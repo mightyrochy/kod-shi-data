@@ -1,0 +1,37 @@
+── ПРОМПТ (2323 симв.) ──
+{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.", "A slot the description says is not needed is not an item: give it worn false. One item carries one thing — of two alternatives list the first; a note in brackets is not an item.", "Slot \"accessory\" is for an item no other slot fits.", "\"is_outfit\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note; then items is empty."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "ITEM_LIST", "answer_schema": {"is_outfit": "yes|no", "items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory", "color_hex": "<#rrggbb or null>", "worn": "<true, or false when the description says the outfit goes without it>"}]}, "input": ["\"description\" — the outfit description"]}, "description": "Wool blend coat, structured tailored fit reaching mid-calf, #2a2326 dark charcoal, heavy wool blend.\nMerino wool turtleneck sweater, relaxed ribbed cut hitting at the hip, #ead0cc soft taupe, fine-gauge merino wool.\nWide-leg trousers, high-rise tapered silhouette ending just above the ankle, #f4dcd8 warm beige, thick woven tweed.\nChunky leather boots, square-toe block heel with a sturdy lug sole, #1f1c1f black, full-grain nubuck leather.\n\nThis outfit is designed to keep you warm against the -10 °C temperature and snow while maintaining a polished look for your work commute. The heavy wool coat and thick tweed trousers provide essential insulation without looking bulky, ensuring comfort during your twenty-minute walk. The neutral color palette of charcoal, taupe, and beige creates a professional yet understated aesthetic suitable for a neat dress code. Finally, the chunky black boots offer traction on icy, salted roads while keeping your legs dry and cozy."}
+
+── ВІДПОВІДЬ (888 симв., 61.3 с, HTTP 200) ──
+{
+  "is_outfit": "yes",
+  "items": [
+    {
+      "name": "Wool blend coat",
+      "details": "structured tailored fit reaching mid-calf, heavy wool blend",
+      "slot": "outerwear",
+      "color_hex": "#2a2326",
+      "worn": true
+    },
+    {
+      "name": "Merino wool turtleneck sweater",
+      "details": "relaxed ribbed cut hitting at the hip, fine-gauge merino wool",
+      "slot": "top",
+      "color_hex": "#ead0cc",
+      "worn": true
+    },
+    {
+      "name": "Wide-leg trousers",
+      "details": "high-rise tapered silhouette ending just above the ankle, thick woven tweed",
+      "slot": "bottom",
+      "color_hex": "#f4dcd8",
+      "worn": true
+    },
+    {
+      "name": "Chunky leather boots",
+      "details": "square-toe block heel with a sturdy lug sole, full-grain nubuck leather",
+      "slot": "shoes",
+      "color_hex": "#1f1c1f",
+      "worn": true
+    }
+  ]
+}
