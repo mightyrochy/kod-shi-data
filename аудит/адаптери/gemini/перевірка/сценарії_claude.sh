@@ -2,24 +2,17 @@
 # Стенд рушія Claude (claude_run.ps1): позначки cc-, коди кінця, продовження, перерваний прогін, вимкнення, стан у issue
 # (fake_gh.py), доставка рядка ВИМКНЕНО (gemini_publish.ps1) і gemini-run, що не бере cc-. PowerShell — PWSH (pwsh 7 чи
 # на ноутбуці Git Bash + `PWSH=powershell`); git, Python 3 (python3, інакше python). Код 1, якщо хоч одна перевірка ✗.
-# Тека прогону — ${TMPDIR:-/tmp}/claude-run/<випадок>. На Windows (є cygpath) шляхи для PowerShell — `cygpath -m`, а
-# заглушки .py — через python: обгортки запускають файл рушія напряму, тож кожна має свій `<заглушка>.cmd` у теці прогону.
-H=$(cd "$(dirname "$0")" && pwd); PW="${PWSH:-pwsh}"; SRC=$(cd "$H/.." && pwd)
+# Тека прогону — ${TMPDIR:-/tmp}/claude-run/<випадок>. Шляхи й заглушки на Windows — спільне `середовище.sh` (wp, stub).
+H=$(cd "$(dirname "$0")" && pwd); . "$H/середовище.sh"; PW="${PWSH:-pwsh}"; SRC=$(cd "$H/.." && pwd)
 SLUG='проба-рушія-claude'; M=cc-claude-sonnet-5-5-medium; BAD=0
-PY=python3; python3 -c '' 2>/dev/null || PY=python
-WIN=; command -v cygpath >/dev/null && WIN=1
-export GIT_AUTHOR_NAME=t GIT_AUTHOR_EMAIL=t@x GIT_COMMITTER_NAME=t GIT_COMMITTER_EMAIL=t@x PYTHONUTF8=1 PYTHONIOENCODING=utf-8
-wp() { if [ -n "$WIN" ]; then cygpath -m "$1"; else printf '%s' "$1"; fi; }
-stub() { if [ -n "$WIN" ]; then wp "$W/bin/$1.cmd"; else printf '%s' "$H/$1.py"; fi; }
+export GIT_AUTHOR_NAME=t GIT_AUTHOR_EMAIL=t@x GIT_COMMITTER_NAME=t GIT_COMMITTER_EMAIL=t@x
 alive() { $PY -c "import os, subprocess, sys
 pid = int(open(sys.argv[1]).read())
 if os.name == 'nt': sys.exit(0 if (' %d ' % pid) in subprocess.run(['tasklist', '/FI', 'PID eq %d' % pid, '/NH'], capture_output=True, text=True).stdout else 1)
 try: os.kill(pid, 0)
 except OSError: sys.exit(1)" "$(wp "$1")"; }
 kill_pid() { [ -e "$1" ] && $PY -c "import os, signal, sys; os.kill(int(open(sys.argv[1]).read()), signal.SIGTERM)" "$(wp "$1")" 2>/dev/null; }
-setup() { W="${TMPDIR:-/tmp}/claude-run/$1"; rm -rf "$W"; mkdir -p "$W"/{cr,out,pub,gem,gh,runs,bin}
-  if [ -n "$WIN" ]; then X=$($PY -c 'import sys; print(sys.executable)')
-    for s in fake_cc fake_gh fake_claude fake_agy; do printf '@"%s" "%s" %%*\r\n' "$X" "$(wp "$H/$s.py")" > "$W/bin/$s.cmd"; done; fi
+setup() { W="${TMPDIR:-/tmp}/claude-run/$1"; rm -rf "$W"; mkdir -p "$W"/{cr,out,pub,gem,gh,runs}
   git init -q --bare "$W/origin.git"; git clone -q "$W/origin.git" "$W/seed" 2>/dev/null
   (cd "$W/seed"; git checkout -q -b main; mkdir -p аудит/наряди; printf 'Т | наряд\n\nПідніми й зупини LM Studio.\n' > "аудит/наряди/$SLUG.md"
    printf '| диспетчер | session_01TEST |\n' > аудит/СТАН.md; git add -A; git commit -q -m init; git push -q origin main 2>/dev/null)
