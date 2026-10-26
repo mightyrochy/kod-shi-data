@@ -220,6 +220,8 @@ function Get-NextMarker {
     foreach ($m in Get-Markers) {
         $state = Get-StatePath "$($m.Ref) $($m.Sha)"
         if (Test-Path -LiteralPath $state) { continue }
+        # Позначки `cc-` — рушій Claude під власником (claude_run.ps1): gemini-run їх не бере й узятими не позначає.
+        if ($m.Valid -and $m.Model.StartsWith('cc-')) { continue }
         if (-not $m.Valid) {
             Write-WrapperLog "позначка $($m.Name): назва не за форматом gemini-queue/<наряд>/<модель>/<спроба> — пропущено"
             Write-FileAtomic $state 'INVALID_NAME'
@@ -915,7 +917,15 @@ function Main {
         $script:Agy = Find-EngineExe $AgyExe
         if ($script:Agy) { try { Write-Pools } catch { Write-WrapperLog "пули: $($_.Exception.Message)" } }
         if ($null -eq $m) { return 0 }
-        Invoke-Task $m
+        # Узята позначка — в heartbeat, поки наряд іде: її бачать стан ноутбука й вимкнення (claude_run.ps1).
+        $hb.marker = $m.Name; $hb.engine = (Get-Engine $m.Model).Name; $hb.model = $m.Model; $hb.since = (Get-Date).ToString('s')
+        Write-FileAtomic (Join-Path $OutDir 'heartbeat.json') ($hb | ConvertTo-Json -Compress)
+        try { Invoke-Task $m }
+        finally {
+            foreach ($k in @('marker', 'engine', 'model', 'since')) { $hb.Remove($k) }
+            $hb.time = (Get-Date).ToString('s')
+            Write-FileAtomic (Join-Path $OutDir 'heartbeat.json') ($hb | ConvertTo-Json -Compress)
+        }
         0
     } catch {
         Write-WrapperLog "збій обгортки: $($_.Exception.Message)"
