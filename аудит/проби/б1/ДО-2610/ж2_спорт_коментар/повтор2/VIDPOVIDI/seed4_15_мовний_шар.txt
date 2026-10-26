@@ -1,4 +1,4 @@
-── ПРОМПТ (6386 симв.) ──
+── ПРОМПТ (6188 симв.) ──
 Ти — перекладачка в застосунку-стилістці. Ти пишеш природною українською тексти, які зараз побачить жінка. Рішень не приймаєш, на питання не відповідаєш, змісту не міняєш.
 
 Вхід — JSON-об'єкт: ключ — номер тексту н, значення — текст, який склали код та інші моделі.
@@ -20,22 +20,22 @@
 4 — назва в тексті н=5
 When a text speaks of an item of the list, call it by the kind in its name — the same noun in the right case (list «Тренч бежевий подовжений» — text «тренч», «Светр в'язаний оверсайз» — «светр»), not by another kind or a synonym of the English word. Make every adjective, pronoun and verb with the item agree with that noun in gender and number («Тренч бежевий» — «бежевий тренч, який…»; «Лофери шкіряні» — «шкіряні лофери, які…»). A name you translate in this same call (text н=K): give it one noun and call the item by it, in agreement, in every text. A text the list gives as about an item (about it: text н=M) speaks of that one item, and so does every other text where the English names it. The colour of an item of the list is the colour of its name: keep the shop's colour word from its name; when its name has no colour word, write the Ukrainian name of its colour code. The English colour words for that item are the stylist's impression of a photo: do not turn them into a colour of their own — the item's colour stands in their place. Colours of its details (trim, strap, buttons, print), its fabric and the rest — translate from the text. The list is for names only: an item the English text does not name is not added to the translation — neither to the description nor to the advice. The kind code next to an item (kind code: …) is the code of its kind: every noun for that item, in every text, names this kind and no other, whatever word the English text uses; a code ending in _generic names only the family (dress_generic — a dress, bag_generic — a bag). The kind noun of its name and this code are the same kind: write the name's noun.
 
-[colour: код] у тексті — колір речі кодом: напиши на його місці українську назву цього кольору, узгоджену з реченням. Коли та сама річ у тексті вже має колір своїм словом, лиши її слово, а другої назви кольору не додавай. Коди: milky — молочний.
-
 ТЕКСТИ:
 {
-"1": "A relaxed-fit cotton sweater in a warm oatmeal tone [colour: milky], soft drape cut that falls to the hips with long sleeves, neutral heather color, breathable jersey knit. Straight-leg dark denim jeans in an indigo wash, regular rise and mid-thigh length, deep blue hue, sturdy twill fabric. Minimalist leather loafers in a cognac brown, square toe with a low block heel, polished calfskin upper. Delicate gold bar necklace in 14k gold finish, slender link chain resting at the collarbone, warm metallic tone, lightweight metal alloy.\n\nThis outfit perfectly balances the morning autumn daylight with a comfortable yet put-together everyday look. The oatmeal sweater offers gentle warmth for the seasonal chill without feeling heavy, while the dark denim provides structure and durability for daily wear. The cognac loafers ground the neutral palette with an earthy richness that harmonizes beautifully with her warm skin undertones. It respects her wish for simplicity by avoiding outer layers or formal details, allowing the textures of the knit and denim to take center stage in a natural, effortless style.",
-"2": "sweater",
-"3": "jeans",
-"4": "loafers",
-"5": "necklace"
+"1": "A dark denim jacket in a structured, slightly oversized boxy cut, knee-length, deep indigo blue with code, made of heavy-weight raw cotton twill.\nHigh-waisted straight-leg trousers in a classic stretch denim weave, ankle length, charcoal gray with code, composed of 98% cotton and 2% elastane for comfort.\nA simple crewneck T-shirt in a soft relaxed fit, hip-length, off-white with code, crafted from breathable combed cotton jersey.\nMinimalist leather sneakers with a white rubber sole and black toe cap, medium shaft height, pure black upper with code, made of smooth calfskin leather.\nThis ensemble embodies the perfect balance for an autumn morning while maintaining the requested everyday level of formality without going overboard. The dark denim jacket provides essential warmth against the cooler season temperatures while keeping the look effortless and versatile for daily activities. Pairing it with neutral trousers and a crisp white tee creates a streamlined silhouette that feels both polished and completely relaxed, ensuring you stay comfortable from start to finish.",
+"2": "Dark denim jacket",
+"3": "High-waisted straight-leg trousers",
+"4": "Simple crewneck T-shirt",
+"5": "Minimalist leather sneakers"
 }
 
-── ВІДПОВІДЬ (661 симв., 41.1 с, HTTP 200) ──
+── ВІДПОВІДЬ (1345 симв., 49.2 с, HTTP 200) ──
+```json
 {
-  "1": "Теплий светр вільного крою з бавовни в затишному молочному відтінку [colour: milky], м’який драпірувальний крій, що спадає до стегон, довгі рукави, нейтральний колір меланжу, дихаючий трикотаж. Прямі джинси з темного деніму в індиго, стандартна посадка та середня довжина по середину стегна, насичений синій відтінок, міцна тканина саржа. Мінімалістичні лофери зі шкіри кольору коньяку, квадратний носок і невисокий стійкий каблук, відполірована лицьова шкіра. Делікатне золоте намисто-бар з покриттям 14 каратів, тонка ланцюжок на кістці, теплий металевий відтінок, легкий сплав.",
-  "2": "светр",
-  "3": "джинси",
-  "4": "лофери",
-  "5": "намисто"
+  "1": "Темно-синя джинсова куртка прямого крою, трохи вільного силуету, довжиною до колін, глибокого індиго з кодом, виготовлена ​​з щільної сирої бавовняної тканини.\nВисокопотані прямі штани класичного еластичного джинсового плетіння, довжиною до щиколотки, вугільно-сірого кольору з кодом, що складаються на 98% з бавовни та 2% еластану для комфорту.\nПростий футбол з круглим вирізом у м'якому вільному крої, довжиною до стегон, молочно-білого кольору з кодом, виготовлений ​​з дихаючого трикотажного бавовняного джерсі.\nМінімалістичні шкіряні кеди на білій гумовій підошві та чорному носку, середньої висоти халяви, повністю чорної верхньої частини з кодом, виготовлені ​​з гладкої телячої шкіри.\nЦей образ втілює ідеальний баланс для осіннього ранку, зберігаючи при цьому необхідний рівень повсякденності без надмірностей. Темно-синя джинсова куртка забезпечує важливе тепло проти прохолодних температур сезону, залишаючись легкою та універсальною для щоденної діяльності. Поєднання її з нейтральними брюками та білосніжною футболкою створює стрункий силует, який відчувається одночасно вишукано і абсолютно розслаблено, гарантуючи тобі комфорт від початку до кінця.",
+  "2": "Темно-синя джинсова куртка",
+  "3": "Високопотані прямі штани",
+  "4": "Простий футбол з круглим вирізом",
+  "5": "Мінімалістичні шкіряні кеди"
 }
+```

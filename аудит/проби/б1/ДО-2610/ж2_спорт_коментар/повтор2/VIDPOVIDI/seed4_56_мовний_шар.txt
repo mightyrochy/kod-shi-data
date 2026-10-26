@@ -1,0 +1,54 @@
+── ПРОМПТ (8034 симв.) ──
+Ти — перекладачка в застосунку-стилістці. Ти пишеш природною українською тексти, які зараз побачить жінка. Рішень не приймаєш, на питання не відповідаєш, змісту не міняєш.
+
+Вхід — JSON-об'єкт: ключ — номер тексту н, значення — текст, який склали код та інші моделі.
+
+Відповідь — лише JSON-об'єкт тієї самої форми, що вхід, з усіма його ключами: ключ — номер н кожного тексту зі входу, значення — рядок — той самий зміст природною українською, без англійських слів і кодів (назви крамниць і брендів — як є); ПЕРЕКЛАДАЙ КОЖНЕ англійське слово, навіть одне посеред українського речення; латиницею лишай лише назви крамниць і брендів, «V-подібний» і «den»; текст, що вже природний і до неї на «ти», — без змін, а український текст на «ви» перепиши на «ти», решту лиши слово в слово.
+
+Вид кожної речі — теж зміст: річ у перекладі — та сама, що у вході, а не схожа чи сусідня. ankle boots — черевики чи ботильйони, boots — чоботи, heeled — на підборах, а не туфлі, pumps — туфлі-човники, loafers — лофери; pendant — кулон чи підвіска, necklace — намисто чи ланцюжок, а не каблучка, сережки чи браслет; ring — каблучка; earrings — сережки. Українські назви речей у вході (назви з крамниці, найчастіше перед « — ») переписуй літера в літеру: не міняй, не переставляй і не додавай у них жодного слова.
+
+Про жінку — лише до неї, на «ти» (ти, тебе, тобі, твій, твоя; хочеш, скинеш; наказ однини: розкажи, оберни, тримай, дай), і в питаннях теж: you, your, she, her про неї — «ти», «твій» (her skin tone — твій тон шкіри; when she turns her head — коли ти повертаєш голову; she looks taller — ти виглядаєш вищою), англійський наказ — наказом однини; «вона», «її» — лише про річ (сукню, сумку, куртку). Говорить стилістка — одна жінка: про себе — від першої особи однини й у жіночому роді (я підібрала, я б додала), не «ми», не від імені застосунку чи коду і ніколи словами самої жінки.
+
+Мова: літературна українська, як у текстах українських крамниць одягу. Кожне українське слово — літерами лише української абетки, без жодної латинської літери чи стороннього знака всередині слова. Кожне речення — одна остаточна версія, без виправлень посеред тексту. Словничок нижче — лише як перекласти англійське слово, коли воно є у вході; це не зміст: річ, тканина чи колір, яких у вході нема, у тексті не з'являються. Звичні українські назви для слів англійського джерела: trousers, pants — штани; dressy, dressier — ошатний, ошатніше; look, outfit — образ; taupe — сіро-бежевий; loose — вільний; suede — замша (жіночий рід); slip dress — сукня-комбінація; camel — кемел (колір). Назви речей і кольорів, які дала крамниця, — як є.
+
+Перевір кожне слово ДО відповіді: до неї — лише «ти», жодного «ви», «ваш» і наказу множини, і про неї жодного «вона», «її», «їй», жодне слово не стоїть двічі поспіль, кожна річ — того самого виду, що у вході (річ образу — іменником її назви з переліку, коли він є, і слова при ній узгоджені з цим іменником), а українська назва речі — слово в слово. Відповідь — рівно ОДИН JSON-об'єкт і нічого після нього: другої, виправленої версії, приміток і пояснень не пиши — помилку виправ у тому самому об'єкті.
+
+Речі образу — перелік, який жінка бачить на картці (номер речі — назва біля неї):
+1 — Светр оверсайз коричневий · kind code: sweater · colour code: brown · about it: text н=1
+2 — Джинси STRAIGHT синій · kind code: jeans · colour code: blue · about it: text н=2
+3 — Кросівки бордові з натурального спилку-замші · kind code: sneakers · colour code: burgundy · about it: text н=3
+4 — Рюкзак жіночий Welfare сірий · kind code: backpack · colour code: grey · about it: text н=4
+5 — Жіноча стьобана куртка Thinsulate™ без хутра з втачним рукавом Stella Polare (бордо, 44) · kind code: jacket · colour code: burgundy · about it: text н=5
+When a text speaks of an item of the list, call it by the kind in its name — the same noun in the right case (list «Тренч бежевий подовжений» — text «тренч», «Светр в'язаний оверсайз» — «светр»), not by another kind or a synonym of the English word. Make every adjective, pronoun and verb with the item agree with that noun in gender and number («Тренч бежевий» — «бежевий тренч, який…»; «Лофери шкіряні» — «шкіряні лофери, які…»). A name you translate in this same call (text н=K): give it one noun and call the item by it, in agreement, in every text. A text the list gives as about an item (about it: text н=M) speaks of that one item, and so does every other text where the English names it. The colour of an item of the list is the colour of its name: keep the shop's colour word from its name; when its name has no colour word, write the Ukrainian name of its colour code. The English colour words for that item are the stylist's impression of a photo: do not turn them into a colour of their own — the item's colour stands in their place. Colours of its details (trim, strap, buttons, print), its fabric and the rest — translate from the text. The list is for names only: an item the English text does not name is not added to the translation — neither to the description nor to the advice. The kind code next to an item (kind code: …) is the code of its kind: every noun for that item, in every text, names this kind and no other, whatever word the English text uses; a code ending in _generic names only the family (dress_generic — a dress, bag_generic — a bag). The kind noun of its name and this code are the same kind: write the name's noun.
+
+Colour codes: blue — синій; brown — коричневий; burgundy — бордовий; grey — сірий.
+
+ТЕКСТИ:
+{
+"1": "This is a relaxed-fit sweater in a rich brown shade with a soft, knitted texture that offers comfort all day long. Its slightly dropped shoulders and oversized cut create an effortless silhouette while maintaining a polished feel.",
+"2": "These are straight-leg jeans in a classic blue wash, featuring a mid-to-high rise and clean lines that follow the natural shape of your legs without adding bulk. The fabric has just enough stretch for movement while holding its form beautifully.",
+"3": "You have burgundy suede sneakers that blend sporty ease with a touch of elegance thanks to their premium material and understated design. Their flat sole makes them ideal for walking, yet they add depth of color to your neutral base.",
+"4": "This is a sleek grey backpack with a striking geometric pattern that catches the light subtly throughout your day. Its structured shape keeps essentials secure while its neutral tone blends effortlessly with your earthy palette.",
+"5": "The jacket you're wearing is an olive-toned quilted piece made from Thinsulate™ for lightweight warmth. With a button-front closure and relaxed fit, it layers seamlessly over your sweater without overwhelming your frame.",
+"6": "I have put together a cozy and stylish look for your autumn mornings. You are wearing the brown oversized sweater paired with the straight-leg blue jeans that fall just right at the ankle to keep your silhouette balanced. To top it off, I've chosen the burgundy suede sneakers for their comfort and earthy warmth, while the grey geometric backpack adds a modern touch. Finally, the olive quilted jacket from Stella Polare serves as your perfect layer; its relaxed fit keeps you warm without hiding your figure, and you can easily slip it on or off depending on how the day unfolds.",
+"7": "Layer the olive jacket over the brown sweater for warmth in the morning sun, then take it off when you head indoors or into cooler evening light.",
+"8": "Wear the straight-leg jeans untucked to showcase the ankle of your burgundy sneakers, creating a clean vertical line that elongates your frame.",
+"9": "Кросівки бордові з натурального спилку-замші — I added these brown suede sneakers to continue the leg line under the midi skirt and anchor the hem at your height, unlike the previous white gold which felt disconnected from the autumn palette.",
+"10": "Светр оверсайз коричневий — The oversized sweater feels intentional for your cozy day, not too big; it sets the relaxed tone you need while the fitted jeans balance the silhouette."
+}
+
+── ВІДПОВІДЬ (2552 симв., 27.4 с, HTTP 200) ──
+```json
+{
+"1": "Це светр вільного крою в насиченому коричневому відтінку з м’якою трикотажною текстурою, яка дарує комфорт протягом усього дня. Злегка спущені плечі та оверсайз-крій створюють невимушений силует, зберігаючи при цьому вишуканий вигляд.",
+"2": "Це прямі джинси класичного синього кольору з середньою або високою посадкою та чіткими лініями, що повторюють природну форму ваших ніг без зайвого об’єму. Тканина має достатню еластичність для свободи рухів і водночас чудово тримає форму.",
+"3": "У тебе бордові замшеві кросівки, які поєднують спортивну зручність з ноткою елегантності завдяки своїй високоякісній тканині та стриманому дизайну. Їхня плоска підошва робить їх ідеальними для ходьби, а колір додає глибини твоєму нейтральному образу.",
+"4": "Це стильний сірий рюкзак з виразним геометричним візерунком, який ледь помітно відсвічується протягом дня. Його структурована форма надійно зберігає необхідні речі, а нейтральний тон бездоганно поєднується з твоєю природною палітрою кольорів.",
+"5": "Ти одягла оливкову стьобану куртку Thinsulate™, виготовлену для легкої теплоти. З застібкою на гудзики та вільним кроєм, вона чудово поєднується зі светром без зайвого об’єму.",
+"6": "Я підібрала тобі затишний і стильний образ для осінніх ранків. Ти одягла коричневий оверсайз-светр у парі з прямими синіми джинсами, які чудово сидять на щиколотці та зберігають твій силует гармонійним. На завершення я обрала бордові замшеві кросівки для їхньої зручності й теплоти кольору, а сірий рюкзак з геометричним візерунком додає сучасний акцент. І нарешті, оливкова стьобана куртка від Stella Polare стане твоїм ідеальним верхнім одягом; її вільний крій зігріває тебе без зайвого об’єму, а ти легко можеш зняти або накинути її залежно від того, як розгортається день.",
+"7": "Накинь оливкову куртку поверх коричневого светра для тепла під осіннім сонцем, потім зніми її, коли зайдеш у приміщення чи опинишся в прохолодну вечірню пору.",
+"8": "Одягни прямі джинси так, щоб вони трохи визирали з-під кросівок бордового кольору, створюючи чітку вертикальну лінію, яка візуально подовжує твій силует.",
+"9": "Бордові замшеві кросівки — я додала ці коричневі замшеві кросівки, щоб продовжити лінію ноги під міді-спідницею та зафіксувати поділ на твоєму зрості, на відміну від попередніх білих золотих, які здавалися не пов’язаними з осінньою палітрою.",
+"10": "Оверсайз-коричневий светр — оверсайз-светр виглядає доречно для твого затишного дня, не надто великим; він задає потрібний невимушений тон, а приталені джинси збалансовують силует."
+}
+```

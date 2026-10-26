@@ -1,37 +1,5 @@
-── ПРОМПТ (2485 симв.) ──
-{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.", "A slot the description says is not needed is not an item: give it worn false. One item carries one thing — of two alternatives list the first; a note in brackets is not an item.", "Slot \"accessory\" is for an item no other slot fits.", "\"is_outfit\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note; then items is empty."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "ITEM_LIST", "answer_schema": {"is_outfit": "yes|no", "items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory", "color_hex": "<#rrggbb or null>", "worn": "<true, or false when the description says the outfit goes without it>"}]}, "input": ["\"description\" — the outfit description"]}, "description": "A relaxed-fit cotton sweater in a warm oatmeal tone (#E0D5C1), soft drape cut that falls to the hips with long sleeves, neutral heather color, breathable jersey knit. Straight-leg dark denim jeans in an indigo wash (#2A3B4D), regular rise and mid-thigh length, deep blue hue, sturdy twill fabric. Minimalist leather loafers in a cognac brown (#8C5E36), square toe with a low block heel, polished calfskin upper. Delicate gold bar necklace in 14k gold finish (#FFD700), slender link chain resting at the collarbone, warm metallic tone, lightweight metal alloy.\n\nThis outfit perfectly balances the morning autumn daylight with a comfortable yet put-together everyday look. The oatmeal sweater offers gentle warmth for the seasonal chill without feeling heavy, while the dark denim provides structure and durability for daily wear. The cognac loafers ground the neutral palette with an earthy richness that harmonizes beautifully with her warm skin undertones. It respects her wish for simplicity by avoiding outer layers or formal details, allowing the textures of the knit and denim to take center stage in a natural, effortless style."}
+── ПРОМПТ (2484 симв.) ──
+{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.", "A slot the description says is not needed is not an item: give it worn false. One item carries one thing — of two alternatives list the first; a note in brackets is not an item.", "Slot \"accessory\" is for an item no other slot fits.", "\"is_outfit\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note; then items is empty."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "ITEM_LIST", "answer_schema": {"is_outfit": "yes|no", "items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory", "color_hex": "<#rrggbb or null>", "worn": "<true, or false when the description says the outfit goes without it>"}]}, "input": ["\"description\" — the outfit description"]}, "description": "A dark denim jacket in a structured, slightly oversized boxy cut, knee-length, deep indigo blue with hex code #192A40, made of heavy-weight raw cotton twill.\nHigh-waisted straight-leg trousers in a classic stretch denim weave, ankle length, charcoal gray with hex code #36454F, composed of 98% cotton and 2% elastane for comfort.\nA simple crewneck T-shirt in a soft relaxed fit, hip-length, off-white with hex code #FAFAFA, crafted from breathable combed cotton jersey.\nMinimalist leather sneakers with a white rubber sole and black toe cap, medium shaft height, pure black upper with hex code #000000, made of smooth calfskin leather.\nThis ensemble embodies the perfect balance for an autumn morning while maintaining the requested everyday level of formality without going overboard. The dark denim jacket provides essential warmth against the cooler season temperatures while keeping the look effortless and versatile for daily activities. Pairing it with neutral trousers and a crisp white tee creates a streamlined silhouette that feels both polished and completely relaxed, ensuring you stay comfortable from start to finish."}
 
-── ВІДПОВІДЬ (883 симв., 65.9 с, HTTP 200) ──
-{
-  "is_outfit": "yes",
-  "items": [
-    {
-      "name": "sweater",
-      "details": "relaxed-fit cotton sweater with soft drape cut that falls to the hips, long sleeves",
-      "slot": "top",
-      "color_hex": "#E0D5C1",
-      "worn": true
-    },
-    {
-      "name": "jeans",
-      "details": "straight-leg dark denim jeans with regular rise and mid-thigh length",
-      "slot": "bottom",
-      "color_hex": "#2A3B4D",
-      "worn": true
-    },
-    {
-      "name": "loafers",
-      "details": "minimalist leather loafers with square toe, low block heel, polished calfskin upper",
-      "slot": "shoes",
-      "color_hex": "#8C5E36",
-      "worn": true
-    },
-    {
-      "name": "necklace",
-      "details": "delicate gold bar necklace with slender link chain resting at the collarbone",
-      "slot": "collar_necklace",
-      "color_hex": "#FFD700",
-      "worn": true
-    }
-  ]
-}
+── ВІДПОВІДЬ (825 симв., 54.5 с, HTTP 200) ──
+{"is_outfit":"yes","items":[{"name":"Dark denim jacket","details":"structured slightly oversized boxy cut knee-length deep indigo blue made of heavy-weight raw cotton twill","slot":"outerwear","color_hex":"#192A40","worn":true},{"name":"High-waisted straight-leg trousers","details":"classic stretch denim weave ankle length charcoal gray composed of 98% cotton and 2% elastane for comfort","slot":"bottom","color_hex":"#36454F","worn":true},{"name":"Simple crewneck T-shirt","details":"soft relaxed fit hip-length off-white crafted from breathable combed cotton jersey","slot":"top","color_hex":"#FAFAFA","worn":true},{"name":"Minimalist leather sneakers","details":"white rubber sole and black toe cap medium shaft height pure black upper made of smooth calfskin leather","slot":"shoes","color_hex":"#000000","worn":true}]}
