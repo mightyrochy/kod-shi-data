@@ -248,8 +248,12 @@ function Get-NextMarker {
     $now = [DateTimeOffset]::UtcNow.ToUnixTimeSeconds()
     foreach ($m in Get-Markers) {
         $state = Get-StatePath "$($m.Ref) $($m.Sha)"
-        if (Test-Path -LiteralPath $state) { continue }
-        if (($now - $m.Time) -gt $MarkerMaxAgeDays * 86400) {
+        if (Test-Path -LiteralPath $state) {
+            # Виконана позначка вимкнення (стан OFF) на першому проході після нового ввімкнення — теж один BOOT і без
+            # другого вимкнення: диспетчер бачить, що ноутбук знову працює, а позначка витрачена.
+            if (-not ($m.Off -and $script:FreshBoot -and [System.IO.File]::ReadAllText($state, $script:Utf8).StartsWith('OFF '))) { continue }
+        }
+        elseif (($now - $m.Time) -gt $MarkerMaxAgeDays * 86400) {
             Write-RunLog "позначка $($m.Name): коміт старший за $MarkerMaxAgeDays діб — пропущено"
             Write-FileAtomic $state 'STALE'
             continue
@@ -414,8 +418,9 @@ function Get-ErrorCode([string]$Text) {
     'EXIT'
 }
 
-# `claude -p` без межі часу: зупиняє лише завислість (жодного рядка stdout довше за -HangMinutes) чи неприйняте
-# зусилля (попередження в stderr: claude його ігнорує й бере типове — це була б підміна).
+# `claude -p` без межі часу: зупиняє лише завислість (жодної прийнятої події stream-json довше за -HangMinutes — і
+# після закриття stdout, доки процес живий) чи неприйняте зусилля (попередження в stderr: claude його ігнорує й бере
+# типове — це була б підміна). Подія — рядок stdout, що розбирається як JSON з полем type; решта лише в claude.jsonl.
 function Invoke-Claude([string]$Exe, [string[]]$ArgList, [string]$Prompt, [string]$RunDir, [string]$StatePath, [string]$StateHead, [string]$Marker) {
     $psi = New-StartInfo $Exe $ArgList $RepoDir
     $psi.RedirectStandardInput = $true
@@ -429,22 +434,29 @@ function Invoke-Claude([string]$Exe, [string[]]$ArgList, [string]$Prompt, [strin
     $res = [pscustomobject]@{ Code = 0; Kind = ''; Result = $null; Err = '' }
     $err = New-Object System.Text.StringBuilder
     $last = Get-Date
-    $outTask = $null; $errTask = $null; $errDone = $false
+    $outTask = $null; $errTask = $null; $outDone = $false; $errDone = $false
     while ($true) {
-        if ($null -eq $outTask) { $outTask = $p.StandardOutput.ReadLineAsync() }
+        if (-not $outDone -and $null -eq $outTask) { $outTask = $p.StandardOutput.ReadLineAsync() }
         if (-not $errDone -and $null -eq $errTask) { $errTask = $p.StandardError.ReadLineAsync() }
         $left = ($last.AddMinutes($HangMinutes) - (Get-Date)).TotalMilliseconds
         if ($left -le 0) { $res.Kind = 'HANG'; break }
-        # Порядок відомий: [0] — stdout (є завжди), [1] — stderr, поки не закритий.
+        $ms = [int][Math]::Min($left, 60000)
         $wait = [System.Threading.Tasks.Task[]]@(@($outTask, $errTask) | Where-Object { $null -ne $_ })
-        $i = [System.Threading.Tasks.Task]::WaitAny($wait, [int][Math]::Min($left, 60000))
+        if ($wait.Count -eq 0) {
+            # Обидва потоки закрито, процес ще живий: той самий поріг завислості й стан, без окремої межі.
+            if ($p.WaitForExit($ms)) { break }
+            Update-Status
+            continue
+        }
+        $i = [System.Threading.Tasks.Task]::WaitAny($wait, $ms)
         Update-Status
         if ($i -lt 0) {
             # stdout міг лишитись відкритим у нащадка (сервер, піднятий сесією) після кінця claude: це не завислість.
             if ($p.HasExited) { break }
             continue
         }
-        if ($i -eq 1) {
+        # Порядок у $wait: stdout (поки не закритий), далі stderr (поки не закритий) — тож stderr завжди останній.
+        if ($null -ne $errTask -and $i -eq $wait.Count - 1) {
             $line = $errTask.Result; $errTask = $null
             if ($null -eq $line) { $errDone = $true; continue }
             [System.IO.File]::AppendAllText($errLog, $line + "`n", $script:Utf8)
@@ -453,17 +465,20 @@ function Invoke-Claude([string]$Exe, [string[]]$ArgList, [string]$Prompt, [strin
             continue
         }
         $line = $outTask.Result; $outTask = $null
-        if ($null -eq $line) { break }
-        $last = Get-Date
+        if ($null -eq $line) { $outDone = $true; continue }
         [System.IO.File]::AppendAllText($log, $line + "`n", $script:Utf8)
-        $type = ''
-        if ($line -match '^\s*\{\s*"type"\s*:\s*"([a-z_]{1,40})"') { $type = $Matches[1] }
-        [System.IO.File]::AppendAllText($ev, $last.ToString('s') + "`t" + $type + "`n", $script:Utf8)
         if ($line -match 'Unknown --effort value') { $res.Kind = 'EFFORT_INVALID'; break }
-        if ($type -eq 'result') { try { $res.Result = $line | ConvertFrom-Json } catch { Write-RunLog "result не JSON: $($_.Exception.Message)" } }
+        $type = ''; $obj = $null
+        if ($line -match '^\s*\{\s*"type"\s*:\s*"([a-z_]{1,40})"') {
+            $tp = $Matches[1]
+            try { $obj = $line | ConvertFrom-Json -ErrorAction Stop; $type = $tp } catch { }
+        }
+        if (-not $type) { continue }
+        $last = Get-Date
+        [System.IO.File]::AppendAllText($ev, $last.ToString('s') + "`t" + $type + "`n", $script:Utf8)
+        if ($type -eq 'result') { $res.Result = $obj }
     }
     if ($res.Kind) { Stop-Tree $p }
-    elseif (-not $p.WaitForExit(300000)) { Stop-Tree $p }
     $res.Code = $(if ($p.HasExited) { $p.ExitCode } else { -1 })
     $res.Err = $err.ToString()
     $res

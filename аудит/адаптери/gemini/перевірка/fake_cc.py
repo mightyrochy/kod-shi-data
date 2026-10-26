@@ -1,8 +1,10 @@
 #!/usr/bin/env python3
 # Підробний `claude -p … --output-format stream-json` для стенда claude_run.ps1: сценарій — FAKE_CC_SCENARIO,
-# argv і промпт — рядком JSON у FAKE_CC_LOG. Гілку `claude/<наряд>` пушить у origin клону (поточна тека), як сесія.
+# argv і промпт — рядком JSON у FAKE_CC_LOG, свій pid — у FAKE_CC_LOG.pid (pid нащадка — .child). Гілку
+# `claude/<наряд>` пушить у origin клону (поточна тека), як сесія.
 import json, os, re, subprocess, sys, time
 sc = os.environ.get('FAKE_CC_SCENARIO', 'done')
+open(os.environ['FAKE_CC_LOG'] + '.pid', 'w').write(str(os.getpid()))
 prompt = sys.stdin.read()
 with open(os.environ['FAKE_CC_LOG'], 'a', encoding='utf-8') as f:
     f.write(json.dumps({'argv': sys.argv[1:], 'stdin': prompt}, ensure_ascii=False) + '\n')
@@ -47,6 +49,21 @@ if sc == 'bad_model':
     result("There's an issue with the selected model (x). It may not exist or you may not have access to it.", True, 1)
 if sc == 'child_holds_stdout':
     # Сервер, піднятий сесією, лишається з успадкованим stdout після кінця claude.
-    subprocess.Popen(['sleep', '600'], stdout=sys.stdout, stderr=subprocess.DEVNULL, start_new_session=True)
+    c = subprocess.Popen([sys.executable, '-c', 'import time; time.sleep(600)'], stdout=sys.stdout,
+                         stderr=subprocess.DEVNULL, start_new_session=True)
+    open(os.environ['FAKE_CC_LOG'] + '.child', 'w').write(str(c.pid))
+    result('НОУТБУК ГОТОВО %s %s' % (branch, push()))
+if sc == 'closed':
+    # Закрив stdout і stderr, а процес живий і мовчить: завислість, хоч потоків уже нема.
+    os.close(1); os.close(2); time.sleep(600)
+if sc == 'noise':
+    # Лише не-JSON рядки після подій: таймер завислості вони не скидають.
+    for i in range(40):
+        sys.stdout.write('шум %d\n' % i); sys.stdout.flush(); time.sleep(0.5)
+    result('НОУТБУК ГОТОВО %s %s' % (branch, push()))
+if sc == 'pause':
+    # Справжні події частіше за поріг, хоч усього довше: не завислість.
+    for i in range(10):
+        emit({'type': 'assistant', 'message': {'content': [{'type': 'text', 'text': 'крок %d' % i}]}}); time.sleep(0.5)
     result('НОУТБУК ГОТОВО %s %s' % (branch, push()))
 sys.exit(9)
