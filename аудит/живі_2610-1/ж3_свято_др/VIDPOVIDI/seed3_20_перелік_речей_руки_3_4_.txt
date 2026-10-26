@@ -1,0 +1,65 @@
+── ПРОМПТ (2655 симв.) ──
+{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.", "A slot the description says is not needed is not an item: give it worn false. One item carries one thing — of two alternatives list the first; a note in brackets is not an item.", "Slot \"accessory\" is for an item no other slot fits.", "\"is_outfit\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note; then items is empty."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "ITEM_LIST", "answer_schema": {"is_outfit": "yes|no", "items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory", "color_hex": "<#rrggbb or null>", "worn": "<true, or false when the description says the outfit goes without it>"}]}, "input": ["\"description\" — the outfit description"]}, "description": "A tailored silk-blend blouse in deep emerald with a subtle sheen, featuring a relaxed fit and a moderate collar that softens the neckline.  \nWorn beneath it is a structured wool-cashmere blend jacket in charcoal gray, cut with sharp lapels and single-breasted closures for a polished silhouette.  \nThe ensemble rests on wide-leg trousers in matching charcoal wool with a slight drape, hemmed just above the ankle to show a hint of skin.  \nFootwear consists of pointed-toe pumps in matte black leather, mid-heel height to elongate the leg without sacrificing comfort during dancing or standing.  \nAccessories include thin gold hoop earrings, a delicate chain necklace that catches the artificial light, and a small structured clutch in dark burgundy suede.  \nA slim gold watch with a leather strap adds a touch of understated elegance to complete the look.  \nThis outfit works because it balances professional polish with festive warmth through rich autumnal colors like emerald and charcoal, perfect for an evening celebration. The fluid fabrics and strategic textures ensure she feels confident and comfortable throughout the dinner while meeting the smart dress code requirements. The accessories add just enough sparkle to stand out in a group setting without overwhelming the refined base layers."}
+
+── ВІДПОВІДЬ (1383 симв., 83.4 с, HTTP 200) ──
+{
+  "is_outfit": "yes",
+  "items": [
+    {
+      "name": "blouse",
+      "details": "tailored silk-blend, relaxed fit with moderate collar",
+      "slot": "top",
+      "color_hex": "#507a5e",
+      "worn": true
+    },
+    {
+      "name": "jacket",
+      "details": "structured wool-cashmere blend, sharp lapels, single-breasted closures",
+      "slot": "outerwear",
+      "color_hex": "#36454f",
+      "worn": true
+    },
+    {
+      "name": "trousers",
+      "details": "wide-leg charcoal wool with slight drape, hemmed above ankle",
+      "slot": "bottom",
+      "color_hex": "#36454f",
+      "worn": true
+    },
+    {
+      "name": "pumps",
+      "details": "pointed-toe leather, mid-heel",
+      "slot": "shoes",
+      "color_hex": "#000000",
+      "worn": true
+    },
+    {
+      "name": "earrings",
+      "details": "thin gold hoops",
+      "slot": "earrings",
+      "color_hex": "#ffd700",
+      "worn": true
+    },
+    {
+      "name": "necklace",
+      "details": "delicate chain",
+      "slot": "necklace",
+      "color_hex": "#ffd700",
+      "worn": true
+    },
+    {
+      "name": "clutch",
+      "details": "small structured suede",
+      "slot": "bag",
+      "color_hex": "#5e1834",
+      "worn": true
+    },
+    {
+      "name": "watch",
+      "details": "slim gold with leather strap",
+      "slot": "watch",
+      "color_hex": "#ffd700",
+      "worn": true
+    }
+  ]
+}

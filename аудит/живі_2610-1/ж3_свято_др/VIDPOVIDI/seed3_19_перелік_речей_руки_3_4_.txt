@@ -1,0 +1,51 @@
+── ПРОМПТ (2497 симв.) ──
+{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.", "A slot the description says is not needed is not an item: give it worn false. One item carries one thing — of two alternatives list the first; a note in brackets is not an item.", "Slot \"accessory\" is for an item no other slot fits.", "\"is_outfit\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note; then items is empty."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "ITEM_LIST", "answer_schema": {"is_outfit": "yes|no", "items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory", "color_hex": "<#rrggbb or null>", "worn": "<true, or false when the description says the outfit goes without it>"}]}, "input": ["\"description\" — the outfit description"]}, "description": "Charcoal silk-blend blazer with a tailored fit and notched lapel, structured shoulders, cropped length ending at the hip, #1f1c1f, woven fabric.\nCream satin shell blouse with a relaxed collar, straight cut, midi length hitting mid-thigh, #f4dcd8, smooth fabric.\nHigh-waisted wide-leg trousers in dark denim, tapered leg, full-length ankle covering, #2a2326, sturdy cotton.\nMatte black leather pumps with a 7cm stiletto heel, pointed toe, closed strap at the ankle, #1f1c1f, soft leather.\nPearl drop earrings and a delicate gold chain necklace to add subtle elegance without overwhelming the outfit.\nThis ensemble perfectly balances the smart dress code for an evening party while embracing her refusal against overly formal or ceremonial wear. The charcoal blazer provides necessary warmth for autumn weather without looking like heavy outerwear, allowing the creamy blouse and dark denim trousers to create a sophisticated yet comfortable silhouette. The heel height enhances her posture elegantly for dancing at a birthday celebration, while the monochromatic dark palette with cream accents flatters her skin tone under artificial lighting."}
+
+── ВІДПОВІДЬ (1176 симв., 80.3 с, HTTP 200) ──
+{
+  "is_outfit": "yes",
+  "items": [
+    {
+      "name": "blazer",
+      "details": "tailored fit with notched lapel, structured shoulders, cropped length ending at the hip, woven fabric",
+      "slot": "outerwear",
+      "color_hex": "#1f1c1f",
+      "worn": true
+    },
+    {
+      "name": "blouse",
+      "details": "relaxed collar, straight cut, midi length hitting mid-thigh, smooth fabric",
+      "slot": "top",
+      "color_hex": "#f4dcd8",
+      "worn": true
+    },
+    {
+      "name": "trousers",
+      "details": "high-waisted wide-leg with tapered leg, full-length ankle covering, sturdy cotton",
+      "slot": "bottom",
+      "color_hex": "#2a2326",
+      "worn": true
+    },
+    {
+      "name": "pumps",
+      "details": "7cm stiletto heel, pointed toe, closed strap at the ankle, soft leather",
+      "slot": "shoes",
+      "color_hex": "#1f1c1f",
+      "worn": true
+    },
+    {
+      "name": "earrings",
+      "details": "drop style",
+      "slot": "earrings",
+      "color_hex": null,
+      "worn": true
+    },
+    {
+      "name": "necklace",
+      "details": "delicate chain",
+      "slot": "necklace",
+      "color_hex": null,
+      "worn": true
+    }
+  ]
+}
