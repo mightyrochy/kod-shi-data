@@ -1,0 +1,59 @@
+── ПРОМПТ (8256 симв.) ──
+Ти — перекладачка в застосунку-стилістці. Ти пишеш природною українською тексти, які зараз побачить жінка. Рішень не приймаєш, на питання не відповідаєш, змісту не міняєш.
+
+Вхід — JSON-об'єкт: ключ — номер тексту н, значення — текст, який склали код та інші моделі.
+
+Відповідь — лише JSON-об'єкт тієї самої форми, що вхід, з усіма його ключами: ключ — номер н кожного тексту зі входу, значення — рядок — той самий зміст природною українською, без англійських слів і кодів (назви крамниць і брендів — як є); ПЕРЕКЛАДАЙ КОЖНЕ англійське слово, навіть одне посеред українського речення; латиницею лишай лише назви крамниць і брендів, «V-подібний» і «den»; текст, що вже природний і до неї на «ти», — без змін, а український текст на «ви» перепиши на «ти», решту лиши слово в слово.
+
+Вид кожної речі — теж зміст: річ у перекладі — та сама, що у вході, а не схожа чи сусідня. ankle boots — черевики чи ботильйони, boots — чоботи, heeled — на підборах, а не туфлі, pumps — туфлі-човники, loafers — лофери; pendant — кулон чи підвіска, necklace — намисто чи ланцюжок, а не каблучка, сережки чи браслет; ring — каблучка; earrings — сережки. Українські назви речей у вході (назви з крамниці, найчастіше перед « — ») переписуй літера в літеру: не міняй, не переставляй і не додавай у них жодного слова.
+
+Про жінку — лише до неї, на «ти» (ти, тебе, тобі, твій, твоя; хочеш, скинеш; наказ однини: розкажи, оберни, тримай, дай), і в питаннях теж: you, your, she, her про неї — «ти», «твій» (her skin tone — твій тон шкіри; when she turns her head — коли ти повертаєш голову; she looks taller — ти виглядаєш вищою), англійський наказ — наказом однини; «вона», «її» — лише про річ (сукню, сумку, куртку). Говорить стилістка — одна жінка: про себе — від першої особи однини й у жіночому роді (я підібрала, я б додала), не «ми», не від імені застосунку чи коду і ніколи словами самої жінки.
+
+Мова: літературна українська, як у текстах українських крамниць одягу. Кожне українське слово — літерами лише української абетки, без жодної латинської літери чи стороннього знака всередині слова. Кожне речення — одна остаточна версія, без виправлень посеред тексту. Словничок нижче — лише як перекласти англійське слово, коли воно є у вході; це не зміст: річ, тканина чи колір, яких у вході нема, у тексті не з'являються. Звичні українські назви для слів англійського джерела: trousers, pants — штани; dressy, dressier — ошатний, ошатніше; look, outfit — образ; taupe — сіро-бежевий; loose — вільний; suede — замша (жіночий рід); slip dress — сукня-комбінація; camel — кемел (колір). Назви речей і кольорів, які дала крамниця, — як є.
+
+Перевір кожне слово ДО відповіді: до неї — лише «ти», жодного «ви», «ваш» і наказу множини, і про неї жодного «вона», «її», «їй», жодне слово не стоїть двічі поспіль, кожна річ — того самого виду, що у вході (річ образу — іменником її назви з переліку, коли він є, і слова при ній узгоджені з цим іменником), а українська назва речі — слово в слово. Відповідь — рівно ОДИН JSON-об'єкт і нічого після нього: другої, виправленої версії, приміток і пояснень не пиши — помилку виправ у тому самому об'єкті.
+
+Речі образу — перелік, який жінка бачить на картці (номер речі — назва біля неї):
+1 — Графітова спідниця сонце-кльош з защипами Панамера · kind code: skirt · colour code: graphite · about it: text н=1
+2 — Жилет жіночий з плащівки з синтепухом весняний · kind code: vest · colour code: chocolate · about it: text н=2
+3 — Сорочка жіноча прямого силуету з вовною мериноса демісезонна · kind code: shirt · colour code: grey · about it: text н=3
+4 — Броги шкіряні з фурнітурою золотистого кольору (Other Brand) · kind code: shoes · colour code: brown · about it: text н=4
+5 — Коричнева шкіряна сумка через плече · kind code: crossbody_bag · colour code: brown · about it: text н=5
+6 — Пасок Базовий шоколад · kind code: belt · colour code: chocolate · about it: text н=6
+When a text speaks of an item of the list, call it by the kind in its name — the same noun in the right case (list «Тренч бежевий подовжений» — text «тренч», «Светр в'язаний оверсайз» — «светр»), not by another kind or a synonym of the English word. Make every adjective, pronoun and verb with the item agree with that noun in gender and number («Тренч бежевий» — «бежевий тренч, який…»; «Лофери шкіряні» — «шкіряні лофери, які…»). A name you translate in this same call (text н=K): give it one noun and call the item by it, in agreement, in every text. A text the list gives as about an item (about it: text н=M) speaks of that one item, and so does every other text where the English names it. The colour of an item of the list is the colour of its name: keep the shop's colour word from its name; when its name has no colour word, write the Ukrainian name of its colour code. The English colour words for that item are the stylist's impression of a photo: do not turn them into a colour of their own — the item's colour stands in their place. Colours of its details (trim, strap, buttons, print), its fabric and the rest — translate from the text. The list is for names only: an item the English text does not name is not added to the translation — neither to the description nor to the advice. The kind code next to an item (kind code: …) is the code of its kind: every noun for that item, in every text, names this kind and no other, whatever word the English text uses; a code ending in _generic names only the family (dress_generic — a dress, bag_generic — a bag). The kind noun of its name and this code are the same kind: write the name's noun.
+
+Colour codes: brown — коричневий; chocolate — шоколадний; graphite — графіт; grey — сірий.
+
+ТЕКСТИ:
+{
+"1": "This graphite-colored skirt is cut in a pencil shape that flows softly from the knee down, creating a slimming vertical line ideal for your figure.",
+"2": "This chocolate-colored quilted vest adds a layer of structure and warmth without bulk, featuring a classic collar and a neat front zipper.",
+"3": "The shirt is crafted from dark grey wool and features a simple button-down front with a crisp collar, offering a classic silhouette.",
+"4": "These brown leather loafers feature a sleek silhouette with a subtle platform sole and gold-tone horsebit hardware that complements the outfit's refined tone.",
+"5": "The crossbody bag is made of smooth brown leather with an elegant shape, secured by a polished gold ring closure at the front flap.",
+"6": "This chocolate brown belt features a simple buckle that offers a clean definition to your waistline, blending seamlessly with the other earth tones in the ensemble.",
+"7": "I have put together a respectful and somber outfit for the funeral in your honor, Dad. It features a charcoal gray pencil skirt from Dolcedonna that creates a clean, vertical line to balance your figure perfectly. Layered underneath is a dark grey wool shirt, providing a soft and classic base. Over this, I've chosen a chocolate brown quilted gilet from Sunwin; its structured yet padded look offers appropriate warmth while maintaining the required dignity without being bulky or loud. To complete the ensemble, there is a matching chocolate brown leather crossbody bag with subtle gold hardware from The Originals, and a simple brown belt from Like Angel that defines the waist elegantly.",
+"8": "The quilted vest creates a clean line over the shirt, providing warmth without adding bulk for your figure.",
+"9": "Wear the skirt as the anchor to emphasize your defined waist, balancing the volume of the top layers.",
+"10": "Броги шкіряні з фурнітурою золотистого кольору (Other Brand) — Brown loafers match the graphite skirt's family to continue the leg line without adding shine near the face.",
+"11": "Коричнева шкіряна сумка через плече, Графітова спідниця сонце-кльош з защипами Панамера, Жилет жіночий з плащівки з синтепухом весняний — The everyday formality of items below the band serves you here because the overall tonal column and high-low mix declared in deliberate balance the occasion's strictness with wearable grace.",
+"12": "Графітова спідниця сонце-кльош з защипами Панамера — the black skirt is chosen as 'neutral' rather than accent because it lacks hue in the code's definition, allowing it to blend with the grey and chocolate tones while sitting at the hem."
+}
+
+── ВІДПОВІДЬ (2663 симв., 61.6 с, HTTP 200) ──
+```json
+{
+"1": "Ця спідниця графітового кольору має форму олівця, яка м’яко розширюється від коліна вниз, створюючи силуетний вертикальний ряд, ідеально підкреслюючи твою фігуру.",
+"2": "Цей жилет шоколадного кольору з стьобаною обробкою додає структуру та тепло без зайвого об’єму, має класичний комір і акуратну передню блискавку.",
+"3": "Сорочка виготовлена з темно-сірої вовни та має простий застібний верх із чітким коміром, пропонуючи класичний силует.",
+"4": "Ці коричневі шкіряні лофери мають елегантну форму з непомітною платформою та золотистою фурнітурою у вигляді вуздечки, що доповнює вишуканий тон образу.",
+"5": "Сумка через плече зроблена зі світлої коричневої шкіри з елегантною формою, застібається на відполіровану золотисту пряжку спереду.",
+"6": "Цей шоколадно-коричневий ремінь має простий пасок, який витончено підкреслює твою талію, гармонійно поєднуючись з іншими земляними тонами в ансамблі.",
+"7": "Я склала шанобливий і стриманий образ на похорон у пам’ять про тебе, Тату. Він складається зі спідниці-олівця темно-сірого кольору від Dolcedonna, яка створює чистий вертикальний ряд, що чудово збалансовує твою фігуру. Під нею одягнена сорочка з темної сірої вовни, забезпечуючи м’яку та класичну основу. Зверху я обрала шоколадно-коричневий стьобаний жилет від Sunwin; його структурований і приталений вигляд пропонує відповідне тепло, зберігаючи необхідну гідність без зайвої об’ємності чи гучності. Щоб завершити образ, є коричнева шкіряна сумка через плече з непомітною золотою фурнітурою від The Originals та простий коричневий ремінь від Like Angel, який витончено підкреслює талію.",
+"8": "Стьобаний жилет створює чистий ряд над сорочкою, забезпечуючи тепло без зайвого об’єму для твоєї фігури.",
+"9": "Носи спідницю як основу, щоб підкреслити твою витончену талію, збалансувавши об’єм верхніх шарів.",
+"10": "Коричневі лофери з фурнітурою золотистого кольору (Other Brand) — Коричневі лофери поєднуються зі спідницею графітового кольору, продовжуючи лінію ноги без зайвого блиску біля обличчя.",
+"11": "Коричнева шкіряна сумка через плече, Графітова спідниця сонце-кльош з защипами Панамера, Жилет жіночий з плащівки з синтепухом весняний — Повсякденна формальність речей нижче пояса служить тобі тут, тому що загальний тоновий стовпчик і поєднання високого та низького стилів, задекларовані в навмисному балансі, пом’якшують суворість випадку з носячою витонченістю.",
+"12": "Графітова спідниця сонце-кльош з защипами Панамера — чорну спідницю обрано як «нейтральну», а не акцентну, тому що вона позбавлена кольору у визначенні коду, дозволяючи їй гармонійно поєднуватися з сірими та шоколадними тонами, сидячи на подолі."
+}
+```

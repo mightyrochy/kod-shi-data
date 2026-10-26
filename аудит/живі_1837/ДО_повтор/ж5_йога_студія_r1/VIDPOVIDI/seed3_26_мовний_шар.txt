@@ -1,0 +1,58 @@
+── ПРОМПТ (7990 симв.) ──
+Ти — перекладачка в застосунку-стилістці. Ти пишеш природною українською тексти, які зараз побачить жінка. Рішень не приймаєш, на питання не відповідаєш, змісту не міняєш.
+
+Вхід — JSON-об'єкт: ключ — номер тексту н, значення — текст, який склали код та інші моделі.
+
+Відповідь — лише JSON-об'єкт тієї самої форми, що вхід, з усіма його ключами: ключ — номер н кожного тексту зі входу, значення — рядок — той самий зміст природною українською, без англійських слів і кодів (назви крамниць і брендів — як є); ПЕРЕКЛАДАЙ КОЖНЕ англійське слово, навіть одне посеред українського речення; латиницею лишай лише назви крамниць і брендів, «V-подібний» і «den»; текст, що вже природний і до неї на «ти», — без змін, а український текст на «ви» перепиши на «ти», решту лиши слово в слово.
+
+Вид кожної речі — теж зміст: річ у перекладі — та сама, що у вході, а не схожа чи сусідня. ankle boots — черевики чи ботильйони, boots — чоботи, heeled — на підборах, а не туфлі, pumps — туфлі-човники, loafers — лофери; pendant — кулон чи підвіска, necklace — намисто чи ланцюжок, а не каблучка, сережки чи браслет; ring — каблучка; earrings — сережки. Українські назви речей у вході (назви з крамниці, найчастіше перед « — ») переписуй літера в літеру: не міняй, не переставляй і не додавай у них жодного слова.
+
+Про жінку — лише до неї, на «ти» (ти, тебе, тобі, твій, твоя; хочеш, скинеш; наказ однини: розкажи, оберни, тримай, дай), і в питаннях теж: you, your, she, her про неї — «ти», «твій» (her skin tone — твій тон шкіри; when she turns her head — коли ти повертаєш голову; she looks taller — ти виглядаєш вищою), англійський наказ — наказом однини; «вона», «її» — лише про річ (сукню, сумку, куртку). Говорить стилістка — одна жінка: про себе — від першої особи однини й у жіночому роді (я підібрала, я б додала), не «ми», не від імені застосунку чи коду і ніколи словами самої жінки.
+
+Мова: літературна українська, як у текстах українських крамниць одягу. Кожне українське слово — літерами лише української абетки, без жодної латинської літери чи стороннього знака всередині слова. Кожне речення — одна остаточна версія, без виправлень посеред тексту. Словничок нижче — лише як перекласти англійське слово, коли воно є у вході; це не зміст: річ, тканина чи колір, яких у вході нема, у тексті не з'являються. Звичні українські назви для слів англійського джерела: trousers, pants — штани; dressy, dressier — ошатний, ошатніше; look, outfit — образ; taupe — сіро-бежевий; loose — вільний; suede — замша (жіночий рід); slip dress — сукня-комбінація; camel — кемел (колір). Назви речей і кольорів, які дала крамниця, — як є.
+
+Перевір кожне слово ДО відповіді: до неї — лише «ти», жодного «ви», «ваш» і наказу множини, і про неї жодного «вона», «її», «їй», жодне слово не стоїть двічі поспіль, кожна річ — того самого виду, що у вході (річ образу — іменником її назви з переліку, коли він є, і слова при ній узгоджені з цим іменником), а українська назва речі — слово в слово. Відповідь — рівно ОДИН JSON-об'єкт і нічого після нього: другої, виправленої версії, приміток і пояснень не пиши — помилку виправ у тому самому об'єкті.
+
+Речі образу — перелік, який жінка бачить на картці (номер речі — назва біля неї):
+1 — Довга спідниця із вовни ягнят сіра · kind code: skirt · colour code: grey · about it: text н=1
+2 — Пуховик (осінь) в кольорі синій · kind code: jacket · colour code: blue · about it: text н=2
+3 — Чокер Карен зі стразами та перлинами айворі із золотим · kind code: jewelry_generic · about it: text н=3
+4 — Намисто з 5 рядів перлин айворі · kind code: jewelry_generic · colour code: milky · about it: text н=4
+5 — Кеди червоні · kind code: plimsolls · colour code: red · about it: text н=5
+6 — Жіноча сумка через плече шкіряна червона · kind code: crossbody_bag · colour code: red · about it: text н=6
+7 — Лонгслів “Sheer” чорний · kind code: longsleeve · colour code: black · about it: text н=7
+When a text speaks of an item of the list, call it by the kind in its name — the same noun in the right case (list «Тренч бежевий подовжений» — text «тренч», «Светр в'язаний оверсайз» — «светр»), not by another kind or a synonym of the English word. Make every adjective, pronoun and verb with the item agree with that noun in gender and number («Тренч бежевий» — «бежевий тренч, який…»; «Лофери шкіряні» — «шкіряні лофери, які…»). A name you translate in this same call (text н=K): give it one noun and call the item by it, in agreement, in every text. A text the list gives as about an item (about it: text н=M) speaks of that one item, and so does every other text where the English names it. The colour of an item of the list is the colour of its name: keep the shop's colour word from its name; when its name has no colour word, write the Ukrainian name of its colour code. The English colour words for that item are the stylist's impression of a photo: do not turn them into a colour of their own — the item's colour stands in their place. Colours of its details (trim, strap, buttons, print), its fabric and the rest — translate from the text. The list is for names only: an item the English text does not name is not added to the translation — neither to the description nor to the advice. The kind code next to an item (kind code: …) is the code of its kind: every noun for that item, in every text, names this kind and no other, whatever word the English text uses; a code ending in _generic names only the family (dress_generic — a dress, bag_generic — a bag). The kind noun of its name and this code are the same kind: write the name's noun.
+
+Colour codes: black — чорний; blue — синій; grey — сірий; milky — молочний; red — червоний.
+
+ТЕКСТИ:
+{
+"1": "This is a high-waisted, floor-length skirt in a soft grey hue. It features a subtle central slit at the back for ease of movement and a classic clean line that complements your figure.",
+"2": "A navy blue puffer jacket with a structured collar and a relaxed fit. Its quilted design offers excellent insulation, making it perfect for cooler autumn days while maintaining a modern silhouette.",
+"3": "An elegant choker featuring gold-toned metalwork shaped like leaves, accented with white pearls and sparkling crystals. It sits gracefully on the collarbone to add a touch of glamour without overwhelming your look.",
+"4": "This layered necklace showcases multiple strands of creamy ivory pearls cascading down the chest, topped with a sophisticated black satin bow. It adds a classic, feminine detail that pairs beautifully with both casual and slightly dressier looks.",
+"5": "These are red plimsolls combining a rich crimson leather upper with white laces and a clean white sole. Their slip-on design ensures comfort for walking through the studio or out in town.",
+"6": "A vibrant red handbag crafted from a glossy, crocodile-textured material. Its structured shape and gold buckle detail make it a standout accessory that complements your sneakers while adding a pop of color to the ensemble.",
+"7": "A sleek black long-sleeved top with a relaxed fit and a smooth texture. Its simple design allows it to serve as a versatile base layer under your puffer jacket, ensuring you stay comfortable throughout your day.",
+"8": "I chose a look that flows from your morning yoga practice to your afternoon coffee. The grey wool skirt offers the movement and comfort needed for kneeling and stretching, while the navy puffer jacket provides the necessary warmth for an autumn day in the studio. I paired this with a black long-sleeved top and red sneakers, which bring a playful pop of color to your outfit.",
+"9": "The grey skirt's soft fabric stretches as you move through your yoga poses without restriction.",
+"10": "If it gets chilly later, the navy puffer can be worn over a tank or sweater for extra insulation.",
+"11": "Пуховик (осінь) в кольорі синій — I replaced the original grey dress with this navy blue oversized down jacket to add necessary warmth for the cool studio temperature and break the monochrome look slightly."
+}
+
+── ВІДПОВІДЬ (2318 симв., 43.2 с, HTTP 200) ──
+```json
+{
+"1": "Це спідниця з високою талією, що сягає підлоги, сірого кольору. Вона має ледь помітний розріз на спині для зручності рухів і класичну лінію, яка гармонійно доповнює твою фігуру.",
+"2": "Синя пухова куртка з об’ємним коміром та вільним кроєм. Її простьобаний дизайн забезпечує чудову теплоізоляцію, що робить її ідеальною для холодних осінніх днів, зберігаючи при цьому сучасний силует.",
+"3": "Елегантний чокер із золотистим металевим оздобленням у формі листя, акцентованим білими перлами та блискучими кристалами. Він витончено сидить на ключицях і додає твоєму образу нотку гламуру без надмірності.",
+"4": "Цей багатошаровий намисто складається з кількох ниток кремових айворі перлів, що спадають по грудях, увінчаних вишуканим чорним атласним бантом. Він додає класичну жіночу деталь, яка чудово гармонує як із повсякденними, так і з трохи ошатнішими образами.",
+"5": "Це червоні кеди, що поєднують насичений бордовий шкіряний верх зі світлими шнурками та чистою білою підошвою. Їхня конструкція на блискавці забезпечує комфорт під час прогулянок студією чи містом.",
+"6": "Яскрава червона сумка, виготовлена з глянцевого матеріалу зі структурою крокодила. Її чітка форма та золота пряжка роблять її помітною деталлю, яка доповнює твої кеди, додаючи образу яскравий акцент.",
+"7": "Стильна чорна футболка з довгими рукавами вільного крою і гладкою текстурою. Її простий дизайн дозволяє використовувати її як універсальний базовий шар під пуховик, забезпечуючи комфорт протягом усього дня.",
+"8": "Я обрала образ, який плавно переходить від ранкової йоги до післяобідньої кави. Сіра вовняна спідниця пропонує рухливість і зручність, необхідні для присідань та розтяжок, а синя пухова куртка забезпечує потрібне тепло в осінній день у студії. Я поєднала це з чорною футболкою з довгими рукавами та червоними кедами, які додають грайливий акцент до твого образу.",
+"9": "М'яка тканина сірої спідниці розтягується під час виконання вправ йоги без жодних обмежень.",
+"10": "Якщо пізніше стане прохолодніше, пухову куртку можна одягнути поверх майки або светра для додаткової теплоізоляції.",
+"11": "Пуховик (осінь) в кольорі синій — Я замінила оригінальну сіру сукню на цю велику синю пухову куртку, щоб додати необхідне тепло прохолодній температурі студії та трохи розбавити монохромний вигляд."
+}
+```

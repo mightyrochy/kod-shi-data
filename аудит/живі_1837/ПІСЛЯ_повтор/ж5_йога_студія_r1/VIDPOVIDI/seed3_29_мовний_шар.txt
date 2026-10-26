@@ -1,0 +1,58 @@
+── ПРОМПТ (8319 симв.) ──
+Ти — перекладачка в застосунку-стилістці. Ти пишеш природною українською тексти, які зараз побачить жінка. Рішень не приймаєш, на питання не відповідаєш, змісту не міняєш.
+
+Вхід — JSON-об'єкт: ключ — номер тексту н, значення — текст, який склали код та інші моделі.
+
+Відповідь — лише JSON-об'єкт тієї самої форми, що вхід, з усіма його ключами: ключ — номер н кожного тексту зі входу, значення — рядок — той самий зміст природною українською, без англійських слів і кодів (назви крамниць і брендів — як є); ПЕРЕКЛАДАЙ КОЖНЕ англійське слово, навіть одне посеред українського речення; латиницею лишай лише назви крамниць і брендів, «V-подібний» і «den»; текст, що вже природний і до неї на «ти», — без змін, а український текст на «ви» перепиши на «ти», решту лиши слово в слово.
+
+Вид кожної речі — теж зміст: річ у перекладі — та сама, що у вході, а не схожа чи сусідня. ankle boots — черевики чи ботильйони, boots — чоботи, heeled — на підборах, а не туфлі, pumps — туфлі-човники, loafers — лофери; pendant — кулон чи підвіска, necklace — намисто чи ланцюжок, а не каблучка, сережки чи браслет; ring — каблучка; earrings — сережки. Українські назви речей у вході (назви з крамниці, найчастіше перед « — ») переписуй літера в літеру: не міняй, не переставляй і не додавай у них жодного слова.
+
+Про жінку — лише до неї, на «ти» (ти, тебе, тобі, твій, твоя; хочеш, скинеш; наказ однини: розкажи, оберни, тримай, дай), і в питаннях теж: you, your, she, her про неї — «ти», «твій» (her skin tone — твій тон шкіри; when she turns her head — коли ти повертаєш голову; she looks taller — ти виглядаєш вищою), англійський наказ — наказом однини; «вона», «її» — лише про річ (сукню, сумку, куртку). Говорить стилістка — одна жінка: про себе — від першої особи однини й у жіночому роді (я підібрала, я б додала), не «ми», не від імені застосунку чи коду і ніколи словами самої жінки.
+
+Мова: літературна українська, як у текстах українських крамниць одягу. Кожне українське слово — літерами лише української абетки, без жодної латинської літери чи стороннього знака всередині слова. Кожне речення — одна остаточна версія, без виправлень посеред тексту. Словничок нижче — лише як перекласти англійське слово, коли воно є у вході; це не зміст: річ, тканина чи колір, яких у вході нема, у тексті не з'являються. Звичні українські назви для слів англійського джерела: trousers, pants — штани; dressy, dressier — ошатний, ошатніше; look, outfit — образ; taupe — сіро-бежевий; loose — вільний; suede — замша (жіночий рід); slip dress — сукня-комбінація; camel — кемел (колір). Назви речей і кольорів, які дала крамниця, — як є.
+
+Перевір кожне слово ДО відповіді: до неї — лише «ти», жодного «ви», «ваш» і наказу множини, і про неї жодного «вона», «її», «їй», жодне слово не стоїть двічі поспіль, кожна річ — того самого виду, що у вході (річ образу — іменником її назви з переліку, коли він є, і слова при ній узгоджені з цим іменником), а українська назва речі — слово в слово. Відповідь — рівно ОДИН JSON-об'єкт і нічого після нього: другої, виправленої версії, приміток і пояснень не пиши — помилку виправ у тому самому об'єкті.
+
+Речі образу — перелік, який жінка бачить на картці (номер речі — назва біля неї):
+1 — Лонгслів базовий синій гладкої в’язки · kind code: longsleeve · colour code: blue · about it: text н=1
+2 — Палацо з вельвету · kind code: trousers · colour code: grey · about it: text н=2
+3 — Базовий топ з віскози в шоколадному кольорі · kind code: t_shirt · colour code: chocolate · about it: text н=3
+4 — Обруч Кейсі жовтий · kind code: headband · colour code: yellow · about it: text н=4
+5 — Лофери нубукові бежеві · kind code: loafers · colour code: beige · about it: text н=5
+6 — Сумка зі шкіри Sylvie · kind code: bag_generic · colour code: camel · about it: text н=6
+7 — Золотисте намисто з двох ланцюжків · kind code: jewelry_generic · colour code: golden · about it: text н=7
+When a text speaks of an item of the list, call it by the kind in its name — the same noun in the right case (list «Тренч бежевий подовжений» — text «тренч», «Светр в'язаний оверсайз» — «светр»), not by another kind or a synonym of the English word. Make every adjective, pronoun and verb with the item agree with that noun in gender and number («Тренч бежевий» — «бежевий тренч, який…»; «Лофери шкіряні» — «шкіряні лофери, які…»). A name you translate in this same call (text н=K): give it one noun and call the item by it, in agreement, in every text. A text the list gives as about an item (about it: text н=M) speaks of that one item, and so does every other text where the English names it. The colour of an item of the list is the colour of its name: keep the shop's colour word from its name; when its name has no colour word, write the Ukrainian name of its colour code. The English colour words for that item are the stylist's impression of a photo: do not turn them into a colour of their own — the item's colour stands in their place. Colours of its details (trim, strap, buttons, print), its fabric and the rest — translate from the text. The list is for names only: an item the English text does not name is not added to the translation — neither to the description nor to the advice. The kind code next to an item (kind code: …) is the code of its kind: every noun for that item, in every text, names this kind and no other, whatever word the English text uses; a code ending in _generic names only the family (dress_generic — a dress, bag_generic — a bag). The kind noun of its name and this code are the same kind: write the name's noun.
+
+Colour codes: beige — бежевий; blue — синій; camel — кемел; chocolate — шоколадний; golden — золотий; grey — сірий; yellow — жовтий.
+
+ТЕКСТИ:
+{
+"1": "A navy blue long-sleeve sweater with a smooth knit and a clean round neckline. It sits neatly on your frame, offering a classic look that works well as a layer or an outer piece.",
+"2": "Grey wide-leg trousers made from soft velour fabric with a high waist and pleated front. They drape elegantly down to the ankles, providing both comfort and a sophisticated silhouette.",
+"3": "A chocolate brown sleeveless t-shirt crafted from viscose, featuring a gathered neckline for a relaxed yet polished fit. Its lightweight fabric moves comfortably with you during yoga sessions.",
+"4": "A stylish yellow headband adorned with faceted crystal stones set along a braided black band. It adds a vibrant, eye-catching accent that complements the neutral tones of your outfit.",
+"5": "Beige suede loafers with a low heel and a decorative strap across the vamp. Their soft texture and understated design make them ideal for walking or casual outings.",
+"6": "A camel-colored leather handbag named Sylvie, featuring a white front panel with a navy stripe and gold chain detailing. Its structured shape and elegant hardware give it a timeless appeal.",
+"7": "A delicate golden necklace made from two fine chains tied in a neat knot at the center. The minimalist design adds just the right amount of shine without overpowering your overall look.",
+"8": "This ensemble is perfect for a gentle start to your day. The chocolate-colored t-shirt offers the comfort you need before stretching into your yoga practice, while the grey velour trousers provide a soft, non-slip feel that keeps you grounded. Afterward, swap into your beige loafers for an easy stroll over to your coffee with a friend, carrying your camel bag and letting the yellow headband add a cheerful pop of color to your look. The golden knot necklace ties everything together with a touch of subtle elegance.",
+"9": "Tuck the chocolate t-shirt into the high-waisted grey trousers to highlight your waist, which creates a balanced silhouette perfect for yoga and movement.",
+"10": "Обруч Кейсі жовтий — Keeps the yellow headband to add a pop of color and match her eyes' warmth as a deliberate break from cool neutrals.",
+"11": "Лонгслів базовий синій гладкої в’язки, Палацо з вельвету, Базовий топ з віскози в шоколадному кольорі, Обруч Кейсі жовтий, Лофери нубукові бежеві, Сумка зі шкіри Sylvie, Золотисте намисто з двох ланцюжків — The mix of workwear, classic, and quiet luxury registers is not a flaw but a strength here: it reflects the transition from active movement in the yoga studio to the casual elegance of an office setting and a relaxed afternoon with a friend."
+}
+
+── ВІДПОВІДЬ (2705 симв., 74.9 с, HTTP 200) ──
+```json
+{
+"1": "Синій лонгслів з гладкої в’язки та чистим круглим вирізом. Він охайно сидить на твоїй фігурі, пропонуючи класичний вигляд, який добре підійде як для шару одягу, так і для верхнього елемента.",
+"2": "Широкі штани з м’якого вельветового матеріалу сірого кольору з високою талією та защипами спереду. Вони витончено спадають до щиколоток, забезпечуючи комфорт і вишуканий силует.",
+"3": "Безрукавний топ шоколадного кольору з віскози, який має зібрану горловину для розслабленого та водночас охайного крою. Його легкий матеріал зручно рухається разом із тобою під час занять йогою.",
+"4": "Стильний жовтий обруч Кейсі з прикрашеними кристалами, вставленими у чорну плетену стрічку. Він додає яскравий і помітний акцент, який доповнює нейтральні тони твого образу.",
+"5": "Бежеві замшеві лофери на низькому підборі з декоративним ремінцем через носок. Їхня м’яка текстура та стриманий дизайн роблять їх ідеальними для прогулянок або повсякденних виходів.",
+"6": "Шкіряна сумка кольору кемел на ім'я Сільві, з білою передньою панеллю з темно-синьою смужкою та золотими ланцюжками. Її структурована форма та елегантне оздоблення надають їй позачасового вигляду.",
+"7": "Делікатний золотий кулон, зроблений із двох тонких ланцюжків, зав’язаних у акуратний вузол посередині. Мінімалістичний дизайн додає лише потрібну кількість блиску без перевантаження загального образу.",
+"8": "Цей ансамбль ідеальний для спокійного початку твого дня. Шоколадний топ забезпечує комфорт, який тобі необхідний перед тим, як ти почнеш розтягуватися під час занять йогою, а сірі вельветові штани дарують м’яке відчуття та запобігають ковзанню, тримаючи тебе на землі. Згодом переодягнися у бежеві лофери для легкої прогулянки до зустрічі з подругою за кавою, несучи свою сумку кольору кемел і дозволяючи жовтому обручу Кейсі додати веселий колірний акцент до твого образу. Золотий кулон із двох ланцюжків пов’язує все разом у дусі витонченої елегантності.",
+"9": "Заправ шоколадний топ у високі сірі штани, щоб підкреслити талію — це створить збалансований силует, який ідеально підходить для занять йогою та рухів.",
+"10": "Обруч Кейсі жовтий — Залишай жовтий обруч, щоб додати колірний акцент і відповідати теплоті кольору твоїх очей як свідомий контраст із прохолодними нейтральними тонами.",
+"11": "Лонгслів базовий синій гладкої в’язки, Палацо з вельвету, Базовий топ з віскози в шоколадному кольорі, Обруч Кейсі жовтий, Лофери нубукові бежеві, Сумка зі шкіри Sylvie, Золотисте намисто з двох ланцюжків — Поєднання робочого стилю, класики та тихої розкоші не є недоліком, а силою: воно відображає перехід від активних рухів у залі для йоги до невимушеної елегантності офісу та спокійного дня з подругою."
+}
+```

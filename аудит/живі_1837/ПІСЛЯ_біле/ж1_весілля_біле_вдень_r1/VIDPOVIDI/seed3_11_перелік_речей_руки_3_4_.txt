@@ -1,0 +1,37 @@
+── ПРОМПТ (2052 симв.) ──
+{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.", "A slot the description says is not needed is not an item: give it worn false. One item carries one thing — of two alternatives list the first; a note in brackets is not an item.", "Slot \"accessory\" is for an item no other slot fits.", "\"is_outfit\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note; then items is empty."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "ITEM_LIST", "answer_schema": {"is_outfit": "yes|no", "items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory", "color_hex": "<#rrggbb or null>", "worn": "<true, or false when the description says the outfit goes without it>"}]}, "input": ["\"description\" — the outfit description"]}, "description": "Silk crepe evening gown with a draped neckline and flowing skirt, floor length, deep emerald green #043927, fluid silk blend.\nStrappy nude satin pump with a slender stiletto heel.\nGold drop earrings and a delicate pearl bracelet to complement the jewel tone without overpowering it.\nThis outfit works because the rich emerald hue feels festive and elegant for an autumn wedding, while the fluid drape of the gown ensures comfort throughout the day's events. The nude heels elongate the legs and blend seamlessly with skin tones, keeping the focus on the dress's sophisticated silhouette. Gold accents provide a touch of warmth that harmonizes perfectly with the seasonal palette and daylight setting."}
+
+── ВІДПОВІДЬ (697 симв., 87.3 с, HTTP 200) ──
+{
+  "is_outfit": "yes",
+  "items": [
+    {
+      "name": "silk crepe evening gown",
+      "details": "draped neckline, flowing skirt, floor length, fluid silk blend",
+      "slot": "dress",
+      "color_hex": "#043927",
+      "worn": true
+    },
+    {
+      "name": "strappy nude satin pump",
+      "details": "slender stiletto heel",
+      "slot": "shoes",
+      "color_hex": null,
+      "worn": true
+    },
+    {
+      "name": "gold drop earrings",
+      "details": "",
+      "slot": "earrings",
+      "color_hex": null,
+      "worn": true
+    },
+    {
+      "name": "pearl bracelet",
+      "details": "delicate",
+      "slot": "bracelet",
+      "color_hex": null,
+      "worn": true
+    }
+  ]
+}

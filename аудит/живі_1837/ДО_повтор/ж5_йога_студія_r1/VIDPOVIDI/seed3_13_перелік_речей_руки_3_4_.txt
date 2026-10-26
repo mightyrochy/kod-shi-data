@@ -1,0 +1,30 @@
+── ПРОМПТ (2176 симв.) ──
+{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.", "A slot the description says is not needed is not an item: give it worn false. One item carries one thing — of two alternatives list the first; a note in brackets is not an item.", "Slot \"accessory\" is for an item no other slot fits.", "\"is_outfit\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note; then items is empty."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "ITEM_LIST", "answer_schema": {"is_outfit": "yes|no", "items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory", "color_hex": "<#rrggbb or null>", "worn": "<true, or false when the description says the outfit goes without it>"}]}, "input": ["\"description\" — the outfit description"]}, "description": "Loose-fit linen-blend top in #d1ad87 sand, relaxed silhouette falling to mid-thigh with rolled sleeves, soft cream hue matching hex #f5f0e6, breathable woven fabric. High-waisted wide-leg trousers in #3a2a20 charcoal denim, straight cut reaching just above the ankle, deep indigo shade corresponding to hex #1c1b1b, sturdy cotton twill material. Minimalist leather sandals with a low wedge heel in #bd9669 taupe, slender strap design finished with hex #bfa38d, smooth supple leather upper. This ensemble balances the physical demands of morning yoga with the comfort needed for a relaxed coffee catch-up while respecting the creative office dress code. The neutral earth tones harmonize with her skin and hair shades without overwhelming the active setting, while the loose linens provide ease of movement for stretching poses."}
+
+── ВІДПОВІДЬ (665 симв., 50.8 с, HTTP 200) ──
+{
+  "is_outfit": "yes",
+  "items": [
+    {
+      "name": "top",
+      "details": "loose-fit linen-blend top with rolled sleeves and relaxed silhouette falling to mid-thigh",
+      "slot": "top",
+      "color_hex": "#d1ad87",
+      "worn": true
+    },
+    {
+      "name": "bottoms",
+      "details": "high-waisted wide-leg trousers in straight cut reaching just above the ankle",
+      "slot": "bottom",
+      "color_hex": "#3a2a20",
+      "worn": true
+    },
+    {
+      "name": "shoes",
+      "details": "minimalist leather sandals with a low wedge heel and slender strap design",
+      "slot": "shoes",
+      "color_hex": "#bd9669",
+      "worn": true
+    }
+  ]
+}

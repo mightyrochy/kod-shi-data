@@ -1,0 +1,51 @@
+── ПРОМПТ (7418 симв.) ──
+Ти — перекладачка в застосунку-стилістці. Ти пишеш природною українською тексти, які зараз побачить жінка. Рішень не приймаєш, на питання не відповідаєш, змісту не міняєш.
+
+Вхід — JSON-об'єкт: ключ — номер тексту н, значення — текст, який склали код та інші моделі.
+
+Відповідь — лише JSON-об'єкт тієї самої форми, що вхід, з усіма його ключами: ключ — номер н кожного тексту зі входу, значення — рядок — той самий зміст природною українською, без англійських слів і кодів (назви крамниць і брендів — як є); ПЕРЕКЛАДАЙ КОЖНЕ англійське слово, навіть одне посеред українського речення; латиницею лишай лише назви крамниць і брендів, «V-подібний» і «den»; текст, що вже природний і до неї на «ти», — без змін, а український текст на «ви» перепиши на «ти», решту лиши слово в слово.
+
+Вид кожної речі — теж зміст: річ у перекладі — та сама, що у вході, а не схожа чи сусідня. ankle boots — черевики чи ботильйони, boots — чоботи, heeled — на підборах, а не туфлі, pumps — туфлі-човники, loafers — лофери; pendant — кулон чи підвіска, necklace — намисто чи ланцюжок, а не каблучка, сережки чи браслет; ring — каблучка; earrings — сережки. Українські назви речей у вході (назви з крамниці, найчастіше перед « — ») переписуй літера в літеру: не міняй, не переставляй і не додавай у них жодного слова.
+
+Про жінку — лише до неї, на «ти» (ти, тебе, тобі, твій, твоя; хочеш, скинеш; наказ однини: розкажи, оберни, тримай, дай), і в питаннях теж: you, your, she, her про неї — «ти», «твій» (her skin tone — твій тон шкіри; when she turns her head — коли ти повертаєш голову; she looks taller — ти виглядаєш вищою), англійський наказ — наказом однини; «вона», «її» — лише про річ (сукню, сумку, куртку). Говорить стилістка — одна жінка: про себе — від першої особи однини й у жіночому роді (я підібрала, я б додала), не «ми», не від імені застосунку чи коду і ніколи словами самої жінки.
+
+Мова: літературна українська, як у текстах українських крамниць одягу. Кожне українське слово — літерами лише української абетки, без жодної латинської літери чи стороннього знака всередині слова. Кожне речення — одна остаточна версія, без виправлень посеред тексту. Словничок нижче — лише як перекласти англійське слово, коли воно є у вході; це не зміст: річ, тканина чи колір, яких у вході нема, у тексті не з'являються. Звичні українські назви для слів англійського джерела: trousers, pants — штани; dressy, dressier — ошатний, ошатніше; look, outfit — образ; taupe — сіро-бежевий; loose — вільний; suede — замша (жіночий рід); slip dress — сукня-комбінація; camel — кемел (колір). Назви речей і кольорів, які дала крамниця, — як є.
+
+Перевір кожне слово ДО відповіді: до неї — лише «ти», жодного «ви», «ваш» і наказу множини, і про неї жодного «вона», «її», «їй», жодне слово не стоїть двічі поспіль, кожна річ — того самого виду, що у вході (річ образу — іменником її назви з переліку, коли він є, і слова при ній узгоджені з цим іменником), а українська назва речі — слово в слово. Відповідь — рівно ОДИН JSON-об'єкт і нічого після нього: другої, виправленої версії, приміток і пояснень не пиши — помилку виправ у тому самому об'єкті.
+
+Речі образу — перелік, який жінка бачить на картці (номер речі — назва біля неї):
+1 — Сукня рожева · kind code: dress_generic · colour code: pink · about it: text н=1
+2 — Туфлі жіночі Tamaris · kind code: dress_shoes · colour code: brown · about it: text н=2
+3 — Жіноча сумка Welfare бежева · kind code: bag_generic · colour code: beige · about it: text н=3
+4 — Обруч Бетті зі стразами та перлинами пудровий · kind code: headband · colour code: powder_pink · about it: text н=4
+When a text speaks of an item of the list, call it by the kind in its name — the same noun in the right case (list «Тренч бежевий подовжений» — text «тренч», «Светр в'язаний оверсайз» — «светр»), not by another kind or a synonym of the English word. Make every adjective, pronoun and verb with the item agree with that noun in gender and number («Тренч бежевий» — «бежевий тренч, який…»; «Лофери шкіряні» — «шкіряні лофери, які…»). A name you translate in this same call (text н=K): give it one noun and call the item by it, in agreement, in every text. A text the list gives as about an item (about it: text н=M) speaks of that one item, and so does every other text where the English names it. The colour of an item of the list is the colour of its name: keep the shop's colour word from its name; when its name has no colour word, write the Ukrainian name of its colour code. The English colour words for that item are the stylist's impression of a photo: do not turn them into a colour of their own — the item's colour stands in their place. Colours of its details (trim, strap, buttons, print), its fabric and the rest — translate from the text. The list is for names only: an item the English text does not name is not added to the translation — neither to the description nor to the advice. The kind code next to an item (kind code: …) is the code of its kind: every noun for that item, in every text, names this kind and no other, whatever word the English text uses; a code ending in _generic names only the family (dress_generic — a dress, bag_generic — a bag). The kind noun of its name and this code are the same kind: write the name's noun.
+
+Colour codes: beige — бежевий; brown — коричневий; pink — рожевий; powder_pink — пудровий.
+
+ТЕКСТИ:
+{
+"1": "This is a soft pink dress in a sleek, fluid silhouette that flatters your figure with a gentle waistline and modest puff sleeves. The fabric drapes beautifully from the elbow-length sleeves down to just above your ankles, creating an elegant, timeless shape perfect for an upscale evening.",
+"2": "These are brown suede shoes with a chunky, textured sole and clean lines that offer both style and stability for dancing. The lacing detail adds a touch of vintage charm without sacrificing comfort or sophistication.",
+"3": "A structured yet slouchy beige suede handbag with a wide, comfortable handle that allows you to carry it effortlessly on your shoulder or arm. Its neutral tone and soft texture blend seamlessly with your outfit while providing ample space for essentials.",
+"4": "A luxurious pink velvet headband adorned with delicate strands of pearls, sparkling crystals, and shimmering sequins that catch the light with every movement. Its gentle curve and soft color complement your dress while adding a touch of romantic glamour.",
+"5": "I chose this soft pink dress with a sleek silhouette and gentle puff sleeves to bring you effortless elegance for your sister's wedding. The dusty rose headband with pearl and crystal embellishments adds a delicate, bridal-friendly sparkle that catches the light without overpowering. Your brown suede shoes ground the look with a modern edge, while the beige slouchy bag offers the perfect blend of comfort and chic practicality for an evening out.",
+"6": "Wear the headband centered on your forehead to elongate your neck and frame your face elegantly.",
+"7": "Let the dress fall naturally at your mid-calf to show off your shoes without disrupting the clean line of the skirt.",
+"8": "Carry the bag on your forearm or let it slip onto your shoulder for a relaxed, confident stride.",
+"9": "Сукня рожева, Туфлі жіночі Tamaris — I accept this finding about 'smart' formality because it confirms the dress meets your occasion's requirements without needing extra layers, keeping the look cohesive and elegant."
+}
+
+── ВІДПОВІДЬ (1969 симв., 36.0 с, HTTP 200) ──
+```json
+{
+"1": "Це м’яка рожева сукня в елегантній, струмливій формі, яка підкреслює твою фігуру з ніжним поясом і скромними рукавами-ліхтариками. Тканина красиво спадає від ліктів до трохи вище щиколоток, створюючи витончену, позачасову форму, що чудово пасуватиме для вечора в розкішному закладі.",
+"2": "Це коричневі замшеві черевики з масивною текстурованою підошвою та чистими лініями, які пропонують стиль і стійкість для танців. Деталь шнурівки додає нотку вінтажного шарму без шкоди для комфорту або вишуканості.",
+"3": "Структурована, але трохи обвисла бежева замшева сумка з широкою зручною ручкою, що дозволяє носити її легко на плечі чи в лікті. Її нейтральний тон і м’яка текстура бездоганно поєднуються з твоїм образом, забезпечуючи достатньо місця для необхідних речей.",
+"4": "Розкішна рожева оксамитова пов’язка на голову, прикрашена ніжними нитками перлів, що іскряться кристалами та блискучими паєтками, які ловлять світло з кожним рухом. Її м’який вигин і ніжний колір доповнюють сукню, додаючи романтичного гламуру.",
+"5": "Я обрала цю рожеву сукню зі струмливим силуетом і рукавами-ліхтариками, щоб ти почувалася невимушено елегантно на весіллі твоєї сестри. Пишна пов’язка з перлами та кристалами додає делікатний блиск, який привертає увагу без надмірності. Твої коричневі замшеві черевики завершують образ сучасною ноткою, а бежева сумка пропонує ідеальне поєднання комфорту та шику.",
+"6": "Одягни пов’язку на лоб посередині, щоб видовжити твою шию та елегантно обрамити обличчя.",
+"7": "Дай сукні вільно спадати до середини литки, щоб показати свої черевики без порушення чистої лінії спідниці.",
+"8": "Носи сумку на передпліччі або дозволь їй з’їхати на плече для розслабленої та впевненої ходи.",
+"9": "Сукня рожева, Туфлі жіночі Tamaris — Я погоджуюся з цим висновком про «розумну» урочистість, тому що він підтверджує, що сукня відповідає вимогам твого заходу без потреби в додаткових шарах, зберігаючи образ цілісним і елегантним."
+}
+```

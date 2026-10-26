@@ -1,0 +1,37 @@
+── ПРОМПТ (1972 симв.) ──
+{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.", "A slot the description says is not needed is not an item: give it worn false. One item carries one thing — of two alternatives list the first; a note in brackets is not an item.", "Slot \"accessory\" is for an item no other slot fits.", "\"is_outfit\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note; then items is empty."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "ITEM_LIST", "answer_schema": {"is_outfit": "yes|no", "items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory", "color_hex": "<#rrggbb or null>", "worn": "<true, or false when the description says the outfit goes without it>"}]}, "input": ["\"description\" — the outfit description"]}, "description": "Sheath dress in deep emerald green (#0e4d35), a knee-length cut with a structured silhouette, fabric: silk faille with a subtle sheen.\nSlouchy pumps in antique gold (#c6a87c), closed-toe with a stiletto heel and a polished finish.\nGold drop earrings with teardrop emeralds (#deb295) and a delicate pearl choker necklace to echo the dress code while honoring your wish for a joyful, radiant look suitable for an evening wedding banquet.\nThis ensemble strikes the perfect balance between formal elegance and celebratory warmth, ensuring you stand out gracefully at the restaurant without feeling out of place among guests."}
+
+── ВІДПОВІДЬ (730 симв., 83.9 с, HTTP 200) ──
+{
+  "is_outfit": "yes",
+  "items": [
+    {
+      "name": "Sheath dress",
+      "details": "knee-length cut with a structured silhouette",
+      "slot": "dress",
+      "color_hex": "#0e4d35",
+      "worn": true
+    },
+    {
+      "name": "Pumps",
+      "details": "slouchy, closed-toe with a stiletto heel and a polished finish",
+      "slot": "shoes",
+      "color_hex": "#c6a87c",
+      "worn": true
+    },
+    {
+      "name": "Gold drop earrings",
+      "details": "with teardrop emeralds",
+      "slot": "earrings",
+      "color_hex": "#deb295",
+      "worn": true
+    },
+    {
+      "name": "Pearl choker necklace",
+      "details": "delicate",
+      "slot": "necklace",
+      "color_hex": null,
+      "worn": true
+    }
+  ]
+}

@@ -1,0 +1,70 @@
+── ПРОМПТ (8785 симв.) ──
+Ти — перекладачка в застосунку-стилістці. Ти пишеш природною українською тексти, які зараз побачить жінка. Рішень не приймаєш, на питання не відповідаєш, змісту не міняєш.
+
+Вхід — JSON-об'єкт: ключ — номер тексту н, значення — текст, який склали код та інші моделі.
+
+Відповідь — лише JSON-об'єкт тієї самої форми, що вхід, з усіма його ключами: ключ — номер н кожного тексту зі входу, значення — рядок — той самий зміст природною українською, без англійських слів і кодів (назви крамниць і брендів — як є); ПЕРЕКЛАДАЙ КОЖНЕ англійське слово, навіть одне посеред українського речення; латиницею лишай лише назви крамниць і брендів, «V-подібний» і «den»; текст, що вже природний і до неї на «ти», — без змін, а український текст на «ви» перепиши на «ти», решту лиши слово в слово.
+
+Вид кожної речі — теж зміст: річ у перекладі — та сама, що у вході, а не схожа чи сусідня. ankle boots — черевики чи ботильйони, boots — чоботи, heeled — на підборах, а не туфлі, pumps — туфлі-човники, loafers — лофери; pendant — кулон чи підвіска, necklace — намисто чи ланцюжок, а не каблучка, сережки чи браслет; ring — каблучка; earrings — сережки. Українські назви речей у вході (назви з крамниці, найчастіше перед « — ») переписуй літера в літеру: не міняй, не переставляй і не додавай у них жодного слова.
+
+Про жінку — лише до неї, на «ти» (ти, тебе, тобі, твій, твоя; хочеш, скинеш; наказ однини: розкажи, оберни, тримай, дай), і в питаннях теж: you, your, she, her про неї — «ти», «твій» (her skin tone — твій тон шкіри; when she turns her head — коли ти повертаєш голову; she looks taller — ти виглядаєш вищою), англійський наказ — наказом однини; «вона», «її» — лише про річ (сукню, сумку, куртку). Говорить стилістка — одна жінка: про себе — від першої особи однини й у жіночому роді (я підібрала, я б додала), не «ми», не від імені застосунку чи коду і ніколи словами самої жінки.
+
+Мова: літературна українська, як у текстах українських крамниць одягу. Кожне українське слово — літерами лише української абетки, без жодної латинської літери чи стороннього знака всередині слова. Кожне речення — одна остаточна версія, без виправлень посеред тексту. Словничок нижче — лише як перекласти англійське слово, коли воно є у вході; це не зміст: річ, тканина чи колір, яких у вході нема, у тексті не з'являються. Звичні українські назви для слів англійського джерела: trousers, pants — штани; dressy, dressier — ошатний, ошатніше; look, outfit — образ; taupe — сіро-бежевий; loose — вільний; suede — замша (жіночий рід); slip dress — сукня-комбінація; camel — кемел (колір). Назви речей і кольорів, які дала крамниця, — як є.
+
+Перевір кожне слово ДО відповіді: до неї — лише «ти», жодного «ви», «ваш» і наказу множини, і про неї жодного «вона», «її», «їй», жодне слово не стоїть двічі поспіль, кожна річ — того самого виду, що у вході (річ образу — іменником її назви з переліку, коли він є, і слова при ній узгоджені з цим іменником), а українська назва речі — слово в слово. Відповідь — рівно ОДИН JSON-об'єкт і нічого після нього: другої, виправленої версії, приміток і пояснень не пиши — помилку виправ у тому самому об'єкті.
+
+Речі образу — перелік, який жінка бачить на картці (номер речі — назва біля неї):
+1 — Трійка піджак однобортний + жилетка + спідниця міні беж · kind code: blazer · colour code: beige · about it: text н=1
+2 — Каблучка декорована діамантами · kind code: ring · colour code: silvery · about it: text н=2
+3 — Шарф клітина кашемір т · kind code: scarf_generic · colour code: beige · about it: text н=3
+4 — Текстильний браслет Trinity із золотим підвісом · kind code: jewelry_generic · colour code: golden · about it: text н=4
+5 — Човники жіночі Tamaris темно-бежеві · kind code: pumps · colour code: beige · about it: text н=5
+6 — Підвіска Silver Heart · kind code: jewelry_generic · colour code: silvery · about it: text н=6
+7 — Текстильний шопер Marcella · kind code: tote · colour code: camel · about it: text н=7
+When a text speaks of an item of the list, call it by the kind in its name — the same noun in the right case (list «Тренч бежевий подовжений» — text «тренч», «Светр в'язаний оверсайз» — «светр»), not by another kind or a synonym of the English word. Make every adjective, pronoun and verb with the item agree with that noun in gender and number («Тренч бежевий» — «бежевий тренч, який…»; «Лофери шкіряні» — «шкіряні лофери, які…»). A name you translate in this same call (text н=K): give it one noun and call the item by it, in agreement, in every text. A text the list gives as about an item (about it: text н=M) speaks of that one item, and so does every other text where the English names it. The colour of an item of the list is the colour of its name: keep the shop's colour word from its name; when its name has no colour word, write the Ukrainian name of its colour code. The English colour words for that item are the stylist's impression of a photo: do not turn them into a colour of their own — the item's colour stands in their place. Colours of its details (trim, strap, buttons, print), its fabric and the rest — translate from the text. The list is for names only: an item the English text does not name is not added to the translation — neither to the description nor to the advice. The kind code next to an item (kind code: …) is the code of its kind: every noun for that item, in every text, names this kind and no other, whatever word the English text uses; a code ending in _generic names only the family (dress_generic — a dress, bag_generic — a bag). The kind noun of its name and this code are the same kind: write the name's noun.
+
+Colour codes: beige — бежевий; camel — кемел; golden — золотий; silvery — срібний.
+
+ТЕКСТИ:
+{
+"1": "A single-breasted beige blazer and matching mini skirt set crafted from a smooth, structured fabric that falls cleanly at the waist to highlight your defined silhouette.",
+"2": "A silvery ring set with a large central stone surrounded by pink accents, offering delicate sparkle that complements the soft tones of your outfit without competing for attention.",
+"3": "A beige cashmere scarf featuring a subtle check pattern, providing warmth and texture while maintaining a neutral palette that blends effortlessly with the suit.",
+"4": "A golden textile bracelet shaped like an intertwined knot, finished with a small gold pendant that adds a touch of warmth to your jewelry ensemble.",
+"5": "Dark-beige suede pumps with a pointed toe and a slender heel, offering both comfort and sophistication for standing through the day's events.",
+"6": "A silvery necklace with a heart-shaped pendant resting gently at the collarbone, bringing understated elegance that harmonizes with your other jewelry pieces.",
+"7": "A camel-colored woven tote bag accented with brown leather handles and details, designed to carry your essentials in style while pairing seamlessly with your neutral-toned outfit.",
+"8": "You are a guest at your sister's wedding, so every piece of this outfit is chosen to honor that special occasion while keeping you comfortable. The beige suit set provides a soft, elegant foundation; the silvery ring and necklace add sparkle without overshadowing the bride; the golden bracelet ties the jewelry together warmly; the dark-beige suede pumps offer height and polish; the camel tote keeps your essentials tidy; and the beige cashmere scarf adds cozy texture and warmth for an autumn day.",
+"9": "Wrap the scarf loosely around your neck to add warmth without hiding the suit's clean lines.",
+"10": "Carry the tote bag in one hand or on the shoulder for easy access during the ceremony and reception.",
+"11": "Take off the blazer if you need to feel more relaxed after dinner.",
+"12": "Трійка піджак однобортний + жилетка + спідниця міні беж — I kept this set as your main anchor, swapping it into the scheme tone to fix the tonal imbalance found.",
+"13": "Підвіска Silver Heart — I removed the shiny necklace and replaced it with silver earrings to reduce shine surfaces and repeat metal near your face.",
+"14": "Човники жіночі Tamaris темно-бежеві — These shoes are needed to complete the silhouette and ground the look for walking on grass.",
+"15": "Текстильний шопер Marcella, Шарф клітина кашемір т — I accept this gate about the near-white bag because swapping the white tote for this camel leather bag grounds the warm suit, respects the reserved color rule against white, and adds texture without introducing a new color that breaks your palette.",
+"16": "Шарф клітина кашемір т — I removed this duplicate print accessory to quieten the outfit and keep one focus, as requested in your finding.",
+"17": "Текстильний браслет Trinity із золотим підвісом — I replaced the second bracelet with this silver statement piece to repeat the metal near your face and fix the single-focus issue."
+}
+
+── ВІДПОВІДЬ (3172 симв., 55.0 с, HTTP 200) ──
+```json
+{
+"1": "Бежевий однобортний блейзер і комплект мініспідниці, виготовлені з гладкої структурованої тканини, що елегантно лягає в талії, підкреслюючи твою фігуру.",
+"2": "Срібне кільце, прикрашене великим центральним каменем, оточеним рожевими акцентами, яке пропонує ніжний блиск, доповнюючи м’які тони твого образу без зайвої уваги.",
+"3": "Бежевий кашеміровий шарф з ледь помітним картатим візерунком, який дарує тепло та текстуру, зберігаючи нейтральну палітру, що гармонійно поєднується зі смокінгом.",
+"4": "Золотий текстильний браслет у формі переплетеного вузла з маленьким золотим підвісом, який додає тепла до твого ювелірного ансамблю.",
+"5": "Темно-бежеві замшеві туфлі-човники на шпильці з загостреним носком, які поєднують комфорт і вишуканість для тривалого перебування під час урочистих подій.",
+"6": "Срібний кулон у формі серця, що ніжно лежить біля ключиць, додаючи стриману елегантність до твоїх ювелірних прикрас.",
+"7": "Кемельова ткана сумка-шопер з коричневими шкіряними ручками та деталями, розроблена для зручного зберігання необхідних речей зі стилем і бездоганного поєднання з нейтральним образом.",
+"8": "Ти — гостя на весіллі твоєї сестри, тому кожен елемент цього образу підібрано так, щоб вшанувати цю особливу подію та водночас забезпечити тобі комфорт. Бежевий смокінг створює м’який і вишуканий фон; срібне кільце й кулон додають блиску без перебивання уваги від нареченої; золотий браслет гармонійно поєднує ювелірні прикраси; темно-бежеві замшеві туфлі-човники дарують висоту та елегантність для прогулянок травою; кемельова сумка-шопер зберігає твої речі в порядку; а бежевий кашеміровий шарф додає затишну текстуру й тепло прохолодним осіннім днем.",
+"9": "Нещільними витками обгорни шарф навколо шиї, щоб додати тепла без приховування чітких ліній смокінгу.",
+"10": "Тримай сумку-шопер в одній руці або на плечі для зручного доступу під час церемонії та святкування.",
+"11": "Зніми блейзер, якщо тобі потрібно відчути себе більш розслаблено після вечері.",
+"12": "Трійка піджак однобортний + жилетка + спідниця міні беж — Я залишила цей комплект як твій основний елемент і замінила його на тон у тональності, щоб виправити дисбаланс кольорів, який ти знайшла.",
+"13": "Підвіска Silver Heart — Я прибрала блискучий кулон і замінила його срібними сережками, щоб зменшити кількість блискучих поверхонь і повторити метал біля твого обличчя.",
+"14": "Човники жіночі Tamaris темно-бежеві — Ці туфлі потрібні для завершення силуету та підтримання образу при ходьбі по траві.",
+"15": "Текстильний шопер Marcella, Шарф клітина кашемір т — Я приймаю цей вибір щодо майже білої сумки, тому що заміна білої сумки на цю кемельову шкіряну сумку підтримує теплий смокінг, поважає правило проти білого кольору та додає текстуру без введення нового відтінку, який порушує твою палітру.",
+"16": "Шарф клітина кашемір т — Я прибрала цей дублюючийся аксесуар з принтом, щоб заспокоїти образ і зберегти один акцент, як ти просила у своєму запиті.",
+"17": "Текстильний браслет Trinity із золотим підвісом — Я замінила другий браслет на цю срібну прикрасу-акцент, щоб повторити метал біля твого обличчя та виправити проблему з одним акцентом."
+}
+```
