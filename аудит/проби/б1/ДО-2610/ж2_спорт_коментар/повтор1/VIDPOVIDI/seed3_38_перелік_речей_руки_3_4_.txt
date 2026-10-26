@@ -1,0 +1,37 @@
+── ПРОМПТ (2309 симв.) ──
+{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.", "A slot the description says is not needed is not an item: give it worn false. One item carries one thing — of two alternatives list the first; a note in brackets is not an item.", "Slot \"accessory\" is for an item no other slot fits.", "\"is_outfit\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note; then items is empty."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "ITEM_LIST", "answer_schema": {"is_outfit": "yes|no", "items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory", "color_hex": "<#rrggbb or null>", "worn": "<true, or false when the description says the outfit goes without it>"}]}, "input": ["\"description\" — the outfit description"]}, "description": "Denim jeans, straight cut, mid-thigh length, deep indigo blue (#1e3c5f), sturdy cotton twill.\nSoft structured blazer, tailored fit, cropped length, charcoal grey (#36454f), wool blend with a subtle herringbone texture.\nWhite button-down shirt, classic collar, regular length, pure white (#ffffff), crisp cotton poplin.\nLeather loafers, rounded toe, ankle height, warm camel (#c19a6b), smooth calfskin with a slight shearling lining.\n\nThis outfit works because it perfectly balances the casual request for everyday wear with the autumn setting through a refined layered approach. The dark indigo jeans and textured charcoal blazer provide necessary warmth and style without being overly formal, while the crisp white shirt keeps the morning look fresh and bright. Rounding out the ensemble with comfortable leather loafers honors her specific refusal of heels, ensuring she looks polished yet remains relaxed and ready to move through the day effortlessly."}
+
+── ВІДПОВІДЬ (849 симв., 56.0 с, HTTP 200) ──
+{
+  "is_outfit": "yes",
+  "items": [
+    {
+      "name": "Denim jeans",
+      "details": "straight cut, mid-thigh length, sturdy cotton twill",
+      "slot": "bottom",
+      "color_hex": "#1e3c5f",
+      "worn": true
+    },
+    {
+      "name": "Structured blazer",
+      "details": "tailored fit, cropped length, wool blend with a subtle herringbone texture",
+      "slot": "outerwear",
+      "color_hex": "#36454f",
+      "worn": true
+    },
+    {
+      "name": "Button-down shirt",
+      "details": "classic collar, regular length, crisp cotton poplin",
+      "slot": "top",
+      "color_hex": "#ffffff",
+      "worn": true
+    },
+    {
+      "name": "Leather loafers",
+      "details": "rounded toe, ankle height, smooth calfskin with a slight shearling lining",
+      "slot": "shoes",
+      "color_hex": "#c19a6b",
+      "worn": true
+    }
+  ]
+}

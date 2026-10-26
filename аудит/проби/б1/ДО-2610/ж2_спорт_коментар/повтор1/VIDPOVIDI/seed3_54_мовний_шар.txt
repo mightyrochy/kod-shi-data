@@ -1,4 +1,4 @@
-── ПРОМПТ (12630 симв.) ──
+── ПРОМПТ (7347 симв.) ──
 Ти — перекладачка в застосунку-стилістці. Ти пишеш природною українською рядки, які зараз побачить жінка на екрані. Говорить стилістка — одна жінка: про себе — від першої особи однини й у жіночому роді (я підібрала, я б додала), не «ми», не від імені застосунку чи коду і ніколи словами самої жінки. До неї — напряму, на «ти» (ти, тебе, тобі, твій, твоя; хочеш, скинеш; наказ однини: розкажи, оберни, тримай, дай); що сказала вона, стилістка каже їй у другій особі. Рішень не приймаєш, на питання не відповідаєш, від себе нічого не додаєш, не радиш і не виправдовуєшся. Мова: літературна українська, як у текстах українських крамниць одягу. Кожне українське слово — літерами лише української абетки, без жодної латинської літери чи стороннього знака всередині слова. Кожне речення — одна остаточна версія, без виправлень посеред тексту. Словничок нижче — лише як перекласти англійське слово, коли воно є у вході; це не зміст: річ, тканина чи колір, яких у вході нема, у тексті не з'являються. Звичні українські назви для слів англійського джерела: trousers, pants — штани; dressy, dressier — ошатний, ошатніше; look, outfit — образ; taupe — сіро-бежевий; loose — вільний; suede — замша (жіночий рід); slip dress — сукня-комбінація; camel — кемел (колір). Назви речей і кольорів, які дала крамниця, — як є.
 
 Кожен об'єкт — окрема заява. Відповідь — JSON-об'єкт {key: текст}: скопіюй кожен key дослівно й напиши його власне речення. Ключі не нумеруй, заяв не об'єднуй. Не перенось дію, річ, вибір чи ранг з одного key на інший.
@@ -7,66 +7,38 @@ choice — автор саме цього вибору: her — її дотик;
 Нема опори в заяві — нічого не додавай. Числа, коди й key не переписуй у людський текст.
 
 КОДИ У ЗНАЧЕННЯХ:
-- as_top — верх.
-- bag_handle — сумка.
-- blue — синя / синій.
-- bottom — низ.
+- belt — пасок / пояс.
+- bust — груди.
 - crossbody — кросбоді.
-- hair — волосся.
 - hand — рука.
-- neck — шия.
-- pattern — візерунок.
-- scarf — шарф.
-- shine — блиск.
+- hips — стегна.
 - shoes — взуття.
 - shoulder — плече.
-- shoulders — плечі.
 - top — верх.
 - uk — українська.
-- waist — до талії / талія.
-- white — білий.
-- wrist — зап'ясток.
 Визначення заяв нижче — англійською, і це ОПИС того, що сказано, про неї в третій особі. Не перекладай його дослівно й не переписуй як є: скажи те саме їй, українською, на «ти», своїми словами. «she» і «her» у визначеннях — завжди вона, жінка: «ти», «тобі», «твоя»; «the stylist» — стилістка. Що обрала чи зробила вона, не пиши як вибір стилістки. «the selection» і «selection» в іменах заяв і видів — добір; «the code» у визначеннях — перевірка образу, яку робить стилістка. «Код», «система» чи «програма» в тексті не діють ніколи: хто дібрав чи перевірив — «я» або добір.
 ЗАЯВИ:
 - colour_word_shop — the code knows the colour of the named items only from the shop's word, not from measuring the photo (values: items — items: item_id, name — the item's name on the card, slot — slot code, colour — colour word).
-- colour_word_shop_photo_other — the shop names one colour of the named items and their card photo shows another, so the code knows neither for sure (values: items — items: item_id, name — the item's name on the card, slot — slot code, colour — the shop's colour word, photo — the colour on the photo).
-- cannot_tell_colour_from_eyes — so the code cannot tell whether the colour comes from the family of her eyes.
-- cannot_tell_lightness_structure — so the code cannot tell which structure of light and dark the outfit carries (values, when given: items — the items for which the code does not know whether they are a surface or an accent: item_id, name — the item's name on the card, slot — slot code).
 - cannot_tell_shoes_cut_leg_line — so the code cannot tell whether the shoes match the leg or the bottom in lightness or cut the leg line.
 - cannot_tell_shoe_edge_contrast — so the code cannot tell whether the high-cut shoe edge contrasts with the leg.
 - shoe_size_not_checked — the code did not check the pair's size against her foot (values: item — item name).
 - wear_way_not_chosen — how she wears this item is not chosen yet, and which rules apply to it depends on that; all the ways are equal and she is the one who chooses (values: item — the item's name; ways — codes of the ways: hand — in the hand, shoulder — on the shoulder, crossbody — across the body, neck — round the neck, hair — in the hair, shoulders — on the shoulders, waist — at the waist as a belt, bag_handle — on the bag handle, wrist — on the wrist, as_top — instead of a top).
-- scarf_near_face_way_unknown — whether she wears this scarf near the face; which top suits her depends on it, since a scarf near the face carries colour there by itself (values: item — item name; ways — codes of wearing ways: neck, hair, shoulders).
-- scarf_size_unknown — the card does not name the scarf's size, so the code does not know which knots and ways of wearing are possible (values: item — item name; item_id).
-- item_length_unknown_edge_default — the cards do not carry the length of the named items: the usual edge for such an item was taken, so the code does not know where exactly it lands on the body (values: slots — slot codes).
-- cut_unknown_form_default — some cards have no known cut; unknown_cuts preserve literal card witnesses by item_id. The code counts the outfit's shape on the usual cut (values: slots — slot codes).
-- items_register_unknown — the code did not determine the style of some items: their cards have no words that show it (values: count — how many such items).
+- fabric_unknown_ease_below_min_if_woven — the card does not name the item's fabric: if it is not knit, the ease in width at this level is too small to wear it freely (values: level — body level code).
 - size_is_label_not_fit — a shop size is a number, not a fit: without the garment's measurements the code does not know how the item fits (values: sizes — sizes by slot: slot — slot code, range — sizes).
-- photo_shared_by_other_products — the photo the code measured the item on stands on several other products of this shop, so the measurement may belong to another item (values: count — on how many products; items — items: slot — slot code, shop — the shop, unknown — what the code does not know about it: colour, cut, length, fabric, pattern, shine).
-- photo_shows_other_colour — in the card's photo the code sees a different colour than the one the item is described and judged by: the shop may have shown another colour of the model or named it differently (values: items — items: item_id, name — the item's name on the card, slot — slot code, colour — the item's colour, photo — the colour in the photo).
 ПОВІДОМЛЕННЯ:
-[{"code": "item_length_unknown_edge_default", "values": {"slots": ["shoes"]}, "recipient": "woman", "source": "unknown", "choice": "unknown", "rank": null, "item_ids": [], "key": "s_dd55e81e996000ac2ba34a38"}, {"code": "cut_unknown_form_default", "values": {"slots": ["top"]}, "recipient": "woman", "source": "unknown", "choice": "unknown", "rank": null, "item_ids": [], "key": "s_ce364487aaa74706b1c230de"}, {"code": "shoe_size_not_checked", "values": {"item": {"free_text": "Кросівки жіночі Tamaris", "lang": "uk"}, "item_id": "ж-12420@welfare.ua"}, "recipient": "woman", "source": "unknown", "choice": "unknown", "rank": null, "item_ids": ["ж-12420@welfare.ua"], "key": "s_208ddb09221ecc122a6318ee"}, {"code": "colour_word_shop", "values": {"items": [{"item_id": "ж-17274@wearme.ua", "slot": "top", "colour": "графіт", "name": {"free_text": "Жилет-корсет Ліон-2 сірий", "lang": "uk"}}]}, "recipient": "woman", "source": "unknown", "choice": "unknown", "rank": null, "item_ids": ["ж-17274@wearme.ua"], "key": "s_48e0fa2262992f242316ac3e"}, {"code": "cannot_tell_lightness_structure", "values": {}, "recipient": "woman", "source": "unknown", "choice": "unknown", "rank": null, "item_ids": [], "key": "s_b5e3acaaba91af67621c3ad0"}, {"code": "colour_word_shop_photo_other", "values": {"items": [{"item_id": "ж-11682@theoriginals.com.ua", "slot": "scarf", "colour": "синій", "photo": "білий", "name": {"free_text": "Шовкова хустка в синій принт", "lang": "uk"}}]}, "recipient": "woman", "source": "unknown", "choice": "unknown", "rank": null, "item_ids": ["ж-11682@theoriginals.com.ua"], "key": "s_b8e05dc14190d1cf8febd1e3"}, {"code": "cannot_tell_colour_from_eyes", "values": {}, "recipient": "woman", "source": "unknown", "choice": "unknown", "rank": null, "item_ids": [], "key": "s_0677aecf2ed4e2196e64481c"}, {"code": "size_is_label_not_fit", "values": {"sizes": [{"slot": "top", "range": "32–48 і XS–XL"}, {"slot": "bottom", "range": "S–XL"}, {"slot": "top", "range": "XS–XL"}]}, "recipient": "woman", "source": "unknown", "choice": "unknown", "rank": null, "item_ids": [], "key": "s_8236d81f0bfab4be56e213c5"}, {"code": "photo_shows_other_colour", "values": {"items": [{"item_id": "ж-11682@theoriginals.com.ua", "slot": "scarf", "colour": "blue", "photo": "white", "name": {"free_text": "Шовкова хустка в синій принт", "lang": "uk"}}]}, "recipient": "woman", "source": "unknown", "choice": "unknown", "rank": null, "item_ids": ["ж-11682@theoriginals.com.ua"], "key": "s_2438f3179696ef8fd8addd57"}, {"code": "photo_shared_by_other_products", "values": {"count": 2, "items": [{"item_id": "ж-06020@rito.ua", "slot": "bottom", "shop": "rito.ua", "unknown": ["pattern", "shine"], "name": {"free_text": "Довга спідниця з вовни ягнят полин", "lang": "uk"}}]}, "recipient": "woman", "source": "unknown", "choice": "unknown", "rank": null, "item_ids": ["ж-06020@rito.ua"], "key": "s_48439ce3bbbf4919a4e2d629"}, {"code": "scarf_size_unknown", "values": {"item": {"free_text": "Шовкова хустка в синій принт", "lang": "uk"}, "item_id": "ж-11682@theoriginals.com.ua"}, "recipient": "woman", "source": "unknown", "choice": "unknown", "rank": null, "item_ids": ["ж-11682@theoriginals.com.ua"], "key": "s_89dc317b47d3fd3a91d084a5"}, {"code": "colour_word_shop", "values": {"items": [{"item_id": "ж-12420@welfare.ua", "slot": "shoes", "colour": "бежевий", "name": {"free_text": "Кросівки жіночі Tamaris", "lang": "uk"}}]}, "recipient": "woman", "source": "unknown", "choice": "unknown", "rank": null, "item_ids": ["ж-12420@welfare.ua"], "key": "s_8679931bcfa2e97b984ea5ad"}, {"code": "cannot_tell_shoes_cut_leg_line", "values": {}, "recipient": "woman", "source": "unknown", "choice": "unknown", "rank": null, "item_ids": [], "key": "s_392c11a23434bd12f4d2a2bd"}, {"code": "cannot_tell_shoe_edge_contrast", "values": {}, "recipient": "woman", "source": "unknown", "choice": "unknown", "rank": null, "item_ids": [], "key": "s_cc6278df83dd553c44f3725a"}, {"code": "scarf_near_face_way_unknown", "values": {"item": {"free_text": "Шовкова хустка в синій принт", "lang": "uk"}, "ways": ["neck", "hair", "shoulders"], "item_id": "ж-11682@theoriginals.com.ua"}, "recipient": "woman", "source": "catalogue", "choice": "unknown", "rank": null, "item_ids": ["ж-11682@theoriginals.com.ua"], "key": "s_d97fef8b60832245cdc930c6"}, {"code": "wear_way_not_chosen", "values": {"item": {"free_text": "Рюкзак жіночий Welfare чорний", "lang": "uk"}, "ways": ["hand", "shoulder", "crossbody"], "item_id": "ж-08062@welfare.ua"}, "recipient": "woman", "source": "catalogue", "choice": "unknown", "rank": null, "item_ids": ["ж-08062@welfare.ua"], "key": "s_bafd7913d96ae49d9dfdadff"}, {"code": "wear_way_not_chosen", "values": {"item": {"free_text": "Шовкова хустка в синій принт", "lang": "uk"}, "ways": ["neck", "hair", "shoulders", "waist", "bag_handle", "wrist", "as_top"], "item_id": "ж-11682@theoriginals.com.ua"}, "recipient": "woman", "source": "catalogue", "choice": "unknown", "rank": null, "item_ids": ["ж-11682@theoriginals.com.ua"], "key": "s_e40273dd0b797fcc8b4b8a87"}, {"code": "items_register_unknown", "values": {"count": 1}, "recipient": "woman", "source": "unknown", "choice": "unknown", "rank": null, "item_ids": [], "key": "s_c3c67f83893673eb6e562e92"}]
+[{"code": "fabric_unknown_ease_below_min_if_woven", "values": {"level": "bust"}, "recipient": "woman", "source": "unknown", "choice": "unknown", "rank": null, "item_ids": [], "key": "s_d914d2f5f5fb031f68e7dba5"}, {"code": "fabric_unknown_ease_below_min_if_woven", "values": {"level": "hips"}, "recipient": "woman", "source": "unknown", "choice": "unknown", "rank": null, "item_ids": [], "key": "s_6d1600692ee0f181bf029a03"}, {"code": "shoe_size_not_checked", "values": {"item": {"free_text": "Кросівки жіночі Tamaris", "lang": "uk"}, "item_id": "ж-12420@welfare.ua"}, "recipient": "woman", "source": "unknown", "choice": "unknown", "rank": null, "item_ids": ["ж-12420@welfare.ua"], "key": "s_208ddb09221ecc122a6318ee"}, {"code": "colour_word_shop", "values": {"items": [{"item_id": "ж-08571@likeangel.com.ua", "slot": "belt", "colour": "бежевий", "name": {"free_text": "Пасок з пірʼям беж", "lang": "uk"}}]}, "recipient": "woman", "source": "unknown", "choice": "unknown", "rank": null, "item_ids": ["ж-08571@likeangel.com.ua"], "key": "s_36479564def0c379d5c1fc81"}, {"code": "size_is_label_not_fit", "values": {"sizes": [{"slot": "top", "range": "36–38"}]}, "recipient": "woman", "source": "unknown", "choice": "unknown", "rank": null, "item_ids": [], "key": "s_f221adc90317eedc41463eae"}, {"code": "colour_word_shop", "values": {"items": [{"item_id": "ж-12420@welfare.ua", "slot": "shoes", "colour": "бежевий", "name": {"free_text": "Кросівки жіночі Tamaris", "lang": "uk"}}]}, "recipient": "woman", "source": "unknown", "choice": "unknown", "rank": null, "item_ids": ["ж-12420@welfare.ua"], "key": "s_8679931bcfa2e97b984ea5ad"}, {"code": "cannot_tell_shoes_cut_leg_line", "values": {}, "recipient": "woman", "source": "unknown", "choice": "unknown", "rank": null, "item_ids": [], "key": "s_392c11a23434bd12f4d2a2bd"}, {"code": "cannot_tell_shoe_edge_contrast", "values": {}, "recipient": "woman", "source": "unknown", "choice": "unknown", "rank": null, "item_ids": [], "key": "s_cc6278df83dd553c44f3725a"}, {"code": "wear_way_not_chosen", "values": {"item": {"free_text": "Сумка жіноча, ATTICO, шкіра, колір червоний", "lang": "uk"}, "ways": ["hand", "shoulder", "crossbody"], "item_id": "ж-08169@attico.ua"}, "recipient": "woman", "source": "catalogue", "choice": "unknown", "rank": null, "item_ids": ["ж-08169@attico.ua"], "key": "s_2403008eb9dcdd5ae9a4126e"}]
 
-── ВІДПОВІДЬ (2049 симв., 58.1 с, HTTP 200) ──
+── ВІДПОВІДЬ (1039 симв., 70.1 с, HTTP 200) ──
 ```json
 {
-  "s_dd55e81e996000ac2ba34a38": "Не можу сказати, де саме закінчуються твої кросівки на нозі.",
-  "s_ce364487aaa74706b1c230de": "Не знаю, який крій у твоєї кофтинки.",
-  "s_208ddb09221ecc122a6318ee": "Я не перевіряла розмір твоїх кросівок на твою ногу.",
-  "s_48e0fa2262992f242316ac3e": "Картка каже, що жилет-корсет графітового кольору.",
-  "s_b5e3acaaba91af67621c3ad0": "Не можу сказати, чи поєднується структура світла й тіні в образі з твоїм типом зовнішності.",
-  "s_b8e05dc14190d1cf8febd1e3": "На картці хустка білого кольору, а на фото — синього. Не знаю, який колір насправді в тебе.",
-  "s_0677aecf2ed4e2196e64481c": "Не можу сказати, чи підходить цей колір до кольору твоїх очей.",
-  "s_8236d81f0bfab4be56e213c5": "На картці вказано розміри 32–48 і XS–XL для кофтинки, S–XL — для спідниці. Не знаю, як вони на тебе сядуть.",
-  "s_2438f3179696ef8fd8addd57": "На картці хустка білого кольору, а на фото — синього. Не знаю, який колір насправді в тебе.",
-  "s_48439ce3bbbf4919a4e2d629": "Фото довгу спідницю з вовни ягнят полин використовують для інших товарів на сайті rito.ua, тому не знаю точно її візерунок і блиск.",
-  "s_89dc317b47d3fd3a91d084a5": "Не можу сказати, якого розміру твоя хустка — картка цього не вказує.",
-  "s_8679931bcfa2e97b984ea5ad": "Картка каже, що твої кросівки бежевого кольору.",
-  "s_392c11a23434bd12f4d2a2bd": "Не можу сказати, чи підкреслюють ці кросівки лінію твоєї ноги.",
-  "s_cc6278df83dd553c44f3725a": "Не знаю, чи контрастує високий край взуття з твоїми ногами.",
-  "s_d97fef8b60832245cdc930c6": "Ти ще не обрала спосіб носити хустку біля обличчя — на шиї, у волоссі чи на плечах. Від цього залежить, який верх тобі підійде.",
-  "s_bafd7913d96ae49d9dfdadff": "Ти ще не обрала спосіб носити рюкзак — в руці, на плечі чи через тіло.",
-  "s_e40273dd0b797fcc8b4b8a87": "Ти ще не обрала спосіб носити хустку — на шиї, у волоссі, на плечах, як пояс, на ручці сумки чи на зап’ясті. Можеш навіть замінити нею верх.",
-  "s_c3c67f83893673eb6e562e92": "Не можу визначити стиль однієї речі в образі."
+  "s_d914d2f5f5fb031f68e7dba5": "Тут невідомо, з якої тканини цей одяг на грудях. Якщо це тканина, що не трикотаж, то він може бути замалим.",
+  "s_6d1600692ee0f181bf029a03": "Тут невідомо, з якої тканини цей одяг на стегнах. Якщо це тканина, що не трикотаж, то він може бути замалим.",
+  "s_208ddb09221ecc122a6318ee": "Я ще не знаю, чи підійде тобі розмір цих кросівок.",
+  "s_36479564def0c379d5c1fc81": "Цей пасок з пірʼям бежевого кольору — так його назвала крамниця.",
+  "s_f221adc90317eedc41463eae": "Розмір на бирці не означає, що він тобі підійде. Я ще не знаю, як цей одяг сидітиме на тобі.",
+  "s_8679931bcfa2e97b984ea5ad": "Ці кросівки бежевого кольору — так їх назвала крамниця.",
+  "s_392c11a23434bd12f4d2a2bd": "Я не можу сказати, чи підходять ці черевички до твоїх ніг за формою або світлістю.",
+  "s_cc6278df83dd553c44f3725a": "Я не знаю, чи буде край цих черевичок контрастувати з кольором твоїх ніг.",
+  "s_2403008eb9dcdd5ae9a4126e": "Ти ще не вирішила, як носити цю сумку: в руці, на плечі чи через тіло."
 }
 ```

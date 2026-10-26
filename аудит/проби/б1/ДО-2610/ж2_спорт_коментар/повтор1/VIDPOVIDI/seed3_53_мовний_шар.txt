@@ -1,4 +1,4 @@
-── ПРОМПТ (7433 симв.) ──
+── ПРОМПТ (8077 симв.) ──
 Ти — перекладачка в застосунку-стилістці. Ти пишеш природною українською тексти, які зараз побачить жінка. Рішень не приймаєш, на питання не відповідаєш, змісту не міняєш.
 
 Вхід — JSON-об'єкт: ключ — номер тексту н, значення — текст, який склали код та інші моделі.
@@ -14,40 +14,41 @@
 Перевір кожне слово ДО відповіді: до неї — лише «ти», жодного «ви», «ваш» і наказу множини, і про неї жодного «вона», «її», «їй», жодне слово не стоїть двічі поспіль, кожна річ — того самого виду, що у вході (річ образу — іменником її назви з переліку, коли він є, і слова при ній узгоджені з цим іменником), а українська назва речі — слово в слово. Відповідь — рівно ОДИН JSON-об'єкт і нічого після нього: другої, виправленої версії, приміток і пояснень не пиши — помилку виправ у тому самому об'єкті.
 
 Речі образу — перелік, який жінка бачить на картці (номер речі — назва біля неї):
-1 — Об’ємний укорочений джемпер з вовни ягнят полин · kind code: sweater · colour code: green · about it: text н=1
-2 — Довга спідниця з вовни ягнят полин · kind code: skirt · colour code: green · about it: text н=2
-3 — Кросівки жіночі Tamaris · kind code: sneakers · colour code: beige · about it: text н=3
-4 — Жилет-корсет Ліон-2 сірий · kind code: vest · colour code: grey · about it: text н=4
-5 — Рюкзак жіночий Welfare чорний · kind code: backpack · colour code: black · about it: text н=5
-6 — Шовкова хустка в синій принт · kind code: kerchief · colour code: blue · about it: text н=6
+1 — Кросівки жіночі Tamaris · kind code: sneakers · colour code: beige · about it: text н=1
+2 — Спідниця міді CAPRI молоко · kind code: skirt · colour code: milky · about it: text н=2
+3 — Пасок з пірʼям беж · kind code: belt · colour code: beige · about it: text н=3
+4 — Блузка зелена з квітковим принтом · kind code: blouse · colour code: green · about it: text н=4
+5 — Сумка жіноча, ATTICO, шкіра, колір червоний · kind code: bag_generic · colour code: red · about it: text н=5
 When a text speaks of an item of the list, call it by the kind in its name — the same noun in the right case (list «Тренч бежевий подовжений» — text «тренч», «Светр в'язаний оверсайз» — «светр»), not by another kind or a synonym of the English word. Make every adjective, pronoun and verb with the item agree with that noun in gender and number («Тренч бежевий» — «бежевий тренч, який…»; «Лофери шкіряні» — «шкіряні лофери, які…»). A name you translate in this same call (text н=K): give it one noun and call the item by it, in agreement, in every text. A text the list gives as about an item (about it: text н=M) speaks of that one item, and so does every other text where the English names it. The colour of an item of the list is the colour of its name: keep the shop's colour word from its name; when its name has no colour word, write the Ukrainian name of its colour code. The English colour words for that item are the stylist's impression of a photo: do not turn them into a colour of their own — the item's colour stands in their place. Colours of its details (trim, strap, buttons, print), its fabric and the rest — translate from the text. The list is for names only: an item the English text does not name is not added to the translation — neither to the description nor to the advice. The kind code next to an item (kind code: …) is the code of its kind: every noun for that item, in every text, names this kind and no other, whatever word the English text uses; a code ending in _generic names only the family (dress_generic — a dress, bag_generic — a bag). The kind noun of its name and this code are the same kind: write the name's noun.
 
-Colour codes: beige — бежевий; black — чорний; blue — синій; green — зелений; grey — сірий.
+Colour codes: beige — бежевий; green — зелений; milky — молочний; red — червоний.
 
 ТЕКСТИ:
 {
-"1": "This is an oversized, cropped knit sweater in a deep olive green with a high ribbed turtleneck and relaxed sleeves that fall just above your hips.",
-"2": "A long, flowing midi skirt made from soft wool in the same green tone, featuring an asymmetrical hemline and a subtle side slit for movement.",
-"3": "These are chunky, retro-style sneakers in a neutral beige leather mix with a thick brown rubber sole and matching laces.",
-"4": "A structured grey knit vest with a square neckline and thin vertical white stripes, cut to sit neatly over sweaters or tees.",
-"5": "A sleek black pebbled-leather backpack with a top handle, front zip pocket, and silver hardware for secure everyday carry.",
-"6": "A square silk kerchief printed with an intricate navy blue botanical design featuring leaves, birds, and flowers against a cream background.",
-"7": "I have put together a layered look in soft greens and greys, anchored by the comfortable wide-leg skirt that balances your wider hip zone with a clean vertical line. The chunky beige sneakers ground the outfit for all-day wear on your feet, while the black backpack handles your essentials hands-free. I chose the grey vest as an outer layer to add just enough structure over the knits without hiding your figure's natural shape, and the silk scarf adds a delicate pop of blue print near your collarbone to break up the solid tones.",
-"8": "Tuck the green sweater slightly into the skirt waistband to define your narrowest point before adding the grey vest over both.",
-"9": "Об’ємний укорочений джемпер з вовни ягнят полин, Довга спідниця з вовни ягнят полин — I accept this remark because it highlights the complementary nature of the warm olive skirt against the neutral sweater, showing how the outfit navigates your palette scheme even if the chroma logic is complex, ultimately serving your goal of a cohesive, grounded look."
+"1": "These Tamaris sneakers are a modern take on the retro runner, crafted in soft beige tones with subtle metallic accents that catch the light. The chunky sole adds height and stability, making them perfect for all-day comfort.",
+"2": "This CAPRI midi skirt is made of a smooth, milky white fabric that drapes elegantly over your hips. Its high-waisted design flatters your figure by defining the waist while adding a touch of grace and movement.",
+"3": "This Likeangel belt is crafted from soft beige satin with a delicate feather detail that adds a romantic touch. It ties neatly at the back to accentuate your waistline without feeling restrictive.",
+"4": "The green floral blouse features a classic collar and voluminous sleeves, creating a playful yet sophisticated silhouette. The floral print adds depth and interest, making it ideal for an autumn day.",
+"5": "This ATTICO bag is crafted from rich red leather with clean lines and a structured shape. Its bold color serves as a striking accent that complements the softer tones of your outfit while adding a sense of luxury.",
+"6": "I have chosen a look that balances softness with structure: your beige Tamaris sneakers ground the outfit in a comfortable, everyday feel, while the milky white CAPRI skirt offers a fluid, romantic line. The green floral blouse brings a lively touch of nature and color, perfectly suited for an autumn morning, tied at the waist to emphasize your defined silhouette without adding bulk. A delicate beige belt adds a hint of elegance, and the red ATTICO bag serves as a vibrant focal point that energizes the neutral palette.",
+"7": "Tuck the blouse in slightly or wear it loose depending on how you want to emphasize your waist—the cut works beautifully with both options.",
+"8": "Спідниця міді CAPRI молоко, Блузка зелена з квітковим принтом — The high-rise waistline hidden by the blouse is a deliberate proportion choice that elongates the torso, which serves your goal of an elegant vertical line in daylight.",
+"9": "Блузка зелена з квітковим принтом, Сумка жіноча, ATTICO, шкіра, колір червоний — Keeping the red bag as the sole loud element allows it to shine as the intended focal point without competing with the quiet top, perfectly adhering to your request for a single focus.",
+"10": "Кросівки жіночі Tamaris, Спідниця міді CAPRI молоко, Пасок з пірʼям беж, Блузка зелена з квітковим принтом, Сумка жіноча, ATTICO, шкіра, колір червоний — While mixing streetwear shoes with a romantic blouse creates stylistic variety, the tonal base of the skirt and trousers anchors the look firmly in the 'smart' register required by your everyday occasion."
 }
 
-── ВІДПОВІДЬ (2066 симв., 39.4 с, HTTP 200) ──
+── ВІДПОВІДЬ (2648 симв., 60.2 с, HTTP 200) ──
 ```json
 {
-"1": "Це об’ємний укорочений в'язаний светр глибокого оливково-зеленого кольору з високим ребристим коміром і розслабленими рукавами, які закінчуються трохи вище твоїх стегон.",
-"2": "Довга спідниця міді вільного крою з м'якої вовни в такому ж зеленому тоні, має асиметричний поділ і ледь помітний бічний розріз для зручності рухів.",
-"3": "Це масивні ретро-кросівки нейтрального бежевого кольору зі шкіряної суміші з товстою коричневою гумовою підошвою та шнурками в колір.",
-"4": "Структурований сірий трикотажний жилет із квадратним вирізом і вузькими вертикальними білими смужками, пошитий так, щоб він акуратно сидів поверх светрів або футболок.",
-"5": "Стильний чорний рюкзак зі штучної шкіри з тисненням, має верхню ручку та передню кишеню на блискавці й срібну фурнітуру для безпечного щоденного використання.",
-"6": "Квадратна шовкова хустка з вишуканим темно-синім рослинним принтом із листям, птахами та квітами на кремовому тлі.",
-"7": "Я підібрала багатошаровий образ у м'яких зелених і сірих тонах, який базується на зручній спідниці з широкими штанинами, що врівноважує твою більш виражену зону стегон чистою вертикальною лінією. Масивні бежеві кросівки роблять образ придатним для носіння цілий день, а чорний рюкзак дозволяє носити необхідні речі без зайвих рук. Я обрала сірий жилет як верхній шар, щоб додати достатньо структури поверх трикотажу, не ховаючи природну форму твоєї фігури, і шовкова хустка додає ніжний акцент темно-синього кольору біля ключиці, розбавляючи однотонні тони.",
-"8": "Злегка заправ светр зеленого кольору в пояс спідниці, щоб підкреслити твою найвужчу частину тіла перед тим, як одягнути сірий жилет поверх обох речей.",
-"9": "Об’ємний укорочений джемпер з вовни ягнят полин, Довга спідниця з вовни ягнят полин — Я приймаю цей коментар, оскільки він підкреслює доповнюючу природу теплої оливкової спідниці на тлі нейтрального светра, показуючи, як образ відповідає твоїй палітрі кольорів навіть якщо логіка насиченості складна, і зрештою служить твоїй меті створити гармонійний та збалансований вигляд."
+"1": "Ці кросівки Tamaris – сучасна інтерпретація ретро-кросівок. Вони виготовлені з м’якого бежевого матеріалу, доповненого ледь помітними металевими акцентами, що ловлять світло. Масивна підошва додає висоти та стійкості, роблячи їх ідеальними для комфорту протягом усього дня.",
+"2": "Ця спідниця міді CAPRI виготовлена з гладкої молочної тканини, яка елегантно драпірується по твоїх стегнах. Її висока талія підкреслює фігуру, визначаючи лінію талії й додаючи нотку грації та руху.",
+"3": "Цей пасок Likeangel виготовлений з м’якого бежевого атласу з ніжним пір’ям, що надає романтичного акценту. Він акуратно зав’язується на спині, підкреслюючи твою талію без відчуття обмеження.",
+"4": "Зелена блузка у квіточку має класичний комірець і пишні рукави, створюючи грайливий, але водночас вишуканий силует. Квітковий принт додає глибини та інтересу, роблячи її чудовим варіантом для осіннього дня.",
+"5": "Ця сумка ATTICO виготовлена з насиченої червоної шкіри з чіткими лініями й структурованою формою. Її яскравий колір слугує вражаючим акцентом, який доповнює м’які тони твого образу та додає відчуття розкоші.",
+"6": "Я підібрала образ, що поєднує ніжність і структуру: бежеві кросівки Tamaris роблять його комфортним для повсякденного носіння, а молочна спідниця CAPRI пропонує плавний романтичний силует. Зелена блузка у квіточку додає жвавого природного кольору, ідеально підходячи для осіннього ранку та зав’язана на талії, щоб підкреслити твою фігуру без зайвого об’єму. Ніжний бежевий пасок додає нотку елегантності, а червона сумка ATTICO слугує яскравим акцентом, що оживляє нейтральну колірну гаму.",
+"7": "Заправ блузку трохи всередину або носи її вільно залежно від того, як ти хочеш підкреслити талію – крій чудово виглядає в обох варіантах.",
+"8": "Спідниця міді CAPRI молоко, Блузка зелена з квітковим принтом — Висока лінія талії, прихована блузкою, є навмисним пропорційним рішенням, що подовжує торс і слугує твоїй меті створити елегантну вертикальну лінію вдень.",
+"9": "Блузка зелена з квітковим принтом, Сумка жіноча, ATTICO, шкіра, колір червоний — Залишаючи червону сумку єдиним яскравим елементом, дозволяє їй сяяти як запланований акцент без конкуренції зі спокійною блузкою, ідеально відповідаючи твоєму проханню мати один фокус.",
+"10": "Кросівки жіночі Tamaris, Спідниця міді CAPRI молоко, Пасок з пірʼям беж, Блузка зелена з квітковим принтом, Сумка жіноча, ATTICO, шкіра, колір червоний — Хоча поєднання спортивного взуття та романтичної блузки створює стилістичне різноманіття, тональна основа спідниці й штанів міцно закріплює образ у необхідному «розумному» ключі для твоєї повсякденної події."
 }
 ```

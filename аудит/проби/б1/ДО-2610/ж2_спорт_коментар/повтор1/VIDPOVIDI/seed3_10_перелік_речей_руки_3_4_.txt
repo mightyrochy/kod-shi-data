@@ -1,0 +1,30 @@
+── ПРОМПТ (2067 симв.) ──
+{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.", "A slot the description says is not needed is not an item: give it worn false. One item carries one thing — of two alternatives list the first; a note in brackets is not an item.", "Slot \"accessory\" is for an item no other slot fits.", "\"is_outfit\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note; then items is empty."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "ITEM_LIST", "answer_schema": {"is_outfit": "yes|no", "items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory", "color_hex": "<#rrggbb or null>", "worn": "<true, or false when the description says the outfit goes without it>"}]}, "input": ["\"description\" — the outfit description"]}, "description": "A cream wool blend sweater with a relaxed boxy cut and long sleeves in the color #e0d5c3.\nA pair of dark indigo straight-leg denim jeans with a mid-rise waist in the color #2f3a47.\nMinimalist leather sneakers with a flat sole in the color #f5f5f0.\n\nThis outfit works perfectly for an autumn morning while adhering to your everyday dress code, offering comfort and ease without feeling too heavy for the daylight hours. The relaxed sweater provides warmth against the cooler fall air, while the dark denim keeps the look grounded and effortless. The neutral cream and soft leather tones complement your natural coloring, creating a polished yet casual look that respects your preference for simple, wearable pieces."}
+
+── ВІДПОВІДЬ (576 симв., 75.8 с, HTTP 200) ──
+{
+  "is_outfit": "yes",
+  "items": [
+    {
+      "name": "sweater",
+      "details": "cream wool blend with a relaxed boxy cut and long sleeves",
+      "slot": "top",
+      "color_hex": "#e0d5c3",
+      "worn": true
+    },
+    {
+      "name": "jeans",
+      "details": "dark indigo straight-leg denim with a mid-rise waist",
+      "slot": "bottom",
+      "color_hex": "#2f3a47",
+      "worn": true
+    },
+    {
+      "name": "sneakers",
+      "details": "minimalist leather with a flat sole",
+      "slot": "shoes",
+      "color_hex": "#f5f5f0",
+      "worn": true
+    }
+  ]
+}
