@@ -2250,7 +2250,8 @@ def паспорт_з_шару(внутрішня, сценарій, вето_ч
     # факту на `hand`, а не нищить доказ попереднього читання.
     for ім, опис in _ВМ.ПОЛЯ_ПАСПОРТА.items():
         поле = опис.get("поле")
-        if поле not in в or ім.startswith("@"):
+        ім = _імʼя_факту(ім)
+        if поле not in в or ім is None:
             continue
         if ім in рукою:
             continue
@@ -2302,8 +2303,8 @@ def паспорт_з_шару(внутрішня, сценарій, вето_ч
     # Джерело події визначає лише цей хід: давня цитата може зберігатися для
     # давнього факту, але не робить `her` інше значення без власної цитати. Поле, якого
     # хід не міняв, не має події: так картка зберігає його `default` або сильніше джерело.
-    _змінені_ходом = {опис.get("поле"): ім for ім, опис in _ВМ.ПОЛЯ_ПАСПОРТА.items()
-                          if опис.get("поле") in в and not ім.startswith("@")}
+    _змінені_ходом = {опис.get("поле"): _імʼя_факту(ім) for ім, опис in _ВМ.ПОЛЯ_ПАСПОРТА.items()
+                          if опис.get("поле") in в and _імʼя_факту(ім) is not None}
     _джерела_картки = {ім: ("her" if ім in поля_з_цитатою_ходу and not лише_плитки else "reading")
                               for ім in _змінені_ходом.values()}
     _джерела_картки.update({к: "hand" for к in рукою if к in _ПН.ПОЛЯ_ПАСПОРТА})
@@ -2337,6 +2338,14 @@ def паспорт_з_шару(внутрішня, сценарій, вето_ч
             є_річ=bool(фото or п.get("речі_з_фото")), контраст=контраст)) if к]
         текст, теми, відкинуто, бракує, питанням, показані = суд_частин(
             частини, дозволені, обовʼязкове, дані=[_ВМ.код("advice_topic", т) for т in дані], записано=в)
+        запис_картки = записано_для_репліки(в, п)
+        власне, _, _ = _текст_до_показу(частини, в)
+        підтверджено, причини = суд_підтвердження(власне, запис_картки)
+        обрізано = any(р.get("частина") == "text" for р in відкинуто)
+        перекладачка = обрізано or not підтверджено
+        if перекладачка:
+            текст = ""
+            відкинуто += причини
         # прочитане — дане: у `поради_дані` лягає кожна знана тема з показаного запрошення
         п["поради_дані"] = дані + [к for к in dict.fromkeys(_ВМ.ключ("advice_topic", т) for т in показані)
                                    if к and к not in дані]
@@ -2357,6 +2366,7 @@ def паспорт_з_шару(внутрішня, сценарій, вето_ч
         return dict(паспорт=п, теми_поради=теми, обовʼязкове=обовʼязкове, записано=записано_для_репліки(в, п),
                     вигадки=вигадки, текст=текст, відкинуто=відкинуто, бракує_обовʼязкового=бракує, дозволені=дозволені,
                     запрошення_питанням=питанням,
+                    мовець="translator" if перекладачка else "turn",
                     не_записано=не_записано if вигадки or без_стану or конфлікт_нагоди else [],
                     запрошення=str(частини.get("invite") or "") if показані else "",
                     **({"ремонт_поради": ремонт} if ремонт else {}))
@@ -2557,11 +2567,23 @@ def _ошатність_плиткою(записано):
 # ОШАТНІСТЬ ПЛИТКИ — НАЗВОЮ ЩАБЛЯ (наряд 3.7). Доти назву смуги `_ошатність_плиткою` брала з ділової чи світської
 # гілки підписів дрес-кодів за місцем і нагодою паспорта після ходу; тепер це щабель драбини,
 # той самий, що називає картка (`ошатністьДжерело`), і місце з нагодою для назви не потрібні.
+def _імʼя_факту(ім):
+    """Імʼя факту картки для звичайного поля або тонкої проєкції шва."""
+    if ім in _КЗ.СЛУЖБОВІ:
+        return None
+    if not ім.startswith("@"):
+        return ім
+    return {"@precipitation": "опади", "@activity": "активність", "@surface": "поверхня"}.get(ім)
+
+
 def записано_для_репліки(в, п):
     """Факти цього ходу → мітки й уривки картки, без припущень і службових кодів."""
     вих = {}
     for ім, опис in _ВМ.ПОЛЯ_ПАСПОРТА.items():
         поле = опис.get("поле")
+        ім = _імʼя_факту(ім)
+        if ім is None:
+            continue
         ф = _КЗ.факт(п, ім)
         if поле not in (в or {}) or ф.get("джерело") not in ("her", "hand"):
             continue
@@ -2590,6 +2612,8 @@ def _репліка_без_шкали(репліка):
         return репліка
     з = {к: v for к, v in репліка["recorded"].items() if к != "formality"}
     ф = репліка["recorded"]["formality"]          # назва плитки від шва (`записано_для_репліки`) — як є
+    if isinstance(ф, dict) and ф.get("label"):
+        return репліка
     плитка = ф if isinstance(ф, str) and ф.strip() else _ошатність_плиткою(репліка["recorded"])
     if плитка:
         з["formality"] = плитка
@@ -2649,19 +2673,49 @@ def промпт_репліки(репліка):
         "РЕПЛІКА:", _json_.dumps(репліка or {}, ensure_ascii=False)])
 
 
+def суд_підтвердження(текст, записано, дозволити_питання=False):
+    """Підтвердження має мітку або уривок картки; кожне число — з тієї ж картки.
+
+    Це зіставлення дослівних уривків і сталих міток, без тлумачення слів.
+    Відхилена репліка повертається цілою на переклад, а не обрізається.
+    """
+    def норм(т):
+        """Нормалізувати регістр, апостроф і пробіли без перефразування."""
+        return " ".join(unicodedata.normalize("NFKC", str(т)).lower().replace("’", "'").replace("ʼ", "'").split())
+
+    опори = [норм(т) for ф in (записано or {}).values() if isinstance(ф, dict)
+             for т in (ф.get("label"), ф.get("quote")) if т]
+    числа = r"(?<!\w)[+-]?\d+(?:[:.,]\d+)?"
+    дозволені = {ц.lstrip("+") for т in опори for ц in re.findall(числа, т)}
+    чужі = [ц for ц in re.findall(числа, норм(текст)) if ц.lstrip("+") not in дозволені]
+    речення = [р for р in _РЕЧЕННЯ.split(текст or "") if р.strip()
+               and not (дозволити_питання and _ПИТАННЯ.search(р))]
+    без_опори = [р for р in речення if опори and not any(
+        re.search(r"(?<!\w)" + re.escape(т) + r"(?!\w)", норм(р)) for т in опори)]
+    чому = "unrecorded_number" if чужі else "no_card_confirmation" if без_опори else (
+        "no_confirmation_text" if not речення and опори or not str(текст or "").strip() else None)
+    if чому:
+        return "", [dict(частина="text", чому=чому, зняте=текст, числа=чужі)]
+    return текст, []
+
+
 def суд_репліки(текст, репліка):
     """(текст, відкинуто) — суд ФОРМИ репліки перекладача, як `_без_питань` на одному виклику:
     питати її може лише код. Без `required` речень-питань нема; з `required` — одне, ОСТАННЄ (промпт ставить
     його після підтвердження). Знята решта — рядком у `відкинуто`. Запрошення поради перекладач не пише:
     його пише модель ходу, і судить `суд_частин` (`прийняти_репліку`, `запрошення`)."""
     р = репліка if isinstance(репліка, dict) else {}
+    підтвердження, причини = суд_підтвердження(текст, р.get("recorded"), bool(р.get("required")))
+    if not підтвердження:
+        return "", причини
     стеля = 1 if р.get("required") else 0
     речення = [x for x in _РЕЧЕННЯ.split(текст or "") if x.strip()]
     питання = [і for і, x in enumerate(речення) if _ПИТАННЯ.search(x)]
     зняти = set(питання[:len(питання) - стеля])
     відкинуто = [dict(частина="reply_text", чому="question_not_allowed" if not стеля else "too_many_questions",
                       зняте=[речення[і] for і in sorted(зняти)])] if зняти else []
-    return " ".join(x for і, x in enumerate(речення) if і not in зняти), відкинуто
+    показ = " ".join(x for і, x in enumerate(речення) if і not in зняти)
+    return показ, відкинуто
 
 
 # РЕПЛІКА ПРОЗОЮ — ТЕКСТ РЕПЛІКИ, КОЛИ В НІЙ НІЧОГО, КРІМ ЇЇ МОВИ (п.12).
@@ -3183,28 +3237,26 @@ def _умови_тем():
     """{тема: (про що запросити, коли тема доречна)} — сталі рядки словника кодів ходу; сцени — `_сцени_умов`."""
     коди = _коди_полем
     вечір, надворі = "an evening scene", "outdoors"
-    return {
-        "occasion": ("where she is going in this item: work, a date, a celebration or every day",
-                     "she sent a photo of her item and no occasion, place or event is known"),
-        # «today» модель переносила дослівно — «сьогодні» для події в серпні чи суботу
-        # Тема мети — обидві осі (увага й «що ще важливо»), одним м'яким реченням
-        # «a longer line» MamayLM у ремонті «новорічна» читала як довжину сукні; довша лінія — щоб
-        # виглядати вищою (п.9), як у `goal_extra`.
-        "goal": ("whether at this outing she wants to draw attention or stay unnoticed, and whether a longer line "
-                 "to look taller, comfort all day or strictness for the occasion matter to her", вечір),
-        # МАК-2: та сама умова, що `brief.порада_з_випадку` у судді тем
-        "makeup": ("what make-up she plans and the lip colour",
-                   "%s; or profile colouring.contrast is low and the occasion is dressy: occasion %s, place %s, "
-                   "dress_code %s, or formality from %g up"
-                   % (вечір, коди("occasion", _ПН.НАГОДИ_ДІЛОВІ), коди("place", _ПН.МІСЦЯ_ДІЛОВІ),
-                      коди("dress_code", _ФОРМ_.ДРЕС_КОДИ_ДІЛОВІ), _KC.ОШАТНІСТЬ_ДЛЯ_ПОРАДИ_МАКІЯЖУ)),
-        "movement": ("whether she will walk much and for how long",
-                     "%s, or occasion %s" % (надворі, коди("occasion", _ПН.ХОДИТИ_НАГОДИ))),
-        "temperature": ("how many degrees it will be", надворі),
-        "jewelry": ("which jewellery she wants with THIS look: gold, silver, pearls, ethnic or none",
-                    "the occasion is not sport"),
-        "register": ("the style she wants THIS look in: classic, sporty, boho, minimalism and so on", "always"),
+    умови = {
+        "occasion": "she sent a photo of her item and no occasion, place or event is known",
+        "goal": вечір,
+        "makeup": ("%s; or profile colouring.contrast is low and the occasion is dressy: occasion %s, place %s, "
+                   "dress_code %s, or formality from %g up" % (
+                       вечір, коди("occasion", _ПН.НАГОДИ_ДІЛОВІ), коди("place", _ПН.МІСЦЯ_ДІЛОВІ),
+                       коди("dress_code", _ФОРМ_.ДРЕС_КОДИ_ДІЛОВІ), _KC.ОШАТНІСТЬ_ДЛЯ_ПОРАДИ_МАКІЯЖУ)),
+        "movement": "%s, or occasion %s" % (надворі, коди("occasion", _ПН.ХОДИТИ_НАГОДИ)),
+        "temperature": надворі,
+        "jewelry": "the occasion is not sport",
+        "register": "always",
     }
+
+    плитки = _ПН.довідник()["плитки_поради"]
+    мітки = {к: [dict(label=р[1], note=р[2]) for р in рядки] for к, рядки in плитки.items()}
+    мітки["goal"] += мітки.pop("goal_extra")
+    мітки.update(occasion=[р["підпис"] for р in _ПН.довідник()["нагоди"] if р["плитка"]],
+                  movement=list(_ВМ.ТАБЛИЦЯ["movement"].values()),
+                  temperature=["Коли й погода"], register=["Стиль"])
+    return {к: (мітки[к], коли) for к, коли in умови.items()}
 
 
 # Обовʼязкове — «без чого не зібрати» (п.9) — тими самими умовами, що в шві (`паспорт_з_шару`:
@@ -3327,7 +3379,7 @@ def _коди_розмови():
              "update, and only while the passport does not know it; for \"advice_topics\" the code has "
              "already checked it):")
     р += ["  · %s — %s" % (сцена, коли) for сцена, коли in _сцени_умов().items()]
-    р += ["- %s: %s · %s" % (к, про, коли) for к, (про, коли) in _умови_тем().items()]
+    р += ["- %s: %s · %s" % (к, _json_.dumps(про, ensure_ascii=False), коли) for к, (про, коли) in _умови_тем().items()]
     р.append("Required questions — code: what to ask · when it applies (after your update):")
     р += ["- %s: %s · %s" % (к, що, коли) for к, (що, коли) in _ОБОВʼЯЗКОВЕ_EN.items()]
     р.append("need — who answers her this turn:")
@@ -3820,8 +3872,7 @@ def паспорт_кодами(п):
 
 
 def плитки_кодами(сценарій, паспорт=None):
-    """Що вона обрала плитками, кодами — без замовчувань форми (В-2: 11:00 і 18 °C вона не називала;
-    ТИПОВЕ-1: і місця, яке плитка нагоди ставить сама)."""
+    """Факти `her`/`hand` з картки для `chosen`; типове й читання сюди не входять."""
     с = сценарій if isinstance(сценарій, dict) else {}
     п = _копія_.deepcopy(паспорт or {})
     if not п.get("картка_запиту"):
@@ -3829,15 +3880,14 @@ def плитки_кодами(сценарій, паспорт=None):
     _КЗ.дотики(п, с.get("події_руки"))
     с = {к: ф.get("значення") for к, ф in п.get("картка_запиту", {}).items()
          if ф.get("джерело") in ("her", "hand")}
-    типові = set()
     вих = {}
     for ключ, поле in (("нагода", "occasion"), ("місце", "place"), ("дрес_код", "dress_code"),
                        ("прикраси", "jewelry")):
-        к = _ВМ.код(поле, с.get(ключ)) if _є(с.get(ключ)) and ключ not in типові else None
+        к = _ВМ.код(поле, с.get(ключ)) if _є(с.get(ключ)) else None
         if к:
             вих[поле] = к
     for ключ, поле in (("година", "hour"), ("темп_c", "temperature_c")):
-        if _є(с.get(ключ)) and ключ not in типові and isinstance(с.get(ключ), (int, float)):
+        if _є(с.get(ключ)) and isinstance(с.get(ключ), (int, float)):
             вих[поле] = с[ключ]
     if "hour" in вих and isinstance(с.get("хвилини"), int) and 0 < с["хвилини"] < 60:
         вих["minute"] = с["хвилини"]
@@ -4237,29 +4287,23 @@ def _година_при_порі(оновлення):
 # потім обід» → sport). Правило — те саме, що в описі `occasion_part` («when she has not said, the first part that is
 # not sport, or the sport part when there is no other»); код звіряє коди, не слова (п.12): `occasion_part` sport —
 # `sport`; інакше (other, unknown чи поля нема) — перше значення, що не `sport`, а коли всі sport — `sport`.
-def _значення_зі_списку(к, з, оновлення):
-    """Значення поля `к` зі списку `з`: для `occasion` — за `occasion_part` того самого `update`, інакше перше."""
-    if к != "occasion":
-        return з[0]
-    спорт = [x for x in з if _код(x) == "sport"]
-    if _код(_пара("occasion_part", {}, оновлення.get("occasion_part"))[0]) == "sport" and спорт:
-        return спорт[0]
-    return next((x for x in з if _код(x) != "sport"), з[0])
-
-
 def _перше_зі_списку(оновлення, поля):
-    """(оновлення, де поле одного значення зі списком кодів чи чисел має одне значення (`_значення_зі_списку`),
-    перенесене кодами, рядки `не_взято` про решту)."""
+    """Перше відоме значення списку разом із власним уривком; службові коди вибір не ведуть."""
     нове, перенесено, рядки = dict(оновлення), [], []
     for к, v in оновлення.items():
         с = поля.get(к) if к != "quotes" else None
         if not isinstance(с, dict) or с.get("type") == "array" or _ref(с) in _ОБʼЄКТИ:
             continue
+        if isinstance(v, dict):
+            ключ = next((x for x in _ЗНАЧЕННЯ_ПАРИ + (к,) if x in v), None)
+            вкладені = v.get(ключ) if ключ else None
+            if isinstance(вкладені, list) and вкладені and all(isinstance(x, dict) for x in вкладені):
+                v = [dict(x, quote=x.get("quote") or v.get("quote")) for x in вкладені]
         з, _ = _пара(к, с, v)
         if not (isinstance(з, list) and len(з) > 1
                 and all(isinstance(x, (str, int, float)) and not isinstance(x, bool) for x in з)):
             continue
-        і = з.index(_значення_зі_списку(к, з, оновлення))
+        і = next((і for і, x in enumerate(з) if not с.get("enum") or x in с["enum"]), 0)
         if isinstance(v, list) and len(v) == len(з):  # список пар — обрана пара зі своїм уривком
             нове[к] = v[і]
         elif isinstance(v, dict):

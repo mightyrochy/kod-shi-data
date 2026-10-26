@@ -9,7 +9,8 @@ import re
 
 ДЖЕРЕЛА = frozenset(("her", "hand", "reading", "default"))
 СИЛА = {"default": 0, "reading": 1, "her": 2, "hand": 2}
-СЛУЖБОВІ = frozenset(("occasion_part", "formality_branch", "formality_reason"))
+СЛУЖБОВІ = frozenset(("occasion_part", "formality_branch", "formality_reason", "quotes",
+                     "гілка_ошатності", "причина_ошатності", "цитати_полів"))
 _ПОРОЖНЄ = (None, "", [], {})
 
 
@@ -83,6 +84,8 @@ def синхронізувати(паспорт, поля, *, джерела=Non
     мета = паспорт.get("джерело_полів") if isinstance(паспорт.get("джерело_полів"), dict) else {}
     явні = джерела if isinstance(джерела, dict) else {}
     типові = {"form_default", "item_default"}
+    for поле in СЛУЖБОВІ:
+        (паспорт.get("картка_запиту") or {}).pop(поле, None)
     for поле in поля:
         давній = факт(паспорт, поле)
         if поле not in явні and давній:
@@ -107,6 +110,8 @@ def синхронізувати(паспорт, поля, *, джерела=Non
 
 def факт(паспорт, поле):
     """Один факт картки або порожній словник."""
+    if поле in СЛУЖБОВІ:
+        return {}
     картка = паспорт.get("картка_запиту") if isinstance(паспорт, dict) else None
     return картка.get(поле, {}) if isinstance(картка, dict) else {}
 
