@@ -1,0 +1,44 @@
+── ПРОМПТ (2264 симв.) ──
+{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.", "A slot the description says is not needed is not an item: give it worn false. One item carries one thing — of two alternatives list the first; a note in brackets is not an item.", "Slot \"accessory\" is for an item no other slot fits.", "\"is_outfit\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note; then items is empty."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "ITEM_LIST", "answer_schema": {"is_outfit": "yes|no", "items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory", "color_hex": "<#rrggbb or null>", "worn": "<true, or false when the description says the outfit goes without it>"}]}, "input": ["\"description\" — the outfit description"]}, "description": "A refined wool-blend blazer in #4B5320 (dark olive), tailored with structured shoulders and a single-breasted cut reaching the hip, worn over a crisp silk blouse in #FFFDD0 (cream) featuring a classic collar. Paired with wide-leg trousers in #2C3639 (charcoal navy) made from heavy twill, falling just above the ankle to elongate the silhouette. The ensemble is grounded by sleek leather ankle boots in #8B4513 (saddle brown) with a low block heel for all-day comfort. A minimalist gold pendant necklace in #FFD700 adds a subtle touch of warmth without overpowering the professional aesthetic. This outfit works because it balances the formal requirements of an office setting with the relaxed temperature of eighteen degrees, offering both polish and ease. The neutral color palette complements her skin tones while the structured yet soft fabrics ensure she feels confident and comfortable throughout the workday."}
+
+── ВІДПОВІДЬ (889 симв., 72.1 с, HTTP 200) ──
+{
+  "is_outfit": "yes",
+  "items": [
+    {
+      "name": "wool-blend blazer",
+      "details": "structured shoulders, single-breasted cut reaching the hip",
+      "slot": "outerwear",
+      "color_hex": "#4B5320",
+      "worn": true
+    },
+    {
+      "name": "silk blouse",
+      "details": "classic collar",
+      "slot": "top",
+      "color_hex": "#FFFDD0",
+      "worn": true
+    },
+    {
+      "name": "wide-leg trousers",
+      "details": "heavy twill, falling just above the ankle",
+      "slot": "bottom",
+      "color_hex": "#2C3639",
+      "worn": true
+    },
+    {
+      "name": "leather ankle boots",
+      "details": "low block heel",
+      "slot": "shoes",
+      "color_hex": "#8B4513",
+      "worn": true
+    },
+    {
+      "name": "gold pendant necklace",
+      "details": "minimalist",
+      "slot": "necklace",
+      "color_hex": "#FFD700",
+      "worn": true
+    }
+  ]
+}

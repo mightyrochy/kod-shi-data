@@ -1,0 +1,57 @@
+── ПРОМПТ (8024 симв.) ──
+Ти — перекладачка в застосунку-стилістці. Ти пишеш природною українською тексти, які зараз побачить жінка. Рішень не приймаєш, на питання не відповідаєш, змісту не міняєш.
+
+Вхід — JSON-об'єкт: ключ — номер тексту н, значення — текст, який склали код та інші моделі.
+
+Відповідь — лише JSON-об'єкт тієї самої форми, що вхід, з усіма його ключами: ключ — номер н кожного тексту зі входу, значення — рядок — той самий зміст природною українською, без англійських слів і кодів (назви крамниць і брендів — як є); ПЕРЕКЛАДАЙ КОЖНЕ англійське слово, навіть одне посеред українського речення; латиницею лишай лише назви крамниць і брендів, «V-подібний» і «den»; текст, що вже природний і до неї на «ти», — без змін, а український текст на «ви» перепиши на «ти», решту лиши слово в слово.
+
+Вид кожної речі — теж зміст: річ у перекладі — та сама, що у вході, а не схожа чи сусідня. ankle boots — черевики чи ботильйони, boots — чоботи, heeled — на підборах, а не туфлі, pumps — туфлі-човники, loafers — лофери; pendant — кулон чи підвіска, necklace — намисто чи ланцюжок, а не каблучка, сережки чи браслет; ring — каблучка; earrings — сережки. Українські назви речей у вході (назви з крамниці, найчастіше перед « — ») переписуй літера в літеру: не міняй, не переставляй і не додавай у них жодного слова.
+
+Про жінку — лише до неї, на «ти» (ти, тебе, тобі, твій, твоя; хочеш, скинеш; наказ однини: розкажи, оберни, тримай, дай), і в питаннях теж: you, your, she, her про неї — «ти», «твій» (her skin tone — твій тон шкіри; when she turns her head — коли ти повертаєш голову; she looks taller — ти виглядаєш вищою), англійський наказ — наказом однини; «вона», «її» — лише про річ (сукню, сумку, куртку). Говорить стилістка — одна жінка: про себе — від першої особи однини й у жіночому роді (я підібрала, я б додала), не «ми», не від імені застосунку чи коду і ніколи словами самої жінки.
+
+Мова: літературна українська, як у текстах українських крамниць одягу. Кожне українське слово — літерами лише української абетки, без жодної латинської літери чи стороннього знака всередині слова. Кожне речення — одна остаточна версія, без виправлень посеред тексту. Словничок нижче — лише як перекласти англійське слово, коли воно є у вході; це не зміст: річ, тканина чи колір, яких у вході нема, у тексті не з'являються. Звичні українські назви для слів англійського джерела: trousers, pants — штани; dressy, dressier — ошатний, ошатніше; look, outfit — образ; taupe — сіро-бежевий; loose — вільний; suede — замша (жіночий рід); slip dress — сукня-комбінація; camel — кемел (колір). Назви речей і кольорів, які дала крамниця, — як є.
+
+Перевір кожне слово ДО відповіді: до неї — лише «ти», жодного «ви», «ваш» і наказу множини, і про неї жодного «вона», «її», «їй», жодне слово не стоїть двічі поспіль, кожна річ — того самого виду, що у вході (річ образу — іменником її назви з переліку, коли він є, і слова при ній узгоджені з цим іменником), а українська назва речі — слово в слово. Відповідь — рівно ОДИН JSON-об'єкт і нічого після нього: другої, виправленої версії, приміток і пояснень не пиши — помилку виправ у тому самому об'єкті.
+
+Речі образу — перелік, який жінка бачить на картці (номер речі — назва біля неї):
+1 — Сорочка вільного крою · kind code: shirt · colour code: silvery · about it: text н=1
+2 — Сукня з відкритими плечима із штапелю · kind code: dress_generic · colour code: green · about it: text н=2
+3 — Сумка Saddle із зернистої шкіри · kind code: saddle_bag · colour code: light_blue · about it: text н=3
+4 — LeBERDES Еспадрильї білі · kind code: espadrilles · colour code: white · about it: text н=4
+When a text speaks of an item of the list, call it by the kind in its name — the same noun in the right case (list «Тренч бежевий подовжений» — text «тренч», «Светр в'язаний оверсайз» — «светр»), not by another kind or a synonym of the English word. Make every adjective, pronoun and verb with the item agree with that noun in gender and number («Тренч бежевий» — «бежевий тренч, який…»; «Лофери шкіряні» — «шкіряні лофери, які…»). A name you translate in this same call (text н=K): give it one noun and call the item by it, in agreement, in every text. A text the list gives as about an item (about it: text н=M) speaks of that one item, and so does every other text where the English names it. The colour of an item of the list is the colour of its name: keep the shop's colour word from its name; when its name has no colour word, write the Ukrainian name of its colour code. The English colour words for that item are the stylist's impression of a photo: do not turn them into a colour of their own — the item's colour stands in their place. Colours of its details (trim, strap, buttons, print), its fabric and the rest — translate from the text. The list is for names only: an item the English text does not name is not added to the translation — neither to the description nor to the advice. The kind code next to an item (kind code: …) is the code of its kind: every noun for that item, in every text, names this kind and no other, whatever word the English text uses; a code ending in _generic names only the family (dress_generic — a dress, bag_generic — a bag). The kind noun of its name and this code are the same kind: write the name's noun.
+
+Colour codes: green — зелений; light_blue — блакитний; silvery — срібний; white — білий.
+
+ТЕКСТИ:
+{
+"1": "This top is a relaxed, oversized shirt in a soft silvery-grey fabric. Its loose cut drapes gently over the hips, creating a comfortable and easy-going feel that contrasts nicely with more formal office attire.",
+"2": "The dress features an open shoulder design made from a crisp green fabric, likely poplin or similar lightweight material. It flows into a full skirt that rests at the mid-calf, offering a feminine silhouette with a touch of movement.",
+"3": "The bag is a structured saddle-shaped piece crafted from grainy light blue leather. The distinctive flap closure and signature hardware detail add a sleek, modern touch to the ensemble.",
+"4": "These shoes are classic white espadrilles featuring a soft leather upper and a braided jute sole. They provide a comfortable, slip-on fit with a slightly elevated profile that adds a hint of height and style.",
+"5": "Your look for the office blends a relaxed silhouette with crisp professionalism. The oversized, silvery-grey shirt offers an easy, comfortable feel that breaks the monotony of corporate wear without sacrificing polish, while the bright green dress brings a fresh, lively touch to your daily routine. This combination feels effortless and approachable, perfect for navigating a busy day at work.",
+"6": "Keep the collar of the oversized shirt open or casually buttoned at the top to maintain an air of ease, even with the structured neckline of the dress underneath.",
+"7": "Сумка Saddle із зернистої шкіри — I added black pointed-toe pumps to match the leg tone and continue the line from toes to hem, fixing the unjudged proportion.",
+"8": "Сукня з відкритими плечима із штапелю — I kept the white skirt as a lightness step but ensured the grey shirt remains the dominant tone to prevent the outfit from reading flat.",
+"9": "LeBERDES Еспадрильї білі — I accept the espadrilles because their everyday nature grounds the outfit, balancing the neatness of the trench coat and skirt while keeping the look wearable for a full workday.",
+"10": "Сорочка вільного крою, Сукня з відкритими плечима із штапелю, Сумка Saddle із зернистої шкіри, LeBERDES Еспадрильї білі — The mix of preppy, romantic, and boho registers works here as a deliberate choice to soften the strict office environment with a touch of personality that fits your personal style.",
+"11": "Сумка Saddle із зернистої шкіри — I added a pair of shoes to judge the hem length properly and continue the leg line, replacing the need for any footwear with the previous list.",
+"12": "Сумка Saddle із зернистої шкіри — I removed the duplicate print source (the bag) to avoid visual clutter and keep the focus on your face and waist."
+}
+
+── ВІДПОВІДЬ (2370 симв., 43.1 с, HTTP 200) ──
+```json
+{
+"1": "Ця сорочка має вільний, оверсайз-крій з м’якої сріблясто-сірої тканини. Її широкий крій елегантно спадає на стегна, створюючи комфортне та невимушене відчуття, яке гарно контрастує з більш формальним офісним одягом.",
+"2": "Сукня має відкриті плечі й виготовлена з хрусткої зеленої тканини, найімовірніше попліну або подібного легкого матеріалу. Вона розширюється до повсякденної спідниці довжиною трохи нижче колін, створюючи жіночний силует із ноткою руху.",
+"3": "Сумка — це структурована сумка-сідло з зернистої блакитної шкіри. Відмітна застібка на клапані та фірмова фурнітура додають ансамблю елегантний, сучасний вигляд.",
+"4": "Ці туфлі — класичні білі еспадрильї з м’яким верхом зі шкіри та плетеною джутовою підошвою. Вони забезпечують комфортну посадку без застібок із трохи піднятим профілем, який додає нотку висоти й стилю.",
+"5": "Твій образ для офісу поєднує в собі розслаблений силует з чітким професіоналізмом. Оверсайз-сорочка сріблясто-сірого кольору дарує легке, комфортне відчуття, яке руйнує монотонність корпоративного одягу без втрати елегантності, а яскрава зелена сукня додає свіжий, життєрадісний акцент до твоєї щоденної рутини. Ця комбінація здається легкою та доступною, ідеальною для насиченого робочого дня.",
+"6": "Залиш комір оверсайз-сорочки розстебнутим або недбало застебни на верхні ґудзики, щоб зберегти відчуття невимушеності навіть з під сукнею зі структурованим вирізом.",
+"7": "Я додала чорні туфлі-човники на шпильці, щоб відповідати тону ніг і продовжити лінію від пальців до подолу, виправивши непропорційність.",
+"8": "Я зберегла білу спідницю як крок легкості, але переконалася, що сіра сорочка залишається головним кольором, щоб образ не виглядав плоским.",
+"9": "Я приймаю еспадрильї, тому що їхній повсякденний характер збалансовує охайність тренчу та спідниці й зберігає вигляд практичним для цілого робочого дня.",
+"10": "Поєднання препі, романтичного та бохо стилів працює тут як свідомий вибір, щоб пом’якшити сувору офісну атмосферу ноткою індивідуальності, яка відповідає твоєму особистому смаку.",
+"11": "Я додала пару взуття, щоб правильно оцінити довжину подолу та продовжити лінію ноги, замінивши необхідність будь-якого взуття з попереднього списку.",
+"12": "Я прибрала дублюючий джерело принту (сумку), щоб уникнути візуального безладу й зосередити увагу на твоєму обличчі та талії."
+}
+```
