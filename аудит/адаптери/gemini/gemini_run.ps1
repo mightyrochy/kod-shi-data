@@ -530,9 +530,12 @@ function Select-Engine($M) {
 
 # --- прогін agy ---------------------------------------------------------------------------------------------------
 
-# Роль агента Codex — з рядка «Роль — …» наряду (перший): ПЕРЕВІРКА за `аудит/ПЕРЕВІРКА.md`; нема чи інша — виконавець.
+# Роль агента Codex — з рядка «Роль — …» наряду (перший, з першої колонки): ПЕРЕВІРКА за `аудит/ПЕРЕВІРКА.md`;
+# нема чи інша — виконавець. Рядки всередині огороджених блоків (```/~~~, зокрема незакритого) — приклад, а не мета наряду;
+# слово ролі не має продовжуватись літерою чи цифрою, кінець тексту без переносу рядка допустимий.
 function Get-TaskRole([string]$TaskText) {
-    if ($TaskText -cmatch '(?m)^Роль — (ВИКОНАВЕЦЬ|ПЕРЕВІРКА)(?=[\s,(.])') { return $Matches[1] }
+    $body = [regex]::Replace($TaskText, '(?ms)^[ \t]*(`{3,}|~{3,}).*?(?:^[ \t]*\1[ \t\r]*$|\z)', '')
+    if ($body -cmatch '(?m)^Роль — (ВИКОНАВЕЦЬ|ПЕРЕВІРКА)(?![\p{L}\p{N}_-])') { return $Matches[1] }
     'ВИКОНАВЕЦЬ'
 }
 
@@ -613,10 +616,17 @@ $head $facts
 "@
 }
 
-function Get-ErrorCode([string]$Text, [string]$EngineName = 'agy') {
+function Get-ErrorCode([string]$Text, [string]$EngineName = 'agy', [string]$Effort = '') {
     if ($Text -match 'invalid model selection|not recognized as a known model') { return 'MODEL_INVALID' }
-    # Codex не приймає зусилля з позначки: помилка конфігурації `model_reasoning_effort` чи відповідь API про `reasoning.effort`.
-    if ($EngineName -eq 'codex' -and $Text -match 'reasoning[._ -]?effort|[Uu]nsupported value') { return 'EFFORT_INVALID' }
+    # Codex не приймає зусилля з позначки: помилка конфігурації `model_reasoning_effort`, відповідь API про `reasoning.effort`
+    # або відповідь «Invalid/Unsupported value … Supported values are: …», де названо надіслане зусилля чи перелік зусиль
+    # (сервер параметра в тексті не називає). Чужа «Unsupported value: temperature» зусиллям не вважається.
+    if ($EngineName -eq 'codex') {
+        $badValue = $Text -match '(?:Invalid|Unsupported) value|unknown variant'
+        $namesEffort = $Effort -and ($Text -cmatch ('(?<![\p{L}\p{N}_-])' + [regex]::Escape($Effort) + '(?![\p{L}\p{N}_-])'))
+        $listsEfforts = $Text -cmatch ('Supported values are:.*(?<![\p{L}\p{N}_-])(?:xhigh|minimal)(?![\p{L}\p{N}_-])')
+        if ($Text -match 'reasoning[._ -]?effort' -or ($badValue -and ($namesEffort -or $listsEfforts))) { return 'EFFORT_INVALID' }
+    }
     if ($Text -match '429|RESOURCE_EXHAUSTED|[Qq]uota|[Uu]sage limit|[Rr]ate limit') { return 'QUOTA' }
     if ($Text -match 'authentication required|[Nn]ot logged in|[Pp]lease (?:log ?in|sign in)') { return 'AUTH' }
     'AGY_ERROR'
@@ -765,7 +775,7 @@ function Invoke-Agent($M, [string]$Start, [string]$Prompt, [string]$Dir, $Sel) {
                 if ($status -in @('ERROR', 'INVALID', 'CANCELED')) {
                     $err = ''
                     if ($r.Result.PSObject.Properties['error']) { $err = [string]$r.Result.error }
-                    $code = Get-ErrorCode $err $run.Engine.Name
+                    $code = Get-ErrorCode $err $run.Engine.Name $run.Engine.Effort
                     Write-WrapperLog "agy: статус $status ($code)"
                     break
                 }

@@ -17,8 +17,8 @@ git init -q --bare "$W/origin.git"
 git clone -q "$W/origin.git" "$W/seed" 2>/dev/null
 cd "$W/seed"; git checkout -q -b main
 mkdir -p аудит/наряди аудит/адаптери/gemini .github/workflows
-printf 'Т | наряд\n\n%sЗроби щось.\n' "${TASK_ROLE:+Роль — $TASK_ROLE (\`аудит/$TASK_ROLE.md\`), ядро — \`AGENTS.md\`. Наряд самодостатній.
-}" > "аудит/наряди/$SLUG.md"
+printf 'Т | наряд\n\n%sЗроби щось.\n%s' "${TASK_ROLE:+Роль — $TASK_ROLE (\`аудит/$TASK_ROLE.md\`), ядро — \`AGENTS.md\`. Наряд самодостатній.
+}" "${TASK_TAIL:-}" > "аудит/наряди/$SLUG.md"
 printf '| роль | сесія |\n|---|---|\n| диспетчер | session_01TEST (ДИСПЕТЧЕР) | x |\n' > аудит/СТАН.md
 echo 'on: push' > .github/workflows/x.yml; echo '#' > аудит/адаптери/gemini/gemini_publish.ps1
 git add -A; git commit -q -m init; git push -q origin main

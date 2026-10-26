@@ -17,6 +17,11 @@ def opt(name):
 eff = [a.split('=', 1)[1] for a in args if a.startswith('model_reasoning_effort=')]
 ok_eff = os.environ.get('FAKE_CODEX_EFFORTS')
 if eff and ok_eff and eff[0] not in ok_eff.split(','):
+    if os.environ.get('FAKE_EFFORT_STYLE') == 'payload':
+        # відмова сервера (codex 0.164): подія --json без назви параметра в тексті
+        print(json.dumps({'type': 'error', 'message': "Invalid response.create payload: Invalid value: '%s'. Supported values are: "
+                          "'none', 'minimal', 'low', 'medium', 'high', 'xhigh', and 'max'." % eff[0]}))
+        sys.exit(1)
     sys.stderr.write('Error loading config.toml: unknown variant `%s`, expected one of %s in `model_reasoning_effort`\n'
                      % (eff[0], ', '.join('`%s`' % x for x in ok_eff.split(','))))
     sys.exit(1)
