@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # Стенд обгортки М.2, 11 сценаріїв черги й публікації: повтор, позначка зникла, не ff, збій claude, доробка, ізоляція,
 # стара й крива позначка, перерваний прогін, засипання станами, відхилений пуш, підроблений стан (8940). pwsh — PWSH.
-H=$(cd "$(dirname "$0")" && pwd); PW="${PWSH:-pwsh}"; SRC=$(cd "$H/.." && pwd)
+H=$(cd "$(dirname "$0")" && pwd); . "$H/середовище.sh"; PW="${PWSH:-pwsh}"; SRC=$(cd "$H/.." && pwd)
 SLUG='М.2-проба-обгортки'; M=gemini-3.8-flash-high
 export GIT_AUTHOR_NAME=t GIT_AUTHOR_EMAIL=t@x GIT_COMMITTER_NAME=t GIT_COMMITTER_EMAIL=t@x
 setup() { W="${TMPDIR:-/tmp}/gemini-obhortka/$1"; rm -rf "$W"; mkdir -p "$W"/{fake,runs,out,pub}
@@ -9,9 +9,9 @@ setup() { W="${TMPDIR:-/tmp}/gemini-obhortka/$1"; rm -rf "$W"; mkdir -p "$W"/{fa
   (cd "$W/seed"; git checkout -q -b main; mkdir -p аудит/наряди; printf 'н\n' > "аудит/наряди/$SLUG.md"
    printf '| диспетчер | session_01TEST |\n' > аудит/СТАН.md; git add -A; git commit -q -m init; git push -q origin main 2>/dev/null)
   git clone -q "$W/origin.git" "$W/clone" 2>/dev/null; git -C "$W/clone" config user.name g; git -C "$W/clone" config user.email g@x
-  export FAKE_STATE="$W/fake" FAKE_CLAUDE_LOG="$W/claude.log" FAKE_SCENARIO=abandon_then_done FAKE_ISOLATION= FAKE_CLAUDE_FAIL=; }
-gem() { "$PW" -NoProfile -File "$H/side.ps1" -Script "$SRC/gemini_run.ps1" -ArgsJson "{\"RepoDir\":\"$W/clone\",\"RunsDir\":\"$W/runs\",\"OutDir\":\"$W/out\",\"RepoUrl\":\"$W/origin.git\",\"AgyExe\":\"$H/fake_agy.py\",\"TurnMinutes\":0.05,\"TotalMinutes\":0.5,\"MaxNudges\":3}"; }
-pub() { "$PW" -NoProfile -File "$H/side.ps1" -Script "$SRC/gemini_publish.ps1" -ArgsJson "{\"WorkDir\":\"$W/pub\",\"OutDir\":\"$W/out\",\"RepoUrl\":\"$W/origin.git\",\"ClaudeExe\":\"$H/fake_claude.py\",\"MaxSendAttempts\":2,\"SendRetryDelaySeconds\":0}"; }
+  WW=$(wp "$W"); export FAKE_STATE="$WW/fake" FAKE_CLAUDE_LOG="$WW/claude.log" FAKE_SCENARIO=abandon_then_done FAKE_ISOLATION= FAKE_CLAUDE_FAIL=; }
+gem() { "$PW" -NoProfile -File "$(wp "$H/side.ps1")" -Script "$(wp "$SRC/gemini_run.ps1")" -ArgsJson "{\"RepoDir\":\"$WW/clone\",\"RunsDir\":\"$WW/runs\",\"OutDir\":\"$WW/out\",\"RepoUrl\":\"$WW/origin.git\",\"AgyExe\":\"$(stub fake_agy)\",\"TurnMinutes\":0.05,\"TotalMinutes\":0.5,\"MaxNudges\":3}"; }
+pub() { "$PW" -NoProfile -File "$(wp "$H/side.ps1")" -Script "$(wp "$SRC/gemini_publish.ps1")" -ArgsJson "{\"WorkDir\":\"$WW/pub\",\"OutDir\":\"$WW/out\",\"RepoUrl\":\"$WW/origin.git\",\"ClaudeExe\":\"$(stub fake_claude)\",\"MaxSendAttempts\":2,\"SendRetryDelaySeconds\":0}"; }
 mark() { git -C "$W/seed" push -q origin "${2:-main}:refs/heads/gemini-queue/$1" 2>/dev/null; }
 show() { echo "  wrapper: $(grep -cE 'наряд .*->' "$W/runs/wrapper.log" 2>/dev/null) прогонів; $(grep -E 'пропущено|ізоляція|origin' "$W/runs/wrapper.log" 2>/dev/null | sed 's/^20[0-9-]* [0-9:]* //' | tr '\n' '|')"
   echo "  claude: $(wc -l < "$W/claude.log" 2>/dev/null) рядків"; sed 's/^20[0-9-]* [0-9:]* /  pub: /' "$W/pub/publish.log" 2>/dev/null | cut -c1-230
@@ -33,8 +33,8 @@ echo "=== 7 стара позначка, крива назва, не з main, н
   for i in 1 2 3 4; do gem; done; pub; show; grep -ho '"code":"[A-Z_]*"' "$W"/out/*.json | sort | uniq -c
 echo "=== 8 перерваний прогін: стан STARTED із JSON -> INTERRUPTED із бандлом"; setup r8; mark "$SLUG/$M/1"
   export FAKE_SCENARIO=hang
-  timeout -s KILL 5 "$PW" -NoProfile -File "$H/side.ps1" -Script "$SRC/gemini_run.ps1" -ArgsJson "{\"RepoDir\":\"$W/clone\",\"RunsDir\":\"$W/runs\",\"OutDir\":\"$W/out\",\"RepoUrl\":\"$W/origin.git\",\"AgyExe\":\"$H/fake_agy.py\",\"TurnMinutes\":5,\"TotalMinutes\":10,\"MaxNudges\":3}"
-  pkill -f 'python3 [^ ]*fake_ag[y].py'; rm -f "$W/runs/lock"; gem; pub; show; grep -ho '"code":"[A-Z_]*"' "$W"/out/*.json | sort | uniq -c
+  timeout -s KILL 5 "$PW" -NoProfile -File "$(wp "$H/side.ps1")" -Script "$(wp "$SRC/gemini_run.ps1")" -ArgsJson "{\"RepoDir\":\"$WW/clone\",\"RunsDir\":\"$WW/runs\",\"OutDir\":\"$WW/out\",\"RepoUrl\":\"$WW/origin.git\",\"AgyExe\":\"$(stub fake_agy)\",\"TurnMinutes\":5,\"TotalMinutes\":10,\"MaxNudges\":3}"
+  pkill -f 'fake_ag[y]\.' 2>/dev/null; rm -f "$W/runs/lock"; gem; pub; show; grep -ho '"code":"[A-Z_]*"' "$W"/out/*.json | sort | uniq -c
 echo "=== 9 спам: копії стану з іншими id на ту саму позначку й купа кривих"; setup r9; mark "$SLUG/$M/1"; gem
   J=$(ls "$W"/out/*.json | grep -v heartbeat | head -1); for k in 1 2 3; do
     id=20991231-00000$k-aaaaaaaaaaa$k; sed "s/\"id\":\"[^\"]*\"/\"id\":\"$id\"/; s/\"bundle\":\"[^\"]*\"/\"bundle\":\"\"/" "$J" > "$W/out/$id.json"
@@ -43,10 +43,10 @@ echo "=== 9 спам: копії стану з іншими id на ту сам�
   if [ "$(grep -c 'ЗАБЛОКОВАНО gemini/невідомо STATE_INVALID' "$W/claude.log")" = 1 ] && ! grep -q 'не за форматом' "$W/claude.log"; then echo "  ✓ криві стани — один закритий рядок STATE_INVALID на добу"; else echo "  ✗ рядок STATE_INVALID"; fi
 echo "=== 10 пуш відхилено: 2 тихі повтори, рядок, -Retry після виправлення"; setup r10; mark "$SLUG/$M/1"; gem
   printf '#!/bin/sh\nexit 1\n' > "$W/origin.git/hooks/pre-receive"; chmod +x "$W/origin.git/hooks/pre-receive"
-  P="{\"WorkDir\":\"$W/pub\",\"OutDir\":\"$W/out\",\"RepoUrl\":\"$W/origin.git\",\"ClaudeExe\":\"$H/fake_claude.py\",\"MaxPushRetries\":2,\"SendRetryDelaySeconds\":0"
-  for i in 1 2 3 4; do "$PW" -NoProfile -File "$H/side.ps1" -Script "$SRC/gemini_publish.ps1" -ArgsJson "$P}"; done
+  P="{\"WorkDir\":\"$WW/pub\",\"OutDir\":\"$WW/out\",\"RepoUrl\":\"$WW/origin.git\",\"ClaudeExe\":\"$(stub fake_claude)\",\"MaxPushRetries\":2,\"SendRetryDelaySeconds\":0"
+  for i in 1 2 3 4; do "$PW" -NoProfile -File "$(wp "$H/side.ps1")" -Script "$(wp "$SRC/gemini_publish.ps1")" -ArgsJson "$P}"; done
   echo "  claude після 4 проходів: $(wc -l < "$W/claude.log")"; rm "$W/origin.git/hooks/pre-receive"
-  ID=$(basename $(ls "$W"/out/2*.json) .json); "$PW" -NoProfile -File "$H/side.ps1" -Script "$SRC/gemini_publish.ps1" -ArgsJson "$P,\"Retry\":\"$ID\"}"; show
+  ID=$(basename $(ls "$W"/out/2*.json) .json); "$PW" -NoProfile -File "$(wp "$H/side.ps1")" -Script "$(wp "$SRC/gemini_publish.ps1")" -ArgsJson "$P,\"Retry\":\"$ID\"}"; show
 echo "=== 11 підроблений стан (8940): ранній id на ту саму позначку, models і числа з текстом"; setup r11; mark "$SLUG/$M/1"; gem
   J=$(ls "$W"/out/2*.json | head -1); MK=$(git -C "$W/origin.git" rev-parse "refs/heads/gemini-queue/$SLUG/$M/1")
   for c in MODEL_INVALID NO_REPORT; do id=20000101-00000$([ $c = NO_REPORT ] && echo 1 || echo 0)-aaaaaaaaaaaa
