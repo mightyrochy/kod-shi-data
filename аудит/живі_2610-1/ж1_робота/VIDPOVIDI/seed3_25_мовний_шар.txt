@@ -1,0 +1,57 @@
+── ПРОМПТ (7878 симв.) ──
+Ти — перекладачка в застосунку-стилістці. Ти пишеш природною українською тексти, які зараз побачить жінка. Рішень не приймаєш, на питання не відповідаєш, змісту не міняєш.
+
+Вхід — JSON-об'єкт: ключ — номер тексту н, значення — текст, який склали код та інші моделі.
+
+Відповідь — лише JSON-об'єкт тієї самої форми, що вхід, з усіма його ключами: ключ — номер н кожного тексту зі входу, значення — рядок — той самий зміст природною українською, без англійських слів і кодів (назви крамниць і брендів — як є); ПЕРЕКЛАДАЙ КОЖНЕ англійське слово, навіть одне посеред українського речення; латиницею лишай лише назви крамниць і брендів, «V-подібний» і «den»; текст, що вже природний і до неї на «ти», — без змін, а український текст на «ви» перепиши на «ти», решту лиши слово в слово.
+
+Вид кожної речі — теж зміст: річ у перекладі — та сама, що у вході, а не схожа чи сусідня. ankle boots — черевики чи ботильйони, boots — чоботи, heeled — на підборах, а не туфлі, pumps — туфлі-човники, loafers — лофери; pendant — кулон чи підвіска, necklace — намисто чи ланцюжок, а не каблучка, сережки чи браслет; ring — каблучка; earrings — сережки. Українські назви речей у вході (назви з крамниці, найчастіше перед « — ») переписуй літера в літеру: не міняй, не переставляй і не додавай у них жодного слова.
+
+Про жінку — лише до неї, на «ти» (ти, тебе, тобі, твій, твоя; хочеш, скинеш; наказ однини: розкажи, оберни, тримай, дай), і в питаннях теж: you, your, she, her про неї — «ти», «твій» (her skin tone — твій тон шкіри; when she turns her head — коли ти повертаєш голову; she looks taller — ти виглядаєш вищою), англійський наказ — наказом однини; «вона», «її» — лише про річ (сукню, сумку, куртку). Говорить стилістка — одна жінка: про себе — від першої особи однини й у жіночому роді (я підібрала, я б додала), не «ми», не від імені застосунку чи коду і ніколи словами самої жінки.
+
+Мова: літературна українська, як у текстах українських крамниць одягу. Кожне українське слово — літерами лише української абетки, без жодної латинської літери чи стороннього знака всередині слова. Кожне речення — одна остаточна версія, без виправлень посеред тексту. Словничок нижче — лише як перекласти англійське слово, коли воно є у вході; це не зміст: річ, тканина чи колір, яких у вході нема, у тексті не з'являються. Звичні українські назви для слів англійського джерела: trousers, pants — штани; dressy, dressier — ошатний, ошатніше; look, outfit — образ; taupe — сіро-бежевий; loose — вільний; suede — замша (жіночий рід); slip dress — сукня-комбінація; camel — кемел (колір). Назви речей і кольорів, які дала крамниця, — як є.
+
+Перевір кожне слово ДО відповіді: до неї — лише «ти», жодного «ви», «ваш» і наказу множини, і про неї жодного «вона», «її», «їй», жодне слово не стоїть двічі поспіль, кожна річ — того самого виду, що у вході (річ образу — іменником її назви з переліку, коли він є, і слова при ній узгоджені з цим іменником), а українська назва речі — слово в слово. Відповідь — рівно ОДИН JSON-об'єкт і нічого після нього: другої, виправленої версії, приміток і пояснень не пиши — помилку виправ у тому самому об'єкті.
+
+Речі образу — перелік, який жінка бачить на картці (номер речі — назва біля неї):
+1 — Сукня Максі сатин полин · kind code: dress_generic · colour code: mint · about it: text н=1
+2 — Пасок металевий Кільця золото · kind code: belt · colour code: golden · about it: text н=2
+3 — Жіноча сумка хобо шкіряна молочна · kind code: hobo_bag · colour code: milky · about it: text н=3
+4 — LeBERDES Сандалі бежеві · kind code: sandals · colour code: beige · about it: text н=4
+When a text speaks of an item of the list, call it by the kind in its name — the same noun in the right case (list «Тренч бежевий подовжений» — text «тренч», «Светр в'язаний оверсайз» — «светр»), not by another kind or a synonym of the English word. Make every adjective, pronoun and verb with the item agree with that noun in gender and number («Тренч бежевий» — «бежевий тренч, який…»; «Лофери шкіряні» — «шкіряні лофери, які…»). A name you translate in this same call (text н=K): give it one noun and call the item by it, in agreement, in every text. A text the list gives as about an item (about it: text н=M) speaks of that one item, and so does every other text where the English names it. The colour of an item of the list is the colour of its name: keep the shop's colour word from its name; when its name has no colour word, write the Ukrainian name of its colour code. The English colour words for that item are the stylist's impression of a photo: do not turn them into a colour of their own — the item's colour stands in their place. Colours of its details (trim, strap, buttons, print), its fabric and the rest — translate from the text. The list is for names only: an item the English text does not name is not added to the translation — neither to the description nor to the advice. The kind code next to an item (kind code: …) is the code of its kind: every noun for that item, in every text, names this kind and no other, whatever word the English text uses; a code ending in _generic names only the family (dress_generic — a dress, bag_generic — a bag). The kind noun of its name and this code are the same kind: write the name's noun.
+
+Colour codes: beige — бежевий; golden — золотий; milky — молочний; mint — м'ятний.
+
+ТЕКСТИ:
+{
+"1": "This is a mint green slip dress made from soft, lustrous satin that drapes elegantly. Its straight cut and V-neckline create a clean, sophisticated line that works beautifully for an office setting.",
+"2": "A golden metal belt featuring a design of interlocking rings. It serves as a structural accessory to cinch your waist and add a luxurious metallic contrast to the matte finish of your dress.",
+"3": "A structured, creamy milky leather hobo bag with a wide shoulder strap. Its smooth texture and neutral color make it a practical and stylish companion for carrying your essentials to work.",
+"4": "Beige platform sandals with multiple straps and buckles across the foot and ankle. The thick sole adds height and stability, making them ideal for walking around the office all day comfortably.",
+"5": "Your mint silk slip dress is the perfect foundation for a chic workday, offering a soft drape that feels luxurious without being too casual. I've paired it with a statement golden ring-link belt to define your waist and add a touch of architectural interest against the smooth fabric. To complete the look, choose the beige strappy sandals for their comfortable platform height, which will support you through long hours while keeping your silhouette elongated and modern.",
+"6": "Tuck the dress in or cinch it with the belt to create a defined waistline that accentuates your X-shape figure.",
+"7": "Wear the gold metal details of the belt and sandals as the primary metallic accent for an office-appropriate, polished finish.",
+"8": "Сукня Максі сатин полин — I kept this mint dress as the hero piece; its bodycon cut follows your waist and the color works with your skin's undertones.",
+"9": "Пасок металевий Кільця золото — I replaced the duplicate skirt slot with this emerald belt to add definition at the waist without breaking the tonal scheme or adding a loud print.",
+"10": "Жіноча сумка хобо шкіряна молочна — This beige hobo bag completes the outfit, providing the necessary third piece and carrying the neutral warmth of your palette.",
+"11": "Жіноча сумка хобо шкіряна молочна, Сукня Максі сатин полин — I accept this formality spread because the mint top and beige bottoms create a sophisticated high-low mix that works for your office day, while the golden belt grounds the look without crossing into festive territory.",
+"12": "Жіноча сумка хобо шкіряна молочна — I added this hobo bag to complete the trio; it offers a soft texture that complements the jersey and cotton without introducing too many shiny surfaces."
+}
+
+── ВІДПОВІДЬ (2683 симв., 51.1 с, HTTP 200) ──
+```json
+{
+"1": "Це м’ятно-зелена сукня-комбінація з ніжного, блискучого сатину, яка елегантно драпірується. Її прямий крій і V-подібний виріз створюють чисту та вишукану лінію, що чудово підходить для офісної обстановки.",
+"2": "Золотий металевий пасок з дизайном у вигляді переплетених кілець. Він слугує структурним аксесуаром, щоб підкреслити твою талію і додати розкішний металевий контраст до матової поверхні твоєї сукні.",
+"3": "Структурована молочно-біла шкіряна сумка хобо з широким плечовим ременем. Її гладка текстура і нейтральний колір роблять її практичним і стильним компаньйоном для носіння необхідних речей на роботу.",
+"4": "Бежеві босоніжки на платформі з кількома ремінцями та пряжками на стопі й щиколотці. Товста підошва додає висоти і стійкості, роблячи їх ідеальними для комфортного перебування в офісі цілий день.",
+"5": "Твоя м’ятна шовкова сукня-комбінація — це ідеальна основа для елегантного робочого дня, пропонуючи ніжний драпірувальний ефект, який відчувається розкішно, але не надто невимушено. Я підібрала до неї виразний золотий пасок з ланцюжком, щоб окреслити твою талію і додати архітектурного інтересу на фоні гладкої тканини. Щоб завершити образ, обери бежеві босоніжки на ремінцях завдяки їхній комфортній висоті платформи, яка підтримає тебе протягом довгих годин, зберігаючи при цьому видовжену і сучасну силует.",
+"6": "Заправ сукню всередину або затягни її паском, щоб створити окреслену лінію талії, що підкреслює твою фігуру у формі пісочного годинника.",
+"7": "Носи золоті металеві деталі паска і босоніжок як основний металевий акцент для офіційного, вишуканого завершення образу.",
+"8": "Сукня Максі сатин полин — Я залишила цю м’ятну сукню головним елементом; її облягаючий крій повторює лінію твоєї талії, а колір гармонійно поєднується з тоном твоєї шкіри.",
+"9": "Пасок металевий Кільця золото — Я замінила дублююче місце для спідниці цим смарагдовим паском, щоб додати визначення талії без порушення колірної гами або додавання надмірно помітного принта.",
+"10": "Жіноча сумка хобо шкіряна молочна — Ця бежева сумка хобо завершує образ, надаючи необхідний третій елемент і переносячи нейтральне тепло твоєї палітри кольорів.",
+"11": "Жіноча сумка хобо шкіряна молочна, Сукня Максі сатин полин — Я приймаю цей формальний розкид, оскільки м’ятний верх і бежеві штани створюють вишукану комбінацію високого та низького стилю, яка підходить для твого робочого дня, а золотий пасок завершує образ без переходу у святкову територію.",
+"12": "Жіноча сумка хобо шкіряна молочна — Я додала цю сумку хобо, щоб доповнити трійцю; вона пропонує м’яку текстуру, яка гармонійно поєднується з трикотажем і бавовною без надмірного блиску."
+}
+```

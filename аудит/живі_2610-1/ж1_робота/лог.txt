@@ -1,0 +1,528 @@
+СЦЕНАРІЙ ПІДМІНЕНО (CHAT_TEXT/PASPORT): звірки офісного випадку звіряються з поданим паспортом · {"чат":"робочий день в офісі","паспорт":null}
+МОДЕЛЬ ЖИВА: qwen/qwen3.5-9b · http://127.0.0.1:1241/v1 · reasoning_effort=none · відповіді → C:/tmp/z2610_out/ж1_робота/VIDPOVIDI
+   ⊘ зовнішній запит: https://cdn.jsdelivr.net/gh/MacPaw/Fixel@514fd02ea7d70668ed3dd09fb2674ba6f70d61ee/fonts/webfonts/Fix
+   ⊘ зовнішній запит: https://cdn.jsdelivr.net/gh/MacPaw/Fixel@514fd02ea7d70668ed3dd09fb2674ba6f70d61ee/fonts/webfonts/Fix
+   ⊘ зовнішній запит: https://cdn.jsdelivr.net/gh/MacPaw/Fixel@514fd02ea7d70668ed3dd09fb2674ba6f70d61ee/fonts/webfonts/Fix
+   ⊘ зовнішній запит: https://cdn.jsdelivr.net/gh/MacPaw/Fixel@514fd02ea7d70668ed3dd09fb2674ba6f70d61ee/fonts/webfonts/Fix
+сторінка піднята за 0.5 с · збірка: fe21f831ec2fdfda5be2dd177592d3a7cf9c71aa · єдина сторінка: true
+
+0. знайомство · крок 1 «Про тебе»: {"режим":"старт","екран":0,"видно":["е-профіль"],"кнопка":"Далі"}
+  ✔ крок 1: кольори лягли ручним шляхом сторінки («Застосувати кольори»)
+   крок 2 «Що тобі до лиця»: {"режим":"старт","екран":1,"видно":["е-лице"],"кнопка":"Далі"}
+   знімок: C:\tmp\z2610_out\ж1_робота\знімки\ekran_znaiomstvo_2_do_lytsia_seed3.png 57994 Б
+   крок 3 «Фігура»: {"режим":"старт","екран":2,"видно":["е-мірки"],"кнопка":"Готово"}
+  ✔ знайомство — рівно три кроки, і «Готово» стоїть лише на третьому
+   знімок: C:\tmp\z2610_out\ж1_робота\знімки\ekran_znaiomstvo_3_fihura_seed3.png 28796 Б
+   «Готово» → {"режим":"сценарій","екран":2,"видно":["е-випадок"],"лист":true,"підказка":"Напиши, як подрузі: куди йдеш, коли, яка погода, чого хочеш і чого не хочеш. Я складу сценарій, а ти поправиш, що треба.","питання":"Куди ти збираєшся?","рукою":"Або заповнити рукою","прикладів":3,"дії_панелі":false,"картка":false,"зібрати":null} за 1.2 с
+  ✔ після «Готово» — екран сценарію v5: аркуш листа з полем, питання «Куди ти збираєшся?», «Або заповнити рукою»; дій панелі нема, отже репліка піде замовленням, а не в помічницю
+   знімок: C:\tmp\z2610_out\ж1_робота\знімки\ekran_scenarii_porozhnii_seed3.png 34819 Б
+   ↔ модель #1 мовний шар: хід розмови (35930 симв., разом 37163) → 12.0 с · HTTP 200 · 431 симв.
+   ↔ модель #2 мовний шар: ремонт поради (3285 симв., разом 3540) → 1.7 с · HTTP 200 · 127 симв.
+
+1. чат → паспорт за 17.7 с · pyodide тягнув: ["pyodide.js","python_stdlib.zip","pyodide.asm.wasm","pyodide-lock.json","pyodide.asm.js"]
+  ✔ чат заповнив плитки з поданого паспорта (нагода=робота; чинне місце — null)
+  ✔ вето з поданого паспорта в паспорті (на екрані чипів нема, ПОКАЗ-1) (жодного)
+  ✔ рядок підтвердження стоїть («Усе правильно?» + «так»/«поправити»), і випадок — з поданого паспорта («робочий день в офісі»; нагода в рядках картки)
+  ✔ паспорт із перекладу (слова → внутрішня мова → паспорт кодом), питань моделі в паспорті нема (Т-18)
+  ✔ М-5: хід розмови — один виклик мовної моделі (запис «розмова» з внутрішньою мовою й частинами); другий — лише коли зміст дає код; у бульбашці — текст після суду коду
+  ✔ порада (рядки 108/114): тем за хід 1…3 — запрошення моделі розмови, пропущене судом коду, без повторів (`поради_дані`)
+  ✔ до збирання нічого не бракує
+   знімок чату: C:\tmp\z2610_out\ж1_робота\знімки\chat_108_seed3.png 8814 Б
+   ↔ модель #3 мовний шар (11612 симв., разом 12615) → 23.9 с · HTTP 200 · 2560 симв.
+
+1б. екран «Палітра» за 47.9 с · стан: "Ти обрала, щоб я почекала з базою. Ти обрала, щоб я почекала зі схемою. Ти обрала, щоб я почекала з насиченістю."
+   чипів основи: рекомендованих 6 · у розкривачі «не радимо, але можна» 31 · гам 4 · схем 7 · основ у смузі «середні» 6
+   сім'ї по порядку: ["зелена","фіолетова","нейтраль"] · чипи: ["зелена","зелена","фіолетова","фіолетова","нейтраль","нейтраль"]
+  ✔ екран «Палітра» відкрився рядком картки і дає рекомендовані основи (рядок «Основа — головний колір», чипи з сім'єю), вибір лишився за стилісткою
+  ✔ кожен чип «нейтраль» — справді нейтраль: сім'я з коду, тег у підписі і C* нижче межі кажуть одне
+  ✔ чипи основ стоять КУПНО ПО СІМ'ЯХ і в сталому порядку (жодна сім'я не двома клаптями)
+   ↔ модель #4 вибір палітри (стилістка) (14498 симв., разом 16391) → 11.7 с · HTTP 200 · 193 симв.
+   ↔ модель #5 мовний шар (6861 симв., разом 7315) → 14.7 с · HTTP 200 · 951 симв.
+   П-7 вибір стилістки на екрані: {"стан":"Я обрала м'ятний світлий колір з м'якою основою. Я обрала тональну схему для тебе. Я обрала приглушену насиченість кольорів.","нота":"Для цього образу я обрала тональну схему. Я обрала м'ятний світлий колір як основний для тебе. Це перша порада щодо твого колориту, і вона нічого іншого не потребує. Цей колір підкреслює та відтіняє твої очі. Якщо ти хочеш, можеш обрати інший варіант сама.","стрічка":"основа від стилістки · схема від стилістки","чип_схеми":"хай обере стилістка","позначені":["приглушені","м'ятний світлий · м'яка · стилістка","тональна · найходовіша"],"код_на_екрані":false,"вибір":null,"гілка":null,"схема":null}
+   знімок: C:\tmp\z2610_out\ж1_робота\знімки\ekran_palitra_seed3.png 136569 Б
+1б · написів «без пояснення словами» на екрані «Палітра»: 0 · рядків біля схем 6 · нота: "Для цього образу я обрала тональну схему. Я обрала м'ятний світлий колір як основний для тебе. Це перша порада щодо твого колориту, і вона нічого іншого не потребує. Цей колір підкреслює та відтіняє твої очі. Якщо ти хочеш, можеш обрати інший варіант сама."
+
+1е. чи можна натиснути «Зібрати образи» (рядок 183): {"під_пальцем_кнопка":true,"під_нижнім_краєм":true,"панель_fixed":true,"на_всю_ширину":true,"запас_px":370,"панель_висота":274,"відступ_body":"294px","вікно":844,"прокрутка":206}
+  ✔ «Зібрати образи» відкрита для дотику: у точці пальця — сама кнопка, а не панель (рядок 183)
+  ✔ і під нею лишається місце: низ кнопки вище за верх панелі на прокрученій до низу сторінці
+   знімок: C:\tmp\z2610_out\ж1_робота\знімки\scenarii_knopka_nad_panelliu_seed3.png 31583 Б
+   знімок: C:\tmp\z2610_out\ж1_робота\знімки\zbyrannia_01_seed3.png 33813 Б
+   знімок: C:\tmp\z2610_out\ж1_робота\знімки\zbyrannia_02_seed3.png 34365 Б
+   знімок: C:\tmp\z2610_out\ж1_робота\знімки\zbyrannia_03_seed3.png 33918 Б
+   ↔ модель #6 ПАКЕТ_V1→ОБРАЗИ_V1 (127342 симв., разом 141071) → 32.9 с · HTTP 200 · 3200 симв.
+   знімок: C:\tmp\z2610_out\ж1_робота\знімки\zbyrannia_04_seed3.png 33757 Б
+   ↔ модель #7 проза: рука 3/4 (2192 симв., разом 2355) → 32.1 с · HTTP 200 · 1064 симв.
+   ↔ модель #8 проза: рука 3/4 (1852 симв., разом 1977) → 33.3 с · HTTP 200 · 1002 симв.
+   знімок: C:\tmp\z2610_out\ж1_робота\знімки\zbyrannia_05_seed3.png 33765 Б
+   знімок: C:\tmp\z2610_out\ж1_робота\знімки\zbyrannia_06_seed3.png 34550 Б
+   знімок: C:\tmp\z2610_out\ж1_робота\знімки\zbyrannia_07_seed3.png 33979 Б
+   ↔ модель #9 ПАКЕТ_V1→ОБРАЗИ_V1 (124417 симв., разом 138662) → 55.7 с · HTTP 200 · 3322 симв.
+   знімок: C:\tmp\z2610_out\ж1_робота\знімки\zbyrannia_08_seed3.png 33046 Б
+   ↔ модель #10 ВЕРДИКТ_V1→ОБРАЗИ_V1 (110772 симв., разом 125173) → 78.0 с · HTTP 200 · 7543 симв.
+   ↔ модель #11 перелік речей (руки 3–4) (2421 симв., разом 2568) → 80.4 с · HTTP 200 · 1057 симв.
+   ↔ модель #12 перелік речей (руки 3–4) (2358 симв., разом 2504) → 81.3 с · HTTP 200 · 738 симв.
+   ↔ модель #13 ВЕРДИКТ_V1→ОБРАЗИ_V1 (125163 симв., разом 141846) → 72.0 с · HTTP 200 · 1619 симв.
+   ↔ модель #14 ПОВНОТА→ДОПОВНЕННЯ_V1 (30508 симв., разом 34815) → 34.3 с · HTTP 200 · 1254 симв.
+   ↔ модель #15 мовний шар (6399 симв., разом 6526) → 43.9 с · HTTP 200 · 1259 симв.
+   ↔ модель #16 мовний шар (5990 симв., разом 6102) → 49.4 с · HTTP 200 · 1114 симв.
+   ↔ модель #17 ПОВНОТА→ДОПОВНЕННЯ_V1 (20788 симв., разом 23435) → 43.3 с · HTTP 200 · 302 симв.
+   ↔ модель #18 ВЕРДИКТ_V1→ВИБІР_V1 (35327 симв., разом 39726) → 38.6 с · HTTP 200 · 781 симв.
+   ↔ модель #19 мовний шар (6599 симв., разом 6700) → 37.2 с · HTTP 200 · 1170 симв.
+   ↔ модель #20 ВЕРДИКТ_V1→ВИБІР_V1 (20168 симв., разом 22185) → 25.3 с · HTTP 200 · 682 симв.
+   ↔ модель #21 ОПИС_V1→ОПИС_ВІДПОВІДЬ_V1 (14821 симв., разом 17559, фото 7) → 28.5 с · HTTP 200 · 1725 симв.
+   ↔ модель #22 ОПИС_V1→ОПИС_ВІДПОВІДЬ_V1 (19173 симв., разом 22612, фото 8) → 18.9 с · HTTP 200 · 2979 симв.
+   ↔ модель #23 мовний шар (3631 симв., разом 3722) → 18.7 с · HTTP 200 · 93 симв.
+   ↔ модель #24 мовний шар (9976 симв., разом 10586) → 33.8 с · HTTP 200 · 1804 симв.
+   ↔ модель #25 мовний шар (7878 симв., разом 8018) → 51.1 с · HTTP 200 · 2683 симв.
+   рука 1: картка за 280.4 с (від запити) · намір паспорта conventional
+   ↔ модель #26 мовний шар (5360 симв., разом 5630) → 43.7 с · HTTP 200 · 336 симв.
+   ↔ модель #27 мовний шар (13767 симв., разом 14721) → 58.2 с · HTTP 200 · 2062 симв.
+   ↔ модель #28 мовний шар (8301 симв., разом 8432) → 61.3 с · HTTP 200 · 2908 симв.
+
+2. збирання (сід 3) за 399.0 с · поломка руки 2: "правило" · статус: ""
+  ✔ збирання на опублікованій сторінці не падає (намір паспорта conventional)
+   екран збирання: 28 станів у C:\tmp\z2610_out\ж1_робота\знімки\postup_seed3.txt
+
+2б. чотири картки за 399.2 с · розклад рук: 3412 · пул: K=491:487/бюджет43400ток · поломка руки 2: "правило" · контроль: {"різних":1,"сліпих":26,"поломка":"правило","слід":["ноти_слотів","правила","слоти_випали"],"вхід":true,"без_входу":{"R-COL-16":"особа.бік_b.вхід: eyes_give_no_side","K-OUT-33":"сценарій.темп_c: none_or_cold_suppresses_draped","K-SHO-16":"сценарій.тривалість_год|поверхня: none","K-MAT-03":"сценарій.темп_c: none"},"сліпий":false,"пул_спільних":194}
+   рука 3 {"рука":"3","речей":6,"фото":0,"без_свого":6,"свідомі_список":[],"назви_обидві":["Блузка","Штани","Піджак","Лофери","Сережки","Ланцюжок"],"ід_речей":["м-001","м-002","м-003","м-004","м-005","м-006"],"свідомі_ід":[],"ціни":0,"текст":1064,"ітерацій":0,"викликів":2,"назви":["Блузка","Штани","Піджак","Лофери","Сережки","Ланцюжок"],"проза":"Cream silk blouse in a relaxed fit, knee-length hemline, #F5F0E6 color, woven silk.\nCharcoal wool-blend wide-leg trousers, ankle length, #3B3F4F color, heavy worsted wool.\nOatmeal unstructured blazer, cropped at the waist, #D4CFC8 color, fine gauge cashmere.\nDark brown leather loafers with a slight heel, rounded toe, #4A3B32 color, full-grain calfskin.\nGold-plated minimal hoop earrings and a thin chain necklace, #FFD700 accents, polished brass.\n\nThis outfit works because it balances professional polish with the comfort needed for an autumn office day, adhering to the \"neat\" dress code without feeling overly formal. The cream blouse provides a soft contrast to the deep charcoal trousers, creating a sophisticated yet approachable silhouette suitable for her complexion. The unstructured blazer adds necessary layers against the cooler fall weather while maintaining ease of movement throughout the workday. Finally, the leather loafers ground the look with timeless elegance, ensuring she feels confident and ready from morning meetings to afternoon tasks.","назви_до_шару":["Blouse","Trousers","Blazer","Loafers","Earrings","Necklace"],"не_перекладено":[],"збій":false,"мова_видано":"так","свідомі":0,"різноманітність":false,"питань":0,"питань_картці":0,"чекають":0,"відкладено":0,"для_всіх":0,"кнопка":null,"питання":[],"тексти_питань":[],"питань_з_пам_яті":0,"схема":{"вийшла":null,"основа":{"база":"м'ятний·холодна·68·приглушені","на_великій":"невідомо","одягу_у_пулі":{"так":2,"невідомо":11}}},"питань_від_шару":0}
+   рука 4 {"рука":"4","речей":4,"фото":0,"без_свого":4,"свідомі_список":[],"назви_обидві":["блейзер","блуза","штани","взуття"],"ід_речей":["м-001","м-002","м-003","м-004"],"свідомі_ід":[],"ціни":0,"текст":1002,"ітерацій":0,"викликів":2,"назви":["блейзер","блуза","штани","взуття"],"проза":"A structured wool-blend blazer, boxy cut, knee-length, deep charcoal grey with hex code #36454F.\nA silk-poplin blouse, relaxed fit, long-sleeved, crisp white with hex code #FFFFFF.\nA tailored wool trousers, straight-leg cut, ankle-length, muted olive green with hex code #556B2F.\nLeather ballet flats, rounded toe, closed back, black leather with hex code #000000.\n\nThis outfit works perfectly for an autumn workday in the office while adhering to the \"neat\" dress code requested. The structured blazer and tailored trousers provide a polished, professional silhouette suitable for business interactions, while the relaxed blouse ensures comfort throughout the day. The neutral color palette of charcoal, white, and olive green offers a sophisticated yet versatile look that transitions seamlessly from morning meetings to afternoon tasks. As the weather is cool autumn air, the wool blend provides necessary warmth without being bulky, respecting the indoor environment where no outer layer is needed.","назви_до_шару":["blazer","blouse","trousers","shoes"],"не_перекладено":[],"збій":false,"мова_видано":"так","свідомі":0,"різноманітність":false,"питань":0,"питань_картці":0,"чекають":0,"відкладено":0,"для_всіх":0,"кнопка":null,"питання":[],"тексти_питань":[],"питань_з_пам_яті":0,"схема":{"вийшла":null,"основа":{"база":"м'ятний·холодна·68·приглушені","на_великій":"невідомо","одягу_у_пулі":{"так":2,"невідомо":11}}},"питань_від_шару":0}
+   рука 1 {"рука":"1","речей":4,"фото":4,"без_свого":0,"свідомі_список":["Сукня Максі сатин полин — Я залишила цю м’ятну сукню головним елементом; її облягаючий крій повторює лінію твоєї талії, а колір гармонійно поєднується з тоном твоєї шкіри.","Пасок металевий Кільця золото — Я замінила дублююче місце для спідниці цим смарагдовим паском, щоб додати визначення талії без порушення колірної гами або додавання надмірно помітного принта.","Жіноча сумка хобо шкіряна молочна — Ця бежева сумка хобо завершує образ, надаючи необхідний третій елемент і переносячи нейтральне тепло твоєї палітри кольорів.","Жіноча сумка хобо шкіряна молочна, Сукня Максі сатин полин — Я приймаю цей формальний розкид, оскільки м’ятний верх і бежеві штани створюють вишукану комбінацію високого та низького стилю, яка підходить для твого робочого дня, а золотий пасок завершує образ без переходу у святкову територію.","Жіноча сумка хобо шкіряна молочна — Я додала цю сумку хобо, щоб доповнити трійцю; вона пропонує м’яку текстуру, яка гармонійно поєднується з трикотажем і бавовною без надмірного блиску."],"назви_обидві":["Сукня Максі сатин полин","Пасок металевий Кільця золото","Жіноча сумка хобо шкіряна молочна","LeBERDES Сандалі бежеві","LeBERDES Сандалі"],"ід_речей":["ж-00188@likeangel.com.ua","ж-07624@likeangel.com.ua","ж-08262@miraton.ua","ж-09974@favoriteshoes.com.ua"],"свідомі_ід":[["ж-00188@likeangel.com.ua"],["ж-07624@likeangel.com.ua"],["ж-08262@miraton.ua"],["ж-08262@miraton.ua","ж-00188@likeangel.com.ua"],["ж-08262@miraton.ua"]],"ціни":4,"текст":1725,"ітерацій":4,"викликів":5,"назви":["Сукня Максі сатин полин","Пасок металевий Кільця золото","Жіноча сумка хобо шкіряна молочна","LeBERDES Сандалі бежеві"],"проза":"{\n\"version\": \"1\",\n\"text\": \"Your mint silk slip dress is the perfect foundation for a chic workday, offering a soft drape that feels luxurious without being too casual. I've paired it with a statement golden ring-link belt to define your waist and add a touch of architectural interest against the smooth fabric. To complete the look, choose the beige strappy sandals for their comfortable platform height, which will support you through long hours while keeping your silhouette elongated and modern.\",\n\"how_to_wear\": [\"Tuck the dress in or cinch it with the belt to create a defined waistline that accentuates your X-shape figure.\", \"Wear the gold metal details of the belt and sandals as the primary metallic accent for an office-appropriate, polished finish.\"],\n\"wrong_photos\": [],\n\"swap\": {},\n\"named\": [],\n\"about_items\": [\n{\n\"n\": \"#175·18\",\n\"text\": \"This is a mint green slip dress made from soft, lustrous satin that drapes elegantly. Its straight cut and V-neckline create a clean, sophisticated line that works beautifully for an office setting.\"\n},\n{\n\"n\": \"#236·18\",\n\"text\": \"A golden metal belt featuring a design of interlocking rings. It serves as a structural accessory to cinch your waist and add a luxurious metallic contrast to the matte finish of your dress.\"\n},\n{\n\"n\": \"#125·21\",\n\"text\": \"A structured, creamy milky leather hobo bag with a wide shoulder strap. Its smooth texture and neutral color make it a practical and stylish companion for carrying your essentials to work.\"\n},\n{\n\"n\": \"#186·10\",\n\"text\": \"Beige platform sandals with multiple straps and buckles across the foot and ankle. The thick sole adds height and stability, making them ideal for walking around the office all day comfortably.\"\n}\n]\n}","назви_до_шару":["Сукня Максі сатин полин","Пасок металевий Кільця золото","Жіноча сумка хобо шкіряна молочна","LeBERDES Сандалі бежеві"],"не_перекладено":[],"збій":false,"мова_видано":"так","свідомі":5,"різноманітність":true,"питань":30,"питань_картці":7,"чекають":1,"відкладено":1,"для_всіх":22,"кнопка":"За цим посиланням ти знайдеш список того, що я ще не можу перевірити в цьому образі.","питання":["K-SHO-13: shoe_size_not_checked {item: «LeBERDES Сандалі бежеві», item_id: ж-09974@favoriteshoes.com.ua} + her_foot_length_unknown + item_insole_length_unknown → «Зараз я не можу перевірити, чи підходить тобі розмір цих бежевих сандалів LeBERDES. Я ще не знаю довжину твоєї стопи. На жаль, я не можу дізнатися довжину устілки цих сандалів.»","K-COL-01: cannot_tell_lightness_structure {items: [{item_id: ж-07624@likeangel.com.ua, slot: belt, name: «Пасок металевий Кільця золото»}, {item_id: ж-08262@miraton.ua, slot: bag, name: «Жіноча сумка хобо шкіряна молочна»}, {item_id: ж-09974@favoriteshoes.com.ua, slot: shoes, name: «LeBERDES Сандалі бежеві»}]} · on_expand","K-COL-06: colour_word_shop {items: [{item_id: ж-07624@likeangel.com.ua, slot: belt, colour: золотий, name: «Пасок металевий Кільця золото»}]} + cannot_tell_item_is_neutral ; K-PAL-03: colour_word_shop {items: [{item_id: ж-07624@likeangel.com.ua, slot: belt, colour: золотий, name: «Пасок металевий Кільця золото»}]} + cannot_tell_item_holds_scheme_hue ; K-PAL-09: colour_word_shop {items: [{item_id: ж-07624@likeangel.com.ua, slot: belt, colour: золотий, name: «Пасок металевий Кільця золото»}]} + cannot_tell_item_off_palette ; K-PAL-02: colour_word_shop {items: [{item_id: ж-07624@likeangel.com.ua, slot: belt, colour: золотий, name: «Пасок металевий Кільця золото»}]} + cannot_tell_colour_from_eyes ; K-PAL-15: colour_word_shop {items: [{item_id: ж-07624@likeangel.com.ua, slot: belt, colour: золотий, name: «Пасок металевий Кільця золото»}]} + cannot_tell_look_follows_her_combinations → «Я знаю колір цього золотого металевого паска лише з назви в магазині. Тому я не можу сказати, чи цей предмет нейтральний за кольором. Я не знаю, чи відповідає колір цього предмета обраній палітрі. Тому я не можу сказати, чи цей предмет знаходиться поза твоєю палітрою кольорів. Я не знаю, чи походить колір цього предмета від твоїх очей. Тому я не можу сказати, чи кольори в образі відповідають логіці твоїх комбінацій.»","K-PC-05: which_white_suits_unknown · for_all","K-SIZ-02: size_is_label_not_fit {sizes: [{slot: dress, range: XS–XL}]} → «Я знаю лише розмір цього плаття за позначкою магазину, але не можу сказати, чи воно тобі підійде по фігурі.»","R-FEED-06: photo_shared_by_other_products {count: 2, items: [{item_id: ж-07624@likeangel.com.ua, slot: belt, shop: likeangel.com.ua, unknown: [cut, length, fabric, pattern, shine], name: «Пасок металевий Кільця золото»}]} → «Ця фотографія з паском металевим Кільця золото використовується ще на двох інших товарах в магазині likeangel.com.ua, тому вимірювання можуть не відповідати саме цьому предмету.»","K-KOH-07: item_below_occasion_band_explained {reason: item_below_band, band: [5, 6], by: deliberate} → «Цей предмет більш повсякденний, ніж рівень цієї події, але я знаю, що ти свідомо зробила такий вибір.»","K-ACC-12: wear_way_not_chosen {item: «Жіноча сумка хобо шкіряна молочна», ways: [hand, shoulder, crossbody], item_id: ж-08262@miraton.ua} → «Ти ще не обрала спосіб носіння цієї молочної шкіряної сумки хобо: в руці, на плечі чи через тіло.»","K-SHO-11: calf_girth_not_measured · for_all","K-SHO-09: leg_proportion_template_crotch · for_all","K-END-01: wear_cost_no_duration_surface · for_all","K-REG-03: items_register_unknown {count: 2} → «Я не можу визначити стиль двох предметів з твого образу, бо їх картки не містять потрібних слів.»","K-BOD-05: vertical_balance_not_judged · for_all","K-SIZ-01: no_input_hand_finger_neck_sizes · for_all","K-EYE-01: no_input_frame_size · for_all","K-WCH-01: no_input_watch_size · for_all","K-GLV-01: no_input_glove_size · for_all","K-HAT-01: no_input_hat_girth · for_all","K-ACC-03: no_input_hardware_metal · for_all","K-ACC-08: no_input_scarf_chosen_last · for_all","K-ACC-11: no_input_pocket_square · for_all","K-EYE-04: no_input_lens_prescription · for_all","K-SCL-01: no_input_facial_feature_scale · for_all","K-JEW-03: no_input_stone_clarity_band_width · for_all","K-ACC-09: no_input_brooch_weight · for_all","K-HAT-02: no_input_hat_brim_vs_cheekbones · for_all","K-SHO-06: no_input_shoes_formality_outlier_rule · for_all","K-SHO-12: no_input_toe_shape · for_all","K-REG-02: her_register_unknown · for_all","площа: areas_not_measured · for_all"],"тексти_питань":["Зараз я не можу перевірити, чи підходить тобі розмір цих бежевих сандалів LeBERDES. Я ще не знаю довжину твоєї стопи. На жаль, я не можу дізнатися довжину устілки цих сандалів.","Я знаю колір цього золотого металевого паска лише з назви в магазині. Тому я не можу сказати, чи цей предмет нейтральний за кольором. Я не знаю, чи відповідає колір цього предмета обраній палітрі. Тому я не можу сказати, чи цей предмет знаходиться поза твоєю палітрою кольорів. Я не знаю, чи походить колір цього предмета від твоїх очей. Тому я не можу сказати, чи кольори в образі відповідають логіці твоїх комбінацій.","Я знаю лише розмір цього плаття за позначкою магазину, але не можу сказати, чи воно тобі підійде по фігурі.","Ця фотографія з паском металевим Кільця золото використовується ще на двох інших товарах в магазині likeangel.com.ua, тому вимірювання можуть не відповідати саме цьому предмету.","Цей предмет більш повсякденний, ніж рівень цієї події, але я знаю, що ти свідомо зробила такий вибір.","Ти ще не обрала спосіб носіння цієї молочної шкіряної сумки хобо: в руці, на плечі чи через тіло.","Я не можу визначити стиль двох предметів з твого образу, бо їх картки не містять потрібних слів."],"питань_з_пам_яті":0,"схема":{"вийшла":null,"основа":{"база":"м'ятний·холодна·68·приглушені","на_великій":"так","одягу_у_пулі":{"так":2,"невідомо":11}}},"питань_від_шару":7}
+   рука 2 {"рука":"2","речей":5,"фото":5,"без_свого":0,"свідомі_список":["Майка з відкритими плечима нідея сіра, Джинси STRAIGHT сірий, Кеди шкіряні (Other Brand), Мінісумка з текстурованої шкіри, Шовкова хустка в синій принт — Я погоджуюсь із цим висновком, адже носіння цих чотирьох стилів — романтичного, робочого одягу, класичного та препі — створює вишуканий багатошаровий образ, який підходить для твого офісного середовища. Це доводить, що вбрання не є безладним, а навпаки, свідомо стилізованим."],"назви_обидві":["Майка з відкритими плечима нідея сіра","Допомагає створити трендові багатошарові образи та стильно поєднується з кардиганом прямого крою","Джинси STRAIGHT сірий","ДЖИНСИ STRAIGHT СІРИЙ ST 708","Кеди шкіряні (Other Brand)","Other Brand","Мінісумка з текстурованої шкіри","Шовкова хустка в синій принт"],"ід_речей":["ж-02402@25union.com.ua","ж-06662@twice.com.ua","ж-10262@brenda.ua","ж-11585@theoriginals.com.ua","ж-11682@theoriginals.com.ua"],"свідомі_ід":[["ж-02402@25union.com.ua","ж-06662@twice.com.ua","ж-10262@brenda.ua","ж-11585@theoriginals.com.ua","ж-11682@theoriginals.com.ua"]],"ціни":5,"текст":2979,"ітерацій":4,"викликів":5,"назви":["Майка з відкритими плечима нідея сіра","Джинси STRAIGHT сірий","Кеди шкіряні (Other Brand)","Мінісумка з текстурованої шкіри","Шовкова хустка в синій принт"],"проза":"{\"version\": 1, \"text\": \"This grey ribbed knit halter top with a high neckline offers a clean, polished start to your workday. Paired with the straight-leg grey jeans that define your waist, they create a cohesive, relaxed silhouette perfect for an office environment without looking sloppy. The white leather plimsolls bring a fresh, contemporary edge to the neutral base, while the peach quilted mini-bag adds a touch of soft color and texture you can easily lift when heading out. Tucking the blue silk scarf neatly at your neck introduces a pattern that breaks up the monochrome look, tying your hair back if needed or simply adding a splash of visual interest near your face.\", \"how_to_wear\": [\"Tuck the scarf into the neckline for a structured finish, or drape it loosely over one shoulder for a softer morning vibe.\", \"If you plan to walk extensively, consider taking the top off during lunch breaks as the jeans remain versatile enough to stand alone under a blazer if needed.\", \"Keep the plimsolls laced tightly for a crisp line, or slightly loose for comfort during long days of movement.\"], \"wrong_photos\": [], \"swap\": {}, \"named\": [{\"n\": \"#411·00\", \"what\": \"grey ribbed knit halter top\"}, {\"n\": \"#21·33\", \"what\": \"straight-leg grey jeans\"}, {\"n\": \"#78·03\", \"what\": \"white leather plimsolls with animal print stars\"}, {\"n\": \"#130·32\", \"what\": \"peach quilted mini-bag\"}, {\"n\": \"#177·32\", \"what\": \"blue silk scarf\"}], \"about_items\": [{\"n\": \"#411·00\", \"text\": \"This grey ribbed knit halter top features a high round neckline and wide shoulder straps that frame your collarbone beautifully. The fine vertical texture adds subtle dimension while the fitted cut hugs your torso to highlight your defined waist without restricting movement.\"}, {\"n\": \"#21·33\", \"text\": \"The straight-leg jeans in grey denim offer a flattering silhouette that follows your hips before falling freely to the ankle. Their classic five-pocket design and sturdy fabric provide durability for daily wear, while the light wash keeps the look modern and versatile.\"}, {\"n\": \"#78·03\", \"text\": \"These white leather plimsolls are crafted with a chunky sole for comfort and feature bold animal-print stars in leopard and zebra alongside silver accents. The low-top design makes them easy to slip on, while the leather material ensures they hold their shape throughout your day.\"}, {\"n\": \"#130·32\", \"text\": \"A peach-colored mini-bag made from textured quilted leather that adds warmth and softness to your ensemble. Its compact rectangular shape fits essentials easily, and the adjustable strap lets you wear it comfortably across your body or over one shoulder.\"}, {\"n\": \"#177·32\", \"text\": \"This blue silk scarf displays an intricate botanical print with delicate flowers and leaves in deep navy tones against a creamy background. The lightweight fabric drapes elegantly around your neck, adding sophistication without overwhelming the simplicity of your grey outfit.\"}], \"named_items_only_for_text\": true}","назви_до_шару":["Майка з відкритими плечима нідея сіра","Джинси STRAIGHT сірий","Кеди шкіряні (Other Brand)","Мінісумка з текстурованої шкіри","Шовкова хустка в синій принт"],"не_перекладено":[],"збій":false,"мова_видано":"так","свідомі":1,"різноманітність":true,"питань":36,"питань_картці":12,"чекають":2,"відкладено":2,"для_всіх":22,"кнопка":"За цим посиланням ти знайдеш список того, що я ще не можу перевірити в цьому образі.","питання":["K-FIT-03: item_length_unknown_edge_default {slots: [shoes]} ; K-FIT-03: length_word_edge_may_land_on_widest {slot: top, length: «стегно», level: hips} → «Довжина взуття не перевірена. Здається, край верху може лягти на найширше місце стегон.»","K-SHO-13: shoe_size_not_checked {item: «Кеди шкіряні (Other Brand)», item_id: ж-10262@brenda.ua} + her_foot_length_unknown + item_insole_length_unknown → «Довжина взуття не перевірена. Я ще не знаю довжину твоєї стопи. На жаль, я не можу дізнатися довжину устілки цих сандалів.»","K-SHO-07: shoe_cut_irrelevant_leg_covered {item: «Кеди шкіряні (Other Brand)», item_id: ж-10262@brenda.ua} → «Довжина взуття не перевірена, адже низ закриває ногу.»","K-CLR-02: colour_word_shop_photo_other {items: [{item_id: ж-11682@theoriginals.com.ua, slot: scarf, colour: синій, photo: білий, name: «Шовкова хустка в синій принт»}]} + cannot_tell_face_contrast_matches_hers ; K-COL-06: colour_word_shop_photo_other {items: [{item_id: ж-11682@theoriginals.com.ua, slot: scarf, colour: синій, photo: білий, name: «Шовкова хустка в синій принт»}]} + cannot_tell_item_is_neutral ; K-PAL-18: colour_word_shop_photo_other {items: [{item_id: ж-11682@theoriginals.com.ua, slot: scarf, colour: синій, photo: білий, name: «Шовкова хустка в синій принт»}]} + cannot_tell_accent_role_chroma ; K-PAL-03: colour_word_shop_photo_other {items: [{item_id: ж-11682@theoriginals.com.ua, slot: scarf, colour: синій, photo: білий, name: «Шовкова хустка в синій принт»}]} + cannot_tell_item_holds_scheme_hue ; K-PAL-09: colour_word_shop_photo_other {items: [{item_id: ж-11682@theoriginals.com.ua, slot: scarf, colour: синій, photo: білий, name: «Шовкова хустка в синій принт»}]} + cannot_tell_item_off_palette ; K-PAL-08: colour_word_shop_photo_other {items: [{item_id: ж-11682@theoriginals.com.ua, slot: scarf, colour: синій, photo: білий, name: «Шовкова хустка в синій принт»}]} + cannot_tell_look_contrast_matches_hers ; K-PAL-02: colour_word_shop_photo_other {items: [{item_id: ж-11682@theoriginals.com.ua, slot: scarf, colour: синій, photo: білий, name: «Шовкова хустка в синій принт»}]} + cannot_tell_colour_from_eyes ; K-PAL-10: colour_word_shop_photo_other {items: [{item_id: ж-11682@theoriginals.com.ua, slot: scarf, colour: синій, photo: білий, name: «Шовкова хустка в синій принт»}]} + cannot_tell_item_off_palette ; K-PAL-15: colour_word_shop_photo_other {items: [{item_id: ж-11682@theoriginals.com.ua, slot: scarf, colour: синій, photo: білий, name: «Шовкова хустка в синій принт»}]} + cannot_tell_look_follows_her_combinations → «На картці хустка виглядає білою, а на фото — синьою. Не можу сказати, чи контрастність образу збігається з твоєю. Тому я не можу сказати, чи цей предмет нейтральний за кольором. Не можу сказати, чи він достатньо яскравий для акцентної ролі. Я не знаю, чи відповідає колір цього предмета обраній палітрі. Тому я не можу сказати, чи цей предмет знаходиться поза твоєю палітрою кольорів. Не знаю, чи контрастність образу збігається з твоєю. Я не знаю, чи походить колір цього предмета від твоїх очей. Тому я не можу сказати, чи кольори в образі відповідають логіці твоїх комбінацій.»","K-COL-01: cannot_tell_lightness_structure {items: [{item_id: ж-10262@brenda.ua, slot: shoes, name: «Кеди шкіряні (Other Brand)»}, {item_id: ж-11585@theoriginals.com.ua, slot: bag, name: «Мінісумка з текстурованої шкіри»}, {item_id: ж-11682@theoriginals.com.ua, slot: scarf, name: «Шовкова хустка в синій принт»}]} · on_expand","K-COL-06: colour_word_shop_photo_other {items: [{item_id: ж-11682@theoriginals.com.ua, slot: scarf, colour: синій, photo: білий, name: «Шовкова хустка в синій принт»}]} + cannot_tell_two_different_whites {items: [{item_id: ж-10262@brenda.ua, slot: shoes, name: «Кеди шкіряні (Other Brand)»}, {item_id: ж-11682@theoriginals.com.ua, slot: scarf, name: «Шовкова хустка в синій принт»}]} · on_expand","K-KOH-02: item_formality_unknown → «Не можу визначити рівень формальності цих предметів.»","K-PC-05: which_white_suits_unknown · for_all","K-SIZ-02: size_is_label_not_fit {sizes: [{slot: bottom, range: 34–40}]} → «Розмір вказаний як діапазон, але невідомо, чи він тобі підійде.»","R-FEED-01: photo_shows_other_colour {items: [{item_id: ж-11682@theoriginals.com.ua, slot: scarf, colour: blue, photo: white, name: «Шовкова хустка в синій принт»}]} → «На картці хустка виглядає білою, а на фото — синьою.»","R-FP-07: cut_from_photo_shop_differs {items: [{item_id: ж-02402@25union.com.ua, slot: top, shop: straight, photo: bodycon, name: «Майка з відкритими плечима нідея сіра»}]} → «Крій на фото відрізняється від того, що вказано у магазині: там straight, а тут bodycon.»","K-CRA-12: scarf_size_unknown {item: «Шовкова хустка в синій принт», item_id: ж-11682@theoriginals.com.ua} → «Не знаю розмір хустки — не можу сказати, які вузли та способи носіння можливі.»","K-ACC-07: scarf_near_face_way_unknown {item: «Шовкова хустка в синій принт», ways: [neck, hair, shoulders], item_id: ж-11682@theoriginals.com.ua} → «Ти ще не обрала спосіб носити цю хустку біля обличчя.»","K-ACC-12: wear_way_not_chosen {item: «Мінісумка з текстурованої шкіри», ways: [hand, shoulder, crossbody], item_id: ж-11585@theoriginals.com.ua} ; K-ACC-12: wear_way_not_chosen {item: «Шовкова хустка в синій принт», ways: [neck, hair, shoulders, waist, bag_handle, wrist, as_top], item_id: ж-11682@theoriginals.com.ua} → «Ти ще не обрала, як носити сумку. Ти ще не обрала спосіб носити хустку.»","K-SHO-11: calf_girth_not_measured · for_all","K-SHO-09: leg_proportion_template_crotch · for_all","K-END-01: wear_cost_no_duration_surface · for_all","K-REG-03: items_register_unknown {count: 2} → «Я не можу визначити стиль двох предметів з твого образу, бо їх картки не містять потрібних слів.»","площа: areas_not_measured · for_all","K-BOD-05: vertical_balance_not_judged · for_all","K-SIZ-01: no_input_hand_finger_neck_sizes · for_all","K-EYE-01: no_input_frame_size · for_all","K-WCH-01: no_input_watch_size · for_all","K-GLV-01: no_input_glove_size · for_all","K-HAT-01: no_input_hat_girth · for_all","K-ACC-03: no_input_hardware_metal · for_all","K-ACC-08: no_input_scarf_chosen_last · for_all","K-ACC-11: no_input_pocket_square · for_all","K-EYE-04: no_input_lens_prescription · for_all","K-SCL-01: no_input_facial_feature_scale · for_all","K-JEW-03: no_input_stone_clarity_band_width · for_all","K-ACC-09: no_input_brooch_weight · for_all","K-HAT-02: no_input_hat_brim_vs_cheekbones · for_all","K-SHO-06: no_input_shoes_formality_outlier_rule · for_all","K-SHO-12: no_input_toe_shape · for_all","K-REG-02: her_register_unknown · for_all"],"тексти_питань":["Довжина взуття не перевірена. Здається, край верху може лягти на найширше місце стегон.","Довжина взуття не перевірена. Я ще не знаю довжину твоєї стопи. На жаль, я не можу дізнатися довжину устілки цих сандалів.","Довжина взуття не перевірена, адже низ закриває ногу.","На картці хустка виглядає білою, а на фото — синьою. Не можу сказати, чи контрастність образу збігається з твоєю. Тому я не можу сказати, чи цей предмет нейтральний за кольором. Не можу сказати, чи він достатньо яскравий для акцентної ролі. Я не знаю, чи відповідає колір цього предмета обраній палітрі. Тому я не можу сказати, чи цей предмет знаходиться поза твоєю палітрою кольорів. Не знаю, чи контрастність образу збігається з твоєю. Я не знаю, чи походить колір цього предмета від твоїх очей. Тому я не можу сказати, чи кольори в образі відповідають логіці твоїх комбінацій.","Не можу визначити рівень формальності цих предметів.","Розмір вказаний як діапазон, але невідомо, чи він тобі підійде.","На картці хустка виглядає білою, а на фото — синьою.","Крій на фото відрізняється від того, що вказано у магазині: там straight, а тут bodycon.","Не знаю розмір хустки — не можу сказати, які вузли та способи носіння можливі.","Ти ще не обрала спосіб носити цю хустку біля обличчя.","Ти ще не обрала, як носити сумку. Ти ще не обрала спосіб носити хустку.","Я не можу визначити стиль двох предметів з твого образу, бо їх картки не містять потрібних слів."],"питань_з_пам_яті":1,"схема":{"вийшла":false,"основа":{"база":"м'ятний·холодна·68·приглушені","на_великій":"ні","одягу_у_пулі":{"так":0,"невідомо":17}}},"питань_від_шару":11}
+
+ПЛАНУВАЛЬНИК · збирання → чотири картки · стінний 313.1 с · викликів 23 · спроб 23 · обривів 0 (HTTP 599 стенда 0) · повторів 0 · черга 29.7 с · модель 1055.9 с · токени вхід 257525 / кеш 0 / вихід 13519 · обрізано 0 · одночасно 4
+   · мова — викликів 9 · модель 397.3 с (найдовший 61.3) · черга 29.7 с · вхід ≤ 14721 симв. · стеля виводу 4000 · токени 21836/5277
+   · ITEM_LIST — викликів 2 · модель 161.7 с (найдовший 81.3) · черга 0 с · вхід ≤ 2568 симв. · стеля виводу 4000 · токени 1208/655
+   · OUTFITS_V1 — викликів 2 · модель 150 с (найдовший 78) · черга 0 с · вхід ≤ 141846 симв. · стеля виводу 4000 · токени 78099/3161
+   · OUTFITS_V1 · пул — викликів 2 · модель 88.7 с (найдовший 55.8) · черга 0 с · вхід ≤ 141071 симв. · стеля виводу 2800 · токени 98799/1919
+   · COMPLETION_V1 — викликів 2 · модель 77.6 с (найдовший 43.3) · черга 0 с · вхід ≤ 34815 симв. · стеля виводу 4000 · токени 18562/638
+   · OUTFIT_TEXT — викликів 2 · модель 65.4 с (найдовший 33.3) · черга 0 с · вхід ≤ 2355 симв. · стеля виводу 4000 · токени 1118/458
+   · CHOICE_V1 — викликів 2 · модель 63.9 с (найдовший 38.6) · черга 0 с · вхід ≤ 39726 симв. · стеля виводу 4000 · токени 17413/305
+   · DESCRIPTION_V1 — викликів 2 · модель 51.2 с (найдовший 30.3) · черга 0 с · вхід ≤ 22612 симв. · стеля виводу 4000 · токени 20490/1106
+  ✔ чотири картки, жодного збою
+   П-7 діагноз вибору палітри: ["palette · choice · scheme=тональна · scheme_by=stylist · scheme_rank=1 · base=м'ятний · base_by=stylist · base_rank=3 · base_why=why_first_advice,why_her_eyes · gamut=приглушені · gamut_by=stylist","palette · choice · rejected=reason_outside_list:native_to_her_soft_contrast · taken=none","palette · choice · same_as=palette_screen"]
+  ✔ що код почув від моделі й не взяв — рядком у звіті власника (1)
+  ✔ руки 1–2: дві ітерації + вибір + опис (ітерацій 3, викликів ≥ 4); руки 3–4: складання + перелік речей (2, ітерацій 0)
+  ✗ руки 3–4: кожна річ переліку названа в прозі, і жодна названа не загубилась  →  {"речі_поза_прозою":[["4","shoes"]],"названо_на_картці":[["3","6","6",0],["4","4","4",0]],"назви":[["3",["Блузка","Штани","Піджак","Лофери","Сережки","Ланцюжок"]],["4",["блейзер","блуза","штани","взуття"]]]}
+  ✔ руки 1–2: речі з фото й цінами, окрім тих, у яких свого знімка в каталозі нема (арка); руки 3–4: речі без фото (Р-4 не вирішено — картки різняться)
+  ✔ на жодній картці нема «#N·MM», hex чи кодів правил
+  ✔ на жодній картці нема id вигаданої речі рук 3–4 («м-NNN»)
+  ✔ на жодній картці нема `repr` словника чи списку («{'», «[{», «"statements"»)
+  ✔ картки рук 3–4: латиниці на видимому тексті нема — англійську моделі жінці пише лише шар (П-3)
+  ✔ проза всіх чотирьох карток є і не чужою мовою (сторож продукту на видимому тексті, МШ-1)
+  ✔ на жодній картці нема сирого JSON переліку (дужки, ```)
+  ✔ картки рук 1–2 і 3–4 відрізняються з першого погляду (рядок «Разом», кнопка «не ця») — ціна Р-4
+  ✔ на картку йде лише образ, який код прийняв
+   діагноз прогону (30 рядків):
+     · passport · place_words_without_place · step=layer · field=place_words · model_said="Офіс" · code=not_taken
+     · chat · dropped · part=invite · why=no_invite
+     · chat · moved · update.formality.step_code
+     · palette · choice · scheme=тональна · scheme_by=stylist · scheme_rank=1 · base=м'ятний · base_by=stylist · base_rank=3 · base_why=why_first_advice,why_her_eyes · gamut=приглушені · gamut_by=stylist
+     · palette · choice · rejected=reason_outside_list:native_to_her_soft_contrast · taken=none
+     · palette · choice · same_as=palette_screen
+     · pool · cuts=set_only_in_own_slot=147,no_photo_none_opened=107,no_photo_other_items_only=5,not_clothing_for_occasion=7,no_price=3,no_photo_feed_gave_none=1,sport_or_beach_below_event_level=19
+     · control · hand_2_broken=rule_off · drawn_from=K-ACC-01,K-BOD-02,K-COL-06-M,K-CRA-01,K-FIT-03,K-KOH-02,K-PAL-18,K-REG-01,K-SIL-03,R-MUA-02
+     · control · trace · breakage=правило · packet_fields=ноти_слотів,правила,слоти_випали · brief_rows_changed=1
+     · control · no_input=R-COL-16=особа.бік_b.вхід: eyes_give_no_side | K-OUT-33=сценарій.темп_c: none_or_cold_suppresses_draped | K-SHO-16=сценарій.тривалість_год|поверхня: none | K-MAT-03=сценарій.темп_c: none
+     · hand_3 · items_source=separate_call · model_named=6 · on_card=6
+     · hand_4 · items_source=separate_call · model_named=4 · on_card=4
+     · hand_2 · repair · read_with_normalisation=number_read_as_enum_word: версія
+     · hand_1 · completeness_repair · before_choice · attempt=1 · with_holes=5 · outfits=5 · without_blockers=0→5 · untouched=0
+     · hand_4 · layer · dir=out · model=mamaylm-gemma-3-12b-it-v2.0 · ms=49421 · texts=5 · changed=5
+     · hand_2 · completeness_repair · before_choice · attempt=1 · with_holes=2 · outfits=2 · without_blockers=0→2 · untouched=0
+     · hand_1 · choice_gates_accepted · outfit=о2 · rules=K-KOH-02
+     · hand_3 · layer · dir=out · model=mamaylm-gemma-3-12b-it-v2.0 · ms=43925 · texts=7 · changed=7
+     · hand_3.retry · layer · dir=out · model=mamaylm-gemma-3-12b-it-v2.0 · ms=37176 · texts=1 · changed=1 · notes=input_form_read
+     · hand_2 · choice_gates_accepted · outfit=о4 · rules=K-REG-01
+     · hand_2 · remove_not_done · item=#177·32 · why=у своєму слоті вона одна, а прибирати дозволено лише другу річ у слоті
+     · hand_1 · code_unknown=K-SHO-13: shoe_size_not_checked {item: «LeBERDES Сандалі бежеві», item_id: ж-09974@favoriteshoes.com.ua} + her_foot_length_unknown + item_insole_length_unknown | K-COL-01: cannot_tell_lightness_stru
+     · hand_2 · description · read_with_normalisation=number_read_as_enum_word: версія
+     · hand_2 · code_unknown=K-FIT-03: item_length_unknown_edge_default {slots: [shoes]} | K-FIT-03: length_word_edge_may_land_on_widest {slot: top, length: «стегно», level: hips} | K-SHO-13: shoe_size_not_checked {item: «Кеди 
+     · hand_1.code_unknowns · layer · dir=out_messages · model=mamaylm-gemma-3-12b-it-v2.0 · ms=34225 · messages=8 · said=15
+     · hand_1 · layer · dir=out_messages · model=mamaylm-gemma-3-12b-it-v2.0 · ms=18663 · messages=1 · said=1
+     · hand_1 · layer · dir=out · model=mamaylm-gemma-3-12b-it-v2.0 · ms=51931 · texts=12 · changed=12
+     · hand_2.code_unknowns · layer · dir=out_messages · model=mamaylm-gemma-3-12b-it-v2.0 · ms=64687 · messages=11 · said=23
+     · hand_2 · layer · dir=out_messages · model=mamaylm-gemma-3-12b-it-v2.0 · ms=43688 · messages=2 · said=3
+     · hand_2 · layer · dir=out · model=mamaylm-gemma-3-12b-it-v2.0 · ms=83306 · texts=10 · changed=10
+   рука 3 — код не знає (0): 
+   рука 4 — код не знає (0): 
+   рука 1 — код не знає (30): K-SHO-13: shoe_size_not_checked {item: «LeBERDES Сандалі бежеві», item_id: ж-09974@favoriteshoes.com.ua} + her_foot_length_unknown + item_insole_length_unknown → «Зараз я не можу перевірити, чи підходить тобі розмір цих бежевих сандалів LeBERDES. Я ще не знаю довжину твоєї стопи. На жаль, я не можу дізнатися довжину устілки цих сандалів.» | K-COL-01: cannot_tell_lightness_structure {items: [{item_id: ж-07624@likeangel.com.ua, slot: belt, name: «Пасок металевий Кільця золото»}, {item_id: ж-08262@miraton.ua, slot: bag, name: «Жіноча сумка хобо шкіряна молочна»}, {item_id: ж-09974@favoriteshoes.com.ua, slot: shoes, name: «LeBERDES Сандалі бежеві»}]} · on_expand | K-COL-06: colour_word_shop {items: [{item_id: ж-07624@likeangel.com.ua, slot: belt, colour: золотий, name: «Пасок металевий Кільця золото»}]} + cannot_tell_item_is_neutral ; K-PAL-03: colour_word_shop {items: [{item_id: ж-07624@likeangel.com.ua, slot: belt, colour: золотий, name: «Пасок металевий Кільця золото»}]} + cannot_tell_item_holds_scheme_hue ; K-PAL-09: colour_word_shop {items: [{item_id: ж-07624@likeangel.com.ua, slot: belt, colour: золотий, name: «Пасок металевий Кільця золото»}]} + cannot_tell_item_off_palette ; K-PAL-02: colour_word_shop {items: [{item_id: ж-07624@likeangel.com.ua, slot: belt, colour: золотий, name: «Пасок металевий Кільця золото»}]} + cannot_tell_colour_from_eyes ; K-PAL-15: colour_word_shop {items: [{item_id: ж-07624@likeangel.com.ua, slot: belt, colour: золотий, name: «Пасок металевий Кільця золото»}]} + cannot_tell_look_follows_her_combinations → «Я знаю колір цього золотого металевого паска лише з назви в магазині. Тому я не можу сказати, чи цей предмет нейтральний за кольором. Я не знаю, чи відповідає колір цього предмета обраній палітрі. Тому я не можу сказати, чи цей предмет знаходиться поза твоєю палітрою кольорів. Я не знаю, чи походить колір цього предмета від твоїх очей. Тому я не можу сказати, чи кольори в образі відповідають логіці твоїх комбінацій.» | K-PC-05: which_white_suits_unknown · for_all | K-SIZ-02: size_is_label_not_fit {sizes: [{slot: dress, range: XS–XL}]} → «Я знаю лише розмір цього плаття за позначкою магазину, але не можу сказати, чи воно тобі підійде по фігурі.» | R-FEED-06: photo_shared_by_other_products {count: 2, items: [{item_id: ж-07624@likeangel.com.ua, slot: belt, shop: likeangel.com.ua, unknown: [cut, length, fabric, pattern, shine], name: «Пасок металевий Кільця золото»}]} → «Ця фотографія з паском металевим Кільця золото використовується ще на двох інших товарах в магазині likeangel.com.ua, тому вимірювання можуть не відповідати саме цьому предмету.» | K-KOH-07: item_below_occasion_band_explained {reason: item_below_band, band: [5, 6], by: deliberate} → «Цей предмет більш повсякденний, ніж рівень цієї події, але я знаю, що ти свідомо зробила такий вибір.» | K-ACC-12: wear_way_not_chosen {item: «Жіноча сумка хобо шкіряна молочна», ways: [hand, shoulder, crossbody], item_id: ж-08262@miraton.ua} → «Ти ще не обрала спосіб носіння цієї молочної шкіряної сумки хобо: в руці, на плечі чи через тіло.» | K-SHO-11: calf_girth_not_measured · for_all | K-SHO-09: leg_proportion_template_crotch · for_all | K-END-01: wear_cost_no_duration_surface · for_all | K-REG-03: items_register_unknown {count: 2} → «Я не можу визначити стиль двох предметів з твого образу, бо їх картки не містять потрібних слів.» | K-BOD-05: vertical_balance_not_judged · for_all | K-SIZ-01: no_input_hand_finger_neck_sizes · for_all | K-EYE-01: no_input_frame_size · for_all | K-WCH-01: no_input_watch_size · for_all | K-GLV-01: no_input_glove_size · for_all | K-HAT-01: no_input_hat_girth · for_all | K-ACC-03: no_input_hardware_metal · for_all | K-ACC-08: no_input_scarf_chosen_last · for_all | K-ACC-11: no_input_pocket_square · for_all | K-EYE-04: no_input_lens_prescription · for_all | K-SCL-01: no_input_facial_feature_scale · for_all | K-JEW-03: no_input_stone_clarity_band_width · for_all | K-ACC-09: no_input_brooch_weight · for_all | K-HAT-02: no_input_hat_brim_vs_cheekbones · for_all | K-SHO-06: no_input_shoes_formality_outlier_rule · for_all | K-SHO-12: no_input_toe_shape · for_all | K-REG-02: her_register_unknown · for_all | площа: areas_not_measured · for_all
+   рука 2 — код не знає (36): K-FIT-03: item_length_unknown_edge_default {slots: [shoes]} ; K-FIT-03: length_word_edge_may_land_on_widest {slot: top, length: «стегно», level: hips} → «Довжина взуття не перевірена. Здається, край верху може лягти на найширше місце стегон.» | K-SHO-13: shoe_size_not_checked {item: «Кеди шкіряні (Other Brand)», item_id: ж-10262@brenda.ua} + her_foot_length_unknown + item_insole_length_unknown → «Довжина взуття не перевірена. Я ще не знаю довжину твоєї стопи. На жаль, я не можу дізнатися довжину устілки цих сандалів.» | K-SHO-07: shoe_cut_irrelevant_leg_covered {item: «Кеди шкіряні (Other Brand)», item_id: ж-10262@brenda.ua} → «Довжина взуття не перевірена, адже низ закриває ногу.» | K-CLR-02: colour_word_shop_photo_other {items: [{item_id: ж-11682@theoriginals.com.ua, slot: scarf, colour: синій, photo: білий, name: «Шовкова хустка в синій принт»}]} + cannot_tell_face_contrast_matches_hers ; K-COL-06: colour_word_shop_photo_other {items: [{item_id: ж-11682@theoriginals.com.ua, slot: scarf, colour: синій, photo: білий, name: «Шовкова хустка в синій принт»}]} + cannot_tell_item_is_neutral ; K-PAL-18: colour_word_shop_photo_other {items: [{item_id: ж-11682@theoriginals.com.ua, slot: scarf, colour: синій, photo: білий, name: «Шовкова хустка в синій принт»}]} + cannot_tell_accent_role_chroma ; K-PAL-03: colour_word_shop_photo_other {items: [{item_id: ж-11682@theoriginals.com.ua, slot: scarf, colour: синій, photo: білий, name: «Шовкова хустка в синій принт»}]} + cannot_tell_item_holds_scheme_hue ; K-PAL-09: colour_word_shop_photo_other {items: [{item_id: ж-11682@theoriginals.com.ua, slot: scarf, colour: синій, photo: білий, name: «Шовкова хустка в синій принт»}]} + cannot_tell_item_off_palette ; K-PAL-08: colour_word_shop_photo_other {items: [{item_id: ж-11682@theoriginals.com.ua, slot: scarf, colour: синій, photo: білий, name: «Шовкова хустка в синій принт»}]} + cannot_tell_look_contrast_matches_hers ; K-PAL-02: colour_word_shop_photo_other {items: [{item_id: ж-11682@theoriginals.com.ua, slot: scarf, colour: синій, photo: білий, name: «Шовкова хустка в синій принт»}]} + cannot_tell_colour_from_eyes ; K-PAL-10: colour_word_shop_photo_other {items: [{item_id: ж-11682@theoriginals.com.ua, slot: scarf, colour: синій, photo: білий, name: «Шовкова хустка в синій принт»}]} + cannot_tell_item_off_palette ; K-PAL-15: colour_word_shop_photo_other {items: [{item_id: ж-11682@theoriginals.com.ua, slot: scarf, colour: синій, photo: білий, name: «Шовкова хустка в синій принт»}]} + cannot_tell_look_follows_her_combinations → «На картці хустка виглядає білою, а на фото — синьою. Не можу сказати, чи контрастність образу збігається з твоєю. Тому я не можу сказати, чи цей предмет нейтральний за кольором. Не можу сказати, чи він достатньо яскравий для акцентної ролі. Я не знаю, чи відповідає колір цього предмета обраній палітрі. Тому я не можу сказати, чи цей предмет знаходиться поза твоєю палітрою кольорів. Не знаю, чи контрастність образу збігається з твоєю. Я не знаю, чи походить колір цього предмета від твоїх очей. Тому я не можу сказати, чи кольори в образі відповідають логіці твоїх комбінацій.» | K-COL-01: cannot_tell_lightness_structure {items: [{item_id: ж-10262@brenda.ua, slot: shoes, name: «Кеди шкіряні (Other Brand)»}, {item_id: ж-11585@theoriginals.com.ua, slot: bag, name: «Мінісумка з текстурованої шкіри»}, {item_id: ж-11682@theoriginals.com.ua, slot: scarf, name: «Шовкова хустка в синій принт»}]} · on_expand | K-COL-06: colour_word_shop_photo_other {items: [{item_id: ж-11682@theoriginals.com.ua, slot: scarf, colour: синій, photo: білий, name: «Шовкова хустка в синій принт»}]} + cannot_tell_two_different_whites {items: [{item_id: ж-10262@brenda.ua, slot: shoes, name: «Кеди шкіряні (Other Brand)»}, {item_id: ж-11682@theoriginals.com.ua, slot: scarf, name: «Шовкова хустка в синій принт»}]} · on_expand | K-KOH-02: item_formality_unknown → «Не можу визначити рівень формальності цих предметів.» | K-PC-05: which_white_suits_unknown · for_all | K-SIZ-02: size_is_label_not_fit {sizes: [{slot: bottom, range: 34–40}]} → «Розмір вказаний як діапазон, але невідомо, чи він тобі підійде.» | R-FEED-01: photo_shows_other_colour {items: [{item_id: ж-11682@theoriginals.com.ua, slot: scarf, colour: blue, photo: white, name: «Шовкова хустка в синій принт»}]} → «На картці хустка виглядає білою, а на фото — синьою.» | R-FP-07: cut_from_photo_shop_differs {items: [{item_id: ж-02402@25union.com.ua, slot: top, shop: straight, photo: bodycon, name: «Майка з відкритими плечима нідея сіра»}]} → «Крій на фото відрізняється від того, що вказано у магазині: там straight, а тут bodycon.» | K-CRA-12: scarf_size_unknown {item: «Шовкова хустка в синій принт», item_id: ж-11682@theoriginals.com.ua} → «Не знаю розмір хустки — не можу сказати, які вузли та способи носіння можливі.» | K-ACC-07: scarf_near_face_way_unknown {item: «Шовкова хустка в синій принт», ways: [neck, hair, shoulders], item_id: ж-11682@theoriginals.com.ua} → «Ти ще не обрала спосіб носити цю хустку біля обличчя.» | K-ACC-12: wear_way_not_chosen {item: «Мінісумка з текстурованої шкіри», ways: [hand, shoulder, crossbody], item_id: ж-11585@theoriginals.com.ua} ; K-ACC-12: wear_way_not_chosen {item: «Шовкова хустка в синій принт», ways: [neck, hair, shoulders, waist, bag_handle, wrist, as_top], item_id: ж-11682@theoriginals.com.ua} → «Ти ще не обрала, як носити сумку. Ти ще не обрала спосіб носити хустку.» | K-SHO-11: calf_girth_not_measured · for_all | K-SHO-09: leg_proportion_template_crotch · for_all | K-END-01: wear_cost_no_duration_surface · for_all | K-REG-03: items_register_unknown {count: 2} → «Я не можу визначити стиль двох предметів з твого образу, бо їх картки не містять потрібних слів.» | площа: areas_not_measured · for_all | K-BOD-05: vertical_balance_not_judged · for_all | K-SIZ-01: no_input_hand_finger_neck_sizes · for_all | K-EYE-01: no_input_frame_size · for_all | K-WCH-01: no_input_watch_size · for_all | K-GLV-01: no_input_glove_size · for_all | K-HAT-01: no_input_hat_girth · for_all | K-ACC-03: no_input_hardware_metal · for_all | K-ACC-08: no_input_scarf_chosen_last · for_all | K-ACC-11: no_input_pocket_square · for_all | K-EYE-04: no_input_lens_prescription · for_all | K-SCL-01: no_input_facial_feature_scale · for_all | K-JEW-03: no_input_stone_clarity_band_width · for_all | K-ACC-09: no_input_brooch_weight · for_all | K-HAT-02: no_input_hat_brim_vs_cheekbones · for_all | K-SHO-06: no_input_shoes_formality_outlier_rule · for_all | K-SHO-12: no_input_toe_shape · for_all | K-REG-02: her_register_unknown · for_all
+   картка: [["",0,true],["",0,true],["За цим посиланням ти знайдеш список того, що я ще не можу перевірити в цьому образі. · 8",7,true],["За цим посиланням ти знайдеш список того, що я ще не можу перевірити в цьому образі. · 14",12,true]]
+  ✔ блок «що не перевірено» є там і лише там, де шар дав речення; згорнутий, підпис — слова шару й число рядків, без «код»
+  ✔ розгорнутий перелік — усі речення шару (без стелі, п.9; рядок 1447)
+  ✔ кожне «код не знає» доїхало до шару, і шар відповів на кожне
+   «код не знає» для картки / на розгортання / лише у звіті (для_всіх) / усього: [["3",0,0,0,0,null],["4",0,0,0,0,null],["1",7,1,22,30,"За цим посиланням ти знайдеш список того, що я ще не можу перевірити в цьому образі."],["2",12,2,22,36,"За цим посиланням ти знайдеш список того, що я ще не можу перевірити в цьому образі."]]
+   «код не знає», питання з пам'яті: {"питань":5,"з_пам_яті":5,"записів":0,"без_тексту":0}
+  ✔ питання, яких картці не ставили вдруге, — з пам'яті: виклику шару нема, число лягло в картку
+  ✔ жива модель шару: кожне питання дійшло до картки українським реченням
+  ✔ у блоці «код не знає» — лише речення шару: жодного коду заяви, ключа з підкресленням чи ID правила
+  ✔ дотик по «код не знає» діє на всі картки з переліком і переживає перемальовування
+  ✔ суд лише в руках 1–2: руки 3/4 без знахідок і без питань «код не знає»
+   ⊘ зовнішній запит: https://25union.com.ua/image/cache/wp/gj/tovar/246-majka-z-vidkritimi-plechima-nideya/22193-999x999.
+   ⊘ зовнішній запит: https://twice.com.ua/22994-large_default/dzhinsi-straight-sirij-st-708.webp
+   ⊘ зовнішній запит: https://brenda.ua/image/cache/catalog/25.08.24/203-1200x1800.jpg
+   ⊘ зовнішній запит: https://images.theoriginals.com.ua/cache/catalog/product_photo/83295/mini-sumka-iz-teksturirovannoi-
+   знімок: C:\tmp\z2610_out\ж1_робота\знімки\kartka_87_seed3_zgornuto.png 190592 Б
+   знімок: C:\tmp\z2610_out\ж1_робота\знімки\kartka_87_seed3_rozgornuto.png 250879 Б
+   знімок: C:\tmp\z2610_out\ж1_робота\знімки\kartka_m001_seed3_ruka3_rozgornuto.png 108632 Б
+   знімок: C:\tmp\z2610_out\ж1_робота\знімки\kartka_poz0_ruka3_seed3.png 106794 Б
+   плитки kartka_poz0_ruka3: {"плиток":0,"img_у_центрі":0,"без_img":[]}
+   знімок: C:\tmp\z2610_out\ж1_робота\знімки\kartka_poz1_ruka4_seed3.png 95494 Б
+   плитки kartka_poz1_ruka4: {"плиток":0,"img_у_центрі":0,"без_img":[]}
+   ↔ модель #29 мовний шар (4347 симв., разом 4506) → 2.8 с · HTTP 200 · 207 симв.
+   знімок: C:\tmp\z2610_out\ж1_робота\знімки\kartka_poz2_ruka1_seed3.png 142105 Б
+   плитки kartka_poz2_ruka1: {"плиток":4,"img_у_центрі":0,"без_img":[0,1,2,3]}
+   знімок: C:\tmp\z2610_out\ж1_робота\знімки\kartka_poz3_ruka2_seed3.png 190006 Б
+   плитки kartka_poz3_ruka2: {"плиток":5,"img_у_центрі":0,"без_img":[0,1,2,3,4]}
+   фото карток: C:\tmp\z2610_out\ж1_робота\знімки\фото_карток.txt 1000 Б · прийшло 0 з 6 · без FOTO=1 мережі нема
+   видимий текст карток: C:\tmp\z2610_out\ж1_робота\знімки\картки.txt 16519 Б · «ші» у видимому тексті карток: 0/0/0/0
+   знімок: C:\tmp\z2610_out\ж1_робота\знімки\spysok_kartok_seed3.png 202699 Б
+
+3. промптів до моделі: 30 {"мовний шар: хід розмови":1,"мовний шар: ремонт поради":1,"мовний шар":13,"вибір палітри (стилістка)":1,"ПАКЕТ_V1→ОБРАЗИ_V1":2,"проза: рука 3/4":2,"ВЕРДИКТ_V1→ОБРАЗИ_V1":2,"перелік речей (руки 3–4)":2,"ПОВНОТА→ДОПОВНЕННЯ_V1":2,"ВЕРДИКТ_V1→ВИБІР_V1":2,"ОПИС_V1→ОПИС_ВІДПОВІДЬ_V1":2}
+   розмір запитів (симв. разом із base64 фото; стеля моста 400000):
+     # 1 мовний шар: хід розмови                  текст   35930 · фото 0 · разом   37163
+     # 2 мовний шар: ремонт поради                текст    3285 · фото 0 · разом    3540
+     # 3 мовний шар                               текст   11612 · фото 0 · разом   12615
+     # 4 вибір палітри (стилістка)                текст   14498 · фото 0 · разом   16391
+     # 5 мовний шар                               текст    6861 · фото 0 · разом    7315
+     # 6 ПАКЕТ_V1→ОБРАЗИ_V1                       текст  127342 · фото 0 · разом  141071
+     # 7 проза: рука 3/4                          текст    2192 · фото 0 · разом    2355
+     # 8 проза: рука 3/4                          текст    1852 · фото 0 · разом    1977
+     # 9 ПАКЕТ_V1→ОБРАЗИ_V1                       текст  124417 · фото 0 · разом  138662
+     #10 ВЕРДИКТ_V1→ОБРАЗИ_V1                     текст  110772 · фото 0 · разом  125173
+     #11 перелік речей (руки 3–4)                 текст    2421 · фото 0 · разом    2568
+     #12 перелік речей (руки 3–4)                 текст    2358 · фото 0 · разом    2504
+     #13 ВЕРДИКТ_V1→ОБРАЗИ_V1                     текст  125163 · фото 0 · разом  141846
+     #14 ПОВНОТА→ДОПОВНЕННЯ_V1                    текст   30508 · фото 0 · разом   34815
+     #15 мовний шар                               текст    6399 · фото 0 · разом    6526
+     #16 мовний шар                               текст    5990 · фото 0 · разом    6102
+     #17 ПОВНОТА→ДОПОВНЕННЯ_V1                    текст   20788 · фото 0 · разом   23435
+     #18 ВЕРДИКТ_V1→ВИБІР_V1                      текст   35327 · фото 0 · разом   39726
+     #19 мовний шар                               текст    6599 · фото 0 · разом    6700
+     #20 ВЕРДИКТ_V1→ВИБІР_V1                      текст   20168 · фото 0 · разом   22185
+     #21 ОПИС_V1→ОПИС_ВІДПОВІДЬ_V1                текст   14821 · фото 7 · разом   17559
+     #22 ОПИС_V1→ОПИС_ВІДПОВІДЬ_V1                текст   19173 · фото 8 · разом   22612
+     #23 мовний шар                               текст    3631 · фото 0 · разом    3722
+     #24 мовний шар                               текст    9976 · фото 0 · разом   10586
+     #25 мовний шар                               текст    7878 · фото 0 · разом    8018
+     #26 мовний шар                               текст    5360 · фото 0 · разом    5630
+     #27 мовний шар                               текст   13767 · фото 0 · разом   14721
+     #28 мовний шар                               текст    8301 · фото 0 · разом    8432
+     #29 мовний шар                               текст    4347 · фото 0 · разом    4506
+     #30 мовний шар                               текст    5077 · фото 0 · разом    5305
+  ✔ жоден запит не переріс стелю моста (наряд Л-2: код зменшує фото сам)
+  ✔ запит із її фото коштує більше за свій текст, і різниця видна (фото справді поїхали)
+   розміри запитів: C:\tmp\z2610_out\ж1_робота\знімки\розміри_запитів_seed3.txt
+  ✔ кожен промпт ітерацій 1–2, вибору й опису — один JSON-обʼєкт
+  ✔ опис іде з фото речей (блоки image у виклику 4)
+  ✔ невідомих промптів нема
+   мовний шар: модель mamaylm-gemma-3-12b-it-v2.0 · викликів у картках 10 · текстів 58, змінено 58 · без відповіді 0 · мс 43925/37176/49421/34225/18663/51931/2786/64687/43688/83306 · реплік чату з записами шару 1 з 1
+     · hand_3 · опис: Cream silk blouse in a relaxed fit, knee-length hemline, #F5F0E6 color, woven silk.
+Charcoal wool-blend wide-leg trouser
+         → Шовкова блузка кремового кольору вільного крою, довжина до коліна, [colour: white] колір, тканий шовк.
+Штани широкі з во
+     · hand_3 · річ.0.назва: Blouse
+         → Блузка
+     · hand_3 · річ.1.назва: Trousers
+         → Штани
+     · hand_3 · річ.2.назва: Blazer
+         → Піджак
+     · hand_3 · річ.3.назва: Loafers
+         → Лофери
+     · hand_3 · річ.4.назва: Earrings
+         → Сережки
+     · hand_3 · річ.5.назва: Necklace
+         → Ланцюжок
+     · hand_3.retry · опис: Шовкова блузка кремового кольору вільного крою, довжина до коліна, [colour: white] колір, тканий шовк.
+Штани широкі з во
+         → Шовкова блузка кремового кольору вільного крою, довжина до коліна, білий колір, тканий шовк.
+Штани широкі з вовняної сум
+     · hand_4 · опис: A structured wool-blend blazer, boxy cut, knee-length, deep charcoal grey with code #36454F.
+A silk-poplin blouse, relax
+         → Вовняний блейзер з додаванням синтетичних волокон, структурованого крою, довжиною до коліна, глибокого вугільно-сірого к
+     · hand_4 · річ.0.назва: blazer
+         → блейзер
+     · hand_4 · річ.1.назва: blouse
+         → блуза
+     · hand_4 · річ.2.назва: trousers
+         → штани
+     · hand_4 · річ.3.назва: shoes
+         → взуття
+     · hand_1.code_unknowns · питання.0: {"kind":"card_unchecked","statements":[{"code":"shoe_size_not_checked","values":{"item":{"free_text":"LeBERDES Сандалі б
+         → Зараз я не можу перевірити, чи підходить тобі розмір цих бежевих сандалів LeBERDES. Я ще не знаю довжину твоєї стопи. На
+     · hand_1.code_unknowns · питання.2: {"kind":"card_unchecked","statements":[{"code":"colour_word_shop","values":{"items":[{"item_id":"ж-07624@likeangel.com.u
+         → Я знаю колір цього золотого металевого паска лише з назви в магазині. Тому я не можу сказати, чи цей предмет нейтральний
+     · hand_1.code_unknowns · питання.4: {"kind":"card_unchecked","statements":[{"code":"size_is_label_not_fit","values":{"sizes":[{"slot":"dress","range":"XS–XL
+         → Я знаю лише розмір цього плаття за позначкою магазину, але не можу сказати, чи воно тобі підійде по фігурі.
+     · hand_1.code_unknowns · питання.5: {"kind":"card_unchecked","statements":[{"code":"photo_shared_by_other_products","values":{"count":2,"items":[{"item_id":
+         → Ця фотографія з паском металевим Кільця золото використовується ще на двох інших товарах в магазині likeangel.com.ua, то
+     · hand_1.code_unknowns · питання.6: {"kind":"card_unchecked","statements":[{"code":"item_below_occasion_band_explained","values":{"reason":"item_below_band"
+         → Цей предмет більш повсякденний, ніж рівень цієї події, але я знаю, що ти свідомо зробила такий вибір.
+     · hand_1.code_unknowns · питання.7: {"kind":"card_unchecked","statements":[{"code":"wear_way_not_chosen","values":{"item":{"free_text":"Жіноча сумка хобо шк
+         → Ти ще не обрала спосіб носіння цієї молочної шкіряної сумки хобо: в руці, на плечі чи через тіло.
+     · hand_1.code_unknowns · питання.11: {"kind":"card_unchecked","statements":[{"code":"items_register_unknown","values":{"count":2},"recipient":"woman","source
+         → Я не можу визначити стиль двох предметів з твого образу, бо їх картки не містять потрібних слів.
+     · hand_1.code_unknowns · кнопка: {"kind":"card_unknowns_toggle","statements":[{"code":"unchecked_in_this_look"}]}
+         → За цим посиланням ти знайдеш список того, що я ще не можу перевірити в цьому образі.
+     · hand_1 · кадр_не_відкрився: {"kind":"no_photo_reason","statements":[{"code":"no_photo_frames_did_not_open"}]}
+         → Я не можу відкрити фотографії цього товару.
+     · hand_1 · про_річ.0: This is a mint green slip dress made from soft, lustrous satin that drapes elegantly. Its straight cut and V-neckline cr
+         → Це м’ятно-зелена сукня-комбінація з ніжного, блискучого сатину, яка елегантно драпірується. Її прямий крій і V-подібний 
+     · hand_1 · про_річ.1: A golden metal belt featuring a design of interlocking rings. It serves as a structural accessory to cinch your waist an
+         → Золотий металевий пасок з дизайном у вигляді переплетених кілець. Він слугує структурним аксесуаром, щоб підкреслити тво
+     · hand_1 · про_річ.2: A structured, creamy milky leather hobo bag with a wide shoulder strap. Its smooth texture and neutral color make it a p
+         → Структурована молочно-біла шкіряна сумка хобо з широким плечовим ременем. Її гладка текстура і нейтральний колір роблять
+     · hand_1 · про_річ.3: Beige platform sandals with multiple straps and buckles across the foot and ankle. The thick sole adds height and stabil
+         → Бежеві босоніжки на платформі з кількома ремінцями та пряжками на стопі й щиколотці. Товста підошва додає висоти і стійк
+     · hand_1 · опис: Your mint silk slip dress is the perfect foundation for a chic workday, offering a soft drape that feels luxurious witho
+         → Твоя м’ятна шовкова сукня-комбінація — це ідеальна основа для елегантного робочого дня, пропонуючи ніжний драпірувальний
+     · hand_1 · як_носити.0: Tuck the dress in or cinch it with the belt to create a defined waistline that accentuates your X-shape figure.
+         → Заправ сукню всередину або затягни її паском, щоб створити окреслену лінію талії, що підкреслює твою фігуру у формі пісо
+     · hand_1 · як_носити.1: Wear the gold metal details of the belt and sandals as the primary metallic accent for an office-appropriate, polished f
+         → Носи золоті металеві деталі паска і босоніжок як основний металевий акцент для офіційного, вишуканого завершення образу.
+     · hand_1 · свідомі.0: Сукня Максі сатин полин — I kept this mint dress as the hero piece; its bodycon cut follows your waist and the color wor
+         → Сукня Максі сатин полин — Я залишила цю м’ятну сукню головним елементом; її облягаючий крій повторює лінію твоєї талії, 
+     · hand_1 · свідомі.1: Пасок металевий Кільця золото — I replaced the duplicate skirt slot with this emerald belt to add definition at the wais
+         → Пасок металевий Кільця золото — Я замінила дублююче місце для спідниці цим смарагдовим паском, щоб додати визначення тал
+     · hand_1 · свідомі.2: Жіноча сумка хобо шкіряна молочна — This beige hobo bag completes the outfit, providing the necessary third piece and ca
+         → Жіноча сумка хобо шкіряна молочна — Ця бежева сумка хобо завершує образ, надаючи необхідний третій елемент і переносячи 
+     · hand_1 · свідомі.3: Жіноча сумка хобо шкіряна молочна, Сукня Максі сатин полин — I accept this formality spread because the mint top and bei
+         → Жіноча сумка хобо шкіряна молочна, Сукня Максі сатин полин — Я приймаю цей формальний розкид, оскільки м’ятний верх і бе
+     · hand_1 · свідомі.4: Жіноча сумка хобо шкіряна молочна — I added this hobo bag to complete the trio; it offers a soft texture that complement
+         → Жіноча сумка хобо шкіряна молочна — Я додала цю сумку хобо, щоб доповнити трійцю; вона пропонує м’яку текстуру, яка гарм
+     · hand_1.code_unknowns · питання.1: {"kind":"card_unchecked","statements":[{"code":"cannot_tell_lightness_structure","values":{"items":[{"item_id":"ж-07624@
+         → Я не можу сказати, чи є ці речі акцентом або поверхнею в образі: пасок металевий Кільця золото, жіноча сумка хобо шкірян
+     · hand_2.code_unknowns · питання.0: {"kind":"card_unchecked","statements":[{"code":"item_length_unknown_edge_default","values":{"slots":["shoes"]},"recipien
+         → Довжина взуття не перевірена. Здається, край верху може лягти на найширше місце стегон.
+     · hand_2.code_unknowns · питання.1: {"kind":"card_unchecked","statements":[{"code":"shoe_size_not_checked","values":{"item":{"free_text":"Кеди шкіряні (Othe
+         → Довжина взуття не перевірена. Я ще не знаю довжину твоєї стопи. На жаль, я не можу дізнатися довжину устілки цих сандалі
+     · hand_2.code_unknowns · питання.2: {"kind":"card_unchecked","statements":[{"code":"shoe_cut_irrelevant_leg_covered","values":{"item":{"free_text":"Кеди шкі
+         → Довжина взуття не перевірена, адже низ закриває ногу.
+     · hand_2.code_unknowns · питання.3: {"kind":"card_unchecked","statements":[{"code":"colour_word_shop_photo_other","values":{"items":[{"item_id":"ж-11682@the
+         → На картці хустка виглядає білою, а на фото — синьою. Не можу сказати, чи контрастність образу збігається з твоєю. Тому я
+     · hand_2.code_unknowns · питання.6: {"kind":"card_unchecked","statements":[{"code":"item_formality_unknown","values":{},"recipient":"woman","source":"unknow
+         → Не можу визначити рівень формальності цих предметів.
+     · hand_2.code_unknowns · питання.8: {"kind":"card_unchecked","statements":[{"code":"size_is_label_not_fit","values":{"sizes":[{"slot":"bottom","range":"34–4
+         → Розмір вказаний як діапазон, але невідомо, чи він тобі підійде.
+     · hand_2.code_unknowns · питання.9: {"kind":"card_unchecked","statements":[{"code":"photo_shows_other_colour","values":{"items":[{"item_id":"ж-11682@theorig
+         → На картці хустка виглядає білою, а на фото — синьою.
+     · hand_2.code_unknowns · питання.10: {"kind":"card_unchecked","statements":[{"code":"cut_from_photo_shop_differs","values":{"items":[{"item_id":"ж-02402@25un
+         → Крій на фото відрізняється від того, що вказано у магазині: там straight, а тут bodycon.
+     · hand_2.code_unknowns · питання.11: {"kind":"card_unchecked","statements":[{"code":"scarf_size_unknown","values":{"item":{"free_text":"Шовкова хустка в сині
+         → Не знаю розмір хустки — не можу сказати, які вузли та способи носіння можливі.
+     · hand_2.code_unknowns · питання.12: {"kind":"card_unchecked","statements":[{"code":"scarf_near_face_way_unknown","values":{"item":{"free_text":"Шовкова хуст
+         → Ти ще не обрала спосіб носити цю хустку біля обличчя.
+     · hand_2.code_unknowns · питання.13: {"kind":"card_unchecked","statements":[{"code":"wear_way_not_chosen","values":{"item":{"free_text":"Мінісумка з текстуро
+         → Ти ще не обрала, як носити сумку. Ти ще не обрала спосіб носити хустку.
+     · hand_2 · схема_жінці: {"kind":"card_scheme","statements":[{"code":"scheme_chosen_by_stylist","values":{"scheme":"тональна"},"recipient":"woman
+         → Я підібрала для тебе тональну палітру. У цьому образі жоден з великих предметів не відповідає тональній схемі, яку я під
+     · hand_2 · кадр_не_відкрився: {"kind":"no_photo_reason","statements":[{"code":"no_photo_frames_did_not_open"}]}
+         → Я не можу відкрити фотографії цього товару.
+     · hand_2 · про_річ.0: This grey ribbed knit halter top features a high round neckline and wide shoulder straps that frame your collarbone beau
+         → Ця сіра трикотажна майка з відкритими плечима має високий круглий виріз і широкі бретелі, які чудово обрамлюють твою клю
+     · hand_2 · про_річ.1: The straight-leg jeans in grey denim offer a flattering silhouette that follows your hips before falling freely to the a
+         → Джинси прямого крою сірого кольору пропонують вигідний силует, який повторює лінію стегон і вільно спадає до щиколотки. 
+     · hand_2 · про_річ.2: These white leather plimsolls are crafted with a chunky sole for comfort and feature bold animal-print stars in leopard 
+         → Ці білі шкіряні кеди мають масивну підошву для комфорту і прикрашені сміливими зірками з леопардовим та зебровим принтом
+     · hand_2 · про_річ.3: A peach-colored mini-bag made from textured quilted leather that adds warmth and softness to your ensemble. Its compact 
+         → Персикова міні-сумка з текстурованої стьобаної шкіри додає тепла та м’якості твоєму образу. Її компактна прямокутна форм
+     · hand_2 · про_річ.4: This blue silk scarf displays an intricate botanical print with delicate flowers and leaves in deep navy tones against a
+         → Цей ситцевий шовковий шарф має складний квітковий принт з ніжними квітами та листям у глибоких темно-синіх тонах на крем
+     · hand_2 · опис: This grey ribbed knit halter top with a high neckline offers a clean, polished start to your workday. Paired with the st
+         → Ця сіра трикотажна майка з відкритими плечима та високим вирізом пропонує чистий і охайний початок робочого дня. У поєдн
+     · hand_2 · як_носити.0: Tuck the scarf into the neckline for a structured finish, or drape it loosely over one shoulder for a softer morning vib
+         → Заправи шарф у виріз для більш структурованого фінішу, або недбало накинь його на одне плече для м’якшого ранкового наст
+     · hand_2 · як_носити.1: If you plan to walk extensively, consider taking the top off during lunch breaks as the jeans remain versatile enough to
+         → Якщо ти плануєш багато ходити, подумай про те, щоб зняти майку під час обідньої перерви, адже штани залишаються досить у
+     · hand_2 · як_носити.2: Keep the plimsolls laced tightly for a crisp line, or slightly loose for comfort during long days of movement.
+         → Зав’яжи кеди тугіше для чіткої лінії або трохи вільніше для комфорту протягом тривалих днів активності.
+     · hand_2 · свідомі.0: Майка з відкритими плечима нідея сіра, Джинси STRAIGHT сірий, Кеди шкіряні (Other Brand), Мінісумка з текстурованої шкір
+         → Майка з відкритими плечима нідея сіра, Джинси STRAIGHT сірий, Кеди шкіряні (Other Brand), Мінісумка з текстурованої шкір
+  ✔ що перша відповідь шару не переклала — добрав повтор; вхідним назавжди не лишилось нічого (П-3)
+  ✔ кожна картка з речами пройшла мовний шар (запис виклику в картці)
+   знімок: C:\tmp\z2610_out\ж1_робота\знімки\otsin1_1_do_dotyku_seed3.png 38947 Б
+   знімок: C:\tmp\z2610_out\ж1_робота\знімки\otsin1_2_pislia_dotyku_fokus_seed3.png 43149 Б
+
+4а. ОЦІН-1 · вердикт з одного дотику: записів до 0 → після дотику по «Вдягнеш?» 1 · лічильник «оцінено 0 з 4» → «оцінено 1 з 4» · {"рамка":true,"порада":"Вердикт уже записано. Кілька речень своїми словами дуже допоможуть: що саме відгукнулось.","кнопка_вимкнена":false,"статус":"Записано."}
+  ✔ один дотик по «Вдягнеш?» уже пише вердикт: +1 запис, без «Записати вердикт»
+  ✔ лічильник «оцінено N з M» біля «1 / 4» росте з дотиком
+  ✔ після дотику поле — фокус (рамка), поруч м'який рядок «вердикт уже записано», кнопка не вимкнена
+   ↔ модель #30 мовний шар (5077 симв., разом 5305) → 5.0 с · HTTP 200 · 217 симв.
+   ↔ модель #31 мовний шар: вхід (коментар) (6848 симв., разом 7187) → 3.9 с · HTTP 200 · 237 симв.
+   знімок: C:\tmp\z2610_out\ж1_робота\знімки\otsin1_3_pislia_zapysu_nastupна_seed3.png 44244 Б
+   після слів і «Записати вердикт»: записів 1 · видно картку 1 · лічильник «оцінено 1 з 4»
+  ✔ друга вісь, слова й «Записати вердикт» дописують ТОЙ САМИЙ запис, а не плодять другий
+  ✔ «Записати вердикт» веде на наступну неоцінену картку (наступна жива після першої)
+  ✔ змінила відповідь «Вдягнеш?» — запис оновлено (їх лишилось стільки ж), не додано
+   знімок: C:\tmp\z2610_out\ж1_робота\знімки\otsin1_4_usi_otsineni_seed3.png 40506 Б
+   усі картки торкнуто: записів 4 на 4 карток · лічильник «оцінено 4 з 4» · картка на екрані 3
+  ✔ усі оцінено — «оцінено M з M», один запис на картку
+  ✔ неоцінених нема — лишаємось на місці, без нових екранів
+
+4. журнал: записів 4 · колонок у шапці 92
+    {"рука":"3","поломка":"","паспорт_джерело":"модель","чат_повідомлень":"2","мова":"","свідомі":"","виконано":"","різноманітність":"","викликів":"2"}
+    {"рука":"4","поломка":"","паспорт_джерело":"модель","чат_повідомлень":"2","мова":"","свідомі":"","виконано":"","різноманітність":"","викликів":"2"}
+    {"рука":"1","поломка":"","паспорт_джерело":"модель","чат_повідомлень":"2","мова":"","свідомі":"Сукня Максі сатин полин — Я залишила цю м’ятну сукню головни","виконано":"усе","різноманітність":"груп 1","викликів":"5"}
+    {"рука":"2","поломка":"правило: rule_off · id=K-KOH-02 · theme=occasion · breaks=1 ","паспорт_джерело":"модель","чат_повідомлень":"2","мова":"","свідомі":"Майка з відкритими плечима нідея сіра, Джинси STRAIGHT сірий","виконано":"усе","різноманітність":"груп 1","викликів":"5"}
+  ✔ чотири записи, кожен має всі колонки шапки
+   дотик по чипах: {"зроблено":{"верд":["as_is"],"для_мене":["mine"],"аспекти":["colour","cut"]},"не":[],"верд":"вдягну як є","для_мене":"саме моє","верд_код":"as_is","моє_код":"mine","аспекти":["colour","cut"],"аспекти_знак":"plus","питання":"Що саме робить його твоїм?"}
+   дотик по чипах: {"зроблено":{"верд":["as_is"],"для_мене":["mine"]},"не":[],"верд":"вдягну як є","для_мене":"саме моє","верд_код":"as_is","моє_код":"mine","аспекти":[],"аспекти_знак":"plus","питання":"Що саме робить його твоїм?"}
+   дотик по чипах: {"зроблено":{"верд":["as_is"],"для_мене":["mine"],"аспекти":["colour"]},"не":[],"верд":"вдягну як є","для_мене":"саме моє","верд_код":"as_is","моє_код":"mine","аспекти":["colour"],"аспекти_знак":"plus","питання":"Що саме робить його твоїм?"}
+   дотик по чипах: {"зроблено":{"верд":["as_is"],"для_мене":["mine"]},"не":[],"верд":"вдягну як є","для_мене":"саме моє","верд_код":"as_is","моє_код":"mine","аспекти":[],"аспекти_знак":"plus","питання":"Що саме робить його твоїм?"}
+   у журналі: {"рука":"3","позиція":1,"вердикт_людини":"вдягну як є","вердикт_код":"as_is","моє_код":"mine","аспекти_знак":"plus","вдалось":"colour+cut","причини":"","питання_поля":"as_is.mine"}
+   у журналі: {"рука":"4","позиція":2,"вердикт_людини":"вдягну як є","вердикт_код":"as_is","моє_код":"mine","аспекти_знак":"","вдалось":"","причини":"","питання_поля":"as_is.mine"}
+   у журналі: {"рука":"1","позиція":3,"вердикт_людини":"вдягну як є","вердикт_код":"as_is","моє_код":"mine","аспекти_знак":"plus","вдалось":"colour","причини":"","питання_поля":"as_is.mine"}
+   у журналі: {"рука":"2","позиція":4,"вердикт_людини":"вдягну як є","вердикт_код":"as_is","моє_код":"mine","аспекти_знак":"","вдалось":"","причини":"","питання_поля":"as_is.mine"}
+  ✔ дотик по чипах вердикту кладе КОДИ двох осей (не лише напис), і питання над полем іде за ними
+  ✔ колонки КВ-1 у журналі несуть значення: `вердикт_код`, `моє_код`, `питання_поля`, а знак і «вдалось» — де були аспекти
+   знімок: C:\tmp\z2610_out\ж1_робота\знімки\verdykt_po_dotyku_poz0_seed3.png 119392 Б
+   плитки verdykt_po_dotyku_poz0: {"плиток":0,"img_у_центрі":0,"без_img":[]}
+
+4г. КВ-2, шість кнопок на 390 px: {"ряди":[{"рядків":1,"ширина":314,"чипи":264.1,"висота":44},{"рядків":1,"ширина":314,"чипи":216.6,"висота":44}],"осі_кегль":14.5,"поле_кегль":22,"висота_двох_осей":214.3,"висота_блоку":811.4,"висота_поля":353.3,"поле":154,"прокрутка":false,"предки":[".ряд.ряд-осі 314 pad 0px/0px mar 0px/0px",".вердикт 314 pad 0px/0px mar 18px/18px","#к-0.картка 350 pad 0px/0px mar 0px/0px","#картки. 350 pad 0px/0px mar 0px/0px","#е-образи.екран 350 pad 0px/0px mar 0px/0px","#колонка.колонка 390 pad 20px/20px mar 0px/0px"]}
+  ✔ КВ-2: кожен ряд осей — ОДИН рядок на 390 px, без горизонтальної прокрутки, і питання осей дрібніше за питання поля
+   «код не знає» — повний перелік проти звіту: [{"рука":"3","у_звіті":0,"повний":0},{"рука":"4","у_звіті":0,"повний":0},{"рука":"1","у_звіті":30,"повний":30},{"рука":"2","у_звіті":36,"повний":36}]
+   картка малює всі свої речення (без `для_всіх`) · звіт — [0,0,30,36]
+  ✔ колонка `питання_коду` звіту несе ПОВНИЙ перелік коду (N у звіті = N коду ≥ N на картці)
+   етапи руки 3 {"рука":"3","є":true,"розділів":["виклики","викликів","довідник_речей","діагноз_прогону","діагноз_руки","прогін","розмова","суд"],"викликів":2,"кроки":["assembly","item_list"],"стадії":["assembly","item_list"],"пул":487,"відсічено":7,"без_входу":null,"знахідок_суду":0,"питань_суду":0,"діагнозу":13,"символів":687573}
+   етапи руки 4 {"рука":"4","є":true,"розділів":["виклики","викликів","довідник_речей","діагноз_прогону","діагноз_руки","прогін","розмова","суд"],"викликів":2,"кроки":["assembly","item_list"],"стадії":["assembly","item_list"],"пул":487,"відсічено":7,"без_входу":null,"знахідок_суду":0,"питань_суду":0,"діагнозу":12,"символів":685822}
+   етапи руки 1 {"рука":"1","є":true,"розділів":["виклики","викликів","довідник_речей","діагноз_прогону","діагноз_руки","прогін","розмова","суд"],"викликів":5,"кроки":["assembly","repair","completeness_repair","choice","description"],"стадії":["assembly","repair","completeness_repair","choice","description"],"пул":487,"відсічено":7,"без_входу":8,"знахідок_суду":11,"питань_суду":34,"діагнозу":16,"символів":2038073}
+   етапи руки 2 {"рука":"2","є":true,"розділів":["виклики","викликів","довідник_речей","діагноз_прогону","діагноз_руки","прогін","розмова","суд"],"викликів":5,"кроки":["assembly","repair","completeness_repair","choice","description"],"стадії":["assembly","repair","completeness_repair","choice","description"],"пул":487,"відсічено":7,"без_входу":11,"знахідок_суду":12,"питань_суду":46,"діагнозу":19,"символів":2646508}
+  ✔ колонка `етапи` є на КОЖНІЙ руці й несе хід рішення (прогін, виклики, суд, діагноз)
+  ✔ етапи рук 1–2 несуть відсічення до пулу, чекліст «без входу», суд і кроки петлі (вибір, опис)
+   розмір звіту (ВЕРДИКТИ-ПОКАЗ-V3, 4 рядки): без колонки `етапи` 40765 · з нею 6098751 символів
+   фрагмент колонки `етапи` руки 1 (перші 900 символів):
+     {"прогін":{"пул_речей":487,"пул_чому":null,"стеля":{"K":491,"K_запитано":491,"K_віддано":491,"унікальних":487,"символів":127342,"пул_токенів":43385,"бюджет":43400,"чому":[{"code":"pool_cut_to_budget","values":{"full_tokens":218644,"floor":20},"recipient":"woman","source":"unknown","choice":"unknown","rank":null,"item_ids":[],"key":"s_6a6f13acab20505fdb7258be"}],"осі":{"верх":{"рядків":424,"страт":367,"без_тип":3,"без_зона":0,"без_гілка":0,"квота":46},"низ":{"рядків":428,"страт":367,"без_тип":0,"без_зона":0,"без_гілка":0,"квота":46},"сукня":{"рядків":392,"страт":255,"без_тип":0,"без_зона":0,"без_гілка":0,"квота":44},"комплект":{"рядків":77,"страт":76,"без_тип":0,"без_зона":0,"без_гілка":0,"квота":24},"верхній_шар":{"рядків":480,"страт":389,"без_тип":1,"без_зона":0,"без_гілка":0,"квота":49},"взуття":{"рядків":511,"страт":344,"без_тип":2,"без_зона":0,"без_гілка":0,"квота":51},"сумка":{"рядк
+  ✔ колонки Т-11 несуть значення: рука, поломка (рука 2), паспорт_джерело, чат_повідомлень, викликів
+  ✔ колонка `мова`: називає правило — або порожня, бо в текстах карток нема російських літер (чиста мова, гейту нічого ловити)
+  ✔ колонка `свідомі` рук 1–2 — ходи картки дослівно, і кожен хід над річчю її складу (Л-4)
+  ✔ колонка `свідомі_ід` рук 1–2 — id речей кожного ходу хід у хід, усі в складі картки (рядок 1250)
+
+4б. звіт файлом: verdykty-qakbb7-2026-10-26-1946.json · 4275438 символів
+   TSV того самого журналу 6108963 · файл 4275438 · файл без винесення спільного 6288423 → винесення зекономило 32 %
+   рядок стану: Збережено файлом «verdykty-qakbb7-2026-10-26-1946.json»: вердиктів 4, 4175 КБ. Прикріпи його до повідомлення.
+  ✔ кнопка «Зберегти всі вердикти файлом» віддає СПРАВЖНЄ завантаження, і браузер зберіг ім'я з пристроєм і датою
+  ✔ файл — цілий JSON, самодостатній: збірка, каталог, профіль зі знімком входу, паспорт і чотири вердикти
+  ✔ жодне непорожнє поле ШАПКИ не загублене — звірено поіменно на СПРАВЖНІХ записах прогону
+  ✔ спільне `етапи` винесено в шапку прогону — 22 тис. символів `прогін` не повторюються чотири рази
+  ✔ знахідки суду лишились структурою, а довгий текст — цілим, із переносами
+  ✔ порожніх полів у вердиктах файла нема жодного — рядка з 69 табуляцій тут не буває
+  ✔ на телефонній ширині кнопка звіту вміщається в екран цілком
+
+4б-201. запит і сира відповідь на кожному кроці:
+   рука 3 · assembly ← hand_prompt · step=assembly · запит 2192 символів · відповідь 1064 · образів кроку 0
+   рука 3 · item_list ← item_list_prompt · schema=ITEM_LIST · запит 2421 символів · відповідь 1057 · образів кроку 0
+   рука 4 · assembly ← hand_prompt · step=assembly · запит 1852 символів · відповідь 1002 · образів кроку 0
+   рука 4 · item_list ← item_list_prompt · schema=ITEM_LIST · запит 2358 символів · відповідь 738 · образів кроку 0
+   рука 1 · assembly ← hand_prompt · step=assembly · запит 127342 символів · відповідь 3200 · образів кроку 9 · вердикт набору є
+   рука 1 · repair ← repair_prompt · verdict=VERDYKT_V1 · rule_codes=no · запит 110772 символів · відповідь 7543 · образів кроку 5 · вердикт набору є
+   рука 1 · completeness_repair ← completeness_prompt · before_choice · attempt=1 · запит 30508 символів · відповідь 1254 · образів кроку 5 · вердикт набору є
+   рука 1 · choice ← choice_prompt · schema=VYBIR_V1 · запит 35327 символів · відповідь 781 · образів кроку 1 · вердикт набору є
+   рука 1 · description ← description_prompt · schema=OPYS_V1 · item_photos=yes · запит 14814 символів · відповідь 1725 · образів кроку 1 · вердикт набору є
+   рука 2 · assembly ← hand_prompt · step=assembly · запит 124417 символів · відповідь 3322 · образів кроку 10 · вердикт набору є
+   рука 2 · repair ← repair_prompt · verdict=VERDYKT_V1 · rule_codes=no · запит 125163 символів · відповідь 1619 · образів кроку 2 · вердикт набору є
+   рука 2 · completeness_repair ← completeness_prompt · before_choice · attempt=1 · запит 20788 символів · відповідь 302 · образів кроку 2 · вердикт набору є
+   рука 2 · choice ← choice_prompt · schema=VYBIR_V1 · запит 20168 символів · відповідь 682 · образів кроку 1 · вердикт набору є
+   рука 2 · description ← description_prompt · schema=OPYS_V1 · item_photos=yes · запит 19165 символів · відповідь 2979 · образів кроку 1 · вердикт набору є
+  ✔ кожен виклик моделі несе ЗАПИТ, що в неї пішов (жодного порожнього `запит.текст`)
+  ✔ кожен виклик моделі несе СИРУ відповідь цього кроку, а не лише рішення коду про неї
+  ✔ крок складання несе ВСІ свої образи з вердиктом коду на кожен, а не тільки обраний
+   довідник речей `етапи`: [{"рука":"3","речей":6,"з_назвою":6,"з_ціною":0,"з_фото":0,"з_кольором":0,"з_номером":0,"складу_покрито":true},{"рука":"4","речей":4,"з_назвою":4,"з_ціною":0,"з_фото":0,"з_кольором":0,"з_номером":0,"складу_покрито":true},{"рука":"1","речей":31,"з_назвою":31,"з_ціною":31,"з_фото":31,"з_кольором":31,"з_номером":31,"складу_покрито":true},{"рука":"2","речей":35,"з_назвою":35,"з_ціною":35,"з_фото":35,"з_кольором":35,"з_номером":35,"складу_покрито":true}]
+  ✔ `етапи` зводять КОЖЕН ід складу до людських слів — назва, ціна, колір, адреса фото поруч з ід
+   `спільне` файла: 23 полів · вхід_прогону: 11 полів
+  ✔ кожен прогін несе ПОВНИЙ знімок входу і профіль, а не чотири поля
+   старий прогін без `вхід_прогону`: {"спільне":["полів_збірка_не_писала"],"нота":"вхід_прогону, етапи — ці вердикти записані збіркою, старішою за ці поля; це не «код не порахував», а «тодішній показ їх не зберігав». Решта полів прогону на місці."}
+  ✔ прогін старої збірки САМ каже, яких полів у нього нема, а не мовчить чотирма полями
+   ціна повноти (рядок 201): 4 вердикти — 4275610 символів, склався за 22 мс, розібрався за 15 мс · дотик → файл на диску 445 мс
+   на журналі власника (17 вердиктів): 15098404 символів (14745 КБ тексту), склався за 135 мс, розібрався за 57 мс
+  ✔ файл розбирається назад у той самий журнал — усі вердикти на місці, поля зливаються
+  ✔ журнал на 17 вердиктів складається і розбирається в тій самій вкладці, без винятку
+   знімок: C:\tmp\z2610_out\ж1_робота\знімки\ekran_scenarii_seed3.png 27438 Б
+   знімок: C:\tmp\z2610_out\ж1_робота\знімки\ekran_scenarii_povnyi_seed3.png 35702 Б
+   знімок: C:\tmp\z2610_out\ж1_робота\знімки\ekran_profil_seed3.png 39361 Б
+   знімок: C:\tmp\z2610_out\ж1_робота\знімки\ekran_profil_povnyi_seed3.png 46056 Б
+   знімок: C:\tmp\z2610_out\ж1_робота\знімки\ekran_palitra_seed3.png 133711 Б
+   знімок: C:\tmp\z2610_out\ж1_робота\знімки\ekran_palitra_povnyi_seed3.png 148979 Б
+   знімок: C:\tmp\z2610_out\ж1_робота\знімки\ekran_scenariyi_seed3.png 15450 Б
+   знімок: C:\tmp\z2610_out\ж1_робота\знімки\ekran_scenariyi_povnyi_seed3.png 23328 Б
+   знімок: C:\tmp\z2610_out\ж1_робота\знімки\ekran_obrazy_seed3.png 179016 Б
+   знімок: C:\tmp\z2610_out\ж1_робота\знімки\ekran_obrazy_povnyi_seed3.png 162121 Б
+   плитки «Усіх образів»: 
+   знімок: C:\tmp\z2610_out\ж1_робота\знімки\ekran_biblioteka_seed3.png 59952 Б
+   знімок: C:\tmp\z2610_out\ж1_робота\знімки\ekran_biblioteka_povnyi_seed3.png 65926 Б
+   знімок: C:\tmp\z2610_out\ж1_робота\знімки\ekran_otsinka_seed3.png 28238 Б
+   знімок: C:\tmp\z2610_out\ж1_робота\знімки\ekran_otsinka_povnyi_seed3.png 33714 Б
+
+5. прохід екранами й картками: C:\tmp\z2610_out\ж1_робота\знімки\текст_екранів.txt 36686 Б
+   «ші» окремим словом у ВИДИМОМУ тексті (рядок 138): ніде · РАЗОМ 0
+
+ПЛАНУВАЛЬНИК · увесь прогін · стінний 403.4 с · викликів 31 · спроб 31 · обривів 0 (HTTP 599 стенда 0) · повторів 0 · черга 30.1 с · модель 1131.7 с · токени вхід 284108 / кеш 0 / вихід 15886 · обрізано 0 · одночасно 4
+   · мова — викликів 13 · модель 443.8 с (найдовший 61.3) · черга 30.1 с · вхід ≤ 14721 симв. · стеля виводу 4000 · токени 31526/7243
+   · ITEM_LIST — викликів 2 · модель 161.7 с (найдовший 81.3) · черга 0 с · вхід ≤ 2568 симв. · стеля виводу 4000 · токени 1208/655
+   · OUTFITS_V1 — викликів 2 · модель 150 с (найдовший 78) · черга 0 с · вхід ≤ 141846 симв. · стеля виводу 4000 · токени 78099/3161
+   · OUTFITS_V1 · пул — викликів 2 · модель 88.7 с (найдовший 55.8) · черга 0 с · вхід ≤ 141071 симв. · стеля виводу 2800 · токени 98799/1919
+   · COMPLETION_V1 — викликів 2 · модель 77.6 с (найдовший 43.3) · черга 0 с · вхід ≤ 34815 симв. · стеля виводу 4000 · токени 18562/638
+   · OUTFIT_TEXT — викликів 2 · модель 65.4 с (найдовший 33.3) · черга 0 с · вхід ≤ 2355 симв. · стеля виводу 4000 · токени 1118/458
+   · CHOICE_V1 — викликів 2 · модель 63.9 с (найдовший 38.6) · черга 0 с · вхід ≤ 39726 симв. · стеля виводу 4000 · токени 17413/305
+   · DESCRIPTION_V1 — викликів 2 · модель 51.2 с (найдовший 30.3) · черга 0 с · вхід ≤ 22612 симв. · стеля виводу 4000 · токени 20490/1106
+   · мова · ХІД_РОЗМОВИ — викликів 1 · модель 12 с (найдовший 12) · черга 0 с · вхід ≤ 37163 симв. · стеля виводу 4000 · токени 8968/174
+   · PALETTE_CHOICE — викликів 1 · модель 11.7 с (найдовший 11.7) · черга 0 с · вхід ≤ 16391 симв. · стеля виводу 4000 · токени 5164/82
+   · мова · answer_schema — викликів 1 · модель 3.9 с (найдовший 3.9) · черга 0 с · вхід ≤ 7187 симв. · стеля виводу 4000 · токени 1922/98
+   · мова · ПОРАДА_ХОДУ — викликів 1 · модель 1.7 с (найдовший 1.7) · черга 0 с · вхід ≤ 3540 симв. · стеля виводу 4000 · токени 839/47
+
+ЖИВА МОДЕЛЬ qwen/qwen3.5-9b: викликів 31 · збоїв 0 · у стелю виводу 0 · з думкою 0 · разом 1127.6 с (найдовший 81.3 с)
+   · мовний шар: хід розмови — HTTP 200 · 12 с · вхід 8968 т. · вихід за лічильником CLI (з міркуванням) 174 т., видимих ≤ 216 т. · 431 симв.
+   · мовний шар: ремонт поради — HTTP 200 · 1.7 с · вхід 839 т. · вихід за лічильником CLI (з міркуванням) 47 т., видимих ≤ 64 т. · 127 симв.
+   · мовний шар — HTTP 200 · 23.9 с · вхід 4019 т. · вихід за лічильником CLI (з міркуванням) 1259 т., видимих ≤ 1280 т. · 2560 симв.
+   · вибір палітри (стилістка) — HTTP 200 · 11.7 с · вхід 5164 т. · вихід за лічильником CLI (з міркуванням) 82 т., видимих ≤ 97 т. · 193 симв.
+   · мовний шар — HTTP 200 · 14.7 с · вхід 2379 т. · вихід за лічильником CLI (з міркуванням) 504 т., видимих ≤ 476 т. · 951 симв.
+   · ПАКЕТ_V1→ОБРАЗИ_V1 — HTTP 200 · 32.9 с · вхід 49293 т. · вихід за лічильником CLI (з міркуванням) 1016 т., видимих ≤ 1600 т. · 3200 симв.
+   · проза: рука 3/4 — HTTP 200 · 32.1 с · вхід 625 т. · вихід за лічильником CLI (з міркуванням) 242 т., видимих ≤ 532 т. · 1064 симв.
+   · проза: рука 3/4 — HTTP 200 · 33.3 с · вхід 493 т. · вихід за лічильником CLI (з міркуванням) 216 т., видимих ≤ 501 т. · 1002 симв.
+   · ПАКЕТ_V1→ОБРАЗИ_V1 — HTTP 200 · 55.7 с · вхід 49506 т. · вихід за лічильником CLI (з міркуванням) 903 т., видимих ≤ 1661 т. · 3322 симв.
+   · ВЕРДИКТ_V1→ОБРАЗИ_V1 — HTTP 200 · 78 с · вхід 36267 т. · вихід за лічильником CLI (з міркуванням) 2673 т., видимих ≤ 3772 т. · 7543 симв.
+   · перелік речей (руки 3–4) — HTTP 200 · 80.4 с · вхід 617 т. · вихід за лічильником CLI (з міркуванням) 387 т., видимих ≤ 529 т. · 1057 симв.
+   · перелік речей (руки 3–4) — HTTP 200 · 81.3 с · вхід 591 т. · вихід за лічильником CLI (з міркуванням) 268 т., видимих ≤ 369 т. · 738 симв.
+   · ВЕРДИКТ_V1→ОБРАЗИ_V1 — HTTP 200 · 72 с · вхід 41832 т. · вихід за лічильником CLI (з міркуванням) 488 т., видимих ≤ 810 т. · 1619 симв.
+   · ПОВНОТА→ДОПОВНЕННЯ_V1 — HTTP 200 · 34.3 с · вхід 11104 т. · вихід за лічильником CLI (з міркуванням) 499 т., видимих ≤ 627 т. · 1254 симв.
+   · мовний шар — HTTP 200 · 43.9 с · вхід 1956 т. · вихід за лічильником CLI (з міркуванням) 458 т., видимих ≤ 630 т. · 1259 симв.
+   · мовний шар — HTTP 200 · 49.4 с · вхід 1813 т. · вихід за лічильником CLI (з міркуванням) 403 т., видимих ≤ 557 т. · 1114 симв.
+   · ПОВНОТА→ДОПОВНЕННЯ_V1 — HTTP 200 · 43.3 с · вхід 7458 т. · вихід за лічильником CLI (з міркуванням) 139 т., видимих ≤ 151 т. · 302 симв.
+   · ВЕРДИКТ_V1→ВИБІР_V1 — HTTP 200 · 38.6 с · вхід 11295 т. · вихід за лічильником CLI (з міркуванням) 156 т., видимих ≤ 391 т. · 781 симв.
+   · мовний шар — HTTP 200 · 37.2 с · вхід 2148 т. · вихід за лічильником CLI (з міркуванням) 408 т., видимих ≤ 585 т. · 1170 симв.
+   · ВЕРДИКТ_V1→ВИБІР_V1 — HTTP 200 · 25.3 с · вхід 6118 т. · вихід за лічильником CLI (з міркуванням) 149 т., видимих ≤ 341 т. · 682 симв.
+   · ОПИС_V1→ОПИС_ВІДПОВІДЬ_V1 — HTTP 200 · 28.5 с · вхід 10075 т. · вихід за лічильником CLI (з міркуванням) 420 т., видимих ≤ 863 т. · 1725 симв.
+   · ОПИС_V1→ОПИС_ВІДПОВІДЬ_V1 — HTTP 200 · 18.9 с · вхід 10415 т. · вихід за лічильником CLI (з міркуванням) 686 т., видимих ≤ 1490 т. · 2979 симв.
+   · мовний шар — HTTP 200 · 18.7 с · вхід 1232 т. · вихід за лічильником CLI (з міркуванням) 51 т., видимих ≤ 47 т. · 93 симв.
+   · мовний шар — HTTP 200 · 33.8 с · вхід 3398 т. · вихід за лічильником CLI (з міркуванням) 821 т., видимих ≤ 902 т. · 1804 симв.
+   · мовний шар — HTTP 200 · 51.1 с · вхід 2263 т. · вихід за лічильником CLI (з міркуванням) 930 т., видимих ≤ 1342 т. · 2683 симв.
+   · мовний шар — HTTP 200 · 43.7 с · вхід 1927 т. · вихід за лічильником CLI (з міркуванням) 165 т., видимих ≤ 168 т. · 336 симв.
+   · мовний шар — HTTP 200 · 58.2 с · вхід 4781 т. · вихід за лічильником CLI (з міркуванням) 1069 т., видимих ≤ 1031 т. · 2062 симв.
+   · мовний шар — HTTP 200 · 61.3 с · вхід 2318 т. · вихід за лічильником CLI (з міркуванням) 972 т., видимих ≤ 1454 т. · 2908 симв.
+   · мовний шар — HTTP 200 · 2.8 с · вхід 1510 т. · вихід за лічильником CLI (з міркуванням) 93 т., видимих ≤ 104 т. · 207 симв.
+   · мовний шар — HTTP 200 · 5 с · вхід 1782 т. · вихід за лічильником CLI (з міркуванням) 110 т., видимих ≤ 109 т. · 217 симв.
+   · мовний шар: вхід (коментар) — HTTP 200 · 3.9 с · вхід 1922 т. · вихід за лічильником CLI (з міркуванням) 98 т., видимих ≤ 119 т. · 237 симв.
+
+фрази нових правил у ПОВНОМУ тексті пакета (усі виклики моделі цього сіда): {"намір=comfort_first (у переліку значень поля)":1,"намір=context_optimal (у переліку значень поля)":1}
+
+мережа поза сторінкою (заблоковано): 166 запитів [
+  'https://cdn.jsdelivr.net/gh/MacPaw/Fixel@514fd02ea7d70668ed3dd09fb2674ba6f70d61e',
+  'https://cdn.jsdelivr.net/gh/MacPaw/Fixel@514fd02ea7d70668ed3dd09fb2674ba6f70d61e',
+  'https://cdn.jsdelivr.net/gh/MacPaw/Fixel@514fd02ea7d70668ed3dd09fb2674ba6f70d61e'
+]
+консоль (помилки/попередження): [
+  'error: Failed to load resource: net::ERR_FAILED',
+  'error: Failed to load resource: net::ERR_FAILED',
+  'error: Failed to load resource: net::ERR_FAILED',
+  'error: Failed to load resource: the server responded with a status of 404 (Not Found)',
+  'error: Failed to load resource: net::ERR_FAILED',
+  'error: Failed to load resource: the server responded with a status of 404 (Not Found)',
+  'warning: штамп збірки: build.txt → 404',
+  'error: Failed to load resource: the server responded with a status of 404 (Not Found)',
+  'error: Failed to load resource: the server responded with a status of 404 (Not Found)',
+  'error: Failed to load resource: net::ERR_FAILED'
+]
+
+ВПАЛО 1 · 412.9 с
+
+ДОКАЗ · рв6_стенд · run-mvpnuw0p-c029731f · код fe21f831ec2fdfda5be2dd177592d3a7cf9c71aa · подія усі сцени стенда · доведено → C:\tmp\z2610_out\ж1_робота\знімки\доказ.json
+очікувань дії ядра: виконано 12 різних викликів файлу з 47 (разом 24 очікувань)
