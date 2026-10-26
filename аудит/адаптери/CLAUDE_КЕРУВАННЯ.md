@@ -26,7 +26,7 @@
   `list_*` — фільтри й `limit` ≤ 10, `list_events` — `kinds`; не тягти весь список у контекст.
 - Недоставлені листи: `list_triggers(recurring=false, include_completed=true, limit=6)`, звірити `last_run`.
   Прямий патч між сесіями — `send_message`, доставка — `updated_at`; звичайний лист — `CLAUDE.md`, «Лист».
-- Нагляд PR — `subscribe_pr_activity`; правки коментарів не сповіщають — їх бачить пульс. Останній коментар —
+- Нагляд PR — такт пульсу; підписок не ставлять (файли ролей). Останній коментар —
   `get_comments(perPage=1, page=<кількість>)`. Архів/повернення — `archive_session` / `unarchive_session`.
 - Голова PR: `git fetch origin pull/N/head`; відмовлено — `pull_request_read(method="get_status")`.
   Чернетка перед дозволеним злиттям — `update_pull_request(draft=false)`, інакше 405; злиття — з `expectedHeadSha`.
