@@ -1,0 +1,23 @@
+── ПРОМПТ (2234 симв.) ──
+{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.", "A slot the description says is not needed is not an item: give it worn false. One item carries one thing — of two alternatives list the first; a note in brackets is not an item.", "Slot \"accessory\" is for an item no other slot fits.", "\"is_outfit\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note; then items is empty."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "ITEM_LIST", "answer_schema": {"is_outfit": "yes|no", "items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory", "color_hex": "<#rrggbb or null>", "worn": "<true, or false when the description says the outfit goes without it>"}]}, "input": ["\"description\" — the outfit description"]}, "description": "Sheer silk evening gown with a high neckline and modest length, cut in a graceful A-line silhouette, color ivory white with hex code #FFFFF0, fabric lightweight chiffon layered over nude silk.\nBlack leather ankle boots, pointed toe cut, mid-calf height, color deep black with hex code #1C1C1C, fabric smooth polished calfskin.\nThis outfit respects the sacred tradition of Sunday church service while adhering to your request for a very smart evening gown, offering a dignified silhouette that transitions seamlessly into the family lunch afterward without needing an outer layer given the cool but mild autumn temperature of 18°C. The conservative neckline and modest length ensure appropriate decorum for worship, while the soft ivory hue reflects light beautifully in the daylight and complements the black boots for a sophisticated contrast during the afternoon meal with parents."}
+
+── ВІДПОВІДЬ (504 симв., 45.0 с, HTTP 200) ──
+{
+  "is_outfit": "yes",
+  "items": [
+    {
+      "name": "Evening gown",
+      "details": "Graceful A-line silhouette with high neckline and modest length, made of lightweight chiffon layered over nude silk",
+      "slot": "dress",
+      "color_hex": "#FFFFF0",
+      "worn": true
+    },
+    {
+      "name": "Ankle boots",
+      "details": "Pointed toe cut and mid-calf height, made of smooth polished calfskin leather",
+      "slot": "shoes",
+      "color_hex": "#1C1C1C",
+      "worn": true
+    }
+  ]
+}
