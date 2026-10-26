@@ -9,12 +9,14 @@
   1. перевірка ізоляції за `GEMINI.md` (whoami, `net session`, чужі профілі й диски, змінні з ключами);
   2. `git fetch` без входу: `main`, `gemini/*` і позначки черги `gemini-queue/<наряд>/<модель>/<спроба>`, які ставить
      лише диспетчер; позначка має вказувати на коміт із `main`, текст наряду — лише `аудит/наряди/<наряд>.md` з нього;
-  2а. рушій за назвою моделі в позначці (М.9-В): `gpt-<модель>[-low|-medium|-high|-xhigh]` — локальний Codex (`codex exec`),
+  2а. рушій за назвою моделі в позначці (М.9-В): `gpt-<модель>[-<зусилля>]` — локальний Codex (`codex exec`; зусилля —
+      none|minimal|low|medium|high|xhigh|max|ultra, відмову `codex exec` обгортка віддає кодом EFFORT_INVALID, без підміни),
       інша — `agy`; квота `agy` як дані (`agy -p "/usage" --output-format json`, 0 ходів): група моделі з 0 % — наряд не
       береться (код `QUOTA_ZERO`), а коли задано `-CodexFallbackModel`, `agy` на 0 % замінює Codex з цією моделлю
       (квоту Codex без ходу не прочитати: його 429 ловить обгортка, код `QUOTA`);
   3. гілка `gemini/<наряд>` від свіжого `main` (чи від уже опублікованої `gemini/<наряд>` — доробка);
   4. один прогін `agy` з межею часу; хід без звіту чи звіт, що не збігся з гілкою, — догонка тієї самої розмови;
+     Codex межі часу прогону не має: його зупиняє лише завислість (нема нових подій `--json` довше за -CodexStallMinutes);
   5. бандл гілки й стан (лише коди й числа) у теці обміну; публікує їх окрема задача власника `gemini_publish.ps1`.
 Нічого не пушить; ізоляцію не створює й не змінює. Налаштування — `НАЛАШТУВАННЯ.md` поруч.
 #>
@@ -34,6 +36,7 @@ param(
     [string]$Mode = 'stream',
     [double]$TurnMinutes = 120,
     [double]$TotalMinutes = 180,
+    [double]$CodexStallMinutes = 60,
     [int]$MaxNudges = 4,
     [double]$QuotaMinutes = 2,
     [int]$MarkerMaxAgeDays = 7,
@@ -53,6 +56,8 @@ $script:PoolModelPattern = '^(gemini|claude|gpt)-[a-z0-9.-]{1,36}$'
 $script:UsageMinVersion = [version]'1.1.11'
 # Каскад моделей «проєктування» (pro): наступна за пулом після самої моделі позначки; далі лише Codex (-CodexFallbackModel).
 $script:ClaudeCascadeModel = 'claude-opus-5-5-high'
+# Суфікс-зусилля позначки gpt-*: що `codex exec` не приймає, то відмова (EFFORT_INVALID), а не тиха підміна.
+$script:CodexEfforts = 'none|minimal|low|medium|high|xhigh|max|ultra'
 $script:AgyVersionDone = $false; $script:AgyVersion = $null; $script:Usage = $null; $script:AgyModels = $null
 $script:Utf8 = New-Object System.Text.UTF8Encoding($false)
 $script:OnWindows = ($PSVersionTable.PSEdition -ne 'Core') -or [bool](Get-Variable IsWindows -ValueOnly -ErrorAction SilentlyContinue)
@@ -152,6 +157,42 @@ function Invoke-Native([string]$Exe, [string[]]$Arguments, [string]$WorkDir = ''
     [pscustomobject]@{ Code = $(if ($timedOut) { -1 } else { $p.ExitCode }); TimedOut = $timedOut; Out = $out.Result; Err = $err.Result }
 }
 
+# Запуск без межі часу (Codex): процес зупиняє лише завислість — жодного нового рядка stdout (події `--json`) довше за
+# $StallMinutes. Кожен рядок одразу йде в $LogFile, а мітка часу й тип події — в $EventsFile (щоб поріг вивіряти за прогонами).
+function Invoke-NativeUntilStall([string]$Exe, [string[]]$Arguments, [string]$WorkDir, [double]$StallMinutes, [string]$LogFile, [string]$EventsFile) {
+    $psi = New-StartInfo $Exe $Arguments $WorkDir
+    $p = [System.Diagnostics.Process]::Start($psi)
+    $err = $p.StandardError.ReadToEndAsync()
+    $out = New-Object System.Text.StringBuilder
+    $last = Get-Date
+    $stalled = $false
+    $pending = $null
+    while ($true) {
+        if ($null -eq $pending) { $pending = $p.StandardOutput.ReadLineAsync() }
+        $left = ($last.AddMinutes($StallMinutes) - (Get-Date)).TotalMilliseconds
+        if ($left -le 0) { $stalled = $true; break }
+        if (-not $pending.Wait([int][Math]::Min($left, 60000))) {
+            # stdout міг лишитись відкритим у нащадка завершеного процесу: це не завислість.
+            if ($p.HasExited) { break }
+            continue
+        }
+        $line = $pending.Result
+        $pending = $null
+        if ($null -eq $line) { break }
+        $last = Get-Date
+        [void]$out.Append($line).Append("`n")
+        [System.IO.File]::AppendAllText($LogFile, $line + "`n", $script:Utf8)
+        $type = ''
+        if ($line -match '"type"\s*:\s*"([^"]{1,60})"') { $type = $Matches[1] }
+        [System.IO.File]::AppendAllText($EventsFile, $last.ToString('s') + "`t" + $type + "`n", $script:Utf8)
+    }
+    if (-not $stalled -and -not $p.WaitForExit([int][Math]::Min([double][int]::MaxValue, $StallMinutes * 60000))) { $stalled = $true }
+    if ($stalled) { Stop-Tree $p } else { $p.WaitForExit() }
+    $errText = ''
+    if ($err.Wait(15000)) { $errText = $err.Result }
+    [pscustomobject]@{ Code = $(if ($stalled) { -1 } else { $p.ExitCode }); Stalled = $stalled; Out = $out.ToString(); Err = $errText }
+}
+
 function Invoke-Git([string[]]$GitArgs, [switch]$AllowFail) {
     $all = @('-C', $RepoDir, '-c', "core.hooksPath=$script:NoHooks", '-c', 'credential.helper=', '-c', 'core.quotepath=false') + $GitArgs
     $r = Invoke-Native $GitExe $all
@@ -241,7 +282,7 @@ function Get-NextMarker {
 function Get-Engine([string]$Model) {
     if ($Model -cmatch '^gpt-(.+)$') {
         $name = $Model; $effort = ''
-        if ($Model -cmatch '^(.+)-(low|medium|high|xhigh)$') { $name = $Matches[1]; $effort = $Matches[2] }
+        if ($Model -cmatch ('^(.+)-(' + $script:CodexEfforts + ')$')) { $name = $Matches[1]; $effort = $Matches[2] }
         return [pscustomobject]@{ Name = 'codex'; Model = $name; Effort = $effort }
     }
     [pscustomobject]@{ Name = 'agy'; Model = $Model; Effort = '' }
@@ -489,11 +530,25 @@ function Select-Engine($M) {
 
 # --- прогін agy ---------------------------------------------------------------------------------------------------
 
+# Роль агента Codex — з рядка «Роль — …» наряду (перший): ПЕРЕВІРКА за `аудит/ПЕРЕВІРКА.md`; нема чи інша — виконавець.
+function Get-TaskRole([string]$TaskText) {
+    if ($TaskText -cmatch '(?m)^Роль — (ВИКОНАВЕЦЬ|ПЕРЕВІРКА)(?=[\s,(.])') { return $Matches[1] }
+    'ВИКОНАВЕЦЬ'
+}
+
 function Get-Prompt($M, [string]$TaskText, [string]$EngineName = 'agy') {
     $branch = "gemini/$($M.Slug)"
     $adapter = $(if ($EngineName -eq 'codex') { 'адаптер — лише цей текст' } else { 'адаптер середовища — `GEMINI.md`' })
+    $role = $(if ($EngineName -eq 'codex') { Get-TaskRole $TaskText } else { 'ВИКОНАВЕЦЬ' })
+    $roleText = $(if ($role -eq 'ПЕРЕВІРКА') { 'перевірка' } else { 'виконавець' })
+    $roleFile = $(if ($role -eq 'ПЕРЕВІРКА') { 'ПЕРЕВІРКА' } else { 'ВИКОНАВЕЦЬ' })
+    $commitRule = $(if ($role -eq 'ПЕРЕВІРКА') {
+        "звіт перевірки (вердикт, докази, вади) — файл, який називає наряд, у цій гілці;`n  тілом останнього коміту — його підсумок: диспетчер відкриє PR саме з нього."
+    } else {
+        "звіт ролі (що зроблено, ДО -> ПІСЛЯ, вади поза мірилом) — тілом`n  останнього коміту: диспетчер відкриє PR саме з нього."
+    })
 @"
-Ти — виконавець за ``AGENTS.md`` і ``аудит/ВИКОНАВЕЦЬ.md``; $adapter. Ізоляцію ОС уже
+Ти — $roleText за ``AGENTS.md`` і ``аудит/$roleFile.md``; $adapter. Ізоляцію ОС уже
 перевірила обгортка. Тебе запустила обгортка М.2 без людини: питань не став, відповіді не буде.
 
 - Наряд — ``$($script:TaskDir)$($M.Slug).md`` з ``main`` на коміті $($M.Sha); повний текст — нижче між рисками.
@@ -501,8 +556,7 @@ function Get-Prompt($M, [string]$TaskText, [string]$EngineName = 'agy') {
   Файлів ``.github/`` і ``аудит/адаптери/gemini/`` не змінюй: таку гілку не опублікують.
 - Кожну команду виконуй на передньому плані й чекай її завершення: фонове завдання зупиняється разом із ходом, а
   звіт без результату — кинутий прогін.
-- Коміть після кожного завершеного кроку; звіт ролі (що зроблено, ДО -> ПІСЛЯ, вади поза мірилом) — тілом
-  останнього коміту: диспетчер відкриє PR саме з нього.
+- Коміть після кожного завершеного кроку; $commitRule
 - Останній рядок відповіді — рівно один із двох:
   НОУТБУК ГОТОВО $branch <повний SHA голови гілки>
   ЗАБЛОКОВАНО: <що саме й чого чекаєш> — і зроблене до того закомічене.
@@ -559,8 +613,10 @@ $head $facts
 "@
 }
 
-function Get-ErrorCode([string]$Text) {
+function Get-ErrorCode([string]$Text, [string]$EngineName = 'agy') {
     if ($Text -match 'invalid model selection|not recognized as a known model') { return 'MODEL_INVALID' }
+    # Codex не приймає зусилля з позначки: помилка конфігурації `model_reasoning_effort` чи відповідь API про `reasoning.effort`.
+    if ($EngineName -eq 'codex' -and $Text -match 'reasoning[._ -]?effort|[Uu]nsupported value') { return 'EFFORT_INVALID' }
     if ($Text -match '429|RESOURCE_EXHAUSTED|[Qq]uota|[Uu]sage limit|[Rr]ate limit') { return 'QUOTA' }
     if ($Text -match 'authentication required|[Nn]ot logged in|[Pp]lease (?:log ?in|sign in)') { return 'AUTH' }
     'AGY_ERROR'
@@ -617,25 +673,26 @@ function Close-StreamRun($Run) {
 
 # Рушій без розмови (Codex): кожен хід — окремий процес; текст ходу — у файлі, аргумент без лапок і
 # метасимволів cmd. Догонка несе повний наряд, бо нової розмови рушій не пам'ятає, а стан роботи — у гілці.
+# Межі часу ходу нема: зупиняє лише завислість (Invoke-NativeUntilStall, -CodexStallMinutes) — вид ходу 'stall'.
 # Прапори Codex `exec` -C/-m/-c/--json/-o/--dangerously-bypass-approvals-and-sandbox
 # (https://learn.chatgpt.com/docs/developer-commands?surface=cli): обхід пісочниці Codex — лише тому, що ізоляція ОС
 # (користувач gemini без прав і входів) уже стоїть, як вимагає документація («only inside an isolated runner»).
-function Invoke-OneShotTurn($M, $Run, [string]$Text, [datetime]$Deadline) {
+function Invoke-OneShotTurn($M, $Run, [string]$Text) {
     $Run.Turn++
     $file = Join-Path $Run.Dir ('turn{0}.md' -f $Run.Turn)
     $body = $(if ($Run.Turn -gt 1) { $Run.BasePrompt + "`n`n----- ПРОДОВЖЕННЯ -----`n" + $Text } else { $Text })
     [System.IO.File]::WriteAllText($file, $body, $script:Utf8)
     $short = "Прочитай файл $file і виконай його повністю"
-    $minutes = ($Deadline - (Get-Date)).TotalMinutes
-    if ($minutes -le 0) { return [pscustomobject]@{ Kind = 'timeout'; Result = $null } }
     $outFile = Join-Path $Run.Dir ('turn{0}.out.md' -f $Run.Turn)
     $a = @('exec', '-C', $RepoDir, '-m', $Run.Engine.Model)
     if ($Run.Engine.Effort) { $a += @('-c', "model_reasoning_effort=$($Run.Engine.Effort)") }
     $a += @('--json', '-o', $outFile, '--dangerously-bypass-approvals-and-sandbox', $short)
-    $r = Invoke-Native $Run.Exe $a $RepoDir $minutes
-    [System.IO.File]::AppendAllText($Run.Log, $r.Out + "`n", $script:Utf8)
+    $r = Invoke-NativeUntilStall $Run.Exe $a $RepoDir $CodexStallMinutes $Run.Log (Join-Path $Run.Dir 'codex.events.tsv')
     [System.IO.File]::AppendAllText($Run.ErrLog, $r.Err, $script:Utf8)
-    if ($r.TimedOut) { return [pscustomobject]@{ Kind = 'timeout'; Result = $null } }
+    if ($r.Stalled) {
+        Write-WrapperLog "codex: нових подій нема понад $CodexStallMinutes хв — завислість, зупинено"
+        return [pscustomobject]@{ Kind = 'stall'; Result = $null }
+    }
     $resp = ''; $err = ''
     if (Test-Path -LiteralPath $outFile) { $resp = [System.IO.File]::ReadAllText($outFile, $script:Utf8) }
     if ($r.Code -ne 0) { $err = ($r.Err + "`n" + $r.Out.Substring([Math]::Max(0, $r.Out.Length - 2000))).Trim() }
@@ -645,7 +702,7 @@ function Invoke-OneShotTurn($M, $Run, [string]$Text, [datetime]$Deadline) {
 }
 
 function Invoke-Turn($M, $Run, [string]$Text, [datetime]$Deadline) {
-    if ($Run.Engine.Name -ne 'agy') { return Invoke-OneShotTurn $M $Run $Text $Deadline }
+    if ($Run.Engine.Name -ne 'agy') { return Invoke-OneShotTurn $M $Run $Text }
     if ($Mode -eq 'stream') {
         if ($null -eq $Run.Proc) { Start-StreamRun $M $Run }
         try {
@@ -681,7 +738,9 @@ function Invoke-Agent($M, [string]$Start, [string]$Prompt, [string]$Dir, $Sel) {
         Engine = $Sel.Engine; Exe = $Sel.Exe; BasePrompt = $Prompt
         Dir = $Dir; Log = (Join-Path $Dir 'agy.jsonl'); ErrLog = (Join-Path $Dir 'agy.stderr.txt'); Turn = 0
         Responses = New-Object System.Collections.Generic.List[string] }
-    $deadline = (Get-Date).AddMinutes($TotalMinutes)
+    # Codex без межі часу всього й ходу (власник 26.10): його зупиняє лише завислість; `agy` — як було.
+    $unlimited = ($Sel.Engine.Name -eq 'codex')
+    $deadline = $(if ($unlimited) { [datetime]::MaxValue } else { (Get-Date).AddMinutes($TotalMinutes) })
     $text = $Prompt
     $turns = 0
     $nudges = 0
@@ -689,10 +748,14 @@ function Invoke-Agent($M, [string]$Start, [string]$Prompt, [string]$Dir, $Sel) {
     $report = 'NONE'
     try {
         while ($true) {
-            $turnDeadline = (Get-Date).AddMinutes($TurnMinutes)
-            if ($turnDeadline -gt $deadline) { $turnDeadline = $deadline }
+            $turnDeadline = $deadline
+            if (-not $unlimited) {
+                $turnDeadline = (Get-Date).AddMinutes($TurnMinutes)
+                if ($turnDeadline -gt $deadline) { $turnDeadline = $deadline }
+            }
             $turns++
             $r = Invoke-Turn $M $run $text $turnDeadline
+            if ($r.Kind -eq 'stall') { $code = 'STALL'; break }
             $why = $r.Kind
             if ($r.Kind -eq 'result') {
                 $status = [string]$r.Result.status
@@ -702,7 +765,7 @@ function Invoke-Agent($M, [string]$Start, [string]$Prompt, [string]$Dir, $Sel) {
                 if ($status -in @('ERROR', 'INVALID', 'CANCELED')) {
                     $err = ''
                     if ($r.Result.PSObject.Properties['error']) { $err = [string]$r.Result.error }
-                    $code = Get-ErrorCode $err
+                    $code = Get-ErrorCode $err $run.Engine.Name
                     Write-WrapperLog "agy: статус $status ($code)"
                     break
                 }
@@ -828,12 +891,13 @@ function Invoke-Task($M) {
         if ($anc.Code -ne 0) { $status.code = 'NOT_ON_MAIN'; return }
         if ((Invoke-Git @('cat-file', '-e', "$($M.Sha):$taskPath") -AllowFail).Code -ne 0) { $status.code = 'NO_TASK_FILE'; return }
         $taskText = (Invoke-Git @('cat-file', 'blob', "$($M.Sha):$taskPath")).Out
-        if ($taskText.Length -gt 30000) { $status.code = 'TASK_TOO_LONG'; return }
         # Квота до наряду: група моделі з 0 % — наряд не береться (марно палить спробу й дає 429 посеред прогону).
         $sel = Select-Engine $M
         $q = $sel.Quota
         $status.engine = $sel.Engine.Name
         $status.actual = $sel.Model
+        # Межа розміру наряду — для agy (як було); Codex читає наряд з файлу `turnN.md`, розмір не обмежено (власник 26.10).
+        if ($sel.Engine.Name -ne 'codex' -and $taskText.Length -gt 30000) { $status.code = 'TASK_TOO_LONG'; return }
         $MA = $M | Select-Object *
         $MA.Model = $sel.Model
         if (-not $sel.Exe) { $status.code = 'ENGINE_MISSING'; return }

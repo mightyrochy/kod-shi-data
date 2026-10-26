@@ -54,4 +54,26 @@ case_ pools-line "FAKE_USAGE=tsv" abandon_then_done gemini-3.5-flash 'ПУЛИ V
 # аргументи рушіїв: прапори й зусилля дослівно
 a=$(cat "${TMPDIR:-/tmp}/gemini-obhortka/m9v-codex-done/fake/codex.argv.log" 2>/dev/null | head -1)
 [[ "$a" == *'"-m", "gpt-6.1-sol"'* && "$a" == *'model_reasoning_effort=high'* && "$a" == *'--dangerously-bypass-approvals-and-sandbox'* ]] && echo "ok   codex-argv" || { echo "FAIL codex-argv: $a"; bad=1; }
+# Codex без меж (обгортка-codex-без-меж): зусилля max, відмова зусилля, довгий прогін, завислість, роль із наряду
+CE='FAKE_CODEX_EFFORTS=low,medium,high,xhigh,max'
+case_ codex-max "$CE" abandon_then_done gpt-6.1-sol-max 'МОДЕЛЬ gpt-6.1-sol-max'
+a=$(head -1 "${TMPDIR:-/tmp}/gemini-obhortka/m9v-codex-max/fake/codex.argv.log" 2>/dev/null)
+[[ "$a" == *'"-m", "gpt-6.1-sol"'* && "$a" == *'model_reasoning_effort=max'* ]] && echo "ok   codex-max-argv" || { echo "FAIL codex-max-argv: $a"; bad=1; }
+# зусилля, якого codex exec не приймає: ЗАБЛОКОВАНО з кодом, один виклик, без тихої підміни на нижче
+case_ codex-effort-rejected "FAKE_CODEX_EFFORTS=low,medium,high,xhigh" abandon_then_done gpt-6.1-sol-max 'ЗАБЛОКОВАНО gemini/М.2-проба-обгортки EFFORT_INVALID'
+n=$(wc -l < "${TMPDIR:-/tmp}/gemini-obhortka/m9v-codex-effort-rejected/fake/codex.argv.log" 2>/dev/null)
+[[ "$n" == 1 ]] && echo "ok   codex-effort-rejected-one-call" || { echo "FAIL codex-effort-rejected-one-call: викликів $n"; bad=1; }
+# довший за TotalMinutes (30 с) прогін з подіями щосекунди не обривається: межі часу для Codex нема
+EXTRA='{"EnableCodex":true,"CodexStallMinutes":0.1}' case_ codex-long-run "FAKE_SLOW_SECONDS=40" slow_done gpt-6.1-sol-high 'ГОТОВО gemini/М.2-проба-обгортки'
+t=$(cat "${TMPDIR:-/tmp}"/gemini-obhortka/m9v-codex-long-run/runs/*/codex.events.tsv 2>/dev/null | wc -l)
+[[ "$t" -ge 30 ]] && echo "ok   codex-long-run-events" || { echo "FAIL codex-long-run-events: подій $t"; bad=1; }
+# завислість: тиша довше за поріг (6 с) зупиняє прогін кодом STALL
+EXTRA='{"EnableCodex":true,"CodexStallMinutes":0.1}' case_ codex-stall "X=1" hang gpt-6.1-sol-high 'ЗАБЛОКОВАНО gemini/М.2-проба-обгортки STALL'
+# роль з рядка «Роль — …» наряду: за замовчуванням виконавець, ПЕРЕВІРКА — перевірка; agy роль не міняє
+case_ role-default "X=1" abandon_then_done gpt-6.1-sol-high 'ГОТОВО gemini/М.2-проба-обгортки'
+grep -q 'Ти — виконавець за `AGENTS.md` і `аудит/ВИКОНАВЕЦЬ.md`' "${TMPDIR:-/tmp}/gemini-obhortka/m9v-role-default/fake/codex.prompts.log" && echo "ok   role-default-prompt" || { echo "FAIL role-default-prompt"; bad=1; }
+case_ role-review "TASK_ROLE=ПЕРЕВІРКА" abandon_then_done gpt-6.1-sol-high 'ГОТОВО gemini/М.2-проба-обгортки'
+grep -q 'Ти — перевірка за `AGENTS.md` і `аудит/ПЕРЕВІРКА.md`' "${TMPDIR:-/tmp}/gemini-obhortka/m9v-role-review/fake/codex.prompts.log" && echo "ok   role-review-prompt" || { echo "FAIL role-review-prompt"; bad=1; }
+case_ role-agy "TASK_ROLE=ПЕРЕВІРКА" abandon_then_done gemini-3.8-flash-high 'КВОТА GEMINI35FLASH 34'
+grep -q 'Ти — перевірка' "${TMPDIR:-/tmp}/gemini-obhortka/m9v-role-agy/fake/prompts.log" && { echo "FAIL role-agy: agy отримав роль перевірки"; bad=1; } || echo "ok   role-agy-unchanged"
 exit $bad
