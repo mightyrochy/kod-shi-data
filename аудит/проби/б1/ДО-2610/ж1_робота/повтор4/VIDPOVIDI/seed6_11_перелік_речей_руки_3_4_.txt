@@ -1,0 +1,37 @@
+── ПРОМПТ (2386 симв.) ──
+{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.", "A slot the description says is not needed is not an item: give it worn false. One item carries one thing — of two alternatives list the first; a note in brackets is not an item.", "Slot \"accessory\" is for an item no other slot fits.", "\"is_outfit\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note; then items is empty."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "ITEM_LIST", "answer_schema": {"is_outfit": "yes|no", "items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory", "color_hex": "<#rrggbb or null>", "worn": "<true, or false when the description says the outfit goes without it>"}]}, "input": ["\"description\" — the outfit description"]}, "description": "A refined merino wool knit tunic in forest green, midi length with a structured boat neckline and long sleeves, soft drape cut that flatters the silhouette without clinging.  \nTailored high-waisted trousers in matching charcoal heathered wool, ankle-length with a slight taper, clean straight leg line for a polished professional look.  \nLoafers in smooth cognac leather with a low block heel, rounded toe and minimal stitching for understated elegance.  \nA thin silk scarf in autumnal rust tones tied loosely at the neck to add warmth without bulk.  \n\nThis outfit works perfectly for an office setting in cool autumn weather as it balances professionalism with comfort while respecting her neat dress code preference. The matching knit and trousers create a cohesive monochromatic base that looks polished under daylight, while the wool fabrics provide necessary warmth at 18°C without appearing overly heavy. The cognac loafers introduce a subtle pop of color that feels sophisticated yet approachable for daily work interactions."}
+
+── ВІДПОВІДЬ (887 симв., 55.8 с, HTTP 200) ──
+{
+  "is_outfit": true,
+  "items": [
+    {
+      "name": "Tunic",
+      "details": "Merino wool knit with a structured boat neckline, long sleeves, midi length, and soft drape cut",
+      "slot": "top",
+      "color_hex": "#2e4a3d",
+      "worn": true
+    },
+    {
+      "name": "Trousers",
+      "details": "Charcoal heathered wool with high waist, ankle length, slight taper, and clean straight leg line",
+      "slot": "bottom",
+      "color_hex": "#363c40",
+      "worn": true
+    },
+    {
+      "name": "Loafers",
+      "details": "Smooth cognac leather with low block heel, rounded toe, and minimal stitching",
+      "slot": "shoes",
+      "color_hex": "#c68e57",
+      "worn": true
+    },
+    {
+      "name": "Scarf",
+      "details": "Thin silk with autumnal rust tones tied loosely at the neck",
+      "slot": "scarf",
+      "color_hex": "#b76a45",
+      "worn": true
+    }
+  ]
+}

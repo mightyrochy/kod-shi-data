@@ -1,0 +1,30 @@
+── ПРОМПТ (2173 симв.) ──
+{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.", "A slot the description says is not needed is not an item: give it worn false. One item carries one thing — of two alternatives list the first; a note in brackets is not an item.", "Slot \"accessory\" is for an item no other slot fits.", "\"is_outfit\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note; then items is empty."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "ITEM_LIST", "answer_schema": {"is_outfit": "yes|no", "items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory", "color_hex": "<#rrggbb or null>", "worn": "<true, or false when the description says the outfit goes without it>"}]}, "input": ["\"description\" — the outfit description"]}, "description": "A refined wool-blend knit in a soft taupe shade (#B8C6C1), tailored with a straight cut that falls to the hip, featuring long sleeves and a V-neckline.\nSlim-fit trousers in dark charcoal denim with a clean crease down the front, offering a straight leg length that hits just above the ankle.\nFlat leather loafers in a matte brown finish (#8B5A2B) with minimal detailing and a flexible sole for all-day comfort.\nThis outfit strikes the perfect balance for a workday office environment, blending professionalism with the relaxed elegance required for neat attire. The warm autumnal tones of the knit complement her skin tone while providing just enough visual interest to stand out without being overpowering. The straight silhouette offers a flattering, modern shape that accommodates movement comfortably through the day."}
+
+── ВІДПОВІДЬ (593 симв., 56.0 с, HTTP 200) ──
+{
+"is_outfit": "yes",
+"items": [
+{
+"name": "wool-blend knit top",
+"details": "refined soft shade with straight cut falling to the hip, long sleeves and V-neckline",
+"slot": "top",
+"color_hex": "#B8C6C1",
+"worn": true
+},
+{
+"name": "denim trousers",
+"details": "slim-fit dark charcoal color with clean crease down the front, straight leg length hitting just above the ankle",
+"slot": "bottom",
+"color_hex": "#3D4245",
+"worn": true
+},
+{
+"name": "leather loafers",
+"details": "flat matte finish with minimal detailing and flexible sole",
+"slot": "shoes",
+"color_hex": "#8B5A2B",
+"worn": true
+}
+]
+}

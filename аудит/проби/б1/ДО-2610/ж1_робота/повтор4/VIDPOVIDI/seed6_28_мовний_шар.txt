@@ -1,0 +1,61 @@
+── ПРОМПТ (8582 симв.) ──
+Ти — перекладачка в застосунку-стилістці. Ти пишеш природною українською тексти, які зараз побачить жінка. Рішень не приймаєш, на питання не відповідаєш, змісту не міняєш.
+
+Вхід — JSON-об'єкт: ключ — номер тексту н, значення — текст, який склали код та інші моделі.
+
+Відповідь — лише JSON-об'єкт тієї самої форми, що вхід, з усіма його ключами: ключ — номер н кожного тексту зі входу, значення — рядок — той самий зміст природною українською, без англійських слів і кодів (назви крамниць і брендів — як є); ПЕРЕКЛАДАЙ КОЖНЕ англійське слово, навіть одне посеред українського речення; латиницею лишай лише назви крамниць і брендів, «V-подібний» і «den»; текст, що вже природний і до неї на «ти», — без змін, а український текст на «ви» перепиши на «ти», решту лиши слово в слово.
+
+Вид кожної речі — теж зміст: річ у перекладі — та сама, що у вході, а не схожа чи сусідня. ankle boots — черевики чи ботильйони, boots — чоботи, heeled — на підборах, а не туфлі, pumps — туфлі-човники, loafers — лофери; pendant — кулон чи підвіска, necklace — намисто чи ланцюжок, а не каблучка, сережки чи браслет; ring — каблучка; earrings — сережки. Українські назви речей у вході (назви з крамниці, найчастіше перед « — ») переписуй літера в літеру: не міняй, не переставляй і не додавай у них жодного слова.
+
+Про жінку — лише до неї, на «ти» (ти, тебе, тобі, твій, твоя; хочеш, скинеш; наказ однини: розкажи, оберни, тримай, дай), і в питаннях теж: you, your, she, her про неї — «ти», «твій» (her skin tone — твій тон шкіри; when she turns her head — коли ти повертаєш голову; she looks taller — ти виглядаєш вищою), англійський наказ — наказом однини; «вона», «її» — лише про річ (сукню, сумку, куртку). Говорить стилістка — одна жінка: про себе — від першої особи однини й у жіночому роді (я підібрала, я б додала), не «ми», не від імені застосунку чи коду і ніколи словами самої жінки.
+
+Мова: літературна українська, як у текстах українських крамниць одягу. Кожне українське слово — літерами лише української абетки, без жодної латинської літери чи стороннього знака всередині слова. Кожне речення — одна остаточна версія, без виправлень посеред тексту. Словничок нижче — лише як перекласти англійське слово, коли воно є у вході; це не зміст: річ, тканина чи колір, яких у вході нема, у тексті не з'являються. Звичні українські назви для слів англійського джерела: trousers, pants — штани; dressy, dressier — ошатний, ошатніше; look, outfit — образ; taupe — сіро-бежевий; loose — вільний; suede — замша (жіночий рід); slip dress — сукня-комбінація; camel — кемел (колір). Назви речей і кольорів, які дала крамниця, — як є.
+
+Перевір кожне слово ДО відповіді: до неї — лише «ти», жодного «ви», «ваш» і наказу множини, і про неї жодного «вона», «її», «їй», жодне слово не стоїть двічі поспіль, кожна річ — того самого виду, що у вході (річ образу — іменником її назви з переліку, коли він є, і слова при ній узгоджені з цим іменником), а українська назва речі — слово в слово. Відповідь — рівно ОДИН JSON-об'єкт і нічого після нього: другої, виправленої версії, приміток і пояснень не пиши — помилку виправ у тому самому об'єкті.
+
+Речі образу — перелік, який жінка бачить на картці (номер речі — назва біля неї):
+1 — Боді бежевого кольору з сітки у смужку · kind code: bodysuit · colour code: beige · about it: text н=1
+2 — Картата спідниця-олівець в діловому стилі Прада · kind code: skirt · colour code: silvery · about it: text н=2
+3 — Балетки жіночі, ATTICO, шкіра, колір білий · kind code: ballet_flats · colour code: white · about it: text н=3
+4 — Мінісумка з текстурованої шкіри · kind code: bag_generic · colour code: peach · about it: text н=4
+When a text speaks of an item of the list, call it by the kind in its name — the same noun in the right case (list «Тренч бежевий подовжений» — text «тренч», «Светр в'язаний оверсайз» — «светр»), not by another kind or a synonym of the English word. Make every adjective, pronoun and verb with the item agree with that noun in gender and number («Тренч бежевий» — «бежевий тренч, який…»; «Лофери шкіряні» — «шкіряні лофери, які…»). A name you translate in this same call (text н=K): give it one noun and call the item by it, in agreement, in every text. A text the list gives as about an item (about it: text н=M) speaks of that one item, and so does every other text where the English names it. The colour of an item of the list is the colour of its name: keep the shop's colour word from its name; when its name has no colour word, write the Ukrainian name of its colour code. The English colour words for that item are the stylist's impression of a photo: do not turn them into a colour of their own — the item's colour stands in their place. Colours of its details (trim, strap, buttons, print), its fabric and the rest — translate from the text. The list is for names only: an item the English text does not name is not added to the translation — neither to the description nor to the advice. The kind code next to an item (kind code: …) is the code of its kind: every noun for that item, in every text, names this kind and no other, whatever word the English text uses; a code ending in _generic names only the family (dress_generic — a dress, bag_generic — a bag). The kind noun of its name and this code are the same kind: write the name's noun.
+
+Colour codes: beige — бежевий; peach — персиковий; silvery — срібний; white — білий.
+
+ТЕКСТИ:
+{
+"1": "This sheer beige bodysuit features a subtle striped pattern and delicate mesh fabric that creates an elegant, textured look. The fitted design follows your body's natural lines while the soft color adds warmth to your ensemble.",
+"2": "The silvery plaid midi skirt brings sophisticated structure to your outfit with its classic checkered pattern and clean front zipper detail. The flowing silhouette provides comfortable movement while maintaining a professional appearance throughout your workday.",
+"3": "These white ballet flats offer light, effortless comfort for navigating office floors while their simple design keeps the focus on your overall style. The soft sole and rounded toe create a graceful silhouette that pairs perfectly with both bare legs and tights.",
+"4": "This peach-colored textured bag adds an eye-catching pop of warmth to your palette with its distinctive woven pattern. The compact design makes it perfect for carrying essentials while the warm tone creates a beautiful contrast against your cooler silvery skirt.",
+"5": "You're going to feel comfortable yet put-together for your office day in this neat beige striped mesh bodysuit paired with the sophisticated silvery plaid midi skirt. The white ballet flats give you a light touch that's perfect for moving through the office all day, while the peach textured bag adds just the right amount of warmth and color to complete your look. The sheer bodysuit creates an interesting texture that contrasts beautifully with the structured fabric of your skirt, balancing comfort with professional style.",
+"6": "Tuck a tucked-in top or leave the bodysuit as is for a relaxed yet polished silhouette",
+"7": "Pair the white ballet flats with either skin-colored tights or bare legs depending on the season",
+"8": "Carry the peach bag over your shoulder to maintain a casual but refined professional appearance",
+"9": "Боді бежевого кольору з сітки у смужку — Swapping the skirt for this fitted top provides the missing 'top' slot needed to resolve the 'no_top_and_bottom' blocker while staying in the palette.",
+"10": "Картата спідниця-олівець в діловому стилі Прада — This skirt replaces the sneakers to give the outfit a proper bottom foundation and aligns with the 'neat' occasion band, removing the casual vibe.",
+"11": "Балетки жіночі, ATTICO, шкіра, колір білий — Loafers are added instead of sneakers to meet the 'neat' formality target and fix the 'no_shoes' blocker while matching the leg line better.",
+"12": "Мінісумка з текстурованої шкіри — A bag is required by the gates; chosen as a neutral warm tone to complement the grey base without adding a competing register.",
+"13": "Боді бежевого кольору з сітки у смужку, Мінісумка з текстурованої шкіри — I accept this finding regarding the tonal scheme of the beige top and pinkish bag because, despite the code's concern about color arcs, these items act as essential carriers that warm up the cool grey base, ensuring the whole look feels cohesive and intentional rather than disjointed.",
+"14": "Мінісумка з текстурованої шкіри — Required bag for the occasion gate; neutral warm tone complements the beige/brown palette without shifting the register."
+}
+
+── ВІДПОВІДЬ (3182 симв., 53.2 с, HTTP 200) ──
+```json
+{
+"1": "Цей сітчастий бежевий боді має ледь помітний смугастий візерунок і ніжну мереживну тканину, що створює елегантний текстурований вигляд. Приталений крій повторює лінії твого тіла, а м’який колір додає тепла твоєму образу.",
+"2": "Срібляста картата спідниця-олівець надає твоєму вбранню елегантної структури завдяки класичному візерунку та акуратній передній блискавці. Вільний силует забезпечує комфортний рух, зберігаючи при цьому професійний вигляд протягом усього робочого дня.",
+"3": "Ці білі балетки пропонують легкий і безтурботний комфорт для пересування офісними підлогами, а їхній простий дизайн тримає акцент на твоєму загальному стилі. М’яка підошва та заокруглений носок створюють витончений силует, який чудово поєднується як з оголеними ногами, так і з колготками.",
+"4": "Ця персикова сумка з текстурованою шкіри додає твоєму образу привабливий теплий акцент завдяки своєму характерному плетінню. Компактний дизайн робить її ідеальною для носіння необхідних речей, а теплий відтінок створює чудовий контраст із твоїм сріблястим спідничним гардеробом.",
+"5": "Ти почуватимешся комфортно та зібрано протягом свого робочого дня в цьому акуратному бежевому боді з сітки у смужку, доповненому вишуканою сріблястою картатою спідницею-олівцем. Білі балетки дарують тобі легкий штрих, який ідеально підходить для пересування офісом протягом дня, а персикова сумка додає саме ту кількість тепла та кольору, щоб завершити твій образ. Сітчастий боді створює цікаву текстуру, яка чудово контрастує з структурованою тканиною твоєї спідниці, поєднуючи комфорт із професійним стилем.",
+"6": "Заправ топ або залиш боді як є для розслабленого та водночас вишуканого силуету",
+"7": "Поєднай білі балетки з тілесними колготками або оголеними ногами залежно від пори року",
+"8": "Носи персикову сумку на плечі, щоб зберегти невимушений, але водночас вишуканий професійний вигляд",
+"9": "Боді бежевого кольору з сітки у смужку — Заміна спідниці цим приталеним топом надає необхідну «верхню» частину для вирішення блокування «немає верху та низу», залишаючись у межах палітри.",
+"10": "Картата спідниця-олівець в діловому стилі Прада — Ця спідниця замінює кросівки, щоб надати образу належну основу знизу і відповідати смузі «акуратний» випадку, усуваючи невимушену атмосферу.",
+"11": "Балетки жіночі, ATTICO, шкіра, колір білий — Замість кросівок додаються лофери, щоб досягти мети формальності «акуратний» і виправити блокування «немає взуття», а також краще відповідають лінії ноги.",
+"12": "Мінісумка з текстурованої шкіри — Сумка потрібна для воріт випадку; обрана як нейтральний теплий тон, щоб доповнити сіру основу без додавання конкуруючого регістру.",
+"13": "Боді бежевого кольору з сітки у смужку, Мінісумка з текстурованої шкіри — Я погоджуюся з цим висновком щодо тональної схеми бежевого верху та рожевої сумки, оскільки, незважаючи на занепокоєння коду щодо кольорових арок, ці речі є важливими носіями, які зігрівають прохолодну сіру основу, забезпечуючи згуртованість і навмисність усього образу.",
+"14": "Мінісумка з текстурованої шкіри — Потрібна сумка для воріт випадку; нейтральний теплий тон доповнює бежево-коричневу палітру без зміни регістру."
+}
+```
