@@ -1,0 +1,37 @@
+── ПРОМПТ (2375 симв.) ──
+{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.", "A slot the description says is not needed is not an item: give it worn false. One item carries one thing — of two alternatives list the first; a note in brackets is not an item.", "Slot \"accessory\" is for an item no other slot fits.", "\"is_outfit\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note; then items is empty."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "ITEM_LIST", "answer_schema": {"is_outfit": "yes|no", "items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory", "color_hex": "<#rrggbb or null>", "worn": "<true, or false when the description says the outfit goes without it>"}]}, "input": ["\"description\" — the outfit description"]}, "description": "A relaxed dark indigo denim jacket, tailored box cut, medium length in a rich midnight blue (hex code: #191970), washed cotton twill.\nBelow it, a soft charcoal heather knit polo neck, standard crew neck and straight drop shoulder silhouette, knee-length hem in a muted slate gray (hex code: #6d7e8f), brushed jersey blend.\nWorn with slim-fit black jeans, classic taper leg and ankle length in jet black (hex code: #0a0a0a), 100% organic cotton with subtle stretch.\nFinished by minimalist white leather sneakers, rounded toe and low chunky sole, off-white (hex code: #fdfdfd) smooth calfskin.\nThis outfit works perfectly for an autumn morning as it balances the crisp cool air of the season with layers that provide warmth without bulk. The indigo jacket adds a stylish outer layer appropriate for daytime daylight, while the dark knit and jeans offer comfort for everyday activities. The neutral color palette of slate gray and black grounds the look, allowing the denim to serve as the focal point of the casual ensemble."}
+
+── ВІДПОВІДЬ (908 симв., 48.3 с, HTTP 200) ──
+{
+  "is_outfit": "yes",
+  "items": [
+    {
+      "name": "denim jacket",
+      "details": "relaxed tailored box cut medium length washed cotton twill",
+      "slot": "outerwear",
+      "color_hex": "#191970",
+      "worn": true
+    },
+    {
+      "name": "knit polo neck",
+      "details": "soft charcoal heather knit standard crew neck straight drop shoulder silhouette knee-length hem brushed jersey blend",
+      "slot": "top",
+      "color_hex": "#6d7e8f",
+      "worn": true
+    },
+    {
+      "name": "jeans",
+      "details": "slim-fit classic taper leg and ankle length 100% organic cotton with subtle stretch",
+      "slot": "bottom",
+      "color_hex": "#0a0a0a",
+      "worn": true
+    },
+    {
+      "name": "leather sneakers",
+      "details": "minimalist rounded toe low chunky sole off-white smooth calfskin",
+      "slot": "shoes",
+      "color_hex": "#fdfdfd",
+      "worn": true
+    }
+  ]
+}

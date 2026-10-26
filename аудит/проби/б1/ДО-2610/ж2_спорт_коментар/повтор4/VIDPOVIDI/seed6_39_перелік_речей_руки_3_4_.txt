@@ -1,0 +1,37 @@
+── ПРОМПТ (2386 симв.) ──
+{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.", "A slot the description says is not needed is not an item: give it worn false. One item carries one thing — of two alternatives list the first; a note in brackets is not an item.", "Slot \"accessory\" is for an item no other slot fits.", "\"is_outfit\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note; then items is empty."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "ITEM_LIST", "answer_schema": {"is_outfit": "yes|no", "items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory", "color_hex": "<#rrggbb or null>", "worn": "<true, or false when the description says the outfit goes without it>"}]}, "input": ["\"description\" — the outfit description"]}, "description": "Heavyweight denim jacket, oversized relaxed fit, hip length, faded indigo wash, durable cotton twill.\nCropped crewneck sweater, ribbed mock neck hem, waist length, oatmeal heather, soft fine-knit merino wool blend.\nDark wash straight-leg jeans, standard rise, full length, deep navy blue, sturdy denim with subtle fading at the thighs.\nChunky white leather sneakers, rounded toe, ankle height, pure white, premium smooth leather and rubber sole.\nWhy this outfit works: This ensemble perfectly balances autumn warmth with everyday comfort while strictly adhering to her request for no heels and a refusal of generic prints on footwear. The oversized denim jacket provides an essential layer against the crisp morning air, contrasting nicely with the cozy texture of the oatmeal knit sweater. By sticking to dark denim and clean white sneakers, the look remains neat and classic without any distracting patterns or elevated shoe styles. It offers a relaxed yet polished silhouette ideal for a casual morning out during the fall season."}
+
+── ВІДПОВІДЬ (900 симв., 81.0 с, HTTP 200) ──
+{
+  "is_outfit": "yes",
+  "items": [
+    {
+      "name": "denim jacket",
+      "details": "Heavyweight, oversized relaxed fit, hip length, durable cotton twill",
+      "slot": "outerwear",
+      "color_hex": "#4b6285",
+      "worn": true
+    },
+    {
+      "name": "crewneck sweater",
+      "details": "Cropped, ribbed mock neck hem, waist length, soft fine-knit merino wool blend",
+      "slot": "top",
+      "color_hex": "#d6cebe",
+      "worn": true
+    },
+    {
+      "name": "jeans",
+      "details": "Straight-leg, standard rise, full length, sturdy denim with subtle fading at the thighs",
+      "slot": "bottom",
+      "color_hex": "#0b1a2e",
+      "worn": true
+    },
+    {
+      "name": "sneakers",
+      "details": "Chunky white leather, rounded toe, ankle height, premium smooth leather and rubber sole",
+      "slot": "shoes",
+      "color_hex": "#ffffff",
+      "worn": true
+    }
+  ]
+}

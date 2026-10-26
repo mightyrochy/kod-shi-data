@@ -1,0 +1,37 @@
+── ПРОМПТ (2545 симв.) ──
+{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.", "A slot the description says is not needed is not an item: give it worn false. One item carries one thing — of two alternatives list the first; a note in brackets is not an item.", "Slot \"accessory\" is for an item no other slot fits.", "\"is_outfit\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note; then items is empty."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "ITEM_LIST", "answer_schema": {"is_outfit": "yes|no", "items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory", "color_hex": "<#rrggbb or null>", "worn": "<true, or false when the description says the outfit goes without it>"}]}, "input": ["\"description\" — the outfit description"]}, "description": "A soft cream-colored silk blend blouse with a relaxed collar and dropped shoulders, featuring a loose A-line cut that falls to high hip length in an earthy beige tone (#d6cbb8) with a lightweight woven fabric.\nPair this with dark indigo denim jeans in a straight leg silhouette, reaching full ankle length in a deep navy blue shade (#1f2a40) crafted from sturdy organic cotton twill.\nComplete the look with tan leather loafers with a low block heel, designed in a rounded toe cut at mid-calf length, made from smooth supple calfskin in a warm cognac color (#c59d56).\nAdd a woven straw tote bag with leather handles to carry essentials, finished with natural jute texture and an oatmeal brown hue (#e3d0a8) for a tactile contrast.\n\nThis outfit works perfectly for an autumn morning while honoring the desire for an everyday, relaxed dress code by blending breathable natural fibers like silk and cotton with durable denim. The neutral beige and indigo color palette complements warm skin tones while maintaining a polished yet effortless vibe suitable for daylight hours. By omitting outer layers, the ensemble ensures comfort in mild temperatures without sacrificing style or intentionality."}
+
+── ВІДПОВІДЬ (1024 симв., 49.4 с, HTTP 200) ──
+{
+  "is_outfit": "yes",
+  "items": [
+    {
+      "name": "blouse",
+      "details": "soft cream-colored silk blend blouse with a relaxed collar and dropped shoulders, featuring a loose A-line cut that falls to high hip length",
+      "slot": "top",
+      "color_hex": "#d6cbb8",
+      "worn": true
+    },
+    {
+      "name": "jeans",
+      "details": "dark indigo denim jeans in a straight leg silhouette, reaching full ankle length, crafted from sturdy organic cotton twill",
+      "slot": "bottom",
+      "color_hex": "#1f2a40",
+      "worn": true
+    },
+    {
+      "name": "loafers",
+      "details": "tan leather loafers with a low block heel, designed in a rounded toe cut at mid-calf length, made from smooth supple calfskin",
+      "slot": "shoes",
+      "color_hex": "#c59d56",
+      "worn": true
+    },
+    {
+      "name": "tote bag",
+      "details": "woven straw tote bag with leather handles, finished with natural jute texture",
+      "slot": "bag",
+      "color_hex": "#e3d0a8",
+      "worn": true
+    }
+  ]
+}
