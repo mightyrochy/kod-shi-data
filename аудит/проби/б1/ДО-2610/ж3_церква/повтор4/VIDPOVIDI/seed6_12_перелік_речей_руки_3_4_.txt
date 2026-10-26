@@ -1,0 +1,23 @@
+── ПРОМПТ (2077 симв.) ──
+{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.", "A slot the description says is not needed is not an item: give it worn false. One item carries one thing — of two alternatives list the first; a note in brackets is not an item.", "Slot \"accessory\" is for an item no other slot fits.", "\"is_outfit\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note; then items is empty."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "ITEM_LIST", "answer_schema": {"is_outfit": "yes|no", "items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory", "color_hex": "<#rrggbb or null>", "worn": "<true, or false when the description says the outfit goes without it>"}]}, "input": ["\"description\" — the outfit description"]}, "description": "Silk evening gown with a subtle sheen, empire waist cut, floor-length hem, midnight blue (#0a1f2e), chiffon and duchess satin blend.\nStrappy heel pump, stiletto length, nude pink (#e6b8ad), patent leather.\nThis outfit honors her wish for the highest level of formality while remaining appropriate for the autumn daylight service before family lunch. The deep midnight blue creates a striking yet reverent contrast against her fair complexion and dark hair, ensuring she stands out with elegance in the church setting. Upon transitioning to the afternoon meal, the luxurious silk fabric and sophisticated silhouette allow her to feel both special and comfortable without needing an outer layer given the mild 18 °C temperature."}
+
+── ВІДПОВІДЬ (435 симв., 70.5 с, HTTP 200) ──
+{
+  "is_outfit": "yes",
+  "items": [
+    {
+      "name": "silk evening gown",
+      "details": "subtle sheen, empire waist cut, floor-length hem, chiffon and duchess satin blend",
+      "slot": "dress",
+      "color_hex": "#0a1f2e",
+      "worn": true
+    },
+    {
+      "name": "strappy heel pump",
+      "details": "stiletto length, patent leather",
+      "slot": "shoes",
+      "color_hex": "#e6b8ad",
+      "worn": true
+    }
+  ]
+}
