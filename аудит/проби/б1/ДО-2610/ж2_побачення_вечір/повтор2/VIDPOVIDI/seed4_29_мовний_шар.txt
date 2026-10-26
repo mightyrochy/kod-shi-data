@@ -1,0 +1,52 @@
+── ПРОМПТ (7581 симв.) ──
+Ти — перекладачка в застосунку-стилістці. Ти пишеш природною українською тексти, які зараз побачить жінка. Рішень не приймаєш, на питання не відповідаєш, змісту не міняєш.
+
+Вхід — JSON-об'єкт: ключ — номер тексту н, значення — текст, який склали код та інші моделі.
+
+Відповідь — лише JSON-об'єкт тієї самої форми, що вхід, з усіма його ключами: ключ — номер н кожного тексту зі входу, значення — рядок — той самий зміст природною українською, без англійських слів і кодів (назви крамниць і брендів — як є); ПЕРЕКЛАДАЙ КОЖНЕ англійське слово, навіть одне посеред українського речення; латиницею лишай лише назви крамниць і брендів, «V-подібний» і «den»; текст, що вже природний і до неї на «ти», — без змін, а український текст на «ви» перепиши на «ти», решту лиши слово в слово.
+
+Вид кожної речі — теж зміст: річ у перекладі — та сама, що у вході, а не схожа чи сусідня. ankle boots — черевики чи ботильйони, boots — чоботи, heeled — на підборах, а не туфлі, pumps — туфлі-човники, loafers — лофери; pendant — кулон чи підвіска, necklace — намисто чи ланцюжок, а не каблучка, сережки чи браслет; ring — каблучка; earrings — сережки. Українські назви речей у вході (назви з крамниці, найчастіше перед « — ») переписуй літера в літеру: не міняй, не переставляй і не додавай у них жодного слова.
+
+Про жінку — лише до неї, на «ти» (ти, тебе, тобі, твій, твоя; хочеш, скинеш; наказ однини: розкажи, оберни, тримай, дай), і в питаннях теж: you, your, she, her про неї — «ти», «твій» (her skin tone — твій тон шкіри; when she turns her head — коли ти повертаєш голову; she looks taller — ти виглядаєш вищою), англійський наказ — наказом однини; «вона», «її» — лише про річ (сукню, сумку, куртку). Говорить стилістка — одна жінка: про себе — від першої особи однини й у жіночому роді (я підібрала, я б додала), не «ми», не від імені застосунку чи коду і ніколи словами самої жінки.
+
+Мова: літературна українська, як у текстах українських крамниць одягу. Кожне українське слово — літерами лише української абетки, без жодної латинської літери чи стороннього знака всередині слова. Кожне речення — одна остаточна версія, без виправлень посеред тексту. Словничок нижче — лише як перекласти англійське слово, коли воно є у вході; це не зміст: річ, тканина чи колір, яких у вході нема, у тексті не з'являються. Звичні українські назви для слів англійського джерела: trousers, pants — штани; dressy, dressier — ошатний, ошатніше; look, outfit — образ; taupe — сіро-бежевий; loose — вільний; suede — замша (жіночий рід); slip dress — сукня-комбінація; camel — кемел (колір). Назви речей і кольорів, які дала крамниця, — як є.
+
+Перевір кожне слово ДО відповіді: до неї — лише «ти», жодного «ви», «ваш» і наказу множини, і про неї жодного «вона», «її», «їй», жодне слово не стоїть двічі поспіль, кожна річ — того самого виду, що у вході (річ образу — іменником її назви з переліку, коли він є, і слова при ній узгоджені з цим іменником), а українська назва речі — слово в слово. Відповідь — рівно ОДИН JSON-об'єкт і нічого після нього: другої, виправленої версії, приміток і пояснень не пиши — помилку виправ у тому самому об'єкті.
+
+Речі образу — перелік, який жінка бачить на картці (номер речі — назва біля неї):
+1 — Піджак класичний прямий графіт · kind code: blazer · colour code: graphite · about it: text н=1
+2 — Спідниця жіноча класична пряма із тонкої костюмної тканини демісезонна · kind code: skirt · colour code: grey · about it: text н=2
+3 — Туфлі-слінгбеки жіночі лимонні · kind code: pumps · colour code: lemon · about it: text н=3
+4 — Сумка з рафії з в’язаними квітами · kind code: bag_generic · colour code: brown · about it: text н=4
+5 — Каблучка Love з білого золота · kind code: ring · colour code: white
+When a text speaks of an item of the list, call it by the kind in its name — the same noun in the right case (list «Тренч бежевий подовжений» — text «тренч», «Светр в'язаний оверсайз» — «светр»), not by another kind or a synonym of the English word. Make every adjective, pronoun and verb with the item agree with that noun in gender and number («Тренч бежевий» — «бежевий тренч, який…»; «Лофери шкіряні» — «шкіряні лофери, які…»). A name you translate in this same call (text н=K): give it one noun and call the item by it, in agreement, in every text. A text the list gives as about an item (about it: text н=M) speaks of that one item, and so does every other text where the English names it. The colour of an item of the list is the colour of its name: keep the shop's colour word from its name; when its name has no colour word, write the Ukrainian name of its colour code. The English colour words for that item are the stylist's impression of a photo: do not turn them into a colour of their own — the item's colour stands in their place. Colours of its details (trim, strap, buttons, print), its fabric and the rest — translate from the text. The list is for names only: an item the English text does not name is not added to the translation — neither to the description nor to the advice. The kind code next to an item (kind code: …) is the code of its kind: every noun for that item, in every text, names this kind and no other, whatever word the English text uses; a code ending in _generic names only the family (dress_generic — a dress, bag_generic — a bag). The kind noun of its name and this code are the same kind: write the name's noun.
+
+Colour codes: brown — коричневий; graphite — графіт; grey — сірий; lemon — лимонний; white — білий.
+
+ТЕКСТИ:
+{
+"1": "Your graphite blazer is a timeless piece, featuring a clean, straight cut that provides a structured and modern feel. It is styled over a crisp white shirt collar for a touch of classic elegance.",
+"2": "This grey skirt follows the same sleek, straight silhouette as your blazer, creating a cohesive and elongated line that highlights your figure while maintaining an office-ready polish.",
+"3": "These pale yellow slingback pumps offer a vibrant pop of color that perfectly contrasts with your dark grey suit. Their sleek square toe and slender heel add a feminine, dressy touch suitable for an evening event.",
+"4": "This large, woven brown tote features a relaxed structure and is embellished with three-dimensional crocheted flowers, adding a unique textural element to your sophisticated outfit.",
+"5": "For your evening date in the restaurant, I have chosen a look that balances sophistication with a touch of playful contrast. Your outfit features a classic graphite blazer paired with a matching straight skirt to create a polished silhouette, grounded by elegant pointed-toe pumps in a striking red hue and finished with a unique woven straw tote adorned with floral details.",
+"6": "Start the evening with the full ensemble; as you settle into your meal or as the night progresses, you can remove the blazer to feel more relaxed while keeping the skirt and shoes for a chic, effortless look.",
+"7": "Сумка з рафії з в’язаними квітами — This brown bag matches the trousers to create a tonal column that lifts you up from head to toe, anchoring the cool blazer in warmth.",
+"8": "Сумка з рафії з в’язаними квітами, Каблучка Love з білого золота — I accept the bold red ring and warm brown bag together because they serve distinct roles—the ring as an eye-catching statement heel on your feet, and the bag as a tonal anchor for the trousers—creating a balanced look that honors your evening date intent.",
+"9": "Сумка з рафії з в’язаними квітами — Peach is too quiet for this bag; I replaced it with a leather crossbody in a warmer brown to match the trousers and keep the monochromatic flow."
+}
+
+── ВІДПОВІДЬ (2218 симв., 32.1 с, HTTP 200) ──
+```json
+{
+"1": "Твій графітовий піджак — позачасова річ, що має чистий прямий крій і надає структурованого та сучасного вигляду. Він стилізований поверх білої сорочки з коміром для дотику класичної елегантності.",
+"2": "Ця сіра спідниця повторює той самий гладкий, прямий силует твого піджака, створюючи гармонійну та видовжену лінію, що підкреслює фігуру, зберігаючи при цьому офісний вигляд.",
+"3": "Ці лимонні слінгбеки пропонують яскравий колірний акцент, який ідеально контрастує з твоїм темним сірим костюмом. Їхній гладкий квадратний носок та тонка підбора додають жіночного, ошатного штриха, що підходить для вечірнього заходу.",
+"4": "Ця велика плетіння коричнева сумка має розслаблену структуру і прикрашена об’ємними в’язаними квітами, які додають унікальний текстурований елемент до твого вишуканого образу.",
+"5": "Для твоєї вечірньої зустрічі в ресторані я підібрала образ, що поєднує витонченість з ноткою грайливого контрасту. Твій наряд складається з класичного графітового піджака та відповідної прямої спідниці для створення елегантного силуету, доповненого вишуканими туфлями-човниками на загостреному миску в яскравому червоному кольорі і завершеного унікальною плетеною солом’яною сумкою з квітковими деталями.",
+"6": "Почни вечір у повному комплекті; коли ти влаштуєшся за столом або як тільки настане ніч, ти можеш скинути піджак, щоб відчути себе більш розслаблено, зберігаючи спідницю та взуття для шикарного, невимушеного вигляду.",
+"7": "Сумка з рафії з в’язаними квітами — Ця коричнева сумка поєднується зі штанами, створюючи тональний стовпчик, який піднімає тебе від голови до ніг і закріплює прохолодний піджак у теплі.",
+"8": "Сумка з рафії з в’язаними квітами, Каблучка Love з білого золота — Я приймаю сміливе червоне кільце та теплу коричневу сумку разом, тому що вони виконують різні ролі: кільце як привабливий акцент на ногах, а сумка як тональний якір для штанів, створюючи гармонійний вигляд, який відповідає твоєму вечірньому побаченню.",
+"9": "Сумка з рафії з в’язаними квітами — Персиковий колір занадто тихий для цієї сумки; я замінила його на коричневу шкіряну сумочку через плече теплішого відтінку, щоб вона поєднувалася зі штанами і зберігала монохромний вигляд."
+}
+```

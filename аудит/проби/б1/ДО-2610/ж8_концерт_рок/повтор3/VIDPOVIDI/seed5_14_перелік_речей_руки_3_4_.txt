@@ -1,0 +1,37 @@
+── ПРОМПТ (2344 симв.) ──
+{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.", "A slot the description says is not needed is not an item: give it worn false. One item carries one thing — of two alternatives list the first; a note in brackets is not an item.", "Slot \"accessory\" is for an item no other slot fits.", "\"is_outfit\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note; then items is empty."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "ITEM_LIST", "answer_schema": {"is_outfit": "yes|no", "items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory", "color_hex": "<#rrggbb or null>", "worn": "<true, or false when the description says the outfit goes without it>"}]}, "input": ["\"description\" — the outfit description"]}, "description": "Leather moto jacket, cropped cut, hip length, deep black with hex code #000000, nappa leather.\nWide-leg dark denim jeans, relaxed fit through the thigh and tapering at the ankle, indigo wash with hex code #19263B, heavy raw cotton.\nChunky white sneakers, classic low-top style, bone color with hex code #F5F5DC, canvas and rubber.\nSilver statement hoop earrings, medium diameter, polished metal, stainless steel.\nThe outfit works perfectly for a Friday rock concert because the leather moto jacket adds an edgy, protective layer against the cool autumn evening air while keeping her movement unrestricted in the crowd. The dark indigo jeans balance the brightness of the sneakers and reflect the high-energy vibe of the venue without feeling too dressy for standing on one's feet all night. This combination honors the \"smart\" formality level by blending refined textures like leather with durable denim, ensuring she looks stylish yet ready to dance or walk through the crowd comfortably."}
+
+── ВІДПОВІДЬ (817 симв., 55.9 с, HTTP 200) ──
+{
+  "is_outfit": "yes",
+  "items": [
+    {
+      "name": "Leather moto jacket",
+      "details": "cropped cut, hip length, nappa leather",
+      "slot": "outerwear",
+      "color_hex": "#000000",
+      "worn": true
+    },
+    {
+      "name": "Wide-leg dark denim jeans",
+      "details": "relaxed fit through the thigh and tapering at the ankle, heavy raw cotton",
+      "slot": "bottom",
+      "color_hex": "#19263B",
+      "worn": true
+    },
+    {
+      "name": "Chunky white sneakers",
+      "details": "classic low-top style, canvas and rubber",
+      "slot": "shoes",
+      "color_hex": "#F5F5DC",
+      "worn": true
+    },
+    {
+      "name": "Silver statement hoop earrings",
+      "details": "medium diameter, polished metal",
+      "slot": "earrings",
+      "color_hex": null,
+      "worn": true
+    }
+  ]
+}

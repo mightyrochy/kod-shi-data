@@ -1,0 +1,65 @@
+── ПРОМПТ (2996 симв.) ──
+{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.", "A slot the description says is not needed is not an item: give it worn false. One item carries one thing — of two alternatives list the first; a note in brackets is not an item.", "Slot \"accessory\" is for an item no other slot fits.", "\"is_outfit\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note; then items is empty."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "ITEM_LIST", "answer_schema": {"is_outfit": "yes|no", "items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory", "color_hex": "<#rrggbb or null>", "worn": "<true, or false when the description says the outfit goes without it>"}]}, "input": ["\"description\" — the outfit description"]}, "description": "Charcoal wool-blend two-button suit jacket with a single-breasted cut and notch lapels, mid-thigh length, #2F4F4F (dark slate gray), structured woven fabric.\nCharcoal wool-blend straight-leg trousers with a high rise and clean front closure, full ankle length, #2F4F4F (dark slate gray), same structured woven fabric as the jacket.\nCream silk-blend button-down blouse with a relaxed fit and rolled cuffs, hip length, #FFFDD0 (creamy white), smooth sateen fabric.\nBlack polished leather pumps with a 3-inch stiletto heel and closed toe, medium shaft height, #000000 (true black), calfskin leather.\nMatte black pearl-encrusted clutch handbag with a gold chain strap, small rectangular shape, #000000 (true black), structured fabric.\nOpaque charcoal wool tights at 40 denier, knee-high length, #2F4F4F (dark slate gray matching the suit), fine knit nylon.\nSimple platinum wedding band on left ring finger and a small pearl stud earring in lobe, round cut, metallic finish, polished metal.\n\nThis outfit works because it adheres strictly to the solemn requirements of a formal funeral while respecting the specific timing and weather conditions. The dark slate gray wool suit provides the necessary gravity and respect for the occasion without being overly black, which can feel too stark for an autumn day at 18 °C. The cream blouse offers a subtle contrast that softens the overall look appropriately for daylight viewing, ensuring she remains visible yet dignified. Finally, the polished shoes and minimal accessories strike the perfect balance between honoring the deceased and maintaining personal elegance without unnecessary distraction."}
+
+── ВІДПОВІДЬ (1398 симв., 61.6 с, HTTP 200) ──
+{
+"is_outfit": "yes",
+"items": [
+{
+"name": "suit jacket",
+"details": "two-button single-breasted cut with notch lapels, mid-thigh length, structured woven fabric",
+"slot": "outerwear",
+"color_hex": "#2F4F4F",
+"worn": true
+},
+{
+"name": "trousers",
+"details": "straight-leg high rise with clean front closure, full ankle length, same structured woven fabric as jacket",
+"slot": "bottom",
+"color_hex": "#2F4F4F",
+"worn": true
+},
+{
+"name": "blouse",
+"details": "button-down relaxed fit with rolled cuffs, hip length, smooth sateen fabric",
+"slot": "top",
+"color_hex": "#FFFDD0",
+"worn": true
+},
+{
+"name": "pumps",
+"details": "polished leather closed toe with 3-inch stiletto heel and medium shaft height",
+"slot": "shoes",
+"color_hex": "#000000",
+"worn": true
+},
+{
+"name": "clutch handbag",
+"details": "small rectangular shape with gold chain strap, structured fabric",
+"slot": "bag",
+"color_hex": "#000000",
+"worn": true
+},
+{
+"name": "tights",
+"details": "opaque wool fine knit nylon knee-high length at 40 denier",
+"slot": "tights",
+"color_hex": "#2F4F4F",
+"worn": true
+},
+{
+"name": "wedding band",
+"details": "simple platinum round cut metallic finish polished metal on left ring finger",
+"slot": "ring",
+"color_hex": null,
+"worn": true
+},
+{
+"name": "earring",
+"details": "small pearl stud round cut with lobe placement and metallic finish",
+"slot": "earrings",
+"color_hex": null,
+"worn": true
+}
+]
+}
