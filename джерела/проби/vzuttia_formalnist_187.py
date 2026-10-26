@@ -2,11 +2,11 @@
 # «уггі», «еспадрильї» ще з теми-10, а `інтервал_типу` про них не знав — (None, None).
 # K-KOH-02/05 беруть речі ЛИШЕ з інтервалом, тож на весіллі 7–9 замшеві мокасини
 # проходили МОВЧКИ. Сім смуг узято з тих, що вже стоять у таблиці, — нових чисел нема.
-import sys, os, collections, importlib.util
+import sys, os, collections, importlib.util, tempfile
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), ".."))
 import feed, фід_каталог as ФК, фід_слот as ФС, формальність as ФН
 _сп = importlib.util.spec_from_file_location(
-    "до_формальність", os.environ.get("DO_FORM", "/tmp/187/до_формальність.py"))
+    "до_формальність", os.environ.get("DO_FORM", os.path.join(tempfile.gettempdir(), "187", "до_формальність.py")))
 ФД = importlib.util.module_from_spec(_сп); _сп.loader.exec_module(ФД)
 СІМ = ("уггі", "еспадрильї", "балетки", "мюлі", "челсі", "мокасини", "ботфорти")
 кат = ФК.прочитати_каталог(feed.каталог_на_диску("каталог_повний.xml"), 0)["каталог"]

@@ -90,6 +90,7 @@ _ПСЕВДОНІМИ = {"список": "list", "spysok": "list", "оцінка
 _ОПИС_РЕЧІ = "; ".join([next(п.що for п in _ПМ.СКЛАДАННЯ.вхід if п.шлях == "pool")]
                        + ["«%s» — %s" % пара for пара in _Д.ОПИС_ТИПОВИХ.items() if пара[0] != "in_arc"])
 _КОНТЕКСТ = (
+    _ЗП.ПОЛЕ_ВІДБОРУ,
     _ЗП.Поле("case", "her case: the occasion, her words, wishes, mood and refusals"),
     _ЗП.Поле("day", "her day as facts: what she will do, where, how long, the weather, the hour "
                     "and light, the level of the occasion"),
