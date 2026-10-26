@@ -5,7 +5,8 @@
 
 .DESCRIPTION
 Крок 1 НАЛАШТУВАННЯ.md (claude --version), крок 2 (файли й SHA-256 проти хеші.psd1 = таблиці «Хеші файлів»),
-тека %USERPROFILE%\gemini-outbox, спостерігач за СПОСТЕРІГАЧ.md «Налаштування» (спершу -DryRun, потім реєстрація).
+тека %USERPROFILE%\gemini-outbox, спостерігач за СПОСТЕРІГАЧ.md «Налаштування» (спершу -DryRun, потім реєстрація),
+рушій Claude — задача claude-run (НАЛАШТУВАННЯ.md «Рушій Claude»).
 Ідемпотентний: повторний запуск перекачує файли, перевіряє хеші, перереєструє задачу. Паролів і токенів не читає.
 Команди — дослівно з НАЛАШТУВАННЯ.md і СПОСТЕРІГАЧ.md.
 #>
@@ -35,9 +36,11 @@ Invoke-WebRequest "$base/gemini_publish.ps1" -OutFile "$pub\gemini_publish.ps1" 
 Invoke-WebRequest "$base/gemini_run.ps1" -OutFile "$env:TEMP\gemini_run.ps1" -UseBasicParsing
 $w = "$env:USERPROFILE\gemini-watch"; New-Item -ItemType Directory -Force $w | Out-Null
 Invoke-WebRequest "$base/gemini_watch.ps1" -OutFile "$w\gemini_watch.ps1" -UseBasicParsing
+$cr = "$env:USERPROFILE\claude-run"; New-Item -ItemType Directory -Force $cr | Out-Null
+Invoke-WebRequest "$base/claude_run.ps1" -OutFile "$cr\claude_run.ps1" -UseBasicParsing
 Get-FileHash "$pub\gemini_publish.ps1", "$env:TEMP\gemini_run.ps1" | Format-List Hash, Path
 $bad = @()
-foreach ($p in @(@('gemini_publish.ps1', "$pub\gemini_publish.ps1"), @('gemini_run.ps1', "$env:TEMP\gemini_run.ps1"), @('gemini_watch.ps1', "$w\gemini_watch.ps1"))) {
+foreach ($p in @(@('gemini_publish.ps1', "$pub\gemini_publish.ps1"), @('gemini_run.ps1', "$env:TEMP\gemini_run.ps1"), @('gemini_watch.ps1', "$w\gemini_watch.ps1"), @('claude_run.ps1', "$cr\claude_run.ps1"))) {
     $got = (Get-FileHash $p[1] -Algorithm SHA256).Hash
     if ($got -ne $expected[$p[0]]) { $bad += "$($p[0]): маємо $got, очікували $($expected[$p[0]])" }
 }
@@ -73,5 +76,17 @@ $s = New-ScheduledTaskSettingsSet @set -ExecutionTimeLimit (New-TimeSpan -Minute
 $p = New-ScheduledTaskPrincipal -UserId "$env:USERDOMAIN\$env:USERNAME" -LogonType Interactive -RunLevel Limited
 Register-ScheduledTask -TaskName 'gemini-watch' -Action $a -Trigger $t -Settings $s -Principal $p -Force | Out-Null
 Get-ScheduledTask gemini-watch | ForEach-Object { "gemini-watch: $($_.State), інтервал $($_.Triggers[0].Repetition.Interval)" }
+
+# --- рушій Claude ---
+Step 'Рушій Claude: клон і реєстрація задачі claude-run'
+$ErrorActionPreference = 'Continue'
+$o = & git -C "$env:USERPROFILE\kod-shi-data" remote get-url origin 2>&1
+$ErrorActionPreference = 'Stop'
+if (($o -replace '\.git$', '') -ne 'https://github.com/mightyrochy/kod-shi-data') { Stop-Here "клон $env:USERPROFILE\kod-shi-data не знайдено чи origin не той ($o): claude-run бере наряди з нього." }
+$a = New-ScheduledTaskAction -Execute 'conhost.exe' -Argument "--headless powershell.exe -NoProfile -NonInteractive -ExecutionPolicy Bypass -File `"$cr\claude_run.ps1`""
+$t = New-ScheduledTaskTrigger -Once -At (Get-Date).AddMinutes(1) -RepetitionInterval (New-TimeSpan -Minutes 5)
+$s = New-ScheduledTaskSettingsSet @set -ExecutionTimeLimit ([TimeSpan]::Zero)
+Register-ScheduledTask -TaskName 'claude-run' -Action $a -Trigger $t -Settings $s -Principal $p -Force | Out-Null
+Get-ScheduledTask claude-run | ForEach-Object { "claude-run: $($_.State), інтервал $($_.Triggers[0].Repetition.Interval), межа часу $($_.Settings.ExecutionTimeLimit)" }
 
 Write-Host "`nГОТОВО: частина власника пройдена. Далі — за ЩО_НАТИСНУТИ.md (крок 2: користувач gemini)." -ForegroundColor Green

@@ -1,0 +1,52 @@
+#!/usr/bin/env python3
+# Підробний `claude -p … --output-format stream-json` для стенда claude_run.ps1: сценарій — FAKE_CC_SCENARIO,
+# argv і промпт — рядком JSON у FAKE_CC_LOG. Гілку `claude/<наряд>` пушить у origin клону (поточна тека), як сесія.
+import json, os, re, subprocess, sys, time
+sc = os.environ.get('FAKE_CC_SCENARIO', 'done')
+prompt = sys.stdin.read()
+with open(os.environ['FAKE_CC_LOG'], 'a', encoding='utf-8') as f:
+    f.write(json.dumps({'argv': sys.argv[1:], 'stdin': prompt}, ensure_ascii=False) + '\n')
+slug = re.search(r'аудит/наряди/(.+?)\.md', prompt).group(1)
+branch = 'claude/' + slug
+def emit(o):
+    sys.stdout.write(json.dumps(o, ensure_ascii=False) + '\n'); sys.stdout.flush()
+def git(*a):
+    return subprocess.run(['git', *a], check=True, capture_output=True, text=True).stdout.strip()
+def push():
+    tree = git('rev-parse', 'origin/main^{tree}')
+    sha = git('commit-tree', tree, '-p', 'origin/main', '-m', 'звіт ' + sc)
+    git('push', '-q', 'origin', '+' + sha + ':refs/heads/' + branch)
+    return sha
+def result(text, err=False, code=0):
+    emit({'type': 'result', 'subtype': 'error_during_execution' if err else 'success', 'is_error': err, 'result': text})
+    sys.exit(code)
+emit({'type': 'system', 'subtype': 'init', 'model': sys.argv[sys.argv.index('--model') + 1]})
+emit({'type': 'assistant', 'message': {'content': [{'type': 'text', 'text': 'працюю'}]}})
+if sc == 'done':
+    result('Готово.\n\n**НОУТБУК ГОТОВО `%s` %s**' % (branch, push()))
+if sc == 'wrong_sha':
+    push(); result('НОУТБУК ГОТОВО %s %s' % (branch, 'a' * 40))
+if sc == 'bad_branch':
+    result('НОУТБУК ГОТОВО main %s' % push())
+if sc == 'blocked':
+    push(); result('НОУТБУК ЗАБЛОКОВАНО: LM Studio не відповідає, гілка %s.' % branch)
+if sc == 'no_report':
+    result('Зроблено, усе гаразд.')
+if sc == 'die':
+    sys.exit(3)
+if sc == 'hang':
+    time.sleep(600)
+if sc == 'effort':
+    sys.stderr.write("Unknown --effort value 'ultra' — ignoring it and using the default effort. Valid values: low, medium, high\n")
+    sys.stderr.flush(); time.sleep(600)
+if sc == 'auth':
+    result('Not logged in · Please run /login', True, 1)
+if sc == 'quota':
+    result('Claude AI usage limit reached|1793024400', True, 1)
+if sc == 'bad_model':
+    result("There's an issue with the selected model (x). It may not exist or you may not have access to it.", True, 1)
+if sc == 'child_holds_stdout':
+    # Сервер, піднятий сесією, лишається з успадкованим stdout після кінця claude.
+    subprocess.Popen(['sleep', '600'], stdout=sys.stdout, stderr=subprocess.DEVNULL, start_new_session=True)
+    result('НОУТБУК ГОТОВО %s %s' % (branch, push()))
+sys.exit(9)
