@@ -482,6 +482,46 @@ def _екрани(т):
                       else м.group(0) if м.group(1) in '"\\/bfnrtu' else м.group(1), т)
 
 
+def _рядки_без_ком(т):
+    """Читає цілий об'єкт рядків із пропущеними комами між полями.
+
+    Ключі й значення декодує JSON, без пошуку слів чи дописування тексту.
+    Інша помилка синтаксису, вкладені поля чи обрив відхиляють увесь об'єкт.
+    """
+    т = re.sub(r"^```(?:json)?\s*|\s*```$", "", т.strip()).strip()
+    if not (т.startswith("{") and т.endswith("}")):
+        return None
+    декодер, вих, позиція, пропуск = _json_.JSONDecoder(), {}, 1, False
+    try:
+        while True:
+            while т[позиція].isspace():
+                позиція += 1
+            ключ, позиція = декодер.raw_decode(т, позиція)
+            while т[позиція].isspace():
+                позиція += 1
+            if not isinstance(ключ, str) or ключ in вих or т[позиція] != ":":
+                return None
+            позиція += 1
+            while т[позиція].isspace():
+                позиція += 1
+            текст, позиція = декодер.raw_decode(т, позиція)
+            if not isinstance(текст, str):
+                return None
+            вих[ключ] = текст
+            while т[позиція].isspace():
+                позиція += 1
+            if позиція == len(т) - 1:
+                return вих if пропуск else None
+            if т[позиція] == ",":
+                позиція += 1
+            elif т[позиція] == '"':
+                пропуск = True
+            else:
+                return None
+    except (ValueError, IndexError):
+        return None
+
+
 def _обʼєкт(відповідь, нотатки=None):
     """(JSON-об'єкт або масив із відповіді моделі, причина, коли не вийшло).
 
@@ -498,6 +538,10 @@ def _обʼєкт(відповідь, нотатки=None):
             сир = _екрани(сир)
             if нотатки is not None:
                 нотатки.append("invalid_escape_read")
+    if об is None and нотатки is not None:
+        об = _рядки_без_ком(сир)
+        if об is not None:
+            нотатки.append("missing_commas_read")
     if об is None:                  # `протокол.розбір` бере лише об'єкт; масив дочитується тут
         for т in dict.fromkeys((сир, _екрани(сир))):
             try:
