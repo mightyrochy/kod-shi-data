@@ -210,7 +210,7 @@ def main():
     р.add_argument('--сторінка', help='зібрана index.html (з МОДУЛІ_ПОКАЗУ)')
     р.add_argument('--входи', default=ВХОДИ_ТИПОВІ, help='входи мосту, JSONL (можна .gz); типово — записані у репозиторії')
     р.add_argument('--вихід', help='файл знімка (поруч <вихід>.час.json)')
-    р.add_argument('--pyodide', default='/tmp/pyodide', help='кеш Pyodide 0.26.4 (середовище pyodide)')
+    р.add_argument('--pyodide', default=os.path.join(tempfile.gettempdir(), 'pyodide'), help='кеш Pyodide 0.26.4 (середовище pyodide)')
     р.add_argument('--лише', type=int, help='лише перші N викликів')
     р.add_argument('--портативна', type=підміна, help='дослід причин розбіжності: математика без libm, порядок множин за значенням чи обидва')
     р.add_argument('--з-сирих', dest='сирі', help='сирі відповіді з браузера (`міст_воркер_дослід.js`) → знімок у --вихід')

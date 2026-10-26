@@ -36,4 +36,25 @@ for doc in ('НАЛАШТУВАННЯ.md','СПОСТЕРІГАЧ.md'):
                 print('нема дослівно:',l[:110]); bad=1
 sys.exit(bad)
 P
+# Codex під gemini (М.9-В PR-3, 9738/9741): інсталятор закріплено релізом і хешем; ключ -EnableCodex у 1_адмін.ps1; кроки власника
+python3 - "$G" <<'P' && ok "Codex: закріплений інсталятор, ключ -EnableCodex, кроки власника" || F=1
+import re,sys
+g=sys.argv[1]; bad=0
+def rd(n): return open(f'{g}/{n}',encoding='utf-8-sig').read().replace('\r','')
+psd,tab,adm,sub,nat=rd('m9v/хеші.psd1'),rd('НАЛАШТУВАННЯ.md'),rd('m9v/1_адмін.ps1'),rd('m9v/2_під_gemini.ps1'),rd('m9v/ЩО_НАТИСНУТИ.md')
+def chk(c,m):
+    global bad
+    if not c: print('ПОМИЛКА',m); bad=1
+h=re.search(r"CodexInstaller\s*=\s*'([0-9A-F]{64})'",psd); v=re.search(r"CodexRelease\s*=\s*'(\d+\.\d+\.\d+)'",psd)
+chk(h and v,'хеші.psd1: CodexInstaller (64 hex верхнім регістром) і CodexRelease (x.y.z)')
+if h and v:
+    chk(re.search(r"\| `CodexInstaller`[^|]*\| `%s` \|"%h.group(1),tab),'таблиця «Хеші файлів» НАЛАШТУВАННЯ.md: рядок CodexInstaller = psd1')
+chk("releases.openai.com/codex/releases/$rel/install.ps1" in sub,'2_під_gemini.ps1: інсталятор з URL релізу $rel')
+chk('chatgpt.com/codex/install.ps1' not in re.sub(r'(?s)<#.*?#>','',sub),'2_під_gemini.ps1: рухомий URL лише в коментарі')
+chk('-Release $rel' in sub and '$got -ne $want' in sub,'2_під_gemini.ps1: -Release $rel і звірка хешу')
+chk('[switch]$EnableCodex' in adm and "$a.Arguments += ' -EnableCodex'" in adm,'1_адмін.ps1: ключ -EnableCodex дописує аргумент')
+chk('1_адмін.ps1" -EnableCodex' in nat and '-WithCodex' in nat,'ЩО_НАТИСНУТИ.md: кроки 2 і 3 з -EnableCodex / -WithCodex')
+chk('НЕ НАТИСКАТИ' not in nat,'ЩО_НАТИСНУТИ.md: розділ «НЕ НАТИСКАТИ» прибрано')
+sys.exit(bad)
+P
 exit $F

@@ -2,11 +2,11 @@
 # нього. Коли ПЕРШЕ входження прикметникове, ключ кидався ЗОВСІМ — навіть якщо далі
 # в назві він стоїть іменником. `_ключ_іменником` (рядок 184, той самий фільтр)
 # шукає далі. Тепер обидва місця — «ключ як іменник» — це одна функція, а не дві.
-import sys, os, collections, importlib.util
+import sys, os, collections, importlib.util, tempfile
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), ".."))
 import feed, фід_каталог as ФК, фід_слот as НОВ
 _сп = importlib.util.spec_from_file_location(
-    "до_фід_слот", os.environ.get("DO_FID_SLOT", "/tmp/194/до_фід_слот.py"))
+    "до_фід_слот", os.environ.get("DO_FID_SLOT", os.path.join(tempfile.gettempdir(), "194", "до_фід_слот.py")))
 СТАР = importlib.util.module_from_spec(_сп); _сп.loader.exec_module(СТАР)
 кат = ФК.прочитати_каталог(feed.каталог_на_диску("каталог_повний.xml"), 0)["каталог"]
 оф = lambda r: {"назва": r.get("назва"), "категорія": r.get("категорія"),

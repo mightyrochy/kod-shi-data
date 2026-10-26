@@ -5,8 +5,8 @@
      node проби/kadr_syluet_f143.js <корінь зі зібраним index.html> <знімок.png> */
 const { chromium } = require('playwright');
 const { чекатиСтан } = require('./очікування.js');
-const fs = require('fs'), path = require('path'), zlib = require('zlib');
-const КОРІНЬ = process.argv[2] || '/tmp/стенд', ЗНІМОК = process.argv[3] || '/tmp/kadr_syluet_f143.png';
+const fs = require('fs'), path = require('path'), os = require('os'), zlib = require('zlib');
+const КОРІНЬ = process.argv[2] || path.join(os.tmpdir(), 'стенд'), ЗНІМОК = process.argv[3] || path.join(os.tmpdir(), 'kadr_syluet_f143.png');
 const БАЗА = 'http://127.0.0.1:8765';
 const ЖИВЕ = 'https://www.sunwin-store.com/wp-content/uploads/2026/07/2968_champagne_2.webp';
 const МЕРТВЕ = 'https://www.sunwin-store.com/wp-content/uploads/2026/07/НЕМА-ТАКОГО.webp';
