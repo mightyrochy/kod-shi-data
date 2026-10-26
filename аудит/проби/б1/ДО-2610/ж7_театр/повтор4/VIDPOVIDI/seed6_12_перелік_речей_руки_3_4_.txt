@@ -1,0 +1,51 @@
+── ПРОМПТ (2464 симв.) ──
+{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.", "A slot the description says is not needed is not an item: give it worn false. One item carries one thing — of two alternatives list the first; a note in brackets is not an item.", "Slot \"accessory\" is for an item no other slot fits.", "\"is_outfit\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note; then items is empty."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "ITEM_LIST", "answer_schema": {"is_outfit": "yes|no", "items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory", "color_hex": "<#rrggbb or null>", "worn": "<true, or false when the description says the outfit goes without it>"}]}, "input": ["\"description\" — the outfit description"]}, "description": "A sheath dress of noble fabric in a deep midnight blue with hex code #00003B, cut in an empire waist and falling to mid-calf length.\nA matching tailored jacket in the same midnight blue fabric with notched lapels and single-button closure.\nOpaque matte tights in a rich charcoal shade with hex code #36454F for warmth against the autumn chill.\nStrappy satin pumps in metallic silver with a moderate heel height to complement the evening hour.\nA pair of classic diamond-cut stud earrings in white gold and small, delicate pearl drop earrings as an alternative choice.\nA sleek black leather clutch with a secure clasp to hold essentials without bulk.\nThis outfit works because the noble fabric and sheath silhouette align perfectly with the formal theatre setting while the dark color palette exudes elegance for the 7 PM start. The matching jacket provides a structured layer appropriate for the autumn evening temperature of 18 °C, ensuring comfort during the performance. Silver accents in the shoes and optional jewelry add a touch of brilliance that catches the light without overpowering the refined look."}
+
+── ВІДПОВІДЬ (807 симв., 59.9 с, HTTP 200) ──
+{
+"items": [
+{
+"name": "sheath dress",
+"details": "noble fabric, empire waist, mid-calf length",
+"slot": "dress",
+"worn": true,
+"color_hex": "#00003B"
+},
+{
+"name": "tailored jacket",
+"details": "matching noble fabric, notched lapels, single-button closure",
+"slot": "outerwear",
+"worn": true,
+"color_hex": "#00003B"
+},
+{
+"name": "tights",
+"details": "opaque matte",
+"slot": "tights",
+"worn": true,
+"color_hex": "#36454F"
+},
+{
+"name": "pumps",
+"details": "strappy satin, moderate heel height",
+"slot": "shoes",
+"worn": true,
+"color_hex": null
+},
+{
+"name": "earrings",
+"details": "diamond-cut stud or pearl drop",
+"slot": "earrings",
+"worn": true,
+"color_hex": null
+},
+{
+"name": "clutch",
+"details": "sleek black leather, secure clasp",
+"slot": "bag",
+"worn": true,
+"color_hex": null
+}
+],
+"is_outfit": "yes"
+}

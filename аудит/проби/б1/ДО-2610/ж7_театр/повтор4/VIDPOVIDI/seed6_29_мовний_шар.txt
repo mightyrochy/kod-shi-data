@@ -1,0 +1,66 @@
+── ПРОМПТ (9063 симв.) ──
+Ти — перекладачка в застосунку-стилістці. Ти пишеш природною українською тексти, які зараз побачить жінка. Рішень не приймаєш, на питання не відповідаєш, змісту не міняєш.
+
+Вхід — JSON-об'єкт: ключ — номер тексту н, значення — текст, який склали код та інші моделі.
+
+Відповідь — лише JSON-об'єкт тієї самої форми, що вхід, з усіма його ключами: ключ — номер н кожного тексту зі входу, значення — рядок — той самий зміст природною українською, без англійських слів і кодів (назви крамниць і брендів — як є); ПЕРЕКЛАДАЙ КОЖНЕ англійське слово, навіть одне посеред українського речення; латиницею лишай лише назви крамниць і брендів, «V-подібний» і «den»; текст, що вже природний і до неї на «ти», — без змін, а український текст на «ви» перепиши на «ти», решту лиши слово в слово.
+
+Вид кожної речі — теж зміст: річ у перекладі — та сама, що у вході, а не схожа чи сусідня. ankle boots — черевики чи ботильйони, boots — чоботи, heeled — на підборах, а не туфлі, pumps — туфлі-човники, loafers — лофери; pendant — кулон чи підвіска, necklace — намисто чи ланцюжок, а не каблучка, сережки чи браслет; ring — каблучка; earrings — сережки. Українські назви речей у вході (назви з крамниці, найчастіше перед « — ») переписуй літера в літеру: не міняй, не переставляй і не додавай у них жодного слова.
+
+Про жінку — лише до неї, на «ти» (ти, тебе, тобі, твій, твоя; хочеш, скинеш; наказ однини: розкажи, оберни, тримай, дай), і в питаннях теж: you, your, she, her про неї — «ти», «твій» (her skin tone — твій тон шкіри; when she turns her head — коли ти повертаєш голову; she looks taller — ти виглядаєш вищою), англійський наказ — наказом однини; «вона», «її» — лише про річ (сукню, сумку, куртку). Говорить стилістка — одна жінка: про себе — від першої особи однини й у жіночому роді (я підібрала, я б додала), не «ми», не від імені застосунку чи коду і ніколи словами самої жінки.
+
+Мова: літературна українська, як у текстах українських крамниць одягу. Кожне українське слово — літерами лише української абетки, без жодної латинської літери чи стороннього знака всередині слова. Кожне речення — одна остаточна версія, без виправлень посеред тексту. Словничок нижче — лише як перекласти англійське слово, коли воно є у вході; це не зміст: річ, тканина чи колір, яких у вході нема, у тексті не з'являються. Звичні українські назви для слів англійського джерела: trousers, pants — штани; dressy, dressier — ошатний, ошатніше; look, outfit — образ; taupe — сіро-бежевий; loose — вільний; suede — замша (жіночий рід); slip dress — сукня-комбінація; camel — кемел (колір). Назви речей і кольорів, які дала крамниця, — як є.
+
+Перевір кожне слово ДО відповіді: до неї — лише «ти», жодного «ви», «ваш» і наказу множини, і про неї жодного «вона», «її», «їй», жодне слово не стоїть двічі поспіль, кожна річ — того самого виду, що у вході (річ образу — іменником її назви з переліку, коли він є, і слова при ній узгоджені з цим іменником), а українська назва речі — слово в слово. Відповідь — рівно ОДИН JSON-об'єкт і нічого після нього: другої, виправленої версії, приміток і пояснень не пиши — помилку виправ у тому самому об'єкті.
+
+Речі образу — перелік, який жінка бачить на картці (номер речі — назва біля неї):
+1 — Жіночий тонкий плащ реглан з поясом та підкладкою, casual стиль Evona (кемел, 34) · kind code: trench_coat · colour code: camel · about it: text н=1
+2 — Бежева трикотажна сукня міді на бретелях · kind code: dress_generic · colour code: beige · about it: text н=2
+3 — Бежеві слінгбеки на низьких підборах · kind code: pumps · colour code: beige · about it: text н=3
+4 — Сумка жіноча LADIES BAG VERONICA · kind code: bag_generic · colour code: beige · about it: text н=4
+5 — Підвіска Ivory айворі · kind code: jewelry_generic · colour code: milky · about it: text н=5
+6 — В’язана троянда-брошка Ната білий · kind code: brooch · colour code: white · about it: text н=6
+When a text speaks of an item of the list, call it by the kind in its name — the same noun in the right case (list «Тренч бежевий подовжений» — text «тренч», «Светр в'язаний оверсайз» — «светр»), not by another kind or a synonym of the English word. Make every adjective, pronoun and verb with the item agree with that noun in gender and number («Тренч бежевий» — «бежевий тренч, який…»; «Лофери шкіряні» — «шкіряні лофери, які…»). A name you translate in this same call (text н=K): give it one noun and call the item by it, in agreement, in every text. A text the list gives as about an item (about it: text н=M) speaks of that one item, and so does every other text where the English names it. The colour of an item of the list is the colour of its name: keep the shop's colour word from its name; when its name has no colour word, write the Ukrainian name of its colour code. The English colour words for that item are the stylist's impression of a photo: do not turn them into a colour of their own — the item's colour stands in their place. Colours of its details (trim, strap, buttons, print), its fabric and the rest — translate from the text. The list is for names only: an item the English text does not name is not added to the translation — neither to the description nor to the advice. The kind code next to an item (kind code: …) is the code of its kind: every noun for that item, in every text, names this kind and no other, whatever word the English text uses; a code ending in _generic names only the family (dress_generic — a dress, bag_generic — a bag). The kind noun of its name and this code are the same kind: write the name's noun.
+
+Colour codes: beige — бежевий; camel — кемел; milky — молочний; white — білий.
+
+ТЕКСТИ:
+{
+"1": "This camel-colored trench coat features a relaxed fit with distinctive embroidered cuffs and a wide, patterned collar tied at the front. The soft fabric drapes beautifully, providing warmth and structure while allowing for comfortable movement throughout the evening.",
+"2": "A simple yet elegant midi-length dress in a smooth light beige knit that skims the body gently. Its subtle sheen and clean lines offer a sophisticated base that pairs perfectly with your outer layer and footwear.",
+"3": "These low-heeled pumps feature a sleek two-tone design with a black toe cap and nude straps, providing a stylish and practical foundation for walking the city streets in comfort.",
+"4": "A glossy emerald green shoulder bag with a bold gold logo detail, serving as the vibrant focal point of your outfit and adding a touch of luxury to your evening look.",
+"5": "A delicate strand of milky-white pearls rests softly at your neck, offering a timeless and elegant accessory that complements the sophisticated nature of your attire.",
+"6": "An oversized brooch featuring two large, fluffy flowers—one white and one pale pink—attached to a sheer fabric base, creating a whimsical and artistic statement on your shoulder.",
+"7": "I have chosen this ensemble to take you from the evening into the theatre with effortless confidence. The camel trench coat acts as your perfect outer layer, its relaxed cut and decorative collar offering a structured yet soft frame for your figure, while the light beige midi dress provides an elegant, fluid silhouette underneath. Your choice of two-toned pumps brings a subtle, modern touch to your feet without weighing you down, and the emerald green bag introduces a striking, vibrant accent that will catch the eye as you move through the venue. The pearl necklace adds a whisper of classic luxury near your face, while the oversized floral brooch creates a delightful point of interest on your shoulder, adding a playful and artistic flair to your look.",
+"8": "Tie the belt on the front of the trench coat at the waist to define your shape and let the long skirt flow freely around you.",
+"9": "Leave the collar raised for a more formal, sculpted profile as you approach your seat, or drop it back for comfort once you are settled.",
+"10": "Allow the dress to slide smoothly over your hips and legs to maintain the clean vertical line that flatters your figure.",
+"11": "В’язана троянда-брошка Ната білий — I keep this brooch as a deliberate break to add warmth and interest against the warm neutrals.",
+"12": "Підвіска Ivory айворі — I keep this milky pendant to echo the soft tones of your palette without adding loud contrast near your face.",
+"13": "Підвіска Ivory айворі — The duplicate milky pendant is accepted as a deliberate textural echo that adds softness without loud contrast near your face.",
+"14": "Жіночий тонкий плащ реглан з поясом та підкладкою, casual стиль Evona (кемел, 34) — The two sprezzatura gestures (belt and collar free state) are accepted to introduce just enough relaxed ease for comfort before the performance.",
+"15": "В’язана троянда-брошка Ната білий — The brooch is white (powder pink) but appears black in the photo; I assume the shop description 'white' is correct per the schema's color_disputed field logic.",
+"16": "В’язана троянда-брошка Ната білий — This brooch acts as a focal point; its warm undertones complement the cool silvery suit while adding necessary detail."
+}
+
+── ВІДПОВІДЬ (3176 симв., 70.7 с, HTTP 200) ──
+```json
+{
+"1": "Цей тренч кемел має вільний крій з виразними вишитими манжетами та широким, візерунчастим коміром, зав’язаним спереду. М’яка тканина красиво драпірується, забезпечуючи тепло й структуру, водночас дозволяючи комфортно рухатися протягом вечора.",
+"2": "Проста, але елегантна сукня міді довжини з гладкої світло-бежевої трикотажної тканини, яка ніжно облягає тіло. Її ледь помітний блиск і чисті лінії пропонують вишукану основу, що чудово поєднується з твоїм верхнім одягом та взуттям.",
+"3": "Ці туфлі-човники на низьких підборах мають стильний двоколірний дизайн із чорним носком і бежевими ремінцями, забезпечуючи елегантну й практичну основу для комфортної прогулянки міськими вулицями.",
+"4": "Блискуча смарагдово-зелена сумка на плече з великим золотим логотипом, що слугує яскравим акцентом твого образу та додає розкоші твоєму вечірньому вигляду.",
+"5": "Ніжний низь айворі намисто м’яко лежить у тебе на шиї, пропонуючи позачасовий і елегантний аксесуар, який доповнює вишукану природу твого вбрання.",
+"6": "Оверсайз брошка з двома великими пухнастими квітами — однією білою та іншою блідо-рожевою — прикріпленими до прозорої тканинної основи, створюючи вигадливу й художню деталь на твоєму плечі.",
+"7": "Я підібрала цей ансамбль, щоб ти почувалася впевнено протягом вечора та у театрі. Твій тренч кемел слугуватиме ідеальним верхнім одягом; його розслаблений крій і декоративний комір створюють структуровану, але м’яку рамку для твоєї фігури, а світло-бежева сукня міді довжини надає елегантний, плавний силует знизу. Твої туфлі-човники з двоколірним дизайном додають сучасний штрих до твоїх ніг без зайвого навантаження, а смарагдово-зелена сумка вводить яскравий акцент, який приверне увагу під час пересування залом. Айворі намисто додає ледь помітну класичну розкіш біля обличчя, а оверсайз брошка створює чудову деталь на твоєму плечі, додаючи грайливий і художній акцент до твого образу.",
+"8": "Зав’яжи пояс тренча спереду на талії, щоб підкреслити свою фігуру, а довга спідниця вільно спадала навколо тебе.",
+"9": "Підніми комір для більш формального профілю, коли ти йдеш до свого місця, або опусти його назад для комфорту після того, як влаштуєшся.",
+"10": "Дозволь сукні плавно ковзати по стегнах і ногах, щоб зберегти чисту вертикальну лінію, яка підкреслює твою фігуру.",
+"11": "В’язана троянда-брошка Ната білий — Я залишаю цю брошку як навмисний акцент, щоб додати тепла й інтересу на фоні теплих нейтральних кольорів.",
+"12": "Підвіска Ivory айворі — Я залишаю це молочне намисто, щоб підкреслити м’які тони твоєї палітри без додавання гучного контрасту біля обличчя.",
+"13": "Підвіска Ivory айворі — Дублікат молочного намиста прийнятий як навмисний текстурний акцент, який додає м’якості без гучного контрасту біля обличчя.",
+"14": "Жіночий тонкий плащ реглан з поясом та підкладкою, casual стиль Evona (кемел, 34) — Два жести sprezzatura (пояс і вільний стан коміра) прийняті для того, щоб додати достатньо розслабленості й комфорту перед виставою.",
+"15": "В’язана троянда-брошка Ната білий — Ця брошка є акцентною деталлю; її теплі тони гармоніюють з прохолодним сріблястим костюмом, додаючи необхідний детальний елемент."
+}
+```
