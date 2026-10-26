@@ -8,7 +8,7 @@ import sys
 def main():
     """Друкує лічбу відповідей і порожніх джерел без викликів моделей."""
     корінь = pathlib.Path(__file__).resolve().parents[2]
-    сцени = {str(pathlib.Path(ш).parent.name): json.loads(pathlib.Path(ш).read_text(encoding="utf-8"))
+    сцени = {str(pathlib.Path(ш)): json.loads(pathlib.Path(ш).read_text(encoding="utf-8"))
              for ш in sys.argv[1:]}
     код = r'''
 const fs = require('fs'), path = require('path');
@@ -23,6 +23,8 @@ for (const [сцена, файл] of Object.entries(сцени)) for (const пр
   const порожніх = без.filter(({з, ключ}) => !джерелоШару(з, ключ)).length;
   console.log(сцена, 'рука', к.рука, 'відповіли ДО → ПІСЛЯ:', було, '→', питаньЗВідповіддю(записи),
     'порожніх джерел ДО → ПІСЛЯ:', без.filter(({з, ключ}) => !(з.вхід || {})[ключ]).length, '→', порожніх);
+  if ('питань_картці' in к) console.log('  повних відповідей разом із пам’яттю / питань для картки:',
+    питаньЗВідповіддю(записи) + (к.питань_з_пам_яті || 0), '/', к.питань_картці);
   if (порожніх) process.exitCode = 1;
 }
 '''
