@@ -1,0 +1,30 @@
+── ПРОМПТ (2120 симв.) ──
+{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.", "A slot the description says is not needed is not an item: give it worn false. One item carries one thing — of two alternatives list the first; a note in brackets is not an item.", "Slot \"accessory\" is for an item no other slot fits.", "\"is_outfit\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note; then items is empty."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "ITEM_LIST", "answer_schema": {"is_outfit": "yes|no", "items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory", "color_hex": "<#rrggbb or null>", "worn": "<true, or false when the description says the outfit goes without it>"}]}, "input": ["\"description\" — the outfit description"]}, "description": "Wool blend midi skirt, straight cut, knee length, charcoal grey (#36454F), heavy felt fabric.  \nMerino wool fine knit turtleneck, relaxed fit, hip length, cream white (#FFFFF0), soft thermal yarn.  \nLeather ankle boots with low heel, slim silhouette, calf height, black (#000000), waterproof treated leather.  \nThis outfit works because the heavy wool skirt and thermal knit keep her warm against the freezing -10°C wind while the dark palette handles the snowy light elegantly. The straight skirt line prevents snagging on bike chains or rough pavement during her 20-minute walk, ensuring comfort and safety. A single textured wool layer provides enough warmth without overheating indoors once she reaches work, adhering to the neat business dress code she requested."}
+
+── ВІДПОВІДЬ (516 симв., 78.2 с, HTTP 200) ──
+{
+"is_outfit": "yes",
+"items": [
+{
+"name": "Wool blend midi skirt",
+"details": "straight cut, knee length, heavy felt fabric",
+"slot": "bottom",
+"color_hex": "#36454F",
+"worn": true
+},
+{
+"name": "Merino wool fine knit turtleneck",
+"details": "relaxed fit, hip length, soft thermal yarn",
+"slot": "top",
+"color_hex": "#FFFFF0",
+"worn": true
+},
+{
+"name": "Leather ankle boots",
+"details": "low heel, slim silhouette, calf height, waterproof treated leather",
+"slot": "shoes",
+"color_hex": "#000000",
+"worn": true
+}
+]
+}

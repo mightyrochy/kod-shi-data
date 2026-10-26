@@ -1,0 +1,44 @@
+── ПРОМПТ (2394 симв.) ──
+{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.", "A slot the description says is not needed is not an item: give it worn false. One item carries one thing — of two alternatives list the first; a note in brackets is not an item.", "Slot \"accessory\" is for an item no other slot fits.", "\"is_outfit\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note; then items is empty."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "ITEM_LIST", "answer_schema": {"is_outfit": "yes|no", "items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory", "color_hex": "<#rrggbb or null>", "worn": "<true, or false when the description says the outfit goes without it>"}]}, "input": ["\"description\" — the outfit description"]}, "description": "A charcoal grey wool crepe sheath dress, knee-length cut with a modest neckline, color #3e4246 fabric: matte woven wool. A matching charcoal tailored blazer with notch lapels, single-breasted closure, length hitting the hip bone, color #2f3136 fabric: structured wool blend. Black patent leather pumps with a 7cm heel, pointed toe silhouette, color #0a0a0a fabric: smooth synthetic leather. Small black satin drop earrings and a simple black silk scarf for the collarbone area, color #050505 fabric: lustrous woven polyester.\n\nThis outfit works because the dark, monochromatic palette conveys deep respect and solemnity suitable for a grandfather's funeral in the early morning light. The combination of the tailored blazer and the knee-length dress strikes a necessary balance between formality and modesty without appearing overly restrictive or heavy. Choosing matte wool over shiny fabrics ensures the silhouette remains understated and dignified, aligning with traditional mourning customs while adhering to her request for formal attire."}
+
+── ВІДПОВІДЬ (1074 симв., 51.5 с, HTTP 200) ──
+{
+  "is_outfit": "yes",
+  "items": [
+    {
+      "name": "sheath dress",
+      "details": "knee-length cut with a modest neckline, matte woven wool fabric",
+      "slot": "dress",
+      "color_hex": "#3e4246",
+      "worn": true
+    },
+    {
+      "name": "tailored blazer",
+      "details": "notch lapels, single-breasted closure, length hitting the hip bone, structured wool blend fabric",
+      "slot": "outerwear",
+      "color_hex": "#2f3136",
+      "worn": true
+    },
+    {
+      "name": "pumps",
+      "details": "7cm heel, pointed toe silhouette, smooth synthetic leather fabric",
+      "slot": "shoes",
+      "color_hex": "#0a0a0a",
+      "worn": true
+    },
+    {
+      "name": "drop earrings",
+      "details": "small satin drop earrings, lustrous woven polyester fabric",
+      "slot": "earrings",
+      "color_hex": "#050505",
+      "worn": true
+    },
+    {
+      "name": "scarf",
+      "details": "simple silk scarf for the collarbone area, lustrous woven polyester fabric",
+      "slot": "scarf",
+      "color_hex": "#050505",
+      "worn": true
+    }
+  ]
+}

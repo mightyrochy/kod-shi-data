@@ -1,0 +1,56 @@
+── ПРОМПТ (7950 симв.) ──
+Ти — перекладачка в застосунку-стилістці. Ти пишеш природною українською тексти, які зараз побачить жінка. Рішень не приймаєш, на питання не відповідаєш, змісту не міняєш.
+
+Вхід — JSON-об'єкт: ключ — номер тексту н, значення — текст, який склали код та інші моделі.
+
+Відповідь — лише JSON-об'єкт тієї самої форми, що вхід, з усіма його ключами: ключ — номер н кожного тексту зі входу, значення — рядок — той самий зміст природною українською, без англійських слів і кодів (назви крамниць і брендів — як є); ПЕРЕКЛАДАЙ КОЖНЕ англійське слово, навіть одне посеред українського речення; латиницею лишай лише назви крамниць і брендів, «V-подібний» і «den»; текст, що вже природний і до неї на «ти», — без змін, а український текст на «ви» перепиши на «ти», решту лиши слово в слово.
+
+Вид кожної речі — теж зміст: річ у перекладі — та сама, що у вході, а не схожа чи сусідня. ankle boots — черевики чи ботильйони, boots — чоботи, heeled — на підборах, а не туфлі, pumps — туфлі-човники, loafers — лофери; pendant — кулон чи підвіска, necklace — намисто чи ланцюжок, а не каблучка, сережки чи браслет; ring — каблучка; earrings — сережки. Українські назви речей у вході (назви з крамниці, найчастіше перед « — ») переписуй літера в літеру: не міняй, не переставляй і не додавай у них жодного слова.
+
+Про жінку — лише до неї, на «ти» (ти, тебе, тобі, твій, твоя; хочеш, скинеш; наказ однини: розкажи, оберни, тримай, дай), і в питаннях теж: you, your, she, her про неї — «ти», «твій» (her skin tone — твій тон шкіри; when she turns her head — коли ти повертаєш голову; she looks taller — ти виглядаєш вищою), англійський наказ — наказом однини; «вона», «її» — лише про річ (сукню, сумку, куртку). Говорить стилістка — одна жінка: про себе — від першої особи однини й у жіночому роді (я підібрала, я б додала), не «ми», не від імені застосунку чи коду і ніколи словами самої жінки.
+
+Мова: літературна українська, як у текстах українських крамниць одягу. Кожне українське слово — літерами лише української абетки, без жодної латинської літери чи стороннього знака всередині слова. Кожне речення — одна остаточна версія, без виправлень посеред тексту. Словничок нижче — лише як перекласти англійське слово, коли воно є у вході; це не зміст: річ, тканина чи колір, яких у вході нема, у тексті не з'являються. Звичні українські назви для слів англійського джерела: trousers, pants — штани; dressy, dressier — ошатний, ошатніше; look, outfit — образ; taupe — сіро-бежевий; loose — вільний; suede — замша (жіночий рід); slip dress — сукня-комбінація; camel — кемел (колір). Назви речей і кольорів, які дала крамниця, — як є.
+
+Перевір кожне слово ДО відповіді: до неї — лише «ти», жодного «ви», «ваш» і наказу множини, і про неї жодного «вона», «її», «їй», жодне слово не стоїть двічі поспіль, кожна річ — того самого виду, що у вході (річ образу — іменником її назви з переліку, коли він є, і слова при ній узгоджені з цим іменником), а українська назва речі — слово в слово. Відповідь — рівно ОДИН JSON-об'єкт і нічого після нього: другої, виправленої версії, приміток і пояснень не пиши — помилку виправ у тому самому об'єкті.
+
+Речі образу — перелік, який жінка бачить на картці (номер речі — назва біля неї):
+1 — Светр оверсайз коричневий · kind code: sweater · colour code: brown · about it: text н=1
+2 — Штани з костюмної тканини · kind code: trousers · colour code: brown · about it: text н=2
+3 — Жіноча сумка через плече шкіряна червона · kind code: crossbody_bag · colour code: red · about it: text н=3
+4 — Пасок з пір’ям декольте червоний · kind code: belt · colour code: red · about it: text н=4
+5 — LeBERDES Сандалі золоті · kind code: sandals · colour code: golden · about it: text н=5
+When a text speaks of an item of the list, call it by the kind in its name — the same noun in the right case (list «Тренч бежевий подовжений» — text «тренч», «Светр в'язаний оверсайз» — «светр»), not by another kind or a synonym of the English word. Make every adjective, pronoun and verb with the item agree with that noun in gender and number («Тренч бежевий» — «бежевий тренч, який…»; «Лофери шкіряні» — «шкіряні лофери, які…»). A name you translate in this same call (text н=K): give it one noun and call the item by it, in agreement, in every text. A text the list gives as about an item (about it: text н=M) speaks of that one item, and so does every other text where the English names it. The colour of an item of the list is the colour of its name: keep the shop's colour word from its name; when its name has no colour word, write the Ukrainian name of its colour code. The English colour words for that item are the stylist's impression of a photo: do not turn them into a colour of their own — the item's colour stands in their place. Colours of its details (trim, strap, buttons, print), its fabric and the rest — translate from the text. The list is for names only: an item the English text does not name is not added to the translation — neither to the description nor to the advice. The kind code next to an item (kind code: …) is the code of its kind: every noun for that item, in every text, names this kind and no other, whatever word the English text uses; a code ending in _generic names only the family (dress_generic — a dress, bag_generic — a bag). The kind noun of its name and this code are the same kind: write the name's noun.
+
+Colour codes: brown — коричневий; golden — золотий; red — червоний.
+
+ТЕКСТИ:
+{
+"1": "This is a relaxed, oversized turtleneck sweater in a soft, heathered brown tone. Crafted from a warm knit fabric, it features a high collar that frames the face and long, dropped shoulders for a comfortable, effortless drape.",
+"2": "These are tailored trousers made from structured costume fabric in a deep mocha color. They feature clean front pleats that elongate the leg line and a straight, wide-cut silhouette that offers both comfort and a sophisticated profile.",
+"3": "This is a striking red patent leather crossbody bag with a glossy crocodile-embossed texture and a sleek gold-tone buckle detail. Its structured square shape and top handle offer a polished, statement-making finish to the ensemble.",
+"4": "This vibrant red belt is crafted from satin fabric with an elegant feather trim at the front. It features a central bow closure and a wide strap that cinches the waist while adding a touch of romantic texture and bold color.",
+"5": "These are gold metallic sandals built on a thick black platform wedge. The strappy upper is composed of overlapping straps in a shiny, warm gold finish, secured with an ankle strap that ensures a secure fit for all-day wear.",
+"6": "This cozy tan turtleneck sweater is perfectly balanced by your wide-legged trousers in a rich mocha tone. The deep red of the patent leather crossbody bag and the feathered belt create a stunning focal point for the day, while the gold platform sandals add height and modern edge to complete the look. It's an ensemble that effortlessly transitions from morning coffee runs to evening outings.",
+"7": "Tuck the sweater slightly into your high-waisted trousers to highlight your defined waist and maintain a clean silhouette.",
+"8": "Let the red belt hang loose at the front or tie it behind for a more relaxed, effortless vibe as you move through the day.",
+"9": "Keep your hands deep in the pockets of your trousers or hold the handle of the structured bag for that polished, ready-to-go finish.",
+"10": "Пасок з пір’ям декольте червоний — Adding this red belt makes the outfit complete in item count and introduces a loud accessory with a distinct tone that nothing else repeats, fixing the 'loud_accessory' finding.",
+"11": "Жіноча сумка через плече шкіряна червона, Пасок з пір’ям декольте червоний — I accept this finding about the color step and multiple loud colors because the deep burgundy of the bag provides a strong contrast that anchors the look, making the combination work as a deliberate design choice rather than an error."
+}
+
+── ВІДПОВІДЬ (2400 симв., 42.5 с, HTTP 200) ──
+```json
+{
+"1": "Це вільний светр оверсайз з високим коміром у м’якому коричневому відтінку. Він виготовлений із теплої трикотажної тканини та має довгі, спущені плечі для комфортного й невимушеного силуету.",
+"2": "Це штани вільного крою з костюмної тканини глибокого мока кольору. Вони мають чисті передні складки, які видовжують лінію ніг і прямий крій, що забезпечує комфорт та вишуканий силует.",
+"3": "Це ефектна червона шкіряна сумка-кросбоді з глянцевою текстурою під крокодила та елегантною золотистою застібкою. Її структурована квадратна форма й верхня ручка надають ансамблю вишуканого, помітного завершення.",
+"4": "Цей яскраво-червоний пасок виготовлений із сатинової тканини з елегантною пір’яною обробкою спереду. Він має центральну бантну застібку та широкий ремінь, який підкреслює талію, додаючи романтичної текстури й яскравого кольору.",
+"5": "Це золоті металеві сандалії на товстому чорному платформовому каблуці. Верхня частина з переплетеними ремінцями має блискуче тепле золотисте покриття та застібається на щиколотці для комфортної посадки протягом усього дня.",
+"6": "Цей затишний бежевий светр із високим коміром чудово поєднується з твоїми широкими штанами в насиченому мока кольорі. Глибокий червоний колір шкіряної сумки-кросбоді та паска з пір’ям створюють приголомшливу центральну точку для дня, а золоті сандалії на платформі додають висоти й сучасного акценту, щоб завершити образ. Це ансамбль, який легко переходить від ранкової кави до вечірніх прогулянок.",
+"7": "Злегка заправ светр у твої штани з високою талією, щоб підкреслити тонку талію й зберегти чистий силует.",
+"8": "Дай червоному паску вільно висіти спереду або зав’яжи його позаду для більш розслабленого, невимушеного настрою протягом дня.",
+"9": "Тримай руки в кишенях штанів або тримай ручку сумки-кросбоді — це завершить образ у стильному й готовому до виходу вигляді.",
+"10": "Пасок з пір’ям декольте червоний — Додавання цього червоного паска робить твій образ повним за кількістю речей і вводить помітний аксесуар із чітким відтінком, який нічого інше не повторює, усуваючи знахідку 'loud_accessory'.",
+"11": "Жіноча сумка через плече шкіряна червона, Пасок з пір’ям декольте червоний — Я приймаю цю знахідку про колірну гаму та кілька помітних кольорів, тому що глибокий бордовий відтінок сумки створює сильний контраст і закріплює образ як навмисний дизайнерський вибір, а не помилку."
+}
+```

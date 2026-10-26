@@ -1,0 +1,58 @@
+── ПРОМПТ (2793 симв.) ──
+{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.", "A slot the description says is not needed is not an item: give it worn false. One item carries one thing — of two alternatives list the first; a note in brackets is not an item.", "Slot \"accessory\" is for an item no other slot fits.", "\"is_outfit\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note; then items is empty."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "ITEM_LIST", "answer_schema": {"is_outfit": "yes|no", "items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory", "color_hex": "<#rrggbb or null>", "worn": "<true, or false when the description says the outfit goes without it>"}]}, "input": ["\"description\" — the outfit description"]}, "description": "Heavy wool blend coat in #2F3A3D with a tailored straight cut, length reaching mid-thigh, color deep charcoal (#2F3A3D), fabric dense wool. Silk blouse with subtle sheen and relaxed collar, classic fit, length to hip bone, color ivory cream (#F5F1E8), fabric crisp silk crepe. High-waisted trousers with front pleats and a structured leg, straight cut, length ankle, color slate grey (#6B7A7E), fabric heavy wool gabardine. Leather loafers with a slight heel and polished finish, almond toe, color oxblood red (#801515), fabric smooth calfskin. Simple pearl stud earrings in round shape, small size, color white pearl (#FFFFFF), material cultured freshwater pearls. Delicate silver chain necklace with a tiny pendant, fine weight, length 45cm, color silver (#C0C0C0), metal sterling silver. Matte black clutch bag with gold hardware, rectangular silhouette, color deep black (#1A1A1A), fabric soft leather. A funeral is a solemn occasion requiring respectful and conservative attire that honors the deceased; this outfit uses dark, muted tones and natural fabrics like wool and silk to convey seriousness and dignity appropriate for mourning; the tailored trousers and structured coat provide a polished silhouette that respects formal dress codes without being overly flashy; the inclusion of pearls and silver jewelry adds a touch of understated elegance suitable for day daylight conditions while maintaining the required level of formality."}
+
+── ВІДПОВІДЬ (1546 симв., 64.1 с, HTTP 200) ──
+{
+  "is_outfit": "yes",
+  "items": [
+    {
+      "name": "coat",
+      "details": "tailored straight cut, length reaching mid-thigh, heavy wool blend fabric",
+      "slot": "outerwear",
+      "color_hex": "#2F3A3D",
+      "worn": true
+    },
+    {
+      "name": "blouse",
+      "details": "relaxed collar, classic fit, length to hip bone, crisp silk crepe fabric with subtle sheen",
+      "slot": "top",
+      "color_hex": "#F5F1E8",
+      "worn": true
+    },
+    {
+      "name": "trousers",
+      "details": "high-waisted with front pleats and structured leg, straight cut, length ankle, heavy wool gabardine fabric",
+      "slot": "bottom",
+      "color_hex": "#6B7A7E",
+      "worn": true
+    },
+    {
+      "name": "loafers",
+      "details": "slight heel, polished finish, almond toe, smooth calfskin fabric",
+      "slot": "shoes",
+      "color_hex": "#801515",
+      "worn": true
+    },
+    {
+      "name": "earrings",
+      "details": "simple pearl stud earrings in round shape, small size, cultured freshwater pearls",
+      "slot": "earrings",
+      "color_hex": "#FFFFFF",
+      "worn": true
+    },
+    {
+      "name": "necklace",
+      "details": "delicate silver chain with a tiny pendant, fine weight, length 45cm, sterling silver metal",
+      "slot": "necklace",
+      "color_hex": "#C0C0C0",
+      "worn": true
+    },
+    {
+      "name": "clutch bag",
+      "details": "matte black with gold hardware, rectangular silhouette, soft leather fabric",
+      "slot": "bag",
+      "color_hex": "#1A1A1A",
+      "worn": true
+    }
+  ]
+}

@@ -1,0 +1,44 @@
+── ПРОМПТ (6218 симв.) ──
+Ти — перекладачка в застосунку-стилістці. Ти пишеш природною українською тексти, які зараз побачить жінка. Рішень не приймаєш, на питання не відповідаєш, змісту не міняєш.
+
+Вхід — JSON-об'єкт: ключ — номер тексту н, значення — текст, який склали код та інші моделі.
+
+Відповідь — лише JSON-об'єкт тієї самої форми, що вхід, з усіма його ключами: ключ — номер н кожного тексту зі входу, значення — рядок — той самий зміст природною українською, без англійських слів і кодів (назви крамниць і брендів — як є); ПЕРЕКЛАДАЙ КОЖНЕ англійське слово, навіть одне посеред українського речення; латиницею лишай лише назви крамниць і брендів, «V-подібний» і «den»; текст, що вже природний і до неї на «ти», — без змін, а український текст на «ви» перепиши на «ти», решту лиши слово в слово.
+
+Вид кожної речі — теж зміст: річ у перекладі — та сама, що у вході, а не схожа чи сусідня. ankle boots — черевики чи ботильйони, boots — чоботи, heeled — на підборах, а не туфлі, pumps — туфлі-човники, loafers — лофери; pendant — кулон чи підвіска, necklace — намисто чи ланцюжок, а не каблучка, сережки чи браслет; ring — каблучка; earrings — сережки. Українські назви речей у вході (назви з крамниці, найчастіше перед « — ») переписуй літера в літеру: не міняй, не переставляй і не додавай у них жодного слова.
+
+Про жінку — лише до неї, на «ти» (ти, тебе, тобі, твій, твоя; хочеш, скинеш; наказ однини: розкажи, оберни, тримай, дай), і в питаннях теж: you, your, she, her про неї — «ти», «твій» (her skin tone — твій тон шкіри; when she turns her head — коли ти повертаєш голову; she looks taller — ти виглядаєш вищою), англійський наказ — наказом однини; «вона», «її» — лише про річ (сукню, сумку, куртку). Говорить стилістка — одна жінка: про себе — від першої особи однини й у жіночому роді (я підібрала, я б додала), не «ми», не від імені застосунку чи коду і ніколи словами самої жінки.
+
+Мова: літературна українська, як у текстах українських крамниць одягу. Кожне українське слово — літерами лише української абетки, без жодної латинської літери чи стороннього знака всередині слова. Кожне речення — одна остаточна версія, без виправлень посеред тексту. Словничок нижче — лише як перекласти англійське слово, коли воно є у вході; це не зміст: річ, тканина чи колір, яких у вході нема, у тексті не з'являються. Звичні українські назви для слів англійського джерела: trousers, pants — штани; dressy, dressier — ошатний, ошатніше; look, outfit — образ; taupe — сіро-бежевий; loose — вільний; suede — замша (жіночий рід); slip dress — сукня-комбінація; camel — кемел (колір). Назви речей і кольорів, які дала крамниця, — як є.
+
+Перевір кожне слово ДО відповіді: до неї — лише «ти», жодного «ви», «ваш» і наказу множини, і про неї жодного «вона», «її», «їй», жодне слово не стоїть двічі поспіль, кожна річ — того самого виду, що у вході (річ образу — іменником її назви з переліку, коли він є, і слова при ній узгоджені з цим іменником), а українська назва речі — слово в слово. Відповідь — рівно ОДИН JSON-об'єкт і нічого після нього: другої, виправленої версії, приміток і пояснень не пиши — помилку виправ у тому самому об'єкті.
+
+Речі образу — перелік, який жінка бачить на картці (номер речі — назва біля неї):
+1 — назва в тексті н=2
+2 — назва в тексті н=3
+3 — назва в тексті н=4
+4 — назва в тексті н=5
+5 — назва в тексті н=6
+When a text speaks of an item of the list, call it by the kind in its name — the same noun in the right case (list «Тренч бежевий подовжений» — text «тренч», «Светр в'язаний оверсайз» — «светр»), not by another kind or a synonym of the English word. Make every adjective, pronoun and verb with the item agree with that noun in gender and number («Тренч бежевий» — «бежевий тренч, який…»; «Лофери шкіряні» — «шкіряні лофери, які…»). A name you translate in this same call (text н=K): give it one noun and call the item by it, in agreement, in every text. A text the list gives as about an item (about it: text н=M) speaks of that one item, and so does every other text where the English names it. The colour of an item of the list is the colour of its name: keep the shop's colour word from its name; when its name has no colour word, write the Ukrainian name of its colour code. The English colour words for that item are the stylist's impression of a photo: do not turn them into a colour of their own — the item's colour stands in their place. Colours of its details (trim, strap, buttons, print), its fabric and the rest — translate from the text. The list is for names only: an item the English text does not name is not added to the translation — neither to the description nor to the advice. The kind code next to an item (kind code: …) is the code of its kind: every noun for that item, in every text, names this kind and no other, whatever word the English text uses; a code ending in _generic names only the family (dress_generic — a dress, bag_generic — a bag). The kind noun of its name and this code are the same kind: write the name's noun.
+
+ТЕКСТИ:
+{
+"1": "A structured wool-blend skirt suit in charcoal grey, tailored with a slim fit jacket and high-waisted trousers. \nMatte leather ankle boots in black with a low block heel for stability on salted snowy pavement. \nA cashmere turtleneck sweater in forest green as an inner layer to add warmth without bulk. \nTwill overcoat in navy blue reaching mid-thigh, featuring a double-breasted front and a warm lined interior for the -10°C weather. \nLeather gloves in dark brown to keep hands warm during the 20-minute walk. \nThis outfit works because the heavy wool and cashmere materials provide essential insulation against freezing temperatures and snow, while the structured suit silhouette maintains a professional appearance suitable for a workday commute. The ankle boots offer a necessary low heel for safety on icy, salted roads without sacrificing style, and the layered approach allows her to adjust warmth as she reaches her destination. Dark neutral tones like charcoal and navy blend seamlessly with any skin tone and ensure visibility and elegance in wintry daylight conditions.",
+"2": "Wool-blend skirt suit",
+"3": "Matte leather ankle boots",
+"4": "Cashmere turtleneck sweater",
+"5": "Twill overcoat",
+"6": "Leather gloves"
+}
+
+── ВІДПОВІДЬ (1292 симв., 58.8 с, HTTP 200) ──
+```json
+{
+  "1": "Вовняний костюм-двійка з вузькою спідницею та звуженими штанами, пошитий у темно-сірому кольорі. \nМатові шкіряні черевики на низькому блочному підборі чорного кольору для стійкості на слизькій засніженій дорозі. \nКашеміровий гольф лісового зеленого кольору як внутрішній шар, щоб додати тепла без об’єму. \nTвідове пальто темно-синього кольору довжиною до середини стегна з подвійним рядом ґудзиків і теплою підкладкою для температури -10°C. \nШкіряні рукавички коричневого кольору, щоб зігріти руки під час двадцятихвилинної прогулянки. \nЦей образ працює тому, що важкі вовняні та кашемірові матеріали забезпечують необхідну ізоляцію від морозних температур і снігу, а приталений силует костюма зберігає професійний вигляд, який підходить для робочого дня. Черевики пропонують потрібний низький каблук для безпеки на слизькій посипаній дорозі без шкоди для стилю, і багатошаровість дозволяє їй регулювати теплоту при досягненні місця призначення. Темно-нейтральні тони, такі як темно-сірий і темно-синій, гармонійно поєднуються з будь-яким кольором шкіри та забезпечують видимість і елегантність у зимовий час доби.",
+  "2": "Вовняний костюм-двійка",
+  "3": "Матові шкіряні черевики",
+  "4": "Кашеміровий гольф",
+  "5": "Tвідове пальто",
+  "6": "Шкіряні рукавички"
+}
+```

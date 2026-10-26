@@ -1,0 +1,30 @@
+── ПРОМПТ (2337 симв.) ──
+{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.", "A slot the description says is not needed is not an item: give it worn false. One item carries one thing — of two alternatives list the first; a note in brackets is not an item.", "Slot \"accessory\" is for an item no other slot fits.", "\"is_outfit\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note; then items is empty."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "ITEM_LIST", "answer_schema": {"is_outfit": "yes|no", "items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory", "color_hex": "<#rrggbb or null>", "worn": "<true, or false when the description says the outfit goes without it>"}]}, "input": ["\"description\" — the outfit description"]}, "description": "High-waisted wide-leg dark denim trousers in black with a hex code of #0B0C10, cut straight and falling to mid-calf length, made from sturdy non-stretch twill fabric.\nA crisp white button-down shirt in a classic pointed collar style, tailored to a relaxed but neat fit with medium weight poplin fabric.\nChunky black leather platform sneakers with a thick sole and reinforced toe cap, designed for walking and standing on uneven club floors.\nThis outfit works because the wide-leg trousers offer ease of movement while maintaining a polished look suitable for a smart dress code, allowing you to stand comfortably in a crowd without feeling restricted. The white shirt adds a clean contrast that looks sharp even after hours of dancing or milling about, ensuring you stay stylish throughout the night. The chunky sneakers provide the necessary support for walking a lot while keeping the silhouette casual yet put-together, perfectly balancing comfort with the requested neat aesthetic."}
+
+── ВІДПОВІДЬ (777 симв., 68.4 с, HTTP 200) ──
+{
+  "is_outfit": "yes",
+  "items": [
+    {
+      "name": "dark denim trousers",
+      "details": "high-waisted wide-leg straight cut falling to mid-calf length made from sturdy non-stretch twill fabric",
+      "slot": "bottom",
+      "color_hex": "#0B0C10",
+      "worn": true
+    },
+    {
+      "name": "white button-down shirt",
+      "details": "classic pointed collar style tailored to a relaxed but neat fit made from medium weight poplin fabric",
+      "slot": "top",
+      "color_hex": "#FFFFFF",
+      "worn": true
+    },
+    {
+      "name": "chunky leather platform sneakers",
+      "details": "thick sole with reinforced toe cap designed for walking and standing on uneven surfaces",
+      "slot": "shoes",
+      "color_hex": "#000000",
+      "worn": true
+    }
+  ]
+}

@@ -1,0 +1,37 @@
+── ПРОМПТ (2319 симв.) ──
+{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.", "A slot the description says is not needed is not an item: give it worn false. One item carries one thing — of two alternatives list the first; a note in brackets is not an item.", "Slot \"accessory\" is for an item no other slot fits.", "\"is_outfit\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note; then items is empty."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "ITEM_LIST", "answer_schema": {"is_outfit": "yes|no", "items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory", "color_hex": "<#rrggbb or null>", "worn": "<true, or false when the description says the outfit goes without it>"}]}, "input": ["\"description\" — the outfit description"]}, "description": "Silk velvet sheath evening gown, floor-length silhouette with a modest high neckline and subtle chapel train, deep burgundy (#4A0404), smooth woven satin finish.\nPointed-toe pumps, mid-heel height, same deep burgundy leather to elongate the leg line, polished calfskin material.\nPearl drop earrings, single strand freshwater pearl necklace, gold cuff bracelet, small clutch purse in matching velvet fabric.\n\nThis outfit honors the transition from Sunday church service to a family luncheon by selecting a very formal evening gown that respects the sanctity of the ceremony while offering enough elegance for an afternoon gathering with parents. The deep burgundy color and silk velvet texture provide a dignified, warm appearance suitable for autumn daylight without appearing overly heavy or dark. By avoiding any casual elements like denim or sneakers, this ensemble ensures you remain respectful throughout the entire day while feeling sophisticated and polished."}
+
+── ВІДПОВІДЬ (871 симв., 63.7 с, HTTP 200) ──
+{
+  "is_outfit": "yes",
+  "items": [
+    {
+      "name": "Silk velvet sheath evening gown",
+      "details": "floor-length silhouette with a modest high neckline and subtle chapel train, smooth woven satin finish",
+      "slot": "dress",
+      "color_hex": "#4A0404",
+      "worn": true
+    },
+    {
+      "name": "Pointed-toe pumps",
+      "details": "mid-heel height to elongate the leg line, polished calfskin material",
+      "slot": "shoes",
+      "color_hex": "#4A0404",
+      "worn": true
+    },
+    {
+      "name": "Pearl drop earrings",
+      "details": "single strand freshwater pearl necklace",
+      "slot": "jewelry",
+      "color_hex": null,
+      "worn": true
+    },
+    {
+      "name": "Gold cuff bracelet",
+      "details": "small clutch purse in matching velvet fabric",
+      "slot": "accessory",
+      "color_hex": null,
+      "worn": true
+    }
+  ]
+}
