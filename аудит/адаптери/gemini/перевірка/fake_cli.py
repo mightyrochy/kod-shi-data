@@ -17,7 +17,14 @@ def opt(name):
 eff = [a.split('=', 1)[1] for a in args if a.startswith('model_reasoning_effort=')]
 ok_eff = os.environ.get('FAKE_CODEX_EFFORTS')
 if eff and ok_eff and eff[0] not in ok_eff.split(','):
-    if os.environ.get('FAKE_EFFORT_STYLE') == 'payload':
+    style = os.environ.get('FAKE_EFFORT_STYLE')
+    if style == 'escaped':
+        # те саме повідомлення в екрануванні Windows PowerShell 5.1 (ConvertTo-Json): апостроф як \u0027
+        msg = ("Invalid response.create payload: Invalid value: '%s'. Supported values are: "
+               "'none', 'minimal', 'low', 'medium', 'high', 'xhigh', and 'max'." % eff[0])
+        print(json.dumps({'type': 'error', 'message': msg}).replace("'", '\\u0027'))
+        sys.exit(1)
+    if style == 'payload':
         # відмова сервера (codex 0.164): подія --json без назви параметра в тексті
         print(json.dumps({'type': 'error', 'message': "Invalid response.create payload: Invalid value: '%s'. Supported values are: "
                           "'none', 'minimal', 'low', 'medium', 'high', 'xhigh', and 'max'." % eff[0]}))

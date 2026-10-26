@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # Стенд М.9-А, доставка й квота: квота як дані до наряду, тека вихідних (шаблони, карантин, повтор, стан «надіслано /
 # спроби»), кінець прогону ≤ 2 хв до claude. pwsh — PWSH. Код 1, якщо хоч одна перевірка ✗.
-H=$(cd "$(dirname "$0")" && pwd); PW="${PWSH:-pwsh}"; SRC=$(cd "$H/.." && pwd)
+H=$(cd "$(dirname "$0")" && pwd); . "$H/середовище.sh"; PW="${PWSH:-pwsh}"; SRC=$(cd "$H/.." && pwd)
 SLUG='М.2-проба-обгортки'; M=gemini-3.8-flash-high; BAD=0
 export GIT_AUTHOR_NAME=t GIT_AUTHOR_EMAIL=t@x GIT_COMMITTER_NAME=t GIT_COMMITTER_EMAIL=t@x
 setup() { W="${TMPDIR:-/tmp}/gemini-obhortka/$1"; rm -rf "$W"; mkdir -p "$W"/{fake,runs,out,pub}
@@ -9,13 +9,13 @@ setup() { W="${TMPDIR:-/tmp}/gemini-obhortka/$1"; rm -rf "$W"; mkdir -p "$W"/{fa
   (cd "$W/seed"; git checkout -q -b main; mkdir -p аудит/наряди; printf 'н\n' > "аудит/наряди/$SLUG.md"
    printf '| диспетчер | session_01TEST |\n' > аудит/СТАН.md; git add -A; git commit -q -m init; git push -q origin main 2>/dev/null)
   git clone -q "$W/origin.git" "$W/clone" 2>/dev/null; git -C "$W/clone" config user.name g; git -C "$W/clone" config user.email g@x
-  OB="$W/gemini-outbox"
-  export FAKE_STATE="$W/fake" FAKE_CLAUDE_LOG="$W/claude.log" FAKE_SCENARIO=abandon_then_done FAKE_ISOLATION= FAKE_CLAUDE_FAIL= FAKE_USAGE=ok FAKE_RESET=137; }
-gem() { "$PW" -NoProfile -File "$H/side.ps1" -Script "$SRC/gemini_run.ps1" -ArgsJson "{\"RepoDir\":\"$W/clone\",\"RunsDir\":\"$W/runs\",\"OutDir\":\"$W/out\",\"RepoUrl\":\"$W/origin.git\",\"AgyExe\":\"$H/fake_agy.py\",\"TurnMinutes\":0.05,\"TotalMinutes\":0.5,\"MaxNudges\":3}" >/dev/null 2>&1; }
-pub() { "$PW" -NoProfile -File "$H/side.ps1" -Script "$SRC/gemini_publish.ps1" -ArgsJson "{\"WorkDir\":\"$W/pub\",\"OutDir\":\"$W/out\",\"RepoUrl\":\"$W/origin.git\",\"ClaudeExe\":\"$H/fake_claude.py\",\"SendRetryDelaySeconds\":0${1:+,$1}}" >/dev/null 2>&1; }
+  OB="$W/gemini-outbox"; WW=$(wp "$W")
+  export FAKE_STATE="$WW/fake" FAKE_CLAUDE_LOG="$WW/claude.log" FAKE_SCENARIO=abandon_then_done FAKE_ISOLATION= FAKE_CLAUDE_FAIL= FAKE_USAGE=ok FAKE_RESET=137; }
+gem() { "$PW" -NoProfile -File "$(wp "$H/side.ps1")" -Script "$(wp "$SRC/gemini_run.ps1")" -ArgsJson "{\"RepoDir\":\"$WW/clone\",\"RunsDir\":\"$WW/runs\",\"OutDir\":\"$WW/out\",\"RepoUrl\":\"$WW/origin.git\",\"AgyExe\":\"$(stub fake_agy)\",\"TurnMinutes\":0.05,\"TotalMinutes\":0.5,\"MaxNudges\":3}" >/dev/null 2>&1; }
+pub() { "$PW" -NoProfile -File "$(wp "$H/side.ps1")" -Script "$(wp "$SRC/gemini_publish.ps1")" -ArgsJson "{\"WorkDir\":\"$WW/pub\",\"OutDir\":\"$WW/out\",\"RepoUrl\":\"$WW/origin.git\",\"ClaudeExe\":\"$(stub fake_claude)\",\"SendRetryDelaySeconds\":0${1:+,$1}}" >/dev/null 2>&1; }
 mark() { git -C "$W/seed" push -q origin "main:refs/heads/gemini-queue/$1" 2>/dev/null; }
-lines() { python3 -c "import json,sys
-for l in open('$W/claude.log', encoding='utf-8'):
+lines() { $PY -c "import json,sys
+for l in open('$WW/claude.log', encoding='utf-8'):
     print('  → ' + json.loads(l)['stdin'])" 2>/dev/null; }
 # рядок ПУЛИ (pools.json від gemini) іде окремо, раз на 3 год — у лічильник доставлених рядків не входить
 nlines() { [ -f "$W/claude.log" ] && { grep -vc "ПУЛИ" "$W/claude.log" || true; } || echo 0; }
@@ -73,7 +73,7 @@ put "GEMINI ОБГОРТКА: ЗАБЛОКОВАНО gemini/х код_малим
 printf 'GEMINI ОБГОРТКА: ГОТОВО gemini/х %s\nдругий рядок\n' "$SHA" > "$OB/20261024-130001-bbbbbbbbbb01.txt"
 printf '\xef\xbb\xbfGEMINI ОБГОРТКА: ГОТОВО gemini/х %s\n' "$SHA" > "$OB/20261024-130002-bbbbbbbbbb02.txt"
 printf 'GEMINI \xff\xfe ГОТОВО\n' > "$OB/20261024-130003-bbbbbbbbbb03.txt"
-python3 -c "open('$OB/20261024-130004-bbbbbbbbbb04.txt','w').write('x'*3000)"
+$PY -c "open('$(wp "$OB")/20261024-130004-bbbbbbbbbb04.txt','w').write('x'*3000)"
 : > "$OB/20261024-130005-bbbbbbbbbb05.txt"
 printf 'GEMINI ОБГОРТКА: ГОТОВО gemini/х %s\n' "$SHA" > "$OB/.20261024-130006-bbbbbbbbbb06.txt.tmp"      # незавершений запис — не чіпати
 printf 'GEMINI ОБГОРТКА: ГОТОВО gemini/х %s\n' "$SHA" > "$OB/20261024-130007-bbbbbbbbbb06.txt.part"

@@ -6,7 +6,7 @@
 #   "k nothing stream" "l abandon_then_done print" "m hang print" "n abandon_then_done stream bad-model"; do
 #   set -- $s; ./сценарії_прогону.sh "$@" 2>/dev/null | grep 'GEMINI ОБГОРТКА'; done
 set -u
-H=$(cd "$(dirname "$0")" && pwd)
+H=$(cd "$(dirname "$0")" && pwd); . "$H/середовище.sh"
 PW="${PWSH:-pwsh}"
 SRC=$(cd "$H/.." && pwd)
 NAME=$1; SC=$2; MODE=$3; MODEL=${4:-gemini-3.8-flash-high}; HOOK=${5:-}
@@ -24,12 +24,12 @@ echo 'on: push' > .github/workflows/x.yml; echo '#' > аудит/адаптер�
 git add -A; git commit -q -m init; git push -q origin main
 git push -q origin "main:refs/heads/gemini-queue/$SLUG/$MODEL/1"
 cd "$W"; git clone -q origin.git clone; git -C clone config user.name g; git -C clone config user.email g@x
-export FAKE_SCENARIO=$SC FAKE_STATE="$W/fake" FAKE_CLAUDE_LOG="$W/claude.log"
-GA=$(python3 -c "import json,os;print(json.dumps({**dict(RepoDir='$W/clone',RunsDir='$W/runs',OutDir='$W/out',RepoUrl='$W/origin.git',AgyExe='$H/fake_agy.py',CodexExe='$H/fake_codex.py',Mode='$MODE',TurnMinutes=0.05,TotalMinutes=0.5,MaxNudges=3),**json.loads(os.environ.get('EXTRA','{}'))}))")
-"$PW" -NoProfile -File "$H/side.ps1" -Script "$SRC/gemini_run.ps1" -ArgsJson "$GA"; echo "gemini exit=$?"
+export FAKE_SCENARIO=$SC FAKE_STATE="$(wp "$W/fake")" FAKE_CLAUDE_LOG="$(wp "$W/claude.log")"
+GA=$($PY -c "import json,os;print(json.dumps({**dict(RepoDir='$(wp "$W/clone")',RunsDir='$(wp "$W/runs")',OutDir='$(wp "$W/out")',RepoUrl='$(wp "$W/origin.git")',AgyExe='$(stub fake_agy)',CodexExe='$(stub fake_codex)',Mode='$MODE',TurnMinutes=0.05,TotalMinutes=0.5,MaxNudges=3),**json.loads(os.environ.get('EXTRA','{}'))}))")
+"$PW" -NoProfile -File "$(wp "$H/side.ps1")" -Script "$(wp "$SRC/gemini_run.ps1")" -ArgsJson "$GA"; echo "gemini exit=$?"
 [ -n "$HOOK" ] && (cd "$W" && eval "$HOOK")
-PA=$(python3 -c "import json;print(json.dumps(dict(WorkDir='$W/pub',OutDir='$W/out',RepoUrl='$W/origin.git',ClaudeExe='$H/fake_claude.py',SendRetryDelaySeconds=0)))")
-"$PW" -NoProfile -File "$H/side.ps1" -Script "$SRC/gemini_publish.ps1" -ArgsJson "$PA"; echo "publish exit=$?"
+PA=$($PY -c "import json;print(json.dumps(dict(WorkDir='$(wp "$W/pub")',OutDir='$(wp "$W/out")',RepoUrl='$(wp "$W/origin.git")',ClaudeExe='$(stub fake_claude)',SendRetryDelaySeconds=0)))")
+"$PW" -NoProfile -File "$(wp "$H/side.ps1")" -Script "$(wp "$SRC/gemini_publish.ps1")" -ArgsJson "$PA"; echo "publish exit=$?"
 echo "--- out:"; ls "$W/out"; cat "$W"/out/*.json 2>/dev/null | grep -v heartbeat; echo
 echo "--- wrapper.log:"; cat "$W/runs/wrapper.log"
 echo "--- publish.log:"; cat "$W/pub/publish.log" 2>/dev/null

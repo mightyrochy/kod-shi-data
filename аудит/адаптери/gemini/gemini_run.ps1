@@ -616,7 +616,17 @@ $head $facts
 "@
 }
 
+# Рядки подій `--json` приходять з екрануванням JSON (`\u0027` замість апострофа, `\"`); клас відмови шукаємо в розкодованому
+# тексті, а не в сирому: інакше межа слова біля `\u0027max\u0027` ламається. Розкодування не залежить від того, чи рядок
+# події цілий (хвіст виводу обрізаний по символах) — тому це підстановка, а не ConvertFrom-Json.
+function Expand-JsonEscapes([string]$Text) {
+    $t = [regex]::Replace($Text, '\\u([0-9a-fA-F]{4})', { param($m) [string][char][Convert]::ToInt32($m.Groups[1].Value, 16) })
+    $t = [regex]::Replace($t, '\\[nrt]', ' ')
+    [regex]::Replace($t, '\\(["\\/])', '$1')
+}
+
 function Get-ErrorCode([string]$Text, [string]$EngineName = 'agy', [string]$Effort = '') {
+    $Text = Expand-JsonEscapes $Text
     if ($Text -match 'invalid model selection|not recognized as a known model') { return 'MODEL_INVALID' }
     # Codex не приймає зусилля з позначки: помилка конфігурації `model_reasoning_effort`, відповідь API про `reasoning.effort`
     # або відповідь «Invalid/Unsupported value … Supported values are: …», де названо надіслане зусилля чи перелік зусиль

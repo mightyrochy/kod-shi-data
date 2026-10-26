@@ -2,20 +2,20 @@
 # Стенд спостерігача М.9-Б без Windows (pwsh 7, git, python3): локальний «origin», підробний gh (fake_gh.py).
 # 11 сценаріїв: базова лінія, коментарі, CI, перенос, відмови переносу, ворожі назви, збій gh, ліміт рядків, формат теки.
 # Кожен рядок теки перевіряється за шаблонами наряду. pwsh — змінна PWSH.
-H=$(cd "$(dirname "$0")" && pwd); PW="${PWSH:-pwsh}"; SRC=$(cd "$H/.." && pwd)
+H=$(cd "$(dirname "$0")" && pwd); . "$H/середовище.sh"; PW="${PWSH:-pwsh}"; SRC=$(cd "$H/.." && pwd)
 SLUG='М.9-проба-спостерігача'; R=mightyrochy/kod-shi-data; BOT='chatgpt-codex-connector[bot]'
 export GIT_AUTHOR_NAME=t GIT_AUTHOR_EMAIL=t@x GIT_COMMITTER_NAME=t GIT_COMMITTER_EMAIL=t@x
 ts() { date -u -d "$1 sec" +%Y-%m-%dT%H:%M:%SZ; }
-sha() { python3 -c "import hashlib,sys;print(hashlib.sha1(sys.argv[1].encode()).hexdigest())" "$1"; }
+sha() { $PY -c "import hashlib,sys;print(hashlib.sha1(sys.argv[1].encode()).hexdigest())" "$1"; }
 setup() { W="${TMPDIR:-/tmp}/gemini-watch/$1"; rm -rf "$W"; mkdir -p "$W"/{fake,out,work}
   git init -q --bare "$W/origin.git"; git clone -q "$W/origin.git" "$W/seed" 2>/dev/null
   (cd "$W/seed"; git checkout -q -b main; printf 'один\nдва\nтри\n' > a.txt; mkdir -p аудит/адаптери/gemini; echo w > аудит/адаптери/gemini/w.txt
    git add -A; git commit -q -m init; git push -q origin main 2>/dev/null
    git checkout -q -b "codex/$SLUG"; git commit -q --allow-empty -m "наряд"; git push -q origin "codex/$SLUG" 2>/dev/null)
-  HEAD0=$(git -C "$W/origin.git" rev-parse "refs/heads/codex/$SLUG"); export FAKE_GH_DIR="$W/fake" FAKE_GH_FAIL=
+  HEAD0=$(git -C "$W/origin.git" rev-parse "refs/heads/codex/$SLUG"); export FAKE_GH_DIR="$(wp "$W/fake")" FAKE_GH_FAIL=
   pulls "[1801,mightyrochy,$HEAD0,codex/$SLUG]"; checks "$HEAD0" completed success
   patches; }
-pulls() { python3 - "$FAKE_GH_DIR/pulls.json" "$@" <<'P'
+pulls() { $PY - "$FAKE_GH_DIR/pulls.json" "$@" <<'P'
 import json,sys
 out=[]
 for a in sys.argv[2:]:
@@ -24,13 +24,13 @@ for a in sys.argv[2:]:
 json.dump(out,open(sys.argv[1],'w'))
 P
 }
-checks() { python3 - "$FAKE_GH_DIR/checks_$1.json" "${@:2}" <<'P'
+checks() { $PY - "$FAKE_GH_DIR/checks_$1.json" "${@:2}" <<'P'
 import json,sys
 a=sys.argv[2:]; json.dump([{"status":a[i],"conclusion":a[i+1] or None} for i in range(0,len(a),2)],open(sys.argv[1],'w'))
 P
 }
 # cmt <N> <id> <login> <відступ секунд для updated_at> [файл тіла]
-cmt() { python3 - "$FAKE_GH_DIR/comments_$1.json" "$2" "$3" "$(ts "$4")" "${5:-}" <<'P'
+cmt() { $PY - "$FAKE_GH_DIR/comments_$1.json" "$2" "$3" "$(ts "$4")" "${5:-}" <<'P'
 import json,os,sys
 p,i,l,t,b=sys.argv[1:]
 c=json.load(open(p)) if os.path.exists(p) else []
@@ -52,14 +52,14 @@ patches() { P="$W/patch"; mkdir -p "$P"
   printf 'diff --git a/l b/l\nnew file mode 120000\nindex 0000000..1111111\n--- /dev/null\n+++ b/l\n@@ -0,0 +1 @@\n+a.txt\n\\ No newline at end of file\n' > "$P/link.diff"
   printf 'diff --git a/.git/hooks/x b/.git/hooks/x\nnew file mode 100644\n--- /dev/null\n+++ b/.git/hooks/x\n@@ -0,0 +1 @@\n+x\n' > "$P/dotgit.diff"
   printf 'diff --git a/../ззовні b/../ззовні\nnew file mode 100644\n--- /dev/null\n+++ b/../ззовні\n@@ -0,0 +1 @@\n+x\n' > "$P/outside.diff"; }
-watch() { "$PW" -NoProfile -File "$SRC/gemini_watch.ps1" -WorkDir "$W/work" -OutDir "$W/out" -Repo "$R" -RepoUrl "$W/origin.git" \
-  -GhExe "$H/fake_gh.py" "$@"; echo "  код виходу: $?" >&2; }
+watch() { "$PW" -NoProfile -File "$(wp "$SRC/gemini_watch.ps1")" -WorkDir "$(wp "$W/work")" -OutDir "$(wp "$W/out")" -Repo "$R" -RepoUrl "$(wp "$W/origin.git")" \
+  -GhExe "$(stub fake_gh)" "$@"; echo "  код виходу: $?" >&2; }
 rows() { for f in $(ls "$W/out" | grep -v '\.part$' | sort); do cat "$W/out/$f"; echo; done | sed '/^$/d'; }
 n() { ls "$W/out" 2>/dev/null | grep -c '\.txt$'; }
 mv_out() { mkdir -p "$W/seen"; mv "$W/out"/*.txt "$W/seen/" 2>/dev/null; }
 # Прогін і показ нових рядків: ім'я -> рядки, що з'явились від минулого показу.
 step() { watch "${@:2}" 2>/dev/null; echo "-- $1: рядків $(n)"; rows | sed 's/^/   /'; mv_out; }
-check_format() { python3 - "$W" <<'P'
+check_format() { $PY - "$W" <<'P'
 import os,re,sys,glob
 w=sys.argv[1]; sl=r'[\w][\w._-]{0,79}'; sh=r'[0-9a-f]{40}'
 T=[r'СПОСТЕРІГАЧ КОМЕНТАР #\d+ \d+ (mightyrochy|chatgpt-codex-connector\[bot\]) (новий|змінено)',
@@ -106,7 +106,7 @@ body "$W/b.md" "$W/patch/ok.diff"; cmt 1801 593 "$BOT" 1 "$W/b.md"; step "TOO_BI
 echo "=== 5б хеші: обрізаний diff при хешах повного -> HASH_MISMATCH; без блоку хешів -> NO_HASHES"; setup w5b; step "базова лінія"
 head -8 "$W/patch/ok.diff" > "$W/patch/cut.diff"; body "$W/b.md" "$W/patch/cut.diff"; cmt 1801 520 "$BOT" -30 "$W/b.md"
 body "$W/b2.md" "$W/patch/ok.diff" без; cmt 1801 521 "$BOT" -30 "$W/b2.md"; step "обрізаний і без хешів"
-python3 - "$W/b.md" <<'P'
+$PY - "$W/b.md" <<'P'
 import sys,re
 p=sys.argv[1]; s=open(p,encoding='utf-8').read(); s=re.sub(r'^[0-9a-f]{40}  нове.txt$','0'*40+'  нове.txt',s,flags=re.M); open(p,'w',encoding='utf-8').write(s)
 P
@@ -114,7 +114,7 @@ sleep 1; body "$W/b.md" "$W/patch/ok.diff"; sed -i 's/^\([0-9a-f]\{40\}\)  a.txt
 [ "$(git -C "$W/origin.git" rev-parse "refs/heads/codex/$SLUG")" = "$HEAD0" ] && echo "  ✓ гілку не пересунуто" || echo "  ✗ гілка рухалась"
 echo "=== 6 ворожі назви гілок і PR: нічого, крім шаблонів"; setup w6; step "базова лінія"
 pulls "[1801,mightyrochy,$HEAD0,codex/$SLUG]" "[1810,mightyrochy,$(sha e),codex/..evil]" "[1811,mightyrochy,$(sha f),codex/a b]" "[1812,mightyrochy,$(sha g),codex/x;rm]" "[1813,stranger,$(sha h),codex/chuzha]"
-python3 - "$FAKE_GH_DIR/pulls.json" <<'P'
+$PY - "$FAKE_GH_DIR/pulls.json" <<'P'
 import json,sys
 p=json.load(open(sys.argv[1])); p.append({"number":1814,"user":{"login":"mightyrochy"},"head":{"sha":"a"*40,"ref":"codex/nl\n","repo":{"full_name":"mightyrochy/kod-shi-data"}}}); json.dump(p,open(sys.argv[1],'w'))
 P
