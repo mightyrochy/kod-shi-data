@@ -1,0 +1,30 @@
+── ПРОМПТ (2253 симв.) ──
+{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.", "A slot the description says is not needed is not an item: give it worn false. One item carries one thing — of two alternatives list the first; a note in brackets is not an item.", "Slot \"accessory\" is for an item no other slot fits.", "\"is_outfit\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note; then items is empty."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "ITEM_LIST", "answer_schema": {"is_outfit": "yes|no", "items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory", "color_hex": "<#rrggbb or null>", "worn": "<true, or false when the description says the outfit goes without it>"}]}, "input": ["\"description\" — the outfit description"]}, "description": "Leather moto jacket in deep charcoal with a sleek asymmetrical zipper and cropped length, color #36454F, heavy vegan leather.\nHigh-waisted wide-leg trousers in matte black with a relaxed fit extending to the ankle, color #000000, durable cotton twill.\nChunky combat boots with a 4cm heel and reinforced toe box, color #1A1A1A, weather-resistant rubber and suede.\nThis ensemble is perfect for standing in a crowded rock concert because the leather jacket adds an edgy attitude while keeping you warm against the autumn chill without overheating at 18°C. The wide-leg trousers allow for easy walking through the venue crowd, and the sturdy combat boots provide essential stability and comfort on potentially uneven club floors. The dark monochromatic palette ensures you stay cool under bright stage lights while looking effortlessly cool enough to match the energetic atmosphere of a Friday night show."}
+
+── ВІДПОВІДЬ (589 симв., 72.1 с, HTTP 200) ──
+{
+  "is_outfit": "yes",
+  "items": [
+    {
+      "name": "Leather moto jacket",
+      "details": "Asymmetrical zipper and cropped length",
+      "slot": "outerwear",
+      "color_hex": "#36454F",
+      "worn": true
+    },
+    {
+      "name": "High-waisted wide-leg trousers",
+      "details": "Relaxed fit extending to the ankle",
+      "slot": "bottom",
+      "color_hex": "#000000",
+      "worn": true
+    },
+    {
+      "name": "Chunky combat boots",
+      "details": "4cm heel and reinforced toe box",
+      "slot": "shoes",
+      "color_hex": "#1A1A1A",
+      "worn": true
+    }
+  ]
+}
