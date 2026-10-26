@@ -30,7 +30,7 @@
   · Лічба «на скількох речах вийшло» — це ДОСЯЖНІСТЬ, не якість: правило може
     виходити на 600 речах і бути хибним на всіх шістьохстах.
 """
-import ast, collections, inspect, os, re, sys
+import ast, collections, inspect, os, re, sys, tempfile
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import feed as Ф
@@ -39,7 +39,7 @@ import outer as ВШ
 import accessory as АК
 
 КОРІНЬ = os.path.dirname(os.path.abspath(Ф.__file__))
-КЕШ = "/tmp/_audit_feed_поля_кеш.json"
+КЕШ = os.path.join(tempfile.gettempdir(), "_audit_feed_поля_кеш.json")
 
 # Слоти ядра одягу — усе інше в реєстрах `feed` аксесуарне. Список ВИВОДИТЬСЯ
 # з реєстрів, а не дублюється: інакше наступний слот, доданий у `feed`, тихо

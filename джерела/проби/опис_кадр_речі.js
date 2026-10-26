@@ -4,11 +4,12 @@
    сережки 5) і мертвим кадром №3 та друкує пари «річ → кадр, який побачить модель».
    ДО — воркер і сторінка origin/main (кадри голими блоками), ПІСЛЯ — робоче дерево (`підписатиКадри`).
    Запуск із теки `джерела`: node проби/опис_кадр_речі.js */
-const fs = require("fs"), { execFileSync } = require("child_process");
+const fs = require("fs"), path = require("path"), os = require("os"), {pathToFileURL} = require("url"),
+  { execFileSync } = require("child_process");
 const git = ф => execFileSync("git", ["show", "origin/main:джерела/" + ф], { encoding: "utf8", maxBuffer: 1 << 28 });
-const модуль = async (код, ім) => { const ш = "/tmp/_кадр_" + ім + ".mjs";
+const модуль = async (код, ім) => { const ш = path.join(os.tmpdir(), "_кадр_" + ім + ".mjs");
   fs.writeFileSync(ш, код.replace(/export\s*\{\s*worker_default as default\s*\}\s*;?/, "const М = worker_default;").replace(/^export default/m, "const М =") + "\nexport {М};");
-  return (await import(ш)).М; };
+  return (await import(pathToFileURL(ш).href)).М; };
 const РЕЧІ = [["сумка", [1, 2]], ["ремінь", [3, 4]], ["сережки", [5]]];
 const УРЛИ = [1, 2, 3, 4, 5].map(i => (i === 3 ? "https://dead.example/" : "https://img.example/") + i + ".jpg");
 const пнг = new Uint8Array(2048); пнг.set([137, 80, 78, 71, 13, 10, 26, 10]);

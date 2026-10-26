@@ -1488,7 +1488,18 @@ def помилка_формату(помилки, відповідь=None):
 # «словами» («прогулянка просто неба», «з 18:00 — вечір і до ночі; …»).
 import внутрішня_мова as _ВМ
 _КОДИ_ВМ = lambda поле: слово(*_ВМ.ТАБЛИЦЯ[поле])
-ДЕНЬ = обʼєкт({"activity": _КОДИ_ВМ("activity"), "movement": _КОДИ_ВМ("movement"),
+ПОТРЕБА_ПОДІЇ = обʼєкт({
+    "profile": слово("unknown", "mourning", "reserved_white", "business"),
+    "light": слово("unknown", "daylight", "evening"), "mourning": ЛОГІЧНЕ,
+    "lightness_range": або_нуль(список(ЧИСЛО)), "lightness_max": або_нуль(ЧИСЛО),
+    "chroma_max": або_нуль(ЧИСЛО), "loudness_max": або_нуль(ЧИСЛО),
+    "loudness_source": слово("unknown", "wedding_evening_photos", "mourning_dark_quiet_near_face"),
+    "near_white_veto": ЛОГІЧНЕ, "shine_near_face_from": або_нуль(ЧИСЛО),
+    "decorated_headwear_or_nonmetal_jewelry": список(_КОДИ_ВМ("pattern")),
+    "festive_trim_shine_from": або_нуль(ЧИСЛО), "loud_patterns_large_or_near_face": список(_КОДИ_ВМ("pattern")),
+})
+
+ДЕНЬ = обʼєкт({"occasion_requirements": ПОТРЕБА_ПОДІЇ, "activity": _КОДИ_ВМ("activity"), "movement": _КОДИ_ВМ("movement"),
                "place": _КОДИ_ВМ("place"), "setting": _КОДИ_ВМ("setting"),
                "surface": _КОДИ_ВМ("surface"), "dress_code": _КОДИ_ВМ("dress_code"),
                "duration_h": ЧИСЛО, "temperature_c": ЧИСЛО,
@@ -1966,7 +1977,7 @@ def регістр_знахідки(з):
 # першою — §1(а) вимагає її в кожному обміні.
 ВЕРДИКТ_ОБРАЗІВ = "вердикт"
 ТВІЙ_ОБРАЗ = "твій_образ"
-ПОЛЯ_ТВОГО_ОБРАЗУ = ("ід", "підпис", "речі", "день")
+ПОЛЯ_ТВОГО_ОБРАЗУ = ("ід", "підпис", "речі", "день", "полюс")
 _ПЕРЕД_СУДОМ = ("версія", "ітерація", "випадок", "день")
 
 

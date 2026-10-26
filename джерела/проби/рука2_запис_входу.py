@@ -3,9 +3,9 @@
 Друкує: яке правило випало й на скільки різниться пул; сід порядку показу кожної руки; скільки спільних речей стоїть на
 тій самій позиції свого слота. Не відтворює вибору стилістки палітри (його нема у вході), тож склад пулу близький, не байт-у-байт.
 Запуск: gunzip -c каталог_повний.xml.gz > /tmp/каталог_повний.xml && python3 джерела/проби/рука2_запис_входу.py ФАЙЛ СІД [КАТАЛОГ]"""
-import json, os, sys
+import json, os, sys, tempfile
 КОРІНЬ = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-файл, сід, каталог = sys.argv[1], int(sys.argv[2]), (sys.argv[3] if len(sys.argv) > 3 else "/tmp/каталог_повний.xml")
+файл, сід, каталог = sys.argv[1], int(sys.argv[2]), (sys.argv[3] if len(sys.argv) > 3 else os.path.join(tempfile.gettempdir(), "каталог_повний.xml"))
 sys.path.insert(0, os.path.join(КОРІНЬ, "джерела")); os.chdir(sys.path[0])
 import bridge as B
 д = json.load(open(файл, encoding="utf-8")); вп = д["спільне"]["вхід_прогону"]; вх = json.load(open("стенд_вх.json"))
