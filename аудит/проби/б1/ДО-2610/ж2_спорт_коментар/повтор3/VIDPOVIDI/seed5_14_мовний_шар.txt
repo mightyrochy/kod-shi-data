@@ -1,4 +1,4 @@
-── ПРОМПТ (5731 симв.) ──
+── ПРОМПТ (6063 симв.) ──
 Ти — перекладачка в застосунку-стилістці. Ти пишеш природною українською тексти, які зараз побачить жінка. Рішень не приймаєш, на питання не відповідаєш, змісту не міняєш.
 
 Вхід — JSON-об'єкт: ключ — номер тексту н, значення — текст, який склали код та інші моделі.
@@ -19,18 +19,20 @@
 3 — назва в тексті н=4
 When a text speaks of an item of the list, call it by the kind in its name — the same noun in the right case (list «Тренч бежевий подовжений» — text «тренч», «Светр в'язаний оверсайз» — «светр»), not by another kind or a synonym of the English word. Make every adjective, pronoun and verb with the item agree with that noun in gender and number («Тренч бежевий» — «бежевий тренч, який…»; «Лофери шкіряні» — «шкіряні лофери, які…»). A name you translate in this same call (text н=K): give it one noun and call the item by it, in agreement, in every text. A text the list gives as about an item (about it: text н=M) speaks of that one item, and so does every other text where the English names it. The colour of an item of the list is the colour of its name: keep the shop's colour word from its name; when its name has no colour word, write the Ukrainian name of its colour code. The English colour words for that item are the stylist's impression of a photo: do not turn them into a colour of their own — the item's colour stands in their place. Colours of its details (trim, strap, buttons, print), its fabric and the rest — translate from the text. The list is for names only: an item the English text does not name is not added to the translation — neither to the description nor to the advice. The kind code next to an item (kind code: …) is the code of its kind: every noun for that item, in every text, names this kind and no other, whatever word the English text uses; a code ending in _generic names only the family (dress_generic — a dress, bag_generic — a bag). The kind noun of its name and this code are the same kind: write the name's noun.
 
+[colour: код] у тексті — колір речі кодом: напиши на його місці українську назву цього кольору, узгоджену з реченням. Коли та сама річ у тексті вже має колір своїм словом, лиши її слово, а другої назви кольору не додавай. Коди: navy — темно-синій.
+
 ТЕКСТИ:
 {
-"1": "Woven cotton tunic, relaxed A-line silhouette, knee-length hem, sand color with code, soft brushed fabric.\nDark wash denim jeans, straight-leg cut, ankle length, charcoal gray with code, rigid twill material.\nMinimalist canvas sneakers, rounded toe, mid-top height, off-white with code, durable suede and rubber construction.\n\nThis outfit balances comfort with a polished everyday aesthetic perfect for an autumn morning in daylight. The neutral tones of the sand tunic and charcoal denim create a harmonious, low-maintenance look that feels effortless yet intentional. Lightweight layers are unnecessary as the weather is mild enough, allowing the focus to remain on the quality of the natural fabrics and the clean lines of the silhouette.",
-"2": "tunic",
-"3": "jeans",
-"4": "sneakers"
+"1": "A relaxed-fit denim shirt in deep indigo, [colour: navy], crafted from sturdy cotton twill to provide comfort and structure for the morning air.\nDark wash straight-leg jeans with a mid-rise waist, made of soft stretch denim to allow ease of movement throughout the day.\nMinimalist leather ankle boots in black with a low block heel, featuring a smooth grain finish suitable for autumn pavements.\nThis outfit works perfectly for an autumn morning while adhering to your request for everyday casual wear, offering warmth and durability against the cooler season without feeling overdressed. The dark indigo tones complement the daylight ambiance while maintaining a relaxed yet put-together aesthetic that honors your refusal of anything too formal or restrictive.",
+"2": "relaxed-fit denim shirt",
+"3": "dark wash straight-leg jeans",
+"4": "minimalist leather ankle boots"
 }
 
-── ВІДПОВІДЬ (439 симв., 46.8 с, HTTP 200) ──
+── ВІДПОВІДЬ (940 симв., 46.1 с, HTTP 200) ──
 {
-"1": "Тюнічка з тканого бавовняного полотна, вільний силует А-подібної форми, довжина до колін, пісочного кольору з кодом, м'яка фланелева тканина.\nДжинси темно-синього відтінку, прямий крій, довжина до щиколотки, вугільно-сірого кольору з кодом, жорсткий твіл.\nМінімалістичні кеди з полотна, заокруглений носок, середня висота халяви, молочно-білого кольору з кодом, міцна замша та гума.",
-"2": "тюнічка",
-"3": "джинси",
-"4": "кеди"
+  "1": "Джинсова сорочка вільного крою глибокого індиго, [colour: navy], виготовлена з міцного бавовняного сатину для комфорту та структури в ранковий час.\nТемно-сині прямі джинси із середньою посадкою на талії, пошиті з м’якої еластичної деніму, щоб забезпечити свободу рухів протягом дня.\nМінімалістичні шкіряні черевики до щиколотки чорного кольору з невисоким стійким каблуком і гладкою зернистою обробкою для осінніх тротуарів.\nЦей образ чудово підходить для осіннього ранку, відповідаючи твоєму проханню щодо повсякденного неформального одягу. Він дарує тепло та довговічність у холодну пору року без відчуття надмірності. Темно-сині тони гармонують з денним світлом і зберігають розслаблений, але охайний вигляд, який відповідає твоїй відмові від будь-чого занадто формального чи обмежувального.",
+  "2": "джинсова сорочка вільного крою",
+  "3": "темно-сині прямі джинси",
+  "4": "мінімалістичні шкіряні черевики до щиколотки"
 }

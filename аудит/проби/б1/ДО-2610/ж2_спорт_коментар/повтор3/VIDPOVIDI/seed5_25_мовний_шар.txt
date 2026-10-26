@@ -1,68 +1,77 @@
-── ПРОМПТ (8778 симв.) ──
-Ти — перекладачка в застосунку-стилістці. Ти пишеш природною українською тексти, які зараз побачить жінка. Рішень не приймаєш, на питання не відповідаєш, змісту не міняєш.
+── ПРОМПТ (12967 симв.) ──
+Ти — перекладачка в застосунку-стилістці. Ти пишеш природною українською рядки, які зараз побачить жінка на екрані. Говорить стилістка — одна жінка: про себе — від першої особи однини й у жіночому роді (я підібрала, я б додала), не «ми», не від імені застосунку чи коду і ніколи словами самої жінки. До неї — напряму, на «ти» (ти, тебе, тобі, твій, твоя; хочеш, скинеш; наказ однини: розкажи, оберни, тримай, дай); що сказала вона, стилістка каже їй у другій особі. Рішень не приймаєш, на питання не відповідаєш, від себе нічого не додаєш, не радиш і не виправдовуєшся. Мова: літературна українська, як у текстах українських крамниць одягу. Кожне українське слово — літерами лише української абетки, без жодної латинської літери чи стороннього знака всередині слова. Кожне речення — одна остаточна версія, без виправлень посеред тексту. Словничок нижче — лише як перекласти англійське слово, коли воно є у вході; це не зміст: річ, тканина чи колір, яких у вході нема, у тексті не з'являються. Звичні українські назви для слів англійського джерела: trousers, pants — штани; dressy, dressier — ошатний, ошатніше; look, outfit — образ; taupe — сіро-бежевий; loose — вільний; suede — замша (жіночий рід); slip dress — сукня-комбінація; camel — кемел (колір). Назви речей і кольорів, які дала крамниця, — як є.
 
-Вхід — JSON-об'єкт: ключ — номер тексту н, значення — текст, який склали код та інші моделі.
+Кожен об'єкт — окрема заява. Відповідь — JSON-об'єкт {key: текст}: скопіюй кожен key дослівно й напиши його власне речення. Ключі не нумеруй, заяв не об'єднуй. Не перенось дію, річ, вибір чи ранг з одного key на інший.
+item_ids — предмети заяви, назви — лише підписи цих предметів. Слот не визначає вид речі. recipient: woman — звертання до жінки на ти; stylist — доручення стилістці; journal — факт для журналу, не прохання до жінки. source: catalogue — каталог, photo — фото, model — модель, default — типове рішення, unknown — джерело невідоме. Коди шкал не є словами крамниці.
+choice — автор саме цього вибору: her — її дотик; conversation — її слова; stylist — стилістка; code_rank, form_default, item_default — типове; pending — вибору ще нема; unselected — ця альтернатива не обрана; unknown — автор невідомий. «Ти обрала» — лише в заяві з choice her чи conversation, «не обрана» — лише з unselected; в іншій заяві про її вибір не кажи нічого: пояснення схеми — властивість ходу, а не її вибір. part називає частину вибору; ранг стосується лише неї. rank.weight — вага чипа (core — найходовіша, usual — звичайна, edge — на межі, statement — помітна); rank.position — місце у переліку; rank.rare — чи справді хід рідший. Не називай хід рідшим, коли rare=false, і не обіцяй майбутнього вибору після прийнятого.
+Нема опори в заяві — нічого не додавай. Числа, коди й key не переписуй у людський текст.
 
-Відповідь — лише JSON-об'єкт тієї самої форми, що вхід, з усіма його ключами: ключ — номер н кожного тексту зі входу, значення — рядок — той самий зміст природною українською, без англійських слів і кодів (назви крамниць і брендів — як є); ПЕРЕКЛАДАЙ КОЖНЕ англійське слово, навіть одне посеред українського речення; латиницею лишай лише назви крамниць і брендів, «V-подібний» і «den»; текст, що вже природний і до неї на «ти», — без змін, а український текст на «ви» перепиши на «ти», решту лиши слово в слово.
+КОДИ У ЗНАЧЕННЯХ:
+- as_top — верх.
+- bag_handle — сумка.
+- crossbody — кросбоді.
+- dress — сукня.
+- hair — волосся.
+- hand — рука.
+- neck — шия.
+- scarf — шарф.
+- shoulder — плече.
+- shoulders — плечі.
+- uk — українська.
+- waist — до талії / талія.
+- wrist — зап'ясток.
+Визначення заяв нижче — англійською, і це ОПИС того, що сказано, про неї в третій особі. Не перекладай його дослівно й не переписуй як є: скажи те саме їй, українською, на «ти», своїми словами. «she» і «her» у визначеннях — завжди вона, жінка: «ти», «тобі», «твоя»; «the stylist» — стилістка. Що обрала чи зробила вона, не пиши як вибір стилістки. «the selection» і «selection» в іменах заяв і видів — добір; «the code» у визначеннях — перевірка образу, яку робить стилістка. «Код», «система» чи «програма» в тексті не діють ніколи: хто дібрав чи перевірив — «я» або добір.
+ЗАЯВИ:
+- unchecked_in_this_look — behind this button is the list of what stays unchecked in this outfit: what could not be verified for lack of data about the items, about her or about her day.
+- colour_word_shop — the code knows the colour of the named items only from the shop's word, not from measuring the photo (values: items — items: item_id, name — the item's name on the card, slot — slot code, colour — colour word).
+- cannot_tell_item_holds_scheme_hue — so the code cannot tell whether the item holds the hue of the chosen palette scheme.
+- cannot_tell_look_follows_her_combinations — so the code cannot tell whether the outfit's colours follow the logic of her combinations.
+- cannot_tell_complementary_pair_leads — so the code cannot tell whether a pair of opposite colours leads the outfit.
+- cannot_tell_item_off_palette — so the code cannot tell whether the item's colour lies outside her palette.
+- cannot_tell_item_carries_interest — so the code cannot tell whether the item's colour is strong enough to carry interest.
+- cannot_tell_item_is_neutral — so the code cannot tell whether the named item is a neutral at all, and the rules about neutrals did not judge it.
+- cannot_tell_accent_role_chroma — so the code cannot tell whether the item is colourful enough for the accent role the palette scheme gave its slot.
+- cannot_tell_shoes_cut_leg_line — so the code cannot tell whether the shoes match the leg or the bottom in lightness or cut the leg line.
+- cannot_tell_face_contrast_matches_hers — so the code cannot tell whether the jump of lightness near her face matches her own contrast.
+- shoe_size_not_checked — the code did not check the pair's size against her foot (values: item — item name).
+- her_foot_length_unknown — the code does not know her foot length; it is one question of the questionnaire.
+- item_insole_length_unknown — the pair's card does not carry the insole length.
+- wear_way_not_chosen — how she wears this item is not chosen yet, and which rules apply to it depends on that; all the ways are equal and she is the one who chooses (values: item — the item's name; ways — codes of the ways: hand — in the hand, shoulder — on the shoulder, crossbody — across the body, neck — round the neck, hair — in the hair, shoulders — on the shoulders, waist — at the waist as a belt, bag_handle — on the bag handle, wrist — on the wrist, as_top — instead of a top).
+- scarf_near_face_way_unknown — whether she wears this scarf near the face; which top suits her depends on it, since a scarf near the face carries colour there by itself (values: item — item name; ways — codes of wearing ways: neck, hair, shoulders).
+- scarf_size_unknown — the card does not name the scarf's size, so the code does not know which knots and ways of wearing are possible (values: item — item name; item_id).
+- dress_formality_no_photo_score — how dressy this dress is, the code does not know: its kind in one word covers both everyday and evening dresses, and there is no dressiness score from its photo (values: items — the dresses).
+- items_register_unknown — the code did not determine the style of some items: their cards have no words that show it (values: count — how many such items).
+- size_is_label_not_fit — a shop size is a number, not a fit: without the garment's measurements the code does not know how the item fits (values: sizes — sizes by slot: slot — slot code, range — sizes).
+- item_below_occasion_band_explained — by the code's measure this item is more casual than the level of the occasion, and the outfit says why: a choice, not a slip — for information only (values: reason; band; by — deliberate or her_wish).
+ПОВІДОМЛЕННЯ:
+[{"code": "shoe_size_not_checked", "values": {"item": {"free_text": "Лофери лакові зелені", "lang": "uk"}, "item_id": "ж-10357@giardini-shoes.com"}, "recipient": "woman", "source": "unknown", "choice": "unknown", "rank": null, "item_ids": ["ж-10357@giardini-shoes.com"], "key": "s_8a051064c62d4f91391a8b0a"}, {"code": "her_foot_length_unknown", "values": {}, "recipient": "woman", "source": "unknown", "choice": "unknown", "rank": null, "item_ids": [], "key": "s_af5e5b0c283fa4c16e3cfbf8"}, {"code": "item_insole_length_unknown", "values": {}, "recipient": "woman", "source": "unknown", "choice": "unknown", "rank": null, "item_ids": [], "key": "s_caefb4b9f9ab82eca8285490"}, {"code": "colour_word_shop", "values": {"items": [{"item_id": "ж-13528@wearme.ua", "slot": "dress", "colour": "фіолетовий", "name": {"free_text": "Сукня міні з декольте довгий рукав", "lang": "uk"}}]}, "recipient": "woman", "source": "unknown", "choice": "unknown", "rank": null, "item_ids": ["ж-13528@wearme.ua"], "key": "s_15032a7f97e05e83e5cafdce"}, {"code": "cannot_tell_face_contrast_matches_hers", "values": {}, "recipient": "woman", "source": "unknown", "choice": "unknown", "rank": null, "item_ids": [], "key": "s_15ad924aff9f7791396d4c85"}, {"code": "cannot_tell_item_is_neutral", "values": {}, "recipient": "woman", "source": "unknown", "choice": "unknown", "rank": null, "item_ids": [], "key": "s_1bb7d677f3c632d8ee486a1d"}, {"code": "cannot_tell_item_carries_interest", "values": {}, "recipient": "woman", "source": "unknown", "choice": "unknown", "rank": null, "item_ids": [], "key": "s_b3f173bb0f71b92b70041f2f"}, {"code": "cannot_tell_item_holds_scheme_hue", "values": {}, "recipient": "woman", "source": "unknown", "choice": "unknown", "rank": null, "item_ids": [], "key": "s_b9f97d98e5cadd388315972b"}, {"code": "cannot_tell_item_off_palette", "values": {}, "recipient": "woman", "source": "unknown", "choice": "unknown", "rank": null, "item_ids": [], "key": "s_b19ee9d1785e964012e3bb54"}, {"code": "cannot_tell_look_follows_her_combinations", "values": {}, "recipient": "woman", "source": "unknown", "choice": "unknown", "rank": null, "item_ids": [], "key": "s_ba86b69ff5e199abce953ca9"}, {"code": "cannot_tell_complementary_pair_leads", "values": {}, "recipient": "woman", "source": "unknown", "choice": "unknown", "rank": null, "item_ids": [], "key": "s_df46a9c73d206d0d811b8788"}, {"code": "cannot_tell_shoes_cut_leg_line", "values": {}, "recipient": "woman", "source": "unknown", "choice": "unknown", "rank": null, "item_ids": [], "key": "s_392c11a23434bd12f4d2a2bd"}, {"code": "colour_word_shop", "values": {"items": [{"item_id": "ж-16604@wearme.ua", "slot": "scarf", "colour": "бежевий", "name": {"free_text": "Шарф двухсторонній градієнт", "lang": "uk"}}]}, "recipient": "woman", "source": "unknown", "choice": "unknown", "rank": null, "item_ids": ["ж-16604@wearme.ua"], "key": "s_11a8ba1c1dc7c5c4a5561bc9"}, {"code": "cannot_tell_face_contrast_matches_hers", "values": {}, "recipient": "woman", "source": "unknown", "choice": "unknown", "rank": null, "item_ids": [], "key": "s_15ad924aff9f7791396d4c85"}, {"code": "cannot_tell_accent_role_chroma", "values": {}, "recipient": "woman", "source": "unknown", "choice": "unknown", "rank": null, "item_ids": [], "key": "s_09e4565a0eb2214989180b91"}, {"code": "dress_formality_no_photo_score", "values": {"items": ["ж-13528@wearme.ua"]}, "recipient": "woman", "source": "photo", "choice": "unknown", "rank": null, "item_ids": ["ж-13528@wearme.ua"], "key": "s_d00da3da4a45f95e79f51c54"}, {"code": "size_is_label_not_fit", "values": {"sizes": [{"slot": "dress", "range": "XS–XL"}]}, "recipient": "woman", "source": "unknown", "choice": "unknown", "rank": null, "item_ids": [], "key": "s_fd4fca0941c1a82b43db10c7"}, {"code": "scarf_size_unknown", "values": {"item": {"free_text": "Шарф двухсторонній градієнт", "lang": "uk"}, "item_id": "ж-16604@wearme.ua"}, "recipient": "woman", "source": "unknown", "choice": "unknown", "rank": null, "item_ids": ["ж-16604@wearme.ua"], "key": "s_2477f9ed9d4a2defff71179b"}, {"code": "item_below_occasion_band_explained", "values": {"reason": "item_below_band", "band": [3, 4], "by": "deliberate"}, "recipient": "woman", "source": "unknown", "choice": "unknown", "rank": null, "item_ids": [], "key": "s_e66b1ed6914128334800fa24"}, {"code": "scarf_near_face_way_unknown", "values": {"item": {"free_text": "Шарф двухсторонній градієнт", "lang": "uk"}, "ways": ["neck", "hair", "shoulders"], "item_id": "ж-16604@wearme.ua"}, "recipient": "woman", "source": "catalogue", "choice": "unknown", "rank": null, "item_ids": ["ж-16604@wearme.ua"], "key": "s_a8d0cd1db315bace920845a6"}, {"code": "wear_way_not_chosen", "values": {"item": {"free_text": "Шарф двухсторонній градієнт", "lang": "uk"}, "ways": ["neck", "hair", "shoulders", "waist", "bag_handle", "wrist", "as_top"], "item_id": "ж-16604@wearme.ua"}, "recipient": "woman", "source": "catalogue", "choice": "unknown", "rank": null, "item_ids": ["ж-16604@wearme.ua"], "key": "s_a87e0e244489b8fbd85cde00"}, {"code": "wear_way_not_chosen", "values": {"item": {"free_text": "Рюкзак жіночий Welfare бежевий", "lang": "uk"}, "ways": ["hand", "shoulder", "crossbody"], "item_id": "ж-08029@welfare.ua"}, "recipient": "woman", "source": "catalogue", "choice": "unknown", "rank": null, "item_ids": ["ж-08029@welfare.ua"], "key": "s_4a0c6e7abfbac1ebf9055dd2"}, {"code": "items_register_unknown", "values": {"count": 3}, "recipient": "woman", "source": "unknown", "choice": "unknown", "rank": null, "item_ids": [], "key": "s_e1560aa9a06a975e0f42184c"}, {"code": "unchecked_in_this_look", "values": {}, "recipient": "woman", "source": "unknown", "choice": "unknown", "rank": null, "item_ids": [], "key": "s_90779327d85530d30d7a4cab"}]
 
-Вид кожної речі — теж зміст: річ у перекладі — та сама, що у вході, а не схожа чи сусідня. ankle boots — черевики чи ботильйони, boots — чоботи, heeled — на підборах, а не туфлі, pumps — туфлі-човники, loafers — лофери; pendant — кулон чи підвіска, necklace — намисто чи ланцюжок, а не каблучка, сережки чи браслет; ring — каблучка; earrings — сережки. Українські назви речей у вході (назви з крамниці, найчастіше перед « — ») переписуй літера в літеру: не міняй, не переставляй і не додавай у них жодного слова.
-
-Про жінку — лише до неї, на «ти» (ти, тебе, тобі, твій, твоя; хочеш, скинеш; наказ однини: розкажи, оберни, тримай, дай), і в питаннях теж: you, your, she, her про неї — «ти», «твій» (her skin tone — твій тон шкіри; when she turns her head — коли ти повертаєш голову; she looks taller — ти виглядаєш вищою), англійський наказ — наказом однини; «вона», «її» — лише про річ (сукню, сумку, куртку). Говорить стилістка — одна жінка: про себе — від першої особи однини й у жіночому роді (я підібрала, я б додала), не «ми», не від імені застосунку чи коду і ніколи словами самої жінки.
-
-Мова: літературна українська, як у текстах українських крамниць одягу. Кожне українське слово — літерами лише української абетки, без жодної латинської літери чи стороннього знака всередині слова. Кожне речення — одна остаточна версія, без виправлень посеред тексту. Словничок нижче — лише як перекласти англійське слово, коли воно є у вході; це не зміст: річ, тканина чи колір, яких у вході нема, у тексті не з'являються. Звичні українські назви для слів англійського джерела: trousers, pants — штани; dressy, dressier — ошатний, ошатніше; look, outfit — образ; taupe — сіро-бежевий; loose — вільний; suede — замша (жіночий рід); slip dress — сукня-комбінація; camel — кемел (колір). Назви речей і кольорів, які дала крамниця, — як є.
-
-Перевір кожне слово ДО відповіді: до неї — лише «ти», жодного «ви», «ваш» і наказу множини, і про неї жодного «вона», «її», «їй», жодне слово не стоїть двічі поспіль, кожна річ — того самого виду, що у вході (річ образу — іменником її назви з переліку, коли він є, і слова при ній узгоджені з цим іменником), а українська назва речі — слово в слово. Відповідь — рівно ОДИН JSON-об'єкт і нічого після нього: другої, виправленої версії, приміток і пояснень не пиши — помилку виправ у тому самому об'єкті.
-
-Речі образу — перелік, який жінка бачить на картці (номер речі — назва біля неї):
-1 — Жакет вельветовий на блискавці Клер · kind code: blazer · colour code: brown · about it: text н=1
-2 — Гольф без рукавів «Contour» коричневий · kind code: sweater · colour code: brown · about it: text н=2
-3 — Джинси блакитні BACKSIDE · kind code: jeans · colour code: light_blue · about it: text н=3
-4 — Пасок з пірʼям рожевий · kind code: belt · colour code: pink · about it: text н=4
-5 — Шкіряні черевики зі шкіри із золотистим декором · kind code: ankle_boots · colour code: golden · about it: text н=5
-6 — Рюкзак жіночий Welfare бежевий · kind code: backpack · colour code: beige · about it: text н=6
-7 — Куртка вільна кокон суперлегка · kind code: jacket · colour code: green · about it: text н=7
-When a text speaks of an item of the list, call it by the kind in its name — the same noun in the right case (list «Тренч бежевий подовжений» — text «тренч», «Светр в'язаний оверсайз» — «светр»), not by another kind or a synonym of the English word. Make every adjective, pronoun and verb with the item agree with that noun in gender and number («Тренч бежевий» — «бежевий тренч, який…»; «Лофери шкіряні» — «шкіряні лофери, які…»). A name you translate in this same call (text н=K): give it one noun and call the item by it, in agreement, in every text. A text the list gives as about an item (about it: text н=M) speaks of that one item, and so does every other text where the English names it. The colour of an item of the list is the colour of its name: keep the shop's colour word from its name; when its name has no colour word, write the Ukrainian name of its colour code. The English colour words for that item are the stylist's impression of a photo: do not turn them into a colour of their own — the item's colour stands in their place. Colours of its details (trim, strap, buttons, print), its fabric and the rest — translate from the text. The list is for names only: an item the English text does not name is not added to the translation — neither to the description nor to the advice. The kind code next to an item (kind code: …) is the code of its kind: every noun for that item, in every text, names this kind and no other, whatever word the English text uses; a code ending in _generic names only the family (dress_generic — a dress, bag_generic — a bag). The kind noun of its name and this code are the same kind: write the name's noun.
-
-Colour codes: beige — бежевий; brown — коричневий; golden — золотий; green — зелений; light_blue — блакитний; pink — рожевий.
-
-ТЕКСТИ:
-{
-"1": "This velour blazer is a standout piece, featuring a soft brown hue and a sleek zipper closure that adds a modern touch to its classic silhouette.",
-"2": "The ribbed turtleneck sweater in brown offers a snug, comfortable fit with a sleeveless design that highlights your shoulders and arms.",
-"3": "These light blue BACKSIDE jeans bring a relaxed yet stylish vibe to the outfit, featuring a unique distressed detail on the pockets for added character.",
-"4": "The pink feather belt adds a whimsical and feminine touch, cinching your waist with a playful flair that contrasts beautifully with the more structured pieces.",
-"5": "These black ankle boots feature a sophisticated gold chain detail around the cuff, adding an element of luxury and edge to your look.",
-"6": "The beige backpack is crafted from pebbled leather, offering a chic and practical accessory that complements the earthy tones of your outfit.",
-"7": "This oversized cocoon jacket in a muted green provides a cozy and relaxed layer, perfect for transitional weather while maintaining a modern aesthetic.",
-"8": "Your outfit is built on a rich, autumnal palette of deep brown textures, anchored by the velour blazer and the ribbed sweater. The light blue jeans introduce a fresh, casual contrast that keeps the look from feeling too heavy, while the soft pink belt adds a delicate pop of color at your waist. The beige backpack grounds the ensemble with its neutral tone, and the ankle boots bring in a touch of edgy elegance with their metallic accents. This combination works beautifully for your morning routine, offering a perfect balance between polished style and everyday comfort.",
-"9": "Start your day with the cozy ribbed sweater, letting the velour blazer be your outer layer to carry you through cooler moments.",
-"10": "Use the pink feather belt to define your waist, especially when pairing it with the fitted cut of the jeans for a flattering silhouette.",
-"11": "When the light turns golden or the chill sets in, slip on the cocoon jacket for an effortless, voluminous finish that still feels relaxed.",
-"12": "Жакет вельветовий на блискавці Клер — I keep this brown corduroy blazer as the hero outer layer to lead the classic register and provide structure over the soft knit.",
-"13": "Гольф без рукавів «Contour» коричневий — I keep this brown sleeveless jersey top as the quiet inner layer to maintain a tonal warmth inside the outfit.",
-"14": "Джинси блакитні BACKSIDE — I keep these light blue jeans as the bottom, accepting the cool tone to break the monochrome warmth and add visual interest.",
-"15": "Пасок з пірʼям рожевий — I add this pink belt to define the waistline and introduce a pop of color that echoes the scarf in your set, replacing the shoes which were too casual for the occasion.",
-"16": "Рюкзак жіночий Welfare бежевий, Жакет вельветовий на блискавці Клер — I accept the backpack's home register because it serves as a functional utility layer that adds comfort for carrying items throughout your morning, softening the blazer's formality without breaking your intent."
-}
-
-── ВІДПОВІДЬ (3194 симв., 89.7 с, HTTP 200) ──
+── ВІДПОВІДЬ (2345 симв., 52.3 с, HTTP 200) ──
 ```json
 {
-"1": "Цей вельветовий блейзер є виразним елементом гардеробу, з м’яким коричневим відтінком і стильною блискавкою, яка додає сучасний штрих до його класичного силуету.",
-"2": "Ребристий гольф без рукавів у коричневому кольорі пропонує затишне та комфортне прилягання з дизайном без рукавів, який підкреслює твої плечі та руки.",
-"3": "Ці блакитні джинси BACKSIDE додають розслаблений і стильний вигляд образу, маючи унікальну потерту деталь на кишенях для додаткового характеру.",
-"4": "Рожевий пасок з пір’ям додає грайливого та жіночного акценту, підкреслюючи твою талію з пустотливим шармом, який чудово контрастує з більш структурованими елементами.",
-"5": "Ці чорні черевики на підборах мають вишукану золоту ланцюгову деталь навколо халяви, додаючи нотку розкоші та зухвальства до твого образу.",
-"6": "Бежевий рюкзак виконаний з тисненої шкіри, пропонуючи елегантний і практичний аксесуар, який гармонійно поєднується із земляними тонами твого вбрання.",
-"7": "Ця оверсайз куртка-кокон у приглушеному зеленому кольорі забезпечує затишний і розслаблений шар, ідеальний для перехідної погоди, зберігаючи сучасну естетику.",
-"8": "Твій образ побудований на багатій осінній палітрі глибоких коричневих текстур, які підтримуються вельветовим блейзером та ребристим светром. Блакитні джинси додають свіжий і невимушений контраст, який не дозволяє образу здаватися надто важким, а м’який рожевий пасок додає ніжний колірний акцент на твоїй талії. Бежевий рюкзак завершує ансамбль своїм нейтральним тоном, а черевики на підборах привносять нотку зухвалого шику з їх металевими акцентами. Ця комбінація чудово працює для твоєї ранкової рутини, пропонуючи ідеальний баланс між вишуканим стилем та повсякденним комфортом.",
-"9": "Почни свій день із затишного ребристого светра, дозволяючи вельветовому блейзеру бути твоїм верхнім шаром для прохолодніших моментів.",
-"10": "Використай рожевий пасок з пір’ям, щоб підкреслити свою талію, особливо коли поєднуєш його із приталеним кроєм джинсів для витонченого силуету.",
-"11": "Коли світло стане золотим або похолоднішає, одягни куртку-кокон для безпроблемної об’ємної завершеності, яка все ще відчувається розслаблено.",
-"12": "Жакет вельветовий на блискавці Клер — Я залишаю цей коричневий блейзер з кордуроя як головний верхній шар для класичного стилю та структури над м’яким трикотажем.",
-"13": "Гольф без рукавів «Contour» коричневий — Я залишаю цей коричневий гольф без рукавів як тихий внутрішній шар, щоб зберегти тональне тепло всередині образу.",
-"14": "Джинси блакитні BACKSIDE — Я залишаю ці блакитні джинси внизу, приймаючи прохолодний тон для розриву монохромного тепла та додавання візуального інтересу.",
-"15": "Пасок з пірʼям рожевий — Я додам цей рожевий пасок, щоб підкреслити лінію талії та ввести колірний акцент, який перегукується зі шарфом у твоєму образі, замінюючи взуття, яке було надто повсякденним для цієї нагоди.",
-"16": "Рюкзак жіночий Welfare бежевий, Жакет вельветовий на блискавці Клер — Я приймаю домашній стиль рюкзака, оскільки він служить функціональним шаром-утилітою, який додає комфорту для перенесення речей протягом твого ранку, пом’якшуючи формальність блейзера без порушення твоєї мети."
+  "shoe_size_not_checked": "Я не перевірила розмір твоїх лакових зелених лоферів.",
+  "her_foot_length_unknown": "Я ще не знаю довжину твоєї стопи, це питання з анкетки.",
+  "item_insole_length_unknown": "На картці взуття немає інформації про довжину устілки.",
+  "colour_word_shop": "Колір сукні фіолетовий — так каже магазин.",
+  "cannot_tell_face_contrast_matches_hers": "Я не можу сказати, чи контраст біля твого обличчя підходить тобі.",
+  "cannot_tell_item_is_neutral": "Не знаю, чи взагалі цей предмет нейтральний.",
+  "cannot_tell_item_carries_interest": "Не можу визначити, чи він достатньо цікавий сам по собі.",
+  "cannot_tell_item_holds_scheme_hue": "Я не знаю, чи колір цього предмета відповідає обраній палітрі.",
+  "cannot_tell_item_off_palette": "Не можу сказати, чи його колір виходить за межі твоєї палітри.",
+  "cannot_tell_look_follows_her_combinations": "Я не знаю, чи кольори в образі відповідають твоїм комбінаціям.",
+  "cannot_tell_complementary_pair_leads": "Не можу сказати, чи пара протилежних кольорів веде образ.",
+  "cannot_tell_shoes_cut_leg_line": "Я не знаю, чи взуття підкреслює твої ноги або навпаки їх обрізає.",
+  "colour_word_shop": "Колір шарфа бежевий — так каже магазин.",
+  "cannot_tell_face_contrast_matches_hers": "Я не можу сказати, чи контраст біля твого обличчя підходить тобі.",
+  "cannot_tell_accent_role_chroma": "Не знаю, чи шарф достатньо яскравий для акцентної ролі в образі.",
+  "dress_formality_no_photo_score": "Я не можу сказати наскільки ошатна ця сукня, бо її фото не дає оцінку урочистості.",
+  "size_is_label_not_fit": "Розмір XS–XL — це лише позначка магазину, я не знаю чи він тобі підійде.",
+  "scarf_size_unknown": "На картці шарфа немає інформації про його розмір.",
+  "item_below_occasion_band_explained": "Цей предмет більш повсякденний, ніж рівень події. Ти обрала такий навмисно.",
+  "scarf_near_face_way_unknown": "Я не знаю як ти носиш шарф біля обличчя: на шиї, у волоссі чи на плечах.",
+  "wear_way_not_chosen": "Ти ще не обрала спосіб носіння шарфа — в руці, на плечі, через тіло, на талії тощо.",
+  "wear_way_not_chosen": "Ти ще не обрала як носити рюкзак: у руці, на одному чи обох плечах.",
+  "items_register_unknown": "Я не можу визначити стиль трьох предметів з цього образу.",
+  "unchecked_in_this_look": "Ось що я ще не перевірила в цьому образі."
 }
 ```

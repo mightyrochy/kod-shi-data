@@ -1,0 +1,30 @@
+── ПРОМПТ (2112 симв.) ──
+{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.", "A slot the description says is not needed is not an item: give it worn false. One item carries one thing — of two alternatives list the first; a note in brackets is not an item.", "Slot \"accessory\" is for an item no other slot fits.", "\"is_outfit\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note; then items is empty."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "ITEM_LIST", "answer_schema": {"is_outfit": "yes|no", "items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory", "color_hex": "<#rrggbb or null>", "worn": "<true, or false when the description says the outfit goes without it>"}]}, "input": ["\"description\" — the outfit description"]}, "description": "A soft cotton knit sweater in a heather grey tone (#8C92AC), relaxed fit with dropped shoulders, long sleeves reaching the wrist.  \nDark wash straight-leg jeans with subtle stitching details, mid-rise waist, classic 30-inch length to the ankle.  \nLeather loafers in chocolate brown (#4A3728), slip-on style with a low stacked heel and perforated detail.  \n\nThis outfit works because it perfectly balances comfort and polish for an everyday autumn morning while respecting her wish to avoid heels entirely. The neutral grey knit pairs effortlessly with dark denim, creating a timeless foundation that feels both relaxed and intentional. Adding the rich brown loafers introduces warmth against the cool seasonal palette without compromising on ease or mobility."}
+
+── ВІДПОВІДЬ (683 симв., 48.5 с, HTTP 200) ──
+{
+  "is_outfit": "yes",
+  "items": [
+    {
+      "name": "Sweater",
+      "details": "soft cotton knit, relaxed fit with dropped shoulders, long sleeves reaching the wrist",
+      "slot": "top",
+      "color_hex": "#8C92AC",
+      "worn": true
+    },
+    {
+      "name": "Jeans",
+      "details": "dark wash straight-leg with subtle stitching details, mid-rise waist, classic 30-inch length to the ankle",
+      "slot": "bottom",
+      "color_hex": null,
+      "worn": true
+    },
+    {
+      "name": "Loafers",
+      "details": "leather slip-on style with a low stacked heel and perforated detail",
+      "slot": "shoes",
+      "color_hex": "#4A3728",
+      "worn": true
+    }
+  ]
+}

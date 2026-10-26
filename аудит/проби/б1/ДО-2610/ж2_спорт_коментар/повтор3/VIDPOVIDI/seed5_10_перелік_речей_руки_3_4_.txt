@@ -1,29 +1,29 @@
-── ПРОМПТ (2130 симв.) ──
-{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.", "A slot the description says is not needed is not an item: give it worn false. One item carries one thing — of two alternatives list the first; a note in brackets is not an item.", "Slot \"accessory\" is for an item no other slot fits.", "\"is_outfit\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note; then items is empty."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "ITEM_LIST", "answer_schema": {"is_outfit": "yes|no", "items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory", "color_hex": "<#rrggbb or null>", "worn": "<true, or false when the description says the outfit goes without it>"}]}, "input": ["\"description\" — the outfit description"]}, "description": "Woven cotton tunic, relaxed A-line silhouette, knee-length hem, sand color with hex code #C2B280, soft brushed fabric.\nDark wash denim jeans, straight-leg cut, ankle length, charcoal gray with hex code #36454F, rigid twill material.\nMinimalist canvas sneakers, rounded toe, mid-top height, off-white with hex code #FAFAFA, durable suede and rubber construction.\n\nThis outfit balances comfort with a polished everyday aesthetic perfect for an autumn morning in daylight. The neutral tones of the sand tunic and charcoal denim create a harmonious, low-maintenance look that feels effortless yet intentional. Lightweight layers are unnecessary as the weather is mild enough, allowing the focus to remain on the quality of the natural fabrics and the clean lines of the silhouette."}
+── ПРОМПТ (2107 симв.) ──
+{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.", "A slot the description says is not needed is not an item: give it worn false. One item carries one thing — of two alternatives list the first; a note in brackets is not an item.", "Slot \"accessory\" is for an item no other slot fits.", "\"is_outfit\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note; then items is empty."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "ITEM_LIST", "answer_schema": {"is_outfit": "yes|no", "items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory", "color_hex": "<#rrggbb or null>", "worn": "<true, or false when the description says the outfit goes without it>"}]}, "input": ["\"description\" — the outfit description"]}, "description": "A relaxed-fit denim shirt in deep indigo, #254789, crafted from sturdy cotton twill to provide comfort and structure for the morning air.\nDark wash straight-leg jeans with a mid-rise waist, made of soft stretch denim to allow ease of movement throughout the day.\nMinimalist leather ankle boots in black with a low block heel, featuring a smooth grain finish suitable for autumn pavements.\nThis outfit works perfectly for an autumn morning while adhering to your request for everyday casual wear, offering warmth and durability against the cooler season without feeling overdressed. The dark indigo tones complement the daylight ambiance while maintaining a relaxed yet put-together aesthetic that honors your refusal of anything too formal or restrictive."}
 
-── ВІДПОВІДЬ (611 симв., 96.6 с, HTTP 200) ──
+── ВІДПОВІДЬ (698 симв., 51.1 с, HTTP 200) ──
 {
   "is_outfit": "yes",
   "items": [
     {
-      "name": "tunic",
-      "details": "relaxed A-line silhouette, knee-length hem, woven cotton fabric",
+      "name": "relaxed-fit denim shirt",
+      "details": "deep indigo color with sturdy cotton twill fabric for comfort and structure",
       "slot": "top",
-      "color_hex": "#C2B280",
+      "color_hex": "#254789",
       "worn": true
     },
     {
-      "name": "jeans",
-      "details": "straight-leg cut, ankle length, rigid twill material",
+      "name": "dark wash straight-leg jeans",
+      "details": "mid-rise waist made of soft stretch denim for ease of movement",
       "slot": "bottom",
-      "color_hex": "#36454F",
+      "color_hex": "#000000",
       "worn": true
     },
     {
-      "name": "sneakers",
-      "details": "rounded toe, mid-top height, durable suede and rubber construction",
+      "name": "minimalist leather ankle boots",
+      "details": "low block heel with smooth grain finish suitable for autumn pavement",
       "slot": "shoes",
-      "color_hex": "#FAFAFA",
+      "color_hex": "#000000",
       "worn": true
     }
   ]

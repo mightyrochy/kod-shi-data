@@ -1,4 +1,4 @@
-── ПРОМПТ (5658 симв.) ──
+── ПРОМПТ (7363 симв.) ──
 Ти — перекладачка в застосунку-стилістці. Ти пишеш природною українською тексти, які зараз побачить жінка. Рішень не приймаєш, на питання не відповідаєш, змісту не міняєш.
 
 Вхід — JSON-об'єкт: ключ — номер тексту н, значення — текст, який склали код та інші моделі.
@@ -14,23 +14,44 @@
 Перевір кожне слово ДО відповіді: до неї — лише «ти», жодного «ви», «ваш» і наказу множини, і про неї жодного «вона», «її», «їй», жодне слово не стоїть двічі поспіль, кожна річ — того самого виду, що у вході (річ образу — іменником її назви з переліку, коли він є, і слова при ній узгоджені з цим іменником), а українська назва речі — слово в слово. Відповідь — рівно ОДИН JSON-об'єкт і нічого після нього: другої, виправленої версії, приміток і пояснень не пиши — помилку виправ у тому самому об'єкті.
 
 Речі образу — перелік, який жінка бачить на картці (номер речі — назва біля неї):
-1 — назва в тексті н=2
-2 — назва в тексті н=3
-3 — назва в тексті н=4
+1 — Хустка “Satina” шоколадна · kind code: kerchief · colour code: chocolate · about it: text н=1
+2 — В’язана троянда-брошка айворі · kind code: brooch · colour code: milky · about it: text н=2
+3 — Золота каблучка-трансформер · kind code: ring · colour code: golden · about it: text н=3
+4 — Рюкзак жіночий Welfare червоний · kind code: backpack · colour code: red · about it: text н=4
+5 — Сатиновий костюм із блузою · kind code: two_piece_set · colour code: khaki · about it: text н=5
+6 — Кеди жіночі фіолетові · kind code: plimsolls · colour code: purple · about it: text н=6
 When a text speaks of an item of the list, call it by the kind in its name — the same noun in the right case (list «Тренч бежевий подовжений» — text «тренч», «Светр в'язаний оверсайз» — «светр»), not by another kind or a synonym of the English word. Make every adjective, pronoun and verb with the item agree with that noun in gender and number («Тренч бежевий» — «бежевий тренч, який…»; «Лофери шкіряні» — «шкіряні лофери, які…»). A name you translate in this same call (text н=K): give it one noun and call the item by it, in agreement, in every text. A text the list gives as about an item (about it: text н=M) speaks of that one item, and so does every other text where the English names it. The colour of an item of the list is the colour of its name: keep the shop's colour word from its name; when its name has no colour word, write the Ukrainian name of its colour code. The English colour words for that item are the stylist's impression of a photo: do not turn them into a colour of their own — the item's colour stands in their place. Colours of its details (trim, strap, buttons, print), its fabric and the rest — translate from the text. The list is for names only: an item the English text does not name is not added to the translation — neither to the description nor to the advice. The kind code next to an item (kind code: …) is the code of its kind: every noun for that item, in every text, names this kind and no other, whatever word the English text uses; a code ending in _generic names only the family (dress_generic — a dress, bag_generic — a bag). The kind noun of its name and this code are the same kind: write the name's noun.
+
+Colour codes: chocolate — шоколадний; golden — золотий; khaki — хакі; milky — молочний; purple — фіолетовий; red — червоний.
 
 ТЕКСТИ:
 {
-"1": "A soft cotton T-shirt in cream with a relaxed round neckline, cut from breathable jersey knit.\nDark wash denim jeans in a straight leg with a mid-rise waist and clean stitching.\nWhite leather sneakers with a low-profile sole and minimal branding.\nThis everyday outfit perfectly balances comfort and style for a morning autumn outing, as the cream top brightens the cool seasonal light against the deep blue denim. The flat sneakers honor her refusal to wear heels while maintaining a polished yet effortless look suitable for daylight hours. Every piece adheres to her wish for an easygoing yet refined casual ensemble without any restrictive prints or high footwear.",
-"2": "T-shirt",
-"3": "jeans",
-"4": "sneakers"
+"1": "This chocolate-colored kerchief features a delicate pattern of white dots, adding elegance to your outfit.",
+"2": "The milky brooch is a beautiful accent piece that enhances the blue cardigan.",
+"3": "This golden heart ring offers a subtle yet meaningful detail that catches the eye.",
+"4": "The red backpack adds a pop of color and practicality for carrying your essentials.",
+"5": "This khaki satin two-piece set combines a long-sleeved top and a skirt, providing comfort and style.",
+"6": "These purple plimsolls feature a glittery finish, adding a modern edge to your outfit.",
+"7": "This ensemble brings together a romantic and playful vibe, perfect for your autumn morning. The chocolate-colored kerchief with its delicate white dots adds an elegant touch to the soft satin two-piece set in khaki. The milky brooch serves as a beautiful accent on your blue cardigan, while the golden heart ring offers a subtle yet meaningful detail that catches the daylight. Completing the look are purple plimsolls with a glittery finish, adding a modern edge to the otherwise classic outfit. The red backpack provides a pop of color and practicality for carrying your essentials.",
+"8": "Drape the chocolate kerchief over your shoulders for an effortless and chic look.",
+"9": "В’язана троянда-брошка айворі — I replaced the brooch with a simple cotton kerchief to fix the 'loud_accessory_without_role' finding and create a tonal column.",
+"10": "Золота каблучка-трансформер — I removed the ring entirely so you can focus on your own jewelry or add one from the showcase if needed, clearing the slot for the belt.",
+"11": "Рюкзак жіночий Welfare червоний — I added this grey backpack to solve the 'no_shoes' and 'no_bag' blockers, providing a structured base that withstands the autumn daylight."
 }
 
-── ВІДПОВІДЬ (791 симв., 39.5 с, HTTP 200) ──
+── ВІДПОВІДЬ (1907 симв., 24.0 с, HTTP 200) ──
+```json
 {
-"1": "М’яка бавовняна футболка кремового кольору з вільним круглим вирізом, пошита з дихаючого трикотажного полотна.\nДжинси темно-синього відтінку прямого крою із середньою посадкою та акуратними швами.\nБілі шкіряні кеди на низькій підошві з мінімальним брендуванням.\nЦей повсякденний образ ідеально поєднує комфорт і стиль для ранкової осінньої прогулянки, адже кремовий верх освіжає прохолодне сезонне світло на тлі глибокого синього деніму. Плоскі кеди підкреслюють твоє небажання носити підбори, зберігаючи при цьому вишуканий і без зусиль образ, який доречний у світлий час доби. Кожен елемент відповідає твоєму бажанню створити невимушений, але водночас витончений повсякденний ансамбль без обтяжливих візерунків чи високого взуття.",
-"2": "футболка",
-"3": "джинси",
-"4": "кеди"
+  "1": "Ця шоколадна хустка “Satina” має ніжний візерунок з білих цяток, що додає елегантності твоєму образу.",
+  "2": "Молочна брошка — чудовий акцент, який підкреслює блакитний кардиган.",
+  "3": "Ця золота каблучка-трансформер пропонує ніжну, але значущу деталь, що привертає увагу.",
+  "4": "Червоний рюкзак жіночий Welfare додає яскравого кольору та практичності для носіння твоїх необхідних речей.",
+  "5": "Цей хакі сатиновий костюм із блузою поєднує в собі топ з довгими рукавами та спідницю, забезпечуючи комфорт і стиль.",
+  "6": "Ці фіолетові кеди мають блискуче оздоблення, додаючи сучасної родзинки твоєму образу.",
+  "7": "Цей образ поєднує в собі романтичний та грайливий настрій, ідеальний для твого осіннього ранку. Шоколадна хустка “Satina” з ніжними білими цяточками додає елегантності до м’якого хакі сатинового костюму із блузою. Молочна брошка слугує чудовим акцентом на твоєму блакитному кардигані, а золота каблучка-трансформер пропонує ніжну, але значущу деталь, що привертає сонячне світло. Завершують образ фіолетові кеди з блискучим оздобленням, додаючи сучасної родзинки до класичного образу. Червоний рюкзак жіночий Welfare забезпечує яскравий колір і практичність для носіння твоїх необхідних речей.",
+  "8": "Оберни шоколадну хустку “Satina” навколо плечей, щоб створити безтурботний та елегантний образ.",
+  "9": "В’язана троянда-брошка айворі — Я замінила брошку на просту бавовняну хустку, щоб виправити знахідку 'loud_accessory_without_role' і створити тоновий стовпчик.",
+  "10": "Золота каблучка-трансформер — Я прибрала каблучку зовсім, щоб ти могла зосередитися на власних ювелірних виробах або додати одну з вітрини, якщо потрібно, звільнивши місце для поясу.",
+  "11": "Рюкзак жіночий Welfare червоний — Я додала цей сірий рюкзак, щоб вирішити блокування 'no_shoes' і 'no_bag', забезпечивши структуровану основу, яка витримує осіннє сонячне світло."
 }
+```
