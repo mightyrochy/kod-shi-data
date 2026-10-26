@@ -1,0 +1,37 @@
+── ПРОМПТ (2121 симв.) ──
+{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.", "A slot the description says is not needed is not an item: give it worn false. One item carries one thing — of two alternatives list the first; a note in brackets is not an item.", "Slot \"accessory\" is for an item no other slot fits.", "\"is_outfit\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note; then items is empty."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "ITEM_LIST", "answer_schema": {"is_outfit": "yes|no", "items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory", "color_hex": "<#rrggbb or null>", "worn": "<true, or false when the description says the outfit goes without it>"}]}, "input": ["\"description\" — the outfit description"]}, "description": "Blazer in navy blue with a structured shoulder cut and mid-thigh length, crafted from heavy wool gabardine; high-waisted trousers in charcoal grey with a straight-leg silhouette reaching the ankle, made of stretch cotton twill.\nLeather loafers in chestnut brown with a soft sole and minimal hardware.\nA silk scarf featuring an abstract autumn leaf pattern in burnt orange and mustard yellow.\nThis ensemble embodies the requested 'neat' work dress code while perfectly suiting the cool 18°C autumn weather, as the structured blazer provides necessary warmth without appearing bulky. The neutral charcoal and navy palette harmonizes beautifully with her warm skin tones, creating a professional yet approachable look ideal for an office environment during daylight hours."}
+
+── ВІДПОВІДЬ (810 симв., 54.1 с, HTTP 200) ──
+{
+  "is_outfit": "yes",
+  "items": [
+    {
+      "name": "blazer",
+      "details": "structured shoulder cut and mid-thigh length, crafted from heavy wool gabardine",
+      "slot": "outerwear",
+      "color_hex": "#000080",
+      "worn": true
+    },
+    {
+      "name": "trousers",
+      "details": "high-waisted with a straight-leg silhouette reaching the ankle, made of stretch cotton twill",
+      "slot": "bottom",
+      "color_hex": "#36454F",
+      "worn": true
+    },
+    {
+      "name": "loafers",
+      "details": "soft sole and minimal hardware",
+      "slot": "shoes",
+      "color_hex": "#9C623A",
+      "worn": true
+    },
+    {
+      "name": "scarf",
+      "details": "featuring an abstract autumn leaf pattern",
+      "slot": "scarf",
+      "color_hex": "#CC5500",
+      "worn": true
+    }
+  ]
+}
