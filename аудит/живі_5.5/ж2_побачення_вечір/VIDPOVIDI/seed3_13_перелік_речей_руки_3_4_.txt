@@ -1,0 +1,51 @@
+── ПРОМПТ (2448 симв.) ──
+{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.", "A slot the description says is not needed is not an item: give it worn false. One item carries one thing — of two alternatives list the first; a note in brackets is not an item.", "Slot \"accessory\" is for an item no other slot fits.", "\"is_outfit\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note; then items is empty."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "ITEM_LIST", "answer_schema": {"is_outfit": "yes|no", "items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory", "color_hex": "<#rrggbb or null>", "worn": "<true, or false when the description says the outfit goes without it>"}]}, "input": ["\"description\" — the outfit description"]}, "description": "Blazer in a soft camel hue (#C19A6B) with a relaxed notched lapel and single-breasted closure, crafted from a breathable wool-cashmere blend for autumn warmth; Straight-leg trousers in dark charcoal heather (#2F3336) featuring a high waist and subtle pleats, made of structured cotton-polyester twill that resists wrinkling; Blouse in crisp white with a soft round neck and three-quarter sleeves, constructed from lightweight poplin with a slight sheen to catch the evening light; Heeled ankle boots in polished cognac leather (#A0522D) with a 7 cm block heel and a pointed almond toe for elegant elongation; Minimalist gold-plated drop earrings and a slim leather clutch in matching cognac to complete the look. This ensemble strikes the perfect balance between professional polish and romantic date-night charm, adhering to the requested smart dress code while ensuring comfort during an evening outing at 19:30. The warm autumnal palette of camel, charcoal, and cognac harmonizes beautifully with her skin tones, creating a sophisticated silhouette that feels effortless yet intentionally styled."}
+
+── ВІДПОВІДЬ (1180 симв., 92.7 с, HTTP 200) ──
+{
+  "is_outfit": true,
+  "items": [
+    {
+      "name": "Blazer",
+      "details": "relaxed notched lapel single-breasted closure breathable wool-cashmere blend",
+      "slot": "outerwear",
+      "color_hex": "#C19A6B",
+      "worn": true
+    },
+    {
+      "name": "Straight-leg trousers",
+      "details": "high waist subtle pleats structured cotton-polyester twill resists wrinkling",
+      "slot": "bottom",
+      "color_hex": "#2F3336",
+      "worn": true
+    },
+    {
+      "name": "Blouse",
+      "details": "soft round neck three-quarter sleeves lightweight poplin slight sheen",
+      "slot": "top",
+      "color_hex": "#FFFFFF",
+      "worn": true
+    },
+    {
+      "name": "Heeled ankle boots",
+      "details": "7 cm block heel pointed almond toe polished leather",
+      "slot": "shoes",
+      "color_hex": "#A0522D",
+      "worn": true
+    },
+    {
+      "name": "Drop earrings",
+      "details": "minimalist gold-plated",
+      "slot": "earrings",
+      "color_hex": "#FFD700",
+      "worn": true
+    },
+    {
+      "name": "Clutch",
+      "details": "slim leather matching cognac",
+      "slot": "bag",
+      "color_hex": "#A0522D",
+      "worn": true
+    }
+  ]
+}
