@@ -17,6 +17,8 @@ GPU (тека $LaneDir — `C:\Users\Public\gemini\lanes`, де пишуть і 
 Смуга — за моделлю: `cc-…` — Claude, `gpt-…` — Codex, решта — `agy`.
 #>
 
+. (Join-Path $PSScriptRoot 'wrapper_health.ps1')
+
 $script:QueuePrefix = 'refs/remotes/origin/gemini-queue/'
 $script:TaskDir = 'аудит/наряди/'
 $script:SlugPattern = '^[\p{L}\p{Nd}][\p{L}\p{Nd}._-]{0,79}\z'
@@ -134,7 +136,12 @@ function Invoke-Native([string]$Exe, [string[]]$Arguments, [string]$Dir = '', [d
     <# Запуск із межею часу (по межі — зупинка дерева) і необов'язковим stdin; повертає код, ознаку межі й обидва потоки. #>
     $psi = New-StartInfo $Exe $Arguments $Dir
     $psi.RedirectStandardInput = ($null -ne $StdIn)
-    $p = [System.Diagnostics.Process]::Start($psi)
+    # .NET Framework створює StandardInput з AutoFlush: BOM пишеться вже під час Start.
+    $stdinEncoding = [Console]::InputEncoding
+    try {
+        [Console]::InputEncoding = $script:Utf8
+        $p = [System.Diagnostics.Process]::Start($psi)
+    } finally { [Console]::InputEncoding = $stdinEncoding }
     $out = $p.StandardOutput.ReadToEndAsync()
     $err = $p.StandardError.ReadToEndAsync()
     if ($null -ne $StdIn) {
@@ -142,7 +149,9 @@ function Invoke-Native([string]$Exe, [string[]]$Arguments, [string]$Dir = '', [d
         $w.Write($StdIn)
         $w.Close()
     }
-    $timedOut = -not $p.WaitForExit([int][Math]::Min([double][int]::MaxValue, $TimeoutMinutes * 60000))
+    $until = [datetime]::UtcNow.AddMinutes($TimeoutMinutes)
+    while (-not $p.WaitForExit(1000) -and [datetime]::UtcNow -lt $until) { Invoke-HealthBeat }
+    $timedOut = -not $p.HasExited
     if ($timedOut) { Stop-Tree $p } else { $p.WaitForExit() }
     [pscustomobject]@{ Code = $(if ($timedOut) { -1 } else { $p.ExitCode }); TimedOut = $timedOut; Out = $out.Result; Err = $err.Result }
 }
@@ -477,6 +486,7 @@ function Wait-Workers($Workers, [double]$Minutes) {
     $until = (Get-Date).AddMinutes($Minutes)
     while ((Get-Date) -lt $until) {
         if (@($Workers | Where-Object { -not $_.Proc.HasExited }).Count -lt $alive) { return }
+        Invoke-HealthBeat
         Start-Sleep -Milliseconds 500
     }
 }

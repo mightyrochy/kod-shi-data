@@ -1,0 +1,92 @@
+name: стенди обгортки
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'аудит/адаптери/gemini/**'
+      - '.github/workflows/obhortka.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'аудит/адаптери/gemini/**'
+      - '.github/workflows/obhortka.yml'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: стенди-обгортки-${{ github.event_name == 'pull_request' && github.ref || 'main' }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+jobs:
+  obhortka:
+    name: обгортка — Windows PowerShell 5.1
+    runs-on: windows-latest
+    timeout-minutes: 60
+    defaults:
+      run:
+        shell: bash
+    env:
+      PWSH: ''
+      PYTHONUTF8: '1'
+      PYTHONIOENCODING: utf-8
+    steps:
+      - name: LF для Git Bash
+        run: git config --global core.autocrlf false
+
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
+        with:
+          persist-credentials: false
+          fetch-depth: 1
+
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5.6.0
+        with:
+          python-version: '3.11'
+
+      - name: Git Bash і Windows PowerShell 5.1
+        run: |
+          set -euo pipefail
+          command -v cygpath
+          [ "$(powershell.exe -NoProfile -Command '$PSVersionTable.PSVersion.ToString(2)' | tr -d '\r')" = 5.1 ]
+          # ASCII-шлях спільних .cmd-заглушок; PWSH з Bypass створить середовище.sh.
+          echo "TMPDIR=$(cygpath -u "$RUNNER_TEMP")/obhortka" >> "$GITHUB_ENV"
+          mkdir -p "$(cygpath -u "$RUNNER_TEMP")/obhortka"
+
+      - name: хеші маніфесту = таблиця = блоби LF
+        if: ${{ !cancelled() }}
+        run: |
+          set -o pipefail
+          python аудит/адаптери/gemini/перевірка/перевірити_хеші.py 2>&1 | tee -a "$GITHUB_STEP_SUMMARY"
+
+      - name: сценарії_claude.sh
+        if: ${{ !cancelled() }}
+        run: bash аудит/адаптери/gemini/перевірка/запустити_стенд.sh сценарії_claude.sh
+
+      - name: сценарії_m9v.sh
+        if: ${{ !cancelled() }}
+        run: bash аудит/адаптери/gemini/перевірка/запустити_стенд.sh сценарії_m9v.sh
+
+      - name: сценарії_доставки.sh
+        if: ${{ !cancelled() }}
+        run: bash аудит/адаптери/gemini/перевірка/запустити_стенд.sh сценарії_доставки.sh
+
+      - name: сценарії_прогону.sh
+        if: ${{ !cancelled() }}
+        run: bash аудит/адаптери/gemini/перевірка/запустити_стенд.sh сценарії_прогону.sh
+
+      - name: сценарії_рушіїв.sh
+        if: ${{ !cancelled() }}
+        run: bash аудит/адаптери/gemini/перевірка/запустити_стенд.sh сценарії_рушіїв.sh
+
+      - name: сценарії_смуг.sh
+        if: ${{ !cancelled() }}
+        run: bash аудит/адаптери/gemini/перевірка/запустити_стенд.sh сценарії_смуг.sh
+
+      - name: сценарії_спостерігача.sh
+        if: ${{ !cancelled() }}
+        run: bash аудит/адаптери/gemini/перевірка/запустити_стенд.sh сценарії_спостерігача.sh
+
+      - name: сценарії_черги.sh
+        if: ${{ !cancelled() }}
+        run: bash аудит/адаптери/gemini/перевірка/запустити_стенд.sh сценарії_черги.sh
