@@ -1,0 +1,51 @@
+── ПРОМПТ (2328 симв.) ──
+{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.", "A slot the description says is not needed is not an item: give it worn false. One item carries one thing — of two alternatives list the first; a note in brackets is not an item.", "Slot \"accessory\" is for an item no other slot fits.", "\"is_outfit\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note; then items is empty."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "ITEM_LIST", "answer_schema": {"is_outfit": "yes|no", "items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory", "color_hex": "<#rrggbb or null>", "worn": "<true, or false when the description says the outfit goes without it>"}]}, "input": ["\"description\" — the outfit description"]}, "description": "Structured blazer in charcoal gray with sharp lapels and a tailored fit, cut from 100% wool for crisp drape.\nSilk blouse in cream with a subtle sheen, featuring a relaxed collar and gathered waist to soften the silhouette.\nHigh-waisted wide-leg trousers in navy wool crepe that skim the leg without clinging, falling just above a low heel.\nPointed-toe pumps in polished black leather with a 7cm heel for elongated posture.\nSimple gold stud earrings and a delicate silver watch to keep the look refined and uncluttered.\nThis outfit works perfectly for her request of a restrained yet classic date night, balancing the structure of the blazer with the softness of the silk blouse to create an elegant but approachable vibe. The neutral palette of charcoal, cream, and navy feels timeless for an autumn evening in a restaurant setting. It respects her desire for a \"smart\" dress code while offering a flattering silhouette that transitions comfortably from arrival to dinner."}
+
+── ВІДПОВІДЬ (1198 симв., 108.1 с, HTTP 200) ──
+{
+  "is_outfit": "yes",
+  "items": [
+    {
+      "name": "blazer",
+      "details": "sharp lapels and tailored fit cut from 100% wool for crisp drape",
+      "slot": "outerwear",
+      "color_hex": "#36454f",
+      "worn": true
+    },
+    {
+      "name": "blouse",
+      "details": "relaxed collar and gathered waist to soften the silhouette with a subtle sheen",
+      "slot": "top",
+      "color_hex": "#ffffee",
+      "worn": true
+    },
+    {
+      "name": "trousers",
+      "details": "high-waisted wide-leg cut from navy wool crepe that skim the leg without clinging, falling just above a low heel",
+      "slot": "bottom",
+      "color_hex": "#000080",
+      "worn": true
+    },
+    {
+      "name": "pumps",
+      "details": "pointed-toe with polished black leather and a 7cm heel for elongated posture",
+      "slot": "shoes",
+      "color_hex": "#000000",
+      "worn": true
+    },
+    {
+      "name": "earrings",
+      "details": "simple gold studs",
+      "slot": "earrings",
+      "color_hex": "#ffd700",
+      "worn": true
+    },
+    {
+      "name": "watch",
+      "details": "delicate silver design",
+      "slot": "watch",
+      "color_hex": "#c0c0c0",
+      "worn": true
+    }
+  ]
+}
