@@ -1,4 +1,4 @@
-── ПРОМПТ (6572 симв.) ──
+── ПРОМПТ (6099 симв.) ──
 Ти — перекладачка в застосунку-стилістці. Ти пишеш природною українською тексти, які зараз побачить жінка. Рішень не приймаєш, на питання не відповідаєш, змісту не міняєш.
 
 Вхід — JSON-об'єкт: ключ — номер тексту н, значення — текст, який склали код та інші моделі.
@@ -18,30 +18,26 @@
 2 — назва в тексті н=3
 3 — назва в тексті н=4
 4 — назва в тексті н=5
-5 — назва в тексті н=6
-6 — назва в тексті н=7
 When a text speaks of an item of the list, call it by the kind in its name — the same noun in the right case (list «Тренч бежевий подовжений» — text «тренч», «Светр в'язаний оверсайз» — «светр»), not by another kind or a synonym of the English word. Make every adjective, pronoun and verb with the item agree with that noun in gender and number («Тренч бежевий» — «бежевий тренч, який…»; «Лофери шкіряні» — «шкіряні лофери, які…»). A name you translate in this same call (text н=K): give it one noun and call the item by it, in agreement, in every text. A text the list gives as about an item (about it: text н=M) speaks of that one item, and so does every other text where the English names it. The colour of an item of the list is the colour of its name: keep the shop's colour word from its name; when its name has no colour word, write the Ukrainian name of its colour code. The English colour words for that item are the stylist's impression of a photo: do not turn them into a colour of their own — the item's colour stands in their place. Colours of its details (trim, strap, buttons, print), its fabric and the rest — translate from the text. The list is for names only: an item the English text does not name is not added to the translation — neither to the description nor to the advice. The kind code next to an item (kind code: …) is the code of its kind: every noun for that item, in every text, names this kind and no other, whatever word the English text uses; a code ending in _generic names only the family (dress_generic — a dress, bag_generic — a bag). The kind noun of its name and this code are the same kind: write the name's noun.
+
+[colour: код] у тексті — колір речі кодом: напиши на його місці українську назву цього кольору, узгоджену з реченням. Коли та сама річ у тексті вже має колір своїм словом, лиши її слово, а другої назви кольору не додавай. Коди: navy — темно-синій.
 
 ТЕКСТИ:
 {
-"1": "Mid-weight trench coat in a classic H-shape cut with a straight hem reaching mid-calf, available in deep olive green, crafted from durable waxed cotton gabardine.\nPair this with a soft crewneck sweater featuring a relaxed ribbed fit and a length ending at the hip, in a warm terracotta hue, knitted from a cozy wool-cashmere blend for autumn warmth.\nComplete the look with slim-fit dark wash jeans that taper slightly at the ankle and sit comfortably at the natural waist, made of sturdy cotton denim in a charcoal gray shade .\nFootwear consists of leather Chelsea boots with elastic side gussets, offering a sleek silhouette and secure heel height, finished in rich cognac brown to add warmth.\nFinal touches include a minimalist gold pendant on a delicate chain and structured black leather gloves for added style and protection against morning chill.\n\nThis outfit works perfectly for an everyday autumn morning by balancing comfort with a polished, layered aesthetic suitable for daylight weather. The earthy color palette of olive, terracotta, and cognac reflects the seasonal atmosphere while the natural fabrics provide necessary warmth without bulk. It adheres strictly to your casual dress code while incorporating a trench coat only because the season demands light layering against potential wind or coolness. Every piece respects your wish for practicality, ensuring you feel both stylish and ready for movement.",
-"2": "trench coat",
-"3": "crewneck sweater",
-"4": "jeans",
-"5": "Chelsea boots",
-"6": "gold pendant necklace",
-"7": "leather gloves"
+"1": "Denim jacket, relaxed box cut, classic indigo blue, sturdy cotton twill;\nStraight-leg jeans, mid-rise length, deep midnight wash [colour: navy], rigid denim weave;\nWhite crewneck t-shirt, slim fitted cut, pure off-white, soft cotton jersey;\nMinimalist canvas sneakers, low-top profile, crisp white leather with gum rubber sole (/), durable mixed material.\n\nThis outfit works perfectly for an autumn morning by balancing the crisp cool air with layered warmth without looking heavy or stiff. The dark denim and indigo tones harmonize beautifully with the natural daylight of the season while maintaining a relaxed, effortless vibe. Every piece respects the everyday dress code requirements while offering the comfort and practicality she desires for her daily routine.",
+"2": "Denim jacket",
+"3": "Straight-leg jeans",
+"4": "White crewneck t-shirt",
+"5": "Minimalist canvas sneakers"
 }
 
-── ВІДПОВІДЬ (1707 симв., 49.3 с, HTTP 200) ──
+── ВІДПОВІДЬ (963 симв., 46.7 с, HTTP 200) ──
 ```json
 {
-  "1": "Тренч середньої щільності в класичному H-подібному крої з прямим подолом, що сягає середини литки, доступний у глибокому оливковому кольорі, виготовлений із міцної вощеної бавовняної габардину.\nПоєднай це зі светром з круглим вирізом і вільним ребристим кроєм та довжиною до стегон, виконаного у теплому теракотовому відтінку, зв’язаного з затишної вовняно-кашемірової суміші для осіннього тепла.\nЗаверши образ вузькими джинсами темно-синього кольору, які трохи звужуються до щиколотки та зручно сидять на лінії талії, виготовленими з міцного бавовняного деніму сіро-вугільного відтінку.\nВзуття складається зі шкіряних чобітків Челсі з еластичними бічними вставками, що пропонують елегантний силует і надійну висоту п’яти, оброблені насиченим коньячним кольором для додання тепла.\nФінальні штрихи включають мінімалістичний золотий кулон на тонкому ланцюжку та шкіряні чорні рукавички для додаткового стилю та захисту від ранкової прохолоди.\n\nЦей образ ідеально підходить для звичайного осіннього ранку, поєднуючи комфорт із вишуканою багатошаровістю, придатною для денної погоди. Землиста колірна палітра оливкового, теракотового та коньячного кольорів відображає сезонну атмосферу, а натуральні тканини забезпечують необхідне тепло без об’ємності. Він суворо дотримується твого повсякденного дрес-коду, водночас включаючи тренч лише тому, що сезон вимагає легкого багатошаровості проти потенційного вітру чи прохолоди. Кожен елемент поважає твоє бажання практичності, гарантуючи, що ти відчуваєш себе стильно та готовою до руху.",
-  "2": "тренч",
-  "3": "светр з круглим вирізом",
-  "4": "джинси",
-  "5": "челсі",
-  "6": "золотий кулон на ланцюжку",
-  "7": "шкіряні рукавички"
+  "1": "Джинсова куртка, вільний бокс крій, класичний індиго [colour: темно-синій], міцна бавовняна саржа;\nПрямі джинси, середня посадка, глибокий нічний відтінок [colour: темно-синій], жорстке дені; біла футболка з круглим вирізом, приталений крій, чистий білий колір, м’яка бавовняна тканина;\nМінімалістичні парусинові кросівки, низький профіль, свіжа біла шкіра з гумовою підошвою (/), міцний змішаний матеріал.\n\nЦей образ ідеально підходить для осіннього ранку, поєднуючи прохолодне повітря з шаруватим теплом без вигляду важкості чи скутості. Темна дені та індигові тони гармонійно поєднуються з природним світлом сезону, зберігаючи при цьому розслаблений і невимушений вигляд. Кожен елемент відповідає вимогам повсякденного дрес-коду, пропонуючи тобі комфорт і практичність для твоєї щоденної рутини.",
+  "2": "Джинсова куртка",
+  "3": "Прямі джинси",
+  "4": "Біла футболка з круглим вирізом",
+  "5": "Мінімалістичні парусинові кросівки"
 }
 ```

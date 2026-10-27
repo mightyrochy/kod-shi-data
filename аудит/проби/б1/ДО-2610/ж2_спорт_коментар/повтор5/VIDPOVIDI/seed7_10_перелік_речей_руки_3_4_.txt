@@ -1,43 +1,29 @@
-── ПРОМПТ (2326 симв.) ──
-{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.", "A slot the description says is not needed is not an item: give it worn false. One item carries one thing — of two alternatives list the first; a note in brackets is not an item.", "Slot \"accessory\" is for an item no other slot fits.", "\"is_outfit\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note; then items is empty."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "ITEM_LIST", "answer_schema": {"is_outfit": "yes|no", "items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory", "color_hex": "<#rrggbb or null>", "worn": "<true, or false when the description says the outfit goes without it>"}]}, "input": ["\"description\" — the outfit description"]}, "description": "A soft charcoal grey relaxed-fit button-down shirt in a lightweight brushed cotton twill, featuring a slightly dropped shoulder and a straight hem that hits mid-hip. A pair of black denim jeans with a classic five-pocket design and a moderate rise to sit comfortably on the waist. Black leather Chelsea boots with a low, stacked heel made from smooth nubuck leather. A minimalist gold bar necklace and small stud earrings in polished brass to add a touch of subtle shine. This outfit works perfectly for an autumn morning because the charcoal tone grounds the warm beige undertones visible in the skin while the denim adds essential texture against the crispness of the shirt. The relaxed fit of the cotton top offers comfort for everyday wear without looking sloppy, maintaining a neat casual silhouette appropriate for the season. The black boots provide practical warmth and stability on potentially damp fall streets, completing a look that feels effortlessly put-together."}
+── ПРОМПТ (1948 симв.) ──
+{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.", "A slot the description says is not needed is not an item: give it worn false. One item carries one thing — of two alternatives list the first; a note in brackets is not an item.", "Slot \"accessory\" is for an item no other slot fits.", "\"is_outfit\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note; then items is empty."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "ITEM_LIST", "answer_schema": {"is_outfit": "yes|no", "items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory", "color_hex": "<#rrggbb or null>", "worn": "<true, or false when the description says the outfit goes without it>"}]}, "input": ["\"description\" — the outfit description"]}, "description": "A charcoal gray oversized hoodie with a dropped shoulder cut and ribbed cuffs in soft cotton jersey.\nSlate blue wide-leg trousers with a high waist and tapered ankle in lightweight wool crepe.\nLeather Chelsea boots in dark brown with a low block heel and almond toe.\nThis outfit perfectly balances everyday comfort with autumnal sophistication, using earthy tones that harmonize with her warm skin and hair while remaining practical for a morning outing. The textured wool trousers add structure to the relaxed hoodie, creating a polished yet effortless look suitable for casual daytime settings."}
 
-── ВІДПОВІДЬ (990 симв., 106.2 с, HTTP 200) ──
+── ВІДПОВІДЬ (617 симв., 53.1 с, HTTP 200) ──
 {
   "is_outfit": "yes",
   "items": [
     {
-      "name": "button-down shirt",
-      "details": "relaxed-fit, slightly dropped shoulder, straight hem hitting mid-hip, lightweight brushed cotton twill",
+      "name": "hoodie",
+      "details": "oversized with dropped shoulder cut and ribbed cuffs, soft cotton jersey",
       "slot": "top",
-      "color_hex": "#363c40",
+      "color_hex": "#36454F",
       "worn": true
     },
     {
-      "name": "denim jeans",
-      "details": "classic five-pocket design, moderate rise for comfortable waist fit",
+      "name": "trousers",
+      "details": "wide-leg with high waist and tapered ankle, lightweight wool crepe",
       "slot": "bottom",
-      "color_hex": "#000000",
+      "color_hex": "#3E5F8A",
       "worn": true
     },
     {
-      "name": "Chelsea boots",
-      "details": "low stacked heel, smooth nubuck leather",
+      "name": "boots",
+      "details": "Chelsea boots with low block heel and almond toe",
       "slot": "shoes",
-      "color_hex": "#000000",
-      "worn": true
-    },
-    {
-      "name": "gold bar necklace",
-      "details": "minimalist gold bar",
-      "slot": "collar_necklace",
-      "color_hex": null,
-      "worn": true
-    },
-    {
-      "name": "stud earrings",
-      "details": "small studs in polished brass",
-      "slot": "earrings",
-      "color_hex": null,
+      "color_hex": "#4C3621",
       "worn": true
     }
   ]
