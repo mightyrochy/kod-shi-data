@@ -1,0 +1,44 @@
+── ПРОМПТ (2362 симв.) ──
+{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.", "A slot the description says is not needed is not an item: give it worn false. One item carries one thing — of two alternatives list the first; a note in brackets is not an item.", "Slot \"accessory\" is for an item no other slot fits.", "\"is_outfit\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note; then items is empty."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "ITEM_LIST", "answer_schema": {"is_outfit": "yes|no", "items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory", "color_hex": "<#rrggbb or null>", "worn": "<true, or false when the description says the outfit goes without it>"}]}, "input": ["\"description\" — the outfit description"]}, "description": "Silk chiffon evening gown in pale ivory (#f5f5f0), fluid trumpet silhouette that flows from a structured bodice to a soft A-line skirt with subtle floor-length draping, satin finish in warm neutral tone. Heeled pumps in matching ivory satin, classic pointed toe with a moderate stiletto heel for an elongated line. Pearl drop earrings in lustrous white mother-of-pearl, a delicate gold chain necklace with small circular pendants, and a silk clutch in soft cream to hold essentials. This outfit works because the light silk chiffon catches the daylight gently after the church service while maintaining the reverence of an evening gown for a noble occasion. The ivory palette harmonizes perfectly with her warm skin tone and dark hair, creating a serene and elegant presence suitable for both spiritual gathering and family lunch. The flowing skirt allows comfortable movement during the afternoon meal without sacrificing the formal sophistication required by the event's transition from ceremony to celebration."}
+
+── ВІДПОВІДЬ (834 симв., 59.9 с, HTTP 200) ──
+{
+"is_outfit": "yes",
+"items": [
+{
+"name": "Silk chiffon evening gown",
+"details": "fluid trumpet silhouette that flows from a structured bodice to a soft A-line skirt with subtle floor-length draping, satin finish",
+"slot": "dress",
+"color_hex": "#f5f5f0",
+"worn": true
+},
+{
+"name": "Heeled pumps",
+"details": "classic pointed toe with a moderate stiletto heel for an elongated line",
+"slot": "shoes",
+"color_hex": null,
+"worn": true
+},
+{
+"name": "Pearl drop earrings",
+"details": "in lustrous white mother-of-pearl",
+"slot": "earrings",
+"color_hex": null,
+"worn": true
+},
+{
+"name": "Gold chain necklace",
+"details": "with small circular pendants",
+"slot": "necklace",
+"color_hex": "#FFD700",
+"worn": true
+},
+{
+"name": "Silk clutch",
+"details": "in soft cream to hold essentials",
+"slot": "bag",
+"color_hex": null,
+"worn": true
+}
+]
+}

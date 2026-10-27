@@ -1,0 +1,37 @@
+── ПРОМПТ (2604 симв.) ──
+{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.", "A slot the description says is not needed is not an item: give it worn false. One item carries one thing — of two alternatives list the first; a note in brackets is not an item.", "Slot \"accessory\" is for an item no other slot fits.", "\"is_outfit\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note; then items is empty."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "ITEM_LIST", "answer_schema": {"is_outfit": "yes|no", "items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory", "color_hex": "<#rrggbb or null>", "worn": "<true, or false when the description says the outfit goes without it>"}]}, "input": ["\"description\" — the outfit description"]}, "description": "A structured wool-blend blazer with a tailored fit, notched lapel, and two front pockets in deep forest green (#1B3A2E), crafted from heavy-weight woven fabric for warmth. A matching high-waisted wide-leg trouser featuring a subtle pleat at the waistband and a tapered ankle in the same forest green hue (#1B3A2E), made from soft yet structured wool twill that drapes elegantly. Chunky leather loafers with a slight platform sole and metal horsebit hardware in warm brown (#8B5A2B), offering both comfort for walking through the office and a polished finish. A sheer silk scarf tied loosely around the neck in autumnal rust tones (#C04936), adding a touch of seasonal color without disrupting the professional silhouette. This outfit works because it adheres strictly to the requested \"neat\" business dress code while responding appropriately to the 18 °C autumn weather with an essential outer layer and warm fabrics. The monochromatic base ensures a sophisticated, cohesive look suitable for the office environment, while the rich color palette reflects the season without appearing overly casual or distracting. The combination of structured tailoring and comfortable footwear strikes the perfect balance between professional polish and all-day ease."}
+
+── ВІДПОВІДЬ (865 симв., 67.9 с, HTTP 200) ──
+{
+  "is_outfit": "yes",
+  "items": [
+    {
+      "name": "blazer",
+      "details": "structured wool-blend tailored fit with notched lapel and two front pockets",
+      "slot": "outerwear",
+      "color_hex": "#1B3A2E",
+      "worn": true
+    },
+    {
+      "name": "trousers",
+      "details": "high-waisted wide-leg with subtle waistband pleat and tapered ankle in structured wool twill",
+      "slot": "bottom",
+      "color_hex": "#1B3A2E",
+      "worn": true
+    },
+    {
+      "name": "loafers",
+      "details": "chunky leather with slight platform sole and metal horsebit hardware",
+      "slot": "shoes",
+      "color_hex": "#8B5A2B",
+      "worn": true
+    },
+    {
+      "name": "scarf",
+      "details": "sheer silk tied loosely around the neck in autumnal rust tones",
+      "slot": "scarf",
+      "color_hex": "#C04936",
+      "worn": true
+    }
+  ]
+}

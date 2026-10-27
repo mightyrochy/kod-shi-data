@@ -1,0 +1,51 @@
+── ПРОМПТ (2641 симв.) ──
+{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.", "A slot the description says is not needed is not an item: give it worn false. One item carries one thing — of two alternatives list the first; a note in brackets is not an item.", "Slot \"accessory\" is for an item no other slot fits.", "\"is_outfit\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note; then items is empty."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "ITEM_LIST", "answer_schema": {"is_outfit": "yes|no", "items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory", "color_hex": "<#rrggbb or null>", "worn": "<true, or false when the description says the outfit goes without it>"}]}, "input": ["\"description\" — the outfit description"]}, "description": "Blouse in ivory silk with a relaxed fit and slightly gathered sleeves, #f5f0e6, lightweight fluid silk.\nHigh-waisted trousers in charcoal wool crepe with a wide leg and mid-thigh rise, #3d3d42, heavy twill wool.\nStructured blazer in navy tweed with notch lapels and a single-button closure, #1e2a40, mixed weave of cotton and fine wool.\nHeeled pumps in polished black leather with a rounded toe and moderate stack heel, #0f0f0f, smooth calfskin leather.\nGold-drop earrings with a minimalist geometric design, #ffd700, 18k gold-plated brass.\nA delicate pendant necklace featuring a small emerald-cut stone set in white gold, #50c878, platinum over silver alloy.\n\nThis ensemble strikes the perfect balance between romantic date-night allure and sophisticated business smart attire, suitable for an evening dinner at a restaurant. The textured tweed blazer adds depth and warmth appropriate for autumn weather while maintaining elegance without being overly formal. Neutral ivory tones in the blouse create a soft contrast against the dark charcoal trousers, drawing attention to her complexion and jewelry choices. Completing the look with gold accessories ties together the warm undertones of her skin, ensuring the outfit feels cohesive and intentionally styled for a special occasion."}
+
+── ВІДПОВІДЬ (1113 симв., 97.6 с, HTTP 200) ──
+{
+  "is_outfit": "yes",
+  "items": [
+    {
+      "name": "blouse",
+      "details": "relaxed fit with slightly gathered sleeves",
+      "slot": "top",
+      "color_hex": "#f5f0e6",
+      "worn": true
+    },
+    {
+      "name": "trousers",
+      "details": "high-waisted wide leg with mid-thigh rise",
+      "slot": "bottom",
+      "color_hex": "#3d3d42",
+      "worn": true
+    },
+    {
+      "name": "blazer",
+      "details": "structured with notch lapels and single-button closure",
+      "slot": "outerwear",
+      "color_hex": "#1e2a40",
+      "worn": true
+    },
+    {
+      "name": "pumps",
+      "details": "heeled with rounded toe and moderate stack heel",
+      "slot": "shoes",
+      "color_hex": "#0f0f0f",
+      "worn": true
+    },
+    {
+      "name": "earrings",
+      "details": "gold-drop with minimalist geometric design",
+      "slot": "earrings",
+      "color_hex": "#ffd700",
+      "worn": true
+    },
+    {
+      "name": "necklace",
+      "details": "delicate pendant with small emerald-cut stone",
+      "slot": "collar_necklace",
+      "color_hex": "#50c878",
+      "worn": true
+    }
+  ]
+}

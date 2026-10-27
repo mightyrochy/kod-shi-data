@@ -1,0 +1,37 @@
+── ПРОМПТ (2287 симв.) ──
+{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.", "A slot the description says is not needed is not an item: give it worn false. One item carries one thing — of two alternatives list the first; a note in brackets is not an item.", "Slot \"accessory\" is for an item no other slot fits.", "\"is_outfit\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note; then items is empty."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "ITEM_LIST", "answer_schema": {"is_outfit": "yes|no", "items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory", "color_hex": "<#rrggbb or null>", "worn": "<true, or false when the description says the outfit goes without it>"}]}, "input": ["\"description\" — the outfit description"]}, "description": "Merino wool tunic with a straight, relaxed fit, knee length, deep charcoal gray (#36454F), soft brushed wool.\nWashed cotton trousers with a tapered leg, mid-calf length, dark navy blue (#1C2833), heavy-weight denim with a slight stretch.\nChunky knit cardigan with an oversized boxy silhouette, hip length, oatmeal beige (#D6CFCD), chunky gauge wool blend.\nLeather ankle boots with a low block heel, calf height, black (#000000), full-grain leather with a water-resistant finish.\nThis outfit works because the wool and denim fabrics provide essential warmth against the freezing temperatures and snow while remaining comfortable for a twenty-minute walk to work. The dark color palette keeps you looking polished and professional under office lighting without sacrificing comfort in harsh winter conditions. The ankle boots offer necessary traction on icy, salted streets while keeping your feet dry and protected from the cold ground."}
+
+── ВІДПОВІДЬ (867 симв., 86.3 с, HTTP 200) ──
+{
+  "is_outfit": "yes",
+  "items": [
+    {
+      "name": "Merino wool tunic",
+      "details": "straight relaxed fit knee length soft brushed wool",
+      "slot": "top",
+      "color_hex": "#36454F",
+      "worn": true
+    },
+    {
+      "name": "Washed cotton trousers",
+      "details": "tapered leg mid-calf length heavy-weight denim with slight stretch",
+      "slot": "bottom",
+      "color_hex": "#1C2833",
+      "worn": true
+    },
+    {
+      "name": "Chunky knit cardigan",
+      "details": "oversized boxy silhouette hip length chunky gauge wool blend",
+      "slot": "outerwear",
+      "color_hex": "#D6CFCD",
+      "worn": true
+    },
+    {
+      "name": "Leather ankle boots",
+      "details": "low block heel calf height full-grain leather with water-resistant finish",
+      "slot": "shoes",
+      "color_hex": "#000000",
+      "worn": true
+    }
+  ]
+}

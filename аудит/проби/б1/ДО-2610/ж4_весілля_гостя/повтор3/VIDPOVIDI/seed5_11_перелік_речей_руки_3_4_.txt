@@ -1,0 +1,37 @@
+── ПРОМПТ (2367 симв.) ──
+{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.", "A slot the description says is not needed is not an item: give it worn false. One item carries one thing — of two alternatives list the first; a note in brackets is not an item.", "Slot \"accessory\" is for an item no other slot fits.", "\"is_outfit\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note; then items is empty."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "ITEM_LIST", "answer_schema": {"is_outfit": "yes|no", "items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory", "color_hex": "<#rrggbb or null>", "worn": "<true, or false when the description says the outfit goes without it>"}]}, "input": ["\"description\" — the outfit description"]}, "description": "Evening Gown of Midnight Blue (#0A1123), flowing silhouette with a high neckline and subtle sheen, floor-length, silk chiffon.\nStrappy Heels in Metallic Gold (#D4AF37), stiletto heel, ankle-high, satin.\nDrop Earrings in Diamond Cut (#E6F8FF) and Clutch Bag in Deep Emerald Green (#013220).\n\nThis outfit perfectly matches your role as a wedding guest attending an outdoor ceremony followed by an upscale restaurant dinner in August. The floor-length gown elevates you from standard daytime wear to the required \"very smart\" evening elegance, while the rich midnight blue provides a sophisticated contrast against the summer daylight and garden setting. The metallic gold shoes add a touch of celebratory sparkle without being overly loud, and the emerald clutch offers a complementary pop of color that aligns with your skin tone. Finally, since the temperature is a comfortable 18°C during the day, no outer layer is needed to maintain a light and graceful appearance as you move between the ceremony and dinner."}
+
+── ВІДПОВІДЬ (704 симв., 63.7 с, HTTP 200) ──
+{
+  "is_outfit": "yes",
+  "items": [
+    {
+      "name": "Evening Gown",
+      "details": "flowing silhouette, high neckline, subtle sheen, floor-length, silk chiffon",
+      "slot": "dress",
+      "color_hex": "#0A1123",
+      "worn": true
+    },
+    {
+      "name": "Strappy Heels",
+      "details": "stiletto heel, ankle-high, satin",
+      "slot": "shoes",
+      "color_hex": "#D4AF37",
+      "worn": true
+    },
+    {
+      "name": "Drop Earrings",
+      "details": "diamond cut",
+      "slot": "earrings",
+      "color_hex": "#E6F8FF",
+      "worn": true
+    },
+    {
+      "name": "Clutch Bag",
+      "details": "",
+      "slot": "bag",
+      "color_hex": "#013220",
+      "worn": true
+    }
+  ]
+}

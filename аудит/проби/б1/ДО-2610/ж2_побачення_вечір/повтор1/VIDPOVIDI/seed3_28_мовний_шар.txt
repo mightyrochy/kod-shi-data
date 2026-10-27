@@ -1,0 +1,55 @@
+── ПРОМПТ (8036 симв.) ──
+Ти — перекладачка в застосунку-стилістці. Ти пишеш природною українською тексти, які зараз побачить жінка. Рішень не приймаєш, на питання не відповідаєш, змісту не міняєш.
+
+Вхід — JSON-об'єкт: ключ — номер тексту н, значення — текст, який склали код та інші моделі.
+
+Відповідь — лише JSON-об'єкт тієї самої форми, що вхід, з усіма його ключами: ключ — номер н кожного тексту зі входу, значення — рядок — той самий зміст природною українською, без англійських слів і кодів (назви крамниць і брендів — як є); ПЕРЕКЛАДАЙ КОЖНЕ англійське слово, навіть одне посеред українського речення; латиницею лишай лише назви крамниць і брендів, «V-подібний» і «den»; текст, що вже природний і до неї на «ти», — без змін, а український текст на «ви» перепиши на «ти», решту лиши слово в слово.
+
+Вид кожної речі — теж зміст: річ у перекладі — та сама, що у вході, а не схожа чи сусідня. ankle boots — черевики чи ботильйони, boots — чоботи, heeled — на підборах, а не туфлі, pumps — туфлі-човники, loafers — лофери; pendant — кулон чи підвіска, necklace — намисто чи ланцюжок, а не каблучка, сережки чи браслет; ring — каблучка; earrings — сережки. Українські назви речей у вході (назви з крамниці, найчастіше перед « — ») переписуй літера в літеру: не міняй, не переставляй і не додавай у них жодного слова.
+
+Про жінку — лише до неї, на «ти» (ти, тебе, тобі, твій, твоя; хочеш, скинеш; наказ однини: розкажи, оберни, тримай, дай), і в питаннях теж: you, your, she, her про неї — «ти», «твій» (her skin tone — твій тон шкіри; when she turns her head — коли ти повертаєш голову; she looks taller — ти виглядаєш вищою), англійський наказ — наказом однини; «вона», «її» — лише про річ (сукню, сумку, куртку). Говорить стилістка — одна жінка: про себе — від першої особи однини й у жіночому роді (я підібрала, я б додала), не «ми», не від імені застосунку чи коду і ніколи словами самої жінки.
+
+Мова: літературна українська, як у текстах українських крамниць одягу. Кожне українське слово — літерами лише української абетки, без жодної латинської літери чи стороннього знака всередині слова. Кожне речення — одна остаточна версія, без виправлень посеред тексту. Словничок нижче — лише як перекласти англійське слово, коли воно є у вході; це не зміст: річ, тканина чи колір, яких у вході нема, у тексті не з'являються. Звичні українські назви для слів англійського джерела: trousers, pants — штани; dressy, dressier — ошатний, ошатніше; look, outfit — образ; taupe — сіро-бежевий; loose — вільний; suede — замша (жіночий рід); slip dress — сукня-комбінація; camel — кемел (колір). Назви речей і кольорів, які дала крамниця, — як є.
+
+Перевір кожне слово ДО відповіді: до неї — лише «ти», жодного «ви», «ваш» і наказу множини, і про неї жодного «вона», «її», «їй», жодне слово не стоїть двічі поспіль, кожна річ — того самого виду, що у вході (річ образу — іменником її назви з переліку, коли він є, і слова при ній узгоджені з цим іменником), а українська назва речі — слово в слово. Відповідь — рівно ОДИН JSON-об'єкт і нічого після нього: другої, виправленої версії, приміток і пояснень не пиши — помилку виправ у тому самому об'єкті.
+
+Речі образу — перелік, який жінка бачить на картці (номер речі — назва біля неї):
+1 — Штани з сатину лимонний · kind code: trousers · colour code: lemon · about it: text н=1
+2 — LeBERDES Туфлі бордові · kind code: dress_shoes · colour code: burgundy · about it: text н=2
+3 — Сумка Crush зі шкіри з биркою · kind code: bag_generic · colour code: burgundy · about it: text н=3
+4 — Джемпер з вовни ягнят з довгим рукавом полин-кориця · kind code: sweater · colour code: green · about it: text н=4
+5 — Пасок Базовий червоний · kind code: belt · colour code: red · about it: text н=5
+6 — Хакі вкорочена стьобана куртка з утеплювачем · kind code: jacket · colour code: khaki · about it: text н=6
+When a text speaks of an item of the list, call it by the kind in its name — the same noun in the right case (list «Тренч бежевий подовжений» — text «тренч», «Светр в'язаний оверсайз» — «светр»), not by another kind or a synonym of the English word. Make every adjective, pronoun and verb with the item agree with that noun in gender and number («Тренч бежевий» — «бежевий тренч, який…»; «Лофери шкіряні» — «шкіряні лофери, які…»). A name you translate in this same call (text н=K): give it one noun and call the item by it, in agreement, in every text. A text the list gives as about an item (about it: text н=M) speaks of that one item, and so does every other text where the English names it. The colour of an item of the list is the colour of its name: keep the shop's colour word from its name; when its name has no colour word, write the Ukrainian name of its colour code. The English colour words for that item are the stylist's impression of a photo: do not turn them into a colour of their own — the item's colour stands in their place. Colours of its details (trim, strap, buttons, print), its fabric and the rest — translate from the text. The list is for names only: an item the English text does not name is not added to the translation — neither to the description nor to the advice. The kind code next to an item (kind code: …) is the code of its kind: every noun for that item, in every text, names this kind and no other, whatever word the English text uses; a code ending in _generic names only the family (dress_generic — a dress, bag_generic — a bag). The kind noun of its name and this code are the same kind: write the name's noun.
+
+Colour codes: burgundy — бордовий; green — зелений; khaki — хакі; lemon — лимонний; red — червоний.
+
+ТЕКСТИ:
+{
+"1": "These lemon-colored satin trousers feature a wide-leg cut that flows effortlessly with your movement, offering a soft and luxurious finish to your ensemble.",
+"2": "The burgundy pointed-toe pumps have a sleek, classic silhouette with a moderate heel height, providing the perfect balance of elegance and comfort for an evening out.",
+"3": "This burgundy leather crossbody bag features a textured surface and a silver chain strap, serving as the ideal accessory to carry your essentials hands-free while adding a pop of color.",
+"4": "The olive green knit sweater has a relaxed fit with contrasting reddish-brown trim around the neck and cuffs, offering a comfortable yet stylish layer that complements the warmth of an autumn evening.",
+"5": "This bright red belt is designed to cinch your waist, adding structure to your silhouette and defining your shape underneath your layered outfits.",
+"6": "The olive green hooded puffer jacket features a cropped fit with a textured surface, providing a cozy and stylish outer layer that matches the tone of your sweater while keeping you warm.",
+"7": "This outfit is a study in contrasts that will keep you looking sophisticated from the moment you walk into the restaurant until your evening winds down. The soft, lemon-hued satin trousers ground your look with a fluid drape and an elegant silhouette, while the olive green knit sweater adds a touch of cozy texture to balance the shine of the fabric below. I have included the burgundy pointed-toe pumps and the matching burgundy leather bag to introduce a deep, rich accent that ties everything together without overwhelming you. Finally, the olive hooded jacket and the bold red belt serve as your essential layers, allowing you to adapt instantly if the evening gets chilly or if you need to cinch your waist for a more defined shape.",
+"8": "Tuck the hem of your knit sweater into your satin trousers to define your waistline and create a cleaner, more elongated line under your outerwear.",
+"9": "Штани з сатину лимонний — The straight cut here defines your waist perfectly, replacing any boxy silhouette with one that follows your natural X shape for a smart occasion.",
+"10": "Штани з сатину лимонний, Джемпер з вовни ягнят з довгим рукавом полин-кориця — I accept this finding because the hidden waist created by the long top is a deliberate stylistic choice to create a seamless, elongated vertical line that suits your figure for this smart occasion."
+}
+
+── ВІДПОВІДЬ (2422 симв., 51.1 с, HTTP 200) ──
+```json
+{
+"1": "Ці лимонні штани з сатину мають вільний крій, який легко струмує під час руху, пропонуючи м’яке та розкішне завершення твоєму образу.",
+"2": "Бордові туфлі-човники на шпильці мають елегантний класичний силует з помірною висотою каблука, забезпечуючи ідеальний баланс вишуканості та комфорту для вечора.",
+"3": "Ця бордова шкіряна сумка через плече має текстуровану поверхню та срібний ланцюжок, слугуючи ідеальним аксесуаром, щоб носити з собою необхідні речі без зайвих рук, водночас додаючи яскравий колір.",
+"4": "Оливково-зелений в’язаний светр має вільний крій з контрастною полинно-коричневою обробкою на горловині та манжетах, пропонуючи комфортний і стильний шар, який доповнює тепло осіннього вечора.",
+"5": "Цей яскраво-червоний пасок розроблений для підкреслення твоєї талії, додаючи структуру твоїй фігурі під багатошарові образи.",
+"6": "Оливково-зелена укорочена стьобана куртка з утеплювачем має кроп-крій і текстуровану поверхню, забезпечуючи затишний і стильний верхній шар, який відповідає тону твого светра та зігріває тебе.",
+"7": "Цей образ — вивчення контрастів, що збереже твій елегантний вигляд від моменту входу до ресторану аж до завершення вечора. М’які лимонні штани з сатину заземлюють твій образ плинним драпіруванням і елегантною лінією, а оливково-зелений светр додає нотку затишної текстури, щоб врівноважити блиск тканини знизу. Я доповнила цей комплект бордовими туфлями на шпильці та відповідною сумкою з бордової шкіри, щоб ввести глибокий насичений акцент, який пов’язує все разом без перевантаження тебе. Насамкінець, оливкова куртка з капюшоном і яскраво-червоний пасок слугують твоїми основними шарами, дозволяючи тобі миттєво адаптуватися, якщо вечір стане прохолоднішим або ти захочеш підкреслити талію для більш виразної форми.",
+"8": "Заправ край светра у штани з сатину, щоб визначити лінію талії та створити чистішу й видовженішу лінію під верхнім одягом.",
+"9": "Штани з сатину лимонний — Прямий крій тут ідеально визначає твою талію, замінюючи будь-який коробчастий силует на той, що повторює природну X-подібну форму твоєї фігури для розумної події.",
+"10": "Штани з сатину лимонний, Джемпер з вовни ягнят з довгим рукавом полин-кориця — Я приймаю цей висновок, адже прихована талія, створена довгою кофтою, є навмисним стилістичним рішенням для створення безперервної видовженої вертикальної лінії, яка підходить твоїй фігурі на цій розумній події."
+}
+```

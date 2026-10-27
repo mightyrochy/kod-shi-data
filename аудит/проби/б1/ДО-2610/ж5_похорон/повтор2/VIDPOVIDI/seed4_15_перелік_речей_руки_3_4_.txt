@@ -1,0 +1,44 @@
+── ПРОМПТ (2608 симв.) ──
+{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.", "A slot the description says is not needed is not an item: give it worn false. One item carries one thing — of two alternatives list the first; a note in brackets is not an item.", "Slot \"accessory\" is for an item no other slot fits.", "\"is_outfit\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note; then items is empty."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "ITEM_LIST", "answer_schema": {"is_outfit": "yes|no", "items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory", "color_hex": "<#rrggbb or null>", "worn": "<true, or false when the description says the outfit goes without it>"}]}, "input": ["\"description\" — the outfit description"]}, "description": "A tailored wool blend blazer with a subtle herringbone texture in deep charcoal gray (#36454F), cut classic with notch lapels and single-breasted front, knee-length.\nSilky crepe blouse with a modest neckline in pure white (#FFFFFF), cut straight with a slight drape at the hem to the hip, falling just below the blazer line.\nHigh-waisted worsted wool trousers in matching charcoal gray (#36454F), cut straight-leg with a clean pressed crease and full length reaching the shoe.\nLeather pumps with a moderate heel in polished black (#000000), cut almond-shaped toe and closed back for modesty.\nA simple silk scarf in muted autumn brown (#8B7355) to add warmth and respect without distraction.\n\nThis outfit honors the solemnity of a grandfather's funeral while adhering to the strict formal dress code required at 11 AM on an autumn morning. The dark, neutral palette reflects dignity and reverence, avoiding any flashy patterns that might seem disrespectful in daylight. The combination of wool and crepe provides necessary warmth for the season without compromising the clean lines expected at a religious ceremony. Every element is chosen to ensure the wearer appears composed, respectful, and appropriately attired for this significant family occasion."}
+
+── ВІДПОВІДЬ (1118 симв., 53.1 с, HTTP 200) ──
+{
+  "is_outfit": "yes",
+  "items": [
+    {
+      "name": "blazer",
+      "details": "tailored wool blend with subtle herringbone texture, cut classic with notch lapels and single-breasted front, knee-length",
+      "slot": "outerwear",
+      "color_hex": "#36454F",
+      "worn": true
+    },
+    {
+      "name": "blouse",
+      "details": "silky crepe with modest neckline, cut straight with slight drape at hem to hip",
+      "slot": "top",
+      "color_hex": "#FFFFFF",
+      "worn": true
+    },
+    {
+      "name": "trousers",
+      "details": "high-waisted worsted wool, cut straight-leg with clean pressed crease and full length reaching the shoe",
+      "slot": "bottom",
+      "color_hex": "#36454F",
+      "worn": true
+    },
+    {
+      "name": "pumps",
+      "details": "leather with moderate heel, cut almond-shaped toe and closed back",
+      "slot": "shoes",
+      "color_hex": "#000000",
+      "worn": true
+    },
+    {
+      "name": "scarf",
+      "details": "simple silk to add warmth and respect without distraction",
+      "slot": "scarf",
+      "color_hex": "#8B7355",
+      "worn": true
+    }
+  ]
+}

@@ -1,0 +1,57 @@
+── ПРОМПТ (7920 симв.) ──
+Ти — перекладачка в застосунку-стилістці. Ти пишеш природною українською тексти, які зараз побачить жінка. Рішень не приймаєш, на питання не відповідаєш, змісту не міняєш.
+
+Вхід — JSON-об'єкт: ключ — номер тексту н, значення — текст, який склали код та інші моделі.
+
+Відповідь — лише JSON-об'єкт тієї самої форми, що вхід, з усіма його ключами: ключ — номер н кожного тексту зі входу, значення — рядок — той самий зміст природною українською, без англійських слів і кодів (назви крамниць і брендів — як є); ПЕРЕКЛАДАЙ КОЖНЕ англійське слово, навіть одне посеред українського речення; латиницею лишай лише назви крамниць і брендів, «V-подібний» і «den»; текст, що вже природний і до неї на «ти», — без змін, а український текст на «ви» перепиши на «ти», решту лиши слово в слово.
+
+Вид кожної речі — теж зміст: річ у перекладі — та сама, що у вході, а не схожа чи сусідня. ankle boots — черевики чи ботильйони, boots — чоботи, heeled — на підборах, а не туфлі, pumps — туфлі-човники, loafers — лофери; pendant — кулон чи підвіска, necklace — намисто чи ланцюжок, а не каблучка, сережки чи браслет; ring — каблучка; earrings — сережки. Українські назви речей у вході (назви з крамниці, найчастіше перед « — ») переписуй літера в літеру: не міняй, не переставляй і не додавай у них жодного слова.
+
+Про жінку — лише до неї, на «ти» (ти, тебе, тобі, твій, твоя; хочеш, скинеш; наказ однини: розкажи, оберни, тримай, дай), і в питаннях теж: you, your, she, her про неї — «ти», «твій» (her skin tone — твій тон шкіри; when she turns her head — коли ти повертаєш голову; she looks taller — ти виглядаєш вищою), англійський наказ — наказом однини; «вона», «її» — лише про річ (сукню, сумку, куртку). Говорить стилістка — одна жінка: про себе — від першої особи однини й у жіночому роді (я підібрала, я б додала), не «ми», не від імені застосунку чи коду і ніколи словами самої жінки.
+
+Мова: літературна українська, як у текстах українських крамниць одягу. Кожне українське слово — літерами лише української абетки, без жодної латинської літери чи стороннього знака всередині слова. Кожне речення — одна остаточна версія, без виправлень посеред тексту. Словничок нижче — лише як перекласти англійське слово, коли воно є у вході; це не зміст: річ, тканина чи колір, яких у вході нема, у тексті не з'являються. Звичні українські назви для слів англійського джерела: trousers, pants — штани; dressy, dressier — ошатний, ошатніше; look, outfit — образ; taupe — сіро-бежевий; loose — вільний; suede — замша (жіночий рід); slip dress — сукня-комбінація; camel — кемел (колір). Назви речей і кольорів, які дала крамниця, — як є.
+
+Перевір кожне слово ДО відповіді: до неї — лише «ти», жодного «ви», «ваш» і наказу множини, і про неї жодного «вона», «її», «їй», жодне слово не стоїть двічі поспіль, кожна річ — того самого виду, що у вході (річ образу — іменником її назви з переліку, коли він є, і слова при ній узгоджені з цим іменником), а українська назва речі — слово в слово. Відповідь — рівно ОДИН JSON-об'єкт і нічого після нього: другої, виправленої версії, приміток і пояснень не пиши — помилку виправ у тому самому об'єкті.
+
+Речі образу — перелік, який жінка бачить на картці (номер речі — назва біля неї):
+1 — Чорна приталена сукня із воланами · kind code: dress_generic · colour code: black · about it: text н=1
+2 — Мюлі чорні QATRA · kind code: mules · colour code: black · about it: text н=2
+3 — Жорсткий чокер золотистого кольору · kind code: jewelry_generic · colour code: golden · about it: text н=3
+4 — Сумка жіноча, ATTICO, шкіра, колір чорний · kind code: bag_generic · colour code: black · about it: text н=4
+When a text speaks of an item of the list, call it by the kind in its name — the same noun in the right case (list «Тренч бежевий подовжений» — text «тренч», «Светр в'язаний оверсайз» — «светр»), not by another kind or a synonym of the English word. Make every adjective, pronoun and verb with the item agree with that noun in gender and number («Тренч бежевий» — «бежевий тренч, який…»; «Лофери шкіряні» — «шкіряні лофери, які…»). A name you translate in this same call (text н=K): give it one noun and call the item by it, in agreement, in every text. A text the list gives as about an item (about it: text н=M) speaks of that one item, and so does every other text where the English names it. The colour of an item of the list is the colour of its name: keep the shop's colour word from its name; when its name has no colour word, write the Ukrainian name of its colour code. The English colour words for that item are the stylist's impression of a photo: do not turn them into a colour of their own — the item's colour stands in their place. Colours of its details (trim, strap, buttons, print), its fabric and the rest — translate from the text. The list is for names only: an item the English text does not name is not added to the translation — neither to the description nor to the advice. The kind code next to an item (kind code: …) is the code of its kind: every noun for that item, in every text, names this kind and no other, whatever word the English text uses; a code ending in _generic names only the family (dress_generic — a dress, bag_generic — a bag). The kind noun of its name and this code are the same kind: write the name's noun.
+
+Colour codes: black — чорний; golden — золотий.
+
+ТЕКСТИ:
+{
+"1": "A fitted black dress made of a fluid fabric that drapes softly from the shoulders down to the mid-calf. It features delicate ruffles at the neckline and along the sleeves, adding a touch of quiet movement to your silhouette while maintaining a formal, respectful tone for the occasion.",
+"2": "Sleek black leather mules with a slender stiletto heel and a wide, smooth strap across the vamp. Their open back and minimalist design offer an elegant lift that complements the dress without adding unnecessary structure or clutter.",
+"3": "A rigid gold choker with a clean, continuous curve that sits snugly against the neck. Its metallic sheen provides a subtle contrast to the matte and satin finishes of the outfit, offering a focal point at the throat without overpowering the mournful atmosphere.",
+"4": "A structured black leather bag with clean lines and a soft, slouching quality. Its dark hue matches the rest of the outfit seamlessly, while its shape provides a grounded weight that balances the lightness of the dress and shoes.",
+"5": "This monochromatic ensemble, rooted in deep black, honors the solemnity of the morning. The dress offers a gentle silhouette that moves with you, while the mules provide a quiet grace for your walk, and the leather bag serves as a dignified anchor to hold your essentials without disrupting the line of your figure. The gold choker rests close to your neck, catching the light just enough to be present but never loud.",
+"6": "Keep the dress untucked to let the clean hem define your movement.",
+"7": "Wear the mules as open shoes to reveal your ankles and extend your lines.",
+"8": "Let the bag hang at your hip or on your shoulder, whichever feels most comfortable, without adding weight.",
+"9": "Мюлі чорні QATRA — I chose these black patent pumps to match the dress's lightness and tone, creating an unbroken vertical line from toes to hem instead of a cut leg.",
+"10": "Жорсткий чокер золотистого кольору — I replaced the gold choker with this silvery one because its cool tone matches the dress and keeps the area near your face quiet and solemn.",
+"11": "Чорна приталена сукня із воланами — I kept this dress as the central shape-defining piece; its ruffles soften the silhouette enough for mourning without breaking the dark palette.",
+"12": "Мюлі чорні QATRA — This gate exists only because you selected items of a lower formality band than the occasion's strict requirement, but since I have deliberately declared replacing them with pieces that match the formal tone and dark palette, the outfit is now fully vetted for your intent."
+}
+
+── ВІДПОВІДЬ (2493 симв., 51.8 с, HTTP 200) ──
+```json
+{
+"1": "Приталена чорна сукня з легкої тканини, яка м’яко спадає від плечей до середини литки. Вона має ніжні волани на вирізі та по рукавах, додаючи ледь помітний рух твоєму силуету, зберігаючи при цьому формальний і шанобливий тон для цієї події.",
+"2": "Стильні чорні шкіряні мюлі з витонченим шпильковим підбором та широким гладким ремінцем на носку. Їх відкрита задня частина та мінімалістичний дизайн пропонують елегантний підйом, який доповнює сукню без зайвої структури чи сміття.",
+"3": "Жорсткий золотистий чокер з чистою, безперервною лінією, що щільно прилягає до шиї. Його металевий блиск забезпечує ледь помітний контраст матовим і атласним покриттям вбрання, пропонуючи фокусну точку на горлі, не перевантажуючи сумну атмосферу.",
+"4": "Структурована чорна шкіряна сумка з чистими лініями та м’якою, обвислою якістю. Її темний відтінок бездоганно поєднується з рештою вбрання, а її форма забезпечує стійку вагу, що балансує легкість сукні та туфель.",
+"5": "Цей монохромний ансамбль, заснований на глибокому чорному кольорі, шанує урочистість ранку. Сукня пропонує ніжний силует, який рухається разом з тобою, а мюлі дарують тиху грацію твоїй ході, і шкіряна сумка служить гідним якорем для зберігання необхідних речей без порушення лінії твоєї фігури. Золотистий чокер лежить близько до шиї, вловлюючи світло достатньо, щоб бути присутнім, але ніколи гучним.",
+"6": "Залиш сукню не заправленою всередину, щоб чистий поділ визначав твій рух.",
+"7": "Одягни мюлі як відкриті туфлі, щоб оголити щиколотки та подовжити лінії твоєї ноги.",
+"8": "Дай сумці звисати на стегні або плечі, що тобі зручніше, не додаючи ваги.",
+"9": "Мюлі чорні QATRA — Я обрала ці лаковані чорні туфлі, щоб вони відповідали легкості та тону сукні, створюючи безперервну вертикальну лінію від пальців ніг до подолу замість розрізаної ноги.",
+"10": "Жорсткий чокер золотистого кольору — Я замінила золотистий чокер на цей сріблястий, тому що його холодний тон поєднується з сукнею та зберігає тишу й урочистість біля твого обличчя.",
+"11": "Чорна приталена сукня із воланами — Я залишила цю сукню як центральний елемент, що формує силует; її рюші пом’якшують фігуру достатньо для жалоби без порушення темної палітри.",
+"12": "Мюлі чорні QATRA — Ця брама існує лише тому, що ти обрала речі нижчої формальності, ніж вимагає подія. Але оскільки я свідомо вирішила замінити їх на елементи, які відповідають урочистому тону та темній палітрі, твій образ тепер повністю перевірений для твоєї мети."
+}
+```

@@ -1,0 +1,51 @@
+── ПРОМПТ (2813 симв.) ──
+{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.", "A slot the description says is not needed is not an item: give it worn false. One item carries one thing — of two alternatives list the first; a note in brackets is not an item.", "Slot \"accessory\" is for an item no other slot fits.", "\"is_outfit\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note; then items is empty."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "ITEM_LIST", "answer_schema": {"is_outfit": "yes|no", "items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory", "color_hex": "<#rrggbb or null>", "worn": "<true, or false when the description says the outfit goes without it>"}]}, "input": ["\"description\" — the outfit description"]}, "description": "An ivory silk crepe sheath dress with a subtle cowl neckline that falls to the mid-calf, cut in a flowing bias silhouette for effortless drape, colored #FFFFF0, woven from luxurious silk crepe de chine.\nA structured charcoal wool-blend blazer with notched lapels and a single-breasted button closure, featuring clean lines and a tailored waist, finished in solid charcoal gray with hex code #36454F, constructed from high-quality wool blend.\nSilver polished leather pumps with a 9cm stiletto heel and a pointed toe design, crafted from smooth calfskin in metallic silver with hex code #C0C0C0 to complement the cool autumn tones.\nA pair of dangling crystal drop earrings set in sterling silver, adding a touch of sparkle without overwhelming the neckline, paired with a sleek black clutch and a thin gold bangle bracelet.\nThis ensemble works perfectly for an autumn evening at the theatre because it adheres to the formal dress code while respecting the 18°C temperature by layering a stylish blazer over a light silk gown rather than using heavy outerwear. The neutral palette of ivory, charcoal, and silver reflects the classic elegance expected in a theatrical setting, allowing the wearer's silhouette and jewelry to take center stage under auditorium lighting. Combining fluid fabric with structured tailoring creates a balanced look that transitions seamlessly from the arrival at the venue to the performance itself without sacrificing comfort or grace."}
+
+── ВІДПОВІДЬ (1206 симв., 62.9 с, HTTP 200) ──
+{
+  "is_outfit": "yes",
+  "items": [
+    {
+      "name": "sheath dress",
+      "details": "ivory silk crepe de chine with subtle cowl neckline, mid-calf length, flowing bias silhouette for effortless drape",
+      "slot": "dress",
+      "color_hex": "#FFFFF0",
+      "worn": true
+    },
+    {
+      "name": "blazer",
+      "details": "structured charcoal wool-blend with notched lapels, single-breasted button closure, clean lines, tailored waist",
+      "slot": "outerwear",
+      "color_hex": "#36454F",
+      "worn": true
+    },
+    {
+      "name": "pumps",
+      "details": "silver polished leather with 9cm stiletto heel, pointed toe design, smooth calfskin",
+      "slot": "shoes",
+      "color_hex": "#C0C0C0",
+      "worn": true
+    },
+    {
+      "name": "earrings",
+      "details": "dangling crystal drop set in sterling silver",
+      "slot": "earrings",
+      "color_hex": null,
+      "worn": true
+    },
+    {
+      "name": "clutch",
+      "details": "sleek black",
+      "slot": "bag",
+      "color_hex": "#000000",
+      "worn": true
+    },
+    {
+      "name": "bracelet",
+      "details": "thin gold bangle",
+      "slot": "jewelry",
+      "color_hex": null,
+      "worn": true
+    }
+  ]
+}
