@@ -31,15 +31,20 @@ def api(шлях="", тіло=None):
 
 def головна():
     """Тримає проксі та стенд дочірніми процесами до завершення одного прогону."""
-    середовище = json.loads((ТЕКА / "середовище.json").read_text(encoding="utf-8-sig"))
+    налаштування = Path(__file__).resolve().parent
+    тека = Path(sys.argv[1]).resolve() if len(sys.argv) > 1 else налаштування
+    тека.mkdir(parents=True, exist_ok=True)
+    ТЕКА = тека
+    середовище = json.loads((налаштування / "середовище.json").read_text(encoding="utf-8-sig"))
     env = dict(os.environ, NODE_PATH=середовище["NODE_PATH"], LMS_MODE="http", PORT="1235",
                MODEL=СТИЛІСТКА, MODEL_MOVA=МОВА, MODEL_URL="http://127.0.0.1:1235/v1",
                CTX=json.dumps({СТИЛІСТКА: 57344, МОВА: 16384}), OTSINKA="0", ODNOCHASNO="1",
                ZHINKA=str(КОРІНЬ / "аудит/проби/жінки/ж8.json"),
                CHAT_TEXT="рок-концерт у клубі, п'ятниця ввечері, стоятиму в натовпі, хочу стримано й класично",
                ZNIMKY=str(ТЕКА / "знімки"), VIDPOVIDI=str(ТЕКА / "відповіді"),
-               ZVIT_OUT=str(ТЕКА / "вердикти.txt"), PYTHONUTF8="1", PYTHONIOENCODING="utf-8")
-    for ключ in ("FOTO", "DO", "SCENA", "CHROMIUM", "PASPORT", "ZHYVA", "NODE_OPTIONS"):
+               ZVIT_OUT=str(ТЕКА / "вердикти.txt"), PYTHONUTF8="1", PYTHONIOENCODING="utf-8",
+               NODE_USE_SYSTEM_CA="1")
+    for ключ in ("FOTO", "DO", "SCENA", "CHROMIUM", "PASPORT", "ZHYVA", "NODE_OPTIONS", "NODE_TLS_REJECT_UNAUTHORIZED"):
         env.pop(ключ, None)
     env["PATH"] = str(Path(середовище["node_path"]).parent) + os.pathsep + env["PATH"]
     до = api()
@@ -68,7 +73,7 @@ def головна():
                str(Path(env["USERPROFILE"]) / "pyodide"), "3"]
     (ТЕКА / "запуск.json").write_text(json.dumps({"sha-збірки": sha, "sha-приладів": голова, "сцена": СЦЕНА, "команда": команда,
         "змінні": {k: env[k] for k in ("NODE_PATH", "LMS_MODE", "CTX", "MODEL", "MODEL_MOVA", "MODEL_URL",
-                                      "OTSINKA", "ODNOCHASNO", "CHAT_TEXT", "ZHINKA")}}, ensure_ascii=False, indent=2), encoding="utf-8")
+                                      "OTSINKA", "ODNOCHASNO", "CHAT_TEXT", "ZHINKA", "NODE_USE_SYSTEM_CA")}}, ensure_ascii=False, indent=2), encoding="utf-8")
     стенд = проксі = None
     rc = None
     try:

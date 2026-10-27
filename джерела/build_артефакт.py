@@ -694,8 +694,8 @@ def _димовий_лайт(сирі_zip):
         z.extractall(т)
     for ф in sorted(os.listdir(т)):
         if ф.endswith(".py"):
-            r = subprocess.run([sys.executable, "-m", "py_compile", os.path.join(т, ф)],
-                               capture_output=True, text=True)
+            r = subprocess.run([sys.executable, "-X", "utf8", "-m", "py_compile", os.path.join(т, ф)],
+                               capture_output=True, text=True, encoding="utf-8")
             if r.returncode != 0:
                 raise SystemExit("лайт: py_compile впав на %s:\n%s" % (ф, r.stderr[-400:]))
     # ЖИВІ ВИКЛИКИ, А НЕ ВІРА. Стрип коментарів токенайзером код не чіпає, але саме
@@ -704,7 +704,7 @@ def _димовий_лайт(сирі_zip):
     # `порада` ЗВІДСИ ЗНЯТА (П-5): ендпойнта більше нема. Він і доти не
     # перевірявся — CI збирає режимом «показ-повний», а цей блок живе лише в «лайт»,
     # тож NameError на `кольори(d)` тут ніхто не бачив.
-    r = subprocess.run([sys.executable, "-c",
+    r = subprocess.run([sys.executable, "-X", "utf8", "-c",
                         "import json, bridge\n"
                         "в = json.loads(bridge.виклик('чипи', {}))\n"
                         "assert isinstance(в, dict) and в.get('шкіра'), 'відповідь без чипів'\n"
@@ -757,7 +757,7 @@ def _димовий_лайт(сирі_zip):
                         "      ' · запити ок, слотів %d · statement: пул %d'\n"
                         "      % (len(в), len(пм['сходинки']), len(пм['поділ']['рекомендовані']),\n"
                         "         _сл, зс.get('пул_речей') or 0))"],
-                       cwd=т, capture_output=True, text=True, timeout=300)
+                       cwd=т, capture_output=True, text=True, encoding="utf-8", timeout=300)
     if r.returncode != 0:
         raise SystemExit("лайт: живий виклик моста впав:\n" + (r.stderr or r.stdout)[-600:])
     return r.stdout.strip()
@@ -906,8 +906,8 @@ def _модулі_показу(джерело, повний=False):
     нести все, чим збирається образ.
     """
     зонд = (_ЗОНД_ПОКАЗУ_ПОВНИЙ % _фід_показу(джерело)) if повний else _ЗОНД_ПОКАЗУ
-    r = subprocess.run([sys.executable, "-c", зонд],
-                       cwd=джерело, capture_output=True, text=True, timeout=900)
+    r = subprocess.run([sys.executable, "-X", "utf8", "-c", зонд],
+                       cwd=джерело, capture_output=True, text=True, encoding="utf-8", timeout=900)
     if r.returncode != 0:
         raise SystemExit("показ: зонд %s впав:\n%s"
                          % ("повного шляху" if повний else "палітри",
@@ -976,8 +976,8 @@ def _димовий_показу(сирі_zip, повний=False, фід_зі_�
         z.extractall(т)
     for ф in sorted(os.listdir(т)):
         if ф.endswith(".py"):
-            r = subprocess.run([sys.executable, "-m", "py_compile", os.path.join(т, ф)],
-                               capture_output=True, text=True)
+            r = subprocess.run([sys.executable, "-X", "utf8", "-m", "py_compile", os.path.join(т, ф)],
+                               capture_output=True, text=True, encoding="utf-8")
             if r.returncode != 0:
                 raise SystemExit("показ: py_compile впав на %s:\n%s" % (ф, r.stderr[-400:]))
     if повний:
@@ -990,8 +990,8 @@ def _димовий_показу(сирі_zip, повний=False, фід_зі_�
         зонд = _ЗОНД_ПОКАЗУ_ПОВНИЙ % фід_зі_сторінки
     else:
         зонд = _ЗОНД_ПОКАЗУ
-    r = subprocess.run([sys.executable, "-c", зонд],
-                       cwd=т, capture_output=True, text=True, timeout=900)
+    r = subprocess.run([sys.executable, "-X", "utf8", "-c", зонд],
+                       cwd=т, capture_output=True, text=True, encoding="utf-8", timeout=900)
     if r.returncode != 0:
         raise SystemExit("показ: живий виклик у вантажі впав:\n"
                          + (r.stderr or r.stdout)[-700:])
@@ -1208,7 +1208,7 @@ def _гейти_js(html, b64, назва, обовʼязкові, заборон
     js_для_node = js.replace(b64, "ЗАГЛУШКА")
     із_заглушкою = tempfile.NamedTemporaryFile("w", suffix=".js", delete=False, encoding="utf-8")
     із_заглушкою.write(js_для_node); із_заглушкою.close()
-    r = subprocess.run(["node", "--check", із_заглушкою.name], capture_output=True, text=True)
+    r = subprocess.run(["node", "--check", із_заглушкою.name], capture_output=True, text=True, encoding="utf-8")
     os.unlink(із_заглушкою.name)
     if r.returncode != 0:
         raise SystemExit("%s: node --check впав:\n%s" % (назва, r.stderr or r.stdout))
@@ -1280,7 +1280,7 @@ def _тест_показу(джерело, вихід):
         return
     r = subprocess.run(["node", os.path.basename(тест), os.path.abspath(вихід)],
                        cwd=джерело, env=dict(os.environ, NODE_PATH=вузли),
-                       capture_output=True, text=True, timeout=900)
+                       capture_output=True, text=True, encoding="utf-8", timeout=900)
     if r.returncode != 0:
         raise SystemExit("тест_показу.js впав на зібраному файлі (код %d):\n%s"
                          % (r.returncode, ((r.stdout or "") + (r.stderr or ""))[-2000:]))
@@ -1335,10 +1335,10 @@ def _довідник_показу(джерело):
     підписи ошатності, а суд ішов за іншими числами. Підпроцес, а не імпорт, з
     тієї ж причини, що й зонд вище: збирач міг бути запущений з іншої теки, а
     `pipeline`, імпортований раніше, — бути не тим, що пакується."""
-    r = subprocess.run([sys.executable, "-c",
+    r = subprocess.run([sys.executable, "-X", "utf8", "-c",
                         "import json, pipeline; "
                         "print(json.dumps(pipeline.довідник(), ensure_ascii=False))"],
-                       cwd=джерело, capture_output=True, text=True, timeout=300)
+                       cwd=джерело, capture_output=True, text=True, encoding="utf-8", timeout=300)
     if r.returncode != 0:
         raise SystemExit("показ: довідник не зібрався:\n%s" % (r.stderr or r.stdout)[-700:])
     return r.stdout.strip().splitlines()[-1]
@@ -1351,10 +1351,10 @@ def _вибірка_показу(джерело):
     Число живе в Python, бо це рішення про ЗАДАЧУ, а не про сторінку: показ його лише
     пересилає в тіло виклику, а задача з іншою вибіркою віддає свою поруч із промптом
     свого ендпойнта. Підпроцес — з тієї ж причини, що довідник і промпт кольору."""
-    r = subprocess.run([sys.executable, "-c",
+    r = subprocess.run([sys.executable, "-X", "utf8", "-c",
                         "import json, збирач_промптів as З; "
                         "print(json.dumps(З.вибірка(З.ВИБІРКА_ТИПОВА)))"],
-                       cwd=джерело, capture_output=True, text=True, timeout=300)
+                       cwd=джерело, capture_output=True, text=True, encoding="utf-8", timeout=300)
     if r.returncode != 0:
         raise SystemExit("показ: вибірка не зібралась:\n%s" % (r.stderr or r.stdout)[-700:])
     return r.stdout.strip().split("\n")[-1]
@@ -1367,10 +1367,10 @@ def _промпт_кольору_показу(джерело):
     П-4: доти показ ніс сам текст промпта, українською, повз збирач. Даних, крім
     фото, у виклику нема, тож промпт складається тут, під час збірки, а не на телефоні: перше
     зчитування на знайомстві не чекає Pyodide. Підпроцес — з тієї ж причини, що й довідник."""
-    r = subprocess.run([sys.executable, "-c",
+    r = subprocess.run([sys.executable, "-X", "utf8", "-c",
                         "import json, міст_вхід; "
                         "print(json.dumps(міст_вхід.промпт_кольору(), ensure_ascii=False)[1:-1])"],
-                       cwd=джерело, capture_output=True, text=True, timeout=300)
+                       cwd=джерело, capture_output=True, text=True, encoding="utf-8", timeout=300)
     if r.returncode != 0:
         raise SystemExit("показ: промпт кольору не зібрався:\n%s" % (r.stderr or r.stdout)[-700:])
     return r.stdout.strip().split("\n")[-1]
@@ -1624,7 +1624,7 @@ def зібрати(джерело, вихід, лайт=False):
     js_для_node = js.replace(b64, "ЗАГЛУШКА")
     із_заглушкою = tempfile.NamedTemporaryFile("w", suffix=".js", delete=False, encoding="utf-8")
     із_заглушкою.write(js_для_node); із_заглушкою.close()
-    r = subprocess.run(["node", "--check", із_заглушкою.name], capture_output=True, text=True)
+    r = subprocess.run(["node", "--check", із_заглушкою.name], capture_output=True, text=True, encoding="utf-8")
     os.unlink(із_заглушкою.name)
     if r.returncode != 0:
         raise SystemExit("node --check впав:\n" + (r.stderr or r.stdout))
