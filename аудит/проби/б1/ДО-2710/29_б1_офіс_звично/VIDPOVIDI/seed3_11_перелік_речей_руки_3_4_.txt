@@ -1,0 +1,44 @@
+── ПРОМПТ (2157 симв.) ──
+{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.", "A slot the description says is not needed is not an item: give it worn false. One item carries one thing — of two alternatives list the first; a note in brackets is not an item.", "Slot \"accessory\" is for an item no other slot fits.", "\"is_outfit\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note; then items is empty."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "ITEM_LIST", "answer_schema": {"is_outfit": "yes|no", "items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory", "color_hex": "<#rrggbb or null>", "worn": "<true, or false when the description says the outfit goes without it>"}]}, "input": ["\"description\" — the outfit description"]}, "description": "A structured blazer in charcoal grey, cut with a tailored fit through the waist and falling to hip length, woven from fine wool gabardine. Matching trousers in a straight-leg cut that tapers slightly at the ankle, made of durable twill fabric. A soft-shell loafer in deep brown leather, featuring a low block heel and perforated detailing. A silk scarf with subtle geometric patterns tied loosely around the neck, paired with slim gold hoop earrings. This outfit works because it balances professional polish with autumnal comfort, utilizing a neutral palette that harmonizes with her warm skin tones of #deb295 and #d8a98c. The tailored blazer and structured trousers provide a neat silhouette suitable for an office environment while the natural fabric textures offer breathability for cooler fall weather."}
+
+── ВІДПОВІДЬ (982 симв., 98.0 с, HTTP 200) ──
+{
+  "is_outfit": "yes",
+  "items": [
+    {
+      "name": "blazer",
+      "details": "tailored fit through the waist, hip length, woven from fine wool gabardine",
+      "slot": "outerwear",
+      "color_hex": "#36454f",
+      "worn": true
+    },
+    {
+      "name": "trousers",
+      "details": "straight-leg cut tapering slightly at the ankle, made of durable twill fabric",
+      "slot": "bottom",
+      "color_hex": "#36454f",
+      "worn": true
+    },
+    {
+      "name": "loafer",
+      "details": "soft-shell with low block heel and perforated detailing",
+      "slot": "shoes",
+      "color_hex": "#5c4033",
+      "worn": true
+    },
+    {
+      "name": "scarf",
+      "details": "silk with subtle geometric patterns tied loosely around the neck",
+      "slot": "scarf",
+      "color_hex": null,
+      "worn": true
+    },
+    {
+      "name": "earrings",
+      "details": "slim gold hoops",
+      "slot": "earrings",
+      "color_hex": "#ffd700",
+      "worn": true
+    }
+  ]
+}
