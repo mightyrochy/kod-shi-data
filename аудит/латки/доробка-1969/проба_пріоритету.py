@@ -15,6 +15,9 @@ def main():
     scene = root / 'сценарії_смуг.sh'
     original_side = side.read_bytes()
     original_scene = scene.read_bytes()
+    baseline = subprocess.check_output(['git', '-C', str(tree), 'show',
+                                        '83de15ac58a76c7c307fc6f1a11e36b98861b937:аудит/адаптери/gemini/перевірка/сценарії_смуг.sh'])
+    assert original_scene == baseline, 'Потрібен незмінений стенд точної бази 83de15ac в окремому дереві'
     old = "grep -h 'старт '"
     new = "grep -h 'слот .*пріоритет .* -> '"
     assert old in original_scene.decode('utf-8')
