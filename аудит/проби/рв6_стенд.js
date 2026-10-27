@@ -33,8 +33,9 @@
    адреса, за якою сторінка бачить сама себе й міст. */
 const { chromium } = require('playwright');
 const fs = require('fs'), path = require('path');
-const {ЗаписанийОбмін, записатиОбмін} = require('./записаний_обмін.js');
-const ЗАПИСАНИЙ_ОБМІН = process.env.REPLAY_EXCHANGE ? new ЗаписанийОбмін(process.env.REPLAY_EXCHANGE) : null;
+const {ЗаписанийОбмін, ТекстовіВідповіді, записатиОбмін, імТипу} = require('./записаний_обмін.js');
+const ЗАПИСАНИЙ_ОБМІН = process.env.REPLAY_EXCHANGE ? new ЗаписанийОбмін(process.env.REPLAY_EXCHANGE)
+  : process.env.REPLAY_RECORDINGS ? new ТекстовіВідповіді(process.env.REPLAY_RECORDINGS) : null;
 let номерОбміну = 0;
 const { чекатиСтан, ВИДНО_ЕЛЕМЕНТ } = require('../../джерела/проби/очікування.js');
 /* РЯДОК 2671: файл сцен з Windows-checkout несе `\r` у кінці рядка, і останнє поле сцени
@@ -231,6 +232,7 @@ const намірСторінки = async стор => стор.evaluate(
 /* ЗБІЙ ЗБИРАННЯ (3.4-Б): читання стану збою виключно з ядра (ЗБ.діагноз), без парсингу тексту DOM
    та без неіснуючих полів (ЗБ.помилка не існує, вада 9482). */
 const ВИРАЗ_ЗБОЮ = "(typeof ЗБ !== 'undefined' && ЗБ && (ЗБ.діагноз || []).some(р => /^build · failed/.test(р)))";
+const ВИРАЗ_ЗАВЕРШЕНО = "(typeof ЗБ !== 'undefined' && ЗБ && ЗБ.готово && document.querySelectorAll('#картки .картка').length >= 4)";
 /* NE_TSIA=1 — сцена 4в (рядок 149): «не ця» на картці руки 1 → «Зібрати ще
    раз» → речі руки 1 ДО/ПІСЛЯ. Коштує ще одного повного збору, тож за
    змінною: без неї прогін той самий, що й доти. */
@@ -863,6 +865,17 @@ const ШАР_ВИМКНЕНО = /^(нема|вимк|off|none|0)$/i.test(String(
 const ЖИВИЙ_ШАР = !ШАР_ВИМКНЕНО && !!(МОДЕЛЬ_МОВИ_СТЕНДУ || МОДЕЛЬ_ЖИВА);
 const АДРЕСА_МОДЕЛІ = (process.env.MODEL_URL || 'http://127.0.0.1:1234/v1').replace(/\/+$/, '');
 const ТЕКА_ВІДПОВІДЕЙ = process.env.VIDPOVIDI || null;
+if (ТЕКА_ВІДПОВІДЕЙ && МОДЕЛЬ_ЖИВА && !ЗАПИСАНИЙ_ОБМІН) {
+  const змінні = {};
+  const службові = /^(?:VIDPOVIDI|ZNIMKY|ZHINKA|ZVIT_OUT|MODEL_URL|CHROMIUM|NODE_PATH|ZAPYS_VYKLYKIV|REPLAY_.*)$/;
+  for (const м of fs.readFileSync(__filename, 'utf8').matchAll(/process\.env\.([\p{Lu}_][\p{Lu}\d_]*)/gu))
+    if (process.env[м[1]] !== undefined && !службові.test(м[1]) && !/PROXY|TOKEN|KEY|SECRET|PASS/i.test(м[1]))
+      змінні[м[1]] = process.env[м[1]];
+  // Профіль переноситься даними: абсолютний шлях ноутбука непридатний у CI.
+  const паспорт = {версія: 1, сід: СІД, змінні, жінка: ЖІНКА};
+  fs.mkdirSync(ТЕКА_ВІДПОВІДЕЙ, {recursive: true});
+  fs.writeFileSync(path.join(ТЕКА_ВІДПОВІДЕЙ, '..', 'повтор.json'), JSON.stringify(паспорт, null, 1) + '\n');
+}
 const ТЕМПЕРАТУРА = ('MODEL_TEMP' in process.env) ? Number(process.env.MODEL_TEMP) : null;
 const ТЕМПЕРАТУРА_МОВИ = ('MODEL_TEMP_MOVA' in process.env) ? Number(process.env.MODEL_TEMP_MOVA) : null;
 const ВИБІРКА_ЗАПИТУ = require(path.join(__dirname, 'вибірка_запиту.js'));
@@ -1511,7 +1524,7 @@ function записатиВиклик(н, тип, промпт, р){
   /* рядок 3318: у файл — те, що бачить модель: шов `живоюМоделлю` міняє коди заяв на визначення (PRAVYLA=rechennia) */
   if (ПРАВИЛА_РЕЧЕННЯМИ && тип === 'ПАКЕТ_V1→ОБРАЗИ_V1') промпт = правилаРеченнями(промпт);
   const ім = path.join(ТЕКА_ВІДПОВІДЕЙ, 'seed' + СІД + '_' + String(н).padStart(2, '0') + '_'
-    + тип.replace(/[^\p{L}\d]+/gu, '_').slice(0, 40) + '.txt');
+    + імТипу(тип) + '.txt');
   fs.writeFileSync(ім, '── ПРОМПТ (' + промпт.length + ' симв.) ──\n' + промпт
     + '\n\n── ВІДПОВІДЬ (' + (р.текст || '').length + ' симв., ' + р.с.toFixed(1) + ' с, HTTP ' + р.статус
     + (р.думка ? ', думка ' + р.думка.length + ' симв.' : '') + ') ──\n'
@@ -2530,7 +2543,7 @@ function підсумокМоделі(){
   стежитиЗаОбривом(стор, ЖИВІ_ЗАПИТИ);
   await стор.route(u => цеМіст(u), async route => {
     const тіло = route.request().postDataJSON() || {};
-    if (ТЕКА_ВІДПОВІДЕЙ && (МОДЕЛЬ_ЖИВА || МОДЕЛЬ_МОВИ_СТЕНДУ)) {
+    if (!ЗАПИСАНИЙ_ОБМІН && ТЕКА_ВІДПОВІДЕЙ && МОДЕЛЬ_ЖИВА) {
       const номер = ++номерОбміну, виконати = route.fulfill.bind(route);
       route.fulfill = async відповідь => {
         записатиОбмін(path.join(ТЕКА_ВІДПОВІДЕЙ, 'обмін'), номер, тіло, відповідь);
@@ -2572,7 +2585,7 @@ function підсумокМоделі(){
       const н = промпти.push({тип, довжина: текст.length, фото,
         json: (() => { try { JSON.parse(безХвостаПовтору(текст)); return true; } catch (_) { return false; } })()});
       try {
-        const відповідь = ЗАПИСАНИЙ_ОБМІН.взяти(тіло);
+        const відповідь = ЗАПИСАНИЙ_ОБМІН.взяти(тіло, промптФайлу, тип);
         const дані = JSON.parse(відповідь.body);
         ЖУРНАЛ_МОДЕЛІ.push({тип, статус: відповідь.status, с: 0, симв:
           (дані.content || []).filter(б => б.type === 'text').reduce((с, б) => с + б.text.length, 0),
@@ -2584,8 +2597,9 @@ function підсумокМоделі(){
       } catch (помилка) {
         console.error('ВІДТВОРЕННЯ:', помилка.message);
         провалів++;
-        return route.fulfill({status: 599, contentType: 'application/json',
-          body: JSON.stringify({error: {message: помилка.message}})});
+        ДОКАЗ.обірвано('записаний обмін: ' + помилка.message);
+        await браузер.close();
+        process.exit(2);
       }
     }
     /* ── ПРИМІРЯННЯ В ComfyUI (COMFY=1) — І З ЖИВОЮ МОДЕЛЛЮ, І ЗІ ЗАГЛУШКОЮ ────
@@ -2792,7 +2806,8 @@ function підсумокМоделі(){
     }, [код, ПРАВИЛО_РУКИ2]);
     console.log('   правило руки 2 задано стендом:', ПРАВИЛО_РУКИ2);
   }
-  console.log('\n0. знайомство · крок 1 «Про тебе»:', JSON.stringify(await крокЗнайомства()));
+  const к1 = await крокЗнайомства();
+  console.log('\n0. знайомство · крок 1 «Про тебе»:', JSON.stringify(к1));
   /* Кольори — ТИМ САМИМ ручним шляхом, що й жінка без мосту: розкривач «Інший
      шлях — через будь-який чат-помічник», вставлена відповідь чату, кнопка
      «Застосувати кольори». Фото портрета в стенді нема, тож шлях «Зчитати
@@ -2848,7 +2863,8 @@ function підсумокМоделі(){
      каже «Спершу додай портрет», і крок законно пропускається («Можна
      пропустити й повернутись пізніше»). Це не обхід: це та сама дорога. */
   await чекатиСтан(стор, 'екран 1 профілю (ЕКРАН)', () => ЕКРАН === 1, null, 30000);
-  console.log('   крок 2 «Що тобі до лиця»:', JSON.stringify(await крокЗнайомства()));
+  const к2 = await крокЗнайомства();
+  console.log('   крок 2 «Що тобі до лиця»:', JSON.stringify(к2));
   await знімок('ekran_znaiomstvo_2_do_lytsia', '#е-лице');
   await зібратиТекст('знайомство 2 «Що тобі до лиця»', '#е-лице');
   await стор.click('#н-далі');
@@ -2861,7 +2877,9 @@ function підсумокМоделі(){
     await стор.fill('#' + і, String(v));
   const к3 = await крокЗнайомства();
   console.log('   крок 3 «Фігура»:', JSON.stringify(к3));
-  ф('знайомство — рівно три кроки, і «Готово» стоїть лише на третьому', к3.екран === 2 && к3.кнопка === 'Готово', к3);
+  ф('знайомство — рівно три кроки, і «Готово» стоїть лише на третьому',
+    к1.екран === 0 && к1.кнопка === 'Далі' && к2.екран === 1 && к2.кнопка === 'Далі'
+      && к3.екран === 2 && к3.кнопка === 'Готово', [к1, к2, к3]);
   await знімок('ekran_znaiomstvo_3_fihura', '#е-мірки');
   await зібратиТекст('знайомство 3 «Фігура»', '#е-мірки');
   await стор.click('#н-далі');
@@ -3917,15 +3935,8 @@ function підсумокМоделі(){
     const кадр = () => new Promise(р => requestAnimationFrame(() => requestAnimationFrame(р)));
     window.scrollTo(0, document.documentElement.scrollHeight);
     await кадр();
-    /* РЯДОК 931: без `ZNIMKY` панель у мить виміру ще не закріплена (`position` ≠ fixed, висота 208), і умовна
-       звірка нижче мовчки не вмикалась (84 ✔ проти 85 зі знімками). Чекаємо, доки панель стане `fixed` на всю
-       ширину, до 2 с (на ноутбуці вона так і не стане — тоді міряємо як є), і прокручуємо до низу знову. */
-    const пан = () => document.getElementById('ніг');
-    for (let і = 0, т0 = Date.now(); Date.now() - т0 < 2000; і++){
-      const п_ = пан();
-      if (п_ && getComputedStyle(п_).position === 'fixed' && Math.round(п_.getBoundingClientRect().width) >= window.innerWidth - 1) break;
-      await new Promise(р => setTimeout(р, 100));
-    }
+    /* Обробник прокрутки та малювання проходять кадрами браузера. Геометрію читаємо після них. */
+    await кадр();
     window.scrollTo(0, document.documentElement.scrollHeight);
     await кадр();
     const к = document.getElementById('зб-зібрати'), п = document.getElementById('ніг');
@@ -4033,7 +4044,7 @@ function підсумокМоделі(){
   if (намірУПаспорті !== НАМІР_СТЕНДА)
     console.log('   ⚠ просили намір «' + НАМІР_СТЕНДА + '», паспорт узяв «' + намірУПаспорті + '»');
   console.log('   рука 1: картка за ' + рука1За + ' (від запити) · намір паспорта ' + намірУПаспорті);
-  await чекатиСтан(стор, 'чотири картки чи збій', "document.querySelectorAll('#картки .картка').length >= 4 || "
+  await чекатиСтан(стор, 'збирання завершено й чотири картки чи збій', ВИРАЗ_ЗАВЕРШЕНО + ' || '
       + ВИРАЗ_ЗБОЮ, null, 900000);
   const збій = await стор.evaluate(() => ({статус: (document.getElementById('зб-статус') || {}).textContent || '', поломка: ЗБ.поломка && ЗБ.поломка.назва, карток: document.querySelectorAll('#картки .картка').length}));
   console.log('\n2. збирання (сід ' + СІД + ') за', ч(), '· поломка руки 2:', JSON.stringify(збій.поломка), '· статус:', JSON.stringify(збій.статус.slice(0, 160)));
@@ -4052,7 +4063,7 @@ function підсумокМоделі(){
     const с = await стор.evaluate(() => ({стадії: ЗБ.стадії, етап: ЗБ.етап, діагноз: (ЗБ.діагноз || []).slice(-2), статус: (document.getElementById('зб-статус') || {}).textContent}));
     console.log('   … ' + ч() + ' стадії ' + JSON.stringify(с.стадії) + ' етап ' + JSON.stringify(с.етап) + ' статус ' + JSON.stringify(String(с.статус || '').slice(0, 160)) + ' діагноз ' + JSON.stringify(с.діагноз).slice(0, 300));
   } catch (e) { console.log('   … ' + ч() + ' (стан недоступний: ' + String(e).slice(0, 80) + ')'); } }, 30000);
-  await чекатиСтан(стор, 'чотири картки чи збій', "document.querySelectorAll('#картки .картка').length >= 4 || "
+  await чекатиСтан(стор, 'збирання завершено й чотири картки чи збій', ВИРАЗ_ЗАВЕРШЕНО + ' || '
       + ВИРАЗ_ЗБОЮ, null, 1500000);
   clearInterval(поступ);
   if (знімкиЗб) clearInterval(знімкиЗб);
@@ -4315,7 +4326,8 @@ function підсумокМоделі(){
     видимі.every(т => !/[\[\]{}]/.test(т) && !/```/.test(т)),
     видимі.map(т => (т.match(/[\[\]{}]|```/) || [])[0]));
   ф('картки рук 1–2 і 3–4 відрізняються з першого погляду (рядок «Разом», кнопка «не ця») — ціна Р-4',
-    с2.дом.some(д => д.разом) && с2.дом.some(д => !д.разом), с2.дом.map(д => [д.разом, д.картинок]));
+    с2.дом.length === 4 && с2.дом.every((д, і) => с2.картки[і].рука <= '2' ? д.разом : !д.разом),
+    с2.дом.map((д, і) => [с2.картки[і].рука, д.разом, д.картинок]));
   /* НОВА ЗВІРКА (19.09.2026). Стенд доти НЕ ПИТАВ найпростішого: чи доїхав до
      картки образ, який код сам прийняв. На 12 сідах поспіль у діагнозі стояло
      «на картку йде образ, який код не прийняв», і всі звірки при цьому лишались
@@ -4459,10 +4471,12 @@ function підсумокМоделі(){
   const с2в = await стор.evaluate(async () => {
     const усі = () => [...document.querySelectorAll('#картки .питання-коду')];
     if (!усі().length) return null;
-    усі()[0].open = true; await new Promise(р => setTimeout(р, 80));
+    усі()[0].open = true;
+    await new Promise(р => requestAnimationFrame(() => requestAnimationFrame(р)));
     const по_дотику = усі().map(д => д.open);
     рендер(); const по_рендеру = усі().map(д => д.open);
-    усі()[0].open = false; await new Promise(р => setTimeout(р, 80));
+    усі()[0].open = false;
+    await new Promise(р => requestAnimationFrame(() => requestAnimationFrame(р)));
     const по_згортанню = усі().map(д => д.open);
     return {по_дотику, по_рендеру, по_згортанню};
   });
@@ -6167,7 +6181,8 @@ function підсумокМоделі(){
       console.log('   повтор речей попередніх зборів: ' + повтор.length + ' ' + JSON.stringify(повтор));
       console.log('   діагноз: ' + JSON.stringify(діаг));
       ф('збір ' + (з + 1) + ': речі карток попередніх зборів пішли в міст полем `вже_були`',
-        шле.поле.length > 0 && шле.поле.length === шле.набір.length, шле.поле.length);
+        шле.поле.length > 0 && шле.поле.length === шле.набір.length
+          && шле.набір.every(ід => шле.поле.includes(ід)), шле);
       ф('збір ' + (з + 1) + ': тиск різноманітності названий у діагнозі',
         /* рядок 1456: код діагнозу `pool · diversity · from_previous=N · moved_to_slot_end=…`, а не фраза */
         діаг.some(р => /^pool · diversity · from_previous=[1-9]/.test(р) || /різноманітність: речей попередніх зборів/.test(р)), діаг);
