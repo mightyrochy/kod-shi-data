@@ -1,0 +1,37 @@
+── ПРОМПТ (2422 симв.) ──
+{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.", "A slot the description says is not needed is not an item: give it worn false. One item carries one thing — of two alternatives list the first; a note in brackets is not an item.", "Slot \"accessory\" is for an item no other slot fits.", "\"is_outfit\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note; then items is empty."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "ITEM_LIST", "answer_schema": {"is_outfit": "yes|no", "items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory", "color_hex": "<#rrggbb or null>", "worn": "<true, or false when the description says the outfit goes without it>"}]}, "input": ["\"description\" — the outfit description"]}, "description": "Wool blend pea coat, boxy cut with a straight hemline reaching mid-thigh, navy blue (#000080), dense felted wool.\nHigh-waisted wool trousers, straight leg width, ankle length just above the shoe line, charcoal grey (#36454F), heavy tweed fabric.\nRibbed merino crewneck knit, crew neck depth, hip-length hemline, forest green (#228B22), soft cashmere blend.\nLoafers with a low block heel, almond toe shape, ankle height, dark brown leather with rubber soles for traction on snow.\nThis outfit works because the pea coat provides essential warmth against the -10°C temperature and slippery snowy conditions while the rubber-soled loafers ensure safety during your 20-minute walk to work. The structured wool trousers and ribbed knit offer a polished yet comfortable \"neat\" look suitable for a daily commute without feeling restrictive in cold weather. Each piece is chosen from heat-retentive fabrics like heavy tweed and merino to keep you warm, while the dark neutral palette creates a professional silhouette that transitions seamlessly from the street to the office."}
+
+── ВІДПОВІДЬ (942 симв., 71.5 с, HTTP 200) ──
+{
+  "is_outfit": "yes",
+  "items": [
+    {
+      "name": "pea coat",
+      "details": "boxy cut with a straight hemline reaching mid-thigh, dense felted wool",
+      "slot": "outerwear",
+      "color_hex": "#000080",
+      "worn": true
+    },
+    {
+      "name": "wool trousers",
+      "details": "high-waisted with a straight leg width and ankle length just above the shoe line, heavy tweed fabric",
+      "slot": "bottom",
+      "color_hex": "#36454F",
+      "worn": true
+    },
+    {
+      "name": "ribbed merino crewneck knit",
+      "details": "crew neck depth with a hip-length hemline, soft cashmere blend",
+      "slot": "top",
+      "color_hex": "#228B22",
+      "worn": true
+    },
+    {
+      "name": "loafers",
+      "details": "low block heel with an almond toe shape and ankle height, dark brown leather with rubber soles for traction on snow",
+      "slot": "shoes",
+      "color_hex": "#654321",
+      "worn": true
+    }
+  ]
+}
