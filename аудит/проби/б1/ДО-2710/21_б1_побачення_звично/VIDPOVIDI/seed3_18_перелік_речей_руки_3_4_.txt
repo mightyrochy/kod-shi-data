@@ -1,0 +1,51 @@
+── ПРОМПТ (2557 симв.) ──
+{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.", "A slot the description says is not needed is not an item: give it worn false. One item carries one thing — of two alternatives list the first; a note in brackets is not an item.", "Slot \"accessory\" is for an item no other slot fits.", "\"is_outfit\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note; then items is empty."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "ITEM_LIST", "answer_schema": {"is_outfit": "yes|no", "items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory", "color_hex": "<#rrggbb or null>", "worn": "<true, or false when the description says the outfit goes without it>"}]}, "input": ["\"description\" — the outfit description"]}, "description": "A structured blazer in a deep olive green with a tailored fit and single-breasted front, crafted from a fine wool blend with a subtle herringbone weave.\nHigh-waisted trousers in charcoal grey featuring a straight leg cut and a clean flat front, made from soft but sturdy cotton twill that holds its shape all evening.\nA crisp white silk-blend blouse with a slightly exaggerated collar and button-front closure, offering a touch of elegance without appearing too stiff.\nAnkle boots in polished black leather with a 6 cm block heel to ensure comfort during dinner while maintaining height.\nDelicate gold hoop earrings and a slim leather clutch to complete the look without overwhelming the outfit.\n\nThis outfit works because it perfectly balances the smart dress code required for an evening restaurant date with the relaxed vibe of a casual venue, creating an approachable yet polished silhouette. The deep olive blazer adds a sophisticated pop of autumn color that complements her warm skin tone, while the dark trousers ground the ensemble for the late 19:30 timing. Choosing a block heel in the ankle boots ensures she can walk comfortably through the restaurant without sacrificing style or posture."}
+
+── ВІДПОВІДЬ (1143 симв., 84.1 с, HTTP 200) ──
+{
+  "is_outfit": "yes",
+  "items": [
+    {
+      "name": "blazer",
+      "details": "structured, tailored fit, single-breasted front, fine wool blend with subtle herringbone weave",
+      "slot": "outerwear",
+      "color_hex": "#3d4f28",
+      "worn": true
+    },
+    {
+      "name": "trousers",
+      "details": "high-waisted, straight leg cut, clean flat front, soft but sturdy cotton twill",
+      "slot": "bottom",
+      "color_hex": "#36454F",
+      "worn": true
+    },
+    {
+      "name": "blouse",
+      "details": "crisp white silk-blend, slightly exaggerated collar, button-front closure",
+      "slot": "top",
+      "color_hex": "#FFFFFF",
+      "worn": true
+    },
+    {
+      "name": "ankle boots",
+      "details": "polished black leather, 6 cm block heel",
+      "slot": "shoes",
+      "color_hex": "#000000",
+      "worn": true
+    },
+    {
+      "name": "earrings",
+      "details": "delicate gold hoop",
+      "slot": "earrings",
+      "color_hex": "#FFD700",
+      "worn": true
+    },
+    {
+      "name": "clutch",
+      "details": "slim leather",
+      "slot": "bag",
+      "color_hex": null,
+      "worn": true
+    }
+  ]
+}
