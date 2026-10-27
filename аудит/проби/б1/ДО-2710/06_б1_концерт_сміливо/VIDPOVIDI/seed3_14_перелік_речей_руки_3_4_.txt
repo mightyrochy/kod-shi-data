@@ -1,0 +1,30 @@
+── ПРОМПТ (2141 симв.) ──
+{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.", "A slot the description says is not needed is not an item: give it worn false. One item carries one thing — of two alternatives list the first; a note in brackets is not an item.", "Slot \"accessory\" is for an item no other slot fits.", "\"is_outfit\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note; then items is empty."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "ITEM_LIST", "answer_schema": {"is_outfit": "yes|no", "items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory", "color_hex": "<#rrggbb or null>", "worn": "<true, or false when the description says the outfit goes without it>"}]}, "input": ["\"description\" — the outfit description"]}, "description": "Velvet slip dress, bias-cut silhouette reaching mid-calf length, deep emerald green with hex code #043927, fluid woven fabric.\nChunky stiletto pumps, pointed-toe shape in matte black leather with hex code #1C1C1C.\nChunky gold metal cuff bracelet, wide band design, polished brass finish with hex code #D4AF37.\n\nThis outfit transforms a standard rock concert look into an undeniable statement of confidence and style. The emerald velvet catches the vibrant club lights while commanding attention without overshadowing the band's performance. The bias cut accentuates the figure gracefully for walking through crowds, ensuring she feels powerful and expressive all night long. This ensemble perfectly balances bold glamour with the edge required to stand out in a lively evening atmosphere."}
+
+── ВІДПОВІДЬ (626 симв., 53.1 с, HTTP 200) ──
+{
+  "is_outfit": "yes",
+  "items": [
+    {
+      "name": "Velvet slip dress",
+      "details": "bias-cut silhouette reaching mid-calf length, fluid woven fabric",
+      "slot": "dress",
+      "color_hex": "#043927",
+      "worn": true
+    },
+    {
+      "name": "Chunky stiletto pumps",
+      "details": "pointed-toe shape, matte black leather",
+      "slot": "shoes",
+      "color_hex": "#1C1C1C",
+      "worn": true
+    },
+    {
+      "name": "Chunky gold metal cuff bracelet",
+      "details": "wide band design, polished brass finish",
+      "slot": "bracelet",
+      "color_hex": "#D4AF37",
+      "worn": true
+    }
+  ]
+}
