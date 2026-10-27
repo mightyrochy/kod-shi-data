@@ -1,0 +1,37 @@
+── ПРОМПТ (2760 симв.) ──
+{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.", "A slot the description says is not needed is not an item: give it worn false. One item carries one thing — of two alternatives list the first; a note in brackets is not an item.", "Slot \"accessory\" is for an item no other slot fits.", "\"is_outfit\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note; then items is empty."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "ITEM_LIST", "answer_schema": {"is_outfit": "yes|no", "items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory", "color_hex": "<#rrggbb or null>", "worn": "<true, or false when the description says the outfit goes without it>"}]}, "input": ["\"description\" — the outfit description"]}, "description": "She requests a cocktail dress, but the requested formality level is \"everyday,\" which typically implies jeans or a t-shirt. However, her specific wish for a \"cocktail dress\" combined with an evening date night overrides the generic formality label, so we will select a refined everyday-appropriate mini or midi dress that strikes a balance between special occasion and classic restraint. The fabric needs to be substantial enough to handle wind and rain while remaining elegant.\n\nSilk-blend crepe sheath dress, A-line cut above the knee, color navy blue (#1a237e), matte finish with slight water resistance\nLeather ankle boots, pointed toe, mid-calf height, color charcoal gray (#36454f), smooth grain\nGold-plated minimalist drop earrings, small hoops, color metallic gold (#ffd700)\nCompact transparent trench coat, belted fit, color black (#000000), coated cotton-blend for rain protection\n\nThis outfit respects her desire for a cocktail dress by choosing a classic sheath silhouette in a deep, moody navy that feels both elegant and restrained. The ankle boots and leather accents ground the look appropriately for an evening date while providing necessary coverage against the cold wind and rain at +9 °C. By avoiding excessive shine or heavy embellishments, the style remains timeless and composed, perfectly suiting her request for a serious yet flattering classic look for the movie and dinner."}
+
+── ВІДПОВІДЬ (831 симв., 60.1 с, HTTP 200) ──
+{
+  "is_outfit": "yes",
+  "items": [
+    {
+      "name": "Silk-blend crepe sheath dress",
+      "details": "A-line cut above the knee, matte finish with slight water resistance",
+      "slot": "dress",
+      "color_hex": "#1a237e",
+      "worn": true
+    },
+    {
+      "name": "Leather ankle boots",
+      "details": "Pointed toe, mid-calf height, smooth grain",
+      "slot": "shoes",
+      "color_hex": "#36454f",
+      "worn": true
+    },
+    {
+      "name": "Gold-plated minimalist drop earrings",
+      "details": "Small hoops",
+      "slot": "earrings",
+      "color_hex": "#ffd700",
+      "worn": true
+    },
+    {
+      "name": "Compact transparent trench coat",
+      "details": "Belted fit, coated cotton-blend for rain protection",
+      "slot": "outerwear",
+      "color_hex": "#000000",
+      "worn": true
+    }
+  ]
+}
