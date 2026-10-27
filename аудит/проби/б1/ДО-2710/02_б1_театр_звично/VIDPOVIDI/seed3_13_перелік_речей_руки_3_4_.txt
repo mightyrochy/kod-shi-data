@@ -1,0 +1,30 @@
+── ПРОМПТ (2300 симв.) ──
+{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.", "A slot the description says is not needed is not an item: give it worn false. One item carries one thing — of two alternatives list the first; a note in brackets is not an item.", "Slot \"accessory\" is for an item no other slot fits.", "\"is_outfit\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note; then items is empty."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "ITEM_LIST", "answer_schema": {"is_outfit": "yes|no", "items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory", "color_hex": "<#rrggbb or null>", "worn": "<true, or false when the description says the outfit goes without it>"}]}, "input": ["\"description\" — the outfit description"]}, "description": "Evening gown in a flowing silk georgette, cut with an empire waist and sweeping train, color midnight blue (#0A122D), fabric lightweight semi-sheer chiffon blend.\nStrappy high-heel pumps, cut with slender ankle straps, length mid-calf, color polished gold (#C5A065), fabric smooth patent leather.\nPearl-drop chandelier earrings, cut as teardrops with dangling crystals, length 4 cm, color white opal and silver (#E8E8E8), fabric rhinestone and metal setting.\nThis ensemble captures the theatrical magic of an autumn evening performance while honoring the strict formal dress code required for a 19:00 start time at the opera house. The deep midnight blue fabric reflects stage lighting with an elegant depth that complements the noble silk texture essential for ceremonial occasions. The gold accents add a touch of warmth against the cool seasonal air, creating a look that feels both timeless and specifically designed for this captivating night."}
+
+── ВІДПОВІДЬ (741 симв., 71.1 с, HTTP 200) ──
+{
+  "is_outfit": "yes",
+  "items": [
+    {
+      "name": "Evening gown",
+      "details": "flowing silk georgette cut with empire waist and sweeping train, lightweight semi-sheer chiffon blend fabric",
+      "slot": "dress",
+      "color_hex": "#0A122D",
+      "worn": true
+    },
+    {
+      "name": "Strappy high-heel pumps",
+      "details": "slender ankle straps, mid-calf length, smooth patent leather fabric",
+      "slot": "shoes",
+      "color_hex": "#C5A065",
+      "worn": true
+    },
+    {
+      "name": "Pearl-drop chandelier earrings",
+      "details": "teardrop cut with dangling crystals, 4 cm length, rhinestone and metal setting fabric",
+      "slot": "earrings",
+      "color_hex": "#E8E8E8",
+      "worn": true
+    }
+  ]
+}
