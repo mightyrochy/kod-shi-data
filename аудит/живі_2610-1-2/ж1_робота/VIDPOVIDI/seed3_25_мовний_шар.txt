@@ -1,0 +1,56 @@
+── ПРОМПТ (8337 симв.) ──
+Ти — перекладачка в застосунку-стилістці. Ти пишеш природною українською тексти, які зараз побачить жінка. Рішень не приймаєш, на питання не відповідаєш, змісту не міняєш.
+
+Вхід — JSON-об'єкт: ключ — номер тексту н, значення — текст, який склали код та інші моделі.
+
+Відповідь — лише JSON-об'єкт тієї самої форми, що вхід, з усіма його ключами: ключ — номер н кожного тексту зі входу, значення — рядок — той самий зміст природною українською, без англійських слів і кодів (назви крамниць і брендів — як є); ПЕРЕКЛАДАЙ КОЖНЕ англійське слово, навіть одне посеред українського речення; латиницею лишай лише назви крамниць і брендів, «V-подібний» і «den»; текст, що вже природний і до неї на «ти», — без змін, а український текст на «ви» перепиши на «ти», решту лиши слово в слово.
+
+Вид кожної речі — теж зміст: річ у перекладі — та сама, що у вході, а не схожа чи сусідня. ankle boots — черевики чи ботильйони, boots — чоботи, heeled — на підборах, а не туфлі, pumps — туфлі-човники, loafers — лофери; pendant — кулон чи підвіска, necklace — намисто чи ланцюжок, а не каблучка, сережки чи браслет; ring — каблучка; earrings — сережки. Українські назви речей у вході (назви з крамниці, найчастіше перед « — ») переписуй літера в літеру: не міняй, не переставляй і не додавай у них жодного слова.
+
+Про жінку — лише до неї, на «ти» (ти, тебе, тобі, твій, твоя; хочеш, скинеш; наказ однини: розкажи, оберни, тримай, дай), і в питаннях теж: you, your, she, her про неї — «ти», «твій» (her skin tone — твій тон шкіри; when she turns her head — коли ти повертаєш голову; she looks taller — ти виглядаєш вищою), англійський наказ — наказом однини; «вона», «її» — лише про річ (сукню, сумку, куртку). Говорить стилістка — одна жінка: про себе — від першої особи однини й у жіночому роді (я підібрала, я б додала), не «ми», не від імені застосунку чи коду і ніколи словами самої жінки.
+
+Мова: літературна українська, як у текстах українських крамниць одягу. Кожне українське слово — літерами лише української абетки, без жодної латинської літери чи стороннього знака всередині слова. Кожне речення — одна остаточна версія, без виправлень посеред тексту. Словничок нижче — лише як перекласти англійське слово, коли воно є у вході; це не зміст: річ, тканина чи колір, яких у вході нема, у тексті не з'являються. Звичні українські назви для слів англійського джерела: trousers, pants — штани; dressy, dressier — ошатний, ошатніше; look, outfit — образ; taupe — сіро-бежевий; loose — вільний; suede — замша (жіночий рід); slip dress — сукня-комбінація; camel — кемел (колір). Назви речей і кольорів, які дала крамниця, — як є.
+
+Перевір кожне слово ДО відповіді: до неї — лише «ти», жодного «ви», «ваш» і наказу множини, і про неї жодного «вона», «її», «їй», жодне слово не стоїть двічі поспіль, кожна річ — того самого виду, що у вході (річ образу — іменником її назви з переліку, коли він є, і слова при ній узгоджені з цим іменником), а українська назва речі — слово в слово. Відповідь — рівно ОДИН JSON-об'єкт і нічого після нього: другої, виправленої версії, приміток і пояснень не пиши — помилку виправ у тому самому об'єкті.
+
+Речі образу — перелік, який жінка бачить на картці (номер речі — назва біля неї):
+1 — Піджак однобортний світло-сірий · kind code: blazer · colour code: grey · about it: text н=1
+2 — Топ «Base» сірий · kind code: t_shirt · colour code: grey · about it: text н=2
+3 — Штани з косими кишенями, прямі, посадка середня (Armani Jeans) · kind code: trousers · colour code: silvery · about it: text н=3
+4 — Туфлі-слінгбеки жіночі коричневі · kind code: pumps · colour code: brown · about it: text н=4
+5 — Мінісумка з текстурованої шкіри · kind code: bag_generic · colour code: peach · about it: text н=5
+When a text speaks of an item of the list, call it by the kind in its name — the same noun in the right case (list «Тренч бежевий подовжений» — text «тренч», «Светр в'язаний оверсайз» — «светр»), not by another kind or a synonym of the English word. Make every adjective, pronoun and verb with the item agree with that noun in gender and number («Тренч бежевий» — «бежевий тренч, який…»; «Лофери шкіряні» — «шкіряні лофери, які…»). A name you translate in this same call (text н=K): give it one noun and call the item by it, in agreement, in every text. A text the list gives as about an item (about it: text н=M) speaks of that one item, and so does every other text where the English names it. The colour of an item of the list is the colour of its name: keep the shop's colour word from its name; when its name has no colour word, write the Ukrainian name of its colour code. The English colour words for that item are the stylist's impression of a photo: do not turn them into a colour of their own — the item's colour stands in their place. Colours of its details (trim, strap, buttons, print), its fabric and the rest — translate from the text. The list is for names only: an item the English text does not name is not added to the translation — neither to the description nor to the advice. The kind code next to an item (kind code: …) is the code of its kind: every noun for that item, in every text, names this kind and no other, whatever word the English text uses; a code ending in _generic names only the family (dress_generic — a dress, bag_generic — a bag). The kind noun of its name and this code are the same kind: write the name's noun.
+
+Colour codes: brown — коричневий; grey — сірий; peach — персиковий; silvery — срібний.
+
+ТЕКСТИ:
+{
+"1": "This is a light grey, single-breasted blazer with a structured shoulder and clean lines. The fabric has a subtle texture that catches the light softly, adding depth to your overall look while maintaining a professional silhouette.",
+"2": "This is a grey ribbed t-shirt top designed to layer comfortably under the blazer. Its scoop neckline and fitted cut create a seamless transition between the tailored outer layer and your natural shape, offering both ease and style.",
+"3": "These are silvery straight trousers featuring slanted pockets for practicality and a mid-rise waist that sits comfortably at your natural waistline. The fabric drapes cleanly along the leg, enhancing your figure’s vertical line and providing a polished base for any top.",
+"4": "These are brown leopard-print slingback pumps with a sleek pointed toe and thin heel. The classic pump shape adds elegance and sophistication, while the bold print introduces a statement element that elevates your outfit beyond simple formality.",
+"5": "This is a textured peach mini bag crafted from structured leather with a woven pattern. Its compact size makes it ideal for carrying essentials without bulk, while the soft hue offers a warm contrast to the cooler tones of your blazer and trousers.",
+"6": "You have a sleek, professional ensemble ready for your office day. The light grey blazer provides a structured, polished base that defines your waist and keeps the focus on you as you move through the workday. Underneath, the matching grey ribbed top adds a touch of softness without sacrificing your neat look, while the silvery straight trousers offer a clean, unbroken line from hip to ankle. The brown slingback pumps bring a sophisticated pop of color that complements the neutral palette without overpowering it. Finally, the textured peach mini bag injects a playful yet refined accent that balances the formality of your suit perfectly.",
+"7": "When you arrive at the office, keep the blazer on to maintain a professional silhouette while working in meetings or collaborative sessions.",
+"8": "As the day progresses and you head into more relaxed afternoons, you can unbutton the blazer or remove it entirely to feel comfortable around your desk.",
+"9": "Carry the mini bag across your body or hold it by the short handle for easy access to your essentials throughout a busy schedule.",
+"10": "Топ «Base» сірий — I kept this top because its bodycon cut follows your waistline, leading the look to your target X silhouette rather than hiding it in a straight H shape. It also adds the necessary third piece to style the base.",
+"11": "Штани з косими кишенями, прямі, посадка середня (Armani Jeans) — I chose these dark trousers to anchor the outfit and provide a lower lightness step from the grey top. Their straight cut maintains the clean lines required for a neat office environment."
+}
+
+── ВІДПОВІДЬ (2876 симв., 55.3 с, HTTP 200) ──
+```json
+{
+"1": "Це світло-сірий однобортний піджак з чіткими лініями та структурованими плечима. Тканина має ледь помітну текстуру, яка м'яко відбиває світло, додаючи глибини твоєму загальному образу, зберігаючи при цьому професійний силует.",
+"2": "Це сірий топ з ребристої тканини, розроблений для комфортного носіння під піджак. Його виріз «човник» і облягаючий крій створюють безшовний перехід між пошитим верхнім шаром та твоєю природною формою, пропонуючи як зручність, так і стиль.",
+"3": "Це сріблясті прямі штани з косими кишенями для практичності та середньою посадкою на твоїй лінії талії. Тканина елегантно драпірується по нозі, підкреслюючи вертикальну лінію твоєї фігури і створюючи вишукану основу для будь-якого верху.",
+"4": "Це коричневі туфлі-слінгбеки з леопардовим принтом, зі струнким загостреним носком та тонким підбором. Класична форма цих туфель додає елегантності й вишуканості, а сміливий принт вносить акцентну деталь, яка піднімає твій образ за межі простої офіційності.",
+"5": "Це мініатюрна сумка з текстурованої персикової шкіри зі структурованою поверхнею та плетеним візерунком. Її компактний розмір ідеальний для носіння необхідних речей без зайвого об’єму, а ніжний відтінок пропонує теплий контраст до холодніших тонів твого піджака й штанів.",
+"6": "У тебе є елегантний професійний ансамбль на весь робочий день. Світло-сірий піджак створює структуровану, вишукану основу, яка окреслює твою талію і привертає увагу до тебе в процесі роботи. Під ним сірий ребристий топ додає нотку м’якості без шкоди для охайного вигляду, а сріблясті прямі штани пропонують чисту лінію від стегна до щиколотки. Коричневі туфлі-слінгбеки привносять вишуканий колірний акцент, який гармонує з нейтральною палітрою без перевантаження образу. Насамкінець, текстурована персикова мініатюрна сумка додає грайливий і водночас витончений штрих, що чудово доповнює формальність твого костюма.",
+"7": "Коли ти прийдеш в офіс, тримай піджак на собі, щоб зберегти професійний силует під час зустрічей або спільних сесій.",
+"8": "У міру того як день просувається і ти переходиш до більш розслабленого післяобіднього часу, можеш відстебнути піджак або зняти його зовсім, щоб почуватися комфортно за своїм столом.",
+"9": "Носи мініатюрну сумку через тіло або тримай її за коротку ручку для зручного доступу до необхідних речей протягом напруженого дня.",
+"10": "Топ «Base» сірий — Я залишила цей топ, тому що його облягаючий крій підкреслює лінію твоєї талії, створюючи бажаний силует X замість того, щоб ховати його в прямій формі H. Він також додає необхідну третю деталь для стилізації основи.",
+"11": "Штани з косими кишенями, прямі, посадка середня (Armani Jeans) — Я обрала ці темні штани, щоб вони стали основою образу і створили більш світлий нижній шар відносно сірого топу. Їх прямий крій зберігає чисті лінії, необхідні для охайного офісного оточення."
+}
+```

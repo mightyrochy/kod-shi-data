@@ -1,0 +1,37 @@
+── ПРОМПТ (2480 симв.) ──
+{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.", "A slot the description says is not needed is not an item: give it worn false. One item carries one thing — of two alternatives list the first; a note in brackets is not an item.", "Slot \"accessory\" is for an item no other slot fits.", "\"is_outfit\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note; then items is empty."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "ITEM_LIST", "answer_schema": {"is_outfit": "yes|no", "items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory", "color_hex": "<#rrggbb or null>", "worn": "<true, or false when the description says the outfit goes without it>"}]}, "input": ["\"description\" — the outfit description"]}, "description": "Cream blouse in a soft silk-blend with a relaxed fit and a rounded neckline, #fdfbf7, light cotton-silk weave.\nTailored wool-blend trousers with a straight leg and a subtle front pleat, #8c7e6b, heavy mid-weight wool.\nStructured blazer with notch lapels and two flap pockets, #6f5d4b, textured tweed fabric.\nLeather ankle boots with a low block heel and a pointed toe, #3a2f25, smooth calfskin leather.\n\nThis ensemble strikes the perfect balance for a professional autumn day at the office while respecting her neat dress code and seasonal preferences. The cream blouse provides a soft, approachable focal point that complements her warm skin tones without being too stark, allowing the textured tweed blazer to add necessary structure and sophistication for the workplace. The wool-blend trousers offer warmth against the fall chill while maintaining a clean silhouette that aligns with business-casual standards. Completing the look with understated ankle boots ensures she remains comfortable throughout the day without compromising on her polished appearance, creating an outfit that feels both intentional and effortless."}
+
+── ВІДПОВІДЬ (762 симв., 105.2 с, HTTP 200) ──
+{
+  "is_outfit": "yes",
+  "items": [
+    {
+      "name": "blouse",
+      "details": "soft silk-blend relaxed fit rounded neckline",
+      "slot": "top",
+      "color_hex": "#fdfbf7",
+      "worn": true
+    },
+    {
+      "name": "trousers",
+      "details": "tailored wool-blend straight leg subtle front pleat",
+      "slot": "bottom",
+      "color_hex": "#8c7e6b",
+      "worn": true
+    },
+    {
+      "name": "blazer",
+      "details": "structured notch lapels two flap pockets textured tweed fabric",
+      "slot": "outerwear",
+      "color_hex": "#6f5d4b",
+      "worn": true
+    },
+    {
+      "name": "boots",
+      "details": "leather ankle low block heel pointed toe",
+      "slot": "shoes",
+      "color_hex": "#3a2f25",
+      "worn": true
+    }
+  ]
+}

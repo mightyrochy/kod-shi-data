@@ -1,0 +1,30 @@
+── ПРОМПТ (2208 симв.) ──
+{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.", "A slot the description says is not needed is not an item: give it worn false. One item carries one thing — of two alternatives list the first; a note in brackets is not an item.", "Slot \"accessory\" is for an item no other slot fits.", "\"is_outfit\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note; then items is empty."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "ITEM_LIST", "answer_schema": {"is_outfit": "yes|no", "items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory", "color_hex": "<#rrggbb or null>", "worn": "<true, or false when the description says the outfit goes without it>"}]}, "input": ["\"description\" — the outfit description"]}, "description": "A tailored blouse in a crisp white cotton-poplin with a classic pointed collar and button-front closure.\nStraight-leg trousers in charcoal gray wool-blend suiting, offering a relaxed yet structured fit from hip to hem.\nLoafers in smooth cognac leather with a low stacked heel and minimal metal hardware on the strap.\nThis outfit works because the white blouse brings a fresh, professional brightness that contrasts elegantly with the dark grey trousers for a balanced silhouette. The wool-blend fabric provides essential warmth for an autumn day while maintaining the breathability needed for an office environment throughout the workday. Completing the look with cognac loafers adds a touch of refined warmth and approachability that aligns perfectly with a neat business dress code without requiring an outer layer given the moderate season temperatures."}
+
+── ВІДПОВІДЬ (657 симв., 106.1 с, HTTP 200) ──
+{
+  "is_outfit": "yes",
+  "items": [
+    {
+      "name": "blouse",
+      "details": "tailored cut, classic pointed collar, button-front closure in crisp white cotton-poplin",
+      "slot": "top",
+      "color_hex": "#FFFFFF",
+      "worn": true
+    },
+    {
+      "name": "trousers",
+      "details": "straight-leg fit from hip to hem in charcoal gray wool-blend suiting",
+      "slot": "bottom",
+      "color_hex": "#36454F",
+      "worn": true
+    },
+    {
+      "name": "loafers",
+      "details": "low stacked heel, smooth leather with minimal metal hardware on strap",
+      "slot": "shoes",
+      "color_hex": "#C19A6B",
+      "worn": true
+    }
+  ]
+}
