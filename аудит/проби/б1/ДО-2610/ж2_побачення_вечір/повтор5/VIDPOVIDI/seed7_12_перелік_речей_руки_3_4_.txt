@@ -1,0 +1,51 @@
+── ПРОМПТ (2487 симв.) ──
+{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.", "A slot the description says is not needed is not an item: give it worn false. One item carries one thing — of two alternatives list the first; a note in brackets is not an item.", "Slot \"accessory\" is for an item no other slot fits.", "\"is_outfit\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note; then items is empty."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "ITEM_LIST", "answer_schema": {"is_outfit": "yes|no", "items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory", "color_hex": "<#rrggbb or null>", "worn": "<true, or false when the description says the outfit goes without it>"}]}, "input": ["\"description\" — the outfit description"]}, "description": "Silk blouse in a soft blush hue (#f5e6e0), relaxed collar and fluid drape cut to flatter the bust without tightness, finished with fine-threaded silk. Tailored wool-blend blazer in deep forest green (#2d4a3e), structured yet breathable shoulder line, cropped at the waist to elongate the figure, crafted from lightweight autumn-weight wool. High-waisted pleated trousers in matching charcoal slate (#3a4540), mid-rise length hitting just above the ankle for easy movement and modern silhouette, made of crisp cotton-elastic blend. Heeled pumps in polished oxblood leather (#821f1f), classic pointed toe and stiletto heel for a sleek evening profile. Gold-tone slim chain necklace and delicate hoop earrings to add subtle sparkle without overwhelming the refined fabric textures. This ensemble balances the casual restaurant setting with smart evening formality, offering a comfortable yet polished look that respects her wish for elegance without stiffness. The neutral base tones paired with rich jewel accents reflect her warm undertones in the skin, while the structured jacket adds sophistication appropriate for an autumn date night."}
+
+── ВІДПОВІДЬ (1483 симв., 58.2 с, HTTP 200) ──
+{
+  "is_outfit": "yes",
+  "items": [
+    {
+      "name": "silk blouse",
+      "details": "relaxed collar and fluid drape cut to flatter the bust without tightness, finished with fine-threaded silk",
+      "slot": "top",
+      "color_hex": "#f5e6e0",
+      "worn": true
+    },
+    {
+      "name": "wool-blend blazer",
+      "details": "structured yet breathable shoulder line, cropped at the waist to elongate the figure, crafted from lightweight autumn-weight wool",
+      "slot": "outerwear",
+      "color_hex": "#2d4a3e",
+      "worn": true
+    },
+    {
+      "name": "pleated trousers",
+      "details": "high-waisted, mid-rise length hitting just above the ankle for easy movement and modern silhouette, made of crisp cotton-elastic blend",
+      "slot": "bottom",
+      "color_hex": "#3a4540",
+      "worn": true
+    },
+    {
+      "name": "heeled pumps",
+      "details": "classic pointed toe and stiletto heel for a sleek evening profile",
+      "slot": "shoes",
+      "color_hex": "#821f1f",
+      "worn": true
+    },
+    {
+      "name": "gold-tone slim chain necklace",
+      "details": "delicate, adding subtle sparkle without overwhelming the refined fabric textures",
+      "slot": "collar_necklace",
+      "color_hex": null,
+      "worn": true
+    },
+    {
+      "name": "hoop earrings",
+      "details": "delicate, adding subtle sparkle without overwhelming the refined fabric textures",
+      "slot": "earrings",
+      "color_hex": null,
+      "worn": true
+    }
+  ]
+}

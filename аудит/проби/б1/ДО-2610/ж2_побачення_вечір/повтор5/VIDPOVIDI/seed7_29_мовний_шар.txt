@@ -1,0 +1,51 @@
+── ПРОМПТ (7705 симв.) ──
+Ти — перекладачка в застосунку-стилістці. Ти пишеш природною українською тексти, які зараз побачить жінка. Рішень не приймаєш, на питання не відповідаєш, змісту не міняєш.
+
+Вхід — JSON-об'єкт: ключ — номер тексту н, значення — текст, який склали код та інші моделі.
+
+Відповідь — лише JSON-об'єкт тієї самої форми, що вхід, з усіма його ключами: ключ — номер н кожного тексту зі входу, значення — рядок — той самий зміст природною українською, без англійських слів і кодів (назви крамниць і брендів — як є); ПЕРЕКЛАДАЙ КОЖНЕ англійське слово, навіть одне посеред українського речення; латиницею лишай лише назви крамниць і брендів, «V-подібний» і «den»; текст, що вже природний і до неї на «ти», — без змін, а український текст на «ви» перепиши на «ти», решту лиши слово в слово.
+
+Вид кожної речі — теж зміст: річ у перекладі — та сама, що у вході, а не схожа чи сусідня. ankle boots — черевики чи ботильйони, boots — чоботи, heeled — на підборах, а не туфлі, pumps — туфлі-човники, loafers — лофери; pendant — кулон чи підвіска, necklace — намисто чи ланцюжок, а не каблучка, сережки чи браслет; ring — каблучка; earrings — сережки. Українські назви речей у вході (назви з крамниці, найчастіше перед « — ») переписуй літера в літеру: не міняй, не переставляй і не додавай у них жодного слова.
+
+Про жінку — лише до неї, на «ти» (ти, тебе, тобі, твій, твоя; хочеш, скинеш; наказ однини: розкажи, оберни, тримай, дай), і в питаннях теж: you, your, she, her про неї — «ти», «твій» (her skin tone — твій тон шкіри; when she turns her head — коли ти повертаєш голову; she looks taller — ти виглядаєш вищою), англійський наказ — наказом однини; «вона», «її» — лише про річ (сукню, сумку, куртку). Говорить стилістка — одна жінка: про себе — від першої особи однини й у жіночому роді (я підібрала, я б додала), не «ми», не від імені застосунку чи коду і ніколи словами самої жінки.
+
+Мова: літературна українська, як у текстах українських крамниць одягу. Кожне українське слово — літерами лише української абетки, без жодної латинської літери чи стороннього знака всередині слова. Кожне речення — одна остаточна версія, без виправлень посеред тексту. Словничок нижче — лише як перекласти англійське слово, коли воно є у вході; це не зміст: річ, тканина чи колір, яких у вході нема, у тексті не з'являються. Звичні українські назви для слів англійського джерела: trousers, pants — штани; dressy, dressier — ошатний, ошатніше; look, outfit — образ; taupe — сіро-бежевий; loose — вільний; suede — замша (жіночий рід); slip dress — сукня-комбінація; camel — кемел (колір). Назви речей і кольорів, які дала крамниця, — як є.
+
+Перевір кожне слово ДО відповіді: до неї — лише «ти», жодного «ви», «ваш» і наказу множини, і про неї жодного «вона», «її», «їй», жодне слово не стоїть двічі поспіль, кожна річ — того самого виду, що у вході (річ образу — іменником її назви з переліку, коли він є, і слова при ній узгоджені з цим іменником), а українська назва речі — слово в слово. Відповідь — рівно ОДИН JSON-об'єкт і нічого після нього: другої, виправленої версії, приміток і пояснень не пиши — помилку виправ у тому самому об'єкті.
+
+Речі образу — перелік, який жінка бачить на картці (номер речі — назва біля неї):
+1 — Жакет шоколадна смужка DIJON · kind code: blazer · colour code: chocolate · about it: text н=1
+2 — Спідниця плісе металік · kind code: skirt · colour code: black · about it: text н=2
+3 — Туфлі-слінгбеки жіночі лимонні · kind code: pumps · colour code: lemon · about it: text н=3
+4 — Жіноча сумка Welfare зелена · kind code: bag_generic · colour code: green · about it: text н=4
+When a text speaks of an item of the list, call it by the kind in its name — the same noun in the right case (list «Тренч бежевий подовжений» — text «тренч», «Светр в'язаний оверсайз» — «светр»), not by another kind or a synonym of the English word. Make every adjective, pronoun and verb with the item agree with that noun in gender and number («Тренч бежевий» — «бежевий тренч, який…»; «Лофери шкіряні» — «шкіряні лофери, які…»). A name you translate in this same call (text н=K): give it one noun and call the item by it, in agreement, in every text. A text the list gives as about an item (about it: text н=M) speaks of that one item, and so does every other text where the English names it. The colour of an item of the list is the colour of its name: keep the shop's colour word from its name; when its name has no colour word, write the Ukrainian name of its colour code. The English colour words for that item are the stylist's impression of a photo: do not turn them into a colour of their own — the item's colour stands in their place. Colours of its details (trim, strap, buttons, print), its fabric and the rest — translate from the text. The list is for names only: an item the English text does not name is not added to the translation — neither to the description nor to the advice. The kind code next to an item (kind code: …) is the code of its kind: every noun for that item, in every text, names this kind and no other, whatever word the English text uses; a code ending in _generic names only the family (dress_generic — a dress, bag_generic — a bag). The kind noun of its name and this code are the same kind: write the name's noun.
+
+Colour codes: black — чорний; chocolate — шоколадний; green — зелений; lemon — лимонний.
+
+ТЕКСТИ:
+{
+"1": "This is a chocolate-colored pinstripe blazer with a classic two-button front and sharp lapels. It features functional flap pockets and a rich brown lining, giving it a tailored yet relaxed feel perfect for your evening.",
+"2": "A pleated midi skirt in a shimmering metallic finish that catches the light beautifully. The high waist and flowing fabric create an elegant silhouette that drapes gracefully from your hips down to the floor.",
+"3": "These are lemon-yellow slingback pumps with a square toe, a distinctive block heel, and a decorative buckle strap across the front. The glossy leather finish adds a touch of modern polish to your ensemble.",
+"4": "This is a bright emerald green clutch bag made from textured leather with a signature silver-tone H-shaped clasp on the flap. The vibrant color and sleek profile make it an ideal evening accessory to carry essentials while keeping your hands free.",
+"5": "This evening outfit is built on a sophisticated contrast between the structured lines of the chocolate pinstripe blazer and skirt, softened by the shimmer of the metallic fabric. The pale lemon pumps offer a fresh, playful pop against the dark neutrals, while the electric green clutch acts as the perfect focal point to anchor the look for your date. It is smart enough for a restaurant yet relaxed enough to feel comfortable as you spend the evening together.",
+"6": "Wear the blazer loosely over your shoulders or with just the top button fastened to keep the silhouette airy and effortless.",
+"7": "Спідниця плісе металік — I chose this metallic black skirt to provide the required shine near the face for evening wear, fulfilling the lighting needs of the restaurant while adhering to the monochromatic chocolate palette defined by the blazer and sweater.",
+"8": "Жакет шоколадна смужка DIJON, Спідниця плісе металік, Туфлі-слінгбеки жіночі лимонні, Жіноча сумка Welfare зелена — The gate about no third piece dressed is accepted because the khaki sweater functions as a textural layer rather than a competing color block, maintaining the 'neat' formality required while softening the suit's structure without diluting the warm palette you requested.",
+"9": "Спідниця плісе металік — The metallic black skirt provides the required shine near the face for evening wear, fulfilling the day's lighting needs despite being listed as basic black."
+}
+
+── ВІДПОВІДЬ (2378 симв., 50.2 с, HTTP 200) ──
+```json
+{
+"1": "Це шоколадний блейзер у смужку з класичним двобортним ґудзиком і гострими лацканами. Він має функціональні клапани на кишенях і багату коричневу підкладку, що надає йому елегантного та розслабленого вигляду, який чудово підійде для твого вечора.",
+"2": "Плісована міді-спідниця з блискучим металевим покриттям, яке красиво відбиває світло. Висока талія і струмуюча тканина створюють елегантний силует, який витончено спадає від стегон до підлоги.",
+"3": "Це лимонно-жовті слінгбеки з квадратним носком, масивною п'ятою і декоративною пряжкою на передній частині. Блискуча шкіряна обробка додає твоєму образу сучасного шарму.",
+"4": "Це яскрава смарагдово-зелена клатч з текстурованої шкіри, прикрашена фірмовою сріблястою застібкою у формі літери H на клапані. Яскравий колір і елегантний силует роблять її ідеальним вечірнім аксесуаром для носіння необхідних речей, залишаючи твої руки вільними.",
+"5": "Цей вечірній образ побудований на вишуканому контрасті між чіткими лініями шоколадного блейзера у смужку та спідниці і сяйвом металевої тканини. Лимонні туфлі-слінгбеки додають свіжий, грайливий акцент до темних нейтральних кольорів, а смарагдова зелена клатч стає ідеальним фокусом для завершення образу на твоєму побаченні. Він досить елегантний для ресторану, але достатньо розслаблений, щоб ти почувалася комфортно протягом усього вечора.",
+"6": "Одягни блейзер вільно через плечі або застебни лише верхній ґудзик, щоб зберегти силует повітряним і невимушеним.",
+"7": "Плісована металева спідниця — Я обрала цю чорну металеву спідницю для того, щоб забезпечити необхідне сяйво біля обличчя у вечірній час, задовольняючи потреби освітлення ресторану і дотримуючись монохромної шоколадної палітри, визначеної блейзером і светром.",
+"8": "Шоколадний смугастий жакет DIJON, Плісована металева спідниця, Лимонні жіночі туфлі-слінгбеки, Зелена жіноча сумка Welfare — Відмова від третього предмета одягу прийнята, оскільки хакі светр виконує функцію текстурного шару, а не конкуруючого кольорового блоку, зберігаючи необхідний «акуратний» формальний вигляд і пом'якшуючи структуру костюма без розмивання теплої палітри, яку ти попросила.",
+"9": "Плісована металева спідниця — Металева чорна спідниця забезпечує необхідне сяйво біля обличчя у вечірній час, задовольняючи потреби освітлення дня, незважаючи на те, що вона вказана як основний чорний колір."
+}
+```
