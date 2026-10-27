@@ -4,6 +4,7 @@
 Це вимір наряду, не новий гейт. Сітка: 5 шкір × 7 очей × 3 волосся × 3 метали.
 """
 import itertools
+import importlib.util
 import json
 import pathlib
 import sys
@@ -15,6 +16,7 @@ import міст_основи as МО
 import колір_річ as КР
 import colorspace as КС
 import palettes as П
+import pipeline as К
 
 
 def зняти(вхід):
@@ -41,7 +43,12 @@ def зняти(вхід):
 
 def повтор(кольори):
     """Лічить повтор сім'ї тією самою функцією, що й K-COMP-03/K-PAL-07."""
-    записи = [dict(lab=КС.hx(к)) for к in кольори]
+    записи = []
+    for колір in кольори:
+        lab = КС.hx(колір)
+        L, C, h = КС.lch(lab)
+        if not К._нейтральний_тон(h, C, L):
+            записи.append(dict(lab=lab))
     return any(КР.та_сама_сім_я(а, б) == "так" for а, б in itertools.combinations(записи, 2))
 
 
@@ -67,6 +74,20 @@ def підсумок(персони):
 
 def головна():
     """Зберігає відтворювані входи, екран, поєднання й серіалізацію брифу."""
+    if "--сцени" in sys.argv:
+        модуль = importlib.util.spec_from_file_location("міст_до", sys.argv[2])
+        до = importlib.util.module_from_spec(модуль)
+        модуль.loader.exec_module(до)
+        сцени = []
+        for ім in ("ж4_робота", "ж1_свято_тріада", "ж5_свято_др", "ж3_театр_тріада", "ж7_театр"):
+            ж = json.loads((КОРІНЬ / "аудит/проби/жінки" / (ім[:2] + ".json")).read_text(encoding="utf-8"))
+            вхід = dict(шкіра=ж["skin"], волосся=ж["hair"], очі=ж["eyes"],
+                         очі_кільце=ж.get("ring"), обхвати={}, зріст=ж.get("мірки", {}).get("зріст"))
+            сцени.append(dict(сцена=ім, вхід=вхід, ДО=json.loads(до.палітри(вхід)),
+                               ПІСЛЯ=json.loads(М.палітри(вхід))))
+        pathlib.Path(sys.argv[1]).write_text(json.dumps(сцени, ensure_ascii=False, indent=1), encoding="utf-8")
+        print("Екрани п'яти профілів ДО/ПІСЛЯ записано; без моделі й без відтворення її вибору.")
+        return
     персони = []
     сітка = itertools.product(
         ("#f1d0b5", "#e8b99b", "#bb8561", "#8d573c", "#5a3a2a"),
