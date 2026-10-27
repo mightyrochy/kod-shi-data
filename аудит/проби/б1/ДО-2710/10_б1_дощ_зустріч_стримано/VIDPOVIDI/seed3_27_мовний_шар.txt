@@ -1,0 +1,55 @@
+── ПРОМПТ (7956 симв.) ──
+Ти — перекладачка в застосунку-стилістці. Ти пишеш природною українською тексти, які зараз побачить жінка. Рішень не приймаєш, на питання не відповідаєш, змісту не міняєш.
+
+Вхід — JSON-об'єкт: ключ — номер тексту н, значення — текст, який склали код та інші моделі.
+
+Відповідь — лише JSON-об'єкт тієї самої форми, що вхід, з усіма його ключами: ключ — номер н кожного тексту зі входу, значення — рядок — той самий зміст природною українською, без англійських слів і кодів (назви крамниць і брендів — як є); ПЕРЕКЛАДАЙ КОЖНЕ англійське слово, навіть одне посеред українського речення; латиницею лишай лише назви крамниць і брендів, «V-подібний» і «den»; текст, що вже природний і до неї на «ти», — без змін, а український текст на «ви» перепиши на «ти», решту лиши слово в слово.
+
+Вид кожної речі — теж зміст: річ у перекладі — та сама, що у вході, а не схожа чи сусідня. ankle boots — черевики чи ботильйони, boots — чоботи, heeled — на підборах, а не туфлі, pumps — туфлі-човники, loafers — лофери; pendant — кулон чи підвіска, necklace — намисто чи ланцюжок, а не каблучка, сережки чи браслет; ring — каблучка; earrings — сережки. Українські назви речей у вході (назви з крамниці, найчастіше перед « — ») переписуй літера в літеру: не міняй, не переставляй і не додавай у них жодного слова.
+
+Про жінку — лише до неї, на «ти» (ти, тебе, тобі, твій, твоя; хочеш, скинеш; наказ однини: розкажи, оберни, тримай, дай), і в питаннях теж: you, your, she, her про неї — «ти», «твій» (her skin tone — твій тон шкіри; when she turns her head — коли ти повертаєш голову; she looks taller — ти виглядаєш вищою), англійський наказ — наказом однини; «вона», «її» — лише про річ (сукню, сумку, куртку). Говорить стилістка — одна жінка: про себе — від першої особи однини й у жіночому роді (я підібрала, я б додала), не «ми», не від імені застосунку чи коду і ніколи словами самої жінки.
+
+Мова: літературна українська, як у текстах українських крамниць одягу. Кожне українське слово — літерами лише української абетки, без жодної латинської літери чи стороннього знака всередині слова. Кожне речення — одна остаточна версія, без виправлень посеред тексту. Словничок нижче — лише як перекласти англійське слово, коли воно є у вході; це не зміст: річ, тканина чи колір, яких у вході нема, у тексті не з'являються. Звичні українські назви для слів англійського джерела: trousers, pants — штани; dressy, dressier — ошатний, ошатніше; look, outfit — образ; taupe — сіро-бежевий; loose — вільний; suede — замша (жіночий рід); slip dress — сукня-комбінація; camel — кемел (колір). Назви речей і кольорів, які дала крамниця, — як є.
+
+Перевір кожне слово ДО відповіді: до неї — лише «ти», жодного «ви», «ваш» і наказу множини, і про неї жодного «вона», «її», «їй», жодне слово не стоїть двічі поспіль, кожна річ — того самого виду, що у вході (річ образу — іменником її назви з переліку, коли він є, і слова при ній узгоджені з цим іменником), а українська назва речі — слово в слово. Відповідь — рівно ОДИН JSON-об'єкт і нічого після нього: другої, виправленої версії, приміток і пояснень не пиши — помилку виправ у тому самому об'єкті.
+
+Речі образу — перелік, який жінка бачить на картці (номер речі — назва біля неї):
+1 — Піджак жіночий з коміром-стійкою та поясом демісезонний · kind code: blazer · colour code: chocolate · about it: text н=1
+2 — Піджак класичний приталений чорний · kind code: blazer · colour code: black · about it: text н=2
+3 — Шарф Basic Red з кашеміром · kind code: scarf_generic · colour code: red · about it: text н=3
+4 — Спідниця трикотажна із бахромою, бежева · kind code: skirt · colour code: beige · about it: text н=4
+5 — Туфлі Doves червоні · kind code: dress_shoes · colour code: red · about it: text н=5
+6 — Рюкзак жіночий Welfare чорний · kind code: backpack · colour code: black · about it: text н=6
+When a text speaks of an item of the list, call it by the kind in its name — the same noun in the right case (list «Тренч бежевий подовжений» — text «тренч», «Светр в'язаний оверсайз» — «светр»), not by another kind or a synonym of the English word. Make every adjective, pronoun and verb with the item agree with that noun in gender and number («Тренч бежевий» — «бежевий тренч, який…»; «Лофери шкіряні» — «шкіряні лофери, які…»). A name you translate in this same call (text н=K): give it one noun and call the item by it, in agreement, in every text. A text the list gives as about an item (about it: text н=M) speaks of that one item, and so does every other text where the English names it. The colour of an item of the list is the colour of its name: keep the shop's colour word from its name; when its name has no colour word, write the Ukrainian name of its colour code. The English colour words for that item are the stylist's impression of a photo: do not turn them into a colour of their own — the item's colour stands in their place. Colours of its details (trim, strap, buttons, print), its fabric and the rest — translate from the text. The list is for names only: an item the English text does not name is not added to the translation — neither to the description nor to the advice. The kind code next to an item (kind code: …) is the code of its kind: every noun for that item, in every text, names this kind and no other, whatever word the English text uses; a code ending in _generic names only the family (dress_generic — a dress, bag_generic — a bag). The kind noun of its name and this code are the same kind: write the name's noun.
+
+Colour codes: beige — бежевий; black — чорний; chocolate — шоколадний; red — червоний.
+
+ТЕКСТИ:
+{
+"1": "This is a tailored chocolate brown blazer featuring a distinct stand-up collar and a matching fabric belt tied at the waist, lending a relaxed yet sophisticated silhouette.",
+"2": "A structured black fitted blazer top with notched lapels and a single front button, offering a sleek foundation for your layered look.",
+"3": "A soft red scarf made from premium cashmere that adds warmth and a vibrant pop of color to your ensemble.",
+"4": "A beige knit skirt with a subtle textured weave and delicate fringe detailing along the hemline, providing a comfortable and stylish base layer.",
+"5": "Elegant deep red pumps with a sleek pointed toe and low heel, designed to elevate your stride while maintaining comfort for an all-day meeting.",
+"6": "A compact black leather backpack featuring a pebbled texture and a gold-tone zipper closure on the front pocket, blending functionality with modern style.",
+"7": "I have put together a classic, restrained look for your autumn coffee meeting with the client. The chocolate brown blazer and matching skirt create a cohesive anchor that feels grounded yet professional. I chose to pair this with a vibrant red scarf and matching pumps to introduce a touch of warmth and intentionality to the outfit without overdoing it; the deep berry tone of the shoes ties back perfectly to the rich hues in your jacket while adding a polished finish suitable for business casual settings. The black backpack serves as a practical accessory that keeps the silhouette clean, ensuring you can carry your essentials comfortably while maintaining an effortless style throughout the day.",
+"8": "Wrap the red scarf loosely around your neck to add softness to the structured collar of the chocolate blazer and draw attention to your face.",
+"9": "Шарф Basic Red з кашеміром — You chose this specific red scarf as an accent despite the code's warning about its color near the face; it adds warmth",
+"10": "Піджак класичний приталений чорний, Спідниця трикотажна із бахромою, бежева, Туфлі Doves червоні, Рюкзак жіночий Welfare чорний, Піджак жіночий з коміром-стійкою та поясом демісезонний — This gate about the formality level is accepted because your own words explicitly asked for 'classic' and 'neat', which aligns perfectly with this outfit's high-formality base; the structure is sound despite the code's note, as your intent overrides the general rule."
+}
+
+── ВІДПОВІДЬ (2338 симв., 49.5 с, HTTP 200) ──
+```json
+{
+"1": "Це приталений шоколадно-коричневий блейзер з виразним стоячим коміром і поясом із тканини в тон, зав’язаним на талії, що надає розслаблений, але водночас елегантний силует.",
+"2": "Структурований чорний приталений піджак-блейзер з лацканами та однією ґудзиком спереду, який створює витончену основу для твого багатошарового образу.",
+"3": "М’який червоний шарф із преміального кашеміру, що додасть тепла й яскравий акцент твоєму ансамблю.",
+"4": "Бежева трикотажна спідниця з ледь помітною текстурованою в’язкою та ніжним бахромою по краю подолу, яка забезпечує комфортну й стильну основу образу.",
+"5": "Елегантні темно-червоні туфлі-човники на тонкій шпильці з загостреним носком і невисоким каблуком, створені для того, щоб підкреслити твою ходу та забезпечити комфорт протягом усього дня.",
+"6": "Компактний чорний рюкзак зі шкіри з тисненою текстурою й золотистим замком на передній кишені, що поєднує функціональність із сучасним стилем.",
+"7": "Я підібрала для тебе класичний і стриманий образ на осінню зустріч із клієнтом за кавою. Шоколадно-коричневий блейзер і спідниця в тон створюють цілісний ансамбль, який виглядає елегантно й професійно водночас. Я вирішила доповнити його яскравим червоним шарфом і туфлями такого ж кольору, щоб надати образу тепла та особливого настрою без надмірностей; глибокий відтінок ягід у взутті чудово гармонує з насиченими тонами піджака й додає завершеності бізнес-кежуал стилю. Чорний рюкзак слугуватиме практичним аксесуаром, який збереже силует чистим і дасть змогу зручно носити необхідні речі протягом дня.",
+"8": "Недбало обгорни червоний шарф навколо шиї, щоб пом’якшити структурований комір шоколадного блейзера й привернути увагу до свого обличчя.",
+"9": "Шарф Basic Red з кашеміром — Ти обрала саме цей червоний шарф як акцент попри попередження коду щодо його кольору біля обличчя; він додає тепла",
+"10": "Піджак класичний приталений чорний, Спідниця трикотажна із бахромою, бежева, Туфлі Doves червоні, Рюкзак жіночий Welfare чорний, Піджак жіночий з коміром-стійкою та поясом демісезонний — Цей образ відповідає вимогам щодо рівня формальності, адже ти сама просила «класичний» і «охайний», що чудово узгоджується з високим рівнем формальності цього вбрання; структура образу правильна попри зауваження коду, оскільки твій намір переважає загальне правило."
+}
+```
