@@ -1,0 +1,51 @@
+── ПРОМПТ (2626 симв.) ──
+{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.", "A slot the description says is not needed is not an item: give it worn false. One item carries one thing — of two alternatives list the first; a note in brackets is not an item.", "Slot \"accessory\" is for an item no other slot fits.", "\"is_outfit\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note; then items is empty."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "ITEM_LIST", "answer_schema": {"is_outfit": "yes|no", "items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory", "color_hex": "<#rrggbb or null>", "worn": "<true, or false when the description says the outfit goes without it>"}]}, "input": ["\"description\" — the outfit description"]}, "description": "Black leather moto jacket, biker cut with asymmetrical zipper, cropped length at the waist, black (#000000), nappa leather\nHigh-waisted dark denim jeans, straight leg cut, full length reaching the ankle, indigo wash (#191970), stretch cotton twill\nWhite fitted t-shirt, slim crew-neck cut, short length ending mid-belly, pure white (#FFFFFF), 100% organic cotton jersey\nChunky black platform sneakers, rounded toe cut, high ankle length, matte black (#2F4F4F), suede and rubber\nSilver chain-link choker necklace, rigid geometric cut, short length resting on the collarbone, polished silver metal (#C0C0C0)\nBlack wristband with a neon green sticker, wide flat cut, one size fits all length, distressed cotton canvas (#000000)\n\nThis outfit strikes the perfect balance between rock concert energy and smart casual elegance, adhering to her specified dress code while keeping you cool at 18°C without needing an outer layer. The dark denim and black leather create a cohesive, edgy silhouette ideal for standing in a crowded crowd, while the white tee adds a necessary visual break that prevents the look from feeling too heavy. Platform sneakers provide essential comfort for walking on uneven floors throughout the night, ensuring you can move freely until the final song."}
+
+── ВІДПОВІДЬ (1211 симв., 44.4 с, HTTP 200) ──
+{
+"is_outfit": "yes",
+"items": [
+{
+"name": "Black leather moto jacket",
+"details": "biker cut with asymmetrical zipper, cropped length at the waist, nappa leather fabric",
+"slot": "outerwear",
+"color_hex": "#000000",
+"worn": true
+},
+{
+"name": "Dark denim jeans",
+"details": "high-waisted, straight leg cut, full length reaching the ankle, stretch cotton twill fabric",
+"slot": "bottom",
+"color_hex": "#191970",
+"worn": true
+},
+{
+"name": "White fitted t-shirt",
+"details": "slim crew-neck cut, short length ending mid-belly, 100% organic cotton jersey fabric",
+"slot": "top",
+"color_hex": "#FFFFFF",
+"worn": true
+},
+{
+"name": "Black platform sneakers",
+"details": "chunky, rounded toe cut, high ankle length, suede and rubber composition",
+"slot": "shoes",
+"color_hex": "#2F4F4F",
+"worn": true
+},
+{
+"name": "Silver chain-link choker necklace",
+"details": "rigid geometric cut, short length resting on the collarbone, polished silver metal material",
+"slot": "jewelry",
+"color_hex": "#C0C0C0",
+"worn": true
+},
+{
+"name": "Black wristband with neon green sticker",
+"details": "wide flat cut, one size fits all length, distressed cotton canvas fabric",
+"slot": "accessory",
+"color_hex": "#000000",
+"worn": true
+}
+]
+}

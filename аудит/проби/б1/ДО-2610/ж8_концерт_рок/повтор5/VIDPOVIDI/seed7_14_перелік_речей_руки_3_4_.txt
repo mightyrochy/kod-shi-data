@@ -1,0 +1,37 @@
+── ПРОМПТ (2100 симв.) ──
+{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.", "A slot the description says is not needed is not an item: give it worn false. One item carries one thing — of two alternatives list the first; a note in brackets is not an item.", "Slot \"accessory\" is for an item no other slot fits.", "\"is_outfit\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note; then items is empty."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "ITEM_LIST", "answer_schema": {"is_outfit": "yes|no", "items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory", "color_hex": "<#rrggbb or null>", "worn": "<true, or false when the description says the outfit goes without it>"}]}, "input": ["\"description\" — the outfit description"]}, "description": "Leather moto jacket in deep black hex #000000 with an asymmetric cut and cropped length to fit over a tee.\nHigh-waisted dark denim jeans in hex #1e2530 with a straight leg cut that hits just above the ankle.\nChunky platform sneakers in white leather with hex #ffffff and a rounded toe shape.\nStudded black choker necklace in hex #000000.\nThis outfit works perfectly for standing in a crowded rock concert venue on a cool autumn evening, providing warmth and edgy style without overheating at 18 °C. The dark denim and leather moto jacket align with the smart dress code while offering durability for walking through crowds and mosh pits. The white sneakers add a casual contrast that keeps the look grounded yet fashionable for a Friday night out."}
+
+── ВІДПОВІДЬ (561 симв., 43.0 с, HTTP 200) ──
+{
+"is_outfit": "yes",
+"items": [
+{
+"name": "Leather moto jacket",
+"details": "asymmetric cut, cropped length",
+"slot": "outerwear",
+"color_hex": "#000000",
+"worn": true
+},
+{
+"name": "Dark denim jeans",
+"details": "high-waisted, straight leg cut",
+"slot": "bottom",
+"color_hex": "#1e2530",
+"worn": true
+},
+{
+"name": "Platform sneakers",
+"details": "white leather, rounded toe shape",
+"slot": "shoes",
+"color_hex": "#ffffff",
+"worn": true
+},
+{
+"name": "Studded choker necklace",
+"details": "",
+"slot": "collar_necklace",
+"color_hex": "#000000",
+"worn": true
+}
+]
+}
