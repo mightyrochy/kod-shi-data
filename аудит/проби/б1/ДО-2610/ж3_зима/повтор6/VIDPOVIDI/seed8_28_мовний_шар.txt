@@ -1,0 +1,57 @@
+── ПРОМПТ (8297 симв.) ──
+Ти — перекладачка в застосунку-стилістці. Ти пишеш природною українською тексти, які зараз побачить жінка. Рішень не приймаєш, на питання не відповідаєш, змісту не міняєш.
+
+Вхід — JSON-об'єкт: ключ — номер тексту н, значення — текст, який склали код та інші моделі.
+
+Відповідь — лише JSON-об'єкт тієї самої форми, що вхід, з усіма його ключами: ключ — номер н кожного тексту зі входу, значення — рядок — той самий зміст природною українською, без англійських слів і кодів (назви крамниць і брендів — як є); ПЕРЕКЛАДАЙ КОЖНЕ англійське слово, навіть одне посеред українського речення; латиницею лишай лише назви крамниць і брендів, «V-подібний» і «den»; текст, що вже природний і до неї на «ти», — без змін, а український текст на «ви» перепиши на «ти», решту лиши слово в слово.
+
+Вид кожної речі — теж зміст: річ у перекладі — та сама, що у вході, а не схожа чи сусідня. ankle boots — черевики чи ботильйони, boots — чоботи, heeled — на підборах, а не туфлі, pumps — туфлі-човники, loafers — лофери; pendant — кулон чи підвіска, necklace — намисто чи ланцюжок, а не каблучка, сережки чи браслет; ring — каблучка; earrings — сережки. Українські назви речей у вході (назви з крамниці, найчастіше перед « — ») переписуй літера в літеру: не міняй, не переставляй і не додавай у них жодного слова.
+
+Про жінку — лише до неї, на «ти» (ти, тебе, тобі, твій, твоя; хочеш, скинеш; наказ однини: розкажи, оберни, тримай, дай), і в питаннях теж: you, your, she, her про неї — «ти», «твій» (her skin tone — твій тон шкіри; when she turns her head — коли ти повертаєш голову; she looks taller — ти виглядаєш вищою), англійський наказ — наказом однини; «вона», «її» — лише про річ (сукню, сумку, куртку). Говорить стилістка — одна жінка: про себе — від першої особи однини й у жіночому роді (я підібрала, я б додала), не «ми», не від імені застосунку чи коду і ніколи словами самої жінки.
+
+Мова: літературна українська, як у текстах українських крамниць одягу. Кожне українське слово — літерами лише української абетки, без жодної латинської літери чи стороннього знака всередині слова. Кожне речення — одна остаточна версія, без виправлень посеред тексту. Словничок нижче — лише як перекласти англійське слово, коли воно є у вході; це не зміст: річ, тканина чи колір, яких у вході нема, у тексті не з'являються. Звичні українські назви для слів англійського джерела: trousers, pants — штани; dressy, dressier — ошатний, ошатніше; look, outfit — образ; taupe — сіро-бежевий; loose — вільний; suede — замша (жіночий рід); slip dress — сукня-комбінація; camel — кемел (колір). Назви речей і кольорів, які дала крамниця, — як є.
+
+Перевір кожне слово ДО відповіді: до неї — лише «ти», жодного «ви», «ваш» і наказу множини, і про неї жодного «вона», «її», «їй», жодне слово не стоїть двічі поспіль, кожна річ — того самого виду, що у вході (річ образу — іменником її назви з переліку, коли він є, і слова при ній узгоджені з цим іменником), а українська назва речі — слово в слово. Відповідь — рівно ОДИН JSON-об'єкт і нічого після нього: другої, виправленої версії, приміток і пояснень не пиши — помилку виправ у тому самому об'єкті.
+
+Речі образу — перелік, який жінка бачить на картці (номер речі — назва біля неї):
+1 — Кардиган жіночий напівприталеного силуету з вовною мериноса демісезонний · kind code: cardigan · colour code: chocolate · about it: text н=1
+2 — Коротке пальто кімоно темно-сіре · kind code: coat · colour code: grey · about it: text н=2
+3 — Брюки базові в смужку · kind code: trousers · colour code: grey · about it: text н=3
+4 — Пасок з пір’ям декольте світло блакитний · kind code: belt · colour code: light_blue · about it: text н=4
+5 — Ботильйони замшеві мокко LOOM · kind code: ankle_boots · colour code: mocha · about it: text н=5
+6 — Шкіряний крос-боді чорного кольору з тисненням · kind code: crossbody_bag · colour code: black · about it: text н=6
+When a text speaks of an item of the list, call it by the kind in its name — the same noun in the right case (list «Тренч бежевий подовжений» — text «тренч», «Светр в'язаний оверсайз» — «светр»), not by another kind or a synonym of the English word. Make every adjective, pronoun and verb with the item agree with that noun in gender and number («Тренч бежевий» — «бежевий тренч, який…»; «Лофери шкіряні» — «шкіряні лофери, які…»). A name you translate in this same call (text н=K): give it one noun and call the item by it, in agreement, in every text. A text the list gives as about an item (about it: text н=M) speaks of that one item, and so does every other text where the English names it. The colour of an item of the list is the colour of its name: keep the shop's colour word from its name; when its name has no colour word, write the Ukrainian name of its colour code. The English colour words for that item are the stylist's impression of a photo: do not turn them into a colour of their own — the item's colour stands in their place. Colours of its details (trim, strap, buttons, print), its fabric and the rest — translate from the text. The list is for names only: an item the English text does not name is not added to the translation — neither to the description nor to the advice. The kind code next to an item (kind code: …) is the code of its kind: every noun for that item, in every text, names this kind and no other, whatever word the English text uses; a code ending in _generic names only the family (dress_generic — a dress, bag_generic — a bag). The kind noun of its name and this code are the same kind: write the name's noun.
+
+Colour codes: black — чорний; chocolate — шоколадний; grey — сірий; light_blue — блакитний; mocha — мокко.
+
+ТЕКСТИ:
+{
+"1": "This chocolate-colored cardigan features a semi-fitted silhouette crafted from fine merino wool, offering a V-neckline and soft rolled sleeves that drape elegantly over your frame.",
+"2": "The dark grey kimono coat is designed with an oversized, wrap-style cut and a matching belt to define your waist, creating a relaxed yet sophisticated outer layer perfect for chilly weather.",
+"3": "These grey trousers feature a classic straight-leg cut with subtle vertical pinstripes that elongate the leg and add a refined, architectural element to your outfit.",
+"4": "This light blue belt is embellished with delicate feathers around its center, adding a playful and elegant detail that softens the look and draws attention to your waistline.",
+"5": "The suede ankle boots are designed with a peep-toe opening and a slim kitten heel, providing a sleek and modern finish that complements the texture of your trousers while remaining comfortable for walking.",
+"6": "This black crossbody bag features an alligator-embossed leather finish and a polished gold-tone clasp, offering a touch of luxury and practicality with its secure flap closure and adjustable strap.",
+"7": "This look is built for a brisk autumn walk to work, where your chocolate cardigan offers warmth against the chill, while the dark grey kimono coat provides a substantial outer layer that shields you from the snow and wind. The pinstripe trousers add a touch of structure and lightness to balance the cozy knit on top, and the soft leather crossbody keeps your hands free as you navigate the city streets. The peep-toe boots ground the outfit with a sleek silhouette, and the feathered belt introduces an element of gentle femininity that contrasts beautifully with the ruggedness of the weather.",
+"8": "Let the dark grey coat hang open to showcase the texture of your cardigan and the subtle lines of the trousers, keeping you light enough for movement while still feeling protected against the cold.",
+"9": "Ботильйони замшеві мокко LOOM — The suede ankle boots withstand the salted road conditions; while suede can be delicate, the deep 'mocha' tone and robust ankle shaft are designed to protect your legs from slush during this specific winter commute.",
+"10": "Коротке пальто кімоно темно-сіре — The oversized cut of the grey coat is not a flaw but a deliberate strategy here; it lets wind pass through rather than trapping it against you, keeping you warmer while you move briskly in the snow.",
+"11": "Пасок з пір’ям декольте світло блакитний — The light blue belt acts as a deliberate echo of the headband's color, creating a unified accent that draws attention upward to your face."
+}
+
+── ВІДПОВІДЬ (2470 симв., 61.4 с, HTTP 200) ──
+```json
+{
+"1": "Цей шоколадний кардиган має напівприталений силует і виготовлений з тонкої вовни мериноса. Він доповнений V-подібним вирізом та м'якими рукавами, які елегантно спадають по твоїй фігурі.",
+"2": "Темно-сіре пальто кімоно має вільний крій з запахом і пояс у тон, який підкреслює твою талію. Це розслаблена, але вишукана верхня частина образу, що чудово пасує для холодної погоди.",
+"3": "Ці сірі штани мають класичний прямий крій з ледь помітними вертикальними смужками, які візуально подовжують ноги та додають твоєму вбранню вишуканий архітектурний елемент.",
+"4": "Цей блакитний пасок прикрашений ніжним пір'ям у центрі. Він пом’якшує образ і підкреслює твою лінію талії, додаючи грайливу деталь.",
+"5": "Замшеві ботильйони мокко LOOM мають відкритий носок і тонкий каблук-кішку. Вони завершують образ елегантно й сучасно, гармонуючи з текстурою твоїх штанів та залишаючись зручними для ходьби.",
+"6": "Ця чорна сумка крос-боді має тиснення під шкіру алігатора і блискучу золоту застібку. Вона додає образу розкоші й практичності, адже її надійний клапан та регульований ремінець забезпечують безпечне зберігання твоїх речей.",
+"7": "Цей образ створено для прохолодної осінньої прогулянки до роботи. Шоколадний кардиган зігріває тебе в холод, а темно-сіре пальто кімоно захищає від снігу та вітру. Сірі штани з вертикальними смужками додають структури й легкості, щоб збалансувати затишний трикотаж зверху, а шкіряна сумка крос-боді залишає твої руки вільними під час прогулянки містом. Ботильйони завершують образ елегантною лінією, а пасок із пір’ям додає ніжної жіночності, яка чудово контрастує з суворістю погоди.",
+"8": "Залиш темно-сіре пальто розстебнутим, щоб продемонструвати текстуру кардигану та лінії штанів. Це дозволить тобі вільно рухатися й при цьому відчувати себе захищеною від холоду.",
+"9": "Ботильйони замшеві мокко LOOM витримають умови з посипаними сіллю дорогами, адже глибокий колір 'мокко' та міцний верх ботильйонів розроблені для захисту твоїх ніг від сльоти під час цієї конкретної зимової подорожі.",
+"10": "Коротке пальто кімоно темно-сіре — Вільний крій сірого пальта не є недоліком, а навмисною стратегією. Він дозволяє вітру проходити крізь нього, замість того щоб затримувати його біля тебе, зігріваючи під час активного руху в снігу.",
+"11": "Пасок з пір’ям декольте світло блакитний — Блакитний пасок є навмисним відлунням кольору обідка. Він створює гармонійний акцент, який привертає увагу до твого обличчя."
+}
+```
