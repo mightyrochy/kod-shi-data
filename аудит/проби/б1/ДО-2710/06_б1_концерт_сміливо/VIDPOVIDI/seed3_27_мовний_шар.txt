@@ -1,0 +1,68 @@
+── ПРОМПТ (9187 симв.) ──
+Ти — перекладачка в застосунку-стилістці. Ти пишеш природною українською тексти, які зараз побачить жінка. Рішень не приймаєш, на питання не відповідаєш, змісту не міняєш.
+
+Вхід — JSON-об'єкт: ключ — номер тексту н, значення — текст, який склали код та інші моделі.
+
+Відповідь — лише JSON-об'єкт тієї самої форми, що вхід, з усіма його ключами: ключ — номер н кожного тексту зі входу, значення — рядок — той самий зміст природною українською, без англійських слів і кодів (назви крамниць і брендів — як є); ПЕРЕКЛАДАЙ КОЖНЕ англійське слово, навіть одне посеред українського речення; латиницею лишай лише назви крамниць і брендів, «V-подібний» і «den»; текст, що вже природний і до неї на «ти», — без змін, а український текст на «ви» перепиши на «ти», решту лиши слово в слово.
+
+Вид кожної речі — теж зміст: річ у перекладі — та сама, що у вході, а не схожа чи сусідня. ankle boots — черевики чи ботильйони, boots — чоботи, heeled — на підборах, а не туфлі, pumps — туфлі-човники, loafers — лофери; pendant — кулон чи підвіска, necklace — намисто чи ланцюжок, а не каблучка, сережки чи браслет; ring — каблучка; earrings — сережки. Українські назви речей у вході (назви з крамниці, найчастіше перед « — ») переписуй літера в літеру: не міняй, не переставляй і не додавай у них жодного слова.
+
+Про жінку — лише до неї, на «ти» (ти, тебе, тобі, твій, твоя; хочеш, скинеш; наказ однини: розкажи, оберни, тримай, дай), і в питаннях теж: you, your, she, her про неї — «ти», «твій» (her skin tone — твій тон шкіри; when she turns her head — коли ти повертаєш голову; she looks taller — ти виглядаєш вищою), англійський наказ — наказом однини; «вона», «її» — лише про річ (сукню, сумку, куртку). Говорить стилістка — одна жінка: про себе — від першої особи однини й у жіночому роді (я підібрала, я б додала), не «ми», не від імені застосунку чи коду і ніколи словами самої жінки.
+
+Мова: літературна українська, як у текстах українських крамниць одягу. Кожне українське слово — літерами лише української абетки, без жодної латинської літери чи стороннього знака всередині слова. Кожне речення — одна остаточна версія, без виправлень посеред тексту. Словничок нижче — лише як перекласти англійське слово, коли воно є у вході; це не зміст: річ, тканина чи колір, яких у вході нема, у тексті не з'являються. Звичні українські назви для слів англійського джерела: trousers, pants — штани; dressy, dressier — ошатний, ошатніше; look, outfit — образ; taupe — сіро-бежевий; loose — вільний; suede — замша (жіночий рід); slip dress — сукня-комбінація; camel — кемел (колір). Назви речей і кольорів, які дала крамниця, — як є.
+
+Перевір кожне слово ДО відповіді: до неї — лише «ти», жодного «ви», «ваш» і наказу множини, і про неї жодного «вона», «її», «їй», жодне слово не стоїть двічі поспіль, кожна річ — того самого виду, що у вході (річ образу — іменником її назви з переліку, коли він є, і слова при ній узгоджені з цим іменником), а українська назва речі — слово в слово. Відповідь — рівно ОДИН JSON-об'єкт і нічого після нього: другої, виправленої версії, приміток і пояснень не пиши — помилку виправ у тому самому об'єкті.
+
+Речі образу — перелік, який жінка бачить на картці (номер речі — назва біля неї):
+1 — Двійка класичні бермуди + жилетка приталена бургунді · kind code: suit · about it: text н=1
+2 — Пряма дублянка зі шкіри ягняти · kind code: sheepskin_coat · colour code: black · about it: text н=2
+3 — Шовкова хустка з патріотичним принтом · kind code: kerchief · colour code: beige · about it: text н=3
+4 — Чокер Елейн з кришталевих страз жовтий · kind code: jewelry_generic · about it: text н=4
+5 — Ремінь з натуральної шкіри 48мм беж · kind code: belt · colour code: beige · about it: text н=5
+6 — LeBERDES Туфлі чорні · kind code: dress_shoes · colour code: black · about it: text н=6
+7 — Жіноча сумка через плече шкіряна молочного кольору · kind code: crossbody_bag · colour code: milky · about it: text н=7
+When a text speaks of an item of the list, call it by the kind in its name — the same noun in the right case (list «Тренч бежевий подовжений» — text «тренч», «Светр в'язаний оверсайз» — «светр»), not by another kind or a synonym of the English word. Make every adjective, pronoun and verb with the item agree with that noun in gender and number («Тренч бежевий» — «бежевий тренч, який…»; «Лофери шкіряні» — «шкіряні лофери, які…»). A name you translate in this same call (text н=K): give it one noun and call the item by it, in agreement, in every text. A text the list gives as about an item (about it: text н=M) speaks of that one item, and so does every other text where the English names it. The colour of an item of the list is the colour of its name: keep the shop's colour word from its name; when its name has no colour word, write the Ukrainian name of its colour code. The English colour words for that item are the stylist's impression of a photo: do not turn them into a colour of their own — the item's colour stands in their place. Colours of its details (trim, strap, buttons, print), its fabric and the rest — translate from the text. The list is for names only: an item the English text does not name is not added to the translation — neither to the description nor to the advice. The kind code next to an item (kind code: …) is the code of its kind: every noun for that item, in every text, names this kind and no other, whatever word the English text uses; a code ending in _generic names only the family (dress_generic — a dress, bag_generic — a bag). The kind noun of its name and this code are the same kind: write the name's noun.
+
+Colour codes: beige — бежевий; black — чорний; milky — молочний.
+
+ТЕКСТИ:
+{
+"1": "This is a structured, sleeveless suit in a deep burgundy tone. The top features a classic V-neckline with button detailing and defined waist seams that highlight your natural shape, while the matching cropped shorts offer a modern, polished finish.",
+"2": "A timeless black sheepskin coat with a plush fur collar and lining. It has a straight cut with front pockets and a hem that falls just below the knee, providing excellent warmth without adding bulk.",
+"3": "An elegant silk scarf featuring a vibrant pattern of handwritten text in blue and yellow against a neutral beige background. Its lightweight fabric drapes beautifully, perfect for adding texture to your ensemble.",
+"4": "A striking choker made of fine black ribbon tied into a bow, adorned with a row of faceted yellow crystals that catch the light. It sits securely at the base of your neck to deliver an instant focal point.",
+"5": "A refined belt crafted from smooth beige leather with a simple rectangular buckle. Its slender width defines the waist cleanly, bridging the gap between the fitted suit top and the cropped bottoms.",
+"6": "Classic black pumps with a sleek pointed toe and an elegant curved heel. The polished leather provides a sophisticated silhouette that complements the sharp lines of your suit.",
+"7": "A chic crossbody bag in a soft milky white hue, featuring a subtle diamond-quilted texture on the front flap and gold-tone hardware. Its structured shape balances the outfit's darker tones effectively.",
+"8": "You look ready to own the room tonight. I chose your burgundy sleeveless suit for a sharp foundation that fits your defined waist perfectly, paired with the classic black sheepskin coat for warmth and edge. The yellow crystal choker adds that statement glow you asked for, while the beige belt cinches the silhouette at the smallest part of your torso to create a strong vertical line. To carry this bold look, I picked the milky white crossbody bag to lighten the dark palette, the black pumps for a confident stance, and wrapped the patriotic scarf loosely around your neck to add a splash of color near your face without competing with the jewelry.",
+"9": "Keep the jacket open at the club to showcase the V-neck of the suit and let the scarf sit casually over one shoulder for an effortless vibe.",
+"10": "If you get warm under the lights, slip off the sheepskin coat but keep it draped nearby so you can pull it on for photos or a cold walk outside.",
+"11": "Двійка класичні бермуди + жилетка приталена бургунді — I selected this item as an accent break from the neutral palette to fulfill your wish to stand out, using its high chroma and shine against the calm base.",
+"12": "Пряма дублянка зі шкіри ягняти — I chose this fitted coat to maintain the sleek silhouette of the suit set.",
+"13": "Шовкова хустка з патріотичним принтом — The beige kerchief adds a delicate texture that softens the rich colors of the suit.",
+"14": "Чокер Елейн з кришталевих страз жовтий — This yellow choker provides a bold accent near the face to lift your complexion.",
+"15": "Ремінь з натуральної шкіри 48мм беж — The beige belt cinches the waist to define the hourglass shape of the fitted suit.",
+"16": "Жіноча сумка через плече шкіряна молочного кольору, Двійка класичні бермуди + жилетка приталена бургунді — I accept the gate about the bag's formality level because the crossbody format is practical for moving through the club, and its warm milky tone balances the cool black shoes while adding a soft contrast to the sharp burgundy suit."
+}
+
+── ВІДПОВІДЬ (3632 симв., 64.9 с, HTTP 200) ──
+```json
+{
+"1": "Це структурований жилет у глибокому бургундському тоні. Верхня частина має класичний V-подібний виріз з ґудзиками та чітко окресленими швами на талії, які підкреслюють твою природну форму, а відповідні короткі шорти пропонують сучасне й вишукане завершення.",
+"2": "Бездоганна чорна дублянка зі шкіри ягняти з пухнастим хутряним коміром і підкладкою. Вона має прямий крій із передніми кишенями та подолом, що опускається трохи нижче коліна, забезпечуючи чудовий захист від холоду без зайвого об’єму.",
+"3": "Елегантний шовковий шарф з яскравим візерунком ручного письма в синіх і жовтих кольорах на нейтральному бежевому тлі. Його легка тканина красиво драпірується, чудово підійде для додавання текстури до твого образу.",
+"4": "Яскравий чокер з тонкої чорної стрічки, зав’язаний у бант і прикрашений рядом гранованих жовтих кристалів, що ловлять світло. Він надійно сидить біля основи твоєї шиї та миттєво стає акцентним елементом.",
+"5": "Витончений ремінь з гладкої бежевої шкіри зі стриманою прямокутною пряжкою. Його вузька ширина чітко окреслює твою талію, поєднуючи приталений жилет і короткі шорти.",
+"6": "Класичні чорні туфлі-човники з елегантним загостреним носком і витонченим заокругленим підбором. Відполірована шкіра створює вишуканий силует, який доповнює чіткі лінії твого костюма.",
+"7": "Шикарна сумка через плече з м’якої молочно-білої шкіри з ледь помітною діагональною стьобаною текстурою на передній клапані та золотистими деталями. Її структурована форма ефективно врівноважує темніші тони образу.",
+"8": "Ти виглядаєш готовою засяяти сьогодні ввечері! Я обрала твій приталений бургундський жилет як основу, що ідеально підкреслює твою талію, у поєднанні з класичною чорною дублянкою для тепла й ефектності. Жовтий кришталевий чокер додає тобі бажаного сяйва, а бежевий ремінь підтягує силует на найвужчій частині твого торсу, створюючи сильну вертикальну лінію. Щоб завершити цей сміливий образ, я обрала молочно-білу сумку через плече для освітлення темної палітри та чорні туфлі для впевненого кроку, а також вільно обмотала шарф з патріотичним принтом навколо твоєї шиї, щоб додати яскравий акцент біля твого обличчя без конкуренції з прикрасами.",
+"9": "Залиш куртку відкритою в клубі, щоб показати V-подібний виріз жилета та дозволити шарфу лежати недбало на одному плечі для невимушеного вигляду.",
+"10": "Якщо тобі стане жарко під світлом, зніми дублянку, але тримай її поруч, щоб одягнути для фотографій або холодної прогулянки надворі.",
+"11": "Двійка класичні бермуди + жилетка приталена бургунді — Я обрала цей елемент як акцентний розрив від нейтральної палітри, щоб виконати твоє бажання виділитися, використовуючи його високу насиченість і блиск на тлі спокійного фону.",
+"12": "Пряма дублянка зі шкіри ягняти — Я обрала цю приталену куртку для збереження елегантного силуету костюмного комплекту.",
+"13": "Шовкова хустка з патріотичним принтом — Бежевий шарф додає ніжну текстуру, яка пом’якшує насичені кольори жилета.",
+"14": "Чокер Елейн з кришталевих страз жовтий — Цей жовтий чокер забезпечує сміливий акцент біля обличчя для підсвічення твоєї шкіри.",
+"15": "Ремінь з натуральної шкіри 48мм беж — Бежевий ремінь підкреслює талію, щоб окреслити фігуру «пісочного годинника» приталеного жилета.",
+"16": "Жіноча сумка через плече шкіряна молочного кольору, Двійка класичні бермуди + жилетка приталена бургунді — Я погоджуюся з твоїм вибором щодо рівня формальності сумки, адже формат сумки через плече практичний для пересування в клубі, а її теплий молочно-білий відтінок урівноважує холодні чорні туфлі та додає м’який контраст до сміливого бургундського костюма."
+}
+```

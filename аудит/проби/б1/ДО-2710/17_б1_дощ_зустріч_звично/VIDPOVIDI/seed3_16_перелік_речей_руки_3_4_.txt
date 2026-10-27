@@ -1,0 +1,37 @@
+── ПРОМПТ (2460 симв.) ──
+{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.", "A slot the description says is not needed is not an item: give it worn false. One item carries one thing — of two alternatives list the first; a note in brackets is not an item.", "Slot \"accessory\" is for an item no other slot fits.", "\"is_outfit\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note; then items is empty."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "ITEM_LIST", "answer_schema": {"is_outfit": "yes|no", "items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory", "color_hex": "<#rrggbb or null>", "worn": "<true, or false when the description says the outfit goes without it>"}]}, "input": ["\"description\" — the outfit description"]}, "description": "A structured wool-blend blazer with a tailored fit, sharp lapels and defined shoulders in forest green (#2e4a3d), medium weight.  \nTailored straight-leg trousers in matching forest green (#2e4a3d), mid-weight wool blend with slight stretch for movement.  \nSilk-poplin blouse with a modest V-neck and button-front closure, crisp white (#ffffff), lightweight woven fabric.  \nAnkle boots with a block heel, oiled leather finish in dark brown (#4a362a), water-resistant treated surface.  \nA structured wool-blend blazer is appropriate given the cool 15 °C outdoor temperature and rain exposure before entering the café; its tailored silhouette flatters her proportions while the stretch-rich trousers ensure comfort during standing and movement.  \nThe monochromatic forest green base creates a polished, professional look that respects the neat dress code for a client meeting, while the white blouse adds necessary brightness against the autumn gloom.  \nWater-resistant footwear and a cohesive color palette reflect a thoughtful adaptation to rainy weather without compromising business-appropriate elegance."}
+
+── ВІДПОВІДЬ (856 симв., 71.6 с, HTTP 200) ──
+{
+  "is_outfit": "yes",
+  "items": [
+    {
+      "name": "blazer",
+      "details": "wool-blend with tailored fit, sharp lapels and defined shoulders",
+      "slot": "outerwear",
+      "color_hex": "#2e4a3d",
+      "worn": true
+    },
+    {
+      "name": "trousers",
+      "details": "tailored straight-leg, mid-weight wool blend with slight stretch",
+      "slot": "bottom",
+      "color_hex": "#2e4a3d",
+      "worn": true
+    },
+    {
+      "name": "blouse",
+      "details": "silk-poplin with modest V-neck and button-front closure, lightweight woven fabric",
+      "slot": "top",
+      "color_hex": "#ffffff",
+      "worn": true
+    },
+    {
+      "name": "boots",
+      "details": "ankle boots with block heel, oiled leather finish, water-resistant treated surface",
+      "slot": "shoes",
+      "color_hex": "#4a362a",
+      "worn": true
+    }
+  ]
+}

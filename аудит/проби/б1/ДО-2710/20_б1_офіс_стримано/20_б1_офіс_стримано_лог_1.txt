@@ -1,0 +1,83 @@
+СЦЕНАРІЙ ПІДМІНЕНО (CHAT_TEXT/PASPORT): звірки офісного випадку звіряються з поданим паспортом · {"чат":"робочий день в офісі, хочу стримано й класично","паспорт":null}
+МОДЕЛЬ ЖИВА: qwen/qwen3.5-9b · http://127.0.0.1:1236/v1 · reasoning_effort=none · відповіді → C:/tmp/b1s2run/out/20_б1_офіс_стримано/VIDPOVIDI
+   ⊘ зовнішній запит: https://cdn.jsdelivr.net/gh/MacPaw/Fixel@514fd02ea7d70668ed3dd09fb2674ba6f70d61ee/fonts/webfonts/Fix
+   ⊘ зовнішній запит: https://cdn.jsdelivr.net/gh/MacPaw/Fixel@514fd02ea7d70668ed3dd09fb2674ba6f70d61ee/fonts/webfonts/Fix
+   ⊘ зовнішній запит: https://cdn.jsdelivr.net/gh/MacPaw/Fixel@514fd02ea7d70668ed3dd09fb2674ba6f70d61ee/fonts/webfonts/Fix
+   ⊘ зовнішній запит: https://cdn.jsdelivr.net/gh/MacPaw/Fixel@514fd02ea7d70668ed3dd09fb2674ba6f70d61ee/fonts/webfonts/Fix
+сторінка піднята за 0.5 с · збірка: 7cb3d5d557319a9da34234b04e04603f2491152c · єдина сторінка: true
+
+0. знайомство · крок 1 «Про тебе»: {"режим":"старт","екран":0,"видно":["е-профіль"],"кнопка":"Далі"}
+  ✔ крок 1: кольори лягли ручним шляхом сторінки («Застосувати кольори»)
+   крок 2 «Що тобі до лиця»: {"режим":"старт","екран":1,"видно":["е-лице"],"кнопка":"Далі"}
+   знімок: C:\tmp\b1s2run\out\20_б1_офіс_стримано\знімки\ekran_znaiomstvo_2_do_lytsia_seed3.png 57994 Б
+   крок 3 «Фігура»: {"режим":"старт","екран":2,"видно":["е-мірки"],"кнопка":"Готово"}
+  ✔ знайомство — рівно три кроки, і «Готово» стоїть лише на третьому
+   знімок: C:\tmp\b1s2run\out\20_б1_офіс_стримано\знімки\ekran_znaiomstvo_3_fihura_seed3.png 28796 Б
+   «Готово» → {"режим":"сценарій","екран":2,"видно":["е-випадок"],"лист":true,"підказка":"Напиши, як подрузі: куди йдеш, коли, яка погода, чого хочеш і чого не хочеш. Я складу сценарій, а ти поправиш, що треба.","питання":"Куди ти збираєшся?","рукою":"Або заповнити рукою","прикладів":3,"дії_панелі":false,"картка":false,"зібрати":null} за 1.1 с
+  ✔ після «Готово» — екран сценарію v5: аркуш листа з полем, питання «Куди ти збираєшся?», «Або заповнити рукою»; дій панелі нема, отже репліка піде замовленням, а не в помічницю
+   знімок: C:\tmp\b1s2run\out\20_б1_офіс_стримано\знімки\ekran_scenarii_porozhnii_seed3.png 34819 Б
+   ↔ модель #1 мовний шар: хід розмови (35956 симв., разом 37189) → 96.3 с · HTTP 599 · 0 симв. · {"error":{"message":"Error: read ECONNRESET"}}
+   ↔ модель #2 паспорт (виклик 0) (7858 симв., разом 8309) → 90.0 с · HTTP 599 · 0 симв. · {"error":{"message":"Error: read ECONNRESET"}}
+
+1. чат → паспорт за 190.2 с · pyodide тягнув: ["pyodide.js","python_stdlib.zip","pyodide.asm.wasm","pyodide-lock.json","pyodide.asm.js"]
+  ✗ чат заповнив плитки з паспорта моделі (нагода=робота; чинне місце — офіс)  →  {"нагода":"","місце":"","чинне_місце":null,"чипи":[],"зрозуміла":"","зрозуміла_слова":[],"випадок_рядком":"","рядки_картки":{"нагода":"не обрано","місце":"","зони_вето":""},"плитка_місця":null,"паспорт":null,"записи_шару":[{"напрям":"turn","де":"chat","причина":"turn_failed: model · http=599 · model=qwen/qwen3.5-9b · body={\"error\":{\"message\":\"{\\\"error\\\":{\\\"message\\\":\\\"Error: read EC
+  ✗ вето з чату («без підборів») лягло в паспорт і дійшло до моделі: випадок моделі несе «підбори»  →  ""
+  ✗ рядок підтвердження стоїть («Усе правильно?» + «так»/«поправити»), і випадок, з якого він піднявся, — з паспорта (той самий рядок їде в журнал)  →  {"зрозуміла":"","слова":[],"випадок":"","рядки":{"нагода":"не обрано","місце":"","зони_вето":""}}
+  ✗ паспорт від моделі, питань до людини ≤ 1 (лише «без чого не зібрати»)  →  null
+  ✗ порада стилістки (рядки 108/114) видна в репліці, тем за хід 1…3, не серед питань  →  null
+  ✔ до збирання нічого не бракує
+   знімок чату: C:\tmp\b1s2run\out\20_б1_офіс_стримано\знімки\chat_108_seed3.png 5800 Б
+стенд не піднявся: page.click: Timeout 30000ms exceeded.
+Call log:
+[2m  - waiting for locator('#пал-кнопка')[22m
+[2m    - locator resolved to <button type="button" id="пал-кнопка" class="ряд-паспорта далі-екран">…</button>[22m
+[2m  - attempting click action[22m
+[2m    2 × waiting for element to be visible, enabled and stable[22m
+[2m      - element is not visible[22m
+[2m    - retrying click action[22m
+[2m    - waiting 20ms[22m
+[2m    2 × waiting for element to be visible, enabled and stable[22m
+[2m      - element is not visible[22m
+[2m    - retrying click action[22m
+[2m      - waiting 100ms[22m
+[2m    57 × waiting for element to be visible, enabled and stable[22m
+[2m       - element is not visible[22m
+[2m     - retrying click action[22m
+[2m       - waiting 500ms[22m
+
+    at стор.<computed> (C:\tmp\b1s2\аудит\проби\рв6_стенд.js:2294:57)
+    at async діяІЧекати (C:\tmp\b1s2\аудит\проби\рв6_стенд.js:110:3)
+    at async C:\tmp\b1s2\аудит\проби\рв6_стенд.js:3505:3 {
+  log: [
+    "  - waiting for locator('#пал-кнопка')",
+    '    - locator resolved to <button type="button" id="пал-кнопка" class="ряд-паспорта далі-екран">…</button>',
+    '  - attempting click action',
+    '    2 × waiting for element to be visible, enabled and stable',
+    '      - element is not visible',
+    '    - retrying click action',
+    '    - waiting 20ms',
+    '    2 × waiting for element to be visible, enabled and stable',
+    '      - element is not visible',
+    '    - retrying click action',
+    '      - waiting 100ms',
+    '    57 × waiting for element to be visible, enabled and stable',
+    '       - element is not visible',
+    '     - retrying click action',
+    '       - waiting 500ms'
+  ],
+  name: 'TimeoutError'
+}
+
+ЖИВА МОДЕЛЬ qwen/qwen3.5-9b: викликів 2 · збоїв 2 · у стелю виводу 0 · з думкою 0 · разом 186.3 с (найдовший 96.3 с)
+   · мовний шар: хід розмови — HTTP 599 · 96.3 с · вхід 0 т. · вихід за лічильником CLI (з міркуванням) 0 т., видимих ≤ 0 т. · 0 симв. · {"error":{"message":"Error: read ECONNRESET"}}
+   · паспорт (виклик 0) — HTTP 599 · 90 с · вхід 0 т. · вихід за лічильником CLI (з міркуванням) 0 т., видимих ≤ 0 т. · 0 симв. · {"error":{"message":"Error: read ECONNRESET"}}
+
+фрази нових правил у ПОВНОМУ тексті пакета (усі виклики моделі цього сіда): {"намір=comfort_first (у переліку значень поля)":2,"намір=context_optimal (у переліку значень поля)":2}
+
+ВПАЛО 6 · прогін обірвався на кидку (див. «стенд не піднявся» вище); підсумок моделі надруковано
+
+ДОКАЗ · рв6_стенд · run-mvqm9rtt-f2f850ec · код 7cb3d5d557319a9da34234b04e04603f2491152c · подія — · НЕ ДОВЕДЕНО: нема події завершення (кидок: page.click: Timeout 30000ms exceeded.
+Call log:
+[2m  - waiting for locator('#пал-кнопка')[22m
+[2m    - locator resolved to <button type="button" id="пал-кнопка" class="ряд-паспорта далі-екран">…</b) → C:\tmp\b1s2run\out\20_б1_офіс_стримано\знімки\доказ.json
+очікувань дії ядра: виконано 1 різних викликів файлу з 47 (разом 1 очікувань)

@@ -1,0 +1,30 @@
+── ПРОМПТ (2142 симв.) ──
+{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.", "A slot the description says is not needed is not an item: give it worn false. One item carries one thing — of two alternatives list the first; a note in brackets is not an item.", "Slot \"accessory\" is for an item no other slot fits.", "\"is_outfit\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note; then items is empty."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "ITEM_LIST", "answer_schema": {"is_outfit": "yes|no", "items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory", "color_hex": "<#rrggbb or null>", "worn": "<true, or false when the description says the outfit goes without it>"}]}, "input": ["\"description\" — the outfit description"]}, "description": "Silk crepe evening gown, Empire waist cut, floor-length with a subtle asymmetrical hemline, deep emerald green (#043b2e), fluid drape.\nVelvet opera gloves extending to the elbow, straight fit in a matching emerald shade (#043b2e), soft hand-woven pile.\nStrappy high-heel pumps, sculpted ankle strap cut, stiletto length, burnished gold finish (#d4af37), smooth leather.\nThis ensemble is designed for her desire to stand out at the theatre in the evening, using bold color and luxurious textures that command attention. The asymmetrical hemline and metallic accents serve as a confident statement while maintaining the formal elegance required for the occasion. Every piece aligns with her wish to express herself boldly, turning the classic evening gown into a modern piece of wearable art."}
+
+── ВІДПОВІДЬ (656 симв., 49.8 с, HTTP 200) ──
+{
+  "is_outfit": "yes",
+  "items": [
+    {
+      "name": "Silk crepe evening gown",
+      "details": "Empire waist cut, floor-length with a subtle asymmetrical hemline, fluid drape",
+      "slot": "dress",
+      "color_hex": "#043b2e",
+      "worn": true
+    },
+    {
+      "name": "Velvet opera gloves",
+      "details": "Extending to the elbow, straight fit, soft hand-woven pile",
+      "slot": "gloves",
+      "color_hex": "#043b2e",
+      "worn": true
+    },
+    {
+      "name": "Strappy high-heel pumps",
+      "details": "Sculpted ankle strap cut, stiletto length",
+      "slot": "shoes",
+      "color_hex": "#d4af37",
+      "worn": true
+    }
+  ]
+}

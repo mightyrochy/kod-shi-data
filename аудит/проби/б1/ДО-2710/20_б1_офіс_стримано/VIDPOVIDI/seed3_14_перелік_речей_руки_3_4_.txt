@@ -1,0 +1,37 @@
+── ПРОМПТ (2322 симв.) ──
+{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.", "A slot the description says is not needed is not an item: give it worn false. One item carries one thing — of two alternatives list the first; a note in brackets is not an item.", "Slot \"accessory\" is for an item no other slot fits.", "\"is_outfit\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note; then items is empty."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "ITEM_LIST", "answer_schema": {"is_outfit": "yes|no", "items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory", "color_hex": "<#rrggbb or null>", "worn": "<true, or false when the description says the outfit goes without it>"}]}, "input": ["\"description\" — the outfit description"]}, "description": "Cream silk blouse with a relaxed collar, straight cut to the hip, #deb295 color, soft woven fabric.\nTailored charcoal wool-blend trousers with a slight kickpleat at the front, tapered ankle, #3a4043 color, structured yet draping fabric.\nBlack leather loafers with a low block heel and a subtle grosgrain ribbon detail, pointed toe, #1a1a1a color, smooth nappa leather.\nA slim gold bar necklace and matching stud earrings in polished brass, 18mm length, yellow gold finish.\n\nThis ensemble perfectly captures the \"smart\" dress code required for the office while honoring her request for a classic and streamlined aesthetic. The cream blouse provides a soft contrast to the tailored charcoal trousers, creating a balanced silhouette that feels both professional and comfortable for an autumn workday. The leather loafers ground the outfit with understated elegance without compromising on ease of movement, ensuring she remains poised throughout long hours at her desk."}
+
+── ВІДПОВІДЬ (883 симв., 77.4 с, HTTP 200) ──
+{
+  "is_outfit": "yes",
+  "items": [
+    {
+      "name": "cream silk blouse",
+      "details": "relaxed collar, straight cut to the hip, soft woven fabric",
+      "slot": "top",
+      "color_hex": "#deb295",
+      "worn": true
+    },
+    {
+      "name": "charcoal wool-blend trousers",
+      "details": "slight kickpleat at the front, tapered ankle, structured yet draping fabric",
+      "slot": "bottom",
+      "color_hex": "#3a4043",
+      "worn": true
+    },
+    {
+      "name": "black leather loafers",
+      "details": "low block heel, subtle grosgrain ribbon detail, pointed toe, smooth nappa leather",
+      "slot": "shoes",
+      "color_hex": "#1a1a1a",
+      "worn": true
+    },
+    {
+      "name": "gold bar necklace",
+      "details": "slim, 18mm length, polished brass, yellow gold finish",
+      "slot": "jewelry",
+      "color_hex": null,
+      "worn": true
+    }
+  ]
+}

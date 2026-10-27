@@ -1,0 +1,37 @@
+── ПРОМПТ (2221 симв.) ──
+{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.", "A slot the description says is not needed is not an item: give it worn false. One item carries one thing — of two alternatives list the first; a note in brackets is not an item.", "Slot \"accessory\" is for an item no other slot fits.", "\"is_outfit\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note; then items is empty."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "ITEM_LIST", "answer_schema": {"is_outfit": "yes|no", "items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory", "color_hex": "<#rrggbb or null>", "worn": "<true, or false when the description says the outfit goes without it>"}]}, "input": ["\"description\" — the outfit description"]}, "description": "A tailored wool-blend blazer with a relaxed fit, knee-length cut, charcoal gray (#3E4E52), woven texture.\nCrisp silk blouse with a subtle satin sheen, standard collar, hip-length hem, soft ivory (#F5F5F0), smooth fabric.\nHigh-waisted pleated wool trousers, full length, deep forest green (#2D4639), heavy drape.\nClassic leather ankle boots with a low block heel, round toe, polished brown (#6B4E3C), smooth grain leather.\nThis ensemble strikes the perfect balance for an autumn workday while adhering to the requested neat dress code. The charcoal and forest green palette feels professional yet warm against the cooling weather, avoiding any light outer layer since temperatures are likely mild. The silk blouse adds a touch of refined contrast to the structured wool pieces, creating a polished look that respects the office environment without feeling overly stiff."}
+
+── ВІДПОВІДЬ (826 симв., 99.3 с, HTTP 200) ──
+{
+  "is_outfit": "yes",
+  "items": [
+    {
+      "name": "blazer",
+      "details": "tailored wool-blend with relaxed fit and knee-length cut, woven texture",
+      "slot": "outerwear",
+      "color_hex": "#3E4E52",
+      "worn": true
+    },
+    {
+      "name": "blouse",
+      "details": "crisp silk with subtle satin sheen, standard collar, hip-length hem",
+      "slot": "top",
+      "color_hex": "#F5F5F0",
+      "worn": true
+    },
+    {
+      "name": "trousers",
+      "details": "high-waisted pleated wool, full length, heavy drape",
+      "slot": "bottom",
+      "color_hex": "#2D4639",
+      "worn": true
+    },
+    {
+      "name": "boots",
+      "details": "classic leather ankle boots with low block heel, round toe, smooth grain",
+      "slot": "shoes",
+      "color_hex": "#6B4E3C",
+      "worn": true
+    }
+  ]
+}

@@ -1,0 +1,64 @@
+── ПРОМПТ (8782 симв.) ──
+{"task": {"role": "You are a stylist taking an order: from what the woman chose in the lists and what she said, fill in the case passport.", "rules": ["Take every field only from her words or from \"обрано\"; her words override \"обрано\", and what she said later overrides what she said earlier.", "\"нагода\", \"місце\", \"дрес_код\", \"реєстр_людини\" take only keys from \"ключі\"; when none fits — null, and her word goes into \"подія\".", "\"питання_людині\": up to three short questions, only about what the look cannot be put together without — occasion and place when neither \"обрано\" nor her words give them; otherwise an empty list.", "Do not ask what suits her (metal, white, neutrals).", "\"намір\", \"мета\", \"настрій\", \"макіяж\", \"прикраси\", \"реєстр_людини\" come only from what she herself said about them: occasion, place and dress code do not imply them; not said — \"невідомо\" or an empty list.", "Everything she refused or denied — an item, colour, fabric, print, property or detail — goes into \"вето\" under its section; nothing she denied goes into \"бажання\"."], "limits": ["Rely only on the input: do not invent what it does not contain.", "What you do not know is \"unknown\", null or an empty list, as the schema allows.", "Text for her. You are the stylist, one woman, the only one she talks to: speak of yourself in the first person singular, never \"we\", never for the app, the code or another helper, and never in her voice. Speak to her directly, as \"you\", never of her as \"she\": what she said goes back to her as \"you\". Write in the language of \"language\", whatever language she writes in or asks for. In Ukrainian, address her informally, with the familiar singular, never the polite plural, and a command to her in the singular too; speaking of yourself, use the feminine grammatical gender. Plain human words, without item numbers, ids, hex codes or markdown.", "Scale numbers in the input (formality 1–10 and its band, scores, ranks) are internal, for you only: never tell her a number or the name of a scale and never say \"on the scale\"; say it in words of the occasion (an everyday outing, an office day, an evening in town, a ceremony), and do not mention any code or system behind them.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "Ukrainian", "answer": "ПАСПОРТ", "answer_schema": {"подія": "her words copied letter for letter, shortened only by leaving words out", "нагода": "a key from \"ключі\" or null", "місце": "a key from \"ключі\" or null", "формат": "приміщення | просто неба | змішано | невідомо", "тривалість_год": "number or null", "рух": "сидіти | стояти | ходити | багато ходити | танцювати | ставати на коліна | спорт | невідомо", "дрес_код": "a key from \"ключі\" or null", "ошатність": "the code of one formality step: home, everyday, neat, smart, formal, very_smart, ceremonial — or null", "година": "number 0–23 or null", "темп_c": "number or null", "погода_відчуття": "frost | cold | cool | warm | hot | null", "опади": "ні | можливий_дощ | дощ | мокрий_сніг | злива | сніг | невідомо", "намір": "невідомо | conventional | fashion_forward | editorial | statement | comfort_first | context_optimal", "мета": "невідомо | лестити — usual attention, she wants it to suit her | приховати — quiet, she does not want attention to her look | експресія — she wants to be looked at", "мета_важливо": ["codes from: taller (a longer line, to look taller) | comfort (moving comfortably all day) | strict (strictly by the occasion), several together; only what she said; none — empty list"], "мета_зони": ["up to 3 codes of body zones she wants to draw the eye away from: belly | hips | bust | arms | legs | shoulders | neckline | back; never for how much skin she shows; none — empty list"], "макіяж": {"рівень": "невідомо | нюд | помітний | яскравий", "губи": "#hex of the lip colour, only when she named a lip colour; otherwise null"}, "прикраси": "невідомо | золото | срібло | перли | етно | інші | без прикрас (етно = wood, bone, beads; інші = anything without metal not named separately)", "реєстр_людини": ["0–2 keys from \"ключі\""], "бажання": ["what she asked for: item, cut, colour, mood; nothing she refused"], "вето": {"типи": ["item, property or detail of an item she refused or denied"], "тканини": ["fabric she denied"], "принти": ["print she denied"], "кольори": ["colour or shade she denied"], "зони": "only from: декольте, спина, руки, плечі, ноги, живіт"}, "ноги_вище_см": "cm from the floor above which her legs stay covered, or null", "настрій": ["1–3 of her words about the mood of the look; not said — empty list"], "невідомо": ["keys of this schema for the fields she said nothing about"], "питання_людині": ["up to three short questions, only about what the look cannot be put together without"], "відповідь_людині": "one sentence for her: what you understood or what you ask", "порада_людині": "advice on \"теми_поради\" or empty"}, "input": ["\"обрано\" — what she chose with the tiles", "\"типове_не_назване\" — form defaults: she neither chose nor named them; return them unchanged in the passport and do not tell her they are facts of her day; when she names such a field herself, use her value", "\"паспорт_досі\" — the passport from previous turns; return it in full, updated with what she said since; \"вердикт_коду\" of her items is a level and claim codes with the \"означення\" of each code: convey their meaning in your own words and do not contradict it", "\"розмова\" — the last turns of the conversation, her new message last", "\"ключі\" — allowed keys for \"нагода\", \"місце\", \"дрес_код\", \"реєстр_людини\"", "\"теми_поради\" — advice topics for this turn; in \"порада_людині\" write one sentence, up to 350 characters, covering these topics together as a soft invitation to tell more, adding that she may say nothing and the looks will be put together anyway; it only invites her to tell: it never suggests an item, jewellery or a style and never judges her style — the looks do that; do not put this into \"питання_людині\""]}, "обрано": {"нагода": "робота"}, "типове_не_назване": {"місце": "офіс", "година": 11, "темп_c": 18}, "паспорт_досі": {"подія": "робочий день в офісі", "формат": "невідомо", "тривалість_год": null, "рух": "невідомо", "дрес_код": null, "ошатність": [7, 7], "опади": "невідомо", "намір": "conventional", "мета": "невідомо", "мета_важливо": [], "макіяж": null, "прикраси": "невідомо", "реєстр_людини": ["класика"], "бажання": [], "вето": {"типи": [], "тканини": [], "принти": [], "кольори": [], "зони": []}, "настрій": [], "невідомо": [], "нагода": "робота", "місце": null, "гілка_ошатності": "business", "причина_ошатності": "norm", "цитати_полів": {"нагода": "робочий день в офісі", "реєстр_людини": "стримано й класично"}, "поля_шару": ["вето", "гілка_ошатності", "нагода", "опади", "ошатність", "подія", "причина_ошатності", "реєстр_людини"]}, "розмова": ["She: робочий день в офісі, хочу стримано й класично"], "ключі": {"нагода": "спорт — Спорт, активність; подорож — Подорож (у дорозі: переліт, поїзд); щоденне — Звичайний день (прогулянка, справи); побачення — Побачення; театр — Театр, концерт; робота — Робота (зустріч, презентація, співбесіда); свято — Свято, вечірка (день народження, Новий рік); дім; прогулянка; музей; школа; церква; офіційний_захід; співбесіда; весілля_гість; траур", "місце": "дім — Вдома; парк — Надворі (вулиця, парк, набережна); транспорт_довгий — У дорозі (транспорт, переліт); ресторан_районний — Заклад (кафе, ресторан, бар); театр — Зал (театр, кіно, концерт, музей, конференція); офіс — Офіс; святкова_вечеря — Урочистий зал (банкет, весілля, вечірка); fine_dining; ресторан_високий; бар; кафе; опера_прем'єра; офіс_корпоративний; офіс_креативний; співбесіда; конференція; презентація; прогулянка; дитячий_майданчик; школа_батьківські; лікарня_візит; подорож_переліт; музей; вернісаж; домашня_вечірка; клуб; спорт; церква_служба; весілля; похорон", "дрес_код": "casual — Буденно; smart_casual — Охайно буденно; dressy_casual; business_casual — Ділово, м'яко; semi_formal; festive; business_formal — Ділово, строго; cocktail — Коктейльне; black_tie_optional; black_tie — Чорна краватка; creative_black_tie; white_tie — Біла краватка", "реєстр_людини": "класика — класика / сарторіальний; мінімалізм — мінімалізм / сканді; преппі — преппі / Ivy; стритвер — стритвер; воркер — воркер / Americana; спорт_шик — спорт-шик / athleisure; романтичний — романтичний; бохо — бохо; рок — рок / гранж; тиха_розкіш — тиха розкіш / quiet luxury; gorpcore — gorpcore / техвір; драматичний — драматичний; етно_укр — український етно-реєстр"}, "теми_поради": ["gold, silver, pearls, ethnic or no jewellery at all — what she wants with THIS look"]}
+
+── ВІДПОВІДЬ (1398 симв., 17.1 с, HTTP 200) ──
+{
+  "подія": "робочий день в офісі",
+  "нагода": "робота",
+  "місце": "офіс",
+  "формат": "приміщення",
+  "тривалість_год": null,
+  "рух": "невідомо",
+  "дрес_код": null,
+  "ошатність": [7, 7],
+  "година": 11,
+  "темп_c": 18,
+  "погода_відчуття": null,
+  "опади": "невідомо",
+  "намір": "conventional",
+  "мета": "невідомо",
+  "мета_важливо": [],
+  "мета_зони": [],
+  "макіяж": {
+    "рівень": null,
+    "губи": null
+  },
+  "прикраси": "невідомо",
+  "реєстр_людини": [
+    "класика"
+  ],
+  "бажання": [],
+  "вето": {
+    "типи": [],
+    "тканини": [],
+    "принти": [],
+    "кольори": [],
+    "зони": []
+  },
+  "ноги_вище_см": null,
+  "настрій": [
+    "стримано",
+    "класично"
+  ],
+  "невідомо": [
+    "тривалість_год",
+    "рух",
+    "дрес_код",
+    "година",
+    "темп_c",
+    "погода_відчуття",
+    "опади",
+    "мета",
+    "макіяж",
+    "прикраси",
+    "бажання",
+    "вето",
+    "ноги_вище_см"
+  ],
+  "питання_людині": [
+    "Яку ошатність ти маєш на увазі для офісу?",
+    "Чи є у тебе бажання, щоб одяг був більш виразним чи навпаки — повністю нейтральним?"
+  ],
+  "відповідь_людині": "Ти хочеш стриманий і класичний образ на робочий день в офісі охайною серединою дня.",
+  "порада_людині": "Я можу підібрати для тебе золоті, срібні або перлинні прикраси, якщо ти захочеш додати трохи блиску, або ж залишити їх без прикрас, якщо ти віддаєш перевагу мінімалізму. Розкажи, що тобі ближче."
+}

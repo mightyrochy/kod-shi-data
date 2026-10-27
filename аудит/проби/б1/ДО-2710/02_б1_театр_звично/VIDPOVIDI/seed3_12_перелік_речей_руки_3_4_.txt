@@ -1,0 +1,37 @@
+── ПРОМПТ (2563 симв.) ──
+{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.", "A slot the description says is not needed is not an item: give it worn false. One item carries one thing — of two alternatives list the first; a note in brackets is not an item.", "Slot \"accessory\" is for an item no other slot fits.", "\"is_outfit\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note; then items is empty."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "ITEM_LIST", "answer_schema": {"is_outfit": "yes|no", "items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory", "color_hex": "<#rrggbb or null>", "worn": "<true, or false when the description says the outfit goes without it>"}]}, "input": ["\"description\" — the outfit description"]}, "description": "Emerald green silk sheath dress with a draped neckline and a floor-length hem in #056a3d. The fabric flows softly against the autumn evening air, capturing light with its subtle iridescence while maintaining a silhouette that complements her 160 cm stature without emphasizing specific body measurements.\n\nSilver pointed-toe pumps with a modest heel in metallic finish of #c0c0c0 to echo the cool tones of her hair and eyes, providing an elegant base that elevates the dress for the theatre setting.\n\nA single strand of cultured pearl necklace in #ffffff adds a touch of classic sophistication suitable for a formal evening performance, while small drop earrings in matching pearls frame her face without drawing attention away from the dramatic presentation on stage. This outfit works because the rich emerald color creates a striking contrast with her skin tone of #f2dcd6, making her glow under theatre lighting, while the noble fabric and clean lines respect the formal dress code required for an evening at the opera or play. The cohesive palette of green and silver reflects the autumn season outside while keeping the focus entirely on the captivating nature of the performance she is about to witness."}
+
+── ВІДПОВІДЬ (762 симв., 70.9 с, HTTP 200) ──
+{
+  "is_outfit": true,
+  "items": [
+    {
+      "name": "Emerald green silk sheath dress",
+      "details": "draped neckline, floor-length hem, subtle iridescence",
+      "slot": "dress",
+      "color_hex": "#056a3d",
+      "worn": true
+    },
+    {
+      "name": "Silver pointed-toe pumps",
+      "details": "modest heel, metallic finish",
+      "slot": "shoes",
+      "color_hex": "#c0c0c0",
+      "worn": true
+    },
+    {
+      "name": "Cultured pearl necklace",
+      "details": "single strand",
+      "slot": "necklace",
+      "color_hex": "#ffffff",
+      "worn": true
+    },
+    {
+      "name": "Small drop earrings",
+      "details": "pearls, matching the necklace",
+      "slot": "earrings",
+      "color_hex": "#ffffff",
+      "worn": true
+    }
+  ]
+}

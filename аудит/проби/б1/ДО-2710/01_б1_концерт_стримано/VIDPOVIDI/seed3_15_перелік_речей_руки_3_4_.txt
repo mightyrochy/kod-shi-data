@@ -1,0 +1,44 @@
+── ПРОМПТ (2451 симв.) ──
+{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.", "A slot the description says is not needed is not an item: give it worn false. One item carries one thing — of two alternatives list the first; a note in brackets is not an item.", "Slot \"accessory\" is for an item no other slot fits.", "\"is_outfit\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note; then items is empty."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "ITEM_LIST", "answer_schema": {"is_outfit": "yes|no", "items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory", "color_hex": "<#rrggbb or null>", "worn": "<true, or false when the description says the outfit goes without it>"}]}, "input": ["\"description\" — the outfit description"]}, "description": "Refined silk-blend blouse with a modest collar and button front, tailored fit, deep charcoal grey (#2F3034), smooth woven fabric.\nHigh-waisted wool-blend trousers in a straight-leg cut with subtle side seams, midi length hitting mid-calf, classic navy blue (#1C2E5A), structured felted wool.\nStructured single-breasted blazer with notch lapels and padded shoulders, cropped just below the waistline, dark slate grey (#364047), heavy twill fabric.\nClassic leather loafers with a low block heel and minimal hardware, polished finish, matte black (#121212).\nA simple strand of small pearl beads on thin gold-filled wire.\nThis outfit works by adhering strictly to her request for \"calm and classic\" while perfectly fitting the smart dress code required for an evening event at a club. The monochromatic palette of navy, charcoal, and black creates a sophisticated silhouette that remains understated yet polished in artificial lighting. Every piece chosen prioritizes context optimal fit, ensuring she feels appropriate for the occasion without compromising on the traditional aesthetic she desires."}
+
+── ВІДПОВІДЬ (1128 симв., 92.4 с, HTTP 200) ──
+{
+  "is_outfit": "yes",
+  "items": [
+    {
+      "name": "blouse",
+      "details": "refined silk-blend blouse with a modest collar and button front, tailored fit",
+      "slot": "top",
+      "color_hex": "#2F3034",
+      "worn": true
+    },
+    {
+      "name": "trousers",
+      "details": "high-waisted wool-blend trousers in a straight-leg cut with subtle side seams, midi length hitting mid-calf",
+      "slot": "bottom",
+      "color_hex": "#1C2E5A",
+      "worn": true
+    },
+    {
+      "name": "blazer",
+      "details": "structured single-breasted blazer with notch lapels and padded shoulders, cropped just below the waistline",
+      "slot": "outerwear",
+      "color_hex": "#364047",
+      "worn": true
+    },
+    {
+      "name": "loafers",
+      "details": "classic leather loafers with a low block heel and minimal hardware, polished finish",
+      "slot": "shoes",
+      "color_hex": "#121212",
+      "worn": true
+    },
+    {
+      "name": "necklace",
+      "details": "simple strand of small pearl beads on thin gold-filled wire",
+      "slot": "jewelry",
+      "color_hex": null,
+      "worn": true
+    }
+  ]
+}

@@ -1,0 +1,40 @@
+── ПРОМПТ (6868 симв.) ──
+Ти — перекладачка в застосунку-стилістці. Ти пишеш природною українською рядки, які зараз побачить жінка на екрані. Говорить стилістка — одна жінка: про себе — від першої особи однини й у жіночому роді (я підібрала, я б додала), не «ми», не від імені застосунку чи коду і ніколи словами самої жінки. До неї — напряму, на «ти» (ти, тебе, тобі, твій, твоя; хочеш, скинеш; наказ однини: розкажи, оберни, тримай, дай); що сказала вона, стилістка каже їй у другій особі. Рішень не приймаєш, на питання не відповідаєш, від себе нічого не додаєш, не радиш і не виправдовуєшся. Мова: літературна українська, як у текстах українських крамниць одягу. Кожне українське слово — літерами лише української абетки, без жодної латинської літери чи стороннього знака всередині слова. Кожне речення — одна остаточна версія, без виправлень посеред тексту. Словничок нижче — лише як перекласти англійське слово, коли воно є у вході; це не зміст: річ, тканина чи колір, яких у вході нема, у тексті не з'являються. Звичні українські назви для слів англійського джерела: trousers, pants — штани; dressy, dressier — ошатний, ошатніше; look, outfit — образ; taupe — сіро-бежевий; loose — вільний; suede — замша (жіночий рід); slip dress — сукня-комбінація; camel — кемел (колір). Назви речей і кольорів, які дала крамниця, — як є.
+
+Кожен об'єкт — окрема заява. Відповідь — JSON-об'єкт {key: текст}: скопіюй кожен key дослівно й напиши його власне речення. Ключі не нумеруй, заяв не об'єднуй. Не перенось дію, річ, вибір чи ранг з одного key на інший.
+item_ids — предмети заяви, назви — лише підписи цих предметів. Слот не визначає вид речі. recipient: woman — звертання до жінки на ти; stylist — доручення стилістці; journal — факт для журналу, не прохання до жінки. source: catalogue — каталог, photo — фото, model — модель, default — типове рішення, unknown — джерело невідоме. Коди шкал не є словами крамниці.
+choice — автор саме цього вибору: her — її дотик; conversation — її слова; stylist — стилістка; code_rank, form_default, item_default — типове; pending — вибору ще нема; unselected — ця альтернатива не обрана; unknown — автор невідомий. «Ти обрала» — лише в заяві з choice her чи conversation, «не обрана» — лише з unselected; в іншій заяві про її вибір не кажи нічого: пояснення схеми — властивість ходу, а не її вибір. part називає частину вибору; ранг стосується лише неї. rank.weight — вага чипа (core — найходовіша, usual — звичайна, edge — на межі, statement — помітна); rank.position — місце у переліку; rank.rare — чи справді хід рідший. Не називай хід рідшим, коли rare=false, і не обіцяй майбутнього вибору після прийнятого.
+Нема опори в заяві — нічого не додавай. Числа, коди й key не переписуй у людський текст.
+
+КОДИ У ЗНАЧЕННЯХ:
+- dark — темні.
+Визначення заяв нижче — англійською, і це ОПИС того, що сказано, про неї в третій особі. Не перекладай його дослівно й не переписуй як є: скажи те саме їй, українською, на «ти», своїми словами. «she» і «her» у визначеннях — завжди вона, жінка: «ти», «тобі», «твоя»; «the stylist» — стилістка. Що обрала чи зробила вона, не пиши як вибір стилістки. «the selection» і «selection» в іменах заяв і видів — добір; «the code» у визначеннях — перевірка образу, яку робить стилістка. «Код», «система» чи «програма» в тексті не діють ніколи: хто дібрав чи перевірив — «я» або добір.
+ЗАЯВИ:
+- palette_choice_part — the current state of this palette part: part is scheme, base or saturation; values.value is its actual value, or null while pending; choice is its author. State only this part, do not invent a future choice after it has been made..
+- scheme_neutrals_accent — a neutral base and one flash of colour.
+- light_dark_plus_accent_natural — a light and a dark neutral plus an accent is a natural pair for her expressive contrast: the outfit repeats what is already in the face.
+- stylist_chose_scheme — the stylist chose the scheme for this outing: items are picked for it and the accent is checked against it (values: scheme — the scheme's name).
+- stylist_chose_base — the stylist chose the base, the outfit's main colour (values: base — the colour's name; shade — light, dark, absent means medium).
+- why_goal_express — because the outfit should draw the eye.
+- why_her_words — because it follows what she asked for.
+- why_first_advice — because it is the first advice for her colouring and this outing asks for nothing else.
+- choose_another_if_wants — she can choose another one herself if she wants.
+ПОВІДОМЛЕННЯ:
+[{"code": "palette_choice_part", "values": {"value": "хвойний темний · м'яка"}, "recipient": "woman", "source": "model", "choice": "stylist", "rank": null, "item_ids": [], "part": "base", "key": "s_ed998620ce7055c4f5289d12"}, {"code": "palette_choice_part", "values": {"value": "нейтрали+акцент"}, "recipient": "woman", "source": "model", "choice": "stylist", "rank": null, "item_ids": [], "part": "scheme", "key": "s_d52b7935c219d2e571967526"}, {"code": "palette_choice_part", "values": {"value": "насичені"}, "recipient": "woman", "source": "model", "choice": "stylist", "rank": null, "item_ids": [], "part": "saturation", "key": "s_69bd1335d244e8de841499ed"}, {"code": "stylist_chose_scheme", "values": {"scheme": "нейтрали+акцент"}, "recipient": "woman", "source": "model", "choice": "stylist", "rank": {"position": 1, "rare": false}, "item_ids": [], "part": "scheme", "key": "s_f1fe41a71ea3a5d7050a4948"}, {"code": "why_her_words", "values": {}, "recipient": "woman", "source": "model", "choice": "stylist", "rank": {"position": 1, "rare": false}, "item_ids": [], "part": "scheme", "key": "s_9156178e6a2d33cc31d13b80"}, {"code": "stylist_chose_base", "values": {"base": "хвойний", "shade": "dark"}, "recipient": "woman", "source": "model", "choice": "stylist", "rank": null, "item_ids": [], "part": "base", "key": "s_4fae9571fbed6c8cfe8a46df"}, {"code": "why_first_advice", "values": {}, "recipient": "woman", "source": "model", "choice": "stylist", "rank": null, "item_ids": [], "part": "base", "key": "s_6708f73588d129dd0b4b5214"}, {"code": "why_goal_express", "values": {}, "recipient": "woman", "source": "model", "choice": "stylist", "rank": null, "item_ids": [], "part": "base", "key": "s_1abfe51e8130c6459e6e368d"}, {"code": "choose_another_if_wants", "values": {}, "recipient": "woman", "source": "unknown", "choice": "unknown", "rank": null, "item_ids": [], "key": "s_c87bfd9ed94cfe5ec9fe5750"}, {"code": "scheme_neutrals_accent", "values": {}, "recipient": "woman", "source": "unknown", "choice": "stylist", "rank": {"position": 1, "rare": false, "weight": "core"}, "item_ids": [], "part": "scheme", "key": "s_5adfeaa496e5cef5f158c408"}, {"code": "light_dark_plus_accent_natural", "values": {}, "recipient": "woman", "source": "unknown", "choice": "stylist", "rank": {"position": 1, "rare": false, "weight": "core"}, "item_ids": [], "part": "scheme", "key": "s_169cc068d1ad03fb5e90d402"}]
+
+── ВІДПОВІДЬ (1047 симв., 14.8 с, HTTP 200) ──
+```json
+{
+  "s_ed998620ce7055c4f5289d12": "Я обрала для тебе м'яку хвойну темну основу.",
+  "s_d52b7935c219d2e571967526": "Я обрала нейтрали з акцентом як схему.",
+  "s_69bd1335d244e8de841499ed": "Я обрала насичені кольори для твоєї палітри.",
+  "s_f1fe41a71ea3a5d7050a4948": "Для цього виходу я обрала схему «нейтрали з акцентом».",
+  "s_9156178e6a2d33cc31d13b80": "Я зробила це, бо ти просила саме такого рішення.",
+  "s_4fae9571fbed6c8cfe8a46df": "Хвойний темний колір буде твоєю основною базою.",
+  "s_6708f73588d129dd0b4b5214": "Це моя перша порада для твого колориту та цього образу, який не потребує нічого іншого.",
+  "s_1abfe51e8130c6459e6e368d": "Я обрала цей колір, щоб він привертав увагу до тебе.",
+  "s_c87bfd9ed94cfe5ec9fe5750": "Якщо ти захочеш, можеш сама обрати інший варіант.",
+  "s_5adfeaa496e5cef5f158c408": "Твій образ складатиметься з нейтральних кольорів та одного яскравого акценту.",
+  "s_169cc068d1ad03fb5e90d402": "Я обрала поєднання світлого, темного нейтрального кольору та природного акценту для твого образу."
+}
+```

@@ -1,0 +1,37 @@
+── ПРОМПТ (2276 симв.) ──
+{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.", "A slot the description says is not needed is not an item: give it worn false. One item carries one thing — of two alternatives list the first; a note in brackets is not an item.", "Slot \"accessory\" is for an item no other slot fits.", "\"is_outfit\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note; then items is empty."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "ITEM_LIST", "answer_schema": {"is_outfit": "yes|no", "items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory", "color_hex": "<#rrggbb or null>", "worn": "<true, or false when the description says the outfit goes without it>"}]}, "input": ["\"description\" — the outfit description"]}, "description": "Silk crepe sheath dress, knee-length cut, charcoal gray (#3a4552), smooth fluid fabric.\nCroc-embossed leather pumps, classic pointed-toe shape, medium height heel, deep brown (#6f4e37), soft calfskin.\nPearl drop earrings, round studs, white nacre, gold-filled setting; structured clutch bag, box silhouette, black matte finish, genuine leather.\n\nThis outfit perfectly honors your wish for a restrained and classic look suitable for an evening at the theater at 19:00 in autumn. The charcoal sheath dress provides a timeless silhouette that flatters your figure while adhering strictly to formal dress codes without any unnecessary outer layers since the warmth is sufficient for an indoor event. The deep brown pumps add a touch of understated elegance that complements the dark dress, and the pearl earrings bring a subtle sparkle appropriate for the occasion, ensuring the overall context is optimal for your evening out."}
+
+── ВІДПОВІДЬ (785 симв., 67.1 с, HTTP 200) ──
+{
+  "is_outfit": "yes",
+  "items": [
+    {
+      "name": "Silk crepe sheath dress",
+      "details": "knee-length cut, smooth fluid fabric",
+      "slot": "dress",
+      "color_hex": "#3a4552",
+      "worn": true
+    },
+    {
+      "name": "Croc-embossed leather pumps",
+      "details": "classic pointed-toe shape, medium height heel",
+      "slot": "shoes",
+      "color_hex": "#6f4e37",
+      "worn": true
+    },
+    {
+      "name": "Pearl drop earrings",
+      "details": "round studs, white nacre, gold-filled setting",
+      "slot": "earrings",
+      "color_hex": "#ffffff",
+      "worn": true
+    },
+    {
+      "name": "Structured clutch bag",
+      "details": "box silhouette, genuine leather",
+      "slot": "bag",
+      "color_hex": "#000000",
+      "worn": true
+    }
+  ]
+}

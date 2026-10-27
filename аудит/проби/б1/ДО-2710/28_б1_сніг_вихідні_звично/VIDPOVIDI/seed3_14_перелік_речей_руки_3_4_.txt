@@ -1,0 +1,37 @@
+── ПРОМПТ (2700 симв.) ──
+{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.", "A slot the description says is not needed is not an item: give it worn false. One item carries one thing — of two alternatives list the first; a note in brackets is not an item.", "Slot \"accessory\" is for an item no other slot fits.", "\"is_outfit\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note; then items is empty."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "ITEM_LIST", "answer_schema": {"is_outfit": "yes|no", "items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory", "color_hex": "<#rrggbb or null>", "worn": "<true, or false when the description says the outfit goes without it>"}]}, "input": ["\"description\" — the outfit description"]}, "description": "Wool-blend pea coat in slate blue (#2c3e50), tailored straight cut with elbow-length sleeves, knee-length hem, and a structured lapel, crafted from dense felted fabric for wind resistance.\nMerino wool trousers in charcoal grey (#36454f), slim fit with a high waistline to elongate the leg, mid-calf length break, featuring a soft inner lining for warmth against road salt.\nAnkle boots in polished black leather (#0a0a0a), round toe, low block heel for stability on snowy surfaces, and waterproof membrane construction.\nA chunky knit scarf in cream ivory (#fffff0) with a ribbed texture to add contrast against the dark outerwear.\n\nThis outfit works perfectly because the wool-blend coat and lined trousers provide essential insulation against the freezing temperatures and snow while keeping movement free for your evening walk. The neutral slate and charcoal tones harmonize beautifully with your warm skin tone of #f1d7c4, creating a flattering visual balance without relying on specific color matching rules. While the ensemble leans neat as requested, the textured scarf adds just enough interest to prevent a monochromatic look from feeling too uniform in the dim evening light. You will feel confident stepping out into the cold with friends, knowing the attire is both weather-appropriate and stylishly refined for your coffee stops later."}
+
+── ВІДПОВІДЬ (967 симв., 66.2 с, HTTP 200) ──
+{
+  "is_outfit": "yes",
+  "items": [
+    {
+      "name": "Wool-blend pea coat",
+      "details": "tailored straight cut with elbow-length sleeves, knee-length hem, and a structured lapel, crafted from dense felted fabric",
+      "slot": "outerwear",
+      "color_hex": "#2c3e50",
+      "worn": true
+    },
+    {
+      "name": "Merino wool trousers",
+      "details": "slim fit with a high waistline, mid-calf length break, featuring a soft inner lining",
+      "slot": "bottom",
+      "color_hex": "#36454f",
+      "worn": true
+    },
+    {
+      "name": "Ankle boots",
+      "details": "round toe, low block heel for stability on snowy surfaces, and waterproof membrane construction",
+      "slot": "shoes",
+      "color_hex": "#0a0a0a",
+      "worn": true
+    },
+    {
+      "name": "Chunky knit scarf",
+      "details": "ribbed texture to add contrast against the dark outerwear",
+      "slot": "scarf",
+      "color_hex": "#fffff0",
+      "worn": true
+    }
+  ]
+}

@@ -1,0 +1,37 @@
+── ПРОМПТ (2480 симв.) ──
+{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.", "A slot the description says is not needed is not an item: give it worn false. One item carries one thing — of two alternatives list the first; a note in brackets is not an item.", "Slot \"accessory\" is for an item no other slot fits.", "\"is_outfit\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note; then items is empty."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "ITEM_LIST", "answer_schema": {"is_outfit": "yes|no", "items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory", "color_hex": "<#rrggbb or null>", "worn": "<true, or false when the description says the outfit goes without it>"}]}, "input": ["\"description\" — the outfit description"]}, "description": "Refined wool-blend blazer in #664f34 with a structured shoulder cut and elbow-length sleeves, tailored to skim the 98 cm shoulders without adding bulk.\nSilk-poplin shirt in #e0bd9a with a classic point collar and straight hem, sized for a relaxed fit through the 74 cm waist.\nDark washed denim trousers in #2c3e50 with a mid-rise waistline that flatters the hips while maintaining a clean, uninterrupted leg line.\nLeather ankle boots in #1a1a1a with a low stacked heel and a sleek silhouette to elongate the 168 cm frame.\nThis ensemble strikes the perfect balance between smart casual elegance and personal comfort for an autumn evening date. The neutral palette of charcoal, cream, and deep navy creates a sophisticated backdrop that keeps the focus on her classic style while adapting to the warm 19:30 restaurant setting. The structured blazer adds just enough polish to elevate the denim without crossing into formal territory, ensuring she feels poised yet approachable for conversation. Every piece is selected to optimize her silhouette and honor her request for a restrained, timeless look that exudes quiet confidence."}
+
+── ВІДПОВІДЬ (937 симв., 105.5 с, HTTP 200) ──
+{
+  "is_outfit": "yes",
+  "items": [
+    {
+      "name": "Wool-blend blazer",
+      "details": "structured shoulder cut and elbow-length sleeves, tailored to skim shoulders without adding bulk",
+      "slot": "outerwear",
+      "color_hex": "#664f34",
+      "worn": true
+    },
+    {
+      "name": "Silk-poplin shirt",
+      "details": "classic point collar and straight hem, sized for a relaxed fit through the waist",
+      "slot": "top",
+      "color_hex": "#e0bd9a",
+      "worn": true
+    },
+    {
+      "name": "Dark washed denim trousers",
+      "details": "mid-rise waistline that flatters hips while maintaining a clean, uninterrupted leg line",
+      "slot": "bottom",
+      "color_hex": "#2c3e50",
+      "worn": true
+    },
+    {
+      "name": "Leather ankle boots",
+      "details": "low stacked heel and sleek silhouette to elongate frame",
+      "slot": "shoes",
+      "color_hex": "#1a1a1a",
+      "worn": true
+    }
+  ]
+}

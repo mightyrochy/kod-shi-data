@@ -1,0 +1,44 @@
+── ПРОМПТ (2609 симв.) ──
+{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.", "A slot the description says is not needed is not an item: give it worn false. One item carries one thing — of two alternatives list the first; a note in brackets is not an item.", "Slot \"accessory\" is for an item no other slot fits.", "\"is_outfit\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note; then items is empty."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "ITEM_LIST", "answer_schema": {"is_outfit": "yes|no", "items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory", "color_hex": "<#rrggbb or null>", "worn": "<true, or false when the description says the outfit goes without it>"}]}, "input": ["\"description\" — the outfit description"]}, "description": "Church Service Dinner Jacket in a deep charcoal hue, tailored with clean lines and minimal hardware for a composed silhouette; Evening Blouse of fine wool crepe in ivory, featuring a modest neckline and long sleeves that drape elegantly to the wrist; Slim-fit Trousers in matching dark charcoal wool, falling just below the ankle with a gentle crease to maintain structure; Closed-toe Pump in polished black leather, offering a moderate heel height for comfort during a standing service or seated family gathering; Classic Clutch in structured black leather with a subtle metallic clasp to hold essentials discreetly.\n\nThis outfit honors her request for restraint and classic style by selecting monochromatic dark tones and refined natural fabrics suitable for an autumn day at church, ensuring the attire respects the solemnity of the religious service while remaining appropriate for the subsequent family lunch. The modest cuts of the blouse and trousers, combined with a conservative color palette, align perfectly with traditional expectations for worship without sacrificing elegance. Finally, the polished finish of the leather shoes and clutch ties the ensemble together, projecting dignity and grace as she transitions from ceremony to conversation."}
+
+── ВІДПОВІДЬ (1129 симв., 114.2 с, HTTP 200) ──
+{
+  "is_outfit": "yes",
+  "items": [
+    {
+      "name": "Dinner Jacket",
+      "details": "tailored with clean lines and minimal hardware for a composed silhouette",
+      "slot": "outerwear",
+      "color_hex": "#36454F",
+      "worn": true
+    },
+    {
+      "name": "Evening Blouse",
+      "details": "fine wool crepe featuring a modest neckline and long sleeves that drape elegantly to the wrist",
+      "slot": "top",
+      "color_hex": "#FFFFF0",
+      "worn": true
+    },
+    {
+      "name": "Trousers",
+      "details": "slim-fit falling just below the ankle with a gentle crease to maintain structure",
+      "slot": "bottom",
+      "color_hex": "#36454F",
+      "worn": true
+    },
+    {
+      "name": "Pump",
+      "details": "closed-toe offering a moderate heel height for comfort during a standing service or seated family gathering",
+      "slot": "shoes",
+      "color_hex": "#000000",
+      "worn": true
+    },
+    {
+      "name": "Clutch",
+      "details": "structured with a subtle metallic clasp to hold essentials discreetly",
+      "slot": "bag",
+      "color_hex": "#000000",
+      "worn": true
+    }
+  ]
+}

@@ -1,0 +1,60 @@
+── ПРОМПТ (8347 симв.) ──
+Ти — перекладачка в застосунку-стилістці. Ти пишеш природною українською тексти, які зараз побачить жінка. Рішень не приймаєш, на питання не відповідаєш, змісту не міняєш.
+
+Вхід — JSON-об'єкт: ключ — номер тексту н, значення — текст, який склали код та інші моделі.
+
+Відповідь — лише JSON-об'єкт тієї самої форми, що вхід, з усіма його ключами: ключ — номер н кожного тексту зі входу, значення — рядок — той самий зміст природною українською, без англійських слів і кодів (назви крамниць і брендів — як є); ПЕРЕКЛАДАЙ КОЖНЕ англійське слово, навіть одне посеред українського речення; латиницею лишай лише назви крамниць і брендів, «V-подібний» і «den»; текст, що вже природний і до неї на «ти», — без змін, а український текст на «ви» перепиши на «ти», решту лиши слово в слово.
+
+Вид кожної речі — теж зміст: річ у перекладі — та сама, що у вході, а не схожа чи сусідня. ankle boots — черевики чи ботильйони, boots — чоботи, heeled — на підборах, а не туфлі, pumps — туфлі-човники, loafers — лофери; pendant — кулон чи підвіска, necklace — намисто чи ланцюжок, а не каблучка, сережки чи браслет; ring — каблучка; earrings — сережки. Українські назви речей у вході (назви з крамниці, найчастіше перед « — ») переписуй літера в літеру: не міняй, не переставляй і не додавай у них жодного слова.
+
+Про жінку — лише до неї, на «ти» (ти, тебе, тобі, твій, твоя; хочеш, скинеш; наказ однини: розкажи, оберни, тримай, дай), і в питаннях теж: you, your, she, her про неї — «ти», «твій» (her skin tone — твій тон шкіри; when she turns her head — коли ти повертаєш голову; she looks taller — ти виглядаєш вищою), англійський наказ — наказом однини; «вона», «її» — лише про річ (сукню, сумку, куртку). Говорить стилістка — одна жінка: про себе — від першої особи однини й у жіночому роді (я підібрала, я б додала), не «ми», не від імені застосунку чи коду і ніколи словами самої жінки.
+
+Мова: літературна українська, як у текстах українських крамниць одягу. Кожне українське слово — літерами лише української абетки, без жодної латинської літери чи стороннього знака всередині слова. Кожне речення — одна остаточна версія, без виправлень посеред тексту. Словничок нижче — лише як перекласти англійське слово, коли воно є у вході; це не зміст: річ, тканина чи колір, яких у вході нема, у тексті не з'являються. Звичні українські назви для слів англійського джерела: trousers, pants — штани; dressy, dressier — ошатний, ошатніше; look, outfit — образ; taupe — сіро-бежевий; loose — вільний; suede — замша (жіночий рід); slip dress — сукня-комбінація; camel — кемел (колір). Назви речей і кольорів, які дала крамниця, — як є.
+
+Перевір кожне слово ДО відповіді: до неї — лише «ти», жодного «ви», «ваш» і наказу множини, і про неї жодного «вона», «її», «їй», жодне слово не стоїть двічі поспіль, кожна річ — того самого виду, що у вході (річ образу — іменником її назви з переліку, коли він є, і слова при ній узгоджені з цим іменником), а українська назва речі — слово в слово. Відповідь — рівно ОДИН JSON-об'єкт і нічого після нього: другої, виправленої версії, приміток і пояснень не пиши — помилку виправ у тому самому об'єкті.
+
+Речі образу — перелік, який жінка бачить на картці (номер речі — назва біля неї):
+1 — Топ «Base» сірий · kind code: t_shirt · colour code: grey · about it: text н=1
+2 — Спідниця-шорти з кишенями · kind code: skirt · colour code: white · about it: text н=2
+3 — Прикраса · kind code: jewelry_generic · about it: text н=3
+4 — Чоботи жіночі, ATTICO, шкіра, колір темно-коричневий · kind code: boots · colour code: brown · about it: text н=4
+5 — Сумка Зелена смугаста із широким ременем · kind code: bag_generic · colour code: green · about it: text н=5
+When a text speaks of an item of the list, call it by the kind in its name — the same noun in the right case (list «Тренч бежевий подовжений» — text «тренч», «Светр в'язаний оверсайз» — «светр»), not by another kind or a synonym of the English word. Make every adjective, pronoun and verb with the item agree with that noun in gender and number («Тренч бежевий» — «бежевий тренч, який…»; «Лофери шкіряні» — «шкіряні лофери, які…»). A name you translate in this same call (text н=K): give it one noun and call the item by it, in agreement, in every text. A text the list gives as about an item (about it: text н=M) speaks of that one item, and so does every other text where the English names it. The colour of an item of the list is the colour of its name: keep the shop's colour word from its name; when its name has no colour word, write the Ukrainian name of its colour code. The English colour words for that item are the stylist's impression of a photo: do not turn them into a colour of their own — the item's colour stands in their place. Colours of its details (trim, strap, buttons, print), its fabric and the rest — translate from the text. The list is for names only: an item the English text does not name is not added to the translation — neither to the description nor to the advice. The kind code next to an item (kind code: …) is the code of its kind: every noun for that item, in every text, names this kind and no other, whatever word the English text uses; a code ending in _generic names only the family (dress_generic — a dress, bag_generic — a bag). The kind noun of its name and this code are the same kind: write the name's noun.
+
+Colour codes: brown — коричневий; green — зелений; grey — сірий; white — білий.
+
+ТЕКСТИ:
+{
+"1": "The top is a soft grey, ribbed knit piece with wide straps that offer gentle support and a relaxed fit. Its smooth texture adds a subtle depth to the fabric without overwhelming the simplicity of your office outfit.",
+"2": "These white shorts feature clean lines, two front pockets for practicality, and a slightly structured waistband that sits comfortably at the hip. Their crisp finish elevates them beyond casual wear, making them ideal for an office setting.",
+"3": "This delicate silver jewelry piece is a multi-strand pearl necklace with a central row of sparkling crystals that adds just enough glamour to your neckline without being overpowering.",
+"4": "The boots are crafted from rich dark brown leather, featuring a sleek silhouette and a low block heel for all-day comfort. The subtle sheen of the material complements the matte tones of your other pieces.",
+"5": "This compact crossbody bag showcases a vibrant, vertically striped pattern in shades of green, orange, and brown against a black base. The wide strap ensures it stays securely on your shoulder while offering ample space for essentials.",
+"6": "This ensemble brings a sense of polished, understated elegance to your office day. The soft grey top paired with crisp white shorts creates a clean, monochromatic foundation that feels both professional and comfortable for long hours in the office. The deep brown leather boots ground the outfit, adding a touch of classic sophistication, while the silver pearl jewelry catches the light subtly without drawing too much attention. Finally, the vibrant green striped bag offers just enough pop of color to enliven your look without compromising its neatness.",
+"7": "Tuck the top in or wear it straight depending on whether you want a more structured silhouette during meetings or a relaxed feel for casual moments.",
+"8": "Let the wide strap of the bag fall across your shoulder, keeping it secure and accessible throughout your busy day.",
+"9": "Чоботи жіночі, ATTICO, шкіра, колір темно-коричневий — I add brown leather ankle boots to answer the 'no_shoes' finding and provide adequate coverage for the season.",
+"10": "Чоботи жіночі, ATTICO, шкіра, колір темно-коричневий — These brown leather boots provide the seasonal coverage you need for autumn weather and anchor the hem proportion against your maxi jeans, ensuring practical comfort throughout your workday.",
+"11": "Чоботи жіночі, ATTICO, шкіра, колір темно-коричневий — I add brown leather boots to answer the 'no_shoes' finding and judge the hem proportion correctly against her autumn day.",
+"12": "Чоботи жіночі, ATTICO, шкіра, колір темно-коричневий — I add dark brown ankle boots to answer the 'no_shoes' finding and provide necessary coverage for the autumn season.",
+"13": "Чоботи жіночі, ATTICO, шкіра, колір темно-коричневий — I add brown leather boots to answer the 'no_shoes' finding and ensure she is covered in the autumn weather."
+}
+
+── ВІДПОВІДЬ (2792 симв., 54.6 с, HTTP 200) ──
+```json
+{
+  "1": "Цей топ — м’який сірий трикотажний виріб з широкими бретелями, які ніжно підтримують і дарують вільний крій. Його гладка текстура додає тканині ледь помітну глибину без перевантаження простоти твого офісного образу.",
+  "2": "Ці білі шорти мають чіткі лінії, дві передні кишені для практичності та злегка структурований пояс, який зручно сидить на стегнах. Їхній свіжий вигляд підносить їх понад повсякденний одяг, роблячи ідеальними для офісної обстановки.",
+  "3": "Цей ніжний срібний ювелірний виріб — багатошаровий перловий намисто з центральним рядом блискучих кристалів, який додає достатньо гламуру до твоєї лінії шиї без надмірності.",
+  "4": "Чоботи виготовлені зі шкіри темно-коричневого кольору, мають елегантний силует і низький стійкий каблук для комфорту протягом усього дня. Легкий блиск матеріалу доповнює матові тони твоїх інших речей.",
+  "5": "Ця компактна сумка через плече демонструє яскравий, вертикальний смугастий візерунок відтінків зеленого, помаранчевого та коричневого на чорному фоні. Широкий ремінь гарантує її безпечне носіння на твоєму плечі, пропонуючи достатньо місця для необхідних дрібниць.",
+  "6": "Цей ансамбль привносить відчуття вишуканої, стриманої елегантності у твій офісний день. М’який сірий топ в парі з білими шортами створює чисту монохромну основу, яка поєднує професіоналізм і комфорт для довгих годин на роботі. Чоботи зі шкіри темно-коричневого кольору підкреслюють образ, додаючи нотку класичної витонченості, а срібне перлове намисто ледь помітно ловить світло без надмірної уваги. Насамкінець, яскрава зелена сумка в смужку дарує достатньо колірних акцентів для підняття настрою твого образу, не втрачаючи його охайності.",
+  "7": "Заправ топ або носи його вільно залежно від того, чи хочеш ти більш структурований силует на нарадах або розслабленого вигляду у вільні моменти.",
+  "8": "Дай широкому ременю сумки перекинутися через твоє плече, щоб вона була безпечною та доступною протягом твого насиченого дня.",
+  "9": "Я додаю коричневі шкіряні черевички на підборах, щоб відповісти на знахідку 'no_shoes' і забезпечити достатнє покриття для сезону.",
+  "10": "Ці темно-коричневі шкіряні чоботи дають тобі сезонне покриття, необхідне для осінньої погоди, та правильно підкреслюють довжину низу проти твоїх максі джинсів, забезпечуючи практичний комфорт протягом усього робочого дня.",
+  "11": "Я додаю коричневі шкіряні чоботи, щоб відповісти на знахідку 'no_shoes' і правильно оцінити довжину низу проти її осіннього дня.",
+  "12": "Я додаю темно-коричневі черевички на підборах, щоб відповісти на знахідку 'no_shoes' і забезпечити необхідне покриття для осіннього сезону.",
+  "13": "Я додаю коричневі шкіряні чоботи, щоб відповісти на знахідку 'no_shoes' і переконатися, що ти захищена від осінньої погоди."
+}
+```

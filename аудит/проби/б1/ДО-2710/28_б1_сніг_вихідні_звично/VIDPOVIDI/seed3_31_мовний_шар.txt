@@ -1,0 +1,48 @@
+── ПРОМПТ (7010 симв.) ──
+Ти — перекладачка в застосунку-стилістці. Ти пишеш природною українською тексти, які зараз побачить жінка. Рішень не приймаєш, на питання не відповідаєш, змісту не міняєш.
+
+Вхід — JSON-об'єкт: ключ — номер тексту н, значення — текст, який склали код та інші моделі.
+
+Відповідь — лише JSON-об'єкт тієї самої форми, що вхід, з усіма його ключами: ключ — номер н кожного тексту зі входу, значення — рядок — той самий зміст природною українською, без англійських слів і кодів (назви крамниць і брендів — як є); ПЕРЕКЛАДАЙ КОЖНЕ англійське слово, навіть одне посеред українського речення; латиницею лишай лише назви крамниць і брендів, «V-подібний» і «den»; текст, що вже природний і до неї на «ти», — без змін, а український текст на «ви» перепиши на «ти», решту лиши слово в слово.
+
+Вид кожної речі — теж зміст: річ у перекладі — та сама, що у вході, а не схожа чи сусідня. ankle boots — черевики чи ботильйони, boots — чоботи, heeled — на підборах, а не туфлі, pumps — туфлі-човники, loafers — лофери; pendant — кулон чи підвіска, necklace — намисто чи ланцюжок, а не каблучка, сережки чи браслет; ring — каблучка; earrings — сережки. Українські назви речей у вході (назви з крамниці, найчастіше перед « — ») переписуй літера в літеру: не міняй, не переставляй і не додавай у них жодного слова.
+
+Про жінку — лише до неї, на «ти» (ти, тебе, тобі, твій, твоя; хочеш, скинеш; наказ однини: розкажи, оберни, тримай, дай), і в питаннях теж: you, your, she, her про неї — «ти», «твій» (her skin tone — твій тон шкіри; when she turns her head — коли ти повертаєш голову; she looks taller — ти виглядаєш вищою), англійський наказ — наказом однини; «вона», «її» — лише про річ (сукню, сумку, куртку). Говорить стилістка — одна жінка: про себе — від першої особи однини й у жіночому роді (я підібрала, я б додала), не «ми», не від імені застосунку чи коду і ніколи словами самої жінки.
+
+Мова: літературна українська, як у текстах українських крамниць одягу. Кожне українське слово — літерами лише української абетки, без жодної латинської літери чи стороннього знака всередині слова. Кожне речення — одна остаточна версія, без виправлень посеред тексту. Словничок нижче — лише як перекласти англійське слово, коли воно є у вході; це не зміст: річ, тканина чи колір, яких у вході нема, у тексті не з'являються. Звичні українські назви для слів англійського джерела: trousers, pants — штани; dressy, dressier — ошатний, ошатніше; look, outfit — образ; taupe — сіро-бежевий; loose — вільний; suede — замша (жіночий рід); slip dress — сукня-комбінація; camel — кемел (колір). Назви речей і кольорів, які дала крамниця, — як є.
+
+Перевір кожне слово ДО відповіді: до неї — лише «ти», жодного «ви», «ваш» і наказу множини, і про неї жодного «вона», «її», «їй», жодне слово не стоїть двічі поспіль, кожна річ — того самого виду, що у вході (річ образу — іменником її назви з переліку, коли він є, і слова при ній узгоджені з цим іменником), а українська назва речі — слово в слово. Відповідь — рівно ОДИН JSON-об'єкт і нічого після нього: другої, виправленої версії, приміток і пояснень не пиши — помилку виправ у тому самому об'єкті.
+
+Речі образу — перелік, який жінка бачить на картці (номер речі — назва біля неї):
+1 — Oversize-пончо з вовни ягнят сіре · kind code: poncho · colour code: grey · about it: text н=1
+2 — Блуза шовкова з перекрутом · kind code: blouse · colour code: brown · about it: text н=2
+3 — Черевики замшеві бежеві TERRA на шкірі · kind code: ankle_boots · colour code: beige · about it: text н=3
+4 — Жіноча сумка шопер шкіряна молочного кольору · kind code: tote · colour code: milky · about it: text н=4
+5 — Сині джинси straight fit із ремінцем на кармані · kind code: jeans · colour code: blue · about it: text н=5
+When a text speaks of an item of the list, call it by the kind in its name — the same noun in the right case (list «Тренч бежевий подовжений» — text «тренч», «Светр в'язаний оверсайз» — «светр»), not by another kind or a synonym of the English word. Make every adjective, pronoun and verb with the item agree with that noun in gender and number («Тренч бежевий» — «бежевий тренч, який…»; «Лофери шкіряні» — «шкіряні лофери, які…»). A name you translate in this same call (text н=K): give it one noun and call the item by it, in agreement, in every text. A text the list gives as about an item (about it: text н=M) speaks of that one item, and so does every other text where the English names it. The colour of an item of the list is the colour of its name: keep the shop's colour word from its name; when its name has no colour word, write the Ukrainian name of its colour code. The English colour words for that item are the stylist's impression of a photo: do not turn them into a colour of their own — the item's colour stands in their place. Colours of its details (trim, strap, buttons, print), its fabric and the rest — translate from the text. The list is for names only: an item the English text does not name is not added to the translation — neither to the description nor to the advice. The kind code next to an item (kind code: …) is the code of its kind: every noun for that item, in every text, names this kind and no other, whatever word the English text uses; a code ending in _generic names only the family (dress_generic — a dress, bag_generic — a bag). The kind noun of its name and this code are the same kind: write the name's noun.
+
+Colour codes: beige — бежевий; blue — синій; brown — коричневий; grey — сірий; milky — молочний.
+
+ТЕКСТИ:
+{
+"1": "This oversized poncho is made of soft, warm wool in a clean grey shade, cut with wide sleeves and a flowing silhouette that drapes elegantly over your frame.",
+"2": "The blouse features a deep V-neckline and long gathered sleeves with a subtle crossover front detail, crafted in a rich brown tone that adds warmth to your look.",
+"3": "These ankle boots are made of smooth beige suede with a chunky lug sole, lace-up closure accented by braided cords and decorative beads for a stylish, edgy finish.",
+"4": "This tote bag is crafted from soft, textured leather in a gentle creamy beige tone, designed with a relaxed slouchy shape and a long top handle for easy carrying.",
+"5": "These straight-fit jeans come in a medium blue wash with subtle fading at the thighs and knees, featuring classic five-pocket styling and a comfortable waistband for all-day wear.",
+"6": "Your look is ready for a winter walk through the snow: a soft grey wool poncho draped over a rich brown blouse, paired with classic blue jeans and finished with cozy beige suede ankle boots. The neutral tones of the outerwear and shoes let your warm brown top pop, while the sturdy boots handle the cold and salted streets comfortably. This outfit carries you easily through an evening outing with friends, keeping you stylish without sacrificing warmth.",
+"7": "Leave the poncho open to drape freely over your shoulders and arms for that relaxed winter feel, letting the brown blouse peek out underneath as a soft contrast against the grey exterior."
+}
+
+── ВІДПОВІДЬ (1613 симв., 63.6 с, HTTP 200) ──
+```json
+{
+"1": "Цей оверсайз-пончо виготовлене з м’якої теплої вовни в чистому сірому відтінку, пошито з широкими рукавами та вільною формою, яка елегантно драпірується на твоїй фігурі.",
+"2": "Блуза має глибокий V-подібний виріз і довгі зібрані рукави з ледь помітним перехресним переднім деталем, виготовлена в насиченому коричневому тоні, який додає тепла твоєму образу.",
+"3": "Ці черевики на підборах виготовлені з гладкої бежевої замші зі стійкою підошвою-трактором, шнурівкою, прикрашеною плетеними мотузками та декоративними намистинами для стильного й зухвалого фінішу.",
+"4": "Ця сумка-шопер виготовлена з м’якої текстурованої шкіри в ніжному кремово-бежевому тоні, має розслаблену форму і довгу верхню ручку для зручного носіння.",
+"5": "Ці прямі джинси мають середній синій колір із ледь помітним вицвітанням на стегнах і колінах, класичну п’ятикишеню та комфортну талію для цілоденного носіння.",
+"6": "Твій образ готовий до зимової прогулянки снігом: м’яке сіре вовняне пончо розгорнене на плечах і руках, коричнева блуза під ним створює теплий контраст. Образ завершують класичні сині джинси та затишні бежеві замшеві черевики. Нейтральні тони верхнього одягу й взуття дозволяють твоїй теплій коричневій блузі виділитися, а міцні чоботи комфортно захищають від холоду і солі на вулиці. Цей образ легко підійде для вечірньої прогулянки з друзями, зберігаючи стиль без шкоди для тепла.",
+"7": "Залиш пончо розгорнутим, щоб воно вільно спадало на плечі та руки, створюючи невимушений зимовий вигляд. Нехай коричнева блуза ледь проглядає під ним як м’який контраст до сірого зовнішнього вигляду."
+}
+```

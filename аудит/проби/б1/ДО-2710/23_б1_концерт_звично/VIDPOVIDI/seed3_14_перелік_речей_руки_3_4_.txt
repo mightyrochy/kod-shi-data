@@ -1,0 +1,58 @@
+── ПРОМПТ (2845 симв.) ──
+{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.", "A slot the description says is not needed is not an item: give it worn false. One item carries one thing — of two alternatives list the first; a note in brackets is not an item.", "Slot \"accessory\" is for an item no other slot fits.", "\"is_outfit\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note; then items is empty."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "ITEM_LIST", "answer_schema": {"is_outfit": "yes|no", "items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory", "color_hex": "<#rrggbb or null>", "worn": "<true, or false when the description says the outfit goes without it>"}]}, "input": ["\"description\" — the outfit description"]}, "description": "Black silk blouse with a slightly loose cut and a deep V-neck, color #000000, chiffon fabric layered over opaque black tights for warmth in the autumn evening.\nHigh-waisted wide-leg trousers in heavy matte black denim with a straight leg that does not bunch up while walking through crowds, color #1A1A1A, sturdy cotton blend.\nStructured black blazer with padded shoulders and elbow patches to match rock aesthetics, cut oversized for movement, length hitting mid-thigh, color #050505, wool-cashmere blend.\nChunky black leather combat boots with a thick sole for standing long hours in the club crowd, color #0F0F0F, durable cowhide leather.\nSilver ring set and small studded black crossbody bag to hold essentials while keeping hands free for dancing or holding a drink.\nThis outfit works perfectly for a rock concert on a Friday evening because the structured blazer and combat boots provide an edgy, musical vibe that aligns with the event's energy without being overly formal. The loose blouse and wide-leg trousers allow for significant movement and comfort while standing in the dense crowd inside the club. The monochromatic black palette ensures she looks cohesive under the artificial stage lighting, while the textured fabrics add depth to her silhouette against the dark background of the venue. Finally, the combination of warmth from the layers addresses the autumn evening weather inside a potentially air-conditioned space, ensuring she stays comfortable throughout the night."}
+
+── ВІДПОВІДЬ (1603 симв., 63.2 с, HTTP 200) ──
+{
+  "is_outfit": "yes",
+  "items": [
+    {
+      "name": "Black silk blouse",
+      "details": "slightly loose cut with a deep V-neck, layered over opaque fabric for warmth, chiffon overlay",
+      "slot": "top",
+      "color_hex": "#000000",
+      "worn": true
+    },
+    {
+      "name": "Opaque black tights",
+      "details": "layered under blouse for warmth",
+      "slot": "tights",
+      "color_hex": null,
+      "worn": true
+    },
+    {
+      "name": "High-waisted wide-leg trousers",
+      "details": "heavy matte finish, straight leg cut that does not bunch up, sturdy cotton blend fabric",
+      "slot": "bottom",
+      "color_hex": "#1A1A1A",
+      "worn": true
+    },
+    {
+      "name": "Structured black blazer",
+      "details": "oversized cut for movement with padded shoulders and elbow patches, mid-thigh length, wool-cashmere blend fabric",
+      "slot": "outerwear",
+      "color_hex": "#050505",
+      "worn": true
+    },
+    {
+      "name": "Chunky black leather combat boots",
+      "details": "thick sole for standing long hours, durable cowhide leather construction",
+      "slot": "shoes",
+      "color_hex": "#0F0F0F",
+      "worn": true
+    },
+    {
+      "name": "Silver ring set",
+      "details": "small size for comfort while dancing or holding drinks",
+      "slot": "jewelry",
+      "color_hex": null,
+      "worn": true
+    },
+    {
+      "name": "Studded black crossbody bag",
+      "details": "compact size to hold essentials while keeping hands free for dancing or holding a drink",
+      "slot": "bag",
+      "color_hex": "#000000",
+      "worn": true
+    }
+  ]
+}

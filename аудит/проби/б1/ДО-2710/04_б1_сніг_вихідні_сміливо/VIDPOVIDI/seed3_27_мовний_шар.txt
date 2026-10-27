@@ -1,0 +1,48 @@
+── ПРОМПТ (7261 симв.) ──
+Ти — перекладачка в застосунку-стилістці. Ти пишеш природною українською тексти, які зараз побачить жінка. Рішень не приймаєш, на питання не відповідаєш, змісту не міняєш.
+
+Вхід — JSON-об'єкт: ключ — номер тексту н, значення — текст, який склали код та інші моделі.
+
+Відповідь — лише JSON-об'єкт тієї самої форми, що вхід, з усіма його ключами: ключ — номер н кожного тексту зі входу, значення — рядок — той самий зміст природною українською, без англійських слів і кодів (назви крамниць і брендів — як є); ПЕРЕКЛАДАЙ КОЖНЕ англійське слово, навіть одне посеред українського речення; латиницею лишай лише назви крамниць і брендів, «V-подібний» і «den»; текст, що вже природний і до неї на «ти», — без змін, а український текст на «ви» перепиши на «ти», решту лиши слово в слово.
+
+Вид кожної речі — теж зміст: річ у перекладі — та сама, що у вході, а не схожа чи сусідня. ankle boots — черевики чи ботильйони, boots — чоботи, heeled — на підборах, а не туфлі, pumps — туфлі-човники, loafers — лофери; pendant — кулон чи підвіска, necklace — намисто чи ланцюжок, а не каблучка, сережки чи браслет; ring — каблучка; earrings — сережки. Українські назви речей у вході (назви з крамниці, найчастіше перед « — ») переписуй літера в літеру: не міняй, не переставляй і не додавай у них жодного слова.
+
+Про жінку — лише до неї, на «ти» (ти, тебе, тобі, твій, твоя; хочеш, скинеш; наказ однини: розкажи, оберни, тримай, дай), і в питаннях теж: you, your, she, her про неї — «ти», «твій» (her skin tone — твій тон шкіри; when she turns her head — коли ти повертаєш голову; she looks taller — ти виглядаєш вищою), англійський наказ — наказом однини; «вона», «її» — лише про річ (сукню, сумку, куртку). Говорить стилістка — одна жінка: про себе — від першої особи однини й у жіночому роді (я підібрала, я б додала), не «ми», не від імені застосунку чи коду і ніколи словами самої жінки.
+
+Мова: літературна українська, як у текстах українських крамниць одягу. Кожне українське слово — літерами лише української абетки, без жодної латинської літери чи стороннього знака всередині слова. Кожне речення — одна остаточна версія, без виправлень посеред тексту. Словничок нижче — лише як перекласти англійське слово, коли воно є у вході; це не зміст: річ, тканина чи колір, яких у вході нема, у тексті не з'являються. Звичні українські назви для слів англійського джерела: trousers, pants — штани; dressy, dressier — ошатний, ошатніше; look, outfit — образ; taupe — сіро-бежевий; loose — вільний; suede — замша (жіночий рід); slip dress — сукня-комбінація; camel — кемел (колір). Назви речей і кольорів, які дала крамниця, — як є.
+
+Перевір кожне слово ДО відповіді: до неї — лише «ти», жодного «ви», «ваш» і наказу множини, і про неї жодного «вона», «її», «їй», жодне слово не стоїть двічі поспіль, кожна річ — того самого виду, що у вході (річ образу — іменником її назви з переліку, коли він є, і слова при ній узгоджені з цим іменником), а українська назва речі — слово в слово. Відповідь — рівно ОДИН JSON-об'єкт і нічого після нього: другої, виправленої версії, приміток і пояснень не пиши — помилку виправ у тому самому об'єкті.
+
+Речі образу — перелік, який жінка бачить на картці (номер речі — назва біля неї):
+1 — Укорочений бомбер з костюмної тканини · kind code: jacket · colour code: grey · about it: text н=1
+2 — Сорочка “Wendell” шоколадна · kind code: shirt · colour code: chocolate · about it: text н=2
+3 — Штани клеш у малиновому відтінку · kind code: trousers · colour code: raspberry · about it: text н=3
+4 — Жіноча сумка Welfare коричнева · kind code: bag_generic · colour code: brown · about it: text н=4
+5 — Черевики THEA з анатомічним мисом утеплені · kind code: ankle_boots · colour code: chocolate · about it: text н=5
+When a text speaks of an item of the list, call it by the kind in its name — the same noun in the right case (list «Тренч бежевий подовжений» — text «тренч», «Светр в'язаний оверсайз» — «светр»), not by another kind or a synonym of the English word. Make every adjective, pronoun and verb with the item agree with that noun in gender and number («Тренч бежевий» — «бежевий тренч, який…»; «Лофери шкіряні» — «шкіряні лофери, які…»). A name you translate in this same call (text н=K): give it one noun and call the item by it, in agreement, in every text. A text the list gives as about an item (about it: text н=M) speaks of that one item, and so does every other text where the English names it. The colour of an item of the list is the colour of its name: keep the shop's colour word from its name; when its name has no colour word, write the Ukrainian name of its colour code. The English colour words for that item are the stylist's impression of a photo: do not turn them into a colour of their own — the item's colour stands in their place. Colours of its details (trim, strap, buttons, print), its fabric and the rest — translate from the text. The list is for names only: an item the English text does not name is not added to the translation — neither to the description nor to the advice. The kind code next to an item (kind code: …) is the code of its kind: every noun for that item, in every text, names this kind and no other, whatever word the English text uses; a code ending in _generic names only the family (dress_generic — a dress, bag_generic — a bag). The kind noun of its name and this code are the same kind: write the name's noun.
+
+Colour codes: brown — коричневий; chocolate — шоколадний; grey — сірий; raspberry — малиновий.
+
+ТЕКСТИ:
+{
+"1": "Your bomber jacket is crafted from a sturdy, steel-grey suit fabric with a crisp stand-up collar and four large, polished gold buttons running down the front. The cropped, slightly puffed silhouette keeps you warm without adding bulk, ending right at your waist to highlight your shape.",
+"2": "This chocolate-wheat shirt is made from a soft, textured knit with a structured collar and short sleeves, featuring a row of dark wooden buttons that add a quiet, tactile detail to the front.",
+"3": "These trousers are cut in a bold flare shape from smooth fabric in a vibrant raspberry hue, sitting at the natural waist and widening from the knee down to create a graceful, elongated line for your legs.",
+"4": "This small, soft bag is made of pebbled leather in a warm taupe tone, featuring a rounded shape with a detachable strap and a charming metal charm that hangs from the side.",
+"5": "These ankle boots are crafted from smooth chocolate-brown leather with a rounded toe and a low, stable heel. They feature an anatomical V-shape at the front and a hidden zipper on the back for easy slipping on.",
+"6": "This look is your bold statement for a snowy Saturday stroll with friends. You chose a sleek, steel-grey bomber jacket to keep you warm against the cold air, layered over a rich chocolate-wheat shirt that brings instant warmth and texture. The deep raspberry flare trousers ground the outfit in vibrant color while drawing the eye down to elongate your silhouette, balanced perfectly by classic chocolate ankle boots. Even with the snow and chill, this ensemble feels expressive, comfortable, and ready for an evening of conversation.",
+"7": "Pull the bomber jacket on loosely over your shoulders so it acts as a protective shield without squeezing your waist."
+}
+
+── ВІДПОВІДЬ (1663 симв., 45.1 с, HTTP 200) ──
+```json
+{
+"1": "Твій бомбер пошитий з цупкої сіро-сталевої костюмної тканини, має стоячий комір і чотири великі поліровані золоті ґудзики спереду. Укорочений, трохи розширений силует зігріває тебе без зайвого об’єму, закінчуючись на талії, щоб підкреслити твою фігуру.",
+"2": "Ця шоколадно-пшенична сорочка виготовлена з м'якого текстурованого трикотажу з структурованим коміром і короткими рукавами. На ній є ряд темних дерев’яних ґудзиків, які додають тихий тактильний акцент спереду.",
+"3": "Ці штани мають широкий кльош від коліна, пошиті з гладкої тканини насиченого малинового кольору. Вони сидять на талії і розширюються донизу, створюючи витончену видовжену лінію для твоїх ніг.",
+"4": "Ця невелика м'яка сумка зроблена з тисненої шкіри теплого сіро-бежевого відтінку. Вона має округлу форму, регульований ремінець і чарівний металевий брелок, який висить на боці.",
+"5": "Ці черевики пошиті з гладкої шоколадно-коричневої шкіри з заокругленим носком і низьким стійким каблуком. Вони мають анатомічну V-подібну форму спереду та приховану блискавку на заднику для зручного взування.",
+"6": "Цей образ — твій сміливий вираз у зимову суботу, коли ти гуляєш з друзями. Ти обрала елегантний сіро-сталевий бомбер, щоб захиститися від холоду, накинувши його поверх теплої шоколадно-пшеничної сорочки, яка додає текстури та затишку. Малинові штани кльош підкреслюють твій силует і привертають увагу до довгих ніг, а класичні коричневі черевики завершують образ. Навіть у сніжну погоду цей ансамбль виглядає ефектно, комфортно та готовий для вечора розмов.",
+"7": "Одягни бомбер вільно на плечі так, щоб він захищав тебе від холоду, не обтяжуючи твою талію."
+}
+```
