@@ -10,7 +10,10 @@ role, *args = sys.argv[1:]
 mode = os.environ.get('FAKE_HEALTH_MODE', '')
 if role == 'git':
     if 'cat-file' in args:
-        print('| диспетчер | session_TEST |')
+        if args[-1].endswith(':аудит/СТАН.md'):
+            print('| диспетчер | session_TEST |')
+        else:
+            sys.exit(1)
 elif role == 'gh':
     body = sys.stdin.read() if args[-1] == '-' else Path(args[-1]).read_text(encoding='utf-8-sig')
     with open(os.environ['FAKE_HEALTH_GH_LOG'], 'a', encoding='utf-8') as f:

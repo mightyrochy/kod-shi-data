@@ -4,7 +4,7 @@
 Обгортка Gemini (наряд М.2), сторона власника: бандл із теки обміну -> пуш `gemini/<наряд>` -> рядок диспетчерові.
 
 .DESCRIPTION
-Задача планувальника під власником; запускається з копії поза клоном, яку власник оновлює рукою.
+Задача планувальника під власником; після одноразового встановлення читає перевірену версію з active.txt.
 Усе в теці обміну пише `gemini` — це недовірені байти: звідти лише читаються файли, нічого не запускається.
   1. Стан `<id>.json` — лише коди й числа; наряд, модель і спробу звіряє з позначкою черги на GitHub, тож назву
      гілки задає диспетчер, а не агент.
@@ -24,6 +24,8 @@ param(
     [string]$OutDir = 'C:\Users\Public\gemini\out',
     [string]$RepoUrl = 'https://github.com/mightyrochy/kod-shi-data.git',
     [string]$GitExe = 'git',
+    [string]$GitHubRepo = 'mightyrochy/kod-shi-data',
+    [string]$UpdateRoot = 'C:\ProgramData\gemini-wrapper',
     [string]$ClaudeExe = 'claude',
     [string]$GhExe = 'gh',
     [int]$MaxFallbackAttempts = 12,
@@ -42,6 +44,8 @@ param(
 Set-StrictMode -Version Latest
 $ErrorActionPreference = 'Stop'
 . (Join-Path $PSScriptRoot 'wrapper_health.ps1')
+. (Join-Path $PSScriptRoot 'wrapper_update.ps1')
+. (Join-Path $PSScriptRoot 'wrapper_chain.ps1')
 $script:CloudAuthFailed = $false
 $script:CloudUnavailable = $false
 
@@ -333,6 +337,7 @@ function Get-Line([string]$Id) {
         Write-WrapperLog "кінець $Id — $what $branch $head; комітів $ahead, файлів до main $files; без .github/ і файлів обгортки; $run"
         # ГОТОВО — лише звіт агента ГОТОВО з опублікованою головою; решта опублікованого — код прогону з _PUBLISHED.
         if ($code -eq 'DONE' -and $head) {
+            Save-DraftRequest $branch $head
             # Квота групи (рішення диспетчера 9611): суфікс лише коли стан має групу й відсоток 0–100.
             $qg = [string](Get-Prop $s 'qgroup')
             $qs = $(if ($quotaLeft -match '^(?:100|[1-9]?[0-9])$' -and $qg -cmatch '^[A-Z0-9]{2,16}$') { " КВОТА $qg $quotaLeft" } else { '' })
@@ -379,6 +384,9 @@ function Reset-State([string]$Id) {
 $script:OutboxNamePattern = '^[0-9]{8}-[0-9]{6}-[0-9a-f]{12}\.txt$'
 $script:SlugCore = $script:SlugPattern -replace '^\^|\\z$', ''
 $script:OutboxTemplates = @(
+    '^GEMINI ОБГОРТКА: ЛАНЦЮГ CHAIN_[A-Z_]{1,32}\z',
+    '^GEMINI ОБГОРТКА: ОНОВЛЕНО [0-9a-f]{40} СЕКУНД [0-9]{1,12}\z',
+    '^GEMINI ОБГОРТКА: ОНОВЛЕННЯ [0-9a-f]{40} UPDATE_[A-Z_]{1,32}\z',
     "\AGEMINI ОБГОРТКА: ГОТОВО (?:gemini|codex|claude)/$script:SlugCore [0-9a-f]{40}(?: КВОТА [A-Z0-9_]{2,40} (?:100|[1-9]?[0-9]))?(?: МОДЕЛЬ [a-z0-9][a-z0-9.-]{1,63})?\z"
     '\AGEMINI ОБГОРТКА: ПУЛИ V=(?:[0-9]+(?:\.[0-9]+){1,3}|-)(?: G=[A-Z0-9]{1,16}:(?:100|[1-9]?[0-9]):(?:[0-9]{1,6}|-)){0,6}(?: Q=\?)? M=(?:-|(?:gemini|claude|gpt)-[a-z0-9.-]{1,36}(?:,(?:gemini|claude|gpt)-[a-z0-9.-]{1,36}){0,5})\z'
     "\AGEMINI ОБГОРТКА: ЗАБЛОКОВАНО (?:gemini|codex|claude)/$script:SlugCore [A-Z0-9_]{2,40}\z"
@@ -609,6 +617,8 @@ function Main {
                 '+refs/heads/main:refs/remotes/origin/main',
                 '+refs/heads/gemini/*:refs/remotes/origin/gemini/*',
                 '+refs/heads/gemini-queue/*:refs/remotes/origin/gemini-queue/*'))
+        if (Test-Path -LiteralPath (Join-Path $UpdateRoot 'selfupdate.ready')) { Invoke-WrapperUpdate $UpdateRoot }
+        Invoke-WrapperChain
         if ($Retry) { Reset-State $Retry }
         $files = @(Get-ChildItem -LiteralPath $OutDir -Filter '*.json' -File -ErrorAction SilentlyContinue | Sort-Object Name)
         foreach ($f in $files) {

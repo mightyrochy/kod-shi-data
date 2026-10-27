@@ -50,6 +50,11 @@ Get-FileHash "$cr\claude_run.ps1", "$cr\queue_lanes.ps1", "$cr\wrapper_health.ps
 foreach ($target in @($pub, $env:TEMP, $cr)) {
     if ((Get-FileHash "$target\wrapper_health.ps1" -Algorithm SHA256).Hash -ne $expected['wrapper_health.ps1']) { Stop-Here 'хеш wrapper_health.ps1 не збігся' }
 }
+# Нові модулі публікатора перевіряються до першого запуску копії.
+foreach ($name in @('wrapper_update.ps1','wrapper_chain.ps1','wrapper_probe.ps1')) {
+    Invoke-WebRequest "$base/$name" -OutFile "$pub/$name" -UseBasicParsing
+    if ((Get-FileHash "$pub/$name" -Algorithm SHA256).Hash -cne $expected[$name]) { Stop-Here "хеш $name не збігся" }
+}
 $bad = @()
 foreach ($p in @(@('gemini_publish.ps1', "$pub\gemini_publish.ps1"), @('gemini_run.ps1', "$env:TEMP\gemini_run.ps1"), @('gemini_watch.ps1', "$w\gemini_watch.ps1"), @('claude_run.ps1', "$cr\claude_run.ps1"), @('queue_lanes.ps1', "$env:TEMP\queue_lanes.ps1"), @('queue_lanes.ps1', "$cr\queue_lanes.ps1"))) {
     $got = (Get-FileHash $p[1] -Algorithm SHA256).Hash

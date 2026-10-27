@@ -1,0 +1,876 @@
+diff --git a/.github/workflows/obhortka.yml b/.github/workflows/obhortka.yml
+index 929d23245eb19758d477eaca05fc9592bf1e9fb4..2e2a572620dfeb4a10d5c7ad70ea8f78cc976c43 100644
+--- a/.github/workflows/obhortka.yml
++++ b/.github/workflows/obhortka.yml
+@@ -90,3 +90,15 @@ jobs:
+       - name: сценарії_черги.sh
+         if: ${{ !cancelled() }}
+         run: bash аудит/адаптери/gemini/перевірка/запустити_стенд.sh сценарії_черги.sh
++
++      - name: сценарії_здоровя.sh
++        if: ${{ !cancelled() }}
++        run: bash аудит/адаптери/gemini/перевірка/запустити_стенд.sh сценарії_здоровя.sh
++
++      - name: сценарії_самооновлення.sh
++        if: ${{ !cancelled() }}
++        run: bash аудит/адаптери/gemini/перевірка/запустити_стенд.sh сценарії_самооновлення.sh
++
++      - name: сценарії_ланцюга.sh
++        if: ${{ !cancelled() }}
++        run: bash аудит/адаптери/gemini/перевірка/запустити_стенд.sh сценарії_ланцюга.sh
+diff --git a/аудит/адаптери/gemini/claude_run.ps1 b/аудит/адаптери/gemini/claude_run.ps1
+index 33c6710aa98fb54af32a8ef021d6db8f72632d76..0f19115916be679673b2c1b633351059c7c59e68 100644
+--- a/аудит/адаптери/gemini/claude_run.ps1
++++ b/аудит/адаптери/gemini/claude_run.ps1
+@@ -541,13 +541,13 @@ function Invoke-Task($M, $Job) {
+     $statePath = Get-StatePath (Get-MarkerKey $M)
+     $id = [string]$Job.id
+     $main = Get-RefSha 'refs/remotes/origin/main'
+-    $taskPath = "$($script:TaskDir)$($M.Slug).md"
++    $taskPath = Get-AutoTaskPath $M.Slug
+     if (-not $main -or (Invoke-Git @('merge-base', '--is-ancestor', $M.Sha, $main) -AllowFail).Code -ne 0) { return (Complete-Task $M $statePath $id 'NOT_ON_MAIN') }
+     if ((Invoke-Git @('cat-file', '-e', "$($M.Sha):$taskPath") -AllowFail).Code -ne 0) { return (Complete-Task $M $statePath $id 'NO_TASK_FILE') }
+     if ($M.Claude -notmatch $script:ModelPattern) { return (Complete-Task $M $statePath $id 'MODEL_INVALID') }
+     $exe = Find-Exe $ClaudeExe
+     if (-not $exe) { return (Complete-Task $M $statePath $id 'ENGINE_MISSING') }
+-    $taskText = (Invoke-Git @('cat-file', 'blob', "$($M.Sha):$taskPath")).Out
++    $taskText = Add-AutoTaskContext $M.Slug ((Invoke-Git @('cat-file', 'blob', "$($M.Sha):$taskPath")).Out)
+     $cont = Get-ContinueBranch $M.Slug
+     $runDir = Join-Path (Join-Path $WorkDir 'runs') $id
+     [void](New-Item -ItemType Directory -Force -Path $runDir)
+diff --git a/аудит/адаптери/gemini/gemini_publish.ps1 b/аудит/адаптери/gemini/gemini_publish.ps1
+index 0b70e5b3f98b351f0e24bf0355f93433a67bbd51..756564f7b6a6926c6b4897c0238498880587c85b 100644
+--- a/аудит/адаптери/gemini/gemini_publish.ps1
++++ b/аудит/адаптери/gemini/gemini_publish.ps1
+@@ -4,7 +4,7 @@
+ Обгортка Gemini (наряд М.2), сторона власника: бандл із теки обміну -> пуш `gemini/<наряд>` -> рядок диспетчерові.
+ 
+ .DESCRIPTION
+-Задача планувальника під власником; запускається з копії поза клоном, яку власник оновлює рукою.
++Задача планувальника під власником; після одноразового встановлення читає перевірену версію з active.txt.
+ Усе в теці обміну пише `gemini` — це недовірені байти: звідти лише читаються файли, нічого не запускається.
+   1. Стан `<id>.json` — лише коди й числа; наряд, модель і спробу звіряє з позначкою черги на GitHub, тож назву
+      гілки задає диспетчер, а не агент.
+@@ -24,6 +24,8 @@ param(
+     [string]$OutDir = 'C:\Users\Public\gemini\out',
+     [string]$RepoUrl = 'https://github.com/mightyrochy/kod-shi-data.git',
+     [string]$GitExe = 'git',
++    [string]$GitHubRepo = 'mightyrochy/kod-shi-data',
++    [string]$UpdateRoot = 'C:\ProgramData\gemini-wrapper',
+     [string]$ClaudeExe = 'claude',
+     [string]$GhExe = 'gh',
+     [int]$MaxFallbackAttempts = 12,
+@@ -42,6 +44,8 @@ param(
+ Set-StrictMode -Version Latest
+ $ErrorActionPreference = 'Stop'
+ . (Join-Path $PSScriptRoot 'wrapper_health.ps1')
++. (Join-Path $PSScriptRoot 'wrapper_update.ps1')
++. (Join-Path $PSScriptRoot 'wrapper_chain.ps1')
+ $script:CloudAuthFailed = $false
+ $script:CloudUnavailable = $false
+ 
+@@ -328,6 +332,7 @@ function Get-Line([string]$Id) {
+         Write-WrapperLog "кінець $Id — $what $branch $head; комітів $ahead, файлів до main $files; без .github/ і файлів обгортки; $run"
+         # ГОТОВО — лише звіт агента ГОТОВО з опублікованою головою; решта опублікованого — код прогону з _PUBLISHED.
+         if ($code -eq 'DONE' -and $head) {
++            Save-DraftRequest $branch $head
+             # Квота групи (рішення диспетчера 9611): суфікс лише коли стан має групу й відсоток 0–100.
+             $qg = [string](Get-Prop $s 'qgroup')
+             $qs = $(if ($quotaLeft -match '^(?:100|[1-9]?[0-9])$' -and $qg -cmatch '^[A-Z0-9]{2,16}$') { " КВОТА $qg $quotaLeft" } else { '' })
+@@ -374,6 +379,9 @@ function Reset-State([string]$Id) {
+ $script:OutboxNamePattern = '^[0-9]{8}-[0-9]{6}-[0-9a-f]{12}\.txt$'
+ $script:SlugCore = $script:SlugPattern -replace '^\^|\\z$', ''
+ $script:OutboxTemplates = @(
++    '^GEMINI ОБГОРТКА: ЛАНЦЮГ CHAIN_[A-Z_]{1,32}\z',
++    '^GEMINI ОБГОРТКА: ОНОВЛЕНО [0-9a-f]{40} СЕКУНД [0-9]{1,12}\z',
++    '^GEMINI ОБГОРТКА: ОНОВЛЕННЯ [0-9a-f]{40} UPDATE_[A-Z_]{1,32}\z',
+     "\AGEMINI ОБГОРТКА: ГОТОВО (?:gemini|codex|claude)/$script:SlugCore [0-9a-f]{40}(?: КВОТА [A-Z0-9_]{2,40} (?:100|[1-9]?[0-9]))?(?: МОДЕЛЬ [a-z0-9][a-z0-9.-]{1,63})?\z"
+     '\AGEMINI ОБГОРТКА: ПУЛИ V=(?:[0-9]+(?:\.[0-9]+){1,3}|-)(?: G=[A-Z0-9]{1,16}:(?:100|[1-9]?[0-9]):(?:[0-9]{1,6}|-)){0,6}(?: Q=\?)? M=(?:-|(?:gemini|claude|gpt)-[a-z0-9.-]{1,36}(?:,(?:gemini|claude|gpt)-[a-z0-9.-]{1,36}){0,5})\z'
+     "\AGEMINI ОБГОРТКА: ЗАБЛОКОВАНО (?:gemini|codex|claude)/$script:SlugCore [A-Z0-9_]{2,40}\z"
+@@ -604,6 +612,8 @@ function Main {
+                 '+refs/heads/main:refs/remotes/origin/main',
+                 '+refs/heads/gemini/*:refs/remotes/origin/gemini/*',
+                 '+refs/heads/gemini-queue/*:refs/remotes/origin/gemini-queue/*'))
++        if (Test-Path -LiteralPath (Join-Path $UpdateRoot 'selfupdate.ready')) { Invoke-WrapperUpdate $UpdateRoot }
++        Invoke-WrapperChain
+         if ($Retry) { Reset-State $Retry }
+         $files = @(Get-ChildItem -LiteralPath $OutDir -Filter '*.json' -File -ErrorAction SilentlyContinue | Sort-Object Name)
+         foreach ($f in $files) {
+diff --git a/аудит/адаптери/gemini/gemini_run.ps1 b/аудит/адаптери/gemini/gemini_run.ps1
+index 71142eb235bbc78cae1337d65af3952a7a73f94b..10d0fa80dba660e14d87a58d1822f1799bcfac31 100644
+--- a/аудит/адаптери/gemini/gemini_run.ps1
++++ b/аудит/адаптери/gemini/gemini_run.ps1
+@@ -931,10 +931,10 @@ function Invoke-Task($M, $Job) {
+     try {
+         $main = Get-RefSha 'refs/remotes/origin/main'
+         $anc = Invoke-Git @('merge-base', '--is-ancestor', $M.Sha, $main) -AllowFail
+-        $taskPath = $script:TaskDir + $M.Slug + '.md'
++        $taskPath = Get-AutoTaskPath $M.Slug
+         if ($anc.Code -ne 0) { $status.code = 'NOT_ON_MAIN'; return }
+         if ((Invoke-Git @('cat-file', '-e', "$($M.Sha):$taskPath") -AllowFail).Code -ne 0) { $status.code = 'NO_TASK_FILE'; return }
+-        $taskText = (Invoke-Git @('cat-file', 'blob', "$($M.Sha):$taskPath")).Out
++        $taskText = Add-AutoTaskContext $M.Slug ((Invoke-Git @('cat-file', 'blob', "$($M.Sha):$taskPath")).Out)
+         $js = $Job.sel
+         $eng = [pscustomobject]@{ Name = [string]$js.engine; Model = [string]$js.emodel; Effort = [string]$js.effort }
+         $exe = $(if ($eng.Name -eq 'codex') { Find-CodexExe } else { Find-EngineExe $AgyExe })
+diff --git a/аудит/адаптери/gemini/m9v/0_власник.ps1 b/аудит/адаптери/gemini/m9v/0_власник.ps1
+index 81a4c464db4d93ec4b2120f1a4208f024b4703d9..c45c9e1335e1b8eb1a8ab784e9ef865bef2154b1 100644
+--- a/аудит/адаптери/gemini/m9v/0_власник.ps1
++++ b/аудит/адаптери/gemini/m9v/0_власник.ps1
+@@ -50,6 +50,11 @@ Get-FileHash "$cr\claude_run.ps1", "$cr\queue_lanes.ps1", "$cr\wrapper_health.ps
+ foreach ($target in @($pub, $env:TEMP, $cr)) {
+     if ((Get-FileHash "$target\wrapper_health.ps1" -Algorithm SHA256).Hash -ne $expected['wrapper_health.ps1']) { Stop-Here 'хеш wrapper_health.ps1 не збігся' }
+ }
++# Нові модулі публікатора перевіряються до першого запуску копії.
++foreach ($name in @('wrapper_update.ps1','wrapper_chain.ps1','wrapper_probe.ps1')) {
++    Invoke-WebRequest "$base/$name" -OutFile "$pub/$name" -UseBasicParsing
++    if ((Get-FileHash "$pub/$name" -Algorithm SHA256).Hash -cne $expected[$name]) { Stop-Here "хеш $name не збігся" }
++}
+ $bad = @()
+ foreach ($p in @(@('gemini_publish.ps1', "$pub\gemini_publish.ps1"), @('gemini_run.ps1', "$env:TEMP\gemini_run.ps1"), @('gemini_watch.ps1', "$w\gemini_watch.ps1"), @('claude_run.ps1', "$cr\claude_run.ps1"), @('queue_lanes.ps1', "$env:TEMP\queue_lanes.ps1"), @('queue_lanes.ps1', "$cr\queue_lanes.ps1"))) {
+     $got = (Get-FileHash $p[1] -Algorithm SHA256).Hash
+diff --git a/аудит/адаптери/gemini/m9v/3_самооновлення.ps1 b/аудит/адаптери/gemini/m9v/3_самооновлення.ps1
+new file mode 100644
+index 0000000000000000000000000000000000000000..7def06bd28853ea4b3f6b13ea068191782291d70
+--- /dev/null
++++ b/аудит/адаптери/gemini/m9v/3_самооновлення.ps1
+@@ -0,0 +1,41 @@
++﻿#Requires -Version 5.1
++<# Одноразове встановлення після перевірки й злиття латок. Працює під власником із наявними правами ProgramData;
++не змінює ACL, задачі чи облікові дані. Наступні версії встановлює gemini-publish сам. #>
++param([string]$RepoDir = (Join-Path $env:USERPROFILE 'kod-shi-data'), [string]$Root = 'C:\ProgramData\gemini-wrapper')
++$ErrorActionPreference = 'Stop'
++$repo = Join-Path $RepoDir '.git'
++$source = Split-Path -Parent $PSScriptRoot
++. (Join-Path $source 'gemini_publish.ps1')
++if (-not (Test-OwnerUser) -or -not (Test-UpdateRoot $Root)) { throw 'UPDATE_ACL' }
++$script:Repo = $repo
++$script:NoHooks = Join-Path $env:TEMP ('no-hooks-' + [guid]::NewGuid().ToString('N'))
++$script:OutboxDir = Join-Path $env:USERPROFILE 'gemini-outbox'
++foreach ($d in @($WorkDir, (Join-Path $WorkDir 'seen'), $OutboxDir)) { [void][IO.Directory]::CreateDirectory($d) }
++[void](Invoke-Git @('fetch','-q','--no-tags','origin','+refs/heads/main:refs/remotes/origin/main'))
++Invoke-WrapperUpdate $Root
++$main = Get-RefSha 'refs/remotes/origin/main'
++$active = Join-Path $Root 'active.txt'
++if (-not (Test-Path -LiteralPath $active)) { throw 'UPDATE_NOT_INSTALLED' }
++$installed = [IO.File]::ReadAllText($active).Trim()
++$tree = (Invoke-Git @('rev-parse', "${main}:аудит/адаптери/gemini")).Out.Trim()
++if ($installed -cnotmatch '^[0-9a-f]{40}$' -or [IO.File]::ReadAllText((Join-Path (Join-Path (Join-Path $Root 'versions') $installed) 'source-tree.txt')).Trim() -cne $tree) { throw 'UPDATE_NOT_INSTALLED' }
++foreach ($pair in @(@('gemini_run.ps1',$Root), @('gemini_publish.ps1',(Join-Path $env:USERPROFILE 'gemini-publish')), @('gemini_watch.ps1',(Join-Path $env:USERPROFILE 'gemini-watch')), @('claude_run.ps1',(Join-Path $env:USERPROFILE 'claude-run')))) {
++    $name = $pair[0]; $dir = $pair[1]
++    [void][IO.Directory]::CreateDirectory($dir)
++    $text = @'
++#Requires -Version 5.1
++$ErrorActionPreference = 'Stop'
++$root = '__ROOT__'
++$sha = [IO.File]::ReadAllText((Join-Path $root 'active.txt')).Trim()
++if ($sha -cnotmatch '^[0-9a-f]{40}$') { throw 'UPDATE_POINTER' }
++$file = Join-Path (Join-Path (Join-Path $root 'versions') $sha) '__NAME__'
++& $file @args
++exit $LASTEXITCODE
++'@
++    $text = $text.Replace('__ROOT__', $Root.Replace("'", "''")).Replace('__NAME__', $name)
++    $target = Join-Path $dir $name
++    if (-not (Test-Path -LiteralPath ($target + '.before-update'))) { Copy-Item -LiteralPath $target -Destination ($target + '.before-update') }
++    [IO.File]::WriteAllText($target, $text, $script:Utf8)
++}
++[IO.File]::WriteAllText((Join-Path $Root 'selfupdate.ready'), '1', $script:Utf8)
++Write-Output "Самооновлення встановлено: $main. Наступні запуски чотирьох задач читатимуть active.txt."
+diff --git a/аудит/адаптери/gemini/m9v/хеші.psd1 b/аудит/адаптери/gemini/m9v/хеші.psd1
+index 24a7b7bc0e85a420939eb030b4d8d9f25b5457ca..11a20fd2b7af42d7a144cda7100ee3ddda797c90 100644
+--- a/аудит/адаптери/gemini/m9v/хеші.psd1
++++ b/аудит/адаптери/gemini/m9v/хеші.psd1
+@@ -1,16 +1,19 @@
+ ﻿# Очікувані SHA-256 файлів обгортки — єдине місце для скриптів m9v. Рядки тут мають збігатися з таблицею «Хеші файлів»
+ # у ../НАЛАШТУВАННЯ.md (стенд `перевірка/сценарії_m9v.sh` звіряє). Міняється разом із таблицею (PR, що чіпає обгортку).
+ @{
++    'wrapper_update.ps1' = 'F85CC682A6486977600BC32F2D5068790A30A3AADDCA57EB0A68B1773FB1E16F'
++    'wrapper_probe.ps1' = '85116D04C22EB64CBFF52E66BCEAE9B1091577A889EDD58A8B634093A82BDBC6'
++    'wrapper_chain.ps1' = '79BD08F866529B1C58FE57AF33252AA4F0F7B3D992352130A7824030F27A57CD'
+     'wrapper_health.ps1' = 'FCE45448539D53A6B5718319842FC845DA870F39453A6B716C7AF8A2DB65B88E'
+-    'gemini_run.ps1'     = '48C66A30A0967CE9A8AA60B9ECF102479D6B6C2672B2978F1C0D8A1D6C8100AD'
+-    'gemini_publish.ps1' = '735FB7390DD948FBA97B5AA8DE16416C4ACBB99CB92C33A4A9B0AD1E62EF74B5'
++    'gemini_run.ps1' = 'EB4FDF23FD0BA462B81F2D98592DA6A0E4E15FA63ED14744B6C0844F58FC7B6E'
++    'gemini_publish.ps1' = '28693B4DAB59DED89C7020E3DB1E14CA663D77FE4F6DE64F39FFD92349B764E2'
+     # Інсталятор Codex (9741) закріплено за релізом: install.ps1 — файл релізу https://releases.openai.com/codex/releases/<CodexRelease>/install.ps1
+     # (незмінний URL; той самий sha256 віддає https://chatgpt.com/codex/install.ps1 — редирект на releases.openai.com — і публікує реліз
+     # openai/codex). 2_під_gemini.ps1 -WithCodex виконує його лише при збігу CodexInstaller і ставить саме цей реліз (-Release).
+     # Оновити Codex = новий PR: нова версія, новий хеш (докази — у PR). Порожній хеш — інсталятор не виконується.
+     CodexRelease         = '0.164.0'
+     CodexInstaller       = 'A59CB66350098C33B021FF470D586AE8FE3B7CAF189CA7137B4FE3AF5D4DCE74'
+-    'gemini_watch.ps1'   = '3550085176F339BA00B1D1C28391AC585B0959128335D193601734261D00085B'
+-    'queue_lanes.ps1'    = '12ADC3824C6F126EE91F953B5FA65A96C015FC3D99C39FF9914A167DA2F92DD9'
+-    'claude_run.ps1'     = 'A17354251B4CD11A6D3A77254615798486CE9BEDBA02B3960D0DE9577E19BE4C'
++    'gemini_watch.ps1' = '3550085176F339BA00B1D1C28391AC585B0959128335D193601734261D00085B'
++    'queue_lanes.ps1' = 'CACE28723470EF83C34CC2DFBC3C48A263877911B717EDE0850C98B0BC07663B'
++    'claude_run.ps1' = 'AA91D7EE65DCFA5A0CA3F4B0DC8B9A6C6947B27999B1DC19B4A44243CDCBDFFB'
+ }
+diff --git a/аудит/адаптери/gemini/queue_lanes.ps1 b/аудит/адаптери/gemini/queue_lanes.ps1
+index 26328fd4f7a2595fafbd5b0b4ebe9d2d4aae7128..1be8b23f60a82ace20cf460510db056ecb598670 100644
+--- a/аудит/адаптери/gemini/queue_lanes.ps1
++++ b/аудит/адаптери/gemini/queue_lanes.ps1
+@@ -506,3 +506,17 @@ function Reset-WorkTree([string]$Dir) {
+     [void](Invoke-Git @('reset', '-q', '--hard') -Dir $Dir)
+     [void](Invoke-Git @('clean', '-q', '-ffd') -Dir $Dir)
+ }
++
++function Get-AutoTaskPath([string]$Slug) {
++    <# Лише два закриті шаблони нарядів із main; довільний slug лишається звичайним нарядом. #>
++    if ($Slug -cmatch '^автоперевірка-[1-9][0-9]{0,8}-[0-9a-f]{40}$') { return 'аудит/наряди/автоперевірка.md' }
++    if ($Slug -cmatch '^автоживий-[0-9a-f]{40}$') { return 'аудит/наряди/автоживий.md' }
++    $script:TaskDir + $Slug + '.md'
++}
++
++function Add-AutoTaskContext([string]$Slug, [string]$Text) {
++    <# Числа та SHA із перевіреної позначки стають даними шаблону, текст PR не стає промптом. #>
++    if ($Slug -cmatch '^автоперевірка-([1-9][0-9]{0,8})-([0-9a-f]{40})$') { return $Text + "`nДАНІ ПОЗНАЧКИ: PR #$($Matches[1]); голова $($Matches[2]); наряд $Slug.`n" }
++    if ($Slug -cmatch '^автоживий-([0-9a-f]{40})$') { return $Text + "`nДАНІ ПОЗНАЧКИ: злитий коміт $($Matches[1]); наряд $Slug.`n" }
++    $Text
++}
+diff --git a/аудит/адаптери/gemini/wrapper_chain.ps1 b/аудит/адаптери/gemini/wrapper_chain.ps1
+new file mode 100644
+index 0000000000000000000000000000000000000000..fa503cf14790944609a8a71c6a065348797a34f4
+--- /dev/null
++++ b/аудит/адаптери/gemini/wrapper_chain.ps1
+@@ -0,0 +1,151 @@
++﻿#Requires -Version 5.1
++function Invoke-ChainApi([string]$Path) {
++    <# Читає JSON GitHub; збій не стає порожнім успішним списком. #>
++    $r = Invoke-Native (Resolve-Exe $GhExe) @('api', $Path) $WorkDir 2
++    if ($r.Code -ne 0) { throw 'CHAIN_API' }
++    $data = ConvertFrom-Json $r.Out
++    $data
++}
++
++function Get-ChainPulls {
++    <# Усі відкриті PR, включно з чернетками: рівно 100 на сторінку, до порожньої сторінки. #>
++    for ($page = 1; $page -le 100; $page++) {
++        $items = @(Invoke-ChainApi "repos/$GitHubRepo/pulls?state=open&per_page=100&page=$page")
++        foreach ($item in $items) { $item }
++        if ($items.Count -lt 100) { return }
++    }
++    throw 'CHAIN_PAGES'
++}
++
++function Save-DraftRequest([string]$Branch, [string]$Head) {
++    <# Лише підтверджена публікація DONE лишає завдання створити PR; збій API не губить його. #>
++    if ($DryRun -or $Branch -cnotmatch '^gemini/[\p{L}\p{Nd}][\p{L}\p{Nd}._-]{0,79}$' -or $Head -cnotmatch $script:ShaPattern) { return }
++    $dir = Join-Path $WorkDir 'drafts'; [void][IO.Directory]::CreateDirectory($dir)
++    Write-FileAtomic (Join-Path $dir ((Get-Sha256Hex "$Branch $Head") + '.json')) ((@{branch=$Branch;head=$Head} | ConvertTo-Json -Compress))
++}
++
++function Complete-EngineDrafts {
++    <# Із перевірених результатів публікатора створює PR-чернетки; повтор звіряє наявний PR. #>
++    $pulls = @(Get-ChainPulls)
++    foreach ($file in @(Get-ChildItem -LiteralPath (Join-Path $WorkDir 'drafts') -Filter '*.json' -File -ErrorAction SilentlyContinue)) {
++        $job = ConvertFrom-Json ([IO.File]::ReadAllText($file.FullName, $script:Utf8))
++        $branch = [string]$job.branch; $head = [string]$job.head
++        if ($branch -cnotmatch '^gemini/[\p{L}\p{Nd}][\p{L}\p{Nd}._-]{0,79}$' -or $branch.Contains('..') -or $branch.EndsWith('.lock') -or $head -cnotmatch $script:ShaPattern) { throw 'CHAIN_DRAFT' }
++        # DONE вже пройшов захист Publish-Bundle; повтор усе одно перевіряє поточний ref GitHub.
++        $r = Invoke-Git @('ls-remote','--heads','origin',"refs/heads/$branch") -AllowFail
++        if ($r.Code -ne 0) { throw 'CHAIN_REMOTE' }
++        if (-not $r.Out.StartsWith($head + "`t")) { continue }
++        $existing = @($pulls | Where-Object { $_.user.login -ceq 'mightyrochy' -and $_.head.ref -ceq $branch -and $_.head.repo.full_name -ceq $GitHubRepo })
++        if ($existing.Count) { Remove-Item -LiteralPath $file.FullName; continue }
++        $message = (Invoke-Git @('show','-s','--format=%B',$head)).Out
++        # Спецзгадка не має запускати легасі-рушій із тексту звіту.
++        $message = [regex]::Replace($message, '(?i)@' + 'codex\b', 'Codex')
++        $body = @{title=('Звіт ' + $branch.Substring(7));head=$branch;base='main';draft=$true;body=$message} | ConvertTo-Json -Compress
++        $r = Invoke-Native (Resolve-Exe $GhExe) @('api','--method','POST',"repos/$GitHubRepo/pulls",'--input','-') $WorkDir 2 $body
++        if ($r.Code -ne 0) { throw 'CHAIN_DRAFT' }
++        $pr = ConvertFrom-Json $r.Out
++        if ([string]$pr.number -cnotmatch '^[1-9][0-9]{0,8}$') { throw 'CHAIN_DRAFT' }
++        Write-WrapperLog "ланцюг: створено PR-чернетку #$($pr.number) $branch $head"
++        Remove-Item -LiteralPath $file.FullName
++    }
++}
++
++function Test-LiveModels($Config) {
++    <# Читає каталог локального сервера без завантаження моделей; обом не треба одночасно стояти у VRAM. #>
++    $required = @($Config.models)
++    if ($required.Count -ne 2) { return $false }
++    foreach ($path in @('/api/v1/models','/api/v0/models','/v1/models')) {
++        try {
++            $r = Invoke-RestMethod -Uri ("http://127.0.0.1:1234" + $path) -Method Get -TimeoutSec 5
++            if ($path -eq '/api/v1/models') { $ids = @($r.models | ForEach-Object { [string]$_.key }) }
++            else { $ids = @($r.data | ForEach-Object { [string]$_.id }) }
++            foreach ($id in $required) { if ($id -notin $ids) { return $false } }
++            return $true
++        } catch {
++            # Лише відсутній endpoint дозволяє сумісний старий API. 401/403 не обходяться.
++            if ($_.Exception -isnot [Net.WebException] -or $null -eq $_.Exception.Response -or [int]$_.Exception.Response.StatusCode -ne 404) { return $false }
++        }
++    }
++    $false
++}
++
++function Add-ChainMarker([string]$Slug, [string]$Model, [string]$Main, [switch]$Gpu) {
++    <# Створює сталу позначку один раз; порівняння lease не дозволяє затерти чужу/вже взяту спробу. #>
++    if ($Slug -cnotmatch $script:SlugPattern -or $Model -cnotmatch $script:ModelPattern -or $Main -cnotmatch $script:ShaPattern) { throw 'CHAIN_FORMAT' }
++    $ref = "refs/heads/gemini-queue/$Slug/$Model/1" + $(if ($Gpu) { '/p2-gpu' } else { '/p2' })
++    $r = Invoke-Git @('ls-remote','--heads','origin',$ref) -AllowFail
++    if ($r.Code -ne 0) { throw 'CHAIN_REMOTE' }
++    if ($r.Out.Trim()) { return }
++    $r = Invoke-Git @('push','-q','--no-verify',"--force-with-lease=${ref}:",'origin',"${Main}:$ref") -AllowFail
++    if ($r.Code -ne 0) { throw 'CHAIN_PUSH' }
++    Write-WrapperLog "ланцюг: поставлено $ref на $Main"
++}
++
++function Get-ReviewModels($Pull, $Config) {
++    <# Інший постачальник; для невідомого каскаду Gemini — два рушії, один гарантовано незалежний. #>
++    $branch = [string]$Pull.head.ref
++    if ($branch.StartsWith('claude/')) { return @([string]$Config.codex) }
++    if ($branch.StartsWith('codex/')) { return @([string]$Config.claude) }
++    # Gemini може каскадувати між GPT і Claude через agy; назва гілки цього не доводить.
++    @([string]$Config.codex, [string]$Config.claude)
++}
++
++function Invoke-WrapperChain {
++    <# Чернетка -> незалежна перевірка; зміни продукту в main -> один GPU-прогін, щойно моделі доступні. #>
++    if ($DryRun) { return }
++    $main = Get-RefSha 'refs/remotes/origin/main'
++    $r = Invoke-Git @('cat-file','blob',"${main}:аудит/адаптери/gemini/ланцюг.json") -AllowFail
++    if ($r.Code -ne 0) { return }
++    try {
++        $config = ConvertFrom-Json $r.Out
++        if ($config.v -ne 1 -or $config.codex -cnotmatch '^gpt-[a-z0-9.-]+$' -or $config.claude -cnotmatch '^cc-claude-[a-z0-9.-]+$') { throw 'CHAIN_CONFIG' }
++        foreach ($path in @('аудит/наряди/автоперевірка.md','аудит/наряди/автоживий.md')) {
++            if ((Invoke-Git @('cat-file','-e',"${main}:$path") -AllowFail).Code -ne 0) { throw 'CHAIN_TEMPLATE' }
++        }
++        $statePath = Join-Path $WorkDir 'chain.json'
++        $last = $main; $pending = ''; $seen = @{}
++        if (Test-Path -LiteralPath $statePath) {
++            $state = ConvertFrom-Json ([IO.File]::ReadAllText($statePath, $script:Utf8))
++            $last = [string]$state.main; $pending = [string]$state.pending
++            foreach ($key in @($state.reviews)) { if ($key -is [string]) { $seen[$key] = $true } }
++        }
++        if ($last -cnotmatch $script:ShaPattern -or (Invoke-Git @('merge-base','--is-ancestor',$last,$main) -AllowFail).Code -ne 0) { throw 'CHAIN_HISTORY' }
++        if ($last -cne $main) {
++            $paths = Get-Paths @('diff','--name-only','-z',$last,$main)
++            if (@($paths | Where-Object { $_ -match '^(джерела/|каталог/|index\.html$|build\.txt$)' }).Count) { $pending = $main }
++        }
++        # Спершу зберігаємо виявлене злиття: збій API PR не губить наступний живий прогін.
++        Write-FileAtomic $statePath (([ordered]@{ main=$main; pending=$pending; reviews=@($seen.Keys) }) | ConvertTo-Json -Compress)
++        if ($pending) {
++            if ($pending -cnotmatch $script:ShaPattern) { throw 'CHAIN_STATE' }
++            if (Test-LiveModels $config) {
++                Add-ChainMarker "автоживий-$pending" ([string]$config.codex) $main -Gpu
++                $pending = ''
++            } else { Write-WrapperLog "ланцюг: живий $pending чекає доступу до моделей; пульсу диспетчера не потребує" }
++            Write-FileAtomic $statePath (([ordered]@{ main=$main; pending=$pending; reviews=@($seen.Keys) }) | ConvertTo-Json -Compress)
++        }
++        Complete-EngineDrafts
++        foreach ($pr in @(Get-ChainPulls)) {
++            if ($pr.user.login -cne 'mightyrochy' -or $null -eq $pr.head.repo -or $pr.head.repo.full_name -cne $GitHubRepo -or $pr.base.repo.full_name -cne $GitHubRepo -or $pr.base.ref -cne 'main') { continue }
++            $branch = [string]$pr.head.ref; $head = [string]$pr.head.sha
++            if ($branch -cnotmatch '^(gemini|claude|codex)/([\p{L}\p{Nd}][\p{L}\p{Nd}._-]{0,79})$' -or $head -cnotmatch $script:ShaPattern) { continue }
++            if ($branch -match '/авто(перевірка|живий)-' -or $branch.Contains('..') -or $branch.EndsWith('.lock')) { continue }
++            $n = [string]$pr.number
++            if ($n -cnotmatch '^[1-9][0-9]{0,8}$') { continue }
++            foreach ($model in @(Get-ReviewModels $pr $config)) {
++                $key = "$n $head $model"
++                if ($seen.ContainsKey($key)) { continue }
++                Add-ChainMarker "автоперевірка-$n-$head" $model $main
++                $seen[$key] = $true
++                Write-FileAtomic $statePath (([ordered]@{ main=$main; pending=$pending; reviews=@($seen.Keys) }) | ConvertTo-Json -Compress)
++            }
++        }
++    } catch {
++        $code = [string]$_.Exception.Message
++        if ($code -cnotmatch '^CHAIN_[A-Z_]+$') { $code = 'CHAIN_FAILED' }
++        Write-WrapperLog "ланцюг: $code; наступний прохід повторить незавершене"
++        if (-not (Test-Seen ("chain-failed $code " + [datetime]::UtcNow.ToString('yyyyMMddHH')))) {
++            Add-OutboxLine ((Get-Date -Format 'yyyyMMdd-HHmmss') + '-' + (Get-Sha256Hex "chain $code").Substring(0,12) + '.txt') "GEMINI ОБГОРТКА: ЛАНЦЮГ $code"
++        }
++    }
++}
+diff --git a/аудит/адаптери/gemini/wrapper_probe.ps1 b/аудит/адаптери/gemini/wrapper_probe.ps1
+new file mode 100644
+index 0000000000000000000000000000000000000000..e0691da0fb6ab2e7440078a8a450ef3560ca3848
+--- /dev/null
++++ b/аудит/адаптери/gemini/wrapper_probe.ps1
+@@ -0,0 +1,17 @@
++﻿#Requires -Version 5.1
++# Локальна проба кандидата не читає мережу, профілі, задачі чи спільну теку ноутбука.
++$ErrorActionPreference = 'Stop'
++foreach ($file in @(Get-ChildItem -LiteralPath $PSScriptRoot -Filter '*.ps1' -File)) {
++    $errors = $null; $tokens = $null
++    [void][Management.Automation.Language.Parser]::ParseFile($file.FullName, [ref]$tokens, [ref]$errors)
++    if ($errors.Count) { exit 1 }
++}
++. (Join-Path $PSScriptRoot 'queue_lanes.ps1')
++$script:QueuePrefix = 'refs/remotes/origin/gemini-queue/'
++$script:SlugPattern = '^[\p{L}\p{Nd}][\p{L}\p{Nd}._-]{0,79}$'
++$script:ModelPattern = '^[a-z0-9][a-z0-9.-]{1,63}$'
++$script:CondPattern = '^(?:p[0-9]|d20[0-9]{10}|gpu)(?:-(?:p[0-9]|d20[0-9]{10}|gpu)){0,2}$'
++$m = ConvertTo-Marker ($script:QueuePrefix + 'проба/gpt-6.1-sol-high/1' + "`t" + ('a'*40) + "`t1")
++if (-not $m.Valid -or $m.Lane -ne 'codex') { exit 1 }
++if ((Get-AutoTaskPath ('автоперевірка-12-' + ('a'*40))) -cne 'аудит/наряди/автоперевірка.md') { exit 1 }
++Write-Output 'WRAPPER_PROBE_OK'
+diff --git a/аудит/адаптери/gemini/wrapper_update.ps1 b/аудит/адаптери/gemini/wrapper_update.ps1
+new file mode 100644
+index 0000000000000000000000000000000000000000..a91576c360be450c265cb819d4c59c634d1b2ed3
+--- /dev/null
++++ b/аудит/адаптери/gemini/wrapper_update.ps1
+@@ -0,0 +1,99 @@
++﻿#Requires -Version 5.1
++# Самооновлення викликає лише публікатор власника; джерело — його щойно fetched origin/main.
++function Test-UpdateRoot([string]$Root) {
++    <# Відхиляє посилання та права запису gemini/загальних груп у захищеній теці. #>
++    if (-not (Test-Path -LiteralPath $Root -PathType Container)) { return $false }
++    $item = Get-Item -LiteralPath $Root
++    while ($null -ne $item) {
++        if ($item.Attributes -band [IO.FileAttributes]::ReparsePoint) { return $false }
++        $item = $item.Parent
++    }
++    if (-not $script:OnWindows) { return $true }
++    $sid = ([Security.Principal.NTAccount]"$env:COMPUTERNAME\$GeminiUser").Translate([Security.Principal.SecurityIdentifier]).Value
++    $bad = @($sid, 'S-1-1-0', 'S-1-5-11', 'S-1-5-32-545')
++    $ownerSid = [Security.Principal.WindowsIdentity]::GetCurrent().User.Value
++    $writers = @('S-1-5-18','S-1-5-32-544',$ownerSid)
++    $write = [Security.AccessControl.FileSystemRights]'WriteData,AppendData,WriteExtendedAttributes,WriteAttributes,Delete,ChangePermissions,TakeOwnership,DeleteSubdirectoriesAndFiles'
++    foreach ($rule in (Get-Acl -LiteralPath $Root).Access) {
++        $who = $rule.IdentityReference.Translate([Security.Principal.SecurityIdentifier]).Value
++        if (($who -in $bad -or $who -notin $writers) -and $rule.AccessControlType -eq 'Allow' -and ($rule.FileSystemRights -band $write)) { return $false }
++    }
++    $true
++}
++
++function Write-UpdatePointer([string]$Root, [string]$Sha) {
++    <# Міняє єдине посилання атомарно: читач бачить стару або нову повну версію. #>
++    $path = Join-Path $Root 'active.txt'; $tmp = Join-Path $Root ('active-' + [guid]::NewGuid().ToString('N') + '.part')
++    [IO.File]::WriteAllText($tmp, $Sha, $script:Utf8)
++    if (Test-Path -LiteralPath $path) { [IO.File]::Replace($tmp, $path, [NullString]::Value) }
++    else { [IO.File]::Move($tmp, $path) }
++}
++
++function Invoke-WrapperUpdate([string]$Root) {
++    <# Бере архів лише origin/main, перевіряє хеші та окремий процес проби; тоді перемикає версію. #>
++    if ($DryRun) { return }
++    $sha = Get-RefSha 'refs/remotes/origin/main'
++    if ($sha -cnotmatch '^[0-9a-f]{40}$') { throw 'UPDATE_MAIN' }
++    $stage = ''; $lock = $null
++    try {
++        if (-not (Test-OwnerUser) -or -not (Test-UpdateRoot $Root)) { throw 'UPDATE_ACL' }
++        try { $lock = [IO.File]::Open((Join-Path $Root 'update.lock'), 'OpenOrCreate', 'ReadWrite', 'None') } catch { return }
++        $active = ''; $pointer = Join-Path $Root 'active.txt'
++        if (Test-Path -LiteralPath $pointer) { $active = [IO.File]::ReadAllText($pointer).Trim() }
++        $prefix = 'аудит/адаптери/gemini'
++        $tree = (Invoke-Git @('rev-parse', "${sha}:$prefix")).Out.Trim()
++        if ($active -cmatch '^[0-9a-f]{40}$') {
++            $prior = Join-Path (Join-Path (Join-Path $Root 'versions') $active) 'source-tree.txt'
++            if ((Test-Path -LiteralPath $prior) -and [IO.File]::ReadAllText($prior).Trim() -ceq $tree) { return }
++        }
++        $stage = Join-Path $Root ('.stage-' + [guid]::NewGuid().ToString('N'))
++        [void][IO.Directory]::CreateDirectory($stage)
++        $zip = Join-Path $stage 'main.zip'
++        [void](Invoke-Git @('-c','core.autocrlf=false','-c','core.eol=lf','archive', '--format=zip', "--output=$zip", $sha, '--', $prefix))
++        Add-Type -AssemblyName System.IO.Compression.FileSystem
++        [IO.Compression.ZipFile]::ExtractToDirectory($zip, (Join-Path $stage 'archive'))
++        $src = Join-Path (Join-Path $stage 'archive') $prefix
++        $manifest = Import-PowerShellDataFile (Join-Path $src 'm9v/хеші.psd1')
++        $dest = Join-Path $stage 'version'; [void][IO.Directory]::CreateDirectory($dest)
++        $files = @($manifest.Keys | Where-Object { $_ -cmatch '^[a-z][a-z0-9_]*\.ps1$' })
++        foreach ($needed in @('gemini_run.ps1','gemini_publish.ps1','gemini_watch.ps1','claude_run.ps1','queue_lanes.ps1','wrapper_health.ps1','wrapper_update.ps1','wrapper_chain.ps1','wrapper_probe.ps1')) {
++            if ($needed -notin $files) { throw 'UPDATE_MANIFEST' }
++        }
++        foreach ($name in $files) {
++            $file = Join-Path $src $name
++            if ($manifest[$name] -cnotmatch '^[0-9A-F]{64}$' -or (Get-FileHash -LiteralPath $file -Algorithm SHA256).Hash -cne $manifest[$name]) { Write-WrapperLog "хеш кандидата не збігся: $name"; throw 'UPDATE_HASH' }
++            [IO.File]::Copy($file, (Join-Path $dest $name))
++        }
++        $ps = (Get-Process -Id $PID).Path
++        $probe = Invoke-Native $ps @('-NoProfile','-NonInteractive','-ExecutionPolicy','Bypass','-File',(Join-Path $dest 'wrapper_probe.ps1')) $dest 2
++        if ($probe.Code -ne 0 -or $probe.Out.Trim() -cne 'WRAPPER_PROBE_OK') { throw 'UPDATE_PROBE' }
++        foreach ($name in $files) {
++            if ((Get-FileHash -LiteralPath (Join-Path $dest $name) -Algorithm SHA256).Hash -cne $manifest[$name]) { throw 'UPDATE_HASH' }
++        }
++        [IO.File]::WriteAllText((Join-Path $dest 'source-tree.txt'), $tree, $script:Utf8)
++        $versions = Join-Path $Root 'versions'; [void][IO.Directory]::CreateDirectory($versions)
++        $final = Join-Path $versions $sha
++        # Уже створену версію не переписуємо: її може читати живий наряд.
++        if (Test-Path -LiteralPath $final) {
++            foreach ($name in $files) {
++                if ((Get-FileHash -LiteralPath (Join-Path $final $name) -Algorithm SHA256).Hash -cne $manifest[$name]) { throw 'UPDATE_EXISTS' }
++            }
++        } else { [IO.Directory]::Move($dest, $final) }
++        Write-UpdatePointer $Root $sha
++        $stamp = [long](Invoke-Git @('log','--first-parent','-1','--format=%ct',$sha,'--',$prefix)).Out.Trim()
++        $seconds = [Math]::Max(0, [DateTimeOffset]::UtcNow.ToUnixTimeSeconds() - $stamp)
++        Add-OutboxLine ((Get-Date -Format 'yyyyMMdd-HHmmss') + '-' + (Get-Sha256Hex "update $sha").Substring(0,12) + '.txt') "GEMINI ОБГОРТКА: ОНОВЛЕНО $sha СЕКУНД $seconds"
++        Write-WrapperLog "самооновлення $sha; від коміту origin/main $seconds с; попередня $active"
++    } catch {
++        $code = [string]$_.Exception.Message
++        if ($code -cnotmatch '^UPDATE_[A-Z_]+$') { $code = 'UPDATE_FAILED' }
++        Write-WrapperLog "самооновлення $sha — $code; чинну версію збережено; $($_.Exception.Message)"
++        if (-not (Test-Seen "update-failed $sha $code")) {
++            Add-OutboxLine ((Get-Date -Format 'yyyyMMdd-HHmmss') + '-' + (Get-Sha256Hex "update-failed $sha $code").Substring(0,12) + '.txt') "GEMINI ОБГОРТКА: ОНОВЛЕННЯ $sha $code"
++        }
++    } finally {
++        if ($null -ne $lock) { $lock.Dispose() }
++        # Лише власна випадкова тека під перевіреним коренем; чужих версій не видаляємо.
++        if ($stage -and (Test-Path -LiteralPath $stage) -and (Split-Path -Parent $stage) -eq $Root -and (Split-Path -Leaf $stage) -cmatch '^\.stage-[0-9a-f]{32}$') { Remove-Item -LiteralPath $stage -Recurse -Force }
++    }
++}
+diff --git a/аудит/адаптери/gemini/НАЛАШТУВАННЯ.md b/аудит/адаптери/gemini/НАЛАШТУВАННЯ.md
+index 2b8ad5505ff5f3a38672674ae0ad79aa91ca67f1..7240908bfae7be8ca7c30f2195a6f850100b59de 100644
+--- a/аудит/адаптери/gemini/НАЛАШТУВАННЯ.md
++++ b/аудит/адаптери/gemini/НАЛАШТУВАННЯ.md
+@@ -15,7 +15,7 @@
+ 
+ Межі (18.10): повні права — лише під `gemini`; під `gemini` нема входу ні в GitHub, ні в Claude; обгортка ізоляції не
+ створює й не змінює. Задача під тобою з теки `gemini` лише читає файли, нічого звідти не запускає; її скрипт лежить у
+-твоєму профілі, а не в клоні: злиття в `main` його не міняє, оновлюєш рукою (крок 2).
++твоєму профілі, а не в клоні; після встановлення самооновлення цей файл лише вибирає версію з `active.txt`.
+ 
+ ## 0. Що вже має бути (перевір, 2 хв)
+ 
+@@ -283,7 +283,7 @@ alias `/quota`), https://antigravity.google/docs/cli/headless/ (команди,
+ ## Рушій Claude (задача `claude-run`)
+ 
+ Третій рушій: наряд ноутбука веде Claude Code без вікна (`claude -p`) **під тобою**, з наявними входами Claude, git і
+-`gh` — нового входу нема. Скрипт — `%USERPROFILE%\claude-run\claude_run.ps1` (у профілі, не в клоні: злиття його не
++`gh` — нового входу нема. Скрипт — `%USERPROFILE%\claude-run\claude_run.ps1` (у профілі, не в клоні: після встановлення самооновлення файл вибирає перевірену версію; злиття до встановлення його не
+ міняє). Ставить `m9v/0_власник.ps1` (крок 1 `m9v/ЩО_НАТИСНУТИ.md`) тими самими `$base`, `$set` і `$p`, що й `gemini-watch`:
+ 
+ ```powershell
+@@ -409,12 +409,15 @@ $f = Join-Path "$env:USERPROFILE\gemini-outbox" $n
+ 
+ | файл | SHA-256 |
+ |---|---|
+-| `gemini_run.ps1` | `48C66A30A0967CE9A8AA60B9ECF102479D6B6C2672B2978F1C0D8A1D6C8100AD` |
+-| `gemini_publish.ps1` | `735FB7390DD948FBA97B5AA8DE16416C4ACBB99CB92C33A4A9B0AD1E62EF74B5` |
++| `wrapper_probe.ps1` | `85116D04C22EB64CBFF52E66BCEAE9B1091577A889EDD58A8B634093A82BDBC6` |
++| `wrapper_update.ps1` | `F85CC682A6486977600BC32F2D5068790A30A3AADDCA57EB0A68B1773FB1E16F` |
++| `wrapper_chain.ps1` | `79BD08F866529B1C58FE57AF33252AA4F0F7B3D992352130A7824030F27A57CD` |
++| `gemini_run.ps1` | `EB4FDF23FD0BA462B81F2D98592DA6A0E4E15FA63ED14744B6C0844F58FC7B6E` |
++| `gemini_publish.ps1` | `28693B4DAB59DED89C7020E3DB1E14CA663D77FE4F6DE64F39FFD92349B764E2` |
+ | `gemini_watch.ps1` | `3550085176F339BA00B1D1C28391AC585B0959128335D193601734261D00085B` |
+ | `wrapper_health.ps1` | `FCE45448539D53A6B5718319842FC845DA870F39453A6B716C7AF8A2DB65B88E` |
+-| `queue_lanes.ps1` | `12ADC3824C6F126EE91F953B5FA65A96C015FC3D99C39FF9914A167DA2F92DD9` |
+-| `claude_run.ps1` | `A17354251B4CD11A6D3A77254615798486CE9BEDBA02B3960D0DE9577E19BE4C` |
++| `queue_lanes.ps1` | `CACE28723470EF83C34CC2DFBC3C48A263877911B717EDE0850C98B0BC07663B` |
++| `claude_run.ps1` | `AA91D7EE65DCFA5A0CA3F4B0DC8B9A6C6947B27999B1DC19B4A44243CDCBDFFB` |
+ | `CodexInstaller` (`install.ps1` релізу Codex `CodexRelease`) | `A59CB66350098C33B021FF470D586AE8FE3B7CAF189CA7137B4FE3AF5D4DCE74` |
+ 
+ Той самий список читають скрипти `m9v/` з `m9v/хеші.psd1` — міняти їх разом із таблицею. Підготовка одним проходом — `m9v/ЩО_НАТИСНУТИ.md`.
+@@ -447,3 +450,53 @@ $f = Join-Path "$env:USERPROFILE\gemini-outbox" $n
+ Перевірка зупинки джерела і годинного придушення пересуває час у фікстурі, реальні задачі ноутбука не зупиняє.
+ 
+ Після оновлення обидві задачі запускаються раз на 2 хвилини й у простої; під час довгого наряду серцебиття підтримує планувальник. Це залишає запас до межі свіжості 5 хвилин.
++
++## Самооновлення й автоматичний наступний крок
++
++Після злиття цієї зміни сесія застосування під обліковим записом власника один раз виконує
++`powershell -NoProfile -ExecutionPolicy Bypass -File аудит/адаптери/gemini/m9v/3_самооновлення.ps1` із клона main.
++Потрібні вже наявні права запису власника в ProgramData; підвищення прав, пароль, нові ключі й зміна ACL не потрібні.
++Скрипт зберігає початкові файли як `.before-update`, ставить перевірену версію та замінює чотири входи задач
++малими читачами `C:\ProgramData\gemini-wrapper\active.txt`. Параметри наявних задач зберігаються.
++До цього одноразового кроку старі встановлені копії самі нової можливості отримати не можуть.
++
++Щохвилинний gemini-publish після fetch бере лише повний SHA `origin/main`, створює git archive з LF,
++звіряє кожен виконуваний файл із `m9v/хеші.psd1`, запускає `wrapper_probe.ps1` окремим процесом і ще раз звіряє
++байти. Кандидат та версії лежать під захищеним коренем: gemini має лише RX. Інші групи з правами запису та
++reparse point — відмова. Проба перевіряє синтаксис усіх модулів і розбір позначки/автонарядів без мережі й GPU;
++це дим, повні стенди лишаються в CI. Лише успіх перемикає pointer атомарним File.Replace. Живі процеси
++продовжують читати власну попередню теку версії. Попередні версії автоматично не видаляються.
++Незмінне дерево обгортки не створює ще одну копію через сторонній коміт main.
++
++Успіх: `GEMINI ОБГОРТКА: ОНОВЛЕНО <SHA40> СЕКУНД <N>`; N — секунди від часу останнього коміту першого батьківського ланцюга origin/main,
++який змінив обгортку (не вимір точної миті натискання Merge у GitHub). Відмова: `ОНОВЛЕННЯ <SHA> UPDATE_<КОД>`;
++старий pointer лишається. Повтор тієї самої відмови не дублює рядок. Встановлені копії й задачі сесія під gemini
++не змінює; одноразовий крок виконує сесія застосування під власником після незалежної перевірки латок.
++
++`ланцюг.json` читається тільки з origin/main. Підтверджений результат DONE публікатора зберігає квитанцію
++створення PR-чернетки; збій gh не губить її. Наступний прохід створює чернетку з повідомлення останнього коміту
++або знаходить уже створену. Спецзгадка легасі-Codex з повідомлення не переноситься. Native Claude вже створює свій PR.
++Кожен відкритий PR рушія власника з цього самого репозиторію на main отримує позначку перевірки конкретного SHA:
++`автоперевірка-<PR>-<SHA40>`. Для Claude — GPT, для codex — Claude, для Gemini з невідомим каскадом — обидва:
++назва гілки не доводить, який постачальник фактично виконав наряд. Автозвіти виключено, циклу перевірок немає.
++Чужий автор, форк, інша база й некоректна назва відкидаються. Перевіряються всі сторінки API.
++
++Зміна продукту між послідовними main зберігає очікування GPU-прогону; документація сама GPU не займає.
++Перший прохід встановлює базову лінію. Поки моделі на локальному :1234 не видні через GET /api/v1/models,
++очікування лишається в chain.json. Наступні продуктові злиття об’єднуються до найновішого SHA. Коли моделі
++доступні, ставиться `автоживий-<SHA40>/gpt-6.1-sol-high/1/p2-gpu`; узяття, квота та замок GPU — наявний механізм.
++Доступність моделей не доводить справності Playwright чи достатності контексту: їх перевіряє сам живий наряд
++після підготовки `живий-без-адміна`. Результат прогону залишається доказом, без автоматичного злиття.
++Шаблони `аудит/наряди/автоперевірка.md` й `автоживий.md` постійні; довільний текст API в промпт не додається.
++
++Сталі позначки створюються з lease «ref ще не існує», тож повтор після рестарту не перепише взяту спробу.
++Збої ланцюга дають `GEMINI ОБГОРТКА: ЛАНЦЮГ CHAIN_<КОД>` щонайбільше раз за UTC-годину та повторюються
++наступним проходом. Самооновлення, створення PR, перевірка та постановка живого не чекають диспетчера.
++Диспетчер перевіряє докази й зливає; червоний CI та договір незалежної перевірки зберігаються.
++Добове мірило підтверджується окремо після застосування й одноразового встановлення; стенд з підмінами його не замінює.
++
++Джерело контракту каталогу: [LM Studio — GET /api/v1/models](https://lmstudio.ai/docs/developer/rest/list).
++Список містить доступні моделі, включно з незавантаженими; поле `key` звіряється з конфігурацією.
++На 404 читається сумісний `/api/v0/models`, далі `/v1/models`; 401/403 не запускає обхід і не вимагає нового секрету.
++[OpenAI-сумісний список](https://lmstudio.ai/docs/developer/openai-compat/models) може залежати від JIT,
++тому він останній сумісний варіант. Вивід каталогу не є доказом достатності контексту під час живого прогону.
+diff --git a/аудит/адаптери/gemini/ланцюг.json b/аудит/адаптери/gemini/ланцюг.json
+new file mode 100644
+index 0000000000000000000000000000000000000000..93334a17e9ca1513cea8575e60a8f762fa3ac837
+--- /dev/null
++++ b/аудит/адаптери/gemini/ланцюг.json
+@@ -0,0 +1,6 @@
++{
++  "v": 1,
++  "codex": "gpt-6.1-sol-high",
++  "claude": "cc-claude-opus-5-5-high",
++  "models": ["qwen/qwen3.5-9b", "mamaylm-gemma-3-12b-it-v2.0"]
++}
+diff --git a/аудит/адаптери/gemini/перевірка/fake_health.py b/аудит/адаптери/gemini/перевірка/fake_health.py
+index d52af9dbca1c10e6a17748eb53078adf6de16e24..9bfafc205f0da70f92dc051217fe8b14af541ff3 100644
+--- a/аудит/адаптери/gemini/перевірка/fake_health.py
++++ b/аудит/адаптери/gemini/перевірка/fake_health.py
+@@ -10,7 +10,10 @@ role, *args = sys.argv[1:]
+ mode = os.environ.get('FAKE_HEALTH_MODE', '')
+ if role == 'git':
+     if 'cat-file' in args:
+-        print('| диспетчер | session_TEST |')
++        if args[-1].endswith(':аудит/СТАН.md'):
++            print('| диспетчер | session_TEST |')
++        else:
++            sys.exit(1)
+ elif role == 'gh':
+     body = sys.stdin.read() if args[-1] == '-' else Path(args[-1]).read_text(encoding='utf-8-sig')
+     with open(os.environ['FAKE_HEALTH_GH_LOG'], 'a', encoding='utf-8') as f:
+diff --git a/аудит/адаптери/gemini/перевірка/сценарії_здоровя.sh b/аудит/адаптери/gemini/перевірка/сценарії_здоровя.sh
+new file mode 100644
+index 0000000000000000000000000000000000000000..a92681d73918e7a10912a2912955ed888f3036d3
+--- /dev/null
++++ b/аудит/адаптери/gemini/перевірка/сценарії_здоровя.sh
+@@ -0,0 +1,4 @@
++#!/usr/bin/env bash
++set -euo pipefail
++H=$(cd "$(dirname "$0")" && pwd); . "$H/середовище.sh"
++"${PWSH:-pwsh}" -NoProfile -File "$(wp "$H/сценарії_здоровя.ps1")"
+diff --git a/аудит/адаптери/gemini/перевірка/сценарії_ланцюга.ps1 b/аудит/адаптери/gemini/перевірка/сценарії_ланцюга.ps1
+new file mode 100644
+index 0000000000000000000000000000000000000000..75c5f0b0c4ccbca060a40af47debfa4c479eaf22
+--- /dev/null
++++ b/аудит/адаптери/gemini/перевірка/сценарії_ланцюга.ps1
+@@ -0,0 +1,106 @@
++﻿#Requires -Version 5.1
++param([string]$SourceDir = (Split-Path -Parent $PSScriptRoot))
++$ErrorActionPreference = 'Stop'
++$utf = New-Object Text.UTF8Encoding($false)
++$tmpRoot = Join-Path ([IO.Path]::GetTempPath()) ('e0-chain-' + [guid]::NewGuid().ToString('N'))
++[void][IO.Directory]::CreateDirectory($tmpRoot)
++$failures = 0
++function Check([string]$Name, [bool]$Ok) {
++    <# Один результат стенда, без прихованих відмов. #>
++    if ($Ok) { "✓ $Name" } else { "✗ $Name"; $script:failures++ }
++}
++try {
++    $seed = Join-Path $tmpRoot 'seed'; $remote = Join-Path $tmpRoot 'origin.git'
++    & git init -q --bare $remote; & git init -q -b main $seed
++    & git -C $seed config user.name 'стенд'; & git -C $seed config user.email 'stend@example.invalid'
++    & git -C $seed remote add origin $remote
++    foreach ($dir in @('аудит/наряди','аудит/адаптери/gemini','джерела')) { [void][IO.Directory]::CreateDirectory((Join-Path $seed $dir)) }
++    Copy-Item -LiteralPath (Join-Path $SourceDir 'ланцюг.json') -Destination "$seed/аудит/адаптери/gemini/ланцюг.json"
++    foreach ($task in @('автоперевірка','автоживий')) { [IO.File]::WriteAllText("$seed/аудит/наряди/$task.md", $task, $utf) }
++    [IO.File]::WriteAllText("$seed/джерела/a.py", '1', $utf)
++    & git -C $seed add -A; & git -C $seed commit -q -m 'початкова'; & git -C $seed push -q origin main
++    $bare = Join-Path $tmpRoot 'repo.git'; & git clone -q --bare $remote $bare
++    . (Join-Path $SourceDir 'gemini_publish.ps1') -WorkDir "$tmpRoot/pub" -OutboxDir "$tmpRoot/out"
++    foreach ($d in @($WorkDir, (Join-Path $WorkDir 'seen'), $OutboxDir)) { [void][IO.Directory]::CreateDirectory($d) }
++    $script:Repo = $bare; $script:NoHooks = Join-Path $tmpRoot 'no-hooks'
++    [void](Invoke-Git @('fetch','-q','origin','+refs/heads/main:refs/remotes/origin/main'))
++    $first = Get-RefSha 'refs/remotes/origin/main'
++    $script:RealModelsCheck = (Get-Command Test-LiveModels).ScriptBlock
++    $script:OriginalGetPulls = (Get-Command Get-ChainPulls).ScriptBlock
++    $script:Pulls = @(); $script:Ready = $false
++    function Get-ChainPulls { $script:Pulls }
++    function Test-LiveModels($Config) { $script:Ready }
++    function Pull([int]$Number, [string]$Branch, [string]$Sha, [string]$Owner = 'mightyrochy', [string]$Repository = 'mightyrochy/kod-shi-data') {
++        <# Дані API; довільного тексту в позначки не передаємо. #>
++        [pscustomobject]@{ number=$Number; user=@{login=$Owner}; head=@{ref=$Branch;sha=$Sha;repo=@{full_name=$Repository}}; base=@{ref='main';repo=@{full_name='mightyrochy/kod-shi-data'}} }
++    }
++    $script:Pulls = @((Pull 12 'claude/наряд' $first), (Pull 13 'codex/наряд' $first), (Pull 14 'gemini/наряд' $first), (Pull 15 'claude/чужий' $first 'чужий'), (Pull 16 'claude/форк' $first 'mightyrochy' 'чужий/форк'), (Pull 17 "gemini/автоперевірка-12-$first" $first))
++    Invoke-WrapperChain
++    function Markers { @(& git -C $remote for-each-ref '--format=%(refname)' refs/heads/gemini-queue/) }
++    Check 'готові PR автоматично отримали незалежні рушії, каскад Gemini — обидва' ((Markers).Count -eq 4)
++    Check 'чужий автор, форк та автозвіт не породили нарядів' (@(Markers | Where-Object { $_ -match 'автоперевірка-(15|16|17)-' }).Count -eq 0)
++    Invoke-WrapperChain
++    Check 'повтор після перезапуску не дублює позначки' ((Markers).Count -eq 4)
++    $file = Join-Path $WorkDir 'chain.json'; Remove-Item -LiteralPath $file
++    Invoke-WrapperChain
++    Check 'втрата локального списку не перезаписує наявні позначки' ((Markers).Count -eq 4)
++    function Merge([string]$Path, [string]$Text) {
++        <# Злитий стан main і наступний справжній fetch публікатора. #>
++        [IO.File]::WriteAllText((Join-Path $seed $Path), $Text, $utf)
++        & git -C $seed add -A; & git -C $seed commit -q -m 'злиття'; & git -C $seed push -q origin main
++        [void](Invoke-Git @('fetch','-q','origin','+refs/heads/main:refs/remotes/origin/main'))
++        Get-RefSha 'refs/remotes/origin/main'
++    }
++    $docs = Merge 'опис.md' 'документ'; Invoke-WrapperChain
++    Check 'документація не займає GPU' (@(Markers | Where-Object { $_ -match 'автоживий-' }).Count -eq 0)
++    $product = Merge 'джерела/a.py' '2'; Invoke-WrapperChain
++    $state = ConvertFrom-Json ([IO.File]::ReadAllText($file))
++    Check 'злиття продукту збережене в очікуванні моделей' ($state.pending -ceq $product)
++    $newer = Merge 'джерела/a.py' '3'; Invoke-WrapperChain
++    $script:Ready = $true; Invoke-WrapperChain
++    Check 'кілька злиттів зібрані в одну GPU-позначку після доступу моделей' (@(Markers | Where-Object { $_ -match "автоживий-$newer/.*/1/p2-gpu$" }).Count -eq 1)
++    Invoke-WrapperChain
++    Check 'живий прогін не дублюється' (@(Markers | Where-Object { $_ -match 'автоживий-' }).Count -eq 1)
++    $script:Pulls = @((Pull 12 'claude/наряд' $newer)); Invoke-WrapperChain
++    Check 'нова голова PR отримала нову перевірку' (@(Markers | Where-Object { $_ -match "автоперевірка-12-$newer/" }).Count -eq 1)
++    # Справжня постановка PR-завдання та POST із підміною лише gh.
++    $draftBranch = 'gemini/готовий'
++    [void](Invoke-Git @('push','-q','origin',"${newer}:refs/heads/$draftBranch"))
++    $script:NativeOriginal = (Get-Command Invoke-Native).ScriptBlock
++    $script:DraftPosts = 0; $script:GhExe = 'fake-gh'
++    function Resolve-Exe([string]$Name) { $Name }
++    function Invoke-Native([string]$Exe, [string[]]$Arguments, [string]$WorkDirectory = '', [double]$TimeoutMinutes = 10, [string]$StdIn = $null) {
++        if ($Exe -eq 'fake-gh') {
++            $body = ConvertFrom-Json $StdIn
++            if ($body.draft -ne $true -or $body.base -ne 'main' -or $body.head -ne 'gemini/готовий') { throw 'невірне тіло PR' }
++            $script:DraftPosts++
++            return [pscustomobject]@{Code=0;Out='{"number":101}';Err=''}
++        }
++        & $script:NativeOriginal $Exe $Arguments $WorkDirectory $TimeoutMinutes $StdIn
++    }
++    Save-DraftRequest $draftBranch $newer
++    Complete-EngineDrafts
++    Complete-EngineDrafts
++    Check 'DONE створює PR-чернетку сам, повтор POST відсутній' ($script:DraftPosts -eq 1 -and @(Get-ChildItem "$WorkDir/drafts/*.json").Count -eq 0)
++    # Сторінки API розгортаються без втрати після першої сотні.
++    $script:ApiPages = 0
++    function Invoke-ChainApi([string]$Path) { $script:ApiPages++; if ($script:ApiPages -eq 1) { 1..100 } else { 101 } }
++    Check 'відкриті PR читаються з усіх сторінок API' (@(& $script:OriginalGetPulls).Count -eq 101 -and $script:ApiPages -eq 2)
++    $script:ModelCatalog = @([pscustomobject]@{key='qwen/qwen3.5-9b';loaded_instances=@()}, [pscustomobject]@{key='mamaylm-gemma-3-12b-it-v2.0';loaded_instances=@()})
++    function Invoke-RestMethod { [pscustomobject]@{models=$script:ModelCatalog} }
++    $cfg = ConvertFrom-Json ([IO.File]::ReadAllText((Join-Path $SourceDir 'ланцюг.json')))
++    Check 'каталог незавантажених моделей допускає постановку без двох моделей у VRAM' ([bool](& $script:RealModelsCheck $cfg))
++    $script:ModelCatalog = @($script:ModelCatalog[0])
++    Check 'однієї доступної моделі недостатньо' (-not [bool](& $script:RealModelsCheck $cfg))
++    function Invoke-RestMethod { throw 'сервер недоступний' }
++    Check 'недоступний сервер лишає очікування' (-not [bool](& $script:RealModelsCheck $cfg))
++    # Шаблони планувальників: повний SHA, ніякого вільного тексту з API.
++    . (Join-Path $SourceDir 'queue_lanes.ps1')
++    Check 'обидва планувальники можуть узяти шаблон автонаряду' ((Get-AutoTaskPath "автоперевірка-12-$newer") -ceq 'аудит/наряди/автоперевірка.md' -and (Add-AutoTaskContext "автоживий-$newer" 'текст') -match $newer)
++    $script:DryRun = $true; $script:Pulls = @((Pull 99 'claude/наряд' $newer)); Invoke-WrapperChain
++    Check 'DryRun нічого не ставить' (@(Markers | Where-Object { $_ -match 'автоперевірка-99-' }).Count -eq 0)
++} catch { "✗ виняток стенда: $($_.Exception.Message) $($_.ScriptStackTrace)"; $failures++ }
++finally {
++    if ((Split-Path -Parent $tmpRoot) -eq [IO.Path]::GetTempPath().TrimEnd('\','/') -and (Split-Path -Leaf $tmpRoot) -cmatch '^e0-chain-[0-9a-f]{32}$') { Remove-Item -LiteralPath $tmpRoot -Recurse -Force }
++}
++if ($failures) { exit 1 }
+diff --git a/аудит/адаптери/gemini/перевірка/сценарії_ланцюга.sh b/аудит/адаптери/gemini/перевірка/сценарії_ланцюга.sh
+new file mode 100644
+index 0000000000000000000000000000000000000000..293ab4d0a739577ae8bb62cce6e1d60c0864e626
+--- /dev/null
++++ b/аудит/адаптери/gemini/перевірка/сценарії_ланцюга.sh
+@@ -0,0 +1,4 @@
++#!/usr/bin/env bash
++set -euo pipefail
++H=$(cd "$(dirname "$0")" && pwd); . "$H/середовище.sh"
++"${PWSH:-pwsh}" -NoProfile -File "$(wp "$H/сценарії_ланцюга.ps1")"
+diff --git a/аудит/адаптери/gemini/перевірка/сценарії_самооновлення.ps1 b/аудит/адаптери/gemini/перевірка/сценарії_самооновлення.ps1
+new file mode 100644
+index 0000000000000000000000000000000000000000..58f615f4de8fa68dd73433490738fe9796901193
+--- /dev/null
++++ b/аудит/адаптери/gemini/перевірка/сценарії_самооновлення.ps1
+@@ -0,0 +1,90 @@
++﻿#Requires -Version 5.1
++param([string]$SourceDir = (Split-Path -Parent $PSScriptRoot))
++$ErrorActionPreference = 'Stop'
++$utf = New-Object Text.UTF8Encoding($false)
++$tmpRoot = Join-Path ([IO.Path]::GetTempPath()) ('e0-update-' + [guid]::NewGuid().ToString('N'))
++[void][IO.Directory]::CreateDirectory($tmpRoot)
++$failures = 0
++function Check([string]$Name, [bool]$Ok) {
++    <# Один результат стенда; будь-який провал робить весь запуск червоним. #>
++    if ($Ok) { "✓ $Name" } else { "✗ $Name"; $script:failures++ }
++}
++try {
++    $seed = Join-Path $tmpRoot 'seed'; $root = Join-Path $tmpRoot 'protected'
++    [void][IO.Directory]::CreateDirectory($root)
++    & git init -q -b main $seed
++    & git -C $seed config core.autocrlf false
++    & git -C $seed config user.name 'стенд'; & git -C $seed config user.email 'stend@example.invalid'
++    $prefix = 'аудит/адаптери/gemini'; $src = Join-Path $seed $prefix
++    [void][IO.Directory]::CreateDirectory((Join-Path $src 'm9v'))
++    Copy-Item -Path (Join-Path $SourceDir '*.ps1') -Destination $src
++    function Manifest {
++        <# Відбитки точних кандидатів зберігаються в main разом із ними. #>
++        $lines = @('@{')
++        foreach ($f in @(Get-ChildItem -LiteralPath $src -Filter '*.ps1' -File)) { $lines += "'$($f.Name)' = '$((Get-FileHash -LiteralPath $f.FullName -Algorithm SHA256).Hash)'" }
++        $lines += '}'; [IO.File]::WriteAllText((Join-Path $src 'm9v/хеші.psd1'), ($lines -join "`n"), $utf)
++    }
++    function Commit([string]$Message) {
++        <# Створює наступний стан локального main і освіжає лише його ref у клона власника. #>
++        & git -C $seed add -A; & git -C $seed commit -q -m $Message
++        $sha = (& git -C $seed rev-parse HEAD).Trim()
++        [void](Invoke-Git @('fetch','-q','origin','+refs/heads/main:refs/remotes/origin/main'))
++        $sha
++    }
++    Manifest
++    & git -C $seed add -A; & git -C $seed commit -q -m 'початкова'
++    $bare = Join-Path $tmpRoot 'repo.git'
++    & git clone -q --bare $seed $bare
++    . (Join-Path $SourceDir 'gemini_publish.ps1') -WorkDir "$tmpRoot/pub" -OutboxDir "$tmpRoot/out" -UpdateRoot $root
++    foreach ($dir in @($WorkDir, "$WorkDir/seen", $OutboxDir)) { [void][IO.Directory]::CreateDirectory($dir) }
++    $script:RealRootCheck = (Get-Command Test-UpdateRoot).ScriptBlock
++    $script:Repo = $bare; $script:NoHooks = Join-Path $tmpRoot 'no-hooks'
++    # Лише ОС/ACL підмінено; git archive, хеші, процес PowerShell, атомарний pointer — справжні.
++    function Test-OwnerUser { $true }
++    function Test-UpdateRoot([string]$Root) { $true }
++    [void](Invoke-Git @('fetch','-q','origin','+refs/heads/main:refs/remotes/origin/main'))
++    $first = Get-RefSha 'refs/remotes/origin/main'
++    Invoke-WrapperUpdate $root
++    Get-Content "$WorkDir/publish.log" -Encoding UTF8
++    $pointer = Join-Path $root 'active.txt'
++    Check 'перша перевірена версія взята з origin/main' ((Test-Path $pointer) -and [IO.File]::ReadAllText($pointer) -ceq $first)
++    Check 'рядок містить SHA і секунди від коміту main' (@(Get-ChildItem "$OutboxDir/*.txt" | Where-Object { (Get-Content $_.FullName -Raw -Encoding UTF8) -match "ОНОВЛЕНО $first СЕКУНД [0-9]+" }).Count -eq 1)
++    Invoke-WrapperUpdate $root
++    Check 'повтор не створює нової версії' (@(Get-ChildItem "$root/versions" -Directory).Count -eq 1)
++    $queue = 'refs/remotes/origin/gemini-queue/ворожа/gpt-6.1-sol-high/1'
++    [void](Invoke-Git @('update-ref',$queue,$first))
++    [IO.File]::AppendAllText((Join-Path $src 'gemini_watch.ps1'), "`n# нова версія`n", $utf)
++    Manifest; $second = Commit 'нова версія'
++    Invoke-WrapperUpdate $root
++    Get-Content "$WorkDir/publish.log" -Encoding UTF8
++    Check 'злиту версію увімкнено без дії власника' ([IO.File]::ReadAllText($pointer) -ceq $second)
++    Check 'стару версію збережено для живих процесів' (Test-Path "$root/versions/$first/gemini_run.ps1")
++    [IO.File]::AppendAllText((Join-Path $src 'gemini_run.ps1'), "`n# неузгоджені байти`n", $utf)
++    $badHash = Commit 'хеш не збігається'
++    Invoke-WrapperUpdate $root
++    Check 'незбіг хешу зберігає попередню версію' ([IO.File]::ReadAllText($pointer) -ceq $second)
++    Check 'відмова хешу дала тривогу' (@(Get-ChildItem "$OutboxDir/*.txt" | Where-Object { (Get-Content $_.FullName -Raw -Encoding UTF8) -match "$badHash UPDATE_HASH" }).Count -eq 1)
++    [IO.File]::WriteAllText((Join-Path $src 'wrapper_probe.ps1'), 'exit 7', $utf)
++    Manifest; $badProbe = Commit 'проба відмовляє'
++    Invoke-WrapperUpdate $root
++    Check 'проба з ненульовим кодом не перемикає pointer' ([IO.File]::ReadAllText($pointer) -ceq $second)
++    Check 'відмова проби дала тривогу' (@(Get-ChildItem "$OutboxDir/*.txt" | Where-Object { (Get-Content $_.FullName -Raw -Encoding UTF8) -match "$badProbe UPDATE_PROBE" }).Count -eq 1)
++    Invoke-WrapperUpdate $root
++    Check 'повтор відмови не дублює тривогу' (@(Get-ChildItem "$OutboxDir/*.txt" | Where-Object { (Get-Content $_.FullName -Raw -Encoding UTF8) -match "$badProbe UPDATE_PROBE" }).Count -eq 1)
++    # Перевіряємо справжній алгоритм ACL на синтетичних правилах, без Set-Acl чи зміни ОС.
++    $script:AclRules = @([pscustomobject]@{IdentityReference=[Security.Principal.SecurityIdentifier]'S-1-1-0';AccessControlType='Allow';FileSystemRights=[Security.AccessControl.FileSystemRights]'ReadAndExecute'})
++    function Get-Acl { [pscustomobject]@{Access=$script:AclRules} }
++    Check 'RX загальної групи допускається справжньою перевіркою ACL' ([bool](& $script:RealRootCheck $root))
++    $script:AclRules[0].FileSystemRights = [Security.AccessControl.FileSystemRights]'WriteData'
++    Check 'запис загальної групи відхиляється справжньою перевіркою ACL' (-not [bool](& $script:RealRootCheck $root))
++    $script:AclRules[0].IdentityReference = [Security.Principal.SecurityIdentifier]'S-1-5-32-547'
++    Check 'невідома привілейована група з записом теж відхиляється' (-not [bool](& $script:RealRootCheck $root))
++    function Test-UpdateRoot([string]$Root) { $false }
++    Invoke-WrapperUpdate $root
++    Check 'небезпечний ACL не змінює версії' ([IO.File]::ReadAllText($pointer) -ceq $second)
++    Check 'тимчасові дерева прибрано' (@(Get-ChildItem -LiteralPath $root -Directory -Filter '.stage-*').Count -eq 0)
++} catch { "✗ виняток стенда: $($_.Exception.Message) $($_.ScriptStackTrace)"; $failures++ }
++finally {
++    if ((Split-Path -Parent $tmpRoot) -eq [IO.Path]::GetTempPath().TrimEnd('\','/') -and (Split-Path -Leaf $tmpRoot) -cmatch '^e0-update-[0-9a-f]{32}$') { Remove-Item -LiteralPath $tmpRoot -Recurse -Force }
++}
++if ($failures) { exit 1 }
+diff --git a/аудит/адаптери/gemini/перевірка/сценарії_самооновлення.sh b/аудит/адаптери/gemini/перевірка/сценарії_самооновлення.sh
+new file mode 100644
+index 0000000000000000000000000000000000000000..1f71b9dc1962411a3681d0e32761667dfbafd0a9
+--- /dev/null
++++ b/аудит/адаптери/gemini/перевірка/сценарії_самооновлення.sh
+@@ -0,0 +1,4 @@
++#!/usr/bin/env bash
++set -euo pipefail
++H=$(cd "$(dirname "$0")" && pwd); . "$H/середовище.sh"
++"${PWSH:-pwsh}" -NoProfile -File "$(wp "$H/сценарії_самооновлення.ps1")"
