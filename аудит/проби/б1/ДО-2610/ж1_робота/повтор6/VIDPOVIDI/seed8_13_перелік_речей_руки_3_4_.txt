@@ -1,0 +1,51 @@
+── ПРОМПТ (2330 симв.) ──
+{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.", "A slot the description says is not needed is not an item: give it worn false. One item carries one thing — of two alternatives list the first; a note in brackets is not an item.", "Slot \"accessory\" is for an item no other slot fits.", "\"is_outfit\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note; then items is empty."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "ITEM_LIST", "answer_schema": {"is_outfit": "yes|no", "items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory", "color_hex": "<#rrggbb or null>", "worn": "<true, or false when the description says the outfit goes without it>"}]}, "input": ["\"description\" — the outfit description"]}, "description": "Cream trench coat with a belted waist, knee-length cut, #f5f0e6, lightweight wool blend.\nWhite silk blouse with a relaxed collar, long sleeves, button-front closure, #ffffff.\nTailored navy wool trousers, mid-rise fit with side pockets, full length, #2b3547.\nLeather loafers with a slight platform sole, pointed toe design, #8d7c66.\nGold-plated geometric pendant necklace and slim black leather belt matching the coat.\n\nThis outfit works because it perfectly balances the neat dress code required for an office environment while adapting to the cool autumn temperature of 18°C through the addition of a structured trench coat. The combination of a crisp white silk blouse and tailored navy trousers creates a polished, professional silhouette that remains comfortable for a full workday. Neutral tones in the cream outer layer and deep blue pants harmonize beautifully with her warm skin tone and soft hair colors, ensuring she looks put-together without feeling overly rigid."}
+
+── ВІДПОВІДЬ (1160 симв., 56.0 с, HTTP 200) ──
+{
+  "is_outfit": "yes",
+  "items": [
+    {
+      "name": "Trench coat",
+      "details": "Cream with a belted waist and knee-length cut, made of lightweight wool blend",
+      "slot": "outerwear",
+      "color_hex": "#f5f0e6",
+      "worn": true
+    },
+    {
+      "name": "Blouse",
+      "details": "White silk with a relaxed collar, long sleeves and button-front closure",
+      "slot": "top",
+      "color_hex": "#ffffff",
+      "worn": true
+    },
+    {
+      "name": "Trousers",
+      "details": "Tailored navy wool with mid-rise fit, side pockets and full length",
+      "slot": "bottom",
+      "color_hex": "#2b3547",
+      "worn": true
+    },
+    {
+      "name": "Loafers",
+      "details": "Leather with a slight platform sole and pointed toe design",
+      "slot": "shoes",
+      "color_hex": "#8d7c66",
+      "worn": true
+    },
+    {
+      "name": "Necklace",
+      "details": "Gold-plated geometric pendant",
+      "slot": "jewelry",
+      "color_hex": null,
+      "worn": true
+    },
+    {
+      "name": "Belt",
+      "details": "Slim black leather matching the coat",
+      "slot": "belt",
+      "color_hex": null,
+      "worn": true
+    }
+  ]
+}
