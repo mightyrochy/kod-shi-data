@@ -1,0 +1,26 @@
+diff --git a/.github/workflows/zbirka.yml b/.github/workflows/zbirka.yml
+index adff311ff..cfa89ee01 100644
+--- a/.github/workflows/zbirka.yml
++++ b/.github/workflows/zbirka.yml
+@@ -26,7 +26,7 @@ jobs:
+       contents: read
+     name: що змінилось у push чи PR
+     runs-on: ubuntu-latest
+-    timeout-minutes: 3
++    timeout-minutes: 10
+     outputs:
+       lyshe_doshka: ${{ steps.zmina.outputs.lyshe_doshka }}
+     steps:
+diff --git a/.github/workflows/zhnyva.yml b/.github/workflows/zhnyva.yml
+index 18cf9f84c..de409e5db 100644
+--- a/.github/workflows/zhnyva.yml
++++ b/.github/workflows/zhnyva.yml
+@@ -43,7 +43,7 @@ jobs:
+   schedule-readiness:
+     if: github.event_name == 'schedule'
+     runs-on: ubuntu-latest
+-    timeout-minutes: 2
++    timeout-minutes: 10
+     outputs:
+       ready: ${{ steps.readiness.outputs.ready }}
+     steps:
