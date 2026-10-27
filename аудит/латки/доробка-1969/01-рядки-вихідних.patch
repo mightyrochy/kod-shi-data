@@ -1,0 +1,50 @@
+diff --git a/аудит/адаптери/gemini/claude_run.ps1 b/аудит/адаптери/gemini/claude_run.ps1
+index 33c6710..78cb5a1 100644
+--- a/аудит/адаптери/gemini/claude_run.ps1
++++ b/аудит/адаптери/gemini/claude_run.ps1
+@@ -145,7 +145,7 @@ function Add-Line([string]$Line) {
+     foreach ($t in $script:LineTemplates) { if ($Line -cmatch $t) { $ok = $true; break } }
+     if (-not $ok -or $Line.Contains('..')) { Write-Log "рядок не за шаблоном — не записано: $Line"; return '' }
+     $id = New-Id
+-    Write-FileAtomic (Join-Path $OutboxDir "$id.txt") $Line
++    Write-FileAtomic (Join-Path $OutboxDir "$id.txt") ($Line + "`n")
+     Write-Log "рядок $id : $Line"
+     $id
+ }
+diff --git a/аудит/адаптери/gemini/m9v/хеші.psd1 b/аудит/адаптери/gemini/m9v/хеші.psd1
+index 24a7b7b..26fc03d 100644
+--- a/аудит/адаптери/gemini/m9v/хеші.psd1
++++ b/аудит/адаптери/gemini/m9v/хеші.psd1
+@@ -12,5 +12,5 @@
+     CodexInstaller       = 'A59CB66350098C33B021FF470D586AE8FE3B7CAF189CA7137B4FE3AF5D4DCE74'
+     'gemini_watch.ps1'   = '3550085176F339BA00B1D1C28391AC585B0959128335D193601734261D00085B'
+     'queue_lanes.ps1'    = '12ADC3824C6F126EE91F953B5FA65A96C015FC3D99C39FF9914A167DA2F92DD9'
+-    'claude_run.ps1'     = 'A17354251B4CD11A6D3A77254615798486CE9BEDBA02B3960D0DE9577E19BE4C'
++    'claude_run.ps1'     = '5C20819CB0145C8B62362FBEFF48C328229090317D8176552E46344C5AD16277'
+ }
+diff --git a/аудит/адаптери/gemini/НАЛАШТУВАННЯ.md b/аудит/адаптери/gemini/НАЛАШТУВАННЯ.md
+index 2b8ad55..26f073b 100644
+--- a/аудит/адаптери/gemini/НАЛАШТУВАННЯ.md
++++ b/аудит/адаптери/gemini/НАЛАШТУВАННЯ.md
+@@ -414,7 +414,7 @@ $f = Join-Path "$env:USERPROFILE\gemini-outbox" $n
+ | `gemini_watch.ps1` | `3550085176F339BA00B1D1C28391AC585B0959128335D193601734261D00085B` |
+ | `wrapper_health.ps1` | `FCE45448539D53A6B5718319842FC845DA870F39453A6B716C7AF8A2DB65B88E` |
+ | `queue_lanes.ps1` | `12ADC3824C6F126EE91F953B5FA65A96C015FC3D99C39FF9914A167DA2F92DD9` |
+-| `claude_run.ps1` | `A17354251B4CD11A6D3A77254615798486CE9BEDBA02B3960D0DE9577E19BE4C` |
++| `claude_run.ps1` | `5C20819CB0145C8B62362FBEFF48C328229090317D8176552E46344C5AD16277` |
+ | `CodexInstaller` (`install.ps1` релізу Codex `CodexRelease`) | `A59CB66350098C33B021FF470D586AE8FE3B7CAF189CA7137B4FE3AF5D4DCE74` |
+ 
+ Той самий список читають скрипти `m9v/` з `m9v/хеші.psd1` — міняти їх разом із таблицею. Підготовка одним проходом — `m9v/ЩО_НАТИСНУТИ.md`.
+diff --git a/аудит/адаптери/gemini/перевірка/сценарії_claude.sh b/аудит/адаптери/gemini/перевірка/сценарії_claude.sh
+index 40124d4..9f0407c 100644
+--- a/аудит/адаптери/gemini/перевірка/сценарії_claude.sh
++++ b/аудит/адаптери/gemini/перевірка/сценарії_claude.sh
+@@ -34,7 +34,7 @@ code() { setup "$1"; mark "$SLUG/${3:-$M}/1"; FAKE_CC_SCENARIO=$2 cr "${5:-}"; W
+   EXPECTED="GEMINI ОБГОРТКА: ЗАБЛОКОВАНО claude/$SLUG $WANT"
+   case "$WANT" in AUTH) EXPECTED="$EXPECTED"$'\n''GEMINI ОБГОРТКА: ТРИВОГА AUTH CLAUDE';;
+     ENGINE_MISSING) EXPECTED="$EXPECTED"$'\n''GEMINI ОБГОРТКА: ТРИВОГА ENGINE CLAUDE';; esac
+-  chk "$2 → підсумок $4 і окрема тривога за потреби (є: $(lines))" '[ "$(lines | LC_ALL=C sort)" = "$(printf "%s\n" "$EXPECTED" | LC_ALL=C sort)" ]'; }
++  chk "$2 → підсумок $4 і окрема тривога за потреби (є: $(lines))" '[ "$(lines | wc -l)" = "$(nlines)" ] && [ "$(lines | LC_ALL=C sort)" = "$(printf "%s\n" "$EXPECTED" | LC_ALL=C sort)" ]'; }
+ 
+ echo "=== К1 ГОТОВО: модель і зусилля дослівно, auto, промпт запускача, SHA з origin, стан в issue"
+ setup k1; mark "$SLUG/$M/1"; cr
