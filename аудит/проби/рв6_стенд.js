@@ -2593,6 +2593,8 @@ function підсумокМоделі(){
           вихід: (дані.usage || {}).output_tokens || 0, думка: 0,
           фото_не_дійшло: Number((відповідь.headers || {})['x-images-dropped'] || 0)});
         console.log('   ↔ запис #' + н + ' ' + тип + ' · HTTP ' + відповідь.status);
+        // Миттєвий запис повертається між синхронними кроками моста.
+        await стор.тишаМосту();
         return await route.fulfill(відповідь);
       } catch (помилка) {
         console.error('ВІДТВОРЕННЯ:', помилка.message);
