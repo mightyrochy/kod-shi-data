@@ -7,10 +7,13 @@ K-COL-06 — `distinct_fabric` (kL=2, R-COL-11) проти `distinct` (kL=1). З
 import sys, random, collections as K; sys.path.insert(0, "."); sys.path.insert(0, "проби")
 import pal_вердикт as ПВ, колір_річ as КР, colorspace as cs, суд_від_моделі as СВ, суд_інтерес as СІ, річ_з_фото as РФ
 import колір_простір_стеля as КС
+from фід_збагачення import центр_вікна
 _, _, кат, спец = ПВ.стенд(гілка=0, намір="statement"); П = спец["палітра_практична"]; в = П["вікна"]; Л = K.Counter()
 дуги = [a for ім, aa in (в.get("сім_ї") or {}).items() if ім != "очі" for a in (aa or ())]
 очі = в.get("очі") if "очі" in (в.get("сім_ї") or {}) else None
-слова = [x for x in кат.values() if КР.не_вимір(x) and КР.межі_кольору(x) and x.get("lab")]
+# Центр — лише контрфактична копія для порівняння, у каталозі інтервал не має lab.
+слова = [dict(x, lab=центр_вікна(КР.межі_кольору(x))) for x in кат.values()
+         if КР.тип_кольору(x) == "інтервал" and КР.межі_кольору(x)]
 for x in слова:
     L, C, h = cs.lch(tuple(x["lab"]))
     Л["нейтраль: центр %s → вікно %s" % ("так" if КР.нейтраль(tuple(x["lab"])) else "ні", КР.нейтраль_меж(x))] += 1

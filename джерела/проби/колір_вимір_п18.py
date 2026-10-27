@@ -15,7 +15,7 @@ def каталог():
 ФЗ.вимір_впевнений, ФЗ.СВІТЛЕ_L = (lambda *a: False), float("inf")
 до = каталог()
 ФЗ.вимір_впевнений, ФЗ.СВІТЛЕ_L = впевн, світле
-вид = lambda r: "нема" if not r.get("lab") else "вікно" if КР.не_вимір(r) else "точка"
+вид = lambda r: {"вимір": "точка", "інтервал": "вікно", "невідомо": "нема"}[КР.тип_кольору(r)]
 hx = lambda r: П.hex_з_lab(tuple(r["lab"])) if r.get("lab") else "—"
 зм = sorted(і for і, r in піс.items() if і in до and tuple(до[і].get("lab") or ()) != tuple(r.get("lab") or ()))
 print("речей:", len(піс), "змінили колір:", len(зм))
