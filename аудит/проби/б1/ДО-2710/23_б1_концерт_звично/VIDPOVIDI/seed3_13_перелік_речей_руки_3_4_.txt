@@ -1,0 +1,44 @@
+── ПРОМПТ (2215 симв.) ──
+{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.", "A slot the description says is not needed is not an item: give it worn false. One item carries one thing — of two alternatives list the first; a note in brackets is not an item.", "Slot \"accessory\" is for an item no other slot fits.", "\"is_outfit\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note; then items is empty."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "ITEM_LIST", "answer_schema": {"is_outfit": "yes|no", "items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory", "color_hex": "<#rrggbb or null>", "worn": "<true, or false when the description says the outfit goes without it>"}]}, "input": ["\"description\" — the outfit description"]}, "description": "Textured black cotton blend cropped jacket with sharp lapels and asymmetrical zipper detail, color #1a1a1a, relaxed fit cut. High-waisted wide-leg dark denim trousers in a rigid twill fabric with subtle distressed hem, color #0d0f12. Chunky white platform leather sneakers with reinforced toe cap and thick rubber sole, color #ffffff. Silver geometric-link choker necklace and studded black leather wrist cuff. This outfit works because the statement-making cropped jacket adds an edge suitable for a rock concert while the wide-leg pants provide enough fabric to stand comfortably in a crowded venue without restriction. The dark denim balances the artificial club lighting with a classic texture that anchors the boldness of the outer layer. Finally, the platform sneakers ensure she can move freely and express her style confidently even after standing for hours."}
+
+── ВІДПОВІДЬ (1011 симв., 62.3 с, HTTP 200) ──
+{
+  "is_outfit": "yes",
+  "items": [
+    {
+      "name": "cropped jacket",
+      "details": "textured cotton blend with sharp lapels, asymmetrical zipper detail, and relaxed fit cut",
+      "slot": "outerwear",
+      "color_hex": "#1a1a1a",
+      "worn": true
+    },
+    {
+      "name": "wide-leg trousers",
+      "details": "high-waisted dark denim in rigid twill fabric with subtle distressed hem",
+      "slot": "bottom",
+      "color_hex": "#0d0f12",
+      "worn": true
+    },
+    {
+      "name": "platform sneakers",
+      "details": "chunky white leather with reinforced toe cap and thick rubber sole",
+      "slot": "shoes",
+      "color_hex": "#ffffff",
+      "worn": true
+    },
+    {
+      "name": "choker necklace",
+      "details": "silver geometric-link",
+      "slot": "collar_necklace",
+      "color_hex": null,
+      "worn": true
+    },
+    {
+      "name": "wrist cuff",
+      "details": "studded black leather",
+      "slot": "accessory",
+      "color_hex": null,
+      "worn": true
+    }
+  ]
+}
