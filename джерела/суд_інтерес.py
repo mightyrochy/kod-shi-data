@@ -242,7 +242,7 @@ def річ_несе_інтерес(r):
     if not isinstance(r, dict):
         return []
     e = dict(r)
-    if not _КР.точка_кольору(e) and e.get("hex"):
+    if _КР.тип_кольору(e) == "вимір" and not _КР.точка_кольору(e) and e.get("hex"):
         try:
             e["lab"] = _КС.hx(e["hex"])
         except (TypeError, ValueError, AttributeError):

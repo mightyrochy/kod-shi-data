@@ -623,11 +623,6 @@ def _lab_речі(r, за_ід):
     річ невиміряною, а не нейтральною."""
     повна = (за_ід or {}).get(r.get("id")) or r
     lab = _КР.точка_кольору(повна)
-    if not lab and повна.get("hex"):
-        try:
-            lab = cs.hx(повна["hex"])
-        except ValueError:
-            lab = None
     return lab if lab and len(lab) >= 3 else None
 
 
