@@ -1,0 +1,37 @@
+── ПРОМПТ (2587 симв.) ──
+{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.", "A slot the description says is not needed is not an item: give it worn false. One item carries one thing — of two alternatives list the first; a note in brackets is not an item.", "Slot \"accessory\" is for an item no other slot fits.", "\"is_outfit\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note; then items is empty."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "ITEM_LIST", "answer_schema": {"is_outfit": "yes|no", "items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory", "color_hex": "<#rrggbb or null>", "worn": "<true, or false when the description says the outfit goes without it>"}]}, "input": ["\"description\" — the outfit description"]}, "description": "A fine-gauge merino wool turtleneck sweater, crew neck cut, hip-length hem, charcoal gray color with hex code #36454F, soft yet dense knit fabric.\nAnkle-length straight-leg trousers made of heavy twill cotton blend in a deep forest green hue (#2F4F4F), structured enough to resist snow and wind.\nA tailored wool-blend coat with a classic double-breasted front, hip-to-thigh length for warmth protection, black color with hex code #000000, thick napped fabric for insulation against the frost.\nBlack leather ankle boots with a low block heel and a grippy rubber sole, waterproof treated finish, ensuring stability on icy sidewalks during the twenty-minute walk.\n\nThis outfit works perfectly because it prioritizes genuine warmth without sacrificing the professional neatness required for work in freezing temperatures. The heavy wool sweater and insulated coat create a reliable thermal barrier against the minus ten degree weather and snow, while the durable twill trousers offer wind resistance essential for an active morning commute. Finally, the waterproof leather boots provide the necessary traction and protection for walking on icy pavement, ensuring she arrives at her workplace feeling safe, dry, and appropriately dressed."}
+
+── ВІДПОВІДЬ (900 симв., 63.1 с, HTTP 200) ──
+{
+  "is_outfit": "yes",
+  "items": [
+    {
+      "name": "turtleneck sweater",
+      "details": "fine-gauge merino wool crew neck hip-length soft yet dense knit",
+      "slot": "top",
+      "color_hex": "#36454F",
+      "worn": true
+    },
+    {
+      "name": "trousers",
+      "details": "ankle-length straight-leg heavy twill cotton blend structured wind-resistant",
+      "slot": "bottom",
+      "color_hex": "#2F4F4F",
+      "worn": true
+    },
+    {
+      "name": "coat",
+      "details": "tailored wool-blend classic double-breasted hip-to-thigh length thick napped fabric insulated",
+      "slot": "outerwear",
+      "color_hex": "#000000",
+      "worn": true
+    },
+    {
+      "name": "ankle boots",
+      "details": "black leather low block heel grippy rubber sole waterproof treated finish stable on ice",
+      "slot": "shoes",
+      "color_hex": "#000000",
+      "worn": true
+    }
+  ]
+}
