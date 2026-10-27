@@ -1,0 +1,30 @@
+── ПРОМПТ (2609 симв.) ──
+{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.", "A slot the description says is not needed is not an item: give it worn false. One item carries one thing — of two alternatives list the first; a note in brackets is not an item.", "Slot \"accessory\" is for an item no other slot fits.", "\"is_outfit\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note; then items is empty."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "ITEM_LIST", "answer_schema": {"is_outfit": "yes|no", "items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory", "color_hex": "<#rrggbb or null>", "worn": "<true, or false when the description says the outfit goes without it>"}]}, "input": ["\"description\" — the outfit description"]}, "description": "A sheath dress in a deep emerald green, knee-length cut with a modest V-neckline and subtle back detailing, fabric is heavy silk chiffon that drapes elegantly without being sheer, hex code #046307.\nSilk ankle boots in the same emerald green, pointed toe design with a low block heel for comfort during an afternoon meal, fabric is smooth leather, hex code #046307.\nA tailored wool-blend blazer in charcoal grey to provide warmth and structure against the autumn chill, classic fit cut with notched lapels, length ending at the hip, fabric is fine merino wool, hex code #36454F.\n\nThis outfit works because it respects the sacred atmosphere of church service with a modest neckline and covered knees while remaining warm enough for an autumn day at 18°C. The choice of silk chiffon provides a luxurious texture suitable for very smart evening standards without appearing overly casual, bridging the gap between worship and family dinner. By including the blazer, the ensemble adapts to the cooling weather after the service, offering practical warmth while maintaining a cohesive color story that feels intentional and refined. The matching boots ensure you can move comfortably from the church steps to the dining table without sacrificing style or modesty."}
+
+── ВІДПОВІДЬ (730 симв., 72.1 с, HTTP 200) ──
+{
+  "is_outfit": "yes",
+  "items": [
+    {
+      "name": "sheath dress",
+      "details": "knee-length cut with a modest V-neckline and subtle back detailing, heavy silk chiffon that drapes elegantly without being sheer",
+      "slot": "dress",
+      "color_hex": "#046307",
+      "worn": true
+    },
+    {
+      "name": "ankle boots",
+      "details": "pointed toe design with a low block heel, smooth leather",
+      "slot": "shoes",
+      "color_hex": "#046307",
+      "worn": true
+    },
+    {
+      "name": "blazer",
+      "details": "tailored wool-blend, classic fit cut with notched lapels, length ending at the hip, fine merino wool",
+      "slot": "outerwear",
+      "color_hex": "#36454F",
+      "worn": true
+    }
+  ]
+}
