@@ -2599,11 +2599,12 @@ function підсумокМоделі(){
       } catch (помилка) {
         console.error('ВІДТВОРЕННЯ:', помилка.message);
         if (ЗНІМКИ) fs.writeFileSync(path.join(ЗНІМКИ, 'помилка_відтворення.json'),
-          JSON.stringify({причина: помилка.message, тип, запит: тіло}, null, 1) + '\n');
+          JSON.stringify({причина: помилка.message, код: помилка.code || null,
+            виклик: помилка.виклик || null, тип, запит: тіло}, null, 1) + '\n');
         провалів++;
         ДОКАЗ.обірвано('записаний обмін: ' + помилка.message);
         await браузер.close();
-        process.exit(2);
+        process.exit(помилка.code === 'REPLAY_STALE' ? 3 : 2);
       }
     }
     /* ── ПРИМІРЯННЯ В ComfyUI (COMFY=1) — І З ЖИВОЮ МОДЕЛЛЮ, І ЗІ ЗАГЛУШКОЮ ────
