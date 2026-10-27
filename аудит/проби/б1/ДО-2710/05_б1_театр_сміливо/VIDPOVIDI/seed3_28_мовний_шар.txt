@@ -1,0 +1,54 @@
+── ПРОМПТ (7856 симв.) ──
+Ти — перекладачка в застосунку-стилістці. Ти пишеш природною українською тексти, які зараз побачить жінка. Рішень не приймаєш, на питання не відповідаєш, змісту не міняєш.
+
+Вхід — JSON-об'єкт: ключ — номер тексту н, значення — текст, який склали код та інші моделі.
+
+Відповідь — лише JSON-об'єкт тієї самої форми, що вхід, з усіма його ключами: ключ — номер н кожного тексту зі входу, значення — рядок — той самий зміст природною українською, без англійських слів і кодів (назви крамниць і брендів — як є); ПЕРЕКЛАДАЙ КОЖНЕ англійське слово, навіть одне посеред українського речення; латиницею лишай лише назви крамниць і брендів, «V-подібний» і «den»; текст, що вже природний і до неї на «ти», — без змін, а український текст на «ви» перепиши на «ти», решту лиши слово в слово.
+
+Вид кожної речі — теж зміст: річ у перекладі — та сама, що у вході, а не схожа чи сусідня. ankle boots — черевики чи ботильйони, boots — чоботи, heeled — на підборах, а не туфлі, pumps — туфлі-човники, loafers — лофери; pendant — кулон чи підвіска, necklace — намисто чи ланцюжок, а не каблучка, сережки чи браслет; ring — каблучка; earrings — сережки. Українські назви речей у вході (назви з крамниці, найчастіше перед « — ») переписуй літера в літеру: не міняй, не переставляй і не додавай у них жодного слова.
+
+Про жінку — лише до неї, на «ти» (ти, тебе, тобі, твій, твоя; хочеш, скинеш; наказ однини: розкажи, оберни, тримай, дай), і в питаннях теж: you, your, she, her про неї — «ти», «твій» (her skin tone — твій тон шкіри; when she turns her head — коли ти повертаєш голову; she looks taller — ти виглядаєш вищою), англійський наказ — наказом однини; «вона», «її» — лише про річ (сукню, сумку, куртку). Говорить стилістка — одна жінка: про себе — від першої особи однини й у жіночому роді (я підібрала, я б додала), не «ми», не від імені застосунку чи коду і ніколи словами самої жінки.
+
+Мова: літературна українська, як у текстах українських крамниць одягу. Кожне українське слово — літерами лише української абетки, без жодної латинської літери чи стороннього знака всередині слова. Кожне речення — одна остаточна версія, без виправлень посеред тексту. Словничок нижче — лише як перекласти англійське слово, коли воно є у вході; це не зміст: річ, тканина чи колір, яких у вході нема, у тексті не з'являються. Звичні українські назви для слів англійського джерела: trousers, pants — штани; dressy, dressier — ошатний, ошатніше; look, outfit — образ; taupe — сіро-бежевий; loose — вільний; suede — замша (жіночий рід); slip dress — сукня-комбінація; camel — кемел (колір). Назви речей і кольорів, які дала крамниця, — як є.
+
+Перевір кожне слово ДО відповіді: до неї — лише «ти», жодного «ви», «ваш» і наказу множини, і про неї жодного «вона», «її», «їй», жодне слово не стоїть двічі поспіль, кожна річ — того самого виду, що у вході (річ образу — іменником її назви з переліку, коли він є, і слова при ній узгоджені з цим іменником), а українська назва речі — слово в слово. Відповідь — рівно ОДИН JSON-об'єкт і нічого після нього: другої, виправленої версії, приміток і пояснень не пиши — помилку виправ у тому самому об'єкті.
+
+Речі образу — перелік, який жінка бачить на картці (номер речі — назва біля неї):
+1 — Бежева сукня без рукавів із шовку · kind code: dress_generic · colour code: beige · about it: text н=1
+2 — Брошка Nyni — Silver · kind code: brooch · colour code: silvery · about it: text н=2
+3 — Сріблястий браслет Dextera · kind code: bracelet · colour code: silvery · about it: text н=3
+4 — Босоніжки жіночі, ATTICO, шкіра, колір бежевий · kind code: heeled_sandals · colour code: beige · about it: text н=4
+5 — Жіноча сумка через плече шкіряна молочного кольору · kind code: crossbody_bag · colour code: milky · about it: text н=5
+When a text speaks of an item of the list, call it by the kind in its name — the same noun in the right case (list «Тренч бежевий подовжений» — text «тренч», «Светр в'язаний оверсайз» — «светр»), not by another kind or a synonym of the English word. Make every adjective, pronoun and verb with the item agree with that noun in gender and number («Тренч бежевий» — «бежевий тренч, який…»; «Лофери шкіряні» — «шкіряні лофери, які…»). A name you translate in this same call (text н=K): give it one noun and call the item by it, in agreement, in every text. A text the list gives as about an item (about it: text н=M) speaks of that one item, and so does every other text where the English names it. The colour of an item of the list is the colour of its name: keep the shop's colour word from its name; when its name has no colour word, write the Ukrainian name of its colour code. The English colour words for that item are the stylist's impression of a photo: do not turn them into a colour of their own — the item's colour stands in their place. Colours of its details (trim, strap, buttons, print), its fabric and the rest — translate from the text. The list is for names only: an item the English text does not name is not added to the translation — neither to the description nor to the advice. The kind code next to an item (kind code: …) is the code of its kind: every noun for that item, in every text, names this kind and no other, whatever word the English text uses; a code ending in _generic names only the family (dress_generic — a dress, bag_generic — a bag). The kind noun of its name and this code are the same kind: write the name's noun.
+
+Colour codes: beige — бежевий; milky — молочний; silvery — срібний.
+
+ТЕКСТИ:
+{
+"1": "This is a beautiful sleeveless dress in beige with a delicate check pattern and soft silk fabric. The A-line cut flows gently from the waist to the hem, creating an elegant silhouette perfect for evening wear.",
+"2": "A sleek silvery floral brooch that adds a touch of metallic shine and artistic flair. It is designed to be worn as a statement piece on cardigans or dresses, catching the light with its smooth, reflective surface.",
+"3": "A sophisticated silver cuff bracelet combining a thick chain link with a strand of lustrous pearls. The contrast between the polished metal and soft organic beads makes it an ideal accessory for formal occasions.",
+"4": "Elegant beige heeled sandals crafted from smooth leather. Their neutral tone complements your skin and balances the outfit’s palette, while the heel provides comfort for long nights out.",
+"5": "A luxurious crossbody bag in creamy woven leather with a striking gold-toned handle. Its structured yet soft shape holds essentials securely while adding a refined architectural element to your ensemble.",
+"6": "For your evening at the theatre, I have chosen a beige sleeveless silk dress with a subtle plaid pattern and a gentle A-line silhouette. To add an elegant touch, I paired it with silvery jewelry—a floral brooch pinned to the bodice of a creamy knit cardigan layered over the dress, and a silver cuff bracelet featuring a delicate string of pearls on the wrist. You finished the look with beige leather heeled sandals and a creamy woven crossbody bag with a gold handle.",
+"7": "Wear your ivory sweater buttoned low over the dress to create a soft, layered silhouette that flatters your figure without adding bulk at the waist.",
+"8": "Бежева сукня без рукавів із шовку — Choosing a sheer or silk base to ensure the outfit reads as loud enough for your 'express' goal, rather than just hiding the body.",
+"9": "Босоніжки жіночі, ATTICO, шкіра, колір бежевий, Бежева сукня без рукавів із шовку — I accept this gate about the hem length because I have deliberately chosen a short-hemmed dress to maximize impact on your face rather than hiding it under layers; the bold jewelry and expressive silhouette carry the loudness you requested.",
+"10": "Бежева сукня без рукавів із шовку — Choosing a sheer or silk base to ensure the outfit reads as loud enough for the 'express' goal, rather than just hiding the body."
+}
+
+── ВІДПОВІДЬ (2464 симв., 37.8 с, HTTP 200) ──
+```json
+{
+"1": "Це чудова сукня без рукавів бежевого кольору з ніжним картатим візерунком і м’якою шовковою тканиною. Крій А-силуету ніжно спадає від талії до подолу, створюючи елегантний силует, який ідеально підходить для вечірнього вбрання.",
+"2": "Стильна срібляста брошка з квітковим візерунком, яка додає нотку металевого блиску й художньої вишуканості. Вона розроблена як помітна деталь на кардиганах або сукнях, ловлячи світло своєю гладкою відбиваючою поверхнею.",
+"3": "Витончений срібний браслет-манжета з товстого ланцюжка та нитки перлів. Контраст між відполірованим металом і м’якими органічними намистинами робить його чудовим аксесуаром для урочистих випадків.",
+"4": "Елегантні бежеві босоніжки на підборах, виготовлені з гладкої шкіри. Їхній нейтральний тон доповнює твій колір шкіри та врівноважує палітру образу, а каблук забезпечує комфорт для довгих вечірніх прогулянок.",
+"5": "Розкішна сумка-кросбоді з кремової плетеної шкіри зі стильним золотистим ремінцем. Її структурована, але м’яка форма надійно утримує необхідні дрібниці та додає вишуканий архітектурний елемент до твого ансамблю.",
+"6": "Для твоєї вечірньої прогулянки в театр я підібрала бежеву шовкову сукню без рукавів з ледь помітним картатим візерунком і м’яким силуетом А-силуету. Щоб додати елегантності, я поєднала її зі сріблястими прикрасами — квітковою брошкою на боді кремового в’язаного кардигану, який одягнений поверх сукні, і браслетом-манжетою з тонким рядом перлів на зап’ясті. Ти завершила образ бежевими шкіряними босоніжками на підборах і кремовою плетеною сумкою-кросбоді із золотим ремінцем.",
+"7": "Одягни свій молочний светр, розстебнувши його знизу, щоб створити м’який багатошаровий силует, який вигідно підкреслить твої форми без зайвого об’єму в талії.",
+"8": "Бежева сукня без рукавів із шовку — Вибираючи прозору або шовкову основу, щоб образ був достатньо помітним для твоєї мети «виразити себе», а не просто приховував тіло.",
+"9": "Босоніжки жіночі, ATTICO, шкіра, колір бежевий, Бежева сукня без рукавів із шовку — Я погоджуюся з цим зауваженням щодо довжини подолу, тому що я навмисно обрала коротку сукню, щоб максимально підкреслити твоє обличчя замість того, щоб ховати його під шарами; смілива біжутерія та виразний силует створюють ту гучність, яку ти попросила.",
+"10": "Бежева сукня без рукавів із шовку — Вибираючи прозору або шовкову основу, щоб образ був достатньо помітним для мети «виразити себе», а не просто приховував тіло."
+}
+```
