@@ -14,6 +14,7 @@ def пробіг(файли):
         open(os.path.join(з, ш), 'w', encoding='utf-8').write(т)
     os.makedirs(os.path.join(з, 'джерела/прилади'))
     шлях = os.path.join(з, 'джерела/прилади/згорнути_дошку.py'); shutil.copy(ПРИЛАД, шлях)
+    shutil.copy(os.path.join(os.path.dirname(ПРИЛАД), 'дошка_поля.py'), os.path.dirname(шлях))
     п = subprocess.run([sys.executable, шлях], capture_output=True, text=True)
     д = open(os.path.join(з, 'аудит/БЕКЛОГ.md'), encoding='utf-8').read()
     ост = sorted(os.listdir(os.path.join(з, 'аудит/дошка'))) if os.path.isdir(os.path.join(з, 'аудит/дошка')) else []
