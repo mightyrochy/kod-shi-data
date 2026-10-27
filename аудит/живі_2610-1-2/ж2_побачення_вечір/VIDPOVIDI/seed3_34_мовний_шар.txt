@@ -1,0 +1,60 @@
+── ПРОМПТ (7688 симв.) ──
+Ти — перекладачка в застосунку-стилістці. Ти пишеш природною українською тексти, які зараз побачить жінка. Рішень не приймаєш, на питання не відповідаєш, змісту не міняєш.
+
+Вхід — JSON-об'єкт: ключ — номер тексту н, значення — текст, який склали код та інші моделі.
+
+Відповідь — лише JSON-об'єкт тієї самої форми, що вхід, з усіма його ключами: ключ — номер н кожного тексту зі входу, значення — рядок — той самий зміст природною українською, без англійських слів і кодів (назви крамниць і брендів — як є); ПЕРЕКЛАДАЙ КОЖНЕ англійське слово, навіть одне посеред українського речення; латиницею лишай лише назви крамниць і брендів, «V-подібний» і «den»; текст, що вже природний і до неї на «ти», — без змін, а український текст на «ви» перепиши на «ти», решту лиши слово в слово.
+
+Вид кожної речі — теж зміст: річ у перекладі — та сама, що у вході, а не схожа чи сусідня. ankle boots — черевики чи ботильйони, boots — чоботи, heeled — на підборах, а не туфлі, pumps — туфлі-човники, loafers — лофери; pendant — кулон чи підвіска, necklace — намисто чи ланцюжок, а не каблучка, сережки чи браслет; ring — каблучка; earrings — сережки. Українські назви речей у вході (назви з крамниці, найчастіше перед « — ») переписуй літера в літеру: не міняй, не переставляй і не додавай у них жодного слова.
+
+Про жінку — лише до неї, на «ти» (ти, тебе, тобі, твій, твоя; хочеш, скинеш; наказ однини: розкажи, оберни, тримай, дай), і в питаннях теж: you, your, she, her про неї — «ти», «твій» (her skin tone — твій тон шкіри; when she turns her head — коли ти повертаєш голову; she looks taller — ти виглядаєш вищою), англійський наказ — наказом однини; «вона», «її» — лише про річ (сукню, сумку, куртку). Говорить стилістка — одна жінка: про себе — від першої особи однини й у жіночому роді (я підібрала, я б додала), не «ми», не від імені застосунку чи коду і ніколи словами самої жінки.
+
+Мова: літературна українська, як у текстах українських крамниць одягу. Кожне українське слово — літерами лише української абетки, без жодної латинської літери чи стороннього знака всередині слова. Кожне речення — одна остаточна версія, без виправлень посеред тексту. Словничок нижче — лише як перекласти англійське слово, коли воно є у вході; це не зміст: річ, тканина чи колір, яких у вході нема, у тексті не з'являються. Звичні українські назви для слів англійського джерела: trousers, pants — штани; dressy, dressier — ошатний, ошатніше; look, outfit — образ; taupe — сіро-бежевий; loose — вільний; suede — замша (жіночий рід); slip dress — сукня-комбінація; camel — кемел (колір). Назви речей і кольорів, які дала крамниця, — як є.
+
+Перевір кожне слово ДО відповіді: до неї — лише «ти», жодного «ви», «ваш» і наказу множини, і про неї жодного «вона», «її», «їй», жодне слово не стоїть двічі поспіль, кожна річ — того самого виду, що у вході (річ образу — іменником її назви з переліку, коли він є, і слова при ній узгоджені з цим іменником), а українська назва речі — слово в слово. Відповідь — рівно ОДИН JSON-об'єкт і нічого після нього: другої, виправленої версії, приміток і пояснень не пиши — помилку виправ у тому самому об'єкті.
+
+Речі образу — перелік, який жінка бачить на картці (номер речі — назва біля неї):
+1 — Базовий жакет з вовни ягнят темно-сірий · kind code: blazer · colour code: grey · about it: text н=1
+2 — Спідниця міді з преміум екозамші · kind code: skirt · colour code: yellow · about it: text н=2
+3 — Човники жіночі Tamaris темно-червоні · kind code: pumps · colour code: red · about it: text н=3
+4 — Сумка Бузкова геометрія · kind code: bag_generic · colour code: lilac · about it: text н=4
+5 — Чокер-трансформер з 4 рядів перлин з літерою айворі · kind code: jewelry_generic · about it: text н=5
+When a text speaks of an item of the list, call it by the kind in its name — the same noun in the right case (list «Тренч бежевий подовжений» — text «тренч», «Светр в'язаний оверсайз» — «светр»), not by another kind or a synonym of the English word. Make every adjective, pronoun and verb with the item agree with that noun in gender and number («Тренч бежевий» — «бежевий тренч, який…»; «Лофери шкіряні» — «шкіряні лофери, які…»). A name you translate in this same call (text н=K): give it one noun and call the item by it, in agreement, in every text. A text the list gives as about an item (about it: text н=M) speaks of that one item, and so does every other text where the English names it. The colour of an item of the list is the colour of its name: keep the shop's colour word from its name; when its name has no colour word, write the Ukrainian name of its colour code. The English colour words for that item are the stylist's impression of a photo: do not turn them into a colour of their own — the item's colour stands in their place. Colours of its details (trim, strap, buttons, print), its fabric and the rest — translate from the text. The list is for names only: an item the English text does not name is not added to the translation — neither to the description nor to the advice. The kind code next to an item (kind code: …) is the code of its kind: every noun for that item, in every text, names this kind and no other, whatever word the English text uses; a code ending in _generic names only the family (dress_generic — a dress, bag_generic — a bag). The kind noun of its name and this code are the same kind: write the name's noun.
+
+Colour codes: grey — сірий; lilac — бузковий; red — червоний; yellow — жовтий.
+
+ТЕКСТИ:
+{
+"1": "A dark grey knit cardigan with a classic button-front closure and ribbed trim, offering a soft and cozy feel perfect for an evening outing.",
+"2": "A midi-length skirt crafted from premium faux suede in a warm yellow tone, featuring structured pockets and clean lines that add shape to your silhouette.",
+"3": "Deep red suede pumps with a block heel and pointed toe, designed to elongate the leg while adding a sophisticated pop of color.",
+"4": "A lilac crossbody bag featuring a vibrant geometric pattern of triangles in purple, pink, blue, and yellow, complemented by a solid purple base and strap.",
+"5": "An elegant ivory pearl choker necklace composed of four rows of lustrous pearls, adorned with a sparkling gold letter 'B' pendant at the center.",
+"6": "I have put together a look for your evening date that balances comfort with style. You are wearing a dark grey knit cardigan and matching wide-leg trousers, paired with a structured yellow midi skirt. On your feet are deep red suede pumps that add a bold touch of color to the ensemble.",
+"7": "Keep the grey cardigan open or lightly tucked to show off the waistline of your figure.",
+"8": "Let the length of the yellow skirt fall naturally over the trousers for a layered effect.",
+"9": "Carry the lilac geometric bag crossbody to keep your hands free and look effortless.",
+"10": "Базовий жакет з вовни ягнят темно-сірий — I selected a solid grey fitted blazer instead of a striped one. This avoids print clutter that competes with the occasion's formality and ensures the waist remains the clear focal point.",
+"11": "Спідниця міді з преміум екозамші — I chose this camel midi skirt. It fits the occasion's smart band better than the previous options and provides a comfortable, flowing silhouette for an evening date.",
+"12": "Човники жіночі Tamaris темно-червоні — The bold burgundy pump serves as the perfect focal point for this date, echoing the romantic intent of your occasion and balancing the cool tones of the blazer with a vibrant splash of color.",
+"13": "Спідниця міді з преміум екозамші — I chose this camel midi skirt. It complements the grey tones perfectly and ensures the hem sits correctly on your height for a proportional look under the jacket."
+}
+
+── ВІДПОВІДЬ (2308 симв., 57.2 с, HTTP 200) ──
+```json
+{
+"1": "Теплий темно-сірий в'язаний кардиган з класичною застібкою на ґудзики та рубчастою обробкою, який дарує м'яке й комфортне відчуття для вечірнього виходу.",
+"2": "Спідниця міді з преміум екозамші теплого жовтого кольору, що має структуровані кишені та чіткі лінії, які підкреслюють твою фігуру.",
+"3": "Чоботи на стійкому каблуці темно-червоного кольору з загостреним носком, розроблені для подовження ноги й додавання вишуканого яскравого акценту.",
+"4": "Лілова сумка через плече з барвистим геометричним візерунком у вигляді трикутників фіолетового, рожевого, блакитного та жовтого кольорів на однотонній фіолетовій основі й ремінці.",
+"5": "Елегантний айворі перловий чокер з чотирьох рядів блискучих перлів, прикрашений виблискуючим золотим кулоном у вигляді літери «Б» в центрі.",
+"6": "Я підібрала образ для твого вечірнього побачення, який поєднує комфорт зі стилем. Ти одягнена в темно-сірий в'язаний кардиган і широкі штани в колір, доповнені жовтою спідницею міді з чіткими лініями. На ногах — чоботи на стійкому каблуці насиченого червоного кольору, які додають сміливого акценту цьому ансамблю.",
+"7": "Залиш сірий кардиган розстебнутим або трохи заправ його всередину, щоб підкреслити лінію талії твоєї фігури.",
+"8": "Нехай довжина жовтої спідниці природно спадає на штани для створення багатошарового ефекту.",
+"9": "Носи сумку через плече з геометричним візерунком, щоб звільнити руки та створити невимушений образ.",
+"10": "Базовий жакет з вовни ягнят темно-сірий — Я обрала однотонний сірий приталений блейзер замість смугастого. Це уникне зайвого забарвлення, яке конкурує з формальністю події, і забезпечить чіткий акцент на талії.",
+"11": "Спідниця міді з преміум екозамші — Я обрала цю кемел спідницю міді. Вона краще відповідає розумному стилю побачення, ніж попередні варіанти, і дарує комфортний, струмуючий силует для вечірнього виходу.",
+"12": "Човники жіночі Tamaris темно-червоні — Сміливий бордовий чоботок стане чудовим акцентом на цьому побаченні, підкреслюючи романтичний характер події та збалансовуючи холодні тони блейзера яскравим кольором.",
+"13": "Спідниця міді з преміум екозамші — Я обрала цю кемел спідницю міді. Вона ідеально доповнює сірі відтінки та гарантує, що поділ правильно лягатиме на твій зріст для пропорційного вигляду під жакетом."
+}
+```
