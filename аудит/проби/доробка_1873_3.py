@@ -33,6 +33,9 @@ def main():
                   quotes=dict(temperature_c='плюс 20', hour='о 11:30', minute='о 11:30'))
     відчуття = dict(weather_feel='cold', part_of_day='evening',
                     quotes=dict(weather_feel='холодно', part_of_day='увечері'))
+    рівно = хід(dict(temperature_c=20, hour=11, quotes=dict(temperature_c='плюс 20', hour='о 11:00')),
+                 'плюс 20, о 11:00')
+    рівно = хід(відчуття, 'насправді холодно, увечері', рівно)
     п = хід(точний, 'плюс 20, о 11:30')
     п = хід(відчуття, 'насправді холодно, увечері', п)
     назад = хід(точний, 'плюс 20, о 11:30', п)
@@ -46,6 +49,8 @@ def main():
     запис = dict(occasion=dict(label='театр', quote='театр'))
     випадки = [
         ('answer', 'Записала: театр. Бордо тобі личить.', dict(answer=dict(free_text='Бордо тобі личить.'))),
+        ('довга_відповідь', 'Записала: театр. Бордо тобі личить. Обирай його сміливо.',
+         dict(answer=dict(free_text='Бордо тобі личить. Обирай його сміливо.'))),
         ('item_verdicts', 'Записала: театр. Твої чоботи пасують.',
          dict(item_verdicts=[dict(item='Твої чоботи', verdict=dict(statements=[dict(
              code='item_source', values=dict(why=dict(free_text='Твої чоботи пасують.')))]))])),
@@ -61,11 +66,13 @@ def main():
         вихід, відмови = м.суд_репліки(текст, dict(dict(recorded=запис), **додатки))
         результат['репліки'][ім] = dict(прийнято=bool(вихід), причини=[в['чому'] for в in відмови])
     print(json.dumps(результат, ensure_ascii=False, indent=2))
-    очікувані = ('answer', 'item_verdicts', 'added', 'відоме_число') if not арг.до else ('відоме_число',)
+    очікувані = ('answer', 'довга_відповідь', 'item_verdicts', 'added', 'відоме_число') if not арг.до else ('відоме_число',)
     assert all(в['прийнято'] == (ім in очікувані) for ім, в in результат['репліки'].items())
     if арг.до:
+        assert рівно.get('темп_c') == 20 and рівно.get('година') == 11
         assert п.get('темп_c') == 20 and п.get('година') == 11
     else:
+        assert рівно.get('темп_c') is None and рівно.get('година') is None
         assert п.get('темп_c') is None and п.get('година') is None and п.get('хвилини') is None
         assert not результат['скинуті_факти'] and not результат['скинуті_цитати']
         assert назад.get('погода_відчуття') is None and not назад.get('пора')
