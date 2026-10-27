@@ -1,0 +1,64 @@
+── ПРОМПТ (8765 симв.) ──
+Ти — перекладачка в застосунку-стилістці. Ти пишеш природною українською тексти, які зараз побачить жінка. Рішень не приймаєш, на питання не відповідаєш, змісту не міняєш.
+
+Вхід — JSON-об'єкт: ключ — номер тексту н, значення — текст, який склали код та інші моделі.
+
+Відповідь — лише JSON-об'єкт тієї самої форми, що вхід, з усіма його ключами: ключ — номер н кожного тексту зі входу, значення — рядок — той самий зміст природною українською, без англійських слів і кодів (назви крамниць і брендів — як є); ПЕРЕКЛАДАЙ КОЖНЕ англійське слово, навіть одне посеред українського речення; латиницею лишай лише назви крамниць і брендів, «V-подібний» і «den»; текст, що вже природний і до неї на «ти», — без змін, а український текст на «ви» перепиши на «ти», решту лиши слово в слово.
+
+Вид кожної речі — теж зміст: річ у перекладі — та сама, що у вході, а не схожа чи сусідня. ankle boots — черевики чи ботильйони, boots — чоботи, heeled — на підборах, а не туфлі, pumps — туфлі-човники, loafers — лофери; pendant — кулон чи підвіска, necklace — намисто чи ланцюжок, а не каблучка, сережки чи браслет; ring — каблучка; earrings — сережки. Українські назви речей у вході (назви з крамниці, найчастіше перед « — ») переписуй літера в літеру: не міняй, не переставляй і не додавай у них жодного слова.
+
+Про жінку — лише до неї, на «ти» (ти, тебе, тобі, твій, твоя; хочеш, скинеш; наказ однини: розкажи, оберни, тримай, дай), і в питаннях теж: you, your, she, her про неї — «ти», «твій» (her skin tone — твій тон шкіри; when she turns her head — коли ти повертаєш голову; she looks taller — ти виглядаєш вищою), англійський наказ — наказом однини; «вона», «її» — лише про річ (сукню, сумку, куртку). Говорить стилістка — одна жінка: про себе — від першої особи однини й у жіночому роді (я підібрала, я б додала), не «ми», не від імені застосунку чи коду і ніколи словами самої жінки.
+
+Мова: літературна українська, як у текстах українських крамниць одягу. Кожне українське слово — літерами лише української абетки, без жодної латинської літери чи стороннього знака всередині слова. Кожне речення — одна остаточна версія, без виправлень посеред тексту. Словничок нижче — лише як перекласти англійське слово, коли воно є у вході; це не зміст: річ, тканина чи колір, яких у вході нема, у тексті не з'являються. Звичні українські назви для слів англійського джерела: trousers, pants — штани; dressy, dressier — ошатний, ошатніше; look, outfit — образ; taupe — сіро-бежевий; loose — вільний; suede — замша (жіночий рід); slip dress — сукня-комбінація; camel — кемел (колір). Назви речей і кольорів, які дала крамниця, — як є.
+
+Перевір кожне слово ДО відповіді: до неї — лише «ти», жодного «ви», «ваш» і наказу множини, і про неї жодного «вона», «її», «їй», жодне слово не стоїть двічі поспіль, кожна річ — того самого виду, що у вході (річ образу — іменником її назви з переліку, коли він є, і слова при ній узгоджені з цим іменником), а українська назва речі — слово в слово. Відповідь — рівно ОДИН JSON-об'єкт і нічого після нього: другої, виправленої версії, приміток і пояснень не пиши — помилку виправ у тому самому об'єкті.
+
+Речі образу — перелік, який жінка бачить на картці (номер речі — назва біля неї):
+1 — Кардиган жіночий вовняний на запах із поясом демісезонний · kind code: cardigan · colour code: chocolate · about it: text н=1
+2 — LeBERDES Чоботи зимові коричневі · kind code: boots · colour code: brown · about it: text н=2
+3 — Пасок з пірʼям слива · kind code: belt · colour code: plum · about it: text н=3
+4 — Штани вельветові, бежеві · kind code: trousers · colour code: beige · about it: text н=4
+5 — Шопер “Triangle mini” чорний · kind code: tote · colour code: black · about it: text н=5
+6 — Довге пальто кімоно вовняне темно-сіре · kind code: coat · colour code: grey · about it: text н=6
+When a text speaks of an item of the list, call it by the kind in its name — the same noun in the right case (list «Тренч бежевий подовжений» — text «тренч», «Светр в'язаний оверсайз» — «светр»), not by another kind or a synonym of the English word. Make every adjective, pronoun and verb with the item agree with that noun in gender and number («Тренч бежевий» — «бежевий тренч, який…»; «Лофери шкіряні» — «шкіряні лофери, які…»). A name you translate in this same call (text н=K): give it one noun and call the item by it, in agreement, in every text. A text the list gives as about an item (about it: text н=M) speaks of that one item, and so does every other text where the English names it. The colour of an item of the list is the colour of its name: keep the shop's colour word from its name; when its name has no colour word, write the Ukrainian name of its colour code. The English colour words for that item are the stylist's impression of a photo: do not turn them into a colour of their own — the item's colour stands in their place. Colours of its details (trim, strap, buttons, print), its fabric and the rest — translate from the text. The list is for names only: an item the English text does not name is not added to the translation — neither to the description nor to the advice. The kind code next to an item (kind code: …) is the code of its kind: every noun for that item, in every text, names this kind and no other, whatever word the English text uses; a code ending in _generic names only the family (dress_generic — a dress, bag_generic — a bag). The kind noun of its name and this code are the same kind: write the name's noun.
+
+Colour codes: beige — бежевий; black — чорний; brown — коричневий; chocolate — шоколадний; grey — сірий; plum — сливовий.
+
+ТЕКСТИ:
+{
+"1": "A chocolate brown knitted cardigan with a V-neck wrap front and self-tie belt, worn open to reveal an olive green ribbed top underneath. Its relaxed fit drapes softly over the hips while defining the waist when tied.",
+"2": "Mid-calf leather boots in a deep brown hue, featuring a silver buckle strap around the ankle and a sturdy block heel for stability on snowy streets.",
+"3": "A slim plum-colored belt with a delicate feather accent at the front bow, cinching the waist to add subtle movement and visual interest.",
+"4": "High-rise beige corduroy trousers with a straight leg cut, offering structured comfort and a soft texture that complements the knit layers above.",
+"5": "A structured black tote bag with clean lines and a long shoulder strap, designed to carry essentials without bulk or fuss.",
+"6": "A floor-length dark grey wool coat with a wrap silhouette and self-belt, providing warmth and elegance while maintaining a streamlined profile over the outfit below.",
+"7": "This outfit is built around a rich chocolate brown cardigan layered over an olive green knit, which creates a deep, natural contrast that feels calm and grounded. I chose the wide-leg beige corduroy trousers to introduce warmth and texture without adding visual noise, especially in this winter light. The plum belt with its feather detail adds a touch of playful elegance at the waist, balancing the cozy feel of the cardigan. The dark brown buckle boots ground the look with solid structure, while the sleek black tote provides a minimalist counterpoint that lets the softer textures and colors breathe. This ensemble moves effortlessly through your day as you walk to work: warm enough against the chill, polished enough for professional settings, and adaptable as temperatures shift.",
+"8": "Tuck the cardigan’s front slightly into the trousers to highlight the waistline defined by the belt.",
+"9": "Let the olive green top peek through at the neckline and cuffs for a layered pop of color.",
+"10": "Carry the tote on one shoulder to keep your hands free as you walk through snow.",
+"11": "Кардиган жіночий вовняний на запах із поясом демісезонний — The chocolate neutral bridges black and beige accents to create a warm cohesive tonal column while adhering to the body's need for defined waist lines.",
+"12": "Пасок з пірʼям слива — Plum belt defines the waist against the dark palette; earrings repeat the accent near the face.",
+"13": "Штани вельветові, бежеві, Довге пальто кімоно вовняне темно-сіре — I accept the remark about the hidden waistline because the chocolate cardigan's wrap cut naturally softens the silhouette without losing your professional edge, making the 'hidden' waist a deliberate stylistic choice rather than a flaw.",
+"14": "Кардиган жіночий вовняний на запах із поясом демісезонний — The chocolate neutral is chosen to bridge the gap between black and beige accents, creating a warm, cohesive tonal column while adhering to the body's need for defined waist lines.",
+"15": "Кардиган жіночий вовняний на запах із поясом демісезонний — The chocolate neutral is selected to create a warm cohesive tonal palette that works well with the snowy environment."
+}
+
+── ВІДПОВІДЬ (3088 симв., 56.1 с, HTTP 200) ──
+```json
+{
+"1": "В'язаний кардиган шоколадного кольору з V-подібним вирізом, запахом спереду та самов'язним поясом, одягнений розстібнутим, щоб показати оливково-зелений ребристий топ знизу. Його вільний крій м'яко драпірується по стегнах і підкреслює талію, коли зав'язаний.",
+"2": "Чоботи до середини литки зі шкіри глибокого коричневого кольору з срібною пряжкою на щиколотці та міцним блочним каблуком для стійкості на засніжених вулицях.",
+"3": "Тонкий сливовий ремінь із ніжним пір'яним акцентом у передньому бантику, який підкреслює талію, додаючи ледь помітний рух і візуальний інтерес.",
+"4": "Високопоясні бежеві вельветові штани з прямим кроєм, що забезпечують структурований комфорт і м'яку текстуру, яка доповнює в'язані шари зверху.",
+"5": "Структурована чорна сумка-шопер із чистими лініями та довгою плечовою лямкою, розроблена для перенесення необхідних речей без об’ємності й метушні.",
+"6": "Пальто до підлоги темно-сірого вовняного кольору з запахом і самов'язним поясом, яке забезпечує тепло та елегантність, зберігаючи при цьому стрункий профіль над вбранням знизу.",
+"7": "Цей образ побудований навколо насиченого шоколадного кардигану, надітого поверх оливково-зеленого светра, що створює глибокий природний контраст, який відчувається спокійно та заземлено. Я обрала штани з широкими вельветовими штанинами бежевого кольору, щоб додати тепла й текстури без зайвого візуального шуму, особливо в цьому зимовому світлі. Сливовий ремінь із пір’яним декором додає нотку грайливої елегантності на талії, збалансовуючи затишний вигляд кардигану. Коричневі чоботи з пряжкою підкреслюють образ міцною структурою, а лаконічна чорна сумка-шопер створює мінімалістичний контрапункт, який дозволяє м’якшим текстурам і кольорам дихати. Цей ансамбль легко переходить через твій день під час прогулянки на роботу: достатньо теплий проти холоду, досить елегантний для професійних середовищ і адаптований до змін температури.",
+"8": "Злегка заправ кардиган спереду в штани, щоб підкреслити талію, визначену ременем.",
+"9": "Дай оливково-зеленому топу виглянути з вирізу горловини й манжетів для кольорового акценту.",
+"10": "Носи сумку на одному плечі, щоб звільнити руки під час прогулянки снігом.",
+"11": "Вовняний кардиган жіночий на запах із поясом демісезонний — Шоколадний нейтральний колір поєднує чорні та бежеві акценти, створюючи теплий гармонійний тональний стовпчик і водночас відповідає потребам тіла у визначеній лінії талії.",
+"12": "Ремінь з пірʼям слива — Сливовий ремінь підкреслює лінію талії на тлі темної палітри; сережки повторюють акцент біля обличчя.",
+"13": "Вельветові штани бежеві, Вовняне пальто кімоно темно-сіре — Я приймаю зауваження про приховану лінію талії, тому що кардиган шоколадного кольору з запахом природно пом’якшує силует без втрати професійного вигляду, роблячи «прихований» пояс свідомим стилістичним вибором, а не недоліком.",
+"14": "Вовняний кардиган жіночий на запах із поясом демісезонний — Шоколадний нейтральний колір обраний для створення теплої гармонійної тональної палітри, яка добре поєднується зі сніговим середовищем."
+}
+```

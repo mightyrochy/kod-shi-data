@@ -1,0 +1,44 @@
+── ПРОМПТ (2665 симв.) ──
+{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.", "A slot the description says is not needed is not an item: give it worn false. One item carries one thing — of two alternatives list the first; a note in brackets is not an item.", "Slot \"accessory\" is for an item no other slot fits.", "\"is_outfit\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note; then items is empty."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "ITEM_LIST", "answer_schema": {"is_outfit": "yes|no", "items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory", "color_hex": "<#rrggbb or null>", "worn": "<true, or false when the description says the outfit goes without it>"}]}, "input": ["\"description\" — the outfit description"]}, "description": "A refined silk blouse with a subtle sheen in soft taupe (#D6CEC3), featuring a classic pointed collar and relaxed fit. A structured wool-blend blazer in charcoal grey (#36454F) with sharp lapels and two-button closure, tailored to provide a polished silhouette without restriction. Slim-fit trousers in matching charcoal grey, crafted from stretch wool for comfort throughout the day, falling just at the ankle. Leather loafers in dark brown (#5C4033) with a slight heel and horsebit detail, chosen for their ease of wear during long meetings. Minimalist gold hoop earrings to add a touch of elegance without distracting from professional focus.\n\nThis outfit works perfectly for an autumn office day at 18°C by balancing professionalism with comfort; the blazer provides just enough warmth for the mild weather while allowing freedom of movement, and the neutral color palette ensures versatility across various office settings. The choice of stretch fabric in both the blouse and trousers respects the practical needs of a busy workday, while the polished loafers elevate the look from casual to neat without requiring the stiffness of formal business attire. Finally, the subtle metallic accessory adds a personal touch that aligns with her wish for a refined yet approachable presence in the office environment."}
+
+── ВІДПОВІДЬ (980 симв., 59.7 с, HTTP 200) ──
+{
+  "is_outfit": "yes",
+  "items": [
+    {
+      "name": "silk blouse",
+      "details": "refined silk with subtle sheen, classic pointed collar, relaxed fit",
+      "slot": "top",
+      "color_hex": "#D6CEC3",
+      "worn": true
+    },
+    {
+      "name": "wool-blend blazer",
+      "details": "structured wool-blend with sharp lapels, two-button closure, tailored polished silhouette",
+      "slot": "outerwear",
+      "color_hex": "#36454F",
+      "worn": true
+    },
+    {
+      "name": "trousers",
+      "details": "slim-fit stretch wool falling just at the ankle",
+      "slot": "bottom",
+      "color_hex": "#36454F",
+      "worn": true
+    },
+    {
+      "name": "loafers",
+      "details": "leather with slight heel and horsebit detail",
+      "slot": "shoes",
+      "color_hex": "#5C4033",
+      "worn": true
+    },
+    {
+      "name": "hoop earrings",
+      "details": "minimalist gold",
+      "slot": "earrings",
+      "color_hex": null,
+      "worn": true
+    }
+  ]
+}
