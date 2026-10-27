@@ -9,6 +9,7 @@ const файл = 'аудит/проби/рв6_стенд.js';
 const корінь = path.resolve(__dirname, '../..');
 
 function звірки(код) {
+  код = код.replace(/\r\n/g, '\n');
   const результат = [];
   traverse(babelParse(код, файл, false), {CallExpression(шлях) {
     const вузол = шлях.node;
@@ -30,7 +31,9 @@ function обчислити(звірка, дані) {
 
 function перевірити() {
   const старі = звірки(execFileSync('git', ['show', база + ':' + файл], {cwd: корінь, encoding: 'utf8'}));
-  const нові = звірки(fs.readFileSync(path.join(корінь, файл), 'utf8'));
+  const код = fs.readFileSync(path.join(корінь, файл), 'utf8');
+  const нові = звірки(код);
+  assert.deepEqual(нові, звірки(код.replace(/\r?\n/g, '\r\n')), 'вердикти не залежать від LF/CRLF');
   const випадки = [
     {ід: 'три_кроки', знайти: з => з.назва.includes('рівно три кроки'),
       дані: {к1: {екран: 0, кнопка: 'Готово'}, к2: {екран: 1, кнопка: 'Готово'}, к3: {екран: 2, кнопка: 'Готово'}}},
@@ -50,6 +53,15 @@ function перевірити() {
     return {ід: в.ід, вердикт: 'хибна', до: true, після: false, контрприклад: в.дані,
       джерело_до: база + ':' + файл + ':' + до[0].рядок, рядок_після: після[0].рядок};
   });
+  const заНазвою = з => з.назва.includes('кожен промпт ітерацій');
+  const доJSON = старі.find(заНазвою), післяJSON = нові.find(заНазвою);
+  const сім = {протокольні: Array.from({length: 7}, () => ({json: true}))};
+  assert.equal(обчислити(доJSON, сім), false);
+  assert.equal(обчислити(післяJSON, сім), true);
+  assert.equal(обчислити(післяJSON, {протокольні: []}), false);
+  assert.equal(обчислити(післяJSON, {протокольні: [{json: true}, {json: false}]}), false);
+  докази.push({ід: 'json_без_вигаданої_кількості_ремонтів', вердикт: 'хибна', до: false, після: true,
+    контрприклад: сім, джерело_до: база + ':' + файл + ':' + доJSON.рядок, рядок_після: післяJSON.рядок});
   const реєстр = JSON.parse(fs.readFileSync(path.join(__dirname, 'Е1-звірки.json'), 'utf8'));
   const заІдом = new Map(реєстр.звірки.map(з => [з.ід, з]));
   assert.equal(заІдом.size, реєстр.звірки.length, 'повторений ід звірки');
