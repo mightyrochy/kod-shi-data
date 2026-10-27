@@ -6,7 +6,8 @@ const {chromium} = require('../../джерела/node_modules/playwright');
 const корінь = path.resolve(__dirname, '../..');
 
 async function головна(){
-  const сцени = JSON.parse(fs.readFileSync(process.argv[2], 'utf8'));
+  const буфер = fs.readFileSync(process.argv[2]);
+  const сцени = JSON.parse((process.argv[2].endsWith('.gz') ? require('zlib').gunzipSync(буфер) : буфер).toString('utf8'));
   const вихід = path.resolve(process.argv[4]); fs.mkdirSync(вихід, {recursive:true});
   const схема = process.argv[5] || 'аналогова';
   const html = fs.readFileSync(path.join(корінь, 'index.html'), 'utf8')
