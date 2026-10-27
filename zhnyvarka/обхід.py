@@ -264,9 +264,9 @@ def main(argv=None):
 
 
 def перелік_крамниць(а):
-    """Перелік крамниць обходу: названі або всі з рецептів."""
+    """Повертає домени обходу без повторів і порожніх елементів (порожній аргумент виконавця означає всі)."""
     if а.магазини.strip() not in ("усі", "all", ""):
-        return [x.strip().lower() for x in а.магазини.split(",")]
+        return list(dict.fromkeys(x.strip().lower() for x in а.магазини.split(",") if x.strip()))
     return [р["домен"] for р in csv.DictReader(open(ТЕКА / "рецепти.tsv", encoding="utf-8"), delimiter="\t")
             if р["транспорт"] in {x.strip() for x in а.транспорт.split(",")}]
 

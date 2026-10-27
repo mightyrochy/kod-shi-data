@@ -9,7 +9,7 @@ def main():
     """Міряє чергу довшу за паралельність, з завислою крамницею на початку й у кінці."""
     помилки = []
     for паралельно, порядок in ((1, "hang.com,ok.com,ok2.com"), (2, "hang.com,ok.com,ok2.com"),
-                                (1, "ok.com,ok2.com,hang.com")):
+                                (1, "ok.com,ok2.com,hang.com,ok.com,,")):
         with tempfile.TemporaryDirectory(prefix="обхід-черговість-") as ж:
             for повтор in (1, 2):
                 початок = time.monotonic()
