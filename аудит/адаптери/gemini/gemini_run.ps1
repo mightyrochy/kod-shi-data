@@ -1060,15 +1060,18 @@ function Start-Markers($Workers) {
         if (-not $slot) { continue }
         $id = New-RunId (Get-MarkerKey $m)
         if (-not (New-Claim $m $id)) { continue }
-        $dir = Join-Path $RunsDir $id
-        [void](New-Item -ItemType Directory -Force -Path $dir)
-        $job = @{ id = $id; dir = $dir; slot = $slot; lane = $lane; ref = $m.Ref; sha = $m.Sha; time = $m.Time; name = $m.Name
-            slug = $m.Slug; model = $m.Model; n = $m.N; cond = $m.Cond; prio = $m.Prio; deadline = $m.Deadline; gpu = $m.Gpu
-            head = $(if ($st.Kind -eq 'WAIT') { [string](Get-JsonProp $st.Wait 'head') } else { '' })
-            sel = @{ engine = $sel.Engine.Name; emodel = $sel.Engine.Model; effort = $sel.Engine.Effort; model = $sel.Model
-                qknown = $sel.Quota.Known; qleft = $sel.Quota.Left; qgroup = $sel.Quota.Group }
-            limits = $script:Limits }
-        try { [void]$Workers.Add((Start-Worker $job $dir)) } catch {
+        # Усе між claim і STARTED — під одним обліком відмов (retakes, MaxRetakes, CRASH на межі), 10162/10182.
+        try {
+            $dir = Join-Path $RunsDir $id
+            [void](New-Item -ItemType Directory -Force -Path $dir)
+            $job = @{ id = $id; dir = $dir; slot = $slot; lane = $lane; ref = $m.Ref; sha = $m.Sha; time = $m.Time; name = $m.Name
+                slug = $m.Slug; model = $m.Model; n = $m.N; cond = $m.Cond; prio = $m.Prio; deadline = $m.Deadline; gpu = $m.Gpu
+                head = $(if ($st.Kind -eq 'WAIT') { [string](Get-JsonProp $st.Wait 'head') } else { '' })
+                sel = @{ engine = $sel.Engine.Name; emodel = $sel.Engine.Model; effort = $sel.Engine.Effort; model = $sel.Model
+                    qknown = $sel.Quota.Known; qleft = $sel.Quota.Left; qgroup = $sel.Quota.Group }
+                limits = $script:Limits }
+            [void]$Workers.Add((Start-Worker $job $dir))
+        } catch {
             Write-Log "позначка $($m.Name): процес наряду не запущено — $($_.Exception.Message)"
             Close-FailedStart $m $id (Get-StatePath (Get-MarkerKey $m))
             continue
@@ -1186,7 +1189,8 @@ function Main {
                         '+refs/heads/gemini/*:refs/remotes/origin/gemini/*',
                         '+refs/heads/gemini-queue/*:refs/remotes/origin/gemini-queue/*'))
                 $script:Limits = Get-Limits
-                if ($first) { Resume-Interrupted; Clear-OrphanClaims $RunsDir }
+                if ($first) { Resume-Interrupted }
+                Clear-OrphanClaims $RunsDir
                 $script:Agy = Find-EngineExe $AgyExe
                 if ($script:Agy) { [void](Read-Usage) }
                 $started = Start-Markers $workers

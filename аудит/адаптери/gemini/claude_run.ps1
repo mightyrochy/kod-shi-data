@@ -706,12 +706,15 @@ function Start-Markers($Workers) {
         }
         $id = New-Id
         if (-not (New-Claim $m $id)) { continue }
-        $dir = Join-Path (Join-Path $WorkDir 'runs') $id
-        [void](New-Item -ItemType Directory -Force -Path $dir)
-        $job = @{ id = $id; dir = $dir; slot = $slot; lane = 'claude'; ref = $m.Ref; sha = $m.Sha; time = $m.Time; name = $m.Name
-            slug = $m.Slug; model = $m.Model; n = $m.N; cond = $m.Cond; prio = $m.Prio; deadline = $m.Deadline; gpu = $m.Gpu
-            claude = $m.Claude; effort = $m.Effort; limits = $script:Limits }
-        try { [void]$Workers.Add((Start-Worker $job $dir)) } catch {
+        # Усе між claim і STARTED — під одним обліком відмов (retakes, MaxRetakes, CRASH на межі), 10162/10182.
+        try {
+            $dir = Join-Path (Join-Path $WorkDir 'runs') $id
+            [void](New-Item -ItemType Directory -Force -Path $dir)
+            $job = @{ id = $id; dir = $dir; slot = $slot; lane = 'claude'; ref = $m.Ref; sha = $m.Sha; time = $m.Time; name = $m.Name
+                slug = $m.Slug; model = $m.Model; n = $m.N; cond = $m.Cond; prio = $m.Prio; deadline = $m.Deadline; gpu = $m.Gpu
+                claude = $m.Claude; effort = $m.Effort; limits = $script:Limits }
+            [void]$Workers.Add((Start-Worker $job $dir))
+        } catch {
             Write-Log "позначка $($m.Name): процес наряду не запущено — $($_.Exception.Message)"
             Close-FailedStart $m $id (Get-StatePath (Get-MarkerKey $m))
             continue
@@ -788,7 +791,6 @@ function Main {
         $prev = $(if (Test-Path -LiteralPath $bootFile) { [System.IO.File]::ReadAllText($bootFile, $script:Utf8).Trim() } else { '' })
         $script:FreshBoot = ($boot -ne $prev)
         Resume-Interrupted
-        Clear-OrphanClaims (Join-Path $WorkDir 'runs')
         $script:Workers = New-Object System.Collections.ArrayList
         $first = $true
         while ($true) {
@@ -798,6 +800,7 @@ function Main {
                         '+refs/heads/main:refs/remotes/origin/main',
                         '+refs/heads/gemini-queue/*:refs/remotes/origin/gemini-queue/*') -TimeoutMinutes 15)
                 $script:Limits = Get-Limits
+                Clear-OrphanClaims (Join-Path $WorkDir 'runs')
                 $r = Start-Markers $script:Workers
                 $started = $r[0]; $off = $r[1]
             } catch { Write-Log "прохід: $($_.Exception.Message)" }
