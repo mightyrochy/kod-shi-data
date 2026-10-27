@@ -1,0 +1,44 @@
+── ПРОМПТ (2613 симв.) ──
+{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.", "A slot the description says is not needed is not an item: give it worn false. One item carries one thing — of two alternatives list the first; a note in brackets is not an item.", "Slot \"accessory\" is for an item no other slot fits.", "\"is_outfit\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note; then items is empty."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "ITEM_LIST", "answer_schema": {"is_outfit": "yes|no", "items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory", "color_hex": "<#rrggbb or null>", "worn": "<true, or false when the description says the outfit goes without it>"}]}, "input": ["\"description\" — the outfit description"]}, "description": "A refined wool-blend tweed blazer in deep forest green (#2d4f36), structured with sharp shoulders and a cropped length that hits the hip. A silk-cambric blouse in creamy beige (#e8e3c7) featuring a relaxed collar and a slightly oversized fit to ensure ease of movement while seated. High-waisted wide-leg trousers in charcoal grey melange (#363f45) crafted from a soft stretch wool for warmth and fluid drape, reaching the floor with a gentle break. Ankle boots in polished cognac leather (#8b5a2b) with a low block heel that provides stability indoors while maintaining an elegant silhouette. A thin cashmere wrap cardigan in oatmeal (#d6cea9) draped loosely over the shoulders for additional warmth against the cool evening air. This ensemble perfectly balances the smart dress code required for the theatre with the comfort needed for an extended date involving walking and sitting. The rich autumnal tones of green, grey, and cognac harmonize beautifully with her warm skin tone while providing necessary layers for the chilly +9°C weather without appearing bulky. The tailored yet soft fabrics flatter her specific measurements by skimming the hips and waist smoothly, ensuring she feels confident and at ease throughout the evening from the cinema to dinner."}
+
+── ВІДПОВІДЬ (1192 симв., 65.6 с, HTTP 200) ──
+{
+  "is_outfit": "yes",
+  "items": [
+    {
+      "name": "blazer",
+      "details": "wool-blend tweed, structured with sharp shoulders and a cropped length that hits the hip",
+      "slot": "outerwear",
+      "color_hex": "#2d4f36",
+      "worn": true
+    },
+    {
+      "name": "blouse",
+      "details": "silk-cambric, featuring a relaxed collar and a slightly oversized fit for ease of movement while seated",
+      "slot": "top",
+      "color_hex": "#e8e3c7",
+      "worn": true
+    },
+    {
+      "name": "trousers",
+      "details": "high-waisted wide-leg, crafted from soft stretch wool for warmth and fluid drape, reaching the floor with a gentle break",
+      "slot": "bottom",
+      "color_hex": "#363f45",
+      "worn": true
+    },
+    {
+      "name": "boots",
+      "details": "ankle boots with a low block heel that provides stability indoors while maintaining an elegant silhouette",
+      "slot": "shoes",
+      "color_hex": "#8b5a2b",
+      "worn": true
+    },
+    {
+      "name": "cardigan",
+      "details": "thin cashmere wrap, draped loosely over the shoulders for additional warmth",
+      "slot": "outerwear",
+      "color_hex": "#d6cea9",
+      "worn": true
+    }
+  ]
+}

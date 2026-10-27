@@ -1,0 +1,51 @@
+── ПРОМПТ (2763 симв.) ──
+{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.", "A slot the description says is not needed is not an item: give it worn false. One item carries one thing — of two alternatives list the first; a note in brackets is not an item.", "Slot \"accessory\" is for an item no other slot fits.", "\"is_outfit\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note; then items is empty."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "ITEM_LIST", "answer_schema": {"is_outfit": "yes|no", "items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory", "color_hex": "<#rrggbb or null>", "worn": "<true, or false when the description says the outfit goes without it>"}]}, "input": ["\"description\" — the outfit description"]}, "description": "Midi wool-blend coat in deep charcoal, tailored straight cut, length at knee, hex code #36454F, heavy woven wool.\nSilk blouse with a subtle sheen, relaxed fit, midi length, hex code #E8D5B5, fluid silk charmeuse.\nHigh-waisted pleated trousers in dark denim, structured wide-leg cut, ankle length, hex code #2A2D34, durable cotton twill.\nChunky leather loafers with a low block heel, square toe, mid-calf height, hex code #1F1F1F, smooth full-grain leather.\nGold-dipped hoop earrings, round shape, 3cm diameter, hex code #FFD700, polished gold-tone metal.\nLeather clutch with magnetic closure, rectangular shape, 20cm x 15cm, hex code #C0A080, structured calfskin leather.\n\nThis outfit strikes the perfect balance for an evening autumn date by adhering to the \"smart\" dress code while providing essential warmth against the cold wind and rain mentioned in your wishes. The wool-blend coat offers protection without sacrificing style, layering beautifully over a refined silk blouse and dark denim trousers that ensure comfort during the movie and dinner. The deep charcoal and gold tones create a sophisticated contrast suitable for indoor artificial lighting, helping to flatter your features against the backdrop of cinema seats and restaurant tables. Each piece is selected to keep you dry and cozy while maintaining an elegant silhouette perfect for sitting through a film and enjoying a romantic meal."}
+
+── ВІДПОВІДЬ (1262 симв., 67.2 с, HTTP 200) ──
+{
+  "is_outfit": "yes",
+  "items": [
+    {
+      "name": "coat",
+      "details": "tailored straight cut, midi length at knee, heavy woven wool-blend fabric",
+      "slot": "outerwear",
+      "color_hex": "#36454F",
+      "worn": true
+    },
+    {
+      "name": "blouse",
+      "details": "relaxed fit, midi length, fluid silk charmeuse fabric with subtle sheen",
+      "slot": "top",
+      "color_hex": "#E8D5B5",
+      "worn": true
+    },
+    {
+      "name": "trousers",
+      "details": "high-waisted pleated, structured wide-leg cut, ankle length, durable cotton twill fabric",
+      "slot": "bottom",
+      "color_hex": "#2A2D34",
+      "worn": true
+    },
+    {
+      "name": "loafers",
+      "details": "chunky design with low block heel, square toe, mid-calf height",
+      "slot": "shoes",
+      "color_hex": "#1F1F1F",
+      "worn": true
+    },
+    {
+      "name": "earrings",
+      "details": "gold-dipped hoop shape, round design, 3cm diameter, polished gold-tone metal",
+      "slot": "earrings",
+      "color_hex": "#FFD700",
+      "worn": true
+    },
+    {
+      "name": "clutch",
+      "details": "rectangular shape, magnetic closure, structured calfskin leather",
+      "slot": "bag",
+      "color_hex": "#C0A080",
+      "worn": true
+    }
+  ]
+}
