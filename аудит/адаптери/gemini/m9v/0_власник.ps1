@@ -6,7 +6,8 @@
 .DESCRIPTION
 Крок 1 НАЛАШТУВАННЯ.md (claude --version), крок 2 (файли й SHA-256 проти хеші.psd1 = таблиці «Хеші файлів»),
 тека %USERPROFILE%\gemini-outbox, спостерігач за СПОСТЕРІГАЧ.md «Налаштування» (спершу -DryRun, потім реєстрація),
-рушій Claude — задача claude-run (НАЛАШТУВАННЯ.md «Рушій Claude»).
+рушій Claude — задача claude-run (НАЛАШТУВАННЯ.md «Рушій Claude»); спільний модуль смуг queue_lanes.ps1 — поруч із
+claude_run.ps1 і в %TEMP% (звідти його копіює в ProgramData 1_адмін.ps1).
 Ідемпотентний: повторний запуск перекачує файли, перевіряє хеші, перереєструє задачу. Паролів і токенів не читає.
 Команди — дослівно з НАЛАШТУВАННЯ.md і СПОСТЕРІГАЧ.md.
 #>
@@ -34,13 +35,15 @@ $base = 'https://raw.githubusercontent.com/mightyrochy/kod-shi-data/main/ауд�
 $pub = "$env:USERPROFILE\gemini-publish"; New-Item -ItemType Directory -Force $pub | Out-Null
 Invoke-WebRequest "$base/gemini_publish.ps1" -OutFile "$pub\gemini_publish.ps1" -UseBasicParsing
 Invoke-WebRequest "$base/gemini_run.ps1" -OutFile "$env:TEMP\gemini_run.ps1" -UseBasicParsing
+Invoke-WebRequest "$base/queue_lanes.ps1" -OutFile "$env:TEMP\queue_lanes.ps1" -UseBasicParsing
 $w = "$env:USERPROFILE\gemini-watch"; New-Item -ItemType Directory -Force $w | Out-Null
 Invoke-WebRequest "$base/gemini_watch.ps1" -OutFile "$w\gemini_watch.ps1" -UseBasicParsing
 $cr = "$env:USERPROFILE\claude-run"; New-Item -ItemType Directory -Force $cr | Out-Null
 Invoke-WebRequest "$base/claude_run.ps1" -OutFile "$cr\claude_run.ps1" -UseBasicParsing
+Invoke-WebRequest "$base/queue_lanes.ps1" -OutFile "$cr\queue_lanes.ps1" -UseBasicParsing
 Get-FileHash "$pub\gemini_publish.ps1", "$env:TEMP\gemini_run.ps1" | Format-List Hash, Path
 $bad = @()
-foreach ($p in @(@('gemini_publish.ps1', "$pub\gemini_publish.ps1"), @('gemini_run.ps1', "$env:TEMP\gemini_run.ps1"), @('gemini_watch.ps1', "$w\gemini_watch.ps1"), @('claude_run.ps1', "$cr\claude_run.ps1"))) {
+foreach ($p in @(@('gemini_publish.ps1', "$pub\gemini_publish.ps1"), @('gemini_run.ps1', "$env:TEMP\gemini_run.ps1"), @('gemini_watch.ps1', "$w\gemini_watch.ps1"), @('claude_run.ps1', "$cr\claude_run.ps1"), @('queue_lanes.ps1', "$env:TEMP\queue_lanes.ps1"), @('queue_lanes.ps1', "$cr\queue_lanes.ps1"))) {
     $got = (Get-FileHash $p[1] -Algorithm SHA256).Hash
     if ($got -ne $expected[$p[0]]) { $bad += "$($p[0]): маємо $got, очікували $($expected[$p[0]])" }
 }

@@ -20,6 +20,17 @@ if args[:2] == ['-p', '/usage']:
     # Квота як дані (0 ходів): FAKE_USAGE — tsv | tsv_nohdr | proclaude | ok | flash0 | claude0 | all0 | used | envelope | garbage | fail; FAKE_RESET — хв до скидання.
     import datetime
     mode = os.environ.get('FAKE_USAGE', 'ok')
+    if mode == 'live':
+        # Формат живого agy 1.4.7 (26.10): без заголовка, «група ⇥ вікно ⇥ NN% ⇥ скидання ISO», рядок на вікно.
+        # Gemini 4 Argon — 0 % до FAKE_ZERO_UNTIL (unix), далі 100 %.
+        now = datetime.datetime.now(datetime.timezone.utc); iso = lambda t: t.strftime('%Y-%m-%dT%H:%M:%SZ')
+        until = datetime.datetime.fromtimestamp(int(os.environ.get('FAKE_ZERO_UNTIL', '0')), datetime.timezone.utc)
+        week = iso(now + datetime.timedelta(days=6)); five = iso(now + datetime.timedelta(hours=4))
+        argon = 0 if now < until else 100
+        print('\n'.join(['Gemini Models\tWeekly Limit Remaining\t100%\t' + week, 'Gemini Models\tFive Hour Limit Remaining\t100%\t' + five,
+                         'Claude and GPT models\tWeekly Limit Remaining\t100%\t' + week, 'Claude and GPT models\tFive Hour Limit Remaining\t100%\t' + five,
+                         'Gemini 4 Argon\tGemini 4 Argon Weekly Limit\t%d%%\t%s' % (argon, iso(until if argon == 0 else now + datetime.timedelta(days=7)))]))
+        sys.exit(0)
     reset = (datetime.datetime.now(datetime.timezone.utc) + datetime.timedelta(minutes=int(os.environ.get('FAKE_RESET', '137')))).strftime('%Y-%m-%dT%H:%M:%SZ')
     left = {'Gemini 3.5 Flash': 34, 'Gemini 3.1 Pro': 0, 'Claude & GPT': 0}
     if mode == 'proclaude':
@@ -65,13 +76,28 @@ def turn_no():
     open(p, 'w').write(str(n))
     return n
 
+def hold(slug):
+    # Стенд смуг: FAKE_HOLD с роботи й рядки start/end у FAKE_TIMELINE — щоб виміряти, що йде водночас.
+    tl = os.environ.get('FAKE_TIMELINE')
+    if not tl:
+        return
+    def mark(k):
+        with open(tl, 'a') as f:
+            f.write('%s %s %d\n' % (k, slug, int(time.time() * 1000)))
+    mark('start'); time.sleep(float(os.environ.get('FAKE_HOLD', '0'))); mark('end')
+
 def act(prompt):
     m = re.search(r'ГОТОВО gemini/(\S+) <', prompt)
     slug = m.group(1) if m else '?'
     n = turn_no()
     done = lambda: 'Готово.\nНОУТБУК ГОТОВО gemini/%s %s' % (slug, git('rev-parse', 'HEAD'))
+    if model.startswith('gemini-4-argon') and os.environ.get('FAKE_USAGE') == 'live' and time.time() < int(os.environ.get('FAKE_ZERO_UNTIL', '0')):
+        # Квота групи на нулі: як живий agy — 429 на першому ж ході.
+        return 'ERROR', '', '429 RESOURCE_EXHAUSTED: quota exceeded'
     if model == 'bad-model':
         return 'ERROR', '', 'invalid model selection (--model "bad-model")'
+    if SC == 'commit_done':
+        hold(slug); commit('робота/%s.txt' % slug); return 'SUCCESS', done(), ''
     if SC == 'abandon_then_done':
         if n == 1:
             commit('робота/а.txt'); return 'SUCCESS', 'Запустив фонове завдання, чекаю результату.', ''
