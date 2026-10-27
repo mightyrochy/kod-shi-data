@@ -1,0 +1,62 @@
+── ПРОМПТ (8290 симв.) ──
+Ти — перекладачка в застосунку-стилістці. Ти пишеш природною українською тексти, які зараз побачить жінка. Рішень не приймаєш, на питання не відповідаєш, змісту не міняєш.
+
+Вхід — JSON-об'єкт: ключ — номер тексту н, значення — текст, який склали код та інші моделі.
+
+Відповідь — лише JSON-об'єкт тієї самої форми, що вхід, з усіма його ключами: ключ — номер н кожного тексту зі входу, значення — рядок — той самий зміст природною українською, без англійських слів і кодів (назви крамниць і брендів — як є); ПЕРЕКЛАДАЙ КОЖНЕ англійське слово, навіть одне посеред українського речення; латиницею лишай лише назви крамниць і брендів, «V-подібний» і «den»; текст, що вже природний і до неї на «ти», — без змін, а український текст на «ви» перепиши на «ти», решту лиши слово в слово.
+
+Вид кожної речі — теж зміст: річ у перекладі — та сама, що у вході, а не схожа чи сусідня. ankle boots — черевики чи ботильйони, boots — чоботи, heeled — на підборах, а не туфлі, pumps — туфлі-човники, loafers — лофери; pendant — кулон чи підвіска, necklace — намисто чи ланцюжок, а не каблучка, сережки чи браслет; ring — каблучка; earrings — сережки. Українські назви речей у вході (назви з крамниці, найчастіше перед « — ») переписуй літера в літеру: не міняй, не переставляй і не додавай у них жодного слова.
+
+Про жінку — лише до неї, на «ти» (ти, тебе, тобі, твій, твоя; хочеш, скинеш; наказ однини: розкажи, оберни, тримай, дай), і в питаннях теж: you, your, she, her про неї — «ти», «твій» (her skin tone — твій тон шкіри; when she turns her head — коли ти повертаєш голову; she looks taller — ти виглядаєш вищою), англійський наказ — наказом однини; «вона», «її» — лише про річ (сукню, сумку, куртку). Говорить стилістка — одна жінка: про себе — від першої особи однини й у жіночому роді (я підібрала, я б додала), не «ми», не від імені застосунку чи коду і ніколи словами самої жінки.
+
+Мова: літературна українська, як у текстах українських крамниць одягу. Кожне українське слово — літерами лише української абетки, без жодної латинської літери чи стороннього знака всередині слова. Кожне речення — одна остаточна версія, без виправлень посеред тексту. Словничок нижче — лише як перекласти англійське слово, коли воно є у вході; це не зміст: річ, тканина чи колір, яких у вході нема, у тексті не з'являються. Звичні українські назви для слів англійського джерела: trousers, pants — штани; dressy, dressier — ошатний, ошатніше; look, outfit — образ; taupe — сіро-бежевий; loose — вільний; suede — замша (жіночий рід); slip dress — сукня-комбінація; camel — кемел (колір). Назви речей і кольорів, які дала крамниця, — як є.
+
+Перевір кожне слово ДО відповіді: до неї — лише «ти», жодного «ви», «ваш» і наказу множини, і про неї жодного «вона», «її», «їй», жодне слово не стоїть двічі поспіль, кожна річ — того самого виду, що у вході (річ образу — іменником її назви з переліку, коли він є, і слова при ній узгоджені з цим іменником), а українська назва речі — слово в слово. Відповідь — рівно ОДИН JSON-об'єкт і нічого після нього: другої, виправленої версії, приміток і пояснень не пиши — помилку виправ у тому самому об'єкті.
+
+Речі образу — перелік, який жінка бачить на картці (номер речі — назва біля неї):
+1 — Коричневий трикотажний асиметричний джемпер MH STUDIO · kind code: sweater · colour code: brown · about it: text н=1
+2 — Штани з костюмної тканини · kind code: trousers · colour code: grey · about it: text н=2
+3 — Сумка “Teddy” чорна · kind code: bag_generic · colour code: black · about it: text н=3
+4 — Туфлі-човники, ATTICO, замша, колір чорний · kind code: pumps · colour code: black · about it: text н=4
+5 — Обруч з вуаллю чорний · kind code: headband · colour code: black · about it: text н=5
+When a text speaks of an item of the list, call it by the kind in its name — the same noun in the right case (list «Тренч бежевий подовжений» — text «тренч», «Светр в'язаний оверсайз» — «светр»), not by another kind or a synonym of the English word. Make every adjective, pronoun and verb with the item agree with that noun in gender and number («Тренч бежевий» — «бежевий тренч, який…»; «Лофери шкіряні» — «шкіряні лофери, які…»). A name you translate in this same call (text н=K): give it one noun and call the item by it, in agreement, in every text. A text the list gives as about an item (about it: text н=M) speaks of that one item, and so does every other text where the English names it. The colour of an item of the list is the colour of its name: keep the shop's colour word from its name; when its name has no colour word, write the Ukrainian name of its colour code. The English colour words for that item are the stylist's impression of a photo: do not turn them into a colour of their own — the item's colour stands in their place. Colours of its details (trim, strap, buttons, print), its fabric and the rest — translate from the text. The list is for names only: an item the English text does not name is not added to the translation — neither to the description nor to the advice. The kind code next to an item (kind code: …) is the code of its kind: every noun for that item, in every text, names this kind and no other, whatever word the English text uses; a code ending in _generic names only the family (dress_generic — a dress, bag_generic — a bag). The kind noun of its name and this code are the same kind: write the name's noun.
+
+Colour codes: black — чорний; brown — коричневий; grey — сірий.
+
+ТЕКСТИ:
+{
+"1": "This brown sweater features an asymmetrical front with a subtle knot detail that adds visual interest. Its long sleeves and fitted silhouette offer comfort while maintaining elegance suitable for the occasion.",
+"2": "These grey trousers are crafted from structured fabric with clean lines and functional pockets. The high-waisted design creates a flattering silhouette, elongating your figure while providing ample coverage.",
+"3": "This black teddy bag brings warmth and texture to your ensemble. Its soft, plush exterior contrasts beautifully with the more formal elements of your outfit, adding a comforting element without sacrificing sophistication.",
+"4": "These black suede pumps offer a sleek silhouette that complements both trousers and sweaters. The pointed toe adds a touch of refinement while remaining comfortable enough for a day spent in observance.",
+"5": "This black veil headband features delicate netting that frames your face softly. Its subtle presence honors the solemnity of the occasion while adding a gentle, feminine touch to your overall appearance.",
+"6": "Your outfit for the morning of your grandfather's funeral is a quiet tribute to his memory. The deep brown sweater offers warmth and dignity, while the grey trousers provide a classic silhouette that respects tradition. A black teddy bag adds a touch of softness without being distracting, and the black pumps keep the look grounded and proper. The delicate black veil adorns your head as a final, respectful gesture to his legacy.",
+"7": "Tuck the sweater slightly into the trousers for a polished look that keeps the focus on your face",
+"8": "Carry the teddy bag close to your body, allowing its texture to complement the structured lines of the trousers",
+"9": "The veil should rest gently against your hairline, framing your features without overshadowing your natural expression",
+"10": "Сумка “Teddy” чорна — I kept this black knitted bag to anchor the warm palette while adding a quiet luxury texture that respects the mourning tone.",
+"11": "Туфлі-човники, ATTICO, замша, колір чорний — Black pumps are added here because the hem of your maxi trousers is long; these shoes match your skin tone to continue the leg line without breaking the vertical column.",
+"12": "Коричневий трикотажний асиметричний джемпер MH STUDIO — I chose this item despite its price because the deep chocolate shade anchors the outfit's warm palette perfectly against the cool daylight of the autumn day.",
+"13": "Коричневий трикотажний асиметричний джемпер MH STUDIO — This brown fitted sweater creates a deep neutral tone that contrasts gently with your skin but stays within the mourning palette's quiet range.",
+"14": "Штани з костюмної тканини — I chose these straight trousers to provide a clean line that does not add volume, keeping the outfit streamlined for your shape."
+}
+
+── ВІДПОВІДЬ (2796 симв., 58.7 с, HTTP 200) ──
+```json
+{
+"1": "Цей коричневий светр має асиметричний перед із ледь помітним вузликом, який додає візуального інтересу. Його довгі рукави та приталений силует пропонують комфорт, зберігаючи елегантність, що підходить для цієї нагоди.",
+"2": "Ці сірі штани виготовлені з щільної тканини з чіткими лініями і функціональними кишенями. Висока талія створює лестивий силует, подовжуючи твою фігуру, водночас забезпечуючи достатнє покриття.",
+"3": "Ця чорна сумка “Teddy” додає теплоти й текстури твоєму ансамблю. Її м’який пухнастий зовнішній вигляд чудово контрастує з більш формальними елементами твого вбрання, додаючи заспокійливий елемент без шкоди для вишуканості.",
+"4": "Ці чорні замшеві туфлі-човники пропонують стрункий силует, який доповнює як штани, так і светр. Гострий носок додає штрих витонченості, залишаючись досить комфортним для дня, проведеного у вшануванні.",
+"5": "Цей чорний обруч з вуаллю має ніжне мереживо, яке м’яко обрамлює твоє обличчя. Його ледь помітна присутність шанує урочистість нагоди, водночас додаючи делікатний жіночний штрих до твого загального вигляду.",
+"6": "Твій образ для ранку похорону дідуся — це тиха данина його пам’яті. Коричневий светр пропонує тепло й гідність, а сірі штани забезпечують класичний силует, який поважає традиції. Чорна сумка “Teddy” додає штрих м’якості без відволікання, а чорні туфлі-човники тримають образ стриманим і належним. Ніжна чорна вуаль прикрашає твою голову як останній шанобливий жест до його спадщини.",
+"7": "Злегка заправ светр у штани для вишуканого вигляду, який зберігає увагу на твоєму обличчі",
+"8": "Тримай сумку “Teddy” близько до тіла, дозволяючи її текстурі доповнити чіткі лінії штанів",
+"9": "Вуаль має лежати ніжно біля твого волосся, обрамлюючи риси без затьмарення твоєї природної виразності",
+"10": "Сумка “Teddy” чорна — Я залишила цю чорну в’язану сумку, щоб вона стала центром теплої палітри, водночас додавши тиху розкішну текстуру, яка поважає траурний тон.",
+"11": "Туфлі-човники, ATTICO, замша, колір чорний — Чорні туфлі додали тут тому, що поділ твоїх максі-штанів довгий; ці черевики підібрані у тон твоєї шкіри, щоб продовжити лінію ноги без порушення вертикальної колони.",
+"12": "Коричневий трикотажний асиметричний джемпер MH STUDIO — Я обрала цей светр попри його вартість тому, що глибокий шоколадний відтінок ідеально підкреслює теплу палітру вбрання на тлі прохолодного осіннього світла.",
+"13": "Коричневий трикотажний асиметричний джемпер MH STUDIO — Цей коричневий приталений светр створює глибокий нейтральний тон, який ніжно контрастує з твоєю шкірою, але залишається у межах тихої гами траурної палітри.",
+"14": "Штани з костюмної тканини — Я обрала ці прямі штани, щоб вони забезпечили чисту лінію без додавання об’єму, зберігаючи твій образ струнким для твоєї фігури."
+}
+```
