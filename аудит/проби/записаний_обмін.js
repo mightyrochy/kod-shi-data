@@ -57,6 +57,14 @@ class ТекстовіВідповіді {
   constructor(тека) {
     this.взято = new Set();
     this.помилки = [];
+    this.точніПовтори = new Map();
+    this.повторів = 0;
+    const підготовка = spawnSync(process.env.PYTHON || (process.platform === 'win32' ? 'python' : 'python3'),
+      [path.join(__dirname, 'сумісність_записів.py'), path.join(тека, '..', 'вердикти.txt')],
+      {encoding: 'utf8', windowsHide: true, timeout: 60000, maxBuffer: 32 * 1024 * 1024,
+        env: {...process.env, PYTHONIOENCODING: 'utf-8'}});
+    if (підготовка.status !== 0) throw new Error('Не підготовлено старий протокол: ' + (підготовка.stderr || підготовка.error));
+    const сумісні = JSON.parse(підготовка.stdout);
     const лог = fs.readFileSync(path.join(тека, '..', 'лог.txt'), 'utf8');
     const стеля = new Set([...лог.matchAll(/↔ модель #(\d+) [^\n]*УПЕРЛОСЬ У СТЕЛЮ ВИВОДУ/g)].map(м => Number(м[1])));
     this.записи = fs.readdirSync(тека).filter(ім => /^seed\d+_\d+_.*\.txt$/.test(ім)).sort().map(ім => {
@@ -65,8 +73,14 @@ class ТекстовіВідповіді {
       if (!м) throw new Error('Не прочитано старий запис: ' + ім);
       const номер = Number(/^seed\d+_(\d+)_/.exec(ім)[1]);
       const статус = Number(м[2]);
-      return {ім, тип: /^seed\d+_\d+_(.*)\.txt$/.exec(ім)[1], промпт: м[1], відповідь: {status: статус, contentType: 'application/json',
-        body: JSON.stringify(статус === 200 ? {content: [{type: 'text', text: м[3]}],
+      const ід = crypto.createHash('sha256').update(м[3]).digest('hex');
+      const варіанти = сумісні[ід] || [];
+      if (варіанти.length > 1) throw new Error('Неоднозначна архівна розмітка: ' + ім);
+      const сумісний = варіанти[0];
+      return {ім, тип: /^seed\d+_\d+_(.*)\.txt$/.exec(ім)[1],
+        промпт: сумісний ? сумісний.промпт : м[1], перенумеровано: !!сумісний,
+        відповідь: {status: статус, contentType: 'application/json',
+        body: JSON.stringify(статус === 200 ? {content: [{type: 'text', text: сумісний ? сумісний.відповідь : м[3]}],
           usage: {input_tokens: 0, output_tokens: 0}, stop_reason: стеля.has(номер) ? 'max_tokens' : 'end_turn'}
           : {error: {message: м[3]}})}};
     });
@@ -74,6 +88,12 @@ class ТекстовіВідповіді {
   }
 
   взяти(_тіло, промпт, тип) {
+    const ключ = ключЗапиту(промпт);
+    if (this.точніПовтори.has(ключ)) {
+      this.повторів++;
+      console.log('   точний повтор того самого промпту · sha256=' + ключ);
+      return this.точніПовтори.get(ключ);
+    }
     const кандидати = this.записи.filter(з => з.тип === імТипу(тип) && !this.взято.has(з.ім));
     const зіставлення = spawnSync(process.env.PYTHON || (process.platform === 'win32' ? 'python' : 'python3'),
       [path.join(__dirname, 'схожість_промптів.py')], {encoding: 'utf8', windowsHide: true, timeout: 30000,
@@ -89,13 +109,16 @@ class ТекстовіВідповіді {
       throw new Error(причина);
     }
     this.взято.add(запис.ім);
-    console.log('   запис ' + запис.ім + ' · схожість промпту ' + запис.схожість.toFixed(4));
+    this.точніПовтори.set(ключ, запис.відповідь);
+    console.log('   запис ' + запис.ім + ' · схожість промпту ' + запис.схожість.toFixed(4)
+      + (запис.перенумеровано ? ' · нумерація з продукту, тексти незмінні' : ''));
     return запис.відповідь;
   }
 
   завершити() {
     if (this.помилки.length) throw new Error(this.помилки.join('; '));
     return {взято: this.взято.size, записів: this.записи.length,
+      точних_повторів: this.повторів,
       невикористано: this.записи.filter(з => !this.взято.has(з.ім)).map(з => з.ім)};
   }
 }
