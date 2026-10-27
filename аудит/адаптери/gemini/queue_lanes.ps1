@@ -349,6 +349,23 @@ function Clear-UnstartedClaim([string]$StatePath) {
     Remove-Claim $StatePath
 }
 
+function Step-FailedStart($M, [string]$StatePath) {
+    <# Відмова до STARTED (робоча копія, запуск процесу наряду) — та сама ланка claim -> STARTED, що й квота: рахується
+    тим самим лічильником `retakes` і тією самою межею MaxRetakes. 'NONE' — claim уже звільнено (слот чи GPU зайняті,
+    кінець, чекання) або є STARTED; 'RETRY' — claim звільнено, позначка в черзі (стан WAIT, група START, без чекання);
+    'LIMIT' — межа: чекання не записано, claim лишається, викликач закриває позначку кінцевим станом і рядком. #>
+    $t = ''
+    if (Test-Path -LiteralPath $StatePath) { try { $t = [System.IO.File]::ReadAllText($StatePath, $script:Utf8) } catch { $null = $_ } }
+    if ($t.StartsWith('STARTED ') -or -not (Test-Path -LiteralPath (Get-ClaimPath $StatePath))) { return 'NONE' }
+    # Голова гілки попереднього чекання за квотою — для продовження — не губиться.
+    $head = ''
+    if ($t.StartsWith('WAIT {')) { try { $head = [string](Get-JsonProp ($t.Substring(5) | ConvertFrom-Json) 'head') } catch { $null = $_ } }
+    $n = Set-MarkerWait $M ([DateTimeOffset]::UtcNow.ToUnixTimeSeconds()) @{ retake = $true; group = 'START'; head = $head }
+    if ($null -eq $n) { return 'LIMIT' }
+    Write-Log "позначка $($M.Name): відмова до запуску, повернено в чергу ($n із $script:MaxRetakes)"
+    'RETRY'
+}
+
 function Clear-OrphanClaims([string]$RunsRoot) {
     <# Claim, чий процес наряду зник до STARTED (вимкнення між узяттям і запуском): старший за 10 хв, стану STARTED нема,
     замок слота (з worker.json теки прогону `<id>`) вільний — звільнити. Живий наряд тримає замок слота, свіжий claim

@@ -869,6 +869,15 @@ function Write-QuotaStatus($M, [string]$Id, [string]$Group, [long]$Until, [hasht
     Write-Log "квота: $($M.Name) — група $Group на 0 %, чекає до $(Get-UtcStamp ([DateTimeOffset]::FromUnixTimeSeconds($Until).UtcDateTime))"
 }
 
+# Відмова до STARTED: лічильник повернень і межа ті самі, що в квоти; на межі — кінцевий стан CRASH і рядок диспетчерові.
+function Close-FailedStart($M, [string]$Id, [string]$StatePath) {
+    if ((Step-FailedStart $M $StatePath) -ne 'LIMIT') { return }
+    $status = [ordered]@{ v = 1; id = $Id; slug = $M.Slug; model = $M.Model; n = [int]$M.N; marker = $M.Sha; cond = $M.Cond; slot = ''
+        start = ''; head = ''; code = 'CRASH'; report = 'NONE'; ahead = 0; turns = 0; minutes = 0; bundle = ''; engine = 'agy' }
+    Write-Log "позначка $($M.Name): відмов до запуску понад $script:MaxRetakes — кінець CRASH"
+    Complete-Status $status $StatePath '' ([datetime]::MinValue)
+}
+
 function New-RunId([string]$Key) { '{0:yyyyMMdd-HHmmss}-{1}' -f (Get-Date), (Get-Sha256Hex ($Key + [guid]::NewGuid())).Substring(0, 12) }
 
 # Прогони, що не йдуть: стан STARTED без живого процесу наряду (замок його слота вільний) — закрити й забандлити.
@@ -1061,7 +1070,7 @@ function Start-Markers($Workers) {
             limits = $script:Limits }
         try { [void]$Workers.Add((Start-Worker $job $dir)) } catch {
             Write-Log "позначка $($m.Name): процес наряду не запущено — $($_.Exception.Message)"
-            Clear-UnstartedClaim (Get-StatePath (Get-MarkerKey $m))
+            Close-FailedStart $m $id (Get-StatePath (Get-MarkerKey $m))
             continue
         }
         Write-Log "позначка $($m.Name): слот $slot, пріоритет $($m.Prio)$(if ($m.Deadline) { ", строк $($m.Deadline)" })$(if ($m.Gpu) { ', GPU' }) -> $id"
@@ -1137,7 +1146,8 @@ function Invoke-Worker {
     } finally {
         Remove-Item -LiteralPath $info -Force -ErrorAction SilentlyContinue
         # Помилка до STARTED (робоча копія тощо) не лишає claim: позначка повертається в чергу (10162).
-        Clear-UnstartedClaim $statePath
+        Close-FailedStart ([pscustomobject]@{ Ref = $job.ref; Name = $job.name; Sha = $job.sha; Slug = $job.slug; Model = $job.model
+                N = [string]$job.n; Cond = [string]$job.cond }) ([string]$job.id) $statePath
         if ($null -ne $gpu) { $gpu.Dispose() }
         $slotLock.Dispose()
     }

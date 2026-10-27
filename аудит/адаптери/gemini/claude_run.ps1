@@ -576,6 +576,13 @@ function Invoke-Task($M, $Job) {
     Complete-Task $M $statePath $id 'NO_REPORT'
 }
 
+# Відмова до STARTED: лічильник повернень і межа ті самі, що в квоти; на межі — кінцевий стан CRASH і рядок диспетчерові.
+function Close-FailedStart($M, [string]$Id, [string]$StatePath) {
+    if ((Step-FailedStart $M $StatePath) -ne 'LIMIT') { return }
+    Write-Log "позначка $($M.Name): відмов до запуску понад $script:MaxRetakes — кінець CRASH"
+    Complete-Task $M $StatePath $Id 'CRASH'
+}
+
 # Прогін, перерваний вимкненням чи зупинкою задачі (замок його слота вільний): живий claude без нагляду зупиняється,
 # диспетчерові — INTERRUPTED. Наряд, чий процес ще живий (слот зайнятий), не чіпаємо.
 function Resume-Interrupted {
@@ -706,7 +713,7 @@ function Start-Markers($Workers) {
             claude = $m.Claude; effort = $m.Effort; limits = $script:Limits }
         try { [void]$Workers.Add((Start-Worker $job $dir)) } catch {
             Write-Log "позначка $($m.Name): процес наряду не запущено — $($_.Exception.Message)"
-            Clear-UnstartedClaim (Get-StatePath (Get-MarkerKey $m))
+            Close-FailedStart $m $id (Get-StatePath (Get-MarkerKey $m))
             continue
         }
         Write-Log "позначка $($m.Name): слот $slot, пріоритет $($m.Prio)$(if ($m.Deadline) { ", строк $($m.Deadline)" })$(if ($m.Gpu) { ', GPU' }) -> $id"
@@ -750,7 +757,7 @@ function Invoke-Worker {
         if ($script:WorkTree) { [void](Invoke-Git @('checkout', '-q', '--detach') -AllowFail -Dir $script:WorkTree) }
         Remove-Item -LiteralPath $info -Force -ErrorAction SilentlyContinue
         # Помилка до STARTED (робоча копія тощо) не лишає claim: позначка повертається в чергу (10162).
-        Clear-UnstartedClaim $statePath
+        Close-FailedStart ([pscustomobject]@{ Ref = $job.ref; Name = $job.name; Sha = $job.sha; Slug = $job.slug; Model = $job.model }) ([string]$job.id) $statePath
         if ($null -ne $gpu) { $gpu.Dispose() }
         $slotLock.Dispose()
     }

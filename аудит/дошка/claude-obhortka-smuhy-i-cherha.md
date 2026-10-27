@@ -12,7 +12,7 @@
 стан 10013: **ЗАКРИТО М.9-Е** (10109: задачу не видно — «не знайдено», діє heartbeat) · стан задачі `gemini-run` під власником не перевірено
 стан 10014: **ЗАКРИТО М.9-Е** (10109: MODEL_INVALID, EFFORT_INVALID звірено; ліміт — `rate_limit_event`) · тексти помилок `claude` не звірено наживо
 стан 10161: **ЧАСТКОВО #1889** · лічильник `retakes` переживає STARTED в обох планувальниках (`Get-Retakes` у `queue_lanes.ps1`; `gemini_run.ps1` Invoke-Task, `claude_run.ps1` Invoke-Claude); вимір проби — перевірка на ноутбуці
-стан 10162: **ЧАСТКОВО #1889** · claim без STARTED звільняється (`Clear-UnstartedClaim` у finally Invoke-Worker і при невдалому Start-Worker; `Clear-OrphanClaims` — після аварії процесу); вимір — перевірка на ноутбуці
+стан 10162: **ЧАСТКОВО #1889** · claim без STARTED звільняється (`Clear-UnstartedClaim` у finally Invoke-Worker і при невдалому Start-Worker; `Clear-OrphanClaims` — після аварії процесу); відмова до STARTED рахується лічильником `retakes` з межею MaxRetakes, на межі — CRASH і рядок (`Step-FailedStart`, `Close-FailedStart`); вимір — перевірка на ноутбуці
 стан 10163: **ЧАСТКОВО #1889** · слот береться за фактичним рушієм після Select-Engine (`gemini_run.ps1` Start-Markers); вимір проби `стелі.ps1` — перевірка на ноутбуці
 стан 10164: **ЧАСТКОВО #1889** · `Get-WorkerCommand` у `side.ps1`/`side_claude.ps1` веде дочірній процес через стенд; «процес зупинено» у `сценарії_claude.sh` вимагає pid-файла; стенд на ноутбуці — перевірка
 стан 10165: **ЗАКРИТО #1889** · `НАЛАШТУВАННЯ.md` описує лише чекання скидання квоти й читання таблиці без заголовка за живим форматом agy 1.4.7 (звірка тексту з кодом)
