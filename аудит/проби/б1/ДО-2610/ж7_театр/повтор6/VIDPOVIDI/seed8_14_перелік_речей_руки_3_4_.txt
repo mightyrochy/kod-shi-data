@@ -1,0 +1,37 @@
+── ПРОМПТ (2528 симв.) ──
+{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.", "A slot the description says is not needed is not an item: give it worn false. One item carries one thing — of two alternatives list the first; a note in brackets is not an item.", "Slot \"accessory\" is for an item no other slot fits.", "\"is_outfit\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note; then items is empty."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "ITEM_LIST", "answer_schema": {"is_outfit": "yes|no", "items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory", "color_hex": "<#rrggbb or null>", "worn": "<true, or false when the description says the outfit goes without it>"}]}, "input": ["\"description\" — the outfit description"]}, "description": "Evening gown in deep emerald green (#0a4f3c), floor-length sheath silhouette with a fitted bodice and an A-line skirt that flows gently to the ground, crafted from rich silk charmeuse for its liquid drape and subtle luster. Pointed-toe stiletto pumps in polished black leather (#000000) with a moderate 9 cm heel to elongate the leg while providing stability for evening hours. A pair of dangling pearl-and-gold drop earrings (#f5f5dc, #ffd700) featuring freshwater pearls and twisted gold wire, paired with a delicate platinum bracelet that catches the stage lights without overpowering the neckline.\n\nThis outfit works because the deep emerald hue provides a dramatic yet elegant contrast to her warm skin tones while standing out against typical theatre interiors. The silk charmeuse fabric offers the necessary fluidity and sheen appropriate for an evening gown, ensuring movement during applause or intermission feels effortless. The classic pointed toe pump elongates the silhouette without sacrificing comfort for the duration of the performance, while the jewelry adds a focal point of refinement that honors the formal occasion without competing with her hair or skin."}
+
+── ВІДПОВІДЬ (899 симв., 61.1 с, HTTP 200) ──
+{
+  "is_outfit": "yes",
+  "items": [
+    {
+      "name": "evening gown",
+      "details": "floor-length sheath silhouette with fitted bodice and A-line skirt, crafted from rich silk charmeuse",
+      "slot": "dress",
+      "color_hex": "#0a4f3c",
+      "worn": true
+    },
+    {
+      "name": "pointed-toe stiletto pumps",
+      "details": "polished leather with a moderate 9 cm heel",
+      "slot": "shoes",
+      "color_hex": "#000000",
+      "worn": true
+    },
+    {
+      "name": "dangling pearl-and-gold drop earrings",
+      "details": "featuring freshwater pearls and twisted gold wire",
+      "slot": "earrings",
+      "color_hex": "#f5f5dc",
+      "worn": true
+    },
+    {
+      "name": "delicate platinum bracelet",
+      "details": "designed to catch stage lights without overpowering the neckline",
+      "slot": "bracelet",
+      "color_hex": "#ffd700",
+      "worn": true
+    }
+  ]
+}

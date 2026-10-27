@@ -1,0 +1,41 @@
+── ПРОМПТ (6246 симв.) ──
+Ти — перекладачка в застосунку-стилістці. Ти пишеш природною українською тексти, які зараз побачить жінка. Рішень не приймаєш, на питання не відповідаєш, змісту не міняєш.
+
+Вхід — JSON-об'єкт: ключ — номер тексту н, значення — текст, який склали код та інші моделі.
+
+Відповідь — лише JSON-об'єкт тієї самої форми, що вхід, з усіма його ключами: ключ — номер н кожного тексту зі входу, значення — рядок — той самий зміст природною українською, без англійських слів і кодів (назви крамниць і брендів — як є); ПЕРЕКЛАДАЙ КОЖНЕ англійське слово, навіть одне посеред українського речення; латиницею лишай лише назви крамниць і брендів, «V-подібний» і «den»; текст, що вже природний і до неї на «ти», — без змін, а український текст на «ви» перепиши на «ти», решту лиши слово в слово.
+
+Вид кожної речі — теж зміст: річ у перекладі — та сама, що у вході, а не схожа чи сусідня. ankle boots — черевики чи ботильйони, boots — чоботи, heeled — на підборах, а не туфлі, pumps — туфлі-човники, loafers — лофери; pendant — кулон чи підвіска, necklace — намисто чи ланцюжок, а не каблучка, сережки чи браслет; ring — каблучка; earrings — сережки. Українські назви речей у вході (назви з крамниці, найчастіше перед « — ») переписуй літера в літеру: не міняй, не переставляй і не додавай у них жодного слова.
+
+Про жінку — лише до неї, на «ти» (ти, тебе, тобі, твій, твоя; хочеш, скинеш; наказ однини: розкажи, оберни, тримай, дай), і в питаннях теж: you, your, she, her про неї — «ти», «твій» (her skin tone — твій тон шкіри; when she turns her head — коли ти повертаєш голову; she looks taller — ти виглядаєш вищою), англійський наказ — наказом однини; «вона», «її» — лише про річ (сукню, сумку, куртку). Говорить стилістка — одна жінка: про себе — від першої особи однини й у жіночому роді (я підібрала, я б додала), не «ми», не від імені застосунку чи коду і ніколи словами самої жінки.
+
+Мова: літературна українська, як у текстах українських крамниць одягу. Кожне українське слово — літерами лише української абетки, без жодної латинської літери чи стороннього знака всередині слова. Кожне речення — одна остаточна версія, без виправлень посеред тексту. Словничок нижче — лише як перекласти англійське слово, коли воно є у вході; це не зміст: річ, тканина чи колір, яких у вході нема, у тексті не з'являються. Звичні українські назви для слів англійського джерела: trousers, pants — штани; dressy, dressier — ошатний, ошатніше; look, outfit — образ; taupe — сіро-бежевий; loose — вільний; suede — замша (жіночий рід); slip dress — сукня-комбінація; camel — кемел (колір). Назви речей і кольорів, які дала крамниця, — як є.
+
+Перевір кожне слово ДО відповіді: до неї — лише «ти», жодного «ви», «ваш» і наказу множини, і про неї жодного «вона», «її», «їй», жодне слово не стоїть двічі поспіль, кожна річ — того самого виду, що у вході (річ образу — іменником її назви з переліку, коли він є, і слова при ній узгоджені з цим іменником), а українська назва речі — слово в слово. Відповідь — рівно ОДИН JSON-об'єкт і нічого після нього: другої, виправленої версії, приміток і пояснень не пиши — помилку виправ у тому самому об'єкті.
+
+Речі образу — перелік, який жінка бачить на картці (номер речі — назва біля неї):
+1 — назва в тексті н=2
+2 — назва в тексті н=3
+3 — назва в тексті н=4
+4 — назва в тексті н=5
+When a text speaks of an item of the list, call it by the kind in its name — the same noun in the right case (list «Тренч бежевий подовжений» — text «тренч», «Светр в'язаний оверсайз» — «светр»), not by another kind or a synonym of the English word. Make every adjective, pronoun and verb with the item agree with that noun in gender and number («Тренч бежевий» — «бежевий тренч, який…»; «Лофери шкіряні» — «шкіряні лофери, які…»). A name you translate in this same call (text н=K): give it one noun and call the item by it, in agreement, in every text. A text the list gives as about an item (about it: text н=M) speaks of that one item, and so does every other text where the English names it. The colour of an item of the list is the colour of its name: keep the shop's colour word from its name; when its name has no colour word, write the Ukrainian name of its colour code. The English colour words for that item are the stylist's impression of a photo: do not turn them into a colour of their own — the item's colour stands in their place. Colours of its details (trim, strap, buttons, print), its fabric and the rest — translate from the text. The list is for names only: an item the English text does not name is not added to the translation — neither to the description nor to the advice. The kind code next to an item (kind code: …) is the code of its kind: every noun for that item, in every text, names this kind and no other, whatever word the English text uses; a code ending in _generic names only the family (dress_generic — a dress, bag_generic — a bag). The kind noun of its name and this code are the same kind: write the name's noun.
+
+ТЕКСТИ:
+{
+"1": "Evening gown in deep emerald green, floor-length sheath silhouette with a fitted bodice and an A-line skirt that flows gently to the ground, crafted from rich silk charmeuse for its liquid drape and subtle luster. Pointed-toe stiletto pumps in polished black leather with a moderate 9 cm heel to elongate the leg while providing stability for evening hours. A pair of dangling pearl-and-gold drop earrings (, ) featuring freshwater pearls and twisted gold wire, paired with a delicate platinum bracelet that catches the stage lights without overpowering the neckline.\n\nThis outfit works because the deep emerald hue provides a dramatic yet elegant contrast to her warm skin tones while standing out against typical theatre interiors. The silk charmeuse fabric offers the necessary fluidity and sheen appropriate for an evening gown, ensuring movement during applause or intermission feels effortless. The classic pointed toe pump elongates the silhouette without sacrificing comfort for the duration of the performance, while the jewelry adds a focal point of refinement that honors the formal occasion without competing with her hair or skin.",
+"2": "evening gown",
+"3": "pointed-toe stiletto pumps",
+"4": "dangling pearl-and-gold drop earrings",
+"5": "delicate platinum bracelet"
+}
+
+── ВІДПОВІДЬ (1306 симв., 49.9 с, HTTP 200) ──
+```json
+{
+  "1": "Вечірня сукня глибокого смарагдового кольору, довга приталена силуетна спідниця з облягаючим верхом і розкльошеною спідницею, що ніжно спадає до підлоги. Виготовлена з дорогого шовкового атласу для її плинного драпірування та ледь помітного блиску. Чорні лаковані туфлі-човники на шпильці з помірним 9 см каблуком, щоб подовжити ноги і забезпечити стійкість протягом вечірніх годин. Висячі сережки-підвіски зі свіжими перлинами та золотою дротом, доповнені делікатним платиновим браслетом, який ловить світло софітів без перевантаження зони декольте.\n\nЦей образ працює тому, що глибокий смарагдовий колір створює драматичний і водночас елегантний контраст з її теплим тоном шкіри та виділяється на тлі типових театральних інтер’єрів. Шовковий атлас забезпечує необхідну плинність і блиск, які підходять для вечірньої сукні, гарантуючи, що рухи під час оплесків чи антракту будуть легкими та природними. Класичні туфлі-човники на шпильці подовжують силует без шкоди для комфорту протягом усієї вистави, а прикраси додають акцент вишуканості, який відповідає урочистості події, не конкуруючи з її волоссям чи шкірою.",
+  "2": "вечірня сукня",
+  "3": "туфлі-човники на шпильці",
+  "4": "сережки-підвіски зі свіжими перлинами та золотою дротом",
+  "5": "делікатний платиновий браслет"
+}
+```
