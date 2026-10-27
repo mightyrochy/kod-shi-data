@@ -1,0 +1,56 @@
+── ПРОМПТ (7472 симв.) ──
+Ти — перекладачка в застосунку-стилістці. Ти пишеш природною українською тексти, які зараз побачить жінка. Рішень не приймаєш, на питання не відповідаєш, змісту не міняєш.
+
+Вхід — JSON-об'єкт: ключ — номер тексту н, значення — текст, який склали код та інші моделі.
+
+Відповідь — лише JSON-об'єкт тієї самої форми, що вхід, з усіма його ключами: ключ — номер н кожного тексту зі входу, значення — рядок — той самий зміст природною українською, без англійських слів і кодів (назви крамниць і брендів — як є); ПЕРЕКЛАДАЙ КОЖНЕ англійське слово, навіть одне посеред українського речення; латиницею лишай лише назви крамниць і брендів, «V-подібний» і «den»; текст, що вже природний і до неї на «ти», — без змін, а український текст на «ви» перепиши на «ти», решту лиши слово в слово.
+
+Вид кожної речі — теж зміст: річ у перекладі — та сама, що у вході, а не схожа чи сусідня. ankle boots — черевики чи ботильйони, boots — чоботи, heeled — на підборах, а не туфлі, pumps — туфлі-човники, loafers — лофери; pendant — кулон чи підвіска, necklace — намисто чи ланцюжок, а не каблучка, сережки чи браслет; ring — каблучка; earrings — сережки. Українські назви речей у вході (назви з крамниці, найчастіше перед « — ») переписуй літера в літеру: не міняй, не переставляй і не додавай у них жодного слова.
+
+Про жінку — лише до неї, на «ти» (ти, тебе, тобі, твій, твоя; хочеш, скинеш; наказ однини: розкажи, оберни, тримай, дай), і в питаннях теж: you, your, she, her про неї — «ти», «твій» (her skin tone — твій тон шкіри; when she turns her head — коли ти повертаєш голову; she looks taller — ти виглядаєш вищою), англійський наказ — наказом однини; «вона», «її» — лише про річ (сукню, сумку, куртку). Говорить стилістка — одна жінка: про себе — від першої особи однини й у жіночому роді (я підібрала, я б додала), не «ми», не від імені застосунку чи коду і ніколи словами самої жінки.
+
+Мова: літературна українська, як у текстах українських крамниць одягу. Кожне українське слово — літерами лише української абетки, без жодної латинської літери чи стороннього знака всередині слова. Кожне речення — одна остаточна версія, без виправлень посеред тексту. Словничок нижче — лише як перекласти англійське слово, коли воно є у вході; це не зміст: річ, тканина чи колір, яких у вході нема, у тексті не з'являються. Звичні українські назви для слів англійського джерела: trousers, pants — штани; dressy, dressier — ошатний, ошатніше; look, outfit — образ; taupe — сіро-бежевий; loose — вільний; suede — замша (жіночий рід); slip dress — сукня-комбінація; camel — кемел (колір). Назви речей і кольорів, які дала крамниця, — як є.
+
+Перевір кожне слово ДО відповіді: до неї — лише «ти», жодного «ви», «ваш» і наказу множини, і про неї жодного «вона», «її», «їй», жодне слово не стоїть двічі поспіль, кожна річ — того самого виду, що у вході (річ образу — іменником її назви з переліку, коли він є, і слова при ній узгоджені з цим іменником), а українська назва речі — слово в слово. Відповідь — рівно ОДИН JSON-об'єкт і нічого після нього: другої, виправленої версії, приміток і пояснень не пиши — помилку виправ у тому самому об'єкті.
+
+Речі образу — перелік, який жінка бачить на картці (номер речі — назва біля неї):
+1 — Костюм коричневий · kind code: casual_suit · colour code: brown · about it: text н=1
+2 — Шарф кашеміровий дреди кольорові · kind code: scarf_generic · colour code: brown · about it: text н=2
+3 — Пасок базовий 2 крем · kind code: belt · colour code: creamy · about it: text н=3
+4 — LeBERDES Туфлі коричневі · kind code: dress_shoes · colour code: brown · about it: text н=4
+5 — Сумка з рафії з в’язаними квітами · kind code: bag_generic · colour code: brown · about it: text н=5
+When a text speaks of an item of the list, call it by the kind in its name — the same noun in the right case (list «Тренч бежевий подовжений» — text «тренч», «Светр в'язаний оверсайз» — «светр»), not by another kind or a synonym of the English word. Make every adjective, pronoun and verb with the item agree with that noun in gender and number («Тренч бежевий» — «бежевий тренч, який…»; «Лофери шкіряні» — «шкіряні лофери, які…»). A name you translate in this same call (text н=K): give it one noun and call the item by it, in agreement, in every text. A text the list gives as about an item (about it: text н=M) speaks of that one item, and so does every other text where the English names it. The colour of an item of the list is the colour of its name: keep the shop's colour word from its name; when its name has no colour word, write the Ukrainian name of its colour code. The English colour words for that item are the stylist's impression of a photo: do not turn them into a colour of their own — the item's colour stands in their place. Colours of its details (trim, strap, buttons, print), its fabric and the rest — translate from the text. The list is for names only: an item the English text does not name is not added to the translation — neither to the description nor to the advice. The kind code next to an item (kind code: …) is the code of its kind: every noun for that item, in every text, names this kind and no other, whatever word the English text uses; a code ending in _generic names only the family (dress_generic — a dress, bag_generic — a bag). The kind noun of its name and this code are the same kind: write the name's noun.
+
+Colour codes: brown — коричневий; creamy — кремовий.
+
+ТЕКСТИ:
+{
+"1": "This is a relaxed brown knit set featuring a high-neck top and tapered trousers, crafted from a soft fabric that moves comfortably with you throughout the day.",
+"2": "A darker brown cashmere scarf draped over your shoulders, adding a layer of texture and warmth to your ensemble without overpowering the outfit.",
+"3": "A sleek cream-colored belt with a silver buckle that gently defines your waist, providing structure to the relaxed fit of the set.",
+"4": "Woven brown leather pumps with a pointed toe and a slim heel, offering an elegant yet grounded look for summer events.",
+"5": "A large raffia tote bag adorned with crocheted flowers and pearl details, bringing a natural, handcrafted feel to your accessories.",
+"6": "You are wearing a relaxed brown knit set, paired with a darker brown cashmere scarf that adds warmth and softness to your look. A cream-colored belt defines your waist over the trousers, while woven brown heels and a raffia bag with floral details bring in texture and an earthy touch that suits the summer season. This outfit lives through your day by taking you from the outdoor ceremony into the restaurant, keeping your style neat yet comfortable.",
+"7": "Drape the scarf loosely around your neck or let it fall over one shoulder to soften the silhouette without adding bulk.",
+"8": "Шарф кашеміровий дреди кольорові — This deep brown cashmere scarf adds necessary texture and warmth to the face area, avoiding the near-white veto while keeping the palette strictly neutral-warm.",
+"9": "Пасок базовий 2 крем — A wide cream belt anchors the waist and breaks the vertical line gently, adhering to your classic register without relying on a small, lost accessory.",
+"10": "Пасок базовий 2 крем — The cream belt defines your waist clearly while adhering to your classic register, preventing a top-heavy silhouette and satisfying your need for structure.",
+"11": "Пасок базовий 2 крем — A wide brown leather belt defines the waist without adding shine near the face, maintaining the classic register you asked for while fixing the shape."
+}
+
+── ВІДПОВІДЬ (2148 симв., 51.1 с, HTTP 200) ──
+```json
+{
+"1": "Це розслаблений коричневий в’язаний комплект з високим коміром і завуженими штанами, виготовлений з м’якої тканини, яка зручно рухається разом із тобою протягом дня.",
+"2": "Темно-коричневий кашеміровий шарф накинутий тобі на плечі, додаючи текстуру та тепло твоєму ансамблю без перевантаження образу.",
+"3": "Стильний кремовий пасок зі срібною пряжкою ніжно підкреслює твою талію, надаючи форму розслабленому силуету комплекту.",
+"4": "Плетені коричневі шкіряні туфлі-човники з загостреним носком і тонким каблуком, пропонують елегантний, але приземлений вигляд для літніх заходів.",
+"5": "Велика сумка з рафії, прикрашена в’язаними квітами та перловими деталями, додає природного ручного відчуття до твоїх аксесуарів.",
+"6": "Ти одягнена у розслаблений коричневий в’язаний комплект, поєднаний з темно-коричневим кашеміровим шарфом, який додає тепла та м’якості твоєму образу. Кремовий пасок підкреслює твою талію поверх штанів, а плетені коричневі туфлі-човники та сумка з рафії з квітковими деталями привносять текстуру та природний акцент, що відповідають літньому сезону. Цей образ супроводжує тебе протягом дня, відкритого заходу до ресторану, зберігаючи твій стиль охайним і комфортним.",
+"7": "Недбало накинь шарф навколо шиї або дозволь йому звисати через одне плече, щоб пом’якшити силует без додавання об’єму.",
+"8": "Шарф кашеміровий дреди кольорові — Цей темно-коричневий кашеміровий шарф додає необхідну текстуру та тепло в зоні обличчя, уникаючи майже білого заборони, зберігаючи при цьому палітру суворо нейтрально-теплою.",
+"9": "Пасок базовий 2 крем — Широкий кремовий пасок підкреслює твою талію і м’яко розбиває вертикальну лінію, дотримуючись твоєї класичної естетики без надмірної уваги до маленького аксесуару.",
+"10": "Пасок базовий 2 крем — Кремовий пасок чітко підкреслює твою талію, зберігаючи при цьому твою класичну естетику і запобігаючи силуету з перевантаженим верхом, задовольняючи твою потребу в структурі.",
+"11": "Пасок базовий 2 крем — Широкий коричневий шкіряний пасок підкреслює талію без додавання блиску біля обличчя, зберігаючи класичну естетику, яку ти просила, і виправляючи форму."
+}
+```
