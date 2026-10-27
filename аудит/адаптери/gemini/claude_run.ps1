@@ -145,7 +145,7 @@ function Add-Line([string]$Line) {
     foreach ($t in $script:LineTemplates) { if ($Line -cmatch $t) { $ok = $true; break } }
     if (-not $ok -or $Line.Contains('..')) { Write-Log "рядок не за шаблоном — не записано: $Line"; return '' }
     $id = New-Id
-    Write-FileAtomic (Join-Path $OutboxDir "$id.txt") $Line
+    Write-FileAtomic (Join-Path $OutboxDir "$id.txt") ($Line + "`n")
     Write-Log "рядок $id : $Line"
     $id
 }
@@ -433,7 +433,12 @@ function Invoke-Claude([string]$Exe, [string[]]$ArgList, [string]$Prompt, [strin
     $hang = Get-Limit $script:Limits 'HangMinutes' 'claude_hang_minutes'
     $psi = New-StartInfo $Exe $ArgList $RepoDir
     $psi.RedirectStandardInput = $true
-    $p = [System.Diagnostics.Process]::Start($psi)
+    # .NET Framework створює StandardInput з AutoFlush: BOM пишеться вже під час Start.
+    $stdinEncoding = [Console]::InputEncoding
+    try {
+        [Console]::InputEncoding = $script:Utf8
+        $p = [System.Diagnostics.Process]::Start($psi)
+    } finally { [Console]::InputEncoding = $stdinEncoding }
     $start = ''; try { $start = Get-UtcStamp $p.StartTime } catch { $null = $_ }
     Write-FileAtomic $StatePath ($StateHead + ' ' + (([ordered]@{ pid = $p.Id; start = $start; marker = $Marker; slot = $Slot; retakes = (Get-Retakes $StatePath) }) | ConvertTo-Json -Compress))
     $w = New-Object System.IO.StreamWriter($p.StandardInput.BaseStream, $script:Utf8)

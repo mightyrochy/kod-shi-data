@@ -124,7 +124,12 @@ function Invoke-Native([string]$Exe, [string[]]$Arguments, [string]$WorkDirector
     $psi.EnvironmentVariables['GIT_TERMINAL_PROMPT'] = '0'
     $psi.EnvironmentVariables['GCM_INTERACTIVE'] = 'never'
     $psi.RedirectStandardInput = ($null -ne $StdIn)
-    $p = [System.Diagnostics.Process]::Start($psi)
+    # .NET Framework створює StandardInput з AutoFlush: BOM пишеться вже під час Start.
+    $stdinEncoding = [Console]::InputEncoding
+    try {
+        [Console]::InputEncoding = $script:Utf8
+        $p = [System.Diagnostics.Process]::Start($psi)
+    } finally { [Console]::InputEncoding = $stdinEncoding }
     $out = $p.StandardOutput.ReadToEndAsync()
     $err = $p.StandardError.ReadToEndAsync()
     if ($null -ne $StdIn) {

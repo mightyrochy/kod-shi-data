@@ -685,7 +685,12 @@ function Wait-StreamResult($Run, [datetime]$Deadline) {
 function Start-StreamRun($M, $Run) {
     $psi = New-StartInfo $script:Agy (Get-AgyArgs $M $Run.Conversation @()) $RepoDir
     $psi.RedirectStandardInput = $true
-    $Run.Proc = [System.Diagnostics.Process]::Start($psi)
+    # .NET Framework створює StandardInput з AutoFlush: BOM пишеться вже під час Start.
+    $stdinEncoding = [Console]::InputEncoding
+    try {
+        [Console]::InputEncoding = $script:Utf8
+        $Run.Proc = [System.Diagnostics.Process]::Start($psi)
+    } finally { [Console]::InputEncoding = $stdinEncoding }
     $Run.Stdin = New-Object System.IO.StreamWriter($Run.Proc.StandardInput.BaseStream, $script:Utf8)
     $Run.Stderr = $Run.Proc.StandardError.ReadToEndAsync()
     $Run.Pending = $null

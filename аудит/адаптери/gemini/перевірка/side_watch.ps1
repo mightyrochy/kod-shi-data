@@ -1,5 +1,7 @@
 ﻿# Стенд спостерігача: локальний origin і fake_gh, користувач ОС підмінено як у side.ps1 та side_claude.ps1.
 param([string]$Script, [string]$ArgsJson, [int]$MaxRows = 20, [int]$MaxDiffKB = 128)
+# UTF-8 із BOM у стандартному stdin .NET Framework, як у раннера Windows.
+if ($env:OS -eq 'Windows_NT') { [Console]::InputEncoding = [Text.Encoding]::UTF8 }
 $p = @{}
 (ConvertFrom-Json $ArgsJson).PSObject.Properties | ForEach-Object { $p[$_.Name] = $_.Value }
 $script:HarnessPython = $p['HarnessPython']
