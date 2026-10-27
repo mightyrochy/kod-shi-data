@@ -1,0 +1,50 @@
+diff --git a/аудит/адаптери/gemini/gemini_watch.ps1 b/аудит/адаптери/gemini/gemini_watch.ps1
+index 22fe3e0ace8e33af87eedb5d1bf78febe9d38fff..f752736c9666f948b9e52d67356f1c117c0dfcc9 100644
+--- a/аудит/адаптери/gemini/gemini_watch.ps1
++++ b/аудит/адаптери/gemini/gemini_watch.ps1
+@@ -163,7 +163,9 @@ function Get-Stamp($v) {
+ function Invoke-Gh([string]$Path) {
+     $r = Invoke-Native (Resolve-Exe $GhExe) @('api', '-H', 'Accept: application/vnd.github+json', $Path) $WorkDir 3
+     if ($r.Code -ne 0) { throw "gh api $Path -> $($r.Code): $($r.Err.Trim())" }
+-    $r.Out | ConvertFrom-Json
++    # PowerShell 5.1 не перелічує масив із ConvertFrom-Json у конвеєрі; вираз розгортає його в елементи.
++    $parsed = $r.Out | ConvertFrom-Json
++    $parsed
+ }
+ 
+ # Сторінки по 100, поки не прийде неповна; лише масиви.
+@@ -261,7 +263,7 @@ function Invoke-Transfer($Pr, [string]$CommentId, [string]$Diff, $Hashes, [int]$
+     [void](New-Item -ItemType Directory -Force -Path (Split-Path $wt))
+     $hasWt = $false
+     try {
+-        [void](Invoke-Git @('worktree', 'add', '-q', '--detach', $wt, $base))
++        [void](Invoke-Git @('-c', 'core.autocrlf=false', 'worktree', 'add', '-q', '--detach', $wt, $base))
+         $hasWt = $true
+         $g = @('-c', "core.hooksPath=$script:NoHooks", '-c', 'core.autocrlf=false', '-c', 'core.safecrlf=false')
+         $chk = Invoke-Native $GitExe ($g + @('apply', '--check', '--recount', '--whitespace=nowarn', '-')) $wt 3 $Diff
+diff --git a/аудит/адаптери/gemini/m9v/хеші.psd1 b/аудит/адаптери/gemini/m9v/хеші.psd1
+index ea732741cee032def27f8b36b7a4ddbbe2d8187a..c6ff111d55da5dbe479865d799023e43e3c7cacc 100644
+--- a/аудит/адаптери/gemini/m9v/хеші.psd1
++++ b/аудит/адаптери/gemini/m9v/хеші.psd1
+@@ -9,7 +9,7 @@
+     # Оновити Codex = новий PR: нова версія, новий хеш (докази — у PR). Порожній хеш — інсталятор не виконується.
+     CodexRelease         = '0.164.0'
+     CodexInstaller       = 'A59CB66350098C33B021FF470D586AE8FE3B7CAF189CA7137B4FE3AF5D4DCE74'
+-    'gemini_watch.ps1'   = 'CEBCDD8FFEAFCDF29D9B4F5F624F00E8C8AE9A3811B49E87D3EB6B9B992C24ED'
++    'gemini_watch.ps1'   = '3550085176F339BA00B1D1C28391AC585B0959128335D193601734261D00085B'
+     'queue_lanes.ps1'    = '0D2BE9DE68DEC2602E6671EEE50BA94008BD436619E9603A086A5BC3E03A5E20'
+     'claude_run.ps1'     = '03F740987233B9C8BA9BF172957D03AC2447DD6911CE9C820BE3E7D95037A59F'
+ }
+diff --git a/аудит/адаптери/gemini/НАЛАШТУВАННЯ.md b/аудит/адаптери/gemini/НАЛАШТУВАННЯ.md
+index 3a3b238e350173abf285d0bd6f5e3243b644af38..59764c89155a36da4a926705bd83999dd64d7cd0 100644
+--- a/аудит/адаптери/gemini/НАЛАШТУВАННЯ.md
++++ b/аудит/адаптери/gemini/НАЛАШТУВАННЯ.md
+@@ -404,7 +404,7 @@ $f = Join-Path "$env:USERPROFILE\gemini-outbox" $n
+ |---|---|
+ | `gemini_run.ps1` | `65FDD272EE6D6D3AFF2622D54174F9C1960C708AFDE57F83943AE90DAA16DD18` |
+ | `gemini_publish.ps1` | `4CFFE78BB534AA02A8E5F5E9E27146D14B6A63437A3BB45D33B7045846C0FFFB` |
+-| `gemini_watch.ps1` | `CEBCDD8FFEAFCDF29D9B4F5F624F00E8C8AE9A3811B49E87D3EB6B9B992C24ED` |
++| `gemini_watch.ps1` | `3550085176F339BA00B1D1C28391AC585B0959128335D193601734261D00085B` |
+ | `queue_lanes.ps1` | `0D2BE9DE68DEC2602E6671EEE50BA94008BD436619E9603A086A5BC3E03A5E20` |
+ | `claude_run.ps1` | `03F740987233B9C8BA9BF172957D03AC2447DD6911CE9C820BE3E7D95037A59F` |
+ | `CodexInstaller` (`install.ps1` релізу Codex `CodexRelease`) | `A59CB66350098C33B021FF470D586AE8FE3B7CAF189CA7137B4FE3AF5D4DCE74` |

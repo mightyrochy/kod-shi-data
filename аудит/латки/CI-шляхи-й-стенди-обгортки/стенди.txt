@@ -1,0 +1,1083 @@
+Windows; користувач gemini; Git Bash; Windows PowerShell 5.1; Python 3.12.
+База: 614635841a6c9e446a3450513749fadaaafc54b0
+TMPDIR=/tmp/ci-shliakhy
+
+Команда: bash аудит/адаптери/gemini/перевірка/запустити_стенд.sh сценарії_claude.sh
+ПІДСУМОК сценарії_claude.sh: ✓ 43 / ✗ 0; код стенда 0; код логу 0
+
+Команда: export TMPDIR=/tmp/ci-shliakhy; mkdir -p "$TMPDIR"; bash аудит/адаптери/gemini/перевірка/запустити_стенд.sh сценарії_m9v.sh
+ok  синтаксис 0_власник.ps1
+ok  синтаксис 1_адмін.ps1
+ok  синтаксис 2_під_gemini.ps1
+ok  синтаксис хеші.psd1
+ok  хеші: psd1 = таблиця = файли
+ok  дослівні рядки команд
+ok  Codex: закріплений інсталятор, ключ -EnableCodex, кроки власника
+ПІДСУМОК сценарії_m9v.sh: ✓ 7 / ✗ 0; код стенда 0; код логу 0
+
+Код процесу: 0
+
+Команда: export TMPDIR=/tmp/ci-shliakhy; mkdir -p "$TMPDIR"; bash аудит/адаптери/gemini/перевірка/запустити_стенд.sh сценарії_доставки.sh
+=== Д1 квота групи моделі 0 %: наряд не береться, 0 ходів, рядок із групою й часом скидання
+warning: in the working copy of 'аудит/СТАН.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'аудит/наряди/М.2-проба-обгортки.md', LF will be replaced by CRLF the next time Git touches it
+  → GEMINI ОБГОРТКА: ЗАБЛОКОВАНО gemini/М.2-проба-обгортки QUOTA0_GEMINI35FLASH_M137
+  → GEMINI ОБГОРТКА: ПУЛИ V=1.1.11 G=GEMINI35FLASH:0:137 G=GEMINI31PRO:0:137 G=CLAUDEGPT:0:137 M=gemini-3.8-flash-high,claude-opus-5-5-high
+  ✓ прогонів agy (ходів) — 0
+  ✓ гілки gemini/ нема
+  ✓ рядок ЗАБЛОКОВАНО QUOTA0_<група>_M<хв>
+  ✓ рівно один рядок
+  ✓ повторний прохід — без нового наряду й рядка
+=== Д2 нуль у групах Pro і Claude & GPT не блокує Flash; залишок квоти — у журналі
+warning: in the working copy of 'аудит/СТАН.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'аудит/наряди/М.2-проба-обгортки.md', LF will be replaced by CRLF the next time Git touches it
+  → GEMINI ОБГОРТКА: ГОТОВО gemini/М.2-проба-обгортки eb6171d77479b2caf8ff173973d736f4cd9e6e93 КВОТА GEMINI35FLASH 34 МОДЕЛЬ gemini-3.8-flash-high
+  → GEMINI ОБГОРТКА: ПУЛИ V=1.1.11 G=GEMINI35FLASH:34:137 G=GEMINI31PRO:0:137 G=CLAUDEGPT:0:137 M=gemini-3.8-flash-high,claude-opus-5-5-high
+  ✓ наряд пройшов: ГОТОВО gemini/<наряд> <SHA40>
+  ✓ залишок 34 % у publish.log
+=== Д3 інші формати /usage (usedPercent, конверт response) розбираються; нерозпізнане й збій agy — наряд іде
+warning: in the working copy of 'аудит/СТАН.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'аудит/наряди/М.2-проба-обгортки.md', LF will be replaced by CRLF the next time Git touches it
+  ✓ used: формат розібрано (залишок 34 %), Flash не заблоковано
+warning: in the working copy of 'аудит/СТАН.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'аудит/наряди/М.2-проба-обгортки.md', LF will be replaced by CRLF the next time Git touches it
+  ✓ envelope: формат розібрано (залишок 34 %), Flash не заблоковано
+warning: in the working copy of 'аудит/СТАН.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'аудит/наряди/М.2-проба-обгортки.md', LF will be replaced by CRLF the next time Git touches it
+  ✓ all0 -> QUOTA0
+warning: in the working copy of 'аудит/СТАН.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'аудит/наряди/М.2-проба-обгортки.md', LF will be replaced by CRLF the next time Git touches it
+  ✓ garbage -> наряд пройшов (ГОТОВО)
+warning: in the working copy of 'аудит/СТАН.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'аудит/наряди/М.2-проба-обгортки.md', LF will be replaced by CRLF the next time Git touches it
+  ✓ fail -> наряд пройшов (ГОТОВО)
+  ✓ garbage: вивід /usage в wrapper.log для власника
+=== Д4 429 посеред прогону — позначка чекає скидання групи (М.9-Е), рядок QUOTA0 одним рядком
+warning: in the working copy of 'аудит/СТАН.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'аудит/наряди/М.2-проба-обгортки.md', LF will be replaced by CRLF the next time Git touches it
+  → GEMINI ОБГОРТКА: ЗАБЛОКОВАНО gemini/М.2-проба-обгортки QUOTA0_GEMINI35FLASH_M137
+  → GEMINI ОБГОРТКА: ПУЛИ V=1.1.11 G=GEMINI35FLASH:34:137 G=GEMINI31PRO:0:137 G=CLAUDEGPT:0:137 M=gemini-3.8-flash-high,claude-opus-5-5-high
+  ✓ рядок ЗАБЛОКОВАНО gemini/<наряд> QUOTA0_GEMINI35FLASH_M<хв>, один
+  ✓ позначка в чеканні (WAIT), спроба не спалена
+=== Д5 шаблони теки вихідних: лише повний збіг; решта — карантин, у рядку лише код
+warning: in the working copy of 'аудит/СТАН.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'аудит/наряди/М.2-проба-обгортки.md', LF will be replaced by CRLF the next time Git touches it
+  → GEMINI ОБГОРТКА: ГОТОВО gemini/М.9-А-доставка aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+  → GEMINI ОБГОРТКА: ГОТОВО gemini/М.9-А-доставка aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa КВОТА GEMINI35FLASH 0
+  → GEMINI ОБГОРТКА: ЗАБЛОКОВАНО claude/М.9-А-доставка QUOTA0_FLASH_M10
+  → СПОСТЕРІГАЧ КОМЕНТАР #963 4321 chatgpt-codex-connector[bot] змінено
+  → СПОСТЕРІГАЧ CI #1716 aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa timed_out
+  → СПОСТЕРІГАЧ ПЕРЕНЕСЕНО М.9-Б codex/М.9-Б aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa #1730
+  → СПОСТЕРІГАЧ НЕ ПЕРЕНЕСЕНО М.9-Б APPLY_FAILED
+  → GEMINI ОБГОРТКА: КАРАНТИН ВИХІДНИХ 20261024-120008-aaaaaaaaaa08 NO_TEMPLATE — рядок не переслано (те
+  → GEMINI ОБГОРТКА: КАРАНТИН ВИХІДНИХ 20261024-120009-aaaaaaaaaa09 NO_TEMPLATE — рядок не переслано (те
+  → GEMINI ОБГОРТКА: КАРАНТИН ВИХІДНИХ 20261024-120010-aaaaaaaaaa10 NO_TEMPLATE — рядок не переслано (те
+  ✓ переслано рівно 7 шаблонних рядків і не більше 3 повідомлень про карантин
+  ✓ у повідомленнях про карантин — лише код, ні слова з файлів
+  ✓ карантин: 16 файлів (11 не за шаблоном + 5 за форматом) лежать у quarantine/
+  ✓ незавершені й чужі імена не чіпано
+  ✓ прийняті — у done/, у теці лишились лише тимчасові
+  ✓ другий прохід нічого не надіслав повторно
+=== Д6 повтор і стан «надіслано / спроби»: збій claude -> спроби, далі доставлено один раз
+warning: in the working copy of 'аудит/СТАН.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'аудит/наряди/М.2-проба-обгортки.md', LF will be replaced by CRLF the next time Git touches it
+{"line":"СПОСТЕРІГАЧ CI #5 bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb success","sent":false,"attempts":3}
+  ✓ після збою: sent=false, attempts=3 (SendRetries)
+{"line":"СПОСТЕРІГАЧ CI #5 bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb success","sent":true,"attempts":4}
+  ✓ після відновлення: sent=true, attempts=4
+  ✓ доставлено рівно раз
+=== Д6б межа спроб: MaxSendAttempts=4 — тиша після чотирьох
+warning: in the working copy of 'аудит/СТАН.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'аудит/наряди/М.2-проба-обгортки.md', LF will be replaced by CRLF the next time Git touches it
+  ✓ claude викликано рівно 4 рази
+=== Д7 кінець прогону -> ok:true за ≤ 2 хв (від готового стану до claude)
+warning: in the working copy of 'аудит/СТАН.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'аудит/наряди/М.2-проба-обгортки.md', LF will be replaced by CRLF the next time Git touches it
+  ✓ доставлено за 1 с (межа 120)
+  ✓ рядок кінця пройшов теку вихідних: файл у done/
+=== Д8 стенд одного прогону: рядок кінця перед сном/вимкненням сесії — вже в теці, сесії жити не треба
+warning: in the working copy of 'аудит/СТАН.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'аудит/наряди/М.2-проба-обгортки.md', LF will be replaced by CRLF the next time Git touches it
+  ✓ повторний запуск тихий
+=== Д9 SlugPattern закінчується на \z, а не $: slug із кінцевим \n відкидається в обох файлах
+  ✓ queue_lanes: 'x\n' -> False, 'x' -> True (дістали: False True)
+  ✓ gemini_publish: 'x\n' -> False, 'x' -> True (дістали: False True)
+
+ВСЕ ✓
+ПІДСУМОК сценарії_доставки.sh: ✓ 30 / ✗ 0; код стенда 0; код логу 0
+
+Код процесу: 0
+
+Команда: export TMPDIR=/tmp/ci-shliakhy; mkdir -p "$TMPDIR"; bash аудит/адаптери/gemini/перевірка/запустити_стенд.sh сценарії_прогону.sh
+  ✓ a (abandon_then_done, stream)
+  ✓ b (github, stream)
+  ✓ c (github_renamed, stream)
+  ✓ d (wrapper, stream)
+  ✓ e (blocked, stream)
+  ✓ f (wrong_sha, stream)
+  ✓ g (dirty, stream)
+  ✓ h (never, stream)
+  ✓ i (hang, stream)
+  ✓ j (die, stream)
+  ✓ k (nothing, stream)
+  ✓ l (abandon_then_done, print)
+  ✗ m (hang, print), код 0, очікування ГОТОВО
+warning: in the working copy of '.github/workflows/x.yml', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'аудит/СТАН.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'аудит/адаптери/gemini/gemini_publish.ps1', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'аудит/наряди/М.2-проба-обгортки.md', LF will be replaced by CRLF the next time Git touches it
+warning: remote HEAD refers to nonexistent ref, unable to checkout
+gemini exit=0
+publish exit=0
+--- out:
+20261027-172610-60c85fc08992.bundle
+20261027-172610-60c85fc08992.json
+20261027-172610-60c85fc08992.tail.txt
+heartbeat.json
+pools.json
+{"v":1,"id":"20261027-172610-60c85fc08992","slug":"М.2-проба-обгортки","model":"gemini-3.8-flash-high","n":1,"marker":"422a8b782f9802f674d80afbc1f658628861ecb7","cond":"","slot":"agy-1","start":"422a8b782f9802f674d80afbc1f658628861ecb7","head":"3641be996055c4f2f350bd1bb2cfb6dbeba9739f","code":"TIMEOUT","report":"NONE","ahead":1,"turns":1,"minutes":1,"bundle":"20261027-172610-60c85fc08992.bundle","engine":"agy","retakes":0,"actual":"gemini-3.8-flash-high","quota":34,"qgroup":"GEMINI35FLASH"}{"time":"2026-10-27T17:27:13","isolation":"OK","lanes":[{"lane":"codex","n":2,"busy":[]},{"lane":"agy","n":2,"busy":[]}],"limits":"код","quota":{"read":"2026-10-27T15:27:12Z","known":true,"windows":[{"g":"GEMINI35FLASH","w":"","left":34,"reset":"2026-10-27T17:44:12Z"},{"g":"GEMINI31PRO","w":"","left":0,"reset":"2026-10-27T17:44:12Z"},{"g":"CLAUDEGPT","w":"","left":0,"reset":"2026-10-27T17:44:12Z"}]},"wait":[]}{"v":1,"time":"2026-10-27T17:27:13","agy":"1.1.11","groups":[{"g":"GEMINI35FLASH","left":34,"reset":137},{"g":"GEMINI31PRO","left":0,"reset":137},{"g":"CLAUDEGPT","left":0,"reset":137}],"models":["gemini-3.8-flash-high","claude-opus-5-5-high"],"unknown":false}
+
+--- wrapper.log:
+2026-10-27 17:26:10 позначка gemini-queue/М.2-проба-обгортки/gemini-3.8-flash-high/1: слот agy-1, пріоритет 5 -> 20261027-172610-60c85fc08992
+2026-10-27 17:26:11 [37868] наряд gemini-queue/М.2-проба-обгортки/gemini-3.8-flash-high/1 422a8b782f9802f674d80afbc1f658628861ecb7 -> 20261027-172610-60c85fc08992 (слот agy-1)
+2026-10-27 17:27:13 [37868] наряд М.2-проба-обгортки [20261027-172610-60c85fc08992]: TIMEOUT, ходів 1, комітів 1
+--- publish.log:
+2026-10-27 17:27:15 кінець 20261027-172610-60c85fc08992 — ОПУБЛІКОВАНО gemini/М.2-проба-обгортки 3641be996055c4f2f350bd1bb2cfb6dbeba9739f; комітів 1, файлів до main 1; без .github/ і файлів обгортки; межа часу прогону; ходів 1, хв 1; черга gemini-queue/М.2-проба-обгортки/gemini-3.8-flash-high/1; залишок квоти групи моделі — 34 %
+2026-10-27 17:27:15 вихідні 20261027-172610-60c85fc08992.txt: GEMINI ОБГОРТКА: ЗАБЛОКОВАНО gemini/М.2-проба-обгортки TIMEOUT_PUBLISHED
+2026-10-27 17:27:15 вихідні 20261027-172715-46492c06beee.txt: GEMINI ОБГОРТКА: ПУЛИ V=1.1.11 G=GEMINI35FLASH:34:137 G=GEMINI31PRO:0:137 G=CLAUDEGPT:0:137 M=gemini-3.8-flash-high,claude-opus-5-5-high
+--- claude:
+{"argv": ["-p", "--cloud", "session_01TEST", "--output-format", "json"], "stdin": "GEMINI ОБГОРТКА: ЗАБЛОКОВАНО gemini/М.2-проба-обгортки TIMEOUT_PUBLISHED"}
+{"argv": ["-p", "--cloud", "session_01TEST", "--output-format", "json"], "stdin": "GEMINI ОБГОРТКА: ПУЛИ V=1.1.11 G=GEMINI35FLASH:34:137 G=GEMINI31PRO:0:137 G=CLAUDEGPT:0:137 M=gemini-3.8-flash-high,claude-opus-5-5-high"}
+--- origin gemini/:
+refs/heads/gemini/М.2-проба-обгортки 3641be996055c4f2f350bd1bb2cfb6dbeba9739f
+  ✓ n (abandon_then_done, stream)
+ПІДСУМОК сценарії_прогону.sh: ✓ 13 / ✗ 1; код стенда 1; код логу 0
+
+Код процесу: 1
+
+Команда: export TMPDIR=/tmp/ci-shliakhy; mkdir -p "$TMPDIR"; bash аудит/адаптери/gemini/перевірка/запустити_стенд.sh сценарії_рушіїв.sh
+ok   codex-done
+ok   codex-github
+ok   codex-blocked
+ok   codex-missing
+ok   fallback-to-codex
+ok   fallback-not-needed
+ok   no-fallback-zero
+ok   codex-429
+ok   codex-auth
+ok   agy-unchanged
+ok   codex-off-label
+ok   codex-off-label-not-called
+ok   codex-off-fallback
+ok   secret-path
+ok   secret-content
+FAIL cascade-code-stays: чекав «МОДЕЛЬ gemini-3.5-flash», є «»
+ok   cascade-design-claude
+ok   cascade-design-codex
+ok   cascade-design-none
+ok   usage-tsv
+ok   usage-nohdr
+ok   usage-old
+ok   usage-oldnoquota
+ok   usage-old-argv
+ok   ver-date-only
+ok   ver-date-only-argv
+ok   ver-date-before
+ok   ver-date-before-argv
+ok   ver-agy-line
+ok   usage-nohdr-pools
+ok   usage-nohdr-log
+ok   pools-hook-narrow
+ok   pools-line
+ok   codex-argv
+ok   codex-max
+ok   codex-max-argv
+ok   codex-effort-rejected
+ok   codex-effort-rejected-one-call
+ok   codex-long-run
+ok   codex-long-run-events
+ok   codex-stall
+ok   role-default
+ok   role-default-prompt
+ok   role-review
+ok   role-review-prompt
+ok   role-agy
+ok   role-agy-unchanged
+ok   role-fenced-example
+ok   role-fenced-example-prompt
+ok   role-bare-eof
+ok   role-bare-eof-prompt
+ok   codex-effort-payload
+ok   codex-effort-escaped
+ПІДСУМОК сценарії_рушіїв.sh: ✓ 52 / ✗ 1; код стенда 1; код логу 0
+
+Код процесу: 1
+
+Команда: export TMPDIR=/tmp/ci-shliakhy; mkdir -p "$TMPDIR"; bash аудит/адаптери/gemini/перевірка/запустити_стенд.sh сценарії_смуг.sh
+=== А: шість позначок на одному коміті — смуги водночас, до N у смузі, за пріоритетом; Argon на 0 % чекає скидання
+warning: in the working copy of 'аудит/СТАН.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'аудит/наряди/gpu-agy.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'аудит/наряди/gpu-claude.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'аудит/наряди/n-codex-1.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'аудит/наряди/n-codex-2.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'аудит/наряди/n-codex-3.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'аудит/наряди/n-codex-4.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'аудит/наряди/а-codex.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'аудит/наряди/б-codex.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'аудит/наряди/в-agy.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'аудит/наряди/г-agy-квота.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'аудит/наряди/д-claude.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'аудит/наряди/е-claude-gpu.md', LF will be replaced by CRLF the next time Git touches it
+  перший прохід планувальників: 14 с; найбільше водночас: усього 5, codex 2, agy 1, claude 2
+  ✓ codex — 2 водночас (слотів 2)
+  ✓ claude — 2 водночас (слотів 2)
+  ✓ смуги водночас: усього ≥ 5
+  порядок узяття: gemini-queue/б-codex/gpt-6.1-sol-high/1/p1 gemini-queue/а-codex/gpt-6.1-sol-high/1/p2 gemini-queue/в-agy/gemini-3.8-flash-high/1/p3 gemini-queue/б-codex/gpt-6.1-sol-high/1/p1 gemini-queue/а-codex/gpt-6.1-sol-high/1/p2 gemini-queue/в-agy/gemini-3.8-flash-high/1/p3 gemini-queue/е-claude-gpu/cc-claude-sonnet-5-5-medium/1/p1-gpu gemini-queue/д-claude/cc-claude-sonnet-5-5-medium/1/p4 
+  ✓ узято за пріоритетом: б(p1) раніше за а(p2), е(p1) раніше за д(p4)
+  ✓ Argon (p0) на нулі не взято, позначка в чеканні
+  ✓ стан: таблиця смуг — claude 2/2 і codex 2/2 у якійсь правці
+  ✓ стан: квота agy з UTC — GEMINI4ARGON 0 %, скидання …Z, зчитано …Z
+  ✓ стан: квота Claude з rate_limit_event (5H, 7D)
+  ✓ стан: позначка Argon у «Чекають скидання квоти»
+  ✓ стан: GPU зайнята слотом claude
+  ✓ Argon: рядок QUOTA0_GEMINI4ARGON_M<хв> диспетчерові — один (є: 1)
+  ✓ після «скидання» Argon узято тією ж смугою без нової позначки → ГОТОВО
+  ✓ решта п'яти — ГОТОВО (є: 5)
+  кінці: ГОТОВО gemini/б-codex МОДЕЛЬ gpt-6.1-sol-high;ГОТОВО gemini/в-agy КВОТА GEMINIMODELS 100 МОДЕЛЬ gemini-3.8-flash-high;ЗАБЛОКОВАНО gemini/г-agy-квота QUOTA0_GEMINI4ARGON_M1;ГОТОВО gemini/а-codex МОДЕЛЬ gpt-6.1-sol-high;ГОТОВО claude/д-claude МОДЕЛЬ cc-claude-sonnet-5-5-medium;ГОТОВО claude/е-claude-gpu МОДЕЛЬ cc-claude-sonnet-5-5-medium;ГОТОВО gemini/г-agy-квота КВОТА GEMINI4ARGON 100 МОДЕЛЬ gemini-4-argon-high;
+=== Б: GPU — по одному на ноутбуці, замок спільний для gemini-run і claude-run
+warning: in the working copy of 'аудит/СТАН.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'аудит/наряди/gpu-agy.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'аудит/наряди/gpu-claude.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'аудит/наряди/n-codex-1.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'аудит/наряди/n-codex-2.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'аудит/наряди/n-codex-3.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'аудит/наряди/n-codex-4.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'аудит/наряди/а-codex.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'аудит/наряди/б-codex.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'аудит/наряди/в-agy.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'аудит/наряди/г-agy-квота.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'аудит/наряди/д-claude.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'аудит/наряди/е-claude-gpu.md', LF will be replaced by CRLF the next time Git touches it
+  найбільше водночас GPU-нарядів: 1; порядок: gpu-claude gpu-agy
+  ✓ дві GPU-позначки різних облікових записів — не водночас, обидві виконано
+=== В: N зі смуги.json на origin/main — 1, потім 2, без перевстановлення скриптів
+warning: in the working copy of 'аудит/СТАН.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'аудит/наряди/gpu-agy.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'аудит/наряди/gpu-claude.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'аудит/наряди/n-codex-1.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'аудит/наряди/n-codex-2.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'аудит/наряди/n-codex-3.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'аудит/наряди/n-codex-4.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'аудит/наряди/а-codex.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'аудит/наряди/б-codex.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'аудит/наряди/в-agy.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'аудит/наряди/г-agy-квота.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'аудит/наряди/д-claude.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'аудит/наряди/е-claude-gpu.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'аудит/адаптери/gemini/смуги.json', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'аудит/адаптери/gemini/смуги.json', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'аудит/адаптери/gemini/смуги.json', LF will be replaced by CRLF the next time Git touches it
+  codex водночас: смуги.json codex=1 → 1, codex=2 → 2; codex=99 у даних → 4 (стеля в коді)
+  ✓ N з файла даних міняє паралельність без перевстановлення (1 → 2)
+  ✓ дані не перевищують стелі коду (99 → 4)
+
+ВСЕ ✓
+ПІДСУМОК сценарії_смуг.sh: ✓ 16 / ✗ 0; код стенда 0; код логу 0
+
+Код процесу: 0
+
+Команда: export TMPDIR=/tmp/ci-shliakhy; mkdir -p "$TMPDIR"; bash аудит/адаптери/gemini/перевірка/запустити_стенд.sh сценарії_спостерігача.sh
+=== 1 базова лінія: перший прохід мовчить, другий теж
+warning: in the working copy of 'a.txt', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'аудит/адаптери/gemini/w.txt', LF will be replaced by CRLF the next time Git touches it
+-- прохід 1: рядків 0
+-- прохід 2: рядків 0
+ls: cannot access '/tmp/ci-shliakhy/gemini-watch/w1/work/state.json': No such file or directory
+=== 2 коментарі: новий, змінено, чужі не йдуть, повтор мовчить
+warning: in the working copy of 'a.txt', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'аудит/адаптери/gemini/w.txt', LF will be replaced by CRLF the next time Git touches it
+-- базова лінія: рядків 0
+-- нові: рядків 0
+-- повтор: рядків 0
+-- правка двох: рядків 0
+-- після правки: рядків 0
+=== 3 CI: pending мовчить, зміна стану йде, чужі PR ні, закритий зникає
+warning: in the working copy of 'a.txt', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'аудит/адаптери/gemini/w.txt', LF will be replaced by CRLF the next time Git touches it
+-- базова лінія: рядків 0
+-- pending (рядків 0): рядків 0
+-- failure поверх success: рядків 0
+-- без змін: рядків 0
+-- нова голова, cancelled: рядків 0
+-- нема перевірок -> pending: рядків 0
+-- 1802 закрито: рядків 0
+grep: /tmp/ci-shliakhy/gemini-watch/w3/work/state.json: No such file or directory
+=== 4 перенос: diff лягає -> гілка codex/<наряд>, рядок, без повтору
+warning: in the working copy of 'a.txt', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'аудит/адаптери/gemini/w.txt', LF will be replaced by CRLF the next time Git touches it
+-- базова лінія: рядків 0
+-- відповідь бота: рядків 0
+  гілка: ✗ не змінилась
+один|два|три|
+fatal: path 'нове.txt' does not exist in '9b2bb12a7f3d11895c17933e22b4090995a74c23'
+  коміт: наряд
+  ref refs/heads/codex/М.9-проба-спостерігача   ref refs/heads/main 
+-- повтор: рядків 0
+  main недоторканий: один|два|три|
+=== 5 відмови переносу: код причини, гілка не рухається
+warning: in the working copy of 'a.txt', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'аудит/адаптери/gemini/w.txt', LF will be replaced by CRLF the next time Git touches it
+-- базова лінія: рядків 0
+-- вісім поганих diff: рядків 0
+-- diff від не-бота: лише коментар власника: рядків 0
+  ✓ гілка codex/М.9-проба-спостерігача не рухалась
+-- відповідь бота без diff: лише коментар: рядків 0
+-- правка bad -> ok: переноситься: рядків 0
+-- TOO_BIG: рядків 0
+=== 5б хеші: обрізаний diff при хешах повного -> HASH_MISMATCH; без блоку хешів -> NO_HASHES
+warning: in the working copy of 'a.txt', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'аудит/адаптери/gemini/w.txt', LF will be replaced by CRLF the next time Git touches it
+-- базова лінія: рядків 0
+-- обрізаний і без хешів: рядків 0
+-- хеш файлу інший: рядків 0
+  ✓ гілку не пересунуто
+=== 6 ворожі назви гілок і PR: нічого, крім шаблонів
+warning: in the working copy of 'a.txt', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'аудит/адаптери/gemini/w.txt', LF will be replaced by CRLF the next time Git touches it
+-- базова лінія: рядків 0
+-- п'ять ворожих PR: рядків 0
+=== 7 збій gh: код 1, рядків нема, стан не просунувся, далі наздоганяє
+warning: in the working copy of 'a.txt', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'аудит/адаптери/gemini/w.txt', LF will be replaced by CRLF the next time Git touches it
+-- базова лінія: рядків 0
+  ✓ gh не відповідає -> код виходу 1
+  рядків: 0
+-- gh знову працює: рядків 0
+=== 8 ліміт рядків: 5 нових коментарів при MaxRows 2 -> 3 проходи, без дублів
+warning: in the working copy of 'a.txt', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'аудит/адаптери/gemini/w.txt', LF will be replaced by CRLF the next time Git touches it
+-- базова лінія: рядків 0
+-- прохід 1: рядків 0
+-- прохід 2: рядків 0
+-- прохід 3: рядків 0
+-- прохід 4: рядків 0
+=== 9 формат теки вихідних для всього, що було у w2..w8
+  w2:   ✓ формат усіх 0 файлів: ім'я, UTF-8 без BOM, один рядок, шаблон
+  w3:   ✓ формат усіх 0 файлів: ім'я, UTF-8 без BOM, один рядок, шаблон
+  w4:   ✓ формат усіх 0 файлів: ім'я, UTF-8 без BOM, один рядок, шаблон
+  w5:   ✓ формат усіх 0 файлів: ім'я, UTF-8 без BOM, один рядок, шаблон
+  w5b:   ✓ формат усіх 0 файлів: ім'я, UTF-8 без BOM, один рядок, шаблон
+  w6:   ✓ формат усіх 0 файлів: ім'я, UTF-8 без BOM, один рядок, шаблон
+  w7:   ✓ формат усіх 0 файлів: ім'я, UTF-8 без BOM, один рядок, шаблон
+  w8:   ✓ формат усіх 0 файлів: ім'я, UTF-8 без BOM, один рядок, шаблон
+ПІДСУМОК сценарії_спостерігача.sh: ✓ 11 / ✗ 1; код стенда 0; код логу 0
+
+Код процесу: 1
+
+Команда: export TMPDIR=/tmp/ci-shliakhy; mkdir -p "$TMPDIR"; bash аудит/адаптери/gemini/перевірка/запустити_стенд.sh сценарії_черги.sh
+=== 1 повтор: друга пара запусків нічого не робить
+warning: in the working copy of 'аудит/СТАН.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'аудит/наряди/М.2-проба-обгортки.md', LF will be replaced by CRLF the next time Git touches it
+  wrapper: 1 прогонів; 
+  claude: 2 рядків
+  pub: кінець 20261027-173525-1ba962e30617 — ОПУБЛІКОВАНО gemini/М.2-проба-обгортки e2b536d03a23063be6711e7ee637f0b2820d36c0; комітів 1, файлів до main 1; без .github/ і фай�
+  pub: вихідні 20261027-173525-1ba962e30617.txt: GEMINI ОБГОРТКА: ГОТОВО gemini/М.2-проба-обгортки e2b536d03a23063be6711e7ee637f0b2820d36c0 КВОТА GEMINI35FLASH 34 МОДЕЛЬ gemini-3.8-fla
+  pub: вихідні 20261027-173529-46492c06beee.txt: GEMINI ОБГОРТКА: ПУЛИ V=1.1.11 G=GEMINI35FLASH:34:137 G=GEMINI31PRO:0:137 G=CLAUDEGPT:0:137 M=gemini-3.8-flash-high,claude-opus-5-5-high
+  origin refs/heads/gemini/М.2-проба-обгортки e2b536d
+=== 2 позначку знято до публікації
+warning: in the working copy of 'аудит/СТАН.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'аудит/наряди/М.2-проба-обгортки.md', LF will be replaced by CRLF the next time Git touches it
+  wrapper: 1 прогонів; 
+  claude: 2 рядків
+  pub: стан 20261027-173534-f26c19f15a3a не відповідає жодній позначці черги на GitHub — не опубліковано
+  pub: вихідні 20261027-173534-f26c19f15a3a.txt: GEMINI ОБГОРТКА: ЗАБЛОКОВАНО gemini/невідомо STATE_INVALID
+  pub: вихідні 20261027-173538-46492c06beee.txt: GEMINI ОБГОРТКА: ПУЛИ V=1.1.11 G=GEMINI35FLASH:34:137 G=GEMINI31PRO:0:137 G=CLAUDEGPT:0:137 M=gemini-3.8-flash-high,claude-opus-5-5-high
+=== 3 не fast-forward
+warning: in the working copy of 'аудит/СТАН.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'аудит/наряди/М.2-проба-обгортки.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'y', LF will be replaced by CRLF the next time Git touches it
+  wrapper: 1 прогонів; 
+  claude: 2 рядків
+  pub: кінець 20261027-173541-40c3f306d889 — НЕ ОПУБЛІКОВАНО gemini/М.2-проба-обгортки c694723140a8f683d1995e48a3eea76fee9ad767 — не fast-forward до опублікованої гілки; 
+  pub: вихідні 20261027-173541-40c3f306d889.txt: GEMINI ОБГОРТКА: ЗАБЛОКОВАНО gemini/М.2-проба-обгортки NOT_FF
+  pub: вихідні 20261027-173545-46492c06beee.txt: GEMINI ОБГОРТКА: ПУЛИ V=1.1.11 G=GEMINI35FLASH:34:137 G=GEMINI31PRO:0:137 G=CLAUDEGPT:0:137 M=gemini-3.8-flash-high,claude-opus-5-5-high
+  origin refs/heads/gemini/М.2-проба-обгортки 2420754
+=== 4 claude не приймає: 2 спроби й тиша
+warning: in the working copy of 'аудит/СТАН.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'аудит/наряди/М.2-проба-обгортки.md', LF will be replaced by CRLF the next time Git touches it
+  wrapper: 1 прогонів; 
+  claude: 4 рядків
+  pub: кінець 20261027-173548-350d2c21ff1d — ОПУБЛІКОВАНО gemini/М.2-проба-обгортки ee53091344922ee35f862ee1ab0b0f73c0adf7b1; комітів 1, файлів до main 1; без .github/ і фай�
+  pub: вихідні 20261027-173548-350d2c21ff1d.txt: GEMINI ОБГОРТКА: ГОТОВО gemini/М.2-проба-обгортки ee53091344922ee35f862ee1ab0b0f73c0adf7b1 КВОТА GEMINI35FLASH 34 МОДЕЛЬ gemini-3.8-fla
+  pub: вихідні 20261027-173552-46492c06beee.txt: GEMINI ОБГОРТКА: ПУЛИ V=1.1.11 G=GEMINI35FLASH:34:137 G=GEMINI31PRO:0:137 G=CLAUDEGPT:0:137 M=gemini-3.8-flash-high,claude-opus-5-5-high
+  pub: claude --cloud session_01TEST -> 0: {"ok": false, "session_id": "session_01TEST"} 
+  pub: claude --cloud session_01TEST -> 0: {"ok": false, "session_id": "session_01TEST"} 
+  pub: claude --cloud session_01TEST -> 0: {"ok": false, "session_id": "session_01TEST"} 
+  pub: claude --cloud session_01TEST -> 0: {"ok": false, "session_id": "session_01TEST"} 
+  origin refs/heads/gemini/М.2-проба-обгортки ee53091
+=== 5 доробка: старт від опублікованої gemini/<наряд>, спроба 2
+warning: in the working copy of 'аудит/СТАН.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'аудит/наряди/М.2-проба-обгортки.md', LF will be replaced by CRLF the next time Git touches it
+  wrapper: 2 прогонів; 
+  claude: 3 рядків
+  pub: кінець 20261027-173556-81a7e0c43452 — ОПУБЛІКОВАНО gemini/М.2-проба-обгортки 5c2820643950808391438bc3d67d71f1cb61ac08; комітів 1, файлів до main 1; без .github/ і фай�
+  pub: вихідні 20261027-173556-81a7e0c43452.txt: GEMINI ОБГОРТКА: ГОТОВО gemini/М.2-проба-обгортки 5c2820643950808391438bc3d67d71f1cb61ac08 КВОТА GEMINI35FLASH 34 МОДЕЛЬ gemini-3.8-fla
+  pub: вихідні 20261027-173600-46492c06beee.txt: GEMINI ОБГОРТКА: ПУЛИ V=1.1.11 G=GEMINI35FLASH:34:137 G=GEMINI31PRO:0:137 G=CLAUDEGPT:0:137 M=gemini-3.8-flash-high,claude-opus-5-5-high
+  pub: кінець 20261027-173601-067c1008fa8e — ОПУБЛІКОВАНО gemini/М.2-проба-обгортки 2c50781b997b78493ba33019987cf997c66199c6; комітів 1, файлів до main 1; без .github/ і фай�
+  pub: вихідні 20261027-173601-067c1008fa8e.txt: GEMINI ОБГОРТКА: ГОТОВО gemini/М.2-проба-обгортки 2c50781b997b78493ba33019987cf997c66199c6 КВОТА GEMINI35FLASH 34 МОДЕЛЬ gemini-3.8-fla
+  origin refs/heads/gemini/М.2-проба-обгортки 2c50781
+/tmp/ci-shliakhy/gemini-obhortka/r5/out/20261027-173556-81a7e0c43452.json:"start":"55b8571f40a65e00ae1a10ba6d5
+/tmp/ci-shliakhy/gemini-obhortka/r5/out/20261027-173601-067c1008fa8e.json:"start":"5c2820643950808391438bc3d67
+=== 6 ізоляція ENV: один рядок на добу, прогону нема
+warning: in the working copy of 'аудит/СТАН.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'аудит/наряди/М.2-проба-обгортки.md', LF will be replaced by CRLF the next time Git touches it
+  wrapper: 0 прогонів; ізоляція: ENV — нових прогонів нема|ізоляція: ENV — нових прогонів нема|
+  claude: 1 рядків
+  pub: ізоляція не пройшла перевірку (ENV — у змінних середовища gemini є KEY/TOKEN/SECRET/PASSWORD); прогони Gemini стоять, потрібна дія власника
+  pub: вихідні 20261027-173608-841c891a0cb8.txt: GEMINI ОБГОРТКА: ЗАБЛОКОВАНО gemini/невідомо ISOLATION_FAILED
+  ✓ ізоляція — один закритий рядок з міткою, без вільного тексту
+=== 7 стара позначка, крива назва, не з main, нема файлу наряду
+warning: in the working copy of 'аудит/СТАН.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'аудит/наряди/М.2-проба-обгортки.md', LF will be replaced by CRLF the next time Git touches it
+  wrapper: 2 прогонів; позначка gemini-queue/крива/назва: назва не за форматом gemini-queue/<наряд>/<модель>/<спроба>[/<умови>] — пропущено|позначка gemini-queue/М.2-проба-обгортки/gemini-3.8-flash-high/1: коміт старший за 7 діб — пропущено|
+  claude: 3 рядків
+  pub: кінець 20261027-173613-5cc36a96377d — НЕ ЗАВЕРШЕНО gemini/Інший-наряд — нема файлу наряду на коміті позначки; ходів 0, хв 0; черга gemini-queue/Ін�
+  pub: кінець 20261027-173613-b112f08b7214 — НЕ ЗАВЕРШЕНО gemini/М.2-проба-обгортки — коміт позначки не з main; ходів 0, хв 0; черга gemini-queue/М.2-проба-об�
+  pub: вихідні 20261027-173613-5cc36a96377d.txt: GEMINI ОБГОРТКА: ЗАБЛОКОВАНО gemini/Інший-наряд NO_TASK_FILE
+  pub: вихідні 20261027-173613-b112f08b7214.txt: GEMINI ОБГОРТКА: ЗАБЛОКОВАНО gemini/М.2-проба-обгортки NOT_ON_MAIN
+  pub: вихідні 20261027-173618-46492c06beee.txt: GEMINI ОБГОРТКА: ПУЛИ V=1.1.11 G=GEMINI35FLASH:34:137 G=GEMINI31PRO:0:137 G=CLAUDEGPT:0:137 M=gemini-3.8-flash-high,claude-opus-5-5-high
+      1 "code":"NOT_ON_MAIN"
+      1 "code":"NO_TASK_FILE"
+=== 8 перерваний прогін: стан STARTED із JSON -> INTERRUPTED із бандлом
+warning: in the working copy of 'аудит/СТАН.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'аудит/наряди/М.2-проба-обгортки.md', LF will be replaced by CRLF the next time Git touches it
+/c/Users/gemini/gemini-runs/20261027-171633-179ae4119088/ci-worktree/аудит/адаптери/gemini/перевірка/сценарії_черги.sh: line 36: 234510 Killed                     timeout -s KILL 5 "$PW" -NoProfile -File "$(wp "$H/side.ps1")" -Script "$(wp "$SRC/gemini_run.ps1")" -ArgsJson "{\"RepoDir\":\"$WW/clone\",\"RunsDir\":\"$WW/runs\",\"OutDir\":\"$WW/out\",\"RepoUrl\":\"$WW/origin.git\",\"AgyExe\":\"$(stub fake_agy)\",\"TurnMinutes\":5,\"TotalMinutes\":10,\"MaxNudges\":3}"
+  wrapper: 1 прогонів; 
+  claude: 2 рядків
+  pub: кінець 20261027-173621-e6368908ff84 — ОПУБЛІКОВАНО gemini/М.2-проба-обгортки 651609490c97076be2d95fc43876f204dfb4350e; комітів 1, файлів до main 1; без .github/ і фай�
+  pub: вихідні 20261027-173621-e6368908ff84.txt: GEMINI ОБГОРТКА: ЗАБЛОКОВАНО gemini/М.2-проба-обгортки INTERRUPTED_PUBLISHED
+  pub: вихідні 20261027-173628-46492c06beee.txt: GEMINI ОБГОРТКА: ПУЛИ V=1.1.11 G=GEMINI35FLASH:34:137 G=GEMINI31PRO:0:137 G=CLAUDEGPT:0:137 M=gemini-3.8-flash-high,claude-opus-5-5-high
+  origin refs/heads/gemini/М.2-проба-обгортки 6516094
+      1 "code":"INTERRUPTED"
+=== 9 спам: копії стану з іншими id на ту саму позначку й купа кривих
+warning: in the working copy of 'аудит/СТАН.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'аудит/наряди/М.2-проба-обгортки.md', LF will be replaced by CRLF the next time Git touches it
+  wrapper: 1 прогонів; 
+  claude: 3 рядків
+  pub: кінець 20261027-173630-3f61c05f41fe — ОПУБЛІКОВАНО gemini/М.2-проба-обгортки e69a51c008685de70ace6bcccfb4e3885ff096eb; комітів 1, файлів до main 1; без .github/ і фай�
+  pub: стан 20991231-000001-aaaaaaaaaaa1 — повтор, рядка нема
+  pub: стан 20991231-000002-aaaaaaaaaaa2 — повтор, рядка нема
+  pub: стан 20991231-000003-aaaaaaaaaaa3 — повтор, рядка нема
+  pub: стан 20991231-000101-bbbbbbbbbbb1 не за форматом — не опубліковано
+  pub: стан 20991231-000102-bbbbbbbbbbb2 не за форматом — не опубліковано
+  pub: стан 20991231-000102-bbbbbbbbbbb2 — повтор, рядка нема
+  pub: стан 20991231-000103-bbbbbbbbbbb3 не за форматом — не опубліковано
+  pub: стан 20991231-000103-bbbbbbbbbbb3 — повтор, рядка нема
+  pub: вихідні 20261027-173630-3f61c05f41fe.txt: GEMINI ОБГОРТКА: ГОТОВО gemini/М.2-проба-обгортки e69a51c008685de70ace6bcccfb4e3885ff096eb КВОТА GEMINI35FLASH 34 МОДЕЛЬ gemini-3.8-fla
+  pub: вихідні 20261027-173635-46492c06beee.txt: GEMINI ОБГОРТКА: ПУЛИ V=1.1.11 G=GEMINI35FLASH:34:137 G=GEMINI31PRO:0:137 G=CLAUDEGPT:0:137 M=gemini-3.8-flash-high,claude-opus-5-5-high
+  pub: вихідні 20991231-000101-bbbbbbbbbbb1.txt: GEMINI ОБГОРТКА: ЗАБЛОКОВАНО gemini/невідомо STATE_INVALID
+  origin refs/heads/gemini/М.2-проба-обгортки e69a51c
+  ✓ криві стани — один закритий рядок STATE_INVALID на добу
+=== 10 пуш відхилено: 2 тихі повтори, рядок, -Retry після виправлення
+warning: in the working copy of 'аудит/СТАН.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'аудит/наряди/М.2-проба-обгортки.md', LF will be replaced by CRLF the next time Git touches it
+  claude після 4 проходів: 2
+  wrapper: 1 прогонів; 
+  claude: 2 рядків
+  pub: пуш refs/heads/gemini/М.2-проба-обгортки -> 1: To C:/Users/gemini/AppData/Local/Temp/ci-shliakhy/gemini-obhortka/r10/origin.git
+ ! [remote rejected] 62fa1c35ece303b0f76e6b0861531ed53e723c47 -> gemini/М.2-проба-обгортки (pre-receive hook declined)
+error: failed to push some refs to 'C:/Users/gemini/AppData/Local/Temp/ci-shliakhy/gemini-obhortka/r10/origin.git'
+  pub: вихідні 20261027-173643-46492c06beee.txt: GEMINI ОБГОРТКА: ПУЛИ V=1.1.11 G=GEMINI35FLASH:34:137 G=GEMINI31PRO:0:137 G=CLAUDEGPT:0:137 M=gemini-3.8-flash-high,claude-opus-5-5-high
+  pub: пуш refs/heads/gemini/М.2-проба-обгортки -> 1: To C:/Users/gemini/AppData/Local/Temp/ci-shliakhy/gemini-obhortka/r10/origin.git
+ ! [remote rejected] 62fa1c35ece303b0f76e6b0861531ed53e723c47 -> gemini/М.2-проба-обгортки (pre-receive hook declined)
+error: failed to push some refs to 'C:/Users/gemini/AppData/Local/Temp/ci-shliakhy/gemini-obhortka/r10/origin.git'
+  pub: пуш refs/heads/gemini/М.2-проба-обгортки -> 1: To C:/Users/gemini/AppData/Local/Temp/ci-shliakhy/gemini-obhortka/r10/origin.git
+ ! [remote rejected] 62fa1c35ece303b0f76e6b0861531ed53e723c47 -> gemini/М.2-проба-обгортки (pre-receive hook declined)
+error: failed to push some refs to 'C:/Users/gemini/AppData/Local/Temp/ci-shliakhy/gemini-obhortka/r10/origin.git'
+  pub: кінець 20261027-173638-ddb8da34e8d1 — НЕ ОПУБЛІКОВАНО gemini/М.2-проба-обгортки 62fa1c35ece303b0f76e6b0861531ed53e723c47 — пуш не вдавався годину (журнал publis
+  pub: вихідні 20261027-173638-ddb8da34e8d1.txt: GEMINI ОБГОРТКА: ЗАБЛОКОВАНО gemini/М.2-проба-обгортки PUSH_FAILED
+  pub: стан 20261027-173638-ddb8da34e8d1 забуто рукою власника — повтор
+  pub: кінець 20261027-173638-ddb8da34e8d1 — ОПУБЛІКОВАНО gemini/М.2-проба-обгортки 62fa1c35ece303b0f76e6b0861531ed53e723c47; комітів 1, файлів до main 1; без .github/ і фай�
+  origin refs/heads/gemini/М.2-проба-обгортки 62fa1c3
+=== 11 підроблений стан (8940): ранній id на ту саму позначку, models і числа з текстом
+warning: in the working copy of 'аудит/СТАН.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'аудит/наряди/М.2-проба-обгортки.md', LF will be replaced by CRLF the next time Git touches it
+  wrapper: 1 прогонів; 
+  claude: 4 рядків
+  pub: кінець 20000101-000000-aaaaaaaaaaaa — НЕ ЗАВЕРШЕНО gemini/М.2-проба-обгортки — agy не знає моделі з позначки; ходів 0, хв 0; черга gemini-queue/М.2-про
+  pub: кінець 20000101-000001-aaaaaaaaaaaa — НЕ ЗАВЕРШЕНО gemini/М.2-проба-обгортки — агент без звіту після всіх догонок; ходів 0, хв 0; черга gemini-queu
+  pub: кінець 20261027-173650-d128e9763b6e — ОПУБЛІКОВАНО gemini/М.2-проба-обгортки 9aa00761303c6d868f11e882f1351ea543e4b2f9; комітів 1, файлів до main 1; без .github/ і фай�
+  pub: вихідні 20000101-000000-aaaaaaaaaaaa.txt: GEMINI ОБГОРТКА: ЗАБЛОКОВАНО gemini/М.2-проба-обгортки MODEL_INVALID
+  pub: вихідні 20000101-000001-aaaaaaaaaaaa.txt: GEMINI ОБГОРТКА: ЗАБЛОКОВАНО gemini/М.2-проба-обгортки NO_REPORT
+  pub: вихідні 20261027-173650-d128e9763b6e.txt: GEMINI ОБГОРТКА: ГОТОВО gemini/М.2-проба-обгортки 9aa00761303c6d868f11e882f1351ea543e4b2f9 КВОТА GEMINI35FLASH 34 МОДЕЛЬ gemini-3.8-fla
+  pub: вихідні 20261027-173654-46492c06beee.txt: GEMINI ОБГОРТКА: ПУЛИ V=1.1.11 G=GEMINI35FLASH:34:137 G=GEMINI31PRO:0:137 G=CLAUDEGPT:0:137 M=gemini-3.8-flash-high,claude-opus-5-5-high
+  origin refs/heads/gemini/М.2-проба-обгортки 9aa0076
+  ✓ у рядках нема жодного слова зі стану
+  ✓ справжній результат опубліковано
+ПІДСУМОК сценарії_черги.sh: ✓ 4 / ✗ 0; код стенда 0; код логу 0
+
+Код процесу: 0
+
+Команда: export TMPDIR=/tmp/ci-shliakhy; mkdir -p "$TMPDIR"; bash аудит/адаптери/gemini/перевірка/запустити_стенд.sh сценарії_спостерігача.sh
+=== 1 базова лінія: перший прохід мовчить, другий теж
+warning: in the working copy of 'a.txt', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'аудит/адаптери/gemini/w.txt', LF will be replaced by CRLF the next time Git touches it
+  ✗ w1: прохід 1 — код 1, рядків 0 (очікувано 0)
+  ✗ w1: прохід 2 — код 1, рядків 0 (очікувано 0)
+ls: cannot access '/tmp/ci-shliakhy/gemini-watch/w1/work/state.json': No such file or directory
+=== 2 коментарі: новий, змінено, чужі не йдуть, повтор мовчить
+warning: in the working copy of 'a.txt', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'аудит/адаптери/gemini/w.txt', LF will be replaced by CRLF the next time Git touches it
+  ✗ w2: базова лінія — код 1, рядків 0 (очікувано 0)
+  ✗ w2: нові — код 1, рядків 0 (очікувано 2)
+  ✗ w2: повтор — код 1, рядків 0 (очікувано 0)
+  ✗ w2: правка двох — код 1, рядків 0 (очікувано 2)
+  ✗ w2: після правки — код 1, рядків 0 (очікувано 0)
+=== 3 CI: pending мовчить, зміна стану йде, чужі PR ні, закритий зникає
+warning: in the working copy of 'a.txt', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'аудит/адаптери/gemini/w.txt', LF will be replaced by CRLF the next time Git touches it
+  ✗ w3: базова лінія — код 1, рядків 0 (очікувано 0)
+  ✗ w3: pending (рядків 0) — код 1, рядків 0 (очікувано 0)
+  ✗ w3: failure поверх success — код 1, рядків 0 (очікувано 1)
+  ✗ w3: без змін — код 1, рядків 0 (очікувано 0)
+  ✗ w3: нова голова, cancelled — код 1, рядків 0 (очікувано 1)
+  ✗ w3: нема перевірок -> pending — код 1, рядків 0 (очікувано 0)
+  ✗ w3: 1802 закрито — код 1, рядків 0 (очікувано 0)
+grep: /tmp/ci-shliakhy/gemini-watch/w3/work/state.json: No such file or directory
+=== 4 перенос: diff лягає -> гілка codex/<наряд>, рядок, без повтору
+warning: in the working copy of 'a.txt', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'аудит/адаптери/gemini/w.txt', LF will be replaced by CRLF the next time Git touches it
+  ✗ w4: базова лінія — код 1, рядків 0 (очікувано 0)
+  ✗ w4: відповідь бота — код 1, рядків 0 (очікувано 2)
+  гілка: ✗ не змінилась
+один|два|три|
+fatal: path 'нове.txt' does not exist in 'ddf3f8a8a19c28771477083d90cefdbe3e2ec33c'
+  коміт: наряд
+  ref refs/heads/codex/М.9-проба-спостерігача   ref refs/heads/main 
+  ✗ w4: повтор — код 1, рядків 0 (очікувано 0)
+  main недоторканий: один|два|три|
+=== 5 відмови переносу: код причини, гілка не рухається
+warning: in the working copy of 'a.txt', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'аудит/адаптери/gemini/w.txt', LF will be replaced by CRLF the next time Git touches it
+  ✗ w5: базова лінія — код 1, рядків 0 (очікувано 0)
+  ✗ w5: вісім поганих diff — код 1, рядків 0 (очікувано 16)
+  ✗ w5: diff від не-бота: лише коментар власника — код 1, рядків 0 (очікувано 1)
+  ✓ гілка codex/М.9-проба-спостерігача не рухалась
+  ✗ w5: відповідь бота без diff: лише коментар — код 1, рядків 0 (очікувано 1)
+  ✗ w5: правка bad -> ok: переноситься — код 1, рядків 0 (очікувано 2)
+  ✗ w5: TOO_BIG — код 1, рядків 0 (очікувано 2)
+=== 5б хеші: обрізаний diff при хешах повного -> HASH_MISMATCH; без блоку хешів -> NO_HASHES
+warning: in the working copy of 'a.txt', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'аудит/адаптери/gemini/w.txt', LF will be replaced by CRLF the next time Git touches it
+  ✗ w5b: базова лінія — код 1, рядків 0 (очікувано 0)
+  ✗ w5b: обрізаний і без хешів — код 1, рядків 0 (очікувано 4)
+  ✗ w5b: хеш файлу інший — код 1, рядків 0 (очікувано 2)
+  ✓ гілку не пересунуто
+=== 6 ворожі назви гілок і PR: нічого, крім шаблонів
+warning: in the working copy of 'a.txt', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'аудит/адаптери/gemini/w.txt', LF will be replaced by CRLF the next time Git touches it
+  ✗ w6: базова лінія — код 1, рядків 0 (очікувано 0)
+  ✗ w6: п'ять ворожих PR — код 1, рядків 0 (очікувано 0)
+=== 7 збій gh: код 1, рядків нема, стан не просунувся, далі наздоганяє
+warning: in the working copy of 'a.txt', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'аудит/адаптери/gemini/w.txt', LF will be replaced by CRLF the next time Git touches it
+  ✗ w7: базова лінія — код 1, рядків 0 (очікувано 0)
+  ✓ gh не відповідає -> код виходу 1
+  рядків: 0
+  ✗ w7: gh знову працює — код 1, рядків 0 (очікувано 1)
+=== 8 ліміт рядків: 5 нових коментарів при MaxRows 2 -> 3 проходи, без дублів
+warning: in the working copy of 'a.txt', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'аудит/адаптери/gemini/w.txt', LF will be replaced by CRLF the next time Git touches it
+  ✗ w8: базова лінія — код 1, рядків 0 (очікувано 0)
+  ✗ w8: прохід 1 — код 1, рядків 0 (очікувано 2)
+  ✗ w8: прохід 2 — код 1, рядків 0 (очікувано 2)
+  ✗ w8: прохід 3 — код 1, рядків 0 (очікувано 1)
+  ✗ w8: прохід 4 — код 1, рядків 0 (очікувано 0)
+=== 9 формат теки вихідних для всього, що було у w2..w8
+  w2:   ✗ формат усіх 0 файлів: ім'я, UTF-8 без BOM, один рядок, шаблон
+  w3:   ✗ формат усіх 0 файлів: ім'я, UTF-8 без BOM, один рядок, шаблон
+  w4:   ✗ формат усіх 0 файлів: ім'я, UTF-8 без BOM, один рядок, шаблон
+  w5:   ✗ формат усіх 0 файлів: ім'я, UTF-8 без BOM, один рядок, шаблон
+  w5b:   ✗ формат усіх 0 файлів: ім'я, UTF-8 без BOM, один рядок, шаблон
+  w6:   ✓ формат усіх 0 файлів: ім'я, UTF-8 без BOM, один рядок, шаблон
+  w7:   ✗ формат усіх 0 файлів: ім'я, UTF-8 без BOM, один рядок, шаблон
+  w8:   ✗ формат усіх 0 файлів: ім'я, UTF-8 без BOM, один рядок, шаблон
+ПІДСУМОК сценарії_спостерігача.sh: ✓ 4 / ✗ 43; код стенда 1; код логу 0
+
+Код процесу: 1
+
+Команда: export TMPDIR=/tmp/ci-shliakhy; mkdir -p "$TMPDIR"; bash аудит/адаптери/gemini/перевірка/запустити_стенд.sh сценарії_прогону.sh
+  ✓ a (abandon_then_done, stream)
+  ✓ b (github, stream)
+  ✓ c (github_renamed, stream)
+  ✓ d (wrapper, stream)
+  ✓ e (blocked, stream)
+  ✓ f (wrong_sha, stream)
+  ✓ g (dirty, stream)
+  ✓ h (never, stream)
+  ✓ i (hang, stream)
+  ✓ j (die, stream)
+  ✓ k (nothing, stream)
+  ✓ l (abandon_then_done, print)
+  ✓ m (hang, print)
+  ✓ n (abandon_then_done, stream)
+ПІДСУМОК сценарії_прогону.sh: ✓ 14 / ✗ 0; код стенда 0; код логу 0
+
+Код процесу: 0
+
+Команда: export TMPDIR=/tmp/ci-shliakhy; mkdir -p "$TMPDIR"; bash аудит/адаптери/gemini/перевірка/запустити_стенд.sh сценарії_рушіїв.sh
+ok   codex-done
+ok   codex-github
+ok   codex-blocked
+ok   codex-missing
+ok   fallback-to-codex
+ok   fallback-not-needed
+ok   no-fallback-zero
+ok   codex-429
+ok   codex-auth
+ok   agy-unchanged
+ok   codex-off-label
+ok   codex-off-label-not-called
+ok   codex-off-fallback
+ok   secret-path
+ok   secret-content
+ok   cascade-code-stays
+ok   cascade-design-claude
+ok   cascade-design-codex
+ok   cascade-design-none
+ok   usage-tsv
+ok   usage-nohdr
+ok   usage-old
+ok   usage-oldnoquota
+ok   usage-old-argv
+ok   ver-date-only
+ok   ver-date-only-argv
+ok   ver-date-before
+ok   ver-date-before-argv
+ok   ver-agy-line
+ok   usage-nohdr-pools
+ok   usage-nohdr-log
+ok   pools-hook-narrow
+ok   pools-line
+ok   codex-argv
+ok   codex-max
+ok   codex-max-argv
+ok   codex-effort-rejected
+ok   codex-effort-rejected-one-call
+ok   codex-long-run
+ok   codex-long-run-events
+ok   codex-stall
+ok   role-default
+ok   role-default-prompt
+ok   role-review
+ok   role-review-prompt
+ok   role-agy
+ok   role-agy-unchanged
+ok   role-fenced-example
+ok   role-fenced-example-prompt
+ok   role-bare-eof
+ok   role-bare-eof-prompt
+ok   codex-effort-payload
+ok   codex-effort-escaped
+ПІДСУМОК сценарії_рушіїв.sh: ✓ 53 / ✗ 0; код стенда 0; код логу 0
+
+Код процесу: 0
+
+Команда: export TMPDIR=/tmp/ci-shliakhy; mkdir -p "$TMPDIR"; bash аудит/адаптери/gemini/перевірка/запустити_стенд.sh сценарії_спостерігача.sh
+=== 1 базова лінія: перший прохід мовчить, другий теж
+warning: in the working copy of 'a.txt', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'аудит/адаптери/gemini/w.txt', LF will be replaced by CRLF the next time Git touches it
+  ✓ w1: прохід 1 — код 0, рядків 0 (очікувано 0)
+  ✓ w1: прохід 2 — код 0, рядків 0 (очікувано 0)
+  ✓ стан записано
+=== 2 коментарі: новий, змінено, чужі не йдуть, повтор мовчить
+warning: in the working copy of 'a.txt', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'аудит/адаптери/gemini/w.txt', LF will be replaced by CRLF the next time Git touches it
+  ✓ w2: базова лінія — код 0, рядків 0 (очікувано 0)
+  ✗ w2: нові — код 0, рядків 0 (очікувано 2)
+  ✓ w2: повтор — код 0, рядків 0 (очікувано 0)
+  ✗ w2: правка двох — код 0, рядків 0 (очікувано 2)
+  ✓ w2: після правки — код 0, рядків 0 (очікувано 0)
+=== 3 CI: pending мовчить, зміна стану йде, чужі PR ні, закритий зникає
+warning: in the working copy of 'a.txt', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'аудит/адаптери/gemini/w.txt', LF will be replaced by CRLF the next time Git touches it
+  ✓ w3: базова лінія — код 0, рядків 0 (очікувано 0)
+  ✓ w3: pending (рядків 0) — код 0, рядків 0 (очікувано 0)
+  ✗ w3: failure поверх success — код 0, рядків 0 (очікувано 1)
+  ✓ w3: без змін — код 0, рядків 0 (очікувано 0)
+  ✗ w3: нова голова, cancelled — код 0, рядків 0 (очікувано 1)
+  ✓ w3: нема перевірок -> pending — код 0, рядків 0 (очікувано 0)
+  ✓ w3: 1802 закрито — код 0, рядків 0 (очікувано 0)
+  1802 у стані: 0
+=== 4 перенос: diff лягає -> гілка codex/<наряд>, рядок, без повтору
+warning: in the working copy of 'a.txt', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'аудит/адаптери/gemini/w.txt', LF will be replaced by CRLF the next time Git touches it
+  ✓ w4: базова лінія — код 0, рядків 0 (очікувано 0)
+  ✗ w4: відповідь бота — код 0, рядків 0 (очікувано 2)
+  гілка: ✗ не змінилась
+один|два|три|
+fatal: path 'нове.txt' does not exist in 'b573968a4e734d013895acb992ab038ca88d6d57'
+  коміт: наряд
+  ref refs/heads/codex/М.9-проба-спостерігача   ref refs/heads/main 
+  ✓ w4: повтор — код 0, рядків 0 (очікувано 0)
+  main недоторканий: один|два|три|
+=== 5 відмови переносу: код причини, гілка не рухається
+warning: in the working copy of 'a.txt', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'аудит/адаптери/gemini/w.txt', LF will be replaced by CRLF the next time Git touches it
+  ✓ w5: базова лінія — код 0, рядків 0 (очікувано 0)
+  ✗ w5: вісім поганих diff — код 0, рядків 0 (очікувано 16)
+  ✗ w5: diff від не-бота: лише коментар власника — код 0, рядків 0 (очікувано 1)
+  ✓ гілка codex/М.9-проба-спостерігача не рухалась
+  ✗ w5: відповідь бота без diff: лише коментар — код 0, рядків 0 (очікувано 1)
+  ✗ w5: правка bad -> ok: переноситься — код 0, рядків 0 (очікувано 2)
+  ✗ w5: TOO_BIG — код 0, рядків 0 (очікувано 2)
+=== 5б хеші: обрізаний diff при хешах повного -> HASH_MISMATCH; без блоку хешів -> NO_HASHES
+warning: in the working copy of 'a.txt', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'аудит/адаптери/gemini/w.txt', LF will be replaced by CRLF the next time Git touches it
+  ✓ w5b: базова лінія — код 0, рядків 0 (очікувано 0)
+  ✗ w5b: обрізаний і без хешів — код 0, рядків 0 (очікувано 4)
+  ✗ w5b: хеш файлу інший — код 0, рядків 0 (очікувано 2)
+  ✓ гілку не пересунуто
+=== 6 ворожі назви гілок і PR: нічого, крім шаблонів
+warning: in the working copy of 'a.txt', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'аудит/адаптери/gemini/w.txt', LF will be replaced by CRLF the next time Git touches it
+  ✓ w6: базова лінія — код 0, рядків 0 (очікувано 0)
+  ✓ w6: п'ять ворожих PR — код 0, рядків 0 (очікувано 0)
+=== 7 збій gh: код 1, рядків нема, стан не просунувся, далі наздоганяє
+warning: in the working copy of 'a.txt', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'аудит/адаптери/gemini/w.txt', LF will be replaced by CRLF the next time Git touches it
+  ✓ w7: базова лінія — код 0, рядків 0 (очікувано 0)
+  ✓ gh не відповідає -> код виходу 1
+  рядків: 0
+  ✗ w7: gh знову працює — код 0, рядків 0 (очікувано 1)
+=== 8 ліміт рядків: 5 нових коментарів при MaxRows 2 -> 3 проходи, без дублів
+warning: in the working copy of 'a.txt', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'аудит/адаптери/gemini/w.txt', LF will be replaced by CRLF the next time Git touches it
+  ✓ w8: базова лінія — код 0, рядків 0 (очікувано 0)
+  ✗ w8: прохід 1 — код 0, рядків 0 (очікувано 2)
+  ✗ w8: прохід 2 — код 0, рядків 0 (очікувано 2)
+  ✗ w8: прохід 3 — код 0, рядків 0 (очікувано 1)
+  ✓ w8: прохід 4 — код 0, рядків 0 (очікувано 0)
+=== 9 формат теки вихідних для всього, що було у w2..w8
+  w2:   ✗ формат усіх 0 файлів: ім'я, UTF-8 без BOM, один рядок, шаблон
+  w3:   ✗ формат усіх 0 файлів: ім'я, UTF-8 без BOM, один рядок, шаблон
+  w4:   ✗ формат усіх 0 файлів: ім'я, UTF-8 без BOM, один рядок, шаблон
+  w5:   ✗ формат усіх 0 файлів: ім'я, UTF-8 без BOM, один рядок, шаблон
+  w5b:   ✗ формат усіх 0 файлів: ім'я, UTF-8 без BOM, один рядок, шаблон
+  w6:   ✓ формат усіх 0 файлів: ім'я, UTF-8 без BOM, один рядок, шаблон
+  w7:   ✗ формат усіх 0 файлів: ім'я, UTF-8 без BOM, один рядок, шаблон
+  w8:   ✗ формат усіх 0 файлів: ім'я, UTF-8 без BOM, один рядок, шаблон
+ПІДСУМОК сценарії_спостерігача.sh: ✓ 24 / ✗ 24; код стенда 1; код логу 0
+
+Код процесу: 1
+
+Команда: export TMPDIR=/tmp/ci-shliakhy; mkdir -p "$TMPDIR"; bash аудит/адаптери/gemini/перевірка/запустити_стенд.sh сценарії_спостерігача.sh
+=== 1 базова лінія: перший прохід мовчить, другий теж
+warning: in the working copy of 'a.txt', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'аудит/адаптери/gemini/w.txt', LF will be replaced by CRLF the next time Git touches it
+  ✓ w1: прохід 1 — код 0, рядків 0 (очікувано 0)
+  ✓ w1: прохід 2 — код 0, рядків 0 (очікувано 0)
+  ✓ стан записано
+=== 2 коментарі: новий, змінено, чужі не йдуть, повтор мовчить
+warning: in the working copy of 'a.txt', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'аудит/адаптери/gemini/w.txt', LF will be replaced by CRLF the next time Git touches it
+  ✓ w2: базова лінія — код 0, рядків 0 (очікувано 0)
+  ✓ w2: нові — код 0, рядків 2 (очікувано 2)
+   СПОСТЕРІГАЧ КОМЕНТАР #963 200 mightyrochy новий
+   СПОСТЕРІГАЧ КОМЕНТАР #1801 210 chatgpt-codex-connector[bot] новий
+  ✓ w2: повтор — код 0, рядків 0 (очікувано 0)
+  ✓ w2: правка двох — код 0, рядків 2 (очікувано 2)
+   СПОСТЕРІГАЧ КОМЕНТАР #963 200 mightyrochy змінено
+   СПОСТЕРІГАЧ КОМЕНТАР #1801 210 chatgpt-codex-connector[bot] змінено
+  ✓ w2: після правки — код 0, рядків 0 (очікувано 0)
+=== 3 CI: pending мовчить, зміна стану йде, чужі PR ні, закритий зникає
+warning: in the working copy of 'a.txt', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'аудит/адаптери/gemini/w.txt', LF will be replaced by CRLF the next time Git touches it
+  ✓ w3: базова лінія — код 0, рядків 0 (очікувано 0)
+  ✓ w3: pending (рядків 0) — код 0, рядків 0 (очікувано 0)
+  ✓ w3: failure поверх success — код 0, рядків 1 (очікувано 1)
+   СПОСТЕРІГАЧ CI #1802 86f7e437faa5a7fce15d1ddcb9eaeaea377667b8 failure
+  ✓ w3: без змін — код 0, рядків 0 (очікувано 0)
+  ✓ w3: нова голова, cancelled — код 0, рядків 1 (очікувано 1)
+   СПОСТЕРІГАЧ CI #1802 3c363836cf4e16666669a25da280a1865c2d2874 cancelled
+  ✓ w3: нема перевірок -> pending — код 0, рядків 0 (очікувано 0)
+  ✓ w3: 1802 закрито — код 0, рядків 0 (очікувано 0)
+  1802 у стані: 0
+=== 4 перенос: diff лягає -> гілка codex/<наряд>, рядок, без повтору
+warning: in the working copy of 'a.txt', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'аудит/адаптери/gemini/w.txt', LF will be replaced by CRLF the next time Git touches it
+  ✓ w4: базова лінія — код 0, рядків 0 (очікувано 0)
+  ✓ w4: відповідь бота — код 0, рядків 2 (очікувано 2)
+   СПОСТЕРІГАЧ КОМЕНТАР #1801 400 chatgpt-codex-connector[bot] новий
+   СПОСТЕРІГАЧ НЕ ПЕРЕНЕСЕНО М.9-проба-спостерігача APPLY_FAILED
+  гілка: ✗ не змінилась
+один|два|три|
+fatal: path 'нове.txt' does not exist in '2ea51c5822002b1fc5cd958fb5486b442dbdb14c'
+  коміт: наряд
+  ref refs/heads/codex/М.9-проба-спостерігача   ref refs/heads/main 
+  ✓ w4: повтор — код 0, рядків 0 (очікувано 0)
+  main недоторканий: один|два|три|
+=== 5 відмови переносу: код причини, гілка не рухається
+warning: in the working copy of 'a.txt', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'аудит/адаптери/gemini/w.txt', LF will be replaced by CRLF the next time Git touches it
+  ✓ w5: базова лінія — код 0, рядків 0 (очікувано 0)
+  ✓ w5: вісім поганих diff — код 0, рядків 16 (очікувано 16)
+   СПОСТЕРІГАЧ НЕ ПЕРЕНЕСЕНО М.9-проба-спостерігача APPLY_FAILED
+   СПОСТЕРІГАЧ КОМЕНТАР #1801 503 chatgpt-codex-connector[bot] новий
+   СПОСТЕРІГАЧ КОМЕНТАР #1801 501 chatgpt-codex-connector[bot] новий
+   СПОСТЕРІГАЧ НЕ ПЕРЕНЕСЕНО М.9-проба-спостерігача FFFD
+   СПОСТЕРІГАЧ КОМЕНТАР #1801 502 chatgpt-codex-connector[bot] новий
+   СПОСТЕРІГАЧ КОМЕНТАР #1801 507 chatgpt-codex-connector[bot] новий
+   СПОСТЕРІГАЧ НЕ ПЕРЕНЕСЕНО М.9-проба-спостерігача APPLY_FAILED
+   СПОСТЕРІГАЧ НЕ ПЕРЕНЕСЕНО М.9-проба-спостерігача SPECIAL_MODE
+   СПОСТЕРІГАЧ НЕ ПЕРЕНЕСЕНО М.9-проба-спостерігача APPLY_FAILED
+   СПОСТЕРІГАЧ КОМЕНТАР #1801 504 chatgpt-codex-connector[bot] новий
+   СПОСТЕРІГАЧ КОМЕНТАР #1801 506 chatgpt-codex-connector[bot] новий
+   СПОСТЕРІГАЧ НЕ ПЕРЕНЕСЕНО М.9-проба-спостерігача FORBIDDEN_PATH
+   СПОСТЕРІГАЧ КОМЕНТАР #1801 505 chatgpt-codex-connector[bot] новий
+   СПОСТЕРІГАЧ НЕ ПЕРЕНЕСЕНО М.9-проба-спостерігача BINARY
+   СПОСТЕРІГАЧ КОМЕНТАР #1801 508 chatgpt-codex-connector[bot] новий
+   СПОСТЕРІГАЧ НЕ ПЕРЕНЕСЕНО М.9-проба-спостерігача FORBIDDEN_PATH
+  ✓ w5: diff від не-бота: лише коментар власника — код 0, рядків 1 (очікувано 1)
+   СПОСТЕРІГАЧ КОМЕНТАР #1801 590 mightyrochy новий
+  ✓ гілка codex/М.9-проба-спостерігача не рухалась
+  ✓ w5: відповідь бота без diff: лише коментар — код 0, рядків 1 (очікувано 1)
+   СПОСТЕРІГАЧ КОМЕНТАР #1801 592 chatgpt-codex-connector[bot] новий
+  ✓ w5: правка bad -> ok: переноситься — код 0, рядків 2 (очікувано 2)
+   СПОСТЕРІГАЧ КОМЕНТАР #1801 501 chatgpt-codex-connector[bot] змінено
+   СПОСТЕРІГАЧ НЕ ПЕРЕНЕСЕНО М.9-проба-спостерігача APPLY_FAILED
+  ✓ w5: TOO_BIG — код 0, рядків 2 (очікувано 2)
+   СПОСТЕРІГАЧ НЕ ПЕРЕНЕСЕНО М.9-проба-спостерігача TOO_BIG
+   СПОСТЕРІГАЧ КОМЕНТАР #1801 593 chatgpt-codex-connector[bot] новий
+=== 5б хеші: обрізаний diff при хешах повного -> HASH_MISMATCH; без блоку хешів -> NO_HASHES
+warning: in the working copy of 'a.txt', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'аудит/адаптери/gemini/w.txt', LF will be replaced by CRLF the next time Git touches it
+  ✓ w5b: базова лінія — код 0, рядків 0 (очікувано 0)
+  ✓ w5b: обрізаний і без хешів — код 0, рядків 4 (очікувано 4)
+   СПОСТЕРІГАЧ КОМЕНТАР #1801 521 chatgpt-codex-connector[bot] новий
+   СПОСТЕРІГАЧ НЕ ПЕРЕНЕСЕНО М.9-проба-спостерігача NO_HASHES
+   СПОСТЕРІГАЧ НЕ ПЕРЕНЕСЕНО М.9-проба-спостерігача APPLY_FAILED
+   СПОСТЕРІГАЧ КОМЕНТАР #1801 520 chatgpt-codex-connector[bot] новий
+  ✓ w5b: хеш файлу інший — код 0, рядків 2 (очікувано 2)
+   СПОСТЕРІГАЧ КОМЕНТАР #1801 522 chatgpt-codex-connector[bot] новий
+   СПОСТЕРІГАЧ НЕ ПЕРЕНЕСЕНО М.9-проба-спостерігача APPLY_FAILED
+  ✓ гілку не пересунуто
+=== 6 ворожі назви гілок і PR: нічого, крім шаблонів
+warning: in the working copy of 'a.txt', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'аудит/адаптери/gemini/w.txt', LF will be replaced by CRLF the next time Git touches it
+  ✓ w6: базова лінія — код 0, рядків 0 (очікувано 0)
+  ✗ w6: п'ять ворожих PR — код 0, рядків 4 (очікувано 0)
+   СПОСТЕРІГАЧ CI #1812 54fd1711209fb1c0781092374132c66e79e2241b success
+   СПОСТЕРІГАЧ CI #1814 aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa success
+   СПОСТЕРІГАЧ CI #1811 4a0a19218e082a343a1b17e5333409af9d98f0f5 success
+   СПОСТЕРІГАЧ CI #1810 58e6b3a414a1e090dfc6029add0f3555ccba127f success
+=== 7 збій gh: код 1, рядків нема, стан не просунувся, далі наздоганяє
+warning: in the working copy of 'a.txt', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'аудит/адаптери/gemini/w.txt', LF will be replaced by CRLF the next time Git touches it
+  ✓ w7: базова лінія — код 0, рядків 0 (очікувано 0)
+  ✓ gh не відповідає -> код виходу 1
+  рядків: 0
+  ✓ w7: gh знову працює — код 0, рядків 1 (очікувано 1)
+   СПОСТЕРІГАЧ КОМЕНТАР #963 700 mightyrochy новий
+=== 8 ліміт рядків: 5 нових коментарів при MaxRows 2 -> 3 проходи, без дублів
+warning: in the working copy of 'a.txt', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'аудит/адаптери/gemini/w.txt', LF will be replaced by CRLF the next time Git touches it
+  ✓ w8: базова лінія — код 0, рядків 0 (очікувано 0)
+  ✓ w8: прохід 1 — код 0, рядків 2 (очікувано 2)
+   СПОСТЕРІГАЧ КОМЕНТАР #963 802 mightyrochy новий
+   СПОСТЕРІГАЧ КОМЕНТАР #963 801 mightyrochy новий
+  ✓ w8: прохід 2 — код 0, рядків 2 (очікувано 2)
+   СПОСТЕРІГАЧ КОМЕНТАР #963 803 mightyrochy новий
+   СПОСТЕРІГАЧ КОМЕНТАР #963 804 mightyrochy новий
+  ✓ w8: прохід 3 — код 0, рядків 1 (очікувано 1)
+   СПОСТЕРІГАЧ КОМЕНТАР #963 805 mightyrochy новий
+  ✓ w8: прохід 4 — код 0, рядків 0 (очікувано 0)
+=== 9 формат теки вихідних для всього, що було у w2..w8
+  w2:   ✓ формат усіх 4 файлів: ім'я, UTF-8 без BOM, один рядок, шаблон
+  w3:   ✓ формат усіх 2 файлів: ім'я, UTF-8 без BOM, один рядок, шаблон
+  w4:   ✓ формат усіх 2 файлів: ім'я, UTF-8 без BOM, один рядок, шаблон
+  w5:   ✓ формат усіх 22 файлів: ім'я, UTF-8 без BOM, один рядок, шаблон
+  w5b:   ✓ формат усіх 6 файлів: ім'я, UTF-8 без BOM, один рядок, шаблон
+  w6:   ✓ формат усіх 4 файлів: ім'я, UTF-8 без BOM, один рядок, шаблон
+  w7:   ✓ формат усіх 1 файлів: ім'я, UTF-8 без BOM, один рядок, шаблон
+  w8:   ✓ формат усіх 5 файлів: ім'я, UTF-8 без BOM, один рядок, шаблон
+ПІДСУМОК сценарії_спостерігача.sh: ✓ 46 / ✗ 2; код стенда 1; код логу 0
+
+Код процесу: 1
+
+Команда: export TMPDIR=/tmp/ci-shliakhy; mkdir -p "$TMPDIR"; bash аудит/адаптери/gemini/перевірка/запустити_стенд.sh сценарії_m9v.sh
+ok  синтаксис 0_власник.ps1
+ok  синтаксис 1_адмін.ps1
+ok  синтаксис 2_під_gemini.ps1
+ok  синтаксис хеші.psd1
+ok  хеші: psd1 = таблиця = файли
+ok  дослівні рядки команд
+ok  Codex: закріплений інсталятор, ключ -EnableCodex, кроки власника
+ПІДСУМОК сценарії_m9v.sh: ✓ 7 / ✗ 0; код стенда 0; код логу 0
+
+Код процесу: 0
+
+Команда: export TMPDIR=/tmp/ci-shliakhy; mkdir -p "$TMPDIR"; bash аудит/адаптери/gemini/перевірка/запустити_стенд.sh сценарії_спостерігача.sh
+=== 1 базова лінія: перший прохід мовчить, другий теж
+warning: in the working copy of 'a.txt', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'аудит/адаптери/gemini/w.txt', LF will be replaced by CRLF the next time Git touches it
+  ✓ w1: прохід 1 — код 0, рядків 0 (очікувано 0)
+  ✓ w1: прохід 2 — код 0, рядків 0 (очікувано 0)
+  ✓ стан записано
+=== 2 коментарі: новий, змінено, чужі не йдуть, повтор мовчить
+warning: in the working copy of 'a.txt', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'аудит/адаптери/gemini/w.txt', LF will be replaced by CRLF the next time Git touches it
+  ✓ w2: базова лінія — код 0, рядків 0 (очікувано 0)
+  ✓ w2: нові — код 0, рядків 2 (очікувано 2)
+   СПОСТЕРІГАЧ КОМЕНТАР #963 200 mightyrochy новий
+   СПОСТЕРІГАЧ КОМЕНТАР #1801 210 chatgpt-codex-connector[bot] новий
+  ✓ w2: повтор — код 0, рядків 0 (очікувано 0)
+  ✓ w2: правка двох — код 0, рядків 2 (очікувано 2)
+   СПОСТЕРІГАЧ КОМЕНТАР #1801 210 chatgpt-codex-connector[bot] змінено
+   СПОСТЕРІГАЧ КОМЕНТАР #963 200 mightyrochy змінено
+  ✓ w2: після правки — код 0, рядків 0 (очікувано 0)
+=== 3 CI: pending мовчить, зміна стану йде, чужі PR ні, закритий зникає
+warning: in the working copy of 'a.txt', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'аудит/адаптери/gemini/w.txt', LF will be replaced by CRLF the next time Git touches it
+  ✓ w3: базова лінія — код 0, рядків 0 (очікувано 0)
+  ✓ w3: pending (рядків 0) — код 0, рядків 0 (очікувано 0)
+  ✓ w3: failure поверх success — код 0, рядків 1 (очікувано 1)
+   СПОСТЕРІГАЧ CI #1802 86f7e437faa5a7fce15d1ddcb9eaeaea377667b8 failure
+  ✓ w3: без змін — код 0, рядків 0 (очікувано 0)
+  ✓ w3: нова голова, cancelled — код 0, рядків 1 (очікувано 1)
+   СПОСТЕРІГАЧ CI #1802 3c363836cf4e16666669a25da280a1865c2d2874 cancelled
+  ✓ w3: нема перевірок -> pending — код 0, рядків 0 (очікувано 0)
+  ✓ w3: 1802 закрито — код 0, рядків 0 (очікувано 0)
+  1802 у стані: 0
+=== 4 перенос: diff лягає -> гілка codex/<наряд>, рядок, без повтору
+warning: in the working copy of 'a.txt', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'аудит/адаптери/gemini/w.txt', LF will be replaced by CRLF the next time Git touches it
+  ✓ w4: базова лінія — код 0, рядків 0 (очікувано 0)
+  ✓ w4: відповідь бота — код 0, рядків 2 (очікувано 2)
+   СПОСТЕРІГАЧ КОМЕНТАР #1801 400 chatgpt-codex-connector[bot] новий
+   СПОСТЕРІГАЧ ПЕРЕНЕСЕНО М.9-проба-спостерігача codex/М.9-проба-спостерігача 84a6a1ad4b661391c250ce8e4756ff50b555b42d #1801
+  гілка: пересунута
+один|2|три|
+новий
+  коміт: Перенос diff Codex з коментаря 400 до PR #1801 (спостерігач без моделі)
+  ref refs/heads/codex/М.9-проба-спостерігача   ref refs/heads/main 
+  ✓ w4: повтор — код 0, рядків 0 (очікувано 0)
+  main недоторканий: один|два|три|
+=== 5 відмови переносу: код причини, гілка не рухається
+warning: in the working copy of 'a.txt', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'аудит/адаптери/gemini/w.txt', LF will be replaced by CRLF the next time Git touches it
+  ✓ w5: базова лінія — код 0, рядків 0 (очікувано 0)
+  ✓ w5: вісім поганих diff — код 0, рядків 16 (очікувано 16)
+   СПОСТЕРІГАЧ КОМЕНТАР #1801 501 chatgpt-codex-connector[bot] новий
+   СПОСТЕРІГАЧ НЕ ПЕРЕНЕСЕНО М.9-проба-спостерігача APPLY_FAILED
+   СПОСТЕРІГАЧ КОМЕНТАР #1801 507 chatgpt-codex-connector[bot] новий
+   СПОСТЕРІГАЧ КОМЕНТАР #1801 503 chatgpt-codex-connector[bot] новий
+   СПОСТЕРІГАЧ НЕ ПЕРЕНЕСЕНО М.9-проба-спостерігача FORBIDDEN_PATH
+   СПОСТЕРІГАЧ КОМЕНТАР #1801 506 chatgpt-codex-connector[bot] новий
+   СПОСТЕРІГАЧ НЕ ПЕРЕНЕСЕНО М.9-проба-спостерігача APPLY_FAILED
+   СПОСТЕРІГАЧ НЕ ПЕРЕНЕСЕНО М.9-проба-спостерігача FFFD
+   СПОСТЕРІГАЧ КОМЕНТАР #1801 505 chatgpt-codex-connector[bot] новий
+   СПОСТЕРІГАЧ КОМЕНТАР #1801 504 chatgpt-codex-connector[bot] новий
+   СПОСТЕРІГАЧ КОМЕНТАР #1801 508 chatgpt-codex-connector[bot] новий
+   СПОСТЕРІГАЧ КОМЕНТАР #1801 502 chatgpt-codex-connector[bot] новий
+   СПОСТЕРІГАЧ НЕ ПЕРЕНЕСЕНО М.9-проба-спостерігача FORBIDDEN_PATH
+   СПОСТЕРІГАЧ НЕ ПЕРЕНЕСЕНО М.9-проба-спостерігача BINARY
+   СПОСТЕРІГАЧ НЕ ПЕРЕНЕСЕНО М.9-проба-спостерігача SPECIAL_MODE
+   СПОСТЕРІГАЧ НЕ ПЕРЕНЕСЕНО М.9-проба-спостерігача APPLY_FAILED
+  ✓ w5: diff від не-бота: лише коментар власника — код 0, рядків 1 (очікувано 1)
+   СПОСТЕРІГАЧ КОМЕНТАР #1801 590 mightyrochy новий
+  ✓ гілка codex/М.9-проба-спостерігача не рухалась
+  ✓ w5: відповідь бота без diff: лише коментар — код 0, рядків 1 (очікувано 1)
+   СПОСТЕРІГАЧ КОМЕНТАР #1801 592 chatgpt-codex-connector[bot] новий
+  ✓ w5: правка bad -> ok: переноситься — код 0, рядків 2 (очікувано 2)
+   СПОСТЕРІГАЧ КОМЕНТАР #1801 501 chatgpt-codex-connector[bot] змінено
+   СПОСТЕРІГАЧ ПЕРЕНЕСЕНО М.9-проба-спостерігача codex/М.9-проба-спостерігача 2b539c4a148fa6ad9f5a4cb56e943e0d7f974bf1 #1801
+  ✓ w5: TOO_BIG — код 0, рядків 2 (очікувано 2)
+   СПОСТЕРІГАЧ НЕ ПЕРЕНЕСЕНО М.9-проба-спостерігача TOO_BIG
+   СПОСТЕРІГАЧ КОМЕНТАР #1801 593 chatgpt-codex-connector[bot] новий
+=== 5б хеші: обрізаний diff при хешах повного -> HASH_MISMATCH; без блоку хешів -> NO_HASHES
+warning: in the working copy of 'a.txt', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'аудит/адаптери/gemini/w.txt', LF will be replaced by CRLF the next time Git touches it
+  ✓ w5b: базова лінія — код 0, рядків 0 (очікувано 0)
+  ✓ w5b: обрізаний і без хешів — код 0, рядків 4 (очікувано 4)
+   СПОСТЕРІГАЧ КОМЕНТАР #1801 520 chatgpt-codex-connector[bot] новий
+   СПОСТЕРІГАЧ НЕ ПЕРЕНЕСЕНО М.9-проба-спостерігача NO_HASHES
+   СПОСТЕРІГАЧ КОМЕНТАР #1801 521 chatgpt-codex-connector[bot] новий
+   СПОСТЕРІГАЧ НЕ ПЕРЕНЕСЕНО М.9-проба-спостерігача HASH_MISMATCH
+  ✓ w5b: хеш файлу інший — код 0, рядків 2 (очікувано 2)
+   СПОСТЕРІГАЧ КОМЕНТАР #1801 522 chatgpt-codex-connector[bot] новий
+   СПОСТЕРІГАЧ НЕ ПЕРЕНЕСЕНО М.9-проба-спостерігача HASH_MISMATCH
+  ✓ гілку не пересунуто
+=== 6 ворожі назви гілок і PR: нічого, крім шаблонів
+warning: in the working copy of 'a.txt', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'аудит/адаптери/gemini/w.txt', LF will be replaced by CRLF the next time Git touches it
+  ✓ w6: базова лінія — код 0, рядків 0 (очікувано 0)
+  ✓ w6: п'ять ворожих PR — код 0, рядків 4 (очікувано 4)
+   СПОСТЕРІГАЧ CI #1814 aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa success
+   СПОСТЕРІГАЧ CI #1810 58e6b3a414a1e090dfc6029add0f3555ccba127f success
+   СПОСТЕРІГАЧ CI #1811 4a0a19218e082a343a1b17e5333409af9d98f0f5 success
+   СПОСТЕРІГАЧ CI #1812 54fd1711209fb1c0781092374132c66e79e2241b success
+=== 7 збій gh: код 1, рядків нема, стан не просунувся, далі наздоганяє
+warning: in the working copy of 'a.txt', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'аудит/адаптери/gemini/w.txt', LF will be replaced by CRLF the next time Git touches it
+  ✓ w7: базова лінія — код 0, рядків 0 (очікувано 0)
+  ✓ gh не відповідає -> код виходу 1
+  рядків: 0
+  ✓ w7: gh знову працює — код 0, рядків 1 (очікувано 1)
+   СПОСТЕРІГАЧ КОМЕНТАР #963 700 mightyrochy новий
+=== 8 ліміт рядків: 5 нових коментарів при MaxRows 2 -> 3 проходи, без дублів
+warning: in the working copy of 'a.txt', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'аудит/адаптери/gemini/w.txt', LF will be replaced by CRLF the next time Git touches it
+  ✓ w8: базова лінія — код 0, рядків 0 (очікувано 0)
+  ✓ w8: прохід 1 — код 0, рядків 2 (очікувано 2)
+   СПОСТЕРІГАЧ КОМЕНТАР #963 801 mightyrochy новий
+   СПОСТЕРІГАЧ КОМЕНТАР #963 802 mightyrochy новий
+  ✓ w8: прохід 2 — код 0, рядків 2 (очікувано 2)
+   СПОСТЕРІГАЧ КОМЕНТАР #963 804 mightyrochy новий
+   СПОСТЕРІГАЧ КОМЕНТАР #963 803 mightyrochy новий
+  ✓ w8: прохід 3 — код 0, рядків 1 (очікувано 1)
+   СПОСТЕРІГАЧ КОМЕНТАР #963 805 mightyrochy новий
+  ✓ w8: прохід 4 — код 0, рядків 0 (очікувано 0)
+=== 9 формат теки вихідних для всього, що було у w2..w8
+  w2:   ✓ формат усіх 4 файлів: ім'я, UTF-8 без BOM, один рядок, шаблон
+  w3:   ✓ формат усіх 2 файлів: ім'я, UTF-8 без BOM, один рядок, шаблон
+  w4:   ✓ формат усіх 2 файлів: ім'я, UTF-8 без BOM, один рядок, шаблон
+  w5:   ✓ формат усіх 22 файлів: ім'я, UTF-8 без BOM, один рядок, шаблон
+  w5b:   ✓ формат усіх 6 файлів: ім'я, UTF-8 без BOM, один рядок, шаблон
+  w6:   ✓ формат усіх 4 файлів: ім'я, UTF-8 без BOM, один рядок, шаблон
+  w7:   ✓ формат усіх 1 файлів: ім'я, UTF-8 без BOM, один рядок, шаблон
+  w8:   ✓ формат усіх 5 файлів: ім'я, UTF-8 без BOM, один рядок, шаблон
+ПІДСУМОК сценарії_спостерігача.sh: ✓ 47 / ✗ 0; код стенда 0; код логу 0
+
+Код процесу: 0
+
+Команда: export TMPDIR=/tmp/ci-shliakhy; mkdir -p "$TMPDIR"; bash аудит/адаптери/gemini/перевірка/запустити_стенд.sh сценарії_m9v.sh
+ok  синтаксис 0_власник.ps1
+ok  синтаксис 1_адмін.ps1
+ok  синтаксис 2_під_gemini.ps1
+ok  синтаксис хеші.psd1
+ok  хеші: psd1 = таблиця = файли
+ok  дослівні рядки команд
+ok  Codex: закріплений інсталятор, ключ -EnableCodex, кроки власника
+ПІДСУМОК сценарії_m9v.sh: ✓ 7 / ✗ 0; код стенда 0; код логу 0
+
+Код процесу: 0
+
+
+Остаточна звірка хешів індексу й запис GITHUB_STEP_SUMMARY:
+Команда: export TMPDIR=/tmp/ci-shliakhy; set -o pipefail; python аудит/адаптери/gemini/перевірка/перевірити_хеші.py 2>&1 | tee -a "$GITHUB_STEP_SUMMARY"; bash аудит/адаптери/gemini/перевірка/запустити_стенд.sh сценарії_m9v.sh
+✓ gemini_run.ps1: 65FDD272EE6D6D3AFF2622D54174F9C1960C708AFDE57F83943AE90DAA16DD18
+✓ gemini_publish.ps1: 4CFFE78BB534AA02A8E5F5E9E27146D14B6A63437A3BB45D33B7045846C0FFFB
+✓ gemini_watch.ps1: 3550085176F339BA00B1D1C28391AC585B0959128335D193601734261D00085B
+✓ queue_lanes.ps1: 0D2BE9DE68DEC2602E6671EEE50BA94008BD436619E9603A086A5BC3E03A5E20
+✓ claude_run.ps1: 03F740987233B9C8BA9BF172957D03AC2447DD6911CE9C820BE3E7D95037A59F
+ok  синтаксис 0_власник.ps1
+ok  синтаксис 1_адмін.ps1
+ok  синтаксис 2_під_gemini.ps1
+ok  синтаксис хеші.psd1
+ok  хеші: psd1 = таблиця = файли
+ok  дослівні рядки команд
+ok  Codex: закріплений інсталятор, ключ -EnableCodex, кроки власника
+ПІДСУМОК сценарії_m9v.sh: ✓ 7 / ✗ 0; код стенда 0; код логу 0
+
+Код процесу: 0
