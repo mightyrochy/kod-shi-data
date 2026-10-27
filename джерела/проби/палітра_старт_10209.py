@@ -10,7 +10,7 @@ def головна():
     вихід.mkdir(parents=True, exist_ok=True)
     сцени = (корінь / 'аудит/проби/б1_доречність.md').read_text(encoding='utf8')
     рядки = [р.split('|') for р in сцени.splitlines() if р.startswith('б1_')]
-    for номер in (7, 9, 11, 14, 1, 20, 29):
+    for номер in (map(int, sys.argv[4:]) if len(sys.argv) > 4 else (7, 9, 11, 14, 1, 20, 29)):
         назва, жінка, слова, *_ = рядки[номер - 1]
         запис = корінь / 'аудит/проби/б1/ДО-2710' / ('%02d_' % номер + назва)
         with socket.socket() as порт:

@@ -4,6 +4,9 @@ const fs = require('fs'), path = require('path'), Module = require('module');
 const [збірка, кеш, запис] = process.argv.slice(2);
 const корінь = path.resolve(__dirname, '../..');
 const стенд = path.join(корінь, 'аудит/проби/рв6_стенд.js');
+const доКод = require('child_process').execFileSync('git',
+  ['show', '8fb11be121af8e7d71a9ed6c7558e117144d90ff:аудит/проби/рв6_стенд.js'], {cwd: корінь, encoding: 'utf8'});
+const доТиша = JSON.parse(доКод.match(/const МІСТ_ТИХИЙ = ("[^\n]+");/)[1]);
 let код = fs.readFileSync(стенд, 'utf8');
 const кінець = "await збиранняСтартувало(стор, браузер, 'збір 1');";
 if (!код.includes(кінець)) throw new Error('не знайдено межу старту збирання');
@@ -15,8 +18,9 @@ if (!код.includes(кінець)) throw new Error('не знайдено ме�
     міст: [...ЧЕКАЮТЬ_МОСТА_П.values()].map(ч => ({ім: ч.ім, асинх: ч.асинх})),
     час: Date.now() - ЗБ.почато}));
   if (стан.режим !== 'очікування' || стан.готово) throw new Error('збирання не стартувало');
+  стан.до_тиша_моста = await стор.показПідЧасМоста.evaluate(${JSON.stringify(доТиша)});
   const вихід = process.env.ZNIMKY;
-  await стор.знімокПосеред({path: path.join(вихід, 'старт.png')});
+  await стор.знімокПосеред({path: path.join(вихід, 'старт.png'), animations: 'disabled'});
   fs.writeFileSync(path.join(вихід, 'старт.json'), JSON.stringify(стан, null, 2));
   const до = fs.readFileSync(path.join(${JSON.stringify(запис)}, 'лог.txt'), 'utf8');
   const таймаут = /ТАЙМАУТ очікування стану «?„?збирання стартувало чи питання нагоди/.test(до);
