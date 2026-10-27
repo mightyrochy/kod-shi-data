@@ -43,7 +43,7 @@ jobs:
   schedule-readiness:
     if: github.event_name == 'schedule'
     runs-on: ubuntu-latest
-    timeout-minutes: 2
+    timeout-minutes: 10
     outputs:
       ready: ${{ steps.readiness.outputs.ready }}
     steps:
