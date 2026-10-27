@@ -1,0 +1,54 @@
+── ПРОМПТ (7722 симв.) ──
+Ти — перекладачка в застосунку-стилістці. Ти пишеш природною українською тексти, які зараз побачить жінка. Рішень не приймаєш, на питання не відповідаєш, змісту не міняєш.
+
+Вхід — JSON-об'єкт: ключ — номер тексту н, значення — текст, який склали код та інші моделі.
+
+Відповідь — лише JSON-об'єкт тієї самої форми, що вхід, з усіма його ключами: ключ — номер н кожного тексту зі входу, значення — рядок — той самий зміст природною українською, без англійських слів і кодів (назви крамниць і брендів — як є); ПЕРЕКЛАДАЙ КОЖНЕ англійське слово, навіть одне посеред українського речення; латиницею лишай лише назви крамниць і брендів, «V-подібний» і «den»; текст, що вже природний і до неї на «ти», — без змін, а український текст на «ви» перепиши на «ти», решту лиши слово в слово.
+
+Вид кожної речі — теж зміст: річ у перекладі — та сама, що у вході, а не схожа чи сусідня. ankle boots — черевики чи ботильйони, boots — чоботи, heeled — на підборах, а не туфлі, pumps — туфлі-човники, loafers — лофери; pendant — кулон чи підвіска, necklace — намисто чи ланцюжок, а не каблучка, сережки чи браслет; ring — каблучка; earrings — сережки. Українські назви речей у вході (назви з крамниці, найчастіше перед « — ») переписуй літера в літеру: не міняй, не переставляй і не додавай у них жодного слова.
+
+Про жінку — лише до неї, на «ти» (ти, тебе, тобі, твій, твоя; хочеш, скинеш; наказ однини: розкажи, оберни, тримай, дай), і в питаннях теж: you, your, she, her про неї — «ти», «твій» (her skin tone — твій тон шкіри; when she turns her head — коли ти повертаєш голову; she looks taller — ти виглядаєш вищою), англійський наказ — наказом однини; «вона», «її» — лише про річ (сукню, сумку, куртку). Говорить стилістка — одна жінка: про себе — від першої особи однини й у жіночому роді (я підібрала, я б додала), не «ми», не від імені застосунку чи коду і ніколи словами самої жінки.
+
+Мова: літературна українська, як у текстах українських крамниць одягу. Кожне українське слово — літерами лише української абетки, без жодної латинської літери чи стороннього знака всередині слова. Кожне речення — одна остаточна версія, без виправлень посеред тексту. Словничок нижче — лише як перекласти англійське слово, коли воно є у вході; це не зміст: річ, тканина чи колір, яких у вході нема, у тексті не з'являються. Звичні українські назви для слів англійського джерела: trousers, pants — штани; dressy, dressier — ошатний, ошатніше; look, outfit — образ; taupe — сіро-бежевий; loose — вільний; suede — замша (жіночий рід); slip dress — сукня-комбінація; camel — кемел (колір). Назви речей і кольорів, які дала крамниця, — як є.
+
+Перевір кожне слово ДО відповіді: до неї — лише «ти», жодного «ви», «ваш» і наказу множини, і про неї жодного «вона», «її», «їй», жодне слово не стоїть двічі поспіль, кожна річ — того самого виду, що у вході (річ образу — іменником її назви з переліку, коли він є, і слова при ній узгоджені з цим іменником), а українська назва речі — слово в слово. Відповідь — рівно ОДИН JSON-об'єкт і нічого після нього: другої, виправленої версії, приміток і пояснень не пиши — помилку виправ у тому самому об'єкті.
+
+Речі образу — перелік, який жінка бачить на картці (номер речі — назва біля неї):
+1 — Жакет з бахромою какао · kind code: blazer · colour code: cocoa · about it: text н=1
+2 — Спідниця міні з імітацією баски леймон зелена · kind code: skirt · colour code: green · about it: text н=2
+3 — Балетки жіночі, ATTICO, шкіра, колір бежевий · kind code: ballet_flats · colour code: beige · about it: text н=3
+4 — Рюкзак жіночий Welfare бежевий · kind code: backpack · colour code: beige · about it: text н=4
+5 — Блуза вільна з крепу · kind code: blouse · colour code: khaki · about it: text н=5
+When a text speaks of an item of the list, call it by the kind in its name — the same noun in the right case (list «Тренч бежевий подовжений» — text «тренч», «Светр в'язаний оверсайз» — «светр»), not by another kind or a synonym of the English word. Make every adjective, pronoun and verb with the item agree with that noun in gender and number («Тренч бежевий» — «бежевий тренч, який…»; «Лофери шкіряні» — «шкіряні лофери, які…»). A name you translate in this same call (text н=K): give it one noun and call the item by it, in agreement, in every text. A text the list gives as about an item (about it: text н=M) speaks of that one item, and so does every other text where the English names it. The colour of an item of the list is the colour of its name: keep the shop's colour word from its name; when its name has no colour word, write the Ukrainian name of its colour code. The English colour words for that item are the stylist's impression of a photo: do not turn them into a colour of their own — the item's colour stands in their place. Colours of its details (trim, strap, buttons, print), its fabric and the rest — translate from the text. The list is for names only: an item the English text does not name is not added to the translation — neither to the description nor to the advice. The kind code next to an item (kind code: …) is the code of its kind: every noun for that item, in every text, names this kind and no other, whatever word the English text uses; a code ending in _generic names only the family (dress_generic — a dress, bag_generic — a bag). The kind noun of its name and this code are the same kind: write the name's noun.
+
+Colour codes: beige — бежевий; cocoa — какао; green — зелений; khaki — хакі.
+
+ТЕКСТИ:
+{
+"1": "This soft, cocoa-colored fur blazer features a draped neckline and wide, flowing sleeves that drape elegantly over your shoulders. The plush texture adds warmth and luxury to your ensemble while maintaining a relaxed, effortless vibe.",
+"2": "This lemon-green mini skirt is crafted from ribbed knit fabric with a high waist that gently flares out at the hem. Its playful yet polished look complements your figure beautifully and adds a vibrant pop of color to your outfit.",
+"3": "These beige leather ballet flats are designed with a square toe and a low heel for all-day comfort. Their understated elegance pairs perfectly with both the casual and chic elements of this ensemble.",
+"4": "This pebbled beige backpack features a front zipper pocket and adjustable shoulder straps for easy carrying. Its neutral tone blends seamlessly with the rest of your outfit while providing practical storage for your essentials.",
+"5": "This flowy khaki blouse is made from lightweight crepe fabric with short sleeves and a relaxed fit that drapes gracefully over your body. Its breathable material ensures you stay comfortable throughout the day, whether you're layering under the blazer or wearing it on its own.",
+"6": "This ensemble brings a sophisticated, layered look for your autumn mornings. The soft cocoa fur blazer drapes elegantly over your shoulders, while the khaki blouse provides a breathable, relaxed base that you can easily remove if you warm up inside. Paired with the lemon-green mini skirt, which creates a beautiful contrast against your figure, and finished with beige ballet flats and a matching backpack, this outfit strikes the perfect balance between chic style and everyday comfort.",
+"7": "Leave the fur blazer open to highlight the waistline of your khaki blouse and the silhouette of your lemon-green skirt.",
+"8": "Tuck in the hem of your blouse slightly if you want a more defined waist, or let it fall naturally for an effortless vibe.",
+"9": "Жакет з бахромою какао — Velour is chosen on purpose to add texture against the matte day lighting, softening the silhouette.",
+"10": "Спідниця міні з імітацією баски леймон зелена — The green skirt anchors the look as an edge item within her palette rather than a neutral base, fulfilling the scheme's"
+}
+
+── ВІДПОВІДЬ (2253 симв., 53.7 с, HTTP 200) ──
+```json
+{
+"1": "Цей м’який хутряний блейзер кольору какао має драпірований виріз і широкі рукави, що елегантно спадають з плечей. Пухнаста текстура додає тепла та розкоші твоєму образу, зберігаючи при цьому невимушений, безтурботний вигляд.",
+"2": "Ця міні-спідниця кольору лайм зроблена з ребристої трикотажної тканини з високою посадкою, яка трохи розширюється донизу. Її грайливий і водночас елегантний вигляд чудово підкреслює твою фігуру та додає яскравого кольорового акценту твоєму образу.",
+"3": "Ці бежеві шкіряні балетки мають квадратний носок і невисокий каблук для комфорту протягом усього дня. Їхня стримана елегантність чудово поєднується як з повсякденними, так і зі стильними деталями цього образу.",
+"4": "Цей рюкзак кольору беж має передню кишеню на блискавці та регульовані плечові ремені для зручного носіння. Його нейтральний відтінок бездоганно гармонує з іншими елементами твого образу, забезпечуючи практичне місце для зберігання необхідних речей.",
+"5": "Ця вільна блуза кольору хакі виготовлена ​​з легкої креп-тканини з короткими рукавами та розслабленим силуетом, який граційно спадає по твоїй фігурі. Її дихаючий матеріал забезпечує комфорт протягом усього дня, чи ти носиш її під блейзером або окремо.",
+"6": "Цей образ створює вишуканий багатошаровий вигляд для осінніх ранків. М’який хутряний блейзер кольору какао елегантно спадає з плечей, а хакі-блуза дарує дихаючу та розслаблену основу, яку ти легко можеш зняти, якщо тобі стане жарко всередині. У поєднанні з лайм-зеленою міні-спідницею, яка створює чудовий контраст на твоїй фігурі, і доповнена бежевими балетками та відповідним рюкзаком, цей образ досягає ідеального балансу між стильним виглядом і повсякденним комфортом.",
+"7": "Залиш блейзер відкритим, щоб підкреслити лінію талії твоєї хакі-блузи та силует лайм-зеленої спідниці.",
+"8": "Злегка заправ блатузу всередину, якщо хочеш більш чітко окреслений стан, або дай їй вільно спадати для невимушеного вигляду.",
+"9": "Жакет з бахромою какао — Вельвет обрано навмисно, щоб додати текстури на тлі матового денного освітлення та пом’якшити силует.",
+"10": "Спідниця міні з імітацією баски лайм зелена — Зелена спідниця є акцентним елементом у її палітрі, а не нейтральною основою, що задовольняє схему."
+}
+```

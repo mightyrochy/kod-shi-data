@@ -1,0 +1,30 @@
+── ПРОМПТ (2267 симв.) ──
+{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.", "A slot the description says is not needed is not an item: give it worn false. One item carries one thing — of two alternatives list the first; a note in brackets is not an item.", "Slot \"accessory\" is for an item no other slot fits.", "\"is_outfit\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note; then items is empty."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "ITEM_LIST", "answer_schema": {"is_outfit": "yes|no", "items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory", "color_hex": "<#rrggbb or null>", "worn": "<true, or false when the description says the outfit goes without it>"}]}, "input": ["\"description\" — the outfit description"]}, "description": "A tailored dark denim midi skirt in a relaxed A-line cut with mid-calm length, color #1a1a1d, fabric heavyweight stretch cotton.\nAn oversized cream knit sweater with a dropped shoulder silhouette and crew neck length, color #f5f0e6, fabric fine-gauge merino wool.\nMinimalist leather ankle boots with a low block heel in a sleek pointed-toe cut, color #8b7d6e, fabric smooth full-grain leather.\nThis outfit strikes the perfect balance for an autumn morning by choosing dark denim and structured wool that withstands the season's chill while maintaining a relaxed everyday aesthetic. The cream sweater softens the dark skirt to complement her warm skin tone without overpowering the daylight setting, creating a cohesive look that respects her casual preference. Completing the ensemble with understated ankle boots ensures comfort for movement while adding a polished edge suitable for any daytime social engagement."}
+
+── ВІДПОВІДЬ (734 симв., 84.9 с, HTTP 200) ──
+{
+  "is_outfit": "yes",
+  "items": [
+    {
+      "name": "midi skirt",
+      "details": "tailored dark denim relaxed A-line cut with mid-calm length heavyweight stretch cotton fabric",
+      "slot": "bottom",
+      "color_hex": "#1a1a1d",
+      "worn": true
+    },
+    {
+      "name": "sweater",
+      "details": "oversized cream knit with dropped shoulder silhouette and crew neck length fine-gauge merino wool fabric",
+      "slot": "top",
+      "color_hex": "#f5f0e6",
+      "worn": true
+    },
+    {
+      "name": "ankle boots",
+      "details": "minimalist leather with low block heel and sleek pointed-toe cut smooth full-grain leather fabric",
+      "slot": "shoes",
+      "color_hex": "#8b7d6e",
+      "worn": true
+    }
+  ]
+}
