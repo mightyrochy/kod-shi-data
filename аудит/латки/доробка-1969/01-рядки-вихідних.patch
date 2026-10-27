@@ -33,7 +33,7 @@ index 2b8ad55..26f073b 100644
 -| `claude_run.ps1` | `A17354251B4CD11A6D3A77254615798486CE9BEDBA02B3960D0DE9577E19BE4C` |
 +| `claude_run.ps1` | `5C20819CB0145C8B62362FBEFF48C328229090317D8176552E46344C5AD16277` |
  | `CodexInstaller` (`install.ps1` релізу Codex `CodexRelease`) | `A59CB66350098C33B021FF470D586AE8FE3B7CAF189CA7137B4FE3AF5D4DCE74` |
- 
+
  Той самий список читають скрипти `m9v/` з `m9v/хеші.psd1` — міняти їх разом із таблицею. Підготовка одним проходом — `m9v/ЩО_НАТИСНУТИ.md`.
 diff --git a/аудит/адаптери/gemini/перевірка/сценарії_claude.sh b/аудит/адаптери/gemini/перевірка/сценарії_claude.sh
 index 40124d4..9f0407c 100644
@@ -45,6 +45,6 @@ index 40124d4..9f0407c 100644
      ENGINE_MISSING) EXPECTED="$EXPECTED"$'\n''GEMINI ОБГОРТКА: ТРИВОГА ENGINE CLAUDE';; esac
 -  chk "$2 → підсумок $4 і окрема тривога за потреби (є: $(lines))" '[ "$(lines | LC_ALL=C sort)" = "$(printf "%s\n" "$EXPECTED" | LC_ALL=C sort)" ]'; }
 +  chk "$2 → підсумок $4 і окрема тривога за потреби (є: $(lines))" '[ "$(lines | wc -l)" = "$(nlines)" ] && [ "$(lines | LC_ALL=C sort)" = "$(printf "%s\n" "$EXPECTED" | LC_ALL=C sort)" ]'; }
- 
+
  echo "=== К1 ГОТОВО: модель і зусилля дослівно, auto, промпт запускача, SHA з origin, стан в issue"
  setup k1; mark "$SLUG/$M/1"; cr
