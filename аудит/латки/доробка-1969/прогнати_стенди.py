@@ -20,13 +20,25 @@ def main():
     commands = [(p.name, ['C:/Program Files/Git/bin/bash.exe', (root / 'запустити_стенд.sh').as_posix(), p.name])
                 for p in sorted((tree / root).glob('сценарії_*.sh'))]
     commands.append(('перевірити_хеші.py', [sys.executable, str(root / 'перевірити_хеші.py')]))
-    results = []
+    selected = sys.argv[3:]
+    if selected:
+        assert set(selected) <= {name for name, _ in commands}, 'Невідома назва стенда'
+        commands = [(name, command) for name, command in commands if name in selected]
+    saved = output / 'результати.json'
+    results = json.loads(saved.read_text(encoding='utf-8')) if selected and saved.exists() else []
+    results = [r for r in results if r['стенд'] not in selected]
     for name, command in commands:
         start = time.monotonic()
         log = output / (name + '.txt')
         with log.open('wb') as stream:
             result = subprocess.run(command, cwd=tree, env=env, stdout=stream, stderr=subprocess.STDOUT)
-        content = log.read_text(encoding='utf-8')
+        data = log.read_bytes()
+        try:
+            content = data.decode('utf-8')
+        except UnicodeDecodeError:
+            # Діагностичний cut може обрізати багатобайтовий символ: сирі байти лишаються доказом.
+            log.with_suffix(log.suffix + '.bin').write_bytes(data)
+            content = data.decode('utf-8', errors='backslashreplace')
         log.write_bytes(('\n'.join(line.rstrip() for line in content.splitlines()) + '\n').encode('utf-8'))
         results.append({'стенд': name, 'код': result.returncode, 'секунд': round(time.monotonic() - start, 2),
                         'підсумок': content.splitlines()[-1]})
