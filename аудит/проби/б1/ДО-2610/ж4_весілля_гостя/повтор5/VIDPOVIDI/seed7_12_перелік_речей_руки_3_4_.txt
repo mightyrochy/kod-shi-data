@@ -1,0 +1,37 @@
+── ПРОМПТ (2262 симв.) ──
+{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.", "A slot the description says is not needed is not an item: give it worn false. One item carries one thing — of two alternatives list the first; a note in brackets is not an item.", "Slot \"accessory\" is for an item no other slot fits.", "\"is_outfit\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note; then items is empty."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "ITEM_LIST", "answer_schema": {"is_outfit": "yes|no", "items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory", "color_hex": "<#rrggbb or null>", "worn": "<true, or false when the description says the outfit goes without it>"}]}, "input": ["\"description\" — the outfit description"]}, "description": "Satin slip dress with a draped neckline, midi length, deep emerald green (#043927), liquid silk.\nStructured blazer with long sleeves, cropped at the hip, forest green (#1A3D2E), wool blend with subtle sheen.\nStiletto pumps with a pointed toe, knee-high height, forest green (#1A3D2E), patent leather with a satin finish.\nPearl drop earrings and a delicate gold necklace matching the wedding theme.\nThis ensemble bridges the gap between outdoor daylight elegance and indoor upscale dining sophistication perfectly suited for an August evening at 18 degrees. The coordinated forest green palette creates a cohesive, polished look that respects the formal very_smart requirement without appearing overly rigid in summer weather. Adding the structured blazer provides necessary coverage as temperatures dip slightly after sunset while the luxurious satin fabric ensures comfort and grace throughout the reception."}
+
+── ВІДПОВІДЬ (806 симв., 61.2 с, HTTP 200) ──
+{
+  "is_outfit": "yes",
+  "items": [
+    {
+      "name": "Satin slip dress",
+      "details": "draped neckline, midi length, liquid silk fabric",
+      "slot": "dress",
+      "color_hex": "#043927",
+      "worn": true
+    },
+    {
+      "name": "Structured blazer",
+      "details": "long sleeves, cropped at the hip, wool blend with subtle sheen",
+      "slot": "outerwear",
+      "color_hex": "#1A3D2E",
+      "worn": true
+    },
+    {
+      "name": "Stiletto pumps",
+      "details": "pointed toe, knee-high height, patent leather with a satin finish",
+      "slot": "shoes",
+      "color_hex": "#1A3D2E",
+      "worn": true
+    },
+    {
+      "name": "Pearl drop earrings and delicate gold necklace",
+      "details": "",
+      "slot": "jewelry",
+      "color_hex": null,
+      "worn": true
+    }
+  ]
+}
