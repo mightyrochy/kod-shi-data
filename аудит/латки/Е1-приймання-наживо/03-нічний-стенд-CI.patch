@@ -1,0 +1,27 @@
+diff --git a/.github/workflows/obhortka.yml b/.github/workflows/obhortka.yml
+--- a/.github/workflows/obhortka.yml
++++ b/.github/workflows/obhortka.yml
+@@ -5,11 +5,15 @@
+     branches: [main]
+     paths:
+       - 'аудит/адаптери/gemini/**'
++      - 'аудит/проби/перевірити_нічний_маркер.ps1'
++      - 'аудит/проби/нічний_наряд.md'
+       - '.github/workflows/obhortka.yml'
+   push:
+     branches: [main]
+     paths:
+       - 'аудит/адаптери/gemini/**'
++      - 'аудит/проби/перевірити_нічний_маркер.ps1'
++      - 'аудит/проби/нічний_наряд.md'
+       - '.github/workflows/obhortka.yml'
+ 
+ permissions:
+@@ -90,3 +94,7 @@
+       - name: сценарії_черги.sh
+         if: ${{ !cancelled() }}
+         run: bash аудит/адаптери/gemini/перевірка/запустити_стенд.sh сценарії_черги.sh
++
++      - name: нічна позначка за UTC, одна на добу
++        if: ${{ !cancelled() }}
++        run: powershell.exe -NoProfile -File аудит/проби/перевірити_нічний_маркер.ps1 -WrapperRoot аудит/адаптери/gemini

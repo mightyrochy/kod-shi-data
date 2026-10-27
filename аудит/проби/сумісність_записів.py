@@ -8,6 +8,45 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "джерела"))
 import мовний_шар as шар
 
 
+def заяви_з_запису(текст):
+    """Читає вкладені масиви JSON, не відтворюючи заголовків чи шаблону промпту."""
+    декодер = json.JSONDecoder()
+    for індекс, символ in enumerate(текст):
+        if символ != "[":
+            continue
+        try:
+            значення, _ = декодер.raw_decode(текст, індекс)
+        except ValueError:
+            continue
+        if isinstance(значення, list) and значення and all(
+                isinstance(з, dict) and "key" in з and "code" in з for з in значення):
+            return значення
+    return []
+
+
+def відповідь_на_виклик(старий, новий, відповідь):
+    """Переносить дослівну відповідь між іменами тієї самої заяви двох викликів."""
+    було, тепер = заяви_з_запису(старий), заяви_з_запису(новий)
+    дані, _ = шар._обʼєкт(відповідь, [])
+    if not було or not тепер or not isinstance(дані, dict):
+        return відповідь
+    if not set(дані) & {str(з["key"]) for з in було}:
+        return відповідь
+    if шар._повторені_ключі_повідомлень(відповідь):
+        return відповідь
+
+    def зміст(заява):
+        return json.dumps({к: з for к, з in заява.items() if к != "key"}, ensure_ascii=False, sort_keys=True)
+
+    поточні = {зміст(з): str(з["key"]) for з in тепер}
+    перейменування = {str(з["key"]): поточні[зміст(з)] for з in було if зміст(з) in поточні}
+    результат = {перейменування.get(ключ, ключ): текст for ключ, текст in дані.items()}
+    if len(результат) != len(дані):
+        raise ValueError("Перенумерація об'єднала різні відповіді")
+    assert list(результат.values()) == list(дані.values())
+    return json.dumps(результат, ensure_ascii=False)
+
+
 def підготувати(архів):
     """Перенумеровує ключі з архівної розмітки; тексти моделі лишає дослівними."""
     if not Path(архів).is_file():
@@ -40,4 +79,8 @@ def підготувати(архів):
 
 
 if __name__ == "__main__":
-    print(json.dumps(підготувати(sys.argv[1]), ensure_ascii=False))
+    if sys.argv[1] == "--виклик":
+        дані = json.load(sys.stdin)
+        print(json.dumps(відповідь_на_виклик(дані["було"], дані["тепер"], дані["відповідь"]), ensure_ascii=False))
+    else:
+        print(json.dumps(підготувати(sys.argv[1]), ensure_ascii=False))

@@ -2596,6 +2596,8 @@ function підсумокМоделі(){
         return await route.fulfill(відповідь);
       } catch (помилка) {
         console.error('ВІДТВОРЕННЯ:', помилка.message);
+        if (ЗНІМКИ) fs.writeFileSync(path.join(ЗНІМКИ, 'помилка_відтворення.json'),
+          JSON.stringify({причина: помилка.message, тип, запит: тіло}, null, 1) + '\n');
         провалів++;
         ДОКАЗ.обірвано('записаний обмін: ' + помилка.message);
         await браузер.close();
