@@ -1,4 +1,4 @@
-﻿param([string]$Root, [string]$Temp, [ValidateSet('gemini','claude')][string]$Engine = 'gemini', [ValidateSet('quota','worker','spawn','orphan')][string]$Case = 'quota')
+﻿param([string]$Root, [string]$Temp, [ValidateSet('gemini','claude')][string]$Engine = 'gemini', [ValidateSet('quota','worker','spawn','orphan','directory')][string]$Case = 'quota')
 $ErrorActionPreference = 'Stop'
 [Console]::OutputEncoding = [System.Text.Encoding]::UTF8
 [void](New-Item -ItemType Directory -Force -Path $Temp)
@@ -28,6 +28,10 @@ $lane = $(if ($Engine -eq 'gemini') { 'codex' } else { 'claude' })
 $id = '20261027-000000-000000000001'
 $job = [pscustomobject]@{ id = $id; slot = "$lane-1"; dir = $Temp; head = ''; ref = $m.Ref; sha = $m.Sha; gpu = $true; lane = $lane; name = $m.Name; slug = $m.Slug; model = $m.Model; prio = 5; n = '1'; cond = ''; deadline = ''; time = 0; claude = 'claude-test'; effort = 'high'; limits = [pscustomobject]@{ slots = [pscustomobject]@{}; agy_turn_minutes = 10; agy_total_minutes = 30; codex_stall_minutes = 10 }; sel = [pscustomobject]@{ engine = 'codex'; emodel = 'gpt-test'; effort = ''; qknown = $false; qgroup = ''; qleft = -1; model = 'gpt-test' } }
 $sp = Get-StatePath (Get-MarkerKey $m)
+if ($Case -eq 'directory') {
+    # Виняток New-Item після New-Claim, до try/Start-Worker; решта планувальника справжня.
+    function New-Item { throw 'штучна відмова створення теки прогону' }
+}
 if ($Case -eq 'quota' -and $Engine -eq 'claude') {
     # Підміна лише зовнішнього CLI; справжні Invoke-Task -> Invoke-Claude записують STARTED і читають події.
     $py = (Get-Command python).Source
@@ -58,7 +62,7 @@ for ($i = 1; $i -le 7; $i++) {
         $script:Job = $job
         function Enter-WorkTree { throw 'штучна помилка створення worktree' }
         $rc = Invoke-Worker
-    } elseif ($Case -eq 'spawn') {
+    } elseif ($Case -in @('spawn','directory')) {
         $script:Limits = @{ slots = @{ codex = 1; agy = 1; claude = 1 } }
         $script:ProbeMarker = $m
         function Get-Markers { $script:ProbeMarker }
