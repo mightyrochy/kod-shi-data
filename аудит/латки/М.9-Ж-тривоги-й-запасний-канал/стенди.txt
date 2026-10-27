@@ -5,7 +5,7 @@ HEAD is now at d8613d4d9 Merge pull request #1944 from mightyrochy/claude/4.6-A-
 КОМАНДА: git -c core.autocrlf=false -C C:\Users\gemini\gemini-runs\20261027-180117-4244725c5df0\m9zh checkout-index --all --force
 
 ✓ код 0
-КОМАНДА: Python Path.read_bytes().replace(CRLF, LF) для файлів аудит/адаптери/gemini у тимчасовому дереві; база — байти блобів Git.
+КОМАНДА: git show HEAD:<шлях> -> запис байтів кожного відстежуваного файла аудит/адаптери/gemini; база — точні блоби Git без перетворення закінчень рядків.
 КОМАНДА: git -c core.autocrlf=false -C C:\Users\gemini\gemini-runs\20261027-180117-4244725c5df0\m9zh apply --check C:\Users\gemini\kod-shi-data\аудит\латки\М.9-Ж-тривоги-й-запасний-канал\01-здоровя-обгортки.patch
 
 ✓ код 0
@@ -13,40 +13,84 @@ HEAD is now at d8613d4d9 Merge pull request #1944 from mightyrochy/claude/4.6-A-
 
 ✓ код 0
 КОМАНДА: powershell -NoProfile -ExecutionPolicy Bypass -File C:\Users\gemini\gemini-runs\20261027-180117-4244725c5df0\m9zh\аудит\адаптери\gemini\перевірка\сценарії_здоровя.ps1 -Before -SourceDir C:/Users/gemini/kod-shi-data/аудит/адаптери/gemini
-✓ auth Main завершився успішно
-✓ ДО: 401 — коментарів #1690 немає, рядок не доставлено
-✓ ДО: agy без входу — тривог немає
-✓ ДО: heartbeat не має часу зчитування UTC
+✓ auth Main завершився успішно
+
+✓ ДО: 401 — коментарів #1690 немає, рядок не доставлено
+
+✓ ДО: agy без входу — тривог немає
+
+✓ ДО: heartbeat не має часу зчитування UTC
+
 ✓ код 0
 КОМАНДА: powershell -NoProfile -ExecutionPolicy Bypass -File C:\Users\gemini\gemini-runs\20261027-180117-4244725c5df0\m9zh\аудит\адаптери\gemini\перевірка\сценарії_здоровя.ps1
-✓ auth Main завершився успішно
-✓ 401: той самий рядок і тривога CLOUD у #1690 негайно
-✓ auth Main завершився успішно
-✓ повторний запуск не дублює доставленого
-✓ auth Main завершився успішно
-✓ нова подія не дублює ту саму тривогу протягом години
-✓ delay Main завершився успішно
-✓ до 10 хв запасний канал мовчить
-✓ delay Main завершився успішно
-✓ після 10 хв gh доставляє і після вичерпання спроб claude
-✓ exhaust Main завершився успішно
-✓ exhaust Main завершився успішно
-✓ вичерпані спроби: рядок, стан, підсумок і журнал збережено
-✓ exhaust Main завершився успішно
-✓ після вичерпання спроб немає нових викликів gh
-✓ ack Main завершився успішно
-✓ рядкове ok замість булевого true не підтверджує доставку
-✓ JSON agy: групи успадковано, 4 вікна, 92/100/50/0 %, UTC; response ігнорується
-✓ agy без входу створює тривогу AUTH AGY без виводу CLI
-✓ окремі тривоги Codex, ізоляції й диска
-✓ повтор AUTH AGY раніше години придушено
-✓ після години повтор дозволено
-✓ довільна деталь і невідомий код відкидаються
-✓ gemini-run: під час очікування CLI пише UTC, смуги й слоти
-✓ claude-run: під час очікування CLI пише UTC й публікує стан через gh PATCH
-✓ зупинене джерело: за зсуву часу на 6 хв вік >5; свіжа задача власника не освіжає його
-✓ стан ноутбука показує вичерпану доставку
-ВСЕ ✓
+✓ auth Main завершився успішно
+
+✓ 401: той самий рядок і тривога CLOUD у #1690 негайно
+
+✓ auth Main завершився успішно
+
+✓ повторний запуск не дублює доставленого
+
+✓ auth Main завершився успішно
+
+✓ нова подія не дублює ту саму тривогу протягом години
+
+✓ delay Main завершився успішно
+
+✓ до 10 хв запасний канал мовчить
+
+✓ delay Main завершився успішно
+
+✓ після 10 хв gh доставляє і після вичерпання спроб claude
+
+✓ exhaust Main завершився успішно
+
+✓ exhaust Main завершився успішно
+
+✓ вичерпані спроби: рядок, стан, підсумок і журнал збережено
+
+✓ exhaust Main завершився успішно
+
+✓ після вичерпання спроб немає нових викликів gh
+
+✓ ack Main завершився успішно
+
+✓ рядкове ok замість булевого true не підтверджує доставку
+
+✓ response Main завершився успішно
+
+✓ 401 у відповіді з успішним ok не стає тривогою з тексту агента
+
+✓ JSON agy: групи успадковано, 4 вікна, 92/100/50/0 %, UTC; response ігнорується
+
+✓ agy без входу створює тривогу AUTH AGY без виводу CLI
+
+✓ окремі тривоги Codex, ізоляції й диска
+
+✓ повтор AUTH AGY раніше години придушено
+
+✓ після години повтор дозволено
+
+✓ довільна деталь і невідомий код відкидаються
+
+✓ import Main завершився успішно
+
+✓ тривоги Gemini проходять перевірений шаблон і резерв; джерело обміну лишається тільки для читання
+
+✓ import Main завершився успішно
+
+✓ повторне читання теки Gemini не дублює тривог
+
+✓ gemini-run: під час очікування CLI пише UTC, смуги й слоти
+
+✓ claude-run: під час очікування CLI пише UTC й публікує стан через gh PATCH
+
+✓ зупинене джерело: за зсуву часу на 6 хв вік >5; свіжа задача власника не освіжає його
+
+✓ стан ноутбука показує вичерпану доставку
+
+ВСЕ ✓
+
 ✓ код 0
 Час меж 10 хв / 1 год / зупинка 6 хв пересунуто у фікстурах. Живі задачі не зупинялися.
 КОМАНДА: bash C:/Users/gemini/gemini-runs/20261027-180117-4244725c5df0/m9zh/аудит/адаптери/gemini/перевірка/сценарії_доставки.sh
@@ -63,7 +107,7 @@ warning: in the working copy of 'аудит/наряди/М.2-проба-обг�
 === Д2 нуль у групах Pro і Claude & GPT не блокує Flash; залишок квоти — у журналі
 warning: in the working copy of 'аудит/СТАН.md', LF will be replaced by CRLF the next time Git touches it
 warning: in the working copy of 'аудит/наряди/М.2-проба-обгортки.md', LF will be replaced by CRLF the next time Git touches it
-  → GEMINI ОБГОРТКА: ГОТОВО gemini/М.2-проба-обгортки d2b67897b8bc99dbaf9b925525d50cdd3d3bb991 КВОТА GEMINI35FLASH 34 МОДЕЛЬ gemini-3.8-flash-high
+  → GEMINI ОБГОРТКА: ГОТОВО gemini/М.2-проба-обгортки 875d08797dca2e00d8e22575d995765869182cd3 КВОТА GEMINI35FLASH 34 МОДЕЛЬ gemini-3.8-flash-high
   → GEMINI ОБГОРТКА: ПУЛИ V=1.1.11 G=GEMINI35FLASH:34:137 G=GEMINI31PRO:0:137 G=CLAUDEGPT:0:137 M=gemini-3.8-flash-high,claude-opus-5-5-high
   ✓ наряд пройшов: ГОТОВО gemini/<наряд> <SHA40>
   ✓ залишок 34 % у publish.log
@@ -113,9 +157,9 @@ warning: in the working copy of 'аудит/наряди/М.2-проба-обг�
 === Д6 повтор і стан «надіслано / спроби»: збій claude -> спроби, далі доставлено один раз
 warning: in the working copy of 'аудит/СТАН.md', LF will be replaced by CRLF the next time Git touches it
 warning: in the working copy of 'аудит/наряди/М.2-проба-обгортки.md', LF will be replaced by CRLF the next time Git touches it
-{"line":"СПОСТЕРІГАЧ CI #5 bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb success","sent":false,"attempts":3,"first_failure_utc":"2026-10-27T16:13:32.4399325Z","fallback_attempts":0,"channel":"","exhausted":false,"cloud_auth":false}
+{"line":"СПОСТЕРІГАЧ CI #5 bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb success","sent":false,"attempts":3,"first_failure_utc":"2026-10-27T16:29:44.7451876Z","fallback_attempts":0,"channel":"","exhausted":false,"cloud_auth":false}
   ✓ після збою: sent=false, attempts=3 (SendRetries)
-{"line":"СПОСТЕРІГАЧ CI #5 bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb success","sent":true,"attempts":4,"first_failure_utc":"2026-10-27T16:13:32.4399325Z","fallback_attempts":0,"channel":"claude","exhausted":false,"cloud_auth":false}
+{"line":"СПОСТЕРІГАЧ CI #5 bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb success","sent":true,"attempts":4,"first_failure_utc":"2026-10-27T16:29:44.7451876Z","fallback_attempts":0,"channel":"claude","exhausted":false,"cloud_auth":false}
   ✓ після відновлення: sent=true, attempts=4
   ✓ доставлено рівно раз
 === Д6б межа спроб: MaxSendAttempts=4 — тиша після чотирьох
@@ -143,92 +187,92 @@ warning: in the working copy of 'аудит/СТАН.md', LF will be replaced by
 warning: in the working copy of 'аудит/наряди/М.2-проба-обгортки.md', LF will be replaced by CRLF the next time Git touches it
   wrapper: 1 прогонів; 
   claude: 2 рядків
-  pub: кінець 20261027-181355-fee11e1fa22f — ОПУБЛІКОВАНО gemini/М.2-проба-обгортки 8e72684b5eb2e1c51c4b39b60789692a39e21a45; комітів 1, файлів до main 1; без .github/ і фай�
-  pub: вихідні 20261027-181355-fee11e1fa22f.txt: GEMINI ОБГОРТКА: ГОТОВО gemini/М.2-проба-обгортки 8e72684b5eb2e1c51c4b39b60789692a39e21a45 КВОТА GEMINI35FLASH 34 МОДЕЛЬ gemini-3.8-fla
-  pub: вихідні 20261027-181359-46492c06beee.txt: GEMINI ОБГОРТКА: ПУЛИ V=1.1.11 G=GEMINI35FLASH:34:137 G=GEMINI31PRO:0:137 G=CLAUDEGPT:0:137 M=gemini-3.8-flash-high,claude-opus-5-5-high
-  origin refs/heads/gemini/М.2-проба-обгортки 8e72684
+  pub: кінець 20261027-183007-cf3a7b8c5e59 — ОПУБЛІКОВАНО gemini/М.2-проба-обгортки 76ec5c6185524f459901525776514c73f06582ea; комітів 1, файлів до main 1; без .github/ і фай�
+  pub: вихідні 20261027-183007-cf3a7b8c5e59.txt: GEMINI ОБГОРТКА: ГОТОВО gemini/М.2-проба-обгортки 76ec5c6185524f459901525776514c73f06582ea КВОТА GEMINI35FLASH 34 МОДЕЛЬ gemini-3.8-fla
+  pub: вихідні 20261027-183011-46492c06beee.txt: GEMINI ОБГОРТКА: ПУЛИ V=1.1.11 G=GEMINI35FLASH:34:137 G=GEMINI31PRO:0:137 G=CLAUDEGPT:0:137 M=gemini-3.8-flash-high,claude-opus-5-5-high
+  origin refs/heads/gemini/М.2-проба-обгортки 76ec5c6
 === 2 позначку знято до публікації
 warning: in the working copy of 'аудит/СТАН.md', LF will be replaced by CRLF the next time Git touches it
 warning: in the working copy of 'аудит/наряди/М.2-проба-обгортки.md', LF will be replaced by CRLF the next time Git touches it
   wrapper: 1 прогонів; 
   claude: 2 рядків
-  pub: стан 20261027-181403-64ad8ee55e2a не відповідає жодній позначці черги на GitHub — не опубліковано
-  pub: вихідні 20261027-181403-64ad8ee55e2a.txt: GEMINI ОБГОРТКА: ЗАБЛОКОВАНО gemini/невідомо STATE_INVALID
-  pub: вихідні 20261027-181407-46492c06beee.txt: GEMINI ОБГОРТКА: ПУЛИ V=1.1.11 G=GEMINI35FLASH:34:137 G=GEMINI31PRO:0:137 G=CLAUDEGPT:0:137 M=gemini-3.8-flash-high,claude-opus-5-5-high
+  pub: стан 20261027-183015-2b5e50e964b0 не відповідає жодній позначці черги на GitHub — не опубліковано
+  pub: вихідні 20261027-183015-2b5e50e964b0.txt: GEMINI ОБГОРТКА: ЗАБЛОКОВАНО gemini/невідомо STATE_INVALID
+  pub: вихідні 20261027-183019-46492c06beee.txt: GEMINI ОБГОРТКА: ПУЛИ V=1.1.11 G=GEMINI35FLASH:34:137 G=GEMINI31PRO:0:137 G=CLAUDEGPT:0:137 M=gemini-3.8-flash-high,claude-opus-5-5-high
 === 3 не fast-forward
 warning: in the working copy of 'аудит/СТАН.md', LF will be replaced by CRLF the next time Git touches it
 warning: in the working copy of 'аудит/наряди/М.2-проба-обгортки.md', LF will be replaced by CRLF the next time Git touches it
 warning: in the working copy of 'y', LF will be replaced by CRLF the next time Git touches it
   wrapper: 1 прогонів; 
   claude: 2 рядків
-  pub: кінець 20261027-181410-5136da5edf64 — НЕ ОПУБЛІКОВАНО gemini/М.2-проба-обгортки 8882a35e5774099105dc78f2dbe6496aa462eaed — не fast-forward до опублікованої гілки; 
-  pub: вихідні 20261027-181410-5136da5edf64.txt: GEMINI ОБГОРТКА: ЗАБЛОКОВАНО gemini/М.2-проба-обгортки NOT_FF
-  pub: вихідні 20261027-181415-46492c06beee.txt: GEMINI ОБГОРТКА: ПУЛИ V=1.1.11 G=GEMINI35FLASH:34:137 G=GEMINI31PRO:0:137 G=CLAUDEGPT:0:137 M=gemini-3.8-flash-high,claude-opus-5-5-high
-  origin refs/heads/gemini/М.2-проба-обгортки 55205e8
+  pub: кінець 20261027-183021-3ad2f95ad99b — НЕ ОПУБЛІКОВАНО gemini/М.2-проба-обгортки 81439ea02597d051c480f5a9777ae7c3e4db1027 — не fast-forward до опублікованої гілки; 
+  pub: вихідні 20261027-183021-3ad2f95ad99b.txt: GEMINI ОБГОРТКА: ЗАБЛОКОВАНО gemini/М.2-проба-обгортки NOT_FF
+  pub: вихідні 20261027-183026-46492c06beee.txt: GEMINI ОБГОРТКА: ПУЛИ V=1.1.11 G=GEMINI35FLASH:34:137 G=GEMINI31PRO:0:137 G=CLAUDEGPT:0:137 M=gemini-3.8-flash-high,claude-opus-5-5-high
+  origin refs/heads/gemini/М.2-проба-обгортки 74d9cdd
 === 4 claude не приймає: 2 спроби й тиша
 warning: in the working copy of 'аудит/СТАН.md', LF will be replaced by CRLF the next time Git touches it
 warning: in the working copy of 'аудит/наряди/М.2-проба-обгортки.md', LF will be replaced by CRLF the next time Git touches it
   wrapper: 1 прогонів; 
   claude: 4 рядків
-  pub: кінець 20261027-181417-4bcc7d307f19 — ОПУБЛІКОВАНО gemini/М.2-проба-обгортки 9524c55b75a92b824595e0deeb3c7795ac725b5e; комітів 1, файлів до main 1; без .github/ і фай�
-  pub: вихідні 20261027-181417-4bcc7d307f19.txt: GEMINI ОБГОРТКА: ГОТОВО gemini/М.2-проба-обгортки 9524c55b75a92b824595e0deeb3c7795ac725b5e КВОТА GEMINI35FLASH 34 МОДЕЛЬ gemini-3.8-fla
-  pub: вихідні 20261027-181421-46492c06beee.txt: GEMINI ОБГОРТКА: ПУЛИ V=1.1.11 G=GEMINI35FLASH:34:137 G=GEMINI31PRO:0:137 G=CLAUDEGPT:0:137 M=gemini-3.8-flash-high,claude-opus-5-5-high
+  pub: кінець 20261027-183028-5a9382b412ad — ОПУБЛІКОВАНО gemini/М.2-проба-обгортки 3ea1b212c19b01d17d92afb85a2613fc3f317674; комітів 1, файлів до main 1; без .github/ і фай�
+  pub: вихідні 20261027-183028-5a9382b412ad.txt: GEMINI ОБГОРТКА: ГОТОВО gemini/М.2-проба-обгортки 3ea1b212c19b01d17d92afb85a2613fc3f317674 КВОТА GEMINI35FLASH 34 МОДЕЛЬ gemini-3.8-fla
+  pub: вихідні 20261027-183032-46492c06beee.txt: GEMINI ОБГОРТКА: ПУЛИ V=1.1.11 G=GEMINI35FLASH:34:137 G=GEMINI31PRO:0:137 G=CLAUDEGPT:0:137 M=gemini-3.8-flash-high,claude-opus-5-5-high
   pub: claude --cloud session_01TEST -> 0: {"ok": false, "session_id": "session_01TEST"} 
   pub: claude --cloud session_01TEST -> 0: {"ok": false, "session_id": "session_01TEST"} 
   pub: claude --cloud session_01TEST -> 0: {"ok": false, "session_id": "session_01TEST"} 
   pub: claude --cloud session_01TEST -> 0: {"ok": false, "session_id": "session_01TEST"} 
-  origin refs/heads/gemini/М.2-проба-обгортки 9524c55
+  origin refs/heads/gemini/М.2-проба-обгортки 3ea1b21
 === 5 доробка: старт від опублікованої gemini/<наряд>, спроба 2
 warning: in the working copy of 'аудит/СТАН.md', LF will be replaced by CRLF the next time Git touches it
 warning: in the working copy of 'аудит/наряди/М.2-проба-обгортки.md', LF will be replaced by CRLF the next time Git touches it
   wrapper: 2 прогонів; 
   claude: 3 рядків
-  pub: кінець 20261027-181425-5ea7818198ac — ОПУБЛІКОВАНО gemini/М.2-проба-обгортки 018f73417ff2cd8c7dd0f2c373722cc10e61ec61; комітів 1, файлів до main 1; без .github/ і фай�
-  pub: вихідні 20261027-181425-5ea7818198ac.txt: GEMINI ОБГОРТКА: ГОТОВО gemini/М.2-проба-обгортки 018f73417ff2cd8c7dd0f2c373722cc10e61ec61 КВОТА GEMINI35FLASH 34 МОДЕЛЬ gemini-3.8-fla
-  pub: вихідні 20261027-181430-46492c06beee.txt: GEMINI ОБГОРТКА: ПУЛИ V=1.1.11 G=GEMINI35FLASH:34:137 G=GEMINI31PRO:0:137 G=CLAUDEGPT:0:137 M=gemini-3.8-flash-high,claude-opus-5-5-high
-  pub: кінець 20261027-181431-0885d17cc861 — ОПУБЛІКОВАНО gemini/М.2-проба-обгортки 7caa407d3d770f2960a3c19cc84e9627e9ec4dea; комітів 1, файлів до main 1; без .github/ і фай�
-  pub: вихідні 20261027-181431-0885d17cc861.txt: GEMINI ОБГОРТКА: ГОТОВО gemini/М.2-проба-обгортки 7caa407d3d770f2960a3c19cc84e9627e9ec4dea КВОТА GEMINI35FLASH 34 МОДЕЛЬ gemini-3.8-fla
-  origin refs/heads/gemini/М.2-проба-обгортки 7caa407
-C:/Users/gemini/gemini-runs/m9zh-tmp/gemini-obhortka/r5/out/20261027-181425-5ea7818198ac.json:"start":"5342257
-C:/Users/gemini/gemini-runs/m9zh-tmp/gemini-obhortka/r5/out/20261027-181431-0885d17cc861.json:"start":"018f734
-=== 6 ізоляція ENV: один рядок на добу, прогону нема
+  pub: кінець 20261027-183037-384f7a390ba9 — ОПУБЛІКОВАНО gemini/М.2-проба-обгортки ca3ab7b1dac01aca6def7bb49ab5a5fe4ef313ff; комітів 1, файлів до main 1; без .github/ і фай�
+  pub: вихідні 20261027-183037-384f7a390ba9.txt: GEMINI ОБГОРТКА: ГОТОВО gemini/М.2-проба-обгортки ca3ab7b1dac01aca6def7bb49ab5a5fe4ef313ff КВОТА GEMINI35FLASH 34 МОДЕЛЬ gemini-3.8-fla
+  pub: вихідні 20261027-183041-46492c06beee.txt: GEMINI ОБГОРТКА: ПУЛИ V=1.1.11 G=GEMINI35FLASH:34:137 G=GEMINI31PRO:0:137 G=CLAUDEGPT:0:137 M=gemini-3.8-flash-high,claude-opus-5-5-high
+  pub: кінець 20261027-183042-ba6065d473a0 — ОПУБЛІКОВАНО gemini/М.2-проба-обгортки 791497a61561d191d805f9a0d9815edb1e1d855b; комітів 1, файлів до main 1; без .github/ і фай�
+  pub: вихідні 20261027-183042-ba6065d473a0.txt: GEMINI ОБГОРТКА: ГОТОВО gemini/М.2-проба-обгортки 791497a61561d191d805f9a0d9815edb1e1d855b КВОТА GEMINI35FLASH 34 МОДЕЛЬ gemini-3.8-fla
+  origin refs/heads/gemini/М.2-проба-обгортки 791497a
+C:/Users/gemini/gemini-runs/m9zh-tmp/gemini-obhortka/r5/out/20261027-183037-384f7a390ba9.json:"start":"8fa95ce
+C:/Users/gemini/gemini-runs/m9zh-tmp/gemini-obhortka/r5/out/20261027-183042-ba6065d473a0.json:"start":"ca3ab7b
+=== 6 ізоляція ENV: підсумок і окрема тривога, прогону нема
 warning: in the working copy of 'аудит/СТАН.md', LF will be replaced by CRLF the next time Git touches it
 warning: in the working copy of 'аудит/наряди/М.2-проба-обгортки.md', LF will be replaced by CRLF the next time Git touches it
   wrapper: 0 прогонів; ізоляція: ENV — нових прогонів нема|ізоляція: ENV — нових прогонів нема|
   claude: 2 рядків
   pub: ізоляція не пройшла перевірку (ENV — у змінних середовища gemini є KEY/TOKEN/SECRET/PASSWORD); прогони Gemini стоять, потрібна дія власника
-  pub: вихідні 20261027-161440-780127677c9a.txt: GEMINI ОБГОРТКА: ТРИВОГА ISOLATION ENV
-  pub: вихідні 20261027-181438-841c891a0cb8.txt: GEMINI ОБГОРТКА: ЗАБЛОКОВАНО gemini/невідомо ISOLATION_FAILED
-  ✗ рядок ізоляції
+  pub: вихідні 20261027-163051-ab4726c0aab3.txt: GEMINI ОБГОРТКА: ТРИВОГА ISOLATION ENV
+  pub: вихідні 20261027-183049-841c891a0cb8.txt: GEMINI ОБГОРТКА: ЗАБЛОКОВАНО gemini/невідомо ISOLATION_FAILED
+  ✓ ізоляція — закритий підсумок і тривога, без вільного тексту
 === 7 стара позначка, крива назва, не з main, нема файлу наряду
 warning: in the working copy of 'аудит/СТАН.md', LF will be replaced by CRLF the next time Git touches it
 warning: in the working copy of 'аудит/наряди/М.2-проба-обгортки.md', LF will be replaced by CRLF the next time Git touches it
   wrapper: 2 прогонів; позначка gemini-queue/крива/назва: назва не за форматом gemini-queue/<наряд>/<модель>/<спроба>[/<умови>] — пропущено|позначка gemini-queue/М.2-проба-обгортки/gemini-3.8-flash-high/1: коміт старший за 7 діб — пропущено|
   claude: 3 рядків
-  pub: кінець 20261027-181444-11e8bd0f959a — НЕ ЗАВЕРШЕНО gemini/Інший-наряд — нема файлу наряду на коміті позначки; ходів 0, хв 0; черга gemini-queue/Ін�
-  pub: кінець 20261027-181444-d1a965a61abf — НЕ ЗАВЕРШЕНО gemini/М.2-проба-обгортки — коміт позначки не з main; ходів 0, хв 0; черга gemini-queue/М.2-проба-об�
-  pub: вихідні 20261027-181444-11e8bd0f959a.txt: GEMINI ОБГОРТКА: ЗАБЛОКОВАНО gemini/Інший-наряд NO_TASK_FILE
-  pub: вихідні 20261027-181444-d1a965a61abf.txt: GEMINI ОБГОРТКА: ЗАБЛОКОВАНО gemini/М.2-проба-обгортки NOT_ON_MAIN
-  pub: вихідні 20261027-181450-46492c06beee.txt: GEMINI ОБГОРТКА: ПУЛИ V=1.1.11 G=GEMINI35FLASH:34:137 G=GEMINI31PRO:0:137 G=CLAUDEGPT:0:137 M=gemini-3.8-flash-high,claude-opus-5-5-high
+  pub: кінець 20261027-183055-9a905ffc7cc1 — НЕ ЗАВЕРШЕНО gemini/М.2-проба-обгортки — коміт позначки не з main; ходів 0, хв 0; черга gemini-queue/М.2-проба-об�
+  pub: кінець 20261027-183055-bade4127b972 — НЕ ЗАВЕРШЕНО gemini/Інший-наряд — нема файлу наряду на коміті позначки; ходів 0, хв 0; черга gemini-queue/Ін�
+  pub: вихідні 20261027-183055-9a905ffc7cc1.txt: GEMINI ОБГОРТКА: ЗАБЛОКОВАНО gemini/М.2-проба-обгортки NOT_ON_MAIN
+  pub: вихідні 20261027-183055-bade4127b972.txt: GEMINI ОБГОРТКА: ЗАБЛОКОВАНО gemini/Інший-наряд NO_TASK_FILE
+  pub: вихідні 20261027-183101-46492c06beee.txt: GEMINI ОБГОРТКА: ПУЛИ V=1.1.11 G=GEMINI35FLASH:34:137 G=GEMINI31PRO:0:137 G=CLAUDEGPT:0:137 M=gemini-3.8-flash-high,claude-opus-5-5-high
       1 "code":"NOT_ON_MAIN"
       1 "code":"NO_TASK_FILE"
 === 8 перерваний прогін: стан STARTED із JSON -> INTERRUPTED із бандлом
 warning: in the working copy of 'аудит/СТАН.md', LF will be replaced by CRLF the next time Git touches it
 warning: in the working copy of 'аудит/наряди/М.2-проба-обгортки.md', LF will be replaced by CRLF the next time Git touches it
-C:/Users/gemini/gemini-runs/20261027-180117-4244725c5df0/m9zh/аудит/адаптери/gemini/перевірка/сценарії_черги.sh: line 36: 249161 Killed                     timeout -s KILL 5 "$PW" -NoProfile -File "$(wp "$H/side.ps1")" -Script "$(wp "$SRC/gemini_run.ps1")" -ArgsJson "{\"RepoDir\":\"$WW/clone\",\"RunsDir\":\"$WW/runs\",\"OutDir\":\"$WW/out\",\"RepoUrl\":\"$WW/origin.git\",\"AgyExe\":\"$(stub fake_agy)\",\"TurnMinutes\":5,\"TotalMinutes\":10,\"MaxNudges\":3}"
+C:/Users/gemini/gemini-runs/20261027-180117-4244725c5df0/m9zh/аудит/адаптери/gemini/перевірка/сценарії_черги.sh: line 36: 257100 Killed                     timeout -s KILL 5 "$PW" -NoProfile -File "$(wp "$H/side.ps1")" -Script "$(wp "$SRC/gemini_run.ps1")" -ArgsJson "{\"RepoDir\":\"$WW/clone\",\"RunsDir\":\"$WW/runs\",\"OutDir\":\"$WW/out\",\"RepoUrl\":\"$WW/origin.git\",\"AgyExe\":\"$(stub fake_agy)\",\"TurnMinutes\":5,\"TotalMinutes\":10,\"MaxNudges\":3}"
   wrapper: 1 прогонів; 
   claude: 2 рядків
-  pub: кінець 20261027-181452-c48ae5e4a67e — ОПУБЛІКОВАНО gemini/М.2-проба-обгортки a6321f8055da59de7e47e2d5602aaeff6d1a3f26; комітів 1, файлів до main 1; без .github/ і фай�
-  pub: вихідні 20261027-181452-c48ae5e4a67e.txt: GEMINI ОБГОРТКА: ЗАБЛОКОВАНО gemini/М.2-проба-обгортки INTERRUPTED_PUBLISHED
-  pub: вихідні 20261027-181459-46492c06beee.txt: GEMINI ОБГОРТКА: ПУЛИ V=1.1.11 G=GEMINI35FLASH:34:137 G=GEMINI31PRO:0:137 G=CLAUDEGPT:0:137 M=gemini-3.8-flash-high,claude-opus-5-5-high
-  origin refs/heads/gemini/М.2-проба-обгортки a6321f8
+  pub: кінець 20261027-183103-ba8c41fca1d5 — ОПУБЛІКОВАНО gemini/М.2-проба-обгортки 1190bf7d8a885b1331e03648904db1e2d7cc2146; комітів 1, файлів до main 1; без .github/ і фай�
+  pub: вихідні 20261027-183103-ba8c41fca1d5.txt: GEMINI ОБГОРТКА: ЗАБЛОКОВАНО gemini/М.2-проба-обгортки INTERRUPTED_PUBLISHED
+  pub: вихідні 20261027-183110-46492c06beee.txt: GEMINI ОБГОРТКА: ПУЛИ V=1.1.11 G=GEMINI35FLASH:34:137 G=GEMINI31PRO:0:137 G=CLAUDEGPT:0:137 M=gemini-3.8-flash-high,claude-opus-5-5-high
+  origin refs/heads/gemini/М.2-проба-обгортки 1190bf7
       1 "code":"INTERRUPTED"
 === 9 спам: копії стану з іншими id на ту саму позначку й купа кривих
 warning: in the working copy of 'аудит/СТАН.md', LF will be replaced by CRLF the next time Git touches it
 warning: in the working copy of 'аудит/наряди/М.2-проба-обгортки.md', LF will be replaced by CRLF the next time Git touches it
   wrapper: 1 прогонів; 
   claude: 3 рядків
-  pub: кінець 20261027-181502-65adef74baea — ОПУБЛІКОВАНО gemini/М.2-проба-обгортки 73823238cea572c5b940f476d917bdaee282ba99; комітів 1, файлів до main 1; без .github/ і фай�
+  pub: кінець 20261027-183113-f12493fa941d — ОПУБЛІКОВАНО gemini/М.2-проба-обгортки 0f4cf9d77d74ddfb34fd74af76a85d0d75a99a07; комітів 1, файлів до main 1; без .github/ і фай�
   pub: стан 20991231-000001-aaaaaaaaaaa1 — повтор, рядка нема
   pub: стан 20991231-000002-aaaaaaaaaaa2 — повтор, рядка нема
   pub: стан 20991231-000003-aaaaaaaaaaa3 — повтор, рядка нема
@@ -237,10 +281,10 @@ warning: in the working copy of 'аудит/наряди/М.2-проба-обг�
   pub: стан 20991231-000102-bbbbbbbbbbb2 — повтор, рядка нема
   pub: стан 20991231-000103-bbbbbbbbbbb3 не за форматом — не опубліковано
   pub: стан 20991231-000103-bbbbbbbbbbb3 — повтор, рядка нема
-  pub: вихідні 20261027-181502-65adef74baea.txt: GEMINI ОБГОРТКА: ГОТОВО gemini/М.2-проба-обгортки 73823238cea572c5b940f476d917bdaee282ba99 КВОТА GEMINI35FLASH 34 МОДЕЛЬ gemini-3.8-fla
-  pub: вихідні 20261027-181507-46492c06beee.txt: GEMINI ОБГОРТКА: ПУЛИ V=1.1.11 G=GEMINI35FLASH:34:137 G=GEMINI31PRO:0:137 G=CLAUDEGPT:0:137 M=gemini-3.8-flash-high,claude-opus-5-5-high
+  pub: вихідні 20261027-183113-f12493fa941d.txt: GEMINI ОБГОРТКА: ГОТОВО gemini/М.2-проба-обгортки 0f4cf9d77d74ddfb34fd74af76a85d0d75a99a07 КВОТА GEMINI35FLASH 34 МОДЕЛЬ gemini-3.8-fla
+  pub: вихідні 20261027-183118-46492c06beee.txt: GEMINI ОБГОРТКА: ПУЛИ V=1.1.11 G=GEMINI35FLASH:34:137 G=GEMINI31PRO:0:137 G=CLAUDEGPT:0:137 M=gemini-3.8-flash-high,claude-opus-5-5-high
   pub: вихідні 20991231-000101-bbbbbbbbbbb1.txt: GEMINI ОБГОРТКА: ЗАБЛОКОВАНО gemini/невідомо STATE_INVALID
-  origin refs/heads/gemini/М.2-проба-обгортки 7382323
+  origin refs/heads/gemini/М.2-проба-обгортки 0f4cf9d
   ✓ криві стани — один закритий рядок STATE_INVALID на добу
 === 10 пуш відхилено: 2 тихі повтори, рядок, -Retry після виправлення
 warning: in the working copy of 'аудит/СТАН.md', LF will be replaced by CRLF the next time Git touches it
@@ -249,20 +293,20 @@ warning: in the working copy of 'аудит/наряди/М.2-проба-обг�
   wrapper: 1 прогонів; 
   claude: 2 рядків
   pub: пуш refs/heads/gemini/М.2-проба-обгортки -> 1: To C:/Users/gemini/gemini-runs/m9zh-tmp/gemini-obhortka/r10/origin.git
- ! [remote rejected] 7d7a1a5db6a32d80ed349ddfbcbb8755dedd7791 -> gemini/М.2-проба-обгортки (pre-receive hook declined)
+ ! [remote rejected] 823884273ed9c9c5c78ff0d0cf3b7cd36a99f6bf -> gemini/М.2-проба-обгортки (pre-receive hook declined)
 error: failed to push some refs to 'C:/Users/gemini/gemini-runs/m9zh-tmp/gemini-obhortka/r10/origin.git'
-  pub: вихідні 20261027-181514-46492c06beee.txt: GEMINI ОБГОРТКА: ПУЛИ V=1.1.11 G=GEMINI35FLASH:34:137 G=GEMINI31PRO:0:137 G=CLAUDEGPT:0:137 M=gemini-3.8-flash-high,claude-opus-5-5-high
+  pub: вихідні 20261027-183125-46492c06beee.txt: GEMINI ОБГОРТКА: ПУЛИ V=1.1.11 G=GEMINI35FLASH:34:137 G=GEMINI31PRO:0:137 G=CLAUDEGPT:0:137 M=gemini-3.8-flash-high,claude-opus-5-5-high
   pub: пуш refs/heads/gemini/М.2-проба-обгортки -> 1: To C:/Users/gemini/gemini-runs/m9zh-tmp/gemini-obhortka/r10/origin.git
- ! [remote rejected] 7d7a1a5db6a32d80ed349ddfbcbb8755dedd7791 -> gemini/М.2-проба-обгортки (pre-receive hook declined)
+ ! [remote rejected] 823884273ed9c9c5c78ff0d0cf3b7cd36a99f6bf -> gemini/М.2-проба-обгортки (pre-receive hook declined)
 error: failed to push some refs to 'C:/Users/gemini/gemini-runs/m9zh-tmp/gemini-obhortka/r10/origin.git'
   pub: пуш refs/heads/gemini/М.2-проба-обгортки -> 1: To C:/Users/gemini/gemini-runs/m9zh-tmp/gemini-obhortka/r10/origin.git
- ! [remote rejected] 7d7a1a5db6a32d80ed349ddfbcbb8755dedd7791 -> gemini/М.2-проба-обгортки (pre-receive hook declined)
+ ! [remote rejected] 823884273ed9c9c5c78ff0d0cf3b7cd36a99f6bf -> gemini/М.2-проба-обгортки (pre-receive hook declined)
 error: failed to push some refs to 'C:/Users/gemini/gemini-runs/m9zh-tmp/gemini-obhortka/r10/origin.git'
-  pub: кінець 20261027-181510-96fe73c16726 — НЕ ОПУБЛІКОВАНО gemini/М.2-проба-обгортки 7d7a1a5db6a32d80ed349ddfbcbb8755dedd7791 — пуш не вдавався годину (журнал publis
-  pub: вихідні 20261027-181510-96fe73c16726.txt: GEMINI ОБГОРТКА: ЗАБЛОКОВАНО gemini/М.2-проба-обгортки PUSH_FAILED
-  pub: стан 20261027-181510-96fe73c16726 забуто рукою власника — повтор
-  pub: кінець 20261027-181510-96fe73c16726 — ОПУБЛІКОВАНО gemini/М.2-проба-обгортки 7d7a1a5db6a32d80ed349ddfbcbb8755dedd7791; комітів 1, файлів до main 1; без .github/ і фай�
-  origin refs/heads/gemini/М.2-проба-обгортки 7d7a1a5
+  pub: кінець 20261027-183121-5259cd2ac3bc — НЕ ОПУБЛІКОВАНО gemini/М.2-проба-обгортки 823884273ed9c9c5c78ff0d0cf3b7cd36a99f6bf — пуш не вдавався годину (журнал publis
+  pub: вихідні 20261027-183121-5259cd2ac3bc.txt: GEMINI ОБГОРТКА: ЗАБЛОКОВАНО gemini/М.2-проба-обгортки PUSH_FAILED
+  pub: стан 20261027-183121-5259cd2ac3bc забуто рукою власника — повтор
+  pub: кінець 20261027-183121-5259cd2ac3bc — ОПУБЛІКОВАНО gemini/М.2-проба-обгортки 823884273ed9c9c5c78ff0d0cf3b7cd36a99f6bf; комітів 1, файлів до main 1; без .github/ і фай�
+  origin refs/heads/gemini/М.2-проба-обгортки 8238842
 === 11 підроблений стан (8940): ранній id на ту саму позначку, models і числа з текстом
 warning: in the working copy of 'аудит/СТАН.md', LF will be replaced by CRLF the next time Git touches it
 warning: in the working copy of 'аудит/наряди/М.2-проба-обгортки.md', LF will be replaced by CRLF the next time Git touches it
@@ -270,15 +314,193 @@ warning: in the working copy of 'аудит/наряди/М.2-проба-обг�
   claude: 4 рядків
   pub: кінець 20000101-000000-aaaaaaaaaaaa — НЕ ЗАВЕРШЕНО gemini/М.2-проба-обгортки — agy не знає моделі з позначки; ходів 0, хв 0; черга gemini-queue/М.2-про
   pub: кінець 20000101-000001-aaaaaaaaaaaa — НЕ ЗАВЕРШЕНО gemini/М.2-проба-обгортки — агент без звіту після всіх догонок; ходів 0, хв 0; черга gemini-queu
-  pub: кінець 20261027-181521-18131ae9de8e — ОПУБЛІКОВАНО gemini/М.2-проба-обгортки 3bd2a32d869fbe54f8c05ba9030c08e0b22d83aa; комітів 1, файлів до main 1; без .github/ і фай�
+  pub: кінець 20261027-183133-d2aebdf6d2b4 — ОПУБЛІКОВАНО gemini/М.2-проба-обгортки cc2fc1a5924c3560f2c1112be40b5a54fe728041; комітів 1, файлів до main 1; без .github/ і фай�
   pub: вихідні 20000101-000000-aaaaaaaaaaaa.txt: GEMINI ОБГОРТКА: ЗАБЛОКОВАНО gemini/М.2-проба-обгортки MODEL_INVALID
   pub: вихідні 20000101-000001-aaaaaaaaaaaa.txt: GEMINI ОБГОРТКА: ЗАБЛОКОВАНО gemini/М.2-проба-обгортки NO_REPORT
-  pub: вихідні 20261027-181521-18131ae9de8e.txt: GEMINI ОБГОРТКА: ГОТОВО gemini/М.2-проба-обгортки 3bd2a32d869fbe54f8c05ba9030c08e0b22d83aa КВОТА GEMINI35FLASH 34 МОДЕЛЬ gemini-3.8-fla
-  pub: вихідні 20261027-181525-46492c06beee.txt: GEMINI ОБГОРТКА: ПУЛИ V=1.1.11 G=GEMINI35FLASH:34:137 G=GEMINI31PRO:0:137 G=CLAUDEGPT:0:137 M=gemini-3.8-flash-high,claude-opus-5-5-high
-  origin refs/heads/gemini/М.2-проба-обгортки 3bd2a32
+  pub: вихідні 20261027-183133-d2aebdf6d2b4.txt: GEMINI ОБГОРТКА: ГОТОВО gemini/М.2-проба-обгортки cc2fc1a5924c3560f2c1112be40b5a54fe728041 КВОТА GEMINI35FLASH 34 МОДЕЛЬ gemini-3.8-fla
+  pub: вихідні 20261027-183138-46492c06beee.txt: GEMINI ОБГОРТКА: ПУЛИ V=1.1.11 G=GEMINI35FLASH:34:137 G=GEMINI31PRO:0:137 G=CLAUDEGPT:0:137 M=gemini-3.8-flash-high,claude-opus-5-5-high
+  origin refs/heads/gemini/М.2-проба-обгортки cc2fc1a
   ✓ у рядках нема жодного слова зі стану
   ✓ справжній результат опубліковано
+ВСЕ ✓
 Код: 0
+КОМАНДА: bash C:/Users/gemini/gemini-runs/20261027-180117-4244725c5df0/m9zh/аудит/адаптери/gemini/перевірка/сценарії_рушіїв.sh
+ok   codex-done
+ok   codex-github
+ok   codex-blocked
+ok   codex-missing
+ok   fallback-to-codex
+ok   fallback-not-needed
+ok   no-fallback-zero
+ok   codex-429
+ok   codex-auth
+ok   agy-unchanged
+ok   codex-off-label
+ok   codex-off-label-not-called
+ok   codex-off-fallback
+ok   secret-path
+ok   secret-content
+ok   cascade-code-stays
+ok   cascade-design-claude
+ok   cascade-design-codex
+ok   cascade-design-none
+ok   usage-tsv
+ok   usage-nohdr
+ok   usage-old
+ok   usage-oldnoquota
+ok   usage-old-argv
+ok   ver-date-only
+ok   ver-date-only-argv
+ok   ver-date-before
+ok   ver-date-before-argv
+ok   ver-agy-line
+ok   usage-nohdr-pools
+ok   usage-nohdr-log
+ok   pools-hook-narrow
+ok   pools-line
+ok   codex-argv
+ok   codex-max
+ok   codex-max-argv
+ok   codex-effort-rejected
+ok   codex-effort-rejected-one-call
+ok   codex-long-run
+ok   codex-long-run-events
+ok   codex-stall
+ok   role-default
+ok   role-default-prompt
+ok   role-review
+ok   role-review-prompt
+ok   role-agy
+ok   role-agy-unchanged
+ok   role-fenced-example
+ok   role-fenced-example-prompt
+ok   role-bare-eof
+ok   role-bare-eof-prompt
+ok   codex-effort-payload
+ok   codex-effort-escaped
+Код: 0
+КОМАНДА: bash C:/Users/gemini/gemini-runs/20261027-180117-4244725c5df0/m9zh/аудит/адаптери/gemini/перевірка/сценарії_claude.sh
+=== К1 ГОТОВО: модель і зусилля дослівно, auto, промпт запускача, SHA з origin, стан в issue
+warning: in the working copy of 'аудит/СТАН.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'аудит/наряди/проба-рушія-claude.md', LF will be replaced by CRLF the next time Git touches it
+  ✓ рядок ГОТОВО claude/<наряд> <SHA origin> МОДЕЛЬ cc-claude-sonnet-5-5-medium
+  ✓ argv: -p --model claude-sonnet-5-5 --effort medium --permission-mode auto stream-json
+  ✓ промпт: НОУТБУК.md, наряд дослівно, вимикає лише обгортка, без «Продовжуй»
+  ✓ issue 1856 оновлено PATCH-ем, тіло — «веде наряд» і позначка
+  ✓ події stream-json — у events.tsv
+  ✓ другий прохід ту саму позначку не бере
+=== К2 нова спроба при наявній гілці — «Продовжуй з гілки»; модель без зусилля — без --effort
+  ✓ промпт: Продовжуй з гілки claude/<наряд>
+  ✓ argv без --effort
+=== К3 коди кінця
+warning: in the working copy of 'аудит/СТАН.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'аудит/наряди/проба-рушія-claude.md', LF will be replaced by CRLF the next time Git touches it
+  ✓ wrong_sha → підсумок NO_PUSH і окрема тривога за потреби (є: GEMINI ОБГОРТКА: ЗАБЛОКОВАНО claude/проба-рушія-claude NO_PUSH)
+warning: in the working copy of 'аудит/СТАН.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'аудит/наряди/проба-рушія-claude.md', LF will be replaced by CRLF the next time Git touches it
+  ✓ bad_branch → підсумок BAD_BRANCH і окрема тривога за потреби (є: GEMINI ОБГОРТКА: ЗАБЛОКОВАНО claude/проба-рушія-claude BAD_BRANCH)
+warning: in the working copy of 'аудит/СТАН.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'аудит/наряди/проба-рушія-claude.md', LF will be replaced by CRLF the next time Git touches it
+  ✓ blocked → підсумок BLOCKED і окрема тривога за потреби (є: GEMINI ОБГОРТКА: ЗАБЛОКОВАНО claude/проба-рушія-claude BLOCKED)
+  ✓ гілка зі звіту ЗАБЛОКОВАНО збережена для продовження
+warning: in the working copy of 'аудит/СТАН.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'аудит/наряди/проба-рушія-claude.md', LF will be replaced by CRLF the next time Git touches it
+  ✓ no_report → підсумок NO_REPORT і окрема тривога за потреби (є: GEMINI ОБГОРТКА: ЗАБЛОКОВАНО claude/проба-рушія-claude NO_REPORT)
+warning: in the working copy of 'аудит/СТАН.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'аудит/наряди/проба-рушія-claude.md', LF will be replaced by CRLF the next time Git touches it
+  ✓ die → підсумок EXIT і окрема тривога за потреби (є: GEMINI ОБГОРТКА: ЗАБЛОКОВАНО claude/проба-рушія-claude EXIT)
+warning: in the working copy of 'аудит/СТАН.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'аудит/наряди/проба-рушія-claude.md', LF will be replaced by CRLF the next time Git touches it
+  ✓ hang → підсумок HANG і окрема тривога за потреби (є: GEMINI ОБГОРТКА: ЗАБЛОКОВАНО claude/проба-рушія-claude HANG)
+  ✓ завислий claude зупинено
+warning: in the working copy of 'аудит/СТАН.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'аудит/наряди/проба-рушія-claude.md', LF will be replaced by CRLF the next time Git touches it
+  ✓ effort → підсумок EFFORT_INVALID і окрема тривога за потреби (є: GEMINI ОБГОРТКА: ЗАБЛОКОВАНО claude/проба-рушія-claude EFFORT_INVALID)
+warning: in the working copy of 'аудит/СТАН.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'аудит/наряди/проба-рушія-claude.md', LF will be replaced by CRLF the next time Git touches it
+  ✓ auth → підсумок AUTH і окрема тривога за потреби (є: GEMINI ОБГОРТКА: ТРИВОГА AUTH CLAUDE
+GEMINI ОБГОРТКА: ЗАБЛОКОВАНО claude/проба-рушія-claude AUTH)
+warning: in the working copy of 'аудит/СТАН.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'аудит/наряди/проба-рушія-claude.md', LF will be replaced by CRLF the next time Git touches it
+  ✓ quota → підсумок QUOTA0_CLAUDE_M10 і окрема тривога за потреби (є: GEMINI ОБГОРТКА: ЗАБЛОКОВАНО claude/проба-рушія-claude QUOTA0_CLAUDE_M10)
+  ✓ ліміт: позначка чекає скидання (WAIT), спроба не спалена
+warning: in the working copy of 'аудит/СТАН.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'аудит/наряди/проба-рушія-claude.md', LF will be replaced by CRLF the next time Git touches it
+  ✓ bad_model → підсумок MODEL_INVALID і окрема тривога за потреби (є: GEMINI ОБГОРТКА: ЗАБЛОКОВАНО claude/проба-рушія-claude MODEL_INVALID)
+warning: in the working copy of 'аудит/СТАН.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'аудит/наряди/проба-рушія-claude.md', LF will be replaced by CRLF the next time Git touches it
+  ✓ done → підсумок ENGINE_MISSING і окрема тривога за потреби (є: GEMINI ОБГОРТКА: ТРИВОГА ENGINE CLAUDE
+GEMINI ОБГОРТКА: ЗАБЛОКОВАНО claude/проба-рушія-claude ENGINE_MISSING)
+warning: in the working copy of 'аудит/СТАН.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'аудит/наряди/проба-рушія-claude.md', LF will be replaced by CRLF the next time Git touches it
+  ✓ нема файлу наряду → NO_TASK_FILE
+warning: in the working copy of 'аудит/СТАН.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'аудит/наряди/проба-рушія-claude.md', LF will be replaced by CRLF the next time Git touches it
+  ✓ коміт позначки не в main → NOT_ON_MAIN, claude не кликано
+warning: in the working copy of 'аудит/СТАН.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'аудит/наряди/проба-рушія-claude.md', LF will be replaced by CRLF the next time Git touches it
+  ✓ стара позначка — без рядка й без claude
+=== К4 claude закінчився, а нащадок тримає stdout — не завислість
+warning: in the working copy of 'аудит/СТАН.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'аудит/наряди/проба-рушія-claude.md', LF will be replaced by CRLF the next time Git touches it
+  ✓ ГОТОВО за ≤ 90 с (є: 64 с)
+=== К5 прогін, перерваний вимкненням: наступний прохід пише INTERRUPTED
+warning: in the working copy of 'аудит/СТАН.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'аудит/наряди/проба-рушія-claude.md', LF will be replaced by CRLF the next time Git touches it
+  ✓ рядок INTERRUPTED, стан DONE
+=== К6 ВИМКНИ-НОУТБУК
+warning: in the working copy of 'аудит/СТАН.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'аудит/наряди/проба-рушія-claude.md', LF will be replaced by CRLF the next time Git touches it
+  ✓ gemini-run виконується — без рядка й без shutdown
+  ✓ стан задачі не видно, у heartbeat узята позначка — чекає
+  ✓ issue: рядок gemini-run з позначкою й рушієм
+  ✓ рушії вільні — ВИМКНЕНО <SHA коміту>, shutdown
+  ✓ gemini-publish доставляє ВИМКНЕНО диспетчерові
+  ✓ та сама виконана позначка після нового ввімкнення — один BOOT, без shutdown
+  ✓ наступний прохід — нічого нового
+warning: in the working copy of 'аудит/СТАН.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'аудит/наряди/проба-рушія-claude.md', LF will be replaced by CRLF the next time Git touches it
+  ✓ позначка до першого проходу після ввімкнення → BOOT, без shutdown
+  ✓ наступна спроба — вимикає
+=== К7 gemini-run позначок cc- не бере й узятими не позначає
+warning: in the working copy of 'аудит/СТАН.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'аудит/наряди/проба-рушія-claude.md', LF will be replaced by CRLF the next time Git touches it
+  ✓ gemini-run пройшов (heartbeat, ізоляція OK) — без стану й результату
+  ✓ той самий прохід claude-run бере її
+=== К8 завислість — від останньої прийнятої події stream-json, доки процес живий
+warning: in the working copy of 'аудит/СТАН.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'аудит/наряди/проба-рушія-claude.md', LF will be replaced by CRLF the next time Git touches it
+  ✓ stdout і stderr закрито, процес мовчить → HANG за ≤ 60 с (є: 7 с, GEMINI ОБГОРТКА: ЗАБЛОКОВАНО claude/проба-рушія-claude HANG)
+  ✓ процес після HANG зупинено
+warning: in the working copy of 'аудит/СТАН.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'аудит/наряди/проба-рушія-claude.md', LF will be replaced by CRLF the next time Git touches it
+  ✓ не-JSON рядки таймера не скидають → HANG (є: GEMINI ОБГОРТКА: ЗАБЛОКОВАНО claude/проба-рушія-claude HANG)
+  ✓ events.tsv — лише події з типом (2), шум — у claude.jsonl
+warning: in the working copy of 'аудит/СТАН.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'аудит/наряди/проба-рушія-claude.md', LF will be replaced by CRLF the next time Git touches it
+  ✓ події частіше за поріг, усього довше за нього → ГОТОВО (є: GEMINI ОБГОРТКА: ГОТОВО claude/проба-рушія-claude b3a3b29ffa9f3b2bd187e3a55ab65674ca7b3b24 МОДЕЛЬ cc-claude-sonnet-5-5-medium)
+
+ВСЕ ✓
+Код: 0
+КОМАНДА: bash C:/Users/gemini/gemini-runs/20261027-180117-4244725c5df0/m9zh/аудит/адаптери/gemini/перевірка/сценарії_m9v.sh
+ok  синтаксис 0_власник.ps1
+ok  синтаксис 1_адмін.ps1
+ok  синтаксис 2_під_gemini.ps1
+ok  синтаксис хеші.psd1
+ok  хеші: psd1 = таблиця = файли
+ok  дослівні рядки команд
+ok  Codex: закріплений інсталятор, ключ -EnableCodex, кроки власника
+Код: 0
+
+КОМАНДА: powershell -NoProfile -ExecutionPolicy Bypass -File C:\Users\gemini\gemini-runs\20261027-180117-4244725c5df0\m9zh\аудит\адаптери\gemini\перевірка\сценарії_здоровя.ps1 -Before -SourceDir C:\Users\gemini\kod-shi-data\аудит\адаптери\gemini
+✓ auth Main завершився успішно
+✓ ДО: 401 — коментарів #1690 немає, рядок не доставлено
+✓ ДО: agy без входу — тривог немає
+✓ ДО: heartbeat не має часу зчитування UTC
+
+✓ заключний ДО: код 0
+
+Стенд смуг: збережений успішний прогін; після нього планувальники й спільні модулі не змінювалися.
 КОМАНДА: bash C:/Users/gemini/gemini-runs/20261027-180117-4244725c5df0/m9zh/аудит/адаптери/gemini/перевірка/сценарії_смуг.sh
 === А: шість позначок на одному коміті — смуги водночас, до N у смузі, за пріоритетом; Argon на 0 % чекає скидання
 warning: in the working copy of 'аудит/СТАН.md', LF will be replaced by CRLF the next time Git touches it
@@ -362,170 +584,47 @@ warning: in the working copy of 'аудит/адаптери/gemini/смуги.j
 
 ВСЕ ✓
 Код: 0
-КОМАНДА: bash C:/Users/gemini/gemini-runs/20261027-180117-4244725c5df0/m9zh/аудит/адаптери/gemini/перевірка/сценарії_рушіїв.sh
-ok   codex-done
-ok   codex-github
-ok   codex-blocked
-ok   codex-missing
-ok   fallback-to-codex
-ok   fallback-not-needed
-ok   no-fallback-zero
-ok   codex-429
-ok   codex-auth
-ok   agy-unchanged
-ok   codex-off-label
-ok   codex-off-label-not-called
-ok   codex-off-fallback
-ok   secret-path
-ok   secret-content
-ok   cascade-code-stays
-ok   cascade-design-claude
-ok   cascade-design-codex
-ok   cascade-design-none
-ok   usage-tsv
-ok   usage-nohdr
-ok   usage-old
-ok   usage-oldnoquota
-ok   usage-old-argv
-ok   ver-date-only
-ok   ver-date-only-argv
-ok   ver-date-before
-ok   ver-date-before-argv
-ok   ver-agy-line
-ok   usage-nohdr-pools
-ok   usage-nohdr-log
-ok   pools-hook-narrow
-ok   pools-line
-ok   codex-argv
-ok   codex-max
-ok   codex-max-argv
-ok   codex-effort-rejected
-ok   codex-effort-rejected-one-call
-ok   codex-long-run
-ok   codex-long-run-events
-ok   codex-stall
-ok   role-default
-ok   role-default-prompt
-ok   role-review
-ok   role-review-prompt
-ok   role-agy
-ok   role-agy-unchanged
-ok   role-fenced-example
-ok   role-fenced-example-prompt
-ok   role-bare-eof
-ok   role-bare-eof-prompt
-ok   codex-effort-payload
-ok   codex-effort-escaped
-Код: 0
-КОМАНДА: bash C:/Users/gemini/gemini-runs/20261027-180117-4244725c5df0/m9zh/аудит/адаптери/gemini/перевірка/сценарії_claude.sh
-=== К1 ГОТОВО: модель і зусилля дослівно, auto, промпт запускача, SHA з origin, стан в issue
-warning: in the working copy of 'аудит/СТАН.md', LF will be replaced by CRLF the next time Git touches it
-warning: in the working copy of 'аудит/наряди/проба-рушія-claude.md', LF will be replaced by CRLF the next time Git touches it
-  ✓ рядок ГОТОВО claude/<наряд> <SHA origin> МОДЕЛЬ cc-claude-sonnet-5-5-medium
-  ✓ argv: -p --model claude-sonnet-5-5 --effort medium --permission-mode auto stream-json
-  ✓ промпт: НОУТБУК.md, наряд дослівно, вимикає лише обгортка, без «Продовжуй»
-  ✓ issue 1856 оновлено PATCH-ем, тіло — «веде наряд» і позначка
-  ✓ події stream-json — у events.tsv
-  ✓ другий прохід ту саму позначку не бере
-=== К2 нова спроба при наявній гілці — «Продовжуй з гілки»; модель без зусилля — без --effort
-  ✓ промпт: Продовжуй з гілки claude/<наряд>
-  ✓ argv без --effort
-=== К3 коди кінця
-warning: in the working copy of 'аудит/СТАН.md', LF will be replaced by CRLF the next time Git touches it
-warning: in the working copy of 'аудит/наряди/проба-рушія-claude.md', LF will be replaced by CRLF the next time Git touches it
-  ✓ wrong_sha → ЗАБЛОКОВАНО … NO_PUSH (є: GEMINI ОБГОРТКА: ЗАБЛОКОВАНО claude/проба-рушія-claude NO_PUSH)
-warning: in the working copy of 'аудит/СТАН.md', LF will be replaced by CRLF the next time Git touches it
-warning: in the working copy of 'аудит/наряди/проба-рушія-claude.md', LF will be replaced by CRLF the next time Git touches it
-  ✓ bad_branch → ЗАБЛОКОВАНО … BAD_BRANCH (є: GEMINI ОБГОРТКА: ЗАБЛОКОВАНО claude/проба-рушія-claude BAD_BRANCH)
-warning: in the working copy of 'аудит/СТАН.md', LF will be replaced by CRLF the next time Git touches it
-warning: in the working copy of 'аудит/наряди/проба-рушія-claude.md', LF will be replaced by CRLF the next time Git touches it
-  ✓ blocked → ЗАБЛОКОВАНО … BLOCKED (є: GEMINI ОБГОРТКА: ЗАБЛОКОВАНО claude/проба-рушія-claude BLOCKED)
-  ✓ гілка зі звіту ЗАБЛОКОВАНО збережена для продовження
-warning: in the working copy of 'аудит/СТАН.md', LF will be replaced by CRLF the next time Git touches it
-warning: in the working copy of 'аудит/наряди/проба-рушія-claude.md', LF will be replaced by CRLF the next time Git touches it
-  ✓ no_report → ЗАБЛОКОВАНО … NO_REPORT (є: GEMINI ОБГОРТКА: ЗАБЛОКОВАНО claude/проба-рушія-claude NO_REPORT)
-warning: in the working copy of 'аудит/СТАН.md', LF will be replaced by CRLF the next time Git touches it
-warning: in the working copy of 'аудит/наряди/проба-рушія-claude.md', LF will be replaced by CRLF the next time Git touches it
-  ✓ die → ЗАБЛОКОВАНО … EXIT (є: GEMINI ОБГОРТКА: ЗАБЛОКОВАНО claude/проба-рушія-claude EXIT)
-warning: in the working copy of 'аудит/СТАН.md', LF will be replaced by CRLF the next time Git touches it
-warning: in the working copy of 'аудит/наряди/проба-рушія-claude.md', LF will be replaced by CRLF the next time Git touches it
-  ✓ hang → ЗАБЛОКОВАНО … HANG (є: GEMINI ОБГОРТКА: ЗАБЛОКОВАНО claude/проба-рушія-claude HANG)
-  ✓ завислий claude зупинено
-warning: in the working copy of 'аудит/СТАН.md', LF will be replaced by CRLF the next time Git touches it
-warning: in the working copy of 'аудит/наряди/проба-рушія-claude.md', LF will be replaced by CRLF the next time Git touches it
-  ✓ effort → ЗАБЛОКОВАНО … EFFORT_INVALID (є: GEMINI ОБГОРТКА: ЗАБЛОКОВАНО claude/проба-рушія-claude EFFORT_INVALID)
-warning: in the working copy of 'аудит/СТАН.md', LF will be replaced by CRLF the next time Git touches it
-warning: in the working copy of 'аудит/наряди/проба-рушія-claude.md', LF will be replaced by CRLF the next time Git touches it
-  ✗ auth → ЗАБЛОКОВАНО … AUTH (є: GEMINI ОБГОРТКА: ТРИВОГА AUTH CLAUDE
-GEMINI ОБГОРТКА: ЗАБЛОКОВАНО claude/проба-рушія-claude AUTH)
-warning: in the working copy of 'аудит/СТАН.md', LF will be replaced by CRLF the next time Git touches it
-warning: in the working copy of 'аудит/наряди/проба-рушія-claude.md', LF will be replaced by CRLF the next time Git touches it
-  ✓ quota → ЗАБЛОКОВАНО … QUOTA0_CLAUDE_M10 (є: GEMINI ОБГОРТКА: ЗАБЛОКОВАНО claude/проба-рушія-claude QUOTA0_CLAUDE_M10)
-  ✓ ліміт: позначка чекає скидання (WAIT), спроба не спалена
-warning: in the working copy of 'аудит/СТАН.md', LF will be replaced by CRLF the next time Git touches it
-warning: in the working copy of 'аудит/наряди/проба-рушія-claude.md', LF will be replaced by CRLF the next time Git touches it
-  ✓ bad_model → ЗАБЛОКОВАНО … MODEL_INVALID (є: GEMINI ОБГОРТКА: ЗАБЛОКОВАНО claude/проба-рушія-claude MODEL_INVALID)
-warning: in the working copy of 'аудит/СТАН.md', LF will be replaced by CRLF the next time Git touches it
-warning: in the working copy of 'аудит/наряди/проба-рушія-claude.md', LF will be replaced by CRLF the next time Git touches it
-  ✗ done → ЗАБЛОКОВАНО … ENGINE_MISSING (є: GEMINI ОБГОРТКА: ТРИВОГА ENGINE CLAUDE
-GEMINI ОБГОРТКА: ЗАБЛОКОВАНО claude/проба-рушія-claude ENGINE_MISSING)
-warning: in the working copy of 'аудит/СТАН.md', LF will be replaced by CRLF the next time Git touches it
-warning: in the working copy of 'аудит/наряди/проба-рушія-claude.md', LF will be replaced by CRLF the next time Git touches it
-  ✓ нема файлу наряду → NO_TASK_FILE
-warning: in the working copy of 'аудит/СТАН.md', LF will be replaced by CRLF the next time Git touches it
-warning: in the working copy of 'аудит/наряди/проба-рушія-claude.md', LF will be replaced by CRLF the next time Git touches it
-  ✓ коміт позначки не в main → NOT_ON_MAIN, claude не кликано
-warning: in the working copy of 'аудит/СТАН.md', LF will be replaced by CRLF the next time Git touches it
-warning: in the working copy of 'аудит/наряди/проба-рушія-claude.md', LF will be replaced by CRLF the next time Git touches it
-  ✓ стара позначка — без рядка й без claude
-=== К4 claude закінчився, а нащадок тримає stdout — не завислість
-warning: in the working copy of 'аудит/СТАН.md', LF will be replaced by CRLF the next time Git touches it
-warning: in the working copy of 'аудит/наряди/проба-рушія-claude.md', LF will be replaced by CRLF the next time Git touches it
-  ✓ ГОТОВО за ≤ 90 с (є: 63 с)
-=== К5 прогін, перерваний вимкненням: наступний прохід пише INTERRUPTED
-warning: in the working copy of 'аудит/СТАН.md', LF will be replaced by CRLF the next time Git touches it
-warning: in the working copy of 'аудит/наряди/проба-рушія-claude.md', LF will be replaced by CRLF the next time Git touches it
-  ✓ рядок INTERRUPTED, стан DONE
-=== К6 ВИМКНИ-НОУТБУК
-warning: in the working copy of 'аудит/СТАН.md', LF will be replaced by CRLF the next time Git touches it
-warning: in the working copy of 'аудит/наряди/проба-рушія-claude.md', LF will be replaced by CRLF the next time Git touches it
-  ✓ gemini-run виконується — без рядка й без shutdown
-  ✓ стан задачі не видно, у heartbeat узята позначка — чекає
-  ✓ issue: рядок gemini-run з позначкою й рушієм
-  ✓ рушії вільні — ВИМКНЕНО <SHA коміту>, shutdown
-  ✓ gemini-publish доставляє ВИМКНЕНО диспетчерові
-  ✓ та сама виконана позначка після нового ввімкнення — один BOOT, без shutdown
-  ✓ наступний прохід — нічого нового
-warning: in the working copy of 'аудит/СТАН.md', LF will be replaced by CRLF the next time Git touches it
-warning: in the working copy of 'аудит/наряди/проба-рушія-claude.md', LF will be replaced by CRLF the next time Git touches it
-  ✓ позначка до першого проходу після ввімкнення → BOOT, без shutdown
-  ✓ наступна спроба — вимикає
-=== К7 gemini-run позначок cc- не бере й узятими не позначає
-warning: in the working copy of 'аудит/СТАН.md', LF will be replaced by CRLF the next time Git touches it
-warning: in the working copy of 'аудит/наряди/проба-рушія-claude.md', LF will be replaced by CRLF the next time Git touches it
-  ✓ gemini-run пройшов (heartbeat, ізоляція OK) — без стану й результату
-  ✓ той самий прохід claude-run бере її
-=== К8 завислість — від останньої прийнятої події stream-json, доки процес живий
-warning: in the working copy of 'аудит/СТАН.md', LF will be replaced by CRLF the next time Git touches it
-warning: in the working copy of 'аудит/наряди/проба-рушія-claude.md', LF will be replaced by CRLF the next time Git touches it
-  ✓ stdout і stderr закрито, процес мовчить → HANG за ≤ 60 с (є: 6 с, GEMINI ОБГОРТКА: ЗАБЛОКОВАНО claude/проба-рушія-claude HANG)
-  ✓ процес після HANG зупинено
-warning: in the working copy of 'аудит/СТАН.md', LF will be replaced by CRLF the next time Git touches it
-warning: in the working copy of 'аудит/наряди/проба-рушія-claude.md', LF will be replaced by CRLF the next time Git touches it
-  ✓ не-JSON рядки таймера не скидають → HANG (є: GEMINI ОБГОРТКА: ЗАБЛОКОВАНО claude/проба-рушія-claude HANG)
-  ✓ events.tsv — лише події з типом (2), шум — у claude.jsonl
-warning: in the working copy of 'аудит/СТАН.md', LF will be replaced by CRLF the next time Git touches it
-warning: in the working copy of 'аудит/наряди/проба-рушія-claude.md', LF will be replaced by CRLF the next time Git touches it
-  ✓ події частіше за поріг, усього довше за нього → ГОТОВО (є: GEMINI ОБГОРТКА: ГОТОВО claude/проба-рушія-claude 8897175093b13d5b9896f5b49d7be7ae225470a4 МОДЕЛЬ cc-claude-sonnet-5-5-medium)
 
-ЗБІЙ ✗
-Код: 1
-КОМАНДА: bash C:/Users/gemini/gemini-runs/20261027-180117-4244725c5df0/m9zh/аудит/адаптери/gemini/перевірка/сценарії_m9v.sh
-ok  синтаксис 0_власник.ps1
-ok  синтаксис 1_адмін.ps1
-ok  синтаксис 2_під_gemini.ps1
-ok  синтаксис хеші.psd1
-ok  хеші: psd1 = таблиця = файли
-ok  дослівні рядки команд
-ok  Codex: закріплений інсталятор, ключ -EnableCodex, кроки власника
-Код: 0
+Перші очікування старих стендів черги/Claude вимагали одного рядка замість підсумку й тривоги; уточнено точний набір рядків. Черга тепер також повертає ненульовий код за провалу. Нижче — заключний повтор на остаточній латці.
+
+КОМАНДА: git apply --cached --check <01.patch>
+✓ точні блоби бази: код 0
+
+КОМАНДА: powershell -NoProfile -ExecutionPolicy Bypass -File C:\Users\gemini\gemini-runs\20261027-180117-4244725c5df0\m9zh\аудит\адаптери\gemini\перевірка\сценарії_здоровя.ps1 -Before -SourceDir C:\Users\gemini\kod-shi-data\аудит\адаптери\gemini
+✓ auth Main завершився успішно
+✓ ДО: 401 — коментарів #1690 немає, рядок не доставлено
+✓ ДО: agy без входу — тривог немає
+✓ ДО: heartbeat не має часу зчитування UTC
+
+✓ заключний ДО: код 0
+
+КОМАНДА: git apply --cached --check <01.patch>
+✓ точні блоби бази: код 0
+
+ПІДСУМОК: ✓ стенд здоров’я ДО/ПІСЛЯ; ✓ шість стендів сім’ї; ✓ git apply --check на базі; ✓ git apply --cached --check точних блобів.
+
+КОМАНДА: git -c core.autocrlf=false -C C:\Users\gemini\gemini-runs\20261027-180117-4244725c5df0\m9zh apply --reverse --check C:\Users\gemini\kod-shi-data\аудит\латки\М.9-Ж-тривоги-й-запасний-канал\01-здоровя-обгортки.patch
+
+✓ код 0
+
+КОМАНДА: git -c core.autocrlf=false -C C:\Users\gemini\gemini-runs\20261027-180117-4244725c5df0\m9zh apply --reverse C:\Users\gemini\kod-shi-data\аудит\латки\М.9-Ж-тривоги-й-запасний-канал\01-здоровя-обгортки.patch
+
+✓ код 0
+
+КОМАНДА: git -c core.autocrlf=false -C C:\Users\gemini\gemini-runs\20261027-180117-4244725c5df0\m9zh apply --check C:\Users\gemini\kod-shi-data\аудит\латки\М.9-Ж-тривоги-й-запасний-канал\01-здоровя-обгортки.patch
+
+✓ код 0
+
+КОМАНДА: git -c core.autocrlf=false -C C:\Users\gemini\gemini-runs\20261027-180117-4244725c5df0\m9zh apply C:\Users\gemini\kod-shi-data\аудит\латки\М.9-Ж-тривоги-й-запасний-канал\01-здоровя-обгортки.patch
+
+✓ код 0
+
+КОМАНДА: git -c core.autocrlf=false -C C:\Users\gemini\gemini-runs\20261027-180117-4244725c5df0\m9zh diff --check -- аудит/адаптери/gemini
+
+✓ код 0
+
+✓ Остаточна латка повторно застосована на чистих точних байтах бази; перевірка пробілів коду успішна.
+
+КОМАНДА: agy -p /usage --output-format json (живий ноутбук; результат скорочено до структури)
+✓ status=SUCCESS; num_turns=0; command.name=usage; груп=3; вікон=5; remaining_fraction і reset_time наявні у buckets.
+✓ Після стендів процесів, що лишилися: 0.
