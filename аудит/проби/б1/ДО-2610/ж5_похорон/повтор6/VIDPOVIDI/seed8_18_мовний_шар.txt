@@ -1,0 +1,41 @@
+── ПРОМПТ (6322 симв.) ──
+Ти — перекладачка в застосунку-стилістці. Ти пишеш природною українською тексти, які зараз побачить жінка. Рішень не приймаєш, на питання не відповідаєш, змісту не міняєш.
+
+Вхід — JSON-об'єкт: ключ — номер тексту н, значення — текст, який склали код та інші моделі.
+
+Відповідь — лише JSON-об'єкт тієї самої форми, що вхід, з усіма його ключами: ключ — номер н кожного тексту зі входу, значення — рядок — той самий зміст природною українською, без англійських слів і кодів (назви крамниць і брендів — як є); ПЕРЕКЛАДАЙ КОЖНЕ англійське слово, навіть одне посеред українського речення; латиницею лишай лише назви крамниць і брендів, «V-подібний» і «den»; текст, що вже природний і до неї на «ти», — без змін, а український текст на «ви» перепиши на «ти», решту лиши слово в слово.
+
+Вид кожної речі — теж зміст: річ у перекладі — та сама, що у вході, а не схожа чи сусідня. ankle boots — черевики чи ботильйони, boots — чоботи, heeled — на підборах, а не туфлі, pumps — туфлі-човники, loafers — лофери; pendant — кулон чи підвіска, necklace — намисто чи ланцюжок, а не каблучка, сережки чи браслет; ring — каблучка; earrings — сережки. Українські назви речей у вході (назви з крамниці, найчастіше перед « — ») переписуй літера в літеру: не міняй, не переставляй і не додавай у них жодного слова.
+
+Про жінку — лише до неї, на «ти» (ти, тебе, тобі, твій, твоя; хочеш, скинеш; наказ однини: розкажи, оберни, тримай, дай), і в питаннях теж: you, your, she, her про неї — «ти», «твій» (her skin tone — твій тон шкіри; when she turns her head — коли ти повертаєш голову; she looks taller — ти виглядаєш вищою), англійський наказ — наказом однини; «вона», «її» — лише про річ (сукню, сумку, куртку). Говорить стилістка — одна жінка: про себе — від першої особи однини й у жіночому роді (я підібрала, я б додала), не «ми», не від імені застосунку чи коду і ніколи словами самої жінки.
+
+Мова: літературна українська, як у текстах українських крамниць одягу. Кожне українське слово — літерами лише української абетки, без жодної латинської літери чи стороннього знака всередині слова. Кожне речення — одна остаточна версія, без виправлень посеред тексту. Словничок нижче — лише як перекласти англійське слово, коли воно є у вході; це не зміст: річ, тканина чи колір, яких у вході нема, у тексті не з'являються. Звичні українські назви для слів англійського джерела: trousers, pants — штани; dressy, dressier — ошатний, ошатніше; look, outfit — образ; taupe — сіро-бежевий; loose — вільний; suede — замша (жіночий рід); slip dress — сукня-комбінація; camel — кемел (колір). Назви речей і кольорів, які дала крамниця, — як є.
+
+Перевір кожне слово ДО відповіді: до неї — лише «ти», жодного «ви», «ваш» і наказу множини, і про неї жодного «вона», «її», «їй», жодне слово не стоїть двічі поспіль, кожна річ — того самого виду, що у вході (річ образу — іменником її назви з переліку, коли він є, і слова при ній узгоджені з цим іменником), а українська назва речі — слово в слово. Відповідь — рівно ОДИН JSON-об'єкт і нічого після нього: другої, виправленої версії, приміток і пояснень не пиши — помилку виправ у тому самому об'єкті.
+
+Речі образу — перелік, який жінка бачить на картці (номер речі — назва біля неї):
+1 — назва в тексті н=2
+2 — назва в тексті н=3
+3 — назва в тексті н=4
+4 — назва в тексті н=5
+When a text speaks of an item of the list, call it by the kind in its name — the same noun in the right case (list «Тренч бежевий подовжений» — text «тренч», «Светр в'язаний оверсайз» — «светр»), not by another kind or a synonym of the English word. Make every adjective, pronoun and verb with the item agree with that noun in gender and number («Тренч бежевий» — «бежевий тренч, який…»; «Лофери шкіряні» — «шкіряні лофери, які…»). A name you translate in this same call (text н=K): give it one noun and call the item by it, in agreement, in every text. A text the list gives as about an item (about it: text н=M) speaks of that one item, and so does every other text where the English names it. The colour of an item of the list is the colour of its name: keep the shop's colour word from its name; when its name has no colour word, write the Ukrainian name of its colour code. The English colour words for that item are the stylist's impression of a photo: do not turn them into a colour of their own — the item's colour stands in their place. Colours of its details (trim, strap, buttons, print), its fabric and the rest — translate from the text. The list is for names only: an item the English text does not name is not added to the translation — neither to the description nor to the advice. The kind code next to an item (kind code: …) is the code of its kind: every noun for that item, in every text, names this kind and no other, whatever word the English text uses; a code ending in _generic names only the family (dress_generic — a dress, bag_generic — a bag). The kind noun of its name and this code are the same kind: write the name's noun.
+
+ТЕКСТИ:
+{
+"1": "Charcoal wool gabardine skirt suit with a high-neck structured jacket and matching A-line trousers, classic fit through the hip with a straight leg cut, deep anthracite shade, dense 12oz worsted wool.\nIvory silk chiffon blouse with a modest spread collar and subtle front pleats, relaxed tailoring at the waist for comfort during prolonged sitting, off-white color, lightweight fluid fabric.\nMatte black leather pumps with a 7 cm block heel and closed toe, sleek almond shape, smooth calfskin, polished finish suitable for solemn occasions.\nSmall jet-black pearl stud earrings set in sterling silver, classic round shape, glossy resin pearls on oxidized silver .\n\nThis outfit works because the dark charcoal suit provides the necessary respect and formality required for a grandfather's funeral while remaining appropriate for early morning daylight. The ivory blouse offers a gentle visual contrast that honors the somber occasion without appearing stark or cold against the darker tones of mourning attire. Every element, from the structured yet comfortable wool jacket to the modest heel height, balances dignity with the practical needs of standing and sitting for several hours in an autumn setting.",
+"2": "Charcoal wool gabardine skirt suit",
+"3": "Ivory silk chiffon blouse",
+"4": "Matte black leather pumps",
+"5": "Jet-black pearl stud earrings"
+}
+
+── ВІДПОВІДЬ (1495 симв., 53.8 с, HTTP 200) ──
+```json
+{
+  "1": "Сірий вовняний костюм з габардину зі спідницею, що складається з жакета структурованого крою з високим коміром і відповідних прямих штанів А-силуету. Класичний крій у стегнах, глибокий антрацитовий відтінок, щільна вовна 12oz.\nСвітло-бежева шовкова блузка з чиффону зі скромним розгорнутим комірцем і ледь помітними складками спереду. Вільний крій на талії для комфорту під час тривалого сидіння, світлий колір слонової кістки, легка повітряна тканина.\nМатові чорні шкіряні туфлі-човники з 7 см блочним каблуком і закритим носком. Стрункий мигдалеподібний силует, гладка теляча шкіра, відполірована обробка для урочистих випадків.\nНевеликі чорні перлинні сережки-гвоздики зі срібла 925 проби. Класична кругла форма, блискучі смоляні перли на окисленому сріблі.\n\nЦей образ працює тому, що темний сірий костюм забезпечує необхідну повагу та урочистість, потрібні для похорону дідуся, залишаючись при цьому доречним у ранковий час доби. Світло-бежева блузка пропонує ніжкий візуальний контраст, який вшановує сумний випадок без появи надто різким або холодним на тлі темних тонів траурного одягу. Кожен елемент — від структурованого жакета з вовни до помірної висоти каблука — поєднує гідність із практичними потребами стояння та сидіння протягом кількох годин в осінню пору.",
+  "2": "Сірий вовняний костюм з габардину зі спідницею",
+  "3": "Світло-бежева шовкова блузка з чиффону",
+  "4": "Матові чорні шкіряні туфлі-човники",
+  "5": "Чорні перлинні сережки-гвоздики"
+}
+```

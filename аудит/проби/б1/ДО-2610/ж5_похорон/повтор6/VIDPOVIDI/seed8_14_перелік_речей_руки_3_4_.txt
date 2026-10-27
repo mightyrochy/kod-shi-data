@@ -1,0 +1,37 @@
+── ПРОМПТ (2589 симв.) ──
+{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.", "A slot the description says is not needed is not an item: give it worn false. One item carries one thing — of two alternatives list the first; a note in brackets is not an item.", "Slot \"accessory\" is for an item no other slot fits.", "\"is_outfit\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note; then items is empty."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "ITEM_LIST", "answer_schema": {"is_outfit": "yes|no", "items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory", "color_hex": "<#rrggbb or null>", "worn": "<true, or false when the description says the outfit goes without it>"}]}, "input": ["\"description\" — the outfit description"]}, "description": "Charcoal wool gabardine skirt suit with a high-neck structured jacket and matching A-line trousers, classic fit through the hip with a straight leg cut, deep anthracite shade #36454F, dense 12oz worsted wool.\nIvory silk chiffon blouse with a modest spread collar and subtle front pleats, relaxed tailoring at the waist for comfort during prolonged sitting, off-white color #FFFFF0, lightweight fluid fabric.\nMatte black leather pumps with a 7 cm block heel and closed toe, sleek almond shape, smooth calfskin #1C1C1C, polished finish suitable for solemn occasions.\nSmall jet-black pearl stud earrings set in sterling silver, classic round shape, glossy resin pearls on oxidized silver #F5F5F5.\n\nThis outfit works because the dark charcoal suit provides the necessary respect and formality required for a grandfather's funeral while remaining appropriate for early morning daylight. The ivory blouse offers a gentle visual contrast that honors the somber occasion without appearing stark or cold against the darker tones of mourning attire. Every element, from the structured yet comfortable wool jacket to the modest heel height, balances dignity with the practical needs of standing and sitting for several hours in an autumn setting."}
+
+── ВІДПОВІДЬ (1053 симв., 75.1 с, HTTP 200) ──
+{
+  "is_outfit": "yes",
+  "items": [
+    {
+      "name": "Charcoal wool gabardine skirt suit",
+      "details": "high-neck structured jacket with matching A-line trousers, classic fit through hip with straight leg cut, made of dense 12oz worsted wool",
+      "slot": "set",
+      "color_hex": "#36454F",
+      "worn": true
+    },
+    {
+      "name": "Ivory silk chiffon blouse",
+      "details": "modest spread collar with subtle front pleats, relaxed tailoring at waist for comfort during prolonged sitting",
+      "slot": "top",
+      "color_hex": "#FFFFF0",
+      "worn": true
+    },
+    {
+      "name": "Matte black leather pumps",
+      "details": "7 cm block heel, closed toe, sleek almond shape, smooth calfskin with polished finish",
+      "slot": "shoes",
+      "color_hex": "#1C1C1C",
+      "worn": true
+    },
+    {
+      "name": "Jet-black pearl stud earrings",
+      "details": "classic round shape, glossy resin pearls set in oxidized sterling silver",
+      "slot": "earrings",
+      "color_hex": "#F5F5F5",
+      "worn": true
+    }
+  ]
+}
