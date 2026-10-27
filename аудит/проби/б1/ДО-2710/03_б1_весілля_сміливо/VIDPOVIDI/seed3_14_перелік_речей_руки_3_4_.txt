@@ -1,0 +1,30 @@
+── ПРОМПТ (2232 симв.) ──
+{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.", "A slot the description says is not needed is not an item: give it worn false. One item carries one thing — of two alternatives list the first; a note in brackets is not an item.", "Slot \"accessory\" is for an item no other slot fits.", "\"is_outfit\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note; then items is empty."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "ITEM_LIST", "answer_schema": {"is_outfit": "yes|no", "items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory", "color_hex": "<#rrggbb or null>", "worn": "<true, or false when the description says the outfit goes without it>"}]}, "input": ["\"description\" — the outfit description"]}, "description": "Silk crepe evening gown, empire waistline, midi length that transitions into a floor-sweeping train, electric indigo blue (#1E3A8A), lightweight fluid silk.\nPointed-toe stiletto pump, slim silhouette, ankle height with a sharp heel, same electric indigo blue (#1E3A8A), patent leather finish.\nDrop-earring chandelier in oxidized silver, wide hoop pendant design, antique silver tone (#C0C0C0), polished metal alloy.\n\nThis electrifying indigo gown transforms the traditional white wedding palette into a bold statement of confidence and joy. The fluid silk crepe fabric catches the late summer daylight beautifully while the midi-to-floor train ensures you look regal as you transition from the garden ceremony to the restaurant reception. By choosing this vibrant hue over conventional pastels or neutrals, you honor her wish to stand out with a fearless and expressive presence."}
+
+── ВІДПОВІДЬ (712 симв., 63.8 с, HTTP 200) ──
+{
+  "is_outfit": "yes",
+  "items": [
+    {
+      "name": "Silk crepe evening gown",
+      "details": "empire waistline, midi length transitioning to floor-sweeping train, lightweight fluid fabric",
+      "slot": "dress",
+      "color_hex": "#1E3A8A",
+      "worn": true
+    },
+    {
+      "name": "Pointed-toe stiletto pump",
+      "details": "slim silhouette, ankle height, sharp heel, patent leather finish",
+      "slot": "shoes",
+      "color_hex": "#1E3A8A",
+      "worn": true
+    },
+    {
+      "name": "Drop-earring chandelier",
+      "details": "wide hoop pendant design, oxidized silver tone, polished metal alloy",
+      "slot": "earrings",
+      "color_hex": "#C0C0C0",
+      "worn": true
+    }
+  ]
+}
