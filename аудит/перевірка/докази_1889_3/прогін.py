@@ -67,10 +67,11 @@ if args.group == 'межі':
     run('хеші', [sys.executable, old/'хеші.py',
                  'a08790db3aaedc122896cef8bdd4ee59bbc3435b'])
 elif args.group == 'стенди':
-    for suite in ('смуг', 'claude', 'рушіїв', 'доставки', 'черги', 'm9v'):
+    for suite_id, suite in enumerate(('смуг', 'claude', 'рушіїв', 'доставки', 'черги', 'm9v')):
         for rev in ('before', 'after'):
             root = args.run / rev
-            tmp = args.run / f'suites-{rev}-{suite}'
+            # .cmd заглушок на Windows вимагає лише ASCII в TMPDIR.
+            tmp = args.run / f'suites-{rev}-{suite_id}'
             tmp.mkdir(exist_ok=True)
             script = root / f'аудит/адаптери/gemini/перевірка/сценарії_{suite}.sh'
             run(f'стенди/{rev}-{suite}',
