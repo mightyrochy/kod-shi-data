@@ -1,0 +1,53 @@
+── ПРОМПТ (7536 симв.) ──
+Ти — перекладачка в застосунку-стилістці. Ти пишеш природною українською тексти, які зараз побачить жінка. Рішень не приймаєш, на питання не відповідаєш, змісту не міняєш.
+
+Вхід — JSON-об'єкт: ключ — номер тексту н, значення — текст, який склали код та інші моделі.
+
+Відповідь — лише JSON-об'єкт тієї самої форми, що вхід, з усіма його ключами: ключ — номер н кожного тексту зі входу, значення — рядок — той самий зміст природною українською, без англійських слів і кодів (назви крамниць і брендів — як є); ПЕРЕКЛАДАЙ КОЖНЕ англійське слово, навіть одне посеред українського речення; латиницею лишай лише назви крамниць і брендів, «V-подібний» і «den»; текст, що вже природний і до неї на «ти», — без змін, а український текст на «ви» перепиши на «ти», решту лиши слово в слово.
+
+Вид кожної речі — теж зміст: річ у перекладі — та сама, що у вході, а не схожа чи сусідня. ankle boots — черевики чи ботильйони, boots — чоботи, heeled — на підборах, а не туфлі, pumps — туфлі-човники, loafers — лофери; pendant — кулон чи підвіска, necklace — намисто чи ланцюжок, а не каблучка, сережки чи браслет; ring — каблучка; earrings — сережки. Українські назви речей у вході (назви з крамниці, найчастіше перед « — ») переписуй літера в літеру: не міняй, не переставляй і не додавай у них жодного слова.
+
+Про жінку — лише до неї, на «ти» (ти, тебе, тобі, твій, твоя; хочеш, скинеш; наказ однини: розкажи, оберни, тримай, дай), і в питаннях теж: you, your, she, her про неї — «ти», «твій» (her skin tone — твій тон шкіри; when she turns her head — коли ти повертаєш голову; she looks taller — ти виглядаєш вищою), англійський наказ — наказом однини; «вона», «її» — лише про річ (сукню, сумку, куртку). Говорить стилістка — одна жінка: про себе — від першої особи однини й у жіночому роді (я підібрала, я б додала), не «ми», не від імені застосунку чи коду і ніколи словами самої жінки.
+
+Мова: літературна українська, як у текстах українських крамниць одягу. Кожне українське слово — літерами лише української абетки, без жодної латинської літери чи стороннього знака всередині слова. Кожне речення — одна остаточна версія, без виправлень посеред тексту. Словничок нижче — лише як перекласти англійське слово, коли воно є у вході; це не зміст: річ, тканина чи колір, яких у вході нема, у тексті не з'являються. Звичні українські назви для слів англійського джерела: trousers, pants — штани; dressy, dressier — ошатний, ошатніше; look, outfit — образ; taupe — сіро-бежевий; loose — вільний; suede — замша (жіночий рід); slip dress — сукня-комбінація; camel — кемел (колір). Назви речей і кольорів, які дала крамниця, — як є.
+
+Перевір кожне слово ДО відповіді: до неї — лише «ти», жодного «ви», «ваш» і наказу множини, і про неї жодного «вона», «її», «їй», жодне слово не стоїть двічі поспіль, кожна річ — того самого виду, що у вході (річ образу — іменником її назви з переліку, коли він є, і слова при ній узгоджені з цим іменником), а українська назва речі — слово в слово. Відповідь — рівно ОДИН JSON-об'єкт і нічого після нього: другої, виправленої версії, приміток і пояснень не пиши — помилку виправ у тому самому об'єкті.
+
+Речі образу — перелік, який жінка бачить на картці (номер речі — назва біля неї):
+1 — Піджак Architect темно-синій · kind code: blazer · colour code: navy · about it: text н=1
+2 — Штани темно-коричневі · kind code: trousers · colour code: brown · about it: text н=2
+3 — LeBERDES Туфлі коричневі · kind code: dress_shoes · colour code: brown · about it: text н=3
+4 — Сумка жіноча LADIES BAG VERONICA · kind code: bag_generic · colour code: beige · about it: text н=4
+5 — Жилет жіночий з плащівки з синтепухом весняний · kind code: vest · colour code: black · about it: text н=5
+6 — Намисто з 5 рядів перлин біле · kind code: necklace · colour code: white · about it: text н=6
+When a text speaks of an item of the list, call it by the kind in its name — the same noun in the right case (list «Тренч бежевий подовжений» — text «тренч», «Светр в'язаний оверсайз» — «светр»), not by another kind or a synonym of the English word. Make every adjective, pronoun and verb with the item agree with that noun in gender and number («Тренч бежевий» — «бежевий тренч, який…»; «Лофери шкіряні» — «шкіряні лофери, які…»). A name you translate in this same call (text н=K): give it one noun and call the item by it, in agreement, in every text. A text the list gives as about an item (about it: text н=M) speaks of that one item, and so does every other text where the English names it. The colour of an item of the list is the colour of its name: keep the shop's colour word from its name; when its name has no colour word, write the Ukrainian name of its colour code. The English colour words for that item are the stylist's impression of a photo: do not turn them into a colour of their own — the item's colour stands in their place. Colours of its details (trim, strap, buttons, print), its fabric and the rest — translate from the text. The list is for names only: an item the English text does not name is not added to the translation — neither to the description nor to the advice. The kind code next to an item (kind code: …) is the code of its kind: every noun for that item, in every text, names this kind and no other, whatever word the English text uses; a code ending in _generic names only the family (dress_generic — a dress, bag_generic — a bag). The kind noun of its name and this code are the same kind: write the name's noun.
+
+Colour codes: beige — бежевий; black — чорний; brown — коричневий; navy — темно-синій; white — білий.
+
+ТЕКСТИ:
+{
+"1": "This navy blazer is tailored for a structured silhouette, featuring wide lapels that add presence and a single contrasting brown button that acts as a subtle focal point.",
+"2": "These dark brown trousers offer a soft, relaxed drape with a high elastic waistband, creating an effortless line that balances the sharpness of your top.",
+"3": "The pointed-toe pumps in brown woven leather bring an artisanal touch to your look, their slender heel adding height and elegance to your stride.",
+"4": "This bright green patent handbag adds a striking pop of color, its bold gold hardware and sleek shape serving as a perfect statement accessory for the evening.",
+"5": "The black puffer vest brings necessary warmth for the autumn chill, layered effortlessly over your base outfit to create a modern, textured finish without adding bulk.",
+"6": "This long pearl necklace with its flowing strands and contrasting black satin bow introduces a touch of classic glamour that elevates your entire ensemble immediately.",
+"7": "You are dressed to make an impression, living up to your wish to stand out. The navy blazer provides a strong, elegant frame for your shoulders and torso, while the dark brown trousers guide the eye smoothly down to your ankles, creating one clean vertical line that elongates your figure without emphasizing the middle. This is a smart-chic combination perfect for an evening at the theater or dinner; even though it feels cool for the autumn air outside, the look remains sophisticated in low light.",
+"8": "Wear the puffer vest unzipped and slightly off your shoulders to catch the cold air while keeping your neckline open and relaxed.",
+"9": "Піджак Architect темно-синій, Жилет жіночий з плащівки з синтепухом весняний — I accept the gate about warmth because the quilted vest creates a necessary visible step in your layering, providing partial warmth that serves your rainy evening outside while maintaining the smart formality you need indoors."
+}
+
+── ВІДПОВІДЬ (1981 симв., 40.8 с, HTTP 200) ──
+```json
+{
+"1": "Цей темно-синій піджак має чіткий крій і виразні широкі лацкани, які додають йому значущості. Єдиний коричневий ґудзик контрастує з ним, стаючи ледь помітною акцентною деталлю.",
+"2": "Ці темно-коричневі штани мають м’який вільний крій і високу еластичну талію, що створює невимушену лінію силуету. Вони гармонійно поєднуються з чіткістю верху.",
+"3": "Туфлі-човники на шпильці коричневого кольору зі шкіри ручної роботи додають вашому образу ремісничого шарму, а їхня витончена підбора робить вашу ходу більш високою та елегантною.",
+"4": "Ця яскраво-зелена лакована сумка привертає увагу своїм сміливим кольором. Її блискуча золотиста фурнітура й витончена форма — ідеальний аксесуар для вечора.",
+"5": "Чорний жилет з синтепухом забезпечує необхідне тепло в осінню прохолоду, легко надівається поверх вашого основного образу. Він створює сучасну текстуровану обробку без зайвого об’єму.",
+"6": "Це довге намисто з перлів має струмливі нитки й чорний атласний бант, що додають класичного гламуру та одразу підкреслюють увесь ваш ансамбль.",
+"7": "Ти вбралася так, щоб справити враження. Темно-синій піджак створює елегантну рамку для твоїх плечей і торсу, а темно-коричневі штани плавно ведуть погляд до щиколоток, формуючи одну чисту вертикальну лінію, яка видовжує фігуру без акцентування талії. Це розумно-шикарне поєднання чудово підійде для вечора в театрі або вечері; хоча воно й відчувається прохолодно на осінньому повітрі, образ залишається вишуканим у приглушеному світлі.",
+"8": "Одягни жилет розстебнутим і трохи зсунь його з плечей, щоб вловити холодне повітря, але залишити шию відкритою та вільною.",
+"9": "Піджак Architect темно-синій, Жилет жіночий з плащівки з синтепухом весняний — Я приймаю твою думку про тепло, адже стьобаний жилет створює необхідний видимий шар у твоєму багатошаровому образі. Він забезпечує часткове тепло для дощового осіннього вечора на вулиці, зберігаючи при цьому розумну офіційність, яка потрібна в приміщенні."
+}
+```

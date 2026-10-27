@@ -1,0 +1,51 @@
+── ПРОМПТ (2440 симв.) ──
+{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.", "A slot the description says is not needed is not an item: give it worn false. One item carries one thing — of two alternatives list the first; a note in brackets is not an item.", "Slot \"accessory\" is for an item no other slot fits.", "\"is_outfit\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note; then items is empty."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "ITEM_LIST", "answer_schema": {"is_outfit": "yes|no", "items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory", "color_hex": "<#rrggbb or null>", "worn": "<true, or false when the description says the outfit goes without it>"}]}, "input": ["\"description\" — the outfit description"]}, "description": "Velvet blazer, structured tailoring with slightly padded shoulders, deep emerald green (#0a4f38), heavy wool blend with a subtle sheen.\nWool crepe trousers, straight-leg cut from hip to ankle, charcoal grey (#2b2b2b), dense woven fabric for wind resistance.\nSilk blouse, relaxed fit with a draped neckline, burnt orange (#cc5500), fluid smooth texture.\nStilettos, pointed toe pump, black leather (#111111), mid-height heel for elongated posture.\nClutch handbag, geometric hard-case structure, glossy black patent (#000000).\nBold layered gold cufflinks, oversized chain-link design, polished metal finish.\nThis outfit works because the rich emerald velvet and burnt orange silk immediately catch the eye in artificial theater lighting while keeping warmth against the cold evening breeze. The tailored silhouette balances the need to stand out with a refined smart dress code suitable for a date night at the cinema followed by dinner. By combining structured outer layers with fluid inner fabrics, it creates a dynamic contrast that feels both fashionable and intentionally expressive."}
+
+── ВІДПОВІДЬ (1252 симв., 56.1 с, HTTP 200) ──
+{
+  "is_outfit": "yes",
+  "items": [
+    {
+      "name": "Velvet blazer",
+      "details": "structured tailoring with slightly padded shoulders, heavy wool blend with a subtle sheen",
+      "slot": "outerwear",
+      "color_hex": "#0a4f38",
+      "worn": true
+    },
+    {
+      "name": "Wool crepe trousers",
+      "details": "straight-leg cut from hip to ankle, dense woven fabric for wind resistance",
+      "slot": "bottom",
+      "color_hex": "#2b2b2b",
+      "worn": true
+    },
+    {
+      "name": "Silk blouse",
+      "details": "relaxed fit with a draped neckline, fluid smooth texture",
+      "slot": "top",
+      "color_hex": "#cc5500",
+      "worn": true
+    },
+    {
+      "name": "Stilettos",
+      "details": "pointed toe pump, mid-height heel for elongated posture",
+      "slot": "shoes",
+      "color_hex": "#111111",
+      "worn": true
+    },
+    {
+      "name": "Clutch handbag",
+      "details": "geometric hard-case structure, glossy patent finish",
+      "slot": "bag",
+      "color_hex": "#000000",
+      "worn": true
+    },
+    {
+      "name": "Bold layered gold cufflinks",
+      "details": "oversized chain-link design, polished metal finish",
+      "slot": "jewelry",
+      "color_hex": null,
+      "worn": false
+    }
+  ]
+}
