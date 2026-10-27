@@ -31,3 +31,8 @@ git apply --check аудит/латки/CI-таймаут-checkout/01-timeout.pa
 ```bash
 git apply --index аудит/латки/CI-таймаут-checkout/01-timeout.patch
 ```
+
+## Результати перевірки
+- `git apply --check аудит/латки/CI-таймаут-checkout/01-timeout.patch` — чисто (код 0).
+- `python джерела/прилади/згорнути_дошку.py --лише-перевірити` — 0 помилок.
+- Захищені файли `.github/` та `аудит/адаптери/gemini/` у гілці не змінювалися (захист М.9-Г).
