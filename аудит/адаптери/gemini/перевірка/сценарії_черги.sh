@@ -34,6 +34,9 @@ echo "=== 7 стара позначка, крива назва, не з main, н
 echo "=== 8 перерваний прогін: стан STARTED із JSON -> INTERRUPTED із бандлом"; setup r8; mark "$SLUG/$M/1"
   export FAKE_SCENARIO=hang
   timeout -s KILL 5 "$PW" -NoProfile -File "$(wp "$H/side.ps1")" -Script "$(wp "$SRC/gemini_run.ps1")" -ArgsJson "{\"RepoDir\":\"$WW/clone\",\"RunsDir\":\"$WW/runs\",\"OutDir\":\"$WW/out\",\"RepoUrl\":\"$WW/origin.git\",\"AgyExe\":\"$(stub fake_agy)\",\"TurnMinutes\":5,\"TotalMinutes\":10,\"MaxNudges\":3}"
+  # Вимкнення ноутбука вбиває й процеси нарядів (М.9-Е: наряд — окремий процес, pid — у слоті): дерево кожного.
+  for f in "$W"/runs/slots/*.json; do [ -e "$f" ] || continue; pid=$($PY -c "import json,sys; print(json.load(open(sys.argv[1], encoding='utf-8-sig'))['pid'])" "$(wp "$f")")
+    if [ -n "$WIN" ]; then taskkill //F //T //PID "$pid" >/dev/null 2>&1; else pkill -9 -P "$pid" 2>/dev/null; kill -9 "$pid" 2>/dev/null; fi; done
   pkill -f 'fake_ag[y]\.' 2>/dev/null; rm -f "$W/runs/lock"; gem; pub; show; grep -ho '"code":"[A-Z_]*"' "$W"/out/*.json | sort | uniq -c
 echo "=== 9 спам: копії стану з іншими id на ту саму позначку й купа кривих"; setup r9; mark "$SLUG/$M/1"; gem
   J=$(ls "$W"/out/*.json | grep -v heartbeat | head -1); for k in 1 2 3; do

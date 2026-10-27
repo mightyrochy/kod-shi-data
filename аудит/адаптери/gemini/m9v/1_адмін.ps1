@@ -4,8 +4,9 @@
 М.9-В, підготовка, частина адміністратора: кроки 3 і 5 НАЛАШТУВАННЯ.md. Запуск — «PowerShell від імені адміністратора».
 
 .DESCRIPTION
-Крок 3: тека C:\ProgramData\gemini-wrapper (gemini лише читає). Крок 5: право «вхід як пакетне завдання»
-для gemini і задачі gemini-run (під gemini) та gemini-publish (під власником). Ідемпотентний.
+Крок 3: тека C:\ProgramData\gemini-wrapper (gemini лише читає) з gemini_run.ps1 і queue_lanes.ps1. Крок 5: право
+«вхід як пакетне завдання» для gemini і задачі gemini-run (під gemini, раз на 5 хв, без межі часу) та gemini-publish
+(під власником). Ідемпотентний.
 Пароль gemini — лише через Get-Credential (системне вікно); скрипт його не читає в змінну для виводу й не пише.
 Попередні умови: 0_власник.ps1 пройдено; gemini має пароль (той, що вже стоїть у задачі gemini-run; без пароля — Ctrl+Alt+Del у сеансі gemini).
 Команди кроків — дослівно з НАЛАШТУВАННЯ.md.
@@ -26,7 +27,7 @@ if (-not (Get-LocalUser -Name gemini -ErrorAction SilentlyContinue)) { Stop-Here
 # файли з 0_власник.ps1 і їхні хеші (ProgramData отримує саме перевірену копію)
 $expected = Import-PowerShellDataFile (Join-Path $here 'хеші.psd1')
 $pubFile = "$env:USERPROFILE\gemini-publish\gemini_publish.ps1"
-foreach ($f in @(@('gemini_run.ps1', "$env:TEMP\gemini_run.ps1"), @('gemini_publish.ps1', $pubFile))) {
+foreach ($f in @(@('gemini_run.ps1', "$env:TEMP\gemini_run.ps1"), @('queue_lanes.ps1', "$env:TEMP\queue_lanes.ps1"), @('gemini_publish.ps1', $pubFile))) {
     if (-not (Test-Path $f[1])) { Stop-Here "нема $($f[1]): спершу 0_власник.ps1 (у цьому ж обліковому записі, не іншим адміністратором)." }
 }
 
@@ -39,12 +40,16 @@ if ($LASTEXITCODE -ne 0) { Stop-Here "icacls повернув код $LASTEXITCO
 # gemini_run.ps1 копіюємо в ProgramData (звичайний користувач туди не пише), хеш рахуємо вже з копії; розбіжність — копію
 # видаляємо й падаємо. gemini_publish.ps1 лишається у профілі власника (задача gemini-publish запускає його звідти): байти
 # читаємо раз, хеш — з пам'яті.
-$dst = Join-Path $run 'gemini_run.ps1'
+# queue_lanes.ps1 — спільний модуль смуг (М.9-Е): gemini_run.ps1 підвантажує його з тієї самої теки.
 Copy-Item "$env:TEMP\gemini_run.ps1" "$run\gemini_run.ps1" -Force
-$got = (Get-FileHash $dst -Algorithm SHA256).Hash
-if ($got -ne $expected['gemini_run.ps1']) {
-    Remove-Item $dst -Force -ErrorAction SilentlyContinue
-    Stop-Here "хеш gemini_run.ps1 у ProgramData не збігся з хеші.psd1: маємо $got; файл видалено. Запусти 0_власник.ps1 знову; не допомогло — диспетчерові."
+Copy-Item "$env:TEMP\queue_lanes.ps1" "$run\queue_lanes.ps1" -Force
+foreach ($name in @('gemini_run.ps1', 'queue_lanes.ps1')) {
+    $dst = Join-Path $run $name
+    $got = (Get-FileHash $dst -Algorithm SHA256).Hash
+    if ($got -ne $expected[$name]) {
+        Remove-Item $dst -Force -ErrorAction SilentlyContinue
+        Stop-Here "хеш $name у ProgramData не збігся з хеші.psd1: маємо $got; файл видалено. Запусти 0_власник.ps1 знову; не допомогло — диспетчерові."
+    }
 }
 $sha = [System.Security.Cryptography.SHA256]::Create()
 $got = ([BitConverter]::ToString($sha.ComputeHash([System.IO.File]::ReadAllBytes($pubFile))) -replace '-', '')
@@ -64,11 +69,12 @@ $new = if (-not $old) { "*$sid" } elseif ($old -match [regex]::Escape($sid)) { $
 secedit /configure /db "$d\new.sdb" /cfg "$d\new.inf" /areas USER_RIGHTS
 if ($LASTEXITCODE -ne 0) { Stop-Here "secedit повернув код $LASTEXITCODE." }
 
-# під gemini: раз на 15 хв, до 4 год (сама обгортка зупиняє прогін на 3 год)
+# під gemini: раз на 5 хв, без межі часу задачі (М.9-Е): запуск — планувальник смуг, живе, доки йдуть його наряди
+# (Codex без межі, agy — до agy_total_minutes), і сам опитує чергу; IgnoreNew не пускає другого.
 $a = New-ScheduledTaskAction -Execute 'powershell.exe' -Argument '-NoProfile -NonInteractive -ExecutionPolicy Bypass -File C:\ProgramData\gemini-wrapper\gemini_run.ps1'
 if ($EnableCodex) { $a.Arguments += ' -EnableCodex' }   # рішення власника 25.10 (9738): ключ рушія Codex у gemini_run.ps1
-$t = New-ScheduledTaskTrigger -Once -At (Get-Date).AddMinutes(2) -RepetitionInterval (New-TimeSpan -Minutes 15)
-$s = New-ScheduledTaskSettingsSet @set -ExecutionTimeLimit (New-TimeSpan -Hours 4)
+$t = New-ScheduledTaskTrigger -Once -At (Get-Date).AddMinutes(2) -RepetitionInterval (New-TimeSpan -Minutes 5)
+$s = New-ScheduledTaskSettingsSet @set -ExecutionTimeLimit ([TimeSpan]::Zero)
 $c = Get-Credential -UserName "$env:COMPUTERNAME\gemini" -Message 'Пароль користувача gemini'
 if (-not $c) { Stop-Here 'пароль gemini не введено.' }
 Register-ScheduledTask -TaskName 'gemini-run' -Action $a -Trigger $t -Settings $s -User $c.UserName -Password $c.GetNetworkCredential().Password -RunLevel Limited -Force | Out-Null
@@ -84,7 +90,7 @@ Register-ScheduledTask -TaskName 'gemini-publish' -Action $a2 -Trigger $t2 -Sett
 
 Get-ScheduledTask gemini-run, gemini-publish | ForEach-Object { $_.TaskName, $_.Principal.LogonType, $_.Triggers[0].Repetition.Interval, $_.Triggers[0].Repetition.Duration }
 
-# очікувано: Password і Interactive, PT15M/PT1M, тривалість порожня; не порожня — виправ у «Планувальнику завдань» (НАЛАШТУВАННЯ.md, крок 5)
+# очікувано: Password і Interactive, PT5M/PT1M, тривалість порожня; не порожня — виправ у «Планувальнику завдань» (НАЛАШТУВАННЯ.md, крок 5)
 $bad = @()
 foreach ($task in (Get-ScheduledTask gemini-run, gemini-publish)) {
     if ($task.Triggers[0].Repetition.Duration) { $bad += $task.TaskName }

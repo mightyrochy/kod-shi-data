@@ -30,8 +30,8 @@ for l in open('$(wp "$W/cc.log")', encoding='utf-8'): print(' '.join(json.loads(
 prompt() { $PY -c "import json
 print([json.loads(l) for l in open('$(wp "$W/cc.log")', encoding='utf-8')][-1]['stdin'])" 2>/dev/null; }
 chk() { if eval "$2"; then echo "  ✓ $1"; else echo "  ✗ $1"; BAD=1; fi; }
-code() { setup "$1"; mark "$SLUG/${3:-$M}/1"; FAKE_CC_SCENARIO=$2 cr "${5:-}"
-  chk "$2 → ЗАБЛОКОВАНО … $4 (є: $(lines))" '[ "$(lines)" = "GEMINI ОБГОРТКА: ЗАБЛОКОВАНО claude/$SLUG $4" ]'; }
+code() { setup "$1"; mark "$SLUG/${3:-$M}/1"; FAKE_CC_SCENARIO=$2 cr "${5:-}"; WANT=$4
+  chk "$2 → ЗАБЛОКОВАНО … $4 (є: $(lines))" '[ "$(lines)" = "GEMINI ОБГОРТКА: ЗАБЛОКОВАНО claude/$SLUG $WANT" ]'; }
 
 echo "=== К1 ГОТОВО: модель і зусилля дослівно, auto, промпт запускача, SHA з origin, стан в issue"
 setup k1; mark "$SLUG/$M/1"; cr
@@ -54,10 +54,11 @@ chk "гілка зі звіту ЗАБЛОКОВАНО збережена для
 code k3d no_report "$M" NO_REPORT
 code k3e die "$M" EXIT
 code k3f hang "$M" HANG
-chk "завислий claude зупинено" '! alive "$W/cc.log.pid"'
+chk "завислий claude зупинено" '[ -e "$W/cc.log.pid" ] && ! alive "$W/cc.log.pid"'
 code k3g effort cc-claude-sonnet-5-5-ultra EFFORT_INVALID
 code k3h auth "$M" AUTH
-code k3i quota "$M" QUOTA
+code k3i quota "$M" QUOTA0_CLAUDE_M10
+chk "ліміт: позначка чекає скидання (WAIT), спроба не спалена" 'grep -q "^WAIT " "$W"/cr/state/*.txt'
 code k3j bad_model cc-claude-sonnet-9 MODEL_INVALID
 code k3k done "$M" ENGINE_MISSING "{\"ClaudeExe\":\"$(wp "$W")/нема/claude\"}"
 setup k3l; mark "нема-наряду/$M/1"; cr; chk "нема файлу наряду → NO_TASK_FILE" '[ "$(lines)" = "GEMINI ОБГОРТКА: ЗАБЛОКОВАНО claude/нема-наряду NO_TASK_FILE" ]'
@@ -90,12 +91,12 @@ mark "ВИМКНИ-НОУТБУК/cc-off/2"; cr; chk "наступна спро�
 echo "=== К7 gemini-run позначок cc- не бере й узятими не позначає"
 setup k7; mark "$SLUG/$M/1"
 "$PW" -NoProfile -File "$(wp "$H/side.ps1")" -Script "$(wp "$SRC/gemini_run.ps1")" -ArgsJson "{\"RepoDir\":\"$(wp "$W/clone")\",\"RunsDir\":\"$(wp "$W/runs")\",\"OutDir\":\"$(wp "$W/gem")\",\"RepoUrl\":\"$(wp "$W/origin.git")\",\"AgyExe\":\"$(stub fake_agy)\",\"TurnMinutes\":0.05,\"TotalMinutes\":0.5,\"MaxNudges\":3}" >/dev/null 2>&1
-chk "gemini-run пройшов (heartbeat, ізоляція OK) — без стану й результату" 'grep -q "\"isolation\":\"OK\"" "$W/gem/heartbeat.json" && [ -z "$(ls "$W/runs/state" 2>/dev/null)" ] && [ -z "$(ls "$W/gem" | grep -v heartbeat)" ]'
+chk "gemini-run пройшов (heartbeat, ізоляція OK) — без стану й результату" 'grep -q "\"isolation\":\"OK\"" "$W/gem/heartbeat.json" && [ -z "$(ls "$W/runs/state" 2>/dev/null)" ] && [ -z "$(ls "$W/gem" | grep -vE "heartbeat|pools")" ]'
 cr; chk "той самий прохід claude-run бере її" '[[ "$(lines)" == "GEMINI ОБГОРТКА: ГОТОВО claude/$SLUG "* ]]'
 echo "=== К8 завислість — від останньої прийнятої події stream-json, доки процес живий"
 setup k8a; mark "$SLUG/$M/1"; T0=$(date +%s); FAKE_CC_SCENARIO=closed cr; T1=$(date +%s)
 chk "stdout і stderr закрито, процес мовчить → HANG за ≤ 60 с (є: $((T1 - T0)) с, $(lines))" '[ "$(lines)" = "GEMINI ОБГОРТКА: ЗАБЛОКОВАНО claude/$SLUG HANG" ] && [ $((T1 - T0)) -le 60 ]'
-chk "процес після HANG зупинено" '! alive "$W/cc.log.pid"'
+chk "процес після HANG зупинено" '[ -e "$W/cc.log.pid" ] && ! alive "$W/cc.log.pid"'
 setup k8b; mark "$SLUG/$M/1"; FAKE_CC_SCENARIO=noise cr
 chk "не-JSON рядки таймера не скидають → HANG (є: $(lines))" '[ "$(lines)" = "GEMINI ОБГОРТКА: ЗАБЛОКОВАНО claude/$SLUG HANG" ]'
 chk "events.tsv — лише події з типом (2), шум — у claude.jsonl" '[ "$(cat "$W"/cr/runs/*/events.tsv | wc -l)" = 2 ] && ! cut -f2 "$W"/cr/runs/*/events.tsv | tr -d "\r" | grep -qx "" && grep -q "^шум 0" "$W"/cr/runs/*/claude.jsonl'

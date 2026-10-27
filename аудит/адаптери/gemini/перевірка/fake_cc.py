@@ -10,6 +10,16 @@ with open(os.environ['FAKE_CC_LOG'], 'a', encoding='utf-8') as f:
     f.write(json.dumps({'argv': sys.argv[1:], 'stdin': prompt}, ensure_ascii=False) + '\n')
 slug = re.search(r'аудит/наряди/(.+?)\.md', prompt).group(1)
 branch = 'claude/' + slug
+def hold(slug):
+    # Стенд смуг: FAKE_HOLD с роботи й рядки start/end у FAKE_TIMELINE — щоб виміряти, що йде водночас.
+    tl = os.environ.get('FAKE_TIMELINE')
+    if not tl:
+        return
+    def mark(k):
+        with open(tl, 'a') as f:
+            f.write('%s %s %d\n' % (k, slug, int(time.time() * 1000)))
+    mark('start'); time.sleep(float(os.environ.get('FAKE_HOLD', '0'))); mark('end')
+
 def emit(o):
     sys.stdout.write(json.dumps(o, ensure_ascii=False) + '\n'); sys.stdout.flush()
 def git(*a):
@@ -24,7 +34,19 @@ def result(text, err=False, code=0):
     sys.exit(code)
 emit({'type': 'system', 'subtype': 'init', 'model': sys.argv[sys.argv.index('--model') + 1]})
 emit({'type': 'assistant', 'message': {'content': [{'type': 'text', 'text': 'працюю'}]}})
+if os.environ.get('FAKE_CC_RL'):
+    # Подія ліміту, як у живого claude 2.1.300 (26.10): status, resetsAt, unifiedWindows з utilization і resetsAt.
+    t = int(time.time()); u = int(os.environ.get('FAKE_CC_QUOTA_UNTIL', '0'))
+    rej = sc == 'quota_until' and t < u
+    emit({'type': 'rate_limit_event', 'rate_limit_info': {'status': 'rejected' if rej else 'allowed', 'resetsAt': u if rej else t + 14400,
+          'rateLimitType': 'five_hour', 'unifiedWindows': {'five_hour': {'utilization': 1.0 if rej else 0.32, 'resetsAt': u if rej else t + 14400},
+                                                           'seven_day': {'utilization': 0.82, 'resetsAt': t + 400000}}}})
+if sc == 'quota_until':
+    if time.time() < int(os.environ.get('FAKE_CC_QUOTA_UNTIL', '0')):
+        result("You've hit your limit · resets soon", True, 1)
+    sc = 'done'
 if sc == 'done':
+    hold(slug)
     result('Готово.\n\n**НОУТБУК ГОТОВО `%s` %s**' % (branch, push()))
 if sc == 'wrong_sha':
     push(); result('НОУТБУК ГОТОВО %s %s' % (branch, 'a' * 40))
@@ -44,7 +66,8 @@ if sc == 'effort':
 if sc == 'auth':
     result('Not logged in · Please run /login', True, 1)
 if sc == 'quota':
-    result('Claude AI usage limit reached|1793024400', True, 1)
+    # ліміт зі скиданням через 10 хв (формат «…|<unix>» давніх claude; новіші — подія rate_limit_event)
+    result('Claude AI usage limit reached|%d' % (int(time.time()) + 600), True, 1)
 if sc == 'bad_model':
     result("There's an issue with the selected model (x). It may not exist or you may not have access to it.", True, 1)
 if sc == 'child_holds_stdout':

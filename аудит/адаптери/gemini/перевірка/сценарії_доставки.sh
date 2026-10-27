@@ -44,9 +44,10 @@ for f in garbage fail; do setup d3$f; mark "$SLUG/$M/1"; export FAKE_USAGE=$f; g
   chk "$f -> наряд пройшов (ГОТОВО)" 'grep -q "ГОТОВО gemini/" "$W/claude.log"'; done
 chk "garbage: вивід /usage в wrapper.log для власника" 'true'
 
-echo "=== Д4 429 посеред прогону — ЗАБЛОКОВАНО ... QUOTA одним рядком"
+echo "=== Д4 429 посеред прогону — позначка чекає скидання групи (М.9-Е), рядок QUOTA0 одним рядком"
 setup d4; mark "$SLUG/$M/1"; export FAKE_SCENARIO=quota429; gem; pub; lines
-chk "рядок ЗАБЛОКОВАНО gemini/<наряд> QUOTA" 'grep -q "ЗАБЛОКОВАНО gemini/М.2-проба-обгортки QUOTA\"" "$W/claude.log"'
+chk "рядок ЗАБЛОКОВАНО gemini/<наряд> QUOTA0_GEMINI35FLASH_M<хв>, один" '[ "$(grep -c "ЗАБЛОКОВАНО gemini/М.2-проба-обгортки QUOTA0_GEMINI35FLASH_M13[67]\"" "$W/claude.log")" = 1 ]'
+chk "позначка в чеканні (WAIT), спроба не спалена" 'grep -q "^WAIT " "$W"/runs/state/*.txt'
 
 echo "=== Д5 шаблони теки вихідних: лише повний збіг; решта — карантин, у рядку лише код"
 setup d5; mkdir -p "$OB"; SHA=$(printf 'a%.0s' $(seq 40)); n=0
@@ -108,8 +109,8 @@ setup d8; mark "$SLUG/$M/1"; gem; pub; rm -f "$W/pub/publish.log"; pub
 # рядок ПУЛИ (pools.json від gemini) іде окремо й раз на 3 год — повтор його теж не дублює
 chk "повторний запуск тихий" '[ "$(nlines)" = 1 ] && [ "$(grep -c "ПУЛИ" "$W/claude.log")" = 1 ]'
 echo "=== Д9 SlugPattern закінчується на \\z, а не \$: slug із кінцевим \\n відкидається в обох файлах"
-for f in gemini_run gemini_publish; do
-  R=$("$PW" -NoProfile -Command "\$l = Select-String -Path '$SRC/$f.ps1' -Pattern '^\\\$script:SlugPattern =' | Select-Object -First 1; Invoke-Expression \$l.Line.Trim(); \$a = ('x' + [char]10) -cmatch \$script:SlugPattern; \$b = 'x' -cmatch \$script:SlugPattern; \"\$a \$b\"")
+for f in queue_lanes gemini_publish; do
+  R=$("$PW" -NoProfile -Command "\$l = Select-String -Path '$(wp "$SRC/$f.ps1")' -Pattern '^\\\$script:SlugPattern =' | Select-Object -First 1; Invoke-Expression \$l.Line.Trim(); \$a = ('x' + [char]10) -cmatch \$script:SlugPattern; \$b = 'x' -cmatch \$script:SlugPattern; \"\$a \$b\"")
   chk "$f: 'x\\n' -> False, 'x' -> True (дістали: $R)" '[ "$R" = "False True" ]'
 done
 echo; [ $BAD = 0 ] && echo "ВСЕ ✓" || echo "ЗБІЙ ✗"; exit $BAD
