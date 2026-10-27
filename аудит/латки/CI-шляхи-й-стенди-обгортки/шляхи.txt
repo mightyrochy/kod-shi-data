@@ -1,0 +1,59 @@
+Локальна проба точного run задачі zminy зі змодельованими merge-комітами PR. GitHub не запускався.
+Команда: python paths_probe.py (скрипт нижче)
+✓ обгортка: produkt=false, pravyla=false
+✓ продукт: produkt=true, pravyla=false
+✓ документи: produkt=false, pravyla=true
+✓ обидва процеси: produkt=true, pravyla=true
+✓ index: produkt=true, pravyla=false
+✓ збірка: produkt=true, pravyla=false
+✓ новий процес: produkt=false, pravyla=false
+✓ невідомий diff / ручний запуск: produkt=true, pravyla=true
+✓ усі 8 сценарії мають окремий крок Windows
+
+from pathlib import Path
+import subprocess, os, yaml, json
+root=Path(r'C:/Users/gemini/gemini-runs/20261027-171633-179ae4119088/ci-worktree')
+out=Path(r'C:/Users/gemini/kod-shi-data/аудит/латки/CI-шляхи-й-стенди-обгортки')
+wf=yaml.safe_load((root/'.github/workflows/zbirka.yml').read_text(encoding='utf-8'))
+other=yaml.safe_load((root/'.github/workflows/obhortka.yml').read_text(encoding='utf-8'))
+script=next(x['run'] for x in wf['jobs']['zminy']['steps'] if x.get('id')=='zmina')
+scripts={p.name for p in (root/'аудит/адаптери/gemini/перевірка').glob('сценарії_*.sh')}
+steps={s['name'] for s in other['jobs']['obhortka']['steps'] if s.get('name') in scripts}
+assert scripts==steps
+probe=Path(r'C:/Users/gemini/gemini-runs/20261027-171633-179ae4119088/paths-probe'); probe.mkdir(exist_ok=True)
+def git(*args):
+    return subprocess.check_output(['git',*args],cwd=probe,stderr=subprocess.DEVNULL).decode().strip()
+git('init','-q'); git('config','user.name','проба'); git('config','user.email','probe@example.invalid'); git('config','core.autocrlf','false')
+(probe/'seed').write_text('x'); git('add','.'); git('commit','-qm','основа'); base=git('rev-parse','HEAD'); git('branch','-f','main',base)
+runfile=probe/'classify.sh'; runfile.write_text(script,encoding='utf-8',newline='\n')
+results=[]
+for label,paths,want in [
+ ('обгортка',['аудит/адаптери/gemini/gemini_run.ps1'],('false','false')),
+ ('продукт',['джерела/bridge.py'],('true','false')),
+ ('документи',['аудит/ПЕРЕВІРКА.md'],('false','true')),
+ ('обидва процеси',['.github/workflows/zbirka.yml','.github/workflows/obhortka.yml'],('true','true')),
+ ('index',['index.html'],('true','false')),
+ ('збірка',['build.txt'],('true','false')),
+ ('новий процес',['.github/workflows/obhortka.yml'],('false','false')),
+]:
+    git('checkout','-q','-B','candidate',base)
+    for path in paths:
+        p=probe/path; p.parent.mkdir(parents=True,exist_ok=True); p.write_text('x',encoding='utf-8'); git('add','--',path)
+    git('commit','-qm',label)
+    head=git('rev-parse','HEAD')
+    git('checkout','-q','--detach',base); git('merge','--no-ff','-qm','злиття',head)
+    result=probe/'output'; result.write_text(''); summary=probe/'summary'; summary.write_text('')
+    env=dict(os.environ,GITHUB_EVENT_NAME='pull_request',GITHUB_OUTPUT=result.as_posix(),GITHUB_STEP_SUMMARY=summary.as_posix(),GITHUB_SHA=git('rev-parse','HEAD'))
+    subprocess.run(['C:/Program Files/Git/bin/bash.exe','--noprofile','--norc','-eo','pipefail',runfile.as_posix()],cwd=probe,env=env,check=True)
+    values=dict(line.split('=',1) for line in result.read_text().splitlines())
+    assert (values['produkt'],values['pravyla'])==want,(label,values)
+    results.append(f"✓ {label}: produkt={values['produkt']}, pravyla={values['pravyla']}")
+# Невідомий diff / ручний запуск зберігає повний шлях.
+result.write_text(''); env['GITHUB_EVENT_NAME']='workflow_dispatch'
+subprocess.run(['C:/Program Files/Git/bin/bash.exe','--noprofile','--norc','-eo','pipefail',runfile.as_posix()],cwd=probe,env=env,check=True)
+assert result.read_text()=='produkt=true\npravyla=true\n'
+results.append('✓ невідомий diff / ручний запуск: produkt=true, pravyla=true')
+results.append(f'✓ усі {len(scripts)} сценарії мають окремий крок Windows')
+text='Локальна проба точного run задачі zminy зі змодельованими merge-комітами PR. GitHub не запускався.\nКоманда: python paths_probe.py (скрипт нижче)\n'+'\n'.join(results)+'\n\n'+Path(__file__).read_text(encoding='utf-8-sig')
+(out/'шляхи.txt').write_text(text,encoding='utf-8')
+print('\n'.join(results))
