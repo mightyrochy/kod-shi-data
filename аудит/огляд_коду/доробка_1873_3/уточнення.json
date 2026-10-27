@@ -1,0 +1,22 @@
+[
+  {
+    "перевірка": "шар845_питання: правильний аргумент",
+    "джерело": "аудит\\перевірки\\3.11\\ж2_відтворення_ДО_лог.txt",
+    "команда": "python проби/шар845_питання.py C:\\Users\\gemini\\AppData\\Local\\Temp\\dorobka1873_3_9uyiq47z\\лог.txt.gz",
+    "код": 0,
+    "вивід": "викликів шару на «код не знає»: 0 · питань у них: 0 · мають текст: 0\nповторів (.code_unknowns.retry): 0 · «[object Object]» у діагнозі стенда: 0\n"
+  },
+  {
+    "перевірка": "шлях_шар_фрази_коду: ДО",
+    "база": "daf1b93d462792bf66bd3c3d09ec0d2c6f0d7bc3",
+    "команда": "import importlib.util,sys,subprocess,runpy\nfrom pathlib import Path\nroot=Path.cwd();sys.path.insert(0,str(root))\nfor name in ('картка_запиту','мовний_шар'):\n path=root/(name+'.py')\n m=importlib.util.module_from_spec(importlib.util.spec_from_file_location(name,path));sys.modules[name]=m\n src=subprocess.check_output(['git','show','daf1b93d462792bf66bd3c3d09ec0d2c6f0d7bc3'+':джерела/'+name+'.py'])\n exec(compile(src,str(path),'exec'),m.__dict__)\nrunpy.run_path('проби/шлях_шар_фрази_коду.py',run_name='__main__')\n",
+    "код": 1,
+    "вивід": "день моделям (день_кодами): {\"activity\": \"stroll\", \"movement\": \"walk_a_lot\", \"place\": \"park\", \"setting\": \"outdoor\", \"surface\": \"grass\", \"duration_h\": 2, \"temperature_c\": 18, \"precipitation\": \"none\", \"wind_ms\": 7, \"star\nдень моделям (день_кодами): {\"place\": \"theatre\", \"setting\": \"indoor\", \"duration_h\": 4, \"temperature_c\": -8, \"precipitation\": \"snow\", \"road_salt\": true, \"start_hour\": 18, \"part_of_day\": \"evening\", \"until_night\": true, \"\nендпойнт `мова` на репліку дає запасний текст коду: null\nTraceback (most recent call last):\n  File \"<string>\", line 9, in <module>\n  File \"<frozen runpy>\", line 287, in run_path\n  File \"<frozen runpy>\", line 98, in _run_module_code\n  File \"<frozen runpy>\", line 88, in _run_code\n  File \"проби/шлях_шар_фрази_коду.py\", line 32, in <module>\n    тіло = re.sub(r\"/\\*.*?\\*/|//[^\\n]*\", \"\", re.search(r\"async function %s\\(.*?\\n\\}\\n\" % ім, T, re.S).group(0), flags=re.S)\n                                             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nAttributeError: 'NoneType' object has no attribute 'group'\n"
+  },
+  {
+    "перевірка": "шлях_шар_фрази_коду: ПІСЛЯ",
+    "команда": "python проби/шлях_шар_фрази_коду.py",
+    "код": 1,
+    "вивід": "день моделям (день_кодами): {\"activity\": \"stroll\", \"movement\": \"walk_a_lot\", \"place\": \"park\", \"setting\": \"outdoor\", \"surface\": \"grass\", \"duration_h\": 2, \"temperature_c\": 18, \"precipitation\": \"none\", \"wind_ms\": 7, \"star\nдень моделям (день_кодами): {\"place\": \"theatre\", \"setting\": \"indoor\", \"duration_h\": 4, \"temperature_c\": -8, \"precipitation\": \"snow\", \"road_salt\": true, \"start_hour\": 18, \"part_of_day\": \"evening\", \"until_night\": true, \"\nендпойнт `мова` на репліку дає запасний текст коду: null\nTraceback (most recent call last):\n  File \"C:\\Users\\gemini\\kod-shi-data\\джерела\\проби\\шлях_шар_фрази_коду.py\", line 32, in <module>\n    тіло = re.sub(r\"/\\*.*?\\*/|//[^\\n]*\", \"\", re.search(r\"async function %s\\(.*?\\n\\}\\n\" % ім, T, re.S).group(0), flags=re.S)\n                                             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nAttributeError: 'NoneType' object has no attribute 'group'\n"
+  }
+]
