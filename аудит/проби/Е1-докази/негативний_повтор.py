@@ -24,9 +24,11 @@ def перевірити():
     with (вихід / 'лог.txt').open('w', encoding='utf-8') as лог:
         результат = subprocess.run(команда, env=середовище, stdout=лог, stderr=subprocess.STDOUT, timeout=60)
     помилка = json.loads((вихід / 'знімки/помилка_відтворення.json').read_text(encoding='utf-8'))
-    assert результат.returncode == 2 and помилка['запит']['messages'] == []
+    assert результат.returncode == 3 and помилка['запит']['messages'] == []
+    assert помилка['код'] == 'REPLAY_STALE' and помилка['виклик'] == 1
     assert 'Нема невзятої відповіді' in помилка['причина']
-    підсумок = {'rc': результат.returncode, 'зміна': 'messages:повідомлення → messages:[] у копії збірки',
+    підсумок = {'rc': результат.returncode, 'стан': 'запис застарів на виклику 1',
+        'зміна': 'messages:повідомлення → messages:[] у копії збірки',
         'причина': помилка['причина'], 'CI': 'не запущено; локальний негативний прогін'}
     (вихід / 'результат.json').write_text(json.dumps(підсумок, ensure_ascii=False, indent=1) + '\n', encoding='utf-8')
     print(json.dumps(підсумок, ensure_ascii=False))

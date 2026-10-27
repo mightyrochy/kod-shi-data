@@ -32,12 +32,24 @@ def виконати():
     а.add_argument("збірка", type=Path)
     а.add_argument("кеш", type=Path)
     а.add_argument("вихід", type=Path)
-    а.add_argument("--сцена", type=int, default=1)
+    а.add_argument("--сцена", default="1", help="Номер архівної сцени або id з живі_сцени.txt")
     а.add_argument("--node", default="node")
     п = а.parse_args()
-    перелік = json.loads(subprocess.check_output([п.node, str(КОРІНЬ / "аудит/проби/приймання_записів.js"), "--перелік"],
-                                                 cwd=КОРІНЬ, text=True, encoding="utf-8"))
-    сцена = перелік[п.сцена - 1]
+    if п.сцена.isdecimal():
+        перелік = json.loads(subprocess.check_output([п.node, str(КОРІНЬ / "аудит/проби/приймання_записів.js"), "--перелік"],
+            env=dict(os.environ, REPLAY_ARCHIVE="1"), cwd=КОРІНЬ, text=True, encoding="utf-8"))
+        сцена = перелік[int(п.сцена) - 1]
+    else:
+        рядки = [р.split("|") for р in (КОРІНЬ / "аудит/проби/живі_сцени.txt").read_text(encoding="utf-8").splitlines()
+                 if р.startswith(п.сцена + "|")]
+        if len(рядки) != 1:
+            raise ValueError("Нема єдиної сцени в реєстрі: " + п.сцена)
+        id_, жінка, запит, змінні = рядки[0][:4]
+        if змінні:
+            raise ValueError("Сцена потребує окремого режиму: " + змінні)
+        сцена = {"назва": id_, "сід": 3, "змінні": {"CHAT_TEXT": запит,
+            "ZHINKA": str(КОРІНЬ / "аудит/проби/жінки" / (жінка + ".json")),
+            "MODEL": "qwen/qwen3.5-9b", "MODEL_MOVA": "mamaylm-gemma-3-12b-it-v2.0", "OTSINKA": "0", "FOTO": "0"}}
     вихід = п.вихід.resolve()
     вихід.mkdir(parents=True, exist_ok=False)
     env = dict(os.environ)
