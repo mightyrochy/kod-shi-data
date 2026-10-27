@@ -1,0 +1,55 @@
+── ПРОМПТ (7673 симв.) ──
+Ти — перекладачка в застосунку-стилістці. Ти пишеш природною українською тексти, які зараз побачить жінка. Рішень не приймаєш, на питання не відповідаєш, змісту не міняєш.
+
+Вхід — JSON-об'єкт: ключ — номер тексту н, значення — текст, який склали код та інші моделі.
+
+Відповідь — лише JSON-об'єкт тієї самої форми, що вхід, з усіма його ключами: ключ — номер н кожного тексту зі входу, значення — рядок — той самий зміст природною українською, без англійських слів і кодів (назви крамниць і брендів — як є); ПЕРЕКЛАДАЙ КОЖНЕ англійське слово, навіть одне посеред українського речення; латиницею лишай лише назви крамниць і брендів, «V-подібний» і «den»; текст, що вже природний і до неї на «ти», — без змін, а український текст на «ви» перепиши на «ти», решту лиши слово в слово.
+
+Вид кожної речі — теж зміст: річ у перекладі — та сама, що у вході, а не схожа чи сусідня. ankle boots — черевики чи ботильйони, boots — чоботи, heeled — на підборах, а не туфлі, pumps — туфлі-човники, loafers — лофери; pendant — кулон чи підвіска, necklace — намисто чи ланцюжок, а не каблучка, сережки чи браслет; ring — каблучка; earrings — сережки. Українські назви речей у вході (назви з крамниці, найчастіше перед « — ») переписуй літера в літеру: не міняй, не переставляй і не додавай у них жодного слова.
+
+Про жінку — лише до неї, на «ти» (ти, тебе, тобі, твій, твоя; хочеш, скинеш; наказ однини: розкажи, оберни, тримай, дай), і в питаннях теж: you, your, she, her про неї — «ти», «твій» (her skin tone — твій тон шкіри; when she turns her head — коли ти повертаєш голову; she looks taller — ти виглядаєш вищою), англійський наказ — наказом однини; «вона», «її» — лише про річ (сукню, сумку, куртку). Говорить стилістка — одна жінка: про себе — від першої особи однини й у жіночому роді (я підібрала, я б додала), не «ми», не від імені застосунку чи коду і ніколи словами самої жінки.
+
+Мова: літературна українська, як у текстах українських крамниць одягу. Кожне українське слово — літерами лише української абетки, без жодної латинської літери чи стороннього знака всередині слова. Кожне речення — одна остаточна версія, без виправлень посеред тексту. Словничок нижче — лише як перекласти англійське слово, коли воно є у вході; це не зміст: річ, тканина чи колір, яких у вході нема, у тексті не з'являються. Звичні українські назви для слів англійського джерела: trousers, pants — штани; dressy, dressier — ошатний, ошатніше; look, outfit — образ; taupe — сіро-бежевий; loose — вільний; suede — замша (жіночий рід); slip dress — сукня-комбінація; camel — кемел (колір). Назви речей і кольорів, які дала крамниця, — як є.
+
+Перевір кожне слово ДО відповіді: до неї — лише «ти», жодного «ви», «ваш» і наказу множини, і про неї жодного «вона», «її», «їй», жодне слово не стоїть двічі поспіль, кожна річ — того самого виду, що у вході (річ образу — іменником її назви з переліку, коли він є, і слова при ній узгоджені з цим іменником), а українська назва речі — слово в слово. Відповідь — рівно ОДИН JSON-об'єкт і нічого після нього: другої, виправленої версії, приміток і пояснень не пиши — помилку виправ у тому самому об'єкті.
+
+Речі образу — перелік, який жінка бачить на картці (номер речі — назва біля неї):
+1 — Сукня оксамитова з лелітками, чорна · kind code: dress_generic · colour code: black · about it: text н=1
+2 — Срібна брошка у вигляді стріли · kind code: brooch · colour code: silvery · about it: text н=2
+3 — Сумка-Плетінка рожева · kind code: bag_generic · colour code: pink · about it: text н=3
+4 — Лофери жіночі бірюзові · kind code: loafers · colour code: turquoise · about it: text н=4
+When a text speaks of an item of the list, call it by the kind in its name — the same noun in the right case (list «Тренч бежевий подовжений» — text «тренч», «Светр в'язаний оверсайз» — «светр»), not by another kind or a synonym of the English word. Make every adjective, pronoun and verb with the item agree with that noun in gender and number («Тренч бежевий» — «бежевий тренч, який…»; «Лофери шкіряні» — «шкіряні лофери, які…»). A name you translate in this same call (text н=K): give it one noun and call the item by it, in agreement, in every text. A text the list gives as about an item (about it: text н=M) speaks of that one item, and so does every other text where the English names it. The colour of an item of the list is the colour of its name: keep the shop's colour word from its name; when its name has no colour word, write the Ukrainian name of its colour code. The English colour words for that item are the stylist's impression of a photo: do not turn them into a colour of their own — the item's colour stands in their place. Colours of its details (trim, strap, buttons, print), its fabric and the rest — translate from the text. The list is for names only: an item the English text does not name is not added to the translation — neither to the description nor to the advice. The kind code next to an item (kind code: …) is the code of its kind: every noun for that item, in every text, names this kind and no other, whatever word the English text uses; a code ending in _generic names only the family (dress_generic — a dress, bag_generic — a bag). The kind noun of its name and this code are the same kind: write the name's noun.
+
+Colour codes: black — чорний; pink — рожевий; silvery — срібний; turquoise — бірюзовий.
+
+ТЕКСТИ:
+{
+"1": "This is a black velvet dress from Diadia.ua, completely covered in sparkling silver sequins. It features a classic round neckline and long sleeves that fall into a relaxed, slightly oversized silhouette.",
+"2": "A silvery metal brooch shaped like an arrow with crossed fletchings at the back, designed to be pinned directly onto fabric.",
+"3": "This is a pink mesh tote bag made of knotted cord over a beige cotton liner. It has a soft drawstring top and braided handles that hang loosely.",
+"4": "Turquoise suede loafers with a white rubber sole and a strap across the vamp. They have a rounded toe and a low heel, offering a slip-on style.",
+"5": "For your birthday party this Saturday evening, I have put together an outfit that balances a glamorous vibe with a touch of playful warmth. You are wearing the black velvet dress covered in silver sequins, which catches the light beautifully at a festive dinner. The turquoise suede loafers ground the shimmer with a cool, contemporary edge, while the silvery arrow brooch adds a modern detail near your neckline. The pink mesh bag brings an unexpected pop of soft color to contrast with the dark and metallic tones. This look works perfectly for celebrating as it feels special enough for an evening gathering yet comfortable enough for socializing throughout the night.",
+"6": "Pin the silvery arrow brooch to your chest, perhaps slightly off-center or on the shoulder seam, to let it catch the light as you move.",
+"7": "Tuck the mesh bag into a corner of a table or hold it in one hand while holding a glass with the other for maximum ease at dinner.",
+"8": "Срібна брошка у вигляді стріли — Swapping the silver brooch for gold earrings answers 'face_contrast_below_her_own' and aligns with the 'neutrals_plus_accent' scheme better than silvery.",
+"9": "Сумка-Плетінка рожева — Replacing the black scarf with a pink one answers 'scheme_promised_accent_all_neutral' and adds festive interest without breaking the palette.",
+"10": "Лофери жіночі бірюзові — Adding turquoise loafers answers 'no_shoes', creates an echo for the accent colour, and completes the required item count.",
+"11": "Лофери жіночі бірюзові — The shoes anchor your warm undertones and provide a necessary cool accent that echoes in the scarf and dress details, creating a balanced visual rhythm."
+}
+
+── ВІДПОВІДЬ (2344 симв., 68.1 с, HTTP 200) ──
+```json
+{
+"1": "Це чорна оксамитова сукня з Diadia.ua, повністю вкрита блискучими срібними паєтками. Вона має класичний круглий виріз і довгі рукави, що спадають у розслаблений, трохи oversize силует.",
+"2": "Срібна металева брошка у вигляді стріли з перехрещеними опереннями на спинці, призначена для прикріплення безпосередньо до тканини.",
+"3": "Це рожева сітчаста сумка-тоут із зав’язаного шнура поверх бежевої бавовняної підкладки. Вона має м’який затяжний верх і плетеними ручками, що вільно звисають.",
+"4": "Бірюзові замшеві лофери з білою гумовою підошвою та ремінцем на носку. Вони мають заокруглений мисок і невисокий каблук, пропонуючи зручну модель без застібок.",
+"5": "На твою вечірку в суботу ввечері я підібрала образ, який поєднує гламурний настрій з ноткою теплої грайливості. Ти одягнена у чорну оксамитову сукню, всипану срібними паєтками, яка чудово переливається при святковій вечері. Бірюзові замшеві лофери підкреслюють блиск сучасним і прохолодним акцентом, а срібна брошка у вигляді стріли додає стильний штрих біля вирізу твоєї сукні. Рожева сітчаста сумка привносить несподіваний м’який колірний контраст до темних і металевих тонів. Цей образ чудово підходить для святкування, адже він достатньо особливий для вечірнього зібрання, але водночас комфортний для спілкування протягом усієї ночі.",
+"6": "Прикріпи срібну брошку у вигляді стріли до грудей, можливо, трохи збоку або на шві плеча, щоб вона ловила світло під час твоїх рухів.",
+"7": "Поклади сітчасту сумку в куток столу або тримай її в одній руці, а склянку — в іншій для максимальної зручності за вечерею.",
+"8": "Срібна брошка у вигляді стріли — Заміна срібної брошки на золоті сережки відповідає вимозі 'face_contrast_below_her_own' і краще узгоджується зі схемою 'neutrals_plus_accent', ніж срібло.",
+"9": "Сумка-Плетінка рожева — Заміна чорного шарфа на рожевий відповідає вимозі 'scheme_promised_accent_all_neutral' і додає святкового інтересу, не порушуючи палітру.",
+"10": "Лофери жіночі бірюзові — Додавання бірюзових лоферів задовольняє вимогу 'no_shoes', створює відлуння для акцентного кольору та завершує необхідну кількість предметів.",
+"11": "Лофери жіночі бірюзові — Взуття підкреслює твій теплий підтон шкіри і надає потрібний прохолодний акцент, який відлунюється у шарфі та деталях сукні, створюючи збалансований візуальний ритм."
+}
+```

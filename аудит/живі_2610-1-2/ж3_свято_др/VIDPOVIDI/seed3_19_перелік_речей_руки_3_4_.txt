@@ -1,0 +1,44 @@
+── ПРОМПТ (2596 симв.) ──
+{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.", "A slot the description says is not needed is not an item: give it worn false. One item carries one thing — of two alternatives list the first; a note in brackets is not an item.", "Slot \"accessory\" is for an item no other slot fits.", "\"is_outfit\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note; then items is empty."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "ITEM_LIST", "answer_schema": {"is_outfit": "yes|no", "items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory", "color_hex": "<#rrggbb or null>", "worn": "<true, or false when the description says the outfit goes without it>"}]}, "input": ["\"description\" — the outfit description"]}, "description": "Woven silk-blend blouse in pale champagne (#f4dcd8), relaxed yet tailored collar cut, long length hitting mid-hip, soft drape.\nTailored wool-blend trousers in deep charcoal (#3a3f45), slim straight leg cut, full length to ankle, matte finish.\nStructured blazer in blackened crimson (#681e2d), cropped single-breasted cut with peak lapels, hip-length hem, smooth worsted fabric.\nStrappy stiletto heels in polished obsidian (#0a0a0a), narrow pointed toe, mid-calf height strap, glossy leather finish.\nPearl drop earrings in white mother-of-pearl (#f8f6f2), teardrop shape with simple post backing, 2 cm length, lustrous nacre material.\nWhy this outfit works: This ensemble strikes the perfect balance between sophisticated and approachable for an evening celebration, adhering to the requested smart dress code while respecting the autumn weather by including a structured outer layer. The color palette harmonizes her skin tones with rich, deep hues that look stunning under artificial party lighting, creating a warm glow against the cooler seasonal backdrop. The mix of textures from the woven blouse to the smooth blazer adds visual interest without appearing overly formal, making it ideal for dancing and socializing throughout the night."}
+
+── ВІДПОВІДЬ (1140 симв., 80.3 с, HTTP 200) ──
+{
+  "is_outfit": "yes",
+  "items": [
+    {
+      "name": "blouse",
+      "details": "Woven silk-blend with relaxed yet tailored collar cut, long length hitting mid-hip, soft drape",
+      "slot": "top",
+      "color_hex": "#f4dcd8",
+      "worn": true
+    },
+    {
+      "name": "trousers",
+      "details": "Tailored wool-blend with slim straight leg cut, full length to ankle, matte finish",
+      "slot": "bottom",
+      "color_hex": "#3a3f45",
+      "worn": true
+    },
+    {
+      "name": "blazer",
+      "details": "Structured single-breasted with peak lapels, cropped hip-length hem, smooth worsted fabric",
+      "slot": "outerwear",
+      "color_hex": "#681e2d",
+      "worn": true
+    },
+    {
+      "name": "heels",
+      "details": "Strappy stiletto with narrow pointed toe, mid-calf height strap, glossy leather finish",
+      "slot": "shoes",
+      "color_hex": "#0a0a0a",
+      "worn": true
+    },
+    {
+      "name": "earrings",
+      "details": "Pearl drop teardrop shape with simple post backing, 2 cm length, lustrous nacre material",
+      "slot": "earrings",
+      "color_hex": "#f8f6f2",
+      "worn": true
+    }
+  ]
+}
