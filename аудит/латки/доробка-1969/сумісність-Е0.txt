@@ -1,4 +1,12 @@
+Джерело: origin/gemini/Е0-обгортка-сама@76776983c92338fa2d069b08bfc5d33e29230ab1
+Латка: аудит/латки/Е0-обгортка-сама/01-самооновлення-й-ланцюг.patch
+Команда: git apply --check <Е0.patch>
+База: #1969 + 01-рядки-вихідних.patch
+Код: 1
 error: patch failed: аудит/адаптери/gemini/m9v/хеші.psd1:1
 error: аудит/адаптери/gemini/m9v/хеші.psd1: patch does not apply
 error: patch failed: аудит/адаптери/gemini/НАЛАШТУВАННЯ.md:409
 error: аудит/адаптери/gemini/НАЛАШТУВАННЯ.md: patch does not apply
+
+Лише діагностика, без застосування: git apply --check --exclude=<хеші.psd1> --exclude=<НАЛАШТУВАННЯ.md> <Е0.patch>
+Код: 0

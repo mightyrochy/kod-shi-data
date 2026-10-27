@@ -1,19 +1,22 @@
+diff --git a/аудит/адаптери/gemini/перевірка/сценарії_claude.sh b/аудит/адаптери/gemini/перевірка/сценарії_claude.sh
+index 40124d4..9f0407c 100644
+--- a/аудит/адаптери/gemini/перевірка/сценарії_claude.sh
++++ b/аудит/адаптери/gemini/перевірка/сценарії_claude.sh
+@@ -36,3 +36,3 @@ code() { setup "$1"; mark "$SLUG/${3:-$M}/1"; FAKE_CC_SCENARIO=$2 cr "${5:-}"; W
+     ENGINE_MISSING) EXPECTED="$EXPECTED"$'\n''GEMINI ОБГОРТКА: ТРИВОГА ENGINE CLAUDE';; esac
+-  chk "$2 → підсумок $4 і окрема тривога за потреби (є: $(lines))" '[ "$(lines | LC_ALL=C sort)" = "$(printf "%s\n" "$EXPECTED" | LC_ALL=C sort)" ]'; }
++  chk "$2 → підсумок $4 і окрема тривога за потреби (є: $(lines))" '[ "$(lines | wc -l)" = "$(nlines)" ] && [ "$(lines | LC_ALL=C sort)" = "$(printf "%s\n" "$EXPECTED" | LC_ALL=C sort)" ]'; }
+ 
 diff --git a/аудит/адаптери/gemini/claude_run.ps1 b/аудит/адаптери/gemini/claude_run.ps1
 index 33c6710..d517944 100644
 --- a/аудит/адаптери/gemini/claude_run.ps1
 +++ b/аудит/адаптери/gemini/claude_run.ps1
-@@ -145,7 +145,7 @@ function Add-Line([string]$Line) {
-     foreach ($t in $script:LineTemplates) { if ($Line -cmatch $t) { $ok = $true; break } }
-     if (-not $ok -or $Line.Contains('..')) { Write-Log "рядок не за шаблоном — не записано: $Line"; return '' }
+@@ -147,3 +147,3 @@ function Add-Line([string]$Line) {
      $id = New-Id
 -    Write-FileAtomic (Join-Path $OutboxDir "$id.txt") $Line
 +    Write-FileAtomic (Join-Path $OutboxDir "$id.txt") ($Line + "`n")
      Write-Log "рядок $id : $Line"
-     $id
- }
-@@ -433,7 +433,12 @@ function Invoke-Claude([string]$Exe, [string[]]$ArgList, [string]$Prompt, [strin
-     $hang = Get-Limit $script:Limits 'HangMinutes' 'claude_hang_minutes'
-     $psi = New-StartInfo $Exe $ArgList $RepoDir
+@@ -435,3 +435,8 @@ function Invoke-Claude([string]$Exe, [string[]]$ArgList, [string]$Prompt, [strin
      $psi.RedirectStandardInput = $true
 -    $p = [System.Diagnostics.Process]::Start($psi)
 +    # .NET Framework створює StandardInput з AutoFlush: BOM пишеться вже під час Start.
@@ -23,15 +26,11 @@ index 33c6710..d517944 100644
 +        $p = [System.Diagnostics.Process]::Start($psi)
 +    } finally { [Console]::InputEncoding = $stdinEncoding }
      $start = ''; try { $start = Get-UtcStamp $p.StartTime } catch { $null = $_ }
-     Write-FileAtomic $StatePath ($StateHead + ' ' + (([ordered]@{ pid = $p.Id; start = $start; marker = $Marker; slot = $Slot; retakes = (Get-Retakes $StatePath) }) | ConvertTo-Json -Compress))
-     $w = New-Object System.IO.StreamWriter($p.StandardInput.BaseStream, $script:Utf8)
 diff --git a/аудит/адаптери/gemini/gemini_publish.ps1 b/аудит/адаптери/gemini/gemini_publish.ps1
 index 0b70e5b..420409a 100644
 --- a/аудит/адаптери/gemini/gemini_publish.ps1
 +++ b/аудит/адаптери/gemini/gemini_publish.ps1
-@@ -124,7 +124,12 @@ function Invoke-Native([string]$Exe, [string[]]$Arguments, [string]$WorkDirector
-     $psi.EnvironmentVariables['GIT_TERMINAL_PROMPT'] = '0'
-     $psi.EnvironmentVariables['GCM_INTERACTIVE'] = 'never'
+@@ -126,3 +126,8 @@ function Invoke-Native([string]$Exe, [string[]]$Arguments, [string]$WorkDirector
      $psi.RedirectStandardInput = ($null -ne $StdIn)
 -    $p = [System.Diagnostics.Process]::Start($psi)
 +    # .NET Framework створює StandardInput з AutoFlush: BOM пишеться вже під час Start.
@@ -41,15 +40,11 @@ index 0b70e5b..420409a 100644
 +        $p = [System.Diagnostics.Process]::Start($psi)
 +    } finally { [Console]::InputEncoding = $stdinEncoding }
      $out = $p.StandardOutput.ReadToEndAsync()
-     $err = $p.StandardError.ReadToEndAsync()
-     if ($null -ne $StdIn) {
 diff --git a/аудит/адаптери/gemini/gemini_run.ps1 b/аудит/адаптери/gemini/gemini_run.ps1
 index 71142eb..f56086d 100644
 --- a/аудит/адаптери/gemini/gemini_run.ps1
 +++ b/аудит/адаптери/gemini/gemini_run.ps1
-@@ -685,7 +685,12 @@ function Wait-StreamResult($Run, [datetime]$Deadline) {
- function Start-StreamRun($M, $Run) {
-     $psi = New-StartInfo $script:Agy (Get-AgyArgs $M $Run.Conversation @()) $RepoDir
+@@ -687,3 +687,8 @@ function Start-StreamRun($M, $Run) {
      $psi.RedirectStandardInput = $true
 -    $Run.Proc = [System.Diagnostics.Process]::Start($psi)
 +    # .NET Framework створює StandardInput з AutoFlush: BOM пишеться вже під час Start.
@@ -59,15 +54,11 @@ index 71142eb..f56086d 100644
 +        $Run.Proc = [System.Diagnostics.Process]::Start($psi)
 +    } finally { [Console]::InputEncoding = $stdinEncoding }
      $Run.Stdin = New-Object System.IO.StreamWriter($Run.Proc.StandardInput.BaseStream, $script:Utf8)
-     $Run.Stderr = $Run.Proc.StandardError.ReadToEndAsync()
-     $Run.Pending = $null
 diff --git a/аудит/адаптери/gemini/gemini_watch.ps1 b/аудит/адаптери/gemini/gemini_watch.ps1
 index f752736..5d4eaaa 100644
 --- a/аудит/адаптери/gemini/gemini_watch.ps1
 +++ b/аудит/адаптери/gemini/gemini_watch.ps1
-@@ -100,7 +100,12 @@ function Invoke-Native([string]$Exe, [string[]]$Arguments, [string]$WorkDirector
-     $psi.EnvironmentVariables['GIT_TERMINAL_PROMPT'] = '0'
-     $psi.EnvironmentVariables['GCM_INTERACTIVE'] = 'never'
+@@ -102,3 +102,8 @@ function Invoke-Native([string]$Exe, [string[]]$Arguments, [string]$WorkDirector
      $psi.RedirectStandardInput = ($null -ne $StdIn)
 -    $p = [System.Diagnostics.Process]::Start($psi)
 +    # .NET Framework створює StandardInput з AutoFlush: BOM пишеться вже під час Start.
@@ -77,25 +68,18 @@ index f752736..5d4eaaa 100644
 +        $p = [System.Diagnostics.Process]::Start($psi)
 +    } finally { [Console]::InputEncoding = $stdinEncoding }
      $out = $p.StandardOutput.ReadToEndAsync()
-     $err = $p.StandardError.ReadToEndAsync()
-     if ($null -ne $StdIn) {
 diff --git a/аудит/адаптери/gemini/m9v/хеші.psd1 b/аудит/адаптери/gemini/m9v/хеші.psd1
 index 24a7b7b..15a40ac 100644
 --- a/аудит/адаптери/gemini/m9v/хеші.psd1
 +++ b/аудит/адаптери/gemini/m9v/хеші.psd1
-@@ -2,15 +2,15 @@
- # у ../НАЛАШТУВАННЯ.md (стенд `перевірка/сценарії_m9v.sh` звіряє). Міняється разом із таблицею (PR, що чіпає обгортку).
- @{
+@@ -4,4 +4,4 @@
      'wrapper_health.ps1' = 'FCE45448539D53A6B5718319842FC845DA870F39453A6B716C7AF8A2DB65B88E'
 -    'gemini_run.ps1'     = '48C66A30A0967CE9A8AA60B9ECF102479D6B6C2672B2978F1C0D8A1D6C8100AD'
 -    'gemini_publish.ps1' = '735FB7390DD948FBA97B5AA8DE16416C4ACBB99CB92C33A4A9B0AD1E62EF74B5'
 +    'gemini_run.ps1'     = 'AF5B33D322B3A040BD6B91E2A3D992C22068D1DED94CEAFB323A62891DAD6FDE'
 +    'gemini_publish.ps1' = '904ABCC5FE198EFF89B4BA956C7B58742AD54932CAE4A3F01673416B6E4506B2'
      # Інсталятор Codex (9741) закріплено за релізом: install.ps1 — файл релізу https://releases.openai.com/codex/releases/<CodexRelease>/install.ps1
-     # (незмінний URL; той самий sha256 віддає https://chatgpt.com/codex/install.ps1 — редирект на releases.openai.com — і публікує реліз
-     # openai/codex). 2_під_gemini.ps1 -WithCodex виконує його лише при збігу CodexInstaller і ставить саме цей реліз (-Release).
-     # Оновити Codex = новий PR: нова версія, новий хеш (докази — у PR). Порожній хеш — інсталятор не виконується.
-     CodexRelease         = '0.164.0'
+@@ -12,5 +12,5 @@
      CodexInstaller       = 'A59CB66350098C33B021FF470D586AE8FE3B7CAF189CA7137B4FE3AF5D4DCE74'
 -    'gemini_watch.ps1'   = '3550085176F339BA00B1D1C28391AC585B0959128335D193601734261D00085B'
 -    'queue_lanes.ps1'    = '12ADC3824C6F126EE91F953B5FA65A96C015FC3D99C39FF9914A167DA2F92DD9'
@@ -108,9 +92,7 @@ diff --git a/аудит/адаптери/gemini/queue_lanes.ps1 b/аудит/а�
 index 26328fd..c3ef664 100644
 --- a/аудит/адаптери/gemini/queue_lanes.ps1
 +++ b/аудит/адаптери/gemini/queue_lanes.ps1
-@@ -136,7 +136,12 @@ function Invoke-Native([string]$Exe, [string[]]$Arguments, [string]$Dir = '', [d
-     <# Запуск із межею часу (по межі — зупинка дерева) і необов'язковим stdin; повертає код, ознаку межі й обидва потоки. #>
-     $psi = New-StartInfo $Exe $Arguments $Dir
+@@ -138,3 +138,8 @@ function Invoke-Native([string]$Exe, [string[]]$Arguments, [string]$Dir = '', [d
      $psi.RedirectStandardInput = ($null -ne $StdIn)
 -    $p = [System.Diagnostics.Process]::Start($psi)
 +    # .NET Framework створює StandardInput з AutoFlush: BOM пишеться вже під час Start.
@@ -120,15 +102,11 @@ index 26328fd..c3ef664 100644
 +        $p = [System.Diagnostics.Process]::Start($psi)
 +    } finally { [Console]::InputEncoding = $stdinEncoding }
      $out = $p.StandardOutput.ReadToEndAsync()
-     $err = $p.StandardError.ReadToEndAsync()
-     if ($null -ne $StdIn) {
 diff --git a/аудит/адаптери/gemini/НАЛАШТУВАННЯ.md b/аудит/адаптери/gemini/НАЛАШТУВАННЯ.md
 index 2b8ad55..80bfe7e 100644
 --- a/аудит/адаптери/gemini/НАЛАШТУВАННЯ.md
 +++ b/аудит/адаптери/gemini/НАЛАШТУВАННЯ.md
-@@ -409,12 +409,12 @@ $f = Join-Path "$env:USERPROFILE\gemini-outbox" $n
- 
- | файл | SHA-256 |
+@@ -411,8 +411,8 @@ $f = Join-Path "$env:USERPROFILE\gemini-outbox" $n
  |---|---|
 -| `gemini_run.ps1` | `48C66A30A0967CE9A8AA60B9ECF102479D6B6C2672B2978F1C0D8A1D6C8100AD` |
 -| `gemini_publish.ps1` | `735FB7390DD948FBA97B5AA8DE16416C4ACBB99CB92C33A4A9B0AD1E62EF74B5` |
@@ -142,54 +120,30 @@ index 2b8ad55..80bfe7e 100644
 +| `queue_lanes.ps1` | `23BF290032E38380132C44D94ECDB2AF2480BE7710C14CEB6799A9D482187407` |
 +| `claude_run.ps1` | `249CF4B2826B079F4B68B6BDC7A6DDF431EF3E2AE7D130490F72EC0D8DDDF094` |
  | `CodexInstaller` (`install.ps1` релізу Codex `CodexRelease`) | `A59CB66350098C33B021FF470D586AE8FE3B7CAF189CA7137B4FE3AF5D4DCE74` |
- 
- Той самий список читають скрипти `m9v/` з `m9v/хеші.psd1` — міняти їх разом із таблицею. Підготовка одним проходом — `m9v/ЩО_НАТИСНУТИ.md`.
 diff --git a/аудит/адаптери/gemini/перевірка/side.ps1 b/аудит/адаптери/gemini/перевірка/side.ps1
 index 8014aea..5c74497 100644
 --- a/аудит/адаптери/gemini/перевірка/side.ps1
 +++ b/аудит/адаптери/gemini/перевірка/side.ps1
-@@ -1,5 +1,7 @@
- ﻿# Стенд: підвантажує обгортку крапкою, підміняє перевірки Windows (ізоляція, користувач) і запускає Main.
+@@ -2,2 +2,4 @@
  param([string]$Script, [string]$ArgsJson)
 +# UTF-8 із BOM у стандартному stdin .NET Framework, як у раннера Windows.
 +if ($env:OS -eq 'Windows_NT') { [Console]::InputEncoding = [Text.Encoding]::UTF8 }
  $p = @{}
- (ConvertFrom-Json $ArgsJson).PSObject.Properties | ForEach-Object { $p[$_.Name] = $_.Value }
- # Стенд не чіпає справжньої спільної теки ноутбука (C:\Users\Public\gemini\lanes): без LaneDir — тимчасова тека.
 diff --git a/аудит/адаптери/gemini/перевірка/side_claude.ps1 b/аудит/адаптери/gemini/перевірка/side_claude.ps1
 index 3245942..b19daf3 100644
 --- a/аудит/адаптери/gemini/перевірка/side_claude.ps1
 +++ b/аудит/адаптери/gemini/перевірка/side_claude.ps1
-@@ -1,5 +1,7 @@
- ﻿# Стенд claude_run.ps1: підвантажує крапкою, підміняє ноутбук (користувач, час увімкнення, задачі, shutdown) і запускає Main.
+@@ -2,2 +2,4 @@
  param([string]$Script, [string]$ArgsJson)
 +# UTF-8 із BOM у стандартному stdin .NET Framework, як у раннера Windows.
 +if ($env:OS -eq 'Windows_NT') { [Console]::InputEncoding = [Text.Encoding]::UTF8 }
  $p = @{}
- (ConvertFrom-Json $ArgsJson).PSObject.Properties | ForEach-Object { $p[$_.Name] = $_.Value }
- # Стенд не чіпає справжньої спільної теки ноутбука (C:\Users\Public\gemini\lanes): без LaneDir — тимчасова тека.
 diff --git a/аудит/адаптери/gemini/перевірка/side_watch.ps1 b/аудит/адаптери/gemini/перевірка/side_watch.ps1
 index 7da079d..b0fae43 100644
 --- a/аудит/адаптери/gemini/перевірка/side_watch.ps1
 +++ b/аудит/адаптери/gemini/перевірка/side_watch.ps1
-@@ -1,5 +1,7 @@
- ﻿# Стенд спостерігача: локальний origin і fake_gh, користувач ОС підмінено як у side.ps1 та side_claude.ps1.
+@@ -2,2 +2,4 @@
  param([string]$Script, [string]$ArgsJson, [int]$MaxRows = 20, [int]$MaxDiffKB = 128)
 +# UTF-8 із BOM у стандартному stdin .NET Framework, як у раннера Windows.
 +if ($env:OS -eq 'Windows_NT') { [Console]::InputEncoding = [Text.Encoding]::UTF8 }
  $p = @{}
- (ConvertFrom-Json $ArgsJson).PSObject.Properties | ForEach-Object { $p[$_.Name] = $_.Value }
- $script:HarnessPython = $p['HarnessPython']
-diff --git a/аудит/адаптери/gemini/перевірка/сценарії_claude.sh b/аудит/адаптери/gemini/перевірка/сценарії_claude.sh
-index 40124d4..9f0407c 100644
---- a/аудит/адаптери/gemini/перевірка/сценарії_claude.sh
-+++ b/аудит/адаптери/gemini/перевірка/сценарії_claude.sh
-@@ -34,7 +34,7 @@ code() { setup "$1"; mark "$SLUG/${3:-$M}/1"; FAKE_CC_SCENARIO=$2 cr "${5:-}"; W
-   EXPECTED="GEMINI ОБГОРТКА: ЗАБЛОКОВАНО claude/$SLUG $WANT"
-   case "$WANT" in AUTH) EXPECTED="$EXPECTED"$'\n''GEMINI ОБГОРТКА: ТРИВОГА AUTH CLAUDE';;
-     ENGINE_MISSING) EXPECTED="$EXPECTED"$'\n''GEMINI ОБГОРТКА: ТРИВОГА ENGINE CLAUDE';; esac
--  chk "$2 → підсумок $4 і окрема тривога за потреби (є: $(lines))" '[ "$(lines | LC_ALL=C sort)" = "$(printf "%s\n" "$EXPECTED" | LC_ALL=C sort)" ]'; }
-+  chk "$2 → підсумок $4 і окрема тривога за потреби (є: $(lines))" '[ "$(lines | wc -l)" = "$(nlines)" ] && [ "$(lines | LC_ALL=C sort)" = "$(printf "%s\n" "$EXPECTED" | LC_ALL=C sort)" ]'; }
- 
- echo "=== К1 ГОТОВО: модель і зусилля дослівно, auto, промпт запускача, SHA з origin, стан в issue"
- setup k1; mark "$SLUG/$M/1"; cr
