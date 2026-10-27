@@ -1,0 +1,27 @@
+Перевірка середовища Б.1-серія-2, 27.10.2026.
+Контрольний час UTC: 2026-10-27T07:47:36.0141720Z.
+Користувач: DESKTOP-6N11SA4\gemini.
+HEAD на старті = origin/main = 246973bc7e7703026836640991b54e3406cedb83.
+git diff --quiet HEAD refs/remotes/origin/main: rc=0.
+Локальний main = feba60494d0deb0df61a32079317172d3a241c25 (застарілий покажчик).
+
+Get-NetTCPConnection -State Listen -LocalPort 1234:
+{"LocalAddress":"127.0.0.1","LocalPort":1234,"OwningProcess":14132}
+Get-Process -Id 14132:
+{"Id":14132,"ProcessName":"LM Studio","Path":null,"StartTime":null}
+Get-CimInstance Win32_Process -Filter 'ProcessId=14132':
+{"ProcessId":14132,"ParentProcessId":26252,"ExecutablePath":null}
+
+nvidia-smi перед стартом:
+NVIDIA-SMI 621.01; RTX 4090; WDDM; 56 MiB / 16376 MiB; GPU-Util 0 %.
+Processes: No running processes found.
+
+Get-Command lms,node -ErrorAction SilentlyContinue: результат порожній.
+Test-Path C:\Users\gemini\.lmstudio\bin\lms.exe: False.
+Test-Path C:\Users\gemini\.lmstudio\bin\lms.cmd: False.
+Test-Path C:\Users\Admin\.lmstudio\bin\lms.exe:
+Access is denied; UnauthorizedAccessException.
+Відмову ОС не обходили. lms ps не виконано.
+
+Старт стенда: не виконувався; 0/30; rc немає.
+Своїх сервісів або моделей не запускали; чужих процесів не зупиняли.
