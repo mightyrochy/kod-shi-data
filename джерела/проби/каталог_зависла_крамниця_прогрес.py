@@ -3,7 +3,6 @@
 import csv, sys, tempfile
 from pathlib import Path
 from unittest.mock import Mock, patch
-
 sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "zhnyvarka"))
 import обхід
 
@@ -14,6 +13,7 @@ def main():
         ("без нового стану", 1, "стеля 1", [2, 2, 2], "NO_PROGRESS", 1),
         ("без карток", 0, "стеля 1", [0, 0, 0], "NO_PROGRESS", 1),
         ("явний таймаут", 0, "таймаут", [0, 0, 0], "TIMEOUT", 1),
+        ("таймаут із картками", 1, "таймаут", [2, 2, 2], "TIMEOUT", 1),
         ("рух без карток", 0, "стеля 1", [0, 1, 2], "", 2),
         ("рух із картками", 1, "стеля 1", [0, 1, 2], "", 2),
         ("черга вичерпана", 1, "успіх", [2, 2, 2], "", 1),
