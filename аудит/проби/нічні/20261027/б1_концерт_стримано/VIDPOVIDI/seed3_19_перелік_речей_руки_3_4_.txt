@@ -1,0 +1,44 @@
+── ПРОМПТ (2492 симв.) ──
+{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.", "A slot the description says is not needed is not an item: give it worn false. One item carries one thing — of two alternatives list the first; a note in brackets is not an item.", "Slot \"accessory\" is for an item no other slot fits.", "\"is_outfit\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note; then items is empty."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "ITEM_LIST", "answer_schema": {"is_outfit": "yes|no", "items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory", "color_hex": "<#rrggbb or null>", "worn": "<true, or false when the description says the outfit goes without it>"}]}, "input": ["\"description\" — the outfit description"]}, "description": "Merino wool tunic, relaxed fit with a straight hemline, charcoal grey (#36454F), fine-gauge knit fabric\nTailored wide-leg trousers, tapering slightly at the ankle, dark indigo (#1E2A38), heavy-weight cotton twill\nLeather loafers, classic almond toe silhouette, oxblood brown (#802020), full-grain calfskin\nMinimalist gold hoop earrings, medium diameter with a smooth finish, solid 14k yellow gold metal\nStructured leather belt, thin loop through front buckle, matching oxblood brown (#802020), smooth vegetable-tanned leather\n\nThis outfit strikes the perfect balance for an autumn evening at a club, adhering to her request for a classic yet streamlined aesthetic. The soft warmth of the merino wool tunic provides comfort while moving around, paired with durable dark denim trousers that offer ease without sacrificing style. The choice of neutral tones in deep charcoal and indigo aligns with her desire for a cool, composed look suitable for artificial stage lighting. Completing the ensemble with rich oxblood loafers and subtle gold jewelry elevates the neat dress code while respecting her refusal of anything too trendy or flashy."}
+
+── ВІДПОВІДЬ (1061 симв., 4.6 с, HTTP 200) ──
+{
+  "is_outfit": "yes",
+  "items": [
+    {
+      "name": "Merino wool tunic",
+      "details": "relaxed fit with a straight hemline, fine-gauge knit fabric",
+      "slot": "top",
+      "color_hex": "#36454F",
+      "worn": true
+    },
+    {
+      "name": "Tailored wide-leg trousers",
+      "details": "tapering slightly at the ankle, heavy-weight cotton twill",
+      "slot": "bottom",
+      "color_hex": "#1E2A38",
+      "worn": true
+    },
+    {
+      "name": "Leather loafers",
+      "details": "classic almond toe silhouette, full-grain calfskin",
+      "slot": "shoes",
+      "color_hex": "#802020",
+      "worn": true
+    },
+    {
+      "name": "Minimalist gold hoop earrings",
+      "details": "medium diameter with a smooth finish, solid 14k yellow gold metal",
+      "slot": "earrings",
+      "color_hex": null,
+      "worn": true
+    },
+    {
+      "name": "Structured leather belt",
+      "details": "thin loop through front buckle, smooth vegetable-tanned leather",
+      "slot": "belt",
+      "color_hex": "#802020",
+      "worn": true
+    }
+  ]
+}
