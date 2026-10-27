@@ -17,6 +17,8 @@ GPU (тека $LaneDir — `C:\Users\Public\gemini\lanes`, де пишуть і 
 Смуга — за моделлю: `cc-…` — Claude, `gpt-…` — Codex, решта — `agy`.
 #>
 
+. (Join-Path $PSScriptRoot 'wrapper_health.ps1')
+
 $script:QueuePrefix = 'refs/remotes/origin/gemini-queue/'
 $script:TaskDir = 'аудит/наряди/'
 $script:SlugPattern = '^[\p{L}\p{Nd}][\p{L}\p{Nd}._-]{0,79}\z'
@@ -142,7 +144,9 @@ function Invoke-Native([string]$Exe, [string[]]$Arguments, [string]$Dir = '', [d
         $w.Write($StdIn)
         $w.Close()
     }
-    $timedOut = -not $p.WaitForExit([int][Math]::Min([double][int]::MaxValue, $TimeoutMinutes * 60000))
+    $until = [datetime]::UtcNow.AddMinutes($TimeoutMinutes)
+    while (-not $p.WaitForExit(1000) -and [datetime]::UtcNow -lt $until) { Invoke-HealthBeat }
+    $timedOut = -not $p.HasExited
     if ($timedOut) { Stop-Tree $p } else { $p.WaitForExit() }
     [pscustomobject]@{ Code = $(if ($timedOut) { -1 } else { $p.ExitCode }); TimedOut = $timedOut; Out = $out.Result; Err = $err.Result }
 }
@@ -477,6 +481,7 @@ function Wait-Workers($Workers, [double]$Minutes) {
     $until = (Get-Date).AddMinutes($Minutes)
     while ((Get-Date) -lt $until) {
         if (@($Workers | Where-Object { -not $_.Proc.HasExited }).Count -lt $alive) { return }
+        Invoke-HealthBeat
         Start-Sleep -Milliseconds 500
     }
 }

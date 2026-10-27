@@ -25,6 +25,8 @@ param(
     [string]$RepoUrl = 'https://github.com/mightyrochy/kod-shi-data.git',
     [string]$GitExe = 'git',
     [string]$ClaudeExe = 'claude',
+    [string]$GhExe = 'gh',
+    [int]$MaxFallbackAttempts = 12,
     [string]$GeminiUser = 'gemini',
     [string]$WrapperDir = 'аудит/адаптери/gemini/',
     [int]$MaxBundleMB = 512,
@@ -39,6 +41,9 @@ param(
 
 Set-StrictMode -Version Latest
 $ErrorActionPreference = 'Stop'
+. (Join-Path $PSScriptRoot 'wrapper_health.ps1')
+$script:CloudAuthFailed = $false
+$script:CloudUnavailable = $false
 
 $script:SlugPattern = '^[\p{L}\p{Nd}][\p{L}\p{Nd}._-]{0,79}\z'
 $script:ModelPattern = '^[a-z0-9][a-z0-9.-]{1,63}$'
@@ -261,6 +266,7 @@ function Get-Line([string]$Id) {
     if ($code -eq 'ISOLATION') {
         $check = [string](Get-Prop $s 'check')
         if (-not $script:IsolationChecks.ContainsKey($check)) { return Get-BadLine $Id 'з невідомою перевіркою ізоляції' }
+        Add-HealthAlert 'ISOLATION' $check
         if (Test-Seen ('isolation ' + $check + ' ' + (Get-Date -Format 'yyyyMMdd'))) { return $null }
         Write-WrapperLog "ізоляція не пройшла перевірку ($check — $($script:IsolationChecks[$check])); прогони Gemini стоять, потрібна дія власника"
         return [pscustomobject]@{ Outbox = 'GEMINI ОБГОРТКА: ЗАБЛОКОВАНО gemini/невідомо ISOLATION_FAILED' }
@@ -284,6 +290,8 @@ function Get-Line([string]$Id) {
     if (Test-Path -LiteralPath (Get-SeenPath "published $queue $marker")) { return $null }
     $turns = Get-Int $s 'turns'; $minutes = Get-Int $s 'minutes'; $ahead = Get-Int $s 'ahead'
     # Лише слова цього файлу: поля стану поза переліками (зокрема `models`) у рядок не потрапляють.
+    if ($code -eq 'AUTH') { Add-HealthAlert 'AUTH' $(if ($model -like 'gpt-*') { 'CODEX' } else { 'AGY' }) }
+    if ($code -eq 'ENGINE_MISSING') { Add-HealthAlert 'ENGINE' $(if ($model -like 'gpt-*') { 'CODEX' } else { 'AGY' }) }
     $reason = $script:RunCodes[$code]
     $quotaLeft = [string](Get-Prop $s 'quota')
     $quotaNote = $(if ($quotaLeft -match '^[0-9]{1,3}$') { "; залишок квоти групи моделі — $quotaLeft %" } else { '' })
@@ -369,6 +377,7 @@ $script:OutboxTemplates = @(
     "\AGEMINI ОБГОРТКА: ГОТОВО (?:gemini|codex|claude)/$script:SlugCore [0-9a-f]{40}(?: КВОТА [A-Z0-9_]{2,40} (?:100|[1-9]?[0-9]))?(?: МОДЕЛЬ [a-z0-9][a-z0-9.-]{1,63})?\z"
     '\AGEMINI ОБГОРТКА: ПУЛИ V=(?:[0-9]+(?:\.[0-9]+){1,3}|-)(?: G=[A-Z0-9]{1,16}:(?:100|[1-9]?[0-9]):(?:[0-9]{1,6}|-)){0,6}(?: Q=\?)? M=(?:-|(?:gemini|claude|gpt)-[a-z0-9.-]{1,36}(?:,(?:gemini|claude|gpt)-[a-z0-9.-]{1,36}){0,5})\z'
     "\AGEMINI ОБГОРТКА: ЗАБЛОКОВАНО (?:gemini|codex|claude)/$script:SlugCore [A-Z0-9_]{2,40}\z"
+    '\AGEMINI ОБГОРТКА: ТРИВОГА (?:AUTH (?:AGY|CODEX|CLAUDE|CLOUD)|ISOLATION (?:WHOAMI|NET_SESSION|PROFILES|DRIVES|ENV)|DISK FULL|ENGINE (?:AGY|CODEX|CLAUDE))\z'
     '\AGEMINI ОБГОРТКА: ВИМКНЕНО [0-9a-f]{40}\z'
     '\AСПОСТЕРІГАЧ КОМЕНТАР #[0-9]{1,12} [0-9]{1,20} (?:mightyrochy|chatgpt-codex-connector\[bot\]) (?:новий|змінено)\z'
     '\AСПОСТЕРІГАЧ CI #[0-9]{1,12} [0-9a-f]{40} (?:success|failure|cancelled|timed_out|action_required|neutral|skipped|pending)\z'
@@ -491,8 +500,12 @@ function Send-Line([string]$Line) {
     # Рядок — через stdin: `claude` буває `.cmd`, і тоді аргумент розбирав би cmd.exe.
     $r = Invoke-Native (Resolve-Exe $ClaudeExe) @('-p', '--cloud', $sid, '--output-format', 'json') $WorkDir 3 $Line
     $ok = $false
-    try { $ok = [bool]((($r.Out -split "`n" | Where-Object { $_.Trim().StartsWith('{') }) | Select-Object -Last 1 | ConvertFrom-Json).ok) }
+    try { $ack = (($r.Out -split "`n" | Where-Object { $_.Trim().StartsWith('{') }) | Select-Object -Last 1 | ConvertFrom-Json).ok; $ok = $r.Code -eq 0 -and $ack -is [bool] -and $ack -eq $true }
     catch { Write-WrapperLog "відповідь claude не JSON: $($_.Exception.Message)" }
+    if (-not $ok -and (($r.Out + $r.Err) -match '\b401\b|authentication_error|[Nn]ot logged in')) {
+        $script:CloudAuthFailed = $true
+        Add-HealthAlert 'AUTH' 'CLOUD'
+    }
     if (-not $ok) { Write-WrapperLog "claude --cloud $sid -> $($r.Code): $($r.Out.Trim()) $($r.Err.Trim())" }
     $ok
 }
@@ -503,15 +516,80 @@ function Send-LineRetry([string]$Line, [int]$Done) {
     while ($true) {
         $tries++
         if (Send-Line $Line) { return [pscustomobject]@{ Ok = $true; Tries = $tries } }
-        if ($tries -ge $SendRetries -or ($Done + $tries) -ge $MaxSendAttempts) { return [pscustomobject]@{ Ok = $false; Tries = $tries } }
+        if ($script:CloudAuthFailed -or $tries -ge $SendRetries -or ($Done + $tries) -ge $MaxSendAttempts) { return [pscustomobject]@{ Ok = $false; Tries = $tries } }
         if (-not $DryRun -and $SendRetryDelaySeconds -gt 0) { Start-Sleep -Seconds $SendRetryDelaySeconds }
     }
+}
+
+function Receive-HealthAlerts {
+    <# Недовірені тривоги Gemini: лише пара з переліку; загальний формат файлів не розширюється. #>
+    $dir = Join-Path $OutDir 'alerts'
+    foreach ($f in @(Get-ChildItem -LiteralPath $dir -Filter '*.txt' -File -ErrorAction SilentlyContinue | Where-Object { $_.Name -cmatch $script:OutboxNamePattern -and -not (Test-Path -LiteralPath (Get-SeenPath ('health-import ' + $_.Name))) } | Select-Object -First 64)) {
+        if ($f.Name -cnotmatch $script:OutboxNamePattern) { continue }
+        $r = Read-OutboxFile $f.FullName
+        if (-not $r[1] -and (Test-HealthAlert $r[0])) {
+            $parts = $r[0] -split ' '
+            Add-HealthAlert $parts[-2] $parts[-1]
+        } else { Write-WrapperLog 'тривогу Gemini відкинуто за форматом' }
+        Write-FileAtomic (Get-SeenPath ('health-import ' + $f.Name)) '1'
+    }
+}
+
+function Send-Fallback([string]$Line) {
+    <# Той самий рядок у #1690 через stdin JSON; ні оболонки, ні тексту агента в аргументах. #>
+    if ($DryRun) { return $true }
+    $body = ([ordered]@{ body = $Line }) | ConvertTo-Json -Compress
+    try {
+        $r = Invoke-Native (Resolve-Exe $GhExe) @('api', '-X', 'POST', 'repos/mightyrochy/kod-shi-data/issues/1690/comments', '--input', '-') $WorkDir 1 $body
+        $id = 0L
+        $ok = $r.Code -eq 0 -and [long]::TryParse([string](Get-Prop ($r.Out | ConvertFrom-Json) 'id'), [ref]$id) -and $id -gt 0
+        if (-not $ok) { Write-WrapperLog 'запасний канал gh: немає підтвердження id' }
+        return $ok
+    } catch { Write-WrapperLog 'запасний канал gh: збій'; return $false }
+}
+
+function Send-Pending([System.IO.FileInfo]$File) {
+    <# Стан доставки збережено перед мережею; рядок лишається після вичерпання обох бюджетів. #>
+    $st = [System.IO.File]::ReadAllText($File.FullName, $script:Utf8) | ConvertFrom-Json
+    if ($st.sent -or (Get-Prop $st 'exhausted') -eq $true) { return }
+    $first = [string](Get-Prop $st 'first_failure_utc')
+    if (-not $first) { $first = $File.CreationTimeUtc.ToString('o') }
+    $new = [ordered]@{ line = [string]$st.line; sent = $false; attempts = [int]$st.attempts
+        first_failure_utc = $first; fallback_attempts = [int](Get-Prop $st 'fallback_attempts'); channel = ''; exhausted = $false; cloud_auth = ((Get-Prop $st 'cloud_auth') -eq $true) }
+    Write-FileAtomic $File.FullName ($new | ConvertTo-Json -Compress)
+    if (-not $script:CloudAuthFailed -and -not $script:CloudUnavailable -and $new.attempts -lt $MaxSendAttempts) {
+        try { $res = Send-LineRetry $new.line $new.attempts }
+        catch { Write-WrapperLog 'канал claude: збій'; $res = [pscustomobject]@{ Ok = $false; Tries = 1 } }
+        $new.attempts += $res.Tries
+        $new.sent = $res.Ok
+        if ($res.Ok) { $new.channel = 'claude' } else { $script:CloudUnavailable = $true }
+    }
+    $new.cloud_auth = $new.cloud_auth -or $script:CloudAuthFailed
+    $age = ([DateTimeOffset]::UtcNow - [DateTimeOffset]::Parse($first)).TotalMinutes
+    if (-not $new.sent -and ($new.cloud_auth -or $age -ge 10) -and $new.fallback_attempts -lt $MaxFallbackAttempts) {
+        $new.fallback_attempts++
+        if (Send-Fallback $new.line) { $new.sent = $true; $new.channel = 'gh' }
+    }
+    $new.exhausted = -not $new.sent -and ($new.cloud_auth -or $new.attempts -ge $MaxSendAttempts) -and $new.fallback_attempts -ge $MaxFallbackAttempts
+    if ($new.exhausted) { Write-WrapperLog "спроби доставки вичерпано: $($File.Name); рядок збережено у стані" }
+    Write-FileAtomic $File.FullName ($new | ConvertTo-Json -Compress)
+}
+
+function Write-DeliveryStatus {
+    <# Підсумок доставки для читача стану ноутбука, без вмісту рядків. #>
+    $pending = 0; $exhausted = 0
+    foreach ($f in @(Get-ChildItem -LiteralPath (Join-Path $WorkDir 'state') -Filter '*.json' -File)) {
+        $s = [System.IO.File]::ReadAllText($f.FullName, $script:Utf8) | ConvertFrom-Json
+        if (-not $s.sent) { $pending++; if ((Get-Prop $s 'exhausted') -eq $true) { $exhausted++ } }
+    }
+    Write-FileAtomic (Join-Path $WorkDir 'delivery.json') (([ordered]@{ read_utc = [datetime]::UtcNow.ToString("yyyy-MM-dd'T'HH:mm:ss'Z'"); pending = $pending; exhausted = $exhausted }) | ConvertTo-Json -Compress)
 }
 
 function Main {
     if (-not $OutboxDir) { $script:OutboxDir = Join-Path (Split-Path -Parent $WorkDir) 'gemini-outbox' }
     foreach ($d in @($WorkDir, (Join-Path $WorkDir 'state'), (Join-Path $WorkDir 'inbox'), (Join-Path $WorkDir 'seen'), $OutboxDir)) { [void](New-Item -ItemType Directory -Force -Path $d) }
     if (-not (Test-OwnerUser)) { Write-WrapperLog "запуск під $GeminiUser — відмова"; return 1 }
+    $script:HealthAlertDir = $OutboxDir
     $script:Repo = Join-Path $WorkDir 'repo.git'
     $script:NoHooks = Join-Path ([System.IO.Path]::GetTempPath()) ('no-hooks-' + [guid]::NewGuid().ToString('N'))
     $lockFile = $null
@@ -551,16 +629,19 @@ function Main {
             Write-FileAtomic $statePath (([ordered]@{ line = $line; sent = $false; attempts = 0 }) | ConvertTo-Json -Compress)
         }
         Add-PoolsLine
+        Receive-HealthAlerts
         Receive-Outbox
-        foreach ($sf in @(Get-ChildItem -LiteralPath (Join-Path $WorkDir 'state') -Filter '*.json' -File | Sort-Object Name)) {
-            $st = [System.IO.File]::ReadAllText($sf.FullName, $script:Utf8) | ConvertFrom-Json
-            if ($st.sent -or $st.attempts -ge $MaxSendAttempts) { continue }
-            $res = Send-LineRetry ([string]$st.line) ([int]$st.attempts)
-            $new = [ordered]@{ line = [string]$st.line; sent = $res.Ok; attempts = [int]$st.attempts + $res.Tries }
-            Write-FileAtomic $sf.FullName ($new | ConvertTo-Json -Compress)
-            # Канал до диспетчера не працює — решта рядків чекає наступного проходу, а не множить паузи.
-            if (-not $res.Ok) { break }
+        $processed = @{}
+        # Другий прохід підхоплює тривогу CLOUD, створену під час першої спроби доставки.
+        foreach ($round in 1..2) {
+            foreach ($sf in @(Get-ChildItem -LiteralPath (Join-Path $WorkDir 'state') -Filter '*.json' -File | Sort-Object Name)) {
+                if ($processed.ContainsKey($sf.Name)) { continue }
+                Send-Pending $sf
+                $processed[$sf.Name] = $true
+            }
+            Receive-Outbox
         }
+        Write-DeliveryStatus
         0
     } catch {
         Write-WrapperLog "збій: $($_.Exception.Message)"

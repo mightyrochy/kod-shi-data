@@ -27,7 +27,7 @@ if (-not (Get-LocalUser -Name gemini -ErrorAction SilentlyContinue)) { Stop-Here
 # файли з 0_власник.ps1 і їхні хеші (ProgramData отримує саме перевірену копію)
 $expected = Import-PowerShellDataFile (Join-Path $here 'хеші.psd1')
 $pubFile = "$env:USERPROFILE\gemini-publish\gemini_publish.ps1"
-foreach ($f in @(@('gemini_run.ps1', "$env:TEMP\gemini_run.ps1"), @('queue_lanes.ps1', "$env:TEMP\queue_lanes.ps1"), @('gemini_publish.ps1', $pubFile))) {
+foreach ($f in @(@('gemini_run.ps1', "$env:TEMP\gemini_run.ps1"), @('wrapper_health.ps1', "$env:TEMP\wrapper_health.ps1"), @('queue_lanes.ps1', "$env:TEMP\queue_lanes.ps1"), @('gemini_publish.ps1', $pubFile), @('wrapper_health.ps1', (Join-Path (Split-Path $pubFile) 'wrapper_health.ps1')))) {
     if (-not (Test-Path $f[1])) { Stop-Here "нема $($f[1]): спершу 0_власник.ps1 (у цьому ж обліковому записі, не іншим адміністратором)." }
 }
 
@@ -43,7 +43,8 @@ if ($LASTEXITCODE -ne 0) { Stop-Here "icacls повернув код $LASTEXITCO
 # queue_lanes.ps1 — спільний модуль смуг (М.9-Е): gemini_run.ps1 підвантажує його з тієї самої теки.
 Copy-Item "$env:TEMP\gemini_run.ps1" "$run\gemini_run.ps1" -Force
 Copy-Item "$env:TEMP\queue_lanes.ps1" "$run\queue_lanes.ps1" -Force
-foreach ($name in @('gemini_run.ps1', 'queue_lanes.ps1')) {
+Copy-Item "$env:TEMP\wrapper_health.ps1" "$run\wrapper_health.ps1" -Force
+foreach ($name in @('gemini_run.ps1', 'queue_lanes.ps1', 'wrapper_health.ps1')) {
     $dst = Join-Path $run $name
     $got = (Get-FileHash $dst -Algorithm SHA256).Hash
     if ($got -ne $expected[$name]) {
@@ -69,11 +70,11 @@ $new = if (-not $old) { "*$sid" } elseif ($old -match [regex]::Escape($sid)) { $
 secedit /configure /db "$d\new.sdb" /cfg "$d\new.inf" /areas USER_RIGHTS
 if ($LASTEXITCODE -ne 0) { Stop-Here "secedit повернув код $LASTEXITCODE." }
 
-# під gemini: раз на 5 хв, без межі часу задачі (М.9-Е): запуск — планувальник смуг, живе, доки йдуть його наряди
+# під gemini: раз на 2 хв, без межі часу задачі (М.9-Е): запуск — планувальник смуг, живе, доки йдуть його наряди
 # (Codex без межі, agy — до agy_total_minutes), і сам опитує чергу; IgnoreNew не пускає другого.
 $a = New-ScheduledTaskAction -Execute 'powershell.exe' -Argument '-NoProfile -NonInteractive -ExecutionPolicy Bypass -File C:\ProgramData\gemini-wrapper\gemini_run.ps1'
 if ($EnableCodex) { $a.Arguments += ' -EnableCodex' }   # рішення власника 25.10 (9738): ключ рушія Codex у gemini_run.ps1
-$t = New-ScheduledTaskTrigger -Once -At (Get-Date).AddMinutes(2) -RepetitionInterval (New-TimeSpan -Minutes 5)
+$t = New-ScheduledTaskTrigger -Once -At (Get-Date).AddMinutes(2) -RepetitionInterval (New-TimeSpan -Minutes 2)
 $s = New-ScheduledTaskSettingsSet @set -ExecutionTimeLimit ([TimeSpan]::Zero)
 $c = Get-Credential -UserName "$env:COMPUTERNAME\gemini" -Message 'Пароль користувача gemini'
 if (-not $c) { Stop-Here 'пароль gemini не введено.' }

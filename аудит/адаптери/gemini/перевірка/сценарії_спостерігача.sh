@@ -3,6 +3,7 @@
 # 11 сценаріїв: базова лінія, коментарі, CI, перенос, відмови переносу, ворожі назви, збій gh, ліміт рядків, формат теки.
 # Кожен рядок теки перевіряється за шаблонами наряду. pwsh — змінна PWSH.
 H=$(cd "$(dirname "$0")" && pwd); . "$H/середовище.sh"; PW="${PWSH:-pwsh}"; SRC=$(cd "$H/.." && pwd)
+BAD=0
 SLUG='М.9-проба-спостерігача'; R=mightyrochy/kod-shi-data; BOT='chatgpt-codex-connector[bot]'
 export GIT_AUTHOR_NAME=t GIT_AUTHOR_EMAIL=t@x GIT_COMMITTER_NAME=t GIT_COMMITTER_EMAIL=t@x
 ts() { date -u -d "$1 sec" +%Y-%m-%dT%H:%M:%SZ; }
@@ -52,13 +53,37 @@ patches() { P="$W/patch"; mkdir -p "$P"
   printf 'diff --git a/l b/l\nnew file mode 120000\nindex 0000000..1111111\n--- /dev/null\n+++ b/l\n@@ -0,0 +1 @@\n+a.txt\n\\ No newline at end of file\n' > "$P/link.diff"
   printf 'diff --git a/.git/hooks/x b/.git/hooks/x\nnew file mode 100644\n--- /dev/null\n+++ b/.git/hooks/x\n@@ -0,0 +1 @@\n+x\n' > "$P/dotgit.diff"
   printf 'diff --git a/../ззовні b/../ззовні\nnew file mode 100644\n--- /dev/null\n+++ b/../ззовні\n@@ -0,0 +1 @@\n+x\n' > "$P/outside.diff"; }
-watch() { "$PW" -NoProfile -File "$(wp "$SRC/gemini_watch.ps1")" -WorkDir "$(wp "$W/work")" -OutDir "$(wp "$W/out")" -Repo "$R" -RepoUrl "$(wp "$W/origin.git")" \
-  -GhExe "$(stub fake_gh)" "$@"; echo "  код виходу: $?" >&2; }
+watch() {
+  local A RC
+  A=$($PY -c "import json,sys; print(json.dumps(dict(HarnessPython=sys.executable,HarnessGh='$(wp "$H/fake_gh.py")',WorkDir='$(wp "$W/work")',OutDir='$(wp "$W/out")',Repo='$R',RepoUrl='$(wp "$W/origin.git")',GhExe='$(stub fake_gh)')))" )
+  "$PW" -NoProfile -File "$(wp "$H/side_watch.ps1")" -Script "$(wp "$SRC/gemini_watch.ps1")" -ArgsJson "$A" "$@"
+  RC=$?; echo "  код виходу: $RC" >&2; return "$RC"
+}
 rows() { for f in $(ls "$W/out" | grep -v '\.part$' | sort); do cat "$W/out/$f"; echo; done | sed '/^$/d'; }
 n() { ls "$W/out" 2>/dev/null | grep -c '\.txt$'; }
 mv_out() { mkdir -p "$W/seen"; mv "$W/out"/*.txt "$W/seen/" 2>/dev/null; }
 # Прогін і показ нових рядків: ім'я -> рядки, що з'явились від минулого показу.
-step() { watch "${@:2}" 2>/dev/null; echo "-- $1: рядків $(n)"; rows | sed 's/^/   /'; mv_out; }
+step() {
+  local RC COUNT WANT=0
+  watch "${@:2}" 2>/dev/null; RC=$?
+  COUNT=$(n)
+  case "${W##*/}:$1" in
+    'w2:нові'|'w2:правка двох'|'w4:відповідь бота'|'w5:правка bad -> ok: переноситься'|'w5:TOO_BIG'|'w5b:хеш файлу інший'|'w8:прохід 1'|'w8:прохід 2') WANT=2 ;;
+    'w3:failure поверх success'|'w3:нова голова, cancelled'|'w5:diff від не-бота: лише коментар власника'|'w5:відповідь бота без diff: лише коментар'|'w7:gh знову працює'|'w8:прохід 3') WANT=1 ;;
+    'w5:вісім поганих diff') WANT=16 ;;
+    'w5b:обрізаний і без хешів'|"w6:п'ять ворожих PR") WANT=4 ;;
+  esac
+  if [ "$RC" -eq 0 ] && [ "$COUNT" -eq "$WANT" ]; then
+    echo "  ✓ ${W##*/}: $1 — код $RC, рядків $COUNT (очікувано $WANT)"
+  else
+    echo "  ✗ ${W##*/}: $1 — код $RC, рядків $COUNT (очікувано $WANT)"
+    BAD=1
+  fi
+  if [ "${W##*/}" = w6 ] && rows | grep -qv '^СПОСТЕРІГАЧ CI #'; then
+    echo '  ✗ ворожі назви: у вихідних є рядок, відмінний від шаблонного стану CI'; BAD=1
+  fi
+  rows | sed 's/^/   /'; mv_out
+}
 check_format() { $PY - "$W" <<'P'
 import os,re,sys,glob
 w=sys.argv[1]; sl=r'[\w][\w._-]{0,79}'; sh=r'[0-9a-f]{40}'
@@ -71,7 +96,8 @@ for d in ('out','seen'):
         b=open(f,'rb').read(); tot+=1
         ok=re.fullmatch(r'\d{8}-\d{6}-[0-9a-f]{12}\.txt',os.path.basename(f)) and not b.startswith(b'\xef\xbb\xbf') and b'\n' not in b and any(re.fullmatch(t,b.decode()) for t in T)
         if not ok: bad+=1; print('  ✗ формат:',os.path.basename(f),b[:80])
-print('  %s формат усіх %d файлів: ім\'я, UTF-8 без BOM, один рядок, шаблон'%('✓' if not bad else '✗',tot)); 
+if not tot: bad+=1
+print('  %s формат усіх %d файлів: ім\'я, UTF-8 без BOM, один рядок, шаблон'%('✓' if not bad else '✗',tot)); sys.exit(bool(bad))
 P
 }
 echo "=== 1 базова лінія: перший прохід мовчить, другий теж"; setup w1
@@ -127,3 +153,5 @@ echo "=== 8 ліміт рядків: 5 нових коментарів при Ma
 for i in 1 2 3 4 5; do cmt 963 80$i mightyrochy -30; done; step "прохід 1" -MaxRows 2; step "прохід 2" -MaxRows 2; step "прохід 3" -MaxRows 2; step "прохід 4" -MaxRows 2
 echo "=== 9 формат теки вихідних для всього, що було у w2..w8"
 for s in w2 w3 w4 w5 w5b w6 w7 w8; do W="${TMPDIR:-/tmp}/gemini-watch/$s"; printf '  %s: ' $s; check_format | tail -1; done
+
+exit "$BAD"

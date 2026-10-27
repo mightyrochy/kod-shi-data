@@ -194,6 +194,8 @@ function Read-GeminiBeat {
     $utc = { param($s) if ($s -match $script:UtcRx) { $s } else { '' } }
     $t = & $get $j 'time'
     if ($t -match '^\d{4}-\d\d-\d\dT\d\d:\d\d:\d\d$') { $b.Time = Get-UtcStamp ([datetime]::ParseExact($t, 's', [cultureinfo]::InvariantCulture)) }
+    $readUtc = & $get $j 'read_utc'
+    if ($readUtc -cmatch $script:UtcRx) { $b.Time = $readUtc }
     $iso = & $get $j 'isolation'
     if ($iso -cmatch '^[A-Z0-9_]{2,40}$') { $b.Isolation = $iso }
     $lim = & $get $j 'limits'
@@ -260,7 +262,7 @@ function Get-StatusBody {
         '<!-- Тіло переписує задача claude-run на ноутбуці (аудит/адаптери/gemini/claude_run.ps1); лише обчислене. -->',
         "**Ноутбук $host_** · оновлено $(Get-UtcStamp (Get-Date)) · claude-run: $script:Phase",
         '',
-        'Оновлено понад 15 хв тому — задача `claude-run` не працює: ноутбук вимкнено, сплячий чи задачу зупинено.',
+        'Оновлено понад 5 хв тому — задача `claude-run` не працює: ноутбук вимкнено, сплячий чи задачу зупинено.',
         '',
         '| задача | востаннє запущено (UTC) | результат | стан |',
         '|---|---|---|---|'
@@ -297,7 +299,7 @@ function Get-StatusBody {
         }
     }
     $lines += @('', "GPU: $(if ($gpuBy.Count) { 'зайнята — ' + ($gpuBy -join ', ') } else { 'вільна' }) · межі: claude-run — $(if ($null -ne $lim) { $lim.source } else { '?' }), gemini-run — $(if ($g.Limits) { $g.Limits } else { '?' })")
-    $lines += @('', "heartbeat gemini-run: $($g.Time) · isolation: $($g.Isolation)")
+    $lines += @('', "heartbeat gemini-run (UTC): $($g.Time) · вік: $(Get-Minutes $g.Time) хв · isolation: $($g.Isolation) · понад 5 хв — джерело застаріле")
     $lines += @('', '### Квота (UTC)', '', '| смуга · група | вікно | залишок | скидання | зчитано |', '|---|---|---|---|---|')
     if ($null -ne $g.Quota -and $g.Quota.Windows.Count -gt 0) {
         foreach ($w in $g.Quota.Windows) { $lines += "| agy · $($w.G) | $(if ($w.W) { $w.W } else { '—' }) | $($w.Left) % | $(if ($w.Reset) { $w.Reset } else { '?' }) | $(if ($g.Quota.Read) { $g.Quota.Read } else { '?' }) |" }
@@ -316,17 +318,24 @@ function Get-StatusBody {
         $lines += @('', '### Чекають скидання квоти', '', '| позначка | до (UTC) | група |', '|---|---|---|')
         foreach ($w in $wait) { $lines += "| $($w.Marker) | $($w.Until) | $($w.Group) |" }
     }
+    $deliveryPath = Join-Path $PublishDir 'delivery.json'
+    if (Test-Path -LiteralPath $deliveryPath) {
+        try {
+            $delivery = [System.IO.File]::ReadAllText($deliveryPath, $script:Utf8) | ConvertFrom-Json
+            $lines += @('', "Доставка: зчитано $($delivery.read_utc); чекають $($delivery.pending); спроби вичерпано $($delivery.exhausted).")
+        } catch { Write-Log 'стан доставки не прочитано' }
+    }
     ($lines -join "`n") + "`n"
 }
 
 # Стан — у файл і в issue; збій GitHub не зупиняє наряду. -Force — поза ритмом -StatusMinutes.
 function Update-Status([switch]$Force) {
-    if (-not $Force -and ((Get-Date) - $script:LastStatus).TotalMinutes -lt $StatusMinutes) { return }
+    if (-not $Force -and ((Get-Date) - $script:LastStatus).TotalMinutes -lt [Math]::Min(4, $StatusMinutes)) { return }
     $script:LastStatus = Get-Date
     try {
         $body = Get-StatusBody
         Write-FileAtomic (Join-Path $WorkDir 'status.md') $body
-        $hb = [ordered]@{ time = (Get-Date).ToString('s'); phase = $script:Phase; busy = @(Read-SlotInfo 'claude' | ForEach-Object { [string]$_.marker }) }
+        $hb = [ordered]@{ read_utc = (Get-UtcStamp (Get-Date)); time = (Get-Date).ToString('s'); phase = $script:Phase; busy = @(Read-SlotInfo 'claude' | ForEach-Object { [string]$_.marker }) }
         Write-FileAtomic (Join-Path $WorkDir 'heartbeat.json') ($hb | ConvertTo-Json -Compress)
         if ($NoStatus) { return }
         $gh = Find-Exe $GhExe
@@ -487,6 +496,8 @@ function Invoke-Claude([string]$Exe, [string[]]$ArgList, [string]$Prompt, [strin
 }
 
 function Complete-Task($M, [string]$StatePath, [string]$Id, [string]$Code, [string]$Branch = '', [string]$Sha = '') {
+    if ($Code -eq 'AUTH') { Add-HealthAlert 'AUTH' 'CLAUDE' }
+    if ($Code -eq 'ENGINE_MISSING') { Add-HealthAlert 'ENGINE' 'CLAUDE' }
     $line = $(if ($Code -eq 'DONE') { "GEMINI ОБГОРТКА: ГОТОВО $Branch $Sha МОДЕЛЬ $($M.Model)" }
               else { "GEMINI ОБГОРТКА: ЗАБЛОКОВАНО claude/$($M.Slug) $Code" })
     if (-not (Add-Line $line)) { $Code = 'LINE_REJECTED' }
@@ -775,7 +786,9 @@ function Main {
     }
     if (-not (Test-OwnerUser)) { Write-Log "запуск під $GeminiUser — відмова"; return 1 }
     $script:NoHooks = Join-Path ([System.IO.Path]::GetTempPath()) ('no-hooks-' + [guid]::NewGuid().ToString('N'))
+    $script:HealthAlertDir = $OutboxDir
     if ($WorkerFile) { return (Invoke-Worker) }
+    $script:HeartbeatAction = { Update-Status }
     $lockFile = Open-Lock (Join-Path $WorkDir 'lock')
     if ($null -eq $lockFile) { return 0 }
     try {
@@ -803,7 +816,7 @@ function Main {
                 Clear-OrphanClaims (Join-Path $WorkDir 'runs')
                 $r = Start-Markers $script:Workers
                 $started = $r[0]; $off = $r[1]
-            } catch { Write-Log "прохід: $($_.Exception.Message)" }
+            } catch { Add-HealthException $_.Exception; Write-Log "прохід: $($_.Exception.Message)" }
             if ($first) { Write-FileAtomic $bootFile $boot; $script:FreshBoot = $false; $first = $false }
             foreach ($w in @($script:Workers | Where-Object { $_.Proc.HasExited })) { $script:Workers.Remove($w) }
             $script:Phase = $(if ($script:Workers.Count -gt 0) { "веде наряди: $($script:Workers.Count)" } else { 'чекає позначки' })
@@ -816,7 +829,7 @@ function Main {
         Update-Status -Force
         0
     } catch {
-        Write-Log "збій обгортки: $($_.Exception.Message)"
+        Add-HealthException $_.Exception; Write-Log "збій обгортки: $($_.Exception.Message)"
         $script:Phase = 'збій'
         Update-Status -Force
         1

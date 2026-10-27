@@ -9,6 +9,45 @@ set -u
 H=$(cd "$(dirname "$0")" && pwd); . "$H/середовище.sh"
 PW="${PWSH:-pwsh}"
 SRC=$(cd "$H/.." && pwd)
+# Без аргументів — усі випадки стенда; з аргументами — один прогін для сусідніх стендів.
+if [ "$#" -eq 0 ]; then
+  BAD=0
+  while read -r name scenario mode want model; do
+    LOG=$(mktemp "${TMPDIR:-/tmp}/prohin.XXXXXX")
+    bash "$0" "ci-$name" "$scenario" "$mode" "${model:-gemini-3.8-flash-high}" > "$LOG" 2>&1
+    RC=$?
+    if [ "$want" = ГОТОВО ]; then
+      EXPECT='GEMINI ОБГОРТКА: ГОТОВО gemini/М.2-проба-обгортки '
+    else
+      EXPECT="GEMINI ОБГОРТКА: ЗАБЛОКОВАНО gemini/М.2-проба-обгортки $want"
+    fi
+    GOT=$(delivered "${TMPDIR:-/tmp}/gemini-obhortka/ci-$name/claude.log" 2>/dev/null)
+    if [ "$RC" -eq 0 ] && [[ "$GOT" == *"$EXPECT"* ]]; then
+      echo "  ✓ $name ($scenario, $mode)"
+    else
+      echo "  ✗ $name ($scenario, $mode), код $RC, очікування $want"
+      cat "$LOG"
+      BAD=1
+    fi
+    rm -f "$LOG"
+  done <<'CASES'
+a abandon_then_done stream ГОТОВО
+b github stream GITHUB_DIR
+c github_renamed stream GITHUB_DIR
+d wrapper stream WRAPPER_FILES
+e blocked stream BLOCKED_PUBLISHED
+f wrong_sha stream ГОТОВО
+g dirty stream ГОТОВО
+h never stream NO_REPORT
+i hang stream ГОТОВО
+j die stream ГОТОВО
+k nothing stream BLOCKED
+l abandon_then_done print ГОТОВО
+m hang print TIMEOUT_PUBLISHED
+n abandon_then_done stream MODEL_INVALID bad-model
+CASES
+  exit "$BAD"
+fi
 NAME=$1; SC=$2; MODE=$3; MODEL=${4:-gemini-3.8-flash-high}; HOOK=${5:-}
 W="${TMPDIR:-/tmp}/gemini-obhortka/$NAME"; rm -rf "$W"; mkdir -p "$W"/{fake,runs,out,pub}
 SLUG='М.2-проба-обгортки'
@@ -35,3 +74,5 @@ echo "--- wrapper.log:"; cat "$W/runs/wrapper.log"
 echo "--- publish.log:"; cat "$W/pub/publish.log" 2>/dev/null
 echo "--- claude:"; cat "$W/claude.log" 2>/dev/null
 echo "--- origin gemini/:"; git -C "$W/origin.git" for-each-ref --format='%(refname) %(objectname)' refs/heads/gemini/
+
+exit 0
