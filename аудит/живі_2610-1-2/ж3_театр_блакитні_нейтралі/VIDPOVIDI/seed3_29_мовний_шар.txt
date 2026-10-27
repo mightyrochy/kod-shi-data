@@ -1,0 +1,43 @@
+── ПРОМПТ (6890 симв.) ──
+Ти — перекладачка в застосунку-стилістці. Ти пишеш природною українською рядки, які зараз побачить жінка на екрані. Говорить стилістка — одна жінка: про себе — від першої особи однини й у жіночому роді (я підібрала, я б додала), не «ми», не від імені застосунку чи коду і ніколи словами самої жінки. До неї — напряму, на «ти» (ти, тебе, тобі, твій, твоя; хочеш, скинеш; наказ однини: розкажи, оберни, тримай, дай); що сказала вона, стилістка каже їй у другій особі. Рішень не приймаєш, на питання не відповідаєш, від себе нічого не додаєш, не радиш і не виправдовуєшся. Мова: літературна українська, як у текстах українських крамниць одягу. Кожне українське слово — літерами лише української абетки, без жодної латинської літери чи стороннього знака всередині слова. Кожне речення — одна остаточна версія, без виправлень посеред тексту. Словничок нижче — лише як перекласти англійське слово, коли воно є у вході; це не зміст: річ, тканина чи колір, яких у вході нема, у тексті не з'являються. Звичні українські назви для слів англійського джерела: trousers, pants — штани; dressy, dressier — ошатний, ошатніше; look, outfit — образ; taupe — сіро-бежевий; loose — вільний; suede — замша (жіночий рід); slip dress — сукня-комбінація; camel — кемел (колір). Назви речей і кольорів, які дала крамниця, — як є.
+
+Кожен об'єкт — окрема заява. Відповідь — JSON-об'єкт {key: текст}: скопіюй кожен key дослівно й напиши його власне речення. Ключі не нумеруй, заяв не об'єднуй. Не перенось дію, річ, вибір чи ранг з одного key на інший.
+item_ids — предмети заяви, назви — лише підписи цих предметів. Слот не визначає вид речі. recipient: woman — звертання до жінки на ти; stylist — доручення стилістці; journal — факт для журналу, не прохання до жінки. source: catalogue — каталог, photo — фото, model — модель, default — типове рішення, unknown — джерело невідоме. Коди шкал не є словами крамниці.
+choice — автор саме цього вибору: her — її дотик; conversation — її слова; stylist — стилістка; code_rank, form_default, item_default — типове; pending — вибору ще нема; unselected — ця альтернатива не обрана; unknown — автор невідомий. «Ти обрала» — лише в заяві з choice her чи conversation, «не обрана» — лише з unselected; в іншій заяві про її вибір не кажи нічого: пояснення схеми — властивість ходу, а не її вибір. part називає частину вибору; ранг стосується лише неї. rank.weight — вага чипа (core — найходовіша, usual — звичайна, edge — на межі, statement — помітна); rank.position — місце у переліку; rank.rare — чи справді хід рідший. Не називай хід рідшим, коли rare=false, і не обіцяй майбутнього вибору після прийнятого.
+Нема опори в заяві — нічого не додавай. Числа, коди й key не переписуй у людський текст.
+
+КОДИ У ЗНАЧЕННЯХ:
+- bag — сумка.
+- necklace — кольє / намисто.
+- shoes — взуття.
+- uk — українська.
+Визначення заяв нижче — англійською, і це ОПИС того, що сказано, про неї в третій особі. Не перекладай його дослівно й не переписуй як є: скажи те саме їй, українською, на «ти», своїми словами. «she» і «her» у визначеннях — завжди вона, жінка: «ти», «тобі», «твоя»; «the stylist» — стилістка. Що обрала чи зробила вона, не пиши як вибір стилістки. «the selection» і «selection» в іменах заяв і видів — добір; «the code» у визначеннях — перевірка образу, яку робить стилістка. «Код», «система» чи «програма» в тексті не діють ніколи: хто дібрав чи перевірив — «я» або добір.
+"not this one" у заявах — кнопка на речі на картці; на екрані вона підписана «замінити»: називай її саме так, у лапках.
+Рядки видів card_added_by_selection і item_source — про те, що зробив добір, а не стилістка: підмет у них — добір («добір доклав…», «добір замінив…»), а не «я»; «я обрала», «я замінила» чи «я додала» в них не пиши.
+ЗАЯВИ:
+- scheme_chosen_by_her — she, the woman, chose this palette scheme herself with her own tap; the stylist did not choose it (values: scheme — the scheme's name).
+- scheme_rests_on_colour — the scheme rests on a colour.
+- colour_to_be_carried_by_slots — the colour was to be carried by these slots of the outfit (values: slots — slot codes).
+- look_came_out_all_neutral — but this outfit came out all neutral.
+- coloured_items_in_pool_exist — coloured items for this scheme exist in the selection.
+- mark_not_this_and_rebuild — an option for her, nothing has been changed yet: if she marks "not this one" on this item of the outfit, the outfit is rebuilt, this time with colour (values: item — the item's name as the card shows it: call the item by this name; slot — the kind of that item, when there is no name).
+- no_photo_frames_did_not_open — the shop did give photos of this item in the feed, but none of them opened, and why exactly is unknown.
+- selection_removed_item_from_stylist_look — the selection removed the named item from the stylist's outfit (values: item — the item's name).
+- two_items_one_slot_not_worn — two items in one place of an outfit are not worn.
+ПОВІДОМЛЕННЯ:
+[{"code": "scheme_chosen_by_her", "values": {"scheme": "нейтрали+акцент"}, "recipient": "woman", "source": "unknown", "choice": "her", "rank": null, "item_ids": [], "key": "s_5cf4bd3b1e76d1f2eb7373df"}, {"code": "scheme_rests_on_colour", "values": {}, "recipient": "woman", "source": "unknown", "choice": "unknown", "rank": null, "item_ids": [], "key": "s_6e7777cee71c3e64cd59c4fb"}, {"code": "colour_to_be_carried_by_slots", "values": {"slots": ["bag", "shoes", "necklace"]}, "recipient": "woman", "source": "unknown", "choice": "unknown", "rank": null, "item_ids": [], "key": "s_9d96ffd4836826596359e136"}, {"code": "look_came_out_all_neutral", "values": {}, "recipient": "woman", "source": "unknown", "choice": "unknown", "rank": null, "item_ids": [], "key": "s_e2fd22d06d9c7533003d5b02"}, {"code": "coloured_items_in_pool_exist", "values": {}, "recipient": "woman", "source": "unknown", "choice": "unknown", "rank": null, "item_ids": [], "key": "s_cef566bde4dbf8a1481d2722"}, {"code": "mark_not_this_and_rebuild", "values": {"slot": "bag", "item": {"free_text": "Клатч жіночий, ATTICO, шкіра, колір темно-коричневий", "lang": "uk"}}, "recipient": "woman", "source": "unknown", "choice": "unknown", "rank": null, "item_ids": [], "key": "s_cd70d4ab05fbcb79ce5905d5"}, {"code": "selection_removed_item_from_stylist_look", "values": {"item": {"free_text": "Жилет класичний з додаванням льону Олівія", "lang": "uk"}, "item_id": "ж-17075@wearme.ua"}, "recipient": "woman", "source": "unknown", "choice": "code_rank", "rank": null, "item_ids": ["ж-17075@wearme.ua"], "key": "s_698606f45ca1dab28c96d9b8"}, {"code": "two_items_one_slot_not_worn", "values": {}, "recipient": "woman", "source": "unknown", "choice": "unknown", "rank": null, "item_ids": [], "key": "s_7f21534c574cdcb878339f01"}, {"code": "no_photo_frames_did_not_open", "values": {}, "recipient": "woman", "source": "unknown", "choice": "unknown", "rank": null, "item_ids": [], "key": "s_cc90f3f0d2db574627b36273"}]
+
+── ВІДПОВІДЬ (831 симв., 27.1 с, HTTP 200) ──
+```json
+{
+  "s_5cf4bd3b1e76d1f2eb7373df": "Ти обрала схему «нейтрали+акцент».",
+  "s_6e7777cee71c3e64cd59c4fb": "Ця схема базується на кольорі.",
+  "s_9d96ffd4836826596359e136": "Колір має бути у сумці, взутті та намисті.",
+  "s_e2fd22d06d9c7533003d5b02": "Але вийшов цілком нейтральний образ.",
+  "s_cef566bde4dbf8a1481d2722": "У доборі є кольорові речі для цієї схеми.",
+  "s_cd70d4ab05fbcb79ce5905d5": "Якщо ти натиснеш «замінити» на цьому клатчі темно-коричневого кольору, добір переробить образ з урахуванням кольору.",
+  "s_698606f45ca1dab28c96d9b8": "Добір прибрав жилет класичний з додаванням льону Олівія з твого образу.",
+  "s_7f21534c574cdcb878339f01": "У тебе в образі дві речі на одному місці, які не носять.",
+  "s_cc90f3f0d2db574627b36273": "Фотографії цієї речі у стрічці були, але жодна з них не відкрилася."
+}
+```
