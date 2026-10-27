@@ -1,0 +1,44 @@
+── ПРОМПТ (2199 симв.) ──
+{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.", "A slot the description says is not needed is not an item: give it worn false. One item carries one thing — of two alternatives list the first; a note in brackets is not an item.", "Slot \"accessory\" is for an item no other slot fits.", "\"is_outfit\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note; then items is empty."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "ITEM_LIST", "answer_schema": {"is_outfit": "yes|no", "items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory", "color_hex": "<#rrggbb or null>", "worn": "<true, or false when the description says the outfit goes without it>"}]}, "input": ["\"description\" — the outfit description"]}, "description": "Sheath dress, knee-length, deep emerald green (#043927), silk crepe\nTextured tweed jacket, cropped bolero style, forest green (#1F2A2E), wool blend\nLoafers, pointed toe, burnished gold (#C5A065), soft leather\nPearl drop earrings and a slim gold watch\n\nThis outfit strikes the perfect balance for an evening date at a restaurant by adhering to the \"smart\" dress code while feeling seasonally appropriate for autumn. The deep emerald silk sheath offers an elegant, feminine silhouette that feels refined yet comfortable enough for a long dinner conversation. The textured tweed bolero adds a layer of warmth suitable for cooler fall evenings without looking too heavy or formal like a full suit. Finally, the gold loafers ground the look with a touch of luxury and sophistication, ensuring you feel polished and confident throughout the evening."}
+
+── ВІДПОВІДЬ (892 симв., 64.1 с, HTTP 200) ──
+{
+  "is_outfit": "yes",
+  "items": [
+    {
+      "name": "sheath dress",
+      "details": "knee-length, deep emerald green (#043927), silk crepe",
+      "slot": "dress",
+      "color_hex": "#043927",
+      "worn": true
+    },
+    {
+      "name": "tweed jacket",
+      "details": "cropped bolero style, textured, forest green (#1F2A2E), wool blend",
+      "slot": "outerwear",
+      "color_hex": "#1F2A2E",
+      "worn": true
+    },
+    {
+      "name": "loafers",
+      "details": "pointed toe, burnished gold (#C5A065), soft leather",
+      "slot": "shoes",
+      "color_hex": "#C5A065",
+      "worn": true
+    },
+    {
+      "name": "pearl drop earrings",
+      "details": "",
+      "slot": "earrings",
+      "color_hex": null,
+      "worn": true
+    },
+    {
+      "name": "gold watch",
+      "details": "slim",
+      "slot": "watch",
+      "color_hex": null,
+      "worn": true
+    }
+  ]
+}
