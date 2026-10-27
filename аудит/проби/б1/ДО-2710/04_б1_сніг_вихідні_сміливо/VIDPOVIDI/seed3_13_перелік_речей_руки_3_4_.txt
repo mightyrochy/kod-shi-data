@@ -1,0 +1,51 @@
+── ПРОМПТ (2958 симв.) ──
+{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.", "A slot the description says is not needed is not an item: give it worn false. One item carries one thing — of two alternatives list the first; a note in brackets is not an item.", "Slot \"accessory\" is for an item no other slot fits.", "\"is_outfit\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note; then items is empty."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "ITEM_LIST", "answer_schema": {"is_outfit": "yes|no", "items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory", "color_hex": "<#rrggbb or null>", "worn": "<true, or false when the description says the outfit goes without it>"}]}, "input": ["\"description\" — the outfit description"]}, "description": "A wool-blend structured blazer in charcoal grey (#3a4552), sharp lapels and a cropped length at the hip, fabric with a subtle herringbone weave that catches light.\nWide-leg trousers in matching charcoal wool (#3a4552), a high-rise cut flowing to the ankle without pooling, featuring a smooth texture that resists salt stains.\nA silk-blend camisole in warm camel (#d2b48c), straight necklines and mid-thigh length, providing skin exposure for warmth regulation while adding soft contrast.\nChelsea boots in polished black leather (#000000), elastic side panels ensuring freedom of movement over snow and slush, reaching mid-calf to keep feet warm.\nA thick wool scarf in deep rust red (#8a3324) with a fringed edge, draped loosely around the neck for extra insulation against the wind.\nStatement gold geometric earrings in 14k vermeil, featuring large angular shapes that swing gently while walking to draw attention upward.\n\nThis outfit works because it fully embraces her desire to stand out by pairing a bold, structured silhouette with a vibrant rust accent that contrasts sharply against the snowy backdrop. The choice of wide-leg trousers and a cropped blazer allows for easy movement over slippery salted streets while maintaining a polished neat look appropriate for an evening stroll. By selecting rich textures like herringbone wool and silk, the ensemble ensures warmth during the freezing temperatures without sacrificing style. Ultimately, the striking color combination and architectural shapes deliver her goal of making a strong statement as she walks through the city center with friends."}
+
+── ВІДПОВІДЬ (1183 симв., 51.6 с, HTTP 200) ──
+{
+  "is_outfit": "yes",
+  "items": [
+    {
+      "name": "blazer",
+      "details": "structured cut, cropped length at hip, subtle herringbone weave fabric",
+      "slot": "outerwear",
+      "color_hex": "#3a4552",
+      "worn": true
+    },
+    {
+      "name": "trousers",
+      "details": "wide-leg cut, high-rise flowing to ankle, smooth salt-stain resistant texture",
+      "slot": "bottom",
+      "color_hex": "#3a4552",
+      "worn": true
+    },
+    {
+      "name": "camisole",
+      "details": "straight neckline, mid-thigh length",
+      "slot": "top",
+      "color_hex": "#d2b48c",
+      "worn": true
+    },
+    {
+      "name": "boots",
+      "details": "Chelsea style with elastic side panels, reaching mid-calf",
+      "slot": "shoes",
+      "color_hex": "#000000",
+      "worn": true
+    },
+    {
+      "name": "scarf",
+      "details": "thick wool with fringed edge, draped loosely around neck",
+      "slot": "scarf",
+      "color_hex": "#8a3324",
+      "worn": true
+    },
+    {
+      "name": "earrings",
+      "details": "geometric shapes in 14k vermeil, swinging gently while walking",
+      "slot": "earrings",
+      "color_hex": null,
+      "worn": true
+    }
+  ]
+}

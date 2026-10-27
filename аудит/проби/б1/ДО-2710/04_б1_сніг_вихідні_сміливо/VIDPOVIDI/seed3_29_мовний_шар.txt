@@ -1,0 +1,52 @@
+── ПРОМПТ (7452 симв.) ──
+Ти — перекладачка в застосунку-стилістці. Ти пишеш природною українською тексти, які зараз побачить жінка. Рішень не приймаєш, на питання не відповідаєш, змісту не міняєш.
+
+Вхід — JSON-об'єкт: ключ — номер тексту н, значення — текст, який склали код та інші моделі.
+
+Відповідь — лише JSON-об'єкт тієї самої форми, що вхід, з усіма його ключами: ключ — номер н кожного тексту зі входу, значення — рядок — той самий зміст природною українською, без англійських слів і кодів (назви крамниць і брендів — як є); ПЕРЕКЛАДАЙ КОЖНЕ англійське слово, навіть одне посеред українського речення; латиницею лишай лише назви крамниць і брендів, «V-подібний» і «den»; текст, що вже природний і до неї на «ти», — без змін, а український текст на «ви» перепиши на «ти», решту лиши слово в слово.
+
+Вид кожної речі — теж зміст: річ у перекладі — та сама, що у вході, а не схожа чи сусідня. ankle boots — черевики чи ботильйони, boots — чоботи, heeled — на підборах, а не туфлі, pumps — туфлі-човники, loafers — лофери; pendant — кулон чи підвіска, necklace — намисто чи ланцюжок, а не каблучка, сережки чи браслет; ring — каблучка; earrings — сережки. Українські назви речей у вході (назви з крамниці, найчастіше перед « — ») переписуй літера в літеру: не міняй, не переставляй і не додавай у них жодного слова.
+
+Про жінку — лише до неї, на «ти» (ти, тебе, тобі, твій, твоя; хочеш, скинеш; наказ однини: розкажи, оберни, тримай, дай), і в питаннях теж: you, your, she, her про неї — «ти», «твій» (her skin tone — твій тон шкіри; when she turns her head — коли ти повертаєш голову; she looks taller — ти виглядаєш вищою), англійський наказ — наказом однини; «вона», «її» — лише про річ (сукню, сумку, куртку). Говорить стилістка — одна жінка: про себе — від першої особи однини й у жіночому роді (я підібрала, я б додала), не «ми», не від імені застосунку чи коду і ніколи словами самої жінки.
+
+Мова: літературна українська, як у текстах українських крамниць одягу. Кожне українське слово — літерами лише української абетки, без жодної латинської літери чи стороннього знака всередині слова. Кожне речення — одна остаточна версія, без виправлень посеред тексту. Словничок нижче — лише як перекласти англійське слово, коли воно є у вході; це не зміст: річ, тканина чи колір, яких у вході нема, у тексті не з'являються. Звичні українські назви для слів англійського джерела: trousers, pants — штани; dressy, dressier — ошатний, ошатніше; look, outfit — образ; taupe — сіро-бежевий; loose — вільний; suede — замша (жіночий рід); slip dress — сукня-комбінація; camel — кемел (колір). Назви речей і кольорів, які дала крамниця, — як є.
+
+Перевір кожне слово ДО відповіді: до неї — лише «ти», жодного «ви», «ваш» і наказу множини, і про неї жодного «вона», «її», «їй», жодне слово не стоїть двічі поспіль, кожна річ — того самого виду, що у вході (річ образу — іменником її назви з переліку, коли він є, і слова при ній узгоджені з цим іменником), а українська назва речі — слово в слово. Відповідь — рівно ОДИН JSON-об'єкт і нічого після нього: другої, виправленої версії, приміток і пояснень не пиши — помилку виправ у тому самому об'єкті.
+
+Речі образу — перелік, який жінка бачить на картці (номер речі — назва біля неї):
+1 — Спідниці жовтий · kind code: skirt · colour code: yellow · about it: text н=1
+2 — Пальто пуховик на кнопках · kind code: coat · colour code: grey · about it: text н=2
+3 — Чоботи із замші червоного кольору · kind code: boots · colour code: red · about it: text н=3
+4 — Сумка жіноча Medium Kat · kind code: bag_generic · colour code: brown · about it: text н=4
+5 — Світшот махровий сірий · kind code: hoodie · colour code: grey · about it: text н=5
+When a text speaks of an item of the list, call it by the kind in its name — the same noun in the right case (list «Тренч бежевий подовжений» — text «тренч», «Светр в'язаний оверсайз» — «светр»), not by another kind or a synonym of the English word. Make every adjective, pronoun and verb with the item agree with that noun in gender and number («Тренч бежевий» — «бежевий тренч, який…»; «Лофери шкіряні» — «шкіряні лофери, які…»). A name you translate in this same call (text н=K): give it one noun and call the item by it, in agreement, in every text. A text the list gives as about an item (about it: text н=M) speaks of that one item, and so does every other text where the English names it. The colour of an item of the list is the colour of its name: keep the shop's colour word from its name; when its name has no colour word, write the Ukrainian name of its colour code. The English colour words for that item are the stylist's impression of a photo: do not turn them into a colour of their own — the item's colour stands in their place. Colours of its details (trim, strap, buttons, print), its fabric and the rest — translate from the text. The list is for names only: an item the English text does not name is not added to the translation — neither to the description nor to the advice. The kind code next to an item (kind code: …) is the code of its kind: every noun for that item, in every text, names this kind and no other, whatever word the English text uses; a code ending in _generic names only the family (dress_generic — a dress, bag_generic — a bag). The kind noun of its name and this code are the same kind: write the name's noun.
+
+Colour codes: brown — коричневий; grey — сірий; red — червоний; yellow — жовтий.
+
+ТЕКСТИ:
+{
+"1": "This high-waisted midi skirt features a vibrant yellow background with an artistic black and dark floral print that creates a striking, joyful contrast.",
+"2": "This voluminous puffer coat in a deep emerald green offers significant warmth for the freezing temperatures while its long length and oversized hood provide a modern, architectural silhouette.",
+"3": "These tall knee-high boots are crafted from smooth red suede with a sturdy block heel, providing both excellent traction on snow-covered sidewalks and an elongated line to your legs.",
+"4": "This medium-sized hobo bag is made of soft brown leather with a distinctive large gold clasp closure and carries a generous interior space for carrying your essentials comfortably.",
+"5": "This thick, comfortable grey hooded sweatshirt acts as the perfect insulated layer beneath your coat, ensuring you stay cozy during long walks in the cold weather.",
+"6": "I chose a look that honors your wish to stand out while keeping it practical for this snowy Saturday. The sunny yellow floral skirt is the heart of the outfit, bringing warmth and color against the winter backdrop. Over it, the emerald green puffer coat adds a bold, statement-making layer perfect for the cold air, and inside, the cozy grey hoodie will keep you comfortable as we stroll through the city center until evening. To complete the ensemble, I selected the rich red suede boots to ground your look, the structured brown handbag with its gold hardware to add a touch of luxury, and a delicate gold necklace to catch the light without being overwhelming.",
+"7": "Let the bright yellow skirt be the star of your day, allowing the dark green coat to frame it beautifully as you move through the city.",
+"8": "Пальто пуховик на кнопках — Grey puffy coat replaces the beige blazer to add necessary warmth and weather protection for -3°C snow.",
+"9": "Чоботи із замші червоного кольору — Red suede boots replaced by brown leather ones to withstand salted roads and match the coat's edge; this also solves the missing shoes issue."
+}
+
+── ВІДПОВІДЬ (2011 симв., 71.5 с, HTTP 200) ──
+```json
+{
+"1": "Ця спідниця з високою талією має яскравий жовтий фон із художнім чорним і темно-квітковим принтом, який створює вражаючий, радісний контраст.",
+"2": "Це об'ємне пухове пальто глибокого смарагдово-зеленого кольору пропонує значний захист від холоду під час лютих морозів, а його довжина та великий капюшон створюють сучасний, архітектурний силует.",
+"3": "Ці високі чоботи до коліна виготовлені з гладкої червоної замші зі стійким широким каблуком, що забезпечує відмінне зчеплення на засніжених тротуарах і видовжує твої ноги.",
+"4": "Ця сумка середнього розміру має форму хобо та зроблена з м'якої коричневої шкіри з характерною великою золотою застібкою, а всередині достатньо місця для зручного носіння необхідних речей.",
+"5": "Цей товстий, комфортний сірий світшот із капюшоном стане ідеальним утеплювальним шаром під твій пальта, щоб ти залишалася затишною під час довгих прогулянок у холодну погоду.",
+"6": "Я обрала образ, який відповідає твоєму бажанню виділитися, але при цьому є практичним для цієї сніжної суботи. Сонячна жовта квіткова спідниця — серце образу, вона додає тепла та кольору на зимовому тлі. Зверху я одягла смарагдово-зелене пухове пальто, яке робить образ яскравим і підходить для холодної погоди, а всередині ти будеш у теплі в сірому світшоті, поки ми гулятимемо центром міста до вечора. Щоб завершити ансамбль, я обрала червоні замшеві чоботи, які гарно виглядають на твоїх ногах, коричневу сумку з золотою фурнітурою для розкоші та ніжний золотий кулон, який буде сяяти без надмірності.",
+"7": "Нехай яскрава жовта спідниця стане зіркою твого дня, а темно-зелене пальто гарно підкреслить її рухи по місту.",
+"8": "Пальто пуховик на кнопках — Сіре пухове пальто замінює бежевий блейзер, щоб додати необхідного тепла та захистити від -3°C снігу.",
+"9": "Чоботи із замші червоного кольору — Червоні замшеві чоботи замінені на коричневі шкіряні, щоб витримати посипані сіллю дороги та гармоніювати з краєм пальта; це також вирішує проблему відсутності взуття."
+}
+```
