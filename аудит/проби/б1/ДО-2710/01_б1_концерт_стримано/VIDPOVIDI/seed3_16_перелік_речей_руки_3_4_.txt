@@ -1,0 +1,51 @@
+── ПРОМПТ (2645 симв.) ──
+{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.", "A slot the description says is not needed is not an item: give it worn false. One item carries one thing — of two alternatives list the first; a note in brackets is not an item.", "Slot \"accessory\" is for an item no other slot fits.", "\"is_outfit\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note; then items is empty."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "ITEM_LIST", "answer_schema": {"is_outfit": "yes|no", "items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory", "color_hex": "<#rrggbb or null>", "worn": "<true, or false when the description says the outfit goes without it>"}]}, "input": ["\"description\" — the outfit description"]}, "description": "Wool-blend tweed blazer with a sharp notch lapel, tailored fit through the shoulders and waist, charcoal gray (#3E4145), fine weave. Silk satin blouse with a rounded neck and subtle sheen, relaxed drape at the bust, ivory white (#FFFFF0), smooth sateen. High-waisted wool crepe trousers with a flat front and minimal pleats, straight leg that skims the ankle, charcoal gray (#3E4145), dense sueded texture. Leather loafers with a low stacked heel and penny slot detail, polished finish, deep espresso brown (#3B2726), smooth calfskin. Gold-tone stud earrings and a slim metal wristwatch to ground the classic look without adding bulk for standing in a crowd. This outfit honors your request for something restrained and classic while navigating an autumn evening at a rock concert; the structured tweed jacket and tailored trousers provide a polished silhouette that stands out against a chaotic environment without feeling overdressed. The rich, deep tones of charcoal and espresso create a timeless foundation that reads as sophisticated yet understated, perfectly balancing the energy of the venue with your desire for elegance. Choosing artificial-light-friendly fabrics like silk satin adds a subtle glow to your features in the club’s atmosphere while maintaining a serious, chic aesthetic."}
+
+── ВІДПОВІДЬ (1158 симв., 94.0 с, HTTP 200) ──
+{
+  "is_outfit": "yes",
+  "items": [
+    {
+      "name": "wool-blend tweed blazer",
+      "details": "sharp notch lapel, tailored fit through the shoulders and waist, fine weave",
+      "slot": "outerwear",
+      "color_hex": "#3E4145",
+      "worn": true
+    },
+    {
+      "name": "silk satin blouse",
+      "details": "rounded neck, subtle sheen, relaxed drape at the bust",
+      "slot": "top",
+      "color_hex": "#FFFFF0",
+      "worn": true
+    },
+    {
+      "name": "wool crepe trousers",
+      "details": "high-waisted, flat front with minimal pleats, straight leg that skims the ankle",
+      "slot": "bottom",
+      "color_hex": "#3E4145",
+      "worn": true
+    },
+    {
+      "name": "leather loafers",
+      "details": "low stacked heel, penny slot detail, polished finish",
+      "slot": "shoes",
+      "color_hex": "#3B2726",
+      "worn": true
+    },
+    {
+      "name": "gold-tone stud earrings",
+      "details": "",
+      "slot": "earrings",
+      "color_hex": null,
+      "worn": true
+    },
+    {
+      "name": "slim metal wristwatch",
+      "details": "",
+      "slot": "watch",
+      "color_hex": null,
+      "worn": true
+    }
+  ]
+}
