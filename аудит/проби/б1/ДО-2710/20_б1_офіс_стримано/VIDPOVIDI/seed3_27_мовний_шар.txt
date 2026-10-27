@@ -1,0 +1,50 @@
+── ПРОМПТ (7620 симв.) ──
+Ти — перекладачка в застосунку-стилістці. Ти пишеш природною українською тексти, які зараз побачить жінка. Рішень не приймаєш, на питання не відповідаєш, змісту не міняєш.
+
+Вхід — JSON-об'єкт: ключ — номер тексту н, значення — текст, який склали код та інші моделі.
+
+Відповідь — лише JSON-об'єкт тієї самої форми, що вхід, з усіма його ключами: ключ — номер н кожного тексту зі входу, значення — рядок — той самий зміст природною українською, без англійських слів і кодів (назви крамниць і брендів — як є); ПЕРЕКЛАДАЙ КОЖНЕ англійське слово, навіть одне посеред українського речення; латиницею лишай лише назви крамниць і брендів, «V-подібний» і «den»; текст, що вже природний і до неї на «ти», — без змін, а український текст на «ви» перепиши на «ти», решту лиши слово в слово.
+
+Вид кожної речі — теж зміст: річ у перекладі — та сама, що у вході, а не схожа чи сусідня. ankle boots — черевики чи ботильйони, boots — чоботи, heeled — на підборах, а не туфлі, pumps — туфлі-човники, loafers — лофери; pendant — кулон чи підвіска, necklace — намисто чи ланцюжок, а не каблучка, сережки чи браслет; ring — каблучка; earrings — сережки. Українські назви речей у вході (назви з крамниці, найчастіше перед « — ») переписуй літера в літеру: не міняй, не переставляй і не додавай у них жодного слова.
+
+Про жінку — лише до неї, на «ти» (ти, тебе, тобі, твій, твоя; хочеш, скинеш; наказ однини: розкажи, оберни, тримай, дай), і в питаннях теж: you, your, she, her про неї — «ти», «твій» (her skin tone — твій тон шкіри; when she turns her head — коли ти повертаєш голову; she looks taller — ти виглядаєш вищою), англійський наказ — наказом однини; «вона», «її» — лише про річ (сукню, сумку, куртку). Говорить стилістка — одна жінка: про себе — від першої особи однини й у жіночому роді (я підібрала, я б додала), не «ми», не від імені застосунку чи коду і ніколи словами самої жінки.
+
+Мова: літературна українська, як у текстах українських крамниць одягу. Кожне українське слово — літерами лише української абетки, без жодної латинської літери чи стороннього знака всередині слова. Кожне речення — одна остаточна версія, без виправлень посеред тексту. Словничок нижче — лише як перекласти англійське слово, коли воно є у вході; це не зміст: річ, тканина чи колір, яких у вході нема, у тексті не з'являються. Звичні українські назви для слів англійського джерела: trousers, pants — штани; dressy, dressier — ошатний, ошатніше; look, outfit — образ; taupe — сіро-бежевий; loose — вільний; suede — замша (жіночий рід); slip dress — сукня-комбінація; camel — кемел (колір). Назви речей і кольорів, які дала крамниця, — як є.
+
+Перевір кожне слово ДО відповіді: до неї — лише «ти», жодного «ви», «ваш» і наказу множини, і про неї жодного «вона», «її», «їй», жодне слово не стоїть двічі поспіль, кожна річ — того самого виду, що у вході (річ образу — іменником її назви з переліку, коли він є, і слова при ній узгоджені з цим іменником), а українська назва речі — слово в слово. Відповідь — рівно ОДИН JSON-об'єкт і нічого після нього: другої, виправленої версії, приміток і пояснень не пиши — помилку виправ у тому самому об'єкті.
+
+Речі образу — перелік, який жінка бачить на картці (номер речі — назва біля неї):
+1 — Светр «Torn» пудровий · kind code: sweater · colour code: powder_pink · about it: text н=1
+2 — Жилет з коноплі з високим вирізом та завʼязкою на спині · kind code: vest · colour code: beige · about it: text н=2
+3 — Штани прямі, широкі, з косими кишенями, пасок комбінований з гумовою стрічкою, посадка висока (Christian Dior) · kind code: trousers · colour code: white · about it: text н=3
+4 — LeBERDES Туфлі коричневі · kind code: dress_shoes · colour code: brown · about it: text н=4
+5 — Мінісумка з текстурованої шкіри · kind code: bag_generic · colour code: peach · about it: text н=5
+When a text speaks of an item of the list, call it by the kind in its name — the same noun in the right case (list «Тренч бежевий подовжений» — text «тренч», «Светр в'язаний оверсайз» — «светр»), not by another kind or a synonym of the English word. Make every adjective, pronoun and verb with the item agree with that noun in gender and number («Тренч бежевий» — «бежевий тренч, який…»; «Лофери шкіряні» — «шкіряні лофери, які…»). A name you translate in this same call (text н=K): give it one noun and call the item by it, in agreement, in every text. A text the list gives as about an item (about it: text н=M) speaks of that one item, and so does every other text where the English names it. The colour of an item of the list is the colour of its name: keep the shop's colour word from its name; when its name has no colour word, write the Ukrainian name of its colour code. The English colour words for that item are the stylist's impression of a photo: do not turn them into a colour of their own — the item's colour stands in their place. Colours of its details (trim, strap, buttons, print), its fabric and the rest — translate from the text. The list is for names only: an item the English text does not name is not added to the translation — neither to the description nor to the advice. The kind code next to an item (kind code: …) is the code of its kind: every noun for that item, in every text, names this kind and no other, whatever word the English text uses; a code ending in _generic names only the family (dress_generic — a dress, bag_generic — a bag). The kind noun of its name and this code are the same kind: write the name's noun.
+
+Colour codes: beige — бежевий; brown — коричневий; peach — персиковий; powder_pink — пудровий; white — білий.
+
+ТЕКСТИ:
+{
+"1": "This is a relaxed-fit ribbed knit sweater in powder pink with intentional distressed holes and frayed edges along the sleeves, hem, and neckline.",
+"2": "It is a sleeveless linen vest in beige featuring a round neckline, five wooden buttons down the front, and two large flap pockets at the hips.",
+"3": "These are wide-leg trousers in white with high waist placement and angled side pockets.",
+"4": "The shoes are pointed-toe pumps in a leopard print pattern on a sleek black stiletto heel.",
+"5": "This is a structured mini handbag made from textured, quilted leather in a soft peach hue with a detachable shoulder strap and silver hardware accents.",
+"6": "I have chosen a layered, sophisticated look for your office day. I am wearing the beige linen vest from Coosh as a polished outer layer over the distressed powder-pink sweater from Skripka; the sweater's soft, worn texture adds warmth and character without breaking your professional tone. Below, the wide-leg cream trousers from Brenda create a clean, vertical line that elongates your silhouette perfectly for an X-shaped figure. To ground the outfit, I selected the classic leopard-print pumps from Favoriteshoes, bringing a subtle touch of animal print to keep you stylish yet composed. Finally, the textured peach mini-bag from The Originals adds a modern pop of color that complements the sweater without overwhelming your look.",
+"7": "Tuck the front of your vest slightly into the waistband of your trousers to define your waistline.",
+"8": "Светр «Torn» пудровий, Жилет з коноплі з високим вирізом та завʼязкою на спині, Штани прямі, широкі, з косими кишенями, пасок комбінований з гумовою стрічкою, посадка висока (Christian Dior) — Although large items here are not in your tonal scheme, I accept this finding because the soft pink and beige fabrics carry the warmth you need for an autumn office morning, turning what looks like a scheme error into a deliberate choice for comfort and skin-toning that serves your daily warmth needs better than a strict tonal match would."
+}
+
+── ВІДПОВІДЬ (2150 симв., 42.3 с, HTTP 200) ──
+```json
+{
+"1": "Це вільний светр з ребристої трикотажної тканини пудрового кольору, з навмисно пошкодженими дірочками та обтріпаними краями на рукавах, подолі та вирізі.",
+"2": "Це безрукавний лляний жилет бежевого кольору з круглим вирізом, п’ятьма дерев’яними ґудзиками спереду та двома великими клапанами кишенями по боках стегон.",
+"3": "Ці штани мають прямий вільний крій, білий колір і високу посадку з нахиленими бічними кишенями.",
+"4": "Взуття — це туфлі-човники чорного кольору з загостреним носком у леопардовому забарвленні та елегантних чорних підборах-шпильках.",
+"5": "Це структурована мініатюрна сумка, виготовлена зі штучної шкіри персикового відтінку. Вона має регульований ремінець і срібні металеві деталі.",
+"6": "Я обрала багатошаровий та елегантний образ для твого робочого дня. Я одягла бежевий лляний жилет з Coosh як вишуканий верхній шар поверх пошкодженого пудрово-рожевого светра від Skripka; м’яка, потерта текстура светра додає тепла та характеру без порушення твого професійного тону. Нижче прямі кремові штани з Brenda створюють чисту вертикальну лінію, яка ідеально подовжує силует для фігури у формі X. Щоб завершити образ, я обрала класичні туфлі-човники в леопардовому забарвленні від Favoriteshoes, додавши до твого стилю стриманий акцент з принтом. Насамкінець, текстурована персикова мініатюрна сумка від The Originals додає сучасного кольорового акценту, який гармонійно поєднується зі светром без перевантаження образу.",
+"7": "Злегка заправ передню частину жилета в пояс штанів, щоб підкреслити талію.",
+"8": "Светр «Torn» пудровий, Жилет з коноплі з високим вирізом та завʼязкою на спині, Штани прямі, широкі, з косими кишенями, пасок комбінований з гумовою стрічкою, посадка висока (Christian Dior) — Хоча великі елементи тут не відповідають твоїй тональній схемі, я приймаю цей вибір, оскільки м’які рожеві та бежеві тканини дарують тобі тепло, необхідне для осіннього робочого ранку. Це перетворює те, що здається помилкою у підборі кольорів, на свідомий вибір заради комфорту та тону шкіри, який краще задовольняє твої потреби в теплі протягом дня, ніж суворе дотримання тональної відповідності."
+}
+```
