@@ -63,13 +63,14 @@ def головна():
         time.sleep(15)
     with socket.socket() as перевірка:
         перевірка.bind(("127.0.0.1", 1235))
-    html = (Path(env["USERPROFILE"]) / "kod-shi-stand-live/index.html").read_text(encoding="utf-8")
+    стендТека = Path(середовище["stand_root"])
+    html = (стендТека / "index.html").read_text(encoding="utf-8")
     sha = re.search(r'const ЗБІРКА_ПОКАЗУ = "([0-9a-f]{40})"', html)[1]
     (ТЕКА / "збірка-код.txt").write_text(sha + "\n", encoding="utf-8")
     голова = subprocess.check_output(["git", "rev-parse", "HEAD"], cwd=КОРІНЬ, text=True).strip()
     (ТЕКА / "код.txt").write_text(f"{sha} {СЦЕНА} ПІСЛЯ {СТИЛІСТКА}+{МОВА}\n", encoding="utf-8")
     команда = [середовище["node_path"], str(КОРІНЬ / "аудит/проби/рв6_стенд.js"),
-               "http://127.0.0.1:8765", str(Path(env["USERPROFILE"]) / "kod-shi-stand-live"),
+               "http://127.0.0.1:8765", str(стендТека),
                str(Path(env["USERPROFILE"]) / "pyodide"), "3"]
     (ТЕКА / "запуск.json").write_text(json.dumps({"sha-збірки": sha, "sha-приладів": голова, "сцена": СЦЕНА, "команда": команда,
         "змінні": {k: env[k] for k in ("NODE_PATH", "LMS_MODE", "CTX", "MODEL", "MODEL_MOVA", "MODEL_URL",

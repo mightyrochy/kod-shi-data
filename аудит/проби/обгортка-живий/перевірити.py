@@ -15,13 +15,14 @@ def головна():
     вихід = ТЕКА / "спроба-3"
     вихід.mkdir(exist_ok=True)
     конф = json.loads((ТЕКА / "середовище.json").read_text(encoding="utf-8-sig"))
+    Path(конф["stand_root"]).mkdir(parents=True, exist_ok=True)
     node = конф["node_path"]
     env = dict(os.environ, PYTHONUTF8="1", PYTHONIOENCODING="utf-8", NODE_USE_SYSTEM_CA="1",
                LYUSTERKO_PYC_PYTHON=конф["компілятор"], LYUSTERKO_CATALOG="повний", NODE_PATH=конф["NODE_PATH"])
     env["PATH"] = str(Path(node).parent) + os.pathsep + env["PATH"]
     команди = [
         ("збірка", [sys.executable, "-X", "utf8", "build_артефакт.py", ".",
-                     str(Path.home() / "kod-shi-stand-live/index.html"), "показ-повний"]),
+                     str(Path(конф["stand_root"]) / "index.html"), "показ-повний"]),
         ("дим", [sys.executable, "-X", "utf8", "стенд_знімок.py", "--дим"]),
         ("живий-шлях", [sys.executable, "-X", "utf8", "тест_живого_шляху.py"]),
         ("протокол", [sys.executable, "-X", "utf8", "тест_протоколу.py"]),

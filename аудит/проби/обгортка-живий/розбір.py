@@ -27,7 +27,7 @@ def головна():
                  "заяви": [{"code": "item_insole_length_unknown", "key": ключ}]}]
     звіт["повтор_30"] = М.прийняти_повідомлення(розмітка, відповідь)
     промпт = М.промпт_повідомлень(розмітка)
-    звіт["схема_відповіді_повідомлень"] = json.loads(промпт.splitlines()[-1]) if "<речення про цю заяву>" in промпт else None
+    звіт["схема_відповіді_повідомлень"] = json.loads(промпт.split("ФОРМА ВІДПОВІДІ:\n")[1].split("\nПОВІДОМЛЕННЯ:")[0]) if "ФОРМА ВІДПОВІДІ:" in промпт else None
     вивід = json.dumps(звіт, ensure_ascii=False, indent=2) + "\n"
     if len(sys.argv) > 1:
         Path(sys.argv[1]).write_text(вивід, encoding="utf-8")
