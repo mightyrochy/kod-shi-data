@@ -1,0 +1,37 @@
+── ПРОМПТ (2283 симв.) ──
+{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.", "A slot the description says is not needed is not an item: give it worn false. One item carries one thing — of two alternatives list the first; a note in brackets is not an item.", "Slot \"accessory\" is for an item no other slot fits.", "\"is_outfit\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note; then items is empty."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "ITEM_LIST", "answer_schema": {"is_outfit": "yes|no", "items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory", "color_hex": "<#rrggbb or null>", "worn": "<true, or false when the description says the outfit goes without it>"}]}, "input": ["\"description\" — the outfit description"]}, "description": "Structured blazer in a rich camel hue with a tailored fit and notched lapels, crafted from a heavy wool-blend fabric that repels moisture.\nSlim-fit trousers in charcoal grey with a mid-rise waist, made from stretch cotton twill to allow for easy movement while standing or sitting.\nA crisp white button-down shirt worn underneath the blazer, featuring a pointed collar and a smooth poplin weave.\nLoafers in black leather with a rubberized sole, designed to keep feet dry on wet pavement.\nThis outfit works perfectly for an autumn rainy day because the wool blend of the blazer provides warmth and water resistance without feeling bulky or stiff. The neutral color palette of camel, grey, and white creates a professional yet approachable look suitable for a client meeting in a café. The structured silhouette flatters the figure while the stretch fabric ensures comfort throughout the entire duration of the standing appointment."}
+
+── ВІДПОВІДЬ (828 симв., 72.9 с, HTTP 200) ──
+{
+  "is_outfit": "yes",
+  "items": [
+    {
+      "name": "blazer",
+      "details": "structured with tailored fit and notched lapels, crafted from heavy wool-blend fabric",
+      "slot": "outerwear",
+      "color_hex": "#C19A6B",
+      "worn": true
+    },
+    {
+      "name": "trousers",
+      "details": "slim-fit with mid-rise waist, made from stretch cotton twill",
+      "slot": "bottom",
+      "color_hex": "#36454F",
+      "worn": true
+    },
+    {
+      "name": "shirt",
+      "details": "button-down with pointed collar and smooth poplin weave",
+      "slot": "top",
+      "color_hex": "#FFFFFF",
+      "worn": true
+    },
+    {
+      "name": "loafers",
+      "details": "with rubberized sole designed to keep feet dry on wet pavement",
+      "slot": "shoes",
+      "color_hex": "#000000",
+      "worn": true
+    }
+  ]
+}
