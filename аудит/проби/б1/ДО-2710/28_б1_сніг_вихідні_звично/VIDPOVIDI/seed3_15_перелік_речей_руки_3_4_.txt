@@ -1,0 +1,37 @@
+── ПРОМПТ (2400 симв.) ──
+{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.", "A slot the description says is not needed is not an item: give it worn false. One item carries one thing — of two alternatives list the first; a note in brackets is not an item.", "Slot \"accessory\" is for an item no other slot fits.", "\"is_outfit\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note; then items is empty."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "ITEM_LIST", "answer_schema": {"is_outfit": "yes|no", "items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory", "color_hex": "<#rrggbb or null>", "worn": "<true, or false when the description says the outfit goes without it>"}]}, "input": ["\"description\" — the outfit description"]}, "description": "Wool-blend pea coat, knee-length, charcoal gray (#3a4548), heavy felted wool with a soft interior lining.\nSlim-fit trousers, ankle length, black (#1a1a1a), stretch twill with subtle ribbed texture at the hem.\nSilk-blend blouse, relaxed fit, off-white (#f5f5f0), fluid satin weave that resists static cling.\nLeather ankle boots, mid-calf height, chestnut brown (#8b4513), waterproof treated leather with a grippy rubber lug sole.\nThis outfit perfectly balances warmth and style for a snowy -3°C Saturday walk to the city center. The wool-blend coat provides essential insulation against the cold and snow without looking bulky, while the stretch twill trousers offer comfort for walking on potentially salted sidewalks. Neutral tones in charcoal, black, and chestnut brown create a sophisticated, streamlined look that transitions seamlessly from an afternoon coffee chat to an evening drink at a café. The textured fabrics add visual interest under artificial city lighting, ensuring you look polished yet cozy throughout your outing with friends."}
+
+── ВІДПОВІДЬ (828 симв., 67.1 с, HTTP 200) ──
+{
+  "is_outfit": true,
+  "items": [
+    {
+      "name": "pea coat",
+      "details": "wool-blend, knee-length, heavy felted wool with soft interior lining",
+      "slot": "outerwear",
+      "color_hex": "#3a4548",
+      "worn": true
+    },
+    {
+      "name": "trousers",
+      "details": "slim-fit, ankle length, stretch twill with subtle ribbed texture at the hem",
+      "slot": "bottom",
+      "color_hex": "#1a1a1a",
+      "worn": true
+    },
+    {
+      "name": "blouse",
+      "details": "silk-blend, relaxed fit, fluid satin weave",
+      "slot": "top",
+      "color_hex": "#f5f5f0",
+      "worn": true
+    },
+    {
+      "name": "ankle boots",
+      "details": "mid-calf height, waterproof treated leather with grippy rubber lug sole",
+      "slot": "shoes",
+      "color_hex": "#8b4513",
+      "worn": true
+    }
+  ]
+}
