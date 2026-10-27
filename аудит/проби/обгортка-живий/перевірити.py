@@ -13,12 +13,16 @@ import time
 def головна():
     """Зберігає окремий журнал кожної команди та їхні справжні коди виходу."""
     вихід = ТЕКА / "спроба-3"
-    вихід.mkdir(exist_ok=True)
+    уточнені = "--уточнені-проби" in sys.argv
+    if уточнені:
+        вихід /= "уточнені-проби"
+    вихід.mkdir(parents=True, exist_ok=True)
     конф = json.loads((ТЕКА / "середовище.json").read_text(encoding="utf-8-sig"))
     Path(конф["stand_root"]).mkdir(parents=True, exist_ok=True)
     node = конф["node_path"]
     env = dict(os.environ, PYTHONUTF8="1", PYTHONIOENCODING="utf-8", NODE_USE_SYSTEM_CA="1",
-               LYUSTERKO_PYC_PYTHON=конф["компілятор"], LYUSTERKO_CATALOG="повний", NODE_PATH=конф["NODE_PATH"])
+               LYUSTERKO_PYC_PYTHON=конф["компілятор"], LYUSTERKO_CATALOG="повний", NODE_PATH=конф["NODE_PATH"],
+               CHROMIUM=конф["chromium_path"], PYTHONUNBUFFERED="1")
     env["PATH"] = str(Path(node).parent) + os.pathsep + env["PATH"]
     команди = [
         ("збірка", [sys.executable, "-X", "utf8", "build_артефакт.py", ".",
@@ -35,7 +39,18 @@ def головна():
     for маска in ("шлях_шар_*.py", "промпти3_*.py", "карт1_*.py", "мова_шару_*.py",
                   "м5_*.py", "шар845_*.py", "протокол_лапка_*.py", "поділ_pipeline_ast.py", "поділ_bridge_ast.py"):
         проби.update((КОРІНЬ / "джерела/проби").glob(маска))
-    команди.extend((п.stem, [sys.executable, "-X", "utf8", str(п)]) for п in sorted(проби))
+    for п in sorted(проби):
+        if п.stem == "промпти3_база":
+            continue
+        команда = [sys.executable, "-X", "utf8", str(п)]
+        if п.stem == "карт1_картка":
+            команда += [конф["stand_root"], str(Path.home() / "pyodide")]
+        if п.stem == "промпти3_допит_6215":
+            команда += ["68429c13bd29d3960d5b72caebcd9ed0cdaa23f6", "аудит/живі_1016_1"]
+        команди.append((п.stem, команда))
+    if уточнені:
+        команди = [(н, к) for н, к in команди if н in (
+            "карт1_картка", "промпти3_вибір_ід", "промпти3_допит_6215")]
     підсумок = []
     for назва, команда in команди:
         почато = time.monotonic()

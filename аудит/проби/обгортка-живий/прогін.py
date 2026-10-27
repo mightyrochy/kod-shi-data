@@ -47,19 +47,18 @@ def головна():
     for ключ in ("FOTO", "DO", "SCENA", "CHROMIUM", "PASPORT", "ZHYVA", "NODE_OPTIONS", "NODE_TLS_REJECT_UNAUTHORIZED"):
         env.pop(ключ, None)
     env["PATH"] = str(Path(середовище["node_path"]).parent) + os.pathsep + env["PATH"]
-    до = api()
-    if any(m["loaded_instances"] for m in до["models"]):
-        raise RuntimeError("LM Studio вже тримає чужу модель")
     межа = time.monotonic() + 1800
     while True:
+        до = api()
+        (ТЕКА / "моделі-до.json").write_text(json.dumps(до, ensure_ascii=False, indent=2), encoding="utf-8")
         gpu = subprocess.run(["nvidia-smi", "--query-compute-apps=pid,process_name", "--format=csv,noheader"],
                              capture_output=True, text=True, check=True)
         (ТЕКА / "gpu-до.txt").write_text(gpu.stdout or "Нема обчислювальних процесів\n", encoding="utf-8")
-        if not gpu.stdout.strip():
+        if not gpu.stdout.strip() and not any(m["loaded_instances"] for m in до["models"]):
             break
         if time.monotonic() >= межа:
-            raise RuntimeError("GPU зайнята понад 30 хвилин")
-        print("GPU зайнята, чекаю", flush=True)
+            raise RuntimeError("GPU чи LM Studio зайняті понад 30 хвилин; чужі процеси й моделі не змінено")
+        print("GPU чи LM Studio зайняті, чекаю звільнення (до 30 хвилин)", flush=True)
         time.sleep(15)
     with socket.socket() as перевірка:
         перевірка.bind(("127.0.0.1", 1235))
