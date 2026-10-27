@@ -1,0 +1,129 @@
+git show a08790db:аудит/адаптери/gemini/gemini_run.ps1; рядки 1058–1084
+1058:         $lane = $(if ($sel.Engine.Name -eq 'codex') { 'codex' } else { 'agy' })
+1059:         $slot = Get-FreeSlot $lane ([int]$script:Limits.slots[$lane]) $Workers
+1060:         if (-not $slot) { continue }
+1061:         $id = New-RunId (Get-MarkerKey $m)
+1062:         if (-not (New-Claim $m $id)) { continue }
+1063:         # Усе між claim і STARTED — під одним обліком відмов (retakes, MaxRetakes, CRASH на межі), 10162/10182.
+1064:         try {
+1065:             $dir = Join-Path $RunsDir $id
+1066:             [void](New-Item -ItemType Directory -Force -Path $dir)
+1067:             $job = @{ id = $id; dir = $dir; slot = $slot; lane = $lane; ref = $m.Ref; sha = $m.Sha; time = $m.Time; name = $m.Name
+1068:                 slug = $m.Slug; model = $m.Model; n = $m.N; cond = $m.Cond; prio = $m.Prio; deadline = $m.Deadline; gpu = $m.Gpu
+1069:                 head = $(if ($st.Kind -eq 'WAIT') { [string](Get-JsonProp $st.Wait 'head') } else { '' })
+1070:                 sel = @{ engine = $sel.Engine.Name; emodel = $sel.Engine.Model; effort = $sel.Engine.Effort; model = $sel.Model
+1071:                     qknown = $sel.Quota.Known; qleft = $sel.Quota.Left; qgroup = $sel.Quota.Group }
+1072:                 limits = $script:Limits }
+1073:             [void]$Workers.Add((Start-Worker $job $dir))
+1074:         } catch {
+1075:             Write-Log "позначка $($m.Name): процес наряду не запущено — $($_.Exception.Message)"
+1076:             Close-FailedStart $m $id (Get-StatePath (Get-MarkerKey $m))
+1077:             continue
+1078:         }
+1079:         Write-Log "позначка $($m.Name): слот $slot, пріоритет $($m.Prio)$(if ($m.Deadline) { ", строк $($m.Deadline)" })$(if ($m.Gpu) { ', GPU' }) -> $id"
+1080:         $started++
+1081:     }
+1082:     $started
+1083: }
+1084: 
+git show a08790db:аудит/адаптери/gemini/gemini_run.ps1; рядки 1180–1201
+1180:                 if (($origin.TrimEnd('/') -replace '\.git$', '') -ne ($RepoUrl.TrimEnd('/') -replace '\.git$', '')) {
+1181:                     Write-Log "origin клону ($origin) не $RepoUrl — прогонів нема"
+1182:                     return 1
+1183:                 }
+1184:             }
+1185:             $started = 0
+1186:             try {
+1187:                 [void](Invoke-Git @('fetch', '-q', '--prune', '--no-tags', 'origin',
+1188:                         '+refs/heads/main:refs/remotes/origin/main',
+1189:                         '+refs/heads/gemini/*:refs/remotes/origin/gemini/*',
+1190:                         '+refs/heads/gemini-queue/*:refs/remotes/origin/gemini-queue/*'))
+1191:                 $script:Limits = Get-Limits
+1192:                 if ($first) { Resume-Interrupted }
+1193:                 Clear-OrphanClaims $RunsDir
+1194:                 $script:Agy = Find-EngineExe $AgyExe
+1195:                 if ($script:Agy) { [void](Read-Usage) }
+1196:                 $started = Start-Markers $workers
+1197:             } catch { Write-Log "прохід: $($_.Exception.Message)" }
+1198:             $first = $false
+1199:             foreach ($w in @($workers | Where-Object { $_.Proc.HasExited })) { $workers.Remove($w) }
+1200:             Write-Heartbeat ''
+1201:             if ($workers.Count -eq 0 -and $started -eq 0) { break }
+
+git show a08790db:аудит/адаптери/gemini/claude_run.ps1; рядки 704–728
+704:             $ownGpu = @($Workers | Where-Object { $_.Gpu -and -not $_.Proc.HasExited }).Count -gt 0
+705:             if ($ownGpu -or -not (Test-LockFree (Get-GpuLockPath))) { continue }
+706:         }
+707:         $id = New-Id
+708:         if (-not (New-Claim $m $id)) { continue }
+709:         # Усе між claim і STARTED — під одним обліком відмов (retakes, MaxRetakes, CRASH на межі), 10162/10182.
+710:         try {
+711:             $dir = Join-Path (Join-Path $WorkDir 'runs') $id
+712:             [void](New-Item -ItemType Directory -Force -Path $dir)
+713:             $job = @{ id = $id; dir = $dir; slot = $slot; lane = 'claude'; ref = $m.Ref; sha = $m.Sha; time = $m.Time; name = $m.Name
+714:                 slug = $m.Slug; model = $m.Model; n = $m.N; cond = $m.Cond; prio = $m.Prio; deadline = $m.Deadline; gpu = $m.Gpu
+715:                 claude = $m.Claude; effort = $m.Effort; limits = $script:Limits }
+716:             [void]$Workers.Add((Start-Worker $job $dir))
+717:         } catch {
+718:             Write-Log "позначка $($m.Name): процес наряду не запущено — $($_.Exception.Message)"
+719:             Close-FailedStart $m $id (Get-StatePath (Get-MarkerKey $m))
+720:             continue
+721:         }
+722:         Write-Log "позначка $($m.Name): слот $slot, пріоритет $($m.Prio)$(if ($m.Deadline) { ", строк $($m.Deadline)" })$(if ($m.Gpu) { ', GPU' }) -> $id"
+723:         $started++
+724:     }
+725:     @($started, $null)
+726: }
+727: 
+728: # Процес наряду: слот (замок на весь прогін), GPU (замок, спільний з gemini-run), робоча копія слота, прогін.
+git show a08790db:аудит/адаптери/gemini/claude_run.ps1; рядки 789–811
+789:         $bootFile = Join-Path $WorkDir 'boot.txt'
+790:         $boot = Get-BootStamp
+791:         $prev = $(if (Test-Path -LiteralPath $bootFile) { [System.IO.File]::ReadAllText($bootFile, $script:Utf8).Trim() } else { '' })
+792:         $script:FreshBoot = ($boot -ne $prev)
+793:         Resume-Interrupted
+794:         $script:Workers = New-Object System.Collections.ArrayList
+795:         $first = $true
+796:         while ($true) {
+797:             $started = 0; $off = $null
+798:             try {
+799:                 [void](Invoke-Git @('fetch', '-q', '--prune', '--no-tags', 'origin',
+800:                         '+refs/heads/main:refs/remotes/origin/main',
+801:                         '+refs/heads/gemini-queue/*:refs/remotes/origin/gemini-queue/*') -TimeoutMinutes 15)
+802:                 $script:Limits = Get-Limits
+803:                 Clear-OrphanClaims (Join-Path $WorkDir 'runs')
+804:                 $r = Start-Markers $script:Workers
+805:                 $started = $r[0]; $off = $r[1]
+806:             } catch { Write-Log "прохід: $($_.Exception.Message)" }
+807:             if ($first) { Write-FileAtomic $bootFile $boot; $script:FreshBoot = $false; $first = $false }
+808:             foreach ($w in @($script:Workers | Where-Object { $_.Proc.HasExited })) { $script:Workers.Remove($w) }
+809:             $script:Phase = $(if ($script:Workers.Count -gt 0) { "веде наряди: $($script:Workers.Count)" } else { 'чекає позначки' })
+810:             if ($null -ne $off) { Invoke-Off $off }
+811:             Update-Status -Force:($started -gt 0)
+
+git show a08790db:аудит/адаптери/gemini/queue_lanes.ps1; рядки 369–390
+369: function Clear-OrphanClaims([string]$RunsRoot) {
+370:     <# Claim, чий процес наряду зник до STARTED (вимкнення між узяттям і запуском): старший за 10 хв, стану STARTED нема,
+371:     замок слота (з worker.json теки прогону `<id>`) вільний — звільнити. Живий наряд тримає замок слота, свіжий claim
+372:     ще не дійшов до запуску. #>
+373:     foreach ($c in @(Get-ChildItem -LiteralPath $script:StateDir -Filter '*.claim' -File -ErrorAction SilentlyContinue)) {
+374:         if (((Get-Date) - $c.LastWriteTime).TotalMinutes -lt 10) { continue }
+375:         $sp = $c.FullName -replace '\.claim$', '.txt'
+376:         $id = ''; try { $id = [System.IO.File]::ReadAllText($c.FullName, $script:Utf8).Trim() } catch { continue }
+377:         if ($id -notmatch '^[0-9]{8}-[0-9]{6}-[0-9a-f]{12}$') { continue }
+378:         $wf = Join-Path (Join-Path $RunsRoot $id) 'worker.json'
+379:         if (Test-Path -LiteralPath $wf) {
+380:             $slot = ''; try { $slot = [string](Get-JsonProp ([System.IO.File]::ReadAllText($wf, $script:Utf8) | ConvertFrom-Json) 'slot') } catch { continue }
+381:             if ($slot -notmatch '^[a-z]+-[0-9]$' -or -not (Test-LockFree (Join-Path $script:SlotDir "$slot.lock"))) { continue }
+382:         }
+383:         Write-Log "узяття $id без запуску — звільнено"
+384:         Clear-UnstartedClaim $sp
+385:     }
+386: }
+387: 
+388: function Get-WaitingMarkers {
+389:     <# Позначки в чеканні квоти (для стану): назва, до коли (UTC), група. #>
+390:     @(foreach ($f in @(Get-ChildItem -LiteralPath $script:StateDir -Filter '*.txt' -File -ErrorAction SilentlyContinue)) {
+
+git diff --exit-code fc81c831 a08790db -- аудит/адаптери/gemini/перевірка
+exit=0; stdout=0 байтів
