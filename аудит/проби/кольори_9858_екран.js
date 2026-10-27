@@ -1,6 +1,6 @@
 /* Функціональні знімки справжнього показу на даних Python-моста, без моделі.
    node аудит/проби/кольори_9858_екран.js <дані.json> <палітра-ДО.js> <тека-виходу>
-   На всіх профілях явно обрано аналогову схему для огляду чипа і стрічки. */
+   П'ятий аргумент — схема (типово аналогова) для огляду чипа і стрічки. */
 const fs = require('fs'), path = require('path');
 const {chromium} = require('../../джерела/node_modules/playwright');
 const корінь = path.resolve(__dirname, '../..');
@@ -8,6 +8,7 @@ const корінь = path.resolve(__dirname, '../..');
 async function головна(){
   const сцени = JSON.parse(fs.readFileSync(process.argv[2], 'utf8'));
   const вихід = path.resolve(process.argv[4]); fs.mkdirSync(вихід, {recursive:true});
+  const схема = process.argv[5] || 'аналогова';
   const html = fs.readFileSync(path.join(корінь, 'index.html'), 'utf8')
     .replace(/<script\b[^>]*>[\s\S]*?<\/script>/gi, '');
   const браузер = await chromium.launch({headless:true, executablePath:process.env.CHROMIUM});
@@ -20,14 +21,14 @@ async function головна(){
       await стор.addScriptTag({content:`
         var ПАЛІТРА=null, ПАЛ_МОВА_ШАРУ=null, ПАСПОРТ_П=null;
         var КОЛІР={шкіра:'так', волосся:'так', очі:'так'};
-        var ВИБІР={схема:'аналогова', смуга:'середні', вибір_кольору:{}};
+        var ВИБІР={схема:${JSON.stringify(схема)}, смуга:'середні', вибір_кольору:{}};
         var ГАМИ=['приглушені','середні','насичені'];
         var ПОЛЯ_ОБХВАТІВ=[], НАПИС_БЕЗ_ТЕКСТУ_П='';
         var $=id=>document.getElementById(id);
         var ел=(tag,cls,text)=>{let e=document.createElement(tag);if(cls)e.className=cls;if(text)e.textContent=text;return e;};
         var станВиборуП=()=>{}, поколінняМістуП=()=>0, чиннеМістуП=()=>true;
         var завершитиДіюЯдра=()=>{}, драпЗЧатомП=()=>({});
-        var повідомленнямП=async()=>({записи:[],тексти:{'пал-стан':'Функціональний повтор: аналогова схема'}});
+        var повідомленнямП=async()=>({записи:[],тексти:{'пал-стан':${JSON.stringify('Функціональний повтор: ' + схема)}}});
       `});
       const js = fs.readFileSync(режим==='ДО' ? process.argv[3] : path.join(корінь,'джерела/показ/палітра.js'),'utf8');
       await стор.addScriptTag({content:js});
