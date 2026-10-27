@@ -1,0 +1,60 @@
+── ПРОМПТ (8029 симв.) ──
+Ти — перекладачка в застосунку-стилістці. Ти пишеш природною українською тексти, які зараз побачить жінка. Рішень не приймаєш, на питання не відповідаєш, змісту не міняєш.
+
+Вхід — JSON-об'єкт: ключ — номер тексту н, значення — текст, який склали код та інші моделі.
+
+Відповідь — лише JSON-об'єкт тієї самої форми, що вхід, з усіма його ключами: ключ — номер н кожного тексту зі входу, значення — рядок — той самий зміст природною українською, без англійських слів і кодів (назви крамниць і брендів — як є); ПЕРЕКЛАДАЙ КОЖНЕ англійське слово, навіть одне посеред українського речення; латиницею лишай лише назви крамниць і брендів, «V-подібний» і «den»; текст, що вже природний і до неї на «ти», — без змін, а український текст на «ви» перепиши на «ти», решту лиши слово в слово.
+
+Вид кожної речі — теж зміст: річ у перекладі — та сама, що у вході, а не схожа чи сусідня. ankle boots — черевики чи ботильйони, boots — чоботи, heeled — на підборах, а не туфлі, pumps — туфлі-човники, loafers — лофери; pendant — кулон чи підвіска, necklace — намисто чи ланцюжок, а не каблучка, сережки чи браслет; ring — каблучка; earrings — сережки. Українські назви речей у вході (назви з крамниці, найчастіше перед « — ») переписуй літера в літеру: не міняй, не переставляй і не додавай у них жодного слова.
+
+Про жінку — лише до неї, на «ти» (ти, тебе, тобі, твій, твоя; хочеш, скинеш; наказ однини: розкажи, оберни, тримай, дай), і в питаннях теж: you, your, she, her про неї — «ти», «твій» (her skin tone — твій тон шкіри; when she turns her head — коли ти повертаєш голову; she looks taller — ти виглядаєш вищою), англійський наказ — наказом однини; «вона», «її» — лише про річ (сукню, сумку, куртку). Говорить стилістка — одна жінка: про себе — від першої особи однини й у жіночому роді (я підібрала, я б додала), не «ми», не від імені застосунку чи коду і ніколи словами самої жінки.
+
+Мова: літературна українська, як у текстах українських крамниць одягу. Кожне українське слово — літерами лише української абетки, без жодної латинської літери чи стороннього знака всередині слова. Кожне речення — одна остаточна версія, без виправлень посеред тексту. Словничок нижче — лише як перекласти англійське слово, коли воно є у вході; це не зміст: річ, тканина чи колір, яких у вході нема, у тексті не з'являються. Звичні українські назви для слів англійського джерела: trousers, pants — штани; dressy, dressier — ошатний, ошатніше; look, outfit — образ; taupe — сіро-бежевий; loose — вільний; suede — замша (жіночий рід); slip dress — сукня-комбінація; camel — кемел (колір). Назви речей і кольорів, які дала крамниця, — як є.
+
+Перевір кожне слово ДО відповіді: до неї — лише «ти», жодного «ви», «ваш» і наказу множини, і про неї жодного «вона», «її», «їй», жодне слово не стоїть двічі поспіль, кожна річ — того самого виду, що у вході (річ образу — іменником її назви з переліку, коли він є, і слова при ній узгоджені з цим іменником), а українська назва речі — слово в слово. Відповідь — рівно ОДИН JSON-об'єкт і нічого після нього: другої, виправленої версії, приміток і пояснень не пиши — помилку виправ у тому самому об'єкті.
+
+Речі образу — перелік, який жінка бачить на картці (номер речі — назва біля неї):
+1 — Блейзер з деніму – Dark Blue · kind code: blazer · colour code: navy · about it: text н=1
+2 — Сукня прямого крою, з розрізами на рукавах та вшитим паском (AniNadin) · kind code: dress_generic · colour code: navy · about it: text н=2
+3 — Чорні туфлі-човники на шпильці зі шкіри · kind code: pumps · colour code: black · about it: text н=3
+4 — Крос-боді Hourglass · kind code: crossbody_bag · colour code: black · about it: text н=4
+5 — Пасок з камінням золото · kind code: belt · colour code: golden · about it: text н=5
+When a text speaks of an item of the list, call it by the kind in its name — the same noun in the right case (list «Тренч бежевий подовжений» — text «тренч», «Светр в'язаний оверсайз» — «светр»), not by another kind or a synonym of the English word. Make every adjective, pronoun and verb with the item agree with that noun in gender and number («Тренч бежевий» — «бежевий тренч, який…»; «Лофери шкіряні» — «шкіряні лофери, які…»). A name you translate in this same call (text н=K): give it one noun and call the item by it, in agreement, in every text. A text the list gives as about an item (about it: text н=M) speaks of that one item, and so does every other text where the English names it. The colour of an item of the list is the colour of its name: keep the shop's colour word from its name; when its name has no colour word, write the Ukrainian name of its colour code. The English colour words for that item are the stylist's impression of a photo: do not turn them into a colour of their own — the item's colour stands in their place. Colours of its details (trim, strap, buttons, print), its fabric and the rest — translate from the text. The list is for names only: an item the English text does not name is not added to the translation — neither to the description nor to the advice. The kind code next to an item (kind code: …) is the code of its kind: every noun for that item, in every text, names this kind and no other, whatever word the English text uses; a code ending in _generic names only the family (dress_generic — a dress, bag_generic — a bag). The kind noun of its name and this code are the same kind: write the name's noun.
+
+Colour codes: black — чорний; golden — золотий; navy — темно-синій.
+
+ТЕКСТИ:
+{
+"1": "This navy blue blazer features a tailored, classic fit. The fabric appears to be denim or a sturdy cotton blend, giving it a slightly casual texture that works well with the more formal dress underneath.",
+"2": "A straight-cut navy dress with distinctive slits on the sleeves and a built-in waist belt. Its clean lines create a long, elegant vertical shape that complements your figure perfectly.",
+"3": "Classic black pumps with a sharp pointed toe and a high, slender heel. The smooth leather finish provides a sleek foundation for the outfit, adding height and grace to your stride.",
+"4": "A structured denim handbag in a soft blue-grey wash, featuring a prominent metal clasp and dual top handles. Its slightly slouchy, rectangular shape adds a relaxed yet chic element to the ensemble.",
+"5": "An elegant gold-toned belt adorned with sparkling stones. The chain detail at the front creates a sophisticated focal point that draws attention to your waist and adds a luxurious touch to the neckline area.",
+"6": "This navy blazer and matching dress create a sophisticated, polished look perfect for church. The elegant pumps add a touch of classic femininity to your silhouette. The gold-studded belt cinches the waist to define your figure, while the denim bag offers a stylish contrast that keeps the overall look interesting without being too casual.",
+"7": "Wear the blazer structured over the dress to maintain a sharp, formal line appropriate for the service.",
+"8": "Чорні туфлі-човники на шпильці зі шкіри — I kept these black pumps because they anchor the leg line under the midi dress, continuing the tone from toes to knee.",
+"9": "Блейзер з деніму – Dark Blue — I kept this denim blazer as a deliberate break of the palette, but ensured it is structured enough to read as formal for church.",
+"10": "Крос-боді Hourglass — I added this crossbody bag to carry essentials during the service and lunch.",
+"11": "Блейзер з деніму – Dark Blue, Сукня прямого крою, з розрізами на рукавах та вшитим паском (AniNadin), Чорні туфлі-човники на шпильці зі шкіри, Крос-боді Hourglass, Пасок з камінням золото — I accept this register gate because the navy blazer and fitted dress create a cohesive 'smart' silhouette that meets the formality of church, elevating the casualness of standard denim to a respectful occasion-appropriate level.",
+"12": "Крос-боді Hourglass — I included this crossbody bag to meet the requirement for a bag during the day.",
+"13": "Крос-боді Hourglass — I added this bag to meet the requirement for carrying essentials during the day."
+}
+
+── ВІДПОВІДЬ (2632 симв., 48.8 с, HTTP 200) ──
+```json
+{
+"1": "Цей темно-синій блейзер має елегантний, класичний крій. Тканина виглядає як денім або міцна бавовняна суміш, що надає йому трохи недбалого вигляду, який добре поєднується з більш формальною сукнею під ним.",
+"2": "Сукня прямого крою темно-синього кольору з характерними розрізами на рукавах і вшитим паском. Її чіткі лінії створюють довгу, елегантну вертикальну форму, яка чудово доповнює твою фігуру.",
+"3": "Класичні чорні туфлі-човники з гострим носком і високим, тонким підбором. Гладка шкіряна обробка забезпечує елегантну основу для образу, додаючи зросту та грації твоїй ході.",
+"4": "Структурована сумка через плече з деніму м'якого синьо-сірого відтінку, що має помітний металевий замок і дві верхні ручки. Її трохи недбала прямокутна форма додає розслабленого, але елегантного акценту до ансамблю.",
+"5": "Елегантний золотистий пасок, прикрашений блискучими камінцями. Ланцюжок спереду створює вишукану центральну точку, яка привертає увагу до твоєї талії і додає розкішного штриха в області декольте.",
+"6": "Цей темно-синій блейзер і відповідна сукня створюють елегантний, охайний образ, який чудово підходить для церкви. Елегантні туфлі додають нотку класичної жіночності твоїй фігурі. Пасок з камінням підкреслює талію, щоб визначити твою фігуру, а сумка з деніму пропонує стильний контраст, який зберігає загальний вигляд цікавим без надмірної недбалості.",
+"7": "Одягни блейзер структуровано поверх сукні, щоб зберегти чітку, формальну лінію, яка підходить для служби.",
+"8": "Чорні туфлі-човники на шпильці зі шкіри — Я залишила ці чорні туфлі, тому що вони продовжують лінію ноги під сукнею міді, перегукуючись з тоном від пальців до колін.",
+"9": "Блейзер з деніму – Dark Blue — Я залишила цей блейзер з деніму як свідомий контраст у палітрі, але подбала про те, щоб він був достатньо структурований і виглядав формально для церкви.",
+"10": "Крос-боді Hourglass — Я додала цю сумку через плече, щоб носити з собою необхідні речі під час служби та обіду.",
+"11": "Блейзер з деніму – Dark Blue, Сукня прямого крою, з розрізами на рукавах та вшитим паском (AniNadin), Чорні туфлі-човники на шпильці зі шкіри, Крос-боді Hourglass, Пасок з камінням золото — Я приймаю цей образ, тому що темно-синій блейзер і приталена сукня створюють гармонійний «охайний» силует, який відповідає формальності церкви, піднімаючи недбалість стандартного деніму до шанобливого рівня.",
+"12": "Крос-боді Hourglass — Я включила цю сумку через плече, щоб задовольнити вимогу мати з собою сумку протягом дня.",
+"13": "Крос-боді Hourglass — Я додала цю сумку, щоб відповідати вимозі носити необхідні речі протягом дня."
+}
+```
