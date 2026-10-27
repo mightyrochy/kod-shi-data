@@ -1,0 +1,60 @@
+── ПРОМПТ (8276 симв.) ──
+Ти — перекладачка в застосунку-стилістці. Ти пишеш природною українською тексти, які зараз побачить жінка. Рішень не приймаєш, на питання не відповідаєш, змісту не міняєш.
+
+Вхід — JSON-об'єкт: ключ — номер тексту н, значення — текст, який склали код та інші моделі.
+
+Відповідь — лише JSON-об'єкт тієї самої форми, що вхід, з усіма його ключами: ключ — номер н кожного тексту зі входу, значення — рядок — той самий зміст природною українською, без англійських слів і кодів (назви крамниць і брендів — як є); ПЕРЕКЛАДАЙ КОЖНЕ англійське слово, навіть одне посеред українського речення; латиницею лишай лише назви крамниць і брендів, «V-подібний» і «den»; текст, що вже природний і до неї на «ти», — без змін, а український текст на «ви» перепиши на «ти», решту лиши слово в слово.
+
+Вид кожної речі — теж зміст: річ у перекладі — та сама, що у вході, а не схожа чи сусідня. ankle boots — черевики чи ботильйони, boots — чоботи, heeled — на підборах, а не туфлі, pumps — туфлі-човники, loafers — лофери; pendant — кулон чи підвіска, necklace — намисто чи ланцюжок, а не каблучка, сережки чи браслет; ring — каблучка; earrings — сережки. Українські назви речей у вході (назви з крамниці, найчастіше перед « — ») переписуй літера в літеру: не міняй, не переставляй і не додавай у них жодного слова.
+
+Про жінку — лише до неї, на «ти» (ти, тебе, тобі, твій, твоя; хочеш, скинеш; наказ однини: розкажи, оберни, тримай, дай), і в питаннях теж: you, your, she, her про неї — «ти», «твій» (her skin tone — твій тон шкіри; when she turns her head — коли ти повертаєш голову; she looks taller — ти виглядаєш вищою), англійський наказ — наказом однини; «вона», «її» — лише про річ (сукню, сумку, куртку). Говорить стилістка — одна жінка: про себе — від першої особи однини й у жіночому роді (я підібрала, я б додала), не «ми», не від імені застосунку чи коду і ніколи словами самої жінки.
+
+Мова: літературна українська, як у текстах українських крамниць одягу. Кожне українське слово — літерами лише української абетки, без жодної латинської літери чи стороннього знака всередині слова. Кожне речення — одна остаточна версія, без виправлень посеред тексту. Словничок нижче — лише як перекласти англійське слово, коли воно є у вході; це не зміст: річ, тканина чи колір, яких у вході нема, у тексті не з'являються. Звичні українські назви для слів англійського джерела: trousers, pants — штани; dressy, dressier — ошатний, ошатніше; look, outfit — образ; taupe — сіро-бежевий; loose — вільний; suede — замша (жіночий рід); slip dress — сукня-комбінація; camel — кемел (колір). Назви речей і кольорів, які дала крамниця, — як є.
+
+Перевір кожне слово ДО відповіді: до неї — лише «ти», жодного «ви», «ваш» і наказу множини, і про неї жодного «вона», «її», «їй», жодне слово не стоїть двічі поспіль, кожна річ — того самого виду, що у вході (річ образу — іменником її назви з переліку, коли він є, і слова при ній узгоджені з цим іменником), а українська назва речі — слово в слово. Відповідь — рівно ОДИН JSON-об'єкт і нічого після нього: другої, виправленої версії, приміток і пояснень не пиши — помилку виправ у тому самому об'єкті.
+
+Речі образу — перелік, який жінка бачить на картці (номер речі — назва біля неї):
+1 — Жіночий офісний жилет великого розміру · kind code: vest · colour code: green · about it: text н=1
+2 — Спідниця міні CAPRI кориця · kind code: skirt · colour code: camel · about it: text н=2
+3 — Сумка жіноча raffia Turismo · kind code: bag_generic · colour code: red · about it: text н=3
+4 — Туфлі Doves червоні · kind code: dress_shoes · colour code: red · about it: text н=4
+5 — Хустка “Satina” пудрова · kind code: kerchief · colour code: powder_pink · about it: text н=5
+When a text speaks of an item of the list, call it by the kind in its name — the same noun in the right case (list «Тренч бежевий подовжений» — text «тренч», «Светр в'язаний оверсайз» — «светр»), not by another kind or a synonym of the English word. Make every adjective, pronoun and verb with the item agree with that noun in gender and number («Тренч бежевий» — «бежевий тренч, який…»; «Лофери шкіряні» — «шкіряні лофери, які…»). A name you translate in this same call (text н=K): give it one noun and call the item by it, in agreement, in every text. A text the list gives as about an item (about it: text н=M) speaks of that one item, and so does every other text where the English names it. The colour of an item of the list is the colour of its name: keep the shop's colour word from its name; when its name has no colour word, write the Ukrainian name of its colour code. The English colour words for that item are the stylist's impression of a photo: do not turn them into a colour of their own — the item's colour stands in their place. Colours of its details (trim, strap, buttons, print), its fabric and the rest — translate from the text. The list is for names only: an item the English text does not name is not added to the translation — neither to the description nor to the advice. The kind code next to an item (kind code: …) is the code of its kind: every noun for that item, in every text, names this kind and no other, whatever word the English text uses; a code ending in _generic names only the family (dress_generic — a dress, bag_generic — a bag). The kind noun of its name and this code are the same kind: write the name's noun.
+
+Colour codes: camel — кемел; green — зелений; powder_pink — пудровий; red — червоний.
+
+ТЕКСТИ:
+{
+"1": "This dark olive-green belted vest features a V-neckline and a wrap-style front closure secured by a circular ring detail, creating a tailored look that elongates the torso.",
+"2": "The capri-length skirt is crafted from a smooth camel-colored knit fabric with an elastic waistband, offering a comfortable and versatile fit that sits just above the ankle.",
+"3": "This handcrafted Raffia bag showcases a rich red hue with intricate woven textures, long rope handles, and decorative tassels, providing both style and practicality for carrying essentials.",
+"4": "These pointed-toe pumps are made of glossy red leather with a moderate heel height, offering a sleek and sophisticated design that complements the overall outfit while ensuring stability during extended periods of walking.",
+"5": "The pink polka-dot kerchief is made from a soft satin-like fabric with white dots, designed to be tied elegantly around the head or worn as an accessory for added flair and personal expression.",
+"6": "I have chosen a dark olive-green belted vest to wear over your floral blouse, paired with camel-colored capri trousers. This ensemble brings structure and elegance to your look while keeping it comfortable for the crowded club environment. The deep red woven Raffia bag and matching pointed-toe pumps add a striking pop of color that perfectly complements the evening atmosphere without being overpowering. The soft pink polka-dot kerchief, when tied around your neck, introduces a gentle, playful touch that balances the more serious tones of your outfit.",
+"7": "Wear the vest over your blouse to add structure and define your waist, creating a polished silhouette ideal for standing in the crowd.",
+"8": "Жіночий офісний жилет великого розміру, Спідниця міні CAPRI кориця, Туфлі Doves червоні — I kept the relaxed level because comfort is key for standing all evening.",
+"9": "Туфлі Doves червоні — Shoes cut the line; I keep them for the bold red contrast needed at a rock show.",
+"10": "Сумка жіноча raffia Turismo, Туфлі Doves червоні, Хустка “Satina” пудрова — I kept the off-palette hues for the necessary rock-star contrast.",
+"11": "Жіночий офісний жилет великого розміру, Спідниця міні CAPRI кориця — The boxy cut lacks waist definition; I will change the top to follow the waistline.",
+"12": "Сумка жіноча raffia Turismo, Туфлі Doves червоні, Хустка “Satina” пудрова — I accept the remark about the shoe hue being an accent echo because the deep red shoes are the essential focal point of your rock outfit; the 'echo' here is not a second red item but the powerful repetition of that color on your face via your lips and perhaps a touch of blush, grounding the look in you rather than just the items.",
+"13": "Жіночий офісний жилет великого розміру — Using a fitted vest adds structure to the waist, emphasizing your defined figure."
+}
+
+── ВІДПОВІДЬ (2925 симв., 48.1 с, HTTP 200) ──
+```json
+{
+"1": "Цей темно-оливковий жилет з поясом має V-подібний виріз і застібається спереду на зав'язки у вигляді круглого кільця, створюючи елегантний силует, який візуально подовжує торс.",
+"2": "Спідниця капрі виготовлена з гладкої трикотажної тканини кольору кемел і має еластичний пояс, що забезпечує зручну та універсальну посадку на рівні щиколотки.",
+"3": "Ця ручна сумка з рафії демонструє насичений червоний колір із витонченою плетеною текстурою, довгими мотузковими ручками та декоративними китицями, поєднуючи стиль і практичність для носіння необхідних речей.",
+"4": "Ці туфлі-човники з загостреним миском виготовлені зі шкіри кольору червоний із помірною висотою підборів, пропонують елегантний дизайн, який доповнює загальний образ і забезпечує стійкість протягом тривалого часу.",
+"5": "Цей хустинка в рожеву цятку виготовлена з м'якої тканини, що нагадує атлас, із білими цяточками та призначена для елегантного зав’язування навколо голови або носіння як аксесуар для додання образу індивідуальності.",
+"6": "Я обрала темно-оливковий жилет з поясом, щоб одягнути його поверх твоєї блузки у квіточки в поєднанні зі штанами капрі кольору кемел. Цей ансамбль додає структури та елегантності твоїй зовнішності, залишаючись при цьому комфортним для галасливого клубного середовища. Сумка з рафії насиченого червоного кольору та туфлі-човники такого ж відтінку створюють яскравий акцент, який ідеально доповнює вечірню атмосферу без надмірності. М’який рожевий хустинка в цятку, зав’язаний навколо твоєї шиї, додає ніжну та грайливу нотку, яка збалансовує більш серйозні тони твого образу.",
+"7": "Одягни жилет поверх блузки, щоб додати структури та підкреслити лінію талії, створюючи витончений силует, який ідеально підходить для перебування в натовпі.",
+"8": "Жилет великого розміру, Спідниця міні CAPRI кориця, Туфлі Doves червоні — Я зберегла невимушений рівень, тому що комфорт є ключовим фактором при тривалому стоянні.",
+"9": "Туфлі Doves червоні — Взуття розставляє акценти; я залишаю їх для необхідного контрасту яскравого червоного кольору на рок-концерті.",
+"10": "Сумка raffia Turismo, Туфлі Doves червоні, Хустка “Satina” пудрова — Я зберегла відтінки поза палітрою, які потрібні для необхідного контрасту в стилі рок-зірки.",
+"11": "Жилет великого розміру — Об’ємний крій не має чіткої лінії талії; я заміню верх на річ, що повторює лінію талії.",
+"12": "Сумка raffia Turismo, Туфлі Doves червоні, Хустка “Satina” пудрова — Я приймаю зауваження щодо того, що колір взуття є відлунням акценту, тому що глибокі червоні туфлі – це важливий фокус твого рок-образу; «відлуння» тут не другий червоний предмет, а потужне повторення цього кольору на твоєму обличчі за допомогою губної помади та, можливо, легкої рум’яни, що робить акцент саме на тобі, а не лише на речах.",
+"13": "Жилет великого розміру — Використання приталеного жилета додає структури в області талії, підкреслюючи твою фігуру."
+}
+```

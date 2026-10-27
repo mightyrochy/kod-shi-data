@@ -1,0 +1,37 @@
+── ПРОМПТ (2360 симв.) ──
+{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.", "A slot the description says is not needed is not an item: give it worn false. One item carries one thing — of two alternatives list the first; a note in brackets is not an item.", "Slot \"accessory\" is for an item no other slot fits.", "\"is_outfit\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note; then items is empty."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "ITEM_LIST", "answer_schema": {"is_outfit": "yes|no", "items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory", "color_hex": "<#rrggbb or null>", "worn": "<true, or false when the description says the outfit goes without it>"}]}, "input": ["\"description\" — the outfit description"]}, "description": "Black fitted tank top, cropped cut hitting just above the waistband, deep black hex #000000, cotton jersey.\nHigh-waisted dark denim jeans, straight leg with a clean mid-length hem ending at the ankle bone, indigo blue hex #191970, rigid denim weave.\nWhite leather low-top sneakers, classic rounded toe with minimal branding, pure white hex #FFFFFF, smooth calfskin leather.\nStudded black leather wristband, adjustable cuff width, matte black hex #2F4F4F, faux leather with metal hardware.\nThis outfit works perfectly for a Friday evening at a rock concert because the durable denim handles standing in crowds and dancing without losing its shape. The dark top and jeans create a classic rock-and-roll silhouette that feels cool but comfortable enough for all-night movement. The white sneakers add a crisp contrast to the dark palette while offering the necessary support for walking on concrete floors. Finally, the studded accessory nods to the genre's aesthetic without being overly heavy or restrictive."}
+
+── ВІДПОВІДЬ (869 симв., 79.4 с, HTTP 200) ──
+{
+  "is_outfit": "yes",
+  "items": [
+    {
+      "name": "tank top",
+      "details": "fitted crop cut hitting just above the waistband, deep black cotton jersey",
+      "slot": "top",
+      "color_hex": "#000000",
+      "worn": true
+    },
+    {
+      "name": "jeans",
+      "details": "high-waisted straight leg with a clean mid-length hem ending at the ankle bone, rigid denim weave",
+      "slot": "bottom",
+      "color_hex": "#191970",
+      "worn": true
+    },
+    {
+      "name": "sneakers",
+      "details": "low-top classic rounded toe with minimal branding, smooth calfskin leather",
+      "slot": "shoes",
+      "color_hex": "#FFFFFF",
+      "worn": true
+    },
+    {
+      "name": "wristband",
+      "details": "adjustable cuff width faux leather with metal hardware",
+      "slot": "accessory",
+      "color_hex": "#2F4F4F",
+      "worn": true
+    }
+  ]
+}
