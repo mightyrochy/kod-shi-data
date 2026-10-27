@@ -3,9 +3,11 @@ const fs = require('fs'), path = require('path'), {execFileSync} = require('chil
 const {chromium} = require('../../джерела/node_modules/playwright');
 const {прочитатиДовідникJSON, підставитиШаблон, зібратиШаблонПоказу} = require('../../джерела/показ_шаблон.js');
 const корінь = path.resolve(__dirname, '../..'), код = path.join(корінь, 'джерела');
-const тека = path.join(корінь, 'аудит/огляд_коду/доробка_1873');
+const тека = path.resolve(process.argv[2] || path.join(корінь, 'аудит/огляд_коду/доробка_1873_2'));
 const входи = require('../огляд_коду/доробка_1873/входи.json');
+const {міст} = require('./доробка_1873.js');
 async function main(){
+  fs.mkdirSync(тека, {recursive: true});
   const шаблон = зібратиШаблонПоказу(path.join(код, 'показ.html'));
   const html = підставитиШаблон(шаблон, {__МОДУЛІ_ПОКАЗУ__: 'офлайн', __ЗБІРКА_ПОКАЗУ__: 'replay-1873',
     __ВІДБИТОК__: 'replay-1873', __ФІД_ПОКАЗУ__: 'каталог_brief.xml', __КАТАЛОГ_ПОКАЗУ__: 'офлайн',
@@ -17,14 +19,17 @@ async function main(){
       const стор = await браузер.newPage({viewport: {width: 390, height: 844}, deviceScaleFactor: 1});
       const помилки = []; стор.on('pageerror', е => помилки.push(String(е)));
       const сторінка = до ? html.replace(fs.readFileSync(path.join(код, 'показ/паспорт.js'), 'utf8'),
-        execFileSync('git', ['show', '6e4bc3aa7:джерела/показ/паспорт.js'], {cwd: корінь, encoding: 'utf8'})) : html;
+        execFileSync('git', ['show', '68e5ef3e7:джерела/показ/паспорт.js'], {cwd: корінь, encoding: 'utf8'})) : html;
+      await стор.exposeFunction('містОфлайн', міст);
       await стор.route('**/*', маршрут => маршрут.request().url() === 'http://offline.local/'
         ? маршрут.fulfill({contentType: 'text/html', body: сторінка}) : маршрут.abort());
-      await стор.goto('http://offline.local/');
+      await стор.goto('http://offline.local/#model_mova=offline');
       await стор.waitForFunction(() => !!document.getElementById('вк-сценарій').onclick);
       await стор.evaluate(async сцена => {
         ЧАТ_П = [{хто: 'людина', тема: 'сценарій', текст: сцена.слова}];
         ПАСПОРТ_П = null;
+        містП = async (_, вхід) => window.містОфлайн(вхід);
+        модельМовиП = async () => '';
         оновитиДовідникП = async () => {};
         паспортПоРозмовіП = async () => ({паспорт: сцена.паспорт});
         повідомленнямП = async () => ({тексти: {}, записи: []});
