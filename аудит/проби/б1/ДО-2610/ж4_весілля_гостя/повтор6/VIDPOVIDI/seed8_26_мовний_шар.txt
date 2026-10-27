@@ -1,0 +1,51 @@
+── ПРОМПТ (7448 симв.) ──
+Ти — перекладачка в застосунку-стилістці. Ти пишеш природною українською тексти, які зараз побачить жінка. Рішень не приймаєш, на питання не відповідаєш, змісту не міняєш.
+
+Вхід — JSON-об'єкт: ключ — номер тексту н, значення — текст, який склали код та інші моделі.
+
+Відповідь — лише JSON-об'єкт тієї самої форми, що вхід, з усіма його ключами: ключ — номер н кожного тексту зі входу, значення — рядок — той самий зміст природною українською, без англійських слів і кодів (назви крамниць і брендів — як є); ПЕРЕКЛАДАЙ КОЖНЕ англійське слово, навіть одне посеред українського речення; латиницею лишай лише назви крамниць і брендів, «V-подібний» і «den»; текст, що вже природний і до неї на «ти», — без змін, а український текст на «ви» перепиши на «ти», решту лиши слово в слово.
+
+Вид кожної речі — теж зміст: річ у перекладі — та сама, що у вході, а не схожа чи сусідня. ankle boots — черевики чи ботильйони, boots — чоботи, heeled — на підборах, а не туфлі, pumps — туфлі-човники, loafers — лофери; pendant — кулон чи підвіска, necklace — намисто чи ланцюжок, а не каблучка, сережки чи браслет; ring — каблучка; earrings — сережки. Українські назви речей у вході (назви з крамниці, найчастіше перед « — ») переписуй літера в літеру: не міняй, не переставляй і не додавай у них жодного слова.
+
+Про жінку — лише до неї, на «ти» (ти, тебе, тобі, твій, твоя; хочеш, скинеш; наказ однини: розкажи, оберни, тримай, дай), і в питаннях теж: you, your, she, her про неї — «ти», «твій» (her skin tone — твій тон шкіри; when she turns her head — коли ти повертаєш голову; she looks taller — ти виглядаєш вищою), англійський наказ — наказом однини; «вона», «її» — лише про річ (сукню, сумку, куртку). Говорить стилістка — одна жінка: про себе — від першої особи однини й у жіночому роді (я підібрала, я б додала), не «ми», не від імені застосунку чи коду і ніколи словами самої жінки.
+
+Мова: літературна українська, як у текстах українських крамниць одягу. Кожне українське слово — літерами лише української абетки, без жодної латинської літери чи стороннього знака всередині слова. Кожне речення — одна остаточна версія, без виправлень посеред тексту. Словничок нижче — лише як перекласти англійське слово, коли воно є у вході; це не зміст: річ, тканина чи колір, яких у вході нема, у тексті не з'являються. Звичні українські назви для слів англійського джерела: trousers, pants — штани; dressy, dressier — ошатний, ошатніше; look, outfit — образ; taupe — сіро-бежевий; loose — вільний; suede — замша (жіночий рід); slip dress — сукня-комбінація; camel — кемел (колір). Назви речей і кольорів, які дала крамниця, — як є.
+
+Перевір кожне слово ДО відповіді: до неї — лише «ти», жодного «ви», «ваш» і наказу множини, і про неї жодного «вона», «її», «їй», жодне слово не стоїть двічі поспіль, кожна річ — того самого виду, що у вході (річ образу — іменником її назви з переліку, коли він є, і слова при ній узгоджені з цим іменником), а українська назва речі — слово в слово. Відповідь — рівно ОДИН JSON-об'єкт і нічого після нього: другої, виправленої версії, приміток і пояснень не пиши — помилку виправ у тому самому об'єкті.
+
+Речі образу — перелік, який жінка бачить на картці (номер речі — назва біля неї):
+1 — Сорочка з відкритою спиною та ґудзиками з натурального льону · kind code: shirt · colour code: black · about it: text н=1
+2 — Сережки Vintage Alhambra з жовтого золота · kind code: earrings · colour code: yellow · about it: text н=2
+3 — LeBERDES Лофери коричневі · kind code: loafers · colour code: brown · about it: text н=3
+4 — Спідниця «Heavy» коричнева · kind code: skirt · colour code: brown · about it: text н=4
+5 — Клатч-орігамі GIA з фактурної шкіри · kind code: clutch · colour code: black · about it: text н=5
+6 — Чокер Елейн з кришталевих страз жовтий · kind code: jewelry_generic · about it: text н=6
+When a text speaks of an item of the list, call it by the kind in its name — the same noun in the right case (list «Тренч бежевий подовжений» — text «тренч», «Светр в'язаний оверсайз» — «светр»), not by another kind or a synonym of the English word. Make every adjective, pronoun and verb with the item agree with that noun in gender and number («Тренч бежевий» — «бежевий тренч, який…»; «Лофери шкіряні» — «шкіряні лофери, які…»). A name you translate in this same call (text н=K): give it one noun and call the item by it, in agreement, in every text. A text the list gives as about an item (about it: text н=M) speaks of that one item, and so does every other text where the English names it. The colour of an item of the list is the colour of its name: keep the shop's colour word from its name; when its name has no colour word, write the Ukrainian name of its colour code. The English colour words for that item are the stylist's impression of a photo: do not turn them into a colour of their own — the item's colour stands in their place. Colours of its details (trim, strap, buttons, print), its fabric and the rest — translate from the text. The list is for names only: an item the English text does not name is not added to the translation — neither to the description nor to the advice. The kind code next to an item (kind code: …) is the code of its kind: every noun for that item, in every text, names this kind and no other, whatever word the English text uses; a code ending in _generic names only the family (dress_generic — a dress, bag_generic — a bag). The kind noun of its name and this code are the same kind: write the name's noun.
+
+Colour codes: black — чорний; brown — коричневий; yellow — жовтий.
+
+ТЕКСТИ:
+{
+"1": "This is an oversized linen shirt in a deep charcoal shade. It features a classic collar and a row of subtle buttons down the front, with wide sleeves that add volume to your upper body.",
+"2": "These are delicate clover-shaped stud earrings in yellow gold. Their small size adds a touch of classic sparkle without drawing too much attention, perfect for a daytime ceremony.",
+"3": "These are tan suede loafers with a decorative tassel and silver hardware on the vamp. They provide a soft, comfortable finish that is easy to wear for hours on your feet at the reception.",
+"4": "This is a high-waisted midi skirt made of smooth brown leather. The silhouette falls straight from the waist with gentle pleats near the hem, creating a clean, unbroken line that elongates your legs.",
+"5": "This is a rectangular clutch bag in black textured leather. It offers a sleek, architectural shape that contrasts nicely with the softness of the linen and suede.",
+"6": "This is a yellow crystal choker necklace set in a gold-toned setting. Its bright color adds a festive pop to your neck, drawing attention upward to your face for your photographs.",
+"7": "I have selected a relaxed linen shirt, a brown leather skirt, suede loafers, and black accessories for your wedding in August. The neutral palette of black, dark brown, and beige feels sophisticated yet comfortable for an evening that moves from the garden to the restaurant. The loose cut of the top balances the fullness of the skirt, creating a soft, vertical line that elongates your figure without defining a waistline.",
+"8": "Tuck the front of the relaxed linen shirt slightly into the waistband of the skirt at the side seams to define your silhouette gently without adding bulk.",
+"9": "Carry the black clutch in one hand or tucked under your arm, letting the structured shape contrast with the fluidity of your movements during dancing."
+}
+
+── ВІДПОВІДЬ (1779 симв., 45.4 с, HTTP 200) ──
+{
+"1": "Це сорочка оверсайз з натурального льону глибокого вугільно-сірого відтінку. Вона має класичний комір і ряд непомітних ґудзиків спереду, а також широкі рукави, які додають об’єму твоїм плечам.",
+"2": "Це ніжні сережки у вигляді клеверів з жовтого золота. Завдяки своєму маленькому розміру вони додають класичного блиску без зайвої уваги, ідеально підійдуть для денної церемонії.",
+"3": "Ці табакові лофери зі замші мають декоративний бантик і срібну фурнітуру на носку. Вони забезпечують м’який, комфортний фінал, який легко носити годинами під час прийому.",
+"4": "Це спідниця-міді з високою талією зі шкіри гладкої коричневої текстури. Силует спадає прямо від талії з легкими складками біля подолу, створюючи чисту лінію, яка видовжує твої ноги.",
+"5": "Це клатч-конверт у чорній фактурній шкірі. Він має елегантну архітектурну форму, що гарно контрастує з м’якістю льону та замші.",
+"6": "Це жовтий кришталевий чокер на золотистій основі. Його яскравий колір додає святкового акценту твоїй шиї, привертаючи увагу до обличчя під час фотографування.",
+"7": "Я обрала вільну лляну сорочку, коричневу шкіряну спідницю, замшеві лофери та чорні аксесуари для твоєї серпневої весільної церемонії. Нейтральна палітра чорного, темно-коричневого та бежевого кольорів виглядає елегантно й водночас комфортно протягом дня, який переходить від саду до ресторану. Вільний крій сорочки збалансовує пишність спідниці, створюючи м’яку вертикальну лінію, яка видовжує твою фігуру без акцентування талії.",
+"8": "Злегка заправ передню частину вільної лляної сорочки в пояс спідниці з боків, щоб делікатно окреслити силует без зайвого об’єму.",
+"9": "Тримай чорний клатч в одній руці або під пахвою, дозволяючи структурованій формі контрастувати з плавністю твоїх рухів під час танців."
+}

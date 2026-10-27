@@ -1,0 +1,37 @@
+── ПРОМПТ (2511 симв.) ──
+{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.", "A slot the description says is not needed is not an item: give it worn false. One item carries one thing — of two alternatives list the first; a note in brackets is not an item.", "Slot \"accessory\" is for an item no other slot fits.", "\"is_outfit\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note; then items is empty."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "ITEM_LIST", "answer_schema": {"is_outfit": "yes|no", "items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory", "color_hex": "<#rrggbb or null>", "worn": "<true, or false when the description says the outfit goes without it>"}]}, "input": ["\"description\" — the outfit description"]}, "description": "She is attending her sister's wedding in August at an outdoor ceremony followed by an upscale restaurant, requiring a very smart evening gown suitable for daylight and +18 °C weather. She wants to feel elegant yet comfortable enough to enjoy the transition from the garden to the dining room without feeling overdressed for the warm afternoon sun.\n\nSatin evening gown, sheath cut, floor-length, ivory, #FFFFF0, silk crepe de chine with a subtle woven texture\nGold strappy sandals, open toe, ankle-high, champagne, metallic leather with stiletto heels\nPearl drop earrings, circular design, dangling length to jawline, white freshwater pearls on gold vermeil wire\nClutch bag, structured shape, small size, ivory, matte suede with a satin trim\n\nThis outfit works because the ivory satin gown elevates her look for a formal wedding while remaining light and breathable in the summer heat. The metallic gold sandals add a touch of sparkle that complements the daytime setting without being too heavy for the evening reception. Pearls provide classic sophistication that bridges the casual outdoor ceremony with the refined atmosphere of the upscale restaurant."}
+
+── ВІДПОВІДЬ (869 симв., 54.7 с, HTTP 200) ──
+{
+  "is_outfit": "yes",
+  "items": [
+    {
+      "name": "satin evening gown",
+      "details": "sheath cut, floor-length, silk crepe de chine with a subtle woven texture",
+      "slot": "dress",
+      "color_hex": "#FFFFF0",
+      "worn": true
+    },
+    {
+      "name": "gold strappy sandals",
+      "details": "open toe, ankle-high, metallic leather with stiletto heels",
+      "slot": "shoes",
+      "color_hex": null,
+      "worn": true
+    },
+    {
+      "name": "pearl drop earrings",
+      "details": "circular design, dangling length to jawline, white freshwater pearls on gold vermeil wire",
+      "slot": "earrings",
+      "color_hex": null,
+      "worn": true
+    },
+    {
+      "name": "clutch bag",
+      "details": "structured shape, small size, matte suede with a satin trim",
+      "slot": "bag",
+      "color_hex": null,
+      "worn": true
+    }
+  ]
+}
