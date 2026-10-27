@@ -317,17 +317,20 @@ function Remove-Claim([string]$StatePath) {
     Remove-Item -LiteralPath (Get-ClaimPath $StatePath) -Force -ErrorAction SilentlyContinue
 }
 
+function Get-Retakes([string]$StatePath) {
+    <# Скільки разів позначку вже повернули в чергу за квотою: лічильник `retakes` несуть і WAIT, і STARTED (запуск не
+    стирає його — інакше кожна відмова рахувалась би першою і межа MaxRetakes була б недосяжна). #>
+    if (-not (Test-Path -LiteralPath $StatePath)) { return 0 }
+    $t = [System.IO.File]::ReadAllText($StatePath, $script:Utf8)
+    if ($t -match '^(WAIT|STARTED) .*"retakes":\s*([0-9]{1,3})') { return [int]$Matches[2] }
+    0
+}
+
 function Set-MarkerWait($M, [long]$Until, [hashtable]$Extra) {
     <# Позначка чекає скидання квоти до $Until (unix): спроба не спалена, ту саму позначку візьме та сама смуга.
     Повертає число повернень у чергу; понад MaxRetakes — $null (чекання не записано, далі кінець із кодом квоти). #>
     $sp = Get-StatePath (Get-MarkerKey $M)
-    $st = Get-MarkerState $M
-    $n = 0
-    if ($st.Kind -eq 'WAIT' -and $null -ne (Get-JsonProp $st.Wait 'retakes')) { $n = [int]$st.Wait.retakes }
-    if (Test-Path -LiteralPath $sp) {
-        $t = [System.IO.File]::ReadAllText($sp, $script:Utf8)
-        if ($t -match '"retakes":\s*([0-9]{1,3})') { $n = [Math]::Max($n, [int]$Matches[1]) }
-    }
+    $n = Get-Retakes $sp
     if ($Extra.ContainsKey('retake') -and $Extra.retake) { $n++ }
     if ($n -gt $script:MaxRetakes) { return $null }
     $j = [ordered]@{ until = $Until; until_utc = (Get-UtcStamp ([DateTimeOffset]::FromUnixTimeSeconds($Until).UtcDateTime)); marker = $M.Name; retakes = $n }
@@ -335,6 +338,34 @@ function Set-MarkerWait($M, [long]$Until, [hashtable]$Extra) {
     Write-FileAtomic $sp ('WAIT ' + ($j | ConvertTo-Json -Compress))
     Remove-Claim $sp
     $n
+}
+
+function Clear-UnstartedClaim([string]$StatePath) {
+    <# Узяття без запуску: помилка до STARTED (робоча копія, запуск процесу наряду) не лишає позначку вилученою з черги —
+    claim звільняється, стан (NEW чи WAIT) зберігається. Позначку з STARTED закриває Resume-Interrupted. #>
+    $t = ''
+    if (Test-Path -LiteralPath $StatePath) { try { $t = [System.IO.File]::ReadAllText($StatePath, $script:Utf8) } catch { $null = $_ } }
+    if ($t.StartsWith('STARTED ')) { return }
+    Remove-Claim $StatePath
+}
+
+function Clear-OrphanClaims([string]$RunsRoot) {
+    <# Claim, чий процес наряду зник до STARTED (вимкнення між узяттям і запуском): старший за 10 хв, стану STARTED нема,
+    замок слота (з worker.json теки прогону `<id>`) вільний — звільнити. Живий наряд тримає замок слота, свіжий claim
+    ще не дійшов до запуску. #>
+    foreach ($c in @(Get-ChildItem -LiteralPath $script:StateDir -Filter '*.claim' -File -ErrorAction SilentlyContinue)) {
+        if (((Get-Date) - $c.LastWriteTime).TotalMinutes -lt 10) { continue }
+        $sp = $c.FullName -replace '\.claim$', '.txt'
+        $id = ''; try { $id = [System.IO.File]::ReadAllText($c.FullName, $script:Utf8).Trim() } catch { continue }
+        if ($id -notmatch '^[0-9]{8}-[0-9]{6}-[0-9a-f]{12}$') { continue }
+        $wf = Join-Path (Join-Path $RunsRoot $id) 'worker.json'
+        if (Test-Path -LiteralPath $wf) {
+            $slot = ''; try { $slot = [string](Get-JsonProp ([System.IO.File]::ReadAllText($wf, $script:Utf8) | ConvertFrom-Json) 'slot') } catch { continue }
+            if ($slot -notmatch '^[a-z]+-[0-9]$' -or -not (Test-LockFree (Join-Path $script:SlotDir "$slot.lock"))) { continue }
+        }
+        Write-Log "узяття $id без запуску — звільнено"
+        Clear-UnstartedClaim $sp
+    }
 }
 
 function Get-WaitingMarkers {

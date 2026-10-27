@@ -54,7 +54,7 @@ chk "гілка зі звіту ЗАБЛОКОВАНО збережена для
 code k3d no_report "$M" NO_REPORT
 code k3e die "$M" EXIT
 code k3f hang "$M" HANG
-chk "завислий claude зупинено" '! alive "$W/cc.log.pid"'
+chk "завислий claude зупинено" '[ -e "$W/cc.log.pid" ] && ! alive "$W/cc.log.pid"'
 code k3g effort cc-claude-sonnet-5-5-ultra EFFORT_INVALID
 code k3h auth "$M" AUTH
 code k3i quota "$M" QUOTA0_CLAUDE_M10
@@ -96,7 +96,7 @@ cr; chk "той самий прохід claude-run бере її" '[[ "$(lines)"
 echo "=== К8 завислість — від останньої прийнятої події stream-json, доки процес живий"
 setup k8a; mark "$SLUG/$M/1"; T0=$(date +%s); FAKE_CC_SCENARIO=closed cr; T1=$(date +%s)
 chk "stdout і stderr закрито, процес мовчить → HANG за ≤ 60 с (є: $((T1 - T0)) с, $(lines))" '[ "$(lines)" = "GEMINI ОБГОРТКА: ЗАБЛОКОВАНО claude/$SLUG HANG" ] && [ $((T1 - T0)) -le 60 ]'
-chk "процес після HANG зупинено" '! alive "$W/cc.log.pid"'
+chk "процес після HANG зупинено" '[ -e "$W/cc.log.pid" ] && ! alive "$W/cc.log.pid"'
 setup k8b; mark "$SLUG/$M/1"; FAKE_CC_SCENARIO=noise cr
 chk "не-JSON рядки таймера не скидають → HANG (є: $(lines))" '[ "$(lines)" = "GEMINI ОБГОРТКА: ЗАБЛОКОВАНО claude/$SLUG HANG" ]'
 chk "events.tsv — лише події з типом (2), шум — у claude.jsonl" '[ "$(cat "$W"/cr/runs/*/events.tsv | wc -l)" = 2 ] && ! cut -f2 "$W"/cr/runs/*/events.tsv | tr -d "\r" | grep -qx "" && grep -q "^шум 0" "$W"/cr/runs/*/claude.jsonl'

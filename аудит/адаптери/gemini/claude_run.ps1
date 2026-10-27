@@ -426,7 +426,7 @@ function Invoke-Claude([string]$Exe, [string[]]$ArgList, [string]$Prompt, [strin
     $psi.RedirectStandardInput = $true
     $p = [System.Diagnostics.Process]::Start($psi)
     $start = ''; try { $start = Get-UtcStamp $p.StartTime } catch { $null = $_ }
-    Write-FileAtomic $StatePath ($StateHead + ' ' + (([ordered]@{ pid = $p.Id; start = $start; marker = $Marker; slot = $Slot }) | ConvertTo-Json -Compress))
+    Write-FileAtomic $StatePath ($StateHead + ' ' + (([ordered]@{ pid = $p.Id; start = $start; marker = $Marker; slot = $Slot; retakes = (Get-Retakes $StatePath) }) | ConvertTo-Json -Compress))
     $w = New-Object System.IO.StreamWriter($p.StandardInput.BaseStream, $script:Utf8)
     $w.Write($Prompt)
     $w.Close()
@@ -704,7 +704,11 @@ function Start-Markers($Workers) {
         $job = @{ id = $id; dir = $dir; slot = $slot; lane = 'claude'; ref = $m.Ref; sha = $m.Sha; time = $m.Time; name = $m.Name
             slug = $m.Slug; model = $m.Model; n = $m.N; cond = $m.Cond; prio = $m.Prio; deadline = $m.Deadline; gpu = $m.Gpu
             claude = $m.Claude; effort = $m.Effort; limits = $script:Limits }
-        [void]$Workers.Add((Start-Worker $job $dir))
+        try { [void]$Workers.Add((Start-Worker $job $dir)) } catch {
+            Write-Log "позначка $($m.Name): процес наряду не запущено — $($_.Exception.Message)"
+            Clear-UnstartedClaim (Get-StatePath (Get-MarkerKey $m))
+            continue
+        }
         Write-Log "позначка $($m.Name): слот $slot, пріоритет $($m.Prio)$(if ($m.Deadline) { ", строк $($m.Deadline)" })$(if ($m.Gpu) { ', GPU' }) -> $id"
         $started++
     }
@@ -745,6 +749,8 @@ function Invoke-Worker {
         # Гілку, яку сесія лишила вибраною в робочій копії слота, звільнити для інших слотів.
         if ($script:WorkTree) { [void](Invoke-Git @('checkout', '-q', '--detach') -AllowFail -Dir $script:WorkTree) }
         Remove-Item -LiteralPath $info -Force -ErrorAction SilentlyContinue
+        # Помилка до STARTED (робоча копія тощо) не лишає claim: позначка повертається в чергу (10162).
+        Clear-UnstartedClaim $statePath
         if ($null -ne $gpu) { $gpu.Dispose() }
         $slotLock.Dispose()
     }
@@ -775,6 +781,7 @@ function Main {
         $prev = $(if (Test-Path -LiteralPath $bootFile) { [System.IO.File]::ReadAllText($bootFile, $script:Utf8).Trim() } else { '' })
         $script:FreshBoot = ($boot -ne $prev)
         Resume-Interrupted
+        Clear-OrphanClaims (Join-Path $WorkDir 'runs')
         $script:Workers = New-Object System.Collections.ArrayList
         $first = $true
         while ($true) {

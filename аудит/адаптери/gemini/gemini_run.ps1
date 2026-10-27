@@ -893,7 +893,8 @@ function Invoke-Task($M, $Job) {
     $id = [string]$Job.id
     $statePath = Get-StatePath $key
     $status = [ordered]@{ v = 1; id = $id; slug = $M.Slug; model = $M.Model; n = [int]$M.N; marker = $M.Sha; cond = $M.Cond; slot = [string]$Job.slot
-        start = ''; head = ''; code = ''; report = 'NONE'; ahead = 0; turns = 0; minutes = 0; bundle = ''; engine = 'agy' }
+        start = ''; head = ''; code = ''; report = 'NONE'; ahead = 0; turns = 0; minutes = 0; bundle = ''; engine = 'agy'
+        retakes = (Get-Retakes $statePath) }
     Write-FileAtomic $statePath ('STARTED ' + ($status | ConvertTo-Json -Compress))
     $dir = [string]$Job.dir
     $t0 = Get-Date
@@ -1039,24 +1040,30 @@ function Start-Markers($Workers) {
             Write-FileAtomic (Get-StatePath (Get-MarkerKey $m)) 'STALE'
             continue
         }
-        $slot = Get-FreeSlot $m.Lane ([int]$script:Limits.slots[$m.Lane]) $Workers
-        if (-not $slot) { continue }
         if ((@($Workers | Where-Object { $_.Slug -ceq $m.Slug -and -not $_.Proc.HasExited }).Count -gt 0) -or (Test-SlugBusy $m.Slug $script:Lanes)) { continue }
         if ($m.Gpu -and -not (Test-GpuFree $Workers)) { continue }
         $after = $(if ($st.Kind -eq 'WAIT') { [long]$st.Wait.until } else { 0L })
         $sel = Select-Engine $m $after
         if ($sel.Quota.Blocked) { Enter-StartQuotaWait $m $sel.Quota $st; continue }
+        # Слот і смуга — за фактичним рушієм після вибору (каскад agy -> Codex займає слот Codex і не перевищує його N).
+        $lane = $(if ($sel.Engine.Name -eq 'codex') { 'codex' } else { 'agy' })
+        $slot = Get-FreeSlot $lane ([int]$script:Limits.slots[$lane]) $Workers
+        if (-not $slot) { continue }
         $id = New-RunId (Get-MarkerKey $m)
         if (-not (New-Claim $m $id)) { continue }
         $dir = Join-Path $RunsDir $id
         [void](New-Item -ItemType Directory -Force -Path $dir)
-        $job = @{ id = $id; dir = $dir; slot = $slot; lane = $m.Lane; ref = $m.Ref; sha = $m.Sha; time = $m.Time; name = $m.Name
+        $job = @{ id = $id; dir = $dir; slot = $slot; lane = $lane; ref = $m.Ref; sha = $m.Sha; time = $m.Time; name = $m.Name
             slug = $m.Slug; model = $m.Model; n = $m.N; cond = $m.Cond; prio = $m.Prio; deadline = $m.Deadline; gpu = $m.Gpu
             head = $(if ($st.Kind -eq 'WAIT') { [string](Get-JsonProp $st.Wait 'head') } else { '' })
             sel = @{ engine = $sel.Engine.Name; emodel = $sel.Engine.Model; effort = $sel.Engine.Effort; model = $sel.Model
                 qknown = $sel.Quota.Known; qleft = $sel.Quota.Left; qgroup = $sel.Quota.Group }
             limits = $script:Limits }
-        [void]$Workers.Add((Start-Worker $job $dir))
+        try { [void]$Workers.Add((Start-Worker $job $dir)) } catch {
+            Write-Log "позначка $($m.Name): процес наряду не запущено — $($_.Exception.Message)"
+            Clear-UnstartedClaim (Get-StatePath (Get-MarkerKey $m))
+            continue
+        }
         Write-Log "позначка $($m.Name): слот $slot, пріоритет $($m.Prio)$(if ($m.Deadline) { ", строк $($m.Deadline)" })$(if ($m.Gpu) { ', GPU' }) -> $id"
         $started++
     }
@@ -1129,6 +1136,8 @@ function Invoke-Worker {
         1
     } finally {
         Remove-Item -LiteralPath $info -Force -ErrorAction SilentlyContinue
+        # Помилка до STARTED (робоча копія тощо) не лишає claim: позначка повертається в чергу (10162).
+        Clear-UnstartedClaim $statePath
         if ($null -ne $gpu) { $gpu.Dispose() }
         $slotLock.Dispose()
     }
@@ -1167,7 +1176,7 @@ function Main {
                         '+refs/heads/gemini/*:refs/remotes/origin/gemini/*',
                         '+refs/heads/gemini-queue/*:refs/remotes/origin/gemini-queue/*'))
                 $script:Limits = Get-Limits
-                if ($first) { Resume-Interrupted }
+                if ($first) { Resume-Interrupted; Clear-OrphanClaims $RunsDir }
                 $script:Agy = Find-EngineExe $AgyExe
                 if ($script:Agy) { [void](Read-Usage) }
                 $started = Start-Markers $workers

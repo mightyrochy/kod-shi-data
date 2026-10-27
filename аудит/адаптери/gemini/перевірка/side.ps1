@@ -7,6 +7,15 @@ if ((Get-Command $Script).Parameters.ContainsKey('LaneDir') -and -not $p.Contain
     $p['LaneDir'] = Join-Path ([System.IO.Path]::GetTempPath()) ('lanes-' + [guid]::NewGuid().ToString('N').Substring(0, 8))
 }
 . $Script @p
+# Процес наряду — знов цей стенд (а не сам скрипт), тож бере ті самі підміни, що батьківський (10164).
+$script:SideFile = $PSCommandPath; $script:SideScript = $Script; $script:SideArgs = $p
+function Get-WorkerCommand([string]$File) {
+    $q = @{}
+    foreach ($k in $script:SideArgs.Keys) { $q[$k] = $script:SideArgs[$k] }
+    $q['WorkerFile'] = $File
+    @{ Exe = (Get-Process -Id $PID).Path; Args = @('-NoProfile', '-NonInteractive', '-ExecutionPolicy', 'Bypass', '-File', $script:SideFile,
+            '-Script', $script:SideScript, '-ArgsJson', ($q | ConvertTo-Json -Compress)) }
+}
 function Test-Isolation { [string]$env:FAKE_ISOLATION }
 function Test-OwnerUser { $true }
 exit (Main)
