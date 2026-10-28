@@ -2,6 +2,7 @@
 import tempfile
 from pathlib import Path
 from каталог_зависла_крамниця_json_проба import обхід, прогін, порція, РІЧ
+from json_прохід import позначити
 
 def main():
     """Довіряє лише явному завершенню; початок нового проходу скидає попередній кінець."""
@@ -21,6 +22,7 @@ def main():
         with tempfile.TemporaryDirectory(prefix="обхід-json-скидання-") as ж:
             прогін(ж, сім, [порція(сім, [])])
             (Path(ж) / "обхід_стан.tsv").unlink()
+            позначити(ж, "json.test", False)
             стан, _ = прогін(ж, сім, [(502, "<html>Bad Gateway</html>")] * 3)
             assert стан["лишилось"] == "1" and стан["причина_код"] == "EXCEPTION"
             print(f"{сім}/новий прохід після завершення: залишок=1, причина=EXCEPTION")

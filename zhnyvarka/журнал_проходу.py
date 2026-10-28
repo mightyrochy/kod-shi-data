@@ -27,13 +27,30 @@ def підсумок_черги(база):
 
 
 def прочитати_чергу(шлях):
-    """Повертає знімок черги або None для відсутньої, недоствореної чи недоступної бази."""
+    """Рахує лише підтверджені цілим тілом DONE; невідома схема повертає None."""
     try:
         with closing(sqlite3.connect(Path(шлях).resolve().as_uri() + "?mode=ro", uri=True)) as база:
             база.execute("BEGIN")
-            return підсумок_черги(база)
+            загалом, готово, відомо = підсумок_черги(база)
+            готово = sum(придатна_відповідь(база, Path(шлях).parent, ід, url)
+                         for url, ід in база.execute("SELECT url, відповідь FROM черга WHERE стан='DONE'"))
+            return загалом, готово, відомо
     except sqlite3.DatabaseError:
         return None
+
+
+def придатна_відповідь(база, тека, ід, url):
+    """Підтверджує HTTP 200, адресу та SHA256 збереженого непорожнього тіла."""
+    рядок = база.execute("SELECT код, sha256, файл, url FROM відповіді WHERE ід=?", (ід,)).fetchone()
+    if not рядок or рядок[0] != 200 or рядок[3] != url:
+        return False
+    if not isinstance(рядок[1], str) or рядок[2] != рядок[1] + ".body":
+        return False
+    try:
+        тіло = (тека / рядок[2]).read_bytes()
+    except OSError:
+        return False
+    return bool(тіло and hashlib.sha256(тіло).hexdigest() == рядок[1])
 
 
 class ЖурналПроходу:
@@ -124,16 +141,7 @@ class ЖурналПроходу:
 
     def придатна(self, ід, url):
         """Кеш не є успіхом без цілого тіла й явного HTTP 200."""
-        рядок = self.база.execute("SELECT код, sha256, файл, url FROM відповіді WHERE ід=?", (ід,)).fetchone()
-        if not рядок or рядок[0] != 200 or рядок[3] != url:
-            return False
-        if рядок[2] != рядок[1] + ".body":
-            return False
-        try:
-            тіло = (self.тека / рядок[2]).read_bytes()
-        except FileNotFoundError:
-            return False
-        return bool(тіло and hashlib.sha256(тіло).hexdigest() == рядок[1])
+        return придатна_відповідь(self.база, self.тека, ід, url)
 
     def завершити(self, запис):
         """Невідоме, заслон, збій і неповний розбір лишає до наступної спроби."""

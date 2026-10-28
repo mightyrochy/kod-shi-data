@@ -14,6 +14,7 @@ from pathlib import Path
 import signal
 import subprocess
 import sys
+import tempfile
 import time
 from виконавець import ШАПКА_ЗВЕДЕННЯ
 from json_прохід import завершено
@@ -101,16 +102,64 @@ def стан_рядка(домен, ряд, цикл, журнал):
 
 def останні_рядки(зведення, з_рядка):
     """Читає рядки зведення, дописані після `з_рядка`; для домену береться останній."""
-    ряди = list(csv.DictReader(open(зведення, encoding="utf-8"), delimiter="\t"))[з_рядка:]
+    with open(зведення, encoding="utf-8") as ф:
+        ряди = list(csv.DictReader(ф, delimiter="\t"))[з_рядка:]
     return {р["домен"]: р for р in ряди}, з_рядка + len(ряди)
 
 
+def прочитати_стан(журнал):
+    """Читає цілі рядки TSV; обірваний або пошкоджений рядок відбудує наступний обхід."""
+    стани = {}
+    файл = Path(журнал) / "обхід_стан.tsv"
+    if файл.is_file():
+        with файл.open(encoding="utf-8", errors="replace", newline="") as ф:
+            for р in csv.DictReader(ф, delimiter="\t"):
+                try:
+                    if not р.get("домен") or any(р.get(к) is None for к in ШАПКА):
+                        continue
+                    for к in ("адрес", "готово", "лишилось", "цикл"):
+                        р[к] = int(р[к])
+                    стани[р["домен"]] = {к: р[к] for к in ШАПКА}
+                except (TypeError, ValueError):
+                    continue  # Пошкоджений підсумок не доводить завершення крамниці.
+    return стани
+
+
+def узгодити_стан(журнал, магазини, стани):
+    """Відбудовує підсумки з журналів перед рішенням пропустити завершену крамницю."""
+    for д in магазини:
+        ч = черга(журнал, д)
+        кінець = завершено(журнал, д)
+        if д not in стани and ч is None and not кінець:
+            continue
+        давній = стани.get(д, {})
+        готово = ч[1] if ч is not None else виконано_в_журналі(журнал, д, давній.get("готово", 0))
+        адрес = ч[0] if ч is not None else max(готово, давній.get("адрес", 0))
+        лишилось = залишок(журнал, д, ч, давній.get("лишилось", 1))
+        стани[д] = dict(домен=д, стан_код="CATALOG" if є_картки(журнал, д,
+                       давній.get("стан_код") == "CATALOG") else "WAIT",
+                       причина_код=давній.get("причина_код", "UNKNOWN") if лишилось else "",
+                       адрес=адрес, готово=готово, лишилось=лишилось, цикл=давній.get("цикл", 0),
+                       підстава=давній.get("підстава", "") if лишилось else "завершення підтверджено журналом")
+    return стани
+
+
 def записати(журнал, стани):
-    """Перезаписує обхід_стан.tsv повним станом усіх крамниць обходу."""
-    with open(Path(журнал) / "обхід_стан.tsv", "w", encoding="utf-8", newline="") as ф:
-        п = csv.DictWriter(ф, ШАПКА, delimiter="\t")
-        п.writeheader()
-        п.writerows(стани[д] for д in sorted(стани))
+    """Атомарно замінює TSV після fsync і закриття тимчасового файлу на тому самому диску."""
+    тимчасовий = None
+    try:
+        with tempfile.NamedTemporaryFile(mode="w", encoding="utf-8", newline="", dir=журнал,
+                                         prefix="обхід_стан-", suffix=".tmp", delete=False) as ф:
+            тимчасовий = Path(ф.name)
+            п = csv.DictWriter(ф, ШАПКА, delimiter="\t")
+            п.writeheader()
+            п.writerows(стани[д] for д in sorted(стани))
+            ф.flush()
+            os.fsync(ф.fileno())
+        os.replace(тимчасовий, Path(журнал) / "обхід_стан.tsv")
+    finally:
+        if тимчасовий is not None:
+            тимчасовий.unlink(missing_ok=True)
 
 
 def вбити_процес(proc):
@@ -180,23 +229,10 @@ def main(argv=None):
     зведення = Path(а.журнал) / "зведення_жнив.tsv"
     ряд0 = len(зведення.read_text(encoding="utf-8").splitlines()) - 1 if зведення.is_file() else 0
 
-    стан_файл = Path(а.журнал) / "обхід_стан.tsv"
-    стани = {}
-    if стан_файл.is_file():
-        for р in csv.DictReader(open(стан_файл, encoding="utf-8"), delimiter="\t"):
-            стани[р["домен"]] = {
-                "домен": р["домен"],
-                "стан_код": р["стан_код"],
-                "причина_код": р["причина_код"],
-                "адрес": int(р["адрес"]),
-                "готово": int(р["готово"]),
-                "лишилось": int(р["лишилось"]),
-                "цикл": int(р["цикл"]),
-                "підстава": р["підстава"],
-            }
-
     магазини = перелік_крамниць(а)
+    стани = узгодити_стан(а.журнал, магазини, прочитати_стан(а.журнал))
     if стани:
+        записати(а.журнал, стани)
         магазини = [д for д in магазини if д not in стани or
                     залишок(а.журнал, д, черга(а.журнал, д), стани[д]["лишилось"]) > 0]
 

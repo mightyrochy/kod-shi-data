@@ -17,7 +17,8 @@ def main():
             with п.база:
                 п.база.execute("UPDATE мета SET значення=? WHERE ключ='відомо'", (str(відомо),))
                 if усього:
-                    п.база.execute("INSERT INTO черга VALUES ('/p1','DONE',NULL)")
+                    п.база.execute("INSERT INTO черга VALUES ('/p1','PENDING',NULL)")
+                    п.завершити(dict(url="/p1", стан="картка", відповідь=п.відповідь("/p1", 200, b"CARD")))
             п.закрити()
             if нотатка == "давній TIMEOUT":
                 обхід.записати(ж, {"test.com": dict(домен="test.com", стан_код="WAIT", причина_код="TIMEOUT", адрес=0, готово=0, лишилось=0, цикл=1, підстава=нотатка)})
@@ -29,7 +30,7 @@ def main():
                     обхід.main(["--журнал", ж, "--магазини", "test.com", "--циклів", "1"])
                 with open(Path(ж) / "обхід_стан.tsv", encoding="utf-8") as ф:
                     стан = next(csv.DictReader(ф, delimiter="\t"))
-            оч = 1 if відомо else 2
+            оч = 0 if відомо else 2
             print(f"відомо={відомо}, адрес={усього}, {нотатка}: лишилось={стан['лишилось']}, запусків={запуск.call_count}/{оч}")
             помилки.append(запуск.call_count != оч or bool(int(стан["лишилось"])) == bool(відомо))
     return int(any(помилки))

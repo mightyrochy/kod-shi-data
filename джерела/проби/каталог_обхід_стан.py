@@ -1,8 +1,11 @@
 # -*- coding: utf-8 -*-
 """Мірило 5.3 ПІСЛЯ: з обхід_стан.tsv журналу обходу друкує адреси (всього/готово/лишилось) і крамниці без каталогу.
 Запуск: python3 джерела/проби/каталог_обхід_стан.py <корінь журналу обходу>"""
-import csv, sys, collections                                                    # noqa: E401
-ряди = list(csv.DictReader(open(sys.argv[1] + "/обхід_стан.tsv", encoding="utf-8"), delimiter="\t"))
+import sys, collections
+from pathlib import Path
+sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "zhnyvarka"))
+from обхід import прочитати_стан
+ряди = list(прочитати_стан(sys.argv[1]).values())
 с = lambda к: sum(int(р[к]) for р in ряди)                                      # noqa: E731
 print("крамниць %d · адрес %d · готово %d · лишилось %d (%.0f %%)" % (len(ряди), с("адрес"), с("готово"), с("лишилось"),
       100 * с("лишилось") / max(с("адрес"), 1)))
