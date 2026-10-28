@@ -29,4 +29,6 @@ def порція(сімейство, речі):
     """Кодує очікувану структуру сторінки кожного API."""
     return 200, json.dumps({"products": речі} if сімейство == "shopify" else речі)
 
-РІЧ = dict(id=1, handle="suknia", permalink="https://json.test/suknia", name="Сукня", title="Сукня")
+РІЧ = dict(id=1, handle="suknia", permalink="https://json.test/suknia", name="Чорна сукня", title="Чорна сукня",
+           images=[dict(src="https://json.test/photo.jpg")], variants=[dict(option1="M", available=True)],
+           attributes=[dict(name="Розмір", terms=[dict(name="M")])])

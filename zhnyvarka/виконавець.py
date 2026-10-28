@@ -31,6 +31,7 @@ import argparse, asyncio, csv, datetime, hashlib, json, os, re, sys, time, threa
 from urllib.parse import urlparse, urljoin
 from pathlib import Path
 from журнал_проходу import ЖурналПроходу, відбиток_рецепта
+from json_прохід import позначити
 
 ВЕРСІЯ = "виконавець v1 · 2026-09-07"
 ШАПКА_ЗВЕДЕННЯ = ("дата", "домен", "сімейство", "транспорт", "адрес_знайдено", "відкрито", "карток",
@@ -580,6 +581,8 @@ class Виконавець:
             await сторінка.wait_for_timeout(int(self.a.пауза * 1000))
 
     async def _json_сімейство(self, контекст, р, л, ш, взято, корінь):
+        """Збирає JSON-сторінки; підтверджує кінець лише порожнім списком речей у відповіді HTTP 200."""
+        позначити(self.корінь, р["домен"], False)
         n = 1
         шаблон = р["пошук"].replace("per_page=100", "per_page=50")
         префікси = [""] + ([р["мова"].rstrip("/")] if р.get("мова") and р["мова"] != "/" else []) + ["/uk", "/ua"]
@@ -589,17 +592,23 @@ class Виконавець:
                 url = корінь + пр + шаблон.replace("{n}", str(n))
                 try:
                     код, т = await self._get(контекст, url, тайм=90_000)
-                    j = json.loads(т); break
+                    if код != 200:
+                        raise ValueError(f"HTTP {код}")
+                    j = json.loads(т)
+                    речі = j.get("products") if р["сімейство"] == "shopify" and isinstance(j, dict) else j
+                    if (р["сімейство"] == "shopify" and not isinstance(j, dict) or
+                            not isinstance(речі, list) or any(not isinstance(p, dict) for p in речі)):
+                        raise ValueError("хибна структура сторінки JSON API")
+                    break
                 except Exception as e:  # noqa
+                    j = None
                     останнє = f"{url[:70]} → {str(e)[:50]} | тіло: {(т if 'т' in dir() else '')[:60]!r}"
                     if n > 1: break                        # далі першої сторінки префікси не перебираємо
             if j is None:
-                л["збій"] += 1; л["нотатка"] += f"стор. {n}: {останнє}; "; break
+                л["збій"] += 1; л["нотатка"] += f"збій стор. {n}: {останнє}; "; break
             префікси = [url.replace(корінь, "", 1).replace(шаблон.replace("{n}", str(n)), "")]
-            речі = j.get("products") if isinstance(j, dict) else j
             if not речі:
-                if код != 200 and n == 1:
-                    л["збій"] += 1; л["нотатка"] += f"{код} на {url[:60]}; "
+                позначити(self.корінь, р["домен"], True)
                 break
             for p in речі:
                 к = картка_з_shopify(корінь, p) if р["сімейство"] == "shopify" else картка_з_woo(корінь, p)
@@ -614,6 +623,8 @@ class Виконавець:
                 if л["відкрито"] >= self.a.стеля:
                     л["нотатка"] += f"стеля {self.a.стеля}; "; return
             n += 1
+        else:
+            л["нотатка"] += "межа пагінації 120 сторінок; "
 
     async def _horoshop_адреси(self, контекст, р, л, корінь):
         _, стан = self._стан(р["домен"])
