@@ -1,0 +1,57 @@
+"""Виконує батарею й сім'ю: python батарея.py <дерево> <тека-журналів>."""
+import gzip
+import hashlib
+import json
+import os
+import pathlib
+import subprocess
+import sys
+import time
+
+
+def головна():
+    """Записує команду, код виходу й час кожної перевірки без зупинки на відомій ваді."""
+    тека = pathlib.Path(sys.argv[2]).resolve()
+    тека.mkdir(parents=True, exist_ok=True)
+    корінь = pathlib.Path(sys.argv[1]).resolve()
+    джерела = корінь / "джерела"
+    env = dict(os.environ, PYTHONIOENCODING="utf-8", PYTHONUTF8="1", PYTHONHASHSEED="0",
+               NODE_PATH=str(джерела / "node_modules"))
+    for ключ in ("MODEL_URL", "MODEL_KEY", "OPENAI_API_KEY", "ANTHROPIC_API_KEY", "GEMINI_API_KEY", "GOOGLE_API_KEY"):
+        env.pop(ключ, None)
+    (тека / "середовище.json").write_text(json.dumps(dict(
+        sha=subprocess.check_output(["git", "rev-parse", "HEAD"], cwd=корінь, text=True).strip(),
+        python=sys.version, node=subprocess.check_output(["node", "--version"], text=True).strip(),
+        платформа=sys.platform, файли_продукту={ім: hashlib.sha256((корінь / ім).read_bytes()).hexdigest()
+            for ім in ("джерела/palettes.py", "джерела/суд_від_моделі.py", "джерела/міст_основи.py", "джерела/показ/палітра.js")}), ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+    команди = [[sys.executable, *арг] for арг in (
+        ["стенд_знімок.py", "--дим"], ["тест_живого_шляху.py"], ["тест_протоколу.py"],
+        ["прилади/розділи_гейтів.py"], ["audit_contracts.py"])]
+    команди.append(["node", "тест_показу.js"])
+    команди += [[sys.executable, "проби/поділ_" + ім + "_ast.py"] for ім in ("palette", "bridge", "pipeline")]
+    команди += [[sys.executable, str(п.relative_to(джерела))] for п in sorted((джерела / "проби").glob("pal_*.py"))
+                if п.name not in ("pal_вердикт.py", "pal_вимір.py")]
+    сусідні = set()
+    for шаблон in ("коло2_*.py", "коло3_*.py", "коло_ролі_*.py"):
+        сусідні.update((джерела / "проби").glob(шаблон))
+    for ім in ("col_K-COL-JOIN.py", "col_K-COL-CONF.py", "палітра_одне_рішення_4520.py",
+               "палітра_без_зросту_5070.py"):
+        сусідні.add(джерела / "проби" / ім)
+    команди += [[sys.executable, str(п.relative_to(джерела))] for п in sorted(сусідні)]
+    команди.append([sys.executable, "прилади/згорнути_дошку.py", "--лише-перевірити"])
+    результати = []
+    for і, команда in enumerate(команди, 1):
+        print(f"{і}/{len(команди)}: {' '.join(команда[1:])}", flush=True)
+        початок = time.monotonic()
+        вихід = subprocess.run(команда, cwd=джерела, env=env, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+        назва = f"батарея-{і:02}.txt.gz"
+        (тека / назва).write_bytes(gzip.compress(вихід.stdout, mtime=0))
+        запис = dict(команда=команда[1:], код=вихід.returncode, секунд=round(time.monotonic() - початок, 1), журнал=назва)
+        результати.append(запис)
+        (тека / "батарея.json").write_text(json.dumps(результати, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+        print(f"  код={запис['код']}, {запис['секунд']} с", flush=True)
+    return int(any(з["код"] for з in результати))
+
+
+if __name__ == "__main__":
+    sys.exit(головна())

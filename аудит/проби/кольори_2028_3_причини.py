@@ -10,6 +10,7 @@ import hashlib
 import importlib.util
 import json
 import pathlib
+import subprocess
 import sys
 import tempfile
 from collections import Counter
@@ -137,7 +138,9 @@ def головна():
             П._палітра_практична, П.палітра_практична = сирий, практична
     assert підсумок['решта'] == 280 and підсумок['доповнених'] == 35
     (вихід / 'причини.json.gz').write_bytes(gzip.compress(байти(записи), mtime=0))
-    результат = dict(підсумок, непояснених=0, повтор_моста=315, без_усіх_побайтно_ДО=315)
+    результат = dict(підсумок, непояснених=0, повтор_моста=315, без_усіх_побайтно_ДО=315,
+                     sha=subprocess.check_output(['git', 'rev-parse', 'HEAD'], cwd=КОРІНЬ, text=True).strip(),
+                     палітра_sha256=hashlib.sha256(текст.encode()).hexdigest())
     (вихід / 'причини-вимір.json').write_text(json.dumps(результат, ensure_ascii=False, indent=2) + '\n', encoding='utf-8')
     print(json.dumps(результат, ensure_ascii=False), flush=True)
     return 0
