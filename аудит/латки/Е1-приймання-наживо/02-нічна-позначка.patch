@@ -1,10 +1,12 @@
 diff --git a/аудит/адаптери/gemini/queue_lanes.ps1 b/аудит/адаптери/gemini/queue_lanes.ps1
 --- a/аудит/адаптери/gemini/queue_lanes.ps1
 +++ b/аудит/адаптери/gemini/queue_lanes.ps1
-@@ -266,6 +266,37 @@
+@@ -268,6 +268,37 @@
+     $fmt = '%(refname)%09%(objectname)%09%(committerdate:unix)'
+     $r = Invoke-Git @('for-each-ref', "--format=$fmt", $script:QueuePrefix)
      @(foreach ($line in ($r.Out -split "`n")) { if ($line.Trim()) { ConvertTo-Marker $line.Trim() } })
- }
- 
++}
++
 +function Get-TaskSource($M) {
 +    <# Нічні гілки мають дату, а шаблон наряду — одне постійне джерело в main. #>
 +    if ($M.Slug -cmatch '^Е1-нічний-живий-[0-9]{8}$') { return 'аудит/проби/нічний_наряд.md' }
@@ -34,11 +36,9 @@ diff --git a/аудит/адаптери/gemini/queue_lanes.ps1 b/аудит/а�
 +    }
 +    $ref = $script:QueuePrefix + 'Е1-нічний-живий-' + $date + '/gpt-6.1-sol-high/1/gpu-p8'
 +    ConvertTo-Marker ($ref + "`t" + $saved.sha + "`t" + $saved.time)
-+}
-+
- function Get-MarkerKey($M) { "$($M.Ref) $($M.Sha)" }
+ }
  
- function Get-StatePath([string]$Key) { Join-Path $script:StateDir ((Get-Sha256Hex $Key) + '.txt') }
+ function Get-MarkerKey($M) { "$($M.Ref) $($M.Sha)" }
 diff --git a/аудит/адаптери/gemini/gemini_run.ps1 b/аудит/адаптери/gemini/gemini_run.ps1
 --- a/аудит/адаптери/gemini/gemini_run.ps1
 +++ b/аудит/адаптери/gemini/gemini_run.ps1
@@ -59,7 +59,7 @@ diff --git a/аудит/адаптери/gemini/gemini_run.ps1 b/аудит/ад
  - Гілку ``$branch`` уже вибрано: працюй і коміть лише в ній. Не пуш і не створюй бандла — це робить обгортка.
    Файлів ``.github/`` і ``аудит/адаптери/gemini/`` не змінюй: таку гілку не опублікують.
  - Кожну команду виконуй на передньому плані й чекай її завершення: фонове завдання зупиняється разом із ходом, а
-@@ -936,7 +937,7 @@
+@@ -938,7 +939,7 @@
      try {
          $main = Get-RefSha 'refs/remotes/origin/main'
          $anc = Invoke-Git @('merge-base', '--is-ancestor', $M.Sha, $main) -AllowFail
@@ -68,7 +68,7 @@ diff --git a/аудит/адаптери/gemini/gemini_run.ps1 b/аудит/ад
          if ($anc.Code -ne 0) { $status.code = 'NOT_ON_MAIN'; return }
          if ((Invoke-Git @('cat-file', '-e', "$($M.Sha):$taskPath") -AllowFail).Code -ne 0) { $status.code = 'NO_TASK_FILE'; return }
          $taskText = Add-AutoTaskContext $M.Slug ((Invoke-Git @('cat-file', 'blob', "$($M.Sha):$taskPath")).Out)
-@@ -1056,7 +1057,7 @@
+@@ -1065,7 +1066,7 @@
  function Start-Markers($Workers) {
      $started = 0
      $now = [DateTimeOffset]::UtcNow.ToUnixTimeSeconds()
@@ -82,20 +82,20 @@ diff --git a/аудит/адаптери/gemini/m9v/хеші.psd1 b/аудит/�
 +++ b/аудит/адаптери/gemini/m9v/хеші.psd1
 @@ -5,7 +5,7 @@
      'wrapper_probe.ps1'  = '85116D04C22EB64CBFF52E66BCEAE9B1091577A889EDD58A8B634093A82BDBC6'
-     'wrapper_chain.ps1'  = '79BD08F866529B1C58FE57AF33252AA4F0F7B3D992352130A7824030F27A57CD'
+     'wrapper_chain.ps1'  = '5EDD80E6BF5A19873DF59EA7414C7C3D43A0E375FAAD346A237BBFBC46931E28'
      'wrapper_health.ps1' = 'FCE45448539D53A6B5718319842FC845DA870F39453A6B716C7AF8A2DB65B88E'
--    'gemini_run.ps1'     = '0BA6869246624E1203613A373D408B9B5C2F9FAEAAF14508B7D023A0C1D452B5'
-+    'gemini_run.ps1'     = 'E6085DC726561AD6BC51A1CDAA4B82CE37879612A2D298DE74367346C299D0B0'
-     'gemini_publish.ps1' = '895162B7194F6331E672C2965D0F2833EE130676B44FC3005C16D4E52F95CCED'
+-    'gemini_run.ps1'     = 'C2E735CB362BA5D073EE01327B2BC7960BF11DFA73CADEBDABF00C187E0019EB'
++    'gemini_run.ps1'     = 'FE77218D0CD036849391E6749EE048646B5EF739203BE5CE047D7A899CEB6599'
+     'gemini_publish.ps1' = 'E542F2BECB9FEBE362219D1CE80548052F58B3154F37D92AD3F933A1DD51A5F5'
      # Інсталятор Codex (9741) закріплено за релізом: install.ps1 — файл релізу https://releases.openai.com/codex/releases/<CodexRelease>/install.ps1
      # (незмінний URL; той самий sha256 віддає https://chatgpt.com/codex/install.ps1 — редирект на releases.openai.com — і публікує реліз
 @@ -14,6 +14,6 @@
      CodexRelease         = '0.164.0'
      CodexInstaller       = 'A59CB66350098C33B021FF470D586AE8FE3B7CAF189CA7137B4FE3AF5D4DCE74'
      'gemini_watch.ps1'   = '69EFEBB07FF1AF51C382B753A95C50F3C1AC27B3008F2489992BEBE3FD0213AA'
--    'queue_lanes.ps1'    = '25695435985724B960BAFA1C17B3BCC6F50BA0C36D490102B5BCBC88FC6E5F8C'
-+    'queue_lanes.ps1'    = '3A50686E49EA6C78A0D65531D86001C5F5935B8D4E95BF0237A9CB24BE9359AD'
-     'claude_run.ps1'     = 'DC12D3F1159154644B96D742B3495CDAE512915534143CD2FB62D9929FB15403'
+-    'queue_lanes.ps1'    = '58E19DAEEFDBB0F8FD5AA5502546E424578BD3BB5137D38D56354FB627BC4C68'
++    'queue_lanes.ps1'    = 'DBCDADC3DFBD68DE689A9A41688A6AFDDDB38EF76B3BE130151B9827C1F6AF30'
+     'claude_run.ps1'     = '1D1991F21D13FAE00EE743ED6AA20EFA5B172CB8F9DB3CF3EBA4B0B420E11E4A'
  }
 diff --git a/аудит/адаптери/gemini/НАЛАШТУВАННЯ.md b/аудит/адаптери/gemini/НАЛАШТУВАННЯ.md
 --- a/аудит/адаптери/gemini/НАЛАШТУВАННЯ.md
@@ -103,14 +103,14 @@ diff --git a/аудит/адаптери/gemini/НАЛАШТУВАННЯ.md b/а
 @@ -417,11 +417,11 @@
  | `wrapper_probe.ps1` | `85116D04C22EB64CBFF52E66BCEAE9B1091577A889EDD58A8B634093A82BDBC6` |
  | `wrapper_update.ps1` | `4156307A17BDAE3AF7249E532947F659E99AA1349D159239159FAE60CA7E4F2B` |
- | `wrapper_chain.ps1` | `79BD08F866529B1C58FE57AF33252AA4F0F7B3D992352130A7824030F27A57CD` |
--| `gemini_run.ps1` | `0BA6869246624E1203613A373D408B9B5C2F9FAEAAF14508B7D023A0C1D452B5` |
-+| `gemini_run.ps1` | `E6085DC726561AD6BC51A1CDAA4B82CE37879612A2D298DE74367346C299D0B0` |
- | `gemini_publish.ps1` | `895162B7194F6331E672C2965D0F2833EE130676B44FC3005C16D4E52F95CCED` |
+ | `wrapper_chain.ps1` | `5EDD80E6BF5A19873DF59EA7414C7C3D43A0E375FAAD346A237BBFBC46931E28` |
+-| `gemini_run.ps1` | `C2E735CB362BA5D073EE01327B2BC7960BF11DFA73CADEBDABF00C187E0019EB` |
++| `gemini_run.ps1` | `FE77218D0CD036849391E6749EE048646B5EF739203BE5CE047D7A899CEB6599` |
+ | `gemini_publish.ps1` | `E542F2BECB9FEBE362219D1CE80548052F58B3154F37D92AD3F933A1DD51A5F5` |
  | `gemini_watch.ps1` | `69EFEBB07FF1AF51C382B753A95C50F3C1AC27B3008F2489992BEBE3FD0213AA` |
  | `wrapper_health.ps1` | `FCE45448539D53A6B5718319842FC845DA870F39453A6B716C7AF8A2DB65B88E` |
--| `queue_lanes.ps1` | `25695435985724B960BAFA1C17B3BCC6F50BA0C36D490102B5BCBC88FC6E5F8C` |
-+| `queue_lanes.ps1` | `3A50686E49EA6C78A0D65531D86001C5F5935B8D4E95BF0237A9CB24BE9359AD` |
- | `claude_run.ps1` | `DC12D3F1159154644B96D742B3495CDAE512915534143CD2FB62D9929FB15403` |
+-| `queue_lanes.ps1` | `58E19DAEEFDBB0F8FD5AA5502546E424578BD3BB5137D38D56354FB627BC4C68` |
++| `queue_lanes.ps1` | `DBCDADC3DFBD68DE689A9A41688A6AFDDDB38EF76B3BE130151B9827C1F6AF30` |
+ | `claude_run.ps1` | `1D1991F21D13FAE00EE743ED6AA20EFA5B172CB8F9DB3CF3EBA4B0B420E11E4A` |
  | `CodexInstaller` (`install.ps1` релізу Codex `CodexRelease`) | `A59CB66350098C33B021FF470D586AE8FE3B7CAF189CA7137B4FE3AF5D4DCE74` |
  
