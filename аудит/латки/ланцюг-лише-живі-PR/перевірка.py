@@ -7,6 +7,7 @@ import shutil
 import subprocess
 import sys
 import tempfile
+from concurrent.futures import ThreadPoolExecutor
 
 
 def main():
@@ -16,6 +17,7 @@ def main():
     parser.add_argument('--дерево', type=Path, required=True, dest='work')
     parser.add_argument('--база', type=Path, dest='base')
     parser.add_argument('--лише', nargs='+', dest='only')
+    parser.add_argument('--паралельно', type=int, choices=[1, 2, 3], default=1, dest='jobs')
     args = parser.parse_args()
     root = Path(__file__).resolve().parents[3]
     work = args.work.resolve()
@@ -33,13 +35,13 @@ def main():
         if not original.exists():
             shutil.copyfile(destination, original)
 
-    def run(name, command):
+    def run(name, command, child_env=None):
         """Чекає завершення процесу й показує підсумок, не лишаючи його у фоні."""
         log = logs / (name + '.txt')
         original = logs / (name + '.початково.txt')
         if log.exists() and not original.exists():
             shutil.copyfile(log, original)
-        result = subprocess.run(command, cwd=work, env=env, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+        result = subprocess.run(command, cwd=work, env=child_env or env, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
         output = result.stdout.decode('utf-8', errors='replace')
         log.write_text(json.dumps(command, ensure_ascii=False) + '\n' + output, encoding='utf-8')
         row = {'назва': name, 'код': result.returncode, '✓': output.count('✓'), '✗': output.count('✗')}
@@ -62,12 +64,19 @@ def main():
         temp.mkdir(exist_ok=True)
         env['TMPDIR'] = temp.resolve().as_posix()
         tests = sorted((work / 'аудит/адаптери/gemini/перевірка').glob('сценарії_*.sh'))
-        assert len(tests) == 12, len(tests)
+        assert len(tests) in (12, 13), len(tests)
         if args.only:
             assert set(args.only) <= {p.stem for p in tests}, args.only
             tests = [p for p in tests if p.stem in args.only]
-        for script in tests:
-            run(script.stem, [bash, '-lc', "bash '" + script.relative_to(work).as_posix() + "'"])
+        def scenario(script):
+            # Кожен процес працює на передньому плані; незалежні стенди мають окремі TMPDIR та заглушки.
+            case_env = dict(env)
+            if args.jobs > 1:
+                case_dir = Path(tempfile.mkdtemp(prefix='review-suite-'))
+                case_env['TMPDIR'] = case_dir.resolve().as_posix()
+            run(script.stem, [bash, '-lc', "bash '" + script.relative_to(work).as_posix() + "'"], case_env)
+        with ThreadPoolExecutor(max_workers=args.jobs) as pool:
+            list(pool.map(scenario, tests))
     merged = {row['назва']: row for row in previous}
     merged.update({row['назва']: row for row in results})
     final = list(merged.values())

@@ -1,8 +1,8 @@
 diff --git a/аудит/адаптери/gemini/claude_run.ps1 b/аудит/адаптери/gemini/claude_run.ps1
-index 255e0b996371f6b01cf1c06055e83b2d29da1fe1..4f41b9c5bae83f6f7a99bae42c45356fb592950e 100644
+index f33480b573af60bf9ea32674d79c6554af693ac6..1601e874ac8cff50473a947e676ecdd3f3aff7fb 100644
 --- a/аудит/адаптери/gemini/claude_run.ps1
 +++ b/аудит/адаптери/gemini/claude_run.ps1
-@@ -550,6 +550,9 @@ function Invoke-Task($M, $Job) {
+@@ -608,6 +608,9 @@ function Invoke-Task($M, $Job) {
      if (-not $main -or (Invoke-Git @('merge-base', '--is-ancestor', $M.Sha, $main) -AllowFail).Code -ne 0) { return (Complete-Task $M $statePath $id 'NOT_ON_MAIN') }
      if ((Invoke-Git @('cat-file', '-e', "$($M.Sha):$taskPath") -AllowFail).Code -ne 0) { return (Complete-Task $M $statePath $id 'NO_TASK_FILE') }
      if ($M.Claude -notmatch $script:ModelPattern) { return (Complete-Task $M $statePath $id 'MODEL_INVALID') }
@@ -25,7 +25,7 @@ index 88355f7a387a84b96a3dfc2c834b72644642bb38..9967a5210d296825dd1fa66c5142a068
  }
  $script:IsolationChecks = @{
 diff --git a/аудит/адаптери/gemini/gemini_run.ps1 b/аудит/адаптери/gemini/gemini_run.ps1
-index 76ff91f901cd1f1ad7471e7e8e7a6a93bc6051c5..2df1371c9a15f2c9d0990e22dfdef399ee6a15fb 100644
+index aed21c33429d20dced7b287a691756dd7320c172..9933e6527a2418910e025918786b8ab081a94844 100644
 --- a/аудит/адаптери/gemini/gemini_run.ps1
 +++ b/аудит/адаптери/gemini/gemini_run.ps1
 @@ -965,6 +965,13 @@ function Invoke-Task($M, $Job) {
@@ -43,7 +43,7 @@ index 76ff91f901cd1f1ad7471e7e8e7a6a93bc6051c5..2df1371c9a15f2c9d0990e22dfdef399
          $tail = $res.Tail
          $status.code = $res.Code
 diff --git a/аудит/адаптери/gemini/m9v/хеші.psd1 b/аудит/адаптери/gemini/m9v/хеші.psd1
-index 0a2896eb8727c4538ae2bcd85880b7516fa1f110..1a99ace37a6ea51a251ca9c58937aef5cd40f2f2 100644
+index ebb7f1c929424ba870c71276068c189fc9f6ac38..127318de5f88a2aaed1c3a2138a5da00fc5eb8eb 100644
 --- a/аудит/адаптери/gemini/m9v/хеші.psd1
 +++ b/аудит/адаптери/gemini/m9v/хеші.psd1
 @@ -3,10 +3,10 @@
@@ -53,9 +53,9 @@ index 0a2896eb8727c4538ae2bcd85880b7516fa1f110..1a99ace37a6ea51a251ca9c58937aef5
 -    'wrapper_chain.ps1'  = '79BD08F866529B1C58FE57AF33252AA4F0F7B3D992352130A7824030F27A57CD'
 +    'wrapper_chain.ps1'  = '5EDD80E6BF5A19873DF59EA7414C7C3D43A0E375FAAD346A237BBFBC46931E28'
      'wrapper_health.ps1' = 'FCE45448539D53A6B5718319842FC845DA870F39453A6B716C7AF8A2DB65B88E'
--    'gemini_run.ps1'     = '39FD518203B33184304528AFB50175E0CB455B9337A8B7A46D34F4B565BEB577'
+-    'gemini_run.ps1'     = '0BA6869246624E1203613A373D408B9B5C2F9FAEAAF14508B7D023A0C1D452B5'
 -    'gemini_publish.ps1' = '895162B7194F6331E672C2965D0F2833EE130676B44FC3005C16D4E52F95CCED'
-+    'gemini_run.ps1'     = '93102474B513875BA07549C2098681ADC29B5A29F69AE957171F63FBECDFD7FE'
++    'gemini_run.ps1'     = 'CDFCBFB1A7AA1807A61F20F83E8B2FFCBBFFAB467B6421CA838A8B8E93A5BB92'
 +    'gemini_publish.ps1' = '7E2253EB0D54011B29CEE6CD6426803E8B4826647BF742D9551415DBE24737AB'
      # Інсталятор Codex (9741) закріплено за релізом: install.ps1 — файл релізу https://releases.openai.com/codex/releases/<CodexRelease>/install.ps1
      # (незмінний URL; той самий sha256 віддає https://chatgpt.com/codex/install.ps1 — редирект на releases.openai.com — і публікує реліз
@@ -64,13 +64,13 @@ index 0a2896eb8727c4538ae2bcd85880b7516fa1f110..1a99ace37a6ea51a251ca9c58937aef5
      CodexRelease         = '0.164.0'
      CodexInstaller       = 'A59CB66350098C33B021FF470D586AE8FE3B7CAF189CA7137B4FE3AF5D4DCE74'
      'gemini_watch.ps1'   = '69EFEBB07FF1AF51C382B753A95C50F3C1AC27B3008F2489992BEBE3FD0213AA'
--    'queue_lanes.ps1'    = 'C06A78446762B98EF3D045EB16ADFF15EDBAF1068959F94E346FC3A0069B5918'
--    'claude_run.ps1'     = '3A370295FFE2E96E1DF932AAE0E77AE635C185825A1E81CE9865F3507EF10876'
-+    'queue_lanes.ps1'    = 'D2196E168D86D00254B12E11069D8ECAB42FCB172721F5185E16ABD483051A6B'
-+    'claude_run.ps1'     = 'CA6AF93802EA4339DAB6D7DDBE398C947D53AD4B3205D24E7EE42BF0E0512884'
+-    'queue_lanes.ps1'    = '25695435985724B960BAFA1C17B3BCC6F50BA0C36D490102B5BCBC88FC6E5F8C'
+-    'claude_run.ps1'     = 'DC12D3F1159154644B96D742B3495CDAE512915534143CD2FB62D9929FB15403'
++    'queue_lanes.ps1'    = '58E19DAEEFDBB0F8FD5AA5502546E424578BD3BB5137D38D56354FB627BC4C68'
++    'claude_run.ps1'     = '1D1991F21D13FAE00EE743ED6AA20EFA5B172CB8F9DB3CF3EBA4B0B420E11E4A'
  }
 diff --git a/аудит/адаптери/gemini/queue_lanes.ps1 b/аудит/адаптери/gemini/queue_lanes.ps1
-index f318c8b27d728ddbaa1e0d8748c50ea51835ae16..56bead3c2cb5acd319da4cf6f433c03aedcfd515 100644
+index 9b319057572f495c889f4e6b80bf9d97db713493..5b70c4cd267dce6e5eaec0d222e074f1086e79ff 100644
 --- a/аудит/адаптери/gemini/queue_lanes.ps1
 +++ b/аудит/адаптери/gemini/queue_lanes.ps1
 @@ -9,7 +9,7 @@
@@ -246,29 +246,29 @@ index fa503cf14790944609a8a71c6a065348797a34f4..b9ecc14780bf8186517ad64bf7609634
          }
      } catch {
 diff --git a/аудит/адаптери/gemini/НАЛАШТУВАННЯ.md b/аудит/адаптери/gemini/НАЛАШТУВАННЯ.md
-index 33751be08e65d5342a3a903014b4b234307ace6d..71752cc7e328e0a6a72b5452da80163096ec740d 100644
+index 562ec64531d1848c0630eb9e5b576bc11eec0dd6..03c3d8b3ce96aca77b3613238794cd3f9c276993 100644
 --- a/аудит/адаптери/gemini/НАЛАШТУВАННЯ.md
 +++ b/аудит/адаптери/gemini/НАЛАШТУВАННЯ.md
-@@ -411,13 +411,13 @@ $f = Join-Path "$env:USERPROFILE\gemini-outbox" $n
+@@ -416,13 +416,13 @@ $f = Join-Path "$env:USERPROFILE\gemini-outbox" $n
  |---|---|
  | `wrapper_probe.ps1` | `85116D04C22EB64CBFF52E66BCEAE9B1091577A889EDD58A8B634093A82BDBC6` |
  | `wrapper_update.ps1` | `4156307A17BDAE3AF7249E532947F659E99AA1349D159239159FAE60CA7E4F2B` |
 -| `wrapper_chain.ps1` | `79BD08F866529B1C58FE57AF33252AA4F0F7B3D992352130A7824030F27A57CD` |
--| `gemini_run.ps1` | `39FD518203B33184304528AFB50175E0CB455B9337A8B7A46D34F4B565BEB577` |
+-| `gemini_run.ps1` | `0BA6869246624E1203613A373D408B9B5C2F9FAEAAF14508B7D023A0C1D452B5` |
 -| `gemini_publish.ps1` | `895162B7194F6331E672C2965D0F2833EE130676B44FC3005C16D4E52F95CCED` |
 +| `wrapper_chain.ps1` | `5EDD80E6BF5A19873DF59EA7414C7C3D43A0E375FAAD346A237BBFBC46931E28` |
-+| `gemini_run.ps1` | `93102474B513875BA07549C2098681ADC29B5A29F69AE957171F63FBECDFD7FE` |
++| `gemini_run.ps1` | `CDFCBFB1A7AA1807A61F20F83E8B2FFCBBFFAB467B6421CA838A8B8E93A5BB92` |
 +| `gemini_publish.ps1` | `7E2253EB0D54011B29CEE6CD6426803E8B4826647BF742D9551415DBE24737AB` |
  | `gemini_watch.ps1` | `69EFEBB07FF1AF51C382B753A95C50F3C1AC27B3008F2489992BEBE3FD0213AA` |
  | `wrapper_health.ps1` | `FCE45448539D53A6B5718319842FC845DA870F39453A6B716C7AF8A2DB65B88E` |
--| `queue_lanes.ps1` | `C06A78446762B98EF3D045EB16ADFF15EDBAF1068959F94E346FC3A0069B5918` |
--| `claude_run.ps1` | `3A370295FFE2E96E1DF932AAE0E77AE635C185825A1E81CE9865F3507EF10876` |
-+| `queue_lanes.ps1` | `D2196E168D86D00254B12E11069D8ECAB42FCB172721F5185E16ABD483051A6B` |
-+| `claude_run.ps1` | `CA6AF93802EA4339DAB6D7DDBE398C947D53AD4B3205D24E7EE42BF0E0512884` |
+-| `queue_lanes.ps1` | `25695435985724B960BAFA1C17B3BCC6F50BA0C36D490102B5BCBC88FC6E5F8C` |
+-| `claude_run.ps1` | `DC12D3F1159154644B96D742B3495CDAE512915534143CD2FB62D9929FB15403` |
++| `queue_lanes.ps1` | `58E19DAEEFDBB0F8FD5AA5502546E424578BD3BB5137D38D56354FB627BC4C68` |
++| `claude_run.ps1` | `1D1991F21D13FAE00EE743ED6AA20EFA5B172CB8F9DB3CF3EBA4B0B420E11E4A` |
  | `CodexInstaller` (`install.ps1` релізу Codex `CodexRelease`) | `A59CB66350098C33B021FF470D586AE8FE3B7CAF189CA7137B4FE3AF5D4DCE74` |
  
  Той самий список читають скрипти `m9v/` з `m9v/хеші.psd1` — міняти їх разом із таблицею. Підготовка одним проходом — `m9v/ЩО_НАТИСНУТИ.md`.
-@@ -476,11 +476,37 @@ reparse point — відмова. Проба перевіряє синтакси
+@@ -481,11 +481,37 @@ reparse point — відмова. Проба перевіряє синтакси
  `ланцюг.json` читається тільки з origin/main. Підтверджений результат DONE публікатора зберігає квитанцію
  створення PR-чернетки; збій gh не губить її. Наступний прохід створює чернетку з повідомлення останнього коміту
  або знаходить уже створену. Спецзгадка легасі-Codex з повідомлення не переноситься. Native Claude вже створює свій PR.
@@ -322,22 +322,6 @@ index 93334a17e9ca1513cea8575e60a8f762fa3ac837..29af8d86ad1b8bc185f781b4193b6f05
 +  ],
 +  "review_hours": 24
  }
-diff --git a/аудит/адаптери/gemini/перевірка/side.ps1 b/аудит/адаптери/gemini/перевірка/side.ps1
-index 5c744978d0394eaadbb4d69ead52dc4195c9d72d..ea83496321a52c2d05053c984b6145ec3d9175d3 100644
---- a/аудит/адаптери/gemini/перевірка/side.ps1
-+++ b/аудит/адаптери/gemini/перевірка/side.ps1
-@@ -8,6 +8,11 @@ $p = @{}
- if ((Get-Command $Script).Parameters.ContainsKey('LaneDir') -and -not $p.ContainsKey('LaneDir')) {
-     $p['LaneDir'] = Join-Path ([System.IO.Path]::GetTempPath()) ('lanes-' + [guid]::NewGuid().ToString('N').Substring(0, 8))
- }
-+# Встановлена обгортка не є фікстурою: стенд доставки має власний неактивний корінь оновлення.
-+if ((Get-Command $Script).Parameters.ContainsKey('UpdateRoot') -and -not $p.ContainsKey('UpdateRoot')) {
-+    $testBase = if ($p.ContainsKey('WorkDir')) { $p['WorkDir'] } else { Join-Path ([IO.Path]::GetTempPath()) ('wrapper-test-' + [guid]::NewGuid().ToString('N')) }
-+    $p['UpdateRoot'] = Join-Path $testBase 'update'
-+}
- . $Script @p
- # Процес наряду — знов цей стенд (а не сам скрипт), тож бере ті самі підміни, що батьківський (10164).
- $script:SideFile = $PSCommandPath; $script:SideScript = $Script; $script:SideArgs = $p
 diff --git a/аудит/адаптери/gemini/перевірка/бюджет_живих_pr.ps1 b/аудит/адаптери/gemini/перевірка/бюджет_живих_pr.ps1
 new file mode 100644
 index 0000000000000000000000000000000000000000..5628d05911936b8a3643093a90fd0e179faef8df
@@ -657,20 +641,8 @@ index 0000000000000000000000000000000000000000..d247c6ae59278a566543062b58b73d6a
 +H=$(cd "$(dirname "$0")" && pwd); . "$H/середовище.sh"
 +"${PWSH:-pwsh}" -NoProfile -File "$(wp "$H/сценарії_живих_pr.ps1")"
 +"${PWSH:-pwsh}" -NoProfile -File "$(wp "$H/бюджет_живих_pr.ps1")" -SourceDir "$(wp "$H/..")"
-diff --git a/аудит/адаптери/gemini/перевірка/сценарії_здоровя.ps1 b/аудит/адаптери/gemini/перевірка/сценарії_здоровя.ps1
-index 3db45affe01a6951f7c6dfcf7a93f0a5ab9cc01e..8987b6af4286863773ab47b281d33ccdc052681b 100644
---- a/аудит/адаптери/gemini/перевірка/сценарії_здоровя.ps1
-+++ b/аудит/адаптери/gemini/перевірка/сценарії_здоровя.ps1
-@@ -29,6 +29,7 @@ function Publish([string]$Case, [int]$Limit = 4, [int]$Fallback = 2) {
-     $dir = Join-Path $tmpRoot $Case
-     $params = @{ WorkDir = "$dir/pub"; OutDir = "$dir/out"; OutboxDir = "$dir/box"; GitExe = "$tmpRoot/git.cmd"; ClaudeExe = "$tmpRoot/claude.cmd"; SendRetryDelaySeconds = 0; SendRetries = 1; MaxSendAttempts = $Limit }
-     if (-not $Before) { $params.GhExe = "$tmpRoot/gh.cmd"; $params.MaxFallbackAttempts = $Fallback }
-+    if ((Get-Command (Join-Path $SourceDir 'gemini_publish.ps1')).Parameters.ContainsKey('UpdateRoot')) { $params.UpdateRoot = "$dir/update" }
-     . (Join-Path $SourceDir 'gemini_publish.ps1') @params
-     function Test-OwnerUser { $true }
-     $code = Main
 diff --git a/аудит/адаптери/gemini/перевірка/сценарії_ланцюга.ps1 b/аудит/адаптери/gemini/перевірка/сценарії_ланцюга.ps1
-index 75c5f0b0c4ccbca060a40af47debfa4c479eaf22..4ac4faf42a826b6886407436ef41203b4a29b677 100644
+index 229720e305b49650f0293f417428dd70b80382db..ba4d3dd773ba143f8bb8142cbf7f84237b648072 100644
 --- a/аудит/адаптери/gemini/перевірка/сценарії_ланцюга.ps1
 +++ b/аудит/адаптери/gemini/перевірка/сценарії_ланцюга.ps1
 @@ -29,10 +29,14 @@ try {
