@@ -965,6 +965,13 @@ function Invoke-Task($M, $Job) {
         Write-FileAtomic $statePath ('STARTED ' + ($status | ConvertTo-Json -Compress))
         $prompt = Get-Prompt $MA $taskText $sel.Engine.Name
         [System.IO.File]::WriteAllText((Join-Path $dir 'prompt.md'), $prompt, $script:Utf8)
+        $review = Get-AutoReviewState $M.Slug
+        if ($review -eq 'REVIEW_API') {
+            Enter-ReviewWait $M ([string]$Job.head)
+            $waiting = $true
+            return
+        }
+        if ($review -ne 'LIVE') { $status.code = $review; return }
         $res = Invoke-Agent $MA $start $prompt $dir $sel
         $tail = $res.Tail
         $status.code = $res.Code
