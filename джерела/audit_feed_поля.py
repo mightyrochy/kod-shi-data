@@ -177,8 +177,34 @@ def файли_фасаду(файл):
     модуль = __import__(файл[:-3] if файл.endswith(".py") else файл)
     with open(os.path.join(КОРІНЬ, файл), encoding="utf-8") as ф:
         out = [(модуль.__name__, ф.read())]
-    for м in _СП._реекспортовані([модуль]):
+    реекспорти = _СП._реекспортовані([модуль])
+    for м in реекспорти:
         out.append((м.__name__, inspect.getsource(м)))
+    # Адреса реекспорту може сама бути лише адресою. Беремо визначення
+    # імпортованих функцій у справжнього власника, зберігаючи номери рядків;
+    # решту великого модуля залежності фасадові не приписуємо.
+    import ast
+    покриття, джерела = {}, {}
+    повні = {ім for ім, _ in out}
+    for ф in [модуль, *реекспорти]:
+        for в in ast.parse(inspect.getsource(ф)).body:
+            if not isinstance(в, ast.ImportFrom) or в.level or not в.module:
+                continue
+            адреса = __import__(в.module)
+            for ім in в.names:
+                обʼєкт = getattr(адреса, ім.name, None)
+                if not inspect.isfunction(обʼєкт) or обʼєкт.__module__ == в.module:
+                    continue
+                власник = inspect.getmodule(обʼєкт)
+                if власник is None or власник.__name__ in повні:
+                    continue
+                рядки, початок = inspect.getsourcelines(обʼєкт)
+                джерела[власник.__name__] = inspect.getsource(власник)
+                покриття.setdefault(власник.__name__, set()).update(
+                    range(початок, початок + len(рядки)))
+    for ім, текст in джерела.items():
+        out.append((ім, "".join(р if н in покриття[ім] else "\n"
+                               for н, р in enumerate(текст.splitlines(keepends=True), 1))))
     return out
 
 

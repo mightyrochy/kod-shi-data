@@ -1870,7 +1870,7 @@ def ф():
          "невідомий»: намір_відомий=True і жодного попередження наміру",
          "statement" in _РЕЄСТР.INTENT and _РЕЄСТР.намір("statement")["рахункові"] == 1.0,
          sorted(_РЕЄСТР.INTENT))
-    _реч73 = [dict(id=і, слот=с, hex=h, lab=__import__("colorspace").hx(h))
+    _реч73 = [dict(id=і, слот=с, hex=h, площа=0.2, lab=__import__("colorspace").hx(h))
               for і, с, h in [("a", "верх", "#9a9a9a"), ("b", "низ", "#7a7a7a"),
                               ("c", "взуття", "#5a5a5a")]]
     _E73 = O.елементи(_реч73, "як є")
