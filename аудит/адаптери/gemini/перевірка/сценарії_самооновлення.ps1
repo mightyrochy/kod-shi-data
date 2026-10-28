@@ -1,5 +1,5 @@
 ﻿#Requires -Version 5.1
-param([string]$SourceDir = (Split-Path -Parent $PSScriptRoot))
+param([string]$SourceDir = (Split-Path -Parent $PSScriptRoot), [string]$GeminiUser = 'gemini')
 $ErrorActionPreference = 'Stop'
 $utf = New-Object Text.UTF8Encoding($false)
 $tmpRoot = Join-Path ([IO.Path]::GetTempPath()) ('e0-update-' + [guid]::NewGuid().ToString('N'))
@@ -35,7 +35,7 @@ try {
     & git -C $seed add -A; & git -C $seed commit -q -m 'початкова'
     $bare = Join-Path $tmpRoot 'repo.git'
     & git clone -q --bare $seed $bare
-    . (Join-Path $SourceDir 'gemini_publish.ps1') -WorkDir "$tmpRoot/pub" -OutboxDir "$tmpRoot/out" -UpdateRoot $root
+    . (Join-Path $SourceDir 'gemini_publish.ps1') -WorkDir "$tmpRoot/pub" -OutboxDir "$tmpRoot/out" -UpdateRoot $root -GeminiUser $GeminiUser
     foreach ($dir in @($WorkDir, "$WorkDir/seen", $OutboxDir)) { [void][IO.Directory]::CreateDirectory($dir) }
     $script:RealRootCheck = (Get-Command Test-UpdateRoot).ScriptBlock
     $script:Repo = $bare; $script:NoHooks = Join-Path $tmpRoot 'no-hooks'
@@ -72,16 +72,38 @@ try {
     Invoke-WrapperUpdate $root
     Check 'повтор відмови не дублює тривогу' (@(Get-ChildItem "$OutboxDir/*.txt" | Where-Object { (Get-Content $_.FullName -Raw -Encoding UTF8) -match "$badProbe UPDATE_PROBE" }).Count -eq 1)
     # Перевіряємо справжній алгоритм ACL на синтетичних правилах, без Set-Acl чи зміни ОС.
+    $geminiSid = [Security.Principal.SecurityIdentifier]'S-1-5-21-111111111-222222222-333333333-1988'
     $script:AclRules = @([pscustomobject]@{IdentityReference=[Security.Principal.SecurityIdentifier]'S-1-1-0';AccessControlType='Allow';FileSystemRights=[Security.AccessControl.FileSystemRights]'ReadAndExecute'})
     function Get-Acl { [pscustomobject]@{Access=$script:AclRules} }
-    Check 'RX загальної групи допускається справжньою перевіркою ACL' ([bool](& $script:RealRootCheck $root))
+    Check 'RX загальної групи допускається справжньою перевіркою ACL' ([bool](& $script:RealRootCheck $root $geminiSid))
     $script:AclRules[0].FileSystemRights = [Security.AccessControl.FileSystemRights]'WriteData'
-    Check 'запис загальної групи відхиляється справжньою перевіркою ACL' (-not [bool](& $script:RealRootCheck $root))
+    Check 'запис загальної групи відхиляється справжньою перевіркою ACL' (-not [bool](& $script:RealRootCheck $root $geminiSid))
     $script:AclRules[0].IdentityReference = [Security.Principal.SecurityIdentifier]'S-1-5-32-547'
-    Check 'невідома привілейована група з записом теж відхиляється' (-not [bool](& $script:RealRootCheck $root))
+    Check 'невідома привілейована група з записом теж відхиляється' (-not [bool](& $script:RealRootCheck $root $geminiSid))
+    $script:AclRules[0].IdentityReference = $geminiSid
+    Check 'запис gemini відхиляється за синтетичним SID' (-not [bool](& $script:RealRootCheck $root $geminiSid))
+    $script:AclRules = @(foreach ($sid in @('S-1-5-18', 'S-1-5-32-544', [Security.Principal.WindowsIdentity]::GetCurrent().User.Value)) {
+        [pscustomobject]@{IdentityReference=[Security.Principal.SecurityIdentifier]$sid;AccessControlType='Allow';FileSystemRights=[Security.AccessControl.FileSystemRights]'FullControl'}
+    })
+    Check 'запис SYSTEM, адміністратора й власника допускається' ([bool](& $script:RealRootCheck $root $geminiSid))
+    $missingUser = 'e0-' + [guid]::NewGuid().ToString('N').Substring(0,16)
+    $missingIdentity = [Security.Principal.NTAccount]"$env:COMPUTERNAME\$missingUser"
+    Check 'відсутній облік gemini закриває корінь без винятку' (-not [bool](& $script:RealRootCheck $root $missingIdentity))
+    $script:AclRules[0].IdentityReference = $missingIdentity
+    Check 'неперекладний облік у правилі ACL закриває корінь' (-not [bool](& $script:RealRootCheck $root $geminiSid))
     function Test-UpdateRoot([string]$Root) { $false }
     Invoke-WrapperUpdate $root
     Check 'небезпечний ACL не змінює версії' ([IO.File]::ReadAllText($pointer) -ceq $second)
+    Check 'небезпечний ACL дає тривогу UPDATE_ACL' (@(Get-ChildItem "$OutboxDir/*.txt" | Where-Object { (Get-Content $_.FullName -Raw -Encoding UTF8) -match "$badProbe UPDATE_ACL" }).Count -eq 1)
+    # Повертаємо справжню перевірку: відсутній облік має пройти весь шлях відмови оновлення.
+    Set-Item -Path Function:Test-UpdateRoot -Value $script:RealRootCheck
+    $GeminiUser = $missingUser
+    $script:AclRules = @()
+    [IO.File]::AppendAllText((Join-Path $src 'wrapper_probe.ps1'), "`n# кандидат без обліку gemini`n", $utf)
+    Manifest; $missingAccount = Commit 'оновлення без обліку gemini'
+    Invoke-WrapperUpdate $root
+    Check 'відсутній облік gemini не перемикає чинну версію' ([IO.File]::ReadAllText($pointer) -ceq $second)
+    Check 'відсутній облік gemini дає тривогу UPDATE_ACL' (@(Get-ChildItem "$OutboxDir/*.txt" | Where-Object { (Get-Content $_.FullName -Raw -Encoding UTF8) -match "$missingAccount UPDATE_ACL" }).Count -eq 1)
     Check 'тимчасові дерева прибрано' (@(Get-ChildItem -LiteralPath $root -Directory -Filter '.stage-*').Count -eq 0)
 } catch { "✗ виняток стенда: $($_.Exception.Message) $($_.ScriptStackTrace)"; $failures++ }
 finally {

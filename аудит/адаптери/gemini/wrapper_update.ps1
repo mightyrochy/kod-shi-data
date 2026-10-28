@@ -1,6 +1,6 @@
 ﻿#Requires -Version 5.1
 # Самооновлення викликає лише публікатор власника; джерело — його щойно fetched origin/main.
-function Test-UpdateRoot([string]$Root) {
+function Test-UpdateRoot([string]$Root, [Security.Principal.IdentityReference]$GeminiIdentity = ([Security.Principal.NTAccount]"$env:COMPUTERNAME\$GeminiUser")) {
     <# Відхиляє посилання та права запису gemini/загальних груп у захищеній теці. #>
     if (-not (Test-Path -LiteralPath $Root -PathType Container)) { return $false }
     $item = Get-Item -LiteralPath $Root
@@ -9,14 +9,19 @@ function Test-UpdateRoot([string]$Root) {
         $item = $item.Parent
     }
     if (-not $script:OnWindows) { return $true }
-    $sid = ([Security.Principal.NTAccount]"$env:COMPUTERNAME\$GeminiUser").Translate([Security.Principal.SecurityIdentifier]).Value
-    $bad = @($sid, 'S-1-1-0', 'S-1-5-11', 'S-1-5-32-545')
-    $ownerSid = [Security.Principal.WindowsIdentity]::GetCurrent().User.Value
-    $writers = @('S-1-5-18','S-1-5-32-544',$ownerSid)
-    $write = [Security.AccessControl.FileSystemRights]'WriteData,AppendData,WriteExtendedAttributes,WriteAttributes,Delete,ChangePermissions,TakeOwnership,DeleteSubdirectoriesAndFiles'
-    foreach ($rule in (Get-Acl -LiteralPath $Root).Access) {
-        $who = $rule.IdentityReference.Translate([Security.Principal.SecurityIdentifier]).Value
-        if (($who -in $bad -or $who -notin $writers) -and $rule.AccessControlType -eq 'Allow' -and ($rule.FileSystemRights -band $write)) { return $false }
+    try {
+        $sid = $GeminiIdentity.Translate([Security.Principal.SecurityIdentifier]).Value
+        $bad = @($sid, 'S-1-1-0', 'S-1-5-11', 'S-1-5-32-545')
+        $ownerSid = [Security.Principal.WindowsIdentity]::GetCurrent().User.Value
+        $writers = @('S-1-5-18','S-1-5-32-544',$ownerSid)
+        $write = [Security.AccessControl.FileSystemRights]'WriteData,AppendData,WriteExtendedAttributes,WriteAttributes,Delete,ChangePermissions,TakeOwnership,DeleteSubdirectoriesAndFiles'
+        foreach ($rule in (Get-Acl -LiteralPath $Root -ErrorAction Stop).Access) {
+            $who = $rule.IdentityReference.Translate([Security.Principal.SecurityIdentifier]).Value
+            if (($who -in $bad -or $who -notin $writers) -and $rule.AccessControlType -eq 'Allow' -and ($rule.FileSystemRights -band $write)) { return $false }
+        }
+    } catch {
+        # Невідомий облік або непрочитаний ACL не доводить безпечність кореня.
+        return $false
     }
     $true
 }
