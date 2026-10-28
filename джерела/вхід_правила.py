@@ -6,7 +6,7 @@ from functools import wraps
 
 def нема_входу(з):
     """Розпізнає брак входу, включно зі старими записами на межі ланцюга."""
-    return isinstance(з, dict) and (з.get("сила") in (НЕМА_ВХОДУ, "утримано")
+    return isinstance(з, dict) and (з.get("сила") == НЕМА_ВХОДУ
         or з.get("регістр") == НЕМА_ВХОДУ or bool(з.get("без_входу")))
 
 

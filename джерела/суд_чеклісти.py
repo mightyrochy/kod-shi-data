@@ -1014,7 +1014,7 @@ def _провалює(z):
     образу й на дочекліст живого шляху (`позначити_без_входу`)."""
     if not isinstance(z, dict) or not z.get("правило") or z.get("без_входу"):
         return False
-    if нема_входу(z) or z.get("полярність"):
+    if нема_входу(z) or z.get("сила") == "утримано" or z.get("полярність"):
         return False
     return not (_під_підлогою(z.get("сила_нп")) and not z.get("блокує"))
 
