@@ -310,15 +310,15 @@ def точка_кольору(x):
 
 
 def lab_входу(к):
-    """Lab-трійка виміру з запису речі (`colors[*]`: `hex` переважає, інакше `lab`); None — інтервал чи невідомо. ValueError —
+    """Lab-трійка виміру з запису речі (`lab` переважає, інакше `hex`); None — інтервал чи невідомо. ValueError —
     колір без hex і без lab чи lab не з трьох чисел (`outfit.елементи` додає id речі)."""
-    if тип_кольору(к) != "вимір" and (к.get("колір_тип") or к.get("колір_не_вимір") or к.get("не_вимір") or к.get("колір_невідомий")):
+    if тип_кольору(к) != "вимір" and (к.get("hex") or к.get("lab") or к.get("колір_тип") or к.get("колір_не_вимір") or к.get("не_вимір") or к.get("колір_невідомий")):
         return None
     if not (к.get("hex") or к.get("lab")):
         raise ValueError("колір без hex і без lab")
     if к.get("lab") is not None and len(tuple(к["lab"])) != 3:
         raise ValueError(f"lab із {len(tuple(к['lab']))} чисел, а не з трьох")
-    return lab(к.get("hex") or к["lab"])
+    return lab(к.get("lab") or к["hex"])
 
 
 # ── ГУЧНІСТЬ І СІМ'Я РЕЧІ-ВІКНА — З МЕЖ, А НЕ З ЦЕНТРУ ──
