@@ -21,7 +21,7 @@ def main():
     склад = [п for п in старий["параметри"] if п[0] in ("Склад", "склад")]
     with tempfile.TemporaryDirectory() as жр:
         файл = Path(жр) / "сирі/store.jsonl"; файл.parent.mkdir()
-        файл.write_text(json.dumps(dict(url=з["url"], дата="2026-10-29", записи=[з]), ensure_ascii=False) + "\n", encoding="utf8")
+        файл.write_text(json.dumps(dict(url=з["url"], стан="картка", дата="2026-10-29", записи=[з]), ensure_ascii=False) + "\n", encoding="utf8")
         _, після, л = зібрати(жр, шапка, [старий])
         assert л["оновлено"] == 1
         _, повтор, л2 = зібрати(жр, шапка, після.copy())
