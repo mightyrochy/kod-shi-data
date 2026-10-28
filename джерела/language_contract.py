@@ -37,6 +37,9 @@ def доповнити(було, нове):
             пара = next((н for н in нове if isinstance(в, dict) and isinstance(н, dict)
                          and any(в.get(к) and в.get(к) == н.get(к) for к in ("id", "quote"))), None)
             вих.append(доповнити(в, пара) if пара is not None else copy.deepcopy(в))
+        вих += [copy.deepcopy(н) for н in нове if isinstance(н, dict) and (н.get("id") or н.get("quote"))
+                and not any(isinstance(в, dict) and any(н.get(к) and н.get(к) == в.get(к)
+                            for к in ("id", "quote")) for в in було)]
         return вих
     return copy.deepcopy(було)
 
@@ -93,6 +96,9 @@ def зберегти_подію(результат, сирий):
             в.setdefault("quotes", {})["event"] = цитата.strip()
     if р.get("повтор"):
         р["запасний"] = р.pop("повтор")
+    if р.get("причина") and в:
+        р["запасний"] = р["причина"]
+        р["причина"] = None
     return р
 
 
