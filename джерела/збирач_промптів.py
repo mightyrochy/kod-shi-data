@@ -345,6 +345,13 @@ class Поле:
     треба: bool = False
 
 
+ПОЛЕ_КАНДИДАТІВ = Поле(
+    "candidates", "the item reference table: «cols» names the columns of «rows»; «n» identifies each item",
+    як="Look up the numbers in «your_outfit.items» and «showcase» here to judge the items. "
+        "These are reference facts, not answer fields. The answer selects item numbers; "
+        "the code joins their descriptions and measurements after parsing.")
+
+
 ПОЛЕ_ВІДБОРУ = Поле(
     "selection_policy", "the shared selection constraints and goals",
     як="Gates and vetoes remain required. Item «selection_doses» records independent slot pool doses "
