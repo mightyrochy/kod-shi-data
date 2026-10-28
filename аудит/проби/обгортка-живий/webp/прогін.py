@@ -72,15 +72,17 @@ def main():
     with socket.socket() as sock:
         sock.bind(("127.0.0.1", 1235))
     html = (STAND / "index.html").read_text(encoding="utf-8")
-    assert re.search(r'const ЗБІРКА_ПОКАЗУ = "([0-9a-f]{40})"', html)[1] == SHA
+    build_sha = re.search(r'const ЗБІРКА_ПОКАЗУ = "([0-9a-f]{40})"', html)[1]
+    assert not subprocess.check_output(['git', 'diff', '--name-only', build_sha, SHA, '--',
+        'джерела', 'аудит/проби/рв6_стенд.js', 'аудит/проби/кадр_моделі.js'], cwd=ROOT), 'Код відрізняється від збірки'
     env.update(ZHINKA=str(ROOT / f"аудит/проби/жінки/{woman}.json"), CHAT_TEXT=text,
         ZNIMKY=str(folder / "знімки"), VIDPOVIDI=str(folder / "відповіді"), ZVIT_OUT=str(folder / "вердикти.txt"))
     command = [NODE, str(ROOT / "аудит/проби/рв6_стенд.js"), "http://127.0.0.1:8765", str(STAND), r"C:\Users\gemini\pyodide", "3"]
     proxy_command = [NODE, str(ROOT / "аудит/ноутбук_стенд_2/проксі_почергове.js")]
-    save(folder, "запуск.json", {"sha-збірки": SHA, "sha-приладів": SHA, "сцена": scene,
+    save(folder, "запуск.json", {"sha-збірки": build_sha, "sha-приладів": SHA, "сцена": scene,
         "команда": command, "команда-проксі": proxy_command, "cwd": str(ROOT),
         "змінні": {key: env[key] for key in ["NODE_PATH", "LMS_MODE", "CTX", "MODEL", "MODEL_MOVA", "MODEL_URL", "OTSINKA", "ODNOCHASNO", "CHAT_TEXT", "ZHINKA", "NODE_USE_SYSTEM_CA"]}})
-    (folder / "код.txt").write_text(f"{SHA} {scene} ПІСЛЯ qwen/qwen3.5-9b+mamaylm-gemma-3-12b-it-v2.0\n", encoding="utf-8")
+    (folder / "код.txt").write_text(f"{build_sha} {scene} ПІСЛЯ qwen/qwen3.5-9b+mamaylm-gemma-3-12b-it-v2.0\n", encoding="utf-8")
     proxy = stand = None
     rc = None
     started = datetime.datetime.now(datetime.timezone.utc).isoformat()

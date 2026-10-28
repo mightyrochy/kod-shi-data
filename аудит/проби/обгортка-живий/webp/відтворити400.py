@@ -3,6 +3,7 @@ import base64
 import hashlib
 import json
 from pathlib import Path
+import sys
 import urllib.error
 import urllib.request
 
@@ -28,8 +29,10 @@ def головна():
     ід = свій['instance_id']
     результати = []
     try:
-        for ім, mime in [('ж-12335-0.bin', 'image/jpeg'), ('ж-12335-0.bin', 'image/webp')]:
-            б = (ТЕКА / 'кадри-ДО' / ім).read_bytes()
+        після = '--після' in sys.argv
+        входи = [('кадр-ПІСЛЯ.jpg', 'image/jpeg')] if після else [('кадри-ДО/ж-12335-0.bin', 'image/jpeg'), ('кадри-ДО/ж-12335-0.bin', 'image/webp')]
+        for ім, mime in входи:
+            б = (ТЕКА / ім).read_bytes()
             url = 'data:' + mime + ';base64,' + base64.b64encode(б).decode()
             http, відповідь = запит('/v1/chat/completions', {'model': ід,
                 'messages': [{'role': 'user', 'content': [
@@ -42,7 +45,7 @@ def головна():
             print(mime, http, flush=True)
     finally:
         прибирання = запит('/api/v1/models/unload', {'instance_id': ід})
-        (ТЕКА / 'відтворення400.json').write_text(json.dumps({'завантаження': свій,
+        (ТЕКА / ('відтворення400-ПІСЛЯ.json' if '--після' in sys.argv else 'відтворення400.json')).write_text(json.dumps({'завантаження': свій,
             'виклики': результати, 'прибирання': прибирання}, ensure_ascii=False, indent=2), encoding='utf-8')
 
 
