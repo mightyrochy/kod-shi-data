@@ -4793,7 +4793,7 @@ def прийняти_розмову(відповідь):
                 + ([dict(частина="text", чому="question_in_text", зняте=зняте)] if зняте else [])),
                 dict(оновлення, **{к: з for к, з in об.items() if к != "update"}),
                 dict(ВИДИ_ВХОДУ["scenario"]["поля"], **_СВ_М.форма_мовного_шару(визначення=False)["properties"]),
-                ("formality",) if any(оновлення.get(к) for к in ("occasion", "place", "event")) else ())
+                ("formality",) if any(в.get(к) for к in ("occasion", "place", "event")) else ())
 
 
 def злити_повтор(перша, друга):
