@@ -8,6 +8,12 @@ const після = знімок(fs.readFileSync(path.join(тека, 'лог.txt'
   JSON.parse(fs.readFileSync(path.join(тека, 'знімки/доказ.json'), 'utf8')), 1);
 assert.equal(після.звірки.length, 77);
 assert.equal(порівняти(база, після).стан, 'без регресу');
+const стала = після.звірки.find(з => з.зелена).назва;
+const новаНазва = 'Новий опис тієї самої звірки';
+const перейменувати = колір => fs.readFileSync(path.join(тека, 'лог.txt'), 'utf8')
+  .replace('  ✔ ' + стала, '  ІД ЗВІРКИ: ' + JSON.stringify({назва: новаНазва, стала}) + '\n  ' + колір + ' ' + новаНазва);
+assert.equal(порівняти(база, знімок(перейменувати('✔'), {вердикт: {доведено: true}}, 1)).стан, 'без регресу');
+assert.deepEqual(порівняти(база, знімок(перейменувати('✗'), {вердикт: {доведено: true}}, 1)).регресії, [стала]);
 const новаЧервона = знімок(fs.readFileSync(path.join(тека, 'лог.txt'), 'utf8')
   .replace(/^ВПАЛО 1 ·/m, 'ВПАЛО 2 ·') + '\n  ✗ с1.не_взято  →  не відсічено\n',
 JSON.parse(fs.readFileSync(path.join(тека, 'знімки/доказ.json'), 'utf8')), 1);
