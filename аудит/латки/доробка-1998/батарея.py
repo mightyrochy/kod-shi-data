@@ -32,6 +32,9 @@ def main():
         with (logs / (case.stem + '.txt')).open('wb') as output:
             result = subprocess.run(command, cwd=source, env=env, stdout=output, stderr=subprocess.STDOUT)
         text = (logs / (case.stem + '.txt')).read_text(encoding='utf-8', errors='replace')
+        # Лише форма текстового журналу: LF і без кінцевих пробілів консолі.
+        text = '\n'.join(line.rstrip(' \t') for line in text.splitlines()).rstrip('\n') + '\n'
+        (logs / (case.stem + '.txt')).write_text(text, encoding='utf-8', newline='\n')
         totals = re.findall(r'^ПІДСУМОК .*$', text, re.M)
         line = f'{case.name}: код {result.returncode}; ' + (totals[-1] if totals else 'немає підсумку')
         summary.append(line)
