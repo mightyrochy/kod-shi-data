@@ -19,7 +19,16 @@ SOURCE = "e3720b4ae15003b2ce1da152340eb192a1bc32d0"
 MODELS = {"qwen/qwen3.5-9b": 57344, "mamaylm-gemma-3-12b-it-v2.0": 16384}
 SCENES = {
     "б1_концерт_стримано": ("ж8", "рок-концерт у клубі, п'ятниця ввечері, стоятиму в натовпі, хочу стримано й класично"),
-    "ж1_вокал_просто_зручно": ("ж1", "увечері урок вокалу, надворі +18, хочеться дуже просто і зручне взуття"),
+    "ж4_робота_бежева_блузка_фото": ("ж4", "Ось фото моєї бежевої блузки, збери з нею образ на роботу в офіс"),
+    "ж4_робота_спідниця_фото": ("ж4", "Ось фото моєї спідниці, збери з нею образ на роботу в офіс"),
+    "ж4_робота_тільник_фото": ("ж4", "Ось фото мого смугастого тільника, збери з ним образ на роботу в офіс"),
+    "ж1_оціни_образ_6б": ("ж1", "робочий день в офісі"),
+}
+OPTIONS = {
+    "ж4_робота_бежева_блузка_фото": {"DO": "rozmova", "FOTO": "1", "FOTO_RECHI": str(ROOT / "аудит/проби/поверхня_212/01.jpg")},
+    "ж4_робота_спідниця_фото": {"DO": "rozmova", "FOTO": "1", "FOTO_RECHI": str(ROOT / "аудит/проби/поверхня_212/26.jpg")},
+    "ж4_робота_тільник_фото": {"FOTO": "1", "FOTO_RECHI": str(ROOT / "аудит/проби/поверхня_212/14.jpg")},
+    "ж1_оціни_образ_6б": {"DO": "produkt", "FOTO": "1", "OTSINKA": "1", "OTSINKA_PRAVKA": "1"},
 }
 
 
@@ -76,11 +85,14 @@ def main():
     assert re.search(r'const ЗБІРКА_ПОКАЗУ = "([0-9a-f]{40})"', html)[1] == SOURCE
     env.update(ZHINKA=str(ROOT / f"аудит/проби/жінки/{woman}.json"), CHAT_TEXT=text,
         ZNIMKY=str(folder / "знімки"), VIDPOVIDI=str(folder / "відповіді"), ZVIT_OUT=str(folder / "вердикти.txt"))
+    env.update(OPTIONS.get(scene, {}))
     command = [NODE, str(ROOT / "аудит/проби/рв6_стенд.js"), "http://127.0.0.1:8765", str(STAND), r"C:\Users\gemini\pyodide", "3"]
+    if scene != "б1_концерт_стримано":
+        command.insert(1, str(OUT / "запис_поверхні.js"))
     proxy_command = [NODE, str(ROOT / "аудит/ноутбук_стенд_2/проксі_почергове.js")]
     save(folder, "запуск.json", {"sha-збірки": SOURCE, "sha-артефакту": SHA, "sha-приладів": SHA, "сцена": scene,
         "команда": command, "команда-проксі": proxy_command, "cwd": str(ROOT),
-        "змінні": {key: env[key] for key in ["NODE_PATH", "LMS_MODE", "CTX", "MODEL", "MODEL_MOVA", "MODEL_URL", "OTSINKA", "ODNOCHASNO", "CHAT_TEXT", "ZHINKA", "NODE_USE_SYSTEM_CA"]}})
+        "змінні": {key: env[key] for key in ["NODE_PATH", "LMS_MODE", "CTX", "MODEL", "MODEL_MOVA", "MODEL_URL", "OTSINKA", "ODNOCHASNO", "CHAT_TEXT", "ZHINKA", "NODE_USE_SYSTEM_CA", "FOTO", "FOTO_RECHI", "DO", "OTSINKA_PRAVKA"] if key in env}})
     (folder / "код.txt").write_text(f"{SOURCE} {scene} ПІСЛЯ qwen/qwen3.5-9b+mamaylm-gemma-3-12b-it-v2.0\n", encoding="utf-8")
     proxy = stand = None
     rc = None
