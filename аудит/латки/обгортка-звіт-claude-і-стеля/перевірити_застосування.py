@@ -28,7 +28,7 @@ def main():
               'apply-check-код': 0, 'apply-index-код': 0, 'diff-check-код': 0,
               'латка-sha256': hashlib.sha256(patch.read_bytes()).hexdigest(),
               'файли': git(clean, 'diff', '--cached', '--name-only', base).splitlines()}
-    (folder / 'застосування.json').write_text(json.dumps(result, ensure_ascii=False, indent=2) + '\n', encoding='utf-8')
+    (folder / 'застосування.json').write_bytes((json.dumps(result, ensure_ascii=False, indent=2) + '\n').encode('utf-8'))
     print(json.dumps(result, ensure_ascii=False))
 
 
