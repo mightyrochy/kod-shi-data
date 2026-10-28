@@ -1,0 +1,27 @@
+=== А: шість позначок на одному коміті — смуги водночас, до N у смузі, за пріоритетом; Argon на 0 % чекає скидання
+  перший прохід планувальників: 14 с; найбільше водночас: усього 5, codex 2, agy 1, claude 2
+  ✓ codex — 2 водночас (слотів 2)
+  ✓ claude — 2 водночас (слотів 2)
+  ✓ смуги водночас: усього ≥ 5
+  порядок узяття: gemini-queue/б-codex/gpt-6.1-sol-high/1/p1 gemini-queue/а-codex/gpt-6.1-sol-high/1/p2 gemini-queue/в-agy/gemini-3.8-flash-high/1/p3 gemini-queue/е-claude-gpu/cc-claude-sonnet-5-5-medium/1/p1-gpu gemini-queue/д-claude/cc-claude-sonnet-5-5-medium/1/p4
+  ✓ узято за пріоритетом: б(p1) раніше за а(p2), е(p1) раніше за д(p4)
+  ✓ Argon (p0) на нулі не взято, позначка в чеканні
+  ✓ стан: таблиця смуг — claude 2/2 і codex 2/2 у якійсь правці
+  ✓ стан: квота agy з UTC — GEMINI4ARGON 0 %, скидання …Z, зчитано …Z
+  ✓ стан: квота Claude з rate_limit_event (5H, 7D)
+  ✓ стан: позначка Argon у «Чекають скидання квоти»
+  ✓ стан: GPU зайнята слотом claude
+  ✓ Argon: рядок QUOTA0_GEMINI4ARGON_M<хв> диспетчерові — один (є: 1)
+  ✓ після «скидання» Argon узято тією ж смугою без нової позначки → ГОТОВО
+  ✓ решта п'яти — ГОТОВО (є: 5)
+  кінці: ГОТОВО gemini/а-codex МОДЕЛЬ gpt-6.1-sol-high;ГОТОВО gemini/б-codex МОДЕЛЬ gpt-6.1-sol-high;ЗАБЛОКОВАНО gemini/г-agy-квота QUOTA0_GEMINI4ARGON_M1;ГОТОВО gemini/в-agy КВОТА GEMINIMODELS 100 МОДЕЛЬ gemini-3.8-flash-high;ГОТОВО claude/е-claude-gpu МОДЕЛЬ cc-claude-sonnet-5-5-medium;ГОТОВО claude/д-claude МОДЕЛЬ cc-claude-sonnet-5-5-medium;ГОТОВО gemini/г-agy-квота КВОТА GEMINI4ARGON 100 МОДЕЛЬ gemini-4-argon-high;
+=== Б: GPU — по одному на ноутбуці, замок спільний для gemini-run і claude-run
+  найбільше водночас GPU-нарядів: 1; порядок: gpu-claude gpu-agy
+  ✓ дві GPU-позначки різних облікових записів — не водночас, обидві виконано
+=== В: N зі смуги.json на origin/main — 1, потім 2, без перевстановлення скриптів
+  codex водночас: смуги.json codex=1 → 1, codex=2 → 2; codex=99 у даних → 4 (стеля в коді)
+  ✓ N з файла даних міняє паралельність без перевстановлення (1 → 2)
+  ✓ дані не перевищують стелі коду (99 → 4)
+
+ВСЕ ✓
+ПІДСУМОК сценарії_смуг.sh: ✓ 16 / ✗ 0; код стенда 0; код логу 0
