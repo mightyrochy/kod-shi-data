@@ -12,12 +12,12 @@ import json
 import os
 from pathlib import Path
 import signal
-import sqlite3
 import subprocess
 import sys
 import time
 from виконавець import ШАПКА_ЗВЕДЕННЯ
 from json_прохід import завершено
+from журнал_проходу import прочитати_чергу
 
 ТЕКА = Path(__file__).resolve().parent
 ШАПКА = ("домен", "стан_код", "причина_код", "адрес", "готово", "лишилось", "цикл", "підстава")
@@ -38,31 +38,24 @@ def результати(журнал, домен):
 
 
 def черга(журнал, домен):
-    """Повертає (усього, виконано) з черги крамниці; None, якщо черги нема (json-сімейство)."""
+    """Повертає (усього, виконано) або None, коли SQLite-черга невідома."""
     база = Path(журнал) / "проходи" / домен / "черга.sqlite3"
-    if not база.is_file():
-        return None
-    з = sqlite3.connect(база)
-    try:
-        return з.execute("SELECT count(*), coalesce(sum(стан='DONE'),0) FROM черга").fetchone()
-    finally:
-        з.close()
+    підсумок = прочитати_чергу(база)
+    return підсумок[:2] if підсумок is not None else None
 
 
 def залишок(журнал, домен, ч, резерв=1):
     """Лишає незавершений пошук адрес до повтору, навіть коли поточна черга порожня або вся DONE."""
+    база = Path(журнал) / "проходи" / домен / "черга.sqlite3"
+    if база.is_file():
+        підсумок = прочитати_чергу(база)
+        if підсумок is None:
+            return max(резерв, 1)
+        загалом, готово, відомо = підсумок
+        return max(загалом - готово, int(not відомо))
     if ч is None:
         return 0 if завершено(журнал, домен) else max(резерв, 1)
-    невиконано = ч[0] - ч[1]
-    база = Path(журнал) / "проходи" / домен / "черга.sqlite3"
-    if not база.is_file():
-        return невиконано
-    з = sqlite3.connect(база)
-    try:
-        відомо = з.execute("SELECT значення FROM мета WHERE ключ='відомо'").fetchone()
-        return max(невиконано, int(not відомо or відомо[0] != "1"))
-    finally:
-        з.close()
+    return ч[0] - ч[1]
 
 
 def причина(нотатка):
