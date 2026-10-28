@@ -390,5 +390,127 @@
     "прийнято_до": 53,
     "прийнято_після": 53,
     "спосіб": "sys.settrace, подія exception перед AssertionError, frame.f_locals[підсумок]"
+  },
+  "чотири_випадки_кроку_CI": {
+    "sha256_збірки": "8c3c2bcb083da33ff7a7afbadc3a59021db3315cadfcd766dcfe0531ee5e327d",
+    "крок_CI": "node аудит/проби/приймання_записів.js \"${RUNNER_TEMP}/pokaz\" \"${RUNNER_TEMP}/pyodide\" \\\n  \"${RUNNER_TEMP}/replay\" 0 10\nnode аудит/проби/живий_після_CI.js \"${RUNNER_TEMP}/replay\"\n",
+    "проби": [
+      {
+        "проба": "точна-база",
+        "ДО": 0,
+        "ПІСЛЯ": 0,
+        "підсумок": [
+          {
+            "сцена": "аудит\\проби\\нічні\\20261027\\б1_концерт_стримано",
+            "rc": 1,
+            "секунд": 166.55,
+            "помилка": null,
+            "стан": "без регресу",
+            "регресії": [],
+            "покращення": []
+          }
+        ]
+      },
+      {
+        "проба": "регрес",
+        "ДО": 1,
+        "ПІСЛЯ": 1,
+        "підсумок": [
+          {
+            "сцена": "аудит\\проби\\нічні\\20261027\\б1_концерт_стримано",
+            "rc": 1,
+            "секунд": 169.844,
+            "помилка": null,
+            "стан": "регрес",
+            "регресії": [
+              "знайомство — рівно три кроки, і «Готово» стоїть лише на третьому"
+            ],
+            "покращення": []
+          }
+        ]
+      },
+      {
+        "проба": "застарілий-без-рядка",
+        "ДО": 0,
+        "ПІСЛЯ": 1,
+        "підсумок": [
+          {
+            "сцена": "аудит\\проби\\нічні\\20261027\\б1_концерт_стримано",
+            "rc": 3,
+            "секунд": 6.648,
+            "помилка": null,
+            "стан": "запис застарів",
+            "регресії": [],
+            "покращення": [],
+            "виклик": 1
+          }
+        ]
+      },
+      {
+        "проба": "застарілий-з-рядком",
+        "ДО": 0,
+        "ПІСЛЯ": 0,
+        "підсумок": [
+          {
+            "сцена": "аудит\\проби\\нічні\\20261027\\б1_концерт_стримано",
+            "rc": 3,
+            "секунд": 6.893,
+            "помилка": null,
+            "стан": "запис застарів",
+            "регресії": [],
+            "покращення": [],
+            "виклик": 1
+          }
+        ]
+      }
+    ]
+  },
+  "GitHub_перед_завершенням": {
+    "head": "f6cf513f344464fbc0e58f80e846bd7809c91c38",
+    "total": 6,
+    "checks": [
+      {
+        "name": "опублікувати перевірений показ і дошку",
+        "status": "completed",
+        "conclusion": "skipped",
+        "head_sha": "f6cf513f344464fbc0e58f80e846bd7809c91c38",
+        "html_url": "https://github.com/mightyrochy/kod-shi-data/actions/runs/40642748164/job/122664788400"
+      },
+      {
+        "name": "перевірка джерел",
+        "status": "completed",
+        "conclusion": "skipped",
+        "head_sha": "f6cf513f344464fbc0e58f80e846bd7809c91c38",
+        "html_url": "https://github.com/mightyrochy/kod-shi-data/actions/runs/40642748164/job/122664628033"
+      },
+      {
+        "name": "розділи й контракти",
+        "status": "completed",
+        "conclusion": "skipped",
+        "head_sha": "f6cf513f344464fbc0e58f80e846bd7809c91c38",
+        "html_url": "https://github.com/mightyrochy/kod-shi-data/actions/runs/40642748164/job/122664626954"
+      },
+      {
+        "name": "зібрати показ-повний",
+        "status": "completed",
+        "conclusion": "success",
+        "head_sha": "f6cf513f344464fbc0e58f80e846bd7809c91c38",
+        "html_url": "https://github.com/mightyrochy/kod-shi-data/actions/runs/40642748164/job/122664625697"
+      },
+      {
+        "name": "звіт правил (не гейт)",
+        "status": "completed",
+        "conclusion": "success",
+        "head_sha": "f6cf513f344464fbc0e58f80e846bd7809c91c38",
+        "html_url": "https://github.com/mightyrochy/kod-shi-data/actions/runs/40642748164/job/122664625267"
+      },
+      {
+        "name": "що змінилось у push чи PR",
+        "status": "completed",
+        "conclusion": "success",
+        "head_sha": "f6cf513f344464fbc0e58f80e846bd7809c91c38",
+        "html_url": "https://github.com/mightyrochy/kod-shi-data/actions/runs/40642748164/job/122664433711"
+      }
+    ]
   }
 }
