@@ -69,6 +69,15 @@ def main():
             коди.append(команда(аргументи, "огляд.txt"))
     elif режим == "послідовні":
         коди.append(команда([sys.executable, ТЕКА / "послідовні.py", КОРІНЬ], "послідовні.txt"))
+    elif режим == "фінал":
+        for аргументи in (
+            ["git", "diff", "--exit-code", "3f1ad74a48e26e4b200637a851b5943c5ff62383", "--",
+             "zhnyvarka", "джерела", ".github", "аудит/адаптери/gemini"],
+            ["git", "diff", "--check"],
+            ["git", "diff", "--cached", "--check", "--", ".",
+             ":(exclude)аудит/перевірка/докази_2069_3/*.txt"],
+        ):
+            коди.append(команда(аргументи, "фінал.txt"))
     print(f"Запусків {len(коди)}; кодів 0: {коди.count(0)}; коди: {коди}", flush=True)
     return int(any(коди))
 
