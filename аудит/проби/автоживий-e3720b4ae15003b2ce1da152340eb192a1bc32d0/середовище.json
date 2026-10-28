@@ -1,0 +1,90 @@
+{
+  "час_utc": "2026-10-28T18:06:51.450776+00:00",
+  "cwd": "C:\\Users\\gemini\\gemini-runs\\w\\codex-4",
+  "команди": [
+    {
+      "команда": [
+        "git",
+        "rev-parse",
+        "HEAD",
+        "origin/main"
+      ],
+      "rc": 0,
+      "stdout": "57bd4145961aa5d3150833567fe57a5a83c09a0e\n0a5327dda1072b53c076639b59e5ac45b03cbefe\n",
+      "stderr": ""
+    },
+    {
+      "команда": [
+        "git",
+        "merge-base",
+        "--is-ancestor",
+        "6e452693807de1dc8d6e6a30dd5c861f1826d101",
+        "origin/main"
+      ],
+      "rc": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "команда": [
+        "netstat",
+        "-ano",
+        "-p",
+        "tcp"
+      ],
+      "rc": 0,
+      "stdout": "  TCP    127.0.0.1:1234         0.0.0.0:0              LISTENING       14132",
+      "stderr": ""
+    },
+    {
+      "команда": [
+        "nvidia-smi",
+        "--query-gpu=name,memory.total,memory.used",
+        "--format=csv"
+      ],
+      "rc": 0,
+      "stdout": "name, memory.total [MiB], memory.used [MiB]\nNVIDIA GeForce RTX 4090 Laptop GPU, 16376 MiB, 0 MiB\n",
+      "stderr": ""
+    },
+    {
+      "команда": [
+        "whoami"
+      ],
+      "rc": 0,
+      "stdout": "desktop-6n11sa4\\gemini\n",
+      "stderr": ""
+    },
+    {
+      "команда": [
+        "C:\\Users\\gemini\\tools\\node-v24.22.1-win-x64\\node.exe",
+        "--version"
+      ],
+      "rc": 0,
+      "stdout": "v24.22.1\n",
+      "stderr": ""
+    }
+  ],
+  "http": [
+    {
+      "метод": "GET",
+      "url": "http://127.0.0.1:1234/lmstudio-greeting",
+      "status": 200,
+      "body": "{\"lmstudio\":true}"
+    },
+    {
+      "метод": "GET",
+      "url": "http://127.0.0.1:1234/api/v1/models",
+      "status": 200,
+      "body": "{\n  \"models\": [\n    {\n      \"type\": \"llm\",\n      \"publisher\": \"skypro1111\",\n      \"key\": \"lapa-v0.1.3-instruct\",\n      \"display_name\": \"Lapa v0.1.3 Instruct\",\n      \"architecture\": \"gemma3\",\n      \"quantization\": {\n        \"name\": \"Q8_0\",\n        \"bits_per_weight\": 8\n      },\n      \"size_bytes\": 12510503072,\n      \"params_string\": \"12B\",\n      \"loaded_instances\": [],\n      \"max_context_length\": 131072,\n      \"format\": \"gguf\",\n      \"capabilities\": {\n        \"vision\": false,\n        \"trained_for_tool_use\": false\n      },\n      \"description\": null\n    },\n    {\n      \"type\": \"llm\",\n      \"publisher\": \"unsloth\",\n      \"key\": \"gemma-4-e4b-it\",\n      \"display_name\": \"Gemma 4 E4B Instruct\",\n      \"architecture\": \"gemma4\",\n      \"quantization\": {\n        \"name\": \"Q4_K_M\",\n        \"bits_per_weight\": 4\n      },\n      \"size_bytes\": 4977171584,\n      \"params_string\": \"7.5B\",\n      \"loaded_instances\": [],\n      \"max_context_length\": 131072,\n      \"format\": \"gguf\",\n      \"capabilities\": {\n        \"vision\": false,\n        \"trained_for_tool_use\": true,\n        \"reasoning\": {\n          \"allowed_options\": [\n            \"off\",\n            \"on\"\n          ],\n          \"default\": \"on\"\n        }\n      },\n      \"description\": null\n    },\n    {\n      \"type\": \"llm\",\n      \"publisher\": \"unsloth\",\n      \"key\": \"gemma-4-12b-it\",\n      \"display_name\": \"Gemma 4 12B Instruct\",\n      \"architecture\": \"gemma4\",\n      \"quantization\": {\n        \"name\": \"Q3_K_M\",\n        \"bits_per_weight\": 3\n      },\n      \"size_bytes\": 5868988800,\n      \"params_string\": \"12B\",\n      \"loaded_instances\": [],\n      \"max_context_length\": 262144,\n      \"format\": \"gguf\",\n      \"capabilities\": {\n        \"vision\": true,\n        \"trained_for_tool_use\": true,\n        \"reasoning\": {\n          \"allowed_options\": [\n            \"off\",\n            \"on\"\n          ],\n          \"default\": \"on\"\n        }\n      },\n      \"description\": null\n    },\n    {\n      \"type\": \"llm\",\n      \"publisher\": \"INSAIT-Institute\",\n      \"key\": \"mamaylm-gemma-3-12b-it-v2.0\",\n      \"display_name\": \"MamayLM Gemma 3 12B Instruct v2.0\",\n      \"architecture\": \"gemma3\",\n      \"quantization\": {\n        \"name\": \"Q4_K_M\",\n        \"bits_per_weight\": 4\n      },\n      \"size_bytes\": 7300778784,\n      \"params_string\": \"12B\",\n      \"loaded_instances\": [],\n      \"max_context_length\": 131072,\n      \"format\": \"gguf\",\n      \"capabilities\": {\n        \"vision\": false,\n        \"trained_for_tool_use\": false\n      },\n      \"description\": null\n    },\n    {\n      \"type\": \"llm\",\n      \"publisher\": \"qwen\",\n      \"key\": \"qwen/qwen3.5-9b\",\n      \"display_name\": \"Qwen3.5 9B\",\n      \"architecture\": \"qwen35\",\n      \"quantization\": {\n        \"name\": \"Q4_K_M\",\n        \"bits_per_weight\": 4\n      },\n      \"size_bytes\": 6548927711,\n      \"params_string\": \"9B\",\n      \"loaded_instances\": [],\n      \"max_context_length\": 262144,\n      \"format\": \"gguf\",\n      \"capabilities\": {\n        \"vision\": true,\n        \"trained_for_tool_use\": true,\n        \"reasoning\": {\n          \"allowed_options\": [\n            \"off\",\n            \"on\"\n          ],\n          \"default\": \"on\"\n        }\n      },\n      \"description\": null,\n      \"variants\": [\n        \"qwen/qwen3.5-9b@q4_k_m\",\n        \"qwen/qwen3.5-9b@q8_0\"\n      ],\n      \"selected_variant\": \"qwen/qwen3.5-9b@q4_k_m\"\n    },\n    {\n      \"type\": \"llm\",\n      \"publisher\": \"lmstudio-community\",\n      \"key\": \"gemma-4-12b-it-qat\",\n      \"display_name\": \"Gemma 4 12B Instruct QAT\",\n      \"architecture\": \"gemma4\",\n      \"quantization\": {\n        \"name\": \"Q4_0\",\n        \"bits_per_weight\": 4\n      },\n      \"size_bytes\": 7150994336,\n      \"params_string\": \"12B\",\n      \"loaded_instances\": [],\n      \"max_context_length\": 262144,\n      \"format\": \"gguf\",\n      \"capabilities\": {\n        \"vision\": true,\n        \"trained_for_tool_use\": true,\n        \"reasoning\": {\n          \"allowed_options\": [\n            \"off\",\n            \"on\"\n          ],\n          \"default\": \"on\"\n        }\n      },\n      \"description\": null\n    },\n    {\n      \"type\": \"llm\",\n      \"publisher\": \"lmstudio-community\",\n      \"key\": \"qwen3-vl-8b-instruct\",\n      \"display_name\": \"Qwen3 VL 8B Instruct\",\n      \"architecture\": \"qwen3vl\",\n      \"quantization\": {\n        \"name\": \"Q4_K_M\",\n        \"bits_per_weight\": 4\n      },\n      \"size_bytes\": 6186814624,\n      \"params_string\": \"8B\",\n      \"loaded_instances\": [],\n      \"max_context_length\": 262144,\n      \"format\": \"gguf\",\n      \"capabilities\": {\n        \"vision\": true,\n        \"trained_for_tool_use\": true\n      },\n      \"description\": null\n    },\n    {\n      \"type\": \"embedding\",\n      \"publisher\": \"nomic-ai\",\n      \"key\": \"text-embedding-nomic-embed-text-v1.5\",\n      \"display_name\": \"Nomic Embed Text v1.5\",\n      \"quantization\": {\n        \"name\": \"Q4_K_M\",\n        \"bits_per_weight\": 4\n      },\n      \"size_bytes\": 84106624,\n      \"params_string\": null,\n      \"loaded_instances\": [],\n      \"max_context_length\": 2048,\n      \"format\": \"gguf\"\n    }\n  ]\n}"
+    }
+  ],
+  "файли": {
+    "C:\\Users\\gemini\\tools\\node-v24.22.1-win-x64\\node.exe": true,
+    "C:\\Users\\gemini\\kod-shi-test-node\\node_modules\\playwright\\package.json": true,
+    "C:\\Users\\gemini\\AppData\\Local\\ms-playwright\\chromium-1248\\chrome-win64\\chrome.exe": true,
+    "C:\\Users\\gemini\\tools\\python-3.12.1\\python.exe": true,
+    "C:\\Users\\gemini\\pyodide\\pyodide.js": true
+  },
+  "живий_rc": null,
+  "живий_стартував": false
+}
