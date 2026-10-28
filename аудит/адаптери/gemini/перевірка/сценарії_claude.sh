@@ -105,4 +105,17 @@ chk "не-JSON рядки таймера не скидають → HANG (є: $(l
 chk "events.tsv — лише події з типом (2), шум — у claude.jsonl" '[ "$(cat "$W"/cr/runs/*/events.tsv | wc -l)" = 2 ] && ! cut -f2 "$W"/cr/runs/*/events.tsv | tr -d "\r" | grep -qx "" && grep -q "^шум 0" "$W"/cr/runs/*/claude.jsonl'
 setup k8c; mark "$SLUG/$M/1"; FAKE_CC_SCENARIO=pause cr
 chk "події частіше за поріг, усього довше за нього → ГОТОВО (є: $(lines))" '[[ "$(lines)" == "GEMINI ОБГОРТКА: ГОТОВО claude/$SLUG "* ]]'
+
+echo "=== К9 оформлений звіт у result stream-json та приклади поза протоколом"
+for form in quote bold_period inline; do
+  setup "k9-$form"; mark "$SLUG/$M/1"; FAKE_CC_SCENARIO="report_$form" cr
+  SHA=$(git -C "$W/origin.git" rev-parse "refs/heads/claude/$SLUG" 2>/dev/null)
+  chk "оформлення $form, підсумок після звіту → ГОТОВО з SHA origin" '[ "$(lines)" = "GEMINI ОБГОРТКА: ГОТОВО claude/$SLUG $SHA МОДЕЛЬ $M" ]'
+done
+for form in example fence blockquote prompt assistant_only; do
+  code "k9-$form" "report_$form" "$M" NO_REPORT
+done
+code k9-wrong-sha report_wrong_sha "$M" NO_PUSH
+code k9-bad-branch report_bad_branch "$M" BAD_BRANCH
+
 echo; [ $BAD = 0 ] && echo "ВСЕ ✓" || echo "ЗБІЙ ✗"; exit $BAD

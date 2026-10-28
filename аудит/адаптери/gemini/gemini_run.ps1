@@ -863,7 +863,9 @@ function Complete-Status($Status, [string]$StatePath, [string]$Tail, [datetime]$
             $Status.ahead = $f.Ahead
             if ($f.Ahead -gt 0) {
                 $bundle = Join-Path $OutDir ($Status.id + '.bundle')
-                $exclude = @('^refs/remotes/origin/main', "^$($Status.start)")
+                # Позначка — опублікований коміт main, який публікатор уже отримує разом із чергою.
+                # start може бути приватним злиттям, а origin/main — свіжішим за клон публікатора.
+                $exclude = @("^$($Status.marker)")
                 [void](Invoke-Git (@('bundle', 'create', '-q', ($bundle + '.part'), "refs/heads/gemini/$($Status.slug)") + $exclude))
                 Move-Item -LiteralPath ($bundle + '.part') -Destination $bundle -Force
                 $Status.bundle = $Status.id + '.bundle'
@@ -910,7 +912,7 @@ function Resume-Interrupted {
         if (-not $text.StartsWith('STARTED {')) { continue }
         $j = $text.Substring(8) | ConvertFrom-Json
         $slot = [string](Get-JsonProp $j 'slot')
-        if ($slot -match '^[a-z]+-[0-9]$' -and -not (Test-LockFree (Join-Path $script:SlotDir "$slot.lock"))) { continue }
+        if ((Test-SlotName $slot $script:Lanes) -and -not (Test-LockFree (Join-Path $script:SlotDir "$slot.lock"))) { continue }
         $status = [ordered]@{}
         foreach ($p in $j.PSObject.Properties) { $status[$p.Name] = $p.Value }
         $status.code = 'INTERRUPTED'
@@ -965,6 +967,13 @@ function Invoke-Task($M, $Job) {
         Write-FileAtomic $statePath ('STARTED ' + ($status | ConvertTo-Json -Compress))
         $prompt = Get-Prompt $MA $taskText $sel.Engine.Name
         [System.IO.File]::WriteAllText((Join-Path $dir 'prompt.md'), $prompt, $script:Utf8)
+        $review = Get-AutoReviewState $M.Slug
+        if ($review -eq 'REVIEW_API') {
+            Enter-ReviewWait $M ([string]$Job.head)
+            $waiting = $true
+            return
+        }
+        if ($review -ne 'LIVE') { $status.code = $review; return }
         $res = Invoke-Agent $MA $start $prompt $dir $sel
         $tail = $res.Tail
         $status.code = $res.Code

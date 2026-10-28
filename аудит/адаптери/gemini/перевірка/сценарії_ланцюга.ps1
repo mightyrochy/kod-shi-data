@@ -20,7 +20,7 @@ try {
     [IO.File]::WriteAllText("$seed/джерела/a.py", '1', $utf)
     & git -C $seed add -A; & git -C $seed commit -q -m 'початкова'; & git -C $seed push -q origin main
     $bare = Join-Path $tmpRoot 'repo.git'; & git clone -q --bare $remote $bare
-    . (Join-Path $SourceDir 'gemini_publish.ps1') -WorkDir "$tmpRoot/pub" -OutboxDir "$tmpRoot/out"
+    . (Join-Path $SourceDir 'gemini_publish.ps1') -WorkDir "$tmpRoot/pub" -OutboxDir "$tmpRoot/out" -UpdateRoot "$tmpRoot/update"
     foreach ($d in @($WorkDir, (Join-Path $WorkDir 'seen'), $OutboxDir)) { [void][IO.Directory]::CreateDirectory($d) }
     $script:Repo = $bare; $script:NoHooks = Join-Path $tmpRoot 'no-hooks'
     [void](Invoke-Git @('fetch','-q','origin','+refs/heads/main:refs/remotes/origin/main'))
@@ -29,10 +29,14 @@ try {
     $script:OriginalGetPulls = (Get-Command Get-ChainPulls).ScriptBlock
     $script:Pulls = @(); $script:Ready = $false
     function Get-ChainPulls { $script:Pulls }
+    function Invoke-ChainApi([string]$Path) {
+        $sha = ($Path -split '/')[-1]
+        [pscustomobject]@{sha=$sha;commit=@{committer=@{date=[datetimeoffset]::UtcNow.AddMinutes(-1).ToString('o')}}}
+    }
     function Test-LiveModels($Config) { $script:Ready }
     function Pull([int]$Number, [string]$Branch, [string]$Sha, [string]$Owner = 'mightyrochy', [string]$Repository = 'mightyrochy/kod-shi-data') {
         <# Дані API; довільного тексту в позначки не передаємо. #>
-        [pscustomobject]@{ number=$Number; user=@{login=$Owner}; head=@{ref=$Branch;sha=$Sha;repo=@{full_name=$Repository}}; base=@{ref='main';repo=@{full_name='mightyrochy/kod-shi-data'}} }
+        [pscustomobject]@{ created_at=[datetimeoffset]::UtcNow.ToString('o'); number=$Number; user=@{login=$Owner}; head=@{ref=$Branch;sha=$Sha;repo=@{full_name=$Repository}}; base=@{ref='main';repo=@{full_name='mightyrochy/kod-shi-data'}} }
     }
     $script:Pulls = @((Pull 12 'claude/наряд' $first), (Pull 13 'codex/наряд' $first), (Pull 14 'gemini/наряд' $first), (Pull 15 'claude/чужий' $first 'чужий'), (Pull 16 'claude/форк' $first 'mightyrochy' 'чужий/форк'), (Pull 17 "gemini/автоперевірка-12-$first" $first))
     Invoke-WrapperChain
@@ -97,6 +101,28 @@ try {
     # Шаблони планувальників: повний SHA, ніякого вільного тексту з API.
     . (Join-Path $SourceDir 'queue_lanes.ps1')
     Check 'обидва планувальники можуть узяти шаблон автонаряду' ((Get-AutoTaskPath "автоперевірка-12-$newer") -ceq 'аудит/наряди/автоперевірка.md' -and (Add-AutoTaskContext "автоживий-$newer" 'текст') -match $newer)
+    # Вікно рахується за SHA й committer, а коментар не оживляє початковий архів.
+    $clock = [datetimeoffset]::UtcNow; $installed = $clock.AddDays(-2); $heads = @{}
+    $script:HeadDate = $clock.AddHours(-25)
+    function Invoke-ChainApi([string]$Path) { [pscustomobject]@{sha=($Path -split '/')[-1];commit=@{committer=@{date=$script:HeadDate.ToString('o')}}} }
+    $oldPull = Pull 70 'claude/давній' $first
+    $oldPull.created_at = $clock.AddDays(-10).ToString('o')
+    Check 'давня голова не потрапляє у початкове вікно 24 годин' (-not (Test-RecentReviewHead $oldPull $heads $installed $clock 24))
+    $script:HeadDate = $clock.AddMinutes(-1)
+    Check 'та сама давня голова не оживає від свіжих метаданих' (-not (Test-RecentReviewHead $oldPull $heads $installed $clock 24))
+    $oldPull.head.sha = $newer
+    Check 'спостережена зміна SHA оживляє PR незалежно від дати коміту' (Test-RecentReviewHead $oldPull $heads $installed $clock 24)
+    $savedHeads = ConvertFrom-Json ($heads | ConvertTo-Json -Depth 5)
+    $headsAgain = @{}; foreach ($entry in $savedHeads.PSObject.Properties) { $headsAgain[$entry.Name] = $entry.Value }
+    Check 'право нової голови зберігається після перезапуску й за межами вікна' (Test-RecentReviewHead $oldPull $headsAgain $installed ($clock.AddDays(3)) 24)
+    $oldPull.created_at = $clock.AddHours(-1).ToString('o'); $script:HeadDate = $clock.AddDays(-10)
+    Check 'PR, створений після встановлення, допускає й старий коміт' (Test-RecentReviewHead $oldPull @{} $installed $clock 24)
+    $oldPull.created_at = $clock.AddDays(-10).ToString('o'); $script:HeadDate = $clock.AddHours(-24)
+    Check 'ліва межа вікна включена' (Test-RecentReviewHead $oldPull @{} $installed $clock 24)
+    $script:HeadDate = $clock.AddHours(-24).AddSeconds(-1)
+    Check 'секунда до лівої межі виключена' (-not (Test-RecentReviewHead $oldPull @{} $installed $clock 24))
+    $script:HeadDate = $clock.AddMinutes(1)
+    Check 'майбутня дата коміту не вважається рухом' (-not (Test-RecentReviewHead $oldPull @{} $installed $clock 24))
     $script:DryRun = $true; $script:Pulls = @((Pull 99 'claude/наряд' $newer)); Invoke-WrapperChain
     Check 'DryRun нічого не ставить' (@(Markers | Where-Object { $_ -match 'автоперевірка-99-' }).Count -eq 0)
 } catch { "✗ виняток стенда: $($_.Exception.Message) $($_.ScriptStackTrace)"; $failures++ }

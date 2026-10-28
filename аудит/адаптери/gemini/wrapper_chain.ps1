@@ -90,6 +90,28 @@ function Get-ReviewModels($Pull, $Config) {
     @([string]$Config.codex, [string]$Config.claude)
 }
 
+function Test-RecentReviewHead($Pull, $Heads, [datetimeoffset]$Installed, [datetimeoffset]$Now, [int]$Hours) {
+    <# Новий PR після встановлення, спостережена зміна SHA або свіжа голова у першому знімку.
+
+    updated_at PR змінюють і коментарі, тому для початкового вікна читаємо дату committer точного SHA. #>
+    $n = [string]$Pull.number; $head = [string]$Pull.head.sha
+    $old = $Heads[$n]
+    if ($null -ne $old -and $old.sha -ceq $head) { return [bool]$old.eligible }
+    $eligible = $null -ne $old
+    if (-not $eligible) {
+        $created = [datetimeoffset]::Parse([string]$Pull.created_at, [Globalization.CultureInfo]::InvariantCulture)
+        $eligible = $created -ge $Installed -and $created -le $Now
+        if (-not $eligible) {
+            $commit = Invoke-ChainApi "repos/$GitHubRepo/commits/$head"
+            if ($commit.sha -cne $head) { throw 'CHAIN_HEAD' }
+            $time = [datetimeoffset]::Parse([string]$commit.commit.committer.date, [Globalization.CultureInfo]::InvariantCulture)
+            $eligible = $time -ge $Now.AddHours(-$Hours) -and $time -le $Now
+        }
+    }
+    $Heads[$n] = @{sha=$head;eligible=$eligible}
+    $eligible
+}
+
 function Invoke-WrapperChain {
     <# Чернетка -> незалежна перевірка; зміни продукту в main -> один GPU-прогін, щойно моделі доступні. #>
     if ($DryRun) { return }
@@ -102,11 +124,26 @@ function Invoke-WrapperChain {
         foreach ($path in @('аудит/наряди/автоперевірка.md','аудит/наряди/автоживий.md')) {
             if ((Invoke-Git @('cat-file','-e',"${main}:$path") -AllowFail).Code -ne 0) { throw 'CHAIN_TEMPLATE' }
         }
+        $hours = 24
+        $hoursProp = $config.PSObject.Properties['review_hours']
+        if ($null -ne $hoursProp) {
+            if ($hoursProp.Value -isnot [int] -and $hoursProp.Value -isnot [long]) { throw 'CHAIN_CONFIG' }
+            $hours = [int]$hoursProp.Value
+            if ($hours -lt 1 -or $hours -gt 168) { throw 'CHAIN_CONFIG' }
+        }
+        $now = [datetimeoffset]::UtcNow; $installed = $now; $heads = @{}
         $statePath = Join-Path $WorkDir 'chain.json'
         $last = $main; $pending = ''; $seen = @{}
         if (Test-Path -LiteralPath $statePath) {
             $state = ConvertFrom-Json ([IO.File]::ReadAllText($statePath, $script:Utf8))
             $last = [string]$state.main; $pending = [string]$state.pending
+            if ($null -ne $state.PSObject.Properties['installed_utc']) {
+                $installed = [datetimeoffset]::Parse([string]$state.installed_utc, [Globalization.CultureInfo]::InvariantCulture)
+                if ($installed -gt $now) { throw 'CHAIN_STATE' }
+            }
+            if ($null -ne $state.PSObject.Properties['heads']) {
+                foreach ($entry in $state.heads.PSObject.Properties) { $heads[$entry.Name] = $entry.Value }
+            }
             foreach ($key in @($state.reviews)) { if ($key -is [string]) { $seen[$key] = $true } }
         }
         if ($last -cnotmatch $script:ShaPattern -or (Invoke-Git @('merge-base','--is-ancestor',$last,$main) -AllowFail).Code -ne 0) { throw 'CHAIN_HISTORY' }
@@ -115,14 +152,14 @@ function Invoke-WrapperChain {
             if (@($paths | Where-Object { $_ -match '^(джерела/|каталог/|index\.html$|build\.txt$)' }).Count) { $pending = $main }
         }
         # Спершу зберігаємо виявлене злиття: збій API PR не губить наступний живий прогін.
-        Write-FileAtomic $statePath (([ordered]@{ main=$main; pending=$pending; reviews=@($seen.Keys) }) | ConvertTo-Json -Compress)
+        Write-FileAtomic $statePath (([ordered]@{ main=$main; pending=$pending; reviews=@($seen.Keys); installed_utc=$installed.ToString('o'); heads=$heads }) | ConvertTo-Json -Compress -Depth 5)
         if ($pending) {
             if ($pending -cnotmatch $script:ShaPattern) { throw 'CHAIN_STATE' }
             if (Test-LiveModels $config) {
                 Add-ChainMarker "автоживий-$pending" ([string]$config.codex) $main -Gpu
                 $pending = ''
             } else { Write-WrapperLog "ланцюг: живий $pending чекає доступу до моделей; пульсу диспетчера не потребує" }
-            Write-FileAtomic $statePath (([ordered]@{ main=$main; pending=$pending; reviews=@($seen.Keys) }) | ConvertTo-Json -Compress)
+            Write-FileAtomic $statePath (([ordered]@{ main=$main; pending=$pending; reviews=@($seen.Keys); installed_utc=$installed.ToString('o'); heads=$heads }) | ConvertTo-Json -Compress -Depth 5)
         }
         Complete-EngineDrafts
         foreach ($pr in @(Get-ChainPulls)) {
@@ -132,12 +169,15 @@ function Invoke-WrapperChain {
             if ($branch -match '/авто(перевірка|живий)-' -or $branch.Contains('..') -or $branch.EndsWith('.lock')) { continue }
             $n = [string]$pr.number
             if ($n -cnotmatch '^[1-9][0-9]{0,8}$') { continue }
+            $eligible = Test-RecentReviewHead $pr $heads $installed $now $hours
+            Write-FileAtomic $statePath (([ordered]@{ main=$main; pending=$pending; reviews=@($seen.Keys); installed_utc=$installed.ToString('o'); heads=$heads }) | ConvertTo-Json -Compress -Depth 5)
+            if (-not $eligible) { continue }
             foreach ($model in @(Get-ReviewModels $pr $config)) {
                 $key = "$n $head $model"
                 if ($seen.ContainsKey($key)) { continue }
                 Add-ChainMarker "автоперевірка-$n-$head" $model $main
                 $seen[$key] = $true
-                Write-FileAtomic $statePath (([ordered]@{ main=$main; pending=$pending; reviews=@($seen.Keys) }) | ConvertTo-Json -Compress)
+                Write-FileAtomic $statePath (([ordered]@{ main=$main; pending=$pending; reviews=@($seen.Keys); installed_utc=$installed.ToString('o'); heads=$heads }) | ConvertTo-Json -Compress -Depth 5)
             }
         }
     } catch {
