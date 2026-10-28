@@ -25,13 +25,14 @@ def головна():
                [sys.executable, "проби/zhnyva_нові_магазини.py"],
                [sys.executable, "прилади/згорнути_дошку.py", "--лише-перевірити"]]
     результати = []
-    with Path(__file__).with_name("батарея.log").open("w", encoding="utf-8") as лог:
+    with Path(__file__).with_name("батарея.log").open("w", encoding="utf-8", newline="\n") as лог:
         for команда in команди:
             початок = time.monotonic()
             print("Перевірка:", " ".join(команда[1:]), flush=True)
             прогін = subprocess.run(команда, cwd=корінь / "джерела", env=оточення,
                                      stdout=subprocess.PIPE, stderr=subprocess.STDOUT, timeout=900)
-            текст = прогін.stdout.decode("utf-8", errors="replace")
+            текст = прогін.stdout.decode("utf-8", errors="replace").replace("\r\n", "\n")
+            текст = "\n".join(рядок.rstrip() for рядок in текст.splitlines()) + "\n"
             лог.write("\n$ " + " ".join(команда) + "\n" + текст)
             лог.flush()
             результати.append(dict(команда=команда, код=прогін.returncode, секунд=round(time.monotonic() - початок, 2)))
