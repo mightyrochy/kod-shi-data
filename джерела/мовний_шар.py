@@ -2946,22 +2946,33 @@ def відповідь_повідомлень(схема, відповідь):
         return {}, [dict(де="корінь", що="one_json_object_required")]
     if not isinstance(пари, tuple):
         return {}, [dict(де="корінь", що="object_required")]
-    об, повторені = {}, set()
+    об, повторені = {}, set(_повторені_ключі_повідомлень(відповідь))
     for ключ, значення in пари:
         if ключ in об:
             повторені.add(ключ)
         об[ключ] = значення
     помилки = [dict(де=к, що="unknown_key") for к in об if к not in схема.get("properties", {})]
     вих = {}
-    for ключ in схема.get("required", []):
-        т = об.get(ключ)
-        чому = ("duplicate_key" if ключ in повторені else "required_missing" if ключ not in об
-                else "nonempty_string_required" if not isinstance(т, str) or not т.strip()
-                or len(т.strip()) < схема.get("properties", {}).get(ключ, {}).get("minLength", 1) or _ВМ.невідомо(т) else None)
-        if чому:
-            помилки.append(dict(де=ключ, що=чому))
-        else:
-            вих[ключ] = т.strip()
+    if схема.get("required"):
+        for ключ in схема.get("required", []):
+            т = об.get(ключ)
+            чому = ("duplicate_key" if ключ in повторені else "required_missing" if ключ not in об
+                    else "nonempty_string_required" if not isinstance(т, str) or not т.strip()
+                    or len(т.strip()) < схема.get("properties", {}).get(ключ, {}).get("minLength", 1) or _ВМ.невідомо(т) else None)
+            if чому:
+                помилки.append(dict(де=ключ, що=чому))
+            else:
+                вих[ключ] = т.strip()
+    else:
+        for ключ, т in об.items():
+            if ключ not in схема.get("properties", {}):
+                continue
+            чому = ("duplicate_key" if ключ in повторені
+                    else "nonempty_string_required" if not isinstance(т, str) or not т.strip() or _ВМ.невідомо(т) else None)
+            if чому:
+                помилки.append(dict(де=ключ, що=чому))
+            else:
+                вих[ключ] = т.strip()
     return вих, помилки
 
 
@@ -3002,32 +3013,19 @@ def промпт_повідомлень(розмітка, помилки=None):
 
 def прийняти_повідомлення(розмітка, відповідь):
     """Текст приймається лише за ключем заяви; пропуск і чужий ключ видимі у записі."""
-    текст = str(відповідь or "").strip()
-    рамка = re.fullmatch(r"```(?:json)?\s*\n?(.*?)\n?```", текст, re.S)
-    if рамка:
-        текст = рамка.group(1).strip()
-    try:
-        пари = _json_.loads(текст, object_pairs_hook=tuple)
-    except (ValueError, TypeError):
-        return dict(тексти={}, заяви=[dict(р, текст=None, стан="missing_text") for р in (розмітка or [])],
-                    без_відповіді=[р["ключ"] for р in (розмітка or [])], зайві_ключі=[],
-                    причина="not_json_object", помилки=[dict(де="корінь", що="one_json_object_required")],
-                    нотатки=[])
-    if not isinstance(пари, tuple):
-        return dict(тексти={}, заяви=[dict(р, текст=None, стан="missing_text") for р in (розмітка or [])],
-                    без_відповіді=[р["ключ"] for р in (розмітка or [])], зайві_ключі=[],
-                    причина="not_json_object", помилки=[dict(де="корінь", що="object_required")],
-                    нотатки=[])
-
-    об, повторені = {}, set()
-    for ключ, значення in пари:
-        if ключ in об:
-            повторені.add(ключ)
-        об[ключ] = значення
-
     ключі = _ключі_повідомлень(розмітка or [])
     дозволені = set(ключі.keys()) | set(ключі.values())
-    помилки = [dict(де=к, що="unknown_key") for к in об if к not in дозволені]
+    схема = {"type": "object", "additionalProperties": False,
+             "properties": {к: {"type": "string", "minLength": 1} for к in дозволені}}
+    об, помилки = відповідь_повідомлень(схема, відповідь)
+    if any(п.get("де") == "корінь" for п in помилки):
+        return dict(тексти={}, заяви=[dict(р, текст=None, стан="missing_text") for р in (розмітка or [])],
+                    без_відповіді=[р["ключ"] for р in (розмітка or [])], зайві_ключі=[],
+                    причина="not_json_object", помилки=помилки, нотатки=[])
+
+    повторені = _повторені_ключі_повідомлень(відповідь)
+    дублікати_помилок = {п["де"] for п in помилки if п["що"] == "duplicate_key"}
+    всі_дублі = set(повторені) | дублікати_помилок
 
     тексти, без, заяви = {}, [], []
     for р in розмітка or []:
@@ -3035,7 +3033,9 @@ def прийняти_повідомлення(розмітка, відповід
         короткий = ключі[довгий]
         є_короткий = короткий in об
         є_довгий = довгий in об
-        дубль = (короткий in повторені) or (довгий in повторені) or (є_короткий and є_довгий)
+        дубль = (короткий in всі_дублі) or (довгий in всі_дублі) or (є_короткий and є_довгий)
+
+        де_помилки = довгий if є_довгий or not є_короткий else короткий
         if дубль:
             чому = "duplicate_key"
             т = None
@@ -3049,13 +3049,9 @@ def прийняти_повідомлення(розмітка, відповід
             т = None
             чому = "required_missing"
 
-        if чому is None:
-            if not isinstance(т, str) or not т.strip() or len(т.strip()) < 1 or _ВМ.невідомо(т):
-                чому = "nonempty_string_required"
-
-        де_помилки = довгий if є_довгий or not є_короткий else короткий
         if чому:
-            помилки.append(dict(де=де_помилки, що=чому))
+            if not any(п.get("де") == де_помилки and п.get("що") == чому for п in помилки):
+                помилки.append(dict(де=де_помилки, що=чому))
             if довгий not in без:
                 без.append(довгий)
             заяви.append(dict(р, текст=None, стан="missing_text"))
@@ -3064,10 +3060,12 @@ def прийняти_повідомлення(розмітка, відповід
             заяви.append(dict(р, текст=тексти[довгий], стан="translated"))
 
     зайві = sorted(п["де"] for п in помилки if п["що"] == "unknown_key")
-    нотатки = ["duplicate_statement_keys: " + ", ".join(sorted(повторені))] if повторені else []
+    нотатки = ["duplicate_statement_keys: " + ", ".join(sorted(всі_дублі))] if всі_дублі else []
     причина = "texts_missing" if без else "schema_mismatch" if помилки else None
     return dict(тексти=тексти, заяви=заяви, без_відповіді=без, зайві_ключі=зайві,
                 причина=причина, помилки=помилки, нотатки=нотатки)
+
+
 # ══ ХІД РОЗМОВИ: МОВНА МОДЕЛЬ ВЕДЕ РОЗМОВУ (аудит/ПРОДУКТ.md п.14) ═════
 # СЛОВО ВЛАСНИКА 27.09 (змінює рішення 25.09 «перекладач»): «Не можна якісно перекладати та
 # інтерпретувати бажання людини, якщо брати кожне повідомлення окремо. Мовна модель має
