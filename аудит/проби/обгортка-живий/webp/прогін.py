@@ -41,7 +41,7 @@ def environment():
         PYTHONIOENCODING="utf-8", NODE_USE_SYSTEM_CA="1", LYUSTERKO_CATALOG="повний",
         LYUSTERKO_PYC_PYTHON=r"C:\Users\gemini\tools\python-3.12.1\python.exe")
     env["PATH"] = str(Path(NODE).parent) + os.pathsep + env["PATH"]
-    for key in ["FOTO", "DO", "SCENA", "CHROMIUM", "PASPORT", "ZHYVA", "NODE_OPTIONS", "NODE_TLS_REJECT_UNAUTHORIZED"]:
+    for key in ["FOTO", "DO", "SCENA", "CHROMIUM", "PASPORT", "ZHYVA", "NODE_TLS_REJECT_UNAUTHORIZED"]:
         env.pop(key, None)
     return env
 
