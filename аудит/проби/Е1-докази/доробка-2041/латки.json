@@ -1,0 +1,38 @@
+{
+ "база": "9e69f6d2cdc518bad39f1ed165fac436b28ca5ca",
+ "латки": [
+  {
+   "латка": "00-шляхи-приймання.patch",
+   "sha256": "9a3d8157f64af9a9834a0c31c51fcb71bb40fc159c8b28e73ede41573416bc6f"
+  },
+  {
+   "латка": "01-приймання.patch",
+   "sha256": "1bf1553ff6b1e801a90894e0d313bc27e26065f74c1645e1a292334c570e66ce"
+  },
+  {
+   "латка": "02-нічна-позначка.patch",
+   "sha256": "72fc6cf83357a4fbfc8e02f756c6ed9c86aee75d40333d2d972d714c1e4cdccf"
+  },
+  {
+   "латка": "03-нічний-стенд-CI.patch",
+   "sha256": "4f140279615c0c17ad816186ebbacd3b94bcc91d3d796a58066c4daefcdcf4ee"
+  },
+  {
+   "латка": "04-храповик.patch",
+   "sha256": "539df7ea7a74497ee28292d0da0ecc49ddac679855eb2b26c1bf531bbfac99b1"
+  }
+ ],
+ "apply_check": true,
+ "хеші": "✓ wrapper_update.ps1: 4156307A17BDAE3AF7249E532947F659E99AA1349D159239159FAE60CA7E4F2B\n✓ wrapper_probe.ps1: 85116D04C22EB64CBFF52E66BCEAE9B1091577A889EDD58A8B634093A82BDBC6\n✓ wrapper_chain.ps1: 5EDD80E6BF5A19873DF59EA7414C7C3D43A0E375FAAD346A237BBFBC46931E28\n✓ wrapper_health.ps1: FCE45448539D53A6B5718319842FC845DA870F39453A6B716C7AF8A2DB65B88E\n✓ gemini_run.ps1: FE77218D0CD036849391E6749EE048646B5EF739203BE5CE047D7A899CEB6599\n✓ gemini_publish.ps1: E542F2BECB9FEBE362219D1CE80548052F58B3154F37D92AD3F933A1DD51A5F5\n✓ gemini_watch.ps1: 69EFEBB07FF1AF51C382B753A95C50F3C1AC27B3008F2489992BEBE3FD0213AA\n✓ queue_lanes.ps1: DBCDADC3DFBD68DE689A9A41688A6AFDDDB38EF76B3BE130151B9827C1F6AF30\n✓ claude_run.ps1: 1D1991F21D13FAE00EE743ED6AA20EFA5B172CB8F9DB3CF3EBA4B0B420E11E4A\n",
+ "ніч": "✔ до 02:00 UTC позначки немає\n✔ ніч займає звичайну смугу та GPU\n✔ новий main тієї самої доби не створює другий запуск\n✔ наступна доба має власну гілку й чинний main\n✔ нічна гілка читає постійний шаблон\n✔ звичайний наряд читає власний файл\n✔ автонаряд зберігає шлях шаблону Е0\n✔ автонаряд зберігає шлях шаблону Е0\n✔ адаптер називає справжнє джерело нічного наряду\n✔ без шаблону в main запуску немає\n",
+ "крок_CI": {
+  "name": "записані сцени через продукт",
+  "env": {
+   "NODE_PATH": "джерела/node_modules",
+   "REPLAY_BASE_BUILD": "${{ runner.temp }}/main-pokaz",
+   "REPLAY_BASE_ROOT": "${{ runner.temp }}/main-replay"
+  },
+  "run": "node аудит/проби/приймання_записів.js \"${RUNNER_TEMP}/pokaz\" \"${RUNNER_TEMP}/pyodide\" \\\n  \"${RUNNER_TEMP}/replay\" ${{ matrix.chastyna }} 10\nGITHUB_TOKEN=\"${{ github.event_name == 'push' && github.token || '' }}\" node аудит/проби/живий_після_CI.js \"${RUNNER_TEMP}/replay\"\n"
+ },
+ "частин": 10
+}
