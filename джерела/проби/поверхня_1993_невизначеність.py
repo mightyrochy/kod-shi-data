@@ -18,6 +18,7 @@ def main():
         assert з['збагачення_межі'] == з['межі'], з
         assert not з['суд_палітри'] and з['суд_колір'] != 'виміряно з фото', з
         assert 'colour_partly_measured' in з['суд_свідок'] and not any(к.startswith('colour_word') for к in з['суд_свідок']), з
+        assert 'colour_partly_measured' in з['суд_заяви'] and 'colour_unknown_not_checked' not in з['суд_заяви'], з
         print(з['ключ'], 'точки нема; світлота й хрома збережені; палітра невідомо')
     сегмент = dict(lab=[60, 12, 0], хрома=[12, 3], тон=[350, 10], слово='рожевий')
     сегмент['колір_не_вимір'] = П.межі_сегмента(сегмент)

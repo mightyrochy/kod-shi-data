@@ -1757,7 +1757,8 @@ def вердикт(річ, F, T, сцен=None, source="uncontrolled", intent="c
         рівня_нема = рівень == "личить"
         рівень = "невідомо" if рівня_нема else рівень
         про_колір = ([_ВМ.заява("cannot_say_if_suits")] if рівня_нема else []) \
-            + [_ВМ.заява("colour_unknown_not_checked")]
+            + [_ВМ.заява("colour_partly_measured" if (_КР.не_вимір(вим) or {}).get("свідок") == "partial_measure"
+                        else "colour_unknown_not_checked")]
     elif not річ.get("фото"):
         про_колір = [_ВМ.заява("colour_from_her_words_not_photo",
                                colour=_вільний(річ.get("колір")))]
