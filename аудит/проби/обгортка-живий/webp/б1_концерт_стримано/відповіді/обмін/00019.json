@@ -1,0 +1,27 @@
+{
+ "версія": 1,
+ "запит": {
+  "model": "qwen/qwen3.5-9b",
+  "max_tokens": 4000,
+  "messages": [
+   {
+    "role": "user",
+    "content": [
+     {
+      "type": "text",
+      "text": "{\"task\": {\"role\": \"You read the description of an outfit and list its items as data.\", \"rules\": [\"One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.\", \"A slot the description says is not needed is not an item: give it worn false. One item carries one thing — of two alternatives list the first; a note in brackets is not an item.\", \"Slot \\\"accessory\\\" is for an item no other slot fits.\", \"\\\"is_outfit\\\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note; then items is empty.\"], \"limits\": [\"Rely only on the input: do not invent what it does not contain.\", \"The answer is one JSON object following \\\"answer_schema\\\", without explanations and without ```.\"], \"language\": \"English\", \"answer\": \"ITEM_LIST\", \"answer_schema\": {\"is_outfit\": \"yes|no\", \"items\": [{\"name\": \"<what the item is>\", \"details\": \"<its cut, length and fabric>\", \"slot\": \"top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory\", \"color_hex\": \"<#rrggbb or null>\", \"worn\": \"<true, or false when the description says the outfit goes without it>\"}]}, \"input\": [\"\\\"description\\\" — the outfit description\"]}, \"description\": \"Black cashmere crewneck sweater, ribbed hem and cuffs, charcoal grey (#36454F), soft wool blend\\nWide-leg black wool-blend trousers, relaxed fit tapering to the ankle, jet black (#000000), heavy tweed weave\\nLeather Chelsea boots, rounded toe, deep midnight blue (#191970), smooth calfskin leather\\nMinimalist gold-plated chain necklace and small silver hoop earrings, polished metal finish\\n\\nThis outfit works because it balances the relaxed nature of a rock concert with her request for a classic, unflustered aesthetic through dark, high-quality fabrics. The choice of neat formality ensures she looks put-together yet comfortable enough to walk around the club without restriction. Darker tones like charcoal and midnight blue are perfect for autumn evenings under artificial lighting while maintaining a timeless silhouette.\"}"
+     }
+    ]
+   }
+  ],
+  "temperature": 1
+ },
+ "відповідь": {
+  "status": 200,
+  "contentType": "application/json",
+  "headers": {
+   "x-model": "qwen/qwen3.5-9b"
+  },
+  "body": "{\"content\":[{\"type\":\"text\",\"text\":\"{\\n  \\\"is_outfit\\\": true,\\n  \\\"items\\\": [\\n    {\\n      \\\"name\\\": \\\"crewneck sweater\\\",\\n      \\\"details\\\": \\\"black cashmere crewneck with ribbed hem and cuffs, soft wool blend\\\",\\n      \\\"slot\\\": \\\"top\\\",\\n      \\\"color_hex\\\": \\\"#36454F\\\",\\n      \\\"worn\\\": true\\n    },\\n    {\\n      \\\"name\\\": \\\"wide-leg trousers\\\",\\n      \\\"details\\\": \\\"black wool-blend, relaxed fit tapering to the ankle, heavy tweed weave\\\",\\n      \\\"slot\\\": \\\"bottom\\\",\\n      \\\"color_hex\\\": \\\"#000000\\\",\\n      \\\"worn\\\": true\\n    },\\n    {\\n      \\\"name\\\": \\\"Chelsea boots\\\",\\n      \\\"details\\\": \\\"leather, rounded toe, smooth calfskin leather\\\",\\n      \\\"slot\\\": \\\"shoes\\\",\\n      \\\"color_hex\\\": \\\"#191970\\\",\\n      \\\"worn\\\": true\\n    },\\n    {\\n      \\\"name\\\": \\\"chain necklace\\\",\\n      \\\"details\\\": \\\"minimalist gold-plated chain\\\",\\n      \\\"slot\\\": \\\"jewelry\\\",\\n      \\\"color_hex\\\": null,\\n      \\\"worn\\\": false\\n    },\\n    {\\n      \\\"name\\\": \\\"hoop earrings\\\",\\n      \\\"details\\\": \\\"small silver hoop\\\",\\n      \\\"slot\\\": \\\"earrings\\\",\\n      \\\"color_hex\\\": null,\\n      \\\"worn\\\": false\\n    }\\n  ]\\n}\"}],\"usage\":{\"input_tokens\":553,\"output_tokens\":324},\"stop_reason\":\"end_turn\"}"
+ }
+}
