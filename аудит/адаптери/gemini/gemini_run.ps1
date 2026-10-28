@@ -863,7 +863,9 @@ function Complete-Status($Status, [string]$StatePath, [string]$Tail, [datetime]$
             $Status.ahead = $f.Ahead
             if ($f.Ahead -gt 0) {
                 $bundle = Join-Path $OutDir ($Status.id + '.bundle')
-                $exclude = @('^refs/remotes/origin/main', "^$($Status.start)")
+                # Позначка — опублікований коміт main, який публікатор уже отримує разом із чергою.
+                # start може бути приватним злиттям, а origin/main — свіжішим за клон публікатора.
+                $exclude = @("^$($Status.marker)")
                 [void](Invoke-Git (@('bundle', 'create', '-q', ($bundle + '.part'), "refs/heads/gemini/$($Status.slug)") + $exclude))
                 Move-Item -LiteralPath ($bundle + '.part') -Destination $bundle -Force
                 $Status.bundle = $Status.id + '.bundle'

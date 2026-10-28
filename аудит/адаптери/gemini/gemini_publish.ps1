@@ -189,7 +189,11 @@ function Publish-Bundle($S, [string]$Id) {
     $copy = Join-Path (Join-Path $WorkDir 'inbox') ($Id + '.bundle')
     Copy-Item -LiteralPath $src -Destination $copy -Force
     try {
-        if ((Invoke-Git @('bundle', 'verify', '-q', $copy) -AllowFail).Code -ne 0) { return @('BUNDLE_INVALID', 0) }
+        $verify = Invoke-Git @('bundle', 'verify', $copy) -AllowFail
+        if ($verify.Code -ne 0) {
+            Write-WrapperLog "бандл $Id — git bundle verify -> $($verify.Code): $($verify.Out.Trim()) $($verify.Err.Trim())"
+            return @('BUNDLE_INVALID', 0)
+        }
         $heads = @((Invoke-Git @('bundle', 'list-heads', $copy)).Out -split "`n" | Where-Object { $_.Trim() })
         $slug = [string](Get-Prop $S 'slug')
         $want = (Get-Prop $S 'head') + ' refs/heads/gemini/' + $slug
