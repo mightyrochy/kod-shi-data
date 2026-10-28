@@ -23,19 +23,22 @@ def головна():
     os.chdir(код)
     sys.path.insert(0, str(код))
     os.environ.update(PYTHONUTF8="1", PYTHONIOENCODING="utf-8", NODE_PATH=str(код / "node_modules"))
-    if режим == "каталог":
+    if режим in ("каталог", "сегменти"):
         import feed
         import фід_каталог as ФК
         import колір_річ as КР
         import композитор_річ as КП
         import outfit as О
         import colorspace as КС
-        знімок = ФК.прочитати_каталог(feed.каталог_на_диску(), 0)
-        записати(вихід / "каталог.json", знімок)
+        знімок = (ФК.прочитати_каталог(feed.каталог_на_диску(), 0) if режим == "каталог" else
+                  json.loads(Path(sys.argv[4]).read_text(encoding="utf-8")))
+        if режим == "каталог":
+            записати(вихід / "каталог.json", знімок)
         кат = знімок["каталог"]
         факти = dict(записів=len(кат), типи=dict(collections.Counter(КР.тип_кольору(р) for р in кат))
                      if hasattr(КР, "тип_кольору") else {}, сегментів=0, втрат=0, спотворень=0, максимум=0,
                      без_точки=0, без_меж=0)
+        спотворені_речі = set()
         for р in кат:
             факти["без_точки"] += КР.точка_кольору(р) is None
             факти["без_меж"] += КР.межі_кольору(р) is None
@@ -51,12 +54,27 @@ def головна():
                     if о is not None:
                         d = КС.de00(т, о)
                         факти["спотворень"] += d > 1
+                        if d > 1:
+                            спотворені_речі.add(р["id"])
                         факти["максимум"] = max(факти["максимум"], d)
                 else:
                     assert о is None
+        факти["спотворених_речей"] = len(спотворені_речі)
         записати(вихід / "каталог-підсумок.json", факти)
         print(json.dumps(факти, ensure_ascii=False), flush=True)
         return 0
+    if режим == "регресії":
+        прилад = Path(sys.argv[4]).resolve()
+        зведення = []
+        for ім in ("два", "невідомо", "полюс"):
+            команда = [sys.executable, str(прилад), str(дерево), ім]
+            р = subprocess.run(команда, cwd=код, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+            (вихід / (ім + ".txt")).write_bytes(р.stdout)
+            зведення.append(dict(команда=команда, код=р.returncode,
+                                 вивід=р.stdout.decode("utf-8", errors="replace")))
+        записати(вихід / "регресії.json", зведення)
+        print(json.dumps(зведення, ensure_ascii=False), flush=True)
+        return int(any(р["код"] for р in зведення))
     if режим == "межі":
         import колір_річ as КР
         import фід_збагачення as ФЗ
@@ -103,6 +121,25 @@ def головна():
                               приклад=next(р for р in результати if р["id"] == "ж-07553@brenda.ua")),
                          ensure_ascii=False), flush=True)
         return 0
+    if режим == "історичні":
+        os.environ.update(GIT_CONFIG_COUNT="1", GIT_CONFIG_KEY_0="core.quotepath", GIT_CONFIG_VALUE_0="false")
+        вхід = дерево / "аудит/тести/власник_2026-10-14/verdykty-0phxvk-2026-10-14-1551.json"
+        теки = sorted({str(п.parent) for п in (дерево / "аудит").rglob("*проза_рука_3_4.txt")})
+        assert вхід.is_file() and теки
+        print("Історичний JSON знайдено; тек прози:", len(теки), flush=True)
+        команди = [(ім, [str(вхід)]) for ім in ("колір_кадр_слово_5222", "колір_кадр_слово_5223")]
+        команди += [(ім, теки) for ім in ("колір_названо", "колір_прози_шар")]
+        команди.append(("колір_ярлик_hex", ["HEAD:аудит"]))
+        результати = []
+        for ім, арг in команди:
+            команда = [sys.executable, str(код / "проби" / (ім + ".py")), *арг]
+            with (вихід / (ім + ".txt")).open("wb") as журнал:
+                к = subprocess.run(команда, cwd=дерево if ім == "колір_ярлик_hex" else код,
+                                   stdout=журнал, stderr=subprocess.STDOUT).returncode
+            результати.append(dict(назва=ім, команда=команда, код=к))
+            print(ім, "код", к, flush=True)
+        записати(вихід / "результати.json", результати)
+        return int(any(р["код"] for р in результати))
     if режим == "батарея":
         результати = []
 
