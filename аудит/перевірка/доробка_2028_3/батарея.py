@@ -23,12 +23,12 @@ def головна():
         sha=subprocess.check_output(["git", "rev-parse", "HEAD"], cwd=корінь, text=True).strip(),
         python=sys.version, node=subprocess.check_output(["node", "--version"], text=True).strip(),
         платформа=sys.platform, файли_продукту={ім: hashlib.sha256((корінь / ім).read_bytes()).hexdigest()
-            for ім in ("джерела/palettes.py", "джерела/суд_від_моделі.py", "джерела/міст_основи.py", "джерела/показ/палітра.js")}), ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+            for ім in ("джерела/palettes.py", "джерела/суд_від_моделі.py", "джерела/міст_основи.py", "джерела/показ/палітра.js", "джерела/композитор_слоти.py")}), ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
     команди = [[sys.executable, *арг] for арг in (
         ["стенд_знімок.py", "--дим"], ["тест_живого_шляху.py"], ["тест_протоколу.py"],
         ["прилади/розділи_гейтів.py"], ["audit_contracts.py"])]
     команди.append(["node", "тест_показу.js"])
-    команди += [[sys.executable, "проби/поділ_" + ім + "_ast.py"] for ім in ("palette", "bridge", "pipeline")]
+    команди += [[sys.executable, "проби/поділ_" + ім + "_ast.py"] for ім in ("palette", "bridge", "pipeline", "composer")]
     команди += [[sys.executable, str(п.relative_to(джерела))] for п in sorted((джерела / "проби").glob("pal_*.py"))
                 if п.name not in ("pal_вердикт.py", "pal_вимір.py")]
     сусідні = set()
