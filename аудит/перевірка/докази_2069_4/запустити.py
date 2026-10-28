@@ -61,6 +61,19 @@ def main():
         return штатні(("власні", "сім’я", "послідовні", "батарея"))
     if режим == "читачі":
         return команда([sys.executable, ТЕКА / "читачі.py"], "читачі.txt")
+    if режим == "фінал":
+        коди = []
+        for арг, назва in (
+            ([sys.executable, "джерела/прилади/згорнути_дошку.py", "--лише-перевірити"], "дошка.txt"),
+            (["git", "diff", "--exit-code", "878370b0985c18988fdda88ef6ba7a8bffe5dc59", "HEAD", "--",
+              "zhnyvarka", "джерела", ".github", "аудит/адаптери/gemini"], "код-після-злиття.txt"),
+            (["git", "diff", "--exit-code", "39989dd42a49625c74c1593aaafc249f44fc54c0", "HEAD", "--",
+              ".github", "аудит/адаптери/gemini"], "захищені-шляхи.txt"),
+            (["git", "diff", "--exit-code", "--", "аудит/перевірка/докази_2069_3"], "старі-докази.txt"),
+            (["git", "diff", "--cached", "--check", "--", ".", ":(exclude)аудит/перевірка/докази_2069_4/*.txt"], "диф.txt"),
+        ):
+            коди.append(команда(арг, назва))
+        return int(any(коди))
     if режим == "чутливість":
         with tempfile.TemporaryDirectory(prefix="review-2069-4-broken-") as дім:
             дім = Path(дім)

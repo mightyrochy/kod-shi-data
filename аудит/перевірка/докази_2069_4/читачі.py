@@ -19,6 +19,7 @@ import tempfile
     "джерела/прилади/назви_карток_зібрати.py": {"назви_із_жнив"},
     "zhnyvarka/json_прохід.py": {"журнал_збігається", "позначити"},
     "zhnyvarka/складальник.py": {"читати_записи", "писати_записи"},
+    "zhnyvarka/журнал_артефакт.py": {"розпакувати"},
 }
 
 
@@ -37,9 +38,9 @@ def знайти(sha):
                 if not isinstance(в, ast.Call):
                     continue
                 ім = в.func.id if isinstance(в.func, ast.Name) else в.func.attr if isinstance(в.func, ast.Attribute) else ""
-                if ім not in {"open", "read_bytes", "read_text", "write_text", "NamedTemporaryFile", "GzipFile"}:
+                if ім not in {"open", "read_bytes", "read_text", "write_text", "NamedTemporaryFile", "GzipFile", "extractall"}:
                     continue
-                група = ("SHA256" if файл.endswith("json_прохід.py") else
+                група = ("перенесення байтів" if ім == "extractall" else "SHA256" if файл.endswith("json_прохід.py") else
                          "каталог v1" if файл.endswith("складальник.py") else "зміст жнив")
                 рядки.append(dict(файл=файл, рядок=в.lineno, функція=ф.name, операція=ім, група=група))
     файл = ".github/workflows/zhnyva.yml"
@@ -78,7 +79,7 @@ def main():
         for р in знайдені:
             print(f"{р['файл']}:{р['рядок']} | {р['функція']} | {р['операція']} | {р['група']}")
         print(json.dumps(dict(усього=len(знайдені), зміст_жнив=sum(р["група"] == "зміст жнив" for р in знайдені),
-                              SHA256=2, вивід_байтів=1, каталог_v1=2), ensure_ascii=False))
+                              SHA256=2, вивід_байтів=1, перенесення_байтів=1, каталог_v1=2), ensure_ascii=False))
         for файл, ім in (("джерела/прилади/назви_карток_зібрати.py", "назви_із_жнив"),
                         ("zhnyvarka/складальник.py", "читати_записи")):
             перевірити_читача(sha, файл, ім)

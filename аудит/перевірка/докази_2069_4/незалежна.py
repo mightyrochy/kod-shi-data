@@ -48,8 +48,12 @@ def обхід(дім, сім, домени):
                 asyncio.run(збирач._магазин(AsyncMock(), рецепт, asyncio.Semaphore(1)))
         return {д: (0, False) for д in магазини}
 
-    with patch.object(о, "запустити_крамниці", запуск):
-        о.main(["--журнал", str(дім), "--магазини", ",".join(домени), "--циклів", "1"])
+    try:
+        with patch.object(о, "запустити_крамниці", запуск):
+            о.main(["--журнал", str(дім), "--магазини", ",".join(домени), "--циклів", "1"])
+    except Exception as e:
+        e.вимір_HTTP, e.вимір_запуски = HTTP, запуски
+        raise
     return HTTP, запуски
 
 
@@ -158,7 +162,9 @@ def main():
                     факт["пройдено"] &= not потребує or діагноз
                 except Exception as e:
                     факт = dict(сімейство=сім, файл=джерело, обрив=обрив, пройдено=False,
-                                виняток=f"{type(e).__name__}: {e}")
+                                виняток=f"{type(e).__name__}: {e}",
+                                HTTP_до_винятку=getattr(e, "вимір_HTTP", None),
+                                запуск_до_винятку=getattr(e, "вимір_запуски", None))
                 результати.append(факт)
                 print(json.dumps(факт, ensure_ascii=False), flush=True)
     for джерело in ("зведення", "стан", "JSONL", "курсор_JSON", "фізичний_курсор"):
