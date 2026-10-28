@@ -80,8 +80,8 @@ def скомпілювати(модулі, компілятор=None):
     if not компілятор:
         raise RuntimeError("байткод: CPython 3.12.1 недоступний; задайте LYUSTERKO_PYC_PYTHON")
     вхід = {і: base64.b64encode(д).decode("ascii") for і, д in sorted(модулі.items())}
-    процес = subprocess.run([компілятор, "-I", "-c", _КОМПІЛЯТОР],
-        input=json.dumps(вхід), capture_output=True, text=True, check=False)
+    процес = subprocess.run([компілятор, "-I", "-X", "utf8", "-c", _КОМПІЛЯТОР],
+        input=json.dumps(вхід), capture_output=True, text=True, encoding="utf-8", check=False)
     if процес.returncode:
         raise RuntimeError("байткод: компілятор відмовив: " + процес.stderr.strip())
     відповідь = json.loads(процес.stdout)

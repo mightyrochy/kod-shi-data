@@ -1,0 +1,10 @@
+Traceback (most recent call last):
+  File "C:\Users\gemini\gemini-runs\w\codex-3\джерела\проби\промпти3_допит_6215.py", line 22, in <module>
+    файли = [ф for ф in git("ls-tree", "-r", "--name-only", ГІЛКА, ТЕКА).splitlines() if "/VIDPOVIDI/" in ф]
+                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\gemini\gemini-runs\w\codex-3\джерела\проби\промпти3_допит_6215.py", line 10, in <lambda>
+    git = lambda *а: subprocess.run(["git", "-C", "..", "-c", "core.quotepath=off"] + list(а), capture_output=True, check=True).stdout.decode()
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\gemini\AppData\Local\Programs\Python\Python312\Lib\subprocess.py", line 571, in run
+    raise CalledProcessError(retcode, process.args,
+subprocess.CalledProcessError: Command '['git', '-C', '..', '-c', 'core.quotepath=off', 'ls-tree', '-r', '--name-only', 'origin/claude/zhyvi-1016-1', 'аудит/живі_1016_1']' returned non-zero exit status 128.

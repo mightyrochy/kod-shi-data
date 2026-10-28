@@ -1,0 +1,43 @@
+python : C:\Users\gemini\gemini-runs\w\codex-1\джерела\build_артефакт.py:1024: SyntaxWarning: invalid escape sequence '
+\*'
+At line:2 char:918
++ ... +$env:PATH; python джерела/build_артефакт.py джерела 'C:\Users\gemini ...
++                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (C:\Users\gemini...e sequence '\*':String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+  ЧОМУ СВІЙ СКАНЕР, А НЕ `re`. `/\*.*?\*/` зняв би «коментар» усередині
+<unknown>:453: SyntaxWarning: invalid escape sequence '\A'
+<unknown>:924: SyntaxWarning: invalid escape sequence '\A'
+<unknown>:453: SyntaxWarning: invalid escape sequence '\A'
+<unknown>:924: SyntaxWarning: invalid escape sequence '\A'
+Exception in thread Thread-3 (_readerthread):
+Traceback (most recent call last):
+  File "C:\Users\gemini\AppData\Local\Programs\Python\Python312\Lib\threading.py", line 1075, in _bootstrap_inner
+    self.run()
+  File "C:\Users\gemini\AppData\Local\Programs\Python\Python312\Lib\threading.py", line 1012, in run
+    self._target(*self._args, **self._kwargs)
+  File "C:\Users\gemini\AppData\Local\Programs\Python\Python312\Lib\subprocess.py", line 1599, in _readerthread
+    buffer.append(fh.read())
+                  ^^^^^^^^^
+  File "<frozen codecs>", line 322, in decode
+UnicodeDecodeError: 'utf-8' codec can't decode byte 0xe2 in position 2: invalid continuation byte
+  вантаж: фід ← каталог_повний.xml (53873 КБ, чистий)
+Traceback (most recent call last):
+  File "C:\Users\gemini\gemini-runs\w\codex-1\джерела\build_артефакт.py", line 1742, in <module>
+    зібрати_показ(sys.argv[1], sys.argv[2], повний=(режим == "показ-повний"))
+  File "C:\Users\gemini\gemini-runs\w\codex-1\джерела\build_артефакт.py", line 1415, in зібрати_показ
+    сирі_zip, імена = _зібрати_zip_показу(джерело, повний, каталог)
+                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\gemini\gemini-runs\w\codex-1\джерела\build_артефакт.py", line 954, in _зібрати_zip_показу
+    return _зібрати_zip_лайт(джерело, каталог, байткод=True)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\gemini\gemini-runs\w\codex-1\джерела\build_артефакт.py", line 668, in _зібрати_zip_лайт
+    додаткові = скомпілювати(модулі)
+                ^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\gemini\gemini-runs\w\codex-1\джерела\build_байткод.py", line 87, in скомпілювати
+    відповідь = json.loads(процес.stdout)
+                ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\gemini\AppData\Local\Programs\Python\Python312\Lib\json\__init__.py", line 339, in loads
+    raise TypeError(f'the JSON object must be str, bytes or bytearray, '
+TypeError: the JSON object must be str, bytes or bytearray, not NoneType
