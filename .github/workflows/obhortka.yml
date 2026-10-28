@@ -1,15 +1,23 @@
 name: стенди обгортки
 
 on:
+  schedule:
+    - cron: '0 2 * * *'
   pull_request:
     branches: [main]
     paths:
       - 'аудит/адаптери/gemini/**'
+      - 'аудит/проби/перевірити_нічний_маркер.ps1'
+      - 'аудит/проби/нічний_наряд.md'
+      - 'аудит/проби/поставити_нічну_позначку.py'
       - '.github/workflows/obhortka.yml'
   push:
     branches: [main]
     paths:
       - 'аудит/адаптери/gemini/**'
+      - 'аудит/проби/перевірити_нічний_маркер.ps1'
+      - 'аудит/проби/нічний_наряд.md'
+      - 'аудит/проби/поставити_нічну_позначку.py'
       - '.github/workflows/obhortka.yml'
 
 permissions:
@@ -20,7 +28,24 @@ concurrency:
   cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
+  nichna_poznachka:
+    name: довірений дозвіл нічного прогону
+    if: github.event_name == 'schedule' && github.repository == 'mightyrochy/kod-shi-data'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
+        with:
+          persist-credentials: false
+      - name: датована гілка черги без пересування наявної
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: python3 аудит/проби/поставити_нічну_позначку.py
+
   obhortka:
+    if: github.event_name != 'schedule'
     name: обгортка — Windows PowerShell 5.1
     runs-on: windows-latest
     timeout-minutes: 60
@@ -102,3 +127,7 @@ jobs:
       - name: сценарії_ланцюга.sh
         if: ${{ !cancelled() }}
         run: bash аудит/адаптери/gemini/перевірка/запустити_стенд.sh сценарії_ланцюга.sh
+
+      - name: нічна позначка за UTC, одна на добу
+        if: ${{ !cancelled() }}
+        run: powershell.exe -NoProfile -ExecutionPolicy Bypass -File аудит/проби/перевірити_нічний_маркер.ps1 -WrapperRoot аудит/адаптери/gemini

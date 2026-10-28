@@ -1,7 +1,8 @@
 diff --git a/.github/workflows/zbirka.yml b/.github/workflows/zbirka.yml
+index bd710c3f0..bd1477297 100644
 --- a/.github/workflows/zbirka.yml
 +++ b/.github/workflows/zbirka.yml
-@@ -229,7 +230,6 @@
+@@ -230,7 +230,6 @@ jobs:
  
        - name: стенд у браузері (Chromium + Pyodide, 20 звірок)
          id: stend
@@ -9,7 +10,7 @@ diff --git a/.github/workflows/zbirka.yml b/.github/workflows/zbirka.yml
          env:
            LYUSTERKO_PYC_PYTHON: ${{ steps.pyc_python.outputs.python-path }}
          run: |
-@@ -273,11 +273,66 @@
+@@ -274,12 +273,67 @@ jobs:
              if [ -f стенд.log ]; then
                ZELENYH=$(grep -cE '^  ✔' стенд.log || true)
                CHERVONYH=$(grep -cE '^  ✗' стенд.log || true)
@@ -19,7 +20,7 @@ diff --git a/.github/workflows/zbirka.yml b/.github/workflows/zbirka.yml
                echo "- \`node аудит/проби/рв6_стенд.js\` — крок не дійшов до виводу"
              fi
            } >> "$GITHUB_STEP_SUMMARY"
-+
+ 
 +  pryimannia:
 +    name: записаний живий шлях у Pyodide (${{ matrix.chastyna }})
 +    permissions:
@@ -74,10 +75,11 @@ diff --git a/.github/workflows/zbirka.yml b/.github/workflows/zbirka.yml
 +          path: ${{ runner.temp }}/replay
 +          if-no-files-found: error
 +          retention-days: 7
- 
++
    rozdily:
      permissions:
-@@ -386,8 +436,8 @@
+       contents: read
+@@ -387,8 +441,8 @@ jobs:
      permissions:
        contents: read
      name: зібрати показ-повний
