@@ -30,6 +30,16 @@ if sys.argv[1] in ('prepare', 'preparebase'):
     for folder in (TREE, BEFORE):
         (folder / 'джерела/каталог_повний.xml').write_bytes(catalog)
     print('ДО й ПІСЛЯ підготовлено; каталог', len(catalog), flush=True)
+elif sys.argv[1] == 'summarize':
+    results = json.loads((LOGS / 'батарея.json').read_text(encoding='utf8'))
+    prefixes = ('ПРОЙДЕНО ', 'ВИКОНАНО ЗВІРОК:', 'ПОКАЗ:', 'тест_протоколу:', 'КОНТРАКТИ', 'файлів ', 'ФАКТ')
+    for record in results:
+        output = (LOGS / (record['назва'] + '.txt')).read_text(encoding='utf8')
+        summary = '\n'.join(line for line in output.splitlines() if line.startswith(prefixes))
+        record['вивід'] = summary if summary else output[-1400:]
+    (LOGS / 'батарея.json').write_text(json.dumps(results, ensure_ascii=False, indent=2)+'\n', encoding='utf8')
+    print('Команд:', len(results), '; успішних:', sum(r['код'] == 0 for r in results))
+    assert len(results) == 12 and all(r['код'] == 0 for r in results)
 elif sys.argv[1] == 'battery':
     commands = [([sys.executable, '-X', 'utf8', file, *args], file) for file, args in (
         ('стенд_знімок.py', ['--дим']), ('тест_живого_шляху.py', []),

@@ -1,5 +1,5 @@
 """Власна перевірка фактів записів і результату моста без генерації."""
-import copy, hashlib, json, os, pathlib, re, statistics, subprocess, sys, time
+import copy, cProfile, hashlib, io, json, os, pathlib, pstats, re, statistics, subprocess, sys, time
 
 RUN = pathlib.Path(os.environ.get('KOD_SHI_REVIEW_ROOT', pathlib.Path(__file__).parent))
 TREE = RUN / 'review-2106'
@@ -31,6 +31,24 @@ if sys.argv[1] == 'audit':
     for row in actual:
         print(pathlib.Path(row['файл']).parent.parent.name,
               pathlib.Path(row['файл']).name.split('_')[1], *[row[k] for k in fields])
+elif sys.argv[1] == 'profile':
+    answer = json.loads((RUN / 'review-logs/міст-повний-після.json').read_text(encoding='utf8'))
+    verdict = P.вердикт_на_дріт(answer['вердикт'])
+    assert isinstance(verdict, dict) and verdict.get('вердикт')
+    timings = []
+    profile = cProfile.Profile()
+    for i in range(10):
+        start = time.perf_counter()
+        profile.enable()
+        wire = D.вердикт(verdict)
+        Z.зібрати(V.оголошення_ремонту(wire), wire)
+        profile.disable()
+        timings.append(time.perf_counter()-start)
+    stream = io.StringIO()
+    pstats.Stats(profile, stream=stream).strip_dirs().sort_stats('cumulative').print_stats(30)
+    tag = 'після' if SRC == TREE / 'джерела' else 'до'
+    (RUN / ('review-logs/профіль-' + tag + '.txt')).write_text(stream.getvalue(), encoding='utf8')
+    print(tag, '10 перетворень і промптів, медіана:', statistics.median(timings))
 elif sys.argv[1] == 'records':
     sha = 'dd1327c9a809f03ffb7663089183950b623e976c'
     prefix = 'аудит/проби/автоживий-bd628bb29a90637ae18833c92eceb8230bd9b995'
