@@ -17,6 +17,40 @@ function Get-ChainPulls {
     throw 'CHAIN_PAGES'
 }
 
+function Test-ChainCodePull($Pull) {
+    <# Повний список файлів API відрізняє документацію від коду; неповна відповідь лишає повтор. #>
+    $code = $false; $count = 0
+    for ($page = 1; $page -le 100; $page++) {
+        $items = @(Invoke-ChainApi "repos/$GitHubRepo/pulls/$($Pull.number)/files?per_page=100&page=$page")
+        foreach ($item in $items) {
+            if ($item.filename -isnot [string] -or -not $item.filename) { throw 'CHAIN_FILES' }
+            $paths = @([string]$item.filename)
+            if ($null -ne $item.PSObject.Properties['status'] -and $item.status -ceq 'renamed') {
+                if ($item.previous_filename -isnot [string] -or -not $item.previous_filename) { throw 'CHAIN_FILES' }
+                $paths += [string]$item.previous_filename
+            }
+            foreach ($path in $paths) {
+                if ($path -cnotmatch '^аудит/' -or $path -cmatch '^аудит/(адаптери|проби)/') { $code = $true }
+            }
+            $count++
+        }
+        if ($items.Count -lt 100) {
+            if (-not $count) { throw 'CHAIN_FILES' }
+            return $code
+        }
+    }
+    throw 'CHAIN_PAGES'
+}
+
+function Get-ChainBuildStamp([string]$Commit) {
+    <# Читає штамп з точного коміту; відсутня збірка чекає, пошкоджена не стає успіхом. #>
+    $exists = Invoke-Git @('ls-tree','--name-only',$Commit,'--','build.txt')
+    if (-not $exists.Out.Trim()) { return '' }
+    $stamp = (Invoke-Git @('cat-file','blob',"${Commit}:build.txt")).Out.Trim()
+    if ($stamp -cnotmatch $script:ShaPattern) { throw 'CHAIN_BUILD' }
+    $stamp
+}
+
 function Save-DraftRequest([string]$Branch, [string]$Head) {
     <# Лише підтверджена публікація DONE лишає завдання створити PR; збій API не губить його. #>
     if ($DryRun -or $Branch -cnotmatch '^gemini/[\p{L}\p{Nd}][\p{L}\p{Nd}._-]{0,79}$' -or $Head -cnotmatch $script:ShaPattern) { return }
@@ -113,7 +147,7 @@ function Test-RecentReviewHead($Pull, $Heads, [datetimeoffset]$Installed, [datet
 }
 
 function Invoke-WrapperChain {
-    <# Чернетка -> незалежна перевірка; зміни продукту в main -> один GPU-прогін, щойно моделі доступні. #>
+    <# PR коду -> незалежна перевірка; новий штамп збірки -> один GPU-прогін на коміті збірки. #>
     if ($DryRun) { return }
     $main = Get-RefSha 'refs/remotes/origin/main'
     $r = Invoke-Git @('cat-file','blob',"${main}:аудит/адаптери/gemini/ланцюг.json") -AllowFail
@@ -133,10 +167,21 @@ function Invoke-WrapperChain {
         }
         $now = [datetimeoffset]::UtcNow; $installed = $now; $heads = @{}
         $statePath = Join-Path $WorkDir 'chain.json'
-        $last = $main; $pending = ''; $seen = @{}
+        $last = $main; $seen = @{}; $liveStamps = @{}; $livePending = @(); $hasLiveState = $false
         if (Test-Path -LiteralPath $statePath) {
             $state = ConvertFrom-Json ([IO.File]::ReadAllText($statePath, $script:Utf8))
-            $last = [string]$state.main; $pending = [string]$state.pending
+            $last = [string]$state.main
+            if ($null -ne $state.PSObject.Properties['live_stamps']) {
+                $hasLiveState = $true
+                foreach ($stamp in @($state.live_stamps)) {
+                    if ($stamp -isnot [string] -or $stamp -cnotmatch $script:ShaPattern) { throw 'CHAIN_STATE' }
+                    $liveStamps[$stamp] = $true
+                }
+                $livePending = @($state.live_pending)
+                foreach ($job in $livePending) {
+                    if ($job.stamp -cnotmatch $script:ShaPattern -or $job.main -cnotmatch $script:ShaPattern -or -not $liveStamps.ContainsKey([string]$job.stamp)) { throw 'CHAIN_STATE' }
+                }
+            }
             if ($null -ne $state.PSObject.Properties['installed_utc']) {
                 $installed = [datetimeoffset]::Parse([string]$state.installed_utc, [Globalization.CultureInfo]::InvariantCulture)
                 if ($installed -gt $now) { throw 'CHAIN_STATE' }
@@ -147,37 +192,51 @@ function Invoke-WrapperChain {
             foreach ($key in @($state.reviews)) { if ($key -is [string]) { $seen[$key] = $true } }
         }
         if ($last -cnotmatch $script:ShaPattern -or (Invoke-Git @('merge-base','--is-ancestor',$last,$main) -AllowFail).Code -ne 0) { throw 'CHAIN_HISTORY' }
+        $build = Get-ChainBuildStamp $last
+        # Перший запуск або старий формат стану: поточна збірка — початкова межа, не історичний наряд.
+        if (-not $hasLiveState -and $build) { $liveStamps[$build] = $true }
         if ($last -cne $main) {
-            $paths = Get-Paths @('diff','--name-only','-z',$last,$main)
-            if (@($paths | Where-Object { $_ -match '^(джерела/|каталог/|index\.html$|build\.txt$)' }).Count) { $pending = $main }
+            $commits = (Invoke-Git @('rev-list','--first-parent','--reverse',"$last..$main")).Out
+            foreach ($commit in @($commits -split '\s+' | Where-Object { $_ })) {
+                $stamp = Get-ChainBuildStamp $commit
+                if ($stamp -and $stamp -cne $build -and -not $liveStamps.ContainsKey($stamp)) {
+                    $livePending += @{stamp=$stamp;main=$commit}
+                    $liveStamps[$stamp] = $true
+                }
+                $build = $stamp
+            }
         }
-        # Спершу зберігаємо виявлене злиття: збій API PR не губить наступний живий прогін.
-        Write-FileAtomic $statePath (([ordered]@{ main=$main; pending=$pending; reviews=@($seen.Keys); installed_utc=$installed.ToString('o'); heads=$heads }) | ConvertTo-Json -Compress -Depth 5)
-        if ($pending) {
-            if ($pending -cnotmatch $script:ShaPattern) { throw 'CHAIN_STATE' }
-            if (Test-LiveModels $config) {
-                Add-ChainMarker "автоживий-$pending" ([string]$config.codex) $main -Gpu
-                $pending = ''
-            } else { Write-WrapperLog "ланцюг: живий $pending чекає доступу до моделей; пульсу диспетчера не потребує" }
-            Write-FileAtomic $statePath (([ordered]@{ main=$main; pending=$pending; reviews=@($seen.Keys); installed_utc=$installed.ToString('o'); heads=$heads }) | ConvertTo-Json -Compress -Depth 5)
-        }
+        # Черга й ключі зберігаються до публікації; збій PR API не губить збірку.
+        Write-FileAtomic $statePath (([ordered]@{ main=$main; live_stamps=@($liveStamps.Keys); live_pending=@($livePending); reviews=@($seen.Keys); installed_utc=$installed.ToString('o'); heads=$heads }) | ConvertTo-Json -Compress -Depth 5)
+        if ($livePending.Count -and (Test-LiveModels $config)) {
+            while ($livePending.Count) {
+                $job = $livePending[0]
+                Add-ChainMarker "автоживий-$($job.stamp)" ([string]$config.codex) ([string]$job.main) -Gpu
+                $livePending = @($livePending | Select-Object -Skip 1)
+                Write-FileAtomic $statePath (([ordered]@{ main=$main; live_stamps=@($liveStamps.Keys); live_pending=@($livePending); reviews=@($seen.Keys); installed_utc=$installed.ToString('o'); heads=$heads }) | ConvertTo-Json -Compress -Depth 5)
+            }
+        } elseif ($livePending.Count) { Write-WrapperLog "ланцюг: збірки ($($livePending.Count)) чекають доступу до моделей; пульсу диспетчера не потребують" }
         Complete-EngineDrafts
         foreach ($pr in @(Get-ChainPulls)) {
             if ($pr.user.login -cne 'mightyrochy' -or $null -eq $pr.head.repo -or $pr.head.repo.full_name -cne $GitHubRepo -or $pr.base.repo.full_name -cne $GitHubRepo -or $pr.base.ref -cne 'main') { continue }
             $branch = [string]$pr.head.ref; $head = [string]$pr.head.sha
             if ($branch -cnotmatch '^(gemini|claude|codex)/([\p{L}\p{Nd}][\p{L}\p{Nd}._-]{0,79})$' -or $head -cnotmatch $script:ShaPattern) { continue }
             if ($branch -match '/авто(перевірка|живий)-' -or $branch.Contains('..') -or $branch.EndsWith('.lock')) { continue }
+            if (([string]$pr.title).Contains('[НЕ ЗЛИВАТИ]')) { continue }
             $n = [string]$pr.number
             if ($n -cnotmatch '^[1-9][0-9]{0,8}$') { continue }
             $eligible = Test-RecentReviewHead $pr $heads $installed $now $hours
-            Write-FileAtomic $statePath (([ordered]@{ main=$main; pending=$pending; reviews=@($seen.Keys); installed_utc=$installed.ToString('o'); heads=$heads }) | ConvertTo-Json -Compress -Depth 5)
+            Write-FileAtomic $statePath (([ordered]@{ main=$main; live_stamps=@($liveStamps.Keys); live_pending=@($livePending); reviews=@($seen.Keys); installed_utc=$installed.ToString('o'); heads=$heads }) | ConvertTo-Json -Compress -Depth 5)
             if (-not $eligible) { continue }
-            foreach ($model in @(Get-ReviewModels $pr $config)) {
+            $models = @(Get-ReviewModels $pr $config)
+            if (-not @($models | Where-Object { -not $seen.ContainsKey("$n $head $_") }).Count) { continue }
+            if (-not (Test-ChainCodePull $pr)) { continue }
+            foreach ($model in $models) {
                 $key = "$n $head $model"
                 if ($seen.ContainsKey($key)) { continue }
                 Add-ChainMarker "автоперевірка-$n-$head" $model $main
                 $seen[$key] = $true
-                Write-FileAtomic $statePath (([ordered]@{ main=$main; pending=$pending; reviews=@($seen.Keys); installed_utc=$installed.ToString('o'); heads=$heads }) | ConvertTo-Json -Compress -Depth 5)
+                Write-FileAtomic $statePath (([ordered]@{ main=$main; live_stamps=@($liveStamps.Keys); live_pending=@($livePending); reviews=@($seen.Keys); installed_utc=$installed.ToString('o'); heads=$heads }) | ConvertTo-Json -Compress -Depth 5)
             }
         }
     } catch {
