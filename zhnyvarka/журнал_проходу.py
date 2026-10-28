@@ -1,5 +1,6 @@
 """Черга одного проходу карток; відповіді й стан живуть поза репозиторієм."""
 import datetime
+from contextlib import closing
 import hashlib
 import json
 import os
@@ -8,12 +9,38 @@ import re
 import sqlite3
 
 ЗАВЕРШЕНІ = {"картка", "нижче_порогу", "російська_назва", "не_картка"}
+СХЕМА = (
+    "CREATE TABLE IF NOT EXISTS мета (ключ TEXT PRIMARY KEY, значення TEXT)",
+    "CREATE TABLE IF NOT EXISTS черга (url TEXT PRIMARY KEY, стан TEXT, відповідь INTEGER)",
+    "CREATE TABLE IF NOT EXISTS відповіді (ід INTEGER PRIMARY KEY, url TEXT, час TEXT, код INTEGER, "
+    "sha256 TEXT, файл TEXT, тип TEXT, кінцева TEXT)",
+)
+
+
+def підсумок_черги(база):
+    """Читає кількість URL і підтвердження переліку з одного знімка повної схеми."""
+    # Звернення до всіх таблиць не приймає частково створену схему за відому чергу.
+    база.execute("SELECT ід, url, час, код, sha256, файл, тип, кінцева FROM відповіді LIMIT 0")
+    загалом, готово = база.execute("SELECT count(*), coalesce(sum(стан='DONE'),0) FROM черга").fetchone()
+    відомо = база.execute("SELECT значення FROM мета WHERE ключ='відомо'").fetchone()
+    return загалом, готово, bool(відомо and відомо[0] == '1')
+
+
+def прочитати_чергу(шлях):
+    """Повертає знімок черги або None для відсутньої, недоствореної чи недоступної бази."""
+    try:
+        with closing(sqlite3.connect(Path(шлях).resolve().as_uri() + "?mode=ro", uri=True)) as база:
+            база.execute("BEGIN")
+            return підсумок_черги(база)
+    except sqlite3.DatabaseError:
+        return None
 
 
 class ЖурналПроходу:
     """Зберігає адреси до запиту, результат після fsync журналу карток."""
 
     def __init__(self, корінь, домен, відбиток, оновити=False, картки=None):
+        """Відновлює схему й метадані однією транзакцією перед роботою з адресами."""
         self.корінь = Path(корінь).expanduser().resolve()
         if self.корінь.is_relative_to(Path(__file__).resolve().parents[1]) or any(
                 (предок / ".git").exists() for предок in (self.корінь, *self.корінь.parents)):
@@ -23,15 +50,11 @@ class ЖурналПроходу:
         self.тека = self.корінь / домен
         self.тека.mkdir(parents=True, exist_ok=True)
         self.база = sqlite3.connect(self.тека / "черга.sqlite3")
-        self.база.executescript('''
-            CREATE TABLE IF NOT EXISTS мета (ключ TEXT PRIMARY KEY, значення TEXT);
-            CREATE TABLE IF NOT EXISTS черга (url TEXT PRIMARY KEY, стан TEXT, відповідь INTEGER);
-            CREATE TABLE IF NOT EXISTS відповіді (
-                ід INTEGER PRIMARY KEY, url TEXT, час TEXT, код INTEGER, sha256 TEXT,
-                файл TEXT, тип TEXT, кінцева TEXT);
-        ''')
-        попередній = self.база.execute("SELECT значення FROM мета WHERE ключ='відбиток'").fetchone()
         with self.база:
+            self.база.execute("BEGIN")
+            for sql in СХЕМА:
+                self.база.execute(sql)
+            попередній = self.база.execute("SELECT значення FROM мета WHERE ключ='відбиток'").fetchone()
             self.база.execute("UPDATE черга SET стан='PENDING' WHERE стан='INFLIGHT'")
             if оновити or not попередній or попередній[0] != відбиток:
                 self.база.execute("UPDATE черга SET стан='PENDING'")
@@ -121,10 +144,9 @@ class ЖурналПроходу:
 
     def звіт(self):
         """Рахує URL, а не кількість повторних спроб чи карток."""
-        загалом, готово = self.база.execute("SELECT count(*), coalesce(sum(стан='DONE'),0) FROM черга").fetchone()
-        відомо = self.база.execute("SELECT значення FROM мета WHERE ключ='відомо'").fetchone()
+        загалом, готово, відомо = підсумок_черги(self.база)
         return {"total": загалом, "done": готово, "pending": загалом - готово,
-                "queue_complete": bool(відомо and відомо[0] == '1' and загалом and загалом == готово), "source_complete": None}
+                "queue_complete": bool(відомо and загалом and загалом == готово), "source_complete": None}
 
     def закрити(self):
         """Закриває власне з'єднання після завершення крамниці."""
