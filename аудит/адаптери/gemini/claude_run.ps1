@@ -546,13 +546,13 @@ function Invoke-Task($M, $Job) {
     $statePath = Get-StatePath (Get-MarkerKey $M)
     $id = [string]$Job.id
     $main = Get-RefSha 'refs/remotes/origin/main'
-    $taskPath = "$($script:TaskDir)$($M.Slug).md"
+    $taskPath = Get-AutoTaskPath $M.Slug
     if (-not $main -or (Invoke-Git @('merge-base', '--is-ancestor', $M.Sha, $main) -AllowFail).Code -ne 0) { return (Complete-Task $M $statePath $id 'NOT_ON_MAIN') }
     if ((Invoke-Git @('cat-file', '-e', "$($M.Sha):$taskPath") -AllowFail).Code -ne 0) { return (Complete-Task $M $statePath $id 'NO_TASK_FILE') }
     if ($M.Claude -notmatch $script:ModelPattern) { return (Complete-Task $M $statePath $id 'MODEL_INVALID') }
     $exe = Find-Exe $ClaudeExe
     if (-not $exe) { return (Complete-Task $M $statePath $id 'ENGINE_MISSING') }
-    $taskText = (Invoke-Git @('cat-file', 'blob', "$($M.Sha):$taskPath")).Out
+    $taskText = Add-AutoTaskContext $M.Slug ((Invoke-Git @('cat-file', 'blob', "$($M.Sha):$taskPath")).Out)
     $cont = Get-ContinueBranch $M.Slug
     $runDir = Join-Path (Join-Path $WorkDir 'runs') $id
     [void](New-Item -ItemType Directory -Force -Path $runDir)

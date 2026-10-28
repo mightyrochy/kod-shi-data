@@ -511,3 +511,17 @@ function Reset-WorkTree([string]$Dir) {
     [void](Invoke-Git @('reset', '-q', '--hard') -Dir $Dir)
     [void](Invoke-Git @('clean', '-q', '-ffd') -Dir $Dir)
 }
+
+function Get-AutoTaskPath([string]$Slug) {
+    <# Лише два закриті шаблони нарядів із main; довільний slug лишається звичайним нарядом. #>
+    if ($Slug -cmatch '^автоперевірка-[1-9][0-9]{0,8}-[0-9a-f]{40}$') { return 'аудит/наряди/автоперевірка.md' }
+    if ($Slug -cmatch '^автоживий-[0-9a-f]{40}$') { return 'аудит/наряди/автоживий.md' }
+    $script:TaskDir + $Slug + '.md'
+}
+
+function Add-AutoTaskContext([string]$Slug, [string]$Text) {
+    <# Числа та SHA із перевіреної позначки стають даними шаблону, текст PR не стає промптом. #>
+    if ($Slug -cmatch '^автоперевірка-([1-9][0-9]{0,8})-([0-9a-f]{40})$') { return $Text + "`nДАНІ ПОЗНАЧКИ: PR #$($Matches[1]); голова $($Matches[2]); наряд $Slug.`n" }
+    if ($Slug -cmatch '^автоживий-([0-9a-f]{40})$') { return $Text + "`nДАНІ ПОЗНАЧКИ: злитий коміт $($Matches[1]); наряд $Slug.`n" }
+    $Text
+}
