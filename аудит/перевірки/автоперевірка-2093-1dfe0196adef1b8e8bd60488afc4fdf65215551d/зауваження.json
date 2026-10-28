@@ -1,0 +1,138 @@
+[
+  {
+    "випадок": "плитки: невідомий ключ",
+    "викликів": 1,
+    "перша": {
+      "update": {
+        "formality": "neat",
+        "part_of_dai": "evening"
+      }
+    },
+    "друга": {
+      "update": {
+        "formality": "neat",
+        "part_of_day": "evening"
+      }
+    },
+    "внутрішня": {
+      "formality": {
+        "from": 5,
+        "to": 6
+      }
+    },
+    "контроль_виправленої": {
+      "formality": {
+        "from": 5,
+        "to": 6
+      },
+      "part_of_day": "evening"
+    },
+    "запис": {
+      "напрям": "turn",
+      "де": "chat",
+      "модель": "запис",
+      "коли": "2026-10-28T18:13:33.935Z",
+      "вхід": {
+        "слова": "",
+        "реплік_до": 0
+      },
+      "вибірка": {
+        "temperature": 0
+      },
+      "символів_промпта": 7843,
+      "незнайомі": [
+        "update.part_of_dai"
+      ],
+      "перенесено": [
+        "update.formality.step_code"
+      ],
+      "мс": 471,
+      "внутрішня": {
+        "formality": {
+          "from": 5,
+          "to": 6
+        }
+      },
+      "частини": {}
+    }
+  },
+  {
+    "випадок": "список: виправлення другого коду",
+    "викликів": 2,
+    "перша": {
+      "update": {
+        "registers": {
+          "quote": "класично й мінімалістично",
+          "value": [
+            "classic",
+            "minimalist"
+          ]
+        }
+      },
+      "need": "build",
+      "text": "Записала стиль."
+    },
+    "друга": {
+      "update": {
+        "registers": {
+          "quote": "класично й мінімалістично",
+          "value": [
+            "classic",
+            "minimalism"
+          ]
+        }
+      },
+      "need": "build",
+      "text": "Записала стиль."
+    },
+    "внутрішня": {
+      "registers": [
+        "classic"
+      ],
+      "quotes": {
+        "registers": "класично й мінімалістично"
+      }
+    },
+    "контроль_виправленої": {
+      "registers": [
+        "classic",
+        "minimalism"
+      ],
+      "quotes": {
+        "registers": "класично й мінімалістично"
+      }
+    },
+    "запис": {
+      "напрям": "turn",
+      "де": "chat",
+      "модель": "запис",
+      "коли": "2026-10-28T18:13:34.597Z",
+      "вхід": {
+        "слова": "Класично й мінімалістично",
+        "реплік_до": 0
+      },
+      "вибірка": {
+        "temperature": 0
+      },
+      "символів_промпта": 36227,
+      "повтор": {
+        "причина": "contract: Field registers: registers[1]=minimalist. Previous value: {\"quote\": \"класично й мінімалістично\", \"value\": [\"classic\", \"minimalist\"]}. Use this field schema: {\"description\": \"реєстри стилю, якими вона сама себе описала\", \"type\": \"array\", \"items\": {\"description\": \"реєстр стилю\", \"enum\": [\"classic\", \"minimalism\", \"preppy\", \"streetwear\", \"workwear\", \"sport_chic\", \"romantic\", \"boho\", \"rock\", \"quiet_luxury\", \"gorpcore\", \"dramatic\", \"ukrainian_ethnic\", \"unknown\"]}, \"maxItems\": 2}. Return the corrected answer once; keep all known facts.",
+        "відповідь_моделі": "{\"update\":{\"registers\":{\"quote\":\"класично й мінімалістично\",\"value\":[\"classic\",\"minimalist\"]}},\"need\":\"build\",\"text\":\"Записала стиль.\"}"
+      },
+      "мс": 723,
+      "внутрішня": {
+        "registers": [
+          "classic"
+        ],
+        "quotes": {
+          "registers": "класично й мінімалістично"
+        }
+      },
+      "частини": {
+        "need": "build",
+        "text": "Записала стиль.",
+        "invite_topics": []
+      }
+    }
+  }
+]
