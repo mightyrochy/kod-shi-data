@@ -8,6 +8,12 @@ import io
 import os
 import sys
 
+ЗОВНІШНІ_ВХОДИ = {
+    "boxes": "GroundingDinoProcessor.post_process_grounded_object_detection: рамки знайдених речей xyxy.",
+    "original_sizes": "SamProcessor: вихідні розміри фото (висота, ширина) для відновлення маски.",
+    "reshaped_input_sizes": "SamProcessor: розміри фото після масштабування до входу SAM, до padding.",
+}
+
 
 def маска(шлях, слово):
     """Знаходить рамки слова GroundingDINO й об'єднує маски SAM цих рамок."""
