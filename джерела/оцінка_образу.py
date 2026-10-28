@@ -805,6 +805,11 @@ def _контраст_обличчя(F, T, записи, source):
     if not зк:
         return {}
     з = зк[0]
+    if з.get("без_входу"):
+        return dict(без_входу=dict(rule=["K-CLR-02"], check="обличчя", point=_ВМ.код_пункту("K-CLR-02"),
+                                  what={"free_text": str(з.get("суть") or ""), "lang": "uk"},
+                                  missing=[str(з.get("бракує") or з["без_входу"])],
+                                  statements=list(з.get("заяви") or [])))
     return dict(пункт=dict(бік="обличчя", пункт="K-CLR-02", правила=["K-CLR-02"],
                            стан=("пройдено" if з.get("сила") == "ok" else "провал"), що=з.get("суть")))
 
