@@ -37,25 +37,32 @@ def відсутні_поля(значення, схема, шлях=""):
 
 
 def доповнити(було, нове):
-    """Доповнити прийняте значення без заміни вже відомих фактів.
+    """Злити поля повтору: непорожня заміна перемагає, пропуски зберігають перше.
 
     Речі зі списку зіставляються лише за ідентичністю або їхнім уривком,
     тому переставлений повтор не змінює речі місцями.
     """
+    if нове is None or isinstance(нове, str) and not нове.strip() or нове == [] or нове == {}:
+        return copy.deepcopy(було)
+    if isinstance(було, dict) and "value" in було and not isinstance(нове, (dict, list)):
+        нове = {"value": нове}
     if isinstance(було, dict) and isinstance(нове, dict):
-        return {к: доповнити(в, нове[к]) if к in нове else copy.deepcopy(в) for к, в in було.items()} | {
+        return {к: доповнити(в, нове[к]) if к in нове and not (к == "quote" and М.невідомо(нове[к]))
+                else copy.deepcopy(в) for к, в in було.items()} | {
             к: copy.deepcopy(в) for к, в in нове.items() if к not in було}
     if isinstance(було, list) and isinstance(нове, list):
+        if not all(isinstance(в, dict) for в in було + нове):
+            return copy.deepcopy(нове)
         вих = []
         for в in було:
             пара = next((н for н in нове if isinstance(в, dict) and isinstance(н, dict)
                          and any(в.get(к) and в.get(к) == н.get(к) for к in ("id", "item", "quote"))), None)
             вих.append(доповнити(в, пара) if пара is not None else copy.deepcopy(в))
-        вих += [copy.deepcopy(н) for н in нове if isinstance(н, dict) and (н.get("id") or н.get("item") or н.get("quote"))
+        вих += [copy.deepcopy(н) for н in нове if н not in було
                 and not any(isinstance(в, dict) and any(н.get(к) and н.get(к) == в.get(к)
                             for к in ("id", "item", "quote")) for в in було)]
         return вих
-    return copy.deepcopy(було)
+    return copy.deepcopy(нове)
 
 
 def розбіжності(результат, сирий, поля, обовʼязкові=()):
