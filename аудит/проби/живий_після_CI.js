@@ -5,7 +5,7 @@ function погоджено(опис) {
   return /^\s*ЖИВИЙ ПІСЛЯ:[^\S\r\n]+\S[^\r\n]*$/m.test(опис || '');
 }
 
-async function погодженняPush(подія) {
+async function погодженняПушу(подія) {
   const sha = подія?.after, репозиторій = подія?.repository?.full_name;
   if (подія?.ref !== 'refs/heads/main' || !/^[0-9a-f]{40}$/.test(sha || '') ||
       репозиторій !== process.env.GITHUB_REPOSITORY) return false;
@@ -29,7 +29,7 @@ async function перевірити(тека, подія) {
   const підсумок = JSON.parse(fs.readFileSync(path.join(тека, 'підсумок.json'), 'utf8'));
   if (підсумок.some(р => р.стан === 'регрес')) throw new Error('Приймання виявило регрес');
   if (!підсумок.some(р => р.стан === 'запис застарів')) return;
-  const єПогодження = подія?.pull_request ? погоджено(подія.pull_request.body) : await погодженняPush(подія);
+  const єПогодження = подія?.pull_request ? погоджено(подія.pull_request.body) : await погодженняПушу(подія);
   if (!єПогодження)
     throw new Error('Запис застарів: потрібний рядок ЖИВИЙ ПІСЛЯ: <сцена> — <питання> в описі PR або погодження для голови push');
 }
