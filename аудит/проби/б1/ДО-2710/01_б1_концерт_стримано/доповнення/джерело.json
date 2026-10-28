@@ -1,0 +1,465 @@
+{
+ "початок": "2026-10-27T22:03:19.800Z",
+ "sha": "b81c1b9db9c5f545de8295228cc2a7ce6670859e",
+ "ключ": "9a4f8f36a6a644aa2eefa1c6ab15e561ba17620d02aaf64be030a1603affb56a",
+ "до": {
+  "models": [
+   {
+    "type": "llm",
+    "publisher": "skypro1111",
+    "key": "lapa-v0.1.3-instruct",
+    "display_name": "Lapa v0.1.3 Instruct",
+    "architecture": "gemma3",
+    "quantization": {
+     "name": "Q8_0",
+     "bits_per_weight": 8
+    },
+    "size_bytes": 12510503072,
+    "params_string": "12B",
+    "loaded_instances": [],
+    "max_context_length": 131072,
+    "format": "gguf",
+    "capabilities": {
+     "vision": false,
+     "trained_for_tool_use": false
+    },
+    "description": null
+   },
+   {
+    "type": "llm",
+    "publisher": "unsloth",
+    "key": "gemma-4-e4b-it",
+    "display_name": "Gemma 4 E4B Instruct",
+    "architecture": "gemma4",
+    "quantization": {
+     "name": "Q4_K_M",
+     "bits_per_weight": 4
+    },
+    "size_bytes": 4977171584,
+    "params_string": "7.5B",
+    "loaded_instances": [],
+    "max_context_length": 131072,
+    "format": "gguf",
+    "capabilities": {
+     "vision": false,
+     "trained_for_tool_use": true,
+     "reasoning": {
+      "allowed_options": [
+       "off",
+       "on"
+      ],
+      "default": "on"
+     }
+    },
+    "description": null
+   },
+   {
+    "type": "llm",
+    "publisher": "unsloth",
+    "key": "gemma-4-12b-it",
+    "display_name": "Gemma 4 12B Instruct",
+    "architecture": "gemma4",
+    "quantization": {
+     "name": "Q3_K_M",
+     "bits_per_weight": 3
+    },
+    "size_bytes": 5868988800,
+    "params_string": "12B",
+    "loaded_instances": [],
+    "max_context_length": 262144,
+    "format": "gguf",
+    "capabilities": {
+     "vision": true,
+     "trained_for_tool_use": true,
+     "reasoning": {
+      "allowed_options": [
+       "off",
+       "on"
+      ],
+      "default": "on"
+     }
+    },
+    "description": null
+   },
+   {
+    "type": "llm",
+    "publisher": "INSAIT-Institute",
+    "key": "mamaylm-gemma-3-12b-it-v2.0",
+    "display_name": "MamayLM Gemma 3 12B Instruct v2.0",
+    "architecture": "gemma3",
+    "quantization": {
+     "name": "Q4_K_M",
+     "bits_per_weight": 4
+    },
+    "size_bytes": 7300778784,
+    "params_string": "12B",
+    "loaded_instances": [],
+    "max_context_length": 131072,
+    "format": "gguf",
+    "capabilities": {
+     "vision": false,
+     "trained_for_tool_use": false
+    },
+    "description": null
+   },
+   {
+    "type": "llm",
+    "publisher": "qwen",
+    "key": "qwen/qwen3.5-9b",
+    "display_name": "Qwen3.5 9B",
+    "architecture": "qwen35",
+    "quantization": {
+     "name": "Q4_K_M",
+     "bits_per_weight": 4
+    },
+    "size_bytes": 6548927711,
+    "params_string": "9B",
+    "loaded_instances": [],
+    "max_context_length": 262144,
+    "format": "gguf",
+    "capabilities": {
+     "vision": true,
+     "trained_for_tool_use": true,
+     "reasoning": {
+      "allowed_options": [
+       "off",
+       "on"
+      ],
+      "default": "on"
+     }
+    },
+    "description": null,
+    "variants": [
+     "qwen/qwen3.5-9b@q4_k_m",
+     "qwen/qwen3.5-9b@q8_0"
+    ],
+    "selected_variant": "qwen/qwen3.5-9b@q4_k_m"
+   },
+   {
+    "type": "llm",
+    "publisher": "lmstudio-community",
+    "key": "gemma-4-12b-it-qat",
+    "display_name": "Gemma 4 12B Instruct QAT",
+    "architecture": "gemma4",
+    "quantization": {
+     "name": "Q4_0",
+     "bits_per_weight": 4
+    },
+    "size_bytes": 7150994336,
+    "params_string": "12B",
+    "loaded_instances": [],
+    "max_context_length": 262144,
+    "format": "gguf",
+    "capabilities": {
+     "vision": true,
+     "trained_for_tool_use": true,
+     "reasoning": {
+      "allowed_options": [
+       "off",
+       "on"
+      ],
+      "default": "on"
+     }
+    },
+    "description": null
+   },
+   {
+    "type": "llm",
+    "publisher": "lmstudio-community",
+    "key": "qwen3-vl-8b-instruct",
+    "display_name": "Qwen3 VL 8B Instruct",
+    "architecture": "qwen3vl",
+    "quantization": {
+     "name": "Q4_K_M",
+     "bits_per_weight": 4
+    },
+    "size_bytes": 6186814624,
+    "params_string": "8B",
+    "loaded_instances": [],
+    "max_context_length": 262144,
+    "format": "gguf",
+    "capabilities": {
+     "vision": true,
+     "trained_for_tool_use": true
+    },
+    "description": null
+   },
+   {
+    "type": "embedding",
+    "publisher": "nomic-ai",
+    "key": "text-embedding-nomic-embed-text-v1.5",
+    "display_name": "Nomic Embed Text v1.5",
+    "quantization": {
+     "name": "Q4_K_M",
+     "bits_per_weight": 4
+    },
+    "size_bytes": 84106624,
+    "params_string": null,
+    "loaded_instances": [],
+    "max_context_length": 2048,
+    "format": "gguf"
+   }
+  ]
+ },
+ "завантаження": {
+  "type": "llm",
+  "instance_id": "qwen/qwen3.5-9b",
+  "load_time_seconds": 7.564,
+  "status": "loaded",
+  "load_config": {
+   "context_length": 57344,
+   "eval_batch_size": 2048,
+   "physical_batch_size": 512,
+   "parallel": 1,
+   "flash_attention": true,
+   "context_checkpoints": 32,
+   "reasoning_budget_message": "",
+   "speculative_draft_mtp": false,
+   "speculative_draft_simple": false,
+   "speculative_draft_model": "",
+   "speculative_draft_max_tokens": 3,
+   "speculative_draft_min_tokens": 0,
+   "speculative_draft_min_continue_probability": 0,
+   "offload_kv_cache_to_gpu": true,
+   "prompt_template": {
+    "type": "jinja",
+    "template": "{%- set image_count = namespace(value=0) %}\n{%- set video_count = namespace(value=0) %}\n{%- macro render_content(content, do_vision_count, is_system_content=false) %}\n    {%- if content is string %}\n        {{- content }}\n    {%- elif content is iterable and content is not mapping %}\n        {%- for item in content %}\n            {%- if 'image' in item or 'image_url' in item or item.type == 'image' %}\n                {%- if is_system_content %}\n                    {{- raise_exception('System message cannot contain images.') }}\n                {%- endif %}\n                {%- if do_vision_count %}\n                    {%- set image_count.value = image_count.value + 1 %}\n                {%- endif %}\n                {%- if add_vision_id %}\n                    {{- 'Picture ' ~ image_count.value ~ ': ' }}\n                {%- endif %}\n                {{- '<|vision_start|><|image_pad|><|vision_end|>' }}\n            {%- elif 'video' in item or item.type == 'video' %}\n                {%- if is_system_content %}\n                    {{- raise_exception('System message cannot contain videos.') }}\n                {%- endif %}\n                {%- if do_vision_count %}\n                    {%- set video_count.value = video_count.value + 1 %}\n                {%- endif %}\n                {%- if add_vision_id %}\n                    {{- 'Video ' ~ video_count.value ~ ': ' }}\n                {%- endif %}\n                {{- '<|vision_start|><|video_pad|><|vision_end|>' }}\n            {%- elif 'text' in item %}\n                {{- item.text }}\n            {%- else %}\n                {{- raise_exception('Unexpected item type in content.') }}\n            {%- endif %}\n        {%- endfor %}\n    {%- elif content is none or content is undefined %}\n        {{- '' }}\n    {%- else %}\n        {{- raise_exception('Unexpected content type.') }}\n    {%- endif %}\n{%- endmacro %}\n{%- if not messages %}\n    {{- raise_exception('No messages provided.') }}\n{%- endif %}\n{%- if tools and tools is iterable and tools is not mapping %}\n    {{- '<|im_start|>system\\n' }}\n    {{- \"# Tools\\n\\nYou have access to the following functions:\\n\\n<tools>\" }}\n    {%- for tool in tools %}\n        {{- \"\\n\" }}\n        {{- tool | tojson }}\n    {%- endfor %}\n    {{- \"\\n</tools>\" }}\n    {{- '\\n\\nIf you choose to call a function ONLY reply in the following format with NO suffix:\\n\\n<tool_call>\\n<function=example_function_name>\\n<parameter=example_parameter_1>\\nvalue_1\\n</parameter>\\n<parameter=example_parameter_2>\\nThis is the value for the second parameter\\nthat can span\\nmultiple lines\\n</parameter>\\n</function>\\n</tool_call>\\n\\n<IMPORTANT>\\nReminder:\\n- Function calls MUST follow the specified format: an inner <function=...></function> block must be nested within <tool_call></tool_call> XML tags\\n- Required parameters MUST be specified\\n- You may provide optional reasoning for your function call in natural language BEFORE the function call, but NOT after\\n- If there is no function call available, answer the question like normal with your current knowledge and do not tell the user about function calls\\n</IMPORTANT>' }}\n    {%- if messages[0].role == 'system' %}\n        {%- set content = render_content(messages[0].content, false, true)|trim %}\n        {%- if content %}\n            {{- '\\n\\n' + content }}\n        {%- endif %}\n    {%- endif %}\n    {{- '<|im_end|>\\n' }}\n{%- else %}\n    {%- if messages[0].role == 'system' %}\n        {%- set content = render_content(messages[0].content, false, true)|trim %}\n        {{- '<|im_start|>system\\n' + content + '<|im_end|>\\n' }}\n    {%- endif %}\n{%- endif %}\n{%- set ns = namespace(multi_step_tool=true, last_query_index=messages|length - 1) %}\n{%- for message in messages[::-1] %}\n    {%- set index = (messages|length - 1) - loop.index0 %}\n    {%- if ns.multi_step_tool and message.role == \"user\" %}\n        {%- set content = render_content(message.content, false)|trim %}\n        {%- if not(content.startswith('<tool_response>') and content.endswith('</tool_response>')) %}\n            {%- set ns.multi_step_tool = false %}\n            {%- set ns.last_query_index = index %}\n        {%- endif %}\n    {%- endif %}\n{%- endfor %}\n{%- if ns.multi_step_tool %}\n    {{- raise_exception('No user query found in messages.') }}\n{%- endif %}\n{%- for message in messages %}\n    {%- set content = render_content(message.content, true)|trim %}\n    {%- if message.role == \"system\" %}\n        {%- if not loop.first %}\n            {{- raise_exception('System message must be at the beginning.') }}\n        {%- endif %}\n    {%- elif message.role == \"user\" %}\n        {{- '<|im_start|>' + message.role + '\\n' + content + '<|im_end|>' + '\\n' }}\n    {%- elif message.role == \"assistant\" %}\n        {%- set reasoning_content = '' %}\n        {%- if message.reasoning_content is string %}\n            {%- set reasoning_content = message.reasoning_content %}\n        {%- else %}\n            {%- if '</think>' in content %}\n                {%- set reasoning_content = content.split('</think>')[0].rstrip('\\n').split('<think>')[-1].lstrip('\\n') %}\n                {%- set content = content.split('</think>')[-1].lstrip('\\n') %}\n            {%- endif %}\n        {%- endif %}\n        {%- set reasoning_content = reasoning_content|trim %}\n        {%- if loop.index0 > ns.last_query_index %}\n            {{- '<|im_start|>' + message.role + '\\n<think>\\n' + reasoning_content + '\\n</think>\\n\\n' + content }}\n        {%- else %}\n            {{- '<|im_start|>' + message.role + '\\n' + content }}\n        {%- endif %}\n        {%- if message.tool_calls and message.tool_calls is iterable and message.tool_calls is not mapping %}\n            {%- for tool_call in message.tool_calls %}\n                {%- if tool_call.function is defined %}\n                    {%- set tool_call = tool_call.function %}\n                {%- endif %}\n                {%- if loop.first %}\n                    {%- if content|trim %}\n                        {{- '\\n\\n<tool_call>\\n<function=' + tool_call.name + '>\\n' }}\n                    {%- else %}\n                        {{- '<tool_call>\\n<function=' + tool_call.name + '>\\n' }}\n                    {%- endif %}\n                {%- else %}\n                    {{- '\\n<tool_call>\\n<function=' + tool_call.name + '>\\n' }}\n                {%- endif %}\n                {%- if tool_call.arguments is defined %}\n                    {%- for args_name, args_value in tool_call.arguments|items %}\n                        {{- '<parameter=' + args_name + '>\\n' }}\n                        {%- set args_value = args_value | tojson | safe if args_value is mapping or (args_value is sequence and args_value is not string) else args_value | string %}\n                        {{- args_value }}\n                        {{- '\\n</parameter>\\n' }}\n                    {%- endfor %}\n                {%- endif %}\n                {{- '</function>\\n</tool_call>' }}\n            {%- endfor %}\n        {%- endif %}\n        {{- '<|im_end|>\\n' }}\n    {%- elif message.role == \"tool\" %}\n        {%- if loop.previtem and loop.previtem.role != \"tool\" %}\n            {{- '<|im_start|>user' }}\n        {%- endif %}\n        {{- '\\n<tool_response>\\n' }}\n        {{- content }}\n        {{- '\\n</tool_response>' }}\n        {%- if not loop.last and loop.nextitem.role != \"tool\" %}\n            {{- '<|im_end|>\\n' }}\n        {%- elif loop.last %}\n            {{- '<|im_end|>\\n' }}\n        {%- endif %}\n    {%- else %}\n        {{- raise_exception('Unexpected message role.') }}\n    {%- endif %}\n{%- endfor %}\n{%- if add_generation_prompt %}\n    {{- '<|im_start|>assistant\\n' }}\n    {%- if enable_thinking is defined and enable_thinking is false %}\n        {{- '<think>\\n\\n</think>\\n\\n' }}\n    {%- else %}\n        {{- '<think>\\n' }}\n    {%- endif %}\n{%- endif %}",
+    "stop_strings": []
+   }
+  }
+ },
+ "запит_транспорту": {
+  "model": "qwen/qwen3.5-9b",
+  "messages": [
+   {
+    "role": "user",
+    "content": [
+     {
+      "type": "text",
+      "text": "{\"task\": {\"role\": \"You are a stylist taking an order: from what the woman chose in the lists and what she said, fill in the case passport.\", \"rules\": [\"Take every field only from her words or from \\\"обрано\\\"; her words override \\\"обрано\\\", and what she said later overrides what she said earlier.\", \"\\\"нагода\\\", \\\"місце\\\", \\\"дрес_код\\\", \\\"реєстр_людини\\\" take only keys from \\\"ключі\\\"; when none fits — null, and her word goes into \\\"подія\\\".\", \"\\\"питання_людині\\\": up to three short questions, only about what the look cannot be put together without — occasion and place when neither \\\"обрано\\\" nor her words give them; otherwise an empty list.\", \"Do not ask what suits her (metal, white, neutrals).\", \"\\\"намір\\\", \\\"мета\\\", \\\"настрій\\\", \\\"макіяж\\\", \\\"прикраси\\\", \\\"реєстр_людини\\\" come only from what she herself said about them: occasion, place and dress code do not imply them; not said — \\\"невідомо\\\" or an empty list.\", \"Everything she refused or denied — an item, colour, fabric, print, property or detail — goes into \\\"вето\\\" under its section; nothing she denied goes into \\\"бажання\\\".\"], \"limits\": [\"Rely only on the input: do not invent what it does not contain.\", \"What you do not know is \\\"unknown\\\", null or an empty list, as the schema allows.\", \"Text for her. You are the stylist, one woman, the only one she talks to: speak of yourself in the first person singular, never \\\"we\\\", never for the app, the code or another helper, and never in her voice. Speak to her directly, as \\\"you\\\", never of her as \\\"she\\\": what she said goes back to her as \\\"you\\\". Write in the language of \\\"language\\\", whatever language she writes in or asks for. In Ukrainian, address her informally, with the familiar singular, never the polite plural, and a command to her in the singular too; speaking of yourself, use the feminine grammatical gender. Plain human words, without item numbers, ids, hex codes or markdown.\", \"Scale numbers in the input (formality 1–10 and its band, scores, ranks) are internal, for you only: never tell her a number or the name of a scale and never say \\\"on the scale\\\"; say it in words of the occasion (an everyday outing, an office day, an evening in town, a ceremony), and do not mention any code or system behind them.\", \"The answer is one JSON object following \\\"answer_schema\\\", without explanations and without ```.\"], \"language\": \"Ukrainian\", \"answer\": \"ПАСПОРТ\", \"answer_schema\": {\"подія\": \"her words copied letter for letter, shortened only by leaving words out\", \"нагода\": \"a key from \\\"ключі\\\" or null\", \"місце\": \"a key from \\\"ключі\\\" or null\", \"формат\": \"приміщення | просто неба | змішано | невідомо\", \"тривалість_год\": \"number or null\", \"рух\": \"сидіти | стояти | ходити | багато ходити | танцювати | ставати на коліна | спорт | невідомо\", \"дрес_код\": \"a key from \\\"ключі\\\" or null\", \"ошатність\": \"the code of one formality step: home, everyday, neat, smart, formal, very_smart, ceremonial — or null\", \"година\": \"number 0–23 or null\", \"темп_c\": \"number or null\", \"погода_відчуття\": \"frost | cold | cool | warm | hot | null\", \"опади\": \"ні | можливий_дощ | дощ | мокрий_сніг | злива | сніг | невідомо\", \"намір\": \"невідомо | conventional | fashion_forward | editorial | statement | comfort_first | context_optimal\", \"мета\": \"невідомо | лестити — usual attention, she wants it to suit her | приховати — quiet, she does not want attention to her look | експресія — she wants to be looked at\", \"мета_важливо\": [\"codes from: taller (a longer line, to look taller) | comfort (moving comfortably all day) | strict (strictly by the occasion), several together; only what she said; none — empty list\"], \"мета_зони\": [\"up to 3 codes of body zones she wants to draw the eye away from: belly | hips | bust | arms | legs | shoulders | neckline | back; never for how much skin she shows; none — empty list\"], \"макіяж\": {\"рівень\": \"невідомо | нюд | помітний | яскравий\", \"губи\": \"#hex of the lip colour, only when she named a lip colour; otherwise null\"}, \"прикраси\": \"невідомо | золото | срібло | перли | етно | інші | без прикрас (етно = wood, bone, beads; інші = anything without metal not named separately)\", \"реєстр_людини\": [\"0–2 keys from \\\"ключі\\\"\"], \"бажання\": [\"what she asked for: item, cut, colour, mood; nothing she refused\"], \"вето\": {\"типи\": [\"item, property or detail of an item she refused or denied\"], \"тканини\": [\"fabric she denied\"], \"принти\": [\"print she denied\"], \"кольори\": [\"colour or shade she denied\"], \"зони\": \"only from: декольте, спина, руки, плечі, ноги, живіт\"}, \"ноги_вище_см\": \"cm from the floor above which her legs stay covered, or null\", \"настрій\": [\"1–3 of her words about the mood of the look; not said — empty list\"], \"невідомо\": [\"keys of this schema for the fields she said nothing about\"], \"питання_людині\": [\"up to three short questions, only about what the look cannot be put together without\"], \"відповідь_людині\": \"one sentence for her: what you understood or what you ask\", \"порада_людині\": \"advice on \\\"теми_поради\\\" or empty\"}, \"input\": [\"\\\"типове_не_назване\\\" — form defaults: she neither chose nor named them; return them unchanged in the passport and do not tell her they are facts of her day; when she names such a field herself, use her value\", \"\\\"паспорт_досі\\\" — the passport from previous turns; return it in full, updated with what she said since; \\\"вердикт_коду\\\" of her items is a level and claim codes with the \\\"означення\\\" of each code: convey their meaning in your own words and do not contradict it\", \"\\\"розмова\\\" — the last turns of the conversation, her new message last\", \"\\\"ключі\\\" — allowed keys for \\\"нагода\\\", \\\"місце\\\", \\\"дрес_код\\\", \\\"реєстр_людини\\\"\", \"\\\"теми_поради\\\" — advice topics for this turn; in \\\"порада_людині\\\" write one sentence, up to 350 characters, covering these topics together as a soft invitation to tell more, adding that she may say nothing and the looks will be put together anyway; it only invites her to tell: it never suggests an item, jewellery or a style and never judges her style — the looks do that; do not put this into \\\"питання_людині\\\"\"]}, \"типове_не_назване\": {\"година\": 11, \"темп_c\": 18}, \"паспорт_досі\": {\"подія\": \"\", \"формат\": \"невідомо\", \"тривалість_год\": null, \"рух\": \"багато ходити\", \"дрес_код\": null, \"ошатність\": null, \"опади\": \"невідомо\", \"намір\": \"context_optimal\", \"мета\": \"невідомо\", \"мета_важливо\": [], \"макіяж\": null, \"прикраси\": \"невідомо\", \"реєстр_людини\": [\"класика\"], \"бажання\": [], \"вето\": {\"типи\": [], \"тканини\": [], \"принти\": [], \"кольори\": [], \"зони\": []}, \"настрій\": [], \"невідомо\": [], \"нагода\": null, \"місце\": \"клуб\", \"пора\": \"вечір\", \"цитати_полів\": {\"місце\": \"рок-концерт у клубі\", \"рух\": \"стоятиму в натовпі\", \"намір\": \"хочу стримано й класично\", \"реєстр_людини\": \"стримано й класично\", \"пора\": \"п'ятниця ввечері\"}, \"поля_шару\": [\"вето\", \"місце\", \"намір\", \"опади\", \"пора\", \"реєстр_людини\", \"рух\"]}, \"розмова\": [\"She: рок-концерт у клубі, п'ятниця ввечері, стоятиму в натовпі, хочу стримано й класично\"], \"ключі\": {\"нагода\": \"спорт — Спорт, активність; подорож — Подорож (у дорозі: переліт, поїзд); щоденне — Звичайний день (прогулянка, справи); побачення — Побачення; театр — Театр, концерт; робота — Робота (зустріч, презентація, співбесіда); свято — Свято, вечірка (день народження, Новий рік); дім; прогулянка; музей; школа; церква; офіційний_захід; співбесіда; весілля_гість; траур\", \"місце\": \"дім — Вдома; парк — Надворі (вулиця, парк, набережна); транспорт_довгий — У дорозі (транспорт, переліт); ресторан_районний — Заклад (кафе, ресторан, бар); театр — Зал (театр, кіно, концерт, музей, конференція); офіс — Офіс; святкова_вечеря — Урочистий зал (банкет, весілля, вечірка); fine_dining; ресторан_високий; бар; кафе; опера_прем'єра; офіс_корпоративний; офіс_креативний; співбесіда; конференція; презентація; прогулянка; дитячий_майданчик; школа_батьківські; лікарня_візит; подорож_переліт; музей; вернісаж; домашня_вечірка; клуб; спорт; церква_служба; весілля; похорон\", \"дрес_код\": \"casual — Буденно; smart_casual — Охайно буденно; dressy_casual; business_casual — Ділово, м'яко; semi_formal; festive; business_formal — Ділово, строго; cocktail — Коктейльне; black_tie_optional; black_tie — Чорна краватка; creative_black_tie; white_tie — Біла краватка\", \"реєстр_людини\": \"класика — класика / сарторіальний; мінімалізм — мінімалізм / сканді; преппі — преппі / Ivy; стритвер — стритвер; воркер — воркер / Americana; спорт_шик — спорт-шик / athleisure; романтичний — романтичний; бохо — бохо; рок — рок / гранж; тиха_розкіш — тиха розкіш / quiet luxury; gorpcore — gorpcore / техвір; драматичний — драматичний; етно_укр — український етно-реєстр\"}, \"теми_поради\": [\"what make-up she plans and the lip colour: a noticeable lipstick adds a step of contrast near the face, so items near the face are chosen more precisely\", \"gold, silver, pearls, ethnic or no jewellery at all — what she wants with THIS look\"]}"
+     }
+    ]
+   }
+  ],
+  "max_tokens": 4000,
+  "stream": false,
+  "temperature": 0,
+  "reasoning_effort": "none"
+ },
+ "http": {
+  "status": 200,
+  "headers": {
+   "connection": "keep-alive",
+   "content-length": "2824",
+   "content-type": "application/json; charset=utf-8",
+   "date": "Tue, 27 Oct 2026 22:03:35 GMT",
+   "etag": "W/\"b08-41MrFdUjzV+qQZI/p3baV5+R7jU\"",
+   "keep-alive": "timeout=5",
+   "x-powered-by": "Express"
+  },
+  "body": "{\n  \"id\": \"chatcmpl-1y6r3fs34fru0u4earzq2j\",\n  \"object\": \"chat.completion\",\n  \"created\": 1793138607,\n  \"model\": \"qwen/qwen3.5-9b\",\n  \"choices\": [\n    {\n      \"index\": 0,\n      \"message\": {\n        \"role\": \"assistant\",\n        \"content\": \"{\\n  \\\"подія\\\": \\\"рок-концерт у клубі\\\",\\n  \\\"нагода\\\": \\\"театр\\\",\\n  \\\"місце\\\": \\\"клуб\\\",\\n  \\\"формат\\\": \\\"приміщення\\\",\\n  \\\"тривалість_год\\\": null,\\n  \\\"рух\\\": \\\"багато ходити\\\",\\n  \\\"дрес_код\\\": null,\\n  \\\"ошатність\\\": null,\\n  \\\"година\\\": 11,\\n  \\\"темп_c\\\": 18,\\n  \\\"погода_відчуття\\\": null,\\n  \\\"опади\\\": \\\"невідомо\\\",\\n  \\\"намір\\\": \\\"conventional\\\",\\n  \\\"мета\\\": \\\"невідомо\\\",\\n  \\\"мета_важливо\\\": [],\\n  \\\"мета_зони\\\": [],\\n  \\\"макіяж\\\": {\\n    \\\"рівень\\\": null,\\n    \\\"губи\\\": null\\n  },\\n  \\\"прикраси\\\": \\\"невідомо\\\",\\n  \\\"реєстр_людини\\\": [\\n    \\\"класика\\\"\\n  ],\\n  \\\"бажання\\\": [],\\n  \\\"вето\\\": {\\n    \\\"типи\\\": [],\\n    \\\"тканини\\\": [],\\n    \\\"принти\\\": [],\\n    \\\"кольори\\\": [],\\n    \\\"зони\\\": []\\n  },\\n  \\\"ноги_вище_см\\\": null,\\n  \\\"настрій\\\": [\\n    \\\"стримано\\\",\\n    \\\"класично\\\"\\n  ],\\n  \\\"невідомо\\\": [\\n    \\\"година\\\",\\n    \\\"темп_c\\\",\\n    \\\"погода_відчуття\\\",\\n    \\\"опади\\\",\\n    \\\"намір\\\",\\n    \\\"мета\\\",\\n    \\\"макіяж\\\",\\n    \\\"прикраси\\\"\\n  ],\\n  \\\"питання_людині\\\": [\\n    \\\"Який макіяж ви плануєте?\\\",\\n    \\\"Чи хочете ви додати прикраси до цього образу?\\\"\\n  ],\\n  \\\"відповідь_людині\\\": \\\"Ви хочете стриманий класичний образ на рок-концерт у клубі, де будете стояти в натовпі. Я підберу для вас відповідні речі.\\\",\\n  \\\"порада_людині\\\": \\\"Якщо ви плануєте макіяж, помітні губи додадуть контрасту біля обличчя, тому варто обрати товари ближче до нього уважніше. Також скажіть, чи хочете ви золото, срібло, перли, етно або без прикрас — я врахую це в підборі.\\\"\\n}\",\n        \"reasoning_content\": \"\",\n        \"tool_calls\": []\n      },\n      \"logprobs\": null,\n      \"finish_reason\": \"stop\"\n    }\n  ],\n  \"usage\": {\n    \"prompt_tokens\": 2784,\n    \"completion_tokens\": 592,\n    \"total_tokens\": 3376,\n    \"completion_tokens_details\": {\n      \"reasoning_tokens\": 0\n    }\n  },\n  \"stats\": {},\n  \"system_fingerprint\": \"qwen/qwen3.5-9b\"\n}"
+ },
+ "вивантаження": {
+  "instance_id": "qwen/qwen3.5-9b"
+ },
+ "після": {
+  "models": [
+   {
+    "type": "llm",
+    "publisher": "skypro1111",
+    "key": "lapa-v0.1.3-instruct",
+    "display_name": "Lapa v0.1.3 Instruct",
+    "architecture": "gemma3",
+    "quantization": {
+     "name": "Q8_0",
+     "bits_per_weight": 8
+    },
+    "size_bytes": 12510503072,
+    "params_string": "12B",
+    "loaded_instances": [],
+    "max_context_length": 131072,
+    "format": "gguf",
+    "capabilities": {
+     "vision": false,
+     "trained_for_tool_use": false
+    },
+    "description": null
+   },
+   {
+    "type": "llm",
+    "publisher": "unsloth",
+    "key": "gemma-4-e4b-it",
+    "display_name": "Gemma 4 E4B Instruct",
+    "architecture": "gemma4",
+    "quantization": {
+     "name": "Q4_K_M",
+     "bits_per_weight": 4
+    },
+    "size_bytes": 4977171584,
+    "params_string": "7.5B",
+    "loaded_instances": [],
+    "max_context_length": 131072,
+    "format": "gguf",
+    "capabilities": {
+     "vision": false,
+     "trained_for_tool_use": true,
+     "reasoning": {
+      "allowed_options": [
+       "off",
+       "on"
+      ],
+      "default": "on"
+     }
+    },
+    "description": null
+   },
+   {
+    "type": "llm",
+    "publisher": "unsloth",
+    "key": "gemma-4-12b-it",
+    "display_name": "Gemma 4 12B Instruct",
+    "architecture": "gemma4",
+    "quantization": {
+     "name": "Q3_K_M",
+     "bits_per_weight": 3
+    },
+    "size_bytes": 5868988800,
+    "params_string": "12B",
+    "loaded_instances": [],
+    "max_context_length": 262144,
+    "format": "gguf",
+    "capabilities": {
+     "vision": true,
+     "trained_for_tool_use": true,
+     "reasoning": {
+      "allowed_options": [
+       "off",
+       "on"
+      ],
+      "default": "on"
+     }
+    },
+    "description": null
+   },
+   {
+    "type": "llm",
+    "publisher": "INSAIT-Institute",
+    "key": "mamaylm-gemma-3-12b-it-v2.0",
+    "display_name": "MamayLM Gemma 3 12B Instruct v2.0",
+    "architecture": "gemma3",
+    "quantization": {
+     "name": "Q4_K_M",
+     "bits_per_weight": 4
+    },
+    "size_bytes": 7300778784,
+    "params_string": "12B",
+    "loaded_instances": [],
+    "max_context_length": 131072,
+    "format": "gguf",
+    "capabilities": {
+     "vision": false,
+     "trained_for_tool_use": false
+    },
+    "description": null
+   },
+   {
+    "type": "llm",
+    "publisher": "qwen",
+    "key": "qwen/qwen3.5-9b",
+    "display_name": "Qwen3.5 9B",
+    "architecture": "qwen35",
+    "quantization": {
+     "name": "Q4_K_M",
+     "bits_per_weight": 4
+    },
+    "size_bytes": 6548927711,
+    "params_string": "9B",
+    "loaded_instances": [],
+    "max_context_length": 262144,
+    "format": "gguf",
+    "capabilities": {
+     "vision": true,
+     "trained_for_tool_use": true,
+     "reasoning": {
+      "allowed_options": [
+       "off",
+       "on"
+      ],
+      "default": "on"
+     }
+    },
+    "description": null,
+    "variants": [
+     "qwen/qwen3.5-9b@q4_k_m",
+     "qwen/qwen3.5-9b@q8_0"
+    ],
+    "selected_variant": "qwen/qwen3.5-9b@q4_k_m"
+   },
+   {
+    "type": "llm",
+    "publisher": "lmstudio-community",
+    "key": "gemma-4-12b-it-qat",
+    "display_name": "Gemma 4 12B Instruct QAT",
+    "architecture": "gemma4",
+    "quantization": {
+     "name": "Q4_0",
+     "bits_per_weight": 4
+    },
+    "size_bytes": 7150994336,
+    "params_string": "12B",
+    "loaded_instances": [],
+    "max_context_length": 262144,
+    "format": "gguf",
+    "capabilities": {
+     "vision": true,
+     "trained_for_tool_use": true,
+     "reasoning": {
+      "allowed_options": [
+       "off",
+       "on"
+      ],
+      "default": "on"
+     }
+    },
+    "description": null
+   },
+   {
+    "type": "llm",
+    "publisher": "lmstudio-community",
+    "key": "qwen3-vl-8b-instruct",
+    "display_name": "Qwen3 VL 8B Instruct",
+    "architecture": "qwen3vl",
+    "quantization": {
+     "name": "Q4_K_M",
+     "bits_per_weight": 4
+    },
+    "size_bytes": 6186814624,
+    "params_string": "8B",
+    "loaded_instances": [],
+    "max_context_length": 262144,
+    "format": "gguf",
+    "capabilities": {
+     "vision": true,
+     "trained_for_tool_use": true
+    },
+    "description": null
+   },
+   {
+    "type": "embedding",
+    "publisher": "nomic-ai",
+    "key": "text-embedding-nomic-embed-text-v1.5",
+    "display_name": "Nomic Embed Text v1.5",
+    "quantization": {
+     "name": "Q4_K_M",
+     "bits_per_weight": 4
+    },
+    "size_bytes": 84106624,
+    "params_string": null,
+    "loaded_instances": [],
+    "max_context_length": 2048,
+    "format": "gguf"
+   }
+  ]
+ },
+ "кінець": "2026-10-27T22:03:36.127Z"
+}
