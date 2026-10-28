@@ -32,7 +32,8 @@ if __name__ == '__main__':
     if mode == 'підготовка':
         before = TEMP / 'before'
         before.mkdir(exist_ok=True)
-        data = subprocess.check_output(['git', 'archive', 'bd628bb29a90637ae18833c92eceb8230bd9b995', 'джерела'], cwd=ROOT)
+        data = subprocess.check_output(['git', 'archive', 'bd628bb29a90637ae18833c92eceb8230bd9b995',
+                                        'джерела', 'каталог_повний.xml.gz'], cwd=ROOT)
         with tarfile.open(fileobj=io.BytesIO(data)) as archive:
             archive.extractall(before, filter='data')
         print('Архів ДО підготовлено')
@@ -45,3 +46,28 @@ if __name__ == '__main__':
                    for i, command in enumerate(commands, 1)]
         results += [run('досяжність', [sys.executable, '-X', 'utf8', 'досяжність.py'], ROOT / 'джерела')]
         (OUT / 'батарея.json').write_text(json.dumps(results, ensure_ascii=False, indent=2) + '\n', encoding='utf8')
+    elif mode == 'збірки':
+        os.environ['LYUSTERKO_PYC_PYTHON'] = 'C:/Users/gemini/tools/python-3.12.1/python.exe'
+        results = []
+        for name, source in [('до', TEMP / 'before/джерела'), ('після', ROOT / 'джерела')]:
+            target = TEMP / ('build-' + name)
+            target.mkdir(exist_ok=True)
+            results.append(run('збірка-' + name, [sys.executable, '-X', 'utf8', 'build_артефакт.py', '.',
+                               str(target / 'index.html'), 'показ-повний'], source))
+        (OUT / 'збірки.json').write_text(json.dumps(results, ensure_ascii=False, indent=2) + '\n', encoding='utf8')
+    elif mode == 'стенди':
+        os.environ['CHROMIUM'] = 'C:/Program Files/Google/Chrome/Application/chrome.exe'
+        results = []
+        for name in ['до', 'після']:
+            shots = TEMP / ('shots-' + name)
+            shots.mkdir(exist_ok=True)
+            os.environ['ZNIMKY'] = str(shots)
+            results.append(run('стенд-' + name, ['node', 'аудит/проби/рв6_стенд.js',
+                               'http://127.0.0.1:8765', str(TEMP / ('build-' + name)),
+                               'C:/Users/gemini/pyodide', '3'], ROOT))
+        (OUT / 'стенди.json').write_text(json.dumps(results, ensure_ascii=False, indent=2) + '\n', encoding='utf8')
+    elif mode == 'родини':
+        probes = ['ремонт_понад_просили', 'ремонт_порядок_5511', 'повнота_до_вибору_ходи',
+                  'повнота_після_вибору_ходи', 'повнота_вибір_прийняття']
+        results = [run(p, [sys.executable, '-X', 'utf8', 'проби/' + p + '.py'], ROOT / 'джерела') for p in probes]
+        (OUT / 'родини.json').write_text(json.dumps(results, ensure_ascii=False, indent=2) + '\n', encoding='utf8')

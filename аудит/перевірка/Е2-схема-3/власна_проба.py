@@ -111,6 +111,8 @@ def bridge_probe():
     os.chdir(SOURCES)
     import bridge as B
     import схеми_розбору as S
+    import feed
+    feed.каталог_на_диску('каталог_повний.xml')
     brief = dict(json.loads(Path('стенд_вх.json').read_text(encoding='utf8')), сід=4242,
                  варіантів=10, ремонт_варіантів=5, бюджет_символів=120000, без_фото=1, пакети=1)
     requests = json.loads(B.виклик('запити', json.dumps(brief, ensure_ascii=False)))
@@ -126,27 +128,67 @@ def bridge_probe():
         lengths.append(len(answer))
     decoded = json.loads(answer)
     assert not decoded.get('помилка'), decoded.get('помилка')
+    tag = 'до' if SOURCES != ROOT / 'джерела' else 'після'
+    scratch = Path('C:/Users/gemini/gemini-runs/20261028-171005-42cc673ca36e/e2-check')
+    (scratch / ('відповідь-моста-' + tag + '.json')).write_text(answer, encoding='utf8')
     result = dict(джерела=str(SOURCES), секунд=times, медіана=statistics.median(times),
                   довжини=lengths, ключі_моста=list(decoded),
                   ремонт=len(decoded['промпт_ремонту']), вибір=len(decoded['промпт_лише_вибору']))
-    candidates = [r for slot in pool.values() for r in slot]
+    result['випадки'] = parser_cases()
+    (OUT / ('міст-' + tag + '.json')).write_text(json.dumps(result, ensure_ascii=False, indent=2) + '\n', encoding='utf8')
+    print(json.dumps({k: v for k, v in result.items() if k != 'випадки'}, ensure_ascii=False, indent=2))
+
+
+def parser_cases():
+    import схеми_розбору as S
+    from пакет_моделі import номери_речей
+    candidates = {s: [dict(id='probe-' + str(i) + '@shop', слот=s)]
+                  for i, s in enumerate(('верх', 'низ', 'взуття', 'сумка'), 1)}
+    numbers, _ = номери_речей(candidates)
+    items = ['#%s·%s' % pair for pair in numbers.values()]
     one = dict(version='1', outfits=[dict(id='o1', why='Її день', caption='Світлий задум',
-                                        day='Зручний день.', items=outfits[0]['речі'])])
+                                        day='Зручний день.', items=items)])
     samples = {'звичайна': dump(one), 'обрізана': dump(one)[:-18],
                'невідомий_номер': dump(dict(version='1', outfits=[dict(id='o1', items=['#999999·99'])])),
-               'повтор_номера': dump(dict(version='1', outfits=[dict(id='o1', items=[outfits[0]['речі'][0]] * 2)])),
+               'повтор_номера': dump(dict(version='1', outfits=[dict(id='o1', items=[items[0]] * 2)])),
                'порожня': dump(dict(version='1', outfits=[])),
                'стара': dump(dict(one, chosen=[dict(id='o1', why='Її день')]))}
-    result['випадки'] = {}
+    six = dict(version='1', outfits=[dict(one['outfits'][0], id='o' + str(i)) for i in range(1, 7)])
+    samples['понад_просили'] = dump(six)
+    samples['старий_вибір_понад'] = dump(dict(six, chosen=[dict(id='o' + str(i), why='Її день')
+                                                        for i in (6, 4, 2, 5, 1)]))
+    result = {}
     for name, text in samples.items():
         obj, err, notes = P.розбір_за_схемою(text, 'ОБРАЗИ_V1')
         parsed = S._розбір_образи_v1(text, кандидати=candidates, просили=5)
-        result['випадки'][name] = dict(причина=err, нотатки=notes, розбір=parsed,
+        result[name] = dict(причина=err, нотатки=notes, розбір=parsed,
                                       помилки_схеми=P.перевірити(P.ОБРАЗИ_V1, obj) if obj is not None else [])
-    tag = 'до' if SOURCES != ROOT / 'джерела' else 'після'
-    (OUT / ('міст-' + tag + '.json')).write_text(json.dumps(result, ensure_ascii=False, indent=2) + '\n', encoding='utf8')
-    print(json.dumps(result, ensure_ascii=False, indent=2))
+    assert len(result['звичайна']['розбір'][0]['ід']) == 4
+    assert result['стара']['розбір'][0]['ід'] == result['звичайна']['розбір'][0]['ід']
+    assert result['обрізана']['нотатки']['обрізано']
+    assert not result['обрізана']['розбір'][0]['готово']
+    assert not result['невідомий_номер']['розбір'][0]['готово']
+    assert len(result['повтор_номера']['розбір'][0]['ід']) == 1
+    assert result['повтор_номера']['розбір'][0]['двічі']
+    assert not result['порожня']['розбір'][0]['готово']
+    assert len(result['понад_просили']['розбір']) == 5
+    # Історичний договір зберігає порядок відповіді серед членів chosen.
+    assert [r['ід_відповіді'] for r in result['старий_вибір_понад']['розбір']] == ['о1', 'о2', 'о4', 'о5', 'о6']
+    return result
 
 
 if __name__ == '__main__':
-    replay() if sys.argv[1] == 'записи' else bridge_probe()
+    if sys.argv[1] == 'записи':
+        replay()
+    elif sys.argv[1] == 'випадки':
+        tag = 'до' if SOURCES != ROOT / 'джерела' else 'після'
+        result = parser_cases()
+        (OUT / ('випадки-' + tag + '.json')).write_text(json.dumps(result, ensure_ascii=False, indent=2) + '\n', encoding='utf8')
+        old_path = OUT / ('міст-' + tag + '.json')
+        if old_path.exists():
+            old = json.loads(old_path.read_text(encoding='utf8'))
+            old['випадки'] = result
+            old_path.write_text(json.dumps(old, ensure_ascii=False, indent=2) + '\n', encoding='utf8')
+        print('8/8 власних випадків:', tag)
+    else:
+        bridge_probe()
