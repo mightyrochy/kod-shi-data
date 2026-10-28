@@ -23,7 +23,6 @@ def головна():
             ціль[("без_аналогової" if без else "з_аналоговою") + ("_змінено" if бриф(поточна["бриф"]) != бриф(в["бриф_ДО"]) else "_незмінно")] += 1
     результат = dict(персон=len(до), змінено=dict(зміни), бриф_проти_першої_спроби_ДО=dict(початковий_до),
                      бриф_проти_першої_спроби_ПІСЛЯ=dict(початковий_після))
-    (тека / "зіставлення.json").write_text(json.dumps(результат, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
     вади = json.loads((тека / "ДО/вимір.json").read_text(encoding="utf-8"))["гами"][0]["вади"]
     докази = {}
     for з in вади:
@@ -37,6 +36,7 @@ def головна():
                     докази[ключ] = dict(персона=і, вхід=до[і]["вхід"], вада=з, короткий_бриф=п)
     (тека / "суперечність-мірила.json").write_text(json.dumps(list(докази.values()), ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
     результат["контрприкладів_нульовому_дифу"] = len(докази)
+    (тека / "зіставлення.json").write_text(json.dumps(результат, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
     print(json.dumps(результат, ensure_ascii=False))
 
 
