@@ -1259,6 +1259,9 @@ _МІСЦЯ_ОПЦІЙ = "where it is worn"
     "colour_word_not_photo": "the colour of the named items comes from a word, not from measuring the photo "
                              "(values: items — items: item_id, name — the item's name on the card, slot — slot "
                              "code, colour — colour word)",
+    "colour_partly_measured": "the named items have a partial photo measurement: lightness and chroma bounds "
+                              "are available, while hue is uncertain; this is not a colour word "
+                              "(values: items — items: item_id, name — the item's name on the card, slot — slot code)",
     "cannot_tell_item_holds_scheme_hue": "so the code cannot tell whether the item holds the hue of the "
                                          "chosen palette scheme",
     "cannot_tell_look_contrast_matches_hers": "so the code cannot tell whether the outfit's contrast matches "
