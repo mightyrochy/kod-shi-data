@@ -33,6 +33,7 @@ from pathlib import Path
 from журнал_проходу import ЖурналПроходу, відбиток_рецепта
 from json_прохід import позначити, відновити, сторінка, МЕЖА_СТОРІНОК
 from журнал_карток import прочитати
+from журнал_таблиці import дописати
 from журнал_проходу import ЗАВЕРШЕНІ
 
 ВЕРСІЯ = "виконавець v1 · 2026-09-07"
@@ -412,7 +413,7 @@ class Виконавець:
         self.проходи = {}
         self.замок = threading.Lock()
         self.зведення = self.корінь / "зведення_жнив.tsv"
-        if not os.path.exists(self.зведення):
+        if not self.зведення.exists() or not self.зведення.stat().st_size:
             open(self.зведення, "w", encoding="utf-8").write("\t".join(ШАПКА_ЗВЕДЕННЯ) + "\n")
 
     # ── журнал ──
@@ -425,22 +426,22 @@ class Виконавець:
         return ш, взято
 
     def _стан(self, домен):
+        """Читає курсор пошуку; обірваний JSON діагностує й повторює пошук від початку."""
         ш = str(self.корінь / "сирі" / f"{домен}.стан.json")
-        return ш, (json.load(open(ш, encoding="utf-8")) if os.path.exists(ш) else {"розділи": {}, "sitemap": [], "помилки": []})
+        if os.path.exists(ш):
+            try:
+                стан = json.loads(Path(ш).read_bytes())
+                if not isinstance(стан, dict):
+                    raise ValueError("STATE_INVALID")
+                return ш, стан
+            except ValueError:
+                лог(f"JOURNAL_CORRUPT: {ш}")
+        return ш, {"розділи": {}, "sitemap": [], "помилки": []}
 
     def _пиши(self, ш, зап):
         """Дописує цілий запис окремим рядком, навіть після обірваного хвоста."""
         with self.замок:
-            хвіст = b"\n"
-            if Path(ш).is_file() and Path(ш).stat().st_size:
-                with open(ш, "rb") as ф:
-                    ф.seek(-1, os.SEEK_END)
-                    хвіст = ф.read(1)
-            with open(ш, "a", encoding="utf-8") as f:
-                if хвіст != b"\n":
-                    f.write("\n")
-                f.write(json.dumps(зап, ensure_ascii=False) + "\n")
-                f.flush(); os.fsync(f.fileno())
+            дописати(ш, json.dumps(зап, ensure_ascii=False))
         домен = домен_із(зап["url"])
         if домен in self.проходи:
             self.проходи[домен].завершити(зап)
@@ -515,11 +516,11 @@ class Виконавець:
                     except Exception:
                         pass
                 сер = round(sum(л["бали"]) / len(л["бали"]), 1) if л["бали"] else ""
-                with self.замок, open(self.зведення, "a", encoding="utf-8") as f:
+                with self.замок:
                     л["нотатка"] = re.sub(r"[\t\r\n]+", " ", л["нотатка"])
-                    f.write("\t".join(str(x) for x in [datetime.date.today(), домен, р["сімейство"], р["транспорт"], л["адрес"], л["відкрито"], л["картка"],
+                    дописати(self.зведення, "\t".join(str(x) for x in [datetime.date.today(), домен, р["сімейство"], р["транспорт"], л["адрес"], л["відкрито"], л["картка"],
                                                        л["нижче_порогу"], л["неповна_розбірка"], л["російська_назва"], л["не_картка"], л["збій"], сер,
-                                                       round(time.time() - t0), л["нотатка"]]) + "\n")
+                                                       round(time.time() - t0), л["нотатка"]]))
                 лог(f"{домен:<24} карток {л['картка']} · нижче порогу {л['нижче_порогу']} · неповна розбірка {л['неповна_розбірка']} · "
                     f"рос. {л['російська_назва']} · не картка {л['не_картка']} · збоїв {л['збій']} · бал {сер} · {round(time.time() - t0)} с {л['нотатка']}")
 
