@@ -1,0 +1,13 @@
+Traceback (most recent call last):
+  File "C:\Users\gemini\gemini-runs\w\codex-3\джерела\проби\промпти3_вибір_ід.py", line 11, in <module>
+    for ш, промпт, відп in Б.записи(r"ВЕРДИКТ_V1_ВИБІР_V1\.txt$"):
+                           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\gemini\gemini-runs\w\codex-3\джерела\проби\промпти3_база.py", line 35, in записи
+    for ш in _git("ls-tree", "-r", "--name-only", ref, "--", "../аудит").splitlines():
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\gemini\gemini-runs\w\codex-3\джерела\проби\промпти3_база.py", line 8, in <lambda>
+    _git = lambda *а: subprocess.run(["git", "-C", ДЖЕРЕЛА, "-c", "core.quotepath=off", *а], capture_output=True,
+                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\gemini\AppData\Local\Programs\Python\Python312\Lib\subprocess.py", line 571, in run
+    raise CalledProcessError(retcode, process.args,
+subprocess.CalledProcessError: Command '['git', '-C', 'C:\\Users\\gemini\\gemini-runs\\w\\codex-3\\джерела', '-c', 'core.quotepath=off', 'ls-tree', '-r', '--name-only', 'origin/claude/zhyvi-pachka-15', '--', '../аудит']' returned non-zero exit status 128.
