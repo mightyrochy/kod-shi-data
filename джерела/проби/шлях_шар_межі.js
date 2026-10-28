@@ -16,14 +16,15 @@ async function main(){
     ['verdict_comment',{wear:'bad'},{wear:'as_is'}],
     ['review_items_fix',{actions:[{item:'r1'}]},{actions:[{op:'remove',item:'r1'}]}]]){
     let calls=0;
-    c.модельМовиП=async ()=>JSON.stringify(++calls===1?bad:good);
+    c.модельМовиП=async p=>{JSON.parse(p);return JSON.stringify(++calls===1?bad:good);};
     const r=await c.перекластиП(kind,'її слова',{},'проба');
     const ok=calls===2 && Object.keys(r.внутрішня).length>0;
     console.log(JSON.stringify({межа:kind,викликів:calls,дані:r.внутрішня,пройдено:ok}));failures+=!ok;
   }
   for(const repaired of [false,true]){
     let calls=0;
-    c.модельМовиП=async ()=> (++calls===1 || !repaired)?'{}':'{"1":"Коротке повідомлення для тебе."}';
+    c.модельМовиП=async p=>{JSON.parse(p.slice(p.lastIndexOf('ТЕКСТИ:')+7));
+      return (++calls===1 || !repaired)?'{}':'{"1":"Коротке повідомлення для тебе."}';};
     const r=await c.мовоюП({рядок:'A short message for you.'},'try_on');
     const ok=calls===2 && r.тексти.рядок===(repaired?'Коротке повідомлення для тебе.':'A short message for you.');
     console.log(JSON.stringify({межа:'тексти',виправлено:repaired,викликів:calls,дані:r.тексти,пройдено:ok}));failures+=!ok;

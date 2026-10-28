@@ -18,7 +18,8 @@ async function main(){
       містП:bridge, вхідМостаП:()=>({сценарій:{}}), текстРепліки:р=>р.текст});
     vm.runInContext(fs.readFileSync(path.join(src,'показ/мовний_шар.js'),'utf8'), c);
     let answer = Object.entries(scene.відповіді).find(([k])=>k.includes('seed3_01_'))[1].відповідь;
-    c.модельМовиП = async prompt => {prompts.push(prompt); return answer;};
+    c.модельМовиП = async prompt => {prompts.push(prompt);
+      if(prompt.includes('РЕПЛІКА:\n')) JSON.parse(prompt.slice(prompt.lastIndexOf('РЕПЛІКА:')+8)); return answer;};
     c.латинкаЧатуП = async t => t;
     const turn = await c.ходомРозмовиП(scene.слова, [], 'chat');
     const p = await bridge('мова', {паспорт_з:turn.внутрішня, сценарій:{}, слова_розмови:[scene.слова], частини:turn.частини});
