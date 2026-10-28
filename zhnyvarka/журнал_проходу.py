@@ -7,6 +7,7 @@ import os
 from pathlib import Path
 import re
 import sqlite3
+from журнал_карток import прочитати
 
 ЗАВЕРШЕНІ = {"картка", "нижче_порогу", "російська_назва", "не_картка"}
 СХЕМА = (
@@ -26,13 +27,16 @@ def підсумок_черги(база):
     return загалом, готово, bool(відомо and відомо[0] == '1')
 
 
-def прочитати_чергу(шлях):
+def прочитати_чергу(шлях, картки=None):
     """Рахує лише підтверджені цілим тілом DONE; невідома схема повертає None."""
     try:
         with closing(sqlite3.connect(Path(шлях).resolve().as_uri() + "?mode=ro", uri=True)) as база:
             база.execute("BEGIN")
             загалом, готово, відомо = підсумок_черги(база)
-            готово = sum(придатна_відповідь(база, Path(шлях).parent, ід, url)
+            завершені = None if картки is None else {(з["url"], з.get("відповідь"))
+                        for з in прочитати(картки)[0] if з.get("стан") in ЗАВЕРШЕНІ}
+            готово = sum((завершені is None or (url, ід) in завершені)
+                         and придатна_відповідь(база, Path(шлях).parent, ід, url)
                          for url, ід in база.execute("SELECT url, відповідь FROM черга WHERE стан='DONE'"))
             return загалом, готово, відомо
     except sqlite3.DatabaseError:
@@ -84,13 +88,9 @@ class ЖурналПроходу:
         if картки is not None:
             завершені = set()
             if Path(картки).exists():
-                for рядок in Path(картки).read_text(encoding="utf-8").splitlines():
-                    try:
-                        запис = json.loads(рядок)
-                        if запис.get("стан") in ЗАВЕРШЕНІ:
-                            завершені.add((запис.get("url"), запис.get("відповідь")))
-                    except json.JSONDecodeError:
-                        continue  # Обірваний останній рядок не доводить завершення.
+                for запис in прочитати(картки)[0]:
+                    if запис.get("стан") in ЗАВЕРШЕНІ:
+                        завершені.add((запис.get("url"), запис.get("відповідь")))
             for url, ід in self.база.execute("SELECT url, відповідь FROM черга WHERE стан='DONE'").fetchall():
                 if (url, ід) not in завершені:
                     with self.база:

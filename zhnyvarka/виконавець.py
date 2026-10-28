@@ -31,7 +31,9 @@ import argparse, asyncio, csv, datetime, hashlib, json, os, re, sys, time, threa
 from urllib.parse import urlparse, urljoin
 from pathlib import Path
 from журнал_проходу import ЖурналПроходу, відбиток_рецепта
-from json_прохід import позначити
+from json_прохід import позначити, прочитати_стан, сторінка, МЕЖА_СТОРІНОК
+from журнал_карток import прочитати
+from журнал_проходу import ЗАВЕРШЕНІ
 
 ВЕРСІЯ = "виконавець v1 · 2026-09-07"
 ШАПКА_ЗВЕДЕННЯ = ("дата", "домен", "сімейство", "транспорт", "адрес_знайдено", "відкрито", "карток",
@@ -415,14 +417,11 @@ class Виконавець:
 
     # ── журнал ──
     def _журнал(self, домен):
+        """Читає цілі записи незалежно від обриву UTF-8 у сусідньому рядку."""
         ш = str(self.корінь / "сирі" / f"{домен}.jsonl")
         взято = {}
-        if os.path.exists(ш):
-            for р in open(ш, encoding="utf-8"):
-                try:
-                    з = json.loads(р); взято[з["url"]] = з.get("стан")
-                except Exception:  # noqa
-                    pass
+        for з in прочитати(ш)[0]:
+            взято[з["url"]] = з.get("стан")
         return ш, взято
 
     def _стан(self, домен):
@@ -430,9 +429,18 @@ class Виконавець:
         return ш, (json.load(open(ш, encoding="utf-8")) if os.path.exists(ш) else {"розділи": {}, "sitemap": [], "помилки": []})
 
     def _пиши(self, ш, зап):
-        with self.замок, open(ш, "a", encoding="utf-8") as f:
-            f.write(json.dumps(зап, ensure_ascii=False) + "\n")
-            f.flush(); os.fsync(f.fileno())
+        """Дописує цілий запис окремим рядком, навіть після обірваного хвоста."""
+        with self.замок:
+            хвіст = b"\n"
+            if Path(ш).is_file() and Path(ш).stat().st_size:
+                with open(ш, "rb") as ф:
+                    ф.seek(-1, os.SEEK_END)
+                    хвіст = ф.read(1)
+            with open(ш, "a", encoding="utf-8") as f:
+                if хвіст != b"\n":
+                    f.write("\n")
+                f.write(json.dumps(зап, ensure_ascii=False) + "\n")
+                f.flush(); os.fsync(f.fileno())
         домен = домен_із(зап["url"])
         if домен in self.проходи:
             self.проходи[домен].завершити(зап)
@@ -582,13 +590,25 @@ class Виконавець:
 
     async def _json_сімейство(self, контекст, р, л, ш, взято, корінь):
         """Збирає JSON-сторінки; підтверджує кінець лише порожнім списком речей у відповіді HTTP 200."""
-        позначити(self.корінь, р["домен"], False)
-        n = 1
+        збережений = прочитати_стан(self.корінь, р["домен"])
+        підпис = hashlib.sha256(json.dumps(р, sort_keys=True).encode()).hexdigest()
+        if збережений.get("підпис") != підпис or not Path(ш).is_file() or прочитати(ш)[1]:
+            збережений = {}
+        n = збережений.get("сторінка", 1)
+        позначити(self.корінь, р["домен"], False, n, збережений.get("префікс", ""), підпис)
         шаблон = р["пошук"].replace("per_page=100", "per_page=50")
         префікси = [""] + ([р["мова"].rstrip("/")] if р.get("мова") and р["мова"] != "/" else []) + ["/uk", "/ua"]
-        while n <= 120:
+        if збережений.get("префікс"):
+            префікси = [збережений["префікс"]]
+        межа = n + МЕЖА_СТОРІНОК
+        while n < межа:
             j = None
-            for пр in префікси:
+            кеш = сторінка(self.корінь, р["домен"], n, підпис=підпис)
+            if кеш is not None:
+                речі, пр = кеш["речі"], кеш["префікс"]
+                j = речі
+                url = корінь + пр + шаблон.replace("{n}", str(n))
+            for пр in ([] if кеш is not None else префікси):
                 url = корінь + пр + шаблон.replace("{n}", str(n))
                 try:
                     код, т = await self._get(контекст, url, тайм=90_000)
@@ -607,13 +627,15 @@ class Виконавець:
             if j is None:
                 л["збій"] += 1; л["нотатка"] += f"збій стор. {n}: {останнє}; "; break
             префікси = [url.replace(корінь, "", 1).replace(шаблон.replace("{n}", str(n)), "")]
+            if кеш is None:
+                сторінка(self.корінь, р["домен"], n, {"речі": речі, "префікс": префікси[0]}, підпис)
             if not речі:
-                позначити(self.корінь, р["домен"], True)
+                позначити(self.корінь, р["домен"], True, n, префікси[0], підпис)
                 break
             for p in речі:
                 к = картка_з_shopify(корінь, p) if р["сімейство"] == "shopify" else картка_з_woo(корінь, p)
                 л["адрес"] += 1
-                if к["url"] in взято:
+                if взято.get(к["url"]) in ЗАВЕРШЕНІ:
                     continue
                 л["відкрито"] += 1
                 стан = завершити(к)
@@ -621,10 +643,12 @@ class Виконавець:
                 self._пиши(ш, {"url": к["url"], "хеш": hashlib.md5(json.dumps(p, sort_keys=True).encode()).hexdigest()[:12],
                                "дата": datetime.date.today().isoformat(), "стан": стан, "бал": к["бал"], "поля_є": к["поля_є"], "картка": к})
                 if л["відкрито"] >= self.a.стеля:
+                    позначити(self.корінь, р["домен"], False, n, префікси[0], підпис)
                     л["нотатка"] += f"стеля {self.a.стеля}; "; return
             n += 1
+            позначити(self.корінь, р["домен"], False, n, префікси[0], підпис)
         else:
-            л["нотатка"] += "межа пагінації 120 сторінок; "
+            л["нотатка"] += f"межа пагінації {МЕЖА_СТОРІНОК} сторінок за запуск; "
 
     async def _horoshop_адреси(self, контекст, р, л, корінь):
         _, стан = self._стан(р["домен"])
@@ -788,9 +812,8 @@ class Виконавець:
         if not os.path.exists(ш):
             return
         картки = []
-        for р in open(ш, encoding="utf-8"):
+        for з in прочитати(ш)[0]:
             try:
-                з = json.loads(р)
                 if з.get("стан") == "картка" and з.get("картка", {}).get("фото"): картки.append(з)
             except Exception:  # noqa
                 pass

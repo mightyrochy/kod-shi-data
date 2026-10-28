@@ -1,12 +1,10 @@
 """Друкує відновлення невідомого переліку після таймауту, збою й обриву без зведення."""
-import csv, sys, tempfile
+import csv, json, sys, tempfile
 from pathlib import Path
 from unittest.mock import Mock, patch
 sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "zhnyvarka"))
 import обхід
 from журнал_проходу import ЖурналПроходу
-
-
 def main():
     """Відрізняє незавершений пошук від завершеної черги й перевіряє наступний запуск."""
     помилки = []
@@ -20,6 +18,8 @@ def main():
                     п.база.execute("INSERT INTO черга VALUES ('/p1','PENDING',NULL)")
                     п.завершити(dict(url="/p1", стан="картка", відповідь=п.відповідь("/p1", 200, b"CARD")))
             п.закрити()
+            if усього:
+                сирі = Path(ж) / "сирі"; сирі.mkdir(); (сирі / "test.com.jsonl").write_text(json.dumps(dict(url="/p1", стан="картка", відповідь=1)) + "\n", encoding="utf-8")
             if нотатка == "давній TIMEOUT":
                 обхід.записати(ж, {"test.com": dict(домен="test.com", стан_код="WAIT", причина_код="TIMEOUT", адрес=0, готово=0, лишилось=0, цикл=1, підстава=нотатка)})
             ряд = dict(нотатка=нотатка, карток="0", адрес_знайдено="0", відкрито="0")

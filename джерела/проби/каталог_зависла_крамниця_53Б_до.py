@@ -10,10 +10,11 @@ def main():
     with tempfile.TemporaryDirectory(prefix="обхід-53Б-до-") as ж:
         тека = Path(ж)
         (тека / "zhnyvarka").mkdir()
-        for файл in (корінь / "zhnyvarka").iterdir():
-            if файл.suffix not in (".py", ".tsv"): continue
-            код = subprocess.check_output(["git", "show", f"{база}:zhnyvarka/{файл.name}"], cwd=корінь)
-            (тека / "zhnyvarka" / файл.name).write_bytes(код)
+        файли = subprocess.check_output(["git", "ls-tree", "-r", "--name-only", база, "--", "zhnyvarka"], cwd=корінь).decode().splitlines()
+        for ім in файли:
+            if Path(ім).suffix not in (".py", ".tsv"): continue
+            код = subprocess.check_output(["git", "show", f"{база}:{ім}"], cwd=корінь)
+            (тека / ім).write_bytes(код)
         проби = тека / "джерела/проби"; проби.mkdir(parents=True)
         for назва in ("json_проба", "sqlite_проба", "обрив_json", "обрив_стан", "обрив_тіло"):
             ім = f"каталог_зависла_крамниця_{назва}.py"
