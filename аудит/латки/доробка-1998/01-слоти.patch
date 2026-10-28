@@ -115,3 +115,44 @@ index 16b1cdde0..562ec6453 100644
  | `CodexInstaller` (`install.ps1` релізу Codex `CodexRelease`) | `A59CB66350098C33B021FF470D586AE8FE3B7CAF189CA7137B4FE3AF5D4DCE74` |
  
  Той самий список читають скрипти `m9v/` з `m9v/хеші.psd1` — міняти їх разом із таблицею. Підготовка одним проходом — `m9v/ЩО_НАТИСНУТИ.md`.
+diff --git a/аудит/адаптери/gemini/перевірка/side.ps1 b/аудит/адаптери/gemini/перевірка/side.ps1
+index 5c744978d..ddb7d315e 100644
+--- a/аудит/адаптери/gemini/перевірка/side.ps1
++++ b/аудит/адаптери/gemini/перевірка/side.ps1
+@@ -8,6 +8,10 @@ $p = @{}
+ if ((Get-Command $Script).Parameters.ContainsKey('LaneDir') -and -not $p.ContainsKey('LaneDir')) {
+     $p['LaneDir'] = Join-Path ([System.IO.Path]::GetTempPath()) ('lanes-' + [guid]::NewGuid().ToString('N').Substring(0, 8))
+ }
++# Наявний selfupdate.ready робочої обгортки не є входом синтетичного стенда.
++if ((Get-Command $Script).Parameters.ContainsKey('UpdateRoot') -and -not $p.ContainsKey('UpdateRoot')) {
++    $p['UpdateRoot'] = Join-Path ([System.IO.Path]::GetTempPath()) ('update-' + [guid]::NewGuid().ToString('N'))
++}
+ . $Script @p
+ # Процес наряду — знов цей стенд (а не сам скрипт), тож бере ті самі підміни, що батьківський (10164).
+ $script:SideFile = $PSCommandPath; $script:SideScript = $Script; $script:SideArgs = $p
+diff --git a/аудит/адаптери/gemini/перевірка/сценарії_здоровя.ps1 b/аудит/адаптери/gemini/перевірка/сценарії_здоровя.ps1
+index 3db45affe..a108e0df5 100644
+--- a/аудит/адаптери/gemini/перевірка/сценарії_здоровя.ps1
++++ b/аудит/адаптери/gemini/перевірка/сценарії_здоровя.ps1
+@@ -27,7 +27,7 @@ function Put-Line([string]$Dir, [string]$Line) {
+ function Publish([string]$Case, [int]$Limit = 4, [int]$Fallback = 2) {
+     <# Справжній Main публікатора; усі зовнішні процеси — заглушки з ASCII-теки. #>
+     $dir = Join-Path $tmpRoot $Case
+-    $params = @{ WorkDir = "$dir/pub"; OutDir = "$dir/out"; OutboxDir = "$dir/box"; GitExe = "$tmpRoot/git.cmd"; ClaudeExe = "$tmpRoot/claude.cmd"; SendRetryDelaySeconds = 0; SendRetries = 1; MaxSendAttempts = $Limit }
++    $params = @{ WorkDir = "$dir/pub"; OutDir = "$dir/out"; OutboxDir = "$dir/box"; UpdateRoot = "$dir/update"; GitExe = "$tmpRoot/git.cmd"; ClaudeExe = "$tmpRoot/claude.cmd"; SendRetryDelaySeconds = 0; SendRetries = 1; MaxSendAttempts = $Limit }
+     if (-not $Before) { $params.GhExe = "$tmpRoot/gh.cmd"; $params.MaxFallbackAttempts = $Fallback }
+     . (Join-Path $SourceDir 'gemini_publish.ps1') @params
+     function Test-OwnerUser { $true }
+diff --git a/аудит/адаптери/gemini/перевірка/сценарії_ланцюга.ps1 b/аудит/адаптери/gemini/перевірка/сценарії_ланцюга.ps1
+index 75c5f0b0c..229720e30 100644
+--- a/аудит/адаптери/gemini/перевірка/сценарії_ланцюга.ps1
++++ b/аудит/адаптери/gemini/перевірка/сценарії_ланцюга.ps1
+@@ -20,7 +20,7 @@ try {
+     [IO.File]::WriteAllText("$seed/джерела/a.py", '1', $utf)
+     & git -C $seed add -A; & git -C $seed commit -q -m 'початкова'; & git -C $seed push -q origin main
+     $bare = Join-Path $tmpRoot 'repo.git'; & git clone -q --bare $remote $bare
+-    . (Join-Path $SourceDir 'gemini_publish.ps1') -WorkDir "$tmpRoot/pub" -OutboxDir "$tmpRoot/out"
++    . (Join-Path $SourceDir 'gemini_publish.ps1') -WorkDir "$tmpRoot/pub" -OutboxDir "$tmpRoot/out" -UpdateRoot "$tmpRoot/update"
+     foreach ($d in @($WorkDir, (Join-Path $WorkDir 'seen'), $OutboxDir)) { [void][IO.Directory]::CreateDirectory($d) }
+     $script:Repo = $bare; $script:NoHooks = Join-Path $tmpRoot 'no-hooks'
+     [void](Invoke-Git @('fetch','-q','origin','+refs/heads/main:refs/remotes/origin/main'))
