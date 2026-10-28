@@ -431,7 +431,7 @@ index 577fab2f575b8b9d7dbfe65ff16f1068806d4fed..100d2ecdcd4bf904592a063561adf363
 +
 +Write-Host "`nГОТОВО: isolation OK$(if ($WithCodex) { ', Codex увійшов' } else { ', Codex вимкнено' }). Далі — ЩО_НАТИСНУТИ.md (повернутись до себе, перевірка heartbeat)." -ForegroundColor Green
 diff --git a/аудит/адаптери/gemini/m9v/хеші.psd1 b/аудит/адаптери/gemini/m9v/хеші.psd1
-index cc9202f7528dcbd3b901576cd3ca38370eba5250..9d53fbfa1b656d04a8350153be1e4de9b5014070 100644
+index cc9202f7528dcbd3b901576cd3ca38370eba5250..82fee7ce522d08640f0181f6e04648cfb0b5ad8a 100644
 --- a/аудит/адаптери/gemini/m9v/хеші.psd1
 +++ b/аудит/адаптери/gemini/m9v/хеші.psd1
 @@ -3,10 +3,10 @@
@@ -443,7 +443,7 @@ index cc9202f7528dcbd3b901576cd3ca38370eba5250..9d53fbfa1b656d04a8350153be1e4de9
 -    'gemini_run.ps1'     = 'C3D46833DAC7B7D1BD2C9DE4BA7FF2471CC82142D405AEFD379C04EE77FF8068'
 -    'gemini_publish.ps1' = 'E542F2BECB9FEBE362219D1CE80548052F58B3154F37D92AD3F933A1DD51A5F5'
 +    'wrapper_chain.ps1'  = '806F6DD792213D702F7EF9079318C450AD4EEE651B88DA13E749F6DD5FE052D2'
-+    'wrapper_health.ps1' = '66E3FDD0026A285A2E83E678BE3C2D9D1555D99B83D6460296EE06CFA5233748'
++    'wrapper_health.ps1' = 'D03E371F34B3AC2881B70047563260905CD2DEB343DCD8608257495E531B90EA'
 +    'gemini_run.ps1'     = 'B645BAEC41D3E92716B3A64220A7E5EF2991CE3F4EF9ED01E72E65C4484CB769'
 +    'gemini_publish.ps1' = '7F4FC17738BF30D3F84C2DCFA2DC2A52CAA086A90825F31B0C4339BFFEA3A39C'
      # Інсталятор Codex (9741) закріплено за релізом: install.ps1 — файл релізу https://releases.openai.com/codex/releases/<CodexRelease>/install.ps1
@@ -853,10 +853,10 @@ index 94ac3278ff527dac967c3d1f22c49aeaf2444ea1..d137fc836f74d40d1bdf98d2ab8df1ef
          }
      } catch {
 diff --git a/аудит/адаптери/gemini/wrapper_health.ps1 b/аудит/адаптери/gemini/wrapper_health.ps1
-index b25ac2c230bc93bc4cb57731822961c9a4452508..861a535c5f8172229d77a503f52d266a5717ad7e 100644
+index b25ac2c230bc93bc4cb57731822961c9a4452508..a458923cd7e0006df76c12989b0e98e3b3e46961 100644
 --- a/аудит/адаптери/gemini/wrapper_health.ps1
 +++ b/аудит/адаптери/gemini/wrapper_health.ps1
-@@ -59,3 +59,9 @@ function Invoke-HealthBeat {
+@@ -59,3 +59,8 @@ function Invoke-HealthBeat {
      try { & $script:HeartbeatAction }
      finally { $script:HeartbeatBusy = $false }
  }
@@ -865,9 +865,8 @@ index b25ac2c230bc93bc4cb57731822961c9a4452508..861a535c5f8172229d77a503f52d266a
 +    <# Звіти перевірки й пачки вже містять вердикт і не породжують рекурсії. #>
 +    $Branch -cmatch '/(?:авто(?:перевірка|живий)-|перевірка-|pachka-|Е1-нічний-живий-)'
 +}
-+
 diff --git a/аудит/адаптери/gemini/НАЛАШТУВАННЯ.md b/аудит/адаптери/gemini/НАЛАШТУВАННЯ.md
-index 7c7e2dd8ec72c5bd67e5da3d33f2c11bde170c05..d007abf3debfdfc3a2b0958ad572b47dac49e61f 100644
+index 7c7e2dd8ec72c5bd67e5da3d33f2c11bde170c05..2b5730da1cc3e2bdbce81aafb61ef164312e80c0 100644
 --- a/аудит/адаптери/gemini/НАЛАШТУВАННЯ.md
 +++ b/аудит/адаптери/gemini/НАЛАШТУВАННЯ.md
 @@ -416,13 +416,13 @@ $f = Join-Path "$env:USERPROFILE\gemini-outbox" $n
@@ -884,7 +883,7 @@ index 7c7e2dd8ec72c5bd67e5da3d33f2c11bde170c05..d007abf3debfdfc3a2b0958ad572b47d
 -| `wrapper_health.ps1` | `FCE45448539D53A6B5718319842FC845DA870F39453A6B716C7AF8A2DB65B88E` |
 -| `queue_lanes.ps1` | `C4CCA1B7DE38B62AC9DB978AC744D8342FC30460BFD4FD954C492C5F7181EA4D` |
 -| `claude_run.ps1` | `B2D0C64BBBCD84583A8C9767AAC046BE51ACF25A2AAEB86D3F1A114DB39AD679` |
-+| `wrapper_health.ps1` | `66E3FDD0026A285A2E83E678BE3C2D9D1555D99B83D6460296EE06CFA5233748` |
++| `wrapper_health.ps1` | `D03E371F34B3AC2881B70047563260905CD2DEB343DCD8608257495E531B90EA` |
 +| `queue_lanes.ps1` | `6FA4D9E9E78C923AA2D525C83C1E3E307B313FBD735FB6CAE3F01B6BA0BA85C8` |
 +| `claude_run.ps1` | `61C0730FA3F50B1D9F71ADE12CAC8E162DBCF8E7A874C38C06B28DEF5FAFE570` |
  | `CodexInstaller` (`install.ps1` релізу Codex `CodexRelease`) | `A59CB66350098C33B021FF470D586AE8FE3B7CAF189CA7137B4FE3AF5D4DCE74` |
