@@ -1,0 +1,158 @@
+diff --git a/аудит/адаптери/gemini/claude_run.ps1 b/аудит/адаптери/gemini/claude_run.ps1
+index c8853b17f..f33480b57 100644
+--- a/аудит/адаптери/gemini/claude_run.ps1
++++ b/аудит/адаптери/gemini/claude_run.ps1
+@@ -213,10 +213,10 @@ function Read-GeminiBeat {
+     $lanes = @()
+     foreach ($l in @(Get-JsonProp $j 'lanes' | Select-Object -First 2)) {
+         $ln = & $get $l 'lane'; $n = & $get $l 'n'
+-        if ($ln -notin @('codex', 'agy') -or $n -notmatch '^[0-4]$') { continue }
+-        $busy = @(foreach ($s in @(Get-JsonProp $l 'busy' | Select-Object -First 4)) {
++        if ($ln -notin @('codex', 'agy') -or -not (Test-SlotCount $n)) { continue }
++        $busy = @(foreach ($s in @(Get-JsonProp $l 'busy' | Select-Object -First $script:Ceil.slots[1])) {
+             $sl = & $get $s 'slot'; $m = & $get $s 'marker'; $md = & $get $s 'model'; $since = & $utc (& $get $s 'since')
+-            if ($sl -cnotmatch "^$ln-[1-4]$" -or $m -cnotmatch $script:MarkerRx -or $m.Contains('..') -or $md -cnotmatch $script:ModelPattern) { continue }
++            if (-not (Test-SlotName $sl @($ln)) -or $m -cnotmatch $script:MarkerRx -or $m.Contains('..') -or $md -cnotmatch $script:ModelPattern) { continue }
+             [pscustomobject]@{ Slot = $sl; Marker = $m; Model = $md; Since = $since; Gpu = ((& $get $s 'gpu') -eq 'True') }
+         })
+         $lanes += [pscustomobject]@{ Lane = $ln; N = [int]$n; Busy = $busy }
+@@ -666,7 +666,7 @@ function Resume-Interrupted {
+         $id = $Matches[1]
+         $j = $null; try { $j = $Matches[2] | ConvertFrom-Json } catch { $null = $_ }
+         $slot = [string](Get-JsonProp $j 'slot')
+-        if ($slot -match '^claude-[1-4]$' -and -not (Test-LockFree (Join-Path $script:SlotDir "$slot.lock"))) { continue }
++        if ((Test-SlotName $slot @('claude')) -and -not (Test-LockFree (Join-Path $script:SlotDir "$slot.lock"))) { continue }
+         $marker = [string](Get-JsonProp $j 'marker')
+         try {
+             $p = Get-Process -Id ([int]$j.pid) -ErrorAction Stop
+diff --git a/аудит/адаптери/gemini/gemini_run.ps1 b/аудит/адаптери/gemini/gemini_run.ps1
+index 76ff91f90..aed21c334 100644
+--- a/аудит/адаптери/gemini/gemini_run.ps1
++++ b/аудит/адаптери/gemini/gemini_run.ps1
+@@ -910,7 +910,7 @@ function Resume-Interrupted {
+         if (-not $text.StartsWith('STARTED {')) { continue }
+         $j = $text.Substring(8) | ConvertFrom-Json
+         $slot = [string](Get-JsonProp $j 'slot')
+-        if ($slot -match '^[a-z]+-[0-9]$' -and -not (Test-LockFree (Join-Path $script:SlotDir "$slot.lock"))) { continue }
++        if ((Test-SlotName $slot $script:Lanes) -and -not (Test-LockFree (Join-Path $script:SlotDir "$slot.lock"))) { continue }
+         $status = [ordered]@{}
+         foreach ($p in $j.PSObject.Properties) { $status[$p.Name] = $p.Value }
+         $status.code = 'INTERRUPTED'
+diff --git a/аудит/адаптери/gemini/m9v/хеші.psd1 b/аудит/адаптери/gemini/m9v/хеші.psd1
+index 4c92c5dd8..ebb7f1c92 100644
+--- a/аудит/адаптери/gemini/m9v/хеші.psd1
++++ b/аудит/адаптери/gemini/m9v/хеші.psd1
+@@ -5,7 +5,7 @@
+     'wrapper_probe.ps1'  = '85116D04C22EB64CBFF52E66BCEAE9B1091577A889EDD58A8B634093A82BDBC6'
+     'wrapper_chain.ps1'  = '79BD08F866529B1C58FE57AF33252AA4F0F7B3D992352130A7824030F27A57CD'
+     'wrapper_health.ps1' = 'FCE45448539D53A6B5718319842FC845DA870F39453A6B716C7AF8A2DB65B88E'
+-    'gemini_run.ps1'     = '39FD518203B33184304528AFB50175E0CB455B9337A8B7A46D34F4B565BEB577'
++    'gemini_run.ps1'     = '0BA6869246624E1203613A373D408B9B5C2F9FAEAAF14508B7D023A0C1D452B5'
+     'gemini_publish.ps1' = '895162B7194F6331E672C2965D0F2833EE130676B44FC3005C16D4E52F95CCED'
+     # Інсталятор Codex (9741) закріплено за релізом: install.ps1 — файл релізу https://releases.openai.com/codex/releases/<CodexRelease>/install.ps1
+     # (незмінний URL; той самий sha256 віддає https://chatgpt.com/codex/install.ps1 — редирект на releases.openai.com — і публікує реліз
+@@ -14,6 +14,6 @@
+     CodexRelease         = '0.164.0'
+     CodexInstaller       = 'A59CB66350098C33B021FF470D586AE8FE3B7CAF189CA7137B4FE3AF5D4DCE74'
+     'gemini_watch.ps1'   = '69EFEBB07FF1AF51C382B753A95C50F3C1AC27B3008F2489992BEBE3FD0213AA'
+-    'queue_lanes.ps1'    = '1426ACE17A7380BDF053A62ECD55BB8FF27AFEBE128559BD730D520F42B04BCA'
+-    'claude_run.ps1'     = 'E50F57B13A71807BAB3F90DC2C3E53FB020A4E121B446C5DAF629C34FC7428B3'
++    'queue_lanes.ps1'    = '25695435985724B960BAFA1C17B3BCC6F50BA0C36D490102B5BCBC88FC6E5F8C'
++    'claude_run.ps1'     = 'DC12D3F1159154644B96D742B3495CDAE512915534143CD2FB62D9929FB15403'
+ }
+diff --git a/аудит/адаптери/gemini/queue_lanes.ps1 b/аудит/адаптери/gemini/queue_lanes.ps1
+index 6b558b250..9b3190575 100644
+--- a/аудит/адаптери/gemini/queue_lanes.ps1
++++ b/аудит/адаптери/gemini/queue_lanes.ps1
+@@ -387,7 +387,7 @@ function Clear-OrphanClaims([string]$RunsRoot) {
+         $wf = Join-Path (Join-Path $RunsRoot $id) 'worker.json'
+         if (Test-Path -LiteralPath $wf) {
+             $slot = ''; try { $slot = [string](Get-JsonProp ([System.IO.File]::ReadAllText($wf, $script:Utf8) | ConvertFrom-Json) 'slot') } catch { continue }
+-            if ($slot -notmatch '^[a-z]+-[0-9]$' -or -not (Test-LockFree (Join-Path $script:SlotDir "$slot.lock"))) { continue }
++            if (-not (Test-SlotName $slot) -or -not (Test-LockFree (Join-Path $script:SlotDir "$slot.lock"))) { continue }
+         }
+         Write-Log "узяття $id без запуску — звільнено"
+         Clear-UnstartedClaim $sp
+@@ -406,6 +406,21 @@ function Get-WaitingMarkers {
+ 
+ # --- слоти, GPU, процес наряду -------------------------------------------------------------------------------------
+ 
++function Test-SlotCount([string]$Value) {
++    <# Ціла кількість слотів у спільному діапазоні; недовірені значення відкидаємо, не обрізаємо. #>
++    $n = 0
++    [regex]::IsMatch($Value, '\A(?:0|[1-9][0-9]*)\z') -and [int]::TryParse($Value, [ref]$n) -and
++        $n -ge $script:Ceil.slots[0] -and $n -le $script:Ceil.slots[1]
++}
++
++function Test-SlotName([string]$Name, [string[]]$Lanes = @($script:LaneDefaults.Keys)) {
++    <# Назва слота дозволеної смуги з додатним номером у спільному діапазоні.
++
++    Номер не обмежуємо поточним N: після зменшення смуги вже запущені наряди мають завершитися. #>
++    $m = [regex]::Match($Name, '\A([a-z]+)-([1-9][0-9]*)\z')
++    $m.Success -and $Lanes -ccontains $m.Groups[1].Value -and (Test-SlotCount $m.Groups[2].Value)
++}
++
+ function Open-Lock([string]$Path) {
+     <# Винятковий замок-файл (FileShare None) або $null — зайнято. Звільняє ОС, коли процес-власник завершився. #>
+     try { [System.IO.File]::Open($Path, 'OpenOrCreate', 'ReadWrite', 'None') } catch { $null }
+diff --git a/аудит/адаптери/gemini/НАЛАШТУВАННЯ.md b/аудит/адаптери/gemini/НАЛАШТУВАННЯ.md
+index 16b1cdde0..562ec6453 100644
+--- a/аудит/адаптери/gemini/НАЛАШТУВАННЯ.md
++++ b/аудит/адаптери/gemini/НАЛАШТУВАННЯ.md
+@@ -417,12 +417,12 @@ $f = Join-Path "$env:USERPROFILE\gemini-outbox" $n
+ | `wrapper_probe.ps1` | `85116D04C22EB64CBFF52E66BCEAE9B1091577A889EDD58A8B634093A82BDBC6` |
+ | `wrapper_update.ps1` | `4156307A17BDAE3AF7249E532947F659E99AA1349D159239159FAE60CA7E4F2B` |
+ | `wrapper_chain.ps1` | `79BD08F866529B1C58FE57AF33252AA4F0F7B3D992352130A7824030F27A57CD` |
+-| `gemini_run.ps1` | `39FD518203B33184304528AFB50175E0CB455B9337A8B7A46D34F4B565BEB577` |
++| `gemini_run.ps1` | `0BA6869246624E1203613A373D408B9B5C2F9FAEAAF14508B7D023A0C1D452B5` |
+ | `gemini_publish.ps1` | `895162B7194F6331E672C2965D0F2833EE130676B44FC3005C16D4E52F95CCED` |
+ | `gemini_watch.ps1` | `69EFEBB07FF1AF51C382B753A95C50F3C1AC27B3008F2489992BEBE3FD0213AA` |
+ | `wrapper_health.ps1` | `FCE45448539D53A6B5718319842FC845DA870F39453A6B716C7AF8A2DB65B88E` |
+-| `queue_lanes.ps1` | `1426ACE17A7380BDF053A62ECD55BB8FF27AFEBE128559BD730D520F42B04BCA` |
+-| `claude_run.ps1` | `E50F57B13A71807BAB3F90DC2C3E53FB020A4E121B446C5DAF629C34FC7428B3` |
++| `queue_lanes.ps1` | `25695435985724B960BAFA1C17B3BCC6F50BA0C36D490102B5BCBC88FC6E5F8C` |
++| `claude_run.ps1` | `DC12D3F1159154644B96D742B3495CDAE512915534143CD2FB62D9929FB15403` |
+ | `CodexInstaller` (`install.ps1` релізу Codex `CodexRelease`) | `A59CB66350098C33B021FF470D586AE8FE3B7CAF189CA7137B4FE3AF5D4DCE74` |
+ 
+ Той самий список читають скрипти `m9v/` з `m9v/хеші.psd1` — міняти їх разом із таблицею. Підготовка одним проходом — `m9v/ЩО_НАТИСНУТИ.md`.
+diff --git a/аудит/адаптери/gemini/перевірка/side.ps1 b/аудит/адаптери/gemini/перевірка/side.ps1
+index 5c744978d..ddb7d315e 100644
+--- a/аудит/адаптери/gemini/перевірка/side.ps1
++++ b/аудит/адаптери/gemini/перевірка/side.ps1
+@@ -8,6 +8,10 @@ $p = @{}
+ if ((Get-Command $Script).Parameters.ContainsKey('LaneDir') -and -not $p.ContainsKey('LaneDir')) {
+     $p['LaneDir'] = Join-Path ([System.IO.Path]::GetTempPath()) ('lanes-' + [guid]::NewGuid().ToString('N').Substring(0, 8))
+ }
++# Наявний selfupdate.ready робочої обгортки не є входом синтетичного стенда.
++if ((Get-Command $Script).Parameters.ContainsKey('UpdateRoot') -and -not $p.ContainsKey('UpdateRoot')) {
++    $p['UpdateRoot'] = Join-Path ([System.IO.Path]::GetTempPath()) ('update-' + [guid]::NewGuid().ToString('N'))
++}
+ . $Script @p
+ # Процес наряду — знов цей стенд (а не сам скрипт), тож бере ті самі підміни, що батьківський (10164).
+ $script:SideFile = $PSCommandPath; $script:SideScript = $Script; $script:SideArgs = $p
+diff --git a/аудит/адаптери/gemini/перевірка/сценарії_здоровя.ps1 b/аудит/адаптери/gemini/перевірка/сценарії_здоровя.ps1
+index 3db45affe..a108e0df5 100644
+--- a/аудит/адаптери/gemini/перевірка/сценарії_здоровя.ps1
++++ b/аудит/адаптери/gemini/перевірка/сценарії_здоровя.ps1
+@@ -27,7 +27,7 @@ function Put-Line([string]$Dir, [string]$Line) {
+ function Publish([string]$Case, [int]$Limit = 4, [int]$Fallback = 2) {
+     <# Справжній Main публікатора; усі зовнішні процеси — заглушки з ASCII-теки. #>
+     $dir = Join-Path $tmpRoot $Case
+-    $params = @{ WorkDir = "$dir/pub"; OutDir = "$dir/out"; OutboxDir = "$dir/box"; GitExe = "$tmpRoot/git.cmd"; ClaudeExe = "$tmpRoot/claude.cmd"; SendRetryDelaySeconds = 0; SendRetries = 1; MaxSendAttempts = $Limit }
++    $params = @{ WorkDir = "$dir/pub"; OutDir = "$dir/out"; OutboxDir = "$dir/box"; UpdateRoot = "$dir/update"; GitExe = "$tmpRoot/git.cmd"; ClaudeExe = "$tmpRoot/claude.cmd"; SendRetryDelaySeconds = 0; SendRetries = 1; MaxSendAttempts = $Limit }
+     if (-not $Before) { $params.GhExe = "$tmpRoot/gh.cmd"; $params.MaxFallbackAttempts = $Fallback }
+     . (Join-Path $SourceDir 'gemini_publish.ps1') @params
+     function Test-OwnerUser { $true }
+diff --git a/аудит/адаптери/gemini/перевірка/сценарії_ланцюга.ps1 b/аудит/адаптери/gemini/перевірка/сценарії_ланцюга.ps1
+index 75c5f0b0c..229720e30 100644
+--- a/аудит/адаптери/gemini/перевірка/сценарії_ланцюга.ps1
++++ b/аудит/адаптери/gemini/перевірка/сценарії_ланцюга.ps1
+@@ -20,7 +20,7 @@ try {
+     [IO.File]::WriteAllText("$seed/джерела/a.py", '1', $utf)
+     & git -C $seed add -A; & git -C $seed commit -q -m 'початкова'; & git -C $seed push -q origin main
+     $bare = Join-Path $tmpRoot 'repo.git'; & git clone -q --bare $remote $bare
+-    . (Join-Path $SourceDir 'gemini_publish.ps1') -WorkDir "$tmpRoot/pub" -OutboxDir "$tmpRoot/out"
++    . (Join-Path $SourceDir 'gemini_publish.ps1') -WorkDir "$tmpRoot/pub" -OutboxDir "$tmpRoot/out" -UpdateRoot "$tmpRoot/update"
+     foreach ($d in @($WorkDir, (Join-Path $WorkDir 'seen'), $OutboxDir)) { [void][IO.Directory]::CreateDirectory($d) }
+     $script:Repo = $bare; $script:NoHooks = Join-Path $tmpRoot 'no-hooks'
+     [void](Invoke-Git @('fetch','-q','origin','+refs/heads/main:refs/remotes/origin/main'))

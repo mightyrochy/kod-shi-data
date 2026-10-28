@@ -27,7 +27,7 @@ function Put-Line([string]$Dir, [string]$Line) {
 function Publish([string]$Case, [int]$Limit = 4, [int]$Fallback = 2) {
     <# Справжній Main публікатора; усі зовнішні процеси — заглушки з ASCII-теки. #>
     $dir = Join-Path $tmpRoot $Case
-    $params = @{ WorkDir = "$dir/pub"; OutDir = "$dir/out"; OutboxDir = "$dir/box"; GitExe = "$tmpRoot/git.cmd"; ClaudeExe = "$tmpRoot/claude.cmd"; SendRetryDelaySeconds = 0; SendRetries = 1; MaxSendAttempts = $Limit }
+    $params = @{ WorkDir = "$dir/pub"; OutDir = "$dir/out"; OutboxDir = "$dir/box"; UpdateRoot = "$dir/update"; GitExe = "$tmpRoot/git.cmd"; ClaudeExe = "$tmpRoot/claude.cmd"; SendRetryDelaySeconds = 0; SendRetries = 1; MaxSendAttempts = $Limit }
     if (-not $Before) { $params.GhExe = "$tmpRoot/gh.cmd"; $params.MaxFallbackAttempts = $Fallback }
     . (Join-Path $SourceDir 'gemini_publish.ps1') @params
     function Test-OwnerUser { $true }

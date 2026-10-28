@@ -213,10 +213,10 @@ function Read-GeminiBeat {
     $lanes = @()
     foreach ($l in @(Get-JsonProp $j 'lanes' | Select-Object -First 2)) {
         $ln = & $get $l 'lane'; $n = & $get $l 'n'
-        if ($ln -notin @('codex', 'agy') -or $n -notmatch '^[0-4]$') { continue }
-        $busy = @(foreach ($s in @(Get-JsonProp $l 'busy' | Select-Object -First 4)) {
+        if ($ln -notin @('codex', 'agy') -or -not (Test-SlotCount $n)) { continue }
+        $busy = @(foreach ($s in @(Get-JsonProp $l 'busy' | Select-Object -First $script:Ceil.slots[1])) {
             $sl = & $get $s 'slot'; $m = & $get $s 'marker'; $md = & $get $s 'model'; $since = & $utc (& $get $s 'since')
-            if ($sl -cnotmatch "^$ln-[1-4]$" -or $m -cnotmatch $script:MarkerRx -or $m.Contains('..') -or $md -cnotmatch $script:ModelPattern) { continue }
+            if (-not (Test-SlotName $sl @($ln)) -or $m -cnotmatch $script:MarkerRx -or $m.Contains('..') -or $md -cnotmatch $script:ModelPattern) { continue }
             [pscustomobject]@{ Slot = $sl; Marker = $m; Model = $md; Since = $since; Gpu = ((& $get $s 'gpu') -eq 'True') }
         })
         $lanes += [pscustomobject]@{ Lane = $ln; N = [int]$n; Busy = $busy }
@@ -666,7 +666,7 @@ function Resume-Interrupted {
         $id = $Matches[1]
         $j = $null; try { $j = $Matches[2] | ConvertFrom-Json } catch { $null = $_ }
         $slot = [string](Get-JsonProp $j 'slot')
-        if ($slot -match '^claude-[1-4]$' -and -not (Test-LockFree (Join-Path $script:SlotDir "$slot.lock"))) { continue }
+        if ((Test-SlotName $slot @('claude')) -and -not (Test-LockFree (Join-Path $script:SlotDir "$slot.lock"))) { continue }
         $marker = [string](Get-JsonProp $j 'marker')
         try {
             $p = Get-Process -Id ([int]$j.pid) -ErrorAction Stop
