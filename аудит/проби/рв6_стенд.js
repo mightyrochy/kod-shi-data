@@ -1109,10 +1109,10 @@ const ЖИВІ_ЗАПИТИ = new Map(), ОБРИВИ = [];
    encoded image` і на qwen3.5-9b, і на qwen3-vl-8b. А webp у каталозі багато
    (rito, emmeliedelage, miraton). Постачальники справжнього мосту webp беруть,
    тож це межа рантайму, а не продукту, — і адаптер її знімає перекодуванням у
-   jpeg. Нема `sharp` — кадр просто не доїде, як і доти, і його порахує
-   `x-images-dropped`. */
+   jpeg. Визначення формату й обмеження розміру спільні для URL і base64:
+   заголовок крамниці може бути відсутнім або не відповідати байтам (10616). */
 let _sharp = null; try { _sharp = require('sharp'); } catch (_) {}
-const ЖИВІ_ТИПИ = new Set(['image/jpeg', 'image/png']);
+const {підготуватиКадр} = require('./кадр_моделі.js');
 /* ВЕЛИКИЙ КАДР ВАЛИТЬ РУШІЙ (виміряно 25.09.2026, LM Studio llama.cpp cuda12 2.45.0,
    gemma-4-12b-it-qat): фото речі 1200×1800 — «The model has crashed without
    additional information» на будь-якому контексті (8 192 … 65 536), без Exif
@@ -1129,10 +1129,9 @@ const ФОТО_МАКС = ('FOTO_MAX' in process.env) ? Number(process.env.FOTO_
    каталогу — webp: emmeliedelage, rito, sezone…), тобто 20–50 % кадрів кожного опису —
    стенд міряв свою втрату, а не продукт (там адреси несе сам Anthropic). Причина кожної втрати
    лишається в `ПРИЧИНИ_ВТРАТ` і друкується в підсумку. */
-const КЛОД_ТИПИ = new Set(['image/jpeg', 'image/png', 'image/webp', 'image/gif']);
 const КЛОД_КАДР_МАКС_Б = 5 * 1024 * 1024;
 const ПРИЧИНИ_ВТРАТ = [];
-async function кадрБазою(url, сире){
+async function кадрБазою(url, сире, облік){
   const втрата = п => { ПРИЧИНИ_ВТРАТ.push(п + ' · ' + String(url).slice(0, 90)); return null; };
   try {
     let в = null;
@@ -1140,24 +1139,18 @@ async function кадрБазою(url, сире){
       try { в = await fetch(url, {redirect: 'follow'}); if (в.ok || в.status < 500) break; } catch (е) { if (спроба) throw е; }
     }
     if (!в.ok) return втрата('HTTP ' + в.status);
-    let тип = (в.headers.get('content-type') || 'image/jpeg').split(';')[0].trim();
-    let байти = Buffer.from(await в.arrayBuffer());
+    const тип = (в.headers.get('content-type') || 'image/jpeg').split(';')[0].trim();
+    const байти = Buffer.from(await в.arrayBuffer());
     if (!байти.length) return втрата('порожньо');
-    const прийнятні = сире ? КЛОД_ТИПИ : ЖИВІ_ТИПИ;
-    const великий = _sharp && ФОТО_МАКС > 0 && await _sharp(байти).metadata()
-      .then(м => Math.max(м.width || 0, м.height || 0) > ФОТО_МАКС, () => false);
-    if (!прийнятні.has(тип) || великий){
-      if (!_sharp) return втрата(!прийнятні.has(тип) ? 'тип ' + тип + ' без sharp' : 'великий без sharp');
-      байти = await (великий ? _sharp(байти).resize({width: ФОТО_МАКС, height: ФОТО_МАКС, fit: 'inside'}) : _sharp(байти))
-        .jpeg({quality: 88}).toBuffer();
-      тип = 'image/jpeg';
-    }
-    if (сире && байти.length > КЛОД_КАДР_МАКС_Б) return втрата('понад 5 МБ');
-    return 'data:' + тип + ';base64,' + байти.toString('base64');
-  } catch (е) { return втрата('мережа ' + String((е.cause && е.cause.code) || е.message).slice(0, 40)); }
+    const кадр = await підготуватиКадр(байти, тип, {sharp: _sharp, макс: ФОТО_МАКС, сире});
+    if (сире && кадр.вихід.байтів > КЛОД_КАДР_МАКС_Б) return втрата('понад 5 МБ');
+    if (облік) облік.push({джерело: url.startsWith('data:') ? 'base64' : url, вхід: кадр.вхід, вихід: кадр.вихід});
+    return кадр.url;
+  } catch (е) { return втрата('отримання/декодування ' + String((е.cause && е.cause.code) || е.message).slice(0, 80)); }
 }
 async function живоюМоделлю(тіло, тип, держак){
   let фотоНеДійшло = 0; /* локально: виклики йдуть паралельно, глобальний лічильник їх мішав (КАДР-870) */
+  const кадри = [];
   if (ПРАВИЛА_РЕЧЕННЯМИ && тип === 'ПАКЕТ_V1→ОБРАЗИ_V1')
     тіло = Object.assign({}, тіло, {messages: (тіло.messages || []).map(м => Object.assign({}, м,
       {content: Array.isArray(м.content) ? м.content.map(б => б.type === 'text' ? Object.assign({}, б, {text: правилаРеченнями(б.text || '')}) : б)
@@ -1175,9 +1168,9 @@ async function живоюМоделлю(тіло, тип, держак){
     for (const б of м.content){
       if (б.type !== 'image'){ зміст.push({type: 'text', text: б.text || ''}); continue; }
       const дж = б.source || {};
-      const url = дж.type === 'base64'
+      const url = await кадрБазою(дж.type === 'base64'
         ? 'data:' + (дж.media_type || 'image/jpeg') + ';base64,' + дж.data
-        : await кадрБазою(дж.url || '');
+        : дж.url || '', false, кадри);
       if (url) зміст.push({type: 'image_url', image_url: {url}});
       /* ФОТО-513: як у `worker_джерело.js` — кадр, що не дійшов, лишає своє місце текстом, а не
          зникає (інакше кадри за ним зсуваються проти підписів «Photo N:») */
@@ -1214,6 +1207,7 @@ async function живоюМоделлю(тіло, тип, держак){
   const видимихОцінка = Math.ceil(текст.length / 2);
   ЖУРНАЛ_МОДЕЛІ.push({тип, статус, с: +с_.toFixed(1), вхід, вихід, стоп, модель_сторінки: тіло.model, стеля: тіло.max_tokens,
                       думка: думка.length, симв: текст.length, видимих_т_оцінка: видимихОцінка, фото_не_дійшло: фотоНеДійшло, помилка,
+                      кадри,
                       ...((держак || {}).обірвано_о ? {обрив: true} : {})});
   return {статус, текст, думка, вхід, вихід, стоп, помилка, с: с_, дропи: фотоНеДійшло};
 }
