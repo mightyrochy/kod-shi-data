@@ -1,0 +1,138 @@
+diff --git a/аудит/адаптери/gemini/m9v/хеші.psd1 b/аудит/адаптери/gemini/m9v/хеші.psd1
+index 53874c2b8262978808980c3f420e5a2b706372a6..0a2896eb8727c4538ae2bcd85880b7516fa1f110 100644
+--- a/аудит/адаптери/gemini/m9v/хеші.psd1
++++ b/аудит/адаптери/gemini/m9v/хеші.psd1
+@@ -1,7 +1,7 @@
+ ﻿# Очікувані SHA-256 файлів обгортки — єдине місце для скриптів m9v. Рядки тут мають збігатися з таблицею «Хеші файлів»
+ # у ../НАЛАШТУВАННЯ.md (стенд `перевірка/сценарії_m9v.sh` звіряє). Міняється разом із таблицею (PR, що чіпає обгортку).
+ @{
+-    'wrapper_update.ps1' = 'F85CC682A6486977600BC32F2D5068790A30A3AADDCA57EB0A68B1773FB1E16F'
++    'wrapper_update.ps1' = '4156307A17BDAE3AF7249E532947F659E99AA1349D159239159FAE60CA7E4F2B'
+     'wrapper_probe.ps1'  = '85116D04C22EB64CBFF52E66BCEAE9B1091577A889EDD58A8B634093A82BDBC6'
+     'wrapper_chain.ps1'  = '79BD08F866529B1C58FE57AF33252AA4F0F7B3D992352130A7824030F27A57CD'
+     'wrapper_health.ps1' = 'FCE45448539D53A6B5718319842FC845DA870F39453A6B716C7AF8A2DB65B88E'
+diff --git a/аудит/адаптери/gemini/wrapper_update.ps1 b/аудит/адаптери/gemini/wrapper_update.ps1
+index a91576c360be450c265cb819d4c59c634d1b2ed3..baeaaf14fce169704a0afaedca93425242255ebc 100644
+--- a/аудит/адаптери/gemini/wrapper_update.ps1
++++ b/аудит/адаптери/gemini/wrapper_update.ps1
+@@ -1,6 +1,6 @@
+ ﻿#Requires -Version 5.1
+ # Самооновлення викликає лише публікатор власника; джерело — його щойно fetched origin/main.
+-function Test-UpdateRoot([string]$Root) {
++function Test-UpdateRoot([string]$Root, [Security.Principal.IdentityReference]$GeminiIdentity = ([Security.Principal.NTAccount]"$env:COMPUTERNAME\$GeminiUser")) {
+     <# Відхиляє посилання та права запису gemini/загальних груп у захищеній теці. #>
+     if (-not (Test-Path -LiteralPath $Root -PathType Container)) { return $false }
+     $item = Get-Item -LiteralPath $Root
+@@ -9,14 +9,19 @@ function Test-UpdateRoot([string]$Root) {
+         $item = $item.Parent
+     }
+     if (-not $script:OnWindows) { return $true }
+-    $sid = ([Security.Principal.NTAccount]"$env:COMPUTERNAME\$GeminiUser").Translate([Security.Principal.SecurityIdentifier]).Value
+-    $bad = @($sid, 'S-1-1-0', 'S-1-5-11', 'S-1-5-32-545')
+-    $ownerSid = [Security.Principal.WindowsIdentity]::GetCurrent().User.Value
+-    $writers = @('S-1-5-18','S-1-5-32-544',$ownerSid)
+-    $write = [Security.AccessControl.FileSystemRights]'WriteData,AppendData,WriteExtendedAttributes,WriteAttributes,Delete,ChangePermissions,TakeOwnership,DeleteSubdirectoriesAndFiles'
+-    foreach ($rule in (Get-Acl -LiteralPath $Root).Access) {
+-        $who = $rule.IdentityReference.Translate([Security.Principal.SecurityIdentifier]).Value
+-        if (($who -in $bad -or $who -notin $writers) -and $rule.AccessControlType -eq 'Allow' -and ($rule.FileSystemRights -band $write)) { return $false }
++    try {
++        $sid = $GeminiIdentity.Translate([Security.Principal.SecurityIdentifier]).Value
++        $bad = @($sid, 'S-1-1-0', 'S-1-5-11', 'S-1-5-32-545')
++        $ownerSid = [Security.Principal.WindowsIdentity]::GetCurrent().User.Value
++        $writers = @('S-1-5-18','S-1-5-32-544',$ownerSid)
++        $write = [Security.AccessControl.FileSystemRights]'WriteData,AppendData,WriteExtendedAttributes,WriteAttributes,Delete,ChangePermissions,TakeOwnership,DeleteSubdirectoriesAndFiles'
++        foreach ($rule in (Get-Acl -LiteralPath $Root -ErrorAction Stop).Access) {
++            $who = $rule.IdentityReference.Translate([Security.Principal.SecurityIdentifier]).Value
++            if (($who -in $bad -or $who -notin $writers) -and $rule.AccessControlType -eq 'Allow' -and ($rule.FileSystemRights -band $write)) { return $false }
++        }
++    } catch {
++        # Невідомий облік або непрочитаний ACL не доводить безпечність кореня.
++        return $false
+     }
+     $true
+ }
+diff --git a/аудит/адаптери/gemini/НАЛАШТУВАННЯ.md b/аудит/адаптери/gemini/НАЛАШТУВАННЯ.md
+index b4b698878be45db3860168b63172d4be730da9b0..33751be08e65d5342a3a903014b4b234307ace6d 100644
+--- a/аудит/адаптери/gemini/НАЛАШТУВАННЯ.md
++++ b/аудит/адаптери/gemini/НАЛАШТУВАННЯ.md
+@@ -410,7 +410,7 @@ $f = Join-Path "$env:USERPROFILE\gemini-outbox" $n
+ | файл | SHA-256 |
+ |---|---|
+ | `wrapper_probe.ps1` | `85116D04C22EB64CBFF52E66BCEAE9B1091577A889EDD58A8B634093A82BDBC6` |
+-| `wrapper_update.ps1` | `F85CC682A6486977600BC32F2D5068790A30A3AADDCA57EB0A68B1773FB1E16F` |
++| `wrapper_update.ps1` | `4156307A17BDAE3AF7249E532947F659E99AA1349D159239159FAE60CA7E4F2B` |
+ | `wrapper_chain.ps1` | `79BD08F866529B1C58FE57AF33252AA4F0F7B3D992352130A7824030F27A57CD` |
+ | `gemini_run.ps1` | `39FD518203B33184304528AFB50175E0CB455B9337A8B7A46D34F4B565BEB577` |
+ | `gemini_publish.ps1` | `895162B7194F6331E672C2965D0F2833EE130676B44FC3005C16D4E52F95CCED` |
+diff --git a/аудит/адаптери/gemini/перевірка/сценарії_самооновлення.ps1 b/аудит/адаптери/gemini/перевірка/сценарії_самооновлення.ps1
+index 58f615f4de8fa68dd73433490738fe9796901193..cc6a08b6bd43cf983a82543eef22fbf09a0cc740 100644
+--- a/аудит/адаптери/gemini/перевірка/сценарії_самооновлення.ps1
++++ b/аудит/адаптери/gemini/перевірка/сценарії_самооновлення.ps1
+@@ -1,5 +1,5 @@
+ ﻿#Requires -Version 5.1
+-param([string]$SourceDir = (Split-Path -Parent $PSScriptRoot))
++param([string]$SourceDir = (Split-Path -Parent $PSScriptRoot), [string]$GeminiUser = 'gemini')
+ $ErrorActionPreference = 'Stop'
+ $utf = New-Object Text.UTF8Encoding($false)
+ $tmpRoot = Join-Path ([IO.Path]::GetTempPath()) ('e0-update-' + [guid]::NewGuid().ToString('N'))
+@@ -35,7 +35,7 @@ try {
+     & git -C $seed add -A; & git -C $seed commit -q -m 'початкова'
+     $bare = Join-Path $tmpRoot 'repo.git'
+     & git clone -q --bare $seed $bare
+-    . (Join-Path $SourceDir 'gemini_publish.ps1') -WorkDir "$tmpRoot/pub" -OutboxDir "$tmpRoot/out" -UpdateRoot $root
++    . (Join-Path $SourceDir 'gemini_publish.ps1') -WorkDir "$tmpRoot/pub" -OutboxDir "$tmpRoot/out" -UpdateRoot $root -GeminiUser $GeminiUser
+     foreach ($dir in @($WorkDir, "$WorkDir/seen", $OutboxDir)) { [void][IO.Directory]::CreateDirectory($dir) }
+     $script:RealRootCheck = (Get-Command Test-UpdateRoot).ScriptBlock
+     $script:Repo = $bare; $script:NoHooks = Join-Path $tmpRoot 'no-hooks'
+@@ -72,16 +72,38 @@ try {
+     Invoke-WrapperUpdate $root
+     Check 'повтор відмови не дублює тривогу' (@(Get-ChildItem "$OutboxDir/*.txt" | Where-Object { (Get-Content $_.FullName -Raw -Encoding UTF8) -match "$badProbe UPDATE_PROBE" }).Count -eq 1)
+     # Перевіряємо справжній алгоритм ACL на синтетичних правилах, без Set-Acl чи зміни ОС.
++    $geminiSid = [Security.Principal.SecurityIdentifier]'S-1-5-21-111111111-222222222-333333333-1988'
+     $script:AclRules = @([pscustomobject]@{IdentityReference=[Security.Principal.SecurityIdentifier]'S-1-1-0';AccessControlType='Allow';FileSystemRights=[Security.AccessControl.FileSystemRights]'ReadAndExecute'})
+     function Get-Acl { [pscustomobject]@{Access=$script:AclRules} }
+-    Check 'RX загальної групи допускається справжньою перевіркою ACL' ([bool](& $script:RealRootCheck $root))
++    Check 'RX загальної групи допускається справжньою перевіркою ACL' ([bool](& $script:RealRootCheck $root $geminiSid))
+     $script:AclRules[0].FileSystemRights = [Security.AccessControl.FileSystemRights]'WriteData'
+-    Check 'запис загальної групи відхиляється справжньою перевіркою ACL' (-not [bool](& $script:RealRootCheck $root))
++    Check 'запис загальної групи відхиляється справжньою перевіркою ACL' (-not [bool](& $script:RealRootCheck $root $geminiSid))
+     $script:AclRules[0].IdentityReference = [Security.Principal.SecurityIdentifier]'S-1-5-32-547'
+-    Check 'невідома привілейована група з записом теж відхиляється' (-not [bool](& $script:RealRootCheck $root))
++    Check 'невідома привілейована група з записом теж відхиляється' (-not [bool](& $script:RealRootCheck $root $geminiSid))
++    $script:AclRules[0].IdentityReference = $geminiSid
++    Check 'запис gemini відхиляється за синтетичним SID' (-not [bool](& $script:RealRootCheck $root $geminiSid))
++    $script:AclRules = @(foreach ($sid in @('S-1-5-18', 'S-1-5-32-544', [Security.Principal.WindowsIdentity]::GetCurrent().User.Value)) {
++        [pscustomobject]@{IdentityReference=[Security.Principal.SecurityIdentifier]$sid;AccessControlType='Allow';FileSystemRights=[Security.AccessControl.FileSystemRights]'FullControl'}
++    })
++    Check 'запис SYSTEM, адміністратора й власника допускається' ([bool](& $script:RealRootCheck $root $geminiSid))
++    $missingUser = 'e0-' + [guid]::NewGuid().ToString('N').Substring(0,16)
++    $missingIdentity = [Security.Principal.NTAccount]"$env:COMPUTERNAME\$missingUser"
++    Check 'відсутній облік gemini закриває корінь без винятку' (-not [bool](& $script:RealRootCheck $root $missingIdentity))
++    $script:AclRules[0].IdentityReference = $missingIdentity
++    Check 'неперекладний облік у правилі ACL закриває корінь' (-not [bool](& $script:RealRootCheck $root $geminiSid))
+     function Test-UpdateRoot([string]$Root) { $false }
+     Invoke-WrapperUpdate $root
+     Check 'небезпечний ACL не змінює версії' ([IO.File]::ReadAllText($pointer) -ceq $second)
++    Check 'небезпечний ACL дає тривогу UPDATE_ACL' (@(Get-ChildItem "$OutboxDir/*.txt" | Where-Object { (Get-Content $_.FullName -Raw -Encoding UTF8) -match "$badProbe UPDATE_ACL" }).Count -eq 1)
++    # Повертаємо справжню перевірку: відсутній облік має пройти весь шлях відмови оновлення.
++    Set-Item -Path Function:Test-UpdateRoot -Value $script:RealRootCheck
++    $GeminiUser = $missingUser
++    $script:AclRules = @()
++    [IO.File]::AppendAllText((Join-Path $src 'wrapper_probe.ps1'), "`n# кандидат без обліку gemini`n", $utf)
++    Manifest; $missingAccount = Commit 'оновлення без обліку gemini'
++    Invoke-WrapperUpdate $root
++    Check 'відсутній облік gemini не перемикає чинну версію' ([IO.File]::ReadAllText($pointer) -ceq $second)
++    Check 'відсутній облік gemini дає тривогу UPDATE_ACL' (@(Get-ChildItem "$OutboxDir/*.txt" | Where-Object { (Get-Content $_.FullName -Raw -Encoding UTF8) -match "$missingAccount UPDATE_ACL" }).Count -eq 1)
+     Check 'тимчасові дерева прибрано' (@(Get-ChildItem -LiteralPath $root -Directory -Filter '.stage-*').Count -eq 0)
+ } catch { "✗ виняток стенда: $($_.Exception.Message) $($_.ScriptStackTrace)"; $failures++ }
+ finally {
+diff --git a/аудит/адаптери/gemini/перевірка/сценарії_самооновлення.sh b/аудит/адаптери/gemini/перевірка/сценарії_самооновлення.sh
+index 1f71b9dc1962411a3681d0e32761667dfbafd0a9..2b36a66c0ad075f351fe4ddeb9ff31935aadfc68 100644
+--- a/аудит/адаптери/gemini/перевірка/сценарії_самооновлення.sh
++++ b/аудит/адаптери/gemini/перевірка/сценарії_самооновлення.sh
+@@ -1,4 +1,4 @@
+ #!/usr/bin/env bash
+ set -euo pipefail
+ H=$(cd "$(dirname "$0")" && pwd); . "$H/середовище.sh"
+-"${PWSH:-pwsh}" -NoProfile -File "$(wp "$H/сценарії_самооновлення.ps1")"
++"${PWSH:-pwsh}" -NoProfile -File "$(wp "$H/сценарії_самооновлення.ps1")" -GeminiUser "${GEMINI_TEST_USER:-gemini}"
