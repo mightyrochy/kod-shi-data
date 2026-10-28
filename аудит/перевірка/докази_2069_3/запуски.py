@@ -67,6 +67,8 @@ def main():
             ["git", "diff", "--name-only", "498fd52c480005dd7b60523f594d586afb5ad4e6", "HEAD", "--", ".github", "аудит/адаптери/gemini"],
         ):
             коди.append(команда(аргументи, "огляд.txt"))
+    elif режим == "послідовні":
+        коди.append(команда([sys.executable, ТЕКА / "послідовні.py", КОРІНЬ], "послідовні.txt"))
     print(f"Запусків {len(коди)}; кодів 0: {коди.count(0)}; коди: {коди}", flush=True)
     return int(any(коди))
 
