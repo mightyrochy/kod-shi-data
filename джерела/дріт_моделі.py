@@ -42,6 +42,7 @@ import протокол as _ПР
 import selection_policy as _ПВ
 import колір_образу as _КО
 import знання_речі as _ЗН
+import колір_річ as _КР_ТИП
 
 U = _ВМ.UNKNOWN
 
@@ -524,6 +525,15 @@ def річ(r, короткий=False, пул=False, слот=None):
     if not isinstance(r, dict):
         return r
     о = {"n": r.get("н"), "name": r.get("назва")}
+    if r.get("колір_тип"):
+        о["color_type"] = {"вимір": "measure", "інтервал": "interval", "невідомо": "unknown"}[_КР_ТИП.тип_кольору(r)]
+        о["color_not_measured"] = _не_вимір(_КР_ТИП.не_вимір(r))
+    вимір = r.get("колір_вимір")
+    if вимір:
+        о["color_measurement"] = dict(lab=_КР_ТИП.точка_кольору(вимір),
+            source=вимір.get("джерело"), usable=вимір.get("придатний"))
+    if r.get("колір_слово"):
+        о["color_word"] = _не_вимір(_КР_ТИП.не_вимір(r["колір_слово"]))
     if r.get("ціна") is not None:
         о["price"] = _число(r["ціна"])
     for ключ, v in (
@@ -562,12 +572,12 @@ def річ(r, короткий=False, пул=False, слот=None):
         о["hers"] = True
         for ключ, v in (("owner", код_переліку(_ЧИЯ, r.get("чия"))), ("pinned", True if r.get("закріплена") else None),
                         ("color_from", код_переліку(_ДЖЕРЕЛО_КОЛЬОРУ_ЇЇ, r.get("джерело_кольору"))),
-                        ("color_not_measured", _не_вимір(r.get("колір_не_вимір"))),
+                        ("color_not_measured", _не_вимір(_КР_ТИП.не_вимір(r))),
                         ("stylist_color", код("color_name", r.get("колір_стилістки")) if r.get("колір_стилістки") else None),
                         ("formality_from_photo", ошатність_словом(r.get("формальність_фото"))),
                         ("verdict_level", код_переліку(_ВЕРДИКТ_РІВЕНЬ, r.get("вердикт_рівень"))),
                         ("softening", r.get("пом_якшення")),
-                        ("lab", [_число(x) for x in r["lab"]] if r.get("lab") else None)):
+                        ("lab", [_число(x) for x in _КР_ТИП.точка_кольору(r)] if _КР_ТИП.точка_кольору(r) else None)):
             if v not in (None, "", [], ()):
                 о[ключ] = v
     if r.get("за_бажанням"):
@@ -623,7 +633,7 @@ def річ(r, короткий=False, пул=False, слот=None):
     if "item_type" in о:                 # розбір назвав вид речі — рід уже випливає з нього
         о.pop("kind", None)
     if r.get("знання"):
-        о.update(_ЗН.на_дріт(r["знання"], має_точку=bool(о.get("hex") or о.get("lab"))))
+        о.update(_ЗН.на_дріт(r["знання"], має_точку=bool(о.get("hex") or _КР_ТИП.точка_кольору(о))))
     вих = _скоротити(о) if розб else о
     if пул:
         for ключ, типове in ТИПОВІ_ПУЛУ.items():

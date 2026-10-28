@@ -1,13 +1,9 @@
-# -*- coding: utf-8 -*-
-"""Рядок 4510, було (БАЗА — git worktree, типово origin/main) → стало: назва теплих нейтралей палітри з волосся (L*35.4 і 40.1,
-C* 8, h 90 — як `palettes.кольори`) і код hex знахідки; точки крамниць з виміром з фото (усі й C* < 10) — підпис `palettes.назва`
-і збіг зі словом крамниці; hex відповідей моделі (VIDPOVIDI), що змінили код; ґратка основ; записи каталогу, що змінились. Запуск: cd джерела && python3 проби/колір_майже_нейтраль.py [база]"""
-import collections as К, json, os, re, subprocess, sys, tempfile, warnings
-warnings.filterwarnings("ignore"); sys.path.insert(0, "."); import colorspace as cs
+"""Теплі нейтралі, hex, ґратка й каталог на одному корпусі: із джерела/ python проби/колір_майже_нейтраль.py [база] [корпус]."""
+import collections as К, json, os, re, subprocess, sys, tempfile, warnings; warnings.filterwarnings("ignore"); sys.path.insert(0, "."); import colorspace as cs
 if sys.argv[1:2] == ["--знімок"]:
     import feed, мовний_шар as МШ, міст_основи as МО, palettes as PS, фід_каталог as FK, фід_розбір as FR, фід_збагачення as FZ, verify as V, colorspace as cs
-    шл = subprocess.run(["git", "ls-files", "-z", "--", "../аудит"], capture_output=True).stdout.decode().split("\0")
-    hx = sorted({"#" + х.upper() for ф in шл if "VIDPOVIDI" in ф for х in re.findall(r"#([0-9a-fA-F]{6})\b", open(ф, encoding="utf-8", errors="ignore").read())} | {"#585346", "#645e52"})
+    корпус = os.path.abspath(sys.argv[3]) if len(sys.argv) > 3 else os.path.abspath(".."); шл = subprocess.run(["git", "ls-files", "-z", "--", "аудит"], cwd=корпус, capture_output=True).stdout.decode().split("\0")
+    hx = sorted({"#" + х.upper() for ф in шл if "VIDPOVIDI" in ф for х in re.findall(r"#([0-9a-fA-F]{6})\b", open(os.path.join(корпус, ф), encoding="utf-8", errors="ignore").read())} | {"#585346", "#645e52"})
     зб, кр = feed.читати_збагачення(), {}
     for o in FR.читати_yml("каталог_повний.xml")[0]:
         z, п = зб.get(o["id"]) or {}, " ".join(str(o.get("колір_сирий") or "").lower().split())
@@ -16,15 +12,15 @@ if sys.argv[1:2] == ["--знімок"]:
             кр[o["id"]] = (V.слово_крамниці(п)["ім"], PS.назва(cs.hx(z["колір_основний"]["hex"]))[0], cs.lch(cs.hx(z["колір_основний"]["hex"]))[1], *cs.lch(cs.hx(z["колір_основний"]["hex"]))[::2])
     кат = {r["id"]: r for r in FK.прочитати_каталог("каталог_повний.xml", 0)["каталог"]}
     json.dump(dict(нт={L: (PS.назва(PS.lab_з_lch(L, 8.0, 90))[0], PS.hex_з_lab(PS.lab_з_lch(L, 8.0, 90))) for L in (35.4, 40.1)}, коди={х: МШ._код_кольору(х[1:]) for х in hx}, ґратка=МО.ґратка_основ()[0], центри={ім: PS.назва(PS.центр(в))[0] for ім, в in V.ЛЕКСИКОН.items()}, крамниці=кр, каталог=кат),
-              open(sys.argv[2], "w", encoding="utf-8"), ensure_ascii=False, default=str)
-    sys.exit()
-база, т = (sys.argv[1:] or ["origin/main"])[0], tempfile.mkdtemp(); subprocess.run(["git", "worktree", "add", "-q", "--detach", т + "/б", база], check=True)
+              open(sys.argv[2], "w", encoding="utf-8"), ensure_ascii=False, default=str); sys.exit()
+база, т = (sys.argv[1:] or ["origin/main"])[0], tempfile.mkdtemp(); корпус = os.path.abspath(sys.argv[2]) if len(sys.argv) > 2 else os.path.abspath(".."); subprocess.run(["git", "worktree", "add", "-q", "--detach", т + "/б", база], check=True)
 try:
-    os.symlink(os.path.abspath("каталог_повний.xml"), т + "/б/джерела/каталог_повний.xml")
+    import shutil
+    shutil.copyfile(os.path.abspath("каталог_повний.xml"), т + "/б/джерела/каталог_повний.xml")
     for д, ф in ((т + "/б/джерела", т + "/до.json"), (".", т + "/після.json")):
-        subprocess.run([sys.executable, os.path.abspath(__file__), "--знімок", ф], cwd=д, check=True)
+        subprocess.run([sys.executable, os.path.abspath(__file__), "--знімок", ф, корпус], cwd=д, check=True)
     до, піс = (json.load(open(т + ф, encoding="utf-8")) for ф in ("/до.json", "/після.json"))
-finally: subprocess.run(["git", "worktree", "remove", "--force", т + "/б"])
+finally: assert os.path.commonpath((os.path.realpath(т), os.path.realpath(т + "/б"))) == os.path.realpath(т); subprocess.run(["git", "worktree", "remove", "--force", т + "/б"])
 print("ФАКТ · теплі нейтралі палітри (L*: назва, hex):", до["нт"], "→", піс["нт"], "; коди hex знахідки:", {х: (до["коди"].get(х), піс["коди"].get(х)) for х in ("#585346", "#645E52")})
 АХ = {"чорний", "білий", "сірий", "графіт", "срібний"}
 print("ФАКТ · точки крамниць з C* < 10 (усього, підпис хроматичний, у крамниці хроматичне, збіг) до → після:", [(len(м), sum(в[1] not in АХ for в in м),
@@ -41,4 +37,4 @@ print("ФАКТ · точок крамниць з виміром %d: підпи�
       dict(К.Counter((до["крамниці"][і][1], піс["крамниці"][і][1]) for і in кз)), *(sum(в[0] == в[1] for в in x["крамниці"].values()) for x in (до, піс))))
 кк = [і for і in піс["каталог"] if до["каталог"].get(і) != піс["каталог"][і]]
 print("ФАКТ · каталог: речей %d → %d; запис змінився в %d, поля %s" % (len(до["каталог"]), len(піс["каталог"]), len(кк),
-      dict(К.Counter(п for і in кк for п in set(до["каталог"][і]) | set(піс["каталог"][і]) if до["каталог"][і].get(п) != піс["каталог"][і].get(п)))))
+      dict(К.Counter(п for і in кк for п in set(до["каталог"].get(і, {})) | set(піс["каталог"][і]) if до["каталог"].get(і, {}).get(п) != піс["каталог"][і].get(п)))))
