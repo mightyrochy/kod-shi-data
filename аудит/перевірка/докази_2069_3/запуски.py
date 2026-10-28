@@ -33,8 +33,10 @@ def main():
             архів = subprocess.check_output(["git", "archive", "a136a841db8fed6703c17866166514729f2875eb", "zhnyvarka"], cwd=КОРІНЬ)
             with tarfile.open(fileobj=io.BytesIO(архів)) as файл:
                 файл.extractall(тека, filter="data")
-            for дерево, назва in ((тека, "ДО.txt"), (КОРІНЬ, "ПІСЛЯ.txt")):
-                коди.append(команда([sys.executable, ТЕКА / "незалежна.py", дерево], назва))
+            for дерево, назва, очікуваний in ((тека, "ДО.txt", 1), (КОРІНЬ, "ПІСЛЯ.txt", 0)):
+                код = команда([sys.executable, ТЕКА / "незалежна.py", дерево], назва)
+                коди.append(int(код != очікуваний))
+                print(f"{назва}: очікуваний код {очікуваний}, отримано {код}", flush=True)
         коди.append(команда([sys.executable, ТЕКА / "повтор_2053.py", КОРІНЬ], "повтор_2053.txt"))
     elif режим == "батарея":
         for арг in (["стенд_знімок.py", "--дим"], ["тест_живого_шляху.py"], ["тест_протоколу.py"],
