@@ -1,4 +1,4 @@
-"""Звірити id, типи й кожен вимір сегмента на двох справжніх знімках каталогу."""
+"""Звірити id, типи й виміри сегментів: порівняти.py [ДО.json ПІСЛЯ.json]."""
 import collections
 import json
 from pathlib import Path
@@ -10,9 +10,13 @@ import colorspace as КС, колір_річ as КР, outfit as О, композ
 def головна():
     """Надрукувати втрати каталогу й вимірів, включно зі зниклими точками кольору."""
     тека = Path(__file__).resolve().parent
-    до, після = [{р["id"]: р for р in json.loads((тека / ("каталог-" + назва + ".json")).read_text(encoding="utf-8"))["каталог"]}
-                 for назва in ("ДО", "ПІСЛЯ")]
+    шляхи = [Path(а) for а in sys.argv[1:]] or [тека / ("каталог-" + н + ".json") for н in ("ДО", "ПІСЛЯ")]
+    if len(шляхи) != 2:
+        raise SystemExit("Потрібні два шляхи: ДО.json ПІСЛЯ.json")
+    до, після = [{р["id"]: р for р in json.loads(шлях.read_text(encoding="utf-8"))["каталог"]}
+                 for шлях in шляхи]
     підсумок = dict(до=len(до), після=len(після), втрачено_id=len(до.keys() - після.keys()),
+                    змінено_записів=sum(р != до.get(і) for і, р in після.items()),
                     типи=dict(collections.Counter(map(КР.тип_кольору, після.values()))),
                     невимір_з_lab=sum(bool(р.get("lab")) for р in після.values() if КР.тип_кольору(р) != "вимір"),
                     виміряних_сегментів=0, зниклих_точок=0, спотворених_понад_1=0, найбільша_de00=0.0)

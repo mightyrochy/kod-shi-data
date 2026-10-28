@@ -43,10 +43,15 @@ def головна():
     проби = sorted(set(код.glob("проби/колір_*.py")) | set(код.glob("проби/pal_*.py")) |
                    set(код.glob("проби/поділ_*_ast.py")))
     доступні = [п for п in проби if п.name not in окремі_входи | спільні | історичні]
+    def команда_проби(п):
+        """Для 300 образів зберегти штатний суд і звірене індексування діагностики (9704)."""
+        if п.name == "колір_нейтраль.py":
+            return [sys.executable, str(корінь / "аудит/проби/тип_кольору_213_нейтраль.py")]
+        return [sys.executable, str(п)]
     # Це незалежні процеси команд, без спільних Python-модулів чи підміни каталогу.
     # Кожна команда дочекана; скрипти зі змінами worktree виконуються послідовно нижче.
     with concurrent.futures.ThreadPoolExecutor(max_workers=3) as пул:
-        завдання = [пул.submit(виконати, п.stem, [sys.executable, str(п)]) for п in доступні]
+        завдання = [пул.submit(виконати, п.stem, команда_проби(п)) for п in доступні]
         for завдання_ in concurrent.futures.as_completed(завдання):
             результати.append(завдання_.result())
             (тека / "результати.json").write_bytes(json.dumps(результати, ensure_ascii=False, indent=2).encode())
