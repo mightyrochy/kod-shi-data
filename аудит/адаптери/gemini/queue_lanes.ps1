@@ -9,7 +9,7 @@
 Підвантажується крапкою (`. queue_lanes.ps1`) після блоку параметрів скрипта; власних параметрів нема. Читає змінні
 скрипта: $RepoDir, $GitExe, $LaneDir, $script:NoHooks, $script:StateDir, $script:SlotDir, $script:SelfPath, $script:Bound,
 і функцію журналу Write-Log. Два облікові записи розведено жорстко, тож планувальників два; спільні між ними лише замок
-GPU (тека $LaneDir — `C:\Users\Public\gemini\lanes`, де пишуть і INTERACTIVE, і BATCH) і рядок стану ноутбука.
+GPU та бюджет перевірок PR (тека $LaneDir — `C:\Users\Public\gemini\lanes`, де пишуть і INTERACTIVE, і BATCH) і рядок стану ноутбука.
 
 Позначка: `gemini-queue/<наряд>/<модель>/<спроба>[/<умови>]`; умови — до трьох лексем через `-` у будь-якому порядку:
 `p<0-9>` — пріоритет (0 — найвищий; без лексеми — 5), `d<РРРРММДДГГхх>` — строк у UTC, `gpu` — наряд займає відеокарту.
@@ -45,6 +45,10 @@ $script:MaxRetakes = 5
 # Код виходу процесу наряду: слот чи GPU зайняті до старту — позначку не взято, вона лишається в черзі.
 $script:WorkerSlotBusy = 3
 $script:WorkerGpuBusy = 4
+# Спільний рухомий бюджет публічного REST: половина 60/год лишається іншим читачам.
+$script:ReviewApiLimit = 30
+$script:ReviewApiWindow = 3600
+$script:ReviewApiBackoff = 120
 
 # --- процеси й файли ----------------------------------------------------------------------------------------------
 
@@ -292,6 +296,57 @@ function Get-OrderedMarkers($Markers) {
     Add-FirstSeen $Markers
     @($Markers | Sort-Object @{ Expression = { $_.Prio } }, @{ Expression = { if ($_.Deadline) { $_.Deadline } else { '999999999999' } } },
         @{ Expression = { $_.Seen } }, @{ Expression = { $_.Time } }, @{ Expression = { $_.Name } })
+}
+
+function Get-ReviewTime {
+    <# Поточна секунда UTC; стенд підміняє годинник без реального чекання. #>
+    [DateTimeOffset]::UtcNow.ToUnixTimeSeconds()
+}
+
+function Get-AutoReviewState([string]$Slug) {
+    <# Звіряє PR один раз безпосередньо перед моделлю, лише у вже вільному слоті.
+
+    Спільний файл під замком обох облікових записів обмежує всі три смуги 30 запитами за рухому годину.
+    Успішний LIVE не кешується: кожен справжній запуск отримує свіжий стан PR. #>
+    if ($Slug -cnotmatch '^автоперевірка-([1-9][0-9]{0,8})-([0-9a-f]{40})$') { return 'LIVE' }
+    $number = $Matches[1]; $head = $Matches[2]
+    $lock = $null
+    try {
+        $lock = Open-Lock (Join-Path $LaneDir 'review-api.lock')
+        if ($null -eq $lock) { return 'REVIEW_API' }
+        $path = Join-Path $LaneDir 'review-api.json'
+        $now = Get-ReviewTime
+        $calls = @(); $until = 0L
+        if (Test-Path -LiteralPath $path) {
+            $saved = [IO.File]::ReadAllText($path, $script:Utf8) | ConvertFrom-Json
+            # Пошкоджений бюджет не дозволяє непорахованих запитів.
+            if ($null -eq $saved.calls -or $null -eq $saved.until) { return 'REVIEW_API' }
+            $calls = @($saved.calls | Where-Object { [long]$_ -gt ($now - $script:ReviewApiWindow) })
+            $until = [long]$saved.until
+        }
+        if ($now -lt $until -or $calls.Count -ge $script:ReviewApiLimit) { return 'REVIEW_API' }
+        # Резервуємо запит до мережі: 403/429, тайм-аут і падіння процесу також входять у бюджет.
+        $budget = [ordered]@{calls=@($calls) + @($now);until=0L}
+        Write-FileAtomic $path ($budget | ConvertTo-Json -Compress)
+        try {
+            $pr = Invoke-RestMethod -Uri "https://api.github.com/repos/mightyrochy/kod-shi-data/pulls/$number" -Method Get -TimeoutSec 20 -MaximumRedirection 0 -Headers @{Accept='application/vnd.github+json'; 'User-Agent'='kod-shi-wrapper'}
+            if ([string]$pr.number -cne $number -or $pr.state -cnotin @('open','closed') -or [string]$pr.head.sha -cnotmatch '^[0-9a-f]{40}$') { throw 'REVIEW_RESPONSE' }
+            if ($pr.state -cne 'open' -or $pr.head.sha -cne $head) { return 'STALE' }
+            if ($pr.user.login -cne 'mightyrochy' -or $null -eq $pr.head.repo -or $pr.head.repo.full_name -cne 'mightyrochy/kod-shi-data' -or $pr.base.repo.full_name -cne 'mightyrochy/kod-shi-data' -or $pr.base.ref -cne 'main' -or $pr.head.ref -match '/авто(перевірка|живий)-') { return 'STALE' }
+            'LIVE'
+        } catch {
+            $budget.until = $now + $script:ReviewApiBackoff
+            Write-FileAtomic $path ($budget | ConvertTo-Json -Compress)
+            'REVIEW_API'
+        }
+    } catch { 'REVIEW_API' }
+    finally { if ($null -ne $lock) { $lock.Dispose() } }
+}
+
+function Enter-ReviewWait($M, [string]$Head = '') {
+    <# Повертає позначку після відмови REST чи вичерпання бюджету без збільшення retakes і кінцевого звіту. #>
+    [void](Set-MarkerWait $M ((Get-ReviewTime) + $script:ReviewApiBackoff) @{group='REVIEW_API';head=$Head})
+    Write-Log "позначка $($M.Name): REVIEW_API; спроба збережена, повтор у черзі"
 }
 
 function Get-MarkerState($M) {

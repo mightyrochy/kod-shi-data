@@ -608,6 +608,9 @@ function Invoke-Task($M, $Job) {
     if (-not $main -or (Invoke-Git @('merge-base', '--is-ancestor', $M.Sha, $main) -AllowFail).Code -ne 0) { return (Complete-Task $M $statePath $id 'NOT_ON_MAIN') }
     if ((Invoke-Git @('cat-file', '-e', "$($M.Sha):$taskPath") -AllowFail).Code -ne 0) { return (Complete-Task $M $statePath $id 'NO_TASK_FILE') }
     if ($M.Claude -notmatch $script:ModelPattern) { return (Complete-Task $M $statePath $id 'MODEL_INVALID') }
+    $review = Get-AutoReviewState $M.Slug
+    if ($review -eq 'REVIEW_API') { Enter-ReviewWait $M; return }
+    if ($review -ne 'LIVE') { return (Complete-Task $M $statePath $id $review) }
     $exe = Find-Exe $ClaudeExe
     if (-not $exe) { return (Complete-Task $M $statePath $id 'ENGINE_MISSING') }
     $taskText = Add-AutoTaskContext $M.Slug ((Invoke-Git @('cat-file', 'blob', "$($M.Sha):$taskPath")).Out)
