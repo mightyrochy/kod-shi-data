@@ -48,6 +48,23 @@ if sc == 'quota_until':
 if sc == 'done':
     hold(slug)
     result('Готово.\n\n**НОУТБУК ГОТОВО `%s` %s**' % (branch, push()))
+if sc.startswith('report_'):
+    sha = push()
+    line = 'НОУТБУК ГОТОВО %s %s' % (branch, sha)
+    forms = {
+        'report_quote': '«%s».\n\nПідсумок: виконано.' % line,
+        'report_bold_period': '**%s.**' % line,
+        'report_inline': '`%s`\n\nПеревірено.' % line,
+        'report_example': 'Приклад:\n%s' % line,
+        'report_fence': '```text\n%s\n```' % line,
+        'report_blockquote': '> ' + line,
+        'report_prompt': '----- НАРЯД -----\n%s\n----- КІНЕЦЬ НАРЯДУ -----' % line,
+        'report_assistant_only': 'Готово, без звіту.',
+        'report_wrong_sha': '«НОУТБУК ГОТОВО %s %s».' % (branch, 'a' * 40),
+        'report_bad_branch': '**НОУТБУК ГОТОВО main %s.**' % sha,
+    }
+    emit({'type': 'assistant', 'message': {'content': [{'type': 'text', 'text': line}]}})
+    result(forms[sc])
 if sc == 'wrong_sha':
     push(); result('НОУТБУК ГОТОВО %s %s' % (branch, 'a' * 40))
 if sc == 'bad_branch':

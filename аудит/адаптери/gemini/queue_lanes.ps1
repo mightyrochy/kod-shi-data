@@ -29,10 +29,10 @@ $script:LanesPath = 'аудит/адаптери/gemini/смуги.json'
 $script:Utf8 = New-Object System.Text.UTF8Encoding($false)
 $script:OnWindows = ($PSVersionTable.PSEdition -ne 'Core') -or [bool](Get-Variable IsWindows -ValueOnly -ErrorAction SilentlyContinue)
 
-# Стелі — у коді під хешем: файл даних з origin/main їх не перевищить (значення поза межами обрізаються до меж), а
-# параметр задачі планувальника — рука власника, його не обрізаємо.
+# Кількість слотів задає смуги.json; 64 — захист від помилки в даних, не виміряна межа ноутбука.
+# Решта меж також під хешем; значення поза ними обрізаються. Параметр задачі власника не обрізаємо.
 $script:Ceil = @{
-    slots = @(0, 4); poll_minutes = @(1, 5); usage_minutes = @(5, 60); quota_wait_minutes = @(15, 1440)
+    slots = @(0, 64); poll_minutes = @(1, 5); usage_minutes = @(5, 60); quota_wait_minutes = @(15, 1440)
     agy_total_minutes = @(30, 600); agy_turn_minutes = @(10, 600); codex_stall_minutes = @(10, 240); claude_hang_minutes = @(30, 240)
 }
 $script:Defaults = @{
@@ -387,7 +387,7 @@ function Clear-OrphanClaims([string]$RunsRoot) {
         $wf = Join-Path (Join-Path $RunsRoot $id) 'worker.json'
         if (Test-Path -LiteralPath $wf) {
             $slot = ''; try { $slot = [string](Get-JsonProp ([System.IO.File]::ReadAllText($wf, $script:Utf8) | ConvertFrom-Json) 'slot') } catch { continue }
-            if ($slot -notmatch '^[a-z]+-[0-9]$' -or -not (Test-LockFree (Join-Path $script:SlotDir "$slot.lock"))) { continue }
+            if (-not (Test-SlotName $slot) -or -not (Test-LockFree (Join-Path $script:SlotDir "$slot.lock"))) { continue }
         }
         Write-Log "узяття $id без запуску — звільнено"
         Clear-UnstartedClaim $sp
@@ -405,6 +405,21 @@ function Get-WaitingMarkers {
 }
 
 # --- слоти, GPU, процес наряду -------------------------------------------------------------------------------------
+
+function Test-SlotCount([string]$Value) {
+    <# Ціла кількість слотів у спільному діапазоні; недовірені значення відкидаємо, не обрізаємо. #>
+    $n = 0
+    [regex]::IsMatch($Value, '\A(?:0|[1-9][0-9]*)\z') -and [int]::TryParse($Value, [ref]$n) -and
+        $n -ge $script:Ceil.slots[0] -and $n -le $script:Ceil.slots[1]
+}
+
+function Test-SlotName([string]$Name, [string[]]$Lanes = @($script:LaneDefaults.Keys)) {
+    <# Назва слота дозволеної смуги з додатним номером у спільному діапазоні.
+
+    Номер не обмежуємо поточним N: після зменшення смуги вже запущені наряди мають завершитися. #>
+    $m = [regex]::Match($Name, '\A([a-z]+)-([1-9][0-9]*)\z')
+    $m.Success -and $Lanes -ccontains $m.Groups[1].Value -and (Test-SlotCount $m.Groups[2].Value)
+}
 
 function Open-Lock([string]$Path) {
     <# Винятковий замок-файл (FileShare None) або $null — зайнято. Звільняє ОС, коли процес-власник завершився. #>

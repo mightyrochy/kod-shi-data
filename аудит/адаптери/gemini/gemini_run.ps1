@@ -910,7 +910,7 @@ function Resume-Interrupted {
         if (-not $text.StartsWith('STARTED {')) { continue }
         $j = $text.Substring(8) | ConvertFrom-Json
         $slot = [string](Get-JsonProp $j 'slot')
-        if ($slot -match '^[a-z]+-[0-9]$' -and -not (Test-LockFree (Join-Path $script:SlotDir "$slot.lock"))) { continue }
+        if ((Test-SlotName $slot $script:Lanes) -and -not (Test-LockFree (Join-Path $script:SlotDir "$slot.lock"))) { continue }
         $status = [ordered]@{}
         foreach ($p in $j.PSObject.Properties) { $status[$p.Name] = $p.Value }
         $status.code = 'INTERRUPTED'
