@@ -5,7 +5,7 @@
 v2, відкинутого лише порогом згоди, хоч він лежить у вікні вжитку слова. Підсумок: речей-вікон «гучних» за
 центром, у чийого слова медіана виміру тиха (<40). Запуск із джерела/: python3 проби/колір_центр_вікна_хрома.py"""
 import sys, json, gzip, collections as K, statistics as S; sys.path.insert(0, ".")
-import bridge as B, стенд_знімок as СЗ, colorspace as cs, колір_річ as КР, verify as V, фід_збагачення as ФЗ
+import bridge as B, стенд_знімок as СЗ, colorspace as cs, колір_річ as КР, verify as V
 вх = json.load(open("стенд_вх.json", encoding="utf-8"))
 B.виклик("запити", json.dumps(dict(вх, сценарій=СЗ.СЦЕНАРІЇ["офіс·18°C"], випадок="офіс"), ensure_ascii=False))
 кат, зб = B.каталог_останнього_пакета(), json.load(gzip.open("каталог_збагачення.json.gz"))

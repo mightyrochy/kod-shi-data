@@ -8,7 +8,7 @@
 import sys, json, pathlib, os
 _К = pathlib.Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(_К)); os.chdir(_К)
-import bridge as B, семплер as С, композитор_слоти as КС, hypergraph as ГГ, fit as ПС, верхнє_довжина as ВД, колір_простір_перетворення as КП
+import bridge as B, семплер as С, композитор_слоти as КС, hypergraph as ГГ, fit as ПС, верхнє_довжина as ВД
 from колір_річ import точка_кольору
 зап = {}; _о = С.вибрати
 def _з(к, *а, **kw):
