@@ -853,14 +853,8 @@ def _тло_кадру(rgb, w, h, боки):
 
 
 def _морфологія(m, w, h, ерозія):
-    """Один крок ерозії (ерозія=True) або дилатації 3×3 над булевою маскою."""
-    вих = [False] * (w * h)
-    for y in range(h):
-        for x in range(w):
-            сусіди = [m[yy * w + xx] for yy in range(max(0, y - 1), min(h, y + 2))
-                      for xx in range(max(0, x - 1), min(w, x + 2))]
-            вих[y * w + x] = all(сусіди) if ерозія else any(сусіди)
-    return вих
+    """Один крок ерозії або дилатації 3×3 спільним ядром масок."""
+    return list(map(bool, _ПОВ._морфологія(m, w, h, 1, ерозія)))
 
 
 def _найбільша_пляма(m, w, h):

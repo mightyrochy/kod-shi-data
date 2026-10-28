@@ -37,8 +37,8 @@ def поправка_тла(bgr, маска, стеля=1.25):
     import numpy as np
     from surface import поправка_тла as виправити
     h, w = bgr.shape[:2]
-    rgb = [tuple(reversed(p)) for ряд in bgr.tolist() for p in ряд]
-    м = [p > 127 for ряд in маска.tolist() for p in ряд]
+    rgb = bgr[:, :, ::-1].reshape(-1, 3).tolist()
+    м = (маска > 127).tobytes()
     rgb, підсил = виправити(rgb, м, w, h, стеля)
     return np.asarray([tuple(reversed(p)) for p in rgb], dtype="uint8").reshape(h, w, 3), підсил
 
@@ -212,6 +212,7 @@ def виміряти_поверхню(bgr, маска, арр=None, сід=17, �
     Маска показу сюди не приходить: браузер кличе ядро прямо з RGB.
     """
     import cv2
+    import numpy as np
     import surface as П
     h, w = bgr.shape[:2]
     if маска.shape[:2] != (h, w):
@@ -224,9 +225,10 @@ def виміряти_поверхню(bgr, маска, арр=None, сід=17, �
         h, w = bgr.shape[:2]
     if арр is not None:
         арр = cv2.resize(арр, (w, h), interpolation=cv2.INTER_NEAREST)
-    rgb = [tuple(reversed(p)) for ряд in bgr.tolist() for p in ряд]
-    м = [p > 127 for ряд in маска.tolist() for p in ряд]
-    шк = [p in П.ШКІРА_БЕЗ_ВОЛОССЯ for ряд in арр.tolist() for p in ряд] if арр is not None else None
+    байти = bgr[:, :, ::-1].tobytes()
+    rgb = list(zip(байти[::3], байти[1::3], байти[2::3]))
+    м = (маска > 127).tobytes()
+    шк = np.isin(арр, П.ШКІРА_БЕЗ_ВОЛОССЯ).tobytes() if арр is not None else None
     клас = "запасна" if джерело == "запасна" else "SAM" if джерело and "SAM" in джерело else "ATR"
     return П.виміряти(rgb, w, h, м, клас_маски=клас, мітки_шкіри=шк, сід=сід)
 
