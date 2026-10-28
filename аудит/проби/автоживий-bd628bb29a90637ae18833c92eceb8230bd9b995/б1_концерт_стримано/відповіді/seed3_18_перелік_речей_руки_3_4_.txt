@@ -1,0 +1,44 @@
+── ПРОМПТ (2326 симв.) ──
+{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.", "A slot the description says is not needed is not an item: give it worn false. One item carries one thing — of two alternatives list the first; a note in brackets is not an item.", "Slot \"accessory\" is for an item no other slot fits.", "\"is_outfit\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note; then items is empty."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "ITEM_LIST", "answer_schema": {"is_outfit": "yes|no", "items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory", "color_hex": "<#rrggbb or null>", "worn": "<true, or false when the description says the outfit goes without it>"}]}, "input": ["\"description\" — the outfit description"]}, "description": "Charcoal wool-blend blazer, tailored fit with notch lapels and long sleeves, #2F4F4F, fine melton weave\nCream silk-blend blouse, relaxed collar and gathered waistline, #FFFDD0, smooth charmeuse fabric\nHigh-waisted charcoal trousers, straight leg cut hitting just above the ankle, #36454F, structured stretch wool\nBlack leather loafers, sleek slip-on design with minimal branding, #000000, smooth calfskin leather\nSmall silver geometric stud earrings, polished finish, #C0C0C0, sterling metal\nWhy this outfit works: This ensemble perfectly balances the request for a classic register with the practical need to walk extensively in a club setting. The dark charcoal palette grounds the look in a timeless aesthetic that fits both the evening lighting and the autumn season without feeling too heavy. By choosing structured yet comfortable fabrics like melton wool and silk, the outfit ensures ease of movement while maintaining the neat dress code required for the occasion."}
+
+── ВІДПОВІДЬ (998 симв., 5.3 с, HTTP 200) ──
+{
+  "is_outfit": "yes",
+  "items": [
+    {
+      "name": "blazer",
+      "details": "tailored fit with notch lapels and long sleeves, fine melton weave",
+      "slot": "outerwear",
+      "color_hex": "#2F4F4F",
+      "worn": true
+    },
+    {
+      "name": "blouse",
+      "details": "relaxed collar and gathered waistline, smooth charmeuse fabric",
+      "slot": "top",
+      "color_hex": "#FFFDD0",
+      "worn": true
+    },
+    {
+      "name": "trousers",
+      "details": "straight leg cut hitting just above the ankle, structured stretch wool",
+      "slot": "bottom",
+      "color_hex": "#36454F",
+      "worn": true
+    },
+    {
+      "name": "loafers",
+      "details": "sleek slip-on design with minimal branding, smooth calfskin leather",
+      "slot": "shoes",
+      "color_hex": "#000000",
+      "worn": true
+    },
+    {
+      "name": "earrings",
+      "details": "polished finish, sterling metal",
+      "slot": "earrings",
+      "color_hex": "#C0C0C0",
+      "worn": true
+    }
+  ]
+}
