@@ -771,6 +771,112 @@ index 085742e4d65aca4a5f4d10de97c4dba78e6dfd5e..c88599a63f74561edd6b689dda0d56be
 +`--disable-gpu` в Playwright launch і persistent context, зберігаючи решту аргументів.
 +`Test-ExternalGpuFree` лишає GPU-наряд у черзі за стороннього compute PID; чужих процесів
 +не зупиняє. Агент зберігає NODE_OPTIONS/PYTHONPATH, а GPU-замок лишається спільним для моделей.
+diff --git a/аудит/адаптери/gemini/перевірка/fake_agy.py b/аудит/адаптери/gemini/перевірка/fake_agy.py
+index 576463637d485b17d513777df238a9fd10c53b70..cb62286bcfa3d9e9878dd55a8bd821523bffcd43 100755
+--- a/аудит/адаптери/gemini/перевірка/fake_agy.py
++++ b/аудит/адаптери/gemini/перевірка/fake_agy.py
+@@ -76,15 +76,7 @@ def turn_no():
+     open(p, 'w').write(str(n))
+     return n
+ 
+-def hold(slug):
+-    # Стенд смуг: FAKE_HOLD с роботи й рядки start/end у FAKE_TIMELINE — щоб виміряти, що йде водночас.
+-    tl = os.environ.get('FAKE_TIMELINE')
+-    if not tl:
+-        return
+-    def mark(k):
+-        with open(tl, 'a') as f:
+-            f.write('%s %s %d\n' % (k, slug, int(time.time() * 1000)))
+-    mark('start'); time.sleep(float(os.environ.get('FAKE_HOLD', '0'))); mark('end')
++from fake_timeline import тримати as hold
+ 
+ def act(prompt):
+     m = re.search(r'ГОТОВО gemini/(\S+) <', prompt)
+diff --git a/аудит/адаптери/gemini/перевірка/fake_cc.py b/аудит/адаптери/gemini/перевірка/fake_cc.py
+index 56b88293ef99d992e66226c8be641d0f05b9279f..64d53c34a339e46fd8d37dcf931832c2ae09b095 100755
+--- a/аудит/адаптери/gemini/перевірка/fake_cc.py
++++ b/аудит/адаптери/gemini/перевірка/fake_cc.py
+@@ -10,15 +10,7 @@ with open(os.environ['FAKE_CC_LOG'], 'a', encoding='utf-8') as f:
+     f.write(json.dumps({'argv': sys.argv[1:], 'stdin': prompt}, ensure_ascii=False) + '\n')
+ slug = re.search(r'аудит/наряди/(.+?)\.md', prompt).group(1)
+ branch = 'claude/' + slug
+-def hold(slug):
+-    # Стенд смуг: FAKE_HOLD с роботи й рядки start/end у FAKE_TIMELINE — щоб виміряти, що йде водночас.
+-    tl = os.environ.get('FAKE_TIMELINE')
+-    if not tl:
+-        return
+-    def mark(k):
+-        with open(tl, 'a') as f:
+-            f.write('%s %s %d\n' % (k, slug, int(time.time() * 1000)))
+-    mark('start'); time.sleep(float(os.environ.get('FAKE_HOLD', '0'))); mark('end')
++from fake_timeline import тримати as hold
+ 
+ def emit(o):
+     sys.stdout.write(json.dumps(o, ensure_ascii=False) + '\n'); sys.stdout.flush()
+diff --git a/аудит/адаптери/gemini/перевірка/fake_cli.py b/аудит/адаптери/gemini/перевірка/fake_cli.py
+index e3bd449dae13d9131074a9a98780c86a1b8e49df..051ea51b7f8f9646ec96dd4d38775a17d0ae98e7 100755
+--- a/аудит/адаптери/gemini/перевірка/fake_cli.py
++++ b/аудит/адаптери/gemini/перевірка/fake_cli.py
+@@ -42,15 +42,7 @@ def commit(path):
+     git('add', path)
+     git('-c', 'user.name=g', '-c', 'user.email=g@x', 'commit', '-q', '-m', 'крок: ' + path)
+ 
+-def hold(slug):
+-    # Стенд смуг: FAKE_HOLD с роботи й рядки start/end у FAKE_TIMELINE — щоб виміряти, що йде водночас.
+-    tl = os.environ.get('FAKE_TIMELINE')
+-    if not tl:
+-        return
+-    def mark(k):
+-        with open(tl, 'a') as f:
+-            f.write('%s %s %d\n' % (k, slug, int(time.time() * 1000)))
+-    mark('start'); time.sleep(float(os.environ.get('FAKE_HOLD', '0'))); mark('end')
++from fake_timeline import тримати as hold
+ 
+ prompt_arg = args[-1]
+ path = re.search(r'файл (\S+) ', prompt_arg).group(1)
+diff --git a/аудит/адаптери/gemini/перевірка/fake_timeline.py b/аудит/адаптери/gemini/перевірка/fake_timeline.py
+new file mode 100644
+index 0000000000000000000000000000000000000000..cb39a775c2b1243cc90cc6541e6a3dbc7d5d90de
+--- /dev/null
++++ b/аудит/адаптери/gemini/перевірка/fake_timeline.py
+@@ -0,0 +1,37 @@
++"""Спільний міжпроцесний запис часової лінії заглушок трьох рушіїв."""
++import os
++import time
++
++
++def позначити(шлях, подія, слаг):
++    """Дописує цілий рядок під замком, відкриваючи журнал після взяття замка."""
++    with open(шлях + '.lock', 'a+b') as замок:
++        замок.seek(0, 2)
++        if not замок.tell():
++            замок.write(b'0')
++            замок.flush()
++        замок.seek(0)
++        if os.name == 'nt':
++            import msvcrt
++            msvcrt.locking(замок.fileno(), msvcrt.LK_LOCK, 1)
++        else:
++            import fcntl
++            fcntl.flock(замок, fcntl.LOCK_EX)
++        try:
++            with open(шлях, 'a', encoding='utf-8') as журнал:
++                журнал.write('%s %s %d\n' % (подія, слаг, int(time.time() * 1000)))
++        finally:
++            if os.name == 'nt':
++                замок.seek(0)
++                msvcrt.locking(замок.fileno(), msvcrt.LK_UNLCK, 1)
++            else:
++                fcntl.flock(замок, fcntl.LOCK_UN)
++
++
++def тримати(слаг):
++    """Позначає початок і кінець заданого часу роботи заглушки."""
++    шлях = os.environ.get('FAKE_TIMELINE')
++    if шлях:
++        позначити(шлях, 'start', слаг)
++        time.sleep(float(os.environ.get('FAKE_HOLD', '0')))
++        позначити(шлях, 'end', слаг)
 diff --git a/аудит/адаптери/gemini/перевірка/side.ps1 b/аудит/адаптери/gemini/перевірка/side.ps1
 index ddb7d315e73b29b5c5ec4ec97f6ea4ce2687cfad..78077a612d5520ed99a08a5f42a747335e9c1b02 100644
 --- a/аудит/адаптери/gemini/перевірка/side.ps1
