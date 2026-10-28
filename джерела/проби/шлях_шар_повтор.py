@@ -10,7 +10,7 @@ def main():
     перша = next(в["відповідь"] for к, в in сцена["відповіді"].items() if "seed3_01_" in к)
     об, _ = М._обʼєкт(перша)
     факти = []
-    for заміна in ({"value": "concert"}, {"quote": None, "value": "concert"}, {"quote": " ", "value": "concert"}):
+    for заміна in ({"value": "concert"}, {"quote": None, "value": "concert"}, {"quote": " ", "value": "concert"}, {"quote": 42, "value": "concert"}, "concert", None, {}):
         друга = copy.deepcopy(об); друга["update"]["occasion"] = заміна
         р = json.loads(М.мова(dict(розмова=dict(нове=сцена["слова"]), перша_відповідь=перша,
                                   відповідь_моделі=json.dumps(друга), завершити_договір=True)))

@@ -47,7 +47,8 @@ def доповнити(було, нове):
     if isinstance(було, dict) and "value" in було and not isinstance(нове, (dict, list)):
         нове = {"value": нове}
     if isinstance(було, dict) and isinstance(нове, dict):
-        return {к: доповнити(в, нове[к]) if к in нове and not (к == "quote" and М.невідомо(нове[к]))
+        return {к: доповнити(в, нове[к]) if к in нове and not (к == "quote" and
+                (not isinstance(нове[к], str) or М.невідомо(нове[к])))
                 else copy.deepcopy(в) for к, в in було.items()} | {
             к: copy.deepcopy(в) for к, в in нове.items() if к not in було}
     if isinstance(було, list) and isinstance(нове, list):
