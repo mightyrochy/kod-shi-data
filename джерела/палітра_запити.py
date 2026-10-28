@@ -31,6 +31,7 @@ import реєстр_правил as _РП
 import внутрішня_мова as _ВМ
 import personal_palette as _PP
 import palettes as _PL
+import колір_річ as _КР_ТИП
 
 
 # ═══ ТОН ВІД РИС: сім готових функцій нарешті доходять до вікна каталогу ═══════
@@ -206,9 +207,9 @@ def макіяж_тон_у_тон(E, F):
     if not обрані: return зн
     найближча = {}
     for e in E:
-        if e.get("слот") not in K_MUA_01_ПЛОЩА or e.get("lab") is None: continue
+        if e.get("слот") not in K_MUA_01_ПЛОЩА or _КР_ТИП.точка_кольору(e) is None: continue
         for к, р in обрані:
-            d = cs.de00(tuple(e["lab"]), cs.hx(р["hex"]))
+            d = cs.de00(tuple(_КР_ТИП.точка_кольору(e)), cs.hx(р["hex"]))
             if d < K_MUA_01_ΔE and d < найближча.get(e["річ"], (99.0,))[0]:
                 найближча[e["річ"]] = (d, р.get("зона") or к, р["hex"], e.get("слот"))
     for річ, (d, зона, hx_, слот) in найближча.items():

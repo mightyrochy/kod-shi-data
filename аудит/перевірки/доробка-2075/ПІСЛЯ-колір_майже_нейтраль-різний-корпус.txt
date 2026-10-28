@@ -1,0 +1,14 @@
+ФАКТ · теплі нейтралі палітри (L*: назва, hex): {'35.4': ['коричневий', '#585347'], '40.1': ['коричневий', '#645e52']} → {'35.4': ['коричневий', '#585347'], '40.1': ['коричневий', '#645e52']} ; коди hex знахідки: {'#585346': ('brown', 'brown'), '#645E52': ('brown', 'brown')}
+ФАКТ · точки крамниць з C* < 10 (усього, підпис хроматичний, у крамниці хроматичне, збіг) до → після: [(5748, 738, 2216, 3025), (5748, 738, 2216, 3025)]
+Traceback (most recent call last):
+  File "C:\Users\gemini\gemini-runs\w\codex-1\джерела\проби\колір_майже_нейтраль.py", line 34, in <module>
+    print("ФАКТ · hex з відповідей моделі: %d, код змінився в %d — %s" % (len(піс["коди"]), len(зм), dict(К.Counter((до["коди"][х], піс["коди"][х]) for х in зм))))
+                                                                                                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\gemini\AppData\Local\Programs\Python\Python312\Lib\collections\__init__.py", line 607, in __init__
+    self.update(iterable, **kwds)
+  File "C:\Users\gemini\AppData\Local\Programs\Python\Python312\Lib\collections\__init__.py", line 699, in update
+    _count_elements(self, iterable)
+  File "C:\Users\gemini\gemini-runs\w\codex-1\джерела\проби\колір_майже_нейтраль.py", line 34, in <genexpr>
+    print("ФАКТ · hex з відповідей моделі: %d, код змінився в %d — %s" % (len(піс["коди"]), len(зм), dict(К.Counter((до["коди"][х], піс["коди"][х]) for х in зм))))
+                                                                                                                     ~~~~~~~~~~^^^
+KeyError: '#0A101C'

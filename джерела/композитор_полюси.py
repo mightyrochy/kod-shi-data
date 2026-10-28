@@ -23,6 +23,7 @@ from композитор_оцінка import (образи_для_виміру 
 import colorspace as _cs
 import реєстр_правил as _РЕЄСТР
 import trace as _СЛ
+import колір_річ as _КР_ТИП
 
 
 def вигляд_виміру(F, по_слотах, тіло, слоти, скільки, сід, жорстке_ні, вето, kw):
@@ -169,17 +170,15 @@ def полюси_пулу(по_слотах, базові=("верх", "низ",
             # речі зі списку мовчки, а колона світлоти (K-COL-01) міряється саме
             # повнотою цього списку: річ, що випала, зсувала вирок «колона є».
             # hex і lab речі народжує `фід_каталог`, це не невідомий вхід.
-            lab = r.get("lab")
-            if lab is None and r.get("hex"):
-                lab = _cs.hx(r["hex"])
-            if lab:
-                L_за_слотом.setdefault(с, []).append(float(_cs.lch(tuple(lab))[0]))
+            межі = _КР_ТИП.межі_кольору(r)
+            if межі is not None:
+                L_за_слотом.setdefault(с, []).append(межі[:2])
     колона = False
     слоти_L = [с for с in L_за_слотом if L_за_слотом[с]]
     for i in range(len(слоти_L)):
         for j in range(i + 1, len(слоти_L)):
             a, b = sorted(L_за_слотом[слоти_L[i]]), sorted(L_за_слотом[слоти_L[j]])
-            if any(abs(x - y) < крок for x in a for y in b):
+            if any(max(abs(x[0] - y[1]), abs(x[1] - y[0])) < крок for x in a for y in b):
                 колона = True; break
         if колона:
             break
