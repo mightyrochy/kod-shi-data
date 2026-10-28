@@ -213,10 +213,10 @@ function Read-GeminiBeat {
     $lanes = @()
     foreach ($l in @(Get-JsonProp $j 'lanes' | Select-Object -First 2)) {
         $ln = & $get $l 'lane'; $n = & $get $l 'n'
-        if ($ln -notin @('codex', 'agy') -or $n -notmatch '^[0-4]$') { continue }
-        $busy = @(foreach ($s in @(Get-JsonProp $l 'busy' | Select-Object -First 4)) {
+        if ($ln -notin @('codex', 'agy') -or -not (Test-SlotCount $n)) { continue }
+        $busy = @(foreach ($s in @(Get-JsonProp $l 'busy' | Select-Object -First $script:Ceil.slots[1])) {
             $sl = & $get $s 'slot'; $m = & $get $s 'marker'; $md = & $get $s 'model'; $since = & $utc (& $get $s 'since')
-            if ($sl -cnotmatch "^$ln-[1-4]$" -or $m -cnotmatch $script:MarkerRx -or $m.Contains('..') -or $md -cnotmatch $script:ModelPattern) { continue }
+            if (-not (Test-SlotName $sl @($ln)) -or $m -cnotmatch $script:MarkerRx -or $m.Contains('..') -or $md -cnotmatch $script:ModelPattern) { continue }
             [pscustomobject]@{ Slot = $sl; Marker = $m; Model = $md; Since = $since; Gpu = ((& $get $s 'gpu') -eq 'True') }
         })
         $lanes += [pscustomobject]@{ Lane = $ln; N = [int]$n; Busy = $busy }
@@ -378,21 +378,79 @@ $TaskText
 "@
 }
 
-# Звіт сесії: останній непорожній рядок відповіді (дозволено оздоблення ` * >).
+function Remove-ReportDecoration([string]$Line, [switch]$Sentence) {
+    <# Прибирає лише збалансоване оформлення цілого рядка чи окремого поля звіту. #>
+    $line = $Line.Trim(); $periodRemoved = $false
+    $pairs = @(@('**', '**'), @('__', '__'), @('*', '*'), @('_', '_'), @('`', '`'), @('"', '"'), @("'", "'"), @('«', '»'), @('“', '”'))
+    do {
+        $before = $line
+        if ($Sentence -and -not $periodRemoved -and $line.EndsWith('.')) {
+            $line = $line.Substring(0, $line.Length - 1).TrimEnd(); $periodRemoved = $true
+        }
+        foreach ($pair in $pairs) {
+            if ($line.Length -gt 2 * $pair[0].Length -and $line.StartsWith($pair[0]) -and $line.EndsWith($pair[1])) {
+                $line = $line.Substring($pair[0].Length, $line.Length - $pair[0].Length - $pair[1].Length).Trim()
+                break
+            }
+        }
+    } while ($line -cne $before)
+    $line
+}
+
 function Get-Report([string]$Text) {
-    $lines = @(($Text -split "\r?\n") | ForEach-Object { $_.Trim().Trim([char[]]@('*', '`', '>', ' ')) } | Where-Object { $_ })
-    if ($lines.Count -eq 0) { return $null }
-    $last = $lines[-1]
-    if ($last -cmatch '^НОУТБУК ГОТОВО (\S+) ([0-9a-fA-F]{40})$') {
-        return [pscustomobject]@{ Kind = 'DONE'; Branch = $Matches[1].Trim([char[]]@('`', '*')); Sha = $Matches[2].ToLowerInvariant() }
+    <# Читає єдиний окремий звіт у відповіді result, пропускаючи код, цитати й приклади.
+
+    Позиція в кінці та markdown не визначають результат роботи. Цитований наряд і приклади не можуть його
+    підтвердити; неоднозначні відповіді відхиляються. Гілку й SHA перевіряє виклик через origin. #>
+    $reports = @(); $fence = ''; $task = $false; $example = $false; $exampleContent = $false
+    $exampleLevel = 0; $quote = ''; $comment = $false; $blockQuote = $false
+    foreach ($raw in ($Text -split "\r?\n")) {
+        $line = $raw.Trim()
+        if ($fence) {
+            if ($line -match ('^' + [regex]::Escape($fence[0]) + '{' + $fence.Length + ',}\s*$')) { $fence = '' }
+            continue
+        }
+        if ($blockQuote) { if (-not $line) { $blockQuote = $false }; continue }
+        if ($line.StartsWith('>')) { $blockQuote = $true; continue }
+        if ($quote) { if ($line.TrimEnd('.').EndsWith($quote)) { $quote = '' }; continue }
+        if ($line.Contains('<!--')) { $comment = $true }
+        if ($comment) { if ($line.Contains('-->')) { $comment = $false }; continue }
+        if ($line -match '^(`{3,}|~{3,})') { $fence = $Matches[1]; $exampleContent = $example; continue }
+        if ($line -cmatch '^----- НАРЯД -----$') { $task = $true; continue }
+        if ($line -cmatch '^----- КІНЕЦЬ НАРЯДУ -----$') { $task = $false; continue }
+        if ($task) { continue }
+        if ($line -match '^(#{1,6})\s+(.+)$') {
+            $level = $Matches[1].Length; $title = $Matches[2]
+            if ($exampleLevel -and $level -le $exampleLevel) { $exampleLevel = 0 }
+            if ($title -match '^(?:Приклад|Приклади|Зразок|Цитата|Цитати|Текст наряду)\b') { $exampleLevel = $level }
+            continue
+        }
+        if ($exampleLevel) { continue }
+        if (-not $line) { if ($exampleContent) { $example = $false; $exampleContent = $false }; continue }
+        $label = Remove-ReportDecoration $line
+        if ($label -match '^(?:Приклад|Зразок|Цитата|Текст наряду)\b.*:\s*$') { $example = $true; $exampleContent = $false; continue }
+        if ($example) { $exampleContent = $true; continue }
+        if ($raw -match '^(?: {4}|\t)') { continue }
+        foreach ($pair in @(@('«', '»'), @('"', '"'), @('“', '”'))) {
+            if ($line.StartsWith($pair[0]) -and -not $line.TrimEnd('.').EndsWith($pair[1])) { $quote = $pair[1]; break }
+        }
+        if ($quote) { continue }
+        $line = Remove-ReportDecoration $line -Sentence
+        if ($line -cmatch '^НОУТБУК ГОТОВО (\S+) (\S+)$') {
+            $branch = Remove-ReportDecoration $Matches[1]
+            $sha = Remove-ReportDecoration $Matches[2]
+            if ($sha -cnotmatch '^[0-9a-fA-F]{40}$') { return $null }
+            $reports += [pscustomobject]@{ Kind = 'DONE'; Branch = $branch; Sha = $sha.ToLowerInvariant() }
+        } elseif ($line -cmatch '^НОУТБУК ЗАБЛОКОВАНО\b') {
+            $branch = ''
+            if ($line -cmatch "(claude/$script:SlugCore)") { $branch = $Matches[1].TrimEnd('.') }
+            $reports += [pscustomobject]@{ Kind = 'BLOCKED'; Branch = $branch; Sha = '' }
+        }
     }
-    if ($last -cmatch '^НОУТБУК ЗАБЛОКОВАНО\b') {
-        $b = ''
-        if ($last -cmatch "(claude/$script:SlugCore)") { $b = $Matches[1].TrimEnd('.') }
-        return [pscustomobject]@{ Kind = 'BLOCKED'; Branch = $b; Sha = '' }
-    }
+    if ($reports.Count -eq 1) { return $reports[0] }
     $null
 }
+
 
 function Get-ErrorCode([string]$Text) {
     if ($Text -match 'issue with the selected model|unrecognized_model|model_not_found|not_found_error.{0,80}model') { return 'MODEL_INVALID' }
@@ -608,7 +666,7 @@ function Resume-Interrupted {
         $id = $Matches[1]
         $j = $null; try { $j = $Matches[2] | ConvertFrom-Json } catch { $null = $_ }
         $slot = [string](Get-JsonProp $j 'slot')
-        if ($slot -match '^claude-[1-4]$' -and -not (Test-LockFree (Join-Path $script:SlotDir "$slot.lock"))) { continue }
+        if ((Test-SlotName $slot @('claude')) -and -not (Test-LockFree (Join-Path $script:SlotDir "$slot.lock"))) { continue }
         $marker = [string](Get-JsonProp $j 'marker')
         try {
             $p = Get-Process -Id ([int]$j.pid) -ErrorAction Stop
