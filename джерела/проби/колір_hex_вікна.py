@@ -22,7 +22,8 @@ if sys.argv[1:2] == ["--знімок"]:
 база, т = (sys.argv[1:] or ["origin/main"])[0], tempfile.mkdtemp()
 subprocess.run(["git", "worktree", "add", "-q", "--detach", т + "/б", база], check=True)
 try:
-    os.symlink(os.path.abspath("каталог_повний.xml"), т + "/б/джерела/каталог_повний.xml")
+    import shutil
+    shutil.copyfile(os.path.abspath("каталог_повний.xml"), т + "/б/джерела/каталог_повний.xml")
     for д, ф in ((т + "/б/джерела", т + "/до.json"), (".", т + "/після.json")):
         subprocess.run([sys.executable, os.path.abspath(__file__), "--знімок", ф], cwd=д, check=True)
     до, піс = (json.load(open(т + ф, encoding="utf-8")) for ф in ("/до.json", "/після.json"))
@@ -36,5 +37,5 @@ print("ФАКТ · точок крамниць з виміром %d: підпи�
       dict(К.Counter((до["крамниці"][і][1], піс["крамниці"][і][1]) for і in кз)), *(sum(с == п for с, п in x["крамниці"].values()) for x in (до, піс))))
 кк = [і for і in піс["каталог"] if до["каталог"].get(і) != піс["каталог"][і]]
 print("ФАКТ · каталог: речей %d → %d; запис змінився в %d, поля %s" % (len(до["каталог"]), len(піс["каталог"]), len(кк),
-      dict(К.Counter(п for і in кк for п in set(до["каталог"][і]) | set(піс["каталог"][і]) if до["каталог"][і].get(п) != піс["каталог"][і].get(п)))))
-json.dump({і: [до["каталог"][і], піс["каталог"][і]] for і in кк}, open(т + "/каталог_зміни.json", "w", encoding="utf-8"), ensure_ascii=False); print("ФАКТ · змінені записи — %s/каталог_зміни.json" % т)
+      dict(К.Counter(п for і in кк for п in set(до["каталог"].get(і, {})) | set(піс["каталог"][і]) if до["каталог"].get(і, {}).get(п) != піс["каталог"][і].get(п)))))
+json.dump({і: [до["каталог"].get(і), піс["каталог"][і]] for і in кк}, open(т + "/каталог_зміни.json", "w", encoding="utf-8"), ensure_ascii=False); print("ФАКТ · змінені записи — %s/каталог_зміни.json; додано %d, втрачено %d" % (т, len(піс["каталог"].keys() - до["каталог"].keys()), len(до["каталог"].keys() - піс["каталог"].keys())))
