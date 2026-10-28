@@ -1,5 +1,6 @@
 """Власні випадки: обриви на межах стійких записів і втрата JSONL посередині."""
 import asyncio
+import csv
 import json
 from pathlib import Path
 import sys
@@ -69,8 +70,14 @@ def магазин(журнал, сім, точка="", через_обхід=Fa
     with patch.object(збирач, "_get", side_effect=http), patch.object(збирач, "_пиши", side_effect=картка), \
             patch.object(json_прохід, "записати", side_effect=запис):
         if через_обхід:
-            with patch.object(обхід, "запустити_крамниці", side_effect=запустити):
-                обхід.main(["--журнал", журнал, "--магазини", "review.test", "--циклів", "1"])
+            with tempfile.TemporaryDirectory(prefix="review-2085-recipes-") as тека:
+                with (Path(тека) / "рецепти.tsv").open("w", encoding="utf-8", newline="") as ф:
+                    писач = csv.DictWriter(ф, fieldnames=list(рецепт), delimiter="\t")
+                    писач.writeheader()
+                    писач.writerow(рецепт)
+                with patch.object(обхід, "ТЕКА", Path(тека)), \
+                        patch.object(обхід, "запустити_крамниці", side_effect=запустити):
+                    обхід.main(["--журнал", журнал, "--магазини", "усі", "--циклів", "1"])
         else:
             запустити()
     return запити
