@@ -942,7 +942,7 @@ function Invoke-Task($M, $Job) {
         $taskPath = Get-TaskSource $M
         if ($anc.Code -ne 0) { $status.code = 'NOT_ON_MAIN'; return }
         if ((Invoke-Git @('cat-file', '-e', "$($M.Sha):$taskPath") -AllowFail).Code -ne 0) { $status.code = 'NO_TASK_FILE'; return }
-        $taskText = Add-AutoTaskContext $M.Slug ((Invoke-Git @('cat-file', 'blob', "$($M.Sha):$taskPath")).Out) $M.Sha
+        $taskText = (Invoke-Git @('cat-file', 'blob', "$($M.Sha):$taskPath")).Out
         $js = $Job.sel
         $eng = [pscustomobject]@{ Name = [string]$js.engine; Model = [string]$js.emodel; Effort = [string]$js.effort }
         $exe = $(if ($eng.Name -eq 'codex') { Find-CodexExe } else { Find-EngineExe $AgyExe })
@@ -975,6 +975,10 @@ function Invoke-Task($M, $Job) {
             return
         }
         if ($review -ne 'LIVE') { $status.code = $review; return }
+        try { $taskText = Add-AutoTaskContext $M.Slug $taskText $M.Sha }
+        catch { Enter-ReviewWait $M; $waiting = $true; return }
+        $prompt = Get-Prompt $MA $taskText $sel.Engine.Name
+        [IO.File]::WriteAllText((Join-Path $dir 'prompt.md'), $prompt, $script:Utf8)
         $res = Invoke-Agent $MA $start $prompt $dir $sel
         $tail = $res.Tail
         $status.code = $res.Code
@@ -1167,7 +1171,7 @@ function Invoke-Worker {
     try {
         if ($job.gpu) {
             $gpu = Open-Lock (Get-GpuLockPath)
-            if ($null -eq $gpu) { Remove-Claim $statePath; Write-Log "GPU зайнята — $($job.name) лишається в черзі"; return $script:WorkerGpuBusy }
+            if ($null -eq $gpu -or -not (Test-ExternalGpuFree)) { Remove-Claim $statePath; Write-Log "GPU зайнята — $($job.name) лишається в черзі"; return $script:WorkerGpuBusy }
         }
         Write-FileAtomic $info (([ordered]@{ slot = $job.slot; lane = $job.lane; marker = $job.name; slug = $job.slug; model = $job.model
                     since = (Get-UtcStamp (Get-Date)); gpu = [bool]$job.gpu; prio = $job.prio; pid = $PID }) | ConvertTo-Json -Compress)
@@ -1175,6 +1179,7 @@ function Invoke-Worker {
             N = [string]$job.n; Cond = [string]$job.cond; Prio = $job.prio; Deadline = $job.deadline; Gpu = [bool]$job.gpu; Lane = $job.lane }
         $wt = Enter-WorkTree (Join-Path (Join-Path $RunsDir 'w') $job.slot) 'refs/remotes/origin/main'
         Set-Variable -Scope Script -Name RepoDir -Value $wt
+        Set-BrowserGpuPolicy (Join-Path $script:SlotDir ($job.slot + '-browser'))
         Invoke-Task $M $job
         0
     } catch {

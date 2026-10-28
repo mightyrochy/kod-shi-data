@@ -342,7 +342,7 @@ function Get-Line([string]$Id) {
         Write-WrapperLog "кінець $Id — $what $branch $head; комітів $ahead, файлів до main $files; без .github/ і файлів обгортки; $run"
         # ГОТОВО — лише звіт агента ГОТОВО з опублікованою головою; решта опублікованого — код прогону з _PUBLISHED.
         if ($code -eq 'DONE' -and $head) {
-            Save-DraftRequest $branch $head
+            Save-DraftRequest $branch $head ([string](Get-Prop $s 'actual'))
             # Квота групи (рішення диспетчера 9611): суфікс лише коли стан має групу й відсоток 0–100.
             $qg = [string](Get-Prop $s 'qgroup')
             $qs = $(if ($quotaLeft -match '^(?:100|[1-9]?[0-9])$' -and $qg -cmatch '^[A-Z0-9]{2,16}$') { " КВОТА $qg $quotaLeft" } else { '' })
@@ -511,7 +511,25 @@ function Get-DispatcherId {
     ''
 }
 
+function Test-DispatcherAction([string]$Line) {
+    <# Диспетчер прокидається лише за дією; звичайні стани лишаються локально. #>
+    if ($Line -cmatch '^GEMINI ОБГОРТКА: (?:ЗАБЛОКОВАНО|ТРИВОГА|ЛАНЦЮГ) ') { return $true }
+    if ($Line -cmatch '^GEMINI ОБГОРТКА: ГОТОВО (?:gemini|claude|codex)/(?:автоперевірка-|перевірка-|pachka-|автоживий-|Е1-нічний-живий-)') { return $true }
+    $false
+}
+
+function Save-LocalLine([string]$Line) {
+    <# Рядок лишається у журналі та стані для #1856 без мережевої доставки. #>
+    Write-WrapperLog "локально, без пробудження: $Line"
+    $path = Join-Path $WorkDir 'local-lines.json'
+    $lines = @()
+    if (Test-Path -LiteralPath $path) { $parsed = ConvertFrom-Json ([IO.File]::ReadAllText($path, $script:Utf8)); $lines = @($parsed) }
+    $lines = @($lines | Where-Object { $_.line -cne $Line } | Select-Object -Last 31)
+    Write-FileAtomic $path (ConvertTo-Json -InputObject @($lines + @(@{utc=[datetime]::UtcNow.ToString('o');line=$Line})) -Compress)
+}
+
 function Send-Line([string]$Line) {
+    if (-not (Test-DispatcherAction $Line)) { Save-LocalLine $Line; return $true }
     if ($DryRun) { Write-WrapperLog "DryRun, рядок не надіслано: $Line"; return $true }
     $sid = Get-DispatcherId
     if (-not $sid) { Write-WrapperLog 'нема адреси диспетчера в аудит/СТАН.md'; return $false }
@@ -554,6 +572,7 @@ function Receive-HealthAlerts {
 }
 
 function Send-Fallback([string]$Line) {
+    if (-not (Test-DispatcherAction $Line)) { Save-LocalLine $Line; return $true }
     <# Той самий рядок у #1690 через stdin JSON; ні оболонки, ні тексту агента в аргументах. #>
     if ($DryRun) { return $true }
     $body = ([ordered]@{ body = $Line }) | ConvertTo-Json -Compress
@@ -570,6 +589,11 @@ function Send-Pending([System.IO.FileInfo]$File) {
     <# Стан доставки збережено перед мережею; рядок лишається після вичерпання обох бюджетів. #>
     $st = [System.IO.File]::ReadAllText($File.FullName, $script:Utf8) | ConvertFrom-Json
     if ($st.sent -or (Get-Prop $st 'exhausted') -eq $true) { return }
+    if (-not (Test-DispatcherAction ([string]$st.line))) {
+        Save-LocalLine ([string]$st.line)
+        Write-FileAtomic $File.FullName ((@{line=[string]$st.line;sent=$true;attempts=[int]$st.attempts;channel='local'}) | ConvertTo-Json -Compress)
+        return
+    }
     $first = [string](Get-Prop $st 'first_failure_utc')
     if (-not $first) { $first = $File.CreationTimeUtc.ToString('o') }
     $new = [ordered]@{ line = [string]$st.line; sent = $false; attempts = [int]$st.attempts
