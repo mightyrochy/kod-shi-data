@@ -22,8 +22,9 @@ def головна():
         assert Ф.матеріал_речі(отрута)[0] == "100% бавовна"
     assert З.властивість(р, "composition")["value"] == ["cotton"]
     з = Ф.завершити_запис_речі(dict(р, id=о["id"], назва="Сукня", довжина="литка", крій="straight"))
+    з["розбір"] = {"item_type": "jeans", "cut": "bodycon", "length": "mini"}
     assert О.елементи([dict(з, hex="#303030")])[0]["матеріал_коди"] == з["матеріал_коди"]
-    with patch.object(К, "поля", return_value={"item_type": "jeans", "cut": "bodycon", "length": "mini"}), patch.object(К, "увімкнено", return_value=True):
+    with patch.object(К, "поля", side_effect=AssertionError("пізнє читання розбору")), patch.object(К, "увімкнено", return_value=True):
         п = П.річ_пулу(з, {})
         повний, короткий = Д.річ(п), Д.річ(п, короткий=True)
         assert повний["type"] == короткий["item_type"] == "dress_generic"

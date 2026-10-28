@@ -59,6 +59,7 @@ U = _ВМ.UNKNOWN
 
 РОЗБІР_ІМ = "каталог_розбір_коди.json"
 _КЕШ = {}
+_ВІДБИТОК = []
 
 # ── ЩО З РОЗБОРУ МОДЕЛЬ НЕ БАЧИТЬ ───────────────────────────────────────────────
 # `slot` — рішення власника 24–25.09.2026: «модель сама знає, що джинси — низ»; місце речі в
@@ -140,7 +141,8 @@ def читати(тека=None):
     ш = шлях(тека)
     if not ш:
         return {}
-    ключ = (ш, _os.path.getmtime(ш))
+    ст = _os.stat(ш)
+    ключ = (ш, ст.st_mtime_ns, ст.st_size)
     if ключ not in _КЕШ:
         import gzip as _gz, json as _json
         with (_gz.open(ш, "rt", encoding="utf-8") if ш.endswith(".gz")
@@ -156,6 +158,17 @@ def поля(ід, тека=None):
         return {}
     з = читати(тека).get(str(ід))
     return з if isinstance(з, dict) else {}
+
+
+def відбиток(тека=None):
+    """Стабільний відбиток кодів розбору для всіх кешів запису каталогу."""
+    import hashlib
+    import json
+    дані = читати(тека)
+    if not _ВІДБИТОК or _ВІДБИТОК[0] is not дані:
+        байти = json.dumps(дані, ensure_ascii=False, sort_keys=True, separators=(",", ":")).encode("utf-8")
+        _ВІДБИТОК[:] = [дані, hashlib.sha256(байти).hexdigest()]
+    return _ВІДБИТОК[1]
 
 
 def _коротко(значення):

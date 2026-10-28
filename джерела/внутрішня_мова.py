@@ -311,6 +311,7 @@ _ЛАПКИ_ДОВКОЛА = re.compile(r'^["«„“”]\s*([^"«»„“”]*?
         "earrings": "сережки", "bracelet": "браслет", "necklace": "намисто", "collar_necklace": "кольє",
         "brooch": "брошка", "watch": "годинник", "glasses": "окуляри", "gloves": "рукавички",
         "tights": "колготи", "socks": "шкарпетки", "swimsuit": "купальник", "lingerie": "білизна"},
+    "fabric_kind": {"knit": "трикотаж", "woven": "полотно"},
     "fabric": {
         "wool": "вовна", "cashmere": "кашемір", "mohair": "мохер", "angora": "ангора",
         "alpaca": "альпака", "cotton": "бавовна", "viscose": "віскоза", "tencel": "тенсел",
