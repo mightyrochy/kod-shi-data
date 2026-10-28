@@ -35,11 +35,11 @@ def доповнити(було, нове):
         вих = []
         for в in було:
             пара = next((н for н in нове if isinstance(в, dict) and isinstance(н, dict)
-                         and any(в.get(к) and в.get(к) == н.get(к) for к in ("id", "quote"))), None)
+                         and any(в.get(к) and в.get(к) == н.get(к) for к in ("id", "item", "quote"))), None)
             вих.append(доповнити(в, пара) if пара is not None else copy.deepcopy(в))
-        вих += [copy.deepcopy(н) for н in нове if isinstance(н, dict) and (н.get("id") or н.get("quote"))
+        вих += [copy.deepcopy(н) for н in нове if isinstance(н, dict) and (н.get("id") or н.get("item") or н.get("quote"))
                 and not any(isinstance(в, dict) and any(н.get(к) and н.get(к) == в.get(к)
-                            for к in ("id", "quote")) for в in було)]
+                            for к in ("id", "item", "quote")) for в in було)]
         return вих
     return copy.deepcopy(було)
 
