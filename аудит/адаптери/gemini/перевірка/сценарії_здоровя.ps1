@@ -47,7 +47,7 @@ function Comments {
 }
 
 try {
-    $line = 'СПОСТЕРІГАЧ CI #1690 ' + ('a' * 40) + ' success'
+    $line = 'GEMINI ОБГОРТКА: ЗАБЛОКОВАНО gemini/проба CRASH'
     $env:FAKE_HEALTH_MODE = '401'
     Put-Line "$tmpRoot/auth/box" $line
     Publish 'auth'
@@ -71,7 +71,7 @@ try {
     Check '401: той самий рядок і тривога CLOUD у #1690 негайно' ($comments.Count -eq 2 -and $comments.body.body -contains $line -and $comments.body.body -contains 'GEMINI ОБГОРТКА: ТРИВОГА AUTH CLOUD' -and @($comments | Where-Object { $_.args -notcontains 'repos/mightyrochy/kod-shi-data/issues/1690/comments' }).Count -eq 0)
     Publish 'auth'
     Check 'повторний запуск не дублює доставленого' (@(Comments).Count -eq 2)
-    Put-Line "$tmpRoot/auth/box" ($line -replace 'success', 'failure')
+    Put-Line "$tmpRoot/auth/box" ($line -replace 'CRASH', 'TIMEOUT')
     Publish 'auth'
     Check 'нова подія не дублює ту саму тривогу протягом години' (@(Comments).Count -eq 3)
 

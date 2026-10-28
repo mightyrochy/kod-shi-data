@@ -42,13 +42,13 @@ try {
     $script:Pulls = @((Pull 12 'claude/наряд' $first), (Pull 13 'codex/наряд' $first), (Pull 14 'gemini/наряд' $first), (Pull 15 'claude/чужий' $first 'чужий'), (Pull 16 'claude/форк' $first 'mightyrochy' 'чужий/форк'), (Pull 17 "gemini/автоперевірка-12-$first" $first))
     Invoke-WrapperChain
     function Markers { @(& git -C $remote for-each-ref '--format=%(refname)' refs/heads/gemini-queue/) }
-    Check 'готові PR автоматично отримали незалежні рушії, каскад Gemini — обидва' ((Markers).Count -eq 4)
+    Check 'готові PR автоматично отримали незалежні рушії, Gemini — один' ((Markers).Count -eq 3)
     Check 'чужий автор, форк та автозвіт не породили нарядів' (@(Markers | Where-Object { $_ -match 'автоперевірка-(15|16|17)-' }).Count -eq 0)
     Invoke-WrapperChain
-    Check 'повтор після перезапуску не дублює позначки' ((Markers).Count -eq 4)
+    Check 'повтор після перезапуску не дублює позначки' ((Markers).Count -eq 3)
     $file = Join-Path $WorkDir 'chain.json'; Remove-Item -LiteralPath $file
     Invoke-WrapperChain
-    Check 'втрата локального списку не перезаписує наявні позначки' ((Markers).Count -eq 4)
+    Check 'втрата локального списку не перезаписує наявні позначки' ((Markers).Count -eq 3)
     function Merge([string]$Path, [string]$Text) {
         <# Злитий стан main і наступний справжній fetch публікатора. #>
         [IO.File]::WriteAllText((Join-Path $seed $Path), $Text, $utf)
@@ -103,6 +103,7 @@ try {
     Check 'недоступний сервер лишає очікування' (-not [bool](& $script:RealModelsCheck $cfg))
     # Шаблони планувальників: повний SHA, ніякого вільного тексту з API.
     . (Join-Path $SourceDir 'queue_lanes.ps1')
+    function Get-AutoLivePlan { '{}' }
     Check 'обидва планувальники можуть узяти шаблон автонаряду' ((Get-AutoTaskPath "автоперевірка-12-$newer") -ceq 'аудит/наряди/автоперевірка.md' -and (Add-AutoTaskContext "автоживий-$newer" 'текст' $built) -match $newer)
     # Вікно рахується за SHA й committer, а коментар не оживляє початковий архів.
     $clock = [datetimeoffset]::UtcNow; $installed = $clock.AddDays(-2); $heads = @{}

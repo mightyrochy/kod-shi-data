@@ -24,4 +24,9 @@ function Get-WorkerCommand([string]$File) {
 }
 function Test-Isolation { [string]$env:FAKE_ISOLATION }
 function Test-OwnerUser { $true }
+# Політику пробудження окремо перевіряє сценарії_менше_прогонів.ps1.
+if ((Split-Path -Leaf $Script) -eq 'gemini_publish.ps1') {
+    function Test-DispatcherAction([string]$Line) { $true }
+}
+function Test-ExternalGpuFree { $true }
 exit (Main)

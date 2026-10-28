@@ -59,3 +59,9 @@ function Invoke-HealthBeat {
     try { & $script:HeartbeatAction }
     finally { $script:HeartbeatBusy = $false }
 }
+
+function Test-ReviewBranch([string]$Branch) {
+    <# Звіти перевірки й пачки вже містять вердикт і не породжують рекурсії. #>
+    $Branch -cmatch '/(?:авто(?:перевірка|живий)-|перевірка-|pachka-|Е1-нічний-живий-)'
+}
+
