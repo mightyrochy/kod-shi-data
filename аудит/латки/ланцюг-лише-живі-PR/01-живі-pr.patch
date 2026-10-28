@@ -1,35 +1,19 @@
 diff --git a/аудит/адаптери/gemini/claude_run.ps1 b/аудит/адаптери/gemini/claude_run.ps1
-index 255e0b996..d3ed767e7 100644
+index 255e0b996371f6b01cf1c06055e83b2d29da1fe1..4f41b9c5bae83f6f7a99bae42c45356fb592950e 100644
 --- a/аудит/адаптери/gemini/claude_run.ps1
 +++ b/аудит/адаптери/gemini/claude_run.ps1
-@@ -550,6 +550,8 @@ function Invoke-Task($M, $Job) {
+@@ -550,6 +550,9 @@ function Invoke-Task($M, $Job) {
      if (-not $main -or (Invoke-Git @('merge-base', '--is-ancestor', $M.Sha, $main) -AllowFail).Code -ne 0) { return (Complete-Task $M $statePath $id 'NOT_ON_MAIN') }
      if ((Invoke-Git @('cat-file', '-e', "$($M.Sha):$taskPath") -AllowFail).Code -ne 0) { return (Complete-Task $M $statePath $id 'NO_TASK_FILE') }
      if ($M.Claude -notmatch $script:ModelPattern) { return (Complete-Task $M $statePath $id 'MODEL_INVALID') }
 +    $review = Get-AutoReviewState $M.Slug
++    if ($review -eq 'REVIEW_API') { Enter-ReviewWait $M; return }
 +    if ($review -ne 'LIVE') { return (Complete-Task $M $statePath $id $review) }
      $exe = Find-Exe $ClaudeExe
      if (-not $exe) { return (Complete-Task $M $statePath $id 'ENGINE_MISSING') }
      $taskText = Add-AutoTaskContext $M.Slug ((Invoke-Git @('cat-file', 'blob', "$($M.Sha):$taskPath")).Out)
-@@ -707,6 +709,16 @@ function Start-Markers($Workers) {
-     if ($null -ne $off) { return @(0, $off) }
-     foreach ($m in @($ordered | Where-Object { -not $_.Off })) {
-         $st = Get-MarkerState $m
-+        if ($st.Kind -in @('NEW','WAIT')) {
-+            $review = Get-AutoReviewState $m.Slug
-+            if ($review -eq 'REVIEW_API') { Write-Log "позначка $($m.Name): REVIEW_API; повтор наступним проходом"; continue }
-+            if ($review -eq 'STALE') {
-+                $id = New-Id
-+                if (-not (New-Claim $m $id)) { continue }
-+                Complete-Task $m (Get-StatePath (Get-MarkerKey $m)) $id 'STALE'
-+                continue
-+            }
-+        }
-         if (-not (Test-MarkerReady $st)) { continue }
-         if (($now - $m.Time) -gt $MarkerMaxAgeDays * 86400) {
-             Write-Log "позначка $($m.Name): коміт старший за $MarkerMaxAgeDays діб — пропущено"
 diff --git a/аудит/адаптери/gemini/gemini_publish.ps1 b/аудит/адаптери/gemini/gemini_publish.ps1
-index 88355f7a3..9967a5210 100644
+index 88355f7a387a84b96a3dfc2c834b72644642bb38..9967a5210d296825dd1fa66c5142a068ca0a995c 100644
 --- a/аудит/адаптери/gemini/gemini_publish.ps1
 +++ b/аудит/адаптери/gemini/gemini_publish.ps1
 @@ -74,6 +74,7 @@ $script:RunCodes = @{
@@ -41,40 +25,25 @@ index 88355f7a3..9967a5210 100644
  }
  $script:IsolationChecks = @{
 diff --git a/аудит/адаптери/gemini/gemini_run.ps1 b/аудит/адаптери/gemini/gemini_run.ps1
-index 76ff91f90..6ed73bcb9 100644
+index 76ff91f901cd1f1ad7471e7e8e7a6a93bc6051c5..2df1371c9a15f2c9d0990e22dfdef399ee6a15fb 100644
 --- a/аудит/адаптери/gemini/gemini_run.ps1
 +++ b/аудит/адаптери/gemini/gemini_run.ps1
-@@ -965,6 +965,8 @@ function Invoke-Task($M, $Job) {
+@@ -965,6 +965,13 @@ function Invoke-Task($M, $Job) {
          Write-FileAtomic $statePath ('STARTED ' + ($status | ConvertTo-Json -Compress))
          $prompt = Get-Prompt $MA $taskText $sel.Engine.Name
          [System.IO.File]::WriteAllText((Join-Path $dir 'prompt.md'), $prompt, $script:Utf8)
 +        $review = Get-AutoReviewState $M.Slug
++        if ($review -eq 'REVIEW_API') {
++            Enter-ReviewWait $M ([string]$Job.head)
++            $waiting = $true
++            return
++        }
 +        if ($review -ne 'LIVE') { $status.code = $review; return }
          $res = Invoke-Agent $MA $start $prompt $dir $sel
          $tail = $res.Tail
          $status.code = $res.Code
-@@ -1067,6 +1069,19 @@ function Start-Markers($Workers) {
-     if ($mine.Count -eq 0) { return 0 }
-     foreach ($m in (Get-OrderedMarkers $mine)) {
-         $st = Get-MarkerState $m
-+        if ($st.Kind -in @('NEW','WAIT')) {
-+            $review = Get-AutoReviewState $m.Slug
-+            if ($review -eq 'REVIEW_API') { Write-Log "позначка $($m.Name): REVIEW_API; повтор наступним проходом"; continue }
-+            if ($review -eq 'STALE') {
-+                $id = New-RunId (Get-MarkerKey $m)
-+                if (-not (New-Claim $m $id)) { continue }
-+                $statePath = Get-StatePath (Get-MarkerKey $m)
-+                $status = [ordered]@{ v=1; id=$id; slug=$m.Slug; model=$m.Model; n=[int]$m.N; marker=$m.Sha; cond=$m.Cond
-+                    start=''; head=''; code='STALE'; report='NONE'; ahead=0; turns=0; minutes=0; bundle='' }
-+                Complete-Status $status $statePath '' ([datetime]::MinValue)
-+                continue
-+            }
-+        }
-         if (-not (Test-MarkerReady $st)) { continue }
-         if (($now - $m.Time) -gt $MarkerMaxAgeDays * 86400) {
-             Write-Log "позначка $($m.Name): коміт старший за $MarkerMaxAgeDays діб — пропущено"
 diff --git a/аудит/адаптери/gemini/m9v/хеші.psd1 b/аудит/адаптери/gemini/m9v/хеші.psd1
-index 0a2896eb8..6e78f7f0c 100644
+index 0a2896eb8727c4538ae2bcd85880b7516fa1f110..1a99ace37a6ea51a251ca9c58937aef5cd40f2f2 100644
 --- a/аудит/адаптери/gemini/m9v/хеші.psd1
 +++ b/аудит/адаптери/gemini/m9v/хеші.psd1
 @@ -3,10 +3,10 @@
@@ -86,7 +55,7 @@ index 0a2896eb8..6e78f7f0c 100644
      'wrapper_health.ps1' = 'FCE45448539D53A6B5718319842FC845DA870F39453A6B716C7AF8A2DB65B88E'
 -    'gemini_run.ps1'     = '39FD518203B33184304528AFB50175E0CB455B9337A8B7A46D34F4B565BEB577'
 -    'gemini_publish.ps1' = '895162B7194F6331E672C2965D0F2833EE130676B44FC3005C16D4E52F95CCED'
-+    'gemini_run.ps1'     = '91F110EF270DAC03E1BA73617DA571255EA583823CBE42F1AFA9F9201D221DEF'
++    'gemini_run.ps1'     = '93102474B513875BA07549C2098681ADC29B5A29F69AE957171F63FBECDFD7FE'
 +    'gemini_publish.ps1' = '7E2253EB0D54011B29CEE6CD6426803E8B4826647BF742D9551415DBE24737AB'
      # Інсталятор Codex (9741) закріплено за релізом: install.ps1 — файл релізу https://releases.openai.com/codex/releases/<CodexRelease>/install.ps1
      # (незмінний URL; той самий sha256 віддає https://chatgpt.com/codex/install.ps1 — редирект на releases.openai.com — і публікує реліз
@@ -97,37 +66,93 @@ index 0a2896eb8..6e78f7f0c 100644
      'gemini_watch.ps1'   = '69EFEBB07FF1AF51C382B753A95C50F3C1AC27B3008F2489992BEBE3FD0213AA'
 -    'queue_lanes.ps1'    = 'C06A78446762B98EF3D045EB16ADFF15EDBAF1068959F94E346FC3A0069B5918'
 -    'claude_run.ps1'     = '3A370295FFE2E96E1DF932AAE0E77AE635C185825A1E81CE9865F3507EF10876'
-+    'queue_lanes.ps1'    = '5EC0A6F9E09EA0F43287D98D80CDB945664FDB2076E6F7502AAEAECB907859B9'
-+    'claude_run.ps1'     = 'AFE1A9C6577E7392CF2CD72AF845126A1199EDFC0D03DCB6C01423378AC9E43F'
++    'queue_lanes.ps1'    = 'D2196E168D86D00254B12E11069D8ECAB42FCB172721F5185E16ABD483051A6B'
++    'claude_run.ps1'     = 'CA6AF93802EA4339DAB6D7DDBE398C947D53AD4B3205D24E7EE42BF0E0512884'
  }
 diff --git a/аудит/адаптери/gemini/queue_lanes.ps1 b/аудит/адаптери/gemini/queue_lanes.ps1
-index f318c8b27..aa13ffb04 100644
+index f318c8b27d728ddbaa1e0d8748c50ea51835ae16..56bead3c2cb5acd319da4cf6f433c03aedcfd515 100644
 --- a/аудит/адаптери/gemini/queue_lanes.ps1
 +++ b/аудит/адаптери/gemini/queue_lanes.ps1
-@@ -294,6 +294,21 @@ function Get-OrderedMarkers($Markers) {
+@@ -9,7 +9,7 @@
+ Підвантажується крапкою (`. queue_lanes.ps1`) після блоку параметрів скрипта; власних параметрів нема. Читає змінні
+ скрипта: $RepoDir, $GitExe, $LaneDir, $script:NoHooks, $script:StateDir, $script:SlotDir, $script:SelfPath, $script:Bound,
+ і функцію журналу Write-Log. Два облікові записи розведено жорстко, тож планувальників два; спільні між ними лише замок
+-GPU (тека $LaneDir — `C:\Users\Public\gemini\lanes`, де пишуть і INTERACTIVE, і BATCH) і рядок стану ноутбука.
++GPU та бюджет перевірок PR (тека $LaneDir — `C:\Users\Public\gemini\lanes`, де пишуть і INTERACTIVE, і BATCH) і рядок стану ноутбука.
+ 
+ Позначка: `gemini-queue/<наряд>/<модель>/<спроба>[/<умови>]`; умови — до трьох лексем через `-` у будь-якому порядку:
+ `p<0-9>` — пріоритет (0 — найвищий; без лексеми — 5), `d<РРРРММДДГГхх>` — строк у UTC, `gpu` — наряд займає відеокарту.
+@@ -45,6 +45,10 @@ $script:MaxRetakes = 5
+ # Код виходу процесу наряду: слот чи GPU зайняті до старту — позначку не взято, вона лишається в черзі.
+ $script:WorkerSlotBusy = 3
+ $script:WorkerGpuBusy = 4
++# Спільний рухомий бюджет публічного REST: половина 60/год лишається іншим читачам.
++$script:ReviewApiLimit = 30
++$script:ReviewApiWindow = 3600
++$script:ReviewApiBackoff = 120
+ 
+ # --- процеси й файли ----------------------------------------------------------------------------------------------
+ 
+@@ -294,6 +298,57 @@ function Get-OrderedMarkers($Markers) {
          @{ Expression = { $_.Seen } }, @{ Expression = { $_.Time } }, @{ Expression = { $_.Name } })
  }
  
-+function Get-AutoReviewState([string]$Slug) {
-+    <# Звіряє живий PR і точний SHA без рушія й входу; збій API лишає позначку для повтору.
++function Get-ReviewTime {
++    <# Поточна секунда UTC; стенд підміняє годинник без реального чекання. #>
++    [DateTimeOffset]::UtcNow.ToUnixTimeSeconds()
++}
 +
-+    Публічний read-only API потрібний також ізольованій смузі gemini, де немає входу gh. #>
++function Get-AutoReviewState([string]$Slug) {
++    <# Звіряє PR один раз безпосередньо перед моделлю, лише у вже вільному слоті.
++
++    Спільний файл під замком обох облікових записів обмежує всі три смуги 30 запитами за рухому годину.
++    Успішний LIVE не кешується: кожен справжній запуск отримує свіжий стан PR. #>
 +    if ($Slug -cnotmatch '^автоперевірка-([1-9][0-9]{0,8})-([0-9a-f]{40})$') { return 'LIVE' }
 +    $number = $Matches[1]; $head = $Matches[2]
++    $lock = $null
 +    try {
-+        $pr = Invoke-RestMethod -Uri "https://api.github.com/repos/mightyrochy/kod-shi-data/pulls/$number" -Method Get -TimeoutSec 20 -MaximumRedirection 0 -Headers @{Accept='application/vnd.github+json'; 'User-Agent'='kod-shi-wrapper'}
-+        if ([string]$pr.number -cne $number -or $pr.state -cnotin @('open','closed') -or [string]$pr.head.sha -cnotmatch '^[0-9a-f]{40}$') { return 'REVIEW_API' }
-+        if ($pr.state -cne 'open' -or $pr.head.sha -cne $head) { return 'STALE' }
-+        if ($pr.user.login -cne 'mightyrochy' -or $null -eq $pr.head.repo -or $pr.head.repo.full_name -cne 'mightyrochy/kod-shi-data' -or $pr.base.repo.full_name -cne 'mightyrochy/kod-shi-data' -or $pr.base.ref -cne 'main' -or $pr.head.ref -match '/авто(перевірка|живий)-') { return 'STALE' }
-+        'LIVE'
++        $lock = Open-Lock (Join-Path $LaneDir 'review-api.lock')
++        if ($null -eq $lock) { return 'REVIEW_API' }
++        $path = Join-Path $LaneDir 'review-api.json'
++        $now = Get-ReviewTime
++        $calls = @(); $until = 0L
++        if (Test-Path -LiteralPath $path) {
++            $saved = [IO.File]::ReadAllText($path, $script:Utf8) | ConvertFrom-Json
++            # Пошкоджений бюджет не дозволяє непорахованих запитів.
++            if ($null -eq $saved.calls -or $null -eq $saved.until) { return 'REVIEW_API' }
++            $calls = @($saved.calls | Where-Object { [long]$_ -gt ($now - $script:ReviewApiWindow) })
++            $until = [long]$saved.until
++        }
++        if ($now -lt $until -or $calls.Count -ge $script:ReviewApiLimit) { return 'REVIEW_API' }
++        # Резервуємо запит до мережі: 403/429, тайм-аут і падіння процесу також входять у бюджет.
++        $budget = [ordered]@{calls=@($calls) + @($now);until=0L}
++        Write-FileAtomic $path ($budget | ConvertTo-Json -Compress)
++        try {
++            $pr = Invoke-RestMethod -Uri "https://api.github.com/repos/mightyrochy/kod-shi-data/pulls/$number" -Method Get -TimeoutSec 20 -MaximumRedirection 0 -Headers @{Accept='application/vnd.github+json'; 'User-Agent'='kod-shi-wrapper'}
++            if ([string]$pr.number -cne $number -or $pr.state -cnotin @('open','closed') -or [string]$pr.head.sha -cnotmatch '^[0-9a-f]{40}$') { throw 'REVIEW_RESPONSE' }
++            if ($pr.state -cne 'open' -or $pr.head.sha -cne $head) { return 'STALE' }
++            if ($pr.user.login -cne 'mightyrochy' -or $null -eq $pr.head.repo -or $pr.head.repo.full_name -cne 'mightyrochy/kod-shi-data' -or $pr.base.repo.full_name -cne 'mightyrochy/kod-shi-data' -or $pr.base.ref -cne 'main' -or $pr.head.ref -match '/авто(перевірка|живий)-') { return 'STALE' }
++            'LIVE'
++        } catch {
++            $budget.until = $now + $script:ReviewApiBackoff
++            Write-FileAtomic $path ($budget | ConvertTo-Json -Compress)
++            'REVIEW_API'
++        }
 +    } catch { 'REVIEW_API' }
++    finally { if ($null -ne $lock) { $lock.Dispose() } }
++}
++
++function Enter-ReviewWait($M, [string]$Head = '') {
++    <# Повертає позначку після відмови REST чи вичерпання бюджету без збільшення retakes і кінцевого звіту. #>
++    [void](Set-MarkerWait $M ((Get-ReviewTime) + $script:ReviewApiBackoff) @{group='REVIEW_API';head=$Head})
++    Write-Log "позначка $($M.Name): REVIEW_API; спроба збережена, повтор у черзі"
 +}
 +
  function Get-MarkerState($M) {
      <# NEW — не бачили; TAKEN — узята (файл `.claim`); WAIT — чекає скидання квоти (Wait.until, unix); DONE — інше. #>
      $sp = Get-StatePath (Get-MarkerKey $M)
 diff --git a/аудит/адаптери/gemini/wrapper_chain.ps1 b/аудит/адаптери/gemini/wrapper_chain.ps1
-index fa503cf14..b9ecc1478 100644
+index fa503cf14790944609a8a71c6a065348797a34f4..b9ecc14780bf8186517ad64bf76096348ac54255 100644
 --- a/аудит/адаптери/gemini/wrapper_chain.ps1
 +++ b/аудит/адаптери/gemini/wrapper_chain.ps1
 @@ -90,6 +90,28 @@ function Get-ReviewModels($Pull, $Config) {
@@ -221,7 +246,7 @@ index fa503cf14..b9ecc1478 100644
          }
      } catch {
 diff --git a/аудит/адаптери/gemini/НАЛАШТУВАННЯ.md b/аудит/адаптери/gemini/НАЛАШТУВАННЯ.md
-index 33751be08..3bc9724a8 100644
+index 33751be08e65d5342a3a903014b4b234307ace6d..71752cc7e328e0a6a72b5452da80163096ec740d 100644
 --- a/аудит/адаптери/gemini/НАЛАШТУВАННЯ.md
 +++ b/аудит/адаптери/gemini/НАЛАШТУВАННЯ.md
 @@ -411,13 +411,13 @@ $f = Join-Path "$env:USERPROFILE\gemini-outbox" $n
@@ -232,18 +257,18 @@ index 33751be08..3bc9724a8 100644
 -| `gemini_run.ps1` | `39FD518203B33184304528AFB50175E0CB455B9337A8B7A46D34F4B565BEB577` |
 -| `gemini_publish.ps1` | `895162B7194F6331E672C2965D0F2833EE130676B44FC3005C16D4E52F95CCED` |
 +| `wrapper_chain.ps1` | `5EDD80E6BF5A19873DF59EA7414C7C3D43A0E375FAAD346A237BBFBC46931E28` |
-+| `gemini_run.ps1` | `91F110EF270DAC03E1BA73617DA571255EA583823CBE42F1AFA9F9201D221DEF` |
++| `gemini_run.ps1` | `93102474B513875BA07549C2098681ADC29B5A29F69AE957171F63FBECDFD7FE` |
 +| `gemini_publish.ps1` | `7E2253EB0D54011B29CEE6CD6426803E8B4826647BF742D9551415DBE24737AB` |
  | `gemini_watch.ps1` | `69EFEBB07FF1AF51C382B753A95C50F3C1AC27B3008F2489992BEBE3FD0213AA` |
  | `wrapper_health.ps1` | `FCE45448539D53A6B5718319842FC845DA870F39453A6B716C7AF8A2DB65B88E` |
 -| `queue_lanes.ps1` | `C06A78446762B98EF3D045EB16ADFF15EDBAF1068959F94E346FC3A0069B5918` |
 -| `claude_run.ps1` | `3A370295FFE2E96E1DF932AAE0E77AE635C185825A1E81CE9865F3507EF10876` |
-+| `queue_lanes.ps1` | `5EC0A6F9E09EA0F43287D98D80CDB945664FDB2076E6F7502AAEAECB907859B9` |
-+| `claude_run.ps1` | `AFE1A9C6577E7392CF2CD72AF845126A1199EDFC0D03DCB6C01423378AC9E43F` |
++| `queue_lanes.ps1` | `D2196E168D86D00254B12E11069D8ECAB42FCB172721F5185E16ABD483051A6B` |
++| `claude_run.ps1` | `CA6AF93802EA4339DAB6D7DDBE398C947D53AD4B3205D24E7EE42BF0E0512884` |
  | `CodexInstaller` (`install.ps1` релізу Codex `CodexRelease`) | `A59CB66350098C33B021FF470D586AE8FE3B7CAF189CA7137B4FE3AF5D4DCE74` |
  
  Той самий список читають скрипти `m9v/` з `m9v/хеші.psd1` — міняти їх разом із таблицею. Підготовка одним проходом — `m9v/ЩО_НАТИСНУТИ.md`.
-@@ -476,11 +476,31 @@ reparse point — відмова. Проба перевіряє синтакси
+@@ -476,11 +476,37 @@ reparse point — відмова. Проба перевіряє синтакси
  `ланцюг.json` читається тільки з origin/main. Підтверджений результат DONE публікатора зберігає квитанцію
  створення PR-чернетки; збій gh не губить її. Наступний прохід створює чернетку з повідомлення останнього коміту
  або знаходить уже створену. Спецзгадка легасі-Codex з повідомлення не переноситься. Native Claude вже створює свій PR.
@@ -261,23 +286,29 @@ index 33751be08..3bc9724a8 100644
 +Початкове рішення зберігається з SHA, а зміна голови відкриває нову перевірку. Втрата локального стану
 +починає нову базову лінію; сталі віддалені позначки та lease захищають від повторного запуску старих спроб.
 +
-+Перед вибором рушія й квоти обидва планувальники звіряють `автоперевірка-<PR>-<SHA40>` через публічний
-+GET `/repos/mightyrochy/kod-shi-data/pulls/<PR>` без входу й нових секретів. PR закритий, SHA змінився,
-+автор/база/репозиторій уже не відповідають договору або гілка є автозвітом — стан `DONE … STALE` і один
-+`GEMINI ОБГОРТКА: ЗАБЛОКОВАНО <гілка> STALE`, без рушія. Це стосується й уже поставлених позначок,
-+також `WAIT` до скидання квоти та вимкненої смуги Claude. Віддалені позначки не видаляються.
-+Мережева відмова, 403/429 або неповна відповідь — `REVIEW_API`: до узяття позначка лишається для наступного
-+проходу. Повторна звірка в процесі наряду перед викликом моделі закриває гонку між постановкою й стартом;
-+її відмова завершує узяту спробу кодом `REVIEW_API`, без моделі. Закриття PR уже після цієї звірки не
-+перериває запущений прогін. Давність обмежує нову постановку; наявна позначка відкритого PR з тим самим SHA
-+сама лише через сплив 24 годин не скасовується.
++У вільному слоті безпосередньо перед моделлю процес наряду звіряє `автоперевірка-<PR>-<SHA40>` через
++публічний GET `/repos/mightyrochy/kod-shi-data/pulls/<PR>` без входу й нових секретів. Планувальники
++не роблять REST-запитів під час обходу черги: вимкнена смуга, зайняті слоти й незавершений WAIT не витрачають їх.
++PR закритий, SHA змінився, автор/база/репозиторій не відповідають договору або гілка є автозвітом —
++`DONE … STALE` і один `GEMINI ОБГОРТКА: ЗАБЛОКОВАНО <гілка> STALE`, без моделі.
++Це стосується й уже поставлених позначок; віддалені позначки не видаляються.
 +
++`review-api.json` та `review-api.lock` у спільному `$LaneDir` обмежують усі три смуги сукупно
++30 запитами за рухомі 3600 секунд. Запит резервується під файловим замком до мережі; збій і перезапуск
++не обнуляють витраченого бюджету. Успішний LIVE не кешується: кожен запуск перевіряє свіжий стан.
++Нема доступу до замка, пошкоджений бюджет, мережевий збій, 403/429, неповна відповідь чи вичерпана межа —
++`REVIEW_API` і повернення в WAIT на 120 секунд без збільшення retakes, кінцевого звіту чи виклику моделі.
++Мережева відмова також ставить спільну паузу 120 секунд. Голова продовження Codex/agy зберігається.
++Нових секретів, ACL і встановлених копій ця зміна не потребує.
++
++Закриття PR після останньої звірки не перериває вже запущений прогін. Давність обмежує нову постановку;
++наявна позначка відкритого PR з тим самим SHA сама лише через сплив 24 годин не скасовується.
 +
  Зміна продукту між послідовними main зберігає очікування GPU-прогону; документація сама GPU не займає.
  Перший прохід встановлює базову лінію. Поки моделі на локальному :1234 не видні через GET /api/v1/models,
  очікування лишається в chain.json. Наступні продуктові злиття об’єднуються до найновішого SHA. Коли моделі
 diff --git a/аудит/адаптери/gemini/ланцюг.json b/аудит/адаптери/gemini/ланцюг.json
-index 93334a17e..29af8d86a 100644
+index 93334a17e9ca1513cea8575e60a8f762fa3ac837..29af8d86ad1b8bc185f781b4193b6f0511cd18f3 100644
 --- a/аудит/адаптери/gemini/ланцюг.json
 +++ b/аудит/адаптери/gemini/ланцюг.json
 @@ -2,5 +2,9 @@
@@ -292,7 +323,7 @@ index 93334a17e..29af8d86a 100644
 +  "review_hours": 24
  }
 diff --git a/аудит/адаптери/gemini/перевірка/side.ps1 b/аудит/адаптери/gemini/перевірка/side.ps1
-index 5c744978d..ea8349632 100644
+index 5c744978d0394eaadbb4d69ead52dc4195c9d72d..ea83496321a52c2d05053c984b6145ec3d9175d3 100644
 --- a/аудит/адаптери/gemini/перевірка/side.ps1
 +++ b/аудит/адаптери/gemini/перевірка/side.ps1
 @@ -8,6 +8,11 @@ $p = @{}
@@ -307,12 +338,166 @@ index 5c744978d..ea8349632 100644
  . $Script @p
  # Процес наряду — знов цей стенд (а не сам скрипт), тож бере ті самі підміни, що батьківський (10164).
  $script:SideFile = $PSCommandPath; $script:SideScript = $Script; $script:SideArgs = $p
+diff --git a/аудит/адаптери/gemini/перевірка/бюджет_живих_pr.ps1 b/аудит/адаптери/gemini/перевірка/бюджет_живих_pr.ps1
+new file mode 100644
+index 0000000000000000000000000000000000000000..5628d05911936b8a3643093a90fd0e179faef8df
+--- /dev/null
++++ b/аудит/адаптери/gemini/перевірка/бюджет_живих_pr.ps1
+@@ -0,0 +1,148 @@
++﻿#Requires -Version 5.1
++param([Parameter(Mandatory=$true)][string]$SourceDir, [Alias('Phase')][ValidateSet('ДО','ПІСЛЯ')][string]$MeasurePhase = 'ПІСЛЯ')
++$ErrorActionPreference = 'Stop'
++$tmp = Join-Path ([IO.Path]::GetTempPath()) ('review-budget-' + [guid]::NewGuid().ToString('N'))
++[void][IO.Directory]::CreateDirectory($tmp)
++$failures = 0
++function Check([string]$Name, [bool]$Ok) {
++    <# Друкує вимір і повертає ненульовий код за невиконання мірила. #>
++    if ($Ok) { "✓ $Name" } else { "✗ $Name"; $script:failures++ }
++}
++try {
++    $script:ApiCalls = 0; $script:Burned = 0; $script:Models = 0
++    $script:Clock = [DateTimeOffset]::UtcNow.ToUnixTimeSeconds()
++    $shared = Join-Path $tmp 'lanes'; [void][IO.Directory]::CreateDirectory($shared)
++    $head = 'b' * 40
++    foreach ($lane in @('codex','agy','claude')) {
++        $case = Join-Path $tmp $lane
++        $OutboxDir = Join-Path $case 'lines'; $OutDir = Join-Path $case 'out'; $WorkDir = $case
++        if ($lane -eq 'claude') {
++            . (Join-Path $SourceDir 'claude_run.ps1') -WorkDir $case -RepoDir $case -OutboxDir "$case/lines" -LaneDir $shared -NoStatus
++        } else {
++            . (Join-Path $SourceDir 'gemini_run.ps1') -RunsDir $case -RepoDir $case -OutDir "$case/out" -LaneDir $shared -EnableCodex
++            $script:Lanes = @($lane)
++        }
++        $script:StateDir = Join-Path $case 'state'; $script:SlotDir = Join-Path $case 'slots'
++        foreach ($d in @($case,$script:StateDir,$script:SlotDir,$OutDir,$OutboxDir,"$case/runs")) {
++            if ($d) { [void][IO.Directory]::CreateDirectory($d) }
++        }
++        $script:Limits = @{slots=@{codex=4;agy=4;claude=4}}
++        $script:ReadySlot = $false; $script:ApiError = ''; $script:Jobs = New-Object Collections.ArrayList
++        $script:Markers = @()
++        $model = switch ($lane) {codex {'gpt-6.1-sol-high'} agy {'gemini-3.8-flash-high'} claude {'cc-claude-opus-5-5-high'}}
++        for ($n = 1; $n -le 10; $n++) {
++            $number = 100 + $script:Markers.Count + $(switch ($lane) {codex {0} agy {10} claude {20}})
++            $script:Markers += ConvertTo-Marker ("refs/remotes/origin/gemini-queue/автоперевірка-$number-$head/$model/1`t$head`t$script:Clock")
++        }
++        function Get-Markers { $script:Markers }
++        function Get-ReviewTime { $script:Clock }
++        function Write-Log([string]$Text) { }
++        function Invoke-RestMethod {
++            param($Uri,$Method,$TimeoutSec,$MaximumRedirection,$Headers)
++            $script:ApiCalls++
++            if ($script:ApiError) { throw $script:ApiError }
++            $number = ($Uri -split '/')[-1]
++            [pscustomobject]@{number=[int]$number;state='open';user=@{login='mightyrochy'};head=@{sha=$head;ref='claude/живий';repo=@{full_name='mightyrochy/kod-shi-data'}};base=@{ref='main';repo=@{full_name='mightyrochy/kod-shi-data'}}}
++        }
++        function Select-Engine($M,[long]$After) { [pscustomobject]@{Engine=@{Name=$lane;Model='стенд';Effort='high'};Model=$M.Model;Quota=@{Blocked=$false;Known=$false;Group='';Left=0}} }
++        function Get-FreeSlot { if ($script:ReadySlot) { 'стенд-1' } }
++        function Test-SlugBusy { $false }
++        function Start-Worker($Job,[string]$Dir) { [void]$script:Jobs.Add($Job); [pscustomobject]@{Slug=$Job.slug;Proc=@{HasExited=$true};Gpu=$false} }
++        function Get-RefSha { $head }
++        function Invoke-Git { [pscustomobject]@{Code=0;Out='Наряд стенда';Err=''} }
++        function Reset-WorkTree { }
++        function Get-Prompt { 'Наряд стенда' }
++        function Find-EngineExe { 'стенд' }
++        function Find-CodexExe { 'стенд' }
++        function Find-Exe { 'стенд' }
++        function Get-ContinueBranch { '' }
++        function Get-Quota { [pscustomobject]@{Known=$false} }
++        function Invoke-Agent { $script:Models++; [pscustomobject]@{Tail='';Code='NO_REPORT';Report='NONE';Turns=1} }
++        function Invoke-Claude { $script:Models++; [pscustomobject]@{Kind='NO_REPORT'} }
++        function Complete-Status($Status,$StatePath) {
++            Write-FileAtomic $StatePath "DONE $($Status.id) $($Status.code)"
++            Remove-Claim $StatePath
++        }
++        # 60 хвилинних проходів на 30 позначках у трьох смугах; перші 30 без слота, наступні зі слотом.
++        $before = $script:ApiCalls
++        $workers = New-Object Collections.ArrayList
++        for ($poll = 0; $poll -lt 60; $poll++) {
++            $script:ReadySlot = $poll -ge 30
++            $script:Clock = [DateTimeOffset]::UtcNow.ToUnixTimeSeconds() + $poll * 60
++            $null = Start-Markers $workers
++            foreach ($job in @($script:Jobs)) {
++                $m = @($script:Markers | Where-Object { $_.Slug -eq $job.slug })[0]
++                if ($lane -eq 'claude') { $m = Add-ClaudeFields $m }
++                $null = Invoke-Task $m $job
++            }
++            $script:Jobs.Clear()
++        }
++        "$MeasurePhase $lane : API за 60 проходів = $($script:ApiCalls - $before)"
++        Check "$lane : усі десять живих позначок дійшли до моделі" ($script:Models -eq $(switch ($lane) {codex {10} agy {20} claude {30}}))
++    }
++    "$MeasurePhase разом: 30 позначок, 60 проходів, API=$script:ApiCalls, моделей=$script:Models"
++    Check 'бюджет запитів до API' ($script:ApiCalls -eq $(if ($MeasurePhase -eq 'ДО') {690} else {30}))
++    if ($MeasurePhase -eq 'ПІСЛЯ') {
++        # Новий процес читає той самий бюджет; додаткові PR і зміна смуги не обходять межу.
++        Check '31-й запит відкладено' ((Get-AutoReviewState "автоперевірка-999-$head") -eq 'REVIEW_API' -and $script:ApiCalls -eq 30)
++        $savedNow = $script:Clock
++        $clockFile = Join-Path $shared 'clock.txt'; [IO.File]::WriteAllText($clockFile,[string]$savedNow)
++        $child = Join-Path $tmp 'child.ps1'
++        $source = (Join-Path $SourceDir 'queue_lanes.ps1').Replace("'","''")
++        $childText = @"
++`$LaneDir = '$($shared.Replace("'","''"))'
++. '$source'
++function Get-ReviewTime { [long][IO.File]::ReadAllText('$($clockFile.Replace("'","''"))') }
++function Invoke-RestMethod { throw 'НЕОЧІКУВАНИЙ ЗАПИТ' }
++if ((Get-AutoReviewState 'автоперевірка-999-$head') -ne 'REVIEW_API') { exit 1 }
++if (([IO.File]::ReadAllText((Join-Path `$LaneDir 'review-api.json')) | ConvertFrom-Json).calls.Count -ne 30) { exit 2 }
++"@
++        [IO.File]::WriteAllText($child,$childText,(New-Object Text.UTF8Encoding($true)))
++        & (Get-Process -Id $PID).Path -NoProfile -ExecutionPolicy Bypass -File $child
++        Check 'спільний бюджет зберігається в новому процесі' ($LASTEXITCODE -eq 0)
++        $script:Clock += 3601
++        Check 'після рухомої години свіжий PR перевіряється' ((Get-AutoReviewState "автоперевірка-999-$head") -eq 'LIVE' -and $script:ApiCalls -eq 31)
++    }
++    # Відмова вже взятої позначки: реальний Invoke-Task у кожній смузі, не лише чиста функція API.
++    foreach ($lane in @('codex','agy','claude')) {
++        # Функції Invoke-Task завантажуються знову, IO та виклики моделей лишаються підмінами стенда.
++        $name = if ($lane -eq 'claude') {'claude_run.ps1'} else {'gemini_run.ps1'}
++        # AST бере саме поточне тіло функції з перевірюваного джерела, зберігаючи ізоляцію стенда.
++        $tokens=$null; $errors=$null
++        $ast = [Management.Automation.Language.Parser]::ParseFile((Join-Path $SourceDir $name),[ref]$tokens,[ref]$errors)
++        $fn = $ast.Find({param($node) $node -is [Management.Automation.Language.FunctionDefinitionAst] -and $node.Name -eq 'Invoke-Task'},$false)
++        . ([scriptblock]::Create($fn.Extent.Text))
++        foreach ($errorText in @('HTTP 403','HTTP 429','мережевий збій')) {
++            $LaneDir = Join-Path $tmp ("error-$lane-" + [guid]::NewGuid().ToString('N'))
++            [void][IO.Directory]::CreateDirectory($LaneDir)
++            $script:Clock = [DateTimeOffset]::UtcNow.ToUnixTimeSeconds()
++            $script:ApiError = $errorText
++            $m = ConvertTo-Marker ("refs/remotes/origin/gemini-queue/автоперевірка-777-$head/$model/1`t$head`t$script:Clock")
++            if ($lane -eq 'claude') { $m = Add-ClaudeFields $m }
++            $sp = Get-StatePath (Get-MarkerKey $m)
++            Write-FileAtomic $sp ('WAIT {"until":0,"retakes":5}')
++            $id = '20261028-060000-abcdefabcdef'; $dir = Join-Path $WorkDir "runs/$id"
++            [void][IO.Directory]::CreateDirectory($dir)
++            [void](New-Claim $m $id)
++            $job = @{id=$id;dir=$dir;slot='стенд-1';head=('c'*40);sel=@{engine=$lane;model=$model;emodel='стенд';effort='high';qknown=$false;qleft=0;qgroup=''}}
++            $priorModels = $script:Models
++            $null = Invoke-Task $m $job
++            $st = Get-MarkerState $m
++            $ok = $st.Kind -eq 'WAIT' -and (Get-Retakes $sp) -eq 5 -and $script:Models -eq $priorModels
++            if ($MeasurePhase -eq 'ПІСЛЯ') { Check "$lane $errorText : WAIT, retakes=5, без моделі" $ok }
++            else { if (-not $ok) { $script:Burned++ } }
++            if ($MeasurePhase -eq 'ПІСЛЯ') {
++                if ($lane -ne 'claude' -and $st.Kind -eq 'WAIT') { Check "$lane : збережено голову продовження" ($st.Wait.head -eq ('c'*40)) }
++                $script:ApiError = ''; $script:Clock += 121
++                $null = Invoke-Task $m $job
++                Check "$lane $errorText : та сама спроба запускається після відновлення" ($script:Models -eq ($priorModels+1))
++            }
++        }
++    }
++    "$MeasurePhase спалених спроб через відмови API=$script:Burned"
++    if ($MeasurePhase -eq 'ПІСЛЯ') { Check 'відмови API не спалюють спроби' ($script:Burned -eq 0) }
++} catch { "✗ виняток стенда: $($_.Exception.Message) $($_.ScriptStackTrace)"; $failures++ }
++finally {
++    if ((Split-Path -Parent $tmp) -eq [IO.Path]::GetTempPath().TrimEnd('\','/') -and (Split-Path -Leaf $tmp) -cmatch '^review-budget-[0-9a-f]{32}$') { Remove-Item -LiteralPath $tmp -Recurse -Force }
++}
++if ($failures) { exit 1 }
 diff --git a/аудит/адаптери/gemini/перевірка/сценарії_живих_pr.ps1 b/аудит/адаптери/gemini/перевірка/сценарії_живих_pr.ps1
 new file mode 100644
-index 000000000..9130aa567
+index 0000000000000000000000000000000000000000..bc0e78a1a36fbbb449715572f9f19276a1b85732
 --- /dev/null
 +++ b/аудит/адаптери/gemini/перевірка/сценарії_живих_pr.ps1
-@@ -0,0 +1,139 @@
+@@ -0,0 +1,148 @@
 +﻿#Requires -Version 5.1
 +param([string]$SourceDir = (Split-Path -Parent $PSScriptRoot), [Alias('Phase')][ValidateSet('ДО','ПІСЛЯ')][string]$MeasurePhase = 'ПІСЛЯ')
 +$ErrorActionPreference = 'Stop'
@@ -367,14 +552,14 @@ index 000000000..9130aa567
 +        Check "$MeasurePhase $lane : давній PR із сьогоднішнім коментарем" ((@($refs | Where-Object { $_ -match 'автоперевірка-3-' }).Count -eq 0) -eq ($MeasurePhase -eq 'ПІСЛЯ'))
 +        $pubWork = $WorkDir
 +        if ($lane -eq 'claude') {
-+            . (Join-Path $SourceDir 'claude_run.ps1') -WorkDir "$case/claude" -RepoDir $seed -OutboxDir "$case/lines" -NoStatus
++            . (Join-Path $SourceDir 'claude_run.ps1') -WorkDir "$case/claude" -RepoDir $seed -OutboxDir "$case/lines" -LaneDir "$case/lanes" -NoStatus
 +        } else {
-+            . (Join-Path $SourceDir 'gemini_run.ps1') -RunsDir "$case/runs" -RepoDir $seed -OutDir "$case/out" -EnableCodex
++            . (Join-Path $SourceDir 'gemini_run.ps1') -RunsDir "$case/runs" -RepoDir $seed -OutDir "$case/out" -LaneDir "$case/lanes" -EnableCodex
 +            $script:Lanes = @($lane)
 +        }
 +        $script:StateDir = Join-Path $case 'state'; $script:SlotDir = Join-Path $case 'slots'
 +        $script:NoHooks = Join-Path $case 'no-hooks'; $script:Limits = @{slots=@{codex=4;agy=4;claude=4}}
-+        foreach ($d in @($script:StateDir,$script:SlotDir,$RunsDir,$OutDir)) { if ($d) { [void][IO.Directory]::CreateDirectory($d) } }
++        foreach ($d in @($script:StateDir,$script:SlotDir,$RunsDir,$OutDir,$LaneDir)) { if ($d) { [void][IO.Directory]::CreateDirectory($d) } }
 +        [void](Invoke-Git @('fetch','-q','origin','+refs/heads/main:refs/remotes/origin/main','+refs/heads/gemini-queue/*:refs/remotes/origin/gemini-queue/*'))
 +        $script:Jobs = New-Object Collections.ArrayList
 +        $script:ApiFail = $false
@@ -442,9 +627,18 @@ index 000000000..9130aa567
 +            [void](Invoke-Git @('fetch','-q','origin','+refs/heads/gemini-queue/*:refs/remotes/origin/gemini-queue/*'))
 +            $script:Cases['6'] = Pull 6 'claude/після-збою' $head
 +            $script:ApiFail = $true; $null = Start-Markers $workers
-+            Check "$lane : збій API лишає нову позначку, без виклику моделі" ($script:Jobs.Count -eq 0 -and (Get-MarkerState (@(Get-Markers | Where-Object { $_.Slug -eq $slug })[0])).Kind -eq 'NEW')
-+            $script:ApiFail = $false; $null = Start-Markers $workers
-+            Check "$lane : після відновлення API та сама позначка береться" ($script:Jobs.Count -eq 1)
++            $m = @(Get-Markers | Where-Object { $_.Slug -eq $slug })[0]
++            if ($lane -eq 'claude') { $m = Add-ClaudeFields $m }
++            $job = $script:Jobs[0]; $priorModels = $script:Models
++            $null = Invoke-Task $m $job
++            Check "$lane : збій API повертає позначку в WAIT, без моделі" ((Get-MarkerState $m).Kind -eq 'WAIT' -and $script:Models -eq $priorModels -and (Get-Retakes (Get-StatePath (Get-MarkerKey $m))) -eq 0)
++            $script:ApiFail = $false
++            # Пересуваємо лише годинник API; черга й бюджет зберігаються, реального чекання нема.
++            function Get-ReviewTime { [DateTimeOffset]::UtcNow.ToUnixTimeSeconds() + 121 }
++            $null = Invoke-Task $m $job
++            Check "$lane : після відновлення API та сама позначка запускає модель" ($script:Models -eq ($priorModels + 1))
++            Remove-Item Function:Get-ReviewTime
++            . (Join-Path $SourceDir 'queue_lanes.ps1')
 +        }
 +    }
 +} catch { "✗ виняток стенда: $($_.Exception.Message) $($_.ScriptStackTrace)"; $failures++ }
@@ -454,16 +648,17 @@ index 000000000..9130aa567
 +if ($failures) { exit 1 }
 diff --git a/аудит/адаптери/gemini/перевірка/сценарії_живих_pr.sh b/аудит/адаптери/gemini/перевірка/сценарії_живих_pr.sh
 new file mode 100644
-index 000000000..fa294eb5d
+index 0000000000000000000000000000000000000000..d247c6ae59278a566543062b58b73d6a233237fb
 --- /dev/null
 +++ b/аудит/адаптери/gemini/перевірка/сценарії_живих_pr.sh
-@@ -0,0 +1,4 @@
+@@ -0,0 +1,5 @@
 +#!/usr/bin/env bash
 +set -euo pipefail
 +H=$(cd "$(dirname "$0")" && pwd); . "$H/середовище.sh"
 +"${PWSH:-pwsh}" -NoProfile -File "$(wp "$H/сценарії_живих_pr.ps1")"
++"${PWSH:-pwsh}" -NoProfile -File "$(wp "$H/бюджет_живих_pr.ps1")" -SourceDir "$(wp "$H/..")"
 diff --git a/аудит/адаптери/gemini/перевірка/сценарії_здоровя.ps1 b/аудит/адаптери/gemini/перевірка/сценарії_здоровя.ps1
-index 3db45affe..8987b6af4 100644
+index 3db45affe01a6951f7c6dfcf7a93f0a5ab9cc01e..8987b6af4286863773ab47b281d33ccdc052681b 100644
 --- a/аудит/адаптери/gemini/перевірка/сценарії_здоровя.ps1
 +++ b/аудит/адаптери/gemini/перевірка/сценарії_здоровя.ps1
 @@ -29,6 +29,7 @@ function Publish([string]$Case, [int]$Limit = 4, [int]$Fallback = 2) {
@@ -475,7 +670,7 @@ index 3db45affe..8987b6af4 100644
      function Test-OwnerUser { $true }
      $code = Main
 diff --git a/аудит/адаптери/gemini/перевірка/сценарії_ланцюга.ps1 b/аудит/адаптери/gemini/перевірка/сценарії_ланцюга.ps1
-index 75c5f0b0c..4ac4faf42 100644
+index 75c5f0b0c4ccbca060a40af47debfa4c479eaf22..4ac4faf42a826b6886407436ef41203b4a29b677 100644
 --- a/аудит/адаптери/gemini/перевірка/сценарії_ланцюга.ps1
 +++ b/аудит/адаптери/gemini/перевірка/сценарії_ланцюга.ps1
 @@ -29,10 +29,14 @@ try {

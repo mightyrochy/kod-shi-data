@@ -12,7 +12,7 @@ import tempfile
 def main():
     """Виконує батарею або повтор обраних сценаріїв без втрати первинних доказів."""
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('mode', choices=['проби', 'стенди'])
+    parser.add_argument('mode', choices=['проби', 'стенди', 'бюджет'])
     parser.add_argument('--дерево', type=Path, required=True, dest='work')
     parser.add_argument('--база', type=Path, dest='base')
     parser.add_argument('--лише', nargs='+', dest='only')
@@ -48,13 +48,15 @@ def main():
         if result.returncode:
             print(output[-3000:], flush=True)
 
-    if args.mode == 'проби':
+    if args.mode in ('проби', 'бюджет'):
         for phase, source in [('ДО', args.base or root), ('ПІСЛЯ', work)]:
             quote = lambda value: "'" + str(value).replace("'", "''") + "'"
+            probe = 'бюджет.ps1' if args.mode == 'бюджет' else 'проба.ps1'
             command = ("[Console]::OutputEncoding = New-Object Text.UTF8Encoding($false); & "
-                       + quote(out / 'проба.ps1') + ' -SourceDir '
+                       + quote(out / probe) + ' -SourceDir '
                        + quote(source / 'аудит/адаптери/gemini') + ' -Phase ' + quote(phase))
-            run(phase, ['powershell', '-NoProfile', '-ExecutionPolicy', 'Bypass', '-Command', command])
+            name = 'бюджет-' + phase if args.mode == 'бюджет' else phase
+            run(name, ['powershell', '-NoProfile', '-ExecutionPolicy', 'Bypass', '-Command', command])
     else:
         temp = Path(tempfile.gettempdir()) / 'live-pr-stend'
         temp.mkdir(exist_ok=True)

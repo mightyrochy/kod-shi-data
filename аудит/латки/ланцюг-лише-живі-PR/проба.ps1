@@ -52,14 +52,14 @@ try {
         Check "$MeasurePhase $lane : давній PR із сьогоднішнім коментарем" ((@($refs | Where-Object { $_ -match 'автоперевірка-3-' }).Count -eq 0) -eq ($MeasurePhase -eq 'ПІСЛЯ'))
         $pubWork = $WorkDir
         if ($lane -eq 'claude') {
-            . (Join-Path $SourceDir 'claude_run.ps1') -WorkDir "$case/claude" -RepoDir $seed -OutboxDir "$case/lines" -NoStatus
+            . (Join-Path $SourceDir 'claude_run.ps1') -WorkDir "$case/claude" -RepoDir $seed -OutboxDir "$case/lines" -LaneDir "$case/lanes" -NoStatus
         } else {
-            . (Join-Path $SourceDir 'gemini_run.ps1') -RunsDir "$case/runs" -RepoDir $seed -OutDir "$case/out" -EnableCodex
+            . (Join-Path $SourceDir 'gemini_run.ps1') -RunsDir "$case/runs" -RepoDir $seed -OutDir "$case/out" -LaneDir "$case/lanes" -EnableCodex
             $script:Lanes = @($lane)
         }
         $script:StateDir = Join-Path $case 'state'; $script:SlotDir = Join-Path $case 'slots'
         $script:NoHooks = Join-Path $case 'no-hooks'; $script:Limits = @{slots=@{codex=4;agy=4;claude=4}}
-        foreach ($d in @($script:StateDir,$script:SlotDir,$RunsDir,$OutDir)) { if ($d) { [void][IO.Directory]::CreateDirectory($d) } }
+        foreach ($d in @($script:StateDir,$script:SlotDir,$RunsDir,$OutDir,$LaneDir)) { if ($d) { [void][IO.Directory]::CreateDirectory($d) } }
         [void](Invoke-Git @('fetch','-q','origin','+refs/heads/main:refs/remotes/origin/main','+refs/heads/gemini-queue/*:refs/remotes/origin/gemini-queue/*'))
         $script:Jobs = New-Object Collections.ArrayList
         $script:ApiFail = $false
@@ -127,9 +127,18 @@ try {
             [void](Invoke-Git @('fetch','-q','origin','+refs/heads/gemini-queue/*:refs/remotes/origin/gemini-queue/*'))
             $script:Cases['6'] = Pull 6 'claude/після-збою' $head
             $script:ApiFail = $true; $null = Start-Markers $workers
-            Check "$lane : збій API лишає нову позначку, без виклику моделі" ($script:Jobs.Count -eq 0 -and (Get-MarkerState (@(Get-Markers | Where-Object { $_.Slug -eq $slug })[0])).Kind -eq 'NEW')
-            $script:ApiFail = $false; $null = Start-Markers $workers
-            Check "$lane : після відновлення API та сама позначка береться" ($script:Jobs.Count -eq 1)
+            $m = @(Get-Markers | Where-Object { $_.Slug -eq $slug })[0]
+            if ($lane -eq 'claude') { $m = Add-ClaudeFields $m }
+            $job = $script:Jobs[0]; $priorModels = $script:Models
+            $null = Invoke-Task $m $job
+            Check "$lane : збій API повертає позначку в WAIT, без моделі" ((Get-MarkerState $m).Kind -eq 'WAIT' -and $script:Models -eq $priorModels -and (Get-Retakes (Get-StatePath (Get-MarkerKey $m))) -eq 0)
+            $script:ApiFail = $false
+            # Пересуваємо лише годинник API; черга й бюджет зберігаються, реального чекання нема.
+            function Get-ReviewTime { [DateTimeOffset]::UtcNow.ToUnixTimeSeconds() + 121 }
+            $null = Invoke-Task $m $job
+            Check "$lane : після відновлення API та сама позначка запускає модель" ($script:Models -eq ($priorModels + 1))
+            Remove-Item Function:Get-ReviewTime
+            . (Join-Path $SourceDir 'queue_lanes.ps1')
         }
     }
 } catch { "✗ виняток стенда: $($_.Exception.Message) $($_.ScriptStackTrace)"; $failures++ }
