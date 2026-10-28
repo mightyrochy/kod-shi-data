@@ -1,0 +1,87 @@
+["C:\\Program Files\\Git\\bin\\bash.exe", "-lc", "bash 'аудит/адаптери/gemini/перевірка/сценарії_доставки.sh'"]
+=== Д1 квота групи моделі 0 %: наряд не береться, 0 ходів, рядок із групою й часом скидання
+warning: in the working copy of 'аудит/СТАН.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'аудит/наряди/М.2-проба-обгортки.md', LF will be replaced by CRLF the next time Git touches it
+  → GEMINI ОБГОРТКА: ЗАБЛОКОВАНО gemini/М.2-проба-обгортки QUOTA0_GEMINI35FLASH_M137
+  → GEMINI ОБГОРТКА: ПУЛИ V=1.1.11 G=GEMINI35FLASH:0:137 G=GEMINI31PRO:0:137 G=CLAUDEGPT:0:137 M=gemini-3.8-flash-high,claude-opus-5-5-high
+  ✓ прогонів agy (ходів) — 0
+  ✓ гілки gemini/ нема
+  ✓ рядок ЗАБЛОКОВАНО QUOTA0_<група>_M<хв>
+  ✓ рівно один рядок
+  ✓ повторний прохід — без нового наряду й рядка
+=== Д2 нуль у групах Pro і Claude & GPT не блокує Flash; залишок квоти — у журналі
+warning: in the working copy of 'аудит/СТАН.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'аудит/наряди/М.2-проба-обгортки.md', LF will be replaced by CRLF the next time Git touches it
+  → GEMINI ОБГОРТКА: ГОТОВО gemini/М.2-проба-обгортки 9c085392b8340f4c5de59bc7779eae76ea9f498a КВОТА GEMINI35FLASH 34 МОДЕЛЬ gemini-3.8-flash-high
+  → GEMINI ОБГОРТКА: ПУЛИ V=1.1.11 G=GEMINI35FLASH:34:137 G=GEMINI31PRO:0:137 G=CLAUDEGPT:0:137 M=gemini-3.8-flash-high,claude-opus-5-5-high
+  ✓ наряд пройшов: ГОТОВО gemini/<наряд> <SHA40>
+  ✓ залишок 34 % у publish.log
+=== Д3 інші формати /usage (usedPercent, конверт response) розбираються; нерозпізнане й збій agy — наряд іде
+warning: in the working copy of 'аудит/СТАН.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'аудит/наряди/М.2-проба-обгортки.md', LF will be replaced by CRLF the next time Git touches it
+  ✓ used: формат розібрано (залишок 34 %), Flash не заблоковано
+warning: in the working copy of 'аудит/СТАН.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'аудит/наряди/М.2-проба-обгортки.md', LF will be replaced by CRLF the next time Git touches it
+  ✓ envelope: формат розібрано (залишок 34 %), Flash не заблоковано
+warning: in the working copy of 'аудит/СТАН.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'аудит/наряди/М.2-проба-обгортки.md', LF will be replaced by CRLF the next time Git touches it
+  ✓ all0 -> QUOTA0
+warning: in the working copy of 'аудит/СТАН.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'аудит/наряди/М.2-проба-обгортки.md', LF will be replaced by CRLF the next time Git touches it
+  ✓ garbage -> наряд пройшов (ГОТОВО)
+warning: in the working copy of 'аудит/СТАН.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'аудит/наряди/М.2-проба-обгортки.md', LF will be replaced by CRLF the next time Git touches it
+  ✓ fail -> наряд пройшов (ГОТОВО)
+  ✓ garbage: вивід /usage в wrapper.log для власника
+=== Д4 429 посеред прогону — позначка чекає скидання групи (М.9-Е), рядок QUOTA0 одним рядком
+warning: in the working copy of 'аудит/СТАН.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'аудит/наряди/М.2-проба-обгортки.md', LF will be replaced by CRLF the next time Git touches it
+  → GEMINI ОБГОРТКА: ЗАБЛОКОВАНО gemini/М.2-проба-обгортки QUOTA0_GEMINI35FLASH_M137
+  → GEMINI ОБГОРТКА: ПУЛИ V=1.1.11 G=GEMINI35FLASH:34:137 G=GEMINI31PRO:0:137 G=CLAUDEGPT:0:137 M=gemini-3.8-flash-high,claude-opus-5-5-high
+  ✓ рядок ЗАБЛОКОВАНО gemini/<наряд> QUOTA0_GEMINI35FLASH_M<хв>, один
+  ✓ позначка в чеканні (WAIT), спроба не спалена
+=== Д5 шаблони теки вихідних: лише повний збіг; решта — карантин, у рядку лише код
+warning: in the working copy of 'аудит/СТАН.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'аудит/наряди/М.2-проба-обгортки.md', LF will be replaced by CRLF the next time Git touches it
+  → GEMINI ОБГОРТКА: ГОТОВО gemini/М.9-А-доставка aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+  → GEMINI ОБГОРТКА: ГОТОВО gemini/М.9-А-доставка aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa КВОТА GEMINI35FLASH 0
+  → GEMINI ОБГОРТКА: ЗАБЛОКОВАНО claude/М.9-А-доставка QUOTA0_FLASH_M10
+  → СПОСТЕРІГАЧ КОМЕНТАР #963 4321 chatgpt-codex-connector[bot] змінено
+  → СПОСТЕРІГАЧ CI #1716 aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa timed_out
+  → СПОСТЕРІГАЧ ПЕРЕНЕСЕНО М.9-Б codex/М.9-Б aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa #1730
+  → СПОСТЕРІГАЧ НЕ ПЕРЕНЕСЕНО М.9-Б APPLY_FAILED
+  → GEMINI ОБГОРТКА: КАРАНТИН ВИХІДНИХ 20261024-120008-aaaaaaaaaa08 NO_TEMPLATE — рядок не переслано (те
+  → GEMINI ОБГОРТКА: КАРАНТИН ВИХІДНИХ 20261024-120009-aaaaaaaaaa09 NO_TEMPLATE — рядок не переслано (те
+  → GEMINI ОБГОРТКА: КАРАНТИН ВИХІДНИХ 20261024-120010-aaaaaaaaaa10 NO_TEMPLATE — рядок не переслано (те
+  ✓ переслано рівно 7 шаблонних рядків і не більше 3 повідомлень про карантин
+  ✓ у повідомленнях про карантин — лише код, ні слова з файлів
+  ✓ карантин: 16 файлів (11 не за шаблоном + 5 за форматом) лежать у quarantine/
+  ✓ незавершені й чужі імена не чіпано
+  ✓ прийняті — у done/, у теці лишились лише тимчасові
+  ✓ другий прохід нічого не надіслав повторно
+=== Д6 повтор і стан «надіслано / спроби»: збій claude -> спроби, далі доставлено один раз
+warning: in the working copy of 'аудит/СТАН.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'аудит/наряди/М.2-проба-обгортки.md', LF will be replaced by CRLF the next time Git touches it
+{"line":"СПОСТЕРІГАЧ CI #5 bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb success","sent":false,"attempts":3,"first_failure_utc":"2026-10-28T04:25:55.9842024Z","fallback_attempts":0,"channel":"","exhausted":false,"cloud_auth":false}
+  ✓ після збою: sent=false, attempts=3 (SendRetries)
+{"line":"СПОСТЕРІГАЧ CI #5 bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb success","sent":true,"attempts":4,"first_failure_utc":"2026-10-28T04:25:55.9842024Z","fallback_attempts":0,"channel":"claude","exhausted":false,"cloud_auth":false}
+  ✓ після відновлення: sent=true, attempts=4
+  ✓ доставлено рівно раз
+=== Д6б межа спроб: MaxSendAttempts=4 — тиша після чотирьох
+warning: in the working copy of 'аудит/СТАН.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'аудит/наряди/М.2-проба-обгортки.md', LF will be replaced by CRLF the next time Git touches it
+  ✓ claude викликано рівно 4 рази
+=== Д7 кінець прогону -> ok:true за ≤ 2 хв (від готового стану до claude)
+warning: in the working copy of 'аудит/СТАН.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'аудит/наряди/М.2-проба-обгортки.md', LF will be replaced by CRLF the next time Git touches it
+  ✓ доставлено за 2 с (межа 120)
+  ✓ рядок кінця пройшов теку вихідних: файл у done/
+=== Д8 стенд одного прогону: рядок кінця перед сном/вимкненням сесії — вже в теці, сесії жити не треба
+warning: in the working copy of 'аудит/СТАН.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'аудит/наряди/М.2-проба-обгортки.md', LF will be replaced by CRLF the next time Git touches it
+  ✓ повторний запуск тихий
+=== Д9 SlugPattern закінчується на \z, а не $: slug із кінцевим \n відкидається в обох файлах
+  ✓ queue_lanes: 'x\n' -> False, 'x' -> True (дістали: False True)
+  ✓ gemini_publish: 'x\n' -> False, 'x' -> True (дістали: False True)
+
+ВСЕ ✓
