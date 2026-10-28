@@ -193,7 +193,7 @@ function Find-CodexExe {
 
 # Шлях до виконуваного рушія; нема в PATH — $null (рушій недоступний), не збій обгортки.
 function Find-EngineExe([string]$Name) {
-    try { Resolve-Exe $Name } catch { Write-Log "рушій: $($_.Exception.Message)"; $null }
+    try { Resolve-Exe $Name } catch { Add-HealthAlert 'ENGINE' $(if ($Name -match 'codex') { 'CODEX' } else { 'AGY' }); Write-Log "рушій: $($_.Exception.Message)"; $null }
 }
 
 # --- квота --------------------------------------------------------------------------------------------------------
@@ -341,12 +341,28 @@ function ConvertFrom-UsageTable([string]$Text) {
     ,@($rows)
 }
 
-# Вивід /usage -> вікна квоти (Name, Window, Left, Reset); Known=$false — не розпізнано.
+# JSON /usage (command.data.groups[].buckets[]) -> вікна квоти (Name, Window, Left, Reset); Known=$false — не розпізнано.
 function ConvertFrom-UsageText([string]$Text, [long]$ReadUnix) {
     $script:UsageReadTime = [DateTimeOffset]::FromUnixTimeSeconds($ReadUnix)
     $u = [pscustomobject]@{ Known = $false; Windows = @(); Text = ''; Read = $script:UsageReadTime }
     $text = $Text.Trim()
     if (-not $text) { return $u }
+    $doc = $null
+    try { $json = $text | ConvertFrom-Json } catch { $json = $null }
+    $command = Get-JsonProp $json 'command'
+    if ((Get-JsonProp $command 'name') -eq 'usage') {
+        $acc = New-Object System.Collections.ArrayList
+        foreach ($g in @(Get-JsonProp (Get-JsonProp $command 'data') 'groups')) {
+            foreach ($b in @(Get-JsonProp $g 'buckets')) {
+                $fraction = ConvertTo-Number (Get-JsonProp $b 'remaining_fraction')
+                if ($null -eq $fraction -or $fraction -lt 0 -or $fraction -gt 1) { continue }
+                Get-UsageGroups ([pscustomobject]@{ name = (Get-JsonProp $g 'name'); window = (Get-JsonProp $b 'window')
+                    remaining_fraction = $fraction; reset_time = (Get-JsonProp $b 'reset_time') }) $acc
+            }
+        }
+        $u.Known = ($acc.Count -gt 0); $u.Windows = @($acc)
+        return $u
+    }
     $doc = ConvertFrom-UsageTable $text
     if ($null -eq $doc -and $text.Contains("`t")) {
         # Табличний вивід без розпізнаного заголовка: колонок не знаємо — квота невідома, не вгадуємо.
@@ -393,8 +409,8 @@ function Update-UsageCache {
         if ($null -eq $v -or $v -lt $script:UsageMinVersion) {
             Write-Log "квота: agy $(if ($v) { $v } else { '?' }) < $($script:UsageMinVersion) — /usage не кличу"
         } else {
-            $r = Invoke-Native $script:Agy @('-p', '/usage') $RepoDir $QuotaMinutes
-            if ($r.TimedOut -or $r.Code -ne 0) { Write-Log "квота: agy /usage -> $($r.Code)" } else { $c.text = $r.Out }
+            $r = Invoke-Native $script:Agy @('-p', '/usage', '--output-format', 'json') $RepoDir $QuotaMinutes
+            if ($r.TimedOut -or $r.Code -ne 0) { [void](Get-ErrorCode ($r.Out + $r.Err)); Write-Log "квота: agy /usage -> $($r.Code)" } else { $c.text = $r.Out }
         }
         $c.models = @(Get-AgyModels)
     } catch { Write-Log "квота: $($_.Exception.Message)" }
@@ -628,7 +644,9 @@ function Get-ErrorCode([string]$Text, [string]$EngineName = 'agy', [string]$Effo
         if ($Text -match 'reasoning[._ -]?effort' -or ($badValue -and ($namesEffort -or $listsEfforts))) { return 'EFFORT_INVALID' }
     }
     if ($Text -match '429|RESOURCE_EXHAUSTED|[Qq]uota|[Uu]sage limit|[Rr]ate limit') { return 'QUOTA' }
-    if ($Text -match 'authentication required|[Nn]ot logged in|[Pp]lease (?:log ?in|sign in)') { return 'AUTH' }
+    if ($Text -match 'authentication required|[Nn]ot logged in|[Pp]lease (?:log ?in|sign in)|authentication_error|\b401\b') {
+        Add-HealthAlert 'AUTH' $EngineName.ToUpperInvariant(); return 'AUTH'
+    }
     'AGY_ERROR'
 }
 
@@ -667,7 +685,12 @@ function Wait-StreamResult($Run, [datetime]$Deadline) {
 function Start-StreamRun($M, $Run) {
     $psi = New-StartInfo $script:Agy (Get-AgyArgs $M $Run.Conversation @()) $RepoDir
     $psi.RedirectStandardInput = $true
-    $Run.Proc = [System.Diagnostics.Process]::Start($psi)
+    # .NET Framework створює StandardInput з AutoFlush: BOM пишеться вже під час Start.
+    $stdinEncoding = [Console]::InputEncoding
+    try {
+        [Console]::InputEncoding = $script:Utf8
+        $Run.Proc = [System.Diagnostics.Process]::Start($psi)
+    } finally { [Console]::InputEncoding = $stdinEncoding }
     $Run.Stdin = New-Object System.IO.StreamWriter($Run.Proc.StandardInput.BaseStream, $script:Utf8)
     $Run.Stderr = $Run.Proc.StandardError.ReadToEndAsync()
     $Run.Pending = $null
@@ -913,10 +936,10 @@ function Invoke-Task($M, $Job) {
     try {
         $main = Get-RefSha 'refs/remotes/origin/main'
         $anc = Invoke-Git @('merge-base', '--is-ancestor', $M.Sha, $main) -AllowFail
-        $taskPath = $script:TaskDir + $M.Slug + '.md'
+        $taskPath = Get-AutoTaskPath $M.Slug
         if ($anc.Code -ne 0) { $status.code = 'NOT_ON_MAIN'; return }
         if ((Invoke-Git @('cat-file', '-e', "$($M.Sha):$taskPath") -AllowFail).Code -ne 0) { $status.code = 'NO_TASK_FILE'; return }
-        $taskText = (Invoke-Git @('cat-file', 'blob', "$($M.Sha):$taskPath")).Out
+        $taskText = Add-AutoTaskContext $M.Slug ((Invoke-Git @('cat-file', 'blob', "$($M.Sha):$taskPath")).Out)
         $js = $Job.sel
         $eng = [pscustomobject]@{ Name = [string]$js.engine; Model = [string]$js.emodel; Effort = [string]$js.effort }
         $exe = $(if ($eng.Name -eq 'codex') { Find-CodexExe } else { Find-EngineExe $AgyExe })
@@ -988,6 +1011,7 @@ function Enter-RunQuotaWait($M, $Sel, $Status, $Res, [string]$Dir) {
 }
 
 function Write-IsolationStatus([string]$Check) {
+    Add-HealthAlert 'ISOLATION' $Check
     $key = 'isolation ' + $Check + ' ' + (Get-Date -Format 'yyyyMMdd')
     $state = Get-StatePath $key
     if (Test-Path -LiteralPath $state) { return }
@@ -1085,7 +1109,7 @@ function Start-Markers($Workers) {
 # heartbeat.json для стану ноутбука (claude_run.ps1 читає, перевіряючи кожне поле): смуги й слоти, квота груп моделей
 # (вікна, % залишку, скидання UTC, коли зчитано), остання відмова Codex, позначки в чеканні квоти. Лише назви й числа.
 function Write-Heartbeat([string]$Iso) {
-    $hb = [ordered]@{ time = (Get-Date).ToString('s'); isolation = $(if ($Iso) { $Iso } else { 'OK' }) }
+    $hb = [ordered]@{ read_utc = (Get-UtcStamp (Get-Date)); time = (Get-Date).ToString('s'); isolation = $(if ($Iso) { $Iso } else { 'OK' }) }
     if (-not $Iso -and $null -ne $script:Limits) {
         $lanes = @(); $first = $null
         foreach ($ln in $script:Lanes) {
@@ -1144,7 +1168,7 @@ function Invoke-Worker {
         Invoke-Task $M $job
         0
     } catch {
-        Write-Log "процес наряду $($job.name): $($_.Exception.Message)"
+        Add-HealthException $_.Exception; Write-Log "процес наряду $($job.name): $($_.Exception.Message)"
         1
     } finally {
         Remove-Item -LiteralPath $info -Force -ErrorAction SilentlyContinue
@@ -1162,7 +1186,10 @@ function Main {
     $script:SlotDir = Join-Path $RunsDir 'slots'
     foreach ($d in @($RunsDir, $script:StateDir, $script:SlotDir, $OutDir, $LaneDir)) { [void](New-Item -ItemType Directory -Force -Path $d) }
     $script:NoHooks = Join-Path ([System.IO.Path]::GetTempPath()) ('no-hooks-' + [guid]::NewGuid().ToString('N'))
+    $script:HealthAlertDir = Join-Path $OutDir 'alerts'
     if ($WorkerFile) { return (Invoke-Worker) }
+    $script:CurrentIsolation = ''
+    $script:HeartbeatAction = { Write-Heartbeat $script:CurrentIsolation }
     $lockFile = Open-Lock (Join-Path $RunsDir 'lock')
     if ($null -eq $lockFile) { return 0 }
     try {
@@ -1170,6 +1197,7 @@ function Main {
         $first = $true
         while ($true) {
             $iso = Test-Isolation
+            $script:CurrentIsolation = $iso
             if ($iso) {
                 Write-Log "ізоляція: $iso — нових прогонів нема"; Write-IsolationStatus $iso; Write-Heartbeat $iso
                 if (@($workers | Where-Object { -not $_.Proc.HasExited }).Count -eq 0) { return 0 }
@@ -1194,7 +1222,7 @@ function Main {
                 $script:Agy = Find-EngineExe $AgyExe
                 if ($script:Agy) { [void](Read-Usage) }
                 $started = Start-Markers $workers
-            } catch { Write-Log "прохід: $($_.Exception.Message)" }
+            } catch { Add-HealthException $_.Exception; Write-Log "прохід: $($_.Exception.Message)" }
             $first = $false
             foreach ($w in @($workers | Where-Object { $_.Proc.HasExited })) { $workers.Remove($w) }
             Write-Heartbeat ''
@@ -1203,7 +1231,7 @@ function Main {
         }
         0
     } catch {
-        Write-Log "збій обгортки: $($_.Exception.Message)"
+        Add-HealthException $_.Exception; Write-Log "збій обгортки: $($_.Exception.Message)"
         1
     } finally {
         $lockFile.Dispose()

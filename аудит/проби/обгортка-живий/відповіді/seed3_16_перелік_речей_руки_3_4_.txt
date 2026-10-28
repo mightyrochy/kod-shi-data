@@ -1,0 +1,37 @@
+── ПРОМПТ (2562 симв.) ──
+{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.", "A slot the description says is not needed is not an item: give it worn false. One item carries one thing — of two alternatives list the first; a note in brackets is not an item.", "Slot \"accessory\" is for an item no other slot fits.", "\"is_outfit\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note; then items is empty."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "ITEM_LIST", "answer_schema": {"is_outfit": "yes|no", "items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory", "color_hex": "<#rrggbb or null>", "worn": "<true, or false when the description says the outfit goes without it>"}]}, "input": ["\"description\" — the outfit description"]}, "description": "A crisp white silk blouse, tailored fit with a modest collar and button-front detail, ivory (#FFFFF0), 100% mulberry silk.\nA structured black wool-blend blazer, single-breasted notch lapel with peak shoulders, mid-thigh length, charcoal gray (#36454F), heavy-weight virgin wool.\nHigh-waisted navy wool trousers, straight-leg cut with a subtle pleat at the front, ankle-length hem just grazing the shoe, dark navy (#000080), 100% super-120s worsted wool.\nBlack leather loafers, penny-style strap with polished hardware, sleek almond toe, patent leather finish, smooth calfskin leather.\n\nThis ensemble honors your request for something restrained and classic by choosing timeless silhouettes like the tailored blazer and straight-leg trousers that have remained staples of smart attire for decades. The rich textures of wool and silk paired with a monochromatic palette of ivory, charcoal, and navy create a sophisticated look that will not feel out of place standing in a dense crowd at a rock concert. By keeping the cut clean and avoiding excessive embellishments, the outfit balances the energetic atmosphere of the venue while maintaining your desired sense of understated elegance throughout the evening."}
+
+── ВІДПОВІДЬ (923 симв., 4.0 с, HTTP 200) ──
+{
+  "is_outfit": "yes",
+  "items": [
+    {
+      "name": "silk blouse",
+      "details": "crisp white tailored fit with a modest collar and button-front detail",
+      "slot": "top",
+      "color_hex": "#FFFFF0",
+      "worn": true
+    },
+    {
+      "name": "wool-blend blazer",
+      "details": "structured black single-breasted notch lapel with peak shoulders and mid-thigh length",
+      "slot": "outerwear",
+      "color_hex": "#36454F",
+      "worn": true
+    },
+    {
+      "name": "wool trousers",
+      "details": "high-waisted navy straight-leg cut with a subtle pleat at the front and ankle-length hem",
+      "slot": "bottom",
+      "color_hex": "#000080",
+      "worn": true
+    },
+    {
+      "name": "leather loafers",
+      "details": "black penny-style strap with polished hardware, sleek almond toe and patent leather finish",
+      "slot": "shoes",
+      "color_hex": null,
+      "worn": true
+    }
+  ]
+}

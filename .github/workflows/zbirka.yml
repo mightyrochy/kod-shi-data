@@ -9,6 +9,8 @@ on:
       - 'джерела/**'
       - '!джерела/аудит/ДОСЯЖНІСТЬ.md'
       - 'каталог_повний.xml.gz'
+      - 'index.html'
+      - 'build.txt'
       - '.github/workflows/zbirka.yml'
       - 'аудит/дошка/**'
   workflow_dispatch:
@@ -28,47 +30,54 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 10
     outputs:
-      lyshe_doshka: ${{ steps.zmina.outputs.lyshe_doshka }}
+      produkt: ${{ steps.zmina.outputs.produkt }}
+      pravyla: ${{ steps.zmina.outputs.pravyla }}
     steps:
       - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
         with:
           persist-credentials: false
           fetch-depth: 2
 
-      - name: чи змінилась лише дошка
+      - name: які шляхи змінено
         id: zmina
         env:
           BEFORE: ${{ github.event.before }}
         run: |
-          lyshe=false
+          # Невідомий diff і ручний запуск — повна перевірка, без тихого пропуску.
+          produkt=true
+          pravyla=true
+          znano=false
           if [ "${GITHUB_EVENT_NAME}" = push ] && [ -n "${BEFORE//0/}" ] \
              && git fetch --no-tags --depth=1 origin "${BEFORE}" 2>/dev/null; then
-            zminy=$(git -c core.quotepath=off diff --name-only "${BEFORE}" "${GITHUB_SHA}")
-            if [ -n "${zminy}" ] && ! printf '%s\n' "${zminy}" | grep -qv '^аудит/дошка/'; then
-              lyshe=true
-            fi
+            git -c core.quotepath=off diff --name-only --no-renames -z "${BEFORE}" "${GITHUB_SHA}" > /tmp/zminy
+            znano=true
+          elif [ "${GITHUB_EVENT_NAME}" = pull_request ] && git rev-parse -q --verify HEAD^2 >/dev/null; then
+            git -c core.quotepath=off diff --name-only --no-renames -z HEAD^1 HEAD > /tmp/zminy
+            znano=true
           fi
-          # PR (checkout — злиття з main, HEAD^1 = основа): лише документи (`*.md` поза `джерела/`) — те саме
-          # «легке» значення, що й лише дошка: важкі задачі пропущено умовою задачі (пропущена задача
-          # зараховується як пройдена), формат дошки звіряє наступний крок. Будь-який інший файл — повний шлях.
-          if [ "${GITHUB_EVENT_NAME}" = pull_request ] && git rev-parse -q --verify HEAD^2 >/dev/null; then
-            zminy=$(git -c core.quotepath=off diff --name-only --no-renames HEAD^1 HEAD)
-            if [ -n "${zminy}" ] \
-               && ! printf '%s\n' "${zminy}" | grep -qE '^джерела/' \
-               && ! printf '%s\n' "${zminy}" | grep -qvE '\.md$'; then
-              lyshe=true
-            fi
+          if [ "${znano}" = true ] && [ -s /tmp/zminy ]; then
+            produkt=false
+            pravyla=false
+            while IFS= read -r -d '' shliakh; do
+              case "${shliakh}" in
+                джерела/*|каталог_повний.xml.gz|index.html|build.txt|.github/workflows/zbirka.yml) produkt=true ;;
+              esac
+              case "${shliakh}" in
+                *.md|джерела/правила.py|.github/workflows/zbirka.yml) pravyla=true ;;
+              esac
+            done < /tmp/zminy
           fi
-          echo "lyshe_doshka=${lyshe}" >> "$GITHUB_OUTPUT"
-          echo "лише дошка чи документи: ${lyshe}" >> "$GITHUB_STEP_SUMMARY"
+          echo "produkt=${produkt}" >> "$GITHUB_OUTPUT"
+          echo "pravyla=${pravyla}" >> "$GITHUB_OUTPUT"
+          echo "продукт: ${produkt}; правила й документи: ${pravyla}" >> "$GITHUB_STEP_SUMMARY"
 
       - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5.6.0
-        if: github.event_name == 'pull_request' && steps.zmina.outputs.lyshe_doshka == 'true'
+        if: steps.zmina.outputs.produkt == 'false'
         with:
           python-version: '3.11'
 
-      - name: файли дошки згортаються (документний PR — повна перевірка пропущена)
-        if: github.event_name == 'pull_request' && steps.zmina.outputs.lyshe_doshka == 'true'
+      - name: файли дошки згортаються (легкий шлях)
+        if: steps.zmina.outputs.produkt == 'false'
         run: python3 джерела/прилади/згорнути_дошку.py --лише-перевірити
 
   perevirka:
@@ -76,7 +85,7 @@ jobs:
       contents: read
     name: перевірка джерел
     needs: zminy
-    if: needs.zminy.outputs.lyshe_doshka != 'true'
+    if: needs.zminy.outputs.produkt == 'true'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
@@ -275,7 +284,7 @@ jobs:
       contents: read
     name: розділи й контракти
     needs: zminy
-    if: needs.zminy.outputs.lyshe_doshka != 'true'
+    if: needs.zminy.outputs.produkt == 'true'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
@@ -314,7 +323,7 @@ jobs:
       contents: read
     name: звіт правил (не гейт)
     needs: zminy
-    if: needs.zminy.outputs.lyshe_doshka != 'true'
+    if: needs.zminy.outputs.pravyla == 'true'
     continue-on-error: true
     timeout-minutes: 10
     runs-on: ubuntu-latest
@@ -378,7 +387,7 @@ jobs:
       contents: read
     name: зібрати показ-повний
     needs: [zminy, perevirka, rozdily]
-    if: ${{ !cancelled() && needs.zminy.result == 'success' && (needs.zminy.outputs.lyshe_doshka == 'true' || (needs.perevirka.result == 'success' && needs.rozdily.result == 'success')) }}
+    if: ${{ !cancelled() && needs.zminy.result == 'success' && (needs.zminy.outputs.produkt == 'false' || (needs.perevirka.result == 'success' && needs.rozdily.result == 'success')) }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
@@ -390,26 +399,26 @@ jobs:
           python-version: '3.11'
 
       - name: перевірений показ із перевірки
-        if: needs.zminy.outputs.lyshe_doshka != 'true'
+        if: needs.zminy.outputs.produkt == 'true'
         uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
         with:
           name: pokaz-povnyi-${{ github.sha }}
           path: .
 
       - name: звірка вантажу з джерелами
-        if: needs.zminy.outputs.lyshe_doshka != 'true'
+        if: needs.zminy.outputs.produkt == 'true'
         working-directory: джерела
         run: python3 звірка_вантажу.py
 
       - name: свіжий звіт досяжності з перевірки
-        if: needs.zminy.outputs.lyshe_doshka != 'true'
+        if: needs.zminy.outputs.produkt == 'true'
         uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
         with:
           name: dosiazhnist-zvit
           path: джерела/аудит
 
       - name: перевірені файли → публікації
-        if: needs.zminy.outputs.lyshe_doshka != 'true'
+        if: needs.zminy.outputs.produkt == 'true'
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
           name: publikatsiia-${{ github.sha }}
@@ -434,7 +443,7 @@ jobs:
           python-version: '3.11'
 
       - name: перевірені файли зі збірки
-        if: needs.zminy.outputs.lyshe_doshka != 'true'
+        if: needs.zminy.outputs.produkt == 'true'
         uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
         with:
           name: publikatsiia-${{ github.sha }}
@@ -450,11 +459,11 @@ jobs:
 
       - name: закомітити артефакт
         env:
-          LYSHE_DOSHKA: ${{ needs.zminy.outputs.lyshe_doshka }}
+          PRODUKT: ${{ needs.zminy.outputs.produkt }}
         run: |
           set -e
           SOURCE_SHA=$(git rev-parse HEAD)
-          if [ "${LYSHE_DOSHKA}" = "true" ]; then
+          if [ "${PRODUKT}" = "false" ]; then
             git add -A аудит/БЕКЛОГ.md
             git add -A аудит/дошка 2>/dev/null || true
             MSG="дошка: згорнуто файли аудит/дошка (${SOURCE_SHA})"

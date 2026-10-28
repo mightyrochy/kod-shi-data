@@ -3,7 +3,7 @@ const fs = require('fs'), path = require('path'), vm = require('vm'), assert = r
 const корінь = path.resolve(__dirname, '../..');
 const контекст = vm.createContext({});
 vm.runInContext(fs.readFileSync(path.join(корінь, 'джерела/показ/збирання_руки.js'), 'utf8'), контекст);
-const повтор = контекст.повторнийЗапитРукиП;
+const повтор = контекст.промптПовторуП;
 const тека = path.join(__dirname, 'б1/ДО-2710');
 let запитів = 0, повторів = 0, до = 0, після = 0;
 const форми = new Set();
@@ -26,8 +26,8 @@ for (const сцена of fs.readdirSync(тека)){
         if (!вхід.task) continue;
         const помилка = {error: 'format_error', instead: 'Return one object matching answer_schema.'};
         const новий = JSON.parse(повтор(текст, JSON.stringify(помилка)));
-        assert.deepEqual(новий.format_errors, помилка);
-        delete новий.format_errors;
+        assert.deepEqual(новий.format_error, помилка);
+        delete новий.format_error;
         assert.deepEqual(новий, JSON.parse(JSON.stringify(вхід)));
         assert.deepEqual(Object.keys(новий), Object.keys(вхід));
         запитів++; форми.add(крок.крок);

@@ -31,7 +31,10 @@ prompt() { $PY -c "import json
 print([json.loads(l) for l in open('$(wp "$W/cc.log")', encoding='utf-8')][-1]['stdin'])" 2>/dev/null; }
 chk() { if eval "$2"; then echo "  ✓ $1"; else echo "  ✗ $1"; BAD=1; fi; }
 code() { setup "$1"; mark "$SLUG/${3:-$M}/1"; FAKE_CC_SCENARIO=$2 cr "${5:-}"; WANT=$4
-  chk "$2 → ЗАБЛОКОВАНО … $4 (є: $(lines))" '[ "$(lines)" = "GEMINI ОБГОРТКА: ЗАБЛОКОВАНО claude/$SLUG $WANT" ]'; }
+  EXPECTED="GEMINI ОБГОРТКА: ЗАБЛОКОВАНО claude/$SLUG $WANT"
+  case "$WANT" in AUTH) EXPECTED="$EXPECTED"$'\n''GEMINI ОБГОРТКА: ТРИВОГА AUTH CLAUDE';;
+    ENGINE_MISSING) EXPECTED="$EXPECTED"$'\n''GEMINI ОБГОРТКА: ТРИВОГА ENGINE CLAUDE';; esac
+  chk "$2 → підсумок $4 і окрема тривога за потреби (є: $(lines))" '[ "$(lines | wc -l)" = "$(nlines)" ] && [ "$(lines | LC_ALL=C sort)" = "$(printf "%s\n" "$EXPECTED" | LC_ALL=C sort)" ]'; }
 
 echo "=== К1 ГОТОВО: модель і зусилля дослівно, auto, промпт запускача, SHA з origin, стан в issue"
 setup k1; mark "$SLUG/$M/1"; cr

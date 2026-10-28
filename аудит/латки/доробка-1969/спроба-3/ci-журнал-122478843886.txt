@@ -1,0 +1,854 @@
+﻿2026-10-27T21:23:39.3338249Z Current runner version: '2.338.0'
+2026-10-27T21:23:39.3365036Z ##[group]Runner Image Provisioner
+2026-10-27T21:23:39.3365594Z Hosted Compute Agent
+2026-10-27T21:23:39.3366016Z Version: 20261021.618
+2026-10-27T21:23:39.3366370Z Commit: 21505ad2541d5be6135ed84fc33697146cf75b8e
+2026-10-27T21:23:39.3366779Z Build Date: 2026-10-21T00:45:21Z
+2026-10-27T21:23:39.3367177Z Worker ID: {672108be-e8e7-4396-9b3f-ef3cb01d0f56}
+2026-10-27T21:23:39.3367577Z Region: centralus
+2026-10-27T21:23:39.3367907Z Cloud: Azure
+2026-10-27T21:23:39.3368210Z ##[endgroup]
+2026-10-27T21:23:39.3369004Z ##[group]Operating System
+2026-10-27T21:23:39.3369441Z Microsoft Windows Server 2025
+2026-10-27T21:23:39.3369785Z 10.0.26100
+2026-10-27T21:23:39.3370098Z Datacenter
+2026-10-27T21:23:39.3370447Z ##[endgroup]
+2026-10-27T21:23:39.3370816Z ##[group]Runner Image
+2026-10-27T21:23:39.3371178Z Image: windows-2025-vs2026
+2026-10-27T21:23:39.3371525Z Version: 20261021.278.1
+2026-10-27T21:23:39.3372655Z Included Software: https://github.com/actions/runner-images/blob/win25-vs2026/20261021.278/images/windows/Windows2025-VS2026-Readme.md
+2026-10-27T21:23:39.3373603Z Image Release: https://github.com/actions/runner-images/releases/tag/win25-vs2026%2F20261021.278
+2026-10-27T21:23:39.3374165Z ##[endgroup]
+2026-10-27T21:23:39.3374827Z ##[group]GITHUB_TOKEN Permissions
+2026-10-27T21:23:39.3376140Z Contents: read
+2026-10-27T21:23:39.3376451Z Metadata: read
+2026-10-27T21:23:39.3376751Z ##[endgroup]
+2026-10-27T21:23:39.3378984Z Secret source: Actions
+2026-10-27T21:23:39.3379709Z Cache mode: write
+2026-10-27T21:23:39.3380338Z Prepare workflow directory
+2026-10-27T21:23:39.3709819Z Prepare all required actions
+2026-10-27T21:23:39.3745281Z Getting action download info
+2026-10-27T21:23:39.5765948Z Download action repository 'actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5' (SHA:34e114876b0b11c390a56381ad16ebd13914f8d5)
+2026-10-27T21:23:39.6649061Z Download action repository 'actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065' (SHA:a26af69be951a213d495a4c3e4e4022e16d87065)
+2026-10-27T21:23:39.8641628Z Complete job name: обгортка — Windows PowerShell 5.1
+2026-10-27T21:23:39.9630565Z ##[group]Run git config --global core.autocrlf false
+2026-10-27T21:23:39.9631167Z git config --global core.autocrlf false
+2026-10-27T21:23:39.9645067Z shell: C:\Program Files\Git\bin\bash.EXE --noprofile --norc -e -o pipefail {0}
+2026-10-27T21:23:39.9645628Z env:
+2026-10-27T21:23:39.9645843Z   PWSH:
+2026-10-27T21:23:39.9646054Z   PYTHONUTF8: 1
+2026-10-27T21:23:39.9646288Z   PYTHONIOENCODING: utf-8
+2026-10-27T21:23:39.9646538Z ##[endgroup]
+2026-10-27T21:23:40.7264543Z ##[group]Run actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
+2026-10-27T21:23:40.7265127Z with:
+2026-10-27T21:23:40.7265389Z   persist-credentials: false
+2026-10-27T21:23:40.7265685Z   fetch-depth: 1
+2026-10-27T21:23:40.7265956Z   repository: mightyrochy/kod-shi-data
+2026-10-27T21:23:40.7268772Z   token: ***
+2026-10-27T21:23:40.7269008Z   ssh-strict: true
+2026-10-27T21:23:40.7269293Z   ssh-user: git
+2026-10-27T21:23:40.7269528Z   clean: true
+2026-10-27T21:23:40.7269789Z   sparse-checkout-cone-mode: true
+2026-10-27T21:23:40.7270093Z   fetch-tags: false
+2026-10-27T21:23:40.7270345Z   show-progress: true
+2026-10-27T21:23:40.7270610Z   lfs: false
+2026-10-27T21:23:40.7270842Z   submodules: false
+2026-10-27T21:23:40.7271107Z   set-safe-directory: true
+2026-10-27T21:23:40.7271409Z env:
+2026-10-27T21:23:40.7271642Z   PWSH:
+2026-10-27T21:23:40.7271867Z   PYTHONUTF8: 1
+2026-10-27T21:23:40.7272118Z   PYTHONIOENCODING: utf-8
+2026-10-27T21:23:40.7272430Z ##[endgroup]
+2026-10-27T21:23:40.8395239Z Syncing repository: mightyrochy/kod-shi-data
+2026-10-27T21:23:40.8396809Z ##[group]Getting Git version info
+2026-10-27T21:23:40.8397240Z Working directory is 'D:\a\kod-shi-data\kod-shi-data'
+2026-10-27T21:23:40.8786759Z [command]"C:\Program Files\Git\bin\git.exe" version
+2026-10-27T21:23:40.9117445Z git version 2.56.0.windows.2
+2026-10-27T21:23:40.9160101Z ##[endgroup]
+2026-10-27T21:23:40.9171656Z Copying 'C:\Users\runneradmin\.gitconfig' to 'D:\a\_temp\9e2e4b93-7959-4845-8df3-217ba3483590\.gitconfig'
+2026-10-27T21:23:40.9189494Z Temporarily overriding HOME='D:\a\_temp\9e2e4b93-7959-4845-8df3-217ba3483590' before making global git config changes
+2026-10-27T21:23:40.9190328Z Adding repository directory to the temporary git global config as a safe directory
+2026-10-27T21:23:40.9197549Z [command]"C:\Program Files\Git\bin\git.exe" config --global --add safe.directory D:\a\kod-shi-data\kod-shi-data
+2026-10-27T21:23:40.9511694Z Deleting the contents of 'D:\a\kod-shi-data\kod-shi-data'
+2026-10-27T21:23:40.9516774Z ##[group]Initializing the repository
+2026-10-27T21:23:40.9524026Z [command]"C:\Program Files\Git\bin\git.exe" init D:\a\kod-shi-data\kod-shi-data
+2026-10-27T21:23:41.0331771Z Initialized empty Git repository in D:/a/kod-shi-data/kod-shi-data/.git/
+2026-10-27T21:23:41.0378766Z [command]"C:\Program Files\Git\bin\git.exe" remote add origin https://github.com/mightyrochy/kod-shi-data
+2026-10-27T21:23:41.0954510Z ##[endgroup]
+2026-10-27T21:23:41.0955977Z ##[group]Disabling automatic garbage collection
+2026-10-27T21:23:41.0957494Z [command]"C:\Program Files\Git\bin\git.exe" config --local gc.auto 0
+2026-10-27T21:23:41.1273309Z ##[endgroup]
+2026-10-27T21:23:41.1274297Z ##[group]Setting up auth
+2026-10-27T21:23:41.1283321Z [command]"C:\Program Files\Git\bin\git.exe" config --local --name-only --get-regexp core\.sshCommand
+2026-10-27T21:23:41.1598002Z [command]"C:\Program Files\Git\bin\git.exe" submodule foreach --recursive "sh -c \"git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :\""
+2026-10-27T21:23:42.1610225Z [command]"C:\Program Files\Git\bin\git.exe" config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+2026-10-27T21:23:42.1942583Z [command]"C:\Program Files\Git\bin\git.exe" submodule foreach --recursive "sh -c \"git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :\""
+2026-10-27T21:23:42.7020305Z [command]"C:\Program Files\Git\bin\git.exe" config --local --name-only --get-regexp ^includeIf\.gitdir:
+2026-10-27T21:23:42.7451881Z [command]"C:\Program Files\Git\bin\git.exe" submodule foreach --recursive "git config --local --show-origin --name-only --get-regexp remote.origin.url"
+2026-10-27T21:23:43.2888748Z [command]"C:\Program Files\Git\bin\git.exe" config --local http.https://github.com/.extraheader "AUTHORIZATION: basic ***"
+2026-10-27T21:23:43.3231634Z ##[endgroup]
+2026-10-27T21:23:43.3239601Z ##[group]Fetching the repository
+2026-10-27T21:23:43.3240847Z [command]"C:\Program Files\Git\bin\git.exe" -c protocol.version=2 fetch --no-tags --prune --no-recurse-submodules --depth=1 origin +2452be73e464408d62e4cb49e1c756428202e5f7:refs/remotes/pull/1969/merge
+2026-10-27T21:25:43.5677874Z From https://github.com/mightyrochy/kod-shi-data
+2026-10-27T21:25:43.5678773Z  * [new ref]         2452be73e464408d62e4cb49e1c756428202e5f7 -> pull/1969/merge
+2026-10-27T21:25:43.5714345Z ##[endgroup]
+2026-10-27T21:25:43.5714772Z ##[group]Determining the checkout info
+2026-10-27T21:25:43.5717027Z ##[endgroup]
+2026-10-27T21:25:43.5726759Z [command]"C:\Program Files\Git\bin\git.exe" sparse-checkout disable
+2026-10-27T21:25:43.6159495Z [command]"C:\Program Files\Git\bin\git.exe" config --local --unset-all extensions.worktreeConfig
+2026-10-27T21:25:43.6483691Z ##[group]Checking out the ref
+2026-10-27T21:25:43.6484311Z [command]"C:\Program Files\Git\bin\git.exe" checkout --progress --force refs/remotes/pull/1969/merge
+2026-10-27T21:25:44.7924913Z Updating files:  21% (2738/12919)
+2026-10-27T21:25:44.8683614Z Updating files:  22% (2843/12919)
+2026-10-27T21:25:44.9574672Z Updating files:  23% (2972/12919)
+2026-10-27T21:25:45.0459627Z Updating files:  24% (3101/12919)
+2026-10-27T21:25:45.1290107Z Updating files:  25% (3230/12919)
+2026-10-27T21:25:45.2873092Z Updating files:  26% (3359/12919)
+2026-10-27T21:25:45.3550826Z Updating files:  27% (3489/12919)
+2026-10-27T21:25:45.4607049Z Updating files:  28% (3618/12919)
+2026-10-27T21:25:45.5266665Z Updating files:  29% (3747/12919)
+2026-10-27T21:25:45.6122908Z Updating files:  30% (3876/12919)
+2026-10-27T21:25:45.6971692Z Updating files:  31% (4005/12919)
+2026-10-27T21:25:45.7109981Z Updating files:  32% (4135/12919)
+2026-10-27T21:25:45.7952580Z Updating files:  32% (4155/12919)
+2026-10-27T21:25:45.9163033Z Updating files:  33% (4264/12919)
+2026-10-27T21:25:46.0036966Z Updating files:  34% (4393/12919)
+2026-10-27T21:25:46.0554515Z Updating files:  35% (4522/12919)
+2026-10-27T21:25:46.1684037Z Updating files:  36% (4651/12919)
+2026-10-27T21:25:46.2775155Z Updating files:  37% (4781/12919)
+2026-10-27T21:25:46.3843224Z Updating files:  38% (4910/12919)
+2026-10-27T21:25:46.4901748Z Updating files:  39% (5039/12919)
+2026-10-27T21:25:46.6905144Z Updating files:  40% (5168/12919)
+2026-10-27T21:25:46.7257323Z Updating files:  41% (5297/12919)
+2026-10-27T21:25:46.7547785Z Updating files:  41% (5361/12919)
+2026-10-27T21:25:46.7761437Z Updating files:  42% (5426/12919)
+2026-10-27T21:25:46.8367096Z Updating files:  43% (5556/12919)
+2026-10-27T21:25:46.8885062Z Updating files:  44% (5685/12919)
+2026-10-27T21:25:46.9367707Z Updating files:  45% (5814/12919)
+2026-10-27T21:25:46.9787113Z Updating files:  46% (5943/12919)
+2026-10-27T21:25:47.0257039Z Updating files:  47% (6072/12919)
+2026-10-27T21:25:47.0697195Z Updating files:  48% (6202/12919)
+2026-10-27T21:25:47.1177928Z Updating files:  49% (6331/12919)
+2026-10-27T21:25:47.1644778Z Updating files:  50% (6460/12919)
+2026-10-27T21:25:47.2080070Z Updating files:  51% (6589/12919)
+2026-10-27T21:25:47.2656629Z Updating files:  52% (6718/12919)
+2026-10-27T21:25:47.3145251Z Updating files:  53% (6848/12919)
+2026-10-27T21:25:47.3577358Z Updating files:  54% (6977/12919)
+2026-10-27T21:25:47.4014452Z Updating files:  55% (7106/12919)
+2026-10-27T21:25:47.4544009Z Updating files:  56% (7235/12919)
+2026-10-27T21:25:47.5057577Z Updating files:  57% (7364/12919)
+2026-10-27T21:25:47.5614614Z Updating files:  58% (7494/12919)
+2026-10-27T21:25:47.6105534Z Updating files:  59% (7623/12919)
+2026-10-27T21:25:47.6450529Z Updating files:  60% (7752/12919)
+2026-10-27T21:25:47.6842104Z Updating files:  61% (7881/12919)
+2026-10-27T21:25:47.7273566Z Updating files:  62% (8010/12919)
+2026-10-27T21:25:47.7397608Z Updating files:  62% (8112/12919)
+2026-10-27T21:25:47.7849952Z Updating files:  63% (8139/12919)
+2026-10-27T21:25:47.8328826Z Updating files:  64% (8269/12919)
+2026-10-27T21:25:47.8763109Z Updating files:  65% (8398/12919)
+2026-10-27T21:25:47.9268787Z Updating files:  66% (8527/12919)
+2026-10-27T21:25:48.1491656Z Updating files:  67% (8656/12919)
+2026-10-27T21:25:48.2011336Z Updating files:  68% (8785/12919)
+2026-10-27T21:25:48.2468800Z Updating files:  69% (8915/12919)
+2026-10-27T21:25:48.3068567Z Updating files:  70% (9044/12919)
+2026-10-27T21:25:48.3508463Z Updating files:  71% (9173/12919)
+2026-10-27T21:25:48.4056601Z Updating files:  72% (9302/12919)
+2026-10-27T21:25:48.4482660Z Updating files:  73% (9431/12919)
+2026-10-27T21:25:48.5125333Z Updating files:  74% (9561/12919)
+2026-10-27T21:25:48.5581279Z Updating files:  75% (9690/12919)
+2026-10-27T21:25:48.5864849Z Updating files:  76% (9819/12919)
+2026-10-27T21:25:48.6083365Z Updating files:  77% (9948/12919)
+2026-10-27T21:25:48.6253232Z Updating files:  78% (10077/12919)
+2026-10-27T21:25:48.7069486Z Updating files:  79% (10207/12919)
+2026-10-27T21:25:48.7251902Z Updating files:  80% (10336/12919)
+2026-10-27T21:25:48.7744181Z Updating files:  80% (10369/12919)
+2026-10-27T21:25:48.7976176Z Updating files:  81% (10465/12919)
+2026-10-27T21:25:48.8153665Z Updating files:  82% (10594/12919)
+2026-10-27T21:25:48.8592596Z Updating files:  83% (10723/12919)
+2026-10-27T21:25:48.9196767Z Updating files:  84% (10852/12919)
+2026-10-27T21:25:48.9610292Z Updating files:  85% (10982/12919)
+2026-10-27T21:25:48.9864207Z Updating files:  86% (11111/12919)
+2026-10-27T21:25:49.0073118Z Updating files:  87% (11240/12919)
+2026-10-27T21:25:49.0241585Z Updating files:  88% (11369/12919)
+2026-10-27T21:25:49.0397567Z Updating files:  89% (11498/12919)
+2026-10-27T21:25:49.0555682Z Updating files:  90% (11628/12919)
+2026-10-27T21:25:49.0721640Z Updating files:  91% (11757/12919)
+2026-10-27T21:25:49.0874841Z Updating files:  92% (11886/12919)
+2026-10-27T21:25:49.1028939Z Updating files:  93% (12015/12919)
+2026-10-27T21:25:49.1187076Z Updating files:  94% (12144/12919)
+2026-10-27T21:25:49.1327581Z Updating files:  95% (12274/12919)
+2026-10-27T21:25:49.1474945Z Updating files:  96% (12403/12919)
+2026-10-27T21:25:49.1621884Z Updating files:  97% (12532/12919)
+2026-10-27T21:25:49.1769606Z Updating files:  98% (12661/12919)
+2026-10-27T21:25:49.2455720Z Updating files:  99% (12790/12919)
+2026-10-27T21:25:49.2456156Z Updating files: 100% (12919/12919)
+2026-10-27T21:25:49.2456371Z Updating files: 100% (12919/12919), done.
+2026-10-27T21:25:49.2654747Z Note: switching to 'refs/remotes/pull/1969/merge'.
+2026-10-27T21:25:49.2655316Z
+2026-10-27T21:25:49.2655666Z You are in 'detached HEAD' state. You can look around, make experimental
+2026-10-27T21:25:49.2656250Z changes and commit them, and you can discard any commits you make in this
+2026-10-27T21:25:49.2656743Z state without impacting any branches by switching back to a branch.
+2026-10-27T21:25:49.2657235Z
+2026-10-27T21:25:49.2657459Z If you want to create a new branch to retain commits you create, you may
+2026-10-27T21:25:49.2658075Z do so (now or later) by using -c with the switch command. Example:
+2026-10-27T21:25:49.2658308Z
+2026-10-27T21:25:49.2658476Z   git switch -c <new-branch-name>
+2026-10-27T21:25:49.2658631Z
+2026-10-27T21:25:49.2658761Z Or undo this operation with:
+2026-10-27T21:25:49.2658931Z
+2026-10-27T21:25:49.2659044Z   git switch -
+2026-10-27T21:25:49.2659184Z
+2026-10-27T21:25:49.2659374Z Turn off this advice by setting config variable advice.detachedHead to false
+2026-10-27T21:25:49.2659688Z
+2026-10-27T21:25:49.2659974Z HEAD is now at 2452be7 Merge 83de15ac58a76c7c307fc6f1a11e36b98861b937 into 15f463e93610b42755bfac0163606ac73d2228c8
+2026-10-27T21:25:49.3613812Z ##[endgroup]
+2026-10-27T21:25:49.3944050Z [command]"C:\Program Files\Git\bin\git.exe" log -1 --format=%H
+2026-10-27T21:25:49.4213843Z 2452be73e464408d62e4cb49e1c756428202e5f7
+2026-10-27T21:25:49.4250463Z ##[group]Removing auth
+2026-10-27T21:25:49.4258274Z [command]"C:\Program Files\Git\bin\git.exe" config --local --name-only --get-regexp core\.sshCommand
+2026-10-27T21:25:49.4559829Z [command]"C:\Program Files\Git\bin\git.exe" submodule foreach --recursive "sh -c \"git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :\""
+2026-10-27T21:25:49.8813175Z [command]"C:\Program Files\Git\bin\git.exe" config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+2026-10-27T21:25:49.9037180Z http.https://github.com/.extraheader
+2026-10-27T21:25:49.9068526Z [command]"C:\Program Files\Git\bin\git.exe" config --local --unset-all http.https://github.com/.extraheader
+2026-10-27T21:25:49.9332575Z [command]"C:\Program Files\Git\bin\git.exe" submodule foreach --recursive "sh -c \"git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :\""
+2026-10-27T21:25:50.3909331Z [command]"C:\Program Files\Git\bin\git.exe" config --local --name-only --get-regexp ^includeIf\.gitdir:
+2026-10-27T21:25:50.4219056Z [command]"C:\Program Files\Git\bin\git.exe" submodule foreach --recursive "git config --local --show-origin --name-only --get-regexp remote.origin.url"
+2026-10-27T21:25:50.8973513Z ##[endgroup]
+2026-10-27T21:25:50.9292600Z ##[group]Run actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065
+2026-10-27T21:25:50.9292877Z with:
+2026-10-27T21:25:50.9293004Z   python-version: 3.11
+2026-10-27T21:25:50.9293329Z   check-latest: false
+2026-10-27T21:25:50.9294694Z   token: ***
+2026-10-27T21:25:50.9294820Z   update-environment: true
+2026-10-27T21:25:50.9294975Z   allow-prereleases: false
+2026-10-27T21:25:50.9295113Z   freethreaded: false
+2026-10-27T21:25:50.9295231Z env:
+2026-10-27T21:25:50.9295339Z   PWSH:
+2026-10-27T21:25:50.9295450Z   PYTHONUTF8: 1
+2026-10-27T21:25:50.9295574Z   PYTHONIOENCODING: utf-8
+2026-10-27T21:25:50.9295708Z ##[endgroup]
+2026-10-27T21:25:51.0492925Z ##[group]Installed versions
+2026-10-27T21:25:51.0628572Z (node:2300) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+2026-10-27T21:25:51.0629032Z (Use `node --trace-deprecation ...` to show where the warning was created)
+2026-10-27T21:25:51.0630125Z Successfully set up CPython (3.11.9)
+2026-10-27T21:25:51.0630596Z ##[endgroup]
+2026-10-27T21:25:51.0881600Z ##[group]Run set -euo pipefail
+2026-10-27T21:25:51.0881947Z set -euo pipefail
+2026-10-27T21:25:51.0882182Z command -v cygpath
+2026-10-27T21:25:51.0882560Z [ "$(powershell.exe -NoProfile -Command '$PSVersionTable.PSVersion.ToString(2)' | tr -d '\r')" = 5.1 ]
+2026-10-27T21:25:51.0883044Z # ASCII-шлях спільних .cmd-заглушок; PWSH з Bypass створить середовище.sh.
+2026-10-27T21:25:51.0883398Z echo "TMPDIR=$(cygpath -u "$RUNNER_TEMP")/obhortka" >> "$GITHUB_ENV"
+2026-10-27T21:25:51.0883711Z mkdir -p "$(cygpath -u "$RUNNER_TEMP")/obhortka"
+2026-10-27T21:25:51.0936664Z shell: C:\Program Files\Git\bin\bash.EXE --noprofile --norc -e -o pipefail {0}
+2026-10-27T21:25:51.0936989Z env:
+2026-10-27T21:25:51.0937169Z   PWSH:
+2026-10-27T21:25:51.0937330Z   PYTHONUTF8: 1
+2026-10-27T21:25:51.0937509Z   PYTHONIOENCODING: utf-8
+2026-10-27T21:25:51.0937745Z   pythonLocation: C:\hostedtoolcache\windows\Python\3.11.9\x64
+2026-10-27T21:25:51.0938214Z   PKG_CONFIG_PATH: C:\hostedtoolcache\windows\Python\3.11.9\x64/lib/pkgconfig
+2026-10-27T21:25:51.0938537Z   Python_ROOT_DIR: C:\hostedtoolcache\windows\Python\3.11.9\x64
+2026-10-27T21:25:51.0938817Z   Python2_ROOT_DIR: C:\hostedtoolcache\windows\Python\3.11.9\x64
+2026-10-27T21:25:51.0939098Z   Python3_ROOT_DIR: C:\hostedtoolcache\windows\Python\3.11.9\x64
+2026-10-27T21:25:51.0939328Z ##[endgroup]
+2026-10-27T21:25:51.1334486Z /usr/bin/cygpath
+2026-10-27T21:25:52.9495075Z ##[group]Run set -o pipefail
+2026-10-27T21:25:52.9495394Z set -o pipefail
+2026-10-27T21:25:52.9495715Z python аудит/адаптери/gemini/перевірка/перевірити_хеші.py 2>&1 | tee -a "$GITHUB_STEP_SUMMARY"
+2026-10-27T21:25:52.9506466Z shell: C:\Program Files\Git\bin\bash.EXE --noprofile --norc -e -o pipefail {0}
+2026-10-27T21:25:52.9506752Z env:
+2026-10-27T21:25:52.9506919Z   PWSH:
+2026-10-27T21:25:52.9507076Z   PYTHONUTF8: 1
+2026-10-27T21:25:52.9507257Z   PYTHONIOENCODING: utf-8
+2026-10-27T21:25:52.9507490Z   pythonLocation: C:\hostedtoolcache\windows\Python\3.11.9\x64
+2026-10-27T21:25:52.9507806Z   PKG_CONFIG_PATH: C:\hostedtoolcache\windows\Python\3.11.9\x64/lib/pkgconfig
+2026-10-27T21:25:52.9508146Z   Python_ROOT_DIR: C:\hostedtoolcache\windows\Python\3.11.9\x64
+2026-10-27T21:25:52.9508431Z   Python2_ROOT_DIR: C:\hostedtoolcache\windows\Python\3.11.9\x64
+2026-10-27T21:25:52.9508730Z   Python3_ROOT_DIR: C:\hostedtoolcache\windows\Python\3.11.9\x64
+2026-10-27T21:25:52.9509066Z   TMPDIR: /d/a/_temp/obhortka
+2026-10-27T21:25:52.9509271Z ##[endgroup]
+2026-10-27T21:25:54.1763956Z ✓ wrapper_health.ps1: FCE45448539D53A6B5718319842FC845DA870F39453A6B716C7AF8A2DB65B88E
+2026-10-27T21:25:54.1764803Z ✓ gemini_run.ps1: AF5B33D322B3A040BD6B91E2A3D992C22068D1DED94CEAFB323A62891DAD6FDE
+2026-10-27T21:25:54.1765516Z ✓ gemini_publish.ps1: 904ABCC5FE198EFF89B4BA956C7B58742AD54932CAE4A3F01673416B6E4506B2
+2026-10-27T21:25:54.1766292Z ✓ gemini_watch.ps1: 69EFEBB07FF1AF51C382B753A95C50F3C1AC27B3008F2489992BEBE3FD0213AA
+2026-10-27T21:25:54.1767042Z ✓ queue_lanes.ps1: 23BF290032E38380132C44D94ECDB2AF2480BE7710C14CEB6799A9D482187407
+2026-10-27T21:25:54.1768870Z ✓ claude_run.ps1: 249CF4B2826B079F4B68B6BDC7A6DDF431EF3E2AE7D130490F72EC0D8DDDF094
+2026-10-27T21:25:54.1960283Z ##[group]Run bash аудит/адаптери/gemini/перевірка/запустити_стенд.sh сценарії_claude.sh
+2026-10-27T21:25:54.1960652Z bash аудит/адаптери/gemini/перевірка/запустити_стенд.sh сценарії_claude.sh
+2026-10-27T21:25:54.1969642Z shell: C:\Program Files\Git\bin\bash.EXE --noprofile --norc -e -o pipefail {0}
+2026-10-27T21:25:54.1969879Z env:
+2026-10-27T21:25:54.1969987Z   PWSH:
+2026-10-27T21:25:54.1970089Z   PYTHONUTF8: 1
+2026-10-27T21:25:54.1970206Z   PYTHONIOENCODING: utf-8
+2026-10-27T21:25:54.1970378Z   pythonLocation: C:\hostedtoolcache\windows\Python\3.11.9\x64
+2026-10-27T21:25:54.1970636Z   PKG_CONFIG_PATH: C:\hostedtoolcache\windows\Python\3.11.9\x64/lib/pkgconfig
+2026-10-27T21:25:54.1970917Z   Python_ROOT_DIR: C:\hostedtoolcache\windows\Python\3.11.9\x64
+2026-10-27T21:25:54.1971146Z   Python2_ROOT_DIR: C:\hostedtoolcache\windows\Python\3.11.9\x64
+2026-10-27T21:25:54.1971401Z   Python3_ROOT_DIR: C:\hostedtoolcache\windows\Python\3.11.9\x64
+2026-10-27T21:25:54.1971643Z   TMPDIR: /d/a/_temp/obhortka
+2026-10-27T21:25:54.1971779Z ##[endgroup]
+2026-10-27T21:25:54.5649128Z === К1 ГОТОВО: модель і зусилля дослівно, auto, промпт запускача, SHA з origin, стан в issue
+2026-10-27T21:26:00.2569545Z   ✓ рядок ГОТОВО claude/<наряд> <SHA origin> МОДЕЛЬ cc-claude-sonnet-5-5-medium
+2026-10-27T21:26:00.3338003Z   ✓ argv: -p --model claude-sonnet-5-5 --effort medium --permission-mode auto stream-json
+2026-10-27T21:26:00.4133236Z   ✓ промпт: НОУТБУК.md, наряд дослівно, вимикає лише обгортка, без «Продовжуй»
+2026-10-27T21:26:00.5523213Z   ✓ issue 1856 оновлено PATCH-ем, тіло — «веде наряд» і позначка
+2026-10-27T21:26:00.6011667Z   ✓ події stream-json — у events.tsv
+2026-10-27T21:26:02.0815883Z   ✓ другий прохід ту саму позначку не бере
+2026-10-27T21:26:02.0816572Z === К2 нова спроба при наявній гілці — «Продовжуй з гілки»; модель без зусилля — без --effort
+2026-10-27T21:26:05.5279804Z   ✓ промпт: Продовжуй з гілки claude/<наряд>
+2026-10-27T21:26:05.6071457Z   ✓ argv без --effort
+2026-10-27T21:26:05.6071954Z === К3 коди кінця
+2026-10-27T21:26:09.7943850Z   ✓ wrong_sha → підсумок NO_PUSH і окрема тривога за потреби (є: GEMINI ОБГОРТКА: ЗАБЛОКОВАНО claude/проба-рушія-claude NO_PUSH)
+2026-10-27T21:26:13.9300510Z   ✓ bad_branch → підсумок BAD_BRANCH і окрема тривога за потреби (є: GEMINI ОБГОРТКА: ЗАБЛОКОВАНО claude/проба-рушія-claude BAD_BRANCH)
+2026-10-27T21:26:18.1482279Z   ✓ blocked → підсумок BLOCKED і окрема тривога за потреби (є: GEMINI ОБГОРТКА: ЗАБЛОКОВАНО claude/проба-рушія-claude BLOCKED)
+2026-10-27T21:26:18.1625371Z   ✓ гілка зі звіту ЗАБЛОКОВАНО збережена для продовження
+2026-10-27T21:26:22.2727780Z   ✓ no_report → підсумок NO_REPORT і окрема тривога за потреби (є: GEMINI ОБГОРТКА: ЗАБЛОКОВАНО claude/проба-рушія-claude NO_REPORT)
+2026-10-27T21:26:26.3734877Z   ✓ die → підсумок EXIT і окрема тривога за потреби (є: GEMINI ОБГОРТКА: ЗАБЛОКОВАНО claude/проба-рушія-claude EXIT)
+2026-10-27T21:26:33.5429858Z   ✓ hang → підсумок HANG і окрема тривога за потреби (є: GEMINI ОБГОРТКА: ЗАБЛОКОВАНО claude/проба-рушія-claude HANG)
+2026-10-27T21:26:33.6550193Z   ✓ завислий claude зупинено
+2026-10-27T21:26:37.6846286Z   ✓ effort → підсумок EFFORT_INVALID і окрема тривога за потреби (є: GEMINI ОБГОРТКА: ЗАБЛОКОВАНО claude/проба-рушія-claude EFFORT_INVALID)
+2026-10-27T21:26:42.1320862Z   ✓ auth → підсумок AUTH і окрема тривога за потреби (є: GEMINI ОБГОРТКА: ЗАБЛОКОВАНО claude/проба-рушія-claude AUTH
+2026-10-27T21:26:42.1322244Z GEMINI ОБГОРТКА: ТРИВОГА AUTH CLAUDE)
+2026-10-27T21:26:46.2270413Z   ✓ quota → підсумок QUOTA0_CLAUDE_M10 і окрема тривога за потреби (є: GEMINI ОБГОРТКА: ЗАБЛОКОВАНО claude/проба-рушія-claude QUOTA0_CLAUDE_M10)
+2026-10-27T21:26:46.2416185Z   ✓ ліміт: позначка чекає скидання (WAIT), спроба не спалена
+2026-10-27T21:26:50.2692973Z   ✓ bad_model → підсумок MODEL_INVALID і окрема тривога за потреби (є: GEMINI ОБГОРТКА: ЗАБЛОКОВАНО claude/проба-рушія-claude MODEL_INVALID)
+2026-10-27T21:26:53.9213226Z   ✓ done → підсумок ENGINE_MISSING і окрема тривога за потреби (є: GEMINI ОБГОРТКА: ЗАБЛОКОВАНО claude/проба-рушія-claude ENGINE_MISSING
+2026-10-27T21:26:53.9214249Z GEMINI ОБГОРТКА: ТРИВОГА ENGINE CLAUDE)
+2026-10-27T21:26:57.5541166Z   ✓ нема файлу наряду → NO_TASK_FILE
+2026-10-27T21:27:01.1813661Z   ✓ коміт позначки не в main → NOT_ON_MAIN, claude не кликано
+2026-10-27T21:27:03.5289481Z   ✓ стара позначка — без рядка й без claude
+2026-10-27T21:27:03.5290019Z === К4 claude закінчився, а нащадок тримає stdout — не завислість
+2026-10-27T21:28:07.5459788Z   ✓ ГОТОВО за ≤ 90 с (є: 63 с)
+2026-10-27T21:28:07.6148243Z === К5 прогін, перерваний вимкненням: наступний прохід пише INTERRUPTED
+2026-10-27T21:28:09.6921218Z   ✓ рядок INTERRUPTED, стан DONE
+2026-10-27T21:28:09.6921644Z === К6 ВИМКНИ-НОУТБУК
+2026-10-27T21:28:11.9474574Z   ✓ gemini-run виконується — без рядка й без shutdown
+2026-10-27T21:28:13.4146998Z   ✓ стан задачі не видно, у heartbeat узята позначка — чекає
+2026-10-27T21:28:13.4345022Z   ✓ issue: рядок gemini-run з позначкою й рушієм
+2026-10-27T21:28:24.9494665Z   ✓ рушії вільні — ВИМКНЕНО <SHA коміту>, shutdown
+2026-10-27T21:28:26.0520943Z   ✓ gemini-publish доставляє ВИМКНЕНО диспетчерові
+2026-10-27T21:28:27.4552069Z   ✓ та сама виконана позначка після нового ввімкнення — один BOOT, без shutdown
+2026-10-27T21:28:28.8895950Z   ✓ наступний прохід — нічого нового
+2026-10-27T21:28:31.0872558Z   ✓ позначка до першого проходу після ввімкнення → BOOT, без shutdown
+2026-10-27T21:28:42.8262445Z   ✓ наступна спроба — вимикає
+2026-10-27T21:28:42.8263001Z === К7 gemini-run позначок cc- не бере й узятими не позначає
+2026-10-27T21:28:44.7612019Z   ✓ gemini-run пройшов (heartbeat, ізоляція OK) — без стану й результату
+2026-10-27T21:28:48.0190091Z   ✓ той самий прохід claude-run бере її
+2026-10-27T21:28:48.0191762Z === К8 завислість — від останньої прийнятої події stream-json, доки процес живий
+2026-10-27T21:28:54.4959600Z   ✓ stdout і stderr закрито, процес мовчить → HANG за ≤ 60 с (є: 6 с, GEMINI ОБГОРТКА: ЗАБЛОКОВАНО claude/проба-рушія-claude HANG)
+2026-10-27T21:28:54.5923557Z   ✓ процес після HANG зупинено
+2026-10-27T21:29:00.9968928Z   ✓ не-JSON рядки таймера не скидають → HANG (є: GEMINI ОБГОРТКА: ЗАБЛОКОВАНО claude/проба-рушія-claude HANG)
+2026-10-27T21:29:01.0734999Z   ✓ events.tsv — лише події з типом (2), шум — у claude.jsonl
+2026-10-27T21:29:10.1910665Z   ✓ події частіше за поріг, усього довше за нього → ГОТОВО (є: GEMINI ОБГОРТКА: ГОТОВО claude/проба-рушія-claude c974db7ad1a622665c5fd6e9f3e8a2bbc04dbabb МОДЕЛЬ cc-claude-sonnet-5-5-medium)
+2026-10-27T21:29:10.1911334Z
+2026-10-27T21:29:10.1911474Z ВСЕ ✓
+2026-10-27T21:29:10.2359754Z ПІДСУМОК сценарії_claude.sh: ✓ 43 / ✗ 0; код стенда 0; код логу 0
+2026-10-27T21:29:10.2688553Z ##[group]Run bash аудит/адаптери/gemini/перевірка/запустити_стенд.sh сценарії_m9v.sh
+2026-10-27T21:29:10.2689094Z bash аудит/адаптери/gemini/перевірка/запустити_стенд.sh сценарії_m9v.sh
+2026-10-27T21:29:10.2702604Z shell: C:\Program Files\Git\bin\bash.EXE --noprofile --norc -e -o pipefail {0}
+2026-10-27T21:29:10.2702834Z env:
+2026-10-27T21:29:10.2702952Z   PWSH:
+2026-10-27T21:29:10.2703053Z   PYTHONUTF8: 1
+2026-10-27T21:29:10.2703178Z   PYTHONIOENCODING: utf-8
+2026-10-27T21:29:10.2703357Z   pythonLocation: C:\hostedtoolcache\windows\Python\3.11.9\x64
+2026-10-27T21:29:10.2703608Z   PKG_CONFIG_PATH: C:\hostedtoolcache\windows\Python\3.11.9\x64/lib/pkgconfig
+2026-10-27T21:29:10.2703859Z   Python_ROOT_DIR: C:\hostedtoolcache\windows\Python\3.11.9\x64
+2026-10-27T21:29:10.2704092Z   Python2_ROOT_DIR: C:\hostedtoolcache\windows\Python\3.11.9\x64
+2026-10-27T21:29:10.2704316Z   Python3_ROOT_DIR: C:\hostedtoolcache\windows\Python\3.11.9\x64
+2026-10-27T21:29:10.2704563Z   TMPDIR: /d/a/_temp/obhortka
+2026-10-27T21:29:10.2704707Z ##[endgroup]
+2026-10-27T21:29:10.8100718Z ok  синтаксис 0_власник.ps1
+2026-10-27T21:29:11.0299469Z ok  синтаксис 1_адмін.ps1
+2026-10-27T21:29:11.2515067Z ok  синтаксис 2_під_gemini.ps1
+2026-10-27T21:29:11.4574924Z ok  синтаксис хеші.psd1
+2026-10-27T21:29:11.4980319Z ok  хеші: psd1 = таблиця = файли
+2026-10-27T21:29:11.5352607Z ok  дослівні рядки команд
+2026-10-27T21:29:11.5724316Z ok  Codex: закріплений інсталятор, ключ -EnableCodex, кроки власника
+2026-10-27T21:29:11.6164192Z ПІДСУМОК сценарії_m9v.sh: ✓ 7 / ✗ 0; код стенда 0; код логу 0
+2026-10-27T21:29:11.6455856Z ##[group]Run bash аудит/адаптери/gemini/перевірка/запустити_стенд.sh сценарії_доставки.sh
+2026-10-27T21:29:11.6456313Z bash аудит/адаптери/gemini/перевірка/запустити_стенд.sh сценарії_доставки.sh
+2026-10-27T21:29:11.6466255Z shell: C:\Program Files\Git\bin\bash.EXE --noprofile --norc -e -o pipefail {0}
+2026-10-27T21:29:11.6466524Z env:
+2026-10-27T21:29:11.6466678Z   PWSH:
+2026-10-27T21:29:11.6466837Z   PYTHONUTF8: 1
+2026-10-27T21:29:11.6466977Z   PYTHONIOENCODING: utf-8
+2026-10-27T21:29:11.6467200Z   pythonLocation: C:\hostedtoolcache\windows\Python\3.11.9\x64
+2026-10-27T21:29:11.6467529Z   PKG_CONFIG_PATH: C:\hostedtoolcache\windows\Python\3.11.9\x64/lib/pkgconfig
+2026-10-27T21:29:11.6467827Z   Python_ROOT_DIR: C:\hostedtoolcache\windows\Python\3.11.9\x64
+2026-10-27T21:29:11.6468101Z   Python2_ROOT_DIR: C:\hostedtoolcache\windows\Python\3.11.9\x64
+2026-10-27T21:29:11.6468367Z   Python3_ROOT_DIR: C:\hostedtoolcache\windows\Python\3.11.9\x64
+2026-10-27T21:29:11.6468689Z   TMPDIR: /d/a/_temp/obhortka
+2026-10-27T21:29:11.6468869Z ##[endgroup]
+2026-10-27T21:29:11.9558790Z === Д1 квота групи моделі 0 %: наряд не береться, 0 ходів, рядок із групою й часом скидання
+2026-10-27T21:29:15.0544859Z   → GEMINI ОБГОРТКА: ЗАБЛОКОВАНО gemini/М.2-проба-обгортки QUOTA0_GEMINI35FLASH_M137
+2026-10-27T21:29:15.0545722Z   → GEMINI ОБГОРТКА: ПУЛИ V=1.1.11 G=GEMINI35FLASH:0:137 G=GEMINI31PRO:0:137 G=CLAUDEGPT:0:137 M=gemini-3.8-flash-high,claude-opus-5-5-high
+2026-10-27T21:29:15.0862845Z   ✓ прогонів agy (ходів) — 0
+2026-10-27T21:29:15.1121511Z   ✓ гілки gemini/ нема
+2026-10-27T21:29:15.1253891Z   ✓ рядок ЗАБЛОКОВАНО QUOTA0_<група>_M<хв>
+2026-10-27T21:29:15.1449322Z   ✓ рівно один рядок
+2026-10-27T21:29:16.8584937Z   ✓ повторний прохід — без нового наряду й рядка
+2026-10-27T21:29:16.8585727Z === Д2 нуль у групах Pro і Claude & GPT не блокує Flash; залишок квоти — у журналі
+2026-10-27T21:29:23.3566857Z   → GEMINI ОБГОРТКА: ГОТОВО gemini/М.2-проба-обгортки 72646cc0a19e263a316882cd8c6a397b2472b050 КВОТА GEMINI35FLASH 34 МОДЕЛЬ gemini-3.8-flash-high
+2026-10-27T21:29:23.3568035Z   → GEMINI ОБГОРТКА: ПУЛИ V=1.1.11 G=GEMINI35FLASH:34:137 G=GEMINI31PRO:0:137 G=CLAUDEGPT:0:137 M=gemini-3.8-flash-high,claude-opus-5-5-high
+2026-10-27T21:29:23.3757631Z   ✓ наряд пройшов: ГОТОВО gemini/<наряд> <SHA40>
+2026-10-27T21:29:23.3896618Z   ✓ залишок 34 % у publish.log
+2026-10-27T21:29:23.3897427Z === Д3 інші формати /usage (usedPercent, конверт response) розбираються; нерозпізнане й збій agy — наряд іде
+2026-10-27T21:29:29.9295677Z   ✓ used: формат розібрано (залишок 34 %), Flash не заблоковано
+2026-10-27T21:29:36.6913401Z   ✓ envelope: формат розібрано (залишок 34 %), Flash не заблоковано
+2026-10-27T21:29:39.9457496Z   ✓ all0 -> QUOTA0
+2026-10-27T21:29:46.4537630Z   ✓ garbage -> наряд пройшов (ГОТОВО)
+2026-10-27T21:29:52.7895623Z   ✓ fail -> наряд пройшов (ГОТОВО)
+2026-10-27T21:29:52.7896144Z   ✓ garbage: вивід /usage в wrapper.log для власника
+2026-10-27T21:29:52.7896964Z === Д4 429 посеред прогону — позначка чекає скидання групи (М.9-Е), рядок QUOTA0 одним рядком
+2026-10-27T21:29:58.4108049Z   → GEMINI ОБГОРТКА: ЗАБЛОКОВАНО gemini/М.2-проба-обгортки QUOTA0_GEMINI35FLASH_M137
+2026-10-27T21:29:58.4108819Z   → GEMINI ОБГОРТКА: ПУЛИ V=1.1.11 G=GEMINI35FLASH:34:137 G=GEMINI31PRO:0:137 G=CLAUDEGPT:0:137 M=gemini-3.8-flash-high,claude-opus-5-5-high
+2026-10-27T21:29:58.4302707Z   ✓ рядок ЗАБЛОКОВАНО gemini/<наряд> QUOTA0_GEMINI35FLASH_M<хв>, один
+2026-10-27T21:29:58.4457153Z   ✓ позначка в чеканні (WAIT), спроба не спалена
+2026-10-27T21:29:58.4457969Z === Д5 шаблони теки вихідних: лише повний збіг; решта — карантин, у рядку лише код
+2026-10-27T21:30:02.4535068Z   → GEMINI ОБГОРТКА: ГОТОВО gemini/М.9-А-доставка aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+2026-10-27T21:30:02.4535844Z   → GEMINI ОБГОРТКА: ГОТОВО gemini/М.9-А-доставка aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa КВОТА GEMINI35FLASH 0
+2026-10-27T21:30:02.4539195Z   → GEMINI ОБГОРТКА: ЗАБЛОКОВАНО claude/М.9-А-доставка QUOTA0_FLASH_M10
+2026-10-27T21:30:02.4539775Z   → СПОСТЕРІГАЧ КОМЕНТАР #963 4321 chatgpt-codex-connector[bot] змінено
+2026-10-27T21:30:02.4540202Z   → СПОСТЕРІГАЧ CI #1716 aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa timed_out
+2026-10-27T21:30:02.4540715Z   → СПОСТЕРІГАЧ ПЕРЕНЕСЕНО М.9-Б codex/М.9-Б aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa #1730
+2026-10-27T21:30:02.4541136Z   → СПОСТЕРІГАЧ НЕ ПЕРЕНЕСЕНО М.9-Б APPLY_FAILED
+2026-10-27T21:30:02.4541613Z   → GEMINI ОБГОРТКА: КАРАНТИН ВИХІДНИХ 20261024-120008-aaaaaaaaaa08 NO_TEMPLATE — рядок не переслано (те
+2026-10-27T21:30:02.4542190Z   → GEMINI ОБГОРТКА: КАРАНТИН ВИХІДНИХ 20261024-120009-aaaaaaaaaa09 NO_TEMPLATE — рядок не переслано (те
+2026-10-27T21:30:02.4543550Z   → GEMINI ОБГОРТКА: КАРАНТИН ВИХІДНИХ 20261024-120010-aaaaaaaaaa10 NO_TEMPLATE — рядок не переслано (те
+2026-10-27T21:30:02.4798338Z   ✓ переслано рівно 7 шаблонних рядків і не більше 3 повідомлень про карантин
+2026-10-27T21:30:02.4982285Z   ✓ у повідомленнях про карантин — лише код, ні слова з файлів
+2026-10-27T21:30:02.5230349Z   ✓ карантин: 16 файлів (11 не за шаблоном + 5 за форматом) лежать у quarantine/
+2026-10-27T21:30:02.5233944Z   ✓ незавершені й чужі імена не чіпано
+2026-10-27T21:30:02.5604077Z   ✓ прийняті — у done/, у теці лишились лише тимчасові
+2026-10-27T21:30:02.5814971Z   ✓ другий прохід нічого не надіслав повторно
+2026-10-27T21:30:02.5815525Z === Д6 повтор і стан «надіслано / спроби»: збій claude -> спроби, далі доставлено один раз
+2026-10-27T21:30:04.2203861Z {"line":"СПОСТЕРІГАЧ CI #5 bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb success","sent":false,"attempts":3,"first_failure_utc":"2026-10-27T21:30:03.8737885Z","fallback_attempts":0,"channel":"","exhausted":false,"cloud_auth":false}
+2026-10-27T21:30:04.2323170Z   ✓ після збою: sent=false, attempts=3 (SendRetries)
+2026-10-27T21:30:05.0335530Z {"line":"СПОСТЕРІГАЧ CI #5 bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb success","sent":true,"attempts":4,"first_failure_utc":"2026-10-27T21:30:03.8737885Z","fallback_attempts":0,"channel":"claude","exhausted":false,"cloud_auth":false}
+2026-10-27T21:30:05.0479790Z   ✓ після відновлення: sent=true, attempts=4
+2026-10-27T21:30:05.7419788Z   ✓ доставлено рівно раз
+2026-10-27T21:30:05.7420311Z === Д6б межа спроб: MaxSendAttempts=4 — тиша після чотирьох
+2026-10-27T21:30:09.0366995Z   ✓ claude викликано рівно 4 рази
+2026-10-27T21:30:09.0367537Z === Д7 кінець прогону -> ok:true за ≤ 2 хв (від готового стану до claude)
+2026-10-27T21:30:15.9000192Z   ✓ доставлено за 2 с (межа 120)
+2026-10-27T21:30:15.9175950Z   ✓ рядок кінця пройшов теку вихідних: файл у done/
+2026-10-27T21:30:15.9176497Z === Д8 стенд одного прогону: рядок кінця перед сном/вимкненням сесії — вже в теці, сесії жити не треба
+2026-10-27T21:30:23.5033939Z   ✓ повторний запуск тихий
+2026-10-27T21:30:23.5034804Z === Д9 SlugPattern закінчується на \z, а не $: slug із кінцевим \n відкидається в обох файлах
+2026-10-27T21:30:23.8011093Z   ✓ queue_lanes: 'x\n' -> False, 'x' -> True (дістали: False True)
+2026-10-27T21:30:24.0902042Z   ✓ gemini_publish: 'x\n' -> False, 'x' -> True (дістали: False True)
+2026-10-27T21:30:24.0902859Z
+2026-10-27T21:30:24.0903246Z ВСЕ ✓
+2026-10-27T21:30:24.1482066Z ПІДСУМОК сценарії_доставки.sh: ✓ 30 / ✗ 0; код стенда 0; код логу 0
+2026-10-27T21:30:24.1885066Z ##[group]Run bash аудит/адаптери/gemini/перевірка/запустити_стенд.sh сценарії_прогону.sh
+2026-10-27T21:30:24.1885450Z bash аудит/адаптери/gemini/перевірка/запустити_стенд.sh сценарії_прогону.sh
+2026-10-27T21:30:24.1894664Z shell: C:\Program Files\Git\bin\bash.EXE --noprofile --norc -e -o pipefail {0}
+2026-10-27T21:30:24.1894894Z env:
+2026-10-27T21:30:24.1894998Z   PWSH:
+2026-10-27T21:30:24.1895303Z   PYTHONUTF8: 1
+2026-10-27T21:30:24.1895422Z   PYTHONIOENCODING: utf-8
+2026-10-27T21:30:24.1895616Z   pythonLocation: C:\hostedtoolcache\windows\Python\3.11.9\x64
+2026-10-27T21:30:24.1895879Z   PKG_CONFIG_PATH: C:\hostedtoolcache\windows\Python\3.11.9\x64/lib/pkgconfig
+2026-10-27T21:30:24.1896131Z   Python_ROOT_DIR: C:\hostedtoolcache\windows\Python\3.11.9\x64
+2026-10-27T21:30:24.1896355Z   Python2_ROOT_DIR: C:\hostedtoolcache\windows\Python\3.11.9\x64
+2026-10-27T21:30:24.1896584Z   Python3_ROOT_DIR: C:\hostedtoolcache\windows\Python\3.11.9\x64
+2026-10-27T21:30:24.1896834Z   TMPDIR: /d/a/_temp/obhortka
+2026-10-27T21:30:24.1896971Z ##[endgroup]
+2026-10-27T21:30:32.0796294Z   ✓ a (abandon_then_done, stream)
+2026-10-27T21:30:38.8311125Z   ✓ b (github, stream)
+2026-10-27T21:30:46.2348156Z   ✓ c (github_renamed, stream)
+2026-10-27T21:30:52.9216328Z   ✓ d (wrapper, stream)
+2026-10-27T21:30:59.7031495Z   ✓ e (blocked, stream)
+2026-10-27T21:31:07.1977974Z   ✓ f (wrong_sha, stream)
+2026-10-27T21:31:14.5157657Z   ✓ g (dirty, stream)
+2026-10-27T21:31:21.1964623Z   ✓ h (never, stream)
+2026-10-27T21:31:31.0551433Z   ✓ i (hang, stream)
+2026-10-27T21:31:38.4890476Z   ✓ j (die, stream)
+2026-10-27T21:31:44.9835078Z   ✓ k (nothing, stream)
+2026-10-27T21:31:52.5811993Z   ✓ l (abandon_then_done, print)
+2026-10-27T21:32:59.3438902Z   ✓ m (hang, print)
+2026-10-27T21:33:05.3320765Z   ✓ n (abandon_then_done, stream)
+2026-10-27T21:33:05.3884609Z ПІДСУМОК сценарії_прогону.sh: ✓ 14 / ✗ 0; код стенда 0; код логу 0
+2026-10-27T21:33:05.4174804Z ##[group]Run bash аудит/адаптери/gemini/перевірка/запустити_стенд.sh сценарії_рушіїв.sh
+2026-10-27T21:33:05.4175188Z bash аудит/адаптери/gemini/перевірка/запустити_стенд.sh сценарії_рушіїв.sh
+2026-10-27T21:33:05.4184606Z shell: C:\Program Files\Git\bin\bash.EXE --noprofile --norc -e -o pipefail {0}
+2026-10-27T21:33:05.4184832Z env:
+2026-10-27T21:33:05.4184941Z   PWSH:
+2026-10-27T21:33:05.4185047Z   PYTHONUTF8: 1
+2026-10-27T21:33:05.4185200Z   PYTHONIOENCODING: utf-8
+2026-10-27T21:33:05.4185378Z   pythonLocation: C:\hostedtoolcache\windows\Python\3.11.9\x64
+2026-10-27T21:33:05.4185629Z   PKG_CONFIG_PATH: C:\hostedtoolcache\windows\Python\3.11.9\x64/lib/pkgconfig
+2026-10-27T21:33:05.4185878Z   Python_ROOT_DIR: C:\hostedtoolcache\windows\Python\3.11.9\x64
+2026-10-27T21:33:05.4186110Z   Python2_ROOT_DIR: C:\hostedtoolcache\windows\Python\3.11.9\x64
+2026-10-27T21:33:05.4186341Z   Python3_ROOT_DIR: C:\hostedtoolcache\windows\Python\3.11.9\x64
+2026-10-27T21:33:05.4186557Z   TMPDIR: /d/a/_temp/obhortka
+2026-10-27T21:33:05.4186703Z ##[endgroup]
+2026-10-27T21:33:12.2349117Z ok   codex-done
+2026-10-27T21:33:18.5940829Z ok   codex-github
+2026-10-27T21:33:24.6610596Z ok   codex-blocked
+2026-10-27T21:33:30.3153422Z ok   codex-missing
+2026-10-27T21:33:36.8782694Z ok   fallback-to-codex
+2026-10-27T21:33:44.1220234Z ok   fallback-not-needed
+2026-10-27T21:33:48.0831456Z ok   no-fallback-zero
+2026-10-27T21:33:53.7222174Z ok   codex-429
+2026-10-27T21:33:59.3617015Z ok   codex-auth
+2026-10-27T21:34:06.5211298Z ok   agy-unchanged
+2026-10-27T21:34:11.4959715Z ok   codex-off-label
+2026-10-27T21:34:11.4961189Z ok   codex-off-label-not-called
+2026-10-27T21:34:15.1094692Z ok   codex-off-fallback
+2026-10-27T21:34:21.5098500Z ok   secret-path
+2026-10-27T21:34:27.8262770Z ok   secret-content
+2026-10-27T21:34:34.7446792Z ok   cascade-code-stays
+2026-10-27T21:34:41.5296594Z ok   cascade-design-claude
+2026-10-27T21:34:48.0303482Z ok   cascade-design-codex
+2026-10-27T21:34:51.6065447Z ok   cascade-design-none
+2026-10-27T21:34:58.6329513Z ok   usage-tsv
+2026-10-27T21:35:05.4999026Z ok   usage-nohdr
+2026-10-27T21:35:11.8604153Z ok   usage-old
+2026-10-27T21:35:18.6915593Z ok   usage-oldnoquota
+2026-10-27T21:35:18.7049184Z ok   usage-old-argv
+2026-10-27T21:35:24.8565306Z ok   ver-date-only
+2026-10-27T21:35:24.8709280Z ok   ver-date-only-argv
+2026-10-27T21:35:31.9365924Z ok   ver-date-before
+2026-10-27T21:35:31.9526005Z ok   ver-date-before-argv
+2026-10-27T21:35:39.1917296Z ok   ver-agy-line
+2026-10-27T21:35:46.2506189Z ok   usage-nohdr-pools
+2026-10-27T21:35:46.2625769Z ok   usage-nohdr-log
+2026-10-27T21:35:53.3002547Z ok   pools-hook-narrow
+2026-10-27T21:36:00.7397871Z ok   pools-line
+2026-10-27T21:36:00.7795691Z ok   codex-argv
+2026-10-27T21:36:07.3546421Z ok   codex-max
+2026-10-27T21:36:07.3757300Z ok   codex-max-argv
+2026-10-27T21:36:13.0594953Z ok   codex-effort-rejected
+2026-10-27T21:36:13.0826803Z ok   codex-effort-rejected-one-call
+2026-10-27T21:36:59.8901520Z ok   codex-long-run
+2026-10-27T21:36:59.9220411Z ok   codex-long-run-events
+2026-10-27T21:37:11.8120142Z ok   codex-stall
+2026-10-27T21:37:19.0273663Z ok   role-default
+2026-10-27T21:37:19.0437620Z ok   role-default-prompt
+2026-10-27T21:37:26.2076327Z ok   role-review
+2026-10-27T21:37:26.2244721Z ok   role-review-prompt
+2026-10-27T21:37:33.9461795Z ok   role-agy
+2026-10-27T21:37:33.9629782Z ok   role-agy-unchanged
+2026-10-27T21:37:41.0753440Z ok   role-fenced-example
+2026-10-27T21:37:41.0914474Z ok   role-fenced-example-prompt
+2026-10-27T21:37:48.2054092Z ok   role-bare-eof
+2026-10-27T21:37:48.2210320Z ok   role-bare-eof-prompt
+2026-10-27T21:37:54.5499305Z ok   codex-effort-payload
+2026-10-27T21:38:00.5058814Z ok   codex-effort-escaped
+2026-10-27T21:38:00.5760995Z ПІДСУМОК сценарії_рушіїв.sh: ✓ 53 / ✗ 0; код стенда 0; код логу 0
+2026-10-27T21:38:00.6129201Z ##[group]Run bash аудит/адаптери/gemini/перевірка/запустити_стенд.sh сценарії_смуг.sh
+2026-10-27T21:38:00.6129710Z bash аудит/адаптери/gemini/перевірка/запустити_стенд.sh сценарії_смуг.sh
+2026-10-27T21:38:00.6140442Z shell: C:\Program Files\Git\bin\bash.EXE --noprofile --norc -e -o pipefail {0}
+2026-10-27T21:38:00.6140737Z env:
+2026-10-27T21:38:00.6140918Z   PWSH:
+2026-10-27T21:38:00.6141081Z   PYTHONUTF8: 1
+2026-10-27T21:38:00.6141268Z   PYTHONIOENCODING: utf-8
+2026-10-27T21:38:00.6141527Z   pythonLocation: C:\hostedtoolcache\windows\Python\3.11.9\x64
+2026-10-27T21:38:00.6141843Z   PKG_CONFIG_PATH: C:\hostedtoolcache\windows\Python\3.11.9\x64/lib/pkgconfig
+2026-10-27T21:38:00.6142316Z   Python_ROOT_DIR: C:\hostedtoolcache\windows\Python\3.11.9\x64
+2026-10-27T21:38:00.6142766Z   Python2_ROOT_DIR: C:\hostedtoolcache\windows\Python\3.11.9\x64
+2026-10-27T21:38:00.6143185Z   Python3_ROOT_DIR: C:\hostedtoolcache\windows\Python\3.11.9\x64
+2026-10-27T21:38:00.6143674Z   TMPDIR: /d/a/_temp/obhortka
+2026-10-27T21:38:00.6143945Z ##[endgroup]
+2026-10-27T21:38:00.9742211Z === А: шість позначок на одному коміті — смуги водночас, до N у смузі, за пріоритетом; Argon на 0 % чекає скидання
+2026-10-27T21:38:17.6298107Z   перший прохід планувальників: 15 с; найбільше водночас: усього 5, codex 2, agy 1, claude 2
+2026-10-27T21:38:17.7015047Z   ✓ codex — 2 водночас (слотів 2)
+2026-10-27T21:38:17.7687983Z   ✓ claude — 2 водночас (слотів 2)
+2026-10-27T21:38:17.8385065Z   ✓ смуги водночас: усього ≥ 5
+2026-10-27T21:38:17.8893907Z   порядок узяття: gemini-queue/б-codex/gpt-6.1-sol-high/1/p1 gemini-queue/а-codex/gpt-6.1-sol-high/1/p2 gemini-queue/в-agy/gemini-3.8-flash-high/1/p3 gemini-queue/б-codex/gpt-6.1-sol-high/1/p1 gemini-queue/а-codex/gpt-6.1-sol-high/1/p2 gemini-queue/в-agy/gemini-3.8-flash-high/1/p3 gemini-queue/д-claude/cc-claude-sonnet-5-5-medium/1/p4 gemini-queue/е-claude-gpu/cc-claude-sonnet-5-5-medium/1/p1-gpu
+2026-10-27T21:38:17.8896553Z   ✗ узято за пріоритетом: б(p1) раніше за а(p2), е(p1) раніше за д(p4)
+2026-10-27T21:38:17.9237604Z   ✓ Argon (p0) на нулі не взято, позначка в чеканні
+2026-10-27T21:38:17.9979960Z   ✓ стан: таблиця смуг — claude 2/2 і codex 2/2 у якійсь правці
+2026-10-27T21:38:18.0285417Z   ✓ стан: квота agy з UTC — GEMINI4ARGON 0 %, скидання …Z, зчитано …Z
+2026-10-27T21:38:18.0844155Z   ✓ стан: квота Claude з rate_limit_event (5H, 7D)
+2026-10-27T21:38:18.1094966Z   ✓ стан: позначка Argon у «Чекають скидання квоти»
+2026-10-27T21:38:18.1095365Z   ✓ стан: GPU зайнята слотом claude
+2026-10-27T21:38:22.2406725Z   ✓ Argon: рядок QUOTA0_GEMINI4ARGON_M<хв> диспетчерові — один (є: 1)
+2026-10-27T21:39:02.6843118Z   ✓ після «скидання» Argon узято тією ж смугою без нової позначки → ГОТОВО
+2026-10-27T21:39:02.7160782Z   ✓ решта п'яти — ГОТОВО (є: 5)
+2026-10-27T21:39:02.7803728Z   кінці: ГОТОВО gemini/а-codex МОДЕЛЬ gpt-6.1-sol-high;ГОТОВО gemini/б-codex МОДЕЛЬ gpt-6.1-sol-high;ЗАБЛОКОВАНО gemini/г-agy-квота QUOTA0_GEMINI4ARGON_M1;ГОТОВО gemini/в-agy КВОТА GEMINIMODELS 100 МОДЕЛЬ gemini-3.8-flash-high;ГОТОВО claude/е-claude-gpu МОДЕЛЬ cc-claude-sonnet-5-5-medium;ГОТОВО claude/д-claude МОДЕЛЬ cc-claude-sonnet-5-5-medium;ГОТОВО gemini/г-agy-квота КВОТА GEMINI4ARGON 100 МОДЕЛЬ gemini-4-argon-high;
+2026-10-27T21:39:02.7805382Z === Б: GPU — по одному на ноутбуці, замок спільний для gemini-run і claude-run
+2026-10-27T21:39:28.7931581Z   найбільше водночас GPU-нарядів: 1; порядок: gpu-claude gpu-agy
+2026-10-27T21:39:28.8778289Z   ✓ дві GPU-позначки різних облікових записів — не водночас, обидві виконано
+2026-10-27T21:39:28.8778929Z === В: N зі смуги.json на origin/main — 1, потім 2, без перевстановлення скриптів
+2026-10-27T21:40:05.4223458Z   codex водночас: смуги.json codex=1 → 1, codex=2 → 2; codex=99 у даних → 4 (стеля в коді)
+2026-10-27T21:40:05.4224764Z   ✓ N з файла даних міняє паралельність без перевстановлення (1 → 2)
+2026-10-27T21:40:05.4225179Z   ✓ дані не перевищують стелі коду (99 → 4)
+2026-10-27T21:40:05.4225355Z
+2026-10-27T21:40:05.4228006Z ЗБІЙ ✗
+2026-10-27T21:40:05.4877058Z ПІДСУМОК сценарії_смуг.sh: ✓ 15 / ✗ 2; код стенда 1; код логу 0
+2026-10-27T21:40:05.5081363Z ##[error]Process completed with exit code 1.
+2026-10-27T21:40:05.5220173Z ##[group]Run bash аудит/адаптери/gemini/перевірка/запустити_стенд.sh сценарії_спостерігача.sh
+2026-10-27T21:40:05.5220580Z bash аудит/адаптери/gemini/перевірка/запустити_стенд.sh сценарії_спостерігача.sh
+2026-10-27T21:40:05.5231808Z shell: C:\Program Files\Git\bin\bash.EXE --noprofile --norc -e -o pipefail {0}
+2026-10-27T21:40:05.5232052Z env:
+2026-10-27T21:40:05.5232171Z   PWSH:
+2026-10-27T21:40:05.5232286Z   PYTHONUTF8: 1
+2026-10-27T21:40:05.5232459Z   PYTHONIOENCODING: utf-8
+2026-10-27T21:40:05.5232660Z   pythonLocation: C:\hostedtoolcache\windows\Python\3.11.9\x64
+2026-10-27T21:40:05.5232943Z   PKG_CONFIG_PATH: C:\hostedtoolcache\windows\Python\3.11.9\x64/lib/pkgconfig
+2026-10-27T21:40:05.5233216Z   Python_ROOT_DIR: C:\hostedtoolcache\windows\Python\3.11.9\x64
+2026-10-27T21:40:05.5233467Z   Python2_ROOT_DIR: C:\hostedtoolcache\windows\Python\3.11.9\x64
+2026-10-27T21:40:05.5233708Z   Python3_ROOT_DIR: C:\hostedtoolcache\windows\Python\3.11.9\x64
+2026-10-27T21:40:05.5233951Z   TMPDIR: /d/a/_temp/obhortka
+2026-10-27T21:40:05.5234095Z ##[endgroup]
+2026-10-27T21:40:05.8414465Z === 1 базова лінія: перший прохід мовчить, другий теж
+2026-10-27T21:40:07.9539645Z   ✓ w1: прохід 1 — код 0, рядків 0 (очікувано 0)
+2026-10-27T21:40:09.0085045Z   ✓ w1: прохід 2 — код 0, рядків 0 (очікувано 0)
+2026-10-27T21:40:09.1044682Z   ✓ стан записано
+2026-10-27T21:40:09.1045382Z === 2 коментарі: новий, змінено, чужі не йдуть, повтор мовчить
+2026-10-27T21:40:11.0466395Z   ✓ w2: базова лінія — код 0, рядків 0 (очікувано 0)
+2026-10-27T21:40:12.5146901Z   ✓ w2: нові — код 0, рядків 2 (очікувано 2)
+2026-10-27T21:40:12.6248743Z    СПОСТЕРІГАЧ КОМЕНТАР #1801 210 chatgpt-codex-connector[bot] новий
+2026-10-27T21:40:12.6249139Z    СПОСТЕРІГАЧ КОМЕНТАР #963 200 mightyrochy новий
+2026-10-27T21:40:13.6868962Z   ✓ w2: повтор — код 0, рядків 0 (очікувано 0)
+2026-10-27T21:40:15.9080213Z   ✓ w2: правка двох — код 0, рядків 2 (очікувано 2)
+2026-10-27T21:40:15.9883418Z    СПОСТЕРІГАЧ КОМЕНТАР #963 200 mightyrochy змінено
+2026-10-27T21:40:15.9885344Z    СПОСТЕРІГАЧ КОМЕНТАР #1801 210 chatgpt-codex-connector[bot] змінено
+2026-10-27T21:40:17.0006706Z   ✓ w2: після правки — код 0, рядків 0 (очікувано 0)
+2026-10-27T21:40:17.0820696Z === 3 CI: pending мовчить, зміна стану йде, чужі PR ні, закритий зникає
+2026-10-27T21:40:19.1966636Z   ✓ w3: базова лінія — код 0, рядків 0 (очікувано 0)
+2026-10-27T21:40:20.4108036Z   ✓ w3: pending (рядків 0) — код 0, рядків 0 (очікувано 0)
+2026-10-27T21:40:21.6576889Z   ✓ w3: failure поверх success — код 0, рядків 1 (очікувано 1)
+2026-10-27T21:40:21.7204982Z    СПОСТЕРІГАЧ CI #1802 86f7e437faa5a7fce15d1ddcb9eaeaea377667b8 failure
+2026-10-27T21:40:22.8588280Z   ✓ w3: без змін — код 0, рядків 0 (очікувано 0)
+2026-10-27T21:40:24.1357678Z   ✓ w3: нова голова, cancelled — код 0, рядків 1 (очікувано 1)
+2026-10-27T21:40:24.2020704Z    СПОСТЕРІГАЧ CI #1802 3c363836cf4e16666669a25da280a1865c2d2874 cancelled
+2026-10-27T21:40:25.2575320Z   ✓ w3: нема перевірок -> pending — код 0, рядків 0 (очікувано 0)
+2026-10-27T21:40:26.2843443Z   ✓ w3: 1802 закрито — код 0, рядків 0 (очікувано 0)
+2026-10-27T21:40:26.3791266Z   1802 у стані: 0
+2026-10-27T21:40:26.3794926Z === 4 перенос: diff лягає -> гілка codex/<наряд>, рядок, без повтору
+2026-10-27T21:40:28.1793451Z   ✓ w4: базова лінія — код 0, рядків 0 (очікувано 0)
+2026-10-27T21:40:30.1678342Z   ✓ w4: відповідь бота — код 0, рядків 2 (очікувано 2)
+2026-10-27T21:40:30.2476909Z    СПОСТЕРІГАЧ ПЕРЕНЕСЕНО М.9-проба-спостерігача codex/М.9-проба-спостерігача 32ebca70f7170635f68e8830ce1715b111403267 #1801
+2026-10-27T21:40:30.2478330Z    СПОСТЕРІГАЧ КОМЕНТАР #1801 400 chatgpt-codex-connector[bot] новий
+2026-10-27T21:40:30.3247459Z   гілка: пересунута
+2026-10-27T21:40:30.3571138Z один|2|три|
+2026-10-27T21:40:30.3882479Z новий
+2026-10-27T21:40:30.4201716Z   коміт: Перенос diff Codex з коментаря 400 до PR #1801 (спостерігач без моделі)
+2026-10-27T21:40:30.4522819Z   ref refs/heads/codex/М.9-проба-спостерігача   ref refs/heads/main
+2026-10-27T21:40:31.4407979Z   ✓ w4: повтор — код 0, рядків 0 (очікувано 0)
+2026-10-27T21:40:31.5701226Z   main недоторканий: один|два|три|
+2026-10-27T21:40:31.5701724Z === 5 відмови переносу: код причини, гілка не рухається
+2026-10-27T21:40:33.4386113Z   ✓ w5: базова лінія — код 0, рядків 0 (очікувано 0)
+2026-10-27T21:40:37.3159728Z   ✓ w5: вісім поганих diff — код 0, рядків 16 (очікувано 16)
+2026-10-27T21:40:37.5793928Z    СПОСТЕРІГАЧ КОМЕНТАР #1801 501 chatgpt-codex-connector[bot] новий
+2026-10-27T21:40:37.5796279Z    СПОСТЕРІГАЧ КОМЕНТАР #1801 502 chatgpt-codex-connector[bot] новий
+2026-10-27T21:40:37.5797460Z    СПОСТЕРІГАЧ НЕ ПЕРЕНЕСЕНО М.9-проба-спостерігача APPLY_FAILED
+2026-10-27T21:40:37.5797919Z    СПОСТЕРІГАЧ НЕ ПЕРЕНЕСЕНО М.9-проба-спостерігача FORBIDDEN_PATH
+2026-10-27T21:40:37.5798578Z    СПОСТЕРІГАЧ КОМЕНТАР #1801 503 chatgpt-codex-connector[bot] новий
+2026-10-27T21:40:37.5799135Z    СПОСТЕРІГАЧ КОМЕНТАР #1801 507 chatgpt-codex-connector[bot] новий
+2026-10-27T21:40:37.5799604Z    СПОСТЕРІГАЧ НЕ ПЕРЕНЕСЕНО М.9-проба-спостерігача BINARY
+2026-10-27T21:40:37.5800000Z    СПОСТЕРІГАЧ КОМЕНТАР #1801 504 chatgpt-codex-connector[bot] новий
+2026-10-27T21:40:37.5800395Z    СПОСТЕРІГАЧ КОМЕНТАР #1801 505 chatgpt-codex-connector[bot] новий
+2026-10-27T21:40:37.5800676Z    СПОСТЕРІГАЧ НЕ ПЕРЕНЕСЕНО М.9-проба-спостерігача FFFD
+2026-10-27T21:40:37.5800951Z    СПОСТЕРІГАЧ КОМЕНТАР #1801 506 chatgpt-codex-connector[bot] новий
+2026-10-27T21:40:37.5801235Z    СПОСТЕРІГАЧ НЕ ПЕРЕНЕСЕНО М.9-проба-спостерігача FORBIDDEN_PATH
+2026-10-27T21:40:37.5801562Z    СПОСТЕРІГАЧ НЕ ПЕРЕНЕСЕНО М.9-проба-спостерігача SPECIAL_MODE
+2026-10-27T21:40:37.5801835Z    СПОСТЕРІГАЧ НЕ ПЕРЕНЕСЕНО М.9-проба-спостерігача APPLY_FAILED
+2026-10-27T21:40:37.5802119Z    СПОСТЕРІГАЧ КОМЕНТАР #1801 508 chatgpt-codex-connector[bot] новий
+2026-10-27T21:40:37.5802435Z    СПОСТЕРІГАЧ НЕ ПЕРЕНЕСЕНО М.9-проба-спостерігача APPLY_FAILED
+2026-10-27T21:40:38.8633977Z   ✓ w5: diff від не-бота: лише коментар власника — код 0, рядків 1 (очікувано 1)
+2026-10-27T21:40:38.9289326Z    СПОСТЕРІГАЧ КОМЕНТАР #1801 590 mightyrochy новий
+2026-10-27T21:40:38.9930959Z   ✓ гілка codex/М.9-проба-спостерігача не рухалась
+2026-10-27T21:40:39.9420595Z   ✓ w5: відповідь бота без diff: лише коментар — код 0, рядків 1 (очікувано 1)
+2026-10-27T21:40:40.0018249Z    СПОСТЕРІГАЧ КОМЕНТАР #1801 592 chatgpt-codex-connector[bot] новий
+2026-10-27T21:40:42.7532421Z   ✓ w5: правка bad -> ok: переноситься — код 0, рядків 2 (очікувано 2)
+2026-10-27T21:40:42.8393488Z    СПОСТЕРІГАЧ КОМЕНТАР #1801 501 chatgpt-codex-connector[bot] змінено
+2026-10-27T21:40:42.8395545Z    СПОСТЕРІГАЧ ПЕРЕНЕСЕНО М.9-проба-спостерігача codex/М.9-проба-спостерігача 7e2dee3c15d238405f05f41bc9294cbb51ab593b #1801
+2026-10-27T21:40:44.1008571Z   ✓ w5: TOO_BIG — код 0, рядків 2 (очікувано 2)
+2026-10-27T21:40:44.1796209Z    СПОСТЕРІГАЧ КОМЕНТАР #1801 593 chatgpt-codex-connector[bot] новий
+2026-10-27T21:40:44.1797838Z    СПОСТЕРІГАЧ НЕ ПЕРЕНЕСЕНО М.9-проба-спостерігача TOO_BIG
+2026-10-27T21:40:44.2070683Z === 5б хеші: обрізаний diff при хешах повного -> HASH_MISMATCH; без блоку хешів -> NO_HASHES
+2026-10-27T21:40:46.0221297Z   ✓ w5b: базова лінія — код 0, рядків 0 (очікувано 0)
+2026-10-27T21:40:47.8614961Z   ✓ w5b: обрізаний і без хешів — код 0, рядків 4 (очікувано 4)
+2026-10-27T21:40:47.9703705Z    СПОСТЕРІГАЧ КОМЕНТАР #1801 521 chatgpt-codex-connector[bot] новий
+2026-10-27T21:40:47.9705255Z    СПОСТЕРІГАЧ НЕ ПЕРЕНЕСЕНО М.9-проба-спостерігача HASH_MISMATCH
+2026-10-27T21:40:47.9708201Z    СПОСТЕРІГАЧ НЕ ПЕРЕНЕСЕНО М.9-проба-спостерігача NO_HASHES
+2026-10-27T21:40:47.9709269Z    СПОСТЕРІГАЧ КОМЕНТАР #1801 520 chatgpt-codex-connector[bot] новий
+2026-10-27T21:40:51.8027365Z   ✓ w5b: хеш файлу інший — код 0, рядків 2 (очікувано 2)
+2026-10-27T21:40:51.8928468Z    СПОСТЕРІГАЧ НЕ ПЕРЕНЕСЕНО М.9-проба-спостерігача HASH_MISMATCH
+2026-10-27T21:40:51.8930532Z    СПОСТЕРІГАЧ КОМЕНТАР #1801 522 chatgpt-codex-connector[bot] новий
+2026-10-27T21:40:51.9554616Z   ✓ гілку не пересунуто
+2026-10-27T21:40:51.9555365Z === 6 ворожі назви гілок і PR: нічого, крім шаблонів
+2026-10-27T21:40:53.7358664Z   ✓ w6: базова лінія — код 0, рядків 0 (очікувано 0)
+2026-10-27T21:40:55.9798872Z   ✓ w6: п'ять ворожих PR — код 0, рядків 4 (очікувано 4)
+2026-10-27T21:40:56.1791848Z    СПОСТЕРІГАЧ CI #1811 4a0a19218e082a343a1b17e5333409af9d98f0f5 success
+2026-10-27T21:40:56.1793588Z    СПОСТЕРІГАЧ CI #1810 58e6b3a414a1e090dfc6029add0f3555ccba127f success
+2026-10-27T21:40:56.1794694Z    СПОСТЕРІГАЧ CI #1814 aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa success
+2026-10-27T21:40:56.1795307Z    СПОСТЕРІГАЧ CI #1812 54fd1711209fb1c0781092374132c66e79e2241b success
+2026-10-27T21:40:56.2077055Z === 7 збій gh: код 1, рядків нема, стан не просунувся, далі наздоганяє
+2026-10-27T21:40:58.0258404Z   ✓ w7: базова лінія — код 0, рядків 0 (очікувано 0)
+2026-10-27T21:40:58.9645547Z   ✓ gh не відповідає -> код виходу 1
+2026-10-27T21:40:58.9961841Z   рядків: 0
+2026-10-27T21:41:00.0710716Z   ✓ w7: gh знову працює — код 0, рядків 1 (очікувано 1)
+2026-10-27T21:41:00.1425792Z    СПОСТЕРІГАЧ КОМЕНТАР #963 700 mightyrochy новий
+2026-10-27T21:41:00.1732413Z === 8 ліміт рядків: 5 нових коментарів при MaxRows 2 -> 3 проходи, без дублів
+2026-10-27T21:41:02.0979936Z   ✓ w8: базова лінія — код 0, рядків 0 (очікувано 0)
+2026-10-27T21:41:03.3956425Z   ✓ w8: прохід 1 — код 0, рядків 2 (очікувано 2)
+2026-10-27T21:41:03.4835031Z    СПОСТЕРІГАЧ КОМЕНТАР #963 802 mightyrochy новий
+2026-10-27T21:41:03.4838560Z    СПОСТЕРІГАЧ КОМЕНТАР #963 801 mightyrochy новий
+2026-10-27T21:41:04.4798895Z   ✓ w8: прохід 2 — код 0, рядків 2 (очікувано 2)
+2026-10-27T21:41:04.5665897Z    СПОСТЕРІГАЧ КОМЕНТАР #963 803 mightyrochy новий
+2026-10-27T21:41:04.5666645Z    СПОСТЕРІГАЧ КОМЕНТАР #963 804 mightyrochy новий
+2026-10-27T21:41:05.6139037Z   ✓ w8: прохід 3 — код 0, рядків 1 (очікувано 1)
+2026-10-27T21:41:05.6987323Z    СПОСТЕРІГАЧ КОМЕНТАР #963 805 mightyrochy новий
+2026-10-27T21:41:06.7597322Z   ✓ w8: прохід 4 — код 0, рядків 0 (очікувано 0)
+2026-10-27T21:41:06.8854706Z === 9 формат теки вихідних для всього, що було у w2..w8
+2026-10-27T21:41:06.9517031Z   w2:   ✓ формат усіх 4 файлів: ім'я, UTF-8 без BOM, один рядок, шаблон
+2026-10-27T21:41:07.0023218Z   w3:   ✓ формат усіх 2 файлів: ім'я, UTF-8 без BOM, один рядок, шаблон
+2026-10-27T21:41:07.0514446Z   w4:   ✓ формат усіх 2 файлів: ім'я, UTF-8 без BOM, один рядок, шаблон
+2026-10-27T21:41:07.1022112Z   w5:   ✓ формат усіх 22 файлів: ім'я, UTF-8 без BOM, один рядок, шаблон
+2026-10-27T21:41:07.1530884Z   w5b:   ✓ формат усіх 6 файлів: ім'я, UTF-8 без BOM, один рядок, шаблон
+2026-10-27T21:41:07.2016887Z   w6:   ✓ формат усіх 4 файлів: ім'я, UTF-8 без BOM, один рядок, шаблон
+2026-10-27T21:41:07.2502569Z   w7:   ✓ формат усіх 1 файлів: ім'я, UTF-8 без BOM, один рядок, шаблон
+2026-10-27T21:41:07.3033526Z   w8:   ✓ формат усіх 5 файлів: ім'я, UTF-8 без BOM, один рядок, шаблон
+2026-10-27T21:41:07.3543251Z ПІДСУМОК сценарії_спостерігача.sh: ✓ 47 / ✗ 0; код стенда 0; код логу 0
+2026-10-27T21:41:07.3877120Z ##[group]Run bash аудит/адаптери/gemini/перевірка/запустити_стенд.sh сценарії_черги.sh
+2026-10-27T21:41:07.3877553Z bash аудит/адаптери/gemini/перевірка/запустити_стенд.sh сценарії_черги.sh
+2026-10-27T21:41:07.3887702Z shell: C:\Program Files\Git\bin\bash.EXE --noprofile --norc -e -o pipefail {0}
+2026-10-27T21:41:07.3887992Z env:
+2026-10-27T21:41:07.3888143Z   PWSH:
+2026-10-27T21:41:07.3888295Z   PYTHONUTF8: 1
+2026-10-27T21:41:07.3888479Z   PYTHONIOENCODING: utf-8
+2026-10-27T21:41:07.3888768Z   pythonLocation: C:\hostedtoolcache\windows\Python\3.11.9\x64
+2026-10-27T21:41:07.3889077Z   PKG_CONFIG_PATH: C:\hostedtoolcache\windows\Python\3.11.9\x64/lib/pkgconfig
+2026-10-27T21:41:07.3889386Z   Python_ROOT_DIR: C:\hostedtoolcache\windows\Python\3.11.9\x64
+2026-10-27T21:41:07.3889677Z   Python2_ROOT_DIR: C:\hostedtoolcache\windows\Python\3.11.9\x64
+2026-10-27T21:41:07.3889983Z   Python3_ROOT_DIR: C:\hostedtoolcache\windows\Python\3.11.9\x64
+2026-10-27T21:41:07.3890283Z   TMPDIR: /d/a/_temp/obhortka
+2026-10-27T21:41:07.3890503Z ##[endgroup]
+2026-10-27T21:41:07.7122830Z === 1 повтор: друга пара запусків нічого не робить
+2026-10-27T21:41:16.1675835Z   wrapper: 1 прогонів;
+2026-10-27T21:41:16.1890590Z   claude: 2 рядків
+2026-10-27T21:41:16.2098934Z   pub: кінець 20261027-214109-543c18ecb507 — ОПУБЛІКОВАНО gemini/М.2-проба-обгортки 079787435e7744367f98c995efc6ce140743f270; комітів 1, файлів до main 1; без .github/ і фай�
+2026-10-27T21:41:16.2100175Z   pub: вихідні 20261027-214109-543c18ecb507.txt: GEMINI ОБГОРТКА: ГОТОВО gemini/М.2-проба-обгортки 079787435e7744367f98c995efc6ce140743f270 КВОТА GEMINI35FLASH 34 МОДЕЛЬ gemini-3.8-fla
+2026-10-27T21:41:16.2101695Z   pub: вихідні 20261027-214114-46492c06beee.txt: GEMINI ОБГОРТКА: ПУЛИ V=1.1.11 G=GEMINI35FLASH:34:137 G=GEMINI31PRO:0:137 G=CLAUDEGPT:0:137 M=gemini-3.8-flash-high,claude-opus-5-5-high
+2026-10-27T21:41:16.2390646Z   origin refs/heads/gemini/М.2-проба-обгортки 0797874
+2026-10-27T21:41:16.2391239Z === 2 позначку знято до публікації
+2026-10-27T21:41:22.3386465Z   wrapper: 1 прогонів;
+2026-10-27T21:41:22.3595875Z   claude: 2 рядків
+2026-10-27T21:41:22.3807318Z   pub: стан 20261027-214118-40ba205431a0 не відповідає жодній позначці черги на GitHub — не опубліковано
+2026-10-27T21:41:22.3808132Z   pub: вихідні 20261027-214118-40ba205431a0.txt: GEMINI ОБГОРТКА: ЗАБЛОКОВАНО gemini/невідомо STATE_INVALID
+2026-10-27T21:41:22.3809186Z   pub: вихідні 20261027-214121-46492c06beee.txt: GEMINI ОБГОРТКА: ПУЛИ V=1.1.11 G=GEMINI35FLASH:34:137 G=GEMINI31PRO:0:137 G=CLAUDEGPT:0:137 M=gemini-3.8-flash-high,claude-opus-5-5-high
+2026-10-27T21:41:22.4094859Z === 3 не fast-forward
+2026-10-27T21:41:29.0237097Z   wrapper: 1 прогонів;
+2026-10-27T21:41:29.0418296Z   claude: 2 рядків
+2026-10-27T21:41:29.0599487Z   pub: кінець 20261027-214124-3af970d06f87 — НЕ ОПУБЛІКОВАНО gemini/М.2-проба-обгортки a2aad9bddfe401f25e1078fcf0d779429f974b1e — не fast-forward до опублікованої гілки;
+2026-10-27T21:41:29.0600573Z   pub: вихідні 20261027-214124-3af970d06f87.txt: GEMINI ОБГОРТКА: ЗАБЛОКОВАНО gemini/М.2-проба-обгортки NOT_FF
+2026-10-27T21:41:29.0601596Z   pub: вихідні 20261027-214128-46492c06beee.txt: GEMINI ОБГОРТКА: ПУЛИ V=1.1.11 G=GEMINI35FLASH:34:137 G=GEMINI31PRO:0:137 G=CLAUDEGPT:0:137 M=gemini-3.8-flash-high,claude-opus-5-5-high
+2026-10-27T21:41:29.0876056Z   origin refs/heads/gemini/М.2-проба-обгортки a8396fc
+2026-10-27T21:41:29.0876534Z === 4 claude не приймає: 2 спроби й тиша
+2026-10-27T21:41:37.0024835Z   wrapper: 1 прогонів;
+2026-10-27T21:41:37.0208207Z   claude: 4 рядків
+2026-10-27T21:41:37.0392083Z   pub: кінець 20261027-214130-f6b07c252584 — ОПУБЛІКОВАНО gemini/М.2-проба-обгортки 84b2d3538124005bb6dc43766d9ed71fb481d205; комітів 1, файлів до main 1; без .github/ і фай�
+2026-10-27T21:41:37.0393380Z   pub: вихідні 20261027-214130-f6b07c252584.txt: GEMINI ОБГОРТКА: ГОТОВО gemini/М.2-проба-обгортки 84b2d3538124005bb6dc43766d9ed71fb481d205 КВОТА GEMINI35FLASH 34 МОДЕЛЬ gemini-3.8-fla
+2026-10-27T21:41:37.0396635Z   pub: вихідні 20261027-214135-46492c06beee.txt: GEMINI ОБГОРТКА: ПУЛИ V=1.1.11 G=GEMINI35FLASH:34:137 G=GEMINI31PRO:0:137 G=CLAUDEGPT:0:137 M=gemini-3.8-flash-high,claude-opus-5-5-high
+2026-10-27T21:41:37.0397301Z   pub: claude --cloud session_01TEST -> 0: {"ok": false, "session_id": "session_01TEST"}
+2026-10-27T21:41:37.0397966Z   pub: claude --cloud session_01TEST -> 0: {"ok": false, "session_id": "session_01TEST"}
+2026-10-27T21:41:37.0398318Z   pub: claude --cloud session_01TEST -> 0: {"ok": false, "session_id": "session_01TEST"}
+2026-10-27T21:41:37.0398692Z   pub: claude --cloud session_01TEST -> 0: {"ok": false, "session_id": "session_01TEST"}
+2026-10-27T21:41:37.0637209Z   origin refs/heads/gemini/М.2-проба-обгортки 84b2d35
+2026-10-27T21:41:37.0658716Z === 5 доробка: старт від опублікованої gemini/<наряд>, спроба 2
+2026-10-27T21:41:49.3565767Z   wrapper: 2 прогонів;
+2026-10-27T21:41:49.3870278Z   claude: 3 рядків
+2026-10-27T21:41:49.4095217Z   pub: кінець 20261027-214138-28c37092c0c2 — ОПУБЛІКОВАНО gemini/М.2-проба-обгортки ed78e701aa14b8a595e1b0c6476ab9b7085cece2; комітів 1, файлів до main 1; без .github/ і фай�
+2026-10-27T21:41:49.4096853Z   pub: вихідні 20261027-214138-28c37092c0c2.txt: GEMINI ОБГОРТКА: ГОТОВО gemini/М.2-проба-обгортки ed78e701aa14b8a595e1b0c6476ab9b7085cece2 КВОТА GEMINI35FLASH 34 МОДЕЛЬ gemini-3.8-fla
+2026-10-27T21:41:49.4100186Z   pub: вихідні 20261027-214143-46492c06beee.txt: GEMINI ОБГОРТКА: ПУЛИ V=1.1.11 G=GEMINI35FLASH:34:137 G=GEMINI31PRO:0:137 G=CLAUDEGPT:0:137 M=gemini-3.8-flash-high,claude-opus-5-5-high
+2026-10-27T21:41:49.4101365Z   pub: кінець 20261027-214144-74bdc1378807 — ОПУБЛІКОВАНО gemini/М.2-проба-обгортки c68049f58f4980ea3e59663a87e9489a9e25014e; комітів 1, файлів до main 1; без .github/ і фай�
+2026-10-27T21:41:49.4102205Z   pub: вихідні 20261027-214144-74bdc1378807.txt: GEMINI ОБГОРТКА: ГОТОВО gemini/М.2-проба-обгортки c68049f58f4980ea3e59663a87e9489a9e25014e КВОТА GEMINI35FLASH 34 МОДЕЛЬ gemini-3.8-fla
+2026-10-27T21:41:49.4465652Z   origin refs/heads/gemini/М.2-проба-обгортки c68049f
+2026-10-27T21:41:49.4623940Z /d/a/_temp/obhortka/gemini-obhortka/r5/out/20261027-214138-28c37092c0c2.json:"start":"2fc571ce5d93d38f636bbbbc
+2026-10-27T21:41:49.4625408Z /d/a/_temp/obhortka/gemini-obhortka/r5/out/20261027-214144-74bdc1378807.json:"start":"ed78e701aa14b8a595e1b0c6
+2026-10-27T21:41:49.4647217Z === 6 ізоляція ENV: підсумок і окрема тривога, прогону нема
+2026-10-27T21:41:52.6796373Z   wrapper: 0 прогонів; ізоляція: ENV — нових прогонів нема|ізоляція: ENV — нових прогонів нема|
+2026-10-27T21:41:52.7018306Z   claude: 2 рядків
+2026-10-27T21:41:52.7237422Z   pub: ізоляція не пройшла перевірку (ENV — у змінних середовища gemini є KEY/TOKEN/SECRET/PASSWORD); прогони Gemini стоять, потрібна дія власника
+2026-10-27T21:41:52.7238339Z   pub: вихідні 20261027-214150-841c891a0cb8.txt: GEMINI ОБГОРТКА: ЗАБЛОКОВАНО gemini/невідомо ISOLATION_FAILED
+2026-10-27T21:41:52.7239059Z   pub: вихідні 20261027-214152-c81e0f8edd6a.txt: GEMINI ОБГОРТКА: ТРИВОГА ISOLATION ENV
+2026-10-27T21:41:52.8048643Z   ✓ ізоляція — закритий підсумок і тривога, без вільного тексту
+2026-10-27T21:41:52.8049265Z === 7 стара позначка, крива назва, не з main, нема файлу наряду
+2026-10-27T21:42:01.4296494Z   wrapper: 2 прогонів; позначка gemini-queue/крива/назва: назва не за форматом gemini-queue/<наряд>/<модель>/<спроба>[/<умови>] — пропущено|позначка gemini-queue/М.2-проба-обгортки/gemini-3.8-flash-high/1: коміт старший за 7 діб — пропущено|
+2026-10-27T21:42:01.4493653Z   claude: 3 рядків
+2026-10-27T21:42:01.4688239Z   pub: кінець 20261027-214155-7b6d2af05f0b — НЕ ЗАВЕРШЕНО gemini/Інший-наряд — нема файлу наряду на коміті позначки; ходів 0, хв 0; черга gemini-queue/Ін�
+2026-10-27T21:42:01.4689238Z   pub: кінець 20261027-214155-f7d51df4a0d4 — НЕ ЗАВЕРШЕНО gemini/М.2-проба-обгортки — коміт позначки не з main; ходів 0, хв 0; черга gemini-queue/М.2-проба-об�
+2026-10-27T21:42:01.4690063Z   pub: вихідні 20261027-214155-7b6d2af05f0b.txt: GEMINI ОБГОРТКА: ЗАБЛОКОВАНО gemini/Інший-наряд NO_TASK_FILE
+2026-10-27T21:42:01.4690887Z   pub: вихідні 20261027-214155-f7d51df4a0d4.txt: GEMINI ОБГОРТКА: ЗАБЛОКОВАНО gemini/М.2-проба-обгортки NOT_ON_MAIN
+2026-10-27T21:42:01.4691896Z   pub: вихідні 20261027-214201-46492c06beee.txt: GEMINI ОБГОРТКА: ПУЛИ V=1.1.11 G=GEMINI35FLASH:34:137 G=GEMINI31PRO:0:137 G=CLAUDEGPT:0:137 M=gemini-3.8-flash-high,claude-opus-5-5-high
+2026-10-27T21:42:01.5319766Z       1 "code":"NOT_ON_MAIN"
+2026-10-27T21:42:01.5320145Z       1 "code":"NO_TASK_FILE"
+2026-10-27T21:42:01.5467760Z === 8 перерваний прогін: стан STARTED із JSON -> INTERRUPTED із бандлом
+2026-10-27T21:42:07.3692494Z /d/a/kod-shi-data/kod-shi-data/аудит/адаптери/gemini/перевірка/сценарії_черги.sh: line 36:  2159 Killed                     timeout -s KILL 5 "$PW" -NoProfile -File "$(wp "$H/side.ps1")" -Script "$(wp "$SRC/gemini_run.ps1")" -ArgsJson "{\"RepoDir\":\"$WW/clone\",\"RunsDir\":\"$WW/runs\",\"OutDir\":\"$WW/out\",\"RepoUrl\":\"$WW/origin.git\",\"AgyExe\":\"$(stub fake_agy)\",\"TurnMinutes\":5,\"TotalMinutes\":10,\"MaxNudges\":3}"
+2026-10-27T21:42:10.4784914Z   wrapper: 1 прогонів;
+2026-10-27T21:42:10.5012793Z   claude: 2 рядків
+2026-10-27T21:42:10.5229085Z   pub: кінець 20261027-214203-9cf02c1aa7a4 — ОПУБЛІКОВАНО gemini/М.2-проба-обгортки 3132f30bb6e82879faa2218a3f52bc4a9722aa5d; комітів 1, файлів до main 1; без .github/ і фай�
+2026-10-27T21:42:10.5230440Z   pub: вихідні 20261027-214203-9cf02c1aa7a4.txt: GEMINI ОБГОРТКА: ЗАБЛОКОВАНО gemini/М.2-проба-обгортки INTERRUPTED_PUBLISHED
+2026-10-27T21:42:10.5231488Z   pub: вихідні 20261027-214210-46492c06beee.txt: GEMINI ОБГОРТКА: ПУЛИ V=1.1.11 G=GEMINI35FLASH:34:137 G=GEMINI31PRO:0:137 G=CLAUDEGPT:0:137 M=gemini-3.8-flash-high,claude-opus-5-5-high
+2026-10-27T21:42:10.5565067Z   origin refs/heads/gemini/М.2-проба-обгортки 3132f30
+2026-10-27T21:42:10.5786519Z       1 "code":"INTERRUPTED"
+2026-10-27T21:42:10.5790384Z === 9 спам: копії стану з іншими id на ту саму позначку й купа кривих
+2026-10-27T21:42:17.9489599Z   wrapper: 1 прогонів;
+2026-10-27T21:42:17.9675681Z   claude: 3 рядків
+2026-10-27T21:42:17.9864698Z   pub: кінець 20261027-214212-82d72be90453 — ОПУБЛІКОВАНО gemini/М.2-проба-обгортки 055ec3696ecd2cccd980783490c341c6bd840267; комітів 1, файлів до main 1; без .github/ і фай�
+2026-10-27T21:42:17.9865583Z   pub: стан 20991231-000001-aaaaaaaaaaa1 — повтор, рядка нема
+2026-10-27T21:42:17.9866030Z   pub: стан 20991231-000002-aaaaaaaaaaa2 — повтор, рядка нема
+2026-10-27T21:42:17.9866510Z   pub: стан 20991231-000003-aaaaaaaaaaa3 — повтор, рядка нема
+2026-10-27T21:42:17.9866973Z   pub: стан 20991231-000101-bbbbbbbbbbb1 не за форматом — не опубліковано
+2026-10-27T21:42:17.9867541Z   pub: стан 20991231-000102-bbbbbbbbbbb2 не за форматом — не опубліковано
+2026-10-27T21:42:17.9868014Z   pub: стан 20991231-000102-bbbbbbbbbbb2 — повтор, рядка нема
+2026-10-27T21:42:17.9868877Z   pub: стан 20991231-000103-bbbbbbbbbbb3 не за форматом — не опубліковано
+2026-10-27T21:42:17.9869370Z   pub: стан 20991231-000103-bbbbbbbbbbb3 — повтор, рядка нема
+2026-10-27T21:42:17.9870514Z   pub: вихідні 20261027-214212-82d72be90453.txt: GEMINI ОБГОРТКА: ГОТОВО gemini/М.2-проба-обгортки 055ec3696ecd2cccd980783490c341c6bd840267 КВОТА GEMINI35FLASH 34 МОДЕЛЬ gemini-3.8-fla
+2026-10-27T21:42:17.9871895Z   pub: вихідні 20261027-214216-46492c06beee.txt: GEMINI ОБГОРТКА: ПУЛИ V=1.1.11 G=GEMINI35FLASH:34:137 G=GEMINI31PRO:0:137 G=CLAUDEGPT:0:137 M=gemini-3.8-flash-high,claude-opus-5-5-high
+2026-10-27T21:42:17.9872524Z   pub: вихідні 20991231-000101-bbbbbbbbbbb1.txt: GEMINI ОБГОРТКА: ЗАБЛОКОВАНО gemini/невідомо STATE_INVALID
+2026-10-27T21:42:18.0179145Z   origin refs/heads/gemini/М.2-проба-обгортки 055ec36
+2026-10-27T21:42:18.0363318Z   ✓ криві стани — один закритий рядок STATE_INVALID на добу
+2026-10-27T21:42:18.0363916Z === 10 пуш відхилено: 2 тихі повтори, рядок, -Retry після виправлення
+2026-10-27T21:42:27.8256523Z   claude після 4 проходів: 2
+2026-10-27T21:42:29.1421427Z   wrapper: 1 прогонів;
+2026-10-27T21:42:29.1607707Z   claude: 2 рядків
+2026-10-27T21:42:29.1797042Z   pub: пуш refs/heads/gemini/М.2-проба-обгортки -> 1: To D:/a/_temp/obhortka/gemini-obhortka/r10/origin.git
+2026-10-27T21:42:29.1798016Z  ! [remote rejected] a6e460fb99b49929c93aaba62f3a79b5f136d62f -> gemini/М.2-проба-обгортки (pre-receive hook declined)
+2026-10-27T21:42:29.1798730Z error: failed to push some refs to 'D:/a/_temp/obhortka/gemini-obhortka/r10/origin.git'
+2026-10-27T21:42:29.1800023Z   pub: вихідні 20261027-214224-46492c06beee.txt: GEMINI ОБГОРТКА: ПУЛИ V=1.1.11 G=GEMINI35FLASH:34:137 G=GEMINI31PRO:0:137 G=CLAUDEGPT:0:137 M=gemini-3.8-flash-high,claude-opus-5-5-high
+2026-10-27T21:42:29.1801320Z   pub: пуш refs/heads/gemini/М.2-проба-обгортки -> 1: To D:/a/_temp/obhortka/gemini-obhortka/r10/origin.git
+2026-10-27T21:42:29.1802144Z  ! [remote rejected] a6e460fb99b49929c93aaba62f3a79b5f136d62f -> gemini/М.2-проба-обгортки (pre-receive hook declined)
+2026-10-27T21:42:29.1802863Z error: failed to push some refs to 'D:/a/_temp/obhortka/gemini-obhortka/r10/origin.git'
+2026-10-27T21:42:29.1803322Z   pub: пуш refs/heads/gemini/М.2-проба-обгортки -> 1: To D:/a/_temp/obhortka/gemini-obhortka/r10/origin.git
+2026-10-27T21:42:29.1803816Z  ! [remote rejected] a6e460fb99b49929c93aaba62f3a79b5f136d62f -> gemini/М.2-проба-обгортки (pre-receive hook declined)
+2026-10-27T21:42:29.1804230Z error: failed to push some refs to 'D:/a/_temp/obhortka/gemini-obhortka/r10/origin.git'
+2026-10-27T21:42:29.1804780Z   pub: кінець 20261027-214219-424870446704 — НЕ ОПУБЛІКОВАНО gemini/М.2-проба-обгортки a6e460fb99b49929c93aaba62f3a79b5f136d62f — пуш не вдавався годину (журнал publis
+2026-10-27T21:42:29.1805351Z   pub: вихідні 20261027-214219-424870446704.txt: GEMINI ОБГОРТКА: ЗАБЛОКОВАНО gemini/М.2-проба-обгортки PUSH_FAILED
+2026-10-27T21:42:29.1805774Z   pub: стан 20261027-214219-424870446704 забуто рукою власника — повтор
+2026-10-27T21:42:29.1806308Z   pub: кінець 20261027-214219-424870446704 — ОПУБЛІКОВАНО gemini/М.2-проба-обгортки a6e460fb99b49929c93aaba62f3a79b5f136d62f; комітів 1, файлів до main 1; без .github/ і фай�
+2026-10-27T21:42:29.2061802Z   origin refs/heads/gemini/М.2-проба-обгортки a6e460f
+2026-10-27T21:42:29.2062390Z === 11 підроблений стан (8940): ранній id на ту саму позначку, models і числа з текстом
+2026-10-27T21:42:36.1589573Z   wrapper: 1 прогонів;
+2026-10-27T21:42:36.1792049Z   claude: 4 рядків
+2026-10-27T21:42:36.1987866Z   pub: кінець 20000101-000000-aaaaaaaaaaaa — НЕ ЗАВЕРШЕНО gemini/М.2-проба-обгортки — agy не знає моделі з позначки; ходів 0, хв 0; черга gemini-queue/М.2-про
+2026-10-27T21:42:36.1988628Z   pub: кінець 20000101-000001-aaaaaaaaaaaa — НЕ ЗАВЕРШЕНО gemini/М.2-проба-обгортки — агент без звіту після всіх догонок; ходів 0, хв 0; черга gemini-queu
+2026-10-27T21:42:36.1989387Z   pub: кінець 20261027-214231-fe6388df6fa4 — ОПУБЛІКОВАНО gemini/М.2-проба-обгортки 31bf2de10963a6f9b096efe5763cc4b3fc455919; комітів 1, файлів до main 1; без .github/ і фай�
+2026-10-27T21:42:36.1990045Z   pub: вихідні 20000101-000000-aaaaaaaaaaaa.txt: GEMINI ОБГОРТКА: ЗАБЛОКОВАНО gemini/М.2-проба-обгортки MODEL_INVALID
+2026-10-27T21:42:36.1990541Z   pub: вихідні 20000101-000001-aaaaaaaaaaaa.txt: GEMINI ОБГОРТКА: ЗАБЛОКОВАНО gemini/М.2-проба-обгортки NO_REPORT
+2026-10-27T21:42:36.1991174Z   pub: вихідні 20261027-214231-fe6388df6fa4.txt: GEMINI ОБГОРТКА: ГОТОВО gemini/М.2-проба-обгортки 31bf2de10963a6f9b096efe5763cc4b3fc455919 КВОТА GEMINI35FLASH 34 МОДЕЛЬ gemini-3.8-fla
+2026-10-27T21:42:36.1991945Z   pub: вихідні 20261027-214235-46492c06beee.txt: GEMINI ОБГОРТКА: ПУЛИ V=1.1.11 G=GEMINI35FLASH:34:137 G=GEMINI31PRO:0:137 G=CLAUDEGPT:0:137 M=gemini-3.8-flash-high,claude-opus-5-5-high
+2026-10-27T21:42:36.2253371Z   origin refs/heads/gemini/М.2-проба-обгортки 31bf2de
+2026-10-27T21:42:36.2400618Z   ✓ у рядках нема жодного слова зі стану
+2026-10-27T21:42:36.2681525Z   ✓ справжній результат опубліковано
+2026-10-27T21:42:36.2682004Z ВСЕ ✓
+2026-10-27T21:42:36.3155850Z ПІДСУМОК сценарії_черги.sh: ✓ 4 / ✗ 0; код стенда 0; код логу 0
+2026-10-27T21:42:36.3521797Z Post job cleanup.
+2026-10-27T21:42:36.4699132Z [command]"C:\Program Files\Git\bin\git.exe" version
+2026-10-27T21:42:36.4991306Z git version 2.56.0.windows.2
+2026-10-27T21:42:36.5041303Z Copying 'C:\Users\runneradmin\.gitconfig' to 'D:\a\_temp\709ae98c-6a04-4342-8524-9c3c27ae2a30\.gitconfig'
+2026-10-27T21:42:36.5059142Z Temporarily overriding HOME='D:\a\_temp\709ae98c-6a04-4342-8524-9c3c27ae2a30' before making global git config changes
+2026-10-27T21:42:36.5059887Z Adding repository directory to the temporary git global config as a safe directory
+2026-10-27T21:42:36.5068023Z [command]"C:\Program Files\Git\bin\git.exe" config --global --add safe.directory D:\a\kod-shi-data\kod-shi-data
+2026-10-27T21:42:36.5371967Z [command]"C:\Program Files\Git\bin\git.exe" config --local --name-only --get-regexp core\.sshCommand
+2026-10-27T21:42:36.5688982Z [command]"C:\Program Files\Git\bin\git.exe" submodule foreach --recursive "sh -c \"git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :\""
+2026-10-27T21:42:37.0586640Z [command]"C:\Program Files\Git\bin\git.exe" config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+2026-10-27T21:42:37.0897163Z [command]"C:\Program Files\Git\bin\git.exe" submodule foreach --recursive "sh -c \"git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :\""
+2026-10-27T21:42:37.5649098Z [command]"C:\Program Files\Git\bin\git.exe" config --local --name-only --get-regexp ^includeIf\.gitdir:
+2026-10-27T21:42:37.5965214Z [command]"C:\Program Files\Git\bin\git.exe" submodule foreach --recursive "git config --local --show-origin --name-only --get-regexp remote.origin.url"
+2026-10-27T21:42:38.0509103Z Cleaning up orphan processes
+2026-10-27T21:42:38.0826441Z ##[warning]Node.js 20 is deprecated. The following actions target Node.js 20 but are being forced to run on Node.js 24: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5, actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065. For more information see: https://github.blog/changelog/2025-09-19-deprecation-of-node-20-on-github-actions-runners/

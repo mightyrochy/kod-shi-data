@@ -16,3 +16,12 @@ stub() { if [ -n "$WIN" ]; then mkdir -p "$STUBS"; cp "$H"/fake_*.py "$STUBS/"
 # обгортка в $STUBS, що дописує ключ; TMPDIR — лише ASCII (кирилиця в шляху ламає .cmd заглушок).
 if [ -n "$WIN" ] && [ -z "${PWSH:-}" ]; then mkdir -p "$STUBS"; printf '#!/bin/sh\nexec powershell -ExecutionPolicy Bypass "$@"\n' > "$STUBS/pwb"
   chmod +x "$STUBS/pwb"; export PWSH="$STUBS/pwb"; fi
+
+# Доставлений рядок перевіряємо з JSON-журналу заглушки, а не з діагностичного stdout різних процесів.
+delivered() { $PY - "$(wp "$1")" <<'P'
+import json, sys
+with open(sys.argv[1], encoding='utf-8') as stream:
+    for line in stream:
+        print(json.loads(line)['stdin'])
+P
+}

@@ -100,7 +100,12 @@ function Invoke-Native([string]$Exe, [string[]]$Arguments, [string]$WorkDirector
     $psi.EnvironmentVariables['GIT_TERMINAL_PROMPT'] = '0'
     $psi.EnvironmentVariables['GCM_INTERACTIVE'] = 'never'
     $psi.RedirectStandardInput = ($null -ne $StdIn)
-    $p = [System.Diagnostics.Process]::Start($psi)
+    # .NET Framework створює StandardInput з AutoFlush: BOM пишеться вже під час Start.
+    $stdinEncoding = [Console]::InputEncoding
+    try {
+        [Console]::InputEncoding = $script:Utf8
+        $p = [System.Diagnostics.Process]::Start($psi)
+    } finally { [Console]::InputEncoding = $stdinEncoding }
     $out = $p.StandardOutput.ReadToEndAsync()
     $err = $p.StandardError.ReadToEndAsync()
     if ($null -ne $StdIn) {
@@ -163,7 +168,9 @@ function Get-Stamp($v) {
 function Invoke-Gh([string]$Path) {
     $r = Invoke-Native (Resolve-Exe $GhExe) @('api', '-H', 'Accept: application/vnd.github+json', $Path) $WorkDir 3
     if ($r.Code -ne 0) { throw "gh api $Path -> $($r.Code): $($r.Err.Trim())" }
-    $r.Out | ConvertFrom-Json
+    # PowerShell 5.1 не перелічує масив із ConvertFrom-Json у конвеєрі; вираз розгортає його в елементи.
+    $parsed = $r.Out | ConvertFrom-Json
+    $parsed
 }
 
 # Сторінки по 100, поки не прийде неповна; лише масиви.
@@ -261,7 +268,7 @@ function Invoke-Transfer($Pr, [string]$CommentId, [string]$Diff, $Hashes, [int]$
     [void](New-Item -ItemType Directory -Force -Path (Split-Path $wt))
     $hasWt = $false
     try {
-        [void](Invoke-Git @('worktree', 'add', '-q', '--detach', $wt, $base))
+        [void](Invoke-Git @('-c', 'core.autocrlf=false', 'worktree', 'add', '-q', '--detach', $wt, $base))
         $hasWt = $true
         $g = @('-c', "core.hooksPath=$script:NoHooks", '-c', 'core.autocrlf=false', '-c', 'core.safecrlf=false')
         $chk = Invoke-Native $GitExe ($g + @('apply', '--check', '--recount', '--whitespace=nowarn', '-')) $wt 3 $Diff

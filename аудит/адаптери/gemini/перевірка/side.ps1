@@ -1,5 +1,7 @@
 ﻿# Стенд: підвантажує обгортку крапкою, підміняє перевірки Windows (ізоляція, користувач) і запускає Main.
 param([string]$Script, [string]$ArgsJson)
+# UTF-8 із BOM у стандартному stdin .NET Framework, як у раннера Windows.
+if ($env:OS -eq 'Windows_NT') { [Console]::InputEncoding = [Text.Encoding]::UTF8 }
 $p = @{}
 (ConvertFrom-Json $ArgsJson).PSObject.Properties | ForEach-Object { $p[$_.Name] = $_.Value }
 # Стенд не чіпає справжньої спільної теки ноутбука (C:\Users\Public\gemini\lanes): без LaneDir — тимчасова тека.

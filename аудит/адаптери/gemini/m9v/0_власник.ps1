@@ -42,6 +42,19 @@ $cr = "$env:USERPROFILE\claude-run"; New-Item -ItemType Directory -Force $cr | O
 Invoke-WebRequest "$base/claude_run.ps1" -OutFile "$cr\claude_run.ps1" -UseBasicParsing
 Invoke-WebRequest "$base/queue_lanes.ps1" -OutFile "$cr\queue_lanes.ps1" -UseBasicParsing
 Get-FileHash "$pub\gemini_publish.ps1", "$env:TEMP\gemini_run.ps1" | Format-List Hash, Path
+Invoke-WebRequest "$base/wrapper_health.ps1" -OutFile "$pub\wrapper_health.ps1" -UseBasicParsing
+Invoke-WebRequest "$base/wrapper_health.ps1" -OutFile "$env:TEMP\wrapper_health.ps1" -UseBasicParsing
+Invoke-WebRequest "$base/wrapper_health.ps1" -OutFile "$cr\wrapper_health.ps1" -UseBasicParsing
+Get-FileHash "$pub\wrapper_health.ps1", "$env:TEMP\wrapper_health.ps1", "$env:TEMP\queue_lanes.ps1" | Format-List Hash, Path
+Get-FileHash "$cr\claude_run.ps1", "$cr\queue_lanes.ps1", "$cr\wrapper_health.ps1" | Format-List Hash, Path
+foreach ($target in @($pub, $env:TEMP, $cr)) {
+    if ((Get-FileHash "$target\wrapper_health.ps1" -Algorithm SHA256).Hash -ne $expected['wrapper_health.ps1']) { Stop-Here 'хеш wrapper_health.ps1 не збігся' }
+}
+# Нові модулі публікатора перевіряються до першого запуску копії.
+foreach ($name in @('wrapper_update.ps1','wrapper_chain.ps1','wrapper_probe.ps1')) {
+    Invoke-WebRequest "$base/$name" -OutFile "$pub/$name" -UseBasicParsing
+    if ((Get-FileHash "$pub/$name" -Algorithm SHA256).Hash -cne $expected[$name]) { Stop-Here "хеш $name не збігся" }
+}
 $bad = @()
 foreach ($p in @(@('gemini_publish.ps1', "$pub\gemini_publish.ps1"), @('gemini_run.ps1', "$env:TEMP\gemini_run.ps1"), @('gemini_watch.ps1', "$w\gemini_watch.ps1"), @('claude_run.ps1', "$cr\claude_run.ps1"), @('queue_lanes.ps1', "$env:TEMP\queue_lanes.ps1"), @('queue_lanes.ps1', "$cr\queue_lanes.ps1"))) {
     $got = (Get-FileHash $p[1] -Algorithm SHA256).Hash
@@ -87,7 +100,7 @@ $o = & git -C "$env:USERPROFILE\kod-shi-data" remote get-url origin 2>&1
 $ErrorActionPreference = 'Stop'
 if (($o -replace '\.git$', '') -ne 'https://github.com/mightyrochy/kod-shi-data') { Stop-Here "клон $env:USERPROFILE\kod-shi-data не знайдено чи origin не той ($o): claude-run бере наряди з нього." }
 $a = New-ScheduledTaskAction -Execute 'conhost.exe' -Argument "--headless powershell.exe -NoProfile -NonInteractive -ExecutionPolicy Bypass -File `"$cr\claude_run.ps1`""
-$t = New-ScheduledTaskTrigger -Once -At (Get-Date).AddMinutes(1) -RepetitionInterval (New-TimeSpan -Minutes 5)
+$t = New-ScheduledTaskTrigger -Once -At (Get-Date).AddMinutes(1) -RepetitionInterval (New-TimeSpan -Minutes 2)
 $s = New-ScheduledTaskSettingsSet @set -ExecutionTimeLimit ([TimeSpan]::Zero)
 Register-ScheduledTask -TaskName 'claude-run' -Action $a -Trigger $t -Settings $s -Principal $p -Force | Out-Null
 Get-ScheduledTask claude-run | ForEach-Object { "claude-run: $($_.State), інтервал $($_.Triggers[0].Repetition.Interval), межа часу $($_.Settings.ExecutionTimeLimit)" }
