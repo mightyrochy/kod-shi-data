@@ -1,15 +1,14 @@
 diff --git a/аудит/адаптери/gemini/queue_lanes.ps1 b/аудит/адаптери/gemini/queue_lanes.ps1
 --- a/аудит/адаптери/gemini/queue_lanes.ps1
 +++ b/аудит/адаптери/gemini/queue_lanes.ps1
-@@ -257,6 +257,38 @@
+@@ -266,6 +266,37 @@
      @(foreach ($line in ($r.Out -split "`n")) { if ($line.Trim()) { ConvertTo-Marker $line.Trim() } })
  }
  
-+
 +function Get-TaskSource($M) {
 +    <# Нічні гілки мають дату, а шаблон наряду — одне постійне джерело в main. #>
 +    if ($M.Slug -cmatch '^Е1-нічний-живий-[0-9]{8}$') { return 'аудит/проби/нічний_наряд.md' }
-+    $script:TaskDir + $M.Slug + '.md'
++    Get-AutoTaskPath $M.Slug
 +}
 +
 +function Get-NightlyMarker([datetime]$Now = [datetime]::UtcNow) {
@@ -43,7 +42,7 @@ diff --git a/аудит/адаптери/gemini/queue_lanes.ps1 b/аудит/а�
 diff --git a/аудит/адаптери/gemini/gemini_run.ps1 b/аудит/адаптери/gemini/gemini_run.ps1
 --- a/аудит/адаптери/gemini/gemini_run.ps1
 +++ b/аудит/адаптери/gemini/gemini_run.ps1
-@@ -530,6 +530,7 @@
+@@ -546,6 +546,7 @@
  }
  
  function Get-Prompt($M, [string]$TaskText, [string]$EngineName = 'agy') {
@@ -51,7 +50,7 @@ diff --git a/аудит/адаптери/gemini/gemini_run.ps1 b/аудит/ад
      $branch = "gemini/$($M.Slug)"
      $adapter = $(if ($EngineName -eq 'codex') { 'адаптер — лише цей текст' } else { 'адаптер середовища — `GEMINI.md`' })
      $role = $(if ($EngineName -eq 'codex') { Get-TaskRole $TaskText } else { 'ВИКОНАВЕЦЬ' })
-@@ -544,7 +545,7 @@
+@@ -560,7 +561,7 @@
  Ти — $roleText за ``AGENTS.md`` і ``аудит/$roleFile.md``; $adapter. Ізоляцію ОС уже
  перевірила обгортка. Тебе запустила обгортка М.2 без людини: питань не став, відповіді не буде.
  
@@ -60,16 +59,16 @@ diff --git a/аудит/адаптери/gemini/gemini_run.ps1 b/аудит/ад
  - Гілку ``$branch`` уже вибрано: працюй і коміть лише в ній. Не пуш і не створюй бандла — це робить обгортка.
    Файлів ``.github/`` і ``аудит/адаптери/gemini/`` не змінюй: таку гілку не опублікують.
  - Кожну команду виконуй на передньому плані й чекай її завершення: фонове завдання зупиняється разом із ходом, а
-@@ -913,7 +914,7 @@
+@@ -936,7 +937,7 @@
      try {
          $main = Get-RefSha 'refs/remotes/origin/main'
          $anc = Invoke-Git @('merge-base', '--is-ancestor', $M.Sha, $main) -AllowFail
--        $taskPath = $script:TaskDir + $M.Slug + '.md'
+-        $taskPath = Get-AutoTaskPath $M.Slug
 +        $taskPath = Get-TaskSource $M
          if ($anc.Code -ne 0) { $status.code = 'NOT_ON_MAIN'; return }
          if ((Invoke-Git @('cat-file', '-e', "$($M.Sha):$taskPath") -AllowFail).Code -ne 0) { $status.code = 'NO_TASK_FILE'; return }
-         $taskText = (Invoke-Git @('cat-file', 'blob', "$($M.Sha):$taskPath")).Out
-@@ -1032,7 +1033,7 @@
+         $taskText = Add-AutoTaskContext $M.Slug ((Invoke-Git @('cat-file', 'blob', "$($M.Sha):$taskPath")).Out)
+@@ -1056,7 +1057,7 @@
  function Start-Markers($Workers) {
      $started = 0
      $now = [DateTimeOffset]::UtcNow.ToUnixTimeSeconds()
@@ -81,36 +80,37 @@ diff --git a/аудит/адаптери/gemini/gemini_run.ps1 b/аудит/ад
 diff --git a/аудит/адаптери/gemini/m9v/хеші.psd1 b/аудит/адаптери/gemini/m9v/хеші.psd1
 --- a/аудит/адаптери/gemini/m9v/хеші.psd1
 +++ b/аудит/адаптери/gemini/m9v/хеші.psd1
-@@ -1,7 +1,7 @@
- ﻿# Очікувані SHA-256 файлів обгортки — єдине місце для скриптів m9v. Рядки тут мають збігатися з таблицею «Хеші файлів»
- # у ../НАЛАШТУВАННЯ.md (стенд `перевірка/сценарії_m9v.sh` звіряє). Міняється разом із таблицею (PR, що чіпає обгортку).
- @{
--    'gemini_run.ps1'     = '65FDD272EE6D6D3AFF2622D54174F9C1960C708AFDE57F83943AE90DAA16DD18'
-+    'gemini_run.ps1'     = '5C43F80BB72E4849233CEBC9BFF58C75EBD40E9883A50B617ED6DB21653141EC'
-     'gemini_publish.ps1' = '4CFFE78BB534AA02A8E5F5E9E27146D14B6A63437A3BB45D33B7045846C0FFFB'
+@@ -5,7 +5,7 @@
+     'wrapper_probe.ps1'  = '85116D04C22EB64CBFF52E66BCEAE9B1091577A889EDD58A8B634093A82BDBC6'
+     'wrapper_chain.ps1'  = '79BD08F866529B1C58FE57AF33252AA4F0F7B3D992352130A7824030F27A57CD'
+     'wrapper_health.ps1' = 'FCE45448539D53A6B5718319842FC845DA870F39453A6B716C7AF8A2DB65B88E'
+-    'gemini_run.ps1'     = '0BA6869246624E1203613A373D408B9B5C2F9FAEAAF14508B7D023A0C1D452B5'
++    'gemini_run.ps1'     = 'E6085DC726561AD6BC51A1CDAA4B82CE37879612A2D298DE74367346C299D0B0'
+     'gemini_publish.ps1' = '895162B7194F6331E672C2965D0F2833EE130676B44FC3005C16D4E52F95CCED'
      # Інсталятор Codex (9741) закріплено за релізом: install.ps1 — файл релізу https://releases.openai.com/codex/releases/<CodexRelease>/install.ps1
      # (незмінний URL; той самий sha256 віддає https://chatgpt.com/codex/install.ps1 — редирект на releases.openai.com — і публікує реліз
-@@ -10,6 +10,6 @@
+@@ -14,6 +14,6 @@
      CodexRelease         = '0.164.0'
      CodexInstaller       = 'A59CB66350098C33B021FF470D586AE8FE3B7CAF189CA7137B4FE3AF5D4DCE74'
-     'gemini_watch.ps1'   = '3550085176F339BA00B1D1C28391AC585B0959128335D193601734261D00085B'
--    'queue_lanes.ps1'    = '0D2BE9DE68DEC2602E6671EEE50BA94008BD436619E9603A086A5BC3E03A5E20'
-+    'queue_lanes.ps1'    = '745204B85BD8B1415F073D0DC3D0537B674BF42FDD5BB14C893AB8A0E14C75DE'
-     'claude_run.ps1'     = '03F740987233B9C8BA9BF172957D03AC2447DD6911CE9C820BE3E7D95037A59F'
+     'gemini_watch.ps1'   = '69EFEBB07FF1AF51C382B753A95C50F3C1AC27B3008F2489992BEBE3FD0213AA'
+-    'queue_lanes.ps1'    = '25695435985724B960BAFA1C17B3BCC6F50BA0C36D490102B5BCBC88FC6E5F8C'
++    'queue_lanes.ps1'    = '3A50686E49EA6C78A0D65531D86001C5F5935B8D4E95BF0237A9CB24BE9359AD'
+     'claude_run.ps1'     = 'DC12D3F1159154644B96D742B3495CDAE512915534143CD2FB62D9929FB15403'
  }
 diff --git a/аудит/адаптери/gemini/НАЛАШТУВАННЯ.md b/аудит/адаптери/gemini/НАЛАШТУВАННЯ.md
 --- a/аудит/адаптери/gemini/НАЛАШТУВАННЯ.md
 +++ b/аудит/адаптери/gemini/НАЛАШТУВАННЯ.md
-@@ -402,10 +402,10 @@
- 
- | файл | SHA-256 |
- |---|---|
--| `gemini_run.ps1` | `65FDD272EE6D6D3AFF2622D54174F9C1960C708AFDE57F83943AE90DAA16DD18` |
-+| `gemini_run.ps1` | `5C43F80BB72E4849233CEBC9BFF58C75EBD40E9883A50B617ED6DB21653141EC` |
- | `gemini_publish.ps1` | `4CFFE78BB534AA02A8E5F5E9E27146D14B6A63437A3BB45D33B7045846C0FFFB` |
- | `gemini_watch.ps1` | `3550085176F339BA00B1D1C28391AC585B0959128335D193601734261D00085B` |
--| `queue_lanes.ps1` | `0D2BE9DE68DEC2602E6671EEE50BA94008BD436619E9603A086A5BC3E03A5E20` |
-+| `queue_lanes.ps1` | `745204B85BD8B1415F073D0DC3D0537B674BF42FDD5BB14C893AB8A0E14C75DE` |
- | `claude_run.ps1` | `03F740987233B9C8BA9BF172957D03AC2447DD6911CE9C820BE3E7D95037A59F` |
+@@ -417,11 +417,11 @@
+ | `wrapper_probe.ps1` | `85116D04C22EB64CBFF52E66BCEAE9B1091577A889EDD58A8B634093A82BDBC6` |
+ | `wrapper_update.ps1` | `4156307A17BDAE3AF7249E532947F659E99AA1349D159239159FAE60CA7E4F2B` |
+ | `wrapper_chain.ps1` | `79BD08F866529B1C58FE57AF33252AA4F0F7B3D992352130A7824030F27A57CD` |
+-| `gemini_run.ps1` | `0BA6869246624E1203613A373D408B9B5C2F9FAEAAF14508B7D023A0C1D452B5` |
++| `gemini_run.ps1` | `E6085DC726561AD6BC51A1CDAA4B82CE37879612A2D298DE74367346C299D0B0` |
+ | `gemini_publish.ps1` | `895162B7194F6331E672C2965D0F2833EE130676B44FC3005C16D4E52F95CCED` |
+ | `gemini_watch.ps1` | `69EFEBB07FF1AF51C382B753A95C50F3C1AC27B3008F2489992BEBE3FD0213AA` |
+ | `wrapper_health.ps1` | `FCE45448539D53A6B5718319842FC845DA870F39453A6B716C7AF8A2DB65B88E` |
+-| `queue_lanes.ps1` | `25695435985724B960BAFA1C17B3BCC6F50BA0C36D490102B5BCBC88FC6E5F8C` |
++| `queue_lanes.ps1` | `3A50686E49EA6C78A0D65531D86001C5F5935B8D4E95BF0237A9CB24BE9359AD` |
+ | `claude_run.ps1` | `DC12D3F1159154644B96D742B3495CDAE512915534143CD2FB62D9929FB15403` |
  | `CodexInstaller` (`install.ps1` релізу Codex `CodexRelease`) | `A59CB66350098C33B021FF470D586AE8FE3B7CAF189CA7137B4FE3AF5D4DCE74` |
  

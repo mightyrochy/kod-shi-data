@@ -1,23 +1,6 @@
 diff --git a/.github/workflows/zbirka.yml b/.github/workflows/zbirka.yml
 --- a/.github/workflows/zbirka.yml
 +++ b/.github/workflows/zbirka.yml
-@@ -9,6 +9,7 @@
-       - 'джерела/**'
-       - '!джерела/аудит/ДОСЯЖНІСТЬ.md'
-       - 'каталог_повний.xml.gz'
-+      - 'аудит/проби/**'
-       - 'index.html'
-       - 'build.txt'
-       - '.github/workflows/zbirka.yml'
-@@ -60,7 +61,7 @@
-             pravyla=false
-             while IFS= read -r -d '' shliakh; do
-               case "${shliakh}" in
--                джерела/*|каталог_повний.xml.gz|index.html|build.txt|.github/workflows/zbirka.yml) produkt=true ;;
-+                джерела/*|аудит/проби/*|каталог_повний.xml.gz|index.html|build.txt|.github/workflows/zbirka.yml) produkt=true ;;
-               esac
-               case "${shliakh}" in
-                 *.md|джерела/правила.py|.github/workflows/zbirka.yml) pravyla=true ;;
 @@ -229,7 +230,6 @@
  
        - name: стенд у браузері (Chromium + Pyodide, 20 звірок)

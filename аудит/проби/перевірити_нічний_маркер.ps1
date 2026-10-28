@@ -24,6 +24,10 @@ Assert-That ($c.Count -eq 1 -and $c[0].Slug -cne $a[0].Slug -and $c[0].Sha -ceq 
 Assert-That ((Get-TaskSource $c[0]) -ceq 'аудит/проби/нічний_наряд.md') 'нічна гілка читає постійний шаблон'
 $ordinary = [pscustomobject]@{ Slug = 'звичайний' }
 Assert-That ((Get-TaskSource $ordinary) -ceq ($script:TaskDir + 'звичайний.md')) 'звичайний наряд читає власний файл'
+foreach ($slug in @(('автоперевірка-1981-' + ('a' * 40)), ('автоживий-' + ('b' * 40)))) {
+    $auto = [pscustomobject]@{ Slug = $slug }
+    Assert-That ((Get-TaskSource $auto) -ceq (Get-AutoTaskPath $slug)) 'автонаряд зберігає шлях шаблону Е0'
+}
 $prompt = Get-Prompt $c[0] 'Роль — ВИКОНАВЕЦЬ' 'codex'
 Assert-That ($prompt.Contains('аудит/проби/нічний_наряд.md')) 'адаптер називає справжнє джерело нічного наряду'
 $script:HasTemplate = $false

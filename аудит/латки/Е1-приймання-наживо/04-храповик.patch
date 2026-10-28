@@ -27,7 +27,7 @@ diff --git a/.github/workflows/zbirka.yml b/.github/workflows/zbirka.yml
        - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
          with:
            node-version: '22'
-@@ -315,13 +316,29 @@
+@@ -315,16 +316,33 @@
            path: ${{ runner.temp }}/pokaz
        - name: Pyodide 0.26.4 з диска
          run: sh аудит/проби/стенд_pyodide_кеш.sh "${RUNNER_TEMP}/pyodide"
@@ -57,3 +57,7 @@ diff --git a/.github/workflows/zbirka.yml b/.github/workflows/zbirka.yml
          run: |
            node аудит/проби/приймання_записів.js "${RUNNER_TEMP}/pokaz" "${RUNNER_TEMP}/pyodide" \
              "${RUNNER_TEMP}/replay" ${{ matrix.chastyna }} 10
++          node аудит/проби/живий_після_CI.js "${RUNNER_TEMP}/replay"
+       - name: докази всіх сцен, зокрема невдалих
+         if: always()
+         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
