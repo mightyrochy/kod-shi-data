@@ -26,5 +26,13 @@ async function main(){
     const item={випадок:name,викликів:calls,перша:bad,друга:good,внутрішня:r.внутрішня,контроль_виправленої:control.внутрішня,запис:r.запис};
     results.push(item); console.log(JSON.stringify(item));
   }
+  const scene=JSON.parse(fs.readFileSync(process.argv[3] || path.resolve(src,'../аудит/проби/Е2-ремонт-шар/записи.json'),'utf8'))[0];
+  const raw=Object.entries(scene.відповіді).find(([k])=>k.includes('seed3_01_'))[1].відповідь;
+  const repeat=JSON.parse(raw.trim().replace(/^```(?:json)?\s*/,'').replace(/\s*```$/,''));
+  delete repeat.update.occasion.quote;
+  const turn=await c.містП('мова',{розмова:{нове:scene.слова},відповідь_моделі:JSON.stringify(repeat),
+    перша_відповідь:raw,завершити_договір:true});
+  const passport=await c.містП('мова',{паспорт_з:turn.внутрішня,сценарій:{},слова_розмови:[scene.слова],частини:turn.частини});
+  console.log(JSON.stringify({випадок:'втрата первинної цитати',event:turn.внутрішня.event||null,подія:passport.паспорт.подія,місце:passport.паспорт.місце}));
 }
 main().catch(e=>{console.error(e);process.exitCode=1;});
