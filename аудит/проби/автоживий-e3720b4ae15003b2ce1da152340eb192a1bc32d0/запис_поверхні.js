@@ -1,6 +1,7 @@
 /* Додатковий читач стану незміненого стенда. Входів і відповідей моделей не змінює. */
 const fs = require('fs'), path = require('path');
 const {chromium} = require('playwright');
+fs.mkdirSync(process.env.ZNIMKY, {recursive: true});
 const launch = chromium.launch.bind(chromium);
 chromium.launch = async (...args) => {
   const browser = await launch(...args), close = browser.close.bind(browser);
