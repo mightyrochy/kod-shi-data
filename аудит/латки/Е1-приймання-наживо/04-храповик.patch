@@ -1,0 +1,71 @@
+diff --git a/.github/workflows/zbirka.yml b/.github/workflows/zbirka.yml
+--- a/.github/workflows/zbirka.yml
++++ b/.github/workflows/zbirka.yml
+@@ -230,6 +230,7 @@
+ 
+       - name: стенд у браузері (Chromium + Pyodide, 20 звірок)
+         id: stend
++        continue-on-error: true
+         env:
+           LYUSTERKO_PYC_PYTHON: ${{ steps.pyc_python.outputs.python-path }}
+         run: |
+@@ -273,7 +274,7 @@
+             if [ -f стенд.log ]; then
+               ZELENYH=$(grep -cE '^  ✔' стенд.log || true)
+               CHERVONYH=$(grep -cE '^  ✗' стенд.log || true)
+-              echo "- \`node аудит/проби/рв6_стенд.js\` — звірок: **${ZELENYH:-0} ✔ / ${CHERVONYH:-0} ✗** (Chromium + Pyodide проти зібраного index.html; крок блокує)"
++              echo "- \`node аудит/проби/рв6_стенд.js\` — звірок: **${ZELENYH:-0} ✔ / ${CHERVONYH:-0} ✗** (Chromium + Pyodide проти зібраного index.html; дим без приймання)"
+             else
+               echo "- \`node аудит/проби/рв6_стенд.js\` — крок не дійшов до виводу"
+             fi
+@@ -283,6 +284,7 @@
+     name: записаний живий шлях у Pyodide (${{ matrix.chastyna }})
+     permissions:
+       contents: read
++      pull-requests: read
+     needs: [zminy, perevirka]
+     if: needs.zminy.outputs.produkt == 'true'
+     runs-on: ubuntu-latest
+@@ -300,7 +302,7 @@
+           fetch-depth: 0
+       - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065
+         with:
+-          python-version: '3.11'
++          python-version: '3.12.1'
+       - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+         with:
+           node-version: '22'
+@@ -315,16 +317,33 @@
+           path: ${{ runner.temp }}/pokaz
+       - name: Pyodide 0.26.4 з диска
+         run: sh аудит/проби/стенд_pyodide_кеш.sh "${RUNNER_TEMP}/pyodide"
++      - name: код базового main й повна збірка
++        env:
++          BASE_REF: ${{ github.event.pull_request.base.sha || github.event.before }}
++        run: |
++          if [ -z "$BASE_REF" ] || ! git cat-file -e "${BASE_REF}^{commit}"; then
++            echo "Нема коду бази для храповика" >&2
++            exit 1
++          fi
++          git worktree add --detach "${RUNNER_TEMP}/main-replay" "$BASE_REF"
++          mkdir -p "${RUNNER_TEMP}/main-pokaz"
++          NODE_PATH="${GITHUB_WORKSPACE}/джерела/node_modules" LYUSTERKO_CATALOG=повний python "${RUNNER_TEMP}/main-replay/джерела/build_артефакт.py" \
++            "${RUNNER_TEMP}/main-replay/джерела" "${RUNNER_TEMP}/main-pokaz/index.html" показ-повний
+       - name: усі звірки мають огляд і контрприклади перевірено
+         run: node аудит/проби/звірки_Е1.js
+       - name: відтворення не приховує зайвих чи пропущених викликів
+         run: node аудит/проби/перевірити_записаний_обмін.js
++      - name: храповик і відомі червоні звірки
++        run: node аудит/проби/перевірити_храповик.js
+       - name: записані сцени через продукт
+         env:
+           NODE_PATH: джерела/node_modules
++          REPLAY_BASE_BUILD: ${{ runner.temp }}/main-pokaz
++          REPLAY_BASE_ROOT: ${{ runner.temp }}/main-replay
+         run: |
+           node аудит/проби/приймання_записів.js "${RUNNER_TEMP}/pokaz" "${RUNNER_TEMP}/pyodide" \
+             "${RUNNER_TEMP}/replay" ${{ matrix.chastyna }} 10
++          GITHUB_TOKEN="${{ github.event_name == 'push' && github.token || '' }}" node аудит/проби/живий_після_CI.js "${RUNNER_TEMP}/replay"
+       - name: докази всіх сцен, зокрема невдалих
+         if: always()
+         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02

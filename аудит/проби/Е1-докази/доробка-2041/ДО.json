@@ -1,0 +1,102 @@
+[
+ {
+  "проба": "PR з погодженням",
+  "rc": 0,
+  "очікувано": 0
+ },
+ {
+  "проба": "PR без погодження",
+  "rc": 1,
+  "очікувано": 1
+ },
+ {
+  "проба": "push з погодженого PR",
+  "rc": 1,
+  "очікувано": 0,
+  "помилка": "Запис застарів: в описі PR потрібний рядок ЖИВИЙ ПІСЛЯ: <сцена> — <питання>"
+ },
+ {
+  "проба": "push без погодження",
+  "rc": 1,
+  "очікувано": 1
+ },
+ {
+  "проба": "push з рядком у коміті злиття",
+  "rc": 1,
+  "очікувано": 0,
+  "помилка": "Запис застарів: в описі PR потрібний рядок ЖИВИЙ ПІСЛЯ: <сцена> — <питання>"
+ },
+ {
+  "проба": "push: відкритий PR не є погодженням",
+  "rc": 1,
+  "очікувано": 1
+ },
+ {
+  "проба": "push: погодження іншої голови",
+  "rc": 1,
+  "очікувано": 1
+ },
+ {
+  "проба": "push: PR з форка",
+  "rc": 1,
+  "очікувано": 1
+ },
+ {
+  "проба": "push: API недоступний",
+  "rc": 1,
+  "очікувано": 1
+ },
+ {
+  "проба": "push: справжній регрес з погодженням",
+  "rc": 1,
+  "очікувано": 1
+ },
+ {
+  "проба": "push: точний запис без погодження",
+  "rc": 0,
+  "очікувано": 0
+ },
+ {
+  "проба": "нова червона на main, зелена на голові",
+  "rc": 2,
+  "очікувано": 0,
+  "помилка": "Error: Не можна затягнути базу: регрес\n    at затягнути (C:\\Users\\gemini\\AppData\\Local\\Temp\\E1-2041-before-bz8bfxn4\\аудит\\проби\\храповик_записів.js:50:42)\n    at виконати (C:\\Users\\gemini\\AppData\\Local\\Temp\\E1-2041-before-bz8bfxn4\\аудит\\проби\\приймання_записів.js:146:21)\n    at Object.<anonymous> (C:\\Users\\gemini\\AppData\\Local\\Temp\\E1-2041-before-bz8bfxn4\\аудит\\проби\\приймання_записів.js:173:9)\n    at Module._compile (node:internal/modules/cjs/loader:1781:14)\n    at Object..js (node:internal/modules/cjs/loader:1913:10)\n    at Module.load (node:internal/modules/cjs/loader:1505:32)\n    at Function._load (node:internal/modules/cjs/loader:1309:12)\n    at wrapModuleLoad (node:internal/modules/cjs/loader:254:19)\n    at Function.executeUserEntryPoint [as runMain] (node:internal/modules/run_main:171:5)\n    at node:internal/main/run_main_module:36:49"
+ },
+ {
+  "проба": "посилена червона на main, зелена на голові",
+  "rc": 2,
+  "очікувано": 0,
+  "помилка": "Error: Не можна затягнути базу: регрес\n    at затягнути (C:\\Users\\gemini\\AppData\\Local\\Temp\\E1-2041-before-bz8bfxn4\\аудит\\проби\\храповик_записів.js:50:42)\n    at виконати (C:\\Users\\gemini\\AppData\\Local\\Temp\\E1-2041-before-bz8bfxn4\\аудит\\проби\\приймання_записів.js:146:21)\n    at Object.<anonymous> (C:\\Users\\gemini\\AppData\\Local\\Temp\\E1-2041-before-bz8bfxn4\\аудит\\проби\\приймання_записів.js:173:9)\n    at Module._compile (node:internal/modules/cjs/loader:1781:14)\n    at Object..js (node:internal/modules/cjs/loader:1913:10)\n    at Module.load (node:internal/modules/cjs/loader:1505:32)\n    at Function._load (node:internal/modules/cjs/loader:1309:12)\n    at wrapModuleLoad (node:internal/modules/cjs/loader:254:19)\n    at Function.executeUserEntryPoint [as runMain] (node:internal/modules/run_main:171:5)\n    at node:internal/main/run_main_module:36:49"
+ },
+ {
+  "проба": "нова червона на голові й main",
+  "rc": 2,
+  "очікувано": 1,
+  "помилка": "Error: Не можна затягнути базу: регрес\n    at затягнути (C:\\Users\\gemini\\AppData\\Local\\Temp\\E1-2041-before-bz8bfxn4\\аудит\\проби\\храповик_записів.js:50:42)\n    at виконати (C:\\Users\\gemini\\AppData\\Local\\Temp\\E1-2041-before-bz8bfxn4\\аудит\\проби\\приймання_записів.js:146:21)\n    at Object.<anonymous> (C:\\Users\\gemini\\AppData\\Local\\Temp\\E1-2041-before-bz8bfxn4\\аудит\\проби\\приймання_записів.js:173:9)\n    at Module._compile (node:internal/modules/cjs/loader:1781:14)\n    at Object..js (node:internal/modules/cjs/loader:1913:10)\n    at Module.load (node:internal/modules/cjs/loader:1505:32)\n    at Function._load (node:internal/modules/cjs/loader:1309:12)\n    at wrapModuleLoad (node:internal/modules/cjs/loader:254:19)\n    at Function.executeUserEntryPoint [as runMain] (node:internal/modules/run_main:171:5)\n    at node:internal/main/run_main_module:36:49"
+ },
+ {
+  "проба": "нова червона лише на голові",
+  "rc": 1,
+  "очікувано": 1
+ },
+ {
+  "проба": "нова зелена main стала червоною",
+  "rc": 1,
+  "очікувано": 1
+ },
+ {
+  "проба": "виправлена 10231 на main знову червона",
+  "rc": 1,
+  "очікувано": 1
+ },
+ {
+  "проба": "перейменована зелена",
+  "rc": 0,
+  "очікувано": 0
+ },
+ {
+  "проба": "перейменована червона",
+  "rc": 1,
+  "очікувано": 1
+ }
+]
