@@ -31,7 +31,7 @@ import argparse, asyncio, csv, datetime, hashlib, json, os, re, sys, time, threa
 from urllib.parse import urlparse, urljoin
 from pathlib import Path
 from журнал_проходу import ЖурналПроходу, відбиток_рецепта
-from json_прохід import позначити, прочитати_стан, сторінка, МЕЖА_СТОРІНОК
+from json_прохід import позначити, відновити, сторінка, МЕЖА_СТОРІНОК
 from журнал_карток import прочитати
 from журнал_проходу import ЗАВЕРШЕНІ
 
@@ -590,12 +590,9 @@ class Виконавець:
 
     async def _json_сімейство(self, контекст, р, л, ш, взято, корінь):
         """Продовжує збережені JSON-сторінки; кінець доводить порожня порція з HTTP 200."""
-        збережений = прочитати_стан(self.корінь, р["домен"])
         підпис = hashlib.sha256(json.dumps(р, sort_keys=True).encode()).hexdigest()
-        if збережений.get("підпис") != підпис or not Path(ш).is_file() or прочитати(ш)[1]:
-            збережений = {}
+        збережений = відновити(self.корінь, р["домен"], підпис, getattr(self.a, "оновити_перелік", False))
         n = збережений.get("сторінка", 1)
-        позначити(self.корінь, р["домен"], False, n, збережений.get("префікс", ""), підпис)
         шаблон = р["пошук"].replace("per_page=100", "per_page=50")
         префікси = [""] + ([р["мова"].rstrip("/")] if р.get("мова") and р["мова"] != "/" else []) + ["/uk", "/ua"]
         if збережений.get("префікс"):
