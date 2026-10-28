@@ -6,6 +6,7 @@
 import argparse, contextlib, gzip, io, json, os, subprocess, sys, tempfile, types
 ТУТ = os.path.dirname(os.path.dirname(os.path.abspath(__file__))); sys.path.insert(0, ТУТ)
 import feed as F, colorspace as CS, verify as V, жнива_v2 as Н
+from колір_річ import точка_кольору
 БАЗА = sys.argv[1] if len(sys.argv) > 1 else "95b0102"
 С = types.ModuleType("жнива_v2_старий"); С.__file__ = os.path.join(ТУТ, "жнива_v2.py")
 exec(compile(subprocess.run(["git", "show", "%s:джерела/жнива_v2.py" % БАЗА], cwd=ТУТ, capture_output=True, check=True).stdout.decode("utf-8"), "жнива_v2.py", "exec"), С.__dict__)
@@ -13,8 +14,9 @@ exec(compile(subprocess.run(["git", "show", "%s:джерела/жнива_v2.py"
 С.V.__dict__.update(V.__dict__, ЛЕКСИКОН={с: в for с, в in V.ЛЕКСИКОН.items() if с not in V.ВІКНА_КРАМНИЦЬ})
 зб = dict(F.читати_збагачення(ТУТ)); v2 = [зб[к] for к in sorted(зб) if (зб[к].get("версія") or 1) >= 2][:300]
 offers = F.читати_yml(sys.argv[2] if len(sys.argv) > 2 else Н.КАТАЛОГ)[0][:3000]
-кл = lambda з: [dict(слово=k["слово"], частка=k["частка"], lab=list(CS.hx(k["hex"])), hex=k["hex"], у_вікні=True) for k in (з.get("колір_основний"), з.get("колір_другий")) if k]
-з_кольором = [з for з in v2 if з.get("колір_основний")]
+кл = lambda з: [dict(k, lab=list(точка_кольору(k)), hex=k.get("hex") or CS.hex_з_lab(точка_кольору(k)), у_вікні=True) for k in (з.get("колір_основний"), з.get("колір_другий")) if точка_кольору(k) is not None]
+з_кольором = [з for з in v2 if точка_кольору(з.get("колір_основний")) is not None]
+print("Історичне порівняння точок: записів без виміру", len(v2) - len(з_кольором), "із", len(v2))
 сирі = [(dict(з, колір_слово=з["колір_основний"]["слово"], деталі=["комір", "x"]), "одяг" if з.get("крій") else "дрібне") for з in з_кольором] + [({"колір_слово": "чорний", "каблук": {"є": True, "форма": "тонкий"}, "носок": "гострий", "блиск": 2}, "взуття"), ({"тип": "тоут", "ручки": "обидва"}, "сумка"), ({"метал": "золотистий", "масштаб": "велика"}, "прикраса")]
 def зведення(м, з):
     о, д, с = м.звести_колір(кл(з), з["колір_основний"]["слово"], ["сірий", "білий"])

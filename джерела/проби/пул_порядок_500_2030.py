@@ -9,6 +9,7 @@ import sys, json, pathlib, os
 _К = pathlib.Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(_К)); os.chdir(_К)
 import bridge as B, семплер as С, композитор_слоти as КС, hypergraph as ГГ, fit as ПС, верхнє_довжина as ВД, колір_простір_перетворення as КП
+from колір_річ import точка_кольору
 зап = {}; _о = С.вибрати
 def _з(к, *а, **kw):
     зап.setdefault("пул", {с: list(v) for с, v in к.items()}); return _о(к, *а, **kw)
@@ -19,12 +20,14 @@ def прогін(смуга, зр=168, об=None):
     вх["сценарій"] = dict(вх["сценарій"], ошатність=list(смуга), темп_c=5)
     р = json.loads(B.виклик("запити", json.dumps(вх, ensure_ascii=False)))
     return зап["пул"], {с: {x["id"] for x in v} for с, v in р["кандидати"].items()}
-лаб = lambda r: КП.to_lab(tuple(int(r["hex"][i:i + 2], 16) for i in (1, 3, 5)))
+лаб = точка_кольору
 де = lambda a, b: sum((x - y) ** 2 for x, y in zip(a, b)) ** .5
 перші, вибірки = {}, {}
 for смуга in ((6, 8), (5, 7), (4, 6), (2, 4)):
     пул, вибір = прогін(смуга); вибірки[смуга] = вибір; перші[смуга] = {с: {r["id"] for r in v[:5]} for с, v in пул.items()}
-    одн = [sum(1 for r in v[:5] if де(лаб(r), лаб(v[0])) <= 10) for v in пул.values()]
+    пари = [(лаб(r), лаб(v[0])) for v in пул.values() for r in v[:5]]
+    print('ΔE76: пар без точкового виміру', sum(a is None or b is None for a, b in пари), 'із', len(пари))
+    одн = [sum(1 for r in v[:5] if лаб(r) is not None and лаб(v[0]) is not None and де(лаб(r), лаб(v[0])) <= 10) for v in пул.values()]
     нж = lambda рядки, взяті=None: sum(1 for r in рядки if r.get("_нижче_смуги") and (взяті is None or r["id"] in взяті))
     print("смуга %d–%d: перших 5 слота одного кольору з першою — %.1f з 5; нижче смуги: пул %d%% → стилістці %d%%" % (*смуга, sum(одн) / len(одн),
           100 * sum(нж(v) for v in пул.values()) // sum(map(len, пул.values())), 100 * sum(нж(v, вибір[с]) for с, v in пул.items()) // sum(map(len, вибір.values()))))
