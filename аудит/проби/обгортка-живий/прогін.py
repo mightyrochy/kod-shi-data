@@ -44,7 +44,7 @@ def головна():
                ZNIMKY=str(ТЕКА / "знімки"), VIDPOVIDI=str(ТЕКА / "відповіді"),
                ZVIT_OUT=str(ТЕКА / "вердикти.txt"), PYTHONUTF8="1", PYTHONIOENCODING="utf-8",
                NODE_USE_SYSTEM_CA="1")
-    for ключ in ("FOTO", "DO", "SCENA", "CHROMIUM", "PASPORT", "ZHYVA", "NODE_OPTIONS", "NODE_TLS_REJECT_UNAUTHORIZED"):
+    for ключ in ("FOTO", "DO", "SCENA", "CHROMIUM", "PASPORT", "ZHYVA", "NODE_TLS_REJECT_UNAUTHORIZED"):
         env.pop(ключ, None)
     env["PATH"] = str(Path(середовище["node_path"]).parent) + os.pathsep + env["PATH"]
     межа = time.monotonic() + 1800
