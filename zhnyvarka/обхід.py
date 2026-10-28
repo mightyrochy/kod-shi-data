@@ -8,7 +8,6 @@ import argparse
 import collections
 from concurrent.futures import ThreadPoolExecutor
 import csv
-import json
 import os
 from pathlib import Path
 import signal

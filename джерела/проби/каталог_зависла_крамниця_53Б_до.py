@@ -12,7 +12,7 @@ def main():
         (тека / "zhnyvarka").mkdir()
         файли = subprocess.check_output(["git", "ls-tree", "-r", "--name-only", база, "--", "zhnyvarka"], cwd=корінь).decode().splitlines()
         for ім in файли:
-            if Path(ім).suffix not in (".py", ".tsv"): continue
+            if Path(ім).parent != Path("zhnyvarka") or Path(ім).suffix not in (".py", ".tsv"): continue
             код = subprocess.check_output(["git", "show", f"{база}:{ім}"], cwd=корінь)
             (тека / ім).write_bytes(код)
         проби = тека / "джерела/проби"; проби.mkdir(parents=True)
