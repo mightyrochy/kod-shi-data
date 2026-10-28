@@ -38,15 +38,10 @@ index c81f4618a..b7de4a730 100644
          $state = Get-StatePath (Get-MarkerKey $m)
          if (Test-Path -LiteralPath $state) { continue }
 diff --git a/аудит/адаптери/gemini/m9v/хеші.psd1 b/аудит/адаптери/gemini/m9v/хеші.psd1
-index eec6ee07c..7bbe339e1 100644
+index eec6ee07c..cc9202f75 100644
 --- a/аудит/адаптери/gemini/m9v/хеші.psd1
 +++ b/аудит/адаптери/gemini/m9v/хеші.psd1
-@@ -1,11 +1,11 @@
--﻿# Очікувані SHA-256 файлів обгортки — єдине місце для скриптів m9v. Рядки тут мають збігатися з таблицею «Хеші файлів»
-+# Очікувані SHA-256 файлів обгортки — єдине місце для скриптів m9v. Рядки тут мають збігатися з таблицею «Хеші файлів»
- # у ../НАЛАШТУВАННЯ.md (стенд `перевірка/сценарії_m9v.sh` звіряє). Міняється разом із таблицею (PR, що чіпає обгортку).
- @{
-     'wrapper_update.ps1' = '4156307A17BDAE3AF7249E532947F659E99AA1349D159239159FAE60CA7E4F2B'
+@@ -5,7 +5,7 @@
      'wrapper_probe.ps1'  = '85116D04C22EB64CBFF52E66BCEAE9B1091577A889EDD58A8B634093A82BDBC6'
      'wrapper_chain.ps1'  = 'AC5AC68AFCB3E9C93DEDF20EAEC0466CF331C990CC93C8748D5B70D034E6DB88'
      'wrapper_health.ps1' = 'FCE45448539D53A6B5718319842FC845DA870F39453A6B716C7AF8A2DB65B88E'

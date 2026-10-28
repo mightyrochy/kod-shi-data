@@ -60,10 +60,10 @@ index 2e2a57262..b083b5130 100644
 +        if: ${{ !cancelled() }}
 +        run: powershell.exe -NoProfile -ExecutionPolicy Bypass -File аудит/проби/перевірити_нічний_маркер.ps1 -WrapperRoot аудит/адаптери/gemini
 diff --git a/аудит/проби/перевірити_нічний_маркер.ps1 b/аудит/проби/перевірити_нічний_маркер.ps1
-index aa61a4c5b..f75d65f97 100644
+index aa61a4c5b..79f6d80ce 100644
 --- a/аудит/проби/перевірити_нічний_маркер.ps1
 +++ b/аудит/проби/перевірити_нічний_маркер.ps1
-@@ -1,35 +1,111 @@
+@@ -1,35 +1,112 @@
 -﻿param([Parameter(Mandatory = $true)][string]$WrapperRoot)
 +﻿param([Parameter(Mandatory = $true)][string]$WrapperRoot, [switch]$Before)
  $ErrorActionPreference = 'Stop'
@@ -187,6 +187,7 @@ index aa61a4c5b..f75d65f97 100644
 +        [void](Git-At $origin @('update-ref', '-d', 'refs/heads/gemini-queue/звичайний/gpt-6.1-sol-high/1/gpu-p8'))
 +        [void](Git-At $pub @('fetch', '-q', '--prune', 'origin', '+refs/heads/*:refs/remotes/origin/*'))
 +        $status.id = '20261027-020002-cccccccccccc'
++        $status.code = 'CRASH'
 +        [IO.File]::WriteAllText((Join-Path $out ($status.id + '.json')), ($status | ConvertTo-Json -Compress), $script:Utf8)
 +        Assert-That ($null -eq (Get-Line $status.id)) 'знята звичайна позначка знову не дає прав'
 +    }
