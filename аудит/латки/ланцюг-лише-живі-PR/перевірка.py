@@ -1,32 +1,77 @@
-﻿from pathlib import Path
-import subprocess, os, json, sys
-root=Path(r'C:/Users/gemini/gemini-runs/w/codex-3')
-work=Path(r'C:/Users/gemini/gemini-runs/w/live-pr-patch')
-out=root/'аудит/латки/ланцюг-лише-живі-PR'; logs=out/'журнали';logs.mkdir(exist_ok=True)
-env=os.environ.copy();env.update(PYTHONUTF8='1',PYTHONIOENCODING='utf-8')
-bash=r'C:/Program Files/Git/bin/bash.exe'
-results=[]
-def run(name,args,cwd):
- p=subprocess.run(args,cwd=cwd,env=env,stdout=subprocess.PIPE,stderr=subprocess.STDOUT)
- s=p.stdout.decode('utf-8',errors='replace');(logs/(name+'.txt')).write_text(s,encoding='utf-8',newline='\n')
- item={'назва':name,'код':p.returncode,'✓':s.count('✓'),'✗':s.count('✗')};results.append(item)
- print(json.dumps(item,ensure_ascii=False),flush=True)
- if p.returncode: print(s[-3000:],flush=True)
- return p.returncode
-mode=sys.argv[1]
-if mode=='проби':
- for phase,source in [('ДО',root),('ПІСЛЯ',work)]:
-  script=out/'проба.ps1'; src=source/'аудит/адаптери/gemini'
-  quote=lambda s:"'"+str(s).replace("'","''")+"'"
-  cmd="[Console]::OutputEncoding = New-Object Text.UTF8Encoding($false); & "+quote(script)+' -SourceDir '+quote(src)+' -Phase '+quote(phase)
-  run(phase,['powershell','-NoProfile','-ExecutionPolicy','Bypass','-Command',cmd],root)
-else:
- temp=Path(r'C:/Users/gemini/gemini-runs/w/live-pr-stend');temp.mkdir(exist_ok=True)
- env['TMPDIR']='/c/Users/gemini/gemini-runs/w/live-pr-stend'
- tests=sorted((work/'аудит/адаптери/gemini/перевірка').glob('сценарії_*.sh'))
- assert len(tests)==12,len(tests)
- for script in tests:
-  path=script.relative_to(work).as_posix()
-  run(script.stem,[bash,'-lc',"bash '"+path+"'"],work)
-(out/('результати-'+mode+'.json')).write_text(json.dumps(results,ensure_ascii=False,indent=2)+'\n',encoding='utf-8')
-sys.exit(any(r['код'] or r['✗'] for r in results))
+﻿"""Послідовно виконує стенди латки й зберігає повні журнали."""
+from pathlib import Path
+import argparse
+import json
+import os
+import shutil
+import subprocess
+import sys
+import tempfile
+
+
+def main():
+    """Виконує батарею або повтор обраних сценаріїв без втрати первинних доказів."""
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument('mode', choices=['проби', 'стенди'])
+    parser.add_argument('--дерево', type=Path, required=True, dest='work')
+    parser.add_argument('--база', type=Path, dest='base')
+    parser.add_argument('--лише', nargs='+', dest='only')
+    args = parser.parse_args()
+    root = Path(__file__).resolve().parents[3]
+    work = args.work.resolve()
+    out = Path(__file__).resolve().parent
+    logs = out / 'журнали'
+    logs.mkdir(exist_ok=True)
+    env = dict(os.environ, PYTHONUTF8='1', PYTHONIOENCODING='utf-8')
+    bash = (str(Path(os.environ.get('ProgramFiles', 'C:/Program Files')) / 'Git/bin/bash.exe')
+            if os.name == 'nt' else shutil.which('bash'))
+    results = []
+    destination = out / ('результати-' + args.mode + '.json')
+    previous = json.loads(destination.read_text(encoding='utf-8')) if args.only and destination.exists() else []
+    if previous:
+        original = out / ('результати-' + args.mode + '-початково.json')
+        if not original.exists():
+            shutil.copyfile(destination, original)
+
+    def run(name, command):
+        """Чекає завершення процесу й показує підсумок, не лишаючи його у фоні."""
+        log = logs / (name + '.txt')
+        original = logs / (name + '.початково.txt')
+        if log.exists() and not original.exists():
+            shutil.copyfile(log, original)
+        result = subprocess.run(command, cwd=work, env=env, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+        output = result.stdout.decode('utf-8', errors='replace')
+        log.write_text(json.dumps(command, ensure_ascii=False) + '\n' + output, encoding='utf-8')
+        row = {'назва': name, 'код': result.returncode, '✓': output.count('✓'), '✗': output.count('✗')}
+        results.append(row)
+        print(json.dumps(row, ensure_ascii=False), flush=True)
+        if result.returncode:
+            print(output[-3000:], flush=True)
+
+    if args.mode == 'проби':
+        for phase, source in [('ДО', args.base or root), ('ПІСЛЯ', work)]:
+            quote = lambda value: "'" + str(value).replace("'", "''") + "'"
+            command = ("[Console]::OutputEncoding = New-Object Text.UTF8Encoding($false); & "
+                       + quote(out / 'проба.ps1') + ' -SourceDir '
+                       + quote(source / 'аудит/адаптери/gemini') + ' -Phase ' + quote(phase))
+            run(phase, ['powershell', '-NoProfile', '-ExecutionPolicy', 'Bypass', '-Command', command])
+    else:
+        temp = Path(tempfile.gettempdir()) / 'live-pr-stend'
+        temp.mkdir(exist_ok=True)
+        env['TMPDIR'] = temp.resolve().as_posix()
+        tests = sorted((work / 'аудит/адаптери/gemini/перевірка').glob('сценарії_*.sh'))
+        assert len(tests) == 12, len(tests)
+        if args.only:
+            assert set(args.only) <= {p.stem for p in tests}, args.only
+            tests = [p for p in tests if p.stem in args.only]
+        for script in tests:
+            run(script.stem, [bash, '-lc', "bash '" + script.relative_to(work).as_posix() + "'"])
+    merged = {row['назва']: row for row in previous}
+    merged.update({row['назва']: row for row in results})
+    final = list(merged.values())
+    destination.write_text(json.dumps(final, ensure_ascii=False, indent=2) + '\n', encoding='utf-8')
+    return int(any(row['код'] or row['✗'] for row in final))
+
+
+if __name__ == '__main__':
+    sys.exit(main())

@@ -291,6 +291,22 @@ index 93334a17e..29af8d86a 100644
 +  ],
 +  "review_hours": 24
  }
+diff --git a/аудит/адаптери/gemini/перевірка/side.ps1 b/аудит/адаптери/gemini/перевірка/side.ps1
+index 5c744978d..ea8349632 100644
+--- a/аудит/адаптери/gemini/перевірка/side.ps1
++++ b/аудит/адаптери/gemini/перевірка/side.ps1
+@@ -8,6 +8,11 @@ $p = @{}
+ if ((Get-Command $Script).Parameters.ContainsKey('LaneDir') -and -not $p.ContainsKey('LaneDir')) {
+     $p['LaneDir'] = Join-Path ([System.IO.Path]::GetTempPath()) ('lanes-' + [guid]::NewGuid().ToString('N').Substring(0, 8))
+ }
++# Встановлена обгортка не є фікстурою: стенд доставки має власний неактивний корінь оновлення.
++if ((Get-Command $Script).Parameters.ContainsKey('UpdateRoot') -and -not $p.ContainsKey('UpdateRoot')) {
++    $testBase = if ($p.ContainsKey('WorkDir')) { $p['WorkDir'] } else { Join-Path ([IO.Path]::GetTempPath()) ('wrapper-test-' + [guid]::NewGuid().ToString('N')) }
++    $p['UpdateRoot'] = Join-Path $testBase 'update'
++}
+ . $Script @p
+ # Процес наряду — знов цей стенд (а не сам скрипт), тож бере ті самі підміни, що батьківський (10164).
+ $script:SideFile = $PSCommandPath; $script:SideScript = $Script; $script:SideArgs = $p
 diff --git a/аудит/адаптери/gemini/перевірка/сценарії_живих_pr.ps1 b/аудит/адаптери/gemini/перевірка/сценарії_живих_pr.ps1
 new file mode 100644
 index 000000000..9130aa567
@@ -446,6 +462,18 @@ index 000000000..fa294eb5d
 +set -euo pipefail
 +H=$(cd "$(dirname "$0")" && pwd); . "$H/середовище.sh"
 +"${PWSH:-pwsh}" -NoProfile -File "$(wp "$H/сценарії_живих_pr.ps1")"
+diff --git a/аудит/адаптери/gemini/перевірка/сценарії_здоровя.ps1 b/аудит/адаптери/gemini/перевірка/сценарії_здоровя.ps1
+index 3db45affe..8987b6af4 100644
+--- a/аудит/адаптери/gemini/перевірка/сценарії_здоровя.ps1
++++ b/аудит/адаптери/gemini/перевірка/сценарії_здоровя.ps1
+@@ -29,6 +29,7 @@ function Publish([string]$Case, [int]$Limit = 4, [int]$Fallback = 2) {
+     $dir = Join-Path $tmpRoot $Case
+     $params = @{ WorkDir = "$dir/pub"; OutDir = "$dir/out"; OutboxDir = "$dir/box"; GitExe = "$tmpRoot/git.cmd"; ClaudeExe = "$tmpRoot/claude.cmd"; SendRetryDelaySeconds = 0; SendRetries = 1; MaxSendAttempts = $Limit }
+     if (-not $Before) { $params.GhExe = "$tmpRoot/gh.cmd"; $params.MaxFallbackAttempts = $Fallback }
++    if ((Get-Command (Join-Path $SourceDir 'gemini_publish.ps1')).Parameters.ContainsKey('UpdateRoot')) { $params.UpdateRoot = "$dir/update" }
+     . (Join-Path $SourceDir 'gemini_publish.ps1') @params
+     function Test-OwnerUser { $true }
+     $code = Main
 diff --git a/аудит/адаптери/gemini/перевірка/сценарії_ланцюга.ps1 b/аудит/адаптери/gemini/перевірка/сценарії_ланцюга.ps1
 index 75c5f0b0c..4ac4faf42 100644
 --- a/аудит/адаптери/gemini/перевірка/сценарії_ланцюга.ps1
