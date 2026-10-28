@@ -270,6 +270,37 @@ function Get-Markers {
     @(foreach ($line in ($r.Out -split "`n")) { if ($line.Trim()) { ConvertTo-Marker $line.Trim() } })
 }
 
+function Get-TaskSource($M) {
+    <# Нічні гілки мають дату, а шаблон наряду — одне постійне джерело в main. #>
+    if ($M.Slug -cmatch '^Е1-нічний-живий-[0-9]{8}$') { return 'аудит/проби/нічний_наряд.md' }
+    Get-AutoTaskPath $M.Slug
+}
+
+function Get-NightlyMarker([datetime]$Now = [datetime]::UtcNow) {
+    <# Після 02:00 UTC — одна локальна позначка на дату, через звичайну чергу та замок GPU. #>
+    $utc = $Now.ToUniversalTime()
+    if ($utc.Hour -lt 2) { return }
+    $main = Get-RefSha 'refs/remotes/origin/main'
+    if ($main -cnotmatch '^[0-9a-f]{40}$') { return }
+    $template = 'аудит/проби/нічний_наряд.md'
+    if ((Invoke-Git @('cat-file', '-e', "${main}:$template") -AllowFail).Code -ne 0) { return }
+    $date = $utc.ToString('yyyyMMdd')
+    $dir = Join-Path $RunsDir 'nightly'
+    [void](New-Item -ItemType Directory -Force -Path $dir)
+    $file = Join-Path $dir ($date + '.json')
+    if (Test-Path -LiteralPath $file) {
+        $saved = [System.IO.File]::ReadAllText($file, $script:Utf8) | ConvertFrom-Json
+        if ($saved.date -cne $date -or $saved.sha -cnotmatch '^[0-9a-f]{40}$' -or
+            [string]$saved.time -cnotmatch '^[0-9]{10}$') { throw 'Хибний стан нічного прогону' }
+    } else {
+        $stamp = ([DateTimeOffset]$utc).ToUnixTimeSeconds()
+        $saved = [pscustomobject]@{ date = $date; sha = $main; time = $stamp }
+        Write-FileAtomic $file ($saved | ConvertTo-Json -Compress)
+    }
+    $ref = $script:QueuePrefix + 'Е1-нічний-живий-' + $date + '/gpt-6.1-sol-high/1/gpu-p8'
+    ConvertTo-Marker ($ref + "`t" + $saved.sha + "`t" + $saved.time)
+}
+
 function Get-MarkerKey($M) { "$($M.Ref) $($M.Sha)" }
 
 function Get-StatePath([string]$Key) { Join-Path $script:StateDir ((Get-Sha256Hex $Key) + '.txt') }
