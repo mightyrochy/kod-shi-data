@@ -11,8 +11,9 @@ sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent.parent))
 import feed as F; F.каталог_на_диску('каталог_повний.xml')
 import фід_каталог as ФК, colorspace as cs, колір_простір_риси as КР
 т = collections.defaultdict(list)
+import колір_річ as _КОЛІР
 for r in ФК.прочитати_каталог('каталог_повний.xml', 0)['каталог']:
-    if r.get("lab") and cs.lch(tuple(r["lab"]))[1] > 8: т[r.get("колір_назва")].append(cs.lch(tuple(r["lab"]))[2])
+    if _КОЛІР.точка_кольору(r) and cs.lch(tuple(_КОЛІР.точка_кольору(r)))[1] > 8: т[r.get("колір_назва")].append(cs.lch(tuple(_КОЛІР.точка_кольору(r)))[2])
 мед = lambda *сл: math.degrees(math.atan2(sum(math.sin(math.radians(h)) for с in сл for h in т[с]),
                                           sum(math.cos(math.radians(h)) for с in сл for h in т[с]))) % 360
 кут = lambda a, b: abs((a - b + 180) % 360 - 180)

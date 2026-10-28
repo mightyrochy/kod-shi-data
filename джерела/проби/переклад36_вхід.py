@@ -6,6 +6,7 @@ import json, pathlib, re, sys
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parents[1]))
 import мовний_шар as МШ
 
+import колір_річ as _КОЛІР
 for тека in sys.argv[1:]:
     шари = {ф: ф.read_text() for ф in sorted(pathlib.Path(тека).glob("*мовний_шар.txt"))}
     for ф in sorted(pathlib.Path(тека).glob("*.txt")):
@@ -22,7 +23,7 @@ for тека in sys.argv[1:]:
         місце = {р["n"]: і for і, р in enumerate(речі)}
         тексти = {"про_річ.%d" % місце[а["n"]]: а["text"] for а in про if а.get("n") in місце}
         тексти["опис"] = (відп.get("answer_schema") or {}).get("text") or відп.get("text") or ""
-        перелік = [dict(н=і + 1, назва=р["name"], колір=р.get("color"), hex=р.get("hex"),
+        перелік = [dict(н=і + 1, назва=р["name"], колір=р.get("color"), hex=_КОЛІР.hex_кольору(р),
                         **({"опис": "про_річ.%d" % і} if "про_річ.%d" % і in тексти else {})) for і, р in enumerate(речі)]
         пр = МШ.промпт(МШ.розмітити(тексти), перелік)
         рядки = [л for л in пр.splitlines() if re.match(r"\d+ — ", л)]

@@ -43,6 +43,7 @@
 імпорт — `palette` у `_придатність_принтів`: `palette` імпортує суд, і зворотний
 імпорт на рівні модуля дав би цикл.
 """
+import колір_річ as _КОЛІР
 from colorspace import hx, lch, de00
 
 # Реєстр, шкала сили, конструктор знахідки, намір і функції ваги — з
@@ -227,7 +228,7 @@ if __name__ == "__main__":
         out = []
         for r in речі:
             g = m[r["id"]]
-            out.append(dict(id=r["id"], слот=r["слот"], hex=r["hex"],
+            out.append(dict(id=r["id"], слот=r["слот"], hex=_КОЛІР.hex_кольору(r),
                             площа=g["площа"], джерело_площі=g["джерело_площі"],
                             near=g["near"] if r["слот"] not in ("сумка", "прикраси") else None,
                             **{k: v for k, v in r.items()

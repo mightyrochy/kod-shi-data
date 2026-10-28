@@ -14,8 +14,8 @@ for r in кат:
     с = r.get("колір_ім") or r.get("колір_назва")
     if not с or с not in V.ЛЕКСИКОН or not V.ЛЕКСИКОН[с][4]: continue
     нв, з = КР.не_вимір(r), зб.get(r["id"]) or {}
-    if нв is None and r.get("lab"): Т[с][0].append(cs.lch(tuple(r["lab"]))[1]); continue
-    if нв and r.get("lab") and cs.lch(tuple(r["lab"]))[1] >= 40: ВІК[с] += 1
+    if нв is None and КР.точка_кольору(r): Т[с][0].append(cs.lch(tuple(КР.точка_кольору(r)))[1]); continue
+    if нв and КР.точка_кольору(r) and cs.lch(tuple(КР.точка_кольору(r)))[1] >= 40: ВІК[с] += 1
     if нв and (r.get("колір_спір") or {}).get("чому") == "згода свідків нижча за поріг" and з.get("версія") == 2:
         lab = КР.точка_кольору(з.get("колір_основний"))
         if lab and V.перевірити(lab, ім=с)["вердикт"] == "прийнято": Т[с][1].append(cs.lch(tuple(lab))[1])

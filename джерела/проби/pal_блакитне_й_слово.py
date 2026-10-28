@@ -12,10 +12,10 @@ import колір_річ as КР, palettes as PAL, палітра_схеми as 
 пох = K.Counter()
 for v in зб.values():
     x = v.get("колір_основний") or {}
-    if not x.get("hex"): continue
-    L, C, h = cs.lch(cs.hx(x["hex"]))
+    if not КР.hex_кольору(x): continue
+    L, C, h = cs.lch(cs.hx(КР.hex_кольору(x)))
     if 230 <= h <= 300 and L >= КР.СВІТЛА_ХОЛОДНА_L and 12 <= C <= 24:
-        пох[(x.get("слово"), "нейтраль" if КР.нейтраль(cs.hx(x["hex"])) else "колір")] += 1
+        пох[(x.get("слово"), "нейтраль" if КР.нейтраль(cs.hx(КР.hex_кольору(x))) else "колір")] += 1
 print("каталог h 230–300, L* ≥ 60, C* 12–24 (слово, читання коду):", пох.most_common(4))
 assert not any(ч == "нейтраль" for (_, ч) in пох), пох
 for hx, ім in (("#b3d9ff", "Туфлі Sergio Rossi блакитні"), ("#2a3a5a", "нейві"), ("#9ba5b0", "блакитні джинси C7")):

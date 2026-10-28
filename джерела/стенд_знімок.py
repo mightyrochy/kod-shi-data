@@ -14,6 +14,7 @@
 Дим:     python3 стенд_знімок.py --дим                (секунди, після КОЖНОЇ правки)
 Порівняння: python3 стенд_знімок.py --діф база нове
 """
+import колір_річ as _КОЛІР
 import sys, os, json, collections
 
 ТУТ = os.path.dirname(os.path.abspath(__file__))
@@ -145,7 +146,7 @@ def образ_і_суд(назва, сцен):
         речі.append(dict(повна or пул[0], слот=слот))
     if len(речі) < 2:
         return dict(помилка="замало кандидатів")
-    _без_кольору = [x["слот"] for x in речі if not (x.get("lab") or x.get("hex") or x.get("вікно"))]
+    _без_кольору = [x["слот"] for x in речі if _КОЛІР.межі_кольору(x) is None]
     T = ПС.тіло(float(вх["зріст"]), {k: float(v) for k, v in вх["обхвати"].items()})
     import colorspace as cs
     F = cs.features(cs.hx(вх["шкіра"]), cs.hx(вх["волосся"][0]), cs.hx(вх["очі"]))
@@ -157,7 +158,7 @@ def образ_і_суд(назва, сцен):
         # ЯКЩО КОЛІР УСЕ Ж НЕ ДОЇХАВ — це видно в знімку, а не мовчки псує колірні
         # числа. Порожній список означає, що всі речі прийшли з кольором.
         слоти_без_кольору=_без_кольору,
-        hex_речей=[(g.get("слот"), g.get("hex")) for g in готові],
+        hex_речей=[(g.get("слот"), _КОЛІР.hex_кольору(g)) for g in готові],
         ключі_виходу=sorted(вих.keys()),
         знахідки_шляхи=sorted(collections.Counter(ш for ш, _ in з).items()),
         знахідки_правила=sorted(collections.Counter(z.get("правило") for _, z in з).items()),

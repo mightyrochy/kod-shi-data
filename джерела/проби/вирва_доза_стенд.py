@@ -6,12 +6,13 @@
 import json, math, os, sys
 Д = os.path.dirname(os.path.dirname(os.path.abspath(__file__))); sys.path.insert(0, Д); os.chdir(Д)
 import bridge as B, colorspace as cs
+import колір_річ as _КОЛІР
 for намір, мета in (("statement", None), ("statement", "приховати"), ("conventional", None)):
     вх = dict(json.load(open("стенд_вх.json", encoding="utf-8")), варіантів=10, ремонт_варіантів=5, без_фото=1, намір=намір)
     if мета:
         вх["паспорт"] = dict(вх.get("паспорт") or {}, мета=мета)
     пул = json.loads(B.виклик("запити", json.dumps(вх, ensure_ascii=False)))["пакети"]["1"]["пул"]
-    C = lambda r: math.hypot(*cs.to_lab(tuple(int(r["hex"][1 + 2 * k:3 + 2 * k], 16) for k in range(3)))[1:]) if r.get("hex") else 0
+    C = lambda r: math.hypot(*cs.to_lab(tuple(int(_КОЛІР.hex_кольору(r)[1 + 2 * k:3 + 2 * k], 16) for k in range(3)))[1:]) if _КОЛІР.hex_кольору(r) else 0
     за = {с: sorted(пул[с], key=C) for с in ("верх", "низ", "взуття", "сумка")}
     н = lambda с, і, гучно: (за[с][-1 - і % len(за[с])] if гучно else за[с][і % len(за[с])])["н"]
     образи = [dict(ід="о%d" % (і + 1), підпис="образ %d" % (і + 1),

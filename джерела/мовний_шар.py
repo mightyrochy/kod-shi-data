@@ -40,6 +40,7 @@
 
 БЕЗ МОДЕЛІ ШАРУ ВСЕ ЯК ДОТИ: показ не кличе цей модуль.
 """
+import колір_річ as _КОЛІР
 import json as _json_
 import copy as _копія_
 import re
@@ -388,7 +389,7 @@ def _код_кольору_речі(р):
     к = str(р.get("код_кольору") or "").strip()
     if к in _ВМ.ТАБЛИЦЯ.get("color_name", {}) and not _ВМ.невідомо(к):
         return к
-    hx = re.fullmatch(r"#?([0-9a-fA-F]{6})", str(р.get("hex") or "").strip())
+    hx = re.fullmatch(r"#?([0-9a-fA-F]{6})", str(_КОЛІР.hex_кольору(р) or "").strip())
     return _код_кольору(hx.group(1)) if hx else None
 
 

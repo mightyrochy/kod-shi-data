@@ -24,7 +24,8 @@ sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent))
 import pal_вердикт as ПВ
 import pipeline as PL
 
-сім_я = lambda з: PL._сім_я_тону(з.get("hex") or ПВ.cs.hex_з_lab(з["lab"]))
+import колір_річ as _КОЛІР
+сім_я = lambda з: PL._сім_я_тону(_КОЛІР.hex_кольору(з) or ПВ.cs.hex_з_lab(_КОЛІР.точка_кольору(з)))
 візерунок = lambda який, крім=None: (lambda L, C, h, з: (
     str(з.get("візерунок") or "").lower() == який and C >= 20.0
     and сім_я(з) and сім_я(з) != крім))

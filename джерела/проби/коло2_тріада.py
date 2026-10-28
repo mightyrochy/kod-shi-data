@@ -10,9 +10,10 @@ sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent.parent))
 import feed as F; F.каталог_на_диску('каталог_повний.xml')
 import фід_каталог as ФК, colorspace as cs, палітра_схеми as PS
 кат = ФК.прочитати_каталог('каталог_повний.xml', 0)['каталог']
+import колір_річ as _КОЛІР
 def мед(слово):
-    hs = [cs.lch(tuple(r["lab"]))[2] for r in кат if r.get("колір_назва") == слово and r.get("lab")
-          and cs.lch(tuple(r["lab"]))[1] > 8]
+    hs = [cs.lch(tuple(_КОЛІР.точка_кольору(r)))[2] for r in кат if r.get("колір_назва") == слово and _КОЛІР.точка_кольору(r)
+          and cs.lch(tuple(_КОЛІР.точка_кольору(r)))[1] > 8]
     return math.degrees(math.atan2(sum(math.sin(math.radians(h)) for h in hs),
                                    sum(math.cos(math.radians(h)) for h in hs))) % 360, len(hs)
 кут = lambda a, b: abs((a - b + 180) % 360 - 180)

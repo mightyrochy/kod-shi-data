@@ -16,13 +16,14 @@ import colorspace as CS
 д = json.load(io.open(os.path.join(ТУТ, "аудит", "збагачення_v2_вибірка.json"), encoding="utf-8"))
 ахром = {с for с, в in V.ЛЕКСИКОН.items() if not в[4]}      # вікна без дуги тону
 рядки = []
+import колір_річ as _КОЛІР
 for р in д["речі"]:
     св = (р.get("вимір") or {}).get("світліша")
     осн = (р.get("запис") or {}).get("колір_основний")
     if not св or not осн:
         continue
     кл = [к for к in р["вимір"]["кластери"] if к["слово"] == осн["слово"]]
-    C0 = round(CS.lch(tuple(кл[0]["lab"]))[1], 1) if кл else None
+    C0 = round(CS.lch(tuple(_КОЛІР.точка_кольору(кл[0])))[1], 1) if кл else None
     рядки.append((р.get("слот"), р["id"], осн["слово"], C0, св["слово"], св["C"], св["тон"]))
 інше = [р for р in рядки if р[2] != р[4]]
 з_ахром = [р for р in інше if р[2] in ахром and р[4] not in ахром]

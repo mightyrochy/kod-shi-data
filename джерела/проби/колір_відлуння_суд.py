@@ -24,7 +24,7 @@ for назва in ("офіс·18°C", "дощ·ресторан·вечір", "�
     for a, b in [(a, b) for a in вел for b in акс if зі[a].get("колір_ім") and зі[a].get("колір_ім") == зі[b].get("колір_ім")][:6]:
         образи.append([a, b] + ([к["низ"][0]["id"]] if зі[a].get("слот") == "верх" and к.get("низ") else []) + ([к["взуття"][0]["id"]] if к.get("взуття") else []))
     вим = lambda с: [r["id"] for r in кат if r.get("слот") in с and гучна(r) and not КР.не_вимір(r)]   # увесь каталог руки 1
-    h = lambda x: cs.lch(tuple(зі[x]["lab"]))[2]
+    h = lambda x: cs.lch(tuple(КР.точка_кольору(зі[x])))[2]
     пари = [(a, b, КР.кут_на_колі(h(a), h(b))) for a in вим(("сукня", "верх")) for b in вим(АС.СЛОТИ_АКСЕСУАРІВ + ("взуття",)) if КР._кут(h(a), h(b)) <= 45]
     for a, b, _ in rnd.sample([п for п in пари if 15 < п[2] <= 45], 6) + rnd.sample([п for п in пари if п[2] <= 15], 3):
         образи.append([a, b] + ([к["низ"][0]["id"]] if зі[a].get("слот") == "верх" and к.get("низ") else []) + ([к["взуття"][0]["id"]] if к.get("взуття") and зі[b].get("слот") != "взуття" else []))
@@ -34,6 +34,6 @@ for назва in ("офіс·18°C", "дощ·ресторан·вечір", "�
         оп = sorted("опора:%s" % o.get("правило") for o in в.get("опори") or [] if o.get("правило") in ПР)
         for x in зн + оп: Л[x] += 1
         Л["образів"] += 1
-        Д.append("%s#%02d %s | %s" % (назва[:6], i, " ".join(зн + оп), " · ".join("%s %s%s %s" % ((зі[x].get("назва") or "")[:26], зі[x].get("колір_ім") or "", "~" if КР.не_вимір(зі[x]) else "", PS.hex_з_lab(зі[x]["lab"]) if зі[x].get("lab") else "—") for x in ід)))
+        Д.append("%s#%02d %s | %s" % (назва[:6], i, " ".join(зн + оп), " · ".join("%s %s%s %s" % ((зі[x].get("назва") or "")[:26], зі[x].get("колір_ім") or "", "~" if КР.не_вимір(зі[x]) else "", PS.hex_з_lab(КР.точка_кольору(зі[x])) if КР.точка_кольору(зі[x]) else "—") for x in ід)))
 for к_, v in sorted(Л.items()): print("  %-28s %4d" % (к_, v))
 if "-д" in sys.argv: print("\n".join(Д))

@@ -16,8 +16,8 @@ def каталог():
 до = каталог()
 ФЗ.вимір_впевнений, ФЗ.СВІТЛЕ_L = впевн, світле
 вид = lambda r: {"вимір": "точка", "інтервал": "вікно", "невідомо": "нема"}[КР.тип_кольору(r)]
-hx = lambda r: П.hex_з_lab(tuple(r["lab"])) if r.get("lab") else "—"
-зм = sorted(і for і, r in піс.items() if і in до and tuple(до[і].get("lab") or ()) != tuple(r.get("lab") or ()))
+hx = lambda r: П.hex_з_lab(tuple(КР.точка_кольору(r))) if КР.точка_кольору(r) else "—"
+зм = sorted(і for і, r in піс.items() if і in до and tuple(КР.точка_кольору(до[і]) or ()) != tuple(КР.точка_кольору(r) or ()))
 print("речей:", len(піс), "змінили колір:", len(зм))
 print("куди:", dict(K.Counter("%s → %s" % (вид(до[і]), вид(піс[і])) for і in зм)))
 print("по слотах:", dict(K.Counter(піс[і].get("слот") for і in зм).most_common()))

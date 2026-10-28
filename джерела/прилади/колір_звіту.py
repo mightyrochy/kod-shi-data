@@ -3,12 +3,13 @@ from колір_річ import тип_кольору, точка_кольору, 
 import colorspace as CS
 
 
+import колір_річ as _КОЛІР
 def колір_звіту(запис):
     """Дає hex лише виміру, межі інтервалу або None для невідомого кольору."""
     тип = тип_кольору(запис)
     if тип == "вимір":
         lab = точка_кольору(запис)
-        return (запис.get("hex") or CS.hex_з_lab(lab)) if lab is not None else None
+        return (_КОЛІР.hex_кольору(запис) or CS.hex_з_lab(lab)) if lab is not None else None
     межі = межі_кольору(запис)
     return dict(колір_тип=тип, межі=межі) if межі is not None else None
 

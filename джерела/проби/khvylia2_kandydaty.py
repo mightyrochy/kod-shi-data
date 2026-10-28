@@ -14,11 +14,12 @@ import feed, фід_збагачення as FZ, фід_каталог as FK, ф�
 гр, сім = К.defaultdict(dict), К.defaultdict(К.Counter)
 двоє = lambda п: sum(1 for т in п.replace("(", " ").replace(")", " ").split() if V.слово_крамниці(т)) > 1
 преф = lambda a, b: len([1 for i in range(min(len(a), len(b))) if a[:i+1] == b[:i+1]])
+import колір_річ as _КОЛІР
 for o in FR.читати_yml("каталог_повний.xml")[0]:
     п = н(o.get("колір_сирий")); z = зб.get(o["id"]) or {}; к = z.get("колір_основний") or {}
-    if not п or len(FK._СЕП_КОЛЬОРУ.split(п)) > 1 or not к.get("hex") or (z.get("версія") or 1) < 2: continue
+    if not п or len(FK._СЕП_КОЛЬОРУ.split(п)) > 1 or not _КОЛІР.hex_кольору(к) or (z.get("версія") or 1) < 2: continue
     if not FZ.колір_збагачення(z)[2].startswith("hex"): continue
-    гр[п].setdefault(z.get("фото") or o.get("group_id") or o["id"], []).append(cs.hx(к["hex"]))
+    гр[п].setdefault(z.get("фото") or o.get("group_id") or o["id"], []).append(cs.hx(_КОЛІР.hex_кольору(к)))
     сім[п][V.сім_я_слова(к["слово"])] += 1
 пц = lambda xs, p: (lambda s, k: s[int(k)] + (s[min(int(k)+1, len(s)-1)] - s[int(k)]) * (k-int(k)))(sorted(xs), (len(xs)-1)*p)
 бере = lambda w, l: w[0] <= l[0] <= w[1] and w[2] <= l[1] <= w[3] and (w[4] is None or l[1] < 10 or (l[2]-w[4][0]) % 360 <= (w[4][1]-w[4][0]) % 360)

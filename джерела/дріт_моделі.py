@@ -501,7 +501,7 @@ def _сім_я_речі(r):
     відсутня або застаріла. Пороги нейтралі не дублюємо; кольорові дуги
     палітри й запас без коректного hex лишаються чинними.
     """
-    hex_ = r.get("hex")
+    hex_ = _КР_ТИП.hex_кольору(r)
     if isinstance(hex_, str) and _re.fullmatch(r"#?[0-9a-fA-F]{6}", hex_):
         lab = _cs.hx(hex_)
         if _КО.нейтраль(lab) is not None:
@@ -525,7 +525,7 @@ def річ(r, короткий=False, пул=False, слот=None):
     if not isinstance(r, dict):
         return r
     о = {"n": r.get("н"), "name": r.get("назва")}
-    if r.get("колір_тип"):
+    if _КР_ТИП.явний_тип_кольору(r):
         о["color_type"] = {"вимір": "measure", "інтервал": "interval", "невідомо": "unknown"}[_КР_ТИП.тип_кольору(r)]
         о["color_not_measured"] = _не_вимір(_КР_ТИП.не_вимір(r))
     вимір = r.get("колір_вимір")
@@ -544,7 +544,7 @@ def річ(r, короткий=False, пул=False, слот=None):
             ("pattern", код("pattern", r.get("візерунок")) if r.get("візерунок") else None),
             ("shine", True if r.get("блиск") else None), ("details", _деталі(r.get("деталі"))),
             ("color", колір_код(r.get("колір"))[0]), ("shop_color", колір_код(r.get("колір"))[1]),
-            ("hex", r.get("hex")),
+            ("hex", _КР_ТИП.hex_кольору(r)),
             # другий свідок кольору: кадр картки показує інший колір, ніж слово крамниці
             ("color_disputed", код("color_name", r["колір_кадру"]) if r.get("колір_кадру") else None),
             ("family", _сім_я_речі(r)),
@@ -1526,7 +1526,7 @@ def опис(об):
                         # опис не назве річ кольором, який спростовує її ж кадр на картці
                         ("color", None if _інший_кадр else колір_код(x.get("колір"))[0]),
                         ("shop_color", None if _інший_кадр else колір_код(x.get("колір"))[1]),
-                        ("hex", None if _інший_кадр else x.get("hex")),
+                        ("hex", None if _інший_кадр else _КР_ТИП.hex_кольору(x)),
                         ("photo_other_colour", True if _інший_кадр else None),
                         ("photos", x.get("фото_номери")), ("no_photo", True if x.get("без_кадру") else None),
                         ("hers", True if x.get("її_річ") else None)):
@@ -1588,7 +1588,7 @@ def опис(об):
         вих["swap_spares"] = {"item": _зап.get("річ"), "why": _зап.get("чому"), "spares": [
             {к: v for к, v in (("n", x.get("н")), ("name", x.get("назва")), ("shop", x.get("магазин")),
                                ("color", колір_код(x.get("колір"))[0]), ("shop_color", колір_код(x.get("колір"))[1]),
-                               ("hex", x.get("hex")), ("photos", x.get("фото_номери")))
+                               ("hex", _КР_ТИП.hex_кольору(x)), ("photos", x.get("фото_номери")))
              if v not in (None, "", [])} for x in _зап["запасні"]]}
     return вих
 

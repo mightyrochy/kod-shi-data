@@ -21,5 +21,5 @@ print("ФАКТ · причини: %s" % collections.Counter(причина(r) f
 print("ФАКТ · свідок: %s; слоти: %s" % (dict(collections.Counter(КР.не_вимір(r).get("свідок") for r in нв)),
       collections.Counter(r["слот"] for r in нв).most_common(5)))
 print("ФАКТ · інтервалів з lab: %d; невідомих: %d; інтервалів зі збереженим фото-виміром: %d" % (
-    sum(bool(r.get("lab")) for r in нв), sum(КР.тип_кольору(r) == "невідомо" for r in К), sum(bool(r.get("колір_вимір")) for r in нв)))
+    sum(bool(КР.точка_кольору(r)) for r in нв), sum(КР.тип_кольору(r) == "невідомо" for r in К), sum(bool(r.get("колір_вимір")) for r in нв)))
 print("ФАКТ · крамниці: %s" % collections.Counter(r["магазин"] for r in нв).most_common(6))

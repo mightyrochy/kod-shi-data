@@ -242,11 +242,6 @@ def річ_несе_інтерес(r):
     if not isinstance(r, dict):
         return []
     e = dict(r)
-    if _КР.тип_кольору(e) == "вимір" and not _КР.точка_кольору(e) and e.get("hex"):
-        try:
-            e["lab"] = _КС.hx(e["hex"])
-        except (TypeError, ValueError, AttributeError):
-            e["lab"] = None
     if _КР.точка_кольору(e) and "нейтраль" not in e:
         e["нейтраль"] = _КО.нейтраль(tuple(_КР.точка_кольору(e)))
     return важелі_інтересу(e)

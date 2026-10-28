@@ -17,7 +17,7 @@ import bridge as B, colorspace as cs, колір_річ as КР, колір_ві
 зріз, П2 = (lambda с, п: "так" if с[0] >= п else "ні" if с[1] < п else "невідомо"), ((False, КВ.КРАЙ_ДУГИ), (True, КВ.КІНЕЦЬ_ЗГАСАННЯ))
 Л, зона = K.Counter(), K.defaultdict(set)
 for x in речі:
-    вим, (L, C, h) = КР.не_вимір(x) is None, cs.lch(tuple(x["lab"]))
+    вим, (L, C, h) = КР.не_вимір(x) is None, cs.lch(tuple(КР.точка_кольору(x)))
     for мн, дд in (("ролі", ролі), ("вікна", вікна)):
         for д in дд:
             ц = КВ._параметри_дуги(д)[0]; р0 = КР.запис_кольору(dict(lab=ПЛ.lab_з_lch(L, C, ц)))
