@@ -33,7 +33,7 @@ async function перевіритиНовішуЗбірку(){
 document.addEventListener('visibilitychange', () => {
   if (document.visibilityState === 'visible') перевіритиНовішуЗбірку();
 });
-const ГАМИ = ['приглушені', 'середні', 'насичені'];
+const ГАМИ = ДОВІДНИК.показ.ГАМИ;
 const ДЗЕРКАЛА_П = [['jsdelivr', 'https://cdn.jsdelivr.net/pyodide/v0.26.4/full/']];
 const СТОРОЖ_П = 150000;
 /* Завантажувач Pyodide тягне воркер `fetch` з `integrity` — та сама перевірка, що доти стояла на тезі `<script>` */
