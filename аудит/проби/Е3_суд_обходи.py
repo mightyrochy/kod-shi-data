@@ -1,19 +1,23 @@
 """Друкує підміни відсутнього числового входу й власників погодних рішень."""
 import ast
 import json
+import subprocess
+import sys
 from pathlib import Path
 
 
-ПОЛЯ = {"площа", "near", "C", "a", "b", "блиск", "тепло_особи", "впевненість"}
+ПОЛЯ = {"площа", "near", "C", "a", "b", "блиск", "тепло_особи", "впевненість", "полірування", "chroma"}
 
 
-def вимір():
+def вимір(база=None):
     """Лічить підміни предметних входів; лічильники й суми виходу входами не є."""
     обходи, погода = [], []
     for файл in sorted(Path("джерела").glob("*.py")):
         if not (файл.stem.startswith("суд_") or файл.stem == "правила"):
             continue
-        дерево = ast.parse(файл.read_text(encoding="utf-8-sig"))
+        текст = (subprocess.check_output(["git", "show", f"{база}:{файл.as_posix()}"]).decode("utf-8")
+                 if база else файл.read_text(encoding="utf-8-sig"))
+        дерево = ast.parse(текст)
         for вузол in ast.walk(дерево):
             вираз = None
             if isinstance(вузол, ast.BoolOp) and isinstance(вузол.op, ast.Or):
@@ -28,11 +32,14 @@ def вимір():
                              for в in ast.walk(вираз) if isinstance(в, ast.Constant) and isinstance(в.value, str)):
                 обходи.append(f"{файл.as_posix()}:{вузол.lineno}: {ast.unparse(вираз)}")
     for ім in ("суд_погода", "аксесуари_погода", "верхнє_погода"):
-        дерево = ast.parse(Path("джерела", ім + ".py").read_text(encoding="utf-8-sig"))
+        файл = Path("джерела", ім + ".py")
+        текст = (subprocess.check_output(["git", "show", f"{база}:{файл.as_posix()}"]).decode("utf-8")
+                 if база else файл.read_text(encoding="utf-8-sig"))
+        дерево = ast.parse(текст)
         if any(isinstance(в, ast.FunctionDef) for в in дерево.body):
             погода.append(ім)
     return dict(типові=len(обходи), місця=обходи, погодні_модулі=погода)
 
 
 if __name__ == "__main__":
-    print(json.dumps(вимір(), ensure_ascii=False, indent=2))
+    print(json.dumps(вимір(sys.argv[1] if len(sys.argv) > 1 else None), ensure_ascii=False, indent=2))
