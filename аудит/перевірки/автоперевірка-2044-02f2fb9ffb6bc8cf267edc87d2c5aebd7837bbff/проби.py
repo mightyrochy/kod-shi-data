@@ -9,7 +9,48 @@ import колір_річ as KR
 import композитор_слоти as KS
 import verify as V
 
-if sys.argv[2] == "метал-вікно":
+if sys.argv[2] == "метал-суд":
+    import palettes as PL
+    import фід_збагачення as FZ
+    import суд_від_моделі as SV
+    r = dict(id="gold", слот="намисто", тип="намисто", метал="золото", назва="Золоте намисто",
+             lab=FZ.центр_вікна(V.ЛЕКСИКОН["золотий"]),
+             колір_не_вимір=dict(свідок="shop_word", слово="золотий", вікно=V.ЛЕКСИКОН["золотий"]))
+    if hasattr(KR, "тип_кольору"):
+        r.update(lab=None, колір_тип="інтервал")
+    print("Колір металу:", PL.колір_металу(r))
+    print("Знахідки:", [(z["правило"], z.get("ярлик"), z.get("ремонт"))
+                         for z in SV.бюджет_і_відлуння([r], за_ід={r["id"]: r})])
+elif sys.argv[2] == "заміна":
+    import оцінка_образу as OO
+    import річ_з_фото as RF
+    import фід_збагачення as FZ
+    window = (60, 65, 0, 3, None)
+    candidate = dict(id="shop", слот="верх", lab=FZ.центр_вікна(window),
+                     колір_не_вимір=dict(свідок="shop_word", вікно=window))
+    if hasattr(KR, "тип_кольору"):
+        candidate.update(lab=None, колір_тип="інтервал")
+    palette = dict(вікна=dict(L=(0, 100), C=(0, 100), сім_ї={}))
+    print("Справжнє членство:", RF.членство_вікна(candidate, palette))
+    OO._крамниця = lambda *a: ({"верх": [candidate]}, None, True, {})
+    member = RF.членство_вікна
+    calls = []
+    class ДосягнутоЧленства(Exception):
+        pass
+    def counted(*args):
+        calls.append(member(*args))
+        # Пробу обмежено входом у членство; суд і вітрина не підмінюються й не запускаються.
+        raise ДосягнутоЧленства()
+    RF.членство_вікна = counted
+    own = dict(ід="old", слот="верх", колір="чорний", біля_обличчя=True,
+               палітра=dict(стан="поза палітрою", сила=0))
+    try:
+        result = OO.зміни({}, {}, {}, {}, [own], ["old"], [], dict(сума_сил=1), palette)
+        print("Результат:", result)
+    except ДосягнутоЧленства:
+        print("Досягнуто членства кандидата; подальший суд поза пробою")
+    print("Викликів членства в штатному генераторі:", len(calls), calls)
+elif sys.argv[2] == "метал-вікно":
     import palettes as PL
     import фід_добір as FD
     import фід_збагачення as FZ
