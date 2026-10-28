@@ -8,6 +8,13 @@ const після = знімок(fs.readFileSync(path.join(тека, 'лог.txt'
   JSON.parse(fs.readFileSync(path.join(тека, 'знімки/доказ.json'), 'utf8')), 1);
 assert.equal(після.звірки.length, 77);
 assert.equal(порівняти(база, після).стан, 'без регресу');
+const новаЧервона = знімок(fs.readFileSync(path.join(тека, 'лог.txt'), 'utf8')
+  .replace(/^ВПАЛО 1 ·/m, 'ВПАЛО 2 ·') + '\n  ✗ с1.не_взято  →  не відсічено\n',
+JSON.parse(fs.readFileSync(path.join(тека, 'знімки/доказ.json'), 'utf8')), 1);
+assert.equal(новаЧервона.завершено, true);
+assert.deepEqual(порівняти(база, новаЧервона).регресії, ['с1.не_взято']);
+assert.throws(() => затягнути(база, новаЧервона), /регрес/);
+assert.equal(порівняти(база, {...новаЧервона, застарілий: {виклик: 7}}).стан, 'регрес');
 const додатковийПровал = знімок(fs.readFileSync(path.join(тека, 'лог.txt'), 'utf8').replace(/^ВПАЛО 1 ·/m, 'ВПАЛО 2 ·'),
   JSON.parse(fs.readFileSync(path.join(тека, 'знімки/доказ.json'), 'utf8')), 1);
 assert.equal(порівняти(база, додатковийПровал).стан, 'регрес', 'провал поза звірками не ховається');
