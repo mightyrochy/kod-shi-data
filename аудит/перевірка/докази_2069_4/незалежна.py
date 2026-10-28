@@ -62,7 +62,8 @@ def матриця(сім, джерело, обрив):
         файл = шляхи[джерело]
         цілі = файл.read_bytes().splitlines(keepends=True)
         if обрив == "межа":
-            файл.write_bytes(b"".join(цілі))
+            # Справжня втрата останнього цілого запису, збережено попередній рядок.
+            файл.write_bytes(b"".join(цілі[:-1]))
         elif обрив == "без LF":
             файл.write_bytes(b"".join(цілі).rstrip(b"\r\n"))
         else:
@@ -85,7 +86,8 @@ def матриця(сім, джерело, обрив):
                               and not повтор and not повторні and цілі[0] in файл.read_bytes()
                               and {з["url"] for з in записи} == {f"https://old.com/{'products/' if сім == 'shopify' else ''}p{n}" for n in (1, 2)}
                               and all(стани[д]["лишилось"] == 0 for д in ("old.com", "ok.com"))
-                              and all(д in підсумки for д in ("old.com", "ok.com"))))
+                              and "ok.com" in підсумки
+                              and (джерело == "зведення" and обрив == "межа" or "old.com" in підсумки)))
 
 
 def дописування(джерело):
@@ -122,6 +124,25 @@ def курсор_JSON():
         return dict(курсор_JSON=True, пройдено=стан == {"розділи": {}, "sitemap": [], "помилки": []})
 
 
+def фізичний_курсор():
+    from журнал_таблиці import дописати
+    with tempfile.TemporaryDirectory(prefix="review-2069-4-cursor-") as tmp:
+        файл = Path(tmp) / "зведення_жнив.tsv"
+        def ряд(домен):
+            поля = {к: "0" for к in в.ШАПКА_ЗВЕДЕННЯ}
+            поля["домен"] = домен
+            return "\t".join(поля[к] for к in в.ШАПКА_ЗВЕДЕННЯ)
+        файл.write_bytes(("\t".join(в.ШАПКА_ЗВЕДЕННЯ) + "\n" + ряд("a.com") + "\n").encode()
+                         + 'Сукня'.encode()[:-1] + b"\n" + (ряд("b.com") + "\n").encode())
+        перші, позиція = о.останні_рядки(файл, 0)
+        дописати(файл, ряд("c.com"))
+        другі, наступна = о.останні_рядки(файл, позиція)
+        треті, кінець = о.останні_рядки(файл, наступна)
+        return dict(фізичний_курсор=[позиція, наступна, кінець],
+                    пройдено=set(перші) == {"a.com", "b.com"} and set(другі) == {"c.com"}
+                    and not треті and [позиція, наступна, кінець] == [3, 4, 4])
+
+
 def main():
     результати = []
     for сім in ("woo", "shopify"):
@@ -140,10 +161,11 @@ def main():
                                 виняток=f"{type(e).__name__}: {e}")
                 результати.append(факт)
                 print(json.dumps(факт, ensure_ascii=False), flush=True)
-    for джерело in ("зведення", "стан", "JSONL", "курсор_JSON"):
+    for джерело in ("зведення", "стан", "JSONL", "курсор_JSON", "фізичний_курсор"):
         try:
             with contextlib.redirect_stdout(io.StringIO()), contextlib.redirect_stderr(io.StringIO()):
-                факт = курсор_JSON() if джерело == "курсор_JSON" else дописування(джерело)
+                факт = (курсор_JSON() if джерело == "курсор_JSON" else фізичний_курсор()
+                        if джерело == "фізичний_курсор" else дописування(джерело))
         except Exception as e:
             факт = dict(дописування=джерело, пройдено=False, виняток=f"{type(e).__name__}: {e}")
         результати.append(факт)

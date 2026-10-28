@@ -59,6 +59,8 @@ def main():
         return int(до != 1 or після != 0)
     if режим == "штатні":
         return штатні(("власні", "сім’я", "послідовні", "батарея"))
+    if режим == "читачі":
+        return команда([sys.executable, ТЕКА / "читачі.py"], "читачі.txt")
     if режим == "чутливість":
         with tempfile.TemporaryDirectory(prefix="review-2069-4-broken-") as дім:
             дім = Path(дім)
@@ -67,8 +69,10 @@ def main():
             shutil.copytree(СТАРІ, докази, ignore=shutil.ignore_patterns("*.txt", "*.png", "__pycache__"))
             shutil.copytree(КОРІНЬ / "джерела/проби", дім / "джерела/проби", ignore=shutil.ignore_patterns("__pycache__"))
             subprocess.run(["git", "init", "-q", str(дім)], check=True)
-            архів_до = subprocess.check_output(["git", "archive", "a136a841db8fed6703c17866166514729f2875eb", "zhnyvarka"], cwd=КОРІНЬ)
-            subprocess.run(["git", "-C", str(дім), "fetch", "-q", str(КОРІНЬ), "a136a841db8fed6703c17866166514729f2875eb"], check=True)
+            обєкти = subprocess.check_output(["git", "rev-parse", "--git-path", "objects"], cwd=КОРІНЬ).decode().strip()
+            # Лише читання вже наявних об'єктів: повна копія історії тут не потрібна.
+            (дім / ".git/objects/info/alternates").write_bytes(
+                (КОРІНЬ / обєкти).resolve().as_posix().encode("utf-8") + b"\n")
             # Справжній злам коду ПІСЛЯ: кожне читання JSONL падає. Прилад не змінюється.
             (дім / "zhnyvarka/журнал_карток.py").write_text(
                 'def прочитати(*args):\n    raise RuntimeError("ПРОБА_10678_ЗЛАМАНО_ПІСЛЯ")\n', encoding="utf-8")
