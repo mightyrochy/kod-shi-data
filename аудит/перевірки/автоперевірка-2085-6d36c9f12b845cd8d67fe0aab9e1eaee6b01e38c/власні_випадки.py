@@ -18,10 +18,12 @@ class Обрив(BaseException):
     """Імітує зупинку поза обробниками помилок крамниці."""
 
 
-def магазин(журнал, сім, точка="", через_обхід=False):
+def магазин(журнал, сім, точка="", через_обхід=False, версія=1):
     """Виконує справжній магазин, замінюючи HTTP і необов'язково межу одного запису."""
     рецепт = dict(домен="review.test", сімейство=сім, транспорт="http", старт="https://review.test",
                   пошук="/products.json?page={n}" if сім == "shopify" else "/wp-json/wc/store/products?page={n}")
+    if версія == 2:
+        рецепт["пошук"] = "/v2" + рецепт["пошук"]
     збирач = виконавець.Виконавець(SimpleNamespace(журнал=журнал, стеля=300,
                    секунд_на_магазин=30, без_огляду=True))
     запити = []
@@ -29,7 +31,8 @@ def магазин(журнал, сім, точка="", через_обхід=Fa
         """Віддає шість речей трьома сторінками; четверта порожня."""
         n = int(url.rsplit("=", 1)[1])
         запити.append(n)
-        речі = [dict(id=i, handle=f"p{i}", permalink=f"https://review.test/p{i}", name="Чорна сукня",
+        зсув = 6 if версія == 2 else 0
+        речі = [dict(id=i + зсув, handle=f"p{i + зсув}", permalink=f"https://review.test/p{i + зсув}", name="Чорна сукня",
                      title="Чорна сукня", images=[dict(src="https://review.test/photo.jpg")],
                      variants=[dict(option1="M", available=True)],
                      attributes=[dict(name="Розмір", terms=[dict(name="M")])])
