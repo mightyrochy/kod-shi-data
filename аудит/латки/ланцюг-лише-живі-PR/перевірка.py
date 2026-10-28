@@ -42,8 +42,8 @@ def main():
         if log.exists() and not original.exists():
             shutil.copyfile(log, original)
         result = subprocess.run(command, cwd=work, env=child_env or env, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
-        output = result.stdout.decode('utf-8', errors='replace')
-        log.write_text(json.dumps(command, ensure_ascii=False) + '\n' + output, encoding='utf-8')
+        output = result.stdout.decode('utf-8', errors='replace').replace('\r\n', '\n').replace('\r', '\n')
+        log.write_text(json.dumps(command, ensure_ascii=False) + '\n' + output, encoding='utf-8', newline='\n')
         row = {'назва': name, 'код': result.returncode, '✓': output.count('✓'), '✗': output.count('✗')}
         results.append(row)
         print(json.dumps(row, ensure_ascii=False), flush=True)
@@ -80,7 +80,7 @@ def main():
     merged = {row['назва']: row for row in previous}
     merged.update({row['назва']: row for row in results})
     final = list(merged.values())
-    destination.write_text(json.dumps(final, ensure_ascii=False, indent=2) + '\n', encoding='utf-8')
+    destination.write_text(json.dumps(final, ensure_ascii=False, indent=2) + '\n', encoding='utf-8', newline='\n')
     return int(any(row['код'] or row['✗'] for row in final))
 
 
