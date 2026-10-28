@@ -4,6 +4,7 @@ from collections import Counter
 import io
 import json
 from pathlib import Path
+import re
 import subprocess
 import tarfile
 import warnings
@@ -29,6 +30,7 @@ API = "джерела/колір_річ.py"
     "джерела/проби/поверхня_1993_невизначеність.py": "пряма перевірка відсутності Lab у неповному вимірі",
     "джерела/проби/кадри_групи_5697.py": "пряма перевірка сирого формату кадру",
     "джерела/проби/знання_читачі.py": "пряма перевірка проєкції дроту",
+    "джерела/проби/колір_тип_213_межа.py": "пряма перевірка браузерного результату читача на піксельному вході",
     "аудит/проби/тип_кольору_213.py": "пряма перевірка відсутності Lab інтервалу у каталозі",
 }
 ВІКНА_ІНШЕ = {
@@ -51,9 +53,11 @@ API = "джерела/колір_річ.py"
     "джерела/жнива_запис.py": {"основний['lab']", "кл2[0]['lab']"},
     "джерела/жнива_колір.py": {"перший['lab']", "к['lab']"},
     "джерела/прилади/розділи_гейтів.py": {"c['lab']", "e['lab']", "c['вікно']", "c.get('вікно')"},
+    "джерела/прилади/невизначеність_1993.py": {"вимір['lab']"},
 }
 # Залишкові hex мають інші договори; кожен вузол з контекстом іде у JSON.
 ІНШЕ = {
+    "джерела/pair_test.py": "мапа hex рис обличчя (шкіра, волосся, очі), а не hex кольору речі",
     "аудит/проби/probe_rest.py": "hex рис обличчя у профілі",
     "джерела/palettes.py": "побудовані зразки палітри",
     "джерела/personal_palette.py": "вимір рис обличчя",
@@ -94,6 +98,7 @@ API = "джерела/колір_річ.py"
     "джерела/розбір_відповідей.py": "плоский результат розбору моделі перед типізацією речі",
     "джерела/річ_з_фото.py": "сирі піксельні кластери до типізації запису речі",
     "джерела/тест_протоколу.py": "зразки палітри у фікстурі",
+    "джерела/проби/колір_тип_213_межа.py": "пряма перевірка відсутності точки у браузерному результаті API",
 }
 
 
@@ -102,11 +107,11 @@ def тексти(ревізія):
     if ревізія == "ПІСЛЯ":
         шляхи = subprocess.check_output(["git", "ls-files", "--cached", "--others", "--exclude-standard"], cwd=КОРІНЬ).decode().splitlines()
         return {ф: (КОРІНЬ / ф).read_text("utf-8-sig") for ф in шляхи
-                if ф.endswith(".py") and ф.startswith(("джерела/", "аудит/проби/")) and (КОРІНЬ / ф).is_file()}
-    дані = subprocess.check_output(["git", "archive", ревізія, "джерела/*.py", "аудит/проби/*.py"], cwd=КОРІНЬ)
+                if ф.endswith((".py", ".js", ".html")) and ф.startswith(("джерела/", "аудит/проби/")) and (КОРІНЬ / ф).is_file()}
+    дані = subprocess.check_output(["git", "archive", ревізія, "джерела/*.py", "джерела/*.js", "джерела/*.html", "аудит/проби/*.py"], cwd=КОРІНЬ)
     with tarfile.open(fileobj=io.BytesIO(дані)) as архів:
         return {ф.name: архів.extractfile(ф).read().decode("utf-8-sig")
-                for ф in архів if ф.isfile() and ф.name.endswith(".py")}
+                for ф in архів if ф.isfile() and ф.name.endswith((".py", ".js", ".html"))}
 
 
 def читання(тексти_):
@@ -114,15 +119,25 @@ def читання(тексти_):
     результат = []
     for файл, текст in sorted(тексти_.items()):
         рядки = текст.splitlines()
-        for в in ast.walk(ast.parse(текст)):
+        if not файл.endswith(".py"):
+            for i, рядок in enumerate(рядки, 1):
+                for збіг in re.finditer(r"\.(hex|lab)\b|\[['\"](hex|lab)['\"]\]", рядок):
+                    результат.append(dict(файл=файл, рядок=i, стовпець=збіг.start(), поле=збіг.group(1) or збіг.group(2),
+                        вираз=збіг.group(), функція="JS: поле проєкції", контекст=[рядок]))
+            continue
+        дерево = ast.parse(текст)
+        функції = [в for в in ast.walk(дерево) if isinstance(в, (ast.FunctionDef, ast.AsyncFunctionDef))]
+        for в in ast.walk(дерево):
             поле = None
             if isinstance(в, ast.Subscript) and isinstance(в.ctx, ast.Load) and isinstance(в.slice, ast.Constant):
                 поле = в.slice.value
             elif isinstance(в, ast.Call) and isinstance(в.func, ast.Attribute) and в.func.attr == "get" and в.args and isinstance(в.args[0], ast.Constant):
                 поле = в.args[0].value
             if поле in ПОЛЯ:
+                батьки = [ф for ф in функції if ф.lineno <= в.lineno <= ф.end_lineno]
+                функція = min(батьки, key=lambda ф: ф.end_lineno - ф.lineno).name if батьки else "верхній рівень"
                 результат.append(dict(файл=файл, рядок=в.lineno, стовпець=в.col_offset, поле=поле,
-                    вираз=ast.unparse(в), контекст=рядки[max(0, в.lineno-3):min(len(рядки), в.end_lineno+2)]))
+                    вираз=ast.unparse(в), функція=функція, контекст=рядки[max(0, в.lineno-3):min(len(рядки), в.end_lineno+2)]))
     return результат
 
 
@@ -137,6 +152,12 @@ def головна():
             ключ = (в["файл"], в["вираз"])
             if в["файл"] == API:
                 в.update(клас="колір варіанта", місце="API", підстава="власник формату")
+            elif not в["файл"].endswith(".py"):
+                в.update(клас="інше", місце="проєкція API", підстава="зразок палітри/профілю, карта кружечків або плоский результат Python; поля фото нормалізовані API до передачі у браузер")
+            elif в["файл"] == "джерела/річ_з_фото.py" and (
+                    в["функція"] == "звести" and в["поле"] == "lab" or
+                    в["функція"] == "_вимір_плями_кроками" and в["вираз"] in {"основний['lab']", "основний['hex']", "другий['hex']"}):
+                в.update(клас="колір варіанта", місце="обхід", підстава="точка обраного кольору та браузерні поля результату фото")
             elif ключ in перенесені or в["вираз"] in ДОДАТКОВІ.get(в["файл"], set()) or в["поле"] in {"колір_тип", "колір_не_вимір", "не_вимір", "колір_невідомий"}:
                 в.update(клас="колір варіанта", місце="обхід", підстава="споживач запису кольору")
             elif в["поле"] == "hex":
@@ -154,6 +175,8 @@ def головна():
         hex_ = [в for в in записи if в["поле"] == "hex"]
         обходи = [в for в in записи if в["місце"] == "обхід"]
         підсумки[етап] = dict(hex_файлів=len({в["файл"] for в in hex_}), hex_читань=len(hex_),
+            python_hex_файлів=len({в["файл"] for в in hex_ if в["файл"].endswith(".py")}),
+            python_hex_читань=sum(в["файл"].endswith(".py") for в in hex_),
             класи_hex=dict(Counter(в["клас"] for в in hex_)), обходів=len(обходи))
     (ТУТ / "межа-інвентар.json").write_text(json.dumps(dict(підсумки=підсумки, ревізії=джерела), ensure_ascii=False, indent=2), "utf-8")
     рядки = ["# Читання полів кольору: кожне місце ДО → ПІСЛЯ", "", "ДО: ed42a591; ПІСЛЯ: робоча голова. Одиниця — AST-вузол читання.", ""]
