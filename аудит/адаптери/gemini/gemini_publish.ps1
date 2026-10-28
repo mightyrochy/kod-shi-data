@@ -74,6 +74,7 @@ $script:RunCodes = @{
     EFFORT_INVALID = 'codex exec не приймає зусилля з позначки'; STALL = 'Codex без нових подій довше за поріг (завислість)'
     NOT_ON_MAIN = 'коміт позначки не з main'; NO_TASK_FILE = 'нема файлу наряду на коміті позначки'
     TASK_TOO_LONG = 'наряд довший за 30 тис. знаків'; ENGINE_MISSING = 'рушія моделі нема на ноутбуці'; CRASH = 'збій обгортки gemini'
+    STALE = 'PR закритий, голова змінилася або це автозвіт'; REVIEW_API = 'не вдалося звірити PR через API'
     INTERRUPTED = 'прогін перервано (вимкнення чи сон ноутбука)'
 }
 $script:IsolationChecks = @{
