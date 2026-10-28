@@ -1,5 +1,5 @@
 diff --git a/аудит/адаптери/gemini/gemini_publish.ps1 b/аудит/адаптери/gemini/gemini_publish.ps1
-index 88355f7a3..ac640b5ce 100644
+index 88355f7a3..1661ecd2c 100644
 --- a/аудит/адаптери/gemini/gemini_publish.ps1
 +++ b/аудит/адаптери/gemini/gemini_publish.ps1
 @@ -188,7 +188,11 @@ function Publish-Bundle($S, [string]$Id) {
@@ -7,9 +7,9 @@ index 88355f7a3..ac640b5ce 100644
      Copy-Item -LiteralPath $src -Destination $copy -Force
      try {
 -        if ((Invoke-Git @('bundle', 'verify', '-q', $copy) -AllowFail).Code -ne 0) { return @('BUNDLE_INVALID', 0) }
-+        $verify = Invoke-Git @('bundle', 'verify', '-q', $copy) -AllowFail
++        $verify = Invoke-Git @('bundle', 'verify', $copy) -AllowFail
 +        if ($verify.Code -ne 0) {
-+            Write-WrapperLog "бандл $Id — git bundle verify -> $($verify.Code): $($verify.Err.Trim())"
++            Write-WrapperLog "бандл $Id — git bundle verify -> $($verify.Code): $($verify.Out.Trim()) $($verify.Err.Trim())"
 +            return @('BUNDLE_INVALID', 0)
 +        }
          $heads = @((Invoke-Git @('bundle', 'list-heads', $copy)).Out -split "`n" | Where-Object { $_.Trim() })
@@ -31,7 +31,7 @@ index 76ff91f90..b03dd85c8 100644
                  Move-Item -LiteralPath ($bundle + '.part') -Destination $bundle -Force
                  $Status.bundle = $Status.id + '.bundle'
 diff --git a/аудит/адаптери/gemini/m9v/хеші.psd1 b/аудит/адаптери/gemini/m9v/хеші.psd1
-index 0a2896eb8..ae009bb4b 100644
+index 0a2896eb8..c37f10c53 100644
 --- a/аудит/адаптери/gemini/m9v/хеші.psd1
 +++ b/аудит/адаптери/gemini/m9v/хеші.psd1
 @@ -5,8 +5,8 @@
@@ -41,12 +41,12 @@ index 0a2896eb8..ae009bb4b 100644
 -    'gemini_run.ps1'     = '39FD518203B33184304528AFB50175E0CB455B9337A8B7A46D34F4B565BEB577'
 -    'gemini_publish.ps1' = '895162B7194F6331E672C2965D0F2833EE130676B44FC3005C16D4E52F95CCED'
 +    'gemini_run.ps1'     = 'E2B429E5DFEB59FF7909331D57365BD3A55EC78C7257041CD3EAF133490A2C8E'
-+    'gemini_publish.ps1' = '37DD50503FB9157FC2DB1348CEF254F7FAD4F6B28A7A1D3C326AEA6204497A87'
++    'gemini_publish.ps1' = '09B2581BE33F68AA2FB3FDFDE680326E31F4140945D006EFD97C17CB69AEFA25'
      # Інсталятор Codex (9741) закріплено за релізом: install.ps1 — файл релізу https://releases.openai.com/codex/releases/<CodexRelease>/install.ps1
      # (незмінний URL; той самий sha256 віддає https://chatgpt.com/codex/install.ps1 — редирект на releases.openai.com — і публікує реліз
      # openai/codex). 2_під_gemini.ps1 -WithCodex виконує його лише при збігу CodexInstaller і ставить саме цей реліз (-Release).
 diff --git a/аудит/адаптери/gemini/НАЛАШТУВАННЯ.md b/аудит/адаптери/gemini/НАЛАШТУВАННЯ.md
-index 33751be08..1cac23c51 100644
+index 33751be08..d42919894 100644
 --- a/аудит/адаптери/gemini/НАЛАШТУВАННЯ.md
 +++ b/аудит/адаптери/gemini/НАЛАШТУВАННЯ.md
 @@ -412,8 +412,8 @@ $f = Join-Path "$env:USERPROFILE\gemini-outbox" $n
@@ -56,16 +56,31 @@ index 33751be08..1cac23c51 100644
 -| `gemini_run.ps1` | `39FD518203B33184304528AFB50175E0CB455B9337A8B7A46D34F4B565BEB577` |
 -| `gemini_publish.ps1` | `895162B7194F6331E672C2965D0F2833EE130676B44FC3005C16D4E52F95CCED` |
 +| `gemini_run.ps1` | `E2B429E5DFEB59FF7909331D57365BD3A55EC78C7257041CD3EAF133490A2C8E` |
-+| `gemini_publish.ps1` | `37DD50503FB9157FC2DB1348CEF254F7FAD4F6B28A7A1D3C326AEA6204497A87` |
++| `gemini_publish.ps1` | `09B2581BE33F68AA2FB3FDFDE680326E31F4140945D006EFD97C17CB69AEFA25` |
  | `gemini_watch.ps1` | `69EFEBB07FF1AF51C382B753A95C50F3C1AC27B3008F2489992BEBE3FD0213AA` |
  | `wrapper_health.ps1` | `FCE45448539D53A6B5718319842FC845DA870F39453A6B716C7AF8A2DB65B88E` |
  | `queue_lanes.ps1` | `C06A78446762B98EF3D045EB16ADFF15EDBAF1068959F94E346FC3A0069B5918` |
+diff --git a/аудит/адаптери/gemini/перевірка/side.ps1 b/аудит/адаптери/gemini/перевірка/side.ps1
+index 5c744978d..f3d108188 100644
+--- a/аудит/адаптери/gemini/перевірка/side.ps1
++++ b/аудит/адаптери/gemini/перевірка/side.ps1
+@@ -8,6 +8,10 @@ $p = @{}
+ if ((Get-Command $Script).Parameters.ContainsKey('LaneDir') -and -not $p.ContainsKey('LaneDir')) {
+     $p['LaneDir'] = Join-Path ([System.IO.Path]::GetTempPath()) ('lanes-' + [guid]::NewGuid().ToString('N').Substring(0, 8))
+ }
++# Публікатор стенда не читає позначку самооновлення справжнього ноутбука.
++if ((Get-Command $Script).Parameters.ContainsKey('UpdateRoot') -and -not $p.ContainsKey('UpdateRoot')) {
++    $p['UpdateRoot'] = Join-Path ([System.IO.Path]::GetTempPath()) ('updates-' + [guid]::NewGuid().ToString('N').Substring(0, 8))
++}
+ . $Script @p
+ # Процес наряду — знов цей стенд (а не сам скрипт), тож бере ті самі підміни, що батьківський (10164).
+ $script:SideFile = $PSCommandPath; $script:SideScript = $Script; $script:SideArgs = $p
 diff --git a/аудит/адаптери/gemini/перевірка/сценарії_бандлів.ps1 b/аудит/адаптери/gemini/перевірка/сценарії_бандлів.ps1
 new file mode 100644
-index 000000000..54ca88477
+index 000000000..34d0587e3
 --- /dev/null
 +++ b/аудит/адаптери/gemini/перевірка/сценарії_бандлів.ps1
-@@ -0,0 +1,91 @@
+@@ -0,0 +1,100 @@
 +﻿#Requires -Version 5.1
 +<# Перевіряє справжні Complete-Status і Publish-Bundle на локальних репозиторіях без мережі й рушіїв. #>
 +param([string]$Root, [switch]$Before)
@@ -80,7 +95,7 @@ index 000000000..54ca88477
 +    ($out -join "`n").Trim()
 +}
 +
-+$cases = @('private-start', 'new-main', 'published-start', 'REF_MISMATCH', 'SECRET', 'GITHUB_DIR', 'WRAPPER_FILES')
++$cases = @('private-start', 'new-main', 'published-start', 'BUNDLE_INVALID', 'REF_MISMATCH', 'SECRET', 'GITHUB_DIR', 'WRAPPER_FILES')
 +if ($Before) { $cases = $cases[0..1] }
 +$bad = 0
 +foreach ($case in $cases) {
@@ -137,6 +152,11 @@ index 000000000..54ca88477
 +        Complete-Status $s (Join-Path $w 'state.txt') '' ([datetime]::MinValue)
 +    }
 +    if (-not $s.bundle) { throw 'Complete-Status не створив бандла' }
++    if ($case -eq 'BUNDLE_INVALID') {
++        # Старий виробник виключив main, якого публікатор ще не отримав.
++        [void](Fixture-Git $repo @('bundle', 'create', '-q', (Join-Path $w "out/$($s.bundle)"),
++                'refs/heads/gemini/probe', '^refs/remotes/origin/main', "^$start"))
++    }
 +    $head = $s.head
 +    if ($case -eq 'REF_MISMATCH') { $s.head = $marker }
 +    $result = & {
@@ -153,6 +173,10 @@ index 000000000..54ca88477
 +    # Відмова не повинна пересунути раніше опубліковану гілку.
 +    elseif ($case -ne 'private-start') { $ok = $ok -and $published -eq $start }
 +    else { $ok = $ok -and -not $published }
++    if ($case -eq 'BUNDLE_INVALID') {
++        $diagnostic = [IO.File]::ReadAllText((Join-Path $pub 'publish.log'))
++        $ok = $ok -and $diagnostic.Contains($newMain) -and $diagnostic.Contains('git bundle verify -> 1')
++    }
 +    if ($ok) { Write-Host "  ✓ $case -> $want" }
 +    else { Write-Host "  ✗ $case -> $($result[0]), очікування $want"; $bad++ }
 +}
@@ -169,3 +193,16 @@ index 000000000..6e32e092c
 +H=$(cd "$(dirname "$0")" && pwd); . "$H/середовище.sh"
 +W=$(mktemp -d "${TMPDIR:-/tmp}/bundles.XXXXXX")
 +"${PWSH:-pwsh}" -NoProfile -File "$(wp "$H/сценарії_бандлів.ps1")" -Root "$(wp "$W")" "$@"
+diff --git a/аудит/адаптери/gemini/перевірка/сценарії_здоровя.ps1 b/аудит/адаптери/gemini/перевірка/сценарії_здоровя.ps1
+index 3db45affe..a108e0df5 100644
+--- a/аудит/адаптери/gemini/перевірка/сценарії_здоровя.ps1
++++ b/аудит/адаптери/gemini/перевірка/сценарії_здоровя.ps1
+@@ -27,7 +27,7 @@ function Put-Line([string]$Dir, [string]$Line) {
+ function Publish([string]$Case, [int]$Limit = 4, [int]$Fallback = 2) {
+     <# Справжній Main публікатора; усі зовнішні процеси — заглушки з ASCII-теки. #>
+     $dir = Join-Path $tmpRoot $Case
+-    $params = @{ WorkDir = "$dir/pub"; OutDir = "$dir/out"; OutboxDir = "$dir/box"; GitExe = "$tmpRoot/git.cmd"; ClaudeExe = "$tmpRoot/claude.cmd"; SendRetryDelaySeconds = 0; SendRetries = 1; MaxSendAttempts = $Limit }
++    $params = @{ WorkDir = "$dir/pub"; OutDir = "$dir/out"; OutboxDir = "$dir/box"; UpdateRoot = "$dir/update"; GitExe = "$tmpRoot/git.cmd"; ClaudeExe = "$tmpRoot/claude.cmd"; SendRetryDelaySeconds = 0; SendRetries = 1; MaxSendAttempts = $Limit }
+     if (-not $Before) { $params.GhExe = "$tmpRoot/gh.cmd"; $params.MaxFallbackAttempts = $Fallback }
+     . (Join-Path $SourceDir 'gemini_publish.ps1') @params
+     function Test-OwnerUser { $true }

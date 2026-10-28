@@ -20,7 +20,8 @@ def main():
         report.append(f"{status['slug']} / {ident}\nпозначка: {status['marker']}\n"
                       f"start: {status['start']}\nhead: {status['head']}\n{header}\n"
                       f"git bundle verify У КЛОНІ ВИКОНАВЦЯ: код {result.returncode}\n{result.stdout}{result.stderr}")
-    output.write_text('\n'.join(report), encoding='utf-8')
+    output.write_text('\n'.join(line.rstrip() for line in '\n'.join(report).splitlines()) + '\n',
+                      encoding='utf-8', newline='\n')
     print('Три бандли вимагають локальний start; у клоні виконавця verify успішний. Профіль публікатора недоступний.')
 
 
