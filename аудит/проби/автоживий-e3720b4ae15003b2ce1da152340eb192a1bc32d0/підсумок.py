@@ -15,6 +15,7 @@ for folder in sorted(root.iterdir()):
     proof = json.loads(proof_file.read_text(encoding="utf-8")) if proof_file.exists() else {}
     calls_file = folder / "знімки/модель_виклики.json"
     calls = json.loads(calls_file.read_text(encoding="utf-8"))["виклики"] if calls_file.exists() else []
+    log_http = re.findall(r"↔ модель #\d+ .*?HTTP (\d+)", log)
     state_file = folder / "знімки/поверхня_стани.json"
     states = json.loads(state_file.read_text(encoding="utf-8")) if state_file.exists() else []
     summary[folder.name] = {
@@ -24,7 +25,9 @@ for folder in sorted(root.iterdir()):
         "провали": re.findall(r"^\s*✗ (.*)$", log, re.M),
         "факт": proof.get("факт"), "вердикт_приладу": proof.get("вердикт"),
         "SHA_доказу": proof.get("код"),
-        "викликів": len(calls), "HTTP_200": sum(c.get("статус") == 200 for c in calls),
+        "джерело_HTTP": "модель_виклики.json" if calls_file.exists() else "лог.txt (короткий режим не пише таблиці викликів)",
+        "викликів": len(calls) if calls_file.exists() else len(log_http),
+        "HTTP_200": sum(c.get("статус") == 200 for c in calls) if calls_file.exists() else log_http.count("200"),
         "типи_викликів": dict(Counter(c["тип"] for c in calls)),
         "max_tokens": [{"номер": i + 1, **c} for i, c in enumerate(calls) if c.get("стоп") == "max_tokens"],
         "вхідних_токенів_макс": max((c.get("вхід", 0) for c in calls), default=0),
@@ -34,7 +37,7 @@ for folder in sorted(root.iterdir()):
         "станів_поверхні": len(states),
         "останній_стан_із_речами": next((s for s in reversed(states) if s.get("речі") or s.get("оцінка")), None),
     }
-(root / "підсумок.json").write_text(json.dumps(summary, ensure_ascii=False, indent=2), encoding="utf-8")
+(root / "підсумок.json").write_text(json.dumps(summary, ensure_ascii=False, indent=2), encoding="utf-8", newline="\n")
 for scene, data in summary.items():
     print(f"{scene}: rc={data['rc']}; звірки {data['успішних_звірок']}/{data['невдалих_звірок']}; "
           f"HTTP {data['HTTP_200']}/{data['викликів']}; карток {len(data['знімки_карток'])}; втрат фото {data['втрат_фото']}")

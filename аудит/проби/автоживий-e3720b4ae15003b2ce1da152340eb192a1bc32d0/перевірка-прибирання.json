@@ -1,0 +1,36 @@
+[
+  {
+    "команда": [
+      "netstat",
+      "-ano",
+      "-p",
+      "tcp"
+    ],
+    "rc": 0,
+    "stdout": "  TCP    127.0.0.1:1234         0.0.0.0:0              LISTENING       14132",
+    "stderr": ""
+  },
+  {
+    "команда": [
+      "git",
+      "-C",
+      "C:/Users/gemini/gemini-runs/20261028-200546-bcd36cccddc6/код-e3720b4",
+      "status",
+      "--short"
+    ],
+    "rc": 0,
+    "stdout": "",
+    "stderr": ""
+  },
+  {
+    "команда": [
+      "powershell",
+      "-NoProfile",
+      "-Command",
+      "Get-Process -Id 50044,49224,54840,56968 -ErrorAction SilentlyContinue | Select-Object Id,ProcessName | ConvertTo-Json"
+    ],
+    "rc": 1,
+    "stdout": "",
+    "stderr": ""
+  }
+]
