@@ -1,14 +1,18 @@
 # -*- coding: utf-8 -*-
 """Вимір ознак обличчя з джерелом і довірою для рангу, суду й пулу.
 
-Кеш належить профілю. Відбиток охоплює самі риси, їхні похибки, макіяж і
-протокол: копія профілю після засмаги чи фарбування не успадковує старого виміру.
+Службовий кеш зберігається поза даними профілю й не змінює ключ пулу.
+Відбиток охоплює риси, їхні похибки, макіяж і протокол: правка профілю оновлює вимір.
 """
+from collections import OrderedDict
 import hashlib
 import json
 import face_contrast as _KC
 from колір_простір_перетворення import hx
 from колір_простір_надійність import reliability, надійність_контрасту, MIN_TO_EMIT
+
+_КЕШ = OrderedDict()
+_МЕЖА_КЕШУ = 128  # технічна межа пам’яті: dict не підтримує слабке посилання
 
 РІВНІ_КОНТРАСТУ = (22.0, 45.0)  # T3; напрям — Candille 2012
 L_ШКІРИ_ПОРОГІВ = 66.0  # T3, опора Russell / R-PC-09
@@ -27,9 +31,10 @@ def _походження(F):
 
 def джерело_виміру(F, source=None):
     """Бере збережений протокол фото; для старого профілю — явний аргумент або типове."""
-    return ((F.get("_meta") or {}).get("protocol") or source
-            or ((F.get("_ознаки_обличчя") or {}).get("вимір") or {}).get("протокол")
-            or "uncontrolled")
+    кеш = _КЕШ.get(id(F))
+    попередній = кеш[1] if кеш and кеш[0] is F else None
+    return (F.get("_meta") or {}).get("protocol") or source or попередній or "uncontrolled"
+
 
 
 def ознаки(F, source=None):
@@ -38,9 +43,10 @@ def ознаки(F, source=None):
     вхід = {k: v for k, v in F.items() if not k.startswith("_")}
     вхід.update({k: F.get(k) for k in ("_meta", "_розподіли", "_макіяж")})
     відбиток = hashlib.sha256(json.dumps([source, вхід], sort_keys=True, ensure_ascii=False).encode()).hexdigest()
-    кеш = F.get("_ознаки_обличчя") or {}
-    if кеш.get("відбиток") == відбиток:
-        return кеш["вимір"]
+    кеш = _КЕШ.get(id(F))
+    if кеш and кеш[0] is F and кеш[2] == відбиток:
+        _КЕШ.move_to_end(id(F))
+        return кеш[3]
     R = dict(reliability(source))
     дж = _походження(F)
     # Явний hex не є фотографією: відтінок очей не приглушується камерою.
@@ -68,7 +74,10 @@ def ознаки(F, source=None):
                           довіра=довіра_очей),
                  бік_очей=_бік_очей(профіль, довіра_очей, дж if "очі" in риси else "типове"),
                  надійність=dict(R, contrast=к["довіра"], hue=довіра_тону), протокол=source)
-    F["_ознаки_обличчя"] = dict(відбиток=відбиток, вимір=вимір)
+    _КЕШ[id(F)] = (F, source, відбиток, вимір)
+    _КЕШ.move_to_end(id(F))
+    if len(_КЕШ) > _МЕЖА_КЕШУ:
+        _КЕШ.popitem(last=False)
     return вимір
 
 
