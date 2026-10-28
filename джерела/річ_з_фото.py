@@ -1883,8 +1883,9 @@ def запис_каталогу(річ):
              назва=(річ.get("назва") or None),
              власна=True, чия=(річ.get("чия") or "невідомо"), фото_ід=річ.get("фото"),
              закріплена=bool(річ.get("закріплена")))
-    if lab:
-        з.update(lab=tuple(lab), hex=(вим.get("hex") or cs.hex_з_lab(tuple(lab))),
+    if lab or _КР.межі_кольору(вим) is not None:
+        з.update(lab=tuple(lab) if lab else None,
+                 hex=(вим.get("hex") or cs.hex_з_lab(tuple(lab))) if lab else None,
                  колір=(вим.get("слово") or річ.get("колір")), джерело_кольору="фото жінки")
         if вим.get("колір_не_вимір"):
             з["колір_не_вимір"] = вим["колір_не_вимір"]
