@@ -8,6 +8,7 @@ import json as _json
 
 from знання_речі import ВЛАСТИВОСТІ
 from colorspace import hx
+import колір_річ as _КР_ТИП
 
 ОПИС = (
     "knowledge_legend joins knowledge to the actual items in this request. sections keys are JSON Pointer "
@@ -88,7 +89,7 @@ def _точка_посиланням(річ, факт):
     """
     if факт["status"] != "measured":
         return факт["value"]
-    if _канон(річ.get("lab")) == _канон(факт["value"]):
+    if _канон(_КР_ТИП.точка_кольору(річ)) == _канон(факт["value"]):
         return dict(field="lab", conversion="identity")
     if річ.get("hex"):
         try:
