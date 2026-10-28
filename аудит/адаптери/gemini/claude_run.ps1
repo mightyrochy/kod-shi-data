@@ -613,7 +613,7 @@ function Invoke-Task($M, $Job) {
     if ($review -ne 'LIVE') { return (Complete-Task $M $statePath $id $review) }
     $exe = Find-Exe $ClaudeExe
     if (-not $exe) { return (Complete-Task $M $statePath $id 'ENGINE_MISSING') }
-    $taskText = Add-AutoTaskContext $M.Slug ((Invoke-Git @('cat-file', 'blob', "$($M.Sha):$taskPath")).Out)
+    $taskText = Add-AutoTaskContext $M.Slug ((Invoke-Git @('cat-file', 'blob', "$($M.Sha):$taskPath")).Out) $M.Sha
     $cont = Get-ContinueBranch $M.Slug
     $runDir = Join-Path (Join-Path $WorkDir 'runs') $id
     [void](New-Item -ItemType Directory -Force -Path $runDir)

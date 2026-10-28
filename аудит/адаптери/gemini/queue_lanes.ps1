@@ -589,9 +589,13 @@ function Get-AutoTaskPath([string]$Slug) {
     $script:TaskDir + $Slug + '.md'
 }
 
-function Add-AutoTaskContext([string]$Slug, [string]$Text) {
+function Add-AutoTaskContext([string]$Slug, [string]$Text, [string]$BuildMain = '') {
     <# Числа та SHA із перевіреної позначки стають даними шаблону, текст PR не стає промптом. #>
     if ($Slug -cmatch '^автоперевірка-([1-9][0-9]{0,8})-([0-9a-f]{40})$') { return $Text + "`nДАНІ ПОЗНАЧКИ: PR #$($Matches[1]); голова $($Matches[2]); наряд $Slug.`n" }
-    if ($Slug -cmatch '^автоживий-([0-9a-f]{40})$') { return $Text + "`nДАНІ ПОЗНАЧКИ: злитий коміт $($Matches[1]); наряд $Slug.`n" }
+    if ($Slug -cmatch '^автоживий-([0-9a-f]{40})$') {
+        $stamp = $Matches[1]
+        if ($BuildMain -cnotmatch '^[0-9a-f]{40}$') { throw 'AUTO_BUILD' }
+        return $Text + "`nДАНІ ПОЗНАЧКИ: злитий коміт джерел $stamp; штамп build.txt $stamp; коміт збірки $BuildMain. Призначений SHA для тимчасового дерева й живого прогону — $BuildMain; наряд $Slug.`n"
+    }
     $Text
 }

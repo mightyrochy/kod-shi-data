@@ -30,7 +30,7 @@ try {
         $script:CaseModel = switch ($lane) { codex { 'gpt-6.1-sol-high' } agy { 'gemini-3.8-flash-high' } claude { 'cc-claude-opus-5-5-high' } }
         function Pull([int]$Number, [string]$Branch, [string]$Sha, [string]$State='open') {
             <# Закритий, змінений, давній, звіт і живий PR у формі GitHub REST. #>
-            [pscustomobject]@{number=$Number;state=$State;created_at=[datetimeoffset]::UtcNow.AddDays(-10).ToString('o');updated_at=[datetimeoffset]::UtcNow.ToString('o');user=@{login='mightyrochy'};head=@{ref=$Branch;sha=$Sha;repo=@{full_name='mightyrochy/kod-shi-data'}};base=@{ref='main';repo=@{full_name='mightyrochy/kod-shi-data'}}}
+            [pscustomobject]@{number=$Number;title='Код';state=$State;created_at=[datetimeoffset]::UtcNow.AddDays(-10).ToString('o');updated_at=[datetimeoffset]::UtcNow.ToString('o');user=@{login='mightyrochy'};head=@{ref=$Branch;sha=$Sha;repo=@{full_name='mightyrochy/kod-shi-data'}};base=@{ref='main';repo=@{full_name='mightyrochy/kod-shi-data'}}}
         }
         $script:Cases = @{
             '1'=(Pull 1 'claude/закритий' $head 'closed'); '2'=(Pull 2 'claude/змінений' $other)
@@ -43,6 +43,7 @@ try {
         function Complete-EngineDrafts { }
         function Get-ReviewModels($Pull,$Config) { $script:CaseModel }
         function Invoke-ChainApi([string]$Path) {
+            if ($Path -match '/files\?') { return [pscustomobject]@{filename='джерела/a.py'} }
             $sha = ($Path -split '/')[-1]
             $date = if ($sha -eq ('a' * 40)) { [datetimeoffset]::UtcNow.AddDays(-10) } else { [datetimeoffset]::UtcNow.AddMinutes(-1) }
             [pscustomobject]@{sha=$sha;commit=@{committer=@{date=$date.ToString('o')}}}
