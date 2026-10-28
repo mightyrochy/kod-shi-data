@@ -58,6 +58,15 @@ def main():
         коди.append(команда([sys.executable, "досяжність.py"], "досяжність.txt", ДЖЕРЕЛА))
         коди.append(команда(["node", ТЕКА / "знімок.cjs"], "знімок.txt"))
         коди.append(команда(["git", "diff", "--check"], "диф.txt"))
+    elif режим == "огляд":
+        for аргументи in (
+            ["git", "rev-parse", "HEAD"],
+            ["git", "diff", "a136a841db8fed6703c17866166514729f2875eb", "HEAD", "--", "zhnyvarka"],
+            ["rg", "-n", "віднов|продовж|прочитати_стан|завершено\\(|кеш|DONE|read_text", "zhnyvarka", "-g", "*.py"],
+            ["git", "log", "--format=%H %s", "-3", "--", "zhnyvarka/журнал_карток.py", "zhnyvarka/журнал_проходу.py"],
+            ["git", "diff", "--name-only", "498fd52c480005dd7b60523f594d586afb5ad4e6", "HEAD", "--", ".github", "аудит/адаптери/gemini"],
+        ):
+            коди.append(команда(аргументи, "огляд.txt"))
     print(f"Запусків {len(коди)}; кодів 0: {коди.count(0)}; коди: {коди}", flush=True)
     return int(any(коди))
 
