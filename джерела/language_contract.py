@@ -44,11 +44,8 @@ def доповнити(було, нове):
     """
     if нове is None or isinstance(нове, str) and not нове.strip() or нове == [] or нове == {}:
         return copy.deepcopy(було)
-    if isinstance(було, dict) and "value" in було and not isinstance(нове, (dict, list)):
-        нове = {"value": нове}
     if isinstance(було, dict) and isinstance(нове, dict):
-        return {к: доповнити(в, нове[к]) if к in нове and not (к == "quote" and
-                (not isinstance(нове[к], str) or М.невідомо(нове[к])))
+        return {к: доповнити(в, нове[к]) if к in нове
                 else copy.deepcopy(в) for к, в in було.items()} | {
             к: copy.deepcopy(в) for к, в in нове.items() if к not in було}
     if isinstance(було, list) and isinstance(нове, list):
@@ -57,13 +54,52 @@ def доповнити(було, нове):
         вих = []
         for в in було:
             пара = next((н for н in нове if isinstance(в, dict) and isinstance(н, dict)
-                         and any(в.get(к) and в.get(к) == н.get(к) for к in ("id", "item", "quote"))), None)
+                         and any(в.get(к) and в.get(к) == н.get(к) for к in ("id", "item", "quote", "ключ"))), None)
             вих.append(доповнити(в, пара) if пара is not None else copy.deepcopy(в))
         вих += [copy.deepcopy(н) for н in нове if н not in було
                 and not any(isinstance(в, dict) and any(н.get(к) and н.get(к) == в.get(к)
-                            for к in ("id", "item", "quote")) for в in було)]
+                            for к in ("id", "item", "quote", "ключ")) for в in було)]
         return вих
     return copy.deepcopy(нове)
+
+
+def злити_повтор(перша, друга):
+    """Злити результати того самого читача Е2; відхилене поле не є заміною.
+
+    Сирі відповіді сюди не потрапляють. Читач уже прийняв внутрішні поля,
+    частини й тексти; джерельні тексти з `без_відповіді` заміною не стають.
+    """
+    перша, друга = перша or {}, друга or {}
+    вих = доповнити(перша, друга)
+    for ключ in ("незнайомі", "невідомо", "не_взято", "заглушки", "перенесено", "відкинуто", "нотатки", "помилки"):
+        if ключ in перша or ключ in друга:
+            вих[ключ] = list({json.dumps(в, sort_keys=True, ensure_ascii=False): в
+                             for р in (перша, друга) for в in р.get(ключ) or []}.values())
+    в1, в2 = перша.get("внутрішня") or {}, друга.get("внутрішня") or {}
+    if "внутрішня" in вих:
+        вих["повтор_дописав"] = [к for к in в2 if к != "quotes" and к not in в1]
+    # Частини тексту описують саме обраний текст, а не дописуються до старих речень.
+    if (друга.get("частини") or {}).get("text"):
+        вих["частини"]["text_parts"] = copy.deepcopy(друга["частини"].get("text_parts") or [])
+    if "тексти" in вих:
+        прийняті = [{к: т for к, т in (р.get("тексти") or {}).items()
+                     if к not in (р.get("без_відповіді") or [])} for р in (перша, друга)]
+        тексти = доповнити(*прийняті)
+        вих["без_відповіді"] = [к for к in вих["тексти"] if к not in тексти]
+        вих["тексти"] = (друга.get("тексти") or {}) | (перша.get("тексти") or {}) | тексти
+        вих["короткі"] = {к: max([р.get("короткі", {}).get(к, "") for р in (перша, друга)], key=len)
+                          for к in вих["без_відповіді"] if any(р.get("короткі", {}).get(к) for р in (перша, друга))}
+        for к, т in вих["короткі"].items():
+            вих["тексти"][к] = т
+        вих["урізано"] = {к: в for к, в in (вих.get("урізано") or {}).items() if к in вих["без_відповіді"]}
+        if "заяви" in вих:
+            вих["заяви"] = [dict(р, текст=тексти.get(р["ключ"]),
+                                 стан="translated" if р["ключ"] in тексти else "missing_text") for р in вих["заяви"]]
+        вих["причина"] = (друга.get("причина") or перша.get("причина")) if вих["без_відповіді"] else None
+    else:
+        вих["причина"] = друга.get("причина") if перша.get("причина") else None
+    вих["повтор"] = None
+    return вих
 
 
 def розбіжності(результат, сирий, поля, обовʼязкові=()):
@@ -113,7 +149,7 @@ def зберегти_подію(результат, сирий):
     нагода = об.get("occasion")
     if not в.get("occasion") and not в.get("event") and isinstance(нагода, dict):
         цитата = нагода.get("quote")
-        if isinstance(цитата, str) and цитата.strip():
+        if isinstance(цитата, str) and цитата.strip() and not М.невідомо(цитата):
             в["event"] = {"free_text": цитата.strip(), "lang": "uk"}
             в.setdefault("quotes", {})["event"] = цитата.strip()
     if р.get("повтор"):
