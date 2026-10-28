@@ -836,13 +836,17 @@ index e3bd449dae13d9131074a9a98780c86a1b8e49df..051ea51b7f8f9646ec96dd4d38775a17
  path = re.search(r'файл (\S+) ', prompt_arg).group(1)
 diff --git a/аудит/адаптери/gemini/перевірка/fake_timeline.py b/аудит/адаптери/gemini/перевірка/fake_timeline.py
 new file mode 100644
-index 0000000000000000000000000000000000000000..cb39a775c2b1243cc90cc6541e6a3dbc7d5d90de
+index 0000000000000000000000000000000000000000..ecb285aedb219d14f85863a3d0dce5e99b903bbe
 --- /dev/null
 +++ b/аудит/адаптери/gemini/перевірка/fake_timeline.py
-@@ -0,0 +1,37 @@
+@@ -0,0 +1,49 @@
 +"""Спільний міжпроцесний запис часової лінії заглушок трьох рушіїв."""
 +import os
 +import time
++import errno
++
++СТРОК_ЗАМКА_С = 30
++КРОК_ЗАМКА_С = 0.001
 +
 +
 +def позначити(шлях, подія, слаг):
@@ -855,7 +859,15 @@ index 0000000000000000000000000000000000000000..cb39a775c2b1243cc90cc6541e6a3dbc
 +        замок.seek(0)
 +        if os.name == 'nt':
 +            import msvcrt
-+            msvcrt.locking(замок.fileno(), msvcrt.LK_LOCK, 1)
++            межа = time.monotonic() + СТРОК_ЗАМКА_С
++            while True:
++                try:
++                    msvcrt.locking(замок.fileno(), msvcrt.LK_NBLCK, 1)
++                    break
++                except OSError as збій:
++                    if збій.errno not in (errno.EACCES, errno.EAGAIN, errno.EDEADLK) or time.monotonic() >= межа:
++                        raise
++                    time.sleep(КРОК_ЗАМКА_С)
 +        else:
 +            import fcntl
 +            fcntl.flock(замок, fcntl.LOCK_EX)
