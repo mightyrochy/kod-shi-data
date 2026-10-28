@@ -225,213 +225,8 @@ index b7de4a730ca6682474d419601119ab708f13f961..1973bd7318808bd137c2cefc668104de
          Invoke-Task $M $job
          0
      } catch {
-diff --git a/аудит/адаптери/gemini/m9v/2_під_gemini.ps1 b/аудит/адаптери/gemini/m9v/2_під_gemini.ps1
-index 577fab2f575b8b9d7dbfe65ff16f1068806d4fed..100d2ecdcd4bf904592a063561adf363ad4930e6 100644
---- a/аудит/адаптери/gemini/m9v/2_під_gemini.ps1
-+++ b/аудит/адаптери/gemini/m9v/2_під_gemini.ps1
-@@ -1,100 +1,100 @@
--﻿#Requires -Version 5.1
--<#
--.SYNOPSIS
--М.9-В, підготовка, частина gemini: крок 0 (клон, git config), Codex CLI, вхід, крок 4. Запуск — під gemini.
--
--.DESCRIPTION
--Запускається один раз, ПІСЛЯ 1_адмін.ps1 (обгортка в C:\ProgramData\gemini-wrapper уже стоїть); повторний запуск безпечний.
--Паролів і токенів не читає й не виводить: про вхід судить лише наявність файлу чи код `codex login status`.
--Codex без `-WithCodex` скрипт не ставить і не входить. Рішення власника 25.10 (9738): Codex під gemini вмикається з основним
--акаунтом ChatGPT власника, ризик прийнято (токен лежить у `~/.codex/auth.json` профілю gemini — секрет у межі цього
--користувача, у репозиторій не йде, 9739; ізоляцію рушіїв веде М.9-Г). З `-WithCodex`:
--  Codex CLI  — інсталятор закріплено за релізом (без Node.js, https://github.com/openai/codex): файл
--               https://releases.openai.com/codex/releases/<CodexRelease>/install.ps1 качається у файл, sha256 звіряється з
--               `CodexInstaller` у хеші.psd1 і лише тоді виконується з `-Release <CodexRelease>` (9741); хеш порожній чи інший —
--               СТОП, інсталятор не виконується (сам інсталятор несе блок підпису Authenticode — не перевірено — і звіряє SHA256SUMS пакета);
--               вхід — `codex login --device-auth` (код на сторінці, без браузера на цьому ноутбуці):
--               https://learn.chatgpt.com/docs/developer-commands?surface=cli
--Gemini CLI не ставимо (рішення диспетчера 25.10: для Google One його замінено Antigravity CLI з 18.06.2026, README google-gemini/gemini-cli); другий рушій Gemini — наявний agy.
--Команди кроків 0 і 4 — дослівно з НАЛАШТУВАННЯ.md.
--#>
--# Continue, не Stop: у Windows PowerShell 5.1 stderr рідних команд (git clone, npm) при Stop — виняток; коди виходу перевіряються вручну
--param([switch]$WithCodex)
--$ErrorActionPreference = 'Continue'
--function Stop-Here([string]$m) { Write-Host "СТОП: $m" -ForegroundColor Red; Write-Host 'Напиши диспетчерові: ЗАБЛОКОВАНО + цей текст.'; exit 1 }
--function Step([string]$m) { Write-Host "`n== $m" -ForegroundColor Cyan }
--function Update-Path { $env:Path = [Environment]::GetEnvironmentVariable('Path', 'Machine') + ';' + [Environment]::GetEnvironmentVariable('Path', 'User') }
--function Has([string]$n) { [bool](Get-Command $n -ErrorAction SilentlyContinue) }
--
--if ($env:USERNAME -ne 'gemini') { Stop-Here "це має бути користувач gemini, а тут $env:USERNAME (Win+L → gemini)." }
--if (([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)) {
--    Stop-Here 'gemini має бути без прав адміністратора (ізоляція 19.10).' }
--
--# --- вимоги ---
--Step 'Вимоги: git 2.30+ і обгортка'
--Update-Path
--if (-not (Has git)) { Stop-Here 'git не знайдено під gemini (НАЛАШТУВАННЯ.md, крок 0: git має бути).' }
--if ((git --version) -notmatch '(\d+\.\d+\.\d+)') { Stop-Here 'git --version не розібрано.' }
--$gv = [version]$Matches[1]
--if ($gv -lt [version]'2.30') { Stop-Here "git $gv старіший за 2.30." }
--Write-Host "git $gv — ок."
--if (-not (Test-Path 'C:\ProgramData\gemini-wrapper\gemini_run.ps1')) {
--    Stop-Here 'обгортки в C:\ProgramData\gemini-wrapper нема: спершу 1_адмін.ps1 (адмінський PowerShell під власником), потім цей скрипт.' }
--
--# --- крок 0 ---
--Step 'Крок 0: клон і git config'
--if (-not (Test-Path "$env:USERPROFILE\kod-shi-data\.git")) {
--    git clone --depth 1 https://github.com/mightyrochy/kod-shi-data "$env:USERPROFILE\kod-shi-data"
--    if ($LASTEXITCODE -ne 0) { Stop-Here "git clone повернув код $LASTEXITCODE." }
--} else { Write-Host 'Клон уже є.' }
--if (-not (git config --global user.email)) { git config --global user.name 'gemini'; git config --global user.email "gemini@$env:COMPUTERNAME" }
--
--# --- Codex CLI (лише -WithCodex, після рішення власника про акаунт, 9738) ---
--if (-not $WithCodex) {
--    Write-Host "`nCodex пропущено: без -WithCodex не ставиться й не входить (рішення власника 25.10, 9738: вмикати з -WithCodex)." -ForegroundColor Yellow
--} else {
--    Step 'Codex CLI'
--    if (-not (Has codex)) {
--        $expected = Import-PowerShellDataFile (Join-Path $PSScriptRoot 'хеші.psd1') -ErrorAction SilentlyContinue
--        $want = $(if ($expected -and $expected.ContainsKey('CodexInstaller')) { [string]$expected['CodexInstaller'] } else { '' })
--        $rel = $(if ($expected -and $expected.ContainsKey('CodexRelease')) { [string]$expected['CodexRelease'] } else { '' })
--        if ($rel -notmatch '^\d+\.\d+\.\d+$') { Stop-Here "CodexRelease у хеші.psd1 порожній чи не виду x.y.z ('$rel'). Інсталятор не виконано." }
--        $inst = "$env:TEMP\codex_install.ps1"
--        Invoke-WebRequest "https://releases.openai.com/codex/releases/$rel/install.ps1" -OutFile $inst -UseBasicParsing
--        $got = (Get-FileHash $inst -Algorithm SHA256).Hash
--        Write-Host "sha256 інсталятора: $got"
--        if (-not $want) { Stop-Here "хеш інсталятора Codex не зафіксовано в хеші.psd1 (CodexInstaller). Звір sha256 вище з офіційним джерелом, запиши його PR-ом; інсталятор не виконано." }
--        if ($got -ne $want) { Stop-Here "sha256 інсталятора не збігся з хеші.psd1 (чекав $want). Інсталятор не виконано." }
--        $env:CODEX_NON_INTERACTIVE = '1'
--        & powershell -NoProfile -ExecutionPolicy Bypass -File $inst -Release $rel
--        Update-Path
--        if (-not (Has codex)) { Stop-Here 'codex не знайдено після установки; відкрий нове вікно PowerShell і запусти скрипт знову.' }
--    }
--    Write-Host "codex: $(& codex --version)"
--
--    Step 'Вхід Codex (ChatGPT, --device-auth)'
--    & codex login status *> $null
--    if ($LASTEXITCODE -eq 0) { Write-Host 'Вхід ChatGPT вже є.' }
--    else {
--        Write-Host 'Відкрий показану адресу на телефоні, введи код і увійди основним акаунтом ChatGPT (рішення власника 25.10, 9738).' -ForegroundColor Yellow
--        & codex login --device-auth
--        & codex login status *> $null
--        if ($LASTEXITCODE -ne 0) { Stop-Here 'вхід Codex не вдався (код не введено чи сплив): запусти цей самий рядок ще раз.' }
--    }
--    Write-Host 'Рушій Codex у задачі gemini-run вмикає 1_адмін.ps1 -EnableCodex (НАЛАШТУВАННЯ.md, «Пули й каскад»).'
--}
--
--# --- крок 4 ---
--Step 'Крок 4: перевірка ізоляції'
--powershell -NoProfile -ExecutionPolicy Bypass -File C:\ProgramData\gemini-wrapper\gemini_run.ps1
--Get-Content C:\Users\Public\gemini\out\heartbeat.json      # має бути "isolation":"OK"
--$hb = Get-Content C:\Users\Public\gemini\out\heartbeat.json -Raw | ConvertFrom-Json
--if ($hb.isolation -ne 'OK') {
--    Stop-Here "isolation=$($hb.isolation): WHOAMI — не той користувач, NET_SESSION — права адміністратора, PROFILES — бачить чужий профіль, DRIVES — інший диск, ENV — змінна з KEY/TOKEN/SECRET/PASSWORD." }
--$denied = $false
--try { Add-Content C:\ProgramData\gemini-wrapper\gemini_run.ps1 '#' -ErrorAction Stop } catch { $denied = $true }   # має бути відмова в доступі
--if (-not $denied) { Stop-Here 'gemini зміг дописати в gemini_run.ps1 — права теки неправильні (крок 3).' }
--Write-Host 'Запис у обгортку відхилено — як і треба.' -ForegroundColor Green
--agy models                                                  # список моделей (диспетчерові не треба — обгортка сама)
--
--Write-Host "`nГОТОВО: isolation OK$(if ($WithCodex) { ', Codex увійшов' } else { ', Codex вимкнено' }). Далі — ЩО_НАТИСНУТИ.md (повернутись до себе, перевірка heartbeat)." -ForegroundColor Green
-+﻿#Requires -Version 5.1
-+<#
-+.SYNOPSIS
-+М.9-В, підготовка, частина gemini: крок 0 (клон, git config), Codex CLI, вхід, крок 4. Запуск — під gemini.
-+
-+.DESCRIPTION
-+Запускається один раз, ПІСЛЯ 1_адмін.ps1 (обгортка в C:\ProgramData\gemini-wrapper уже стоїть); повторний запуск безпечний.
-+Паролів і токенів не читає й не виводить: про вхід судить лише наявність файлу чи код `codex login status`.
-+Codex без `-WithCodex` скрипт не ставить і не входить. Рішення власника 25.10 (9738): Codex під gemini вмикається з основним
-+акаунтом ChatGPT власника, ризик прийнято (токен лежить у `~/.codex/auth.json` профілю gemini — секрет у межі цього
-+користувача, у репозиторій не йде, 9739; ізоляцію рушіїв веде М.9-Г). З `-WithCodex`:
-+  Codex CLI  — інсталятор закріплено за релізом (без Node.js, https://github.com/openai/codex): файл
-+               https://releases.openai.com/codex/releases/<CodexRelease>/install.ps1 качається у файл, sha256 звіряється з
-+               `CodexInstaller` у хеші.psd1 і лише тоді виконується з `-Release <CodexRelease>` (9741); хеш порожній чи інший —
-+               СТОП, інсталятор не виконується (сам інсталятор несе блок підпису Authenticode — не перевірено — і звіряє SHA256SUMS пакета);
-+               вхід — `codex login --device-auth` (код на сторінці, без браузера на цьому ноутбуці):
-+               https://learn.chatgpt.com/docs/developer-commands?surface=cli
-+Gemini CLI не ставимо (рішення диспетчера 25.10: для Google One його замінено Antigravity CLI з 18.06.2026, README google-gemini/gemini-cli); другий рушій Gemini — наявний agy.
-+Команди кроків 0 і 4 — дослівно з НАЛАШТУВАННЯ.md.
-+#>
-+# Continue, не Stop: у Windows PowerShell 5.1 stderr рідних команд (git clone, npm) при Stop — виняток; коди виходу перевіряються вручну
-+param([switch]$WithCodex)
-+$ErrorActionPreference = 'Continue'
-+function Stop-Here([string]$m) { Write-Host "СТОП: $m" -ForegroundColor Red; Write-Host 'Напиши диспетчерові: ЗАБЛОКОВАНО + цей текст.'; exit 1 }
-+function Step([string]$m) { Write-Host "`n== $m" -ForegroundColor Cyan }
-+function Update-Path { $env:Path = [Environment]::GetEnvironmentVariable('Path', 'Machine') + ';' + [Environment]::GetEnvironmentVariable('Path', 'User') }
-+function Has([string]$n) { [bool](Get-Command $n -ErrorAction SilentlyContinue) }
-+
-+if ($env:USERNAME -ne 'gemini') { Stop-Here "це має бути користувач gemini, а тут $env:USERNAME (Win+L → gemini)." }
-+if (([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)) {
-+    Stop-Here 'gemini має бути без прав адміністратора (ізоляція 19.10).' }
-+
-+# --- вимоги ---
-+Step 'Вимоги: git 2.30+ і обгортка'
-+Update-Path
-+if (-not (Has git)) { Stop-Here 'git не знайдено під gemini (НАЛАШТУВАННЯ.md, крок 0: git має бути).' }
-+if ((git --version) -notmatch '(\d+\.\d+\.\d+)') { Stop-Here 'git --version не розібрано.' }
-+$gv = [version]$Matches[1]
-+if ($gv -lt [version]'2.30') { Stop-Here "git $gv старіший за 2.30." }
-+Write-Host "git $gv — ок."
-+if (-not (Test-Path 'C:\ProgramData\gemini-wrapper\gemini_run.ps1')) {
-+    Stop-Here 'обгортки в C:\ProgramData\gemini-wrapper нема: спершу 1_адмін.ps1 (адмінський PowerShell під власником), потім цей скрипт.' }
-+
-+# --- крок 0 ---
-+Step 'Крок 0: клон і git config'
-+if (-not (Test-Path "$env:USERPROFILE\kod-shi-data\.git")) {
-+    git clone --depth 1 https://github.com/mightyrochy/kod-shi-data "$env:USERPROFILE\kod-shi-data"
-+    if ($LASTEXITCODE -ne 0) { Stop-Here "git clone повернув код $LASTEXITCODE." }
-+} else { Write-Host 'Клон уже є.' }
-+if (-not (git config --global user.email)) { git config --global user.name 'gemini'; git config --global user.email "gemini@$env:COMPUTERNAME" }
-+
-+# --- Codex CLI (лише -WithCodex, після рішення власника про акаунт, 9738) ---
-+if (-not $WithCodex) {
-+    Write-Host "`nCodex пропущено: без -WithCodex не ставиться й не входить (рішення власника 25.10, 9738: вмикати з -WithCodex)." -ForegroundColor Yellow
-+} else {
-+    Step 'Codex CLI'
-+    if (-not (Has codex)) {
-+        $expected = Import-PowerShellDataFile (Join-Path $PSScriptRoot 'хеші.psd1') -ErrorAction SilentlyContinue
-+        $want = $(if ($expected -and $expected.ContainsKey('CodexInstaller')) { [string]$expected['CodexInstaller'] } else { '' })
-+        $rel = $(if ($expected -and $expected.ContainsKey('CodexRelease')) { [string]$expected['CodexRelease'] } else { '' })
-+        if ($rel -notmatch '^\d+\.\d+\.\d+$') { Stop-Here "CodexRelease у хеші.psd1 порожній чи не виду x.y.z ('$rel'). Інсталятор не виконано." }
-+        $inst = "$env:TEMP\codex_install.ps1"
-+        Invoke-WebRequest "https://releases.openai.com/codex/releases/$rel/install.ps1" -OutFile $inst -UseBasicParsing
-+        $got = (Get-FileHash $inst -Algorithm SHA256).Hash
-+        Write-Host "sha256 інсталятора: $got"
-+        if (-not $want) { Stop-Here "хеш інсталятора Codex не зафіксовано в хеші.psd1 (CodexInstaller). Звір sha256 вище з офіційним джерелом, запиши його PR-ом; інсталятор не виконано." }
-+        if ($got -ne $want) { Stop-Here "sha256 інсталятора не збігся з хеші.psd1 (чекав $want). Інсталятор не виконано." }
-+        $env:CODEX_NON_INTERACTIVE = '1'
-+        & powershell -NoProfile -ExecutionPolicy Bypass -File $inst -Release $rel
-+        Update-Path
-+        if (-not (Has codex)) { Stop-Here 'codex не знайдено після установки; відкрий нове вікно PowerShell і запусти скрипт знову.' }
-+    }
-+    Write-Host "codex: $(& codex --version)"
-+
-+    Step 'Вхід Codex (ChatGPT, --device-auth)'
-+    & codex login status *> $null
-+    if ($LASTEXITCODE -eq 0) { Write-Host 'Вхід ChatGPT вже є.' }
-+    else {
-+        Write-Host 'Відкрий показану адресу на телефоні, введи код і увійди основним акаунтом ChatGPT (рішення власника 25.10, 9738).' -ForegroundColor Yellow
-+        & codex login --device-auth
-+        & codex login status *> $null
-+        if ($LASTEXITCODE -ne 0) { Stop-Here 'вхід Codex не вдався (код не введено чи сплив): запусти цей самий рядок ще раз.' }
-+    }
-+    Write-Host 'Рушій Codex у задачі gemini-run вмикає 1_адмін.ps1 -EnableCodex (НАЛАШТУВАННЯ.md, «Пули й каскад»).'
-+}
-+
-+# --- крок 4 ---
-+Step 'Крок 4: перевірка ізоляції'
-+powershell -NoProfile -ExecutionPolicy Bypass -File C:\ProgramData\gemini-wrapper\gemini_run.ps1
-+Get-Content C:\Users\Public\gemini\out\heartbeat.json      # має бути "isolation":"OK"
-+$hb = Get-Content C:\Users\Public\gemini\out\heartbeat.json -Raw | ConvertFrom-Json
-+if ($hb.isolation -ne 'OK') {
-+    Stop-Here "isolation=$($hb.isolation): WHOAMI — не той користувач, NET_SESSION — права адміністратора, PROFILES — бачить чужий профіль, DRIVES — інший диск, ENV — змінна з KEY/TOKEN/SECRET/PASSWORD." }
-+$denied = $false
-+try { Add-Content C:\ProgramData\gemini-wrapper\gemini_run.ps1 '#' -ErrorAction Stop } catch { $denied = $true }   # має бути відмова в доступі
-+if (-not $denied) { Stop-Here 'gemini зміг дописати в gemini_run.ps1 — права теки неправильні (крок 3).' }
-+Write-Host 'Запис у обгортку відхилено — як і треба.' -ForegroundColor Green
-+agy models                                                  # список моделей (диспетчерові не треба — обгортка сама)
-+
-+Write-Host "`nГОТОВО: isolation OK$(if ($WithCodex) { ', Codex увійшов' } else { ', Codex вимкнено' }). Далі — ЩО_НАТИСНУТИ.md (повернутись до себе, перевірка heartbeat)." -ForegroundColor Green
 diff --git a/аудит/адаптери/gemini/m9v/хеші.psd1 b/аудит/адаптери/gemini/m9v/хеші.psd1
-index cc9202f7528dcbd3b901576cd3ca38370eba5250..82fee7ce522d08640f0181f6e04648cfb0b5ad8a 100644
+index cc9202f7528dcbd3b901576cd3ca38370eba5250..97a34bee6745472c6f9e83c723faa678f25828b6 100644
 --- a/аудит/адаптери/gemini/m9v/хеші.psd1
 +++ b/аудит/адаптери/gemini/m9v/хеші.psd1
 @@ -3,10 +3,10 @@
@@ -455,23 +250,24 @@ index cc9202f7528dcbd3b901576cd3ca38370eba5250..82fee7ce522d08640f0181f6e04648cf
      'gemini_watch.ps1'   = '69EFEBB07FF1AF51C382B753A95C50F3C1AC27B3008F2489992BEBE3FD0213AA'
 -    'queue_lanes.ps1'    = 'C4CCA1B7DE38B62AC9DB978AC744D8342FC30460BFD4FD954C492C5F7181EA4D'
 -    'claude_run.ps1'     = 'B2D0C64BBBCD84583A8C9767AAC046BE51ACF25A2AAEB86D3F1A114DB39AD679'
-+    'queue_lanes.ps1'    = '6FA4D9E9E78C923AA2D525C83C1E3E307B313FBD735FB6CAE3F01B6BA0BA85C8'
++    'queue_lanes.ps1'    = '7E88FC8CE1F79069BD112681424F37EF6347E50135B20549C9BE3274AD68AD6A'
 +    'claude_run.ps1'     = '61C0730FA3F50B1D9F71ADE12CAC8E162DBCF8E7A874C38C06B28DEF5FAFE570'
  }
 diff --git a/аудит/адаптери/gemini/queue_lanes.ps1 b/аудит/адаптери/gemini/queue_lanes.ps1
-index b22aad4558e83fcc9ca4e5ff4cb48f4867762255..3e512a4af678e47f08c0c101b847d14f730dbbb7 100644
+index b22aad4558e83fcc9ca4e5ff4cb48f4867762255..d76fb90263ff5aff71ee04eba69a6c07a468957a 100644
 --- a/аудит/адаптери/gemini/queue_lanes.ps1
 +++ b/аудит/адаптери/gemini/queue_lanes.ps1
-@@ -272,7 +272,7 @@ function Get-Markers {
+@@ -271,8 +271,7 @@ function Get-Markers {
+ }
  
  function Get-TaskSource($M) {
-     <# Нічні гілки мають дату, а шаблон наряду — одне постійне джерело в main. #>
+-    <# Нічні гілки мають дату, а шаблон наряду — одне постійне джерело в main. #>
 -    if ($M.Slug -cmatch '^Е1-нічний-живий-[0-9]{8}$') { return 'аудит/проби/нічний_наряд.md' }
-+    if ($M.Slug -cmatch '^Е1-нічний-живий-[0-9]{8}$') { return 'аудит/наряди/автоживий.md' }
++    <# Усі наряди використовують спільне визначення шляху шаблону. #>
      Get-AutoTaskPath $M.Slug
  }
  
-@@ -287,7 +287,9 @@ function Get-NightlyMarker([datetime]$Now = [datetime]::UtcNow) {
+@@ -287,7 +286,9 @@ function Get-NightlyMarker([datetime]$Now = [datetime]::UtcNow) {
      $main = Get-RefSha 'refs/remotes/origin/main'
      if ($main -cnotmatch '^[0-9a-f]{40}$' -or
          (Invoke-Git @('merge-base', '--is-ancestor', $sha, $main) -AllowFail).Code -ne 0) { return }
@@ -482,7 +278,7 @@ index b22aad4558e83fcc9ca4e5ff4cb48f4867762255..3e512a4af678e47f08c0c101b847d14f
      if ((Invoke-Git @('cat-file', '-e', "${sha}:$template") -AllowFail).Code -ne 0) { return }
      $dir = Join-Path $RunsDir 'nightly'
      [void](New-Item -ItemType Directory -Force -Path $dir)
-@@ -338,6 +340,9 @@ function Get-ReviewTime {
+@@ -338,6 +339,9 @@ function Get-ReviewTime {
      [DateTimeOffset]::UtcNow.ToUnixTimeSeconds()
  }
  
@@ -492,7 +288,7 @@ index b22aad4558e83fcc9ca4e5ff4cb48f4867762255..3e512a4af678e47f08c0c101b847d14f
  function Get-AutoReviewState([string]$Slug) {
      <# Звіряє PR один раз безпосередньо перед моделлю, лише у вже вільному слоті.
  
-@@ -367,7 +372,7 @@ function Get-AutoReviewState([string]$Slug) {
+@@ -367,7 +371,7 @@ function Get-AutoReviewState([string]$Slug) {
              $pr = Invoke-RestMethod -Uri "https://api.github.com/repos/mightyrochy/kod-shi-data/pulls/$number" -Method Get -TimeoutSec 20 -MaximumRedirection 0 -Headers @{Accept='application/vnd.github+json'; 'User-Agent'='kod-shi-wrapper'}
              if ([string]$pr.number -cne $number -or $pr.state -cnotin @('open','closed') -or [string]$pr.head.sha -cnotmatch '^[0-9a-f]{40}$') { throw 'REVIEW_RESPONSE' }
              if ($pr.state -cne 'open' -or $pr.head.sha -cne $head) { return 'STALE' }
@@ -501,7 +297,7 @@ index b22aad4558e83fcc9ca4e5ff4cb48f4867762255..3e512a4af678e47f08c0c101b847d14f
              'LIVE'
          } catch {
              $budget.until = $now + $script:ReviewApiBackoff
-@@ -620,17 +625,168 @@ function Reset-WorkTree([string]$Dir) {
+@@ -620,17 +624,168 @@ function Reset-WorkTree([string]$Dir) {
  function Get-AutoTaskPath([string]$Slug) {
      <# Лише два закриті шаблони нарядів із main; довільний slug лишається звичайним нарядом. #>
      if ($Slug -cmatch '^автоперевірка-[1-9][0-9]{0,8}-[0-9a-f]{40}$') { return 'аудит/наряди/автоперевірка.md' }
@@ -866,7 +662,7 @@ index b25ac2c230bc93bc4cb57731822961c9a4452508..a458923cd7e0006df76c12989b0e98e3
 +    $Branch -cmatch '/(?:авто(?:перевірка|живий)-|перевірка-|pachka-|Е1-нічний-живий-)'
 +}
 diff --git a/аудит/адаптери/gemini/НАЛАШТУВАННЯ.md b/аудит/адаптери/gemini/НАЛАШТУВАННЯ.md
-index 7c7e2dd8ec72c5bd67e5da3d33f2c11bde170c05..2b5730da1cc3e2bdbce81aafb61ef164312e80c0 100644
+index 7c7e2dd8ec72c5bd67e5da3d33f2c11bde170c05..ad96a4d48b232e45b5b64cafb0bf08442f431315 100644
 --- a/аудит/адаптери/gemini/НАЛАШТУВАННЯ.md
 +++ b/аудит/адаптери/gemini/НАЛАШТУВАННЯ.md
 @@ -416,13 +416,13 @@ $f = Join-Path "$env:USERPROFILE\gemini-outbox" $n
@@ -884,7 +680,7 @@ index 7c7e2dd8ec72c5bd67e5da3d33f2c11bde170c05..2b5730da1cc3e2bdbce81aafb61ef164
 -| `queue_lanes.ps1` | `C4CCA1B7DE38B62AC9DB978AC744D8342FC30460BFD4FD954C492C5F7181EA4D` |
 -| `claude_run.ps1` | `B2D0C64BBBCD84583A8C9767AAC046BE51ACF25A2AAEB86D3F1A114DB39AD679` |
 +| `wrapper_health.ps1` | `D03E371F34B3AC2881B70047563260905CD2DEB343DCD8608257495E531B90EA` |
-+| `queue_lanes.ps1` | `6FA4D9E9E78C923AA2D525C83C1E3E307B313FBD735FB6CAE3F01B6BA0BA85C8` |
++| `queue_lanes.ps1` | `7E88FC8CE1F79069BD112681424F37EF6347E50135B20549C9BE3274AD68AD6A` |
 +| `claude_run.ps1` | `61C0730FA3F50B1D9F71ADE12CAC8E162DBCF8E7A874C38C06B28DEF5FAFE570` |
  | `CodexInstaller` (`install.ps1` релізу Codex `CodexRelease`) | `A59CB66350098C33B021FF470D586AE8FE3B7CAF189CA7137B4FE3AF5D4DCE74` |
  

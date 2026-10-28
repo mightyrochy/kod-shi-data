@@ -61,6 +61,8 @@ def виконати():
         запис = dict(стенд=назва, команда=команда, код_процесу=результат.returncode, код=код, тверджень=тверджень, провалів=провалів)
         результати.append(запис)
         print(json.dumps(запис, ensure_ascii=False), flush=True)
+        if код:
+            print(вивід, file=sys.stderr, flush=True)
     (журнали / 'результати.json').write_text(json.dumps(результати, ensure_ascii=False, indent=2) + '\n', encoding='utf-8')
     return int(any(запис['код'] for запис in результати))
 
