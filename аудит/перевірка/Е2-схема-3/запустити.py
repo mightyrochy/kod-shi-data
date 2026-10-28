@@ -20,6 +20,9 @@ def run(name, args, cwd):
     (TEMP / (name + '.txt')).write_text(result.stdout, encoding='utf8')
     record = dict(команда=subprocess.list2cmdline(args), тека=str(cwd), код=result.returncode,
                   секунд=round(time.perf_counter() - start, 2), вивід=result.stdout[-2400:])
+    if name.startswith('стенд-'):
+        record['звірки'] = [line for line in result.stdout.splitlines()
+                             if line.lstrip().startswith(('✔ ', '✗ '))]
     print(name, result.returncode, record['секунд'], flush=True)
     return record
 
@@ -57,6 +60,8 @@ if __name__ == '__main__':
         (OUT / 'збірки.json').write_text(json.dumps(results, ensure_ascii=False, indent=2) + '\n', encoding='utf8')
     elif mode == 'стенди':
         os.environ['CHROMIUM'] = 'C:/Program Files/Google/Chrome/Application/chrome.exe'
+        for key in ('MODEL', 'MODEL_MOVA', 'ZHYVA', 'REPLAY_EXCHANGE', 'REPLAY_RECORDINGS'):
+            os.environ.pop(key, None)
         results = []
         for name in ['до', 'після']:
             shots = TEMP / ('shots-' + name)
@@ -71,3 +76,30 @@ if __name__ == '__main__':
                   'повнота_після_вибору_ходи', 'повнота_вибір_прийняття']
         results = [run(p, [sys.executable, '-X', 'utf8', 'проби/' + p + '.py'], ROOT / 'джерела') for p in probes]
         (OUT / 'родини.json').write_text(json.dumps(results, ensure_ascii=False, indent=2) + '\n', encoding='utf8')
+    elif mode == 'показ-збірки':
+        result = run('показ-збірки', ['node', 'тест_показу.js', str(TEMP / 'build-після/index.html')], ROOT / 'джерела')
+        lines = (TEMP / 'показ-збірки.txt').read_text(encoding='utf8').splitlines()
+        result['вивід'] = '\n'.join(line for line in lines if line.lstrip().startswith(('✗ ', 'ВИКОНАНО ЗВІРОК:', 'ВПАЛО ')))
+        result['помилки'] = sorted({line[:500] for line in lines if line.lstrip().startswith('✗ ')})
+        (OUT / 'показ-збірки.json').write_text(json.dumps(result, ensure_ascii=False, indent=2) + '\n', encoding='utf8')
+    elif mode == 'стенд-до-повтор':
+        os.environ['CHROMIUM'] = 'C:/Program Files/Google/Chrome/Application/chrome.exe'
+        for key in ('MODEL', 'MODEL_MOVA', 'ZHYVA', 'REPLAY_EXCHANGE', 'REPLAY_RECORDINGS'):
+            os.environ.pop(key, None)
+        first = OUT / 'стенди.json'
+        old = json.loads(first.read_text(encoding='utf8'))
+        (OUT / 'стенди-перша-спроба.json').write_text(json.dumps(old, ensure_ascii=False, indent=2) + '\n', encoding='utf8')
+        shots = TEMP / 'shots-до-повтор'
+        shots.mkdir(exist_ok=True)
+        os.environ['ZNIMKY'] = str(shots)
+        old[0] = run('стенд-до-повтор', ['node', 'аудит/проби/рв6_стенд.js',
+                      'http://127.0.0.1:8765', str(TEMP / 'build-до'), 'C:/Users/gemini/pyodide', '3'], ROOT)
+        first.write_text(json.dumps(old, ensure_ascii=False, indent=2) + '\n', encoding='utf8')
+    elif mode == 'стиснути-доказ-показу':
+        file = OUT / 'показ-збірки.json'
+        result = json.loads(file.read_text(encoding='utf8'))
+        lines = (TEMP / 'показ-збірки.txt').read_text(encoding='utf8').splitlines()
+        result['вивід'] = '\n'.join(line for line in lines if line.lstrip().startswith(('✗ ', 'ВИКОНАНО ЗВІРОК:', 'ВПАЛО ')))
+        result['помилки'] = sorted({line for line in lines if line.lstrip().startswith('✗ ')})
+        file.write_text(json.dumps(result, ensure_ascii=False, indent=2) + '\n', encoding='utf8')
+        print(result['вивід'])
