@@ -121,6 +121,30 @@ def головна():
                               приклад=next(р for р in результати if р["id"] == "ж-07553@brenda.ua")),
                          ensure_ascii=False), flush=True)
         return 0
+    if режим == "одна":
+        ім = Path(sys.argv[4]).stem
+        команда = [sys.executable, str(код / "проби" / sys.argv[4]), *sys.argv[5:]]
+        with (вихід / (ім + ".txt")).open("wb") as журнал:
+            к = subprocess.run(команда, cwd=код, stdout=журнал, stderr=subprocess.STDOUT).returncode
+        р = dict(назва=ім, команда=команда, код=к)
+        записати(вихід / (ім + ".json"), р)
+        print(json.dumps(р, ensure_ascii=False), flush=True)
+        return к
+    if режим == "погода":
+        кат = json.loads(Path(sys.argv[4]).read_text(encoding="utf-8"))["каталог"]
+        вхід = вихід / "каталог-рядки.json"
+        записати(вхід, кат)
+        результати = []
+        for ім in ("wea_вхід", "wea_канон", "wea_спека"):
+            команда = [sys.executable, str(код / "проби" / (ім + ".py")), str(код)]
+            if ім != "wea_вхід":
+                команда.append(str(вхід))
+            with (вихід / (ім + ".txt")).open("wb") as журнал:
+                к = subprocess.run(команда, cwd=код, stdout=журнал, stderr=subprocess.STDOUT).returncode
+            результати.append(dict(назва=ім, команда=команда, код=к))
+            print(ім, "код", к, flush=True)
+        записати(вихід / "результати.json", результати)
+        return int(any(р["код"] for р in результати))
     if режим == "історичні":
         os.environ.update(GIT_CONFIG_COUNT="1", GIT_CONFIG_KEY_0="core.quotepath", GIT_CONFIG_VALUE_0="false")
         вхід = дерево / "аудит/тести/власник_2026-10-14/verdykty-0phxvk-2026-10-14-1551.json"
@@ -140,7 +164,7 @@ def головна():
             print(ім, "код", к, flush=True)
         записати(вихід / "результати.json", результати)
         return int(any(р["код"] for р in результати))
-    if режим == "батарея":
+    if режим in ("батарея", "проби"):
         результати = []
 
         def запуск(назва, команда):
@@ -151,21 +175,24 @@ def головна():
             print(json.dumps(р, ensure_ascii=False), flush=True)
             return р
 
-        for ім, арг in (("дим", ["стенд_знімок.py", "--дим"]),
+        батарея = (("дим", ["стенд_знімок.py", "--дим"]),
                         ("живий_шлях", ["тест_живого_шляху.py"]),
                         ("протокол", ["тест_протоколу.py"]),
                         ("розділи", ["прилади/розділи_гейтів.py"]),
-                        ("контракти", ["audit_contracts.py"])):
-            результати.append(запуск(ім, [sys.executable, *арг]))
-        результати.append(запуск("показ", ["node", "тест_показу.js"]))
+                        ("контракти", ["audit_contracts.py"]))
+        if режим == "батарея":
+            for ім, арг in батарея:
+                результати.append(запуск(ім, [sys.executable, *арг]))
+            результати.append(запуск("показ", ["node", "тест_показу.js"]))
         виключені = {"pal_вердикт.py", "pal_вимір.py", "колір_спільне.py", "колір_нейтраль.py",
                      "колір_весь_кадр_5286.py", "колір_кадр_слово_5222.py", "колір_кадр_слово_5223.py",
                      "колір_названо.py", "колір_прози_шар.py", "колір_ярлик_hex.py",
-                     "колір_hex_вікна.py", "колір_майже_нейтраль.py"}
+                     "колір_hex_вікна.py", "колір_майже_нейтраль.py",
+                     "wea_вхід.py", "wea_канон.py", "wea_спека.py"}
         проби = sorted({п for пр in ("колір_", "pal_", "wea_", "поділ_")
                         for п in (код / "проби").glob(пр + "*.py")
                         if п.name not in виключені and (пр != "поділ_" or п.stem.endswith("_ast"))})
-        with concurrent.futures.ThreadPoolExecutor(max_workers=3) as пул:
+        with concurrent.futures.ThreadPoolExecutor(max_workers=int(sys.argv[4]) if len(sys.argv) > 4 else 3) as пул:
             запити = [пул.submit(запуск, п.stem, [sys.executable, str(п)]) for п in проби]
             for запит in concurrent.futures.as_completed(запити):
                 результати.append(запит.result())
