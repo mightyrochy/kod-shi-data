@@ -189,7 +189,8 @@ def оцінити(F, комбо, тіло, жорстке_ні, вето, са�
                                   учасники=[dict(роль="border_colour",
                                                  річ=комбо[z["річ"]].get("id") or _річ)] + [
                                       dict(роль="companion", річ=x.get("id") or x.get("назва"))
-                                      for j, x in enumerate(комбо) if j != z["річ"] and _КР_ТИП.точка_кольору(x)]))
+                                      for j, x in enumerate(комбо)
+                                      if j != z["річ"] and _КР_ТИП.межі_кольору(x) is not None]))
             continue
         зн.append(dict(_РЕЄСТР.зн("K-PAL-16", "hint", z["суть"],
                                    [комбо[z["річ"]].get("назва") or комбо[z["річ"]].get("id")],

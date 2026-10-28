@@ -170,15 +170,15 @@ def полюси_пулу(по_слотах, базові=("верх", "низ",
             # речі зі списку мовчки, а колона світлоти (K-COL-01) міряється саме
             # повнотою цього списку: річ, що випала, зсувала вирок «колона є».
             # hex і lab речі народжує `фід_каталог`, це не невідомий вхід.
-            lab = _КР_ТИП.точка_кольору(r)
-            if lab:
-                L_за_слотом.setdefault(с, []).append(float(_cs.lch(tuple(lab))[0]))
+            межі = _КР_ТИП.межі_кольору(r)
+            if межі is not None:
+                L_за_слотом.setdefault(с, []).append(межі[:2])
     колона = False
     слоти_L = [с for с in L_за_слотом if L_за_слотом[с]]
     for i in range(len(слоти_L)):
         for j in range(i + 1, len(слоти_L)):
             a, b = sorted(L_за_слотом[слоти_L[i]]), sorted(L_за_слотом[слоти_L[j]])
-            if any(abs(x - y) < крок for x in a for y in b):
+            if any(max(abs(x[0] - y[1]), abs(x[1] - y[0])) < крок for x in a for y in b):
                 колона = True; break
         if колона:
             break
