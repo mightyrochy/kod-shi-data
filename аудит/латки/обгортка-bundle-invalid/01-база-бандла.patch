@@ -1,0 +1,171 @@
+diff --git a/аудит/адаптери/gemini/gemini_publish.ps1 b/аудит/адаптери/gemini/gemini_publish.ps1
+index 88355f7a3..ac640b5ce 100644
+--- a/аудит/адаптери/gemini/gemini_publish.ps1
++++ b/аудит/адаптери/gemini/gemini_publish.ps1
+@@ -188,7 +188,11 @@ function Publish-Bundle($S, [string]$Id) {
+     $copy = Join-Path (Join-Path $WorkDir 'inbox') ($Id + '.bundle')
+     Copy-Item -LiteralPath $src -Destination $copy -Force
+     try {
+-        if ((Invoke-Git @('bundle', 'verify', '-q', $copy) -AllowFail).Code -ne 0) { return @('BUNDLE_INVALID', 0) }
++        $verify = Invoke-Git @('bundle', 'verify', '-q', $copy) -AllowFail
++        if ($verify.Code -ne 0) {
++            Write-WrapperLog "бандл $Id — git bundle verify -> $($verify.Code): $($verify.Err.Trim())"
++            return @('BUNDLE_INVALID', 0)
++        }
+         $heads = @((Invoke-Git @('bundle', 'list-heads', $copy)).Out -split "`n" | Where-Object { $_.Trim() })
+         $slug = [string](Get-Prop $S 'slug')
+         $want = (Get-Prop $S 'head') + ' refs/heads/gemini/' + $slug
+diff --git a/аудит/адаптери/gemini/gemini_run.ps1 b/аудит/адаптери/gemini/gemini_run.ps1
+index 76ff91f90..b03dd85c8 100644
+--- a/аудит/адаптери/gemini/gemini_run.ps1
++++ b/аудит/адаптери/gemini/gemini_run.ps1
+@@ -863,7 +863,9 @@ function Complete-Status($Status, [string]$StatePath, [string]$Tail, [datetime]$
+             $Status.ahead = $f.Ahead
+             if ($f.Ahead -gt 0) {
+                 $bundle = Join-Path $OutDir ($Status.id + '.bundle')
+-                $exclude = @('^refs/remotes/origin/main', "^$($Status.start)")
++                # Позначка — опублікований коміт main, який публікатор уже отримує разом із чергою.
++                # start може бути приватним злиттям, а origin/main — свіжішим за клон публікатора.
++                $exclude = @("^$($Status.marker)")
+                 [void](Invoke-Git (@('bundle', 'create', '-q', ($bundle + '.part'), "refs/heads/gemini/$($Status.slug)") + $exclude))
+                 Move-Item -LiteralPath ($bundle + '.part') -Destination $bundle -Force
+                 $Status.bundle = $Status.id + '.bundle'
+diff --git a/аудит/адаптери/gemini/m9v/хеші.psd1 b/аудит/адаптери/gemini/m9v/хеші.psd1
+index 0a2896eb8..ae009bb4b 100644
+--- a/аудит/адаптери/gemini/m9v/хеші.psd1
++++ b/аудит/адаптери/gemini/m9v/хеші.psd1
+@@ -5,8 +5,8 @@
+     'wrapper_probe.ps1'  = '85116D04C22EB64CBFF52E66BCEAE9B1091577A889EDD58A8B634093A82BDBC6'
+     'wrapper_chain.ps1'  = '79BD08F866529B1C58FE57AF33252AA4F0F7B3D992352130A7824030F27A57CD'
+     'wrapper_health.ps1' = 'FCE45448539D53A6B5718319842FC845DA870F39453A6B716C7AF8A2DB65B88E'
+-    'gemini_run.ps1'     = '39FD518203B33184304528AFB50175E0CB455B9337A8B7A46D34F4B565BEB577'
+-    'gemini_publish.ps1' = '895162B7194F6331E672C2965D0F2833EE130676B44FC3005C16D4E52F95CCED'
++    'gemini_run.ps1'     = 'E2B429E5DFEB59FF7909331D57365BD3A55EC78C7257041CD3EAF133490A2C8E'
++    'gemini_publish.ps1' = '37DD50503FB9157FC2DB1348CEF254F7FAD4F6B28A7A1D3C326AEA6204497A87'
+     # Інсталятор Codex (9741) закріплено за релізом: install.ps1 — файл релізу https://releases.openai.com/codex/releases/<CodexRelease>/install.ps1
+     # (незмінний URL; той самий sha256 віддає https://chatgpt.com/codex/install.ps1 — редирект на releases.openai.com — і публікує реліз
+     # openai/codex). 2_під_gemini.ps1 -WithCodex виконує його лише при збігу CodexInstaller і ставить саме цей реліз (-Release).
+diff --git a/аудит/адаптери/gemini/НАЛАШТУВАННЯ.md b/аудит/адаптери/gemini/НАЛАШТУВАННЯ.md
+index 33751be08..1cac23c51 100644
+--- a/аудит/адаптери/gemini/НАЛАШТУВАННЯ.md
++++ b/аудит/адаптери/gemini/НАЛАШТУВАННЯ.md
+@@ -412,8 +412,8 @@ $f = Join-Path "$env:USERPROFILE\gemini-outbox" $n
+ | `wrapper_probe.ps1` | `85116D04C22EB64CBFF52E66BCEAE9B1091577A889EDD58A8B634093A82BDBC6` |
+ | `wrapper_update.ps1` | `4156307A17BDAE3AF7249E532947F659E99AA1349D159239159FAE60CA7E4F2B` |
+ | `wrapper_chain.ps1` | `79BD08F866529B1C58FE57AF33252AA4F0F7B3D992352130A7824030F27A57CD` |
+-| `gemini_run.ps1` | `39FD518203B33184304528AFB50175E0CB455B9337A8B7A46D34F4B565BEB577` |
+-| `gemini_publish.ps1` | `895162B7194F6331E672C2965D0F2833EE130676B44FC3005C16D4E52F95CCED` |
++| `gemini_run.ps1` | `E2B429E5DFEB59FF7909331D57365BD3A55EC78C7257041CD3EAF133490A2C8E` |
++| `gemini_publish.ps1` | `37DD50503FB9157FC2DB1348CEF254F7FAD4F6B28A7A1D3C326AEA6204497A87` |
+ | `gemini_watch.ps1` | `69EFEBB07FF1AF51C382B753A95C50F3C1AC27B3008F2489992BEBE3FD0213AA` |
+ | `wrapper_health.ps1` | `FCE45448539D53A6B5718319842FC845DA870F39453A6B716C7AF8A2DB65B88E` |
+ | `queue_lanes.ps1` | `C06A78446762B98EF3D045EB16ADFF15EDBAF1068959F94E346FC3A0069B5918` |
+diff --git a/аудит/адаптери/gemini/перевірка/сценарії_бандлів.ps1 b/аудит/адаптери/gemini/перевірка/сценарії_бандлів.ps1
+new file mode 100644
+index 000000000..54ca88477
+--- /dev/null
++++ b/аудит/адаптери/gemini/перевірка/сценарії_бандлів.ps1
+@@ -0,0 +1,91 @@
++﻿#Requires -Version 5.1
++<# Перевіряє справжні Complete-Status і Publish-Bundle на локальних репозиторіях без мережі й рушіїв. #>
++param([string]$Root, [switch]$Before)
++$ErrorActionPreference = 'Stop'
++$src = Split-Path $PSScriptRoot
++$utf8 = New-Object Text.UTF8Encoding($false)
++
++function Fixture-Git([string]$At, [string[]]$Items) {
++    <# Виконує команду стенда й зупиняється при помилці Git. #>
++    $out = & git -C $At -c user.name=stand -c user.email=stand@example.invalid -c core.autocrlf=false @Items 2>&1
++    if ($LASTEXITCODE -ne 0) { throw ($out -join "`n") }
++    ($out -join "`n").Trim()
++}
++
++$cases = @('private-start', 'new-main', 'published-start', 'REF_MISMATCH', 'SECRET', 'GITHUB_DIR', 'WRAPPER_FILES')
++if ($Before) { $cases = $cases[0..1] }
++$bad = 0
++foreach ($case in $cases) {
++    $w = Join-Path $Root $case
++    [void](New-Item -ItemType Directory -Path $w)
++    foreach ($dir in @('seed', 'out', 'runs', 'pub', 'pub/inbox')) { [void](New-Item -ItemType Directory -Path (Join-Path $w $dir) -Force) }
++    $origin = Join-Path $w 'origin.git'; $seed = Join-Path $w 'seed'; $repo = Join-Path $w 'clone'; $pub = Join-Path $w 'pub'
++    [void](Fixture-Git $w @('init', '-q', '--bare', $origin))
++    [void](Fixture-Git $origin @('symbolic-ref', 'HEAD', 'refs/heads/main'))
++    [void](Fixture-Git $seed @('init', '-q', '-b', 'main'))
++    [IO.File]::WriteAllText((Join-Path $seed 'base.txt'), "base`n", $utf8)
++    [void](Fixture-Git $seed @('add', '.')); [void](Fixture-Git $seed @('commit', '-q', '-m', 'База позначки'))
++    $marker = Fixture-Git $seed @('rev-parse', 'HEAD')
++    [void](Fixture-Git $seed @('remote', 'add', 'origin', $origin)); [void](Fixture-Git $seed @('push', '-q', 'origin', 'main'))
++    [void](Fixture-Git $w @('clone', '-q', $origin, $repo))
++    [void](Fixture-Git $pub @('init', '-q', '--bare', 'repo.git'))
++    [void](Fixture-Git (Join-Path $pub 'repo.git') @('remote', 'add', 'origin', $origin))
++    [void](Fixture-Git (Join-Path $pub 'repo.git') @('fetch', '-q', 'origin', 'main:refs/remotes/origin/main'))
++    # Публікатор має тільки базу позначки; main відтоді просунувся, агент його віллє.
++    [IO.File]::WriteAllText((Join-Path $seed 'main.txt'), "new main`n", $utf8)
++    [void](Fixture-Git $seed @('add', '.')); [void](Fixture-Git $seed @('commit', '-q', '-m', 'Свіжіший main'))
++    $newMain = Fixture-Git $seed @('rev-parse', 'HEAD')
++    [void](Fixture-Git $seed @('push', '-q', 'origin', 'main'))
++    [void](Fixture-Git $repo @('checkout', '-q', '-b', 'gemini/probe'))
++    [IO.File]::WriteAllText((Join-Path $repo 'review.txt'), "review`n", $utf8)
++    [void](Fixture-Git $repo @('add', '.')); [void](Fixture-Git $repo @('commit', '-q', '-m', 'Гілка перевірки'))
++    $start = Fixture-Git $repo @('rev-parse', 'HEAD')
++    if ($case -ne 'private-start') {
++        [void](Fixture-Git $repo @('push', '-q', 'origin', 'gemini/probe'))
++        [void](Fixture-Git (Join-Path $pub 'repo.git') @('fetch', '-q', 'origin', 'gemini/probe:refs/remotes/origin/gemini/probe'))
++    }
++    [void](Fixture-Git $repo @('fetch', '-q', 'origin', 'main:refs/remotes/origin/main'))
++    [void](Fixture-Git $repo @('merge', '-q', '--no-edit', 'origin/main'))
++    if ($case -eq 'private-start') { $start = Fixture-Git $repo @('rev-parse', 'HEAD') }
++    if ($case -eq 'published-start') {
++        # Доробка опублікованої гілки: обидві передумови вже є у публікатора.
++        [void](Fixture-Git (Join-Path $pub 'repo.git') @('fetch', '-q', 'origin', 'main:refs/remotes/origin/main'))
++    }
++    $path = switch ($case) {
++        'SECRET' { '.codex/auth.json' }
++        'GITHUB_DIR' { '.github/workflows/probe.yml' }
++        'WRAPPER_FILES' { 'аудит/адаптери/gemini/probe.txt' }
++        default { 'work.txt' }
++    }
++    $file = Join-Path $repo $path
++    [void](New-Item -ItemType Directory -Force -Path (Split-Path $file))
++    [IO.File]::WriteAllText($file, "work`n", $utf8)
++    [void](Fixture-Git $repo @('add', '.')); [void](Fixture-Git $repo @('commit', '-q', '-m', 'Робота агента'))
++    $s = [ordered]@{ id = '20261028-000000-aaaaaaaaaaaa'; slug = 'probe'; marker = $marker; start = $start
++        head = ''; ahead = 0; bundle = ''; code = 'DONE'; turns = 1; minutes = 0 }
++    & {
++        . (Join-Path $src 'gemini_run.ps1') -RepoDir $repo -RunsDir (Join-Path $w 'runs') -OutDir (Join-Path $w 'out')
++        $script:NoHooks = Join-Path $w 'no-hooks'
++        Complete-Status $s (Join-Path $w 'state.txt') '' ([datetime]::MinValue)
++    }
++    if (-not $s.bundle) { throw 'Complete-Status не створив бандла' }
++    $head = $s.head
++    if ($case -eq 'REF_MISMATCH') { $s.head = $marker }
++    $result = & {
++        . (Join-Path $src 'gemini_publish.ps1') -WorkDir $pub -OutDir (Join-Path $w 'out') -RepoUrl $origin
++        $script:Repo = Join-Path $pub 'repo.git'; $script:NoHooks = Join-Path $w 'no-hooks'
++        $verify = Invoke-Git @('bundle', 'verify', (Join-Path $OutDir $s.bundle)) -AllowFail
++        Write-Host "$case verify: код $($verify.Code) $($verify.Err.Trim())"
++        Publish-Bundle ([pscustomobject]$s) $s.id
++    }
++    $want = if ($Before) { 'BUNDLE_INVALID' } elseif ($case -cmatch '^[A-Z_]+$') { $case } else { 'OK' }
++    $published = Fixture-Git $origin @('for-each-ref', '--format=%(objectname)', 'refs/heads/gemini/probe')
++    $ok = $result[0] -eq $want
++    if ($want -eq 'OK') { $ok = $ok -and $published -eq $head }
++    # Відмова не повинна пересунути раніше опубліковану гілку.
++    elseif ($case -ne 'private-start') { $ok = $ok -and $published -eq $start }
++    else { $ok = $ok -and -not $published }
++    if ($ok) { Write-Host "  ✓ $case -> $want" }
++    else { Write-Host "  ✗ $case -> $($result[0]), очікування $want"; $bad++ }
++}
++exit ([int]($bad -gt 0))
+diff --git a/аудит/адаптери/gemini/перевірка/сценарії_бандлів.sh b/аудит/адаптери/gemini/перевірка/сценарії_бандлів.sh
+new file mode 100644
+index 000000000..6e32e092c
+--- /dev/null
++++ b/аудит/адаптери/gemini/перевірка/сценарії_бандлів.sh
+@@ -0,0 +1,6 @@
++#!/usr/bin/env bash
++# Справжні створення, verify й публікація: приватний start, новіший main, доробка та захисні відмови.
++set -eu
++H=$(cd "$(dirname "$0")" && pwd); . "$H/середовище.sh"
++W=$(mktemp -d "${TMPDIR:-/tmp}/bundles.XXXXXX")
++"${PWSH:-pwsh}" -NoProfile -File "$(wp "$H/сценарії_бандлів.ps1")" -Root "$(wp "$W")" "$@"
