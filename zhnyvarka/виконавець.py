@@ -31,8 +31,13 @@ import argparse, asyncio, csv, datetime, hashlib, json, os, re, sys, time, threa
 from urllib.parse import urlparse, urljoin
 from pathlib import Path
 from журнал_проходу import ЖурналПроходу, відбиток_рецепта
+from json_прохід import позначити, прочитати_стан, сторінка, МЕЖА_СТОРІНОК
+from журнал_карток import прочитати
+from журнал_проходу import ЗАВЕРШЕНІ
 
 ВЕРСІЯ = "виконавець v1 · 2026-09-07"
+ШАПКА_ЗВЕДЕННЯ = ("дата", "домен", "сімейство", "транспорт", "адрес_знайдено", "відкрито", "карток",
+                    "нижче_порогу", "неповна_розбірка", "російських", "не_картка", "збоїв", "середній_бал", "секунд", "нотатка")
 UA = ("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) "
       "Chrome/128.0.0.0 Safari/537.36")
 assert UA.isascii()
@@ -373,6 +378,28 @@ def завершити(к):
     return стан
 
 
+class ЗаглушкаБраузер:
+    def __init__(self, режим):
+        self.режим = режим
+        self.домен = ""
+
+    async def new_context(self, **kw):
+        return ЗаглушкаКонтекст(self.режим, self.домен)
+
+    async def close(self):
+        pass
+
+
+class ЗаглушкаКонтекст:
+    def __init__(self, режим, домен=""):
+        self.режим = режим
+        self.домен = домен
+
+    async def close(self):
+        if self.режим == "закриття" and "hang" in self.домен:
+            await asyncio.sleep(9999)
+
+
 class Виконавець:
     def __init__(self, a):
         self.a = a
@@ -386,18 +413,15 @@ class Виконавець:
         self.замок = threading.Lock()
         self.зведення = self.корінь / "зведення_жнив.tsv"
         if not os.path.exists(self.зведення):
-            open(self.зведення, "w", encoding="utf-8").write("дата\tдомен\tсімейство\tтранспорт\tадрес_знайдено\tвідкрито\tкарток\tнижче_порогу\tнеповна_розбірка\tросійських\tне_картка\tзбоїв\tсередній_бал\tсекунд\tнотатка\n")
+            open(self.зведення, "w", encoding="utf-8").write("\t".join(ШАПКА_ЗВЕДЕННЯ) + "\n")
 
     # ── журнал ──
     def _журнал(self, домен):
+        """Читає цілі записи незалежно від обриву UTF-8 у сусідньому рядку."""
         ш = str(self.корінь / "сирі" / f"{домен}.jsonl")
         взято = {}
-        if os.path.exists(ш):
-            for р in open(ш, encoding="utf-8"):
-                try:
-                    з = json.loads(р); взято[з["url"]] = з.get("стан")
-                except Exception:  # noqa
-                    pass
+        for з in прочитати(ш)[0]:
+            взято[з["url"]] = з.get("стан")
         return ш, взято
 
     def _стан(self, домен):
@@ -405,49 +429,91 @@ class Виконавець:
         return ш, (json.load(open(ш, encoding="utf-8")) if os.path.exists(ш) else {"розділи": {}, "sitemap": [], "помилки": []})
 
     def _пиши(self, ш, зап):
-        with self.замок, open(ш, "a", encoding="utf-8") as f:
-            f.write(json.dumps(зап, ensure_ascii=False) + "\n")
-            f.flush(); os.fsync(f.fileno())
+        """Дописує цілий запис окремим рядком, навіть після обірваного хвоста."""
+        with self.замок:
+            хвіст = b"\n"
+            if Path(ш).is_file() and Path(ш).stat().st_size:
+                with open(ш, "rb") as ф:
+                    ф.seek(-1, os.SEEK_END)
+                    хвіст = ф.read(1)
+            with open(ш, "a", encoding="utf-8") as f:
+                if хвіст != b"\n":
+                    f.write("\n")
+                f.write(json.dumps(зап, ensure_ascii=False) + "\n")
+                f.flush(); os.fsync(f.fileno())
         домен = домен_із(зап["url"])
         if домен in self.проходи:
             self.проходи[домен].завершити(зап)
 
     async def усі(self, рецепти):
-        from playwright.async_api import async_playwright
         сем = asyncio.Semaphore(self.a.паралельно)
+        if getattr(self.a, "заглушка", None):
+            браузер = ЗаглушкаБраузер(self.a.заглушка)
+            try:
+                await asyncio.gather(*[self._магазин(браузер, р, сем) for р in рецепти])
+            finally:
+                try:
+                    await asyncio.wait_for(asyncio.shield(браузер.close()), timeout=5)
+                except Exception:
+                    pass
+            return
+
+        from playwright.async_api import async_playwright
         async with async_playwright() as p:
             браузер = await p.chromium.launch(headless=not self.a.видимо, args=["--disable-blink-features=AutomationControlled", "--lang=uk-UA"])
             try:
                 await asyncio.gather(*[self._магазин(браузер, р, сем) for р in рецепти])
             finally:
-                await браузер.close()
+                try:
+                    await asyncio.wait_for(asyncio.shield(браузер.close()), timeout=10)
+                except Exception:
+                    pass
 
     async def _магазин(self, браузер, р, сем):
         async with сем:
             домен, t0 = р["домен"], time.time()
             л = {"адрес": 0, "відкрито": 0, "картка": 0, "нижче_порогу": 0, "неповна_розбірка": 0, "російська_назва": 0, "не_картка": 0, "збій": 0, "бали": [], "нотатка": ""}
-            контекст = await браузер.new_context(user_agent=UA, locale="uk-UA", timezone_id="Europe/Kyiv", viewport={"width": 1366, "height": 900},
-                                                 ignore_https_errors=True, extra_http_headers={"Accept-Language": "uk-UA,uk;q=0.9,en;q=0.7"})
+            контекст = None
             try:
-                await asyncio.wait_for(self._жнива(контекст, р, л), timeout=self.a.секунд_на_магазин)
+                async def _кроки():
+                    nonlocal контекст
+                    if getattr(self.a, "заглушка", None) == "контекст" and "hang" in домен:
+                        await asyncio.sleep(9999)
+                    if isinstance(браузер, ЗаглушкаБраузер):
+                        браузер.домен = домен
+                    контекст = await браузер.new_context(user_agent=UA, locale="uk-UA", timezone_id="Europe/Kyiv", viewport={"width": 1366, "height": 900},
+                                                         ignore_https_errors=True, extra_http_headers={"Accept-Language": "uk-UA,uk;q=0.9,en;q=0.7"})
+                    if getattr(self.a, "заглушка", None):
+                        await self._заглушка_жнива(контекст, р, л)
+                    else:
+                        await self._жнива(контекст, р, л)
+                    if not self.a.без_огляду:
+                        try:
+                            await asyncio.wait_for(self._огляд(контекст, домен), timeout=min(30, self.a.секунд_на_магазин))
+                        except Exception as e:
+                            л["нотатка"] += " | огляд: " + str(e).splitlines()[0][:80]
+
+                # Корінь: одна межа часу на всі кроки крамниці
+                await asyncio.wait_for(_кроки(), timeout=self.a.секунд_на_магазин)
             except asyncio.TimeoutError:
-                л["нотатка"] = f"бюджет {self.a.секунд_на_магазин} с вичерпано"
+                л["нотатка"] = (л["нотатка"] + f" | бюджет {self.a.секунд_на_магазин} с вичерпано (таймаут)").strip(" |")
             except Exception as e:  # noqa
-                л["нотатка"] = "збій: " + str(e).splitlines()[0][:160]
+                л["нотатка"] = (л["нотатка"] + " | збій: " + str(e).splitlines()[0][:160]).strip(" |")
             finally:
                 прохід = self.проходи.pop(домен, None)
                 if прохід:
                     л["нотатка"] += " | черга=" + json.dumps(прохід.звіт(), ensure_ascii=False)
-                    прохід.закрити()
-                try:
-                    if not self.a.без_огляду:
-                        await self._огляд(контекст, домен)
-                except Exception as e:  # noqa
-                    л["нотатка"] += " | огляд: " + str(e).splitlines()[0][:80]
-                try:
-                    await контекст.close()
-                except Exception:  # noqa
-                    pass
+                    try:
+                        прохід.закрити()
+                    except Exception:
+                        pass
+                if контекст:
+                    try:
+                        await asyncio.wait_for(asyncio.shield(контекст.close()), timeout=min(5, self.a.секунд_на_магазин))
+                    except asyncio.TimeoutError:
+                        л["нотатка"] = (л["нотатка"] + " | таймаут закриття контексту").strip(" |")
+                    except Exception:
+                        pass
                 сер = round(sum(л["бали"]) / len(л["бали"]), 1) if л["бали"] else ""
                 with self.замок, open(self.зведення, "a", encoding="utf-8") as f:
                     л["нотатка"] = re.sub(r"[\t\r\n]+", " ", л["нотатка"])
@@ -456,6 +522,32 @@ class Виконавець:
                                                        round(time.time() - t0), л["нотатка"]]) + "\n")
                 лог(f"{домен:<24} карток {л['картка']} · нижче порогу {л['нижче_порогу']} · неповна розбірка {л['неповна_розбірка']} · "
                     f"рос. {л['російська_назва']} · не картка {л['не_картка']} · збоїв {л['збій']} · бал {сер} · {round(time.time() - t0)} с {л['нотатка']}")
+
+    async def _заглушка_жнива(self, контекст, р, л):
+        домен = р["домен"]
+        режим = getattr(self.a, "заглушка", None)
+        if "hang" in домен:
+            if режим == "жнива":
+                await asyncio.sleep(9999)
+            elif режим == "синхронний_блок":
+                await asyncio.sleep(0.05)
+                time.sleep(9999)
+            elif режим == "закриття":
+                pass
+            elif режим == "контекст":
+                pass
+            else:
+                ш, _ = self._журнал(домен)
+                self._пиши(ш, {"url": f"https://{домен}/p1", "стан": "картка", "бал": 10, "картка": {"назва": "Тест"}})
+                л.update(картка=1, відкрито=1, адрес=1, нотатка="успіх")
+        else:
+            ш, _ = self._журнал(домен)
+            зап = {"url": f"https://{домен}/p1", "стан": "картка", "бал": 10, "картка": {"назва": "Тест"}}
+            self._пиши(ш, зап)
+            л["картка"] = 1
+            л["відкрито"] = 1
+            л["адрес"] = 1
+            л["нотатка"] = "успіх"
 
     async def _get(self, контекст, url, тайм=30_000):
         r = await контекст.request.get(url, timeout=тайм, max_redirects=4, headers={"Accept": "application/json, text/xml, text/html;q=0.8"})
@@ -497,31 +589,53 @@ class Виконавець:
             await сторінка.wait_for_timeout(int(self.a.пауза * 1000))
 
     async def _json_сімейство(self, контекст, р, л, ш, взято, корінь):
-        n = 1
+        """Продовжує збережені JSON-сторінки; кінець доводить порожня порція з HTTP 200."""
+        збережений = прочитати_стан(self.корінь, р["домен"])
+        підпис = hashlib.sha256(json.dumps(р, sort_keys=True).encode()).hexdigest()
+        if збережений.get("підпис") != підпис or not Path(ш).is_file() or прочитати(ш)[1]:
+            збережений = {}
+        n = збережений.get("сторінка", 1)
+        позначити(self.корінь, р["домен"], False, n, збережений.get("префікс", ""), підпис)
         шаблон = р["пошук"].replace("per_page=100", "per_page=50")
         префікси = [""] + ([р["мова"].rstrip("/")] if р.get("мова") and р["мова"] != "/" else []) + ["/uk", "/ua"]
-        while n <= 120:
+        if збережений.get("префікс"):
+            префікси = [збережений["префікс"]]
+        межа = n + МЕЖА_СТОРІНОК
+        while n < межа:
             j = None
-            for пр in префікси:
+            кеш = сторінка(self.корінь, р["домен"], n, підпис=підпис)
+            if кеш is not None:
+                речі, пр = кеш["речі"], кеш["префікс"]
+                j = речі
+                url = корінь + пр + шаблон.replace("{n}", str(n))
+            for пр in ([] if кеш is not None else префікси):
                 url = корінь + пр + шаблон.replace("{n}", str(n))
                 try:
                     код, т = await self._get(контекст, url, тайм=90_000)
-                    j = json.loads(т); break
+                    if код != 200:
+                        raise ValueError(f"HTTP {код}")
+                    j = json.loads(т)
+                    речі = j.get("products") if р["сімейство"] == "shopify" and isinstance(j, dict) else j
+                    if (р["сімейство"] == "shopify" and not isinstance(j, dict) or
+                            not isinstance(речі, list) or any(not isinstance(p, dict) for p in речі)):
+                        raise ValueError("хибна структура сторінки JSON API")
+                    break
                 except Exception as e:  # noqa
+                    j = None
                     останнє = f"{url[:70]} → {str(e)[:50]} | тіло: {(т if 'т' in dir() else '')[:60]!r}"
                     if n > 1: break                        # далі першої сторінки префікси не перебираємо
             if j is None:
-                л["збій"] += 1; л["нотатка"] += f"стор. {n}: {останнє}; "; break
+                л["збій"] += 1; л["нотатка"] += f"збій стор. {n}: {останнє}; "; break
             префікси = [url.replace(корінь, "", 1).replace(шаблон.replace("{n}", str(n)), "")]
-            речі = j.get("products") if isinstance(j, dict) else j
+            if кеш is None:
+                сторінка(self.корінь, р["домен"], n, {"речі": речі, "префікс": префікси[0]}, підпис)
             if not речі:
-                if код != 200 and n == 1:
-                    л["збій"] += 1; л["нотатка"] += f"{код} на {url[:60]}; "
+                позначити(self.корінь, р["домен"], True, n, префікси[0], підпис)
                 break
             for p in речі:
                 к = картка_з_shopify(корінь, p) if р["сімейство"] == "shopify" else картка_з_woo(корінь, p)
                 л["адрес"] += 1
-                if к["url"] in взято:
+                if взято.get(к["url"]) in ЗАВЕРШЕНІ:
                     continue
                 л["відкрито"] += 1
                 стан = завершити(к)
@@ -529,8 +643,12 @@ class Виконавець:
                 self._пиши(ш, {"url": к["url"], "хеш": hashlib.md5(json.dumps(p, sort_keys=True).encode()).hexdigest()[:12],
                                "дата": datetime.date.today().isoformat(), "стан": стан, "бал": к["бал"], "поля_є": к["поля_є"], "картка": к})
                 if л["відкрито"] >= self.a.стеля:
+                    позначити(self.корінь, р["домен"], False, n, префікси[0], підпис)
                     л["нотатка"] += f"стеля {self.a.стеля}; "; return
             n += 1
+            позначити(self.корінь, р["домен"], False, n, префікси[0], підпис)
+        else:
+            л["нотатка"] += f"межа пагінації {МЕЖА_СТОРІНОК} сторінок за запуск; "
 
     async def _horoshop_адреси(self, контекст, р, л, корінь):
         _, стан = self._стан(р["домен"])
@@ -694,9 +812,8 @@ class Виконавець:
         if not os.path.exists(ш):
             return
         картки = []
-        for р in open(ш, encoding="utf-8"):
+        for з in прочитати(ш)[0]:
             try:
-                з = json.loads(р)
                 if з.get("стан") == "картка" and з.get("картка", {}).get("фото"): картки.append(з)
             except Exception:  # noqa
                 pass
@@ -750,17 +867,23 @@ def main(argv=None):
     п.add_argument("--сторінок", type=int, default=6, help="сторінок пагінації на розділ")
     п.add_argument("--пауза", type=float, default=0.8)
     п.add_argument("--видимо", action="store_true")
+    п.add_argument("--заглушка", default=os.environ.get("ZHNYVARKA_ЗАГЛУШКА", None),
+                   help="тестова заглушка: контекст, жнива, закриття, синхронний_блок")
     a = п.parse_args(argv)
     try:
         sys.stdout.reconfigure(encoding="utf-8", errors="replace")
     except Exception:  # noqa
         pass
-    рецепти = читати_рецепти(a.рецепти)
-    тр = {x.strip() for x in a.транспорт.split(",")}
-    рецепти = [р for р in рецепти if р["транспорт"] in тр]
-    if a.магазини.strip() not in ("усі", "all", ""):
-        хочу = {x.strip().lower() for x in a.магазини.split(",")}
-        рецепти = [р for р in рецепти if р["домен"] in хочу]
+    if getattr(a, "заглушка", None) and a.магазини.strip() not in ("усі", "all", ""):
+        хочу = [x.strip().lower() for x in a.магазини.split(",") if x.strip()]
+        рецепти = [{"домен": д, "сімейство": "заглушка", "транспорт": "http", "старт": f"https://{д}/"} for д in хочу]
+    else:
+        рецепти = читати_рецепти(a.рецепти)
+        тр = {x.strip() for x in a.транспорт.split(",")}
+        рецепти = [р for р in рецепти if р["транспорт"] in тр]
+        if a.магазини.strip() not in ("усі", "all", ""):
+            хочу = {x.strip().lower() for x in a.магазини.split(",")}
+            рецепти = [р for р in рецепти if р["домен"] in хочу]
     if not all(р.get("старт") for р in рецепти):
         # стартові адреси — зі списку власника в розвідка.py, якщо в рецептах колонки «старт» нема
         try:
