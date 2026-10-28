@@ -29,10 +29,10 @@ $script:LanesPath = 'аудит/адаптери/gemini/смуги.json'
 $script:Utf8 = New-Object System.Text.UTF8Encoding($false)
 $script:OnWindows = ($PSVersionTable.PSEdition -ne 'Core') -or [bool](Get-Variable IsWindows -ValueOnly -ErrorAction SilentlyContinue)
 
-# Стелі — у коді під хешем: файл даних з origin/main їх не перевищить (значення поза межами обрізаються до меж), а
-# параметр задачі планувальника — рука власника, його не обрізаємо.
+# Кількість слотів задає смуги.json; 64 — захист від помилки в даних, не виміряна межа ноутбука.
+# Решта меж також під хешем; значення поза ними обрізаються. Параметр задачі власника не обрізаємо.
 $script:Ceil = @{
-    slots = @(0, 4); poll_minutes = @(1, 5); usage_minutes = @(5, 60); quota_wait_minutes = @(15, 1440)
+    slots = @(0, 64); poll_minutes = @(1, 5); usage_minutes = @(5, 60); quota_wait_minutes = @(15, 1440)
     agy_total_minutes = @(30, 600); agy_turn_minutes = @(10, 600); codex_stall_minutes = @(10, 240); claude_hang_minutes = @(30, 240)
 }
 $script:Defaults = @{

@@ -1,0 +1,336 @@
+diff --git a/аудит/адаптери/gemini/claude_run.ps1 b/аудит/адаптери/gemini/claude_run.ps1
+index 255e0b996..c8853b17f 100644
+--- a/аудит/адаптери/gemini/claude_run.ps1
++++ b/аудит/адаптери/gemini/claude_run.ps1
+@@ -378,22 +378,80 @@ $TaskText
+ "@
+ }
+ 
+-# Звіт сесії: останній непорожній рядок відповіді (дозволено оздоблення ` * >).
++function Remove-ReportDecoration([string]$Line, [switch]$Sentence) {
++    <# Прибирає лише збалансоване оформлення цілого рядка чи окремого поля звіту. #>
++    $line = $Line.Trim(); $periodRemoved = $false
++    $pairs = @(@('**', '**'), @('__', '__'), @('*', '*'), @('_', '_'), @('`', '`'), @('"', '"'), @("'", "'"), @('«', '»'), @('“', '”'))
++    do {
++        $before = $line
++        if ($Sentence -and -not $periodRemoved -and $line.EndsWith('.')) {
++            $line = $line.Substring(0, $line.Length - 1).TrimEnd(); $periodRemoved = $true
++        }
++        foreach ($pair in $pairs) {
++            if ($line.Length -gt 2 * $pair[0].Length -and $line.StartsWith($pair[0]) -and $line.EndsWith($pair[1])) {
++                $line = $line.Substring($pair[0].Length, $line.Length - $pair[0].Length - $pair[1].Length).Trim()
++                break
++            }
++        }
++    } while ($line -cne $before)
++    $line
++}
++
+ function Get-Report([string]$Text) {
+-    $lines = @(($Text -split "\r?\n") | ForEach-Object { $_.Trim().Trim([char[]]@('*', '`', '>', ' ')) } | Where-Object { $_ })
+-    if ($lines.Count -eq 0) { return $null }
+-    $last = $lines[-1]
+-    if ($last -cmatch '^НОУТБУК ГОТОВО (\S+) ([0-9a-fA-F]{40})$') {
+-        return [pscustomobject]@{ Kind = 'DONE'; Branch = $Matches[1].Trim([char[]]@('`', '*')); Sha = $Matches[2].ToLowerInvariant() }
+-    }
+-    if ($last -cmatch '^НОУТБУК ЗАБЛОКОВАНО\b') {
+-        $b = ''
+-        if ($last -cmatch "(claude/$script:SlugCore)") { $b = $Matches[1].TrimEnd('.') }
+-        return [pscustomobject]@{ Kind = 'BLOCKED'; Branch = $b; Sha = '' }
++    <# Читає єдиний окремий звіт у відповіді result, пропускаючи код, цитати й приклади.
++
++    Позиція в кінці та markdown не визначають результат роботи. Цитований наряд і приклади не можуть його
++    підтвердити; неоднозначні відповіді відхиляються. Гілку й SHA перевіряє виклик через origin. #>
++    $reports = @(); $fence = ''; $task = $false; $example = $false; $exampleContent = $false
++    $exampleLevel = 0; $quote = ''; $comment = $false; $blockQuote = $false
++    foreach ($raw in ($Text -split "\r?\n")) {
++        $line = $raw.Trim()
++        if ($fence) {
++            if ($line -match ('^' + [regex]::Escape($fence[0]) + '{' + $fence.Length + ',}\s*$')) { $fence = '' }
++            continue
++        }
++        if ($blockQuote) { if (-not $line) { $blockQuote = $false }; continue }
++        if ($line.StartsWith('>')) { $blockQuote = $true; continue }
++        if ($quote) { if ($line.TrimEnd('.').EndsWith($quote)) { $quote = '' }; continue }
++        if ($line.Contains('<!--')) { $comment = $true }
++        if ($comment) { if ($line.Contains('-->')) { $comment = $false }; continue }
++        if ($line -match '^(`{3,}|~{3,})') { $fence = $Matches[1]; $exampleContent = $example; continue }
++        if ($line -cmatch '^----- НАРЯД -----$') { $task = $true; continue }
++        if ($line -cmatch '^----- КІНЕЦЬ НАРЯДУ -----$') { $task = $false; continue }
++        if ($task) { continue }
++        if ($line -match '^(#{1,6})\s+(.+)$') {
++            $level = $Matches[1].Length; $title = $Matches[2]
++            if ($exampleLevel -and $level -le $exampleLevel) { $exampleLevel = 0 }
++            if ($title -match '^(?:Приклад|Приклади|Зразок|Цитата|Цитати|Текст наряду)\b') { $exampleLevel = $level }
++            continue
++        }
++        if ($exampleLevel) { continue }
++        if (-not $line) { if ($exampleContent) { $example = $false; $exampleContent = $false }; continue }
++        $label = Remove-ReportDecoration $line
++        if ($label -match '^(?:Приклад|Зразок|Цитата|Текст наряду)\b.*:\s*$') { $example = $true; $exampleContent = $false; continue }
++        if ($example) { $exampleContent = $true; continue }
++        if ($raw -match '^(?: {4}|\t)') { continue }
++        foreach ($pair in @(@('«', '»'), @('"', '"'), @('“', '”'))) {
++            if ($line.StartsWith($pair[0]) -and -not $line.TrimEnd('.').EndsWith($pair[1])) { $quote = $pair[1]; break }
++        }
++        if ($quote) { continue }
++        $line = Remove-ReportDecoration $line -Sentence
++        if ($line -cmatch '^НОУТБУК ГОТОВО (\S+) (\S+)$') {
++            $branch = Remove-ReportDecoration $Matches[1]
++            $sha = Remove-ReportDecoration $Matches[2]
++            if ($sha -cnotmatch '^[0-9a-fA-F]{40}$') { return $null }
++            $reports += [pscustomobject]@{ Kind = 'DONE'; Branch = $branch; Sha = $sha.ToLowerInvariant() }
++        } elseif ($line -cmatch '^НОУТБУК ЗАБЛОКОВАНО\b') {
++            $branch = ''
++            if ($line -cmatch "(claude/$script:SlugCore)") { $branch = $Matches[1].TrimEnd('.') }
++            $reports += [pscustomobject]@{ Kind = 'BLOCKED'; Branch = $branch; Sha = '' }
++        }
+     }
++    if ($reports.Count -eq 1) { return $reports[0] }
+     $null
+ }
+ 
++
+ function Get-ErrorCode([string]$Text) {
+     if ($Text -match 'issue with the selected model|unrecognized_model|model_not_found|not_found_error.{0,80}model') { return 'MODEL_INVALID' }
+     if ($Text -match 'Not logged in|/login|authentication_error|Invalid API key|OAuth token|\b401\b') { return 'AUTH' }
+diff --git a/аудит/адаптери/gemini/m9v/хеші.psd1 b/аудит/адаптери/gemini/m9v/хеші.psd1
+index 0a2896eb8..4c92c5dd8 100644
+--- a/аудит/адаптери/gemini/m9v/хеші.psd1
++++ b/аудит/адаптери/gemini/m9v/хеші.psd1
+@@ -14,6 +14,6 @@
+     CodexRelease         = '0.164.0'
+     CodexInstaller       = 'A59CB66350098C33B021FF470D586AE8FE3B7CAF189CA7137B4FE3AF5D4DCE74'
+     'gemini_watch.ps1'   = '69EFEBB07FF1AF51C382B753A95C50F3C1AC27B3008F2489992BEBE3FD0213AA'
+-    'queue_lanes.ps1'    = 'C06A78446762B98EF3D045EB16ADFF15EDBAF1068959F94E346FC3A0069B5918'
+-    'claude_run.ps1'     = '3A370295FFE2E96E1DF932AAE0E77AE635C185825A1E81CE9865F3507EF10876'
++    'queue_lanes.ps1'    = '1426ACE17A7380BDF053A62ECD55BB8FF27AFEBE128559BD730D520F42B04BCA'
++    'claude_run.ps1'     = 'E50F57B13A71807BAB3F90DC2C3E53FB020A4E121B446C5DAF629C34FC7428B3'
+ }
+diff --git a/аудит/адаптери/gemini/queue_lanes.ps1 b/аудит/адаптери/gemini/queue_lanes.ps1
+index f318c8b27..6b558b250 100644
+--- a/аудит/адаптери/gemini/queue_lanes.ps1
++++ b/аудит/адаптери/gemini/queue_lanes.ps1
+@@ -29,10 +29,10 @@ $script:LanesPath = 'аудит/адаптери/gemini/смуги.json'
+ $script:Utf8 = New-Object System.Text.UTF8Encoding($false)
+ $script:OnWindows = ($PSVersionTable.PSEdition -ne 'Core') -or [bool](Get-Variable IsWindows -ValueOnly -ErrorAction SilentlyContinue)
+ 
+-# Стелі — у коді під хешем: файл даних з origin/main їх не перевищить (значення поза межами обрізаються до меж), а
+-# параметр задачі планувальника — рука власника, його не обрізаємо.
++# Кількість слотів задає смуги.json; 64 — захист від помилки в даних, не виміряна межа ноутбука.
++# Решта меж також під хешем; значення поза ними обрізаються. Параметр задачі власника не обрізаємо.
+ $script:Ceil = @{
+-    slots = @(0, 4); poll_minutes = @(1, 5); usage_minutes = @(5, 60); quota_wait_minutes = @(15, 1440)
++    slots = @(0, 64); poll_minutes = @(1, 5); usage_minutes = @(5, 60); quota_wait_minutes = @(15, 1440)
+     agy_total_minutes = @(30, 600); agy_turn_minutes = @(10, 600); codex_stall_minutes = @(10, 240); claude_hang_minutes = @(30, 240)
+ }
+ $script:Defaults = @{
+diff --git a/аудит/адаптери/gemini/НАЛАШТУВАННЯ.md b/аудит/адаптери/gemini/НАЛАШТУВАННЯ.md
+index 33751be08..16b1cdde0 100644
+--- a/аудит/адаптери/gemini/НАЛАШТУВАННЯ.md
++++ b/аудит/адаптери/gemini/НАЛАШТУВАННЯ.md
+@@ -262,7 +262,8 @@ alias `/quota`), https://antigravity.google/docs/cli/headless/ (команди,
+ `poll_minutes` (≤ 5 хв), доки йде хоч один його наряд; без нарядів виходить, задача стартує знову за 5 хв.
+ 
+ - **Межі** — `смуги.json` у цій теці; читає з `origin/main` (після `git fetch`, не з робочої копії агента) кожен прохід, тож
+-  зміна в `main` міняє паралельність без перевстановлення копій. Стелі — у коді (`queue_lanes.ps1`): слотів 0–4 на смугу,
++  зміна в `main` міняє паралельність без перевстановлення копій. Кількість слотів задає `смуги.json`; межа 0–64 у `queue_lanes.ps1` захищає від помилки в даних,
++  а не визначає місткість ноутбука. Інші стелі коду:
+   `poll_minutes` 1–5, `usage_minutes` 5–60, `quota_wait_minutes` 15–1440, `agy_total_minutes` 30–600, `agy_turn_minutes`
+   10–600, `codex_stall_minutes` 10–240, `claude_hang_minutes` 30–240; значення поза межами обрізаються. Параметр задачі
+   (рука власника) сильніший за файл.
+@@ -312,6 +313,10 @@ Claude («Смуги й черга» вище).
+ - **Квота.** Відмова за квотою (`usage limit`, `hit your limit`, 429) — не кінець: позначка чекає скидання (час — `resetsAt`
+   події `rate_limit_event` stream-json, яку `claude` 2.1 друкує на кожному прогоні; нема — `quota_wait_minutes`), рядок
+   `ЗАБЛОКОВАНО claude/<наряд> QUOTA0_CLAUDE_M<хв>`, після скидання її бере ця ж смуга, сесія продовжує гілку наряду.
++- **Звіт** — один окремий рядок у полі `result` події `result`. Дозволено збалансоване оформлення
++  жирним, inline-бектиками чи лапками і крапку в кінці; після рядка може бути підсумок. Цитати `>`,
++  блоки коду, цитований наряд і позначені приклади не є звітом; кілька звітів неоднозначні.
++  Гілка й SHA, як раніше, звіряються з `git ls-remote`.
+ - **Промпт** — перший рядок запускача (`аудит/ЗАПУСКАЧ.md`) без його id, з каналом результату (останній рядок відповіді
+   `НОУТБУК ГОТОВО <гілка> <SHA40>` чи `НОУТБУК ЗАБЛОКОВАНО: …`); повний текст `аудит/наряди/<наряд>.md` з коміту позначки;
+   «Продовжуй з гілки `<гілка>`», коли гілка попередньої спроби є на `origin`; останній рядок — «ноутбук не вимикай — вимикає
+@@ -416,8 +421,8 @@ $f = Join-Path "$env:USERPROFILE\gemini-outbox" $n
+ | `gemini_publish.ps1` | `895162B7194F6331E672C2965D0F2833EE130676B44FC3005C16D4E52F95CCED` |
+ | `gemini_watch.ps1` | `69EFEBB07FF1AF51C382B753A95C50F3C1AC27B3008F2489992BEBE3FD0213AA` |
+ | `wrapper_health.ps1` | `FCE45448539D53A6B5718319842FC845DA870F39453A6B716C7AF8A2DB65B88E` |
+-| `queue_lanes.ps1` | `C06A78446762B98EF3D045EB16ADFF15EDBAF1068959F94E346FC3A0069B5918` |
+-| `claude_run.ps1` | `3A370295FFE2E96E1DF932AAE0E77AE635C185825A1E81CE9865F3507EF10876` |
++| `queue_lanes.ps1` | `1426ACE17A7380BDF053A62ECD55BB8FF27AFEBE128559BD730D520F42B04BCA` |
++| `claude_run.ps1` | `E50F57B13A71807BAB3F90DC2C3E53FB020A4E121B446C5DAF629C34FC7428B3` |
+ | `CodexInstaller` (`install.ps1` релізу Codex `CodexRelease`) | `A59CB66350098C33B021FF470D586AE8FE3B7CAF189CA7137B4FE3AF5D4DCE74` |
+ 
+ Той самий список читають скрипти `m9v/` з `m9v/хеші.psd1` — міняти їх разом із таблицею. Підготовка одним проходом — `m9v/ЩО_НАТИСНУТИ.md`.
+diff --git a/аудит/адаптери/gemini/перевірка/fake_cc.py b/аудит/адаптери/gemini/перевірка/fake_cc.py
+index cf0bf24cb..56b88293e 100755
+--- a/аудит/адаптери/gemini/перевірка/fake_cc.py
++++ b/аудит/адаптери/gemini/перевірка/fake_cc.py
+@@ -48,6 +48,23 @@ if sc == 'quota_until':
+ if sc == 'done':
+     hold(slug)
+     result('Готово.\n\n**НОУТБУК ГОТОВО `%s` %s**' % (branch, push()))
++if sc.startswith('report_'):
++    sha = push()
++    line = 'НОУТБУК ГОТОВО %s %s' % (branch, sha)
++    forms = {
++        'report_quote': '«%s».\n\nПідсумок: виконано.' % line,
++        'report_bold_period': '**%s.**' % line,
++        'report_inline': '`%s`\n\nПеревірено.' % line,
++        'report_example': 'Приклад:\n%s' % line,
++        'report_fence': '```text\n%s\n```' % line,
++        'report_blockquote': '> ' + line,
++        'report_prompt': '----- НАРЯД -----\n%s\n----- КІНЕЦЬ НАРЯДУ -----' % line,
++        'report_assistant_only': 'Готово, без звіту.',
++        'report_wrong_sha': '«НОУТБУК ГОТОВО %s %s».' % (branch, 'a' * 40),
++        'report_bad_branch': '**НОУТБУК ГОТОВО main %s.**' % sha,
++    }
++    emit({'type': 'assistant', 'message': {'content': [{'type': 'text', 'text': line}]}})
++    result(forms[sc])
+ if sc == 'wrong_sha':
+     push(); result('НОУТБУК ГОТОВО %s %s' % (branch, 'a' * 40))
+ if sc == 'bad_branch':
+diff --git a/аудит/адаптери/gemini/перевірка/сценарії_claude.sh b/аудит/адаптери/gemini/перевірка/сценарії_claude.sh
+index 9f0407ce5..7b831b541 100755
+--- a/аудит/адаптери/gemini/перевірка/сценарії_claude.sh
++++ b/аудит/адаптери/gemini/перевірка/сценарії_claude.sh
+@@ -105,4 +105,17 @@ chk "не-JSON рядки таймера не скидають → HANG (є: $(l
+ chk "events.tsv — лише події з типом (2), шум — у claude.jsonl" '[ "$(cat "$W"/cr/runs/*/events.tsv | wc -l)" = 2 ] && ! cut -f2 "$W"/cr/runs/*/events.tsv | tr -d "\r" | grep -qx "" && grep -q "^шум 0" "$W"/cr/runs/*/claude.jsonl'
+ setup k8c; mark "$SLUG/$M/1"; FAKE_CC_SCENARIO=pause cr
+ chk "події частіше за поріг, усього довше за нього → ГОТОВО (є: $(lines))" '[[ "$(lines)" == "GEMINI ОБГОРТКА: ГОТОВО claude/$SLUG "* ]]'
++
++echo "=== К9 оформлений звіт у result stream-json та приклади поза протоколом"
++for form in quote bold_period inline; do
++  setup "k9-$form"; mark "$SLUG/$M/1"; FAKE_CC_SCENARIO="report_$form" cr
++  SHA=$(git -C "$W/origin.git" rev-parse "refs/heads/claude/$SLUG" 2>/dev/null)
++  chk "оформлення $form, підсумок після звіту → ГОТОВО з SHA origin" '[ "$(lines)" = "GEMINI ОБГОРТКА: ГОТОВО claude/$SLUG $SHA МОДЕЛЬ $M" ]'
++done
++for form in example fence blockquote prompt assistant_only; do
++  code "k9-$form" "report_$form" "$M" NO_REPORT
++done
++code k9-wrong-sha report_wrong_sha "$M" NO_PUSH
++code k9-bad-branch report_bad_branch "$M" BAD_BRANCH
++
+ echo; [ $BAD = 0 ] && echo "ВСЕ ✓" || echo "ЗБІЙ ✗"; exit $BAD
+diff --git a/аудит/адаптери/gemini/перевірка/сценарії_звіту.ps1 b/аудит/адаптери/gemini/перевірка/сценарії_звіту.ps1
+new file mode 100644
+index 000000000..b778ad226
+--- /dev/null
++++ b/аудит/адаптери/gemini/перевірка/сценарії_звіту.ps1
+@@ -0,0 +1,80 @@
++﻿#Requires -Version 5.1
++param([string]$SourceDir = (Split-Path -Parent $PSScriptRoot), [string]$EvidenceDir = '')
++$ErrorActionPreference = 'Stop'
++$utf = New-Object Text.UTF8Encoding($false)
++$errors = $null; $tokens = $null
++$ast = [Management.Automation.Language.Parser]::ParseFile((Join-Path $SourceDir 'claude_run.ps1'), [ref]$tokens, [ref]$errors)
++if ($errors.Count) { throw ($errors | Out-String) }
++foreach ($name in @('Remove-ReportDecoration', 'Get-Report')) {
++    $node = $ast.Find({ param($n) $n -is [Management.Automation.Language.FunctionDefinitionAst] -and $n.Name -eq $name }, $true)
++    if ($node) { . ([scriptblock]::Create($node.Extent.Text)) }
++}
++$script:SlugCore = '[\p{L}\p{Nd}][\p{L}\p{Nd}._-]{0,79}'
++$sha = 'a' * 40; $branch = 'claude/проба-рушія-claude'; $line = "НОУТБУК ГОТОВО $branch $sha"
++$bad = 0
++function Check([string]$Name, [bool]$Ok) {
++    <# Друкує факт і збирає код завершення всього стенда. #>
++    if ($Ok) { "✓ $Name" } else { "✗ $Name"; $script:bad++ }
++}
++$cases = @(
++    @('простий', $line, 'DONE'),
++    @('жирний', "**$line**", 'DONE'),
++    @('inline-бектики', ('`' + $line + '`'), 'DONE'),
++    @('лапки', ('"' + $line + '"'), 'DONE'),
++    @('українські лапки', "«$line»", 'DONE'),
++    @('крапка', "$line.", 'DONE'),
++    @('жирний з крапкою', "**$line.**", 'DONE'),
++    @('лапки з крапкою', "«$line».", 'DONE'),
++    @('поля з бектиками', ('НОУТБУК ГОТОВО `' + $branch + '` `' + $sha + '`'), 'DONE'),
++    @('після підсумку', "Підсумок: перевірено.`n`n$line", 'DONE'),
++    @('не останній рядок', "$line`n`nПідсумок: перевірено.", 'DONE'),
++    @('CRLF', "Зроблено.`r`n`r`n$line.`r`n", 'DONE'),
++    @('порожня відповідь', '', ''),
++    @('звичайна проза', 'Зроблено, усе гаразд.', ''),
++    @('префікс', "Очікується: $line", ''),
++    @('суфікс', "$line — приклад", ''),
++    @('цитата markdown', "> $line", ''),
++    @('продовження цитати markdown', "> У наряді написано:`n$line", ''),
++    @('цитата багаторядкова', "«У наряді написано:`n$line`nце цитата»", ''),
++    @('огорожа бектиками', ('```text' + "`n$line`n" + '```'), ''),
++    @('огорожа тильдами', "~~~text`n$line`n~~~", ''),
++    @('довша огорожа', ('````text' + "`n$line`n" + '```' + "`n$line`n" + '````'), ''),
++    @('відступ коду', "    $line", ''),
++    @('табуляція коду', "`t$line", ''),
++    @('цитований наряд', "----- НАРЯД -----`n$line`n----- КІНЕЦЬ НАРЯДУ -----", ''),
++    @('приклад', "Приклад:`n$line", ''),
++    @('приклад після порожнього рядка', "Приклад:`n`n$line", ''),
++    @('жирна назва прикладу', "**Приклад:**`n`n$line", ''),
++    @('приклад у розділі', "## Приклад`n`n$line`n`nНе звіт.", ''),
++    @('цитата у розділі', "## Цитата наряду`n$line", ''),
++    @('HTML-коментар', "<!--`n$line`n-->", ''),
++    @('два звіти', "$line`n`n$line", ''),
++    @('зайва крапка', "$line..", ''),
++    @('короткий SHA', "НОУТБУК ГОТОВО $branch abc", ''),
++    @('незбалансоване оформлення', "**$line", ''),
++    @('після прикладу справжній звіт', ('```' + "`n$line`n" + '```' + "`n`n$line"), 'DONE'),
++    @('після розділу прикладу', "## Приклад`n$line`n## Результат`n$line", 'DONE'),
++    @('результат наряду', "## Результат наряду`n$line", 'DONE'),
++    @('наряд усередині блока коду', ('```' + "`n----- НАРЯД -----`n$line`n" + '```' + "`n`n$line"), 'DONE'),
++    @('блокер', "НОУТБУК ЗАБЛОКОВАНО: немає входу, гілка $branch.", 'BLOCKED')
++)
++if ($EvidenceDir) { [void][IO.Directory]::CreateDirectory($EvidenceDir) }
++foreach ($case in $cases) {
++    # Записані форми stream-json 2.1.300, синтетичні дані; журнали Admin недоступні.
++    $event = [ordered]@{ type = 'result'; subtype = 'success'; is_error = $false; result = $case[1] }
++    $json = $event | ConvertTo-Json -Compress
++    if ($EvidenceDir) { [IO.File]::AppendAllText((Join-Path $EvidenceDir 'форми.jsonl'), $json + "`n", $utf) }
++    $report = Get-Report (($json | ConvertFrom-Json).result)
++    $ok = if ($case[2]) { $null -ne $report -and $report.Kind -ceq $case[2] -and $report.Branch -ceq $branch } else { $null -eq $report }
++    if ($ok -and $case[2] -eq 'DONE') { $ok = $report.Sha -ceq $sha }
++    Check $case[0] $ok
++}
++. (Join-Path $SourceDir 'queue_lanes.ps1')
++function Invoke-Git { [pscustomobject]@{ Code = 0; Out = $script:LaneJson } }
++foreach ($n in @(0, 6, 8, 16, 99)) {
++    $script:LaneJson = '{"v":1,"slots":{"codex":' + $n + ',"agy":' + $n + ',"claude":' + $n + '}}'
++    $limits = Get-Limits
++    $expected = [Math]::Min($n, 64)
++    foreach ($lane in @('codex', 'agy', 'claude')) { Check "$lane з даних $n → $expected" ($limits.slots[$lane] -eq $expected) }
++}
++exit [int]($bad -gt 0)
+diff --git a/аудит/адаптери/gemini/перевірка/сценарії_звіту.sh b/аудит/адаптери/gemini/перевірка/сценарії_звіту.sh
+new file mode 100644
+index 000000000..b96101e1d
+--- /dev/null
++++ b/аудит/адаптери/gemini/перевірка/сценарії_звіту.sh
+@@ -0,0 +1,5 @@
++#!/usr/bin/env bash
++# Читач звіту й читання смуги.json без запуску моделей чи змін установлених копій.
++set -euo pipefail
++H=$(cd "$(dirname "$0")" && pwd); . "$H/середовище.sh"
++"${PWSH:-pwsh}" -NoProfile -File "$(wp "$H/сценарії_звіту.ps1")" -SourceDir "$(wp "$H/..")"
+diff --git a/аудит/адаптери/gemini/перевірка/сценарії_смуг.sh b/аудит/адаптери/gemini/перевірка/сценарії_смуг.sh
+index 6c2abe8ec..54597183d 100644
+--- a/аудит/адаптери/gemini/перевірка/сценарії_смуг.sh
++++ b/аудит/адаптери/gemini/перевірка/сценарії_смуг.sh
+@@ -130,5 +130,20 @@ git -C "$W/clone-g" fetch -q origin main 2>/dev/null
+ CE=$("$PW" -NoProfile -c ". '$(wp "$SRC/queue_lanes.ps1")'; \$RepoDir='$(wp "$W/clone-g")'; \$GitExe='git'; \$script:NoHooks='x'; function Write-Log {}; (Get-Limits).slots['codex']" 2>/dev/null | tr -d '\r')
+ echo "  codex водночас: смуги.json codex=1 → $A1, codex=2 → $A2; codex=99 у даних → $CE (стеля в коді)"
+ chk "N з файла даних міняє паралельність без перевстановлення (1 → 2)" '[ "$A1" = 1 ] && [ "$A2" = 2 ]'
+-chk "дані не перевищують стелі коду (99 → 4)" '[ "$CE" = 4 ]'
++chk "дані не перевищують стелі коду (99 → 64)" '[ "$CE" = 64 ]'
++
++echo "=== Г: смуги.json задає 6 і 8 слотів, усі наряди справді працюють водночас"
++for N in 6 8; do
++  setup "slots-$N"; export FAKE_ZERO_UNTIL=0; export FAKE_HOLD=30
++  (cd "$W/seed"; mkdir -p аудит/адаптери/gemini
++   printf '{"v":1,"slots":{"codex":%s,"agy":0,"claude":0}}\n' "$N" > аудит/адаптери/gemini/смуги.json
++   for ((i=1; i<=N; i++)); do printf 'Т | наряд\n' > "аудит/наряди/n-codex-$i.md"; done
++   git add -A; git commit -q -m "смуги $N"; git push -q origin main 2>/dev/null)
++  for ((i=1; i<=N; i++)); do mark "n-codex-$i/$CX/1"; done
++  gem
++  ACTUAL=$(tl codex)
++  chk "смуги.json codex=$N → $N водночас (є: $ACTUAL)" '[ "$ACTUAL" = "$N" ]'
++  chk "усі $N нарядів закінчено" '[ "$(grep -c "^end " "$W/timeline.txt")" = "$N" ]'
++done
++
+ echo; [ $BAD = 0 ] && echo "ВСЕ ✓" || echo "ЗБІЙ ✗"; exit $BAD

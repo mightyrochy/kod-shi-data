@@ -130,5 +130,20 @@ git -C "$W/clone-g" fetch -q origin main 2>/dev/null
 CE=$("$PW" -NoProfile -c ". '$(wp "$SRC/queue_lanes.ps1")'; \$RepoDir='$(wp "$W/clone-g")'; \$GitExe='git'; \$script:NoHooks='x'; function Write-Log {}; (Get-Limits).slots['codex']" 2>/dev/null | tr -d '\r')
 echo "  codex водночас: смуги.json codex=1 → $A1, codex=2 → $A2; codex=99 у даних → $CE (стеля в коді)"
 chk "N з файла даних міняє паралельність без перевстановлення (1 → 2)" '[ "$A1" = 1 ] && [ "$A2" = 2 ]'
-chk "дані не перевищують стелі коду (99 → 4)" '[ "$CE" = 4 ]'
+chk "дані не перевищують стелі коду (99 → 64)" '[ "$CE" = 64 ]'
+
+echo "=== Г: смуги.json задає 6 і 8 слотів, усі наряди справді працюють водночас"
+for N in 6 8; do
+  setup "slots-$N"; export FAKE_ZERO_UNTIL=0; export FAKE_HOLD=30
+  (cd "$W/seed"; mkdir -p аудит/адаптери/gemini
+   printf '{"v":1,"slots":{"codex":%s,"agy":0,"claude":0}}\n' "$N" > аудит/адаптери/gemini/смуги.json
+   for ((i=1; i<=N; i++)); do printf 'Т | наряд\n' > "аудит/наряди/n-codex-$i.md"; done
+   git add -A; git commit -q -m "смуги $N"; git push -q origin main 2>/dev/null)
+  for ((i=1; i<=N; i++)); do mark "n-codex-$i/$CX/1"; done
+  gem
+  ACTUAL=$(tl codex)
+  chk "смуги.json codex=$N → $N водночас (є: $ACTUAL)" '[ "$ACTUAL" = "$N" ]'
+  chk "усі $N нарядів закінчено" '[ "$(grep -c "^end " "$W/timeline.txt")" = "$N" ]'
+done
+
 echo; [ $BAD = 0 ] && echo "ВСЕ ✓" || echo "ЗБІЙ ✗"; exit $BAD
