@@ -19,6 +19,7 @@ def main():
     assert колір_аркуша(запис)["межі"] == (45, 45, 12, 12, None)
     assert колір_аркуша(dict(колір_тип="невідомо", hex="#ffffff")) is None
     assert споживачеві(None, [])[1] is None
+    assert isinstance(споживачеві(dict(колір_тип="невідомо", hex="#ffffff"), ["синій"])[1], dict)
     assert колір_аркуша(dict(слово="чорний", hex="#010203")) == "#010203"
     assert isinstance(колір_аркуша(dict(lab=[50, 0, 0])), str)
     поза = споживачеві(dict(слово="червоний", hex="#ff0000"), ["синій"])
