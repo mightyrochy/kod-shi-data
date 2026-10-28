@@ -20,9 +20,9 @@ def main():
         for назва, дерево, очікуваний in (("ДО", тимчасова, 1), ("ПІСЛЯ", str(корінь), 0)):
             команда = [sys.executable, str(проба), дерево]
             результат = subprocess.run(команда, cwd=корінь, env=середовище, capture_output=True)
-            текст = результат.stdout.decode("utf-8") + результат.stderr.decode("utf-8")
+            текст = "\n".join(р.rstrip() for р in (результат.stdout + результат.stderr).decode("utf-8").splitlines()) + "\n"
             текст += f"\nКод завершення: {результат.returncode}\n"
-            Path(__file__).with_name(назва + ".txt").write_text(текст, encoding="utf-8")
+            Path(__file__).with_name(назва + ".txt").write_text(текст, encoding="utf-8", newline="\n")
             print(назва, "код", результат.returncode)
             for рядок in текст.splitlines():
                 if "HTTP=" in рядок:
