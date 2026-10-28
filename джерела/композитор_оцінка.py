@@ -33,6 +33,7 @@ from композитор_реєстр import (ВАГА_КООРДИНАЦІЇ)
 from композитор_річ import (у_річ as _у_річ, середня_відстань as _середня_відстань)
 import palettes as _PL
 import trace as _СЛ
+import колір_річ as _КР_ТИП
 
 
 def оцінити(F, комбо, тіло, жорстке_ні, вето, самозвіт=None, **kw):
@@ -188,7 +189,8 @@ def оцінити(F, комбо, тіло, жорстке_ні, вето, са�
                                   учасники=[dict(роль="border_colour",
                                                  річ=комбо[z["річ"]].get("id") or _річ)] + [
                                       dict(роль="companion", річ=x.get("id") or x.get("назва"))
-                                      for j, x in enumerate(комбо) if j != z["річ"] and x.get("lab")]))
+                                      for j, x in enumerate(комбо)
+                                      if j != z["річ"] and _КР_ТИП.межі_кольору(x) is not None]))
             continue
         зн.append(dict(_РЕЄСТР.зн("K-PAL-16", "hint", z["суть"],
                                    [комбо[z["річ"]].get("назва") or комбо[z["річ"]].get("id")],
