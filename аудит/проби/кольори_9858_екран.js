@@ -46,7 +46,8 @@ async function головна(){
       const факт = await стор.evaluate(()=>({стан:$('пал-стан').textContent,
         чипи:[...document.querySelectorAll('#пал-схема .чип')].map(e=>({текст:e.textContent,
           кольори:[...e.querySelectorAll('.зразки i')].map(i=>i.style.backgroundColor)})),
-        стрічка:[...document.querySelectorAll('#пал-стрічка i')].map(e=>e.style.backgroundColor)}));
+        стрічка:[...document.querySelectorAll('#пал-стрічка i')].map(e=>e.style.backgroundColor),
+        підпис_стрічки:document.querySelector('#пал-стрічка .стрічка-підпис')?.textContent || ''}));
       if (/не порахувалась/.test(факт.стан)) throw new Error(факт.стан);
       await стор.locator('#пал-стрічка').scrollIntoViewIfNeeded();
       await стор.screenshot({path:path.join(вихід,`${сцена.сцена}-${режим}.png`),animations:'disabled'});
