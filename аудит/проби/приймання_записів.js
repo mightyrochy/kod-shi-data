@@ -1,5 +1,5 @@
 /* Усі зареєстровані живі сцени проходять той самий браузерний стенд із відповідями з диска. */
-const fs = require('fs'), path = require('path'), os = require('os');
+const fs = require('fs'), path = require('path');
 const {spawnSync} = require('child_process');
 const {знімок, звіритиБазу, порівняти, затягнути} = require('./храповик_записів.js');
 const корінь = path.resolve(__dirname, '../..');

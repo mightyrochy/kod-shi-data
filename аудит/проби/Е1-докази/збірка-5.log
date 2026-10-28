@@ -1,0 +1,53 @@
+python : C:\Users\gemini\gemini-runs\w\codex-2\джерела\build_артефакт.py:1024: SyntaxWarning: invalid escape sequence '
+\*'
+At line:2 char:271
++ ... G='повний'; python -X utf8 джерела/build_артефакт.py джерела 'C:/User ...
++                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (C:\Users\gemini...e sequence '\*':String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+  ЧОМУ СВІЙ СКАНЕР, А НЕ `re`. `/\*.*?\*/` зняв би «коментар» усередині
+<unknown>:453: SyntaxWarning: invalid escape sequence '\A'
+<unknown>:924: SyntaxWarning: invalid escape sequence '\A'
+<unknown>:453: SyntaxWarning: invalid escape sequence '\A'
+<unknown>:924: SyntaxWarning: invalid escape sequence '\A'
+<unknown>:453: SyntaxWarning: invalid escape sequence '\A'
+<unknown>:924: SyntaxWarning: invalid escape sequence '\A'
+<unknown>:453: SyntaxWarning: invalid escape sequence '\A'
+<unknown>:924: SyntaxWarning: invalid escape sequence '\A'
+<unknown>:453: SyntaxWarning: invalid escape sequence '\A'
+<unknown>:924: SyntaxWarning: invalid escape sequence '\A'
+<unknown>:453: SyntaxWarning: invalid escape sequence '\A'
+<unknown>:924: SyntaxWarning: invalid escape sequence '\A'
+<unknown>:453: SyntaxWarning: invalid escape sequence '\A'
+<unknown>:924: SyntaxWarning: invalid escape sequence '\A'
+Exception in thread Thread-5 (_readerthread):
+Traceback (most recent call last):
+  File "C:\Users\gemini\AppData\Local\Programs\Python\Python312\Lib\threading.py", line 1075, in _bootstrap_inner
+    self.run()
+  File "C:\Users\gemini\AppData\Local\Programs\Python\Python312\Lib\threading.py", line 1012, in run
+    self._target(*self._args, **self._kwargs)
+  File "C:\Users\gemini\AppData\Local\Programs\Python\Python312\Lib\subprocess.py", line 1599, in _readerthread
+    buffer.append(fh.read())
+                  ^^^^^^^^^
+  File "<frozen codecs>", line 322, in decode
+UnicodeDecodeError: 'utf-8' codec can't decode byte 0xed in position 2: invalid continuation byte
+  вантаж: фід ← каталог_повний.xml (53873 КБ, чистий)
+  вантаж: збагачення ← каталог_збагачення.json.gz (717 КБ)
+  вантаж: назви з карток ← назви_карток.json.gz (183 КБ)
+  вантаж: показність ← каталог_показ.json.gz (48 КБ) · хостів заборони 0 · відновлених речей 1222 · показати нема чим 965
+  вантаж: службові кадри ← каталог_службові_кадри.json.gz (13 КБ) · крамниць 31 · адрес 1315
+  вантаж: розбору каталогу НЕМА в джерелах — річ їде моделі повним записом зі словами крамниці, як доти (перемикач `короткий_запис` без файла нічого не міняє)
+  вантаж: виміри кадрів ← каталог_кадри.json.gz (250 КБ)
+  вантаж: факти власності кадру ← каталог_власник_кадру.json.gz (225 КБ)
+  вантаж: таблиця каталогу ← збудовано, відновлена = побудованій до знака (15816 записів, 1075 КБ, модулів у ключі 72, даних 5, 125.3 с)
+Traceback (most recent call last):
+  File "C:\Users\gemini\gemini-runs\w\codex-2\джерела\build_артефакт.py", line 1742, in <module>
+    зібрати_показ(sys.argv[1], sys.argv[2], повний=(режим == "показ-повний"))
+  File "C:\Users\gemini\gemini-runs\w\codex-2\джерела\build_артефакт.py", line 1446, in зібрати_показ
+    .replace("__ДОВІДНИК_ПОКАЗУ__", _довідник_показу(джерело))
+                                    ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\gemini\gemini-runs\w\codex-2\джерела\build_артефакт.py", line 1344, in _довідник_показу
+    return r.stdout.strip().splitlines()[-1]
+           ^^^^^^^^^^^^^^
+AttributeError: 'NoneType' object has no attribute 'strip'
