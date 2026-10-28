@@ -53,8 +53,9 @@ def перевірка_сегментації(F, E, tol=3.0):
     ризик = {k: v for k, v in F.items()
              if k.startswith("волосся") or k in ("очі", "оправа")}
     for k, f in ризик.items():
-        if any(f.get(п) is None for п in ("L", "a", "b")):
-            out.append(_брак_входу("сегментація", [dict(річ=k)], ("L", "a", "b")))
+        поля = tuple(п for п in ("L", "a", "b") if f.get(п) is None)
+        if поля:
+            out.append(_брак_входу("сегментація", [dict(річ=k)], поля))
             continue
         lab = (f["L"], f["a"], f["b"])
         for e in E:
