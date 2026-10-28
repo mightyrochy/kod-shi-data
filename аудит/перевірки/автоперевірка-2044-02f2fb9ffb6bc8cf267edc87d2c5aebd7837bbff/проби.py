@@ -9,7 +9,23 @@ import колір_річ as KR
 import композитор_слоти as KS
 import verify as V
 
-if sys.argv[2] == "сімя":
+if sys.argv[2] == "метал-вікно":
+    import palettes as PL
+    import фід_добір as FD
+    import фід_збагачення as FZ
+    window = (74, 76, 34, 36, (84, 86))
+    r = dict(id="gold", слот="сережки", тип="сережки", назва="Сережки", group_id="gold", впевненість=1,
+             lab=FZ.центр_вікна(window), колір_не_вимір=dict(свідок="shop_word", вікно=window))
+    q = dict(слот="сережки", L_min=50, L_max=88, C_min=18, C_max=60,
+             h_from=70, h_to=100, метал="золото")
+    if hasattr(KR, "тип_кольору"):
+        r.update(lab=None, колір_тип="інтервал")
+        hit = FD.описує_річ(r, q, вікно=window)
+    else:
+        hit = FD.описує_річ(r["lab"], q, вікно=window)
+    print("Метал за межами:", PL.метал_меж(r, "сережки", "сережки"))
+    print("Вікно цілком усередині золотого рядка; описує_річ:", hit)
+elif sys.argv[2] == "сімя":
     import палітра_схеми as PS
     import фід_збагачення as FZ
     family = dict(роль="основа", дуга=(210, 340))
@@ -73,12 +89,20 @@ elif sys.argv[2] == "каталог":
     import collections
     import outfit as O
     import композитор_річ as KP
+    import фід_збагачення as FZ
     before, after = [{r["id"]: r for r in json.loads(Path(p).read_text(encoding="utf-8"))["каталог"]}
                      for p in sys.argv[3:5]]
     out = dict(до=len(before), після=len(after), втрачено_id=len(before.keys() - after.keys()),
                типи=dict(collections.Counter(map(KR.тип_кольору, after.values()))),
                невимір_з_lab=sum(bool(r.get("lab")) for r in after.values() if KR.тип_кольору(r) != "вимір"),
                сегментів=0, втрачено_точок=0, спотворено=0, максимум_de00=0)
+    centers = [FZ.центр_вікна(v) for v in V.ЛЕКСИКОН.values()]
+    out["вимірів_збіг_із_центром"] = sum(any(CS.de00(KR.точка_кольору(r), c) < .001 for c in centers)
+        for r in after.values() if KR.тип_кольору(r) == "вимір")
+    cohort = json.loads((Path(sys.argv[1]) / "аудит/перевірка/2.13_тип_кольору/каталог.json").read_text(encoding="utf-8"))["група_59"]
+    out["група_59_джерело"] = "склад групи з артефакту PR; перевірено збереження на власному знімку"
+    out["група_59_фото"] = sum(bool(after.get(i, {}).get("колір_вимір")) for i in cohort)
+    out["група_59_основний_вимір"] = sum(KR.тип_кольору(after.get(i)) == "вимір" for i in cohort)
     for r in after.values():
         if not r.get("colors") or r.get("слот") == "верхній_шар":
             continue
