@@ -942,7 +942,7 @@ function Invoke-Task($M, $Job) {
         $taskPath = Get-TaskSource $M
         if ($anc.Code -ne 0) { $status.code = 'NOT_ON_MAIN'; return }
         if ((Invoke-Git @('cat-file', '-e', "$($M.Sha):$taskPath") -AllowFail).Code -ne 0) { $status.code = 'NO_TASK_FILE'; return }
-        $taskText = Add-AutoTaskContext $M.Slug ((Invoke-Git @('cat-file', 'blob', "$($M.Sha):$taskPath")).Out)
+        $taskText = Add-AutoTaskContext $M.Slug ((Invoke-Git @('cat-file', 'blob', "$($M.Sha):$taskPath")).Out) $M.Sha
         $js = $Job.sel
         $eng = [pscustomobject]@{ Name = [string]$js.engine; Model = [string]$js.emodel; Effort = [string]$js.effort }
         $exe = $(if ($eng.Name -eq 'codex') { Find-CodexExe } else { Find-EngineExe $AgyExe })

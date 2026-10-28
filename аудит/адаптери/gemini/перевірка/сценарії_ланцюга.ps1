@@ -30,13 +30,14 @@ try {
     $script:Pulls = @(); $script:Ready = $false
     function Get-ChainPulls { $script:Pulls }
     function Invoke-ChainApi([string]$Path) {
+        if ($Path -match '/files\?') { return [pscustomobject]@{filename='джерела/a.py'} }
         $sha = ($Path -split '/')[-1]
         [pscustomobject]@{sha=$sha;commit=@{committer=@{date=[datetimeoffset]::UtcNow.AddMinutes(-1).ToString('o')}}}
     }
     function Test-LiveModels($Config) { $script:Ready }
     function Pull([int]$Number, [string]$Branch, [string]$Sha, [string]$Owner = 'mightyrochy', [string]$Repository = 'mightyrochy/kod-shi-data') {
         <# Дані API; довільного тексту в позначки не передаємо. #>
-        [pscustomobject]@{ created_at=[datetimeoffset]::UtcNow.ToString('o'); number=$Number; user=@{login=$Owner}; head=@{ref=$Branch;sha=$Sha;repo=@{full_name=$Repository}}; base=@{ref='main';repo=@{full_name='mightyrochy/kod-shi-data'}} }
+        [pscustomobject]@{ created_at=[datetimeoffset]::UtcNow.ToString('o'); number=$Number;title='Код'; user=@{login=$Owner}; head=@{ref=$Branch;sha=$Sha;repo=@{full_name=$Repository}}; base=@{ref='main';repo=@{full_name='mightyrochy/kod-shi-data'}} }
     }
     $script:Pulls = @((Pull 12 'claude/наряд' $first), (Pull 13 'codex/наряд' $first), (Pull 14 'gemini/наряд' $first), (Pull 15 'claude/чужий' $first 'чужий'), (Pull 16 'claude/форк' $first 'mightyrochy' 'чужий/форк'), (Pull 17 "gemini/автоперевірка-12-$first" $first))
     Invoke-WrapperChain
@@ -58,11 +59,13 @@ try {
     $docs = Merge 'опис.md' 'документ'; Invoke-WrapperChain
     Check 'документація не займає GPU' (@(Markers | Where-Object { $_ -match 'автоживий-' }).Count -eq 0)
     $product = Merge 'джерела/a.py' '2'; Invoke-WrapperChain
-    $state = ConvertFrom-Json ([IO.File]::ReadAllText($file))
-    Check 'злиття продукту збережене в очікуванні моделей' ($state.pending -ceq $product)
+    Check 'злиття продукту без штампу чекає збірки' (@(Markers | Where-Object { $_ -match 'автоживий-' }).Count -eq 0)
     $newer = Merge 'джерела/a.py' '3'; Invoke-WrapperChain
+    $built = Merge 'build.txt' $newer; Invoke-WrapperChain
+    $state = ConvertFrom-Json ([IO.File]::ReadAllText($file))
+    Check 'збірка збережена в очікуванні моделей' ($state.live_pending.Count -eq 1 -and $state.live_pending[0].stamp -ceq $newer -and $state.live_pending[0].main -ceq $built)
     $script:Ready = $true; Invoke-WrapperChain
-    Check 'кілька злиттів зібрані в одну GPU-позначку після доступу моделей' (@(Markers | Where-Object { $_ -match "автоживий-$newer/.*/1/p2-gpu$" }).Count -eq 1)
+    Check 'кілька злиттів однієї збірки отримали одну GPU-позначку за штампом' (@(Markers | Where-Object { $_ -match "автоживий-$newer/.*/1/p2-gpu$" }).Count -eq 1)
     Invoke-WrapperChain
     Check 'живий прогін не дублюється' (@(Markers | Where-Object { $_ -match 'автоживий-' }).Count -eq 1)
     $script:Pulls = @((Pull 12 'claude/наряд' $newer)); Invoke-WrapperChain
@@ -100,7 +103,7 @@ try {
     Check 'недоступний сервер лишає очікування' (-not [bool](& $script:RealModelsCheck $cfg))
     # Шаблони планувальників: повний SHA, ніякого вільного тексту з API.
     . (Join-Path $SourceDir 'queue_lanes.ps1')
-    Check 'обидва планувальники можуть узяти шаблон автонаряду' ((Get-AutoTaskPath "автоперевірка-12-$newer") -ceq 'аудит/наряди/автоперевірка.md' -and (Add-AutoTaskContext "автоживий-$newer" 'текст') -match $newer)
+    Check 'обидва планувальники можуть узяти шаблон автонаряду' ((Get-AutoTaskPath "автоперевірка-12-$newer") -ceq 'аудит/наряди/автоперевірка.md' -and (Add-AutoTaskContext "автоживий-$newer" 'текст' $built) -match $newer)
     # Вікно рахується за SHA й committer, а коментар не оживляє початковий архів.
     $clock = [datetimeoffset]::UtcNow; $installed = $clock.AddDays(-2); $heads = @{}
     $script:HeadDate = $clock.AddHours(-25)
