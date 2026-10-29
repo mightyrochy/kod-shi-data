@@ -31,6 +31,7 @@ import feed as _Ф0
 }
 
 import re
+from колір_тон import середина
 def _усі_імена(текст):
     t = " " + текст.lower().replace("-", " ").replace("/", " ") + " "
     return {V.ФОРМИ[k] for k in V.ФОРМИ
@@ -46,7 +47,7 @@ def _lab(L, C, h):
 def центр_вікна(в):
     Llo, Lhi, Clo, Chi, д = в
     if д is None: return _lab((Llo+Lhi)/2, (Clo+Chi)/2, 0.0)
-    a, b = д; h = (a + ((b - a) % 360)/2) % 360
+    h = середина(д)
     return _lab((Llo+Lhi)/2, (Clo+Chi)/2, h)
 
 

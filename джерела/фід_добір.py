@@ -15,6 +15,7 @@ import колір_річ as _КР
 import фід_розбір as _ФР
 import trace as _СЛ
 import palettes as _ПЛ
+from колір_тон import в_дузі, відстань_до_дуги
 
 # ═══════════════ 4. ПОКРИТТЯ ВІКОН ═══════════════
 def підходить(lab, запит):
@@ -225,10 +226,9 @@ def відстань_до_вікна(lab, q):
         dC = max(0, q["C_min"]-C, C-q["C_max"])
     dh = 0.0
     if q.get("h_from") is not None:
-        a, b = q["h_from"], q["h_to"]
-        усередині = (a <= h <= b) if a <= b else (h >= a or h <= b)
-        if not усередині:
-            dh = min(min(abs(h-a), 360-abs(h-a)), min(abs(h-b), 360-abs(h-b)))
+        дуга = (q["h_from"], q["h_to"])
+        if not в_дузі(h, дуга):
+            dh = відстань_до_дуги(h, дуга)
     return dict(разом=round(dL + dC + dh*0.5, 1), dL=round(dL,1), dC=round(dC,1), dh=round(dh,1))
 
 def хвилі(запити):
