@@ -489,6 +489,68 @@ def _причини(сирі, куди):
     return вих[:_ПРИЧИН_МАКС]
 
 
+# ── ПРИЧИНА → ЗВІРКА З ДАНИМИ ───────────────────────────────────────────────
+# ЩО БУЛО. Суддя звіряв з даними лише `why_her_eyes` (окремий `if` у `прийняти`), а решту кодів із
+# переліку приймав словом моделі: `why_first_advice` при основі 9-го рангу пройшла, і `#пал-нота`
+# сказала жінці «це моя перша порада» про дев'яту (9862, живий 2.14-В Д4).
+# ЩО ТЕПЕР. Кожен код `ПРИЧИНИ` має тут перевірку «чи стоїть за причиною факт переліку»: (частина,
+# обране, перелік) → (правда, факт для діагнозу). Додати причину — додати рядок сюди; звірка двох
+# словників — у пробі. Неправдива причина знімається з вибору й іде в `відхилено` кодом; сам вибір лишається.
+def _перша_порада(ч, о, пер):
+    ранг = (о or {}).get("ранг")
+    return (ранг == 1, "%s_rank=%s" % (ч, ранг))
+
+
+def _ранг_і_очі(ч, о, пер):
+    return (ч == "base" and bool((о or {}).get("очі")), "%s_eyes=%s" % (ч, (о or {}).get("очі") or "none"))
+
+
+def _мета(код):
+    return lambda ч, о, пер: ((пер.get("випадок") or {}).get("goal") == код,
+                              "goal=%s" % ((пер.get("випадок") or {}).get("goal") or "none"))
+
+
+def _у_особі(*к):
+    return lambda ч, о, пер: (any((пер["особа"].get(x) or {}) for x in к), "person_%s=none" % "|".join(к))
+
+
+# Її слова на дроті випадку — ті самі поля, що пише `дріт_моделі.випадок` (імена з його мапи, не копія списку):
+# бажання, вето, її фраза (`вимоги_людини` → `her_words`), решта слів, цитати мети й наміру, переконання, прохання
+# про взуття; цитати полів і бажань `випадок` кладе поруч (`field_quotes`, `wish_quotes`).
+_СЛОВА_ЇЇ = tuple(_ДМ.ПОЛЯ_ВИПАДКУ[к] for к in ("бажання", "вето", "вимоги_людини", "решта", "мета_слова", "намір_слова",
+                                                "переконання", "прохання_взуття")) + ("field_quotes", "wish_quotes")
+ЗВІРКА_ПРИЧИН = {
+    "why_her_contrast": _у_особі("contrast"),
+    "why_her_eyes": _ранг_і_очі,
+    "why_her_undertone": _у_особі("undertone"),
+    "why_her_hair": _у_особі("hair"),
+    "why_her_metal": lambda ч, о, пер: (bool(пер["особа"].get("metal")), "metal=none"),
+    "why_goal_flatter": _мета("flatter"),
+    "why_goal_conceal": _мета("conceal"),
+    "why_goal_express": _мета("express"),
+    "why_occasion": lambda ч, о, пер: (bool(any((пер.get("випадок") or {}).get(к) for к in ("occasion", "event", "place"))
+                                            or (пер.get("день") or {}).get("place")
+                                            or (пер.get("день") or {}).get("dress_code")), "occasion=none"),
+    "why_weather": lambda ч, о, пер: (any((пер.get("день") or {}).get(к) is not None
+                                          for к in ("weather", "temperature_c", "season")), "day_weather=none"),
+    "why_her_words": lambda ч, о, пер: (any((пер.get("випадок") or {}).get(к) for к in _СЛОВА_ЇЇ), "her_words=none"),
+    "why_first_advice": _перша_порада,
+}
+
+
+def _звірити_причини(ч, обране, пер, причини, відхилено):
+    """Причини частини `ч` ("scheme" / "base") → лише ті, за якими стоїть факт переліку (`ЗВІРКА_ПРИЧИН`);
+    знята — у `відхилено` кодом з фактом: `reason_not_in_data:<код> · <факт> · taken=none`."""
+    лишені = []
+    for к in причини:
+        правда, факт = ЗВІРКА_ПРИЧИН[к](ч, обране, пер)
+        if правда:
+            лишені.append(к)
+        else:
+            відхилено.append("reason_not_in_data:%s · %s · taken=none" % (к, факт))
+    return лишені
+
+
 def _відтінок(L):
     """Світлота клітинки → код відтінку для заяви: light / dark / None (та сама межа, що на чипі)."""
     return "light" if L >= 68 else ("dark" if L <= 32 else None)
@@ -527,6 +589,7 @@ def прийняти(вхід, відповідь=None, без_моделі=None
         г = next((с for с in пер["схеми"] if с["код"] == str(об.get("scheme") or "").strip()), None)
         if г:
             обрала["scheme"], причини["scheme"] = ХТО_СТИЛІСТКА, _причини(об.get("scheme_reasons"), відхилено)
+            причини["scheme"] = _звірити_причини("scheme", г, пер, причини["scheme"], відхилено)
         else:
             відхилено.append("scheme_outside_list:%s · taken=first_branch" % (об.get("scheme") or "none"))
     if г is None:
@@ -537,10 +600,7 @@ def прийняти(вхід, відповідь=None, без_моделі=None
         о = next((x for x in пер["основи"] if x["id"] == str(об.get("base") or "").strip()), None)
         if о:
             обрала["base"], причини["base"] = ХТО_СТИЛІСТКА, _причини(об.get("base_reasons"), відхилено)
-            if "why_her_eyes" in причини["base"] and not о.get("очі"):
-                # основа до очей не стоїть ні повтором, ні комплементом — причина неправдива
-                причини["base"].remove("why_her_eyes")
-                відхилено.append("reason_not_in_data:why_her_eyes · base_eyes=none · taken=none")
+            причини["base"] = _звірити_причини("base", о, пер, причини["base"], відхилено)
         else:
             відхилено.append("base_outside_list:%s · taken=none" % (об.get("base") or "none"))
     обрала.setdefault("base", ХТО_ВОНА if "base" not in лишила else ХТО_КОД)
