@@ -527,7 +527,9 @@ function Test-DispatcherAction([string]$Line) {
 function Get-LocalLines {
     $path = Join-Path $WorkDir 'local-lines.json'
     if (-not (Test-Path -LiteralPath $path)) { return @() }
-    @(ConvertFrom-Json ([IO.File]::ReadAllText($path, $script:Utf8)))
+    # PowerShell 5.1 пише JSON-масив у конвеєр одним об'єктом: @(ConvertFrom-Json …) дав би масив у масиві.
+    $parsed = ConvertFrom-Json ([IO.File]::ReadAllText($path, $script:Utf8))
+    @($parsed)
 }
 
 function Save-LocalLine([string]$Line) {

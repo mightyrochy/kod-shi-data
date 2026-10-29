@@ -74,7 +74,7 @@ try {
         Deliver ($facts)
         Check "2 факти: рядків $($facts.Count)" ($facts.Count -eq 14)
         Check "2 пробуджень диспетчера: $($script:Calls.Count) (ДО 14 → ПІСЛЯ 0)" ($script:Calls.Count -eq 0)
-        $stored = @(ConvertFrom-Json ([IO.File]::ReadAllText("$WorkDir/local-lines.json")))
+        $stored = @((ConvertFrom-Json ([IO.File]::ReadAllText("$WorkDir/local-lines.json"))))
         Check '2 усі 14 лишились у local-lines.json' ($stored.Count -eq 14)
         Deliver @($quota)
         Check '2 QUOTA0 теж без пробудження' ($script:Calls.Count -eq 0)
@@ -90,7 +90,7 @@ try {
             Check '3 зведення: 14 і 14 рядків' ($parts[1] -ceq 'ЗВЕДЕННЯ БЕЗ ПРОБУДЖЕННЯ: 14' -and $parts.Count -eq 16)
             Check '3 рядки зведення — це рядки фактів' ((($parts[2..15]) -join "`n") -ceq ($facts -join "`n"))
         }
-        $stored = @(ConvertFrom-Json ([IO.File]::ReadAllText("$WorkDir/local-lines.json")))
+        $stored = @((ConvertFrom-Json ([IO.File]::ReadAllText("$WorkDir/local-lines.json"))))
         Check '3 накопичене позначено доставленим' (@($stored | Where-Object { $_.delivered -ne $true }).Count -eq 0)
         Deliver @($wake)
         Check '3 наступний рядок, що будить, — без повторного зведення' ($script:Calls.Count -eq 2 -and $script:Calls[1] -ceq $wake)
@@ -104,7 +104,7 @@ try {
         function Invoke-Native { param($Exe, $Arguments, $WorkDirectory, $TimeoutMinutes, $StdIn) $script:Calls += , [string]$StdIn; [pscustomobject]@{Code = 1; Out = ''; Err = 'збій'} }
         $script:SendRetries = 1; $script:SendRetryDelaySeconds = 0
         Deliver @($wake)
-        $stored = @(ConvertFrom-Json ([IO.File]::ReadAllText("$WorkDir/local-lines.json")))
+        $stored = @((ConvertFrom-Json ([IO.File]::ReadAllText("$WorkDir/local-lines.json"))))
         Check '4 збій доставки — зведення лишається недоставленим' (@($stored | Where-Object { $_.delivered -ne $true }).Count -eq 14)
     }
     Scenario '5 запасний канал теж несе зведення' {
