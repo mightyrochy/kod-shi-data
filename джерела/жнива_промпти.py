@@ -24,13 +24,18 @@ import json, os, re, subprocess, time
 import urllib.request
 import feed as F
 import фрази_формату as _ФФ
+import схема_відповіді as _СВ
 from жнива_реєстр import СЕРВЕР, КОЛЬОРИ, КРОЇ, КРОЇ_СУКНІ, МАТЕРІАЛИ, ВІЗЕРУНКИ, ДОВЖИНИ, група_слота
 
-def _запит(модель, текст, картинки, тайм=240, повтори=2, токенів=600):
-    """Один запит до LM Studio з одним або кількома зображеннями → розібраний JSON."""
-    зміст = [{"type": "text", "text": текст}]
-    for b64 in картинки:
-        зміст.append({"type": "image_url", "image_url": {"url": "data:image/jpeg;base64," + b64}})
+def _запит(модель, текст, картинки, тайм=240, повтори=2, токенів=600, з_ужитком=False):
+    """Один запит до LM Studio з одним або кількома зображеннями → розібраний JSON (з `з_ужитком` — пара
+    (JSON, usage)). Відповідь читає реєстр (форма «ЖНИВА_ОПИС», наряд Е2-межі-поза-реєстром): доти тут, у
+    `жнива_збагачення.спитати` і `проба_мотиву_фото.v2` стояли три копії зрізу «від першої { до останньої }» + `json.loads`,
+    а повтор на не-JSON слав той самий текст. Тепер наступна спроба несе розбіжність словами
+    (`промпт_повтору`); обрив і помилка сервера — та сама спроба, як доти."""
+    форма = _СВ.СХЕМИ_ВІДПОВІДІ["ЖНИВА_ОПИС"]
+    картинки_зміст = [{"type": "image_url", "image_url": {"url": "data:image/jpeg;base64," + b64}}
+                      for b64 in картинки]
     # ЯКЩО ТУТ ПОЧНЕ ЛІТАТИ «не JSON: ''» — перше, що перевіряти, це чи не ДУМАЄ модель
     # перевіряти, це чи не ДУМАЄ модель. У моделі з `capabilities.reasoning.default: on`
     # так, qwen3-vl-8b і gemma-4-12b — ні) відповідь іде в `reasoning_content`, а `content`
@@ -42,18 +47,21 @@ def _запит(модель, текст, картинки, тайм=240, пов
     # піднятий `lms load qwen/qwen3.5-9b` (ключем каталогу), глушиться; піднятий
     # `lms load qwen3.5-9b@q4_k_m` (голим іменем варіанта) — ні, і поле мовчки не діє.
     # Тобто «поле шлемо» ще не значить «модель не думає»: перевіряти відповіддю.
-    дані = json.dumps({"model": модель, "temperature": 0, "max_tokens": токенів,
-                       "messages": [{"role": "user", "content": зміст}]}).encode("utf-8")
+    запит_текст = текст
     for спроба in range(повтори + 1):
+        дані = json.dumps({"model": модель, "temperature": 0, "max_tokens": токенів,
+                           "messages": [{"role": "user", "content": [{"type": "text", "text": запит_текст}]
+                                         + картинки_зміст}]}).encode("utf-8")
         try:
             зап = urllib.request.Request(СЕРВЕР, data=дані, headers={"Content-Type": "application/json"})
             with urllib.request.urlopen(зап, timeout=тайм) as в:
                 відп = json.load(в)
-            текст_від = відп["choices"][0]["message"]["content"].strip()
-            м = re.search(r"\{.*\}", текст_від, re.S)
-            if not м:
-                raise ValueError("не JSON: %r" % текст_від[:100])
-            return json.loads(м.group(0))
+            текст_від = (відп["choices"][0]["message"]["content"] or "").strip()
+            об, причина, _ = форма.прочитати(текст_від)
+            if об is None:
+                запит_текст = форма.промпт_повтору(текст, причина)
+                raise ValueError("не JSON (%s): %r" % (причина, текст_від[:100]))
+            return (об, відп.get("usage", {})) if з_ужитком else об
         except Exception as _e:
             import os as _os, traceback as _tb   # п.14: не мовчати (форма bridge)
             if _os.environ.get("ЛЮСТЕРКО_ТРАСА"): _tb.print_exc()
