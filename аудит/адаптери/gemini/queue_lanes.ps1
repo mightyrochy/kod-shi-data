@@ -3,7 +3,7 @@
 .SYNOPSIS
 Спільне для двох планувальників ноутбука — `gemini_run.ps1` (під `gemini`: смуги Codex і `agy`) і `claude_run.ps1` (під
 власником: смуга Claude Code): позначки черги з пріоритетом і строком, смуги й слоти, межі з файла даних, атомарне узяття
-позначки, чекання скидання квоти, замок GPU, окрема робоча копія й окремий процес на наряд.
+позначки, чекання скидання квоти, замок GPU, копія задачі без тек-архівів і окремий процес на наряд.
 
 .DESCRIPTION
 Підвантажується крапкою (`. queue_lanes.ps1`) після блоку параметрів скрипта; власних параметрів нема. Читає змінні
@@ -600,25 +600,133 @@ function Wait-Workers($Workers, [double]$Minutes) {
     }
 }
 
-function Enter-WorkTree([string]$Path, [string]$Commit) {
-    <# Робоча копія слота: git worktree клону (спільні об'єкти й посилання, свої індекс і тека); нема — створюється. #>
-    [void](Invoke-Git @('worktree', 'prune') -AllowFail)
-    if (-not (Test-Path -LiteralPath (Join-Path $Path '.git'))) {
-        if (Test-Path -LiteralPath $Path) { Remove-Item -LiteralPath $Path -Recurse -Force }
-        [void](New-Item -ItemType Directory -Force -Path (Split-Path -Parent $Path))
-        [void](Invoke-Git @('worktree', 'add', '-q', '-f', '--detach', $Path, $Commit))
+# Теки `аудит/` від третього рівня з відстежуваними файлами від 8 МіБ — архіви прогонів, проб і перевірок: копія задачі
+# їх не викладає (main 29.10: 29 тек, у копії 247 МБ із 1353). Тека, названа в наряді, лишається; іншу сесія додає
+# сама — `git sparse-checkout add '/<тека>/'`.
+$script:ArchiveDirBytes = 8MB
+$script:TaskCopy = $null
+
+function Get-ArchiveDirs([string]$Commit, [string]$TaskText) {
+    <# Теки-архіви коміту згори вниз; частковий клон не міряємо: `ls-tree -l` довантажив би всі об'єкти. #>
+    if ((Invoke-Git @('config', '--get', 'remote.origin.promisor') -AllowFail).Out.Trim() -eq 'true') { return }
+    $r = Invoke-Git @('ls-tree', '-r', '-l', '-z', $Commit, '--', 'аудит') -AllowFail
+    if ($r.Code -ne 0) { return }
+    $size = New-Object 'System.Collections.Generic.Dictionary[string,long]' ([StringComparer]::Ordinal)
+    foreach ($e in $r.Out.Split([char]0)) {
+        if ($e -notmatch '^[0-7]{6} blob [0-9a-f]{40,64} +([0-9]+)\t(.+)$') { continue }
+        $bytes = [long]$Matches[1]; $path = $Matches[2]; $i = -1; $depth = 0
+        while (($i = $path.IndexOf('/', $i + 1)) -ge 0) {
+            $depth++
+            if ($depth -lt 3) { continue }
+            $d = $path.Substring(0, $i); $v = 0L
+            [void]$size.TryGetValue($d, [ref]$v); $size[$d] = $v + $bytes
+        }
     }
-    $Path
+    $named = @(foreach ($m in [regex]::Matches($TaskText, '`([^`\r\n]+)`')) { (($m.Groups[1].Value.Trim() -replace '\\', '/') -replace '^\./', '').TrimEnd('/') })
+    $out = New-Object System.Collections.Generic.List[string]
+    foreach ($d in @($size.Keys | Where-Object { $size[$_] -ge $script:ArchiveDirBytes } | Sort-Object { $_.Split('/').Count }, { $_ })) {
+        $keep = $false
+        foreach ($x in $out) { if ($d.StartsWith($x + '/', [StringComparison]::Ordinal)) { $keep = $true } }
+        foreach ($n in $named) { if ($n -ceq $d -or $n.StartsWith($d + '/', [StringComparison]::Ordinal)) { $keep = $true } }
+        if (-not $keep) { $out.Add($d) }
+    }
+    $out
 }
 
-function Reset-WorkTree([string]$Dir) {
-    <# Чиста робоча копія: перервані операції, замок індексу, незакомічене й зайве — геть. #>
-    foreach ($op in @('merge', 'rebase', 'cherry-pick', 'revert')) { [void](Invoke-Git @($op, '--abort') -AllowFail -Dir $Dir) }
-    $lock = (Invoke-Git @('rev-parse', '--git-path', 'index.lock') -Dir $Dir).Out.Trim()
-    if (-not [System.IO.Path]::IsPathRooted($lock)) { $lock = Join-Path $Dir $lock }
-    if (Test-Path -LiteralPath $lock) { Remove-Item -LiteralPath $lock -Force }
-    [void](Invoke-Git @('reset', '-q', '--hard') -Dir $Dir)
-    [void](Invoke-Git @('clean', '-q', '-ffd') -Dir $Dir)
+function ConvertTo-SparseSkip([string]$Dir) {
+    <# Шаблон sparse-checkout (синтаксис .gitignore), що не викладає теку; спецсимволи шаблону екрановано. #>
+    '!/' + ($Dir -replace '([\\*?\[])', '\$1') + '/'
+}
+
+function New-TaskCopy([string]$Dir, [string]$Commit, [string]$TaskText) {
+    <# Тека задачі: `repo` — git worktree клону (спільні об'єкти й посилання) без тек-архівів, `tmp` — TEMP і TMP процесу
+    наряду та його нащадків. Далі git і рушій працюють у копії ($RepoDir); повертає її шлях, закриває Close-TaskCopy. #>
+    $repo = Join-Path $Dir 'repo'; $tmp = Join-Path $Dir 'tmp'
+    [void][IO.Directory]::CreateDirectory($tmp)
+    $script:TaskCopy = @{ Dir = $Dir; Clone = $RepoDir; Temp = $env:TEMP; Tmp = $env:TMP }
+    [void](Invoke-Git @('worktree', 'prune') -AllowFail)
+    [void](Invoke-Git @('worktree', 'add', '-q', '-f', '--no-checkout', '--detach', $repo, $Commit))
+    # sparse-checkout у worktree лише з git 2.36: раніший писав `core.sparseCheckout` у спільний конфіг клону, а
+    # `--no-cone` з'явився в 2.35. Старіший git — копія повна, але так само прибирається після доставки.
+    $v = [regex]::Match([string](Invoke-Git @('version') -AllowFail).Out, '([0-9]+)\.([0-9]+)')
+    $skip = @()
+    if ($v.Success -and [int]$v.Groups[1].Value * 1000 + [int]$v.Groups[2].Value -ge 2036) {
+        $skip = @(Get-ArchiveDirs $Commit $TaskText)
+        $sp = Invoke-Git (@('sparse-checkout', 'set', '--no-cone', '/*') + @(foreach ($d in $skip) { ConvertTo-SparseSkip $d })) -AllowFail -Dir $repo
+        if ($sp.Code -ne 0) {
+            Write-Log "копія задачі: sparse-checkout не вдався — повна ($($sp.Err.Trim()))"
+            [void](Invoke-Git @('sparse-checkout', 'disable') -AllowFail -Dir $repo)
+            $skip = @()
+        }
+    } else { Write-Log "копія задачі: git до 2.36 — повна ($([string]$v.Value))" }
+    [void](Invoke-Git @('reset', '-q', '--hard') -Dir $repo)
+    Set-Variable -Scope Script -Name RepoDir -Value $repo
+    $env:TEMP = $tmp; $env:TMP = $tmp
+    Write-Log "копія задачі $repo ($Commit): тек-архівів не викладено — $($skip.Count)"
+    $repo
+}
+
+function Get-TaskDirText([string]$TaskDir) {
+    <# Рядок промпту про теку задачі (без теки — ''). #>
+    if (-not $TaskDir) { return '' }
+    "Тека задачі — ``$TaskDir``: робоча копія ``repo`` (поточна тека) і ``tmp`` (туди вже вказують TEMP і TMP). Клонів`n" +
+    "і копій репозиторію поза нею не роби; теки-архіви ``аудит/`` не викладено — потрібну додай ``git sparse-checkout add '/<тека>/'``.`n" +
+    "Після кінця прогону обгортка теку прибирає: лишається лише закомічене."
+}
+
+function Close-TaskCopy([string[]]$Delivered) {
+    <# Після доставки: $RepoDir і TEMP/TMP — як до копії, копія — геть (Remove-TaskCopy). Повертає шлях теки, що
+    лишилась із недоставленими комітами, або ''. #>
+    $c = $script:TaskCopy
+    if ($null -eq $c) { return '' }
+    $script:TaskCopy = $null
+    Set-Variable -Scope Script -Name RepoDir -Value $c.Clone
+    $env:TEMP = $c.Temp; $env:TMP = $c.Tmp
+    Remove-TaskCopy $c.Dir $Delivered
+}
+
+function Remove-TaskCopy([string]$Dir, [string[]]$Delivered) {
+    <# Тека задачі чи давня робоча копія слота — геть, коли голова не несе комітів поза $Delivered (`rev-list --not`).
+    Несе — тека лишається з `kept.txt`, гілку звільнено, повертає шлях теки; інакше ''. #>
+    $repo = $(if (Test-Path -LiteralPath (Join-Path $Dir '.git')) { $Dir } else { Join-Path $Dir 'repo' })
+    if (Test-Path -LiteralPath (Join-Path $repo '.git')) {
+        $n = 0
+        $r = Invoke-Git (@('rev-list', '--count', 'HEAD', '--not') + $Delivered) -AllowFail -Dir $repo
+        if ($r.Code -eq 0 -and [int]::TryParse($r.Out.Trim(), [ref]$n) -and $n -gt 0) {
+            [void](Invoke-Git @('checkout', '-q', '--detach') -AllowFail -Dir $repo)
+            [IO.File]::WriteAllText((Join-Path $Dir 'kept.txt'), "недоставлених комітів голови: $n`n", $script:Utf8)
+            Write-Log "копія задачі $Dir лишається: недоставлених комітів голови $n"
+            return $Dir
+        }
+        [void](Invoke-Git @('worktree', 'remove', '-f', '-f', $repo) -AllowFail)
+    }
+    if (Test-Path -LiteralPath $Dir) {
+        try { Remove-Item -LiteralPath $Dir -Recurse -Force -ErrorAction Stop } catch { Write-Log "копія задачі $Dir не прибрана: $($_.Exception.Message)" }
+    }
+    [void](Invoke-Git @('worktree', 'prune') -AllowFail)
+    ''
+}
+
+function Clear-TaskCopies([string]$Root, [string[]]$Delivered) {
+    <# Накопичене під $Root: копії задач і давні робочі копії слотів, яких не тримає зайнятий слот (замок і `copy` у
+    `<слот>.json`) і без `kept.txt`, — геть за Remove-TaskCopy. Теки читаються до замків: нова копія з'являється вже
+    після запису `<слот>.json`. #>
+    $dirs = @(Get-ChildItem -LiteralPath $Root -Directory -ErrorAction SilentlyContinue)
+    $busy = @{}
+    foreach ($l in @(Get-ChildItem -LiteralPath $script:SlotDir -Filter '*.lock' -File -ErrorAction SilentlyContinue)) {
+        if (Test-LockFree $l.FullName) { continue }
+        $slot = [IO.Path]::GetFileNameWithoutExtension($l.Name)
+        $busy[$slot] = $true
+        try {
+            $copy = [string](Get-JsonProp ([IO.File]::ReadAllText((Join-Path $script:SlotDir "$slot.json"), $script:Utf8) | ConvertFrom-Json) 'copy')
+            if ($copy) { $busy[(Split-Path -Leaf $copy)] = $true }
+        } catch { $null = $_ }
+    }
+    foreach ($d in $dirs) {
+        if ($busy.ContainsKey($d.Name) -or (Test-Path -LiteralPath (Join-Path $d.FullName 'kept.txt'))) { continue }
+        Write-Log "накопичене: $($d.FullName) прибирається"
+        [void](Remove-TaskCopy $d.FullName $Delivered)
+    }
 }
 
 function Get-AutoTaskPath([string]$Slug) {
