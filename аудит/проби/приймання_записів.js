@@ -2,6 +2,7 @@
 const fs = require('fs'), path = require('path');
 const {spawnSync} = require('child_process');
 const {знімок, звіритиБазу, порівняти, затягнутиЗелені} = require('./храповик_записів.js');
+const {ключЗапиту} = require('./записаний_обмін.js');
 const корінь = path.resolve(__dirname, '../..');
 
 function серіяДва() {
@@ -53,7 +54,8 @@ function прочитатиJSON(файл) {
 function результатСтенда(тека, rc) {
   const помилка = прочитатиJSON(path.join(тека, 'знімки/помилка_відтворення.json'));
   const застарілий = rc === 3 && помилка?.код === 'REPLAY_STALE' && Number.isInteger(помилка.виклик)
-    ? {виклик: помилка.виклик, причина: помилка.причина} : null;
+    ? {виклик: помилка.виклик, причина: помилка.причина,
+      ...(помилка.запит ? {вхід: ключЗапиту(помилка.запит)} : {})} : null;
   return знімок(fs.readFileSync(path.join(тека, 'лог.txt'), 'utf8'),
     прочитатиJSON(path.join(тека, 'знімки/доказ.json')), rc, застарілий);
 }
@@ -130,6 +132,7 @@ function виконати() {
       let база = прочитатиJSON(path.join(сцена.тека, 'база.json'));
       if (!база) throw new Error('Нема бази живого запису: ' + сцена.назва);
       звіритиБазу(база);
+      let вимірБази = null;
       if (process.env.REPLAY_BASE_BUILD) {
         const текаБази = path.join(тека, 'main');
         fs.mkdirSync(текаБази, {recursive: true});
@@ -141,11 +144,12 @@ function виконати() {
           {cwd: корінь, env: {...середовище, ZNIMKY: path.join(текаБази, 'знімки')},
             stdio: ['ignore', логБази, логБази], timeout: 600000, windowsHide: true});
         } finally { fs.closeSync(логБази); }
-        const вимірБази = результатСтенда(текаБази, до.status === null ? 2 : до.status);
+        вимірБази = результатСтенда(текаБази, до.status === null ? 2 : до.status);
+        fs.writeFileSync(path.join(тека, 'вимір-бази.json'), JSON.stringify(вимірБази, null, 1) + '\n');
         if (вимірБази.застарілий) console.log('База main: ' + вимірБази.застарілий.причина);
         else база = затягнутиЗелені(база, вимірБази);
       }
-      звіт = порівняти(база, після);
+      звіт = порівняти(база, після, вимірБази);
       fs.writeFileSync(path.join(тека, 'база-порівняння.json'), JSON.stringify(база, null, 1) + '\n');
     }
     підсумок.push({сцена: сцена.назва, rc, секунд: (Date.now() - початок) / 1000,
@@ -155,12 +159,14 @@ function виконати() {
     const рядок = сцена.назва + ': ' + звіт.стан + (після.застарілий ? ' на виклику ' + після.застарілий.виклик : '') +
       '; rc стенда=' + rc + '; регресій=' + звіт.регресії.length;
     console.log(рядок);
-    if (після.застарілий) {
+    const потрібенЖивий = звіт.стан === 'запис застарів';
+    if (потрібенЖивий) {
       console.log('ЖИВИЙ ПІСЛЯ: ' + сцена.id + ' — перезаписати змінений вхід моделі');
-      if (process.env.GITHUB_ACTIONS) console.log('::warning::запис застарів на виклику ' + після.застарілий.виклик);
     }
+    if (після.застарілий && process.env.GITHUB_ACTIONS)
+      console.log('::warning::' + рядок);
     if (process.env.GITHUB_STEP_SUMMARY) fs.appendFileSync(process.env.GITHUB_STEP_SUMMARY,
-      '- ' + рядок + (після.застарілий ? '\n  ЖИВИЙ ПІСЛЯ: ' + сцена.id + ' — перезаписати змінений вхід моделі' : '') + '\n');
+      '- ' + рядок + (потрібенЖивий ? '\n  ЖИВИЙ ПІСЛЯ: ' + сцена.id + ' — перезаписати змінений вхід моделі' : '') + '\n');
   }
   if (підсумок.some(р => р.стан === 'регрес')) process.exitCode = 1;
   if (!сцени.length) {
