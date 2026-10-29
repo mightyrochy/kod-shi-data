@@ -1778,7 +1778,7 @@ def факти_з_картки(html_текст, url, селектори=None):
             сус.decompose()
         галерея = кор.select_one('[class*="gallery"], [class*="product-image"], [class*="product__media"], '
                                  '[class*="swiper"], [class*="slider"], [class*="fotorama"], [class*="carousel"], '
-                                 '[class*="photos"], [class*="images"], [class*="product-photo"]') or суп
+                                 '[class*="photos"], [class*="images"], [class*="product-photo"]') or кор
         картинки, чужих = [], 0
         # 21.09 (рядок 126): шукаємо по ВСІХ вузлах, а не лише по `img/source/a`, бо
         # brenda тримає мініатюри в `style="background-image:url(…)"` на `a`, а
@@ -1804,8 +1804,10 @@ def факти_з_картки(html_текст, url, селектори=None):
     # ціна з розмітки, якщо структурні джерела мовчали
     if ф["ціна"] is None:
         ел = кор.select_one('[itemprop="price"], [class*="price"] , [id*="price"]')
-        if ел and суп.find("h1") and not ф["є_товар"] and not ф.get("є_список"):
-            цін = len(кор.select('[itemprop="price"], [class*="price"]'))
+        # гейт «це картка» судить сторінку, а не поле: рахує ціни по всій сторінці, межа блоку його не стосується (ПС-2)
+        if суп.select_one('[itemprop="price"], [class*="price"] , [id*="price"]') is not None and суп.find("h1") \
+                and not ф["є_товар"] and not ф.get("є_список"):
+            цін = len(суп.select('[itemprop="price"], [class*="price"]'))
             if _ЯВНО_КАРТКА.search(url):
                 цін = min(цін, 6)                    # явна товарна адреса: блок «схожі» не рахуємо
             є_кнопка = bool(re.search(r"кошик|корзин|купити|купить|add to cart|add to bag|\bbuy\b|замовити|заказать", суп.get_text(" ")[:200000], re.I))
