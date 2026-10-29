@@ -79,8 +79,6 @@ $script:UsageMinVersion = [version]'1.1.11'
 $script:ClaudeCascadeModel = 'claude-opus-5-5-high'
 # Суфікс-зусилля позначки gpt-*: що `codex exec` не приймає, то відмова (EFFORT_INVALID), а не тиха підміна.
 $script:CodexEfforts = 'none|minimal|low|medium|high|xhigh|max|ultra'
-# Родини моделей: група /usage без власних слів («Gemini Models», «Claude and GPT models») — спільна для родини.
-$script:Families = @('gemini', 'claude', 'gpt')
 $script:AgyVersionDone = $false; $script:AgyVersion = $null; $script:AgyModels = $null
 $script:Limits = $null
 
@@ -273,15 +271,6 @@ function ConvertTo-WindowCode([string]$Text) {
     $(if ($Text) { 'OTHER' } else { '' })
 }
 
-# Слова назви без чисел і службових слів: група «Gemini 3.5 Flash» ↔ модель gemini-3.8-flash-high — спільне «flash».
-function Get-NameTokens([string]$Name) {
-    $stop = @('gemini', 'high', 'medium', 'low', 'preview', 'latest', 'thinking', 'exp', 'and', 'the', 'models', 'model')
-    @(($Name.ToLowerInvariant() -split '[^a-z0-9]+') | Where-Object { $_ -and $_ -notmatch '^[0-9]+$' -and $stop -notcontains $_ })
-}
-
-# Власні слова назви — без назв родин (gemini, claude, gpt): «Gemini 4 Argon» -> argon, «Claude and GPT models» -> нічого.
-function Get-SpecificTokens([string]$Name) { @(Get-NameTokens $Name | Where-Object { $script:Families -notcontains $_ }) }
-
 # Версія agy з `agy --version`; $null — не розпізнано. Одне читання на процес.
 function Get-AgyVersion {
     if ($script:AgyVersionDone) { return $script:AgyVersion }
@@ -434,23 +423,6 @@ function Read-Usage([switch]$Fresh, [long]$After = 0) {
     }
     $script:AgyModels = $(if (@($c.models).Count -gt 0) { @($c.models) } else { $null })
     ConvertFrom-UsageText ([string]$c.text) ([long]$c.time)
-}
-
-# ASCII-код групи для рядка: назва → A-Z0-9, до 16 знаків.
-function ConvertTo-GroupCode([string]$Name) {
-    $g = ($Name.ToUpperInvariant() -replace '[^A-Z0-9]', '')
-    if (-not $g) { $g = 'MODEL' }
-    $g.Substring(0, [Math]::Min(16, $g.Length))
-}
-
-# Групи моделі: за власними словами («argon», «flash»); нема — група родини без власних слів («Gemini Models»).
-function Get-ModelGroups([string]$Model, $Groups) {
-    $mt = @(Get-SpecificTokens $Model)
-    $hit = @($Groups | Where-Object { $g = $_; @(Get-SpecificTokens $g.Name | Where-Object { $mt -contains $_ }).Count -gt 0 })
-    if ($hit.Count -gt 0) { return $hit }
-    $fam = ($Model.ToLowerInvariant() -split '-')[0]
-    if ($script:Families -notcontains $fam) { return @() }
-    @($Groups | Where-Object { @(Get-SpecificTokens $_.Name).Count -eq 0 -and @($_.Name.ToLowerInvariant() -split '[^a-z0-9]+') -contains $fam })
 }
 
 # Known=$false — квоту не прочитано (наряд іде далі). Blocked — усі групи моделі на 0 %; Group — ASCII-ім'я для коду рядка.
@@ -839,15 +811,17 @@ function Get-AgyModels {
     @($names | Select-Object -Unique -First 20)
 }
 
-# Пули для диспетчера (pools.json у теці вихідних): версія agy, групи (ASCII-код, % залишку, хв до скидання), назви
-# `agy models` за ModelPattern. Лише числа й назви за шаблоном; рядок із них складає gemini_publish.ps1.
+# Пули для диспетчера (pools.json у теці вихідних): версія agy, групи (ASCII-код, % залишку, хв до скидання, слова назви
+# a-z0-9 — для Get-ModelGroups у ланцюзі), назви `agy models` за ModelPattern. Лише числа й назви за шаблоном; рядок
+# із них складає gemini_publish.ps1 (слова назви в рядок не йдуть).
 function Write-Pools($Version, $Usage, $Models) {
     $seen = @{}; $groups = @()
     foreach ($g in @(Merge-UsageWindows $Usage.Windows)) {
         $c = ConvertTo-GroupCode $g.Name
         if ($seen.ContainsKey($c)) { continue }
         $seen[$c] = 1
-        $groups += [ordered]@{ g = $c; left = [int]$g.Left; reset = [int]$g.ResetMin }
+        $n = ($g.Name.ToLowerInvariant() -replace '[^a-z0-9]+', ' ').Trim()
+        $groups += [ordered]@{ g = $c; left = [int]$g.Left; reset = [int]$g.ResetMin; n = $n.Substring(0, [Math]::Min(64, $n.Length)) }
     }
     $pm = @($Models | Where-Object { $_ -cmatch $script:PoolModelPattern } | Select-Object -First 6)
     $doc = [ordered]@{ v = 1; time = (Get-Date).ToString('s'); agy = $(if ($Version) { [string]$Version } else { '' }); groups = @($groups | Select-Object -First 6); models = $pm; unknown = (-not $Usage.Known) }
