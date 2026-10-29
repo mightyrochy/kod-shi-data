@@ -1178,10 +1178,12 @@ def _заяви_ремонту(зміна, словник):
     місцях: перекажи її зміст."""
     г = зміна["гейти"][0]
     стара = назва_коротко(зміна.get("зняв") or зміна.get("замінив"), словник)
-    дія = (_ВМ.заява("selection_removed_item_from_stylist_look", item=_ВМ.вільний(стара), item_id=зміна.get("зняв"), choice="code_rank")
+    # річ у заяві — кодами за записом словника, без назви (Е2-вхід-опису-кодами)
+    _річ = lambda і: _ВМ.річ_заяви(dict((словник or {}).get(і) or {}, id=і)) if і is not None else None
+    дія = (_ВМ.заява("selection_removed_item_from_stylist_look", item=_річ(зміна.get("зняв")), item_id=зміна.get("зняв"), choice="code_rank")
            if зміна.get("зняв")
-           else _ВМ.заява("selection_swapped_item_from_stylist_look", was=_ВМ.вільний(стара),
-                          now=_ВМ.вільний(назва_коротко(зміна.get("на"), словник)), item_ids=[зміна.get("замінив"), зміна.get("на")], choice="code_rank"))
+           else _ВМ.заява("selection_swapped_item_from_stylist_look", was=_річ(зміна.get("замінив")),
+                          now=_річ(зміна.get("на")), item_ids=[зміна.get("замінив"), зміна.get("на")], choice="code_rank"))
     if г.get("правило") == "K-OUT-06":
         суть = str(г.get("суть") or "")
         # шар названий у самій суті — тоді дія каже «саме той шар», а не повторює назву

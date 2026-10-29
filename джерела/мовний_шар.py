@@ -3033,19 +3033,7 @@ def _місцеві_предмети(заяви):
     крамницю й до моделі не йде (Е2-вхід-опису-кодами). Той самий id — той самий номер у всіх заявах виклику,
     тож предмет між заявами не губиться; відповідь — лише тексти за ключем, тож номер назад не читається."""
     місця = {}
-
-    def м(і):
-        return місця.setdefault(str(і), "x%d" % (len(місця) + 1))
-
-    def заміна(в):
-        if isinstance(в, dict):
-            return {к: (м(з) if к == "item_id" and з is not None
-                        else [м(і) for і in з if і is not None] if к == "item_ids" and isinstance(з, (list, tuple))
-                        else заміна(з)) for к, з in в.items()}
-        if isinstance(в, (list, tuple)):
-            return [заміна(з) for з in в]
-        return в
-    return [заміна(з) for з in заяви]
+    return З.номерами(заяви, lambda і: місця.setdefault(str(і), "x%d" % (len(місця) + 1)))
 
 
 def прийняти_повідомлення(розмітка, відповідь):
