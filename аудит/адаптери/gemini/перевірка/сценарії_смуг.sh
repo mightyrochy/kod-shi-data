@@ -58,7 +58,16 @@ P
 # Рядки, доставлені диспетчерові (gemini-publish -> підроблений claude).
 lines() { tr -d '\r' < "$W/claude.log" 2>/dev/null | $PY -c "import sys,json
 for l in sys.stdin: print(json.loads(l)['stdin'])" 2>/dev/null | tr -d '\r'; }
-claims() { { grep -h 'слот .*-> \|наряд gemini-queue/.* -> ' "$W/gr/wrapper.log" 2>/dev/null; grep -h 'старт ' "$W/cr/claude-run.log" 2>/dev/null; } | sed -E 's/^.*(gemini-queue\/[^ :]+).*$/\1/' | tr '\n' ' '; }
+# Порядок узяття пише планувальник після виділення слота. Старт CLI у паралельних процесах може йти в іншому порядку.
+# Старі скрипти в режимі ДО не мають слотів; там показуємо їхні записи старту, як раніше.
+claims() { {
+  if [ "$MODE" = do ]; then
+    grep -h 'слот .*-> \|наряд gemini-queue/.* -> ' "$W/gr/wrapper.log" 2>/dev/null
+    grep -h 'старт ' "$W/cr/claude-run.log" 2>/dev/null
+  else
+    grep -h 'слот .*пріоритет .* -> ' "$W/gr/wrapper.log" "$W/cr/claude-run.log" 2>/dev/null
+  fi
+} | sed -E 's/^.*(gemini-queue\/[^ :]+).*$/\1/' | tr '\n' ' '; }
 
 if [ "$MODE" = do ]; then
   echo "=== ДО: шість позначок на одному коміті (без умов: старі скрипти їх не знають), Argon — 0 % у форматі живого /usage"
