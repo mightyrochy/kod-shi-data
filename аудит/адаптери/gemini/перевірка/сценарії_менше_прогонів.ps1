@@ -74,6 +74,8 @@ try {
         function script:Test-ChainCodePull { $true }
         function script:Test-LiveModels { $true }
         function script:Add-ChainMarker($Slug,$Model,$Main,[switch]$Gpu) { $script:TestMarkers += $Slug }
+        # Клон стенда без origin; зняття мертвих позначок на справжньому origin міряє сценарії_ланцюга.ps1.
+        function script:Remove-DeadReviewMarkers { }
         function script:Invoke-ChainApi([string]$Path) { [pscustomobject]@{sha=($Path -split '/')[-1];commit=@{committer=@{date=[datetimeoffset]::UtcNow.AddSeconds(-1).ToString('o')}}} }
         $pull = [pscustomobject]@{number=9;created_at=[datetimeoffset]::UtcNow.ToString('o');title='код';user=@{login='mightyrochy'};head=@{ref='claude/task';sha=$old;repo=@{full_name='mightyrochy/kod-shi-data'}};base=@{ref='main';repo=@{full_name='mightyrochy/kod-shi-data'}}}
         $script:TestPulls = @($pull)
