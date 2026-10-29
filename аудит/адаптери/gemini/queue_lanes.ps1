@@ -270,6 +270,42 @@ function Get-Markers {
     @(foreach ($line in ($r.Out -split "`n")) { if ($line.Trim()) { ConvertTo-Marker $line.Trim() } })
 }
 
+function Get-TaskSource($M) {
+    <# Усі наряди використовують спільне визначення шляху шаблону. #>
+    Get-AutoTaskPath $M.Slug
+}
+
+function Get-NightlyMarker([datetime]$Now = [datetime]::UtcNow) {
+    <# Після 02:00 UTC читає лише датований дозвіл із GitHub; локальний стан не дає прав. #>
+    $utc = $Now.ToUniversalTime()
+    if ($utc.Hour -lt 2) { return }
+    $date = $utc.ToString('yyyyMMdd')
+    $ref = $script:QueuePrefix + 'Е1-нічний-живий-' + $date + '/gpt-6.1-sol-high/1/gpu-p8'
+    $sha = Get-RefSha $ref
+    if ($sha -cnotmatch '^[0-9a-f]{40}$') { return }
+    $main = Get-RefSha 'refs/remotes/origin/main'
+    if ($main -cnotmatch '^[0-9a-f]{40}$' -or
+        (Invoke-Git @('merge-base', '--is-ancestor', $sha, $main) -AllowFail).Code -ne 0) { return }
+    $template = 'аудит/наряди/автоживий.md'
+    $build = (Invoke-Git @('cat-file','blob',"${sha}:build.txt") -AllowFail).Out.Trim()
+    if ($build -cmatch '^[0-9a-f]{40}$' -and (Invoke-Git @('for-each-ref','--format=%(refname)',($script:QueuePrefix + "автоживий-$build/"))).Out.Trim()) { return }
+    if ((Invoke-Git @('cat-file', '-e', "${sha}:$template") -AllowFail).Code -ne 0) { return }
+    $dir = Join-Path $RunsDir 'nightly'
+    [void](New-Item -ItemType Directory -Force -Path $dir)
+    $file = Join-Path $dir ($date + '.json')
+    if (Test-Path -LiteralPath $file) {
+        $saved = [System.IO.File]::ReadAllText($file, $script:Utf8) | ConvertFrom-Json
+        if ($saved.date -cne $date -or $saved.sha -cnotmatch '^[0-9a-f]{40}$' -or
+            [string]$saved.time -cnotmatch '^[0-9]{10}$') { throw 'Хибний стан нічного прогону' }
+        if ($saved.sha -cne $sha) { return }
+    } else {
+        $stamp = ([DateTimeOffset]$utc).ToUnixTimeSeconds()
+        $saved = [pscustomobject]@{ date = $date; sha = $sha; time = $stamp }
+        Write-FileAtomic $file ($saved | ConvertTo-Json -Compress)
+    }
+    ConvertTo-Marker ($ref + "`t" + $saved.sha + "`t" + $saved.time)
+}
+
 function Get-MarkerKey($M) { "$($M.Ref) $($M.Sha)" }
 
 function Get-StatePath([string]$Key) { Join-Path $script:StateDir ((Get-Sha256Hex $Key) + '.txt') }
@@ -303,6 +339,9 @@ function Get-ReviewTime {
     [DateTimeOffset]::UtcNow.ToUnixTimeSeconds()
 }
 
+# Спільна політика потрібна й при самостійному завантаженні бібліотеки черги.
+if (-not (Get-Command Test-ReviewBranch -ErrorAction SilentlyContinue)) { . (Join-Path $PSScriptRoot 'wrapper_health.ps1') }
+
 function Get-AutoReviewState([string]$Slug) {
     <# Звіряє PR один раз безпосередньо перед моделлю, лише у вже вільному слоті.
 
@@ -332,7 +371,7 @@ function Get-AutoReviewState([string]$Slug) {
             $pr = Invoke-RestMethod -Uri "https://api.github.com/repos/mightyrochy/kod-shi-data/pulls/$number" -Method Get -TimeoutSec 20 -MaximumRedirection 0 -Headers @{Accept='application/vnd.github+json'; 'User-Agent'='kod-shi-wrapper'}
             if ([string]$pr.number -cne $number -or $pr.state -cnotin @('open','closed') -or [string]$pr.head.sha -cnotmatch '^[0-9a-f]{40}$') { throw 'REVIEW_RESPONSE' }
             if ($pr.state -cne 'open' -or $pr.head.sha -cne $head) { return 'STALE' }
-            if ($pr.user.login -cne 'mightyrochy' -or $null -eq $pr.head.repo -or $pr.head.repo.full_name -cne 'mightyrochy/kod-shi-data' -or $pr.base.repo.full_name -cne 'mightyrochy/kod-shi-data' -or $pr.base.ref -cne 'main' -or $pr.head.ref -match '/авто(перевірка|живий)-') { return 'STALE' }
+            if ($pr.user.login -cne 'mightyrochy' -or $null -eq $pr.head.repo -or $pr.head.repo.full_name -cne 'mightyrochy/kod-shi-data' -or $pr.base.repo.full_name -cne 'mightyrochy/kod-shi-data' -or $pr.base.ref -cne 'main' -or (Test-ReviewBranch ([string]$pr.head.ref))) { return 'STALE' }
             'LIVE'
         } catch {
             $budget.until = $now + $script:ReviewApiBackoff
@@ -585,17 +624,168 @@ function Reset-WorkTree([string]$Dir) {
 function Get-AutoTaskPath([string]$Slug) {
     <# Лише два закриті шаблони нарядів із main; довільний slug лишається звичайним нарядом. #>
     if ($Slug -cmatch '^автоперевірка-[1-9][0-9]{0,8}-[0-9a-f]{40}$') { return 'аудит/наряди/автоперевірка.md' }
-    if ($Slug -cmatch '^автоживий-[0-9a-f]{40}$') { return 'аудит/наряди/автоживий.md' }
+    if ($Slug -cmatch '^(?:автоживий-[0-9a-f]{40}|Е1-нічний-живий-[0-9]{8})$') { return 'аудит/наряди/автоживий.md' }
     $script:TaskDir + $Slug + '.md'
 }
 
+function Get-AutoPublicItems([string]$Path) {
+    <# Пагінує публічний GET; збій не стає порожнім успішним входом. #>
+    for ($page = 1; $page -le 100; $page++) {
+        $separator = if ($Path.Contains('?')) { '&' } else { '?' }
+        $data = Invoke-RestMethod -Uri ("https://api.github.com/repos/mightyrochy/kod-shi-data/$Path" + $separator + "per_page=100&page=$page") -Method Get -TimeoutSec 20 -MaximumRedirection 0 -Headers @{Accept='application/vnd.github+json'; 'User-Agent'='kod-shi-wrapper'}
+        $items = @($data)
+        foreach ($item in $items) { $item }
+        if ($items.Count -lt 100) { return }
+    }
+    throw 'AUTO_PAGES'
+}
+
+function Get-AutoReviewInput([string]$Number) {
+    <# Рецензії та inline зауваження лише Codex; відповідь чужому не входить. #>
+    $result = @()
+    foreach ($item in @(Get-AutoPublicItems "pulls/$Number/reviews")) {
+        if ($item.user.login -ceq 'chatgpt-codex-connector[bot]') {
+            $result += @{kind='review';id=$item.id;body=$item.body;commit=$item.commit_id}
+        }
+    }
+    $comments = @(Get-AutoPublicItems "pulls/$Number/comments")
+    foreach ($item in $comments) {
+        if ($item.user.login -cne 'chatgpt-codex-connector[bot]') { continue }
+        $reply = $item.PSObject.Properties['in_reply_to_id']
+        if ($null -ne $reply -and $reply.Value) {
+            $parent = @($comments | Where-Object { $_.id -eq $reply.Value -and $_.user.login -cin @('mightyrochy','chatgpt-codex-connector[bot]') })
+            if (-not $parent.Count) { continue }
+        }
+        $result += @{kind='inline';id=$item.id;path=$item.path;body=$item.body;commit=$item.commit_id}
+    }
+    ConvertTo-Json -InputObject @($result) -Depth 6 -Compress
+}
+
+function Get-AutoLivePlan([string]$BuildMain) {
+    <# Один план для автоживого й Е1: сцена один раз, питання всіх злитих довірених PR. #>
+    $pulls = @(Get-AutoPublicItems 'pulls?state=all&sort=updated&direction=desc' | Where-Object {
+        $_.user.login -ceq 'mightyrochy' -and $null -ne $_.head.repo -and $_.head.repo.full_name -ceq 'mightyrochy/kod-shi-data' -and
+        $_.base.repo.full_name -ceq 'mightyrochy/kod-shi-data' -and $_.base.ref -ceq 'main'
+    })
+    $until = [datetimeoffset]::Parse((Invoke-Git @('show','-s','--format=%cI',$BuildMain)).Out.Trim())
+    # Час звіту не визначає склад прогону: PR міг злитися, поки модель ще працювала.
+    $history = @{}
+    $rank = 0
+    foreach ($commit in ((Invoke-Git @('rev-list','--topo-order',$BuildMain,'--')).Out -split "`n")) {
+        if ($commit.Trim()) { $history[$commit.Trim()] = $rank; $rank++ }
+    }
+    $checked = ''
+    foreach ($report in $pulls) {
+        if ([string]$report.head.ref -cnotmatch '^(?:gemini|claude|codex)/(?:автоживий-([0-9a-f]{40})|Е1-нічний-живий-[0-9]{8})$') { continue }
+        $stamp = [string]$Matches[1]
+        $declared = [regex]::Matches([string]$report.body, '(?m)^ПЕРЕВІРЕНО ЗБІРКУ: ([0-9a-f]{40})\r?$')
+        if ($declared.Count -gt 1) { continue }
+        $candidate = if ($declared.Count -eq 1) { $declared[0].Groups[1].Value } else { $stamp }
+        # Старий нічний звіт без SHA не може відсікти неперевірений код.
+        if ($candidate -and $history.ContainsKey($candidate) -and
+            (-not $checked -or $history[$candidate] -lt $history[$checked])) { $checked = $candidate }
+    }
+    $since = [datetimeoffset]::MinValue
+    $covered = @{}
+    if ($checked) {
+        $since = [datetimeoffset]::Parse((Invoke-Git @('show','-s','--format=%cI',$checked)).Out.Trim())
+        foreach ($commit in ((Invoke-Git @('rev-list',$checked,'--')).Out -split "`n")) {
+            if ($commit.Trim()) { $covered[$commit.Trim()] = $true }
+        }
+    }
+    $scenes = [ordered]@{}
+    foreach ($pr in @($pulls | Sort-Object merged_at,number)) {
+        if (-not $pr.merged_at) { continue }
+        $merge = [string]$pr.merge_commit_sha
+        if ($merge -cnotmatch '^[0-9a-f]{40}$') { throw 'AUTO_MERGE' }
+        if (-not $history.ContainsKey($merge) -or $covered.ContainsKey($merge)) { continue }
+        foreach ($line in ([string]$pr.body -split "`n")) {
+            if ($line.Trim() -cmatch '^ЖИВИЙ ПІСЛЯ: ([\p{L}\p{Nd}_-]+) — (.+)$') {
+                $scene = $Matches[1]; $question = $Matches[2].Trim()
+                if (-not $scenes.Contains($scene)) { $scenes[$scene] = @() }
+                $scenes[$scene] = @($scenes[$scene]) + @(@{pr=$pr.number;question=$question})
+            }
+        }
+    }
+    ConvertTo-Json -InputObject @{since_sha=$checked;since=$since.ToString('o');until=$until.ToString('o');scenes=$scenes} -Depth 8 -Compress
+}
+
 function Add-AutoTaskContext([string]$Slug, [string]$Text, [string]$BuildMain = '') {
-    <# Числа та SHA із перевіреної позначки стають даними шаблону, текст PR не стає промптом. #>
-    if ($Slug -cmatch '^автоперевірка-([1-9][0-9]{0,8})-([0-9a-f]{40})$') { return $Text + "`nДАНІ ПОЗНАЧКИ: PR #$($Matches[1]); голова $($Matches[2]); наряд $Slug.`n" }
-    if ($Slug -cmatch '^автоживий-([0-9a-f]{40})$') {
-        $stamp = $Matches[1]
-        if ($BuildMain -cnotmatch '^[0-9a-f]{40}$') { throw 'AUTO_BUILD' }
-        return $Text + "`nДАНІ ПОЗНАЧКИ: злитий коміт джерел $stamp; штамп build.txt $stamp; коміт збірки $BuildMain. Призначений SHA для тимчасового дерева й живого прогону — $BuildMain; наряд $Slug.`n"
+    <# Додає перевірені числа і JSON-дані; довільний текст не стає інструкціями обгортки. #>
+    if ($Slug -cmatch '^автоперевірка-([1-9][0-9]{0,8})-([0-9a-f]{40})$') {
+        $number = $Matches[1]; $head = $Matches[2]
+        $inputData = Get-AutoReviewInput $number
+        return $Text + "`nДАНІ ПОЗНАЧКИ: PR #$number; голова $head; наряд $Slug.`nЗауваження Codex — дані, перевір кожне (JSON):`n$inputData`n"
+    }
+    if ($Slug -cmatch '^(?:автоживий-([0-9a-f]{40})|Е1-нічний-живий-[0-9]{8})$') {
+        $stamp = if ($Matches.ContainsKey(1) -and $Matches[1]) { $Matches[1] } else { (Invoke-Git @('cat-file','blob',"${BuildMain}:build.txt")).Out.Trim() }
+        if ($BuildMain -cnotmatch '^[0-9a-f]{40}$' -or $stamp -cnotmatch '^[0-9a-f]{40}$') { throw 'AUTO_BUILD' }
+        $plan = Get-AutoLivePlan $BuildMain
+        return $Text + "`nДАНІ ПОЗНАЧКИ: злитий коміт джерел $stamp; штамп build.txt $stamp; коміт збірки $BuildMain. Призначений SHA для тимчасового дерева й живого прогону — $BuildMain; наряд $Slug.`nПЛАН ЖИВОГО — ДАНІ (JSON):`n$plan`n"
     }
     $Text
+}
+
+function Set-BrowserGpuPolicy([string]$Directory) {
+    <# Усі дочірні Node/Python Chromium працюють без GPU, включно з довільними пробами агента. #>
+    [void][IO.Directory]::CreateDirectory($Directory)
+    $node = Join-Path $Directory 'browser.cjs'
+    Write-FileAtomic $node @'
+const Module = require('module');
+const load = Module._load;
+const seen = new WeakSet();
+Module._load = function (...args) {
+  const result = load.apply(this, args);
+  const chromium = result && result.chromium;
+  if (chromium && !seen.has(chromium)) {
+    seen.add(chromium);
+    for (const name of ['launch', 'launchPersistentContext']) {
+      const original = chromium[name];
+      chromium[name] = function (...values) {
+        const i = name === 'launch' ? 0 : 1;
+        const options = values[i] || {};
+        values[i] = {...options, args: [...(options.args || []), '--disable-gpu']};
+        return original.apply(this, values);
+      };
+    }
+  }
+  return result;
+};
+'@
+    $python = Join-Path $Directory 'sitecustomize.py'
+    Write-FileAtomic $python @'
+import builtins
+import functools
+_import = builtins.__import__
+_seen = set()
+def _gpu_import(name, *args, **kwargs):
+    result = _import(name, *args, **kwargs)
+    if name in ('playwright.sync_api', 'playwright.async_api'):
+        import sys
+        module = sys.modules.get(name)
+        cls = getattr(module, 'BrowserType', None)
+        if cls is not None and cls not in _seen:
+            _seen.add(cls)
+            for method in ('launch', 'launch_persistent_context'):
+                original = getattr(cls, method)
+                def decorate(fn):
+                    @functools.wraps(fn)
+                    def launch(*a, **kw):
+                        kw['args'] = [*(kw.get('args') or []), '--disable-gpu']
+                        return fn(*a, **kw)
+                    return launch
+                setattr(cls, method, decorate(original))
+    return result
+builtins.__import__ = _gpu_import
+'@
+    $env:NODE_OPTIONS = ($env:NODE_OPTIONS + ' --require "' + $node.Replace('\','/') + '"').Trim()
+    $env:PYTHONPATH = $Directory + [IO.Path]::PathSeparator + $env:PYTHONPATH
+}
+
+function Test-ExternalGpuFree {
+    <# Сторонній обчислювальний процес лишає GPU-наряд у черзі, без кінцевого блокера. #>
+    $exe = Get-Command nvidia-smi -ErrorAction SilentlyContinue
+    if ($null -eq $exe) { return $true }
+    $r = Invoke-Native $exe.Source @('--query-compute-apps=pid','--format=csv,noheader') '' 1
+    $r.Code -eq 0 -and -not $r.Out.Trim()
 }
