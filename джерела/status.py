@@ -187,7 +187,7 @@
     "знання_речі",
     "знання_дріт",
     "accessory", "areas", "bases", "bridge", "brief",
-    "colorspace", "composer", "coordination", "extract", "face_contrast",
+    "colorspace", "composer", "coordination", "extract", "face_contrast", "face_features",
     "feed", "fit", "graph", "hypergraph", "language_gate",
     "outer", "outfit", "palette", "palettes", "personal_palette",
     "pipeline", "profile", "silhouette", "status",
