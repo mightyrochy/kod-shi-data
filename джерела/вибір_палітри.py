@@ -174,10 +174,8 @@ def _до_очей(о, F):
         "Choose what she left to you: one scheme from \"schemes\" and one base from \"bases\".",
         "The ranks come from her colouring and intent only; the occasion, the goal, the weather, "
         "the jewellery and her words are yours to weigh. Any listed option is allowed, a rarer one too.",
-        "\"saturation\" is the band of the look's colours: a colour base keeps its own band; with a "
-        "neutral base choose it.",
-        "One to three reasons for each choice, only codes from \"reason_codes\". why_her_eyes for a "
-        "base only when that base has \"eyes\".",
+        "\"saturation\" is the band of the look's colours; you choose it with a neutral base.",
+        "Give each choice its reasons.",
     ),
     вихід="PALETTE_CHOICE",
     скелет={"scheme": "<code>", "scheme_reasons": ["<code>"], "base": "<id>",

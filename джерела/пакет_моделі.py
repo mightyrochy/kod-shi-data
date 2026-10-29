@@ -495,8 +495,7 @@ import внутрішня_мова as _ВМ_П
 # 42), тож скопійований приклад не стане чужою річчю, а піде в невірні пари.
 ПРИКЛАД_НОМЕРА = "#12·99"
 РЯДОК_ЛИШЕ_НОМЕР = ("Write every item as its «n» alone, exactly as given (half of a set: «n»/top or «n»/bottom): "
-                    "\"%s\" — never \"%s Olive midi skirt …\" and never an object {\"n\": …}; the code "
-                    "already knows every field of the item." % (ПРИКЛАД_НОМЕРА, ПРИКЛАД_НОМЕРА))
+                    "\"%s\", not an object {\"n\": …}." % ПРИКЛАД_НОМЕРА)
 ПОЛЯ_ОБРАЗІВ_EN = {
     # Підпис «Cozy velour hoodie and grey leggings» стояв над річчю типу
     # `trousers`, а не легінсами пулу (`leggings` — 15 речей), і обіцяв не той одяг. Підпис називає лише речі свого
@@ -692,7 +691,7 @@ import внутрішня_мова as _ВМ_П
         # записаних відповідей (33 — по 7 на кожен задум, 4 107 т. до стелі, 190 с). Код бере перші
         # «outfits_wanted» (`міст_відповіді`), тож решта — лише час виводу (аудит/ПРОДУКТ.md п.21)
         "Put together exactly «outfits_wanted» outfits and end the answer there: an idea of «poles» gives one "
-        "outfit, «free» as many as its «outfits», and the code reads no outfit past «outfits_wanted».",
+        "outfit, «free» as many as its «outfits».",
         "One item of each kind; an outfit has a dress, a set, or a top and a bottom.",
         РЯДОК_ТРЕТЬОЇ_РЕЧІ,
         РЯДОК_РІЧ_ДВІЧІ,

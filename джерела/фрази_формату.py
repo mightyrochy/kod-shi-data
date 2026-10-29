@@ -63,3 +63,13 @@ def повтор_назвою_схеми_en(назва=None):
     if назва:
         return "Return ONLY one JSON object following schema «%s», without explanations and without ```." % назва
     return "Return ONLY one JSON object, without explanations and without ```."
+
+
+def той_самий_обʼєкт_uk(схема):
+    """`формат` повтору мови: ті самі дані за тією самою схемою, міняється лише слово."""
+    return "Віддай ТОЙ САМИЙ обʼєкт за схемою «%s» — міняється лише формулювання." % схема
+
+
+def той_самий_обʼєкт_en(схема):
+    """Те саме англійською дротом (`format` повтору мови)."""
+    return "Return THE SAME object following \"%s\" — only the wording changes." % схема

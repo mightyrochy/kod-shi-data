@@ -315,14 +315,13 @@ def промпт_руки(рука, випадок, вимоги="", вибір=
         # Опис може назвати слот непотрібним («no cardigan is needed»,
         # «tights are not needed»), тому модель передає рішення кодом `worn`,
         # щоб показ не малював згаданий слот річчю.
-        "A slot the description says is not needed is not an item: give it worn false. One item "
-        "carries one thing — of two alternatives list the first; a note in brackets is not an item.",
+        "One item carries one thing — of two alternatives list the first; a note in brackets is not an item.",
         "Slot \"accessory\" is for an item no other slot fits.",
         # Рука може відповісти відмовою замість образу, а перелік — вигадати приклад і зробити відмову карткою.
         # Слів код не читає (п.12): чи опис — образ,
         # каже кодом `is_outfit` модель, що його читає; картка руки — лише на «yes».
         "\"is_outfit\" says whether the description is an outfit: no — when in place of items it has a "
-        "refusal, a question or a note; then items is empty.",
+        "refusal, a question or a note.",
     ),
     вихід="ITEM_LIST",
     скелет={"is_outfit": "yes|no",

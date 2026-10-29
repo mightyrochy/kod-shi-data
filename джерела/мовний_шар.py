@@ -3283,10 +3283,9 @@ _ПОЛЯ_EN = {
                      "snow, wet snow), also in the phrase that names the degrees, with that word as quote; none "
                      "when she says it stays dry; possible_rain when she says rain is only possible — not rain",
     # МОВА-ХІД-ТОНШЕ: «завжди, без цитати, за якорями» каже правило ходу — тут лише щаблі
-    "formality": "how dressy this outing is: the code of one step of the ladder (home, everyday, neat, smart, "
-                 "formal, very_smart, ceremonial)",
+    "formality": "how dressy this outing is: the code of one step of the ladder",
     # Гілку ставить та сама норма, що щабель, — модель, а не назва події в коді
-    "formality_reason": "why the ladder puts her on this step: written — a named written dress code; norm — the usual standard of the place or people; evaluated — +1 because she is evaluated; representing — +1 because she represents others; her_words — her explicit wish. Give it with formality, without quote",
+    "formality_reason": "why the ladder puts her on this step: written — a named written dress code; norm — the usual standard of the place or people; evaluated — +1 because she is evaluated; representing — +1 because she represents others; her_words — her explicit wish. Give it with formality",
     "formality_branch": "the branch of that step, given by the same standard that puts the outing on it: business — "
                         "her workplace, a job interview, a business meeting; social — a reception, a celebration, "
                         "her leisure; only for a step of the ladder that has both",
@@ -3483,22 +3482,25 @@ _ПОТРЕБИ_EN = {
 assert set(_ПОТРЕБИ_EN) == set(_ВМ.ПОТРЕБИ)
 
 
-def _коди_норми():
+def _коди_норми(поля=None):
     """Рядки кодів полів без цитати — від `formality` (якорі, смуги дрес-кодів) до `minute`: спільні для ходу
-    розмови (`_коди_розмови`) і ходу плиток (`ХІД_ПЛИТОК`), щоб словник норми події був один."""
-    р = ["- formality — %s; without quote" % _ПОЛЯ_EN["formality"],
+    розмови (`_коди_розмови`) і ходу плиток (`ХІД_ПЛИТОК`), щоб словник норми події був один. `поля` — лише ці
+    поля (хід плиток бере `ПОЛЯ_ХОДУ_ПЛИТОК`: решту `прийняти_хід_плиток` відкидає, тож модель їх не бачить)."""
+    р = ["Fields without quote — the value alone, not {\"quote\", \"value\"}:",
+         "- formality — %s" % _ПОЛЯ_EN["formality"],
          "  · the ladder (step — its branches: clothes; whose standard puts an outing on the step; ordinary "
          "examples, not codes): %s" % _драбина_en(),
-         "- formality_branch — %s; %s; without quote" % (_ПОЛЯ_EN["formality_branch"],
-                                                         _тип_en(_ВМ.СЦЕНАРІЙ["formality_branch"]))]
+         "- formality_branch — %s; %s" % (_ПОЛЯ_EN["formality_branch"], _тип_en(_ВМ.СЦЕНАРІЙ["formality_branch"]))]
     # МОВА-1 (02.10): `part_of_day` — службове, як ці два, але доти його рядка тут не було: модель не
     # бачила ні опису, ні кодів, і «вдень», «по обіді», «на обід» без години губились (проба
     # `мова1_нечіткі.py`: 0 з 5 таких випадків).
     # `minute` — службове так само: стоїть при `hour`, цитати не потребує, бо без години
     # з її слів шов його не бере (`паспорт_з_шару`).
     for ім in ("formality_reason", "reserved_colour", "open_zones", "part_of_day", "minute"):
+        if поля and ім not in поля:
+            continue
         опис = _ПОЛЯ_EN[ім]
-        р.append("- %s — %s; %s; without quote" % (ім, опис, _тип_en(_ВМ.СЦЕНАРІЙ[ім])))
+        р.append("- %s — %s; %s" % (ім, опис, _тип_en(_ВМ.СЦЕНАРІЙ[ім])))
     return р
 
 
@@ -3611,7 +3613,7 @@ _ПРАВИЛО_ПРОФІЛЮ = (
 # не чинники: вони не кажуть, чия норма діє. Розкид — вибір щабля, а не смуги: смуга — рівно числа щабля.
 _ПРАВИЛО_ОШАТНОСТІ = (
     "\"formality\" is in \"update\" on every turn once her words, the passport or \"chosen\" say what kind of "
-    "outing it is, also when it does not change; before that it is absent. It is without quote: the code of "
+    "outing it is, also when it does not change; before that it is absent. It is the code of "
     "one step of the ladder in \"codes\", and \"formality_branch\" with it when the step has a business and a "
     "social branch, found by one rule for every outing, in this order. (1) A written "
     "requirement — a dress code on the invitation, a written rule of the place — gives the step whose clothes "
@@ -3634,7 +3636,7 @@ _ПРАВИЛО_ОШАТНОСТІ = (
 # «її межа сильніша за норму» — тепер в описі `open_zones`.
 _ПРАВИЛО_НОРМИ = (
     "\"reserved_colour\" and \"open_zones\" are, like formality, your understanding of the event's "
-    "norm, without quote; no such norm — leave them absent: the looks are put together anyway.")
+    "norm; no such norm — leave them absent: the looks are put together anyway.")
 
 
 # ПРАВИЛА ХОДУ: кожне — з причиною в коді чи в рішенні власника (коментар над рядком). Прикладів
@@ -3704,7 +3706,7 @@ _ПРАВИЛО_НОРМИ = (
     "Every field with \"quote\" and every item stands on her words: \"quote\" is a fragment of "
     "HER messages — the new one or an earlier one of hers — copied letter for letter: it keeps her word "
     "forms, endings and case included, and every letter is the letter itself, never a Unicode escape code. No "
-    "such fragment — no field. Never quote your own lines, place_words, event or text.",
+    "such fragment — no field.",
     # K-IO-02: не вигадувати; переліки — закриті (`_норм` кладе чуже в `незнайомі`).
     # ДОЩ-1: «не виводь поля з поля» модель читала й як «не виводь зиму з новорічного свята» —
     # `day.unknown` = [start_hour, temperature_c] у ж7 і ж2. Сезон і пору, які несе сама подія, беруть
@@ -3780,8 +3782,7 @@ _ПРАВИЛО_НОРМИ = (
     # модель (`invite_topics: [occasion, …]` 3 з 3 у К7), а не поради зі списку тем.
     # МОВА-ХІД-ТОНШЕ: форму речення {about, says} каже `answer_schema` (`СКЕЛЕТ_РОЗМОВИ`) — тут лише те,
     # що з нею робить код.
-    "The app shows her only the sentences of \"text\" whose \"about\" codes are all in this turn's "
-    "\"update\" or are \"her_question\". The advice topics are offered in \"invite\", never in \"text\".",
+    "The advice topics are offered in \"invite\", never in \"text\".",
     # НГ-4, живий стенд 01.10: «записала це в твій паспорт» (слово системи, не її) і «врахую, що образ
     # має бути стриманим перед керівництвом» — аудиторію й частини дня код ще не читає (НГ-9, НГ-12),
     # тож обіцянка була б неправдою; що код зробить із почутим, вирішує код, а не модель розмови.
@@ -3930,12 +3931,10 @@ import схема_відповіді as _СВ_М
     ),
     # R3 ходу розмови — тепер усе завдання; `need` і `text` цьому ходові нема куди писати.
     правила=("She wrote nothing and only changed the tiles: \"update\" gives formality (with formality_branch), "
-             "part_of_day, reserved_colour and open_zones for what \"chosen\" and the passport say now, and no "
-             "other field.",
-             "Values are only the codes and forms from \"codes\".",
+             "part_of_day, reserved_colour and open_zones for what \"chosen\" and the passport say now.",
              _ПРАВИЛО_ОШАТНОСТІ,
              _ПРАВИЛО_НОРМИ),
-    коди=tuple(_коди_норми()),
+    коди=tuple(_коди_норми(ПОЛЯ_ХОДУ_ПЛИТОК)),
     вихід="ХІД_ПЛИТОК",
     скелет={"update": {
         "formality": "the code of one step of the ladder — once the kind of outing is known (the \"formality\" "
