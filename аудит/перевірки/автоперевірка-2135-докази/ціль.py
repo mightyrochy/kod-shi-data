@@ -22,3 +22,4 @@ import повнота_образу as П
 pathlib.Path(sys.argv[2]).write_text(json.dumps(дані, ensure_ascii=False, indent=2), encoding='utf-8')
 print(json.dumps(dict(названо=вибір['названо'], прийнятих_речей=len(вибір['ід']),
                      ціль_коду=повнота['образ'], ремонт=[о['ід'] for о in ремонт['образи']]), ensure_ascii=False))
+sys.exit(int(вибір['названо'] not in [о['ід'] for о in ремонт['образи']]))
