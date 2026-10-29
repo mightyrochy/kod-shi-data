@@ -132,7 +132,8 @@ try {
             Check "3 $kind — локально" (-not (Test-DispatcherAction "GEMINI ОБГОРТКА: $kind $sha"))
         }
         foreach ($kind in @('ГОТОВО gemini/перевірка-коду','ГОТОВО claude/pachka-3','ГОТОВО gemini/автоживий-штамп','ЗАБЛОКОВАНО gemini/крок','ТРИВОГА AUTH CODEX','ЛАНЦЮГ CHAIN_API')) {
-            Check "3 $kind — дія диспетчера" (Test-DispatcherAction "GEMINI ОБГОРТКА: $kind $sha")
+            $tail = if ($kind -clike 'ГОТОВО *') { $sha } elseif ($kind -clike 'ЗАБЛОКОВАНО *') { 'CRASH' } else { '' }
+            Check "3 $kind — дія диспетчера" (Test-DispatcherAction ("GEMINI ОБГОРТКА: $kind $tail").TrimEnd())
         }
         $script:CloudCalls = 0
         function Get-DispatcherId { 'session_test' }

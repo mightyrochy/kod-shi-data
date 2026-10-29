@@ -511,21 +511,83 @@ function Get-DispatcherId {
     ''
 }
 
+$script:DispatcherBlockActions = @{
+    DONE=$true; BLOCKED=$true; NO_REPORT=$true; TIMEOUT=$true; AGY_ERROR=$true
+    MODEL_INVALID=$true; QUOTA=$true; AUTH=$true; EFFORT_INVALID=$true; STALL=$true
+    NOT_ON_MAIN=$true; NO_TASK_FILE=$true; TASK_TOO_LONG=$true; ENGINE_MISSING=$true
+    CRASH=$true; INTERRUPTED=$true; ISOLATION_FAILED=$true; STATE_INVALID=$true
+    WHOAMI=$true; NET_SESSION=$true; PROFILES=$true; DRIVES=$true; ENV=$true
+    BUNDLE_MISSING=$true; BUNDLE_TOO_BIG=$true; BUNDLE_INVALID=$true; REF_MISMATCH=$true
+    NO_BASE=$true; SECRET=$true; GITHUB_DIR=$true; WRAPPER_FILES=$true; NOT_FF=$true
+    PUSH_FAILED=$true; BOOT=$true; NO_PUSH=$true; BAD_BRANCH=$true; LINE_REJECTED=$true
+    STALE=$false; REVIEW_API=$false; QUOTA_ZERO=$false; EMPTY=$false
+}
+
 function Test-DispatcherAction([string]$Line) {
-    <# Диспетчер прокидається лише за дією; звичайні стани лишаються локально. #>
-    if ($Line -cmatch '^GEMINI ОБГОРТКА: (?:ЗАБЛОКОВАНО|ТРИВОГА|ЛАНЦЮГ) ') { return $true }
+    <# Будить лише дія диспетчера; невідомий код відмови потребує розбору. #>
+    if ($Line -cmatch '^GEMINI ОБГОРТКА: (?:ТРИВОГА|ЛАНЦЮГ) ') { return $true }
+    if ($Line -cmatch '^GEMINI ОБГОРТКА: ЗАБЛОКОВАНО \S+ ([A-Z0-9_]{2,40})\z') {
+        $code = $Matches[1]
+        if ($code -cmatch '^QUOTA0_[A-Z0-9]{1,16}(?:_M[0-9]{1,6})?\z') { return $false }
+        if ($script:DispatcherBlockActions.ContainsKey($code)) { return $script:DispatcherBlockActions[$code] }
+        return $true
+    }
     if ($Line -cmatch '^GEMINI ОБГОРТКА: ГОТОВО (?:gemini|claude|codex)/(?:автоперевірка-|перевірка-|pachka-|автоживий-|Е1-нічний-живий-)') { return $true }
     $false
 }
 
-function Save-LocalLine([string]$Line) {
-    <# Рядок лишається у журналі та стані для #1856 без мережевої доставки. #>
-    Write-WrapperLog "локально, без пробудження: $Line"
+function Get-LocalLines {
+    <# Читає журнал; старим записам дає сталий ідентифікатор для підтвердження доставки. #>
     $path = Join-Path $WorkDir 'local-lines.json'
-    $lines = @()
-    if (Test-Path -LiteralPath $path) { $parsed = ConvertFrom-Json ([IO.File]::ReadAllText($path, $script:Utf8)); $lines = @($parsed) }
-    $lines = @($lines | Where-Object { $_.line -cne $Line } | Select-Object -Last 31)
-    Write-FileAtomic $path (ConvertTo-Json -InputObject @($lines + @(@{utc=[datetime]::UtcNow.ToString('o');line=$Line})) -Compress)
+    if (-not (Test-Path -LiteralPath $path)) { return }
+    $parsed = ConvertFrom-Json ([IO.File]::ReadAllText($path, $script:Utf8))
+    if ($null -eq $parsed) { return }
+    $lines = @($parsed)
+    $changed = $false
+    foreach ($entry in $lines) {
+        if (-not (Get-Prop $entry 'id')) {
+            $entry | Add-Member -NotePropertyName id -NotePropertyValue ([guid]::NewGuid().ToString('N')) -Force
+            $changed = $true
+        }
+    }
+    if ($changed) { Write-FileAtomic $path (ConvertTo-Json -InputObject $lines -Compress) }
+    $lines
+}
+
+function Save-LocalLine([string]$Line) {
+    <# Зберігає кожну подію до зведення, включно з повторними однаковими рядками. #>
+    Write-WrapperLog "локально, без пробудження: $Line"
+    $lines = @(Get-LocalLines)
+    # Недоставлені події не обрізаються; для стану ноутбука лишаються останні 32 доставлені.
+    $sentIds = @($lines | Where-Object { (Get-Prop $_ 'sent') -eq $true } | Select-Object -Last 32 | ForEach-Object { $_.id })
+    $lines = @($lines | Where-Object { (Get-Prop $_ 'sent') -ne $true -or $_.id -cin $sentIds })
+    $entry = @{utc=[datetime]::UtcNow.ToString('o');line=$Line;id=[guid]::NewGuid().ToString('N');sent=$false}
+    Write-FileAtomic (Join-Path $WorkDir 'local-lines.json') (ConvertTo-Json -InputObject @($lines + @($entry)) -Compress)
+}
+
+function Get-LocalSummary {
+    <# У лист потрапляють лише службові рядки, що пройшли той самий формат вихідних. #>
+    @(Get-LocalLines) | Where-Object {
+        (Get-Prop $_ 'sent') -ne $true -and -not (Test-OutboxLine ([string]$_.line)) -and -not (Test-DispatcherAction ([string]$_.line))
+    }
+}
+
+function Get-DispatcherMessage([string]$Line, [object[]]$Summary) {
+    <# Перший рядок незмінний; повтори у зведенні стиснуто лічильником. #>
+    if ($Summary.Count -eq 0) { return $Line }
+    $rows = @($Summary | Group-Object -Property line | ForEach-Object { "$($_.Count) × $($_.Name)" })
+    $Line + "`nЗВЕДЕННЯ ЛОКАЛЬНИХ РЯДКІВ: $($Summary.Count)`n" + ($rows -join "`n")
+}
+
+function Complete-LocalSummary([object[]]$Summary) {
+    <# Підтверджує лише знімок із доставленого листа; нові події лишаються недоставленими. #>
+    if ($Summary.Count -eq 0) { return }
+    $ids = @($Summary | ForEach-Object { $_.id })
+    $lines = @(Get-LocalLines)
+    foreach ($entry in $lines) {
+        if ($entry.id -cin $ids) { $entry | Add-Member -NotePropertyName sent -NotePropertyValue $true -Force }
+    }
+    Write-FileAtomic (Join-Path $WorkDir 'local-lines.json') (ConvertTo-Json -InputObject $lines -Compress)
 }
 
 function Send-Line([string]$Line) {
@@ -534,7 +596,9 @@ function Send-Line([string]$Line) {
     $sid = Get-DispatcherId
     if (-not $sid) { Write-WrapperLog 'нема адреси диспетчера в аудит/СТАН.md'; return $false }
     # Рядок — через stdin: `claude` буває `.cmd`, і тоді аргумент розбирав би cmd.exe.
-    $r = Invoke-Native (Resolve-Exe $ClaudeExe) @('-p', '--cloud', $sid, '--output-format', 'json') $WorkDir 3 $Line
+    $summary = @(Get-LocalSummary)
+    $message = Get-DispatcherMessage $Line $summary
+    $r = Invoke-Native (Resolve-Exe $ClaudeExe) @('-p', '--cloud', $sid, '--output-format', 'json') $WorkDir 3 $message
     $ok = $false
     try { $ack = (($r.Out -split "`n" | Where-Object { $_.Trim().StartsWith('{') }) | Select-Object -Last 1 | ConvertFrom-Json).ok; $ok = $r.Code -eq 0 -and $ack -is [bool] -and $ack -eq $true }
     catch { Write-WrapperLog "відповідь claude не JSON: $($_.Exception.Message)" }
@@ -543,6 +607,7 @@ function Send-Line([string]$Line) {
         Add-HealthAlert 'AUTH' 'CLOUD'
     }
     if (-not $ok) { Write-WrapperLog "claude --cloud $sid -> $($r.Code): $($r.Out.Trim()) $($r.Err.Trim())" }
+    if ($ok) { Complete-LocalSummary $summary }
     $ok
 }
 
@@ -575,12 +640,14 @@ function Send-Fallback([string]$Line) {
     if (-not (Test-DispatcherAction $Line)) { Save-LocalLine $Line; return $true }
     <# Той самий рядок у #1690 через stdin JSON; ні оболонки, ні тексту агента в аргументах. #>
     if ($DryRun) { return $true }
-    $body = ([ordered]@{ body = $Line }) | ConvertTo-Json -Compress
+    $summary = @(Get-LocalSummary)
+    $body = ([ordered]@{ body = (Get-DispatcherMessage $Line $summary) }) | ConvertTo-Json -Compress
     try {
         $r = Invoke-Native (Resolve-Exe $GhExe) @('api', '-X', 'POST', 'repos/mightyrochy/kod-shi-data/issues/1690/comments', '--input', '-') $WorkDir 1 $body
         $id = 0L
         $ok = $r.Code -eq 0 -and [long]::TryParse([string](Get-Prop ($r.Out | ConvertFrom-Json) 'id'), [ref]$id) -and $id -gt 0
         if (-not $ok) { Write-WrapperLog 'запасний канал gh: немає підтвердження id' }
+        if ($ok) { Complete-LocalSummary $summary }
         return $ok
     } catch { Write-WrapperLog 'запасний канал gh: збій'; return $false }
 }
