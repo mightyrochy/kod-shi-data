@@ -158,6 +158,19 @@ try {
     Complete-EngineDrafts
     Complete-EngineDrafts
     Check 'DONE створює PR-чернетку сам, повтор POST відсутній' ($script:DraftPosts -eq 1 -and @(Get-ChildItem "$WorkDir/drafts/*.json").Count -eq 0)
+    # Мірило наряду обгортка-ресурс-слотів: 3 відкриті PR, у одного голова змінилась, один злито. ДО (за кодом до зміни)
+    # лишалось 5 позначок: по одній на кожну побачену голову й ніякого зняття; ПІСЛЯ — одна на живу голову.
+    $h1 = Merge 'три-pr.txt' '1'
+    $script:Pulls = @((Pull 41 'claude/живий' $h1), (Pull 42 'codex/змінений' $h1), (Pull 43 'claude/злитий' $h1)); Invoke-WrapperChain
+    Check 'три PR — три позначки' (@(Markers | Where-Object { $_ -match "автоперевірка-4[123]-$h1/" }).Count -eq 3)
+    & git -C $seed push -q origin "${h1}:refs/heads/gemini-queue/автоперевірка-41-$h1/cc-claude-opus-5-5-high/1/p2"
+    $h2 = Merge 'три-pr.txt' '2'
+    $script:Pulls = @((Pull 41 'claude/живий' $h1), (Pull 42 'codex/змінений' $h2)); Invoke-WrapperChain
+    $after = @(Markers | Where-Object { $_ -match 'автоперевірка-4[123]-' })
+    $log = [IO.File]::ReadAllText((Join-Path $WorkDir 'publish.log'), $utf)
+    Check 'ПІСЛЯ: по одній позначці на живу голову відкритого PR' ($after.Count -eq 2 -and @($after | Where-Object { $_ -match "автоперевірка-41-$h1/" }).Count -eq 1 -and @($after | Where-Object { $_ -match "автоперевірка-42-$h2/" }).Count -eq 1)
+    Check 'мертві позначки знято до узяття: стара голова, злитий PR, дубль' (@($after | Where-Object { $_ -match "автоперевірка-4[23]-$h1/" }).Count -eq 0 -and $log.Contains('знято — голова PR змінилась') -and $log.Contains('знято — PR не відкритий') -and $log.Contains('знято — друга позначка тієї самої голови'))
+    "  мірило: позначок ДО 5 (за кодом main) → ПІСЛЯ $($after.Count)"
     # Сторінки API розгортаються без втрати після першої сотні.
     $script:ApiPages = 0
     function Invoke-ChainApi([string]$Path) { $script:ApiPages++; if ($script:ApiPages -eq 1) { 1..100 } else { 101 } }

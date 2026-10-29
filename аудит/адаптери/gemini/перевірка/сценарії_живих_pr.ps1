@@ -37,7 +37,7 @@ try {
             '3'=(Pull 3 'claude/давній' $other); '4'=(Pull 4 'gemini/автоперевірка-звіт' $head)
             '5'=(Pull 5 'claude/живий' $head)
         }
-        # Три вже наявні позначки: їх не видаляємо, навіть якщо ланцюг більше не вибирає ці PR.
+        # Три давні позначки мертвих голів (PR закрито, голова змінилась, звіт перевірки): ланцюг знімає їх до узяття.
         foreach ($n in @(1,2,4)) { Add-ChainMarker "автоперевірка-$n-$head" $script:CaseModel $head }
         function Get-ChainPulls { @($script:Cases['3'],$script:Cases['4'],$script:Cases['5']) }
         function Complete-EngineDrafts { }
@@ -51,6 +51,11 @@ try {
         Invoke-WrapperChain
         $refs = @(& git -C $remote for-each-ref '--format=%(refname)' refs/heads/gemini-queue/)
         Check "$MeasurePhase $lane : давній PR із сьогоднішнім коментарем" ((@($refs | Where-Object { $_ -match 'автоперевірка-3-' }).Count -eq 0) -eq ($MeasurePhase -eq 'ПІСЛЯ'))
+        if ($MeasurePhase -eq 'ПІСЛЯ') {
+            Check "$lane : ланцюг зняв три мертві позначки, лишив живу" (@($refs | Where-Object { $_ -match 'автоперевірка-[124]-' }).Count -eq 0 -and @($refs | Where-Object { $_ -match 'автоперевірка-5-' }).Count -eq 1)
+            # Голова, що змінилась між проходами ланцюга: смуга звіряє її сама й моделі не запускає.
+            foreach ($n in @(1,2,4)) { Add-ChainMarker "автоперевірка-$n-$head" $script:CaseModel $head }
+        }
         $pubWork = $WorkDir
         if ($lane -eq 'claude') {
             . (Join-Path $SourceDir 'claude_run.ps1') -WorkDir "$case/claude" -RepoDir $seed -OutboxDir "$case/lines" -LaneDir "$case/lanes" -NoStatus
