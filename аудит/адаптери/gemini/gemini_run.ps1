@@ -1143,7 +1143,7 @@ function Get-GeminiHealth {
     if (Test-Path -LiteralPath $path) { try { $c = [System.IO.File]::ReadAllText($path, $script:Utf8) | ConvertFrom-Json } catch { $null = $_ } }
     $now = [DateTimeOffset]::UtcNow.ToUnixTimeSeconds()
     if ($null -eq $c -or $now - [long]$c.time -ge 60 * (Get-Limit $script:Limits 'UsageMinutes' 'usage_minutes')) {
-        $r = Get-DirBytes $ProfileDir
+        $r = Measure-DirBytes $ProfileDir
         $c = [pscustomobject]@{ time = $now; read = (Get-UtcStamp (Get-Date)); profile = $(if ($null -ne $r) { [string]$r.Bytes } else { '' }); skipped = $(if ($null -ne $r) { [string]$r.Skipped } else { '' }) }
         Write-FileAtomic $path ($c | ConvertTo-Json -Compress)
     }
@@ -1176,7 +1176,7 @@ function Write-Heartbeat([string]$Iso) {
         }
         $hb.lanes = $lanes
         $hb.limits = $script:Limits.source
-        $hb.unsourced = @($script:Limits.unsourced | Where-Object { $_ })
+        $hb.unsourced = @(Get-Unsourced $script:Limits)
         # Старі копії claude_run.ps1 читають одну узяту позначку: перша зайнята.
         if ($null -ne $first) {
             $hb.marker = $first.marker; $hb.engine = $(if ($first.slot -like 'codex-*') { 'codex' } else { 'agy' }); $hb.model = $first.model

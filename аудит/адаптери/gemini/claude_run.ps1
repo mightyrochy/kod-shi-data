@@ -280,7 +280,7 @@ function Update-Health {
     $samples = @(@(Get-JsonProp $h 'samples') | Where-Object { $null -ne $_ -and $now - [long]$_.t -le 2 * 86400 })
     try { $samples += [pscustomobject]@{ t = $now; free = [long](Get-FreeBytes) } } catch { Write-Log "здоров'я: місце не виміряно" }
     $dirs = @(foreach ($d in @(@('C:\tmp', $TmpDir), @('claude-run', $WorkDir))) {
-        $r = Get-DirBytes $d[1]
+        $r = Measure-DirBytes $d[1]
         [pscustomobject]@{ name = $d[0]; bytes = $(if ($null -ne $r) { $r.Bytes } else { -1 }); skipped = $(if ($null -ne $r) { $r.Skipped } else { 0 }) }
     })
     $h = [pscustomobject]@{ time = $now; samples = $samples; dirs = $dirs }
@@ -309,15 +309,19 @@ function Get-HealthLines($G, $Cq) {
     $lines += "- розміри: $($sizes -join ' · ')"
     $ms = @(try { Get-Markers } catch { Write-Log "здоров'я: позначки не прочитано"; @() })
     $lines += @('', "Позначки черги: $($ms.Count) (вік — від коміту голови)", '', '| рушій | вид | < 1 год | < 1 доба | ≥ 1 доба |', '|---|---|---|---|---|')
-    $rows = [ordered]@{}
+    $keys = @{}; $cnt = @{}
     foreach ($m in $ms) {
         $key = "$(if ($m.Valid) { $m.Lane } else { '?' }) | $(Get-MarkerKind ([string]$m.Slug))"
-        if (-not $rows.Contains($key)) { $rows[$key] = @(0, 0, 0) }
         $age = $now - [long]$m.Time
-        $rows[$key][$(if ($age -lt 3600) { 0 } elseif ($age -lt 86400) { 1 } else { 2 })]++
+        $b = "$key#$(if ($age -lt 3600) { 0 } elseif ($age -lt 86400) { 1 } else { 2 })"
+        $keys[$key] = $true
+        $cnt[$b] = 1 + $(if ($cnt.ContainsKey($b)) { [int]$cnt[$b] } else { 0 })
     }
-    foreach ($k in @($rows.Keys | Sort-Object)) { $lines += "| $k | $($rows[$k][0]) | $($rows[$k][1]) | $($rows[$k][2]) |" }
-    if ($rows.Count -eq 0) { $lines += '| — | — | 0 | 0 | 0 |' }
+    foreach ($k in @($keys.Keys | Sort-Object)) {
+        $c = @(foreach ($i in 0..2) { $(if ($cnt.ContainsKey("$k#$i")) { $cnt["$k#$i"] } else { 0 }) })
+        $lines += "| $k | $($c[0]) | $($c[1]) | $($c[2]) |"
+    }
+    if ($keys.Count -eq 0) { $lines += '| — | — | 0 | 0 | 0 |' }
     $zero = { param($Refused, $Reset)
         if ($Refused -notmatch $script:UtcRx) { return $false }
         if ($Reset -match $script:UtcRx) { return [int](Get-Minutes $Reset) -lt 0 }
@@ -376,7 +380,7 @@ function Get-StatusBody {
     $lines += @('', "GPU: $(if ($gpuBy.Count) { 'зайнята — ' + ($gpuBy -join ', ') } else { 'вільна' }) · межі: claude-run — $(if ($null -ne $lim) { $lim.source } else { '?' }), gemini-run — $(if ($g.Limits) { $g.Limits } else { '?' })")
     $lines += @('', "heartbeat gemini-run (UTC): $($g.Time) · вік: $(Get-Minutes $g.Time) хв · isolation: $($g.Isolation) · понад 5 хв — джерело застаріле")
     # Межа без джерела (10970) діє з попереднього прийнятого значення; рядок — щоб її було видно, а не щоб зупинити.
-    $unsrc = $(if ($null -ne $lim) { @($lim.unsourced | Where-Object { $_ }) } else { @() })
+    $unsrc = @(Get-Unsourced $lim)
     foreach ($f in @(@($unsrc) + @($g.Unsourced) | Select-Object -Unique)) {
         $who = @($(if ($unsrc -ccontains $f) { 'claude-run' }), $(if ($g.Unsourced -ccontains $f) { 'gemini-run' }) | Where-Object { $_ })
         $lines += "- межа без джерела: $f ($($who -join ', '))"

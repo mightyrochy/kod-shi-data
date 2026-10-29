@@ -24,7 +24,7 @@ setup() { W="${TMPDIR:-/tmp}/smuhy/$1"; rm -rf "$W"; mkdir -p "$W"/{fake,gr,gout
     FAKE_GEMINI_STATE= FAKE_CLAUDE_LOG="$(wp "$W/claude.log")" FAKE_ISOLATION=
   printf 'b1' > "$W/cr/boot.txt"; }
 # смуги.json v2: кожен слот з джерелом-виміром (без джерела обгортка бере попереднє значення).
-lanes() { local s='"джерело":"вимір: стенд 29.10 — слоти"'
+lanes() { local s='"джерело":"вимір: стенд 29.10 — 3 копії"'
   printf '{"v":2,"slots":{"codex":{"n":%s,%s},"agy":{"n":%s,%s},"claude":{"n":%s,%s}}}\n' "$1" "$s" "$2" "$s" "$3" "$s"; }
 mark() { git -C "$W/seed" push -q origin "main:refs/heads/gemini-queue/$1" 2>/dev/null; }
 gem() { A=$($PY -c "import json,sys

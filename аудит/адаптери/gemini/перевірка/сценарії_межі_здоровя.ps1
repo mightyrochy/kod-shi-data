@@ -87,7 +87,9 @@ try {
         Check "2 розділ «Здоров'я»" ($body.Contains("### Здоров'я"))
         Check '2 показник 1: вільне місце C: і зміна за добу −5.0 ГБ' ($body.Contains('- вільне місце на C: 100.0 ГБ · зміна за добу: −5.0 ГБ'))
         Check '2 показник 2: розміри C:\tmp, claude-run, профілю gemini' ($body -cmatch '- розміри: C:\\tmp 0\.0 ГБ · claude-run [0-9.]+ ГБ · профіль gemini 3\.0 ГБ \(недоступних тек 2\)')
-        Check '2 показник 3: позначки за рушієм, видом і віком' ($body.Contains('Позначки черги: 5') -and $body.Contains('| codex | автоперевірка | 0 | 0 | 2 |') -and $body.Contains('| codex | перевірка | 0 | 1 | 0 |') -and $body.Contains('| claude | наряд | 1 | 0 | 0 |'))
+        $ok3 = $body.Contains('Позначки черги: 5') -and $body.Contains('| codex | автоперевірка | 0 | 0 | 2 |') -and $body.Contains('| codex | перевірка | 0 | 1 | 0 |') -and $body.Contains('| claude | наряд | 1 | 0 | 0 |')
+        Check '2 показник 3: позначки за рушієм, видом і віком' $ok3
+        if (-not $ok3) { @($body -split "`n" | Where-Object { $_ -match '^Позначки|^\| (claude|codex|agy|\?) \|' }) | ForEach-Object { "    $_" } }
         Check '2 показник 4: позначки на рушії з нульовою квотою' ($body.Contains('Позначки на рушії з нульовою квотою: claude 1 · codex 0 · agy 4'))
         $h1 = [IO.File]::ReadAllText("$tmp/cr/health.json", $utf)
         function Get-FreeBytes { 1 }
@@ -189,7 +191,7 @@ try {
         # Живий 29.10: самооновлення о 13:14 записало новий active.txt, а claude-run з 08:34 далі брав позначки старою
         # версією. Тут: перший прохід веде наряд (живий процес), під час нього pointer перемикається.
         [IO.File]::WriteAllText("$vroot/active.txt", $old, $utf)
-        $script:Fake = [pscustomobject]@{ Slot = 'claude-1'; Slug = 'x'; Gpu = $false; Marker = 'x'; Proc = [pscustomobject]@{ HasExited = $false } }
+        $script:Fake = [pscustomobject]@{ Slot = 'claude-1'; Slug = 'x'; Gpu = $false; Marker = 'gemini-queue/x/cc-claude-sonnet-5-5-medium/1'; Proc = [pscustomobject]@{ HasExited = $false } }
         $script:OnStart = { if ($script:Starts -eq 1) { [void]$script:Workers.Add($script:Fake); [IO.File]::WriteAllText("$vroot/active.txt", $new, $utf) } }
         $rc = @(Main)[-1]
         Check "5 після перемикання позначок старою версією не взято: проходів $($script:Starts) (ДО — 2: другий прохід старим кодом, ПІСЛЯ — 1)" ($script:Starts -eq 1)
@@ -212,7 +214,7 @@ try {
         $rc = @(Main)[-1]
         Check "6 наступний запуск, fetch успішний: прибирань $($script:Cleans) (1), код $rc" ($script:Fetches -eq 2 -and $script:Cleans -eq 1 -and $rc -eq 0)
         # Процес із живим нарядом: fetch падає на другому проході — прибирання першого проходу не повторюється.
-        $script:Fake = [pscustomobject]@{ Slot = 'claude-1'; Slug = 'x'; Gpu = $false; Marker = 'x'; Proc = [pscustomobject]@{ HasExited = $false } }
+        $script:Fake = [pscustomobject]@{ Slot = 'claude-1'; Slug = 'x'; Gpu = $false; Marker = 'gemini-queue/x/cc-claude-sonnet-5-5-medium/1'; Proc = [pscustomobject]@{ HasExited = $false } }
         $script:OnStart = { if ($script:Starts -eq 1) { [void]$script:Workers.Add($script:Fake) } }
         $script:Fetches = 0; $script:Cleans = 0; $script:Starts = 0; $script:Waits = 0; $script:FailFetch = 0
         $rc = @(Main)[-1]

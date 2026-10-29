@@ -539,7 +539,7 @@ function Get-WaitingMarkers {
 
 # --- здоров'я машини (лише показ, узяття не гейтить) ----------------------------------------------------------------
 
-function Get-DirBytes([string]$Path) {
+function Measure-DirBytes([string]$Path) {
     <# Розмір названої теки без переходу за точками з'єднання (профіль має петлі); недоступні теки — лічбою Skipped. #>
     if (-not $Path -or -not (Test-Path -LiteralPath $Path -PathType Container)) { return $null }
     $bytes = 0L; $skipped = 0
@@ -555,6 +555,12 @@ function Get-DirBytes([string]$Path) {
         } catch { $skipped++ }
     }
     [pscustomobject]@{ Bytes = $bytes; Skipped = $skipped }
+}
+
+function Get-Unsourced($Limits) {
+    <# Поля меж без джерела з об'єкта Get-Limits; межі з іншого джерела (стенд, старий стан) — без поля, порожньо. #>
+    $u = $(if ($Limits -is [System.Collections.IDictionary]) { $(if ($Limits.Contains('unsourced')) { $Limits['unsourced'] }) } else { Get-JsonProp $Limits 'unsourced' })
+    @($u | Where-Object { $_ })
 }
 
 function Get-MarkerKind([string]$Slug) {
