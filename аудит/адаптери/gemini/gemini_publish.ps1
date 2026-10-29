@@ -519,7 +519,7 @@ $script:LocalLinesCap = 64
 function Test-DispatcherAction([string]$Line) {
     <# Диспетчер прокидається лише за станом, що чекає його дії; решта йде зведенням при наступному пробудженні. #>
     if ($Line -cmatch '^GEMINI ОБГОРТКА: ЗАБЛОКОВАНО \S+ (\S+)$') { return $Matches[1] -cnotmatch $script:QuietBlockedCodes }
-    if ($Line -cmatch '^GEMINI ОБГОРТКА: (?:ЗАБЛОКОВАНО|ТРИВОГА|ЛАНЦЮГ) ') { return $true }
+    if ($Line -cmatch '^GEMINI ОБГОРТКА: (?:ЗАБЛОКОВАНО|ТРИВОГА|ЛАНЦЮГ)(?: |$)') { return $true }
     if ($Line -cmatch '^GEMINI ОБГОРТКА: ГОТОВО (?:gemini|claude|codex)/(?:автоперевірка-|перевірка-|pachka-|автоживий-|Е1-нічний-живий-)') { return $true }
     $false
 }
