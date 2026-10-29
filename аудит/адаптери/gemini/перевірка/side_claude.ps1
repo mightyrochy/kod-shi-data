@@ -28,4 +28,13 @@ function Get-TaskRows {
     }
 }
 function Test-ExternalGpuFree { $true }
+# Диск стенда — не диск машини: вільно FAKE_FREE_GB (типово 1000) мінус 1,5 ГБ на кожну наявну копію слота в w\;
+# FAKE_WT_FAULT — копія слота падає з браком місця (IOException, код 112).
+function Get-FreeDiskGb([string]$Dir) {
+    $root = $(if ($script:SideRoot) { $script:SideRoot } else { $Dir })
+    $f = $(if ($env:FAKE_FREE_GB) { [double]$env:FAKE_FREE_GB } else { 1000 })
+    $f - 1.5 * @(Get-ChildItem -LiteralPath $root -Directory -ErrorAction SilentlyContinue).Count
+}
+if ($env:FAKE_WT_FAULT) { function Enter-WorkTree { throw (New-Object System.IO.IOException('There is not enough space on the disk.', -2147024784)) } }
+$script:SideRoot = (Join-Path $WorkDir 'w')
 exit (Main)

@@ -322,7 +322,8 @@ function Invoke-WrapperChain {
     } catch {
         $code = [string]$_.Exception.Message
         if ($code -cnotmatch '^CHAIN_[A-Z_]+$') { $code = 'CHAIN_FAILED' }
-        Write-WrapperLog "ланцюг: $code; наступний прохід повторить незавершене"
+        # Рядок диспетчерові — лише код; повний текст винятку й місце — у журнал.
+        Write-WrapperLog "ланцюг: $code; наступний прохід повторить незавершене — $(Format-ErrorDetail $_)"
         if (-not (Test-Seen ("chain-failed $code " + [datetime]::UtcNow.ToString('yyyyMMddHH')))) {
             Add-OutboxLine ((Get-Date -Format 'yyyyMMdd-HHmmss') + '-' + (Get-Sha256Hex "chain $code").Substring(0,12) + '.txt') "GEMINI ОБГОРТКА: ЛАНЦЮГ $code"
         }

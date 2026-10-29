@@ -118,4 +118,24 @@ done
 code k9-wrong-sha report_wrong_sha "$M" NO_PUSH
 code k9-bad-branch report_bad_branch "$M" BAD_BRANCH
 
+echo "=== К10 слоти 64, диска на 3 задачі: узято 3, решта чекає без CRASH; копії й теки задач після кінця прибрано"
+setup k10; (cd "$W/seed"; mkdir -p аудит/адаптери/gemini; printf '{"v":1,"slots":{"claude":64}}' > аудит/адаптери/gemini/смуги.json
+  for i in 1 2 3 4 5; do printf 'Т | наряд\n\nПроба диска.\n' > "аудит/наряди/диск-$i.md"; done; git add -A; git commit -q -m диск; git push -q origin main 2>/dev/null)
+for i in 1 2 3 4 5; do mark "диск-$i/$M/1"; done
+FAKE_FREE_GB=34 cr
+chk "перший прохід узяв 3 позначки, далі — «диск: вільно 29.5 ГБ < поріг 30 ГБ»" '[ "$(sed -n "1,/диск: вільно 29.5 ГБ < поріг 30 ГБ/p" "$W/cr/claude-run.log" | grep -c ": слот claude-")" = 3 ]'
+chk "усі 5 виконано, жодного CRASH, claim не лишився" '[ "$(nlines)" = 5 ] && ! lines | grep -q CRASH && [ -z "$(ls "$W"/cr/state/*.claim 2>/dev/null)" ]'
+chk "копії слотів прибрано: w порожня, у клоні одна робоча копія" '[ -z "$(ls "$W/cr/w" 2>/dev/null)" ] && [ "$(git -C "$W/clone" worktree list | wc -l)" = 1 ]'
+chk "у теках прогонів — журнал і стан: без теки задачі й промпта" '[ -z "$(ls -d "$W"/cr/runs/*/task "$W"/cr/runs/*/prompt.txt 2>/dev/null)" ] && [ "$(ls "$W"/cr/runs/*/result.json | wc -l)" = 5 ]'
+chk "промпт називає теку задачі; TEMP процесу claude — вона ж" '[[ "$(prompt)" == *"теці задачі"*"task"* ]] && grep -q "\"temp\": *\"[^\"]*task\"" "$W/cc.log"'
+chk "стан ноутбука: рядок диска з порогом" 'grep -l "диск: вільно .* поріг 30 ГБ" "$W"/gh/patch_*.json >/dev/null'
+echo "=== К11 збій сховища до запуску (повний диск) — позначка в черзі, не CRASH"
+setup k11; mark "$SLUG/$M/1"
+for i in 1 2 3 4 5 6 7; do FAKE_WT_FAULT=1 cr; sed -i 's/"until":[0-9]*/"until":0/' "$W"/cr/state/*.txt; done
+chk "7 збоїв поспіль — без рядка CRASH; WAIT групи DISK, retakes 0" '[ "$(nlines)" = 0 ] && grep -q "^WAIT .*\"retakes\":0" "$W"/cr/state/*.txt && grep -q "\"group\":\"DISK\"" "$W"/cr/state/*.txt'
+chk "у журналі — тип, текст і місце винятку" 'grep -q "System.IO.IOException: There is not enough space on the disk. @ side_claude.ps1:" "$W/cr/claude-run.log"'
+cr; chk "місце є — наступний прохід виконує позначку" '[ "$(lines)" = "GEMINI ОБГОРТКА: ГОТОВО claude/$SLUG $(git -C "$W/origin.git" rev-parse "refs/heads/claude/$SLUG" 2>/dev/null) МОДЕЛЬ $M" ]'
+echo "=== К12 незайняті копії слотів від попередніх версій прибирає перший прохід"
+setup k12; git -C "$W/clone" worktree add -q --detach "$(wp "$W/cr/w/claude-7")" 2>/dev/null; mkdir -p "$W/cr/w/claude-9/недороблена"; cr
+chk "claude-7 (у обліку git) і claude-9 (недороблена) — геть" '[ -z "$(ls "$W/cr/w" 2>/dev/null)" ] && [ "$(git -C "$W/clone" worktree list | wc -l)" = 1 ]'
 echo; [ $BAD = 0 ] && echo "ВСЕ ✓" || echo "ЗБІЙ ✗"; exit $BAD

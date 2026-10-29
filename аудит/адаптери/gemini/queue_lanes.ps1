@@ -34,11 +34,20 @@ $script:OnWindows = ($PSVersionTable.PSEdition -ne 'Core') -or [bool](Get-Variab
 $script:Ceil = @{
     slots = @(0, 64); poll_minutes = @(1, 5); usage_minutes = @(5, 60); quota_wait_minutes = @(15, 1440)
     agy_total_minutes = @(30, 600); agy_turn_minutes = @(10, 600); codex_stall_minutes = @(10, 240); claude_hang_minutes = @(30, 240)
+    min_free_gb = @(5, 500)
 }
 $script:Defaults = @{
     poll_minutes = 2; usage_minutes = 15; quota_wait_minutes = 60
     agy_total_minutes = 180; agy_turn_minutes = 120; codex_stall_minutes = 60; claude_hang_minutes = 120
+    min_free_gb = 30
 }
+# Місце однієї задачі: робоча копія слота — відстежувані файли main, 1,35 ГБ (вимір 29.10), з запасом. Запущені в тому
+# самому проході ще створюють свої копії, тож вільне місце для наступної позначки зменшується на це число за кожну.
+$script:TaskDiskGb = 1.5
+# Останній вимір диска перед узяттям позначки (Test-DiskRoom): Free, Min, Low — для стану ноутбука.
+$script:Disk = $null
+# Тека задачі в процесі наряду (Enter-TaskDir) — для промпта.
+$script:TaskDirPath = ''
 $script:LaneDefaults = [ordered]@{ codex = 2; agy = 2; claude = 2 }
 # Скільки разів відмова за квотою повертає ту саму позначку в чергу: далі — кінець із кодом квоти, як до смуг.
 $script:MaxRetakes = 5
@@ -452,17 +461,25 @@ function Clear-UnstartedClaim([string]$StatePath) {
     Remove-Claim $StatePath
 }
 
-function Step-FailedStart($M, [string]$StatePath) {
+function Step-FailedStart($M, [string]$StatePath, [switch]$Storage) {
     <# Відмова до STARTED (робоча копія, запуск процесу наряду) — та сама ланка claim -> STARTED, що й квота: рахується
     тим самим лічильником `retakes` і тією самою межею MaxRetakes. 'NONE' — claim уже звільнено (слот чи GPU зайняті,
     кінець, чекання) або є STARTED; 'RETRY' — claim звільнено, позначка в черзі (стан WAIT, група START, без чекання);
-    'LIMIT' — межа: чекання не записано, claim лишається, викликач закриває позначку кінцевим станом і рядком. #>
+    'LIMIT' — межа: чекання не записано, claim лишається, викликач закриває позначку кінцевим станом і рядком;
+    'KEEP' — минущий збій сховища (-Storage, Test-StorageFault): позначка не вада й не згоряє до CRASH, поки диск повний —
+    чекає наступного проходу (WAIT, група DISK, без ліку retakes; без чекання збій, що не минає, крутився б без паузи). #>
     $t = ''
     if (Test-Path -LiteralPath $StatePath) { try { $t = [System.IO.File]::ReadAllText($StatePath, $script:Utf8) } catch { $null = $_ } }
     if ($t.StartsWith('STARTED ') -or -not (Test-Path -LiteralPath (Get-ClaimPath $StatePath))) { return 'NONE' }
     # Голова гілки попереднього чекання за квотою — для продовження — не губиться.
     $head = ''
     if ($t.StartsWith('WAIT {')) { try { $head = [string](Get-JsonProp ($t.Substring(5) | ConvertFrom-Json) 'head') } catch { $null = $_ } }
+    if ($Storage) {
+        $until = [DateTimeOffset]::UtcNow.ToUnixTimeSeconds() + [long](60 * (Get-Limit $script:Limits 'PollMinutes' 'poll_minutes'))
+        [void](Set-MarkerWait $M $until @{ group = 'DISK'; head = $head })
+        Write-Log "позначка $($M.Name): збій сховища до запуску — чекає наступного проходу без ліку відмов"
+        return 'KEEP'
+    }
     $n = Set-MarkerWait $M ([DateTimeOffset]::UtcNow.ToUnixTimeSeconds()) @{ retake = $true; group = 'START'; head = $head }
     if ($null -eq $n) { return 'LIMIT' }
     Write-Log "позначка $($M.Name): відмова до запуску, повернено в чергу ($n із $script:MaxRetakes)"
@@ -547,6 +564,25 @@ function Get-FreeSlot([string]$Lane, [int]$N, $Workers) {
     ''
 }
 
+function Get-FreeDiskGb([string]$Dir) {
+    <# Вільне місце (ГБ) на диску теки; не прочиталось — $null. #>
+    try { [Math]::Round(([System.IO.DriveInfo]::new([System.IO.Path]::GetPathRoot([System.IO.Path]::GetFullPath($Dir)))).AvailableFreeSpace / 1GB, 1) }
+    catch { $null }
+}
+
+function Test-DiskRoom([string]$Dir, [int]$Started) {
+    <# Диск робочих копій вміщає ще одну задачу: вільне мінус копії $Started нарядів, запущених цим проходом (ще
+    створюються), — не менше порогу min_free_gb. Ні — позначку не беруть: без claim, без ліку відмов, вона чекає
+    наступного проходу. Вимір — у $script:Disk (стан ноутбука). Місця не прочитано — не стримуємо. #>
+    $min = Get-Limit $script:Limits 'MinFreeGb' 'min_free_gb'
+    $free = Get-FreeDiskGb $Dir
+    $left = $(if ($null -ne $free) { $free - $Started * $script:TaskDiskGb } else { $null })
+    $low = ($null -ne $left) -and $left -lt $min
+    if ($low -and -not ($null -ne $script:Disk -and $script:Disk.Low)) { Write-Log "диск: вільно $left ГБ < поріг $min ГБ — позначок не беру" }
+    $script:Disk = [pscustomobject]@{ Free = $free; Min = $min; Low = $low }
+    -not $low
+}
+
 function Read-SlotInfo([string]$Lane) {
     <# Що йде в слотах смуги зараз: файли `<слот>.json` при зайнятому замку слота. #>
     @(for ($k = 1; $k -le $script:Ceil.slots[1]; $k++) {
@@ -604,11 +640,78 @@ function Enter-WorkTree([string]$Path, [string]$Commit) {
     <# Робоча копія слота: git worktree клону (спільні об'єкти й посилання, свої індекс і тека); нема — створюється. #>
     [void](Invoke-Git @('worktree', 'prune') -AllowFail)
     if (-not (Test-Path -LiteralPath (Join-Path $Path '.git'))) {
-        if (Test-Path -LiteralPath $Path) { Remove-Item -LiteralPath $Path -Recurse -Force }
+        if (Test-Path -LiteralPath $Path) { Remove-Tree $Path }
         [void](New-Item -ItemType Directory -Force -Path (Split-Path -Parent $Path))
         [void](Invoke-Git @('worktree', 'add', '-q', '-f', '--detach', $Path, $Commit))
     }
     $Path
+}
+
+function Remove-Tree([string]$Path) {
+    <# Тека з шляхами понад 260 знаків: Remove-Item на них падає, `rd` з префіксом \\?\ — ні. #>
+    try { Remove-Item -LiteralPath $Path -Recurse -Force -ErrorAction Stop }
+    catch {
+        if (-not $script:OnWindows) { throw }
+        & cmd.exe /d /c "rd /s /q `"\\?\$([System.IO.Path]::GetFullPath($Path))`"" 2>$null
+        if (Test-Path -LiteralPath $Path) { throw }
+    }
+}
+
+function Remove-WorkTree([string]$Path, [string]$Clone) {
+    <# Робоча копія слота після прогону — геть із диска й з обліку клону $Clone: на диску лише копії задач у роботі
+    (1,35 ГБ кожна), а не по копії на кожен слот, що колись працював. Не вийшло — лишається, Enter-WorkTree
+    перевикористає її. Коміти не губляться: гілки й об'єкти — спільні з клоном. #>
+    if (-not $Path -or -not (Test-Path -LiteralPath $Path)) { return }
+    $r = Invoke-Git @('worktree', 'remove', '--force', $Path) -AllowFail -Dir $Clone
+    # Недостворена копія (збій посеред `worktree add`) git-у не відома — тека без обліку.
+    if ($r.Code -ne 0 -and -not (Test-Path -LiteralPath (Join-Path $Path '.git'))) { try { Remove-Tree $Path } catch { $null = $_ } }
+    if (Test-Path -LiteralPath $Path) { Write-Log "робоча копія $Path не прибрана: $($r.Err.Trim())" }
+    [void](Invoke-Git @('worktree', 'prune') -AllowFail -Dir $Clone)
+}
+
+function Clear-IdleWorkTrees([string]$Root, [string]$Clone, [string[]]$Lanes) {
+    <# Копії слотів без наряду (замок слота вільний): накопичене до цієї версії й лишене зірваними прогонами. Кличе
+    планувальник до запуску своїх нарядів; живий наряд тримає замок свого слота, тож його копію не чіпаємо. #>
+    foreach ($d in @(Get-ChildItem -LiteralPath $Root -Directory -ErrorAction SilentlyContinue)) {
+        if (-not (Test-SlotName $d.Name $Lanes) -or -not (Test-LockFree (Join-Path $script:SlotDir "$($d.Name).lock"))) { continue }
+        Remove-WorkTree $d.FullName $Clone
+    }
+}
+
+function Clear-RunDir([string]$Dir) {
+    <# Тека завершеного прогону тримає журнал і стан (result.json, worker.json, журнали рушія, вихідні ходів); копії
+    промпта — наряд і контекст із git, наступна спроба складе їх знову — геть. #>
+    foreach ($f in @(Get-ChildItem -LiteralPath $Dir -File -ErrorAction SilentlyContinue)) {
+        if ($f.Name -match '\A(prompt\.(txt|md)|turn[0-9]+\.md)\z') { Remove-Item -LiteralPath $f.FullName -Force -ErrorAction SilentlyContinue }
+    }
+}
+
+function Enter-TaskDir([string]$RunDir) {
+    <# Тека задачі для дерев, клонів і виводу — у теці прогону; TEMP/TMP процесу наряду, а отже рушія й усіх його
+    нащадків, — туди ж. Що задача створила, обгортка прибирає разом із прогоном (Clear-TaskDir), а не лишається в корені
+    профілю й системному TEMP (#2181). Шлях — у промпті ($script:TaskDirPath). #>
+    $d = Join-Path $RunDir 'task'
+    [void](New-Item -ItemType Directory -Force -Path $d)
+    $script:TaskDirPath = $d
+    $env:TEMP = $d; $env:TMP = $d
+    $d
+}
+
+function Clear-TaskDir([string]$Dir) {
+    <# Після прогону тека задачі — геть. Лишається, коли git у ній має незапушені коміти (HEAD поза origin; у
+    самостійному клоні — і гілки): тоді рядок у журнал і тривога TASKDIR UNPUSHED диспетчерові. #>
+    if (-not $Dir -or -not (Test-Path -LiteralPath $Dir)) { return }
+    foreach ($g in @(Get-ChildItem -LiteralPath $Dir -Recurse -Depth 3 -Force -Filter '.git' -ErrorAction SilentlyContinue)) {
+        $repo = $(if ($g.PSIsContainer) { $g.Parent.FullName } else { $g.DirectoryName })
+        $range = $(if ($g.PSIsContainer) { @('--branches', 'HEAD') } else { @('HEAD') })
+        $r = Invoke-Git (@('log', '--oneline', '-n', '1') + $range + @('--not', '--remotes')) -AllowFail -Dir $repo
+        if ($r.Code -eq 0 -and $r.Out.Trim()) {
+            Write-Log "тека задачі $Dir лишається: незапушене в $repo ($($r.Out.Trim()))"
+            Add-HealthAlert 'TASKDIR' 'UNPUSHED'
+            return
+        }
+    }
+    try { Remove-Tree $Dir } catch { Write-Log "тека задачі $Dir не прибрана: $($_.Exception.Message)" }
 }
 
 function Reset-WorkTree([string]$Dir) {

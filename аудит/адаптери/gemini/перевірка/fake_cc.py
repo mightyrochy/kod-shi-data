@@ -7,7 +7,7 @@ sc = os.environ.get('FAKE_CC_SCENARIO', 'done')
 open(os.environ['FAKE_CC_LOG'] + '.pid', 'w').write(str(os.getpid()))
 prompt = sys.stdin.read()
 with open(os.environ['FAKE_CC_LOG'], 'a', encoding='utf-8') as f:
-    f.write(json.dumps({'argv': sys.argv[1:], 'stdin': prompt}, ensure_ascii=False) + '\n')
+    f.write(json.dumps({'argv': sys.argv[1:], 'stdin': prompt, 'temp': os.environ.get('TEMP', '')}, ensure_ascii=False) + '\n')
 slug = re.search(r'аудит/наряди/(.+?)\.md', prompt).group(1)
 branch = 'claude/' + slug
 from fake_timeline import тримати as hold
