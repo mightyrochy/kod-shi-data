@@ -160,9 +160,11 @@ from колір_простір_індукція import (ПІК_ІНДУКЦІЇ,
 from колір_простір_надійність import (AXIS_RELIABILITY, MIN_TO_EMIT, reliability, КОНТРАСТ_ШУМ_L as _КОНТРАСТ_ШУМ_L,
     КОНТРАСТ_ШУМ_ЧАСТКА as _КОНТРАСТ_ШУМ_ЧАСТКА, похибка_контрасту, надійність_контрасту, gate_conclusions,
     extraction_sanity)
+from колір_тон import (RELATIONS, у_коло_художника, з_кола_художника, зсув_на_колі, доповнення, тепло,
+    центри_відношення, дуга_кола, arc)
 from колір_простір_риси import (ЗОВНІШНІ_ВХОДИ, VALUE_REL, dominant_axis, density, підтон_риси,
     поля_риси, features, температура_шкіри as _температура_шкіри, МАКІЯЖ_РИСИ, ПРЕФІКС_МАКІЯЖУ, додати_макіяж,
-    перерахувати_рису, RELATIONS, у_коло_художника, з_кола_художника, зсув_на_колі, доповнення, тепло, центри_відношення, дуга_кола, arc, in_arc as _in_arc, feature_spectrum, spectra_by_feature, розсіяння,
+    перерахувати_рису, feature_spectrum, spectra_by_feature, розсіяння,
     кут_розсіяння as _кут_розсіяння, регіони, arc_overlap as _arc_overlap, resonance)
 
 if __name__=="__main__":
