@@ -64,7 +64,7 @@ jobs:
                 джерела/*|аудит/проби/*|каталог_повний.xml.gz|index.html|build.txt|.github/workflows/zbirka.yml) produkt=true ;;
               esac
               case "${shliakh}" in
-                *.md|джерела/правила.py|.github/workflows/zbirka.yml) pravyla=true ;;
+                *.md|джерела/правила.py|джерела/прилади/журнал_і_розмір_правил.py|.github/workflows/zbirka.yml) pravyla=true ;;
               esac
             done < /tmp/zminy
           fi
@@ -434,6 +434,13 @@ jobs:
           fi
           exit "${STATUS[1]}"
 
+      - name: журнал власника ↔ файли правил і розмір правил (показ)
+        if: always()
+        continue-on-error: true
+        run: |
+          python3 -I джерела/прилади/журнал_і_розмір_правил.py --самоперевірка
+          python3 -I джерела/прилади/журнал_і_розмір_правил.py --md "${RUNNER_TEMP}/журнал_розмір.md" | tee -a "$GITHUB_STEP_SUMMARY"
+
       - name: стан звіту правил у підсумок
         if: always()
         env:
@@ -460,6 +467,7 @@ jobs:
           path: |
             ${{ runner.temp }}/правила.log
             ${{ runner.temp }}/правила.md
+            ${{ runner.temp }}/журнал_розмір.md
           if-no-files-found: warn
           retention-days: 7
 
