@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """5511, 5239: промпт ремонту на стенді (`стенд_вх.json`, каталог_повний, 10 образів), без моделі — порядок образів
 «verdict» за сідом руки (двічі той самий сід — той самий порядок), запис порядку, розмір промпту, ключі за схемою
-відповіді, підписи «chosen» і «set.bold», і чи промпт вибору лишився той самий (sha). Та сама проба на main — «до».
+відповіді, підписи вибраних образів, і чи промпт вибору лишився той самий (sha). Та сама проба на main — «до».
 Запуск: cd джерела && python3 проби/ремонт_порядок_5511.py"""
 import hashlib, json, os, sys
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -25,7 +25,7 @@ for сід in (4242, 4242, 13, 7):
         сід, " ".join(порядок), "образи=так" if [str(x).replace("о", "o") for x in зап.get("образи") or []] == порядок
         else "образи=—", len(т),
         list(п)[list(п).index("answer_schema") + 1:] or "—", hashlib.sha1(в["промпт_лише_вибору"].encode()).hexdigest()[:10]))
-print("chosen[].id:", ск["chosen"][0]["id"])
-print("chosen[].why:", ск["chosen"][0]["why"])
+print("outfits[].id:", ск["outfits"][0]["id"])
+print("outfits[].why:", ск["outfits"][0]["why"])
 print("outfits[].items:", ск["outfits"][0]["items"][0])
 print("now:", п.get("now", "—"))
