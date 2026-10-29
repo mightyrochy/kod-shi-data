@@ -515,7 +515,11 @@ def _у_особі(*к):
     return lambda ч, о, пер: (any((пер["особа"].get(x) or {}) for x in к), "person_%s=none" % "|".join(к))
 
 
-_СЛОВА_ЇЇ = ("wishes", "wish_quotes", "field_quotes", "goal_quote", "intent_quote", "her_other_words")
+# Її слова на дроті випадку — ті самі поля, що пише `дріт_моделі.випадок` (імена з його мапи, не копія списку):
+# бажання, вето, її фраза (`вимоги_людини` → `her_words`), решта слів, цитати мети й наміру, переконання, прохання
+# про взуття; цитати полів і бажань `випадок` кладе поруч (`field_quotes`, `wish_quotes`).
+_СЛОВА_ЇЇ = tuple(_ДМ.ПОЛЯ_ВИПАДКУ[к] for к in ("бажання", "вето", "вимоги_людини", "решта", "мета_слова", "намір_слова",
+                                                "переконання", "прохання_взуття")) + ("field_quotes", "wish_quotes")
 ЗВІРКА_ПРИЧИН = {
     "why_her_contrast": _у_особі("contrast"),
     "why_her_eyes": _ранг_і_очі,
@@ -525,7 +529,7 @@ _СЛОВА_ЇЇ = ("wishes", "wish_quotes", "field_quotes", "goal_quote", "inte
     "why_goal_flatter": _мета("flatter"),
     "why_goal_conceal": _мета("conceal"),
     "why_goal_express": _мета("express"),
-    "why_occasion": lambda ч, о, пер: (bool((пер.get("випадок") or {}).get("occasion")
+    "why_occasion": lambda ч, о, пер: (bool(any((пер.get("випадок") or {}).get(к) for к in ("occasion", "event", "place"))
                                             or (пер.get("день") or {}).get("place")
                                             or (пер.get("день") or {}).get("dress_code")), "occasion=none"),
     "why_weather": lambda ч, о, пер: (any((пер.get("день") or {}).get(к) is not None
