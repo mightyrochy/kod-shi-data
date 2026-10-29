@@ -222,7 +222,7 @@ _УРІЗАНО_КОДИ = ("shorter_than_source", "ends_cut")
 
 """ + МОВА_ДЛЯ_НЕЇ + """
 
-Перевір кожне слово ДО відповіді: до неї — лише «ти», жодного «ви», «ваш» і наказу множини, і про неї жодного «вона», «її», «їй», жодне слово не стоїть двічі поспіль, кожна річ — того самого виду, що у вході (річ образу — іменником її назви з переліку, коли він є, і слова при ній узгоджені з цим іменником), а українська назва речі — слово в слово. """ + _ФФ.ВІДПОВІДЬ_ОДИН_ОБЄКТ_UK + """
+Перевір кожне слово ДО відповіді: до неї — лише «ти», жодного «ви», «ваш» і наказу множини, і про неї жодного «вона», «її», «їй», жодне слово не стоїть двічі поспіль, кожна річ — того самого виду, що у вході (річ образу — іменником коду її виду з переліку, коли він є, і слова при ній узгоджені з цим іменником), а українська назва речі — слово в слово. """ + _ФФ.ВІДПОВІДЬ_ОДИН_ОБЄКТ_UK + """
 
 ТЕКСТИ:
 """
@@ -369,24 +369,26 @@ def розмітити(тексти, виправ=None, урізано=None):
 # ЩО ТЕПЕР. Біля речі крамниці стоїть код її виду (`item_type` укладки — той самий `type`, що бачила стилістка в
 # `дріт_моделі.опис`; без типу — код слота, як «kind» там же), а правило каже: іменник речі в кожному тексті — цього
 # виду. Слів код не читає: дає код.
-ПРАВИЛО_РЕЧЕЙ = ("When a text speaks of an item of the list, call it by the kind in its name — the same noun in the "
-                 "right case (list «Тренч бежевий подовжений» — text «тренч», «Светр в'язаний оверсайз» — «светр»), "
-                 "not by another kind or a synonym of the English word. Make every adjective, pronoun and verb with "
-                 "the item agree with that noun in gender and number («Тренч бежевий» — «бежевий тренч, який…»; "
-                 "«Лофери шкіряні» — «шкіряні лофери, які…»). A name you translate in this same call (text н=K): "
-                 "give it one noun and call the item by it, in agreement, in every text. A text the list gives as "
-                 "about an item (about it: text н=M) speaks of that one item, and so does every other text where the "
-                 "English names it. The colour of an item of the list is the colour of its name: keep the shop's "
-                 "colour word from its name; when its name has no colour word, write the Ukrainian name of its colour "
-                 "code. The English colour words for that item are the stylist's impression of a photo: do not turn "
-                 "them into a colour of their own — the item's colour stands in their place. Colours of its details "
-                 "(trim, strap, buttons, print), its fabric and the rest — translate from the text. The list is for "
-                 "names only: an item the English text does not name is not added to the translation — neither to "
-                 "the description nor to the advice. The kind code next to an item (kind code: …) is the code of "
-                 "its kind: every noun for that item, in every text, names this kind and no other, whatever word "
-                 "the English text uses; a code ending in _generic names only the family (dress_generic — a dress, "
-                 "bag_generic — a bag). The kind noun of its name and this code are the same kind: write the name's "
-                 "noun.")
+# НАЗВИ З КРАМНИЦІ В ПЕРЕЛІКУ НЕМА (Е2-вхід-опису-кодами, ПС-22). Назва несла вид і колір словами крамниці поруч із
+# кодами, і правило велило брати іменник і колір із неї — два свідки одного факту, що розходились («Сумка поясна» з
+# кодом bag_generic, колір слова назви поруч з іншим кодом кольору). Тепер річ крамниці в переліку — номер на картці,
+# код виду й код кольору: іменник — українське слово коду виду, колір — українська назва коду кольору. Назва речі
+# крамниці лишається у записі виклику (`запис.речі`, звіт власника), у промпт не йде; назва вигаданої речі й її речі з
+# фото — текст цього ж виклику («назва в тексті н=K»), її пише модель, а не крамниця.
+ПРАВИЛО_РЕЧЕЙ = ("When a text speaks of an item of the list, call it by the Ukrainian noun of its kind code (kind code: "
+                 "…) — the same noun in the right case in every text (trench_coat — «тренч», sweater — «светр», "
+                 "loafers — «лофери»), not by another kind or a synonym of the English word, whatever word the "
+                 "English text uses; a code ending in _generic names only the family (dress_generic — a dress, "
+                 "bag_generic — a bag). Make every adjective, pronoun and verb with the item agree with that noun in "
+                 "gender and number («бежевий тренч, який…»; «шкіряні лофери, які…»). A name you translate in this "
+                 "same call (text н=K): give it one noun and call the item by it, in agreement, in every text. A text "
+                 "the list gives as about an item (about it: text н=M) speaks of that one item, and so does every "
+                 "other text where the English names it. The colour of an item of the list is its colour code "
+                 "(colour code: …): write the Ukrainian name of that code. The English colour words for that item are "
+                 "the stylist's impression of a photo: do not turn them into a colour of their own — the item's colour "
+                 "stands in their place. Colours of its details (trim, strap, buttons, print), its fabric and the "
+                 "rest — translate from the text. The list is for the items only: an item the English text does not "
+                 "name is not added to the translation — neither to the description nor to the advice.")
 
 
 def _код_кольору_речі(р):
@@ -417,7 +419,8 @@ def _абзац_речей(розмітка, речі):
     """(абзац промпту з речами картки, коди кольорів речей). `речі` — [{н, назва, ключ?, опис?, заміна?, тип?, колір?,
     hex?}] з
     показу (`тип` — ключ ядра `item_type` з укладки речі, без нього `слот`; у промпт — кодом виду):
-    номер і назва біля речі; назва, яку перекладає цей самий виклик (`ключ` є в `розмітка`), — посиланням «текст н=K»;
+    номер речі; назва крамниці в промпт не йде (`ПРАВИЛО_РЕЧЕЙ`), назва, яку перекладає цей самий виклик (`ключ` є
+    в `розмітка`), — посиланням «текст н=K»;
     текст про цю річ (`опис` — ключ тексту в `розмітка`) — «about it: text н=M»; текст зміни, чия це нова річ
     (`заміна`), — «new item of text н=M» з `ПРАВИЛО_НОВОЇ_РЕЧІ`; код кольору речі крамниці
     (`_код_кольору_речі`). Без речей — ("", [])."""
@@ -426,23 +429,23 @@ def _абзац_речей(розмітка, речі):
     for р in речі if isinstance(речі, list) else []:
         if not isinstance(р, dict):
             continue
-        н, назва = н_ключа.get(str(р.get("ключ") or "")), " ".join(str(р.get("назва") or "").split())
-        if not (н or назва):
-            continue
+        н = н_ключа.get(str(р.get("ключ") or ""))
         к, про = _код_кольору_речі(р), н_ключа.get(str(р.get("опис") or ""))
         заміна = н_ключа.get(str(р.get("заміна") or ""))
-        нові = нові or bool(заміна)
         вид = ((_ВМ.код("item_type", р.get("тип")) if р.get("тип") else None)
                or (_ВМ.код("slot", р.get("слот")) if р.get("слот") else None))
+        поля = ([("назва в тексті н=%d" % н)] if н else []) + (["kind code: %s" % вид] if вид else []) \
+            + (["colour code: %s" % к] if к else []) + (["about it: text н=%d" % про] if про else []) \
+            + (["new item of text н=%d" % заміна] if заміна else [])
+        if not поля:
+            continue
+        нові = нові or bool(заміна)
         if к:
             коди.append(к)
-        рядки.append("%s — %s" % (р.get("н") or len(рядки) + 1, "назва в тексті н=%d" % н if н else назва)
-                     + (" · kind code: %s" % вид if вид else "")
-                     + (" · colour code: %s" % к if к else "") + (" · about it: text н=%d" % про if про else "")
-                     + (" · new item of text н=%d" % заміна if заміна else ""))
+        рядки.append("%s — %s" % (р.get("н") or len(рядки) + 1, " · ".join(поля)))
     if not рядки:
         return "", []
-    return ("Речі образу — перелік, який жінка бачить на картці (номер речі — назва біля неї):\n"
+    return ("Речі образу — перелік речей картки (номер речі — як на картці, поруч — її коди):\n"
             + "\n".join(рядки) + "\n" + ПРАВИЛО_РЕЧЕЙ + (ПРАВИЛО_НОВОЇ_РЕЧІ if нові else "") + "\n\n"), коди
 
 
@@ -3002,7 +3005,8 @@ def промпт_повідомлень(розмітка, помилки=None):
         "Кожен об'єкт — окрема заява. " + _ФФ.ВІДПОВІДЬ_UK + " {key: текст}: скопіюй кожен key "
         "дослівно: це короткий номер заяви в цьому виклику; напиши його власне речення. Заяв не об'єднуй. "
         "Не перенось дію, річ, вибір чи ранг з одного key на інший.",
-        "item_ids — предмети заяви, назви — лише підписи цих предметів. Слот не визначає вид речі. "
+        "item_ids — місцеві номери предметів заяви в цьому виклику (той самий номер — той самий предмет), назви — лише "
+        "підписи цих предметів. Слот не визначає вид речі. "
         "recipient: woman — звертання до жінки на ти; stylist — доручення стилістці; journal — факт "
         "для журналу, не прохання до жінки. source: catalogue — каталог, photo — фото, model — модель, "
         "default — типове рішення, unknown — джерело невідоме. Коди шкал не є словами крамниці.",
@@ -3023,8 +3027,16 @@ def промпт_повідомлень(розмітка, помилки=None):
         "Самі заяви, їхні поля й значення не копіюй у відповідь. Кожен ключ — один раз, без нових ключів.",
         "ФОРМА ВІДПОВІДІ:",
         _json_.dumps(dict.fromkeys((ключі[р["ключ"]] for р in розмітка), "<речення про цю заяву>"), ensure_ascii=False),
-        "ПОВІДОМЛЕННЯ:", _json_.dumps([dict(з, key=ключі[р["ключ"]])
-                                      for р in розмітка for з in р["заяви"]], ensure_ascii=False)])
+        "ПОВІДОМЛЕННЯ:", _json_.dumps(_місцеві_предмети([dict(з, key=ключі[р["ключ"]])
+                                                         for р in розмітка for з in р["заяви"]]), ensure_ascii=False)])
+
+
+def _місцеві_предмети(заяви):
+    """Заяви для промпту — з місцевим номером предмета («x1», «x2» цього виклику) замість повного id: id несе
+    крамницю й до моделі не йде (Е2-вхід-опису-кодами). Той самий id — той самий номер у всіх заявах виклику,
+    тож предмет між заявами не губиться; відповідь — лише тексти за ключем, тож номер назад не читається."""
+    місця = {}
+    return З.номерами(заяви, lambda і: місця.setdefault(str(і), "x%d" % (len(місця) + 1)))
 
 
 def прийняти_повідомлення(розмітка, відповідь):

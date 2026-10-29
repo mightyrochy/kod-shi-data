@@ -525,6 +525,27 @@ def вільний(текст, мова="uk", межа=None):
     return {"free_text": т, "lang": мова}
 
 
+def річ_заяви(р):
+    """Річ крамниці в значенні заяви — кодами, без назви (Е2-вхід-опису-кодами): `item_id` — адреса речі (промпт
+    міняє її на номер речі виклику: опис — `міст_опис`, повідомлення — `мовний_шар._місцеві_предмети`), `kind` —
+    код виду (`item_type`, без нього — `slot`), `color` — код кольору. Назва крамниці несла вид і колір словами, і
+    модель опису та перекладач брали їх звідти; назву жінка читає на картці. Не річ — None."""
+    if not isinstance(р, dict):
+        return None
+    def _к(поле, *ключі):
+        for к in ключі:
+            в = р.get(к)
+            if isinstance(в, str) and в.strip():
+                if в in ТАБЛИЦЯ.get(поле, {}) and not невідомо(в):
+                    return в
+                if код(поле, в):
+                    return код(поле, в)
+        return None
+    вих = {"item_id": р.get("id"), "kind": _к("item_type", "тип", "item_type") or _к("slot", "слот", "slot"),
+           "color": _к("color_name", "код_кольору", "колір_назва", "колір")}
+    return {к: в for к, в in вих.items() if в not in (None, "")} or None
+
+
 # ── СХЕМА: ПОЛЯ, ОПИСИ, ДОЗВОЛЕНІ КОДИ ────────────────────────────────────────
 # Опис поля — визначення коду, а не приклад фрази: промпти перекладачів складаються з
 # цих самих рядків (`мовний_шар.промпт_входу` / `промпт_виходу`).
@@ -946,14 +967,13 @@ _МІСЦЯ_ОПЦІЙ = "where it is worn"
     # ОПИС-1: «вона підібрала свідомо, це її обдумане рішення, а не недороблене» — третя
     # особа й оборона; на картці говорить сама стилістка
     "stylist_declared_on_purpose": "the stylist chose these items for this outfit on purpose (values: "
-                                   "items — the items' names as the card shows them)",
+                                   "items — the items: item_id, kind and colour codes)",
     "action_is_only_her_option": "the outfit is complete as it is: what follows is only an option she may take "
                                  "if she wants more colour, not a task left to her",
     # «вирішила замінити срібну каблучку… на іншу» — можливість для неї шар написав як
     # уже зроблену заміну; визначення каже, що не зроблено нічого
     "mark_not_this_and_rebuild": "an option for her, nothing has been changed yet: if she marks \"not this "
-                                 "one\" on this item of the outfit, the outfit is rebuilt, this time with colour (values: item — the item's name as the card shows it: call "
-                                 "the item by this name; slot — the kind of that item, when there is no name)",
+                                 "one\" on this item of the outfit, the outfit is rebuilt, this time with colour (values: item — the item: item_id, kind and colour codes; slot — the kind of that item, when there is no item)",
     "scheme_asked_for_shade": "the scheme asked for a colour in the named shade (values: anchor — where the "
                               "shade comes from: eyes, hair, skin; base — the word of her chosen base; "
                               "families — words of colour families when there is no anchor)",
@@ -990,15 +1010,14 @@ _МІСЦЯ_ОПЦІЙ = "where it is worn"
                                     "— slot code, colour — colour word)",
     "pool_has_big_items_mark_not_this": "the selection has large items of these colours: marking \"not this "
                                         "one\" on the named items rebuilds the outfit (values: colours — "
-                                        "colour words, slots — slot codes, items — the names of those "
-                                        "items as the card shows them: call them by these names)",
+                                        "colour words, slots — slot codes, items — those items: item_id, kind and colour codes)",
     "colour_can_be_added_as_layer": "these colours can be added as a layer, and such items exist in the "
                                     "selection (values: pairs — pairs {colour, layer}, layer — the slot code "
                                     "of the layer)",
     "needs_separate_top_and_bottom": "these colours need a separate top and bottom instead of a one-piece "
                                      "item: marking \"not this one\" on it rebuilds the outfit (values: "
                                      "colours — colour words, whole — slot code of the one-piece item, "
-                                     "item — its name as the card shows it)",
+                                     "item — the item: item_id, kind and colour codes)",
     "big_items_of_colour_elsewhere": "large items of these colours exist in the selection among these slots "
                                      "(values: colours — colour words, slots — slot codes)",
     "big_items_of_colour_not_found": "no large items of these colours were found today for her sizes and this "
@@ -1014,7 +1033,7 @@ _МІСЦЯ_ОПЦІЙ = "where it is worn"
     "mourning_shine_unknown_one": "the item's shine near the face is uncertain: catalogue and photo "
                                   "disagree (shop_shine_class and photo_shine_class: 0 matte, 1 soft lustre, "
                                   "2 glossy, 3 sparkling; null means not measured). Classes are codes, "
-                                  "not a quote from the shop. Name the item by its item_id and full name.",
+                                  "not a quote from the shop. The item comes as item_id, kind and colour codes.",
     "mourning_shine_unknown_many": "the addressed items have conflicting catalogue and photo shine evidence",
     "mourning_no_metal_near_face": "the selection has no metal jewellery near the face (necklaces, earrings): "
                                    "in mourning there is no shine near the face, and she has not said which "
@@ -1176,7 +1195,7 @@ _МІСЦЯ_ОПЦІЙ = "where it is worn"
     # `repr` словника внутрішньої мови, і жінка читала його на картці. Тепер ярус віддає
     # заяви, і повідомлення в полі лишається ОДНЕ.
     "selection_removed_item_from_stylist_look": "the selection removed the named item from the stylist's outfit "
-                                           "(values: item — the item's name)",
+                                           "(values: item — the item: item_id, kind and colour codes)",
     "selection_swapped_item_from_stylist_look": "the selection replaced the named item of the stylist's outfit "
                                            "with another one from the same selection (values: was — what it "
                                            "was, now — what it is now)",
@@ -1187,8 +1206,7 @@ _МІСЦЯ_ОПЦІЙ = "where it is worn"
     "stylist_swapped_item_after_photo": "after seeing the item photos the stylist replaced one item with "
                                         "another for the same place from her selection; the code checked the "
                                         "outfit again (values: was — the item she took out, now — the item "
-                                        "in its place, both as the shop names them: name each in a few words "
-                                        "of your own — its kind and its colour — never quote the shop's name; "
+                                        "in its place, both as item_id, kind and colour codes: name each in a few words of your own — its kind and its colour; "
                                         "reason — what the photo of «was» showed: colour — its colour there is "
                                         "clearly not the one the shop named (say that it is the colour that "
                                         "differs), kind — it is another kind of item, occasion — it does not "
@@ -1207,8 +1225,7 @@ _МІСЦЯ_ОПЦІЙ = "where it is worn"
     "item_does_not_fit_shoulders": "this item will not fit in the shoulders",
     "item_failed_check_unnamed": "the outfit with this item did not pass the check, and what exactly failed "
                                  "is not named here",
-    "layer_gate_reason": "a reason named by the corpus about the stacking of layers (values: reason — the "
-                         "rule's free text: retell its content rather than quoting it)",
+    "layer_gate_reason": "the layers of the outfit do not stack: one layer will not go over the item under it",
     # ── екран палітри без її вибору: обирає стилістка (П-7, `вибір_палітри`) ─────
     "stylist_will_choose": "until she chooses, the stylist picks the scheme and base for her occasion",
     "stylist_chose_scheme": "the stylist chose the scheme for this outing: items are picked for it and the "
@@ -1248,24 +1265,24 @@ _МІСЦЯ_ОПЦІЙ = "where it is worn"
     # (`заяви` знахідки), міст складає з них повідомлення виду `card_unchecked`, а речення
     # пише мовна модель. `суть` лишилась діагнозом суду для звіту власника (`етапи`).
     # ── колір лише словом, а не вимір (`колір_річ.без_входу_кольору`) ──────────
-    # кожна річ — з `item_id`, і міст дописує `name` — назву речі так, як її підписує картка
-    # (`назва_речі.на_картці`); доти речення звало річ слотом («колір речі верхній шар»)
+    # кожна річ — з `item_id`, і міст дописує `kind` і `color` — коди виду й кольору з картки
+    # (`річ_заяви`, Е2-вхід-опису-кодами; назва несла крамницю в промпт); доти речення звало
+    # річ слотом («колір речі верхній шар»)
     "colour_word_shop": "the code knows the colour of the named items only from the shop's word, not from "
-                        "measuring the photo (values: items — items: item_id, name — the item's name on the card, "
+                        "measuring the photo (values: items — items: item_id, kind — kind code, color — colour code, "
                         "slot — slot code, colour — colour word)",
     "colour_word_shop_photo_other": "the shop names one colour of the named items and their card photo shows "
-                                    "another, so the code knows neither for sure (values: items — items: item_id, "
-                                    "name — the item's name on the card, slot — slot code, colour — the shop's "
+                                    "another, so the code knows neither for sure (values: items — items: item_id, kind — kind code, color — colour code, slot — slot code, colour — the shop's "
                                     "colour word, photo — the colour on the photo)",
     "colour_word_model": "the code knows the colour of the named items only from the model's word, not from "
-                         "measuring the photo (values: items — items: item_id, name — the item's name on the card, "
+                         "measuring the photo (values: items — items: item_id, kind — kind code, color — colour code, "
                          "slot — slot code, colour — colour word)",
     "colour_word_not_photo": "the colour of the named items comes from a word, not from measuring the photo "
-                             "(values: items — items: item_id, name — the item's name on the card, slot — slot "
+                             "(values: items — items: item_id, kind — kind code, color — colour code, slot — slot "
                              "code, colour — colour word)",
     "colour_partly_measured": "the named items have a partial photo measurement: lightness and chroma bounds "
                               "are available, while hue is uncertain; this is not a colour word "
-                              "(values: items — items: item_id, name — the item's name on the card, slot — slot code)",
+                              "(values: items — items: item_id, kind — kind code, color — colour code, slot — slot code)",
     "cannot_tell_item_holds_scheme_hue": "so the code cannot tell whether the item holds the hue of the "
                                          "chosen palette scheme",
     "cannot_tell_look_contrast_matches_hers": "so the code cannot tell whether the outfit's contrast matches "
@@ -1309,11 +1326,10 @@ _МІСЦЯ_ОПЦІЙ = "where it is worn"
                                         "settle whether two items sit on one lightness",
     "cannot_tell_lightness_structure": "so the code cannot tell which structure of light and dark the outfit "
                                        "carries (values, when given: items — the items for which the code does "
-                                       "not know whether they are a surface or an accent: item_id, name — the "
-                                       "item's name on the card, slot — slot code)",
+                                       "not know whether they are a surface or an accent: item_id, kind — kind code, color — colour code, slot — slot code)",
     "cannot_tell_two_neutrals_distinct": "so the code cannot tell whether two neutrals of one lightness "
                                          "differ visibly (values, when given: items — the neutrals' items: "
-                                         "item_id, name — the item's name on the card, slot — slot code)",
+                                         "item_id, kind — kind code, color — colour code, slot — slot code)",
     # річ, що за вікном слова лише «можливо» нейтраль (блакитний, зелений, оливковий), — не
     # «дві нейтралі» й не «нейтраль біля обличчя»: код не знає, чи вона нейтраль узагалі
     "cannot_tell_item_is_neutral": "so the code cannot tell whether the named item is a neutral at all, and the "
@@ -1322,7 +1338,7 @@ _МІСЦЯ_ОПЦІЙ = "where it is worn"
                                                  "matches her temperature",
     "cannot_tell_two_different_whites": "so the code cannot tell whether the outfit has two different whites, "
                                         "cream and optical (values, when given: items — the whites' items: "
-                                        "item_id, name — the item's name on the card, slot — slot code)",
+                                        "item_id, kind — kind code, color — colour code, slot — slot code)",
     "cannot_tell_accessory_spends_chroma": "so the code cannot tell whether a loud accessory spends the budget "
                                            "of loud colours next to another loud item",
     "cannot_tell_chroma_budget_exceeded": "so the code cannot tell whether the outfit has more loud colours "
@@ -1412,16 +1428,11 @@ _МІСЦЯ_ОПЦІЙ = "where it is worn"
     "no_input_toe_shape": "the cards do not carry the toe shape of shoes, so the code does not know how it "
                           "changes the pair's dressiness",
     # ── ворота розміру (`аксесуари_розмір`) ──────────────────────────────────
-    "shoe_size_not_checked": "the code did not check the pair's size against her foot (values: item — item "
-                             "name)",
-    "hat_size_not_checked": "the code did not check the hat's size against her head (values: item — item "
-                            "name)",
-    "frame_size_not_checked": "the code did not check the frame's size against her face (values: item — item "
-                              "name)",
-    "watch_size_not_checked": "the code did not check the watch's size against her wrist (values: item — item "
-                              "name)",
-    "glove_size_not_checked": "the code did not check the gloves' size against her palm (values: item — item "
-                              "name)",
+    "shoe_size_not_checked": "the code did not check the pair's size against her foot (values: item — the item: item_id, kind and colour codes)",
+    "hat_size_not_checked": "the code did not check the hat's size against her head (values: item — the item: item_id, kind and colour codes)",
+    "frame_size_not_checked": "the code did not check the frame's size against her face (values: item — the item: item_id, kind and colour codes)",
+    "watch_size_not_checked": "the code did not check the watch's size against her wrist (values: item — the item: item_id, kind and colour codes)",
+    "glove_size_not_checked": "the code did not check the gloves' size against her palm (values: item — the item: item_id, kind and colour codes)",
     "her_foot_length_unknown": "the code does not know her foot length; it is one question of the "
                                "questionnaire",
     "her_head_girth_unknown": "the code does not know her head girth; it is one question of the questionnaire",
@@ -1435,12 +1446,10 @@ _МІСЦЯ_ОПЦІЙ = "where it is worn"
     "item_glove_size_unknown": "the card does not carry the gloves' size mark",
     "item_frame_size_unreadable": "the code could not read the frame size from the card (values: "
                                  "frame_size — literal card field, her_pupillary_distance_mm — measured number, "
-                                 "item_id — exact item reference, never write it in the woman's text, item — item "
-                                  "name)",
+                                 "item_id — exact item reference, never write it in the woman's text, item — the item: item_id, kind and colour codes)",
     # ── спосіб носіння (`аксесуари_структура`, `аксесуари_суд`) ────────────────
     "wear_way_not_chosen": "how she wears this item is not chosen yet, and which rules apply to it depends on "
-                           "that; all the ways are equal and she is the one who chooses (values: item — the "
-                           "item's name; ways — codes of the ways: hand — in the hand, shoulder — on the "
+                           "that; all the ways are equal and she is the one who chooses (values: item — the item: item_id, kind and colour codes; ways — codes of the ways: hand — in the hand, shoulder — on the "
                            "shoulder, crossbody — across the body, neck — round the neck, hair — in the hair, "
                            "shoulders — on the shoulders, waist — at the waist as a belt, bag_handle — on the "
                            "bag handle, wrist — on the wrist, as_top — instead of a top)",
@@ -1478,14 +1487,14 @@ _МІСЦЯ_ОПЦІЙ = "where it is worn"
                                     "taste (values: size_cm — its side in cm)",
     "scarf_near_face_way_unknown": "whether she wears this scarf near the face; which top suits her depends "
                                    "on it, since a scarf near the face carries colour there by itself "
-                                   "(values: item — item name; ways — codes of wearing ways: neck, hair, "
+                                   "(values: item — the item: item_id, kind and colour codes; ways — codes of wearing ways: neck, hair, "
                                    "shoulders)",
     "face_frame_carrier_no_palette_data": "an item near the face could widen the choice of tops, but this time the "
-                                          "code had no palette data for that (values: item — item name; item_id)",
+                                          "code had no palette data for that (values: item — the item: item_id, kind and colour codes; item_id)",
     "glasses_pairs_count_unknown": "the code does not know how many pairs of glasses she has; with several "
                                    "pairs a frame could rescue the colour near the face",
     "scarf_size_unknown": "the card does not name the scarf's size, so the code does not know which knots and ways of "
-                          "wearing are possible (values: item — item name; item_id)",
+                          "wearing are possible (values: item — the item: item_id, kind and colour codes; item_id)",
     # ── довжина, крій і форма (`fit`, `силует_*`) ────────────────────────────
     "item_length_unknown_edge_default": "the cards do not carry the length of the named items: the usual edge "
                                         "for such an item was taken, so the code does not know where exactly "
@@ -1530,8 +1539,7 @@ _МІСЦЯ_ОПЦІЙ = "where it is worn"
                                 "shape on the usual cut (values: slots — slot codes)",
     "cut_not_declared_assumed_regular": "the item cards here do not name the cut, so it was counted as an "
                                         "ordinary straight cut; what follows holds only if the cut really is "
-                                        "such (values: items — the only items without a declared cut: item_id, "
-                                        "name — the item's name on the card; the other items keep their declared "
+                                        "such (values: items — the only items without a declared cut: item_id, kind — kind code, color — colour code; the other items keep their declared "
                                         "cut)",
     # МОВА ПРО РІЧ І ЛІНІЮ (Ф-2): текст заяви їде мовній моделі, тож
     # заборона корпусу на «ховає» (R-ONB-06, R-LNG-01) діє тут так само, як у `суть`.
@@ -1604,7 +1612,7 @@ _МІСЦЯ_ОПЦІЙ = "where it is worn"
     "calf_not_widest_point": "the calf is measured and is not the widest place of her leg, so there is "
                              "nothing to compare the edges of shoes and hem with",
     "shoe_cut_irrelevant_leg_covered": "the shoe's cut-line decides nothing here: a long bottom covers the leg "
-                                       "(values: item — item name; item_id)",
+                                       "(values: item — the item: item_id, kind and colour codes; item_id)",
     # ── колір образу: площі й поєднання (`колір_*`, `coordination`, `суд_огляд`) ─
     "dress_formality_no_photo_score": "how dressy this dress is, the code does not know: its kind in one word "
                                       "covers both everyday and evening dresses, and there is no dressiness "
@@ -1634,8 +1642,7 @@ _МІСЦЯ_ОПЦІЙ = "where it is worn"
                                      "same in colour",
     "feature_and_item_indistinguishable": "a feature of her face and the item near it are the same colour in "
                                           "the photo, so the code does not know whether the face contrast was "
-                                          "read correctly (values: feature — hair, eyes or glasses; item — "
-                                          "item name)",
+                                          "read correctly (values: feature — hair, eyes or glasses; item — the item: item_id, kind and colour codes)",
     "print_motif_scale_unknown": "two items have prints of one family, and the cards do not carry the motif "
                                  "scale, so the code did not check whether they differ in scale",
     "lead_metal_rule_held_olive": "both metals suit her olive undertone, so the code requires no leading "
@@ -1654,18 +1661,16 @@ _МІСЦЯ_ОПЦІЙ = "where it is worn"
     "items_register_unknown": "the code did not determine the style of some items: their cards have no words "
                               "that show it (values: count — how many such items)",
     "mourning_colour_word_only": "the code knows the item's colour only from a word, so it does not know "
-                                 "whether it is dark and quiet enough for mourning (values: item — item name "
-                                 "or slot code; colour — colour word)",
+                                 "whether it is dark and quiet enough for mourning (values: item — the item: item_id, kind and colour codes, or slot code; colour — colour word)",
     "heel_height_unknown_comfort_ceiling": "the pair has a heel, but the card does not say its height, so the code "
-                                           "did not check it against the limit for a comfortable outing (values: item "
-                                           "— item name; item_id)",
+                                           "did not check it against the limit for a comfortable outing (values: item — the item: item_id, kind and colour codes; item_id)",
     "heel_height_unknown_wear_cost": "the pair has a heel, but the card does not say its height, so the code does not "
-                                     "count the wearing cost for the feet (values: item — item name; item_id)",
+                                     "count the wearing cost for the feet (values: item — the item: item_id, kind and colour codes; item_id)",
     "wear_cost_no_duration_surface": "the code does not count the wearing cost for the feet: it is unknown "
                                      "how many hours and on what she will walk",
     # ── погода й матеріал (`суд_погода`, `аксесуари_погода`) ──────────────────────
     "sole_grip_unknown_ice": "the card does not say whether the sole grips on ice, and today there is black ice "
-                             "(values: item — item name; item_id)",
+                             "(values: item — the item: item_id, kind and colour codes; item_id)",
     "no_light_outer_layer_in_catalogue": "no light outer layer for this occasion was found in the catalogue",
     "fabric_season_not_judged_indoors": "the code does not judge fabric seasonality indoors (values: slot — "
                                         "slot code)",
@@ -1674,27 +1679,24 @@ _МІСЦЯ_ОПЦІЙ = "where it is worn"
     # ── верхній шар (`верхнє_*`) ───────────────────────────────────────────────
     "outer_edges_gap_no_length": "the code does not know the distance between the edge of the outer layer and "
                                  "the edge of the item under it: the cards carry no lengths (values: items — "
-                                 "items: item_id, name — the item's name on the card)",
+                                 "items: item_id, kind — kind code, color — colour code)",
     "outer_edges_coincide_sources_disagree": "the edges of the outer layer and the item under it coincide "
                                              "exactly, and the sources disagree about that; the code takes no "
-                                             "side (values: items — items: item_id, name — the item's name on "
-                                             "the card)",
+                                             "side (values: items — items: item_id, kind — kind code, color — colour code)",
     "cascade_declared_no_penalty": "the edges of the layers stand in even steps: the code counts such a "
                                    "cascade as intended and does not penalise close edges (values: items — "
-                                   "items: item_id, name — the item's name on the card)",
+                                   "items: item_id, kind — kind code, color — colour code)",
     "outer_ease_not_in_feed": "the cards do not carry the width ease of the layers, so the code does not check "
-                              "whether one layer lies comfortably over another (values: items — items: item_id, name "
-                              "— the item's name on the card)",
+                              "whether one layer lies comfortably over another (values: items — items: item_id, kind — kind code, color — colour code)",
     "fitted_outer_over_knit_cut_unknown": "the code does not know whether a fitted layer goes over a knit top: the "
                                           "card does not name the knit top's cut (values: outer — the layer; top — "
-                                          "the knit top: item_id, name — the name on the card)",
+                                          "the knit top: item_id, kind — kind code, color — colour code)",
     "front_v_depth_no_body_input": "the code computed the depth of the outer layer's neckline, but has nothing to "
-                                   "apply it to: it does not know her under-bust girth or neck length (values: item — "
-                                   "item name; item_id)",
+                                   "apply it to: it does not know her under-bust girth or neck length (values: item — the item: item_id, kind and colour codes; item_id)",
     "outer_shoulder_not_measured": "the card does not carry the outer layer's shoulder width, so the code does not "
-                                   "judge whether the shoulder fits (values: item — item name; item_id)",
+                                   "judge whether the shoulder fits (values: item — the item: item_id, kind and colour codes; item_id)",
     "outer_composition_unknown_salt": "the card does not name the outer layer's composition, so the code does not "
-                                      "know whether road salt damages it (values: item — item name; item_id)",
+                                      "know whether road salt damages it (values: item — the item: item_id, kind and colour codes; item_id)",
     # ── річ: розмір, крій і знімок (`суд_річ`) ───────────────────────────────────
     "size_is_label_not_fit": "a shop size is a number, not a fit: without the garment's measurements the code "
                              "does not know how the item fits (values: sizes — sizes by slot: slot — slot "
@@ -1741,8 +1743,7 @@ _МІСЦЯ_ОПЦІЙ = "where it is worn"
                                       "colour, cut, length, fabric, pattern, shine)",
     "photo_shows_other_colour": "in the card's photo the code sees a different colour than the one the item "
                                 "is described and judged by: the shop may have shown another colour of the "
-                                "model or named it differently (values: items — items: item_id, name — the item's "
-                                "name on the card, slot — slot code, colour — the item's colour, photo — the "
+                                "model or named it differently (values: items — items: item_id, kind — kind code, color — colour code, slot — slot code, colour — the item's colour, photo — the "
                                 "colour in the photo)",
     # ── СТРУКТУРА ОБРАЗУ: БЛОКЕРИ КОДАМИ (П-6, `суд_від_моделі.структура_образу_заяви`) ──
     "no_top_bottom_or_dress": "the outfit has neither of these foundations and no dress to replace them: "
@@ -2389,12 +2390,12 @@ _МІСЦЯ_ОПЦІЙ = "where it is worn"
     "belt_makes_ease_interval": "a belt makes the ease a range: the item passes the ladder of eases at "
                                 "several levels",
     "outer_will_not_fit_over_bulky": "the outer layer will not fit over the bulky item under it (values: outer — the "
-                                     "layer, under — the item under it: item_id, name — the name on the card)",
+                                     "layer, under — the item under it: item_id, kind — kind code, color — colour code)",
     "thin_fitted_top_under_or_bulky_without_jacket": "under a fitted layer a thin top that follows the figure "
                                                      "(a shirt, a fine knit), or the bulky jumper without the "
                                                      "jacket, or with a loose cut on top",
     "two_high_necklines_stacked": "two high necklines one on top of the other (values: upper, lower — the items: "
-                                  "item_id, name — the name on the card)",
+                                  "item_id, kind — kind code, color — colour code)",
     "open_neckline_on_top_or_one_high_neck": "an item with an open neckline on top (a cardigan, a jacket, a "
                                              "V-neck), or keep only one high neckline",
     "outer_length_state_chosen_for_warmth": "length and state chosen for warmth, not proportion (values: "
@@ -3544,11 +3545,25 @@ def визначення_заяв(коди):
     "stylist_will_choose": dict(choice="pending"),
 }
 
+# РІЧ У ЗНАЧЕННІ ЗАЯВИ — КОДАМИ (Е2-вхід-опису-кодами): ключі, що за визначеннями `ЗАЯВИ` несуть річ, беруть
+# `річ_заяви` (item_id, kind, color), а не назву крамниці вільним текстом — назва везла вид і колір словами в промпт
+# опису й перекладача, і модель брала їх звідти. Одна точка для всіх виробників, як і словник кодів вище.
+КЛЮЧІ_РЕЧІ = frozenset(("item", "items", "was", "now", "outer", "under", "top", "upper", "lower"))
+
+
+def _річ_вільним(в):
+    return (isinstance(в, dict) and "free_text" in в) or (
+        isinstance(в, (list, tuple)) and any(isinstance(х, dict) and "free_text" in х for х in в))
+
+
 def заява(код, *, recipient=None, source=None, choice=None, rank=None,
           item_ids=(), part=None, **значення):
     """Одна адресна заява з предметом, автором вибору, рангом і джерелом факту."""
     if код not in ЗАЯВИ:
         raise KeyError("заява поза словником ЗАЯВИ: %r" % (код,))
+    _вільні = sorted(к for к in КЛЮЧІ_РЕЧІ & set(значення) if _річ_вільним(значення[к]))
+    if _вільні:
+        raise ValueError("річ заяви %s вільним текстом (%s): річ — `річ_заяви`, без назви" % (код, ", ".join(_вільні)))
     м = МЕТАДАНІ_ЗАЯВ.get(код, {})
     return _ЗАЯВИ.створити(код, значення, recipient=recipient or м.get("recipient", "woman"),
                            source=source or м.get("source", "unknown"), choice=choice or м.get("choice", "unknown"),
