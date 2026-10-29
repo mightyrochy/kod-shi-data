@@ -142,10 +142,13 @@ function Test-QuotaRefused($Refused, $Reset, [datetimeoffset]$Now) {
     ($null -ne $at -and $at -le $Now -and $at -gt $Now.AddMinutes(-60))
 }
 
-function Test-ProviderQuota([string]$Provider, [datetimeoffset]$Now) {
-    <# $true — постачальник на квоті за файлами, які смуги вже ведуть: Codex — `codex` у heartbeat.json (gemini_run),
-    Claude — quota-claude.json (claude_run, поруч із gemini-publish), agy — pools.json (gemini_run): усі групи на 0 %.
-    Не прочитано — вважаємо доступним, як було до квот. Хмарний Claude квоти тут не має: його запускає диспетчер. #>
+function Test-ModelQuota([string]$Model, [datetimeoffset]$Now) {
+    <# $true — постачальник моделі на квоті за файлами, які смуги вже ведуть: Codex — `codex` у heartbeat.json (gemini_run),
+    Claude — quota-claude.json (claude_run, поруч із gemini-publish), agy — pools.json (gemini_run): усі групи саме цієї
+    моделі на 0 % (Get-ModelGroups, як QUOTA0_<група> у смузі); групи моделі не розпізнано — доступний, як у смузі;
+    pools.json без слів назви (до цієї зміни) — усі групи на 0 %. Не прочитано — доступний, як було до квот. Хмарний
+    Claude квоти тут не має: його запускає диспетчер. #>
+    $Provider = Get-ModelProvider $Model
     if ($Provider -ceq 'codex') {
         $hb = Read-QuotaJson $OutDir 'heartbeat.json'
         $c = $(if ($null -ne $hb) { Get-Prop $hb 'codex' } else { $null })
@@ -165,6 +168,11 @@ function Test-ProviderQuota([string]$Provider, [datetimeoffset]$Now) {
     if ($Provider -ceq 'agy') {
         $p = Read-QuotaJson $OutDir 'pools.json'
         $groups = @($(if ($null -ne $p) { Get-Prop $p 'groups' }) | Where-Object { $null -ne $_ })
+        $named = @(foreach ($g in $groups) {
+            $n = [string](Get-Prop $g 'n')
+            if ($n -cmatch '^[a-z0-9 ]{1,64}$') { [pscustomobject]@{ Name = $n; Left = [string](Get-Prop $g 'left') } }
+        })
+        if ($named.Count) { $groups = @(Get-ModelGroups $Model $named) }
         if ($groups.Count -and -not @($groups | Where-Object { [string](Get-Prop $_ 'left') -cne '0' }).Count) { return $true }
     }
     $false
@@ -186,7 +194,7 @@ function Get-ModelBase([string]$Model) { ($Model -creplace '^cc-','') -creplace 
 function Select-ReviewModel([string[]]$Candidates, [datetimeoffset]$Now) {
     <# Перший кандидат, чий постачальник не на квоті (порядок — аудит/МОДЕЛІ.md). Усі на квоті — перший: позначка чекає скидання. #>
     $list = @($Candidates | Where-Object { $_ })
-    foreach ($model in $list) { if (-not (Test-ProviderQuota (Get-ModelProvider $model) $Now)) { return $model } }
+    foreach ($model in $list) { if (-not (Test-ModelQuota $model $Now)) { return $model } }
     $list[0]
 }
 
@@ -222,13 +230,13 @@ function Test-ChainReviewDone([string]$Number, [string]$Head) {
 function Move-BlockedMarkers([string]$Slug, [string]$Model, [string]$Main, [datetimeoffset]$Now, [switch]$Gpu) {
     <# Усі позначки наряду чекають вичерпаної квоти, а $Model — на доступного постачальника: ставить позначку $Model, старі
     знімає (без дубля). Є позначка доступного постачальника чи нема старих — нічого не робить. $true — переведено. #>
-    if (Test-ProviderQuota (Get-ModelProvider $Model) $Now) { return $false }
+    if (Test-ModelQuota $Model $Now) { return $false }
     $r = Invoke-Git @('ls-remote','--heads','origin',"refs/heads/gemini-queue/$Slug/*") -AllowFail
     if ($r.Code -ne 0) { throw 'CHAIN_REMOTE' }
     $old = @(foreach ($line in ($r.Out -split "`n")) {
         if ($line -cmatch ('\trefs/heads/(gemini-queue/' + [regex]::Escape($Slug) + '/([a-z0-9][a-z0-9.-]{1,63})/1(?:/p2(?:-gpu)?)?)$')) { [pscustomobject]@{ Ref = $Matches[1]; Model = $Matches[2] } }
     })
-    if (-not $old.Count -or @($old | Where-Object { $_.Model -ceq $Model -or -not (Test-ProviderQuota (Get-ModelProvider $_.Model) $Now) }).Count) { return $false }
+    if (-not $old.Count -or @($old | Where-Object { $_.Model -ceq $Model -or -not (Test-ModelQuota $_.Model $Now) }).Count) { return $false }
     if ($Gpu) { Add-ChainMarker $Slug $Model $Main -Gpu } else { Add-ChainMarker $Slug $Model $Main }
     foreach ($m in $old) {
         $d = Invoke-Git @('push','-q','--no-verify','origin',":refs/heads/$($m.Ref)") -AllowFail
@@ -243,7 +251,7 @@ function Test-CloudMove([string]$Slug, [datetimeoffset]$Now) {
     $r = Invoke-Git @('ls-remote','--heads','origin',"refs/heads/gemini-queue/$Slug/*") -AllowFail
     if ($r.Code -ne 0) { throw 'CHAIN_REMOTE' }
     $models = @(foreach ($line in ($r.Out -split "`n")) { if ($line -cmatch ('\trefs/heads/gemini-queue/' + [regex]::Escape($Slug) + '/([a-z0-9][a-z0-9.-]{1,63})/')) { $Matches[1] } })
-    $models.Count -and -not @($models | Where-Object { -not (Test-ProviderQuota (Get-ModelProvider $_) $Now) }).Count
+    $models.Count -and -not @($models | Where-Object { -not (Test-ModelQuota $_ $Now) }).Count
 }
 
 function Get-ReviewDiff([string]$Head, [string]$Main) {
@@ -348,7 +356,7 @@ function Remove-DeadReviewMarkers($Pulls, $Seen, [datetimeoffset]$Now) {
         $keep = ''
         if (-not $why) {
             $sorted = @($g.Group | Where-Object { $_.Model -cnotmatch '^cc-' } | Sort-Object Ref)
-            $free = @($sorted | Where-Object { -not (Test-ProviderQuota (Get-ModelProvider $_.Model) $Now) })
+            $free = @($sorted | Where-Object { -not (Test-ModelQuota $_.Model $Now) })
             $keep = $(if ($free.Count) { $free[0].Ref } elseif ($sorted.Count) { $sorted[0].Ref } else { '' })
         }
         foreach ($m in $g.Group) {

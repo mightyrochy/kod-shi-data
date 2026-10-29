@@ -10,6 +10,8 @@ import re
 import re as _re_ід
 import json as _json_ід
 import протокол as _ПР
+import фрази_формату as _ФФ
+import спільні_вимоги as _ВИМ
 from пакет_моделі import номери_речей, скелет_схеми
 
 
@@ -107,10 +109,7 @@ import colorspace as _cs
         # правило «body» («where it sets the eye … waist») і спосіб носіння вели б модель далі:
         # «підперезана червоним паском», «щоб пасок підкреслював найвужчу частину тулуба» при
         # «приховати живіт». Названу зону ховає крій, сміливе лишається деінде (п.17).
-        _ЗП.Поле("case.goal_zones", "the body zones she wants to draw the eye away from, with any goal",
-                 # «no tuck that marks the waist» модель обходила застереженням — «Tuck the front of the
-                 # vest slightly … without marking your waist»; тож заборона без умови «marks»
-                 як="this comes before «body» and «ways_to_wear»: set the eye on none of these zones — no "
+        _ВИМ.поле("case.goal_zones", як="this comes before «body» and «ways_to_wear»: set the eye on none of these zones — no "
                     "sentence or way to wear that marks, frames or accentuates them; with belly or hips: no tuck "
                     "of any kind (not a front or half tuck, not a top tucked into the bottom, whatever it is "
                     "said to avoid) and no belt at the waist, never «the narrowest part of the torso»; do not name "
@@ -118,8 +117,7 @@ import colorspace as _cs
         # «the choice is hers» про БУДЬ-ЩО, що сперечається з днем, модель ставила в кінець більшості
         # карток — про речі, які обрала сама («сітка… наскільки це важливо в церкві, вирішуєш ти»).
         # Своє рішення стилістка не віддає жінці назад.
-        _ЗП.Поле("day", "her day as facts; «formality» is the same internal band",
-                 як="in the last part of «text» say how this outfit lives through her day; when something "
+        _ВИМ.поле("day", як="in the last part of «text» say how this outfit lives through her day; when something "
                     "you chose argues with the day (weather, hours on her feet, the place), say in one plain "
                     "sentence why you still chose it, or what she does about it in the day itself (take the "
                     "layer off, swap the pair); never hand that decision back to her"),
@@ -165,8 +163,7 @@ import colorspace as _cs
                                   "«item» — its «n», «statements» — what the code found, as statement codes",
                  як="this was your choice, not a flaw of the item: never call it a mismatch and never name it "
                     "in «swap»; in «how_to_wear» say what she does about what the code found"),
-        _ЗП.Поле("she_refuses", "what she refused",
-                 як="do not advise an item that breaks it and do not call it a compromise; when such an "
+        _ВИМ.поле("she_refuses", як="do not advise an item that breaks it and do not call it a compromise; when such an "
                     "item is in the outfit, tell her so plainly"),
         # Ч-1 (аудит/ПРОДУКТ.md п.12): the code no longer writes this as a sentence — it sends the
         # same statement codes the language model turns into the card line; codes are English
@@ -532,14 +529,14 @@ def фото_доведено_коду(запис):
 # їй її ж слова («що») тих записів, у яких номера речі образу нема.
 ПОВТОР_НАЗВАНОГО_EN = ("Your «text» or «how_to_wear» names things that are not items of «outfit»: %s. "
                        "Rewrite the whole answer without them — describe only the items of «outfit» — "
-                       "and return the same JSON object.")
+                       "and " + _ФФ.ТОЙ_САМИЙ_ОБЄКТ_EN + ".")
 
 
 # Повтор опису, що лишив речі образу без власного запису в `про_речі`. Номери — з тієї
 # самої нумерації пулу, що бачила модель; слів її прози код не читає (п.12).
 ПОВТОР_НЕ_ОПИСАНО_EN = ("Your «about_items» has no entry for these items of «outfit»: %s. Give every item of "
                         "«outfit» its own entry in «about_items» — its «n» and one or two sentences about it — "
-                        "and return the same JSON object.")
+                        "and " + _ФФ.ТОЙ_САМИЙ_ОБЄКТ_EN + ".")
 
 
 def _про_речі(про_речі, словник, за_ном, склад):

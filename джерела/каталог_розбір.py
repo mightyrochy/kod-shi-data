@@ -533,9 +533,9 @@ def схема():
 #  · НАЗВА ТИПУ НЕ ТРИМАЄ ІНШИХ ПОЛІВ: ж-01232 — «СУКНЯ №1081 ШОКОЛАД» і три коди крою без слова.
 #    Сторож цього не відрізнить (підрядок «сукня» стоїть у тексті), тож це має сказати правило.
 #  · `not_applicable` — рядок 352: «sleeve: no» на штанах значило «рукава тут не буває». Де саме
-#    поля нема, правило каже переліком з `НЕМА_ПОЛЯ` (`_правило_поля_нема`), а не словами «вид
-#    речі»: так MamayLM ставила його на крій і рукав пальта (рядки 2681–2682). Код однаково
-#    приймає лише за таблицею (`_поля_нема`) — правило лише зберігає відповіді.
+#    поля нема, знає лише таблиця `НЕМА_ПОЛЯ`: з промпта правило про неї знято (Е2, 11260) — код сам
+#    ставить `not_applicable` на «unknown» там, де слот чи тип у таблиці, і знімає його звідусіль
+#    інде (`_поля_нема`); перелік слотів у промпті лише повторював таблицю.
 #  · ЗАПОВНЮВАЧ І СУСІДНІЙ КОД (рядки 2681, 2682): «звичайний» крій, довжина «до коліна» без
 #    слова про крій чи довжину; «глибокий виріз» як V-подібний, «відкладний комір» як стійка,
 #    «класичне» чи назва моделі як крій. Цитата тут тримається, а код слів не читає (п.12) — це
@@ -548,25 +548,6 @@ def схема():
 #    фрагментами з цитатою кожен, без маркетингу, бренду, ціни, розміру й обмірів, бо їх модель
 #    переносила з тексту крамниці (К-4/К-5: маркетинг 14→22 % рядків). Висота каблука — форма
 #    взуття, не обмір. Код ці слова НЕ судить (п.12, п.16) — їх тримає лише правило.
-def _правило_поля_нема():
-    """Правило промпта про `not_applicable` — з `НЕМА_ПОЛЯ`: поля з тим самим переліком разом;
-    перелік слотів — коротшим боком («any slot but …», коли так коротше), типи взуття — окремо."""
-    слоти, групи = list(ВМ.ТАБЛИЦЯ["slot"]), {}
-    for шлях, нема in НЕМА_ПОЛЯ.items():
-        групи.setdefault(нема, []).append(шлях)
-    частини = []
-    for нема, поля in групи.items():
-        є = [к for к in слоти if к in нема]
-        решта = [к for к in слоти if к not in нема]
-        опис = "any slot but " + "|".join(решта) if len(решта) < len(є) else "|".join(є)
-        типи = [к for к in ВМ.ТАБЛИЦЯ["item_type"] if к in нема and к not in слоти]
-        частини.append("%s: %s" % (", ".join(поля), опис + ("; item_type " + "|".join(типи) if типи else "")))
-    return ("\"not_applicable\": the field does not exist for this kind of item, quote \"\" (shoes, bags and "
-            "jewellery have no cut, length, sleeve or neckline). Only where the item's slot has no such field — %s; "
-            "heel.shape, heel.height and heel.height_cm also when heel.present is \"no\". Anywhere else the field "
-            "exists: no words about it, \"unknown\"." % "; ".join(частини))
-
-
 _ПРАВИЛА = (
     "Parse only the item named in \"name\". The description may also hold blocks about other "
     "items, delivery or payment: ignore them.",
@@ -580,7 +561,6 @@ _ПРАВИЛА = (
     "not state a cut. Words that fit no code exactly: \"unknown\".",
     "A quote that only names the item type supports slot and item_type and nothing else: not "
     "sleeve, neckline, length, cut, fabric or any other field.",
-    _правило_поля_нема(),
     "\"item_type\": the quote must name this very type. A kind of dress, top or coat needs its own "
     "word in the quote: length, colour, fabric and fit words do not name a kind, so a dress with no "
     "kind named is dress_generic. The words name a type that has no code in the list: value \"not_applicable\" with that quote, never the "
@@ -987,9 +967,9 @@ def _слот(знач, тип, шлях, причини, частини):
 
 
 def _поля_нема(вих, об, причини):
-    """`not_applicable` лишається там, де поля нема за `НЕМА_ПОЛЯ` (слот чи тип речі), а форма й
-    висота каблука — ще й коли `heel.present` = "no"; інакше — "unknown" і рядок `invented`
-    з цитатою моделі. Правка на місці у `вих` (поля вже пройшли `_код`)."""
+    """Поле, якого нема за `НЕМА_ПОЛЯ` (слот чи тип речі; форма й висота каблука — ще й коли `heel.present` =
+    "no"), стає `not_applicable`, коли модель сказала "unknown"; `not_applicable` деінде — "unknown" і рядок
+    `invented` з цитатою моделі. Правка на місці у `вих` (поля вже пройшли `_код`)."""
     слот, тип = вих.get("slot"), вих.get("item_type")
     без_каблука = (вих.get("heel") or {}).get("present") == "no"
     for шлях, нема in НЕМА_ПОЛЯ.items():
@@ -998,9 +978,12 @@ def _поля_нема(вих, об, причини):
         for ім in кроки[:-1]:
             вузол = вузол.get(ім) or {}
             сире = сире.get(ім) if isinstance(сире.get(ім), dict) else {}
-        if вузол.get(кроки[-1]) != НЕ_СТОСУЄТЬСЯ or слот in нема or тип in нема:
+        нема_тут = слот in нема or тип in нема or (
+            без_каблука and шлях in ("heel.shape", "heel.height", "heel.height_cm"))
+        if нема_тут and вузол.get(кроки[-1]) == UNKNOWN:
+            вузол[кроки[-1]] = НЕ_СТОСУЄТЬСЯ
             continue
-        if без_каблука and шлях in ("heel.shape", "heel.height", "heel.height_cm"):
+        if вузол.get(кроки[-1]) != НЕ_СТОСУЄТЬСЯ or нема_тут:
             continue
         вузол[кроки[-1]] = UNKNOWN
         причини.append(вигадка_рядком(шлях, НЕ_СТОСУЄТЬСЯ, _розняти(сире.get(кроки[-1]))[1]))
