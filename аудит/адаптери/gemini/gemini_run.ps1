@@ -8,7 +8,8 @@
 Задача планувальника під користувачем Windows `gemini` (ізоляція ОС; входу в GitHub і Claude нема, ключів нема), раз на
 5 хв, без межі часу задачі. Запуск — планувальник: живе, доки йде хоч один його наряд, і опитує чергу раз на
 `poll_minutes`; без нарядів — виходить (наступний запуск — за 5 хв). Наряд — окремий процес того самого скрипта
-(`-WorkerFile`) зі своїм слотом, текою запуску й робочою копією (git worktree клону). Спільне з `claude_run.ps1` —
+(`-WorkerFile`) зі своїм слотом і текою запуску; копія задачі — `w\<прогін>` (git worktree клону без тек-архівів,
+`TEMP` — там же) — лише після звірки голови, після бандла — геть. Спільне з `claude_run.ps1` —
 `queue_lanes.ps1` (позначки, порядок, смуги, слоти, межі з `смуги.json` на `origin/main`, чекання квоти, замок GPU).
   1. перевірка ізоляції за `GEMINI.md` (whoami, `net session`, чужі профілі й диски, змінні з ключами);
   2. `git fetch` без входу: `main`, `gemini/*` і позначки черги `gemini-queue/<наряд>/<модель>/<спроба>[/<умови>]`, які
@@ -545,7 +546,8 @@ function Get-TaskRole([string]$TaskText) {
     'ВИКОНАВЕЦЬ'
 }
 
-function Get-Prompt($M, [string]$TaskText, [string]$EngineName = 'agy') {
+function Get-Prompt($M, [string]$TaskText, [string]$EngineName = 'agy', [string]$TaskDir = '') {
+    $taskSource = Get-TaskSource $M
     $branch = "gemini/$($M.Slug)"
     $adapter = $(if ($EngineName -eq 'codex') { 'адаптер — лише цей текст' } else { 'адаптер середовища — `GEMINI.md`' })
     $role = $(if ($EngineName -eq 'codex') { Get-TaskRole $TaskText } else { 'ВИКОНАВЕЦЬ' })
@@ -560,8 +562,9 @@ function Get-Prompt($M, [string]$TaskText, [string]$EngineName = 'agy') {
 Ти — $roleText за ``AGENTS.md`` і ``аудит/$roleFile.md``; $adapter. Ізоляцію ОС уже
 перевірила обгортка. Тебе запустила обгортка М.2 без людини: питань не став, відповіді не буде.
 
-- Наряд — ``$($script:TaskDir)$($M.Slug).md`` з ``main`` на коміті $($M.Sha); повний текст — нижче між рисками.
+- Наряд — ``$taskSource`` з ``main`` на коміті $($M.Sha); повний текст — нижче між рисками.
 - Гілку ``$branch`` уже вибрано: працюй і коміть лише в ній. Не пуш і не створюй бандла — це робить обгортка.
+$(if ($TaskDir) { '- ' + ((Get-TaskDirText $TaskDir) -replace "`n", "`n  ") })
   Файлів ``.github/`` і ``аудит/адаптери/gemini/`` не змінюй: таку гілку не опублікують.
 - Кожну команду виконуй на передньому плані й чекай її завершення: фонове завдання зупиняється разом із ходом, а
   звіт без результату — кинутий прогін.
@@ -921,7 +924,7 @@ function Resume-Interrupted {
     }
 }
 
-# Наряд у процесі наряду: робоча копія слота вже вибрана ($RepoDir), рушій вибрав планувальник ($Job.sel).
+# Наряд у процесі наряду: рушій вибрав планувальник ($Job.sel); копія задачі — після звірки голови (New-TaskCopy).
 function Invoke-Task($M, $Job) {
     $key = Get-MarkerKey $M
     $id = [string]$Job.id
@@ -929,19 +932,21 @@ function Invoke-Task($M, $Job) {
     $status = [ordered]@{ v = 1; id = $id; slug = $M.Slug; model = $M.Model; n = [int]$M.N; marker = $M.Sha; cond = $M.Cond; slot = [string]$Job.slot
         start = ''; head = ''; code = ''; report = 'NONE'; ahead = 0; turns = 0; minutes = 0; bundle = ''; engine = 'agy'
         retakes = (Get-Retakes $statePath) }
+    $prev = $(if (Test-Path -LiteralPath $statePath) { [IO.File]::ReadAllText($statePath, $script:Utf8) } else { $null })
     Write-FileAtomic $statePath ('STARTED ' + ($status | ConvertTo-Json -Compress))
     $dir = [string]$Job.dir
     $t0 = Get-Date
     $tail = ''
     $waiting = $false
+    $copyFailed = $false
     Write-Log "наряд $($M.Name) $($M.Sha) -> $id (слот $($Job.slot))"
     try {
         $main = Get-RefSha 'refs/remotes/origin/main'
         $anc = Invoke-Git @('merge-base', '--is-ancestor', $M.Sha, $main) -AllowFail
-        $taskPath = Get-AutoTaskPath $M.Slug
+        $taskPath = Get-TaskSource $M
         if ($anc.Code -ne 0) { $status.code = 'NOT_ON_MAIN'; return }
         if ((Invoke-Git @('cat-file', '-e', "$($M.Sha):$taskPath") -AllowFail).Code -ne 0) { $status.code = 'NO_TASK_FILE'; return }
-        $taskText = Add-AutoTaskContext $M.Slug ((Invoke-Git @('cat-file', 'blob', "$($M.Sha):$taskPath")).Out) $M.Sha
+        $taskText = (Invoke-Git @('cat-file', 'blob', "$($M.Sha):$taskPath")).Out
         $js = $Job.sel
         $eng = [pscustomobject]@{ Name = [string]$js.engine; Model = [string]$js.emodel; Effort = [string]$js.effort }
         $exe = $(if ($eng.Name -eq 'codex') { Find-CodexExe } else { Find-EngineExe $AgyExe })
@@ -960,13 +965,7 @@ function Invoke-Task($M, $Job) {
         $wh = [string]$Job.head
         if ($wh -match '^[0-9a-f]{40}$' -and (Get-RefSha $wh) -and (-not $start -or (Invoke-Git @('merge-base', '--is-ancestor', $start, $wh) -AllowFail).Code -eq 0)) { $start = $wh }
         if (-not $start) { $start = $main }
-        Reset-WorkTree $RepoDir
-        [void](Invoke-Git @('checkout', '-q', '-f', '--ignore-other-worktrees', '-B', "gemini/$($M.Slug)", $start))
-        $status.start = $start
-        # Стан із початком гілки: перерваний прогін наступний запуск закриє й забандлить (Resume-Interrupted).
-        Write-FileAtomic $statePath ('STARTED ' + ($status | ConvertTo-Json -Compress))
-        $prompt = Get-Prompt $MA $taskText $sel.Engine.Name
-        [System.IO.File]::WriteAllText((Join-Path $dir 'prompt.md'), $prompt, $script:Utf8)
+        # Звірка голови — до копії задачі: мертва позначка копії не отримує.
         $review = Get-AutoReviewState $M.Slug
         if ($review -eq 'REVIEW_API') {
             Enter-ReviewWait $M ([string]$Job.head)
@@ -974,6 +973,16 @@ function Invoke-Task($M, $Job) {
             return
         }
         if ($review -ne 'LIVE') { $status.code = $review; return }
+        try { $taskText = Add-AutoTaskContext $M.Slug $taskText $M.Sha }
+        catch { Enter-ReviewWait $M; $waiting = $true; return }
+        $taskDir = Join-Path (Join-Path $RunsDir 'w') $id
+        try { [void](New-TaskCopy $taskDir $start $taskText) } catch { $copyFailed = $true; throw }
+        [void](Invoke-Git @('checkout', '-q', '-f', '--ignore-other-worktrees', '-B', "gemini/$($M.Slug)", $start))
+        $status.start = $start
+        # Стан із початком гілки: перерваний прогін наступний запуск закриє й забандлить (Resume-Interrupted).
+        Write-FileAtomic $statePath ('STARTED ' + ($status | ConvertTo-Json -Compress))
+        $prompt = Get-Prompt $MA $taskText $sel.Engine.Name $taskDir
+        [IO.File]::WriteAllText((Join-Path $dir 'prompt.md'), $prompt, $script:Utf8)
         $res = Invoke-Agent $MA $start $prompt $dir $sel
         $tail = $res.Tail
         $status.code = $res.Code
@@ -985,11 +994,20 @@ function Invoke-Task($M, $Job) {
         $qa = $(if ($sel.Engine.Name -eq 'agy' -and -not $waiting) { Get-Quota $sel.Model -Fresh } else { $q })
         if ($qa.Known) { $status.quota = $qa.Left; $status.qgroup = $qa.Group }
     } catch {
-        $status.code = 'CRASH'
-        Write-Log "збій: $($_.Exception.Message)"
+        if ($copyFailed) {
+            # Відмова до старту, як колись робочої копії (10162): стан — як до STARTED, позначку повертає Close-FailedStart.
+            Write-Log "копія задачі: $($_.Exception.Message)"
+            if ($null -eq $prev) { Remove-Item -LiteralPath $statePath -Force } else { Write-FileAtomic $statePath $prev }
+            $waiting = $true
+        } else {
+            $status.code = 'CRASH'
+            Write-Log "збій: $($_.Exception.Message)"
+        }
     } finally {
         if (-not $waiting) { Complete-Status $status $statePath $tail $t0 }
-        [void](Invoke-Git @('checkout', '-q', '--detach') -AllowFail)
+        # Зроблене — у гілці gemini/<наряд> клону (і в бандлі): копія задачі геть, лишається лише з комітами поза гілками.
+        $kept = Close-TaskCopy @('--branches', '--remotes')
+        if ($kept) { Write-Log "наряд $($M.Name): копія $kept лишається — коміти поза гілками" }
     }
 }
 
@@ -1065,7 +1083,7 @@ function Enter-StartQuotaWait($M, $Q, $State) {
 function Start-Markers($Workers) {
     $started = 0
     $now = [DateTimeOffset]::UtcNow.ToUnixTimeSeconds()
-    $all = @(Get-Markers)
+    $all = @(Get-Markers | Where-Object { -not $_.Slug.StartsWith('Е1-нічний-живий-') }) + @(Get-NightlyMarker)
     foreach ($m in @($all | Where-Object { -not $_.Valid })) {
         $state = Get-StatePath (Get-MarkerKey $m)
         if (Test-Path -LiteralPath $state) { continue }
@@ -1149,7 +1167,7 @@ function Write-Heartbeat([string]$Iso) {
     try { Write-FileAtomic (Join-Path $OutDir 'heartbeat.json') ($hb | ConvertTo-Json -Compress -Depth 6) } catch { Write-Log "heartbeat: $($_.Exception.Message)" }
 }
 
-# Процес наряду: слот (замок на весь прогін), GPU (замок, спільний з claude-run), робоча копія слота, прогін.
+# Процес наряду: слот (замок на весь прогін), GPU (замок, спільний з claude-run), прогін (копію задачі дає Invoke-Task).
 function Invoke-Worker {
     $job = $script:Job
     $lim = @{ slots = @{} }
@@ -1166,14 +1184,14 @@ function Invoke-Worker {
     try {
         if ($job.gpu) {
             $gpu = Open-Lock (Get-GpuLockPath)
-            if ($null -eq $gpu) { Remove-Claim $statePath; Write-Log "GPU зайнята — $($job.name) лишається в черзі"; return $script:WorkerGpuBusy }
+            if ($null -eq $gpu -or -not (Test-ExternalGpuFree)) { Remove-Claim $statePath; Write-Log "GPU зайнята — $($job.name) лишається в черзі"; return $script:WorkerGpuBusy }
         }
         Write-FileAtomic $info (([ordered]@{ slot = $job.slot; lane = $job.lane; marker = $job.name; slug = $job.slug; model = $job.model
-                    since = (Get-UtcStamp (Get-Date)); gpu = [bool]$job.gpu; prio = $job.prio; pid = $PID }) | ConvertTo-Json -Compress)
+                    since = (Get-UtcStamp (Get-Date)); gpu = [bool]$job.gpu; prio = $job.prio; pid = $PID
+                    copy = (Join-Path (Join-Path $RunsDir 'w') ([string]$job.id)) }) | ConvertTo-Json -Compress)
         $M = [pscustomobject]@{ Ref = $job.ref; Name = $job.name; Sha = $job.sha; Time = [long]$job.time; Slug = $job.slug; Model = $job.model
             N = [string]$job.n; Cond = [string]$job.cond; Prio = $job.prio; Deadline = $job.deadline; Gpu = [bool]$job.gpu; Lane = $job.lane }
-        $wt = Enter-WorkTree (Join-Path (Join-Path $RunsDir 'w') $job.slot) 'refs/remotes/origin/main'
-        Set-Variable -Scope Script -Name RepoDir -Value $wt
+        Set-BrowserGpuPolicy (Join-Path $script:SlotDir ($job.slot + '-browser'))
         Invoke-Task $M $job
         0
     } catch {
@@ -1226,7 +1244,7 @@ function Main {
                         '+refs/heads/gemini/*:refs/remotes/origin/gemini/*',
                         '+refs/heads/gemini-queue/*:refs/remotes/origin/gemini-queue/*'))
                 $script:Limits = Get-Limits
-                if ($first) { Resume-Interrupted }
+                if ($first) { Resume-Interrupted; Clear-TaskCopies (Join-Path $RunsDir 'w') @('--branches', '--remotes') }
                 Clear-OrphanClaims $RunsDir
                 $script:Agy = Find-EngineExe $AgyExe
                 if ($script:Agy) { [void](Read-Usage) }

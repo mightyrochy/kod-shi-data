@@ -29,6 +29,12 @@ argv() { $PY -c "import json
 for l in open('$(wp "$W/cc.log")', encoding='utf-8'): print(' '.join(json.loads(l)['argv']))" 2>/dev/null | tail -1; }
 prompt() { $PY -c "import json
 print([json.loads(l) for l in open('$(wp "$W/cc.log")', encoding='utf-8')][-1]['stdin'])" 2>/dev/null; }
+# Тека сесії: cwd — cr/w/<прогін>/repo, TEMP і TMP — cr/w/<прогін>/tmp (з FAKE_CC_LOG).
+copydir() { $PY -c "import json, os, sys
+e = [json.loads(l) for l in open(sys.argv[1], encoding='utf-8')][-1]
+n = lambda p: os.path.normcase(os.path.realpath(p))
+c = n(e['cwd']); d = os.path.dirname(c)
+print('ok' if os.path.dirname(d) == n(sys.argv[2]) and os.path.basename(c) == 'repo' and n(e['temp']) == n(e['tmp']) == os.path.join(d, 'tmp') else 'ні: ' + e['cwd'] + ' ' + e['temp'])" "$(wp "$W/cc.log")" "$(wp "$W/cr/w")"; }
 chk() { if eval "$2"; then echo "  ✓ $1"; else echo "  ✗ $1"; BAD=1; fi; }
 code() { setup "$1"; mark "$SLUG/${3:-$M}/1"; FAKE_CC_SCENARIO=$2 cr "${5:-}"; WANT=$4
   EXPECTED="GEMINI ОБГОРТКА: ЗАБЛОКОВАНО claude/$SLUG $WANT"
@@ -117,5 +123,17 @@ for form in example fence blockquote prompt assistant_only; do
 done
 code k9-wrong-sha report_wrong_sha "$M" NO_PUSH
 code k9-bad-branch report_bad_branch "$M" BAD_BRANCH
+
+echo "=== К10 копія задачі: тека прогону, TEMP там же, після звіту — геть; незапушене лишається; давню копію слота прибрано"
+setup k10; mark "$SLUG/$M/1"
+git -C "$W/clone" fetch -q origin 2>/dev/null; git -C "$W/clone" worktree add -q --detach "$(wp "$W/cr/w/claude-1")" origin/main 2>/dev/null
+chk "давня робоча копія слота є до запуску" '[ -e "$W/cr/w/claude-1/.git" ]'
+cr
+chk "ГОТОВО, сесія — у cr/w/<прогін>/repo, TEMP і TMP — cr/w/<прогін>/tmp ($(copydir))" '[[ "$(lines)" == "GEMINI ОБГОРТКА: ГОТОВО claude/$SLUG "* ]] && [ "$(copydir)" = ok ]'
+chk "промпт називає теку задачі" '[[ "$(prompt)" == *"Тека задачі — "* && "$(prompt)" == *"git sparse-checkout add"* ]]'
+chk "після звіту копії нема, давню копію слота прибрано, worktree клону — лише сам клон" '[ -z "$(ls -A "$W/cr/w")" ] && [ "$(git -C "$W/clone" worktree list | wc -l)" = 1 ]'
+setup k10b; mark "$SLUG/$M/1"; FAKE_CC_SCENARIO=unpushed cr
+chk "незапушений коміт: BLOCKED і COPY_KEPT, тека з kept.txt лишається" '[ "$(lines | LC_ALL=C sort)" = "$(printf "%s\n" "GEMINI ОБГОРТКА: ЗАБЛОКОВАНО claude/$SLUG BLOCKED" "GEMINI ОБГОРТКА: ЗАБЛОКОВАНО claude/$SLUG COPY_KEPT" | LC_ALL=C sort)" ] && ls "$W"/cr/w/*/kept.txt >/dev/null 2>&1'
+cr; chk "перший прохід нового запуску лишену копію не прибирає" 'ls "$W"/cr/w/*/kept.txt >/dev/null 2>&1 && [ "$(git -C "$W/clone" worktree list | wc -l)" = 2 ]'
 
 echo; [ $BAD = 0 ] && echo "ВСЕ ✓" || echo "ЗБІЙ ✗"; exit $BAD

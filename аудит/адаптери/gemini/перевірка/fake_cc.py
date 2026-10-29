@@ -1,24 +1,17 @@
 #!/usr/bin/env python3
 # Підробний `claude -p … --output-format stream-json` для стенда claude_run.ps1: сценарій — FAKE_CC_SCENARIO,
-# argv і промпт — рядком JSON у FAKE_CC_LOG, свій pid — у FAKE_CC_LOG.pid (pid нащадка — .child). Гілку
+# argv, промпт, тека й TEMP/TMP — рядком JSON у FAKE_CC_LOG, свій pid — у FAKE_CC_LOG.pid (pid нащадка — .child). Гілку
 # `claude/<наряд>` пушить у origin клону (поточна тека), як сесія.
 import json, os, re, subprocess, sys, time
 sc = os.environ.get('FAKE_CC_SCENARIO', 'done')
 open(os.environ['FAKE_CC_LOG'] + '.pid', 'w').write(str(os.getpid()))
 prompt = sys.stdin.read()
 with open(os.environ['FAKE_CC_LOG'], 'a', encoding='utf-8') as f:
-    f.write(json.dumps({'argv': sys.argv[1:], 'stdin': prompt}, ensure_ascii=False) + '\n')
+    f.write(json.dumps({'argv': sys.argv[1:], 'stdin': prompt, 'cwd': os.getcwd(), 'temp': os.environ.get('TEMP', ''),
+                        'tmp': os.environ.get('TMP', '')}, ensure_ascii=False) + '\n')
 slug = re.search(r'аудит/наряди/(.+?)\.md', prompt).group(1)
 branch = 'claude/' + slug
-def hold(slug):
-    # Стенд смуг: FAKE_HOLD с роботи й рядки start/end у FAKE_TIMELINE — щоб виміряти, що йде водночас.
-    tl = os.environ.get('FAKE_TIMELINE')
-    if not tl:
-        return
-    def mark(k):
-        with open(tl, 'a') as f:
-            f.write('%s %s %d\n' % (k, slug, int(time.time() * 1000)))
-    mark('start'); time.sleep(float(os.environ.get('FAKE_HOLD', '0'))); mark('end')
+from fake_timeline import тримати as hold
 
 def emit(o):
     sys.stdout.write(json.dumps(o, ensure_ascii=False) + '\n'); sys.stdout.flush()
@@ -71,6 +64,10 @@ if sc == 'bad_branch':
     result('НОУТБУК ГОТОВО main %s' % push())
 if sc == 'blocked':
     push(); result('НОУТБУК ЗАБЛОКОВАНО: LM Studio не відповідає, гілка %s.' % branch)
+if sc == 'unpushed':
+    # Коміт лише в копії задачі, без пушу: обгортка копію лишає (COPY_KEPT).
+    git('commit', '-q', '--allow-empty', '-m', 'незапушене')
+    result('НОУТБУК ЗАБЛОКОВАНО: коміт не запушено.')
 if sc == 'no_report':
     result('Зроблено, усе гаразд.')
 if sc == 'die':

@@ -3,7 +3,7 @@
 .SYNOPSIS
 Спільне для двох планувальників ноутбука — `gemini_run.ps1` (під `gemini`: смуги Codex і `agy`) і `claude_run.ps1` (під
 власником: смуга Claude Code): позначки черги з пріоритетом і строком, смуги й слоти, межі з файла даних, атомарне узяття
-позначки, чекання скидання квоти, замок GPU, окрема робоча копія й окремий процес на наряд.
+позначки, чекання скидання квоти, замок GPU, копія задачі без тек-архівів і окремий процес на наряд.
 
 .DESCRIPTION
 Підвантажується крапкою (`. queue_lanes.ps1`) після блоку параметрів скрипта; власних параметрів нема. Читає змінні
@@ -270,6 +270,42 @@ function Get-Markers {
     @(foreach ($line in ($r.Out -split "`n")) { if ($line.Trim()) { ConvertTo-Marker $line.Trim() } })
 }
 
+function Get-TaskSource($M) {
+    <# Усі наряди використовують спільне визначення шляху шаблону. #>
+    Get-AutoTaskPath $M.Slug
+}
+
+function Get-NightlyMarker([datetime]$Now = [datetime]::UtcNow) {
+    <# Після 02:00 UTC читає лише датований дозвіл із GitHub; локальний стан не дає прав. #>
+    $utc = $Now.ToUniversalTime()
+    if ($utc.Hour -lt 2) { return }
+    $date = $utc.ToString('yyyyMMdd')
+    $ref = $script:QueuePrefix + 'Е1-нічний-живий-' + $date + '/gpt-6.1-sol-high/1/gpu-p8'
+    $sha = Get-RefSha $ref
+    if ($sha -cnotmatch '^[0-9a-f]{40}$') { return }
+    $main = Get-RefSha 'refs/remotes/origin/main'
+    if ($main -cnotmatch '^[0-9a-f]{40}$' -or
+        (Invoke-Git @('merge-base', '--is-ancestor', $sha, $main) -AllowFail).Code -ne 0) { return }
+    $template = 'аудит/наряди/автоживий.md'
+    $build = (Invoke-Git @('cat-file','blob',"${sha}:build.txt") -AllowFail).Out.Trim()
+    if ($build -cmatch '^[0-9a-f]{40}$' -and (Invoke-Git @('for-each-ref','--format=%(refname)',($script:QueuePrefix + "автоживий-$build/"))).Out.Trim()) { return }
+    if ((Invoke-Git @('cat-file', '-e', "${sha}:$template") -AllowFail).Code -ne 0) { return }
+    $dir = Join-Path $RunsDir 'nightly'
+    [void](New-Item -ItemType Directory -Force -Path $dir)
+    $file = Join-Path $dir ($date + '.json')
+    if (Test-Path -LiteralPath $file) {
+        $saved = [System.IO.File]::ReadAllText($file, $script:Utf8) | ConvertFrom-Json
+        if ($saved.date -cne $date -or $saved.sha -cnotmatch '^[0-9a-f]{40}$' -or
+            [string]$saved.time -cnotmatch '^[0-9]{10}$') { throw 'Хибний стан нічного прогону' }
+        if ($saved.sha -cne $sha) { return }
+    } else {
+        $stamp = ([DateTimeOffset]$utc).ToUnixTimeSeconds()
+        $saved = [pscustomobject]@{ date = $date; sha = $sha; time = $stamp }
+        Write-FileAtomic $file ($saved | ConvertTo-Json -Compress)
+    }
+    ConvertTo-Marker ($ref + "`t" + $saved.sha + "`t" + $saved.time)
+}
+
 function Get-MarkerKey($M) { "$($M.Ref) $($M.Sha)" }
 
 function Get-StatePath([string]$Key) { Join-Path $script:StateDir ((Get-Sha256Hex $Key) + '.txt') }
@@ -303,6 +339,9 @@ function Get-ReviewTime {
     [DateTimeOffset]::UtcNow.ToUnixTimeSeconds()
 }
 
+# Спільна політика потрібна й при самостійному завантаженні бібліотеки черги.
+if (-not (Get-Command Test-ReviewBranch -ErrorAction SilentlyContinue)) { . (Join-Path $PSScriptRoot 'wrapper_health.ps1') }
+
 function Get-AutoReviewState([string]$Slug) {
     <# Звіряє PR один раз безпосередньо перед моделлю, лише у вже вільному слоті.
 
@@ -332,7 +371,7 @@ function Get-AutoReviewState([string]$Slug) {
             $pr = Invoke-RestMethod -Uri "https://api.github.com/repos/mightyrochy/kod-shi-data/pulls/$number" -Method Get -TimeoutSec 20 -MaximumRedirection 0 -Headers @{Accept='application/vnd.github+json'; 'User-Agent'='kod-shi-wrapper'}
             if ([string]$pr.number -cne $number -or $pr.state -cnotin @('open','closed') -or [string]$pr.head.sha -cnotmatch '^[0-9a-f]{40}$') { throw 'REVIEW_RESPONSE' }
             if ($pr.state -cne 'open' -or $pr.head.sha -cne $head) { return 'STALE' }
-            if ($pr.user.login -cne 'mightyrochy' -or $null -eq $pr.head.repo -or $pr.head.repo.full_name -cne 'mightyrochy/kod-shi-data' -or $pr.base.repo.full_name -cne 'mightyrochy/kod-shi-data' -or $pr.base.ref -cne 'main' -or $pr.head.ref -match '/авто(перевірка|живий)-') { return 'STALE' }
+            if ($pr.user.login -cne 'mightyrochy' -or $null -eq $pr.head.repo -or $pr.head.repo.full_name -cne 'mightyrochy/kod-shi-data' -or $pr.base.repo.full_name -cne 'mightyrochy/kod-shi-data' -or $pr.base.ref -cne 'main' -or (Test-ReviewBranch ([string]$pr.head.ref))) { return 'STALE' }
             'LIVE'
         } catch {
             $budget.until = $now + $script:ReviewApiBackoff
@@ -561,41 +600,300 @@ function Wait-Workers($Workers, [double]$Minutes) {
     }
 }
 
-function Enter-WorkTree([string]$Path, [string]$Commit) {
-    <# Робоча копія слота: git worktree клону (спільні об'єкти й посилання, свої індекс і тека); нема — створюється. #>
-    [void](Invoke-Git @('worktree', 'prune') -AllowFail)
-    if (-not (Test-Path -LiteralPath (Join-Path $Path '.git'))) {
-        if (Test-Path -LiteralPath $Path) { Remove-Item -LiteralPath $Path -Recurse -Force }
-        [void](New-Item -ItemType Directory -Force -Path (Split-Path -Parent $Path))
-        [void](Invoke-Git @('worktree', 'add', '-q', '-f', '--detach', $Path, $Commit))
+# Теки `аудит/` від третього рівня з відстежуваними файлами від 8 МіБ — архіви прогонів, проб і перевірок: копія задачі
+# їх не викладає (main 29.10: 29 тек, у копії 247 МБ із 1353). Тека, названа в наряді, лишається; іншу сесія додає
+# сама — `git sparse-checkout add '/<тека>/'`.
+$script:ArchiveDirBytes = 8MB
+$script:TaskCopy = $null
+
+function Get-ArchiveDirs([string]$Commit, [string]$TaskText) {
+    <# Теки-архіви коміту згори вниз; частковий клон не міряємо: `ls-tree -l` довантажив би всі об'єкти. #>
+    if ((Invoke-Git @('config', '--get', 'remote.origin.promisor') -AllowFail).Out.Trim() -eq 'true') { return }
+    $r = Invoke-Git @('ls-tree', '-r', '-l', '-z', $Commit, '--', 'аудит') -AllowFail
+    if ($r.Code -ne 0) { return }
+    $size = New-Object 'System.Collections.Generic.Dictionary[string,long]' ([StringComparer]::Ordinal)
+    foreach ($e in $r.Out.Split([char]0)) {
+        if ($e -notmatch '^[0-7]{6} blob [0-9a-f]{40,64} +([0-9]+)\t(.+)$') { continue }
+        $bytes = [long]$Matches[1]; $path = $Matches[2]; $i = -1; $depth = 0
+        while (($i = $path.IndexOf('/', $i + 1)) -ge 0) {
+            $depth++
+            if ($depth -lt 3) { continue }
+            $d = $path.Substring(0, $i); $v = 0L
+            [void]$size.TryGetValue($d, [ref]$v); $size[$d] = $v + $bytes
+        }
     }
-    $Path
+    $named = @(foreach ($m in [regex]::Matches($TaskText, '`([^`\r\n]+)`')) { (($m.Groups[1].Value.Trim() -replace '\\', '/') -replace '^\./', '').TrimEnd('/') })
+    $out = New-Object System.Collections.Generic.List[string]
+    foreach ($d in @($size.Keys | Where-Object { $size[$_] -ge $script:ArchiveDirBytes } | Sort-Object { $_.Split('/').Count }, { $_ })) {
+        $keep = $false
+        foreach ($x in $out) { if ($d.StartsWith($x + '/', [StringComparison]::Ordinal)) { $keep = $true } }
+        foreach ($n in $named) { if ($n -ceq $d -or $n.StartsWith($d + '/', [StringComparison]::Ordinal)) { $keep = $true } }
+        if (-not $keep) { $out.Add($d) }
+    }
+    $out
 }
 
-function Reset-WorkTree([string]$Dir) {
-    <# Чиста робоча копія: перервані операції, замок індексу, незакомічене й зайве — геть. #>
-    foreach ($op in @('merge', 'rebase', 'cherry-pick', 'revert')) { [void](Invoke-Git @($op, '--abort') -AllowFail -Dir $Dir) }
-    $lock = (Invoke-Git @('rev-parse', '--git-path', 'index.lock') -Dir $Dir).Out.Trim()
-    if (-not [System.IO.Path]::IsPathRooted($lock)) { $lock = Join-Path $Dir $lock }
-    if (Test-Path -LiteralPath $lock) { Remove-Item -LiteralPath $lock -Force }
-    [void](Invoke-Git @('reset', '-q', '--hard') -Dir $Dir)
-    [void](Invoke-Git @('clean', '-q', '-ffd') -Dir $Dir)
+function ConvertTo-SparseSkip([string]$Dir) {
+    <# Шаблон sparse-checkout (синтаксис .gitignore), що не викладає теку; спецсимволи шаблону екрановано. #>
+    '!/' + ($Dir -replace '([\\*?\[])', '\$1') + '/'
+}
+
+function New-TaskCopy([string]$Dir, [string]$Commit, [string]$TaskText) {
+    <# Тека задачі: `repo` — git worktree клону (спільні об'єкти й посилання) без тек-архівів, `tmp` — TEMP і TMP процесу
+    наряду та його нащадків. Далі git і рушій працюють у копії ($RepoDir); повертає її шлях, закриває Close-TaskCopy. #>
+    $repo = Join-Path $Dir 'repo'; $tmp = Join-Path $Dir 'tmp'
+    [void][IO.Directory]::CreateDirectory($tmp)
+    $script:TaskCopy = @{ Dir = $Dir; Clone = $RepoDir; Temp = $env:TEMP; Tmp = $env:TMP }
+    [void](Invoke-Git @('worktree', 'prune') -AllowFail)
+    [void](Invoke-Git @('worktree', 'add', '-q', '-f', '--no-checkout', '--detach', $repo, $Commit))
+    # sparse-checkout у worktree лише з git 2.36: раніший писав `core.sparseCheckout` у спільний конфіг клону, а
+    # `--no-cone` з'явився в 2.35. Старіший git — копія повна, але так само прибирається після доставки.
+    $v = [regex]::Match([string](Invoke-Git @('version') -AllowFail).Out, '([0-9]+)\.([0-9]+)')
+    $skip = @()
+    if ($v.Success -and [int]$v.Groups[1].Value * 1000 + [int]$v.Groups[2].Value -ge 2036) {
+        $skip = @(Get-ArchiveDirs $Commit $TaskText)
+        $sp = Invoke-Git (@('sparse-checkout', 'set', '--no-cone', '/*') + @(foreach ($d in $skip) { ConvertTo-SparseSkip $d })) -AllowFail -Dir $repo
+        if ($sp.Code -ne 0) {
+            Write-Log "копія задачі: sparse-checkout не вдався — повна ($($sp.Err.Trim()))"
+            [void](Invoke-Git @('sparse-checkout', 'disable') -AllowFail -Dir $repo)
+            $skip = @()
+        }
+    } else { Write-Log "копія задачі: git до 2.36 — повна ($([string]$v.Value))" }
+    [void](Invoke-Git @('reset', '-q', '--hard') -Dir $repo)
+    Set-Variable -Scope Script -Name RepoDir -Value $repo
+    $env:TEMP = $tmp; $env:TMP = $tmp
+    Write-Log "копія задачі $repo ($Commit): тек-архівів не викладено — $($skip.Count)"
+    $repo
+}
+
+function Get-TaskDirText([string]$TaskDir) {
+    <# Рядок промпту про теку задачі (без теки — ''). #>
+    if (-not $TaskDir) { return '' }
+    "Тека задачі — ``$TaskDir``: робоча копія ``repo`` (поточна тека) і ``tmp`` (туди вже вказують TEMP і TMP). Клонів`n" +
+    "і копій репозиторію поза нею не роби; теки-архіви ``аудит/`` не викладено — потрібну додай ``git sparse-checkout add '/<тека>/'``.`n" +
+    "Після кінця прогону обгортка теку прибирає: лишається лише закомічене."
+}
+
+function Close-TaskCopy([string[]]$Delivered) {
+    <# Після доставки: $RepoDir і TEMP/TMP — як до копії, копія — геть (Remove-TaskCopy). Повертає шлях теки, що
+    лишилась із недоставленими комітами, або ''. #>
+    $c = $script:TaskCopy
+    if ($null -eq $c) { return '' }
+    $script:TaskCopy = $null
+    Set-Variable -Scope Script -Name RepoDir -Value $c.Clone
+    $env:TEMP = $c.Temp; $env:TMP = $c.Tmp
+    Remove-TaskCopy $c.Dir $Delivered
+}
+
+function Remove-TaskCopy([string]$Dir, [string[]]$Delivered) {
+    <# Тека задачі чи давня робоча копія слота — геть, коли голова не несе комітів поза $Delivered (`rev-list --not`).
+    Несе — тека лишається з `kept.txt`, гілку звільнено, повертає шлях теки; інакше ''. #>
+    $repo = $(if (Test-Path -LiteralPath (Join-Path $Dir '.git')) { $Dir } else { Join-Path $Dir 'repo' })
+    if (Test-Path -LiteralPath (Join-Path $repo '.git')) {
+        $n = 0
+        $r = Invoke-Git (@('rev-list', '--count', 'HEAD', '--not') + $Delivered) -AllowFail -Dir $repo
+        if ($r.Code -eq 0 -and [int]::TryParse($r.Out.Trim(), [ref]$n) -and $n -gt 0) {
+            [void](Invoke-Git @('checkout', '-q', '--detach') -AllowFail -Dir $repo)
+            [IO.File]::WriteAllText((Join-Path $Dir 'kept.txt'), "недоставлених комітів голови: $n`n", $script:Utf8)
+            Write-Log "копія задачі $Dir лишається: недоставлених комітів голови $n"
+            return $Dir
+        }
+        [void](Invoke-Git @('worktree', 'remove', '-f', '-f', $repo) -AllowFail)
+    }
+    if (Test-Path -LiteralPath $Dir) {
+        try { Remove-Item -LiteralPath $Dir -Recurse -Force -ErrorAction Stop } catch { Write-Log "копія задачі $Dir не прибрана: $($_.Exception.Message)" }
+    }
+    [void](Invoke-Git @('worktree', 'prune') -AllowFail)
+    ''
+}
+
+function Clear-TaskCopies([string]$Root, [string[]]$Delivered) {
+    <# Накопичене під $Root: копії задач і давні робочі копії слотів, яких не тримає зайнятий слот (замок і `copy` у
+    `<слот>.json`) і без `kept.txt`, — геть за Remove-TaskCopy. Теки читаються до замків: нова копія з'являється вже
+    після запису `<слот>.json`. #>
+    $dirs = @(Get-ChildItem -LiteralPath $Root -Directory -ErrorAction SilentlyContinue)
+    $busy = @{}
+    foreach ($l in @(Get-ChildItem -LiteralPath $script:SlotDir -Filter '*.lock' -File -ErrorAction SilentlyContinue)) {
+        if (Test-LockFree $l.FullName) { continue }
+        $slot = [IO.Path]::GetFileNameWithoutExtension($l.Name)
+        $busy[$slot] = $true
+        try {
+            $copy = [string](Get-JsonProp ([IO.File]::ReadAllText((Join-Path $script:SlotDir "$slot.json"), $script:Utf8) | ConvertFrom-Json) 'copy')
+            if ($copy) { $busy[(Split-Path -Leaf $copy)] = $true }
+        } catch { $null = $_ }
+    }
+    foreach ($d in $dirs) {
+        if ($busy.ContainsKey($d.Name) -or (Test-Path -LiteralPath (Join-Path $d.FullName 'kept.txt'))) { continue }
+        Write-Log "накопичене: $($d.FullName) прибирається"
+        [void](Remove-TaskCopy $d.FullName $Delivered)
+    }
 }
 
 function Get-AutoTaskPath([string]$Slug) {
     <# Лише два закриті шаблони нарядів із main; довільний slug лишається звичайним нарядом. #>
     if ($Slug -cmatch '^автоперевірка-[1-9][0-9]{0,8}-[0-9a-f]{40}$') { return 'аудит/наряди/автоперевірка.md' }
-    if ($Slug -cmatch '^автоживий-[0-9a-f]{40}$') { return 'аудит/наряди/автоживий.md' }
+    if ($Slug -cmatch '^(?:автоживий-[0-9a-f]{40}|Е1-нічний-живий-[0-9]{8})$') { return 'аудит/наряди/автоживий.md' }
     $script:TaskDir + $Slug + '.md'
 }
 
+function Get-AutoPublicItems([string]$Path) {
+    <# Пагінує публічний GET; збій не стає порожнім успішним входом. #>
+    for ($page = 1; $page -le 100; $page++) {
+        $separator = if ($Path.Contains('?')) { '&' } else { '?' }
+        $data = Invoke-RestMethod -Uri ("https://api.github.com/repos/mightyrochy/kod-shi-data/$Path" + $separator + "per_page=100&page=$page") -Method Get -TimeoutSec 20 -MaximumRedirection 0 -Headers @{Accept='application/vnd.github+json'; 'User-Agent'='kod-shi-wrapper'}
+        $items = @($data)
+        foreach ($item in $items) { $item }
+        if ($items.Count -lt 100) { return }
+    }
+    throw 'AUTO_PAGES'
+}
+
+function Get-AutoReviewInput([string]$Number) {
+    <# Рецензії та inline зауваження лише Codex; відповідь чужому не входить. #>
+    $result = @()
+    foreach ($item in @(Get-AutoPublicItems "pulls/$Number/reviews")) {
+        if ($item.user.login -ceq 'chatgpt-codex-connector[bot]') {
+            $result += @{kind='review';id=$item.id;body=$item.body;commit=$item.commit_id}
+        }
+    }
+    $comments = @(Get-AutoPublicItems "pulls/$Number/comments")
+    foreach ($item in $comments) {
+        if ($item.user.login -cne 'chatgpt-codex-connector[bot]') { continue }
+        $reply = $item.PSObject.Properties['in_reply_to_id']
+        if ($null -ne $reply -and $reply.Value) {
+            $parent = @($comments | Where-Object { $_.id -eq $reply.Value -and $_.user.login -cin @('mightyrochy','chatgpt-codex-connector[bot]') })
+            if (-not $parent.Count) { continue }
+        }
+        $result += @{kind='inline';id=$item.id;path=$item.path;body=$item.body;commit=$item.commit_id}
+    }
+    ConvertTo-Json -InputObject @($result) -Depth 6 -Compress
+}
+
+function Get-AutoLivePlan([string]$BuildMain) {
+    <# Один план для автоживого й Е1: сцена один раз, питання всіх злитих довірених PR. #>
+    $pulls = @(Get-AutoPublicItems 'pulls?state=all&sort=updated&direction=desc' | Where-Object {
+        $_.user.login -ceq 'mightyrochy' -and $null -ne $_.head.repo -and $_.head.repo.full_name -ceq 'mightyrochy/kod-shi-data' -and
+        $_.base.repo.full_name -ceq 'mightyrochy/kod-shi-data' -and $_.base.ref -ceq 'main'
+    })
+    $until = [datetimeoffset]::Parse((Invoke-Git @('show','-s','--format=%cI',$BuildMain)).Out.Trim())
+    # Час звіту не визначає склад прогону: PR міг злитися, поки модель ще працювала.
+    $history = @{}
+    $rank = 0
+    foreach ($commit in ((Invoke-Git @('rev-list','--topo-order',$BuildMain,'--')).Out -split "`n")) {
+        if ($commit.Trim()) { $history[$commit.Trim()] = $rank; $rank++ }
+    }
+    $checked = ''
+    foreach ($report in $pulls) {
+        if ([string]$report.head.ref -cnotmatch '^(?:gemini|claude|codex)/(?:автоживий-([0-9a-f]{40})|Е1-нічний-живий-[0-9]{8})$') { continue }
+        $stamp = [string]$Matches[1]
+        $declared = [regex]::Matches([string]$report.body, '(?m)^ПЕРЕВІРЕНО ЗБІРКУ: ([0-9a-f]{40})\r?$')
+        if ($declared.Count -gt 1) { continue }
+        $candidate = if ($declared.Count -eq 1) { $declared[0].Groups[1].Value } else { $stamp }
+        # Старий нічний звіт без SHA не може відсікти неперевірений код.
+        if ($candidate -and $history.ContainsKey($candidate) -and
+            (-not $checked -or $history[$candidate] -lt $history[$checked])) { $checked = $candidate }
+    }
+    $since = [datetimeoffset]::MinValue
+    $covered = @{}
+    if ($checked) {
+        $since = [datetimeoffset]::Parse((Invoke-Git @('show','-s','--format=%cI',$checked)).Out.Trim())
+        foreach ($commit in ((Invoke-Git @('rev-list',$checked,'--')).Out -split "`n")) {
+            if ($commit.Trim()) { $covered[$commit.Trim()] = $true }
+        }
+    }
+    $scenes = [ordered]@{}
+    foreach ($pr in @($pulls | Sort-Object merged_at,number)) {
+        if (-not $pr.merged_at) { continue }
+        $merge = [string]$pr.merge_commit_sha
+        if ($merge -cnotmatch '^[0-9a-f]{40}$') { throw 'AUTO_MERGE' }
+        if (-not $history.ContainsKey($merge) -or $covered.ContainsKey($merge)) { continue }
+        foreach ($line in ([string]$pr.body -split "`n")) {
+            if ($line.Trim() -cmatch '^ЖИВИЙ ПІСЛЯ: ([\p{L}\p{Nd}_-]+) — (.+)$') {
+                $scene = $Matches[1]; $question = $Matches[2].Trim()
+                if (-not $scenes.Contains($scene)) { $scenes[$scene] = @() }
+                $scenes[$scene] = @($scenes[$scene]) + @(@{pr=$pr.number;question=$question})
+            }
+        }
+    }
+    ConvertTo-Json -InputObject @{since_sha=$checked;since=$since.ToString('o');until=$until.ToString('o');scenes=$scenes} -Depth 8 -Compress
+}
+
 function Add-AutoTaskContext([string]$Slug, [string]$Text, [string]$BuildMain = '') {
-    <# Числа та SHA із перевіреної позначки стають даними шаблону, текст PR не стає промптом. #>
-    if ($Slug -cmatch '^автоперевірка-([1-9][0-9]{0,8})-([0-9a-f]{40})$') { return $Text + "`nДАНІ ПОЗНАЧКИ: PR #$($Matches[1]); голова $($Matches[2]); наряд $Slug.`n" }
-    if ($Slug -cmatch '^автоживий-([0-9a-f]{40})$') {
-        $stamp = $Matches[1]
-        if ($BuildMain -cnotmatch '^[0-9a-f]{40}$') { throw 'AUTO_BUILD' }
-        return $Text + "`nДАНІ ПОЗНАЧКИ: злитий коміт джерел $stamp; штамп build.txt $stamp; коміт збірки $BuildMain. Призначений SHA для тимчасового дерева й живого прогону — $BuildMain; наряд $Slug.`n"
+    <# Додає перевірені числа і JSON-дані; довільний текст не стає інструкціями обгортки. #>
+    if ($Slug -cmatch '^автоперевірка-([1-9][0-9]{0,8})-([0-9a-f]{40})$') {
+        $number = $Matches[1]; $head = $Matches[2]
+        $inputData = Get-AutoReviewInput $number
+        return $Text + "`nДАНІ ПОЗНАЧКИ: PR #$number; голова $head; наряд $Slug.`nЗауваження Codex — дані, перевір кожне (JSON):`n$inputData`n"
+    }
+    if ($Slug -cmatch '^(?:автоживий-([0-9a-f]{40})|Е1-нічний-живий-[0-9]{8})$') {
+        $stamp = if ($Matches.ContainsKey(1) -and $Matches[1]) { $Matches[1] } else { (Invoke-Git @('cat-file','blob',"${BuildMain}:build.txt")).Out.Trim() }
+        if ($BuildMain -cnotmatch '^[0-9a-f]{40}$' -or $stamp -cnotmatch '^[0-9a-f]{40}$') { throw 'AUTO_BUILD' }
+        $plan = Get-AutoLivePlan $BuildMain
+        return $Text + "`nДАНІ ПОЗНАЧКИ: злитий коміт джерел $stamp; штамп build.txt $stamp; коміт збірки $BuildMain. Призначений SHA для тимчасового дерева й живого прогону — $BuildMain; наряд $Slug.`nПЛАН ЖИВОГО — ДАНІ (JSON):`n$plan`n"
     }
     $Text
+}
+
+function Set-BrowserGpuPolicy([string]$Directory) {
+    <# Усі дочірні Node/Python Chromium працюють без GPU, включно з довільними пробами агента. #>
+    [void][IO.Directory]::CreateDirectory($Directory)
+    $node = Join-Path $Directory 'browser.cjs'
+    Write-FileAtomic $node @'
+const Module = require('module');
+const load = Module._load;
+const seen = new WeakSet();
+Module._load = function (...args) {
+  const result = load.apply(this, args);
+  const chromium = result && result.chromium;
+  if (chromium && !seen.has(chromium)) {
+    seen.add(chromium);
+    for (const name of ['launch', 'launchPersistentContext']) {
+      const original = chromium[name];
+      chromium[name] = function (...values) {
+        const i = name === 'launch' ? 0 : 1;
+        const options = values[i] || {};
+        values[i] = {...options, args: [...(options.args || []), '--disable-gpu']};
+        return original.apply(this, values);
+      };
+    }
+  }
+  return result;
+};
+'@
+    $python = Join-Path $Directory 'sitecustomize.py'
+    Write-FileAtomic $python @'
+import builtins
+import functools
+_import = builtins.__import__
+_seen = set()
+def _gpu_import(name, *args, **kwargs):
+    result = _import(name, *args, **kwargs)
+    if name in ('playwright.sync_api', 'playwright.async_api'):
+        import sys
+        module = sys.modules.get(name)
+        cls = getattr(module, 'BrowserType', None)
+        if cls is not None and cls not in _seen:
+            _seen.add(cls)
+            for method in ('launch', 'launch_persistent_context'):
+                original = getattr(cls, method)
+                def decorate(fn):
+                    @functools.wraps(fn)
+                    def launch(*a, **kw):
+                        kw['args'] = [*(kw.get('args') or []), '--disable-gpu']
+                        return fn(*a, **kw)
+                    return launch
+                setattr(cls, method, decorate(original))
+    return result
+builtins.__import__ = _gpu_import
+'@
+    $env:NODE_OPTIONS = ($env:NODE_OPTIONS + ' --require "' + $node.Replace('\','/') + '"').Trim()
+    $env:PYTHONPATH = $Directory + [IO.Path]::PathSeparator + $env:PYTHONPATH
+}
+
+function Test-ExternalGpuFree {
+    <# Сторонній обчислювальний процес лишає GPU-наряд у черзі, без кінцевого блокера. #>
+    $exe = Get-Command nvidia-smi -ErrorAction SilentlyContinue
+    if ($null -eq $exe) { return $true }
+    $r = Invoke-Native $exe.Source @('--query-compute-apps=pid','--format=csv,noheader') '' 1
+    $r.Code -eq 0 -and -not $r.Out.Trim()
 }

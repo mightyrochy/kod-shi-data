@@ -342,7 +342,7 @@ function Get-Line([string]$Id) {
         Write-WrapperLog "кінець $Id — $what $branch $head; комітів $ahead, файлів до main $files; без .github/ і файлів обгортки; $run"
         # ГОТОВО — лише звіт агента ГОТОВО з опублікованою головою; решта опублікованого — код прогону з _PUBLISHED.
         if ($code -eq 'DONE' -and $head) {
-            Save-DraftRequest $branch $head
+            Save-DraftRequest $branch $head ([string](Get-Prop $s 'actual'))
             # Квота групи (рішення диспетчера 9611): суфікс лише коли стан має групу й відсоток 0–100.
             $qg = [string](Get-Prop $s 'qgroup')
             $qs = $(if ($quotaLeft -match '^(?:100|[1-9]?[0-9])$' -and $qg -cmatch '^[A-Z0-9]{2,16}$') { " КВОТА $qg $quotaLeft" } else { '' })
@@ -389,7 +389,7 @@ function Reset-State([string]$Id) {
 $script:OutboxNamePattern = '^[0-9]{8}-[0-9]{6}-[0-9a-f]{12}\.txt$'
 $script:SlugCore = $script:SlugPattern -replace '^\^|\\z$', ''
 $script:OutboxTemplates = @(
-    '^GEMINI ОБГОРТКА: ЛАНЦЮГ CHAIN_[A-Z_]{1,32}\z',
+    '^GEMINI ОБГОРТКА: ЛАНЦЮГ CHAIN_[A-Z_]{1,32}(?: [A-Za-z0-9]{1,40} [a-z_]{1,40}\.ps1:[0-9]{1,5})?\z',
     '^GEMINI ОБГОРТКА: ОНОВЛЕНО [0-9a-f]{40} СЕКУНД [0-9]{1,12}\z',
     '^GEMINI ОБГОРТКА: ОНОВЛЕННЯ [0-9a-f]{40} UPDATE_[A-Z_]{1,32}\z',
     "\AGEMINI ОБГОРТКА: ГОТОВО (?:gemini|codex|claude)/$script:SlugCore [0-9a-f]{40}(?: КВОТА [A-Z0-9_]{2,40} (?:100|[1-9]?[0-9]))?(?: МОДЕЛЬ [a-z0-9][a-z0-9.-]{1,63})?\z"
@@ -511,12 +511,61 @@ function Get-DispatcherId {
     ''
 }
 
+# Коди ЗАБЛОКОВАНО, після яких диспетчерові нічого робити: обгортка бере ту саму позначку сама чи позначка вже даремна.
+# Кожен інший код (зокрема невідомий) будить — безпечне за замовчуванням. Доказ — у тілі коміту «тихі пробудження».
+$script:QuietBlockedCodes = '^(?:QUOTA0_[A-Z0-9]{1,16}(?:_M[0-9]{1,6})?|STALE|REVIEW_API)$'
+$script:LocalLinesCap = 64
+
+function Test-DispatcherAction([string]$Line) {
+    <# Диспетчер прокидається лише за станом, що чекає його дії; решта йде зведенням при наступному пробудженні. #>
+    if ($Line -cmatch '^GEMINI ОБГОРТКА: ЗАБЛОКОВАНО \S+ (\S+)$') { return $Matches[1] -cnotmatch $script:QuietBlockedCodes }
+    if ($Line -cmatch '^GEMINI ОБГОРТКА: (?:ЗАБЛОКОВАНО|ТРИВОГА|ЛАНЦЮГ)(?: |$)') { return $true }
+    if ($Line -cmatch '^GEMINI ОБГОРТКА: ГОТОВО (?:gemini|claude|codex)/(?:автоперевірка-|перевірка-|pachka-|автоживий-|Е1-нічний-живий-)') { return $true }
+    $false
+}
+
+function Get-LocalLines {
+    $path = Join-Path $WorkDir 'local-lines.json'
+    if (-not (Test-Path -LiteralPath $path)) { return @() }
+    # PowerShell 5.1 пише JSON-масив у конвеєр одним об'єктом: @(ConvertFrom-Json …) дав би масив у масиві.
+    $parsed = ConvertFrom-Json ([IO.File]::ReadAllText($path, $script:Utf8))
+    @($parsed)
+}
+
+function Save-LocalLine([string]$Line) {
+    <# Рядок лишається у журналі та стані для #1856 без мережевої доставки; кожна подія — окремий запис (для зведення). #>
+    Write-WrapperLog "локально, без пробудження: $Line"
+    $lines = @(Get-LocalLines | Select-Object -Last ($script:LocalLinesCap - 1))
+    Write-FileAtomic (Join-Path $WorkDir 'local-lines.json') (ConvertTo-Json -InputObject @($lines + @(@{utc=[datetime]::UtcNow.ToString('o');line=$Line;delivered=$false})) -Compress)
+}
+
+function Get-DigestText {
+    <# Зведення накопичених недоставлених локальних рядків: кількість і самі рядки обгортки, без тексту агента. #>
+    $pending = @(Get-LocalLines | Where-Object { (Get-Prop $_ 'delivered') -ne $true })
+    if ($pending.Count -eq 0) { return '' }
+    "ЗВЕДЕННЯ БЕЗ ПРОБУДЖЕННЯ: $($pending.Count)`n" + (($pending | ForEach-Object { [string]$_.line }) -join "`n")
+}
+
+function Set-DigestDelivered {
+    <# Після підтвердженої доставки листа зі зведенням накопичене позначається доставленим. #>
+    $all = @(Get-LocalLines)
+    if (@($all | Where-Object { (Get-Prop $_ 'delivered') -ne $true }).Count -eq 0) { return }
+    $done = foreach ($e in $all) { @{utc=[string]$e.utc;line=[string]$e.line;delivered=$true} }
+    Write-FileAtomic (Join-Path $WorkDir 'local-lines.json') (ConvertTo-Json -InputObject @($done) -Compress)
+}
+
+function Add-DigestToLine([string]$Line) {
+    $digest = Get-DigestText
+    if ($digest) { $Line + "`n" + $digest } else { $Line }
+}
+
 function Send-Line([string]$Line) {
+    if (-not (Test-DispatcherAction $Line)) { Save-LocalLine $Line; return $true }
     if ($DryRun) { Write-WrapperLog "DryRun, рядок не надіслано: $Line"; return $true }
     $sid = Get-DispatcherId
     if (-not $sid) { Write-WrapperLog 'нема адреси диспетчера в аудит/СТАН.md'; return $false }
     # Рядок — через stdin: `claude` буває `.cmd`, і тоді аргумент розбирав би cmd.exe.
-    $r = Invoke-Native (Resolve-Exe $ClaudeExe) @('-p', '--cloud', $sid, '--output-format', 'json') $WorkDir 3 $Line
+    $r = Invoke-Native (Resolve-Exe $ClaudeExe) @('-p', '--cloud', $sid, '--output-format', 'json') $WorkDir 3 (Add-DigestToLine $Line)
     $ok = $false
     try { $ack = (($r.Out -split "`n" | Where-Object { $_.Trim().StartsWith('{') }) | Select-Object -Last 1 | ConvertFrom-Json).ok; $ok = $r.Code -eq 0 -and $ack -is [bool] -and $ack -eq $true }
     catch { Write-WrapperLog "відповідь claude не JSON: $($_.Exception.Message)" }
@@ -554,9 +603,10 @@ function Receive-HealthAlerts {
 }
 
 function Send-Fallback([string]$Line) {
+    if (-not (Test-DispatcherAction $Line)) { Save-LocalLine $Line; return $true }
     <# Той самий рядок у #1690 через stdin JSON; ні оболонки, ні тексту агента в аргументах. #>
     if ($DryRun) { return $true }
-    $body = ([ordered]@{ body = $Line }) | ConvertTo-Json -Compress
+    $body = ([ordered]@{ body = (Add-DigestToLine $Line) }) | ConvertTo-Json -Compress
     try {
         $r = Invoke-Native (Resolve-Exe $GhExe) @('api', '-X', 'POST', 'repos/mightyrochy/kod-shi-data/issues/1690/comments', '--input', '-') $WorkDir 1 $body
         $id = 0L
@@ -570,6 +620,11 @@ function Send-Pending([System.IO.FileInfo]$File) {
     <# Стан доставки збережено перед мережею; рядок лишається після вичерпання обох бюджетів. #>
     $st = [System.IO.File]::ReadAllText($File.FullName, $script:Utf8) | ConvertFrom-Json
     if ($st.sent -or (Get-Prop $st 'exhausted') -eq $true) { return }
+    if (-not (Test-DispatcherAction ([string]$st.line))) {
+        Save-LocalLine ([string]$st.line)
+        Write-FileAtomic $File.FullName ((@{line=[string]$st.line;sent=$true;attempts=[int]$st.attempts;channel='local'}) | ConvertTo-Json -Compress)
+        return
+    }
     $first = [string](Get-Prop $st 'first_failure_utc')
     if (-not $first) { $first = $File.CreationTimeUtc.ToString('o') }
     $new = [ordered]@{ line = [string]$st.line; sent = $false; attempts = [int]$st.attempts
@@ -588,6 +643,7 @@ function Send-Pending([System.IO.FileInfo]$File) {
         $new.fallback_attempts++
         if (Send-Fallback $new.line) { $new.sent = $true; $new.channel = 'gh' }
     }
+    if ($new.sent) { Set-DigestDelivered }
     $new.exhausted = -not $new.sent -and ($new.cloud_auth -or $new.attempts -ge $MaxSendAttempts) -and $new.fallback_attempts -ge $MaxFallbackAttempts
     if ($new.exhausted) { Write-WrapperLog "спроби доставки вичерпано: $($File.Name); рядок збережено у стані" }
     Write-FileAtomic $File.FullName ($new | ConvertTo-Json -Compress)

@@ -19,8 +19,8 @@ const ПЛЕЙСХОЛДЕРИ_ПОКАЗУ = ["__МОДУЛІ_ПОКАЗУ__", 
    лишаються порожні таблиці — виклик, що це кличе, друкує факт сам. */
 function прочитатиДовідникJSON(джерело) {
   try {
-    return require("child_process").execSync(
-      'python3 -c "import json, pipeline; print(json.dumps(pipeline.довідник(), ensure_ascii=False))"',
+    return require("child_process").execFileSync('python3', ['-X', 'utf8', '-c',
+      "import json, sys; sys.path.insert(0, 'прилади'); from експорт_показу import довідник; print(json.dumps(довідник(), ensure_ascii=False))"],
       {cwd: джерело, encoding: "utf8", stdio: ["ignore", "pipe", "ignore"]}).trim().split("\n").pop();
   } catch (e) {
     console.log("  (довідник не зібрався з python — таблиці порожні: " + String(e).slice(0, 80) + ")");

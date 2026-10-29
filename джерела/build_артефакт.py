@@ -1336,8 +1336,8 @@ def _довідник_показу(джерело):
     тієї ж причини, що й зонд вище: збирач міг бути запущений з іншої теки, а
     `pipeline`, імпортований раніше, — бути не тим, що пакується."""
     r = subprocess.run([sys.executable, "-X", "utf8", "-c",
-                        "import json, pipeline; "
-                        "print(json.dumps(pipeline.довідник(), ensure_ascii=False))"],
+                        "import json, sys; sys.path.insert(0, 'прилади'); from експорт_показу import довідник; "
+                        "print(json.dumps(довідник(), ensure_ascii=False))"],
                        cwd=джерело, capture_output=True, text=True, encoding="utf-8", timeout=300)
     if r.returncode != 0:
         raise SystemExit("показ: довідник не зібрався:\n%s" % (r.stderr or r.stdout)[-700:])

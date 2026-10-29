@@ -43,6 +43,7 @@ from колір_простір_шкіра import (describe, skin_pos, hair_photo
     ЦЕНТР_ПІДТОНУ, РОЗКИД_ПІДТОНУ, МЕЖА_КЛАСУ_ПІДТОНУ, вісь_підтону_двостороння)
 from колір_простір_надійність import reliability, MIN_TO_EMIT, gate_conclusions, extraction_sanity
 import face_contrast as _KC
+import face_features as _ОБ
 
 # ── ВХІД ІЗ СЕГМЕНТАТОРА, ЯКОГО В ПРОДУКТІ НЕМА ─────────────────────────────
 # Обидва ключі пише `лабораторія/зони_з_масок.build_zones` з масок зовнішнього
@@ -181,8 +182,10 @@ def поля_риси(lab, kind=None, lex=None):
     поля = dict(describe(lab, kind, lex))
     тон_є = поля.get("h") is not None
     поля.update(a=a, b=b, a_star=a,
-                undertone=підтон_риси(a, b, h),
+                undertone=(None if kind == "шкіра" else підтон_риси(a, b, h)),
                 warmth=(тепло(h) if тон_є else None))
+    if kind == "шкіра":
+        поля.update(температура_шкіри(lab))
     return поля
 
 
@@ -248,19 +251,6 @@ def features(lab_skin, lab_hair, lab_eye, lab_glasses=None,
         F["шкіра"].update(ITA=sp["ITA"], depth_band=list(sp["band_p"])[0],
                           band_p=sp["band_p"], p_olive=sp["p_olive"],
                           photo_note=sp.get("photo_note"))
-        # CONTINUUM-МАГНІТУДА ПІДТОНУ (замість cos(h-60) як ДРАЙВЕРА рішення про температуру).
-        # Сила = знакова відстань h° обличчя від нейтрального центру, масштабована на розкид.
-        # Числа виміряні (див. довідку): лицьова шкіра h°≈56-60°, не-афр. діапазон 45-69°;
-        # тому центр 57°, розкид ~±12°. Вище центру = жовтіше/тепліше (h°->90, b* росте);
-        # нижче = червоніше/холодніше (h°->0, a* просвічує). Драйвер — b* (a* обличчя інваріантне
-        # між людьми — виміряно Wang/Xiao), h° — безпечний зведений вимір.
-        # Це САМОВІДНОСНА величина (наскільки жовтіша за типову шкіру) — калібрування проти
-        # драпіровки НЕ треба; поріг «наскільки сильна, щоб діяти» — продуктове рішення.
-        # ХРОМАТИЧНА ПЛОЩИНА a*b*: warm-cool, хрома(clarity) І олива — з ОДНІЄЇ точки ОДНОЧАСНО,
-        # замість двох окремих ліній. L* (глибина) ортогональна, лишається окремо (ITA/depth_band).
-        # Один виклик замість вкладеного блоку: warm-cool/олива/clarity живуть у
-        # _температура_шкіри(), тож profile.py може перерахувати їх після правки профілю.
-        F["шкіра"].update(температура_шкіри(hair_parts.get("шкіра", lab_skin)))
     if hair_unc:
         for k in F:
             if k.startswith("волосся"): F[k]["L_невизначеність"] = hair_unc
@@ -271,7 +261,7 @@ def features(lab_skin, lab_hair, lab_eye, lab_glasses=None,
     # hair_corrected=bool(from_photo) було ПРЯМОЮ НЕПРАВДОЮ: from_image() вимкнено,
     # волосся зсувом не коригується (див. hair_photo_uncertainty). Метадані мусять
     # казати те, що сталось, інакше наступний шар вирішує на вигаданому статусі.
-    F["_meta"]=dict(from_photo=from_photo,
+    F["_meta"]=dict(from_photo=from_photo, protocol=protocol if from_photo else None,
                     hair_corrected=False,
                     skin_corrected=False,
                     корекції="жодних: обидві риси несуть невизначеність, а не зсув",
@@ -411,7 +401,6 @@ def перерахувати_рису(F, риса, lab, kind=None, lex=None):
         sp = skin_pos(lab)
         нове.update(ITA=sp["ITA"], depth_band=list(sp["band_p"])[0],
                     band_p=sp["band_p"], p_olive=sp["p_olive"])
-        нове.update(температура_шкіри(lab))
     F[риса] = нове
     return F
 
@@ -627,11 +616,8 @@ def регіони(F, source="uncontrolled"):
     # value-КОНТРАСТ = пара ВОЛОССЯ↔ШКІРА (несуча, corpus/Lamport). Очі НЕ в L-контрасті —
     # інакше темні очі роблять світлу блондинку «висококонтрастною» (хибно). Очі — в h/C нижче.
     # Це РІЗНИЦЯ двох групових середніх (неперервна), НЕ max−min.
-    hair_Ls = [f["L"] for k, f in F.items()
-               if k.startswith("волосся") and not k.startswith("_") and "L" in f]
-    skin_L = (F.get("шкіра") or {}).get("L")
-    value_к = (round(abs(sum(hair_Ls)/len(hair_Ls) - skin_L), 1)
-               if hair_Ls and skin_L is not None else None)
+    вимір = _ОБ.ознаки(F, source)
+    value_к = вимір["контраст"].get("value_gap")
     відомі = any(pl for _, _, pl in хмара)
     домінанта = (max(хмара, key=lambda t: (t[2] or 0))[0] if відомі else "шкіра (за замовч. площею)")
     # РОЗСІЯННЯ — НЕПЕРЕРВНЕ зважене (СКВ / кругове), НЕ max−min: усі риси й ваги, не дві крайні.
@@ -645,7 +631,7 @@ def регіони(F, source="uncontrolled"):
         """Логістична сила властивості 0..1 з центром c і шириною w, округлена до сотих; центри й
         ширини — T3."""
         return round(1/(1+math.exp(-(x-c)/w)), 2)
-    тепло_особи = (F.get("шкіра") or {}).get("тепло_сила")   # −1.5..+1.5 знакова сила warm/cool
+    тепло_особи = вимір["підтон"].get("тепло_сила")
     сила = dict(
         тепло=тепло_особи,                                              # знакова: −холод .. +тепло
         тепло_наскільки=(round(abs(тепло_особи), 2) if тепло_особи is not None else None),

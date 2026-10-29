@@ -1191,7 +1191,8 @@ def суд_кроками(d):
                                        плитки=d.get("сценарій_плитки"))
     сцен, незн = _сцена(сц, d)
     палітра = _ПЛ.палітра_практична(F, source=d.get("source") or "uncontrolled",
-                                    intent=сцен.get("intent") or "conventional")
+                                    intent=сцен.get("intent") or "conventional",
+                                    насиченість=(d.get("вибір_кольору") or {}).get("насиченість"))
     yield
     шкіра = (F.get("шкіра") or {}).get("hex")
     речі = _слово_сильніше(_без_кадру((yield from _виміри_кроками(d.get("речі"), d.get("пікселі") or {},
