@@ -11,7 +11,10 @@ $p.Remove('HarnessPython')
 $p.Remove('HarnessGh')
 $p['MaxRows'] = $MaxRows
 $p['MaxDiffKB'] = $MaxDiffKB
-. $Script @p
+# Файл, що не завантажився, — провал стенда з причиною: без Main PowerShell знайшов би main.cpl (PATHEXT має .CPL)
+# і відкрив "Миша – властивості" поверх вікон власника (29.10, 20 разів за 2 хв).
+try { . $Script @p } catch { [Console]::Error.WriteLine("СТЕНД: $Script не завантажився: $($_.Exception.Message)"); exit 2 }
+if (-not (Get-Command Main -CommandType Function -ErrorAction SilentlyContinue)) { [Console]::Error.WriteLine("СТЕНД: $Script не визначив Main"); exit 2 }
 function Test-OwnerUser { $true }
 # Справжній gh.exe — нативний процес. .cmd-заглушка розбиває URL із & ще до Python;
 # зберігаємо справжній Invoke-Native й лише додаємо інтерпретатор для цієї заглушки.
