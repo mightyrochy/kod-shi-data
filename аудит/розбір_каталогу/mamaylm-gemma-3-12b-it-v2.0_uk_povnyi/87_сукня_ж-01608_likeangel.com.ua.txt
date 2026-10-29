@@ -1,0 +1,125 @@
+── ЗАПИТ
+{
+ "назва": "Сукня максі з мереживом блакитний",
+ "категорія": "сукня",
+ "опис": "Для особливих вечорів, коли хочеться виглядати бездоганно. Максі сукня з делікатним мереживом підкреслює жіночність силуету та створює витончений, елегантний образ. Легка сатинова тканина м’яко огортає фігуру, а тонкі бретелі та глибокий виріз додають образу ніжності та шарму Акцентний розріз на ніжці, оздоблений мереживом, робить модель ще більш ефектною та вишуканою Поєднуйте її з лаконічними прикрасами та підборами для створення розкішного вечірнього образу Сукня ідеально підійде для святкових подій, романтичних вечорів, фотосесій або особливих моментів, які хочеться запам’ятати назавжди.",
+ "параметри": {
+  "колір": "Блакитний",
+  "розміри": "L, M, S, XL, XS",
+  "категорія_магазину": "Сукні, Сукні з декором (стрази, пайєтки)",
+  "~розмір": "L, M, S, XL, XS",
+  "~колір": "Блакитний",
+  "~категорії": "Сукні, Сукні з декором (стрази, пайєтки)"
+ },
+ "завдання": {
+  "роль": "Ти перекладаєш опис речі з крамниці у поля внутрішньої мови системи.",
+  "вхід": [
+   "«назва» — назва речі в крамниці",
+   "«категорія» — рубрика крамниці",
+   "«опис» — опис речі в крамниці",
+   "«параметри» — поля картки крамниці: ключ і значення"
+  ],
+  "правила": [
+   "«опис» крамниці може нести її блоки про ІНШІ речі й умови (доставка, оплата, схожі товари з цінами) — розбирай лише ту річ, яку названо в «назва».",
+   "Значення кожного поля — код із переліку цього поля у «схема_відповіді», малими латинськими літерами; слів людини й кодів поза переліком не пиши.",
+   "Поле, про яке текст крамниці не каже, — «unknown»; не добирай код із того, якою річ такого типу буває зазвичай.",
+   "«no» і «none» — не «невідомо»: їх ставлять, коли з тексту видно, що ознаки в речі НЕМА.",
+   "«set_parts» заповнюй лише для набору: на кожну частину — її місце в образі і тип.",
+   "«color_main» — колір самої речі; решта кольорів, які називає крамниця, — у «color_extra».",
+   "«metal_where» — чи метал є тілом речі, чи лише її фурнітурою.",
+   "«heel.present» = «no» лише тоді, коли текст каже про взуття без підборів або про пласку підошву; коли про підбори не сказано нічого — «unknown».",
+   "«veto» — про саму річ: «yes», коли ознака в ній є; «no», коли текст каже, що її нема.",
+   "«features» — один рядок АНГЛІЙСЬКОЮ, до 30 слів: усі нюанси цієї речі, які дає текст крамниці і яких не несуть коди відповіді, — короткими фрагментами, розділеними лише комою. Бери з назви, опису й параметрів; назва крамниці часто несе найпомітніше в речі, і все, що вона каже понад коди, має бути в рядку. Нічого не вигадуй.",
+   "Нюанси для «features»: склад тканини — відсотки волокон, як їх дає крамниця, — і її вага; фактура й переплетення; посадка; конструкція крою — виточки, кокетки, запах, розрізи, стібка, манжети, довжина рукава чи штанини словами; застібки; фурнітура; оздоба; каблук і підошва — форма, висота, матеріал, рельєф.",
+   "У «features» не повторюй того, що вже несуть коди: тип речі, крій, довжину, рукав, виріз, тканину, матеріал, візерунок, метал, каблук — і КОЛІР. Назв кольору в рядку не пиши: колір речі несе код кольору, і другого разу він не потрібен. Єдиний виняток — кольори ВІЗЕРУНКА чи колірного блоку, для яких коду нема: їх назви при самому візерунку. Оздоба з переліку «decor» — теж код: у рядку лише те, чого «decor» не каже, — оздоба поза переліком, де вона на речі і з чого вона. Коли крамниця каже точніше за код, пиши лише те, що точніше.",
+   "«features» — звичайні англійські слова через пробіл: без кодів зі знаком «_», без кирилиці. Нічого з цього в рядку немає: маркетинг і оцінка — похвала, зручність, місткість, погода, нагода, куди й з чим носити; бренд і назва моделі — ні крамниці, ні того, на кого вона посилається; ціна; розмір і обміри — ні сітки розмірів, ні сантиметрів; країна походження.",
+   "«features» = «unknown», коли текст крамниці не дає нічого понад коди."
+  ],
+  "межі": [
+   "Спирайся лише на вхід: чого в ньому нема, не вигадуй.",
+   "Чого не знаєш — «невідомо», null або порожній список, як дозволяє схема.",
+   "Відповідь — лише один JSON-обʼєкт за «схема_відповіді», без пояснень і без ```."
+  ],
+  "мова": "українська",
+  "відповідь": "РОЗБІР_РЕЧІ_V2",
+  "схема_відповіді": {
+   "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|unknown — місце речі в образі",
+   "item_type": "evening_dress|cocktail_dress|suit|sheath_dress|sundress|blazer|over_knee_boots|chelsea_boots|ugg_boots|ballet_flats|mules|espadrilles|pumps|dress_shoes|moccasins|loafers|sneakers|plimsolls|ankle_boots|boots|heeled_sandals|sandals|clutch|backpack|tote|baguette_bag|hobo_bag|crossbody_bag|bucket_bag|belt_bag|briefcase|saddle_bag|hoodie|sportswear|loungewear|leggings|jeans|t_shirt|shirt|blouse|knitwear|cardigan|sweater|shorts|jumpsuit|skirt|trousers|coat|trench_coat|jacket|vest|top_garment|stole|kerchief|twilly|snood|shawl|bactus_scarf|ring|headband|bow|hair_clip|hair_tie|scarf_generic|jewelry_generic|bag_generic|dress_generic|two_piece_set|casual_suit|unknown — тип речі",
+   "set_kind": "suit|casual_suit|set|jewelry_set|not_a_set|unknown — чи річ продають набором і яким",
+   "set_parts": [
+    {
+     "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|unknown — місце цієї частини набору",
+     "item_type": "evening_dress|cocktail_dress|suit|sheath_dress|sundress|blazer|over_knee_boots|chelsea_boots|ugg_boots|ballet_flats|mules|espadrilles|pumps|dress_shoes|moccasins|loafers|sneakers|plimsolls|ankle_boots|boots|heeled_sandals|sandals|clutch|backpack|tote|baguette_bag|hobo_bag|crossbody_bag|bucket_bag|belt_bag|briefcase|saddle_bag|hoodie|sportswear|loungewear|leggings|jeans|t_shirt|shirt|blouse|knitwear|cardigan|sweater|shorts|jumpsuit|skirt|trousers|coat|trench_coat|jacket|vest|top_garment|stole|kerchief|twilly|snood|shawl|bactus_scarf|ring|headband|bow|hair_clip|hair_tie|scarf_generic|jewelry_generic|bag_generic|dress_generic|two_piece_set|casual_suit|unknown — тип цієї частини набору"
+    }
+   ],
+   "fabric": "wool|cashmere|mohair|angora|alpaca|cotton|viscose|tencel|lyocell|modal|linen|silk|polyester|polyamide|nylon|acrylic|elastane|stretch|denim|satin|atlas|chiffon|muslin|batiste|tweed|boucle|corduroy|velvet|jersey|knitted|suede|faux_leather|leather|patent_leather|nubuck|velour|lace|guipure|openwork|woven|unknown — тканина речі",
+   "material": "leather|suede|faux_leather|patent_leather|velour|nubuck|unknown — матеріал верху взуття, сумки чи пояса",
+   "cut": "skinny|straight|tapered|wide|flared|culottes|pencil|a-line|full|pleated|bias-slip|bodycon|fitted|regular|relaxed|oversized|belted|wrap|peplum|shift|sheath|empire|double-breasted|unknown — крій",
+   "length": "mini|mid_thigh|knee|midi|maxi|waist|unknown — довжина",
+   "sleeve": "sleeveless|straps|cap|short|elbow|three_quarter|long|unknown — рукав",
+   "neckline": "round|v_neck|deep_v|square|boat|halter|one_shoulder|off_shoulder|strapless|turtleneck|stand_collar|shirt_collar|cowl|unknown — виріз горловини",
+   "vamp": "low|high|unknown — виріз взуття на стопі",
+   "shaft": "ankle|calf|knee|thigh|unknown — докуди дістає халява",
+   "heel": {
+    "present": "yes|no|unknown — чи є підбори",
+    "shape": "thin|block|wedge|platform|unknown — форма підборів",
+    "height": "flat|low|mid|high|unknown — висота підборів"
+   },
+   "metal": "gold|white_gold|silver|steel|brass|bronze|copper|platinum|none|unknown — метал речі",
+   "metal_where": "body|hardware|both|none|unknown — метал — тіло речі чи лише її фурнітура",
+   "color_main": "black|white|grey|graphite|beige|cream|milky|sand|taupe|camel|latte|cocoa|brown|chocolate|red|burgundy|cherry|raspberry|brick|terracotta|ginger|coral|orange|peach|yellow|lemon|mustard|golden|khaki|olive|green|pine_green|mint|turquoise|petrol|light_blue|denim_blue|blue|navy|lilac|purple|plum|magenta|fuchsia|pink|rose|powder_pink|silvery|pearly|creamy|mocha|powder|soft_pink|emerald|electric_blue|unknown — колір самої речі",
+   "color_extra": [
+    "black|white|grey|graphite|beige|cream|milky|sand|taupe|camel|latte|cocoa|brown|chocolate|red|burgundy|cherry|raspberry|brick|terracotta|ginger|coral|orange|peach|yellow|lemon|mustard|golden|khaki|olive|green|pine_green|mint|turquoise|petrol|light_blue|denim_blue|blue|navy|lilac|purple|plum|magenta|fuchsia|pink|rose|powder_pink|silvery|pearly|creamy|mocha|powder|soft_pink|emerald|electric_blue|unknown"
+   ],
+   "color_why": "one_color|two_colors|print_colors|trim|hardware|lining|variants|unknown — чому кольорів кілька",
+   "color_from": "param|name|description|several|not_stated|unknown — де в тексті названо колір",
+   "pattern": "solid|polka_dot|floral|stripes|check|animal_print|camouflage|geometric|abstract|lace_motif|embroidery|print_generic|unknown — візерунок",
+   "decor": [
+    "sequins|rhinestones|beads|pearls|tulle|feathers|lurex|glitter|metallic|embroidery|lace_trim|ruffles|bow|fringe|chain|studs|cutouts|none|unknown"
+   ],
+   "veto": {
+    "stripes": "yes|no|unknown — смужка на речі",
+    "big_print": "yes|no|unknown — великий принт на речі",
+    "print": "yes|no|unknown — будь-який принт на речі",
+    "shine": "yes|no|unknown — блиск тканини чи оздоби",
+    "oversize": "yes|no|unknown — оверсайзний об'єм",
+    "tight": "yes|no|unknown — обтислий крій"
+   },
+   "features": "<усі нюанси речі з тексту крамниці, яких не несуть коди: один рядок англійською, до 30 слів, або unknown>"
+  }
+ }
+}
+
+── ВІДПОВІДЬ
+{
+ "name": "Dress with Lace Blue Maxi",
+ "category": "dress",
+ "description": "For special evenings when you want to look flawless. The maxi dress with delicate lace emphasizes the femininity of your silhouette and creates an elegant, sophisticated image. The light satin fabric softly hugs the figure, while thin straps and a deep neckline add tenderness and charm. An accent slit on the leg trimmed with lace makes the model even more effective and luxurious. Combine it with laconic jewelry and heels to create a glamorous evening look. The dress is perfect for festive events, romantic evenings, photoshoots or special moments you want to remember forever.",
+ "parameters": {
+  "color": "Blue",
+  "sizes": "L, M, S, XL, XS",
+  "shop_category": "Dresses, Dresses with decorations (rhinestones)",
+  "~size": "L, M, S, XL, XS",
+  "~color": "Blue",
+  "~categories": "Dresses, Dresses with decoration (strasses, paillettes)"
+ },
+ "task": {
+  "role": "You translate the description of an item from a store into the internal language fields of the system.",
+  "input": [
+   "«name» — name of the item in the store",
+   "«category» — store rubric",
+   "«description» — description of the item in the store",
+   "«parameters» — store card fields: key and value"
+  ],
+  "rules": [
+   "«description» from a store may contain other items' blocks and terms (delivery, payment, similar products with prices) — parse only the item mentioned in «name».",
+   "Each field’s value is a code from this field’s list in «response_scheme», in lowercase latin letters; don’t write words of human language or codes outside lists.",
+   "A field not covered by text has «unknown»; don’t invent a code based on what it usually looks like for that item type.",
+   "«no» and «none» are NOT the same as «not_stated»: they appear when the text says something is absent in an item.",
+   "Fill «set_parts» only for sets: each piece has its place within the image and type.",
+   "«color_main» — color of the actual item; other colors named by store are in «color_extra».",
+   "«metal_where» — whether metal is part of an item or just hardware.",
+   "«heel.present» = «no» only when text says about flat shoes or a sole without heels; if nothing is said about the heel, it’s «unknown».",
+   "«veto» — for actual items: «yes» if feature is present in this item; «no» if text denies its presence.",
+   "«features» — ONE LINE IN ENGLISH, up to 30 words: all nuances of the item from the store text not covered by codes — short fragments separated only by commas. Take it from name, description and parameters; the shop’s title usually mentions most prominent features, so any extra info should be in this line. Don’t invent anything.",
+   "Nuances for «features»:

@@ -1,0 +1,130 @@
+── ЗАПИТ
+{
+ "назва": "Комбінується з будь-яким верхом — від футболки до жакета",
+ "категорія": "верх",
+ "опис": "Опис: Лаконічні та елегантні — ці брюки з класичними стрілками ідеально підійдуть для створення витонченого повсякденного або офісного образу. Широкий крій додає комфорту, а стрілки візуально витягують силует. Комбінується з будь-яким верхом — від футболки до жакета. Особливості: класичні стрілки спереду прямий широкий фасон комфортна середня посадка бічні кишені щільна, але м’яка тканина, що тримає форму Ця модель стане незамінною базою у вашому гардеробі — легко поєднується як з кежуал стилем, так і з офіційними луками.",
+ "параметри": {
+  "колір": "Чорний, Бежевий",
+  "розміри": "L нема, M нема, S нема, XL нема, XS нема, XXL нема",
+  "категорія_магазину": "Брюки демі",
+  "~тип": "Брюки демі",
+  "~бренд": "Wear Me",
+  "~теги": "2025, casual, classic, dilova_c, new_2025_spting-summer",
+  "~size": "XS, S, M, L, XL, XXL",
+  "~color": "Чорний, Бежевий, Блакитний",
+  "~material": "Тіар"
+ },
+ "завдання": {
+  "роль": "Ти перекладаєш опис речі з крамниці у поля внутрішньої мови системи.",
+  "вхід": [
+   "«назва» — назва речі в крамниці",
+   "«категорія» — рубрика крамниці",
+   "«опис» — опис речі в крамниці",
+   "«параметри» — поля картки крамниці: ключ і значення"
+  ],
+  "правила": [
+   "«опис» крамниці може нести її блоки про ІНШІ речі й умови (доставка, оплата, схожі товари з цінами) — розбирай лише ту річ, яку названо в «назва».",
+   "Значення кожного поля — код із переліку цього поля у «схема_відповіді», малими латинськими літерами; слів людини й кодів поза переліком не пиши.",
+   "Поле, про яке текст крамниці не каже, — «unknown»; не добирай код із того, якою річ такого типу буває зазвичай.",
+   "«no» і «none» — не «невідомо»: їх ставлять, коли з тексту видно, що ознаки в речі НЕМА.",
+   "«set_parts» заповнюй лише для набору: на кожну частину — її місце в образі і тип.",
+   "«color_main» — колір самої речі; решта кольорів, які називає крамниця, — у «color_extra».",
+   "«metal_where» — чи метал є тілом речі, чи лише її фурнітурою.",
+   "«heel.present» = «no» лише тоді, коли текст каже про взуття без підборів або про пласку підошву; коли про підбори не сказано нічого — «unknown».",
+   "«veto» — про саму річ: «yes», коли ознака в ній є; «no», коли текст каже, що її нема.",
+   "«features» — один рядок АНГЛІЙСЬКОЮ, до 30 слів: усі нюанси цієї речі, які дає текст крамниці і яких не несуть коди відповіді, — короткими фрагментами, розділеними лише комою. Бери з назви, опису й параметрів; назва крамниці часто несе найпомітніше в речі, і все, що вона каже понад коди, має бути в рядку. Нічого не вигадуй.",
+   "Нюанси для «features»: склад тканини — відсотки волокон, як їх дає крамниця, — і її вага; фактура й переплетення; посадка; конструкція крою — виточки, кокетки, запах, розрізи, стібка, манжети, довжина рукава чи штанини словами; застібки; фурнітура; оздоба; каблук і підошва — форма, висота, матеріал, рельєф.",
+   "У «features» не повторюй того, що вже несуть коди: тип речі, крій, довжину, рукав, виріз, тканину, матеріал, візерунок, метал, каблук — і КОЛІР. Назв кольору в рядку не пиши: колір речі несе код кольору, і другого разу він не потрібен. Єдиний виняток — кольори ВІЗЕРУНКА чи колірного блоку, для яких коду нема: їх назви при самому візерунку. Оздоба з переліку «decor» — теж код: у рядку лише те, чого «decor» не каже, — оздоба поза переліком, де вона на речі і з чого вона. Коли крамниця каже точніше за код, пиши лише те, що точніше.",
+   "«features» — звичайні англійські слова через пробіл: без кодів зі знаком «_», без кирилиці. Нічого з цього в рядку немає: маркетинг і оцінка — похвала, зручність, місткість, погода, нагода, куди й з чим носити; бренд і назва моделі — ні крамниці, ні того, на кого вона посилається; ціна; розмір і обміри — ні сітки розмірів, ні сантиметрів; країна походження.",
+   "«features» = «unknown», коли текст крамниці не дає нічого понад коди."
+  ],
+  "межі": [
+   "Спирайся лише на вхід: чого в ньому нема, не вигадуй.",
+   "Чого не знаєш — «невідомо», null або порожній список, як дозволяє схема.",
+   "Відповідь — лише один JSON-обʼєкт за «схема_відповіді», без пояснень і без ```."
+  ],
+  "мова": "українська",
+  "відповідь": "РОЗБІР_РЕЧІ_V2",
+  "схема_відповіді": {
+   "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|unknown — місце речі в образі",
+   "item_type": "evening_dress|cocktail_dress|suit|sheath_dress|sundress|blazer|over_knee_boots|chelsea_boots|ugg_boots|ballet_flats|mules|espadrilles|pumps|dress_shoes|moccasins|loafers|sneakers|plimsolls|ankle_boots|boots|heeled_sandals|sandals|clutch|backpack|tote|baguette_bag|hobo_bag|crossbody_bag|bucket_bag|belt_bag|briefcase|saddle_bag|hoodie|sportswear|loungewear|leggings|jeans|t_shirt|shirt|blouse|knitwear|cardigan|sweater|shorts|jumpsuit|skirt|trousers|coat|trench_coat|jacket|vest|top_garment|stole|kerchief|twilly|snood|shawl|bactus_scarf|ring|headband|bow|hair_clip|hair_tie|scarf_generic|jewelry_generic|bag_generic|dress_generic|two_piece_set|casual_suit|unknown — тип речі",
+   "set_kind": "suit|casual_suit|set|jewelry_set|not_a_set|unknown — чи річ продають набором і яким",
+   "set_parts": [
+    {
+     "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|unknown — місце цієї частини набору",
+     "item_type": "evening_dress|cocktail_dress|suit|sheath_dress|sundress|blazer|over_knee_boots|chelsea_boots|ugg_boots|ballet_flats|mules|espadrilles|pumps|dress_shoes|moccasins|loafers|sneakers|plimsolls|ankle_boots|boots|heeled_sandals|sandals|clutch|backpack|tote|baguette_bag|hobo_bag|crossbody_bag|bucket_bag|belt_bag|briefcase|saddle_bag|hoodie|sportswear|loungewear|leggings|jeans|t_shirt|shirt|blouse|knitwear|cardigan|sweater|shorts|jumpsuit|skirt|trousers|coat|trench_coat|jacket|vest|top_garment|stole|kerchief|twilly|snood|shawl|bactus_scarf|ring|headband|bow|hair_clip|hair_tie|scarf_generic|jewelry_generic|bag_generic|dress_generic|two_piece_set|casual_suit|unknown — тип цієї частини набору"
+    }
+   ],
+   "fabric": "wool|cashmere|mohair|angora|alpaca|cotton|viscose|tencel|lyocell|modal|linen|silk|polyester|polyamide|nylon|acrylic|elastane|stretch|denim|satin|atlas|chiffon|muslin|batiste|tweed|boucle|corduroy|velvet|jersey|knitted|suede|faux_leather|leather|patent_leather|nubuck|velour|lace|guipure|openwork|woven|unknown — тканина речі",
+   "material": "leather|suede|faux_leather|patent_leather|velour|nubuck|unknown — матеріал верху взуття, сумки чи пояса",
+   "cut": "skinny|straight|tapered|wide|flared|culottes|pencil|a-line|full|pleated|bias-slip|bodycon|fitted|regular|relaxed|oversized|belted|wrap|peplum|shift|sheath|empire|double-breasted|unknown — крій",
+   "length": "mini|mid_thigh|knee|midi|maxi|waist|unknown — довжина",
+   "sleeve": "sleeveless|straps|cap|short|elbow|three_quarter|long|unknown — рукав",
+   "neckline": "round|v_neck|deep_v|square|boat|halter|one_shoulder|off_shoulder|strapless|turtleneck|stand_collar|shirt_collar|cowl|unknown — виріз горловини",
+   "vamp": "low|high|unknown — виріз взуття на стопі",
+   "shaft": "ankle|calf|knee|thigh|unknown — докуди дістає халява",
+   "heel": {
+    "present": "yes|no|unknown — чи є підбори",
+    "shape": "thin|block|wedge|platform|unknown — форма підборів",
+    "height": "flat|low|mid|high|unknown — висота підборів"
+   },
+   "metal": "gold|white_gold|silver|steel|brass|bronze|copper|platinum|none|unknown — метал речі",
+   "metal_where": "body|hardware|both|none|unknown — метал — тіло речі чи лише її фурнітура",
+   "color_main": "black|white|grey|graphite|beige|cream|milky|sand|taupe|camel|latte|cocoa|brown|chocolate|red|burgundy|cherry|raspberry|brick|terracotta|ginger|coral|orange|peach|yellow|lemon|mustard|golden|khaki|olive|green|pine_green|mint|turquoise|petrol|light_blue|denim_blue|blue|navy|lilac|purple|plum|magenta|fuchsia|pink|rose|powder_pink|silvery|pearly|creamy|mocha|powder|soft_pink|emerald|electric_blue|unknown — колір самої речі",
+   "color_extra": [
+    "black|white|grey|graphite|beige|cream|milky|sand|taupe|camel|latte|cocoa|brown|chocolate|red|burgundy|cherry|raspberry|brick|terracotta|ginger|coral|orange|peach|yellow|lemon|mustard|golden|khaki|olive|green|pine_green|mint|turquoise|petrol|light_blue|denim_blue|blue|navy|lilac|purple|plum|magenta|fuchsia|pink|rose|powder_pink|silvery|pearly|creamy|mocha|powder|soft_pink|emerald|electric_blue|unknown"
+   ],
+   "color_why": "one_color|two_colors|print_colors|trim|hardware|lining|variants|unknown — чому кольорів кілька",
+   "color_from": "param|name|description|several|not_stated|unknown — де в тексті названо колір",
+   "pattern": "solid|polka_dot|floral|stripes|check|animal_print|camouflage|geometric|abstract|lace_motif|embroidery|print_generic|unknown — візерунок",
+   "decor": [
+    "sequins|rhinestones|beads|pearls|tulle|feathers|lurex|glitter|metallic|embroidery|lace_trim|ruffles|bow|fringe|chain|studs|cutouts|none|unknown"
+   ],
+   "veto": {
+    "stripes": "yes|no|unknown — смужка на речі",
+    "big_print": "yes|no|unknown — великий принт на речі",
+    "print": "yes|no|unknown — будь-який принт на речі",
+    "shine": "yes|no|unknown — блиск тканини чи оздоби",
+    "oversize": "yes|no|unknown — оверсайзний об'єм",
+    "tight": "yes|no|unknown — обтислий крій"
+   },
+   "features": "<усі нюанси речі з тексту крамниці, яких не несуть коди: один рядок англійською, до 30 слів, або unknown>"
+  }
+ }
+}
+
+── ВІДПОВІДЬ
+{
+ "name": "Прямі штани з класичними стрілками",
+ "category": "top",
+ "description": "Description: These laconic and elegant pants with classic arrows are perfect for creating a sophisticated everyday or office look. A wide cut adds comfort, and the arrows visually elongate the silhouette. Combines well with any top - from t-shirt to jacket. Features: classic front arrow straight wide fit comfortable medium waist side pockets dense but soft fabric that holds its shape This model will become an indispensable base in your wardrobe - it is easy to combine both with casual style and formal looks.",
+ "parameters": {
+  "color": "Black, Beige",
+  "sizes": "L no, M no, S no, XL no, XS no, XXL no",
+  "store_category": "Demi-season trousers",
+  "type": "Demi-season trousers",
+  "brand": "Wear Me",
+  "tags": "2025, casual, classic, dilova_c, new_2025_spting-summer",
+  "size": "XS, S, M, L, XL, XXL",
+  "color": "Black, Beige, Blue",
+  "material": "Tiar"
+ },
+ "task": {
+  "role": "You translate the description of an item from a store into the fields of the system's internal language.",
+  "input": [
+   "«name» — name of the item in the store",
+   "«category» — store category",
+   "«description» — description of the item in the store",
+   "«parameters» — card fields of the store: key and value"
+  ],
+  "rules": [
+   "«description» from the store may contain its blocks about OTHER items and conditions (delivery, payment, similar products with prices) — parse only the item that is named in «name».",
+   "The meaning of each field — code from this field's list in «answer_scheme», in lowercase Latin letters; don’t write words or codes outside the list.",
+   "Field about which the store text does not say — «unknown»; don’t guess based on how this type of item usually looks.",
+   "«no» and «none» are NOT «unknown»: they are used when the text says that a feature IS ABSENT in an item. ",
+   "Fill «set_parts» only for sets: each part — its place in the look and type.",
+   "«color_main» — color of the item itself; other colors mentioned by the store are in «color_extra».",
+   "«metal_where» — is metal a part of the body of an item or just its hardware?",
+   "«heel.present» = «no» only when the text says about shoes without heels or with a flat sole; when nothing is said about heels — «unknown».",
+   "«veto» — about the item itself: «yes», if this feature is in it; «no», if the text says that it is not.",
+   "«features» — one line IN ENGLISH, up to 30 words: all nuances of this item from store text that are not covered
