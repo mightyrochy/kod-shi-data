@@ -158,6 +158,51 @@ Scenario 'в планувальник' {
     Check 'в2 GPU вільна — наряд узято' ($script:Started -eq 1 -and $r[0] -eq 1 -and -not $script:Held.ContainsKey('GPU'))
 }
 
+# --- (в3) gemini-run: ті самі утримання → рядок у out/alerts → публікатор кладе його у вихідні -------------------------
+$g3out = Join-Path $tmp 'g3out'
+Scenario 'в3 gemini-run' {
+    $work = Join-Path $tmp 'g3'
+    . (Join-Path $SourceDir 'gemini_run.ps1') -RepoDir $tmp -RepoUrl 'x' -RunsDir "$work/runs" -OutDir $g3out -LaneDir "$tmp/g3lanes" -AgyExe 'немає-cli' -ProfileDir $tmp
+    foreach ($d in @("$work/runs", "$work/state", "$work/slots", $g3out, "$tmp/g3lanes")) { [void][IO.Directory]::CreateDirectory($d) }
+    $script:StateDir = "$work/state"; $script:SlotDir = "$work/slots"; $script:Limits = $null
+    $script:HealthAlertDir = Join-Path $g3out 'alerts'
+    $script:Lanes = @('agy', 'codex')
+    $m = [pscustomobject]@{ Valid = $true; Lane = 'agy'; Ref = 'gemini-queue/п/gemini-3.8-flash-high/1/gpu'; Name = 'gemini-queue/п/gemini-3.8-flash-high/1/gpu'
+        Slug = 'п'; Model = 'gemini-3.8-flash-high'; Sha = 'a' * 40; Time = [DateTimeOffset]::UtcNow.ToUnixTimeSeconds(); Gpu = $true; Prio = 5; Deadline = ''; N = '1'; Cond = 'gpu'; Seen = 0 }
+    function Get-Markers { @($m) }
+    function Get-NightlyMarker { @() }
+    function Get-OrderedMarkers($x) { @($x) }
+    function Test-SlugBusy { $false }
+    function Test-LockFree { $true }
+    function Get-Command { [pscustomobject]@{ Source = 'nvidia-smi' } }
+    function Invoke-Native { param($Exe, $Arguments)
+        if ($Arguments -contains '--query-gpu=memory.used') { return [pscustomobject]@{ Code = 0; Out = '2300' } }
+        [pscustomobject]@{ Code = 0; Out = '4120, C:\Users\x\chrome.exe' } }
+    $w = New-Object System.Collections.ArrayList
+    [void](Start-Markers $w)
+    Check 'в3 GPU зайнята процесом — gemini-run не бере позначку й тримає GPU' ($script:Held['GPU'].Reason -ceq 'процес chrome.exe' -and $script:Held['GPU'].Markers.Count -eq 1)
+    $send = { param($l) Add-HoldLine $l }
+    Update-HoldSignals $script:Held $send
+    $f = "$work/state/holds.json"
+    $o = [IO.File]::ReadAllText($f, $utf) | ConvertFrom-Json
+    foreach ($k in @($o.PSObject.Properties.Name)) { $o.$k.since = [DateTimeOffset]::UtcNow.ToUnixTimeSeconds() - 4000 }
+    [IO.File]::WriteAllText($f, ($o | ConvertTo-Json -Compress), $utf)
+    Update-HoldSignals $script:Held $send
+    Update-HoldSignals $script:Held $send
+    $rows = @(Get-ChildItem -LiteralPath "$g3out/alerts" -Filter '*.txt' -File -ErrorAction SilentlyContinue | ForEach-Object { [IO.File]::ReadAllText($_.FullName, $utf).Trim() })
+    Check "в3 понад поріг — один рядок у out/alerts: $($rows -join ' | ')" ($rows.Count -eq 1 -and $rows[0] -ceq 'GEMINI ОБГОРТКА: ЗАБЛОКОВАНО GPU: процес chrome.exe, позначок 1')
+}
+Scenario 'в3 публікатор' {
+    . (Join-Path $SourceDir 'gemini_publish.ps1') -WorkDir "$tmp/g3pub" -OutDir $g3out -OutboxDir "$tmp/g3box"
+    foreach ($d in @($WorkDir, "$WorkDir/state", "$WorkDir/seen", $OutboxDir)) { [void][IO.Directory]::CreateDirectory($d) }
+    $script:HealthAlertDir = $OutboxDir   # як у Main публікатора
+    Receive-HealthAlerts
+    $rows = @(Get-ChildItem -LiteralPath $OutboxDir -Filter '*.txt' -File | ForEach-Object { [IO.File]::ReadAllText($_.FullName, $utf).Trim() })
+    Check "в3 публікатор перекладає рядок рушія у вихідні для диспетчера: $($rows -join ' | ')" ($rows.Count -eq 1 -and $rows[0] -ceq 'GEMINI ОБГОРТКА: ЗАБЛОКОВАНО GPU: процес chrome.exe, позначок 1' -and (Test-OutboxLine $rows[0]) -eq '')
+    Receive-HealthAlerts
+    Check 'в3 повторний імпорт — нових рядків нуль' (@(Get-ChildItem -LiteralPath $OutboxDir -Filter '*.txt' -File).Count -eq 1)
+}
+
 # --- (г) банер "понад 5 хв тому" ---------------------------------------------------------------------------------------
 Scenario 'г банер' {
     $work = Join-Path $tmp 'cg'

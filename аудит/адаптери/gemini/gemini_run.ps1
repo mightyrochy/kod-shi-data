@@ -1,4 +1,4 @@
-﻿﻿#Requires -Version 5.1
+﻿#Requires -Version 5.1
 <#
 .SYNOPSIS
 Обгортка Gemini (наряди М.2, М.9-Е), сторона `gemini`: планувальник смуг Codex і `agy` — позначки черги -> прогони
@@ -1073,6 +1073,7 @@ function Start-Markers($Workers) {
     }
     $mine = @($all | Where-Object { $_.Valid -and $script:Lanes -contains $_.Lane })
     $skipFile = Join-Path $OutDir 'skipped.json'
+    $script:Held = @{}
     if ($mine.Count -eq 0) { Save-Skips $skipFile; return 0 }
     $gpuWhy = $null
     foreach ($m in (Get-OrderedMarkers $mine)) {
@@ -1086,7 +1087,7 @@ function Start-Markers($Workers) {
         if ((@($Workers | Where-Object { $_.Slug -ceq $m.Slug -and -not $_.Proc.HasExited }).Count -gt 0) -or (Test-SlugBusy $m.Slug $script:Lanes)) { Add-Skip $m 'той самий наряд уже йде в слоті'; continue }
         if ($m.Gpu) {
             if ($null -eq $gpuWhy) { $gpuWhy = Get-GpuBusyReason $Workers }
-            if ($gpuWhy) { Add-Skip $m $gpuWhy; continue }
+            if ($gpuWhy) { Add-Skip $m $gpuWhy; Add-Hold $script:Held 'GPU' $script:GpuHoldReason $m.Name; continue }
         }
         $after = $(if ($st.Kind -eq 'WAIT') { [long]$st.Wait.until } else { 0L })
         $sel = Select-Engine $m $after
@@ -1094,7 +1095,7 @@ function Start-Markers($Workers) {
         # Слот і смуга — за фактичним рушієм після вибору (каскад agy -> Codex займає слот Codex і не перевищує його N).
         $lane = $(if ($sel.Engine.Name -eq 'codex') { 'codex' } else { 'agy' })
         $slot = Get-FreeSlot $lane ([int]$script:Limits.slots[$lane]) $Workers
-        if (-not $slot) { Add-Skip $m "нема вільного слота смуги $lane"; continue }
+        if (-not $slot) { Add-Skip $m "нема вільного слота смуги $lane"; Add-Hold $script:Held 'SLOTS' 'слоти зайняті' $m.Name; continue }
         $id = New-RunId (Get-MarkerKey $m)
         if (-not (New-Claim $m $id)) { continue }
         # Усе між claim і STARTED — під одним обліком відмов (retakes, MaxRetakes, CRASH на межі), 10162/10182.
@@ -1270,6 +1271,7 @@ function Main {
                 $script:Agy = Find-EngineExe $AgyExe
                 if ($script:Agy) { [void](Read-Usage) }
                 $started = Start-Markers $workers
+                Update-HoldSignals $script:Held { param($l) Add-HoldLine $l }
             } catch { Add-HealthException $_.Exception; Write-Log "прохід: $($_.Exception.Message)" }
             $first = $false
             foreach ($w in @($workers | Where-Object { $_.Proc.HasExited })) { $workers.Remove($w) }
