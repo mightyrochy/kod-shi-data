@@ -117,7 +117,7 @@ try {
             } else {
                 $WorkDir = $pubWork
                 $sent = 0; $duplicates = 0
-                foreach ($file in @(Get-ChildItem -LiteralPath $OutDir -Filter '*.json')) {
+                foreach ($file in @(Get-ChildItem -LiteralPath $OutDir -Filter '*.json' | Where-Object { $_.Name -ne 'skipped.json' })) {
                     $result = ConvertFrom-Json ([IO.File]::ReadAllText($file.FullName))
                     if ($result.code -ne 'STALE') { continue }
                     $line = Get-Line $file.BaseName
