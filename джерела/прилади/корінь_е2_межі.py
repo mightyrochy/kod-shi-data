@@ -74,7 +74,7 @@ warnings.simplefilter("ignore", SyntaxWarning)
 ОПИС_ВІДПОВІДІ = re.compile(r"сира\b|відповід\w*\s+(?:\w+\s+){0,2}модел|(?:текст|json|JSON)\s+модел|відповід\w+ шару|choices\[0\]",
                             re.I)
 ОПИС_СЛІВ_ЇЇ = re.compile(r"(?:її|жінки)\s+(?:вільн\w+\s+)?(?:слов|текст|реплік|питанн)|вільний текст|дослівн", re.I)
-СЛОВА_ЇЇ_ІМЕНА = {"уривок", "репліка", "слова_розмови", "слова_ходу"}
+СЛОВА_ЇЇ_ІМЕНА = {"уривок", "слова_розмови", "слова_ходу"}
 ІМЯ_ВІДПОВІДІ = re.compile(r"^(?:відповід|json_|текст_моделі|тексти_моделі|перша_відповідь|choices|сир)")
 ПОЛЯ_РЕЧІ_ДРОТУ = {"photo", "name", "slot", "kind", "replace", "n"}
 ІМЯ_ДРОТУ = re.compile(r"для_моделі|для_шару|дрот|дріт|вхід_моделі")  # функції, що самі називають себе будівниками входу моделі
@@ -417,9 +417,17 @@ class Аналіз:
                                     зм.setdefault(н.id, set()).update(м)
                 elif isinstance(в, (ast.For, ast.comprehension)):
                     м = self.мітки(мод, в.iter, зм)
+                    ключі_словника = set()  # ключі словника (`.items()` — перший елемент, `.keys()`) — коди, не її слова
+                    if isinstance(в.iter, ast.Call) and isinstance(в.iter.func, ast.Attribute):
+                        if в.iter.func.attr == "keys":
+                            ключі_словника = {н.id for н in ast.walk(в.target) if isinstance(н, ast.Name)}
+                        elif в.iter.func.attr == "items" and isinstance(в.target, ast.Tuple) and в.target.elts:
+                            ключі_словника = {н.id for н in ast.walk(в.target.elts[0]) if isinstance(н, ast.Name)}
                     if м:
                         for н in ast.walk(в.target):
-                            if isinstance(н, ast.Name):  # змінна циклу не скидає її слова на однойменну змінну функції
+                            if isinstance(н, ast.Name) and н.id in ключі_словника:
+                                зм.setdefault(н.id, set()).update({л for л in м if л[0] != "Ж"})
+                            elif isinstance(н, ast.Name):  # змінна циклу не скидає її слова на однойменну змінну функції
                                 зм.setdefault(н.id, set()).update(
                                     {л for л in м if л[0] != "Ж"} if н.id in назви_функції else м)
                 elif isinstance(в, ast.NamedExpr):
@@ -530,6 +538,17 @@ class Аналіз:
                 self.подія(мод, ім, в, "читання", "in", м)
             elif є_ж(м) and self.пряме_слово(в.comparators[0]):  # `"…" in слова`, не ключ у словнику
                 self.подія(мод, ім, в, "слова", "in", м)
+        elif len(в.ops) == 1 and isinstance(в.ops[0], (ast.Eq, ast.NotEq, ast.In, ast.NotIn)):
+            # її слова (пряма змінна) проти літерала чи переліку літералів: `уривок == "вечір"`, `слова in ("а", "б")`
+            ліве, праве = в.left, в.comparators[0]
+            літерал = lambda е: (isinstance(е, ast.Constant) and isinstance(е.value, str)) or \
+                (isinstance(е, (ast.Tuple, ast.List, ast.Set)) and е.elts and all(isinstance(х, ast.Constant) and isinstance(х.value, str) for х in е.elts))
+            for слово, інше in ((ліве, праве), (праве, ліве)):
+                if isinstance(в.ops[0], (ast.In, ast.NotIn)) and слово is праве:
+                    continue
+                if літерал(інше) and self.пряме_слово(слово) and є_ж(self.мітки(мод, слово, зм)):
+                    self.подія(мод, ім, в, "слова", "==" if isinstance(в.ops[0], (ast.Eq, ast.NotEq)) else "in", self.мітки(мод, слово, зм))
+                    break
 
     def виконати(self):
         for _ in range(14):
@@ -578,7 +597,9 @@ class Структура:
         for мод, ім, ф in self.функції():
             for блок in self.блоки(ф):
                 записи = [ст for ст in блок if запис(ст)]
-                змінює = any(isinstance(ст, (ast.Assign, ast.AugAssign, ast.Delete)) and not запис(ст) for ст in блок)
+                змінює = any((isinstance(ст, (ast.Assign, ast.AugAssign, ast.Delete)) and not запис(ст)) or
+                             (isinstance(ст, ast.Return) and ст.value is not None and not (isinstance(ст.value, ast.Constant) and ст.value.value is None))
+                             for ст in блок)  # повернути виправлене — теж зміна
                 if записи and змінює:
                     вих.append((мод.ім, ім, записи[0].lineno, "гілка ремонту: запис у `нотатки` й зміна даних відповіді в одному "
                                 "блоці — код сам називає це ремонтом форми відповіді"))
@@ -937,22 +958,61 @@ class ПоказJS:
             вих |= межа
         return вих
 
+    @staticmethod
+    def блок_що_містить(маска, поз):
+        """Межі найглибшого `{…}`, що містить позицію (`маска` — тіло без вмісту рядків); весь текст, якщо блоку нема."""
+        глибина, початок = 0, 0
+        for і in range(поз - 1, -1, -1):
+            if маска[і] == "}":
+                глибина += 1
+            elif маска[і] == "{":
+                if глибина == 0:
+                    початок = і
+                    break
+                глибина -= 1
+        else:
+            return 0, len(маска)
+        глибина = 0
+        for і in range(початок, len(маска)):
+            if маска[і] == "{":
+                глибина += 1
+            elif маска[і] == "}":
+                глибина -= 1
+                if глибина == 0:
+                    return початок, і
+        return початок, len(маска)
+
     def читачі(self):
-        """Читання відповіді моделі в JS: змінна, що тримає результат `модель…(…)`, і її вживання, крім передачі мосту."""
+        """Читання відповіді моделі в JS: змінна, що тримає результат `модель…(…)`, і її вживання, крім передачі мосту.
+        Однойменна змінна у вкладеній функції (власне оголошення, яке не охоплює присвоєння з моделі) — інша змінна."""
         вих = []
         for ім, д in self.ф.items():
             if ім.startswith("модель"):
                 continue
             тіло = д["тіло"]
+            маска = re.sub(r"(['\"`])(?:\\.|(?!\1).)*\1", lambda м: м.group(1) + " " * (len(м.group(0)) - 2) + м.group(1), тіло, flags=re.S)
             змінні = set(re.findall(r"(?:const|let|var)?\s*(%s+)\s*=\s*(?:await\s+)?(?:%s+\.)?модель%s*\(" %
                                     (БУКВА, БУКВА, БУКВА), тіло))
             змінні |= set(re.findall(r"(?:const|let|var)\s+(%s+)\s*=\s*(?:await\s+)?блокиВТекст\(" % БУКВА, тіло))
             for зм in sorted(змінні):
                 екр = re.escape(зм)
+                присвоєння = [м.start() for м in re.finditer(r"(?<![\w.])%s\s*=\s*(?:await\s+)?(?:%s+\.)?(?:модель%s*|блокиВТекст)\(" %
+                                                              (екр, БУКВА, БУКВА), тіло)]
+                власні = [м.start() for м in re.finditer(r"(?:\b(?:const|let|var)\s+%s\s*=|[(,]\s*%s\s*[,)]\s*=>|\b%s\s*=>)" %
+                                                         (екр, екр, екр), тіло)
+                          if м.start() not in присвоєння and not any(abs(м.start() - а) < 12 for а in присвоєння)]
                 for м in re.finditer(r"JSON\.parse\(\s*%s\b|(?<![\w.])%s\.(?:match|replace|replaceAll|test|includes|indexOf|"
                                      r"startsWith|endsWith|split|slice|substring|toLowerCase|search)\(|\.(?:test|exec)\(\s*%s\b" %
                                      (екр, екр, екр), тіло):
-                    вих.append((ім, д["файл"], д["рядок"] + тіло[:м.start()].count("\n"), зм, м.group(0)))
+                    затінено = False
+                    for о in власні:
+                        if о > м.start():
+                            continue
+                        від, до = self.блок_що_містить(маска, о)
+                        if від <= м.start() <= до and not any(від <= а <= до for а in присвоєння):
+                            затінено = True
+                    if not затінено:
+                        вих.append((ім, д["файл"], д["рядок"] + тіло[:м.start()].count("\n"), зм, м.group(0)))
         return вих
 
 
@@ -1036,6 +1096,12 @@ def зібрати():
         власні = [н for н, к in конуси.items() if ключ in к]
         повтор = any(є_знак_повтору(а.м[x[0]].функції[x[1]]) for н in власні for x in конуси[н]) if власні else \
             є_знак_повтору(а.м[ключ[0]].функції[ключ[1]])
+        # повтор складає викликач читача (читач лише розбирає): два рівні викликачів
+        викликачі, межа = set(), {ключ}
+        for _ in range(2):
+            межа = {у for у, ц in ребра.items() if ц & межа} - викликачі - {ключ}
+            викликачі |= межа
+        повтор = повтор or any(є_знак_повтору(а.м[x[0]].функції[x[1]]) for x in викликачі if x[0] in а.м and x[1] in а.м[x[0]].функції)
         if not повтор:
             м.додати(файл_модуля(ключ[0]), рядок, 2, "приймальник `%s`: у його конусі нема знака повтору словами "
                      "(`промпт_повтору`/`повторний_виклик`/`помилка_формату`/`format_error`)" % ключ[1], "Б")
