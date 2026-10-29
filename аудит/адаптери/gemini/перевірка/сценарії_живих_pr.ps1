@@ -81,6 +81,7 @@ try {
         }
         $workers = New-Object Collections.ArrayList
         $null = Start-Markers $workers
+        function Get-AutoReviewInput { '[]' }
         $script:Models = 0
         function Find-EngineExe { 'стенд' }
         function Find-CodexExe { 'стенд' }

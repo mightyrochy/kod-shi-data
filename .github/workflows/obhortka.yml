@@ -8,7 +8,8 @@ on:
     paths:
       - 'аудит/адаптери/gemini/**'
       - 'аудит/проби/перевірити_нічний_маркер.ps1'
-      - 'аудит/проби/нічний_наряд.md'
+      - 'аудит/наряди/автоживий.md'
+      - 'аудит/проби/доробка_менше_прогонів.py'
       - 'аудит/проби/поставити_нічну_позначку.py'
       - '.github/workflows/obhortka.yml'
   push:
@@ -16,7 +17,8 @@ on:
     paths:
       - 'аудит/адаптери/gemini/**'
       - 'аудит/проби/перевірити_нічний_маркер.ps1'
-      - 'аудит/проби/нічний_наряд.md'
+      - 'аудит/наряди/автоживий.md'
+      - 'аудит/проби/доробка_менше_прогонів.py'
       - 'аудит/проби/поставити_нічну_позначку.py'
       - '.github/workflows/obhortka.yml'
 
@@ -78,56 +80,8 @@ jobs:
           echo "TMPDIR=$(cygpath -u "$RUNNER_TEMP")/obhortka" >> "$GITHUB_ENV"
           mkdir -p "$(cygpath -u "$RUNNER_TEMP")/obhortka"
 
-      - name: хеші маніфесту = таблиця = блоби LF
+      - name: усі стенди обгортки, нічний стенд і хеші
         if: ${{ !cancelled() }}
         run: |
           set -o pipefail
-          python аудит/адаптери/gemini/перевірка/перевірити_хеші.py 2>&1 | tee -a "$GITHUB_STEP_SUMMARY"
-
-      - name: сценарії_claude.sh
-        if: ${{ !cancelled() }}
-        run: bash аудит/адаптери/gemini/перевірка/запустити_стенд.sh сценарії_claude.sh
-
-      - name: сценарії_m9v.sh
-        if: ${{ !cancelled() }}
-        run: bash аудит/адаптери/gemini/перевірка/запустити_стенд.sh сценарії_m9v.sh
-
-      - name: сценарії_доставки.sh
-        if: ${{ !cancelled() }}
-        run: bash аудит/адаптери/gemini/перевірка/запустити_стенд.sh сценарії_доставки.sh
-
-      - name: сценарії_прогону.sh
-        if: ${{ !cancelled() }}
-        run: bash аудит/адаптери/gemini/перевірка/запустити_стенд.sh сценарії_прогону.sh
-
-      - name: сценарії_рушіїв.sh
-        if: ${{ !cancelled() }}
-        run: bash аудит/адаптери/gemini/перевірка/запустити_стенд.sh сценарії_рушіїв.sh
-
-      - name: сценарії_смуг.sh
-        if: ${{ !cancelled() }}
-        run: bash аудит/адаптери/gemini/перевірка/запустити_стенд.sh сценарії_смуг.sh
-
-      - name: сценарії_спостерігача.sh
-        if: ${{ !cancelled() }}
-        run: bash аудит/адаптери/gemini/перевірка/запустити_стенд.sh сценарії_спостерігача.sh
-
-      - name: сценарії_черги.sh
-        if: ${{ !cancelled() }}
-        run: bash аудит/адаптери/gemini/перевірка/запустити_стенд.sh сценарії_черги.sh
-
-      - name: сценарії_здоровя.sh
-        if: ${{ !cancelled() }}
-        run: bash аудит/адаптери/gemini/перевірка/запустити_стенд.sh сценарії_здоровя.sh
-
-      - name: сценарії_самооновлення.sh
-        if: ${{ !cancelled() }}
-        run: bash аудит/адаптери/gemini/перевірка/запустити_стенд.sh сценарії_самооновлення.sh
-
-      - name: сценарії_ланцюга.sh
-        if: ${{ !cancelled() }}
-        run: bash аудит/адаптери/gemini/перевірка/запустити_стенд.sh сценарії_ланцюга.sh
-
-      - name: нічна позначка за UTC, одна на добу
-        if: ${{ !cancelled() }}
-        run: powershell.exe -NoProfile -ExecutionPolicy Bypass -File аудит/проби/перевірити_нічний_маркер.ps1 -WrapperRoot аудит/адаптери/gemini
+          python аудит/проби/доробка_менше_прогонів.py --дерево . --журнали "$RUNNER_TEMP/obhortka-logs" 2>&1 | tee -a "$GITHUB_STEP_SUMMARY"
