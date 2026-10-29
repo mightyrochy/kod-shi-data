@@ -5,7 +5,7 @@ const В = {};                 // відповіді за позицією: {р�
 let пристрій = 'невідомо';
 const $ = id => document.getElementById(id);
 const ел = (тег, кл, текст) => { const е = document.createElement(тег);
-  if (кл) е.className = кл; if (текст != null) е.textContent = текст; return е; };
+  if (кл) е.className = кл; if (текст != null) текстЖінціП(е, текст); return е; };   // текст елемента — теж крізь точку виходу
 function іконка(ід, кл){
   const s = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
   s.setAttribute('class', 'і' + (кл ? ' ' + кл : ''));
