@@ -19,7 +19,8 @@ for г in ("HEAD", "origin/claude/zhyvi-13", "origin/claude/zhyvi-14"):
         if not в or "improve them" not in пр or hashlib.md5(в.encode()).digest() in бачено:
             continue
         бачено.add(hashlib.md5(в.encode()).digest())
-        дріт = json.loads(пр.partition("\n")[2])
+        # Повтор формату дописується після JSON; вердикт — у першому завершеному об'єкті.
+        дріт = json.JSONDecoder().raw_decode(пр.partition("\n")[2].lstrip())[0]
         гейти = {з.get("id") for о in дріт["verdict"] for з in о.get("findings") or [] if з.get("register") == "gate"}
         def після(м):
             вид = "гейт" if м.group(1) in гейти else "блокер" if м.group(1).startswith("b-") else "зауваж"
