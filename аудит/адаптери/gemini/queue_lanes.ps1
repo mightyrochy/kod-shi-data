@@ -41,10 +41,12 @@ $script:Defaults = @{
     agy_total_minutes = 180; agy_turn_minutes = 120; codex_stall_minutes = 60; claude_hang_minutes = 120
     min_free_gb = 30
 }
-# Місце однієї задачі: робоча копія слота — відстежувані файли main, 1,35 ГБ (вимір 29.10), з запасом. Запущені в тому
-# самому проході ще створюють свої копії, тож вільне місце для наступної позначки зменшується на це число за кожну.
+# Місце однієї задачі: робоча копія слота — відстежувані файли main, 1,35 ГБ (вимір 29.10), з запасом. Задачі, чиї копії
+# ще створюються (у будь-якому процесі й проході), записані в спільний облік, тож вільне місце для наступної позначки
+# зменшується на це число за кожну. Запис без зняття втрачає силу за DiskReserveMinutes.
 $script:TaskDiskGb = 1.5
-# Останній вимір диска перед узяттям позначки (Test-DiskRoom): Free, Min, Low — для стану ноутбука.
+$script:DiskReserveMinutes = 20
+# Останній вимір диска перед узяттям позначки (Reserve-DiskRoom): Free, Min, Low — для стану ноутбука.
 $script:Disk = $null
 # Тека задачі в процесі наряду (Enter-TaskDir) — для промпта.
 $script:TaskDirPath = ''
@@ -570,17 +572,51 @@ function Get-FreeDiskGb([string]$Dir) {
     catch { $null }
 }
 
-function Test-DiskRoom([string]$Dir, [int]$Started) {
-    <# Диск робочих копій вміщає ще одну задачу: вільне мінус копії $Started нарядів, запущених цим проходом (ще
-    створюються), — не менше порогу min_free_gb. Ні — позначку не беруть: без claim, без ліку відмов, вона чекає
-    наступного проходу. Вимір — у $script:Disk (стан ноутбука). Місця не прочитано — не стримуємо. #>
+function Get-DiskLedgerDir { Join-Path $LaneDir 'disk' }
+
+function Open-DiskLedger {
+    <# Замок обліку місця: спільний для claude-run, gemini-run і всіх їхніх проходів (теки смуг одна на ноутбук); чекаємо
+    до 15 с, не вийшло — $null (позначку не беруть, наступний прохід спробує знову). #>
+    $until = (Get-Date).AddSeconds(15)
+    do {
+        $l = Open-Lock (Join-Path $LaneDir 'disk.lock')
+        if ($null -ne $l) { return $l }
+        Start-Sleep -Milliseconds 100
+    } while ((Get-Date) -lt $until)
+    $null
+}
+
+function Reserve-DiskRoom([string]$Dir, [string]$Id) {
+    <# Диск вміщає ще одну задачу: вільне мінус місце, уже обіцяне копіям, що ще створюються (файли обліку
+    `lanes\disk\<id>` усіх процесів і проходів), мінус ця задача — не менше порогу min_free_gb. Так — задача записана в
+    облік (під замком: перевірка й запис не розриваються між процесами); ні — позначку не беруть: без claim, без ліку
+    відмов, вона чекає. Облік знімає Release-DiskRoom, коли копія створена (вільне вже її враховує) чи задача не
+    запустилась; запис старший за DiskReserveMinutes — зірваний процес — не рахується. Вимір — у $script:Disk (стан
+    ноутбука). Місця не прочитано — не стримуємо. #>
     $min = Get-Limit $script:Limits 'MinFreeGb' 'min_free_gb'
-    $free = Get-FreeDiskGb $Dir
-    $left = $(if ($null -ne $free) { $free - $Started * $script:TaskDiskGb } else { $null })
-    $low = ($null -ne $left) -and $left -lt $min
-    if ($low -and -not ($null -ne $script:Disk -and $script:Disk.Low)) { Write-Log "диск: вільно $left ГБ < поріг $min ГБ — позначок не беру" }
-    $script:Disk = [pscustomobject]@{ Free = $free; Min = $min; Low = $low }
-    -not $low
+    $ledger = Get-DiskLedgerDir
+    $lock = Open-DiskLedger
+    if ($null -eq $lock) { return $false }
+    try {
+        [void](New-Item -ItemType Directory -Force -Path $ledger)
+        $live = 0
+        foreach ($f in @(Get-ChildItem -LiteralPath $ledger -File -ErrorAction SilentlyContinue)) {
+            if ($f.LastWriteTimeUtc -lt (Get-Date).ToUniversalTime().AddMinutes(-$script:DiskReserveMinutes)) { Remove-Item -LiteralPath $f.FullName -Force -ErrorAction SilentlyContinue }
+            elseif ($f.Name -ne $Id) { $live++ }
+        }
+        $free = Get-FreeDiskGb $Dir
+        $left = $(if ($null -ne $free) { $free - ($live + 1) * $script:TaskDiskGb } else { $null })
+        $low = ($null -ne $left) -and $left -lt $min
+        if ($low -and -not ($null -ne $script:Disk -and $script:Disk.Low)) { Write-Log "диск: вільно $left ГБ < поріг $min ГБ — позначок не беру" }
+        $script:Disk = [pscustomobject]@{ Free = $free; Min = $min; Low = $low }
+        if (-not $low) { [System.IO.File]::WriteAllText((Join-Path $ledger $Id), "$PID", $script:Utf8) }
+        -not $low
+    } finally { $lock.Dispose() }
+}
+
+function Release-DiskRoom([string]$Id) {
+    <# Зняти задачу з обліку місця: копія створена (чи задача не запустилась). #>
+    if ($Id) { Remove-Item -LiteralPath (Join-Path (Get-DiskLedgerDir) $Id) -Force -ErrorAction SilentlyContinue }
 }
 
 function Read-SlotInfo([string]$Lane) {

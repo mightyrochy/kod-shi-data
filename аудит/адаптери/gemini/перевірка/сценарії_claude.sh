@@ -122,13 +122,24 @@ echo "=== К10 слоти 64, диска на 3 задачі: узято 3, ре
 setup k10; (cd "$W/seed"; mkdir -p аудит/адаптери/gemini; printf '{"v":1,"slots":{"claude":64}}' > аудит/адаптери/gemini/смуги.json
   for i in 1 2 3 4 5; do printf 'Т | наряд\n\nПроба диска.\n' > "аудит/наряди/диск-$i.md"; done; git add -A; git commit -q -m диск; git push -q origin main 2>/dev/null)
 for i in 1 2 3 4 5; do mark "диск-$i/$M/1"; done
-FAKE_FREE_GB=34 cr
-chk "перший прохід узяв 3 позначки, далі — «диск: вільно 29.5 ГБ < поріг 30 ГБ»" '[ "$(sed -n "1,/диск: вільно 29.5 ГБ < поріг 30 ГБ/p" "$W/cr/claude-run.log" | grep -c ": слот claude-")" = 3 ]'
+FAKE_FREE_GB=35 cr
+chk "перший прохід узяв 3 позначки, далі — «диск: вільно 29 ГБ < поріг 30 ГБ»" '[ "$(sed -n "1,/диск: вільно 29 ГБ < поріг 30 ГБ/p" "$W/cr/claude-run.log" | grep -c ": слот claude-")" = 3 ]'
 chk "усі 5 виконано, жодного CRASH, claim не лишився" '[ "$(nlines)" = 5 ] && ! lines | grep -q CRASH && [ -z "$(ls "$W"/cr/state/*.claim 2>/dev/null)" ]'
 chk "копії слотів прибрано: w порожня, у клоні одна робоча копія" '[ -z "$(ls "$W/cr/w" 2>/dev/null)" ] && [ "$(git -C "$W/clone" worktree list | wc -l)" = 1 ]'
 chk "у теках прогонів — журнал і стан: без теки задачі й промпта" '[ -z "$(ls -d "$W"/cr/runs/*/task "$W"/cr/runs/*/prompt.txt 2>/dev/null)" ] && [ "$(ls "$W"/cr/runs/*/result.json | wc -l)" = 5 ]'
 chk "промпт називає теку задачі; TEMP процесу claude — вона ж" '[[ "$(prompt)" == *"теці задачі"*"task"* ]] && grep -q "\"temp\": *\"[^\"]*task\"" "$W/cc.log"'
 chk "стан ноутбука: рядок диска з порогом" 'grep -l "диск: вільно .* поріг 30 ГБ" "$W"/gh/patch_*.json >/dev/null'
+echo "=== К10б спільний облік місця: копії, що створює інший процес чи прохід, віднімаються; сума взятих ≤ (вільне − поріг)/1,5"
+setup k10b; (cd "$W/seed"; mkdir -p аудит/адаптери/gemini; printf '{"v":1,"slots":{"claude":64}}' > аудит/адаптери/gemini/смуги.json
+  for i in 1 2 3 4 5; do printf 'Т | наряд\n\nПроба диска.\n' > "аудит/наряди/диск-$i.md"; done; git add -A; git commit -q -m диск; git push -q origin main 2>/dev/null)
+for i in 1 2 3 4 5; do mark "диск-$i/$M/1"; done
+mkdir -p "$W/lanes/disk"; echo 1 > "$W/lanes/disk/gemini-run-А"; echo 1 > "$W/lanes/disk/gemini-run-Б"; echo 1 > "$W/lanes/disk/зірвана"
+touch -d '2 hours ago' "$W/lanes/disk/зірвана"
+# вільно 35, поріг 30: (35 − 30)/1,5 = 3 задачі; дві вже обіцяні чужим процесом, зірвана не рахується → беремо одну
+FAKE_FREE_GB=35 cr "{\"LaneDir\":\"$(wp "$W/lanes")\"}"
+chk "узято рівно 1 позначку (до спільного обліку брали 3): запас не перебрано" '[ "$(sed -n "1,/диск: вільно .* ГБ < поріг 30 ГБ/p" "$W/cr/claude-run.log" | grep -c ": слот claude-")" = 1 ]'
+chk "зірваний запис прибрано, чужі лишились, свої — зняті після створення копій" '[ "$(ls "$W/lanes/disk" | LC_ALL=C sort | tr "\n" " ")" = "gemini-run-А gemini-run-Б " ]'
+chk "усі 5 позначок з часом виконано, жодного CRASH" 'rm -f "$W"/lanes/disk/*; FAKE_FREE_GB=35 cr "{\"LaneDir\":\"$(wp "$W/lanes")\"}"; [ "$(nlines)" = 5 ] && ! lines | grep -q CRASH'
 echo "=== К11 збій сховища до запуску (повний диск) — позначка в черзі, не CRASH"
 setup k11; mark "$SLUG/$M/1"
 for i in 1 2 3 4 5 6 7; do FAKE_WT_FAULT=1 cr; sed -i 's/"until":[0-9]*/"until":0/' "$W"/cr/state/*.txt; done
