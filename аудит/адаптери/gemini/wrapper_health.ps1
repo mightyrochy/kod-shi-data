@@ -5,6 +5,7 @@ $script:HealthDetails = @{
     ISOLATION = @('WHOAMI', 'NET_SESSION', 'PROFILES', 'DRIVES', 'ENV')
     DISK = @('FULL')
     ENGINE = @('AGY', 'CODEX', 'CLAUDE')
+    TASKDIR = @('UNPUSHED')
 }
 $script:HealthAlertDir = ''
 $script:HeartbeatAction = $null
@@ -42,13 +43,43 @@ function Add-HealthAlert([string]$Code, [string]$Detail) {
     } finally { if ($null -ne $lock) { $lock.Dispose() } }
 }
 
-function Add-HealthException($Exception) {
-    <# Диск упізнається за системним кодом, текст винятку не пересилається. #>
-    $e = $Exception
-    while ($null -ne $e) {
-        if (($e.HResult -band 0xffff) -in @(39, 112)) { Add-HealthAlert 'DISK' 'FULL'; return }
-        $e = $e.InnerException
+# Брак місця в тексті git (Invoke-Git кидає рядок із stderr): так git повідомляє про запис на повний диск.
+$script:DiskFullRx = '(?i)No space left on device|not enough space on the disk|unable to write (new )?(index )?file|could not write|short write|Could not reset index file'
+
+function Test-DiskFull($Exception) {
+    <# Виняток чи вкладений у нього — від браку місця: системні коди 39 і 112 або текст git. #>
+    for ($e = $Exception; $null -ne $e; $e = $e.InnerException) {
+        if (($e.HResult -band 0xffff) -in @(39, 112) -or $e.Message -match $script:DiskFullRx) { return $true }
     }
+    $false
+}
+
+function Test-StorageFault($Exception) {
+    <# Минущий збій сховища: брак місця чи файл, зайнятий іншим процесом (коди 32, 33). Стійкі помилки файлової системи
+    (довгий шлях, доступ) сюди не входять — вони повторювались би вічно й не дійшли б до диспетчера. #>
+    if (Test-DiskFull $Exception) { return $true }
+    for ($e = $Exception; $null -ne $e; $e = $e.InnerException) { if (($e.HResult -band 0xffff) -in @(32, 33)) { return $true } }
+    $false
+}
+
+function Format-ErrorDetail($Err) {
+    <# Повний текст винятку й місце, де він виник, — одним рядком для журналу (рядок диспетчерові лишається за шаблоном):
+    тип і повідомлення з вкладеними винятками, файл і рядок скрипта, стек викликів. #>
+    $e = $(if ($Err -is [System.Management.Automation.ErrorRecord]) { $Err.Exception } else { $Err })
+    $parts = @()
+    for ($x = $e; $null -ne $x; $x = $x.InnerException) { $parts += "$($x.GetType().FullName): $($x.Message)" }
+    $where = ''
+    if ($Err -is [System.Management.Automation.ErrorRecord]) {
+        $ii = $Err.InvocationInfo
+        if ($null -ne $ii -and $ii.ScriptName) { $where = " @ $(Split-Path -Leaf $ii.ScriptName):$($ii.ScriptLineNumber)" }
+        if ($Err.ScriptStackTrace) { $where += ' | стек: ' + (($Err.ScriptStackTrace -split '\r?\n') -join ' <- ') }
+    }
+    (($parts -join ' <= ') + $where) -replace '\s*[\r\n]+\s*', ' '
+}
+
+function Add-HealthException($Exception) {
+    <# Диск упізнається за системним кодом чи текстом git, текст винятку не пересилається. #>
+    if (Test-DiskFull $Exception) { Add-HealthAlert 'DISK' 'FULL' }
 }
 
 function Invoke-HealthBeat {

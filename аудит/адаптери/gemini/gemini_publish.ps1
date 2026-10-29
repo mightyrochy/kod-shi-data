@@ -395,7 +395,7 @@ $script:OutboxTemplates = @(
     "\AGEMINI ОБГОРТКА: ГОТОВО (?:gemini|codex|claude)/$script:SlugCore [0-9a-f]{40}(?: КВОТА [A-Z0-9_]{2,40} (?:100|[1-9]?[0-9]))?(?: МОДЕЛЬ [a-z0-9][a-z0-9.-]{1,63})?\z"
     '\AGEMINI ОБГОРТКА: ПУЛИ V=(?:[0-9]+(?:\.[0-9]+){1,3}|-)(?: G=[A-Z0-9]{1,16}:(?:100|[1-9]?[0-9]):(?:[0-9]{1,6}|-)){0,6}(?: Q=\?)? M=(?:-|(?:gemini|claude|gpt)-[a-z0-9.-]{1,36}(?:,(?:gemini|claude|gpt)-[a-z0-9.-]{1,36}){0,5})\z'
     "\AGEMINI ОБГОРТКА: ЗАБЛОКОВАНО (?:gemini|codex|claude)/$script:SlugCore [A-Z0-9_]{2,40}\z"
-    '\AGEMINI ОБГОРТКА: ТРИВОГА (?:AUTH (?:AGY|CODEX|CLAUDE|CLOUD)|ISOLATION (?:WHOAMI|NET_SESSION|PROFILES|DRIVES|ENV)|DISK FULL|ENGINE (?:AGY|CODEX|CLAUDE))\z'
+    '\AGEMINI ОБГОРТКА: ТРИВОГА (?:AUTH (?:AGY|CODEX|CLAUDE|CLOUD)|ISOLATION (?:WHOAMI|NET_SESSION|PROFILES|DRIVES|ENV)|DISK FULL|ENGINE (?:AGY|CODEX|CLAUDE)|TASKDIR UNPUSHED)\z'
     '\AGEMINI ОБГОРТКА: ВИМКНЕНО [0-9a-f]{40}\z'
     '\AСПОСТЕРІГАЧ КОМЕНТАР #[0-9]{1,12} [0-9]{1,20} (?:mightyrochy|chatgpt-codex-connector\[bot\]) (?:новий|змінено)\z'
     '\AСПОСТЕРІГАЧ CI #[0-9]{1,12} [0-9a-f]{40} (?:success|failure|cancelled|timed_out|action_required|neutral|skipped|pending)\z'

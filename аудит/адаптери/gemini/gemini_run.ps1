@@ -563,6 +563,8 @@ function Get-Prompt($M, [string]$TaskText, [string]$EngineName = 'agy') {
 
 - Наряд — ``$taskSource`` з ``main`` на коміті $($M.Sha); повний текст — нижче між рисками.
 - Гілку ``$branch`` уже вибрано: працюй і коміть лише в ній. Не пуш і не створюй бандла — це робить обгортка.
+- Дерева, клони й вивід — лише в цій робочій копії й теці задачі ``$script:TaskDirPath`` (там же TEMP/TMP); після
+  прогону обгортка теку задачі прибирає.
   Файлів ``.github/`` і ``аудит/адаптери/gemini/`` не змінюй: таку гілку не опублікують.
 - Кожну команду виконуй на передньому плані й чекай її завершення: фонове завдання зупиняється разом із ходом, а
   звіт без результату — кинутий прогін.
@@ -896,8 +898,9 @@ function Write-QuotaStatus($M, [string]$Id, [string]$Group, [long]$Until, [hasht
 }
 
 # Відмова до STARTED: лічильник повернень і межа ті самі, що в квоти; на межі — кінцевий стан CRASH і рядок диспетчерові.
-function Close-FailedStart($M, [string]$Id, [string]$StatePath) {
-    if ((Step-FailedStart $M $StatePath) -ne 'LIMIT') { return }
+# Минущий збій сховища (-Storage) не рахується: позначка лишається в черзі.
+function Close-FailedStart($M, [string]$Id, [string]$StatePath, [switch]$Storage) {
+    if ((Step-FailedStart $M $StatePath -Storage:$Storage) -ne 'LIMIT') { return }
     $status = [ordered]@{ v = 1; id = $Id; slug = $M.Slug; model = $M.Model; n = [int]$M.N; marker = $M.Sha; cond = $M.Cond; slot = ''
         start = ''; head = ''; code = 'CRASH'; report = 'NONE'; ahead = 0; turns = 0; minutes = 0; bundle = ''; engine = 'agy' }
     Write-Log "позначка $($M.Name): відмов до запуску понад $script:MaxRetakes — кінець CRASH"
@@ -919,6 +922,8 @@ function Resume-Interrupted {
         $status.code = 'INTERRUPTED'
         Write-Log "прогін $($status.id) перервано — закриваю"
         Complete-Status $status $sf.FullName '' ([datetime]::MinValue)
+        Clear-RunDir (Join-Path $RunsDir ([string]$status.id))
+        if (Test-SlotName $slot $script:Lanes) { Remove-WorkTree (Join-Path (Join-Path $RunsDir 'w') $slot) $RepoDir }
     }
 }
 
@@ -991,7 +996,7 @@ function Invoke-Task($M, $Job) {
         if ($qa.Known) { $status.quota = $qa.Left; $status.qgroup = $qa.Group }
     } catch {
         $status.code = 'CRASH'
-        Write-Log "збій: $($_.Exception.Message)"
+        Write-Log "збій: $(Format-ErrorDetail $_)"
     } finally {
         if (-not $waiting) { Complete-Status $status $statePath $tail $t0 }
         [void](Invoke-Git @('checkout', '-q', '--detach') -AllowFail)
@@ -1089,6 +1094,8 @@ function Start-Markers($Workers) {
         }
         if ((@($Workers | Where-Object { $_.Slug -ceq $m.Slug -and -not $_.Proc.HasExited }).Count -gt 0) -or (Test-SlugBusy $m.Slug $script:Lanes)) { continue }
         if ($m.Gpu -and -not (Test-GpuFree $Workers)) { continue }
+        # Мало місця під ще одну робочу копію — позначки лишаються в черзі до наступного проходу.
+        if (-not (Test-DiskRoom (Join-Path $RunsDir 'w') $started)) { break }
         $after = $(if ($st.Kind -eq 'WAIT') { [long]$st.Wait.until } else { 0L })
         $sel = Select-Engine $m $after
         if ($sel.Quota.Blocked) { Enter-StartQuotaWait $m $sel.Quota $st; continue }
@@ -1110,8 +1117,8 @@ function Start-Markers($Workers) {
                 limits = $script:Limits }
             [void]$Workers.Add((Start-Worker $job $dir))
         } catch {
-            Write-Log "позначка $($m.Name): процес наряду не запущено — $($_.Exception.Message)"
-            Close-FailedStart $m $id (Get-StatePath (Get-MarkerKey $m))
+            Write-Log "позначка $($m.Name): процес наряду не запущено — $(Format-ErrorDetail $_)"
+            Close-FailedStart $m $id (Get-StatePath (Get-MarkerKey $m)) -Storage:(Test-StorageFault $_.Exception)
             continue
         }
         Write-Log "позначка $($m.Name): слот $slot, пріоритет $($m.Prio)$(if ($m.Deadline) { ", строк $($m.Deadline)" })$(if ($m.Gpu) { ', GPU' }) -> $id"
@@ -1168,6 +1175,10 @@ function Invoke-Worker {
     if ($null -eq $slotLock) { Remove-Claim $statePath; Write-Log "слот $($job.slot) зайнятий — позначку не взято"; return $script:WorkerSlotBusy }
     $gpu = $null
     $info = Join-Path $script:SlotDir "$($job.slot).json"
+    $clone = $RepoDir
+    $wtPath = Join-Path (Join-Path $RunsDir 'w') $job.slot
+    $fault = $false
+    $taskDir = ''; $tempWas = $env:TEMP; $tmpWas = $env:TMP
     try {
         if ($job.gpu) {
             $gpu = Open-Lock (Get-GpuLockPath)
@@ -1177,19 +1188,26 @@ function Invoke-Worker {
                     since = (Get-UtcStamp (Get-Date)); gpu = [bool]$job.gpu; prio = $job.prio; pid = $PID }) | ConvertTo-Json -Compress)
         $M = [pscustomobject]@{ Ref = $job.ref; Name = $job.name; Sha = $job.sha; Time = [long]$job.time; Slug = $job.slug; Model = $job.model
             N = [string]$job.n; Cond = [string]$job.cond; Prio = $job.prio; Deadline = $job.deadline; Gpu = [bool]$job.gpu; Lane = $job.lane }
-        $wt = Enter-WorkTree (Join-Path (Join-Path $RunsDir 'w') $job.slot) 'refs/remotes/origin/main'
+        $wt = Enter-WorkTree $wtPath 'refs/remotes/origin/main'
         Set-Variable -Scope Script -Name RepoDir -Value $wt
+        $taskDir = Enter-TaskDir ([string]$job.dir)
         Set-BrowserGpuPolicy (Join-Path $script:SlotDir ($job.slot + '-browser'))
         Invoke-Task $M $job
         0
     } catch {
-        Add-HealthException $_.Exception; Write-Log "процес наряду $($job.name): $($_.Exception.Message)"
+        $fault = Test-StorageFault $_.Exception
+        Add-HealthException $_.Exception; Write-Log "процес наряду $($job.name): $(Format-ErrorDetail $_)"
         1
     } finally {
+        # Прогін скінчився (будь-яким кодом): тека задачі й копія слота — геть, у теці прогону — журнал і стан.
+        $env:TEMP = $tempWas; $env:TMP = $tmpWas
+        Clear-TaskDir $taskDir
+        Remove-WorkTree $wtPath $clone
+        Clear-RunDir ([string]$job.dir)
         Remove-Item -LiteralPath $info -Force -ErrorAction SilentlyContinue
         # Помилка до STARTED (робоча копія тощо) не лишає claim: позначка повертається в чергу (10162).
         Close-FailedStart ([pscustomobject]@{ Ref = $job.ref; Name = $job.name; Sha = $job.sha; Slug = $job.slug; Model = $job.model
-                N = [string]$job.n; Cond = [string]$job.cond }) ([string]$job.id) $statePath
+                N = [string]$job.n; Cond = [string]$job.cond }) ([string]$job.id) $statePath -Storage:$fault
         if ($null -ne $gpu) { $gpu.Dispose() }
         $slotLock.Dispose()
     }
@@ -1232,7 +1250,7 @@ function Main {
                         '+refs/heads/gemini/*:refs/remotes/origin/gemini/*',
                         '+refs/heads/gemini-queue/*:refs/remotes/origin/gemini-queue/*'))
                 $script:Limits = Get-Limits
-                if ($first) { Resume-Interrupted }
+                if ($first) { Resume-Interrupted; Clear-IdleWorkTrees (Join-Path $RunsDir 'w') $RepoDir $script:Lanes }
                 Clear-OrphanClaims $RunsDir
                 $script:Agy = Find-EngineExe $AgyExe
                 if ($script:Agy) { [void](Read-Usage) }

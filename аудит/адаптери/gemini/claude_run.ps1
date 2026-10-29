@@ -299,6 +299,11 @@ function Get-StatusBody {
         }
     }
     $lines += @('', "GPU: $(if ($gpuBy.Count) { 'зайнята — ' + ($gpuBy -join ', ') } else { 'вільна' }) · межі: claude-run — $(if ($null -ne $lim) { $lim.source } else { '?' }), gemini-run — $(if ($g.Limits) { $g.Limits } else { '?' })")
+    # Диск робочих копій спільний для обох смуг (профілі власника й gemini — на C:).
+    $free = Get-FreeDiskGb $WorkDir; $min = Get-Limit $lim 'MinFreeGb' 'min_free_gb'
+    $lines += @('', $(if ($null -eq $free) { "диск: вільне місце не прочитано · поріг $min ГБ" }
+            elseif ($free -lt $min) { "**диск: вільно $free ГБ < поріг $min ГБ — нових нарядів не беру**" }
+            else { "диск: вільно $free ГБ · поріг $min ГБ" }))
     $lines += @('', "heartbeat gemini-run (UTC): $($g.Time) · вік: $(Get-Minutes $g.Time) хв · isolation: $($g.Isolation) · понад 5 хв — джерело застаріле")
     $lines += @('', '### Квота (UTC)', '', '| смуга · група | вікно | залишок | скидання | зчитано |', '|---|---|---|---|---|')
     if ($null -ne $g.Quota -and $g.Quota.Windows.Count -gt 0) {
@@ -375,6 +380,8 @@ function Get-Prompt($M, [string]$TaskText, [string]$Continue) {
 («НОУТБУК ГОТОВО <гілка> <повний SHA>» чи «НОУТБУК ЗАБЛОКОВАНО: …»): його читає обгортка claude-run і сама пише
 диспетчерові, листів не шли. Гілка — ``claude/…``, запушена тобою.
 Наряд — ``$($script:TaskDir)$($M.Slug).md`` з ``main`` на коміті $($M.Sha); повний текст — нижче між рисками.
+Дерева, клони й вивід — лише в робочій копії слота й теці задачі ``$script:TaskDirPath`` (там же TEMP/TMP); у корені
+профілю нічого не створюй. Після прогону обгортка теку задачі прибирає, з незапушеними комітами — лишає.
 $cont
 ----- НАРЯД -----
 $TaskText
@@ -504,7 +511,9 @@ function Invoke-Claude([string]$Exe, [string[]]$ArgList, [string]$Prompt, [strin
         $p = [System.Diagnostics.Process]::Start($psi)
     } finally { [Console]::InputEncoding = $stdinEncoding }
     $start = ''; try { $start = Get-UtcStamp $p.StartTime } catch { $null = $_ }
-    Write-FileAtomic $StatePath ($StateHead + ' ' + (([ordered]@{ pid = $p.Id; start = $start; marker = $Marker; slot = $Slot; retakes = (Get-Retakes $StatePath) }) | ConvertTo-Json -Compress))
+    # Стан STARTED не записано (диск) — claude без нагляду не лишається, позначка ще до запуску.
+    try { Write-FileAtomic $StatePath ($StateHead + ' ' + (([ordered]@{ pid = $p.Id; start = $start; marker = $Marker; slot = $Slot; retakes = (Get-Retakes $StatePath) }) | ConvertTo-Json -Compress)) }
+    catch { Stop-Tree $p; throw }
     $w = New-Object System.IO.StreamWriter($p.StandardInput.BaseStream, $script:Utf8)
     $w.Write($Prompt)
     $w.Close()
@@ -633,7 +642,9 @@ function Invoke-Task($M, $Job) {
     try {
         $r = Invoke-Claude $exe $a $prompt $runDir $statePath "STARTED $id" $M.Name ([string]$Job.slot)
     } catch {
-        Write-Log "claude: $($_.Exception.Message)"
+        Write-Log "claude: $(Format-ErrorDetail $_)"
+        # До STARTED брак місця не пропалює позначку: вона лишається в черзі (Step-FailedStart -Storage).
+        if ((Test-StorageFault $_.Exception) -and (Step-FailedStart $M $statePath -Storage) -eq 'KEEP') { return }
         return (Complete-Task $M $statePath $id 'CRASH')
     }
     if ($r.Kind) { return (Complete-Task $M $statePath $id $r.Kind) }
@@ -661,8 +672,9 @@ function Invoke-Task($M, $Job) {
 }
 
 # Відмова до STARTED: лічильник повернень і межа ті самі, що в квоти; на межі — кінцевий стан CRASH і рядок диспетчерові.
-function Close-FailedStart($M, [string]$Id, [string]$StatePath) {
-    if ((Step-FailedStart $M $StatePath) -ne 'LIMIT') { return }
+# Минущий збій сховища (-Storage) не рахується: позначка лишається в черзі.
+function Close-FailedStart($M, [string]$Id, [string]$StatePath, [switch]$Storage) {
+    if ((Step-FailedStart $M $StatePath -Storage:$Storage) -ne 'LIMIT') { return }
     Write-Log "позначка $($M.Name): відмов до запуску понад $script:MaxRetakes — кінець CRASH"
     Complete-Task $M $StatePath $Id 'CRASH'
 }
@@ -688,9 +700,11 @@ function Resume-Interrupted {
         else { Write-Log "перерваний $id : позначка невідома" }
         if (Test-Path -LiteralPath (Split-Path -Parent $res)) {
             if (-not (Test-Path -LiteralPath $res)) { Write-FileAtomic $res (([ordered]@{ marker = $marker; code = 'INTERRUPTED'; end = (Get-Date).ToString('s') }) | ConvertTo-Json -Compress) }
+            Clear-RunDir (Split-Path -Parent $res)
         }
         Write-FileAtomic $f.FullName "DONE $id INTERRUPTED"
         Remove-Claim $f.FullName
+        if (Test-SlotName $slot @('claude')) { Remove-WorkTree (Join-Path (Join-Path $WorkDir 'w') $slot) $RepoDir }
     }
 }
 
@@ -788,6 +802,8 @@ function Start-Markers($Workers) {
             $ownGpu = @($Workers | Where-Object { $_.Gpu -and -not $_.Proc.HasExited }).Count -gt 0
             if ($ownGpu -or -not (Test-LockFree (Get-GpuLockPath))) { continue }
         }
+        # Мало місця під ще одну робочу копію — позначки лишаються в черзі до наступного проходу.
+        if (-not (Test-DiskRoom (Join-Path $WorkDir 'w') $started)) { break }
         $id = New-Id
         if (-not (New-Claim $m $id)) { continue }
         # Усе між claim і STARTED — під одним обліком відмов (retakes, MaxRetakes, CRASH на межі), 10162/10182.
@@ -799,8 +815,8 @@ function Start-Markers($Workers) {
                 claude = $m.Claude; effort = $m.Effort; limits = $script:Limits }
             [void]$Workers.Add((Start-Worker $job $dir))
         } catch {
-            Write-Log "позначка $($m.Name): процес наряду не запущено — $($_.Exception.Message)"
-            Close-FailedStart $m $id (Get-StatePath (Get-MarkerKey $m))
+            Write-Log "позначка $($m.Name): процес наряду не запущено — $(Format-ErrorDetail $_)"
+            Close-FailedStart $m $id (Get-StatePath (Get-MarkerKey $m)) -Storage:(Test-StorageFault $_.Exception)
             continue
         }
         Write-Log "позначка $($m.Name): слот $slot, пріоритет $($m.Prio)$(if ($m.Deadline) { ", строк $($m.Deadline)" })$(if ($m.Gpu) { ', GPU' }) -> $id"
@@ -820,6 +836,10 @@ function Invoke-Worker {
     if ($null -eq $slotLock) { Remove-Claim $statePath; Write-Log "слот $($job.slot) зайнятий — позначку не взято"; return $script:WorkerSlotBusy }
     $gpu = $null
     $info = Join-Path $script:SlotDir "$($job.slot).json"
+    $clone = $RepoDir
+    $wtPath = Join-Path (Join-Path $WorkDir 'w') $job.slot
+    $fault = $false
+    $taskDir = ''; $tempWas = $env:TEMP; $tmpWas = $env:TMP
     try {
         if ($job.gpu) {
             $gpu = Open-Lock (Get-GpuLockPath)
@@ -829,23 +849,30 @@ function Invoke-Worker {
                     model = "$($job.claude)$(if ($job.effort) { ' ' + $job.effort })"; since = (Get-UtcStamp (Get-Date)); gpu = [bool]$job.gpu; prio = $job.prio; pid = $PID }) | ConvertTo-Json -Compress)
         $M = [pscustomobject]@{ Ref = $job.ref; Name = $job.name; Sha = $job.sha; Time = [long]$job.time; Slug = $job.slug; Model = $job.model
             N = [string]$job.n; Cond = [string]$job.cond; Claude = [string]$job.claude; Effort = [string]$job.effort; Gpu = [bool]$job.gpu }
-        $script:WorkTree = Enter-WorkTree (Join-Path (Join-Path $WorkDir 'w') $job.slot) 'refs/remotes/origin/main'
+        $script:WorkTree = Enter-WorkTree $wtPath 'refs/remotes/origin/main'
         $wt = $script:WorkTree
         Reset-WorkTree $wt
         [void](Invoke-Git @('checkout', '-q', '-f', '--detach', 'refs/remotes/origin/main') -Dir $wt)
         Set-Variable -Scope Script -Name RepoDir -Value $wt
+        $taskDir = Enter-TaskDir ([string]$job.dir)
         Set-BrowserGpuPolicy (Join-Path $script:SlotDir ($job.slot + '-browser'))
         Invoke-Task $M $job
         0
     } catch {
-        Write-Log "процес наряду $($job.name): $($_.Exception.Message)"
+        $fault = Test-StorageFault $_.Exception
+        Write-Log "процес наряду $($job.name): $(Format-ErrorDetail $_)"
         1
     } finally {
         # Гілку, яку сесія лишила вибраною в робочій копії слота, звільнити для інших слотів.
         if ($script:WorkTree) { [void](Invoke-Git @('checkout', '-q', '--detach') -AllowFail -Dir $script:WorkTree) }
+        # Прогін скінчився (будь-яким кодом): тека задачі й копія слота — геть, у теці прогону — журнал і стан.
+        $env:TEMP = $tempWas; $env:TMP = $tmpWas
+        Clear-TaskDir $taskDir
+        Remove-WorkTree $wtPath $clone
+        Clear-RunDir ([string]$job.dir)
         Remove-Item -LiteralPath $info -Force -ErrorAction SilentlyContinue
         # Помилка до STARTED (робоча копія тощо) не лишає claim: позначка повертається в чергу (10162).
-        Close-FailedStart ([pscustomobject]@{ Ref = $job.ref; Name = $job.name; Sha = $job.sha; Slug = $job.slug; Model = $job.model }) ([string]$job.id) $statePath
+        Close-FailedStart ([pscustomobject]@{ Ref = $job.ref; Name = $job.name; Sha = $job.sha; Slug = $job.slug; Model = $job.model }) ([string]$job.id) $statePath -Storage:$fault
         if ($null -ne $gpu) { $gpu.Dispose() }
         $slotLock.Dispose()
     }
@@ -878,6 +905,7 @@ function Main {
         $prev = $(if (Test-Path -LiteralPath $bootFile) { [System.IO.File]::ReadAllText($bootFile, $script:Utf8).Trim() } else { '' })
         $script:FreshBoot = ($boot -ne $prev)
         Resume-Interrupted
+        Clear-IdleWorkTrees (Join-Path $WorkDir 'w') $RepoDir @('claude')
         $script:Workers = New-Object System.Collections.ArrayList
         $first = $true
         while ($true) {
