@@ -20,6 +20,7 @@ def тягнути(url, шлях):
     if os.path.exists(шлях) and os.path.getsize(шлях) > 900: return шлях
     r = subprocess.run(['curl', '-sS', '-m', '30', '-o', шлях, url], capture_output=True)
     return шлях if r.returncode == 0 and os.path.exists(шлях) and os.path.getsize(шлях) > 900 else None
+import колір_річ as _КОЛІР
 for слово in sys.argv[2:]:
     речі = [o for o in оф if н(o.get('колір_сирий')) == слово and len(ФК._СЕП_КОЛЬОРУ.split(н(o.get('колір_сирий')))) == 1]
     видно, бачені = [], set()
@@ -46,7 +47,7 @@ for слово in sys.argv[2:]:
         except Exception: d.text((x + 8, y + Р // 2), 'фото не відкрилось', font=сер, fill='red')
         р = кат.get(o['id']) or {}
         свідок = FZ.колір_збагачення(z)[2] if z else '—'
-        hx = (k or {}).get('hex') or '—'
+        hx = _КОЛІР.hex_кольору(k or {}) or '—'
         лаб = ('L%.0f C%.0f' % cs.lch(cs.hx(hx))[:2]) if hx != '—' else ''
         if hx != '—': d.rectangle([x + Р - 34, y + 4, x + Р - 6, y + 32], fill=hx, outline='black')
         d.text((x + 4, y + Р + 2), o['id'][:34], font=дрібн, fill='black')

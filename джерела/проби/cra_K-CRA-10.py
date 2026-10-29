@@ -20,9 +20,10 @@ print("текстури каталогу пакета:",
       collections.Counter(c.get("текстура") for c in кат.values()).most_common(6))
 
 
+import колір_річ as _КОЛІР
 def тиха(c):
     try:
-        return КС.lch(c["lab"])[1] < 18 and c.get("візерунок") in (None, "solid")
+        return КС.lch(_КОЛІР.точка_кольору(c))[1] < 18 and c.get("візерунок") in (None, "solid")
     except Exception:
         return False
 

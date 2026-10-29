@@ -9,8 +9,9 @@ import feed, фід_каталог as FK
 К = FK.прочитати_каталог(feed.каталог_на_диску(), 0)["каталог"]
 МЕТАЛ = ("золот", "срібл", "срібн", "металік", "gold", "silver")
 мет = [r for r in К if any(м in (r.get("колір_назва") or "").lower() for м in МЕТАЛ)]
+import колір_річ as _КОЛІР
 print("ФАКТ · записів %d; металеве слово кольору %d: з виміром %d, код = центр вікна слова %d; слоти %s" % (
-    len(К), len(мет), sum(bool(r.get("колір_hex_фото")) for r in мет), sum(bool(r.get("колір_не_вимір")) for r in мет),
+    len(К), len(мет), sum(bool(r.get("колір_hex_фото")) for r in мет), sum(bool(_КОЛІР.провенанс_кольору(r)) for r in мет),
     collections.Counter(r["слот"] for r in мет).most_common(5)))
 print("ФАКТ · слово з фото для металевих: %s" % collections.Counter(r.get("колір_назва_фото") for r in мет).most_common(8))
 бл = [r for r in К if (r.get("блиск") or 0) >= 2]

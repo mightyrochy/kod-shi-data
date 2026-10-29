@@ -9,7 +9,8 @@ from проби import pal_вердикт as ПВ
 
 вх, _, кат, _ = ПВ.стенд(гілка=0, намір="statement")
 гучно = Р.C["hi_C"]
-речі = [x for x in кат.values() if x.get("lab") and not x.get("колір_не_вимір") and x.get("слот") in ("верх", "низ", "сукня")]
+import колір_річ as _КОЛІР
+речі = [x for x in кат.values() if _КОЛІР.точка_кольору(x) and not _КОЛІР.провенанс_кольору(x) and x.get("слот") in ("верх", "низ", "сукня")]
 дані = lambda x: ПВ.lch(кат, x["id"])
 кут = lambda a, b: min(abs(a - b) % 360, 360 - abs(a - b) % 360)
 

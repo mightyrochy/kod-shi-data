@@ -23,11 +23,11 @@ def записати_вибірку():
     for о in очі:
         lab = cs.hx(о); запис = КР.запис_кольору(dict(lab=lab)); кандидати = []
         for x in sorted(кат, key=lambda x: x['id']):
-            hex = cs.hex_з_lab(x['lab']).lower()
+            hex = cs.hex_з_lab(КР.точка_кольору(x)).lower()
             до = КР.у_дугах_кола(x, [ПЛ.дуга_очей(cs.lch(lab)[2])], до_кінця_згасання=True)
             після = КР.у_відлунні_очей(x, запис)
             if до == після or (о, hex) in виключені: continue
-            кандидати.append(dict(очі=о, hex=hex, lab=x['lab'], id=x['id'], до=до, після=після,
+            кандидати.append(dict(очі=о, hex=hex, lab=КР.точка_кольору(x), id=x['id'], до=до, після=після,
                                  фото=x.get('фото_опису') or (x.get('фото') or [None])[0],
                                  url=x.get('url'), назва=x.get('назва')))
         кількість[о] = len(кандидати); вибірка += rnd.sample(кандидати, 4)

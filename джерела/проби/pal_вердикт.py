@@ -33,8 +33,9 @@ def рядок(зн, правило):
             % (z.get("сила"), z.get("сила_нп") or 0.0, z.get("регістр"), str(z.get("суть"))[:96]))
 
 
+import колір_річ as _КОЛІР
 def lch(кат, ід):
-    lab = (кат.get(ід) or {}).get("lab")
+    lab = _КОЛІР.точка_кольору(кат.get(ід) or {})
     return cs.lch(lab) if lab else (None, None, None)
 
 
@@ -60,9 +61,9 @@ def з_каталогу(кат, слот, умова):
     бере її звідти, звідки її візьме живий шлях.
     """
     for r in кат.values():
-        if r.get("слот") != слот or not r.get("lab"): continue
+        if r.get("слот") != слот or not _КОЛІР.точка_кольору(r): continue
         import colorspace as _cs
-        L, C, h = _cs.lch(r["lab"])
+        L, C, h = _cs.lch(_КОЛІР.точка_кольору(r))
         if умова(L, C, h, r):
             return r
     return None

@@ -10,9 +10,10 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))));
 ПОРТ, E017, ЛОРА = int(os.environ.get("COMFY_PORT_153", "8188")), os.path.join(Ж.OSS, "experiments", "017_editor_fidelity_benchoff"), "Qwen-Image-Edit-2511-Lightning-4steps-V1.0-bf16.safetensors"
 ЕТАЛОНИ, ОСОБА, ДОШКА = [("блуза", "верх", "top"), ("спідниця", "низ", "bottom"), ("взуття", "взуття", "shoes")], os.path.join(E017, "results", "_input_person.png"), os.path.join(E017, "results", "_input_board.png"); двигуни, сам, ПОРІГ =[а for а in sys.argv[1:] if not а.startswith("--")] or ["qie20", "lightning4"], "--сам" in sys.argv, 10.0
 sys.path.append(Ж.OSS) if Ж.OSS not in sys.path else None; from system.gates.identity import compare_faces; реф = json.load(open(os.path.join(Ж.OSS, "assets", "outfits", "outfit_001", "eval_references.json"), encoding="utf-8"))
+import колір_річ as _КОЛІР
 def тони(шлях, м):
     """Тони Lab речі на фото за маскою — кластери `виміряти_колір` жнив від 5 % маски (дрібну річ маска бере з тінню)."""
-    return [tuple(к["lab"]) for к in (Ж.виміряти_колір(шлях, м)[0] if м is not None else []) if к["частка"] >= 0.05]
+    return [tuple(_КОЛІР.точка_кольору(к)) for к in (Ж.виміряти_колір(шлях, м)[0] if м is not None else []) if к["частка"] >= 0.05]
 def еталон_тон(ключ):
     """Домінантний тон Lab еталонної речі: фото + маска E-001, підігнана під фото."""
     ф, мс = [os.path.join(Ж.OSS, п.replace("/", os.sep)) for п in реф[ключ]]; м, im = cv2.imread(мс, 0), cv2.imread(ф)

@@ -108,6 +108,7 @@ def _влазить(т, шрифт, ширина):
 _вимір = ImageDraw.Draw(Image.new('RGB', (1, 1)))
 вміст = lambda т, шрифт: _вимір.textlength(т, font=шрифт)
 Ш, ВФ, ВТ = 270, 330, 192
+import колір_річ as _КОЛІР
 for м, xs in вибір.items():
     арк = Image.new('RGB', (Ш * 4, (ВФ + ВТ) * 3 + 36), 'white'); д = ImageDraw.Draw(арк)
     д.text((8, 8), '%s · у каталозі %d речей · слоти: %s' % (м, len(по[м]), ', '.join('%s %d' % (k, v) for k, v in sorted(collections.Counter(x.get('слот') for x in по[м]).items(), key=lambda kv: -kv[1]))), fill='black', font=шрж)
@@ -118,7 +119,7 @@ for м, xs in вибір.items():
             im = Image.open(шлях(u)).convert('RGB'); im.thumbnail((Ш - 10, ВФ - 10)); арк.paste(im, (X + 5, Y + 5))
         except Exception as e:
             д.text((X + 10, Y + 20), 'на картці без фото (арка)' if not u else 'фото не відкрилось', fill='red', font=шр)
-        lab = x.get('lab')
+        lab = _КОЛІР.точка_кольору(x)
         if lab: д.rectangle([X + Ш - 45, Y + ВФ + 4, X + Ш - 8, Y + ВФ + 30], fill=lab_rgb(lab), outline='black')
         рядки = ['%s · %s' % (x.get('id', '').split('@')[0], x.get('слот')),
                  'колір: %s%s' % (x.get('колір_назва'), ('  (фото: %s)' % x.get('колір_назва_фото')) if x.get('колір_назва_фото') and x.get('колір_назва_фото') != x.get('колір_назва') else ''),

@@ -16,12 +16,13 @@ from фід_кадр_колір import НЕ_СВІДКИ
                                                             ф.rsplit("/", 1)[-1].rsplit(".", 1)[0]))
 
 шум = []
+import колір_річ as _КОЛІР
 for кадри in json.load(gzip.open(pathlib.Path(__file__).resolve().parent.parent / "каталог_кадри.json.gz",
                                  "rt", encoding="utf-8"))["записи"].values():
     гр = {}
     for к in кадри:
-        if к.get("lab") and к.get("клас") not in НЕ_СВІДКИ:
-            гр.setdefault(корінь_файлу(к["файл"]), []).append(tuple(к["lab"]))
+        if _КОЛІР.точка_кольору(к) and к.get("клас") not in НЕ_СВІДКИ:
+            гр.setdefault(корінь_файлу(к["файл"]), []).append(tuple(_КОЛІР.точка_кольору(к)))
     for g in гр.values():
         шум += [CS.de00(a, b) for a, b in itertools.combinations(g, 2)
                 if К.нейтраль(a) and К.нейтраль(b) and abs(a[0] - b[0]) < C["step_min"]]

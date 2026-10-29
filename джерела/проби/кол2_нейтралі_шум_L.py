@@ -14,17 +14,18 @@ from реєстр_правил import C
 from фід_кадр_колір import НЕ_СВІДКИ, узгоджений
 корінь_файлу = lambda ф: re.sub(r"[_-]?\d+$", "", re.sub(r"_[0-9a-f]{8}-[0-9a-f-]{20,}$", "",
                                                             ф.rsplit("/", 1)[-1].rsplit(".", 1)[0]))
-згода = lambda a, b: узгоджений(a["слово"], tuple(b["lab"]), V.сім_я_слова(b["слово"]))
+import колір_річ as _КОЛІР
+згода = lambda a, b: узгоджений(a["слово"], tuple(_КОЛІР.точка_кольору(b)), V.сім_я_слова(b["слово"]))
 усі, шум = [], []
 for кадри in json.load(gzip.open(pathlib.Path(__file__).resolve().parent.parent / "каталог_кадри.json.gz",
                                  "rt", encoding="utf-8"))["записи"].values():
     гр = {}
     for к in кадри:
-        if к.get("lab") and к.get("клас") not in НЕ_СВІДКИ and к.get("слово") in V.ЛЕКСИКОН:
+        if _КОЛІР.точка_кольору(к) and к.get("клас") not in НЕ_СВІДКИ and к.get("слово") in V.ЛЕКСИКОН:
             гр.setdefault(корінь_файлу(к["файл"]), []).append(к)
     for a, b in (п for g in гр.values() for п in itertools.combinations(g, 2)):
-        if К.нейтраль(tuple(a["lab"])) and К.нейтраль(tuple(b["lab"])):
-            усі.append(abs(a["lab"][0] - b["lab"][0]))
+        if К.нейтраль(tuple(_КОЛІР.точка_кольору(a))) and К.нейтраль(tuple(_КОЛІР.точка_кольору(b))):
+            усі.append(abs(_КОЛІР.точка_кольору(a)[0] - _КОЛІР.точка_кольору(b)[0]))
             if згода(a, b) and згода(b, a):
                 шум.append(усі[-1])
 q = lambda x, p: sorted(x)[min(len(x) - 1, int(p * len(x)))]

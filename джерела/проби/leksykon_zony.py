@@ -19,9 +19,10 @@ with gzip.open("каталог_збагачення.json.gz", "rt", encoding="ut
     КАТ = json.load(f)
 разом = відкинуто = сусід = 0
 хто, сусіди = {}, {}
+import колір_річ as _КОЛІР
 for зб in КАТ.values():
     к = (зб or {}).get("колір_основний") or {}
-    слово, hex_ = к.get("слово"), к.get("hex")
+    слово, hex_ = к.get("слово"), _КОЛІР.hex_кольору(к)
     if not слово or not hex_ or слово not in V.ЛЕКСИКОН:
         continue
     разом += 1
