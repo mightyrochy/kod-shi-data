@@ -6,6 +6,7 @@ import json as _json
 
 import пакет_моделі as _ПМ
 import протокол as _ПР
+import фрази_формату as _ФФ
 import збирач_промптів as _ЗП
 import уважний_вибір as _УВ
 import руки_без_коду as _РБ
@@ -23,8 +24,7 @@ import міст_вхід as _МВ
 ВІДМОВА = "replacement_model_found_none"  # модель чесно відповіла «підходящої речі нема»: не помилка форми
 
 
-_ПОМИЛКА_ПЕРЕЛІКУ = _поле_помилки("answer again: one JSON object following \"answer_schema\" with exactly one "
-                                  "item, its \"worn\" true")
+_ПОМИЛКА_ПЕРЕЛІКУ = _поле_помилки(_ФФ.повтор_за_схемою_en("one item, its \"worn\" true"))
 
 
 def _відповідь(з):

@@ -22,6 +22,7 @@ import json as _json
 import re as _re
 
 import збирач_промптів as _ЗП
+import спільні_вимоги as _ВИМ
 import внутрішня_мова as _ВМ
 import дріт_моделі as _Д
 
@@ -76,7 +77,7 @@ import дріт_моделі as _Д
     роль="You are the stylist in the Lyusterko app and help the woman who uses it with questions "
          "about the app.",
     вхід=(
-        _ЗП.Поле("question", "her question, in her words", треба=True),
+        _ВИМ.поле("question", треба=True),
         _ЗП.Поле("conversation", "your conversation with her before this question, oldest first"),
         _ЗП.Поле("app", "how the app works: its screens, their elements and what the code does with "
                         "each; on-screen labels are quoted «…» exactly as she sees them", треба=True),
