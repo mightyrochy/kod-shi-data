@@ -1,0 +1,283 @@
+diff --git "a/\320\260\321\203\320\264\320\270\321\202/\320\260\320\264\320\260\320\277\321\202\320\265\321\200\320\270/gemini/claude_run.ps1" "b/\320\260\321\203\320\264\320\270\321\202/\320\260\320\264\320\260\320\277\321\202\320\265\321\200\320\270/gemini/claude_run.ps1"
+index 4c99550d..1118d562 100644
+--- "a/\320\260\321\203\320\264\320\270\321\202/\320\260\320\264\320\260\320\277\321\202\320\265\321\200\320\270/gemini/claude_run.ps1"
++++ "b/\320\260\321\203\320\264\320\270\321\202/\320\260\320\264\320\260\320\277\321\202\320\265\321\200\320\270/gemini/claude_run.ps1"
+@@ -67,6 +67,7 @@ $script:SelfPath = $PSCommandPath
+ . (Join-Path $PSScriptRoot 'queue_lanes.ps1')
+ 
+ $script:Lanes = @('claude')
++$script:LastPaceLog = ''
+ $script:EffortPattern = '^(.+)-(none|minimal|low|medium|high|xhigh|max|ultra)$'
+ $script:OffSlug = 'ВИМКНИ-НОУТБУК'
+ $script:OffModel = 'cc-off'
+@@ -311,6 +312,11 @@ function Get-StatusBody {
+         }
+         if ([string](Get-JsonProp $cq 'refused')) { $lines += "| claude · остання відмова | — | 0 % | $(if ($cq.reset) { [string]$cq.reset } else { 'CLI не дав' }) | $([string]$cq.refused) |" }
+     } else { $lines += '| claude | — | невідомо (ще не було прогону) | — | — |' }
++    $lines += @('', '### Темп смуги claude', '', '| використано 7D | рівний темп зараз | залишок 5H (запас) | бере нове |', '|---|---|---|---|')
++    if ($null -ne $lim -and [int]$lim['claude_pace'] -eq 1) {
++        $pc = Get-ClaudePace $cq $lim
++        $lines += "| $(if ($pc.Known) { [string][int][Math]::Round(100 * $pc.Used7) + ' %' } else { '?' }) | $(if ($pc.Known) { [string][int][Math]::Round(100 * $pc.Pace7) + ' %' } else { '?' }) | $(if ($pc.Known) { [string]$pc.Left5 + ' % (' + [string]$lim['claude_5h_reserve_percent'] + ' %)' } else { '?' }) | $(if ($pc.Take) { 'так' } elseif ($pc.Probe) { 'одна проба — ' + $pc.Why } else { 'ні — ' + $pc.Why }) |"
++    } else { $lines += '| — | — | — | темп вимкнено (`claude_pace` 0): лише стеля слотів |' }
+     if ($null -ne $g.Codex -and $g.Codex.Refused) { $lines += "| codex · остання відмова | — | 0 % | $(if ($g.Codex.Reset) { $g.Codex.Reset } else { 'CLI не дав — чекання quota_wait_minutes' }) | $($g.Codex.Refused) |" }
+     else { $lines += '| codex | — | невідомо (CLI без ходу не дає; відмов не було) | — | — |' }
+     $wait = @(Get-WaitingMarkers) + @($g.Wait)
+@@ -773,6 +779,7 @@ function Start-Markers($Workers) {
+     $ordered = @(Get-OrderedMarkers $mine)
+     foreach ($m in @($ordered | Where-Object { $_.Off })) { if ((Test-OffMarker $m) -and $null -eq $off) { $off = $m } }
+     if ($null -ne $off) { return @(0, $off) }
++    $pace = $(if ([int]$script:Limits['claude_pace'] -eq 1) { Get-ClaudePace (Read-ClaudeQuota) $script:Limits } else { $null })
+     foreach ($m in @($ordered | Where-Object { -not $_.Off })) {
+         $st = Get-MarkerState $m
+         if (-not (Test-MarkerReady $st)) { continue }
+@@ -783,6 +790,13 @@ function Start-Markers($Workers) {
+         }
+         $slot = Get-FreeSlot 'claude' ([int]$script:Limits.slots['claude']) $Workers
+         if (-not $slot) { break }
++        # Темп тижневого ліміту (смуги.json: claude_pace): нове — лише коли 7D не випереджає рівний темп, а 5H має запас;
++        # без свіжих даних — одна проба. Розпочаті наряди не чіпаємо.
++        if (-not (Test-ClaudeStart $pace @($Workers | Where-Object { -not $_.Proc.HasExited }).Count)) {
++            $why = "смуга claude не бере нового: $($pace.Why)"
++            if ($why -cne $script:LastPaceLog) { Write-Log $why; $script:LastPaceLog = $why }
++            break
++        }
+         if ((@($Workers | Where-Object { $_.Slug -ceq $m.Slug -and -not $_.Proc.HasExited }).Count -gt 0) -or (Test-SlugBusy $m.Slug @('claude'))) { continue }
+         if ($m.Gpu) {
+             $ownGpu = @($Workers | Where-Object { $_.Gpu -and -not $_.Proc.HasExited }).Count -gt 0
+diff --git "a/\320\260\321\203\320\264\320\270\321\202/\320\260\320\264\320\260\320\277\321\202\320\265\321\200\320\270/gemini/m9v/\321\205\320\265\321\210\321\226.psd1" "b/\320\260\321\203\320\264\320\270\321\202/\320\260\320\264\320\260\320\277\321\202\320\265\321\200\320\270/gemini/m9v/\321\205\320\265\321\210\321\226.psd1"
+index 9633a429..faa8482d 100644
+--- "a/\320\260\321\203\320\264\320\270\321\202/\320\260\320\264\320\260\320\277\321\202\320\265\321\200\320\270/gemini/m9v/\321\205\320\265\321\210\321\226.psd1"
++++ "b/\320\260\321\203\320\264\320\270\321\202/\320\260\320\264\320\260\320\277\321\202\320\265\321\200\320\270/gemini/m9v/\321\205\320\265\321\210\321\226.psd1"
+@@ -14,6 +14,6 @@
+     CodexRelease         = '0.164.0'
+     CodexInstaller       = 'A59CB66350098C33B021FF470D586AE8FE3B7CAF189CA7137B4FE3AF5D4DCE74'
+     'gemini_watch.ps1'   = '69EFEBB07FF1AF51C382B753A95C50F3C1AC27B3008F2489992BEBE3FD0213AA'
+-    'queue_lanes.ps1'    = '7E88FC8CE1F79069BD112681424F37EF6347E50135B20549C9BE3274AD68AD6A'
+-    'claude_run.ps1'     = '61C0730FA3F50B1D9F71ADE12CAC8E162DBCF8E7A874C38C06B28DEF5FAFE570'
++    'queue_lanes.ps1'    = '8C43F5E92290CC4A868A24684ACCC1A32D5A04A40A2A44F40610FBC91DBB310D'
++    'claude_run.ps1'     = '98947017969BD6480E82DAA9FA42E6A76EDECD4235029AA8C4A4C8AC2B96DCE9'
+ }
+diff --git "a/\320\260\321\203\320\264\320\270\321\202/\320\260\320\264\320\260\320\277\321\202\320\265\321\200\320\270/gemini/queue_lanes.ps1" "b/\320\260\321\203\320\264\320\270\321\202/\320\260\320\264\320\260\320\277\321\202\320\265\321\200\320\270/gemini/queue_lanes.ps1"
+index d76fb902..1ae7bf67 100644
+--- "a/\320\260\321\203\320\264\320\270\321\202/\320\260\320\264\320\260\320\277\321\202\320\265\321\200\320\270/gemini/queue_lanes.ps1"
++++ "b/\320\260\321\203\320\264\320\270\321\202/\320\260\320\264\320\260\320\277\321\202\320\265\321\200\320\270/gemini/queue_lanes.ps1"
+@@ -34,10 +34,12 @@ $script:OnWindows = ($PSVersionTable.PSEdition -ne 'Core') -or [bool](Get-Variab
+ $script:Ceil = @{
+     slots = @(0, 64); poll_minutes = @(1, 5); usage_minutes = @(5, 60); quota_wait_minutes = @(15, 1440)
+     agy_total_minutes = @(30, 600); agy_turn_minutes = @(10, 600); codex_stall_minutes = @(10, 240); claude_hang_minutes = @(30, 240)
++    claude_pace = @(0, 1); claude_5h_reserve_percent = @(0, 90); claude_quota_fresh_minutes = @(5, 240)
+ }
+ $script:Defaults = @{
+     poll_minutes = 2; usage_minutes = 15; quota_wait_minutes = 60
+     agy_total_minutes = 180; agy_turn_minutes = 120; codex_stall_minutes = 60; claude_hang_minutes = 120
++    claude_pace = 0; claude_5h_reserve_percent = 20; claude_quota_fresh_minutes = 30
+ }
+ $script:LaneDefaults = [ordered]@{ codex = 2; agy = 2; claude = 2 }
+ # Скільки разів відмова за квотою повертає ту саму позначку в чергу: далі — кінець із кодом квоти, як до смуг.
+@@ -223,6 +225,58 @@ function Get-Limit($Limits, [string]$Param, [string]$Key) {
+     [double]$Limits[$Key]
+ }
+ 
++# --- темп смуги Claude ---------------------------------------------------------------------------------------------
++
++function ConvertTo-UtcSeconds($Value) {
++    <# Час UTC із `quota-claude.json` (рядок «…Z» чи DateTime, залежно від ConvertFrom-Json) -> секунди Unix; не час — $null. #>
++    if ($Value -is [datetime]) { return [DateTimeOffset]::new($Value.ToUniversalTime()).ToUnixTimeSeconds() }
++    $t = [string]$Value
++    if ($t -notmatch '^\d{4}-\d\d-\d\dT\d\d:\d\d:\d\dZ$') { return $null }
++    [DateTimeOffset]::ParseExact($t, "yyyy-MM-dd'T'HH:mm:ss'Z'", [cultureinfo]::InvariantCulture, [System.Globalization.DateTimeStyles]::AssumeUniversal).ToUnixTimeSeconds()
++}
++
++function Get-ClaudePace($Quota, $Limits, [long]$Now = [DateTimeOffset]::UtcNow.ToUnixTimeSeconds()) {
++    <# Темп тижневого ліміту Claude з `quota-claude.json` (вікна 5H і 7D: залишок % і скидання, коли зчитано).
++
++    Бере нове, лише коли водночас: використано 7D не більше за рівний темп — частку тижня, що минула від (скидання − 7 діб),
++    а залишок 5H не менший за запас `claude_5h_reserve_percent` (координатори сесій — з того самого акаунта). Нема даних,
++    вони старші за `claude_quota_fresh_minutes` або вікно вже скинулось — Known=$false: нового не беремо, крім однієї
++    проби (Probe), що оновить `rate_limit_event`. Розпочаті наряди не зупиняються — це рішення лише про нові. #>
++    $r = [pscustomobject]@{ Known = $false; Take = $false; Probe = $true; Used7 = $null; Pace7 = $null; Left5 = $null; Why = 'нема свіжих даних' }
++    $fresh = 30; $reserve = 20
++    if ($null -ne $Limits -and $Limits.ContainsKey('claude_quota_fresh_minutes')) { $fresh = [double]$Limits['claude_quota_fresh_minutes'] }
++    if ($null -ne $Limits -and $Limits.ContainsKey('claude_5h_reserve_percent')) { $reserve = [double]$Limits['claude_5h_reserve_percent'] }
++    if ($null -eq $Quota) { return $r }
++    $read = ConvertTo-UtcSeconds (Get-JsonProp $Quota 'read')
++    if ($null -eq $read -or ($Now - $read) -gt 60 * $fresh -or $read -gt $Now + 300) { $r.Why = "дані старші за $fresh хв або без часу"; return $r }
++    $w7 = $null; $w5 = $null
++    foreach ($w in @(Get-JsonProp $Quota 'windows')) {
++        if ($null -eq $w) { continue }
++        if ([string]$w.w -ceq '7D') { $w7 = $w } elseif ([string]$w.w -ceq '5H') { $w5 = $w }
++    }
++    $l7 = 0.0; $l5 = 0.0
++    if ($null -eq $w7 -or $null -eq $w5 -or -not [double]::TryParse([string]$w7.left, [System.Globalization.NumberStyles]::Float, [cultureinfo]::InvariantCulture, [ref]$l7) -or
++        -not [double]::TryParse([string]$w5.left, [System.Globalization.NumberStyles]::Float, [cultureinfo]::InvariantCulture, [ref]$l5)) { $r.Why = 'нема вікна 5H чи 7D'; return $r }
++    $reset7 = ConvertTo-UtcSeconds $w7.reset; $reset5 = ConvertTo-UtcSeconds $w5.reset
++    if ($null -eq $reset7 -or $reset7 -le $Now -or ($null -ne $reset5 -and $reset5 -le $Now)) { $r.Why = 'вікно вже скинулось — дані минулого вікна'; return $r }
++    $week = 7 * 86400
++    $r.Known = $true; $r.Probe = $false
++    $r.Used7 = [Math]::Round((100 - $l7) / 100, 4)
++    $r.Pace7 = [Math]::Round([Math]::Min(1.0, [Math]::Max(0.0, ($Now - ($reset7 - $week)) / $week)), 4)
++    $r.Left5 = $l5
++    if ($r.Used7 -gt $r.Pace7) { $r.Why = '7D випереджає рівний темп'; return $r }
++    if ($l5 -lt $reserve) { $r.Why = "5H нижче запасу $reserve %"; return $r }
++    $r.Take = $true; $r.Why = 'темп дозволяє'
++    $r
++}
++
++function Test-ClaudeStart($Pace, [int]$Running) {
++    <# Чи можна взяти ще одну нову позначку смуги Claude. $null — темп вимкнено (`claude_pace` 0): лише стеля слотів. #>
++    if ($null -eq $Pace) { return $true }
++    if ($Pace.Take) { return $true }
++    $Pace.Probe -and $Running -eq 0
++}
++
+ # --- позначки ------------------------------------------------------------------------------------------------------
+ 
+ function Get-Lane([string]$Model) {
+diff --git "a/\320\260\321\203\320\264\320\270\321\202/\320\260\320\264\320\260\320\277\321\202\320\265\321\200\320\270/gemini/\320\235\320\220\320\233\320\220\320\250\320\242\320\243\320\222\320\220\320\235\320\235\320\257.md" "b/\320\260\321\203\320\264\320\270\321\202/\320\260\320\264\320\260\320\277\321\202\320\265\321\200\320\270/gemini/\320\235\320\220\320\233\320\220\320\250\320\242\320\243\320\222\320\220\320\235\320\235\320\257.md"
+index 1a52fff2..5f0c2392 100644
+--- "a/\320\260\321\203\320\264\320\270\321\202/\320\260\320\264\320\260\320\277\321\202\320\265\321\200\320\270/gemini/\320\235\320\220\320\233\320\220\320\250\320\242\320\243\320\222\320\220\320\235\320\235\320\257.md"
++++ "b/\320\260\321\203\320\264\320\270\321\202/\320\260\320\264\320\260\320\277\321\202\320\265\321\200\320\270/gemini/\320\235\320\220\320\233\320\220\320\250\320\242\320\243\320\222\320\220\320\235\320\235\320\257.md"
+@@ -265,7 +265,7 @@ alias `/quota`), https://antigravity.google/docs/cli/headless/ (команди,
+   зміна в `main` міняє паралельність без перевстановлення копій. Кількість слотів задає `смуги.json`; межа 0–64 у `queue_lanes.ps1` захищає від помилки в даних,
+   а не визначає місткість ноутбука. Інші стелі коду:
+   `poll_minutes` 1–5, `usage_minutes` 5–60, `quota_wait_minutes` 15–1440, `agy_total_minutes` 30–600, `agy_turn_minutes`
+-  10–600, `codex_stall_minutes` 10–240, `claude_hang_minutes` 30–240; значення поза межами обрізаються. Параметр задачі
++  10–600, `codex_stall_minutes` 10–240, `claude_hang_minutes` 30–240, `claude_pace` 0–1, `claude_5h_reserve_percent` 0–90, `claude_quota_fresh_minutes` 5–240; значення поза межами обрізаються. Параметр задачі
+   (рука власника) сильніший за файл.
+ - **Наряд — окремий процес** того самого скрипта (`-WorkerFile`) зі своїм слотом (замок `slots\<смуга>-<k>.lock` на весь
+   прогін), текою запуску й робочою копією — git worktree клону (`gemini-runs\w\<слот>`, `claude-run\w\<слот>`).
+@@ -421,8 +421,8 @@ $f = Join-Path "$env:USERPROFILE\gemini-outbox" $n
+ | `gemini_publish.ps1` | `CF364C58870BB038E449BB5E3C658F2F4EAFDBAAF9CC68E7FA51442697530A5A` |
+ | `gemini_watch.ps1` | `69EFEBB07FF1AF51C382B753A95C50F3C1AC27B3008F2489992BEBE3FD0213AA` |
+ | `wrapper_health.ps1` | `D03E371F34B3AC2881B70047563260905CD2DEB343DCD8608257495E531B90EA` |
+-| `queue_lanes.ps1` | `7E88FC8CE1F79069BD112681424F37EF6347E50135B20549C9BE3274AD68AD6A` |
+-| `claude_run.ps1` | `61C0730FA3F50B1D9F71ADE12CAC8E162DBCF8E7A874C38C06B28DEF5FAFE570` |
++| `queue_lanes.ps1` | `8C43F5E92290CC4A868A24684ACCC1A32D5A04A40A2A44F40610FBC91DBB310D` |
++| `claude_run.ps1` | `98947017969BD6480E82DAA9FA42E6A76EDECD4235029AA8C4A4C8AC2B96DCE9` |
+ | `CodexInstaller` (`install.ps1` релізу Codex `CodexRelease`) | `A59CB66350098C33B021FF470D586AE8FE3B7CAF189CA7137B4FE3AF5D4DCE74` |
+ 
+ Той самий список читають скрипти `m9v/` з `m9v/хеші.psd1` — міняти їх разом із таблицею. Підготовка одним проходом — `m9v/ЩО_НАТИСНУТИ.md`.
+diff --git "a/\320\260\321\203\320\264\320\270\321\202/\320\260\320\264\320\260\320\277\321\202\320\265\321\200\320\270/gemini/\320\247\320\225\320\240\320\223\320\220.md" "b/\320\260\321\203\320\264\320\270\321\202/\320\260\320\264\320\260\320\277\321\202\320\265\321\200\320\270/gemini/\320\247\320\225\320\240\320\223\320\220.md"
+index 47044b8e..7aee668c 100644
+--- "a/\320\260\321\203\320\264\320\270\321\202/\320\260\320\264\320\260\320\277\321\202\320\265\321\200\320\270/gemini/\320\247\320\225\320\240\320\223\320\220.md"
++++ "b/\320\260\321\203\320\264\320\270\321\202/\320\260\320\264\320\260\320\277\321\202\320\265\321\200\320\270/gemini/\320\247\320\225\320\240\320\223\320\220.md"
+@@ -28,6 +28,13 @@
+   наявну гілку.
+ - **Стан ноутбука без листа** — тіло issue #1856 (`issue_read`, один виклик): задачі планувальника, `isolation`, узяті
+   позначки, рушії, моделі, хвилини; оновлюється щонайменше раз на 15 хв (зазвичай 5), старіше — `claude-run` не працює.
++- **Темп Claude:** смуга бере нову позначку не за сталою стелею, а за темпом тижневого ліміту (`смуги.json`: `claude_pace` 1;
++  слотів — як у codex і `agy`). Дані — вікна 5H і 7D з `quota-claude.json` (`rate_limit_event`): нове беремо, лише коли
++  використано 7D ≤ частки тижня, що минула від (скидання 7D − 7 діб), і залишок 5H ≥ `claude_5h_reserve_percent` (20 %, запас
++  координаторам з того самого акаунта). Розпочаті наряди не зупиняються. Даних нема, вони старші за
++  `claude_quota_fresh_minutes` (30) чи вікно вже скинулось — нового не беремо, крім одного наряду-проби, що оновить
++  `rate_limit_event`. Тіло #1856 показує «Темп смуги claude»: використано 7D, рівний темп, залишок 5H, чи бере нове.
++  `claude_pace` 0 вертає лише стелю слотів.
+ - **ВИМКНИ НОУТБУК** — позначка `gemini-queue/ВИМКНИ-НОУТБУК/cc-off/<спроба>` на коміт `main`. Коли не йде ні `claude`,
+   ні `gemini-run`, приходить `GEMINI ОБГОРТКА: ВИМКНЕНО <SHA позначки>` і за хвилину ноутбук вимикається; зайнятий
+   рушій — чекає (наступний прохід). Отримав ВИМКНЕНО — нагадай власникові ввімкнути Avast «Вебзахист». `ЗАБЛОКОВАНО
+diff --git "a/\320\260\321\203\320\264\320\270\321\202/\320\260\320\264\320\260\320\277\321\202\320\265\321\200\320\270/gemini/\320\277\320\265\321\200\320\265\320\262\321\226\321\200\320\272\320\260/\321\201\321\206\320\265\320\275\320\260\321\200\321\226\321\227_\321\202\320\265\320\274\320\277_claude.ps1" "b/\320\260\321\203\320\264\320\270\321\202/\320\260\320\264\320\260\320\277\321\202\320\265\321\200\320\270/gemini/\320\277\320\265\321\200\320\265\320\262\321\226\321\200\320\272\320\260/\321\201\321\206\320\265\320\275\320\260\321\200\321\226\321\227_\321\202\320\265\320\274\320\277_claude.ps1"
+new file mode 100644
+index 00000000..0078336b
+--- /dev/null
++++ "b/\320\260\321\203\320\264\320\270\321\202/\320\260\320\264\320\260\320\277\321\202\320\265\321\200\320\270/gemini/\320\277\320\265\321\200\320\265\320\262\321\226\321\200\320\272\320\260/\321\201\321\206\320\265\320\275\320\260\321\200\321\226\321\227_\321\202\320\265\320\274\320\277_claude.ps1"
+@@ -0,0 +1,79 @@
++﻿#Requires -Version 5.1
++param([Parameter(Mandatory=$true)][string]$SourceDir)
++$ErrorActionPreference = 'Stop'
++[Console]::OutputEncoding = New-Object Text.UTF8Encoding($false)
++$bad = 0
++function Check([string]$Name, [bool]$Ok) {
++    <# Кожен провал мірила лишається червоним і впливає на код завершення. #>
++    if ($Ok) { "✓ $Name" } else { "✗ $Name"; $script:bad++ }
++}
++function Scenario([string]$Name, [scriptblock]$Body) {
++    try { & $Body } catch { Check "$Name — $($_.Exception.Message) $($_.ScriptStackTrace)" $false }
++}
++try {
++    $script:Bound = @{}
++    . (Join-Path $SourceDir 'queue_lanes.ps1')
++    $now = [DateTimeOffset]::new(2026, 10, 29, 12, 0, 0, [TimeSpan]::Zero).ToUnixTimeSeconds()
++    $week = 7 * 86400
++    $limits = @{ claude_5h_reserve_percent = 20; claude_quota_fresh_minutes = 30 }
++    function Stamp([long]$Unix) { [DateTimeOffset]::FromUnixTimeSeconds($Unix).UtcDateTime.ToString("yyyy-MM-dd'T'HH:mm:ss'Z'") }
++    # Тиждень пройшов на половину: скидання 7D через 3,5 доби. Рівний темп = 50 %.
++    function New-Quota([double]$Left7, [double]$Left5, [long]$ReadAgo = 60, [long]$Reset7 = ($now + $week / 2)) {
++        ConvertFrom-Json (@{ read = (Stamp ($now - $ReadAgo)); status = 'allowed'
++            windows = @(@{ w = '5H'; left = $Left5; reset = (Stamp ($now + 3600)) }, @{ w = '7D'; left = $Left7; reset = (Stamp $Reset7) }) } | ConvertTo-Json -Depth 4)
++    }
++    $ceiling = 6
++    # Скільки нових позначок візьме смуга за прохід при трьох чергових; Running — уже розпочаті.
++    function Get-Started($Pace, [int]$Running) {
++        $n = $Running; $started = 0
++        foreach ($i in 1..3) {
++            if ($n -ge $ceiling) { break }
++            if (-not (Test-ClaudeStart $Pace $n)) { break }
++            $n++; $started++
++        }
++        $started
++    }
++    $cases = @(
++        @{ Id = 'а'; Name = '7D позаду темпу (використано 30 % < 50 %), 5H з запасом (70 %)'; Quota = (New-Quota 70 70); Running = 0; Do = 2; After = 3 }
++        @{ Id = 'б'; Name = '7D випереджає темп (використано 80 % > 50 %)'; Quota = (New-Quota 20 70); Running = 0; Do = 2; After = 0 }
++        @{ Id = 'б2'; Name = '7D випереджає темп, наряд уже йде — не зупиняється, нового нема'; Quota = (New-Quota 20 70); Running = 1; Do = 1; After = 0 }
++        @{ Id = 'в'; Name = '5H нижче запасу (залишок 10 % < 20 %)'; Quota = (New-Quota 70 10); Running = 0; Do = 2; After = 0 }
++        @{ Id = 'г'; Name = 'даних нема'; Quota = $null; Running = 0; Do = 2; After = 1 }
++        @{ Id = 'г2'; Name = 'дані старші за 30 хв'; Quota = (New-Quota 70 70 7200); Running = 0; Do = 2; After = 1 }
++        @{ Id = 'г3'; Name = 'даних нема, але проба вже йде'; Quota = $null; Running = 1; Do = 1; After = 0 }
++        @{ Id = 'г4'; Name = 'вікно 7D уже скинулось (дані минулого вікна)'; Quota = (New-Quota 70 70 60 ($now - 100)); Running = 0; Do = 2; After = 1 }
++    )
++    "| випадок | ДО (стеля 2, будь-який темп) | ПІСЛЯ (стеля $ceiling, темп) |"
++    foreach ($c in $cases) {
++        Scenario "випадок $($c.Id)" {
++            $pace = Get-ClaudePace $c.Quota $limits $now
++            $after = Get-Started $pace $c.Running
++            "| $($c.Id) $($c.Name) | $($c.Do) | $after (причина: $($pace.Why)) |"
++            Check "$($c.Id) $($c.Name): бере $($c.After)" ($after -eq $c.After)
++        }
++    }
++    Scenario 'межа темпу' {
++        $p = Get-ClaudePace (New-Quota 50 70) $limits $now
++        Check 'рівно на темпі (використано 50 % = рівний темп 50 %) — бере' ($p.Take -and $p.Used7 -eq 0.5 -and $p.Pace7 -eq 0.5)
++        $p = Get-ClaudePace (New-Quota 49 70) $limits $now
++        Check 'трохи випереджає темп — не бере' (-not $p.Take -and $p.Known)
++        $p = Get-ClaudePace (New-Quota 70 20) $limits $now
++        Check 'залишок 5H рівно на запасі — бере' $p.Take
++    }
++    Scenario 'темп для тіла #1856' {
++        $p = Get-ClaudePace (New-Quota 70 70) $limits $now
++        Check 'використано, темп і залишок 5H доступні' ($p.Known -and $p.Used7 -eq 0.3 -and $p.Pace7 -eq 0.5 -and $p.Left5 -eq 70)
++    }
++    Scenario 'темп вимкнено' {
++        Check 'Pace $null — лише стеля слотів' (Test-ClaudeStart $null 5)
++    }
++    Scenario 'межі смуги.json' {
++        $doc = Get-Content -Raw -LiteralPath (Join-Path $SourceDir 'смуги.json') | ConvertFrom-Json
++        Check 'смуги.json: claude слотів як у codex і agy' ($doc.slots.claude -eq $doc.slots.codex -and $doc.slots.claude -eq $doc.slots.agy)
++        Check 'смуги.json: темп увімкнено, запас 5H і свіжість у межах стелі' ($doc.claude_pace -eq 1 -and $doc.claude_5h_reserve_percent -ge 0 -and $doc.claude_5h_reserve_percent -le 90 -and $doc.claude_quota_fresh_minutes -ge 5 -and $doc.claude_quota_fresh_minutes -le 240)
++        Check 'стелі коду знають нові ключі' ($script:Ceil.ContainsKey('claude_pace') -and $script:Ceil.ContainsKey('claude_5h_reserve_percent') -and $script:Ceil.ContainsKey('claude_quota_fresh_minutes') -and $script:Defaults.claude_pace -eq 0)
++    }
++} finally { }
++if ($bad) { "ПІДСУМОК: ✗ $bad"; exit 1 }
++'ПІДСУМОК: ✗ 0'
++exit 0
+diff --git "a/\320\260\321\203\320\264\320\270\321\202/\320\260\320\264\320\260\320\277\321\202\320\265\321\200\320\270/gemini/\321\201\320\274\321\203\320\263\320\270.json" "b/\320\260\321\203\320\264\320\270\321\202/\320\260\320\264\320\260\320\277\321\202\320\265\321\200\320\270/gemini/\321\201\320\274\321\203\320\263\320\270.json"
+index 1a5a9133..ff940c69 100644
+--- "a/\320\260\321\203\320\264\320\270\321\202/\320\260\320\264\320\260\320\277\321\202\320\265\321\200\320\270/gemini/\321\201\320\274\321\203\320\263\320\270.json"
++++ "b/\320\260\321\203\320\264\320\270\321\202/\320\260\320\264\320\260\320\277\321\202\320\265\321\200\320\270/gemini/\321\201\320\274\321\203\320\263\320\270.json"
+@@ -1,11 +1,14 @@
+ {
+   "v": 1,
+-  "slots": { "codex": 6, "agy": 6, "claude": 2 },
++  "slots": { "codex": 6, "agy": 6, "claude": 6 },
+   "poll_minutes": 2,
+   "usage_minutes": 15,
+   "quota_wait_minutes": 60,
+   "agy_total_minutes": 180,
+   "agy_turn_minutes": 120,
+   "codex_stall_minutes": 60,
+-  "claude_hang_minutes": 120
++  "claude_hang_minutes": 120,
++  "claude_pace": 1,
++  "claude_5h_reserve_percent": 20,
++  "claude_quota_fresh_minutes": 30
+ }
