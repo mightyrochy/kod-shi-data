@@ -18,21 +18,21 @@ try {
     . (Join-Path $SourceDir 'gemini_publish.ps1') -WorkDir "$tmp/pub" -OutboxDir "$tmp/out"
     foreach ($dir in @($WorkDir,"$WorkDir/state","$WorkDir/seen",$OutboxDir)) { [void][IO.Directory]::CreateDirectory($dir) }
     . (Join-Path $SourceDir 'queue_lanes.ps1')
-    $config = [pscustomobject]@{codex='gpt-review';claude='cc-claude-review'}
+    $config = [pscustomobject]@{codex='gpt-review';agy='gemini-review';claude='cc-claude-review'}
     $sha = 'a' * 40
     Scenario '1а фактична модель' {
         foreach ($model in @('gpt-6.1-sol-high','gemini-3.8-flash-high','cc-claude-opus-5-5-high','невідома')) {
             $pull = [pscustomobject]@{head=@{ref='gemini/виконавець';sha=$sha}}
             Save-DraftRequest $pull.head.ref $sha $model
             $models = @(Get-ReviewModels $pull $config)
-            $expected = if ($model -like 'gpt-*') { $config.claude } else { $config.codex }
+            $expected = if ($model -like 'gpt-*' -or $model -like 'cc-*') { $config.agy } else { $config.codex }
             Check "1а $model — рівно один інший постачальник" ($models.Count -eq 1 -and $models[0] -ceq $expected)
         }
     }
     Scenario '1а модель із прийнятого рядка' {
         Write-FileAtomic "$WorkDir/state/model.json" ((@{line="GEMINI ОБГОРТКА: ГОТОВО gemini/стан $sha МОДЕЛЬ gpt-6.1-sol-high"}) | ConvertTo-Json)
         $models = @(Get-ReviewModels ([pscustomobject]@{head=@{ref='gemini/стан';sha=$sha}}) $config)
-        Check '1а фактичний GPT із ГОТОВО вибирає Claude без файла моделі' ($models.Count -eq 1 -and $models[0] -ceq $config.claude)
+        Check '1а фактичний GPT із ГОТОВО вибирає agy без файла моделі' ($models.Count -eq 1 -and $models[0] -ceq $config.agy)
         $models = @(Get-ReviewModels ([pscustomobject]@{head=@{ref='gemini/невідома';sha=$sha}}) $config)
         Check '1а немає даних про модель — один Codex' ($models.Count -eq 1 -and $models[0] -ceq $config.codex)
     }
