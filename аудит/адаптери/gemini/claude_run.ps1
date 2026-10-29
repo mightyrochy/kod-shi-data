@@ -87,7 +87,8 @@ $script:UtcRx = '^\d{4}-\d\d-\d\dT\d\d:\d\d:\d\dZ$'
 $script:LineTemplates = @(
     "\AGEMINI ОБГОРТКА: ГОТОВО claude/$script:SlugCore [0-9a-f]{40} МОДЕЛЬ [a-z0-9][a-z0-9.-]{1,63}\z",
     "\AGEMINI ОБГОРТКА: ЗАБЛОКОВАНО claude/$script:SlugCore [A-Z0-9_]{2,40}\z",
-    '\AGEMINI ОБГОРТКА: ВИМКНЕНО [0-9a-f]{40}\z'
+    '\AGEMINI ОБГОРТКА: ВИМКНЕНО [0-9a-f]{40}\z',
+    '\AGEMINI ОБГОРТКА: ЗАБЛОКОВАНО (?:GPU|SLOTS): (?:замок GPU іншого наряду|слоти зайняті|nvidia-smi не відповів|процес [A-Za-z0-9._+-]{1,92}), позначок [1-9][0-9]{0,3}\z'
 )
 
 # --- допоміжне ----------------------------------------------------------------------------------------------------
@@ -342,7 +343,9 @@ function Get-StatusBody {
         '<!-- Тіло переписує задача claude-run на ноутбуці (аудит/адаптери/gemini/claude_run.ps1); лише обчислене. -->',
         "**Ноутбук $host_** · оновлено $(Get-UtcStamp (Get-Date)) · claude-run: $script:Phase",
         '',
-        'Оновлено понад 5 хв тому — задача `claude-run` не працює: ноутбук вимкнено, сплячий чи задачу зупинено.',
+        # Тіло пише сама задача, тож не може знати, що воно застаріло: безумовний "Оновлено понад 5 хв тому" суперечив
+        # власному "оновлено <час>" (#1856, 29.10). Умова — для читача, лічить він за часом вище.
+        'Якщо «оновлено» старше за 5 хв — задача `claude-run` не працює: ноутбук вимкнено, сплячий чи задачу зупинено.',
         '',
         '| задача | востаннє запущено (UTC) | результат | стан |',
         '|---|---|---|---|'
@@ -883,6 +886,7 @@ function Test-OffMarker($M) {
 # Повертає число запущених і позначку вимкнення, яку треба спробувати.
 function Start-Markers($Workers) {
     $started = 0; $off = $null
+    $script:Held = @{}
     $now = [DateTimeOffset]::UtcNow.ToUnixTimeSeconds()
     $mine = @(Get-Markers | Where-Object { $_.Valid -and $_.Lane -eq 'claude' } | ForEach-Object { Add-ClaudeFields $_ })
     if ($mine.Count -eq 0) { return @(0, $null) }
@@ -904,11 +908,16 @@ function Start-Markers($Workers) {
             continue
         }
         $slot = Get-FreeSlot 'claude' ([int]$script:Limits.slots['claude']) $Workers
-        if (-not $slot) { break }
+        if (-not $slot) { Add-Hold $script:Held 'SLOTS' 'слоти зайняті' $m.Name; continue }
         if ((@($Workers | Where-Object { $_.Slug -ceq $m.Slug -and -not $_.Proc.HasExited }).Count -gt 0) -or (Test-SlugBusy $m.Slug @('claude'))) { continue }
         if ($m.Gpu) {
             $ownGpu = @($Workers | Where-Object { $_.Gpu -and -not $_.Proc.HasExited }).Count -gt 0
-            if ($ownGpu -or -not (Test-LockFree (Get-GpuLockPath))) { continue }
+            if ($ownGpu -or -not (Test-LockFree (Get-GpuLockPath))) { Add-Hold $script:Held 'GPU' 'замок GPU іншого наряду' $m.Name; continue }
+            if (-not (Test-ExternalGpuFree)) {
+                Add-Hold $script:Held 'GPU' $script:GpuBusyBy $m.Name
+                Write-Log "GPU зайнята ($script:GpuBusyBy) — $($m.Name) лишається в черзі"
+                continue
+            }
         }
         $id = New-Id
         if (-not (New-Claim $m $id)) { continue }
@@ -945,7 +954,8 @@ function Invoke-Worker {
     try {
         if ($job.gpu) {
             $gpu = Open-Lock (Get-GpuLockPath)
-            if ($null -eq $gpu -or -not (Test-ExternalGpuFree)) { Remove-Claim $statePath; Write-Log "GPU зайнята — $($job.name) лишається в черзі"; return $script:WorkerGpuBusy }
+            $why = $(if ($null -eq $gpu) { 'замок GPU' } elseif (Test-ExternalGpuFree) { '' } else { $script:GpuBusyBy })
+            if ($why) { Remove-Claim $statePath; Write-Log "GPU зайнята ($why) — $($job.name) лишається в черзі"; return $script:WorkerGpuBusy }
         }
         Write-FileAtomic $info (([ordered]@{ slot = $job.slot; lane = 'claude'; marker = $job.name; slug = $job.slug
                     model = "$($job.claude)$(if ($job.effort) { ' ' + $job.effort })"; since = (Get-UtcStamp (Get-Date)); gpu = [bool]$job.gpu; prio = $job.prio; pid = $PID
@@ -995,6 +1005,7 @@ function Main {
         $script:FreshBoot = ($boot -ne $prev)
         Resume-Interrupted
         $script:Workers = New-Object System.Collections.ArrayList
+        $script:Held = @{}
         $first = $true; $clean = $true; $ver = ''
         while ($true) {
             $ver = Get-VersionSwitch
@@ -1011,6 +1022,7 @@ function Main {
                 Clear-OrphanClaims (Join-Path $WorkDir 'runs')
                 $r = Start-Markers $script:Workers
                 $started = $r[0]; $off = $r[1]
+                Update-HoldSignals $script:Held { param($l) Add-Line $l }
             } catch { Add-HealthException $_.Exception; Write-Log "прохід: $($_.Exception.Message)" }
             if ($first) { Write-FileAtomic $bootFile $boot; $script:FreshBoot = $false; $first = $false }
             foreach ($w in @($script:Workers | Where-Object { $_.Proc.HasExited })) { $script:Workers.Remove($w) }

@@ -398,6 +398,7 @@ $script:OutboxTemplates = @(
     "\AGEMINI ОБГОРТКА: ЗАБЛОКОВАНО [A-Z0-9_]{2,40} ×[0-9]{1,5}: (?:gemini|codex|claude)/$script:SlugCore(?:, (?:gemini|codex|claude)/$script:SlugCore){0,4}(?: …)?\z"
     '\AGEMINI ОБГОРТКА: ТРИВОГА (?:AUTH (?:AGY|CODEX|CLAUDE|CLOUD)|ISOLATION (?:WHOAMI|NET_SESSION|PROFILES|DRIVES|ENV)|DISK FULL|ENGINE (?:AGY|CODEX|CLAUDE))\z'
     '\AGEMINI ОБГОРТКА: ВИМКНЕНО [0-9a-f]{40}\z'
+    '\AGEMINI ОБГОРТКА: ЗАБЛОКОВАНО (?:GPU|SLOTS): (?:замок GPU іншого наряду|слоти зайняті|nvidia-smi не відповів|процес [A-Za-z0-9._+-]{1,92}), позначок [1-9][0-9]{0,3}\z'
     '\AGEMINI ОБГОРТКА: ПОТРІБНА ПЕРЕВІРКА CLAUDE #[1-9][0-9]{0,8} [0-9a-f]{40}\z'
     '\AGEMINI ОБГОРТКА: ЗНЯТО ПОЗНАЧОК ПЕРЕВІРКИ [1-9][0-9]{0,5}\z'
     '\AСПОСТЕРІГАЧ КОМЕНТАР #[0-9]{1,12} [0-9]{1,20} (?:mightyrochy|chatgpt-codex-connector\[bot\]) (?:новий|змінено)\z'

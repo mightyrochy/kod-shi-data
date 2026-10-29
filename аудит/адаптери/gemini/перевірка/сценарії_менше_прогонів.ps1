@@ -274,8 +274,8 @@ console.log('GPU_OFF');
         $out = & python "$tmp/test.py"
         Check '5 Python launch і persistent context мають --disable-gpu' ($LASTEXITCODE -eq 0 -and $out -eq 'GPU_OFF')
         function Get-Command { [pscustomobject]@{Source='nvidia-smi'} }
-        function Invoke-Native { [pscustomobject]@{Code=0;Out='37780'} }
-        Check '5 чужий GPU-процес означає чекання' (-not (Test-ExternalGpuFree))
+        function Invoke-Native { [pscustomobject]@{Code=0;Out='37780, C:\Users\x\app.exe, 4096'} }
+        Check '5 чужий GPU-процес із пам''яттю означає чекання' (-not (Test-ExternalGpuFree))
         foreach ($name in @('gemini_run.ps1','claude_run.ps1')) {
             $source = [IO.File]::ReadAllText((Join-Path $SourceDir $name))
             Check "5 $name підключає спільну політику до Invoke-Task" ($source -match 'Set-BrowserGpuPolicy[^\r\n]+\r?\n\s+Invoke-Task \$M \$job' -and $source.Contains('Test-ExternalGpuFree'))

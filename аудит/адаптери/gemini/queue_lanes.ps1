@@ -994,10 +994,68 @@ builtins.__import__ = _gpu_import
     $env:PYTHONPATH = $Directory + [IO.Path]::PathSeparator + $env:PYTHONPATH
 }
 
+# Відеокарта зайнята лише процесом, що тримає пам'ять: вимір 29.10 на ноутбуці — у спокої 57 МБ і єдиний процес
+# AvastUI.exe без пам'яті (N/A), 0 % завантаження; поріг 256 МБ — у 4,5 раза вище за спокій.
+$script:GpuBusyMiB = 256
+$script:GpuBusyBy = ''
+
 function Test-ExternalGpuFree {
-    <# Сторонній обчислювальний процес лишає GPU-наряд у черзі, без кінцевого блокера. #>
+    <# Сторонній обчислювальний процес із пам'яттю від GpuBusyMiB лишає GPU-наряд у черзі, без кінцевого блокера.
+    Процес без пам'яті (N/A, Not Supported) й інтерфейсний — не навантаження. Хто зайняв — у GpuBusyBy назвою процесу
+    (лише безпечні знаки, до трьох): "процес a.exe+b.exe"; nvidia-smi не відповів — "nvidia-smi не відповів". #>
+    $script:GpuBusyBy = ''
     $exe = Get-Command nvidia-smi -ErrorAction SilentlyContinue
     if ($null -eq $exe) { return $true }
-    $r = Invoke-Native $exe.Source @('--query-compute-apps=pid','--format=csv,noheader') '' 1
-    $r.Code -eq 0 -and -not $r.Out.Trim()
+    $r = Invoke-Native $exe.Source @('--query-compute-apps=pid,process_name,used_gpu_memory', '--format=csv,noheader,nounits') '' 1
+    if ($r.Code -ne 0) { $script:GpuBusyBy = 'nvidia-smi не відповів'; return $false }
+    $names = @()
+    foreach ($line in @($r.Out -split "`r?`n")) {
+        $f = @($line.Split(','))
+        if ($f.Count -lt 3) { continue }
+        $mem = $f[$f.Count - 1].Trim()
+        if ($mem -cnotmatch '^[0-9]{1,9}$' -or [long]$mem -lt $script:GpuBusyMiB) { continue }
+        $leaf = (($f[1..($f.Count - 2)] -join ',').Trim() -split '[\\/]')[-1]
+        $safe = ($leaf -replace '[^A-Za-z0-9._-]', '_')
+        if ($safe.Length -gt 30) { $safe = $safe.Substring(0, 30) }
+        $names += $(if ($safe) { $safe } else { 'невідомий' })
+    }
+    if ($names.Count -eq 0) { return $true }
+    $script:GpuBusyBy = 'процес ' + ((@($names | Select-Object -Unique) | Select-Object -First 3) -join '+')
+    $false
+}
+
+# --- сигнал про запобіжник, що тримає позначки ----------------------------------------------------------------------
+# 29.10 GPU-наряд стояв у черзі з 15:06 UTC: журнал 144 рази "GPU зайнята", а диспетчер не знав. Запобіжник сам пише
+# диспетчерові рядок, коли тримає позначки понад quota_wait_minutes (смуги.json, з джерелом).
+
+function Add-Hold([hashtable]$Held, [string]$Resource, [string]$Reason, [string]$Marker) {
+    <# Ресурс тримає позначку за цього проходу; причина — перша за проходом. #>
+    if (-not $Held.ContainsKey($Resource)) { $Held[$Resource] = @{ Reason = $Reason; Markers = (New-Object System.Collections.ArrayList) } }
+    [void]$Held[$Resource].Markers.Add($Marker)
+}
+
+function Update-HoldSignals([hashtable]$Held, [scriptblock]$Send) {
+    <# Рядок "GEMINI ОБГОРТКА: ЗАБЛОКОВАНО <ресурс>: <причина>, позначок N" — один на причину, повтор лише при зміні причини.
+    Утримання зникло — запис знято, нове сигналить знову. Стан — holds.json у теці стану (переживає перезапуск проходу). #>
+    $path = Join-Path $script:StateDir 'holds.json'
+    $prev = @{}
+    if (Test-Path -LiteralPath $path) {
+        try { foreach ($p in ([System.IO.File]::ReadAllText($path, $script:Utf8) | ConvertFrom-Json).PSObject.Properties) { $prev[$p.Name] = $p.Value } } catch { $null = $_ }
+    }
+    $now = [DateTimeOffset]::UtcNow.ToUnixTimeSeconds()
+    $after = [double](Get-Limit $script:Limits 'QuotaWaitMinutes' 'quota_wait_minutes') * 60
+    $next = [ordered]@{}
+    foreach ($res in @($Held.Keys | Sort-Object)) {
+        $h = $Held[$res]; $old = $prev[$res]
+        $since = $(if ($null -ne $old) { [long]$old.since } else { $now })
+        $sent = $(if ($null -ne $old) { [string]$old.sent } else { '' })
+        if (($now - $since) -ge $after -and $sent -cne $h.Reason) {
+            if (& $Send "GEMINI ОБГОРТКА: ЗАБЛОКОВАНО ${res}: $($h.Reason), позначок $($h.Markers.Count)") { $sent = $h.Reason }
+        }
+        $next[$res] = [ordered]@{ since = $since; reason = $h.Reason; sent = $sent }
+    }
+    if ($next.Count -eq 0) { Remove-Item -LiteralPath $path -Force -ErrorAction SilentlyContinue; return }
+    $text = $next | ConvertTo-Json -Compress
+    $cur = $(if (Test-Path -LiteralPath $path) { [System.IO.File]::ReadAllText($path, $script:Utf8) } else { '' })
+    if ($text -cne $cur) { Write-FileAtomic $path $text }
 }
