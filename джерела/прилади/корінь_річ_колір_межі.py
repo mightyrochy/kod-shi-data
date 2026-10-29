@@ -21,6 +21,7 @@ warnings.filterwarnings("ignore")
 МОДУЛЬ_ВИЗНАЧЕННЯ = "колір_тон"
 ПРОПУСК_ДИРЕКТОРІЙ = {"проби", "прилади", "аудит", "node_modules", "__pycache__", "дані_5191_5194", "траса", "лабораторія"}
 ПЕРЕТВОРЕННЯ_ПРОСТОРУ = {"колір_простір_перетворення"}   # Lab↔LCh, OKLab, ΔE2000 однієї точки — вимір, не місце (паспорт, 29.10)
+БЕЗ_ПУНКТУ_1 = {МОДУЛЬ_ВИЗНАЧЕННЯ} | ПЕРЕТВОРЕННЯ_ПРОСТОРУ
 ПРОПУСК_ФАЙЛІВ = re.compile(r"^(тест_|проба|проб_|стенд_знімок)")
 JS_ДИРЕКТОРІЇ = {"показ"}
 JS_ФАЙЛИ = re.compile(r"^(worker|міст_воркер|показ_шаблон)")
@@ -113,6 +114,56 @@ def ознаки_п1_межа_числом(n):
     if імена and числа and all(isinstance(o, (ast.Lt, ast.LtE, ast.Gt, ast.GtE)) for o in n.ops):
         return ["межа тону числом у коді (`%s` проти %g)" % (імена[0].id, числа[0].value)]
     return []
+
+
+ІМ_ХРОМИ = re.compile(r"^(?:C|Cc|C_\w*|c|хром\w*)$")
+ІМ_ПЕРЕТВОРЕННЯ = re.compile(r"^_?(де_?00|de2000|ciede\w*|delta_?e\w*|oklab\w*|to_oklab|lab_з_lch|lch_to_lab|lab_to_lch|lch|_lab|\w*hex_?lch)$", re.I)
+ІМ_ТЕПЛА = re.compile(r"(тепл|холод|warm|cool|температур|temperature)", re.I)
+КЛЮЧ_ДУГИ = re.compile(r"(дуг|hue|arc|сектор|^h$|^h_|_h$|_h\d)", re.I)
+
+
+def рад_імена(тіло):
+    """Імена, присвоєні `radians(<тон>)`: `r = radians(h)`."""
+    r = set()
+    for x in вузли(тіло):
+        if isinstance(x, ast.Assign) and isinstance(x.value, ast.Call) and ім_виклику(x.value) == "radians" \
+                and x.value.args and має_тон(x.value.args[0]):
+            r |= {t.id for t in x.targets if isinstance(t, ast.Name)}
+    return r
+
+
+def кут_радіани_тону(c, рад):
+    """cos/sin(radians(h)) чи cos/sin(r), r = radians(h)."""
+    if not (isinstance(c, ast.Call) and ім_виклику(c) in ("cos", "sin") and c.args):
+        return False
+    a = c.args[0]
+    return (isinstance(a, ast.Call) and ім_виклику(a) == "radians" and a.args and має_тон(a.args[0])) \
+        or (isinstance(a, ast.Name) and a.id in рад)
+
+
+def ознаки_п1_копія_перетворення(n, рад, у_теплій=False):
+    """Друга копія перетворення простору поза його модулем (паспорт, п.1): LCh→Lab, хрома Lab→LCh."""
+    if кут_радіани_тону(n, рад) and not у_теплій:
+        return ["cos/sin кута тону — друга копія LCh→Lab чи власне кругове середнє поза модулем перетворення"]
+    if isinstance(n, ast.Call) and ім_виклику(n) == "hypot" and len(n.args) == 2 and лаб_пара(n.args):
+        return ["друга копія Lab→LCh (хрома `hypot(a, b)`) поза модулем перетворення"]
+    if isinstance(n, (ast.FunctionDef, ast.AsyncFunctionDef)) and ІМ_ПЕРЕТВОРЕННЯ.match(n.name):
+        return ["друге визначення перетворення простору (`%s`) поза модулем" % n.name]
+    return []
+
+
+def лаб_пара(args):
+    def ключ(a):
+        while isinstance(a, ast.BinOp):
+            a = a.left
+        if isinstance(a, ast.Name):
+            return a.id
+        if isinstance(a, ast.Subscript):
+            пл = a.slice.elts[-1] if isinstance(a.slice, ast.Tuple) else a.slice
+            return пл.value if isinstance(пл, ast.Constant) else None
+        return None
+    k = (ключ(args[0]), ключ(args[1]))
+    return k in {("a", "b"), ("a1", "b1"), ("a2", "b2"), (1, 2)} or (isinstance(k[0], int) and k == (1, 2))
 
 
 def ознаки_п1_дуга(n):
@@ -263,6 +314,8 @@ class Збір:
         self.м = {}     # (файл, рядок) -> {пункт: чому}, шляхи
 
     def дод(self, файл, рядок, пункт, чому, шлях):
+        if пункт == 1 and os.path.basename(файл)[:-3] in БЕЗ_ПУНКТУ_1:
+            return    # модуль визначення і модуль перетворення простору звільнені лише від пункту 1; пункти 2–4 діють і в них
         з = self.м.setdefault((файл, рядок), {"пункти": {}, "шляхи": set()})
         з["пункти"].setdefault(пункт, чому)
         з["шляхи"].add(шлях)
@@ -280,7 +333,7 @@ def веде_до_вікна(f):
                [x.id for x in ast.walk(f) if isinstance(x, ast.Name)] + [x.attr for x in ast.walk(f) if isinstance(x, ast.Attribute)])
 
 
-def обхід_python(шлях, файл, збір, імена_визначень_усі):
+def обхід_python(шлях, файл, збір, імена_визначень_усі, тепла_функції):
     t = open(шлях, encoding="utf-8").read()
     try:
         дерево = ast.parse(t)
@@ -289,9 +342,16 @@ def обхід_python(шлях, файл, збір, імена_визначен�
     ф_є_коло = bool(КОЛО_ХУДОЖНИКА.search(t))
     рядки = t.split("\n")
 
-    def шукати(тіло, ш, кутні):
+    def шукати(тіло, ш, кутні, у_теплій=False):
         колір = у_кольорі(тіло, файл)
+        рад = рад_імена(тіло)
         for x in вузли(тіло):
+            for ч in ознаки_п1_копія_перетворення(x, рад, у_теплій):
+                збір.дод(файл, x.lineno, 1, ч, ш)
+            if у_теплій and кут_радіани_тону(x, рад):
+                збір.дод(файл, x.lineno, 2, "тепле ↔ холодне кутом CIELAB (sin/cos кута тону)", ш)
+            if isinstance(x, ast.Call) and ім_виклику(x) in тепла_функції:
+                збір.дод(файл, x.lineno, 2, "тепле ↔ холодне кутом CIELAB (читач `%s`), а не вікном на колі художника" % ім_виклику(x), ш)
             for ч in ознаки_п1(x) + ознаки_п1_дуга(x) + (ознаки_п1_вікно(x) + ознаки_п1_межа_числом(x) if колір else []):
                 збір.дод(файл, x.lineno, 1, ч, ш)
             if колір:
@@ -312,6 +372,9 @@ def обхід_python(шлях, файл, збір, імена_визначен�
             цілі = [t_.id for t_ in х.targets if isinstance(t_, ast.Name)]
             if х in дерево.body and any(ІМ_ТАБЛИЦІ_МЕЖ.search(ц) for ц in цілі) and таблиця_меж(х.value):
                 збір.дод(файл, х.lineno, 1, "власна межа/таблиця тону (%s)" % ",".join(цілі), "А")
+            if not any(ІМ_ТАБЛИЦІ_МЕЖ.search(ц) for ц in цілі) or х not in дерево.body:
+                for рядок, ч in рядки_дуг_за_ключем(х.value, " ".join(цілі)):
+                    збір.дод(файл, рядок, 1, ч, "А")
             for рядок, ч in рядки_таблиці_вікон(х, цілі):
                 з_приміткою = re.search(r"#\s*\d+: нейтр\.", рядки[рядок - 1]) is not None
                 збір.дод(файл, рядок, 4, ч + (" — з приміткою виміру" if з_приміткою else ""), "А")
@@ -319,13 +382,17 @@ def обхід_python(шлях, файл, збір, імена_визначен�
     шукати([x for x in дерево.body if not isinstance(x, (ast.FunctionDef, ast.AsyncFunctionDef, ast.ClassDef))], "підлога", set())
     # функції: шлях А (ім'я чи параметри — тон/сім'я/межа/вікно), шлях Б (викликає такі визначення); решта — підлога
     for f in функції(дерево):
+        for ч in ознаки_п1_копія_перетворення(f, set()):
+            збір.дод(файл, f.lineno, 1, ч, "А")
+        if f.name in тепла_функції:
+            збір.дод(файл, f.lineno, 2, "тепле ↔ холодне кутом CIELAB: `%s` (sin/cos кута тону)" % f.name, "А")
         в_а = bool(ІМ_ВИЗНАЧЕННЯ.search(f.name)) or any(ІМ_ПАРАМ.match(a.arg) for a in f.args.args)
         викликає = {ім_виклику(c) for c in вузли(f.body) if isinstance(c, ast.Call)}
         в_б = bool(викликає & імена_визначень_усі - {f.name})
         шляхи = [к for к, ок in (("А", в_а), ("Б", в_б)) if ок] or ["підлога"]
         кутні = кутні_імена(f.body)
         for один in шляхи:
-            шукати(f.body, один, кутні)
+            шукати(f.body, один, кутні, f.name in тепла_функції)
             for рядок, ч in ознаки_п3_невідомо(f):
                 збір.дод(файл, рядок, 3, ч, один)
             for рядок, ч in ознаки_п4_функція(f):
@@ -334,6 +401,30 @@ def обхід_python(шлях, файл, збір, імена_визначен�
             if isinstance(c, ast.Call) and ЧИТАЧ_СЛОВА.match(ім_виклику(c) or "") and not ЧИТАЧ_СЛОВА.match(f.name) \
                     and (ім_виклику(c) not in ("назва_кольору", "слово_називає_тон") or веде_до_вікна(f)):
                 збір.дод(файл, c.lineno, 4, "вікно/тон із слова крамниці, а не з коду кольору (виклик `%s`)" % ім_виклику(c), "Б")
+
+
+def рядки_дуг_за_ключем(v, назви_цілей=""):
+    """Таблиця меж за структурою значення: ключ (рядок словника чи kwarg) називає дугу/тон/сектор, значення — число чи
+    пара чисел кута; ще — ≥ 3 трійки (від, до, «ім'я») з кутами."""
+    r = []
+    пари = []
+    for x in ast.walk(v):
+        if isinstance(x, ast.Dict):
+            пари += [(k.value, k, val) for k, val in zip(x.keys, x.values) if isinstance(k, ast.Constant) and isinstance(k.value, str)]
+        if isinstance(x, ast.Call):
+            пари += [(k.arg, k.value, k.value) for k in x.keywords if k.arg]
+    for назва, вузол, val in пари:
+        кути = [e for e in ast.walk(val) if число(e)]
+        скаляр_дуги = re.search(r"(^|_)(дуга|дуги|arc|півдуга)$", назва) is not None
+        if КЛЮЧ_ДУГИ.search(назва) and кути and all(-1 <= e.value <= 360 for e in кути) and not re.search(r"поза|^нп_", назва) \
+                and ((число(val) and скаляр_дуги) or (isinstance(val, (ast.Tuple, ast.List)) and len(кути) >= 2)):
+            r.append((val.lineno, "власна дуга/межа тону за ключем «%s» (структура значення, не ім'я таблиці)" % назва))
+    трійки = [x for x in ast.walk(v) if isinstance(x, ast.Tuple) and len(x.elts) == 3 and число(x.elts[0]) and число(x.elts[1])
+              and isinstance(x.elts[2], ast.Constant) and isinstance(x.elts[2].value, str)
+              and -1 <= x.elts[0].value <= 360 and -1 <= x.elts[1].value <= 360]
+    if len(трійки) >= 3 and not re.search(r"ITA", назви_цілей):
+        r.append((v.lineno, "таблиця сімей тону (від, до, ім'я) — %d рядків" % len(трійки)))
+    return r
 
 
 def таблиця_меж(v):
@@ -355,6 +446,7 @@ JS_П2 = [(re.compile(r"\bhs[lv]\s*\(|rgbToHs[lv]|rgb2hs[lv]|\bhsv\b", re.I), "H
          (re.compile(r"Math\.(?:floor|round)\s*\(\s*\w*[hH]\w*\s*/\s*(?:10|12|15|20|30|36|45|60|90|120)\s*\)"), "рівний сектор кута")]
 JS_П3 = re.compile(r"Math\.abs\s*\(\s*\w*[hH]\w*\s*-\s*\w*[hH]\w*\s*\)\s*[<>]=?\s*[\d.]+")
 JS_ЧИТАЧ_СЛОВА = re.compile(r"\b(?:назваКольору|вікноЗіСлова|вікноНазви)\s*\(")
+JS_ДУГА = re.compile(r"\b([A-Za-zА-Яа-яІіЇїЄєҐґ_]*[hH]\w*)\s*>=?\s*(\w+)\s*\|\|\s*\1\s*<=?\s*(\w+)|\b(\w+)\s*<=?\s*([A-Za-zА-Яа-яІіЇїЄєҐґ_]*[hH]\w*)\s*&&\s*\5\s*<=?\s*(\w+)")
 JS_ВІКНА = re.compile(r"^\s*['\"]?[\wа-яіїєґ' -]+['\"]?\s*:\s*\[\s*[\d.]+\s*,\s*[\d.]+\s*,\s*[\d.]+\s*,\s*[\d.]+")
 
 
@@ -371,6 +463,10 @@ def обхід_js(шлях, файл, збір):
                 збір.дод(файл, i, 2, ч, "А")
         if JS_П3.search(рядок):
             збір.дод(файл, i, 3, "відстань тонів проти сталого кута", "А")
+        if JS_ДУГА.search(рядок):
+            збір.дод(файл, i, 1, "власна належність до дуги тону", "А")
+        if JS_ВІКНА.search(рядок):
+            збір.дод(файл, i, 4, "ручний рядок вікна (літерал)", "А")
         if JS_ЧИТАЧ_СЛОВА.search(рядок):
             збір.дод(файл, i, 4, "вікно/тон із слова крамниці, а не з коду кольору", "Б")
 
@@ -385,7 +481,7 @@ def файли(корінь):
             відн = os.path.relpath(шлях, корінь)
             ця_директорія = os.path.relpath(dp, дж)
             if f.endswith(".py") and ця_директорія == "." and not ПРОПУСК_ФАЙЛІВ.match(f) \
-                    and f[:-3] != МОДУЛЬ_ВИЗНАЧЕННЯ and f[:-3] not in ПЕРЕТВОРЕННЯ_ПРОСТОРУ:
+                    :
                 yield шлях, відн, "py"
             elif f.endswith(".js") and not f.startswith("тест_") and (ця_директорія in JS_ДИРЕКТОРІЇ or (ця_директорія == "." and JS_ФАЙЛИ.match(f))):
                 yield шлях, відн, "js"
@@ -407,6 +503,24 @@ def імена_визначень(корінь):
     return r
 
 
+def тепла_кутом(корінь):
+    """Функції теплого/холодного бока, що рахують його кутом тону (`sin/cos(radians(h))`): їхні визначення й читачі — пункт 2."""
+    r = set()
+    for шлях, відн, вид in файли(корінь):
+        if вид != "py":
+            continue
+        try:
+            дерево = ast.parse(open(шлях, encoding="utf-8").read())
+        except SyntaxError:
+            continue
+        for f in функції(дерево):
+            if ІМ_ТЕПЛА.search(f.name) and len(f.name) > 3:
+                рад = рад_імена(f.body)
+                if any(кут_радіани_тону(x, рад) for x in вузли(f.body)):
+                    r.add(f.name)
+    return r
+
+
 def головна(арг):
     корінь = os.path.abspath(os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", ".."))
     if os.path.isdir(os.path.join(os.getcwd(), "джерела")):
@@ -417,9 +531,10 @@ def головна(арг):
         корінь = os.path.abspath(поз[0])
     збір = Збір()
     імена = імена_визначень(корінь)
+    тепло = тепла_кутом(корінь)
     for шлях, відн, вид in файли(корінь):
         if вид == "py":
-            обхід_python(шлях, відн, збір, імена)
+            обхід_python(шлях, відн, збір, імена, тепло)
         else:
             обхід_js(шлях, відн, збір)
     для_виводу = sorted(збір.м.items(), key=lambda kv: (kv[0][0], kv[0][1]))
