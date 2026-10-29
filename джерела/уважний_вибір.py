@@ -44,6 +44,7 @@ import протокол as _ПР
 import пакет_моделі as _ПМ
 import дріт_моделі as _Д
 import збирач_промптів as _ЗП
+import спільні_вимоги as _ВИМ
 import порядок_запиту as _ПЗ
 import повнота_образу as _ПО
 
@@ -91,15 +92,13 @@ _ОПИС_РЕЧІ = "; ".join([next(п.що for п in _ПМ.СКЛАДАННЯ.
                        + ["«%s» — %s" % пара for пара in _Д.ОПИС_ТИПОВИХ.items() if пара[0] != "in_arc"])
 _КОНТЕКСТ = (
     _ЗП.ПОЛЕ_ВІДБОРУ,
-    _ЗП.Поле("case", "her case: the occasion, her words, wishes, mood and refusals"),
-    _ЗП.Поле("day", "her day as facts: what she will do, where, how long, the weather, the hour "
-                    "and light, the level of the occasion"),
-    _ЗП.Поле("person", "her coloring, palette and body"),
+    _ВИМ.поле("case"),
+    _ВИМ.поле("day"),
+    _ВИМ.поле("person"),
     # З БРИФ-1 це виміряні коди зі словника, а не «rules of the style corpus» — словами складання
     # (`пакет_моделі.СКЛАДАННЯ`), без речення про «pool», якого тут нема
-    _ЗП.Поле("style_rules", "what the code measured about her and this case, her own answers and wishes: "
-                            "each entry is {code, values, …}; codes are defined in \"statement_codes\""),
-    _ЗП.Поле("she_refuses", "what she refused in her words"),
+    _ВИМ.поле("style_rules"),
+    _ВИМ.поле("she_refuses"),
 )
 
 # ОЦІНКА (А). ЧОМУ ЦІ РЯДКИ (для людей): «кожну — рівно раз» — повноту код перевіряє
