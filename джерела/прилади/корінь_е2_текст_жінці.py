@@ -1,0 +1,1070 @@
+# -*- coding: utf-8 -*-
+"""Прилад кореня Е2-текст-жінці (паспорт `аудит/корені/Е2-текст-жінці.md`, клас місць): текст, складений моделлю, кодом
+чи даними, що потрапляє на екран жінки поза точкою виходу (`текстЖінціП`, `збійЖінціП`, `мовний_шар.js`).
+Місце = запис у DOM / розмітка / вставка тексту, чий вираз не сталий напис і не число.
+
+Два шляхи (мірило наряду «а»: вони мусять збігатись):
+  А (від записів в екран) — усі стоки в `показ/*.js` і вбудованих скриптах `показ.html`: клас виразу береться ЗВОРОТНО
+      (вираз → присвоєння → параметри за викликами → джерела): N число · C сталий напис · U походження не доведено · T джерело.
+  Б (від джерел тексту) — ВПЕРЕД: джерела (виняток, `.message`, `*_жінці`, результат функції, що досягає fetch/postMessage)
+      → змінні, повернення, параметри → стоки; плюс поля `*_жінці`, які Python кладе в пакет, і де їх читає екран.
+Запуск (з кореня репозиторію): python3 джерела/прилади/корінь_е2_текст_жінці.py джерела [--сталі] [--збіг] [--довідник] [--файли]
+Вивід: місця `файл:рядок · пункт · чому`, підсумки за пунктами, останній рядок `місць: <N>`, код 0 (формат храповика)."""
+import os, re, sys
+
+ТУТ = next((а for а in sys.argv[1:] if not а.startswith("--")),
+           "джерела" if os.path.isdir(os.path.join("джерела", "показ")) else os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+ТОЧКА = ("текстЖінціП", "збійЖінціП")                  # точка виходу (паспорт); станТекстуЖінціП — її сторож
+СЛУЖБОВИЙ_ВИХІД = ("діагнозВласникаП",)                # прихований блок власника, не екран жінки
+ВЛАСТИВОСТІ = {"textContent", "innerHTML", "innerText", "outerHTML", "placeholder", "title", "alt", "label", "nodeValue",
+               "value", "text", "data", "ariaLabel"}
+РОЗМІТКА = {"innerHTML", "outerHTML"}
+КЛЮЧІ_ОБЄКТА = {"textContent", "innerHTML", "innerText", "placeholder", "ariaLabel"}
+АТРИБУТИ = {"aria-label", "title", "placeholder", "alt", "value", "label", "content"}
+ВИКЛИКИ_ТЕКСТ = {"createTextNode": "П1", "alert": "П1", "confirm": "П1", "prompt": "П1", "SpeechSynthesisUtterance": "П1",
+                  "Notification": "П1", "setCustomValidity": "П1"}
+ВСТАВКИ = {"append", "prepend", "replaceChildren", "before", "after", "replaceWith", "appendData"}
+ЧИСЛОВІ = {"length", "size", "count", "toFixed", "toLocaleString", "indexOf", "lastIndexOf", "findIndex", "getTime",
+           "getFullYear", "getMonth", "getDate", "charCodeAt", "codePointAt", "localeCompare", "includes", "some", "every",
+           "has", "test", "startsWith", "endsWith", "isArray", "now", "random", "toPrecision", "valueOf"}
+ПЕРЕНОС = {"join", "slice", "substring", "substr", "trim", "trimStart", "trimEnd", "replace", "replaceAll", "split", "map",
+           "filter", "concat", "toLowerCase", "toUpperCase", "toLocaleLowerCase", "toLocaleUpperCase", "padStart", "padEnd",
+           "flat", "flatMap", "reverse", "sort", "at", "pop", "shift", "find", "reduce", "repeat", "normalize", "toString",
+           "values", "keys", "entries", "from", "assign", "stringify", "fromEntries", "freeze", "of", "match", "matchAll",
+           "forEach", "then", "finally", "catch", "call", "apply", "bind", "charAt", "toSorted", "copyWithin", "fill"}
+ЧИСЛОВІ_ГЛОБАЛЬНІ = {"Number", "parseInt", "parseFloat", "isNaN", "isFinite", "Boolean", "Math", "Date", "Intl", "Symbol",
+                     "setTimeout", "setInterval", "clearTimeout", "requestAnimationFrame", "console", "BigInt", "performance",
+                     "Infinity", "NaN", "undefined", "null", "true", "false", "arguments", "Promise", "Set", "Map", "WeakMap",
+                     "WeakSet", "Error", "TypeError", "RegExp", "URLSearchParams", "URL", "Uint8Array", "ArrayBuffer",
+                     "Blob", "FileReader", "AbortController", "Image", "Worker", "ResizeObserver", "IntersectionObserver",
+                     "MutationObserver", "structuredClone", "queueMicrotask", "FormData"}
+ПЕРЕДАЮТЬ_АРГ = {"String", "encodeURIComponent", "decodeURIComponent", "escape", "unescape", "Object", "Array", "JSON"}
+КЛЮЧОВІ = {"if", "for", "while", "switch", "catch", "function", "return", "typeof", "new", "await", "async", "yield",
+           "else", "do", "try", "finally", "throw", "const", "let", "var", "of", "in", "instanceof", "delete", "void", "case",
+           "break", "continue", "class", "default", "extends", "super", "this", "with"}
+РАНГ = {"N": 0, "C": 1, "X": 1, "U": 2, "T": 3}
+ІМЕНА_РАНГУ = {0: "N", 1: "C", 2: "U", 3: "T"}
+ЛАНЦЮГОВІ_МЕТОДИ_ПОДІЙ = {"addEventListener", "removeEventListener", "setTimeout", "setInterval", "requestAnimationFrame"}
+ЗБІР_МЕТОДИ_ЕЛЕМЕНТА = {"map", "filter", "forEach", "find", "some", "every", "flatMap", "sort", "findIndex", "reduce",
+                        "findLast", "toSorted"}
+
+# ───────────────────────────────────── лексер ─────────────────────────────────────
+ПУНКТ3 = ("===", "!==", "**=", "...", "<<=", ">>=", ">>>", "&&=", "||=", "??=")
+ПУНКТ2 = ("=>", "==", "!=", "<=", ">=", "&&", "||", "??", "?.", "++", "--", "+=", "-=", "*=", "/=", "%=", "&=", "|=", "^=",
+          "**", "<<", ">>")
+ПІСЛЯ_ЯКИХ_РЕГЕКС = {"(", ",", "=", ":", "[", "!", "&", "|", "?", "{", "}", ";", "+", "-", "*", "%", "<", ">", "~", "^",
+                     "return", "typeof", "case", "=>", "&&", "||", "??", "==", "===", "!=", "!==", "void", "await", "of"}
+ІДЕНТ = re.compile(r"[\w$ʼ’]+")
+ЧИСЛО = re.compile(r"0[xX][0-9a-fA-F_]+n?|\d[\d_]*\.?\d*(?:[eE][+-]?\d+)?n?|\.\d+")
+
+
+def лекс(к, і=0, р=1, вкладене=False):
+    ток, н, гл = [], len(к), 0
+    while і < н:
+        с = к[і]
+        if с == "\n":
+            р += 1; і += 1; continue
+        if с in " \t\r﻿":
+            і += 1; continue
+        if к.startswith("//", і):
+            j = к.find("\n", і); і = н if j < 0 else j; continue
+        if к.startswith("/*", і):
+            j = к.find("*/", і + 2); j = н if j < 0 else j + 2
+            р += к.count("\n", і, j); і = j; continue
+        if с in "'\"":
+            j = і + 1
+            while j < н and к[j] != с and к[j] != "\n":
+                j += 2 if к[j] == "\\" else 1
+            ток.append(["str", к[і + 1:j], р]); і = j + 1; continue
+        if с == "`":
+            частини, буф, j, р0 = [], [], і + 1, р
+            while j < н and к[j] != "`":
+                if к[j] == "\\":
+                    буф.append(к[j:j + 2]); р += к[j + 1:j + 2] == "\n"; j += 2; continue
+                if к.startswith("${", j):
+                    частини.append(("s", "".join(буф))); буф = []
+                    вн, j, р = лекс(к, j + 2, р, True)
+                    частини.append(("e", вн)); continue
+                if к[j] == "\n":
+                    р += 1
+                буф.append(к[j]); j += 1
+            частини.append(("s", "".join(буф))); ток.append(["tpl", частини, р0]); і = j + 1; continue
+        м = ЧИСЛО.match(к, і) if (с.isdigit() or (с == "." and к[і + 1:і + 2].isdigit())) else None
+        if м:
+            ток.append(["num", м.group(0), р]); і = м.end(); continue
+        if с.isalpha() or с in "_$ʼ":
+            м = ІДЕНТ.match(к, і)
+            ток.append(["id", м.group(0), р]); і = м.end(); continue
+        if с == "/":
+            перед = ток[-1][1] if ток and ток[-1][0] in ("p", "id") else (None if not ток else "x")
+            if перед is None or перед in ПІСЛЯ_ЯКИХ_РЕГЕКС:
+                j, кл = і + 1, False
+                while j < н and (кл or к[j] != "/") and к[j] != "\n":
+                    if к[j] == "\\": j += 2; continue
+                    if к[j] == "[": кл = True
+                    elif к[j] == "]": кл = False
+                    j += 1
+                j += 1
+                while j < н and к[j].isalpha(): j += 1
+                ток.append(["re", к[і:j], р]); і = j; continue
+        п = next((x for x in ПУНКТ3 if к.startswith(x, і)), None) or next((x for x in ПУНКТ2 if к.startswith(x, і)), None) or с
+        if вкладене:
+            if п == "{": гл += 1
+            elif п == "}":
+                if гл == 0:
+                    return ток, і + 1, р
+                гл -= 1
+        ток.append(["p", п, р]); і += len(п)
+    return (ток, і, р) if вкладене else ток
+
+
+def пари(ток):
+    пар, стек = {}, []
+    for і, т in enumerate(ток):
+        if т[0] != "p": continue
+        if т[1] in "([{": стек.append(і)
+        elif т[1] in ")]}" and стек:
+            j = стек.pop(); пар[j] = і; пар[і] = j
+    return пар
+
+
+def розділити(ток, пар, а, б, роздільник=","):
+    """частини [а,б) по верхньорівневих роздільниках"""
+    вих, поч, і = [], а, а
+    while і < б:
+        т = ток[і]
+        if т[0] == "p" and т[1] in "([{" and і in пар:
+            і = пар[і] + 1; continue
+        if т[0] == "p" and т[1] == роздільник:
+            вих.append((поч, і)); поч = і + 1
+        і += 1
+    if поч < б or вих:
+        вих.append((поч, б))
+    return [(x, y) for x, y in вих if x < y]
+
+
+def текст_токенів(ток, а, б, межа=90):
+    ч = []
+    for т in ток[а:б]:
+        ч.append("'" + т[1] + "'" if т[0] == "str" else "`…`" if т[0] == "tpl" else str(т[1]))
+    return re.sub(r"\s+", " ", " ".join(ч))[:межа]
+
+
+# ─────────────────────────────── модуль: функції, області, присвоєння ───────────────────────────────
+class Функція:
+    __slots__ = ("ід", "ім", "парам", "а", "б", "заг_а", "бат", "вираз", "мод", "кб")
+
+    def __init__(с, мод, ім, парам, а, б, заг_а, вираз):
+        с.мод, с.ім, с.парам, с.а, с.б, с.заг_а, с.вираз, с.бат, с.кб = мод, ім, парам, а, б, заг_а, вираз, None, None
+
+
+class Модуль:
+    def __init__(с, шлях, ток, зсув=0, служб=False):
+        с.шлях, с.ток, с.пар, с.зсув, с.служб = шлях, ток, пари(ток), зсув, служб
+        с.функції, с.оголош, с.присв, с.виклики, с.стоки, с.поля_запис = [], {}, [], [], [], []
+        с.кеш_охоплення = {}
+        с._функції(); с._оголошення(); с._присвоєння()
+
+    def функції_в(с, a, b):
+        if not hasattr(с, "_заг"): с._заг = [ф.заг_а for ф in sorted(с.функції, key=lambda f: f.заг_а)]; с._відс = sorted(с.функції, key=lambda f: f.заг_а)
+        import bisect
+        return с._відс[bisect.bisect_left(с._заг, a):bisect.bisect_left(с._заг, b)]
+
+    def рядок(с, і):
+        return с.ток[min(max(і, 0), len(с.ток) - 1)][2] + с.зсув if с.ток else 0
+
+    # ── функції
+    def _параметри(с, а, б):
+        вих = []
+        for x, y in розділити(с.ток, с.пар, а, б):
+            ідс = [с.ток[k][1] for k in range(x, y) if с.ток[k][0] == "id" and с.ток[k][1] not in КЛЮЧОВІ
+                   and not (k > x and с.ток[k - 1][1] in (".", "?."))]
+            if с.ток[x][1] in ("{", "["):
+                вих.append(("*", ідс))
+            elif ідс:
+                вих.append((ідс[0], ідс[:1]))
+        return вих
+
+    def _функції(с):
+        т, пар, н = с.ток, с.пар, len(с.ток)
+        for і in range(н):
+            if т[і][0] == "id" and т[і][1] == "function":
+                j = і + 1
+                if j < н and т[j][1] == "*": j += 1
+                ім = None
+                if j < н and т[j][0] == "id": ім = т[j][1]; j += 1
+                if j < н and т[j][1] == "(" and j in пар and пар[j] + 1 < н and т[пар[j] + 1][1] == "{":
+                    о = пар[j] + 1
+                    if ім is None and і >= 2 and т[і - 1][1] == "=" and т[і - 2][0] == "id": ім = т[і - 2][1]
+                    с.функції.append(Функція(с, ім, с._параметри(j + 1, пар[j]), о + 1, пар[о], і, False))
+            elif т[і][1] == "=>":
+                if т[і - 1][1] == ")" and (і - 1) in пар:
+                    о = пар[і - 1]; парам = с._параметри(о + 1, і - 1); поч = о
+                elif т[і - 1][0] == "id":
+                    парам = [(т[і - 1][1], [т[і - 1][1]])]; поч = і - 1
+                else:
+                    continue
+                if поч >= 1 and т[поч - 1][1] == "async": поч -= 1
+                ім = т[поч - 2][1] if поч >= 2 and т[поч - 1][1] == "=" and т[поч - 2][0] == "id" else None
+                if і + 1 < н and т[і + 1][1] == "{" and (і + 1) in пар:
+                    с.функції.append(Функція(с, ім, парам, і + 2, пар[і + 1], поч, False))
+                else:
+                    с.функції.append(Функція(с, ім, парам, і + 1, с.кінець_виразу(і + 1), поч, True))
+            elif (т[і][0] == "id" and т[і][1] not in КЛЮЧОВІ and і + 1 < н and т[і + 1][1] == "(" and (і + 1) in пар
+                  and пар[і + 1] + 1 < н and т[пар[і + 1] + 1][1] == "{" and і >= 1
+                  and (т[і - 1][1] in ("{", ",") or (т[і - 1][1] == "async" and і >= 2 and т[і - 2][1] in ("{", ",")))):
+                j = пар[і + 1] + 1
+                с.функції.append(Функція(с, т[і][1], с._параметри(і + 2, пар[і + 1]), j + 1, пар[j], і, False))
+        for ф in с.функції:
+            ф.ід = (с.шлях, ф.заг_а, ф.а)
+        с.функції.sort(key=lambda ф: (ф.заг_а, -ф.б))
+
+    def кінець_виразу(с, а, кома=True):
+        """кінець виразу, що починається в `а`: `;`/закрита дужка/(кома) на глибині 0 або перенос рядка без продовження"""
+        т, пар, н, і = с.ток, с.пар, len(с.ток), а
+        while і < н:
+            x = т[і]
+            if x[0] == "p":
+                if x[1] in "([{" and і in пар:
+                    і = пар[і] + 1; continue
+                if x[1] in ")]}" or x[1] == ";" or (x[1] == "," and кома): return і
+            if x[1] == "=>" and і + 1 < н and т[і + 1][1] == "{" and (і + 1) in пар:
+                і = пар[і + 1] + 1; continue
+            if і + 1 < н and т[і + 1][2] > x[2]:
+                наст = т[і + 1]
+                if not (x[0] == "p" and x[1] not in (")", "]", "}", "++", "--")) and not (
+                        наст[0] == "p" and наст[1] in ("+", "-", "*", "/", "?", ":", ".", "?.", "&&", "||", "??", ",", ")", "]", "}",
+                                                       "=", "==", "===", "!=", "!==", "<", ">", "<=", ">=", "=>", "(", "[")):
+                    return і + 1
+            і += 1
+        return н
+
+    def охоплює(с, і):
+        """внутрішня функція, що містить токен `і` (параметри — теж її)"""
+        if і in с.кеш_охоплення: return с.кеш_охоплення[і]
+        вих = None
+        for ф in с.функції:
+            if ф.заг_а <= і < ф.б + (0 if ф.вираз else 1) and (вих is None or ф.заг_а >= вих.заг_а): вих = ф
+        с.кеш_охоплення[і] = вих
+        return вих
+
+    def батько(с, ф):
+        if ф.бат is None:
+            ін = None
+            for g in с.функції:
+                if g is not ф and g.заг_а <= ф.заг_а and ф.б <= g.б and (g.заг_а, -g.б) != (ф.заг_а, -ф.б) and (
+                        ін is None or g.заг_а >= ін.заг_а): ін = g
+            ф.бат = ін or False
+        return ф.бат or None
+
+    # ── оголошення
+    def _оголошення(с):
+        т, пар, н = с.ток, с.пар, len(с.ток)
+
+        def додай(і, ім):
+            ф = с.охоплює(і)
+            с.оголош.setdefault(ф.ід if ф else None, set()).add(ім)
+        for ф in с.функції:
+            for ім, ідс in ф.парам:
+                for x in ідс: с.оголош.setdefault(ф.ід, set()).add(x)
+        for і in range(н):
+            x = т[і]
+            if x[0] == "id" and x[1] in ("const", "let", "var") and і + 1 < н:
+                j = і + 1
+                if т[j][1] in ("{", "[") and j in пар:
+                    for k in range(j + 1, пар[j]):
+                        if т[k][0] == "id" and т[k][1] not in КЛЮЧОВІ and т[k][1] and (k + 1 >= н or т[k + 1][1] != ":") and т[k - 1][1] not in (".", "?."):
+                            додай(і, т[k][1])
+                    continue
+                while j < н:
+                    if т[j][0] == "id" and т[j][1] not in КЛЮЧОВІ: додай(і, т[j][1])
+                    k = с.кінець_виразу(j + 2) if j + 1 < н and т[j + 1][1] == "=" else j + 1
+                    if k < н and т[k][1] == ",": j = k + 1
+                    else: break
+            elif x[0] == "id" and x[1] == "catch" and і + 2 < н and т[і + 1][1] == "(" and т[і + 2][0] == "id":
+                додай(і, т[і + 2][1])
+            elif x[0] == "id" and x[1] == "function" and і + 1 < н and т[і + 1][0] == "id":
+                додай(і, т[і + 1][1])
+
+    def ключ(с, і, ім):
+        ф = с.охоплює(і)
+        while ф:
+            if ім in с.оголош.get(ф.ід, ()): return (ф.ід, ім)
+            ф = с.батько(ф)
+        return ("G", ім)
+
+    # ── присвоєння: (ключ, вид, (а, б)) — вираз-джерело в цьому ж модулі
+    def _присвоєння(с):
+        т, пар, н = с.ток, с.пар, len(с.ток)
+        ОП = {"=", "+=", "||=", "&&=", "??="}
+        for і in range(н):
+            x = т[і]
+            if x[0] == "id" and x[1] not in КЛЮЧОВІ and (і == 0 or т[і - 1][1] not in (".", "?.")) and і + 1 < н:
+                наст = т[і + 1]
+                if наст[0] == "p" and наст[1] in ОП:
+                    с.присв.append((с.ключ(і, x[1]), "=", (і + 2, с.кінець_виразу(і + 2)), і))
+                    continue
+                # контейнер: X.push(..) / X.f = .. / X[..] = ..
+                j = і + 1
+                while j < н and т[j][1] in (".", "?.", "[") :
+                    if т[j][1] == "[":
+                        if j not in пар: break
+                        j = пар[j] + 1
+                    elif j + 1 < н and т[j + 1][0] == "id":
+                        j += 2
+                    else: break
+                if j > і + 1 and j < н:
+                    if т[j][1] in ОП and т[j - 1][1] != "]" and т[j - 1][0] == "id" and т[j - 1][1] in ВЛАСТИВОСТІ:
+                        pass                        # це сток, не контейнер
+                    elif т[j][1] in ОП:
+                        с.присв.append((с.ключ(і, x[1]), "поле", (j + 1, с.кінець_виразу(j + 1)), і))
+                    elif т[j][1] == "(" and j in пар and т[j - 1][1] in ("push", "unshift", "add", "set", "splice", "assign", "append", "concat"):
+                        for a, b in розділити(т, пар, j + 1, пар[j]):
+                            с.присв.append((с.ключ(і, x[1]), "поле", (a, b), і))
+        for і in range(н):
+            if т[і][0] == "id" and т[і][1] == "assign" and і >= 2 and т[і - 1][1] == "." and т[і - 2][1] == "Object" \
+                    and і + 1 < н and т[і + 1][1] == "(" and (і + 1) in пар:
+                ч = розділити(т, пар, і + 2, пар[і + 1])
+                if ч and т[ч[0][0]][0] == "id":
+                    for a, b in ч[1:]:
+                        с.присв.append((с.ключ(і, т[ч[0][0]][1]), "поле", (a, b), і))
+        # поля за іменем: `X.f = вираз` і `{f: вираз}` (псевдоніми контейнера не губимо)
+        for і in range(н):
+            x = т[і]
+            if x[0] == "id" and x[1] not in ВЛАСТИВОСТІ and і >= 1 and т[і - 1][1] in (".", "?.") and і + 1 < н \
+                    and т[і + 1][0] == "p" and т[і + 1][1] in ("=", "+=", "||=", "??="):
+                с.поля_запис.append((x[1], (і + 2, с.кінець_виразу(і + 2)), і))
+            elif x[0] in ("id", "str") and і >= 1 and т[і - 1][1] in ("{", ",") and і + 1 < н and т[і + 1][1] == ":" \
+                    and x[1] not in КЛЮЧІ_ОБЄКТА:
+                с.поля_запис.append((x[1], (і + 2, с.кінець_виразу(і + 2)), і))
+        # деструктуризація та цикли for..of/in
+        for і in range(н):
+            x = т[і]
+            if x[0] == "id" and x[1] in ("const", "let", "var") and і + 1 < н and т[і + 1][1] in ("{", "[") and (і + 1) in пар:
+                j = пар[і + 1] + 1
+                if j < н and т[j][1] in ("=", "of", "in"):
+                    а, б = j + 1, с.кінець_виразу(j + 1) if т[j][1] == "=" else (пар[і - 1] if False else с.кінець_виразу(j + 1))
+                    for k in range(і + 2, пар[і + 1]):
+                        if т[k][0] == "id" and т[k][1] not in КЛЮЧОВІ and (k + 1 >= н or т[k + 1][1] != ":") and т[k - 1][1] not in (".", "?."):
+                            с.присв.append((с.ключ(і, т[k][1]), "елемент" if т[j][1] != "=" else "=", (а, б), і))
+            elif x[0] == "id" and x[1] in ("const", "let", "var") and і + 2 < н and т[і + 1][0] == "id" and т[і + 2][0] == "id" \
+                    and т[і + 2][1] in ("of", "in"):
+                а = і + 3
+                б = пар[і - 1] if (і >= 1 and т[і - 1][1] == "(" and (і - 1) in пар) else с.кінець_виразу(а)
+                с.присв.append((с.ключ(і, т[і + 1][1]), "елемент", (а, б), і))
+        # виклики відомих імен (для параметрів): (ім, [діапазони аргументів], індекс токена)
+        for і in range(н):
+            x = т[і]
+            if x[0] == "id" and і + 1 < н and т[і + 1][1] == "(" and (і + 1) in пар and x[1] not in КЛЮЧОВІ:
+                if і >= 1 and т[і - 1][1] in ("function", "async") : continue
+                с.виклики.append((x[1], розділити(т, пар, і + 2, пар[і + 1]), і))
+
+
+# ─────────────────────────────────── програма: усі модулі разом ───────────────────────────────────
+class Програма:
+    def __init__(с, модулі, закріплені=()):
+        с.модулі, с.закріплені = модулі, set(закріплені)
+        с.за_ім, с.ф_за_ід = {}, {}
+        for м in модулі:
+            for ф in м.функції:
+                с.ф_за_ід[ф.ід] = ф
+                if ф.ім: с.за_ім.setdefault(ф.ім, []).append(ф)
+        с.присв = {}
+        for м in модулі:
+            for к, в, д, і in м.присв: с.присв.setdefault(к, []).append((м, в, д, і))
+        с.виклики = {}
+        for м in модулі:
+            for ім, арг, і in м.виклики:
+                if ім in с.за_ім: с.виклики.setdefault(ім, []).append((м, арг, і))
+        с.ключі_catch = set()
+        for м in модулі:
+            т = м.ток
+            for і in range(len(т) - 2):
+                if т[і][1] == "catch" and т[і + 1][1] == "(" and т[і + 2][0] == "id":
+                    с.ключі_catch.add(м.ключ(і + 2, т[і + 2][1]))
+        с.джерела_фн = с._досяжні_джерела()
+        с.змінні, с.фн, с.поля = {}, {}, {}
+        с.розв_язати()
+
+    def _досяжні_джерела(с):
+        """функції, що (транзитивно) досягають fetch/postMessage/Pyodide: їхній результат — дані ззовні"""
+        з, всі = set(), [ф for м in с.модулі for ф in м.функції]
+        ЗОВНІ = ("fetch", "postMessage", "runPythonAsync", "runPython", "loadPyodide", "XMLHttpRequest", "FileReader")
+        for ф in всі:
+            т = ф.мод.ток
+            if any(т[і][0] == "id" and т[і][1] in ЗОВНІ for і in range(ф.а, min(ф.б, len(т)))): з.add(ф.ід)
+        зміна = True
+        while зміна:
+            зміна = False
+            for ф in всі:
+                if ф.ід in з: continue
+                т = ф.мод.ток
+                for і in range(ф.а, min(ф.б, len(т)) - 1):
+                    if (т[і][0] == "id" and т[і + 1][1] == "(" and т[і][1] in с.за_ім and (і == 0 or т[і - 1][1] not in (".", "?."))
+                            and any(g.ід in з for g in с.за_ім[т[і][1]])):
+                        з.add(ф.ід); зміна = True; break
+        return з
+
+    # ── ранг виразу: N(0) число · C(1) сталий напис · U(2) походження не доведено · T(3) джерело тексту
+    def в(с, м, а, б):
+        return с._в2(м, м.ток, м.пар, а, б, а)
+
+    def _в(с, м, т, пар, а, б, ск):
+        return с._в2(м, т, пар, а, б, ск)
+
+    def _верх(с, т, пар, а, б, шукані):
+        """позиції верхньорівневих токенів із `шукані`"""
+        вих, і = [], а
+        while і < б:
+            if т[і][0] == "p" and т[і][1] in "([{" and і in пар: і = пар[і] + 1; continue
+            if т[і][0] == "p" and т[і][1] in шукані: вих.append(і)
+            і += 1
+        return вих
+
+    def _в2(с, м, т, пар, а, б, ск):
+        while а < б and т[а][0] == "p" and т[а][1] == ";": а += 1
+        if а >= б: return 0
+        if т[а][0] == "id" and т[а][1] in ("function", "class"): return 0
+        if т[а][0] == "id" and т[а][1] == "async" and а + 1 < б and т[а + 1][1] == "function": return 0
+        if с._верх(т, пар, а, б, ("=>",)): return 0
+        # умовний: ліва частина — умова
+        q = с._верх(т, пар, а, б, ("?",))
+        if q:
+            і, лічба, к = q[0], 1, q[0] + 1
+            while к < б:
+                if т[к][0] == "p" and т[к][1] in "([{" and к in пар: к = пар[к] + 1; continue
+                if т[к][0] == "p" and т[к][1] == "?": лічба += 1
+                elif т[к][0] == "p" and т[к][1] == ":":
+                    лічба -= 1
+                    if лічба == 0: break
+                к += 1
+            return max(с._в(м, т, пар, і + 1, к, ск), с._в(м, т, пар, к + 1, б, ск))
+        for оп in (("||", "??"), ("&&",)):
+            ч, поч = [], а
+            for і in с._верх(т, пар, а, б, оп): ч.append((поч, і)); поч = і + 1
+            if ч:
+                ч.append((поч, б))
+                return max(с._в(м, т, пар, x, y, ск) for x, y in ч) if оп[0] == "||" else с._в(м, т, пар, поч, б, ск)
+        for і in с._верх(т, пар, а, б, ("==", "===", "!=", "!==", "<", ">", "<=", ">=")): return 0
+        if any(т[і][0] == "id" and т[і][1] in ("instanceof", "in") and і > а for і in range(а, б)
+               if not (т[і][0] == "p")) and not [1 for і in range(а, б) if т[і][1] in "([{" and т[і][0] == "p"]:
+            return 0
+        поч, ч, арифм = а, [], False
+        for і in с._верх(т, пар, а, б, ("+", "-", "*", "/", "%", "**", "&", "|", "^", "<<", ">>", ">>>")):
+            if і == а or (т[і - 1][0] == "p" and т[і - 1][1] not in (")", "]", "}")): continue    # унарний
+            if т[і][1] == "+": ч.append((поч, і)); поч = і + 1
+            else: арифм = True
+        if арифм and not ч: return 0
+        ч.append((поч, б))
+        if len(ч) > 1: return max(с._в(м, т, пар, x, y, ск) for x, y in ч)
+        x = т[а]
+        if x[0] == "p" and x[1] in ("!", "-", "~", "++", "--"): return 0
+        if x[0] == "p" and x[1] in ("+", "..."): return с._в(м, т, пар, а + 1, б, ск)
+        if x[0] == "id" and x[1] == "typeof": return 1
+        if x[0] == "id" and x[1] in ("void", "delete"): return 0
+        if x[0] == "id" and x[1] in ("await", "yield"): return с._в(м, т, пар, а + 1, б, ск)
+        return с._ланцюг(м, т, пар, а, б, ск)
+
+    def _арг(с, м, т, пар, a, b, ск):
+        """ранг аргументу виклику: значення + повернення функцій, що передані всередині"""
+        р = с._в(м, т, пар, a, b, ск)
+        if т is м.ток:
+            for ф in м.функції_в(a, b): р = max(р, с.повернення(ф))
+        return р
+
+    def _ланцюг(с, м, т, пар, а, б, ск):
+        і = а
+        if т[і][0] == "id" and т[і][1] == "new" and і + 1 < б: і += 1
+        x = т[і]
+        ім_бази, виклик_бази, ранг = None, False, 0
+        if x[0] == "str": ранг = 1; і += 1
+        elif x[0] in ("num", "re"): ранг = 0; і += 1
+        elif x[0] == "tpl":
+            ранг = 1
+            for вид, зн in x[1]:
+                if вид == "e": ранг = max(ранг, с._в(м, зн, пари(зн), 0, len(зн), ск))
+            і += 1
+        elif x[0] == "p" and x[1] == "(" and і in пар:
+            ранг = с._в(м, т, пар, і + 1, пар[і], ск); і = пар[і] + 1
+        elif x[0] == "p" and x[1] == "[" and і in пар:
+            for aa, bb in розділити(т, пар, і + 1, пар[і]): ранг = max(ранг, с._арг(м, т, пар, aa, bb, ск))
+            і = пар[і] + 1
+        elif x[0] == "p" and x[1] == "{" and і in пар:
+            for aa, bb in розділити(т, пар, і + 1, пар[і]):
+                if aa + 1 < bb and т[aa + 1][1] == ":": ранг = max(ранг, с._арг(м, т, пар, aa + 2, bb, ск))
+                elif т[aa][1] == "...": ранг = max(ранг, с._в(м, т, пар, aa + 1, bb, ск))
+                elif aa + 1 == bb and т[aa][0] == "id": ранг = max(ранг, с._змінна(м, т, aa, ск))
+            і = пар[і] + 1
+        elif x[0] == "id":
+            ім_бази = x[1]; і += 1
+            if і < б and т[і][1] == "(" and і in пар: виклик_бази = True
+            else: ранг = с._база(ім_бази, м, т, і - 1, ск)
+        else:
+            return 2
+        метод = None
+        while і < б:
+            y = т[і]
+            if y[0] == "p" and y[1] in (".", "?.") and і + 1 < б and т[і + 1][0] == "id":
+                ім = т[і + 1][1]; і += 2; метод = ім
+                if ім == "message" or ім.endswith("_жінці"): ранг = 3
+                elif ім in ("length", "size"): ранг = 0
+                else: ранг = max(ранг, с.поля.get(ім, 0))
+                continue
+            if y[0] == "p" and y[1] == "[" and і in пар: і = пар[і] + 1; метод = None; continue
+            if y[0] == "p" and y[1] == "(" and і in пар:
+                аргр = 0
+                for aa, bb in розділити(т, пар, і + 1, пар[і]): аргр = max(аргр, с._арг(м, т, пар, aa, bb, ск))
+                if виклик_бази: ранг = с._виклик(ім_бази, аргр); виклик_бази = False
+                elif метод: ранг = с._метод(ранг, метод, аргр, ім_бази)
+                і = пар[і] + 1; метод = None; continue
+            break
+        return ранг
+
+    def _база(с, ім, м, т, і, ск):
+        if ім in ("this", "document", "window", "navigator", "location", "localStorage", "sessionStorage", "history", "screen",
+                  "self", "globalThis", "event", "super"): return 2
+        if ім in ЧИСЛОВІ_ГЛОБАЛЬНІ or ім in ПЕРЕДАЮТЬ_АРГ or ім in ТОЧКА or ім in СЛУЖБОВИЙ_ВИХІД: return 0
+        if ім in КЛЮЧОВІ: return 0
+        return с._змінна(м, т, і, ск)
+
+    def _змінна(с, м, т, і, ск):
+        ім = т[і][1]
+        return с.клас_ключа(м.ключ(і if т is м.ток else ск, ім), ім)
+
+    def _виклик(с, ім, аргр):
+        if ім in ТОЧКА: return 1
+        if ім in СЛУЖБОВИЙ_ВИХІД: return 0
+        if ім == "fetch": return 3
+        if ім in ПЕРЕДАЮТЬ_АРГ: return аргр
+        if ім in ЧИСЛОВІ_ГЛОБАЛЬНІ: return 0
+        if ім in с.за_ім:
+            р = 0
+            for ф in с.за_ім[ім]:
+                if ф.ід in с.джерела_фн: р = 3
+                р = max(р, с.повернення(ф))
+            return р
+        return 2
+
+    def _метод(с, ранг, ім, аргр, база):
+        if база in ЧИСЛОВІ_ГЛОБАЛЬНІ and ранг == 0 and ім not in ПЕРЕНОС: return 0
+        if ім in ЧИСЛОВІ and ім not in ПЕРЕНОС: return 0
+        if ім in ПЕРЕНОС: return max(ранг, аргр)
+        if ім in с.за_ім: return max(с._виклик(ім, аргр), 0)
+        return max(ранг, 2)
+
+    def повернення(с, ф):
+        return 3 if ф.ід in с.джерела_фн else с.фн.get(ф.ід, 0)
+
+    def _повернення_обчислити(с, ф):
+        м, т = ф.мод, ф.мод.ток
+        р = 0
+        if ф.вираз: р = с.в(м, ф.а, ф.б)
+        else:
+            for і in range(ф.а, min(ф.б, len(т))):
+                if т[і][0] == "id" and т[і][1] == "return" and м.охоплює(і) is ф:
+                    р = max(р, с._в(м, т, м.пар, і + 1, м.кінець_виразу(і + 1), і + 1))
+        return р
+
+    def клас_ключа(с, ключ, ім):
+        if ключ in с.змінні: return с.змінні[ключ]
+        return 2 if (ключ[0] == "G" and ім not in с.за_ім) else 0
+
+    def _параметр_обчислити(с, ф, k):
+        р, є = 0, False
+        if ф.ім:
+            for м2, арг, і in с.виклики.get(ф.ім, ()):
+                if k < len(арг): є = True; р = max(р, с._в(м2, м2.ток, м2.пар, арг[k][0], арг[k][1], арг[k][0]))
+        оп = с._зворотний(ф)
+        if оп is not None:
+            є = True
+            if k == 0: р = max(р, оп if isinstance(оп, int) else с._в(ф.мод, ф.мод.ток, ф.мод.пар, оп[0], оп[1], оп[1]))
+        return р if є else 2
+
+    def _зворотний(с, ф):
+        """опис першого параметра функції, переданої аргументом `приймач.метод(cb)`: ранг або (початок, кінець) приймача"""
+        if ф.кб is not None: return ф.кб if ф.кб != -1 else None
+        м, т, пар = ф.мод, ф.мод.ток, ф.мод.пар
+        з, j = None, ф.заг_а - 1
+        if j >= 0 and т[j][1] in ("(", ","):
+            k = j
+            while k >= 0:
+                if т[k][0] == "p" and т[k][1] in ")]}" and k in пар: k = пар[k] - 1; continue
+                if т[k][0] == "p" and т[k][1] == "(" and k in пар and пар[k] > ф.заг_а: break
+                k -= 1
+            if k >= 1 and т[k][1] == "(" and т[k - 1][0] == "id":
+                метод = т[k - 1][1]
+                приймач = (початок_ланцюга(м, k - 2), k - 2) if k >= 3 and т[k - 2][1] in (".", "?.") else None
+                if метод == "catch": з = 3
+                elif метод in ЗБІР_МЕТОДИ_ЕЛЕМЕНТА or метод in ("then", "finally"):
+                    з = приймач if (приймач and метод != "reduce") else 2
+                elif метод == "addEventListener":
+                    з = 3 if т[k + 1][0] == "str" and т[k + 1][1] == "message" else 2
+                elif метод == "Promise": з = 0
+                else: з = 2
+        if з is None and ф.заг_а >= 2 and т[ф.заг_а - 1][1] == "=" and т[ф.заг_а - 2][0] == "id":
+            з = 3 if т[ф.заг_а - 2][1] in ("onmessage", "onerror", "onunhandledrejection") else (2 if ф.ім is None else None)
+        ф.кб = з if з is not None else -1
+        return з
+
+    def розв_язати(с):
+        """найменша нерухома точка: ранги змінних, параметрів і повернень функцій ростуть, доки щось змінюється"""
+        всі = list(с.ф_за_ід.values())
+        for ф in всі:
+            for ім2, ідс in ф.парам:
+                for x in ідс: с.змінні.setdefault((ф.ід, x), 0)
+        for ключ in с.ключі_catch: с.змінні[ключ] = 3
+        for ключ in с.присв: с.змінні.setdefault(ключ, 0)
+        for ім in с.закріплені: с.змінні[("G", ім)] = 1
+        зміна, кроків = True, 0
+        while зміна and кроків < 60:
+            зміна, кроків = False, кроків + 1
+            for ключ, ряд in с.присв.items():
+                if ключ[0] == "G" and ключ[1] in с.закріплені: continue
+                р = с.змінні[ключ]
+                for м, вид, (а, б), і in ряд: р = max(р, с._в(м, м.ток, м.пар, а, б, і))
+                if р != с.змінні[ключ]: с.змінні[ключ] = р; зміна = True
+            for м in с.модулі:
+                for ім, (а, б), і in м.поля_запис:
+                    р = с._в(м, м.ток, м.пар, а, б, і)
+                    if р > с.поля.get(ім, 0): с.поля[ім] = р; зміна = True
+            for ф in всі:
+                р = max(с.фн.get(ф.ід, 0), с._повернення_обчислити(ф))
+                if р != с.фн.get(ф.ід, 0): с.фн[ф.ід] = р; зміна = True
+                for k, (ім2, ідс) in enumerate(ф.парам):
+                    р = с._параметр_обчислити(ф, k)
+                    for x in ідс:
+                        if р > с.змінні[(ф.ід, x)]: с.змінні[(ф.ід, x)] = р; зміна = True
+        с.кроків = кроків
+
+
+def початок_ланцюга(м, j):
+    """початок ланцюга приймача, що закінчується перед токеном `j`"""
+    т, пар, k = м.ток, м.пар, j - 1
+    while k >= 0:
+        x = т[k]
+        if x[0] == "p" and x[1] in (")", "]") and k in пар: k = пар[k] - 1; continue
+        if x[0] in ("id", "str", "num", "tpl"):
+            if k >= 1 and т[k - 1][1] in (".", "?."): k -= 2; continue
+            return k
+        break
+    return k + 1
+
+
+# ───────────────────────────────────────── стоки (шлях А) ─────────────────────────────────────────
+def текстоподібний(м, п, a, b, ранг):
+    """аргумент append/replaceChildren — текст, а не вузол"""
+    if ранг == 3: return True
+    т = м.ток
+    if т[a][0] in ("str", "tpl"): return True
+    return any(т[i][0] == "p" and т[i][1] == "+" for i in range(a, b)) and any(т[i][0] in ("str", "tpl") for i in range(a, b)) \
+        or any(т[i][1] in ("join",) for i in range(a, b))
+
+
+class Сток:
+    __slots__ = ("мод", "і", "а", "б", "вид", "ранг", "обгортка", "точка", "ф", "чим")
+
+    def __init__(с, мод, і, а, б, вид, ф):
+        с.мод, с.і, с.а, с.б, с.вид, с.ф, с.ранг, с.обгортка, с.точка, с.чим = мод, і, а, б, вид, ф, 0, False, False, ""
+
+
+def знайти_стоки(п):
+    стоки = []
+    виняток = lambda ф: ф is not None and ф.ім in ТОЧКА + ("станТекстуЖінціП",) + СЛУЖБОВИЙ_ВИХІД
+    for м in п.модулі:
+        т, пар, н = м.ток, м.пар, len(м.ток)
+        for і, x in enumerate(т):
+            ф = м.охоплює(і)
+            while ф is not None and not виняток(ф): ф = м.батько(ф)
+            if ф is not None: continue
+            ф = м.охоплює(і)
+            знайдено = []                                     # (вид, а, б)
+            if x[0] == "p" and x[1] in ("=", "+=") and і >= 2 and т[і - 1][0] == "id" and т[і - 1][1] in ВЛАСТИВОСТІ and т[і - 2][1] in (".", "?."):
+                знайдено.append(("П2" if т[і - 1][1] in РОЗМІТКА else "П1", і + 1, м.кінець_виразу(і + 1), "." + т[і - 1][1]))
+            elif x[0] == "id" and x[1] in КЛЮЧІ_ОБЄКТА and і + 1 < n_(т) and т[і + 1][1] == ":" and і >= 1 and т[і - 1][1] in ("{", ","):
+                знайдено.append(("П2" if x[1] in РОЗМІТКА else "П1", і + 2, м.кінець_виразу(і + 2), "{" + x[1] + ":}"))
+            elif x[0] == "id" and і + 1 < n_(т) and т[і + 1][1] == "(" and (і + 1) in пар:
+                арг = розділити(т, пар, і + 2, пар[і + 1])
+                перед_крапка = і >= 1 and т[і - 1][1] in (".", "?.")
+                if x[1] in ВИКЛИКИ_ТЕКСТ and (not перед_крапка or x[1] in ("createTextNode", "setCustomValidity") or (і >= 2 and т[і - 2][1] == "window")) and арг:
+                    знайдено.append((ВИКЛИКИ_ТЕКСТ[x[1]], арг[0][0], арг[0][1], x[1] + "()"))
+                elif x[1] in ("insertAdjacentHTML", "insertAdjacentText") and len(арг) > 1:
+                    знайдено.append(("П2" if x[1].endswith("HTML") else "П1", арг[1][0], арг[1][1], x[1] + "()"))
+                elif x[1] == "Option" and арг and і >= 1 and т[і - 1][1] == "new":
+                    знайдено.append(("П1", арг[0][0], арг[0][1], "new Option()"))
+                elif x[1] == "setAttribute" and len(арг) > 1 and т[арг[0][0]][0] == "str" and т[арг[0][0]][1] in АТРИБУТИ:
+                    знайдено.append(("П1", арг[1][0], арг[1][1], "атрибут " + т[арг[0][0]][1]))
+                elif x[1] in ВСТАВКИ and перед_крапка:
+                    for a, b in арг:
+                        знайдено.append(("П4?", a, b, "." + x[1] + "()"))
+            for вид, a, b, чим in знайдено:
+                if a >= b: continue
+                с = Сток(м, і, a, b, вид, ф)
+                с.чим = чим
+                if вид == "П4?":
+                    р = п._в(м, т, пар, a, b, a)
+                    if not текстоподібний(м, п, a, b, р): continue
+                    с.вид = "П4"
+                с.ранг = п._в(м, т, пар, a, b, a)
+                с.точка = any(т[k][0] == "id" and т[k][1] in ТОЧКА for k in range(a, b))
+                стоки.append(с)
+    # обгортки: функція, чий параметр лягає в сток як є
+    обгортки = {}
+    for с in стоки:
+        if с.ф is None or not с.ф.ім or с.б - с.а > 4: continue
+        імена = [с.мод.ток[k][1] for k in range(с.а, с.б) if с.мод.ток[k][0] == "id" and с.мод.ток[k][1] not in КЛЮЧОВІ]
+        if len(імена) == 1:
+            for k, (ім2, ідс) in enumerate(с.ф.парам):
+                if імена[0] in ідс and ім2 != "*":
+                    обгортки.setdefault(с.ф.ім, set()).add(k); с.обгортка = True
+    for ім, номери in обгортки.items():
+        for м2, арг, і in п.виклики.get(ім, ()):
+            ф = м2.охоплює(і)
+            for k in номери:
+                if k < len(арг):
+                    с = Сток(м2, і, арг[k][0], арг[k][1], "П3", ф)
+                    с.чим = ім + "()"
+                    с.ранг = п._в(м2, м2.ток, м2.пар, арг[k][0], арг[k][1], арг[k][0])
+                    с.точка = any(м2.ток[q][0] == "id" and м2.ток[q][1] in ТОЧКА for q in range(арг[k][0], арг[k][1]))
+                    стоки.append(с)
+    return стоки, обгортки
+
+
+def n_(т): return len(т)
+
+
+# ───────────────────────────────── шлях Б: від джерел уперед ─────────────────────────────────
+def позиції_значення(т, пар, а, б):
+    """ідентифікатори й токени у позиціях ЗНАЧЕННЯ (не умова, не порівняння, не довжина, не індекс)"""
+    вих = []
+    while а < б and т[а][1] == ";": а += 1
+    if а >= б or any(т[і][1] == "=>" for і in п_верх(т, пар, а, б, ("=>",))): return вих
+    if т[а][0] == "id" and т[а][1] in ("function", "class", "typeof", "void", "delete"): return вих
+    q = п_верх(т, пар, а, б, ("?",))
+    if q:
+        лічба, к = 1, q[0] + 1
+        while к < б:
+            if т[к][0] == "p" and т[к][1] in "([{" and к in пар: к = пар[к] + 1; continue
+            if т[к][0] == "p" and т[к][1] == "?": лічба += 1
+            elif т[к][0] == "p" and т[к][1] == ":":
+                лічба -= 1
+                if лічба == 0: break
+            к += 1
+        return позиції_значення(т, пар, q[0] + 1, к) + позиції_значення(т, пар, к + 1, б)
+    for оп in (("||", "??"), ("&&",)):
+        ч, поч = [], а
+        for і in п_верх(т, пар, а, б, оп): ч.append((поч, і)); поч = і + 1
+        if ч:
+            ч.append((поч, б))
+            for x, y in (ч if оп[0] == "||" else ч[-1:]): вих += позиції_значення(т, пар, x, y)
+            return вих
+    if п_верх(т, пар, а, б, ("==", "===", "!=", "!==", "<", ">", "<=", ">=")): return вих
+    поч, ч, арифм = а, [], False
+    for і in п_верх(т, пар, а, б, ("+", "-", "*", "/", "%", "**", "&", "|", "^", "<<", ">>")):
+        if і == а or (т[і - 1][0] == "p" and т[і - 1][1] not in (")", "]", "}")): continue
+        if т[і][1] == "+": ч.append((поч, і)); поч = і + 1
+        else: арифм = True
+    if арифм and not ч: return вих
+    ч.append((поч, б))
+    if len(ч) > 1:
+        for x, y in ч: вих += позиції_значення(т, пар, x, y)
+        return вих
+    if т[а][0] == "p" and т[а][1] in ("!", "-", "~", "++", "--"): return вих
+    і = а + 1 if (т[а][0] == "id" and т[а][1] in ("await", "new")) or (т[а][0] == "p" and т[а][1] in ("+", "...")) else а
+    числовий = т[і][0] == "id" and т[і][1] in ("Number", "parseInt", "parseFloat", "isNaN", "isFinite", "Boolean", "Math", "Date", "Intl", "BigInt") \
+        or (т[і][0] == "id" and т[і][1] in ТОЧКА + СЛУЖБОВИЙ_ВИХІД)
+    while і < б:
+        x = т[і]
+        if x[0] == "tpl":
+            for вид, зн in x[1]:
+                if вид == "e": вих += [(зн, пари(зн), k) for k in позиції_значення(зн, пари(зн), 0, len(зн))]
+            і += 1; continue
+        if x[0] == "p" and x[1] == "[" and і in пар and і > а: і = пар[і] + 1; continue          # індекс
+        if x[0] == "p" and x[1] in ("(", "[", "{") and і in пар:
+            if x[1] == "{":
+                for aa, bb in розділити(т, пар, і + 1, пар[і]):
+                    вих += позиції_значення(т, пар, aa + 2 if aa + 1 < bb and т[aa + 1][1] == ":" else aa, bb)
+            else:
+                for aa, bb in розділити(т, пар, і + 1, пар[і]): вих += позиції_значення(т, пар, aa, bb)
+            і = пар[і] + 1; continue
+        if x[0] == "id":
+            if і >= 1 and т[і - 1][1] in (".", "?."):
+                if x[1] in ("length", "size") or (x[1] in ЧИСЛОВІ and x[1] not in ПЕРЕНОС): числовий = True
+                else: вих.append(("м", x[1], і))
+            else:
+                вих.append(і)
+        і += 1
+    return [] if числовий else вих
+
+
+def шлях_б(п, стоки):
+    """Уперед: джерела (виняток, `.message`, `*_жінці`, функції, що досягають fetch/postMessage) → змінні → стоки.
+    Згадка проста (без винятку умов і чисел) — розбіжності з А пояснюються у виводі."""
+    заражені, фн = set(), set(п.джерела_фн)
+    заражені |= п.ключі_catch
+    поля_джерела = set()                   # поля, у які пишеться джерело (за іменем, як у А)
+
+    def згадує(м, т, пар, а, б, ск):
+        for v in позиції_значення(т, пар, а, б):
+            if isinstance(v, tuple) and v[0] == "м":
+                if v[1] == "message" or v[1].endswith("_жінці") or v[1] in поля_джерела: return True
+                continue
+            if isinstance(v, tuple):                     # токен із шаблону: (список токенів, пари, індекс)
+                зт, зп, k = v
+                if зт[k][1] == "fetch" or м.ключ(ск, зт[k][1]) in заражені: return True
+                if k + 1 < len(зт) and зт[k + 1][1] == "(" and зт[k][1] in п.за_ім and any(g.ід in фн for g in п.за_ім[зт[k][1]]): return True
+                continue
+            x = т[v]
+            if x[1] == "fetch": return True
+            if v + 1 < len(т) and т[v + 1][1] == "(" and x[1] in п.за_ім and any(g.ід in фн for g in п.за_ім[x[1]]): return True
+            if м.ключ(v if т is м.ток else ск, x[1]) in заражені: return True
+        return False
+    зміна = True
+    while зміна:
+        зміна = False
+        for ключ, ряд in п.присв.items():
+            if ключ in заражені: continue
+            for м, вид, (а, б), і in ряд:
+                if згадує(м, м.ток, м.пар, а, б, і): заражені.add(ключ); зміна = True; break
+        for ф in п.ф_за_ід.values():
+            if ф.ід in фн: continue
+            м, т = ф.мод, ф.мод.ток
+            ок = False
+            if ф.вираз: ок = згадує(м, т, м.пар, ф.а, ф.б, ф.а)
+            else:
+                for і in range(ф.а, min(ф.б, len(т))):
+                    if т[і][1] == "return" and м.охоплює(і) is ф and згадує(м, т, м.пар, і + 1, м.кінець_виразу(і + 1), і + 1): ок = True; break
+            if ок: фн.add(ф.ід); зміна = True
+        for ім, ряд in п.виклики.items():
+            for ф in п.за_ім[ім]:
+                for м, арг, і in ряд:
+                    for k, (a, b) in enumerate(арг):
+                        if k < len(ф.парам) and ф.парам[k][0] != "*":
+                            ключ = (ф.ід, ф.парам[k][0])
+                            if ключ not in заражені and згадує(м, м.ток, м.пар, a, b, a): заражені.add(ключ); зміна = True
+        for м in п.модулі:                          # поля за іменем
+            for ім, (а, б), і in м.поля_запис:
+                if ім not in поля_джерела and згадує(м, м.ток, м.пар, а, б, і): поля_джерела.add(ім); зміна = True
+        for ф in п.ф_за_ід.values():                # зворотні виклики з джерелом приймача
+            if ф.парам and any((ф.ід, x) not in заражені for x in ф.парам[0][1]):
+                оп = п._зворотний(ф)
+                if оп == 3 or (isinstance(оп, tuple) and згадує(ф.мод, ф.мод.ток, ф.мод.пар, оп[0], оп[1], оп[1])):
+                    for x in ф.парам[0][1]: заражені.add((ф.ід, x))
+                    зміна = True
+    вих = set()
+    for с in стоки:
+        if згадує(с.мод, с.мод.ток, с.мод.пар, с.а, с.б, с.а): вих.add((відображене(с.мод.шлях), с.мод.рядок(с.і), с.вид))
+    return вих, len(заражені)
+
+
+def п_верх(т, пар, а, б, шукані):
+    вих, і = [], а
+    while і < б:
+        if т[і][0] == "p" and т[і][1] in "([{" and і in пар: і = пар[і] + 1; continue
+        if т[і][0] == "p" and т[і][1] in шукані: вих.append(і)
+        і += 1
+    return вих
+
+
+def b_(б, т): return min(б, len(т))
+
+
+# ───────────────────────────────────────── збирання й вивід ─────────────────────────────────────────
+СКРИПТ = re.compile(r"<script(?P<а>[^>]*)>(?P<т>.*?)</script>", re.S | re.I)
+ДИНАМІКА_РОЗМІТКИ = re.compile(r"\$\{|\{\{|__[А-ЯІЇЄҐA-Z_]{3,}__|\bon[a-z]+\s*=\s*[\"']")
+
+
+def прочитати(шлях):
+    with open(шлях, encoding="utf8") as ф: return ф.read()
+
+
+def модулі_html(шлях, ім):
+    текст, вих, розмітка = прочитати(шлях), [], []
+    кінець = 0
+    k = 0
+    for м in СКРИПТ.finditer(текст):
+        розмітка.append((текст[кінець:м.start()], текст.count("\n", 0, кінець)))
+        кінець = м.end()
+        if "src=" in м.group("а"): continue
+        k += 1
+        зсув = текст.count("\n", 0, м.start("т"))
+        вих.append(Модуль("%s#%d" % (ім, k), лекс(м.group("т")), зсув))
+    розмітка.append((текст[кінець:], текст.count("\n", 0, кінець)))
+    динаміка = []
+    for ч, рядок0 in розмітка:
+        for н, р in enumerate(ч.split("\n")):
+            if ДИНАМІКА_РОЗМІТКИ.search(р): динаміка.append("%s:%d" % (ім, рядок0 + н + 1))
+    return вих, динаміка
+
+
+def відображене(модуль_шлях): return модуль_шлях.split("#")[0]
+
+
+def обчислити(тека, закріплені=()):
+    показ = os.path.join(тека, "показ")
+    модулі = [Модуль("показ/" + ф, лекс(прочитати(os.path.join(показ, ф))))
+              for ф in sorted(os.listdir(показ)) if ф.endswith(".js")]
+    мод_html, динаміка = модулі_html(os.path.join(тека, "показ.html"), "показ.html")
+    п = Програма(модулі + мод_html, закріплені)
+    стоки, обгортки = знайти_стоки(п)
+    служб_модулі = []
+    for шлях, ім in ((os.path.join(тека, "проба.html"), "проба.html"), (os.path.join(тека, "..", "показ_зонд.html"), "показ_зонд.html")):
+        if os.path.exists(шлях): служб_модулі += модулі_html(шлях, ім)[0]
+    службові = Програма(служб_модулі) if служб_модулі else None
+    стоки_служб = знайти_стоки(службові)[0] if службові else []
+    return п, стоки, обгортки, динаміка, стоки_служб
+
+
+def пункт(с):
+    return "П5" if с.мод.шлях.startswith("показ.html") else с.вид
+
+
+def подія(с):
+    return (відображене(с.мод.шлях), с.мод.рядок(с.і), с.вид)
+
+
+ПРОБНИЙ_JS = """
+const ТАБ = {а: 'так'};
+function текстЖінціП(е, т){ е.textContent = т; return т; }
+function ф(e, дані){
+  const в = document.getElementById('a');
+  в.textContent = 'x' + дані.назва;
+  в.innerHTML = `<b>${дані.текст}</b>`;
+  в.append('Помилка: ' + String(e));
+  alert(e.message);
+  в.value = дані.х;
+  в.placeholder = ТАБ.а;
+  в.textContent = текстЖінціП(null, дані.текст, 'вид') + дані.сире;
+  в.setAttribute('aria-label', 'а' + дані.б);
+  в.title = 5 + 1;
+  в.textContent = текстЖінціП(null, дані.текст, 'вид');
+}
+try { ф(); } catch (помилка) { document.title = String(помилка); }
+"""
+ПРОБНИЙ_HTML = "<html><body><p id=a>напис</p><script>try{ х(); }catch(e){ document.getElementById('a').textContent = 'Не відкрився: ' + String(e); }</script></body></html>"
+
+
+def самоперевірка():
+    """Форми, яких не бачив прилад виконавця (11292): ${}, append, alert, .value, `текстЖінціП(…) + сире`, виняток через змінну,
+    вбудований скрипт. Очікувано 9 місць; сталі, числа й виклик точки — не місця."""
+    import tempfile
+    with tempfile.TemporaryDirectory() as тека:
+        os.makedirs(os.path.join(тека, "показ"))
+        for ім, зміст in ((os.path.join("показ", "проба.js"), ПРОБНИЙ_JS), ("показ.html", ПРОБНИЙ_HTML)):
+            with open(os.path.join(тека, ім), "w", encoding="utf8") as ф: ф.write(зміст)
+        п, стоки, _, _, _ = обчислити(тека)
+    знайдено = len({подія(с) + (с.а, с.б) for с in стоки if not с.обгортка and с.ранг >= 2})
+    print("самоперевірка: %d з 9 очікуваних місць" % знайдено)
+    return знайдено == 9
+
+
+def main():
+    if "--самоперевірка" in sys.argv:
+        sys.exit(0 if самоперевірка() else 1)
+    п, стоки, обгортки, динаміка, стоки_служб = обчислити(ТУТ)
+    місця, сталі, числа, точкою, внутрішні = {}, {}, {}, 0, 0
+    for с in sorted(стоки, key=lambda s: (відображене(s.мод.шлях), s.мод.рядок(s.і))):
+        ключ = подія(с) + (с.а, с.б)
+        if с.обгортка: внутрішні += 1; continue
+        if с.ранг >= 2: місця.setdefault(ключ, с)
+        elif с.ранг == 1: сталі.setdefault(ключ, с)
+        else: числа.setdefault(ключ, с)
+        if с.точка and с.ранг < 2: точкою += 1
+    за_пунктом = {}
+    for с in місця.values():
+        р = за_пунктом.setdefault(пункт(с), [0, 0, 0]); р[0] += 1; р[1 if с.ранг == 3 else 2] += 1
+    опис = {"П1": "запис тексту в DOM (textContent, value, placeholder, title, alt, createTextNode, setAttribute, alert)",
+            "П2": "розмітка (innerHTML, outerHTML, insertAdjacentHTML)",
+            "П3": "крізь обгортку вузла (`ел(тег, клас, текст)` і подібні: параметр лягає в DOM)",
+            "П4": "вставка тексту вузлом (append, replaceChildren, … з текстовим аргументом)",
+            "П5": "вбудований скрипт `показ.html` (будь-який запис П1–П4)",
+            "П6": "розмітка поза `показ/` і скриптами з динамічним маркером"}
+    def рядок_місця(с, показувати_сталі=False):
+        ім = відображене(с.мод.шлях); л = с.мод.рядок(с.і)
+        чому = {3: "джерело тексту (виняток, поле *_жінці чи дані ззовні)", 2: "походження не доведено (код, стан, її введення)",
+                1: "сталий напис", 0: "число"}[с.ранг]
+        вираз = текст_токенів(с.мод.ток, с.а, с.б)
+        return "%s:%d · %s%s · %s: %s" % (ім, л, пункт(с), "" if пункт(с) == с.вид else "/" + с.вид, чому, вираз)
+    for с in місця.values(): print(рядок_місця(с))
+    for х in динаміка: print("%s · П6 · динамічний маркер у розмітці" % х)
+    if "--сталі" in sys.argv:
+        for с in сталі.values(): print("стале ·", рядок_місця(с))
+    if "--збіг" in sys.argv:
+        б_стоки, зараж = шлях_б(п, [с for с in стоки if not с.обгортка])
+        а_т = {подія(с) for с in місця.values() if с.ранг == 3}
+        а_всі = {подія(с) for с in місця.values()}
+        ранги = {}
+        for с in стоки: ранги.setdefault(подія(с), []).append(с.ранг)
+        print("— збіг шляхів: А (ранг T): %d · Б (джерело досягає стоку): %d · спільних: %d · заражених ключів Б: %d" % (len(а_т), len(б_стоки), len(а_т & б_стоки), зараж))
+        for х in sorted(б_стоки - а_т):
+            print("  лише Б · %s:%d · %s · ранг А = %s" % (х[0], х[1], х[2], "".join(ІМЕНА_РАНГУ[r] for r in sorted(set(ранги.get(х, [2]))))))
+        for х in sorted(а_т - б_стоки):
+            print("  лише А · %s:%d · %s" % х)
+        ключі_py = set()
+        for ф in os.listdir(ТУТ):
+            if ф.endswith(".py") and not ф.startswith(("тест", "проба")):
+                к = прочитати(os.path.join(ТУТ, ф))
+                ключі_py |= set(re.findall(r"[\"']([^\W\d][\w]{2,40})[\"']\s*:", к)) | set(re.findall(r"\[[\"']([^\W\d][\w]{2,40})[\"']\]\s*=(?!=)", к))
+        у_стоках = {}
+        for с in місця.values():
+            for v in позиції_значення(с.мод.ток, с.мод.пар, с.а, с.б):
+                if isinstance(v, tuple) and v[0] == "м" and v[1] in ключі_py:
+                    у_стоках.setdefault(v[1], set()).add("%s:%d" % (відображене(с.мод.шлях), с.мод.рядок(с.і)))
+        print("— поля, які Python кладе в пакет і які екран пише в стоки-місця: %d полів, %d місць" % (len(у_стоках), len(set().union(*у_стоках.values()) if у_стоках else ())))
+        for ім in sorted(у_стоках, key=lambda x: -len(у_стоках[x])): print("  %s · %d" % (ім, len(у_стоках[ім])))
+        поля = set()
+        for ф in os.listdir(ТУТ):
+            if ф.endswith(".py"):
+                поля |= set(re.findall(r"[\"'](\w+_жінці)[\"']", прочитати(os.path.join(ТУТ, ф))))
+        читання = {}
+        for м in п.модулі:
+            for і, x in enumerate(м.ток):
+                if x[0] == "id" and x[1] in поля and і >= 1 and м.ток[і - 1][1] in (".", "?.") or (x[0] == "str" and x[1] in поля):
+                    читання.setdefault(x[1], []).append("%s:%d" % (відображене(м.шлях), м.рядок(і)))
+        print("— поля *_жінці, які кладе Python: %d · читає екран: %d" % (len(поля), len(читання)))
+        for ім in sorted(поля): print("  %s · %s" % (ім, ", ".join(читання.get(ім, ["екран не читає"]))[:140]))
+    print("— підсумки за пунктами класу (місць · з них джерело T · походження U):")
+    всього = 0
+    for к in ("П1", "П2", "П3", "П4", "П5"):
+        р = за_пунктом.get(к, [0, 0, 0]); всього += р[0]
+        print("  %s · %d · T %d · U %d · %s" % (к, р[0], р[1], р[2], опис[к]))
+    print("  П6 · %d · %s" % (len(динаміка), опис["П6"])); всього += len(динаміка)
+    викликів = sum(1 for м in п.модулі for і, x in enumerate(м.ток) if x[0] == "id" and x[1] in ТОЧКА and і + 1 < len(м.ток)
+                   and м.ток[і + 1][1] == "(" and not (і >= 1 and м.ток[і - 1][1] == "function"))
+    print("— викликів точки виходу (`текстЖінціП`, `збійЖінціП`): %d" % викликів)
+    print("— поза місцями: сталих написів %d · чисел %d · крізь точку виходу %d · внутрішніх записів обгорток %d (обгортки: %s)"
+          % (len(сталі), len(числа), точкою, внутрішні, ", ".join("%s(%s)" % (ім, ",".join(map(str, sorted(н)))) for ім, н in sorted(обгортки.items())) or "—"))
+    служб = {подія(с) + (с.а,) for с in стоки_служб if с.ранг >= 2 and not с.обгортка}
+    print("— поза екраном жінки (службові сторінки власника `проба.html`, `показ_зонд.html`, не рахуються): %d" % len(служб))
+    за_чим = {}
+    for с in місця.values(): за_чим[с.чим] = за_чим.get(с.чим, 0) + 1
+    print("— за способом запису (місць): " + " · ".join("%s %d" % (к, v) for к, v in sorted(за_чим.items(), key=lambda x: -x[1])))
+    if "--файли" in sys.argv:
+        рахунок = {}
+        for с in стоки:
+            if not с.обгортка: рахунок.setdefault(відображене(с.мод.шлях), [0, 0])[0 if с.ранг >= 2 else 1] += 1
+        for ф in sorted(os.listdir(os.path.join(ТУТ, "показ"))):
+            if ф.endswith(".js"): рахунок.setdefault("показ/" + ф, [0, 0])
+        print("— по файлах (місць · решта стоків):")
+        for ф, (a, b) in sorted(рахунок.items()): print("  %s · %d · %d" % (ф, a, b))
+    if "--довідник" in sys.argv:
+        _, стоки2, _, _, _ = обчислити(ТУТ, ("ДОВІДНИК",))
+        м2 = {подія(с) + (с.а, с.б) for с in стоки2 if not с.обгортка and с.ранг >= 2}
+        print("— якби ДОВІДНИК (`__ДОВІДНИК_ПОКАЗУ__`, живий: замінюється даними з Python) був сталим: %d місць, а з довідником %d"
+              % (len(м2), len(місця)))
+    print("місць: %d" % всього)
+
+
+if __name__ == "__main__":
+    import threading
+    sys.setrecursionlimit(1000000)
+    threading.stack_size(512 * 1024 * 1024)
+    код = []
+    def запуск():
+        try: main()
+        except SystemExit as вихід:
+            код.append(вихід.code or 0)
+        except BaseException:
+            import traceback; traceback.print_exc(); код.append(1)
+    потік = threading.Thread(target=запуск)
+    потік.start(); потік.join()
+    sys.exit(код[0] if код else 0)
