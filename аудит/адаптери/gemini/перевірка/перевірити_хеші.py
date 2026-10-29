@@ -38,7 +38,11 @@ def перевірити_смуги(root):
     if дані.get('v') != 2:
         вади.append('v не 2')
     знайдено = {'slots.' + k: v for k, v in (дані.get('slots') or {}).items()}
-    знайдено.update({k: v for k, v in дані.items() if k not in ('v', 'slots')})
+    # claude_laptop — перелік нарядів Claude, яким потрібен ноутбук (#2211), не межа: лише назви-рядки.
+    перелік = дані.get('claude_laptop', [])
+    if not isinstance(перелік, list) or not all(isinstance(x, str) and x for x in перелік):
+        вади.append('claude_laptop не перелік назв')
+    знайдено.update({k: v for k, v in дані.items() if k not in ('v', 'slots', 'claude_laptop')})
     вади += [f'зайве поле {k}' for k in sorted(set(знайдено) - set(поля))]
     вади += [f'нема поля {k}' for k in sorted(set(поля) - set(знайдено))]
     без = []

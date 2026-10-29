@@ -398,6 +398,8 @@ $script:OutboxTemplates = @(
     "\AGEMINI ОБГОРТКА: ЗАБЛОКОВАНО [A-Z0-9_]{2,40} ×[0-9]{1,5}: (?:gemini|codex|claude)/$script:SlugCore(?:, (?:gemini|codex|claude)/$script:SlugCore){0,4}(?: …)?\z"
     '\AGEMINI ОБГОРТКА: ТРИВОГА (?:AUTH (?:AGY|CODEX|CLAUDE|CLOUD)|ISOLATION (?:WHOAMI|NET_SESSION|PROFILES|DRIVES|ENV)|DISK FULL|ENGINE (?:AGY|CODEX|CLAUDE))\z'
     '\AGEMINI ОБГОРТКА: ВИМКНЕНО [0-9a-f]{40}\z'
+    '\AGEMINI ОБГОРТКА: ПОТРІБНА ПЕРЕВІРКА CLAUDE #[1-9][0-9]{0,8} [0-9a-f]{40}\z'
+    '\AGEMINI ОБГОРТКА: ЗНЯТО ПОЗНАЧОК ПЕРЕВІРКИ [1-9][0-9]{0,5}\z'
     '\AСПОСТЕРІГАЧ КОМЕНТАР #[0-9]{1,12} [0-9]{1,20} (?:mightyrochy|chatgpt-codex-connector\[bot\]) (?:новий|змінено)\z'
     '\AСПОСТЕРІГАЧ CI #[0-9]{1,12} [0-9a-f]{40} (?:success|failure|cancelled|timed_out|action_required|neutral|skipped|pending)\z'
     "\AСПОСТЕРІГАЧ ПЕРЕНЕСЕНО (?<n>$script:SlugCore) codex/\k<n> [0-9a-f]{40} #[0-9]{1,12}\z"
@@ -520,7 +522,10 @@ $script:LocalLinesCap = 64
 function Test-DispatcherAction([string]$Line) {
     <# Диспетчер прокидається лише за станом, що чекає його дії; решта йде зведенням при наступному пробудженні. #>
     if ($Line -cmatch '^GEMINI ОБГОРТКА: ЗАБЛОКОВАНО ([A-Z0-9_]{2,40}) ×[0-9]{1,5}: ') { return $Matches[1] -cnotmatch $script:QuietBlockedCodes }
+    # Позначку перевірки Claude на ноутбуці ланцюг знімає й віддає іншому рецензентові сам.
+    if ($Line -cmatch '^GEMINI ОБГОРТКА: ЗАБЛОКОВАНО claude/автоперевірка-\S+ CLAUDE_NOT_LAPTOP$') { return $false }
     if ($Line -cmatch '^GEMINI ОБГОРТКА: ЗАБЛОКОВАНО \S+ (\S+)$') { return $Matches[1] -cnotmatch $script:QuietBlockedCodes }
+    if ($Line -cmatch '^GEMINI ОБГОРТКА: ПОТРІБНА ПЕРЕВІРКА CLAUDE ') { return $true }
     if ($Line -cmatch '^GEMINI ОБГОРТКА: (?:ЗАБЛОКОВАНО|ТРИВОГА|ЛАНЦЮГ)(?: |$)') { return $true }
     if ($Line -cmatch '^GEMINI ОБГОРТКА: ГОТОВО (?:gemini|claude|codex)/(?:автоперевірка-|перевірка-|pachka-|автоживий-|Е1-нічний-живий-)') { return $true }
     $false

@@ -218,7 +218,7 @@ function Get-Limits {
     без джерел), нема файла, кривий чи невідомий формат — попереднє прийняте значення (стан limits.json; нема — з коду), а
     поле — в unsourced для рядка «межа без джерела» стану ноутбука. Зміна файла в main діє на наступному проході без
     перевстановлення копій: читається він після `git fetch`, який перезаписує й origin/main, змінений у клоні. #>
-    $l = @{ slots = [ordered]@{}; source = 'код'; unsourced = @() }
+    $l = @{ slots = [ordered]@{}; source = 'код'; unsourced = @(); claude_laptop = @() }
     foreach ($k in $script:LaneDefaults.Keys) { $l.slots[$k] = $script:LaneDefaults[$k] }
     foreach ($k in $script:Defaults.Keys) { $l[$k] = $script:Defaults[$k] }
     # Без теки стану (читач меж поза планувальником) попереднє не зберігається.
@@ -252,6 +252,8 @@ function Get-Limits {
     $text = $accepted | ConvertTo-Json -Compress
     $old = $(if ($prevPath -and (Test-Path -LiteralPath $prevPath)) { [System.IO.File]::ReadAllText($prevPath, $script:Utf8) } else { '' })
     if ($prevPath -and $accepted.Count -gt 0 -and $text -cne $old) { Write-FileAtomic $prevPath $text }
+    # Наряди Claude, яким потрібен ноутбук без відеокарти (LM Studio, фото, локальні програми): лише назви за шаблоном.
+    $l.claude_laptop = @(@(Get-JsonProp $doc 'claude_laptop') | Where-Object { $_ -is [string] -and $_ -cmatch $script:SlugPattern } | Select-Object -First 64)
     $l
 }
 

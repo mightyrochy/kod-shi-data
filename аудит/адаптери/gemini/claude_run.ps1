@@ -13,7 +13,8 @@
 Спільне з `gemini_run.ps1` — `queue_lanes.ps1` (позначки, порядок, слоти, межі, чекання квоти, замок GPU).
   1. Позначки — лише `cc-…` з `origin` (fetch у клон власника `RepoDir`); `gemini-run` їх не бере. Узяття — атомарне
      (`.claim`), виконана позначка — файл стану, вдруге не береться. Коміт позначки — у `main`, наряд — файл
-     `аудит/наряди/<наряд>.md` на цьому коміті; позначка вибирає лише наряд, модель, спробу й умови.
+     `аудит/наряди/<наряд>.md` на цьому коміті; позначка вибирає лише наряд, модель, спробу й умови. Без умови `gpu` і
+     поза переліком `claude_laptop` у `смуги.json` — ЗАБЛОКОВАНО … CLAUDE_NOT_LAPTOP, без копії й слота: решта — хмарі.
   2. `cc-<модель>-<зусилля>`: модель і зусилля йдуть у `claude --model/--effort` дослівно; неприйняте —
      ЗАБЛОКОВАНО з кодом (MODEL_INVALID, EFFORT_INVALID), без підміни. Дозволи — `--permission-mode auto`.
   3. Промпт — перший і останній рядки запускача (`аудит/ЗАПУСКАЧ.md`) без його id і з вимкненням «лише обгортка за
@@ -894,6 +895,12 @@ function Start-Markers($Workers) {
         if (($now - $m.Time) -gt $MarkerMaxAgeDays * 86400) {
             Write-Log "позначка $($m.Name): коміт старший за $MarkerMaxAgeDays діб — пропущено"
             Write-FileAtomic (Get-StatePath (Get-MarkerKey $m)) 'STALE'
+            continue
+        }
+        # Claude на ноутбуці — лише наряд, якому ноутбук потрібен: GPU чи перелік `claude_laptop` у смуги.json (власник
+        # 26.10, 29.10). Решта — хмарним сесіям: рядок диспетчерові, копії й слота нема.
+        if (-not $m.Gpu -and $m.Slug -cnotin @($script:Limits.claude_laptop)) {
+            Complete-Task $m (Get-StatePath (Get-MarkerKey $m)) (New-Id) 'CLAUDE_NOT_LAPTOP'
             continue
         }
         $slot = Get-FreeSlot 'claude' ([int]$script:Limits.slots['claude']) $Workers

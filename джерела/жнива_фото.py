@@ -54,6 +54,16 @@ def _качати(url, реферер=None, тайм=25):
 
 
 # ── ФОТО ────────────────────────────────────────────────────────────────────
+def читати_bgr(шлях):
+    """Читає BGR через байти: файловий API OpenCV не підтримує кирилицю у Windows."""
+    import cv2, numpy as np
+    with open(шлях, "rb") as файл:
+        фото = cv2.imdecode(np.frombuffer(файл.read(), dtype=np.uint8), cv2.IMREAD_COLOR)
+    if фото is None:
+        raise ValueError("Фото не декодується: %s" % шлях)
+    return фото
+
+
 def _відкрити(сирі):
     """Байти → PIL RGB; прозорість (RGBA/LA/P) кладеться на біле — як тло крамничного фото."""
     from PIL import Image

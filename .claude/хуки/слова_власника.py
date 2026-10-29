@@ -35,8 +35,8 @@ def текст(вміст):
     return вміст.strip() if isinstance(вміст, str) else ""
 
 
-def прочитати(шлях):
-    """Слова людини з транскрипту сесії."""
+def слова_людини(шлях):
+    """Слова людини з транскрипту сесії: [(час "РРРР-ММ-ДД ГГ:ХХ" UTC, текст)]. Спільне з `листи_менеджерові.py`."""
     слова, бачені, надіслано = [], set(), {}
     with open(шлях, encoding="utf-8") as ф:
         for рядок in ф:
@@ -63,8 +63,25 @@ def прочитати(шлях):
             ключ = (коли, т)
             if т and not МІТКА_ЛИСТА.match(т) and ключ not in бачені and ід not in бачені:
                 бачені.update({ключ, ід or ключ})
-                слова.append(f"- {коли} UTC «{т}»")
+                слова.append((коли, т))
     return слова
+
+
+def початок_транскрипту(шлях):
+    """Час першої події транскрипту "РРРР-ММ-ДД ГГ:ХХ" UTC; порожній чи без часу — None."""
+    with open(шлях, encoding="utf-8") as ф:
+        for рядок in ф:
+            try:
+                коли = json.loads(рядок).get("timestamp")
+            except (ValueError, AttributeError):
+                continue
+            if isinstance(коли, str) and коли:
+                return коли[:16].replace("T", " ")
+    return None
+
+
+def прочитати(шлях):
+    return [f"- {коли} UTC «{т}»" for коли, т in слова_людини(шлях)]
 
 
 def main():
