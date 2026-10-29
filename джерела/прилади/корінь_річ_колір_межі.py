@@ -419,6 +419,14 @@ def рядки_дуг_за_ключем(v, назви_цілей=""):
         if КЛЮЧ_ДУГИ.search(назва) and кути and all(-1 <= e.value <= 360 for e in кути) and not re.search(r"поза|^нп_", назва) \
                 and ((число(val) and скаляр_дуги) or (isinstance(val, (ast.Tuple, ast.List)) and len(кути) >= 2)):
             r.append((val.lineno, "власна дуга/межа тону за ключем «%s» (структура значення, не ім'я таблиці)" % назва))
+    for назва, вузол, val in пари:
+        # запис реєстру: ключ про тепле/холодне/дугу, у значенні `val=(від, до, …)` — кути
+        if re.search(r"warm|cool|тепл|холод|hue|дуг|arc", назва, re.I) and isinstance(val, (ast.Call, ast.Dict)):
+            for ключ, знач in ([(k.arg, k.value) for k in val.keywords] if isinstance(val, ast.Call) else
+                               [(k.value, w) for k, w in zip(val.keys, val.values) if isinstance(k, ast.Constant)]):
+                кути = [e for e in ast.walk(знач) if число(e)] if ключ == "val" and isinstance(знач, (ast.Tuple, ast.List)) else []
+                if len(кути) >= 2 and all(-1 <= e.value <= 360 for e in кути):
+                    r.append((знач.lineno, "власна дуга/межа тону в записі реєстру «%s»" % назва))
     трійки = [x for x in ast.walk(v) if isinstance(x, ast.Tuple) and len(x.elts) == 3 and число(x.elts[0]) and число(x.elts[1])
               and isinstance(x.elts[2], ast.Constant) and isinstance(x.elts[2].value, str)
               and -1 <= x.elts[0].value <= 360 and -1 <= x.elts[1].value <= 360]
