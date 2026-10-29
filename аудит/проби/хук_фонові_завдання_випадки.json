@@ -1,0 +1,552 @@
+[
+ {
+  "сесія": "session_0174ZLdhnmRhKAJhKocYY78j",
+  "час": "2026-10-22T06:31:29",
+  "run_in_background": true,
+  "timeout": null,
+  "тривалість_с": null,
+  "вид": "робота",
+  "автофон": false,
+  "команда": "S=$SP; P=/root/.local/share/uv/python/cpython-3.12.1-linux-x86_64-gnu/bin/python3.12; cd /home/user/kod-shi-data; ls -la кеш.json; git log -1 --format=%h -- кеш.json; cat > $S/заміри.sh <<E\nset -u\ncd /home/user/kod-shi-data/джерела\nLYUSTERKO_CATALOG=повний LYUSTERKO_PYC_PYTHON=$P python3 build_артефакт.py . $S/index_гілка.html показ-повний > $S/збірка_гілка2.log 2>&1 || echo \"ЗБІРКА ВПАЛА\"\n(python3 стенд_знімок.py --дим && python3 тест_живого_шляху.py && python3 тест_протоколу.py && python3 прилади/розділи_гейтів.py && python3 audit_contracts.py && echo \"БАТАРЕЯ PY OK\") > $S/батарея_голова.txt 2>&1 || echo \"БАТАРЕЯ ВПАЛА\"\ncd /home/user/kod-shi-data\nfor і in 1 2 3; do for в in main гілка; do $P джерела/прилади/знімок_мосту.py cpython --сторінка $S/index_\\$в.html --вихід $S/t\\${і}_\\$в.jsonl > /dev/null 2>&1; done; done\npython3 джерела/прилади/знімок_мосту.py --діф $S/t1_main.jsonl $S/t1_гілка.jsonl | tail -1\nfor в in main гілка; do python3 -c \"\nimport json,statistics as s\nxs=[sum(x[2] for x in json.load(open('$S/t%d_%s.jsonl.час.json'%(і,'\\$в')))['виклики'] if x[1]=='від_моделі') for і in (1,2,3)]\nprint('\\$в', 'від_моделі мс', [round(x) for x in xs], 'медіана', round(s.median(xs)))\"; done\ntail -1 $S/батарея_голова.txt\nE\nbash $S/заміри.sh > $S/заміри.txt 2>&1; cat $S/заміри.txt"
+ },
+ {
+  "сесія": "session_0174ZLdhnmRhKAJhKocYY78j",
+  "час": "2026-10-22T07:34:48",
+  "run_in_background": true,
+  "timeout": 3600000,
+  "тривалість_с": null,
+  "вид": "чекач",
+  "автофон": false,
+  "команда": "SHA=25f21fd677b8dd3e291593d02e53946db7352a5a; until r=$(curl -sS \"https://api.github.com/repos/mightyrochy/kod-shi-data/commits/$SHA/check-runs\" || true); echo \"$r\" | python3 -c \"\nimport json,sys\nd=json.load(sys.stdin); rs=d.get('check_runs',[])\nsys.exit(0 if rs and all(x['status']=='completed' for x in rs) and len(rs)>=4 else 1)\" 2>/dev/null; do sleep 60; done; echo \"$r\" | python3 -c \"\nimport json,sys; print([(x['name'],x['conclusion']) for x in json.load(sys.stdin)['check_runs']])\""
+ },
+ {
+  "сесія": "session_0174ZLdhnmRhKAJhKocYY78j",
+  "час": "2026-10-22T07:35:36",
+  "run_in_background": false,
+  "timeout": null,
+  "тривалість_с": 125,
+  "вид": "робота",
+  "автофон": true,
+  "команда": "S=$SP/ж58/аудит/живі_58; cd $S; python3 - <<'E'\nimport glob,re,collections\nкоди=[\"контраст\",\"метал\",\"формальність\",\"маркери_щабля\",\"колір\",\"відлуння\",\"площі\",\"сімʼї\",\"реєстр\",\"третя_річ\",\"розмір_номер\",\"фокус\",\"взуття\",\"тканина\",\"аксесуари\",\"край\",\"верх_довжина\",\"текстура\",\"бік_b\",\"основи_бік\",\"дистанція\",\"день_вечір\",\"макіяж\",\"погода\"]\nc=collections.Counter(); де=collections.Counter(); пр=0\nfor f in glob.glob('*/*/VIDPOVIDI/*.txt'):\n    т=open(f,encoding='utf8',errors='replace').read().split('── ВІДПОВІДЬ',1)[0]; пр+=1\n    for к in коди:\n        for м in re.finditer(r'.{0,25}\"%s\".{0,5}'%re.escape(к), т):\n            c[к]+=1; де[(f.split('_',2)[-1][:-4] if False else re.sub(r'seed\\d+_\\d+_','',f.split('/')[-1]), м.group(0)[:30])]+=1\nprint('промптів',пр,'згадок кодом-рядком у лапках',sum(c.values()))\nfor k,v in де.most_common(8): print(v,k)\nE"
+ },
+ {
+  "сесія": "session_0174ZLdhnmRhKAJhKocYY78j",
+  "час": "2026-10-22T07:38:14",
+  "run_in_background": true,
+  "timeout": 3600000,
+  "тривалість_с": null,
+  "вид": "чекач",
+  "автофон": false,
+  "команда": "SHA=9829697e9f4dc8adbf086f5557119896afe17427; until r=$(curl -sS \"https://api.github.com/repos/mightyrochy/kod-shi-data/commits/$SHA/check-runs\" || echo '{}'); echo \"$r\" | python3 -c \"\nimport json,sys\nrs=json.load(sys.stdin).get('check_runs',[]); імена={x['name']:x for x in rs}\nтреба=('перевірка джерел','розділи й контракти','зібрати показ-повний')\nsys.exit(0 if all(і in імена and імена[і]['status']=='completed' for і in треба) and all(x['status']=='completed' for x in rs) else 1)\" 2>/dev/null; do sleep 60; done; echo \"$r\" | python3 -c \"\nimport json,sys; print([(x['name'],x['conclusion']) for x in json.load(sys.stdin)['check_runs']])\""
+ },
+ {
+  "сесія": "session_018PH2De64GCPFA7tNAfARuh",
+  "час": "2026-10-25T12:08:17",
+  "run_in_background": false,
+  "timeout": null,
+  "тривалість_с": null,
+  "вид": "робота",
+  "автофон": true,
+  "команда": "tail -1 аудит/дошка/claude/5-4-g-hramatyka.md | rev | cut -c1-250 | rev; tail -1 аудит/дошка/claude/5-4-g-hramatyka.md | tr -cd '|' | wc -c"
+ },
+ {
+  "сесія": "session_018qcpadmn3w5MW9DxjHgjp3",
+  "час": "2026-10-26T15:57:22",
+  "run_in_background": false,
+  "timeout": null,
+  "тривалість_с": null,
+  "вид": "робота",
+  "автофон": true,
+  "команда": "git fetch -q origin '+refs/heads/*:refs/remotes/origin/*' 2>/dev/null; for r in $(git for-each-ref --format='%(refname)' refs/remotes/origin); do git -c core.quotepath=off grep -hoE '^(заміна !?)?\\| *1[0-9]{4} *\\|' $r -- аудит/дошка аудит/БЕКЛОГ.md 2>/dev/null; done | grep -oE '1[0-9]{4}' | sort -un | tail -15"
+ },
+ {
+  "сесія": "session_01BBw3G7D6ASsTKsUnP4GMWP",
+  "час": "2026-10-22T12:01:08",
+  "run_in_background": true,
+  "timeout": 7200000,
+  "тривалість_с": 1193,
+  "вид": "робота",
+  "автофон": false,
+  "команда": "S=$SP; cd $S && env P=2 python3 прогін.py після_прим $S/reg auto 2>&1 | grep -v Warning | tail -5"
+ },
+ {
+  "сесія": "session_01BBw3G7D6ASsTKsUnP4GMWP",
+  "час": "2026-10-22T12:01:09",
+  "run_in_background": true,
+  "timeout": 7200000,
+  "тривалість_с": null,
+  "вид": "робота",
+  "автофон": false,
+  "команда": "S=$SP; cd $S && env P=1 python3 прогін.py кін_прир /home/user/kod-shi-data 2>&1 | tail -5"
+ },
+ {
+  "сесія": "session_01BBw3G7D6ASsTKsUnP4GMWP",
+  "час": "2026-10-22T12:01:11",
+  "run_in_background": true,
+  "timeout": 7200000,
+  "тривалість_с": null,
+  "вид": "робота",
+  "автофон": false,
+  "команда": "S=$SP; cd $S && env P=1 ЛИШЕ_РУКА1=1 python3 прогін.py кін_рука1 /home/user/kod-shi-data 2>&1 | tail -5"
+ },
+ {
+  "сесія": "session_01BBw3G7D6ASsTKsUnP4GMWP",
+  "час": "2026-10-22T12:23:27",
+  "run_in_background": true,
+  "timeout": 3600000,
+  "тривалість_с": null,
+  "вид": "робота",
+  "автофон": false,
+  "команда": "S=$SP; (cd $S/main/джерела && timeout 3000 python3 проби/рука2_хибні_каталог.py > $S/каталог_до.txt 2>&1) & (cd /home/user/kod-shi-data/джерела && timeout 3000 python3 проби/рука2_хибні_каталог.py > $S/каталог_після.txt 2>&1) & wait; grep -v Warning $S/каталог_до.txt | grep -v '^ ' > $S/к1; grep -v Warning $S/каталог_після.txt | grep -v '^ ' > $S/к2; wc -l $S/к1 $S/к2; diff $S/к1 $S/к2 | cut -c1-300 | head -10"
+ },
+ {
+  "сесія": "session_01BBw3G7D6ASsTKsUnP4GMWP",
+  "час": "2026-10-22T12:23:33",
+  "run_in_background": true,
+  "timeout": 7200000,
+  "тривалість_с": null,
+  "вид": "робота",
+  "автофон": false,
+  "команда": "ls node_modules | head -3; S=$SP; (time (python3 стенд_знімок.py --дим && python3 тест_живого_шляху.py && python3 тест_протоколу.py && python3 прилади/розділи_гейтів.py && python3 audit_contracts.py && NODE_PATH=node_modules node тест_показу.js)) > $S/батарея.txt 2>&1; echo \"КОД $?\" >> $S/батарея.txt; tail -5 $S/батарея.txt"
+ },
+ {
+  "сесія": "session_01BQdNJ1nMkMwMKiGhP9gB3y",
+  "час": "2026-10-22T13:05:29",
+  "run_in_background": false,
+  "timeout": null,
+  "тривалість_с": 144,
+  "вид": "робота",
+  "автофон": true,
+  "команда": "cd $SP/h && cat >> run2.sh <<'EOF'\necho \"=== 10 пуш відхилено: 2 тихі повтори, рядок, -Retry після виправлення\"; setup r10; mark \"$SLUG/$M/1\"; gem\n  printf '#!/bin/sh\\nexit 1\\n' > \"$W/origin.git/hooks/pre-receive\"; chmod +x \"$W/origin.git/hooks/pre-receive\"\n  P=\"{\\\"WorkDir\\\":\\\"$W/pub\\\",\\\"OutDir\\\":\\\"$W/out\\\",\\\"RepoUrl\\\":\\\"$W/origin.git\\\",\\\"ClaudeExe\\\":\\\"$H/fake_claude.py\\\",\\\"MaxPushRetries\\\":2\"\n  for i in 1 2 3 4; do \"$PW\" -NoProfile -File \"$H/side.ps1\" -Script \"$SRC/gemini_publish.ps1\" -ArgsJson \"$P}\"; done\n  echo \"  claude після 4 проходів: $(wc -l < \"$W/claude.log\")\"; rm \"$W/origin.git/hooks/pre-receive\"\n  ID=$(basename $(ls \"$W\"/out/2*.json) .json); \"$PW\" -NoProfile -File \"$H/side.ps1\" -Script \"$SRC/gemini_publish.ps1\" -ArgsJson \"$P,\\\"Retry\\\":\\\"$ID\\\"}\"; show\nEOF\n./run2.sh > out2.txt 2>&1; grep -v -E '^(fatal|warning|hint)' out2.txt | grep -v '^  origin' | cut -c1-200 | sed -n '/=== 8/,$p'; for s in \"a abandon_then_done stream\" \"b github stream\" \"c github_renamed stream\" \"d wrapper stream\" \"e blocked stream\" \"f wrong_sha stream\" \"g dirty stream\" \"h never stream\" \"i hang stream\" \"j die stream\" \"k nothing stream\" \"l abandon_then_done print\" \"m hang print\" \"n abandon_then_done stream bad-model\"; do set -- $s; printf '%s: ' \"$1\"; ./run.sh $1 $2 $3 ${4:-} 2>/dev/null | grep -E '^20.*GEMINI ОБГОРТКА' | sed 's/^20[0-9-]* [0-9:]* GEMINI ОБГОРТКА: //' | cut -c1-120; done"
+ },
+ {
+  "сесія": "session_01BQdNJ1nMkMwMKiGhP9gB3y",
+  "час": "2026-10-22T13:08:29",
+  "run_in_background": true,
+  "timeout": null,
+  "тривалість_с": 167,
+  "вид": "робота",
+  "автофон": false,
+  "команда": "export PWSH=$SP/pwsh/pwsh; { for s in \"a abandon_then_done stream\" \"b github stream\" \"c github_renamed stream\" \"d wrapper stream\" \"e blocked stream\" \"f wrong_sha stream\" \"g dirty stream\" \"h never stream\" \"i hang stream\" \"j die stream\" \"k nothing stream\" \"l abandon_then_done print\" \"m hang print\" \"n abandon_then_done stream bad-model\"; do set -- $s; printf '%s: ' \"$1\"; ./сценарії_прогону.sh \"$@\" 2>/dev/null | grep -E '^20.*GEMINI ОБГОРТКА' | sed 's/^20[0-9-]* [0-9:]* GEMINI ОБГОРТКА: //' | cut -c1-140; done; ./сценарії_черги.sh 2>&1 | grep -E '^===|claude|GEMINI ОБГОРТКА|code' | cut -c1-140; } > $SP/final.txt 2>&1; cd $SP && ./pwsh/pwsh -NoProfile -File psa.ps1 2>&1 | grep -v -E 'PSReviewUnusedParameter|PSAvoidUsingPositionalParameters|PSUseSingularNouns|PSUseShouldProcess' > psa_final.txt; echo done"
+ },
+ {
+  "сесія": "session_01FUNnY2xRn8kvUcaRtkfBBy",
+  "час": "2026-10-22T21:43:52",
+  "run_in_background": true,
+  "timeout": null,
+  "тривалість_с": null,
+  "вид": "робота",
+  "автофон": false,
+  "команда": "SP=$SP; bash $SP/пари.sh > $SP/пари.out 2>&1"
+ },
+ {
+  "сесія": "session_01FUNnY2xRn8kvUcaRtkfBBy",
+  "час": "2026-10-22T21:56:18",
+  "run_in_background": true,
+  "timeout": null,
+  "тривалість_с": null,
+  "вид": "робота",
+  "автофон": false,
+  "команда": "SP=$SP; cat > $SP/батарея.sh <<'EOF'\nSP=$SP\ncd /home/user/kod-shi-data/джерела\nfor c in \"python3 стенд_знімок.py --дим\" \"python3 тест_живого_шляху.py\" \"python3 тест_протоколу.py\" \"python3 прилади/розділи_гейтів.py\" \"python3 audit_contracts.py\" \"env NODE_PATH=node_modules node тест_показу.js\"; do\n  $c > $SP/бат_$(echo $c | tr -c 'a-zA-Zа-яА-ЯіїєІЇЄ_' '_' | cut -c1-40).log 2>&1; echo \"rc=$? · $c\"\ndone\nfor n in 5 6; do bash $SP/прогін.sh після_$n $SP/після 3; bash $SP/прогін.sh до_$n $SP/до 3; done\nEOF\nbash $SP/батарея.sh > $SP/батарея.out 2>&1"
+ },
+ {
+  "сесія": "session_01FUNnY2xRn8kvUcaRtkfBBy",
+  "час": "2026-10-22T22:14:20",
+  "run_in_background": true,
+  "timeout": null,
+  "тривалість_с": null,
+  "вид": "робота",
+  "автофон": false,
+  "команда": "SP=$SP; bash $SP/б.sh > $SP/б.out 2>&1"
+ },
+ {
+  "сесія": "session_01FUNnY2xRn8kvUcaRtkfBBy",
+  "час": "2026-10-22T22:27:12",
+  "run_in_background": true,
+  "timeout": null,
+  "тривалість_с": null,
+  "вид": "робота",
+  "автофон": false,
+  "команда": "SP=$SP; CHASY_MYNULYI=99 bash $SP/прогін.sh після_8 $SP/після 3 > $SP/після8.out 2>&1"
+ },
+ {
+  "сесія": "session_01FUNnY2xRn8kvUcaRtkfBBy",
+  "час": "2026-10-22T23:17:38",
+  "run_in_background": true,
+  "timeout": null,
+  "тривалість_с": null,
+  "вид": "робота",
+  "автофон": false,
+  "команда": "SP=$SP; R=/home/user/kod-shi-data; bash $SP/збірка.sh $R $SP/після/index.html > $SP/після9.out 2>&1; bash $SP/прогін.sh після_9 $SP/після 3 >> $SP/після9.out 2>&1"
+ },
+ {
+  "сесія": "session_01Fb7kZuVUsDUkoYwyC1ZkBQ",
+  "час": "2026-10-23T06:45:49",
+  "run_in_background": true,
+  "timeout": 7200000,
+  "тривалість_с": null,
+  "вид": "робота",
+  "автофон": false,
+  "команда": "$SP/батарея2.sh"
+ },
+ {
+  "сесія": "session_01Fb7kZuVUsDUkoYwyC1ZkBQ",
+  "час": "2026-10-23T07:21:15",
+  "run_in_background": true,
+  "timeout": 7200000,
+  "тривалість_с": 797,
+  "вид": "робота",
+  "автофон": false,
+  "команда": "$SP/батарея2.sh"
+ },
+ {
+  "сесія": "session_01Fb7kZuVUsDUkoYwyC1ZkBQ",
+  "час": "2026-10-23T07:24:31",
+  "run_in_background": false,
+  "timeout": 1800000,
+  "тривалість_с": null,
+  "вид": "робота",
+  "автофон": true,
+  "команда": "S=$SP; git log --oneline -1; (python3 стенд_знімок.py --дим 2>&1 | tail -1; python3 тест_живого_шляху.py 2>&1 | grep 'ПРОЙДЕНО'; python3 тест_протоколу.py 2>&1 | tail -1; python3 прилади/розділи_гейтів.py 2>&1 | tail -1; python3 audit_contracts.py 2>&1 | grep -c '✗'; NODE_PATH=node_modules node тест_показу.js 2>&1 | tail -1) > $S/батарея_голова.txt 2>&1; cat $S/батарея_голова.txt; for f in проби/поділ_*_ast.py; do python3 \"$f\" >/dev/null 2>&1 || echo \"ВПАЛО $f\"; done"
+ },
+ {
+  "сесія": "session_01GZJsR288YzozmF2Ba8SoTS",
+  "час": "2026-10-23T15:08:59",
+  "run_in_background": false,
+  "timeout": 3600000,
+  "тривалість_с": 655,
+  "вид": "робота",
+  "автофон": true,
+  "команда": "SP=$SP; for c in \"python3 стенд_знімок.py --дим\" \"python3 тест_живого_шляху.py\" \"python3 тест_протоколу.py\" \"python3 прилади/розділи_гейтів.py\" \"python3 audit_contracts.py\" \"env NODE_PATH=node_modules node тест_показу.js\"; do n=$(echo $c | awk '{print $NF}' | tr '/' '_'); timeout 1500 $c > $SP/бат_$n.txt 2>&1; echo \"$? $c :: $(tail -1 $SP/бат_$n.txt | cut -c1-200)\"; done"
+ },
+ {
+  "сесія": "session_01GZJsR288YzozmF2Ba8SoTS",
+  "час": "2026-10-23T15:21:46",
+  "run_in_background": true,
+  "timeout": 7200000,
+  "тривалість_с": null,
+  "вид": "робота",
+  "автофон": false,
+  "команда": "SP=$SP; for c in \"python3 стенд_знімок.py --дим\" \"python3 тест_живого_шляху.py\" \"python3 тест_протоколу.py\" \"python3 прилади/розділи_гейтів.py\" \"python3 audit_contracts.py\" \"env NODE_PATH=node_modules node тест_показу.js\" \"python3 проби/слід_оцінки_9044.py\"; do n=$(echo $c | awk '{print $NF}' | tr '/' '_'); timeout 1500 $c > $SP/бат2_$n.txt 2>&1; echo \"$? $c :: $(tail -1 $SP/бат2_$n.txt | cut -c1-200)\"; done; bash $SP/проби.sh /home/user/kod-shi-data/джерела $SP/після_гілка; cut -c1-120 $SP/після_гілка/зведення.txt"
+ },
+ {
+  "сесія": "session_01Gs1ctE2BJ3HwCx2byEHwvg",
+  "час": "2026-10-24T02:20:30",
+  "run_in_background": true,
+  "timeout": 1200000,
+  "тривалість_с": null,
+  "вид": "робота",
+  "автофон": false,
+  "команда": "bash $SP/батарея.sh після"
+ },
+ {
+  "сесія": "session_01JKcPeV8ni2B9Fbnah7odFo",
+  "час": "2026-10-25T10:12:01",
+  "run_in_background": true,
+  "timeout": 3600000,
+  "тривалість_с": null,
+  "вид": "чекач",
+  "автофон": false,
+  "команда": "u=\"https://api.github.com/repos/mightyrochy/kod-shi-data/commits/5a3a3a3220d1fdd8c912c5e815f36d97709ce186/check-runs\"; until curl -sS -m 20 \"$u\" 2>/dev/null | python3 -c \"import json,sys;d=json.load(sys.stdin)['check_runs'];sys.exit(0 if d and all(c['status']=='completed' for c in d) else 1)\"; do sleep 45; done; curl -sS -m 20 \"$u\" | python3 -c \"import json,sys;[print(c['name'],c['conclusion']) for c in json.load(sys.stdin)['check_runs']]\""
+ },
+ {
+  "сесія": "session_01LBp5EUd4VC4xnYqCkbMuN4",
+  "час": "2026-10-22T08:14:56",
+  "run_in_background": false,
+  "timeout": null,
+  "тривалість_с": 169,
+  "вид": "робота",
+  "автофон": true,
+  "команда": "cd /home/user/kod-shi-data/джерела && ls node_modules 2>/dev/null | head -3; ls ../аудит/проби/ | grep -c .; for f in проби/оцінка_*.py проби/шлях_оцінка_*.py; do echo \"== $f\"; timeout 300 python3 -W ignore $f 2>&1 | tail -2; done 2>&1 | tail -80"
+ },
+ {
+  "сесія": "session_01LBp5EUd4VC4xnYqCkbMuN4",
+  "час": "2026-10-22T08:19:19",
+  "run_in_background": true,
+  "timeout": null,
+  "тривалість_с": null,
+  "вид": "робота",
+  "автофон": false,
+  "команда": "(npm ci --ignore-scripts --no-audit --no-fund >/dev/null 2>&1; python3 -c \"import чистка_каталогу as ч, feed as Ф; print('фід:', ч.забезпечити_чистим('каталог_повний.xml')); print('фікстура:', Ф.каталог_на_диску('каталог_brief.xml'))\" && python3 стенд_знімок.py --дим && python3 тест_живого_шляху.py && python3 тест_протоколу.py && python3 прилади/розділи_гейтів.py && python3 audit_contracts.py && NODE_PATH=node_modules node тест_показу.js; echo \"БАТАРЕЯ КОД $?\") > $SP/батарея.txt 2>&1"
+ },
+ {
+  "сесія": "session_01M9XyHMGLf2tYQEsRufjUVi",
+  "час": "2026-10-22T09:19:26",
+  "run_in_background": true,
+  "timeout": 3600000,
+  "тривалість_с": null,
+  "вид": "робота",
+  "автофон": false,
+  "команда": "cd /home/user/kod-shi-data && S=$SP; cat > $S/після.sh <<EOF\nset -e\ncd /home/user/kod-shi-data/джерела\nexport LYUSTERKO_PYC_PYTHON=/root/.local/share/uv/python/cpython-3.12.1-linux-x86_64-gnu/bin/python3.12\nmkdir -p $S/після/зн\nLYUSTERKO_CATALOG=повний python3 build_артефакт.py . $S/після/index.html показ-повний > $S/після/збірка.log 2>&1\ncd ..\nZNIMKY=$S/після/зн CHROMIUM=/opt/pw-browsers/chromium NODE_PATH=джерела/node_modules node аудит/проби/рв6_стенд.js http://127.0.0.1:8765 $S/після $S/pyodide 3 > $S/після/стенд.log 2>&1 || echo \"стенд rc \\$?\"\ntail -3 $S/після/збірка.log; grep -cE '^  ✔' $S/після/стенд.log; grep -E '^  ✗|СТЕНД:|ДОКАЗ' $S/після/стенд.log | head\nEOF\ntime sh $S/після.sh"
+ },
+ {
+  "сесія": "session_01M9XyHMGLf2tYQEsRufjUVi",
+  "час": "2026-10-22T09:25:46",
+  "run_in_background": true,
+  "timeout": 5400000,
+  "тривалість_с": null,
+  "вид": "робота",
+  "автофон": false,
+  "команда": "S=$SP; cat > $S/фінал.sh <<EOF\ncd /home/user/kod-shi-data/джерела\nexport LYUSTERKO_PYC_PYTHON=/root/.local/share/uv/python/cpython-3.12.1-linux-x86_64-gnu/bin/python3.12\nexport CHROMIUM=/opt/pw-browsers/chromium NODE_PATH=/home/user/kod-shi-data/джерела/node_modules\nmkdir -p $S/п2/зн $S/шов\nLYUSTERKO_CATALOG=повний python3 build_артефакт.py . $S/п2/index.html показ-повний > $S/п2/збірка.log 2>&1 || echo \"ЗБІРКА rc \\$?\"\ncd ..\nZNIMKY=$S/п2/зн node аудит/проби/рв6_стенд.js http://127.0.0.1:8765 $S/п2 $S/pyodide 3 > $S/п2/стенд.log 2>&1 || echo \"стенд rc \\$?\"\necho \"стенд ✔ \\$(grep -cE '^  ✔' $S/п2/стенд.log) ✗ \\$(grep -cE '^  ✗' $S/п2/стенд.log)\"; grep -E 'СТЕНД:|^ДОКАЗ' $S/п2/стенд.log\nfor н in до п2; do node джерела/прилади/міст_шов_дослід.js $S/\\$н/index.html $S/pyodide аудит/проби/знімок_входи_сід3.jsonl.gz $S/шов \\$н > $S/шов/\\$н.log 2>&1 || echo \"шов \\$н rc \\$?\"; tail -1 $S/шов/\\$н.log;\n  python3 джерела/прилади/знімок_мосту.py --з-сирих $S/шов/\\$н/сирі.jsonl --вихід $S/шов/\\$н.jsonl | tail -1; done\npython3 джерела/прилади/знімок_мосту.py --діф $S/шов/до.jsonl $S/шов/п2.jsonl | tail -2; cmp $S/шов/до.jsonl $S/шов/п2.jsonl && echo \"знімок тотожний байт у байт\"; sha256sum $S/шов/до.jsonl $S/шов/п2.jsonl\nfor н in до п2; do MITKA=\\$н node аудит/проби/підтвердження_5770.js $S/\\$н $S/pyodide > $S/шов/5770_\\$н.log 2>&1 || echo \"5770 \\$н rc \\$?\"; done\ncd джерела && (python3 стенд_знімок.py --дим && python3 тест_живого_шляху.py && python3 тест_протоколу.py && python3 прилади/розділи_гейтів.py && python3 audit_contracts.py && node тест_показу.js) > $S/батарея.log 2>&1; echo \"батарея rc \\$?\"; tail -2 $S/батарея.log\nEOF\ntime sh $S/фінал.sh"
+ },
+ {
+  "сесія": "session_01M9XyHMGLf2tYQEsRufjUVi",
+  "час": "2026-10-22T09:31:21",
+  "run_in_background": true,
+  "timeout": 5400000,
+  "тривалість_с": null,
+  "вид": "робота",
+  "автофон": false,
+  "команда": "S=$SP; ls $S/п2/зн | grep -c zbyr; ls $S/п2/зн | wc -l; cat > $S/фінал2.sh <<EOF\ncd /home/user/kod-shi-data\nexport CHROMIUM=/opt/pw-browsers/chromium NODE_PATH=/home/user/kod-shi-data/джерела/node_modules\nfor n in до п2; do node джерела/прилади/міст_шов_дослід.js $S/\\$n/index.html $S/pyodide аудит/проби/знімок_входи_сід3.jsonl.gz $S/шов \\$n > $S/шов/\\$n.log 2>&1 || echo \"шов \\$n rc \\$?\"; tail -1 $S/шов/\\$n.log;\n  python3 джерела/прилади/знімок_мосту.py --з-сирих $S/шов/\\$n/сирі.jsonl --вихід $S/шов/\\$n.jsonl | tail -1; done\npython3 джерела/прилади/знімок_мосту.py --діф $S/шов/до.jsonl $S/шов/п2.jsonl | tail -2; cmp $S/шов/до.jsonl $S/шов/п2.jsonl && echo \"знімок тотожний байт у байт\"; sha256sum $S/шов/до.jsonl $S/шов/п2.jsonl\nfor n in до п2; do MITKA=\\$n node аудит/проби/підтвердження_5770.js $S/\\$n $S/pyodide > $S/шов/5770_\\$n.log 2>&1 || echo \"5770 \\$n rc \\$?\"; done\ncd джерела && (python3 стенд_знімок.py --дим && python3 тест_живого_шляху.py && python3 тест_протоколу.py && python3 прилади/розділи_гейтів.py && python3 audit_contracts.py && node тест_показу.js) > $S/батарея.log 2>&1; echo \"батарея rc \\$?\"; tail -2 $S/батарея.log\nEOF\ntime bash $S/фінал2.sh"
+ },
+ {
+  "сесія": "session_01NCY4LhibSwNV6KR3ByDQJo",
+  "час": "2026-10-22T20:38:18",
+  "run_in_background": false,
+  "timeout": null,
+  "тривалість_с": 609,
+  "вид": "робота",
+  "автофон": true,
+  "команда": "timeout 600 python3 -c \"\nimport warnings; warnings.filterwarnings('ignore')\nimport feed, формальність as Ф\nк = feed._прочитати_каталог(feed.каталог_на_диску('каталог_повний.xml'))\nк = к if isinstance(к, list) else list(к.values()) if isinstance(к, dict) else к\nprint(type(к), len(к)); r=к[0]; print({k: r.get(k) for k in ('тип','текстура','формальність_фото','слот')}, Ф.інтервал_формальності(r))\n\" 2>&1 | tail -3"
+ },
+ {
+  "сесія": "session_01NCY4LhibSwNV6KR3ByDQJo",
+  "час": "2026-10-22T20:50:20",
+  "run_in_background": true,
+  "timeout": 5400000,
+  "тривалість_с": 703,
+  "вид": "робота",
+  "автофон": false,
+  "команда": "S=$SP; cd /home/user/kod-shi-data/джерела && rm -f $S/п_код.txt; for k in \"стенд_знімок.py --дим:дим\" \"тест_живого_шляху.py:жш\" \"тест_протоколу.py:прот\" \"прилади/розділи_гейтів.py:гейти\" \"audit_contracts.py:контр\"; do c=${k%%:*}; n=${k##*:}; python3 $c > $S/п_$n.log 2>&1; echo \"$n $?\" >> $S/п_код.txt; done; NODE_PATH=node_modules node тест_показу.js > $S/п_показ.log 2>&1; echo \"показ $?\" >> $S/п_код.txt; for f in проби/поділ_*_ast.py; do python3 $f >/dev/null 2>&1 || echo \"поділ ✗ $f\" >> $S/п_код.txt; done; cat $S/п_код.txt"
+ },
+ {
+  "сесія": "session_01NCY4LhibSwNV6KR3ByDQJo",
+  "час": "2026-10-22T20:50:23",
+  "run_in_background": false,
+  "timeout": 590000,
+  "тривалість_с": 700,
+  "вид": "чекач",
+  "автофон": true,
+  "команда": "S=$SP; until grep -q '^показ' $S/п_код.txt 2>/dev/null; do sleep 15; done; sleep 5; cat $S/п_код.txt; grep -hE '^ *✗|ВПАЛО: ' $S/п_*.log | head -6 | cut -c1-300"
+ },
+ {
+  "сесія": "session_01NCY4LhibSwNV6KR3ByDQJo",
+  "час": "2026-10-22T22:00:08",
+  "run_in_background": true,
+  "timeout": 5400000,
+  "тривалість_с": 650,
+  "вид": "робота",
+  "автофон": false,
+  "команда": "S=$SP; cd /home/user/kod-shi-data/джерела && rm -f $S/п_код.txt; for k in \"стенд_знімок.py --дим:дим\" \"тест_живого_шляху.py:жш\" \"тест_протоколу.py:прот\" \"прилади/розділи_гейтів.py:гейти\" \"audit_contracts.py:контр\"; do c=${k%%:*}; n=${k##*:}; python3 $c > $S/п_$n.log 2>&1; echo \"$n $?\" >> $S/п_код.txt; done; NODE_PATH=node_modules node тест_показу.js > $S/п_показ.log 2>&1; echo \"показ $?\" >> $S/п_код.txt; for f in проби/поділ_*_ast.py; do python3 $f >/dev/null 2>&1 || echo \"поділ ✗ $f\" >> $S/п_код.txt; done; python3 проби/нагода_смуга_числом.py >/dev/null 2>&1; echo \"нагода_смуга $?\" >> $S/п_код.txt; cat $S/п_код.txt"
+ },
+ {
+  "сесія": "session_01NCY4LhibSwNV6KR3ByDQJo",
+  "час": "2026-10-22T22:00:17",
+  "run_in_background": false,
+  "timeout": 590000,
+  "тривалість_с": 650,
+  "вид": "чекач",
+  "автофон": true,
+  "команда": "S=$SP; until grep -q '^нагода_смуга' $S/п_код.txt 2>/dev/null; do sleep 15; done; cat $S/п_код.txt; grep -hE '^ *✗|ВПАЛО: ' $S/п_*.log | head -6 | cut -c1-300"
+ },
+ {
+  "сесія": "session_01NjEsEsW7KAaDxNwDxyNaZo",
+  "час": "2026-10-23T04:46:10",
+  "run_in_background": true,
+  "timeout": 3600000,
+  "тривалість_с": null,
+  "вид": "робота",
+  "автофон": false,
+  "команда": "cd $SP && (time python3 мірило.py /home/user/kod-shi-data виміри_після) > після.log 2>&1"
+ },
+ {
+  "сесія": "session_01NjEsEsW7KAaDxNwDxyNaZo",
+  "час": "2026-10-23T04:50:08",
+  "run_in_background": true,
+  "timeout": 3600000,
+  "тривалість_с": null,
+  "вид": "робота",
+  "автофон": false,
+  "команда": "cd $SP && cp /home/user/kod-shi-data/джерела/проби/рука2_хибний_бриф.py проба_бриф.py && (python3 проба_бриф.py do/джерела > бриф_до.txt 2>&1; python3 проба_бриф.py /home/user/kod-shi-data/джерела > бриф_після.txt 2>&1)"
+ },
+ {
+  "сесія": "session_01NjEsEsW7KAaDxNwDxyNaZo",
+  "час": "2026-10-23T04:50:53",
+  "run_in_background": true,
+  "timeout": 3600000,
+  "тривалість_с": null,
+  "вид": "робота",
+  "автофон": false,
+  "команда": "cd $SP && python3 проба_бриф.py $PWD/do/джерела > бриф_до.txt 2>&1"
+ },
+ {
+  "сесія": "session_01NjEsEsW7KAaDxNwDxyNaZo",
+  "час": "2026-10-23T04:58:20",
+  "run_in_background": true,
+  "timeout": 3600000,
+  "тривалість_с": null,
+  "вид": "робота",
+  "автофон": false,
+  "команда": "cd /home/user/kod-shi-data/джерела && ls node_modules >/dev/null 2>&1 && echo nm || echo \"нема node_modules\"; (python3 стенд_знімок.py --дим && python3 тест_живого_шляху.py && python3 тест_протоколу.py && python3 прилади/розділи_гейтів.py && python3 audit_contracts.py && NODE_PATH=node_modules node тест_показу.js) > $SP/батарея.log 2>&1; echo \"КОД $?\" >> $SP/батарея.log"
+ },
+ {
+  "сесія": "session_01NjEsEsW7KAaDxNwDxyNaZo",
+  "час": "2026-10-23T04:58:27",
+  "run_in_background": true,
+  "timeout": 7200000,
+  "тривалість_с": null,
+  "вид": "робота",
+  "автофон": false,
+  "команда": "P=$SP/проби; mkdir -p $P; for f in проби/рука2_*.py проби/кеш_входу_*.py проби/sil_K-*.py; do b=$(basename $f .py); timeout 1500 python3 $f > $P/$b.log 2>&1; echo \"$? $b\"; done > $P/підсумок.txt 2>&1; echo кінець >> $P/підсумок.txt"
+ },
+ {
+  "сесія": "session_01PhfYcHvN6mdJXDpmJKDgm7",
+  "час": "2026-10-23T17:42:16",
+  "run_in_background": false,
+  "timeout": null,
+  "тривалість_с": 182,
+  "вид": "робота",
+  "автофон": true,
+  "команда": "git add -A джерела && git commit -q -m \"5.2: правило 8 — спільні за байтами кадри галереї не стають фото речі; проба власник_кадру_52\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_01PhfYcHvN6mdJXDpmJKDgm7\" && git push -q -u origin claude/5-2-vlasnyk-kadru 2>&1 | tail -2; git log --oneline -1; git fetch -q --unshallow origin 2>&1 | tail -1; ls джерела/проби/поділ_*_ast.py; ls джерела/проби/поділ_очікувані.d | tail -5"
+ },
+ {
+  "сесія": "session_01PhfYcHvN6mdJXDpmJKDgm7",
+  "час": "2026-10-23T17:44:30",
+  "run_in_background": true,
+  "timeout": 3600000,
+  "тривалість_с": null,
+  "вид": "робота",
+  "автофон": false,
+  "команда": "cd /home/user/kod-shi-data/джерела && (python3 стенд_знімок.py --дим && python3 тест_живого_шляху.py && python3 тест_протоколу.py && python3 прилади/розділи_гейтів.py && python3 audit_contracts.py && NODE_PATH=node_modules node тест_показу.js; echo \"КОД $?\") > $SP/батарея.txt 2>&1"
+ },
+ {
+  "сесія": "session_01QbaUDp6Z15aLMJ93c8vMtk",
+  "час": "2026-10-25T11:44:58",
+  "run_in_background": false,
+  "timeout": 600000,
+  "тривалість_с": 660,
+  "вид": "робота",
+  "автофон": true,
+  "команда": "L=$SP/бат.log; (python3 стенд_знімок.py --дим && python3 тест_живого_шляху.py && python3 тест_протоколу.py && python3 прилади/розділи_гейтів.py && python3 audit_contracts.py && NODE_PATH=node_modules node тест_показу.js) > $L 2>&1; echo \"код $?\"; grep -iE \"живого|6/6|розділ|помил|FAIL|пройдено|OK|✓\" $L | tail -12"
+ },
+ {
+  "сесія": "session_01TcXa5V4eMzCHoTbK9dVdtz",
+  "час": "2026-10-23T09:51:40",
+  "run_in_background": true,
+  "timeout": 7200000,
+  "тривалість_с": null,
+  "вид": "робота",
+  "автофон": false,
+  "команда": "SP=$SP; rm -rf $SP/знімки_до2 $SP/знімки_після2 $SP/wt_до2 $SP/wt_після2 $SP/wt_ф2 $SP/знімки_ф2; ($SP/знімок.sh a3689670a00824693d95732a4e45e22d4f209442 до3; $SP/знімок.sh c9bb767341789a877ab41e2306652144d6db8a43 після3) > $SP/знімки3.log 2>&1"
+ },
+ {
+  "сесія": "session_01TcXa5V4eMzCHoTbK9dVdtz",
+  "час": "2026-10-23T09:53:01",
+  "run_in_background": true,
+  "timeout": 7200000,
+  "тривалість_с": null,
+  "вид": "робота",
+  "автофон": false,
+  "команда": "pkill -f знімок_сцен; pkill -f build_артефакт; sleep 1; SP=$SP; ($SP/знімок.sh a3689670a00824693d95732a4e45e22d4f209442 до3; $SP/знімок.sh 43bfa27536f9fe24670763d48c71f71f73f5c01a після3) > $SP/знімки3.log 2>&1"
+ },
+ {
+  "сесія": "session_01TcXa5V4eMzCHoTbK9dVdtz",
+  "час": "2026-10-23T09:54:37",
+  "run_in_background": true,
+  "timeout": null,
+  "тривалість_с": null,
+  "вид": "робота",
+  "автофон": false,
+  "команда": "SP=$SP; cd /home/user/kod-shi-data && git status --short | head; $SP/батарея.sh > $SP/батарея3.log 2>&1"
+ },
+ {
+  "сесія": "session_01TcXa5V4eMzCHoTbK9dVdtz",
+  "час": "2026-10-23T10:27:42",
+  "run_in_background": true,
+  "timeout": null,
+  "тривалість_с": null,
+  "вид": "робота",
+  "автофон": false,
+  "команда": "SP=$SP; rm -rf $SP/знімки_після3; cd /home/user/kod-shi-data && t0=$(date +%s); python3 джерела/прилади/знімок_сцен.py прогнати --сторінка $SP/сторінка_після3.html --pyodide $SP/pyodide --вихід $SP/знімки_після3 -j 4 > $SP/знімок_після3.log 2>&1; echo \"знімок rc $? $(( $(date +%s)-t0 ))с\""
+ },
+ {
+  "сесія": "session_01WWdDEDN1gL7qWjKrEP2USk",
+  "час": "2026-10-22T08:24:00",
+  "run_in_background": true,
+  "timeout": 3600000,
+  "тривалість_с": null,
+  "вид": "робота",
+  "автофон": false,
+  "команда": "$SP/поділ.sh"
+ },
+ {
+  "сесія": "session_01WWdDEDN1gL7qWjKrEP2USk",
+  "час": "2026-10-22T08:29:10",
+  "run_in_background": true,
+  "timeout": 3600000,
+  "тривалість_с": null,
+  "вид": "робота",
+  "автофон": false,
+  "команда": "$SP/батарея2.sh"
+ },
+ {
+  "сесія": "session_01WWdDEDN1gL7qWjKrEP2USk",
+  "час": "2026-10-22T08:38:14",
+  "run_in_background": true,
+  "timeout": 5400000,
+  "тривалість_с": null,
+  "вид": "чекач",
+  "автофон": false,
+  "команда": "U=\"https://api.github.com/repos/mightyrochy/kod-shi-data/commits/2dd38891f32b8b41e64b6f7116f28d791bcd9de8/check-runs\"; until s=$(curl -sS \"$U\" || true); echo \"$s\" | python3 -c \"import json,sys; d=json.load(sys.stdin); r=d.get('check_runs',[]); sys.exit(0 if r and all(x['status']=='completed' for x in r) else 1)\" 2>/dev/null; do sleep 60; done; echo \"$s\" | python3 -c \"import json,sys; [print(r['name'], r['conclusion']) for r in json.load(sys.stdin)['check_runs']]\""
+ },
+ {
+  "сесія": "session_01WWdDEDN1gL7qWjKrEP2USk",
+  "час": "2026-10-22T09:33:19",
+  "run_in_background": true,
+  "timeout": 5400000,
+  "тривалість_с": null,
+  "вид": "чекач",
+  "автофон": false,
+  "команда": "U=\"https://api.github.com/repos/mightyrochy/kod-shi-data/commits/efd2561798991a0b5138c6741a735e98f9f4c49d/check-runs\"; sleep 20; until s=$(curl -sS \"$U\" || true); echo \"$s\" | python3 -c \"import json,sys; d=json.load(sys.stdin); r=d.get('check_runs',[]); sys.exit(0 if len(r)>=3 and all(x['status']=='completed' for x in r) else 1)\" 2>/dev/null; do sleep 60; done; echo \"$s\" | python3 -c \"import json,sys; [print(r['name'], r['conclusion']) for r in json.load(sys.stdin)['check_runs']]\""
+ },
+ {
+  "сесія": "session_01YP2w1QCKxPxUqCEKiWKVfe",
+  "час": "2026-10-22T09:43:18",
+  "run_in_background": true,
+  "timeout": 2400000,
+  "тривалість_с": 306,
+  "вид": "робота",
+  "автофон": false,
+  "команда": "S=$SP; cat > $S/vidp.sh <<EOF\nset -u\ncd /home/user/kod-shi-data\nfor P in do:3 pislia:3 pislia:4; do\n  K=\\${P%%:*}; C=\\${P##*:}; [ \\$K = do ] && SRC=$S/до || SRC=$S/після\n  D=$S/vidp_\\${K}_\\$C; rm -rf \\$D; mkdir -p \\$D/v; cp \\$SRC/index.html \\$D/index.html\n  CHROMIUM=/opt/pw-browsers/chromium VIDPOVIDI=\\$D/v NODE_PATH=джерела/node_modules timeout 1500 node аудит/проби/рв6_стенд.js http://127.0.0.1:8765 \\$D $S/pyodide \\$C > \\$D/log.txt 2>&1; echo rc=\\$? >> \\$D/log.txt\ndone\necho vidp-done\nEOF\nbash $S/vidp.sh"
+ },
+ {
+  "сесія": "session_01YP2w1QCKxPxUqCEKiWKVfe",
+  "час": "2026-10-22T09:49:46",
+  "run_in_background": true,
+  "timeout": 2400000,
+  "тривалість_с": 540,
+  "вид": "робота",
+  "автофон": false,
+  "команда": "S=$SP; cat > $S/після2.sh <<EOF\nset -u\ncd /home/user/kod-shi-data/джерела\nNODE_PATH=node_modules node тест_показу.js > $S/тп3.log 2>&1; echo \"показ rc=\\$?\"\nLYUSTERKO_CATALOG=повний LYUSTERKO_PYC_PYTHON=/root/.local/share/uv/python/cpython-3.12.1-linux-x86_64-gnu/bin/python3.12 python3 build_артефакт.py . $S/після2/index.html показ-повний > $S/збірка_після2.log 2>&1; echo \"збірка rc=\\$?\"\ncd ..\nfor N in 4 1; do D=$S/after2_\\$N; rm -rf \\$D; mkdir -p \\$D/z; cp $S/після2/index.html \\$D/index.html\nCHROMIUM=/opt/pw-browsers/chromium CHASY=1 ZATRYMKA=typy ZATRYMKA_ODNA=1 ZATRYMKA_MNOZHNYK=0.3 ODNOCHASNO=\\$N ZNIMKY=\\$D/z NODE_PATH=джерела/node_modules timeout 1500 node аудит/проби/рв6_стенд.js http://127.0.0.1:8765 \\$D $S/pyodide 3 > \\$D/log.txt 2>&1; echo \"стенд \\$N rc=\\$?\"; done\necho all-done\nEOF\nmkdir -p $S/після2; bash $S/після2.sh"
+ },
+ {
+  "сесія": "session_01Yb1pXnaxFfD8d1ZweSCVGq",
+  "час": "2026-10-22T07:57:57",
+  "run_in_background": true,
+  "timeout": 1300000,
+  "тривалість_с": 1208,
+  "вид": "чекач",
+  "автофон": false,
+  "команда": "sleep 1200; echo ok"
+ },
+ {
+  "сесія": "session_01Yb1pXnaxFfD8d1ZweSCVGq",
+  "час": "2026-10-22T07:58:00",
+  "run_in_background": false,
+  "timeout": 1300000,
+  "тривалість_с": 1205,
+  "вид": "чекач",
+  "автофон": true,
+  "команда": "until [ -s /tmp/claude-0/-home-user-kod-shi-data/75f9c820-6160-51f6-b710-9254add7b0cf/tasks/bp4vwgoyc.output ]; do sleep 10; done; echo done"
+ }
+]
