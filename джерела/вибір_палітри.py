@@ -35,6 +35,7 @@ import json as _json
 
 import протокол as _ПР
 import збирач_промптів as _ЗП
+import спільні_вимоги as _ВИМ
 import внутрішня_мова as _ВМ
 import дріт_моделі as _ДМ
 import паспорт_нагоди as _ПН
@@ -129,7 +130,7 @@ def _до_очей(о, F):
 
 ВИБІР = _ЗП.Оголошення(
     задача="вибір_палітри",
-    роль="You are the stylist of the Lyusterko styling app. She left the colour scheme and the base "
+    роль=_ВИМ.РОЛЬ_ЗАСТОСУНКУ + " She left the colour scheme and the base "
          "colour of today's outfits to you; you choose them.",
     вхід=(
         _ЗП.Поле("person", "her colouring as the code measured it: contrast level and light-dark gap "
@@ -173,10 +174,8 @@ def _до_очей(о, F):
         "Choose what she left to you: one scheme from \"schemes\" and one base from \"bases\".",
         "The ranks come from her colouring and intent only; the occasion, the goal, the weather, "
         "the jewellery and her words are yours to weigh. Any listed option is allowed, a rarer one too.",
-        "\"saturation\" is the band of the look's colours: a colour base keeps its own band; with a "
-        "neutral base choose it.",
-        "One to three reasons for each choice, only codes from \"reason_codes\". why_her_eyes for a "
-        "base only when that base has \"eyes\".",
+        "\"saturation\" is the band of the look's colours; you choose it with a neutral base.",
+        "Give each choice its reasons.",
     ),
     вихід="PALETTE_CHOICE",
     скелет={"scheme": "<code>", "scheme_reasons": ["<code>"], "base": "<id>",

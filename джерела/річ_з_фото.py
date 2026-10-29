@@ -524,7 +524,6 @@ def фото_речей():
                 "\"frame\" is the item's box on its photo in thousandths of width and height (0–1000), tight "
                 "around the item itself, without background, skin or other items; " + РАМКА_НА_ОКО + ".",
                 "Field values are only codes from \"codes\"; what the photo does not show is null.",
-                "Start the answer with the JSON object itself: no description or reasoning before it.",
             ),
             вихід="PHOTO_ITEMS",
             скелет={"items": [{
