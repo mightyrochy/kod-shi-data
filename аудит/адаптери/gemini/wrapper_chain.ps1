@@ -420,9 +420,9 @@ function Invoke-WrapperChain {
             foreach ($model in $models) {
                 $key = "$n $head $model"
                 if ($seen.ContainsKey($key)) { continue }
-                $moved = $false
-                if (@($seen.Keys | Where-Object { $_ -cmatch ('^' + $n + ' ' + $head + ' ') }).Count) { $moved = Move-BlockedMarkers "автоперевірка-$n-$head" $model $main $now }
-                if (-not $moved) { Add-ChainMarker "автоперевірка-$n-$head" $model $main }
+                # Одна перевірка на голову: позначка будь-якого рушія вже стоїть — нової не ставимо, лише переводимо позначки, що чекають вичерпаної квоти.
+                if (@($seen.Keys | Where-Object { $_ -cmatch ('^' + $n + ' ' + $head + ' ') }).Count) { [void](Move-BlockedMarkers "автоперевірка-$n-$head" $model $main $now) }
+                else { Add-ChainMarker "автоперевірка-$n-$head" $model $main }
                 $seen[$key] = $true
                 $reviewed[$n] = @{head=$head;diff=$diff}
                 Write-FileAtomic $statePath (([ordered]@{ main=$main; reviewed=$reviewed; live_active=$liveActive; live_since=$liveSince; live_stamps=@($liveStamps.Keys); live_pending=@($livePending); reviews=@($seen.Keys); installed_utc=$installed.ToString('o'); heads=$heads }) | ConvertTo-Json -Compress -Depth 5)

@@ -110,6 +110,13 @@ try {
     Check 'Codex вичерпано: позначка перейшла до Claude, одна' ($moved.Count -eq 1 -and $moved[0] -match '/cc-claude-opus-5-5-high/1/p2$')
     Invoke-WrapperChain; SetCodex $false; Invoke-WrapperChain
     Check 'повтор і відновлення Codex не дублюють перевірку' (@(SlugMarkers "автоперевірка-36-$head").Count -eq 1)
+    # Голова, вперше побачена при Codex на квоті, отримує позначку Claude; коли Codex стає доступним, другої не ставимо.
+    SetCodex $true; SetClaude $false
+    $head = Merge 'квота-4б.txt' '4б'
+    $script:Pulls = @((Pull 38 'claude/квота-h' $head)); Invoke-WrapperChain
+    Check 'Codex на квоті з початку: позначка Claude' (@(SlugMarkers "автоперевірка-38-$head").Count -eq 1 -and @(SlugMarkers "автоперевірка-38-$head")[0] -match '/cc-claude-opus-5-5-high/1/p2$')
+    SetCodex $false; Invoke-WrapperChain; Invoke-WrapperChain
+    Check 'Codex став доступним: одна перевірка на голову, без позначки gpt' (@(SlugMarkers "автоперевірка-38-$head").Count -eq 1 -and @(SlugMarkers "автоперевірка-38-$head")[0] -match '/cc-claude-opus-5-5-high/1/p2$')
     # Звіт, що вже опубліковано, інший рушій не повторює.
     SetCodex $false
     [void][IO.Directory]::CreateDirectory("$WorkDir/state")
