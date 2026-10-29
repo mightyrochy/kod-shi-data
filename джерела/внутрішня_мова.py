@@ -1362,6 +1362,7 @@ _МІСЦЯ_ОПЦІЙ = "where it is worn"
     "cannot_tell_dark_fitted_in_sun": "so the code cannot tell whether the fitted item is dark enough to "
                                       "get hot in the sun",
     # ── правила, яким входу нема ніде (`верхнє_суд.БЕЗ_ВХОДУ`, `аксесуари_суд.БЕЗ_ВХОДУ`) ──
+    "rule_input_missing": "The rule cannot judge: the listed input fields are missing for these items. State what is unknown or ask her; do not substitute a typical value.",
     "no_input_outer_warmth": "nobody publishes the warmth of an outer layer as a number, so the code judges "
                              "whether it is enough for this weather only by the item's type",
     "no_input_down_fill_power": "the cards do not carry down quality together with filling weight, so the "

@@ -23,7 +23,8 @@ print("блокерів %d · з options %d · з items %d · без обох %s
       sum(bool(б.get("items")) for б in бл), [б["code"] for б in бл if not б.get("options") and not б.get("items")]))
 ходи = [dict(blocker=б["id"], add=[б["options"][0]]) if б.get("options") else dict(blocker=б["id"], keep=б["items"][0])
         for б in бл if б.get("options") or б.get("items")] + [dict(blocker="b-o2-1", add=["#2d2326"])]
-стара = dict(version="1", outfits=[dict(id="o1", items=образи[0]["речі"][:2], done=[dict(finding="Added %s" % бл[1]["options"][0])])])
+стара = dict(version="1", outfits=[dict(id="o1", items=образи[0]["речі"][:2],
+             done=[dict(finding="Added %s" % next(б["options"][0] for б in бл if б.get("options")))])])
 for як, відп in (("ходами", dict(version="1", fixes=ходи)), ("старою формою", стара)):
     вД = міст(ітерація=2, текст_моделі=json.dumps(відп, ensure_ascii=False), попередній_вердикт=в2["вердикт"],
               спроба_повноти=1, до_вибору=1)
