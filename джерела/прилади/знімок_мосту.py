@@ -198,7 +198,7 @@ def підміна(значення):
 
 
 def main():
-    signal.signal(signal.SIGPIPE, signal.SIG_DFL)    # `| head` не друкує трасу
+    if hasattr(signal, "SIGPIPE"): signal.signal(signal.SIGPIPE, signal.SIG_DFL)    # `| head` не друкує трасу
     if sys.argv[1:2] == ['зміст']:    # рішення доменною мовою: `знімок_змісту.py` (крок 0.2-Б)
         sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
         import знімок_змісту
