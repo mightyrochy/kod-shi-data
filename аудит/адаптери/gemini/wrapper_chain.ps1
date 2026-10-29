@@ -51,9 +51,13 @@ function Get-ChainBuildStamp([string]$Commit) {
     $stamp
 }
 
-function Save-DraftRequest([string]$Branch, [string]$Head) {
+function Save-DraftRequest([string]$Branch, [string]$Head, [string]$Model = '') {
     <# Лише підтверджена публікація DONE лишає завдання створити PR; збій API не губить його. #>
     if ($DryRun -or $Branch -cnotmatch '^gemini/[\p{L}\p{Nd}][\p{L}\p{Nd}._-]{0,79}$' -or $Head -cnotmatch $script:ShaPattern) { return }
+    if ($Model -cmatch $script:ModelPattern) {
+        $models = Join-Path $WorkDir 'engine-models'; [void][IO.Directory]::CreateDirectory($models)
+        Write-FileAtomic (Join-Path $models ((Get-Sha256Hex "$Branch $Head") + '.txt')) $Model
+    }
     $dir = Join-Path $WorkDir 'drafts'; [void][IO.Directory]::CreateDirectory($dir)
     Write-FileAtomic (Join-Path $dir ((Get-Sha256Hex "$Branch $Head") + '.json')) ((@{branch=$Branch;head=$Head} | ConvertTo-Json -Compress))
 }
@@ -116,12 +120,64 @@ function Add-ChainMarker([string]$Slug, [string]$Model, [string]$Main, [switch]$
 }
 
 function Get-ReviewModels($Pull, $Config) {
-    <# Інший постачальник; для невідомого каскаду Gemini — два рушії, один гарантовано незалежний. #>
-    $branch = [string]$Pull.head.ref
+    <# Один інший постачальник; фактичний каскад прив'язаний до опублікованого SHA. #>
+    $branch = [string]$Pull.head.ref; $head = [string]$Pull.head.sha
+    if (Test-ReviewBranch $branch) { return @() }
     if ($branch.StartsWith('claude/')) { return @([string]$Config.codex) }
     if ($branch.StartsWith('codex/')) { return @([string]$Config.claude) }
-    # Gemini може каскадувати між GPT і Claude через agy; назва гілки цього не доводить.
-    @([string]$Config.codex, [string]$Config.claude)
+    $file = Join-Path (Join-Path $WorkDir 'engine-models') ((Get-Sha256Hex "$branch $head") + '.txt')
+    $model = ''
+    foreach ($stateFile in @(Get-ChildItem -LiteralPath (Join-Path $WorkDir 'state') -Filter '*.json' -File -ErrorAction SilentlyContinue)) {
+        $state = ConvertFrom-Json ([IO.File]::ReadAllText($stateFile.FullName, $script:Utf8))
+        if ([string](Get-Prop $state 'line') -cmatch ('^GEMINI ОБГОРТКА: ГОТОВО ' + [regex]::Escape("$branch $head") + '(?: КВОТА [A-Z0-9_]+ [0-9]+)? МОДЕЛЬ ([a-z0-9.-]+)$')) { $model = $Matches[1]; break }
+    }
+    if (Test-Path -LiteralPath $file) { $model = [IO.File]::ReadAllText($file, $script:Utf8).Trim() }
+    if ($model -cmatch '^gpt-') { return @([string]$Config.claude) }
+    @([string]$Config.codex)
+}
+
+function Get-ReviewDiff([string]$Head, [string]$Main) {
+    <# Хеш повного diff проти merge-base не змінюється від чистого злиття main. #>
+    if ((Invoke-Git @('cat-file','-e',"$Head^{commit}") -AllowFail).Code -ne 0) {
+        [void](Invoke-Git @('fetch','-q','origin',$Head))
+    }
+    $base = (Invoke-Git @('merge-base',$Main,$Head)).Out.Trim()
+    Get-Sha256Hex (Invoke-Git @('-c','core.quotePath=true','diff','--binary','--full-index','--no-ext-diff','--no-textconv','--no-renames',$base,$Head,'--')).Out
+}
+
+function Test-ReviewedMerge($Pull, $Reviewed, [string]$Main) {
+    <# Пропускає лише нащадка перевіреної голови з незмінним diff і самими merge у першій лінії. #>
+    $n = [string]$Pull.number; $head = [string]$Pull.head.sha
+    if (-not $Reviewed.ContainsKey($n)) { return $false }
+    $old = $Reviewed[$n]
+    $verdict = $false
+    foreach ($file in @(Get-ChildItem -LiteralPath (Join-Path $WorkDir 'state') -Filter '*.json' -File -ErrorAction SilentlyContinue)) {
+        $state = ConvertFrom-Json ([IO.File]::ReadAllText($file.FullName, $script:Utf8))
+        if ([string](Get-Prop $state 'line') -cmatch ('^GEMINI ОБГОРТКА: ГОТОВО (?:gemini|claude|codex)/автоперевірка-' + $n + '-' + [string]$old.head + ' ')) { $verdict = $true; break }
+    }
+    if (-not $verdict) { return $false }
+    if ((Invoke-Git @('merge-base','--is-ancestor',[string]$old.head,$head) -AllowFail).Code -ne 0) { return $false }
+    if ((Invoke-Git @('rev-list','--first-parent','--no-merges',"$($old.head)..$head")).Out.Trim()) { return $false }
+    (Get-ReviewDiff $head $Main) -ceq [string]$old.diff
+}
+
+function Get-LiveCompletion($Active) {
+    <# Кінець — прийнятий опублікований звіт, а не взяття позначки чи вихід процесу. #>
+    foreach ($file in @(Get-ChildItem -LiteralPath (Join-Path $WorkDir 'state') -Filter '*.json' -File -ErrorAction SilentlyContinue)) {
+        $state = ConvertFrom-Json ([IO.File]::ReadAllText($file.FullName, $script:Utf8))
+        if ([string](Get-Prop $state 'line') -cmatch ('^GEMINI ОБГОРТКА: (ГОТОВО|ЗАБЛОКОВАНО) (?:gemini|claude)/автоживий-' + [regex]::Escape([string]$Active.stamp) + ' ')) {
+            return $file.CreationTimeUtc.ToString('o')
+        }
+    }
+    ''
+}
+
+function Get-LatestLivePending($Pending) {
+    <# Єдина черга зберігає останню готову збірку; проміжні штампи лише журналює. #>
+    $items = @($Pending)
+    if (-not $items.Count) { return @() }
+    foreach ($job in @($items | Select-Object -SkipLast 1)) { Write-WrapperLog "ланцюг: пропущено проміжний штамп $($job.stamp)" }
+    @($items[-1])
 }
 
 function Test-RecentReviewHead($Pull, $Heads, [datetimeoffset]$Installed, [datetimeoffset]$Now, [int]$Hours) {
@@ -167,10 +223,13 @@ function Invoke-WrapperChain {
         }
         $now = [datetimeoffset]::UtcNow; $installed = $now; $heads = @{}
         $statePath = Join-Path $WorkDir 'chain.json'
-        $last = $main; $seen = @{}; $liveStamps = @{}; $livePending = @(); $hasLiveState = $false
+        $reviewed = @{}; $liveActive = $null; $liveSince = ''; $last = $main; $seen = @{}; $liveStamps = @{}; $livePending = @(); $hasLiveState = $false
         if (Test-Path -LiteralPath $statePath) {
             $state = ConvertFrom-Json ([IO.File]::ReadAllText($statePath, $script:Utf8))
             $last = [string]$state.main
+            if ($null -ne $state.PSObject.Properties['reviewed']) { foreach ($entry in $state.reviewed.PSObject.Properties) { $reviewed[$entry.Name] = $entry.Value } }
+            if ($null -ne $state.PSObject.Properties['live_active']) { $liveActive = $state.live_active }
+            if ($null -ne $state.PSObject.Properties['live_since']) { $liveSince = [string]$state.live_since }
             if ($null -ne $state.PSObject.Properties['live_stamps']) {
                 $hasLiveState = $true
                 foreach ($stamp in @($state.live_stamps)) {
@@ -206,37 +265,58 @@ function Invoke-WrapperChain {
                 $build = $stamp
             }
         }
-        # Черга й ключі зберігаються до публікації; збій PR API не губить збірку.
-        Write-FileAtomic $statePath (([ordered]@{ main=$main; live_stamps=@($liveStamps.Keys); live_pending=@($livePending); reviews=@($seen.Keys); installed_utc=$installed.ToString('o'); heads=$heads }) | ConvertTo-Json -Compress -Depth 5)
-        if ($livePending.Count -and (Test-LiveModels $config)) {
-            while ($livePending.Count) {
-                $job = $livePending[0]
-                Add-ChainMarker "автоживий-$($job.stamp)" ([string]$config.codex) ([string]$job.main) -Gpu
-                $livePending = @($livePending | Select-Object -Skip 1)
-                Write-FileAtomic $statePath (([ordered]@{ main=$main; live_stamps=@($liveStamps.Keys); live_pending=@($livePending); reviews=@($seen.Keys); installed_utc=$installed.ToString('o'); heads=$heads }) | ConvertTo-Json -Compress -Depth 5)
-            }
-        } elseif ($livePending.Count) { Write-WrapperLog "ланцюг: збірки ($($livePending.Count)) чекають доступу до моделей; пульсу диспетчера не потребують" }
+        $livePending = @(Get-LatestLivePending $livePending)
+        if ($null -ne $liveActive) {
+            $completed = Get-LiveCompletion $liveActive
+            if ($completed) { $liveSince = $completed; $liveActive = $null }
+        }
+        # Запис до мережі лишає ту саму роботу для повтору після падіння.
+        Write-FileAtomic $statePath (([ordered]@{ main=$main; reviewed=$reviewed; live_active=$liveActive; live_since=$liveSince; live_stamps=@($liveStamps.Keys); live_pending=@($livePending); reviews=@($seen.Keys); installed_utc=$installed.ToString('o'); heads=$heads }) | ConvertTo-Json -Compress -Depth 7)
+        if ($null -eq $liveActive -and $livePending.Count -and (Test-LiveModels $config)) {
+            $job = $livePending[0]
+            $liveActive = [pscustomobject]@{stamp=$job.stamp;main=$job.main;published=$false}; $livePending = @()
+            # Резерв до push: падіння після прийнятого ref не перетворює його на пропущений штамп.
+            Write-FileAtomic $statePath (([ordered]@{ main=$main; reviewed=$reviewed; live_active=$liveActive; live_since=$liveSince; live_stamps=@($liveStamps.Keys); live_pending=@($livePending); reviews=@($seen.Keys); installed_utc=$installed.ToString('o'); heads=$heads }) | ConvertTo-Json -Compress -Depth 7)
+        }
+        if ($null -ne $liveActive -and $null -ne $liveActive.PSObject.Properties['published'] -and -not $liveActive.published) {
+            Add-ChainMarker "автоживий-$($liveActive.stamp)" ([string]$config.codex) ([string]$liveActive.main) -Gpu
+            $liveActive.published = $true
+            Write-FileAtomic $statePath (([ordered]@{ main=$main; reviewed=$reviewed; live_active=$liveActive; live_since=$liveSince; live_stamps=@($liveStamps.Keys); live_pending=@($livePending); reviews=@($seen.Keys); installed_utc=$installed.ToString('o'); heads=$heads }) | ConvertTo-Json -Compress -Depth 7)
+        }
         Complete-EngineDrafts
         foreach ($pr in @(Get-ChainPulls)) {
             if ($pr.user.login -cne 'mightyrochy' -or $null -eq $pr.head.repo -or $pr.head.repo.full_name -cne $GitHubRepo -or $pr.base.repo.full_name -cne $GitHubRepo -or $pr.base.ref -cne 'main') { continue }
             $branch = [string]$pr.head.ref; $head = [string]$pr.head.sha
             if ($branch -cnotmatch '^(gemini|claude|codex)/([\p{L}\p{Nd}][\p{L}\p{Nd}._-]{0,79})$' -or $head -cnotmatch $script:ShaPattern) { continue }
-            if ($branch -match '/авто(перевірка|живий)-' -or $branch.Contains('..') -or $branch.EndsWith('.lock')) { continue }
+            if ((Test-ReviewBranch $branch) -or $branch.Contains('..') -or $branch.EndsWith('.lock')) { continue }
             if (([string]$pr.title).Contains('[НЕ ЗЛИВАТИ]')) { continue }
             $n = [string]$pr.number
             if ($n -cnotmatch '^[1-9][0-9]{0,8}$') { continue }
             $eligible = Test-RecentReviewHead $pr $heads $installed $now $hours
-            Write-FileAtomic $statePath (([ordered]@{ main=$main; live_stamps=@($liveStamps.Keys); live_pending=@($livePending); reviews=@($seen.Keys); installed_utc=$installed.ToString('o'); heads=$heads }) | ConvertTo-Json -Compress -Depth 5)
+            Write-FileAtomic $statePath (([ordered]@{ main=$main; reviewed=$reviewed; live_active=$liveActive; live_since=$liveSince; live_stamps=@($liveStamps.Keys); live_pending=@($livePending); reviews=@($seen.Keys); installed_utc=$installed.ToString('o'); heads=$heads }) | ConvertTo-Json -Compress -Depth 5)
             if (-not $eligible) { continue }
+            if (-not $reviewed.ContainsKey($n)) {
+                foreach ($key in @($seen.Keys | Where-Object { $_ -cmatch ('^' + $n + ' [0-9a-f]{40} ') })) {
+                    $oldHead = ($key -split ' ')[1]
+                    if ((Invoke-Git @('cat-file','-e',"$oldHead^{commit}") -AllowFail).Code -eq 0 -and
+                        (Invoke-Git @('merge-base','--is-ancestor',$oldHead,$head) -AllowFail).Code -eq 0) {
+                        $reviewed[$n] = @{head=$oldHead;diff=(Get-ReviewDiff $oldHead $main)}
+                        if (Test-ReviewedMerge $pr $reviewed $main) { break }
+                    }
+                }
+            }
+            if (Test-ReviewedMerge $pr $reviewed $main) { Write-WrapperLog "ланцюг: #$n $head — незмінний diff після злиття main"; continue }
             $models = @(Get-ReviewModels $pr $config)
             if (-not @($models | Where-Object { -not $seen.ContainsKey("$n $head $_") }).Count) { continue }
             if (-not (Test-ChainCodePull $pr)) { continue }
+            $diff = Get-ReviewDiff $head $main
             foreach ($model in $models) {
                 $key = "$n $head $model"
                 if ($seen.ContainsKey($key)) { continue }
                 Add-ChainMarker "автоперевірка-$n-$head" $model $main
                 $seen[$key] = $true
-                Write-FileAtomic $statePath (([ordered]@{ main=$main; live_stamps=@($liveStamps.Keys); live_pending=@($livePending); reviews=@($seen.Keys); installed_utc=$installed.ToString('o'); heads=$heads }) | ConvertTo-Json -Compress -Depth 5)
+                $reviewed[$n] = @{head=$head;diff=$diff}
+                Write-FileAtomic $statePath (([ordered]@{ main=$main; reviewed=$reviewed; live_active=$liveActive; live_since=$liveSince; live_stamps=@($liveStamps.Keys); live_pending=@($livePending); reviews=@($seen.Keys); installed_utc=$installed.ToString('o'); heads=$heads }) | ConvertTo-Json -Compress -Depth 5)
             }
         }
     } catch {

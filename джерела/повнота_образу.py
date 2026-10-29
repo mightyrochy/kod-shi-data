@@ -588,9 +588,10 @@ def промпт_вибору(образи, випадок=None, без_фото
                                         "and «families» — its colour families, each meant for its own large item",
                  як="her explicit choice: the code's remarks about this scheme carry her wish, not the code's"),
         _ЗП.Поле("day", "her day as facts"),
-        _ЗП.Поле("item_keys", "what the keys of the items in «verdict» and «showcase» mean, and defaults for omitted values",
+        _ЗП.ПОЛЕ_КАНДИДАТІВ,
+        _ЗП.Поле("item_keys", "what the keys in «candidates» mean, and defaults for omitted values",
                  як="read every item by these keys; restore every absent key that has an `absent =` default"),
-        _ЗП.Поле("verdict", "your outfits and what the code noticed in each: «your_outfit» — its items, caption "
+        _ЗП.Поле("verdict", "your outfits and what the code noticed in each: «your_outfit» — its item numbers, caption "
                             "and «day» (your sentence about her day in it); «structure» — blockers; «checklist» — "
                             "by area, the points the code noticed as not met; each point is a code defined in "
                             "\"statement_codes\"; «your_declared» — your declared deliberate moves; "
@@ -1518,14 +1519,15 @@ def повнота_набору(вердикт, кандидати=None, кат�
     вхід=(
         *ВИПАДОК_ПОВНОТИ,
         _ЗП.Поле("day", "her day as facts"),
-        _ЗП.Поле("item_keys", "what the keys of the items in «verdict» and «showcase» mean, and defaults for omitted values",
+        _ЗП.ПОЛЕ_КАНДИДАТІВ,
+        _ЗП.Поле("item_keys", "what the keys in «candidates» mean, and defaults for omitted values",
                  як="read every item by these keys; restore every absent key that has an `absent =` default"),
-        _ЗП.Поле("verdict", "your outfits and the code's check: «your_outfit» — items with their full "
-                            "descriptions and your caption; «structure.blockers» — what keeps the outfit from "
+        _ЗП.Поле("verdict", "your outfits and the code's check: «your_outfit» — item numbers "
+                            "and your caption; «structure.blockers» — what keeps the outfit from "
                             "being shown, each under its «id»: a missing kind of item, with «options» — the "
                             "«n» of the «showcase» items that fill it; or several items of one kind, with "
                             "«items»", треба=True),
-        _ЗП.Поле("showcase", "items that can fill what is missing"),
+        _ЗП.Поле("showcase", "item numbers that can fill what is missing"),
         _ЗП.Поле("still_missing", "your previous answer to this request and the blockers it still has: "
                                   "«empty_kinds» — missing kinds with the showcase items that fill them, "
                                   "«same_kind» — items of one kind",
@@ -1577,14 +1579,15 @@ def повнота_набору(вердикт, кандидати=None, кат�
     вхід=(
         *ВИПАДОК_ПОВНОТИ,
         _ЗП.Поле("day", "her day as facts"),
-        _ЗП.Поле("item_keys", "what the keys of the items in «verdict» and «showcase» mean, and defaults for omitted values",
+        _ЗП.ПОЛЕ_КАНДИДАТІВ,
+        _ЗП.Поле("item_keys", "what the keys in «candidates» mean, and defaults for omitted values",
                  як="read every item by these keys; restore every absent key that has an `absent =` default"),
-        _ЗП.Поле("verdict", "your outfits and the code's check: «your_outfit» — items with their full "
-                            "descriptions and your caption; «structure.blockers» — what keeps the outfit from "
+        _ЗП.Поле("verdict", "your outfits and the code's check: «your_outfit» — item numbers "
+                            "and your caption; «structure.blockers» — what keeps the outfit from "
                             "being shown, each under its «id»: a missing kind of item, with «options» — the "
                             "«n» of the «showcase» items that fill it; or several items of one kind, with "
                             "«items»", треба=True),
-        _ЗП.Поле("showcase", "items that can fill what is missing"),
+        _ЗП.Поле("showcase", "item numbers that can fill what is missing"),
         _ЗП.Поле("she_refuses", "what she refused", як="do not add an item that breaks it"),
     ),
     правила=(

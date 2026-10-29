@@ -127,14 +127,19 @@ Invoke-WrapperChain
         $thirdBuild = Merge 'build.txt' $third
         $later = Merge 'опис.md' 'після збірки'; Invoke-WrapperChain
         $state = ConvertFrom-Json ([IO.File]::ReadAllText((Join-Path $WorkDir 'chain.json')))
-        Check 'два штампи між проходами збережено, поки моделі недоступні' ($state.live_pending.Count -eq 2)
+        Check 'два штампи згорнуто до останнього, поки попередній активний' ($state.live_pending.Count -eq 1 -and $state.live_pending[0].stamp -ceq $third)
         $script:Ready = $true; Invoke-WrapperChain
-        Check 'кожен штамп має одну позначку на першому коміті своєї збірки' (@(Markers 'автоживий-').Count -eq 3 -and (& git -C $remote rev-parse @(Markers "автоживий-$second/")[0]).Trim() -ceq $secondBuild -and (& git -C $remote rev-parse @(Markers "автоживий-$third/")[0]).Trim() -ceq $thirdBuild)
+        Check 'активний прогін не породжує наступної позначки' (@(Markers 'автоживий-').Count -eq 1)
+        [void][IO.Directory]::CreateDirectory((Join-Path $WorkDir 'state'))
+        Write-FileAtomic (Join-Path $WorkDir 'state/report.json') ((@{line="GEMINI ОБГОРТКА: ГОТОВО gemini/автоживий-$product $built"}) | ConvertTo-Json)
+        Invoke-WrapperChain
+        Check 'після звіту лише останній штамп має позначку на коміті своєї збірки' (@(Markers 'автоживий-').Count -eq 2 -and @(Markers "автоживий-$second/").Count -eq 0 -and (& git -C $remote rev-parse @(Markers "автоживий-$third/")[0]).Trim() -ceq $thirdBuild)
         $back = Merge 'build.txt' $product; Invoke-WrapperChain
-        Check 'повтор старого штампу не ставить нового прогону' (@(Markers 'автоживий-').Count -eq 3)
+        Check 'повтор старого штампу не ставить нового прогону' (@(Markers 'автоживий-').Count -eq 2)
         $bad = Merge 'build.txt' 'пошкоджено'; Invoke-WrapperChain
-        Check 'пошкоджений штамп не створює позначки' (@(Markers 'автоживий-').Count -eq 3)
+        Check 'пошкоджений штамп не створює позначки' (@(Markers 'автоживий-').Count -eq 2)
         . (Join-Path $SourceDir 'queue_lanes.ps1')
+        function Get-AutoLivePlan { '{}' }
         $context = Add-AutoTaskContext "автоживий-$product" 'Наряд' $built
         Check 'наряд призначає дерево збірки й окремо називає штамп джерел' ($context.Contains("коміт збірки $built") -and $context.Contains("штамп build.txt $product"))
     }

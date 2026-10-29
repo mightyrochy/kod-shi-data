@@ -27,4 +27,5 @@ function Get-TaskRows {
         [pscustomobject]@{ Name = $n; Last = '2026-10-26T10:00:00Z'; Result = '0x0'; State = $st }
     }
 }
+function Test-ExternalGpuFree { $true }
 exit (Main)

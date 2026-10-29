@@ -1,5 +1,6 @@
 ﻿param([Parameter(Mandatory = $true)][string]$WrapperRoot, [switch]$Before)
 $ErrorActionPreference = 'Stop'
+[Console]::OutputEncoding = New-Object Text.UTF8Encoding($false)
 $WrapperRoot = (Resolve-Path -LiteralPath $WrapperRoot).Path
 $testRoot = Join-Path ([System.IO.Path]::GetTempPath()) ('nightly-' + [guid]::NewGuid().ToString('N'))
 $seed = Join-Path $testRoot 'seed'; $origin = Join-Path $testRoot 'origin.git'
@@ -19,8 +20,10 @@ try {
     [void](Git-At $seed @('init', '-q', '-b', 'main'))
     [void](Git-At $seed @('config', 'user.name', 'Стенд'))
     [void](Git-At $seed @('config', 'user.email', 'stand@local'))
-    [void](New-Item -ItemType Directory -Force -Path (Join-Path $seed 'аудит/проби'))
-    [IO.File]::WriteAllText((Join-Path $seed 'аудит/проби/нічний_наряд.md'), 'Роль — ВИКОНАВЕЦЬ', [Text.Encoding]::UTF8)
+    [void](New-Item -ItemType Directory -Force -Path (Join-Path $seed 'аудит/наряди'))
+    [IO.File]::WriteAllText((Join-Path $seed 'аудит/наряди/автоживий.md'), 'Роль — ВИКОНАВЕЦЬ', [Text.Encoding]::UTF8)
+    $build = 'b' * 40
+    [IO.File]::WriteAllText((Join-Path $seed 'build.txt'), $build, [Text.Encoding]::ASCII)
     [void](Git-At $seed @('add', '.'))
     [void](Git-At $seed @('commit', '-qm', 'База нічного стенда'))
     $base = Git-At $seed @('rev-parse', 'HEAD')
@@ -38,9 +41,20 @@ try {
     [void](Git-At $clone @('fetch', '-q', 'origin'))
     $early = @(Get-NightlyMarker ([datetime]'2026-10-27T01:59:00Z'))
     Assert-That ($early.Count -eq 0) 'дозвіл не запускає ніч до 02:00 UTC'
-    $night = @(Get-NightlyMarker $clock)[0]
+    $nights = @(Get-NightlyMarker $clock)
+    Assert-That ($nights.Count -eq 1) 'датований дозвіл зі спільним шаблоном повертає одну ніч'
+    $night = $nights[0]
     Assert-That ($night.Valid -and $night.Gpu -and $night.Prio -eq 8 -and $night.Lane -eq 'codex') 'ніч має звичайний слот Codex і GPU'
-    Assert-That ((Get-TaskSource $night) -ceq 'аудит/проби/нічний_наряд.md') 'ніч читає постійний шаблон'
+    Assert-That ((Get-TaskSource $night) -ceq 'аудит/наряди/автоживий.md') 'ніч читає постійний шаблон автоживого'
+    $autoQueue = "gemini-queue/автоживий-$build/gpt-6.1-sol-high/1/gpu-p2"
+    [void](Git-At $seed @('push', '-q', 'origin', "${base}:refs/heads/$autoQueue"))
+    [void](Git-At $clone @('fetch', '-q', 'origin'))
+    Assert-That (@(Get-NightlyMarker $clock).Count -eq 0) 'автоживий тієї самої збірки прибирає повторний нічний прогін'
+    [void](Git-At $origin @('update-ref', '-d', "refs/heads/$autoQueue"))
+    $otherQueue = 'gemini-queue/автоживий-' + ('c' * 40) + '/gpt-6.1-sol-high/1/gpu-p2'
+    [void](Git-At $seed @('push', '-q', 'origin', "${base}:refs/heads/$otherQueue"))
+    [void](Git-At $clone @('fetch', '-q', '--prune', 'origin'))
+    Assert-That (@(Get-NightlyMarker $clock).Count -eq 1) 'автоживий іншої збірки не прибирає дозволену ніч'
     [void](Git-At $seed @('commit', '-qm', 'Новий main', '--allow-empty'))
     [void](Git-At $seed @('push', '-q', 'origin', 'main'))
     [void](Git-At $clone @('fetch', '-q', 'origin'))
