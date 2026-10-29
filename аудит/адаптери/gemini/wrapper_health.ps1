@@ -7,6 +7,20 @@ $script:HealthDetails = @{
     ENGINE = @('AGY', 'CODEX', 'CLAUDE')
 }
 $script:HealthAlertDir = ''
+# Сигнал запобіжника, що тримає позначки (queue_lanes.ps1, Update-HoldSignals): рядок рушія й шаблон публікації — тут одне місце.
+$script:HoldLineTemplate = '\AGEMINI ОБГОРТКА: ЗАБЛОКОВАНО (?:GPU|SLOTS): (?:замок GPU іншого наряду|слоти зайняті|nvidia-smi не відповів|GPU зайнята стороннім процесом|процес [A-Za-z0-9._+-]{1,92}), позначок [1-9][0-9]{0,3}\z'
+
+function Test-HoldLine([string]$Line) { $Line -cmatch $script:HoldLineTemplate }
+
+function Add-HoldLine([string]$Line) {
+    <# Рядок сигналу запобіжника в теку тривог рушія (gemini-run → out/alerts); публікатор перевіряє його заново. #>
+    if (-not $script:HealthAlertDir -or -not (Test-HoldLine $Line)) { return '' }
+    [void][System.IO.Directory]::CreateDirectory($script:HealthAlertDir)
+    $name = '{0:yyyyMMdd-HHmmss}-{1}.txt' -f [datetime]::UtcNow, ([guid]::NewGuid().ToString('N').Substring(0, 12))
+    Write-FileAtomic (Join-Path $script:HealthAlertDir $name) ($Line + "`
+")
+    $name
+}
 $script:HeartbeatAction = $null
 $script:HeartbeatBusy = $false
 $script:LastHealthBeat = [datetime]::MinValue

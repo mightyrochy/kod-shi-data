@@ -51,6 +51,9 @@ $script:WorkerGpuBusy = 4
 $script:ReviewApiLimit = 30
 $script:ReviewApiWindow = 3600
 $script:ReviewApiBackoff = 120
+# Відеопам'ять (MiB), нижче якої сторонню зайнятість GPU не рахуємо: вікно AvastUI тримає 57 MiB (вимір 29.10 20:00 UTC),
+# завантажена модель — гігабайти.
+$script:GpuIdleMiB = 512
 
 # --- процеси й файли ----------------------------------------------------------------------------------------------
 
@@ -994,10 +997,142 @@ builtins.__import__ = _gpu_import
     $env:PYTHONPATH = $Directory + [IO.Path]::PathSeparator + $env:PYTHONPATH
 }
 
-function Test-ExternalGpuFree {
-    <# Сторонній обчислювальний процес лишає GPU-наряд у черзі, без кінцевого блокера. #>
+function Get-ExternalGpuMiB {
+    <# Відеопам'ять, зайнята зараз (MiB, усі карти); -1 — nvidia-smi не відповів. Міряємо пам'ять, а не перелік процесів:
+    --query-compute-apps під WDDM називає й порожній AvastUI.exe (його вікно живе від старту системи) — 29.10 від 14:27 UTC
+    це лишало кожен GPU-наряд у черзі на 6+ год; з одним AvastUI зайнято 57 MiB (вимір 29.10 20:00 UTC). #>
     $exe = Get-Command nvidia-smi -ErrorAction SilentlyContinue
-    if ($null -eq $exe) { return $true }
-    $r = Invoke-Native $exe.Source @('--query-compute-apps=pid','--format=csv,noheader') '' 1
-    $r.Code -eq 0 -and -not $r.Out.Trim()
+    if ($null -eq $exe) { return 0 }
+    $r = Invoke-Native $exe.Source @('--query-gpu=memory.used','--format=csv,noheader,nounits') '' 1
+    if ($r.Code -ne 0) { return -1 }
+    $sum = 0; $seen = $false
+    foreach ($line in ($r.Out -split "`n")) { $v = 0; if ([int]::TryParse($line.Trim(), [ref]$v)) { $sum += $v; $seen = $true } }
+    if ($seen) { $sum } else { -1 }
+}
+
+function Test-ExternalGpuFree {
+    <# Сторонній процес із відеопам'яттю лишає GPU-наряд у черзі, без кінцевого блокера. #>
+    $used = Get-ExternalGpuMiB
+    $used -ge 0 -and $used -le $script:GpuIdleMiB
+}
+
+function Get-GpuProcessNames {
+    <# Назви процесів з переліку compute-apps для журналу й сигналу (до трьох, лише безпечні знаки). Під WDDM пам'ять
+    процесів часто N/A, тож зайнятість міряє Get-ExternalGpuMiB, а це лише відповідь «хто». #>
+    $exe = Get-Command nvidia-smi -ErrorAction SilentlyContinue
+    if ($null -eq $exe) { return '' }
+    $r = Invoke-Native $exe.Source @('--query-compute-apps=pid,process_name', '--format=csv,noheader') '' 1
+    if ($r.Code -ne 0) { return '' }
+    $names = @()
+    foreach ($line in @($r.Out -split "`r?`n")) {
+        $f = @($line.Split(','))
+        if ($f.Count -lt 2) { continue }
+        $leaf = (($f[1..($f.Count - 1)] -join ',').Trim() -split '[\\/]')[-1]
+        $safe = ($leaf -replace '[^A-Za-z0-9._-]', '_')
+        if ($safe.Length -gt 30) { $safe = $safe.Substring(0, 30) }
+        if ($safe) { $names += $safe }
+    }
+    (@($names | Select-Object -Unique) | Select-Object -First 3) -join '+'
+}
+
+$script:GpuHoldReason = ''
+
+function Get-GpuBusyReason($Workers) {
+    <# Чому GPU не віддати наряду зараз; '' — вільна. Єдине місце для планувальників обох облікових записів.
+    GpuHoldReason — стійка причина для рядка сигналу (без чисел, що гуляють між проходами). #>
+    $script:GpuHoldReason = ''
+    if (@($Workers | Where-Object { $_.Gpu -and -not $_.Proc.HasExited }).Count -gt 0) { $script:GpuHoldReason = 'замок GPU іншого наряду'; return 'GPU: її тримає власний наряд обгортки' }
+    if (-not (Test-LockFree (Get-GpuLockPath))) { $script:GpuHoldReason = 'замок GPU іншого наряду'; return "GPU: замок $(Get-GpuLockPath) тримає інший процес" }
+    $used = Get-ExternalGpuMiB
+    if ($used -lt 0) { $script:GpuHoldReason = 'nvidia-smi не відповів'; return 'GPU: nvidia-smi не відповів' }
+    if ($used -gt $script:GpuIdleMiB) {
+        $who = Get-GpuProcessNames
+        $script:GpuHoldReason = $(if ($who) { "процес $who" } else { 'GPU зайнята стороннім процесом' })
+        return "GPU: зайнято $used MiB стороннім процесом (поріг $script:GpuIdleMiB)$(if ($who) { ': ' + $who })"
+    }
+    ''
+}
+
+# --- позначки, що стоять без старту ---------------------------------------------------------------------------------
+
+$script:PassSkips = [ordered]@{}
+
+function Add-Skip($M, [string]$Why) {
+    <# Позначку цього проходу не взято з названої причини; Save-Skips у кінці проходу пише журнал і файл для #1856. #>
+    $script:PassSkips[[string]$M.Name] = $Why
+}
+
+function Save-Skips([string]$Path) {
+    <# Файл «що стоїть і чому» (замінюється щопроходу); рядок журналу — лише коли причина нова для позначки: попередній
+    файл несе `since`, бо процес планувальника живе недовго. #>
+    $old = @{}
+    try { foreach ($r in @([System.IO.File]::ReadAllText($Path, $script:Utf8) | ConvertFrom-Json)) { $old[[string]$r.marker] = $r } } catch { $null = $_ }
+    $now = Get-UtcStamp (Get-Date)
+    $rows = @(foreach ($n in $script:PassSkips.Keys) {
+        $why = [string]$script:PassSkips[$n]; $since = $now
+        if ($old.ContainsKey($n) -and [string]$old[$n].why -ceq $why) { $since = [string]$old[$n].since }
+        else { Write-Log "позначка ${n}: не стартує — $why" }
+        [ordered]@{ marker = $n; why = $why; since = $since }
+    })
+    $script:PassSkips = [ordered]@{}
+    Write-FileAtomic $Path (ConvertTo-Json -InputObject $rows -Compress)
+}
+
+function Add-Note([string]$Path, [string]$Marker, [string]$Text) {
+    <# Останні 12 приміток до #1856 (причина BLOCKED без гілки): один рядок, без керівних символів, до 240 знаків. #>
+    $rows = @()
+    try { $rows = @([System.IO.File]::ReadAllText($Path, $script:Utf8) | ConvertFrom-Json) } catch { $null = $_ }
+    $clean = ([regex]::Replace($Text, '[\x00-\x1f\x7f]+', ' ')).Trim()
+    if ($clean.Length -gt 240) { $clean = $clean.Substring(0, 240) }
+    $rows = @($rows | Select-Object -Last 11) + @([pscustomobject]@{ utc = (Get-UtcStamp (Get-Date)); marker = $Marker; text = $clean })
+    Write-FileAtomic $Path (ConvertTo-Json -InputObject $rows -Compress)
+}
+
+function Test-TaskFile([string]$Sha, [string]$TaskPath) {
+    <# Чи є файл наряду на коміті позначки. Вирок «нема» — лише коли git так сказав; будь-який інший збій (блокування
+    об'єктів під час fetch сусіднього процесу, таймаут) після трьох спроб — виняток, і позначка вертається в чергу, а не
+    пишеться кінцем NO_TASK_FILE (29.10 19:36 UTC: 28 с до вироку на виклик, що тепер триває 0,1 с). #>
+    for ($i = 1; $i -le 3; $i++) {
+        $r = Invoke-Git @('cat-file', '-e', "${Sha}:$TaskPath") -AllowFail
+        if ($r.Code -eq 0) { return $true }
+        if ((-not $r.TimedOut) -and ($r.Code -eq 1 -or $r.Err -match 'does not exist|Not a valid object name|exists on disk, but not in')) { return $false }
+        if ($i -lt 3) { Start-Sleep -Seconds 3 }
+    }
+    throw "git cat-file -e ${Sha}:$TaskPath -> $($r.Code): $($r.Err.Trim())"
+}
+
+# --- сигнал про запобіжник, що тримає позначки ----------------------------------------------------------------------
+# 29.10 GPU-наряд стояв у черзі з 15:06 UTC: журнал 144 рази "GPU зайнята", а диспетчер не знав. Запобіжник сам пише
+# диспетчерові рядок, коли тримає позначки понад quota_wait_minutes (смуги.json, з джерелом).
+
+function Add-Hold([hashtable]$Held, [string]$Resource, [string]$Reason, [string]$Marker) {
+    <# Ресурс тримає позначку за цього проходу; причина — перша за проходом. #>
+    if (-not $Held.ContainsKey($Resource)) { $Held[$Resource] = @{ Reason = $Reason; Markers = (New-Object System.Collections.ArrayList) } }
+    [void]$Held[$Resource].Markers.Add($Marker)
+}
+
+function Update-HoldSignals([hashtable]$Held, [scriptblock]$Send) {
+    <# Рядок "GEMINI ОБГОРТКА: ЗАБЛОКОВАНО <ресурс>: <причина>, позначок N" — один на причину, повтор лише при зміні причини.
+    Утримання зникло — запис знято, нове сигналить знову. Стан — holds.json у теці стану (переживає перезапуск проходу). #>
+    $path = Join-Path $script:StateDir 'holds.json'
+    $prev = @{}
+    if (Test-Path -LiteralPath $path) {
+        try { foreach ($p in ([System.IO.File]::ReadAllText($path, $script:Utf8) | ConvertFrom-Json).PSObject.Properties) { $prev[$p.Name] = $p.Value } } catch { $null = $_ }
+    }
+    $now = [DateTimeOffset]::UtcNow.ToUnixTimeSeconds()
+    $after = [double](Get-Limit $script:Limits 'QuotaWaitMinutes' 'quota_wait_minutes') * 60
+    $next = [ordered]@{}
+    foreach ($res in @($Held.Keys | Sort-Object)) {
+        $h = $Held[$res]; $old = $prev[$res]
+        $since = $(if ($null -ne $old) { [long]$old.since } else { $now })
+        $sent = $(if ($null -ne $old) { [string]$old.sent } else { '' })
+        if (($now - $since) -ge $after -and $sent -cne $h.Reason) {
+            if (& $Send "GEMINI ОБГОРТКА: ЗАБЛОКОВАНО ${res}: $($h.Reason), позначок $($h.Markers.Count)") { $sent = $h.Reason }
+        }
+        $next[$res] = [ordered]@{ since = $since; reason = $h.Reason; sent = $sent }
+    }
+    if ($next.Count -eq 0) { Remove-Item -LiteralPath $path -Force -ErrorAction SilentlyContinue; return }
+    $text = $next | ConvertTo-Json -Compress
+    $cur = $(if (Test-Path -LiteralPath $path) { [System.IO.File]::ReadAllText($path, $script:Utf8) } else { '' })
+    if ($text -cne $cur) { Write-FileAtomic $path $text }
 }
