@@ -13,14 +13,11 @@ import sys, pathlib, json
 _К = pathlib.Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(_К))
 import bridge as B, bases as ОС, palette as П, outfit as O
-
-вх = json.load(open(_К / "стенд_вх.json", encoding="utf-8"))
-F, T, _зр, _kw = B._збірка(вх)
+F, T, _зр, _kw = B._збірка(json.load(open(_К / "стенд_вх.json", encoding="utf-8")))
 таб, пор = B._ґратка_основ()
 к = O.контраст_особи(F, "uncontrolled")
 було = {}
 for намір in ("conventional", "statement"):
-    вх["намір"] = намір
     р, п = ОС.ранг(F, таб, пор,
                    контраст=dict(value_gap=к.get("value_gap"), рівень=к.get("рівень")),
                    надійність=П.reliability("uncontrolled"), intent=намір)
