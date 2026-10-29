@@ -1,0 +1,1119 @@
+1. СТАРТ БЕЗ ХЕША: повна збірка
+  ✓ скрипт піднявся без винятків
+  ✓ без профілю — екран знайомства видно, панель із діями на місці
+  ✓ ЄДИНА_СТОРІНКА: картка «Зібрати образи» видно, картка «окрема сторінка» схована
+  ✓ у міст іде ім'я фіду від збирача, не літерал
+  ✓ П.каталог для людини й вердикта — підпис збирача
+  ✓ на сценарії кнопка «Зібрати образи» стоїть в екрані під карткою, а не в панелі
+  ✓ без кольорів/обхватів/нагоди збирання НЕ стартує і каже, чого бракує (нема виклику моделі)
+  ✓ старий шлях не зачепило: статус переходу порожній
+  ✓ кнопка «Зібрати чотири образи» не заблокована після відмови
+1б. НЕОБОВʼЯЗКОВІ ОБХВАТИ НОГИ НА ЕКРАНІ (Н-P36)
+  ✓ три поля ноги є на екрані фігури — у розширених вимірах, не серед основних (v4)
+  ✓ порожнє поле не шлеться зовсім: «не міряла» і «нуль» — різні твердження
+  ✓ заповнені поля їдуть у міст під іменами рівнів профілю — приймальний рядок наряду Н-P36
+  ✓ ті самі ключі їдуть і розвилкою палітр: обидва шляхи будують тіло тим самим `fit.тіло`
+  ✓ поля НЕОБОВʼЯЗКОВІ: без них профіль лишається повним і збирання не блокується
+  ✓ обміри ноги переживають перечитування профілю: їх пише `писатиАктивний` і читає `читатиАктивний`
+  ✓ без винятків
+1в. ВИСОКЕ СТЕГНО: ПʼЯТИЙ ОБХВАТ, НЕОБОВʼЯЗКОВИЙ (Н-V13-028)
+  ✓ поле високого стегна є на екрані фігури — у розширених налаштуваннях (v4)
+  ✓ порожнє поле не шлеться: «не міряла» лишається «не міряла», а не 0.92×стегна
+  ✓ заповнене їде в міст ключем `високе_стегно` — тим самим іменем рівня, яке подає стенд і знає `areas.РІВНІ`
+  ✓ необовʼязкове: профіль без нього лишається повним, збирання не блокується
+  ✓ і воно переживає перечитування профілю тим самим реєстром, що й решта обхватів
+  ✓ без винятків
+1г. АКСЕСУАРНІ ВИМІРИ: СТОПА Й ГОЛОВА (Н-V13-025)
+  ✓ обидва поля є на екрані обмірів і стоять у блоці обмірів, а не в чужому екрані
+  ✓ вони НЕ у витинанці: фронтальний контур не має ні стопи збоку, ні обхвату черепа, і підпис «як міряти» стоїть при кожному
+  ✓ порожні поля не шлються ЗОВСІМ: ключа `аксесуарні` у виводі немає, щоб журнал відрізняв «не міряла» від «виміряла»
+  ✓ заповнені поля їдуть у міст словником рівно з двома ключами — приймальний рядок наряду Н-V13-025
+  ✓ ті самі два ключі стоять і в пакеті ВХІД-V1 під `мірки.аксесуарні`: один збір на обидва шляхи, не два розбіжні списки полів
+  ✓ поля НЕОБОВʼЯЗКОВІ: без лінійки профіль лишається повним і збирання не блокується
+  ✓ виміри переживають перечитування профілю: їх пише `писатиАктивний` і читає `читатиАктивний`
+  ✓ очищені поля знову знімають ключ повністю, а не лишають порожній словник
+  ✓ без винятків
+1д. МОВНИЙ ШАР: ОДНА ТОЧКА НА ВИХОДІ; БЕЗ МОДЕЛІ ШАРУ — ЯК ДОТИ; ЗБІЙ НЕ КИДАЄ (25.09.2026)
+  ✓ #модель_мови=нема — шару нема: текст як є, жодного виклику, жодного запису
+  ✓ без винятків
+  ✓ типово модель шару — та сама, що складає образи
+  ✓ збій моста не кидає: жінка бачить вхідний текст, у записі виклику — причина
+  ✓ два кроки моста й один виклик моделі шару між ними — як у `паспорт`
+  ✓ картка малює написане шаром; запис виклику несе де, модель, час, вхід і вихід повністю
+  ✓ рядок діагнозу — кодами й у руки (починається з hand_1): модель, мс, changed=1 (рядок 168)
+  ✓ без винятків
+  ✓ без моделі кожна заява має ключ, явний брак тексту й причину в журналі
+  ✓ рядок без жодного тексту — сталий напис місця, який картка згортає (рядок 2812), а не речення
+  ✓ без винятків
+  ✓ однойменні речі й переставлена відповідь: кожен текст при своєму ID
+  ✓ два одночасні однакові набори: один виклик, обидва споживачі мають заяви
+  ✓ інше місце показу тієї самої заяви бере текст за ключем без виклику моделі
+  ✓ перестановка речей під час перекладу: текст повертається до ID, а не старого номера
+  ✓ інший автор вибору змінює ключ і не бере текст старого рішення
+  ✓ без винятків
+  ✓ часткова відповідь: один повтор лише пропущеної заяви; текст сусідньої збережено
+  ✓ адресат журнал лишається у записі, без речення на екрані
+  ✓ запис несе предмет, ранг, автора, джерело й сирий текст моделі
+  ✓ номер поза переліком не приклеюється до заяви
+  ✓ чужа мова однієї заяви не стирає переклад сусідньої; сирий текст є в журналі
+  ✓ без винятків
+  ✓ 20 різних предметів: пачки 15 + 6, кожне питання має текст
+  ✓ без винятків
+  ✓ 9033: повтор урізаного опису — інший промпт із причиною; лишилось урізаним — довший переклад і ключ у мова_урізано
+  ✓ без винятків
+1д-3. ЕХО МОВНОГО ШАРУ НА КАРТЦІ ОБРАЗУ: АНГЛІЙСЬКА ПРОЗА ЖІНЦІ НЕ ЙДЕ (МШ-1, рядок 311)
+  ✓ ехо шару видно: обидва ключі пішли в шар удруге (`hand_2.retry`, опис окремим викликом) і лишились неперекладеними
+  ✓ на картці нема жодного англійського речення, а сталий український напис — за кнопкою, згорнутий
+  ✓ сирий опис лишається в картці для звіту — ховається показ, а не дані
+  ✓ без винятків
+  ✓ переклад шару не чіпається: на картці українські опис і «Як це носити», знятого нема
+  ✓ без винятків
+1д-4. МІШАНЕ ПИСЬМО В КІЛЬКОХ СЛОВАХ НЕ ЗНІМАЄ ПРОЗИ: ПОВТОР — ЇЇ Ж ТЕКСТОМ І З ТОЧНИМИ СЛОВАМИ (ПРОЗА-1, рядок 970)
+  ✓ повтор виправив слово: повтор пішов її українським текстом, а не англійським входом, і з точним словом
+  ✓ повтор виправив слово: проза на картці є — «Без пояснення словами» нема, латинського слова нема
+  ✓ без винятків
+  ✓ повтор повернув англійську: повтор пішов її українським текстом, а не англійським входом, і з точним словом
+  ✓ повтор повернув англійську: проза на картці є — «Без пояснення словами» нема, латинського слова нема
+  ✓ без винятків
+  ✓ повтор зіпсував текст: повтор пішов її українським текстом, а не англійським входом, і з точним словом
+  ✓ повтор зіпсував текст: проза на картці є — «Без пояснення словами» нема, латинського слова нема
+  ✓ повтор зіпсував текст: на картці перший переклад без битих літер, а відкинутий повтор названо у звіті
+  ✓ без винятків
+  ✓ бренд у даних речі — законний, повтору нема
+  ✓ без винятків
+  ✓ «Monday» з великої всередині англійського речення — залишок, іде в повтор
+  ✓ без винятків
+  ✓ бренд без коду в даних — залишок, іде в повтор; повтор-каша відкинуто, на картці перший переклад
+  ✓ без винятків
+1е. МОВНА МОДЕЛЬ ВЕДЕ РОЗМОВУ: ОДИН ВИКЛИК НА ХІД → ПАСПОРТ КОДОМ → ТЕКСТ ПІСЛЯ СУДУ (М-5, п.14; Т-12, Т-16)
+  ✓ виклику 0 нема: хід іде в `мова.розмова`, паспорт — кодом (`мова.паспорт_з` з частинами й усіма її репліками)
+  ✓ М-5: мовну модель кликано ОДИН раз на хід — перекладача входу й перекладача репліки нема
+  ✓ Т-12: паспорт — з ходу розмови (18:00), а не з плитки чи вгадування
+  ✓ у бульбашці — текст ПІСЛЯ суду коду (питання моделі «Хочеш ще щось?» знято, запрошення — дозволене)
+  ✓ звіт: один запис виклику — turn, її слова, внутрішня мова й частини повністю, модель, час і що код зняв (зняте і прийомом, і швом — раз, рядок 4620)
+  ✓ теми, до яких справді запрошено, — `ОСТАННІ_ТЕМИ_П`
+  ✓ сирі слова в міст не їдуть: `вимоги` порожні, коли паспорт склала мовна модель
+  ✓ другий хід: у промпт їде розмова до нього (її перший лист і відповідь стилістки), нове — окремо
+  ✓ …а шов звіряє цитати з усіма її репліками розмови
+  ✓ need: look — стилістка відповідає, а текст пише перекладач репліки: два виклики, запис «питання_до: стилістка»
+  ✓ рішення суду про перекладачку діє навіть коли ремонт поради повернув непорожній текст
+  ✓ Т-16: без жодної відмови рядка «межею не стали» нема
+  ✓ …а відмову почуто й не взято межею — рядок стоїть
+  ✓ коментар до образу → внутрішня мова (річ за id, причина кодом); у міст їдуть речі образу; запис із де verdict.hand_1
+  ✓ без винятків
+1є. РЕЧІ З ФОТО З ШАРОМ — СВОЄЮ ЗАДАЧЕЮ (П-1): промпт і розбір — міст, «чия» — з її речей ходу, повтор один
+  ✓ перший крок: промпт із мосту — фото ідом і розміром (без байтів), «чия» — з own_items перекладу
+  ✓ модель із зором дістає промпт мосту й фото; нечитана відповідь — РІВНО один повтор із причиною
+  ✓ рядок 6221: кожен кадр — під підписом збирача з мосту («Photo ф1»), як у «Оціни мій образ»
+  ✓ речі — з розбору мосту; у записі обидві спроби: запит, сира відповідь, причина й незнайомі коди
+  ✓ запис «речі з фото» їде у звіт разом із реплікою стилістки
+  ✓ «Можна не відповідати…» (порада_питанням) переживає чернетку: реплікаЗФотоП її не губить
+  ✓ без винятків
+2. ХЕШ ІЗ ПАРАМЕТРАМИ МОСТУ — НЕ ПАКЕТ
+  ✓ без винятків
+  ✓ екрани введення НЕ сховано, панель на місці; профіль і розділи сховані лише тому, що це знайомство
+  ✓ шапка не каже «Пакет не розпакувався»
+  ✓ адреса й токен мосту прочитані з хеша
+  ✓ модель із хеша переважує збірку
+  ✓ …і збережені на пристрої для наступного відкриття без хеша
+2б. БЕЗ МОСТУ НА PAGES — ВІДМОВА СЛОВАМИ, НЕ ЧОТИРИ ЗБОЇ; HASHCHANGE ПІДХОПЛЮЄ МІСТ
+  ✓ без токена на https-походженні збирання не стартує і каже, як відкрити посилання (#токен)
+  ✓ жодного виклику моделі не було
+  ✓ hashchange: адреса й токен підхоплені без перезавантаження
+  ✓ …і екрани введення після hashchange не сховано
+2б-2. ЧУЖА АДРЕСА В ПОСИЛАННІ НЕ ГУБИТЬ ЗБЕРЕЖЕНИЙ ТОКЕН (рядок 2485; з рядка 1979)
+  ✓ токен збережено, адреси нема, посилання з чужою адресою: відкат на типовий міст ЗІ збереженим токеном (чужий не йде)
+  ✓ збережено типовий міст і токен: відкат лишає обох
+  ✓ токен, збережений до чужої адреси, на типовий міст не йде
+  ✓ нічого не збережено: відкат на типовий міст без токена (як було)
+2б-3. LOCALHOST БЕЗ ДІАЛОГУ — ЛИШЕ МІСТ СТЕНДА Й ЛОКАЛЬНИЙ ВОРКЕР (рядок 2486)
+  ✓ без діалогу — міст стенда (те саме походження, `/міст`), локальний воркер :8787 і типовий міст
+  ✓ будь-який інший localhost (порт, шлях, https, чуже походження) — діалогом згоди
+  ✓ `#міст=http://localhost:6666&т=x` не зберігає ні адреси, ні токена до згоди й чекає на діалог
+2в. КОЛЬОРИ З ПОРТРЕТА — СТОРІНКА КЛИЧЕ МОДЕЛЬ САМА
+  ✓ кнопка «Зчитати кольори з портрета» є, ручний шлях під розкривачем
+  ✓ без портрета — каже додати портрет, модель не кличе
+  ✓ з портретом: один виклик моделі з промптом збирача (англійською, PORTRAIT_COLOURS) і фото; кольори застосовано; свотчі намальовано
+  ✓ відмова моделі: код причини → речення мовної моделі під сталим написом екрана
+  ✓ без речення мовної моделі — лише сталий напис, чужих слів нема
+  ✓ без винятків
+2г. ФОТО ЗМЕНШУЄТЬСЯ ПЕРЕД ВІДПРАВКОЮ (413 на першому прогоні)
+  ✓ довга сторона 4000 → 1568, пропорції збережено (1568×1176)
+  ✓ якість знижується, поки не влізе під стелю (0.85 → 0.7 → 0.55), тип jpeg
+  ✓ легке фото — одна ітерація, якість 0.85
+фото не зменшилось, шлю як є: Error: нема
+    at w.createImageBitmap (C:\Users\gemini\gemini-runs\w\review-2123\джерела\тест_показу.js:1061:47)
+    at блобВБазу (https://mightyrochy.github.io/kod-shi-data/%D0%BF%D0%BE%D0%BA%D0%B0%D0%B7.html:9508:22)
+    at eval (eval at <anonymous> (C:\Users\gemini\gemini-runs\w\review-2123\джерела\тест_показу.js:1066:24), <anonymous>:1:1)
+    at eval (<anonymous>)
+    at C:\Users\gemini\gemini-runs\w\review-2123\джерела\тест_показу.js:1066:24
+  ✓ без createImageBitmap — фото йде як є через фолбек (не тиша)
+2ґ. РОЗМІР ЗАПИТУ КОД ЗНАЄ ДО ВІДПРАВКИ (413 прогону власника 25.09, наряд Л-2)
+  ✓ стеля коду — та сама, що в мості (worker.js СТЕЛЯ_ВХОДУ_СИМВ = 400000)
+  ✓ розмір рахується так само, як на мості: JSON.stringify(messages).length
+  ✓ запит під межею: фото лишається як є, звіт каже «влізло»
+  ✓ два фото по 260 000 + текст 120 000 (= 640 000 симв, HTTP 413 на мості) влазять після зменшення
+  ✓ зменшено саме фото, і кожна сходинка названа у звіті
+  ✓ текст запиту не чіпано (ріже фото, а не слова)
+  ✓ дев'ять фото ходу: запит влазить, зайві знято й названі, перше зображення лишилось
+  ✓ не влізло й після зменшення — виняток називає числа, а не «не вимальовувався»
+  ✓ звіт вміщення каже «не влізло»
+  ✓ модельП шле мостові вже вміщене тіло (і каже викликачеві розмір)
+  ✓ копія під запит менша, а збережений кадр лишився повним (вимір кольору читає його)
+  ✓ виклик, що не доїхав, іде в `виклики` етапом із запитом, розміром і причиною
+2д. ЧЕРГА ВИКЛИКІВ: не більше ОДНОЧАСНО_П у польоті, старти розведені паузою (429 на прогоні 17:33)
+  ✓ шість викликів: у польоті рівно до ОДНОЧАСНО_П (4) одночасно
+  ✓ між двома стартами — щонайменше ПАУЗА_МІЖ_П (400 мс)
+  ✓ черга не вішає: шість викликів пройшли за розумний час
+model · retry connection_reset · stage=OUTFITS_V1 · пул · attempt=1 · no_limit_headers · body={"error":{"message":"Error: read ECONNRESET"}}
+  ✓ обрив 599 за мить: один повтор з причиною connection_reset і відступом, обрив у журналі до повтору, відповідь — друга спроба
+  ✓ зведення дії: стінний час, межа слотів і бюджет виклику (символи входу, стеля виводу)
+  ✓ обрив після довгого виклику (таймаут дороги) не повторюється; обрив сторінкою — теж
+  ✓ `#одночасно=2` ставить межу слотів 2 (A/B рядка 2900); без хеша — 4
+2е. МІСТ ДО PYTHON: без спільного стану між паралельними викликами (гонка 18:45)
+  ✓ чотири паралельні виклики — кожна відповідь свого входу (луна збігається з даними виклику)
+  ✓ дані йдуть рядком JSON-аргументом, а не кодом: рядок = рівно JSON входу, коду Python нема
+  ✓ «суд» і «каталог» оцінки йдуть поступливо (`виклик_а`), решта — синхронно; порожній вхід — null
+2е-б. ПОКОЛІННЯ ВІДПОВІДІ МОСТА: застаріла відповідь не пише стан (рядки 7311, 8410)
+  ✓ палітра: ПАЛІТРА — від ОСТАННЬОГО входу, а не від відповіді, що прийшла останньою
+  ✓ палітра: нота — від останнього входу; застарілий виклик не написав ані ПАЛІТРУ, ані «не порахувалась»
+  ✓ палітра: ноти старого входу, що прийшли після другого очікування, не затирають нот нового
+  ✓ помади: ПОМАДИ_П і ПОМАДИ_КЛЮЧ_П — від останнього входу
+  ✓ без ключа обидві відповіді доходять кожна до свого входу
+  ✓ застарілий виклик, що впав, відхиляється як `застаріло`, а не як справжня помилка; новіший прийнято
+  ✓ без винятків
+2е-в. МІСТ У ВОРКЕРІ: відповідь — своєму входу, помилка зберігає вид, падіння воркера не вішає (4.1-Б-3)
+  ✓ чотири паралельні виклики через воркер — кожна відповідь свого входу, хоч прийшли в зворотному порядку
+  ✓ підйом один на чотири виклики: base64 вантажу, дзеркало й цілісність завантажувача — у повідомленні
+  ✓ кожен виклик несе свій номер `н`; після відповідей ніхто не чекає; час Python — у журналі моста
+  ✓ рух воркера доходить до рядка стану (ЗАВАНТАЖЕНО_П), міст готовий (МІСТ_ГОТОВИЙ_П), глобалі pyodide_показу нема
+  ✓ помилка Python приходить як PythonError із трасбеком — збір і далі читає її як помилку коду, не мережі
+  ✓ воркер упав посеред виклику — виклик відхилено, а не повішено; міст не готовий
+  ✓ наступний виклик піднімає воркер наново
+  ✓ без винятків
+  ✓ збій завантажувача у воркері — `mirror_failed` з причиною; воркер закрито, міст не готовий
+2є-0. РІЧ БЕЗ ФОТО ЙДЕ В ПРОМПТ СЛОВАМИ, А ПІДПИС НАЗИВАЄ ЛИШЕ ЇЇ (Т-11)
+  ✓ пакет із хеша розібрано, карток намальовано 1
+фото не зменшилось до 1024 px: Error: мережі в тесті нема
+    at w.fetch (C:\Users\gemini\gemini-runs\w\review-2123\джерела\тест_показу.js:189:38)
+    at _зменшитиБ64П (https://mightyrochy.github.io/kod-shi-data/%D0%BF%D0%BE%D0%BA%D0%B0%D0%B7.html#H4sIAAAAAAAACn1Ty27aUBT8FeuszaupKuFVvyKbCqGooZQKVERIRRUh-ZGWLCrRlZG6SJbdOg4GY7Ar9Qtm_qg615CQLLq60nnMzDln7pUgFkdwh1v8wk8sKqcNsQVr3DOkiwyROEIfCT36FfyhixS7x5wt-tBHhC0KPCjWs0Bb-5Agx7I6GfStv2vrzUnToouEMyTYKISiFrxmiC1_KMQttpyLLRrHGhm2iLAURxoHRpc-MqTivLsSugz2SjVv-DLlLaHu6SLC2kKOyCq58MBAKZAjY1AtmRLOGBrA3rl2rir1er1-8rbbGV6Oqu8_D5Q7VyjEhgy_kWgfYqQqxkKIAplOZbTZwu8MtUWcV81m0xZeo6CPQhz5OB4PL5xarTfoVjuTs8Gw36k1qp-GXW0L6GJ7VPQooTbRtKe7LceLsWZAnz7nMrX30rngokKv8VIwPcQM6WPL0MISK6TI6anyTFePgjcv8HOkWCtOrDegV04zHl12bOEMKedatUNh7oWMLkNsxJEP_bNR5_wo1i5hVQp2ejl1WcwAK2OPFBuVVKiUQgUqk22VDuANUrPpfV3MEMtnlU_Dl3dr1P9ztzttN6vw9i5-OtRrc6ejDZSWz9RE9A6WN7x0zU7NePeltEN22d4X6U5dBuLIRa__pTP6KtOWLeYHHQzcMv8tR8RvRtc-Om1N_wEhQVvvngMAAA:9584:27)
+    at https://mightyrochy.github.io/kod-shi-data/%D0%BF%D0%BE%D0%BA%D0%B0%D0%B7.html#H4sIAAAAAAAACn1Ty27aUBT8FeuszaupKuFVvyKbCqGooZQKVERIRRUh-ZGWLCrRlZG6SJbdOg4GY7Ar9Qtm_qg615CQLLq60nnMzDln7pUgFkdwh1v8wk8sKqcNsQVr3DOkiwyROEIfCT36FfyhixS7x5wt-tBHhC0KPCjWs0Bb-5Agx7I6GfStv2vrzUnToouEMyTYKISiFrxmiC1_KMQttpyLLRrHGhm2iLAURxoHRpc-MqTivLsSugz2SjVv-DLlLaHu6SLC2kKOyCq58MBAKZAjY1AtmRLOGBrA3rl2rir1er1-8rbbGV6Oqu8_D5Q7VyjEhgy_kWgfYqQqxkKIAplOZbTZwu8MtUWcV81m0xZeo6CPQhz5OB4PL5xarTfoVjuTs8Gw36k1qp-GXW0L6GJ7VPQooTbRtKe7LceLsWZAnz7nMrX30rngokKv8VIwPcQM6WPL0MISK6TI6anyTFePgjcv8HOkWCtOrDegV04zHl12bOEMKedatUNh7oWMLkNsxJEP_bNR5_wo1i5hVQp2ejl1WcwAK2OPFBuVVKiUQgUqk22VDuANUrPpfV3MEMtnlU_Dl3dr1P9ztzttN6vw9i5-OtRrc6ejDZSWz9RE9A6WN7x0zU7NePeltEN22d4X6U5dBuLIRa__pTP6KtOWLeYHHQzcMv8tR8RvRtc-Om1N_wEhQVvvngMAAA:9604:23
+    at фотоДоСторониП (https://mightyrochy.github.io/kod-shi-data/%D0%BF%D0%BE%D0%BA%D0%B0%D0%B7.html#H4sIAAAAAAAACn1Ty27aUBT8FeuszaupKuFVvyKbCqGooZQKVERIRRUh-ZGWLCrRlZG6SJbdOg4GY7Ar9Qtm_qg615CQLLq60nnMzDln7pUgFkdwh1v8wk8sKqcNsQVr3DOkiwyROEIfCT36FfyhixS7x5wt-tBHhC0KPCjWs0Bb-5Agx7I6GfStv2vrzUnToouEMyTYKISiFrxmiC1_KMQttpyLLRrHGhm2iLAURxoHRpc-MqTivLsSugz2SjVv-DLlLaHu6SLC2kKOyCq58MBAKZAjY1AtmRLOGBrA3rl2rir1er1-8rbbGV6Oqu8_D5Q7VyjEhgy_kWgfYqQqxkKIAplOZbTZwu8MtUWcV81m0xZeo6CPQhz5OB4PL5xarTfoVjuTs8Gw36k1qp-GXW0L6GJ7VPQooTbRtKe7LceLsWZAnz7nMrX30rngokKv8VIwPcQM6WPL0MISK6TI6anyTFePgjcv8HOkWCtOrDegV04zHl12bOEMKedatUNh7oWMLkNsxJEP_bNR5_wo1i5hVQp2ejl1WcwAK2OPFBuVVKiUQgUqk22VDuANUrPpfV3MEMtnlU_Dl3dr1P9ztzttN6vw9i5-OtRrc6ejDZSWz9RE9A6WN7x0zU7NePeltEN22d4X6U5dBuLIRa__pTP6KtOWLeYHHQzcMv8tR8RvRtc-Om1N_wEhQVvvngMAAA:9613:5)
+    at приміряти (https://mightyrochy.github.io/kod-shi-data/%D0%BF%D0%BE%D0%BA%D0%B0%D0%B7.html#H4sIAAAAAAAACn1Ty27aUBT8FeuszaupKuFVvyKbCqGooZQKVERIRRUh-ZGWLCrRlZG6SJbdOg4GY7Ar9Qtm_qg615CQLLq60nnMzDln7pUgFkdwh1v8wk8sKqcNsQVr3DOkiwyROEIfCT36FfyhixS7x5wt-tBHhC0KPCjWs0Bb-5Agx7I6GfStv2vrzUnToouEMyTYKISiFrxmiC1_KMQttpyLLRrHGhm2iLAURxoHRpc-MqTivLsSugz2SjVv-DLlLaHu6SLC2kKOyCq58MBAKZAjY1AtmRLOGBrA3rl2rir1er1-8rbbGV6Oqu8_D5Q7VyjEhgy_kWgfYqQqxkKIAplOZbTZwu8MtUWcV81m0xZeo6CPQhz5OB4PL5xarTfoVjuTs8Gw36k1qp-GXW0L6GJ7VPQooTbRtKe7LceLsWZAnz7nMrX30rngokKv8VIwPcQM6WPL0MISK6TI6anyTFePgjcv8HOkWCtOrDegV04zHl12bOEMKedatUNh7oWMLkNsxJEP_bNR5_wo1i5hVQp2ejl1WcwAK2OPFBuVVKiUQgUqk22VDuANUrPpfV3MEMtnlU_Dl3dr1P9ztzttN6vw9i5-OtRrc6ejDZSWz9RE9A6WN7x0zU7NePeltEN22d4X6U5dBuLIRa__pTP6KtOWLeYHHQzcMv8tR8RvRtc-Om1N_wEhQVvvngMAAA:9786:22)
+    at async C:\Users\gemini\gemini-runs\w\review-2123\джерела\тест_показу.js:1428:5
+  ✓ моделі картинки йде РІВНО той текст, який склав міст (П-1: промпт — на збирачі)
+  ✓ її річ без знімка йде в міст словами: слот, її назва, крій кодом і позначка «її»
+  ✓ річ крамниці без знімка доїжджає з кодом кольору producer, без слова крамниці (5235)
+  ✓ річ, чиє фото ПОЇХАЛО, у перелік «без фото» не потрапляє
+  ✓ підпис обіцяє рівно ті речі, які пішли в міст словами — один перелік на обох
+  ✓ без винятків
+2є-0б. РУКА БЕЗ КАТАЛОГУ З ЇЇ РІЧЧЮ З ФОТО: решта образу теж доїжджає словами (Т-15)
+  ✓ пакет із хеша розібрано, карток намальовано 1
+фото не зменшилось до 1024 px: Error: мережі в тесті нема
+    at w.fetch (C:\Users\gemini\gemini-runs\w\review-2123\джерела\тест_показу.js:189:38)
+    at _зменшитиБ64П (https://mightyrochy.github.io/kod-shi-data/%D0%BF%D0%BE%D0%BA%D0%B0%D0%B7.html#H4sIAAAAAAAACnWSwWrbQBRFf0XMWgqkgUL1Id0U402zKLSb0kIhGGTZqbsIuN3I0EUK_QJFkZBseRToF5z7R-GN7NDUdCV4o3fueW_mylG51PGLW37ynU3y-tzFjpY7FcrYUbrUKafRXHnCgzI69k9nsbOPckp6Bu6N9awwtT4aPPXZlw_voz9t9PLiVaSMRisatoYw6qClCnrdGOKWXmsXO6vTsqOnpHapuzgmZsrZ0bn0zZVTpsXB1M5D3s5yw2QHRhlxR0MbPffT4mzMabRSEXDv3trIG20SLcMyPCUt1biKOQ8qqPF0-qp1ZMRxK145A_uI1hbENvjF1tEzjDKejtaQlU2kuaFd-unj58vYaUWntf21ZxinX1ofw9QCLXt57mbxQZB9ojkVjXJlyYknvxnwpsB2HDmjpuOeEh9ZRLBaBaXtP5pGzXSNtzGm-mbdo_UIqA1yNP_biIpWC-XKtU5enDj9CDdcmE9jNiexT83_T5vELry_4_VPwmv1lLoO93KoziazR7SE2-XcAgAA:9584:27)
+    at https://mightyrochy.github.io/kod-shi-data/%D0%BF%D0%BE%D0%BA%D0%B0%D0%B7.html#H4sIAAAAAAAACnWSwWrbQBRFf0XMWgqkgUL1Id0U402zKLSb0kIhGGTZqbsIuN3I0EUK_QJFkZBseRToF5z7R-GN7NDUdCV4o3fueW_mylG51PGLW37ynU3y-tzFjpY7FcrYUbrUKafRXHnCgzI69k9nsbOPckp6Bu6N9awwtT4aPPXZlw_voz9t9PLiVaSMRisatoYw6qClCnrdGOKWXmsXO6vTsqOnpHapuzgmZsrZ0bn0zZVTpsXB1M5D3s5yw2QHRhlxR0MbPffT4mzMabRSEXDv3trIG20SLcMyPCUt1biKOQ8qqPF0-qp1ZMRxK145A_uI1hbENvjF1tEzjDKejtaQlU2kuaFd-unj58vYaUWntf21ZxinX1ofw9QCLXt57mbxQZB9ojkVjXJlyYknvxnwpsB2HDmjpuOeEh9ZRLBaBaXtP5pGzXSNtzGm-mbdo_UIqA1yNP_biIpWC-XKtU5enDj9CDdcmE9jNiexT83_T5vELry_4_VPwmv1lLoO93KoziazR7SE2-XcAgAA:9604:23
+    at фотоДоСторониП (https://mightyrochy.github.io/kod-shi-data/%D0%BF%D0%BE%D0%BA%D0%B0%D0%B7.html#H4sIAAAAAAAACnWSwWrbQBRFf0XMWgqkgUL1Id0U402zKLSb0kIhGGTZqbsIuN3I0EUK_QJFkZBseRToF5z7R-GN7NDUdCV4o3fueW_mylG51PGLW37ynU3y-tzFjpY7FcrYUbrUKafRXHnCgzI69k9nsbOPckp6Bu6N9awwtT4aPPXZlw_voz9t9PLiVaSMRisatoYw6qClCnrdGOKWXmsXO6vTsqOnpHapuzgmZsrZ0bn0zZVTpsXB1M5D3s5yw2QHRhlxR0MbPffT4mzMabRSEXDv3trIG20SLcMyPCUt1biKOQ8qqPF0-qp1ZMRxK145A_uI1hbENvjF1tEzjDKejtaQlU2kuaFd-unj58vYaUWntf21ZxinX1ofw9QCLXt57mbxQZB9ojkVjXJlyYknvxnwpsB2HDmjpuOeEh9ZRLBaBaXtP5pGzXSNtzGm-mbdo_UIqA1yNP_biIpWC-XKtU5enDj9CDdcmE9jNiexT83_T5vELry_4_VPwmv1lLoO93KoziazR7SE2-XcAgAA:9613:5)
+    at приміряти (https://mightyrochy.github.io/kod-shi-data/%D0%BF%D0%BE%D0%BA%D0%B0%D0%B7.html#H4sIAAAAAAAACnWSwWrbQBRFf0XMWgqkgUL1Id0U402zKLSb0kIhGGTZqbsIuN3I0EUK_QJFkZBseRToF5z7R-GN7NDUdCV4o3fueW_mylG51PGLW37ynU3y-tzFjpY7FcrYUbrUKafRXHnCgzI69k9nsbOPckp6Bu6N9awwtT4aPPXZlw_voz9t9PLiVaSMRisatoYw6qClCnrdGOKWXmsXO6vTsqOnpHapuzgmZsrZ0bn0zZVTpsXB1M5D3s5yw2QHRhlxR0MbPffT4mzMabRSEXDv3trIG20SLcMyPCUt1biKOQ8qqPF0-qp1ZMRxK145A_uI1hbENvjF1tEzjDKejtaQlU2kuaFd-unj58vYaUWntf21ZxinX1ofw9QCLXt57mbxQZB9ojkVjXJlyYknvxnwpsB2HDmjpuOeEh9ZRLBaBaXtP5pGzXSNtzGm-mbdo_UIqA1yNP_biIpWC-XKtU5enDj9CDdcmE9jNiexT83_T5vELry_4_VPwmv1lLoO93KoziazR7SE2-XcAgAA:9786:22)
+    at async C:\Users\gemini\gemini-runs\w\review-2123\джерела\тест_показу.js:1480:5
+фото не зменшилось до 768 px: Error: мережі в тесті нема
+    at w.fetch (C:\Users\gemini\gemini-runs\w\review-2123\джерела\тест_показу.js:189:38)
+    at _зменшитиБ64П (https://mightyrochy.github.io/kod-shi-data/%D0%BF%D0%BE%D0%BA%D0%B0%D0%B7.html#H4sIAAAAAAAACnWSwWrbQBRFf0XMWgqkgUL1Id0U402zKLSb0kIhGGTZqbsIuN3I0EUK_QJFkZBseRToF5z7R-GN7NDUdCV4o3fueW_mylG51PGLW37ynU3y-tzFjpY7FcrYUbrUKafRXHnCgzI69k9nsbOPckp6Bu6N9awwtT4aPPXZlw_voz9t9PLiVaSMRisatoYw6qClCnrdGOKWXmsXO6vTsqOnpHapuzgmZsrZ0bn0zZVTpsXB1M5D3s5yw2QHRhlxR0MbPffT4mzMabRSEXDv3trIG20SLcMyPCUt1biKOQ8qqPF0-qp1ZMRxK145A_uI1hbENvjF1tEzjDKejtaQlU2kuaFd-unj58vYaUWntf21ZxinX1ofw9QCLXt57mbxQZB9ojkVjXJlyYknvxnwpsB2HDmjpuOeEh9ZRLBaBaXtP5pGzXSNtzGm-mbdo_UIqA1yNP_biIpWC-XKtU5enDj9CDdcmE9jNiexT83_T5vELry_4_VPwmv1lLoO93KoziazR7SE2-XcAgAA:9584:27)
+    at https://mightyrochy.github.io/kod-shi-data/%D0%BF%D0%BE%D0%BA%D0%B0%D0%B7.html#H4sIAAAAAAAACnWSwWrbQBRFf0XMWgqkgUL1Id0U402zKLSb0kIhGGTZqbsIuN3I0EUK_QJFkZBseRToF5z7R-GN7NDUdCV4o3fueW_mylG51PGLW37ynU3y-tzFjpY7FcrYUbrUKafRXHnCgzI69k9nsbOPckp6Bu6N9awwtT4aPPXZlw_voz9t9PLiVaSMRisatoYw6qClCnrdGOKWXmsXO6vTsqOnpHapuzgmZsrZ0bn0zZVTpsXB1M5D3s5yw2QHRhlxR0MbPffT4mzMabRSEXDv3trIG20SLcMyPCUt1biKOQ8qqPF0-qp1ZMRxK145A_uI1hbENvjF1tEzjDKejtaQlU2kuaFd-unj58vYaUWntf21ZxinX1ofw9QCLXt57mbxQZB9ojkVjXJlyYknvxnwpsB2HDmjpuOeEh9ZRLBaBaXtP5pGzXSNtzGm-mbdo_UIqA1yNP_biIpWC-XKtU5enDj9CDdcmE9jNiexT83_T5vELry_4_VPwmv1lLoO93KoziazR7SE2-XcAgAA:9604:23
+    at фотоДоСторониП (https://mightyrochy.github.io/kod-shi-data/%D0%BF%D0%BE%D0%BA%D0%B0%D0%B7.html#H4sIAAAAAAAACnWSwWrbQBRFf0XMWgqkgUL1Id0U402zKLSb0kIhGGTZqbsIuN3I0EUK_QJFkZBseRToF5z7R-GN7NDUdCV4o3fueW_mylG51PGLW37ynU3y-tzFjpY7FcrYUbrUKafRXHnCgzI69k9nsbOPckp6Bu6N9awwtT4aPPXZlw_voz9t9PLiVaSMRisatoYw6qClCnrdGOKWXmsXO6vTsqOnpHapuzgmZsrZ0bn0zZVTpsXB1M5D3s5yw2QHRhlxR0MbPffT4mzMabRSEXDv3trIG20SLcMyPCUt1biKOQ8qqPF0-qp1ZMRxK145A_uI1hbENvjF1tEzjDKejtaQlU2kuaFd-unj58vYaUWntf21ZxinX1ofw9QCLXt57mbxQZB9ojkVjXJlyYknvxnwpsB2HDmjpuOeEh9ZRLBaBaXtP5pGzXSNtzGm-mbdo_UIqA1yNP_biIpWC-XKtU5enDj9CDdcmE9jNiexT83_T5vELry_4_VPwmv1lLoO93KoziazR7SE2-XcAgAA:9613:5)
+    at https://mightyrochy.github.io/kod-shi-data/%D0%BF%D0%BE%D0%BA%D0%B0%D0%B7.html#H4sIAAAAAAAACnWSwWrbQBRFf0XMWgqkgUL1Id0U402zKLSb0kIhGGTZqbsIuN3I0EUK_QJFkZBseRToF5z7R-GN7NDUdCV4o3fueW_mylG51PGLW37ynU3y-tzFjpY7FcrYUbrUKafRXHnCgzI69k9nsbOPckp6Bu6N9awwtT4aPPXZlw_voz9t9PLiVaSMRisatoYw6qClCnrdGOKWXmsXO6vTsqOnpHapuzgmZsrZ0bn0zZVTpsXB1M5D3s5yw2QHRhlxR0MbPffT4mzMabRSEXDv3trIG20SLcMyPCUt1biKOQ8qqPF0-qp1ZMRxK145A_uI1hbENvjF1tEzjDKejtaQlU2kuaFd-unj58vYaUWntf21ZxinX1ofw9QCLXt57mbxQZB9ojkVjXJlyYknvxnwpsB2HDmjpuOeEh9ZRLBaBaXtP5pGzXSNtzGm-mbdo_UIqA1yNP_biIpWC-XKtU5enDj9CDdcmE9jNiexT83_T5vELry_4_VPwmv1lLoO93KoziazR7SE2-XcAgAA:9811:35
+    at Array.map (<anonymous>)
+    at приміряти (https://mightyrochy.github.io/kod-shi-data/%D0%BF%D0%BE%D0%BA%D0%B0%D0%B7.html#H4sIAAAAAAAACnWSwWrbQBRFf0XMWgqkgUL1Id0U402zKLSb0kIhGGTZqbsIuN3I0EUK_QJFkZBseRToF5z7R-GN7NDUdCV4o3fueW_mylG51PGLW37ynU3y-tzFjpY7FcrYUbrUKafRXHnCgzI69k9nsbOPckp6Bu6N9awwtT4aPPXZlw_voz9t9PLiVaSMRisatoYw6qClCnrdGOKWXmsXO6vTsqOnpHapuzgmZsrZ0bn0zZVTpsXB1M5D3s5yw2QHRhlxR0MbPffT4mzMabRSEXDv3trIG20SLcMyPCUt1biKOQ8qqPF0-qp1ZMRxK145A_uI1hbENvjF1tEzjDKejtaQlU2kuaFd-unj58vYaUWntf21ZxinX1ofw9QCLXt57mbxQZB9ojkVjXJlyYknvxnwpsB2HDmjpuOeEh9ZRLBaBaXtP5pGzXSNtzGm-mbdo_UIqA1yNP_biIpWC-XKtU5enDj9CDdcmE9jNiexT83_T5vELry_4_VPwmv1lLoO93KoziazR7SE2-XcAgAA:9811:8)
+    at async C:\Users\gemini\gemini-runs\w\review-2123\джерела\тест_показу.js:1480:5
+  ✓ її річ із фото лишається знімком — «її» в мосту, байти з телефона другим зображенням
+  ✓ вигадані речі руки 3 доїжджають словами, а не зникають із промпта
+  ✓ підпис руки без каталогу називає ті самі речі й не кличе купувати
+  ✓ без винятків
+2є. ТРИПТИХ ЗАМІСТЬ ОДНОГО КАДРУ: ПОВТОР РІВНО ОДИН, БЕЗ ТИХОГО ОБРІЗАННЯ (рядок 125)
+  ✓ пакет із хеша розібрано, карток намальовано 1
+фото не зменшилось до 1024 px: Error: мережі в тесті нема
+    at w.fetch (C:\Users\gemini\gemini-runs\w\review-2123\джерела\тест_показу.js:189:38)
+    at _зменшитиБ64П (https://mightyrochy.github.io/kod-shi-data/%D0%BF%D0%BE%D0%BA%D0%B0%D0%B7.html#H4sIAAAAAAAAClVRzUrDYBB8lbDnNGkpFJKTT-FFi4iWWmk0aIVCKSTp30WoiEQQifTkNdamqYlJwSeYfSPZaKSevo-Z3ZnZ3QFhSSbhBQGecIfHyn6NVEKMN_bZQYKQTGIPEbvsVbBlBxt8_nEqycMeQqTI8S5a_4Aj6UOEDCutb3WVr1hp1A2FHUQ8Q4QPkRDVnMfsI-VbkQiQ8pxUEhwxEqQIsSKTaqWjwx4SbMg8GBA7PPpNKnzhl4ivSC0KLuO5IrGxYl87vMAC95jiAQGeEZgKtsh5zm7xwRIROzxRsEaIBJFM8xMm4hn7hWfnVMTXlWq1Wq3vtVv2zZV2cmlJvAwhYiyLPHhFzo5ACrtlEtGasi8omQ3DMFTiMXL2kJNJZ72efW3qesdqa63-sWV3W3pNO7fb0jZiB-lO0Z-x3hfalaUXc--4DZsqFScrN9YsDpwh5IlspESHzeE3iCDH9Q8CAAA:9584:27)
+    at https://mightyrochy.github.io/kod-shi-data/%D0%BF%D0%BE%D0%BA%D0%B0%D0%B7.html#H4sIAAAAAAAAClVRzUrDYBB8lbDnNGkpFJKTT-FFi4iWWmk0aIVCKSTp30WoiEQQifTkNdamqYlJwSeYfSPZaKSevo-Z3ZnZ3QFhSSbhBQGecIfHyn6NVEKMN_bZQYKQTGIPEbvsVbBlBxt8_nEqycMeQqTI8S5a_4Aj6UOEDCutb3WVr1hp1A2FHUQ8Q4QPkRDVnMfsI-VbkQiQ8pxUEhwxEqQIsSKTaqWjwx4SbMg8GBA7PPpNKnzhl4ivSC0KLuO5IrGxYl87vMAC95jiAQGeEZgKtsh5zm7xwRIROzxRsEaIBJFM8xMm4hn7hWfnVMTXlWq1Wq3vtVv2zZV2cmlJvAwhYiyLPHhFzo5ACrtlEtGasi8omQ3DMFTiMXL2kJNJZ72efW3qesdqa63-sWV3W3pNO7fb0jZiB-lO0Z-x3hfalaUXc--4DZsqFScrN9YsDpwh5IlspESHzeE3iCDH9Q8CAAA:9604:23
+    at фотоДоСторониП (https://mightyrochy.github.io/kod-shi-data/%D0%BF%D0%BE%D0%BA%D0%B0%D0%B7.html#H4sIAAAAAAAAClVRzUrDYBB8lbDnNGkpFJKTT-FFi4iWWmk0aIVCKSTp30WoiEQQifTkNdamqYlJwSeYfSPZaKSevo-Z3ZnZ3QFhSSbhBQGecIfHyn6NVEKMN_bZQYKQTGIPEbvsVbBlBxt8_nEqycMeQqTI8S5a_4Aj6UOEDCutb3WVr1hp1A2FHUQ8Q4QPkRDVnMfsI-VbkQiQ8pxUEhwxEqQIsSKTaqWjwx4SbMg8GBA7PPpNKnzhl4ivSC0KLuO5IrGxYl87vMAC95jiAQGeEZgKtsh5zm7xwRIROzxRsEaIBJFM8xMm4hn7hWfnVMTXlWq1Wq3vtVv2zZV2cmlJvAwhYiyLPHhFzo5ACrtlEtGasi8omQ3DMFTiMXL2kJNJZ72efW3qesdqa63-sWV3W3pNO7fb0jZiB-lO0Z-x3hfalaUXc--4DZsqFScrN9YsDpwh5IlspESHzeE3iCDH9Q8CAAA:9613:5)
+    at приміряти (https://mightyrochy.github.io/kod-shi-data/%D0%BF%D0%BE%D0%BA%D0%B0%D0%B7.html#H4sIAAAAAAAAClVRzUrDYBB8lbDnNGkpFJKTT-FFi4iWWmk0aIVCKSTp30WoiEQQifTkNdamqYlJwSeYfSPZaKSevo-Z3ZnZ3QFhSSbhBQGecIfHyn6NVEKMN_bZQYKQTGIPEbvsVbBlBxt8_nEqycMeQqTI8S5a_4Aj6UOEDCutb3WVr1hp1A2FHUQ8Q4QPkRDVnMfsI-VbkQiQ8pxUEhwxEqQIsSKTaqWjwx4SbMg8GBA7PPpNKnzhl4ivSC0KLuO5IrGxYl87vMAC95jiAQGeEZgKtsh5zm7xwRIROzxRsEaIBJFM8xMm4hn7hWfnVMTXlWq1Wq3vtVv2zZV2cmlJvAwhYiyLPHhFzo5ACrtlEtGasi8omQ3DMFTiMXL2kJNJZ72efW3qesdqa63-sWV3W3pNO7fb0jZiB-lO0Z-x3hfalaUXc--4DZsqFScrN9YsDpwh5IlspESHzeE3iCDH9Q8CAAA:9786:22)
+    at async C:\Users\gemini\gemini-runs\w\review-2123\джерела\тест_показу.js:1542:5
+  ✓ нормальний кадр: один виклик моделі, повтору нема
+  ✓ нормальний кадр: картинка показана, рядок каже лише про речі
+  ✓ нормальний кадр: у журнал `кадрів_кілька` не йде
+  ✓ ×1.33 (сусідня сходинка 3:4 → 1:1) проходить як один кадр — повтору нема
+  ✓ утричі ширший кадр дає РІВНО один повтор (два виклики, не три)
+  ✓ повтор несе підсилену вимогу «один кадр» тим самим змістом
+  ✓ узято картинку повтору, і рядок стану про кілька кадрів мовчить
+  ✓ і після повтору широко — другого повтору нема (рівно два виклики)
+  ✓ (в) картинку ПОКАЗАНО, а не обрізано й не сховано
+  ✓ (д) рядок стану чесно каже про кілька кадрів і називає число, а не лише «4 з 4»
+  ✓ (д) журнал не бреше: у записаному вердикті `примірка_кадрів_кілька` = «так», і колонка є в шапці
+фото не зменшилось до 1024 px: Error: мережі в тесті нема
+    at w.fetch (C:\Users\gemini\gemini-runs\w\review-2123\джерела\тест_показу.js:189:38)
+    at _зменшитиБ64П (https://mightyrochy.github.io/kod-shi-data/%D0%BF%D0%BE%D0%BA%D0%B0%D0%B7.html#H4sIAAAAAAAAClVRzUrDYBB8lbDnNGkpFJKTT-FFi4iWWmk0aIVCKSTp30WoiEQQifTkNdamqYlJwSeYfSPZaKSevo-Z3ZnZ3QFhSSbhBQGecIfHyn6NVEKMN_bZQYKQTGIPEbvsVbBlBxt8_nEqycMeQqTI8S5a_4Aj6UOEDCutb3WVr1hp1A2FHUQ8Q4QPkRDVnMfsI-VbkQiQ8pxUEhwxEqQIsSKTaqWjwx4SbMg8GBA7PPpNKnzhl4ivSC0KLuO5IrGxYl87vMAC95jiAQGeEZgKtsh5zm7xwRIROzxRsEaIBJFM8xMm4hn7hWfnVMTXlWq1Wq3vtVv2zZV2cmlJvAwhYiyLPHhFzo5ACrtlEtGasi8omQ3DMFTiMXL2kJNJZ72efW3qesdqa63-sWV3W3pNO7fb0jZiB-lO0Z-x3hfalaUXc--4DZsqFScrN9YsDpwh5IlspESHzeE3iCDH9Q8CAAA:9584:27)
+    at https://mightyrochy.github.io/kod-shi-data/%D0%BF%D0%BE%D0%BA%D0%B0%D0%B7.html#H4sIAAAAAAAAClVRzUrDYBB8lbDnNGkpFJKTT-FFi4iWWmk0aIVCKSTp30WoiEQQifTkNdamqYlJwSeYfSPZaKSevo-Z3ZnZ3QFhSSbhBQGecIfHyn6NVEKMN_bZQYKQTGIPEbvsVbBlBxt8_nEqycMeQqTI8S5a_4Aj6UOEDCutb3WVr1hp1A2FHUQ8Q4QPkRDVnMfsI-VbkQiQ8pxUEhwxEqQIsSKTaqWjwx4SbMg8GBA7PPpNKnzhl4ivSC0KLuO5IrGxYl87vMAC95jiAQGeEZgKtsh5zm7xwRIROzxRsEaIBJFM8xMm4hn7hWfnVMTXlWq1Wq3vtVv2zZV2cmlJvAwhYiyLPHhFzo5ACrtlEtGasi8omQ3DMFTiMXL2kJNJZ72efW3qesdqa63-sWV3W3pNO7fb0jZiB-lO0Z-x3hfalaUXc--4DZsqFScrN9YsDpwh5IlspESHzeE3iCDH9Q8CAAA:9604:23
+    at фотоДоСторониП (https://mightyrochy.github.io/kod-shi-data/%D0%BF%D0%BE%D0%BA%D0%B0%D0%B7.html#H4sIAAAAAAAAClVRzUrDYBB8lbDnNGkpFJKTT-FFi4iWWmk0aIVCKSTp30WoiEQQifTkNdamqYlJwSeYfSPZaKSevo-Z3ZnZ3QFhSSbhBQGecIfHyn6NVEKMN_bZQYKQTGIPEbvsVbBlBxt8_nEqycMeQqTI8S5a_4Aj6UOEDCutb3WVr1hp1A2FHUQ8Q4QPkRDVnMfsI-VbkQiQ8pxUEhwxEqQIsSKTaqWjwx4SbMg8GBA7PPpNKnzhl4ivSC0KLuO5IrGxYl87vMAC95jiAQGeEZgKtsh5zm7xwRIROzxRsEaIBJFM8xMm4hn7hWfnVMTXlWq1Wq3vtVv2zZV2cmlJvAwhYiyLPHhFzo5ACrtlEtGasi8omQ3DMFTiMXL2kJNJZ72efW3qesdqa63-sWV3W3pNO7fb0jZiB-lO0Z-x3hfalaUXc--4DZsqFScrN9YsDpwh5IlspESHzeE3iCDH9Q8CAAA:9613:5)
+    at приміряти (https://mightyrochy.github.io/kod-shi-data/%D0%BF%D0%BE%D0%BA%D0%B0%D0%B7.html#H4sIAAAAAAAAClVRzUrDYBB8lbDnNGkpFJKTT-FFi4iWWmk0aIVCKSTp30WoiEQQifTkNdamqYlJwSeYfSPZaKSevo-Z3ZnZ3QFhSSbhBQGecIfHyn6NVEKMN_bZQYKQTGIPEbvsVbBlBxt8_nEqycMeQqTI8S5a_4Aj6UOEDCutb3WVr1hp1A2FHUQ8Q4QPkRDVnMfsI-VbkQiQ8pxUEhwxEqQIsSKTaqWjwx4SbMg8GBA7PPpNKnzhl4ivSC0KLuO5IrGxYl87vMAC95jiAQGeEZgKtsh5zm7xwRIROzxRsEaIBJFM8xMm4hn7hWfnVMTXlWq1Wq3vtVv2zZV2cmlJvAwhYiyLPHhFzo5ACrtlEtGasi8omQ3DMFTiMXL2kJNJZ72efW3qesdqa63-sWV3W3pNO7fb0jZiB-lO0Z-x3hfalaUXc--4DZsqFScrN9YsDpwh5IlspESHzeE3iCDH9Q8CAAA:9786:22)
+    at async C:\Users\gemini\gemini-runs\w\review-2123\джерела\тест_показу.js:1607:5
+  ✓ фото пішло без пропорцій (фолбек) — повтору нема і про кадри не сказано нічого
+  ✓ без винятків
+2е-2. ДВІ КАРТКИ В ПОЛЬОТІ: КОЖНА РАХУЄ СВОЇ ВТРАЧЕНІ ЗНІМКИ (рядок 160)
+  ✓ пакет із хеша розібрано, карток намальовано 2
+фото не зменшилось до 1024 px: Error: мережі в тесті нема
+    at w.fetch (C:\Users\gemini\gemini-runs\w\review-2123\джерела\тест_показу.js:189:38)
+    at _зменшитиБ64П (https://mightyrochy.github.io/kod-shi-data/%D0%BF%D0%BE%D0%BA%D0%B0%D0%B7.html#H4sIAAAAAAAACr2TzWrbQBSFX0XctSzryqZQrfoU3QQTSmrclJiaNgFDMMhyEm8K7kqFLtI-guJaVSrFMuQJznmjMMoPaRtiS5jOcubec78ZvjkWzMUXfMc5vuELvjZeq9iCFBeMGCBDLL4wRMIxwwZWKJAzYmiKMsQMESNHgZ8m5Y-NXdOBBEssnGH_wLpOrRetlxYDJJwiwW8TsWKAgieMkPOziThHzpnYYvaRIkOOGAvxRb37kQFDZLgUf-dYGHByB2m4y4GZGXybdcEAMVLLvU1MOGVU9u2_NQW_Gq5Z-qrXHRx9dPY-9M2MpWnBvAzFD0acWq5Tpp8xMqfiq-vawhMUDFGIL-8ODwef_GZzv99zusM3_cFBt-mq837QM20TBsgfVT1Maw7N8di8V0nMcXmbJWcysv-C9DaA9KpDepUhMUfKCUOGT2G2NsBsVcds1XvLq9KNfyDbG0C2q0O2q7_lCgVnHMuoYwuuzMe6U7tTfsIlYp4ywuJ-11zlkfPeM87rc87reue1hvO6Ved1vfNaw3ndsvO63nmt4bxu1Xld77zWcF7_h_Od0Q1NxvyPpwYAAA:9584:27)
+    at https://mightyrochy.github.io/kod-shi-data/%D0%BF%D0%BE%D0%BA%D0%B0%D0%B7.html#H4sIAAAAAAAACr2TzWrbQBSFX0XctSzryqZQrfoU3QQTSmrclJiaNgFDMMhyEm8K7kqFLtI-guJaVSrFMuQJznmjMMoPaRtiS5jOcubec78ZvjkWzMUXfMc5vuELvjZeq9iCFBeMGCBDLL4wRMIxwwZWKJAzYmiKMsQMESNHgZ8m5Y-NXdOBBEssnGH_wLpOrRetlxYDJJwiwW8TsWKAgieMkPOziThHzpnYYvaRIkOOGAvxRb37kQFDZLgUf-dYGHByB2m4y4GZGXybdcEAMVLLvU1MOGVU9u2_NQW_Gq5Z-qrXHRx9dPY-9M2MpWnBvAzFD0acWq5Tpp8xMqfiq-vawhMUDFGIL-8ODwef_GZzv99zusM3_cFBt-mq837QM20TBsgfVT1Maw7N8di8V0nMcXmbJWcysv-C9DaA9KpDepUhMUfKCUOGT2G2NsBsVcds1XvLq9KNfyDbG0C2q0O2q7_lCgVnHMuoYwuuzMe6U7tTfsIlYp4ywuJ-11zlkfPeM87rc87reue1hvO6Ved1vfNaw3ndsvO63nmt4bxu1Xld77zWcF7_h_Od0Q1NxvyPpwYAAA:9604:23
+    at фотоДоСторониП (https://mightyrochy.github.io/kod-shi-data/%D0%BF%D0%BE%D0%BA%D0%B0%D0%B7.html#H4sIAAAAAAAACr2TzWrbQBSFX0XctSzryqZQrfoU3QQTSmrclJiaNgFDMMhyEm8K7kqFLtI-guJaVSrFMuQJznmjMMoPaRtiS5jOcubec78ZvjkWzMUXfMc5vuELvjZeq9iCFBeMGCBDLL4wRMIxwwZWKJAzYmiKMsQMESNHgZ8m5Y-NXdOBBEssnGH_wLpOrRetlxYDJJwiwW8TsWKAgieMkPOziThHzpnYYvaRIkOOGAvxRb37kQFDZLgUf-dYGHByB2m4y4GZGXybdcEAMVLLvU1MOGVU9u2_NQW_Gq5Z-qrXHRx9dPY-9M2MpWnBvAzFD0acWq5Tpp8xMqfiq-vawhMUDFGIL-8ODwef_GZzv99zusM3_cFBt-mq837QM20TBsgfVT1Maw7N8di8V0nMcXmbJWcysv-C9DaA9KpDepUhMUfKCUOGT2G2NsBsVcds1XvLq9KNfyDbG0C2q0O2q7_lCgVnHMuoYwuuzMe6U7tTfsIlYp4ywuJ-11zlkfPeM87rc87reue1hvO6Ved1vfNaw3ndsvO63nmt4bxu1Xld77zWcF7_h_Od0Q1NxvyPpwYAAA:9613:5)
+    at приміряти (https://mightyrochy.github.io/kod-shi-data/%D0%BF%D0%BE%D0%BA%D0%B0%D0%B7.html#H4sIAAAAAAAACr2TzWrbQBSFX0XctSzryqZQrfoU3QQTSmrclJiaNgFDMMhyEm8K7kqFLtI-guJaVSrFMuQJznmjMMoPaRtiS5jOcubec78ZvjkWzMUXfMc5vuELvjZeq9iCFBeMGCBDLL4wRMIxwwZWKJAzYmiKMsQMESNHgZ8m5Y-NXdOBBEssnGH_wLpOrRetlxYDJJwiwW8TsWKAgieMkPOziThHzpnYYvaRIkOOGAvxRb37kQFDZLgUf-dYGHByB2m4y4GZGXybdcEAMVLLvU1MOGVU9u2_NQW_Gq5Z-qrXHRx9dPY-9M2MpWnBvAzFD0acWq5Tpp8xMqfiq-vawhMUDFGIL-8ODwef_GZzv99zusM3_cFBt-mq837QM20TBsgfVT1Maw7N8di8V0nMcXmbJWcysv-C9DaA9KpDepUhMUfKCUOGT2G2NsBsVcds1XvLq9KNfyDbG0C2q0O2q7_lCgVnHMuoYwuuzMe6U7tTfsIlYp4ywuJ-11zlkfPeM87rc87reue1hvO6Ved1vfNaw3ndsvO63nmt4bxu1Xld77zWcF7_h_Od0Q1NxvyPpwYAAA:9786:22)
+    at async Promise.all (index 0)
+    at async C:\Users\gemini\gemini-runs\w\review-2123\джерела\тест_показу.js:1656:5
+  ✓ перша картка лишилась при СВОЇХ 4 з 4, хоч сусідня відповідь прийшла раніше й принесла свої втрати
+  ✓ друга картка рахує свої 2 з 4 — числа карток не змішались
+  ✓ і картинки різні: кожна картка показує свою
+  ✓ рядок першої картки називає, скільки ФОТО дійшло, і не обіцяє намальованого
+  ✓ без винятків
+2ж. ОБРАНИЙ МАКІЯЖ ДОЇЖДЖАЄ ДО КАРТИНКИ В ОБОХ РЕЖИМАХ (рядок 128)
+  ✓ пакет із хеша розібрано, карток намальовано 2
+фото не зменшилось до 1024 px: Error: мережі в тесті нема
+    at w.fetch (C:\Users\gemini\gemini-runs\w\review-2123\джерела\тест_показу.js:189:38)
+    at _зменшитиБ64П (https://mightyrochy.github.io/kod-shi-data/%D0%BF%D0%BE%D0%BA%D0%B0%D0%B7.html#H4sIAAAAAAAACo1SwUoCURT9lcddj6MiCPNWfUWbkIgSMxySMhBEGGcqN4GtJmihtGo7muPYjDNCX3DuH8WdVLQ2bc-595x3zn09wow0YYIxXvGMl8JxmQxChCn77CBGQJrYRcgDdgtYIUDMPo-wkLEYAbsIkCDDh-gcAKeygxAp5mbXbqmvSFUrlmIHIQ8R4lMk1uwg43v2kfCTSIyR8IgMEhwRYiQIMCdN5a2jwy5iLEmf9Igd9javFD73i8VXpN5yLuWRwop9zNk3f4RDHrKf7zcvZHBRKJVKpcpRo96-uzHPr22xShEgwizXxjsydgRSPNiqitYj-4KSrlqWZRDfI2MXGWm67HTat7pYbNoNs949s9uterFsXrUbsuaxg2RvaGdc7Ao9kALzDHtu_ZpBkmOXvpYfKkXAD5Jui_aNg1oqf2qZbKoNFKYIEanDs7Gn90IKmcltpAD2FGZYiqehsEaWf4i5KM2U5Eb6q-H_vrnW_wY1Z6l8iwIAAA:9584:27)
+    at https://mightyrochy.github.io/kod-shi-data/%D0%BF%D0%BE%D0%BA%D0%B0%D0%B7.html#H4sIAAAAAAAACo1SwUoCURT9lcddj6MiCPNWfUWbkIgSMxySMhBEGGcqN4GtJmihtGo7muPYjDNCX3DuH8WdVLQ2bc-595x3zn09wow0YYIxXvGMl8JxmQxChCn77CBGQJrYRcgDdgtYIUDMPo-wkLEYAbsIkCDDh-gcAKeygxAp5mbXbqmvSFUrlmIHIQ8R4lMk1uwg43v2kfCTSIyR8IgMEhwRYiQIMCdN5a2jwy5iLEmf9Igd9javFD73i8VXpN5yLuWRwop9zNk3f4RDHrKf7zcvZHBRKJVKpcpRo96-uzHPr22xShEgwizXxjsydgRSPNiqitYj-4KSrlqWZRDfI2MXGWm67HTat7pYbNoNs949s9uterFsXrUbsuaxg2RvaGdc7Ao9kALzDHtu_ZpBkmOXvpYfKkXAD5Jui_aNg1oqf2qZbKoNFKYIEanDs7Gn90IKmcltpAD2FGZYiqehsEaWf4i5KM2U5Eb6q-H_vrnW_wY1Z6l8iwIAAA:9604:23
+    at фотоДоСторониП (https://mightyrochy.github.io/kod-shi-data/%D0%BF%D0%BE%D0%BA%D0%B0%D0%B7.html#H4sIAAAAAAAACo1SwUoCURT9lcddj6MiCPNWfUWbkIgSMxySMhBEGGcqN4GtJmihtGo7muPYjDNCX3DuH8WdVLQ2bc-595x3zn09wow0YYIxXvGMl8JxmQxChCn77CBGQJrYRcgDdgtYIUDMPo-wkLEYAbsIkCDDh-gcAKeygxAp5mbXbqmvSFUrlmIHIQ8R4lMk1uwg43v2kfCTSIyR8IgMEhwRYiQIMCdN5a2jwy5iLEmf9Igd9javFD73i8VXpN5yLuWRwop9zNk3f4RDHrKf7zcvZHBRKJVKpcpRo96-uzHPr22xShEgwizXxjsydgRSPNiqitYj-4KSrlqWZRDfI2MXGWm67HTat7pYbNoNs949s9uterFsXrUbsuaxg2RvaGdc7Ao9kALzDHtu_ZpBkmOXvpYfKkXAD5Jui_aNg1oqf2qZbKoNFKYIEanDs7Gn90IKmcltpAD2FGZYiqehsEaWf4i5KM2U5Eb6q-H_vrnW_wY1Z6l8iwIAAA:9613:5)
+    at приміряти (https://mightyrochy.github.io/kod-shi-data/%D0%BF%D0%BE%D0%BA%D0%B0%D0%B7.html#H4sIAAAAAAAACo1SwUoCURT9lcddj6MiCPNWfUWbkIgSMxySMhBEGGcqN4GtJmihtGo7muPYjDNCX3DuH8WdVLQ2bc-595x3zn09wow0YYIxXvGMl8JxmQxChCn77CBGQJrYRcgDdgtYIUDMPo-wkLEYAbsIkCDDh-gcAKeygxAp5mbXbqmvSFUrlmIHIQ8R4lMk1uwg43v2kfCTSIyR8IgMEhwRYiQIMCdN5a2jwy5iLEmf9Igd9javFD73i8VXpN5yLuWRwop9zNk3f4RDHrKf7zcvZHBRKJVKpcpRo96-uzHPr22xShEgwizXxjsydgRSPNiqitYj-4KSrlqWZRDfI2MXGWm67HTat7pYbNoNs949s9uterFsXrUbsuaxg2RvaGdc7Ao9kALzDHtu_ZpBkmOXvpYfKkXAD5Jui_aNg1oqf2qZbKoNFKYIEanDs7Gn90IKmcltpAD2FGZYiqehsEaWf4i5KM2U5Eb6q-H_vrnW_wY1Z6l8iwIAAA:9786:22)
+    at async C:\Users\gemini\gemini-runs\w\review-2123\джерела\тест_показу.js:1728:5
+  ✓ (1) «за фото»: у міст іде макіяж паспорта — рівень і колір губ
+  ✓ (1) прозовий опис у приміряння не їде — лише речі (фото й словами) і «Як носити»
+  ✓ (2) «за описом»: той самий макіяж, а в запиті — лише її фото
+  ✓ (2б) макіяж береться зі знімка сценарію, з якого зібрано картку, а не з поточного екрана
+  ✓ (3) макіяжу в паспорті нема — у міст не йде нічого (слово «невідомо» Python теж відкидає)
+  ✓ (3б) «нюд» — свідомий вибір: рівень іде в міст, губ у ньому нема
+  ✓ (4) ×1.8: повтор попросили (поріг 1.6 не чіпали), але про «кілька кадрів» не сказано — названо лише виміряну ширину
+  ✓ (4) ×1.8: журнал каже те саме, що жінка прочитала — `кадрів_кілька` не «так»
+  ✓ (4) ×3.0: дві панелі й більше — кадри названо, число те саме
+  ✓ без винятків
+3. СПРАВЖНІЙ ПАКЕТ У ХЕШІ — КАРТКИ МАЛЮЮТЬСЯ
+  ✓ пакет із хеша розібрано, карток намальовано 3
+  ✓ без винятків
+  ✓ три картки
+  ✓ екрани введення й ряд дій сховано; поле ші лишається
+  ✓ без знімка сценарію в пакеті кнопки «Відкрити сценарій цього образу» нема
+  ✓ шапка несе збірку й каталог пакета
+  ✓ людині — без «ОБРАЗ:» і без id
+  ✓ «Як це носити» винесено окремо
+  ✓ фото речі з посиланням у магазин
+  ✓ кнопка «Приміряти на себе» на кожній картці
+  ✓ Р-2: вціліла російська не малюється жінці — ні описом, ні «як носити»
+  ✓ …але рука не зникає: річ і ціна на картці лишаються
+4. ЛЕГКА ЗБІРКА (без фіду): старий шлях лишається
+  ✓ без винятків
+  ✓ ЄДИНА_СТОРІНКА=false: картка переходу видно, збирання сховано
+  ✓ «Зібрати образи» веде старим шляхом і теж каже, чого бракує
+  ✓ пряме збирання відмовляється без фіду словами
+5. ПАРСЕР КОЛЬОРІВ (перенесено з тест_парсера.js — той читав неіснуючий файл)
+  ✓ JSON за скелетом: 3 шкіри, 3 волосся, око, кільце, освітлення кодами
+  ✓ JSON в обгортці ``` зі словами навколо; hex без ґратки; кільця нема
+  ✓ відмова — код причини; кольорів із відмови не беремо
+  ✓ код причини — перше слово поля (підпис скелета не заважає); photo: true — придатне
+  ✓ запасний шлях: рядки з мітками
+  ✓ запасний шлях: англійські мітки, кільце
+  ✓ маркдаун не з'їдає ґратку
+  ✓ мітка успадковується
+  ✓ людською: без ПІДПИС/ОБРАЗ/id/пар/hex, задум окремо
+6. ПАСПОРТ БЕЗ МОВЧАЗНИХ ДЕФОЛТІВ: ДВІ СПРОБИ, ЧИПИ ЖИВУТЬ, РЯДОК ВИДНО (Т-09)
+  ✓ чипів вето на екрані нема, а приховане поле зон є
+  ✓ зона в прихованому полі читається як межа людини (`зониВето`)
+  ✓ без дотику до картки макіяжу пакет ключа `сценарій.макіяж` не несе
+  ✓ чотири плитки макіяжу намальовано (три рівні + «хай обере стилістка»), колір губ схований
+  ✓ «хай обере стилістка» в макіяжі: ключа `сценарій.макіяж` пакет НЕ несе (паспорт читає це як «невідомо»), а рядок картки показує обране слово, не «не вказано»
+  ✓ плитка «яскравий» → `сценарій.макіяж = {рівень: яскравий}` без кольору, блок губ видно, рядок картки називає макіяж
+  ✓ після дотику до поля кольору губи їдуть тим самим ключем: {рівень, губи}
+  ✓ намистина «хай обере стилістка» намальована серед відтінків, і сходинка лишилась на місці
+  ✓ «хай обере стилістка» для кольору губ: у пакет колір НЕ їде, а рядок картки показує обране слово
+  ✓ повторний дотик знімає вибір: пакет той самий, але поле випадку порожнє і рядок про губи мовчить — стани «не дійшла» і «віддала коду» різні
+  ✓ нюд — рівень без кольору, блок губ схований (K-CLR-03: без помітного макіяжу важеля нема)
+  ✓ без дотику до картки прикрас пакет ключа `сценарій.прикраси` не несе
+  ✓ шість плиток прикрас: золото, срібло, перли, етно, без прикрас і «хай обере стилістка»
+  ✓ плитка «Перли» → `сценарій.прикраси = перли`, і рядок картки називає її словом
+  ✓ плитка «Етно» → `сценарій.прикраси = етно`, і рядок картки називає її словом
+  ✓ плитка «Без прикрас» → `сценарій.прикраси = без прикрас`, і рядок картки називає її словом
+  ✓ плитка «Золото» → `сценарій.прикраси = золото`, і рядок картки називає її словом
+  ✓ «хай обере стилістка» в прикрасах: поля пакет НЕ несе, але показ ПАМ'ЯТАЄ свідомий вибір (поле випадку + рядок картки не сірий)
+  ✓ прогін дійшов до кінця виклику 0 і став рівно там, де заглушка обриває («запити»), — виміряно саме виклик 0
+  ✓ модель кликано РІВНО двічі: одна повторна спроба з нагадуванням про формат і жодної третьої — виклик 0 стоїть перед чотирма руками
+  ✓ друга спроба несе нагадування про формат і ПРИЧИНУ першого провалу, а не ті самі слова
+  ✓ чипи вето їдуть у міст на ОБОХ спробах — межа людини не залежить від того, чи зрозуміла її модель
+  ✓ після двох провалів паспорт узято з плиток і чипів, і вето в ньому збережене
+  ✓ рядок для жінки стоїть ПОЗА `#службове` — його видно без ?службове=1
+  ✓ …і каже правду в обох половинах: що слів не зрозуміли і що саме код усе-таки застосував
+  ✓ те саме — у службовому діагнозі, з причиною формату
+  ✓ без винятків
+7. ЧАТ НА ЕКРАНІ НАГОДИ ЗАПОВНЮЄ ТОЙ САМИЙ ПАСПОРТ (Т-08 кроки 4–7)
+  ✓ до розмови збирання чесно просить випадок
+  ✓ показ питає довідник ЖИВИМ ендпойнтом, щойно міст піднято чатом (Т-08 крок 3, друга половина)
+  ✓ плитка нагоди перемальована зі стану паспорта, а не лишилась окремим вибором
+  ✓ список місця теж узято з паспорта — ключем довідника, не словом жінки
+  ✓ «дощ» доїхав до плитки погоди: двійкове «так» паспорта розводить температура, не здогад про слово
+  ✓ вето «підбори» з розмови лежить у паспорті, що поїде в міст (чипів на екрані нема)
+  ✓ відповідь із чату заповнює порожню картку драпіровки, а відповідь карткою переважає слово з чату
+  ✓ паспорт зібрано моделлю і він валідний (джерело «модель», не «плитки і чипи»)
+  ✓ питання «Усе правильно?» стоїть у картці сценарію з кнопками «так/поправити»
+  ✓ «так» прибирає питання — двічі питати нема про що, картка лишається
+  ✓ у стрічці дві репліки: її слова і відповідь моделі з питанням до неї
+  ✓ чат кличе ТУ САМУ типову модель — без окремого імені в аргументі (крок 7)
+  ✓ після розмови збирання вже не просить випадку
+  ✓ паспорт із самою лише подією — теж законний випадок (крок 6)
+  ✓ другий виклик несе мостові ІСТОРІЮ і паспорт досі — модель не читає розмову вдруге з нуля
+  ✓ стелі немає: після третього повідомлення поле й кнопка відкриті — чат головний вхід (16.09.2026)
+  ✓ четверте повідомлення до моделі не йде
+  ✓ її слова з чату їдуть у канал вимог, а не лишаються на екрані
+  ✓ готовий паспорт із чату не перепитується — виклик 0 не кличе моделі вчетверте
+  ✓ паспорт і стрічка чату лягли у стан збирання — звідти їх бере запис вердикту (крок 6)
+  ✓ колонка «чат» стоїть у шапці журналу поруч із «паспорт»
+  ✓ без винятків
+8. ПІДТОН: УТРИМАНО ЧЕРЕЗ НАДІЙНІСТЬ ≠ ПОРАХОВАНО Й ВИЙШЛО СЕРЕДИННО (Н-V03-009)
+  ✓ утримано: сказано, ЩО невідоме і ЩО це знімає — без кодів правил
+  ✓ …і кнопка веде рівно туди, де три питання вже стоять — на «Що тобі до лиця» в профілі (v4.1)
+  ✓ пораховано й вийшло серединно — інший текст, і жодної кнопки: звужувати нічим
+  ✓ названий бік стоїть словом показу по коду мосту (`warm` → «тепла»)
+  ✓ без винятків
+9. ЖУРНАЛ ВЕРДИКТУ: КОЛОНКИ ЧОТИРЬОХ РУК (Т-11 кроки 4–5)
+  ✓ дев'ять колонок Т-11, «неповний», «дібрав_код», «етапи», «примірка_кадрів_кілька», «знімка_нема», п'ять колонок схеми, дві колонки приміряння, «коментар_голосом», «змінна_пара», «матеріал_жінці», три колонки картинки приміряння, «прогін» і шість колонок вердикту кодами стоять у шапці журналу
+  ✓ вони дописані В КІНЕЦЬ: порядок старих колонок не зсунувся, тож попередні експорти лишаються читні
+  ✓ кожна колонка шапки має ключ у записі вердикту — інакше в TSV стоїть порожній стовпчик
+  ✓ без винятків
+10. ЛОГІКА v4.2: ЗНАЙОМСТВО РАЗ, ДАЛІ — СЦЕНАРІЙ; РОЗДІЛИ — ТРИ ВКЛАДКИ ВНИЗУ
+  ✓ без профілю сторінка відкривається на знайомстві: крок 1, нитка з трьох вузлів, дії видно, вкладок нема
+  ✓ ім'я — на першому кроці знайомства, а не в розширених (рішення власника 18.09)
+  ✓ на знайомстві розширених вимірів і налаштувань профілю нема
+  ✓ крок 2 — «Що тобі до лиця»: метали й тони окремим кроком, а не розширеним налаштуванням
+  ✓ крок 3 — «Фігура», і лише там кнопка стає «Готово»
+  ✓ «Готово» створює профіль і веде на сценарій; вкладки зʼявились, поточна — «Сценарій»
+  ✓ поза знайомством ряду «Назад / Далі» в панелі нема: панель віддано розмові
+  ✓ прапорець «створено» лежить у профілі на телефоні, а не лише в памʼяті вкладки
+  ✓ вкладка «Профіль» відкриває ОГЛЯД рядками (v5): кроки знайомства сховані, огляд видно, ряд дій панелі — ні
+  ✓ сім рядків огляду: фото, кольори, ім'я, до лиця, обхвати, розширені, налаштування — з прев'ю зі стану
+  ✓ тап по рядку «Обхвати і зріст» відкриває аркуш знизу з ТИМ САМИМ блоком, що й на кроці знайомства
+  ✓ «Готово» закриває аркуш і повертає блок додому — на крок знайомства, звідки його взято
+  ✓ розширені виміри відкриваються аркушем розгорнутими, а в кроці знайомства лишаються розкривачем
+  ✓ тап по заслоні теж закриває; розкривач повертається згорнутим
+  ✓ кружок теми стоїть у шапці, а не в аркуші налаштувань; вибір профілю лишається в аркуші
+  ✓ тап по кружку перемикає тему, і другий тап вертає назад
+  ✓ у розширених вимірах лишились рівно необовʼязкові виміри: ні імені, ні згоди, ні «що до лиця» там нема
+  ✓ перехід на іншу вкладку з відкритим аркушем закриває його й повертає блок додому
+  ✓ вкладка «Сценарій» повертає на головний екран
+  ✓ знак «люстерко» теж веде додому — на сценарій, а не на знайомство
+  ✓ «Збережені» — підекран сценарію: вкладка «Сценарій» лишається поточною, угорі — «← До сценарію»
+  ✓ «← До сценарію» повертає з підекрана на головний
+  ✓ вкладка «Образи» без жодного зібраного образу веде просто в бібліотеку — порожнього екрана образів людина не бачить
+  ✓ вкладка «Сценарій» повертає з бібліотеки
+  ✓ без винятків
+  ✓ повернення: сторінка з профілем відкривається одразу на сценарії, обхвати на місці
+  ✓ друга сторінка без винятків
+  ✓ (підготовка) профіль записано без прапорця «створено»
+  ✓ профіль із кольорами й обхватами, зроблений до v4, відкривається на сценарії — тестувальниці не проходять знайомство вдруге
+  ✓ новий профіль починає зі знайомства з першого кроку
+  ✓ …і вкладки на знайомстві знову сховані
+11. БІБЛІОТЕКА СЦЕНАРІЇВ: ЗБЕРЕГТИ, ВІДКРИТИ, ОНОВИТИ, ЗБЕРЕГТИ ЯК НОВИЙ, ВИДАЛИТИ; ЧЕРНЕТКА ПЕРЕЖИВАЄ ПЕРЕЗАВАНТАЖЕННЯ
+  ✓ новий сценарій без назви й без стану збереження
+  ✓ дотик до плитки робить сценарій «не збереженим»
+  ✓ «Зберегти» відкриває форму з типовою назвою з нагоди; кнопки «Оновити» ще нема — сценарій новий
+  ✓ збережено як новий: один запис у бібліотеці під назвою, на екрані — назва й «збережений»
+  ✓ зміна після збереження — «є незбережені зміни»
+  ✓ для збереженого сценарію форма пропонує обидва шляхи: «Оновити «Вечеря з Олею»» і «Зберегти як новий»
+  ✓ «Оновити» переписує той самий запис: ід той самий, записів один, температура нова
+  ✓ «Зберегти як новий» лишає старий і додає другий; відкритим стає новий
+  ✓ «Сценарії» відкриває бібліотеку: дві картки, відкритий зараз позначено
+  ✓ тап по картці відкриває сценарій: плитки відновлено, екран — сценарій, назва на місці
+  ✓ «Новий» очищає екран: плитки порожні, температура типова, назви нема
+  ✓ видалення — двома дотиками: перший лише питає
+  ✓ другий дотик видаляє: лишається одна картка
+  ✓ після перезавантаження чернетка ціла: плитка, паспорт, рядок «Я зрозуміла так», розмова, вибір палітри
+  ✓ бібліотека сценаріїв теж на місці після перезавантаження
+  ✓ новий профіль — своя порожня чернетка
+  ✓ повернення до першого профілю повертає його чернетку
+  ✓ без винятків
+12. ШІ В ПАНЕЛІ НА КОЖНОМУ ЕКРАНІ: ПОМІЧНИЦЯ ЗНАЄ ЗАСТОСУНОК І СТАН; ПАСПОРТ ЧІПАЄ ЛИШЕ СЦЕНАРІЙ
+  ✓ поле ші стоїть у панелі внизу
+  ✓ у кожному режимі панель видно, а поле й кнопка відкриті
+  ✓ ряд «Назад / Далі» є ЛИШЕ на знайомстві (v4.2): деінде дія стоїть у самому екрані
+  ✓ на сценарії поле розмови розгорнуте само, деінде замість нього — пілюля «Спитати стилістку»
+  ✓ тап по пілюлі розгортає поле й стрічку тут-таки, без переходу на інший екран
+  ✓ підказка в полі — запрошення, а не назва помічниці: слова «ші» в ній нема; у панелі вона коротка, в аркуші листа — речення
+  ✓ поза сценарієм без шару — один виклик моделі без фото з промптом моста «помічниця»; «куди репліка» міст не питають; паспорт не зʼявився
+  ✓ міст помічниці дістає питання, довідку й стан; довідка — англійською, написи екрана в «лапках»
+  ✓ довідка й написи сходяться: кожен ключ довідки має напис, кожен напис стоїть у довідці
+  ✓ міст помічниці (Python): APP_ANSWER, завдання англійською без кирилиці, стан кодами, мова — з показу
+  ✓ відповідь у стрічці, аркуш розмови розгорнутий у панелі; репліки позначені як довідкові
+  ✓ «згорнути» ховає аркуш і лишає останню відповідь стилістки на пілюлі; тап по ній розгортає знову
+  ✓ довідкове питання не стало вимогою до образу і не рахується словами про випадок
+  ✓ рядок 157: обіцянки «врахуємо» жінка не бачить — замість неї сказано, що писати на екрані «Сценарій»
+  ✓ рядок 157 (П-4): англійська обіцянка теж не доходить — жінка бачить, де це написати
+  ✓ на сценарії стрічка стоїть в екрані, а не в панелі: той самий вузол, не друга копія
+  ✓ поза сценарієм вона повертається в панель — і там знову згортається в пілюлю
+  ✓ на сценарії слова йдуть у виклик 0 (паспорт), і промпт паспорта — рівно той, що склав збирач
+  ✓ довідки про застосунок і стану у виклику 0 нема (В-10): ні шапки «КРІМ ПАСПОРТА», ні довідки, ні стану
+  ✓ у виклик 0 їде лише розмова про сценарій: історія — одна її репліка про співбесіду, довідкових реплік у ній нема
+  ✓ стрічка одна на обидва режими: чотири репліки, теми різні
+  ✓ стан для помічниці каже правду про профіль і сценарій (фактами, П-4)
+  ✓ без винятків
+12б. НЕПОВНИЙ ОБРАЗ НЕ ЙДЕ НА КАРТКУ МОВЧКИ (18.09.2026, спіймано власницею)
+  ✓ пакет із хеша розібрано, карток намальовано 2
+  ✓ без винятків
+  ✓ жінка читає, чого образу бракує, словами коду
+  ✓ …і це один рядок, а не заміна картки: речі й ціни лишаються
+  ✓ повний образ рядка про неповноту не дістає
+  ✓ рядок їде в журнал тією самою колонкою, якою стоїть на картці
+  ✓ гейт правила жінці не показується: ні коду, ні слова «гейт»
+  ✓ …але власник читає причину в журналі
+  ✓ повідомлення без шару йде в колонку кодами, а не «[object Object]»
+  ✓ …а текст шару лишається текстом
+  ✓ жінка читає словами, що річ дібрав код, а не стилістка
+  ✓ …і видно, ЯКА саме річ: позначка стоїть біля неї, а не лише в шапці картки
+  ✓ дібране кодом — окрема колонка журналу, не склад образу
+  ✓ ні кодів правил, ні id у тому, що читає жінка про добір
+  ✓ образ цілком від ші рядка про добір не дістає
+13. ЕКРАН РОЗМОВИ v5: АРКУШ ЛИСТА, КАРТКА В СТРІЧЦІ З ДІЄЮ, РЕДАКТОРИ АРКУШЕМ ЗНИЗУ, ШВИДКІ ВІДПОВІДІ
+  ✓ порожній екран — питання й АРКУШ ЛИСТА посеред екрана: те саме поле, що в панелі, стоїть в екрані; картки нема
+  ✓ підказка в аркуші — як подрузі, реченням; нота про телефон видна лише тут
+  ✓ дії бібліотеки — у шапці словами: «Збережені» видно, «Новий» на порожньому сценарії схований; блок дій під карткою зник
+  ✓ хто хоче почати рукою — має рядок «Або заповнити рукою», а не стіну полів
+  ✓ приклади — три живі речення з великої літери у вікнах-картках, без технічного напису над ними (власник, 19.09.2026)
+  ✓ тап по прикладу вписує його в поле й НЕ шле сам — слово лишається за нею
+  ✓ тап по «рукою» показує картку і відкриває перший редактор — нагоду — АРКУШЕМ знизу з тими самими плитками
+  ✓ аркуш нагоди: рівно 7 плиток основних напрямків і «Інше»; без вибору жодної підсвіченої; дотик «Театр, концерт» кладе `театр` і підсвічує лише її
+  ✓ «Інше» знімає вибір плитки, закриває аркуш і ставить курсор у поле розмови — нагоду каже словами
+  ✓ поле розмови переїхало в панель, аркуш листа сховано, а заголовок-питання — теж: далі говорить картка
+  ✓ редактор відкривається РІВНО ОДИН: тап по іншому рядку міняє вміст аркуша, попередній повертається в картку схованим
+  ✓ «Готово» закриває аркуш — картка знову читається як список, редактор удома і схований
+  ✓ дія стоїть У КАРТЦІ: «Зібрати образи» і «Зберегти сценарій» усередині неї, «Новий» у шапці вже видно
+  ✓ кожен рядок картки має свій редактор, і всі поля форми лежать у них — поза карткою полів нема
+  ✓ порожні рядки картки підписані словами й позначені як типові, а не порожнім місцем
+  ✓ обране лягає в рядки картки словами: нагода своя, ошатність — «не обрано» (числа моделі ще нема: щабель ставить драбина, не місце, наряд 3.7), погода з температурою
+  ✓ КАРТ-1 · число моделі [7,8] над побаченням: ошатність — щаблі драбини від НЬОГО «Ошатне – Строге» (не від типового місця), чорним, бо це її слова (наряд 3.7)
+  ✓ …а типове місце побачення [4,5] поза її числом [7,8] не видається за знане: рядка «Де» нема, назва — у «Додати» (рядок 1434)
+  ✓ число — норма події, а не її слово: слово те саме, без «за місцем», але сірим
+  ✓ РЯДОК 1434 · типове місце нагоди при числі моделі нічого на картці не вирішує — здогад коду не стоїть рядком («Урочистий зал» над вечіркою в подруги)
+  ✓ паспорт моделі БЕЗ числа: ошатність «не обрано», сірим (слова від місця нема — наряд 3.7), типове місце на місці
+  ✓ РЯДКИ 472, 1434, 4103 · весілля_денне: місце поза плитками без слів моделі — напис «Весілля»; старий ключ не губить «Де» і не додає пори доби
+  ✓ РЯДКИ 472, 1434, 4103 · весілля_вечірнє: місце поза плитками без слів моделі — напис «Весілля»; старий ключ не губить «Де» і не додає пори доби
+  ✓ РЯДКИ 472, 1434, 4103 · весілля: місце поза плитками без слів моделі — напис «Весілля»; старий ключ не губить «Де» і не додає пори доби
+  ✓ …а місце, якому нема ні слів моделі, ні напису довідника (`слова: false` — запас із ключа), рядка не має: ключа людина не бачить (п.12)
+  ✓ 4103 · «Новорічна вечірка в ресторані» → `ресторан_високий` (поза плитками «свято», слів моделі нема): рядок «Де» стоїть, «Додати» не пропонує «де»
+  ✓ …а слова мовної моделі (`місце_слова`), коли вона їх дала, важать над написом довідника
+  ✓ 4103 · №8 `домашня_вечірка` без слів моделі — теж рядок «Де» («Вечірка вдома»)
+  ✓ …а зі словами мовної моделі (`місце_слова`) — вони на картці чорним, без «типово» — а не типове нагоди «весілля вечірнє» (дошка 471)
+  ✓ наряд 3.7 · [6,8] — ті самі щаблі драбини «Охайне – Строге» для весілля вдень, корпоративу в ресторані, співбесіди й роботи: слово від числа, гілок «ділова/світська» нема
+  ✓ КАРТ-2 · названий дрес-код сильніший за гілку: співбесіда з «cocktail» — «Коктейльне»
+  ✓ ПОКАЗ-1 · код моделі + число [6,8]: слово від числа (щаблі «Охайне – Строге»), а не слово коду («Ділово, м'яко»)
+  ✓ типове місце нагоди, що саме вечірнє, не виживає проти дня моделі (11:00 з її слів): рядок мовчить
+  ✓ …і вечірнє весілля ввечері при числі моделі — теж: ні ключа «весілля вечірнє», ні «типово» (рядки 472, 1434)
+  ✓ РЯДОК 1434 · порожні «Де», «Макіяж», «Прикраси», «Мета» не стоять «не вказано»: рядків нема, назви — в одному рядку «Додати»
+  ✓ …дотик до «Додати» відкриває їх для правки рукою (п.9), а сам рядок «Додати» зникає
+  ✓ …новий сценарій знову ховає порожні
+  ✓ плитка без розмови: число ходу плиток (фоновий паспорт) приходить — картка перемальована від нього; театр [7,8] — щаблі «Ошатне – Строге»
+  ✓ …а число для ІНШИХ плиток картку не веде: назад до «не обрано»
+  ✓ без кольорів і обхватів сценарій САМ каже, чого бракує, і дає кнопку в профіль
+  ✓ …і кнопка справді відкриває профіль
+  ✓ над полем — швидкі відповіді з довідника на те, чого стилістка не знає: ошатність словами і «на твій розсуд» останнім
+  ✓ щойно невідомого не лишилось — швидких відповідей нема
+  ✓ палітра — такий самий рядок картки, але зі стрілкою на окремий екран; чипів палітри тут нема
+  ✓ тап відкриває окремий екран палітри, і лише тоді код рахує кольори
+  ✓ «← До сценарію» з палітри повертає на головний екран
+  ✓ без винятків
+14. ТКАЦЬКИЙ ВЕРСТАТ (v5): ПОЛОТНО ТЧЕТЬСЯ В КОЛЬОРАХ ПАЛІТРИ, РУХ ЛИШЕ `transform`
+  ✓ верстат зібрано: полотно, бердо, човник на доріжці, два утоки і стрічка тканини
+  ✓ рушникові смуги подвоєні з кроком періоду — петля намотування безшовна
+  ✓ без обраної палітри полотно тчеться льоном, смуги — золотом
+  ✓ обрана основа стає ниткою утоку, а акцент — перший інший колір її палітри
+  ✓ схема з розмови дає акцент верстата за ім'ям, а не з першої гілки (3.2-Г, 9551)
+  ✓ щабель збирання читає той самий вузол: `малюватиПоступП` пише data-щабель на верстат
+  ✓ кожен код `СТАДІЯ_П` має сталий напис у `НАПИС_СТАДІЇ_П` (рядок 222)
+  ✓ числа стадії стоять у СТАНІ, а слова складає напис: раунд і частини пулу; рядки без позиції картки
+  ✓ «Службове» після збору: руки за часом готовності, без номера варіанта (позиції рук сліпі)
+  ✓ у стані поступу нема жодної кириличної фрази — значення це коди й числа (п.12)
+  ✓ у стилі верстата анімуються ЛИШЕ transform: човник, уток, бердо й намотування
+  ✓ рухомі частини позначені will-change: transform — браузер піднімає їх на композитор
+  ✓ полотна більшає чвертями: смуга на 96 % поля і чотири зсуви по 25 %
+  ✓ без винятків
+15. ЖУРНАЛ БЕРЕ ТРИ КОЛОНКИ З ВЕРДИКТУ НАД НАБОРОМ, А ОПИС — ГОТОВИМ ПОЛЕМ (рядки 6 і 12 дошки)
+  ✓ рука 1: `різноманітність` у картці — з вердикту ітерації 2, а не з вердикту одного обраного образу
+  ✓ рука 1: `невиконано` теж з ітерації 2 — саме той перелік, який вона назвала
+  ✓ рука 1: хід ітерації 1 над річчю КАРТКИ доживає до журналу, хід над беретом, якого на картці нема, — ні
+  ✓ рука 1: вхід опису — з рішення про картку: оголошення id-ами її речей, образ і «день» того самого образу
+  ✓ рука 1: колонка «мова» називає правило, яке спрацювало, хоч перепис і вдався
+  ✓ «фото не те» лишається від виклику, у якому ФОТО БУЛИ: перепис мови їх не бачив
+  ✓ руки 3–4 другої ітерації не мають, тож колонка «виконано» в них ПОРОЖНЯ, а не «усе»
+  ✓ проза для жінки — готовим полем опису, а не другим розбором сирого тексту
+  ✓ …і на самій картці стоїть чистий текст: ні дужок, ні слова «версія»
+  ✓ без винятків
+15а. РУКИ 3–4 (П-1): ПЕРЕЛІК — JSON ЗБИРАЧА, ОПИС РУКИ СТАЄ НА МІСЦЕ ЗАГЛУШКИ ЦІЛИМ; ЕТАП ПИШЕ САМ ПЕРЕЛІК
+  ✓ (а) промпт переліку — валідний JSON, і в ньому ЦІЛА проза руки (переписана): лапки, переводи рядка й «$&» на місці
+  ✓ (е) перепис мови — той самий промпт руки з полями: попередня проза цілою, зауваження списком
+  ✓ (б) етап переліку зветься своїм кроком і пише САМ перелік, а проза руки лишається в етапі складання
+  ✓ (в) без мовного шару мова вільного тексту відповіді — Ukrainian (перекладати нікому)
+  ✓ (г) річ із кодом слота поза таблицею — названа у звіті (кількість і код), а не згублена мовчки (рядок 3655)
+  ✓ без винятків
+  ✓ (г) з шаром назви вигаданої речі й її речі йдуть у шар і лягають перекладом; назва крамниці — ні
+  ✓ (д) з шаром у міст іде мова вільного тексту English
+  ✓ без винятків
+5284, 6459. «НА ФОТО НЕМА …» — ОДИН СТАЛИЙ РЯДОК КАРТКИ ОЦІНКИ З КОДІВ ПРЕДМЕТІВ, БЕЗ МОВНОГО ПРОХОДУ
+  ✓ коди предметів у мовний прохід не їдуть: рядок не перекладається щоразу наново
+  ✓ на картці — один рядок «На фото нема взуття і сумки: про них не судила.»
+  ✓ одна форма на всі набори кодів: кожен предмет — словом, без «_» і латинки; один предмет — «про це»
+  ✓ код без назви (не-річ) рядка не пише; без предметів рядка нема й на картці
+  ✓ нема предметів — нема рядка на картці
+  ✓ 5–6 предметів: у видимому тексті рядка весь перелік, а не «Не судила про те, чого нема на фото.»
+  ✓ без винятків
+15а-1. ОПИС РУКИ 3–4, ЯКИЙ НЕ Є ОБРАЗОМ, — НЕ КАРТКА: ПОВТОР РАЗ, ДАЛІ ПОРОЖНЄ МІСЦЕ (рядок 6065)
+  ✓ (а) рука 4 відмовилась і після повтору — порожнє місце («не вимальовувався»), тексту відмови на екрані 0
+  ✓ (б) у звіті — причина кодом: не образ, повтор раз, після повтору теж, картки нема
+  ✓ (в) повтор — рівно раз, тим самим промптом руки; рука 3 (образ «так») — картка без повтору
+  ✓ без винятків
+  ✓ (г) повтор дав образ — картка руки 4 з речами, у звіті after_retry=true · card=outfit
+  ✓ без винятків
+15а-2. НАЗВА РЕЧІ, ЯКОЇ ШАР НЕ ПЕРЕКЛАВ, НЕ ДАЄ ПОРОЖНЬОГО РЯДКА (рядок 4106)
+  ✓ 4106 · назва з «18k»: знято лише чуже слово, решта назви йде жінці; переклад, що лишився англійським, у звіті
+  ✓ …а на картці жодного порожнього рядка речі: назва, сталий напис «Назву не вдалося записати», назва
+  ✓ …і опис не втрачає початку через «18k»: знімається число з літерами, а не відрізок до коми; слово латиницею знімає ціле речення, а не шматки між комами (рядок 5243)
+  ✓ без винятків
+15б. НЕПРИЙНЯТИЙ ОБРАЗ НА КАРТКУ НЕ ЙДЕ (наряд Л-4, 26.09.2026)
+  ✓ рука 1 без прийнятого образу — збій, без речей і без опису
+  ✓ …а причина й найповніший кандидат — у діагнозі руки (етапи звіту)
+  ✓ …і журнал руки знає причину: `неповний_чому`
+  ✓ без винятків
+16. ЕКРАН ПАЛІТРИ: ЧИПИ-ОСНОВИ СТОЯТЬ КУПНО ПО СІМ'ЯХ ОДНІЄЮ СІТКОЮ; ПОДІЛ НА РЕКОМЕНДОВАНІ Й НІ ЛИШАЄТЬСЯ
+  ✓ обидва розділи на місці: рекомендовані просто в сітці, не рекомендовані — під розкривачем із тим самим чесним підписом
+  ✓ у сітці лежать САМІ чипи — ні заголовків, ні розділювачів, тож порожніх клітинок нема
+  ✓ рекомендовані: кожна сім'я стоїть одним пробігом, і порядок сімей сталий
+  ✓ не рекомендовані: так само, тим самим сталим порядком
+  ✓ усі клітинки дійшли до екрана, і «хай обере стилістка» — єдиний чип без сім'ї, перший у сітці
+  ✓ усередині сім'ї чипи йдуть від світлого до темного — сім'я читається як одна смуга світлоти
+  ✓ нейтраль лишається підписаною тегом — заголовка, який це казав, більше нема
+  ✓ дотик по чипу обирає рівно ту основу — ключ, hex і тип ідуть у ВИБІР як досі
+  ✓ обраний чип позначено «••» рівно один раз, і рядок стану називає саме його
+  ✓ чип схеми «хай обере стилістка» стоїть першим, і слова «код» у ряду схем нема
+  ✓ схема з розмови вимикає «хай обере стилістка» і вмикає чип своєї схеми (3.2-Г, 9551)
+  ✓ дотик до схеми, як і доти, пише її ім'я; другого стану-номера нема
+  ✓ без винятків
+17. ВЕРДИКТИ ФАЙЛОМ: САМОДОСТАТНІЙ ЗВІТ ДЛЯ МАШИНИ-ДІАГНОСТА (рядок 134)
+  ✓ вісім вердиктів записано: два прогони по чотири руки
+  ✓ кнопка віддає файл: Blob → createObjectURL → <a download> → клік
+  ✓ ім'я файла несе пристрій і дату з годиною, і воно ASCII — інакше браузер його викине
+  ✓ рядок стану називає файл і число вердиктів, а не мовчить
+  ✓ тип блоба — application/json
+  ✓ шапка файла самодостатня: формат, пристрій, дата вивантаження, лічба й рядок «як читати»
+  ✓ свіжий прогін не пише про себе «збірка старіша за ці поля», коли поле в шапці файла
+  ✓ два прогони стоять окремо, у кожному свої чотири руки
+  ✓ ід прогону стоїть у шапці свого прогону, і в двох прогонах він різний
+  ✓ чотири руки прогону справді записані в одну мить — саме на цьому CI і зловив хибну зв'язку за `час`
+  ✓ жодне непорожнє поле ШАПКИ не загублене — звірено поіменно по всіх восьми вердиктах
+  ✓ …і кожне з них несе ТЕ САМЕ значення, що й запис (JSON-поля — розібраними)
+   звірено непорожніх полів: 420 (по 53 на вердикт)
+  ✓ порожніх полів у вердиктах файла нема жодного — ні '', ні null, ні [] 
+  ✓ …а `false` і `0` порожнечею НЕ вважаються: це відповіді, а не брак даних
+  ✓ «поломка» стоїть лише там, де вона є (рука 2), а не порожнім рядком у кожній руці
+  ✓ пристрій і джерело однакові в усьому журналі — тож стоять у шапці ФАЙЛА, не в прогонах
+  ✓ паспорт, розмова й палітра стоять РАЗ на прогін, а не в кожній із чотирьох рук
+  ✓ паспорт і розмова їдуть РОЗІБРАНИМИ, а не рядком із JSON усередині JSON
+  ✓ розклад розрізняє прогони — тож лишається в їхніх шапках, а не злітає у файлову
+  ✓ профіль читається з файла: колір, мірки, драпіровка й вибір палітри — а не саме ім'я
+  ✓ …і сценарій із форми стоїть поруч із паспортом — два різні свідки одного випадку
+  ✓ рука, склад і текст — НЕ спільне: вони лишаються в кожному вердикті
+  ✓ знахідки — масив обʼєктів із правилом, силою, регістром, суттю й ремонтом, а не склеєний рядок
+  ✓ питання коду — теж перелік, а не рядок із ' | ' усередині
+  ✓ «знімка нема» — перелік пар «річ + причина», розібраних на поля
+  ✓ чеклісти суду доїхали цілими — з «без входу» і названим полем
+  ✓ спільне `етапи` винесено в шапку прогону — той самий `прогін` не їде в кожну з чотирьох рук
+  ✓ ребра калібрування (поза ШАПКОЮ) уперше їдуть у звіт — раніше їх не бачив ніхто
+  ✓ на картку йшла розібрана проза — вона стоїть у звіті поруч із сирим текстом моделі
+  ✓ повтор шару, відкинутий як зіпсований, видно у файлі вердиктів (рядок 2540)
+  ✓ …а де мовний гейт сховав опис (Р-2), це видно полем, а не здогадом із порожнечі
+  ✓ речі образу стоять полями, а не самими id у рядку `склад`
+  ✓ …і порожніх ключів у них нема: чого фід не дав, того в речі не стоїть
+  ✓ переноси в описі збереглися: файл несе той самий текст, що й запис
+  ✓ …і в довгих полях суду теж: суть знахідки лишилась двома рядками
+  ✓ і після винесення спільного етапи руки збираються повними — з прогоном, викликами й судом
+  ✓ а TSV, як і доти, чавить переноси в пробіли — саме тому файл і потрібен
+  ✓ кнопка копіювання далі працює: заголовок V3, шапка колонок і рядок на кожен вердикт
+  ✓ жоден рядок не з'їхав по колонках
+  ✓ колонка «питання_коду» — той самий рядок через ' | ', що й доти
+  ✓ колонка «знімка_нема» — той самий рядок «назва — причина», що й доти
+  ✓ колонка «знахідки_коду» — той самий «правило:сила», хоч знахідка й поїхала цілою
+   вимір на 8 вердиктах (2 прогони × 4 руки):
+     TSV (кнопка копіювання)  20404 символів · 19.9 КБ
+     файл JSON                33894 символів · 33.1 КБ
+     файл без винесення спільного 43946 символів · 42.9 КБ  → винесення зекономило 23 %
+     той самий файл відступом у 1 пробіл 47304 символів · 46.2 КБ  (тому рядок на вердикт, а не відступ: коштував би +40 %)
+  ✓ винесення спільного справді економить, а не лише переставляє
+  ✓ без винятків
+18. МІСЦЕ ПІД НИЖНЬОЮ ПАНЕЛЛЮ: КНОПКА В КАРТЦІ НЕ ХОВАЄТЬСЯ ПІД `#ніг` (рядок 183)
+  ✓ під панеллю лишається її висота плюс поле для пальця
+  ✓ панель виросла — місце під нею перерахували, а не лишили старим
+  ✓ широкий екран сам собою місця не скасовує: поки панель `fixed`, воно лишається
+  ✓ панель у потоці колонки місця під собою не просить
+  ✓ без винятків
+19. РЯДКА «НЕ ХОЧУ» НА КАРТЦІ НЕМА, А МЕЖА З РОЗМОВИ ДОЇЖДЖАЄ ДО КОДУ (ПОКАЗ-1, слово власника 02.10)
+  ✓ рядка «Не хочу», його значення й редактора на картці нема
+  ✓ зона з розмови лягає в приховане поле і їде у вхід коду: `зібратиВхід().вето.зони`
+  ✓ без винятків
+20. «ОЦІНИ МІЙ ОБРАЗ» (Л-6): ОКРЕМИЙ ЕКРАН, БЕЗ ТИПОВИХ ПОЛІВ, ОБРАЗ ЦІЛИМ, ВЕРДИКТ У ФАЙЛ, ДОПИТ
+  ✓ на екрані сценарію кнопки-входу «Оціни мій образ» більше нема — і на порожньому, і з карткою
+  ✓ картка сценарію є, а біля «Зібрати образи» — лише вона: другого входу в оцінку не зʼявилось
+  ✓ вкладок унизу чотири, четверта — «Оцінити» з іконкою й повним словом у title
+  ✓ вкладка відкриває ОКРЕМИЙ екран, як «Палітра»: видно лише «Оціни мій образ», поточна вкладка — «Оцінити»
+  ✓ на екрані оцінки нема панелі помічниці: ні пілюлі, ні поля (питання — під карткою, де модель бачить фото)
+  ✓ список нагод «Оціни» — «не скажу», ті самі 7 плиток у їхньому порядку, тоді «Інше»; без груп
+  ✓ жодного голого ключа коду в словах і двох однакових слів нема
+  ✓ «Інше» не їде в міст нагодою, а ставить курсор у «Що хочеш знати?»
+  ✓ поля екрана: фото з «+», «Що хочеш знати?», нагода «не скажу», температура порожня, опади не обрано
+  ✓ порожні нагода й погода НЕ підставляються типовими: сцена оцінки — порожня (ні 11:00, ні +18 °C)
+  ✓ фото оцінки — тим самим шляхом, що кожен виклик (наряд Л-2): копія боком СТОРОНА_ФОТО_РЕЧІ_П, стелю тримає `вмістити_запит_П` у `модельП`, окремої стелі в оцінці нема
+  ✓ два фото стоять мініатюрами, «+» лишається, «Оцінити» відкрилось
+міст для оцінки не піднявся: Error: mirror_failed: jsdelivr → TypeError: URL.createObjectURL is not a function
+    at піднятиВоркерМостуП (https://mightyrochy.github.io/kod-shi-data/%D0%BF%D0%BE%D0%BA%D0%B0%D0%B7.html#%D0%BC%D1%96%D1%81%D1%82=http://localhost:8787&%D1%82=tok-a1&%D0%BC%D0%BE%D0%B4%D0%B5%D0%BB%D1%8C_%D0%BC%D0%BE%D0%B2%D0%B8=%D0%BD%D0%B5%D0%BC%D0%B0:10302:9)
+    at https://mightyrochy.github.io/kod-shi-data/%D0%BF%D0%BE%D0%BA%D0%B0%D0%B7.html#%D0%BC%D1%96%D1%81%D1%82=http://localhost:8787&%D1%82=tok-a1&%D0%BC%D0%BE%D0%B4%D0%B5%D0%BB%D1%8C_%D0%BC%D0%BE%D0%B2%D0%B8=%D0%BD%D0%B5%D0%BC%D0%B0:10313:26
+    at підняти_міст_показу (https://mightyrochy.github.io/kod-shi-data/%D0%BF%D0%BE%D0%BA%D0%B0%D0%B7.html#%D0%BC%D1%96%D1%81%D1%82=http://localhost:8787&%D1%82=tok-a1&%D0%BC%D0%BE%D0%B4%D0%B5%D0%BB%D1%8C_%D0%BC%D0%BE%D0%B2%D0%B8=%D0%BD%D0%B5%D0%BC%D0%B0:10326:5)
+    at відкритиОцінкуП (https://mightyrochy.github.io/kod-shi-data/%D0%BF%D0%BE%D0%BA%D0%B0%D0%B7.html#%D0%BC%D1%96%D1%81%D1%82=http://localhost:8787&%D1%82=tok-a1&%D0%BC%D0%BE%D0%B4%D0%B5%D0%BB%D1%8C_%D0%BC%D0%BE%D0%B2%D0%B8=%D0%BD%D0%B5%D0%BC%D0%B0:10951:24)
+    at режим (https://mightyrochy.github.io/kod-shi-data/%D0%BF%D0%BE%D0%BA%D0%B0%D0%B7.html#%D0%BC%D1%96%D1%81%D1%82=http://localhost:8787&%D1%82=tok-a1&%D0%BC%D0%BE%D0%B4%D0%B5%D0%BB%D1%8C_%D0%BC%D0%BE%D0%B2%D0%B8=%D0%BD%D0%B5%D0%BC%D0%B0:4218:23)
+    at $.onclick (https://mightyrochy.github.io/kod-shi-data/%D0%BF%D0%BE%D0%BA%D0%B0%D0%B7.html#%D0%BC%D1%96%D1%81%D1%82=http://localhost:8787&%D1%82=tok-a1&%D0%BC%D0%BE%D0%B4%D0%B5%D0%BB%D1%8C_%D0%BC%D0%BE%D0%B2%D0%B8=%D0%BD%D0%B5%D0%BC%D0%B0:7361:64)
+    at HTMLButtonElement.invokeTheCallbackFunction (C:\Users\gemini\gemini-runs\w\codex-2\джерела\node_modules\jsdom\lib\generated\idl\EventHandlerNonNull.js:14:28)
+    at HTMLButtonElement.<anonymous> (C:\Users\gemini\gemini-runs\w\codex-2\джерела\node_modules\jsdom\lib\jsdom\living\helpers\create-event-accessor.js:57:32)
+    at innerInvokeEventListeners (C:\Users\gemini\gemini-runs\w\codex-2\джерела\node_modules\jsdom\lib\jsdom\living\events\EventTarget-impl.js:378:16)
+    at invokeEventListeners (C:\Users\gemini\gemini-runs\w\codex-2\джерела\node_modules\jsdom\lib\jsdom\living\events\EventTarget-impl.js:320:3)
+фото не зменшилось до 768 px: Error: мережі в тесті нема
+    at w.fetch (C:\Users\gemini\gemini-runs\w\review-2123\джерела\тест_показу.js:189:38)
+    at _зменшитиБ64П (https://mightyrochy.github.io/kod-shi-data/%D0%BF%D0%BE%D0%BA%D0%B0%D0%B7.html#%D0%BC%D1%96%D1%81%D1%82=http://localhost:8787&%D1%82=tok-a1&%D0%BC%D0%BE%D0%B4%D0%B5%D0%BB%D1%8C_%D0%BC%D0%BE%D0%B2%D0%B8=%D0%BD%D0%B5%D0%BC%D0%B0:9584:27)
+    at https://mightyrochy.github.io/kod-shi-data/%D0%BF%D0%BE%D0%BA%D0%B0%D0%B7.html#%D0%BC%D1%96%D1%81%D1%82=http://localhost:8787&%D1%82=tok-a1&%D0%BC%D0%BE%D0%B4%D0%B5%D0%BB%D1%8C_%D0%BC%D0%BE%D0%B2%D0%B8=%D0%BD%D0%B5%D0%BC%D0%B0:9604:23
+    at фотоДоСторониП (https://mightyrochy.github.io/kod-shi-data/%D0%BF%D0%BE%D0%BA%D0%B0%D0%B7.html#%D0%BC%D1%96%D1%81%D1%82=http://localhost:8787&%D1%82=tok-a1&%D0%BC%D0%BE%D0%B4%D0%B5%D0%BB%D1%8C_%D0%BC%D0%BE%D0%B2%D0%B8=%D0%BD%D0%B5%D0%BC%D0%B0:9613:5)
+    at https://mightyrochy.github.io/kod-shi-data/%D0%BF%D0%BE%D0%BA%D0%B0%D0%B7.html#%D0%BC%D1%96%D1%81%D1%82=http://localhost:8787&%D1%82=tok-a1&%D0%BC%D0%BE%D0%B4%D0%B5%D0%BB%D1%8C_%D0%BC%D0%BE%D0%B2%D0%B8=%D0%BD%D0%B5%D0%BC%D0%B0:9622:38
+    at Array.map (<anonymous>)
+    at фотоДляЗапитуП (https://mightyrochy.github.io/kod-shi-data/%D0%BF%D0%BE%D0%BA%D0%B0%D0%B7.html#%D0%BC%D1%96%D1%81%D1%82=http://localhost:8787&%D1%82=tok-a1&%D0%BC%D0%BE%D0%B4%D0%B5%D0%BB%D1%8C_%D0%BC%D0%BE%D0%B2%D0%B8=%D0%BD%D0%B5%D0%BC%D0%B0:9622:31)
+    at викликОцінкиП (https://mightyrochy.github.io/kod-shi-data/%D0%BF%D0%BE%D0%BA%D0%B0%D0%B7.html#%D0%BC%D1%96%D1%81%D1%82=http://localhost:8787&%D1%82=tok-a1&%D0%BC%D0%BE%D0%B4%D0%B5%D0%BB%D1%8C_%D0%BC%D0%BE%D0%B2%D0%B8=%D0%BD%D0%B5%D0%BC%D0%B0:11069:48)
+    at оцінитиОбразП (https://mightyrochy.github.io/kod-shi-data/%D0%BF%D0%BE%D0%BA%D0%B0%D0%B7.html#%D0%BC%D1%96%D1%81%D1%82=http://localhost:8787&%D1%82=tok-a1&%D0%BC%D0%BE%D0%B4%D0%B5%D0%BB%D1%8C_%D0%BC%D0%BE%D0%B2%D0%B8=%D0%BD%D0%B5%D0%BC%D0%B0:11280:20)
+    at async C:\Users\gemini\gemini-runs\w\review-2123\джерела\тест_показу.js:4266:5
+фото не зменшилось до 768 px: Error: мережі в тесті нема
+    at w.fetch (C:\Users\gemini\gemini-runs\w\review-2123\джерела\тест_показу.js:189:38)
+    at _зменшитиБ64П (https://mightyrochy.github.io/kod-shi-data/%D0%BF%D0%BE%D0%BA%D0%B0%D0%B7.html#%D0%BC%D1%96%D1%81%D1%82=http://localhost:8787&%D1%82=tok-a1&%D0%BC%D0%BE%D0%B4%D0%B5%D0%BB%D1%8C_%D0%BC%D0%BE%D0%B2%D0%B8=%D0%BD%D0%B5%D0%BC%D0%B0:9584:27)
+    at https://mightyrochy.github.io/kod-shi-data/%D0%BF%D0%BE%D0%BA%D0%B0%D0%B7.html#%D0%BC%D1%96%D1%81%D1%82=http://localhost:8787&%D1%82=tok-a1&%D0%BC%D0%BE%D0%B4%D0%B5%D0%BB%D1%8C_%D0%BC%D0%BE%D0%B2%D0%B8=%D0%BD%D0%B5%D0%BC%D0%B0:9604:23
+    at фотоДоСторониП (https://mightyrochy.github.io/kod-shi-data/%D0%BF%D0%BE%D0%BA%D0%B0%D0%B7.html#%D0%BC%D1%96%D1%81%D1%82=http://localhost:8787&%D1%82=tok-a1&%D0%BC%D0%BE%D0%B4%D0%B5%D0%BB%D1%8C_%D0%BC%D0%BE%D0%B2%D0%B8=%D0%BD%D0%B5%D0%BC%D0%B0:9613:5)
+    at https://mightyrochy.github.io/kod-shi-data/%D0%BF%D0%BE%D0%BA%D0%B0%D0%B7.html#%D0%BC%D1%96%D1%81%D1%82=http://localhost:8787&%D1%82=tok-a1&%D0%BC%D0%BE%D0%B4%D0%B5%D0%BB%D1%8C_%D0%BC%D0%BE%D0%B2%D0%B8=%D0%BD%D0%B5%D0%BC%D0%B0:9622:38
+    at Array.map (<anonymous>)
+    at фотоДляЗапитуП (https://mightyrochy.github.io/kod-shi-data/%D0%BF%D0%BE%D0%BA%D0%B0%D0%B7.html#%D0%BC%D1%96%D1%81%D1%82=http://localhost:8787&%D1%82=tok-a1&%D0%BC%D0%BE%D0%B4%D0%B5%D0%BB%D1%8C_%D0%BC%D0%BE%D0%B2%D0%B8=%D0%BD%D0%B5%D0%BC%D0%B0:9622:31)
+    at викликОцінкиП (https://mightyrochy.github.io/kod-shi-data/%D0%BF%D0%BE%D0%BA%D0%B0%D0%B7.html#%D0%BC%D1%96%D1%81%D1%82=http://localhost:8787&%D1%82=tok-a1&%D0%BC%D0%BE%D0%B4%D0%B5%D0%BB%D1%8C_%D0%BC%D0%BE%D0%B2%D0%B8=%D0%BD%D0%B5%D0%BC%D0%B0:11069:48)
+    at оцінитиОбразП (https://mightyrochy.github.io/kod-shi-data/%D0%BF%D0%BE%D0%BA%D0%B0%D0%B7.html#%D0%BC%D1%96%D1%81%D1%82=http://localhost:8787&%D1%82=tok-a1&%D0%BC%D0%BE%D0%B4%D0%B5%D0%BB%D1%8C_%D0%BC%D0%BE%D0%B2%D0%B8=%D0%BD%D0%B5%D0%BC%D0%B0:11280:20)
+    at async C:\Users\gemini\gemini-runs\w\review-2123\джерела\тест_показу.js:4266:5
+пікселі речі з фото не прочитались: Error: мережі в тесті нема
+    at w.fetch (C:\Users\gemini\gemini-runs\w\review-2123\джерела\тест_показу.js:189:38)
+    at розкодуватиФотоП (https://mightyrochy.github.io/kod-shi-data/%D0%BF%D0%BE%D0%BA%D0%B0%D0%B7.html#%D0%BC%D1%96%D1%81%D1%82=http://localhost:8787&%D1%82=tok-a1&%D0%BC%D0%BE%D0%B4%D0%B5%D0%BB%D1%8C_%D0%BC%D0%BE%D0%B2%D0%B8=%D0%BD%D0%B5%D0%BC%D0%B0:5832:27)
+    at кадрФотоП (https://mightyrochy.github.io/kod-shi-data/%D0%BF%D0%BE%D0%BA%D0%B0%D0%B7.html#%D0%BC%D1%96%D1%81%D1%82=http://localhost:8787&%D1%82=tok-a1&%D0%BC%D0%BE%D0%B4%D0%B5%D0%BB%D1%8C_%D0%BC%D0%BE%D0%B2%D0%B8=%D0%BD%D0%B5%D0%BC%D0%B0:5852:21)
+    at async пікселіРечіП (https://mightyrochy.github.io/kod-shi-data/%D0%BF%D0%BE%D0%BA%D0%B0%D0%B7.html#%D0%BC%D1%96%D1%81%D1%82=http://localhost:8787&%D1%82=tok-a1&%D0%BC%D0%BE%D0%B4%D0%B5%D0%BB%D1%8C_%D0%BC%D0%BE%D0%B2%D0%B8=%D0%BD%D0%B5%D0%BC%D0%B0:5856:24)
+    at async оцінитиОбразП (https://mightyrochy.github.io/kod-shi-data/%D0%BF%D0%BE%D0%BA%D0%B0%D0%B7.html#%D0%BC%D1%96%D1%81%D1%82=http://localhost:8787&%D1%82=tok-a1&%D0%BC%D0%BE%D0%B4%D0%B5%D0%BB%D1%8C_%D0%BC%D0%BE%D0%B2%D0%B8=%D0%BD%D0%B5%D0%BC%D0%B0:11311:21)
+    at async C:\Users\gemini\gemini-runs\w\review-2123\джерела\тест_показу.js:4266:5
+пікселі речі з фото не прочитались: Error: мережі в тесті нема
+    at w.fetch (C:\Users\gemini\gemini-runs\w\review-2123\джерела\тест_показу.js:189:38)
+    at розкодуватиФотоП (https://mightyrochy.github.io/kod-shi-data/%D0%BF%D0%BE%D0%BA%D0%B0%D0%B7.html#%D0%BC%D1%96%D1%81%D1%82=http://localhost:8787&%D1%82=tok-a1&%D0%BC%D0%BE%D0%B4%D0%B5%D0%BB%D1%8C_%D0%BC%D0%BE%D0%B2%D0%B8=%D0%BD%D0%B5%D0%BC%D0%B0:5832:27)
+    at кадрФотоП (https://mightyrochy.github.io/kod-shi-data/%D0%BF%D0%BE%D0%BA%D0%B0%D0%B7.html#%D0%BC%D1%96%D1%81%D1%82=http://localhost:8787&%D1%82=tok-a1&%D0%BC%D0%BE%D0%B4%D0%B5%D0%BB%D1%8C_%D0%BC%D0%BE%D0%B2%D0%B8=%D0%BD%D0%B5%D0%BC%D0%B0:5852:21)
+    at async пікселіРечіП (https://mightyrochy.github.io/kod-shi-data/%D0%BF%D0%BE%D0%BA%D0%B0%D0%B7.html#%D0%BC%D1%96%D1%81%D1%82=http://localhost:8787&%D1%82=tok-a1&%D0%BC%D0%BE%D0%B4%D0%B5%D0%BB%D1%8C_%D0%BC%D0%BE%D0%B2%D0%B8=%D0%BD%D0%B5%D0%BC%D0%B0:5856:24)
+    at async оцінитиОбразП (https://mightyrochy.github.io/kod-shi-data/%D0%BF%D0%BE%D0%BA%D0%B0%D0%B7.html#%D0%BC%D1%96%D1%81%D1%82=http://localhost:8787&%D1%82=tok-a1&%D0%BC%D0%BE%D0%B4%D0%B5%D0%BB%D1%8C_%D0%BC%D0%BE%D0%B2%D0%B8=%D0%BD%D0%B5%D0%BC%D0%B0:11311:21)
+    at async C:\Users\gemini\gemini-runs\w\review-2123\джерела\тест_показу.js:4266:5
+пікселі речі з фото не прочитались: Error: мережі в тесті нема
+    at w.fetch (C:\Users\gemini\gemini-runs\w\review-2123\джерела\тест_показу.js:189:38)
+    at розкодуватиФотоП (https://mightyrochy.github.io/kod-shi-data/%D0%BF%D0%BE%D0%BA%D0%B0%D0%B7.html#%D0%BC%D1%96%D1%81%D1%82=http://localhost:8787&%D1%82=tok-a1&%D0%BC%D0%BE%D0%B4%D0%B5%D0%BB%D1%8C_%D0%BC%D0%BE%D0%B2%D0%B8=%D0%BD%D0%B5%D0%BC%D0%B0:5832:27)
+    at кадрФотоП (https://mightyrochy.github.io/kod-shi-data/%D0%BF%D0%BE%D0%BA%D0%B0%D0%B7.html#%D0%BC%D1%96%D1%81%D1%82=http://localhost:8787&%D1%82=tok-a1&%D0%BC%D0%BE%D0%B4%D0%B5%D0%BB%D1%8C_%D0%BC%D0%BE%D0%B2%D0%B8=%D0%BD%D0%B5%D0%BC%D0%B0:5852:21)
+    at async пікселіРечіП (https://mightyrochy.github.io/kod-shi-data/%D0%BF%D0%BE%D0%BA%D0%B0%D0%B7.html#%D0%BC%D1%96%D1%81%D1%82=http://localhost:8787&%D1%82=tok-a1&%D0%BC%D0%BE%D0%B4%D0%B5%D0%BB%D1%8C_%D0%BC%D0%BE%D0%B2%D0%B8=%D0%BD%D0%B5%D0%BC%D0%B0:5856:24)
+    at async оцінитиОбразП (https://mightyrochy.github.io/kod-shi-data/%D0%BF%D0%BE%D0%BA%D0%B0%D0%B7.html#%D0%BC%D1%96%D1%81%D1%82=http://localhost:8787&%D1%82=tok-a1&%D0%BC%D0%BE%D0%B4%D0%B5%D0%BB%D1%8C_%D0%BC%D0%BE%D0%B2%D0%B8=%D0%BD%D0%B5%D0%BC%D0%B0:11311:21)
+    at async C:\Users\gemini\gemini-runs\w\review-2123\джерела\тест_показу.js:4266:5
+  ✓ перелік «Що я бачу на фото»: рядок на річ (місце сталим написом), кнопка активна, картки ще нема
+  ✓ «Так, оцінюй» — один дотик: картка стоїть, перелік згорнуто, у звіті показано/дотиків/мс_до_так
+  ✓ крок за кроком: речі_промпт → каталог → речі → перелік → суд → оцінка_промпт → оцінка
+  ✓ у суд їде сцена ЛИШЕ з названого: порожня, без години й температури; каталог — лише прогрів і шукання
+  ✓ обидва виклики моделі несуть ОБИДВА фото (і речі, і відповідь бачать образ) — «не бачу фото» нема звідки; кожен — із виміром стелі (`вміщВих`) і копією боком задачі в етапі
+  ✓ без мовного шару її питання їде моделі її ж словами з мовою, текст пише функціональна модель українською
+  ✓ картка: відповідь на її питання ПЕРШОЮ → «Що вдало» → «Що змінити» → «Чого я не знаю» → вердикт
+  ✓ «Чого я не знаю» згорнуто за замовчуванням
+  ✓ «Що змінити»: спершу її річ з фото (мініатюра її фото), потім крамниця з назвою, ціною й посиланням
+  ✓ на картці нема ні ідів, ні hex, ні кодів правил
+  ✓ КВ-2: чип «Вдягнеш?» підписаний кодом осі, а напис на екрані коротший за запис
+  ✓ КВ-2: дотик по чипу кладе КОД осі в стан (`верд_код`), а не лише напис
+  ✓ вердикт оцінки записано в журнал: рука «оцінка», свій прогін, вердикт і коментар
+  ✓ етапи оцінки — усі: питання, фото, кожен виклик із ПОВНИМ запитом і сирою відповіддю, речі, суд, відповідь зі сторожем
+  ✓ у записі поруч — що вона прочитала на картці й речі її образу (ід, слот, колір)
+  ✓ у файлі вердиктів оцінка — окремим прогоном
+  ✓ допит: питання під карткою йде моделі з тими самими фото й тим самим судом, відповідь — у стрічці під карткою
+пікселі речі з фото не прочитались: Error: мережі в тесті нема
+    at w.fetch (C:\Users\gemini\gemini-runs\w\review-2123\джерела\тест_показу.js:189:38)
+    at розкодуватиФотоП (https://mightyrochy.github.io/kod-shi-data/%D0%BF%D0%BE%D0%BA%D0%B0%D0%B7.html#%D0%BC%D1%96%D1%81%D1%82=http://localhost:8787&%D1%82=tok-a1&%D0%BC%D0%BE%D0%B4%D0%B5%D0%BB%D1%8C_%D0%BC%D0%BE%D0%B2%D0%B8=%D0%BD%D0%B5%D0%BC%D0%B0:5832:27)
+    at кадрФотоП (https://mightyrochy.github.io/kod-shi-data/%D0%BF%D0%BE%D0%BA%D0%B0%D0%B7.html#%D0%BC%D1%96%D1%81%D1%82=http://localhost:8787&%D1%82=tok-a1&%D0%BC%D0%BE%D0%B4%D0%B5%D0%BB%D1%8C_%D0%BC%D0%BE%D0%B2%D0%B8=%D0%BD%D0%B5%D0%BC%D0%B0:5852:21)
+    at async пікселіРечіП (https://mightyrochy.github.io/kod-shi-data/%D0%BF%D0%BE%D0%BA%D0%B0%D0%B7.html#%D0%BC%D1%96%D1%81%D1%82=http://localhost:8787&%D1%82=tok-a1&%D0%BC%D0%BE%D0%B4%D0%B5%D0%BB%D1%8C_%D0%BC%D0%BE%D0%B2%D0%B8=%D0%BD%D0%B5%D0%BC%D0%B0:5856:24)
+    at async оцінитиОбразП (https://mightyrochy.github.io/kod-shi-data/%D0%BF%D0%BE%D0%BA%D0%B0%D0%B7.html#%D0%BC%D1%96%D1%81%D1%82=http://localhost:8787&%D1%82=tok-a1&%D0%BC%D0%BE%D0%B4%D0%B5%D0%BB%D1%8C_%D0%BC%D0%BE%D0%B2%D0%B8=%D0%BD%D0%B5%D0%BC%D0%B0:11311:21)
+    at async C:\Users\gemini\gemini-runs\w\review-2123\джерела\тест_показу.js:4352:5
+пікселі речі з фото не прочитались: Error: мережі в тесті нема
+    at w.fetch (C:\Users\gemini\gemini-runs\w\review-2123\джерела\тест_показу.js:189:38)
+    at розкодуватиФотоП (https://mightyrochy.github.io/kod-shi-data/%D0%BF%D0%BE%D0%BA%D0%B0%D0%B7.html#%D0%BC%D1%96%D1%81%D1%82=http://localhost:8787&%D1%82=tok-a1&%D0%BC%D0%BE%D0%B4%D0%B5%D0%BB%D1%8C_%D0%BC%D0%BE%D0%B2%D0%B8=%D0%BD%D0%B5%D0%BC%D0%B0:5832:27)
+    at кадрФотоП (https://mightyrochy.github.io/kod-shi-data/%D0%BF%D0%BE%D0%BA%D0%B0%D0%B7.html#%D0%BC%D1%96%D1%81%D1%82=http://localhost:8787&%D1%82=tok-a1&%D0%BC%D0%BE%D0%B4%D0%B5%D0%BB%D1%8C_%D0%BC%D0%BE%D0%B2%D0%B8=%D0%BD%D0%B5%D0%BC%D0%B0:5852:21)
+    at async пікселіРечіП (https://mightyrochy.github.io/kod-shi-data/%D0%BF%D0%BE%D0%BA%D0%B0%D0%B7.html#%D0%BC%D1%96%D1%81%D1%82=http://localhost:8787&%D1%82=tok-a1&%D0%BC%D0%BE%D0%B4%D0%B5%D0%BB%D1%8C_%D0%BC%D0%BE%D0%B2%D0%B8=%D0%BD%D0%B5%D0%BC%D0%B0:5856:24)
+    at async оцінитиОбразП (https://mightyrochy.github.io/kod-shi-data/%D0%BF%D0%BE%D0%BA%D0%B0%D0%B7.html#%D0%BC%D1%96%D1%81%D1%82=http://localhost:8787&%D1%82=tok-a1&%D0%BC%D0%BE%D0%B4%D0%B5%D0%BB%D1%8C_%D0%BC%D0%BE%D0%B2%D0%B8=%D0%BD%D0%B5%D0%BC%D0%B0:11311:21)
+    at async C:\Users\gemini\gemini-runs\w\review-2123\джерела\тест_показу.js:4352:5
+пікселі речі з фото не прочитались: Error: мережі в тесті нема
+    at w.fetch (C:\Users\gemini\gemini-runs\w\review-2123\джерела\тест_показу.js:189:38)
+    at розкодуватиФотоП (https://mightyrochy.github.io/kod-shi-data/%D0%BF%D0%BE%D0%BA%D0%B0%D0%B7.html#%D0%BC%D1%96%D1%81%D1%82=http://localhost:8787&%D1%82=tok-a1&%D0%BC%D0%BE%D0%B4%D0%B5%D0%BB%D1%8C_%D0%BC%D0%BE%D0%B2%D0%B8=%D0%BD%D0%B5%D0%BC%D0%B0:5832:27)
+    at кадрФотоП (https://mightyrochy.github.io/kod-shi-data/%D0%BF%D0%BE%D0%BA%D0%B0%D0%B7.html#%D0%BC%D1%96%D1%81%D1%82=http://localhost:8787&%D1%82=tok-a1&%D0%BC%D0%BE%D0%B4%D0%B5%D0%BB%D1%8C_%D0%BC%D0%BE%D0%B2%D0%B8=%D0%BD%D0%B5%D0%BC%D0%B0:5852:21)
+    at async пікселіРечіП (https://mightyrochy.github.io/kod-shi-data/%D0%BF%D0%BE%D0%BA%D0%B0%D0%B7.html#%D0%BC%D1%96%D1%81%D1%82=http://localhost:8787&%D1%82=tok-a1&%D0%BC%D0%BE%D0%B4%D0%B5%D0%BB%D1%8C_%D0%BC%D0%BE%D0%B2%D0%B8=%D0%BD%D0%B5%D0%BC%D0%B0:5856:24)
+    at async оцінитиОбразП (https://mightyrochy.github.io/kod-shi-data/%D0%BF%D0%BE%D0%BA%D0%B0%D0%B7.html#%D0%BC%D1%96%D1%81%D1%82=http://localhost:8787&%D1%82=tok-a1&%D0%BC%D0%BE%D0%B4%D0%B5%D0%BB%D1%8C_%D0%BC%D0%BE%D0%B2%D0%B8=%D0%BD%D0%B5%D0%BC%D0%B0:11311:21)
+    at async C:\Users\gemini\gemini-runs\w\review-2123\джерела\тест_показу.js:4352:5
+  ✓ збій оцінки: жінці сталий напис без латиниці, картки нема, а в журналі — запис із причиною, кроком збою й етапами
+  ✓ фото без жодної речі: причина — код заяви, а не фраза коду; без мовної моделі — сталий український напис
+  ✓ назване на екрані їде як є: нагода, градуси, опади
+  ✓ без винятків
+20б. «ОЦІНИ МІЙ ОБРАЗ» З МОВНИМ ШАРОМ: ЇЇ ПИТАННЯ — ПЕРЕКЛАДАЧЕВІ, ТЕКСТ КАРТКИ — МОВНІЙ МОДЕЛІ
+міст для оцінки не піднявся: Error: mirror_failed: jsdelivr → TypeError: URL.createObjectURL is not a function
+    at піднятиВоркерМостуП (https://mightyrochy.github.io/kod-shi-data/%D0%BF%D0%BE%D0%BA%D0%B0%D0%B7.html#%D0%BC%D1%96%D1%81%D1%82=http://localhost:8787&%D1%82=tok-a1&%D0%BC%D0%BE%D0%B4%D0%B5%D0%BB%D1%8C_%D0%BC%D0%BE%D0%B2%D0%B8=mamay-test:10302:9)
+    at https://mightyrochy.github.io/kod-shi-data/%D0%BF%D0%BE%D0%BA%D0%B0%D0%B7.html#%D0%BC%D1%96%D1%81%D1%82=http://localhost:8787&%D1%82=tok-a1&%D0%BC%D0%BE%D0%B4%D0%B5%D0%BB%D1%8C_%D0%BC%D0%BE%D0%B2%D0%B8=mamay-test:10313:26
+    at підняти_міст_показу (https://mightyrochy.github.io/kod-shi-data/%D0%BF%D0%BE%D0%BA%D0%B0%D0%B7.html#%D0%BC%D1%96%D1%81%D1%82=http://localhost:8787&%D1%82=tok-a1&%D0%BC%D0%BE%D0%B4%D0%B5%D0%BB%D1%8C_%D0%BC%D0%BE%D0%B2%D0%B8=mamay-test:10326:5)
+    at відкритиОцінкуП (https://mightyrochy.github.io/kod-shi-data/%D0%BF%D0%BE%D0%BA%D0%B0%D0%B7.html#%D0%BC%D1%96%D1%81%D1%82=http://localhost:8787&%D1%82=tok-a1&%D0%BC%D0%BE%D0%B4%D0%B5%D0%BB%D1%8C_%D0%BC%D0%BE%D0%B2%D0%B8=mamay-test:10951:24)
+    at режим (https://mightyrochy.github.io/kod-shi-data/%D0%BF%D0%BE%D0%BA%D0%B0%D0%B7.html#%D0%BC%D1%96%D1%81%D1%82=http://localhost:8787&%D1%82=tok-a1&%D0%BC%D0%BE%D0%B4%D0%B5%D0%BB%D1%8C_%D0%BC%D0%BE%D0%B2%D0%B8=mamay-test:4218:23)
+    at eval (eval at <anonymous> (C:\Users\gemini\gemini-runs\w\review-2123\джерела\тест_показу.js:4402:7), <anonymous>:1:26)
+    at eval (<anonymous>)
+    at C:\Users\gemini\gemini-runs\w\review-2123\джерела\тест_показу.js:4402:7
+фото не зменшилось до 768 px: Error: мережі в тесті нема
+    at w.fetch (C:\Users\gemini\gemini-runs\w\review-2123\джерела\тест_показу.js:189:38)
+    at _зменшитиБ64П (https://mightyrochy.github.io/kod-shi-data/%D0%BF%D0%BE%D0%BA%D0%B0%D0%B7.html#%D0%BC%D1%96%D1%81%D1%82=http://localhost:8787&%D1%82=tok-a1&%D0%BC%D0%BE%D0%B4%D0%B5%D0%BB%D1%8C_%D0%BC%D0%BE%D0%B2%D0%B8=mamay-test:9584:27)
+    at https://mightyrochy.github.io/kod-shi-data/%D0%BF%D0%BE%D0%BA%D0%B0%D0%B7.html#%D0%BC%D1%96%D1%81%D1%82=http://localhost:8787&%D1%82=tok-a1&%D0%BC%D0%BE%D0%B4%D0%B5%D0%BB%D1%8C_%D0%BC%D0%BE%D0%B2%D0%B8=mamay-test:9604:23
+    at фотоДоСторониП (https://mightyrochy.github.io/kod-shi-data/%D0%BF%D0%BE%D0%BA%D0%B0%D0%B7.html#%D0%BC%D1%96%D1%81%D1%82=http://localhost:8787&%D1%82=tok-a1&%D0%BC%D0%BE%D0%B4%D0%B5%D0%BB%D1%8C_%D0%BC%D0%BE%D0%B2%D0%B8=mamay-test:9613:5)
+    at https://mightyrochy.github.io/kod-shi-data/%D0%BF%D0%BE%D0%BA%D0%B0%D0%B7.html#%D0%BC%D1%96%D1%81%D1%82=http://localhost:8787&%D1%82=tok-a1&%D0%BC%D0%BE%D0%B4%D0%B5%D0%BB%D1%8C_%D0%BC%D0%BE%D0%B2%D0%B8=mamay-test:9622:38
+    at Array.map (<anonymous>)
+    at фотоДляЗапитуП (https://mightyrochy.github.io/kod-shi-data/%D0%BF%D0%BE%D0%BA%D0%B0%D0%B7.html#%D0%BC%D1%96%D1%81%D1%82=http://localhost:8787&%D1%82=tok-a1&%D0%BC%D0%BE%D0%B4%D0%B5%D0%BB%D1%8C_%D0%BC%D0%BE%D0%B2%D0%B8=mamay-test:9622:31)
+    at викликОцінкиП (https://mightyrochy.github.io/kod-shi-data/%D0%BF%D0%BE%D0%BA%D0%B0%D0%B7.html#%D0%BC%D1%96%D1%81%D1%82=http://localhost:8787&%D1%82=tok-a1&%D0%BC%D0%BE%D0%B4%D0%B5%D0%BB%D1%8C_%D0%BC%D0%BE%D0%B2%D0%B8=mamay-test:11069:48)
+    at оцінитиОбразП (https://mightyrochy.github.io/kod-shi-data/%D0%BF%D0%BE%D0%BA%D0%B0%D0%B7.html#%D0%BC%D1%96%D1%81%D1%82=http://localhost:8787&%D1%82=tok-a1&%D0%BC%D0%BE%D0%B4%D0%B5%D0%BB%D1%8C_%D0%BC%D0%BE%D0%B2%D0%B8=mamay-test:11280:20)
+    at async C:\Users\gemini\gemini-runs\w\review-2123\джерела\тест_показу.js:4435:5
+пікселі речі з фото не прочитались: Error: мережі в тесті нема
+    at w.fetch (C:\Users\gemini\gemini-runs\w\review-2123\джерела\тест_показу.js:189:38)
+    at розкодуватиФотоП (https://mightyrochy.github.io/kod-shi-data/%D0%BF%D0%BE%D0%BA%D0%B0%D0%B7.html#%D0%BC%D1%96%D1%81%D1%82=http://localhost:8787&%D1%82=tok-a1&%D0%BC%D0%BE%D0%B4%D0%B5%D0%BB%D1%8C_%D0%BC%D0%BE%D0%B2%D0%B8=mamay-test:5832:27)
+    at кадрФотоП (https://mightyrochy.github.io/kod-shi-data/%D0%BF%D0%BE%D0%BA%D0%B0%D0%B7.html#%D0%BC%D1%96%D1%81%D1%82=http://localhost:8787&%D1%82=tok-a1&%D0%BC%D0%BE%D0%B4%D0%B5%D0%BB%D1%8C_%D0%BC%D0%BE%D0%B2%D0%B8=mamay-test:5852:21)
+    at async пікселіРечіП (https://mightyrochy.github.io/kod-shi-data/%D0%BF%D0%BE%D0%BA%D0%B0%D0%B7.html#%D0%BC%D1%96%D1%81%D1%82=http://localhost:8787&%D1%82=tok-a1&%D0%BC%D0%BE%D0%B4%D0%B5%D0%BB%D1%8C_%D0%BC%D0%BE%D0%B2%D0%B8=mamay-test:5856:24)
+    at async оцінитиОбразП (https://mightyrochy.github.io/kod-shi-data/%D0%BF%D0%BE%D0%BA%D0%B0%D0%B7.html#%D0%BC%D1%96%D1%81%D1%82=http://localhost:8787&%D1%82=tok-a1&%D0%BC%D0%BE%D0%B4%D0%B5%D0%BB%D1%8C_%D0%BC%D0%BE%D0%B2%D0%B8=mamay-test:11311:21)
+    at async C:\Users\gemini\gemini-runs\w\review-2123\джерела\тест_показу.js:4435:5
+  ✓ її питання спершу читає хід розмови — один (рядок 6190): її слова, без стрічки; функціональна модель дістає питання внутрішньою мовою, текст — англійською
+  ✓ нагода з її слів (код ходу розмови) їде в суд окремим полем — екран її не підставляв
+  ✓ тексти картки пройшли мовну модель: відповідь і «що вдало» — її словами
+  ✓ 5285: позначки «немає входу» пішли в шар до дотику — «no input: …; reason: …», без «unknown:» і назв пунктів
+  ✓ 5285: розгорнуто — лише рядки зі словами шару, без «Без пояснення словами»
+  ✓ без плитки ходу плиток нема: смуги з повітря не буває
+пікселі речі з фото не прочитались: Error: мережі в тесті нема
+    at w.fetch (C:\Users\gemini\gemini-runs\w\review-2123\джерела\тест_показу.js:189:38)
+    at розкодуватиФотоП (https://mightyrochy.github.io/kod-shi-data/%D0%BF%D0%BE%D0%BA%D0%B0%D0%B7.html#%D0%BC%D1%96%D1%81%D1%82=http://localhost:8787&%D1%82=tok-a1&%D0%BC%D0%BE%D0%B4%D0%B5%D0%BB%D1%8C_%D0%BC%D0%BE%D0%B2%D0%B8=mamay-test:5832:27)
+    at кадрФотоП (https://mightyrochy.github.io/kod-shi-data/%D0%BF%D0%BE%D0%BA%D0%B0%D0%B7.html#%D0%BC%D1%96%D1%81%D1%82=http://localhost:8787&%D1%82=tok-a1&%D0%BC%D0%BE%D0%B4%D0%B5%D0%BB%D1%8C_%D0%BC%D0%BE%D0%B2%D0%B8=mamay-test:5852:21)
+    at async пікселіРечіП (https://mightyrochy.github.io/kod-shi-data/%D0%BF%D0%BE%D0%BA%D0%B0%D0%B7.html#%D0%BC%D1%96%D1%81%D1%82=http://localhost:8787&%D1%82=tok-a1&%D0%BC%D0%BE%D0%B4%D0%B5%D0%BB%D1%8C_%D0%BC%D0%BE%D0%B2%D0%B8=mamay-test:5856:24)
+    at async оцінитиОбразП (https://mightyrochy.github.io/kod-shi-data/%D0%BF%D0%BE%D0%BA%D0%B0%D0%B7.html#%D0%BC%D1%96%D1%81%D1%82=http://localhost:8787&%D1%82=tok-a1&%D0%BC%D0%BE%D0%B4%D0%B5%D0%BB%D1%8C_%D0%BC%D0%BE%D0%B2%D0%B8=mamay-test:11311:21)
+    at async C:\Users\gemini\gemini-runs\w\review-2123\джерела\тест_показу.js:4473:5
+  ✓ плитка «Свято» йде ходом плиток: chosen — лише її плитка, без стрічки й паспорта сценарію
+  ✓ її formality їде в суд полем `сценарій_плитки`, а запис ходу — в етапи оцінки (`review_tiles`)
+пікселі речі з фото не прочитались: Error: мережі в тесті нема
+    at w.fetch (C:\Users\gemini\gemini-runs\w\review-2123\джерела\тест_показу.js:189:38)
+    at розкодуватиФотоП (https://mightyrochy.github.io/kod-shi-data/%D0%BF%D0%BE%D0%BA%D0%B0%D0%B7.html#%D0%BC%D1%96%D1%81%D1%82=http://localhost:8787&%D1%82=tok-a1&%D0%BC%D0%BE%D0%B4%D0%B5%D0%BB%D1%8C_%D0%BC%D0%BE%D0%B2%D0%B8=mamay-test:5832:27)
+    at кадрФотоП (https://mightyrochy.github.io/kod-shi-data/%D0%BF%D0%BE%D0%BA%D0%B0%D0%B7.html#%D0%BC%D1%96%D1%81%D1%82=http://localhost:8787&%D1%82=tok-a1&%D0%BC%D0%BE%D0%B4%D0%B5%D0%BB%D1%8C_%D0%BC%D0%BE%D0%B2%D0%B8=mamay-test:5852:21)
+    at async пікселіРечіП (https://mightyrochy.github.io/kod-shi-data/%D0%BF%D0%BE%D0%BA%D0%B0%D0%B7.html#%D0%BC%D1%96%D1%81%D1%82=http://localhost:8787&%D1%82=tok-a1&%D0%BC%D0%BE%D0%B4%D0%B5%D0%BB%D1%8C_%D0%BC%D0%BE%D0%B2%D0%B8=mamay-test:5856:24)
+    at async оцінитиОбразП (https://mightyrochy.github.io/kod-shi-data/%D0%BF%D0%BE%D0%BA%D0%B0%D0%B7.html#%D0%BC%D1%96%D1%81%D1%82=http://localhost:8787&%D1%82=tok-a1&%D0%BC%D0%BE%D0%B4%D0%B5%D0%BB%D1%8C_%D0%BC%D0%BE%D0%B2%D0%B8=mamay-test:11311:21)
+    at async C:\Users\gemini\gemini-runs\w\review-2123\джерела\тест_показу.js:4488:5
+  ✓ 6190: слова й плитка — один хід розмови: її слова й лише її плитка, без ходу плиток
+  ✓ без винятків
+20в. «ОЦІНИ МІЙ ОБРАЗ» З РОЗМОВИ: ФОТО + ПИТАННЯ ПРО ЇЇ ОБРАЗ — НЕ СЦЕНАРІЙ (Л-6, знахідка Т-1)
+міст для оцінки не піднявся: Error: mirror_failed: jsdelivr → TypeError: URL.createObjectURL is not a function
+    at піднятиВоркерМостуП (https://mightyrochy.github.io/kod-shi-data/%D0%BF%D0%BE%D0%BA%D0%B0%D0%B7.html#%D0%BC%D1%96%D1%81%D1%82=http://localhost:8787&%D1%82=tok-a1&%D0%BC%D0%BE%D0%B4%D0%B5%D0%BB%D1%8C_%D0%BC%D0%BE%D0%B2%D0%B8=mamay-test:10302:9)
+    at https://mightyrochy.github.io/kod-shi-data/%D0%BF%D0%BE%D0%BA%D0%B0%D0%B7.html#%D0%BC%D1%96%D1%81%D1%82=http://localhost:8787&%D1%82=tok-a1&%D0%BC%D0%BE%D0%B4%D0%B5%D0%BB%D1%8C_%D0%BC%D0%BE%D0%B2%D0%B8=mamay-test:10313:26
+    at підняти_міст_показу (https://mightyrochy.github.io/kod-shi-data/%D0%BF%D0%BE%D0%BA%D0%B0%D0%B7.html#%D0%BC%D1%96%D1%81%D1%82=http://localhost:8787&%D1%82=tok-a1&%D0%BC%D0%BE%D0%B4%D0%B5%D0%BB%D1%8C_%D0%BC%D0%BE%D0%B2%D0%B8=mamay-test:10326:5)
+    at відкритиОцінкуП (https://mightyrochy.github.io/kod-shi-data/%D0%BF%D0%BE%D0%BA%D0%B0%D0%B7.html#%D0%BC%D1%96%D1%81%D1%82=http://localhost:8787&%D1%82=tok-a1&%D0%BC%D0%BE%D0%B4%D0%B5%D0%BB%D1%8C_%D0%BC%D0%BE%D0%B2%D0%B8=mamay-test:10951:24)
+    at режим (https://mightyrochy.github.io/kod-shi-data/%D0%BF%D0%BE%D0%BA%D0%B0%D0%B7.html#%D0%BC%D1%96%D1%81%D1%82=http://localhost:8787&%D1%82=tok-a1&%D0%BC%D0%BE%D0%B4%D0%B5%D0%BB%D1%8C_%D0%BC%D0%BE%D0%B2%D0%B8=mamay-test:4218:23)
+    at оцінкаЗРозмовиП (https://mightyrochy.github.io/kod-shi-data/%D0%BF%D0%BE%D0%BA%D0%B0%D0%B7.html#%D0%BC%D1%96%D1%81%D1%82=http://localhost:8787&%D1%82=tok-a1&%D0%BC%D0%BE%D0%B4%D0%B5%D0%BB%D1%8C_%D0%BC%D0%BE%D0%B2%D0%B8=mamay-test:11203:3)
+    at розмоваШаромП (https://mightyrochy.github.io/kod-shi-data/%D0%BF%D0%BE%D0%BA%D0%B0%D0%B7.html#%D0%BC%D1%96%D1%81%D1%82=http://localhost:8787&%D1%82=tok-a1&%D0%BC%D0%BE%D0%B4%D0%B5%D0%BB%D1%8C_%D0%BC%D0%BE%D0%B2%D0%B8=mamay-test:9211:11)
+    at async слатиЧатЯдроП (https://mightyrochy.github.io/kod-shi-data/%D0%BF%D0%BE%D0%BA%D0%B0%D0%B7.html#%D0%BC%D1%96%D1%81%D1%82=http://localhost:8787&%D1%82=tok-a1&%D0%BC%D0%BE%D0%B4%D0%B5%D0%BB%D1%8C_%D0%BC%D0%BE%D0%B2%D0%B8=mamay-test:6057:17)
+    at async слатиЧатП (https://mightyrochy.github.io/kod-shi-data/%D0%BF%D0%BE%D0%BA%D0%B0%D0%B7.html#%D0%BC%D1%96%D1%81%D1%82=http://localhost:8787&%D1%82=tok-a1&%D0%BC%D0%BE%D0%B4%D0%B5%D0%BB%D1%8C_%D0%BC%D0%BE%D0%B2%D0%B8=mamay-test:5961:8)
+    at async C:\Users\gemini\gemini-runs\w\review-2123\джерела\тест_показу.js:4538:5
+фото не зменшилось до 768 px: Error: мережі в тесті нема
+    at w.fetch (C:\Users\gemini\gemini-runs\w\review-2123\джерела\тест_показу.js:189:38)
+    at _зменшитиБ64П (https://mightyrochy.github.io/kod-shi-data/%D0%BF%D0%BE%D0%BA%D0%B0%D0%B7.html#%D0%BC%D1%96%D1%81%D1%82=http://localhost:8787&%D1%82=tok-a1&%D0%BC%D0%BE%D0%B4%D0%B5%D0%BB%D1%8C_%D0%BC%D0%BE%D0%B2%D0%B8=mamay-test:9584:27)
+    at https://mightyrochy.github.io/kod-shi-data/%D0%BF%D0%BE%D0%BA%D0%B0%D0%B7.html#%D0%BC%D1%96%D1%81%D1%82=http://localhost:8787&%D1%82=tok-a1&%D0%BC%D0%BE%D0%B4%D0%B5%D0%BB%D1%8C_%D0%BC%D0%BE%D0%B2%D0%B8=mamay-test:9604:23
+    at фотоДоСторониП (https://mightyrochy.github.io/kod-shi-data/%D0%BF%D0%BE%D0%BA%D0%B0%D0%B7.html#%D0%BC%D1%96%D1%81%D1%82=http://localhost:8787&%D1%82=tok-a1&%D0%BC%D0%BE%D0%B4%D0%B5%D0%BB%D1%8C_%D0%BC%D0%BE%D0%B2%D0%B8=mamay-test:9613:5)
+    at https://mightyrochy.github.io/kod-shi-data/%D0%BF%D0%BE%D0%BA%D0%B0%D0%B7.html#%D0%BC%D1%96%D1%81%D1%82=http://localhost:8787&%D1%82=tok-a1&%D0%BC%D0%BE%D0%B4%D0%B5%D0%BB%D1%8C_%D0%BC%D0%BE%D0%B2%D0%B8=mamay-test:9622:38
+    at Array.map (<anonymous>)
+    at фотоДляЗапитуП (https://mightyrochy.github.io/kod-shi-data/%D0%BF%D0%BE%D0%BA%D0%B0%D0%B7.html#%D0%BC%D1%96%D1%81%D1%82=http://localhost:8787&%D1%82=tok-a1&%D0%BC%D0%BE%D0%B4%D0%B5%D0%BB%D1%8C_%D0%BC%D0%BE%D0%B2%D0%B8=mamay-test:9622:31)
+    at викликОцінкиП (https://mightyrochy.github.io/kod-shi-data/%D0%BF%D0%BE%D0%BA%D0%B0%D0%B7.html#%D0%BC%D1%96%D1%81%D1%82=http://localhost:8787&%D1%82=tok-a1&%D0%BC%D0%BE%D0%B4%D0%B5%D0%BB%D1%8C_%D0%BC%D0%BE%D0%B2%D0%B8=mamay-test:11069:48)
+    at оцінитиОбразП (https://mightyrochy.github.io/kod-shi-data/%D0%BF%D0%BE%D0%BA%D0%B0%D0%B7.html#%D0%BC%D1%96%D1%81%D1%82=http://localhost:8787&%D1%82=tok-a1&%D0%BC%D0%BE%D0%B4%D0%B5%D0%BB%D1%8C_%D0%BC%D0%BE%D0%B2%D0%B8=mamay-test:11280:20)
+    at async оцінкаЗРозмовиП (https://mightyrochy.github.io/kod-shi-data/%D0%BF%D0%BE%D0%BA%D0%B0%D0%B7.html#%D0%BC%D1%96%D1%81%D1%82=http://localhost:8787&%D1%82=tok-a1&%D0%BC%D0%BE%D0%B4%D0%B5%D0%BB%D1%8C_%D0%BC%D0%BE%D0%B2%D0%B8=mamay-test:11206:3)
+пікселі речі з фото не прочитались: Error: мережі в тесті нема
+    at w.fetch (C:\Users\gemini\gemini-runs\w\review-2123\джерела\тест_показу.js:189:38)
+    at розкодуватиФотоП (https://mightyrochy.github.io/kod-shi-data/%D0%BF%D0%BE%D0%BA%D0%B0%D0%B7.html#%D0%BC%D1%96%D1%81%D1%82=http://localhost:8787&%D1%82=tok-a1&%D0%BC%D0%BE%D0%B4%D0%B5%D0%BB%D1%8C_%D0%BC%D0%BE%D0%B2%D0%B8=mamay-test:5832:27)
+    at кадрФотоП (https://mightyrochy.github.io/kod-shi-data/%D0%BF%D0%BE%D0%BA%D0%B0%D0%B7.html#%D0%BC%D1%96%D1%81%D1%82=http://localhost:8787&%D1%82=tok-a1&%D0%BC%D0%BE%D0%B4%D0%B5%D0%BB%D1%8C_%D0%BC%D0%BE%D0%B2%D0%B8=mamay-test:5852:21)
+    at async пікселіРечіП (https://mightyrochy.github.io/kod-shi-data/%D0%BF%D0%BE%D0%BA%D0%B0%D0%B7.html#%D0%BC%D1%96%D1%81%D1%82=http://localhost:8787&%D1%82=tok-a1&%D0%BC%D0%BE%D0%B4%D0%B5%D0%BB%D1%8C_%D0%BC%D0%BE%D0%B2%D0%B8=mamay-test:5856:24)
+    at async оцінитиОбразП (https://mightyrochy.github.io/kod-shi-data/%D0%BF%D0%BE%D0%BA%D0%B0%D0%B7.html#%D0%BC%D1%96%D1%81%D1%82=http://localhost:8787&%D1%82=tok-a1&%D0%BC%D0%BE%D0%B4%D0%B5%D0%BB%D1%8C_%D0%BC%D0%BE%D0%B2%D0%B8=mamay-test:11311:21)
+    at async оцінкаЗРозмовиП (https://mightyrochy.github.io/kod-shi-data/%D0%BF%D0%BE%D0%BA%D0%B0%D0%B7.html#%D0%BC%D1%96%D1%81%D1%82=http://localhost:8787&%D1%82=tok-a1&%D0%BC%D0%BE%D0%B4%D0%B5%D0%BB%D1%8C_%D0%BC%D0%BE%D0%B2%D0%B8=mamay-test:11206:3)
+    at async розмоваШаромП (https://mightyrochy.github.io/kod-shi-data/%D0%BF%D0%BE%D0%BA%D0%B0%D0%B7.html#%D0%BC%D1%96%D1%81%D1%82=http://localhost:8787&%D1%82=tok-a1&%D0%BC%D0%BE%D0%B4%D0%B5%D0%BB%D1%8C_%D0%BC%D0%BE%D0%B2%D0%B8=mamay-test:9211:5)
+    at async слатиЧатЯдроП (https://mightyrochy.github.io/kod-shi-data/%D0%BF%D0%BE%D0%BA%D0%B0%D0%B7.html#%D0%BC%D1%96%D1%81%D1%82=http://localhost:8787&%D1%82=tok-a1&%D0%BC%D0%BE%D0%B4%D0%B5%D0%BB%D1%8C_%D0%BC%D0%BE%D0%B2%D0%B8=mamay-test:6057:17)
+    at async слатиЧатП (https://mightyrochy.github.io/kod-shi-data/%D0%BF%D0%BE%D0%BA%D0%B0%D0%B7.html#%D0%BC%D1%96%D1%81%D1%82=http://localhost:8787&%D1%82=tok-a1&%D0%BC%D0%BE%D0%B4%D0%B5%D0%BB%D1%8C_%D0%BC%D0%BE%D0%B2%D0%B8=mamay-test:5961:8)
+    at async C:\Users\gemini\gemini-runs\w\review-2123\джерела\тест_показу.js:4538:5
+  ✓ фото + питання про її образ у розмові → екран «Оціни мій образ» з тим самим фото й питанням, а не сценарій
+  ✓ паспорт розмови не складався (нема «нагоди ти не назвала» / «образи зберу»); мовна модель кликалась раз — оцінка взяла її хід
+  ✓ оцінка дійшла до картки тим самим шляхом, що й з екрана (речі → суд → відповідь)
+  ✓ назвала нагоду, побажання чи без фото — це розмова про сценарій, як доти (вирішують коди, не слова)
+  ✓ ошатність і норма події, які мовна модель ставить щоходу, хід «оціни мій образ» у сценарій не ведуть
+  ✓ без винятків
+21. ФАЙЛ ВЕРДИКТІВ КАЖЕ ПРАВДУ ПРО КОЖЕН ПРОГІН (ділянка 6/8, 26.09.2026)
+  ✓ паспорт вердикта — СВОГО прогону, а не того, що зібрався пізніше
+  ✓ розмова, вхід і контроль поломки — теж свого прогону (слова, зріст, лічба)
+  ✓ діагноз прогону — свій, а не «HTTP 413» із пізнішого збирання
+  ✓ драпіровка теж зі знімка: профіль після карток перезняли, вердикт лишився своїм
+  ✓ без згоди вердикт пишеться без кольору й драпіровки
+  ✓ поломка руки 2 — зі свого прогону («+4.9 °C»), а не «робота → траур» пізнішого
+  ✓ прогін без знімка полів зі сторінки НЕ бере, а називає причину
+  ✓ картка впалої руки кнопки вердикта не показує (судити нема чого) — як доти
+  ✓ впала рука тепер у журналі є — з рукою, позицією й позначкою автозапису
+  ✓ …з причиною збою в діагнозі руки й без вигаданого вердикта жінки
+  ✓ …і з етапами своєї руки, а не порожнім рядком
+  ✓ ребра не вигадуються, а причина названа
+  ✓ двічі той самий збій не записується
+  ✓ розмір запиту — повний: текст окремо, а `симв_разом` — те, що справді пішло в міст
+  ✓ виклик, що не доїхав до моделі, є записом (Л-2): запит із розміром і причина
+  ✓ …а міст, що впав на вже одержаній відповіді, лишає крок РАЗОМ із сирою відповіддю
+  ✓ на живий виклик записи не змінились: крок і далі виводиться з входу мосту
+фото не зменшилось до 1024 px: Error: мережі в тесті нема
+    at w.fetch (C:\Users\gemini\gemini-runs\w\review-2123\джерела\тест_показу.js:189:38)
+    at _зменшитиБ64П (https://mightyrochy.github.io/kod-shi-data/%D0%BF%D0%BE%D0%BA%D0%B0%D0%B7.html#H4sIAAAAAAAACu1UzWrbYBB8FbNn-Ud2Glqd-hS9FCPc1nVT7NY0DgSMwZLT-lKanlQoJaVvYCtS7UiWDH2C2Tcqu5JjuZAQegrEF4P2-76d2dkZDwk-WYSfuMB3fMW38jOTDMICc_Z4jAgzsohdhOywWz4sP5bTCDN2MUOMFJfyfKdgy1WESBBUTnvd0p9F6bDxpMRjhDxFiCtpseYxUj5jDzF_lhYXiPmcDJI6FogQY4aALDLrjYPsxQQxWWatljMYs4sIS7KeD4nHPMnJbvnjiqzXre5x2yD2dIYxZvwpOzANgo-lAi0RsSdCmIbOikhGyFitsWSnhBRzeY0FTyoCkGYHt93hc0Q2EqTsYMmuMm3qgCFP2VPeR6-kw--y-bRTefm-J50T6QBfZ8EvHSvJlBHmidQbNRGBHdFbebJTvHcmVaRk0ZvBoH9sVatHvU6lfdrq9bvtaqvytt-hkbEFr98A_oO_IGZvB9p89A80fJmXXXbvAv4iA28ahJXuJNrIgoUA8Ef2EBSqa5VuhkSHy2qhVtZyZ5g7CZdCMP-eILYLbhPLjG7YdrGYWwmRNoxU1o0PrxnI7AofsCeESK2p1grha2bE-SlZgw8nYrwpUqx4kt_cWiRjUBMpdHsBWcPRSKX1VQN55uUTJ9JcOaa6IgV4d9Ltip3YU-1SrOREVZVfh11JVnYLK6TZWrVf_mWzk8s3J6tWqCtYsAEiHTgqbFdsHdrsXhMM2Msn821lGdgbj2SrFL8VQlrfh3Qf0n1I73dIG_uQ7kO6D-n9DunBTkhzqf4vo7tpvFPuHoL9Nn98t_rv4divOfoLzlzewjUOAAA:9584:27)
+    at https://mightyrochy.github.io/kod-shi-data/%D0%BF%D0%BE%D0%BA%D0%B0%D0%B7.html#H4sIAAAAAAAACu1UzWrbYBB8FbNn-Ud2Glqd-hS9FCPc1nVT7NY0DgSMwZLT-lKanlQoJaVvYCtS7UiWDH2C2Tcqu5JjuZAQegrEF4P2-76d2dkZDwk-WYSfuMB3fMW38jOTDMICc_Z4jAgzsohdhOywWz4sP5bTCDN2MUOMFJfyfKdgy1WESBBUTnvd0p9F6bDxpMRjhDxFiCtpseYxUj5jDzF_lhYXiPmcDJI6FogQY4aALDLrjYPsxQQxWWatljMYs4sIS7KeD4nHPMnJbvnjiqzXre5x2yD2dIYxZvwpOzANgo-lAi0RsSdCmIbOikhGyFitsWSnhBRzeY0FTyoCkGYHt93hc0Q2EqTsYMmuMm3qgCFP2VPeR6-kw--y-bRTefm-J50T6QBfZ8EvHSvJlBHmidQbNRGBHdFbebJTvHcmVaRk0ZvBoH9sVatHvU6lfdrq9bvtaqvytt-hkbEFr98A_oO_IGZvB9p89A80fJmXXXbvAv4iA28ahJXuJNrIgoUA8Ef2EBSqa5VuhkSHy2qhVtZyZ5g7CZdCMP-eILYLbhPLjG7YdrGYWwmRNoxU1o0PrxnI7AofsCeESK2p1grha2bE-SlZgw8nYrwpUqx4kt_cWiRjUBMpdHsBWcPRSKX1VQN55uUTJ9JcOaa6IgV4d9Ltip3YU-1SrOREVZVfh11JVnYLK6TZWrVf_mWzk8s3J6tWqCtYsAEiHTgqbFdsHdrsXhMM2Msn821lGdgbj2SrFL8VQlrfh3Qf0n1I73dIG_uQ7kO6D-n9DunBTkhzqf4vo7tpvFPuHoL9Nn98t_rv4divOfoLzlzewjUOAAA:9604:23
+    at фотоДоСторониП (https://mightyrochy.github.io/kod-shi-data/%D0%BF%D0%BE%D0%BA%D0%B0%D0%B7.html#H4sIAAAAAAAACu1UzWrbYBB8FbNn-Ud2Glqd-hS9FCPc1nVT7NY0DgSMwZLT-lKanlQoJaVvYCtS7UiWDH2C2Tcqu5JjuZAQegrEF4P2-76d2dkZDwk-WYSfuMB3fMW38jOTDMICc_Z4jAgzsohdhOywWz4sP5bTCDN2MUOMFJfyfKdgy1WESBBUTnvd0p9F6bDxpMRjhDxFiCtpseYxUj5jDzF_lhYXiPmcDJI6FogQY4aALDLrjYPsxQQxWWatljMYs4sIS7KeD4nHPMnJbvnjiqzXre5x2yD2dIYxZvwpOzANgo-lAi0RsSdCmIbOikhGyFitsWSnhBRzeY0FTyoCkGYHt93hc0Q2EqTsYMmuMm3qgCFP2VPeR6-kw--y-bRTefm-J50T6QBfZ8EvHSvJlBHmidQbNRGBHdFbebJTvHcmVaRk0ZvBoH9sVatHvU6lfdrq9bvtaqvytt-hkbEFr98A_oO_IGZvB9p89A80fJmXXXbvAv4iA28ahJXuJNrIgoUA8Ef2EBSqa5VuhkSHy2qhVtZyZ5g7CZdCMP-eILYLbhPLjG7YdrGYWwmRNoxU1o0PrxnI7AofsCeESK2p1grha2bE-SlZgw8nYrwpUqx4kt_cWiRjUBMpdHsBWcPRSKX1VQN55uUTJ9JcOaa6IgV4d9Ltip3YU-1SrOREVZVfh11JVnYLK6TZWrVf_mWzk8s3J6tWqCtYsAEiHTgqbFdsHdrsXhMM2Msn821lGdgbj2SrFL8VQlrfh3Qf0n1I73dIG_uQ7kO6D-n9DunBTkhzqf4vo7tpvFPuHoL9Nn98t_rv4divOfoLzlzewjUOAAA:9613:5)
+    at приміряти (https://mightyrochy.github.io/kod-shi-data/%D0%BF%D0%BE%D0%BA%D0%B0%D0%B7.html#H4sIAAAAAAAACu1UzWrbYBB8FbNn-Ud2Glqd-hS9FCPc1nVT7NY0DgSMwZLT-lKanlQoJaVvYCtS7UiWDH2C2Tcqu5JjuZAQegrEF4P2-76d2dkZDwk-WYSfuMB3fMW38jOTDMICc_Z4jAgzsohdhOywWz4sP5bTCDN2MUOMFJfyfKdgy1WESBBUTnvd0p9F6bDxpMRjhDxFiCtpseYxUj5jDzF_lhYXiPmcDJI6FogQY4aALDLrjYPsxQQxWWatljMYs4sIS7KeD4nHPMnJbvnjiqzXre5x2yD2dIYxZvwpOzANgo-lAi0RsSdCmIbOikhGyFitsWSnhBRzeY0FTyoCkGYHt93hc0Q2EqTsYMmuMm3qgCFP2VPeR6-kw--y-bRTefm-J50T6QBfZ8EvHSvJlBHmidQbNRGBHdFbebJTvHcmVaRk0ZvBoH9sVatHvU6lfdrq9bvtaqvytt-hkbEFr98A_oO_IGZvB9p89A80fJmXXXbvAv4iA28ahJXuJNrIgoUA8Ef2EBSqa5VuhkSHy2qhVtZyZ5g7CZdCMP-eILYLbhPLjG7YdrGYWwmRNoxU1o0PrxnI7AofsCeESK2p1grha2bE-SlZgw8nYrwpUqx4kt_cWiRjUBMpdHsBWcPRSKX1VQN55uUTJ9JcOaa6IgV4d9Ltip3YU-1SrOREVZVfh11JVnYLK6TZWrVf_mWzk8s3J6tWqCtYsAEiHTgqbFdsHdrsXhMM2Msn821lGdgbj2SrFL8VQlrfh3Qf0n1I73dIG_uQ7kO6D-n9DunBTkhzqf4vo7tpvFPuHoL9Nn98t_rv4divOfoLzlzewjUOAAA:9786:22)
+    at async C:\Users\gemini\gemini-runs\w\review-2123\джерела\тест_показу.js:4723:5
+  ✓ приміряння тепер стоїть у `виклики` руки — з промптом, лічбою фото й вагою кадру
+  ✓ збій перекладу коментаря вердикта НЕ з'їдає: запис є, сирі слова жінки в ньому
+  ✓ …а сам збій стоїть рядком у записі, а не мовчанням
+  ✓ кнопка запису читає відмову промиса й каже про неї в статусі картки
+  ✓ список вибору будується трьома рівнями: день → прогін → образ
+  ✓ типово позначено те, чого власник ще не вивантажував
+Not implemented: navigation to another Document
+  ✓ у файл поїхав РІВНО обраний вердикт, а не весь журнал
+  ✓ вивантажений вердикт позначено, і «лише не вивантажені» його більше не бере
+  ✓ позначка їде і в сам файл — читач бачить, що цей рядок уже читав
+  ✓ кнопка «Зберегти всі вердикти файлом» лишилась на місці й першою (п.9)
+  ✓ мініатюра першого образу — приміряна картинка, а не фото першої речі крамниці
+  ✓ образ без приміряння і далі показує фото речі, як доти — тим самим вузлом без класу
+  ✓ без винятків
+21. ВШИТЕ ЧИСЛО ФОРМИ — НЕ ЇЇ СЛОВО (розбір 1/8: В-2, В-3, В-13; 26.09.2026)
+  ✓ нова форма: обидва числа неторкані — рядок «Коли й погода» сірий, ні вшитої години (4284), ні вшитих градусів (4430)
+  ✓ у міст їде ПОХОДЖЕННЯ: `сценарій.типові_поля` називає обидва числа, значення лишаються
+  ✓ шапка над картками цих чисел не називає (В-2): у рядку випадку ні години, ні градусів
+  ✓ рядок мети на очікуванні цих чисел не називає (Л-3б): ні «11:00», ні «+18 °C»
+  ✓ стан для помічниці несе неназване число З ПОХОДЖЕННЯМ, а не голим фактом (Л-3б-2)
+  ✓ міст перекладає походження в дріт: form_defaults = start_hour, temperature_c; самі числа лишаються
+  ✓ явний дотик до типового 11 без зміни значення передає подію hand
+  ✓ збереження й відновлення лишають hand та подію, не виводять їх з різниці чисел
+  ✓ збереження неторкнутої нової форми лишає числа типовими
+  ✓ дотик до градусів знімає мітку з НИХ і лишає її на годині (В-2)
+  ✓ щойно вона щось назвала — рядок картки вже не сірий, і градуси в шапці стоять
+  ✓ названі градуси в рядку мети стоять, як доти (Л-3б не забирає її слова)
+  ✓ назване нею число в стані стоїть БЕЗ позначки типового, а неназване — з нею (Л-3б-2)
+  ✓ число, яке вона НАЗВАЛА в розмові, типовим уже не стоїть (В-3): рядок чорний, мітки нема
+  ✓ паспорт із міткою «типове_форми» вертає рядок у сірий — і це той самий рядок, що в Python (В-13)
+  ✓ схема з розмови стає її вибором: у ВИБІР, у вході палітри й у рядку картки (3.2-В, 9401)
+  ✓ названі опади в рядку мети лишаються, хоч градусів вона не називала (Л-3б)
+  ✓ поле зросту порожнє, поки вона його не назвала — вшитого 167 в розкладці нема
+  ✓ порожній зріст стоїть у переліку «без чого не зібрати», а не підставляється числом коду
+  ✓ назвала зріст — він і їде в міст, без жодного дописаного числа
+  ✓ жодна фікстура батареї не заповнює обхвати без зросту — інакше розділ упаде не там, де вада
+  ✓ названі опади самі по собі знімають сірість — у рядку вже є її слово
+  ✓ без винятків
+22. БІБЛІОТЕКА: КОЖЕН ПРОГІН — СВІЙ ЗАПИС І СВОЇ ВЕРДИКТИ (наряд Л-7, 27.09.2026)
+  ✓ пакет, відкритий без іда, дістає свій ід РАЗ — і він внутрішньою мовою, без слів
+  ✓ (3) відповіді попереднього прогону не переїхали на картку нового: вердикт у пам'яті чистий
+  ✓ (1) два збори з однаковою перестановкою рук — ДВА записи бібліотеки, обидва свої
+  ✓ кожен вердикт несе ід СВОГО прогону, а `розклад` лишився тим, чим був
+  ✓ (2) на плитці кожного прогону — ОДИН вердикт, і саме його
+  ✓ (4) у файлі — ДВА прогони, кожен зі своїм ідом у шапці
+  ✓ міграції не треба: давній запис лишився читабельним і несе СВІЙ вердикт, а не свіжий
+  ✓ те саме посилання, відкрите вдруге, дописує СВІЙ запис, а не плодить новий
+  ✓ файл вивантажує і давній вердикт — окремою групою, за його колишнім ключем
+  ✓ без винятків
+23. «УСІ ОБРАЗИ» ПОКАЗУЮТЬ ПЛИТКИ ПІСЛЯ ПЕРШОГО Ж ЗБОРУ (наряд Л-8, 27.09.2026)
+  ✓ до входу в бібліотеку список порожній — плитки малює саме вхід, а не збір
+  ✓ після ПЕРШОГО збору `режим('бібліотека')` сам малює плитку образу — без кнопки й без перезаходу
+  ✓ плитка першого збору несе мініатюру, а не порожню арку
+  ✓ заголовок групи — нагода зі збору, розкладка екрана та сама (п.7)
+  ✓ мініатюра, що не завантажилась, падає на той самий силует, що в образу без фото
+  ✓ заглушка не приносить на плитку жодного нового тексту
+  ✓ читання бібліотеки чекає на щойно зроблений запис: обидва прогони на екрані одразу
+  ✓ без винятків
+24. ПІКТОГРАМА ШМАТКА ВИПАДКУ — ЗА КЛЮЧЕМ ПОЛЯ, А НЕ ЗА ПОЗИЦІЄЮ (наряд Л-9, 27.09.2026)
+  ✓ без розмови: знак мапи стоїть на МІСЦІ, а не на нагоді (шматок 0 — нагода, і він без знака)
+  ✓ година й градуси лишились при своїх знаках — тепер теж за ключем, не за словами в тексті
+  ✓ ключі шматків — імена полів паспорта, і код читає лише їх
+  ✓ рядок випадку не змінився ні на знак (назва сценарію, журнал, записи)
+  ✓ з розмови: вільне речення БЕЗ знака, знак мапи — на справжньому місці («зал»)
+  ✓ опади ведуть знак КОДОМ (дощ/сніг — той самий ключ), а не словом з екрана
+  ✓ шматок, у тексті якого стоїть «°C», знака температури НЕ дістає: код слів не читає (п.12)
+  ✓ сніг замість дощу — той самий ключ, інший код, інший знак
+  ✓ запис без ключів читається, але знаків не дістає — жодного вгадування за позицією
+  ✓ без винятків
+25. КАДР КАРТКИ: МЕРТВИЙ → НАСТУПНИЙ, ВИЧЕРПАНІ → СИЛУЕТ, МОВЧАЗНИЙ → ГОДИННИК (Ф-143)
+  ✓ річ без жодного кадру стоїть силуетом, а не порожнім місцем
+  ✓ мертвий кадр віддає чергу наступному кадру речі, і ряд проходиться ДВІЧІ
+  ✓ кадри вичерпані — на місці мініатюри силует, і жодної фрази коду під річчю
+  ✓ кадр, що не відповів ні кадром, ні помилкою, віддає чергу наступному — і ряд кінчається
+  ✓ без `IntersectionObserver` годинник не заводиться: живий кадр не оголошується мертвим
+  ✓ без винятків
+26. «МАКІЯЖ СЬОГОДНІ»: ЧОМУ ВІДТІНОК МЕНШ ХОДОВИЙ — РЕЧЕННЯ ШАРУ, НЕ ФРАЗА КОДУ (Ч-3, 27.09.2026)
+  ✓ причина відтінка — речення шару, а не код заяви й не обʼєкт
+  ✓ під її власним кольором — рамка показу плюс речення шару
+  ✓ без винятків
+  ✓ без моделі шару рядка причини нема — і жодної фрази коду замість нього
+  ✓ …а намистина відтінка лишається й лишається клікабельною (замка нема)
+  ✓ рамка під власним кольором стоїть і без шару, без причини
+  ✓ без винятків
+27. ЗБІЙ ЗБИРАННЯ Й КАРТКА БЕЗ ПОЯСНЕННЯ — КОДИ ЗАЯВ, НЕ АБЗАЦИ КОДУ (Ч-9, рядок 206)
+  ✓ збій, якого повтор не лікує, — коди заяв, а не абзац коду
+  ✓ …а обрив звʼязку — ІНШІ коди: «спробуй за хвилину» тут правда, і вона лишилась
+  ✓ відмова коду без свого повідомлення йде гілкою «повтор дасть те саме», не «за хвилину»
+  ✓ …а відмова зі СВОЇМ повідомленням (K-IO-01) їде як є, без підміни
+  ✓ картка без пояснення: дві причини — два різні коди, і обидва кажуть, що речі правдиві
+  ✓ `без_опису` — поле повідомлень картки, тож речення йому пише мовна модель
+  ✓ без моделі шару на місці рядка стоїть сталий український напис, а не порожнеча
+  ✓ без винятків
+28. ОЦІН-1: ОДИН ДОТИК = ЗАПИС, ПРАВКА = ТОЙ САМИЙ ЗАПИС, ЛІЧИЛЬНИК, ПЕРЕХІД НА НЕОЦІНЕНУ, ПОЯСНЕННЯ БЕЗ ПРИМУСУ (02.10.2026)
+  ✓ до дотику: лічильник «оцінено 0 з 3» — впала четверта рука серед тих, що є що судити, не рахується
+  ✓ один дотик по «Вдягнеш?» — вже запис вердикту (схема та сама: вердикт, його код)
+  ✓ лічильник «оцінено 1 з 3» — одразу після дотику, у верхньому й нижньому пейджері
+  ✓ кнопка «Записати вердикт» не вимикається і статус каже «Записано.»
+  ✓ після дотику поле — фокус: прокрутка до питання над ним і рамка (клавіатуру не відкриваємо)
+  ✓ поруч — м'який рядок: вердикт уже записано, кілька речень своїми словами дуже допоможуть
+  ✓ торкнулась поля — рамка гасне
+  ✓ друга вісь, аспект і слова — у ТОМУ САМОМУ записі: один на картку, а не чотири
+  ✓ інша відповідь «Вдягнеш?» — той самий запис оновлено, не другий рядок
+  ✓ ребра калібрування — один раз на картку: по запису лише ті, що лічились на останньому стані
+  ✓ переклад коментаря не кличеться вдруге, поки текст той самий (чипи після слів — з кешу)
+  ✓ впала рука пише свій автозапис, але в «оцінено» не рахується (1 з 3, не 2 з 4)
+  ✓ перед «Записати» видно першу картку
+  ✓ лічильник після другого дотику — «оцінено 2 з 3»
+  ✓ «Записати вердикт» на картці 1 веде на 3-тю: 2-гу вже оцінено, її пропущено; четверта впала — теж
+  ✓ запис першої картки лишився одним, і порожнє поле його не зламало
+  ✓ всі три оцінено — лічильник «оцінено 3 з 3»
+  ✓ неоцінених нема — лишається на місці, без нових екранів; лічильник «3 з 3»
+  ✓ нова правка після «готово» — знову той самий запис (кнопка живе), а не дубль
+  ✓ коротко + пауза: один раз «що саме?» — з уже позначеного аспекту («фасон»)
+  ✓ довго: жодної підказки «що саме?», порада лишилась, як була
+  ✓ після підказки і наступних дотиків вона не повторюється й не множиться (один рядок, той самий)
+  ✓ дописала розгорнуто — підказка знята (без червоного, без вікон)
+  ✓ те саме посилання, відкрите вдруге: лічильник «оцінено 3 з 3» — вердикти прогону підхоплено
+  ✓ чип відповіді й слова жінки на місці після відкриття
+  ✓ правка після повторного відкриття дописує ТОЙ САМИЙ запис, а не плодить новий
+  ✓ «оціни мій образ» цього не чіпає: його запис — лише кнопкою, чипи ключа 'оц' нічого не пишуть
+  ✓ без винятків
+РЯДКИ 3166, 2841. Ошатність картки — не від місця (наряд 3.7: щабель ставить драбина); пілюля «Надворі» при морозі без 18 °C
+  ✓ 3166, наряд 3.7 · без числа моделі ошатність не береться ні від місця моделі, ні від типового місця плитки: «не обрано» в усіх трьох
+  ✓ 2841 · паспорт «мороз»: картка «20:00, мороз», пілюля «Надворі» порожня з підказкою «мороз» (не 18), а в паспорт вхід типова температура не їде як сказана
+  ✓ …«холодно» — підказка змінилась разом з карткою
+  ✓ …відчуття зникло — типове число повертається на пілюлю, підказки нема, картка без «+18 °C» (ФОРМА-ТЕМП, рядок 4430)
+  ✓ …рука впише число — воно її: картка «-12 °C», підказки нема, паспорт «мороз» уже не веде рядок
+  ✓ без винятків
+РЯДКИ 3250, 3251, 3252, 3463. Ошатність паспорта К7; плитки відчуття в «Коли й погода»; рядки речей без виїзду
+  ✓ 3250, наряд 3.7 · «Свято, вечірка» без місця й числа: ошатність «не обрано» — щабель ставить драбина, не типове місце
+  ✓ 3252 · паспорт К7 (робота, місце «прогулянка», мороз, числа ошатності нема): ошатність «не обрано» (не від місця, наряд 3.7), «Коли й погода» — «мороз»
+  ✓ 3251 · у «Коли й погода» п'ять плиток відчуття, обрана — «мороз» з паспорта
+  ✓ …дотик «холодно» над паспортом «мороз»: картка «холодно», плитка обрана, пілюля градусів порожня з підказкою «холодно»
+  ✓ …у вхід їде відчуття, а не число; паспорт для шва вже каже «холодно» без градусів, джерело — рука
+  ✓ …повторний дотик по обраному знімає вибір: картка без відчуття, у вхід слово не їде, типове число повертається
+  ✓ …число, вписане рукою, знімає плитку відчуття: картка «+7 °C», у вхід їде число
+  ✓ 3463 · `.річ` (рядки речей карток рук) без анімації `нанизати` й без черги затримок по рядках
+  ✓ без винятків
+ГОЛОС-1. Диктування: наростаючий (Android), сегментний (настільний), iOS з повтором — один текст
+  ✓ голос, наростаючий (Android, послідовність тестувальниці): у полі «хочу на вітряний день отримати образ» один раз
+  ✓ голос, сегменти з isFinal (настільний Chrome): у полі «хочу на вітряний день отримати образ» один раз
+  ✓ голос, iOS (сегменти, повтор останнього остаточного): у полі «хочу на вітряний день отримати образ» один раз
+  ✓ голос: повторний дотик дописує до `база` через пробіл
+  ✓ голос: сегмент, що лиш починається так само, як остаточний, не губить остаточне
+  ✓ голос: без винятків
+ЖИВІ-13 №6 (рядок 3454): ОДНА РІЧ З ФОТО У РЕПЛІЦІ — КОДИ СЛОТА Й ВИДУ (п.12)
+  ✓ одна річ: вердикт несе slot=shoes і item_type=heeled_sandals, назви без слів нема
+  ✓ без винятків
+МОВА-3 (рядки 4020, 4021, 3938): ПОРА — НЕ ГОДИНА; СЛІД КОЖНОГО ХОДУ — У ЗВІТ; НАГОДА ПАСПОРТА — В ОЦІНКУ
+  ✓ 4020: пора без години — «Коли й погода» каже «ввечері» чорним, годинника (20:00) нема
+  ✓ 4021: слід ходу 1 стоїть у записі ходу 1, хоч паспорт ходу 2 його вже не несе
+  ✓ без винятків
+  ✓ 6520: хід з `не_взято` і порожнім `невідомо` — рядок у шві паспорта й у `не_взято_кодом` запису ходу
+  ✓ без винятків
+  ✓ 4021: у звіті власника — сліди останнього паспорта й кожного ходу, кожен раз
+  ✓ без винятків
+міст для оцінки не піднявся: Error: mirror_failed: jsdelivr → TypeError: URL.createObjectURL is not a function
+    at піднятиВоркерМостуП (https://mightyrochy.github.io/kod-shi-data/%D0%BF%D0%BE%D0%BA%D0%B0%D0%B7.html#%D0%BC%D1%96%D1%81%D1%82=http://localhost:8787&%D1%82=tok-a1&%D0%BC%D0%BE%D0%B4%D0%B5%D0%BB%D1%8C_%D0%BC%D0%BE%D0%B2%D0%B8=mamay-test:10302:9)
+    at https://mightyrochy.github.io/kod-shi-data/%D0%BF%D0%BE%D0%BA%D0%B0%D0%B7.html#%D0%BC%D1%96%D1%81%D1%82=http://localhost:8787&%D1%82=tok-a1&%D0%BC%D0%BE%D0%B4%D0%B5%D0%BB%D1%8C_%D0%BC%D0%BE%D0%B2%D0%B8=mamay-test:10313:26
+    at підняти_міст_показу (https://mightyrochy.github.io/kod-shi-data/%D0%BF%D0%BE%D0%BA%D0%B0%D0%B7.html#%D0%BC%D1%96%D1%81%D1%82=http://localhost:8787&%D1%82=tok-a1&%D0%BC%D0%BE%D0%B4%D0%B5%D0%BB%D1%8C_%D0%BC%D0%BE%D0%B2%D0%B8=mamay-test:10326:5)
+    at відкритиОцінкуП (https://mightyrochy.github.io/kod-shi-data/%D0%BF%D0%BE%D0%BA%D0%B0%D0%B7.html#%D0%BC%D1%96%D1%81%D1%82=http://localhost:8787&%D1%82=tok-a1&%D0%BC%D0%BE%D0%B4%D0%B5%D0%BB%D1%8C_%D0%BC%D0%BE%D0%B2%D0%B8=mamay-test:10951:24)
+    at режим (https://mightyrochy.github.io/kod-shi-data/%D0%BF%D0%BE%D0%BA%D0%B0%D0%B7.html#%D0%BC%D1%96%D1%81%D1%82=http://localhost:8787&%D1%82=tok-a1&%D0%BC%D0%BE%D0%B4%D0%B5%D0%BB%D1%8C_%D0%BC%D0%BE%D0%B2%D0%B8=mamay-test:4218:23)
+    at оцінкаЗРозмовиП (https://mightyrochy.github.io/kod-shi-data/%D0%BF%D0%BE%D0%BA%D0%B0%D0%B7.html#%D0%BC%D1%96%D1%81%D1%82=http://localhost:8787&%D1%82=tok-a1&%D0%BC%D0%BE%D0%B4%D0%B5%D0%BB%D1%8C_%D0%BC%D0%BE%D0%B2%D0%B8=mamay-test:11203:3)
+    at розмоваШаромП (https://mightyrochy.github.io/kod-shi-data/%D0%BF%D0%BE%D0%BA%D0%B0%D0%B7.html#%D0%BC%D1%96%D1%81%D1%82=http://localhost:8787&%D1%82=tok-a1&%D0%BC%D0%BE%D0%B4%D0%B5%D0%BB%D1%8C_%D0%BC%D0%BE%D0%B2%D0%B8=mamay-test:9211:11)
+    at runNextTicks (node:internal/process/task_queues:64:5)
+    at process.processTimers (node:internal/timers:518:9)
+    at async слатиЧатЯдроП (https://mightyrochy.github.io/kod-shi-data/%D0%BF%D0%BE%D0%BA%D0%B0%D0%B7.html#%D0%BC%D1%96%D1%81%D1%82=http://localhost:8787&%D1%82=tok-a1&%D0%BC%D0%BE%D0%B4%D0%B5%D0%BB%D1%8C_%D0%BC%D0%BE%D0%B2%D0%B8=mamay-test:6057:17)
+фото не зменшилось до 768 px: Error: мережі в тесті нема
+    at w.fetch (C:\Users\gemini\gemini-runs\w\review-2123\джерела\тест_показу.js:189:38)
+    at _зменшитиБ64П (https://mightyrochy.github.io/kod-shi-data/%D0%BF%D0%BE%D0%BA%D0%B0%D0%B7.html#%D0%BC%D1%96%D1%81%D1%82=http://localhost:8787&%D1%82=tok-a1&%D0%BC%D0%BE%D0%B4%D0%B5%D0%BB%D1%8C_%D0%BC%D0%BE%D0%B2%D0%B8=mamay-test:9584:27)
+    at https://mightyrochy.github.io/kod-shi-data/%D0%BF%D0%BE%D0%BA%D0%B0%D0%B7.html#%D0%BC%D1%96%D1%81%D1%82=http://localhost:8787&%D1%82=tok-a1&%D0%BC%D0%BE%D0%B4%D0%B5%D0%BB%D1%8C_%D0%BC%D0%BE%D0%B2%D0%B8=mamay-test:9604:23
+    at фотоДоСторониП (https://mightyrochy.github.io/kod-shi-data/%D0%BF%D0%BE%D0%BA%D0%B0%D0%B7.html#%D0%BC%D1%96%D1%81%D1%82=http://localhost:8787&%D1%82=tok-a1&%D0%BC%D0%BE%D0%B4%D0%B5%D0%BB%D1%8C_%D0%BC%D0%BE%D0%B2%D0%B8=mamay-test:9613:5)
+    at https://mightyrochy.github.io/kod-shi-data/%D0%BF%D0%BE%D0%BA%D0%B0%D0%B7.html#%D0%BC%D1%96%D1%81%D1%82=http://localhost:8787&%D1%82=tok-a1&%D0%BC%D0%BE%D0%B4%D0%B5%D0%BB%D1%8C_%D0%BC%D0%BE%D0%B2%D0%B8=mamay-test:9622:38
+    at Array.map (<anonymous>)
+    at фотоДляЗапитуП (https://mightyrochy.github.io/kod-shi-data/%D0%BF%D0%BE%D0%BA%D0%B0%D0%B7.html#%D0%BC%D1%96%D1%81%D1%82=http://localhost:8787&%D1%82=tok-a1&%D0%BC%D0%BE%D0%B4%D0%B5%D0%BB%D1%8C_%D0%BC%D0%BE%D0%B2%D0%B8=mamay-test:9622:31)
+    at викликОцінкиП (https://mightyrochy.github.io/kod-shi-data/%D0%BF%D0%BE%D0%BA%D0%B0%D0%B7.html#%D0%BC%D1%96%D1%81%D1%82=http://localhost:8787&%D1%82=tok-a1&%D0%BC%D0%BE%D0%B4%D0%B5%D0%BB%D1%8C_%D0%BC%D0%BE%D0%B2%D0%B8=mamay-test:11069:48)
+    at оцінитиОбразП (https://mightyrochy.github.io/kod-shi-data/%D0%BF%D0%BE%D0%BA%D0%B0%D0%B7.html#%D0%BC%D1%96%D1%81%D1%82=http://localhost:8787&%D1%82=tok-a1&%D0%BC%D0%BE%D0%B4%D0%B5%D0%BB%D1%8C_%D0%BC%D0%BE%D0%B2%D0%B8=mamay-test:11280:20)
+    at runNextTicks (node:internal/process/task_queues:64:5)
+пікселі речі з фото не прочитались: Error: мережі в тесті нема
+    at w.fetch (C:\Users\gemini\gemini-runs\w\review-2123\джерела\тест_показу.js:189:38)
+    at розкодуватиФотоП (https://mightyrochy.github.io/kod-shi-data/%D0%BF%D0%BE%D0%BA%D0%B0%D0%B7.html#%D0%BC%D1%96%D1%81%D1%82=http://localhost:8787&%D1%82=tok-a1&%D0%BC%D0%BE%D0%B4%D0%B5%D0%BB%D1%8C_%D0%BC%D0%BE%D0%B2%D0%B8=mamay-test:5832:27)
+    at кадрФотоП (https://mightyrochy.github.io/kod-shi-data/%D0%BF%D0%BE%D0%BA%D0%B0%D0%B7.html#%D0%BC%D1%96%D1%81%D1%82=http://localhost:8787&%D1%82=tok-a1&%D0%BC%D0%BE%D0%B4%D0%B5%D0%BB%D1%8C_%D0%BC%D0%BE%D0%B2%D0%B8=mamay-test:5852:21)
+    at runNextTicks (node:internal/process/task_queues:64:5)
+    at process.processTimers (node:internal/timers:518:9)
+    at async пікселіРечіП (https://mightyrochy.github.io/kod-shi-data/%D0%BF%D0%BE%D0%BA%D0%B0%D0%B7.html#%D0%BC%D1%96%D1%81%D1%82=http://localhost:8787&%D1%82=tok-a1&%D0%BC%D0%BE%D0%B4%D0%B5%D0%BB%D1%8C_%D0%BC%D0%BE%D0%B2%D0%B8=mamay-test:5856:24)
+    at async оцінитиОбразП (https://mightyrochy.github.io/kod-shi-data/%D0%BF%D0%BE%D0%BA%D0%B0%D0%B7.html#%D0%BC%D1%96%D1%81%D1%82=http://localhost:8787&%D1%82=tok-a1&%D0%BC%D0%BE%D0%B4%D0%B5%D0%BB%D1%8C_%D0%BC%D0%BE%D0%B2%D0%B8=mamay-test:11311:21)
+    at async оцінкаЗРозмовиП (https://mightyrochy.github.io/kod-shi-data/%D0%BF%D0%BE%D0%BA%D0%B0%D0%B7.html#%D0%BC%D1%96%D1%81%D1%82=http://localhost:8787&%D1%82=tok-a1&%D0%BC%D0%BE%D0%B4%D0%B5%D0%BB%D1%8C_%D0%BC%D0%BE%D0%B2%D0%B8=mamay-test:11206:3)
+    at async розмоваШаромП (https://mightyrochy.github.io/kod-shi-data/%D0%BF%D0%BE%D0%BA%D0%B0%D0%B7.html#%D0%BC%D1%96%D1%81%D1%82=http://localhost:8787&%D1%82=tok-a1&%D0%BC%D0%BE%D0%B4%D0%B5%D0%BB%D1%8C_%D0%BC%D0%BE%D0%B2%D0%B8=mamay-test:9211:5)
+    at async слатиЧатЯдроП (https://mightyrochy.github.io/kod-shi-data/%D0%BF%D0%BE%D0%BA%D0%B0%D0%B7.html#%D0%BC%D1%96%D1%81%D1%82=http://localhost:8787&%D1%82=tok-a1&%D0%BC%D0%BE%D0%B4%D0%B5%D0%BB%D1%8C_%D0%BC%D0%BE%D0%B2%D0%B8=mamay-test:6057:17)
+  ✓ 3938: нагода й пора паспорта розмови — у суді оцінки (`сценарій_паспорта`), звідки промпт ОЦІНКИ бере occasion
+  ✓ без винятків
+РЯДОК 4120 (10.10). «НЕ ЦЯ» → «ЗАМІНИТИ»: ДІЯ ЗІ ЗНАЧКОМ, СТАН, ПОЯСНЕННЯ І ВІДПОВІДЬ БІЛЯ РЕЧІ
+  ✓ напис дії — дієслово «замінити» зі значком, не натиснута; «не ця» на картці й у довідці не читається
+  ✓ початкова підказка не обіцяє відкладеної заміни
+  ✓ біля речі немає застарілої обіцянки майбутнього збору
+  ✓ дотик ставить те саме відхилення сценарію, а застаріла обіцянка наступного збору схована
+  ✓ невідомий вхід не підмінюється поточним сценарієм: речі лишилися, причина в етапі
+  ✓ збережена відповідь відновлює те саме відхилення для наступного повного збору
+  ✓ без винятків
+РЯДКИ 5506–5507. СЛІПОТА ДО КІНЦЯ Й «ЧОМУ» ПІСЛЯ «ЗАМІНИТИ»
+  ✓ до жодного вердикту: ні поломки, ні номера руки; статус і брак входу на місці
+  ✓ один вердикт із двох: рядки про поломку досі сховані
+  ✓ вердикти всіх карток: рядки про поломку з'явились
+  ✓ до дотику «замінити» ряду «чому» нема
+  ✓ після «замінити»: один ряд «чому» з тих самих восьми аспектів, без трьох «мінусових»
+  ✓ без дотику по «чому» файл як раніше: ні `about_items`, ні `замінити_чому`
+  ✓ дотик «зручність» → у файлі `about_items: [{id, opinion: dislike, reasons: [comfort]}]`, джерело — tap
+  ✓ «Повернути всі» чистить ряд «чому» і запис: ряду нема, ні `замінити_чому`, ні `about_items` про повернуту річ
+  ✓ відкриття з бібліотеки відновлює ряд «чому» зі збереженим дотиком
+  ✓ без винятків
+РЯДКИ 5470, 4944 (крок 2). [hidden] НЕ ПЕРЕБИВАЄТЬСЯ КЛАСОМ; СТАН ВИБОРУ Й ОГОЛОШЕННЯ СТАТУСІВ ЗБИРАННЯ
+  ✓ кожен елемент з `hidden` має `display:none` (один `[hidden]`, а не латка на поле)
+  ✓ у стилях є одне загальне правило `[hidden]{display:none!important}`, а не латка на одне поле
+  ✓ поле «Колір губ» до вибору «свій колір» не показується
+  ✓ поле розмови має сталий підпис, що не зникає з плейсхолдером
+  ✓ статуси збирання живуть у постійних областях aria-live (polite, atomic) — вони є в розмітці до першого збирання
+  ✓ напис збирання потрапляє в постійну область оголошень
+  ✓ станВиборуП синхронізує aria-pressed з позначкою вибору в обидва боки
+  ✓ кнопка «замінити» перемикає aria-pressed разом з класом і написом
+  ✓ без винятків
+КРОК 4.5. ОДИН ВЛАСНИК СТАНУ ДІЇ: ЗБЕРЕЖЕННЯ → ВІДНОВЛЕННЯ, ПЕРЕСТАВЛЕНІ ВІДПОВІДІ, СКАСОВАНА ЗАМІНА
+  ✓ (а) після відновлення той самий стан: `В[0]`, «не ця» для заміненої речі, жодної заміни в дорозі
+  ✓ (а) дописаний після відновлення запис той самий
+  ✓ (а) без винятків
+  ✓ (б) відповідь дії коментаря до і після нового сценарію — той самий стан нового сценарію: ні «не ця», ні паспорта старого
+  ✓ (б) без винятків
+  ✓ (в) до відповіді речі позначено «на заміну»
+  ✓ (в) скасована заміна з запізнілою відповіддю: картка, «не ця», `В[0]`, кнопка й етапи як до дотику
+  ✓ (в) сховище не чіпали: ні збереженого образу, ні запису вердикту
+  ✓ (в) кнопки знову живі
+  ✓ (в) без винятків
+ВИКОНАНО ЗВІРОК: 793 у 69 розділах
+ПОКАЗ: усе зелене
