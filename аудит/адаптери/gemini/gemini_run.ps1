@@ -1094,8 +1094,6 @@ function Start-Markers($Workers) {
         }
         if ((@($Workers | Where-Object { $_.Slug -ceq $m.Slug -and -not $_.Proc.HasExited }).Count -gt 0) -or (Test-SlugBusy $m.Slug $script:Lanes)) { continue }
         if ($m.Gpu -and -not (Test-GpuFree $Workers)) { continue }
-        # Мало місця під ще одну робочу копію — позначки лишаються в черзі до наступного проходу.
-        if (-not (Test-DiskRoom (Join-Path $RunsDir 'w') $started)) { break }
         $after = $(if ($st.Kind -eq 'WAIT') { [long]$st.Wait.until } else { 0L })
         $sel = Select-Engine $m $after
         if ($sel.Quota.Blocked) { Enter-StartQuotaWait $m $sel.Quota $st; continue }
@@ -1104,7 +1102,10 @@ function Start-Markers($Workers) {
         $slot = Get-FreeSlot $lane ([int]$script:Limits.slots[$lane]) $Workers
         if (-not $slot) { continue }
         $id = New-RunId (Get-MarkerKey $m)
-        if (-not (New-Claim $m $id)) { continue }
+        # Мало місця під ще одну робочу копію (з урахуванням копій, що створюються в інших процесах і проходах) —
+        # позначки лишаються в черзі.
+        if (-not (Reserve-DiskRoom (Join-Path $RunsDir 'w') $id)) { break }
+        if (-not (New-Claim $m $id)) { Release-DiskRoom $id; continue }
         # Усе між claim і STARTED — під одним обліком відмов (retakes, MaxRetakes, CRASH на межі), 10162/10182.
         try {
             $dir = Join-Path $RunsDir $id
@@ -1118,6 +1119,7 @@ function Start-Markers($Workers) {
             [void]$Workers.Add((Start-Worker $job $dir))
         } catch {
             Write-Log "позначка $($m.Name): процес наряду не запущено — $(Format-ErrorDetail $_)"
+            Release-DiskRoom $id
             Close-FailedStart $m $id (Get-StatePath (Get-MarkerKey $m)) -Storage:(Test-StorageFault $_.Exception)
             continue
         }
@@ -1189,6 +1191,7 @@ function Invoke-Worker {
         $M = [pscustomobject]@{ Ref = $job.ref; Name = $job.name; Sha = $job.sha; Time = [long]$job.time; Slug = $job.slug; Model = $job.model
             N = [string]$job.n; Cond = [string]$job.cond; Prio = $job.prio; Deadline = $job.deadline; Gpu = [bool]$job.gpu; Lane = $job.lane }
         $wt = Enter-WorkTree $wtPath 'refs/remotes/origin/main'
+        Release-DiskRoom ([string]$job.id)
         Set-Variable -Scope Script -Name RepoDir -Value $wt
         $taskDir = Enter-TaskDir ([string]$job.dir)
         Set-BrowserGpuPolicy (Join-Path $script:SlotDir ($job.slot + '-browser'))
@@ -1201,6 +1204,7 @@ function Invoke-Worker {
     } finally {
         # Прогін скінчився (будь-яким кодом): тека задачі й копія слота — геть, у теці прогону — журнал і стан.
         $env:TEMP = $tempWas; $env:TMP = $tmpWas
+        Release-DiskRoom ([string]$job.id)
         Clear-TaskDir $taskDir
         Remove-WorkTree $wtPath $clone
         Clear-RunDir ([string]$job.dir)

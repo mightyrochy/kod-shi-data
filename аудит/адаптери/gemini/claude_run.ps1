@@ -802,10 +802,11 @@ function Start-Markers($Workers) {
             $ownGpu = @($Workers | Where-Object { $_.Gpu -and -not $_.Proc.HasExited }).Count -gt 0
             if ($ownGpu -or -not (Test-LockFree (Get-GpuLockPath))) { continue }
         }
-        # Мало місця під ще одну робочу копію — позначки лишаються в черзі до наступного проходу.
-        if (-not (Test-DiskRoom (Join-Path $WorkDir 'w') $started)) { break }
         $id = New-Id
-        if (-not (New-Claim $m $id)) { continue }
+        # Мало місця під ще одну робочу копію (з урахуванням копій, що створюються в інших процесах і проходах) —
+        # позначки лишаються в черзі.
+        if (-not (Reserve-DiskRoom (Join-Path $WorkDir 'w') $id)) { break }
+        if (-not (New-Claim $m $id)) { Release-DiskRoom $id; continue }
         # Усе між claim і STARTED — під одним обліком відмов (retakes, MaxRetakes, CRASH на межі), 10162/10182.
         try {
             $dir = Join-Path (Join-Path $WorkDir 'runs') $id
@@ -816,6 +817,7 @@ function Start-Markers($Workers) {
             [void]$Workers.Add((Start-Worker $job $dir))
         } catch {
             Write-Log "позначка $($m.Name): процес наряду не запущено — $(Format-ErrorDetail $_)"
+            Release-DiskRoom $id
             Close-FailedStart $m $id (Get-StatePath (Get-MarkerKey $m)) -Storage:(Test-StorageFault $_.Exception)
             continue
         }
@@ -850,6 +852,7 @@ function Invoke-Worker {
         $M = [pscustomobject]@{ Ref = $job.ref; Name = $job.name; Sha = $job.sha; Time = [long]$job.time; Slug = $job.slug; Model = $job.model
             N = [string]$job.n; Cond = [string]$job.cond; Claude = [string]$job.claude; Effort = [string]$job.effort; Gpu = [bool]$job.gpu }
         $script:WorkTree = Enter-WorkTree $wtPath 'refs/remotes/origin/main'
+        Release-DiskRoom ([string]$job.id)
         $wt = $script:WorkTree
         Reset-WorkTree $wt
         [void](Invoke-Git @('checkout', '-q', '-f', '--detach', 'refs/remotes/origin/main') -Dir $wt)
@@ -867,6 +870,7 @@ function Invoke-Worker {
         if ($script:WorkTree) { [void](Invoke-Git @('checkout', '-q', '--detach') -AllowFail -Dir $script:WorkTree) }
         # Прогін скінчився (будь-яким кодом): тека задачі й копія слота — геть, у теці прогону — журнал і стан.
         $env:TEMP = $tempWas; $env:TMP = $tmpWas
+        Release-DiskRoom ([string]$job.id)
         Clear-TaskDir $taskDir
         Remove-WorkTree $wtPath $clone
         Clear-RunDir ([string]$job.dir)
