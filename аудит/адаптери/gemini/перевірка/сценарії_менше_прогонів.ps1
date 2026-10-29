@@ -23,6 +23,8 @@ try {
     Scenario '1а фактична модель' {
         foreach ($model in @('gpt-6.1-sol-high','gemini-3.8-flash-high','cc-claude-opus-5-5-high','невідома')) {
             $pull = [pscustomobject]@{head=@{ref='gemini/виконавець';sha=$sha}}
+            # Файл моделі попередньої ітерації (та сама гілка й SHA) не має підміняти невідому модель.
+            Remove-Item -LiteralPath "$WorkDir/engine-models" -Recurse -Force -ErrorAction SilentlyContinue
             Save-DraftRequest $pull.head.ref $sha $model
             $models = @(Get-ReviewModels $pull $config)
             $expected = if ($model -like 'gpt-*' -or $model -like 'cc-*') { $config.agy } else { $config.codex }

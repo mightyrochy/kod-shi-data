@@ -103,12 +103,12 @@ try {
     $script:Pulls = @((Pull 32 'claude/квота-b' $head)); Invoke-WrapperChain
     Check 'автор Claude, agy на квоті: Codex' (@(SlugMarkers "автоперевірка-32-$head").Count -eq 1 -and @(SlugMarkers "автоперевірка-32-$head")[0] -match '/gpt-6\.1-sol-high/1/p2$')
     $script:Pulls = @((Pull 33 'codex/квота-c' $head)); Invoke-WrapperChain
-    Check 'автор GPT, agy на квоті: рядок хмарному Claude, позначки нема' (@(SlugMarkers "автоперевірка-33-$head").Count -eq 0 -and (CloudLines 33).Count -eq 1 -and (CloudLines 33)[0].EndsWith($head))
+    Check 'автор GPT, agy на квоті: рядок хмарному Claude, позначки нема' (@(SlugMarkers "автоперевірка-33-$head").Count -eq 0 -and @(CloudLines 33).Count -eq 1 -and @(CloudLines 33)[0].EndsWith($head))
     Invoke-WrapperChain
-    Check 'повтор не дублює рядок хмарному Claude' ((CloudLines 33).Count -eq 1)
+    Check 'повтор не дублює рядок хмарному Claude' (@(CloudLines 33).Count -eq 1)
     SetCodex $true
     $script:Pulls = @((Pull 34 'gemini/квота-d' $head)); Invoke-WrapperChain
-    Check 'автор Gemini, Codex на квоті: хмарний Claude' (@(SlugMarkers "автоперевірка-34-$head").Count -eq 0 -and (CloudLines 34).Count -eq 1)
+    Check 'автор Gemini, Codex на квоті: хмарний Claude' (@(SlugMarkers "автоперевірка-34-$head").Count -eq 0 -and @(CloudLines 34).Count -eq 1)
     Check 'жодної позначки cc- для перевірки' (@(Markers | Where-Object { $_ -match 'автоперевірка-.*/cc-' }).Count -eq 0)
     $head = Merge 'квота-3.txt' '3'
     $script:Pulls = @((Pull 35 'claude/квота-e' $head)); Invoke-WrapperChain
@@ -127,9 +127,9 @@ try {
     SetCodex $false
     $head = Merge 'квота-4б.txt' '4б'
     $script:Pulls = @((Pull 38 'gemini/квота-h' $head)); Invoke-WrapperChain
-    Check 'до квоти: позначка Codex роботи Gemini' (@(SlugMarkers "автоперевірка-38-$head").Count -eq 1 -and (CloudLines 38).Count -eq 0)
+    Check 'до квоти: позначка Codex роботи Gemini' (@(SlugMarkers "автоперевірка-38-$head").Count -eq 1 -and @(CloudLines 38).Count -eq 0)
     SetCodex $true; Invoke-WrapperChain; Invoke-WrapperChain
-    Check 'Codex вичерпано: позначку знято, один рядок хмарному Claude' (@(SlugMarkers "автоперевірка-38-$head").Count -eq 0 -and (CloudLines 38).Count -eq 1)
+    Check 'Codex вичерпано: позначку знято, один рядок хмарному Claude' (@(SlugMarkers "автоперевірка-38-$head").Count -eq 0 -and @(CloudLines 38).Count -eq 1)
     SetCodex $false; Invoke-WrapperChain
     Check 'відновлення Codex не ставить другої перевірки' (@(SlugMarkers "автоперевірка-38-$head").Count -eq 0)
     # Звіт, що вже опубліковано, інший рушій не повторює.
