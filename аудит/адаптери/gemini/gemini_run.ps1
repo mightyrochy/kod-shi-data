@@ -1251,8 +1251,10 @@ function Main {
     if ($null -eq $lockFile) { return 0 }
     try {
         $workers = New-Object System.Collections.ArrayList
-        $first = $true
+        $first = $true; $clean = $true
         while ($true) {
+            $ver = Get-VersionSwitch
+            if ($ver) { Write-VersionSwitch $ver; break }
             $iso = Test-Isolation
             $script:CurrentIsolation = $iso
             if ($iso) {
@@ -1274,7 +1276,8 @@ function Main {
                         '+refs/heads/gemini/*:refs/remotes/origin/gemini/*',
                         '+refs/heads/gemini-queue/*:refs/remotes/origin/gemini-queue/*'))
                 $script:Limits = Get-Limits
-                if ($first) { Resume-Interrupted; Clear-TaskCopies (Join-Path $RunsDir 'w') @('--branches', '--remotes') }
+                # Перервані й накопичене — після першого успішного fetch: прохід, що впав на fetch, їх не знімає.
+                if ($clean) { Resume-Interrupted; Clear-TaskCopies (Join-Path $RunsDir 'w') @('--branches', '--remotes'); $clean = $false }
                 Clear-OrphanClaims $RunsDir
                 $script:Agy = Find-EngineExe $AgyExe
                 if ($script:Agy) { [void](Read-Usage) }

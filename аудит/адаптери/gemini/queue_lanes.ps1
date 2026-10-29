@@ -28,6 +28,8 @@ $script:CondPattern = '^(?:p[0-9]|d20[0-9]{10}|gpu)(?:-(?:p[0-9]|d20[0-9]{10}|gp
 $script:LanesPath = 'аудит/адаптери/gemini/смуги.json'
 $script:Utf8 = New-Object System.Text.UTF8Encoding($false)
 $script:OnWindows = ($PSVersionTable.PSEdition -ne 'Core') -or [bool](Get-Variable IsWindows -ValueOnly -ErrorAction SilentlyContinue)
+# Тека версії цього процесу: після самооновлення — `<корінь>\versions\<SHA40>`, поряд із коренем — `active.txt`.
+$script:VersionDir = $PSScriptRoot
 
 # Кількість слотів задає смуги.json; 64 — захист від помилки в даних, не виміряна межа ноутбука.
 # Решта меж також під хешем; значення поза ними обрізаються. Параметр задачі власника не обрізаємо.
@@ -564,6 +566,32 @@ function Get-MarkerKind([string]$Slug) {
     if ($Slug -cmatch '^pachka-') { return 'пачка' }
     if ($Slug -ceq 'ВИМКНИ-НОУТБУК') { return 'вимкнення' }
     'наряд'
+}
+
+# --- версія обгортки ------------------------------------------------------------------------------------------------
+
+function Get-VersionSwitch {
+    <# Самооновлення перемкнуло `active.txt` на іншу версію, а цей довгий процес іде зі старої теки: повертає
+    «<стара8> → <нова8>», інакше ''. Запуск не з `versions\<SHA40>` (клон, стенд без підміни) чи непрочитаний,
+    кривий pointer або нова тека, якої нема, — ''. Головний цикл тоді чисто виходить між проходами: свої наряди
+    доробляють окремими процесами під замками слотів, нову версію запускає планувальник. #>
+    $dir = [string]$script:VersionDir
+    if (-not $dir) { return '' }
+    $leaf = Split-Path -Leaf $dir; $versions = Split-Path -Parent $dir
+    if ($leaf -cnotmatch '^[0-9a-f]{40}$' -or -not $versions -or (Split-Path -Leaf $versions) -cne 'versions') { return '' }
+    $active = ''
+    try { $active = [System.IO.File]::ReadAllText((Join-Path (Split-Path -Parent $versions) 'active.txt')).Trim() } catch { return '' }
+    if ($active -cnotmatch '^[0-9a-f]{40}$' -or $active -ceq $leaf) { return '' }
+    if (-not (Test-Path -LiteralPath (Join-Path $versions $active) -PathType Container)) { return '' }
+    "$($leaf.Substring(0, 8)) → $($active.Substring(0, 8))"
+}
+
+function Write-VersionSwitch([string]$Switch) {
+    <# Журнал і `state/version.txt` (його показує стан ноутбука): «<час UTC> <стара> → <нова>». #>
+    Write-Log "версія: $Switch — головний процес виходить, нову запустить планувальник"
+    if ($script:StateDir) {
+        try { Write-FileAtomic (Join-Path $script:StateDir 'version.txt') ("$((Get-Date).ToUniversalTime().ToString('yyyy-MM-ddTHH:mm:ssZ')) $Switch") } catch { $null = $_ }
+    }
 }
 
 # --- слоти, GPU, процес наряду -------------------------------------------------------------------------------------

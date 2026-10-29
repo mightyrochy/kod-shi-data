@@ -381,6 +381,9 @@ function Get-StatusBody {
         $who = @($(if ($unsrc -ccontains $f) { 'claude-run' }), $(if ($g.Unsourced -ccontains $f) { 'gemini-run' }) | Where-Object { $_ })
         $lines += "- межа без джерела: $f ($($who -join ', '))"
     }
+    # Остання зміна версії головного процесу (Write-VersionSwitch старого процесу): нова версія справді взялась.
+    $vt = ''; try { $vt = [System.IO.File]::ReadAllText((Join-Path $script:StateDir 'version.txt'), $script:Utf8).Trim() } catch { $null = $_ }
+    if ($vt -cmatch '^([0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z) ([0-9a-f]{8}) → ([0-9a-f]{8})\z') { $lines += "- версія: $($Matches[2]) → $($Matches[3]) ($($Matches[1]))" }
     $cq = Read-ClaudeQuota
     try { $lines += @(Get-HealthLines $g $cq) } catch { Write-Log "здоров'я: $($_.Exception.Message)"; $lines += @('', "### Здоров'я", '', '- не виміряно (збій — claude-run.log)') }
     $lines += @('', '### Квота (UTC)', '', '| смуга · група | вікно | залишок | скидання | зчитано |', '|---|---|---|---|---|')
@@ -981,15 +984,19 @@ function Main {
         $script:FreshBoot = ($boot -ne $prev)
         Resume-Interrupted
         $script:Workers = New-Object System.Collections.ArrayList
-        $first = $true
+        $first = $true; $clean = $true; $ver = ''
         while ($true) {
+            $ver = Get-VersionSwitch
+            if ($ver) { Write-VersionSwitch $ver; break }
             $started = 0; $off = $null
             try {
                 [void](Invoke-Git @('fetch', '-q', '--prune', '--no-tags', 'origin',
                         '+refs/heads/main:refs/remotes/origin/main',
                         '+refs/heads/gemini-queue/*:refs/remotes/origin/gemini-queue/*') -TimeoutMinutes 15)
                 $script:Limits = Get-Limits
-                if ($first) { Clear-TaskCopies (Join-Path $WorkDir 'w') @('--remotes') }
+                # Накопичене — після першого успішного fetch (до нього origin/* застарілі): прохід, що впав на
+                # fetch, прибирання не знімає.
+                if ($clean) { Clear-TaskCopies (Join-Path $WorkDir 'w') @('--remotes'); $clean = $false }
                 Clear-OrphanClaims (Join-Path $WorkDir 'runs')
                 $r = Start-Markers $script:Workers
                 $started = $r[0]; $off = $r[1]
@@ -1002,7 +1009,7 @@ function Main {
             if ($script:Workers.Count -eq 0 -and $started -eq 0) { break }
             Wait-Workers $script:Workers (Get-Limit $script:Limits 'PollMinutes' 'poll_minutes')
         }
-        $script:Phase = 'чекає позначки'
+        $script:Phase = $(if ($ver) { "оновлення версії: $ver" } else { 'чекає позначки' })
         Update-Status -Force
         0
     } catch {

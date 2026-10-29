@@ -144,6 +144,80 @@ try {
         $body = Get-StatusBody
         Check '4 #1856: розділ «Аварії однієї причини» з лічбою 12 і всіма гілками' ($body.Contains('### Аварії однієї причини') -and $body -cmatch '\| CRASH \| 12 \| claude/наряд-1, .*claude/наряд-12 \|')
     }
+
+    # --- 5–6: головний цикл claude-run (Main) зі справжнім Get-VersionSwitch і прибиранням; підмінено git, позначки, ---
+    # --- чекання й стан ----------------------------------------------------------------------------------------------
+    $old = 'a' * 40; $new = 'b' * 40
+    $vroot = "$tmp/wrapper"
+    foreach ($v in @($old, $new)) { [void][IO.Directory]::CreateDirectory("$vroot/versions/$v") }
+    function Use-Main([string]$Dir) {
+        <# claude_run.ps1 у теці $Dir з підмінами всього, що виходить за процес. #>
+        . (Join-Path $SourceDir 'claude_run.ps1') -WorkDir $Dir -RepoDir $tmp -OutboxDir "$tmp/cbox" -PublishDir "$tmp/pub" -GeminiOutDir "$tmp/gout" -LaneDir "$tmp/lanes" -TmpDir "$tmp/ctmp" -NoStatus
+        $script:Fetches = 0; $script:FailFetch = 0; $script:Starts = 0; $script:Cleans = 0; $script:Waits = 0
+        $script:OnStart = {}; $script:Fake = $null
+        function Test-OwnerUser { $true }
+        function Get-BootStamp { 'boot' }
+        function Resume-Interrupted { }
+        function Clear-OrphanClaims { }
+        function Update-Status { param([switch]$Force) }
+        function Get-Limits { $null }
+        function Get-Limit { 2 }
+        function Invoke-Git { param([string[]]$GitArgs, [switch]$AllowFail, [double]$TimeoutMinutes = 10, [string]$Dir = '')
+            if ($GitArgs[0] -eq 'fetch') {
+                $script:Fetches++
+                if ($script:Fetches -le $script:FailFetch) { throw 'fatal: unable to access github.com' }
+            }
+            [pscustomobject]@{ Code = 0; Out = $RepoUrl; Err = '' } }
+        function Clear-TaskCopies { $script:Cleans++ }
+        function Start-Markers { $script:Starts++; & $script:OnStart; @(0, $null) }
+        function Wait-Workers { $script:Waits++; if ($script:Waits -ge 2 -and $null -ne $script:Fake) { $script:Fake.Proc.HasExited = $true } }
+    }
+
+    Scenario '5 нова версія в довгому процесі' {
+        . Use-Main "$tmp/m5"
+        [IO.File]::WriteAllText("$vroot/active.txt", $old, $utf)
+        $script:VersionDir = "$vroot/versions/$old"
+        Check '5 версія та сама — перемикання нема' ((Get-VersionSwitch) -eq '')
+        $script:VersionDir = $SourceDir
+        [IO.File]::WriteAllText("$vroot/active.txt", $new, $utf)
+        Check '5 запуск не з versions\<SHA> (клон) — перемикання нема' ((Get-VersionSwitch) -eq '')
+        $script:VersionDir = "$vroot/versions/$old"
+        [IO.File]::WriteAllText("$vroot/active.txt", 'c' * 40, $utf)
+        Check '5 pointer на теку, якої нема, — перемикання нема' ((Get-VersionSwitch) -eq '')
+        [IO.File]::WriteAllText("$vroot/active.txt", 'кривий', $utf)
+        Check '5 кривий pointer — перемикання нема' ((Get-VersionSwitch) -eq '')
+        # Живий 29.10: самооновлення о 13:14 записало новий active.txt, а claude-run з 08:34 далі брав позначки старою
+        # версією. Тут: перший прохід веде наряд (живий процес), під час нього pointer перемикається.
+        [IO.File]::WriteAllText("$vroot/active.txt", $old, $utf)
+        $script:Fake = [pscustomobject]@{ Slot = 'claude-1'; Slug = 'x'; Gpu = $false; Marker = 'x'; Proc = [pscustomobject]@{ HasExited = $false } }
+        $script:OnStart = { if ($script:Starts -eq 1) { [void]$script:Workers.Add($script:Fake); [IO.File]::WriteAllText("$vroot/active.txt", $new, $utf) } }
+        $rc = @(Main)[-1]
+        Check "5 після перемикання позначок старою версією не взято: проходів $($script:Starts) (ДО — 2: другий прохід старим кодом, ПІСЛЯ — 1)" ($script:Starts -eq 1)
+        Check "5 головний процес чисто вийшов (код $rc), живий наряд не зупинено — доробляє під своїм замком" ($rc -eq 0 -and -not $script:Fake.Proc.HasExited)
+        $log = [IO.File]::ReadAllText("$tmp/m5/claude-run.log", $utf)
+        Check '5 журнал: «версія: aaaaaaaa → bbbbbbbb»' ($log.Contains('версія: aaaaaaaa → bbbbbbbb'))
+        function Get-TaskRows { @() }
+        function Get-Markers { @() }
+        $body = Get-StatusBody
+        Check '5 #1856: рядок «- версія: aaaaaaaa → bbbbbbbb (<UTC>)»' ($body -cmatch '(?m)^- версія: aaaaaaaa → bbbbbbbb \(20[0-9]{2}-[0-9]{2}-[0-9]{2}T[0-9:]{8}Z\)$')
+    }
+
+    Scenario '6 прибирання накопиченого після збою fetch' {
+        . Use-Main "$tmp/m6"
+        $script:VersionDir = $SourceDir
+        # Живий 29.10 13:17–13:24: кожен прохід — «unable to access github.com».
+        $script:FailFetch = 1
+        $rc = @(Main)[-1]
+        Check "6 перший прохід упав на fetch: прибирання нема (origin/* застарілі), процес без нарядів вийшов (код $rc)" ($script:Fetches -eq 1 -and $script:Cleans -eq 0 -and $rc -eq 0)
+        $rc = @(Main)[-1]
+        Check "6 наступний запуск, fetch успішний: прибирань $($script:Cleans) (1), код $rc" ($script:Fetches -eq 2 -and $script:Cleans -eq 1 -and $rc -eq 0)
+        # Процес із живим нарядом: fetch падає на другому проході — прибирання першого проходу не повторюється.
+        $script:Fake = [pscustomobject]@{ Slot = 'claude-1'; Slug = 'x'; Gpu = $false; Marker = 'x'; Proc = [pscustomobject]@{ HasExited = $false } }
+        $script:OnStart = { if ($script:Starts -eq 1) { [void]$script:Workers.Add($script:Fake) } }
+        $script:Fetches = 0; $script:Cleans = 0; $script:Starts = 0; $script:Waits = 0; $script:FailFetch = 0
+        $rc = @(Main)[-1]
+        Check "6 довгий процес: прибирань $($script:Cleans) за $($script:Fetches) fetch (1 — на першому успішному)" ($script:Fetches -ge 3 -and $script:Cleans -eq 1 -and $rc -eq 0)
+    }
 } finally {
     Remove-Item -LiteralPath $tmp -Recurse -Force -ErrorAction SilentlyContinue
 }
