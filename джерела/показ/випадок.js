@@ -854,7 +854,7 @@ function малюватиЧатП(){
     фото.forEach(ф=>{ const і = ел('img'); і.src = 'data:' + (ф.тип || 'image/jpeg') + ';base64,' + ф.дані;
                       і.alt = 'фото речі'; і.dataset.фото = ф.ід; ряд.appendChild(і); });
     б.appendChild(ряд);
-    if (String(р.текст || '').trim()) б.appendChild(document.createTextNode(р.текст));
+    if (String(р.текст || '').trim()) б.appendChild(document.createTextNode(р.хто === 'ші' ? текстЖінціП(null, р.текст, 'without_text', своїСловаЧатуП()) : р.текст));
     с.appendChild(б);
   });
   const є = ЧАТ_П.length > 0, дім = (РЕЖИМ === 'сценарій');
