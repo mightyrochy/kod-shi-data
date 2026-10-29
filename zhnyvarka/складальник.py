@@ -171,8 +171,11 @@ def писати_записи(шапка, записи, шлях=ЗАПИСИ):
 
 
 def читати_записи(шлях=ЗАПИСИ):
-    with gzip.open(шлях, "rb") as f:
-        рядки = [json.loads(р) for р in f.read().decode("utf-8").split("\n") if р]
+    """Читає схему v1 спільним читачем JSONL, зберігаючи цілі сусідні записи."""
+    from журнал_карток import прочитати
+    рядки, _ = прочитати(шлях, ключ=None)
+    if not рядки or рядки[0].get("схема") != СХЕМА or "початок" not in рядки[0]:
+        raise ValueError("CATALOG_HEADER_INVALID")
     return рядки[0], рядки[1:]
 
 
