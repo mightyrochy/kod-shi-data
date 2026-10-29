@@ -1,0 +1,57 @@
+# Храповик кореня: число місць кореня (паспорт `аудит/корені/<корінь>.md`, рядок `прилад:`) на голові не вище, ніж
+# на базі; прилад чи його `база:` — окремим PR від коду `джерела/` і `показ/`. Формат паспорта — `аудит/КОД.md`.
+# Окремий workflow, а не job `zbirka.yml`: push у main там іде лише за `paths` (паспорт, наряд чи дошка його не
+# будять), а тут — кожен PR і кожен push у main; легкий checkout глибини 1, без збірки показу.
+name: храповик кореня
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: храповик-кореня-${{ github.event_name == 'pull_request' && github.ref || github.sha }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+jobs:
+  khrapovyk:
+    permissions:
+      contents: read
+    name: храповик кореня
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
+        with:
+          persist-credentials: false
+          fetch-depth: 2
+
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5.6.0
+        with:
+          python-version: '3.11'
+
+      - name: стенд храповика (випадки мірила)
+        run: |
+          set -o pipefail
+          python3 джерела/прилади/стенд_храповика_кореня.py | tee -a "$GITHUB_STEP_SUMMARY"
+
+      # PR — коміт злиття проти свого першого батька (той `main`, з яким злито; глибини 2 досить): `base.sha` давній,
+      # якщо PR влив свіжий `main`, і дав би чужі файли (дошка 11353). Не злиття — `base.sha`. Push — проти
+      # `event.before`. Ручний запуск бази не має: прилад друкує пропуск (дошка 10720).
+      - name: храповик кореня
+        env:
+          BASE: ${{ github.event_name == 'pull_request' && github.event.pull_request.base.sha || github.event.before }}
+        run: |
+          if [ "${{ github.event_name }}" = pull_request ]; then
+            python3 джерела/прилади/храповик_кореня.py --пр --база "${BASE}"
+            exit
+          fi
+          if [ -n "${BASE//0/}" ]; then
+            git fetch --no-tags --depth=1 origin "${BASE}" || echo "базу ${BASE} не отримано з origin"
+          fi
+          python3 джерела/прилади/храповик_кореня.py --база "${BASE}"
