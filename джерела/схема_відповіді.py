@@ -182,6 +182,12 @@ def _розбір_outfit_review(відповідь):
         відповідь_як="json",
         розбір=_розбір_outfit_review,
     ),
+    "PORTRAIT_COLOURS": СхемаВідповіді(
+        ід="portrait_colours",
+        назва="PORTRAIT_COLOURS",
+        відповідь_як="json",
+        схема_протоколу="PORTRAIT_COLOURS",
+    ),
 }
 
 
