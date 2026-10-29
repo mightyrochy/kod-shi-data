@@ -53,7 +53,8 @@ try {
         function Select-Engine($M,[long]$After) { [pscustomobject]@{Engine=@{Name=$lane;Model='стенд';Effort='high'};Model=$M.Model;Quota=@{Blocked=$false;Known=$false;Group='';Left=0}} }
         function Get-FreeSlot { if ($script:ReadySlot) { 'стенд-1' } }
         function Test-SlugBusy { $false }
-        function Start-Worker($Job,[string]$Dir) { [void]$script:Jobs.Add($Job); [pscustomobject]@{Slug=$Job.slug;Proc=@{HasExited=$true};Gpu=$false} }
+        # Облік місця знімає та сама Release-DiskRoom, що й процес наряду після створення копії (Invoke-Worker), без копії логіки.
+        function Start-Worker($Job,[string]$Dir) { Release-DiskRoom ([string]$Job.id); [void]$script:Jobs.Add($Job); [pscustomobject]@{Slug=$Job.slug;Proc=@{HasExited=$true};Gpu=$false} }
         function Get-RefSha { $head }
         function Invoke-Git { [pscustomobject]@{Code=0;Out='Наряд стенда';Err=''} }
         function Reset-WorkTree { }
