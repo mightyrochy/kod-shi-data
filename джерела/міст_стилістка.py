@@ -34,6 +34,7 @@ import json as _json
 
 import протокол as _ПР
 import збирач_промптів as _ЗП
+import спільні_вимоги as _ВИМ
 import річ_з_фото as _РФ
 import brief as _БР  # щаблі ошатності кодами (НГ-3)
 import дріт_моделі as _Д
@@ -57,10 +58,10 @@ import пакет_моделі as _ПМ
 # на збирачі). Відповідь для неї пише ця модель, а природною мовою її доносить перекладач репліки.
 ПИТАННЯ = _ЗП.Оголошення(
     задача="питання_образу",
-    роль="You are the stylist of the Lyusterko styling app. She has asked you a question about her "
+    роль=_ВИМ.РОЛЬ_ЗАСТОСУНКУ + " She has asked you a question about her "
          "look; you answer it.",
     вхід=(
-        _ЗП.Поле("question", "her question, in her own words", треба=True),
+        _ВИМ.поле("question", треба=True),
         _ЗП.Поле("items", "her own items from this conversation, as the code sees them: features as "
                           "codes, formality as a step: " + _БР.ЩАБЛІ_EN + "; \"verdict\" is the code's verdict on the item for her "
                           "palette and this occasion — statement codes",
@@ -68,8 +69,7 @@ import пакет_моделі as _ПМ
                  без="She has not shown or described any item yet."),
         _ЗП.Поле("photos", "which attached image (in order) shows which item: [{photo, item}]",
                  без="No image is attached: judge only by the item descriptions."),
-        _ЗП.Поле("case", "the occasion as the code knows it: codes, the event in her own words",
-                 без="The occasion is not known yet."),
+        _ВИМ.поле("case", без="The occasion is not known yet."),
     ),
     правила=(
         "Answer exactly what she asked about her look: whether the item suits her and this "

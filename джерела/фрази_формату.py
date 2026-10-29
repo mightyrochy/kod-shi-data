@@ -31,11 +31,13 @@ def кінець_відповіді_en(після=None):
             + ("." if після else " — write nothing more."))
 
 
-def наприкінці_en(після=None):
-    """Останній рядок промпту, коли схема відповіді стоїть останньою (`скелет_наприкінці`)."""
+def наприкінці_en(після=None, обгортка=False):
+    """Останній рядок промпту, коли схема відповіді стоїть останньою (`скелет_наприкінці`). `обгортка` — додати «не
+    обгортай іншим обʼєктом»: лише там, де модель загортала відповідь у {"answer": {…}} (ремонт, РЕМОНТ-3)."""
     return ("Now write your answer: one object of the form above, from {\"version\" to the brace that closes it"
             + (" right after «%s»" % після if після else "")
-            + ", not wrapped in another object. The answer is over at that brace.")
+            + (", not wrapped in another object" if обгортка else "")
+            + ". The answer is over at that brace.")
 
 
 def відповідь_за_схемою_en(початок, лише=None):

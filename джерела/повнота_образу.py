@@ -12,6 +12,7 @@ import re as _re
 import внутрішня_мова as _ВМ
 import протокол as _ПР
 import фрази_формату as _ФФ
+import спільні_вимоги as _ВИМ
 import збирач_промптів as _ЗП
 from пакет_моделі import ПАКУВАТИ_ІНДЕКСОМ, номери_речей, скелет_схеми, річ_пулу as _річ_пулу, ПОЛЯ_МЕЖІ_НА_СЛОТ, \
     РЯДОК_ЛИШЕ_НОМЕР
@@ -569,29 +570,20 @@ def промпт_вибору(образи, випадок=None, без_фото
     роль="You are the stylist. From the outfits you put together, you choose one for her.",
     вхід=(
         _ЗП.ПОЛЕ_ВІДБОРУ,
-        _ЗП.Поле("case", "her case: the occasion and event, her «intent» and «goal», her words, wishes, mood "
-                         "and refusals",
-                 як="this is what she wants; the choice answers it"),
+        _ВИМ.поле("case", як="this is what she wants; the choice answers it"),
         *ПОЛЯ_МЕЖІ_НА_СЛОТ,
-        _ЗП.Поле("case.goal_quote", "her own words behind «goal»",
-                 як="they say more than the code"),
-        _ЗП.Поле("case.intent_quote", "her own words behind «intent»",
-                 як="they say more than the code"),
-        _ЗП.Поле("case.goal_zones", "with goal conceal: the body zones she wants to draw the eye away from",
-                 як="the goal is about these zones only, not about the whole look"),
-        _ЗП.Поле("case.her_words", "what she asked for in her own words"),
-        _ЗП.Поле("case.her_other_words", "the rest of what she said, which no field of «case» carries",
-                 як="it is part of her case"),
-        _ЗП.Поле("case.language_model_note", "the language model's note on her words about the event, "
-                                             "when they are hard to read without context",
-                 як="it explains her words and does not replace them: where they differ, her words win"),
+        _ВИМ.поле("case.goal_quote", як="they say more than the code"),
+        _ВИМ.поле("case.intent_quote", як="they say more than the code"),
+        _ВИМ.поле("case.goal_zones", як="the goal is about these zones only, not about the whole look"),
+        _ВИМ.поле("case.her_words"),
+        _ВИМ.поле("case.her_other_words"),
+        _ВИМ.поле("case.language_model_note"),
         _ЗП.Поле("case.palette_scheme", "the palette scheme she chose herself on the palette screen: «scheme», "
                                         "and «families» — its colour families, each meant for its own large item",
                  як="her explicit choice: the code's remarks about this scheme carry her wish, not the code's"),
-        _ЗП.Поле("day", "her day as facts"),
+        _ВИМ.поле("day"),
         _ЗП.ПОЛЕ_КАНДИДАТІВ,
-        _ЗП.Поле("item_keys", "what the keys in «candidates» mean, and defaults for omitted values",
-                 як="read every item by these keys; restore every absent key that has an `absent =` default"),
+        _ВИМ.поле("item_keys"),
         _ЗП.Поле("verdict", "your outfits and what the code noticed in each: «your_outfit» — its item numbers, caption "
                             "and «day» (your sentence about her day in it); «structure» — blockers; «checklist» — "
                             "by area, the points the code noticed as not met; each point is a code defined in "
@@ -608,15 +600,14 @@ def промпт_вибору(образи, випадок=None, без_фото
                                     "\"statement_codes\"): for each code, every outfit it stands on — «outfit», "
                                     "«id» of the remark, «items», «values»; «register» «gate» — a gate",
                  як="a remark that stands on every outfit does not tell them apart"),
-        _ЗП.Поле("set", "the check of the whole set: variety, hero, coordination"),
+        _ВИМ.поле("set"),
         # опора образу, якого ремонт прибрав цілком, — на рівні набору
         _ЗП.Поле("set.lost_supports", "what an outfit you dropped or replaced whole in your repair stood on: "
                                       "«outfit» — its id before the repair, «statements» (codes defined in "
                                       "\"statement_codes\") and the «items» that carried it",
                  як="information, not a score: weigh what the set lost against what it gained"),
-        _ЗП.Поле("register", "her style: the leading register and the ones next to it"),
-        _ЗП.Поле("she_refuses", "what she refused",
-                 як="do not choose an outfit that breaks it while there is one that does not"),
+        _ВИМ.поле("register"),
+        _ВИМ.поле("she_refuses", як="do not choose an outfit that breaks it while there is one that does not"),
     ),
     правила=(
         "Choose ONE outfit — the one you vouch for before her: the one that best serves her intent as you "
@@ -1506,10 +1497,38 @@ def повнота_набору(вердикт, кандидати=None, кат�
 # (`міст_відповіді._дріт_повноти`), тож і поля його ті самі, що в `ВИБІР` (як у `вердикт_моделі.РЕМОНТ`). Доти тут
 # стояло «her occasion in her and the code's words» над рядком паспорта, який код пише українською.
 ВИПАДОК_ПОВНОТИ = (
-    _ЗП.Поле("case", "her case in codes: the occasion and event, her «intent» and «goal», her words, wishes, mood "
-                     "and refusals"),
+    _ВИМ.поле("case"),
     *[п for п in ВИБІР.вхід if п.шлях.startswith("case.")],
 )
+
+
+# Що спільне двох викликів повноти (після вибору — один образ, до вибору — усі): день, таблиця речей, вердикт із
+# блокерами, вітрина, відмови — і правила ходів «add»/«keep», і форма ходу. Раз тут, а не копією в кожному.
+_ПОЛЯ_БЛОКЕРІВ = (
+    _ВИМ.поле("day"),
+    _ЗП.ПОЛЕ_КАНДИДАТІВ,
+    _ВИМ.поле("item_keys"),
+    _ЗП.Поле("verdict", "your outfits and the code's check: «your_outfit» — item numbers "
+                        "and your caption; «structure.blockers» — what keeps the outfit from "
+                        "being shown, each under its «id»: a missing kind of item, with «options» — the "
+                        "«n» of the «showcase» items that fill it; or several items of one kind, with "
+                        "«items»", треба=True),
+    _ВИМ.поле("showcase"),
+)
+_ПОЛЕ_ВІДМОВ_ХОДУ = _ВИМ.поле("she_refuses", як="do not add an item that breaks it")
+_ПРАВИЛА_ХОДІВ = (
+    "A blocker with «options»: put in «add» the item of its «options» that suits this outfit best — one "
+    "item; for a missing top and bottom, a dress, or a top and a bottom.",
+    "A blocker with «items»: put in «keep» the one item that suits the outfit best; the code removes "
+    "the others.",
+    "You only add and keep: the other items, the caption and the day of the outfit stay as they are, "
+    "and the code keeps them.",
+)
+_ВИХІД_ХОДІВ = {
+    "fixes[].blocker": "«id» of the blocker, as in «structure.blockers»",
+    "fixes[].add": "«n» of the item you add, alone",
+    "fixes[].keep": "«n» of the item you keep, alone",
+}
 
 
 # доти англійський текст стояв в українському шаблоні над українськими ключами («структура.блокери»,
@@ -1528,40 +1547,22 @@ def повнота_набору(вердикт, кандидати=None, кат�
           "can be shown yet: each has a blocker in «structure». You finish one of them."),
     вхід=(
         *ВИПАДОК_ПОВНОТИ,
-        _ЗП.Поле("day", "her day as facts"),
-        _ЗП.ПОЛЕ_КАНДИДАТІВ,
-        _ЗП.Поле("item_keys", "what the keys in «candidates» mean, and defaults for omitted values",
-                 як="read every item by these keys; restore every absent key that has an `absent =` default"),
-        _ЗП.Поле("verdict", "your outfits and the code's check: «your_outfit» — item numbers "
-                            "and your caption; «structure.blockers» — what keeps the outfit from "
-                            "being shown, each under its «id»: a missing kind of item, with «options» — the "
-                            "«n» of the «showcase» items that fill it; or several items of one kind, with "
-                            "«items»", треба=True),
-        _ЗП.Поле("showcase", "item numbers that can fill what is missing"),
+        *_ПОЛЯ_БЛОКЕРІВ,
         _ЗП.Поле("still_missing", "your previous answer to this request and the blockers it still has: "
                                   "«empty_kinds» — missing kinds with the showcase items that fill them, "
                                   "«same_kind» — items of one kind",
                  як="clear exactly these blockers"),
-        _ЗП.Поле("she_refuses", "what she refused", як="do not add an item that breaks it"),
+        _ПОЛЕ_ВІДМОВ_ХОДУ,
     ),
     правила=(
         "Choose ONE outfit — the one you would stand behind for her — and answer EVERY blocker of it with "
         "«options» or «items»: one entry in «fixes» under the blocker's «id».",
-        "A blocker with «options»: put in «add» the item of its «options» that suits this outfit best — one "
-        "item; for a missing top and bottom, a dress, or a top and a bottom.",
-        "A blocker with «items»: put in «keep» the one item that suits the outfit best; the code removes "
-        "the others.",
-        "You only add and keep: the other items, the caption and the day of the outfit stay as they are, "
-        "and the code keeps them.",
+        *_ПРАВИЛА_ХОДІВ,
         "Answer the blockers of that one outfit only.",
         РЯДОК_ЛИШЕ_НОМЕР,
     ),
     вихід="ДОПОВНЕННЯ_V1",
-    поля_виходу={
-        "fixes[].blocker": "«id» of the blocker, as in «structure.blockers»",
-        "fixes[].add": "«n» of the item you add, alone",
-        "fixes[].keep": "«n» of the item you keep, alone",
-    },
+    поля_виходу=_ВИХІД_ХОДІВ,
     межі=("лише_вхід",),
     мова_промпту="en",
 )
@@ -1588,35 +1589,17 @@ def повнота_набору(вердикт, кандидати=None, кат�
           "before she chooses."),
     вхід=(
         *ВИПАДОК_ПОВНОТИ,
-        _ЗП.Поле("day", "her day as facts"),
-        _ЗП.ПОЛЕ_КАНДИДАТІВ,
-        _ЗП.Поле("item_keys", "what the keys in «candidates» mean, and defaults for omitted values",
-                 як="read every item by these keys; restore every absent key that has an `absent =` default"),
-        _ЗП.Поле("verdict", "your outfits and the code's check: «your_outfit» — item numbers "
-                            "and your caption; «structure.blockers» — what keeps the outfit from "
-                            "being shown, each under its «id»: a missing kind of item, with «options» — the "
-                            "«n» of the «showcase» items that fill it; or several items of one kind, with "
-                            "«items»", треба=True),
-        _ЗП.Поле("showcase", "item numbers that can fill what is missing"),
-        _ЗП.Поле("she_refuses", "what she refused", як="do not add an item that breaks it"),
+        *_ПОЛЯ_БЛОКЕРІВ,
+        _ПОЛЕ_ВІДМОВ_ХОДУ,
     ),
     правила=(
         "Answer EVERY blocker with «options» or «items», in every outfit of «verdict»: one entry in «fixes» "
         "under the blocker's «id».",
-        "A blocker with «options»: put in «add» the item of its «options» that suits this outfit best — one "
-        "item; for a missing top and bottom, a dress, or a top and a bottom.",
-        "A blocker with «items»: put in «keep» the one item that suits the outfit best; the code removes "
-        "the others.",
-        "You only add and keep: the other items, the caption and the day of the outfit stay as they are, "
-        "and the code keeps them.",
+        *_ПРАВИЛА_ХОДІВ,
         РЯДОК_ЛИШЕ_НОМЕР,
     ),
     вихід="ДОПОВНЕННЯ_V1",
-    поля_виходу={
-        "fixes[].blocker": "«id» of the blocker, as in «structure.blockers»",
-        "fixes[].add": "«n» of the item you add, alone",
-        "fixes[].keep": "«n» of the item you keep, alone",
-    },
+    поля_виходу=_ВИХІД_ХОДІВ,
     межі=("лише_вхід",),
     мова_промпту="en",
 )

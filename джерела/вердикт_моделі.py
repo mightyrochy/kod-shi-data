@@ -11,6 +11,7 @@ import math
 import re as _re_ід
 import протокол as _ПР
 import фрази_формату as _ФФ
+import спільні_вимоги as _ВИМ
 import ід_правил as _ід_правил
 from пакет_моделі import ПАКУВАТИ_ІНДЕКСОМ, номери_речей
 from розбір_відповідей import словник_речей as _словник_речей, за_номером as _за_номером, СВІДОМИЙ_МНОЖНИК, свідомі_з_json as _свідомі_з_json
@@ -158,18 +159,14 @@ _БЕЗ_ГЕЙТІВ = {
     задача="ремонт",
     роль="You are the stylist. The code checked the outfits you put together for her; you improve them.",
     вхід=(
-        _ЗП.Поле("case", "her case: the occasion and event, her «intent» and «goal», her words, wishes, mood "
-                         "and refusals",
-                 як="this is what she wants; which outfits you keep and how you improve them answer it"),
+        _ВИМ.поле("case", як="this is what she wants; which outfits you keep and how you improve them answer it"),
         _ЗП.ПОЛЕ_ВІДБОРУ,
         *[п for п in _ВИБІР.вхід if п.шлях.startswith("case.")],
-        _ЗП.Поле("day", "her day as facts",
-                 як="think each outfit through against her day item by item: replace an item that will not "
+        _ВИМ.поле("day", як="think each outfit through against her day item by item: replace an item that will not "
                     "stand the day, or say gently in the outfit's «day» why it stays; write «day» anew "
                     "together with the items"),
         _ЗП.ПОЛЕ_КАНДИДАТІВ,
-        _ЗП.Поле("item_keys", "what the keys in «candidates» mean, and defaults for omitted values",
-                 як="read every item by these keys; restore every absent key that has an `absent =` default"),
+        _ВИМ.поле("item_keys"),
         _ЗП.Поле("verdict", "the code's check of each outfit you put together: «your_outfit» — its item numbers, "
                             "caption and «day» (your sentence about her day in it); "
                             "«your_declared» — the moves you declared in «deliberate»; «structure»; "
@@ -200,7 +197,7 @@ _БЕЗ_ГЕЙТІВ = {
         _ЗП.Поле("fixes", "the code's repair texts by key"),
         _ЗП.Поле("not_run_everywhere", "by area, the checklist points the code did not check in any outfit, "
                                        "named by code without a definition"),
-        _ЗП.Поле("set", "the check of the whole set: variety, hero, coordination, findings about the set"),
+        _ВИМ.поле("set"),
         # ВИРВА-СМІЛИВІСТЬ (п.17): доза сміливого за її наміром — і на кроці 10→5
         _ЗП.Поле("set.bold", "her «intent» asks to stand out; these outfits the code measured as bold, "
                              "with two or more «signs»: loud_colour — a colour of high chroma, "
@@ -227,8 +224,8 @@ _БЕЗ_ГЕЙТІВ = {
                     "only with an entry in «deliberate»"),
         # (б): поле їде лише з порушеннями (`дріт_моделі.вердикт`)
         _ЗП.Поле("language", "violations in your previous text", як="do not repeat them; «instead» — what to use"),
-        _ЗП.Поле("register", "her style: the leading register and the ones next to it"),
-        _ЗП.Поле("outfits_wanted", "how many outfits to return", треба=True),
+        _ВИМ.поле("register"),
+        _ВИМ.поле("outfits_wanted", треба=True),
     ),
     правила=(
         # РЕМОНТ-1 (аудит/ПРОДУКТ.md п.17): вибір — окремим кроком відповіді, ДО образів. Доки
@@ -293,7 +290,7 @@ _БЕЗ_ГЕЙТІВ = {
     мова_промпту="en",
     скелет_наприкінці=True,  # за схемою відповіді — лише кінець промпту
     # за схемою — лише цей рядок; він називає кінець місцем, а не переліком ключів
-    наприкінці=_ФФ.наприкінці_en("needed"),
+    наприкінці=_ФФ.наприкінці_en("needed", обгортка=True),
 )
 
 

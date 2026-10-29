@@ -205,7 +205,11 @@ U = _ВМ.UNKNOWN
 _УРІЗАНО_КОДИ = ("shorter_than_source", "ends_cut")
 РЕЧЕННЯ_УРІЗАНО = (" Твій перший переклад текстів %s урізано (коротший за джерело чи обірваний): переклади кожен із них увесь, до останнього "
                    "абзацу й останнього речення джерела, нічого не пропускаючи й не скорочуючи.")
-ПРОМПТ_ВИХОДУ = """Ти — перекладачка в застосунку-стилістці. Ти пишеш природною українською тексти, які зараз побачить жінка. Рішень не приймаєш, на питання не відповідаєш, змісту не міняєш.
+ПЕРЕКЛАДАЧКА = "Ти — перекладачка в застосунку-стилістці."  # хто вона — раз для трьох промптів шару
+РОЛЬ_ЧАТУ = "You are the stylist of a styling app in a live chat with a woman."  # хто вона — для розмови й поради
+ПОЛЯ_ЗА_СЛОВАМИ = "every field her words give grounds for, in its form from \"codes\""  # скелет перекладу слів
+КОДИ_ЗА_НОРМОЮ = "its codes from \"codes\", when the event has such a norm"
+ПРОМПТ_ВИХОДУ = ПЕРЕКЛАДАЧКА + """ Ти пишеш природною українською тексти, які зараз побачить жінка. Рішень не приймаєш, на питання не відповідаєш, змісту не міняєш.
 
 """ + ВХІД_ВИХОДУ + """
 
@@ -875,7 +879,7 @@ def прийняти(розмітка, відповідь):
                                "want_to_try": "she wants to try it despite a doubt"},
             "opinion": {"like": "she likes it", "dislike": "she does not like it"},
         },
-        скелет={"<field>": "every field her words give grounds for, in its form from \"codes\""},
+        скелет={"<field>": ПОЛЯ_ЗА_СЛОВАМИ},
         наприкінці=_ФФ.відповідь_за_схемою_en("Translate her comment", "the fields her words give grounds for")),
     # ВИПРАВЛЕННЯ ПЕРЕЛІКУ РЕЧЕЙ СЛОВАМИ: «там не штани, а вершкові ботильйони, чорні — запасні». Вхід —
     # перелік, який вона бачить, кодами (`оцінка_образу.речі_для_слів`); вихід — ті самі дії, що дають дотики
@@ -922,7 +926,7 @@ def прийняти(розмітка, відповідь):
               "question_about": "what her question is about"},
         коди_en={"question_about": {"app": "about the app: screens, buttons, steps, what to do next",
                                     "look": "about her look, items, photo, style or colours"}},
-        скелет={"<field>": "every field her words give grounds for, in its form from \"codes\""},
+        скелет={"<field>": ПОЛЯ_ЗА_СЛОВАМИ},
         наприкінці=_ФФ.відповідь_за_схемою_en("Carry her question over")),
 }
 _ОБʼЄКТИ = {"thing": ("«річ»", _ВМ.РІЧ_У_СЛОВАХ), "own_item": ("«її річ»", _ВМ.ЇЇ_РІЧ)}
@@ -2437,7 +2441,7 @@ def паспорт_з_шару(внутрішня, сценарій, вето_ч
 # «не радиш від себе» не тримало — на `recorded: {occasion: work, goal_extra: [taller]}` без жодної
 # речі у вході перекладачка писала «запропонувати тобі штани вільного крою та сукню-комбінацію кемел» (Ж:29). Речі
 # радить стилістка на картках, тож промпт каже прямо: речей, кольорів і фасонів, яких нема у вході, не називати.
-ПРОМПТ_РЕПЛІКИ = "Ти — перекладачка в застосунку-стилістці. Ти пишеш жінці репліку стилістки " \
+ПРОМПТ_РЕПЛІКИ = ПЕРЕКЛАДАЧКА + " Ти пишеш жінці репліку стилістки " \
     "природною українською. " + _ЛВ.ДОГОВІР + " Зміст береш " \
     "лише з повідомлення внутрішньою мовою нижче: нічого не додаєш, не вирішуєш і не радиш від себе; речей, " \
     "кольорів і фасонів, яких нема в повідомленні, не називаєш і не пропонуєш — речі добирає стилістка, коли " \
@@ -2850,7 +2854,7 @@ def прийняти_репліку(відповідь, репліка=None, з�
 # картка має до десятка рядків, і десять викликів моделі на одну картку — десять
 # затримок і десять шансів не відповісти. Промпт несе визначення ЛИШЕ тих видів і
 # заяв, які цього разу приїхали, тож він не росте зі словником.
-ПРОМПТ_ПОВІДОМЛЕНЬ = "Ти — перекладачка в застосунку-стилістці. Ти пишеш природною українською " \
+ПРОМПТ_ПОВІДОМЛЕНЬ = ПЕРЕКЛАДАЧКА + " Ти пишеш природною українською " \
     "рядки, які зараз побачить жінка на екрані. " + _ЛВ.ДОГОВІР + " Рішень не " \
     "приймаєш, на питання не відповідаєш, від себе нічого не додаєш, не радиш і не виправдовуєшся. " \
     + МОВА_ДЛЯ_НЕЇ
@@ -3123,6 +3127,7 @@ def прийняти_повідомлення(розмітка, відповід
 # нею, від найсталішого до найсвіжішого: профіль, давні ходи, розмова, паспорт, плитки, теми,
 # обовʼязкове, фото, її нове повідомлення.
 import збирач_промптів as _ЗП_Р
+import спільні_вимоги as _ВИМ
 
 # Рядки полів сценарію англійською (п.12). Коди — ті самі переліки схеми (`внутрішня_мова.
 # СЦЕНАРІЙ`); нагода й місце — з підписами плиток довідника: це слова екрана, за якими модель
@@ -3857,24 +3862,23 @@ import схема_відповіді as _СВ_М
 
 РОЗМОВА = _ЗП_Р.Оголошення(
     задача="розмова",
-    роль="You are the stylist of a styling app in a live chat with a woman. You understand what she wants "
+    роль=РОЛЬ_ЧАТУ + " You understand what she wants "
          "across the whole conversation, write it into her case passport in the app's codes and answer "
          "her; where the rules say so, the app first checks her items and looks, and you answer from "
          "that check in your next message.",
     вхід=(
         # Профіль кодами — БЕЗ драпіровки (п.9): метал, білий, нейтралі в розмові не питають і не
         # показують; сталий на всю розмову, тому першим серед даних (кеш).
-        _ЗП_Р.Поле("profile", "her profile in codes: colouring, palette choice, height, what is missing"),
+        _ВИМ.поле("profile"),
         # Давні ходи — зведенням, їхня суть уже в паспорті.
         _ЗП_Р.Поле("earlier_conversation", "older turns, shortened: \"turns\" — how many, \"her_messages\" — her "
                                            "last messages among them, cut short",
                    як="background only: do not quote them as her exact words"),
         _ЗП_Р.Поле("conversation", "the last turns before her new message: \"She:\" — her, \"You:\" — you"),
         # Т-08: розмова оновлює той самий паспорт — модель бачить його кодами.
-        _ЗП_Р.Поле("passport", "her case passport in codes after the previous turns"),
+        _ВИМ.поле("passport"),
         # K-IO-02: плитки — друге джерело полів; її слово сильніше (п.9).
-        _ЗП_Р.Поле("chosen", "what she chose with the tiles on the screen, in codes",
-                   як="her words override it"),
+        _ВИМ.поле("chosen", як="her words override it"),
         # Умову теми на стані ДО ходу код перевіряє сам — модель лишається судити лише нові
         _ЗП_Р.Поле("advice_topics", "advice topic codes not yet offered whose condition already holds"),
         _ЗП_Р.Поле("advice_topics_if", "advice topic codes not yet offered whose condition does not hold yet"),
@@ -3885,12 +3889,10 @@ import схема_відповіді as _СВ_М
         # Битий JSON ходу одразу йшов шляхом виклику 0, і подія губилась. Тепер —
         # ОДИН повтор тим самим промптом із причиною кодом (як виклик 0 і фото — `format_error`); поле є лише
         # на повторі, тож сталий початок промпта (кеш) той самий.
-        _ЗП_Р.Поле("format_error", "why your previous answer to this same message could not be read: "
-                                   "not_json_object — not one valid JSON object; no_text_field — neither "
-                                   "\"text\" nor \"ask\"; unknown_key: <names> — those keys of \"update\" are "
-                                   "not fields of the case",
-                   як=_ФФ.ПОВТОР_JSON_EN),
-        _ЗП_Р.Поле("her_new_message", "her new message", треба=True),
+        _ВИМ.поле_помилки(_ФФ.ПОВТОР_JSON_EN, коди={
+            "not_json_object": "not one valid JSON object", "no_text_field": "neither \"text\" nor \"ask\"",
+            "unknown_key: <names>": "those keys of \"update\" are not fields of the case"}),
+        _ВИМ.поле("her_new_message", треба=True),
     ),
     правила=РОЗМОВА_ПРАВИЛА,
     коди=_коди_розмови(),
@@ -3920,12 +3922,11 @@ import схема_відповіді as _СВ_М
          "nothing: you write into her case passport, in the app's codes, how dressy this outing is and the norms "
          "of the event.",
     вхід=(
-        _ЗП_Р.Поле("profile", "her profile in codes: colouring, palette choice, height, what is missing"),
-        _ЗП_Р.Поле("passport", "her case passport in codes after the conversation so far"),
-        _ЗП_Р.Поле("chosen", "what she chose with the tiles on the screen, in codes"),
-        _ЗП_Р.Поле("format_error", "why your previous answer to these same tiles could not be read: "
-                                   "not_json_object — not one valid JSON object",
-                   як=_ФФ.ПОВТОР_JSON_EN),
+        _ВИМ.поле("profile"),
+        _ВИМ.поле("passport"),
+        _ВИМ.поле("chosen"),
+        _ВИМ.поле_помилки(_ФФ.ПОВТОР_JSON_EN, "these same tiles",
+                          коди={"not_json_object": "not one valid JSON object"}),
     ),
     # R3 ходу розмови — тепер усе завдання; `need` і `text` цьому ходові нема куди писати.
     правила=("She wrote nothing and only changed the tiles: \"update\" gives formality (with formality_branch), "
@@ -3941,8 +3942,7 @@ import схема_відповіді as _СВ_М
                      "rule)",
         "formality_branch": "business or social, with formality on a step that has both branches",
         "part_of_day": "its code from \"codes\", when the tiles or the passport give the time of the outing",
-        "reserved_colour": "its codes from \"codes\", when the event has such a norm",
-        "open_zones": "its codes from \"codes\", when the event has such a norm"}},
+        "reserved_colour": КОДИ_ЗА_НОРМОЮ, "open_zones": КОДИ_ЗА_НОРМОЮ}},
     межі=("лише_вхід",),
     мова_промпту="en",
     сталий_спершу=True,
@@ -5088,7 +5088,7 @@ def ремонт_поради(відкинуто, обовʼязкове, доз
 
 ПОРАДА = _ЗП_Р.Оголошення(
     задача="порада",
-    роль="You are the stylist of a styling app in a live chat with a woman. The app did not show her an "
+    роль=РОЛЬ_ЧАТУ + " The app did not show her an "
          "invitation to tell more about this outing: yours broke a rule of the app or was missing. Write it within "
          "the rules.",
     вхід=(
@@ -5097,7 +5097,7 @@ def ремонт_поради(відкинуто, обовʼязкове, доз
         _ЗП_Р.Поле("defect", "why the app did not show your invitation", треба=True),
         _ЗП_Р.Поле("your_invitation", "the invitation the app did not show",
                    як="keep none of its topics that is not in \"advice_topics\""),
-        _ЗП_Р.Поле("her_new_message", "her new message", як="do not invite her to tell what it already says"),
+        _ВИМ.поле("her_new_message", як="do not invite her to tell what it already says"),
     ),
     правила=(
         # П.9: порада — до трьох тем одним м'яким реченням, без обовʼязкових.

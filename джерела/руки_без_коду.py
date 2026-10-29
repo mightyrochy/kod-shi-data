@@ -24,6 +24,7 @@ import json as _json
 import re as _re
 
 import збирач_промптів as _ЗП
+import спільні_вимоги as _ВИМ
 import протокол as _ПР
 import внутрішня_мова as _ВМ
 import річ_з_фото as _РФ
@@ -133,11 +134,10 @@ def її_речі(речі_паспорта):
         # `case` — кодами (`випадок_кодами`), коли є паспорт; без нього — рядок входу
         _ЗП.Поле("case", "her case: the occasion, where and when, the weather, the dress code, her wishes and "
                          "refusals — as codes, her own words as quotes", треба=True,
-                 як="do not take an item that goes against her refusals or her words"),
-        _ЗП.Поле("case.her_words", "what she asked for in her own words", як="meet every point"),
+                 як=_ВИМ.ПРОТИ_ВІДМОВ),
+        _ВИМ.поле("case.her_words", як="meet every point"),
         _ЗП.Поле("case.formality", "the level of dress she named: " + _БР.ЩАБЛІ_EN),
-        _ЗП.Поле("case.goal_zones", "the body zones she wants to draw the eye away from, with any goal",
-                 як="keep these zones quiet; the rest of the look follows goal"),
+        _ВИМ.поле("case.goal_zones"),
         *_ПОЛЯ_МЕЖІ_НА_СЛОТ,
         _ЗП.Поле("photo_of_her", "a photo of her is attached", як="fit the outfit to her"),
         _ЗП.Поле("person", "facts about her from her photo and measurements, without conclusions: colors "

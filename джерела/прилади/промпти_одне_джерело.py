@@ -64,6 +64,9 @@ def _рядки_коду(ф):
     дерево = ast.parse(open(ф, encoding="utf-8").read())
     док = set()
     for n in ast.walk(дерево):
+        # `ЗОВНІШНІ_ВХОДИ` — довідка сканера контрактів про входи з показу, моделі не йде
+        if isinstance(n, ast.Assign) and any(getattr(ц, "id", "") == "ЗОВНІШНІ_ВХОДИ" for ц in n.targets):
+            док.update(id(x) for x in ast.walk(n))
         if isinstance(n, (ast.Module, ast.FunctionDef, ast.ClassDef)) and n.body and \
                 isinstance(n.body[0], ast.Expr) and isinstance(getattr(n.body[0], "value", None), ast.Constant):
             док.add(id(n.body[0].value))
@@ -81,6 +84,10 @@ def дублі_речень(файли):
     return {к: v for к, v in де.items() if len({(x[0], x[1]) for x in v}) >= 2}
 
 
+# однакова назва ключа, різні дані: опис крамниці у виписці каталогу й опис образу, який розбирають на речі
+РІЗНІ_ПОЛЯ = {"description"}
+
+
 def дублі_полів(файли):
     """[(шлях, [(файл, рядок, що)])] — `Поле("шлях", "що", …)` зі схожим «що» у ≥ 2 місцях."""
     за_шляхом = collections.defaultdict(list)
@@ -91,6 +98,8 @@ def дублі_полів(файли):
                 за_шляхом[n.args[0].value].append((os.path.basename(ф), n.lineno, n.args[1].value))
     вих = []
     for шлях, л in за_шляхом.items():
+        if шлях in РІЗНІ_ПОЛЯ:
+            continue
         групи = []
         for x in л:
             for г in групи:
@@ -115,6 +124,9 @@ def форма_словами(файли):
     return вих
 
 
+ДАМП = None  # каталог для `--дамп`: стала частина кожного оголошення файлом, щоб порівняти ДО і ПІСЛЯ `diff -r`
+
+
 def довжини():
     """{клас: симв. сталої частини оголошення} — як `промпти_перелік.ВИМІР_ІСТОРІЇ`, за іменем «модуль.ІМ'Я»."""
     import warnings
@@ -128,20 +140,32 @@ def довжини():
             скелет = ЗП.скелет(о) if о.відповідь_як == "json" else None
         except Exception:
             скелет = None
-        стале = {"role": о.роль, "input": ["%s — %s; %s" % (п.шлях, п.що, п.як) for п in о.вхід],
+        стале = {"role": о.роль, "input": sorted({"%s — %s; %s" % (п.шлях.split(".")[-1].replace("[]", ""), п.що, п.як) for п in о.вхід}),  # як у збирача: однакові рядки — один
                  "rules": list(о.правила), "codes": list(о.коди), "limits": [межі.get(x, "") for x in о.межі],
                  "answer_schema": скелет, "end": о.наприкінці or ""}
         вих[кл] = len(json.dumps(стале, ensure_ascii=False))
+        if ДАМП:
+            os.makedirs(ДАМП, exist_ok=True)
+            open(os.path.join(ДАМП, кл + ".txt"), "w", encoding="utf-8").write(
+                json.dumps(стале, ensure_ascii=False, indent=1))
         # речення, що стоїть двічі в сталій частині одного промпту (без скелета: там підписи листків)
         л = collections.Counter(_норм(р) for ч in ([о.роль] + list(о.правила) + list(о.коди) + [о.наприкінці or ""]
-                                                   + [п.що + ". " + п.як for п in о.вхід]
+                                                   + sorted({(п.шлях.split(".")[-1].replace("[]", "") + " — " + п.що
+                                                              + ". " + п.як) for п in о.вхід})  # збирач зводить рядки входу з однією назвою в один
                                                    + [межі.get(x, "") for x in о.межі])
                                 for р in _речення(ч))
         повтор_у_промпті[кл] = sum(н - 1 for н in л.values() if н > 1)
+        # кінець відповіді назвали і правилом, і останнім рядком — різними словами, тож дослівно не видно
+        if re.search(r"answer is over", " ".join(list(о.правила) + list(о.коди)), re.I) and \
+                re.search(r"answer is over", о.наприкінці or "", re.I):
+            повтор_у_промпті[кл] += 1
     return вих, повтор_у_промпті
 
 
 def main(арг):
+    global ДАМП
+    if "--дамп" in арг:
+        ДАМП = арг[арг.index("--дамп") + 1]
     файли = модулі()
     р, п, ф = дублі_речень(файли), дублі_полів(файли), форма_словами(файли)
     д, в = довжини()
