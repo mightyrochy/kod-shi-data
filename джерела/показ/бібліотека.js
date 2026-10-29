@@ -321,7 +321,7 @@ async function оновитиСценарії(){
   сп.innerHTML = ''; ст.textContent = '';
   let список = [];
   try{ список = await усіСценарії(); }
-  catch(e){ ст.textContent = 'Бібліотека не читається: ' + String(e).slice(0, 100); return; }
+  catch(e){ збійЖінціП(ст, 'library_unreadable', e); return; }
   if (!список.length){
     ст.textContent = 'Ще порожньо. Опиши випадок на головному екрані й натисни «Зберегти» — він зʼявиться тут.';
     return;
