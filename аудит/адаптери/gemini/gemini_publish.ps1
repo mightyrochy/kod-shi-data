@@ -389,7 +389,7 @@ function Reset-State([string]$Id) {
 $script:OutboxNamePattern = '^[0-9]{8}-[0-9]{6}-[0-9a-f]{12}\.txt$'
 $script:SlugCore = $script:SlugPattern -replace '^\^|\\z$', ''
 $script:OutboxTemplates = @(
-    '^GEMINI ОБГОРТКА: ЛАНЦЮГ CHAIN_[A-Z_]{1,32}\z',
+    '^GEMINI ОБГОРТКА: ЛАНЦЮГ CHAIN_[A-Z_]{1,32}(?: [A-Za-z0-9]{1,40} [a-z_]{1,40}\.ps1:[0-9]{1,5})?\z',
     '^GEMINI ОБГОРТКА: ОНОВЛЕНО [0-9a-f]{40} СЕКУНД [0-9]{1,12}\z',
     '^GEMINI ОБГОРТКА: ОНОВЛЕННЯ [0-9a-f]{40} UPDATE_[A-Z_]{1,32}\z',
     "\AGEMINI ОБГОРТКА: ГОТОВО (?:gemini|codex|claude)/$script:SlugCore [0-9a-f]{40}(?: КВОТА [A-Z0-9_]{2,40} (?:100|[1-9]?[0-9]))?(?: МОДЕЛЬ [a-z0-9][a-z0-9.-]{1,63})?\z"
