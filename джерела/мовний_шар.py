@@ -846,7 +846,7 @@ def прийняти(розмітка, відповідь):
         # «верх я б носила й окремо» → межа на топ без `quote`; шов її не бере
         # (`_межа_на_її_словах`), а промпт каже, звідки межа береться: лише з її слів, що відмовляють.
         правила=("What she wants the look without is a limit in \"vetoes\", even when she says it as a wish: the code "
-                 "of that feature itself, of the pattern (without a print — pattern print_generic, not solid), of the "
+                 "of that feature itself, of the pattern, of the "
                  "fabric, the colour or the item, with a slot when she named it, and without the item type of the "
                  "look. A limit stands only on her words that refuse something, and its \"quote\" is those words "
                  "letter for letter; liking an item or wearing it on its own or with other things refuses nothing. "
@@ -894,7 +894,7 @@ def прийняти(розмітка, відповідь):
               ("her_words", "her words about the list")),
         поля=_ВМ.ВИПРАВЛЕННЯ_ПЕРЕЛІКУ,
         правила=("One action — one item. An item she called wrong (not this, but that) is corrected with set over its "
-                 "id: the new kind and colour she named, without slot — the place follows from the kind. An item the "
+                 "id: the new kind and colour she named. An item the "
                  "list does not have at all — add with the kind and colour she named.",
                  # «…чорні — запасні» давало `add ankle_boots black` поруч із наявними чорними — двоє
                  # чорних ботильйонів в образі; «запасна» — це місце речі в образі, а не нова річ
