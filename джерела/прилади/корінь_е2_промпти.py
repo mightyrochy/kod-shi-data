@@ -41,7 +41,9 @@ warnings.simplefilter("ignore")
 # ── ШАРИ: що лічимо ────────────────────────────────────────────────────────────────────────────────────────────────
 # шар → чи входить у `місць:`. Усі шари, де код дає моделі текст, входять (наряд: не звужувати клас); знімки результатів
 # (`траса/*.txt` — записані виходи збирача) не код, що шле, а його слід: друкуються окремо.
-ШАРИ_ЛІЧБИ = ("продукт", "жнивар", "проба", "прилад", "open-source-stylist")
+ШАРИ_КОРЕНЯ = ("продукт", "жнивар")                              # код Люстерка, що шле промпти моделі (рішення менеджера, 11319)
+ШАРИ_ПОЗА = ("проба", "прилад", "open-source-stylist")           # поза коренем: у місцях не лічено, друкуємо окремо (--поза-коренем)
+ШАРИ_ЛІЧБИ = list(ШАРИ_КОРЕНЯ)
 ЗАБОРОНЕНО_ТЕКИ = (".git", "node_modules", "__pycache__")
 РЕЄСТР_ФОРМИ = ("джерела/фрази_формату.py", "джерела/схема_відповіді.py")  # де слова про форму відповіді — на місці
 
@@ -63,7 +65,7 @@ _УК_БУДЬДЕ = ("ніколи", "завжди", "мусиш", "мусит�
 _EN_ПОЧАТОК = ("do not", "don't", "never", "always", "return", "answer", "respond", "reply", "output", "write", "use",
                "keep", "give", "pick", "choose", "select", "list", "name", "describe", "mention", "include", "omit",
                "skip", "prefer", "follow", "treat", "ignore", "compose", "judge", "rate", "say", "add", "leave", "put",
-               "take", "read", "look", "consider", "stay", "stick", "limit", "avoid", "ensure", "make sure", "only",
+               "take", "read", "look", "consider", "stay", "stick", "limit", "avoid", "ensure", "make sure",
                "if ", "when ", "start", "begin", "check",
                "call", "copy", "drop", "fill", "mark", "pass", "send", "set", "show", "state", "tell", "try", "ask")
 _EN_БУДЬДЕ = ("do not", "don't", "never ", "must", "should", "shall", "always ", "at most", "at least", "no more than",
@@ -72,11 +74,11 @@ _УК_СЛОВО = re.compile(r"(?<![%s])(?:%s)" % (_ЛІТ, "|".join(re.escape(
 _EN_СЛОВО = re.compile(r"(?<![%s])(?:%s)(?![%s])" % (_ЛІТ, "|".join(re.escape(x.strip()) for x in _EN_БУДЬДЕ), _ЛІТ), re.I)
 # речення, що не є вимогою до моделі: код, шлях, службовий рядок, лог
 НЕ_ВИМОГА = re.compile(r"\.(py|js|md|json|html|yml)\b|^\s*[#@/]|=>|\bdef \b|\{\{|^\s*(?:assert|import|from)\b|\breturn\b[^.]*\(|\bawait\b|json\.loads|"
-                       r"\bFileNotFound|Traceback|\bsys\.|http[s]?://")
+                       r"\bFileNotFound|Traceback|\bsys\.|http[s]?://|\bis missing\b")
 # слова про форму відповіді (п.2): ЩО вимога каже про вигляд відповіді
 ФОРМА = re.compile(r"\bJSON\b|```|markdown|code fence|\bplain text\b|\b(?:one|single|only one|exactly one) (?:JSON )?object\b|"
                    r"(?:один|єдиний|лише один) (?:JSON-?)?об['ʼ’]?єкт|\bpreamble\b|без пояснен|without explanation|"
-                   r"only the answer|nothing (?:more|else) |нічого (?:більше|після)|begins with|ends with|starts with \{|"
+                   r"only the answer|nothing (?:more|else) (?:than|after|before|outside)\b|нічого (?:більше|після)|begins with|ends with|starts with \{|"
                    r"valid JSON|одним рядком|рівно з цими ключами|exactly these keys|no prose", re.I)
 ВІДПОВІДЬ_СЛОВО = re.compile(r"відпов|answer|reply|respond|output|return|поверн|write nothing|виведи|не пиши|не додавай|"
                              r"do not wrap|not wrapped|response", re.I)
@@ -677,11 +679,14 @@ def пункт2_формат(місця):
     return вих
 
 
+ДІАПАЗОНИ_КОЛЕКЦІЙ = {}   # «файл:ІМ» → (файл, перший рядок, останній рядок) визначення колекції
+
+
 def колекції_коду(кор, файли):
     """{ім'я «файл:ІМ'Я»: множина рядків} — переліки значень і ключів, що тримає код (≥ 3 рядків ≥ 3 знаків)."""
     вих = {}
     for відн, тип in файли:
-        if тип != "py" or шар_файла(відн) not in ШАРИ_ЛІЧБИ[:2]:
+        if тип != "py" or шар_файла(відн) not in ШАРИ_КОРЕНЯ:
             continue
         try:
             д = ast.parse(open(os.path.join(кор, відн), encoding="utf-8").read())
@@ -703,6 +708,7 @@ def колекції_коду(кор, файли):
             ел = {к for к in ел if 3 <= len(к) <= 40 and re.fullmatch(r"[\w\- ]+", к)}
             if len(ел) >= 3:
                 вих["%s:%s" % (відн, ім)] = ел
+                ДІАПАЗОНИ_КОЛЕКЦІЙ["%s:%s" % (відн, ім)] = (відн, n.lineno, getattr(n, "end_lineno", n.lineno))
     for ф in glob.glob(os.path.join(кор, "джерела", "*.schema.json")):
         try:
             дані = json.load(open(ф, encoding="utf-8"))
@@ -765,7 +771,8 @@ def пункт3_дубль_коду(місця, колекції, числа_к�
         ел_пояс = елементи_з_поясненнями(м.текст)
         знайдено = None
         for ім, мн in для_кожного.items():
-            if ім.startswith(м.файл + ":"):   # власну сталу речення не дублює
+            діап = ДІАПАЗОНИ_КОЛЕКЦІЙ.get(ім)
+            if діап and діап[0] == м.файл and діап[1] <= м.рядок <= діап[2]:   # саму себе стала не дублює; реєстр поруч — дублює
                 continue
             макс = 0
             for список in (ел, ел_пояс):
@@ -790,7 +797,7 @@ def числа_меж(кор, файли):
     """{'число': «файл:ІМ'Я»} — цілі сталі коду з іменем межі (МЕЖА/ЛІМІТ/МАКС/МІН/СТЕЛЯ/MAX/MIN/LIMIT) і значенням ≥ 3."""
     вих = {}
     for відн, тип in файли:
-        if тип != "py" or шар_файла(відн) not in ШАРИ_ЛІЧБИ[:2]:
+        if тип != "py" or шар_файла(відн) not in ШАРИ_КОРЕНЯ:
             continue
         try:
             д = ast.parse(open(os.path.join(кор, відн), encoding="utf-8").read())
@@ -933,7 +940,12 @@ def довжини_сталих(кор, модулі):
                 return "".join(згорнути(x, глиб + 1) if isinstance(x, ast.Constant) else "{…}" for x in вузол.values)
             if isinstance(вузол, ast.Call) and isinstance(вузол.func, ast.Attribute) and вузол.func.attr in ("replace", "format", "strip"):
                 if вузол.func.attr == "replace" and len(вузол.args) >= 2:   # підставлений уламок теж іде моделі
-                    return згорнути(вузол.func.value, глиб + 1) + згорнути(вузол.args[1], глиб + 1)
+                    арг1 = вузол.args[1]
+                    if isinstance(арг1, ast.IfExp):                         # два варіанти уламка: беремо довший
+                        вставка = max((згорнути(арг1.body, глиб + 1), згорнути(арг1.orelse, глиб + 1)), key=len)
+                    else:
+                        вставка = згорнути(арг1, глиб + 1)
+                    return згорнути(вузол.func.value, глиб + 1) + вставка
                 return згорнути(вузол.func.value, глиб + 1)
             return ""
         промптові, посилання = {}, collections.Counter()
@@ -949,6 +961,15 @@ def довжини_сталих(кор, модулі):
         for ім_ст in промптові:
             if not посилання[ім_ст] and len(значення[ім_ст]) >= 120:
                 вих["%s:%s" % (м.відн, ім_ст)] = len(значення[ім_ст])
+        # уламки, які функція підставляє в промпт `.replace(…, УЛАМОК | А if умова else Б)`: довжина кожного варіанта окремо,
+        # щоб зміна коротшого варіанта не лишалась невидимою
+        for x in ast.walk(м.дерево):
+            if isinstance(x, ast.Call) and isinstance(x.func, ast.Attribute) and x.func.attr == "replace" and len(x.args) >= 2:
+                вузли = [x.args[1]] if not isinstance(x.args[1], ast.IfExp) else [x.args[1].body, x.args[1].orelse]
+                for в in вузли:
+                    if isinstance(в, ast.Name) and в.id in значення and len(значення[в.id]) >= 120 \
+                            and "%s:%s" % (м.відн, в.id) not in вих:
+                        вих["%s:%s" % (м.відн, в.id)] = len(значення[в.id])
     return вих
 
 
@@ -1054,11 +1075,18 @@ def main(арг):
     print("пункт 1 повтори: %d" % підсумок[1])
     print("пункт 2 формат словами: %d" % підсумок[2])
     print("пункт 3 дубль коду: %d" % підсумок[3])
-    print("пункт 4 суперечності (ознаки полярності; семантичні з кодом і граматикою не виміряно): %d" % підсумок[4])
+    print("пункт 4 ознак суперечності (полярність, числові межі; суперечності за змістом, з кодом і граматикою, прилад не міряє): %d" % підсумок[4])
     print("пункт 5 довжина (не коротший/довший за ДО, нема в базі): %d з %d промптів" % (підсумок[5], len(р["довжини"])))
     шари = collections.Counter(шар_файла(м.файл) for м in р["місця"])
     print("вимог у текстах, що йдуть моделі (шлях А): %d; за шарами: %s" % (len(р["місця"]), dict(шари)))
     print("промптів: %d (оголошень збирача %d, сталих-коренів %d)" % (len(р["довжини"]), len(р["зібрані"]), len(р["довжини"]) - len(р["зібрані"])))
+    if "--поза-коренем" in арг:     # лише довідка: шари поза коренем (проби, прилади, open-source-stylist) у `місць:` не входять
+        ШАРИ_ЛІЧБИ[:] = ШАРИ_ПОЗА
+        інш = основа_лічби(кор)
+        ключі = {(н, м.файл, м.рядок, норм(м.текст)) for н, к in ((1, "п1"), (2, "п2"), (3, "п3")) for м, _ in інш[к]}
+        за_шаром = collections.Counter((шар_файла(ф), н) for н, ф, _, _ in ключі)
+        print("поза коренем (у місцях НЕ лічено): %d; за шарами і пунктами: %s" % (len(ключі), dict(sorted(за_шаром.items()))))
+        ШАРИ_ЛІЧБИ[:] = ШАРИ_КОРЕНЯ
     if р["збої"]:
         print("не завантажено модулів (їх оголошення не лічено): %s" % "; ".join(р["збої"]))
     if "--звірка" in арг:
