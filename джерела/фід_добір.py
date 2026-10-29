@@ -15,7 +15,7 @@ import колір_річ as _КР
 import фід_розбір as _ФР
 import trace as _СЛ
 import palettes as _ПЛ
-from колір_тон import в_дузі, відстань_до_дуги
+from колір_тон import в_дузі, відстань_до_дуги, ширина
 
 # ═══════════════ 4. ПОКРИТТЯ ВІКОН ═══════════════
 def підходить(lab, запит):
@@ -99,7 +99,7 @@ def частка_вікна(вікно, q, сітка=ЧАСТКА_СІТКА):
     if дуга is None:
         hs = [360.0*k/nh for k in range(nh)]
     else:
-        a, b = дуга; span = (b - a) % 360 or 360
+        a = дуга[0]; span = ширина(дуга) or 360
         hs = [(a + span*(k+0.5)/nh) % 360 for k in range(nh)]
     ok = n = 0
     for L in Ls:
@@ -201,8 +201,7 @@ def відстань_до_центру(lab, q):
         if a is None:
             h_ц = lch(lab)[2]                    # тону не просили — він не штрафується
         else:
-            дуга = (b - a) % 360 or 360
-            h_ц = (a + дуга / 2.0) % 360
+            h_ц = (a + (ширина((a, b)) or 360) / 2.0) % 360
         мішень = (L_ц, C_ц*math.cos(math.radians(h_ц)), C_ц*math.sin(math.radians(h_ц)))
     return round(de00(tuple(lab), мішень), 2)
 
