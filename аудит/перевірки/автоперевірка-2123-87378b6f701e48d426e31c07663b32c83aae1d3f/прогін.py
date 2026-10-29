@@ -11,7 +11,8 @@ import time
 ДЕРЕВО = КОРІНЬ.parent / 'review-2123'
 ДЖЕРЕЛА = ДЕРЕВО / 'джерела'
 АРТЕФАКТИ = Path('C:/Users/gemini/gemini-runs/20261029-015546-26adefb51188/review2123-artifacts')
-ОТОЧЕННЯ = dict(os.environ, PYTHONUTF8='1', NODE_PATH=str(КОРІНЬ / 'джерела/node_modules'),
+ОТОЧЕННЯ = dict(os.environ, PYTHONUTF8='1', PYTHONUNBUFFERED='1',
+                 NODE_PATH=str(КОРІНЬ / 'джерела/node_modules'),
                  LYUSTERKO_CATALOG='повний',
                  LYUSTERKO_PYC_PYTHON='C:/Users/gemini/tools/python-3.12.1/python.exe')
 for ключ in ('MODEL', 'MODEL_MOVA', 'ZHYVA', 'REPLAY_EXCHANGE', 'REPLAY_RECORDINGS'):
@@ -22,13 +23,14 @@ def виконати(назва, команда, тека=ДЖЕРЕЛА):
     """Чекає завершення команди, зберігає весь вивід та її код."""
     print('ПОЧАТОК ' + назва, flush=True)
     початок = time.monotonic()
-    процес = subprocess.run(команда, cwd=тека, env=ОТОЧЕННЯ,
-                            stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
-                            encoding='utf8', errors='replace', timeout=3600)
-    (ДОКАЗИ / (назва + '.txt')).write_text(процес.stdout, encoding='utf8')
+    шлях_журналу = ДОКАЗИ / (назва + '.txt')
+    with шлях_журналу.open('w', encoding='utf8') as журнал:
+        процес = subprocess.run(команда, cwd=тека, env=ОТОЧЕННЯ,
+                                stdout=журнал, stderr=subprocess.STDOUT, timeout=3600)
+    вивід = шлях_журналу.read_text(encoding='utf8', errors='replace')
     запис = dict(назва=назва, команда=команда, тека=str(тека), код=процес.returncode,
                  секунд=round(time.monotonic() - початок, 2),
-                 підсумок=[р for р in процес.stdout.splitlines() if
+                 підсумок=[р for р in вивід.splitlines() if
                            р.startswith(('ВИКОНАНО', 'ВПАЛО', 'ПОКАЗ:', 'ДОКАЗ ', 'ПРОЙДЕНО', '8/8'))
                            or р.lstrip().startswith('✗')])
     print(json.dumps(запис, ensure_ascii=False), flush=True)
@@ -54,6 +56,16 @@ def головна():
         проба = ДЕРЕВО / 'аудит/перевірка/Е2-схема-3/власна_проба.py'
         for режим in ('записи', 'випадки'):
             записи.append(виконати(режим, [sys.executable, '-X', 'utf8', str(проба), режим], ДЕРЕВО))
+    elif група == 'ноти-до':
+        АРТЕФАКТИ.mkdir(exist_ok=True)
+        старий_тест = АРТЕФАКТИ / 'тест_показу_до.js'
+        старий_тест.write_bytes(subprocess.check_output(['git', 'show',
+            '87c83613f5708ab3d150e166eab55b1f6fddd439:джерела/тест_показу.js'], cwd=ДЕРЕВО))
+        ОТОЧЕННЯ['LYUSTERKO_TEST_SOURCE'] = str(старий_тест)
+        прилад = ДЕРЕВО / 'аудит/перевірка/доробка-Е2-схема-2/ноти_суворість.js'
+        for затримка in (0, 60, 120):
+            записи.append(виконати('ноти-до-' + str(затримка),
+                ['node', str(прилад), 'штатний', str(затримка)], ДЕРЕВО))
     elif група == 'батарея':
         команди = [(назва, [sys.executable, '-X', 'utf8', назва + '.py', *арг]) for назва, арг in (
             ('стенд_знімок', ['--дим']), ('тест_живого_шляху', []), ('тест_протоколу', []),
@@ -81,6 +93,8 @@ def головна():
     if група == 'короткі':
         assert [з['код'] for з in записи[:6]] == [0, 0, 0, 1, 1, 1]
         assert all(з['код'] == 0 for з in записи[6:])
+    elif група == 'ноти-до':
+        assert [з['код'] for з in записи] == [0, 1, 1]
     elif група != 'стенд':
         assert all(з['код'] == 0 for з in записи)
 
