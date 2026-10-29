@@ -1,14 +1,11 @@
-# -*- coding: utf-8 -*-
-"""КОЛІР-HEX (рядок 4171), було → стало: код кольору hex без її слова (`мовний_шар._код_кольору` → `palettes.назва`)
-на БАЗІ (git worktree, типово origin/main) і в чинному дереві. Друкує: коди для hex знахідки; скільки hex з відповідей
-моделі (VIDPOVIDI) змінили код і які; ґратку основ; точки крамниць (вимір з фото) — підпис і збіг зі словом крамниці;
-записи каталогу, що змінились, і які поля. Запуск: cd джерела && python3 проби/колір_hex_вікна.py [база]"""
+"""Колір hex, ґратка й каталог ДО/ПІСЛЯ на одному корпусі: із джерела/ python проби/колір_hex_вікна.py [база] [корпус]."""
 import collections as К, json, os, re, subprocess, sys, tempfile, warnings
 warnings.filterwarnings("ignore"); sys.path.insert(0, ".")
 if sys.argv[1:2] == ["--знімок"]:
     import feed, мовний_шар as МШ, міст_основи as МО, palettes as PS, фід_каталог as FK, фід_розбір as FR, фід_збагачення as FZ, verify as V, colorspace as cs
-    шл = subprocess.run(["git", "ls-files", "-z", "--", "../аудит"], capture_output=True).stdout.decode().split("\0")
-    hx = sorted({"#" + х.upper() for ф in шл if "VIDPOVIDI" in ф for х in re.findall(r"#([0-9a-fA-F]{6})\b", open(ф, encoding="utf-8", errors="ignore").read())} | {"#D3D3D3", "#E6DCCD", "#FFD700"})
+    корпус = os.path.abspath(sys.argv[3]) if len(sys.argv) > 3 else os.path.abspath("..")
+    шл = subprocess.run(["git", "ls-files", "-z", "--", "аудит"], cwd=корпус, capture_output=True).stdout.decode().split("\0")
+    hx = sorted({"#" + х.upper() for ф in шл if "VIDPOVIDI" in ф for х in re.findall(r"#([0-9a-fA-F]{6})\b", open(os.path.join(корпус, ф), encoding="utf-8", errors="ignore").read())} | {"#D3D3D3", "#E6DCCD", "#FFD700"})
     зб, кр = feed.читати_збагачення(), {}
     for o in FR.читати_yml("каталог_повний.xml")[0]:
         z, п = зб.get(o["id"]) or {}, " ".join(str(o.get("колір_сирий") or "").lower().split())
@@ -19,15 +16,17 @@ if sys.argv[1:2] == ["--знімок"]:
     json.dump(dict(коди={х: МШ._код_кольору(х[1:]) for х in hx}, ґратка=МО.ґратка_основ()[0], крамниці=кр, каталог=кат),
               open(sys.argv[2], "w", encoding="utf-8"), ensure_ascii=False, default=str)
     sys.exit()
-база, т = (sys.argv[1:] or ["origin/main"])[0], tempfile.mkdtemp()
+база, т = (sys.argv[1:] or ["origin/main"])[0], tempfile.mkdtemp(); корпус = os.path.abspath(sys.argv[2]) if len(sys.argv) > 2 else os.path.abspath("..")
 subprocess.run(["git", "worktree", "add", "-q", "--detach", т + "/б", база], check=True)
 try:
     import shutil
     shutil.copyfile(os.path.abspath("каталог_повний.xml"), т + "/б/джерела/каталог_повний.xml")
     for д, ф in ((т + "/б/джерела", т + "/до.json"), (".", т + "/після.json")):
-        subprocess.run([sys.executable, os.path.abspath(__file__), "--знімок", ф], cwd=д, check=True)
+        subprocess.run([sys.executable, os.path.abspath(__file__), "--знімок", ф, корпус], cwd=д, check=True)
     до, піс = (json.load(open(т + ф, encoding="utf-8")) for ф in ("/до.json", "/після.json"))
-finally: subprocess.run(["git", "worktree", "remove", "--force", т + "/б"])
+finally:
+    assert os.path.commonpath((os.path.realpath(т), os.path.realpath(т + "/б"))) == os.path.realpath(т)
+    subprocess.run(["git", "worktree", "remove", "--force", т + "/б"])
 print("ФАКТ · коди hex знахідки до → після:", {х: (до["коди"].get(х), піс["коди"].get(х)) for х in ("#D3D3D3", "#E6DCCD", "#FFD700")})
 зм = [х for х in піс["коди"] if до["коди"].get(х) != піс["коди"][х]]
 print("ФАКТ · hex з відповідей моделі: %d, код змінився в %d — %s" % (len(піс["коди"]), len(зм), dict(К.Counter((до["коди"][х], піс["коди"][х]) for х in зм))))
