@@ -546,6 +546,7 @@ function Get-TaskRole([string]$TaskText) {
 }
 
 function Get-Prompt($M, [string]$TaskText, [string]$EngineName = 'agy') {
+    $taskSource = Get-TaskSource $M
     $branch = "gemini/$($M.Slug)"
     $adapter = $(if ($EngineName -eq 'codex') { 'адаптер — лише цей текст' } else { 'адаптер середовища — `GEMINI.md`' })
     $role = $(if ($EngineName -eq 'codex') { Get-TaskRole $TaskText } else { 'ВИКОНАВЕЦЬ' })
@@ -560,7 +561,7 @@ function Get-Prompt($M, [string]$TaskText, [string]$EngineName = 'agy') {
 Ти — $roleText за ``AGENTS.md`` і ``аудит/$roleFile.md``; $adapter. Ізоляцію ОС уже
 перевірила обгортка. Тебе запустила обгортка М.2 без людини: питань не став, відповіді не буде.
 
-- Наряд — ``$($script:TaskDir)$($M.Slug).md`` з ``main`` на коміті $($M.Sha); повний текст — нижче між рисками.
+- Наряд — ``$taskSource`` з ``main`` на коміті $($M.Sha); повний текст — нижче між рисками.
 - Гілку ``$branch`` уже вибрано: працюй і коміть лише в ній. Не пуш і не створюй бандла — це робить обгортка.
   Файлів ``.github/`` і ``аудит/адаптери/gemini/`` не змінюй: таку гілку не опублікують.
 - Кожну команду виконуй на передньому плані й чекай її завершення: фонове завдання зупиняється разом із ходом, а
@@ -938,7 +939,7 @@ function Invoke-Task($M, $Job) {
     try {
         $main = Get-RefSha 'refs/remotes/origin/main'
         $anc = Invoke-Git @('merge-base', '--is-ancestor', $M.Sha, $main) -AllowFail
-        $taskPath = Get-AutoTaskPath $M.Slug
+        $taskPath = Get-TaskSource $M
         if ($anc.Code -ne 0) { $status.code = 'NOT_ON_MAIN'; return }
         if ((Invoke-Git @('cat-file', '-e', "$($M.Sha):$taskPath") -AllowFail).Code -ne 0) { $status.code = 'NO_TASK_FILE'; return }
         $taskText = Add-AutoTaskContext $M.Slug ((Invoke-Git @('cat-file', 'blob', "$($M.Sha):$taskPath")).Out)
@@ -1065,7 +1066,7 @@ function Enter-StartQuotaWait($M, $Q, $State) {
 function Start-Markers($Workers) {
     $started = 0
     $now = [DateTimeOffset]::UtcNow.ToUnixTimeSeconds()
-    $all = @(Get-Markers)
+    $all = @(Get-Markers) + @(Get-NightlyMarker)
     foreach ($m in @($all | Where-Object { -not $_.Valid })) {
         $state = Get-StatePath (Get-MarkerKey $m)
         if (Test-Path -LiteralPath $state) { continue }
