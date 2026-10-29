@@ -7,7 +7,8 @@ import outfit as О, суд_образу as С, реєстр_правил as Р
 таблиця = pathlib.Path(sys.argv[2]); фід = sys.argv[3]
 т = json.load(gzip.open(таблиця, "rt")); офери = Ф.читати_yml(фід)[0]
 каталог = Т.відновити(т, офери)["каталог"]
-слоти = {с: sorted((x for x in каталог if x.get("слот") == с and (x.get("hex") or x.get("colors"))), key=lambda x: x["id"])
+import колір_річ as _КОЛІР
+слоти = {с: sorted((x for x in каталог if x.get("слот") == с and (_КОЛІР.hex_кольору(x) or x.get("colors"))), key=lambda x: x["id"])
          for с in ("верх", "низ", "взуття")}
 образи = [О.елементи([слоти[с][i] for с in слоти]) for i in range(min(200, *(len(x) for x in слоти.values())))]
 print(json.dumps(dict(items=len(каталог), triples=len(образи), slots={с: len(x) for с, x in слоти.items()},

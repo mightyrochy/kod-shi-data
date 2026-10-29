@@ -13,22 +13,22 @@ for n in range(N):
           if к.get(с) and с not in (("верх", "низ") if n % 2 else ("сукня",)) and rnd.random() < 0.7]
     зн, вм = ПВ.знахідки(вх, ід); зз, кд = [z for z in зн if z.get("правило") in ПР], dict(zip(вм["вердикт"]["образи"][0]["речі"], (x["id"] for x in вм["речі"])))
     С.update(z["правило"] + ":" + str(z.get("сила")) for z in зз)
-    Сир.update(cs.hex_з_lab(зі0[і]["lab"]) for z in зз if z["правило"] == "K-COL-05" and z.get("сила") == "default" for і in map(кд.get, z.get("речі") or ()) if зі0.get(і, {}).get("lab"))
+    Сир.update(cs.hex_з_lab(КР.точка_кольору(зі0[і])) for z in зз if z["правило"] == "K-COL-05" and z.get("сила") == "default" for і in map(кд.get, z.get("речі") or ()) if КР.точка_кольору(зі0.get(і, {})))
 N and print("(1) суд %d образів: %s" % (N, " · ".join("%s %d" % кв for кв in sorted(С.items()))))
 N and print("    речі сиріт K-COL-05 default (колір: разів):", ", ".join("%s: %d" % кв for кв in Сир.most_common(14)))
-Т = {cs.hex_з_lab(x["lab"]): (с, КР.акцент_меж(x), x.get("назва", "")[:34]) for с, xs in к.items() for x in map(зі0.get, (y["id"] for y in xs))
-     if hasattr(КР, "акцент_меж") and x and x.get("lab") and КР.не_вимір(x) is None and cs.lch(x["lab"])[0] < 40 and not КО.нейтраль(tuple(x["lab"]))}
+Т = {cs.hex_з_lab(КР.точка_кольору(x)): (с, КР.акцент_меж(x), x.get("назва", "")[:34]) for с, xs in к.items() for x in map(зі0.get, (y["id"] for y in xs))
+     if hasattr(КР, "акцент_меж") and x and КР.точка_кольору(x) and КР.не_вимір(x) is None and cs.lch(КР.точка_кольору(x))[0] < 40 and not КО.нейтраль(tuple(КР.точка_кольору(x)))}
 вх0, бачені, П = json.load(open("стенд_вх.json", encoding="utf-8")), set(), K.Counter()
 for назва in ("офіс·18°C", "дощ·ресторан·вечір", "весілля·гість", "спека·парк"):
     кк = json.loads(B.виклик("запити", json.dumps(dict(вх0, сценарій=dict(СЗ.СЦЕНАРІЇ[назва]), випадок=назва), ensure_ascii=False)))["кандидати"]
     зі = {x["id"]: x for x in B.каталог_останнього_пакета()}
-    рр = [(с, зі[x["id"]]) for с, xs in кк.items() for x in xs if зі.get(x["id"]) and зі[x["id"]].get("lab") and КР.не_вимір(зі[x["id"]]) is None]
+    рр = [(с, зі[x["id"]]) for с, xs in кк.items() for x in xs if зі.get(x["id"]) and КР.точка_кольору(зі[x["id"]]) and КР.не_вимір(зі[x["id"]]) is None]
     for i, (с1, x) in enumerate(рр):
         for с2, y in рр[i + 1:]:
             if с1 == с2 or (x["id"], y["id"]) in бачені: continue
             бачені |= {(x["id"], y["id"]), (y["id"], x["id"])}
-            a, b = sorted((x, y), key=lambda t: cs.lch(t["lab"])[1])
-            if not (4 <= cs.lch(a["lab"])[1] <= 8 <= 20 <= cs.lch(b["lab"])[1]): continue
+            a, b = sorted((x, y), key=lambda t: cs.lch(КР.точка_кольору(t))[1])
+            if not (4 <= cs.lch(КР.точка_кольору(a))[1] <= 8 <= 20 <= cs.lch(КР.точка_кольору(b))[1]): continue
             ра, рб, б = КР.запис_кольору(a), КР.запис_кольору(b), КВ.ВІКНА_ΔH
             КВ.ВІКНА_ΔH = {}; коло = КВ.вердикт(КВ.сила(ра, рб, "same_hue", False)); КВ.ВІКНА_ΔH = б
             коло != "так" and П.update(["пар", "same_hue " + КВ.вердикт(КВ.сила(ра, рб, "same_hue")), "tonal " + КР.відношення(a, b, "tonal")])

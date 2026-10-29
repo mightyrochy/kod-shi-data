@@ -16,6 +16,7 @@ def пікс(im, б, поле=.12):
     return {"дані": base64.urlsafe_b64encode(c.tobytes()).decode(), "ширина": c.width, "висота": c.height, "ядро": {"ліво": round((л - л2) / (п2 - л2) * 1000),
             "верх": round((в - в2) / (н2 - в2) * 1000), "право": round((п - л2) / (п2 - л2) * 1000), "низ": round((н - в2) / (н2 - в2) * 1000)}}
 рез = collections.defaultdict(list)
+import колір_річ as _КОЛІР
 for f in sorted(glob.glob(os.path.join(sys.argv[1], "*"))):
     try: im = Image.open(f).convert("RGB")
     except Exception: continue
@@ -26,13 +27,13 @@ for f in sorted(glob.glob(os.path.join(sys.argv[1], "*"))):
     xs, ys = [i % w for i, v in enumerate(m) if v], [i // w for i, v in enumerate(m) if v]
     L, T, R, B = min(xs) / w * 1000, min(ys) / h * 1000, (max(xs) + 1) / w * 1000, (max(ys) + 1) / h * 1000
     правда = НОВ.виміряти(пікс(im, (L, T, R, B)))
-    if not правда.get("lab"): continue
-    хибне = "чорний" if правда["lab"][0] > 50 else "білий"
+    if not _КОЛІР.точка_кольору(правда): continue
+    хибне = "чорний" if _КОЛІР.точка_кольору(правда)[0] > 50 else "білий"
     for н, б in (("4 краї, щільна рамка", (L, T, R, B)), ("рамка в речі (3690)", (L + .05 * (R - L), T + .25 * (B - T), R - .25 * (R - L), B - .25 * (B - T))),
                  ("рамка в речі, низ до краю (4285)", (L + .25 * (R - L), T + .4 * (B - T), R - .25 * (R - L), 1000)), ("рамка зсунута на тло (4684)", (L + .6 * (R - L), T, R + .6 * (R - L), B))):
         if б[2] > 1000: continue
         for сл, слово in (("слово вірне", правда["слово"]), ("слово хибне", хибне)):
             for ім, мод in (("до", СТ), ("після", НОВ)):
-                лаб = мод.виміряти(пікс(im, б), слово_моделі=слово).get("lab"); рез[(н, сл, ім)].append(None if not лаб else cs.de00(tuple(лаб), tuple(правда["lab"])))
+                лаб = _КОЛІР.точка_кольору(мод.виміряти(пікс(im, б), слово_моделі=слово)); рез[(н, сл, ім)].append(None if not лаб else cs.de00(tuple(лаб), tuple(_КОЛІР.точка_кольору(правда))))
 for (н, сл, ім), v in sorted(рез.items()):
     ок = [x for x in v if x is not None]; print("%-34s %-11s %-5s n=%3d правильно %3d · хибно %3d · без виміру %3d" % (н, сл, ім, len(v), sum(x <= 10 for x in ок), sum(x > 10 for x in ок), len(v) - len(ок)))

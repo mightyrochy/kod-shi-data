@@ -23,9 +23,10 @@ import feed as Ф, bridge as B, колір_образу as КО
 вх["гілка"] = 0
 json.loads(B.виклик("запити", json.dumps(вх, ensure_ascii=False)))
 кат = B.каталог_останнього_пакета()
+import колір_річ as _КОЛІР
 гучні = [c for c in кат
-         if c.get("слот") == "прикраси" and c.get("lab")
-         and (КО.гучність(tuple(c["lab"])).get("C") or 0) >= 40
+         if c.get("слот") == "прикраси" and _КОЛІР.точка_кольору(c)
+         and (КО.гучність(tuple(_КОЛІР.точка_кольору(c))).get("C") or 0) >= 40
          and (c.get("блиск") or 0) < 2 and not c.get("візерунок") and not c.get("метал")]
 двоє = гучні[:2]
 база = [next(c for c in кат if c.get("слот") == сл) for сл in ("сукня", "взуття", "сумка")]

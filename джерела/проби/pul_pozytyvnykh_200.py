@@ -9,7 +9,7 @@ sys.path[:0] = [str(pathlib.Path(__file__).resolve().parent.parent), str(pathlib
 import bridge as B, колір_річ as КР
 from sklad_virdyktiv_200 import В
 from sud_shem_200 import ПРОГУЛЯНКА, УРОК, вх0
-сім = lambda c: КР.сім_я(c["lab"]) if (c or {}).get("lab") else "?"
+сім = lambda c: КР.сім_я(КР.точка_кольору(c)) if КР.точка_кольору(c or {}) else "?"
 for сід in (3, 7):
     for мітка, зм in (("без вибору", {}), ("н+а", dict(схема="нейтрали+акцент", гілка=2))):
         for п, прогони in ((ПРОГУЛЯНКА, "0"), (УРОК, "34")):

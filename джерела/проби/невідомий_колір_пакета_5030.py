@@ -4,6 +4,7 @@ import os, sys
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 import пакет_моделі as П, дріт_моделі as Д, colorspace as КС, колір_образу as КО
 
+import колір_річ as _КОЛІР
 if __name__ == "__main__":
     невідомі = [{"id": "проба-прапорець", "hex": "#808080", "колір_невідомий": True},
                 {"id": "проба-прапорець-колір", "hex": "#ff0000", "колір_невідомий": True},
@@ -23,12 +24,12 @@ if __name__ == "__main__":
             дріт = Д._ЗП.рядки_таблиці(Д.пакет({"пул": {"верх": [вхід]}, "завдання": {"короткий_запис": короткий}})["pool"])[0]
             ключ = lambda к: к
             if i < len(невідомі):
-                if not р.get("колір_невідомий") or any(р.get(k) is not None for k in ["hex", "сім_я", "у_дузі"]): вади.append((i, "producer"))
+                if not _КОЛІР.позначено_невідомим(р) or any(р.get(k) is not None for k in ["hex", "сім_я", "у_дузі"]): вади.append((i, "producer"))
                 if any(ключ(k) in дріт for k in ["hex", "family"]): вади.append((i, "consumer"))
                 if пул_дуги[i].get("у_дузі") is not None: вади.append((i, "дуга"))
             else:
-                if р.get("колір_невідомий") or not дріт.get(ключ("hex")): вади.append((i, "відомий hex"))
-                if КО.нейтраль(КС.hx(р["hex"])) is not None and дріт.get(ключ("family")) != Д.код("colour_family", КО.сім_я(КС.hx(р["hex"]))): вади.append((i, "відомий neutral"))
+                if _КОЛІР.позначено_невідомим(р) or not дріт.get(ключ("hex")): вади.append((i, "відомий hex"))
+                if КО.нейтраль(КС.hx(_КОЛІР.hex_кольору(р))) is not None and дріт.get(ключ("family")) != Д.код("colour_family", КО.сім_я(КС.hx(_КОЛІР.hex_кольору(р)))): вади.append((i, "відомий neutral"))
                 if р["id"] == "проба-колір" and дріт.get(ключ("family")) != "red": вади.append((i, "кольоровий контроль"))
     print("Actual producer → consumer: невідомих", len(невідомі), "відомих", len(відомі), "× повний/компактний; вади", вади)
     sys.exit(bool(вади))

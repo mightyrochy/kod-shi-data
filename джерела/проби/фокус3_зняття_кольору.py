@@ -6,7 +6,8 @@ import json, gzip, glob, os, sys, collections as K
 sys.path.insert(0, "."); import colorspace as cs, palettes as P, палітра_схеми as ПСХ, внутрішня_мова as ВМ, суд_від_моделі as С, регістр_уваги as РУ, суд_ремесло as СР
 ЗОНА = {"ж4_робота_живіт": ["живіт"]}   # код `goal_zones`, який мовна модель ставить на «приховати живіт»
 на_мету = getattr(РУ, "на_мету", lambda *x: True)
-хр = lambda i: bool(i.get("hex")) and i.get("color") not in ("golden", "silvery", "pearly") and P.хроматична(cs.hx(i["hex"]))
+import колір_річ as _КОЛІР
+хр = lambda i: bool(_КОЛІР.hex_кольору(i)) and i.get("color") not in ("golden", "silvery", "pearly") and P.хроматична(cs.hx(_КОЛІР.hex_кольору(i)))
 сл = lambda i: ВМ.ключ("slot", ВМ.СЛОТ_ТИПУ.get(i.get("type"), "jewelry")) or "прикраси"
 def дж(t):
     try: return json.JSONDecoder().raw_decode(t[t.index("{"):])[0]
@@ -24,7 +25,7 @@ for f in sorted(glob.glob(sys.argv[1] + "/ж*_*/вердикти.txt.gz")):
             yo = o["your_outfit"]; ca = [i for i in yo["items"] if хр(i)]
             if not ca: continue
             кз = {ВМ.код("slot", сл(i)) for i in ca if yo["id"] in a and i["n"] not in a[yo["id"]]["items"]}
-            речі = [dict(id=i["n"], слот=сл(i), hex=i["hex"], назва=i["name"]) for i in yo["items"] if i.get("hex")]
+            речі = [dict(id=i["n"], слот=сл(i), hex=_КОЛІР.hex_кольору(i), назва=i["name"]) for i in yo["items"] if _КОЛІР.hex_кольору(i)]
             сх = СР.слоти_акценту_схеми(речі, сп); кв = {"схема_слоти": сх} if "схема_слоти" in С.бюджет_і_відлуння.__code__.co_varnames else {}
             вол = {"волосся_%d" % k: dict(zip("LCh", cs.lch(cs.hx(x)))) for k, x in enumerate(json.load(open(
                 "../аудит/проби/жінки/%s.json" % f.split("/")[-2].split("_")[0]))["hair"])}

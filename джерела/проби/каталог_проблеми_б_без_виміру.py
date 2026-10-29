@@ -5,21 +5,21 @@
 крамниці, де їх найбільше. Запуск: cd джерела && python3 -W ignore проби/каталог_проблеми_б_без_виміру.py"""
 import collections, os, re, sys
 ТУТ = os.path.dirname(os.path.dirname(os.path.abspath(__file__))); sys.path.insert(0, ТУТ); os.chdir(ТУТ)
-import feed, фід_каталог as FK
+import feed, фід_каталог as FK, колір_річ as КР
 К = FK.прочитати_каталог(feed.каталог_на_диску(), 0)["каталог"]
-нв = [r for r in К if r.get("колір_не_вимір")]
+нв = [r for r in К if КР.тип_кольору(r) == "інтервал"]
 def причина(r):
-    ч = r["колір_не_вимір"].get("чому", "")
+    ч = КР.не_вимір(r).get("чому", "")
     for к, п in (("придатного для виміру", "опису фото для виміру нема"), ("в спорі", "фото в спорі зі словом"),
                  ("спільна картинка", "кадр — спільна картинка"), ("згода свідків", "згода свідків нижча порогу")):
         if к in ч:
             return п
     return re.sub(r"«[^»]*»", "«…»", ч)[:60]
-print("ФАКТ · записів %d; без виміру, код = вікно слова: %d (%.1f %%); з них без hex фото %d" % (
+print("ФАКТ · записів %d; інтервалів: %d (%.1f %%); з них без hex фото %d" % (
     len(К), len(нв), 100 * len(нв) / len(К), sum(not r.get("колір_hex_фото") for r in нв)))
 print("ФАКТ · причини: %s" % collections.Counter(причина(r) for r in нв).most_common())
-print("ФАКТ · свідок: %s; слоти: %s" % (dict(collections.Counter(r["колір_не_вимір"].get("свідок") for r in нв)),
+print("ФАКТ · свідок: %s; слоти: %s" % (dict(collections.Counter(КР.не_вимір(r).get("свідок") for r in нв)),
       collections.Counter(r["слот"] for r in нв).most_common(5)))
-коди = collections.Counter(tuple(r.get("lab") or ()) for r in нв)
-print("ФАКТ · різних кодів lab %d на %d записів; найчастіший код несуть %d записів" % (len(коди), len(нв), коди.most_common(1)[0][1]))
+print("ФАКТ · інтервалів з lab: %d; невідомих: %d; інтервалів зі збереженим фото-виміром: %d" % (
+    sum(bool(КР.точка_кольору(r)) for r in нв), sum(КР.тип_кольору(r) == "невідомо" for r in К), sum(bool(r.get("колір_вимір")) for r in нв)))
 print("ФАКТ · крамниці: %s" % collections.Counter(r["магазин"] for r in нв).most_common(6))

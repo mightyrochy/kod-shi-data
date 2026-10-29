@@ -6,6 +6,7 @@
 import argparse, contextlib, gzip, io, json, os, subprocess, sys, tempfile, types
 ТУТ = os.path.dirname(os.path.dirname(os.path.abspath(__file__))); sys.path.insert(0, ТУТ)
 import feed as F, colorspace as CS, verify as V, жнива_v2 as Н
+from колір_річ import точка_кольору
 БАЗА = sys.argv[1] if len(sys.argv) > 1 else "95b0102"
 С = types.ModuleType("жнива_v2_старий"); С.__file__ = os.path.join(ТУТ, "жнива_v2.py")
 exec(compile(subprocess.run(["git", "show", "%s:джерела/жнива_v2.py" % БАЗА], cwd=ТУТ, capture_output=True, check=True).stdout.decode("utf-8"), "жнива_v2.py", "exec"), С.__dict__)
@@ -13,8 +14,10 @@ exec(compile(subprocess.run(["git", "show", "%s:джерела/жнива_v2.py"
 С.V.__dict__.update(V.__dict__, ЛЕКСИКОН={с: в for с, в in V.ЛЕКСИКОН.items() if с not in V.ВІКНА_КРАМНИЦЬ})
 зб = dict(F.читати_збагачення(ТУТ)); v2 = [зб[к] for к in sorted(зб) if (зб[к].get("версія") or 1) >= 2][:300]
 offers = F.читати_yml(sys.argv[2] if len(sys.argv) > 2 else Н.КАТАЛОГ)[0][:3000]
-кл = lambda з: [dict(слово=k["слово"], частка=k["частка"], lab=list(CS.hx(k["hex"])), hex=k["hex"], у_вікні=True) for k in (з.get("колір_основний"), з.get("колір_другий")) if k]
-з_кольором = [з for з in v2 if з.get("колір_основний")]
+import колір_річ as _КОЛІР
+кл = lambda з: [dict(слово=k["слово"], частка=k["частка"], lab=list(точка_кольору(k)), hex=_КОЛІР.hex_кольору(k) or CS.hex_з_lab(точка_кольору(k)), у_вікні=True) for k in (з.get("колір_основний"), з.get("колір_другий")) if точка_кольору(k) is not None]
+з_кольором = [з for з in v2 if точка_кольору(з.get("колір_основний")) is not None]
+print("Історичне порівняння точок: записів без виміру", len(v2) - len(з_кольором), "із", len(v2))
 сирі = [(dict(з, колір_слово=з["колір_основний"]["слово"], деталі=["комір", "x"]), "одяг" if з.get("крій") else "дрібне") for з in з_кольором] + [({"колір_слово": "чорний", "каблук": {"є": True, "форма": "тонкий"}, "носок": "гострий", "блиск": 2}, "взуття"), ({"тип": "тоут", "ручки": "обидва"}, "сумка"), ({"метал": "золотистий", "масштаб": "велика"}, "прикраса")]
 def зведення(м, з):
     о, д, с = м.звести_колір(кл(з), з["колір_основний"]["слово"], ["сірий", "білий"])
@@ -26,7 +29,7 @@ def злиття(м, тека):
     return gzip.open(а.злити_у).read().decode("utf-8"), [р for р in вих.getvalue().splitlines() if "КБ" not in р]
 ПАРИ = [("нормалізувати", lambda м: [м.нормалізувати(с, н) for с, н in сирі]),
         ("звести_колір+впевненість", lambda м: [зведення(м, з) for з in з_кольором]),
-        ("слово_з_lab+_тінь", lambda м: [(м.слово_з_lab(к["lab"]), м._тінь(к["lab"], [к["lab"][0] - 5] + к["lab"][1:])) for з in v2 for к in кл(з)]),
+        ("слово_з_lab+_тінь", lambda м: [(м.слово_з_lab(_КОЛІР.точка_кольору(к)), м._тінь(_КОЛІР.точка_кольору(к), (_КОЛІР.точка_кольору(к)[0] - 5, *_КОЛІР.точка_кольору(к)[1:]))) for з in v2 for к in кл(з)]),
         ("збільшити_url", lambda м: [м.збільшити_url(u) for o in offers for u in (o.get("фото") or o.get("фото_сирі") or [])]),
         ("тип_речі+набір+промпт", lambda м: [(т, м.набір_слота(т[1]), м._підставити(м.ПРОМПТ_НАБОРУ[м.набір_слота(т[1])], т[0])) for т in map(м.тип_речі, offers[:400])]),
         ("вибірка+_url_крамниць", lambda м: ([o["id"] for o in м.вибірка(offers)], [dict(x) for x in м._url_крамниць(offers)[0].values()], м._url_крамниць(offers)[1])),

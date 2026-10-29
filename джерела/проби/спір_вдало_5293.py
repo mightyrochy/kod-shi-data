@@ -15,6 +15,7 @@ def _вим(в):
         yield
     return г
 разом = {"до": 0, "після": 0, "опори до": 0, "опори після": 0}
+import колір_річ as _КОЛІР
 for т in sorted(glob.glob(os.path.join(sys.argv[1], "*"))):
     d0 = json.load(open(т + "/вердикти.txt", encoding="utf-8")) if os.path.isfile(т + "/вердикти.txt") else {}
     if "вхід_прогону" not in d0.get("спільне", {}): print(os.path.basename(т), "— запис без вхід_прогону (старший формат), пропущено"); continue
@@ -22,7 +23,7 @@ for т in sorted(glob.glob(os.path.join(sys.argv[1], "*"))):
     зап = copy.deepcopy(е["суд"]["речі"])
     for р in зап:
         р.pop("палітра", None); в = р.get("вимір") or {}
-        if в.get("lab") and not в.get("гілка"): в["гілка"] = next((г for с, г in ГІЛКИ if с in (в.get("чому") or "")), "edges")
+        if _КОЛІР.точка_кольору(в) and not в.get("гілка"): в["гілка"] = next((г for с, г in ГІЛКИ if с in (в.get("чому") or "")), "edges")
     непевні = {р["ід"] for р in зап if (р.get("вимір") or {}).get("спір") and ((р["вимір"].get("гілка") not in ("edges", "touch")) or р["вимір"].get("другий"))}
     ряд = []
     for ім, М, ф in ((ім, М, ф) for ф in sorted(glob.glob(т + "/*ОЦІНКА_відповідь.txt")) for ім, М in (("до", СТ), ("після", НОВ))):
