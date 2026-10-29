@@ -67,6 +67,19 @@ def слова_людини(шлях):
     return слова
 
 
+def початок_транскрипту(шлях):
+    """Час першої події транскрипту "РРРР-ММ-ДД ГГ:ХХ" UTC; порожній чи без часу — None."""
+    with open(шлях, encoding="utf-8") as ф:
+        for рядок in ф:
+            try:
+                коли = json.loads(рядок).get("timestamp")
+            except (ValueError, AttributeError):
+                continue
+            if isinstance(коли, str) and коли:
+                return коли[:16].replace("T", " ")
+    return None
+
+
 def прочитати(шлях):
     return [f"- {коли} UTC «{т}»" for коли, т in слова_людини(шлях)]
 
