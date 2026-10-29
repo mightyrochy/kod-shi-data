@@ -34,6 +34,7 @@ import argparse, ast, collections, glob, os, re, sys, warnings
                         "власник_кадру", "колір_невідомий", "колір_hex_фото"))
 КЛЮЧІ_КАДРУ = frozenset(("файл", "url", "клас", "частка_маски"))
 КЛЮЧІ_РЕЧІ = ТИПІЗОВАНІ | {"слот", "колір_назва"}
+ОЗНАКИ_РЕЧІ = frozenset(("слот", "колір", "блиск", "візерунок", "фактура", "крій"))     # запис речі за іншими ознаками
 # читачі типізованого кольору: код, що кличе їх, дивиться на вид значення
 ВИД_ЗНАЧЕННЯ = frozenset(("тип_кольору", "точка_кольору", "hex_кольору", "не_вимір", "явний_тип_кольору", "провенанс_кольору",
                           "lab_входу", "межі_кольору", "вікно_кольору", "має_колір", "запис_кольору", "позначено_невідомим",
@@ -43,7 +44,8 @@ import argparse, ast, collections, glob, os, re, sys, warnings
                         "колір_з_фото", "зразок_пікселів", "палітра_принту", "світліша_половина",
                         "виміряти_кроками", "виміряти_дотик", "фото_за_словом", "фото_за_словом_кроками"))
 ОБГОРТКИ = frozenset(("виміряти", "фото_за_словом"))          # синхронні обгортки вимірювачів: самі не споживачі
-ВИМІРЮВАЧ_АТРИБУТ = frozenset((("surface", "виміряти"), ("П", "виміряти")))
+МОДУЛЬ_ПОВЕРХНІ = "surface"
+АЛІАСИ_МОДУЛЯ, АЛІАСИ_ФУНКЦІЇ = set(), set()     # імена модуля поверхні й функції `виміряти` у файлі: з імпортів
 ПІКСЕЛІ = frozenset(("пікселі", "rgb", "bgr", "labs", "домінанта", "зразок_пікселів"))
 СЛОВО = frozenset(("центр_вікна", "_центр_вікна", "ЛЕКСИКОН", "вікно_зі_слова", "вікно_слова", "lab_з_hex"))
 МОДЕЛЬ = frozenset(("модель", "model_hex", "model_word", "слово_моделі", "shop_word", "назва_вікно"))
@@ -52,7 +54,7 @@ import argparse, ast, collections, glob, os, re, sys, warnings
 ВЛАСНИК = frozenset(("власник_кадру", "чужий_кадр_кольору", "чужий_кадр_речі", "чужий_кадр", "власник",
                      "кадр_належить", "спільні", "спільні_файли"))
 КАДР = frozenset(("кадр", "кадри", "кадр_виміру", "файл", "url", "шлях", "фото"))
-МАНІФЕСТ = frozenset(("походження_кадру", "sha256", "маніфест", "imwrite"))
+МАНІФЕСТ = frozenset(("походження_кадру", "sha256", "маніфест"))     # збереження картинки (imwrite) маніфестом не є
 ОБРАННЯ = frozenset(("min", "max", "sorted", "next", "filter"))
 КЛАСТЕР = re.compile(r"кластер|сегмент|поверхн|виміри|кадри|записи")
 СЛОВО_ЗОВНІ = frozenset(("слово_моделі", "слова_крамниці", "слова_крамниці_", "слово_крамниці", "якір_слово", "слово_її", "крамниця",
@@ -60,7 +62,8 @@ import argparse, ast, collections, glob, os, re, sys, warnings
 НЕНАДІЙНЕ = re.compile(r"ненадій|тло")
 ВАЛІДАТОР = re.compile(r"справн|перевір|валід")      # перевіряє форму запису, колір не бере
 JS_ВИМІР = re.compile(r"\.вимір\s*\|\|\s*\{\}\s*\)\s*\.(hex|lab)\b|\.колір_вимір\.(hex|lab)\b")
-JS_ВИД = re.compile(r"колір_тип|придатн|\.lab\s*\?")
+JS_РІЧ = re.compile(r"(?<![\wа-яіїєґ])(р|річ|речі)\.(hex|lab)\b")      # читач кольору на самій речі, не на виміру
+JS_ВИД = re.compile(r"колір_тип|придатн")     # перевірка лише наявності `.lab ?` вид значення не дивиться
 
 Місце = collections.namedtuple("Місце", "файл рядок пункт чому шлях")
 
@@ -72,10 +75,25 @@ def розібрати(шлях):
         warnings.simplefilter("ignore")
         дерево = ast.parse(текст)
     батьки = {}
+    АЛІАСИ_МОДУЛЯ.clear(); АЛІАСИ_ФУНКЦІЇ.clear()
     for n in ast.walk(дерево):
         for c in ast.iter_child_nodes(n):
             батьки[c] = n
+        if isinstance(n, ast.Import):
+            АЛІАСИ_МОДУЛЯ.update(а.asname or а.name for а in n.names if а.name.split(".")[-1] == МОДУЛЬ_ПОВЕРХНІ)
+        elif isinstance(n, ast.ImportFrom):
+            for а in n.names:
+                if а.name == МОДУЛЬ_ПОВЕРХНІ:
+                    АЛІАСИ_МОДУЛЯ.add(а.asname or а.name)
+                elif (n.module or "").split(".")[-1] == МОДУЛЬ_ПОВЕРХНІ and а.name == "виміряти":
+                    АЛІАСИ_ФУНКЦІЇ.add(а.asname or а.name)
     return дерево, батьки
+
+
+def виміряти_поверхні(n):
+    """Виклик `surface.виміряти`: модуль чи функція названі за імпортом файла, а не за писанням псевдоніма."""
+    ім, мод = ім_виклику(n)
+    return (ім == "виміряти" and мод in АЛІАСИ_МОДУЛЯ) or (мод is None and ім in АЛІАСИ_ФУНКЦІЇ)
 
 
 def власні_вузли(вузол):
@@ -100,7 +118,12 @@ def свідчення(вузли):
     """(імена й атрибути, рядкові константи й імена аргументів, імена викликів) у піддеревах."""
     імена, конст, виклики = set(), set(), set()
     for корінь in вузли:
+        доки = {id(т.body[0].value) for т in ast.walk(корінь)
+                if isinstance(т, (ast.FunctionDef, ast.AsyncFunctionDef, ast.ClassDef, ast.Module)) and т.body
+                and isinstance(т.body[0], ast.Expr) and isinstance(т.body[0].value, ast.Constant)}     # докстрінг — не свідчення
         for n in ast.walk(корінь):
+            if id(n) in доки:
+                continue
             if isinstance(n, ast.Name):
                 імена.add(n.id)
             elif isinstance(n, ast.Attribute):
@@ -113,7 +136,7 @@ def свідчення(вузли):
                 ім, мод = ім_виклику(n)
                 if ім:
                     виклики.add(ім)
-                    if (мод, ім) in ВИМІРЮВАЧ_АТРИБУТ:
+                    if виміряти_поверхні(n):
                         виклики.add("surface.виміряти")
     return імена, конст, виклики
 
@@ -189,7 +212,7 @@ def наявність(вузол, батьки):
             return True
         if isinstance(п, ast.comprehension) and n in п.ifs:
             return True
-        if isinstance(п, ast.BoolOp) or (isinstance(п, ast.UnaryOp) and isinstance(п.op, ast.Not)):
+        if isinstance(п, ast.UnaryOp) and isinstance(п.op, ast.Not):
             return True
         if isinstance(п, ast.Call) and isinstance(п.func, ast.Name) and п.func.id == "bool":
             return True
@@ -285,6 +308,11 @@ def записи_точки(функція):
             ц = n.targets[0]
             if isinstance(ц.slice, ast.Constant) and isinstance(ц.slice.value, str):
                 групи[("оновлення", ast.unparse(ц.value))].append((ц.slice.value, n, n.value))
+        elif isinstance(n, ast.Return) and n.value is not None:     # колір, повернений значенням чи кортежем
+            for т in ast.walk(n.value):
+                if isinstance(т, ast.Subscript) and isinstance(т.slice, ast.Constant) and т.slice.value in ТОЧКА \
+                        and isinstance(т.ctx, ast.Load):
+                    групи[("повернення", id(n), т.slice.value)].append((т.slice.value, n, т))
     вихід = []
     for елем in групи.values():
         ключі = {к for к, _, з in елем if not (isinstance(з, ast.Constant) and з.value is None and к in ("розкид", "spread"))}
@@ -354,7 +382,7 @@ def шлях_А(файл, дерево, батьки):
                 if not isinstance(n, ast.Call):
                     continue
                 ім, мод = ім_виклику(n)
-                if ім in ВИМІРЮВАЧІ or (мод, ім) in ВИМІРЮВАЧ_АТРИБУТ:
+                if ім in ВИМІРЮВАЧІ or виміряти_поверхні(n):
                     імена_ф, конст_ф, виклики_ф = свідчення([функція])
                     if not (імена_ф | конст_ф | виклики_ф) & МАНІФЕСТ:
                         місця.append(Місце(файл, n.lineno, 5, "виклик %s у %s: кадр виміру не збережено з маніфестом" % (ім, функція.name), "А"))
@@ -407,12 +435,15 @@ def шлях_Б(файл, дерево, батьки):
             рядок = вузол.lineno
             є_вид = bool(виклики_о & ВИД_ЗНАЧЕННЯ or "колір_тип" in конст_о or "колір_тип" in ключі)
             # п.3 — запис речі з типізованими ключами: читач `lab`/`hex` напряму без виду значення
-            if ключ is not None and ключі & ТИПІЗОВАНІ and not є_вид:
+            if ключ is not None and ключі & (ТИПІЗОВАНІ | ОЗНАКИ_РЕЧІ) and not є_вид:
                 місця.append(Місце(файл, рядок, 3, "читач «%s» у %s не дивиться на вид значення" % (ключ, функція.name), "Б"))
             # п.1, п.2 — кадр галереї: ключі кадру й точка без розкиду, придатності й власника
-            if ключі & КЛЮЧІ_КАДРУ and not ключі & {"розкид", "придатна", "придатний"}:
-                if not any(р in k for k in конст_б for р in РОЗКИД):
-                    місця.append(Місце(файл, рядок, 1, "читач точки кадру «%s» у %s: точка без розкиду й придатності" % (приймач, функція.name), "Б"))
+            if ключі & КЛЮЧІ_КАДРУ:
+                докази = ключі | конст_б
+                бракує = [н for н, ознаки in (("розкиду", РОЗКИД), ("придатності", ПРИДАТНІСТЬ))
+                          if not any(о in k for k in докази for о in ознаки)]
+                if бракує:
+                    місця.append(Місце(файл, рядок, 1, "читач точки кадру «%s» у %s: точка без %s" % (приймач, функція.name, " і ".join(бракує)), "Б"))
                 if not (свідчення([функція])[0] | свідчення([функція])[1]) & ВЛАСНИК:
                     місця.append(Місце(файл, рядок, 2, "читач кадру «%s» у %s: кадр у колір без перевірки власника кадру" % (приймач, функція.name), "Б"))
     return місця
@@ -422,8 +453,8 @@ def шлях_Б_js(js):
     місця = []
     for ш in js:
         for н, р in enumerate(open(ш, encoding="utf-8").read().split("\n"), 1):
-            if JS_ВИМІР.search(р) and not JS_ВИД.search(р):
-                місця.append(Місце("показ/" + os.path.basename(ш), н, 3, "читач вимір.hex/lab у JS не дивиться на вид значення", "Б"))
+            if (JS_ВИМІР.search(р) or JS_РІЧ.search(р)) and not JS_ВИД.search(р):
+                місця.append(Місце("показ/" + os.path.basename(ш), н, 3, "читач hex/lab речі у JS не дивиться на вид значення", "Б"))
     return місця
 
 
