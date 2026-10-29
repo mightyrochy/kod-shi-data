@@ -8,7 +8,8 @@
   CHROMIUM=/opt/pw-browsers/chromium-1194/chrome-linux/chrome MODEL_URL=http://127.0.0.1:1236/v1 MODEL=qwen/qwen3.5-9b \
   MODEL_MOVA=mamaylm-gemma-3-12b-it-v2.0 FOTO=1 ZHINKA=аудит/проби/жінки/ж2.json CHAT_TEXT='…' OTSINKA=0 NE_TSIA=1 \
   NODE_PATH=джерела/node_modules node аудит/проби/рв6_стенд.js http://127.0.0.1:8765 <тека збірки> <тека pyodide> 3"""
-import sys, os, re, json, difflib, threading
+import sys, os, re, json, threading
+from схожість_промптів import схожість
 from http.server import ThreadingHTTPServer, BaseHTTPRequestHandler
 
 ТЕКА, ПОРТ = sys.argv[1], int(sys.argv[2])
@@ -37,13 +38,6 @@ def клас(т):
 
 for з in ЗАПИСИ:
     з["клас"] = клас(з["промпт"])
-
-
-def схожість(а, б):
-    к = lambda x: x[:600] + "\n…\n" + x[-2500:]
-    return difflib.SequenceMatcher(None, к(а), к(б), autojunk=False).quick_ratio() \
-        if abs(len(а) - len(б)) > 0.5 * max(len(а), len(б), 1) else \
-        difflib.SequenceMatcher(None, к(а), к(б), autojunk=False).ratio()
 
 
 class Р(BaseHTTPRequestHandler):

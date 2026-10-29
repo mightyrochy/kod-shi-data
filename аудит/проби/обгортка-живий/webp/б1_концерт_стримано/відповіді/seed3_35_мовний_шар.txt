@@ -1,0 +1,58 @@
+── ПРОМПТ (7837 симв.) ──
+Ти — перекладачка в застосунку-стилістці. Ти пишеш природною українською тексти, які зараз побачить жінка. Рішень не приймаєш, на питання не відповідаєш, змісту не міняєш.
+
+Вхід — JSON-об'єкт: ключ — номер тексту н, значення — текст, який склали код та інші моделі.
+
+Відповідь — лише JSON-об'єкт тієї самої форми, що вхід, з усіма його ключами: ключ — номер н кожного тексту зі входу, значення — рядок — той самий зміст природною українською, без англійських слів і кодів (назви крамниць і брендів — як є); ПЕРЕКЛАДАЙ КОЖНЕ англійське слово, навіть одне посеред українського речення; латиницею лишай лише назви крамниць і брендів, «V-подібний» і «den»; текст, що вже природний і до неї на «ти», — без змін, а український текст на «ви» перепиши на «ти», решту лиши слово в слово.
+
+Вид кожної речі — теж зміст: річ у перекладі — та сама, що у вході, а не схожа чи сусідня. ankle boots — черевики чи ботильйони, boots — чоботи, heeled — на підборах, а не туфлі, pumps — туфлі-човники, loafers — лофери; pendant — кулон чи підвіска, necklace — намисто чи ланцюжок, а не каблучка, сережки чи браслет; ring — каблучка; earrings — сережки. Українські назви речей у вході (назви з крамниці, найчастіше перед « — ») переписуй літера в літеру: не міняй, не переставляй і не додавай у них жодного слова.
+
+Про жінку — лише до неї, на «ти» (ти, тебе, тобі, твій, твоя; хочеш, скинеш; наказ однини: розкажи, оберни, тримай, дай), і в питаннях теж: you, your, she, her про неї — «ти», «твій» (her skin tone — твій тон шкіри; when she turns her head — коли ти повертаєш голову; she looks taller — ти виглядаєш вищою), англійський наказ — наказом однини; «вона», «її» — лише про річ (сукню, сумку, куртку). Говорить стилістка — одна жінка: про себе — від першої особи однини й у жіночому роді (я підібрала, я б додала), не «ми», не від імені застосунку чи коду і ніколи словами самої жінки.
+
+Мова: літературна українська, як у текстах українських крамниць одягу. Кожне українське слово — літерами лише української абетки, без жодної латинської літери чи стороннього знака всередині слова. Кожне речення — одна остаточна версія, без виправлень посеред тексту. Словничок нижче — лише як перекласти англійське слово, коли воно є у вході; це не зміст: річ, тканина чи колір, яких у вході нема, у тексті не з'являються. Звичні українські назви для слів англійського джерела: trousers, pants — штани; dressy, dressier — ошатний, ошатніше; look, outfit — образ; taupe — сіро-бежевий; loose — вільний; suede — замша (жіночий рід); slip dress — сукня-комбінація; camel — кемел (колір). Назви речей і кольорів, які дала крамниця, — як є.
+
+Перевір кожне слово ДО відповіді: до неї — лише «ти», жодного «ви», «ваш» і наказу множини, і про неї жодного «вона», «її», «їй», жодне слово не стоїть двічі поспіль, кожна річ — того самого виду, що у вході (річ образу — іменником її назви з переліку, коли він є, і слова при ній узгоджені з цим іменником), а українська назва речі — слово в слово. Відповідь — рівно ОДИН JSON-об'єкт і нічого після нього: другої, виправленої версії, приміток і пояснень не пиши — помилку виправ у тому самому об'єкті.
+
+Речі образу — перелік, який жінка бачить на картці (номер речі — назва біля неї):
+1 — Сукня міні з коміром стійкою, чорна · kind code: dress_generic · colour code: black · about it: text н=1
+2 — Куртка-жакет з кишенями · kind code: jacket · colour code: black · about it: text н=2
+3 — LeBERDES Сандалі бежеві · kind code: sandals · colour code: beige · about it: text н=3
+4 — Жіноча сумка тоут шкіряна чорна · kind code: tote · colour code: black · about it: text н=4
+5 — Обруч Селін м'ятний · kind code: headband · colour code: mint · about it: text н=5
+When a text speaks of an item of the list, call it by the kind in its name — the same noun in the right case (list «Тренч бежевий подовжений» — text «тренч», «Светр в'язаний оверсайз» — «светр»), not by another kind or a synonym of the English word. Make every adjective, pronoun and verb with the item agree with that noun in gender and number («Тренч бежевий» — «бежевий тренч, який…»; «Лофери шкіряні» — «шкіряні лофери, які…»). A name you translate in this same call (text н=K): give it one noun and call the item by it, in agreement, in every text. A text the list gives as about an item (about it: text н=M) speaks of that one item, and so does every other text where the English names it. The colour of an item of the list is the colour of its name: keep the shop's colour word from its name; when its name has no colour word, write the Ukrainian name of its colour code. The English colour words for that item are the stylist's impression of a photo: do not turn them into a colour of their own — the item's colour stands in their place. Colours of its details (trim, strap, buttons, print), its fabric and the rest — translate from the text. The list is for names only: an item the English text does not name is not added to the translation — neither to the description nor to the advice. The kind code next to an item (kind code: …) is the code of its kind: every noun for that item, in every text, names this kind and no other, whatever word the English text uses; a code ending in _generic names only the family (dress_generic — a dress, bag_generic — a bag). The kind noun of its name and this code are the same kind: write the name's noun.
+
+Colour codes: beige — бежевий; black — чорний; mint — м'ятний.
+
+ТЕКСТИ:
+{
+"1": "This black mini dress features a high mock neck and sleeveless design, cutting close to the body with straight lines that end just above the knee. The fabric has a smooth texture without visible sheen or pattern.",
+"2": "The black outerwear is a quilted jacket with an oversized fit and button front closure, featuring large patch pockets at the hips and ribbed trim around the collar.",
+"3": "These beige sandals have a thick platform sole in a two-tone colorway, secured by wide padded straps across the toes and over the ankle that fasten with a metal buckle.",
+"4": "This black leather tote bag features structured side panels, rounded top handles, and a horizontal zippered pocket on the front face with a fabric pull tab.",
+"5": "The mint-colored headband is wide and slightly arched, decorated with clusters of pearls in varying sizes alongside scattered crystals set in gold-tone metal.",
+"6": "You will look sharp and collected for the concert in black, thanks to a fitted mini dress that highlights your defined waistline. The structured jacket adds a modern edge while keeping you warm for autumn evenings, and the beige sandals offer a touch of softness that balances the all-black ensemble. A classic mint headband with pearls brings a subtle spark to your hair without overwhelming the look.",
+"7": "Leave the dress open at the bottom when you get inside the venue to show off the sandal straps and break up the dark silhouette.",
+"8": "Куртка-жакет з кишенями — I swapped the pants set for a jacket to fix the 'dress with set' conflict and create a proper layered top-over-bottom look.",
+"9": "LeBERDES Сандалі бежеві — Nude sandals are ideal for autumn club nights; they match your leg tone and avoid the heaviness of boots.",
+"10": "Сукня міні з коміром стійкою, чорна, LeBERDES Сандалі бежеві, Жіноча сумка тоут шкіряна чорна, Куртка-жакет з кишенями — This 'everyday' level works because your specific day is a rock concert at a club in autumn evening, where the neat formality of the occasion requires softening with casual textures like relaxed cuts and comfortable shoes rather than stiff tailoring.",
+"11": "Сукня міні з коміром стійкою, чорна — Relaxed silhouette creates vertical line needed for her X shape; hem length balances proportions.",
+"12": "LeBERDES Сандалі бежеві — These nude sandals are a better fit for autumn evenings than pumps, and they visually extend your leg length from toes to hem."
+}
+
+── ВІДПОВІДЬ (2461 симв., 40.2 с, HTTP 200) ──
+```json
+{
+"1": "Ця чорна мінісукня має високий комір-стійку та безрукавний дизайн, щільно облягаючи тіло прямими лініями, що закінчуються трохи вище коліна. Тканина має гладку текстуру без помітного блиску чи візерунка.",
+"2": "Чорний верхній одяг — це стьобана куртка з вільним кроєм і застібкою на гудзики, що має великі накладні кишені на стегнах та рубчасту обробку навколо коміра.",
+"3": "Ці бежеві сандалі мають товсту платформу двокольорового відтінку, які фіксуються широкими м’якими ремінцями через пальці ніг і над щиколоткою з металевою пряжкою.",
+"4": "Ця чорна шкіряна сумка-тоут має структуровані бічні панелі, округлі верхні ручки та горизонтальну кишеню на блискавці спереду з тканинною петлею для витягування.",
+"5": "М’ятний обруч широкий і трохи зігнутий, прикрашений кластерами перлів різного розміру разом із розкиданими кристалами, вставленими у золотистий метал.",
+"6": "Ти будеш виглядати стильно та зосереджено на концерті в чорному завдяки обтислій мінісукні, яка підкреслює твою витончену лінію талії. Структурована куртка додає сучасний акцент і зігріває тебе прохолодними осінніми вечорами, а бежеві сандалі дарують нотку м’якості, яка збалансовує весь чорний образ. Класичний м’ятний обруч із перлами додасть стриманого блиску твоєму волоссю без перевантаження образу.",
+"7": "Коли ти зайдеш у зал, розстебни сукню знизу, щоб показати ремінці сандалів і розділити темний силует.",
+"8": "Куртка-жакет з кишенями — Я замінила комплект штанів на жакет, щоб вирішити конфлікт «сукня зі штанами» та створити правильний багатошаровий верхній образ над нижнім.",
+"9": "LeBERDES Сандалі бежеві — Нюдові сандалі ідеальні для осінніх клубних вечорів; вони поєднуються з тоном твоєї ноги й уникають важкості чобіт.",
+"10": "Сукня міні з коміром стійкою, чорна, LeBERDES Сандалі бежеві, Жіноча сумка тоут шкіряна чорна, Куртка-жакет з кишенями — Цей «повсякденний» рівень працює тому, що твій конкретний день — це рок-концерт у клубі восени ввечері, де необхідна охайна формальність пом’якшується за допомогою невимушених текстур, таких як розслаблений крій і зручне взуття, а не жорстка пошивка.",
+"11": "Сукня міні з коміром стійкою, чорна — Вільний силует створює вертикальну лінію, необхідну для твоєї X-подібної фігури; довжина подолу врівноважує пропорції.",
+"12": "LeBERDES Сандалі бежеві — Ці нюдові сандалі краще підходять для осінніх вечорів, ніж туфлі на підборах, і вони візуально подовжують твої ноги від пальців до подолу."
+}
+```

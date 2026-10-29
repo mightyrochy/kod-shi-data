@@ -2,3 +2,5 @@
 set -euo pipefail
 H=$(cd "$(dirname "$0")" && pwd); . "$H/середовище.sh"
 "${PWSH:-pwsh}" -NoProfile -File "$(wp "$H/сценарії_ланцюга.ps1")"
+"${PWSH:-pwsh}" -NoProfile -File "$(wp "$H/сценарії_коду_збірки.ps1")"
+"${PWSH:-pwsh}" -NoProfile -File "$(wp "$H/сценарії_менше_прогонів.ps1")" -SourceDir "$(wp "$H/..")"
