@@ -8,6 +8,10 @@ $p = @{}
 if ((Get-Command $Script).Parameters.ContainsKey('LaneDir') -and -not $p.ContainsKey('LaneDir')) {
     $p['LaneDir'] = Join-Path ([System.IO.Path]::GetTempPath()) ('lanes-' + [guid]::NewGuid().ToString('N').Substring(0, 8))
 }
+# Публікатор стенда не читає позначку самооновлення справжнього ноутбука.
+if ((Get-Command $Script).Parameters.ContainsKey('UpdateRoot') -and -not $p.ContainsKey('UpdateRoot')) {
+    $p['UpdateRoot'] = Join-Path ([System.IO.Path]::GetTempPath()) ('updates-' + [guid]::NewGuid().ToString('N').Substring(0, 8))
+}
 . $Script @p
 # Процес наряду — знов цей стенд (а не сам скрипт), тож бере ті самі підміни, що батьківський (10164).
 $script:SideFile = $PSCommandPath; $script:SideScript = $Script; $script:SideArgs = $p
