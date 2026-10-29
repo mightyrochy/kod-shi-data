@@ -1,4 +1,4 @@
-#Requires -Version 5.1
+﻿#Requires -Version 5.1
 <# Стенд наряду «обгортка-GPU-простій» (29.10): хибне «GPU зайнята», стенд без Main (main.cpl), мовчазний запобіжник.
 Справжні функції обгортки; підмінено лише nvidia-smi, перелік позначок і замки. #>
 param([Parameter(Mandatory = $true)][string]$SourceDir)
