@@ -118,7 +118,7 @@ async function зчитатиКольориЗПортрета(){
     await застосуватиКольори();
     if (!/Прочитано/.test(ст.textContent)) ст.textContent += ' Відповідь чату — під розкривачем нижче.';
   }catch(e){
-    ст.textContent = 'Не вдалось: ' + String(e).slice(0,160) + ' — можна іншим шляхом нижче.';
+    збійЖінціП(ст, 'colors_failed', e);
   }finally{ кн.disabled = false; }
 }
 
@@ -133,7 +133,7 @@ async function застосуватиКольори(){
     ст.textContent = 'Стилістка відмовилась читати це фото.';
     const м = await повідомленнямП({портрет: {kind: 'portrait_unreadable', statements: [{code: из.відмова}]}},
                                    'intro.portrait');
-    if ((м.тексти || {}).портрет) ст.textContent += ' ' + м.тексти.портрет;
+    if ((м.тексти || {}).портрет) ст.textContent += ' ' + текстЖінціП(null, м.тексти.портрет);
     завершитиДіюЯдра('колір', СТАН_КОЛЬОРУ_П);
     return;
   }
