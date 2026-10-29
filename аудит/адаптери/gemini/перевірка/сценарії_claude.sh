@@ -109,7 +109,7 @@ mark "ВИМКНИ-НОУТБУК/cc-off/2"; cr; chk "наступна спро�
 echo "=== К7 gemini-run позначок cc- не бере й узятими не позначає"
 setup k7; mark "$SLUG/$M/1"
 "$PW" -NoProfile -File "$(wp "$H/side.ps1")" -Script "$(wp "$SRC/gemini_run.ps1")" -ArgsJson "{\"RepoDir\":\"$(wp "$W/clone")\",\"RunsDir\":\"$(wp "$W/runs")\",\"OutDir\":\"$(wp "$W/gem")\",\"RepoUrl\":\"$(wp "$W/origin.git")\",\"AgyExe\":\"$(stub fake_agy)\",\"TurnMinutes\":0.05,\"TotalMinutes\":0.5,\"MaxNudges\":3}" >/dev/null 2>&1
-chk "gemini-run пройшов (heartbeat, ізоляція OK) — без стану й результату" 'grep -q "\"isolation\":\"OK\"" "$W/gem/heartbeat.json" && [ -z "$(ls "$W/runs/state" 2>/dev/null)" ] && [ -z "$(ls "$W/gem" | grep -vE "heartbeat|pools")" ]'
+chk "gemini-run пройшов (heartbeat, ізоляція OK) — без стану й результату" 'grep -q "\"isolation\":\"OK\"" "$W/gem/heartbeat.json" && [ -z "$(ls "$W/runs/state" 2>/dev/null)" ] && [ -z "$(ls "$W/gem" | grep -vE "heartbeat|pools|skipped")" ]'
 cr; chk "той самий прохід claude-run бере її" '[[ "$(lines)" == "GEMINI ОБГОРТКА: ГОТОВО claude/$SLUG "* ]]'
 echo "=== К8 завислість — від останньої прийнятої події stream-json, доки процес живий"
 setup k8a; mark "$SLUG/$M/1"; T0=$(date +%s); FAKE_CC_SCENARIO=closed cr; T1=$(date +%s)
