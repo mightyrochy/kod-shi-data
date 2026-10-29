@@ -61,6 +61,20 @@ def назва_виклику(вузол):
             вузол.func.id if isinstance(вузол.func, ast.Name) else '')
 
 
+def узгодити_ast(дерево):
+    """Робить порожні параметри типів однаковими в AST Python 3.11 і 3.12.
+
+    CI й ноутбук мають давати однакові відбитки: у 3.11 цього порожнього
+    поля ще немає, а dump 3.12 його друкує також у вкладених означеннях.
+    """
+    for вузол in ast.walk(дерево):
+        if (isinstance(вузол, (ast.FunctionDef, ast.AsyncFunctionDef, ast.ClassDef))
+                and 'type_params' not in вузол._fields):
+            вузол._fields = вузол._fields + ('type_params',)
+            вузол.type_params = []
+    return дерево
+
+
 def ознаки(вузол, власники=()):
     """Пункти-кандидати для вузла отримання даних, ключа чи виміру."""
     поле = None
@@ -104,7 +118,7 @@ def розібрати_python(текст):
     """Будує два незалежні обходи AST: від читань і від операторів-споживачів."""
     with warnings.catch_warnings():
         warnings.simplefilter('ignore', SyntaxWarning)
-        дерево = ast.parse(текст)
+        дерево = узгодити_ast(ast.parse(текст))
     батьки, області = {}, {}
 
     def розмітити(вузол, область='<модуль>'):
