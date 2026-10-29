@@ -1465,7 +1465,8 @@ _НА_ФОТО = ("Judge only the items on her photos, for her question. A thing
         "\"verdict\": your overall view of whether she should wear the outfit as it is.",
         "\"works\": what works in the outfit as a whole — colors with each other, colors to her palette, "
         "contrast near her face, silhouette. Each point names its items and one \"about\" code.",
-        # «Що вдало» є завжди — коли суд хоч щось підтримує, хоч один пункт стоїть на цьому
+        # «Що вдало» є завжди — коли суд хоч щось підтримує, хоч один пункт стоїть на цьому; решту знімає
+        # сторож (`_суперечить`), «items» зміни ставить сам код (`items_not_target`), понад два «change» — теж він
         "\"works\" has at least one point when \"supported\" is not empty, and every point is one of "
         "\"supported\": its \"about\" and only items listed with it.",
         # ОЦІНКА-3321 (п.12): що саме названо в тексті, код знає лише з ід — слів він не читає
@@ -1478,18 +1479,11 @@ _НА_ФОТО = ("Judge only the items on her photos, for her question. A thing
         # читала ід на картці; заборона ідів у межі «для неї» стоїть далеко від «text» зміни
         "Ids live only in \"id\" and \"items\": a \"text\" never writes one, not even in brackets; "
         "name her item by its kind and colour.",
-        "Claim a success only where the check supports it: a finding or a failed point against items is "
-        "not a success for them; a palette success names only items with palette \"in\"; a contrast "
-        "success needs the passed contrast point.",
         # «wear_with_change» з порожнім «change» — 10 карток у 7 прогонах: зміни крамниці не
         # знайшлось, а ремонт знахідки («додай шар чи сильний аксесуар») модель назвати не могла
-        "\"change\": at most two, her own alternatives first: ids from \"changes\"; when no change in "
+        "\"change\": her own alternatives first: ids from \"changes\"; when no change in "
         "\"changes\" helps, the id of a finding in \"check\" whose \"fix\" she can do herself, and "
         "\"text\" says that fix. \"wear_with_change\" only with at least one \"change\".",
-        # «items» зміни — річ, яку вона міняє: «заміна взуття» під спідницею крамниці (6б Ж:01) — ід
-        # зміни про одну річ, текст про іншу; код звіряє це ідами, слів не читає (`прийняти_оцінку`)
-        "\"items\" of a change from \"changes\" hold the id in its \"replace\": the text is about "
-        "replacing that item.",
         "An item in \"worn_unknown\" is one of her options: speak of it as her choice between them, not "
         "as what she is wearing.",
         _НА_ФОТО,

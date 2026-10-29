@@ -5107,13 +5107,12 @@ def ремонт_поради(відкинуто, обовʼязкове, доз
         # (`too_many_sentences`, порад 0; ремонтів із двома реченнями 4 з 8). «Можна не відповідати…» під
         # запрошенням-питанням ставить показ сам (`ПОРАДА_НЕОБОВʼЯЗКОВА_П`); тут — лише одне речення.
         "\"invite\" is advice, not your question: exactly one soft sentence about up to three codes from "
-        "\"advice_topics\", and nothing after it — no second sentence and no second question; do not add that she "
-        "may skip it: the app tells her. \"invite_topics\" are exactly the codes it covers.",
+        "\"advice_topics\", and nothing after it; do not add that she may skip it: the app tells her.",
         _ПРАВИЛО_ФОРМИ,
         _ПРАВИЛО_ПРОФІЛЮ,
     ),
     вихід="ПОРАДА_ХОДУ",
-    скелет={"invite_topics": ["advice topic codes your invitation covers, up to three"],
+    скелет={"invite_topics": ["advice topic codes your invitation covers"],
             "invite": "one soft invitation sentence"},
     # `без_шкал` знято — у вході ремонту шкал нема (теми, вада, запрошення, її лист).
     межі=("лише_вхід", "для_неї"),
