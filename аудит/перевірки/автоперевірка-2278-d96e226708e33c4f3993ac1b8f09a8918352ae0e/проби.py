@@ -48,3 +48,10 @@ for s in entries:
 for relative, line in [('показ/палітра.js', 463), ('показ/картки.js', 1147)]:
     present = [s for s in entries if module['відображене'](s.мод.шлях) == relative and s.мод.рядок(s.і) == line]
     print(f'голова-{relative}:{line}: стоків {len(present)}')
+    for mod in program.модулі:
+        if module['відображене'](mod.шлях) != relative:
+            continue
+        for name, arguments, position in mod.виклики:
+            if name == 'елНазваП' and mod.рядок(position) == line:
+                start, end = arguments[2]
+                print(f'голова-{relative}:{line}: ранг аргументу {program.в(mod, start, end)}')
