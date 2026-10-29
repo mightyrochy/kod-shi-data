@@ -21,7 +21,11 @@ function git(корінь, аргументи) {
   return р;
 }
 
-/* Місцеві модулі стенда транзитивно: їхня зміна міняє запис так само, як зміна продукту. */
+/* Місцеві модулі й файли стенда транзитивно: їхня зміна міняє запис так само, як зміна продукту. Звіт збірки
+   `джерела/аудит/ДОСЯЖНІСТЬ.md` коміт «збірка:» CI перегенеровує щоразу — він не вхід стенда (той самий виняток —
+   у `zbirka.yml`), інакше жоден штамп `build.txt` не став би базою (11220). */
+const НЕ_ВХІД = ':(exclude)джерела/аудит/ДОСЯЖНІСТЬ.md';
+
 function живийШлях(корінь) {
   const проби = path.join(корінь, 'аудит/проби');
   const бачено = new Set(), черга = ['рв6_стенд.js'];
@@ -30,9 +34,10 @@ function живийШлях(корінь) {
     if (бачено.has(файл) || !fs.existsSync(path.join(проби, файл))) continue;
     бачено.add(файл);
     const код = fs.readFileSync(path.join(проби, файл), 'utf8');
-    for (const м of код.matchAll(/require\((?:path\.join\(__dirname, *)?'(?:\.\/)?([^'/]+\.js)'\)/g)) черга.push(м[1]);
+    if (!файл.endsWith('.js')) continue;
+    for (const м of код.matchAll(/(?:require\(|path\.join\(__dirname, *)'(?:\.\/)?([^'/]+\.(?:js|py|txt|json))'/g)) черга.push(м[1]);
   }
-  return ['джерела', ...[...бачено].sort().map(ф => 'аудит/проби/' + ф)];
+  return ['джерела', 'аудит/проби/жінки', ...[...бачено].sort().map(ф => 'аудит/проби/' + ф), НЕ_ВХІД];
 }
 
 function датаЗапису(результат) {
@@ -65,18 +70,23 @@ function перенести(корінь, тека, сцена, main, шлях, 
   if (є(відносна)) return {не: 'тека бази вже є: ' + відносна};
   if (попередня && попередня.шлях.localeCompare(відносна) >= 0) return {не: 'новіша база вже є: ' + попередня.шлях};
   const куди = path.join(корінь, відносна);
-  // Номери перевіряються до переносу: нова червона лишає запис у звіті наряду як доказ знахідки.
-  const пробна = path.join(тека, 'база.json');
-  if (fs.existsSync(пробна)) return {не: 'база.json уже є в записі наряду'};
-  try { записатиБазу(тека, номери); }
+  if (fs.existsSync(path.join(тека, 'база.json'))) return {не: 'база.json уже є в записі наряду'};
+  // Спершу перенос, потім база: збій переносу нічого не лишає, нова червона повертає запис назад доказом (11222).
+  fs.mkdirSync(path.dirname(куди), {recursive: true});
+  try { fs.renameSync(тека, куди); }
   catch (помилка) {
-    if (fs.existsSync(пробна)) fs.unlinkSync(пробна);
+    if (!fs.readdirSync(path.dirname(куди)).length) fs.rmdirSync(path.dirname(куди));
+    return {не: 'перенос не вдався (' + помилка.code + '), запис лишився без бази: ' + помилка.message};
+  }
+  try { записатиБазу(куди, номери); }
+  catch (помилка) {
+    fs.rmSync(path.join(куди, 'база.json'), {force: true});
+    fs.renameSync(куди, тека);
+    if (!fs.readdirSync(path.dirname(куди)).length) fs.rmdirSync(path.dirname(куди));
     return /номер\S* дошки/.test(помилка.message)
       ? {знахідка: 'червона звірка без номера в попередній базі ' + (попередня ? попередня.шлях : '(нема)')}
       : {не: помилка.message};
   }
-  fs.mkdirSync(path.dirname(куди), {recursive: true});
-  fs.renameSync(тека, куди);
   const замінює = попередня ? попередня.шлях : null;
   const вік = попередня ? вікДіб(попередня.шлях, дата.getTime()) : null;
   fs.writeFileSync(path.join(куди, 'походження.json'), JSON.stringify({
