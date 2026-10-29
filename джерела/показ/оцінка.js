@@ -71,7 +71,7 @@ function малюватиОцінкуП(){
     н.innerHTML = '';
     н.appendChild(Object.assign(ел('option', null, 'не скажу'), {value: ''}));
     (ДОВІДНИК.нагоди || []).filter(о=>о.плитка)
-      .forEach(о=>н.appendChild(Object.assign(ел('option', null, о.підпис), {value: о.ключ})));
+      .forEach(о=>н.appendChild(Object.assign(елЖінціП('option', null, о.підпис), {value: о.ключ})));
     н.appendChild(Object.assign(ел('option', null, 'Інше — напишу словами'), {value: ІНШЕ_ОЦІНКИ_П}));
     н.value = було;
     н.onchange = ()=>{ if (н.value === ІНШЕ_ОЦІНКИ_П){ const п = $('оц-питання'); if (п) п.focus(); } };
@@ -306,7 +306,7 @@ async function оцінитиОбразП(перГотовий){
   const ст = $('оц-стан');
   if (!ОЦ.фото.length){ ст.textContent = 'Додай фото образу — одне чи кілька.'; return; }
   const бракує = чогоБракує().filter(б=>/кольори/.test(б));
-  if (бракує.length){ ст.textContent = 'Щоб оцінити образ, у профілі ще потрібні ' + бракує.join(' і ') + '.'; return; }
+  if (бракує.length){ текстЖінціП(ст, 'Щоб оцінити образ, у профілі ще потрібні ' + бракує.join(' і ') + '.'); return; }
   if (мостуНемаП()){
     ст.textContent = 'Нема токена доступу — стилістка мовчить. Відкрий Люстерко з посилання, яке дав власник.';
     return;
@@ -522,7 +522,7 @@ async function збійОцінкиП(e){
     const м = await повідомленнямП({відмова: e.повідомлення}, 'review');
     (м.записи || []).forEach(з => ОЦ.етапи.мова_шару.push(з));
     текстЖінціП(ст, м.тексти.відмова);
-  } else ст.textContent = НАПИС_ЗБОЮ_ОЦІНКИ_П;
+  } else текстЖінціП(ст, НАПИС_ЗБОЮ_ОЦІНКИ_П);
   await записатиЗбійОцінкиП();
 }
 function кінецьОцінкиП(кн){

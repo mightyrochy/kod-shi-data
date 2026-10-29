@@ -187,7 +187,7 @@ function чипП(текст, обрано, дія, зразки, додКлас
     сп.forEach(х=>{ const i = document.createElement('i'); i.style.background = х; з.appendChild(i); });
     ч.appendChild(з);
   }
-  ч.appendChild(document.createTextNode(текст));
+  const тв = document.createTextNode(''); текстЖінціП(тв, текст, undefined, undefined, 'data'); ч.appendChild(тв);
   ч.onclick = дія;
   ч.onkeydown = е=>{ if (е.key === 'Enter' || е.key === ' '){ е.preventDefault(); дія(); } };
   return ч;
@@ -451,8 +451,8 @@ function малюватиНотиСхем(гілки, тексти){
     /* Ім'я схеми — жирним, решта ноти — звичайним: жінка шукає очима саме назву, яку щойно
        бачила на плитці. Назву малює ПОКАЗ — тим самим словом, що
        стоїть на плитці, — а причину пише мовна модель із заяв гілки (`нота_кодами`). */
-    б.appendChild(ел('b', null, String(г.схема).replace(/_/g, ' ')));
-    б.appendChild(ел('span', null, ' — ' + т));
+    б.appendChild(елНазваП('b', null, String(г.схема).replace(/_/g, ' ')));
+    б.appendChild(елЖінціП('span', null, ' — ' + т, undefined, своїЕкрануП()));
     к.appendChild(б);
   });
 }
@@ -511,7 +511,7 @@ function малюватиПідтонП(р){
                                     : 'з твого знімка.');
   }
   if (!текст){ е.style.display = 'none'; return; }
-  е.appendChild(ел('span', null, текст));
+  е.appendChild(елЖінціП('span', null, текст));
   if (кнопка){
     const к = ел('button', 'текст', 'Відповісти на три питання'); к.type = 'button';
     к.onclick = ()=>відкритиПрофіль('др-блок');
@@ -536,7 +536,7 @@ function малюватиСтрічку(р, вк, об, ог, гілка, сти
   к.appendChild(с);
   /* П-7: підпис каже, чиє це: її, стилістки чи рангу коду, коли стилістка не обрала */
   const с_ = стил || {};
-  к.appendChild(ел('div', 'стрічка-підпис',
+  к.appendChild(елЖінціП('div', 'стрічка-підпис',
     (с_.стБ ? 'основа від стилістки' : об ? 'твоя основа' : с_.кодБ ? 'основа не обрана' : 'основу обере стилістка')
     + (с_.стС ? ' · схема від стилістки' : с_.кодС ? ' · перша схема з поради' : ог ? ' · схема обрана'
                                                                                : ' · схему обере стилістка')
