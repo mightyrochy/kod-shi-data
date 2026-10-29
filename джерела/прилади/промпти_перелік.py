@@ -279,7 +279,7 @@ def оголошення():
             continue
         мод = __import__(м)
         if callable(getattr(мод, "фото_речей", None)):     # ліниве оголошення `річ_з_фото`
-            мод._фото_речей()
+            мод.фото_речей()
         for ім, в in vars(мод).items():
             пари = [(ім, в)] if isinstance(в, ЗП.Оголошення) else (
                 [("%s[%s]" % (ім, к), x) for к, x in в.items() if isinstance(x, ЗП.Оголошення)]

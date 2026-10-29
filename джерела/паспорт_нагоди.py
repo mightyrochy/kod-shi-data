@@ -1050,9 +1050,10 @@ def вікно_розмови(історія, остання_ціла=True):
     # `ключ_довідника` / `реєстри` у `паспорт_з_json`: чужий ключ відкидається, і жінці йде питання.
     "\"нагода\", \"місце\", \"дрес_код\", \"реєстр_людини\" take only keys from \"ключі\"; when none "
     "fits — null, and her word goes into \"подія\".",
-    # П.9: обовʼязкові питання — лише «без чого не зібрати»; три від моделі (`ПИТАНЬ_ЛЮДИНІ_МАКС`).
-    "\"питання_людині\": up to three short questions, only about what the look cannot be put together "
-    "without — occasion and place when neither \"обрано\" nor her words give them; otherwise an empty list.",
+    # П.9: обовʼязкові питання — лише «без чого не зібрати»; скільки лишити і коли сценарій уже є, рахує код
+    # (`питання_відкинуто`: одне, перше, і жодного при відомому сценарії).
+    "\"питання_людині\": short questions only about what the look cannot be put together without — "
+    "occasion and place; otherwise an empty list.",
     # Р-3 (власник): драпіровка — лише профіль. Запис «драп_сирий» з її слів знято — хід розмови
     # такого поля не має, тож ті самі слова давали різний паспорт двома шляхами (п.9).
     "Do not ask what suits her (metal, white, neutrals).",
