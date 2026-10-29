@@ -3325,8 +3325,7 @@ _ПОЛЯ_EN = {
             "is goal_zones, not conceal. Passing the judgement of others is not conceal: it is intent "
             "context_optimal. Only on her words about attention to her look, never on her words about the "
             "outing itself and never as a default",
-    "goal_extra": "what else matters to her in this look, several together: taller — a longer line, to look "
-                  "taller; comfort — moving comfortably all day; strict — strictly by the occasion",
+    "goal_extra": "what else matters to her in this look, several together: " + _ВИМ.КОДИ_GOAL_EXTRA,
     # «сховати живіт» — слова сцени ж4_клуб_приховати; тепер рід (сховати чи зменшити зону)
     "goal_zones": "body zones she wants to draw the eye away from (to hide or slim a zone), with any goal: these "
                   "zones stay quiet, the rest of the look follows goal. Never for how much skin she shows: that is "

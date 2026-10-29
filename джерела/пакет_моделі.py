@@ -549,8 +549,7 @@ import внутрішня_мова as _ВМ_П
         _ВИМ.поле("case.goal_quote"),
         _ВИМ.поле("case.intent_quote"),
         _ВИМ.поле("case.goal_zones"),
-        _ЗП.Поле("case.goal_extra", "what else matters to her: taller — a longer line; comfort — moving "
-                                    "comfortably all day; strict — strictly by the occasion",
+        _ЗП.Поле("case.goal_extra", "what else matters to her: " + _ВИМ.КОДИ_GOAL_EXTRA,
                  як="the outfit answers each of them"),
         _ВИМ.поле("case.her_other_words"),
         _ВИМ.поле("case.language_model_note"),

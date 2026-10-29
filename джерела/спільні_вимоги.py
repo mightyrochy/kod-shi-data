@@ -10,6 +10,8 @@ goal» про ті самі зони) і росли кожна своїм абз
 Опис поля — англійською дротом (аудит/ПРОДУКТ.md п.12); «що» — що це, «як» за замовчуванням — що з ним робити всюди."""
 import збирач_промптів as _ЗП
 
+# значення `goal_extra` — слова кодів, одні для довідника кодів (мовний_шар) і поля входу `case.goal_extra`
+КОДИ_GOAL_EXTRA = "taller — a longer line, to look taller; comfort — moving comfortably all day; strict — strictly by the occasion"
 ПРОТИ_ВІДМОВ = "do not take an item that goes against her refusals or her words"  # як до `case` складання й руки
 ЦИТАТА_ГОВОРИТЬ_БІЛЬШЕ = "they say more than the code: the outfit answers them"  # як до цитат наміру й мети
 РОЛЬ_ЗАСТОСУНКУ = "You are the stylist of the Lyusterko styling app."  # початок ролі помічниці, питання й вибору палітри
