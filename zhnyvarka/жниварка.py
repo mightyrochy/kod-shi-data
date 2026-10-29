@@ -729,7 +729,7 @@ def woo_рецепт(домен, шлях=None):
 
 @functools.lru_cache(maxsize=None)
 def рецепт_селекторів(домен, шлях=None):
-    """{"опис": css, "склад": css, "характеристик": css} з колонок `селектор_опису`, `селектор_складу`, `селектор_характеристик`
+    """{"опис": css, "склад": css, "характеристик": css, "блок": css} з колонок `селектор_опису`, `селектор_складу`, `селектор_характеристик`, `селектор_блоку`
     рецепта крамниці: блоки, які її сторінка сама підписала описом, складом і таблицею характеристик (рядки 5657, 6899);
     порожні — {}, і опис береться лише з JSON-LD чи `itemprop="description"`, а пари — з усієї сторінки за межею розмітки."""
     шлях = шлях or РЕЦЕПТИ_TSV
@@ -739,7 +739,7 @@ def рецепт_селекторів(домен, шлях=None):
         for р in csv.DictReader(f, delimiter="\t"):
             if (р.get("домен") or "").strip().lower().replace("www.", "") == (домен or "").strip().lower().replace("www.", ""):
                 return {к: (р.get(кол) or "").strip() for к, кол in (("опис", "селектор_опису"), ("склад", "селектор_складу"),
-                                                                   ("характеристик", "селектор_характеристик")) if (р.get(кол) or "").strip()}
+                                                                   ("характеристик", "селектор_характеристик"), ("блок", "селектор_блоку")) if (р.get(кол) or "").strip()}
     return {}
 
 
@@ -1422,6 +1422,30 @@ def _плитки(вузол):
     return max((len(г) for г in групи.values()), default=0)
 
 
+def вузол_товару(суп, h1, селектори):
+    """Межа блоку товару — єдина для всіх полів DOM (ПС-2). Лише те, що підписала сторінка чи рецепт: `селектор_блоку`
+    рецепта крамниці, інакше єдиний вузол `itemtype=…/Product`. Евристики (найближчий предок h1, перший «product») нема:
+    вона брала сусідній текст. Повертає (вузол, «рецепт» | «itemtype») або (None, причина) — причина іде в запис і в звіт
+    жнив. Блок має містити h1, коли h1 є: чужий вузол з того ж селектора межею не стає."""
+    предки = {id(p) for p in h1.parents} if h1 is not None else None
+    сел = (селектори or {}).get("блок")
+    if not сел:
+        знайдено, звідки, причина = суп.select('[itemtype$="/Product"], [itemtype$="/Product/"]'), "itemtype", "нема_межі_блоку"
+    else:
+        try:
+            знайдено = суп.select(сел)
+        except Exception:                                              # noqa — чужий селектор у рецепті не валить картку
+            return None, "селектор_блоку_помилка"
+        звідки, причина = "рецепт", "селектор_блоку_не_знайшов"
+    if предки is not None:
+        знайдено = [в for в in знайдено if id(в) in предки]
+    elif len(знайдено) != 1:
+        знайдено = []
+    if not знайдено:
+        return None, причина
+    return знайдено[-1], звідки                              # найвужчий предок h1 з тим самим селектором
+
+
 def прибрати_чуже(суп, h1):
     """Вирізає з розбору вузли, що не належать товару: шапка, підвал, навігація, блоки сусідніх товарів за будовою
     (перелік з ≥ 2 однаковими плитками «посилання + ціна») і блоки за токеном класу («review», «fast-view»…).
@@ -1589,12 +1613,16 @@ def факти_з_картки(html_текст, url, селектори=None):
     ф["сирий"] = dict(h1=h1_текст or None, og_title=meta("og:title"), опис=ф["опис"],
                       назва_json_ld=розекранувати(продукт.get("name") or "") if продукт else None)
     ф["чужих_блоків"] = прибрати_чуже(суп, h1)         # поля нижче — лише з вузла цього товару
+    блок, ф["межа_блоку"] = вузол_товару(суп, h1, селектори)
+    # ПС-2: одна межа для всіх полів DOM нижче. Нема межі — це не «весь суп», а порожній корінь: поле «нема» з причиною
+    # `межа_блоку` (JSON-LD, og й канали API — підписані самим джерелом — не чіпаються)
+    кор = блок if блок is not None else BeautifulSoup("", ПАРСЕР_HTML)
     # блок опису, який сторінка підписала сама: селектор рецепта, інакше `itemprop="description"` (рядок 5657). Сусідні блоки,
     # що вона підписала «схожими» чи «рекомендованими», з нього геть; будь-який інший `class*="desc"` описом не вважається.
     блок_опису = None
     for сел in (селектори.get("опис"), '[itemprop="description"]'):
         try:
-            знайдено = [e for e in суп.select(сел) if e.name != "meta"] if сел else []
+            знайдено = [e for e in кор.select(сел) if e.name != "meta"] if сел else []
         except Exception:                                              # noqa — чужий селектор у рецепті не валить картку
             ф["селектор_помилка"] = сел; знайдено = []
         if знайдено:
@@ -1617,7 +1645,7 @@ def факти_з_картки(html_текст, url, селектори=None):
     # рецепт назвав вузол характеристик (рядок 6899): пари — лише з нього, а не з блоків оплати, доставки, відгуків чи маркетингу
     if селектори.get("характеристик"):
         try:
-            вузли = суп.select(селектори["характеристик"])             # усі збіги: на сторінці їх може бути кілька таблиць
+            вузли = кор.select(селектори["характеристик"])             # усі збіги: на сторінці їх може бути кілька таблиць
             у_вузлі = {id(в) for в in вузли} | {id(x) for в in вузли for x in в.descendants}
         except Exception:                                              # noqa
             ф["селектор_помилка"] = селектори["характеристик"]; у_вузлі = None
@@ -1634,20 +1662,20 @@ def факти_з_картки(html_текст, url, селектори=None):
         з = значення if значення is not None else _текст(значення_ел, 400)
         if пара_придатна(ряд, ключ_ел, значення_ел, розекранувати(к).strip(" :·-—"), розекранувати(з).strip()):
             пари.append((к, з))
-    for tr in суп.find_all("tr"):
+    for tr in кор.find_all("tr"):
         кл = tr.find_all(["th", "td"])
         таблиця = tr.find_parent("table")
         if id(таблиця) not in сітки:
             сітки[id(таблиця)] = таблиця_сіткою(таблиця)
         if len(кл) == 2 and not сітки[id(таблиця)] and в_межах(tr):
             додати(tr, кл[0], кл[1])
-    for dl in суп.find_all("dl"):
+    for dl in кор.find_all("dl"):
         if not в_межах(dl):
             continue
         dts, dds = dl.find_all("dt"), dl.find_all("dd")
         for a, b in zip(dts, dds):
             додати(None, a, b)
-    for li in суп.find_all("li"):
+    for li in кор.find_all("li"):
         if not в_межах(li):
             continue
         діти = [x for x in li.find_all(["span", "div", "b", "strong", "p"], recursive=False)]
@@ -1659,7 +1687,7 @@ def факти_з_картки(html_текст, url, селектори=None):
                 a, b = tx.split(":", 1)
                 if 2 < len(a) < 40 and not (a[-1:].isdigit() and b.strip()[:2].isdigit()):     # «Пн-Нд 12:00» — години, не ключ
                     додати(li, None, li, a, b)
-    for ряд in суп.select("div.properties-group__item, div.properties__item"):
+    for ряд in кор.select("div.properties-group__item, div.properties__item"):
         if not в_межах(ряд):
             continue
         ключ = ряд.select_one(".properties-group__name, .properties__title")
@@ -1670,7 +1698,7 @@ def факти_з_картки(html_текст, url, селектори=None):
             клітини = ряд.find_all("span", recursive=False)
             if len(клітини) == 2:
                 додати(ряд, клітини[0], клітини[1])
-    for абзац in суп.find_all("p"):          # «<p><strong>Матеріал:</strong> 62% віскоза</p>»: підпис виділено розміткою
+    for абзац in кор.find_all("p"):          # «<p><strong>Матеріал:</strong> 62% віскоза</p>»: підпис виділено розміткою
         жирний = абзац.find(["strong", "b"])
         tx, a = _текст(абзац, 300), _текст(жирний, 80) if жирний is not None else ""
         if a.endswith(":") and tx.startswith(a) and tx[len(a):].strip() and в_межах(абзац):
@@ -1689,13 +1717,13 @@ def факти_з_картки(html_текст, url, селектори=None):
             if k == "склад":
                 ф["склад_джерело"] = "рядок опису" if (a, b) in пари_опису else "таблиця характеристик"
     # таблиця мірок виробу (см по розмірах): ≥ 3 колонки й шапка про розмір/обхват — verbatim
-    for tbl in суп.find_all("table"):
+    for tbl in кор.find_all("table"):
         рядки_т = [[_текст(c, 40) for c in tr.find_all(["th", "td"])] for tr in tbl.find_all("tr")]
         рядки_т = [r for r in рядки_т if len(r) >= 3]
         if len(рядки_т) >= 2 and re.search(r"розмір|size|обхват|груд|талі|стегн|довжин|рукав|плеч|\bсм\b", " ".join(рядки_т[0]), re.I):
             ф["таблиця_мірок"] = " ; ".join(" | ".join(r) for r in рядки_т)[:800]; break
     # свотчі кольору: елемент зі стилем background/data-hex або картинкою, підпис з title/alt/тексту
-    for ел in суп.select('[class*="swatch"], [class*="color"], [class*="colour"], [class*="kolir"], [class*="colir"], [data-color], [data-hex]'):
+    for ел in кор.select('[class*="swatch"], [class*="color"], [class*="colour"], [class*="kolir"], [class*="colir"], [data-color], [data-hex]'):
         стиль = ел.get("style") or ""
         hex_ = None
         м = re.search(r"#([0-9a-f]{6}|[0-9a-f]{3})\b", стиль + " " + str(ел.get("data-color") or "") + " " + str(ел.get("data-hex") or ""), re.I)
@@ -1718,14 +1746,14 @@ def факти_з_картки(html_текст, url, селектори=None):
     # склад з блоку, який рецепт крамниці назвав селектором, — сильніше за пари; з довільного тексту сторінки не беремо
     if селектори.get("склад"):
         try:
-            ел_складу = суп.select_one(селектори["склад"])
+            ел_складу = кор.select_one(селектори["склад"])
         except Exception:                                              # noqa
             ф["селектор_помилка"] = селектори["склад"]; ел_складу = None
         if ел_складу is not None and _текст(ел_складу, 400):
             ф["характеристики"]["склад"] = _текст(ел_складу, 400); ф["склад_джерело"] = "селектор рецепта"
     # розміри: контейнери, чиї клас/ім'я/текст мітки кажуть «розмір»
     розміри, в_наявн = [], []
-    for конт in суп.select('[class*="size"], [class*="rozmir"], [class*="razmer"], [id*="size"], [data-attribute*="size"],'
+    for конт in кор.select('[class*="size"], [class*="rozmir"], [class*="razmer"], [id*="size"], [data-attribute*="size"],'
                            ' select[name*="size"], select[name*="rozmir"], [class*="variant"], [class*="option"], [class*="sku-props"]'):
         if re.search(r"gallery|image|photo|slider|swiper", " ".join(конт.get("class") or []), re.I):
             continue                                          # «gallery-size-large» — розмір кадру, не одягу
@@ -1745,12 +1773,12 @@ def факти_з_картки(html_текст, url, селектори=None):
         ф["розміри"], ф["розміри_в_наявності"], ф["розміри_джерело"] = розміри[:20], в_наявн[:20], "dom"
     # галерея — лише коли JSON-LD/og дали < 2 фото; блоки сусідів вирізаються
     if len(ф["фото"]) < 2:
-        for сус in суп.select('[class*="related"], [class*="similar"], [class*="recommend"], [class*="also"], '
+        for сус in кор.select('[class*="related"], [class*="similar"], [class*="recommend"], [class*="also"], '
                               '[class*="recent"], [class*="upsell"], [class*="viewed"], footer, header, nav'):
             сус.decompose()
-        галерея = суп.select_one('[class*="gallery"], [class*="product-image"], [class*="product__media"], '
+        галерея = кор.select_one('[class*="gallery"], [class*="product-image"], [class*="product__media"], '
                                  '[class*="swiper"], [class*="slider"], [class*="fotorama"], [class*="carousel"], '
-                                 '[class*="photos"], [class*="images"], [class*="product-photo"]') or суп
+                                 '[class*="photos"], [class*="images"], [class*="product-photo"]') or кор
         картинки, чужих = [], 0
         # 21.09 (рядок 126): шукаємо по ВСІХ вузлах, а не лише по `img/source/a`, бо
         # brenda тримає мініатюри в `style="background-image:url(…)"` на `a`, а
@@ -1775,8 +1803,10 @@ def факти_з_картки(html_текст, url, селектори=None):
             ф["чужих_тайлів"] = чужих                 # не мовчати, скільки знімків відсічено як чужі
     # ціна з розмітки, якщо структурні джерела мовчали
     if ф["ціна"] is None:
-        ел = суп.select_one('[itemprop="price"], [class*="price"] , [id*="price"]')
-        if ел and суп.find("h1") and not ф["є_товар"] and not ф.get("є_список"):
+        ел = кор.select_one('[itemprop="price"], [class*="price"] , [id*="price"]')
+        # гейт «це картка» судить сторінку, а не поле: рахує ціни по всій сторінці, межа блоку його не стосується (ПС-2)
+        if суп.select_one('[itemprop="price"], [class*="price"] , [id*="price"]') is not None and суп.find("h1") \
+                and not ф["є_товар"] and not ф.get("є_список"):
             цін = len(суп.select('[itemprop="price"], [class*="price"]'))
             if _ЯВНО_КАРТКА.search(url):
                 цін = min(цін, 6)                    # явна товарна адреса: блок «схожі» не рахуємо
@@ -1790,7 +1820,7 @@ def факти_з_картки(html_текст, url, селектори=None):
             if v:
                 ф["ціна"] = v; ф["валюта"] = ф["валюта"] or "UAH"; ф["ціна_джерело"] = "розмітка ціни товару"
         if ф["ціна"] is None:
-            ф["ціна_діагностика"] = " | ".join(_текст(e, 60) for e in суп.select('[class*="price"], [itemprop="price"]')[:3]) or None
+            ф["ціна_діагностика"] = " | ".join(_текст(e, 60) for e in кор.select('[class*="price"], [itemprop="price"]')[:3]) or None
     if ф["available"] is None:
         текст_низ = суп.get_text(" ").lower()
         # лише з тексту сторінки — ПІДКАЗКА: «нема в наявності» може стояти біля одного розміру чи в шаблоні
@@ -2350,7 +2380,7 @@ def канонічний_запис(ф, маг, канал):
                "стать": ст_дж, "слот": сл_дж}
     return dict(
         джерела_полів=джерела,
-        сирий=ф.get("сирий"), чужих_блоків=ф.get("чужих_блоків"),
+        сирий=ф.get("сирий"), чужих_блоків=ф.get("чужих_блоків"), межа_блоку=ф.get("межа_блоку"),
         url=url, назва=назва, назва_сира=(сира if сира != назва else None), назва_джерело=ф.get("назва_джерело"),
         фото_відкинуто=("; ".join(відкинуті_фото) if відкинуті_фото and not фото else None),
         ціна_діагностика=(ф.get("ціна_діагностика") if ф.get("ціна") is None else None),
@@ -3110,6 +3140,15 @@ def зібрати(тека=ТЕКА_ЖНИВ, вихід=".", підпис_пр
     for поле in ("колір_джерело", "слот_джерело", "стать_джерело", "розміри_джерело", "наявність", "канал"):
         c = collections.Counter(re.sub(r"«.*?»", "«…»", str(з.get(поле) or "—")) for з in прийняті)
         р.append("- %s: %s" % (поле, "; ".join("%s %d" % kv for kv in c.most_common(6))))
+    р += ["", "## Межа блоку товару (ПС-2): крамниці без межі — поля DOM «нема»", ""]
+    без_межі = collections.defaultdict(collections.Counter)
+    for з in прийняті:
+        if з.get("межа_блоку") not in (None, "рецепт", "itemtype"):
+            без_межі[з.get("магазин")][з["межа_блоку"]] += 1
+    for м, c in sorted(без_межі.items(), key=lambda kv: -sum(kv[1].values())):
+        р.append("- %s — карток без межі %d (%s): потрібен `селектор_блоку` у рецепті" % (м, sum(c.values()), ", ".join("%s %d" % kv for kv in c.items())))
+    if not без_межі:
+        р.append("- усі картки мають межу блоку")
     р += ["", "## Відхилено — причини (усі магазини)", ""]
     c = collections.Counter()
     for д in діаги:
