@@ -29,23 +29,28 @@ jobs:
       - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
         with:
           persist-credentials: false
-          fetch-depth: 1
+          fetch-depth: 2
 
       - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5.6.0
         with:
           python-version: '3.11'
 
-      - name: стенд храповика (10 випадків мірила)
+      - name: стенд храповика (випадки мірила)
         run: |
           set -o pipefail
           python3 джерела/прилади/стенд_храповика_кореня.py | tee -a "$GITHUB_STEP_SUMMARY"
 
-      # PR — коміт злиття проти `pull_request.base.sha`; push — проти `event.before`. Ручний запуск бази не має:
-      # прилад друкує пропуск (дошка 10720).
+      # PR — коміт злиття проти свого першого батька (той `main`, з яким злито; глибини 2 досить): `base.sha` давній,
+      # якщо PR влив свіжий `main`, і дав би чужі файли (дошка 11353). Не злиття — `base.sha`. Push — проти
+      # `event.before`. Ручний запуск бази не має: прилад друкує пропуск (дошка 10720).
       - name: храповик кореня
         env:
           BASE: ${{ github.event_name == 'pull_request' && github.event.pull_request.base.sha || github.event.before }}
         run: |
+          if [ "${{ github.event_name }}" = pull_request ]; then
+            python3 джерела/прилади/храповик_кореня.py --пр --база "${BASE}"
+            exit
+          fi
           if [ -n "${BASE//0/}" ]; then
             git fetch --no-tags --depth=1 origin "${BASE}" || echo "базу ${BASE} не отримано з origin"
           fi
