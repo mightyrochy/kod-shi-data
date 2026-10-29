@@ -26,7 +26,7 @@ async function main(){
     c.модельМовиП=async p=>{JSON.parse(p.slice(p.lastIndexOf('ТЕКСТИ:')+7));
       return (++calls===1 || !repaired)?'{}':'{"1":"Коротке повідомлення для тебе."}';};
     const r=await c.мовоюП({рядок:'A short message for you.'},'try_on');
-    const ok=calls===2 && r.тексти.рядок===(repaired?'Коротке повідомлення для тебе.':'A short message for you.');
+    const ok=calls===2 && r.тексти.рядок===(repaired?'Коротке повідомлення для тебе.':'— без тексту');
     console.log(JSON.stringify({межа:'тексти',виправлено:repaired,викликів:calls,дані:r.тексти,пройдено:ok}));failures+=!ok;
   }
   process.exitCode=failures?1:0;

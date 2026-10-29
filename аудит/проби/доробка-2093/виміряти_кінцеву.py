@@ -21,10 +21,11 @@ def main():
     прилад.write_bytes(оригінал)
 
     def виконати(назва, команда, місце, дерево, очікуваний=0):
+        """Дочекатися команди й зберегти її код та весь текст журналу."""
         р = subprocess.run(команда, cwd=місце, env=dict(середовище, E2_SOURCES=str(дерево)),
                            stdout=subprocess.PIPE, stderr=subprocess.STDOUT, encoding="utf8", errors="replace")
         файл = журнали / (str(len(результати) + 1) + ".txt")
-        файл.write_text(р.stdout, encoding="utf8")
+        файл.write_text("\n".join(рядок.rstrip() for рядок in р.stdout.splitlines()).rstrip() + "\n", encoding="utf8")
         результати.append(dict(назва=назва, команда=команда, тека=str(місце), джерела=str(дерево),
                               код=р.returncode, очікуваний=очікуваний, журнал=файл.relative_to(корінь).as_posix(),
                               підсумок="\n".join(р.stdout.splitlines()[-5:])))
