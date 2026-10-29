@@ -40,6 +40,8 @@ try {
             $number = 100 + $script:Markers.Count + $(switch ($lane) {codex {0} agy {10} claude {20}})
             $script:Markers += ConvertTo-Marker ("refs/remotes/origin/gemini-queue/автоперевірка-$number-$head/$model/1`t$head`t$script:Clock")
         }
+        # Перевірки Claude на ноутбуці вже не ставляться; бюджет API смуги міряємо на нарядах із переліку ноутбука.
+        $script:Limits.claude_laptop = @($script:Markers | ForEach-Object { $_.Slug })
         function Get-Markers { $script:Markers }
         function Get-ReviewTime { $script:Clock }
         function Write-Log([string]$Text) { }
