@@ -311,6 +311,7 @@ _ЛАПКИ_ДОВКОЛА = re.compile(r'^["«„“”]\s*([^"«»„“”]*?
         "earrings": "сережки", "bracelet": "браслет", "necklace": "намисто", "collar_necklace": "кольє",
         "brooch": "брошка", "watch": "годинник", "glasses": "окуляри", "gloves": "рукавички",
         "tights": "колготи", "socks": "шкарпетки", "swimsuit": "купальник", "lingerie": "білизна"},
+    "fabric_kind": {"knit": "трикотаж", "woven": "полотно"},
     "fabric": {
         "wool": "вовна", "cashmere": "кашемір", "mohair": "мохер", "angora": "ангора",
         "alpaca": "альпака", "cotton": "бавовна", "viscose": "віскоза", "tencel": "тенсел",
@@ -366,7 +367,10 @@ _ЛАПКИ_ДОВКОЛА = re.compile(r'^["«„“”]\s*([^"«»„“”]*?
     "opinion": {"like": "подобається", "dislike": "не подобається"},
     # Ознаки речі каталогу, які ядро вже тримає закритим переліком (`пакет_моделі.річ_пулу`)
     "material": {"leather": "шкіра", "suede": "замша", "faux_leather": "екошкіра",
-                 "patent_leather": "лак", "velour": "велюр", "nubuck": "нубук"},
+                 "patent_leather": "лак", "velour": "велюр", "nubuck": "нубук",
+                 "felt": "фетр", "straw": "солома", "textile": "текстиль",
+                 "fur": "хутро", "fleece": "фліс", "mouton": "мутон",
+                 "unprotected_leather": "незахищена_шкіра"},
     "length": {"mini": "міні", "mid_thigh": "до середини стегна", "knee": "до коліна",
                "midi": "міді", "maxi": "максі", "waist": "до талії"},
     "shaft": {"ankle": "щиколотки", "calf": "литки", "knee": "коліна", "thigh": "стегна"},
