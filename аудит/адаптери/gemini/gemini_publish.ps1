@@ -395,6 +395,7 @@ $script:OutboxTemplates = @(
     "\AGEMINI ОБГОРТКА: ГОТОВО (?:gemini|codex|claude)/$script:SlugCore [0-9a-f]{40}(?: КВОТА [A-Z0-9_]{2,40} (?:100|[1-9]?[0-9]))?(?: МОДЕЛЬ [a-z0-9][a-z0-9.-]{1,63})?\z"
     '\AGEMINI ОБГОРТКА: ПУЛИ V=(?:[0-9]+(?:\.[0-9]+){1,3}|-)(?: G=[A-Z0-9]{1,16}:(?:100|[1-9]?[0-9]):(?:[0-9]{1,6}|-)){0,6}(?: Q=\?)? M=(?:-|(?:gemini|claude|gpt)-[a-z0-9.-]{1,36}(?:,(?:gemini|claude|gpt)-[a-z0-9.-]{1,36}){0,5})\z'
     "\AGEMINI ОБГОРТКА: ЗАБЛОКОВАНО (?:gemini|codex|claude)/$script:SlugCore [A-Z0-9_]{2,40}\z"
+    "\AGEMINI ОБГОРТКА: ЗАБЛОКОВАНО [A-Z0-9_]{2,40} ×[0-9]{1,5}: (?:gemini|codex|claude)/$script:SlugCore(?:, (?:gemini|codex|claude)/$script:SlugCore){0,4}(?: …)?\z"
     '\AGEMINI ОБГОРТКА: ТРИВОГА (?:AUTH (?:AGY|CODEX|CLAUDE|CLOUD)|ISOLATION (?:WHOAMI|NET_SESSION|PROFILES|DRIVES|ENV)|DISK FULL|ENGINE (?:AGY|CODEX|CLAUDE))\z'
     '\AGEMINI ОБГОРТКА: ВИМКНЕНО [0-9a-f]{40}\z'
     '\AСПОСТЕРІГАЧ КОМЕНТАР #[0-9]{1,12} [0-9]{1,20} (?:mightyrochy|chatgpt-codex-connector\[bot\]) (?:новий|змінено)\z'
@@ -518,10 +519,49 @@ $script:LocalLinesCap = 64
 
 function Test-DispatcherAction([string]$Line) {
     <# Диспетчер прокидається лише за станом, що чекає його дії; решта йде зведенням при наступному пробудженні. #>
+    if ($Line -cmatch '^GEMINI ОБГОРТКА: ЗАБЛОКОВАНО ([A-Z0-9_]{2,40}) ×[0-9]{1,5}: ') { return $Matches[1] -cnotmatch $script:QuietBlockedCodes }
     if ($Line -cmatch '^GEMINI ОБГОРТКА: ЗАБЛОКОВАНО \S+ (\S+)$') { return $Matches[1] -cnotmatch $script:QuietBlockedCodes }
     if ($Line -cmatch '^GEMINI ОБГОРТКА: (?:ЗАБЛОКОВАНО|ТРИВОГА|ЛАНЦЮГ)(?: |$)') { return $true }
     if ($Line -cmatch '^GEMINI ОБГОРТКА: ГОТОВО (?:gemini|claude|codex)/(?:автоперевірка-|перевірка-|pachka-|автоживий-|Е1-нічний-живий-)') { return $true }
     $false
+}
+
+# Аварії однієї причини за прохід (10972): 29.10 56 рядків «ЗАБЛОКОВАНО … CRASH» мали одну причину, і диспетчер відповідав
+# на кожен. Недоставлені рядки ЗАБЛОКОВАНО одного коду (QUOTA0_<група>_M<хв> — без хвилин) — один рядок
+# «ЗАБЛОКОВАНО <код> ×N: <до 5 гілок>[ …]»; лічба й повний перелік — blocked-groups.json для стану ноутбука (#1856).
+$script:BlockedGroupsCap = 20
+
+function Merge-BlockedLines {
+    $groups = [ordered]@{}
+    foreach ($sf in @(Get-ChildItem -LiteralPath (Join-Path $WorkDir 'state') -Filter '*.json' -File | Sort-Object Name)) {
+        $st = [System.IO.File]::ReadAllText($sf.FullName, $script:Utf8) | ConvertFrom-Json
+        if ((Get-Prop $st 'sent') -eq $true -or (Get-Prop $st 'exhausted') -eq $true -or [int](Get-Prop $st 'attempts') -gt 0 -or [int](Get-Prop $st 'fallback_attempts') -gt 0) { continue }
+        if ([string](Get-Prop $st 'line') -cnotmatch '\AGEMINI ОБГОРТКА: ЗАБЛОКОВАНО ((?:gemini|codex|claude)/\S+) ([A-Z0-9_]{2,40})\z') { continue }
+        $branch = $Matches[1]
+        $code = $Matches[2] -creplace '\A(QUOTA0_[A-Z0-9]{1,16})_M[0-9]{1,6}\z', '$1'
+        if (-not $groups.Contains($code)) { $groups[$code] = New-Object System.Collections.ArrayList }
+        [void]$groups[$code].Add([pscustomobject]@{ File = $sf; Branch = $branch })
+    }
+    foreach ($code in @($groups.Keys)) {
+        $items = @($groups[$code])
+        if ($items.Count -lt 2) { continue }
+        $line = "GEMINI ОБГОРТКА: ЗАБЛОКОВАНО $code ×$($items.Count): $(@($items | Select-Object -First 5 | ForEach-Object { $_.Branch }) -join ', ')$(if ($items.Count -gt 5) { ' …' })"
+        # Спершу зведений рядок, потім позначка «зведено» на кожному: збій посередині дає повтор, а не втрату.
+        $grouped = Join-Path (Join-Path $WorkDir 'state') ('g-' + $items[0].File.Name)
+        if (-not (Test-Path -LiteralPath $grouped)) {
+            Write-FileAtomic $grouped (([ordered]@{ line = $line; sent = $false; attempts = 0 }) | ConvertTo-Json -Compress)
+            $path = Join-Path $WorkDir 'blocked-groups.json'
+            $old = @()
+            if (Test-Path -LiteralPath $path) { try { $old = @((ConvertFrom-Json ([IO.File]::ReadAllText($path, $script:Utf8)))) } catch { $null = $_ } }
+            $entry = [ordered]@{ utc = [datetime]::UtcNow.ToString("yyyy-MM-dd'T'HH:mm:ss'Z'"); code = $code; n = $items.Count; branches = @($items | ForEach-Object { $_.Branch }) }
+            Write-FileAtomic $path (ConvertTo-Json -InputObject @(@($old | Select-Object -Last ($script:BlockedGroupsCap - 1)) + @($entry)) -Compress -Depth 4)
+        }
+        foreach ($it in $items) {
+            $st = [System.IO.File]::ReadAllText($it.File.FullName, $script:Utf8) | ConvertFrom-Json
+            Write-FileAtomic $it.File.FullName (([ordered]@{ line = [string](Get-Prop $st 'line'); sent = $true; attempts = 0; channel = 'grouped'; group = ('g-' + $items[0].File.Name) }) | ConvertTo-Json -Compress)
+        }
+        Write-WrapperLog "зведено $($items.Count) рядків ЗАБЛОКОВАНО $code в один"
+    }
 }
 
 function Get-LocalLines {
@@ -707,6 +747,7 @@ function Main {
         Add-PoolsLine
         Receive-HealthAlerts
         Receive-Outbox
+        Merge-BlockedLines
         $processed = @{}
         # Другий прохід підхоплює тривогу CLOUD, створену під час першої спроби доставки.
         foreach ($round in 1..2) {

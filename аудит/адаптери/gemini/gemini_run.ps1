@@ -35,6 +35,7 @@ param(
     [string]$LaneDir = 'C:\Users\Public\gemini\lanes',
     [string]$RepoUrl = 'https://github.com/mightyrochy/kod-shi-data',
     [string]$ExpectedUser = 'gemini',
+    [string]$ProfileDir = (Join-Path 'C:\Users' $ExpectedUser),
     [string]$GitExe = 'git',
     [string]$AgyExe = 'agy',
     [string]$CodexExe = 'codex',
@@ -1133,6 +1134,33 @@ function Start-Markers($Workers) {
     $started
 }
 
+# Здоров'я для стану ноутбука (10971; лише показ): розмір профілю gemini (-ProfileDir; нема теки — порожньо) — не
+# частіше за usage_minutes (кеш health.json), і скільки позначок agy стоїть на групі квоти з 0 % (усі групи моделі — 0 %,
+# як Get-Quota).
+function Get-GeminiHealth {
+    $path = Join-Path $RunsDir 'health.json'
+    $c = $null
+    if (Test-Path -LiteralPath $path) { try { $c = [System.IO.File]::ReadAllText($path, $script:Utf8) | ConvertFrom-Json } catch { $null = $_ } }
+    $now = [DateTimeOffset]::UtcNow.ToUnixTimeSeconds()
+    if ($null -eq $c -or $now - [long]$c.time -ge 60 * (Get-Limit $script:Limits 'UsageMinutes' 'usage_minutes')) {
+        $r = Get-DirBytes $ProfileDir
+        $c = [pscustomobject]@{ time = $now; read = (Get-UtcStamp (Get-Date)); profile = $(if ($null -ne $r) { [string]$r.Bytes } else { '' }); skipped = $(if ($null -ne $r) { [string]$r.Skipped } else { '' }) }
+        Write-FileAtomic $path ($c | ConvertTo-Json -Compress)
+    }
+    # Кеш /usage, як у квоті heartbeat: сам вимір agy не запускає; нема кешу — «?» у стані.
+    $zero = ''
+    try {
+        $uc = [System.IO.File]::ReadAllText((Join-Path $RunsDir 'usage.json'), $script:Utf8) | ConvertFrom-Json
+        $u = ConvertFrom-UsageText ([string]$uc.text) ([long]$uc.time)
+        if ($u.Known) {
+            $groups = @(Merge-UsageWindows $u.Windows)
+            $zero = [string]@(Get-Markers | Where-Object { $_.Valid -and $_.Lane -eq 'agy' } | Where-Object {
+                    $hit = @(Get-ModelGroups $_.Model $groups); $hit.Count -gt 0 -and @($hit | Where-Object { $_.Left -eq 0 }).Count -eq $hit.Count }).Count
+        }
+    } catch { $null = $_ }
+    [ordered]@{ profile = [string]$c.profile; skipped = [string]$c.skipped; read = [string]$c.read; zero = $zero }
+}
+
 # heartbeat.json для стану ноутбука (claude_run.ps1 читає, перевіряючи кожне поле): смуги й слоти, квота груп моделей
 # (вікна, % залишку, скидання UTC, коли зчитано), остання відмова Codex, позначки в чеканні квоти. Лише назви й числа.
 function Write-Heartbeat([string]$Iso) {
@@ -1148,6 +1176,7 @@ function Write-Heartbeat([string]$Iso) {
         }
         $hb.lanes = $lanes
         $hb.limits = $script:Limits.source
+        $hb.unsourced = @($script:Limits.unsourced | Where-Object { $_ })
         # Старі копії claude_run.ps1 читають одну узяту позначку: перша зайнята.
         if ($null -ne $first) {
             $hb.marker = $first.marker; $hb.engine = $(if ($first.slot -like 'codex-*') { 'codex' } else { 'agy' }); $hb.model = $first.model
@@ -1163,6 +1192,7 @@ function Write-Heartbeat([string]$Iso) {
         } catch { $null = $_ }
         try { $hb.codex = [System.IO.File]::ReadAllText((Join-Path $RunsDir 'quota-codex.json'), $script:Utf8) | ConvertFrom-Json } catch { $null = $_ }
         $hb.wait = @(foreach ($w in @(Get-WaitingMarkers | Select-Object -First 12)) { [ordered]@{ marker = $w.Marker; until = $w.Until; g = $w.Group } })
+        try { $hb.health = Get-GeminiHealth } catch { Write-Log "здоров'я: $($_.Exception.Message)" }
     }
     try { Write-FileAtomic (Join-Path $OutDir 'heartbeat.json') ($hb | ConvertTo-Json -Compress -Depth 6) } catch { Write-Log "heartbeat: $($_.Exception.Message)" }
 }

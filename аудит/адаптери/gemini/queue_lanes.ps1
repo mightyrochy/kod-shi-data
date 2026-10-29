@@ -187,32 +187,69 @@ function Get-JsonProp($Obj, [string]$Name) {
 }
 
 function ConvertTo-Bounded($Value, $Range) {
-    <# Число з JSON, обрізане до стелі [min, max]; не число — $null (тоді діє значення з коду). #>
+    <# Число з JSON, обрізане до стелі [min, max]; не число — $null (тоді діє попереднє прийняте чи значення з коду). #>
     if ($Value -isnot [int] -and $Value -isnot [long] -and $Value -isnot [double] -and $Value -isnot [decimal]) { return $null }
     [Math]::Min([double]$Range[1], [Math]::Max([double]$Range[0], [double]$Value))
 }
 
-function Get-Limits {
-    <# Межі смуг: `смуги.json` з origin/main (не з робочої копії агента), обрізаний стелями; нема чи кривий — код.
+# Джерело межі (п.11): «власник ДД.ММ …» чи «вимір: …» з датою ДД.ММ і ще хоч одним числом (10970).
+$script:LimitDateRx = '(?<![0-9])(?:0[1-9]|[12][0-9]|3[01])\.(?:0[1-9]|1[0-2])(?![0-9])'
 
-    Зміна файла в main міняє паралельність і межі на наступному проході без перевстановлення копій: читається він
-    після `git fetch`, який перезаписує й origin/main, змінений у клоні. #>
-    $l = @{ slots = [ordered]@{}; source = 'код' }
+function Test-LimitSource([string]$Text) {
+    <# $true — у межі є джерело за форматом; інакше межа без джерела. Той самий розбір — у перевірка/перевірити_хеші.py. #>
+    if ($Text.Length -gt 300 -or $Text -cmatch '[\x00-\x1f]') { return $false }
+    if ($Text -cmatch ('\Aвласник ' + $script:LimitDateRx + '(?:[^0-9].*)?\z')) { return $true }
+    if ($Text -cnotmatch '\Aвимір: ') { return $false }
+    $d = [regex]::Match($Text, $script:LimitDateRx)
+    $d.Success -and $Text.Remove($d.Index, $d.Length).Substring(6) -match '[0-9]'
+}
+
+function Get-LimitFields {
+    <# Усі межі файла даних: слоти смуг і решта, у сталому порядку. #>
+    @($script:LaneDefaults.Keys | ForEach-Object { "slots.$_" }) + @($script:Defaults.Keys | Sort-Object)
+}
+
+function Get-Limits {
+    <# Межі смуг: `смуги.json` v2 з origin/main (не з робочої копії агента), обрізаний стелями.
+
+    v2 — кожна межа `{"n": число, "джерело": "власник ДД.ММ …" | "вимір: … ДД.ММ"}`. Межа без джерела, v1 (міграція: числа
+    без джерел), нема файла, кривий чи невідомий формат — попереднє прийняте значення (стан limits.json; нема — з коду), а
+    поле — в unsourced для рядка «межа без джерела» стану ноутбука. Зміна файла в main діє на наступному проході без
+    перевстановлення копій: читається він після `git fetch`, який перезаписує й origin/main, змінений у клоні. #>
+    $l = @{ slots = [ordered]@{}; source = 'код'; unsourced = @() }
     foreach ($k in $script:LaneDefaults.Keys) { $l.slots[$k] = $script:LaneDefaults[$k] }
     foreach ($k in $script:Defaults.Keys) { $l[$k] = $script:Defaults[$k] }
+    # Без теки стану (читач меж поза планувальником) попереднє не зберігається.
+    $sd = $(try { [string]$script:StateDir } catch { '' })
+    $prevPath = $(if ($sd) { Join-Path $sd 'limits.json' } else { '' })
+    $prev = $null
+    if ($prevPath -and (Test-Path -LiteralPath $prevPath)) { try { $prev = [System.IO.File]::ReadAllText($prevPath, $script:Utf8) | ConvertFrom-Json } catch { $null = $_ } }
+    $doc = $null
     $r = Invoke-Git @('cat-file', 'blob', "refs/remotes/origin/main:$script:LanesPath") -AllowFail
-    if ($r.Code -ne 0 -or $r.Out.Length -gt 4096) { return $l }
-    try { $doc = $r.Out | ConvertFrom-Json } catch { Write-Log 'смуги.json не читається як JSON — межі з коду'; return $l }
-    $l.source = 'origin/main'
-    foreach ($k in $script:Defaults.Keys) {
-        $v = ConvertTo-Bounded (Get-JsonProp $doc $k) $script:Ceil[$k]
-        if ($null -ne $v) { $l[$k] = $v }
+    if ($r.Code -eq 0 -and $r.Out.Length -le 8192) {
+        try { $doc = $r.Out | ConvertFrom-Json } catch { Write-Log 'смуги.json не читається як JSON — попередні межі' }
     }
-    $s = Get-JsonProp $doc 'slots'
-    foreach ($lane in @($script:LaneDefaults.Keys)) {
-        $v = ConvertTo-Bounded (Get-JsonProp $s $lane) $script:Ceil.slots
-        if ($null -ne $v) { $l.slots[$lane] = [int][Math]::Floor($v) }
+    if ($null -ne $doc) { $l.source = 'origin/main' }
+    $v2 = $null -ne $doc -and [string](Get-JsonProp $doc 'v') -eq '2'
+    $accepted = [ordered]@{}
+    foreach ($f in @(Get-LimitFields)) {
+        $lane = $(if ($f.StartsWith('slots.')) { $f.Substring(6) } else { '' })
+        $range = $(if ($lane) { $script:Ceil.slots } else { $script:Ceil[$f] })
+        $node = $null
+        if ($v2) { $node = $(if ($lane) { Get-JsonProp (Get-JsonProp $doc 'slots') $lane } else { Get-JsonProp $doc $f }) }
+        $v = $null
+        if (Test-LimitSource ([string](Get-JsonProp $node 'джерело'))) { $v = ConvertTo-Bounded (Get-JsonProp $node 'n') $range }
+        if ($null -eq $v) {
+            $l.unsourced += $f
+            $v = ConvertTo-Bounded (Get-JsonProp $prev $f) $range
+        }
+        if ($null -eq $v) { continue }
+        $accepted[$f] = $v
+        if ($lane) { $l.slots[$lane] = [int][Math]::Floor($v) } else { $l[$f] = $v }
     }
+    $text = $accepted | ConvertTo-Json -Compress
+    $old = $(if ($prevPath -and (Test-Path -LiteralPath $prevPath)) { [System.IO.File]::ReadAllText($prevPath, $script:Utf8) } else { '' })
+    if ($prevPath -and $accepted.Count -gt 0 -and $text -cne $old) { Write-FileAtomic $prevPath $text }
     $l
 }
 
@@ -496,6 +533,37 @@ function Get-WaitingMarkers {
         try { $j = $t.Substring(5) | ConvertFrom-Json } catch { continue }
         [pscustomobject]@{ Marker = [string]$j.marker; Until = [string]$j.until_utc; Group = [string](Get-JsonProp $j 'group') }
     })
+}
+
+# --- здоров'я машини (лише показ, узяття не гейтить) ----------------------------------------------------------------
+
+function Get-DirBytes([string]$Path) {
+    <# Розмір названої теки без переходу за точками з'єднання (профіль має петлі); недоступні теки — лічбою Skipped. #>
+    if (-not $Path -or -not (Test-Path -LiteralPath $Path -PathType Container)) { return $null }
+    $bytes = 0L; $skipped = 0
+    $stack = New-Object System.Collections.Stack
+    $stack.Push((New-Object System.IO.DirectoryInfo $Path))
+    while ($stack.Count -gt 0) {
+        $d = $stack.Pop()
+        try {
+            foreach ($e in $d.EnumerateFileSystemInfos()) {
+                if ($e.Attributes -band [System.IO.FileAttributes]::ReparsePoint) { continue }
+                if ($e -is [System.IO.DirectoryInfo]) { $stack.Push($e) } else { $bytes += $e.Length }
+            }
+        } catch { $skipped++ }
+    }
+    [pscustomobject]@{ Bytes = $bytes; Skipped = $skipped }
+}
+
+function Get-MarkerKind([string]$Slug) {
+    <# Вид позначки за назвою наряду — для лічби в стані. #>
+    if ($Slug -cmatch '^автоперевірка-') { return 'автоперевірка' }
+    if ($Slug -cmatch '^автоживий-') { return 'автоживий' }
+    if ($Slug -cmatch '^Е1-нічний-живий-') { return 'нічний живий' }
+    if ($Slug -cmatch '^перевірка-') { return 'перевірка' }
+    if ($Slug -cmatch '^pachka-') { return 'пачка' }
+    if ($Slug -ceq 'ВИМКНИ-НОУТБУК') { return 'вимкнення' }
+    'наряд'
 }
 
 # --- слоти, GPU, процес наряду -------------------------------------------------------------------------------------
