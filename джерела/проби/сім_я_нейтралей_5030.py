@@ -14,13 +14,14 @@ def було(м, ім):
     простір = dict(vars(м))
     exec(compile(ast.Module(body=[вузол], type_ignores=[]), "<ДО>", "exec"), простір)
     return простір[ім]
+import колір_річ as _КОЛІР
 if __name__ == "__main__":
     тон_до = було(П, "_сім_я_тону")
     річ_до = FunctionType(Д.річ.__code__, dict(vars(Д), _сім_я_речі=було(Д, "_сім_я_речі")), argdefs=Д.річ.__defaults__)
     кат = Ф.база_прогону(Ф.каталог_на_диску("каталог_повний.xml"), ліміт_фото=0)["каталог"]
     групи = {}; вади = 0
     for р in кат:
-        hex_ = р.get("hex") or (КМ.hex_від_lab(р["lab"]) if р.get("lab") else None)
+        hex_ = КР.hex_кольору(р) or (КМ.hex_від_lab(КР.точка_кольору(р)) if КР.точка_кольору(р) else None)
         if not hex_: continue
         lab = КС.hx(hex_); суд = Д.код("colour_family", КР.сім_я(lab))
         вхід = dict(р, hex=hex_, колір=р.get("колір") or р.get("колір_назва"))

@@ -43,7 +43,7 @@ import silhouette as S
  "subfolder": "тека того ж файлу в тій самій відповіді ComfyUI; типово порожня.\n              Пише сервер ComfyUI, не наш код — як і `type` поруч",
 }
 
-OSS = os.environ.get("OSS_PATH", r"C:\Users\Admin\Open Source Stylist")
+OSS = os.environ.get("OSS_PATH", os.path.join(os.path.dirname(ТУТ), "open-source-stylist"))
 СЕРВЕР = "http://127.0.0.1:1234/v1/chat/completions"   # НЕ localhost: IPv6-резолв на Windows вішає запит (виміряно v1)
 КАТАЛОГ = os.path.join(ТУТ, "каталог_повний.xml")
 ВИБІРКА_ФАЙЛ = os.path.join(ТУТ, "аудит", "збагачення_v2_вибірка.json")

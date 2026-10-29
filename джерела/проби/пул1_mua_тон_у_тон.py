@@ -15,9 +15,10 @@ import feed as Ф, bridge as B, colorspace as cs, палітра_запити as
 зап = пак.get("_запити_у_фід") or []
 print("рядків фіду з кулею K-MUA-01: %d із %d" % (sum(1 for q in зап if q.get("не_ближче_за")), len(зап)))
 кат = {c["id"]: c for c in пак["_каталог"]}   # рядок пулу моделі id не несе: id — за (назва, hex)
-ід = {(к.get("назва"), к.get("hex")): к["id"] for рр in пак["кандидати"].values() for к in рр}
+import колір_річ as _КОЛІР
+ід = {(к.get("назва"), _КОЛІР.hex_кольору(к)): к["id"] for рр in пак["кандидати"].values() for к in рр}
 def de(р):   # колір каталогу (lab) — той самий, яким різала куля й судить суд
-    lab = (кат.get(ід.get((р.get("назва"), р.get("hex")))) or {}).get("lab")
+    lab = _КОЛІР.точка_кольору(кат.get(ід.get((р.get("назва"), _КОЛІР.hex_кольору(р)))) or {})
     return cs.de00(tuple(lab), cs.hx(ГУБИ)) if lab else 99.0
 тон = {с: [р for р in пул.get(с) or [] if de(р) < ПЗ.K_MUA_01_ΔE] for с in ПЗ.K_MUA_01_ПЛОЩА}
 print("великих речей у пулі: %d, з них ΔE00 < 5 від помади: %d %s" % (

@@ -72,7 +72,8 @@ foreach ($case in $cases) {
 . (Join-Path $SourceDir 'queue_lanes.ps1')
 function Invoke-Git { [pscustomobject]@{ Code = 0; Out = $script:LaneJson } }
 foreach ($n in @(0, 6, 8, 16, 99)) {
-    $script:LaneJson = '{"v":1,"slots":{"codex":' + $n + ',"agy":' + $n + ',"claude":' + $n + '}}'
+    $node = '{"n":' + $n + ',"джерело":"вимір: стенд 29.10 — ' + $n + '"}'
+    $script:LaneJson = '{"v":2,"slots":{"codex":' + $node + ',"agy":' + $node + ',"claude":' + $node + '}}'
     $limits = Get-Limits
     $expected = [Math]::Min($n, 64)
     foreach ($lane in @('codex', 'agy', 'claude')) { Check "$lane з даних $n → $expected" ($limits.slots[$lane] -eq $expected) }

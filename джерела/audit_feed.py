@@ -95,10 +95,11 @@ def _старий_лексикон(каталог, мін_n=3, мін_впевн
     import statistics
     from collections import defaultdict
     from colorspace import lch, de00
+    from колір_річ import точка_кольору
     гр = defaultdict(list)
     for c in каталог:
-        if c.get("колір_назва") and c["впевненість"] >= мін_впевненість:
-            гр[c["колір_назва"].strip().lower()].append(c["lab"])
+        if c.get("колір_назва") and c["впевненість"] >= мін_впевненість and точка_кольору(c) is not None:
+            гр[c["колір_назва"].strip().lower()].append(точка_кольору(c))
     out = {}
     for назва, labs in гр.items():
         if len(labs) < мін_n: continue

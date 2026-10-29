@@ -12,8 +12,8 @@ B.виклик("запити", json.dumps(dict(вх, сценарій=СЗ.СЦ�
 кат = [r for r in B.каталог_останнього_пакета() if (АС.C_речі(r) or 0) >= 40]
 ОД = [r for r in кат if r.get("слот") in ("верх", "сукня", "низ", "верхній_шар")]
 АК = [r for r in кат if r.get("слот") in АС.СЛОТИ_АКСЕСУАРІВ or r.get("слот") == "взуття"]
-h = lambda r: cs.lch(tuple(r["lab"]))[2]
-опис = lambda r: "%s · %s%s %s" % ((r.get("назва") or "")[:34], r.get("колір_ім") or "—", "~" if КР.не_вимір(r) else "", PS.hex_з_lab(r["lab"]))
+h = lambda r: cs.lch(tuple(КР.точка_кольору(r)))[2]
+опис = lambda r: "%s · %s%s %s" % ((r.get("назва") or "")[:34], r.get("колір_ім") or "—", "~" if КР.не_вимір(r) else "", PS.hex_з_lab(КР.точка_кольору(r)))
 Л, П, С = K.Counter(), K.defaultdict(list), K.Counter()
 for a in ОД:
     for b in АК:

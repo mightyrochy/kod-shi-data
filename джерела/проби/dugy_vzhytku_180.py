@@ -11,11 +11,12 @@ from фід_фото import спільні_фото as _спільні_фото,
 одне = lambda ч: not re.search(r"[\[(]", ч) and sum(1 for x in ТОК.findall(ч.lower().replace("-", " "))
                                                      if V.назва_кольору(x) or V.слово_крамниці(x)) <= 1
 т = collections.defaultdict(dict)
+import колір_річ as _КОЛІР
 for o in оф:
     z = зб.get(o["id"]); ч = [x.strip() for x in _СЕП_КОЛЬОРУ.split(o.get("колір_сирий") or o.get("колір_назва") or "") if x.strip()]
     if not FZ.збагачення_придатне(z) or (z.get("версія") or 1) < 2 or len(ч) != 1 or not одне(ч[0]):
         continue
-    lab, ск = FZ.lab_з_hex(z["колір_основний"].get("hex")), V.слово_крамниці(ч[0])
+    lab, ск = FZ.lab_з_hex(_КОЛІР.hex_кольору(z["колір_основний"])), V.слово_крамниці(ч[0])
     if lab is not None and ск and not чужий_кадр(z.get("фото"), сп.get(o.get("магазин") or o["id"].split("@")[-1]) or {}):
         т[ск["ім"]].setdefault(_файл_фото(z["фото"]), CS.lch(lab))
 хром = [с for с, в in V.ЛЕКСИКОН.items() if в[4] is not None and с not in V.МЕТАЛИ]

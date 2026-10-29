@@ -8,9 +8,10 @@
 import json, sys, collections; sys.path.insert(0, ".")
 import bridge as B, outfit as O, колір_образу as K, colorspace as cs, палітра_специфікація as С
 B.виклик("запити", json.dumps(json.load(open("стенд_вх.json", encoding="utf-8")), ensure_ascii=False))
-усі = [dict(r, hex=r.get("hex") or cs.hex_з_lab(tuple(r["lab"])))
-       for r in B.каталог_останнього_пакета() if r.get("слот") == "верх" and r.get("lab")]
-світлі = [r for r in усі if r["lab"][0] >= 80.0]
+import колір_річ as _КОЛІР
+усі = [dict(r, hex=r.get("hex") or cs.hex_з_lab(tuple(_КОЛІР.точка_кольору(r))))
+       for r in B.каталог_останнього_пакета() if r.get("слот") == "верх" and _КОЛІР.точка_кольору(r)]
+світлі = [r for r in усі if _КОЛІР.точка_кольору(r)[0] >= 80.0]
 верх = lambda h="#f4f4f0": O.елементи([dict(id="в", слот="верх", hex=h)])
 def лічба(верхи, ос):
     """(знахідок «вище», знахідок «нижче», без знахідки, набір сил) на цих верхах."""

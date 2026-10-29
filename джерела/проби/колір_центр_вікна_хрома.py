@@ -5,7 +5,7 @@
 v2, відкинутого лише порогом згоди, хоч він лежить у вікні вжитку слова. Підсумок: речей-вікон «гучних» за
 центром, у чийого слова медіана виміру тиха (<40). Запуск із джерела/: python3 проби/колір_центр_вікна_хрома.py"""
 import sys, json, gzip, collections as K, statistics as S; sys.path.insert(0, ".")
-import bridge as B, стенд_знімок as СЗ, colorspace as cs, колір_річ as КР, verify as V, фід_збагачення as ФЗ
+import bridge as B, стенд_знімок as СЗ, colorspace as cs, колір_річ as КР, verify as V
 вх = json.load(open("стенд_вх.json", encoding="utf-8"))
 B.виклик("запити", json.dumps(dict(вх, сценарій=СЗ.СЦЕНАРІЇ["офіс·18°C"], випадок="офіс"), ensure_ascii=False))
 кат, зб = B.каталог_останнього_пакета(), json.load(gzip.open("каталог_збагачення.json.gz"))
@@ -14,10 +14,12 @@ for r in кат:
     с = r.get("колір_ім") or r.get("колір_назва")
     if not с or с not in V.ЛЕКСИКОН or not V.ЛЕКСИКОН[с][4]: continue
     нв, з = КР.не_вимір(r), зб.get(r["id"]) or {}
-    if нв is None and r.get("lab"): Т[с][0].append(cs.lch(tuple(r["lab"]))[1]); continue
-    if нв and r.get("lab") and cs.lch(tuple(r["lab"]))[1] >= 40: ВІК[с] += 1
+    if нв is None and КР.точка_кольору(r): Т[с][0].append(cs.lch(tuple(КР.точка_кольору(r)))[1]); continue
+    # Контрфактична хрома центру береться з меж, не з неіснуючої Lab-точки слова.
+    межі = КР.межі_кольору(r) if нв else None
+    if межі and (межі[2] + межі[3]) / 2 >= 40: ВІК[с] += 1
     if нв and (r.get("колір_спір") or {}).get("чому") == "згода свідків нижча за поріг" and з.get("версія") == 2:
-        lab = ФЗ.lab_з_hex(з["колір_основний"]["hex"])
+        lab = КР.точка_кольору(з.get("колір_основний"))
         if lab and V.перевірити(lab, ім=с)["вердикт"] == "прийнято": Т[с][1].append(cs.lch(tuple(lab))[1])
 м = lambda x: S.median(x) if x else float("nan")
 print("слово          центр C* вікна | точки: n, медіана C* | відкинуті порогом у вікні: n, медіана C* | вікон «гучних»")

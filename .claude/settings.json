@@ -12,7 +12,8 @@
       "SearchPlugins",
       "SuggestPluginInstall",
       "SuggestSkills",
-      "mcp__ccd_session__*"
+      "mcp__ccd_session__*",
+      "mcp__claude-code-remote__subscribe_pr_activity"
     ]
   },
   "hooks": {
@@ -34,6 +35,15 @@
           {
             "type": "command",
             "command": "python3 \"$CLAUDE_PROJECT_DIR/.claude/хуки/листи_менеджерові.py\""
+          }
+        ]
+      },
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 \"$CLAUDE_PROJECT_DIR/.claude/хуки/фонові_завдання.py\""
           }
         ]
       }

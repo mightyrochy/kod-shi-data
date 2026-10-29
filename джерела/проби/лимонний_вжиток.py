@@ -6,11 +6,12 @@ import collections as К, re, subprocess, sys, warnings
 warnings.filterwarnings("ignore"); sys.path.insert(0, ".")
 import feed, palettes as PS, фід_каталог as FK, фід_розбір as FR, фід_збагачення as FZ, verify as V, colorspace as cs
 зб, кр = feed.читати_збагачення(), []
+import колір_річ as _КОЛІР
 for o in FR.читати_yml("каталог_повний.xml")[0]:
     z, п = зб.get(o["id"]) or {}, " ".join(str(o.get("колір_сирий") or "").lower().split())
-    if п and len(FK._СЕП_КОЛЬОРУ.split(п)) == 1 and V.слово_крамниці(п) and (z.get("колір_основний") or {}).get("hex") \
+    if п and len(FK._СЕП_КОЛЬОРУ.split(п)) == 1 and V.слово_крамниці(п) and _КОЛІР.hex_кольору(z.get("колір_основний") or {}) \
             and (z.get("версія") or 1) >= 2 and FZ.колір_збагачення(z)[2].startswith("hex"):
-        кр.append((V.слово_крамниці(п)["ім"], z["колір_основний"]["hex"], *cs.lch(cs.hx(z["колір_основний"]["hex"]))))
+        кр.append((V.слово_крамниці(п)["ім"], _КОЛІР.hex_кольору(z["колір_основний"]), *cs.lch(cs.hx(_КОЛІР.hex_кольору(z["колір_основний"])))))
 лим = [к for к in кр if к[0] == "лимонний" and к[3] >= V.ДРІЖ_AB]
 print("ФАКТ · крамниці «лимонний» з тоном (C* ≥ %g): %d, C* %.0f–%.0f, тон %.0f–%.0f, L* %.0f–%.0f" % (V.ДРІЖ_AB, len(лим),
       min(к[3] for к in лим), max(к[3] for к in лим), min(к[4] for к in лим), max(к[4] for к in лим), min(к[2] for к in лим), max(к[2] for к in лим)))
