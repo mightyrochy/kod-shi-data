@@ -119,7 +119,7 @@ async function додатиФотоОцінкиП(е){
       const н = ОЦ.фото.map(х=>parseInt(String(х.ід).replace(/^ф/, ''), 10)).filter(x=>isFinite(x));
       ОЦ.фото.push({ід: 'ф' + ((н.length ? Math.max(...н) : 0) + 1), тип: б.тип || 'image/jpeg', дані: б.дані,
                     ширина: б.ширина || null, висота: б.висота || null});
-    }catch(err){ $('оц-стан').textContent = 'Фото не прочиталось: ' + String(err).slice(0, 120); }
+    }catch(err){ збійЖінціП($('оц-стан'), 'photo_unreadable', err); }
   }
   try{ е.target.value = ''; }catch(_){}
   малюватиФотоОцінкиП();
@@ -521,7 +521,7 @@ async function збійОцінкиП(e){
     ст.textContent = '';
     const м = await повідомленнямП({відмова: e.повідомлення}, 'review');
     (м.записи || []).forEach(з => ОЦ.етапи.мова_шару.push(з));
-    ст.textContent = м.тексти.відмова || '';
+    текстЖінціП(ст, м.тексти.відмова);
   } else ст.textContent = НАПИС_ЗБОЮ_ОЦІНКИ_П;
   await записатиЗбійОцінкиП();
 }
