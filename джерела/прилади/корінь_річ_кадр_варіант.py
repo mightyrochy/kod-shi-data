@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 """Лічить точки отримання даних без власника-варіанта за паспортом кореня.
 
-Це статичний інвентар із рецензованою базою, а не доказ власності з назв
-змінних. Обхід від джерел шукає читання полів, обхід від споживачів — ті
-самі читання всередині операторів. База містить рішення для кожного
+Це незавершений статичний інвентар, а не доказ власності з назв
+змінних. Два обходи AST звіряють координати отримань усередині операторів;
+їхній збіг не доводить повноти шляху від джерела до споживача. База містить рішення для кожного
 нормалізованого виразу, включно з відхиленими кандидатами та причинами.
 Новий вираз не успадковує винятку за іменем файла/функції: він рахується
 окремо як непереглянутий. Координати беруться з дерева, не з бази.
@@ -11,7 +11,8 @@
 Одиниця лічби — оператор отримання даних у Python, рядок отримання у JS;
 повторні читання всередині нього не множать місце. Пункти класу можуть
 перетинатися: загальна кількість — об'єднання місць, не сума підсумків.
-Проби, тести й лабораторія теж скануються. Згенерований index.html,
+Непереглянуті кандидати консервативно збільшують число, але це ще не
+число порушень класу паспорта. Проби, тести й лабораторія теж скануються. Згенерований index.html,
 сторонній open-source-stylist і архів аудит/ не є вихідним кодом системи.
 Нічого не імпортує з продукту, не звертається до мережі, не виконує вимірів.
 """
@@ -75,6 +76,57 @@ def узгодити_ast(дерево):
     return дерево
 
 
+def сталий_dump(вузол):
+    """Серіалізує AST з явними порожніми полями на Python 3.11–3.13.
+
+    Python 3.13 приховує порожні списки у звичайному ast.dump. Тут формат
+    визначає прилад, а не версія стандартної бібліотеки.
+    """
+    параметри = {'include_attributes': False}
+    if sys.version_info >= (3, 13):
+        параметри['show_empty'] = True
+    return ast.dump(вузол, **параметри)
+
+
+def походження(дерево):
+    """Знаходить зовнішні DOM/regex-входи незалежно від назви вихідного поля.
+
+    Кожне читання атрибута, селектор і витяг регулярним виразом стає
+    кандидатом. Чи це кадр/колір/наявність на шляху продукту, визначає
+    рецензована база; новий атрибут або інший regex не успадковує винятку.
+    """
+    зовнішні = {}
+    методи = {'select', 'select_one', 'find_all', 'get_attribute', 'getAttribute',
+              'get_text', 'xpath', 'cssselect', 'search', 'match', 'fullmatch',
+              'finditer', 'findall', 'group', 'groups'}
+    dom = set()
+    оператори = list(ast.walk(дерево))
+    for вузол in оператори:
+        if isinstance(вузол, (ast.Assign, ast.For, ast.comprehension)):
+            значення = вузол.value if isinstance(вузол, ast.Assign) else вузол.iter
+            if any(isinstance(ч, ast.Call) and назва_виклику(ч) in
+                   {'select', 'select_one', 'find_all', 'xpath', 'cssselect'}
+                   for ч in ast.walk(значення)):
+                цілі = вузол.targets if isinstance(вузол, ast.Assign) else [вузол.target]
+                dom.update(ч.id for ц in цілі for ч in ast.walk(ц) if isinstance(ч, ast.Name))
+    for вузол in оператори:
+        if not isinstance(вузол, ast.Call):
+            continue
+        ім = назва_виклику(вузол)
+        приймач = вузол.func.value if isinstance(вузол.func, ast.Attribute) else None
+        аргумент = вузол.args[0] if вузол.args else None
+        атрибут = аргумент.value if isinstance(аргумент, ast.Constant) else None
+        if ім in методи or (ім in {'get', 'find', 'findtext', 'iter'} and (
+                (isinstance(приймач, ast.Name) and приймач.id in dom)
+                or (isinstance(атрибут, str) and (
+                    атрибут.startswith('data-') or атрибут in {'src', 'srcset', 'style', 'href'}))
+                or (ім == 'get' and isinstance(аргумент, ast.Name)))):
+            # Навіть непрямий атрибут ел.get(атр) і група м.group(2)
+            # є входом. Тут немає словника назв полів речі.
+            зовнішні[вузол] = {1, 2}
+    return зовнішні
+
+
 def ознаки(вузол, власники=()):
     """Пункти-кандидати для вузла отримання даних, ключа чи виміру."""
     поле = None
@@ -95,8 +147,18 @@ def ознаки(вузол, власники=()):
     if (isinstance(вузол, ast.Subscript) and isinstance(вузол.ctx, ast.Load)
             and isinstance(вузол.slice, ast.Constant)):
         поле = вузол.slice.value
+    if isinstance(вузол, ast.keyword):
+        поле = вузол.arg
+    if isinstance(вузол, ast.Subscript) and isinstance(вузол.ctx, ast.Store):
+        if isinstance(вузол.slice, ast.Constant):
+            поле = вузол.slice.value
     поле = поле.lower().lstrip('~') if isinstance(поле, str) else поле
     пункти = {п for п, поля in ПОЛЯ.items() if isinstance(поле, str) and поле in поля}
+    if isinstance(поле, str):
+        if re.search(r'кол[іь]р|кольор|colou?r|свотч|swatch|наявн|stock|avail', поле, re.I):
+            пункти.add(2)
+        if re.search(r'фото|кадр|галере|image|picture|photo', поле, re.I):
+            пункти.add(1)
     if поле == 'фото_ключ':
         пункти.add(3)
     # Ключ запису/двійника: перевіряється структура присвоєння, не номер рядка.
@@ -111,14 +173,20 @@ def ознаки(вузол, власники=()):
         if any(к.arg == 'варіант' or (к.arg == 'стан' and isinstance(к.value, ast.Constant)
                                       and к.value.value == 'свій') for к in вузол.keywords):
             пункти.add(1)
+        if назва_виклику(вузол) == 'next':
+            пункти.update((1, 2))
+    if (isinstance(вузол, ast.Subscript) and isinstance(вузол.slice, ast.Constant)
+            and вузол.slice.value == 0):
+        пункти.update((1, 2))
     return пункти
 
 
 def розібрати_python(текст):
-    """Будує два незалежні обходи AST: від читань і від операторів-споживачів."""
+    """Звіряє координати кандидатів обходами від читань і від операторів."""
     with warnings.catch_warnings():
         warnings.simplefilter('ignore', SyntaxWarning)
         дерево = узгодити_ast(ast.parse(текст))
+    входи = походження(дерево)
     батьки, області = {}, {}
 
     def розмітити(вузол, область='<модуль>'):
@@ -141,19 +209,24 @@ def розібрати_python(текст):
             вузол = батьки[вузол]
         return вузол
 
+    відбитки = {}
+
     def запис(вузол, пункт):
         """Канонічна координата оператора й пункту."""
-        норм = ast.dump(вузол, include_attributes=False)
+        if вузол in відбитки:
+            return (області[вузол], вузол.lineno, пункт, відбитки[вузол])
+        норм = сталий_dump(вузол)
         # Для if/for/with беремо лише заголовок: тіло є іншими операторами.
         if isinstance(вузол, (ast.If, ast.While)):
-            норм = ast.dump(вузол.test, include_attributes=False)
+            норм = сталий_dump(вузол.test)
         elif isinstance(вузол, (ast.For, ast.AsyncFor)):
-            норм = ast.dump(вузол.iter, include_attributes=False)
-        return (області[вузол], вузол.lineno, пункт, відбиток(норм))
+            норм = сталий_dump(вузол.iter)
+        відбитки[вузол] = відбиток(норм)
+        return (області[вузол], вузол.lineno, пункт, відбитки[вузол])
 
     вперед = set()
     for вузол in ast.walk(дерево):
-        for пункт in ознаки(вузол, власники):
+        for пункт in ознаки(вузол, власники) | входи.get(вузол, set()):
             вперед.add(запис(оператор(вузол), пункт))
     назад = set()
 
@@ -167,7 +240,7 @@ def розібрати_python(текст):
     for споживач in ast.walk(дерево):
         if isinstance(споживач, ast.stmt):
             for вузол in читання_оператора(споживач):
-                for пункт in ознаки(вузол, власники):
+                for пункт in ознаки(вузол, власники) | входи.get(вузол, set()):
                     назад.add(запис(споживач, пункт))
     return вперед, назад
 
@@ -264,6 +337,16 @@ def розібрати_js(текст):
     for зсув, шматок in шматки:
         чистий = код_js(шматок)
         рядки = чистий.splitlines()
+        # Походження з браузера не залежить від назви поля результату.
+        джерела = re.compile(r'\.(?:querySelectorAll|querySelector|getAttribute|'
+                            r'match|matchAll|exec)\s*\(|\.dataset\b')
+        for номер, рядок in enumerate(рядки, зсув + 1):
+            if джерела.search(рядок):
+                норм = re.sub(r'\s+', ' ', рядок).strip()
+                for пункт in (1, 2):
+                    точка = ('<js>', номер, пункт, відбиток(норм))
+                    вперед.add(точка)
+                    назад.add(точка)
         for зб in ЧИТАННЯ_JS.finditer(чистий):
             номер = чистий.count('\n', 0, зб.start())
             поле = зб.group(1) or зб.group(2)
