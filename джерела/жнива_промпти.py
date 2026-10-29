@@ -195,7 +195,7 @@ _КРІЙ_ОДЯГУ = 'крій: bodycon — лише коли річ обтя�
 _КРІЙ_СУКНІ = """cut (крій): choose one code from {крої}, or null when the construction is unclear or not covered.
 a-line: skirt widens from the waist; shift: straight loose column without waist shaping; sheath: shaped waist and narrow skirt following the body; bodycon: skin-tight throughout.
 wrap: visible overlapping wrap construction; empire: raised seam beneath the bust, loose below; bias-slip: visible bias-cut slip construction; belted: belt or drawstring defines the waist.
-When several constructions coexist and one code cannot describe the visible shape confidently, use null. A fitted bodice alone does not determine the skirt construction. Do not infer cut from the store type, name, another garment, or hidden details."""
+When several constructions coexist and one code cannot describe the visible shape confidently, use null. A fitted bodice alone does not determine the skirt construction. Do not infer cut from the store type, another garment, or hidden details."""
 
 ПРОМПТ_ОДЯГ = """На фото товар крамниці: {тип}. Описуй ЛИШЕ цю річ (не модель, не тло, не інші речі на ній).
 """ + _ОПИС_ПОЧАТОК + """чесно опиши, що бачиш: яка це річ, де закінчується її нижній край на тілі, як сидить, яка фактура, чи є візерунок і який саме (смуги, клітинка, крапки, леопардові плями, зебра, зміїна шкіра, квіти) — чи його нема.
