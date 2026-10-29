@@ -17,7 +17,9 @@ setup() { W="${TMPDIR:-/tmp}/smuhy/$1"; rm -rf "$W"; mkdir -p "$W"/{fake,gr,gout
   (cd "$W/seed"; git checkout -q -b main; mkdir -p аудит/наряди
    for s in а-codex б-codex в-agy г-agy-квота д-claude е-claude-gpu gpu-agy gpu-claude n-codex-1 n-codex-2 n-codex-3 n-codex-4; do
      printf 'Т | наряд %s\n\nЗроби щось.\n' "$s" > "аудит/наряди/$s.md"; done
-   printf '| диспетчер | session_01TEST |\n' > аудит/СТАН.md; git add -A; git commit -q -m init; git push -q origin main 2>/dev/null)
+   printf '| диспетчер | session_01TEST |\n' > аудит/СТАН.md; mkdir -p аудит/адаптери/gemini
+   printf '{"v":1,"claude_laptop":["д-claude"]}\n' > аудит/адаптери/gemini/смуги.json
+   git add -A; git commit -q -m init; git push -q origin main 2>/dev/null)
   for c in clone-g clone-c; do git clone -q "$W/origin.git" "$W/$c" 2>/dev/null; git -C "$W/$c" config user.name g; git -C "$W/$c" config user.email g@x; done
   export FAKE_STATE="$(wp "$W/fake")" FAKE_TIMELINE="$(wp "$W/timeline.txt")" FAKE_HOLD="$HOLD" FAKE_SCENARIO=commit_done \
     FAKE_CC_SCENARIO=done FAKE_CC_RL=1 FAKE_USAGE=live FAKE_CC_LOG="$(wp "$W/cc.log")" FAKE_GH_DIR="$(wp "$W/gh")" FAKE_BOOT=b1 \

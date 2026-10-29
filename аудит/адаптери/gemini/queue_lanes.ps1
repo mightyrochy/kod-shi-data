@@ -197,7 +197,7 @@ function Get-Limits {
 
     Зміна файла в main міняє паралельність і межі на наступному проході без перевстановлення копій: читається він
     після `git fetch`, який перезаписує й origin/main, змінений у клоні. #>
-    $l = @{ slots = [ordered]@{}; source = 'код' }
+    $l = @{ slots = [ordered]@{}; source = 'код'; claude_laptop = @() }
     foreach ($k in $script:LaneDefaults.Keys) { $l.slots[$k] = $script:LaneDefaults[$k] }
     foreach ($k in $script:Defaults.Keys) { $l[$k] = $script:Defaults[$k] }
     $r = Invoke-Git @('cat-file', 'blob', "refs/remotes/origin/main:$script:LanesPath") -AllowFail
@@ -213,6 +213,8 @@ function Get-Limits {
         $v = ConvertTo-Bounded (Get-JsonProp $s $lane) $script:Ceil.slots
         if ($null -ne $v) { $l.slots[$lane] = [int][Math]::Floor($v) }
     }
+    # Наряди Claude, яким потрібен ноутбук без відеокарти (LM Studio, фото, локальні програми): лише назви за шаблоном.
+    $l.claude_laptop = @(@(Get-JsonProp $doc 'claude_laptop') | Where-Object { $_ -is [string] -and $_ -cmatch $script:SlugPattern } | Select-Object -First 64)
     $l
 }
 
