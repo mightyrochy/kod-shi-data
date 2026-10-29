@@ -72,8 +72,8 @@ try {
         function Get-TaskRows { @() }
         $sha = 'b' * 40
         $script:FakeMarkers = @(
-            @('наряд-а/cc-claude-sonnet-5-5-medium/1', 600), @('перевірка-12/gpt-6.1-sol-high/1', 7200), @('автоперевірка-9-x/gpt-6.1-sol-high/1', 3 * 86400),
-            @('автоперевірка-9-y/gpt-6.1-sol-high/1', 2 * 86400), @('наряд-б/gemini-3.8-flash-high/1', 100)
+            @('наряд-а/cc-claude-sonnet-5-5-medium/1', 600), @('перевірка-12/gpt-6.1-sol-high/1', 7200), @('автоперевірка-9-x/gpt-6.1-sol-high/1', 259200),
+            @('автоперевірка-9-y/gpt-6.1-sol-high/1', 172800), @('наряд-б/gemini-3.8-flash-high/1', 100)
         ) | ForEach-Object { ConvertTo-Marker ("refs/remotes/origin/gemini-queue/$($_[0])`t$sha`t$($now - $_[1])") }
         function Get-Markers { $script:FakeMarkers }
         $stamp = { param($s) [DateTimeOffset]::FromUnixTimeSeconds($now + $s).UtcDateTime.ToString("yyyy-MM-dd'T'HH:mm:ss'Z'") }
