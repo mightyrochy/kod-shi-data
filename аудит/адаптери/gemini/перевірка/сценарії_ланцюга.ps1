@@ -132,6 +132,48 @@ try {
     Check 'Codex вичерпано: позначку знято, один рядок хмарному Claude' (@(SlugMarkers "автоперевірка-38-$head").Count -eq 0 -and @(CloudLines 38).Count -eq 1)
     SetCodex $false; Invoke-WrapperChain
     Check 'відновлення Codex не ставить другої перевірки' (@(SlugMarkers "автоперевірка-38-$head").Count -eq 0)
+    # Мірило наряду обгортка-рецензент-за-групою-квоти: квота agy — за групою саме обраної моделі (gemini-3.8-flash-high →
+    # «Gemini Models»), а не за будь-якою групою pools.json. ДО — той самий pools.json без слів назви: так його пише main, і
+    # Test-ModelQuota судить його правилом main (усі групи на 0 %). «Зараз» — 2026-10-29T19:00Z.
+    function SetPools($Gem, $Cg, [switch]$Old) {
+        $gs = @([ordered]@{g='GEMINIMODELS';left=$Gem;reset=90;n='gemini models'}, [ordered]@{g='CLAUDEANDGPTMODE';left=$Cg;reset=90;n='claude and gpt models'})
+        if ($Old) { foreach ($g in $gs) { $g.Remove('n') } }
+        [IO.File]::WriteAllText("$OutDir/pools.json", ((@{v=1;groups=$gs}) | ConvertTo-Json -Compress -Depth 4), $utf)
+    }
+    function SetRefused([string]$At) {
+        $hb = $(if ($At) { @{codex=@{refused=$At}} } else { @{} })
+        [IO.File]::WriteAllText("$OutDir/heartbeat.json", ($hb | ConvertTo-Json -Compress -Depth 3), $utf)
+    }
+    $chainCfg = ConvertFrom-Json ([IO.File]::ReadAllText((Join-Path $SourceDir 'ланцюг.json'), $utf))
+    $at19 = [datetimeoffset]::new(2026, 10, 29, 19, 0, 0, [timespan]::Zero)
+    $tablePull = Pull 50 'claude/таблиця-квоти' $head
+    $cases = @(
+        @{N=1; Gem=0; Cg=1; Refused='2026-10-29T15:18:00Z'; Want='gpt-6.1-sol-high'},
+        @{N=2; Gem=0; Cg=1; Refused='2026-10-29T18:30:00Z'; Want='gemini-3.8-flash-high'},
+        @{N=3; Gem=100; Cg=0; Refused='2026-10-29T15:18:00Z'; Want='gemini-3.8-flash-high'},
+        @{N=4; Gem=0; Cg=0; Refused=''; Want='gpt-6.1-sol-high'},
+        @{N=5; Gem=$null; Cg=$null; Refused=''; Want='gemini-3.8-flash-high'})
+    foreach ($c in $cases) {
+        SetRefused $c.Refused
+        if ($null -eq $c.Gem) { Remove-Item -LiteralPath "$OutDir/pools.json" -ErrorAction SilentlyContinue } else { SetPools $c.Gem $c.Cg -Old }
+        $was = @(Get-ReviewModels $tablePull $chainCfg $at19)
+        if ($null -ne $c.Gem) { SetPools $c.Gem $c.Cg }
+        $got = @(Get-ReviewModels $tablePull $chainCfg $at19)
+        Check "випадок $($c.N) таблиці: рецензент $($c.Want)" ($got.Count -eq 1 -and $got[0] -ceq $c.Want)
+        "  мірило: випадок $($c.N) — ДО $($was -join ',') → ПІСЛЯ $($got -join ',')"
+    }
+    # Випадок 1 для поставленої позначки: …/gemini-3.8-flash-high/… знімається, ставиться …/gpt-6.1-sol-high/…, один раз.
+    SetCodex $false; SetPools 40 1
+    $head = Merge 'квота-група.txt' '1'
+    $script:Pulls = @((Pull 51 'claude/квота-група' $head)); Invoke-WrapperChain
+    Check 'група: до квоти позначка agy' (@(SlugMarkers "автоперевірка-51-$head").Count -eq 1 -and @(SlugMarkers "автоперевірка-51-$head")[0] -match '/gemini-3\.8-flash-high/1/p2$')
+    SetRefused (Stamp -3.7); SetPools 0 1 -Old; Invoke-WrapperChain
+    $was = @(SlugMarkers "автоперевірка-51-$head")
+    SetPools 0 1; Invoke-WrapperChain; Invoke-WrapperChain
+    $got = @(SlugMarkers "автоперевірка-51-$head")
+    Check 'група GEMINIMODELS 0 %, CLAUDEANDGPTMODE 1 %: позначка перейшла до Codex, одна' ($got.Count -eq 1 -and $got[0] -match '/gpt-6\.1-sol-high/1/p2$')
+    "  мірило: заміна позначки у випадку 1 — ДО $(@($was | ForEach-Object { ($_ -split '/')[-3] }) -join ',') → ПІСЛЯ $(@($got | ForEach-Object { ($_ -split '/')[-3] }) -join ',')"
+    SetCodex $false
     # Звіт, що вже опубліковано, інший рушій не повторює.
     SetAgy $false
     [void][IO.Directory]::CreateDirectory("$WorkDir/state")

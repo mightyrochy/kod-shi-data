@@ -3,7 +3,7 @@ import ast, glob, os
 К = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 ВЛАСНИК = "колір_тон"
 МЕЖІ = {"СІГМА_МЕЖІ", "ДУГА_ВІДЛУННЯ", "СЕКТОР_КОЛА", "МЕЖА_БЛИЗЬКИХ", "ТЕПЛИЙ_ПОЛЮС", "СІГМА_ΔH", "_КОЛО", "RELATIONS",
-        "ВІКНА_ТОНУ", "ВІКНА_ΔH", "СІМ_Ї_КОЛО", "FAMILIES", "L_МІН", "_L_МІН", "БІРЮЗОВА_ДУГА"}
+        "ВІКНА_ТОНУ", "ВІКНА_ΔH", "СІМ_Ї_КОЛО", "FAMILIES", "L_МІН", "_L_МІН", "БІРЮЗОВА_ДУГА", "ПОХИБКА_ТОНУ", "ВАГА_ТОНУ_ХРОМИ"}
 число = lambda n: isinstance(n, ast.Constant) and isinstance(n.value, (int, float))
 дуга = lambda n: isinstance(n, ast.Tuple) and len(n.elts) == 2 and all(число(e) and -1 <= e.value <= 360 for e in n.elts)
 ім = lambda n: n.id if isinstance(n, ast.Name) else None
