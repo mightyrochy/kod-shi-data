@@ -168,10 +168,11 @@ _БЕЗ_ГЕЙТІВ = {
                  як="think each outfit through against her day item by item: replace an item that will not "
                     "stand the day, or say gently in the outfit's «day» why it stays; write «day» anew "
                     "together with the items"),
-        _ЗП.Поле("item_keys", "what the keys of the items in «verdict» and «showcase» mean, and defaults for omitted values",
+        _ЗП.ПОЛЕ_КАНДИДАТІВ,
+        _ЗП.Поле("item_keys", "what the keys in «candidates» mean, and defaults for omitted values",
                  як="read every item by these keys; restore every absent key that has an `absent =` default"),
-        _ЗП.Поле("verdict", "the code's check of each outfit you put together: «your_outfit» — its items with "
-                            "full descriptions, caption and «day» (your sentence about her day in it); "
+        _ЗП.Поле("verdict", "the code's check of each outfit you put together: «your_outfit» — its item numbers, "
+                            "caption and «day» (your sentence about her day in it); "
                             "«your_declared» — the moves you declared in «deliberate»; «structure»; "
                             "«findings»; «checklist»; «knot» — the place where most conditions meet",
                  треба=True),
@@ -217,7 +218,7 @@ _БЕЗ_ГЕЙТІВ = {
                     "yourself, and it counts when you find it bold"),
         _ЗП.Поле("set.not_done", "gate findings that still stand in the new check and are not named in «done»",
                  як="give each an entry in «done» of its outfit, or drop the outfit"),
-        _ЗП.Поле("showcase", "items you have not taken yet: for missing kinds of items, for kinds where the set "
+        _ЗП.Поле("showcase", "item numbers you have not taken yet: for missing kinds of items, for kinds where the set "
                              "stands on one item, for the tightest spots, and what the code found for your "
                              "«needed» («found_for»)",
                  як="take the item a missing kind needs; the rest is your choice"),
@@ -235,13 +236,13 @@ _БЕЗ_ГЕЙТІВ = {
         # він стояв лише цим реченням, qwen3.5-9b ішла вердиктом згори й вертала о1…о5 у 27/27 пар заміру
         # ГГ-1: що стояло в о6–о10, до неї не доходило (25 з 54 опор загинули саме так). Код порядку
         # не міняє і за зауваженнями не сортує — порядок вердикта лише названо таким, що нічого не каже.
-        "First choose: in «chosen» name the «outfits_wanted» outfits of «verdict» you keep, and in «why» of "
-        "each say what in «case» it answers — her occasion, «intent», «goal», her own words — so that their "
+        "First choose the «outfits_wanted» outfits of «verdict» you keep. Write each once in «outfits», "
+        "with its «id» and «why» before its improved items. In «why» say what in «case» it answers — "
+        "her occasion, «intent», «goal», her own words — so that their "
         "ideas differ. Read every outfit of «verdict» before you choose: «verdict» comes in an order "
         "drawn by lot, and an outfit's place in it says nothing about her. Do not choose by how many remarks "
         "an outfit has or how mild they are: an outfit that answers her better stays with its remarks.",
-        "«outfits» of the answer are exactly the outfits named in «chosen», in that order, each improved; an "
-        "outfit you did not choose is not written.",
+        "«outfits» is your ordered selection, each outfit improved; an outfit you did not choose is not written.",
         # СКЛАДАННЯ-ЧИТАННЯ: ремонт повертав образи по 1–2 речі (лише змінену сукню чи спідницю) —
         # повнота такі відкидає; у 27 відповідях живих 1510 А 10 образів зі складу 4–6 речей стали трьома
         "An improved outfit is whole: «items» lists all its items, the ones you kept and the ones you put in; an "
@@ -291,12 +292,7 @@ _БЕЗ_ГЕЙТІВ = {
     вихід="ОБРАЗИ_V1",
     # «pole» — поле складання; без підпису його нема й у скелеті ремонту (`протокол.ПОЛЯ_НА_ПРОХАННЯ`)
     поля_виходу=dict({к: v for к, v in _ПОЛЯ_ОБРАЗІВ.items() if к != "образи[].полюс"}, **{
-        # у скелеті «chosen» — один запис, і з «keep_at_least: 2» ремонт лишав два образи з п'яти
-        "обрано[].ід": "«id» of an outfit of «verdict» you keep: «chosen» has one entry for each of the "
-                        "«outfits_wanted» outfits",
-        # «why» у 15 з 88 записів «chosen» живих 1510 А — понад 200 симв. (до 262), у відповідях — роздуми
-        # на 2 тис.
-        "обрано[].чому": "what in «case» this outfit answers: one short sentence, up to 20 words",
+        "образи[].чому": "what in «case» this outfit answers: one short sentence, up to 20 words",
         "образи[].речі": "«n» of each item of the improved outfit, alone: all its items, not only the ones you "
                          "changed",
         "образи[].ід": "«id» of the «your_outfit» you improved",
