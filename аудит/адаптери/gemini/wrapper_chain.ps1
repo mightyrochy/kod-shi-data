@@ -119,12 +119,72 @@ function Add-ChainMarker([string]$Slug, [string]$Model, [string]$Main, [switch]$
     Write-WrapperLog "ланцюг: поставлено $ref на $Main"
 }
 
-function Get-ReviewModels($Pull, $Config) {
-    <# Один інший постачальник; фактичний каскад прив'язаний до опублікованого SHA. #>
+function Read-QuotaJson([string]$Dir, [string]$Name) {
+    <# Файли квот пишуть смуги (heartbeat — недовірений): не за форматом або нема — «квоту не прочитано». #>
+    try { ConvertFrom-Json ([IO.File]::ReadAllText((Join-Path $Dir $Name), $script:Utf8)) } catch { $null }
+}
+
+function ConvertFrom-QuotaStamp($Value) {
+    # PowerShell 7 сам перетворює дати з JSON на DateTime, 5.1 лишає рядок.
+    if ($Value -is [datetime]) { return [datetimeoffset]::new($Value.ToUniversalTime()) }
+    $text = [string]$Value
+    if ($text -cnotmatch '^20[0-9]{2}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$') { return $null }
+    $t = [datetimeoffset]::MinValue
+    if ([datetimeoffset]::TryParseExact($text, "yyyy-MM-dd'T'HH:mm:ss'Z'", [Globalization.CultureInfo]::InvariantCulture, [Globalization.DateTimeStyles]::AssumeUniversal, [ref]$t)) { return $t }
+    $null
+}
+
+function Test-QuotaRefused($Refused, $Reset, [datetimeoffset]$Now) {
+    <# Відмова за квотою діє до скидання; скидання невідоме — годину від відмови (quota_wait_minutes за замовчуванням). #>
+    $until = ConvertFrom-QuotaStamp $Reset
+    if ($null -ne $until) { return $until -gt $Now }
+    $at = ConvertFrom-QuotaStamp $Refused
+    ($null -ne $at -and $at -le $Now -and $at -gt $Now.AddMinutes(-60))
+}
+
+function Test-ProviderQuota([string]$Provider, [datetimeoffset]$Now) {
+    <# $true — постачальник на квоті за файлами, які смуги вже ведуть: Codex — `codex` у heartbeat.json (gemini_run),
+    Claude — quota-claude.json (claude_run, поруч із gemini-publish). Не прочитано — вважаємо доступним, як було до квот.
+    agy рушієм ланцюга не обирається (у ланцюг.json нема його моделі), тож його квота тут не читається. #>
+    if ($Provider -ceq 'codex') {
+        $hb = Read-QuotaJson $OutDir 'heartbeat.json'
+        $c = $(if ($null -ne $hb) { Get-Prop $hb 'codex' } else { $null })
+        if ($null -eq $c) { return $false }
+        return (Test-QuotaRefused (Get-Prop $c 'refused') (Get-Prop $c 'reset') $Now)
+    }
+    if ($Provider -ceq 'claude') {
+        $q = Read-QuotaJson (Join-Path (Split-Path -Parent $WorkDir) 'claude-run') 'quota-claude.json'
+        if ($null -eq $q) { return $false }
+        if (Test-QuotaRefused (Get-Prop $q 'refused') (Get-Prop $q 'reset') $Now) { return $true }
+        foreach ($w in @(Get-Prop $q 'windows')) {
+            if ($null -eq $w) { continue }
+            $until = ConvertFrom-QuotaStamp (Get-Prop $w 'reset')
+            if ([string](Get-Prop $w 'left') -ceq '0' -and $null -ne $until -and $until -gt $Now) { return $true }
+        }
+    }
+    $false
+}
+
+function Get-ModelProvider([string]$Model) {
+    if ($Model -cmatch '^gpt-') { return 'codex' }
+    if ($Model -cmatch '^(?:cc-)?claude-') { return 'claude' }
+    'agy'
+}
+
+function Get-ModelBase([string]$Model) { ($Model -creplace '^cc-','') -creplace '-(?:low|medium|high|xhigh|max)$','' }
+
+function Select-ReviewModel([string[]]$Candidates, [datetimeoffset]$Now) {
+    <# Перший кандидат, чий постачальник не на квоті (порядок — аудит/МОДЕЛІ.md). Усі на квоті — перший: позначка чекає скидання. #>
+    $list = @($Candidates | Where-Object { $_ })
+    foreach ($model in $list) { if (-not (Test-ProviderQuota (Get-ModelProvider $model) $Now)) { return $model } }
+    $list[0]
+}
+
+function Get-ReviewModels($Pull, $Config, [datetimeoffset]$Now = [datetimeoffset]::UtcNow) {
+    <# Один рушій: інший постачальник, ніж автор, що не на квоті; обидва інші на квоті — той самий постачальник іншою
+    моделлю (аудит/МОДЕЛІ.md). Фактичний каскад прив'язаний до опублікованого SHA. #>
     $branch = [string]$Pull.head.ref; $head = [string]$Pull.head.sha
     if (Test-ReviewBranch $branch) { return @() }
-    if ($branch.StartsWith('claude/')) { return @([string]$Config.codex) }
-    if ($branch.StartsWith('codex/')) { return @([string]$Config.claude) }
     $file = Join-Path (Join-Path $WorkDir 'engine-models') ((Get-Sha256Hex "$branch $head") + '.txt')
     $model = ''
     foreach ($stateFile in @(Get-ChildItem -LiteralPath (Join-Path $WorkDir 'state') -Filter '*.json' -File -ErrorAction SilentlyContinue)) {
@@ -132,8 +192,44 @@ function Get-ReviewModels($Pull, $Config) {
         if ([string](Get-Prop $state 'line') -cmatch ('^GEMINI ОБГОРТКА: ГОТОВО ' + [regex]::Escape("$branch $head") + '(?: КВОТА [A-Z0-9_]+ [0-9]+)? МОДЕЛЬ ([a-z0-9.-]+)$')) { $model = $Matches[1]; break }
     }
     if (Test-Path -LiteralPath $file) { $model = [IO.File]::ReadAllText($file, $script:Utf8).Trim() }
-    if ($model -cmatch '^gpt-') { return @([string]$Config.claude) }
-    @([string]$Config.codex)
+    $codexAlt = $(if ($null -ne $Config.PSObject.Properties['codex_alt']) { [string]$Config.codex_alt } else { '' })
+    $claudeAlt = $(if ($null -ne $Config.PSObject.Properties['claude_alt']) { [string]$Config.claude_alt } else { '' })
+    $author = $(if ($branch.StartsWith('claude/')) { 'claude' } elseif ($branch.StartsWith('codex/')) { 'codex' } else { Get-ModelProvider $model })
+    # Запасна модель — відмінна від моделі автора; модель автора claude/ невідома — запасна (Opus), бо код пишуть Sonnet.
+    $other = $(if ($author -ceq 'claude') { $(if ($claudeAlt -and (Get-ModelBase $model) -cne (Get-ModelBase $claudeAlt)) { $claudeAlt } else { [string]$Config.claude }) }
+               elseif ($author -ceq 'codex') { $(if ($codexAlt -and (Get-ModelBase $model) -cne (Get-ModelBase $codexAlt)) { $codexAlt } else { [string]$Config.codex }) })
+    $pick = $(if ($author -ceq 'claude') { Select-ReviewModel @([string]$Config.codex, $other) $Now }
+              elseif ($author -ceq 'codex') { Select-ReviewModel @([string]$Config.claude, $other) $Now }
+              else { Select-ReviewModel @([string]$Config.codex, [string]$Config.claude) $Now })
+    @($pick)
+}
+
+function Test-ChainReviewDone([string]$Number, [string]$Head) {
+    <# Опублікований звіт автоперевірки цієї голови — кінець; позначку іншого рушія вже не ставимо. #>
+    foreach ($file in @(Get-ChildItem -LiteralPath (Join-Path $WorkDir 'state') -Filter '*.json' -File -ErrorAction SilentlyContinue)) {
+        $state = ConvertFrom-Json ([IO.File]::ReadAllText($file.FullName, $script:Utf8))
+        if ([string](Get-Prop $state 'line') -cmatch ('^GEMINI ОБГОРТКА: ГОТОВО (?:gemini|claude|codex)/автоперевірка-' + $Number + '-' + $Head + ' ')) { return $true }
+    }
+    $false
+}
+
+function Move-BlockedMarkers([string]$Slug, [string]$Model, [string]$Main, [datetimeoffset]$Now, [switch]$Gpu) {
+    <# Усі позначки наряду чекають вичерпаної квоти, а $Model — на доступного постачальника: ставить позначку $Model, старі
+    знімає (без дубля). Є позначка доступного постачальника чи нема старих — нічого не робить. $true — переведено. #>
+    if (Test-ProviderQuota (Get-ModelProvider $Model) $Now) { return $false }
+    $r = Invoke-Git @('ls-remote','--heads','origin',"refs/heads/gemini-queue/$Slug/*") -AllowFail
+    if ($r.Code -ne 0) { throw 'CHAIN_REMOTE' }
+    $old = @(foreach ($line in ($r.Out -split "`n")) {
+        if ($line -cmatch ('\trefs/heads/(gemini-queue/' + [regex]::Escape($Slug) + '/([a-z0-9][a-z0-9.-]{1,63})/1(?:/p2(?:-gpu)?)?)$')) { [pscustomobject]@{ Ref = $Matches[1]; Model = $Matches[2] } }
+    })
+    if (-not $old.Count -or @($old | Where-Object { $_.Model -ceq $Model -or -not (Test-ProviderQuota (Get-ModelProvider $_.Model) $Now) }).Count) { return $false }
+    if ($Gpu) { Add-ChainMarker $Slug $Model $Main -Gpu } else { Add-ChainMarker $Slug $Model $Main }
+    foreach ($m in $old) {
+        $d = Invoke-Git @('push','-q','--no-verify','origin',":refs/heads/$($m.Ref)") -AllowFail
+        if ($d.Code -ne 0) { throw 'CHAIN_PUSH' }
+        Write-WrapperLog "ланцюг: $($m.Ref) знято — квота постачальника вичерпана, роботу бере $Model"
+    }
+    $true
 }
 
 function Get-ReviewDiff([string]$Head, [string]$Main) {
@@ -211,6 +307,11 @@ function Invoke-WrapperChain {
     try {
         $config = ConvertFrom-Json $r.Out
         if ($config.v -ne 1 -or $config.codex -cnotmatch '^gpt-[a-z0-9.-]+$' -or $config.claude -cnotmatch '^cc-claude-[a-z0-9.-]+$') { throw 'CHAIN_CONFIG' }
+        # Запасні моделі постачальників — дані; без них вибір береться лише між постачальниками.
+        foreach ($alt in @(@('codex_alt','^gpt-[a-z0-9.-]+$'), @('claude_alt','^cc-claude-[a-z0-9.-]+$'))) {
+            $altProp = $config.PSObject.Properties[$alt[0]]
+            if ($null -ne $altProp -and ($altProp.Value -isnot [string] -or $altProp.Value -cnotmatch $alt[1])) { throw 'CHAIN_CONFIG' }
+        }
         foreach ($path in @('аудит/наряди/автоперевірка.md','аудит/наряди/автоживий.md')) {
             if ((Invoke-Git @('cat-file','-e',"${main}:$path") -AllowFail).Code -ne 0) { throw 'CHAIN_TEMPLATE' }
         }
@@ -279,9 +380,13 @@ function Invoke-WrapperChain {
             Write-FileAtomic $statePath (([ordered]@{ main=$main; reviewed=$reviewed; live_active=$liveActive; live_since=$liveSince; live_stamps=@($liveStamps.Keys); live_pending=@($livePending); reviews=@($seen.Keys); installed_utc=$installed.ToString('o'); heads=$heads }) | ConvertTo-Json -Compress -Depth 7)
         }
         if ($null -ne $liveActive -and $null -ne $liveActive.PSObject.Properties['published'] -and -not $liveActive.published) {
-            Add-ChainMarker "автоживий-$($liveActive.stamp)" ([string]$config.codex) ([string]$liveActive.main) -Gpu
+            Add-ChainMarker "автоживий-$($liveActive.stamp)" (Select-ReviewModel @([string]$config.codex, [string]$config.claude) $now) ([string]$liveActive.main) -Gpu
             $liveActive.published = $true
             Write-FileAtomic $statePath (([ordered]@{ main=$main; reviewed=$reviewed; live_active=$liveActive; live_since=$liveSince; live_stamps=@($liveStamps.Keys); live_pending=@($livePending); reviews=@($seen.Keys); installed_utc=$installed.ToString('o'); heads=$heads }) | ConvertTo-Json -Compress -Depth 7)
+        }
+        elseif ($null -ne $liveActive -and $null -ne $liveActive.PSObject.Properties['published'] -and $liveActive.published) {
+            # Позначка, що чекає вичерпаної квоти, переходить до доступного рушія.
+            [void](Move-BlockedMarkers "автоживий-$($liveActive.stamp)" (Select-ReviewModel @([string]$config.codex, [string]$config.claude) $now) ([string]$liveActive.main) $now -Gpu)
         }
         Complete-EngineDrafts
         foreach ($pr in @(Get-ChainPulls)) {
@@ -306,14 +411,18 @@ function Invoke-WrapperChain {
                 }
             }
             if (Test-ReviewedMerge $pr $reviewed $main) { Write-WrapperLog "ланцюг: #$n $head — незмінний diff після злиття main"; continue }
-            $models = @(Get-ReviewModels $pr $config)
+            $models = @(Get-ReviewModels $pr $config $now)
             if (-not @($models | Where-Object { -not $seen.ContainsKey("$n $head $_") }).Count) { continue }
             if (-not (Test-ChainCodePull $pr)) { continue }
+            # Перевірку, що вже дала звіт, інший рушій не повторює.
+            if (Test-ChainReviewDone $n $head) { continue }
             $diff = Get-ReviewDiff $head $main
             foreach ($model in $models) {
                 $key = "$n $head $model"
                 if ($seen.ContainsKey($key)) { continue }
-                Add-ChainMarker "автоперевірка-$n-$head" $model $main
+                $moved = $false
+                if (@($seen.Keys | Where-Object { $_ -cmatch ('^' + $n + ' ' + $head + ' ') }).Count) { $moved = Move-BlockedMarkers "автоперевірка-$n-$head" $model $main $now }
+                if (-not $moved) { Add-ChainMarker "автоперевірка-$n-$head" $model $main }
                 $seen[$key] = $true
                 $reviewed[$n] = @{head=$head;diff=$diff}
                 Write-FileAtomic $statePath (([ordered]@{ main=$main; reviewed=$reviewed; live_active=$liveActive; live_since=$liveSince; live_stamps=@($liveStamps.Keys); live_pending=@($livePending); reviews=@($seen.Keys); installed_utc=$installed.ToString('o'); heads=$heads }) | ConvertTo-Json -Compress -Depth 5)
@@ -321,10 +430,19 @@ function Invoke-WrapperChain {
         }
     } catch {
         $code = [string]$_.Exception.Message
-        if ($code -cnotmatch '^CHAIN_[A-Z_]+$') { $code = 'CHAIN_FAILED' }
-        Write-WrapperLog "ланцюг: $code; наступний прохід повторить незавершене"
-        if (-not (Test-Seen ("chain-failed $code " + [datetime]::UtcNow.ToString('yyyyMMddHH')))) {
-            Add-OutboxLine ((Get-Date -Format 'yyyyMMdd-HHmmss') + '-' + (Get-Sha256Hex "chain $code").Substring(0,12) + '.txt') "GEMINI ОБГОРТКА: ЛАНЦЮГ $code"
+        $detail = ''
+        if ($code -cnotmatch '^CHAIN_[A-Z_]+$') {
+            # Причина збою: тип винятку й рядок скрипту — у рядку; повний текст і позиція — лише в журналі (він може нести шляхи й дані).
+            $kind = [string]$_.Exception.GetType().Name
+            $at = $_.InvocationInfo
+            $where = $(if ($null -ne $at -and $at.ScriptName) { (Split-Path -Leaf $at.ScriptName) + ':' + $at.ScriptLineNumber } else { '' })
+            Write-WrapperLog ("ланцюг: CHAIN_FAILED {0}: {1}`n{2}" -f $_.Exception.GetType().FullName, $_.Exception.Message, $_.ScriptStackTrace)
+            $code = 'CHAIN_FAILED'
+            if ($kind -cmatch '^[A-Za-z0-9]{1,40}$' -and $where -cmatch '^[a-z_]{1,40}\.ps1:[0-9]{1,5}$') { $detail = " $kind $where" }
+        }
+        Write-WrapperLog "ланцюг: $code$detail; наступний прохід повторить незавершене"
+        if (-not (Test-Seen ("chain-failed $code$detail " + [datetime]::UtcNow.ToString('yyyyMMddHH')))) {
+            Add-OutboxLine ((Get-Date -Format 'yyyyMMdd-HHmmss') + '-' + (Get-Sha256Hex "chain $code$detail").Substring(0,12) + '.txt') "GEMINI ОБГОРТКА: ЛАНЦЮГ $code$detail"
         }
     }
 }
