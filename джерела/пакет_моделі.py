@@ -12,6 +12,8 @@ import re
 import сценарій as _ПОГОДА
 import json as _json_
 import протокол as _ПР
+import фрази_формату as _ФФ
+import спільні_вимоги as _ВИМ
 import дріт_моделі as _Д
 import outfit as _О
 import формальність as _ФОРМ
@@ -493,8 +495,7 @@ import внутрішня_мова as _ВМ_П
 # 42), тож скопійований приклад не стане чужою річчю, а піде в невірні пари.
 ПРИКЛАД_НОМЕРА = "#12·99"
 РЯДОК_ЛИШЕ_НОМЕР = ("Write every item as its «n» alone, exactly as given (half of a set: «n»/top or «n»/bottom): "
-                    "\"%s\" — never \"%s Olive midi skirt …\" and never an object {\"n\": …}; the code "
-                    "already knows every field of the item." % (ПРИКЛАД_НОМЕРА, ПРИКЛАД_НОМЕРА))
+                    "\"%s\", not an object {\"n\": …}." % ПРИКЛАД_НОМЕРА)
 ПОЛЯ_ОБРАЗІВ_EN = {
     # Підпис «Cozy velour hoodie and grey leggings» стояв над річчю типу
     # `trousers`, а не легінсами пулу (`leggings` — 15 речей), і обіцяв не той одяг. Підпис називає лише речі свого
@@ -542,23 +543,15 @@ import внутрішня_мова as _ВМ_П
     роль="You are the stylist. You put together outfits for her from the items of «pool» for her case.",
     вхід=(
         _ЗП.ПОЛЕ_ВІДБОРУ,
-        _ЗП.Поле("case", "her case: the occasion, her words, wishes, mood and refusals",
-                 як="do not take an item that goes against her refusals or her words"),
+        _ВИМ.поле("case", як=_ВИМ.ПРОТИ_ВІДМОВ),
         *ПОЛЯ_МЕЖІ_НА_СЛОТ,
-        _ЗП.Поле("case.goal_quote", "her own words behind «goal»",
-                 як="they say more than the code: the outfit answers them"),
-        _ЗП.Поле("case.intent_quote", "her own words behind «intent»",
-                 як="they say more than the code: the outfit answers them"),
-        _ЗП.Поле("case.goal_zones", "the body zones she wants to draw the eye away from, with any goal",
-                 як="keep these zones quiet; the rest of the look follows goal"),
-        _ЗП.Поле("case.goal_extra", "what else matters to her: taller — a longer line; comfort — moving "
-                                    "comfortably all day; strict — strictly by the occasion",
+        _ВИМ.поле("case.goal_quote"),
+        _ВИМ.поле("case.intent_quote"),
+        _ВИМ.поле("case.goal_zones"),
+        _ЗП.Поле("case.goal_extra", "what else matters to her: " + _ВИМ.КОДИ_GOAL_EXTRA,
                  як="the outfit answers each of them"),
-        _ЗП.Поле("case.her_other_words", "the rest of what she said, which no field of «case» carries",
-                 як="it is part of her case"),
-        _ЗП.Поле("case.language_model_note", "the language model's note on her words about the event, "
-                                             "when they are hard to read without context",
-                 як="it explains her words and does not replace them: where they differ, her words win"),
+        _ВИМ.поле("case.her_other_words"),
+        _ВИМ.поле("case.language_model_note"),
         _ЗП.Поле("case.reserved_colour", "a colour that at this event belongs to another person: near_white — "
                                          "white and colours that read as white in photos (cream, ivory, milky, "
                                          "pale yellow, pale blue) belong to the bride, and she is a guest; it "
@@ -572,12 +565,10 @@ import внутрішня_мова as _ВМ_П
         _ЗП.Поле("case.her_registers", "the style language she dresses in",
                  як="keep to it: one item from another register is a welcome quote; two or more change "
                     "the language"),
-        _ЗП.Поле("day", "her day as facts: what she will do, where and on what ground she will walk, how "
-                        "long, the weather, the hour and light, the level of the occasion",
-                 як="check every item of every outfit against this day, not only the shoes"),
+        _ВИМ.поле("day", як="check every item of every outfit against this day, not only the shoes"),
         _ЗП.Поле("day.unknown", "what she has not told about her day: the place, the hour, the weather",
                  як="do not assume a value for it; prefer items that hold either way"),
-        _ЗП.Поле("person", "her coloring, palette and body"),
+        _ВИМ.поле("person"),
         _ЗП.Поле("person.goal", "the outfit-wide goal: flatter, conceal, express or taller; this is an "
                                   "occasion choice only when goal_reason says goal_from_her_words"),
         _ЗП.Поле("person.goal_reason", "the source and limits of the goal: statements defined in statement_codes; "
@@ -668,18 +659,14 @@ import внутрішня_мова as _ВМ_П
         _ЗП.Поле("coat_required", "it is cold",
                  як="every outfit needs a coat or a warm jacket as its outer layer; a blazer or a "
                     "cardigan does not replace it"),
-        _ЗП.Поле("she_refuses", "what she refused in her words",
-                 як="do not take an item they describe, even when it is in «pool»"),
+        _ВИМ.поле("she_refuses", як="do not take an item described there, even when it is in «pool»"),
         _ЗП.Поле("she_rejected_items", "items she rejected on earlier cards",
                  як="do not take them or their twins from the same shop"),
         _ЗП.Поле("zones_she_keeps_covered", "body zones she does not show"),
         # БРИФ-1: правила, які код уже застосував у пулі чи перевіряє в суді, сюди не
         # їдуть (`дріт_моделі.ЗАЯВИ_ДІЮТЬ_У_КОДІ`); лишається виміряне про неї, її відповіді й
         # бажання, факти дня — інформація для вибору, тож і наказу «keep each» нема
-        _ЗП.Поле("style_rules", "what the code measured about her and this case, her own answers and wishes: "
-                                "each entry is {code, values, …}; codes are defined in "
-                                "\"statement_codes\"; the rules the code already applied to «pool» are not "
-                                "repeated here"),
+        _ВИМ.поле("style_rules"),
         # НП-в переробляє рядки рівня нагоди; доти вони їдуть реченнями брифа (ВМ-1)
         _ЗП.Поле("occasion_rules", "rules of the occasion's level of dress, in Ukrainian", як="keep each"),
         _ЗП.Поле("kind_notes", "what the code says about kinds of items in this pool: each kind "
@@ -696,7 +683,7 @@ import внутрішня_мова as _ВМ_П
                  як="do not invent them and do not fill their place with a variation of an outfit you "
                     "already made"),
         _ЗП.Поле("register_rules", "the corpus rule behind each register label of the items"),
-        _ЗП.Поле("outfits_wanted", "how many outfits to put together: exactly this many", треба=True),
+        _ВИМ.поле("outfits_wanted", треба=True),
     ),
     правила=(
         # СКІЛЬКИ ОБРАЗІВ — ПРАВИЛОМ, НЕ ЛИШЕ ПОЛЕМ: число стояло тільки ключем після пулу, і
@@ -704,7 +691,7 @@ import внутрішня_мова as _ВМ_П
         # записаних відповідей (33 — по 7 на кожен задум, 4 107 т. до стелі, 190 с). Код бере перші
         # «outfits_wanted» (`міст_відповіді`), тож решта — лише час виводу (аудит/ПРОДУКТ.md п.21)
         "Put together exactly «outfits_wanted» outfits and end the answer there: an idea of «poles» gives one "
-        "outfit, «free» as many as its «outfits», and the code reads no outfit past «outfits_wanted».",
+        "outfit, «free» as many as its «outfits».",
         "One item of each kind; an outfit has a dress, a set, or a top and a bottom.",
         РЯДОК_ТРЕТЬОЇ_РЕЧІ,
         РЯДОК_РІЧ_ДВІЧІ,
@@ -763,17 +750,10 @@ def промпт_складання(пакет, *, прогін_руки=None):
 СКЕЛЕТ_ЗАМІНИ = {"outfits": [{"items": ["<n>"]}]}
 
 
-def поле_помилки(як, бачила=True):
-    """Поле повтору: код, чому відповідь на це саме повідомлення не прочитано; є лише на повторі, тож сталий початок
-    промпта (кеш) той самий, що на першому виклику (як `format_error` ходу розмови). `бачила` False — повтор іде
-    іншим промптом, ніж перша відповідь (оцінка/турнір): модель попередньої відповіді не бачила."""
-    опис = ("the code of why your previous answer to this same message could not be used" if бачила
-            else "the code of why this request is sent again")
-    return _ЗП.Поле("format_error", опис, як=як)
+поле_помилки = _ВИМ.поле_помилки  # спільне з мовним шаром: одне оголошення поля повтору
 
 
-ПОМИЛКА_ПУЛУ = поле_помилки("answer again: one JSON object following \"answer_schema\" with exactly one «n» of "
-                             "«pool»")
+ПОМИЛКА_ПУЛУ = поле_помилки(_ФФ.повтор_за_схемою_en("one «n» of «pool»"))
 ПОМИЛКА_ПУЛУ_ІНШИЙ = поле_помилки(ПОМИЛКА_ПУЛУ.як, бачила=False)
 
 
