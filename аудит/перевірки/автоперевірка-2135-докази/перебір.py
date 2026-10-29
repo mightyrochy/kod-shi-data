@@ -1,19 +1,11 @@
 """Міряє залежність ремонту від порядку складу за незмінних оцінок судді."""
 import json
-import ast
 import pathlib
 import random
-import subprocess
 import sys
 
 sys.path.insert(0, sys.argv[1])
 import повнота_образу as П
-
-if '--до' in sys.argv:
-    текст = subprocess.run(['git', 'show', '56530ddcc39fea067536ee836a790c689f757adb:джерела/повнота_образу.py'], capture_output=True, encoding='utf-8', check=True).stdout
-    дерево = ast.parse(текст)
-    функції = [в for в in дерево.body if isinstance(в, ast.FunctionDef) and в.name in ('_вад', '_ремонт_гейтів')]
-    exec(compile(ast.Module(body=функції, type_ignores=[]), '<ремонт на базі PR>', 'exec'), П.__dict__)
 
 слоти = ['верх', 'низ', 'взуття', 'сумка', 'верхній_шар', 'шарф', 'головний_убір', 'пояс', 'прикраса']
 основа = [f'z{i}' for i in range(len(слоти))]
