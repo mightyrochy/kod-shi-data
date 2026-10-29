@@ -300,7 +300,7 @@ async function додатиФотоРечіП(е){
       const б = await блобВБазу(файл);
       ФОТО_ВКЛАДЕНІ_П.push({ід: наступнийІдФотоП(), тип: б.тип || 'image/jpeg', дані: б.дані,
                            ширина: б.ширина || null, висота: б.висота || null});
-    }catch(err){ if (ст) ст.textContent = 'Фото не прочиталось: ' + String(err).slice(0, 120); }
+    }catch(err){ if (ст) збійЖінціП(ст, 'photo_unreadable', err); }
   }
   try{ е.target.value = ''; }catch(_){}
   малюватиВкладенняП(); малюватиЧатП();
@@ -852,7 +852,7 @@ function малюватиЧатП(){
     фото.forEach(ф=>{ const і = ел('img'); і.src = 'data:' + (ф.тип || 'image/jpeg') + ';base64,' + ф.дані;
                       і.alt = 'фото речі'; і.dataset.фото = ф.ід; ряд.appendChild(і); });
     б.appendChild(ряд);
-    if (String(р.текст || '').trim()) б.appendChild(document.createTextNode(р.текст));
+    if (String(р.текст || '').trim()) б.appendChild(document.createTextNode(р.хто === 'ші' ? текстЖінціП(null, р.текст, 'without_text', своїСловаЧатуП()) : р.текст));
     с.appendChild(б);
   });
   const є = ЧАТ_П.length > 0, дім = (РЕЖИМ === 'сценарій');
