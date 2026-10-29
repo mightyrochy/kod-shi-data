@@ -84,6 +84,8 @@ def властивість(річ, властивість):
         if код:
             return факт("measured", код, "metal_code")
         return факт("unknown", None, "metal_missing")
+    if річ.get("склад_ненадійний"):
+        return факт("unknown", None, "composition_unreliable")
     склад = річ.get("склад_коди")
     if склад:
         return факт("measured", list(склад), "composition_declared_codes")
