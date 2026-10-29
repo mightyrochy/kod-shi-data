@@ -8,7 +8,8 @@
 .DESCRIPTION
 Задача планувальника `claude-run` під власником, раз на 5 хв, без межі часу задачі. Запуск — планувальник: живе, доки йде
 хоч один його наряд, і опитує чергу раз на `poll_minutes`; без нарядів — виходить. Наряд — окремий процес того самого
-скрипта (`-WorkerFile`) зі своїм слотом, текою запуску й робочою копією (git worktree клону `RepoDir`, не сам клон).
+скрипта (`-WorkerFile`) зі своїм слотом і текою запуску; копія задачі — `w\<прогін>` (git worktree клону `RepoDir` без
+тек-архівів, `TEMP` — там же) — є лише після звірки голови й прибирається після звіту (`queue_lanes.ps1`, New-TaskCopy).
 Спільне з `gemini_run.ps1` — `queue_lanes.ps1` (позначки, порядок, слоти, межі, чекання квоти, замок GPU).
   1. Позначки — лише `cc-…` з `origin` (fetch у клон власника `RepoDir`); `gemini-run` їх не бере. Узяття — атомарне
      (`.claim`), виконана позначка — файл стану, вдруге не береться. Коміт позначки — у `main`, наряд — файл
@@ -19,7 +20,7 @@
      позначкою»; нова спроба при наявній гілці наряду — ще «продовжуй з гілки». Гілку й PR-чернетку сесія пушить сама.
   4. Межі часу всього нема: зупиняє лише завислість — жодної події stream-json довше за поріг (HANG).
   5. Кінець — рядок теки вихідних (доставляє `gemini-publish`): ГОТОВО <гілка> <SHA40>, лише коли `origin` має
-     саме цей SHA на гілці зі звіту, або ЗАБЛОКОВАНО claude/<наряд> <КОД>. Відмова за квотою — не кінець: позначка
+     саме цей SHA на гілці зі звіту, або ЗАБЛОКОВАНО claude/<наряд> <КОД>; копія з незапушеними комітами лишається — ще рядок COPY_KEPT. Відмова за квотою — не кінець: позначка
      чекає скидання (час — з події `rate_limit_event` stream-json) і рядок QUOTA0_CLAUDE_M<хв>; потім її бере ця ж смуга.
   6. Позначка `gemini-queue/ВИМКНИ-НОУТБУК/cc-off/<спроба>`: коли рушії не працюють — рядок ВИМКНЕНО, чекання
      доставки й `shutdown`. Позначка, що вже була до першого проходу після ввімкнення, — ЗАБЛОКОВАНО … BOOT.
@@ -75,7 +76,6 @@ $script:LastStatus = [datetime]::MinValue
 $script:FreshBoot = $false
 $script:Limits = $null
 $script:Workers = $null
-$script:WorkTree = ''
 $script:MarkerRx = '^gemini-queue/[\p{L}\p{Nd}._-]{1,80}/[a-z0-9][a-z0-9.-]{1,63}/[1-9][0-9]{0,2}(?:/(?:p[0-9]|d20[0-9]{10}|gpu)(?:-(?:p[0-9]|d20[0-9]{10}|gpu)){0,2})?$'
 $script:UtcRx = '^\d{4}-\d\d-\d\dT\d\d:\d\d:\d\dZ$'
 
@@ -368,12 +368,13 @@ function Get-ContinueBranch([string]$Slug) {
     ''
 }
 
-function Get-Prompt($M, [string]$TaskText, [string]$Continue) {
+function Get-Prompt($M, [string]$TaskText, [string]$Continue, [string]$TaskDir) {
     $cont = $(if ($Continue) { "Продовжуй з гілки ``$Continue``: попередня спроба цього наряду вже запушила її.`n" } else { '' })
 @"
 Середовище й кроки ноутбука — ``аудит/НОУТБУК.md``: прочитай; канал результату — останній рядок твоєї відповіді
 («НОУТБУК ГОТОВО <гілка> <повний SHA>» чи «НОУТБУК ЗАБЛОКОВАНО: …»): його читає обгортка claude-run і сама пише
 диспетчерові, листів не шли. Гілка — ``claude/…``, запушена тобою.
+$(Get-TaskDirText $TaskDir)
 Наряд — ``$($script:TaskDir)$($M.Slug).md`` з ``main`` на коміті $($M.Sha); повний текст — нижче між рисками.
 $cont
 ----- НАРЯД -----
@@ -624,14 +625,30 @@ function Invoke-Task($M, $Job) {
     $cont = Get-ContinueBranch $M.Slug
     $runDir = Join-Path (Join-Path $WorkDir 'runs') $id
     [void](New-Item -ItemType Directory -Force -Path $runDir)
-    $prompt = Get-Prompt $M $taskText $cont
+    # Копія задачі — лише після звірки голови: мертва позначка її не отримує; після звіту — геть.
+    try {
+        $taskDir = Get-TaskCopyDir $id
+        [void](New-TaskCopy $taskDir 'refs/remotes/origin/main' $taskText)
+        Invoke-ClaudeTask $M $Job $exe $taskText $cont $runDir $statePath $taskDir
+    } finally {
+        if (Close-TaskCopy @('--remotes')) { [void](Add-Line "GEMINI ОБГОРТКА: ЗАБЛОКОВАНО claude/$($M.Slug) COPY_KEPT") }
+    }
+}
+
+# Тека задачі `<WorkDir>\w\<прогін>`: копія `repo` і `tmp` (queue_lanes.ps1, New-TaskCopy).
+function Get-TaskCopyDir([string]$Id) { Join-Path (Join-Path $WorkDir 'w') $Id }
+
+# Прогін claude у копії задачі ($RepoDir) і кінець за звітом.
+function Invoke-ClaudeTask($M, $Job, [string]$Exe, [string]$TaskText, [string]$Cont, [string]$RunDir, [string]$StatePath, [string]$TaskDir) {
+    $id = [string]$Job.id
+    $prompt = Get-Prompt $M $TaskText $Cont $TaskDir
     [System.IO.File]::WriteAllText((Join-Path $runDir 'prompt.txt'), $prompt, $script:Utf8)
     $a = @('-p', '--model', $M.Claude)
     if ($M.Effort) { $a += @('--effort', $M.Effort) }
     $a += @('--permission-mode', 'auto', '--output-format', 'stream-json', '--verbose')
     Write-Log "позначка $($M.Name): старт $id у слоті $($Job.slot), claude $($a -join ' ')$(if ($cont) { ", продовжує $cont" })"
     try {
-        $r = Invoke-Claude $exe $a $prompt $runDir $statePath "STARTED $id" $M.Name ([string]$Job.slot)
+        $r = Invoke-Claude $Exe $a $prompt $runDir $statePath "STARTED $id" $M.Name ([string]$Job.slot)
     } catch {
         Write-Log "claude: $($_.Exception.Message)"
         return (Complete-Task $M $statePath $id 'CRASH')
@@ -809,7 +826,7 @@ function Start-Markers($Workers) {
     @($started, $null)
 }
 
-# Процес наряду: слот (замок на весь прогін), GPU (замок, спільний з gemini-run), робоча копія слота, прогін.
+# Процес наряду: слот (замок на весь прогін), GPU (замок, спільний з gemini-run), прогін (копію задачі дає Invoke-Task).
 function Invoke-Worker {
     $job = $script:Job
     $lim = @{}
@@ -826,14 +843,10 @@ function Invoke-Worker {
             if ($null -eq $gpu -or -not (Test-ExternalGpuFree)) { Remove-Claim $statePath; Write-Log "GPU зайнята — $($job.name) лишається в черзі"; return $script:WorkerGpuBusy }
         }
         Write-FileAtomic $info (([ordered]@{ slot = $job.slot; lane = 'claude'; marker = $job.name; slug = $job.slug
-                    model = "$($job.claude)$(if ($job.effort) { ' ' + $job.effort })"; since = (Get-UtcStamp (Get-Date)); gpu = [bool]$job.gpu; prio = $job.prio; pid = $PID }) | ConvertTo-Json -Compress)
+                    model = "$($job.claude)$(if ($job.effort) { ' ' + $job.effort })"; since = (Get-UtcStamp (Get-Date)); gpu = [bool]$job.gpu; prio = $job.prio; pid = $PID
+                    copy = (Get-TaskCopyDir ([string]$job.id)) }) | ConvertTo-Json -Compress)
         $M = [pscustomobject]@{ Ref = $job.ref; Name = $job.name; Sha = $job.sha; Time = [long]$job.time; Slug = $job.slug; Model = $job.model
             N = [string]$job.n; Cond = [string]$job.cond; Claude = [string]$job.claude; Effort = [string]$job.effort; Gpu = [bool]$job.gpu }
-        $script:WorkTree = Enter-WorkTree (Join-Path (Join-Path $WorkDir 'w') $job.slot) 'refs/remotes/origin/main'
-        $wt = $script:WorkTree
-        Reset-WorkTree $wt
-        [void](Invoke-Git @('checkout', '-q', '-f', '--detach', 'refs/remotes/origin/main') -Dir $wt)
-        Set-Variable -Scope Script -Name RepoDir -Value $wt
         Set-BrowserGpuPolicy (Join-Path $script:SlotDir ($job.slot + '-browser'))
         Invoke-Task $M $job
         0
@@ -841,8 +854,6 @@ function Invoke-Worker {
         Write-Log "процес наряду $($job.name): $($_.Exception.Message)"
         1
     } finally {
-        # Гілку, яку сесія лишила вибраною в робочій копії слота, звільнити для інших слотів.
-        if ($script:WorkTree) { [void](Invoke-Git @('checkout', '-q', '--detach') -AllowFail -Dir $script:WorkTree) }
         Remove-Item -LiteralPath $info -Force -ErrorAction SilentlyContinue
         # Помилка до STARTED (робоча копія тощо) не лишає claim: позначка повертається в чергу (10162).
         Close-FailedStart ([pscustomobject]@{ Ref = $job.ref; Name = $job.name; Sha = $job.sha; Slug = $job.slug; Model = $job.model }) ([string]$job.id) $statePath
@@ -887,6 +898,7 @@ function Main {
                         '+refs/heads/main:refs/remotes/origin/main',
                         '+refs/heads/gemini-queue/*:refs/remotes/origin/gemini-queue/*') -TimeoutMinutes 15)
                 $script:Limits = Get-Limits
+                if ($first) { Clear-TaskCopies (Join-Path $WorkDir 'w') @('--remotes') }
                 Clear-OrphanClaims (Join-Path $WorkDir 'runs')
                 $r = Start-Markers $script:Workers
                 $started = $r[0]; $off = $r[1]

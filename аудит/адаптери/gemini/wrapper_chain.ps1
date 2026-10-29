@@ -298,6 +298,56 @@ function Test-RecentReviewHead($Pull, $Heads, [datetimeoffset]$Installed, [datet
     $eligible
 }
 
+function Test-ChainReviewPull($Pull) {
+    <# PR, чию голову перевіряє ланцюг: власника, у main цього репозиторію, з гілки рушія (не звіт перевірки), без «[НЕ ЗЛИВАТИ]». #>
+    if ($Pull.user.login -cne 'mightyrochy' -or $null -eq $Pull.head.repo -or $Pull.head.repo.full_name -cne $GitHubRepo -or $Pull.base.repo.full_name -cne $GitHubRepo -or $Pull.base.ref -cne 'main') { return $false }
+    $branch = [string]$Pull.head.ref
+    if ($branch -cnotmatch '^(gemini|claude|codex)/([\p{L}\p{Nd}][\p{L}\p{Nd}._-]{0,79})$' -or [string]$Pull.head.sha -cnotmatch $script:ShaPattern) { return $false }
+    if ((Test-ReviewBranch $branch) -or $branch.Contains('..') -or $branch.EndsWith('.lock')) { return $false }
+    if (([string]$Pull.title).Contains('[НЕ ЗЛИВАТИ]')) { return $false }
+    [string]$Pull.number -cmatch '^[1-9][0-9]{0,8}$'
+}
+
+function Remove-DeadReviewMarkers($Pulls, $Seen, [datetimeoffset]$Now) {
+    <# Позначки автоперевірки, яких смуги не мають брати, знімаються до узяття: голова — не поточна голова відкритого PR
+    (злито, закрито, новий пуш), PR без коду чи вже не перевіряється, друга позначка тієї самої голови (лишається одна —
+    постачальника не на квоті). Кожна знята — рядок журналу; невдале зняття повторить наступний прохід. #>
+    $live = @{}
+    foreach ($pr in @($Pulls)) { if (Test-ChainReviewPull $pr) { $live[[string]$pr.number] = $pr } }
+    $r = Invoke-Git @('ls-remote','--heads','origin','refs/heads/gemini-queue/автоперевірка-*') -AllowFail
+    if ($r.Code -ne 0) { throw 'CHAIN_REMOTE' }
+    $refs = @(foreach ($line in ($r.Out -split "`n")) {
+        if ($line.Trim() -cmatch '^([0-9a-f]{40})\trefs/heads/(gemini-queue/автоперевірка-([1-9][0-9]{0,8})-([0-9a-f]{40})/([a-z0-9][a-z0-9.-]{1,63})/\S+)$') {
+            [pscustomobject]@{ Sha = $Matches[1]; Ref = $Matches[2]; N = $Matches[3]; Head = $Matches[4]; Model = $Matches[5] }
+        }
+    })
+    $drop = @()
+    foreach ($g in @($refs | Group-Object -CaseSensitive { "$($_.N) $($_.Head)" })) {
+        $first = $g.Group[0]; $pr = $live[$first.N]; $why = ''
+        if ($null -eq $pr) { $why = 'PR не відкритий чи не перевіряється' }
+        elseif ([string]$pr.head.sha -cne $first.Head) { $why = 'голова PR змінилась' }
+        elseif (-not @($Seen.Keys | Where-Object { $_ -cmatch ('^' + $first.N + ' ' + $first.Head + ' ') }).Count -and -not (Test-ChainCodePull $pr)) { $why = 'PR без коду' }
+        $keep = ''
+        if (-not $why) {
+            $sorted = @($g.Group | Sort-Object Ref)
+            $free = @($sorted | Where-Object { -not (Test-ProviderQuota (Get-ModelProvider $_.Model) $Now) })
+            $keep = $(if ($free.Count) { $free[0].Ref } else { $sorted[0].Ref })
+        }
+        foreach ($m in $g.Group) {
+            if ($m.Ref -ceq $keep) { continue }
+            $drop += [pscustomobject]@{ Ref = $m.Ref; Sha = $m.Sha; Why = $(if ($why) { $why } else { 'друга позначка тієї самої голови' }) }
+        }
+    }
+    # Пачками: перший прохід нової версії знімає сотні позначок, а кожен push — окремий вхід на origin.
+    for ($i = 0; $i -lt $drop.Count; $i += 40) {
+        $batch = @($drop[$i..([Math]::Min($i + 40, $drop.Count) - 1)])
+        $a = @('push','-q','--no-verify') + @(foreach ($m in $batch) { "--force-with-lease=refs/heads/$($m.Ref):$($m.Sha)" }) + @('origin') + @(foreach ($m in $batch) { ":refs/heads/$($m.Ref)" })
+        $d = Invoke-Git $a -AllowFail
+        if ($d.Code -ne 0) { Write-WrapperLog "ланцюг: зняття $($batch.Count) позначок не вдалося — повтор наступним проходом"; continue }
+        foreach ($m in $batch) { Write-WrapperLog "ланцюг: $($m.Ref) знято — $($m.Why)" }
+    }
+}
+
 function Invoke-WrapperChain {
     <# PR коду -> незалежна перевірка; новий штамп збірки -> один GPU-прогін на коміті збірки. #>
     if ($DryRun) { return }
@@ -389,14 +439,11 @@ function Invoke-WrapperChain {
             [void](Move-BlockedMarkers "автоживий-$($liveActive.stamp)" (Select-ReviewModel @([string]$config.codex, [string]$config.claude) $now) ([string]$liveActive.main) $now -Gpu)
         }
         Complete-EngineDrafts
-        foreach ($pr in @(Get-ChainPulls)) {
-            if ($pr.user.login -cne 'mightyrochy' -or $null -eq $pr.head.repo -or $pr.head.repo.full_name -cne $GitHubRepo -or $pr.base.repo.full_name -cne $GitHubRepo -or $pr.base.ref -cne 'main') { continue }
-            $branch = [string]$pr.head.ref; $head = [string]$pr.head.sha
-            if ($branch -cnotmatch '^(gemini|claude|codex)/([\p{L}\p{Nd}][\p{L}\p{Nd}._-]{0,79})$' -or $head -cnotmatch $script:ShaPattern) { continue }
-            if ((Test-ReviewBranch $branch) -or $branch.Contains('..') -or $branch.EndsWith('.lock')) { continue }
-            if (([string]$pr.title).Contains('[НЕ ЗЛИВАТИ]')) { continue }
-            $n = [string]$pr.number
-            if ($n -cnotmatch '^[1-9][0-9]{0,8}$') { continue }
+        $pulls = @(Get-ChainPulls)
+        Remove-DeadReviewMarkers $pulls $seen $now
+        foreach ($pr in $pulls) {
+            if (-not (Test-ChainReviewPull $pr)) { continue }
+            $head = [string]$pr.head.sha; $n = [string]$pr.number
             $eligible = Test-RecentReviewHead $pr $heads $installed $now $hours
             Write-FileAtomic $statePath (([ordered]@{ main=$main; reviewed=$reviewed; live_active=$liveActive; live_since=$liveSince; live_stamps=@($liveStamps.Keys); live_pending=@($livePending); reviews=@($seen.Keys); installed_utc=$installed.ToString('o'); heads=$heads }) | ConvertTo-Json -Compress -Depth 5)
             if (-not $eligible) { continue }
