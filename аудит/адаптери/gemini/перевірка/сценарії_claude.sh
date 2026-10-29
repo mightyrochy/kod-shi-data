@@ -15,7 +15,9 @@ kill_pid() { [ -e "$1" ] && $PY -c "import os, signal, sys; os.kill(int(open(sys
 setup() { W="${TMPDIR:-/tmp}/claude-run/$1"; rm -rf "$W"; mkdir -p "$W"/{cr,out,pub,gem,gh,runs}
   git init -q --bare "$W/origin.git"; git clone -q "$W/origin.git" "$W/seed" 2>/dev/null
   (cd "$W/seed"; git checkout -q -b main; mkdir -p аудит/наряди; printf 'Т | наряд\n\nПідніми й зупини LM Studio.\n' > "аудит/наряди/$SLUG.md"
-   printf '| диспетчер | session_01TEST |\n' > аудит/СТАН.md; git add -A; git commit -q -m init; git push -q origin main 2>/dev/null)
+   printf '| диспетчер | session_01TEST |\n' > аудит/СТАН.md; mkdir -p аудит/адаптери/gemini
+   printf '{"v":1,"claude_laptop":["%s","нема-наряду"]}\n' "$SLUG" > аудит/адаптери/gemini/смуги.json
+   git add -A; git commit -q -m init; git push -q origin main 2>/dev/null)
   git clone -q "$W/origin.git" "$W/clone" 2>/dev/null; git -C "$W/clone" config user.name g; git -C "$W/clone" config user.email g@x
   export FAKE_CC_LOG="$(wp "$W/cc.log")" FAKE_GH_DIR="$(wp "$W/gh")" FAKE_CC_SCENARIO=done FAKE_BOOT=b1 FAKE_GEMINI_STATE= \
     FAKE_CLAUDE_LOG="$(wp "$W/claude.log")" FAKE_ISOLATION=
@@ -71,6 +73,13 @@ chk "ліміт: позначка чекає скидання (WAIT), спроб
 code k3j bad_model cc-claude-sonnet-9 MODEL_INVALID
 code k3k done "$M" ENGINE_MISSING "{\"ClaudeExe\":\"$(wp "$W")/нема/claude\"}"
 setup k3l; mark "нема-наряду/$M/1"; cr; chk "нема файлу наряду → NO_TASK_FILE" '[ "$(lines)" = "GEMINI ОБГОРТКА: ЗАБЛОКОВАНО claude/нема-наряду NO_TASK_FILE" ]'
+echo "=== К3н Claude на ноутбуці — лише GPU чи перелік claude_laptop (власник 26.10, 29.10)"
+setup k3n; (cd "$W/seed"; printf 'Т | код\n\nЗроби код.\n' > аудит/наряди/код-у-хмарі.md; git add -A; git commit -q -m код; git push -q origin main 2>/dev/null)
+mark "код-у-хмарі/$M/1"; cr
+chk "наряд без gpu поза переліком → CLAUDE_NOT_LAPTOP, claude не кликано й копії нема" '[ "$(lines)" = "GEMINI ОБГОРТКА: ЗАБЛОКОВАНО claude/код-у-хмарі CLAUDE_NOT_LAPTOP" ] && [ ! -e "$W/cc.log" ] && [ -z "$(ls -A "$W/cr/w" 2>/dev/null)" ]'
+cr; chk "повтор не пише рядка вдруге" '[ "$(nlines)" = 1 ]'
+mark "код-у-хмарі/$M/2/gpu"; cr
+chk "той самий наряд з умовою gpu — веде claude -p (ГОТОВО)" '[ "$(nlines)" = 2 ] && lines | grep -q "^GEMINI ОБГОРТКА: ГОТОВО claude/код-у-хмарі [0-9a-f]\{40\} МОДЕЛЬ $M$" && [ "$(wc -l < "$W/cc.log")" = 1 ]'
 setup k3m; S=$(git -C "$W/seed" commit-tree "$(git -C "$W/seed" rev-parse 'main^{tree}')" -p main -m збоку); mark "$SLUG/$M/1" "$S"; cr
 chk "коміт позначки не в main → NOT_ON_MAIN, claude не кликано" '[ "$(lines)" = "GEMINI ОБГОРТКА: ЗАБЛОКОВАНО claude/$SLUG NOT_ON_MAIN" ] && [ ! -e "$W/cc.log" ]'
 setup k3n; mark "$SLUG/$M/1"; cr '{"MarkerMaxAgeDays":-1}'; chk "стара позначка — без рядка й без claude" '[ "$(nlines)" = 0 ] && [ ! -e "$W/cc.log" ] && grep -qx STALE "$W"/cr/state/*.txt'
