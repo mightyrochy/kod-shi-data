@@ -7,6 +7,7 @@
 `feed` не імпортує.
 """
 import os, re, json, math
+import колір_тон as _КТ   # ПС-7: геометрія кута тону — одна, у `колір_тон`
 from colorspace import to_lab, lch, de00
 import verify as V
 from фід_розбір import (СЕП_КОЛЬОРУ as _СЕП_КОЛЬОРУ)
@@ -233,7 +234,7 @@ def до_вікна(lab, ім):
     Lmin, Lmax, Cmin, Cmax, дуга = V.вікно_вжитку(ім)
     L, C, h = lch(lab)
     if дуга and not V.у_дузі(h, дуга):
-        h = min(дуга, key=lambda край: min(abs(h - край), 360 - abs(h - край)))
+        h = min(дуга, key=lambda край: _КТ.кут(h, край))
     L, C = min(max(L, Lmin), Lmax), min(max(C, Cmin), Cmax)
     return de00(tuple(lab), (L, C * math.cos(math.radians(h)), C * math.sin(math.radians(h))))
 

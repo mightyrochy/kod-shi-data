@@ -65,6 +65,7 @@ Gray міряв ЛЮДСЬКІ оцінки «coordinated / matching / similar»
 понад нього ми не вигадуємо.
 """
 import внутрішня_мова as _ВМ
+import колір_тон as _КТ   # ПС-7: геометрія кута тону — одна, у `колір_тон`
 import math
 import statistics
 import colorspace as cs
@@ -267,12 +268,12 @@ def розклад_пари(lab1, lab2):
     dab = math.hypot(a2 - a1, b2 - b1)
     тон = math.sqrt(max(0.0, dab * dab - dC * dC))
     # різниця тонів для тексту K-COMP-04 — на колі художника (2.14-А, п.18), не кутом OKLab
-    dh = abs(cs.у_коло_художника(cs.lch(lab2)[2]) - cs.у_коло_художника(cs.lch(lab1)[2]))
+    dh = _КТ.кут(cs.у_коло_художника(cs.lch(lab2)[2]), cs.у_коло_художника(cs.lch(lab1)[2]))
     return dict(d_ok=round(math.hypot(dL, dab), 4),
                 інтенсивність=round(math.hypot(dL, dC), 4),
                 тон=round(тон, 4),
                 dL=round(dL, 4), dC=round(dC, 4),
-                dh_град=round(min(dh, 360 - dh), 1),
+                dh_град=round(dh, 1),
                 C1=round(C1, 4), C2=round(C2, 4))
 
 

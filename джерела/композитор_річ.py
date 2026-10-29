@@ -170,7 +170,7 @@ def край_з_довжини(r, H):
     if дов is None or якір is None or not зріст:
         return None, None, None, None
     низ = round(float(якір) - float(дов), 1)
-    if низ > float(зріст) or низ < -_НАДЛИШОК_МЕЖА_СМ:
+    if not (-_НАДЛИШОК_МЕЖА_СМ <= низ <= float(зріст)):
         return None, None, None, None
     return (max(0.0, низ), float(r.get("довжина_виробу_розкид_см") or 0.0) or None, точка,
             (round(-низ, 1) if низ < 0.0 else None))

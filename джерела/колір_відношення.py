@@ -184,7 +184,7 @@ def _яскравість(L, Cc, дуга):
         v = 100.0 * min(1.0, max(0.0, to_rgb(L, 0.0, 0.0)[0]))
         return (v, v)
     lo, hi = дуга
-    крок = ((hi - lo) % 360.0) / 8.0
+    крок = ширина(дуга) / 8.0
     vv = [100.0 * min(1.0, max(0.0, *to_rgb(L, Cc * math.cos(math.radians(h)), Cc * math.sin(math.radians(h)))))
           for h in (lo + i * крок for i in range(9 if крок else 1))]
     return (min(vv), max(vv))

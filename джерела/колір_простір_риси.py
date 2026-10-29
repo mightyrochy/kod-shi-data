@@ -555,7 +555,7 @@ def arc_overlap(a,b,step=2):
     if not pts: return None
     if len(pts)==1: return (pts[0], pts[0])
     розриви=[i for i in range(1,len(pts)) if pts[i]-pts[i-1] > step]
-    обгортка = (pts[0] < step) and (pts[-1] >= 360-step) and розриви
+    обгортка = (pts[0] < step) and (pts[-1] + step >= 360) and розриви
     if обгортка:
         i=розриви[-1]                     # хвіст перед розривом — початок дуги
         return (pts[i], pts[i-1])

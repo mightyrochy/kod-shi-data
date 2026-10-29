@@ -1,9 +1,9 @@
-"""ПС-7: скільки визначень сім'ї й меж тону, скільки обходів поза `колір_тон` (друкує факт; ПІСЛЯ: 1 · 1 · 0)."""
+"""ПС-7: скільки визначень сім'ї й меж тону, скільки обходів поза `колір_тон` (друкує факт; ПІСЛЯ: 1 · 1 · 0; ДО на c0a106b3 ширшим приладом — 106)."""
 import ast, glob, os
 К = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 ВЛАСНИК = "колір_тон"
 МЕЖІ = {"СІГМА_МЕЖІ", "ДУГА_ВІДЛУННЯ", "СЕКТОР_КОЛА", "МЕЖА_БЛИЗЬКИХ", "ТЕПЛИЙ_ПОЛЮС", "СІГМА_ΔH", "_КОЛО", "RELATIONS",
-        "ВІКНА_ТОНУ", "ВІКНА_ΔH", "СІМ_Ї_КОЛО", "FAMILIES"}
+        "ВІКНА_ТОНУ", "ВІКНА_ΔH", "СІМ_Ї_КОЛО", "FAMILIES", "L_МІН", "_L_МІН", "БІРЮЗОВА_ДУГА"}
 число = lambda n: isinstance(n, ast.Constant) and isinstance(n.value, (int, float))
 дуга = lambda n: isinstance(n, ast.Tuple) and len(n.elts) == 2 and all(число(e) and -1 <= e.value <= 360 for e in n.elts)
 ім = lambda n: n.id if isinstance(n, ast.Name) else None
@@ -16,17 +16,27 @@ def таблиця_сімей(v):
     дуг = sum(дуга(x) for x in ast.walk(v))
     return len(трійки) >= 3 or {"тепла", "холодна"} <= ключі and дуг >= 6 or "families" in ключі and дуг >= 6
 def обхід_дуги(n):
-    """Своя лічба дуги: належність з переходом через 0° (h >= a or h <= b), середина (… % 360) / 2, ширина (д[1] - д[0]) % 360."""
+    """Своя арифметика кута тону поза `колір_тон` — БУДЬ-ЯКІ операнди (імена, float(...), різні підписки), п'ять видів
+    (прилад перевірки #2245, ширший за первісну пробу, що ловила лише три синтаксичні форми):
+    ширина/зсув — (x − y) % 360; кут — 360 − |x − y|; середина — (… ) / 2 з % 360 поруч; знакова різниця —
+    (x − y + 180) % 360 − 180; належність — x >= a or x <= b."""
     мод = lambda x: isinstance(x, ast.BinOp) and isinstance(x.op, ast.Mod) and число(x.right) and x.right.value == 360
-    if isinstance(n, ast.BinOp) and мод(n) and isinstance(n.left, ast.BinOp) and isinstance(n.left.op, ast.Sub):
-        a, b = n.left.left, n.left.right
-        return all(isinstance(x, ast.Subscript) for x in (a, b)) and ast.dump(a.value) == ast.dump(b.value)
+    sub = lambda x: isinstance(x, ast.BinOp) and isinstance(x.op, ast.Sub)
+    if sub(n) and мод(n.left) and число(n.right) and n.right.value == 180: return True              # знакова
+    if мод(n) and isinstance(n.left, ast.BinOp) and isinstance(n.left.op, ast.Add) and число(n.left.right) \
+            and n.left.right.value == 180 and sub(n.left.left): return False                      # частина знакової
+    if мод(n) and sub(n.left) and not число(n.left.right): return True                              # ширина/зсув
+    if sub(n) and число(n.left) and n.left.value == 360 and not число(n.right): return True         # кут
+    if isinstance(n, ast.BinOp) and isinstance(n.op, ast.Div) and число(n.right) and n.right.value == 2 \
+            and any(мод(x) for x in ast.walk(n.left)): return True                                  # середина
+    if мод(n) and isinstance(n.left, ast.BinOp) and isinstance(n.left.op, ast.Div) and число(n.left.right) \
+            and n.left.right.value == 2: return True                                                # середина
     if isinstance(n, ast.BoolOp) and isinstance(n.op, ast.Or) and len(n.values) == 2 \
             and all(isinstance(c, ast.Compare) and len(c.ops) == 1 for c in n.values):
         a, b = n.values
-        if not all(isinstance(c.comparators[0], (ast.Name, ast.Subscript, ast.Attribute)) for c in n.values): return False
-        return ast.dump(a.left) == ast.dump(b.left) and type(a.ops[0]) in (ast.GtE, ast.Gt) and type(b.ops[0]) in (ast.LtE, ast.Lt)
-    return isinstance(n, ast.BinOp) and isinstance(n.op, ast.Div) and число(n.right) and n.right.value == 2 and any(мод(x) for x in ast.walk(n.left))
+        return ast.dump(a.left) == ast.dump(b.left) and type(a.ops[0]) in (ast.GtE, ast.Gt) \
+            and type(b.ops[0]) in (ast.LtE, ast.Lt) and not число(a.comparators[0]) and not число(b.comparators[0])   # належність
+    return False
 таблиці, межі, обходи = [], {}, []
 for шлях in sorted(glob.glob(os.path.join(К, "*.py"))):
     м = os.path.basename(шлях)[:-3]

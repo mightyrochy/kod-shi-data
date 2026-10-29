@@ -50,6 +50,7 @@
 """
 
 import math
+import колір_тон as _КТ   # ПС-7: геометрія кута тону — одна, у `колір_тон`
 import палітра_нейтраль as _ПН
 import face_contrast as KC
 import face_features as _ОБ
@@ -177,8 +178,8 @@ def відхил_тону_ΔE(lab, поз):
     if _бік_тону(h) * бік >= 0.0:
         return 0.0
     # до 0° — через менший кут; до 180° — через менший кут
-    до_0 = min(h, 360.0 - h)
-    до_180 = abs(h - 180.0)
+    до_0 = _КТ.кут(h, 0.0)
+    до_180 = _КТ.кут(h, 180.0)
     межа = 0.0 if до_0 <= до_180 else 180.0
     return _cs.de00((L, a, b), (L, C * math.cos(math.radians(межа)),
                                 C * math.sin(math.radians(межа))))

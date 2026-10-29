@@ -5,6 +5,7 @@
 Слова не вибирають пікселі; невідомі складові зберігають свою невизначеність.
 """
 import math
+import колір_тон as _КТ   # ПС-7: геометрія кута тону — одна, у `колір_тон`
 import random
 from operator import itemgetter
 from collections import Counter
@@ -86,8 +87,7 @@ def слово_з_lab(lab):
             continue
         d = (max(0, Lmin - L) + max(0, L - Lmax)) / 10.0 + (max(0, Cmin - C_) + max(0, C_ - Cmax)) / 10.0
         if дуга and C_ >= 10 and not V.у_дузі(h, дуга):
-            a, b = дуга
-            d += min(min(abs(h - a), 360 - abs(h - a)), min(abs(h - b), 360 - abs(h - b))) / 30.0
+            d += _КТ.відстань_до_дуги(h, дуга) / 30.0
         поруч.append((d, тісно, сл))
     if вміщають:
         return min(вміщають)[1], True
@@ -596,7 +596,7 @@ def _одне_світло(а, б):
     (L1, C1, h1), (L2, C2, h2) = CS.lch(а), CS.lch(б)
     if min(C1, C2) < БЕЗБАРВНА_C or abs(L1 - L2) >= РОЗРИВ_СВІТЛОТИ:
         return False
-    if min(abs(h1 - h2), 360 - abs(h1 - h2)) >= ТОН_ТІНІ:
+    if _КТ.кут(h1, h2) >= ТОН_ТІНІ:
         return False
     (Cсв, Cтем) = (C1, C2) if L1 >= L2 else (C2, C1)
     return Cтем <= 2 * Cсв + 5
