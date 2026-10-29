@@ -1738,8 +1738,8 @@ _МІСЦЯ_ОПЦІЙ = "where it is worn"
                               "where she is going, and builds again",
     "photo_shared_by_other_products": "the photo the code measured the item on stands on several other "
                                       "products of this shop, so the measurement may belong to another item "
-                                      "(values: count — on how many products; items — items: slot — slot "
-                                      "code, shop — the shop, unknown — what the code does not know about it: "
+                                      "(values: count — on how many products; items — items: item_id, kind and colour codes, "
+                                      "slot — slot code, unknown — what the code does not know about it: "
                                       "colour, cut, length, fabric, pattern, shine)",
     "photo_shows_other_colour": "in the card's photo the code sees a different colour than the one the item "
                                 "is described and judged by: the shop may have shown another colour of the "
