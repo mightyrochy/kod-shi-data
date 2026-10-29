@@ -300,7 +300,7 @@ async function додатиФотоРечіП(е){
       const б = await блобВБазу(файл);
       ФОТО_ВКЛАДЕНІ_П.push({ід: наступнийІдФотоП(), тип: б.тип || 'image/jpeg', дані: б.дані,
                            ширина: б.ширина || null, висота: б.висота || null});
-    }catch(err){ if (ст) ст.textContent = 'Фото не прочиталось: ' + String(err).slice(0, 120); }
+    }catch(err){ if (ст) збійЖінціП(ст, 'photo_unreadable', err); }
   }
   try{ е.target.value = ''; }catch(_){}
   малюватиВкладенняП(); малюватиЧатП();

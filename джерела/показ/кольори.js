@@ -118,7 +118,7 @@ async function зчитатиКольориЗПортрета(){
     await застосуватиКольори();
     if (!/Прочитано/.test(ст.textContent)) ст.textContent += ' Відповідь чату — під розкривачем нижче.';
   }catch(e){
-    ст.textContent = 'Не вдалось: ' + String(e).slice(0,160) + ' — можна іншим шляхом нижче.';
+    збійЖінціП(ст, 'colors_failed', e);
   }finally{ кн.disabled = false; }
 }
 

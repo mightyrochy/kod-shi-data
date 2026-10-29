@@ -499,7 +499,7 @@ async function приміряти(поз){
     let кар = блоки.find(б=>б.type === 'image');
     if (!кар){
       const т = (блоки.find(б=>б.type==='text')||{}).text || '';
-      ст.textContent = 'Картинки не вийшло' + (т ? ': ' + т.slice(0,160) : '.');
+      if (т) текстЖінціП(ст, 'Картинки не вийшло: ' + т.slice(0,160), 'tryon_no_image'); else збійЖінціП(ст, 'tryon_no_image', 'no_text_block');
       к.примірка = null;
       return;
     }
@@ -638,6 +638,6 @@ async function приміряти(поз){
   }catch(e){
     /* збій — це не «речей на картинці 4 з 4»: журнал не має брехати (вердикт 8) */
     к.примірка = null;
-    ст.textContent = 'Приміряння не вдалось: ' + String(e).slice(0,600);
+    збійЖінціП(ст, 'tryon_failed', e);
   }finally{ if (кн) кн.disabled = false; if (!к.картинка) полотно(поз); завершитиДіюЯдра('приміряння', поз); }
 }
