@@ -38,4 +38,5 @@ for сід in range(30):
 print(json.dumps(dict(перестановок=30, відмінних=sum(x['склад'] != факти[0]['склад'] for x in факти),
                       без_ремонту=sum(not x['склад'] for x in факти),
                       факти=факти), ensure_ascii=False, indent=2))
-sys.exit(int(any(x['склад'] != факти[0]['склад'] for x in факти)))
+sys.exit(int(any(not x['склад'] or x['склад'] != факти[0]['склад']
+                 or x['картка_повна'] is False for x in факти)))
