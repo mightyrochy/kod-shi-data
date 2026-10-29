@@ -76,15 +76,7 @@ def turn_no():
     open(p, 'w').write(str(n))
     return n
 
-def hold(slug):
-    # Стенд смуг: FAKE_HOLD с роботи й рядки start/end у FAKE_TIMELINE — щоб виміряти, що йде водночас.
-    tl = os.environ.get('FAKE_TIMELINE')
-    if not tl:
-        return
-    def mark(k):
-        with open(tl, 'a') as f:
-            f.write('%s %s %d\n' % (k, slug, int(time.time() * 1000)))
-    mark('start'); time.sleep(float(os.environ.get('FAKE_HOLD', '0'))); mark('end')
+from fake_timeline import тримати as hold
 
 def act(prompt):
     m = re.search(r'ГОТОВО gemini/(\S+) <', prompt)
