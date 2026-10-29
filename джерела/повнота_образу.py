@@ -11,6 +11,7 @@ import json as _json
 import re as _re
 import внутрішня_мова as _ВМ
 import протокол as _ПР
+import фрази_формату as _ФФ
 import збирач_промптів as _ЗП
 from пакет_моделі import ПАКУВАТИ_ІНДЕКСОМ, номери_речей, скелет_схеми, річ_пулу as _річ_пулу, ПОЛЯ_МЕЖІ_НА_СЛОТ, \
     РЯДОК_ЛИШЕ_НОМЕР
@@ -657,8 +658,7 @@ def промпт_вибору(образи, випадок=None, без_фото
     # «answer»: "CHOICE_V1" у «task» читався як місце для відповіді (вибір 5 з 14 живих викликів загорнув
     # її в {"answer": {…}}); форму несе лише «answer_schema», як у ремонті й складанні
     скелет_наприкінці=True,
-    наприкінці="Now write your answer: one object of the form above, from {\"version\" to the brace that closes it. "
-               "The answer is over at that brace.",
+    наприкінці=_ФФ.наприкінці_en(),
 )
 
 
@@ -2089,8 +2089,7 @@ def _слова_образу(о, склад_моделі, склад_картк�
 # викликів нема (рішення власника 27.09: збирання не повільнішає).
 ПОВТОР_ГЕЙТІВ_EN = ("You chose «%s», and it has gates you did not accept: %s. If it is still the right outfit "
                     "for her, answer again with the same «chosen» and accept each of these gates in «accept» "
-                    "with why; otherwise choose another outfit. Return ONLY one JSON object following the "
-                    "task's answer_schema, without explanations and without ```.")
+                    "with why; otherwise choose another outfit. " + _ФФ.ПОВТОР_ЛИШЕ_JSON_EN)
 
 
 def _прийняті_гейти(о, прийнято):

@@ -54,6 +54,7 @@
 буде лише дописати його в `треба`.
 """
 import json as _json_
+import фрази_формату as _ФФ
 import re as _re
 
 import сценарій as _ПОГОДА
@@ -1344,9 +1345,9 @@ def обʼєкт_помилки(помилки, відповідь=None):
     # `натомість` — вказівка моделі, тож англійською, як промпт (аудит/ПРОДУКТ.md п.12)
     if відповідь:
         о["відповідь"] = відповідь
-        о["натомість"] = "Return ONLY one JSON object following schema «%s», without explanations and without ```." % відповідь
+        о["натомість"] = _ФФ.повтор_назвою_схеми_en(відповідь)
     else:
-        о["натомість"] = "Return ONLY one JSON object, without explanations and without ```."
+        о["натомість"] = _ФФ.повтор_назвою_схеми_en()
     return о
 
 
@@ -2511,7 +2512,7 @@ def помилка_en(о):
                       for п in (о.get("помилки") or [])]}
     if о.get("відповідь"):
         вих["answer"] = НАЗВИ_ВІДПОВІДІ_EN.get(о["відповідь"], о["відповідь"])
-    вих["instead"] = "Return ONLY one JSON object following the task's answer_schema, without explanations and without ```."
+    вих["instead"] = _ФФ.ПОВТОР_ЛИШЕ_JSON_EN
     return вих
 
 

@@ -9,6 +9,7 @@ import re
 import re as _re_ід
 import json as _json_ід
 import протокол as _ПР
+import фрази_формату as _ФФ
 from пакет_моделі import номери_речей, скелет_схеми
 
 
@@ -497,14 +498,14 @@ def фото_доведено_коду(запис):
 # їй її ж слова («що») тих записів, у яких номера речі образу нема.
 ПОВТОР_НАЗВАНОГО_EN = ("Your «text» or «how_to_wear» names things that are not items of «outfit»: %s. "
                        "Rewrite the whole answer without them — describe only the items of «outfit» — "
-                       "and return the same JSON object.")
+                       "and " + _ФФ.ТОЙ_САМИЙ_ОБЄКТ_EN + ".")
 
 
 # Повтор опису, що лишив речі образу без власного запису в `про_речі`. Номери — з тієї
 # самої нумерації пулу, що бачила модель; слів її прози код не читає (п.12).
 ПОВТОР_НЕ_ОПИСАНО_EN = ("Your «about_items» has no entry for these items of «outfit»: %s. Give every item of "
                         "«outfit» its own entry in «about_items» — its «n» and one or two sentences about it — "
-                        "and return the same JSON object.")
+                        "and " + _ФФ.ТОЙ_САМИЙ_ОБЄКТ_EN + ".")
 
 
 def _про_речі(про_речі, словник, за_ном, склад):

@@ -44,6 +44,7 @@ import math as _math
 import re as _re
 
 import протокол as _ПР
+import фрази_формату as _ФФ
 import збирач_промптів as _ЗП
 import внутрішня_мова as _ВМ
 import brief as _БР   # щаблі ошатності кодами для стилістки
@@ -1648,7 +1649,7 @@ def перевірка_для_моделі(суд_):
 # а допит на її місці ставить свою: спільний початок той самий до кінця даних.
 _ДОПИТ_СХЕМА = {"answer": "<the answer to her new question>"}
 _ДОПИТ_ПРАВИЛО = ("Her new question about the same outfit: answer it alone, in one to four sentences; the answer is "
-                  "one JSON object following \"answer_schema\" — only \"answer\", without \"verdict\", \"works\" "
+                  + _ФФ.ОДИН_ОБЄКТ_ЗА_СХЕМОЮ_EN + " — only \"answer\", without \"verdict\", \"works\" "
                   "or \"change\"; keep to what you already told her unless the check contradicts it; suggest "
                   "replacing an item only with ids from \"changes\".")
 

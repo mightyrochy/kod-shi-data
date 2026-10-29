@@ -46,6 +46,7 @@ import re
 import unicodedata
 
 import протокол as _ПР
+import фрази_формату as _ФФ
 import людський_вихід as _ЛВ
 from людський_вихід import ЗВЕРТАННЯ_ТИ as _ЗВЕРТАННЯ_ТИ
 import внутрішня_мова as _ВМ
@@ -216,7 +217,7 @@ _УРІЗАНО_КОДИ = ("shorter_than_source", "ends_cut")
 
 """ + МОВА_ДЛЯ_НЕЇ + """
 
-Перевір кожне слово ДО відповіді: до неї — лише «ти», жодного «ви», «ваш» і наказу множини, і про неї жодного «вона», «її», «їй», жодне слово не стоїть двічі поспіль, кожна річ — того самого виду, що у вході (річ образу — іменником її назви з переліку, коли він є, і слова при ній узгоджені з цим іменником), а українська назва речі — слово в слово. Відповідь — рівно ОДИН JSON-об'єкт і нічого після нього: другої, виправленої версії, приміток і пояснень не пиши — помилку виправ у тому самому об'єкті.
+Перевір кожне слово ДО відповіді: до неї — лише «ти», жодного «ви», «ваш» і наказу множини, і про неї жодного «вона», «її», «їй», жодне слово не стоїть двічі поспіль, кожна річ — того самого виду, що у вході (річ образу — іменником її назви з переліку, коли він є, і слова при ній узгоджені з цим іменником), а українська назва речі — слово в слово. """ + _ФФ.ВІДПОВІДЬ_ОДИН_ОБЄКТ_UK + """
 
 ТЕКСТИ:
 """
@@ -875,8 +876,7 @@ def прийняти(розмітка, відповідь):
             "opinion": {"like": "she likes it", "dislike": "she does not like it"},
         },
         скелет={"<field>": "every field her words give grounds for, in its form from \"codes\""},
-        наприкінці="Translate her comment: one JSON object following \"answer_schema\" in \"task\", only with the "
-                   "fields her words give grounds for."),
+        наприкінці=_ФФ.відповідь_за_схемою_en("Translate her comment", "the fields her words give grounds for")),
     # ВИПРАВЛЕННЯ ПЕРЕЛІКУ РЕЧЕЙ СЛОВАМИ: «там не штани, а вершкові ботильйони, чорні — запасні». Вхід —
     # перелік, який вона бачить, кодами (`оцінка_образу.речі_для_слів`); вихід — ті самі дії, що дають дотики
     # (`виправити_речі`). Цитати поруч із полем нема: дія стоїть на речі з переліку, а не на її уривку.
@@ -908,8 +908,7 @@ def прийняти(розмітка, відповідь):
         },
         скелет={"actions": [{"op": "remove | set | add", "<field>": "every other field of the action her words give, "
                                                                     "in its form from \"codes\""}]},
-        наприкінці="Translate her words: one JSON object following \"answer_schema\" in \"task\", only with what she "
-                   "named."),
+        наприкінці=_ФФ.відповідь_за_схемою_en("Translate her words", "what she named")),
     # ДОПИТ ОЦІНКИ — ЛИШЕ ПИТАННЯ: уточнення до оцінки («А якщо з чорними ботильйонами?»)
     # ішло повним промптом сценарію — ~11 тис. знаків на одне питання, — а показ бере з відповіді лише
     # `question`; решта полів давала шум (`wants: black ankle_boots` у 14 з 31).
@@ -924,7 +923,7 @@ def прийняти(розмітка, відповідь):
         коди_en={"question_about": {"app": "about the app: screens, buttons, steps, what to do next",
                                     "look": "about her look, items, photo, style or colours"}},
         скелет={"<field>": "every field her words give grounds for, in its form from \"codes\""},
-        наприкінці="Carry her question over: one JSON object following \"answer_schema\" in \"task\"."),
+        наприкінці=_ФФ.відповідь_за_схемою_en("Carry her question over")),
 }
 _ОБʼЄКТИ = {"thing": ("«річ»", _ВМ.РІЧ_У_СЛОВАХ), "own_item": ("«її річ»", _ВМ.ЇЇ_РІЧ)}
 
@@ -2724,7 +2723,7 @@ def промпт_репліки(репліка):
         ПРОМПТ_РЕПЛІКИ, "",
         "Вхід — JSON-об'єкт «репліка стилістки»:"] + [рядок for поле, рядок in поля if вх.get(поле)] + [
         "Коди — не слова для неї: пиши їхній зміст, самих кодів не пиши."] + заяви + [
-        "", "Відповідь — лише JSON-об'єкт з одним ключем text — репліка стилістки.", "",
+        "", _ФФ.ВІДПОВІДЬ_ЛИШЕ_UK + " з одним ключем text — репліка стилістки.", "",
         "РЕПЛІКА:", _json_.dumps(репліка or {}, ensure_ascii=False)])
 
 
@@ -2995,7 +2994,7 @@ def промпт_повідомлень(розмітка, помилки=None):
     помилки_промпту = [dict(п, де=ключі.get(п["де"], п["де"])) for п in (помилки or [])]
     return "\n".join([
         ПРОМПТ_ПОВІДОМЛЕНЬ, "",
-        "Кожен об'єкт — окрема заява. Відповідь — JSON-об'єкт {key: текст}: скопіюй кожен key "
+        "Кожен об'єкт — окрема заява. " + _ФФ.ВІДПОВІДЬ_UK + " {key: текст}: скопіюй кожен key "
         "дослівно: це короткий номер заяви в цьому виклику; напиши його власне речення. Заяв не об'єднуй. "
         "Не перенось дію, річ, вибір чи ранг з одного key на інший.",
         "item_ids — предмети заяви, назви — лише підписи цих предметів. Слот не визначає вид речі. "
@@ -3015,7 +3014,7 @@ def промпт_повідомлень(розмітка, помилки=None):
         "СХЕМА ВІДПОВІДІ:", _json_.dumps(схема_повідомлень(розмітка), ensure_ascii=False),
         *(["Першу відповідь не прийнято. Виправ зазначені помилки: " + _json_.dumps(помилки_промпту, ensure_ascii=False)
            + ". Для кожного ключа напиши повне речення українською за схемою; це єдиний повтор."] if помилки else []),
-        "Відповідь — тільки цей JSON-об'єкт: заміни значення реченням українською про відповідну заяву. "
+        _ФФ.ВІДПОВІДЬ_ТІЛЬКИ_ЦЕЙ_UK + ": заміни значення реченням українською про відповідну заяву. "
         "Самі заяви, їхні поля й значення не копіюй у відповідь. Кожен ключ — один раз, без нових ключів.",
         "ФОРМА ВІДПОВІДІ:",
         _json_.dumps(dict.fromkeys((ключі[р["ключ"]] for р in розмітка), "<речення про цю заяву>"), ensure_ascii=False),
@@ -3890,7 +3889,7 @@ import схема_відповіді as _СВ_М
                                    "not_json_object — not one valid JSON object; no_text_field — neither "
                                    "\"text\" nor \"ask\"; unknown_key: <names> — those keys of \"update\" are "
                                    "not fields of the case",
-                   як="answer again: one JSON object, every string a valid JSON string"),
+                   як=_ФФ.ПОВТОР_JSON_EN),
         _ЗП_Р.Поле("her_new_message", "her new message", треба=True),
     ),
     правила=РОЗМОВА_ПРАВИЛА,
@@ -3900,7 +3899,7 @@ import схема_відповіді as _СВ_М
     межі=("лише_вхід", "для_неї", "без_шкал"),
     мова_промпту="en",
     сталий_спершу=True,
-    наприкінці="Answer her new message: one JSON object following \"answer_schema\" in \"task\".",
+    наприкінці=_ФФ.відповідь_за_схемою_en("Answer her new message"),
 )
 
 
@@ -3926,7 +3925,7 @@ import схема_відповіді as _СВ_М
         _ЗП_Р.Поле("chosen", "what she chose with the tiles on the screen, in codes"),
         _ЗП_Р.Поле("format_error", "why your previous answer to these same tiles could not be read: "
                                    "not_json_object — not one valid JSON object",
-                   як="answer again: one JSON object, every string a valid JSON string"),
+                   як=_ФФ.ПОВТОР_JSON_EN),
     ),
     # R3 ходу розмови — тепер усе завдання; `need` і `text` цьому ходові нема куди писати.
     правила=("She wrote nothing and only changed the tiles: \"update\" gives formality (with formality_branch), "
@@ -3947,7 +3946,7 @@ import схема_відповіді as _СВ_М
     межі=("лише_вхід",),
     мова_промпту="en",
     сталий_спершу=True,
-    наприкінці="Answer for these tiles: one JSON object following \"answer_schema\" in \"task\".",
+    наприкінці=_ФФ.відповідь_за_схемою_en("Answer for these tiles"),
 )
 
 
@@ -5121,7 +5120,7 @@ def ремонт_поради(відкинуто, обовʼязкове, доз
     межі=("лише_вхід", "для_неї"),
     мова_промпту="en",
     сталий_спершу=True,
-    наприкінці="Answer: one JSON object following \"answer_schema\" in \"task\".",
+    наприкінці=_ФФ.відповідь_за_схемою_en("Answer"),
 )
 
 

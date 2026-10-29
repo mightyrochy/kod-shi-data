@@ -12,6 +12,7 @@ import re
 import сценарій as _ПОГОДА
 import json as _json_
 import протокол as _ПР
+import фрази_формату as _ФФ
 import дріт_моделі as _Д
 import outfit as _О
 import формальність as _ФОРМ
@@ -772,8 +773,7 @@ def поле_помилки(як, бачила=True):
     return _ЗП.Поле("format_error", опис, як=як)
 
 
-ПОМИЛКА_ПУЛУ = поле_помилки("answer again: one JSON object following \"answer_schema\" with exactly one «n» of "
-                             "«pool»")
+ПОМИЛКА_ПУЛУ = поле_помилки(_ФФ.повтор_за_схемою_en("one «n» of «pool»"))
 ПОМИЛКА_ПУЛУ_ІНШИЙ = поле_помилки(ПОМИЛКА_ПУЛУ.як, бачила=False)
 
 

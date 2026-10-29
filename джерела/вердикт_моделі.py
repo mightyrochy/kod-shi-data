@@ -10,6 +10,7 @@ import json as _json
 import math
 import re as _re_ід
 import протокол as _ПР
+import фрази_формату as _ФФ
 import ід_правил as _ід_правил
 from пакет_моделі import ПАКУВАТИ_ІНДЕКСОМ, номери_речей
 from розбір_відповідей import словник_речей as _словник_речей, за_номером as _за_номером, СВІДОМИЙ_МНОЖНИК, свідомі_з_json as _свідомі_з_json
@@ -146,8 +147,6 @@ _РЯДОК_ACTION = ("«action» in «done» is one word: fixed — the finding
                  "only: fixed and partly the code checks by fact.")
 _РЯДОК_ОБРАЗ_ВІДПОВІДІ = ("An outfit of the answer is «your_outfit» after your work, with the same «id» and with "
                           "«done»; «structure», «findings», «keep», «checklist» and «knot» stay out of the answer.")
-_РЯДОК_КІНЕЦЬ = ("Write the answer object itself: it begins with {\"version\" and ends with the brace that closes "
-                 "it, right after «needed». Do not wrap it in another object; after that brace the answer is over.")
 # Без гейтів у вердикті — ті самі правила без «done»
 _БЕЗ_ГЕЙТІВ = {
     _РЯДОК_ЗАУВАЖЕННЯ: _РЯДОК_ЗАУВАЖЕННЯ.replace("; a remark needs no entry in «done»", ""),
@@ -276,18 +275,7 @@ _БЕЗ_ГЕЙТІВ = {
         "a finding's «id» weakens nothing.",
         "«needed» — only for an item that is neither in the outfits nor in «showcase».",
         _РЯДОК_ОБРАЗ_ВІДПОВІДІ,
-        # РЕМОНТ-1: правило кінця відповіді складання й опису — і тут. Ремонт писав
-        # {"answer": {…}} у 56/65 відповідей і далі переписував дані промпту: «fixes», «set», «showcase»
-        # (16/65 — вітрину з «price», «hex», «L») до стелі виводу.
-        # РЕМОНТ-2: БЕЗ ІМЕН КЛЮЧІВ. «write nothing after it — no «answer_schema», «input»,
-        # «statement_codes»…» `КІНЕЦЬ_ВІДПОВІДІ_EN` qwen3.5-9b читала як перелік того, що дописати: у 17 з 28
-        # відповідей заміру РЕМОНТ-1 після «needed» стоїть «input» (у 10 — `null`, у 7 — увесь `task.input`,
-        # 9–12,7 тис. симв.), і 7 з 13 обрізаних об стелю 4000 т. обрізано саме на ньому (до правила, у заміру ГГ-1,
-        # «input» не писала жодна з 33). Тут кінець названо місцем — дужка після «needed», — а не переліком.
-        # РЕМОНТ-3: і без «answer» — правило називало словом ключ обгортки, якого в
-        # промпті ремонту нема («task» ремонту ключа «answer» не несе), а обгортка `"answer": {` лишалась у 3 з 14
-        # живих сцен. Та сама форма, що `КІНЕЦЬ_ВІДПОВІДІ_EN`: «не обгортай іншим обʼєктом», без імені ключа.
-        _РЯДОК_КІНЕЦЬ,
+        # кінець відповіді — у `наприкінці` (`фрази_формату.наприкінці_en`): одне місце, а не правило й підсумок
     ),
     вихід="ОБРАЗИ_V1",
     # «pole» — поле складання; без підпису його нема й у скелеті ремонту (`протокол.ПОЛЯ_НА_ПРОХАННЯ`)
@@ -305,8 +293,7 @@ _БЕЗ_ГЕЙТІВ = {
     мова_промпту="en",
     скелет_наприкінці=True,  # за схемою відповіді — лише кінець промпту
     # за схемою — лише цей рядок; він називає кінець місцем, а не переліком ключів
-    наприкінці="Now write your answer: one object of the form above, from {\"version\" to the brace that "
-               "closes it right after «needed». The answer is over at that brace.",
+    наприкінці=_ФФ.наприкінці_en("needed"),
 )
 
 

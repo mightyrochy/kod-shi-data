@@ -34,9 +34,9 @@ sys.path.insert(0, os.path.join(ДЖЕРЕЛА, "прилади"))
 ДОДАТКОВІ = ("мовний_шар", "жнива_промпти", "заміна_речі", "протокол", "людський_вихід", "спільні_вимоги",
              "схема_відповіді", "збирач_промптів")
 # вимоги до форми відповіді словами: їх місце — `схема_відповіді` (фраза формату, кінець, повтор)
-ФОРМА_СЛОВАМИ = re.compile(r"one JSON object|only one JSON|JSON-обʼєкт|JSON-об'єкт|ЛИШЕ JSON|ONLY one JSON|"
-                           r"begins with \{|answer is over|same JSON object|valid JSON string", re.I)
-РЕЄСТР_ФОРМИ = "схема_відповіді.py"
+ФОРМА_СЛОВАМИ = re.compile(r"one JSON object|only one JSON|ONLY one JSON|(?:Відповідь|відповідь)[^.]{0,40}JSON-об['ʼ]єкт|"
+                           r"ЛИШЕ JSON|begins with \{|answer is over|same JSON object|valid JSON string", re.I)
+РЕЄСТР_ФОРМИ = ("схема_відповіді.py", "фрази_формату.py")  # реєстр форми відповіді і його нижній шар
 
 
 def _норм(т):
@@ -107,7 +107,7 @@ def форма_словами(файли):
     """[(файл, рядок, початок)] — літерали про форму відповіді поза реєстром форми."""
     вих = []
     for ф in файли:
-        if os.path.basename(ф) == РЕЄСТР_ФОРМИ:
+        if os.path.basename(ф) in РЕЄСТР_ФОРМИ:
             continue
         for н, т in _рядки_коду(ф):
             if ФОРМА_СЛОВАМИ.search(т) and len(т) < 700:
