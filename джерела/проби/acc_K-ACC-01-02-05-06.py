@@ -18,7 +18,7 @@ from верхнє_пропорція import ОБʼЄМНІ_КРОЇ
 вх["гілка"] = 0
 json.loads(B.виклик("запити", json.dumps(вх, ensure_ascii=False)))
 кат = B.каталог_останнього_пакета()
-C = lambda c: (КО.гучність(tuple(c["lab"])).get("C") or 0) if c.get("lab") else 0
+C = lambda c: (КО.гучність(tuple(КР.точка_кольору(c))).get("C") or 0) if КР.точка_кольору(c) else 0
 сумка = next(c for c in кат if c.get("слот") == "сумка" and c.get("формат") == "великий")
 шарф = next(c for c in кат if c.get("слот") == "шарф" and "плечі" in (c.get("місця") or ()) and C(c) < 40)
 прикр = next(c for c in кат if c.get("слот") == "прикраси" and C(c) >= 40)

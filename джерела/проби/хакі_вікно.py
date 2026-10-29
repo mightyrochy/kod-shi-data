@@ -14,11 +14,12 @@ def на(M, f):
     try: return f()
     finally: sys.modules["verify"] = був; FK.V = FZ.V = PS.V = V; МО.ҐРАТКА_КЕШ.clear()
 зб, н, диз, оф, вим = feed.читати_збагачення(), lambda s: " ".join(str(s or "").lower().split()), К.defaultdict(list), [], {}
+import колір_річ as _КОЛІР
 def вибірка():
     for o in FR.читати_yml("каталог_повний.xml")[0]:
         п, z = н(o.get("колір_сирий")), зб.get(o["id"]) or {}
-        if not (z.get("колір_основний") or {}).get("hex") or (z.get("версія") or 1) < 2 or not FZ.колір_збагачення(z)[2].startswith("hex"): continue
-        вим[o["id"]] = lab = cs.hx(z["колір_основний"]["hex"]); ск = п and len(FK._СЕП_КОЛЬОРУ.split(п)) == 1 and Б.слово_крамниці(п)
+        if not _КОЛІР.hex_кольору(z.get("колір_основний") or {}) or (z.get("версія") or 1) < 2 or not FZ.колір_збагачення(z)[2].startswith("hex"): continue
+        вим[o["id"]] = lab = cs.hx(_КОЛІР.hex_кольору(z["колір_основний"])); ск = п and len(FK._СЕП_КОЛЬОРУ.split(п)) == 1 and Б.слово_крамниці(п)
         if ск and ск["ім"] in ("хакі", "оливковий"): оф.append((ск["ім"], п, lab))
         if п == "хакі": диз[z.get("фото") or o.get("group_id") or o["id"]].append(lab)
 на(Б, вибірка)
@@ -34,7 +35,7 @@ for ім, M in (("до", Б), ("після", V)):
 зм = [к for к in set(ґд) | set(ґп) if ґд.get(к) != ґп.get(к)]
 print("ФАКТ · ґратка основ: %d чипів до, %d після — %s; м'ятних клітинок змінилось %d, усього %d %s" % (len(ґд), len(ґп),
       "ПОБАЙТОВО ТА САМА" if ґд == ґп and пд == пп else "ЗМІНИЛАСЬ", sum(к.startswith("м'ятний") for к in зм), len(зм), sorted(зм)[:6]))
-т = [i for i in кд if i in кп and tuple(кд[i]["lab"]) != tuple(кп[i]["lab"])]; пари = [(cs.de00(tuple(кд[i]["lab"]), вим[i]), cs.de00(tuple(кп[i]["lab"]), вим[i])) for i in т if i in вим]
+т = [i for i in кд if i in кп and tuple(_КОЛІР.точка_кольору(кд[i])) != tuple(_КОЛІР.точка_кольору(кп[i]))]; пари = [(cs.de00(tuple(_КОЛІР.точка_кольору(кд[i])), вим[i]), cs.de00(tuple(_КОЛІР.точка_кольору(кп[i])), вим[i])) for i in т if i in вим]
 print("ФАКТ · каталог: речей %d → %d; точка змінилась у %d %s, інше поле — у %d; з виміром з фото %d: медіана ΔE00 точки до виміру %.1f → %.1f, ближче %d, далі %d" % (
       len(кд), len(кп), len(т), dict(К.Counter(кп[i].get("джерело_кольору") for i in т)), sum(1 for i in кд if i in кп and i not in т and кд[i] != кп[i]), len(пари),
       st.median(a for a, _ in пари or [(0, 0)]), st.median(b for _, b in пари or [(0, 0)]), sum(b < a - .1 for a, b in пари), sum(b > a + .1 for a, b in пари)))

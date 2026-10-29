@@ -16,10 +16,11 @@ def записаний(гілка, тека, с):
     т = subprocess.run(["git", "show", "origin/claude/%s:../аудит/%s/VIDPOVIDI/seed3_%d_ОПИС_V1_ОПИС_ВІДПОВІДЬ_V1.txt" % (гілка, тека, с)],
                        capture_output=True, text=True, check=True).stdout.split("── ВІДПОВІДЬ")[0]
     return json.JSONDecoder().raw_decode(т[т.index('{"version"'):])[0]
+import колір_річ as _КОЛІР
 def назад(д):   # записаний дріт → обʼєкт коду (лише поля, яких стосується рядок 4282)
     рч = д["outfit"]["items"]
     речі = [dict(н=x["n"], назва=x["name"], слот=Т["slot"].get(x.get("kind")), тип=Т["item_type"].get(x.get("type")),
-                 магазин=x.get("shop"), колір=x.get("shop_color") or Т["color_name"].get(x.get("color")), hex=x.get("hex"),
+                 магазин=x.get("shop"), колір=x.get("shop_color") or Т["color_name"].get(x.get("color")), hex=_КОЛІР.hex_кольору(x),
                  кадр_колір=Т["color_name"].get(x.get("photo_colour")), фото_номери=x.get("photos")) for x in рч]
     повна = lambda w: next((x["name"] for x in рч if x["name"].startswith(w)), w)   # дріт обрізав назву до 60
     к3 = {"опції": [dict(річ=повна(w.get("item") or ""), клас="шарф", допустимі_місця=["neck"]) for w in д.get("ways_to_wear") or []]}

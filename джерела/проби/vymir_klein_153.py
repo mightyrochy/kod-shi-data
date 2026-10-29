@@ -10,12 +10,13 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))));
 ПОРТ, E017, ЛОРА = int(os.environ.get("COMFY_PORT_153", "8188")), os.path.join(Ж.OSS, "experiments", "017_editor_fidelity_benchoff"), "tryon-klein-4b.safetensors"
 ОСОБА, ПРОМПТ = os.path.join(E017, "results", "_input_person.png"), "TRYON a full-body photo of a person. Replace the outfit with the top and bottom as shown in the reference images. The final image is a full body shot."; sys.path.append(Ж.OSS) if Ж.OSS not in sys.path else None; from system.gates.identity import compare_faces; реф = json.load(open(os.path.join(Ж.OSS, "assets", "outfits", "outfit_001", "eval_references.json"), encoding="utf-8"))
 ЕТАЛОНИ, тимч = [("блуза", "верх", "top"), ("спідниця", "низ", "bottom"), ("взуття", "взуття", "shoes")], tempfile.mkdtemp(prefix="k153_")
+import колір_річ as _КОЛІР
 def річ(ключ, ім):
     """(фото речі на білому для входу LoRA, домінантний тон Lab еталона) — за маскою E-001 з `eval_references.json`."""
     ф, мс = [os.path.join(Ж.OSS, п.replace("/", os.sep)) for п in реф[ключ]]; bgr, м = cv2.imread(ф), cv2.imread(мс, 0)
     м = м if м.shape[:2] == bgr.shape[:2] else cv2.resize(м, (bgr.shape[1], bgr.shape[0]), interpolation=cv2.INTER_NEAREST)
     біле = np.full_like(bgr, 255); біле[м > 127] = bgr[м > 127]; п = os.path.join(тимч, ім + ".png"); cv2.imwrite(п, біле)
-    return п, ([tuple(к["lab"]) for к in Ж.виміряти_колір(ф, м)[0] if к["частка"] >= 0.05] + [None])[0]
+    return п, ([tuple(_КОЛІР.точка_кольору(к)) for к in Ж.виміряти_колір(ф, м)[0] if к["частка"] >= 0.05] + [None])[0]
 def agnostic(шлях):
     """Людина без одягу: регіони одягу ATR (одяг, пояс, взуття) зафарбовані сірим — як просить картка LoRA."""
     bgr = cv2.imread(шлях); bgr[cv2.resize(np.isin(Ж._мітки_atr(шлях), [4, 5, 6, 7, 8, 9, 10]).astype("uint8"), (bgr.shape[1], bgr.shape[0]), interpolation=cv2.INTER_NEAREST) > 0] = 128
@@ -36,5 +37,5 @@ from system.clients.comfyui import ComfyUIClient; к = ComfyUIClient("127.0.0.1"
 т0 = time.time(); в = к.poll(к.submit(п), timeout=1800)["9"]["images"][0]
 вихід = os.path.join(тимч, "klein.png"); open(вихід, "wb").write(к.download(в["filename"], в.get("subfolder", ""), в.get("type", "output")))
 с, кос, арр = time.time() - т0, compare_faces(вихід, ОСОБА)["cosine"], Ж._мітки_atr(вихід)
-де = {ім: round(min([V.de00(tuple(к_["lab"]), еталон[ім]) for к_ in Ж.виміряти_колір(вихід, Ж.маска_atr(вихід, Ж.СЛОТ_РЕГІОНИ[сл], арр)[0])[0] if к_["частка"] >= 0.05] or [99.0]), 1) for ім, сл, _ in ЕТАЛОНИ}
+де = {ім: round(min([V.de00(tuple(_КОЛІР.точка_кольору(к_)), еталон[ім]) for к_ in Ж.виміряти_колір(вихід, Ж.маска_atr(вихід, Ж.СЛОТ_РЕГІОНИ[сл], арр)[0])[0] if к_["частка"] >= 0.05] or [99.0]), 1) for ім, сл, _ in ЕТАЛОНИ}
 print("(4б) tryon-klein-4b · ArcFace %s (поріг 0.57) · речей %d/3 dE00 %s (поріг 10) · %.1f с/образ · вихід %s" % (кос, sum(в_ <= 10 for в_ in де.values()), де, с, вихід))

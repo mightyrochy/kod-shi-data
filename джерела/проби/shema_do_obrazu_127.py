@@ -13,7 +13,8 @@ from колір_річ import сім_я
 from colorspace import hx
 КАТ = sys.argv[1] if len(sys.argv) > 1 else "каталог_повний.xml"
 ЯДРО = ("сукня", "верх", "низ", "взуття", "сумка", "комплект")
-сім = lambda р: (сім_я(hx(р["hex"])) if (р or {}).get("hex") else "")
+import колір_річ as _КОЛІР
+сім = lambda р: (сім_я(hx(_КОЛІР.hex_кольору(р))) if _КОЛІР.hex_кольору(р or {}) else "")
 кольором = lambda ф: bool(ф) and not ф.startswith("нейтраль")
 вх = json.load(open("стенд_вх.json", encoding="utf-8"))
 збої = 0

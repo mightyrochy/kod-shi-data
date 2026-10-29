@@ -20,8 +20,9 @@ _, запити = __import__("bridge").спец_останнього_пакет�
 у_очах = lambda h: any((a[0] - 10 <= h <= a[1] + 10) for a in очі)
 акц = [с for с, v in (спец.get("слоти") or {}).items()
        if isinstance(v, dict) and v.get("роль") == "акцент"]
+import колір_річ as _КОЛІР
 кольоровий = lambda L, C, h, з, с: (not PL._нейтральний_тон(h, C, L)
-                                    and not PAL.метал_речі(з["lab"], с))
+                                    and not PAL.метал_речі(_КОЛІР.точка_кольору(з), с))
 свої = чужі = 0
 for с in акц:
     for x in (r["кандидати"].get(с) or []):

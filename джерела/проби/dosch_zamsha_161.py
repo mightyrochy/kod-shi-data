@@ -11,8 +11,9 @@ json.loads(B.виклик("запити", json.dumps(вх, ensure_ascii=False)))
 кат = {c["id"]: c for c in B.каталог_останнього_пакета()}
 взуття = [c for c in кат.values() if c.get("слот") == "взуття"]
 старе = lambda c: any(v in (c.get("волокно") or c.get("матеріал") or "").lower() for v in СП.ВОЛОГІ_ВЕТО)
+import колір_річ as _КОЛІР
 def вето01(c):
-    E = O.елементи([dict(c, hex=c.get("hex") or "#333333", площа=0.1, near=0.05)])
+    E = O.елементи([dict(c, hex=_КОЛІР.hex_кольору(c) or "#333333", площа=0.1, near=0.05)])
     return any(з["правило"] == "K-WEA-01" and з["суть"].startswith("замша")
                for з in СП.погода(E, темп_c=15, опади="дощ", стан="надворі"))
 бачить05 = [c for c in взуття if АП.відмовляє_у_волозі(c)]

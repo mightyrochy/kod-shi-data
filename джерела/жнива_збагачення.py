@@ -171,6 +171,7 @@ def _число(v, lo, hi, ціле=False):
     return int(round(x)) if ціле else round(x, 2)
 
 
+import колір_річ as _КОЛІР
 def _колір(к):
     """{слово, hex, частка, слово_моделі} або None. Слово — через verify.назва_кольору,
     тобто тим самим розбирачем, що й слово крамниці."""
@@ -180,7 +181,7 @@ def _колір(к):
     слово = сире if сире in V.ЛЕКСИКОН else V.назва_кольору(сире)
     if not слово:
         return None
-    hex_ = str(к.get("hex") or "").strip()
+    hex_ = str(_КОЛІР.hex_кольору(к) or "").strip()
     hex_ = hex_ if re.fullmatch(r"#[0-9a-fA-F]{6}", hex_) else None
     вих = dict(слово=слово, hex=hex_, частка=_число(к.get("частка"), 0, 1))
     if сире != слово:

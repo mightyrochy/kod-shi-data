@@ -6,7 +6,7 @@
 друкує ще id пулу (для порівняння складу: `diff`). Запуск із джерела/: python3 проби/колір_пул_свідки.py [-р]"""
 import sys, json, collections as K; sys.path.insert(0, ".")
 import bridge as B, стенд_знімок as СЗ, семплер as С, композитор_слоти as КС, колір_річ as КР
-ВІКНО = getattr(КР, "вікно_речі", lambda r: r.get("вікно"))
+ВІКНО = getattr(КР, "вікно_речі", lambda r: КР.вікно_кольору(r))
 СВ, ПУЛ, _в, _к = {}, [], С.вибрати, КС.кандидати_на_слот
 def _вибрати(к, *a, **kw):
     if not ПУЛ: ПУЛ.append([(с, r.get("id")) for с, v in к.items() for r in v])

@@ -12,14 +12,15 @@ import feed, фід_каталог as FK, фід_збагачення as FZ, ф�
 кат = {r["id"]: r for r in FK.прочитати_каталог("каталог_повний.xml", 0)["каталог"]}
 для = {п: g for g, ss in СЛОВА.items() for п in ss}
 під = К.defaultdict(list)
+import колір_річ as _КОЛІР
 for o in FR.читати_yml("каталог_повний.xml")[0]:
     п = н(o.get("колір_сирий"))
     if п not in для: continue
     z = зб.get(o["id"]) or {}; k = z.get("колір_основний") or {}
     r = кат.get(o["id"]) or {}
-    if not k.get("hex") or (z.get("версія") or 1) < 2 or not FZ.колір_збагачення(z)[2].startswith("hex"): continue
-    if not r.get("lab"): continue
-    під[для[п]].append((o["id"], r.get("колір_джерело"), cs.de00(tuple(r["lab"]), cs.hx(k["hex"])), k["hex"]))
+    if not _КОЛІР.hex_кольору(k) or (z.get("версія") or 1) < 2 or not FZ.колір_збагачення(z)[2].startswith("hex"): continue
+    if not _КОЛІР.точка_кольору(r): continue
+    під[для[п]].append((o["id"], r.get("колір_джерело"), cs.de00(tuple(_КОЛІР.точка_кольору(r)), cs.hx(_КОЛІР.hex_кольору(k))), _КОЛІР.hex_кольору(k)))
 for g, сп in під.items():
     від = [x for x in сп if x[1] != "фото"]
     print("ФАКТ · «%s»: речей із ПІДТВЕРДЖЕНИМ виміром %d; слово відкинуло вимір у %d (%.0f%%)" % (

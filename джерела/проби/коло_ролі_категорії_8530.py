@@ -11,7 +11,7 @@ B.виклик("запити", open("стенд_вх.json", encoding="utf-8").re
 for x in B.каталог_останнього_пакета():
     с = (x.get("колір_назва") or "").strip().lower()
     if с in тони and КР.межі_кольору(x) and КР.не_вимір(x) is None:
-        L, C, h = cs.lch(tuple(x["lab"]))
+        L, C, h = cs.lch(tuple(КР.точка_кольору(x)))
         if C > 34: тони[с].append(h)
 def медіана(хх):
     з = math.degrees(math.atan2(sum(math.sin(math.radians(h)) for h in хх), sum(math.cos(math.radians(h)) for h in хх)))

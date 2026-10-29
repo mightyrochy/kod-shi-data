@@ -9,9 +9,10 @@ import внутрішня_мова as В, вердикт_моделі as ВМ
 Т = sys.argv[1] if len(sys.argv) > 1 else os.path.join(os.path.dirname(os.path.abspath(__file__)), "../../аудит/перевірки/vyrva_968")
 Ф = re.compile(sys.argv[2] if len(sys.argv) > 2 else ".")
 дж = lambda с: (json.loads(с) if с and с.lstrip()[:1] == "{" else None)
+import колір_річ as _КОЛІР
 def опис(i):  # річ дроту → (слот ядра, опис з ключами `_річ_пулу`)
     сл = В.ТАБЛИЦЯ["slot"].get(В.СЛОТ_ТИПУ.get(i.get("type") or "", ""))
-    return сл, {"тканина": i.get("fabric"), "блиск": i.get("shine"), "візерунок": i.get("pattern"), "колір": i.get("color"), "hex": i.get("hex")}
+    return сл, {"тканина": i.get("fabric"), "блиск": i.get("shine"), "візерунок": i.get("pattern"), "колір": i.get("color"), "hex": _КОЛІР.hex_кольору(i)}
 РАЗОМ = dict(рук=0, з_дозою=0, сміливих=0, лишено=0, доза_ДО=0)
 for f in sorted(x for x in glob.glob(Т + "/*/вердикти.txt.gz") if Ф.search(x.split("/")[-2])):
     for в in json.load(gzip.open(f, "rt"))["прогони"][0]["вердикти"]:

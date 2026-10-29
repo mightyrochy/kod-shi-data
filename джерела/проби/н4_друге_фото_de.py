@@ -25,13 +25,14 @@ def корінь_файлу(ф):
 
 записи = json.load(gzip.open(КОРІНЬ / "каталог_кадри.json.gz", "rt", encoding="utf-8"))["записи"]
 пари = []
+import колір_річ as _КОЛІР
 for кадри in записи.values():
     гр = {}
     for к in кадри:
-        if к.get("lab"):
+        if _КОЛІР.точка_кольору(к):
             гр.setdefault(корінь_файлу(к["файл"]), []).append(к)
     for g in гр.values():
-        пари += [CS.de00(tuple(a["lab"]), tuple(b["lab"])) for a, b in itertools.combinations(g, 2)]
+        пари += [CS.de00(tuple(_КОЛІР.точка_кольору(a)), tuple(_КОЛІР.точка_кольору(b))) for a, b in itertools.combinations(g, 2)]
 пари.sort()
 над = lambda п: 100.0 * sum(1 for x in пари if x > п) / len(пари)
 print("ФАКТ · речей із кадрами %d, пар «той самий варіант» %d" % (len(записи), len(пари)))

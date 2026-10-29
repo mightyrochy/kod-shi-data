@@ -7,11 +7,12 @@ import collections as К, statistics as st, sys
 sys.path.insert(0, ".")
 import feed, міст_основи as МО, palettes as PS, фід_каталог as FK, фід_збагачення as FZ, фід_розбір as FR, verify as V, colorspace as cs
 зб, н, гр = feed.читати_збагачення(), lambda s: " ".join(str(s or "").lower().split()), К.defaultdict(list)
+import колір_річ as _КОЛІР
 for o in FR.читати_yml("каталог_повний.xml")[0]:
     п, z = н(o.get("колір_сирий")), зб.get(o["id"]) or {}
-    if not п or len(FK._СЕП_КОЛЬОРУ.split(п)) > 1 or not (z.get("колір_основний") or {}).get("hex") or (z.get("версія") or 1) < 2: continue
+    if not п or len(FK._СЕП_КОЛЬОРУ.split(п)) > 1 or not _КОЛІР.hex_кольору(z.get("колір_основний") or {}) or (z.get("версія") or 1) < 2: continue
     ск = FZ.колір_збагачення(z)[2].startswith("hex") and V.слово_крамниці(п)
-    if ск: гр[(ск["ім"], z.get("фото") or o.get("group_id") or o["id"])].append(cs.hx(z["колір_основний"]["hex"]))
+    if ск: гр[(ск["ім"], z.get("фото") or o.get("group_id") or o["id"])].append(cs.hx(_КОЛІР.hex_кольору(z["колір_основний"])))
 Д = [(с, tuple(st.median(x[i] for x in v) for i in range(3))) for (с, _), v in гр.items()]
 def зона(Ll, Lh, Cl, Ch, a, b):
     c = К.Counter(с for с, l in Д if (lambda L, C, h: Ll <= L < Lh and Cl <= C < Ch and a <= h < b)(*cs.lch(l)))

@@ -335,7 +335,7 @@ def зібрати_кроками(F, каталог, вікна=None, тіло=N
                 # перелік речей — закупівлею джерел.
                 _вікна_сл = [q for q in (межа or [])
                              if not q.get("слот") or q.get("слот") == сл]
-                _уск = sum(1 for r in речі if r.get("слот") == сл and r.get("lab"))
+                _уск = sum(1 for r in речі if r.get("слот") == сл and _КР.точка_кольору(r))
                 _чому = (_ВМ.заява("edge_branch_absent_by_construction") if not _вікна_сл else
                          _ВМ.заява("edge_branch_absent_in_catalogue",
                                    items=_уск, windows=len(_вікна_сл)))

@@ -25,6 +25,9 @@ setup() { W="${TMPDIR:-/tmp}/smuhy/$1"; rm -rf "$W"; mkdir -p "$W"/{fake,gr,gout
     FAKE_CC_SCENARIO=done FAKE_CC_RL=1 FAKE_USAGE=live FAKE_CC_LOG="$(wp "$W/cc.log")" FAKE_GH_DIR="$(wp "$W/gh")" FAKE_BOOT=b1 \
     FAKE_GEMINI_STATE= FAKE_CLAUDE_LOG="$(wp "$W/claude.log")" FAKE_ISOLATION=
   printf 'b1' > "$W/cr/boot.txt"; }
+# смуги.json v2: кожен слот з джерелом-виміром (без джерела обгортка бере попереднє значення).
+lanes() { local s='"джерело":"вимір: стенд 29.10 — 3 копії"'
+  printf '{"v":2,"slots":{"codex":{"n":%s,%s},"agy":{"n":%s,%s},"claude":{"n":%s,%s}},"claude_laptop":["д-claude"]}\n' "$1" "$s" "$2" "$s" "$3" "$s"; }
 mark() { git -C "$W/seed" push -q origin "main:refs/heads/gemini-queue/$1" 2>/dev/null; }
 gem() { A=$($PY -c "import json,sys
 d=dict(RepoDir='$(wp "$W/clone-g")',RunsDir='$(wp "$W/gr")',OutDir='$(wp "$W/gout")',RepoUrl='$(wp "$W/origin.git")',AgyExe='$(stub fake_agy)',CodexExe='$(stub fake_codex)',EnableCodex=True,TurnMinutes=1,TotalMinutes=2,MaxNudges=2,CodexStallMinutes=1)
@@ -121,13 +124,13 @@ chk "дві GPU-позначки різних облікових записів 
 
 echo "=== В: N зі смуги.json на origin/main — 1, потім 2, без перевстановлення скриптів"
 setup c; export FAKE_ZERO_UNTIL=0
-(cd "$W/seed"; mkdir -p аудит/адаптери/gemini; printf '{"v":1,"slots":{"codex":1,"agy":2,"claude":2}}\n' > аудит/адаптери/gemini/смуги.json
+(cd "$W/seed"; mkdir -p аудит/адаптери/gemini; lanes 1 2 2 > аудит/адаптери/gemini/смуги.json
  git add -A; git commit -q -m 'смуги 1'; git push -q origin main 2>/dev/null)
 mark "n-codex-1/$CX/1"; mark "n-codex-2/$CX/1"; gem; A1=$(tl codex)
-(cd "$W/seed"; printf '{"v":1,"slots":{"codex":2,"agy":2,"claude":2}}\n' > аудит/адаптери/gemini/смуги.json
+(cd "$W/seed"; lanes 2 2 2 > аудит/адаптери/gemini/смуги.json
  git commit -q -am 'смуги 2'; git push -q origin main 2>/dev/null)
 : > "$W/timeline.txt"; mark "n-codex-3/$CX/1"; mark "n-codex-4/$CX/1"; gem; A2=$(tl codex)
-(cd "$W/seed"; printf '{"v":1,"slots":{"codex":99}}\n' > аудит/адаптери/gemini/смуги.json; git commit -q -am 'смуги 99'; git push -q origin main 2>/dev/null)
+(cd "$W/seed"; lanes 99 2 2 > аудит/адаптери/gemini/смуги.json; git commit -q -am 'смуги 99'; git push -q origin main 2>/dev/null)
 git -C "$W/clone-g" fetch -q origin main 2>/dev/null
 CE=$("$PW" -NoProfile -c ". '$(wp "$SRC/queue_lanes.ps1")'; \$RepoDir='$(wp "$W/clone-g")'; \$GitExe='git'; \$script:NoHooks='x'; function Write-Log {}; (Get-Limits).slots['codex']" 2>/dev/null | tr -d '\r')
 echo "  codex водночас: смуги.json codex=1 → $A1, codex=2 → $A2; codex=99 у даних → $CE (стеля в коді)"
@@ -138,7 +141,7 @@ echo "=== Г: смуги.json задає 6 і 8 слотів, усі наряд�
 for N in 6 8; do
   setup "slots-$N"; export FAKE_ZERO_UNTIL=0; export FAKE_HOLD=30
   (cd "$W/seed"; mkdir -p аудит/адаптери/gemini
-   printf '{"v":1,"slots":{"codex":%s,"agy":0,"claude":0}}\n' "$N" > аудит/адаптери/gemini/смуги.json
+   lanes "$N" 0 0 > аудит/адаптери/gemini/смуги.json
    for ((i=1; i<=N; i++)); do printf 'Т | наряд\n' > "аудит/наряди/n-codex-$i.md"; done
    git add -A; git commit -q -m "смуги $N"; git push -q origin main 2>/dev/null)
   for ((i=1; i<=N; i++)); do mark "n-codex-$i/$CX/1"; done

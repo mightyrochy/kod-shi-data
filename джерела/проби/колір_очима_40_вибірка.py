@@ -7,16 +7,17 @@ import фід_збагачення as ФЗ, verify as V
 B.виклик("запити",json.dumps(dict(вх,сценарій=СЗ.СЦЕНАРІЇ["офіс·18°C"],випадок="офіс"),ensure_ascii=False))
 кат,зб=B.каталог_останнього_пакета(),json.load(gzip.open("каталог_збагачення.json.gz"))
 G=K.defaultdict(list)
+import колір_річ as _КОЛІР
 for r in кат:
     нв=КР.не_вимір(r); з=зб.get(r["id"]) or {}
-    if not нв or нв["свідок"]!="shop_word" or з.get("версія")!=2 or not (з.get("колір_основний") or {}).get("hex"): continue
+    if not нв or нв["свідок"]!="shop_word" or з.get("версія")!=2 or not _КОЛІР.hex_кольору(з.get("колір_основний") or {}): continue
     сп=r.get("колір_спір") or {}
     if сп.get("чому")!="згода свідків нижча за поріг": continue
-    сирий=ФЗ.lab_з_hex(з["колір_основний"]["hex"])
+    сирий=ФЗ.lab_з_hex(_КОЛІР.hex_кольору(з["колір_основний"]))
     if нв["слово"] not in V.ЛЕКСИКОН or V.перевірити(сирий,ім=нв["слово"])["вердикт"]!="прийнято": continue
     у=float(з.get("впевненість") or 0)
     g="0.8" if .795<=у<.9 and abs(у-.8)<.03 else "0.75" if abs(у-.75)<.03 else "0.6" if abs(у-.6)<.03 else "0.55" if abs(у-.55)<.03 else None
-    if g: G[g].append((r["id"],нв["слово"],з["колір_основний"]["hex"],round(у,2),r.get("магазин"),r.get("назва")))
+    if g: G[g].append((r["id"],нв["слово"],_КОЛІР.hex_кольору(з["колір_основний"]),round(у,2),r.get("магазин"),r.get("назва")))
 print({k:len(v) for k,v in G.items()})
 rnd=random.Random(7); out=[]
 for g in ["0.8","0.75","0.6","0.55"]:
