@@ -1,0 +1,292 @@
+diff --git "a/\320\260\321\203\320\264\320\270\321\202/\320\260\320\264\320\260\320\277\321\202\320\265\321\200\320\270/gemini/gemini_publish.ps1" "b/\320\260\321\203\320\264\320\270\321\202/\320\260\320\264\320\260\320\277\321\202\320\265\321\200\320\270/gemini/gemini_publish.ps1"
+index aa020f35..cfea7ea1 100644
+--- "a/\320\260\321\203\320\264\320\270\321\202/\320\260\320\264\320\260\320\277\321\202\320\265\321\200\320\270/gemini/gemini_publish.ps1"
++++ "b/\320\260\321\203\320\264\320\270\321\202/\320\260\320\264\320\260\320\277\321\202\320\265\321\200\320\270/gemini/gemini_publish.ps1"
+@@ -511,21 +511,50 @@ function Get-DispatcherId {
+     ''
+ }
+ 
++# Коди ЗАБЛОКОВАНО, після яких диспетчерові нічого робити: обгортка бере ту саму позначку сама чи позначка вже даремна.
++# Кожен інший код (зокрема невідомий) будить — безпечне за замовчуванням. Доказ — у тілі коміту «тихі пробудження».
++$script:QuietBlockedCodes = '^(?:QUOTA0_[A-Z0-9]{1,16}(?:_M[0-9]{1,6})?|STALE|REVIEW_API)$'
++$script:LocalLinesCap = 64
++
+ function Test-DispatcherAction([string]$Line) {
+-    <# Диспетчер прокидається лише за дією; звичайні стани лишаються локально. #>
++    <# Диспетчер прокидається лише за станом, що чекає його дії; решта йде зведенням при наступному пробудженні. #>
++    if ($Line -cmatch '^GEMINI ОБГОРТКА: ЗАБЛОКОВАНО \S+ (\S+)$') { return $Matches[1] -cnotmatch $script:QuietBlockedCodes }
+     if ($Line -cmatch '^GEMINI ОБГОРТКА: (?:ЗАБЛОКОВАНО|ТРИВОГА|ЛАНЦЮГ) ') { return $true }
+     if ($Line -cmatch '^GEMINI ОБГОРТКА: ГОТОВО (?:gemini|claude|codex)/(?:автоперевірка-|перевірка-|pachka-|автоживий-|Е1-нічний-живий-)') { return $true }
+     $false
+ }
+ 
++function Get-LocalLines {
++    $path = Join-Path $WorkDir 'local-lines.json'
++    if (-not (Test-Path -LiteralPath $path)) { return @() }
++    @(ConvertFrom-Json ([IO.File]::ReadAllText($path, $script:Utf8)))
++}
++
+ function Save-LocalLine([string]$Line) {
+-    <# Рядок лишається у журналі та стані для #1856 без мережевої доставки. #>
++    <# Рядок лишається у журналі та стані для #1856 без мережевої доставки; кожна подія — окремий запис (для зведення). #>
+     Write-WrapperLog "локально, без пробудження: $Line"
+-    $path = Join-Path $WorkDir 'local-lines.json'
+-    $lines = @()
+-    if (Test-Path -LiteralPath $path) { $parsed = ConvertFrom-Json ([IO.File]::ReadAllText($path, $script:Utf8)); $lines = @($parsed) }
+-    $lines = @($lines | Where-Object { $_.line -cne $Line } | Select-Object -Last 31)
+-    Write-FileAtomic $path (ConvertTo-Json -InputObject @($lines + @(@{utc=[datetime]::UtcNow.ToString('o');line=$Line})) -Compress)
++    $lines = @(Get-LocalLines | Select-Object -Last ($script:LocalLinesCap - 1))
++    Write-FileAtomic (Join-Path $WorkDir 'local-lines.json') (ConvertTo-Json -InputObject @($lines + @(@{utc=[datetime]::UtcNow.ToString('o');line=$Line;delivered=$false})) -Compress)
++}
++
++function Get-DigestText {
++    <# Зведення накопичених недоставлених локальних рядків: кількість і самі рядки обгортки, без тексту агента. #>
++    $pending = @(Get-LocalLines | Where-Object { (Get-Prop $_ 'delivered') -ne $true })
++    if ($pending.Count -eq 0) { return '' }
++    "ЗВЕДЕННЯ БЕЗ ПРОБУДЖЕННЯ: $($pending.Count)`n" + (($pending | ForEach-Object { [string]$_.line }) -join "`n")
++}
++
++function Set-DigestDelivered {
++    <# Після підтвердженої доставки листа зі зведенням накопичене позначається доставленим. #>
++    $all = @(Get-LocalLines)
++    if (@($all | Where-Object { (Get-Prop $_ 'delivered') -ne $true }).Count -eq 0) { return }
++    $done = foreach ($e in $all) { @{utc=[string]$e.utc;line=[string]$e.line;delivered=$true} }
++    Write-FileAtomic (Join-Path $WorkDir 'local-lines.json') (ConvertTo-Json -InputObject @($done) -Compress)
++}
++
++function Add-DigestToLine([string]$Line) {
++    $digest = Get-DigestText
++    if ($digest) { $Line + "`n" + $digest } else { $Line }
+ }
+ 
+ function Send-Line([string]$Line) {
+@@ -534,7 +563,7 @@ function Send-Line([string]$Line) {
+     $sid = Get-DispatcherId
+     if (-not $sid) { Write-WrapperLog 'нема адреси диспетчера в аудит/СТАН.md'; return $false }
+     # Рядок — через stdin: `claude` буває `.cmd`, і тоді аргумент розбирав би cmd.exe.
+-    $r = Invoke-Native (Resolve-Exe $ClaudeExe) @('-p', '--cloud', $sid, '--output-format', 'json') $WorkDir 3 $Line
++    $r = Invoke-Native (Resolve-Exe $ClaudeExe) @('-p', '--cloud', $sid, '--output-format', 'json') $WorkDir 3 (Add-DigestToLine $Line)
+     $ok = $false
+     try { $ack = (($r.Out -split "`n" | Where-Object { $_.Trim().StartsWith('{') }) | Select-Object -Last 1 | ConvertFrom-Json).ok; $ok = $r.Code -eq 0 -and $ack -is [bool] -and $ack -eq $true }
+     catch { Write-WrapperLog "відповідь claude не JSON: $($_.Exception.Message)" }
+@@ -575,7 +604,7 @@ function Send-Fallback([string]$Line) {
+     if (-not (Test-DispatcherAction $Line)) { Save-LocalLine $Line; return $true }
+     <# Той самий рядок у #1690 через stdin JSON; ні оболонки, ні тексту агента в аргументах. #>
+     if ($DryRun) { return $true }
+-    $body = ([ordered]@{ body = $Line }) | ConvertTo-Json -Compress
++    $body = ([ordered]@{ body = (Add-DigestToLine $Line) }) | ConvertTo-Json -Compress
+     try {
+         $r = Invoke-Native (Resolve-Exe $GhExe) @('api', '-X', 'POST', 'repos/mightyrochy/kod-shi-data/issues/1690/comments', '--input', '-') $WorkDir 1 $body
+         $id = 0L
+@@ -612,6 +641,7 @@ function Send-Pending([System.IO.FileInfo]$File) {
+         $new.fallback_attempts++
+         if (Send-Fallback $new.line) { $new.sent = $true; $new.channel = 'gh' }
+     }
++    if ($new.sent) { Set-DigestDelivered }
+     $new.exhausted = -not $new.sent -and ($new.cloud_auth -or $new.attempts -ge $MaxSendAttempts) -and $new.fallback_attempts -ge $MaxFallbackAttempts
+     if ($new.exhausted) { Write-WrapperLog "спроби доставки вичерпано: $($File.Name); рядок збережено у стані" }
+     Write-FileAtomic $File.FullName ($new | ConvertTo-Json -Compress)
+diff --git "a/\320\260\321\203\320\264\320\270\321\202/\320\260\320\264\320\260\320\277\321\202\320\265\321\200\320\270/gemini/m9v/\321\205\320\265\321\210\321\226.psd1" "b/\320\260\321\203\320\264\320\270\321\202/\320\260\320\264\320\260\320\277\321\202\320\265\321\200\320\270/gemini/m9v/\321\205\320\265\321\210\321\226.psd1"
+index 97a34bee..9633a429 100644
+--- "a/\320\260\321\203\320\264\320\270\321\202/\320\260\320\264\320\260\320\277\321\202\320\265\321\200\320\270/gemini/m9v/\321\205\320\265\321\210\321\226.psd1"
++++ "b/\320\260\321\203\320\264\320\270\321\202/\320\260\320\264\320\260\320\277\321\202\320\265\321\200\320\270/gemini/m9v/\321\205\320\265\321\210\321\226.psd1"
+@@ -6,7 +6,7 @@
+     'wrapper_chain.ps1'  = '806F6DD792213D702F7EF9079318C450AD4EEE651B88DA13E749F6DD5FE052D2'
+     'wrapper_health.ps1' = 'D03E371F34B3AC2881B70047563260905CD2DEB343DCD8608257495E531B90EA'
+     'gemini_run.ps1'     = 'B645BAEC41D3E92716B3A64220A7E5EF2991CE3F4EF9ED01E72E65C4484CB769'
+-    'gemini_publish.ps1' = '7F4FC17738BF30D3F84C2DCFA2DC2A52CAA086A90825F31B0C4339BFFEA3A39C'
++    'gemini_publish.ps1' = 'CF364C58870BB038E449BB5E3C658F2F4EAFDBAAF9CC68E7FA51442697530A5A'
+     # Інсталятор Codex (9741) закріплено за релізом: install.ps1 — файл релізу https://releases.openai.com/codex/releases/<CodexRelease>/install.ps1
+     # (незмінний URL; той самий sha256 віддає https://chatgpt.com/codex/install.ps1 — редирект на releases.openai.com — і публікує реліз
+     # openai/codex). 2_під_gemini.ps1 -WithCodex виконує його лише при збігу CodexInstaller і ставить саме цей реліз (-Release).
+diff --git "a/\320\260\321\203\320\264\320\270\321\202/\320\260\320\264\320\260\320\277\321\202\320\265\321\200\320\270/gemini/\320\235\320\220\320\233\320\220\320\250\320\242\320\243\320\222\320\220\320\235\320\235\320\257.md" "b/\320\260\321\203\320\264\320\270\321\202/\320\260\320\264\320\260\320\277\321\202\320\265\321\200\320\270/gemini/\320\235\320\220\320\233\320\220\320\250\320\242\320\243\320\222\320\220\320\235\320\235\320\257.md"
+index ad96a4d4..1a52fff2 100644
+--- "a/\320\260\321\203\320\264\320\270\321\202/\320\260\320\264\320\260\320\277\321\202\320\265\321\200\320\270/gemini/\320\235\320\220\320\233\320\220\320\250\320\242\320\243\320\222\320\220\320\235\320\235\320\257.md"
++++ "b/\320\260\321\203\320\264\320\270\321\202/\320\260\320\264\320\260\320\277\321\202\320\265\321\200\320\270/gemini/\320\235\320\220\320\233\320\220\320\250\320\242\320\243\320\222\320\220\320\235\320\235\320\257.md"
+@@ -418,7 +418,7 @@ $f = Join-Path "$env:USERPROFILE\gemini-outbox" $n
+ | `wrapper_update.ps1` | `4156307A17BDAE3AF7249E532947F659E99AA1349D159239159FAE60CA7E4F2B` |
+ | `wrapper_chain.ps1` | `806F6DD792213D702F7EF9079318C450AD4EEE651B88DA13E749F6DD5FE052D2` |
+ | `gemini_run.ps1` | `B645BAEC41D3E92716B3A64220A7E5EF2991CE3F4EF9ED01E72E65C4484CB769` |
+-| `gemini_publish.ps1` | `7F4FC17738BF30D3F84C2DCFA2DC2A52CAA086A90825F31B0C4339BFFEA3A39C` |
++| `gemini_publish.ps1` | `CF364C58870BB038E449BB5E3C658F2F4EAFDBAAF9CC68E7FA51442697530A5A` |
+ | `gemini_watch.ps1` | `69EFEBB07FF1AF51C382B753A95C50F3C1AC27B3008F2489992BEBE3FD0213AA` |
+ | `wrapper_health.ps1` | `D03E371F34B3AC2881B70047563260905CD2DEB343DCD8608257495E531B90EA` |
+ | `queue_lanes.ps1` | `7E88FC8CE1F79069BD112681424F37EF6347E50135B20549C9BE3274AD68AD6A` |
+@@ -567,11 +567,15 @@ CI й ноутбук запускають один повний перелік 
+ Зауваження Codex додаються до наряду перевірки через пагіновані публічні GET reviews/comments:
+ лише бот, відповідь чужому відкидається; збій входу повертає роботу в чекання.
+ 
+-`Test-DispatcherAction` — спільне рішення для хмари, повтору та резервного каналу:
+-вердикти перевірки/пачки, звіти живого, ЗАБЛОКОВАНО, ТРИВОГА й ЛАНЦЮГ потребують дії.
+-ВЗЯТО, ГОТОВО виконавця, ОНОВЛЕНО, ПУЛИ лишаються в журналі й `local-lines.json`;
+-стан ноутбука #1856 показує останні 12. Старі недоставлені локальні рядки теж не будять.
+-Транспортні стенди ізолюють цю політику; сценарії_менше_прогонів.ps1 перевіряє її без підміни.
++`Test-DispatcherAction` — спільне рішення для хмари, повтору та резервного каналу: диспетчера будить лише закритий
++перелік станів, після яких без нього нічого не зрушить: вердикти перевірки/пачки, звіти живого, ТРИВОГА, ЛАНЦЮГ і
++ЗАБЛОКОВАНО з кодом, на який обгортка сама не відновлюється (невідомий код будить). Без пробудження лишаються
++ЗАБЛОКОВАНО `QUOTA0_*` (позначка чекає скидання квоти, ту саму бере та сама смуга), `STALE` (PR уже закрито чи голова
++змінилась — рішення нема) і `REVIEW_API` (повтор у черзі), а також ВЗЯТО, ГОТОВО виконавця, ОНОВЛЕНО, ПУЛИ: вони
++лишаються в журналі й `local-lines.json`, стан ноутбука #1856 показує останні 12. Наступний рядок, що будить, несе в тому
++самому листі після основного рядка «ЗВЕДЕННЯ БЕЗ ПРОБУДЖЕННЯ: N» і N накопичених рядків обгортки (без тексту агента),
++після підтвердженої доставки вони позначаються доставленими; окремого пробудження заради зведення нема.
++Транспортні стенди ізолюють цю політику; сценарії_менше_прогонів.ps1 і сценарії_тихі_пробудження.ps1 перевіряють її без підміни.
+ 
+ Обидва worker перед агентом кличуть `Set-BrowserGpuPolicy`: дочірні Node/Python додають
+ `--disable-gpu` в Playwright launch і persistent context, зберігаючи решту аргументів.
+diff --git "a/\320\260\321\203\320\264\320\270\321\202/\320\260\320\264\320\260\320\277\321\202\320\265\321\200\320\270/gemini/\320\247\320\225\320\240\320\223\320\220.md" "b/\320\260\321\203\320\264\320\270\321\202/\320\260\320\264\320\260\320\277\321\202\320\265\321\200\320\270/gemini/\320\247\320\225\320\240\320\223\320\220.md"
+index c88599a6..47044b8e 100644
+--- "a/\320\260\321\203\320\264\320\270\321\202/\320\260\320\264\320\260\320\277\321\202\320\265\321\200\320\270/gemini/\320\247\320\225\320\240\320\223\320\220.md"
++++ "b/\320\260\321\203\320\264\320\270\321\202/\320\260\320\264\320\260\320\277\321\202\320\265\321\200\320\270/gemini/\320\247\320\225\320\240\320\223\320\220.md"
+@@ -91,11 +91,15 @@ CI й ноутбук запускають один повний перелік 
+ Зауваження Codex додаються до наряду перевірки через пагіновані публічні GET reviews/comments:
+ лише бот, відповідь чужому відкидається; збій входу повертає роботу в чекання.
+ 
+-`Test-DispatcherAction` — спільне рішення для хмари, повтору та резервного каналу:
+-вердикти перевірки/пачки, звіти живого, ЗАБЛОКОВАНО, ТРИВОГА й ЛАНЦЮГ потребують дії.
+-ВЗЯТО, ГОТОВО виконавця, ОНОВЛЕНО, ПУЛИ лишаються в журналі й `local-lines.json`;
+-стан ноутбука #1856 показує останні 12. Старі недоставлені локальні рядки теж не будять.
+-Транспортні стенди ізолюють цю політику; сценарії_менше_прогонів.ps1 перевіряє її без підміни.
++`Test-DispatcherAction` — спільне рішення для хмари, повтору та резервного каналу: диспетчера будить лише закритий
++перелік станів, після яких без нього нічого не зрушить: вердикти перевірки/пачки, звіти живого, ТРИВОГА, ЛАНЦЮГ і
++ЗАБЛОКОВАНО з кодом, на який обгортка сама не відновлюється (невідомий код будить). Без пробудження лишаються
++ЗАБЛОКОВАНО `QUOTA0_*` (позначка чекає скидання квоти, ту саму бере та сама смуга), `STALE` (PR уже закрито чи голова
++змінилась — рішення нема) і `REVIEW_API` (повтор у черзі), а також ВЗЯТО, ГОТОВО виконавця, ОНОВЛЕНО, ПУЛИ: вони
++лишаються в журналі й `local-lines.json`, стан ноутбука #1856 показує останні 12. Наступний рядок, що будить, несе в тому
++самому листі після основного рядка «ЗВЕДЕННЯ БЕЗ ПРОБУДЖЕННЯ: N» і N накопичених рядків обгортки (без тексту агента),
++після підтвердженої доставки вони позначаються доставленими; окремого пробудження заради зведення нема.
++Транспортні стенди ізолюють цю політику; сценарії_менше_прогонів.ps1 і сценарії_тихі_пробудження.ps1 перевіряють її без підміни.
+ 
+ Обидва worker перед агентом кличуть `Set-BrowserGpuPolicy`: дочірні Node/Python додають
+ `--disable-gpu` в Playwright launch і persistent context, зберігаючи решту аргументів.
+diff --git "a/\320\260\321\203\320\264\320\270\321\202/\320\260\320\264\320\260\320\277\321\202\320\265\321\200\320\270/gemini/\320\277\320\265\321\200\320\265\320\262\321\226\321\200\320\272\320\260/\321\201\321\206\320\265\320\275\320\260\321\200\321\226\321\227_\321\202\320\270\321\205\321\226_\320\277\321\200\320\276\320\261\321\203\320\264\320\266\320\265\320\275\320\275\321\217.ps1" "b/\320\260\321\203\320\264\320\270\321\202/\320\260\320\264\320\260\320\277\321\202\320\265\321\200\320\270/gemini/\320\277\320\265\321\200\320\265\320\262\321\226\321\200\320\272\320\260/\321\201\321\206\320\265\320\275\320\260\321\200\321\226\321\227_\321\202\320\270\321\205\321\226_\320\277\321\200\320\276\320\261\321\203\320\264\320\266\320\265\320\275\320\275\321\217.ps1"
+new file mode 100644
+index 00000000..0569b1ca
+--- /dev/null
++++ "b/\320\260\321\203\320\264\320\270\321\202/\320\260\320\264\320\260\320\277\321\202\320\265\321\200\320\270/gemini/\320\277\320\265\321\200\320\265\320\262\321\226\321\200\320\272\320\260/\321\201\321\206\320\265\320\275\320\260\321\200\321\226\321\227_\321\202\320\270\321\205\321\226_\320\277\321\200\320\276\320\261\321\203\320\264\320\266\320\265\320\275\320\275\321\217.ps1"
+@@ -0,0 +1,126 @@
++﻿#Requires -Version 5.1
++param([Parameter(Mandatory=$true)][string]$SourceDir)
++$ErrorActionPreference = 'Stop'
++[Console]::OutputEncoding = New-Object Text.UTF8Encoding($false)
++$tmp = Join-Path ([IO.Path]::GetTempPath()) ('tykhi-test-' + [guid]::NewGuid().ToString('N'))
++[void][IO.Directory]::CreateDirectory($tmp)
++$bad = 0
++function Check([string]$Name, [bool]$Ok) {
++    <# Кожен провал мірила лишається червоним і впливає на код завершення. #>
++    if ($Ok) { "✓ $Name" } else { "✗ $Name"; $script:bad++ }
++}
++function Scenario([string]$Name, [scriptblock]$Body) {
++    try { & $Body } catch { Check "$Name — $($_.Exception.Message) $($_.ScriptStackTrace)" $false }
++}
++try {
++    . (Join-Path $SourceDir 'gemini_publish.ps1') -WorkDir "$tmp/pub" -OutboxDir "$tmp/out"
++    foreach ($dir in @($WorkDir, "$WorkDir/state", "$WorkDir/seen", $OutboxDir)) { [void][IO.Directory]::CreateDirectory($dir) }
++    $sha = 'a' * 40
++    $script:Calls = @()
++    function Get-DispatcherId { 'session_test' }
++    function Resolve-Exe { 'test-native' }
++    function Invoke-Native {
++        param($Exe, $Arguments, $WorkDirectory, $TimeoutMinutes, $StdIn)
++        $script:Calls += , [string]$StdIn
++        [pscustomobject]@{Code = 0; Out = '{"ok":true}'; Err = ''}
++    }
++    function Reset-Run {
++        $script:Calls = @()
++        foreach ($f in @(Get-ChildItem "$WorkDir/state" -File -ErrorAction SilentlyContinue)) { Remove-Item -LiteralPath $f.FullName -Force }
++        Remove-Item -LiteralPath "$WorkDir/local-lines.json" -Force -ErrorAction SilentlyContinue
++    }
++    function Deliver([string[]]$Lines) {
++        <# Рядок проходить справжню доставку: стан → Send-Pending. #>
++        foreach ($l in $Lines) {
++            $path = "$WorkDir/state/{0:D4}.json" -f ($script:Seq++)
++            Write-FileAtomic $path ((@{line = $l; sent = $false; attempts = 0}) | ConvertTo-Json -Compress)
++            Send-Pending (Get-Item $path)
++        }
++    }
++    $script:Seq = 1
++
++    # Факти 28–29.10: 14 рядків STALE за автоперевірками й пачкою.
++    $facts = @('автоперевірка-2122-aaa', 'автоперевірка-2122-bbb', 'автоперевірка-2122-ccc', 'автоперевірка-2124-aaa', 'автоперевірка-2124-bbb',
++        'автоперевірка-2124-ccc', 'автоперевірка-2132-aaa', 'автоперевірка-2133-aaa') | ForEach-Object { "GEMINI ОБГОРТКА: ЗАБЛОКОВАНО gemini/$_ STALE" }
++    $facts += @(1974, 1977, 1975, 1981, 1983, 1985) | ForEach-Object { "GEMINI ОБГОРТКА: ЗАБЛОКОВАНО claude/автоперевірка-$_-aaa STALE" }
++    $quota = 'GEMINI ОБГОРТКА: ЗАБЛОКОВАНО codex/крок QUOTA0_CODEX_M60'
++    $wake = "GEMINI ОБГОРТКА: ГОТОВО gemini/автоперевірка-9-$sha $sha"
++
++    Scenario '1 закритий перелік кодів' {
++        # Усі коди з $script:RunCodes, $script:IsolationChecks, кодів публікації та службових рядків.
++        $quiet = @('STALE', 'REVIEW_API')
++        foreach ($code in @($script:RunCodes.Keys | Where-Object { $_ -notin @('QUOTA_ZERO', 'DONE', 'BLOCKED') })) {
++            $want = $code -notin $quiet
++            Check "1 $code — $(if ($want) { 'будить' } else { 'зведення' })" ((Test-DispatcherAction "GEMINI ОБГОРТКА: ЗАБЛОКОВАНО gemini/крок $code") -eq $want)
++        }
++        foreach ($code in @('BLOCKED', 'DONE_PUBLISHED', 'BLOCKED_PUBLISHED', 'NO_HEAD_PUBLISHED', 'STATE_INVALID', 'ISOLATION_FAILED', 'BOOT', 'НЕВІДОМИЙ')) {
++            Check "1 $code — будить" (Test-DispatcherAction "GEMINI ОБГОРТКА: ЗАБЛОКОВАНО gemini/крок $code")
++        }
++        foreach ($code in @($script:PublishCodes.Keys)) { Check "1 публікація $code — будить" (Test-DispatcherAction "GEMINI ОБГОРТКА: ЗАБЛОКОВАНО gemini/крок $code") }
++        foreach ($code in @('QUOTA0_CODEX_M60', 'QUOTA0_CLAUDE_M5', 'QUOTA0_GPT', 'QUOTA0_A1_M0')) {
++            Check "1 $code — зведення" (-not (Test-DispatcherAction "GEMINI ОБГОРТКА: ЗАБЛОКОВАНО claude/крок $code"))
++        }
++        Check '1 нерозібраний ЗАБЛОКОВАНО будить' (Test-DispatcherAction 'GEMINI ОБГОРТКА: ЗАБЛОКОВАНО')
++        Check '1 STALE із зайвим словом у рядку будить' (Test-DispatcherAction 'GEMINI ОБГОРТКА: ЗАБЛОКОВАНО gemini/крок X STALE')
++        Check '1 ТРИВОГА будить' (Test-DispatcherAction 'GEMINI ОБГОРТКА: ТРИВОГА AUTH CLOUD')
++        Check '1 ЛАНЦЮГ будить' (Test-DispatcherAction 'GEMINI ОБГОРТКА: ЛАНЦЮГ CHAIN_API')
++        foreach ($kind in @('перевірка-12', 'pachka-3', 'автоживий-штамп', 'автоперевірка-9', 'Е1-нічний-живий-1')) {
++            Check "1 ГОТОВО $kind — будить" (Test-DispatcherAction "GEMINI ОБГОРТКА: ГОТОВО gemini/$kind $sha")
++        }
++        Check '1 ГОТОВО виконавця — зведення' (-not (Test-DispatcherAction "GEMINI ОБГОРТКА: ГОТОВО gemini/крок $sha"))
++    }
++    Scenario '2 проба: 14 рядків фактів — пробуджень' {
++        Reset-Run
++        Deliver ($facts)
++        Check "2 факти: рядків $($facts.Count)" ($facts.Count -eq 14)
++        Check "2 пробуджень диспетчера: $($script:Calls.Count) (ДО 14 → ПІСЛЯ 0)" ($script:Calls.Count -eq 0)
++        $stored = @(ConvertFrom-Json ([IO.File]::ReadAllText("$WorkDir/local-lines.json")))
++        Check '2 усі 14 лишились у local-lines.json' ($stored.Count -eq 14)
++        Deliver @($quota)
++        Check '2 QUOTA0 теж без пробудження' ($script:Calls.Count -eq 0)
++    }
++    Scenario '3 рядок, що будить, — одне пробудження зі зведенням' {
++        Reset-Run
++        Deliver ($facts)
++        Deliver @($wake)
++        Check "3 пробуджень: $($script:Calls.Count) (рівно 1)" ($script:Calls.Count -eq 1)
++        if ($script:Calls.Count -ge 1) {
++            $parts = $script:Calls[0] -split "`n"
++            Check '3 перший рядок листа не змінений' ($parts[0] -ceq $wake)
++            Check '3 зведення: 14 і 14 рядків' ($parts[1] -ceq 'ЗВЕДЕННЯ БЕЗ ПРОБУДЖЕННЯ: 14' -and $parts.Count -eq 16)
++            Check '3 рядки зведення — це рядки фактів' ((($parts[2..15]) -join "`n") -ceq ($facts -join "`n"))
++        }
++        $stored = @(ConvertFrom-Json ([IO.File]::ReadAllText("$WorkDir/local-lines.json")))
++        Check '3 накопичене позначено доставленим' (@($stored | Where-Object { $_.delivered -ne $true }).Count -eq 0)
++        Deliver @($wake)
++        Check '3 наступний рядок, що будить, — без повторного зведення' ($script:Calls.Count -eq 2 -and $script:Calls[1] -ceq $wake)
++        Deliver @($facts[0])
++        Deliver @($wake)
++        Check '3 нове накопичене — нове зведення з 1' ($script:Calls.Count -eq 3 -and ($script:Calls[2] -split "`n")[1] -ceq 'ЗВЕДЕННЯ БЕЗ ПРОБУДЖЕННЯ: 1')
++    }
++    Scenario '4 недоставлене зведення не губиться' {
++        Reset-Run
++        Deliver ($facts)
++        function Invoke-Native { param($Exe, $Arguments, $WorkDirectory, $TimeoutMinutes, $StdIn) $script:Calls += , [string]$StdIn; [pscustomobject]@{Code = 1; Out = ''; Err = 'збій'} }
++        $script:SendRetries = 1; $script:SendRetryDelaySeconds = 0
++        Deliver @($wake)
++        $stored = @(ConvertFrom-Json ([IO.File]::ReadAllText("$WorkDir/local-lines.json")))
++        Check '4 збій доставки — зведення лишається недоставленим' (@($stored | Where-Object { $_.delivered -ne $true }).Count -eq 14)
++    }
++    Scenario '5 запасний канал теж несе зведення' {
++        Reset-Run
++        Deliver ($facts)
++        $script:GhBodies = @()
++        function Invoke-Native { param($Exe, $Arguments, $WorkDirectory, $TimeoutMinutes, $StdIn) $script:GhBodies += , [string]$StdIn; [pscustomobject]@{Code = 0; Out = '{"id":7}'; Err = ''} }
++        Check '5 запасний канал підтверджено' (Send-Fallback $wake)
++        $body = ($script:GhBodies[0] | ConvertFrom-Json).body
++        Check '5 у тілі коментаря — основний рядок і зведення 14' (($body -split "`n")[0] -ceq $wake -and ($body -split "`n")[1] -ceq 'ЗВЕДЕННЯ БЕЗ ПРОБУДЖЕННЯ: 14')
++        Check '5 локальний рядок через запасний канал — лише в зведення' (Send-Fallback $facts[0])
++    }
++} finally {
++    $script:CloudUnavailable = $false
++    Remove-Item -LiteralPath $tmp -Recurse -Force -ErrorAction SilentlyContinue
++}
++if ($bad) { "ПІДСУМОК: ✗ $bad"; exit 1 }
++'ПІДСУМОК: ✗ 0'
++exit 0
