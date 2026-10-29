@@ -19,6 +19,7 @@ ComfyUI (`_comfy`, `_sam_слово`, `маска_sam`), запасна від �
 cv2/numpy/PIL — ліниво всередині функцій; фасад не імпортує."""
 import json, os, sys, threading
 from жнива_реєстр import OSS, ATR, ШКІРА, СЛОТ_РЕГІОНИ, група_слота, _замок_парсера
+from жнива_фото import читати_bgr
 
 # ── МАСКА ───────────────────────────────────────────────────────────────────
 _ПРОГРІТО = False
@@ -87,10 +88,14 @@ def _мітки_atr(шлях):
 
 
 def _мітки_atr_прогін(шлях):
+    """Рахує ATR; власні ваги профілю мають той самий контракт Leffa."""
     global _ПРОГРІТО
     if OSS not in sys.path:
         sys.path.append(OSS)
     with _замок_парсера:
+        леффа = os.path.join(os.path.expanduser("~"), ".cache", "liusterko", "sam", "Leffa")
+        if os.path.isdir(леффа):
+            os.environ.setdefault("LEFFA_PATH", леффа)
         if _ПРОГРІТО:
             from system.segmentation.parsing import parse_label_map
             return parse_label_map(шлях)
@@ -130,7 +135,7 @@ def маска_atr(шлях, регіони, арр=None):
     import cv2, numpy as np
     арр = _мітки_atr(шлях) if арр is None else арр
     фон = int((арр > 0).sum())
-    bgr = cv2.imread(шлях)
+    bgr = читати_bgr(шлях)
     h, w = bgr.shape[:2]
     найкращий, площа = None, 0
     for р in регіони:
@@ -158,7 +163,7 @@ def маска_без_людини(шлях, арр=None):
     тому тут не матування, а різниця з кольором рамки кадру.
     """
     import cv2, numpy as np
-    bgr = cv2.imread(шлях)
+    bgr = читати_bgr(шлях)
     h, w = bgr.shape[:2]
     к = max(4, min(h, w) // 40)
     рамка = np.concatenate([bgr[:к].reshape(-1, 3), bgr[-к:].reshape(-1, 3),
@@ -275,7 +280,7 @@ def _sam_слово(слот, арр):
 
 
 def маска_sam(шлях, слово, арр=None):
-    """(маска, частка кадру, чому) від SAM 3.1; шкіра й волосся — геть.
+    """(маска, частка кадру, чому) від SAM; шкіра й волосся — геть.
 
     SAM вирізає РІЧ РАЗОМ із тим, що на ній лежить: намисто на шиї приходить із
     шматком шиї, пояс — зі складкою сукні під пальцями. Карта ATR знає шкіру й
@@ -284,18 +289,33 @@ def маска_sam(шлях, слово, арр=None):
     """
     import cv2, numpy as np
     from PIL import Image
-    к = _comfy()
     if not слово:
         return None, НЕ_ПИТАЛИ, "SAM не питали: слова для слота нема"
-    if к is None:
+    типовий = os.path.join(os.path.expanduser("~"), ".cache", "liusterko", "sam", "venv",
+                          "Scripts" if os.name == "nt" else "bin", "python.exe" if os.name == "nt" else "python")
+    пітон = os.environ.get("ЖНИВА_SAM_PYTHON", типовий)
+    локальний = os.path.isfile(пітон) and ("ЖНИВА_SAM_PYTHON" in os.environ or
+                 os.path.isfile(os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(пітон))), "готово")))
+    к = None if локальний else _comfy()
+    if not локальний and к is None:
         return None, НЕ_ПИТАЛИ, "SAM не питали: ComfyUI на %s:%d не піднятий" % (COMFY_ХОСТ, COMFY_ПОРТ)
     try:
         # Маска приходить БАЙТАМИ і декодується в пам'яті. Стара ланка писала її
         # файлом і читала `cv2.imread`, через що мітку доводилось тримати
         # латиницею (18.09: «річ.png» не відкрився) — тепер шляху взагалі нема.
-        г = ГРАФ_SAM3.replace("ІМЯ", к.upload_image(шлях)).replace("СЛОВО", слово)
-        в = к.poll(к.submit(json.loads(г)), timeout=300)["6"]["images"][0]
-        байти = к.download(в["filename"], в.get("subfolder", ""), в.get("type", "output"))
+        if локальний:
+            import subprocess
+            прогін = subprocess.run([пітон, os.path.join(os.path.dirname(__file__), "жнива_sam.py"),
+                                     os.path.abspath(шлях), слово], capture_output=True, timeout=300)
+            if прогін.returncode:
+                причина = прогін.stderr.decode("utf-8", errors="replace").strip()
+                raise RuntimeError(причина.splitlines()[-1][-90:] if причина else
+                                   "Локальний SAM завершився з кодом %d" % прогін.returncode)
+            байти = прогін.stdout
+        else:
+            г = ГРАФ_SAM3.replace("ІМЯ", к.upload_image(шлях)).replace("СЛОВО", слово)
+            в = к.poll(к.submit(json.loads(г)), timeout=300)["6"]["images"][0]
+            байти = к.download(в["filename"], в.get("subfolder", ""), в.get("type", "output"))
         м = cv2.imdecode(np.frombuffer(байти, np.uint8), cv2.IMREAD_GRAYSCALE)
     except Exception as e:
         return None, НЕ_ПИТАЛИ, "SAM «%s» не дав маски: %s" % (слово, str(e)[:90])
@@ -343,7 +363,7 @@ def _покриття_без_людини(шлях, м, арр):
     там законно мала частка переднього плану, на те й пільговий поріг dominance.
     """
     import cv2, numpy as np
-    bgr = cv2.imread(шлях)
+    bgr = читати_bgr(шлях)
     h, w = bgr.shape[:2]
     шкіра = _шкіра_atr(арр, (w, h))
     if шкіра is not None and float(шкіра.mean()) > 0.005:
