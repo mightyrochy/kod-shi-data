@@ -71,20 +71,10 @@ def v2(мод, b64, тип, слот):
     набір = мод.набір_слота(слот)
     if набір not in ("одяг", "дрібне"):
         return None
-    тіло = {"model": "qwen3-vl-8b-instruct", "temperature": 0, "max_tokens": 600,
-            "messages": [{"role": "user", "content": [
-                {"type": "text", "text": мод._підставити(мод.ПРОМПТ_НАБОРУ[набір], тип)},
-                {"type": "image_url", "image_url": {"url": "data:image/jpeg;base64," + b64}}]}]}
-    for спроба in range(3):
-        try:
-            зап = urllib.request.Request(мод.СЕРВЕР, data=json.dumps(тіло).encode("utf-8"),
-                                         headers={"Content-Type": "application/json"})
-            with urllib.request.urlopen(зап, timeout=180) as в:
-                текст = json.load(в)["choices"][0]["message"]["content"]
-            return мод.нормалізувати(json.loads(re.search(r"\{.*\}", текст, re.S).group(0)), набір)
-        except Exception:
-            if спроба == 2:
-                raise
+    # читач і повтор словами — `жнива_промпти._запит` (реєстр, «ЖНИВА_ОПИС»); доти — своя копія regex + json.loads
+    об = мод._запит("qwen3-vl-8b-instruct", мод._підставити(мод.ПРОМПТ_НАБОРУ[набір], тип), [b64],
+                    тайм=180, повтори=2, токенів=600)
+    return мод.нормалізувати(об, набір)
 
 
 def main():
