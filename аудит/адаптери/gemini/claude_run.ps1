@@ -318,6 +318,12 @@ function Get-StatusBody {
         $lines += @('', '### Чекають скидання квоти', '', '| позначка | до (UTC) | група |', '|---|---|---|')
         foreach ($w in $wait) { $lines += "| $($w.Marker) | $($w.Until) | $($w.Group) |" }
     }
+    $localPath = Join-Path $PublishDir 'local-lines.json'
+    if (Test-Path -LiteralPath $localPath) {
+        $local = ConvertFrom-Json ([IO.File]::ReadAllText($localPath, $script:Utf8))
+        $lines += @('', '### Локальні рядки обгортки', '')
+        foreach ($entry in @($local | Select-Object -Last 12)) { $lines += "- $($entry.utc): $($entry.line)" }
+    }
     $deliveryPath = Join-Path $PublishDir 'delivery.json'
     if (Test-Path -LiteralPath $deliveryPath) {
         try {
@@ -613,7 +619,8 @@ function Invoke-Task($M, $Job) {
     if ($review -ne 'LIVE') { return (Complete-Task $M $statePath $id $review) }
     $exe = Find-Exe $ClaudeExe
     if (-not $exe) { return (Complete-Task $M $statePath $id 'ENGINE_MISSING') }
-    $taskText = Add-AutoTaskContext $M.Slug ((Invoke-Git @('cat-file', 'blob', "$($M.Sha):$taskPath")).Out) $M.Sha
+    try { $taskText = Add-AutoTaskContext $M.Slug ((Invoke-Git @('cat-file', 'blob', "$($M.Sha):$taskPath")).Out) $M.Sha }
+    catch { Enter-ReviewWait $M; Remove-Claim $statePath; return }
     $cont = Get-ContinueBranch $M.Slug
     $runDir = Join-Path (Join-Path $WorkDir 'runs') $id
     [void](New-Item -ItemType Directory -Force -Path $runDir)
@@ -816,7 +823,7 @@ function Invoke-Worker {
     try {
         if ($job.gpu) {
             $gpu = Open-Lock (Get-GpuLockPath)
-            if ($null -eq $gpu) { Remove-Claim $statePath; Write-Log "GPU зайнята — $($job.name) лишається в черзі"; return $script:WorkerGpuBusy }
+            if ($null -eq $gpu -or -not (Test-ExternalGpuFree)) { Remove-Claim $statePath; Write-Log "GPU зайнята — $($job.name) лишається в черзі"; return $script:WorkerGpuBusy }
         }
         Write-FileAtomic $info (([ordered]@{ slot = $job.slot; lane = 'claude'; marker = $job.name; slug = $job.slug
                     model = "$($job.claude)$(if ($job.effort) { ' ' + $job.effort })"; since = (Get-UtcStamp (Get-Date)); gpu = [bool]$job.gpu; prio = $job.prio; pid = $PID }) | ConvertTo-Json -Compress)
@@ -827,6 +834,7 @@ function Invoke-Worker {
         Reset-WorkTree $wt
         [void](Invoke-Git @('checkout', '-q', '-f', '--detach', 'refs/remotes/origin/main') -Dir $wt)
         Set-Variable -Scope Script -Name RepoDir -Value $wt
+        Set-BrowserGpuPolicy (Join-Path $script:SlotDir ($job.slot + '-browser'))
         Invoke-Task $M $job
         0
     } catch {

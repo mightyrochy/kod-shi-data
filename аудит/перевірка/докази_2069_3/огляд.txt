@@ -1,0 +1,176 @@
+КОМАНДА: git rev-parse HEAD
+7271b7d4c1e50dfc8522137656212f3ca3011c0d
+
+КОД: 0
+
+КОМАНДА: git diff a136a841db8fed6703c17866166514729f2875eb HEAD -- zhnyvarka
+diff --git a/zhnyvarka/json_прохід.py b/zhnyvarka/json_прохід.py
+index bca8cb520..6adc6e4ab 100644
+--- a/zhnyvarka/json_прохід.py
++++ b/zhnyvarka/json_прохід.py
+@@ -3,7 +3,6 @@ import json
+ import hashlib
+ import os
+ from pathlib import Path
+-from журнал_карток import прочитати
+ 
+ МЕЖА_СТОРІНОК = 120
+ 
+@@ -53,11 +52,27 @@ def завершено(журнал, домен):
+     стан = прочитати_стан(журнал, домен)
+     if стан.get("завершено") is not True:
+         return False
++    return журнал_збігається(журнал, домен, стан)
++
++
++def журнал_збігається(журнал, домен, стан):
++    """Звіряє позицію з байтами журналу, а не лише синтаксичною цілісністю рядків."""
+     файл = Path(журнал) / "сирі" / (домен + ".jsonl")
+-    if "журнал_sha256" in стан:
+-        дані = файл.read_bytes() if файл.is_file() else b""
+-        return hashlib.sha256(дані).hexdigest() == стан["журнал_sha256"]
+-    return not прочитати(файл)[1]
++    дані = файл.read_bytes() if файл.is_file() else b""
++    return hashlib.sha256(дані).hexdigest() == стан.get("журнал_sha256")
++
++
++def відновити(журнал, домен, підпис, оновити=False):
++    """Обирає нові жнива, продовження позиції або відбудову карток із першої кешованої сторінки."""
++    стан = прочитати_стан(журнал, домен)
++    збігається = журнал_збігається(журнал, домен, стан)
++    if оновити or стан.get("підпис") != підпис or (стан.get("завершено") is True and збігається):
++        позначити(журнал, домен, False, підпис=підпис)
++    else:
++        # Без доказу цілісності позиції збережені відповіді відтворюються від початку.
++        позначити(журнал, домен, False, стан.get("сторінка", 1) if збігається else 1,
++                  стан.get("префікс", ""), підпис)
++    return прочитати_стан(журнал, домен)
+ 
+ 
+ def позначити(журнал, домен, кінець, номер=None, префікс="", підпис=""):
+@@ -68,7 +83,6 @@ def позначити(журнал, домен, кінець, номер=None,
+         for кеш in (файл.parent / "json_сторінки").glob("*.json"):
+             кеш.unlink()
+     стан = {"завершено": кінець, "сторінка": номер or 1, "префікс": префікс, "підпис": підпис}
+-    if кінець:
+-        картки = Path(журнал) / "сирі" / (домен + ".jsonl")
+-        стан["журнал_sha256"] = hashlib.sha256(картки.read_bytes() if картки.is_file() else b"").hexdigest()
++    картки = Path(журнал) / "сирі" / (домен + ".jsonl")
++    стан["журнал_sha256"] = hashlib.sha256(картки.read_bytes() if картки.is_file() else b"").hexdigest()
+     записати(файл, стан)
+diff --git a/zhnyvarka/виконавець.py b/zhnyvarka/виконавець.py
+index f9b4dea23..ba67c63e4 100644
+--- a/zhnyvarka/виконавець.py
++++ b/zhnyvarka/виконавець.py
+@@ -31,7 +31,7 @@ import argparse, asyncio, csv, datetime, hashlib, json, os, re, sys, time, threa
+ from urllib.parse import urlparse, urljoin
+ from pathlib import Path
+ from журнал_проходу import ЖурналПроходу, відбиток_рецепта
+-from json_прохід import позначити, прочитати_стан, сторінка, МЕЖА_СТОРІНОК
++from json_прохід import позначити, відновити, сторінка, МЕЖА_СТОРІНОК
+ from журнал_карток import прочитати
+ from журнал_проходу import ЗАВЕРШЕНІ
+ 
+@@ -590,12 +590,9 @@ class Виконавець:
+ 
+     async def _json_сімейство(self, контекст, р, л, ш, взято, корінь):
+         """Продовжує збережені JSON-сторінки; кінець доводить порожня порція з HTTP 200."""
+-        збережений = прочитати_стан(self.корінь, р["домен"])
+         підпис = hashlib.sha256(json.dumps(р, sort_keys=True).encode()).hexdigest()
+-        if збережений.get("підпис") != підпис or not Path(ш).is_file() or прочитати(ш)[1]:
+-            збережений = {}
++        збережений = відновити(self.корінь, р["домен"], підпис, getattr(self.a, "оновити_перелік", False))
+         n = збережений.get("сторінка", 1)
+-        позначити(self.корінь, р["домен"], False, n, збережений.get("префікс", ""), підпис)
+         шаблон = р["пошук"].replace("per_page=100", "per_page=50")
+         префікси = [""] + ([р["мова"].rstrip("/")] if р.get("мова") and р["мова"] != "/" else []) + ["/uk", "/ua"]
+         if збережений.get("префікс"):
+
+КОД: 0
+
+КОМАНДА: rg -n віднов|продовж|прочитати_стан|завершено\(|кеш|DONE|read_text zhnyvarka -g *.py
+zhnyvarka\json_прохід.py:10:def прочитати_стан(журнал, домен):
+zhnyvarka\json_прохід.py:50:def завершено(журнал, домен):
+zhnyvarka\json_прохід.py:52:    стан = прочитати_стан(журнал, домен)
+zhnyvarka\json_прохід.py:65:def відновити(журнал, домен, підпис, оновити=False):
+zhnyvarka\json_прохід.py:66:    """Обирає нові жнива, продовження позиції або відбудову карток із першої кешованої сторінки."""
+zhnyvarka\json_прохід.py:67:    стан = прочитати_стан(журнал, домен)
+zhnyvarka\json_прохід.py:75:    return прочитати_стан(журнал, домен)
+zhnyvarka\json_прохід.py:83:        for кеш in (файл.parent / "json_сторінки").glob("*.json"):
+zhnyvarka\json_прохід.py:84:            кеш.unlink()
+zhnyvarka\виконавець.py:34:from json_прохід import позначити, відновити, сторінка, МЕЖА_СТОРІНОК
+zhnyvarka\виконавець.py:570:        if not прохід.продовження():
+zhnyvarka\виконавець.py:594:        збережений = відновити(self.корінь, р["домен"], підпис, getattr(self.a, "оновити_перелік", False))
+zhnyvarka\виконавець.py:603:            кеш = сторінка(self.корінь, р["домен"], n, підпис=підпис)
+zhnyvarka\виконавець.py:604:            if кеш is not None:
+zhnyvarka\виконавець.py:605:                речі, пр = кеш["речі"], кеш["префікс"]
+zhnyvarka\виконавець.py:608:            for пр in ([] if кеш is not None else префікси):
+zhnyvarka\виконавець.py:627:            if кеш is None:
+zhnyvarka\виконавець.py:854:                   help="корінь журналу поза репозиторієм; той самий шлях відновлює незавершений прохід")
+zhnyvarka\жниварка.py:1272:    НЕ для `/cache/`: в OpenCart розмір — частина шляху кешу, без нього файла нема
+zhnyvarka\жниварка.py:2561:    # Продуктивний магазин може продовжувати себе, але не безмежно: 3× бюджету і не більше 60 хв —
+zhnyvarka\жниварка.py:2873:            # Поки магазин дає ≥30 речей за останні 5 хв — продовжуємо, до твердої межі 3× бюджету.
+zhnyvarka\жниварка.py:2878:                лог("  ⏩ %s: %d речей за 5 хв — продовжую" % (домен, темп))
+zhnyvarka\жниварка.py:3186:    """`--продовжити`: крамниця зібрана, лише коли файл читається й жнива не впали на винятку.
+zhnyvarka\жниварка.py:3225:    ап.add_argument("--продовжити", action="store_true", help="пропускати магазини, що вже мають <домен>.json.gz (після падіння ноутбука)")
+zhnyvarka\жниварка.py:3261:    if a.продовжити:
+zhnyvarka\жниварка.py:3264:        print("продовження: пропущено %d магазинів, що вже зібрані" % (було - len(магазини)), flush=True)
+zhnyvarka\жниварка.py:3266:    # а продуктивні магазини продовжують себе самі (≥30 речей за 5 хв, тверда межа 3×).
+zhnyvarka\жниварка.py:3279:            лог("  ⏱ %s: не почато — стеля часу; добере «продовжити» наступного разу" % м["домен"]); return м["домен"]
+zhnyvarka\журнал_проходу.py:25:    загалом, готово = база.execute("SELECT count(*), coalesce(sum(стан='DONE'),0) FROM черга").fetchone()
+zhnyvarka\журнал_проходу.py:31:    """Рахує DONE з цілим тілом і записом картки, якщо журнал задано; невідома схема повертає None."""
+zhnyvarka\журнал_проходу.py:40:                         for url, ід in база.execute("SELECT url, відповідь FROM черга WHERE стан='DONE'"))
+zhnyvarka\журнал_проходу.py:84:        for url, ід in self.база.execute("SELECT url, відповідь FROM черга WHERE стан='DONE'").fetchall():
+zhnyvarka\журнал_проходу.py:94:            for url, ід in self.база.execute("SELECT url, відповідь FROM черга WHERE стан='DONE'").fetchall():
+zhnyvarka\журнал_проходу.py:99:    def продовження(self):
+zhnyvarka\журнал_проходу.py:118:        return [р[0] for р in self.база.execute("SELECT url FROM черга WHERE стан!='DONE' ORDER BY rowid")]
+zhnyvarka\журнал_проходу.py:149:        стан = 'DONE' if запис.get("стан") in ЗАВЕРШЕНІ and self.придатна(ід, запис["url"]) else 'PENDING'
+zhnyvarka\перезняти_галереї.py:84:    """(код, html, кінцева адреса). Знімок і кінцева адреса кешуються поруч у теці.
+zhnyvarka\перезняти_галереї.py:93:    кеш = os.path.join(тека, re.sub(r"[^a-zA-Z0-9]+", "_", url)[:150] + ".html") if тека else None
+zhnyvarka\перезняти_галереї.py:94:    супутник = (кеш + ".url") if кеш else None
+zhnyvarka\перезняти_галереї.py:95:    if кеш and os.path.exists(кеш) and os.path.getsize(кеш) > 2000:
+zhnyvarka\перезняти_галереї.py:97:            return 200, io.open(кеш, encoding="utf-8", errors="replace").read(), io.open(супутник, encoding="utf-8").read().strip()
+zhnyvarka\перезняти_галереї.py:101:            return 200, io.open(кеш, encoding="utf-8", errors="replace").read(), г.url
+zhnyvarka\перезняти_галереї.py:108:    if в.status_code == 200 and кеш:
+zhnyvarka\перезняти_галереї.py:109:        io.open(кеш, "w", encoding="utf-8").write(в.text)
+zhnyvarka\обхід.py:4:Журнал (корінь `--журнал`) лежить поза репозиторієм; повторний запуск продовжує з місця, де обірвався.
+zhnyvarka\обхід.py:44:    """Лишає незавершений пошук адрес до повтору, навіть коли поточна черга порожня або вся DONE."""
+zhnyvarka\обхід.py:53:        return 0 if завершено(журнал, домен) else max(резерв, 1)
+zhnyvarka\обхід.py:105:def прочитати_стан(журнал):
+zhnyvarka\обхід.py:127:        кінець = завершено(журнал, д)
+zhnyvarka\обхід.py:229:    ряд0 = len(зведення.read_text(encoding="utf-8").splitlines()) - 1 if зведення.is_file() else 0
+zhnyvarka\обхід.py:232:    стани = узгодити_стан(а.журнал, магазини, прочитати_стан(а.журнал))
+zhnyvarka\обхід.py:290:        print("цикл %d: код %d · крамниць %d → лишилось продовжувати %d" % (цикл, код, len(магазини), len(наступні)), flush=True)
+zhnyvarka\start.py:9:    «…_незавершений.zip», щоб нічого не пропало. Та сама версія → продовжує; нова версія → заново.
+zhnyvarka\start.py:140:    """Обірваний прогін → zip «…_незавершений»; «продовжити / заново» — без питань. → аргумент або None."""
+zhnyvarka\start.py:152:        лог("Та сама версія жниварки (%s) — продовжую з місця зупинки." % v_тепер)
+zhnyvarka\start.py:153:        return "--продовжити"
+zhnyvarka\start.py:244:    продовжити = прибрати_попередній()
+zhnyvarka\start.py:250:    if not продовжити:
+zhnyvarka\start.py:264:        if продовжити:
+zhnyvarka\start.py:265:            арг.append(продовжити)
+zhnyvarka\перезняти_збагачення.py:13:`колір_з_фото` у вантаж не їде (`кеш_кольорів.json` збірка не кладе), тож без
+zhnyvarka\перезняти_збагачення.py:100:        ЖЗ.прибрати_кеш(фото)
+zhnyvarka\перезняти_збагачення.py:104:    """Усі офери крамниці → `а.вихід` ({id: запис}), з продовженням."""
+zhnyvarka\перезняти_збагачення.py:107:    готове = json.load(open(а.вихід, encoding="utf-8")) if (а.продовжити and os.path.exists(а.вихід)) else {}
+zhnyvarka\перезняти_збагачення.py:170:    ap.add_argument("--продовжити", action="store_true")
+zhnyvarka\перезняти_кольори_варіантів.py:16:ЩО РОБИТЬ. Для кожного офера крамниці тягне картку (кеш і перевірка кінцевої адреси —
+zhnyvarka\розклад.py:34:    відновлення = [і for і, к in enumerate(кроки) if к.get("id") == "restore"]
+zhnyvarka\розклад.py:39:    if len(відновлення) != 1 or len(жнива) != 1 or len(uploads) != 1:
+zhnyvarka\розклад.py:41:    в, з, а = відновлення[0], жнива[0], uploads[0]
+zhnyvarka\розклад.py:92:        дерево = ast.parse((корінь / потрібні[2]).read_text(encoding="utf-8"))
+zhnyvarka\розклад.py:97:        схема = yaml.load((корінь / потрібні[3]).read_text(encoding="utf-8"), Loader=yaml.BaseLoader)
+
+КОД: 0
+
+КОМАНДА: git log "--format=%H %s" -3 -- zhnyvarka/журнал_карток.py zhnyvarka/журнал_проходу.py
+ba210be441b1bae5858fd88cf1c1edb4ea837d0b Уточнити історичне відтворення й описи відновлення журналу
+d76be5f251df84deb250496d17cf8c23dfdaac1c Відновити читання обірваних журналів і продовження JSON-пагінації
+cb4a68a92d809639e49ca1dff87cf04f2ab1a8fb Відновлювати стан обходу з журналів і атомарно замінювати TSV
+
+КОД: 0
+
+КОМАНДА: git diff --name-only 498fd52c480005dd7b60523f594d586afb5ad4e6 HEAD -- .github аудит/адаптери/gemini
+
+КОД: 0
+

@@ -1,0 +1,51 @@
+── ПРОМПТ (2480 симв.) ──
+{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.", "A slot the description says is not needed is not an item: give it worn false. One item carries one thing — of two alternatives list the first; a note in brackets is not an item.", "Slot \"accessory\" is for an item no other slot fits.", "\"is_outfit\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note; then items is empty."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "ITEM_LIST", "answer_schema": {"is_outfit": "yes|no", "items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory", "color_hex": "<#rrggbb or null>", "worn": "<true, or false when the description says the outfit goes without it>"}]}, "input": ["\"description\" — the outfit description"]}, "description": "A fine-gauge wool blend turtleneck in heathered charcoal (#3f4f5d), relaxed fit with dropped shoulders and a length hitting mid-hip.\nHigh-waisted straight-leg trousers in dark washed denim (#2b2b2b), classic five-pocket silhouette with a slight taper at the ankle for easy movement.\nA structured blazer in a matte cotton twill in deep forest green (#1e3a30), notched lapels and single-button closure that adds polish without bulk.\nLeather loafers in chestnut brown (#8c5e3f), penny detail with a low block heel for comfort during extensive walking.\nThin wool scarf in oatmeal (#d7cba9) and minimal gold stud earrings in 14k yellow gold (#f2daa0).\nThis outfit works because it respects the \"neat\" dress code while accommodating her strong wish to walk a lot with non-restrictive cuts and flexible fabrics. The color palette of charcoal, forest green, and chestnut creates a sophisticated yet relaxed look that fits the evening artificial lighting of a club without feeling overly formal. It balances her desire for a classic silhouette with the practical need for comfort during extended movement at a rock concert in autumn."}
+
+── ВІДПОВІДЬ (1156 симв., 12.4 с, HTTP 200) ──
+{
+  "is_outfit": "yes",
+  "items": [
+    {
+      "name": "Turtleneck",
+      "details": "fine-gauge wool blend, relaxed fit with dropped shoulders, length hitting mid-hip",
+      "slot": "top",
+      "color_hex": "#3f4f5d",
+      "worn": true
+    },
+    {
+      "name": "Trousers",
+      "details": "high-waisted straight-leg, classic five-pocket silhouette with slight taper at ankle",
+      "slot": "bottom",
+      "color_hex": "#2b2b2b",
+      "worn": true
+    },
+    {
+      "name": "Blazer",
+      "details": "structured, matte cotton twill, notched lapels and single-button closure",
+      "slot": "outerwear",
+      "color_hex": "#1e3a30",
+      "worn": true
+    },
+    {
+      "name": "Loafers",
+      "details": "leather, penny detail with low block heel",
+      "slot": "shoes",
+      "color_hex": "#8c5e3f",
+      "worn": true
+    },
+    {
+      "name": "Scarf",
+      "details": "thin wool",
+      "slot": "scarf",
+      "color_hex": "#d7cba9",
+      "worn": true
+    },
+    {
+      "name": "Earrings",
+      "details": "minimal gold stud, 14k yellow gold",
+      "slot": "earrings",
+      "color_hex": "#f2daa0",
+      "worn": true
+    }
+  ]
+}
