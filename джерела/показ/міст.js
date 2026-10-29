@@ -216,7 +216,7 @@ async function підтвердитиАдресуМостаП(){
     в.setAttribute('aria-labelledby', 'міст-питання');
     в.style.cssText = 'max-width:min(34rem,calc(100% - 2rem));border:0;border-radius:18px;padding:24px;color:inherit;background:var(--фон,#fff);box-shadow:0 18px 60px #0008';
     const з = document.createElement('h2'); з.id = 'міст-питання'; з.textContent = 'Використовувати цю адресу?';
-    const п = document.createElement('p'); п.textContent = 'Адреса: ' + к.адреса;
+    const п = document.createElement('p'); назваЖінціП(п, 'Адреса: ' + к.адреса);
     п.style.cssText = 'overflow-wrap:anywhere;line-height:1.5';
     const д = document.createElement('div'); д.style.cssText = 'display:flex;justify-content:flex-end;gap:10px;flex-wrap:wrap;margin-top:20px';
     const ні = document.createElement('button'); ні.type = 'button'; ні.textContent = 'Ні';
