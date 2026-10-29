@@ -22,25 +22,31 @@ $sideDir = Join-Path $SourceDir 'перевірка'
 Scenario 'а GPU' {
     . (Join-Path $SourceDir 'queue_lanes.ps1')
     function Get-Command { [pscustomobject]@{ Source = 'nvidia-smi' } }
-    function Invoke-Native { [pscustomobject]@{ Code = $script:SmiCode; Out = $script:SmiOut } }
+    # Пам'ять карти й перелік compute-процесів — два окремі запити nvidia-smi.
+    function Invoke-Native { param($Exe, $Arguments)
+        if ($Arguments -contains '--query-gpu=memory.used') { return [pscustomobject]@{ Code = $script:SmiCode; Out = $script:SmiMem } }
+        [pscustomobject]@{ Code = 0; Out = $script:SmiApps } }
+    function Test-LockFree { $true }
+    $LaneDir = $tmp
     $script:SmiCode = 0
-    $script:SmiOut = '6320, C:\Program Files\Avast Software\Avast\AvastUI.exe, N/A'
-    Check 'а єдиний процес без пам''яті (AvastUI.exe, N/A) — GPU вільна, наряд береться' (Test-ExternalGpuFree)
-    $script:SmiOut = '6320, C:\Program Files\Avast Software\Avast\AvastUI.exe, [N/A]' + "`n" + '7000, C:\x\app.exe, [Not Supported]'
-    Check 'а [N/A] і [Not Supported] — вільна' (Test-ExternalGpuFree)
-    $script:SmiOut = ''
+    $avast = '6320, C:\Program Files\Avast Software\Avast\AvastUI.exe'
+    $script:SmiApps = $avast; $script:SmiMem = '57'
+    Check 'а єдиний процес AvastUI.exe без навантаження (57 МБ) — GPU вільна, наряд береться' ((Test-ExternalGpuFree) -and (Get-GpuBusyReason @()) -eq '')
+    $script:SmiApps = ''; $script:SmiMem = '0'
     Check 'а порожній перелік — вільна' (Test-ExternalGpuFree)
-    $script:SmiOut = '4120, C:\Users\x\small.exe, 57'
-    Check 'а 57 МБ (спокій відеокарти, вимір 29.10) — вільна' (Test-ExternalGpuFree)
-    $script:SmiOut = '6320, C:\Program Files\Avast Software\Avast\AvastUI.exe, N/A' + "`n" + '4120, C:\Users\x\chrome.exe, 2048'
-    $free = Test-ExternalGpuFree
-    Check "а процес із пам'яттю 2048 МБ — зайнята, назва в причині: «$script:GpuBusyBy»" (-not $free -and $script:GpuBusyBy -ceq 'процес chrome.exe')
-    $script:SmiOut = '4120, C:\a b\dwm, evil;rm.exe, 900'
-    $free = Test-ExternalGpuFree
-    Check "а назва процесу з комою й зайвими знаками стає безпечною: «$script:GpuBusyBy»" (-not $free -and $script:GpuBusyBy -cmatch '^процес [A-Za-z0-9._+-]{1,92}$')
-    $script:SmiCode = 9; $script:SmiOut = ''
-    $free = Test-ExternalGpuFree
-    Check 'а nvidia-smi не відповів — зайнята, причина названа' (-not $free -and $script:GpuBusyBy -ceq 'nvidia-smi не відповів')
+    $script:SmiApps = $avast + "`
+" + '4120, C:\Users\x\chrome.exe'; $script:SmiMem = '2300'
+    $why = Get-GpuBusyReason @()
+    Check "а процес тримає пам'ять (2300 МБ) — зайнята, назви процесів у журналі: «$why»" (-not (Test-ExternalGpuFree) -and $why -match '2300 MiB' -and $why.Contains('AvastUI.exe+chrome.exe') -and $script:GpuHoldReason -ceq 'процес AvastUI.exe+chrome.exe')
+    $script:SmiApps = '4120, C:\a b\dwm, evil;rm.exe'
+    [void](Get-GpuBusyReason @())
+    Check "а назва з комою й зайвими знаками стає безпечною: «$script:GpuHoldReason»" ($script:GpuHoldReason -cmatch '^процес [A-Za-z0-9._+-]{1,92}$')
+    $script:SmiApps = ''
+    [void](Get-GpuBusyReason @())
+    Check 'а пам''ять зайнята, а процесів у переліку нема — стійка причина без чисел' ($script:GpuHoldReason -ceq 'GPU зайнята стороннім процесом')
+    $script:SmiCode = 9
+    $why = Get-GpuBusyReason @()
+    Check 'а nvidia-smi не відповів — зайнята, причина названа' ($why -match 'nvidia-smi' -and $script:GpuHoldReason -ceq 'nvidia-smi не відповів')
 }
 
 # --- (б) стенд без Main не викликає main.cpl --------------------------------------------------------------------------
@@ -139,12 +145,15 @@ Scenario 'в планувальник' {
     function Get-FreeSlot { 'claude-1' }
     $script:Started = 0
     function Start-Worker { $script:Started++; [pscustomobject]@{ Slot = 'claude-1'; Slug = 'п'; Gpu = $true; Marker = 'x'; Proc = [pscustomobject]@{ HasExited = $false } } }
-    function Test-ExternalGpuFree { $script:GpuBusyBy = $script:FakeBy; -not $script:FakeBy }
-    $script:FakeBy = 'процес chrome.exe'
+    function Get-Command { [pscustomobject]@{ Source = 'nvidia-smi' } }
+    function Invoke-Native { param($Exe, $Arguments)
+        if ($Arguments -contains '--query-gpu=memory.used') { return [pscustomobject]@{ Code = 0; Out = $script:FakeMem } }
+        [pscustomobject]@{ Code = 0; Out = $script:FakeApps } }
+    $script:FakeMem = '2300'; $script:FakeApps = '4120, C:\Users\x\chrome.exe'
     $w = New-Object System.Collections.ArrayList
     $r = Start-Markers $w
     Check 'в2 GPU зайнята процесом — воркер не запущено, позначка лишилась без узяття' ($script:Started -eq 0 -and $r[0] -eq 0 -and $script:Held['GPU'].Reason -ceq 'процес chrome.exe' -and $script:Held['GPU'].Markers.Count -eq 1)
-    $script:FakeBy = ''
+    $script:FakeMem = '57'; $script:FakeApps = ''
     $r = Start-Markers $w
     Check 'в2 GPU вільна — наряд узято' ($script:Started -eq 1 -and $r[0] -eq 1 -and -not $script:Held.ContainsKey('GPU'))
 }

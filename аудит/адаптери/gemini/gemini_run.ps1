@@ -1,4 +1,4 @@
-﻿#Requires -Version 5.1
+﻿﻿#Requires -Version 5.1
 <#
 .SYNOPSIS
 Обгортка Gemini (наряди М.2, М.9-Е), сторона `gemini`: планувальник смуг Codex і `agy` — позначки черги -> прогони
@@ -855,6 +855,12 @@ function Complete-Status($Status, [string]$StatePath, [string]$Tail, [datetime]$
     }
     if ($T0 -ne [datetime]::MinValue) { $Status.minutes = [int][Math]::Round(((Get-Date) - $T0).TotalMinutes) }
     if ($Tail) { [System.IO.File]::WriteAllText((Join-Path $OutDir ($Status.id + '.tail.txt')), $Tail, $script:Utf8) }
+    # BLOCKED без гілки: причину знає лише останній рядок агента — він іде в #1856 (blocked-reasons.json), інакше диспетчер бачить код без причини.
+    if ($Status.code -eq 'BLOCKED' -and [int]$Status.ahead -eq 0 -and $Tail) {
+        $reason = @($Tail -split "`n" | Where-Object { $_.Trim() -cmatch '^ЗАБЛОКОВАНО' } | Select-Object -Last 1)
+        if ($reason.Count -eq 0) { $reason = @($Tail -split "`n" | Where-Object { $_.Trim() } | Select-Object -Last 1) }
+        try { Add-Note (Join-Path $OutDir 'blocked-reasons.json') "gemini/$($Status.slug)" ([string]$reason[0]) } catch { Write-Log "причина BLOCKED не записана: $($_.Exception.Message)" }
+    }
     Write-FileAtomic (Join-Path $OutDir ($Status.id + '.json')) ($Status | ConvertTo-Json -Compress)
     Write-FileAtomic $StatePath "DONE $($Status.id) $($Status.code)"
     Remove-Claim $StatePath
@@ -920,7 +926,9 @@ function Invoke-Task($M, $Job) {
         $anc = Invoke-Git @('merge-base', '--is-ancestor', $M.Sha, $main) -AllowFail
         $taskPath = Get-TaskSource $M
         if ($anc.Code -ne 0) { $status.code = 'NOT_ON_MAIN'; return }
-        if ((Invoke-Git @('cat-file', '-e', "$($M.Sha):$taskPath") -AllowFail).Code -ne 0) { $status.code = 'NO_TASK_FILE'; return }
+        # Збій git (не вирок «нема») — відмова до старту: позначка вертається в чергу, як при збої копії.
+        try { $hasTask = Test-TaskFile $M.Sha $taskPath } catch { $copyFailed = $true; throw }
+        if (-not $hasTask) { $status.code = 'NO_TASK_FILE'; return }
         $taskText = (Invoke-Git @('cat-file', 'blob', "$($M.Sha):$taskPath")).Out
         $js = $Job.sel
         $eng = [pscustomobject]@{ Name = [string]$js.engine; Model = [string]$js.emodel; Effort = [string]$js.effort }
@@ -1036,11 +1044,9 @@ function Resolve-Exe([string]$Name) {
 
 # --- планувальник --------------------------------------------------------------------------------------------------
 
-# GPU вільна для нового наряду: свого живого GPU-наряду нема й замок відеокарти (спільний з claude-run) не тримає ніхто.
-function Test-GpuFree($Workers) {
-    if (@($Workers | Where-Object { $_.Gpu -and -not $_.Proc.HasExited }).Count -gt 0) { return $false }
-    Test-LockFree (Get-GpuLockPath)
-}
+# GPU вільна для нового наряду: свого живого GPU-наряду нема, замок відеокарти (спільний з claude-run) не тримає ніхто й
+# сторонні процеси не тримають відеопам'ять (Get-GpuBusyReason).
+function Test-GpuFree($Workers) { (Get-GpuBusyReason $Workers) -eq '' }
 
 # Позначка agy на нульовій квоті до старту: чекає скидання (спроба не спалена); рядок диспетчерові — раз, коли позначка
 # входить у чекання вперше.
@@ -1066,7 +1072,9 @@ function Start-Markers($Workers) {
         Write-FileAtomic $state 'INVALID_NAME'
     }
     $mine = @($all | Where-Object { $_.Valid -and $script:Lanes -contains $_.Lane })
-    if ($mine.Count -eq 0) { return 0 }
+    $skipFile = Join-Path $OutDir 'skipped.json'
+    if ($mine.Count -eq 0) { Save-Skips $skipFile; return 0 }
+    $gpuWhy = $null
     foreach ($m in (Get-OrderedMarkers $mine)) {
         $st = Get-MarkerState $m
         if (-not (Test-MarkerReady $st)) { continue }
@@ -1075,15 +1083,18 @@ function Start-Markers($Workers) {
             Write-FileAtomic (Get-StatePath (Get-MarkerKey $m)) 'STALE'
             continue
         }
-        if ((@($Workers | Where-Object { $_.Slug -ceq $m.Slug -and -not $_.Proc.HasExited }).Count -gt 0) -or (Test-SlugBusy $m.Slug $script:Lanes)) { continue }
-        if ($m.Gpu -and -not (Test-GpuFree $Workers)) { continue }
+        if ((@($Workers | Where-Object { $_.Slug -ceq $m.Slug -and -not $_.Proc.HasExited }).Count -gt 0) -or (Test-SlugBusy $m.Slug $script:Lanes)) { Add-Skip $m 'той самий наряд уже йде в слоті'; continue }
+        if ($m.Gpu) {
+            if ($null -eq $gpuWhy) { $gpuWhy = Get-GpuBusyReason $Workers }
+            if ($gpuWhy) { Add-Skip $m $gpuWhy; continue }
+        }
         $after = $(if ($st.Kind -eq 'WAIT') { [long]$st.Wait.until } else { 0L })
         $sel = Select-Engine $m $after
         if ($sel.Quota.Blocked) { Enter-StartQuotaWait $m $sel.Quota $st; continue }
         # Слот і смуга — за фактичним рушієм після вибору (каскад agy -> Codex займає слот Codex і не перевищує його N).
         $lane = $(if ($sel.Engine.Name -eq 'codex') { 'codex' } else { 'agy' })
         $slot = Get-FreeSlot $lane ([int]$script:Limits.slots[$lane]) $Workers
-        if (-not $slot) { continue }
+        if (-not $slot) { Add-Skip $m "нема вільного слота смуги $lane"; continue }
         $id = New-RunId (Get-MarkerKey $m)
         if (-not (New-Claim $m $id)) { continue }
         # Усе між claim і STARTED — під одним обліком відмов (retakes, MaxRetakes, CRASH на межі), 10162/10182.
@@ -1104,7 +1115,9 @@ function Start-Markers($Workers) {
         }
         Write-Log "позначка $($m.Name): слот $slot, пріоритет $($m.Prio)$(if ($m.Deadline) { ", строк $($m.Deadline)" })$(if ($m.Gpu) { ', GPU' }) -> $id"
         $started++
+        if ($m.Gpu) { $gpuWhy = 'GPU: її щойно взяв наряд цього проходу' }
     }
+    Save-Skips $skipFile
     $started
 }
 
@@ -1188,7 +1201,7 @@ function Invoke-Worker {
     try {
         if ($job.gpu) {
             $gpu = Open-Lock (Get-GpuLockPath)
-            $why = $(if ($null -eq $gpu) { 'замок GPU' } elseif (Test-ExternalGpuFree) { '' } else { $script:GpuBusyBy })
+            $why = $(if ($null -eq $gpu) { 'замок GPU' } elseif (Test-ExternalGpuFree) { '' } else { Get-GpuBusyReason @() })
             if ($why) { Remove-Claim $statePath; Write-Log "GPU зайнята ($why) — $($job.name) лишається в черзі"; return $script:WorkerGpuBusy }
         }
         Write-FileAtomic $info (([ordered]@{ slot = $job.slot; lane = $job.lane; marker = $job.name; slug = $job.slug; model = $job.model
