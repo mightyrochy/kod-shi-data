@@ -480,12 +480,13 @@ def початок_ланцюга(м, j):
 
 # ───────────────────────────────────────── стоки (шлях А) ─────────────────────────────────────────
 class Сток:
-    __slots__ = ("мод", "і", "а", "б", "вид", "обгортка", "точка", "ф", "чим", "ключове", "джерела", "вхід")
+    __slots__ = ("мод", "і", "а", "б", "вид", "обгортка", "точка", "ф", "чим", "ключове", "джерела", "вхід", "писачі")
 
     def __init__(с, мод, і, а, б, вид, ф):
         """Зберігає позицію запису екрана, його вид та договір входу."""
         с.мод, с.і, с.а, с.б, с.вид, с.ф, с.обгортка, с.точка, с.чим, с.ключове = мод, і, а, б, вид, ф, False, False, "", False
         с.джерела, с.вхід = frozenset({'невідоме'}), 'поза'
+        с.писачі = ()
 
 
 ЕЛЕМЕНТИ = {}                           # id → (тег, атрибути) з розмітки показу (HTML і рядки в JS)
@@ -658,7 +659,9 @@ def знайти_стоки(п):
                     стоки.append(с)
     аналіз = Походження(п, розділити, п.входи)
     for с in стоки:
+        аналіз.докази.clear()
         с.джерела = аналіз.вираз(с.мод, с.а, с.б)
+        с.писачі = tuple(sorted(аналіз.докази))
     return стоки, обгортки
 
 
@@ -888,6 +891,7 @@ def обчислити(тека, закріплені=("ДОВІДНИК",)):
             ід = re.search(r"\bid\s*=\s*[\"']([^\"']+)[\"']", мм.group(2))
             if ід: ЕЛЕМЕНТИ.setdefault(ід.group(1), (мм.group(1), мм.group(2)))
     п = Програма(модулі + мод_html, закріплені)
+    п.корінь = тека
     стоки, обгортки = знайти_стоки(п)
     служб_модулі = []
     for шлях, ім in ((os.path.join(тека, "проба.html"), "проба.html"), (os.path.join(тека, "..", "показ_зонд.html"), "показ_зонд.html")):
@@ -905,6 +909,15 @@ def пункт(с):
 def подія(с):
     """Дає спільний ключ події для звірки двох шляхів."""
     return (відображене(с.мод.шлях), с.мод.рядок(с.і), с.вид)
+
+
+def писач(с):
+    """Відділяє доведений допис коду від її слів і недоведеного джерела."""
+    if с.джерела & {'модель', 'складено', 'код'}:
+        return 'продукт'
+    if 'невідоме' in с.джерела or not с.джерела:
+        return 'недоведений'
+    return 'жінка' if 'її' in с.джерела else 'продукт'
 
 
 def самоперевірка():
@@ -947,6 +960,34 @@ function іншаНазва(е, т){ const копія = т; назваЖінці
         ('вузли', "function рендер(){ fetch('/m'); const е = document.createElement('div'); текстЖінціП(е, 'Текст'); return е; } document.body.replaceChildren(...рендер().childNodes);", 0),
         ('точка-допис', "function ф(д){ document.body.textContent = текстЖінціП(null, д) + д; }", 1),
         ('точка', "function ф(д){ текстЖінціП(document.body, д); }", 0),
+        ('сховище-її', "localStorage.setItem('ім', $('ввід').value); їїСловаП(document.body, localStorage.getItem('ім'));", 0),
+        ('сховище-модель', "localStorage.setItem('ім', fetch('/m')); їїСловаП(document.body, localStorage.getItem('ім'));", 1),
+        ('сховище-без-писача', "їїСловаП(document.body, localStorage.getItem('ім'));", 1),
+        ('сховище-змішане', "localStorage.setItem('ім', $('ввід').value); localStorage.setItem('ім', fetch('/m')); їїСловаП(document.body, localStorage.getItem('ім'));", 1),
+        ('сховище-чужий-ключ', "localStorage.setItem('інший', $('ввід').value); їїСловаП(document.body, localStorage.getItem('ім'));", 1),
+        ('сховище-обгортка', "function писати(к, з){localStorage.setItem(к, з);} function читати(к){return localStorage.getItem(к);} писати('її', $('ввід').value); писати('м', fetch('/m')); їїСловаП(document.body, читати('її'));", 0),
+        ('сховище-допис', "localStorage.setItem('ім', $('ввід').value + ' допис'); їїСловаП(document.body, localStorage.getItem('ім'));", 1),
+        ('сховище-поле', "localStorage.setItem('п', JSON.stringify({ім: $('ввід').value, інше: fetch('/m')})); їїСловаП(document.body, JSON.parse(localStorage.getItem('п')).ім);", 0),
+        ('сховище-сеанс', "sessionStorage.setItem('ім', $('ввід').value); їїСловаП(document.body, localStorage.getItem('ім'));", 1),
+        ('сховище-динамічний-писач', "function ф(ключ){localStorage.setItem(ключ, fetch('/m'));} localStorage.setItem('ім', $('ввід').value); їїСловаП(document.body, localStorage.getItem('ім'));", 1),
+        ('бд-поле', "indexedDB.open('б'); const s = d.transaction('п').objectStore('п'); s.put({ім: $('ввід').value}, 'я'); const r = s.get('я'); їїСловаП(document.body, r.result.ім);", 0),
+        ('бд-getAll', "indexedDB.open('б'); const s = d.transaction('п').objectStore('п'); s.put({ім: $('ввід').value}, 'я'); const r = s.getAll(); r.result.forEach(з=>їїСловаП(document.body, з.ім));", 0),
+        ('бд-Promise', "indexedDB.open('б'); const s = d.transaction('п').objectStore('п'); s.put({ім: $('ввід').value}, 'я'); function читати(){return new Promise((рез, від)=>{ const r = s.get('я'); r.onsuccess=()=>рез(r.result); });} їїСловаП(document.body, читати().ім);", 0),
+        ('бд-обгортка', "indexedDB.open('б'); function tx(ім, дія){ const s = d.transaction(ім).objectStore(ім); дія(s); } tx('п', s=>s.put({ім: $('ввід').value}, 'я')); const r = d.transaction('п').objectStore('п').get('я'); їїСловаП(document.body, r.result.ім);", 0),
+        ('бд-чужий-магазин', "indexedDB.open('б'); d.transaction('а').objectStore('а').put({ім: $('ввід').value}, 'я'); const r = d.transaction('б').objectStore('б').get('я'); їїСловаП(document.body, r.result.ім);", 1),
+        ('бд-префікси', "indexedDB.open('б'); function писати(к, з){d.transaction('п').objectStore('п').put(з, к);} писати('п:' + ід, {ім: $('ввід').value}); писати('м:' + ід, {ім: fetch('/m')}); const r = d.transaction('п').objectStore('п').get('п:' + активний); їїСловаП(document.body, r.result.ім);", 0),
+        ('бд-дві-бази', "indexedDB.open('а'); indexedDB.open('б'); const s = d.transaction('п').objectStore('п'); s.put({ім: $('ввід').value}, 'я'); їїСловаП(document.body, s.get('я').result.ім);", 1),
+        ('бд-then', "indexedDB.open('б'); const s = d.transaction('п').objectStore('п'); s.put({ім: $('ввід').value}, 'я'); function читати(){return дб().then(d=>new Promise((рез, від)=>{ const r = s.get('я'); r.onsuccess=()=>рез(r.result); r.onerror=()=>від(r.error); }));} їїСловаП(document.body, читати().ім);", 0),
+        ('каталог-писач-поля', "const fs = require('node:fs'); fs.writeFileSync('каталог.json', JSON.stringify([{ім: $('ввід').value, код: невідоме}])); async function ф(){ const д=await (await fetch('каталог.json')).json(); д.forEach(р=>назваЖінціП(document.body, р.ім)); }", 0),
+        ('каталог-невідомий-писач', "async function ф(){ const д=await (await fetch('каталог.json')).json(); д.forEach(р=>назваЖінціП(document.body, р.ім)); }", 1),
+        ('каталог-змішаний-писач', "const fs = require('node:fs'); fs.writeFileSync('каталог.json', JSON.stringify([{ім: $('ввід').value}])); fs.writeFileSync('каталог.json', JSON.stringify([{ім: невідоме}])); async function ф(){ const д=await (await fetch('каталог.json')).json(); д.forEach(р=>назваЖінціП(document.body, р.ім)); }", 1),
+        ('каталог-інше-поле', "const fs = require('node:fs'); fs.writeFileSync('каталог.json', JSON.stringify([{ім: $('ввід').value, код: невідоме}])); async function ф(){ const д=await (await fetch('каталог.json')).json(); д.forEach(р=>назваЖінціП(document.body, р.код)); }", 1),
+        ('каталог-інший-файл', "const fs = require('node:fs'); fs.writeFileSync('інший.json', JSON.stringify([{ім: $('ввід').value}])); async function ф(){ const д=await (await fetch('каталог.json')).json(); д.forEach(р=>назваЖінціП(document.body, р.ім)); }", 1),
+        ('сховище-пара-контекстів', "function писати(к, з){localStorage.setItem(к, JSON.stringify(з));} function читати(к){return JSON.parse(localStorage.getItem(к));} писати('її', {т: $('ввід').value}); писати('м', {т: невідоме}); їїСловаП(document.body, читати('м').т);", 1),
+        ('каталог-чуже-імя-методу', "const fs={writeFileSync(){}}; fs.writeFileSync('каталог.json', JSON.stringify([{ім: $('ввід').value}])); async function ф(){const д=await (await fetch('каталог.json')).json(); д.forEach(р=>назваЖінціП(document.body, р.ім));}", 1),
+        ('поле-порожній-писач', "function ф(){const п={назви:{}}; назваЖінціП(document.body, п.назви[ід] || '');}", 1),
+        ('поле-вкладений-писач', "const п={назви:{}}; п.назви[ід] = невідоме; назваЖінціП(document.body, п.назви[ід]);", 1),
+        ('каталог-python-кандидат', "async function ф(){const д=await (await fetch('каталог.json')).json(); назваЖінціП(document.body, д.name);}", 1),
     ]
     хиб = 0
     with tempfile.TemporaryDirectory() as тека:
@@ -954,11 +995,15 @@ function іншаНазва(е, т){ const копія = т; назваЖінці
         with open(os.path.join(тека, 'показ', 'мовний_шар.js'), 'w', encoding='utf8') as ф: ф.write(точка)
         with open(os.path.join(тека, 'показ.html'), 'w', encoding='utf8') as ф:
             ф.write('<input id="ввід"><select id="ключ"></select>')
+        with open(os.path.join(тека, 'писач.py'), 'w', encoding='utf8') as ф:
+            ф.write("def запис(крамниця):\n    return {'name': крамниця['title']}\n")
         for ім, код, очікується in проби:
             with open(os.path.join(тека, 'показ', 'проба.js'), 'w', encoding='utf8') as ф: ф.write(код)
             п, стоки, _, _, _ = обчислити(тека)
             вих = [с for с in стоки if not с.обгортка and є_місцем(с)]
             ок = len(вих) == очікується
+            if ім == 'каталог-python-кандидат':
+                ок = ок and any('писач.py:2' in д and 'недоведений' in д for с in вих for д in с.писачі)
             print('%s: %d, очікується %d — %s' % (ім, len(вих), очікується, 'так' if ок else 'НІ'))
             хиб += not ок
             if ім == 'модель-її-назва':
@@ -996,7 +1041,7 @@ def main():
         ключ = подія(с) + (с.а, с.б)
         if с.обгортка: внутрішні += 1; continue
         if с.ключове: ключі.setdefault(ключ, с); continue
-        if с.джерела == {'її'} and not є_місцем(с): її_слова.setdefault(ключ, с); continue
+        if 'її' in с.джерела and not є_місцем(с): її_слова.setdefault(ключ, с); continue
         if є_місцем(с): місця.setdefault(ключ, с)
         elif с.джерела <= {"стале", "перевірено", "вузол", "елемент"}: сталі.setdefault(ключ, с)
         elif "назва" in с.джерела: назви.setdefault(ключ, с)
@@ -1016,9 +1061,21 @@ def main():
         """Форматує місце з пунктом класу та доведеним походженням."""
         ім = відображене(с.мод.шлях); л = с.мод.рядок(с.і)
         чому = 'походження: ' + ', '.join(sorted(с.джерела)) + '; договір: ' + с.вхід
+        чому += '; ' + ('писач недоведений' if писач(с) == 'недоведений' else 'писач-' + писач(с))
         вираз = текст_токенів(с.мод.ток, с.а, с.б)
         return "%s:%d · %s%s · %s: %s" % (ім, л, пункт(с), "" if пункт(с) == с.вид else "/" + с.вид, чому, вираз)
     for с in місця.values(): print(рядок_місця(с))
+    if '--писачі' in sys.argv:
+        for с in sorted(стоки, key=lambda с: (с.мод.шлях, с.і, с.а)):
+            if с.обгортка or с.ключове:
+                continue
+            print(('місце · ' if є_місцем(с) else 'не місце · ') + рядок_місця(с))
+            for доказ in с.писачі:
+                print('  писач · ' + доказ)
+    групи_писачів = {'продукт': 0, 'жінка': 0, 'недоведений': 0}
+    for с in місця.values():
+        групи_писачів[писач(с)] += 1
+    print('— місця за писачем: ' + ' · '.join('%s %d' % пара for пара in групи_писачів.items()))
     for х in динаміка: print("%s · П6 · динамічний маркер у розмітці" % х)
     if "--сталі" in sys.argv:
         for с in сталі.values(): print("стале ·", рядок_місця(с))
