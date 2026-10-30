@@ -30,7 +30,6 @@ param(
     [string]$GhExe = 'gh',
     [int]$MaxFallbackAttempts = 12,
     [string]$GeminiUser = 'gemini',
-    [string]$GeminiRunsDir = (Join-Path (Join-Path 'C:\Users' $GeminiUser) 'gemini-runs'),
     [string]$WrapperDir = 'аудит/адаптери/gemini/',
     [int]$MaxBundleMB = 512,
     [string]$OutboxDir = '',
