@@ -60,6 +60,7 @@ sys.setrecursionlimit(20000)
 ВЕРХ_ДОКУМЕНТА = re.compile(r"document\s*\.\s*(body|documentElement|title|head)\b|"
                             r"querySelector(All)?\(\s*['\"`](body|html|\*|:root)['\"`]\s*\)")
 ВУЗОЛ_ДОКУМЕНТА = re.compile(r"document\s*\.\s*(querySelector|querySelectorAll|getElementById|getElementsBy\w+)\b")
+ЛІТЕРАЛ_КОДУ = re.compile(r"[A-Za-zА-Яа-яЇїІіЄєҐґ]{3,}")   # значення, схоже на код (не вимога до слова крамниці)
 КОД_ЛІТЕРАЛ = re.compile(r"^[a-z][a-z0-9_]{2,40}$")
 
 ТЕКСТ = ("TP", "TN", "TF", "TR")                        # текст кореня сторінки / вузла / фіду / текстового поля
@@ -1210,7 +1211,7 @@ def обчислити(a):
         if ключ is not None and a.код_ключ(ключ) and файл.rsplit("/", 1)[-1].split(".")[0] not in РЕЄСТРОВІ_МОДУЛІ:
             дозв = реєстр.дозволені(ключ)
             коди = sorted(v[1] for v in вал if не_об(v) and v[0] == "L" and
-                          (КОД_ЛІТЕРАЛ.match(v[1]) or (" " not in v[1] and Є_СЛОВО.match(v[1]) and len(v[1]) <= 24)))
+                          (КОД_ЛІТЕРАЛ.match(v[1]) or (" " not in v[1] and ЛІТЕРАЛ_КОДУ.match(v[1]) and len(v[1]) <= 24)))
             поза = [c for c in коди if c not in дозв]
             if поза:
                 додати(файл, рядок, 2, "кодове поле «%s» пише «%s» поза реєстром" % (ім, поза[0]))
