@@ -1,0 +1,37 @@
+── ПРОМПТ (2089 симв.) ──
+{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.", "One item carries one thing — of two alternatives list the first; a note in brackets is not an item.", "Slot \"accessory\" is for an item no other slot fits.", "\"is_outfit\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "ITEM_LIST", "answer_schema": {"is_outfit": "yes|no", "items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory", "color_hex": "<#rrggbb or null>", "worn": "<true, or false when the description says the outfit goes without it>"}]}, "input": ["\"description\" — the outfit description"]}, "description": "Blazer, cropped fit to balance height, charcoal gray (#36454f), wool blend.\nWide-leg trousers, relaxed but structured cut, forest green (#2d4f38), heavy cotton twill.\nSilk blouse, tailored collar with a subtle sheen, cream white (#fdfbf7), raw silk.\nLeather ankle boots, low heel for crowd navigation, dark brown (#3e2723), smooth calfskin.\n\nThis outfit balances the need for movement in a crowded club with a strictly classic aesthetic requested by her. The charcoal blazer and wide-leg trousers create a polished silhouette that stands out against typical concert attire while remaining comfortable enough to stand and walk all night. The forest green pants add a subtle rock-edge contrast without breaking the refined registers she desires, and the cream silk blouse ensures the look remains elegant under artificial club lighting."}
+
+── ВІДПОВІДЬ (771 симв., 6.3 с, HTTP 200) ──
+{
+  "is_outfit": "yes",
+  "items": [
+    {
+      "name": "Blazer",
+      "details": "cropped fit to balance height, wool blend",
+      "slot": "outerwear",
+      "color_hex": "#36454f",
+      "worn": true
+    },
+    {
+      "name": "Wide-leg trousers",
+      "details": "relaxed but structured cut, heavy cotton twill",
+      "slot": "bottom",
+      "color_hex": "#2d4f38",
+      "worn": true
+    },
+    {
+      "name": "Silk blouse",
+      "details": "tailored collar with a subtle sheen, raw silk",
+      "slot": "top",
+      "color_hex": "#fdfbf7",
+      "worn": true
+    },
+    {
+      "name": "Leather ankle boots",
+      "details": "low heel for crowd navigation, smooth calfskin",
+      "slot": "shoes",
+      "color_hex": "#3e2723",
+      "worn": true
+    }
+  ]
+}
