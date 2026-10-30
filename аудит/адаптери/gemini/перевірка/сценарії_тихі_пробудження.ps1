@@ -28,6 +28,7 @@ try {
         $script:Calls = @()
         foreach ($f in @(Get-ChildItem "$WorkDir/state" -File -ErrorAction SilentlyContinue)) { Remove-Item -LiteralPath $f.FullName -Force }
         Remove-Item -LiteralPath "$WorkDir/local-lines.json" -Force -ErrorAction SilentlyContinue
+        Remove-Item -LiteralPath "$WorkDir/quota-windows.json" -Force -ErrorAction SilentlyContinue
     }
     function Deliver([string[]]$Lines) {
         <# Рядок проходить справжню доставку: стан → Send-Pending. #>
@@ -58,7 +59,7 @@ try {
         }
         foreach ($code in @($script:PublishCodes.Keys)) { Check "1 публікація $code — будить" (Test-DispatcherAction "GEMINI ОБГОРТКА: ЗАБЛОКОВАНО gemini/крок $code") }
         foreach ($code in @('QUOTA0_CODEX_M60', 'QUOTA0_CLAUDE_M5', 'QUOTA0_GPT', 'QUOTA0_A1_M0')) {
-            Check "1 $code — зведення" (-not (Test-DispatcherAction "GEMINI ОБГОРТКА: ЗАБЛОКОВАНО claude/крок $code"))
+            Check "1 $code — перший рядок групи будить" (Test-DispatcherAction "GEMINI ОБГОРТКА: ЗАБЛОКОВАНО claude/крок $code")
         }
         Check '1 нерозібраний ЗАБЛОКОВАНО будить' (Test-DispatcherAction 'GEMINI ОБГОРТКА: ЗАБЛОКОВАНО')
         Check '1 STALE із зайвим словом у рядку будить' (Test-DispatcherAction 'GEMINI ОБГОРТКА: ЗАБЛОКОВАНО gemini/крок X STALE')
@@ -77,7 +78,7 @@ try {
         $stored = @((ConvertFrom-Json ([IO.File]::ReadAllText("$WorkDir/local-lines.json"))))
         Check '2 усі 14 лишились у local-lines.json' ($stored.Count -eq 14)
         Deliver @($quota)
-        Check '2 QUOTA0 теж без пробудження' ($script:Calls.Count -eq 0)
+        Check '2 QUOTA0 першого вікна будить, зі зведенням 14' ($script:Calls.Count -eq 1 -and ($script:Calls[0] -split "`n")[1] -ceq 'ЗВЕДЕННЯ БЕЗ ПРОБУДЖЕННЯ: 14')
     }
     Scenario '3 рядок, що будить, — одне пробудження зі зведенням' {
         Reset-Run
@@ -97,6 +98,37 @@ try {
         Deliver @($facts[0])
         Deliver @($wake)
         Check '3 нове накопичене — нове зведення з 1' ($script:Calls.Count -eq 3 -and ($script:Calls[2] -split "`n")[1] -ceq 'ЗВЕДЕННЯ БЕЗ ПРОБУДЖЕННЯ: 1')
+    }
+    Scenario '3а QUOTA0: одне пробудження на групу на вікно квоти' {
+        Reset-Run
+        $line = { param($n) "GEMINI ОБГОРТКА: ЗАБЛОКОВАНО codex/квота-$n QUOTA0_CODEX_M60" }
+        Deliver @(1..5 | ForEach-Object { & $line $_ })
+        Check "3а 5 рядків QUOTA0_CODEX одного вікна — пробуджень $($script:Calls.Count) (ДО 0 → ПІСЛЯ 1)" ($script:Calls.Count -eq 1 -and $script:Calls[0] -ceq (& $line 1))
+        Check '3а стан вікна — у файлі теки стану, не в пам''яті' ((Get-Content -LiteralPath "$WorkDir/quota-windows.json" -Raw -Encoding UTF8) -match '"CODEX"' -and (Test-QuotaWindowOpen 'CODEX'))
+        Deliver @('GEMINI ОБГОРТКА: ЗАБЛОКОВАНО QUOTA0_CODEX ×5: codex/квота-1, codex/квота-2')
+        Check '3а зведений рядок того ж вікна — тихий' ($script:Calls.Count -eq 1)
+        Deliver @('GEMINI ОБГОРТКА: ЗАБЛОКОВАНО claude/крок QUOTA0_CLAUDE_M10')
+        Check '3а інша група будить окремо' ($script:Calls.Count -eq 2)
+        Deliver @($facts[0])
+        Check '3а STALE — без пробудження' ($script:Calls.Count -eq 2)
+        # Скидання квоти: вікно минуло — файл із простроченим кінцем.
+        [IO.File]::WriteAllText("$WorkDir/quota-windows.json", '{"CODEX":"2000-01-01T00:00:00Z","CLAUDE":"2999-01-01T00:00:00Z"}', (New-Object Text.UTF8Encoding($false)))
+        Deliver @(& $line 6)
+        Check "3а друге вікно (після скидання) — ще пробудження: $($script:Calls.Count) (3)" ($script:Calls.Count -eq 3)
+        Deliver @(& $line 7)
+        Check '3а друге вікно: наступний рядок тихий' ($script:Calls.Count -eq 3)
+        Reset-Run
+        Deliver @('GEMINI ОБГОРТКА: ЗАБЛОКОВАНО QUOTA0_CODEX ×3: codex/а, codex/б, codex/в')
+        Deliver @('GEMINI ОБГОРТКА: ЗАБЛОКОВАНО QUOTA0_CODEX ×2: codex/г, codex/д')
+        Check '3а зведений рядок першим будить, наступний у вікні — ні' ($script:Calls.Count -eq 1)
+        # Недоставлений лист вікна не відкриває.
+        Reset-Run
+        $keepRetries = $script:SendRetries
+        function Invoke-Native { param($Exe, $Arguments, $WorkDirectory, $TimeoutMinutes, $StdIn) $script:Calls += , [string]$StdIn; [pscustomobject]@{Code = 1; Out = ''; Err = 'збій'} }
+        $script:SendRetries = 1; $script:SendRetryDelaySeconds = 0
+        Deliver @(& $line 8)
+        Check '3а збій доставки — вікно не відкрито' (-not (Test-QuotaWindowOpen 'CODEX'))
+        $script:SendRetries = $keepRetries; $script:CloudUnavailable = $false
     }
     Scenario '4 недоставлене зведення не губиться' {
         Reset-Run

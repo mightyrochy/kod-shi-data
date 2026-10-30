@@ -1,0 +1,215 @@
+diff --git "a/\320\260\321\203\320\264\320\270\321\202/\320\260\320\264\320\260\320\277\321\202\320\265\321\200\320\270/gemini/gemini_publish.ps1" "b/\320\260\321\203\320\264\320\270\321\202/\320\260\320\264\320\260\320\277\321\202\320\265\321\200\320\270/gemini/gemini_publish.ps1"
+index 19ce4d28..331e31b8 100644
+--- "a/\320\260\321\203\320\264\320\270\321\202/\320\260\320\264\320\260\320\277\321\202\320\265\321\200\320\270/gemini/gemini_publish.ps1"
++++ "b/\320\260\321\203\320\264\320\270\321\202/\320\260\320\264\320\260\320\277\321\202\320\265\321\200\320\270/gemini/gemini_publish.ps1"
+@@ -516,13 +516,58 @@ function Get-DispatcherId {
+     ''
+ }
+ 
+-# Коди ЗАБЛОКОВАНО, після яких диспетчерові нічого робити: обгортка бере ту саму позначку сама чи позначка вже даремна.
++# Коди ЗАБЛОКОВАНО, після яких диспетчерові нічого робити: позначка вже даремна чи повтор іде в черзі.
+ # Кожен інший код (зокрема невідомий) будить — безпечне за замовчуванням. Доказ — у тілі коміту «тихі пробудження».
+-$script:QuietBlockedCodes = '^(?:QUOTA0_[A-Z0-9]{1,16}(?:_M[0-9]{1,6})?|STALE|REVIEW_API)$'
++$script:QuietBlockedCodes = '^(?:STALE|REVIEW_API)$'
+ $script:LocalLinesCap = 64
++# QUOTA0_<ГРУПА> будить раз на вікно квоти: нульова квота вимагає від диспетчера перенаправити наряд (слово власника 30.10).
++# Вікно — до скидання (хвилини з _M<хв>; нема — стеля), стан у теці стану обгортки переживає перезапуск процесу.
++$script:QuotaWindowDefaultMinutes = 360
++
++function Get-QuotaLine([string]$Line) {
++    <# Група й хвилини до скидання (0 — невідомо) із рядка QUOTA0: одиничного чи зведеного; не QUOTA0 — $null. #>
++    if ($Line -cmatch '^GEMINI ОБГОРТКА: ЗАБЛОКОВАНО (?:\S+ QUOTA0_([A-Z0-9]{1,16})(?:_M([0-9]{1,6}))?|QUOTA0_([A-Z0-9]{1,16}) ×[0-9]{1,5}: .+)$') {
++        $g = $Matches[1]; if (-not $g) { $g = $Matches[3] }
++        return [pscustomobject]@{ Group = $g; Minutes = $(if ($Matches[2]) { [int]$Matches[2] } else { 0 }) }
++    }
++    $null
++}
++
++function Get-QuotaWindows {
++    $path = Join-Path $WorkDir 'quota-windows.json'
++    $map = @{}
++    if (-not (Test-Path -LiteralPath $path)) { return $map }
++    try {
++        $o = [IO.File]::ReadAllText($path, $script:Utf8) | ConvertFrom-Json
++        foreach ($pr in @($o.PSObject.Properties)) { $map[[string]$pr.Name] = [string]$pr.Value }
++    } catch { Write-WrapperLog 'quota-windows.json не прочитано, вікна квоти порожні' }
++    $map
++}
++
++function Test-QuotaWindowOpen([string]$Group) {
++    <# Диспетчера про цю групу вже будили, і вікно квоти ще не минуло. #>
++    $w = Get-QuotaWindows
++    if (-not $w.ContainsKey($Group)) { return $false }
++    $until = [datetime]::MinValue
++    [datetime]::TryParse($w[$Group], [Globalization.CultureInfo]::InvariantCulture, [Globalization.DateTimeStyles]::RoundtripKind, [ref]$until) -and $until.ToUniversalTime() -gt [datetime]::UtcNow
++}
++
++function Set-QuotaWindow([string]$Line) {
++    <# Після підтвердженої доставки листа QUOTA0 група замовкає до скидання квоти. #>
++    $q = Get-QuotaLine $Line
++    if (-not $q) { return }
++    $mins = $(if ($q.Minutes -gt 0) { $q.Minutes } else { $script:QuotaWindowDefaultMinutes })
++    $w = Get-QuotaWindows
++    $out = [ordered]@{}
++    foreach ($k in @($w.Keys | Sort-Object)) { if ($k -ne $q.Group -and (Test-QuotaWindowOpen $k)) { $out[$k] = $w[$k] } }
++    $out[$q.Group] = [datetime]::UtcNow.AddMinutes($mins).ToString("yyyy-MM-dd'T'HH:mm:ss'Z'")
++    Write-FileAtomic (Join-Path $WorkDir 'quota-windows.json') (ConvertTo-Json -InputObject $out -Compress)
++}
+ 
+ function Test-DispatcherAction([string]$Line) {
+     <# Диспетчер прокидається лише за станом, що чекає його дії; решта йде зведенням при наступному пробудженні. #>
++    $quota = Get-QuotaLine $Line
++    if ($quota) { return -not (Test-QuotaWindowOpen $quota.Group) }
+     if ($Line -cmatch '^GEMINI ОБГОРТКА: ЗАБЛОКОВАНО ([A-Z0-9_]{2,40}) ×[0-9]{1,5}: ') { return $Matches[1] -cnotmatch $script:QuietBlockedCodes }
+     # Позначку перевірки Claude на ноутбуці ланцюг знімає й віддає іншому рецензентові сам.
+     if ($Line -cmatch '^GEMINI ОБГОРТКА: ЗАБЛОКОВАНО claude/автоперевірка-\S+ CLAUDE_NOT_LAPTOP$') { return $false }
+@@ -692,7 +737,7 @@ function Send-Pending([System.IO.FileInfo]$File) {
+         $new.fallback_attempts++
+         if (Send-Fallback $new.line) { $new.sent = $true; $new.channel = 'gh' }
+     }
+-    if ($new.sent) { Set-DigestDelivered }
++    if ($new.sent) { Set-DigestDelivered; Set-QuotaWindow $new.line }
+     $new.exhausted = -not $new.sent -and ($new.cloud_auth -or $new.attempts -ge $MaxSendAttempts) -and $new.fallback_attempts -ge $MaxFallbackAttempts
+     if ($new.exhausted) { Write-WrapperLog "спроби доставки вичерпано: $($File.Name); рядок збережено у стані" }
+     Write-FileAtomic $File.FullName ($new | ConvertTo-Json -Compress)
+diff --git "a/\320\260\321\203\320\264\320\270\321\202/\320\260\320\264\320\260\320\277\321\202\320\265\321\200\320\270/gemini/m9v/\321\205\320\265\321\210\321\226.psd1" "b/\320\260\321\203\320\264\320\270\321\202/\320\260\320\264\320\260\320\277\321\202\320\265\321\200\320\270/gemini/m9v/\321\205\320\265\321\210\321\226.psd1"
+index f805981a..6029d34a 100644
+--- "a/\320\260\321\203\320\264\320\270\321\202/\320\260\320\264\320\260\320\277\321\202\320\265\321\200\320\270/gemini/m9v/\321\205\320\265\321\210\321\226.psd1"
++++ "b/\320\260\321\203\320\264\320\270\321\202/\320\260\320\264\320\260\320\277\321\202\320\265\321\200\320\270/gemini/m9v/\321\205\320\265\321\210\321\226.psd1"
+@@ -6,7 +6,7 @@
+     'wrapper_chain.ps1'  = '0A254E6884FA61DF9B4FC709EBC3AD05AE8CCD1A25A1F09D87D97C1A43A57184'
+     'wrapper_health.ps1' = 'B3E2C44C4F342A915B814854A7D7619EDE2E019B48DC4A50CF4C9DB304C2E531'
+     'gemini_run.ps1'     = 'ED151D76BA6658EA230A0442252F0D7D05C2F6D723461C383D8E10016206E8FE'
+-    'gemini_publish.ps1' = '3C97912267FFEF59F72A96D44D63B40A52BDA32174FF36E8F1438B076FFC225B'
++    'gemini_publish.ps1' = '0B3FDEDC7CE87FAEA4AEE3F6F70F9627574F76972A05FDA995DFEECCCC7C963D'
+     # Інсталятор Codex (9741) закріплено за релізом: install.ps1 — файл релізу https://releases.openai.com/codex/releases/<CodexRelease>/install.ps1
+     # (незмінний URL; той самий sha256 віддає https://chatgpt.com/codex/install.ps1 — редирект на releases.openai.com — і публікує реліз
+     # openai/codex). 2_під_gemini.ps1 -WithCodex виконує його лише при збігу CodexInstaller і ставить саме цей реліз (-Release).
+diff --git "a/\320\260\321\203\320\264\320\270\321\202/\320\260\320\264\320\260\320\277\321\202\320\265\321\200\320\270/gemini/\320\235\320\220\320\233\320\220\320\250\320\242\320\243\320\222\320\220\320\235\320\235\320\257.md" "b/\320\260\321\203\320\264\320\270\321\202/\320\260\320\264\320\260\320\277\321\202\320\265\321\200\320\270/gemini/\320\235\320\220\320\233\320\220\320\250\320\242\320\243\320\222\320\220\320\235\320\235\320\257.md"
+index 6fd129c4..0791ef64 100644
+--- "a/\320\260\321\203\320\264\320\270\321\202/\320\260\320\264\320\260\320\277\321\202\320\265\321\200\320\270/gemini/\320\235\320\220\320\233\320\220\320\250\320\242\320\243\320\222\320\220\320\235\320\235\320\257.md"
++++ "b/\320\260\321\203\320\264\320\270\321\202/\320\260\320\264\320\260\320\277\321\202\320\265\321\200\320\270/gemini/\320\235\320\220\320\233\320\220\320\250\320\242\320\243\320\222\320\220\320\235\320\235\320\257.md"
+@@ -433,7 +433,7 @@ $f = Join-Path "$env:USERPROFILE\gemini-outbox" $n
+ | `wrapper_update.ps1` | `4156307A17BDAE3AF7249E532947F659E99AA1349D159239159FAE60CA7E4F2B` |
+ | `wrapper_chain.ps1` | `0A254E6884FA61DF9B4FC709EBC3AD05AE8CCD1A25A1F09D87D97C1A43A57184` |
+ | `gemini_run.ps1` | `ED151D76BA6658EA230A0442252F0D7D05C2F6D723461C383D8E10016206E8FE` |
+-| `gemini_publish.ps1` | `3C97912267FFEF59F72A96D44D63B40A52BDA32174FF36E8F1438B076FFC225B` |
++| `gemini_publish.ps1` | `0B3FDEDC7CE87FAEA4AEE3F6F70F9627574F76972A05FDA995DFEECCCC7C963D` |
+ | `gemini_watch.ps1` | `69EFEBB07FF1AF51C382B753A95C50F3C1AC27B3008F2489992BEBE3FD0213AA` |
+ | `wrapper_health.ps1` | `B3E2C44C4F342A915B814854A7D7619EDE2E019B48DC4A50CF4C9DB304C2E531` |
+ | `queue_lanes.ps1` | `02868BB9FFE5320952634BA7A3E3D7B2F34D0F4D11699844F7429DFFDC66B909` |
+@@ -609,9 +609,12 @@ CI й ноутбук запускають один повний перелік 
+ 
+ `Test-DispatcherAction` — спільне рішення для хмари, повтору та резервного каналу: диспетчера будить лише закритий
+ перелік станів, після яких без нього нічого не зрушить: вердикти перевірки/пачки, звіти живого, ТРИВОГА, ЛАНЦЮГ і
+-ЗАБЛОКОВАНО з кодом, на який обгортка сама не відновлюється (невідомий код будить). Без пробудження лишаються
+-ЗАБЛОКОВАНО `QUOTA0_*` (позначка чекає скидання квоти, ту саму бере та сама смуга), `STALE` (PR уже закрито чи голова
+-змінилась — рішення нема) і `REVIEW_API` (повтор у черзі), а також ВЗЯТО, ГОТОВО виконавця, ОНОВЛЕНО, ПУЛИ: вони
++ЗАБЛОКОВАНО з кодом, на який обгортка сама не відновлюється (невідомий код будить). `QUOTA0_<ГРУПА>` будить раз на
++групу на вікно квоти (слово власника 30.10: нульовий ліміт вимагає від диспетчера перенаправити наряд): перший рядок
++групи — або зведений «ЗАБЛОКОВАНО QUOTA0_<ГРУПА> ×N» — після підтвердженої доставки відкриває вікно до скидання (хвилини
++з `_M<хв>`, без них — 360), а решта рядків групи в вікні йдуть без пробудження зведенням; вікна — `quota-windows.json` у
++теці стану обгортки (переживає перезапуск), після скидання перший рядок групи будить знову. Без пробудження лишаються
++ЗАБЛОКОВАНО `STALE` (PR уже закрито чи голова змінилась — рішення нема) і `REVIEW_API` (повтор у черзі), а також ВЗЯТО, ГОТОВО виконавця, ОНОВЛЕНО, ПУЛИ: вони
+ лишаються в журналі й `local-lines.json`, стан ноутбука #1856 показує останні 12. Наступний рядок, що будить, несе в тому
+ самому листі після основного рядка «ЗВЕДЕННЯ БЕЗ ПРОБУДЖЕННЯ: N» і N накопичених рядків обгортки (без тексту агента),
+ після підтвердженої доставки вони позначаються доставленими; окремого пробудження заради зведення нема.
+diff --git "a/\320\260\321\203\320\264\320\270\321\202/\320\260\320\264\320\260\320\277\321\202\320\265\321\200\320\270/gemini/\320\277\320\265\321\200\320\265\320\262\321\226\321\200\320\272\320\260/\321\201\321\206\320\265\320\275\320\260\321\200\321\226\321\227_\320\274\320\265\320\266\321\226_\320\267\320\264\320\276\321\200\320\276\320\262\321\217.ps1" "b/\320\260\321\203\320\264\320\270\321\202/\320\260\320\264\320\260\320\277\321\202\320\265\321\200\320\270/gemini/\320\277\320\265\321\200\320\265\320\262\321\226\321\200\320\272\320\260/\321\201\321\206\320\265\320\275\320\260\321\200\321\226\321\227_\320\274\320\265\320\266\321\226_\320\267\320\264\320\276\321\200\320\276\320\262\321\217.ps1"
+index 8ff653a6..0e1a4996 100644
+--- "a/\320\260\321\203\320\264\320\270\321\202/\320\260\320\264\320\260\320\277\321\202\320\265\321\200\320\270/gemini/\320\277\320\265\321\200\320\265\320\262\321\226\321\200\320\272\320\260/\321\201\321\206\320\265\320\275\320\260\321\200\321\226\321\227_\320\274\320\265\320\266\321\226_\320\267\320\264\320\276\321\200\320\276\320\262\321\217.ps1"
++++ "b/\320\260\321\203\320\264\320\270\321\202/\320\260\320\264\320\260\320\277\321\202\320\265\321\200\320\270/gemini/\320\277\320\265\321\200\320\265\320\262\321\226\321\200\320\272\320\260/\321\201\321\206\320\265\320\275\320\260\321\200\321\226\321\227_\320\274\320\265\320\266\321\226_\320\267\320\264\320\276\321\200\320\276\320\262\321\217.ps1"
+@@ -120,21 +120,21 @@ try {
+             $local = @()
+             if (Test-Path -LiteralPath "$WorkDir/local-lines.json") { $local = @((ConvertFrom-Json ([IO.File]::ReadAllText("$WorkDir/local-lines.json")))) }
+             if ($phase -eq 'ДО') {
+-                Check "3 ДО: 12 збоїв CRASH за прохід — пробуджень $(@($wake | Where-Object { $_ -like '*CRASH' }).Count) (12), у зведенні QUOTA0 — $($local.Count) (3)" (@($wake | Where-Object { $_ -like '*CRASH' }).Count -eq 12 -and $local.Count -eq 3)
++                Check "3 ДО: 12 збоїв CRASH за прохід — пробуджень $(@($wake | Where-Object { $_ -like '*CRASH' }).Count) (12), QUOTA0 — перший будить, у зведенні $($local.Count) (2)" (@($wake | Where-Object { $_ -like '*CRASH' }).Count -eq 12 -and $local.Count -eq 2 -and @($wake | Where-Object { $_ -like '*QUOTA0*' }).Count -eq 1)
+                 return
+             }
+             $agg = 'GEMINI ОБГОРТКА: ЗАБЛОКОВАНО CRASH ×12: claude/наряд-1, claude/наряд-2, claude/наряд-3, claude/наряд-4, claude/наряд-5 …'
+-            Check "3 ПІСЛЯ: пробуджень $($wake.Count) — один «×12» і окремий інший код" ($wake.Count -eq 2 -and $wake -ccontains $agg -and $wake -ccontains $other)
++            Check "3 ПІСЛЯ: пробуджень $($wake.Count) — один «×12», один QUOTA0 «×3» і окремий інший код" ($wake.Count -eq 3 -and $wake -ccontains $agg -and $wake -ccontains $other -and $wake -ccontains 'GEMINI ОБГОРТКА: ЗАБЛОКОВАНО QUOTA0_CODEX ×3: codex/квота-M60, codex/квота-M30, codex/квота-M5')
+             Check '3 зведений рядок — за шаблоном вихідних' ((Test-OutboxLine $agg) -eq '')
+-            Check '3 QUOTA0 трьох хвилин — один рядок у зведенні, без пробудження' ($local.Count -eq 1 -and [string]$local[0].line -ceq 'GEMINI ОБГОРТКА: ЗАБЛОКОВАНО QUOTA0_CODEX ×3: codex/квота-M60, codex/квота-M30, codex/квота-M5')
++            Check '3 QUOTA0 трьох хвилин — один зведений рядок, одне пробудження, у зведенні без пробудження нічого' ($local.Count -eq 0)
+             $groups = @((ConvertFrom-Json ([IO.File]::ReadAllText("$WorkDir/blocked-groups.json"))))
+             $cr = @($groups | Where-Object { $_.code -ceq 'CRASH' })
+             Check '3 лічба й повний перелік (12 гілок) — у blocked-groups.json' ($cr.Count -eq 1 -and [int]$cr[0].n -eq 12 -and @($cr[0].branches).Count -eq 12)
+             Merge-BlockedLines
+             foreach ($sf in @(Get-ChildItem -LiteralPath "$WorkDir/state" -Filter '*.json' -File | Sort-Object Name)) { Send-Pending $sf }
+-            Check '3 повторний прохід — без нового зведення й листа' ($script:Calls.Count -eq 2 -and @((ConvertFrom-Json ([IO.File]::ReadAllText("$WorkDir/blocked-groups.json")))).Count -eq 2)
++            Check '3 повторний прохід — без нового зведення й листа' ($script:Calls.Count -eq 3 -and @((ConvertFrom-Json ([IO.File]::ReadAllText("$WorkDir/blocked-groups.json")))).Count -eq 2)
+             Check '3 одиничний рядок не зводиться' (Test-DispatcherAction $other)
+-            Check '3 зведений QUOTA0 не будить, CRASH будить' (-not (Test-DispatcherAction 'GEMINI ОБГОРТКА: ЗАБЛОКОВАНО QUOTA0_CODEX ×3: codex/а, codex/б') -and (Test-DispatcherAction $agg))
++            Check '3 зведений QUOTA0 у відкритому вікні тихий, CRASH будить' (-not (Test-DispatcherAction 'GEMINI ОБГОРТКА: ЗАБЛОКОВАНО QUOTA0_CODEX ×3: codex/а, codex/б') -and (Test-DispatcherAction $agg))
+         }
+     }
+ 
+diff --git "a/\320\260\321\203\320\264\320\270\321\202/\320\260\320\264\320\260\320\277\321\202\320\265\321\200\320\270/gemini/\320\277\320\265\321\200\320\265\320\262\321\226\321\200\320\272\320\260/\321\201\321\206\320\265\320\275\320\260\321\200\321\226\321\227_\321\202\320\270\321\205\321\226_\320\277\321\200\320\276\320\261\321\203\320\264\320\266\320\265\320\275\320\275\321\217.ps1" "b/\320\260\321\203\320\264\320\270\321\202/\320\260\320\264\320\260\320\277\321\202\320\265\321\200\320\270/gemini/\320\277\320\265\321\200\320\265\320\262\321\226\321\200\320\272\320\260/\321\201\321\206\320\265\320\275\320\260\321\200\321\226\321\227_\321\202\320\270\321\205\321\226_\320\277\321\200\320\276\320\261\321\203\320\264\320\266\320\265\320\275\320\275\321\217.ps1"
+index bdb9f58c..a379232f 100644
+--- "a/\320\260\321\203\320\264\320\270\321\202/\320\260\320\264\320\260\320\277\321\202\320\265\321\200\320\270/gemini/\320\277\320\265\321\200\320\265\320\262\321\226\321\200\320\272\320\260/\321\201\321\206\320\265\320\275\320\260\321\200\321\226\321\227_\321\202\320\270\321\205\321\226_\320\277\321\200\320\276\320\261\321\203\320\264\320\266\320\265\320\275\320\275\321\217.ps1"
++++ "b/\320\260\321\203\320\264\320\270\321\202/\320\260\320\264\320\260\320\277\321\202\320\265\321\200\320\270/gemini/\320\277\320\265\321\200\320\265\320\262\321\226\321\200\320\272\320\260/\321\201\321\206\320\265\320\275\320\260\321\200\321\226\321\227_\321\202\320\270\321\205\321\226_\320\277\321\200\320\276\320\261\321\203\320\264\320\266\320\265\320\275\320\275\321\217.ps1"
+@@ -28,6 +28,7 @@ try {
+         $script:Calls = @()
+         foreach ($f in @(Get-ChildItem "$WorkDir/state" -File -ErrorAction SilentlyContinue)) { Remove-Item -LiteralPath $f.FullName -Force }
+         Remove-Item -LiteralPath "$WorkDir/local-lines.json" -Force -ErrorAction SilentlyContinue
++        Remove-Item -LiteralPath "$WorkDir/quota-windows.json" -Force -ErrorAction SilentlyContinue
+     }
+     function Deliver([string[]]$Lines) {
+         <# Рядок проходить справжню доставку: стан → Send-Pending. #>
+@@ -58,7 +59,7 @@ try {
+         }
+         foreach ($code in @($script:PublishCodes.Keys)) { Check "1 публікація $code — будить" (Test-DispatcherAction "GEMINI ОБГОРТКА: ЗАБЛОКОВАНО gemini/крок $code") }
+         foreach ($code in @('QUOTA0_CODEX_M60', 'QUOTA0_CLAUDE_M5', 'QUOTA0_GPT', 'QUOTA0_A1_M0')) {
+-            Check "1 $code — зведення" (-not (Test-DispatcherAction "GEMINI ОБГОРТКА: ЗАБЛОКОВАНО claude/крок $code"))
++            Check "1 $code — перший рядок групи будить" (Test-DispatcherAction "GEMINI ОБГОРТКА: ЗАБЛОКОВАНО claude/крок $code")
+         }
+         Check '1 нерозібраний ЗАБЛОКОВАНО будить' (Test-DispatcherAction 'GEMINI ОБГОРТКА: ЗАБЛОКОВАНО')
+         Check '1 STALE із зайвим словом у рядку будить' (Test-DispatcherAction 'GEMINI ОБГОРТКА: ЗАБЛОКОВАНО gemini/крок X STALE')
+@@ -77,7 +78,7 @@ try {
+         $stored = @((ConvertFrom-Json ([IO.File]::ReadAllText("$WorkDir/local-lines.json"))))
+         Check '2 усі 14 лишились у local-lines.json' ($stored.Count -eq 14)
+         Deliver @($quota)
+-        Check '2 QUOTA0 теж без пробудження' ($script:Calls.Count -eq 0)
++        Check '2 QUOTA0 першого вікна будить, зі зведенням 14' ($script:Calls.Count -eq 1 -and ($script:Calls[0] -split "`n")[1] -ceq 'ЗВЕДЕННЯ БЕЗ ПРОБУДЖЕННЯ: 14')
+     }
+     Scenario '3 рядок, що будить, — одне пробудження зі зведенням' {
+         Reset-Run
+@@ -98,6 +99,37 @@ try {
+         Deliver @($wake)
+         Check '3 нове накопичене — нове зведення з 1' ($script:Calls.Count -eq 3 -and ($script:Calls[2] -split "`n")[1] -ceq 'ЗВЕДЕННЯ БЕЗ ПРОБУДЖЕННЯ: 1')
+     }
++    Scenario '3а QUOTA0: одне пробудження на групу на вікно квоти' {
++        Reset-Run
++        $line = { param($n) "GEMINI ОБГОРТКА: ЗАБЛОКОВАНО codex/квота-$n QUOTA0_CODEX_M60" }
++        Deliver @(1..5 | ForEach-Object { & $line $_ })
++        Check "3а 5 рядків QUOTA0_CODEX одного вікна — пробуджень $($script:Calls.Count) (ДО 0 → ПІСЛЯ 1)" ($script:Calls.Count -eq 1 -and $script:Calls[0] -ceq (& $line 1))
++        Check '3а стан вікна — у файлі теки стану, не в пам''яті' ((Get-Content -LiteralPath "$WorkDir/quota-windows.json" -Raw -Encoding UTF8) -match '"CODEX"' -and (Test-QuotaWindowOpen 'CODEX'))
++        Deliver @('GEMINI ОБГОРТКА: ЗАБЛОКОВАНО QUOTA0_CODEX ×5: codex/квота-1, codex/квота-2')
++        Check '3а зведений рядок того ж вікна — тихий' ($script:Calls.Count -eq 1)
++        Deliver @('GEMINI ОБГОРТКА: ЗАБЛОКОВАНО claude/крок QUOTA0_CLAUDE_M10')
++        Check '3а інша група будить окремо' ($script:Calls.Count -eq 2)
++        Deliver @($facts[0])
++        Check '3а STALE — без пробудження' ($script:Calls.Count -eq 2)
++        # Скидання квоти: вікно минуло — файл із простроченим кінцем.
++        [IO.File]::WriteAllText("$WorkDir/quota-windows.json", '{"CODEX":"2000-01-01T00:00:00Z","CLAUDE":"2999-01-01T00:00:00Z"}', (New-Object Text.UTF8Encoding($false)))
++        Deliver @(& $line 6)
++        Check "3а друге вікно (після скидання) — ще пробудження: $($script:Calls.Count) (3)" ($script:Calls.Count -eq 3)
++        Deliver @(& $line 7)
++        Check '3а друге вікно: наступний рядок тихий' ($script:Calls.Count -eq 3)
++        Reset-Run
++        Deliver @('GEMINI ОБГОРТКА: ЗАБЛОКОВАНО QUOTA0_CODEX ×3: codex/а, codex/б, codex/в')
++        Deliver @('GEMINI ОБГОРТКА: ЗАБЛОКОВАНО QUOTA0_CODEX ×2: codex/г, codex/д')
++        Check '3а зведений рядок першим будить, наступний у вікні — ні' ($script:Calls.Count -eq 1)
++        # Недоставлений лист вікна не відкриває.
++        Reset-Run
++        $keepRetries = $script:SendRetries
++        function Invoke-Native { param($Exe, $Arguments, $WorkDirectory, $TimeoutMinutes, $StdIn) $script:Calls += , [string]$StdIn; [pscustomobject]@{Code = 1; Out = ''; Err = 'збій'} }
++        $script:SendRetries = 1; $script:SendRetryDelaySeconds = 0
++        Deliver @(& $line 8)
++        Check '3а збій доставки — вікно не відкрито' (-not (Test-QuotaWindowOpen 'CODEX'))
++        $script:SendRetries = $keepRetries; $script:CloudUnavailable = $false
++    }
+     Scenario '4 недоставлене зведення не губиться' {
+         Reset-Run
+         Deliver ($facts)

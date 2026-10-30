@@ -516,13 +516,58 @@ function Get-DispatcherId {
     ''
 }
 
-# Коди ЗАБЛОКОВАНО, після яких диспетчерові нічого робити: обгортка бере ту саму позначку сама чи позначка вже даремна.
+# Коди ЗАБЛОКОВАНО, після яких диспетчерові нічого робити: позначка вже даремна чи повтор іде в черзі.
 # Кожен інший код (зокрема невідомий) будить — безпечне за замовчуванням. Доказ — у тілі коміту «тихі пробудження».
-$script:QuietBlockedCodes = '^(?:QUOTA0_[A-Z0-9]{1,16}(?:_M[0-9]{1,6})?|STALE|REVIEW_API)$'
+$script:QuietBlockedCodes = '^(?:STALE|REVIEW_API)$'
 $script:LocalLinesCap = 64
+# QUOTA0_<ГРУПА> будить раз на вікно квоти: нульова квота вимагає від диспетчера перенаправити наряд (слово власника 30.10).
+# Вікно — до скидання (хвилини з _M<хв>; нема — стеля), стан у теці стану обгортки переживає перезапуск процесу.
+$script:QuotaWindowDefaultMinutes = 360
+
+function Get-QuotaLine([string]$Line) {
+    <# Група й хвилини до скидання (0 — невідомо) із рядка QUOTA0: одиничного чи зведеного; не QUOTA0 — $null. #>
+    if ($Line -cmatch '^GEMINI ОБГОРТКА: ЗАБЛОКОВАНО (?:\S+ QUOTA0_([A-Z0-9]{1,16})(?:_M([0-9]{1,6}))?|QUOTA0_([A-Z0-9]{1,16}) ×[0-9]{1,5}: .+)$') {
+        $g = $Matches[1]; if (-not $g) { $g = $Matches[3] }
+        return [pscustomobject]@{ Group = $g; Minutes = $(if ($Matches[2]) { [int]$Matches[2] } else { 0 }) }
+    }
+    $null
+}
+
+function Get-QuotaWindows {
+    $path = Join-Path $WorkDir 'quota-windows.json'
+    $map = @{}
+    if (-not (Test-Path -LiteralPath $path)) { return $map }
+    try {
+        $o = [IO.File]::ReadAllText($path, $script:Utf8) | ConvertFrom-Json
+        foreach ($pr in @($o.PSObject.Properties)) { $map[[string]$pr.Name] = [string]$pr.Value }
+    } catch { Write-WrapperLog 'quota-windows.json не прочитано, вікна квоти порожні' }
+    $map
+}
+
+function Test-QuotaWindowOpen([string]$Group) {
+    <# Диспетчера про цю групу вже будили, і вікно квоти ще не минуло. #>
+    $w = Get-QuotaWindows
+    if (-not $w.ContainsKey($Group)) { return $false }
+    $until = [datetime]::MinValue
+    [datetime]::TryParse($w[$Group], [Globalization.CultureInfo]::InvariantCulture, [Globalization.DateTimeStyles]::RoundtripKind, [ref]$until) -and $until.ToUniversalTime() -gt [datetime]::UtcNow
+}
+
+function Set-QuotaWindow([string]$Line) {
+    <# Після підтвердженої доставки листа QUOTA0 група замовкає до скидання квоти. #>
+    $q = Get-QuotaLine $Line
+    if (-not $q) { return }
+    $mins = $(if ($q.Minutes -gt 0) { $q.Minutes } else { $script:QuotaWindowDefaultMinutes })
+    $w = Get-QuotaWindows
+    $out = [ordered]@{}
+    foreach ($k in @($w.Keys | Sort-Object)) { if ($k -ne $q.Group -and (Test-QuotaWindowOpen $k)) { $out[$k] = $w[$k] } }
+    $out[$q.Group] = [datetime]::UtcNow.AddMinutes($mins).ToString("yyyy-MM-dd'T'HH:mm:ss'Z'")
+    Write-FileAtomic (Join-Path $WorkDir 'quota-windows.json') (ConvertTo-Json -InputObject $out -Compress)
+}
 
 function Test-DispatcherAction([string]$Line) {
     <# Диспетчер прокидається лише за станом, що чекає його дії; решта йде зведенням при наступному пробудженні. #>
+    $quota = Get-QuotaLine $Line
+    if ($quota) { return -not (Test-QuotaWindowOpen $quota.Group) }
     if ($Line -cmatch '^GEMINI ОБГОРТКА: ЗАБЛОКОВАНО ([A-Z0-9_]{2,40}) ×[0-9]{1,5}: ') { return $Matches[1] -cnotmatch $script:QuietBlockedCodes }
     # Позначку перевірки Claude на ноутбуці ланцюг знімає й віддає іншому рецензентові сам.
     if ($Line -cmatch '^GEMINI ОБГОРТКА: ЗАБЛОКОВАНО claude/автоперевірка-\S+ CLAUDE_NOT_LAPTOP$') { return $false }
@@ -692,7 +737,7 @@ function Send-Pending([System.IO.FileInfo]$File) {
         $new.fallback_attempts++
         if (Send-Fallback $new.line) { $new.sent = $true; $new.channel = 'gh' }
     }
-    if ($new.sent) { Set-DigestDelivered }
+    if ($new.sent) { Set-DigestDelivered; Set-QuotaWindow $new.line }
     $new.exhausted = -not $new.sent -and ($new.cloud_auth -or $new.attempts -ge $MaxSendAttempts) -and $new.fallback_attempts -ge $MaxFallbackAttempts
     if ($new.exhausted) { Write-WrapperLog "спроби доставки вичерпано: $($File.Name); рядок збережено у стані" }
     Write-FileAtomic $File.FullName ($new | ConvertTo-Json -Compress)
