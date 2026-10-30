@@ -19,6 +19,45 @@
     "код": 0
   },
   {
+    "перевірка": "git-name",
+    "команда": [
+      "git",
+      "config",
+      "user.name",
+      "Codex"
+    ],
+    "код": 0
+  },
+  {
+    "перевірка": "git-email",
+    "команда": [
+      "git",
+      "config",
+      "user.email",
+      "codex@local.invalid"
+    ],
+    "код": 0
+  },
+  {
+    "перевірка": "git-base-add",
+    "команда": [
+      "git",
+      "add",
+      "."
+    ],
+    "код": 0
+  },
+  {
+    "перевірка": "git-base-commit",
+    "команда": [
+      "git",
+      "commit",
+      "-qm",
+      "База свіжого main для перевірки латки"
+    ],
+    "код": 0
+  },
+  {
     "перевірка": "git-apply-check",
     "команда": [
       "git",
@@ -52,7 +91,7 @@
       "python",
       "-X",
       "utf8",
-      "C:\\Users\\gemini\\gemini-runs\\w\\20261030-184723-7915b6610cfb\\tmp\\clean-d4\\аудит\\адаптери\\gemini\\перевірка\\перевірити_хеші.py"
+      "C:\\Users\\gemini\\gemini-runs\\w\\20261030-184723-7915b6610cfb\\tmp\\clean-d4-final2\\аудит\\адаптери\\gemini\\перевірка\\перевірити_хеші.py"
     ],
     "код": 0
   },
@@ -76,7 +115,7 @@
       "-File",
       "C:\\Users\\gemini\\gemini-runs\\w\\20261030-184723-7915b6610cfb\\repo\\аудит\\латки\\обгортка-перевірка-після-кінця\\heartbeat-fixed.ps1",
       "-SourceDir",
-      "C:\\Users\\gemini\\gemini-runs\\w\\20261030-184723-7915b6610cfb\\tmp\\clean-d4\\аудит\\адаптери\\gemini",
+      "C:\\Users\\gemini\\gemini-runs\\w\\20261030-184723-7915b6610cfb\\tmp\\clean-d4-final2\\аудит\\адаптери\\gemini",
       "-Template",
       "C:\\Users\\gemini\\gemini-runs\\w\\20261030-184723-7915b6610cfb\\repo\\аудит\\латки\\обгортка-перевірка-після-кінця\\heartbeat-template.ps1"
     ],
@@ -88,7 +127,7 @@
       "powershell",
       "-NoProfile",
       "-Command",
-      "$m = Import-PowerShellDataFile -LiteralPath 'C:\\Users\\gemini\\gemini-runs\\w\\20261030-184723-7915b6610cfb\\tmp\\clean-d4\\аудит\\адаптери\\gemini\\m9v\\хеші.psd1'; if ($m.Count -lt 3) { exit 1 }; Write-Output ('Записів маніфесту: ' + $m.Count)"
+      "$m = Import-PowerShellDataFile -LiteralPath 'C:\\Users\\gemini\\gemini-runs\\w\\20261030-184723-7915b6610cfb\\tmp\\clean-d4-final2\\аудит\\адаптери\\gemini\\m9v\\хеші.psd1'; if ($m.Count -lt 3) { exit 1 }; Write-Output ('Записів маніфесту: ' + $m.Count)"
     ],
     "код": 0
   },
@@ -100,6 +139,6 @@
   {
     "перевірка": "BOM",
     "значення": "efbbbf",
-    "sha256_латки": "22b4014e081274c27c091b189c716674ba8a61b178b821fc8326993b2ae0c3d2"
+    "sha256_латки": "61e637c6206fff9d7cd3aba6b854d0723da1dda65eb99a5f0d001edbad2ace87"
   }
 ]
