@@ -1,55 +1,77 @@
+diff --git "a/\320\260\321\203\320\264\320\270\321\202/\320\260\320\264\320\260\320\277\321\202\320\265\321\200\320\270/gemini/gemini_publish.ps1" "b/\320\260\321\203\320\264\320\270\321\202/\320\260\320\264\320\260\320\277\321\202\320\265\321\200\320\270/gemini/gemini_publish.ps1"
+index 2013c94..19ce4d2 100644
+--- "a/\320\260\321\203\320\264\320\270\321\202/\320\260\320\264\320\260\320\277\321\202\320\265\321\200\320\270/gemini/gemini_publish.ps1"
++++ "b/\320\260\321\203\320\264\320\270\321\202/\320\260\320\264\320\260\320\277\321\202\320\265\321\200\320\270/gemini/gemini_publish.ps1"
+@@ -30,6 +30,7 @@ param(
+     [string]$GhExe = 'gh',
+     [int]$MaxFallbackAttempts = 12,
+     [string]$GeminiUser = 'gemini',
++    [string]$GeminiRunsDir = (Join-Path (Join-Path 'C:\Users' $GeminiUser) 'gemini-runs'),
+     [string]$WrapperDir = 'аудит/адаптери/gemini/',
+     [int]$MaxBundleMB = 512,
+     [string]$OutboxDir = '',
 diff --git "a/\320\260\321\203\320\264\320\270\321\202/\320\260\320\264\320\260\320\277\321\202\320\265\321\200\320\270/gemini/m9v/\321\205\320\265\321\210\321\226.psd1" "b/\320\260\321\203\320\264\320\270\321\202/\320\260\320\264\320\260\320\277\321\202\320\265\321\200\320\270/gemini/m9v/\321\205\320\265\321\210\321\226.psd1"
-index 2e1af9e5c13f981229c99c456dc6c9251f8e3555..bb87abeb8187aca42785653f98a117fb2149eba6 100644
+index 2e1af9e..1c4c31b 100644
 --- "a/\320\260\321\203\320\264\320\270\321\202/\320\260\320\264\320\260\320\277\321\202\320\265\321\200\320\270/gemini/m9v/\321\205\320\265\321\210\321\226.psd1"
 +++ "b/\320\260\321\203\320\264\320\270\321\202/\320\260\320\264\320\260\320\277\321\202\320\265\321\200\320\270/gemini/m9v/\321\205\320\265\321\210\321\226.psd1"
-@@ -3,7 +3,7 @@
+@@ -1,12 +1,12 @@
+-﻿# Очікувані SHA-256 файлів обгортки — єдине місце для скриптів m9v. Рядки тут мають збігатися з таблицею «Хеші файлів»
++# Очікувані SHA-256 файлів обгортки — єдине місце для скриптів m9v. Рядки тут мають збігатися з таблицею «Хеші файлів»
+ # у ../НАЛАШТУВАННЯ.md (стенд `перевірка/сценарії_m9v.sh` звіряє). Міняється разом із таблицею (PR, що чіпає обгортку).
  @{
      'wrapper_update.ps1' = '4156307A17BDAE3AF7249E532947F659E99AA1349D159239159FAE60CA7E4F2B'
      'wrapper_probe.ps1'  = '85116D04C22EB64CBFF52E66BCEAE9B1091577A889EDD58A8B634093A82BDBC6'
 -    'wrapper_chain.ps1'  = '99C1766CD93D0935C1804275B75F09C32C377427F347B91432D82869FAE34194'
-+    'wrapper_chain.ps1'  = '823456204B6F0C22F08786E09D3B8B937CCF6BB65952BF751DF26AA1B67F0ABA'
++    'wrapper_chain.ps1'  = '4394C6C00856782D41D7457B5F140A1FA11A8E7F3D4D9FC63FB7C91966B3109E'
      'wrapper_health.ps1' = 'B3E2C44C4F342A915B814854A7D7619EDE2E019B48DC4A50CF4C9DB304C2E531'
      'gemini_run.ps1'     = 'ED151D76BA6658EA230A0442252F0D7D05C2F6D723461C383D8E10016206E8FE'
-     'gemini_publish.ps1' = '73F2F2AA868DA86391FA9FACFD1F818AA8D1A76B9511F4DA891CBFE1E77087A9'
+-    'gemini_publish.ps1' = '73F2F2AA868DA86391FA9FACFD1F818AA8D1A76B9511F4DA891CBFE1E77087A9'
++    'gemini_publish.ps1' = '3C97912267FFEF59F72A96D44D63B40A52BDA32174FF36E8F1438B076FFC225B'
+     # Інсталятор Codex (9741) закріплено за релізом: install.ps1 — файл релізу https://releases.openai.com/codex/releases/<CodexRelease>/install.ps1
+     # (незмінний URL; той самий sha256 віддає https://chatgpt.com/codex/install.ps1 — редирект на releases.openai.com — і публікує реліз
+     # openai/codex). 2_під_gemini.ps1 -WithCodex виконує його лише при збігу CodexInstaller і ставить саме цей реліз (-Release).
 diff --git "a/\320\260\321\203\320\264\320\270\321\202/\320\260\320\264\320\260\320\277\321\202\320\265\321\200\320\270/gemini/wrapper_chain.ps1" "b/\320\260\321\203\320\264\320\270\321\202/\320\260\320\264\320\260\320\277\321\202\320\265\321\200\320\270/gemini/wrapper_chain.ps1"
-index aa4f34bce38ca68054e41f8704a1b24671889ef3..fe82d02d0531d0606ac2930a31358481c220f014 100644
+index aa4f34b..a1a4483 100644
 --- "a/\320\260\321\203\320\264\320\270\321\202/\320\260\320\264\320\260\320\277\321\202\320\265\321\200\320\270/gemini/wrapper_chain.ps1"
 +++ "b/\320\260\321\203\320\264\320\270\321\202/\320\260\320\264\320\260\320\277\321\202\320\265\321\200\320\270/gemini/wrapper_chain.ps1"
-@@ -405,6 +405,62 @@ function Request-CloudReview([string]$Number, [string]$Head) {
+@@ -405,6 +405,65 @@ function Request-CloudReview([string]$Number, [string]$Head) {
      Write-WrapperLog "ланцюг: #$Number $Head — перевірка хмарним Claude, рядок диспетчерові"
  }
  
++function Get-ChainBusySlots([string]$Dir, [string]$Pattern) {
++    <# Читає JSON лише зайнятих слотів: той самий замок worker визначає активність усіх смуг.
++
++    Heartbeat може не мати lanes або лишитися старим після завершення, тому не визначає активність. #>
++    $slots = Join-Path $Dir 'slots'
++    if (-not (Test-Path -LiteralPath $slots)) { return }
++    foreach ($file in @(Get-ChildItem -LiteralPath $slots -Filter '*.json' -File -ErrorAction Stop)) {
++        if ($file.BaseName -cnotmatch $Pattern) { continue }
++        $lockPath = [IO.Path]::ChangeExtension($file.FullName, '.lock')
++        if (-not (Test-Path -LiteralPath $lockPath)) { continue }
++        try { $lock = [IO.File]::Open($lockPath, 'Open', 'ReadWrite', 'None'); $lock.Dispose(); continue }
++        catch [IO.IOException] { $null = $_ }
++        $slot = ConvertFrom-Json ([IO.File]::ReadAllText($file.FullName, $script:Utf8))
++        $slug = [string](Get-Prop $slot 'slug'); $marker = [string](Get-Prop $slot 'marker')
++        if ($slug -cnotmatch $script:SlugPattern -or $slug.Contains('..') -or $slug.EndsWith('.lock') -or
++            $marker -cnotmatch ('^gemini-queue/' + [regex]::Escape($slug) + '/[a-z0-9][a-z0-9.-]{1,63}/[1-9][0-9]*(?:/[^/]+)?$')) { throw 'CHAIN_LANE_STATE' }
++        $slot
++    }
++}
++
 +function Get-ChainBranchWork([string]$Branch) {
 +    <# Повертає активну позначку гілки з наявного стану смуг, без нового таймера чи реєстру.
 +
 +    Gemini/Codex пишуть gemini/<slug>; Claude може продовжувати іншу гілку зі state/branch-<hash>.txt.
 +    Поточний HEAD копії Claude враховує і першу спробу, яка ще не зберегла гілку продовження. #>
 +    if ($Branch.StartsWith('gemini/')) {
-+        $hb = Read-QuotaJson $OutDir 'heartbeat.json'
-+        if ($null -ne $hb) {
-+            foreach ($lane in @(Get-Prop $hb 'lanes')) {
-+                if ($null -eq $lane -or [string](Get-Prop $lane 'lane') -cnotmatch '^(codex|agy)$') { continue }
-+                foreach ($slot in @(Get-Prop $lane 'busy')) {
-+                    if ($null -eq $slot) { continue }
-+                    $marker = [string](Get-Prop $slot 'marker')
-+                    if ($marker -cmatch '^gemini-queue/([^/]+)/([a-z0-9][a-z0-9.-]{1,63})/[1-9][0-9]*(?:/[^/]+)?$' -and
-+                        $Branch -ceq "gemini/$($Matches[1])") { return $marker }
-+                }
-+            }
++        foreach ($slot in @(Get-ChainBusySlots $GeminiRunsDir '^(codex|agy)-[1-9][0-9]*$')) {
++            if ($Branch -ceq "gemini/$($slot.slug)") { return [string]$slot.marker }
 +        }
 +    }
 +    if ($Branch.StartsWith('claude/')) {
 +        $dir = Join-Path (Split-Path -Parent $WorkDir) 'claude-run'
-+        foreach ($file in @(Get-ChildItem -LiteralPath (Join-Path $dir 'slots') -Filter 'claude-*.json' -File -ErrorAction SilentlyContinue)) {
-+            if ($file.BaseName -cnotmatch '^claude-[1-9][0-9]*$') { continue }
-+            $lockPath = [IO.Path]::ChangeExtension($file.FullName, '.lock')
-+            if (-not (Test-Path -LiteralPath $lockPath)) { continue }
-+            try { $lock = [IO.File]::Open($lockPath, 'Open', 'ReadWrite', 'None'); $lock.Dispose(); continue }
-+            catch [IO.IOException] { $null = $_ }
-+            $slot = ConvertFrom-Json ([IO.File]::ReadAllText($file.FullName, $script:Utf8))
-+            $slug = [string](Get-Prop $slot 'slug'); $marker = [string](Get-Prop $slot 'marker')
-+            if ($slug -cnotmatch $script:SlugPattern -or $slug.Contains('..') -or $slug.EndsWith('.lock') -or
-+                $marker -cnotmatch ('^gemini-queue/' + [regex]::Escape($slug) + '/')) { throw 'CHAIN_LANE_STATE' }
++        foreach ($slot in @(Get-ChainBusySlots $dir '^claude-[1-9][0-9]*$')) {
++            $slug = [string]$slot.slug; $marker = [string]$slot.marker
 +            $branches = @("claude/$slug")
 +            $saved = Join-Path (Join-Path $dir 'state') ('branch-' + (Get-Sha256Hex $slug) + '.txt')
 +            if (Test-Path -LiteralPath $saved) { $branches += [IO.File]::ReadAllText($saved, $script:Utf8).Trim() }
@@ -78,7 +100,7 @@ index aa4f34bce38ca68054e41f8704a1b24671889ef3..fe82d02d0531d0606ac2930a31358481
  function Invoke-WrapperChain {
      <# PR коду -> незалежна перевірка; новий штамп збірки -> один GPU-прогін на коміті збірки. #>
      if ($DryRun) { return }
-@@ -501,6 +557,9 @@ function Invoke-WrapperChain {
+@@ -501,6 +560,9 @@ function Invoke-WrapperChain {
              $eligible = Test-RecentReviewHead $pr $heads $installed $now $hours
              Write-FileAtomic $statePath (([ordered]@{ main=$main; reviewed=$reviewed; live_active=$liveActive; live_since=$liveSince; live_stamps=@($liveStamps.Keys); live_pending=@($livePending); reviews=@($seen.Keys); installed_utc=$installed.ToString('o'); heads=$heads }) | ConvertTo-Json -Compress -Depth 5)
              if (-not $eligible) { continue }
@@ -89,18 +111,21 @@ index aa4f34bce38ca68054e41f8704a1b24671889ef3..fe82d02d0531d0606ac2930a31358481
                  foreach ($key in @($seen.Keys | Where-Object { $_ -cmatch ('^' + $n + ' [0-9a-f]{40} ') })) {
                      $oldHead = ($key -split ' ')[1]
 diff --git "a/\320\260\321\203\320\264\320\270\321\202/\320\260\320\264\320\260\320\277\321\202\320\265\321\200\320\270/gemini/\320\235\320\220\320\233\320\220\320\250\320\242\320\243\320\222\320\220\320\235\320\235\320\257.md" "b/\320\260\321\203\320\264\320\270\321\202/\320\260\320\264\320\260\320\277\321\202\320\265\321\200\320\270/gemini/\320\235\320\220\320\233\320\220\320\250\320\242\320\243\320\222\320\220\320\235\320\235\320\257.md"
-index 696c1758e4e9abc03924d5d6e0b16f8b28ad5115..96124f2614e8fad08d14c4320bedc67c4535eb37 100644
+index 696c175..6f1d33b 100644
 --- "a/\320\260\321\203\320\264\320\270\321\202/\320\260\320\264\320\260\320\277\321\202\320\265\321\200\320\270/gemini/\320\235\320\220\320\233\320\220\320\250\320\242\320\243\320\222\320\220\320\235\320\235\320\257.md"
 +++ "b/\320\260\321\203\320\264\320\270\321\202/\320\260\320\264\320\260\320\277\321\202\320\265\321\200\320\270/gemini/\320\235\320\220\320\233\320\220\320\250\320\242\320\243\320\222\320\220\320\235\320\235\320\257.md"
-@@ -431,7 +431,7 @@ $f = Join-Path "$env:USERPROFILE\gemini-outbox" $n
+@@ -431,9 +431,9 @@ $f = Join-Path "$env:USERPROFILE\gemini-outbox" $n
  |---|---|
  | `wrapper_probe.ps1` | `85116D04C22EB64CBFF52E66BCEAE9B1091577A889EDD58A8B634093A82BDBC6` |
  | `wrapper_update.ps1` | `4156307A17BDAE3AF7249E532947F659E99AA1349D159239159FAE60CA7E4F2B` |
 -| `wrapper_chain.ps1` | `99C1766CD93D0935C1804275B75F09C32C377427F347B91432D82869FAE34194` |
-+| `wrapper_chain.ps1` | `823456204B6F0C22F08786E09D3B8B937CCF6BB65952BF751DF26AA1B67F0ABA` |
++| `wrapper_chain.ps1` | `4394C6C00856782D41D7457B5F140A1FA11A8E7F3D4D9FC63FB7C91966B3109E` |
  | `gemini_run.ps1` | `ED151D76BA6658EA230A0442252F0D7D05C2F6D723461C383D8E10016206E8FE` |
- | `gemini_publish.ps1` | `73F2F2AA868DA86391FA9FACFD1F818AA8D1A76B9511F4DA891CBFE1E77087A9` |
+-| `gemini_publish.ps1` | `73F2F2AA868DA86391FA9FACFD1F818AA8D1A76B9511F4DA891CBFE1E77087A9` |
++| `gemini_publish.ps1` | `3C97912267FFEF59F72A96D44D63B40A52BDA32174FF36E8F1438B076FFC225B` |
  | `gemini_watch.ps1` | `69EFEBB07FF1AF51C382B753A95C50F3C1AC27B3008F2489992BEBE3FD0213AA` |
+ | `wrapper_health.ps1` | `B3E2C44C4F342A915B814854A7D7619EDE2E019B48DC4A50CF4C9DB304C2E531` |
+ | `queue_lanes.ps1` | `02868BB9FFE5320952634BA7A3E3D7B2F34D0F4D11699844F7429DFFDC66B909` |
 @@ -582,6 +582,10 @@ Claude; автор Gemini чи невідомий → Codex, потім хмар
  
  `Get-ReviewModels` вибирає одного іншого постачальника для `gemini/*`: фактичний `gpt-*`
@@ -112,8 +137,88 @@ index 696c1758e4e9abc03924d5d6e0b16f8b28ad5115..96124f2614e8fad08d14c4320bedc67c
  `Test-ReviewBranch` виключає `*/перевірка-*`, `*/pachka-*` й автозвіти.
  Після опублікованого вердикту `Test-ReviewedMerge` порівнює повний diff проти merge-base:
  чисте злиття main без зміни diff не створює нового наряду; звичайний коміт створює.
+@@ -630,3 +634,8 @@ CI й ноутбук запускають один повний перелік 
+ `GEMINI ОБГОРТКА: ЗАБЛОКОВАНО GPU|SLOTS: <причина>, позначок N` (причина GPU стійка: замок, `процес <назва з compute-apps>`
+ або зайнята пам'ять) — один на причину (повтор лише при зміні причини, стан `holds.json`); пульс диспетчера — лише
+ запас. Той самий код у `gemini-run`: рядок іде в `out/alerts`, публікатор перевіряє його заново (`HoldLineTemplate`, `wrapper_health.ps1`) і кладе у вихідні. Тіло #1856 не стверджує «Оновлено понад 5 хв тому»: підказка умовна.
++
++Ланцюг читає активність Codex і `agy` з `GeminiRunsDir/slots`: JSON позначки та зайнятий замок worker.
++Типовий `GeminiRunsDir` — `C:\Users\<GeminiUser>\gemini-runs`, як `RunsDir` планувальника;
++якщо його перенесено, публікатор запускають з відповідним `-GeminiRunsDir`. Стан Claude — `claude-run/slots`
++поруч із `WorkDir` публікатора. Знімок heartbeat не визначає активність жодної смуги.
+diff --git "a/\320\260\321\203\320\264\320\270\321\202/\320\260\320\264\320\260\320\277\321\202\320\265\321\200\320\270/gemini/\320\277\320\265\321\200\320\265\320\262\321\226\321\200\320\272\320\260/fake_cli.py" "b/\320\260\321\203\320\264\320\270\321\202/\320\260\320\264\320\260\320\277\321\202\320\265\321\200\320\270/gemini/\320\277\320\265\321\200\320\265\320\262\321\226\321\200\320\272\320\260/fake_cli.py"
+index 051ea51..52fb76c 100644
+--- "a/\320\260\321\203\320\264\320\270\321\202/\320\260\320\264\320\260\320\277\321\202\320\265\321\200\320\270/gemini/\320\277\320\265\321\200\320\265\320\262\321\226\321\200\320\272\320\260/fake_cli.py"
++++ "b/\320\260\321\203\320\264\320\270\321\202/\320\260\320\264\320\260\320\277\321\202\320\265\321\200\320\270/gemini/\320\277\320\265\321\200\320\265\320\262\321\226\321\200\320\272\320\260/fake_cli.py"
+@@ -42,15 +42,17 @@ def commit(path):
+     git('add', path)
+     git('-c', 'user.name=g', '-c', 'user.email=g@x', 'commit', '-q', '-m', 'крок: ' + path)
+ 
+-from fake_timeline import тримати as hold
++from fake_timeline import тримати as hold, замкнути
+ 
+ prompt_arg = args[-1]
+ path = re.search(r'файл (\S+) ', prompt_arg).group(1)
+ content = open(path, encoding='utf-8').read()
+ open(os.path.join(STATE, KIND + '.prompts.log'), 'a').write(content + '\n=====\n')
+ p = os.path.join(STATE, KIND + '.turns')
+-n = int(open(p).read()) + 1 if os.path.exists(p) else 1
+-open(p, 'w').write(str(n))
++with замкнути(p):
++    n = int(open(p).read()) + 1 if os.path.exists(p) else 1
++    with open(p, 'w') as counter:
++        counter.write(str(n))
+ m = re.search(r'ГОТОВО gemini/(\S+) <', content)
+ slug = m.group(1) if m else '?'
+ def done():
+diff --git "a/\320\260\321\203\320\264\320\270\321\202/\320\260\320\264\320\260\320\277\321\202\320\265\321\200\320\270/gemini/\320\277\320\265\321\200\320\265\320\262\321\226\321\200\320\272\320\260/fake_timeline.py" "b/\320\260\321\203\320\264\320\270\321\202/\320\260\320\264\320\260\320\277\321\202\320\265\321\200\320\270/gemini/\320\277\320\265\321\200\320\265\320\262\321\226\321\200\320\272\320\260/fake_timeline.py"
+index ecb285a..8ccb21f 100644
+--- "a/\320\260\321\203\320\264\320\270\321\202/\320\260\320\264\320\260\320\277\321\202\320\265\321\200\320\270/gemini/\320\277\320\265\321\200\320\265\320\262\321\226\321\200\320\272\320\260/fake_timeline.py"
++++ "b/\320\260\321\203\320\264\320\270\321\202/\320\260\320\264\320\260\320\277\321\202\320\265\321\200\320\270/gemini/\320\277\320\265\321\200\320\265\320\262\321\226\321\200\320\272\320\260/fake_timeline.py"
+@@ -2,13 +2,15 @@
+ import os
+ import time
+ import errno
++from contextlib import contextmanager
+ 
+ СТРОК_ЗАМКА_С = 30
+ КРОК_ЗАМКА_С = 0.001
+ 
+ 
+-def позначити(шлях, подія, слаг):
+-    """Дописує цілий рядок під замком, відкриваючи журнал після взяття замка."""
++@contextmanager
++def замкнути(шлях):
++    """Тримає міжпроцесний замок для цілої операції з файлом."""
+     with open(шлях + '.lock', 'a+b') as замок:
+         замок.seek(0, 2)
+         if not замок.tell():
+@@ -30,8 +32,7 @@ def позначити(шлях, подія, слаг):
+             import fcntl
+             fcntl.flock(замок, fcntl.LOCK_EX)
+         try:
+-            with open(шлях, 'a', encoding='utf-8') as журнал:
+-                журнал.write('%s %s %d\n' % (подія, слаг, int(time.time() * 1000)))
++            yield
+         finally:
+             if os.name == 'nt':
+                 замок.seek(0)
+@@ -39,6 +40,13 @@ def позначити(шлях, подія, слаг):
+             else:
+                 fcntl.flock(замок, fcntl.LOCK_UN)
+ 
++def позначити(шлях, подія, слаг):
++    """Дописує цілий рядок під замком, відкриваючи журнал після взяття замка."""
++    with замкнути(шлях):
++        with open(шлях, 'a', encoding='utf-8') as журнал:
++            журнал.write('%s %s %d\n' % (подія, слаг, int(time.time() * 1000)))
++
++
+ 
+ def тримати(слаг):
+     """Позначає початок і кінець заданого часу роботи заглушки."""
 diff --git "a/\320\260\321\203\320\264\320\270\321\202/\320\260\320\264\320\260\320\277\321\202\320\265\321\200\320\270/gemini/\320\277\320\265\321\200\320\265\320\262\321\226\321\200\320\272\320\260/side.ps1" "b/\320\260\321\203\320\264\320\270\321\202/\320\260\320\264\320\260\320\277\321\202\320\265\321\200\320\270/gemini/\320\277\320\265\321\200\320\265\320\262\321\226\321\200\320\272\320\260/side.ps1"
-index 1eec9380708083889e2fdac0a0c058ba7964db9f..ac5cb669f03fa4996cf220039ffdc59e34db0b84 100644
+index 1eec938..db724d4 100644
 --- "a/\320\260\321\203\320\264\320\270\321\202/\320\260\320\264\320\260\320\277\321\202\320\265\321\200\320\270/gemini/\320\277\320\265\321\200\320\265\320\262\321\226\321\200\320\272\320\260/side.ps1"
 +++ "b/\320\260\321\203\320\264\320\270\321\202/\320\260\320\264\320\260\320\277\321\202\320\265\321\200\320\270/gemini/\320\277\320\265\321\200\320\265\320\262\321\226\321\200\320\272\320\260/side.ps1"
 @@ -4,6 +4,10 @@ param([string]$Script, [string]$ArgsJson)
@@ -127,7 +232,17 @@ index 1eec9380708083889e2fdac0a0c058ba7964db9f..ac5cb669f03fa4996cf220039ffdc59e
  # Стенд не чіпає справжньої спільної теки ноутбука (C:\Users\Public\gemini\lanes): без LaneDir — тимчасова тека.
  if ((Get-Command $Script).Parameters.ContainsKey('LaneDir') -and -not $p.ContainsKey('LaneDir')) {
      $p['LaneDir'] = Join-Path ([System.IO.Path]::GetTempPath()) ('lanes-' + [guid]::NewGuid().ToString('N').Substring(0, 8))
-@@ -32,4 +36,6 @@ if ((Split-Path -Leaf $Script) -eq 'gemini_publish.ps1') {
+@@ -12,6 +16,9 @@ if ((Get-Command $Script).Parameters.ContainsKey('LaneDir') -and -not $p.Contain
+ if ((Get-Command $Script).Parameters.ContainsKey('UpdateRoot') -and -not $p.ContainsKey('UpdateRoot')) {
+     $p['UpdateRoot'] = Join-Path ([System.IO.Path]::GetTempPath()) ('update-' + [guid]::NewGuid().ToString('N'))
+ }
++if ((Get-Command $Script).Parameters.ContainsKey('GeminiRunsDir') -and -not $p.ContainsKey('GeminiRunsDir')) {
++    $p['GeminiRunsDir'] = Join-Path ([System.IO.Path]::GetTempPath()) ('gemini-runs-' + [guid]::NewGuid().ToString('N'))
++}
+ # Файл, що не завантажився, — провал стенда з причиною: без Main PowerShell знайшов би main.cpl (PATHEXT має .CPL)
+ # і відкрив "Миша – властивості" поверх вікон власника (29.10, 20 разів за 2 хв).
+ try { . $Script @p } catch { [Console]::Error.WriteLine("СТЕНД: $Script не завантажився: $($_.Exception.Message)"); exit 2 }
+@@ -32,4 +39,6 @@ if ((Split-Path -Leaf $Script) -eq 'gemini_publish.ps1') {
      function Test-DispatcherAction([string]$Line) { $true }
  }
  function Test-ExternalGpuFree { $true }
@@ -135,7 +250,7 @@ index 1eec9380708083889e2fdac0a0c058ba7964db9f..ac5cb669f03fa4996cf220039ffdc59e
 +function Get-ExternalGpuMiB { <# Дає вільну GPU синтетичному планувальнику. #> 0 }
  exit (Main)
 diff --git "a/\320\260\321\203\320\264\320\270\321\202/\320\260\320\264\320\260\320\277\321\202\320\265\321\200\320\270/gemini/\320\277\320\265\321\200\320\265\320\262\321\226\321\200\320\272\320\260/side_claude.ps1" "b/\320\260\321\203\320\264\320\270\321\202/\320\260\320\264\320\260\320\277\321\202\320\265\321\200\320\270/gemini/\320\277\320\265\321\200\320\265\320\262\321\226\321\200\320\272\320\260/side_claude.ps1"
-index 6ec9b02f9c89581af3c1cd5ceb806a9fd5b27d30..57395eec4a7e4755a60c92eb719726748e6190d1 100644
+index 6ec9b02..57395ee 100644
 --- "a/\320\260\321\203\320\264\320\270\321\202/\320\260\320\264\320\260\320\277\321\202\320\265\321\200\320\270/gemini/\320\277\320\265\321\200\320\265\320\262\321\226\321\200\320\272\320\260/side_claude.ps1"
 +++ "b/\320\260\321\203\320\264\320\270\321\202/\320\260\320\264\320\260\320\277\321\202\320\265\321\200\320\270/gemini/\320\277\320\265\321\200\320\265\320\262\321\226\321\200\320\272\320\260/side_claude.ps1"
 @@ -31,4 +31,6 @@ function Get-TaskRows {
@@ -145,8 +260,20 @@ index 6ec9b02f9c89581af3c1cd5ceb806a9fd5b27d30..57395eec4a7e4755a60c92eb71972674
 +# Планувальник читає той самий вхід напряму через Get-GpuBusyReason.
 +function Get-ExternalGpuMiB { <# Дає вільну GPU синтетичному планувальнику. #> 0 }
  exit (Main)
+diff --git "a/\320\260\321\203\320\264\320\270\321\202/\320\260\320\264\320\260\320\277\321\202\320\265\321\200\320\270/gemini/\320\277\320\265\321\200\320\265\320\262\321\226\321\200\320\272\320\260/\321\201\321\206\320\265\320\275\320\260\321\200\321\226\321\227_\320\266\320\270\320\262\320\270\321\205_pr.ps1" "b/\320\260\321\203\320\264\320\270\321\202/\320\260\320\264\320\260\320\277\321\202\320\265\321\200\320\270/gemini/\320\277\320\265\321\200\320\265\320\262\321\226\321\200\320\272\320\260/\321\201\321\206\320\265\320\275\320\260\321\200\321\226\321\227_\320\266\320\270\320\262\320\270\321\205_pr.ps1"
+index d51b9f6..cddb8f5 100644
+--- "a/\320\260\321\203\320\264\320\270\321\202/\320\260\320\264\320\260\320\277\321\202\320\265\321\200\320\270/gemini/\320\277\320\265\321\200\320\265\320\262\321\226\321\200\320\272\320\260/\321\201\321\206\320\265\320\275\320\260\321\200\321\226\321\227_\320\266\320\270\320\262\320\270\321\205_pr.ps1"
++++ "b/\320\260\321\203\320\264\320\270\321\202/\320\260\320\264\320\260\320\277\321\202\320\265\321\200\320\270/gemini/\320\277\320\265\321\200\320\265\320\262\321\226\321\200\320\272\320\260/\321\201\321\206\320\265\320\275\320\260\321\200\321\226\321\227_\320\266\320\270\320\262\320\270\321\205_pr.ps1"
+@@ -24,6 +24,7 @@ try {
+         $head = (& git -C $seed rev-parse HEAD).Trim(); $other = 'a' * 40
+         $bare = Join-Path $case 'repo.git'; & git clone -q --bare $remote $bare
+         . (Join-Path $SourceDir 'gemini_publish.ps1') -WorkDir "$case/pub" -OutboxDir "$case/lines" -OutDir "$case/out"
++        $GeminiRunsDir = "$case/gemini-runs"
+         $script:Repo = $bare; $script:NoHooks = Join-Path $case 'no-hooks'
+         foreach ($d in @($WorkDir,"$WorkDir/seen",$OutboxDir,$OutDir)) { [void][IO.Directory]::CreateDirectory($d) }
+         [void](Invoke-Git @('fetch','-q','origin','+refs/heads/main:refs/remotes/origin/main'))
 diff --git "a/\320\260\321\203\320\264\320\270\321\202/\320\260\320\264\320\260\320\277\321\202\320\265\321\200\320\270/gemini/\320\277\320\265\321\200\320\265\320\262\321\226\321\200\320\272\320\260/\321\201\321\206\320\265\320\275\320\260\321\200\321\226\321\227_\320\267\320\264\320\276\321\200\320\276\320\262\321\217.ps1" "b/\320\260\321\203\320\264\320\270\321\202/\320\260\320\264\320\260\320\277\321\202\320\265\321\200\320\270/gemini/\320\277\320\265\321\200\320\265\320\262\321\226\321\200\320\272\320\260/\321\201\321\206\320\265\320\275\320\260\321\200\321\226\321\227_\320\267\320\264\320\276\321\200\320\276\320\262\321\217.ps1"
-index af8674ece995ad58fe981909db7c56e93ecb5fb6..12b119ebc8f77b4579d7f3992a849c1c0be1d953 100644
+index af8674e..12b119e 100644
 --- "a/\320\260\321\203\320\264\320\270\321\202/\320\260\320\264\320\260\320\277\321\202\320\265\321\200\320\270/gemini/\320\277\320\265\321\200\320\265\320\262\321\226\321\200\320\272\320\260/\321\201\321\206\320\265\320\275\320\260\321\200\321\226\321\227_\320\267\320\264\320\276\321\200\320\276\320\262\321\217.ps1"
 +++ "b/\320\260\321\203\320\264\320\270\321\202/\320\260\320\264\320\260\320\277\321\202\320\265\321\200\320\270/gemini/\320\277\320\265\321\200\320\265\320\262\321\226\321\200\320\272\320\260/\321\201\321\206\320\265\320\275\320\260\321\200\321\226\321\227_\320\267\320\264\320\276\321\200\320\276\320\262\321\217.ps1"
 @@ -53,7 +53,7 @@ try {
@@ -168,33 +295,35 @@ index af8674ece995ad58fe981909db7c56e93ecb5fb6..12b119ebc8f77b4579d7f3992a849c1c
      $script:StateDir = Join-Path $RunsDir 'state'; [void][System.IO.Directory]::CreateDirectory($script:StateDir)
      $script:SlotDir = Join-Path $RunsDir 'slots'; [void][System.IO.Directory]::CreateDirectory($script:SlotDir)
 diff --git "a/\320\260\321\203\320\264\320\270\321\202/\320\260\320\264\320\260\320\277\321\202\320\265\321\200\320\270/gemini/\320\277\320\265\321\200\320\265\320\262\321\226\321\200\320\272\320\260/\321\201\321\206\320\265\320\275\320\260\321\200\321\226\321\227_\320\272\320\276\320\264\321\203_\320\267\320\261\321\226\321\200\320\272\320\270.ps1" "b/\320\260\321\203\320\264\320\270\321\202/\320\260\320\264\320\260\320\277\321\202\320\265\321\200\320\270/gemini/\320\277\320\265\321\200\320\265\320\262\321\226\321\200\320\272\320\260/\321\201\321\206\320\265\320\275\320\260\321\200\321\226\321\227_\320\272\320\276\320\264\321\203_\320\267\320\261\321\226\321\200\320\272\320\270.ps1"
-index 3f09e39d3dc0af96674114625e987e8645f84feb..612d4f5ed7990a930b00099fdc1ad11bf1f765fa 100644
+index 3f09e39..6e8e112 100644
 --- "a/\320\260\321\203\320\264\320\270\321\202/\320\260\320\264\320\260\320\277\321\202\320\265\321\200\320\270/gemini/\320\277\320\265\321\200\320\265\320\262\321\226\321\200\320\272\320\260/\321\201\321\206\320\265\320\275\320\260\321\200\321\226\321\227_\320\272\320\276\320\264\321\203_\320\267\320\261\321\226\321\200\320\272\320\270.ps1"
 +++ "b/\320\260\321\203\320\264\320\270\321\202/\320\260\320\264\320\260\320\277\321\202\320\265\321\200\320\270/gemini/\320\277\320\265\321\200\320\265\320\262\321\226\321\200\320\272\320\260/\321\201\321\206\320\265\320\275\320\260\321\200\321\226\321\227_\320\272\320\276\320\264\321\203_\320\267\320\261\321\226\321\200\320\272\320\270.ps1"
-@@ -21,7 +21,7 @@ try {
+@@ -21,7 +21,8 @@ try {
      [IO.File]::WriteAllText("$seed/джерела/a.py", '1', $utf)
      & git -C $seed add -A; & git -C $seed commit -q -m 'початкова'; & git -C $seed push -q origin main
      & git clone -q --bare $remote $bare
 -    . (Join-Path $SourceDir 'gemini_publish.ps1') -WorkDir "$tmp/pub" -OutboxDir "$tmp/out" -UpdateRoot "$tmp/update"
 +    . (Join-Path $SourceDir 'gemini_publish.ps1') -WorkDir "$tmp/pub" -OutDir "$tmp/gem-out" -OutboxDir "$tmp/out" -UpdateRoot "$tmp/update"
++    $GeminiRunsDir = "$tmp/gemini-runs"
      foreach ($dir in @($WorkDir, "$WorkDir/seen", $OutboxDir)) { [void][IO.Directory]::CreateDirectory($dir) }
      $script:Repo = $bare; $script:NoHooks = Join-Path $tmp 'no-hooks'
      [void](Invoke-Git @('fetch','-q','origin','+refs/heads/main:refs/remotes/origin/main'))
-@@ -108,7 +108,7 @@ try {
+@@ -108,7 +109,8 @@ try {
      $child = Join-Path $tmp 'restart.ps1'
      $childText = @"
  `$ErrorActionPreference = 'Stop'
 -. '$((Join-Path $SourceDir 'gemini_publish.ps1').Replace("'","''"))' -WorkDir '$($WorkDir.Replace("'","''"))' -OutboxDir '$($OutboxDir.Replace("'","''"))'
 +. '$((Join-Path $SourceDir 'gemini_publish.ps1').Replace("'","''"))' -WorkDir '$($WorkDir.Replace("'","''"))' -OutDir '$($OutDir.Replace("'","''"))' -OutboxDir '$($OutboxDir.Replace("'","''"))'
++`$GeminiRunsDir = '$($GeminiRunsDir.Replace("'","''"))'
  `$script:Repo = '$($bare.Replace("'","''"))'
  `$script:NoHooks = '$($script:NoHooks.Replace("'","''"))'
  function Get-ChainPulls { @() }
 diff --git "a/\320\260\321\203\320\264\320\270\321\202/\320\260\320\264\320\260\320\277\321\202\320\265\321\200\320\270/gemini/\320\277\320\265\321\200\320\265\320\262\321\226\321\200\320\272\320\260/\321\201\321\206\320\265\320\275\320\260\321\200\321\226\321\227_\320\272\321\226\320\275\320\265\321\206\321\214_\321\200\320\276\320\261\320\276\321\202\320\270.ps1" "b/\320\260\321\203\320\264\320\270\321\202/\320\260\320\264\320\260\320\277\321\202\320\265\321\200\320\270/gemini/\320\277\320\265\321\200\320\265\320\262\321\226\321\200\320\272\320\260/\321\201\321\206\320\265\320\275\320\260\321\200\321\226\321\227_\320\272\321\226\320\275\320\265\321\206\321\214_\321\200\320\276\320\261\320\276\321\202\320\270.ps1"
 new file mode 100644
-index 0000000000000000000000000000000000000000..a39ff8a6406f0f05f2bc212ce2efc78436c3fb0d
+index 0000000..f42e988
 --- /dev/null
 +++ "b/\320\260\321\203\320\264\320\270\321\202/\320\260\320\264\320\260\320\277\321\202\320\265\321\200\320\270/gemini/\320\277\320\265\321\200\320\265\320\262\321\226\321\200\320\272\320\260/\321\201\321\206\320\265\320\275\320\260\321\200\321\226\321\227_\320\272\321\226\320\275\320\265\321\206\321\214_\321\200\320\276\320\261\320\276\321\202\320\270.ps1"
-@@ -0,0 +1,104 @@
+@@ -0,0 +1,126 @@
 +﻿#Requires -Version 5.1
 +param([Parameter(Mandatory=$true)][string]$SourceDir, [switch]$Before)
 +$ErrorActionPreference = 'Stop'
@@ -209,6 +338,7 @@ index 0000000000000000000000000000000000000000..a39ff8a6406f0f05f2bc212ce2efc784
 +try {
 +    . (Join-Path $SourceDir 'gemini_publish.ps1') -WorkDir "$tmp/pub" -OutboxDir "$tmp/out"
 +    $OutDir = "$tmp/gem-out"
++    $GeminiRunsDir = "$tmp/gemini-runs"
 +    foreach ($dir in @($WorkDir, "$WorkDir/seen", "$WorkDir/state", $OutboxDir, $OutDir, "$tmp/claude-run/slots", "$tmp/claude-run/state")) {
 +        [void][IO.Directory]::CreateDirectory($dir)
 +    }
@@ -279,17 +409,39 @@ index 0000000000000000000000000000000000000000..a39ff8a6406f0f05f2bc212ce2efc784
 +        Write-FileAtomic "$copy/repo/.git" 'gitdir: ../meta'
 +        Check 'HEAD worktree читається через gitdir' ((Get-ChainBranchWork 'claude/нова-гілка') -ceq $marker)
 +        $lock.Dispose(); $lock = $null
++        $tokens = $null; $errors = $null
++        $ast = [Management.Automation.Language.Parser]::ParseFile((Join-Path $SourceDir 'gemini_run.ps1'), [ref]$tokens, [ref]$errors)
++        $heartbeat = $ast.Find({ param($node) $node -is [Management.Automation.Language.FunctionDefinitionAst] -and $node.Name -ceq 'Write-Heartbeat' }, $true)
++        Invoke-Expression $heartbeat.Extent.Text
++        function Get-UtcStamp($Date) { <# Форматує час справжнього Write-Heartbeat. #> $Date.ToUniversalTime().ToString("yyyy-MM-dd'T'HH:mm:ss'Z'") }
++        [void][IO.Directory]::CreateDirectory("$GeminiRunsDir/slots")
 +        foreach ($lane in @('codex','agy')) {
-+            $gm = "gemini-queue/спільний/gpt-test/2/p1"
++            $gm = "gemini-queue/спільний-$lane/gpt-test/2/p1"
++            $head = $(if ($lane -ceq 'codex') { 'f'*40 } else { '1'*40 })
++            Write-FileAtomic "$GeminiRunsDir/slots/$lane-1.json" ((@{slot="$lane-1";lane=$lane;slug="спільний-$lane";marker=$gm}) | ConvertTo-Json)
++            $lock = [IO.File]::Open("$GeminiRunsDir/slots/$lane-1.lock", 'OpenOrCreate', 'ReadWrite', 'None')
++            Write-Heartbeat 'TEST_ISOLATION'
++            $hb = ConvertFrom-Json ([IO.File]::ReadAllText("$OutDir/heartbeat.json"))
++            Check "${lane}: heartbeat ізоляції не має lanes" ($null -eq $hb.PSObject.Properties['lanes'])
++            Check "${lane}: зайнятий слот повʼязує гілку без heartbeat.lanes" ((Get-ChainBranchWork "gemini/спільний-$lane") -ceq $gm)
++            $n = CountReviews 2386
++            Tick $head "gemini/спільний-$lane"
++            Check "${lane}: активна голова — 0 перевірок" ((CountReviews 2386) -eq $n)
 +            Write-FileAtomic "$OutDir/heartbeat.json" ((@{lanes=@(@{lane=$lane;busy=@(@{marker=$gm})})}) | ConvertTo-Json -Depth 6)
-+            Check "${lane}: активна позначка повʼязує gemini/спільний" ((Get-ChainBranchWork 'gemini/спільний') -ceq $gm)
-+            Tick ('f'*40) 'gemini/спільний'
-+            Check "${lane}: активна голова не отримала перевірки" (@($script:Markers | Where-Object { $_ -ceq "автоперевірка-2386-$('f'*40)" }).Count -eq 0)
++            Write-FileAtomic "$WorkDir/state/done-$lane.json" ((@{line="GEMINI ОБГОРТКА: ГОТОВО gemini/спільний-$lane $head МОДЕЛЬ gpt-test"}) | ConvertTo-Json)
++            $lock.Dispose(); $lock = $null
++            Check "${lane}: старий busy з вільним замком не блокує" (-not (Get-ChainBranchWork "gemini/спільний-$lane"))
++            Tick $head "gemini/спільний-$lane"; Tick $head "gemini/спільний-$lane"
++            Check "${lane}: після ГОТОВО зі старим busy — 1 перевірка" ((CountReviews 2386) -eq ($n+1))
++            $blockedHead = $(if ($lane -ceq 'codex') { '2'*40 } else { '3'*40 })
++            $lock = [IO.File]::Open("$GeminiRunsDir/slots/$lane-1.lock", 'Open', 'ReadWrite', 'None')
++            Tick $blockedHead "gemini/спільний-$lane"
++            Check "${lane}: наступна активна голова — 0 перевірок" ((CountReviews 2386) -eq ($n+1))
++            Write-FileAtomic "$WorkDir/state/blocked-$lane.json" ((@{line="GEMINI ОБГОРТКА: ЗАБЛОКОВАНО gemini/спільний-$lane BLOCKED"}) | ConvertTo-Json)
++            $lock.Dispose(); $lock = $null
++            Tick $blockedHead "gemini/спільний-$lane"; Tick $blockedHead "gemini/спільний-$lane"
++            Check "${lane}: після ЗАБЛОКОВАНО — 1 перевірка" ((CountReviews 2386) -eq ($n+2))
 +        }
-+        Write-FileAtomic "$OutDir/heartbeat.json" '{"lanes":[{"lane":"codex","busy":[]}]}'
-+        Write-FileAtomic "$WorkDir/state/blocked.json" ((@{line='GEMINI ОБГОРТКА: ЗАБЛОКОВАНО gemini/спільний BLOCKED'}) | ConvertTo-Json)
-+        Tick ('f'*40) 'gemini/спільний'; Tick ('f'*40) 'gemini/спільний'
-+        Check 'ЗАБЛОКОВАНО теж звільняє голову: одна перевірка' (@($script:Markers | Where-Object { $_ -ceq "автоперевірка-2386-$('f'*40)" }).Count -eq 1)
 +    }
 +} finally {
 +    if ($null -ne $lock) { $lock.Dispose() }
@@ -297,23 +449,23 @@ index 0000000000000000000000000000000000000000..a39ff8a6406f0f05f2bc212ce2efc784
 +    Remove-Item -LiteralPath $tmp -Recurse -Force
 +}
 +if ($bad) { "ПІДСУМОК: ✗ $bad"; exit 1 }
-+'ПІДСУМОК: ✗ 0'
 +exit 0
 diff --git "a/\320\260\321\203\320\264\320\270\321\202/\320\260\320\264\320\260\320\277\321\202\320\265\321\200\320\270/gemini/\320\277\320\265\321\200\320\265\320\262\321\226\321\200\320\272\320\260/\321\201\321\206\320\265\320\275\320\260\321\200\321\226\321\227_\320\273\320\260\320\275\321\206\321\216\320\263\320\260.ps1" "b/\320\260\321\203\320\264\320\270\321\202/\320\260\320\264\320\260\320\277\321\202\320\265\321\200\320\270/gemini/\320\277\320\265\321\200\320\265\320\262\321\226\321\200\320\272\320\260/\321\201\321\206\320\265\320\275\320\260\321\200\321\226\321\227_\320\273\320\260\320\275\321\206\321\216\320\263\320\260.ps1"
-index 9a73e1d5ecfe891a38e6c44bf690dd4ca7834709..a4fc1c26983d7c8cf2937649bb77269012e6bba2 100644
+index 9a73e1d..f71a55e 100644
 --- "a/\320\260\321\203\320\264\320\270\321\202/\320\260\320\264\320\260\320\277\321\202\320\265\321\200\320\270/gemini/\320\277\320\265\321\200\320\265\320\262\321\226\321\200\320\272\320\260/\321\201\321\206\320\265\320\275\320\260\321\200\321\226\321\227_\320\273\320\260\320\275\321\206\321\216\320\263\320\260.ps1"
 +++ "b/\320\260\321\203\320\264\320\270\321\202/\320\260\320\264\320\260\320\277\321\202\320\265\321\200\320\270/gemini/\320\277\320\265\321\200\320\265\320\262\321\226\321\200\320\272\320\260/\321\201\321\206\320\265\320\275\320\260\321\200\321\226\321\227_\320\273\320\260\320\275\321\206\321\216\320\263\320\260.ps1"
-@@ -20,7 +20,7 @@ try {
+@@ -20,7 +20,8 @@ try {
      [IO.File]::WriteAllText("$seed/джерела/a.py", '1', $utf)
      & git -C $seed add -A; & git -C $seed commit -q -m 'початкова'; & git -C $seed push -q origin main
      $bare = Join-Path $tmpRoot 'repo.git'; & git clone -q --bare $remote $bare
 -    . (Join-Path $SourceDir 'gemini_publish.ps1') -WorkDir "$tmpRoot/pub" -OutboxDir "$tmpRoot/out" -UpdateRoot "$tmpRoot/update"
 +    . (Join-Path $SourceDir 'gemini_publish.ps1') -WorkDir "$tmpRoot/pub" -OutDir "$tmpRoot/gem-out" -OutboxDir "$tmpRoot/out" -UpdateRoot "$tmpRoot/update"
++    $GeminiRunsDir = "$tmpRoot/gemini-runs"
      foreach ($d in @($WorkDir, (Join-Path $WorkDir 'seen'), $OutboxDir)) { [void][IO.Directory]::CreateDirectory($d) }
      $script:Repo = $bare; $script:NoHooks = Join-Path $tmpRoot 'no-hooks'
      [void](Invoke-Git @('fetch','-q','origin','+refs/heads/main:refs/remotes/origin/main'))
 diff --git "a/\320\260\321\203\320\264\320\270\321\202/\320\260\320\264\320\260\320\277\321\202\320\265\321\200\320\270/gemini/\320\277\320\265\321\200\320\265\320\262\321\226\321\200\320\272\320\260/\321\201\321\206\320\265\320\275\320\260\321\200\321\226\321\227_\320\273\320\260\320\275\321\206\321\216\320\263\320\260.sh" "b/\320\260\321\203\320\264\320\270\321\202/\320\260\320\264\320\260\320\277\321\202\320\265\321\200\320\270/gemini/\320\277\320\265\321\200\320\265\320\262\321\226\321\200\320\272\320\260/\321\201\321\206\320\265\320\275\320\260\321\200\321\226\321\227_\320\273\320\260\320\275\321\206\321\216\320\263\320\260.sh"
-index 9afd43a4973115030b5783986e5cf43e913d97d2..25c2e1494ea751a59599e1207f1343d7e63f4683 100644
+index 9afd43a..25c2e14 100644
 --- "a/\320\260\321\203\320\264\320\270\321\202/\320\260\320\264\320\260\320\277\321\202\320\265\321\200\320\270/gemini/\320\277\320\265\321\200\320\265\320\262\321\226\321\200\320\272\320\260/\321\201\321\206\320\265\320\275\320\260\321\200\321\226\321\227_\320\273\320\260\320\275\321\206\321\216\320\263\320\260.sh"
 +++ "b/\320\260\321\203\320\264\320\270\321\202/\320\260\320\264\320\260\320\277\321\202\320\265\321\200\320\270/gemini/\320\277\320\265\321\200\320\265\320\262\321\226\321\200\320\272\320\260/\321\201\321\206\320\265\320\275\320\260\321\200\321\226\321\227_\320\273\320\260\320\275\321\206\321\216\320\263\320\260.sh"
 @@ -4,3 +4,4 @@ H=$(cd "$(dirname "$0")" && pwd); . "$H/середовище.sh"
@@ -322,15 +474,36 @@ index 9afd43a4973115030b5783986e5cf43e913d97d2..25c2e1494ea751a59599e1207f1343d7
  "${PWSH:-pwsh}" -NoProfile -File "$(wp "$H/сценарії_менше_прогонів.ps1")" -SourceDir "$(wp "$H/..")"
 +"${PWSH:-pwsh}" -NoProfile -File "$(wp "$H/сценарії_кінець_роботи.ps1")" -SourceDir "$(wp "$H/..")"
 diff --git "a/\320\260\321\203\320\264\320\270\321\202/\320\260\320\264\320\260\320\277\321\202\320\265\321\200\320\270/gemini/\320\277\320\265\321\200\320\265\320\262\321\226\321\200\320\272\320\260/\321\201\321\206\320\265\320\275\320\260\321\200\321\226\321\227_\320\274\320\265\320\275\321\210\320\265_\320\277\321\200\320\276\320\263\320\276\320\275\321\226\320\262.ps1" "b/\320\260\321\203\320\264\320\270\321\202/\320\260\320\264\320\260\320\277\321\202\320\265\321\200\320\270/gemini/\320\277\320\265\321\200\320\265\320\262\321\226\321\200\320\272\320\260/\321\201\321\206\320\265\320\275\320\260\321\200\321\226\321\227_\320\274\320\265\320\275\321\210\320\265_\320\277\321\200\320\276\320\263\320\276\320\275\321\226\320\262.ps1"
-index 0970ac484d785d4745f2f0a8a852fd2443f41806..fdb8b07564634dc758606a9b21a46c894250ea0d 100644
+index 0970ac4..f09c751 100644
 --- "a/\320\260\321\203\320\264\320\270\321\202/\320\260\320\264\320\260\320\277\321\202\320\265\321\200\320\270/gemini/\320\277\320\265\321\200\320\265\320\262\321\226\321\200\320\272\320\260/\321\201\321\206\320\265\320\275\320\260\321\200\321\226\321\227_\320\274\320\265\320\275\321\210\320\265_\320\277\321\200\320\276\320\263\320\276\320\275\321\226\320\262.ps1"
 +++ "b/\320\260\321\203\320\264\320\270\321\202/\320\260\320\264\320\260\320\277\321\202\320\265\321\200\320\270/gemini/\320\277\320\265\321\200\320\265\320\262\321\226\321\200\320\272\320\260/\321\201\321\206\320\265\320\275\320\260\321\200\321\226\321\227_\320\274\320\265\320\275\321\210\320\265_\320\277\321\200\320\276\320\263\320\276\320\275\321\226\320\262.ps1"
-@@ -15,7 +15,7 @@ function Scenario([string]$Name, [scriptblock]$Body) {
+@@ -15,7 +15,8 @@ function Scenario([string]$Name, [scriptblock]$Body) {
      try { & $Body } catch { Check "$Name — $($_.Exception.Message) $($_.ScriptStackTrace)" $false }
  }
  try {
 -    . (Join-Path $SourceDir 'gemini_publish.ps1') -WorkDir "$tmp/pub" -OutboxDir "$tmp/out"
 +    . (Join-Path $SourceDir 'gemini_publish.ps1') -WorkDir "$tmp/pub" -OutDir "$tmp/gem-out" -OutboxDir "$tmp/out"
++    $GeminiRunsDir = "$tmp/gemini-runs"
      foreach ($dir in @($WorkDir,"$WorkDir/state","$WorkDir/seen",$OutboxDir)) { [void][IO.Directory]::CreateDirectory($dir) }
      . (Join-Path $SourceDir 'queue_lanes.ps1')
      $config = [pscustomobject]@{codex='gpt-review';agy='gemini-review';claude='cc-claude-review'}
+diff --git "a/\320\260\321\203\320\264\320\270\321\202/\320\260\320\264\320\260\320\277\321\202\320\265\321\200\320\270/gemini/\320\277\320\265\321\200\320\265\320\262\321\226\321\200\320\272\320\260/\321\201\321\206\320\265\320\275\320\260\321\200\321\226\321\227_\321\201\320\274\321\203\320\263.sh" "b/\320\260\321\203\320\264\320\270\321\202/\320\260\320\264\320\260\320\277\321\202\320\265\321\200\320\270/gemini/\320\277\320\265\321\200\320\265\320\262\321\226\321\200\320\272\320\260/\321\201\321\206\320\265\320\275\320\260\321\200\321\226\321\227_\321\201\320\274\321\203\320\263.sh"
+index 9fe9054..9b4c2d3 100644
+--- "a/\320\260\321\203\320\264\320\270\321\202/\320\260\320\264\320\260\320\277\321\202\320\265\321\200\320\270/gemini/\320\277\320\265\321\200\320\265\320\262\321\226\321\200\320\272\320\260/\321\201\321\206\320\265\320\275\320\260\321\200\321\226\321\227_\321\201\320\274\321\203\320\263.sh"
++++ "b/\320\260\321\203\320\264\320\270\321\202/\320\260\320\264\320\260\320\277\321\202\320\265\321\200\320\270/gemini/\320\277\320\265\321\200\320\265\320\262\321\226\321\200\320\272\320\260/\321\201\321\206\320\265\320\275\320\260\321\200\321\226\321\227_\321\201\320\274\321\203\320\263.sh"
+@@ -149,6 +149,15 @@ for N in 6 8; do
+   ACTUAL=$(tl codex)
+   chk "смуги.json codex=$N → $N водночас (є: $ACTUAL)" '[ "$ACTUAL" = "$N" ]'
+   chk "усі $N нарядів закінчено" '[ "$(grep -c "^end " "$W/timeline.txt")" = "$N" ]'
++  chk "лічильник codex.turns зберіг усі $N ходів" '[ "$(cat "$W/fake/codex.turns")" = "$N" ]'
++  DONE=$($PY - "$(wp "$W/gout")" <<'P'
++import json, pathlib, sys
++print(sum(json.loads(p.read_text(encoding='utf-8-sig')).get('code') == 'DONE'
++          for p in pathlib.Path(sys.argv[1]).glob('*.json') if p.name != 'heartbeat.json'))
++P
++)
++  chk "worker опублікував $N результатів DONE (є: $DONE)" '[ "$DONE" = "$N" ]'
++
+ done
+ 
+ echo; [ $BAD = 0 ] && echo "ВСЕ ✓" || echo "ЗБІЙ ✗"; exit $BAD
