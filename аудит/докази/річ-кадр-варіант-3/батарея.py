@@ -27,6 +27,9 @@ def main():
         print('Початок:', назва, flush=True)
         with (ДОКАЗИ / ('батарея-' + назва + '.txt')).open('wb') as вихід:
             пр = subprocess.run(команда, cwd=КОРІНЬ / 'джерела', env=оточення, stdout=вихід, stderr=subprocess.STDOUT)
+        журнал = ДОКАЗИ / ('батарея-' + назва + '.txt')
+        текст = журнал.read_text(encoding='utf-8')
+        журнал.write_text('\n'.join(р.rstrip() for р in текст.splitlines()) + '\n', encoding='utf-8')
         запис = dict(назва=назва, команда=команда, код=пр.returncode, секунд=round(time.monotonic() - початок, 1))
         звіт.append(запис)
         (ДОКАЗИ / 'батарея.json').write_text(json.dumps(звіт, ensure_ascii=False, indent=2) + '\n', encoding='utf-8')
