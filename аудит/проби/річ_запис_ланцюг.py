@@ -1,12 +1,6 @@
 """Перевіряє файлові межі на фрагментах Python і JS, не виконуючи продукт."""
-import importlib
-import json
-import os
+import importlib, json, os, subprocess, sys, tempfile
 from pathlib import Path
-import subprocess
-import sys
-import tempfile
-
 
 def головна():
     """Зіставляє семантичні очікування з місцями й наявністю файлових свідків."""

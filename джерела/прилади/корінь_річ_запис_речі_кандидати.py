@@ -53,6 +53,12 @@ def кандидати(аналіз, місця):
                    в.a[0].v in ("search", "match", "fullmatch", "findall", "finditer", "sub", "subn", "test", "exec")]
         if not регекси:
             continue
+        for в in регекси:
+            аргументи = [е for арг in в.a[1:] for е in вирази(арг)]
+            пряма_межа = any(е.k == "sub" or (е.k == "call" and е.a[0].k == "attr" and е.a[0].v in ("get", "pop")) for е in аргументи)
+            if not пряма_межа:
+                причина = "Скалярний читач: виклик регексу не є межею поля; місце п.3 належить вихідному читанню запису."
+                додати(ф.file, в.line, 3, причина, {"місце": f"{ф.file}:{в.line}", "причина": причина}, ф.fid)
         читання = []
         for в in вираз:
             if в.k == "sub" and в.a[1].k == "str":
