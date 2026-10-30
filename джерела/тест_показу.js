@@ -862,6 +862,80 @@ function мостПриміркиЗаглушка(w){
     тест("без винятків", помилки.length === 0, помилки);
   }
 
+  розділ("1д-6. СКЛАДЕНІ ПІДПИСИ: СТОРОЖ ПРОЗИ ЗБЕРІГАЄ НАЗВИ Й ВІДСІКАЄ ЧУЖИЙ ДОПИС");
+  {
+    const {w, d, помилки} = сторінка({url: "https://mightyrochy.github.io/kod-shi-data/показ.html"});
+    await чекатиСтарт(w);
+    w.eval(`П = {картки: [{рука: '1', текст: 'Образ', опис: 'Образ', речі: [
+      {id: 'ж-1@gepur.com', назва: 'Gepur', ціна: 3000, слот: 'сукня', фото: null}],
+      мітки: [], знахідки: [], питання: [], етапи: {}, свідомі: [], фото_не_ті: [], дібрав_код_слоти: []}]};`);
+    const шаблон = w.eval("ШАБЛОНИ_ЗБОЮ_П.without_text");
+    for (const урл of [null, "https://gepur.com/item"]){
+      for (const частина of ["піджак", "Please retry later", "palette_scheme_note", "Вам пасує"]){
+        w.__річ = {урл, частина};
+        const вузол = w.eval(`Object.assign(П.картки[0].речі[0],
+          {урл: window.__річ.урл, частина_комплекту: window.__річ.частина}); рендерКартку(0)`);
+        const назва = вузол.querySelector(урл ? ".річ a" : ".річ span.назва").textContent;
+        тест("назва " + (урл ? "з посиланням" : "без посилання") + ": «" + частина + "»",
+          назва === (частина === "піджак" ? "Gepur — лише піджак із комплекту" : шаблон), назва);
+      }
+    }
+    w.eval("П.картки[0].речі[0].частина_комплекту = ''; document.getElementById('картки').appendChild(рендерКартку(0));");
+    for (const назва of ["Gepur", "Вам пасує"]){
+      w.__назва = назва;
+      w.eval("відповідь(0).чому_не_ця = {річ: {назва: window.__назва, коди: []}}; малюватиЧомуНеЦяП(0)");
+      const підпис = d.querySelector("#к-0 .чому-не-ця .мітка-тиха").textContent;
+      тест("питання заміни: «" + назва + "»", підпис === (назва === "Gepur"
+        ? "Чому замінити «Gepur»? необовʼязково" : шаблон), підпис);
+    }
+    w.eval(`усіВердиктиЗКлючами = async () => [{зап: {}, ключ: 1}];
+      ВИБІР_ВИВАНТАЖЕННЯ_П = [{зап: {}, ключ: 1, вх: {checked: true}}];
+      малюватиВибірВивантаженняП = () => {};
+      вивантажитиФайломП = async () => ({ім: 'verdykty-test.json', байтів: 2048, позначка: window.__допис});`);
+    for (const ід of ["ж-файл", "жв-файл"]){
+      for (const допис of ["", " Please retry later", " palette_scheme_note", " Вам пасує"]){
+        w.__допис = допис;
+        await d.getElementById(ід).onclick();
+        const підпис = d.getElementById("ж-стан").textContent;
+        тест("стан файла " + ід + ": «" + допис + "»", допис ? підпис === шаблон
+          : підпис.includes("Збережено файлом «verdykty-test.json»: вердиктів 1"), підпис);
+      }
+    }
+    w.eval(`URL.createObjectURL = () => 'blob:portrait'; полотно = () => {}; підвʼязатиКартку(0);
+      document.getElementById('кф-0').onchange({target: {files: [new File([''], 'My portrait.png')]}});`);
+    тест("назва локального файла збережена в підписі", d.getElementById("кст-0").textContent
+      === "My portrait.png · показано локально, нікуди не вантажиться", d.getElementById("кст-0").textContent);
+    w.eval(`П.прогін = 'підписи'; усіВердикти = async () => [
+      {прогін: 'підписи', позиція: 1, вердикт_людини: window.__вердикт}];`);
+    for (const текст of ["офіс", "Please retry later", "palette_scheme_note", "Вам пасує"]){
+      w.__вердикт = текст;
+      w.eval("П.випадок_рядок = 'Робота · ' + window.__вердикт");
+      await w.eval("window.зберегтиОбраз()");
+      await w.eval("window.оновитиБібліотеку()");
+      const рядок = d.querySelector(".біб-образ small").textContent;
+      const вердикт = d.querySelector(".біб-образ em").textContent;
+      тест("бібліотека, опис: «" + текст + "»", текст === "офіс" ? рядок.endsWith(" · офіс") : рядок === шаблон, рядок);
+      тест("бібліотека, вердикт: «" + текст + "»", вердикт === (текст === "офіс" ? текст : шаблон), вердикт);
+    }
+    await w.eval("П.випадок_рядок = 'Робота · Gepur'; window.зберегтиОбраз()");
+    await w.eval("П = null; window.оновитиБібліотеку()");
+    тест("назва бренду в бібліотеці — зі збереженої картки без активного пакета",
+      d.querySelector(".біб-образ small").textContent.endsWith(" · Gepur"), d.querySelector(".біб-образ small").textContent);
+    w.eval(`HTMLDialogElement.prototype.showModal = function() {};
+      HTMLDialogElement.prototype.close = function() {};`);
+    for (const адреса of ["https://bridge.example/api", "https://bridge.example/palette_scheme_note", "https://ви.укр/api"]){
+      w.__адреса = адреса;
+      w.eval("непідтвердженийМістП = {адреса: window.__адреса}");
+      const згода = w.eval("підтвердитиАдресуМостаП()");
+      const діалог = d.querySelector("dialog");
+      const підпис = діалог.querySelector("p").textContent;
+      тест("адреса моста: «" + адреса + "»", підпис === (адреса.endsWith("/palette_scheme_note") ? шаблон : "Адреса: " + адреса), підпис);
+      діалог.querySelector("button").click();
+      await згода;
+    }
+    тест("без винятків", помилки.length === 0, помилки);
+  }
+
   розділ("1е. МОВНА МОДЕЛЬ ВЕДЕ РОЗМОВУ: ОДИН ВИКЛИК НА ХІД → ПАСПОРТ КОДОМ → ТЕКСТ ПІСЛЯ СУДУ (М-5, п.14; Т-12, Т-16)");
   {
     /* Стоїть перед 2є з тієї ж причини, що й 1д. Рішення власника 27.09 (М-5, аудит/ПРОДУКТ.md п.14):
