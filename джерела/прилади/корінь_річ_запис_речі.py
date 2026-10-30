@@ -913,7 +913,7 @@ class Рушій:
             return порожньо
         if k == "name":
             н = s.вузол(ф, е.v)
-            if ф.lang == "js" and е.v == "document" and н[0] == "g":
+            if ф.lang == "js" and е.v == "document" and н[0] == "g" and "джерела/показ" not in ф.file:
                 return {н, SEED["D"]}, {н, SEED["D"]}
             return {н}, {н}
         if k == "str":
@@ -1102,6 +1102,8 @@ class Рушій:
             а0 = арги_д[0]
             return (а0.k == "sub" and а0.a[1].k == "str" and а0.a[1].v in ("тіло", "body", "text", "content")) or \
                 (а0.k == "attr" and а0.v in ("text", "content"))
+        if ф.lang == "py" and функц.k == "attr" and ім_я in ("evaluate", "eval_on_selector", "eval_on_selector_all"):
+            return True  # скрипт, виконаний на сторінці крамниці (`document` коду сторінки)
         if функц.k == "attr" and ім_я in КОРЕНІ_Д_МЕТОДИ:
             об = функц.a[0]
             while об.k == "attr":
