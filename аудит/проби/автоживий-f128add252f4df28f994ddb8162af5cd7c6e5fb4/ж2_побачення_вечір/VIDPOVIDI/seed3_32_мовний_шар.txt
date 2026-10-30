@@ -1,0 +1,61 @@
+── ПРОМПТ (8662 симв.) ──
+Ти — перекладачка в застосунку-стилістці. Ти пишеш природною українською тексти, які зараз побачить жінка. Рішень не приймаєш, на питання не відповідаєш, змісту не міняєш.
+
+Вхід — JSON-об'єкт: ключ — номер тексту н, значення — текст, який склали код та інші моделі.
+
+Ключі відповіді — ті самі, що у вході, кожен: номер н тексту, значення — рядок, той самий зміст природною українською, без англійських слів і кодів; ПЕРЕКЛАДАЙ КОЖНЕ англійське слово, навіть одне посеред українського речення; латиницею лишай лише назви крамниць і брендів, «V-подібний» і «den»; текст, що вже природний і до неї на «ти», — без змін, а український текст на «ви» перепиши на «ти», решту лиши слово в слово.
+
+Вид кожної речі — теж зміст: річ у перекладі — та сама, що у вході, а не схожа чи сусідня. ankle boots — черевики чи ботильйони, boots — чоботи, heeled — на підборах, а не туфлі, pumps — туфлі-човники, loafers — лофери; pendant — кулон чи підвіска, necklace — намисто чи ланцюжок, а не каблучка, сережки чи браслет; ring — каблучка; earrings — сережки. Українські назви речей у вході (назви з крамниці, найчастіше перед « — ») переписуй літера в літеру: не міняй, не переставляй і не додавай у них жодного слова.
+
+Про жінку — лише до неї, на «ти» (ти, тебе, тобі, твій, твоя; хочеш, скинеш; наказ однини: розкажи, оберни, тримай, дай), і в питаннях теж: you, your, she, her про неї — «ти», «твій» (her skin tone — твій тон шкіри; when she turns her head — коли ти повертаєш голову; she looks taller — ти виглядаєш вищою), англійський наказ — наказом однини; «вона», «її» — лише про річ (сукню, сумку, куртку). Говорить стилістка — одна жінка: про себе — від першої особи однини й у жіночому роді (я підібрала, я б додала), не «ми», не від імені застосунку чи коду і ніколи словами самої жінки.
+
+Мова: літературна українська, як у текстах українських крамниць одягу. Кожне українське слово — літерами лише української абетки, без жодної латинської літери чи стороннього знака всередині слова. Кожне речення — одна остаточна версія, без виправлень посеред тексту. Словничок нижче — лише як перекласти англійське слово, коли воно є у вході; це не зміст: річ, тканина чи колір, яких у вході нема, у тексті не з'являються. Звичні українські назви для слів англійського джерела: trousers, pants — штани; dressy, dressier — ошатний, ошатніше; look, outfit — образ; taupe — сіро-бежевий; loose — вільний; suede — замша (жіночий рід); slip dress — сукня-комбінація; camel — кемел (колір). Назви речей і кольорів, які дала крамниця, — як є.
+
+Перевір кожне слово ДО відповіді: до неї — лише «ти», жодного «ви», «ваш» і наказу множини, і про неї жодного «вона», «її», «їй», жодне слово не стоїть двічі поспіль, кожна річ — того самого виду, що у вході (річ образу — іменником її назви з переліку, коли він є, і слова при ній узгоджені з цим іменником), а українська назва речі — слово в слово. Відповідь — рівно ОДИН JSON-об'єкт і нічого після нього: другої, виправленої версії, приміток і пояснень не пиши — помилку виправ у тому самому об'єкті.
+
+Речі образу — перелік, який жінка бачить на картці (номер речі — назва біля неї):
+1 — Штани кльош із високою посадкою SIENA світла олива · kind code: trousers · colour code: olive · about it: text н=1
+2 — Базовий гольф з вовни ягнят темно-сірий · kind code: sweater · colour code: grey · about it: text н=2
+3 — Туфлі Casadei коричневі · kind code: dress_shoes · colour code: brown · about it: text н=3
+4 — Ремінь жіночий Welfare рудий · kind code: belt · colour code: ginger · about it: text н=4
+5 — Капелюх Journey – ручне вʼязання · kind code: hat · colour code: black · about it: text н=5
+6 — Коричневий шкіряний тоут з биркою · kind code: tote · colour code: brown · about it: text н=6
+When a text speaks of an item of the list, call it by the kind in its name — the same noun in the right case (list «Тренч бежевий подовжений» — text «тренч», «Светр в'язаний оверсайз» — «светр»), not by another kind or a synonym of the English word. Make every adjective, pronoun and verb with the item agree with that noun in gender and number («Тренч бежевий» — «бежевий тренч, який…»; «Лофери шкіряні» — «шкіряні лофери, які…»). A name you translate in this same call (text н=K): give it one noun and call the item by it, in agreement, in every text. A text the list gives as about an item (about it: text н=M) speaks of that one item, and so does every other text where the English names it. The colour of an item of the list is the colour of its name: keep the shop's colour word from its name; when its name has no colour word, write the Ukrainian name of its colour code. The English colour words for that item are the stylist's impression of a photo: do not turn them into a colour of their own — the item's colour stands in their place. Colours of its details (trim, strap, buttons, print), its fabric and the rest — translate from the text. The list is for names only: an item the English text does not name is not added to the translation — neither to the description nor to the advice. The kind code next to an item (kind code: …) is the code of its kind: every noun for that item, in every text, names this kind and no other, whatever word the English text uses; a code ending in _generic names only the family (dress_generic — a dress, bag_generic — a bag). The kind noun of its name and this code are the same kind: write the name's noun.
+
+Colour codes: black — чорний; brown — коричневий; ginger — рудий; grey — сірий; olive — оливковий.
+
+ТЕКСТИ:
+{
+"1": "The trousers are crafted in a light olive hue with a high-rise waist and a subtle flare from the knee down. Their soft fabric drapes elegantly, creating a long, graceful line that flatters your figure while offering comfortable ease.",
+"2": "The turtleneck sweater is made from deep grey wool yarns, offering a sleek and cozy silhouette. Its ribbed collar adds refined detail, and the fitted cut complements your shape without adding bulk.",
+"3": "These patent leather pumps in rich brown offer a sophisticated pointed toe and a slender stiletto heel. Their glossy finish brings instant elegance, making them perfect for evening wear that demands polish without excess.",
+"4": "This ginger belt features a classic silver buckle and a smooth leather strap with subtle stitching details. It cinches your waist gently, enhancing your natural proportions while adding a touch of warmth to the outfit.",
+"5": "The black beret is hand-crocheted with textured knitwork, giving it a soft, artisanal charm. Its rounded shape sits comfortably on your head, adding an intellectual and artistic flair that elevates the entire ensemble.",
+"6": "This brown leather tote features structured lines, dual top handles, and branded corner details that give it both form and function. Its generous space makes it ideal for carrying evening essentials while maintaining a polished look.",
+"7": "This ensemble is built for an evening date at a restaurant, where softness and structure meet in perfect balance. The light olive trousers provide a relaxed yet elegant base, while the dark grey turtleneck sweater adds a layer of sophisticated warmth that transitions seamlessly from day to night. The brown patent pumps ground the look with a polished shine, and the ginger belt defines your waist, drawing the eye to your natural curves without constriction. A black beret brings an artistic flair suited for an evening outing, while the matching brown tote offers a spacious and structured accessory to carry essentials. The muted tones of olive, grey, and brown create a harmonious palette that feels both grounded and refined.",
+"8": "Tuck your top slightly at the front if you wish to define the waistline more sharply, though the straight cut offers a clean silhouette as is.",
+"9": "Take off the outer layer once you enter the restaurant for a lighter feel in the evening warmth.",
+"10": "Wear the beret with confidence—it elevates the entire look and adds a touch of effortless chic.",
+"11": "Штани кльош із високою посадкою SIENA світла олива — I replace the casual jersey knit with this woven wool skirt to answer the occasion's requirement for smart-everyday formality and structure, replacing the original casual base.",
+"12": "Капелюх Journey – ручне вʼязання — I add this black beanie as a third piece to create a layered look that covers your bare arms in the autumn air, fixing the seasonal exposure.",
+"13": "Базовий гольф з вовни ягнят темно-сірий, Штани кльош із високою посадкою SIENA світла олива — I accept this finding on purpose because replacing the original casual skirt with a structured wool piece elevates the outfit to match the restaurant date without losing comfort."
+}
+
+── ВІДПОВІДЬ (3116 симв., 24.9 с, HTTP 200) ──
+```json
+{
+"1": "Ці штани виготовлені з легкої оливкової тканини, мають високу посадку та ледь помітний кльош від коліна. Їхня м’яка тканина елегантно драпірується, створюючи довгу й граційну лінію, яка підкреслює твою фігуру, водночас забезпечуючи комфорт.",
+"2": "Вовняний гольф з високим коміром виготовлений із темно-сірих пряжів, пропонуючи елегантний і затишний силует. Його ребристий комір додає вишуканої деталі, а приталений крій підкреслює твою фігуру без зайвого об’єму.",
+"3": "Ці лаковані коричневі туфлі мають загострений носок і тонкий каблук-шпильку. Їхній блискучий верх миттєво додає елегантності, роблячи їх ідеальними для вечірнього вбрання, яке вимагає досконалості без надмірності.",
+"4": "Цей рудий ремінь має класичну срібну пряжку та гладку шкіряну стрічку з непомітним рядком. Він ніжно підкреслює твою талію, покращуючи природні пропорції тіла й додаючи тепла до образу.",
+"5": "Цей чорний берет пов’язаний вручну гачком із текстурованою в’язкою, що надає йому м’якого, ремісничого шарму. Його округла форма зручно сидить на голові, додаючи інтелектуального та художнього акценту, який підкреслює весь ансамбль.",
+"6": "Цей коричневий шкіряний тоут має чіткі лінії, дві ручки зверху й брендовані деталі кутів, що надають йому як форму, так і функціональність. Його просторий внутрішній простір робить його ідеальним для вечірніх речей, зберігаючи при цьому вишуканий вигляд.",
+"7": "Цей образ створено для романтичного побачення в ресторані, де м’якість і структура зустрічаються у досконалій гармонії. Легкі оливкові штани створюють розслаблену, але елегантну основу, а темно-сірий вовняний гольф додає шар вишуканого тепла, яке безперешкодно переходить від дня до ночі. Коричневі лаковані туфлі підкреслюють образ блискучим сяйвом, а рудий ремінь визначає твою талію, привертаючи увагу до природних вигинів тіла без надмірної обтяжливості. Чорний берет додає художнього шарму, який пасує для вечірньої прогулянки, тоді як коричневий тоут пропонує просторий і структурований аксесуар для необхідних речей.",
+"8": "Якщо ти хочеш більш чітко підкреслити лінію талії, трохи заправ ту верхню частину спереду. Хоча прямий крій сам по собі створює чистий силует.",
+"9": "Коли зайдеш у ресторан, зніми верхній шар, щоб відчувати себе легше в теплі вечора.",
+"10": "Носи берет із впевненістю — він підкреслює весь образ і додає нотку невимушеної елегантності.",
+"11": "Штани кльош із високою посадкою SIENA світла олива — Я замінюю звичайний трикотажний светр на цю вовняну спідницю, щоб відповідати вимогам повсякденного формального стилю та структури, замінюючи оригінальну неформальну основу.",
+"12": "Капелюх Journey – ручне вʼязання — Я додаю цей чорний берет як третій елемент, щоб створити багатошаровий образ, який закриває твої оголені руки від осіннього холоду, усуваючи сезонну незахищеність.",
+"13": "Базовий гольф з вовни ягнят темно-сірий, Штани кльош із високою посадкою SIENA світла олива — Я приймаю цей висновок навмисне, тому що заміна оригінальної неформальної спідниці на структурований вовняний виріб підносить образ до рівня побачення в ресторані без втрати комфорту."
+}
+```
