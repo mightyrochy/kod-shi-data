@@ -39,8 +39,12 @@ for path in sorted(HERE.glob('*/результат.json')):
     old = run.ROOT / 'аудит/проби/б1/ДО-2710' / path.parent.name / 'VIDPOVIDI'
     old_person, new_person = person(old), person(path.parent / 'VIDPOVIDI')
     same = old_person == new_person if old_person is not None and new_person is not None else 'не виміряно'
-    run.write_json(path.parent / 'мірки-кольори-складання-ДО-ПІСЛЯ.json', {'ДО': old_person, 'ПІСЛЯ': new_person, 'збігаються': same})
+    common = all(old_person[key] == new_person[key] for key in ('body', 'contrast', 'undertone')) if old_person is not None and new_person is not None else 'не виміряно'
+    added = old_person is not None and new_person is not None and old_person['feature_measurements'] is None and new_person['feature_measurements'] is not None
+    run.write_json(path.parent / 'мірки-кольори-складання-ДО-ПІСЛЯ.json', {'ДО': old_person, 'ПІСЛЯ': new_person, 'збігаються': same, 'спільні-поля-збігаються': common, 'додано-feature_measurements': added})
     result['мірки-кольори-складання-збігаються'] = same
+    result['спільні-мірки-кольори-збігаються'] = common
+    result['додано-feature_measurements'] = added
     if result['карток'] < 4:
         failure = re.search(r'поломка руки [12]:[^\n]+?(?= · контроль:|$)', text, re.M)
         result['причина'] = (failure[0] if failure else 'не всі руки дійшли до карток') + '; номер дошки має призначити диспетчер'
