@@ -251,5 +251,66 @@
   "джерела": {
    "джерела/контроль.py": "import json\nfrom bs4 import BeautifulSoup\ndef наповнити(прийняті):\n суп=BeautifulSoup(html,'html.parser')\n ф={'назва':суп.get_text()}\n р={'назва':ф['назва']}\n прийняті.append(р)\ndef зібрати():\n прийняті=[]\n def один():\n  наповнити(прийняті)\n один()\n return прийняті\njson.dump(зібрати(),open('catalog.json','w'))\n"
   }
+ },
+ {
+  "назва": "enumerate зберігає запис окремо від індексу",
+  "пункти": [
+   3
+  ],
+  "джерела": {
+   "джерела/контроль.py": "import json,re\nfor i,offer in enumerate(json.load(open('catalog.json'))):\n re.search('вовна',offer['назва'])\n"
+  }
+ },
+ {
+  "назва": "zip зберігає позицію запису",
+  "пункти": [
+   3
+  ],
+  "джерела": {
+   "джерела/контроль.py": "import json,re\nfor offer,code in zip(json.load(open('catalog.json')),['x']):\n re.search('вовна',offer['назва'])\n"
+  }
+ },
+ {
+  "назва": "прямий динамічний імпорт читача каталогу",
+  "пункти": [
+   3
+  ],
+  "джерела": {
+   "джерела/читач.py": "import json\ndef читати():\n return json.load(open('catalog.json'))\n",
+   "джерела/контроль.py": "import re\nfor offer in __import__('читач').читати():\n re.search('вовна',offer['назва'])\n"
+  }
+ },
+ {
+  "назва": "ганяти не змішує результати різних генераторів",
+  "пункти": [],
+  "джерела": {
+   "джерела/покроковик.py": "def ганяти(ген):\n return ген\n",
+   "джерела/контроль.py": "import json,re\nfrom покроковик import ганяти\ndef джерело():\n return json.load(open('catalog.json'))[0]\nперший=ганяти(джерело())\nдругий=ганяти({'назва':'wool'})\nдругий['тип']='never_registered' if re.search('wool',другий['назва']) else 'none'\n"
+  }
+ },
+ {
+  "назва": "XML і запис у спільній змінній не гублять читання поля",
+  "пункти": [
+   3
+  ],
+  "джерела": {
+   "джерела/контроль.py": "import json,re\nimport xml.etree.ElementTree as ET\no=ET.fromstring(xml)\nfor o in json.load(open('catalog.json')):\n re.search('вовна',o.get('назва'))\n"
+  }
+ },
+ {
+  "назва": "позиція кортежу не підміняє службові дані записом",
+  "пункти": [],
+  "джерела": {
+   "джерела/контроль.py": "import json,re\nдані=(json.load(open('catalog.json'))[0],{'назва':'wool'})\nінше=дані[1]\nінше['тип']='never_registered' if re.search('wool',інше['назва']) else 'none'\n"
+  }
+ },
+ {
+  "назва": "пошук за змінним ключем повертає запис, не ключ мапи",
+  "пункти": [
+   3
+  ],
+  "джерела": {
+   "джерела/контроль.py": "import json,re\nмапа={}\nfor р in json.load(open('catalog.json')):\n мапа[р['id']]=р\nfor ключ in мапа:\n offer=мапа[ключ]\n re.search('вовна',offer['назва'])\n"
+  }
  }
 ]
