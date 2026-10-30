@@ -1,5 +1,5 @@
 {
-  "база": "d527d414e8dcbbaa7040192b0858f8f49c7a6c18",
+  "база": "b2deb8ffa6ea75a8d7b81b6c076e717d782aaaa0",
   "команди": [
     {
       "команда": [
@@ -23,7 +23,7 @@
         "init",
         "-q"
       ],
-      "тека": "C:\\Users\\gemini\\gemini-runs\\w\\20261030-151128-4feac4751f3b\\tmp\\chain-clean",
+      "тека": "C:\\Users\\gemini\\gemini-runs\\w\\20261030-151128-4feac4751f3b\\tmp\\chain-clean-main",
       "код": 0,
       "вивід": ""
     },
@@ -34,7 +34,7 @@
         "core.autocrlf",
         "false"
       ],
-      "тека": "C:\\Users\\gemini\\gemini-runs\\w\\20261030-151128-4feac4751f3b\\tmp\\chain-clean",
+      "тека": "C:\\Users\\gemini\\gemini-runs\\w\\20261030-151128-4feac4751f3b\\tmp\\chain-clean-main",
       "код": 0,
       "вивід": ""
     },
@@ -45,7 +45,7 @@
         "--check",
         "C:\\Users\\gemini\\gemini-runs\\w\\20261030-151128-4feac4751f3b\\repo\\аудит\\латки\\обгортка-перевірка-після-кінця\\зміни.patch"
       ],
-      "тека": "C:\\Users\\gemini\\gemini-runs\\w\\20261030-151128-4feac4751f3b\\tmp\\chain-clean",
+      "тека": "C:\\Users\\gemini\\gemini-runs\\w\\20261030-151128-4feac4751f3b\\tmp\\chain-clean-main",
       "код": 0,
       "вивід": ""
     },
@@ -55,7 +55,7 @@
         "apply",
         "C:\\Users\\gemini\\gemini-runs\\w\\20261030-151128-4feac4751f3b\\repo\\аудит\\латки\\обгортка-перевірка-після-кінця\\зміни.patch"
       ],
-      "тека": "C:\\Users\\gemini\\gemini-runs\\w\\20261030-151128-4feac4751f3b\\tmp\\chain-clean",
+      "тека": "C:\\Users\\gemini\\gemini-runs\\w\\20261030-151128-4feac4751f3b\\tmp\\chain-clean-main",
       "код": 0,
       "вивід": ""
     },
@@ -65,7 +65,7 @@
         "add",
         "."
       ],
-      "тека": "C:\\Users\\gemini\\gemini-runs\\w\\20261030-151128-4feac4751f3b\\tmp\\chain-clean",
+      "тека": "C:\\Users\\gemini\\gemini-runs\\w\\20261030-151128-4feac4751f3b\\tmp\\chain-clean-main",
       "код": 0,
       "вивід": ""
     },
@@ -74,20 +74,36 @@
         "python",
         "-X",
         "utf8",
-        "C:\\Users\\gemini\\gemini-runs\\w\\20261030-151128-4feac4751f3b\\tmp\\chain-clean\\аудит\\адаптери\\gemini\\перевірка\\перевірити_хеші.py"
+        "C:\\Users\\gemini\\gemini-runs\\w\\20261030-151128-4feac4751f3b\\tmp\\chain-clean-main\\аудит\\адаптери\\gemini\\перевірка\\перевірити_хеші.py"
       ],
-      "тека": "C:\\Users\\gemini\\gemini-runs\\w\\20261030-151128-4feac4751f3b\\tmp\\chain-clean",
+      "тека": "C:\\Users\\gemini\\gemini-runs\\w\\20261030-151128-4feac4751f3b\\tmp\\chain-clean-main",
       "код": 0,
       "вивід": "✓ wrapper_update.ps1: 4156307A17BDAE3AF7249E532947F659E99AA1349D159239159FAE60CA7E4F2B\n✓ wrapper_probe.ps1: 85116D04C22EB64CBFF52E66BCEAE9B1091577A889EDD58A8B634093A82BDBC6\n✓ wrapper_chain.ps1: 11C79C8BB1B57E258A47ABC667B74312623A42BCBAD4D027250B836CE82A8744\n✓ wrapper_health.ps1: B3E2C44C4F342A915B814854A7D7619EDE2E019B48DC4A50CF4C9DB304C2E531\n✓ gemini_run.ps1: ED151D76BA6658EA230A0442252F0D7D05C2F6D723461C383D8E10016206E8FE\n✓ gemini_publish.ps1: 3C97912267FFEF59F72A96D44D63B40A52BDA32174FF36E8F1438B076FFC225B\n✓ gemini_watch.ps1: 69EFEBB07FF1AF51C382B753A95C50F3C1AC27B3008F2489992BEBE3FD0213AA\n✓ queue_lanes.ps1: 02868BB9FFE5320952634BA7A3E3D7B2F34D0F4D11699844F7429DFFDC66B909\n✓ claude_run.ps1: 9C9C96D9A065B8EA510C5B9023495806BA03D385ED2613067068842DFFD636C3\n✓ смуги.json: v2, полів 10, без джерела (обгортка бере попереднє): agy_total_minutes, agy_turn_minutes, claude_hang_minutes, codex_stall_minutes, poll_minutes, quota_wait_minutes, usage_minutes\n"
+    },
+    {
+      "команда": [
+        "git",
+        "diff",
+        "--exit-code",
+        "d527d414e8dcbbaa7040192b0858f8f49c7a6c18",
+        "b2deb8ffa6ea75a8d7b81b6c076e717d782aaaa0",
+        "--",
+        ".github/workflows/obhortka.yml",
+        "аудит/проби/перевірити_нічний_маркер.ps1",
+        "аудит/проби/доробка_менше_прогонів.py"
+      ],
+      "тека": "C:\\Users\\gemini\\gemini-runs\\w\\20261030-151128-4feac4751f3b\\repo",
+      "код": 0,
+      "вивід": ""
     },
     {
       "команда": [
         "powershell",
         "-NoProfile",
         "-Command",
-        "$ErrorActionPreference='Stop'; [Console]::OutputEncoding=New-Object Text.UTF8Encoding($false); $manifestData=Import-PowerShellDataFile -LiteralPath 'C:\\Users\\gemini\\gemini-runs\\w\\20261030-151128-4feac4751f3b\\tmp\\chain-clean\\аудит\\адаптери\\gemini\\m9v\\хеші.psd1'; if ($manifestData['wrapper_chain.ps1'] -notmatch '^[0-9A-F]{64}$') { throw 'Маніфест' }; [Console]::WriteLine('BOM EF BB BF; Import-PowerShellDataFile: код 0; PowerShell '+$PSVersionTable.PSVersion)"
+        "$ErrorActionPreference='Stop'; [Console]::OutputEncoding=New-Object Text.UTF8Encoding($false); $manifestData=Import-PowerShellDataFile -LiteralPath 'C:\\Users\\gemini\\gemini-runs\\w\\20261030-151128-4feac4751f3b\\tmp\\chain-clean-main\\аудит\\адаптери\\gemini\\m9v\\хеші.psd1'; if ($manifestData['wrapper_chain.ps1'] -notmatch '^[0-9A-F]{64}$') { throw 'Маніфест' }; [Console]::WriteLine('BOM EF BB BF; Import-PowerShellDataFile: код 0; PowerShell '+$PSVersionTable.PSVersion)"
       ],
-      "тека": "C:\\Users\\gemini\\gemini-runs\\w\\20261030-151128-4feac4751f3b\\tmp\\chain-clean",
+      "тека": "C:\\Users\\gemini\\gemini-runs\\w\\20261030-151128-4feac4751f3b\\tmp\\chain-clean-main",
       "код": 0,
       "вивід": "BOM EF BB BF; Import-PowerShellDataFile: код 0; PowerShell 5.1.26100.9711\n"
     },
@@ -111,6 +127,10 @@
   ],
   "тотожні_файли": [
     {
+      "файл": "аудит/адаптери/gemini/gemini_publish.ps1",
+      "sha256": "3c97912267ffef59f72a96d44d63b40a52bda32174ff36e8f1438b076ffc225b"
+    },
+    {
       "файл": "аудит/адаптери/gemini/m9v/хеші.psd1",
       "sha256": "cde359de38df840042b82692c6eb06e5f944736978ea9d7bb08fb7aac3c3d41f"
     },
@@ -123,9 +143,308 @@
       "sha256": "a22f89e5fc479ac8fd25eaf55a7b3fbaf3bfb6652de861701d153e3631f2b084"
     },
     {
+      "файл": "аудит/адаптери/gemini/перевірка/fake_cli.py",
+      "sha256": "a159c4b78493a645a78f131a326111f0067e8a3e017f2148f0486857dc3b0fa7"
+    },
+    {
+      "файл": "аудит/адаптери/gemini/перевірка/fake_timeline.py",
+      "sha256": "decc4945ce4c0e19c008d78d3715971f70e67df241630845990951b9e71df66d"
+    },
+    {
+      "файл": "аудит/адаптери/gemini/перевірка/side.ps1",
+      "sha256": "22eaefbbec5ef2f656b117ac993a624b382f1bb37f80c6afada1c9fcd372d092"
+    },
+    {
+      "файл": "аудит/адаптери/gemini/перевірка/side_claude.ps1",
+      "sha256": "d3cea8cd223cc32508fc05c0451697e234f8b95fa4289d61b0fd72637528cea7"
+    },
+    {
+      "файл": "аудит/адаптери/gemini/перевірка/сценарії_живих_pr.ps1",
+      "sha256": "01087c4f2d9aeb347226731354da85e999036df240de6d420a0a0a59de602d1d"
+    },
+    {
+      "файл": "аудит/адаптери/gemini/перевірка/сценарії_здоровя.ps1",
+      "sha256": "1a46d5d7121cfd4fcabc64aee88689c44c0837333b9aa3344d8a775b26bce777"
+    },
+    {
+      "файл": "аудит/адаптери/gemini/перевірка/сценарії_коду_збірки.ps1",
+      "sha256": "1c73ac97d9cc182b8562e37bf233cdae9ed495b68a62a2a17b284d3335201f51"
+    },
+    {
       "файл": "аудит/адаптери/gemini/перевірка/сценарії_кінець_роботи.ps1",
       "sha256": "e317f9eac4f06b6d2696b7bc7bc01175a3bbf2fb5cbd7e9bc8eed8f61b7e11c1"
+    },
+    {
+      "файл": "аудит/адаптери/gemini/перевірка/сценарії_ланцюга.ps1",
+      "sha256": "e41b41daa6df7596be8c008d6638579ce7d7a1cdf9ad82d3c969a186c5fb1cbc"
+    },
+    {
+      "файл": "аудит/адаптери/gemini/перевірка/сценарії_ланцюга.sh",
+      "sha256": "3ac1c245780b22863f92c0474d10836d5b44dffb9f02d3e5d82c3a15dc161dc7"
+    },
+    {
+      "файл": "аудит/адаптери/gemini/перевірка/сценарії_менше_прогонів.ps1",
+      "sha256": "d3674cfb8ee451dc27996ce916ad5da6f156e78db13af71d6801e0979689fcc8"
+    },
+    {
+      "файл": "аудит/адаптери/gemini/перевірка/сценарії_смуг.sh",
+      "sha256": "b72231185f491aae7c31530766f4ea9e243f56d62010c5e0896dc1d45ecf1a17"
     }
+  ],
+  "усе_дерево_тотожне": [
+    {
+      "файл": "аудит/адаптери/gemini/claude_run.ps1",
+      "sha256": "9c9c96d9a065b8ea510c5b9023495806ba03d385ed2613067068842dffd636c3"
+    },
+    {
+      "файл": "аудит/адаптери/gemini/gemini_publish.ps1",
+      "sha256": "3c97912267ffef59f72a96d44d63b40a52bda32174ff36e8f1438b076ffc225b"
+    },
+    {
+      "файл": "аудит/адаптери/gemini/gemini_run.ps1",
+      "sha256": "ed151d76ba6658ea230a0442252f0d7d05c2f6d723461c383d8e10016206e8fe"
+    },
+    {
+      "файл": "аудит/адаптери/gemini/gemini_watch.ps1",
+      "sha256": "69efebb07ff1af51c382b753a95c50f3c1ac27b3008f2489992bebe3fd0213aa"
+    },
+    {
+      "файл": "аудит/адаптери/gemini/m9v/0_власник.ps1",
+      "sha256": "6478bf8565752d0fd61cea893166e4305ca08f586b930fbeb13f16e286cf926f"
+    },
+    {
+      "файл": "аудит/адаптери/gemini/m9v/1_адмін.ps1",
+      "sha256": "5eb7c4aa8953f4f49947d91cab93ff0cae0014f9e66dd1742d27bba7d4ed5b95"
+    },
+    {
+      "файл": "аудит/адаптери/gemini/m9v/2_під_gemini.ps1",
+      "sha256": "f71ea20baae8eb9c6bc85298d1c7a595be5401e91343d2d5384b54288e370695"
+    },
+    {
+      "файл": "аудит/адаптери/gemini/m9v/3_самооновлення.ps1",
+      "sha256": "c03eab7e767a8fc4dc3dbcd411c07ea9101861e92a21ee5b4e6093023091ede1"
+    },
+    {
+      "файл": "аудит/адаптери/gemini/m9v/ЩО_НАТИСНУТИ.md",
+      "sha256": "b3542a170ef7a1d622f8b666ee8602f0740a5b0c56700409ed05b5da05382471"
+    },
+    {
+      "файл": "аудит/адаптери/gemini/m9v/хеші.psd1",
+      "sha256": "cde359de38df840042b82692c6eb06e5f944736978ea9d7bb08fb7aac3c3d41f"
+    },
+    {
+      "файл": "аудит/адаптери/gemini/queue_lanes.ps1",
+      "sha256": "02868bb9ffe5320952634ba7a3e3d7b2f34d0f4d11699844f7429dffdc66b909"
+    },
+    {
+      "файл": "аудит/адаптери/gemini/wrapper_chain.ps1",
+      "sha256": "11c79c8bb1b57e258a47abc667b74312623a42bcbad4d027250b836ce82a8744"
+    },
+    {
+      "файл": "аудит/адаптери/gemini/wrapper_health.ps1",
+      "sha256": "b3e2c44c4f342a915b814854a7d7619ede2e019b48dc4a50cf4c9db304c2e531"
+    },
+    {
+      "файл": "аудит/адаптери/gemini/wrapper_probe.ps1",
+      "sha256": "85116d04c22eb64cbff52e66bceae9b1091577a889edd58a8b634093a82bdbc6"
+    },
+    {
+      "файл": "аудит/адаптери/gemini/wrapper_update.ps1",
+      "sha256": "4156307a17bdae3af7249e532947f659e99aa1349d159239159fae60ca7e4f2b"
+    },
+    {
+      "файл": "аудит/адаптери/gemini/НАЛАШТУВАННЯ.md",
+      "sha256": "a22f89e5fc479ac8fd25eaf55a7b3fbaf3bfb6652de861701d153e3631f2b084"
+    },
+    {
+      "файл": "аудит/адаптери/gemini/СПОСТЕРІГАЧ.md",
+      "sha256": "0f769dd2d73950720c5254c4549197919cf21c121c523433f46d2e5ce52fc3f2"
+    },
+    {
+      "файл": "аудит/адаптери/gemini/ЧЕРГА.md",
+      "sha256": "97c0b7d49883ebd497b5f7e38b4069b95b3177bcea4b8d905cb81574e43ffa4a"
+    },
+    {
+      "файл": "аудит/адаптери/gemini/ланцюг.json",
+      "sha256": "2ae6a990e1d89423353ebab5f931180a2b24075103562d297f910e1cda0f62c3"
+    },
+    {
+      "файл": "аудит/адаптери/gemini/перевірка/fake_agy.py",
+      "sha256": "64593840483a75f3af520031a0080d9205e6ef5fa40eae1db676c226cd121a2d"
+    },
+    {
+      "файл": "аудит/адаптери/gemini/перевірка/fake_cc.py",
+      "sha256": "3420be95f8fe5a369c0b8b1c9aa60eef3dc79163bf830a9cadebd7f2e42d43e7"
+    },
+    {
+      "файл": "аудит/адаптери/gemini/перевірка/fake_claude.py",
+      "sha256": "407255d0f2ebbde9eed3efccff0f4ffa8246a7abb221b10641d1f12816bfc05e"
+    },
+    {
+      "файл": "аудит/адаптери/gemini/перевірка/fake_cli.py",
+      "sha256": "a159c4b78493a645a78f131a326111f0067e8a3e017f2148f0486857dc3b0fa7"
+    },
+    {
+      "файл": "аудит/адаптери/gemini/перевірка/fake_codex.py",
+      "sha256": "bd8296dae9776d6256fe70ab40e7c8c547bf1e057d9c0619582088bc76c023cc"
+    },
+    {
+      "файл": "аудит/адаптери/gemini/перевірка/fake_gh.py",
+      "sha256": "cb370c6adfb572b2b0efa57f452774ddbbd429a94e159cada5c261f61e1fa08c"
+    },
+    {
+      "файл": "аудит/адаптери/gemini/перевірка/fake_health.py",
+      "sha256": "6cd9cf588865f5f48a3cd22b6a2a5f18f528058e9cfb3d65bac8a50a469c2d81"
+    },
+    {
+      "файл": "аудит/адаптери/gemini/перевірка/fake_timeline.py",
+      "sha256": "decc4945ce4c0e19c008d78d3715971f70e67df241630845990951b9e71df66d"
+    },
+    {
+      "файл": "аудит/адаптери/gemini/перевірка/side.ps1",
+      "sha256": "22eaefbbec5ef2f656b117ac993a624b382f1bb37f80c6afada1c9fcd372d092"
+    },
+    {
+      "файл": "аудит/адаптери/gemini/перевірка/side_claude.ps1",
+      "sha256": "d3cea8cd223cc32508fc05c0451697e234f8b95fa4289d61b0fd72637528cea7"
+    },
+    {
+      "файл": "аудит/адаптери/gemini/перевірка/side_watch.ps1",
+      "sha256": "89be41dd6095220f1c4404ac449668ef8adba2e6a66a62ccaef040f6ca015cbf"
+    },
+    {
+      "файл": "аудит/адаптери/gemini/перевірка/бюджет_живих_pr.ps1",
+      "sha256": "47b004a18303be3bad1e5d81cefca1966fe8ed290b6c5f1a9692c24061a076e1"
+    },
+    {
+      "файл": "аудит/адаптери/gemini/перевірка/запустити_стенд.sh",
+      "sha256": "51eb4d42aeeb1b7a3da32e69b8fcac4573a67515f9ec1fb02c5ecfddb4c202a2"
+    },
+    {
+      "файл": "аудит/адаптери/gemini/перевірка/перевірити_хеші.py",
+      "sha256": "368129bc83f5ddfc8e83694b8c14b9ae29ccbb58862d819e650e9315ece733de"
+    },
+    {
+      "файл": "аудит/адаптери/gemini/перевірка/середовище.sh",
+      "sha256": "b7fac5856680b304f099ceb2c6e657e5b3a8deb857246539532ab0b3fc510999"
+    },
+    {
+      "файл": "аудит/адаптери/gemini/перевірка/сценарії_claude.sh",
+      "sha256": "a630c9e9aa58237acbd15a3d5b9f16d3e3e77d111dfc8eb92ea9b8a8b700d8b5"
+    },
+    {
+      "файл": "аудит/адаптери/gemini/перевірка/сценарії_m9v.sh",
+      "sha256": "683a0e634967b72badbc8aab4c6ac486a46bf0f5e3c4ee8138e75dad26685ace"
+    },
+    {
+      "файл": "аудит/адаптери/gemini/перевірка/сценарії_бандлів.ps1",
+      "sha256": "4f0b27cf900f5e396e2a92110f23c177241ac5aea585d771b877bacd308b3339"
+    },
+    {
+      "файл": "аудит/адаптери/gemini/перевірка/сценарії_бандлів.sh",
+      "sha256": "de54e429268d143781c991f9b381e03ad33aeb026735248ff5119e8248529531"
+    },
+    {
+      "файл": "аудит/адаптери/gemini/перевірка/сценарії_доставки.sh",
+      "sha256": "7bc5e4304db5e6c2583d9d6f9a44af628b9989fa0de757c2ef035fcabb29ae19"
+    },
+    {
+      "файл": "аудит/адаптери/gemini/перевірка/сценарії_живих_pr.ps1",
+      "sha256": "01087c4f2d9aeb347226731354da85e999036df240de6d420a0a0a59de602d1d"
+    },
+    {
+      "файл": "аудит/адаптери/gemini/перевірка/сценарії_живих_pr.sh",
+      "sha256": "fb003f1c6358c53827853e2dc2abeff41232cbfc63480c0a4506bc3cfb6d50e4"
+    },
+    {
+      "файл": "аудит/адаптери/gemini/перевірка/сценарії_звіту.ps1",
+      "sha256": "bd646e94398d0fe4768cf505f6df6e78662af055d5c35e9baa34dfafe7da3cc1"
+    },
+    {
+      "файл": "аудит/адаптери/gemini/перевірка/сценарії_звіту.sh",
+      "sha256": "3db7c6ac8e17c936c1f087b70dc7d2cfece987fcf526e99a90f7dbc23944dc3a"
+    },
+    {
+      "файл": "аудит/адаптери/gemini/перевірка/сценарії_здоровя.ps1",
+      "sha256": "1a46d5d7121cfd4fcabc64aee88689c44c0837333b9aa3344d8a775b26bce777"
+    },
+    {
+      "файл": "аудит/адаптери/gemini/перевірка/сценарії_здоровя.sh",
+      "sha256": "6e5448d5e0ceec8870f8e66abb2e78f5892a2dd02ec797adca4af80fc7051d58"
+    },
+    {
+      "файл": "аудит/адаптери/gemini/перевірка/сценарії_коду_збірки.ps1",
+      "sha256": "1c73ac97d9cc182b8562e37bf233cdae9ed495b68a62a2a17b284d3335201f51"
+    },
+    {
+      "файл": "аудит/адаптери/gemini/перевірка/сценарії_копії.ps1",
+      "sha256": "2a2fea5285a56825f14eef7270f580d1abd93f39cbb9ac5cc8824f27a3ba1604"
+    },
+    {
+      "файл": "аудит/адаптери/gemini/перевірка/сценарії_кінець_роботи.ps1",
+      "sha256": "e317f9eac4f06b6d2696b7bc7bc01175a3bbf2fb5cbd7e9bc8eed8f61b7e11c1"
+    },
+    {
+      "файл": "аудит/адаптери/gemini/перевірка/сценарії_ланцюга.ps1",
+      "sha256": "e41b41daa6df7596be8c008d6638579ce7d7a1cdf9ad82d3c969a186c5fb1cbc"
+    },
+    {
+      "файл": "аудит/адаптери/gemini/перевірка/сценарії_ланцюга.sh",
+      "sha256": "3ac1c245780b22863f92c0474d10836d5b44dffb9f02d3e5d82c3a15dc161dc7"
+    },
+    {
+      "файл": "аудит/адаптери/gemini/перевірка/сценарії_межі_здоровя.ps1",
+      "sha256": "3b411fa3f094f5ef9528bde2fad56249540b5b537a74b3630e332bd6047c5a6e"
+    },
+    {
+      "файл": "аудит/адаптери/gemini/перевірка/сценарії_менше_прогонів.ps1",
+      "sha256": "d3674cfb8ee451dc27996ce916ad5da6f156e78db13af71d6801e0979689fcc8"
+    },
+    {
+      "файл": "аудит/адаптери/gemini/перевірка/сценарії_прогону.sh",
+      "sha256": "f7ac8d66c3f66354acf7a41cf89f28ac109ef4dd874a12c2b6a5bc5550fd1717"
+    },
+    {
+      "файл": "аудит/адаптери/gemini/перевірка/сценарії_простій_ресурсу.ps1",
+      "sha256": "bb6aeec7f5aa13206bba1301a32d42dfef71b96ed797da228533b778601dac87"
+    },
+    {
+      "файл": "аудит/адаптери/gemini/перевірка/сценарії_рушіїв.sh",
+      "sha256": "5a9e9fb55d2f9d482078490d46f9250ac71a9bbb6bb5816ec31131bc6401e306"
+    },
+    {
+      "файл": "аудит/адаптери/gemini/перевірка/сценарії_самооновлення.ps1",
+      "sha256": "072c6230f361d1970854ed8a3283ecdd82d499140def8bb5f6f38ea98bb9f950"
+    },
+    {
+      "файл": "аудит/адаптери/gemini/перевірка/сценарії_самооновлення.sh",
+      "sha256": "8eeb4a4c6695d36bfca33496d523a92da7d4609ae8a911f9da870818d4f80761"
+    },
+    {
+      "файл": "аудит/адаптери/gemini/перевірка/сценарії_смуг.sh",
+      "sha256": "b72231185f491aae7c31530766f4ea9e243f56d62010c5e0896dc1d45ecf1a17"
+    },
+    {
+      "файл": "аудит/адаптери/gemini/перевірка/сценарії_спостерігача.sh",
+      "sha256": "ec59e7f4796f086b2d856e835b8e09d26182d5fd34a4687d66fb4bd3b8a45b52"
+    },
+    {
+      "файл": "аудит/адаптери/gemini/перевірка/сценарії_тихі_пробудження.ps1",
+      "sha256": "60453743eaba18470abdc1c4a8b537e1b035c73b4c5f367cd9e9df20a8653330"
+    },
+    {
+      "файл": "аудит/адаптери/gemini/перевірка/сценарії_черги.sh",
+      "sha256": "0b6a37199d525ff328a19617250bd63acc384a79be9fd42a260e5c8ffd03fe7a"
+    },
+    {
+      "файл": "аудит/адаптери/gemini/смуги.json",
+      "sha256": "787d8975cc73f4ab1a912252f4f2456f5933d5b80f00b40451c4997277005f94"
+    }
+  ],
+  "незмінні_стенди": [
+    ".github/workflows/obhortka.yml",
+    "аудит/проби/перевірити_нічний_маркер.ps1",
+    "аудит/проби/доробка_менше_прогонів.py"
   ],
   "BOM": "EF BB BF"
 }
