@@ -81,7 +81,7 @@
 """
 import argparse, collections, concurrent.futures, csv, datetime, functools, gzip, html, io, json, os, re, sys, threading, time
 import xml.etree.ElementTree as ET
-from urllib.parse import urljoin, urlparse, urlunparse, parse_qs, parse_qsl, urlencode
+from urllib.parse import urljoin, urlparse, urlunparse, parse_qs, parse_qsl, urlencode, quote
 
 try:
     import requests
@@ -2302,6 +2302,14 @@ def гейти_речі(з):
     return причини
 
 
+_АСКІ_ДРУК = "".join(chr(c) for c in range(33, 127))
+
+
+def кадр_закодований(url):
+    """Адреса кадру без пробілів і не-ASCII (`…/winter 2025-26 maneken/….webp` не відкривається): `%XX`, наявні лишаються."""
+    return quote(url, safe=_АСКІ_ДРУК)
+
+
 def чисті_фото(фото, url="", артикул=None, відкинуті=None):
     вих = []
     for ф in фото or []:
@@ -2309,7 +2317,7 @@ def чисті_фото(фото, url="", артикул=None, відкинут�
             if відкинуті is not None and ф and len(відкинуті) < 3:
                 відкинуті.append(ф)
             continue
-        ф = оригінал_фото(ф)                       # документ 2: оригінал, не мініатюра
+        ф = кадр_закодований(оригінал_фото(ф))     # документ 2: оригінал, не мініатюра
         if ф not in вих:
             вих.append(ф)
     # П2, доказовий фільтр gepur: номер товару з url у шляху картинки — лишаються лише «свої»
