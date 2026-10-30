@@ -493,30 +493,36 @@ JS_ВІКНА = re.compile(r"^\s*['\"]?[\wа-яіїєґ' -]+['\"]?\s*:\s*\[\s*[\
 
 
 def js_копії(t):
-    """Парні C·cos(h), C·sin(h) в одному блоці з кутом у радіанах — копія LCh→Lab."""
+    """Парні C·cos(h), C·sin(h) з кутом у радіанах і виходом трьох координат — копія LCh→Lab."""
     # Ідентифікатори довільні: зв'язуємо обидва виходи з тією самою хромою й кутом.
     добуток = re.compile(r"\b(\w+)\s*\*\s*Math\.(cos|sin)\s*\(\s*([^();]+)\s*\)"
                         r"|Math\.(cos|sin)\s*\(\s*([^();]+)\s*\)\s*\*\s*(\w+)")
     блоки, стек, номер = {}, [0], 0
+    межі = {0: [0, len(t)]}
     події = re.compile(r"[{}]|" + добуток.pattern)
     for m in події.finditer(t):
         if m.group() == "{":
             номер += 1
             стек.append(номер)
+            межі[номер] = [m.start(), len(t)]
         elif m.group() == "}":
             if len(стек) > 1:
+                межі[стек[-1]][1] = m.end()
                 стек.pop()
         else:
             c, дія, h = (m[1], m[2], m[3]) if m[1] else (m[6], m[4], m[5])
             ключ = (стек[-1], c, re.sub(r"\s+", "", h))
             блоки.setdefault(ключ, []).append((дія, m.start()))
-    for (_, c, h), збіги in блоки.items():
+    for (блок, c, h), збіги in блоки.items():
         if {дія for дія, _ in збіги} != {"cos", "sin"}:
             continue
         # Кут безпосередньо або через присвоєння перетворено з градусів.
         до = t[:min(pos for _, pos in збіги)]
+        тіло = t[slice(*межі[блок])]
+        трійка = re.search(r"\breturn\s*\[\s*\w+\s*,[^,\]\n]+,[^\]\n]+\]", тіло)
+        lab = re.search(r"\{[^{}]*\b[Ll]\s*[:,][^{}]*\ba\s*[:,][^{}]*\bb\b", тіло)
         рад = "Math.PI" in h or re.search(r"\b" + re.escape(h) + r"\s*=\s*[^;\n]*Math\.PI\s*/\s*180\b", до)
-        if рад:
+        if рад and (трійка or lab):
             for _, pos in збіги:
                 yield t.count("\n", 0, pos) + 1
 

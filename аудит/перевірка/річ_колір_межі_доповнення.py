@@ -74,6 +74,13 @@ def головна():
     return r > g && r > b ? 'red' : 'other';
 }
 ''', {2}),
+        'З3-Lab-обʼєкт': ('js', '''function convert(L, C, h) {
+    const angle = h * Math.PI / 180;
+    return {L,
+        a: C * Math.cos(angle),
+        b: C * Math.sin(angle)};
+}
+''', {1}),
         'З3-RGB-масив': ('js', '''function classify(rgb) {
     return rgb[0] > rgb[1] ? 'red' : 'other';
 }
@@ -89,6 +96,13 @@ def головна():
         'не-JS': ('js', '''// r > g; C * Math.cos(angle); C * Math.sin(angle)
 const text = "r > b";
 function rotate(x) { return Math.cos(x); }
+''', set()),
+        'не-JS-полярні-координати': ('js', '''function position(radius, degrees) {
+    const angle = degrees * Math.PI / 180;
+    const x = radius * Math.cos(angle);
+    const y = radius * Math.sin(angle);
+    return [x, y];
+}
 ''', set()),
     }
     with tempfile.TemporaryDirectory(prefix='межі-', dir=os.environ['TEMP']) as тека:
