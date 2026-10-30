@@ -31,6 +31,4 @@ function Get-TaskRows {
     }
 }
 function Test-ExternalGpuFree { $true }
-# Планувальник читає той самий вхід напряму через Get-GpuBusyReason.
-function Get-ExternalGpuMiB { <# Дає вільну GPU синтетичному планувальнику. #> 0 }
 exit (Main)
