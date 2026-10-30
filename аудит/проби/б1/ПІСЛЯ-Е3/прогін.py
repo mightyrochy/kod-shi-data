@@ -198,7 +198,7 @@ def main():
                             current_models = {'помилка-GET': str(error)}
                         with (folder / 'спостереження-моделей.jsonl').open('a', encoding='utf-8') as observations:
                             observations.write(json.dumps({'час': now(), 'models': current_models}, ensure_ascii=False) + '\n')
-                        if '503' in proxy_text or any('503' in line for line in lines):
+                        if re.search(r'(?:HTTP\s+503\b|POST /v1/chat/completions:\s*503\b)', proxy_text + '\n' + '\n'.join(lines)):
                             write_json(folder / 'відмова-діагностика.json', {
                                 'до-час': previous_time, 'до': previous_models,
                                 'після-час': now(), 'після': current_models,
