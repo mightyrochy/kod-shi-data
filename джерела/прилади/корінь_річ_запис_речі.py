@@ -371,10 +371,12 @@ class Аналіз:
         м = s.по_імені_модуля.get(ф.mod)
         return None, м
 
-    def читати_ім(s, ф, ім):
-        к, _ = s.змінна(ф, ім)
+    def читати_ім(s, ф, ім, рядок=0):
+        к, власник = s.змінна(ф, ім)
         if к is not None:
-            return s.env.get(к, ())
+            вал = s.env.get(к, ())
+            s.ланцюги.замикання(вал, власник, ф, рядок)
+            return вал
         м = s.мф.get(ф.file)
         if м is not None:
             ал = м.псевдоніми.get(ім)
@@ -445,7 +447,7 @@ class Аналіз:
     def _ev(s, е, ф):
         k = е.k
         if k == "name":
-            return frozenset(s.читати_ім(ф, е.v))
+            return frozenset(s.читати_ім(ф, е.v, е.line))
         if k == "str":
             if not isinstance(е.v, str) or len(е.v) > 80 or not е.v:
                 return frozenset()
@@ -826,9 +828,7 @@ class Аналіз:
         for g in кандидати:
             s.зв_язати(g, av, kv, імена, rv if fn.k == "attr" and функція_модуля is None else None)
             повернене = s.ret.get(g.fid, set())
-            for в in av + kv:
-                s.ланцюги.перенести(в, ф.fid, g.fid, (ф.file, е.line))
-            s.ланцюги.перенести(повернене, g.fid, ф.fid, (ф.file, е.line))
+            s.ланцюги.передачі_виклику(g, ф, е.line, av + kv, повернене, rv)
             s.файловий_договір(g, av, ф, е)
             р |= повернене
             if g.mod == "покроковик" and g.name == "ганяти" and av:

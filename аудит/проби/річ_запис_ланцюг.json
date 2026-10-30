@@ -233,5 +233,23 @@
   "джерела": {
    "джерела/контроль.py": "import json,re\nfrom bs4 import BeautifulSoup\ndef добути(html):\n суп=BeautifulSoup(html,'html.parser')\n return {'назва':суп.get_text()}\ndef записати(ф):\n р={'є':bool(re.search('вовна',ф['назва']))}\n json.dump([р],open('catalog.json','w'))\nзаписати(добути(html))\n"
   }
+ },
+ {
+  "назва": "запис виходить через змінений аргумент без return",
+  "пункти": [
+   4
+  ],
+  "джерела": {
+   "джерела/контроль.py": "import json\nfrom bs4 import BeautifulSoup\ndef наповнити(прийняті):\n суп=BeautifulSoup(html,'html.parser')\n ф={'назва':суп.get_text()}\n р={'назва':ф['назва']}\n прийняті.append(р)\nприйняті=[]\nнаповнити(прийняті)\njson.dump(прийняті,open('catalog.json','w'))\n"
+  }
+ },
+ {
+  "назва": "спільний список проходить замикання без return запису",
+  "пункти": [
+   4
+  ],
+  "джерела": {
+   "джерела/контроль.py": "import json\nfrom bs4 import BeautifulSoup\ndef наповнити(прийняті):\n суп=BeautifulSoup(html,'html.parser')\n ф={'назва':суп.get_text()}\n р={'назва':ф['назва']}\n прийняті.append(р)\ndef зібрати():\n прийняті=[]\n def один():\n  наповнити(прийняті)\n один()\n return прийняті\njson.dump(зібрати(),open('catalog.json','w'))\n"
+  }
  }
 ]
