@@ -52,7 +52,7 @@ for path in sorted(HERE.glob('*/результат.json')):
     if result['карток'] < 4:
         failure = re.search(r'поломка руки [12]:[^\n]+?(?= · контроль:|$)', text, re.M)
         result['причина'] = (failure[0] if failure else 'не всі руки дійшли до карток') + '; номер дошки має призначити диспетчер'
-        if result['номер'] in (6, 19):
+        if failure and failure[0] == 'поломка руки 2: "правило"':
             result['причина'] = (failure[0] if failure else 'не всі руки дійшли до карток') + '; дошка 11503'
     run.write_json(path, result)
 run.update_report()
