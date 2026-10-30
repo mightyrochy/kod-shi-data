@@ -1,0 +1,27 @@
+{
+ "версія": 1,
+ "запит": {
+  "model": "qwen/qwen3.5-9b",
+  "max_tokens": 4000,
+  "messages": [
+   {
+    "role": "user",
+    "content": [
+     {
+      "type": "text",
+      "text": "{\"task\": {\"role\": \"You are a personal stylist. Put together one outfit for her case.\", \"rules\": [\"Items one per line, garments first, then shoes and accessories: what it is, cut, length, color with its hex code, fabric.\", \"An outer layer only when the weather needs it; at +20 °C and warmer there is none.\", \"Last, why this outfit works, in 3–4 sentences.\"], \"limits\": [\"Do not name lightness numbers, body measurements or height in numbers, or body-type labels, and do not say you had limits.\", \"The answer is plain text laid out as the rules say, not JSON.\"], \"language\": \"English\", \"answer\": \"OUTFIT_TEXT\", \"input\": [\"\\\"case\\\" — her case: the occasion, where and when, the weather, the dress code, her wishes and refusals — as codes, her own words as quotes; do not take an item that goes against her refusals or her words\", \"\\\"formality\\\" — the level of dress she named: home (loungewear, athleisure, sportswear) < everyday (jeans, a T-shirt and sneakers; neat casual, dark denim) < neat (business: a blouse, a shirt or a refined knit with trousers or a skirt, a textured jacket or a cardigan, loafers, ballet flats or ankle boots; social: a day dress, a refined knit with a skirt or trousers, a textured jacket, neat flats or ankle boots) < smart (business: a jacket with trousers or a skirt, a blouse or a shirt, loafers or pumps; a sheath dress with a jacket; social: a cocktail dress, heeled shoes) < formal (business: a business suit — a jacket with trousers or a skirt of one fabric — with a blouse, pumps; social: a formal dress of a noble fabric, heeled shoes) < very_smart (an evening gown) < ceremonial (a full-length evening gown with long gloves)\"]}, \"case\": {\"field_quotes\": {\"occasion\": \"ввечері з чоловіком у кіно, потім вечеря\", \"place\": \"ввечері з чоловіком у кіно, потім вечеря\", \"temperature_c\": \"+9 °C\", \"weather_feel\": \"злива й вітер\", \"part_of_day\": \"ввечері\", \"place_words\": \"у кіно, потім вечеря\"}, \"formality_reason\": \"her_words\", \"event\": \"ввечері з чоловіком у кіно, потім вечеря\", \"temperature_c\": 9, \"precipitation\": \"rain\", \"occasion\": \"date\", \"place\": \"theatre\", \"formality\": [\"everyday\"], \"season\": \"autumn\", \"part_of_day\": \"evening\", \"light\": \"artificial\", \"weather_feel\": \"cold\"}}"
+     }
+    ]
+   }
+  ],
+  "temperature": 1
+ },
+ "відповідь": {
+  "status": 200,
+  "contentType": "application/json",
+  "headers": {
+   "x-model": "qwen/qwen3.5-9b"
+  },
+  "body": "{\"content\":[{\"type\":\"text\",\"text\":\"Rain-slicked trench coat, straight cut, knee length, charcoal gray #36454F, waxed cotton blend.\\nWool-blend midi skirt with slight A-line flare, midi length, deep burgundy #800020, heavy jersey fabric.\\nFine-gauge turtleneck knit top, slim fit, hip length, cream white #FFFDD0, merino wool.\\nStrappy ankle boots with a 7 cm block heel, mid-calf height, black patent leather #000000, smooth leather.\\nGold vermeil hoop earrings and a thin pearl choker to elevate the date look.\\nThis outfit works perfectly for an evening date that transitions from a rainy movie theater to a dinner, as the trench coat provides essential protection against the cold rain and wind while maintaining elegance. The dark burgundy skirt adds a romantic, sophisticated touch suitable for social occasions without looking too formal for cinema, striking the right balance between neat casual and smart attire. The cream turtleneck offers warmth against the chill while keeping the silhouette clean and refined, ensuring she feels comfortable and stylish throughout the night.\"}],\"usage\":{\"input_tokens\":625,\"output_tokens\":235},\"stop_reason\":\"end_turn\"}"
+ }
+}

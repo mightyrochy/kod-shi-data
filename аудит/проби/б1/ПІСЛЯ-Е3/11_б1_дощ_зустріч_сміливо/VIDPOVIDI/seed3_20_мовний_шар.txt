@@ -1,0 +1,44 @@
+── ПРОМПТ (6104 симв.) ──
+Ти — перекладачка в застосунку-стилістці. Ти пишеш природною українською тексти, які зараз побачить жінка. Рішень не приймаєш, на питання не відповідаєш, змісту не міняєш.
+
+Вхід — JSON-об'єкт: ключ — номер тексту н, значення — текст, який склали код та інші моделі.
+
+Ключі відповіді — ті самі, що у вході, кожен: номер н тексту, значення — рядок, той самий зміст природною українською, без англійських слів і кодів; ПЕРЕКЛАДАЙ КОЖНЕ англійське слово, навіть одне посеред українського речення; латиницею лишай лише назви крамниць і брендів, «V-подібний» і «den»; текст, що вже природний і до неї на «ти», — без змін, а український текст на «ви» перепиши на «ти», решту лиши слово в слово.
+
+Вид кожної речі — теж зміст: річ у перекладі — та сама, що у вході, а не схожа чи сусідня. ankle boots — черевики чи ботильйони, boots — чоботи, heeled — на підборах, а не туфлі, pumps — туфлі-човники, loafers — лофери; pendant — кулон чи підвіска, necklace — намисто чи ланцюжок, а не каблучка, сережки чи браслет; ring — каблучка; earrings — сережки. Українські назви речей у вході (назви з крамниці, найчастіше перед « — ») переписуй літера в літеру: не міняй, не переставляй і не додавай у них жодного слова.
+
+Про жінку — лише до неї, на «ти» (ти, тебе, тобі, твій, твоя; хочеш, скинеш; наказ однини: розкажи, оберни, тримай, дай), і в питаннях теж: you, your, she, her про неї — «ти», «твій» (her skin tone — твій тон шкіри; when she turns her head — коли ти повертаєш голову; she looks taller — ти виглядаєш вищою), англійський наказ — наказом однини; «вона», «її» — лише про річ (сукню, сумку, куртку). Говорить стилістка — одна жінка: про себе — від першої особи однини й у жіночому роді (я підібрала, я б додала), не «ми», не від імені застосунку чи коду і ніколи словами самої жінки.
+
+Мова: літературна українська, як у текстах українських крамниць одягу. Кожне українське слово — літерами лише української абетки, без жодної латинської літери чи стороннього знака всередині слова. Кожне речення — одна остаточна версія, без виправлень посеред тексту. Словничок нижче — лише як перекласти англійське слово, коли воно є у вході; це не зміст: річ, тканина чи колір, яких у вході нема, у тексті не з'являються. Звичні українські назви для слів англійського джерела: trousers, pants — штани; dressy, dressier — ошатний, ошатніше; look, outfit — образ; taupe — сіро-бежевий; loose — вільний; suede — замша (жіночий рід); slip dress — сукня-комбінація; camel — кемел (колір). Назви речей і кольорів, які дала крамниця, — як є.
+
+Перевір кожне слово ДО відповіді: до неї — лише «ти», жодного «ви», «ваш» і наказу множини, і про неї жодного «вона», «її», «їй», жодне слово не стоїть двічі поспіль, кожна річ — того самого виду, що у вході (річ образу — іменником її назви з переліку, коли він є, і слова при ній узгоджені з цим іменником), а українська назва речі — слово в слово. Відповідь — рівно ОДИН JSON-об'єкт і нічого після нього: другої, виправленої версії, приміток і пояснень не пиши — помилку виправ у тому самому об'єкті.
+
+Речі образу — перелік, який жінка бачить на картці (номер речі — назва біля неї):
+1 — назва в тексті н=2
+2 — назва в тексті н=3
+3 — назва в тексті н=4
+4 — назва в тексті н=5
+5 — назва в тексті н=6
+When a text speaks of an item of the list, call it by the kind in its name — the same noun in the right case (list «Тренч бежевий подовжений» — text «тренч», «Светр в'язаний оверсайз» — «светр»), not by another kind or a synonym of the English word. Make every adjective, pronoun and verb with the item agree with that noun in gender and number («Тренч бежевий» — «бежевий тренч, який…»; «Лофери шкіряні» — «шкіряні лофери, які…»). A name you translate in this same call (text н=K): give it one noun and call the item by it, in agreement, in every text. A text the list gives as about an item (about it: text н=M) speaks of that one item, and so does every other text where the English names it. The colour of an item of the list is the colour of its name: keep the shop's colour word from its name; when its name has no colour word, write the Ukrainian name of its colour code. The English colour words for that item are the stylist's impression of a photo: do not turn them into a colour of their own — the item's colour stands in their place. Colours of its details (trim, strap, buttons, print), its fabric and the rest — translate from the text. The list is for names only: an item the English text does not name is not added to the translation — neither to the description nor to the advice. The kind code next to an item (kind code: …) is the code of its kind: every noun for that item, in every text, names this kind and no other, whatever word the English text uses; a code ending in _generic names only the family (dress_generic — a dress, bag_generic — a bag). The kind noun of its name and this code are the same kind: write the name's noun.
+
+ТЕКСТИ:
+{
+"1": "Outer layer: a structured wool-blend trench coat, knee-length cut, deep charcoal gray, water-resistant technical fabric.\nTop: an oversized silk-cotton blend blouse with dramatic puff sleeves and a high collar, hip-length fit, vibrant emerald green, crinkle texture.\nBottom: wide-leg dark denim trousers with a slight stretch, full length reaching the ankle, midnight blue, heavy twill fabric.\nShoes: chunky platform loafers in glossy patent leather, mid-calf height, black .\nBag: a structured box clutch with a long chain strap, matte black finish, genuine leather.\n\nThis outfit works because it masterfully balances the practical need for rain protection with her bold desire to stand out in a cafe setting. The vibrant emerald blouse and oversized sleeves create an immediate visual statement that captures attention during a business casual meeting, while the dark trench coat ensures she remains dry and composed throughout the long rainy day. The wide-leg denim and chunky loafers offer a contemporary, stylish edge that elevates the look beyond standard office wear without sacrificing comfort or professionalism.",
+"2": "trench coat",
+"3": "blouse",
+"4": "trousers",
+"5": "loafers",
+"6": "clutch"
+}
+
+── ВІДПОВІДЬ (1281 симв., 12.1 с, HTTP 200) ──
+```json
+{
+  "1": "Зовнішній шар: структурований тренч з вовняної суміші, довжини до коліна, глибокого вугільно-сірого кольору, виготовлений з водостійкої технічної тканини.\nВерх: об'ємна блуза з шовку та бавовни зі значними пишними рукавами й високим коміром, довжиною до стегон, яскраво смарагдового кольору, зморшкуватою текстурою.\nНиз: широкі джинсові штани темного відтінку з невеликою еластичністю, повної довжини до щиколотки, насиченого синього кольору, щільної тканини саржі.\nВзуття: масивні лофери на платформі зі шкіряною лакованою поверхнею, висотою до середини литки, чорного кольору.\nСумка: структурована клатч-бокс з довгою ланцюжком, матовим чорним покриттям, виготовлена з натуральної шкіри.\n\nЦей образ вдало поєднує практичну потребу в захисті від дощу з її сміливим бажанням вирізнятися у кафе. Яскрава смарагдова блуза та об’ємні рукави створюють миттєву візуальну заяву, яка привертає увагу під час ділової зустрічі, а темний тренч гарантує, що ти залишишся сухою й зібраною протягом усього дощового дня. Широкі джинси та масивні лофери додають сучасного стильного акценту, який піднімає образ над стандартним офісним одягом без шкоди для комфорту чи професіоналізму.",
+  "2": "тренч",
+  "3": "блуза",
+  "4": "штани",
+  "5": "лофери",
+  "6": "клатч"
+}
+```

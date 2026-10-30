@@ -1,0 +1,27 @@
+{
+ "версія": 1,
+ "запит": {
+  "model": "qwen/qwen3.5-9b",
+  "max_tokens": 4000,
+  "messages": [
+   {
+    "role": "user",
+    "content": [
+     {
+      "type": "text",
+      "text": "{\"task\": {\"role\": \"You are a personal stylist. Put together one outfit for her case.\", \"rules\": [\"Items one per line, garments first, then shoes and accessories: what it is, cut, length, color with its hex code, fabric.\", \"An outer layer only when the weather needs it; at +20 °C and warmer there is none.\", \"Last, why this outfit works, in 3–4 sentences.\"], \"limits\": [\"Do not name lightness numbers, body measurements or height in numbers, or body-type labels, and do not say you had limits.\", \"The answer is plain text laid out as the rules say, not JSON.\"], \"language\": \"English\", \"answer\": \"OUTFIT_TEXT\", \"input\": [\"\\\"case\\\" — her case: the occasion, where and when, the weather, the dress code, her wishes and refusals — as codes, her own words as quotes; do not take an item that goes against her refusals or her words\", \"\\\"formality\\\" — the level of dress she named: home (loungewear, athleisure, sportswear) < everyday (jeans, a T-shirt and sneakers; neat casual, dark denim) < neat (business: a blouse, a shirt or a refined knit with trousers or a skirt, a textured jacket or a cardigan, loafers, ballet flats or ankle boots; social: a day dress, a refined knit with a skirt or trousers, a textured jacket, neat flats or ankle boots) < smart (business: a jacket with trousers or a skirt, a blouse or a shirt, loafers or pumps; a sheath dress with a jacket; social: a cocktail dress, heeled shoes) < formal (business: a business suit — a jacket with trousers or a skirt of one fabric — with a blouse, pumps; social: a formal dress of a noble fabric, heeled shoes) < very_smart (an evening gown) < ceremonial (a full-length evening gown with long gloves)\", \"\\\"person\\\" — facts about her from her photo and measurements, without conclusions: colors in hex (one per measurement), sizes in cm\"]}, \"case\": {\"field_quotes\": {\"occasion\": \"ввечері з чоловіком у кіно, потім вечеря\", \"place\": \"ввечері з чоловіком у кіно, потім вечеря\", \"temperature_c\": \"+9 °C\", \"weather_feel\": \"злива й вітер\", \"part_of_day\": \"ввечері\", \"place_words\": \"у кіно, потім вечеря\"}, \"formality_reason\": \"her_words\", \"event\": \"ввечері з чоловіком у кіно, потім вечеря\", \"temperature_c\": 9, \"precipitation\": \"rain\", \"occasion\": \"date\", \"place\": \"theatre\", \"formality\": [\"everyday\"], \"season\": \"autumn\", \"part_of_day\": \"evening\", \"light\": \"artificial\", \"weather_feel\": \"cold\"}, \"person\": {\"skin_hex\": [\"#5a3a2a\", \"#4e3022\", \"#664332\"], \"hair_hex\": [\"#16110e\", \"#241a15\"], \"eyes_hex\": \"#3b2417\", \"height_cm\": 165, \"girths_cm\": {\"shoulders\": 112, \"bust\": 114, \"waist\": 104, \"hips\": 114}}}"
+     }
+    ]
+   }
+  ],
+  "temperature": 1
+ },
+ "відповідь": {
+  "status": 200,
+  "contentType": "application/json",
+  "headers": {
+   "x-model": "qwen/qwen3.5-9b"
+  },
+  "body": "{\"content\":[{\"type\":\"text\",\"text\":\"A refined black silk-blend sheath dress, straight cut hitting mid-calf, #000000 color with a subtle luster, lightweight woven fabric that repels moisture slightly.  \\nAn tailored charcoal wool-velvet blazer, structured shoulders and tapered waist, #36454F color, dense boucle fabric for wind resistance.  \\nBlack leather ankle boots, block heel, #1C1C1C color, smooth grained leather sole with water-resistant treatment.  \\nA minimalist gold bar necklace, 18k yellow gold finish, #FFD700 color, polished metal band.  \\nWhy this outfit works: This ensemble balances the need for protection against rain and wind with the elegance required for an evening date at the theatre followed by dinner. The dress code allows for \\\"everyday\\\" to \\\"neat\\\" formality, so choosing a structured blazer over heavy outerwear keeps you looking polished without sacrificing comfort in +9 °C weather. Dark neutrals like charcoal and black are timeless for cinema dates, while the gold accent adds a touch of sophistication suitable for dinner afterwards. The water-resistant fabric choices ensure you stay dry through the downpour while maintaining a chic silhouette suitable for an evening out.\"}],\"usage\":{\"input_tokens\":767,\"output_tokens\":254},\"stop_reason\":\"end_turn\"}"
+ }
+}

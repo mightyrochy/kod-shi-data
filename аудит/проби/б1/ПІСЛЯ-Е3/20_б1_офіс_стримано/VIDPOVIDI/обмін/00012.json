@@ -1,0 +1,27 @@
+{
+ "версія": 1,
+ "запит": {
+  "model": "qwen/qwen3.5-9b",
+  "max_tokens": 4000,
+  "messages": [
+   {
+    "role": "user",
+    "content": [
+     {
+      "type": "text",
+      "text": "{\"task\": {\"role\": \"You read the description of an outfit and list its items as data.\", \"rules\": [\"One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.\", \"One item carries one thing — of two alternatives list the first; a note in brackets is not an item.\", \"Slot \\\"accessory\\\" is for an item no other slot fits.\", \"\\\"is_outfit\\\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note.\"], \"limits\": [\"Rely only on the input: do not invent what it does not contain.\", \"The answer is one JSON object following \\\"answer_schema\\\", without explanations and without ```.\"], \"language\": \"English\", \"answer\": \"ITEM_LIST\", \"answer_schema\": {\"is_outfit\": \"yes|no\", \"items\": [{\"name\": \"<what the item is>\", \"details\": \"<its cut, length and fabric>\", \"slot\": \"top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory\", \"color_hex\": \"<#rrggbb or null>\", \"worn\": \"<true, or false when the description says the outfit goes without it>\"}]}, \"input\": [\"\\\"description\\\" — the outfit description\"]}, \"description\": \"A cream-colored silk-blend blouse with a subtle sheen and a classic collar, cut straight through the torso to length mid-thigh, in hex color #e2ba9f.\\nDark indigo wide-leg trousers in heavy-weight cotton twill, tapering slightly at the ankle, featuring a relaxed fit for movement, in hex color #3d3b4a.\\nA charcoal grey unstructured blazer with notched lapels and functional buttons, crafted from a soft wool-nylon blend, falling just above the hip bone, in hex color #4f5256.\\nBrown leather ankle boots with a low block heel and a rounded toe, made of smooth calfskin for comfort during a long day, in hex color #8c6b5a.\\nGold-plated hoop earrings and a slim silver watch to add polished accents without overwhelming the professional setting.\\n\\nThis outfit works perfectly for an office environment on an autumn day by balancing professional polish with seasonal warmth. The unstructured blazer provides just enough layering against cooler temperatures while maintaining a modern, approachable silhouette suitable for workplace collaboration. Neutral tones like cream, indigo, and charcoal allow your natural warm skin and honey hair to stand out without clashing with the autumn atmosphere. The combination of structured trousers and fluid blouse ensures comfort throughout long meetings or walking between departments.\"}"
+     }
+    ]
+   }
+  ],
+  "temperature": 1
+ },
+ "відповідь": {
+  "status": 200,
+  "contentType": "application/json",
+  "headers": {
+   "x-model": "qwen/qwen3.5-9b"
+  },
+  "body": "{\"content\":[{\"type\":\"text\",\"text\":\"{\\n  \\\"is_outfit\\\": \\\"yes\\\",\\n  \\\"items\\\": [\\n    {\\n      \\\"name\\\": \\\"blouse\\\",\\n      \\\"details\\\": \\\"cream-colored silk-blend with a subtle sheen and classic collar, cut straight through the torso to length mid-thigh\\\",\\n      \\\"slot\\\": \\\"top\\\",\\n      \\\"color_hex\\\": \\\"#e2ba9f\\\",\\n      \\\"worn\\\": true\\n    },\\n    {\\n      \\\"name\\\": \\\"trousers\\\",\\n      \\\"details\\\": \\\"dark indigo wide-leg in heavy-weight cotton twill, tapering slightly at the ankle with a relaxed fit\\\",\\n      \\\"slot\\\": \\\"bottom\\\",\\n      \\\"color_hex\\\": \\\"#3d3b4a\\\",\\n      \\\"worn\\\": true\\n    },\\n    {\\n      \\\"name\\\": \\\"blazer\\\",\\n      \\\"details\\\": \\\"charcoal grey unstructured with notched lapels and functional buttons, made from a soft wool-nylon blend, falling just above the hip bone\\\",\\n      \\\"slot\\\": \\\"outerwear\\\",\\n      \\\"color_hex\\\": \\\"#4f5256\\\",\\n      \\\"worn\\\": true\\n    },\\n    {\\n      \\\"name\\\": \\\"ankle boots\\\",\\n      \\\"details\\\": \\\"brown leather with a low block heel and rounded toe, made of smooth calfskin\\\",\\n      \\\"slot\\\": \\\"shoes\\\",\\n      \\\"color_hex\\\": \\\"#8c6b5a\\\",\\n      \\\"worn\\\": true\\n    },\\n    {\\n      \\\"name\\\": \\\"earrings\\\",\\n      \\\"details\\\": \\\"gold-plated hoops\\\",\\n      \\\"slot\\\": \\\"earrings\\\",\\n      \\\"color_hex\\\": null,\\n      \\\"worn\\\": true\\n    },\\n    {\\n      \\\"name\\\": \\\"watch\\\",\\n      \\\"details\\\": \\\"slim silver\\\",\\n      \\\"slot\\\": \\\"watch\\\",\\n      \\\"color_hex\\\": null,\\n      \\\"worn\\\": true\\n    }\\n  ]\\n}\"}],\"usage\":{\"input_tokens\":629,\"output_tokens\":422},\"stop_reason\":\"end_turn\"}"
+ }
+}

@@ -1,0 +1,27 @@
+{
+ "версія": 1,
+ "запит": {
+  "model": "qwen/qwen3.5-9b",
+  "max_tokens": 4000,
+  "messages": [
+   {
+    "role": "user",
+    "content": [
+     {
+      "type": "text",
+      "text": "{\"task\": {\"role\": \"You read the description of an outfit and list its items as data.\", \"rules\": [\"One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.\", \"One item carries one thing — of two alternatives list the first; a note in brackets is not an item.\", \"Slot \\\"accessory\\\" is for an item no other slot fits.\", \"\\\"is_outfit\\\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note.\"], \"limits\": [\"Rely only on the input: do not invent what it does not contain.\", \"The answer is one JSON object following \\\"answer_schema\\\", without explanations and without ```.\"], \"language\": \"English\", \"answer\": \"ITEM_LIST\", \"answer_schema\": {\"is_outfit\": \"yes|no\", \"items\": [{\"name\": \"<what the item is>\", \"details\": \"<its cut, length and fabric>\", \"slot\": \"top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory\", \"color_hex\": \"<#rrggbb or null>\", \"worn\": \"<true, or false when the description says the outfit goes without it>\"}]}, \"input\": [\"\\\"description\\\" — the outfit description\"]}, \"description\": \"Structured blazer in navy blue (#000080), tailored fit, hip length, wool blend.  \\nPencil skirt in charcoal grey (#36454F), knee length, crepe.  \\nSilk blouse in ivory (#FFFFF0), relaxed collar, midi length.  \\nLoafers in polished black leather (#000000), rounded toe.  \\nGold hoop earrings and a simple gold pendant necklace.\\n\\nThis ensemble strikes the perfect balance for a professional autumn office day, adhering to the requested \\\"smart\\\" dress code while remaining comfortable for the cooler weather. The structured navy blazer provides instant polish, contrasting elegantly with the softness of the silk blouse and the sophistication of the charcoal pencil skirt. Neutral tones in grey and ivory ensure the outfit is versatile and timeless, allowing her personal style to shine without overpowering a work environment. Completing the look with classic black loafers and subtle gold jewelry offers a touch of warmth and refinement suitable for the season.\"}"
+     }
+    ]
+   }
+  ],
+  "temperature": 1
+ },
+ "відповідь": {
+  "status": 200,
+  "contentType": "application/json",
+  "headers": {
+   "x-model": "qwen/qwen3.5-9b"
+  },
+  "body": "{\"content\":[{\"type\":\"text\",\"text\":\"{\\n  \\\"is_outfit\\\": \\\"yes\\\",\\n  \\\"items\\\": [\\n    {\\n      \\\"name\\\": \\\"structured blazer\\\",\\n      \\\"details\\\": \\\"tailored fit, hip length, wool blend\\\",\\n      \\\"slot\\\": \\\"outerwear\\\",\\n      \\\"color_hex\\\": \\\"#000080\\\",\\n      \\\"worn\\\": true\\n    },\\n    {\\n      \\\"name\\\": \\\"pencil skirt\\\",\\n      \\\"details\\\": \\\"knee length, crepe\\\",\\n      \\\"slot\\\": \\\"bottom\\\",\\n      \\\"color_hex\\\": \\\"#36454F\\\",\\n      \\\"worn\\\": true\\n    },\\n    {\\n      \\\"name\\\": \\\"silk blouse\\\",\\n      \\\"details\\\": \\\"relaxed collar, midi length\\\",\\n      \\\"slot\\\": \\\"top\\\",\\n      \\\"color_hex\\\": \\\"#FFFFF0\\\",\\n      \\\"worn\\\": true\\n    },\\n    {\\n      \\\"name\\\": \\\"loafers\\\",\\n      \\\"details\\\": \\\"polished black leather, rounded toe\\\",\\n      \\\"slot\\\": \\\"shoes\\\",\\n      \\\"color_hex\\\": \\\"#000000\\\",\\n      \\\"worn\\\": true\\n    },\\n    {\\n      \\\"name\\\": \\\"gold hoop earrings and a simple gold pendant necklace\\\",\\n      \\\"details\\\": \\\"gold hoops and pendant\\\",\\n      \\\"slot\\\": \\\"jewelry\\\",\\n      \\\"color_hex\\\": null,\\n      \\\"worn\\\": true\\n    }\\n  ]\\n}\"}],\"usage\":{\"input_tokens\":564,\"output_tokens\":315},\"stop_reason\":\"end_turn\"}"
+ }
+}
