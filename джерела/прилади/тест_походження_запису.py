@@ -57,15 +57,49 @@ def читати(html):
     def test_оферта(self):
         """Власна оферта визначається id і наявністю з того самого входу."""
         for назва in ("дані", "товар", "варіант"):
-            код = f'''\ndef читати({назва}):
-    return dict(id={назва}.get("id"), available={назва}.get("available"),
-                колір={назва}.findtext("color"), фото={назва}.findtext("picture"))
+            код = f'''\ndef читати(root):
+    for {назва} in root.iter("offer"):
+        return dict(id={назва}.get("id"), available={назва}.get("available"),
+                    колір={назва}.findtext("color"), фото={назва}.findtext("picture"))
 '''
             self.assertTrue(all(м.статус in ("дотримує", "поза класом") for м in місця(код)))
         self.assertTrue(all(м.статус in ("дотримує", "поза класом") for м in місця('''
-def читати(дані):
-    return {"id": дані.get("id"), "available": дані.get("available"), "колір": дані.findtext("color")}
+def читати(root):
+    for дані in root.iter("offer"):
+        return {"id": дані.get("id"), "available": дані.get("available"), "колір": дані.findtext("color")}
 ''')))
+
+    def test_id_товару_не_варіант(self):
+        """Спільне джерело id і stock на Product не доводить оферти."""
+        код = '''
+def читати(дані):
+    return dict(id=дані.get("id"), available=дані.get("available"), колір=дані.findtext("color"))
+'''
+        self.assertFalse([м for м in місця(код) if м.ключ == "колір" and м.статус == "дотримує"])
+
+    def test_псевдонім_варіацій(self):
+        """Ім'я колекції не визначає роль: простежується її вхід."""
+        код = '''
+def читати(дані):
+    рядки = дані.get("variants") or []
+    for елемент in sorted(рядки):
+        return dict(id=елемент.get("id"), available=елемент.get("available"), колір=елемент.get("color"))
+'''
+        self.assertTrue(all(м.статус in ("дотримує", "поза класом") for м in місця(код)))
+
+    def test_однакове_імя_різні_цикли(self):
+        """Пізніший цикл варіацій не типізує попередній цикл товарів."""
+        код = '''
+def читати(root):
+    for рядок in root.iter("product"):
+        вихід = dict(id=рядок.get("id"), available=рядок.get("available"), колір=рядок.findtext("color"))
+    for рядок in root.iter("offer"):
+        інший = dict(id=рядок.get("id"), available=рядок.get("available"), колір=рядок.findtext("color"))
+    return вихід, інший
+'''
+        кольори = [м for м in місця(код) if м.ключ == "колір"]
+        self.assertNotEqual(кольори[0].статус, "дотримує")
+        self.assertEqual(кольори[1].статус, "дотримує")
 
     def test_словник_аргумент(self):
         """Літерал усередині логічного аргументу має ту саму межу, що dict()."""

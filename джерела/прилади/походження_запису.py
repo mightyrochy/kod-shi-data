@@ -66,28 +66,47 @@ class Походження:
         self.функції = функції or {}
         self.вузли = list(власні_вузли(вузол))
         self.присвоєння = {}
-        self.ітератори = {}
         self.звязані = {}
         for н in self.вузли:
             if isinstance(н, (ast.ListComp, ast.SetComp, ast.DictComp, ast.GeneratorExp)):
-                for г in н.generators:
+                for і, г in enumerate(н.generators):
                     імена = {ц.id for ц in ast.walk(г.target) if isinstance(ц, ast.Name)}
-                    for ч in ast.walk(н):
-                        if isinstance(ч, ast.Name) and isinstance(ч.ctx, ast.Load) and ч.id in імена:
-                            self.звязані[id(ч)] = г.iter
+                    вирази = [н.key, н.value] if isinstance(н, ast.DictComp) else [н.elt]
+                    вирази += [в for д in н.generators for в in д.ifs] + [д.iter for д in н.generators[і + 1:]]
+                    self._привязати(імена, вирази + [г.target], г.iter)
             if isinstance(н, (ast.Assign, ast.AnnAssign)) and н.value is not None:
                 for ц in н.targets if isinstance(н, ast.Assign) else [н.target]:
                     self._звязати(ц, н.value)
             elif isinstance(н, (ast.For, ast.AsyncFor, ast.comprehension)):
                 self._звязати(н.target, н.iter)
-                if поле(н.iter) in ВАРІАНТИ or (isinstance(н.iter, ast.Call) and н.iter.args
-                        and isinstance(н.iter.args[0], ast.Constant) and н.iter.args[0].value in ВАРІАНТИ):
-                    for ц in ast.walk(н.target):
-                        if isinstance(ц, ast.Name):
-                            self.ітератори[ц.id] = "вхід-елемента:" + ц.id
+                if isinstance(н, (ast.For, ast.AsyncFor)):
+                    імена = {ц.id for ц in ast.walk(н.target) if isinstance(ц, ast.Name)}
+                    self._привязати(імена, н.body + н.orelse + [н.target], н.iter)
         self.кеш = {}
         self.кеш_коренів = {}
         self.підсумки = {}
+
+    def _привязати(self, імена, вузли, ітер):
+        """Пов'язує вживання з його циклом, не типізуючи всі однойменні змінні функції."""
+        for корінь in вузли:
+            for ч in власні_вузли(корінь):
+                if isinstance(ч, ast.Name) and ч.id in імена:
+                    self.звязані[id(ч)] = ітер
+
+    def із_варіацій(self, вираз, шлях=frozenset()):
+        """Простежує колекцію оферт/варіацій через псевдонім, or і стандартну обгортку."""
+        if поле(вираз) in ВАРІАНТИ:
+            return True
+        if isinstance(вираз, ast.Name) and вираз.id not in шлях:
+            return any(self.із_варіацій(з, шлях | {вираз.id}) for з in self.визначення(вираз.id, вираз.lineno))
+        if isinstance(вираз, ast.BoolOp):
+            return any(self.із_варіацій(з, шлях) for з in вираз.values)
+        if isinstance(вираз, ast.Call) and вираз.args:
+            if isinstance(вираз.args[0], ast.Constant) and вираз.args[0].value in ВАРІАНТИ:
+                return True
+            if ім_виклику(вираз.func) in ("enumerate", "sorted", "iter", "list", "tuple"):
+                return self.із_варіацій(вираз.args[0], шлях)
+        return False
 
     def _звязати(self, ціль, значення):
         """Зберігає також розпакування кортежів."""
@@ -201,10 +220,11 @@ class Походження:
         if isinstance(вираз, ast.Name):
             if вираз.id in шлях:
                 return set()
-            if вираз.id in self.ітератори:
-                return {self.ітератори[вираз.id]}
             if id(вираз) in self.звязані:
-                return self.корені(self.звязані[id(вираз)], шлях=шлях | {вираз.id})
+                ітер = self.звязані[id(вираз)]
+                if self.із_варіацій(ітер):
+                    return {"вхід-елемента:%s:%d" % (вираз.id, getattr(ітер, "lineno", 0))}
+                return self.корені(ітер, шлях=шлях | {вираз.id})
             if вираз.id.isupper():
                 return set()
             зн = self.визначення(вираз.id, перед)
@@ -305,15 +325,16 @@ class Походження:
         if ід and наявність:
             свої = set().union(*(self.корені(з) for з in ід)) & set().union(*(self.корені(з) for з in наявність))
             дж = self.корені(значення)
-            if свої and дж and дж <= свої:
+            # id і наявність бувають і на Product: самі ці два поля не доводять
+            # варіацію. Корінь має походити з елемента offer/variants/variations.
+            if свої and дж and дж <= свої and any(к.startswith("вхід-елемента:") for к in свої):
                 return True
         cur = вузол
         while cur in self.батьки:
             cur = self.батьки[cur]
             if isinstance(cur, (ast.For, ast.AsyncFor, ast.comprehension)):
                 ітер = cur.iter
-                є = поле(ітер) in ВАРІАНТИ or (isinstance(ітер, ast.Call) and ітер.args
-                    and isinstance(ітер.args[0], ast.Constant) and ітер.args[0].value in ВАРІАНТИ)
+                є = self.із_варіацій(ітер)
                 цілі = {н.id for н in ast.walk(cur.target) if isinstance(н, ast.Name)}
                 # Усередині оферти значення має залежати саме від її даних.
                 імена = {н.id for н in ast.walk(значення) if isinstance(н, ast.Name)} if значення else set()
