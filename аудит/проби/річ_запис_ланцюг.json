@@ -1,0 +1,135 @@
+[
+ {
+  "назва": "слова без файла — не запис",
+  "пункти": [],
+  "джерела": {
+   "джерела/контроль.py": "from bs4 import BeautifulSoup\np=BeautifulSoup(html,'html.parser')\nр={'назва':p.get_text().replace('coat','dress')}\n"
+  }
+ },
+ {
+  "назва": "корінь сторінки до файла",
+  "пункти": [
+   4
+  ],
+  "джерела": {
+   "джерела/контроль.py": "import json\nfrom bs4 import BeautifulSoup\np=BeautifulSoup(html,'html.parser')\nр={'назва':p.get_text()}\njson.dump([р],open('catalog.json','w'))\n"
+  }
+ },
+ {
+  "назва": "вузол товару до файла",
+  "пункти": [],
+  "джерела": {
+   "джерела/контроль.py": "import json\nfrom bs4 import BeautifulSoup\np=BeautifulSoup(html,'html.parser')\nр={'назва':p.select_one('#product').get_text()}\njson.dump([р],open('catalog.json','w'))\n"
+  }
+ },
+ {
+  "назва": "Python між двома модулями до файла",
+  "пункти": [
+   1,
+   4
+  ],
+  "джерела": {
+   "джерела/добування.py": "from bs4 import BeautifulSoup\ndef річ(html):\n    p=BeautifulSoup(html,'html.parser')\n    return {'назва':p.get_text().replace('coat','dress')}\n",
+   "джерела/контроль.py": "import json\nfrom добування import річ\njson.dump([річ(html)],open('catalog.json','w'))\n"
+  }
+ },
+ {
+  "назва": "evaluate до файла",
+  "пункти": [
+   4
+  ],
+  "джерела": {
+   "джерела/контроль.py": "import json\nр={'назва':сторінка.evaluate('document.body.innerText')}\njson.dump([р],open('catalog.json','w'))\n"
+  }
+ },
+ {
+  "назва": "талія — довільне поле запису",
+  "пункти": [
+   1,
+   2,
+   3
+  ],
+  "джерела": {
+   "джерела/контроль.py": "import json\nfor р in json.load(open('catalog.json')):\n    р['талія']='coat' if 'coat' in р['опис'] else 'dress_generic'\n"
+  }
+ },
+ {
+  "назва": "контейнер записів — не запис",
+  "пункти": [],
+  "джерела": {
+   "джерела/контроль.py": "import json\nдані=json.load(open('catalog.json'))\nобгортка={'речі':дані,'стан':'idle'}\nif обгортка['стан']=='idle': print('так')\n"
+  }
+ },
+ {
+  "назва": "рішення про заміну — не запис",
+  "пункти": [],
+  "джерела": {
+   "джерела/контроль.py": "import json\nfor р in json.load(open('catalog.json')):\n    рішення={'стан':'idle','заміна':р}\n    рішення['стан']='failed'\n"
+  }
+ },
+ {
+  "назва": "кодова група після окремого читання",
+  "пункти": [
+   2
+  ],
+  "джерела": {
+   "джерела/контроль.py": "import json\nГРУПА=('top','bottom')\nfor р in json.load(open('catalog.json')):\n    слот=р['слот']\n    if слот in ГРУПА: print(р)\n"
+  }
+ },
+ {
+  "назва": "JSON відповіді моделі — не каталог",
+  "пункти": [],
+  "джерела": {
+   "джерела/показ/контроль.js": "const data=response.json();const blocks=data.content||[];blocks.forEach(b=>{if(b.type==='text')console.log(b.text)});"
+  }
+ },
+ {
+  "назва": "JS крапка з каталогу",
+  "пункти": [
+   1,
+   3
+  ],
+  "джерела": {
+   "джерела/показ/контроль.js": "const items=JSON.parse(fetch('catalog.json'));for(const r of items){r.тип=r.назва.includes('coat')?'coat':'dress_generic';}"
+  }
+ },
+ {
+  "назва": "код og:type — не слова крамниці",
+  "пункти": [],
+  "джерела": {
+   "джерела/контроль.py": "import json\nfrom bs4 import BeautifulSoup\np=BeautifulSoup(html,'html.parser')\nр={'вид_розмітки':p.select_one('meta[property=\"og:type\"]').get('content')}\njson.dump([р],open('catalog.json','w'))\n"
+  }
+ },
+ {
+  "назва": "одноключовий запис",
+  "пункти": [
+   2
+  ],
+  "джерела": {
+   "джерела/контроль.py": "import json\nдані=json.load(open('catalog.json'))\nдані.append({'тип':'never_registered'})\n"
+  }
+ },
+ {
+  "назва": "назва звіту не дає запису",
+  "пункти": [],
+  "джерела": {
+   "джерела/контроль.py": "import json\nfor р in json.load(open('каталог_звіт_v1.json')):\n    р['тип']='coat' if 'coat' in р['назва'] else 'dress_generic'\n"
+  }
+ },
+ {
+  "назва": "жниварка через сирі JSON до XML",
+  "пункти": [
+   4
+  ],
+  "джерела": {
+   "zhnyvarka/жниварка.py": "import json\nfrom bs4 import BeautifulSoup\ndef записати_каталог(записи, шлях, підпис):\n    with open(шлях, 'w') as ф:\n        for р in записи:\n            ф.write(р['назва'])\ndef зібрати():\n    with open('жнива/a.json') as ф:\n        д=json.load(ф)\n    записати_каталог(д['прийняті'], 'каталог_повний.xml', '')\ndef добути():\n    p=BeautifulSoup(html, 'html.parser')\n    р={'назва':p.get_text()}\n    with open('жнива/a.json', 'w') as ф:\n        json.dump(dict(прийняті=[р], відхилені=[]), ф)\nзібрати()\nдобути()\n"
+  }
+ },
+ {
+  "назва": "сирий журнал без складальника — не каталог",
+  "пункти": [],
+  "джерела": {
+   "zhnyvarka/контроль.py": "import json\nfrom bs4 import BeautifulSoup\np=BeautifulSoup(html,'html.parser')\nр={'назва':p.get_text()}\njson.dump({'картка':р},open('сирі/a.jsonl','w'))\n"
+  }
+ }
+]
