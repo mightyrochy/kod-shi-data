@@ -1,0 +1,27 @@
+{
+ "версія": 1,
+ "запит": {
+  "model": "qwen/qwen3.5-9b",
+  "max_tokens": 4000,
+  "messages": [
+   {
+    "role": "user",
+    "content": [
+     {
+      "type": "text",
+      "text": "{\"task\": {\"role\": \"You read the description of an outfit and list its items as data.\", \"rules\": [\"One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.\", \"One item carries one thing — of two alternatives list the first; a note in brackets is not an item.\", \"Slot \\\"accessory\\\" is for an item no other slot fits.\", \"\\\"is_outfit\\\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note.\"], \"limits\": [\"Rely only on the input: do not invent what it does not contain.\", \"The answer is one JSON object following \\\"answer_schema\\\", without explanations and without ```.\"], \"language\": \"English\", \"answer\": \"ITEM_LIST\", \"answer_schema\": {\"is_outfit\": \"yes|no\", \"items\": [{\"name\": \"<what the item is>\", \"details\": \"<its cut, length and fabric>\", \"slot\": \"top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory\", \"color_hex\": \"<#rrggbb or null>\", \"worn\": \"<true, or false when the description says the outfit goes without it>\"}]}, \"input\": [\"\\\"description\\\" — the outfit description\"]}, \"description\": \"Structured wool-blend blazer with a sharp lapel in charcoal grey (#36454F), tailored to skim the hips for freedom of movement during long hours of standing, cut from a durable crepe fabric that resists wrinkling.\\nHigh-waisted straight-leg trousers in black #1C1C1C made from heavy-weight stretch twill, designed with hidden side pockets and a full range of motion for walking through crowds without restriction.\\nMinimalist stud earrings in oxidized sterling silver, paired with a sleek leather clutch in deep midnight blue (#0F1626) to hold essentials while maintaining the requested classic register.\\n\\nThis outfit works perfectly because it balances the 'smart' dress code required for the venue with the physical need to stand and move extensively in a crowd without feeling constrained by tight fits or delicate fabrics. The dark charcoal and black palette respects her desire for a streamlined, classic look that avoids flashy trends while standing out subtly against the colorful energy of a rock concert. Finally, the structured yet flexible materials ensure she remains comfortable and composed throughout the entire evening, seamlessly transitioning from arrival to dancing under artificial club lights.\"}"
+     }
+    ]
+   }
+  ],
+  "temperature": 1
+ },
+ "відповідь": {
+  "status": 200,
+  "contentType": "application/json",
+  "headers": {
+   "x-model": "qwen/qwen3.5-9b"
+  },
+  "body": "{\"content\":[{\"type\":\"text\",\"text\":\"{\\n  \\\"is_outfit\\\": \\\"yes\\\",\\n  \\\"items\\\": [\\n    {\\n      \\\"name\\\": \\\"blazer\\\",\\n      \\\"details\\\": \\\"Structured wool-blend with a sharp lapel, tailored to skim the hips for freedom of movement, cut from durable crepe fabric that resists wrinkling\\\",\\n      \\\"slot\\\": \\\"top\\\",\\n      \\\"color_hex\\\": \\\"#36454F\\\",\\n      \\\"worn\\\": true\\n    },\\n    {\\n      \\\"name\\\": \\\"trousers\\\",\\n      \\\"details\\\": \\\"High-waisted straight-leg made from heavy-weight stretch twill, designed with hidden side pockets and a full range of motion for walking\\\",\\n      \\\"slot\\\": \\\"bottom\\\",\\n      \\\"color_hex\\\": \\\"#1C1C1C\\\",\\n      \\\"worn\\\": true\\n    },\\n    {\\n      \\\"name\\\": \\\"earrings\\\",\\n      \\\"details\\\": \\\"Minimalist stud made from oxidized sterling silver\\\",\\n      \\\"slot\\\": \\\"earrings\\\",\\n      \\\"color_hex\\\": null,\\n      \\\"worn\\\": true\\n    },\\n    {\\n      \\\"name\\\": \\\"clutch\\\",\\n      \\\"details\\\": \\\"Sleek leather designed to hold essentials while maintaining a classic register\\\",\\n      \\\"slot\\\": \\\"bag\\\",\\n      \\\"color_hex\\\": \\\"#0F1626\\\",\\n      \\\"worn\\\": true\\n    }\\n  ]\\n}\"}],\"usage\":{\"input_tokens\":586,\"output_tokens\":305},\"stop_reason\":\"end_turn\"}"
+ }
+}
