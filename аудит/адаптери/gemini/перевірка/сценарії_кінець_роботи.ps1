@@ -12,6 +12,7 @@ function Check([string]$Name, [bool]$Ok) {
 try {
     . (Join-Path $SourceDir 'gemini_publish.ps1') -WorkDir "$tmp/pub" -OutboxDir "$tmp/out"
     $OutDir = "$tmp/gem-out"
+    $GeminiRunsDir = "$tmp/gemini-runs"
     foreach ($dir in @($WorkDir, "$WorkDir/seen", "$WorkDir/state", $OutboxDir, $OutDir, "$tmp/claude-run/slots", "$tmp/claude-run/state")) {
         [void][IO.Directory]::CreateDirectory($dir)
     }
@@ -82,17 +83,39 @@ try {
         Write-FileAtomic "$copy/repo/.git" 'gitdir: ../meta'
         Check 'HEAD worktree читається через gitdir' ((Get-ChainBranchWork 'claude/нова-гілка') -ceq $marker)
         $lock.Dispose(); $lock = $null
+        $tokens = $null; $errors = $null
+        $ast = [Management.Automation.Language.Parser]::ParseFile((Join-Path $SourceDir 'gemini_run.ps1'), [ref]$tokens, [ref]$errors)
+        $heartbeat = $ast.Find({ param($node) $node -is [Management.Automation.Language.FunctionDefinitionAst] -and $node.Name -ceq 'Write-Heartbeat' }, $true)
+        Invoke-Expression $heartbeat.Extent.Text
+        function Get-UtcStamp($Date) { <# Форматує час справжнього Write-Heartbeat. #> $Date.ToUniversalTime().ToString("yyyy-MM-dd'T'HH:mm:ss'Z'") }
+        [void][IO.Directory]::CreateDirectory("$GeminiRunsDir/slots")
         foreach ($lane in @('codex','agy')) {
-            $gm = "gemini-queue/спільний/gpt-test/2/p1"
+            $gm = "gemini-queue/спільний-$lane/gpt-test/2/p1"
+            $head = $(if ($lane -ceq 'codex') { 'f'*40 } else { '1'*40 })
+            Write-FileAtomic "$GeminiRunsDir/slots/$lane-1.json" ((@{slot="$lane-1";lane=$lane;slug="спільний-$lane";marker=$gm}) | ConvertTo-Json)
+            $lock = [IO.File]::Open("$GeminiRunsDir/slots/$lane-1.lock", 'OpenOrCreate', 'ReadWrite', 'None')
+            Write-Heartbeat 'TEST_ISOLATION'
+            $hb = ConvertFrom-Json ([IO.File]::ReadAllText("$OutDir/heartbeat.json"))
+            Check "${lane}: heartbeat ізоляції не має lanes" ($null -eq $hb.PSObject.Properties['lanes'])
+            Check "${lane}: зайнятий слот повʼязує гілку без heartbeat.lanes" ((Get-ChainBranchWork "gemini/спільний-$lane") -ceq $gm)
+            $n = CountReviews 2386
+            Tick $head "gemini/спільний-$lane"
+            Check "${lane}: активна голова — 0 перевірок" ((CountReviews 2386) -eq $n)
             Write-FileAtomic "$OutDir/heartbeat.json" ((@{lanes=@(@{lane=$lane;busy=@(@{marker=$gm})})}) | ConvertTo-Json -Depth 6)
-            Check "${lane}: активна позначка повʼязує gemini/спільний" ((Get-ChainBranchWork 'gemini/спільний') -ceq $gm)
-            Tick ('f'*40) 'gemini/спільний'
-            Check "${lane}: активна голова не отримала перевірки" (@($script:Markers | Where-Object { $_ -ceq "автоперевірка-2386-$('f'*40)" }).Count -eq 0)
+            Write-FileAtomic "$WorkDir/state/done-$lane.json" ((@{line="GEMINI ОБГОРТКА: ГОТОВО gemini/спільний-$lane $head МОДЕЛЬ gpt-test"}) | ConvertTo-Json)
+            $lock.Dispose(); $lock = $null
+            Check "${lane}: старий busy з вільним замком не блокує" (-not (Get-ChainBranchWork "gemini/спільний-$lane"))
+            Tick $head "gemini/спільний-$lane"; Tick $head "gemini/спільний-$lane"
+            Check "${lane}: після ГОТОВО зі старим busy — 1 перевірка" ((CountReviews 2386) -eq ($n+1))
+            $blockedHead = $(if ($lane -ceq 'codex') { '2'*40 } else { '3'*40 })
+            $lock = [IO.File]::Open("$GeminiRunsDir/slots/$lane-1.lock", 'Open', 'ReadWrite', 'None')
+            Tick $blockedHead "gemini/спільний-$lane"
+            Check "${lane}: наступна активна голова — 0 перевірок" ((CountReviews 2386) -eq ($n+1))
+            Write-FileAtomic "$WorkDir/state/blocked-$lane.json" ((@{line="GEMINI ОБГОРТКА: ЗАБЛОКОВАНО gemini/спільний-$lane BLOCKED"}) | ConvertTo-Json)
+            $lock.Dispose(); $lock = $null
+            Tick $blockedHead "gemini/спільний-$lane"; Tick $blockedHead "gemini/спільний-$lane"
+            Check "${lane}: після ЗАБЛОКОВАНО — 1 перевірка" ((CountReviews 2386) -eq ($n+2))
         }
-        Write-FileAtomic "$OutDir/heartbeat.json" '{"lanes":[{"lane":"codex","busy":[]}]}'
-        Write-FileAtomic "$WorkDir/state/blocked.json" ((@{line='GEMINI ОБГОРТКА: ЗАБЛОКОВАНО gemini/спільний BLOCKED'}) | ConvertTo-Json)
-        Tick ('f'*40) 'gemini/спільний'; Tick ('f'*40) 'gemini/спільний'
-        Check 'ЗАБЛОКОВАНО теж звільняє голову: одна перевірка' (@($script:Markers | Where-Object { $_ -ceq "автоперевірка-2386-$('f'*40)" }).Count -eq 1)
     }
 } finally {
     if ($null -ne $lock) { $lock.Dispose() }

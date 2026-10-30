@@ -405,37 +405,40 @@ function Request-CloudReview([string]$Number, [string]$Head) {
     Write-WrapperLog "ланцюг: #$Number $Head — перевірка хмарним Claude, рядок диспетчерові"
 }
 
+function Get-ChainBusySlots([string]$Dir, [string]$Pattern) {
+    <# Читає JSON лише зайнятих слотів: той самий замок worker визначає активність усіх смуг.
+
+    Heartbeat може не мати lanes або лишитися старим після завершення, тому не визначає активність. #>
+    $slots = Join-Path $Dir 'slots'
+    if (-not (Test-Path -LiteralPath $slots)) { return }
+    foreach ($file in @(Get-ChildItem -LiteralPath $slots -Filter '*.json' -File -ErrorAction Stop)) {
+        if ($file.BaseName -cnotmatch $Pattern) { continue }
+        $lockPath = [IO.Path]::ChangeExtension($file.FullName, '.lock')
+        if (-not (Test-Path -LiteralPath $lockPath)) { continue }
+        try { $lock = [IO.File]::Open($lockPath, 'Open', 'ReadWrite', 'None'); $lock.Dispose(); continue }
+        catch [IO.IOException] { $null = $_ }
+        $slot = ConvertFrom-Json ([IO.File]::ReadAllText($file.FullName, $script:Utf8))
+        $slug = [string](Get-Prop $slot 'slug'); $marker = [string](Get-Prop $slot 'marker')
+        if ($slug -cnotmatch $script:SlugPattern -or $slug.Contains('..') -or $slug.EndsWith('.lock') -or
+            $marker -cnotmatch ('^gemini-queue/' + [regex]::Escape($slug) + '/[a-z0-9][a-z0-9.-]{1,63}/[1-9][0-9]*(?:/[^/]+)?$')) { throw 'CHAIN_LANE_STATE' }
+        $slot
+    }
+}
+
 function Get-ChainBranchWork([string]$Branch) {
     <# Повертає активну позначку гілки з наявного стану смуг, без нового таймера чи реєстру.
 
     Gemini/Codex пишуть gemini/<slug>; Claude може продовжувати іншу гілку зі state/branch-<hash>.txt.
     Поточний HEAD копії Claude враховує і першу спробу, яка ще не зберегла гілку продовження. #>
     if ($Branch.StartsWith('gemini/')) {
-        $hb = Read-QuotaJson $OutDir 'heartbeat.json'
-        if ($null -ne $hb) {
-            foreach ($lane in @(Get-Prop $hb 'lanes')) {
-                if ($null -eq $lane -or [string](Get-Prop $lane 'lane') -cnotmatch '^(codex|agy)$') { continue }
-                foreach ($slot in @(Get-Prop $lane 'busy')) {
-                    if ($null -eq $slot) { continue }
-                    $marker = [string](Get-Prop $slot 'marker')
-                    if ($marker -cmatch '^gemini-queue/([^/]+)/([a-z0-9][a-z0-9.-]{1,63})/[1-9][0-9]*(?:/[^/]+)?$' -and
-                        $Branch -ceq "gemini/$($Matches[1])") { return $marker }
-                }
-            }
+        foreach ($slot in @(Get-ChainBusySlots $GeminiRunsDir '^(codex|agy)-[1-9][0-9]*$')) {
+            if ($Branch -ceq "gemini/$($slot.slug)") { return [string]$slot.marker }
         }
     }
     if ($Branch.StartsWith('claude/')) {
         $dir = Join-Path (Split-Path -Parent $WorkDir) 'claude-run'
-        foreach ($file in @(Get-ChildItem -LiteralPath (Join-Path $dir 'slots') -Filter 'claude-*.json' -File -ErrorAction SilentlyContinue)) {
-            if ($file.BaseName -cnotmatch '^claude-[1-9][0-9]*$') { continue }
-            $lockPath = [IO.Path]::ChangeExtension($file.FullName, '.lock')
-            if (-not (Test-Path -LiteralPath $lockPath)) { continue }
-            try { $lock = [IO.File]::Open($lockPath, 'Open', 'ReadWrite', 'None'); $lock.Dispose(); continue }
-            catch [IO.IOException] { $null = $_ }
-            $slot = ConvertFrom-Json ([IO.File]::ReadAllText($file.FullName, $script:Utf8))
-            $slug = [string](Get-Prop $slot 'slug'); $marker = [string](Get-Prop $slot 'marker')
-            if ($slug -cnotmatch $script:SlugPattern -or $slug.Contains('..') -or $slug.EndsWith('.lock') -or
-                $marker -cnotmatch ('^gemini-queue/' + [regex]::Escape($slug) + '/')) { throw 'CHAIN_LANE_STATE' }
+        foreach ($slot in @(Get-ChainBusySlots $dir '^claude-[1-9][0-9]*$')) {
+            $slug = [string]$slot.slug; $marker = [string]$slot.marker
             $branches = @("claude/$slug")
             $saved = Join-Path (Join-Path $dir 'state') ('branch-' + (Get-Sha256Hex $slug) + '.txt')
             if (Test-Path -LiteralPath $saved) { $branches += [IO.File]::ReadAllText($saved, $script:Utf8).Trim() }

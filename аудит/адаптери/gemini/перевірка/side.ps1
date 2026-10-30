@@ -16,6 +16,9 @@ if ((Get-Command $Script).Parameters.ContainsKey('LaneDir') -and -not $p.Contain
 if ((Get-Command $Script).Parameters.ContainsKey('UpdateRoot') -and -not $p.ContainsKey('UpdateRoot')) {
     $p['UpdateRoot'] = Join-Path ([System.IO.Path]::GetTempPath()) ('update-' + [guid]::NewGuid().ToString('N'))
 }
+if ((Get-Command $Script).Parameters.ContainsKey('GeminiRunsDir') -and -not $p.ContainsKey('GeminiRunsDir')) {
+    $p['GeminiRunsDir'] = Join-Path ([System.IO.Path]::GetTempPath()) ('gemini-runs-' + [guid]::NewGuid().ToString('N'))
+}
 # Файл, що не завантажився, — провал стенда з причиною: без Main PowerShell знайшов би main.cpl (PATHEXT має .CPL)
 # і відкрив "Миша – властивості" поверх вікон власника (29.10, 20 разів за 2 хв).
 try { . $Script @p } catch { [Console]::Error.WriteLine("СТЕНД: $Script не завантажився: $($_.Exception.Message)"); exit 2 }
