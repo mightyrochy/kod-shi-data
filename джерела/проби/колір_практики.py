@@ -16,7 +16,7 @@ def ділянка(L, C):  return "насичені C≥40" if C >= 40 else "т�
 for назва in ("офіс·18°C", "дощ·ресторан·вечір", "весілля·гість", "спека·парк"):
     к = json.loads(B.виклик("запити", json.dumps(dict(вх0, сценарій=dict(СЗ.СЦЕНАРІЇ[назва]), випадок=назва), ensure_ascii=False)))["кандидати"]
     зі = {r["id"]: r for r in B.каталог_останнього_пакета()}
-    ак = [(с, зі[r["id"]], cs.lch(зі[r["id"]]["lab"])) for с, xs in к.items() for r in xs if зі.get(r["id"]) and зі[r["id"]].get("lab") and not КР.не_вимір(зі[r["id"]])]
+    ак = [(с, зі[r["id"]], cs.lch(КР.точка_кольору(зі[r["id"]]))) for с, xs in к.items() for r in xs if зі.get(r["id"]) and КР.точка_кольору(зі[r["id"]]) and not КР.не_вимір(зі[r["id"]])]
     ак = [t for t in ак if t[2][1] >= 12]
     for (с1, a, ла), (с2, b, лб) in itertools.combinations(ак, 2):
         if с1 == с2: continue
@@ -29,12 +29,12 @@ for назва in ("офіс·18°C", "дощ·ресторан·вечір", "�
             for кл in ("complementary", "warm_cool"): Л["(г) кемел×т.-синій %-13s ДО %s → %s" % (кл, КВ.вердикт(до(lambda: КВ.сила(КР.запис_кольору(a), КР.запис_кольору(b), кл))), КВ.вердикт(КВ.сила(КР.запис_кольору(a), КР.запис_кольору(b), кл)))] += 1
 for дл, ц in sorted(Д.items()): print("  (а) %-38s пар %5d · same_hue «так» ДО %5d → ПІСЛЯ %5d · так→ні %d" % (дл, ц["пар"], ц["ДО так"], ц["ПІСЛЯ так"], ц["так→ні"]))
 for к_, v in sorted(Л.items()): print("  %-66s %6d" % (к_, v))
-for k_, (a, b) in П.items(): print("  приклад ДО/ПІСЛЯ %s: %s × %s same_hue %.2f → %.2f" % (k_, cs.hex_з_lab(a["lab"]), cs.hex_з_lab(b["lab"]), до(lambda: КВ.сила(КР.запис_кольору(a), КР.запис_кольору(b), "same_hue"))[0], КВ.сила(КР.запис_кольору(a), КР.запис_кольору(b), "same_hue")[0]))
+for k_, (a, b) in П.items(): print("  приклад ДО/ПІСЛЯ %s: %s × %s same_hue %.2f → %.2f" % (k_, cs.hex_з_lab(КР.точка_кольору(a)), cs.hex_з_lab(КР.точка_кольору(b)), до(lambda: КВ.сила(КР.запис_кольору(a), КР.запис_кольору(b), "same_hue"))[0], КВ.сила(КР.запис_кольору(a), КР.запис_кольору(b), "same_hue")[0]))
 Р = K.defaultdict(list)
 for кк in json.load(gzip.open("каталог_кадри.json.gz"))["записи"].values():
-    кк = [k for k in кк if k.get("lab") and k.get("слово")]; w = кк and K.Counter(k["слово"] for k in кк).most_common(1)[0][0]
+    кк = [k for k in кк if КР.точка_кольору(k) and k.get("слово")]; w = кк and K.Counter(k["слово"] for k in кк).most_common(1)[0][0]
     for p, q in itertools.combinations([k for k in кк if k["слово"] == w], 2):
-        (La, Ca, ha), (Lb, Cb, hb) = cs.lch(p["lab"]), cs.lch(q["lab"])
+        (La, Ca, ha), (Lb, Cb, hb) = cs.lch(КР.точка_кольору(p)), cs.lch(КР.точка_кольору(q))
         if abs(La - Lb) <= 10: Р[next(x for x in (4, 8, 12, 16, 20, 30, 40, 999) if min(Ca, Cb) < x)].append((КР.кут_на_колі(ha, hb), 2 * math.sqrt(Ca * Cb) * math.sin(math.radians(abs((ha - hb + 180) % 360 - 180)) / 2)))
 p90 = lambda vv: sorted(vv)[int(0.9 * (len(vv) - 1))]
 for x, vv in sorted(Р.items()): print("  (д) кадри C*<%3d n=%4d: p90 Δколо %5.1f (вікно ±15) · p90 ΔH* %4.2f (вікно ±3)" % (x, len(vv), p90([v[0] for v in vv]), p90([v[1] for v in vv])))

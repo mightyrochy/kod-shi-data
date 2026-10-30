@@ -32,8 +32,9 @@
 («ф1·2» → «p1-2», як в ОЦІНЦІ); `прийняти` ідів не читає, тож назад їх вертати нема чого."""
 import json as _json
 
-import протокол as _ПР
+import схема_відповіді as _СВ
 import збирач_промптів as _ЗП
+import спільні_вимоги as _ВИМ
 import річ_з_фото as _РФ
 import brief as _БР  # щаблі ошатності кодами (НГ-3)
 import дріт_моделі as _Д
@@ -41,6 +42,7 @@ import оцінка_образу as _ОО  # ід її речей на дрот�
 import внутрішня_мова as _ВМ
 import паспорт_нагоди as _ПН
 import пакет_моделі as _ПМ
+import міст_помічниця as _МП  # запобіжник обіцянки — один на обох (Е2-межі-показу)
 
 ЗОВНІШНІ_ВХОДИ = {
     "питання": "вхід із показу (`стилісткаП`): її питання про образ — вільний текст від перекладача "
@@ -57,10 +59,10 @@ import пакет_моделі as _ПМ
 # на збирачі). Відповідь для неї пише ця модель, а природною мовою її доносить перекладач репліки.
 ПИТАННЯ = _ЗП.Оголошення(
     задача="питання_образу",
-    роль="You are the stylist of the Lyusterko styling app. She has asked you a question about her "
+    роль=_ВИМ.РОЛЬ_ЗАСТОСУНКУ + " She has asked you a question about her "
          "look; you answer it.",
     вхід=(
-        _ЗП.Поле("question", "her question, in her own words", треба=True),
+        _ВИМ.поле("question", треба=True),
         _ЗП.Поле("items", "her own items from this conversation, as the code sees them: features as "
                           "codes, formality as a step: " + _БР.ЩАБЛІ_EN + "; \"verdict\" is the code's verdict on the item for her "
                           "palette and this occasion — statement codes",
@@ -68,8 +70,7 @@ import пакет_моделі as _ПМ
                  без="She has not shown or described any item yet."),
         _ЗП.Поле("photos", "which attached image (in order) shows which item: [{photo, item}]",
                  без="No image is attached: judge only by the item descriptions."),
-        _ЗП.Поле("case", "the occasion as the code knows it: codes, the event in her own words",
-                 без="The occasion is not known yet."),
+        _ВИМ.поле("case", без="The occasion is not known yet."),
     ),
     правила=(
         "Answer exactly what she asked about her look: whether the item suits her and this "
@@ -145,27 +146,31 @@ def промпт(питання, речі=None, паспорт=None, сцена�
     return _json.dumps(_ЗП.зібрати(ПИТАННЯ, дані, мова_тексту=мова_тексту), ensure_ascii=False)
 
 
-def прийняти(відповідь):
-    """Сира відповідь моделі → dict(відповідь, причина): уся відповідь — текст (форма «plain text»);
-    JSON з полем `answer` (як доти) — текст цього поля. Проза з дужками чи огорожею ```
-    — не відповідь: це уривок JSON, і жінці він не йде."""
+def прийняти(відповідь, промпт=None):
+    """Сира відповідь моделі → dict(відповідь, причина, обіцянка[, промпт_повтору]): уся відповідь — текст (форма «plain
+    text»); JSON з полем `answer` (як доти) — текст цього поля, прочитаний реєстром (`ВІДПОВІДЬ_СТИЛІСТКИ`).
+    Проза з дужками чи огорожею ``` — не відповідь: це уривок JSON, і жінці він не йде. `обіцянка` — запобіжник
+    `міст_помічниця`. Не прочиталась, і є `промпт` — `промпт_повтору` для ОДНОГО повтору словами розбіжності."""
     сира = str(відповідь or "").strip()
     if сира and "{" not in сира and "```" not in сира:
-        return dict(відповідь=сира, причина=None)
-    об, чому_не, _ = _ПР.розбір_останній(сира, ("answer",))
+        return dict(відповідь=сира, причина=None, обіцянка=_МП.обіцяє(сира))
+    схема = _СВ.СХЕМИ_ВІДПОВІДІ["ВІДПОВІДЬ_СТИЛІСТКИ"]
+    об, чому_не, _ = схема.прочитати(сира)
     т = об.get("answer") if isinstance(об, dict) else None
     if isinstance(т, str) and т.strip():
-        return dict(відповідь=т.strip(), причина=None)
+        return dict(відповідь=т.strip(), причина=None, обіцянка=_МП.обіцяє(т))
     # ПРИЧИНА — КОДОМ: вона їде в запис виклику й діагноз звіту власника, не жінці
-    return dict(відповідь="", причина=("empty" if not сира else "no_answer_field" if isinstance(об, dict)
-                                        else "not_json_object: %s" % чому_не))
+    причина = ("empty" if not сира else "no_answer_field" if isinstance(об, dict)
+               else "not_json_object: %s" % чому_не)
+    return dict(відповідь="", причина=причина, обіцянка=False,
+                **({"промпт_повтору": схема.промпт_повтору(промпт, причина)} if промпт else {}))
 
 
 def стилістка(вхід):
     """Ендпойнт моста `стилістка` (два кроки, див. шапку модуля)."""
     d = _json.loads(вхід) if isinstance(вхід, str) else (вхід or {})
     if d.get("відповідь_моделі") is not None:
-        return _json.dumps(прийняти(d["відповідь_моделі"]), ensure_ascii=False)
+        return _json.dumps(прийняти(d["відповідь_моделі"], d.get("промпт")), ensure_ascii=False)
     if not str(d.get("питання") or "").strip():
         return _json.dumps(dict(помилка="нема питання"), ensure_ascii=False)
     return _json.dumps(dict(промпт=промпт(d["питання"], d.get("речі"), d.get("паспорт"), d.get("сценарій"),

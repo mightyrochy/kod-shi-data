@@ -20,10 +20,12 @@
 шаром — «English» (внутрішня мова, текст жінці робить мовна модель: `мовоюКарткуП`
 перекладає опис і назви вигаданих речей), без шару — «Ukrainian» (перекладати нікому).
 """
+import колір_річ as _КОЛІР
 import json as _json
 import re as _re
 
 import збирач_промптів as _ЗП
+import спільні_вимоги as _ВИМ
 import протокол as _ПР
 import внутрішня_мова as _ВМ
 import річ_з_фото as _РФ
@@ -93,8 +95,8 @@ def її_речі(речі_паспорта):
         колір = вим.get("слово") or р.get("колір")
         if колір:
             о["color"] = _РФ.код_поля("color", колір) or колір
-        if вим.get("hex"):
-            о["color_hex"] = вим["hex"]
+        if _КОЛІР.hex_кольору(вим):
+            о["color_hex"] = _КОЛІР.hex_кольору(вим)
         for поле, ключ in (("cut", "крій"), ("length", "довжина"), ("fabric", "матеріал"),
                            ("pattern", "принт")):
             к = _РФ.код_поля(поле, р.get(ключ))
@@ -133,11 +135,10 @@ def її_речі(речі_паспорта):
         # `case` — кодами (`випадок_кодами`), коли є паспорт; без нього — рядок входу
         _ЗП.Поле("case", "her case: the occasion, where and when, the weather, the dress code, her wishes and "
                          "refusals — as codes, her own words as quotes", треба=True,
-                 як="do not take an item that goes against her refusals or her words"),
-        _ЗП.Поле("case.her_words", "what she asked for in her own words", як="meet every point"),
+                 як=_ВИМ.ПРОТИ_ВІДМОВ),
+        _ВИМ.поле("case.her_words", як="meet every point"),
         _ЗП.Поле("case.formality", "the level of dress she named: " + _БР.ЩАБЛІ_EN),
-        _ЗП.Поле("case.goal_zones", "the body zones she wants to draw the eye away from, with any goal",
-                 як="keep these zones quiet; the rest of the look follows goal"),
+        _ВИМ.поле("case.goal_zones"),
         *_ПОЛЯ_МЕЖІ_НА_СЛОТ,
         _ЗП.Поле("photo_of_her", "a photo of her is attached", як="fit the outfit to her"),
         _ЗП.Поле("person", "facts about her from her photo and measurements, without conclusions: colors "
@@ -183,6 +184,40 @@ def проза_руки(текст):
     """Відповідь руки 3–4 без мітки задачі (`ОБРАЗ.вихід`) на самому початку; без мітки — як є."""
     т = str(текст or "")
     return _МІТКА_ПРОЗИ.sub("", т, count=1).lstrip() if _МІТКА_ПРОЗИ.match(т) else т
+
+
+_МІТКА_РЯДКА = _re.compile(r"(ОБРАЗ|ПІДПИС|ФОТО НЕ ТЕ)\s*[:：]", _re.I)
+_СВІДОМО = _re.compile(r"(?:СВІДОМО|Свідомо|свідомо|НАВМИСНО|Навмисно)\s*[:—–-]\s*(.+)$")
+
+
+def опис_для_жінки(проза):
+    """Проза руки 3–4 (`проза_руки`) → dict(текст, як_носити): те, що читає жінка, рішенням коду (Е2-межі-показу;
+    доти це робила `людською()` показу: другий розбирач над відповіддю моделі).
+    · JSON з полем `текст` (модель відповіла обʼєктом, хоч просили прозу) — його `текст` і `як_носити`; JSON без
+      такого поля чи нерозібраний — порожньо: картка без опису чесніша за сирий обʼєкт (05.09);
+    · проза — без рядків-міток задачі (`ОБРАЗ:` / `ПІДПИС:` / `ФОТО НЕ ТЕ:`); рядки «СВІДОМО: …» — у `як_носити`.
+    Машинні сліди (hex, id, коди правил) знімає показ окремо — це чистка, не розбір."""
+    т, як = str(проза or ""), []
+    if _re.match(r"\s*[\{\[]", т) or "```" in т:
+        без = _re.sub(r"```(?:json)?", "", т).strip()
+        об = _ПР.розбір_останній(без, ("текст",))[0]
+        if isinstance(об, dict) and isinstance(об.get("текст"), str):
+            т = об["текст"]
+            як = [str(р).strip() for р in (об.get("як_носити") if isinstance(об.get("як_носити"), list) else [])
+                  if str(р or "").strip()]
+        elif _re.match(r"[\{\[]", без) or _re.search(r'"образи"\s*:|"речі"\s*:\s*\[', т):
+            return dict(текст="", як_носити=[])
+    рядки = []
+    for л in т.split("\n"):
+        р = л.strip()
+        if _МІТКА_РЯДКА.match(р):
+            continue
+        с = _СВІДОМО.match(р)
+        if с:
+            як.append(с.group(1).strip())
+            continue
+        рядки.append(л)
+    return dict(текст="\n".join(рядки), як_носити=як)
 
 
 ЗАГЛУШКА_ОПИСУ = "__ПРОЗА__"
@@ -314,14 +349,13 @@ def промпт_руки(рука, випадок, вимоги="", вибір=
         # Опис може назвати слот непотрібним («no cardigan is needed»,
         # «tights are not needed»), тому модель передає рішення кодом `worn`,
         # щоб показ не малював згаданий слот річчю.
-        "A slot the description says is not needed is not an item: give it worn false. One item "
-        "carries one thing — of two alternatives list the first; a note in brackets is not an item.",
+        "One item carries one thing — of two alternatives list the first; a note in brackets is not an item.",
         "Slot \"accessory\" is for an item no other slot fits.",
         # Рука може відповісти відмовою замість образу, а перелік — вигадати приклад і зробити відмову карткою.
         # Слів код не читає (п.12): чи опис — образ,
         # каже кодом `is_outfit` модель, що його читає; картка руки — лише на «yes».
         "\"is_outfit\" says whether the description is an outfit: no — when in place of items it has a "
-        "refusal, a question or a note; then items is empty.",
+        "refusal, a question or a note.",
     ),
     вихід="ITEM_LIST",
     скелет={"is_outfit": "yes|no",

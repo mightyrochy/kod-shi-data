@@ -68,6 +68,27 @@ jobs:
               esac
             done < /tmp/zminy
           fi
+          # Мірило новизни — опублікований штамп build.txt, а не сусідній push. Concurrency тримає одну очікувану
+          # збірку й витісняє її новішою; витіснив push лише дошки — його легкий шлях index.html не збирає, і
+          # джерел попередника не збирав і не публікував ніхто. Штамп — з голови main на старті прогону (збірки
+          # push ідуть по черзі, тож він не новіший за цей push); джерела, новіші за нього, — повний шлях; штамп
+          # не прочитано — теж повний.
+          if [ "${GITHUB_EVENT_NAME}" = push ] && [ "${produkt}" = false ]; then
+            SHTAMP=""
+            if git fetch --no-tags --depth=1 origin refs/heads/main 2>/dev/null; then
+              SHTAMP=$(git show FETCH_HEAD:build.txt 2>/dev/null | tr -d '[:space:]' || true)
+            fi
+            if [[ "${SHTAMP}" =~ ^[0-9a-f]{40}$ ]] && git fetch --no-tags --depth=1 origin "${SHTAMP}" 2>/dev/null; then
+              if [ -n "$(git -c core.quotepath=off diff --name-only "${SHTAMP}" "${GITHUB_SHA}" -- джерела аудит/проби \
+                         каталог_повний.xml.gz .github/workflows/zbirka.yml ':(exclude)джерела/аудит/ДОСЯЖНІСТЬ.md')" ]; then
+                produkt=true
+                echo "джерела новіші за опублікований штамп ${SHTAMP} — повний шлях" >> "$GITHUB_STEP_SUMMARY"
+              fi
+            else
+              produkt=true
+              echo "штамп build.txt «${SHTAMP}» не прочитано — повний шлях" >> "$GITHUB_STEP_SUMMARY"
+            fi
+          fi
           echo "produkt=${produkt}" >> "$GITHUB_OUTPUT"
           echo "pravyla=${pravyla}" >> "$GITHUB_OUTPUT"
           echo "продукт: ${produkt}; правила й документи: ${pravyla}" >> "$GITHUB_STEP_SUMMARY"
@@ -341,7 +362,9 @@ jobs:
       - name: відтворення не приховує зайвих чи пропущених викликів
         run: node аудит/проби/перевірити_записаний_обмін.js
       - name: храповик і відомі червоні звірки
-        run: node аудит/проби/перевірити_храповик.js
+        run: |
+          node аудит/проби/перевірити_храповик.js
+          node аудит/проби/перевірити_нову_базу.js
       - name: записані сцени через продукт
         env:
           NODE_PATH: джерела/node_modules
@@ -552,9 +575,9 @@ jobs:
         run: |
           set -e
           SOURCE_SHA=$(git rev-parse HEAD)
+          ZVIT="джерела/аудит/ДОСЯЖНІСТЬ.md"
+          ART="${RUNNER_TEMP}/publikatsiia"
           if [ "${PRODUKT}" = "false" ]; then
-            git add -A аудит/БЕКЛОГ.md
-            git add -A аудит/дошка 2>/dev/null || true
             MSG="дошка: згорнуто файли аудит/дошка (${SOURCE_SHA})"
           else
             SHTAMP=$(grep -o 'const ЗБІРКА_ПОКАЗУ = "[^"]*"' index.html | head -1 | sed 's/.*= "//; s/"$//')
@@ -562,56 +585,60 @@ jobs:
               echo "штамп ${SHTAMP} не відповідає джерелам ${SOURCE_SHA} — публікацію зупинено"
               exit 1
             fi
-            printf '%s' "${SHTAMP}" > build.txt
-            ZVIT="джерела/аудит/ДОСЯЖНІСТЬ.md"
-            git add index.html build.txt "${ZVIT}" аудит/БЕКЛОГ.md
-            git add -A аудит/дошка 2>/dev/null || true
+            mkdir -p "${ART}"
+            cp index.html "${ART}/index.html"
+            cp "${ZVIT}" "${ART}/zvit.md"
             MSG="збірка: ${SHTAMP}"
-          fi
-          if git diff --cached --quiet; then
-            echo "артефакт, штамп, звіт і дошка не змінились — коміту нема"
-            exit 0
           fi
           git config user.name  "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git commit -m "${MSG}"
 
-          # Рядок 8651: push поза `paths` збірки не запускає, тож публікацію, якої новіші коміти не стосуються,
-          # переносимо на нову голову; штамп лишається SHA джерел. Зміни в `paths` публікує їхня власна збірка.
+          # Публікація рухає штамп уперед, хоч би скільки злиттів прийшло за час CI. Новий main
+          # (зі зміною джерел чи без) — не причина пропуску: публікацію складаємо наново на його голові —
+          # перевірені index.html, build.txt і звіт цих джерел, дошку згортаємо з його стану. Пропуск — лише
+          # коли штамп main уже не старший за ці джерела. Штамп лишається SHA джерел index.html; push без сили.
           OSNOVA="${SOURCE_SHA}"
+          KOMIT=""
           for sproba in 1 2 3 4 5; do
             git fetch --no-tags origin refs/heads/main
             MAIN_SHA=$(git rev-parse FETCH_HEAD)
+            if ! git merge-base --is-ancestor "${SOURCE_SHA}" "${MAIN_SHA}"; then
+              echo "main ${MAIN_SHA} не містить джерел ${SOURCE_SHA} — публікацію зупинено без силового push" | tee -a "$GITHUB_STEP_SUMMARY"
+              exit 1
+            fi
+            if [ "${PRODUKT}" != "false" ]; then
+              SHTAMP_MAIN=$(git show "${MAIN_SHA}:build.txt" 2>/dev/null | tr -d '[:space:]' || true)
+              if [ -n "${SHTAMP_MAIN}" ] && git merge-base --is-ancestor "${SOURCE_SHA}" "${SHTAMP_MAIN}" 2>/dev/null; then
+                echo "main ${MAIN_SHA} уже опублікував джерела ${SHTAMP_MAIN}, не старші за ${SOURCE_SHA} — публікувати нічого" | tee -a "$GITHUB_STEP_SUMMARY"
+                exit 0
+              fi
+            fi
             if [ "${MAIN_SHA}" != "${OSNOVA}" ]; then
-              SHLYAKHY=()
-              while IFS= read -r shl; do
-                case "${shl}" in
-                  '!'*) SHLYAKHY+=(":(exclude,glob)${shl#!}") ;;
-                  *) SHLYAKHY+=(":(glob)${shl}") ;;
-                esac
-              done < <(awk '/^    paths:$/ {p=1; next} p && /^ *#/ {next} p && /^      - / {print; next} p {exit}' .github/workflows/zbirka.yml \
-                       | sed "s/^      - '//; s/'$//")
-              if [ "${#SHLYAKHY[@]}" -eq 0 ]; then
-                echo "paths збірки не прочитано з zbirka.yml — публікацію джерел ${SOURCE_SHA} не перенесено" | tee -a "$GITHUB_STEP_SUMMARY"
-                exit 1
-              fi
-              ZMINY=$(git -c core.quotepath=off diff --name-only "${SOURCE_SHA}" "${MAIN_SHA}" -- "${SHLYAKHY[@]}")
-              if [ -n "${ZMINY}" ]; then
-                echo "main ${MAIN_SHA} вже новіший за джерела ${SOURCE_SHA} і змінив paths збірки — застарілу публікацію пропущено, публікує його збірка" | tee -a "$GITHUB_STEP_SUMMARY"
-                exit 0
-              fi
-              PUBLIKATSIIA=$(git rev-parse HEAD)
-              git checkout -q --detach "${MAIN_SHA}"
-              if ! git cherry-pick "${PUBLIKATSIIA}"; then
-                git cherry-pick --abort || true
-                echo "main ${MAIN_SHA}: публікація джерел ${SOURCE_SHA} не лягає на новіші коміти (конфлікт) — пропущено без силового push" | tee -a "$GITHUB_STEP_SUMMARY"
-                exit 0
-              fi
+              git checkout -qf --detach "${MAIN_SHA}"
+              python3 джерела/прилади/згорнути_дошку.py 2>&1 | tee -a "$GITHUB_STEP_SUMMARY" \
+                || echo "згортання дошки на ${MAIN_SHA}: файли з помилкою лишились — їх покаже збірка їхнього злиття" | tee -a "$GITHUB_STEP_SUMMARY"
               OSNOVA="${MAIN_SHA}"
-              echo "main ${MAIN_SHA} не змінив paths збірки — публікацію джерел ${SOURCE_SHA} перенесено на нову голову" | tee -a "$GITHUB_STEP_SUMMARY"
+              KOMIT=""
+              echo "main ${MAIN_SHA} новіший за джерела ${SOURCE_SHA} — публікацію складено на його голові" | tee -a "$GITHUB_STEP_SUMMARY"
+            fi
+            if [ -z "${KOMIT}" ]; then
+              if [ "${PRODUKT}" != "false" ]; then
+                cp "${ART}/index.html" index.html
+                cp "${ART}/zvit.md" "${ZVIT}"
+                printf '%s' "${SOURCE_SHA}" > build.txt
+                git add index.html build.txt "${ZVIT}"
+              fi
+              git add -A аудит/БЕКЛОГ.md
+              git add -A аудит/дошка 2>/dev/null || true
+              if git diff --cached --quiet; then
+                echo "артефакт, штамп, звіт і дошка не змінились — коміту нема"
+                exit 0
+              fi
+              git commit -q -m "${MSG}"
+              KOMIT=$(git rev-parse HEAD)
             fi
             if git push origin HEAD:refs/heads/main; then
-              echo "артефакт джерел ${SOURCE_SHA} запушено зі спроби ${sproba}"
+              echo "артефакт джерел ${SOURCE_SHA} запушено зі спроби ${sproba} на main ${MAIN_SHA}" | tee -a "$GITHUB_STEP_SUMMARY"
               exit 0
             fi
             echo "push відбито (спроба ${sproba}) — перед повтором звіримо SHA main"

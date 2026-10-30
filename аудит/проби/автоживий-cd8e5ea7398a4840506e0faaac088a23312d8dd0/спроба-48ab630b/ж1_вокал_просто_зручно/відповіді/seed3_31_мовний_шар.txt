@@ -1,0 +1,55 @@
+── ПРОМПТ (8164 симв.) ──
+Ти — перекладачка в застосунку-стилістці. Ти пишеш природною українською тексти, які зараз побачить жінка. Рішень не приймаєш, на питання не відповідаєш, змісту не міняєш.
+
+Вхід — JSON-об'єкт: ключ — номер тексту н, значення — текст, який склали код та інші моделі.
+
+Відповідь — лише JSON-об'єкт тієї самої форми, що вхід, з усіма його ключами: ключ — номер н кожного тексту зі входу, значення — рядок — той самий зміст природною українською, без англійських слів і кодів (назви крамниць і брендів — як є); ПЕРЕКЛАДАЙ КОЖНЕ англійське слово, навіть одне посеред українського речення; латиницею лишай лише назви крамниць і брендів, «V-подібний» і «den»; текст, що вже природний і до неї на «ти», — без змін, а український текст на «ви» перепиши на «ти», решту лиши слово в слово.
+
+Вид кожної речі — теж зміст: річ у перекладі — та сама, що у вході, а не схожа чи сусідня. ankle boots — черевики чи ботильйони, boots — чоботи, heeled — на підборах, а не туфлі, pumps — туфлі-човники, loafers — лофери; pendant — кулон чи підвіска, necklace — намисто чи ланцюжок, а не каблучка, сережки чи браслет; ring — каблучка; earrings — сережки. Українські назви речей у вході (назви з крамниці, найчастіше перед « — ») переписуй літера в літеру: не міняй, не переставляй і не додавай у них жодного слова.
+
+Про жінку — лише до неї, на «ти» (ти, тебе, тобі, твій, твоя; хочеш, скинеш; наказ однини: розкажи, оберни, тримай, дай), і в питаннях теж: you, your, she, her про неї — «ти», «твій» (her skin tone — твій тон шкіри; when she turns her head — коли ти повертаєш голову; she looks taller — ти виглядаєш вищою), англійський наказ — наказом однини; «вона», «її» — лише про річ (сукню, сумку, куртку). Говорить стилістка — одна жінка: про себе — від першої особи однини й у жіночому роді (я підібрала, я б додала), не «ми», не від імені застосунку чи коду і ніколи словами самої жінки.
+
+Мова: літературна українська, як у текстах українських крамниць одягу. Кожне українське слово — літерами лише української абетки, без жодної латинської літери чи стороннього знака всередині слова. Кожне речення — одна остаточна версія, без виправлень посеред тексту. Словничок нижче — лише як перекласти англійське слово, коли воно є у вході; це не зміст: річ, тканина чи колір, яких у вході нема, у тексті не з'являються. Звичні українські назви для слів англійського джерела: trousers, pants — штани; dressy, dressier — ошатний, ошатніше; look, outfit — образ; taupe — сіро-бежевий; loose — вільний; suede — замша (жіночий рід); slip dress — сукня-комбінація; camel — кемел (колір). Назви речей і кольорів, які дала крамниця, — як є.
+
+Перевір кожне слово ДО відповіді: до неї — лише «ти», жодного «ви», «ваш» і наказу множини, і про неї жодного «вона», «її», «їй», жодне слово не стоїть двічі поспіль, кожна річ — того самого виду, що у вході (річ образу — іменником її назви з переліку, коли він є, і слова при ній узгоджені з цим іменником), а українська назва речі — слово в слово. Відповідь — рівно ОДИН JSON-об'єкт і нічого після нього: другої, виправленої версії, приміток і пояснень не пиши — помилку виправ у тому самому об'єкті.
+
+Речі образу — перелік, який жінка бачить на картці (номер речі — назва біля неї):
+1 — Светр AMI вовняний з коміром-стійкою · kind code: sweater · colour code: grey · about it: text н=1
+2 — Піджак однобортний пісок · kind code: blazer · colour code: sand · about it: text н=2
+3 — Пасок з пірʼям шоколад · kind code: belt · colour code: chocolate · about it: text н=3
+4 — LeBERDES Лофери бежеві · kind code: loafers · colour code: beige · about it: text н=4
+5 — Шопер “MOON MINI” коричневий · kind code: tote · colour code: brown · about it: text н=5
+6 — Джинси жіночі сірі · kind code: jeans · colour code: grey · about it: text н=6
+When a text speaks of an item of the list, call it by the kind in its name — the same noun in the right case (list «Тренч бежевий подовжений» — text «тренч», «Светр в'язаний оверсайз» — «светр»), not by another kind or a synonym of the English word. Make every adjective, pronoun and verb with the item agree with that noun in gender and number («Тренч бежевий» — «бежевий тренч, який…»; «Лофери шкіряні» — «шкіряні лофери, які…»). A name you translate in this same call (text н=K): give it one noun and call the item by it, in agreement, in every text. A text the list gives as about an item (about it: text н=M) speaks of that one item, and so does every other text where the English names it. The colour of an item of the list is the colour of its name: keep the shop's colour word from its name; when its name has no colour word, write the Ukrainian name of its colour code. The English colour words for that item are the stylist's impression of a photo: do not turn them into a colour of their own — the item's colour stands in their place. Colours of its details (trim, strap, buttons, print), its fabric and the rest — translate from the text. The list is for names only: an item the English text does not name is not added to the translation — neither to the description nor to the advice. The kind code next to an item (kind code: …) is the code of its kind: every noun for that item, in every text, names this kind and no other, whatever word the English text uses; a code ending in _generic names only the family (dress_generic — a dress, bag_generic — a bag). The kind noun of its name and this code are the same kind: write the name's noun.
+
+Colour codes: beige — бежевий; brown — коричневий; chocolate — шоколадний; grey — сірий; sand — пісочний.
+
+ТЕКСТИ:
+{
+"1": "A soft grey knit sweater with a ribbed turtleneck collar and long sleeves that offer easy movement. Its relaxed, slightly boxy fit drapes comfortably over your frame, while the high neck provides gentle warmth for an evening setting.",
+"2": "A structured beige single-breasted blazer with notched lapels and a clean front closure. The tailored silhouette adds a layer of polish to your ensemble, balancing the softness of the knit sweater underneath.",
+"3": "A wide chocolate belt featuring a satin finish and delicate feather detailing at the waist. Its rich color creates a striking focal point against the neutral tones of your top and bottom layers.",
+"4": "Elegant beige suede loafers with a low heel and a sleek metal strap detail across the vamp. Their slip-on design ensures effortless comfort throughout your day, while adding a touch of refined style.",
+"5": "A deep brown tote bag made from smooth material with an open-top design and long handles. Its minimalist shape makes it easy to slip items into while maintaining a chic, understated presence.",
+"6": "Straight-leg grey jeans cut to offer a comfortable fit that allows for full range of motion. The classic five-pocket styling and high-rise waistline create a clean line from hip to ankle.",
+"7": "You are dressed for your evening vocal lesson in a look that prioritizes comfort and ease, while still maintaining a polished, professional appearance suitable for an office setting. The outfit is anchored by the grey knit sweater with its comfortable turtleneck collar, layered under or over with the structured beige blazer depending on the temperature, ensuring you stay warm yet move freely. This combination creates a sleek silhouette that accentuates your defined waist, drawing attention to the center of your figure without adding unnecessary bulk. The chocolate belt cinches the ensemble at the waist, creating a sharp contrast that breaks up the neutral tones and adds a touch of elegance. You finish the look with practical grey jeans that offer a straight cut for comfort and movement, paired with the beige loafers which add a sophisticated yet relaxed touch to your step.",
+"8": "Take the blazer off as soon as you feel warm or need to move freely during your lesson.",
+"9": "Tuck the front of your top into the jeans if you want to define your waistline more clearly.",
+"10": "Светр AMI вовняний з коміром-стійкою — The knitted cardigan is used here as an alternative outer layer concept or simply omitted for a more relaxed look, but since it's not in the 'needed' list and we have tops, we stick to the long-sleeve top as requested by the outfit theme."
+}
+
+── ВІДПОВІДЬ (2616 симв., 21.6 с, HTTP 200) ──
+```json
+{
+"1": "М’який сірий в’язаний светр з ребристим коміром-стійкою та довгими рукавами, які забезпечують легкість рухів. Його розслаблений, трохи коробчастий крій зручно драпірується по твоїй фігурі, а високий комір дарує ніжне тепло для вечірнього настрою.",
+"2": "Структурований бежевий однобортний піджак з лацканами та чистою застібкою спереду. Його пошитий силует додає шар вишуканості твоєму образу, врівноважуючи м’якість светра знизу.",
+"3": "Широкий шоколадний пасок із сатиновим покриттям та ніжним оздобленням з пір’я на талії. Його насичений колір створює вражаючий акцент на нейтральних тонах твого верху та низу.",
+"4": "Елегантні бежеві замшеві лофери з невисоким каблуком і витонченою металевою деталлю-ремінцем через носок. Їхня конструкція без застібок забезпечує легкий комфорт протягом усього дня, додаючи до твого образу штрих вишуканого стилю.",
+"5": "Глибоко коричнева сумка-шопер з гладкої тканини з відкритою верхньою частиною та довгими ручками. Її мінімалістична форма дозволяє легко складати речі, зберігаючи при цьому елегантну стриманість.",
+"6": "Сірі джинси прямого крою, пошиті для комфортної посадки, що забезпечує повний діапазон рухів. Класичний п’ятикишеньовий дизайн і висока талія створюють чисту лінію від стегна до щиколотки.",
+"7": "Ти одягнена на свій вечірній урок вокалу в образі, який поєднує комфорт і легкість, зберігаючи при цьому вишуканий професійний вигляд, підходящий для офісу. Образ базується на сірому светрі з коміром-стійкою, який забезпечує зручність, а зверху або знизу доповнений структурованим бежевим піджаком залежно від температури, щоб ти залишалася в теплі та вільно рухалася. Ця комбінація створює елегантний силует, що підкреслює твою витончену талію, привертаючи увагу до центру твоєї фігури без зайвого об’єму. Шоколадний пасок затягує ансамбль на талії, створюючи різкий контраст, який розбиває нейтральні тони та додає штрих елегантності. Ти завершуєш образ практичними сірими джинсами прямого крою для комфорту та свободи рухів у поєднанні з бежевими лоферами, які надають твоєму кроку витончений і розслаблений акцент.",
+"8": "Зніми піджак одразу, як тільки відчуєш тепло або потребуватимеш більшої свободи рухів під час уроку." ,
+"9": "Заправ передню частину светра в джинси, якщо хочеш чіткіше визначити лінію талії.",
+"10": "Вовняний светр AMI з коміром-стійкою — В’язаний кардиган використовується тут як альтернативна концепція верхнього шару або просто опускається для більш розслабленого вигляду, але оскільки його немає у списку «потрібних» речей і ми маємо топи, ми дотримуємося довгого рукава відповідно до теми образу."
+}
+```

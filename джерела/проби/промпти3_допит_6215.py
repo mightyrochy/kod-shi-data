@@ -1,11 +1,11 @@
-"""Рядки 6215, 6450: допит під карткою «Оціни мій образ» — промпт оцінки того самого суду, на місці схеми картки — схема
-лише «answer» (`_ДОПИТ_СХЕМА`), хвіст «now» останнім (`промпт_допиту`). Replay кодом на записах сцен `ж1_оціни_образ_6б`:
-ДО — записані оцінка й допит; ПІСЛЯ — ті самі записи в теперішньому порядку (схема останнім ключем після даних) з
-хвостом `хвіст_допиту`. Друкує сцени, де схема допиту має ключі картки, і символи (токени Gemma 3 з
+"""Рядки 6215, 6450: збирання оцінки й допиту справжніми функціями на входах записаних сцен `ж1_оціни_образ_6б`.
+Підмінено лише підготовку даних суду: промпт, правила, схема й хвіст — продуктові. Друкує сцени, де схема допиту має
+ключі картки, і символи (токени Gemma 3 з
 GEMMA_TOKENIZER=<tokenizer.json>) допиту поза спільним початком з оцінкою.
 Запуск із `джерела`: [GEMMA_TOKENIZER=…] python3 проби/промпти3_допит_6215.py [гілка живих] [тека]"""
 import sys, os, json, subprocess; sys.path.insert(0, '.')
-import оцінка_образу as О, збирач_промптів as ЗП
+from unittest.mock import patch
+import оцінка_образу as О
 ГІЛКА, ТЕКА = (sys.argv[1:] + ["origin/claude/zhyvi-1016-1", "аудит/живі_1016_1"][len(sys.argv[1:]):])[:2]
 git = lambda *а: subprocess.run(["git", "-C", "..", "-c", "core.quotepath=off"] + list(а), capture_output=True, check=True).stdout.decode()
 if os.environ.get("GEMMA_TOKENIZER"):
@@ -16,9 +16,13 @@ if os.environ.get("GEMMA_TOKENIZER"):
 дамп = lambda о: json.dumps(о, ensure_ascii=False, default=str)
 КАРТКА = {"verdict", "works", "change"}
 крок = lambda ф: int(ф.rsplit("/", 1)[1].split("_")[1])
-def тепер(о, схема, хвіст=None):                # теперішній порядок: «task» без схеми, дані, схема, «now»
-    о = dict(о, task={к: в for к, в in о["task"].items() if к not in ("answer", "answer_schema")}); о.pop("now", None)
-    return дамп(dict(о, answer_schema=схема, **({"now": хвіст} if хвіст else {})))
+def тепер(о, хвіст=None):
+    """Збирає справжній промпт на записаних даних суду, без повторного судження каталогу."""
+    дані = {п.шлях: о[п.шлях] for п in О.ОЦІНКА.вхід if п.шлях in о}
+    мова = о.get("task", {}).get("language") or о.get("language")
+    with patch.object(О, "дані_оцінки", return_value=дані):
+        return (О.промпт_допиту({}, хвіст["question"], хвіст["previous"], мова_тексту=мова) if хвіст else
+                О.промпт_оцінки({}, мова_тексту=мова))
 файли = [ф for ф in git("ls-tree", "-r", "--name-only", ГІЛКА, ТЕКА).splitlines() if "/VIDPOVIDI/" in ф]
 Л = dict(до_картка=0, після_картка=0, до_поза=[0, 0], після_поза=[0, 0], сцен=0)
 for сц in sorted({ф.split("/")[2] for ф in файли if "ж1_оціни_образ_6б" in ф}):
@@ -28,9 +32,10 @@ for сц in sorted({ф.split("/")[2] for ф in файли if "ж1_оціни_о�
         continue
     а, д = обʼєкт([ф for ф in оц if крок(ф) < крок(доп[0])][-1]), обʼєкт(доп[0])     # оцінка перед допитом
     Л["до_картка"] += bool(КАРТКА & set(д["task"].get("answer_schema") or д.get("answer_schema") or {}))
-    п_а = тепер(а, ЗП.скелет(О.ОЦІНКА))
-    п_д = json.loads(тепер(д, О._ДОПИТ_СХЕМА, О.хвіст_допиту(д["now"]["question"], д["now"]["previous"])))
-    assert list(п_д)[-2:] == ["answer_schema", "now"] and дамп(п_д).startswith(п_а[:п_а.rindex(", \"answer_schema\"")])
+    п_а = тепер(а)
+    п_д = json.loads(тепер(д, д["now"]))
+    assert list(п_д)[-2:] == ["answer_schema", "now"]
+    assert not any('"%s"' % к in р for к in КАРТКА for р in п_д["task"]["rules"])
     Л["після_картка"] += bool(КАРТКА & set(п_д["answer_schema"]))
     for к, (х, у) in (("до_поза", (дамп(а), дамп(д))), ("після_поза", (п_а, дамп(п_д)))):
         сп = len(os.path.commonprefix([х, у])); Л[к][0] += len(у) - сп; Л[к][1] += ток(у[сп:])

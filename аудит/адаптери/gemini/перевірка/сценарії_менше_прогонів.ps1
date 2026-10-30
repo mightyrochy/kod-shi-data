@@ -18,21 +18,23 @@ try {
     . (Join-Path $SourceDir 'gemini_publish.ps1') -WorkDir "$tmp/pub" -OutboxDir "$tmp/out"
     foreach ($dir in @($WorkDir,"$WorkDir/state","$WorkDir/seen",$OutboxDir)) { [void][IO.Directory]::CreateDirectory($dir) }
     . (Join-Path $SourceDir 'queue_lanes.ps1')
-    $config = [pscustomobject]@{codex='gpt-review';claude='cc-claude-review'}
+    $config = [pscustomobject]@{codex='gpt-review';agy='gemini-review';claude='cc-claude-review'}
     $sha = 'a' * 40
     Scenario '1а фактична модель' {
         foreach ($model in @('gpt-6.1-sol-high','gemini-3.8-flash-high','cc-claude-opus-5-5-high','невідома')) {
             $pull = [pscustomobject]@{head=@{ref='gemini/виконавець';sha=$sha}}
+            # Файл моделі попередньої ітерації (та сама гілка й SHA) не має підміняти невідому модель.
+            Remove-Item -LiteralPath "$WorkDir/engine-models" -Recurse -Force -ErrorAction SilentlyContinue
             Save-DraftRequest $pull.head.ref $sha $model
             $models = @(Get-ReviewModels $pull $config)
-            $expected = if ($model -like 'gpt-*') { $config.claude } else { $config.codex }
+            $expected = if ($model -like 'gpt-*' -or $model -like 'cc-*') { $config.agy } else { $config.codex }
             Check "1а $model — рівно один інший постачальник" ($models.Count -eq 1 -and $models[0] -ceq $expected)
         }
     }
     Scenario '1а модель із прийнятого рядка' {
         Write-FileAtomic "$WorkDir/state/model.json" ((@{line="GEMINI ОБГОРТКА: ГОТОВО gemini/стан $sha МОДЕЛЬ gpt-6.1-sol-high"}) | ConvertTo-Json)
         $models = @(Get-ReviewModels ([pscustomobject]@{head=@{ref='gemini/стан';sha=$sha}}) $config)
-        Check '1а фактичний GPT із ГОТОВО вибирає Claude без файла моделі' ($models.Count -eq 1 -and $models[0] -ceq $config.claude)
+        Check '1а фактичний GPT із ГОТОВО вибирає agy без файла моделі' ($models.Count -eq 1 -and $models[0] -ceq $config.agy)
         $models = @(Get-ReviewModels ([pscustomobject]@{head=@{ref='gemini/невідома';sha=$sha}}) $config)
         Check '1а немає даних про модель — один Codex' ($models.Count -eq 1 -and $models[0] -ceq $config.codex)
     }
@@ -274,6 +276,44 @@ console.log('GPU_OFF');
         function Get-Command { [pscustomobject]@{Source='nvidia-smi'} }
         function Invoke-Native { [pscustomobject]@{Code=0;Out='37780'} }
         Check '5 чужий GPU-процес означає чекання' (-not (Test-ExternalGpuFree))
+        # Випадок 29.10: після перезапуску 14:26 UTC nvidia-smi називає в --query-compute-apps порожній AvastUI (57 MiB), і кожен
+        # GPU-наряд (автоживий, Е3-наживо) стояв у черзі 6+ год. ДО — старий предикат; ПІСЛЯ — пам'ять із порогом.
+        function Invoke-Native {
+            param($Exe, $Arguments)
+            if ($Arguments -contains '--query-compute-apps=pid,used_memory') { return [pscustomobject]@{Code=0;Out='23660, [N/A]'} }
+            if ($Arguments -contains '--query-gpu=memory.used') { return [pscustomobject]@{Code=0;Out='57'} }
+            [pscustomobject]@{Code=1;Out='';Err='невідомий виклик'}
+        }
+        $old = (Invoke-Native 'nvidia-smi' @('--query-compute-apps=pid,used_memory')).Out.Trim()
+        Check '5 ДО: перелік compute-процесів із порожнім AvastUI не порожній (старий предикат давав «зайнята»)' ($old -ne '')
+        Check '5 ПІСЛЯ: 57 MiB від AvastUI — GPU вільна' (Test-ExternalGpuFree)
+        $script:Logged = @(); $LaneDir = $tmp
+        function Write-Log([string]$Text) { $script:Logged += $Text }
+        Check '5 ПІСЛЯ: причина зайнятості порожня' ((Get-GpuBusyReason @()) -eq '')
+        function Invoke-Native { param($Exe, $Arguments) [pscustomobject]@{Code=0;Out='9000'} }
+        Check '5 завантажена модель (9000 MiB) — причина названа числом' ((Get-GpuBusyReason @()) -match '9000 MiB')
+        $m = [pscustomobject]@{Name='gemini-queue/Е3-наживо/gpt-6.1-sol-high/1/p1-gpu'}
+        $skip = Join-Path $tmp 'skipped.json'
+        Add-Skip $m 'GPU: тест'; Save-Skips $skip
+        $since = ([IO.File]::ReadAllText($skip,$utf) | ConvertFrom-Json).since
+        Start-Sleep -Seconds 1
+        Add-Skip $m 'GPU: тест'; Save-Skips $skip
+        Check '5 мовчазний пропуск лишає рядок журналу один раз, since не зсувається' (@($script:Logged | Where-Object { $_ -like '*не стартує*' }).Count -eq 1 -and ([IO.File]::ReadAllText($skip,$utf) | ConvertFrom-Json).since -eq $since)
+        Save-Skips $skip
+        Check '5 позначка, що стартувала, зникає з файла пропусків' (([IO.File]::ReadAllText($skip,$utf)).Trim() -eq '[]')
+        Add-Note (Join-Path $tmp 'blocked-reasons.json') 'gemini/крок' ('ЗАБЛОКОВАНО: суперечливі вимоги' + [char]13 + [char]10 + 'другий рядок')
+        Check '5 причина BLOCKED без гілки — один рядок у файлі для #1856' ((@([IO.File]::ReadAllText((Join-Path $tmp 'blocked-reasons.json'),$utf) | ConvertFrom-Json)[0].text) -eq 'ЗАБЛОКОВАНО: суперечливі вимоги другий рядок')
+        # Test-TaskFile: вирок «нема» лише від git; збій — виняток (позначка вертається в чергу), не NO_TASK_FILE.
+        function Start-Sleep { }
+        $script:Git = @()
+        function Invoke-Git { param($GitArgs, [switch]$AllowFail) $script:Calls++; $script:Git[0] }
+        $script:Calls = 0; $script:Git = @([pscustomobject]@{Code=128;TimedOut=$false;Err='fatal: unable to read tree (abc)'})
+        $threw = $false; try { [void](Test-TaskFile ('a'*40) 'аудит/наряди/х.md') } catch { $threw = $true }
+        Check '5 збій git cat-file після 3 спроб — виняток, не NO_TASK_FILE' ($threw -and $script:Calls -eq 3)
+        $script:Git = @([pscustomobject]@{Code=128;TimedOut=$false;Err="fatal: path 'x' does not exist in 'abc'"})
+        Check '5 git каже «нема» — вирок без повторів' ((-not (Test-TaskFile ('a'*40) 'x')) -and $script:Calls -eq 4)
+        $script:Git = @([pscustomobject]@{Code=0;TimedOut=$false;Err=''})
+        Check '5 файл є — істина' (Test-TaskFile ('a'*40) 'x')
         foreach ($name in @('gemini_run.ps1','claude_run.ps1')) {
             $source = [IO.File]::ReadAllText((Join-Path $SourceDir $name))
             Check "5 $name підключає спільну політику до Invoke-Task" ($source -match 'Set-BrowserGpuPolicy[^\r\n]+\r?\n\s+Invoke-Task \$M \$job' -and $source.Contains('Test-ExternalGpuFree'))

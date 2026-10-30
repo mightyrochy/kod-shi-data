@@ -1,0 +1,200 @@
+=== А: шість позначок на одному коміті — смуги водночас, до N у смузі, за пріоритетом; Argon на 0 % чекає скидання
+warning: in the working copy of 'аудит/СТАН.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'аудит/адаптери/gemini/смуги.json', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'аудит/наряди/gpu-agy.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'аудит/наряди/gpu-claude.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'аудит/наряди/n-codex-1.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'аудит/наряди/n-codex-2.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'аудит/наряди/n-codex-3.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'аудит/наряди/n-codex-4.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'аудит/наряди/а-codex.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'аудит/наряди/б-codex.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'аудит/наряди/в-agy.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'аудит/наряди/г-agy-квота.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'аудит/наряди/д-claude.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'аудит/наряди/е-claude-gpu.md', LF will be replaced by CRLF the next time Git touches it
+  перший прохід планувальників: 17 с; найбільше водночас: усього 5, codex 2, agy 1, claude 2
+  ✓ codex — 2 водночас (слотів 2)
+  ✓ claude — 2 водночас (слотів 2)
+  ✓ смуги водночас: усього ≥ 5
+  порядок узяття: gemini-queue/б-codex/gpt-6.1-sol-high/1/p1 gemini-queue/а-codex/gpt-6.1-sol-high/1/p2 gemini-queue/в-agy/gemini-3.8-flash-high/1/p3 gemini-queue/е-claude-gpu/cc-claude-sonnet-5-5-medium/1/p1-gpu gemini-queue/д-claude/cc-claude-sonnet-5-5-medium/1/p4
+  ✓ узято за пріоритетом: б(p1) раніше за а(p2), е(p1) раніше за д(p4)
+  ✓ Argon (p0) на нулі не взято, позначка в чеканні
+  ✓ стан: таблиця смуг — claude 2/2 і codex 2/2 у якійсь правці
+  ✓ стан: квота agy з UTC — GEMINI4ARGON 0 %, скидання …Z, зчитано …Z
+  ✓ стан: квота Claude з rate_limit_event (5H, 7D)
+  ✓ стан: позначка Argon у «Чекають скидання квоти»
+  ✓ стан: GPU зайнята слотом claude
+  ✓ Argon: рядок QUOTA0_GEMINI4ARGON_M<хв> диспетчерові — один (є: 1)
+  ✓ після «скидання» Argon узято тією ж смугою без нової позначки → ГОТОВО
+  ✓ решта п'яти — ГОТОВО (є: 5)
+  кінці: ГОТОВО gemini/б-codex МОДЕЛЬ gpt-6.1-sol-high;ЗАБЛОКОВАНО gemini/г-agy-квота QUOTA0_GEMINI4ARGON_M1;ГОТОВО gemini/в-agy КВОТА GEMINIMODELS 100 МОДЕЛЬ gemini-3.8-flash-high;ГОТОВО gemini/а-codex МОДЕЛЬ gpt-6.1-sol-high;ГОТОВО claude/е-claude-gpu МОДЕЛЬ cc-claude-sonnet-5-5-medium;ГОТОВО claude/д-claude МОДЕЛЬ cc-claude-sonnet-5-5-medium;ГОТОВО gemini/г-agy-квота КВОТА GEMINI4ARGON 100 МОДЕЛЬ gemini-4-argon-high;
+=== Б: GPU — по одному на ноутбуці, замок спільний для gemini-run і claude-run
+warning: in the working copy of 'аудит/СТАН.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'аудит/адаптери/gemini/смуги.json', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'аудит/наряди/gpu-agy.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'аудит/наряди/gpu-claude.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'аудит/наряди/n-codex-1.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'аудит/наряди/n-codex-2.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'аудит/наряди/n-codex-3.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'аудит/наряди/n-codex-4.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'аудит/наряди/а-codex.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'аудит/наряди/б-codex.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'аудит/наряди/в-agy.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'аудит/наряди/г-agy-квота.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'аудит/наряди/д-claude.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'аудит/наряди/е-claude-gpu.md', LF will be replaced by CRLF the next time Git touches it
+  найбільше водночас GPU-нарядів: 1; порядок: gpu-claude gpu-agy
+  ✓ дві GPU-позначки різних облікових записів — не водночас, обидві виконано
+=== В: N зі смуги.json на origin/main — 1, потім 2, без перевстановлення скриптів
+warning: in the working copy of 'аудит/СТАН.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'аудит/адаптери/gemini/смуги.json', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'аудит/наряди/gpu-agy.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'аудит/наряди/gpu-claude.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'аудит/наряди/n-codex-1.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'аудит/наряди/n-codex-2.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'аудит/наряди/n-codex-3.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'аудит/наряди/n-codex-4.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'аудит/наряди/а-codex.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'аудит/наряди/б-codex.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'аудит/наряди/в-agy.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'аудит/наряди/г-agy-квота.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'аудит/наряди/д-claude.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'аудит/наряди/е-claude-gpu.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'аудит/СТАН.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'аудит/адаптери/gemini/смуги.json', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'аудит/наряди/gpu-agy.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'аудит/наряди/gpu-claude.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'аудит/наряди/n-codex-1.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'аудит/наряди/n-codex-2.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'аудит/наряди/n-codex-3.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'аудит/наряди/n-codex-4.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'аудит/наряди/а-codex.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'аудит/наряди/б-codex.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'аудит/наряди/в-agy.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'аудит/наряди/г-agy-квота.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'аудит/наряди/д-claude.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'аудит/наряди/е-claude-gpu.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'аудит/адаптери/gemini/смуги.json', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'аудит/адаптери/gemini/смуги.json', LF will be replaced by CRLF the next time Git touches it
+  codex водночас: смуги.json codex=1 → 1, codex=2 → 2; codex=99 у даних → 64 (стеля в коді)
+  ✓ N з файла даних міняє паралельність без перевстановлення (1 → 2)
+  ✓ дані не перевищують стелі коду (99 → 64)
+=== Г: смуги.json задає 6 і 8 слотів, усі наряди справді працюють водночас
+warning: in the working copy of 'аудит/СТАН.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'аудит/адаптери/gemini/смуги.json', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'аудит/наряди/gpu-agy.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'аудит/наряди/gpu-claude.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'аудит/наряди/n-codex-1.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'аудит/наряди/n-codex-2.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'аудит/наряди/n-codex-3.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'аудит/наряди/n-codex-4.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'аудит/наряди/а-codex.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'аудит/наряди/б-codex.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'аудит/наряди/в-agy.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'аудит/наряди/г-agy-квота.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'аудит/наряди/д-claude.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'аудит/наряди/е-claude-gpu.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'аудит/адаптери/gemini/смуги.json', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'аудит/наряди/n-codex-1.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'аудит/наряди/n-codex-2.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'аудит/наряди/n-codex-3.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'аудит/наряди/n-codex-4.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'аудит/наряди/n-codex-5.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'аудит/наряди/n-codex-6.md', LF will be replaced by CRLF the next time Git touches it
+  ✓ смуги.json codex=6 → 6 водночас (є: 6)
+  ✓ усі 6 нарядів закінчено
+warning: in the working copy of 'аудит/СТАН.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'аудит/адаптери/gemini/смуги.json', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'аудит/наряди/gpu-agy.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'аудит/наряди/gpu-claude.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'аудит/наряди/n-codex-1.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'аудит/наряди/n-codex-2.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'аудит/наряди/n-codex-3.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'аудит/наряди/n-codex-4.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'аудит/наряди/а-codex.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'аудит/наряди/б-codex.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'аудит/наряди/в-agy.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'аудит/наряди/г-agy-квота.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'аудит/наряди/д-claude.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'аудит/наряди/е-claude-gpu.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'аудит/СТАН.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'аудит/адаптери/gemini/смуги.json', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'аудит/наряди/gpu-agy.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'аудит/наряди/gpu-claude.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'аудит/наряди/n-codex-1.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'аудит/наряди/n-codex-2.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'аудит/наряди/n-codex-3.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'аудит/наряди/n-codex-4.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'аудит/наряди/а-codex.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'аудит/наряди/б-codex.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'аудит/наряди/в-agy.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'аудит/наряди/г-agy-квота.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'аудит/наряди/д-claude.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'аудит/наряди/е-claude-gpu.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'аудит/наряди/n-codex-5.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'аудит/наряди/n-codex-6.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'аудит/наряди/n-codex-7.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'аудит/наряди/n-codex-8.md', LF will be replaced by CRLF the next time Git touches it
+  ✗ смуги.json codex=8 → 8 водночас (є: 6)
+  ✗ усі 8 нарядів закінчено
+
+ЗБІЙ ✗
+ПІДСУМОК сценарії_смуг.sh: ✓ 18 / ✗ 3; код стенда 1; код логу 0
+
+Traceback (most recent call last):
+  File "C:\Users\gemini\gemini-runs\w\20261030-121427-acbbf237a3a7\tmp\review2423\tmp\gemini-stubs\fake_codex.py", line 4, in <module>
+    runpy.run_path(os.path.join(os.path.dirname(os.path.abspath(__file__)), 'fake_cli.py'), run_name='__main__')
+  File "<frozen runpy>", line 287, in run_path
+  File "<frozen runpy>", line 98, in _run_module_code
+  File "<frozen runpy>", line 88, in _run_code
+  File "C:\Users\gemini\gemini-runs\w\20261030-121427-acbbf237a3a7\tmp\review2423\tmp\gemini-stubs\fake_cli.py", line 52, in <module>
+    n = int(open(p).read()) + 1 if os.path.exists(p) else 1
+        ^^^^^^^^^^^^^^^^^^^
+ValueError: invalid literal for int() with base 10: ''
+
+Traceback (most recent call last):
+  File "C:\Users\gemini\gemini-runs\w\20261030-121427-acbbf237a3a7\tmp\review2423\tmp\gemini-stubs\fake_codex.py", line 4, in <module>
+    runpy.run_path(os.path.join(os.path.dirname(os.path.abspath(__file__)), 'fake_cli.py'), run_name='__main__')
+  File "<frozen runpy>", line 287, in run_path
+  File "<frozen runpy>", line 98, in _run_module_code
+  File "<frozen runpy>", line 88, in _run_code
+  File "C:\Users\gemini\gemini-runs\w\20261030-121427-acbbf237a3a7\tmp\review2423\tmp\gemini-stubs\fake_cli.py", line 52, in <module>
+    n = int(open(p).read()) + 1 if os.path.exists(p) else 1
+        ^^^^^^^^^^^^^^^^^^^
+ValueError: invalid literal for int() with base 10: ''
+
+2026-10-30 12:40:35 позначка gemini-queue/n-codex-1/gpt-6.1-sol-high/1: слот codex-1, пріоритет 5 -> 20261030-124035-1ed0341ddd69
+2026-10-30 12:40:35 позначка gemini-queue/n-codex-2/gpt-6.1-sol-high/1: слот codex-2, пріоритет 5 -> 20261030-124035-30fdf13d1905
+2026-10-30 12:40:35 позначка gemini-queue/n-codex-3/gpt-6.1-sol-high/1: слот codex-3, пріоритет 5 -> 20261030-124035-7891be37ed07
+2026-10-30 12:40:36 позначка gemini-queue/n-codex-4/gpt-6.1-sol-high/1: слот codex-4, пріоритет 5 -> 20261030-124036-fd019db99ba2
+2026-10-30 12:40:36 позначка gemini-queue/n-codex-5/gpt-6.1-sol-high/1: слот codex-5, пріоритет 5 -> 20261030-124036-dc0bfc9a02a3
+2026-10-30 12:40:36 позначка gemini-queue/n-codex-6/gpt-6.1-sol-high/1: слот codex-6, пріоритет 5 -> 20261030-124036-0e3e09a9af79
+2026-10-30 12:40:36 позначка gemini-queue/n-codex-7/gpt-6.1-sol-high/1: слот codex-7, пріоритет 5 -> 20261030-124036-d86c21452797
+2026-10-30 12:40:36 позначка gemini-queue/n-codex-8/gpt-6.1-sol-high/1: слот codex-8, пріоритет 5 -> 20261030-124036-a85e112e7047
+2026-10-30 12:40:36 [6392] наряд gemini-queue/n-codex-1/gpt-6.1-sol-high/1 433fe3df8aeb83e9ae8b05ce1910f6d3bef2faba -> 20261030-124035-1ed0341ddd69 (слот codex-1)
+2026-10-30 12:40:36 [9976] наряд gemini-queue/n-codex-2/gpt-6.1-sol-high/1 433fe3df8aeb83e9ae8b05ce1910f6d3bef2faba -> 20261030-124035-30fdf13d1905 (слот codex-2)
+2026-10-30 12:40:36 [42092] наряд gemini-queue/n-codex-3/gpt-6.1-sol-high/1 433fe3df8aeb83e9ae8b05ce1910f6d3bef2faba -> 20261030-124035-7891be37ed07 (слот codex-3)
+2026-10-30 12:40:36 [44176] наряд gemini-queue/n-codex-4/gpt-6.1-sol-high/1 433fe3df8aeb83e9ae8b05ce1910f6d3bef2faba -> 20261030-124036-fd019db99ba2 (слот codex-4)
+2026-10-30 12:40:36 [38776] наряд gemini-queue/n-codex-5/gpt-6.1-sol-high/1 433fe3df8aeb83e9ae8b05ce1910f6d3bef2faba -> 20261030-124036-dc0bfc9a02a3 (слот codex-5)
+2026-10-30 12:40:36 [14436] наряд gemini-queue/n-codex-6/gpt-6.1-sol-high/1 433fe3df8aeb83e9ae8b05ce1910f6d3bef2faba -> 20261030-124036-0e3e09a9af79 (слот codex-6)
+2026-10-30 12:40:37 [8500] наряд gemini-queue/n-codex-7/gpt-6.1-sol-high/1 433fe3df8aeb83e9ae8b05ce1910f6d3bef2faba -> 20261030-124036-d86c21452797 (слот codex-7)
+2026-10-30 12:40:37 [35996] наряд gemini-queue/n-codex-8/gpt-6.1-sol-high/1 433fe3df8aeb83e9ae8b05ce1910f6d3bef2faba -> 20261030-124036-a85e112e7047 (слот codex-8)
+2026-10-30 12:40:37 [6392] копія задачі C:\Users\gemini\gemini-runs\w\20261030-121427-acbbf237a3a7\tmp\review2423\tmp\smuhy\slots-8\gr\w\20261030-124035-1ed0341ddd69\repo (433fe3df8aeb83e9ae8b05ce1910f6d3bef2faba): тек-архівів не викладено — 0
+2026-10-30 12:40:37 [9976] копія задачі C:\Users\gemini\gemini-runs\w\20261030-121427-acbbf237a3a7\tmp\review2423\tmp\smuhy\slots-8\gr\w\20261030-124035-30fdf13d1905\repo (433fe3df8aeb83e9ae8b05ce1910f6d3bef2faba): тек-архівів не викладено — 0
+2026-10-30 12:40:37 [42092] копія задачі C:\Users\gemini\gemini-runs\w\20261030-121427-acbbf237a3a7\tmp\review2423\tmp\smuhy\slots-8\gr\w\20261030-124035-7891be37ed07\repo (433fe3df8aeb83e9ae8b05ce1910f6d3bef2faba): тек-архівів не викладено — 0
+2026-10-30 12:40:37 [44176] копія задачі C:\Users\gemini\gemini-runs\w\20261030-121427-acbbf237a3a7\tmp\review2423\tmp\smuhy\slots-8\gr\w\20261030-124036-fd019db99ba2\repo (433fe3df8aeb83e9ae8b05ce1910f6d3bef2faba): тек-архівів не викладено — 0
+2026-10-30 12:40:37 [38776] копія задачі C:\Users\gemini\gemini-runs\w\20261030-121427-acbbf237a3a7\tmp\review2423\tmp\smuhy\slots-8\gr\w\20261030-124036-dc0bfc9a02a3\repo (433fe3df8aeb83e9ae8b05ce1910f6d3bef2faba): тек-архівів не викладено — 0
+2026-10-30 12:40:38 [14436] копія задачі C:\Users\gemini\gemini-runs\w\20261030-121427-acbbf237a3a7\tmp\review2423\tmp\smuhy\slots-8\gr\w\20261030-124036-0e3e09a9af79\repo (433fe3df8aeb83e9ae8b05ce1910f6d3bef2faba): тек-архівів не викладено — 0
+2026-10-30 12:40:38 [8500] копія задачі C:\Users\gemini\gemini-runs\w\20261030-121427-acbbf237a3a7\tmp\review2423\tmp\smuhy\slots-8\gr\w\20261030-124036-d86c21452797\repo (433fe3df8aeb83e9ae8b05ce1910f6d3bef2faba): тек-архівів не викладено — 0
+2026-10-30 12:40:38 [35996] копія задачі C:\Users\gemini\gemini-runs\w\20261030-121427-acbbf237a3a7\tmp\review2423\tmp\smuhy\slots-8\gr\w\20261030-124036-a85e112e7047\repo (433fe3df8aeb83e9ae8b05ce1910f6d3bef2faba): тек-архівів не викладено — 0
+2026-10-30 12:40:38 [38776] agy: статус ERROR (AGY_ERROR)
+2026-10-30 12:40:38 [6392] agy: статус ERROR (AGY_ERROR)
+2026-10-30 12:40:38 [6392] наряд n-codex-1 [20261030-124035-1ed0341ddd69]: AGY_ERROR, ходів 1, комітів 0
+2026-10-30 12:40:38 [38776] наряд n-codex-5 [20261030-124036-dc0bfc9a02a3]: AGY_ERROR, ходів 1, комітів 0
+2026-10-30 12:41:09 [9976] наряд n-codex-2 [20261030-124035-30fdf13d1905]: DONE, ходів 1, комітів 1
+2026-10-30 12:41:09 [42092] наряд n-codex-3 [20261030-124035-7891be37ed07]: DONE, ходів 1, комітів 1
+2026-10-30 12:41:09 [44176] наряд n-codex-4 [20261030-124036-fd019db99ba2]: DONE, ходів 1, комітів 1
+2026-10-30 12:41:09 [14436] наряд n-codex-6 [20261030-124036-0e3e09a9af79]: DONE, ходів 1, комітів 1
+2026-10-30 12:41:09 [8500] наряд n-codex-7 [20261030-124036-d86c21452797]: DONE, ходів 1, комітів 1
+2026-10-30 12:41:09 [35996] наряд n-codex-8 [20261030-124036-a85e112e7047]: DONE, ходів 1, комітів 1

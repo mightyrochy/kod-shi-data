@@ -27,7 +27,7 @@ for (кл, *в), n in sorted(Л.items()): n and print("    %-13s %-8s → %-8s �
 for a, b in ([dict(lab=tuple(cs.hx(h))) for h in п] for п in (("#b79a83", "#b99b87"), ("#e7702f", "#f9842e"), ("#cc6a3b", "#f9842e"), ("#c46a36", "#df9962"))):
     вв = []
     for м in РЕЖ: режим(м); вв.append(КР.відношення(a, b, "same_hue", певність=м == "ΔH*+τ"))
-    print("(3) %s × %s: Δколо %.1f, ΔH* %.1f — same_hue %s" % (cs.hex_з_lab(a["lab"]), cs.hex_з_lab(b["lab"]), КР.розкид_тону_на_колі(a, b)[0],
+    print("(3) %s × %s: Δколо %.1f, ΔH* %.1f — same_hue %s" % (cs.hex_з_lab(КР.точка_кольору(a)), cs.hex_з_lab(КР.точка_кольору(b)), КР.розкид_тону_на_колі(a, b)[0],
           КВ._дельта_h(КР.запис_кольору(a), КР.запис_кольору(b))[0], " → ".join(вв)))
 N = int(sys.argv[sys.argv.index("-о") + 1]) if "-о" in sys.argv else 0
 ПР, (вх, r, _, _) = ("K-COL-02", "K-ACC-01", "K-COL-05", "K-PAL-04", "K-PAL-05", "K-PAL-15", "K-COMP-05", "K-CRA-02"), ПВ.стенд(гілка=0, намір="statement")

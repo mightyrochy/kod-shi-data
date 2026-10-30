@@ -10,6 +10,8 @@ import json as _json
 import math
 import re as _re_ід
 import протокол as _ПР
+import фрази_формату as _ФФ
+import спільні_вимоги as _ВИМ
 import ід_правил as _ід_правил
 from пакет_моделі import ПАКУВАТИ_ІНДЕКСОМ, номери_речей
 from розбір_відповідей import словник_речей as _словник_речей, за_номером as _за_номером, СВІДОМИЙ_МНОЖНИК, свідомі_з_json as _свідомі_з_json
@@ -146,8 +148,6 @@ _РЯДОК_ACTION = ("«action» in «done» is one word: fixed — the finding
                  "only: fixed and partly the code checks by fact.")
 _РЯДОК_ОБРАЗ_ВІДПОВІДІ = ("An outfit of the answer is «your_outfit» after your work, with the same «id» and with "
                           "«done»; «structure», «findings», «keep», «checklist» and «knot» stay out of the answer.")
-_РЯДОК_КІНЕЦЬ = ("Write the answer object itself: it begins with {\"version\" and ends with the brace that closes "
-                 "it, right after «needed». Do not wrap it in another object; after that brace the answer is over.")
 # Без гейтів у вердикті — ті самі правила без «done»
 _БЕЗ_ГЕЙТІВ = {
     _РЯДОК_ЗАУВАЖЕННЯ: _РЯДОК_ЗАУВАЖЕННЯ.replace("; a remark needs no entry in «done»", ""),
@@ -159,18 +159,14 @@ _БЕЗ_ГЕЙТІВ = {
     задача="ремонт",
     роль="You are the stylist. The code checked the outfits you put together for her; you improve them.",
     вхід=(
-        _ЗП.Поле("case", "her case: the occasion and event, her «intent» and «goal», her words, wishes, mood "
-                         "and refusals",
-                 як="this is what she wants; which outfits you keep and how you improve them answer it"),
+        _ВИМ.поле("case", як="this is what she wants; which outfits you keep and how you improve them answer it"),
         _ЗП.ПОЛЕ_ВІДБОРУ,
         *[п for п in _ВИБІР.вхід if п.шлях.startswith("case.")],
-        _ЗП.Поле("day", "her day as facts",
-                 як="think each outfit through against her day item by item: replace an item that will not "
+        _ВИМ.поле("day", як="think each outfit through against her day item by item: replace an item that will not "
                     "stand the day, or say gently in the outfit's «day» why it stays; write «day» anew "
                     "together with the items"),
         _ЗП.ПОЛЕ_КАНДИДАТІВ,
-        _ЗП.Поле("item_keys", "what the keys in «candidates» mean, and defaults for omitted values",
-                 як="read every item by these keys; restore every absent key that has an `absent =` default"),
+        _ВИМ.поле("item_keys"),
         _ЗП.Поле("verdict", "the code's check of each outfit you put together: «your_outfit» — its item numbers, "
                             "caption and «day» (your sentence about her day in it); "
                             "«your_declared» — the moves you declared in «deliberate»; «structure»; "
@@ -201,7 +197,7 @@ _БЕЗ_ГЕЙТІВ = {
         _ЗП.Поле("fixes", "the code's repair texts by key"),
         _ЗП.Поле("not_run_everywhere", "by area, the checklist points the code did not check in any outfit, "
                                        "named by code without a definition"),
-        _ЗП.Поле("set", "the check of the whole set: variety, hero, coordination, findings about the set"),
+        _ВИМ.поле("set"),
         # ВИРВА-СМІЛИВІСТЬ (п.17): доза сміливого за її наміром — і на кроці 10→5
         _ЗП.Поле("set.bold", "her «intent» asks to stand out; these outfits the code measured as bold, "
                              "with two or more «signs»: loud_colour — a colour of high chroma, "
@@ -228,8 +224,8 @@ _БЕЗ_ГЕЙТІВ = {
                     "only with an entry in «deliberate»"),
         # (б): поле їде лише з порушеннями (`дріт_моделі.вердикт`)
         _ЗП.Поле("language", "violations in your previous text", як="do not repeat them; «instead» — what to use"),
-        _ЗП.Поле("register", "her style: the leading register and the ones next to it"),
-        _ЗП.Поле("outfits_wanted", "how many outfits to return", треба=True),
+        _ВИМ.поле("register"),
+        _ВИМ.поле("outfits_wanted", треба=True),
     ),
     правила=(
         # РЕМОНТ-1 (аудит/ПРОДУКТ.md п.17): вибір — окремим кроком відповіді, ДО образів. Доки
@@ -276,18 +272,7 @@ _БЕЗ_ГЕЙТІВ = {
         "a finding's «id» weakens nothing.",
         "«needed» — only for an item that is neither in the outfits nor in «showcase».",
         _РЯДОК_ОБРАЗ_ВІДПОВІДІ,
-        # РЕМОНТ-1: правило кінця відповіді складання й опису — і тут. Ремонт писав
-        # {"answer": {…}} у 56/65 відповідей і далі переписував дані промпту: «fixes», «set», «showcase»
-        # (16/65 — вітрину з «price», «hex», «L») до стелі виводу.
-        # РЕМОНТ-2: БЕЗ ІМЕН КЛЮЧІВ. «write nothing after it — no «answer_schema», «input»,
-        # «statement_codes»…» `КІНЕЦЬ_ВІДПОВІДІ_EN` qwen3.5-9b читала як перелік того, що дописати: у 17 з 28
-        # відповідей заміру РЕМОНТ-1 після «needed» стоїть «input» (у 10 — `null`, у 7 — увесь `task.input`,
-        # 9–12,7 тис. симв.), і 7 з 13 обрізаних об стелю 4000 т. обрізано саме на ньому (до правила, у заміру ГГ-1,
-        # «input» не писала жодна з 33). Тут кінець названо місцем — дужка після «needed», — а не переліком.
-        # РЕМОНТ-3: і без «answer» — правило називало словом ключ обгортки, якого в
-        # промпті ремонту нема («task» ремонту ключа «answer» не несе), а обгортка `"answer": {` лишалась у 3 з 14
-        # живих сцен. Та сама форма, що `КІНЕЦЬ_ВІДПОВІДІ_EN`: «не обгортай іншим обʼєктом», без імені ключа.
-        _РЯДОК_КІНЕЦЬ,
+        # кінець відповіді — у `наприкінці` (`фрази_формату.наприкінці_en`): одне місце, а не правило й підсумок
     ),
     вихід="ОБРАЗИ_V1",
     # «pole» — поле складання; без підпису його нема й у скелеті ремонту (`протокол.ПОЛЯ_НА_ПРОХАННЯ`)
@@ -305,8 +290,7 @@ _БЕЗ_ГЕЙТІВ = {
     мова_промпту="en",
     скелет_наприкінці=True,  # за схемою відповіді — лише кінець промпту
     # за схемою — лише цей рядок; він називає кінець місцем, а не переліком ключів
-    наприкінці="Now write your answer: one object of the form above, from {\"version\" to the brace that "
-               "closes it right after «needed». The answer is over at that brace.",
+    наприкінці=_ФФ.наприкінці_en("needed", обгортка=True),
 )
 
 
@@ -711,8 +695,7 @@ def мова_повтор(мова, спроба=1, відповідь="ОПИС
     об = dict(версія=_ПР.ВЕРСІЯ, помилка="мова", спроба=с, спроб_усього=МОВНИХ_СПРОБ,
               наказ=наказ, порушення=пор, натомість=натомість, українська=укр,
               відповідь=сх,
-              формат="Віддай ТОЙ САМИЙ обʼєкт за схемою «%s» — міняється лише "
-                     "формулювання." % сх)
+              формат=_ФФ.той_самий_обʼєкт_uk(сх))
     # ── ПЕРЕПИС ФОТО НЕ БАЧИТЬ, І ЦЕ СКАЗАНО ВГОЛОС ─────────
     # Перепис мови йде БЕЗ знімків (`показ.html`: «двадцять знімків удруге
     # коштують рівно стільки ж»), а «віддай ТОЙ САМИЙ обʼєкт» разом зі схемою
@@ -761,7 +744,7 @@ def мова_повтор_на_дріт(об):
            "attempts_total": об.get("спроб_усього"),
            "order": _НАКАЗ_МОВИ_EN + ((" " + _НАКАЗ_УКРАЇНСЬКОЇ_EN) if об.get("українська") else ""),
            "statements": заяви, "statement_codes": _ВМ.визначення_заяв(коди), "answer": сх,
-           "format": "Return THE SAME object following \"%s\" — only the wording changes." % сх}
+           "format": _ФФ.той_самий_обʼєкт_en(сх)}
     if об.get("відповідь") == "ОПИС_ВІДПОВІДЬ_V1":
         вих["photos"] = ("There are NO images in this call — only the language of the text changes. Leave "
                          "\"%s\" EMPTY: what is wrong on the photos is already recorded from the previous "

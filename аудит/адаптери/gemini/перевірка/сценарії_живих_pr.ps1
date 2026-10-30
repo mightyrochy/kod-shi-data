@@ -65,6 +65,8 @@ try {
         }
         $script:StateDir = Join-Path $case 'state'; $script:SlotDir = Join-Path $case 'slots'
         $script:NoHooks = Join-Path $case 'no-hooks'; $script:Limits = @{slots=@{codex=4;agy=4;claude=4}}
+        # Смуга Claude бере наряд без GPU лише з переліку ноутбука; тут міряється звірка голови, тож позначки — у переліку.
+        $script:Limits.claude_laptop = @(1..6 | ForEach-Object { "автоперевірка-$_-$head" })
         foreach ($d in @($script:StateDir,$script:SlotDir,$RunsDir,$OutDir,$LaneDir)) { if ($d) { [void][IO.Directory]::CreateDirectory($d) } }
         [void](Invoke-Git @('fetch','-q','origin','+refs/heads/main:refs/remotes/origin/main','+refs/heads/gemini-queue/*:refs/remotes/origin/gemini-queue/*'))
         $script:Jobs = New-Object Collections.ArrayList
@@ -115,7 +117,7 @@ try {
             } else {
                 $WorkDir = $pubWork
                 $sent = 0; $duplicates = 0
-                foreach ($file in @(Get-ChildItem -LiteralPath $OutDir -Filter '*.json')) {
+                foreach ($file in @(Get-ChildItem -LiteralPath $OutDir -Filter '*.json' | Where-Object { $_.Name -ne 'skipped.json' })) {
                     $result = ConvertFrom-Json ([IO.File]::ReadAllText($file.FullName))
                     if ($result.code -ne 'STALE') { continue }
                     $line = Get-Line $file.BaseName

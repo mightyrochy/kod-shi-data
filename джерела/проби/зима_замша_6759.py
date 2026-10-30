@@ -13,7 +13,8 @@ import feed as Ф, bridge as B, міст_пакет as МП, outfit as O, суд
          ("ж7_мороз_без_відкритого", dict(темп_c=-15, опади="сніг", рух="пішки", відкриті_зони="none")),
          ("ж1_робота_дощ_замша", dict(темп_c=12, опади="дощ", рух="пішки")))
 РУКАВИЦІ = {"cold_accessories_carry_no_colour", "move_colour_to_hat_scarf_gloves"}
-_ел = lambda рр: O.елементи([dict(r, hex=r.get("hex") or "#808080", площа=0.1, near=0.05) for r in рр], стан="надворі")
+import колір_річ as _КОЛІР
+_ел = lambda рр: O.елементи([dict(r, hex=_КОЛІР.hex_кольору(r) or "#808080", площа=0.1, near=0.05) for r in рр], стан="надворі")
 for ім, сц in СЦЕНИ:
     МП.КЕШ_ПАКЕТА.clear()
     B.виклик("запити", json.dumps(dict(вх0, сценарій=dict(вх0["сценарій"], **сц)), ensure_ascii=False))

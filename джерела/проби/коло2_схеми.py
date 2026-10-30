@@ -10,9 +10,10 @@ import sys, pathlib, json, collections
 К = pathlib.Path(__file__).resolve().parent.parent; sys.path.insert(0, str(К))
 import feed as F; F.каталог_на_диску('каталог_повний.xml')
 import фід_каталог as ФК, colorspace as cs, palettes as P, палітра_схеми as PS, палітра_специфікація as SP, міст_вхід as МВ
+import колір_річ as _КОЛІР
 кат = [r for r in ФК.прочитати_каталог('каталог_повний.xml', 0)['каталог'] if r.get("слот") in
-       {"верх", "низ", "сукня", "верхній_шар", "комплект"} and r.get("lab") and P.хроматична(tuple(r["lab"]))]
-тони = [(cs.lch(tuple(r["lab"]))[2], r.get("колір_назва") or "?") for r in кат]
+       {"верх", "низ", "сукня", "верхній_шар", "комплект"} and _КОЛІР.точка_кольору(r) and P.хроматична(tuple(_КОЛІР.точка_кольору(r)))]
+тони = [(cs.lch(tuple(_КОЛІР.точка_кольору(r)))[2], r.get("колір_назва") or "?") for r in кат]
 кут = lambda a, b: abs((a - b + 180) % 360 - 180)
 ДО = {"аналогова": ((30, 15), (55, 18)), "тріада": ((120, 15), (240, 15))}
 def речі(ц, пів): return [i for i, (h, _) in enumerate(тони) if кут(h, ц) <= пів]

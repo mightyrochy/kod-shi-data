@@ -24,7 +24,8 @@ import feed as Ф, bridge as B, status as СТ, colorspace as КС
 вх["каталог"] = Ф.каталог_на_диску("каталог_повний.xml"); вх["гілка"] = 0
 json.loads(B.виклик("запити", json.dumps(вх, ensure_ascii=False)))
 кат = B.каталог_останнього_пакета()
-барв = [c for c in кат if c.get("lab") and КС.lch(c["lab"])[1] > 30]
+import колір_річ as _КОЛІР
+барв = [c for c in кат if _КОЛІР.точка_кольору(c) and КС.lch(_КОЛІР.точка_кольору(c))[1] > 30]
 взяті, іди = set(), []
 for сл in ("верх", "низ", "взуття", "сумка", "шарф"):
     c = next((c for c in барв if c.get("слот") == сл and c["id"] not in взяті), None)

@@ -33,7 +33,8 @@ assert _для_всіх(В.повідомлення('card_unchecked', В.зая�
 речі = [dict(id='kimono', слот='пояс', тип='кімоно', назва='Кімоно довге')]
 т = Л.тон_тональної(речі, {'_схема': 'тональна'})
 р = т['предмети']['не_виміряно'][0]
-assert р['item_id'] == 'kimono' and р['slot'] == 'belt' and 'Кімоно' in р['name']['free_text']
+# річ — кодами (`річ_заяви`, Е2-вхід-опису-кодами): назва крамниці в заяву не йде
+assert р['item_id'] == 'kimono' and р['slot'] == 'belt' and р.get('kind') == 'belt' and 'name' not in р
 print('поточний стан: pending → stylist → her; схема читається за іменем; альтернатива unselected')
-print('адресат незалежний від values; кімоно: id=kimono, slot=belt, власна назва')
+print('адресат незалежний від values; кімоно: id=kimono, slot=belt, kind=belt, без назви')
 print('перелік авторів один:', ','.join(sorted(С.АВТОРИ)))

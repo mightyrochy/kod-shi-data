@@ -171,6 +171,7 @@ def _число(v, lo, hi, ціле=False):
     return int(round(x)) if ціле else round(x, 2)
 
 
+import колір_річ as _КОЛІР
 def _колір(к):
     """{слово, hex, частка, слово_моделі} або None. Слово — через verify.назва_кольору,
     тобто тим самим розбирачем, що й слово крамниці."""
@@ -180,7 +181,7 @@ def _колір(к):
     слово = сире if сире in V.ЛЕКСИКОН else V.назва_кольору(сире)
     if not слово:
         return None
-    hex_ = str(к.get("hex") or "").strip()
+    hex_ = str(_КОЛІР.hex_кольору(к) or "").strip()
     hex_ = hex_ if re.fullmatch(r"#[0-9a-fA-F]{6}", hex_) else None
     вих = dict(слово=слово, hex=hex_, частка=_число(к.get("частка"), 0, 1))
     if сире != слово:
@@ -212,25 +213,11 @@ def нормалізувати(о):
 
 
 def спитати(модель, b64, тип, тайм=120, повтори=2):
-    тіло = {"model": модель, "temperature": 0, "max_tokens": 450,
-            "messages": [{"role": "user", "content": [
-                {"type": "text", "text": _промпт(тип)},
-                {"type": "image_url", "image_url": {"url": "data:image/jpeg;base64," + b64}}]}]}
-    дані = json.dumps(тіло).encode("utf-8")
-    for спроба in range(повтори + 1):
-        try:
-            зап = urllib.request.Request(СЕРВЕР, data=дані, headers={"Content-Type": "application/json"})
-            with urllib.request.urlopen(зап, timeout=тайм) as в:
-                відп = json.load(в)
-            текст = відп["choices"][0]["message"]["content"].strip()
-            м = re.search(r"\{.*\}", текст, re.S)
-            if not м:
-                raise ValueError("не JSON: %r" % текст[:80])
-            return нормалізувати(json.loads(м.group(0))), відп.get("usage", {})
-        except Exception:
-            if спроба == повтори:
-                raise
-            time.sleep(3)
+    # ОДИН ЧИТАЧ І ПОВТОР СЛОВАМИ — `жнива_промпти._запит` (реєстр, форма «ЖНИВА_ОПИС»; наряд Е2-межі-поза-реєстром):
+    # тут стояла його копія з `re.search(r"\{.*\}")` + `json.loads` і повтором того самого тексту
+    from жнива_промпти import _запит
+    об, ужиток = _запит(модель, _промпт(тип), [b64], тайм=тайм, повтори=повтори, токенів=450, з_ужитком=True)
+    return нормалізувати(об), ужиток
 
 
 def тип_для_промпту(o):

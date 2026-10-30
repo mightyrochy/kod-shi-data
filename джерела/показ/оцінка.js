@@ -71,7 +71,7 @@ function малюватиОцінкуП(){
     н.innerHTML = '';
     н.appendChild(Object.assign(ел('option', null, 'не скажу'), {value: ''}));
     (ДОВІДНИК.нагоди || []).filter(о=>о.плитка)
-      .forEach(о=>н.appendChild(Object.assign(ел('option', null, о.підпис), {value: о.ключ})));
+      .forEach(о=>н.appendChild(Object.assign(елЖінціП('option', null, о.підпис), {value: о.ключ})));
     н.appendChild(Object.assign(ел('option', null, 'Інше — напишу словами'), {value: ІНШЕ_ОЦІНКИ_П}));
     н.value = було;
     н.onchange = ()=>{ if (н.value === ІНШЕ_ОЦІНКИ_П){ const п = $('оц-питання'); if (п) п.focus(); } };
@@ -119,7 +119,7 @@ async function додатиФотоОцінкиП(е){
       const н = ОЦ.фото.map(х=>parseInt(String(х.ід).replace(/^ф/, ''), 10)).filter(x=>isFinite(x));
       ОЦ.фото.push({ід: 'ф' + ((н.length ? Math.max(...н) : 0) + 1), тип: б.тип || 'image/jpeg', дані: б.дані,
                     ширина: б.ширина || null, висота: б.висота || null});
-    }catch(err){ $('оц-стан').textContent = 'Фото не прочиталось: ' + String(err).slice(0, 120); }
+    }catch(err){ збійЖінціП($('оц-стан'), 'photo_unreadable', err); }
   }
   try{ е.target.value = ''; }catch(_){}
   малюватиФотоОцінкиП();
@@ -306,7 +306,7 @@ async function оцінитиОбразП(перГотовий){
   const ст = $('оц-стан');
   if (!ОЦ.фото.length){ ст.textContent = 'Додай фото образу — одне чи кілька.'; return; }
   const бракує = чогоБракує().filter(б=>/кольори/.test(б));
-  if (бракує.length){ ст.textContent = 'Щоб оцінити образ, у профілі ще потрібні ' + бракує.join(' і ') + '.'; return; }
+  if (бракує.length){ текстЖінціП(ст, 'Щоб оцінити образ, у профілі ще потрібні ' + бракує.join(' і ') + '.'); return; }
   if (мостуНемаП()){
     ст.textContent = 'Нема токена доступу — стилістка мовчить. Відкрий Люстерко з посилання, яке дав власник.';
     return;
@@ -521,8 +521,8 @@ async function збійОцінкиП(e){
     ст.textContent = '';
     const м = await повідомленнямП({відмова: e.повідомлення}, 'review');
     (м.записи || []).forEach(з => ОЦ.етапи.мова_шару.push(з));
-    ст.textContent = м.тексти.відмова || '';
-  } else ст.textContent = НАПИС_ЗБОЮ_ОЦІНКИ_П;
+    текстЖінціП(ст, м.тексти.відмова);
+  } else текстЖінціП(ст, НАПИС_ЗБОЮ_ОЦІНКИ_П);
   await записатиЗбійОцінкиП();
 }
 function кінецьОцінкиП(кн){

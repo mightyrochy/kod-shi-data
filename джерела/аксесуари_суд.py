@@ -338,8 +338,8 @@ def перевірити(t, речі, темп_c=None, опади=None, реаг
         _СЛ.запис("K-ACC-07", "carrier_present_no_windows_passed",
                   "перевірити", значення="спец/запити відсутні", сила=0.0,
                   напрям="черга на вхід")
-        _заяви_суті = [_ВМ.заява("face_frame_carrier_no_palette_data", item=_ВМ.вільний(
-                носій.get("назва") or носій.get("id") or носій.get("слот")), item_id=носій.get("id"))]
+        _заяви_суті = [_ВМ.заява("face_frame_carrier_no_palette_data", item=_ВМ.річ_заяви(носій),
+                                      item_id=носій.get("id"))]
         рятунок = [dict(_зн("K-ACC-07", "питання",
             _ВМ.суть_кодом(_заяви_суті, [носій.get("id")]),
             [носій.get("назва") or носій.get("id") or носій.get("слот")],
@@ -371,7 +371,7 @@ def перевірити(t, речі, темп_c=None, опади=None, реаг
             if not _м:
                 continue
             _ім = (_р.get("назва") or _р.get("id") or "хустка")[:40]
-            _заяви_суті = [_ВМ.заява("scarf_near_face_way_unknown", item=_ВМ.вільний(_ім),
+            _заяви_суті = [_ВМ.заява("scarf_near_face_way_unknown", item=_ВМ.річ_заяви(_р),
                                  ways=[_ВМ.код_або_невідомо("wear_place", м) for м in _м], item_id=_р.get("id"), source="catalogue")]
             рятунок.append(dict(_зн("K-ACC-07", "питання",
                 _ВМ.суть_кодом(_заяви_суті, [_р.get("id")]), [_ім],

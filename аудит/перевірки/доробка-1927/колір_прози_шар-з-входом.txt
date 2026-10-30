@@ -1,0 +1,11 @@
+seed3_10_проза_рука_3_4.txt
+Traceback (most recent call last):
+  File "C:\Users\gemini\gemini-runs\w\codex-4\джерела\проби\колір_прози_шар.py", line 30, in <module>
+    пр, т = вхід_шару(ф, лишити)
+            ^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\gemini\gemini-runs\w\codex-4\джерела\проби\колір_прози_шар.py", line 20, in вхід_шару
+    опис = json.loads(subprocess.run(["node", "-e", JS, os.path.join(К, "показ.html"), лишити, файл],
+                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\gemini\AppData\Local\Programs\Python\Python312\Lib\subprocess.py", line 571, in run
+    raise CalledProcessError(retcode, process.args,
+subprocess.CalledProcessError: Command '['node', '-e', 'const fs = require(\'fs\'), [, html, hex, ф] = process.argv, s = fs.readFileSync(html, \'utf8\');\nconst п = s.indexOf(\'function людською(\'), б = s.indexOf(\'const безМашинногоСліду\', п);\neval(s.slice(п, s.indexOf(\'.trim();\', s.indexOf("String(s||\'\')", б)) + 8) + \'\\nglobalThis.Л = людською;\');\nconst т = fs.readFileSync(ф, \'utf8\'), в = т.slice(т.indexOf(\'── ВІДПОВІДЬ\')), р = в.slice(в.indexOf(\'\\n\') + 1);\nprocess.stdout.write(JSON.stringify(Л(р, {}, hex === \'1\')[0]));', 'C:\\Users\\gemini\\gemini-runs\\w\\codex-4\\джерела\\проби\\..\\показ.html', '0', 'C:\\Users\\gemini\\gemini-runs\\w\\codex-4\\аудит\\живий_пачка2\\ДО\\П1\\VIDPOVIDI\\seed3_10_проза_рука_3_4.txt']' returned non-zero exit status 1.

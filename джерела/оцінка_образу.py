@@ -44,6 +44,7 @@ import math as _math
 import re as _re
 
 import протокол as _ПР
+import фрази_формату as _ФФ
 import збирач_промптів as _ЗП
 import внутрішня_мова as _ВМ
 import brief as _БР   # щаблі ошатності кодами для стилістки
@@ -71,6 +72,7 @@ import колір_річ as _КР
 import дріт_моделі as _ДМ
 import trace as _СЛ
 import схема_відповіді as _СВ
+import колір_річ as _КР_ТИП
 
 _ганяти = _РФ.ганяти   # доводить генератор-покроковик до кінця: `yield` у ньому — лише місце, де виконавець може поступитися (`суд_без_блоку`)
 
@@ -212,7 +214,7 @@ def речі_з_відповіді(відповідь, фото):
     на фото ф1, «ф1·2» — друга. Річ на фото, якого в цьому виклику не було, не береться;
     фото, на якому модель не назвала нічого, — у `без_речей`, а не мовчанням."""
     # кілька JSON-об'єктів — останній цілий, відкинуте кодами в `нотатки` (СКЛАДАННЯ-1200, `протокол.розбір_останній`)
-    об, причина, нотатки = _ПР.розбір_останній(відповідь, ("items",))
+    об, причина, нотатки = _СВ.СХЕМИ_ВІДПОВІДІ["РЕЧІ_ОЦІНКИ"].прочитати(відповідь)
     фото_ід = [str(х.get("ід")) for х in (фото or []) if isinstance(х, dict) and х.get("ід")]
     вих = dict(речі=[], незнайомі=[], без_речей=[], причина=None, нотатки=нотатки)
     if not isinstance(об, dict) or not isinstance(об.get("items"), list):
@@ -748,7 +750,7 @@ def _без_входу(о, сцен, речі):
         вих.append(dict(input="occasion"))
     if сцен.get("темп_c") in (None, ""):
         вих.append(dict(input="temperature"))
-    без_виміру = [р["ід"] for р in речі if not ((р.get("вимір") or {}).get("lab"))]
+    без_виміру = [р["ід"] for р in речі if not (_КР_ТИП.точка_кольору(р.get("вимір") or {}))]
     if без_виміру:
         вих.append(dict(input="color_measure", items=без_виміру,
                         why=[({"code": р["вимір"]["причина"]} if (р.get("вимір") or {}).get("причина") else
@@ -799,11 +801,17 @@ def _контраст_обличчя(F, T, записи, source):
         return dict(без_входу=dict(rule=["K-CLR-02"], check="обличчя", point=_ВМ.код_пункту("K-CLR-02"),
                                    what={"free_text": "контраст біля обличчя", "lang": "uk"}, why="not_given:шкіра_волосся",
                                    missing={"free_text": str(особа.get("чому") or "нема шкіри чи волосся"), "lang": "uk"}))
-    рг = [_КПР.у_річ(dict(з), з["слот"], T) for з in записи if з.get("lab") and з.get("слот")]
+    рг = [_КПР.у_річ(dict(з), з["слот"], T) for з in записи
+          if _КР_ТИП.межі_кольору(з) is not None and з.get("слот")]
     зк = _КС.біля_обличчя(_O.елементи(рг), особа) if рг else []
     if not зк:
         return {}
     з = зк[0]
+    if з.get("без_входу"):
+        return dict(без_входу=dict(rule=["K-CLR-02"], check="обличчя", point=_ВМ.код_пункту("K-CLR-02"),
+                                  what={"free_text": str(з.get("суть") or ""), "lang": "uk"},
+                                  missing=[str(з.get("бракує") or з["без_входу"])],
+                                  statements=list(з.get("заяви") or [])))
     return dict(пункт=dict(бік="обличчя", пункт="K-CLR-02", правила=["K-CLR-02"],
                            стан=("пройдено" if з.get("сила") == "ok" else "провал"), що=з.get("суть")))
 
@@ -970,7 +978,7 @@ def зміни_кроками(d, F, T, сцен, речі, образ, запа�
             for н, r in enumerate(пули.get(сл) or []):
                 if н % ЧИСЛО_КАНДИДАТІВ_НА_КРОК == 0:
                     yield
-                if not r.get("lab") or not r.get("id"):
+                if _КР_ТИП.межі_кольору(r) is None or not r.get("id"):
                     continue
                 # річ-слово — вікном, не центром: лише «так» усім вікном, сила — мінімум
                 у, сила = _РФ.членство_вікна(r, палітра, члени)
@@ -1089,10 +1097,10 @@ def _без_кадру(речі):
     import feed as _Ф
     for р in речі:
         вим = р.get("вимір") or {}
-        if not вим.get("lab"):
+        if not _КР_ТИП.точка_кольору(вим):
             continue
         if вим.get("спір") and not р.get("дотик") and not р.get("колір_її"):
-            відстань = _Ф.до_вікна(вим["lab"], р["колір"])
+            відстань = _Ф.до_вікна(_КР_ТИП.точка_кольору(вим), р["колір"])
             вим["спір"] = dict(вим["спір"], відстань_до_вікна=round(відстань, 3),
                               допуск=_Ф.ВІДСТУП_ВІД_ВІКНА)
         else:
@@ -1123,7 +1131,7 @@ def _слово_сильніше(речі):
     у `вимір.ненадійний` — звіт і її очі бачать, чому слово перемогло."""
     for р in речі:
         вим = р.get("вимір") or {}
-        if not р.get("колір_її") or (вим.get("lab") and not вим.get("спір")):
+        if not р.get("колір_її") or (_КР_ТИП.точка_кольору(вим) and not вим.get("спір")):
             continue
         р["вимір"] = dict(lab=None, маска=вим.get("маска"), рамка_виміру=вим.get("рамка_виміру"),
                           чому=вим.get("чому"), причина=вим.get("причина") or ПРИЧИНА_ЇЇ_СЛОВО,
@@ -1141,8 +1149,8 @@ def перелік(речі, пікселі=None, шкіра=None):
     for р in речі or []:
         if isinstance(р, dict) and р.get("дотик") and not р.get("колір_її") and (пікселі or {}).get(р.get("ід")):
             вим = _РФ.виміряти_дотик(пікселі[р["ід"]], слово_моделі=None, шкіра_hex=шкіра)
-            if вим.get("lab"):
-                вих[р["ід"]] = вим["hex"]
+            if _КР_ТИП.точка_кольору(вим):
+                вих[р["ід"]] = _КР.hex_кольору(вим)
     return вих
 
 
@@ -1191,7 +1199,7 @@ def суд_кроками(d):
     речі = _слово_сильніше(_без_кадру((yield from _виміри_кроками(d.get("речі"), d.get("пікселі") or {},
                                                                   d.get("пікселі_фото") or {}, шкіра))))
     for р in речі:
-        lab = (р.get("вимір") or {}).get("lab")
+        lab = _КР_ТИП.точка_кольору(р.get("вимір") or {})
         р["біля_обличчя"] = _РФ.біля_обличчя(р.get("слот"))
         if lab:
             р["палітра"] = _РФ.членство_в_палітрі(р["вимір"], палітра)
@@ -1289,7 +1297,7 @@ def речі_для_моделі(суд_):
              "color_observed": (_код("color_name", (вим.get("ненадійний") or {}).get("слово")) if спір else None),
              "name": р.get("назва"), "kind": р.get("вид"), "slot": _код("slot", р.get("слот")),
              "color": _код("color_name", вим.get("слово") or р.get("колір")),
-             "color_measured": bool(вим.get("lab")),
+             "color_measured": bool(_КР_ТИП.точка_кольору(вим)),
              # слово стилістки, з яким вимір розійшовся, — інформація суду, не мовчання
              "color_named": (_код("color_name", р.get("колір")) if спір else None),
              "palette": _ПАЛІТРА_КОД.get(п.get("стан"), "unknown"),
@@ -1398,10 +1406,18 @@ _БЕЗ_ЛІЧИЛЬНИКА = ("The check is what you know about the outfit, no
 # а модель про це не знала: бачила образ без взуття й писала «додай взуття… і, бажано, сумку» (Б4, виклик 12;
 # картка 6б `otsinka_z_chatu_seed3.png`). Тепер вона знає, чого нема на фото, і що її задача — її питання про те,
 # що є: про відсутнє не судить, крім питання про нього. Рядок «на фото нема …» на картці пише мовний прохід.
-_НА_ФОТО = ("Judge only the items on her photos, for her question. A thing in \"not_in_photo\" is not a flaw and "
+_НА_ФОТО = ("Judge the items in \"outfit\" for her question. A thing in \"not_in_photo\" is not a flaw and "
             "not missing from her outfit — she may simply not have photographed it: never ask her to add it, never "
             "call the outfit incomplete for it, and leave it out of every text, unless her question asks about it; "
-            "then answer from the items on her photos.")
+            "then answer from those outfit items.")
+_СПІЛЬНІ_ПРАВИЛА_ОЦІНКИ = (
+    "An item in \"worn_unknown\" is one of her options: speak of it as her choice between them, not "
+    "as what she is wearing.",
+    _НА_ФОТО,
+    "When the outfit is one item, judge that item itself: its color with her palette and near her face, "
+    "its cut and fabric, and her occasion and weather when she named them.",
+    _БЕЗ_ЛІЧИЛЬНИКА,
+)
 # МОВА ТЕКСТІВ — МОВА «language», НЕ ЇЇ ПИТАННЯ (ПРОДУКТ п.12). Поле «question» казало «with its
 # language», і qwen при `"language": "English"` писала жінці сама українською — 10 з 10 сцен живого 15 (`01…10_…/
 # seed*_04`): на «ви» («підкреслює вашу шкіру»), «я б додав», коди фото «(п1)», биті слова («біливі», «Замінка»),
@@ -1413,15 +1429,15 @@ _НА_ФОТО = ("Judge only the items on her photos, for her question. A thing
     задача="оцінка",
     роль="You are a stylist. A woman has put an outfit together herself and asks for your view. "
          "You see her photos and the code's check of the outfit as a whole. Her photos show what she chose to "
-         "show, often not the whole outfit: you judge what is on them.",
+         "show, often not the whole outfit.",
     вхід=(
         _ЗП.Поле("question", "her question in her words, in her language (lang); you answer in \"language\"",
-                 без="She asked no question: give your view of the outfit as a whole."),
+                 без="She asked no question."),
         _ЗП.Поле("occasion", "where she is going, as she named it",
                  без="She did not name the occasion: do not judge formality or fitness for an event."),
         _ЗП.Поле("weather", "the weather she named",
                  без="She did not name the weather: do not judge warmth or weather."),
-        _ЗП.Поле("items", "items on her photos: id identifies the same item across photo corrections; "
+        _ЗП.Поле("items", "her items: id identifies the same item across photo corrections; "
                  "photo and frame give its current location, never infer a photo number from id. "
                  "location_status=item_region_color_dispute means the measured region disagrees with the named item: "
                  "color_observed is unverified, do not judge or replace that item; ask her to point to it. "
@@ -1452,12 +1468,15 @@ _НА_ФОТО = ("Judge only the items on her photos, for her question. A thing
         _ЗП.Поле("unknown", "inputs the code has no value for, so nothing that needs them was judged: "
                             "no_input — the inputs, why — the reason code, items — her items concerned"),
     ),
-    правила=(
-        "\"answer\": answer her question first and directly, in one to three sentences.",
+    правила=_СПІЛЬНІ_ПРАВИЛА_ОЦІНКИ,
+    наприкінці="\n".join((
+        "\"answer\": answer her question first and directly, in one to three sentences; "
+        "without a question, give your view of the outfit as a whole.",
         "\"verdict\": your overall view of whether she should wear the outfit as it is.",
         "\"works\": what works in the outfit as a whole — colors with each other, colors to her palette, "
         "contrast near her face, silhouette. Each point names its items and one \"about\" code.",
-        # «Що вдало» є завжди — коли суд хоч щось підтримує, хоч один пункт стоїть на цьому
+        # «Що вдало» є завжди — коли суд хоч щось підтримує, хоч один пункт стоїть на цьому; решту знімає
+        # сторож (`_суперечить`), «items» зміни ставить сам код (`items_not_target`), понад два «change» — теж він
         "\"works\" has at least one point when \"supported\" is not empty, and every point is one of "
         "\"supported\": its \"about\" and only items listed with it.",
         # ОЦІНКА-3321 (п.12): що саме названо в тексті, код знає лише з ід — слів він не читає
@@ -1466,35 +1485,14 @@ _НА_ФОТО = ("Judge only the items on her photos, for her question. A thing
         "\"items\" of the input does not exist for her. A shop item of a change is shown to her beside "
         "your \"text\" with its own name: do not name it — when you speak of its kind or colour, they are "
         "its \"kind\" and \"color\" — and say why the change helps her.",
-        # КАРТКА-СЛОВА: «your white top (id p2-3)» — шар переклав «(артикул р2-3)», і жінка
-        # читала ід на картці; заборона ідів у межі «для неї» стоїть далеко від «text» зміни
-        "Ids live only in \"id\" and \"items\": a \"text\" never writes one, not even in brackets; "
-        "name her item by its kind and colour.",
-        "Claim a success only where the check supports it: a finding or a failed point against items is "
-        "not a success for them; a palette success names only items with palette \"in\"; a contrast "
-        "success needs the passed contrast point.",
-        # «wear_with_change» з порожнім «change» — 10 карток у 7 прогонах: зміни крамниці не
-        # знайшлось, а ремонт знахідки («додай шар чи сильний аксесуар») модель назвати не могла
-        "\"change\": at most two, her own alternatives first: ids from \"changes\"; when no change in "
-        "\"changes\" helps, the id of a finding in \"check\" whose \"fix\" she can do herself, and "
-        "\"text\" says that fix. \"wear_with_change\" only with at least one \"change\".",
-        # «items» зміни — річ, яку вона міняє: «заміна взуття» під спідницею крамниці (6б Ж:01) — ід
-        # зміни про одну річ, текст про іншу; код звіряє це ідами, слів не читає (`прийняти_оцінку`)
-        "\"items\" of a change from \"changes\" hold the id in its \"replace\": the text is about "
-        "replacing that item.",
-        "An item in \"worn_unknown\" is one of her options: speak of it as her choice between them, not "
-        "as what she is wearing.",
-        _НА_ФОТО,
-        # образ з однієї речі — не «неповний образ», а одна річ, яку вона показала
-        "When the outfit is one item, judge that item itself: its color with her palette and near her face, "
-        "its cut and fabric, and her occasion and weather when she named them.",
-        _БЕЗ_ЛІЧИЛЬНИКА,
-    ),
+        "Name her item by its kind and colour.",
+        "\"change\": prefer her own alternatives; explain the change's benefit or how she can do the finding's fix.",
+    )),
     вихід="OUTFIT_REVIEW_V1",
     скелет={
         "answer": "<the answer to her question>",
-        "verdict": "wear_as_is | wear_with_change | do_not_wear | unknown",
-        "works": [{"about": "colors_together | palette | contrast | silhouette | formality | weather",
+        "verdict": " | ".join(ВЕРДИКТИ),
+        "works": [{"about": " | ".join(ПРО),
                    "items": ["<item id>"], "text": "<what works and why>"}],
         "change": [{"id": "<change id from changes, or finding id from check>",
                     "items": ["<id of her item the text speaks about>"],
@@ -1502,7 +1500,7 @@ _НА_ФОТО = ("Judge only the items on her photos, for her question. A thing
     },
     межі=("лише_вхід", "невідомо", "для_неї", "без_чисел_тіла", "без_шкал"),
     мова_промпту="en",
-    # схема — останнім ключем, після даних; допит міняє лише її (`промпт_допиту`)
+    # Схема — останнім ключем, після даних.
     скелет_наприкінці=True,
 )
 
@@ -1634,23 +1632,12 @@ def перевірка_для_моделі(суд_):
                               "node": вузол}.items() if v not in (None, "", [], {})}
 
 
-# ДОПИТ ПІД КАРТКОЮ (власник 26.09: «Під карткою можна допитати»): її нове питання про той самий образ;
-# відповідь — одне поле «answer». Сторожа тут нема не з лінощів: тверджень кодами допит не несе, а слів код не
-# читає (п.12); суд коду лежить у вході так само, як у першому виклику.
-# ПРОМПТ ОЦІНКИ + ХВІСТ «now» (п.11, п.14). Доти допит був другим оголошенням того самого суду (`ДОПИТ`):
-# роль, 9 рядків входу й дані ОЦІНКИ ще раз, але правила свої — спільний початок двох промптів 209 симв. / 54 ток.
-# (ж15 01–10), і кеш початку різав на третьому правилі: ж15 ОЦІНКА 5,1–5,9 тис. ток. + ДОПИТ 4,8–5,7 тис. на сцену.
-# Тепер допит — байт у байт промпт ОЦІНКИ того самого суду, її першого питання й мови (ті самі кадри «Photo ф1:»),
-# і лише останнім ключем — нове питання, сказане досі й правило відповіді; кешований початок читається один раз.
-# СХЕМА ДОПИТУ — ЛИШЕ «answer». Схема картки стояла в «task», і допит (Ж:03–12, qwen3.5-9b) відповідав
-# усією карткою — answer+verdict+works+change у 10 з 10, сер. 10,0 с, про чорні ботильйони 5 з 10: правило «now»
-# програвало схемі в тому самому промпті. Тепер схема ОЦІНКИ — останнім ключем після даних (`скелет_наприкінці`),
-# а допит на її місці ставить свою: спільний початок той самий до кінця даних.
+# Допит бере той самий суд і спільні настанови; схема й хвіст картки замінюються його власними.
+# Правила картки стоять лише в «now», тому спільний початок до схеми не залежить від виду відповіді.
 _ДОПИТ_СХЕМА = {"answer": "<the answer to her new question>"}
-_ДОПИТ_ПРАВИЛО = ("Her new question about the same outfit: answer it alone, in one to four sentences; the answer is "
-                  "one JSON object following \"answer_schema\" — only \"answer\", without \"verdict\", \"works\" "
-                  "or \"change\"; keep to what you already told her unless the check contradicts it; suggest "
-                  "replacing an item only with ids from \"changes\".")
+_ДОПИТ_ПРАВИЛО = ("Her new question about the same outfit: answer it alone, in one to four sentences; "
+                  "keep to what you already told her unless the check contradicts it; "
+                  "suggest replacements only from \"changes\".")
 
 
 def _питання_дроту(питання):
@@ -1676,9 +1663,7 @@ def _схема_мовою(в, мова):
 
 
 def промпт_допиту(суд_, питання, попередня, мова_тексту=None, питання_оцінки=None):
-    """Промпт допиту рядком: промпт `ОЦІНКА` того самого суду (`питання_оцінки` — її перше питання, `мова_тексту` —
-    та сама мова) зі схемою лише «answer» на місці схеми картки і хвіст «now» (`хвіст_допиту`) останнім ключем —
-    початок той самий, що в оцінки, до кінця її даних."""
+    """Збирає допит із даних оцінки, спільних настанов, схеми «answer» й нового питання в «now»."""
     п = _ЗП.зібрати(ОЦІНКА, _ід_усюди(дані_оцінки(суд_, питання_оцінки)), мова_тексту=мова_тексту)
     п[_ЗП.КЛЮЧІ_EN["схема_відповіді"]] = _схема_мовою(_ДОПИТ_СХЕМА, мова_тексту or _ЗП.МОВА_EN)
     п[_ЗП.КЛЮЧІ_EN["наприкінці"]] = хвіст_допиту(питання, попередня)
@@ -1694,7 +1679,7 @@ def прийняти_допит(відповідь):
     діставала «Не вдалося відповісти» при готовій відповіді. Як `_ПР.стійкий`: однозначний
     намір читаємо, а не викидаємо. Лише проза БЕЗ дужок і огорож: уривок JSON чи ```-блок лишається провалом
     із причиною для повтору. `проза` у виході — щоб журнал показував, що відповідь прийшла не за схемою."""
-    об, причина, нотатки = _ПР.розбір_останній(відповідь, ("answer",))
+    об, причина, нотатки = _СВ.СХЕМИ_ВІДПОВІДІ["ДОПИТ"].прочитати(відповідь)
     т = _текст(об.get("answer")) if isinstance(об, dict) else ""
     проза = False
     if not т and not isinstance(об, dict):
@@ -1923,7 +1908,7 @@ def екземпляри(суд_):
     return {р["ід"]: dict(фото=р.get("фото"), рамка=р.get("рамка"), дотик=bool(р.get("дотик")),
                           причина_ділянки=(р.get("вимір") or {}).get("причина"),
                           слот=р.get("слот"), в_образі=р["ід"] in образ,
-                          виміряно=bool(_КР.точка_кольору(р.get("вимір") or {})),
+                          виміряно=bool(_КР_ТИП.точка_кольору(р.get("вимір") or {})),
                           у_палітрі=((р.get("палітра") or {}).get("стан") == "у палітрі"),
                           біля_обличчя=bool(р.get("біля_обличчя")))
             for р in суд_.get("речі") or [] if isinstance(р, dict) and р.get("ід")}
@@ -1993,10 +1978,8 @@ def повтор_вдалого(суд_, картка):
     опори = опори_вдалого(суд_)
     if not опори or not картка or (картка.get("вдало") or []):
         return None
-    return ("Your \"works\" has no point the check supports. The check supports: %s. Give at least one "
-            "\"works\" point with one of these \"about\" codes and only its ids in \"items\". Answer again "
-            "with the same schema." % "; ".join("%s — %s" % (о["about"], ", ".join(ід_на_дріт(і) for і in о["items"]))
-                                                 for о in опори))
+    return (_json.dumps(dict(reason="works_missing", supported=_ід_усюди(опори)), ensure_ascii=False)
+            + "\n" + _ФФ.ПОВТОР_ЛИШЕ_JSON_EN)
 
 
 def сторож_оцінки_об(об, суд_, причина=None, нотатки=None):
@@ -2134,16 +2117,14 @@ def повтор_вердикту(суд_, сторож):
         ремонти = [ід_на_дріт(з.get("ід")) for з in (суд_.get("суд") or {}).get("findings") or []
                    if з.get("ід") and (з.get("ремонт_заяви") or з.get("ремонт"))]
         її = [ід_на_дріт(і) for і in (суд_.get("образ") or []) + (суд_.get("запасні") or [])]
-        поза = (" Ids in \"items\" are only her items: %s." % ", ".join(її)) if "items_not_in_outfit" in чому else ""
-        return ("Your verdict \"wear_with_change\" has no valid \"change\": verified changes %s; findings "
-                "with a fix %s. Give at least one of these ids in \"change\", or choose another verdict.%s "
-                "Answer again with the same schema." % (", ".join(str(х) for х in зміни) or "—",
-                                                       ", ".join(str(х) for х in ремонти) or "—", поза))
+        дані = dict(reason="change_missing", verified_changes=зміни, findings_with_fix=ремонти)
+        if "items_not_in_outfit" in чому:
+            дані["her_items"] = її
+        return _json.dumps(дані, ensure_ascii=False) + "\n" + _ФФ.ПОВТОР_ЛИШЕ_JSON_EN
     if "contradicts_gate" not in чому:
         return None
     гейти = [ід_на_дріт(з.get("ід")) for з in (суд_.get("суд") or {}).get("findings") or []
              if з.get("регістр") == "гейт" or з.get("без_замків")]
     блок = [_ДМ.код_переліку(_ДМ.БЛОКЕР, б.get("код")) for б in (суд_.get("суд") or {}).get("blockers") or []]
-    return ("Your verdict \"wear_as_is\" contradicts the check: blocking findings %s%s. Answer again "
-            "with the same schema." % (", ".join(str(х) for х in гейти) or "—",
-                                       ("; structure blockers " + ", ".join(str(х) for х in блок)) if блок else ""))
+    return (_json.dumps(dict(reason="contradicts_gate", blocking_findings=гейти, structure_blockers=блок),
+                        ensure_ascii=False) + "\n" + _ФФ.ПОВТОР_ЛИШЕ_JSON_EN)

@@ -1,0 +1,10 @@
+Traceback (most recent call last):
+  File "C:\Users\gemini\gemini-runs\w\20261030-024940-de098f462039\repo\джерела\проби\межі_показу_лічба.py", line 25, in <module>
+    д = дерево(реф); рез[мітка] = [sum(len(re.findall(р, т)) for т in д.values()) for _, р in ОЗНАКИ]
+        ^^^^^^^^^^^
+  File "C:\Users\gemini\gemini-runs\w\20261030-024940-de098f462039\repo\джерела\проби\межі_показу_лічба.py", line 21, in дерево
+    return {os.path.basename(п): subprocess.run(["git", "show", реф + ":" + п], capture_output=True, text=True, cwd=корінь, check=True).stdout
+                                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\gemini\AppData\Local\Programs\Python\Python312\Lib\subprocess.py", line 571, in run
+    raise CalledProcessError(retcode, process.args,
+subprocess.CalledProcessError: Command '['git', 'show', 'origin/main:РґР¶РµСЂРµР»Р°/РїРѕРєР°Р·/Р±С–Р±Р»С–РѕС‚РµРєР°.js']' returned non-zero exit status 128.

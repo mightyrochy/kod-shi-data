@@ -28,6 +28,8 @@ $script:CondPattern = '^(?:p[0-9]|d20[0-9]{10}|gpu)(?:-(?:p[0-9]|d20[0-9]{10}|gp
 $script:LanesPath = 'аудит/адаптери/gemini/смуги.json'
 $script:Utf8 = New-Object System.Text.UTF8Encoding($false)
 $script:OnWindows = ($PSVersionTable.PSEdition -ne 'Core') -or [bool](Get-Variable IsWindows -ValueOnly -ErrorAction SilentlyContinue)
+# Тека версії цього процесу: після самооновлення — `<корінь>\versions\<SHA40>`, поряд із коренем — `active.txt`.
+$script:VersionDir = $PSScriptRoot
 
 # Кількість слотів задає смуги.json; 64 — захист від помилки в даних, не виміряна межа ноутбука.
 # Решта меж також під хешем; значення поза ними обрізаються. Параметр задачі власника не обрізаємо.
@@ -49,6 +51,9 @@ $script:WorkerGpuBusy = 4
 $script:ReviewApiLimit = 30
 $script:ReviewApiWindow = 3600
 $script:ReviewApiBackoff = 120
+# Відеопам'ять (MiB), нижче якої сторонню зайнятість GPU не рахуємо: вікно AvastUI тримає 57 MiB (вимір 29.10 20:00 UTC),
+# завантажена модель — гігабайти.
+$script:GpuIdleMiB = 512
 
 # --- процеси й файли ----------------------------------------------------------------------------------------------
 
@@ -187,32 +192,71 @@ function Get-JsonProp($Obj, [string]$Name) {
 }
 
 function ConvertTo-Bounded($Value, $Range) {
-    <# Число з JSON, обрізане до стелі [min, max]; не число — $null (тоді діє значення з коду). #>
+    <# Число з JSON, обрізане до стелі [min, max]; не число — $null (тоді діє попереднє прийняте чи значення з коду). #>
     if ($Value -isnot [int] -and $Value -isnot [long] -and $Value -isnot [double] -and $Value -isnot [decimal]) { return $null }
     [Math]::Min([double]$Range[1], [Math]::Max([double]$Range[0], [double]$Value))
 }
 
-function Get-Limits {
-    <# Межі смуг: `смуги.json` з origin/main (не з робочої копії агента), обрізаний стелями; нема чи кривий — код.
+# Джерело межі (п.11): «власник ДД.ММ …» чи «вимір: …» з датою ДД.ММ і ще хоч одним числом (10970).
+$script:LimitDateRx = '(?<![0-9])(?:0[1-9]|[12][0-9]|3[01])\.(?:0[1-9]|1[0-2])(?![0-9])'
 
-    Зміна файла в main міняє паралельність і межі на наступному проході без перевстановлення копій: читається він
-    після `git fetch`, який перезаписує й origin/main, змінений у клоні. #>
-    $l = @{ slots = [ordered]@{}; source = 'код' }
+function Test-LimitSource([string]$Text) {
+    <# $true — у межі є джерело за форматом; інакше межа без джерела. Той самий розбір — у перевірка/перевірити_хеші.py. #>
+    if ($Text.Length -gt 300 -or $Text -cmatch '[\x00-\x1f]') { return $false }
+    if ($Text -cmatch ('\Aвласник ' + $script:LimitDateRx + '(?:[^0-9].*)?\z')) { return $true }
+    if ($Text -cnotmatch '\Aвимір: ') { return $false }
+    $d = [regex]::Match($Text, $script:LimitDateRx)
+    $d.Success -and $Text.Remove($d.Index, $d.Length).Substring(6) -match '[0-9]'
+}
+
+function Get-LimitFields {
+    <# Усі межі файла даних: слоти смуг і решта, у сталому порядку. #>
+    @($script:LaneDefaults.Keys | ForEach-Object { "slots.$_" }) + @($script:Defaults.Keys | Sort-Object)
+}
+
+function Get-Limits {
+    <# Межі смуг: `смуги.json` v2 з origin/main (не з робочої копії агента), обрізаний стелями.
+
+    v2 — кожна межа `{"n": число, "джерело": "власник ДД.ММ …" | "вимір: … ДД.ММ"}`. Межа без джерела, v1 (міграція: числа
+    без джерел), нема файла, кривий чи невідомий формат — попереднє прийняте значення (стан limits.json; нема — з коду), а
+    поле — в unsourced для рядка «межа без джерела» стану ноутбука. Зміна файла в main діє на наступному проході без
+    перевстановлення копій: читається він після `git fetch`, який перезаписує й origin/main, змінений у клоні. #>
+    $l = @{ slots = [ordered]@{}; source = 'код'; unsourced = @(); claude_laptop = @() }
     foreach ($k in $script:LaneDefaults.Keys) { $l.slots[$k] = $script:LaneDefaults[$k] }
     foreach ($k in $script:Defaults.Keys) { $l[$k] = $script:Defaults[$k] }
+    # Без теки стану (читач меж поза планувальником) попереднє не зберігається.
+    $sd = $(try { [string]$script:StateDir } catch { '' })
+    $prevPath = $(if ($sd) { Join-Path $sd 'limits.json' } else { '' })
+    $prev = $null
+    if ($prevPath -and (Test-Path -LiteralPath $prevPath)) { try { $prev = [System.IO.File]::ReadAllText($prevPath, $script:Utf8) | ConvertFrom-Json } catch { $null = $_ } }
+    $doc = $null
     $r = Invoke-Git @('cat-file', 'blob', "refs/remotes/origin/main:$script:LanesPath") -AllowFail
-    if ($r.Code -ne 0 -or $r.Out.Length -gt 4096) { return $l }
-    try { $doc = $r.Out | ConvertFrom-Json } catch { Write-Log 'смуги.json не читається як JSON — межі з коду'; return $l }
-    $l.source = 'origin/main'
-    foreach ($k in $script:Defaults.Keys) {
-        $v = ConvertTo-Bounded (Get-JsonProp $doc $k) $script:Ceil[$k]
-        if ($null -ne $v) { $l[$k] = $v }
+    if ($r.Code -eq 0 -and $r.Out.Length -le 8192) {
+        try { $doc = $r.Out | ConvertFrom-Json } catch { Write-Log 'смуги.json не читається як JSON — попередні межі' }
     }
-    $s = Get-JsonProp $doc 'slots'
-    foreach ($lane in @($script:LaneDefaults.Keys)) {
-        $v = ConvertTo-Bounded (Get-JsonProp $s $lane) $script:Ceil.slots
-        if ($null -ne $v) { $l.slots[$lane] = [int][Math]::Floor($v) }
+    if ($null -ne $doc) { $l.source = 'origin/main' }
+    $v2 = $null -ne $doc -and [string](Get-JsonProp $doc 'v') -eq '2'
+    $accepted = [ordered]@{}
+    foreach ($f in @(Get-LimitFields)) {
+        $lane = $(if ($f.StartsWith('slots.')) { $f.Substring(6) } else { '' })
+        $range = $(if ($lane) { $script:Ceil.slots } else { $script:Ceil[$f] })
+        $node = $null
+        if ($v2) { $node = $(if ($lane) { Get-JsonProp (Get-JsonProp $doc 'slots') $lane } else { Get-JsonProp $doc $f }) }
+        $v = $null
+        if (Test-LimitSource ([string](Get-JsonProp $node 'джерело'))) { $v = ConvertTo-Bounded (Get-JsonProp $node 'n') $range }
+        if ($null -eq $v) {
+            $l.unsourced += $f
+            $v = ConvertTo-Bounded (Get-JsonProp $prev $f) $range
+        }
+        if ($null -eq $v) { continue }
+        $accepted[$f] = $v
+        if ($lane) { $l.slots[$lane] = [int][Math]::Floor($v) } else { $l[$f] = $v }
     }
+    $text = $accepted | ConvertTo-Json -Compress
+    $old = $(if ($prevPath -and (Test-Path -LiteralPath $prevPath)) { [System.IO.File]::ReadAllText($prevPath, $script:Utf8) } else { '' })
+    if ($prevPath -and $accepted.Count -gt 0 -and $text -cne $old) { Write-FileAtomic $prevPath $text }
+    # Наряди Claude, яким потрібен ноутбук без відеокарти (LM Studio, фото, локальні програми): лише назви за шаблоном.
+    $l.claude_laptop = @(@(Get-JsonProp $doc 'claude_laptop') | Where-Object { $_ -is [string] -and $_ -cmatch $script:SlugPattern } | Select-Object -First 64)
     $l
 }
 
@@ -496,6 +540,69 @@ function Get-WaitingMarkers {
         try { $j = $t.Substring(5) | ConvertFrom-Json } catch { continue }
         [pscustomobject]@{ Marker = [string]$j.marker; Until = [string]$j.until_utc; Group = [string](Get-JsonProp $j 'group') }
     })
+}
+
+# --- здоров'я машини (лише показ, узяття не гейтить) ----------------------------------------------------------------
+
+function Measure-DirBytes([string]$Path) {
+    <# Розмір названої теки без переходу за точками з'єднання (профіль має петлі); недоступні теки — лічбою Skipped. #>
+    if (-not $Path -or -not (Test-Path -LiteralPath $Path -PathType Container)) { return $null }
+    $bytes = 0L; $skipped = 0
+    $stack = New-Object System.Collections.Stack
+    $stack.Push((New-Object System.IO.DirectoryInfo $Path))
+    while ($stack.Count -gt 0) {
+        $d = $stack.Pop()
+        try {
+            foreach ($e in $d.EnumerateFileSystemInfos()) {
+                if ($e.Attributes -band [System.IO.FileAttributes]::ReparsePoint) { continue }
+                if ($e -is [System.IO.DirectoryInfo]) { $stack.Push($e) } else { $bytes += $e.Length }
+            }
+        } catch { $skipped++ }
+    }
+    [pscustomobject]@{ Bytes = $bytes; Skipped = $skipped }
+}
+
+function Get-Unsourced($Limits) {
+    <# Поля меж без джерела з об'єкта Get-Limits; межі з іншого джерела (стенд, старий стан) — без поля, порожньо. #>
+    $u = $(if ($Limits -is [System.Collections.IDictionary]) { $(if ($Limits.Contains('unsourced')) { $Limits['unsourced'] }) } else { Get-JsonProp $Limits 'unsourced' })
+    @($u | Where-Object { $_ })
+}
+
+function Get-MarkerKind([string]$Slug) {
+    <# Вид позначки за назвою наряду — для лічби в стані. #>
+    if ($Slug -cmatch '^автоперевірка-') { return 'автоперевірка' }
+    if ($Slug -cmatch '^автоживий-') { return 'автоживий' }
+    if ($Slug -cmatch '^Е1-нічний-живий-') { return 'нічний живий' }
+    if ($Slug -cmatch '^перевірка-') { return 'перевірка' }
+    if ($Slug -cmatch '^pachka-') { return 'пачка' }
+    if ($Slug -ceq 'ВИМКНИ-НОУТБУК') { return 'вимкнення' }
+    'наряд'
+}
+
+# --- версія обгортки ------------------------------------------------------------------------------------------------
+
+function Get-VersionSwitch {
+    <# Самооновлення перемкнуло `active.txt` на іншу версію, а цей довгий процес іде зі старої теки: повертає
+    «<стара8> → <нова8>», інакше ''. Запуск не з `versions\<SHA40>` (клон, стенд без підміни) чи непрочитаний,
+    кривий pointer або нова тека, якої нема, — ''. Головний цикл тоді чисто виходить між проходами: свої наряди
+    доробляють окремими процесами під замками слотів, нову версію запускає планувальник. #>
+    $dir = [string]$script:VersionDir
+    if (-not $dir) { return '' }
+    $leaf = Split-Path -Leaf $dir; $versions = Split-Path -Parent $dir
+    if ($leaf -cnotmatch '^[0-9a-f]{40}$' -or -not $versions -or (Split-Path -Leaf $versions) -cne 'versions') { return '' }
+    $active = ''
+    try { $active = [System.IO.File]::ReadAllText((Join-Path (Split-Path -Parent $versions) 'active.txt')).Trim() } catch { return '' }
+    if ($active -cnotmatch '^[0-9a-f]{40}$' -or $active -ceq $leaf) { return '' }
+    if (-not (Test-Path -LiteralPath (Join-Path $versions $active) -PathType Container)) { return '' }
+    "$($leaf.Substring(0, 8)) → $($active.Substring(0, 8))"
+}
+
+function Write-VersionSwitch([string]$Switch) {
+    <# Журнал і `state/version.txt` (його показує стан ноутбука): «<час UTC> <стара> → <нова>». #>
+    Write-Log "версія: $Switch — головний процес виходить, нову запустить планувальник"
+    if ($script:StateDir) {
+        try { Write-FileAtomic (Join-Path $script:StateDir 'version.txt') ("$((Get-Date).ToUniversalTime().ToString('yyyy-MM-ddTHH:mm:ssZ')) $Switch") } catch { $null = $_ }
+    }
 }
 
 # --- слоти, GPU, процес наряду -------------------------------------------------------------------------------------
@@ -890,10 +997,142 @@ builtins.__import__ = _gpu_import
     $env:PYTHONPATH = $Directory + [IO.Path]::PathSeparator + $env:PYTHONPATH
 }
 
-function Test-ExternalGpuFree {
-    <# Сторонній обчислювальний процес лишає GPU-наряд у черзі, без кінцевого блокера. #>
+function Get-ExternalGpuMiB {
+    <# Відеопам'ять, зайнята зараз (MiB, усі карти); -1 — nvidia-smi не відповів. Міряємо пам'ять, а не перелік процесів:
+    --query-compute-apps під WDDM називає й порожній AvastUI.exe (його вікно живе від старту системи) — 29.10 від 14:27 UTC
+    це лишало кожен GPU-наряд у черзі на 6+ год; з одним AvastUI зайнято 57 MiB (вимір 29.10 20:00 UTC). #>
     $exe = Get-Command nvidia-smi -ErrorAction SilentlyContinue
-    if ($null -eq $exe) { return $true }
-    $r = Invoke-Native $exe.Source @('--query-compute-apps=pid','--format=csv,noheader') '' 1
-    $r.Code -eq 0 -and -not $r.Out.Trim()
+    if ($null -eq $exe) { return 0 }
+    $r = Invoke-Native $exe.Source @('--query-gpu=memory.used','--format=csv,noheader,nounits') '' 1
+    if ($r.Code -ne 0) { return -1 }
+    $sum = 0; $seen = $false
+    foreach ($line in ($r.Out -split "`n")) { $v = 0; if ([int]::TryParse($line.Trim(), [ref]$v)) { $sum += $v; $seen = $true } }
+    if ($seen) { $sum } else { -1 }
+}
+
+function Test-ExternalGpuFree {
+    <# Сторонній процес із відеопам'яттю лишає GPU-наряд у черзі, без кінцевого блокера. #>
+    $used = Get-ExternalGpuMiB
+    $used -ge 0 -and $used -le $script:GpuIdleMiB
+}
+
+function Get-GpuProcessNames {
+    <# Назви процесів з переліку compute-apps для журналу й сигналу (до трьох, лише безпечні знаки). Під WDDM пам'ять
+    процесів часто N/A, тож зайнятість міряє Get-ExternalGpuMiB, а це лише відповідь «хто». #>
+    $exe = Get-Command nvidia-smi -ErrorAction SilentlyContinue
+    if ($null -eq $exe) { return '' }
+    $r = Invoke-Native $exe.Source @('--query-compute-apps=pid,process_name', '--format=csv,noheader') '' 1
+    if ($r.Code -ne 0) { return '' }
+    $names = @()
+    foreach ($line in @($r.Out -split "`r?`n")) {
+        $f = @($line.Split(','))
+        if ($f.Count -lt 2) { continue }
+        $leaf = (($f[1..($f.Count - 1)] -join ',').Trim() -split '[\\/]')[-1]
+        $safe = ($leaf -replace '[^A-Za-z0-9._-]', '_')
+        if ($safe.Length -gt 30) { $safe = $safe.Substring(0, 30) }
+        if ($safe) { $names += $safe }
+    }
+    (@($names | Select-Object -Unique) | Select-Object -First 3) -join '+'
+}
+
+$script:GpuHoldReason = ''
+
+function Get-GpuBusyReason($Workers) {
+    <# Чому GPU не віддати наряду зараз; '' — вільна. Єдине місце для планувальників обох облікових записів.
+    GpuHoldReason — стійка причина для рядка сигналу (без чисел, що гуляють між проходами). #>
+    $script:GpuHoldReason = ''
+    if (@($Workers | Where-Object { $_.Gpu -and -not $_.Proc.HasExited }).Count -gt 0) { $script:GpuHoldReason = 'замок GPU іншого наряду'; return 'GPU: її тримає власний наряд обгортки' }
+    if (-not (Test-LockFree (Get-GpuLockPath))) { $script:GpuHoldReason = 'замок GPU іншого наряду'; return "GPU: замок $(Get-GpuLockPath) тримає інший процес" }
+    $used = Get-ExternalGpuMiB
+    if ($used -lt 0) { $script:GpuHoldReason = 'nvidia-smi не відповів'; return 'GPU: nvidia-smi не відповів' }
+    if ($used -gt $script:GpuIdleMiB) {
+        $who = Get-GpuProcessNames
+        $script:GpuHoldReason = $(if ($who) { "процес $who" } else { 'GPU зайнята стороннім процесом' })
+        return "GPU: зайнято $used MiB стороннім процесом (поріг $script:GpuIdleMiB)$(if ($who) { ': ' + $who })"
+    }
+    ''
+}
+
+# --- позначки, що стоять без старту ---------------------------------------------------------------------------------
+
+$script:PassSkips = [ordered]@{}
+
+function Add-Skip($M, [string]$Why) {
+    <# Позначку цього проходу не взято з названої причини; Save-Skips у кінці проходу пише журнал і файл для #1856. #>
+    $script:PassSkips[[string]$M.Name] = $Why
+}
+
+function Save-Skips([string]$Path) {
+    <# Файл «що стоїть і чому» (замінюється щопроходу); рядок журналу — лише коли причина нова для позначки: попередній
+    файл несе `since`, бо процес планувальника живе недовго. #>
+    $old = @{}
+    try { foreach ($r in @([System.IO.File]::ReadAllText($Path, $script:Utf8) | ConvertFrom-Json)) { $old[[string]$r.marker] = $r } } catch { $null = $_ }
+    $now = Get-UtcStamp (Get-Date)
+    $rows = @(foreach ($n in $script:PassSkips.Keys) {
+        $why = [string]$script:PassSkips[$n]; $since = $now
+        if ($old.ContainsKey($n) -and [string]$old[$n].why -ceq $why) { $since = [string]$old[$n].since }
+        else { Write-Log "позначка ${n}: не стартує — $why" }
+        [ordered]@{ marker = $n; why = $why; since = $since }
+    })
+    $script:PassSkips = [ordered]@{}
+    Write-FileAtomic $Path (ConvertTo-Json -InputObject $rows -Compress)
+}
+
+function Add-Note([string]$Path, [string]$Marker, [string]$Text) {
+    <# Останні 12 приміток до #1856 (причина BLOCKED без гілки): один рядок, без керівних символів, до 240 знаків. #>
+    $rows = @()
+    try { $rows = @([System.IO.File]::ReadAllText($Path, $script:Utf8) | ConvertFrom-Json) } catch { $null = $_ }
+    $clean = ([regex]::Replace($Text, '[\x00-\x1f\x7f]+', ' ')).Trim()
+    if ($clean.Length -gt 240) { $clean = $clean.Substring(0, 240) }
+    $rows = @($rows | Select-Object -Last 11) + @([pscustomobject]@{ utc = (Get-UtcStamp (Get-Date)); marker = $Marker; text = $clean })
+    Write-FileAtomic $Path (ConvertTo-Json -InputObject $rows -Compress)
+}
+
+function Test-TaskFile([string]$Sha, [string]$TaskPath) {
+    <# Чи є файл наряду на коміті позначки. Вирок «нема» — лише коли git так сказав; будь-який інший збій (блокування
+    об'єктів під час fetch сусіднього процесу, таймаут) після трьох спроб — виняток, і позначка вертається в чергу, а не
+    пишеться кінцем NO_TASK_FILE (29.10 19:36 UTC: 28 с до вироку на виклик, що тепер триває 0,1 с). #>
+    for ($i = 1; $i -le 3; $i++) {
+        $r = Invoke-Git @('cat-file', '-e', "${Sha}:$TaskPath") -AllowFail
+        if ($r.Code -eq 0) { return $true }
+        if ((-not $r.TimedOut) -and ($r.Code -eq 1 -or $r.Err -match 'does not exist|Not a valid object name|exists on disk, but not in')) { return $false }
+        if ($i -lt 3) { Start-Sleep -Seconds 3 }
+    }
+    throw "git cat-file -e ${Sha}:$TaskPath -> $($r.Code): $($r.Err.Trim())"
+}
+
+# --- сигнал про запобіжник, що тримає позначки ----------------------------------------------------------------------
+# 29.10 GPU-наряд стояв у черзі з 15:06 UTC: журнал 144 рази "GPU зайнята", а диспетчер не знав. Запобіжник сам пише
+# диспетчерові рядок, коли тримає позначки понад quota_wait_minutes (смуги.json, з джерелом).
+
+function Add-Hold([hashtable]$Held, [string]$Resource, [string]$Reason, [string]$Marker) {
+    <# Ресурс тримає позначку за цього проходу; причина — перша за проходом. #>
+    if (-not $Held.ContainsKey($Resource)) { $Held[$Resource] = @{ Reason = $Reason; Markers = (New-Object System.Collections.ArrayList) } }
+    [void]$Held[$Resource].Markers.Add($Marker)
+}
+
+function Update-HoldSignals([hashtable]$Held, [scriptblock]$Send) {
+    <# Рядок "GEMINI ОБГОРТКА: ЗАБЛОКОВАНО <ресурс>: <причина>, позначок N" — один на причину, повтор лише при зміні причини.
+    Утримання зникло — запис знято, нове сигналить знову. Стан — holds.json у теці стану (переживає перезапуск проходу). #>
+    $path = Join-Path $script:StateDir 'holds.json'
+    $prev = @{}
+    if (Test-Path -LiteralPath $path) {
+        try { foreach ($p in ([System.IO.File]::ReadAllText($path, $script:Utf8) | ConvertFrom-Json).PSObject.Properties) { $prev[$p.Name] = $p.Value } } catch { $null = $_ }
+    }
+    $now = [DateTimeOffset]::UtcNow.ToUnixTimeSeconds()
+    $after = [double](Get-Limit $script:Limits 'QuotaWaitMinutes' 'quota_wait_minutes') * 60
+    $next = [ordered]@{}
+    foreach ($res in @($Held.Keys | Sort-Object)) {
+        $h = $Held[$res]; $old = $prev[$res]
+        $since = $(if ($null -ne $old) { [long]$old.since } else { $now })
+        $sent = $(if ($null -ne $old) { [string]$old.sent } else { '' })
+        if (($now - $since) -ge $after -and $sent -cne $h.Reason) {
+            if (& $Send "GEMINI ОБГОРТКА: ЗАБЛОКОВАНО ${res}: $($h.Reason), позначок $($h.Markers.Count)") { $sent = $h.Reason }
+        }
+        $next[$res] = [ordered]@{ since = $since; reason = $h.Reason; sent = $sent }
+    }
+    if ($next.Count -eq 0) { Remove-Item -LiteralPath $path -Force -ErrorAction SilentlyContinue; return }
+    $text = $next | ConvertTo-Json -Compress
+    $cur = $(if (Test-Path -LiteralPath $path) { [System.IO.File]::ReadAllText($path, $script:Utf8) } else { '' })
+    if ($text -cne $cur) { Write-FileAtomic $path $text }
 }

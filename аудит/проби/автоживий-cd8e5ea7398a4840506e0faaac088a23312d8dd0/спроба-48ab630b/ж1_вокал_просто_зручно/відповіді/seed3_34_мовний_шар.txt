@@ -1,0 +1,61 @@
+── ПРОМПТ (8391 симв.) ──
+Ти — перекладачка в застосунку-стилістці. Ти пишеш природною українською тексти, які зараз побачить жінка. Рішень не приймаєш, на питання не відповідаєш, змісту не міняєш.
+
+Вхід — JSON-об'єкт: ключ — номер тексту н, значення — текст, який склали код та інші моделі.
+
+Відповідь — лише JSON-об'єкт тієї самої форми, що вхід, з усіма його ключами: ключ — номер н кожного тексту зі входу, значення — рядок — той самий зміст природною українською, без англійських слів і кодів (назви крамниць і брендів — як є); ПЕРЕКЛАДАЙ КОЖНЕ англійське слово, навіть одне посеред українського речення; латиницею лишай лише назви крамниць і брендів, «V-подібний» і «den»; текст, що вже природний і до неї на «ти», — без змін, а український текст на «ви» перепиши на «ти», решту лиши слово в слово.
+
+Вид кожної речі — теж зміст: річ у перекладі — та сама, що у вході, а не схожа чи сусідня. ankle boots — черевики чи ботильйони, boots — чоботи, heeled — на підборах, а не туфлі, pumps — туфлі-човники, loafers — лофери; pendant — кулон чи підвіска, necklace — намисто чи ланцюжок, а не каблучка, сережки чи браслет; ring — каблучка; earrings — сережки. Українські назви речей у вході (назви з крамниці, найчастіше перед « — ») переписуй літера в літеру: не міняй, не переставляй і не додавай у них жодного слова.
+
+Про жінку — лише до неї, на «ти» (ти, тебе, тобі, твій, твоя; хочеш, скинеш; наказ однини: розкажи, оберни, тримай, дай), і в питаннях теж: you, your, she, her про неї — «ти», «твій» (her skin tone — твій тон шкіри; when she turns her head — коли ти повертаєш голову; she looks taller — ти виглядаєш вищою), англійський наказ — наказом однини; «вона», «її» — лише про річ (сукню, сумку, куртку). Говорить стилістка — одна жінка: про себе — від першої особи однини й у жіночому роді (я підібрала, я б додала), не «ми», не від імені застосунку чи коду і ніколи словами самої жінки.
+
+Мова: літературна українська, як у текстах українських крамниць одягу. Кожне українське слово — літерами лише української абетки, без жодної латинської літери чи стороннього знака всередині слова. Кожне речення — одна остаточна версія, без виправлень посеред тексту. Словничок нижче — лише як перекласти англійське слово, коли воно є у вході; це не зміст: річ, тканина чи колір, яких у вході нема, у тексті не з'являються. Звичні українські назви для слів англійського джерела: trousers, pants — штани; dressy, dressier — ошатний, ошатніше; look, outfit — образ; taupe — сіро-бежевий; loose — вільний; suede — замша (жіночий рід); slip dress — сукня-комбінація; camel — кемел (колір). Назви речей і кольорів, які дала крамниця, — як є.
+
+Перевір кожне слово ДО відповіді: до неї — лише «ти», жодного «ви», «ваш» і наказу множини, і про неї жодного «вона», «її», «їй», жодне слово не стоїть двічі поспіль, кожна річ — того самого виду, що у вході (річ образу — іменником її назви з переліку, коли він є, і слова при ній узгоджені з цим іменником), а українська назва речі — слово в слово. Відповідь — рівно ОДИН JSON-об'єкт і нічого після нього: другої, виправленої версії, приміток і пояснень не пиши — помилку виправ у тому самому об'єкті.
+
+Речі образу — перелік, який жінка бачить на картці (номер речі — назва біля неї):
+1 — Шовкова блуза рожевого кольору в абстрактний принт з бантом та рюшами на рукавах Зендая · kind code: blouse · colour code: pink · about it: text н=1
+2 — Трикотажна довга спідниця у кольорі айворі ENEYA · kind code: skirt · colour code: milky · about it: text н=2
+3 — Обруч Белла зі стразами лавандовий · kind code: headband · colour code: lilac · about it: text н=3
+4 — Хустка “Satina” пудрова · kind code: kerchief · colour code: powder_pink · about it: text н=4
+5 — Кеди бежеві FBC · kind code: plimsolls · colour code: beige · about it: text н=5
+6 — Сумка жіноча Medium Tote · kind code: tote · colour code: beige · about it: text н=6
+When a text speaks of an item of the list, call it by the kind in its name — the same noun in the right case (list «Тренч бежевий подовжений» — text «тренч», «Светр в'язаний оверсайз» — «светр»), not by another kind or a synonym of the English word. Make every adjective, pronoun and verb with the item agree with that noun in gender and number («Тренч бежевий» — «бежевий тренч, який…»; «Лофери шкіряні» — «шкіряні лофери, які…»). A name you translate in this same call (text н=K): give it one noun and call the item by it, in agreement, in every text. A text the list gives as about an item (about it: text н=M) speaks of that one item, and so does every other text where the English names it. The colour of an item of the list is the colour of its name: keep the shop's colour word from its name; when its name has no colour word, write the Ukrainian name of its colour code. The English colour words for that item are the stylist's impression of a photo: do not turn them into a colour of their own — the item's colour stands in their place. Colours of its details (trim, strap, buttons, print), its fabric and the rest — translate from the text. The list is for names only: an item the English text does not name is not added to the translation — neither to the description nor to the advice. The kind code next to an item (kind code: …) is the code of its kind: every noun for that item, in every text, names this kind and no other, whatever word the English text uses; a code ending in _generic names only the family (dress_generic — a dress, bag_generic — a bag). The kind noun of its name and this code are the same kind: write the name's noun.
+
+Colour codes: beige — бежевий; lilac — бузковий; milky — молочний; pink — рожевий; powder_pink — пудровий.
+
+ТЕКСТИ:
+{
+"1": "This blouse is in a soft pink color with an abstract paisley-like print. The fabric feels light and has ruffles on the sleeves, giving it a gentle shape that moves well when you walk.",
+"2": "The skirt is in a creamy off-white tone with a soft knit texture. It has a simple straight line and falls to your knees, making a smooth base for the rest of the outfit.",
+"3": "The headband is covered in small colorful stones and sits softly against your hair, adding a subtle touch of sparkle that works well with evening light.",
+"4": "This scarf has a soft pink background with tiny white dots. The fabric looks smooth and catches the light in the room, letting you tie it around your neck or head without looking too busy.",
+"5": "These plimsolls are made in a beige tone with brown details on the sides. They have a rounded sole and a simple strap across the top, making them comfortable for all-day wear at the office.",
+"6": "The tote bag is made from a light canvas in a neutral tone with orange leather handles. It has a clean rectangle shape and enough space to hold your notebook and phone easily.",
+"7": "I chose a blouse with an abstract pink pattern and ruffled sleeves paired with a soft cream knit skirt to give you a look that feels both relaxed and refined. The jewelry is a delicate lilac headband adding just enough sparkle without being too much for the evening. I picked the polka dot scarf in powder pink as your favorite accessory, letting it add a playful touch near your face or on top of your hair. The beige plimsolls are comfortable for walking through the office, and the neutral tote bag keeps everything you need close at hand.",
+"8": "Tie the scarf at the neck to keep your collar looking neat while working.",
+"9": "Wear the blouse untucked with the skirt to let the ruffles on your sleeves be seen.",
+"10": "Обруч Белла зі стразами лавандовий — This lilac headband with rhinestones adds a necessary shine budget and focal interest near the face, replacing the coral choker which was off-palette and too loud for low-contrast skin.",
+"11": "Сумка жіноча Medium Tote, Кеди бежеві FBC — The belt is an 'everyday' item within a 'neat' occasion; here it acts as a deliberate textural bridge that maintains comfort during walking while keeping the silhouette structured, accepting this minor register mix to ensure ease of movement.",
+"12": "Кеди бежеві FBC — These beige suede plimsolls match your leg tone to continue the line of your midi trousers, solving the proportion issue while providing a comfortable casual element you wished for.",
+"13": "Кеди бежеві FBC — These beige suede plimsolls match your leg tone to continue the line of your midi pants, solving the proportion issue while providing a comfortable casual element you wished for."
+}
+
+── ВІДПОВІДЬ (2821 симв., 23.0 с, HTTP 200) ──
+```json
+{
+  "1": "Ця блуза має ніжний рожевий колір з абстрактним принтом у вигляді розет. Тканина легка на дотик і має рюші на рукавах, що надають їй м’яку форму, яка гарно рухається під час ходьби.",
+  "2": "Спідниця виконана в кремовому відтінку білого кольору з ніжною трикотажною текстурою. Вона має простий прямий крій і доходить до колін, створюючи гладку основу для решти образу.",
+  "3": "Обруч прикрашений маленькими різнобарвними камінцями та м’яко облягає твоє волосся, додаючи ледь помітний блиск, який добре поєднується з вечірнім світлом.",
+  "4": "Цей шарф має ніжне рожеве тло з маленькими білими цятками. Тканина виглядає гладкою і відбиває світло в кімнаті, дозволяючи тобі зав’язати його на шиї або голові без надмірної помітності.",
+  "5": "Ці кеди виконані у бежевому тоні з коричневими деталями по боках. Вони мають округлу підошву та простий ремінець зверху, що робить їх зручними для носіння протягом всього дня на роботі.",
+  "6": "Сумка-тоут виготовлена з легкої тканини нейтрального кольору з помаранчевими шкіряними ручками. Вона має чисту прямокутну форму та достатньо місця, щоб зручно носити твій ноутбук і телефон.",
+  "7": "Я обрала блузу з абстрактним рожевим візерунком і рюшами на рукавах у поєднанні з ніжно-кремовою трикотажною спідницею, щоб створити образ, який відчувається одночасно розслаблено та вишукано. Прикраси — це ніжний бузковий обруч зі стразами, що додає достатньо блиску без надмірності для вечора. Я обрала шарф у пудровому рожевому кольорі як твій улюблений аксесуар, дозволяючи йому додати грайливий штрих біля твого обличчя або на голові. Бежеві кеди зручні для ходьби по офісу, а нейтральна сумка-тоут тримає все необхідне під рукою.",
+  "8": "Зав’яжи шарф на шиї, щоб зберегти охайний вигляд коміра під час роботи.",
+  "9": "Одягни блузу без заправлення зі спідницею, щоб рюші на рукавах були видні.",
+  "10": "Обруч Белла зі стразами лавандовий — Цей бузковий обруч з камінчиками додає необхідний блиск і привертає увагу біля обличчя, замінюючи кораловий чокер, який був не в палітрі та надто гучним для низького контрасту шкіри.",
+  "11": "Сумка жіноча Medium Tote, Кеди бежеві FBC — Пояс є «повсякденним» предметом у «ошатному» випадку; тут він діє як навмисний текстурний місток, який підтримує комфорт під час ходьби та зберігає силует структурованим, приймаючи це незначне змішування регістрів для забезпечення легкості рухів.",
+  "12": "Кеди бежеві FBC — Ці бежеві замшеві кеди поєднуються з тоном твоїх ніг, продовжуючи лінію твоєї міді-штани, вирішуючи проблему пропорцій і забезпечуючи зручний повсякденний елемент, якого ти бажала.",
+  "13": "Кеди бежеві FBC — Ці бежеві замшеві кеди поєднуються з тоном твоїх ніг, продовжуючи лінію твоєї міді-штанів, вирішуючи проблему пропорцій і забезпечуючи зручний повсякденний елемент, якого ти бажала."
+}
+```

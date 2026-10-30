@@ -21,6 +21,7 @@
 
 Прогін:  python3 проба_правила.py [ID ...]      (без аргументів — усі випадки)
 """
+import колір_річ as _КОЛІР
 import sys
 import os
 
@@ -215,8 +216,8 @@ def прогнати(ід=None):
         print("%s   %s" % (в["ід"], в["вимога"]))
         print("─" * 78)
         print("вхід: " + " · ".join(
-            "%s %s%s" % (r["слот"], r.get("тип") or r["hex"],
-                         (" " + r["hex"]) if r.get("тип") else "")
+            "%s %s%s" % (r["слот"], r.get("тип") or _КОЛІР.hex_кольору(r),
+                         (" " + _КОЛІР.hex_кольору(r)) if r.get("тип") else "")
             for r in в["речі"]))
         сц = dict(в["сцен"])
         print("сцена: " + (", ".join("%s=%s" % (k, v) for k, v in сц.items()) or "—"))

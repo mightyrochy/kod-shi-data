@@ -142,10 +142,13 @@ function Test-QuotaRefused($Refused, $Reset, [datetimeoffset]$Now) {
     ($null -ne $at -and $at -le $Now -and $at -gt $Now.AddMinutes(-60))
 }
 
-function Test-ProviderQuota([string]$Provider, [datetimeoffset]$Now) {
-    <# $true — постачальник на квоті за файлами, які смуги вже ведуть: Codex — `codex` у heartbeat.json (gemini_run),
-    Claude — quota-claude.json (claude_run, поруч із gemini-publish). Не прочитано — вважаємо доступним, як було до квот.
-    agy рушієм ланцюга не обирається (у ланцюг.json нема його моделі), тож його квота тут не читається. #>
+function Test-ModelQuota([string]$Model, [datetimeoffset]$Now) {
+    <# $true — постачальник моделі на квоті за файлами, які смуги вже ведуть: Codex — `codex` у heartbeat.json (gemini_run),
+    Claude — quota-claude.json (claude_run, поруч із gemini-publish), agy — pools.json (gemini_run): усі групи саме цієї
+    моделі на 0 % (Get-ModelGroups, як QUOTA0_<група> у смузі); групи моделі не розпізнано — доступний, як у смузі;
+    pools.json без слів назви (до цієї зміни) — усі групи на 0 %. Не прочитано — доступний, як було до квот. Хмарний
+    Claude квоти тут не має: його запускає диспетчер. #>
+    $Provider = Get-ModelProvider $Model
     if ($Provider -ceq 'codex') {
         $hb = Read-QuotaJson $OutDir 'heartbeat.json'
         $c = $(if ($null -ne $hb) { Get-Prop $hb 'codex' } else { $null })
@@ -162,10 +165,25 @@ function Test-ProviderQuota([string]$Provider, [datetimeoffset]$Now) {
             if ([string](Get-Prop $w 'left') -ceq '0' -and $null -ne $until -and $until -gt $Now) { return $true }
         }
     }
+    if ($Provider -ceq 'agy') {
+        $p = Read-QuotaJson $OutDir 'pools.json'
+        $groups = @($(if ($null -ne $p) { Get-Prop $p 'groups' }) | Where-Object { $null -ne $_ })
+        $named = @(foreach ($g in $groups) {
+            $n = [string](Get-Prop $g 'n')
+            if ($n -cmatch '^[a-z0-9 ]{1,64}$') { [pscustomobject]@{ Name = $n; Left = [string](Get-Prop $g 'left') } }
+        })
+        if ($named.Count) { $groups = @(Get-ModelGroups $Model $named) }
+        if ($groups.Count -and -not @($groups | Where-Object { [string](Get-Prop $_ 'left') -cne '0' }).Count) { return $true }
+    }
     $false
 }
 
+# Рецензент без позначки: рядок диспетчерові, який запускає хмарну сесію Claude (Claude на ноутбуці не перевіряє).
+$script:CloudReview = 'claude-cloud'
+
+
 function Get-ModelProvider([string]$Model) {
+    if ($Model -ceq $script:CloudReview) { return 'cloud' }
     if ($Model -cmatch '^gpt-') { return 'codex' }
     if ($Model -cmatch '^(?:cc-)?claude-') { return 'claude' }
     'agy'
@@ -176,13 +194,14 @@ function Get-ModelBase([string]$Model) { ($Model -creplace '^cc-','') -creplace 
 function Select-ReviewModel([string[]]$Candidates, [datetimeoffset]$Now) {
     <# Перший кандидат, чий постачальник не на квоті (порядок — аудит/МОДЕЛІ.md). Усі на квоті — перший: позначка чекає скидання. #>
     $list = @($Candidates | Where-Object { $_ })
-    foreach ($model in $list) { if (-not (Test-ProviderQuota (Get-ModelProvider $model) $Now)) { return $model } }
+    foreach ($model in $list) { if (-not (Test-ModelQuota $model $Now)) { return $model } }
     $list[0]
 }
 
 function Get-ReviewModels($Pull, $Config, [datetimeoffset]$Now = [datetimeoffset]::UtcNow) {
-    <# Один рушій: інший постачальник, ніж автор, що не на квоті; обидва інші на квоті — той самий постачальник іншою
-    моделлю (аудит/МОДЕЛІ.md). Фактичний каскад прив'язаний до опублікованого SHA. #>
+    <# Один рецензент іншого постачальника, ніж автор, що не на квоті: робота GPT і Claude — agy, Gemini — Codex; запасний —
+    Codex для Claude, хмарний Claude для GPT і Gemini (рядок диспетчерові, не claude -p на ноутбуці). Обидва для роботи
+    Claude на квоті — перший: позначка чекає скидання. Фактичний автор прив'язаний до опублікованого SHA. #>
     $branch = [string]$Pull.head.ref; $head = [string]$Pull.head.sha
     if (Test-ReviewBranch $branch) { return @() }
     $file = Join-Path (Join-Path $WorkDir 'engine-models') ((Get-Sha256Hex "$branch $head") + '.txt')
@@ -192,15 +211,10 @@ function Get-ReviewModels($Pull, $Config, [datetimeoffset]$Now = [datetimeoffset
         if ([string](Get-Prop $state 'line') -cmatch ('^GEMINI ОБГОРТКА: ГОТОВО ' + [regex]::Escape("$branch $head") + '(?: КВОТА [A-Z0-9_]+ [0-9]+)? МОДЕЛЬ ([a-z0-9.-]+)$')) { $model = $Matches[1]; break }
     }
     if (Test-Path -LiteralPath $file) { $model = [IO.File]::ReadAllText($file, $script:Utf8).Trim() }
-    $codexAlt = $(if ($null -ne $Config.PSObject.Properties['codex_alt']) { [string]$Config.codex_alt } else { '' })
-    $claudeAlt = $(if ($null -ne $Config.PSObject.Properties['claude_alt']) { [string]$Config.claude_alt } else { '' })
     $author = $(if ($branch.StartsWith('claude/')) { 'claude' } elseif ($branch.StartsWith('codex/')) { 'codex' } else { Get-ModelProvider $model })
-    # Запасна модель — відмінна від моделі автора; модель автора claude/ невідома — запасна (Opus), бо код пишуть Sonnet.
-    $other = $(if ($author -ceq 'claude') { $(if ($claudeAlt -and (Get-ModelBase $model) -cne (Get-ModelBase $claudeAlt)) { $claudeAlt } else { [string]$Config.claude }) }
-               elseif ($author -ceq 'codex') { $(if ($codexAlt -and (Get-ModelBase $model) -cne (Get-ModelBase $codexAlt)) { $codexAlt } else { [string]$Config.codex }) })
-    $pick = $(if ($author -ceq 'claude') { Select-ReviewModel @([string]$Config.codex, $other) $Now }
-              elseif ($author -ceq 'codex') { Select-ReviewModel @([string]$Config.claude, $other) $Now }
-              else { Select-ReviewModel @([string]$Config.codex, [string]$Config.claude) $Now })
+    $pick = $(if ($author -ceq 'claude') { Select-ReviewModel @([string]$Config.agy, [string]$Config.codex) $Now }
+              elseif ($author -ceq 'codex') { Select-ReviewModel @([string]$Config.agy, $script:CloudReview) $Now }
+              else { Select-ReviewModel @([string]$Config.codex, $script:CloudReview) $Now })
     @($pick)
 }
 
@@ -216,13 +230,13 @@ function Test-ChainReviewDone([string]$Number, [string]$Head) {
 function Move-BlockedMarkers([string]$Slug, [string]$Model, [string]$Main, [datetimeoffset]$Now, [switch]$Gpu) {
     <# Усі позначки наряду чекають вичерпаної квоти, а $Model — на доступного постачальника: ставить позначку $Model, старі
     знімає (без дубля). Є позначка доступного постачальника чи нема старих — нічого не робить. $true — переведено. #>
-    if (Test-ProviderQuota (Get-ModelProvider $Model) $Now) { return $false }
+    if (Test-ModelQuota $Model $Now) { return $false }
     $r = Invoke-Git @('ls-remote','--heads','origin',"refs/heads/gemini-queue/$Slug/*") -AllowFail
     if ($r.Code -ne 0) { throw 'CHAIN_REMOTE' }
     $old = @(foreach ($line in ($r.Out -split "`n")) {
         if ($line -cmatch ('\trefs/heads/(gemini-queue/' + [regex]::Escape($Slug) + '/([a-z0-9][a-z0-9.-]{1,63})/1(?:/p2(?:-gpu)?)?)$')) { [pscustomobject]@{ Ref = $Matches[1]; Model = $Matches[2] } }
     })
-    if (-not $old.Count -or @($old | Where-Object { $_.Model -ceq $Model -or -not (Test-ProviderQuota (Get-ModelProvider $_.Model) $Now) }).Count) { return $false }
+    if (-not $old.Count -or @($old | Where-Object { $_.Model -ceq $Model -or -not (Test-ModelQuota $_.Model $Now) }).Count) { return $false }
     if ($Gpu) { Add-ChainMarker $Slug $Model $Main -Gpu } else { Add-ChainMarker $Slug $Model $Main }
     foreach ($m in $old) {
         $d = Invoke-Git @('push','-q','--no-verify','origin',":refs/heads/$($m.Ref)") -AllowFail
@@ -230,6 +244,14 @@ function Move-BlockedMarkers([string]$Slug, [string]$Model, [string]$Main, [date
         Write-WrapperLog "ланцюг: $($m.Ref) знято — квота постачальника вичерпана, роботу бере $Model"
     }
     $true
+}
+
+function Test-CloudMove([string]$Slug, [datetimeoffset]$Now) {
+    <# Хмарний Claude бере голову, коли всі її позначки чекають вичерпаної квоти (без позначок — нічого не переводимо). #>
+    $r = Invoke-Git @('ls-remote','--heads','origin',"refs/heads/gemini-queue/$Slug/*") -AllowFail
+    if ($r.Code -ne 0) { throw 'CHAIN_REMOTE' }
+    $models = @(foreach ($line in ($r.Out -split "`n")) { if ($line -cmatch ('\trefs/heads/gemini-queue/' + [regex]::Escape($Slug) + '/([a-z0-9][a-z0-9.-]{1,63})/')) { $Matches[1] } })
+    $models.Count -and -not @($models | Where-Object { -not (Test-ModelQuota $_ $Now) }).Count
 }
 
 function Get-ReviewDiff([string]$Head, [string]$Main) {
@@ -251,6 +273,8 @@ function Test-ReviewedMerge($Pull, $Reviewed, [string]$Main) {
         $state = ConvertFrom-Json ([IO.File]::ReadAllText($file.FullName, $script:Utf8))
         if ([string](Get-Prop $state 'line') -cmatch ('^GEMINI ОБГОРТКА: ГОТОВО (?:gemini|claude|codex)/автоперевірка-' + $n + '-' + [string]$old.head + ' ')) { $verdict = $true; break }
     }
+    # Голову, віддану хмарному Claude, перевіряє диспетчер: чисте злиття main нового рядка не породжує.
+    if (-not $verdict -and (Test-Path -LiteralPath (Get-SeenPath "cloud-review $n $($old.head)"))) { $verdict = $true }
     if (-not $verdict) { return $false }
     if ((Invoke-Git @('merge-base','--is-ancestor',[string]$old.head,$head) -AllowFail).Code -ne 0) { return $false }
     if ((Invoke-Git @('rev-list','--first-parent','--no-merges',"$($old.head)..$head")).Out.Trim()) { return $false }
@@ -310,8 +334,10 @@ function Test-ChainReviewPull($Pull) {
 
 function Remove-DeadReviewMarkers($Pulls, $Seen, [datetimeoffset]$Now) {
     <# Позначки автоперевірки, яких смуги не мають брати, знімаються до узяття: голова — не поточна голова відкритого PR
-    (злито, закрито, новий пуш), PR без коду чи вже не перевіряється, друга позначка тієї самої голови (лишається одна —
-    постачальника не на квоті). Кожна знята — рядок журналу; невдале зняття повторить наступний прохід. #>
+    (злито, закрито, новий пуш), PR без коду чи вже не перевіряється, позначка Claude на ноутбуці (`cc-`: перевіряє
+    хмарний Claude чи інший постачальник — ключ знято з $Seen, тож голова отримає рецензента наново), друга позначка
+    тієї самої голови (лишається одна — постачальника не на квоті). Кожна знята — рядок журналу, а кількість за прохід —
+    рядок у зведенні обгортки; невдале зняття повторить наступний прохід. #>
     $live = @{}
     foreach ($pr in @($Pulls)) { if (Test-ChainReviewPull $pr) { $live[[string]$pr.number] = $pr } }
     $r = Invoke-Git @('ls-remote','--heads','origin','refs/heads/gemini-queue/автоперевірка-*') -AllowFail
@@ -329,23 +355,54 @@ function Remove-DeadReviewMarkers($Pulls, $Seen, [datetimeoffset]$Now) {
         elseif (-not @($Seen.Keys | Where-Object { $_ -cmatch ('^' + $first.N + ' ' + $first.Head + ' ') }).Count -and -not (Test-ChainCodePull $pr)) { $why = 'PR без коду' }
         $keep = ''
         if (-not $why) {
-            $sorted = @($g.Group | Sort-Object Ref)
-            $free = @($sorted | Where-Object { -not (Test-ProviderQuota (Get-ModelProvider $_.Model) $Now) })
-            $keep = $(if ($free.Count) { $free[0].Ref } else { $sorted[0].Ref })
+            $sorted = @($g.Group | Where-Object { $_.Model -cnotmatch '^cc-' } | Sort-Object Ref)
+            $free = @($sorted | Where-Object { -not (Test-ModelQuota $_.Model $Now) })
+            $keep = $(if ($free.Count) { $free[0].Ref } elseif ($sorted.Count) { $sorted[0].Ref } else { '' })
         }
         foreach ($m in $g.Group) {
             if ($m.Ref -ceq $keep) { continue }
-            $drop += [pscustomobject]@{ Ref = $m.Ref; Sha = $m.Sha; Why = $(if ($why) { $why } else { 'друга позначка тієї самої голови' }) }
+            $cc = $m.Model -cmatch '^cc-'
+            $drop += [pscustomobject]@{ Ref = $m.Ref; Sha = $m.Sha; Key = "$($m.N) $($m.Head) $($m.Model)"; Cc = (-not $why -and $cc)
+                Why = $(if ($why) { $why } elseif ($cc) { 'Claude на ноутбуці не перевіряє' } else { 'друга позначка тієї самої голови' }) }
         }
     }
+    $removed = 0
     # Пачками: перший прохід нової версії знімає сотні позначок, а кожен push — окремий вхід на origin.
     for ($i = 0; $i -lt $drop.Count; $i += 40) {
         $batch = @($drop[$i..([Math]::Min($i + 40, $drop.Count) - 1)])
         $a = @('push','-q','--no-verify') + @(foreach ($m in $batch) { "--force-with-lease=refs/heads/$($m.Ref):$($m.Sha)" }) + @('origin') + @(foreach ($m in $batch) { ":refs/heads/$($m.Ref)" })
         $d = Invoke-Git $a -AllowFail
         if ($d.Code -ne 0) { Write-WrapperLog "ланцюг: зняття $($batch.Count) позначок не вдалося — повтор наступним проходом"; continue }
-        foreach ($m in $batch) { Write-WrapperLog "ланцюг: $($m.Ref) знято — $($m.Why)" }
+        foreach ($m in $batch) {
+            Write-WrapperLog "ланцюг: $($m.Ref) знято — $($m.Why)"
+            if ($m.Cc) { $Seen.Remove($m.Key) }
+        }
+        $removed += $batch.Count
     }
+    if ($removed) {
+        Add-OutboxLine ((Get-Date -Format 'yyyyMMdd-HHmmss') + '-' + (Get-Sha256Hex ("removed $removed " + [guid]::NewGuid())).Substring(0,12) + '.txt') "GEMINI ОБГОРТКА: ЗНЯТО ПОЗНАЧОК ПЕРЕВІРКИ $removed"
+    }
+}
+
+function Request-CloudReview([string]$Number, [string]$Head) {
+    <# Перевірку бере хмарний Claude: позначки тієї самої голови, що чекають вичерпаної квоти, знімаються, диспетчер
+    отримує рядок «ПОТРІБНА ПЕРЕВІРКА CLAUDE #PR <SHA>» один раз на голову. #>
+    $r = Invoke-Git @('ls-remote','--heads','origin',"refs/heads/gemini-queue/автоперевірка-$Number-$Head/*") -AllowFail
+    if ($r.Code -ne 0) { throw 'CHAIN_REMOTE' }
+    foreach ($line in ($r.Out -split "`n")) {
+        if ($line.Trim() -cnotmatch '^([0-9a-f]{40})\trefs/heads/(gemini-queue/\S+)$') { continue }
+        $sha = $Matches[1]; $ref = $Matches[2]
+        $d = Invoke-Git @('push','-q','--no-verify',"--force-with-lease=refs/heads/${ref}:$sha",'origin',":refs/heads/$ref") -AllowFail
+        if ($d.Code -ne 0) { throw 'CHAIN_PUSH' }
+        Write-WrapperLog "ланцюг: $ref знято — перевірку бере хмарний Claude"
+    }
+    # Позначка «відправлено» — після рядка: збій між ними повторить рядок, а не загубить його.
+    $sent = Get-SeenPath "cloud-review $Number $Head"
+    if (-not (Test-Path -LiteralPath $sent)) {
+        Add-OutboxLine ((Get-Date -Format 'yyyyMMdd-HHmmss') + '-' + (Get-Sha256Hex "cloud-review $Number $Head").Substring(0,12) + '.txt') "GEMINI ОБГОРТКА: ПОТРІБНА ПЕРЕВІРКА CLAUDE #$Number $Head"
+        Write-FileAtomic $sent "cloud-review $Number $Head"
+    }
+    Write-WrapperLog "ланцюг: #$Number $Head — перевірка хмарним Claude, рядок диспетчерові"
 }
 
 function Invoke-WrapperChain {
@@ -356,12 +413,9 @@ function Invoke-WrapperChain {
     if ($r.Code -ne 0) { return }
     try {
         $config = ConvertFrom-Json $r.Out
-        if ($config.v -ne 1 -or $config.codex -cnotmatch '^gpt-[a-z0-9.-]+$' -or $config.claude -cnotmatch '^cc-claude-[a-z0-9.-]+$') { throw 'CHAIN_CONFIG' }
-        # Запасні моделі постачальників — дані; без них вибір береться лише між постачальниками.
-        foreach ($alt in @(@('codex_alt','^gpt-[a-z0-9.-]+$'), @('claude_alt','^cc-claude-[a-z0-9.-]+$'))) {
-            $altProp = $config.PSObject.Properties[$alt[0]]
-            if ($null -ne $altProp -and ($altProp.Value -isnot [string] -or $altProp.Value -cnotmatch $alt[1])) { throw 'CHAIN_CONFIG' }
-        }
+        # codex і agy — рецензенти PR; claude — лише автоживий (GPU ноутбука).
+        if ($config.v -ne 1 -or $config.codex -cnotmatch '^gpt-[a-z0-9.-]+$' -or $config.claude -cnotmatch '^cc-claude-[a-z0-9.-]+$' -or
+            $config.PSObject.Properties['agy'] -eq $null -or $config.agy -isnot [string] -or $config.agy -cnotmatch '^gemini-[a-z0-9.-]+$') { throw 'CHAIN_CONFIG' }
         foreach ($path in @('аудит/наряди/автоперевірка.md','аудит/наряди/автоживий.md')) {
             if ((Invoke-Git @('cat-file','-e',"${main}:$path") -AllowFail).Code -ne 0) { throw 'CHAIN_TEMPLATE' }
         }
@@ -468,7 +522,9 @@ function Invoke-WrapperChain {
                 $key = "$n $head $model"
                 if ($seen.ContainsKey($key)) { continue }
                 # Одна перевірка на голову: позначка будь-якого рушія вже стоїть — нової не ставимо, лише переводимо позначки, що чекають вичерпаної квоти.
-                if (@($seen.Keys | Where-Object { $_ -cmatch ('^' + $n + ' ' + $head + ' ') }).Count) { [void](Move-BlockedMarkers "автоперевірка-$n-$head" $model $main $now) }
+                $marked = @($seen.Keys | Where-Object { $_ -cmatch ('^' + $n + ' ' + $head + ' ') }).Count
+                if ($model -ceq $script:CloudReview) { if (-not $marked -or (Test-CloudMove "автоперевірка-$n-$head" $now)) { Request-CloudReview $n $head } }
+                elseif ($marked) { [void](Move-BlockedMarkers "автоперевірка-$n-$head" $model $main $now) }
                 else { Add-ChainMarker "автоперевірка-$n-$head" $model $main }
                 $seen[$key] = $true
                 $reviewed[$n] = @{head=$head;diff=$diff}
