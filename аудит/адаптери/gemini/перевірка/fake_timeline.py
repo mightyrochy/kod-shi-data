@@ -2,13 +2,15 @@
 import os
 import time
 import errno
+from contextlib import contextmanager
 
 СТРОК_ЗАМКА_С = 30
 КРОК_ЗАМКА_С = 0.001
 
 
-def позначити(шлях, подія, слаг):
-    """Дописує цілий рядок під замком, відкриваючи журнал після взяття замка."""
+@contextmanager
+def замкнути(шлях):
+    """Тримає міжпроцесний замок для цілої операції з файлом."""
     with open(шлях + '.lock', 'a+b') as замок:
         замок.seek(0, 2)
         if not замок.tell():
@@ -30,14 +32,20 @@ def позначити(шлях, подія, слаг):
             import fcntl
             fcntl.flock(замок, fcntl.LOCK_EX)
         try:
-            with open(шлях, 'a', encoding='utf-8') as журнал:
-                журнал.write('%s %s %d\n' % (подія, слаг, int(time.time() * 1000)))
+            yield
         finally:
             if os.name == 'nt':
                 замок.seek(0)
                 msvcrt.locking(замок.fileno(), msvcrt.LK_UNLCK, 1)
             else:
                 fcntl.flock(замок, fcntl.LOCK_UN)
+
+def позначити(шлях, подія, слаг):
+    """Дописує цілий рядок під замком, відкриваючи журнал після взяття замка."""
+    with замкнути(шлях):
+        with open(шлях, 'a', encoding='utf-8') as журнал:
+            журнал.write('%s %s %d\n' % (подія, слаг, int(time.time() * 1000)))
+
 
 
 def тримати(слаг):

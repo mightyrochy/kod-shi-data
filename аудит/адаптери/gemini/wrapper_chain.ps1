@@ -405,6 +405,111 @@ function Request-CloudReview([string]$Number, [string]$Head) {
     Write-WrapperLog "ланцюг: #$Number $Head — перевірка хмарним Claude, рядок диспетчерові"
 }
 
+function Get-ChainBusySlots([string]$Dir, [string]$Pattern, [string]$Lane='невідома') {
+    <# Читає зайняті слоти незалежно; недоступний слот журналюється, решта лишається відомою.
+
+    Прямий перелік відрізняє відсутню теку від відмови доступу, яку Test-Path може приховати.
+    Лише sharing violation замка доводить зайнятість; зниклий JSON/замок означає кінець worker. #>
+    $slots = Join-Path $Dir 'slots'
+    try { $paths = [IO.Directory]::GetFiles($slots, '*.json') }
+    catch {
+        if ($_.Exception.GetBaseException() -is [IO.DirectoryNotFoundException]) { return }
+        Write-WrapperLog "стан смуги $Lane недоступний: $($_.Exception.GetType().Name): $($_.Exception.Message)"
+        return
+    }
+    foreach ($path in $paths) {
+        $file = [IO.FileInfo]$path
+        if ($file.BaseName -cnotmatch $Pattern) { continue }
+        $lockPath = [IO.Path]::ChangeExtension($file.FullName, '.lock')
+        try {
+            try {
+                $lock = [IO.File]::Open($lockPath, 'Open', 'ReadWrite', 'None')
+                $lock.Dispose(); continue
+            } catch [IO.IOException] {
+                # FileShare.None worker дає ERROR_SHARING_VIOLATION (32), не довільну IOException.
+                if (($_.Exception.HResult -band 0xffff) -ne 32) { throw }
+            }
+            $slot = ConvertFrom-Json ([IO.File]::ReadAllText($file.FullName, $script:Utf8)) -ErrorAction Stop
+            $slug = [string](Get-Prop $slot 'slug'); $marker = [string](Get-Prop $slot 'marker')
+            if ($slug -cnotmatch $script:SlugPattern -or $slug.Contains('..') -or $slug.EndsWith('.lock') -or
+                $marker -cnotmatch ('^gemini-queue/' + [regex]::Escape($slug) + '/[a-z0-9][a-z0-9.-]{1,63}/[1-9][0-9]*(?:/[^/]+)?$')) { throw 'CHAIN_LANE_STATE' }
+            $slot
+        } catch {
+            $cause = $_.Exception.GetBaseException()
+            if ($cause -is [IO.FileNotFoundException] -or $cause -is [IO.DirectoryNotFoundException]) { continue }
+            Write-WrapperLog "стан смуги $Lane недоступний: $($cause.GetType().Name): $($cause.Message)"
+        }
+    }
+}
+
+function Read-ChainOptionalFile([string]$Path) {
+    <# Відсутній файл стану допускається; відмова доступу лишається помилкою слота. #>
+    try { [IO.File]::ReadAllText($Path, $script:Utf8) }
+    catch {
+        $cause = $_.Exception.GetBaseException()
+        if ($cause -isnot [IO.FileNotFoundException] -and $cause -isnot [IO.DirectoryNotFoundException]) { throw }
+        ''
+    }
+}
+
+function Get-ChainBranchWork([string]$Branch) {
+    <# Пов'язує гілку з активною позначкою; помилка чужого стану лишає звичайну перевірку цієї смуги.
+
+    Кожний слот читається окремо: відмова Claude не зупиняє Codex/agy, відмова Codex не скасовує agy.
+    Gemini/Codex пишуть gemini/<slug>; Claude також має збережену гілку та HEAD копії. #>
+    $lanes = @()
+    if ($Branch.StartsWith('gemini/')) {
+        $lanes = @(@{name='codex';dir=$GeminiRunsDir}, @{name='agy';dir=$GeminiRunsDir})
+    } elseif ($Branch.StartsWith('claude/')) {
+        $lanes = @(@{name='claude';dir=(Join-Path (Split-Path -Parent $WorkDir) 'claude-run')})
+    }
+    foreach ($lane in $lanes) {
+        foreach ($slot in @(Get-ChainBusySlots $lane.dir ('^' + $lane.name + '-[1-9][0-9]*$') $lane.name)) {
+            try {
+                $slug = [string]$slot.slug; $marker = [string]$slot.marker
+                if ($lane.name -cne 'claude') {
+                    if ($Branch -ceq "gemini/$slug") { return $marker }
+                    continue
+                }
+                $branches = @("claude/$slug")
+                $saved = Join-Path (Join-Path $lane.dir 'state') ('branch-' + (Get-Sha256Hex $slug) + '.txt')
+                $branches += ([string](Read-ChainOptionalFile $saved)).Trim()
+                $copy = [string](Get-Prop $slot 'copy')
+                if ($copy) {
+                    $gitDir = Join-Path (Join-Path $copy 'repo') '.git'
+                    $attributes = $null
+                    try { $attributes = [IO.File]::GetAttributes($gitDir) }
+                    catch {
+                        $cause = $_.Exception.GetBaseException()
+                        if ($cause -isnot [IO.FileNotFoundException] -and $cause -isnot [IO.DirectoryNotFoundException]) { throw }
+                    }
+                    if ($null -ne $attributes -and -not ($attributes -band [IO.FileAttributes]::Directory)) {
+                        $link = ([string](Read-ChainOptionalFile $gitDir)).Trim()
+                        if ($link -cmatch '^gitdir: (.+)$') {
+                            $gitDir = $Matches[1]
+                            if (-not [IO.Path]::IsPathRooted($gitDir)) { $gitDir = Join-Path (Join-Path $copy 'repo') $gitDir }
+                        }
+                    }
+                    # GetAttributes не перевіряє ListDirectory; HEAD може мати явний дозвіл.
+                    # Це стосується також теки, на яку вказує gitdir файла worktree.
+                    try { $null = [IO.Directory]::GetFiles($gitDir, 'HEAD') }
+                    catch {
+                        $cause = $_.Exception.GetBaseException()
+                        if ($cause -isnot [IO.FileNotFoundException] -and $cause -isnot [IO.DirectoryNotFoundException]) { throw }
+                    }
+                    $headPath = Join-Path $gitDir 'HEAD'
+                    $ref = ([string](Read-ChainOptionalFile $headPath)).Trim()
+                    if ($ref -cmatch '^ref: refs/heads/(claude/[^/]+)$') { $branches += $Matches[1] }
+                }
+                if ($branches -ccontains $Branch) { return $marker }
+            } catch {
+                Write-WrapperLog "стан смуги $($lane.name) недоступний: $($_.Exception.GetType().Name): $($_.Exception.Message)"
+            }
+        }
+    }
+    ''
+}
+
 function Invoke-WrapperChain {
     <# PR коду -> незалежна перевірка; новий штамп збірки -> один GPU-прогін на коміті збірки. #>
     if ($DryRun) { return }
@@ -501,6 +606,9 @@ function Invoke-WrapperChain {
             $eligible = Test-RecentReviewHead $pr $heads $installed $now $hours
             Write-FileAtomic $statePath (([ordered]@{ main=$main; reviewed=$reviewed; live_active=$liveActive; live_since=$liveSince; live_stamps=@($liveStamps.Keys); live_pending=@($livePending); reviews=@($seen.Keys); installed_utc=$installed.ToString('o'); heads=$heads }) | ConvertTo-Json -Compress -Depth 5)
             if (-not $eligible) { continue }
+            $work = Get-ChainBranchWork ([string]$pr.head.ref)
+            if ($work) { Write-WrapperLog "ланцюг: #$n $head — смуга ще пише ($work), перевірка після кінця"; continue }
+            Write-WrapperLog "ланцюг: #$n $head — активної смуги нема, звичайна перевірка голови"
             if (-not $reviewed.ContainsKey($n)) {
                 foreach ($key in @($seen.Keys | Where-Object { $_ -cmatch ('^' + $n + ' [0-9a-f]{40} ') })) {
                     $oldHead = ($key -split ' ')[1]
