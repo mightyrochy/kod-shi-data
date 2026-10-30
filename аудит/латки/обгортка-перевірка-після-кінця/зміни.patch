@@ -113,7 +113,7 @@ index 696c1758e4e9abc03924d5d6e0b16f8b28ad5115..96124f2614e8fad08d14c4320bedc67c
  Після опублікованого вердикту `Test-ReviewedMerge` порівнює повний diff проти merge-base:
  чисте злиття main без зміни diff не створює нового наряду; звичайний коміт створює.
 diff --git "a/\320\260\321\203\320\264\320\270\321\202/\320\260\320\264\320\260\320\277\321\202\320\265\321\200\320\270/gemini/\320\277\320\265\321\200\320\265\320\262\321\226\321\200\320\272\320\260/side.ps1" "b/\320\260\321\203\320\264\320\270\321\202/\320\260\320\264\320\260\320\277\321\202\320\265\321\200\320\270/gemini/\320\277\320\265\321\200\320\265\320\262\321\226\321\200\320\272\320\260/side.ps1"
-index 1eec9380708083889e2fdac0a0c058ba7964db9f..5b3dec77fc19bfdc82edc1905721fbe003681e9c 100644
+index 1eec9380708083889e2fdac0a0c058ba7964db9f..ac5cb669f03fa4996cf220039ffdc59e34db0b84 100644
 --- "a/\320\260\321\203\320\264\320\270\321\202/\320\260\320\264\320\260\320\277\321\202\320\265\321\200\320\270/gemini/\320\277\320\265\321\200\320\265\320\262\321\226\321\200\320\272\320\260/side.ps1"
 +++ "b/\320\260\321\203\320\264\320\270\321\202/\320\260\320\264\320\260\320\277\321\202\320\265\321\200\320\270/gemini/\320\277\320\265\321\200\320\265\320\262\321\226\321\200\320\272\320\260/side.ps1"
 @@ -4,6 +4,10 @@ param([string]$Script, [string]$ArgsJson)
@@ -132,10 +132,10 @@ index 1eec9380708083889e2fdac0a0c058ba7964db9f..5b3dec77fc19bfdc82edc1905721fbe0
  }
  function Test-ExternalGpuFree { $true }
 +# Планувальник читає той самий вхід напряму через Get-GpuBusyReason.
-+function Get-ExternalGpuMiB { 0 }
++function Get-ExternalGpuMiB { <# Дає вільну GPU синтетичному планувальнику. #> 0 }
  exit (Main)
 diff --git "a/\320\260\321\203\320\264\320\270\321\202/\320\260\320\264\320\260\320\277\321\202\320\265\321\200\320\270/gemini/\320\277\320\265\321\200\320\265\320\262\321\226\321\200\320\272\320\260/side_claude.ps1" "b/\320\260\321\203\320\264\320\270\321\202/\320\260\320\264\320\260\320\277\321\202\320\265\321\200\320\270/gemini/\320\277\320\265\321\200\320\265\320\262\321\226\321\200\320\272\320\260/side_claude.ps1"
-index 6ec9b02f9c89581af3c1cd5ceb806a9fd5b27d30..e004491bbf03ccb009d66a1ddd13e47e445c649b 100644
+index 6ec9b02f9c89581af3c1cd5ceb806a9fd5b27d30..57395eec4a7e4755a60c92eb719726748e6190d1 100644
 --- "a/\320\260\321\203\320\264\320\270\321\202/\320\260\320\264\320\260\320\277\321\202\320\265\321\200\320\270/gemini/\320\277\320\265\321\200\320\265\320\262\321\226\321\200\320\272\320\260/side_claude.ps1"
 +++ "b/\320\260\321\203\320\264\320\270\321\202/\320\260\320\264\320\260\320\277\321\202\320\265\321\200\320\270/gemini/\320\277\320\265\321\200\320\265\320\262\321\226\321\200\320\272\320\260/side_claude.ps1"
 @@ -31,4 +31,6 @@ function Get-TaskRows {
@@ -143,10 +143,10 @@ index 6ec9b02f9c89581af3c1cd5ceb806a9fd5b27d30..e004491bbf03ccb009d66a1ddd13e47e
  }
  function Test-ExternalGpuFree { $true }
 +# Планувальник читає той самий вхід напряму через Get-GpuBusyReason.
-+function Get-ExternalGpuMiB { 0 }
++function Get-ExternalGpuMiB { <# Дає вільну GPU синтетичному планувальнику. #> 0 }
  exit (Main)
 diff --git "a/\320\260\321\203\320\264\320\270\321\202/\320\260\320\264\320\260\320\277\321\202\320\265\321\200\320\270/gemini/\320\277\320\265\321\200\320\265\320\262\321\226\321\200\320\272\320\260/\321\201\321\206\320\265\320\275\320\260\321\200\321\226\321\227_\320\267\320\264\320\276\321\200\320\276\320\262\321\217.ps1" "b/\320\260\321\203\320\264\320\270\321\202/\320\260\320\264\320\260\320\277\321\202\320\265\321\200\320\270/gemini/\320\277\320\265\321\200\320\265\320\262\321\226\321\200\320\272\320\260/\321\201\321\206\320\265\320\275\320\260\321\200\321\226\321\227_\320\267\320\264\320\276\321\200\320\276\320\262\321\217.ps1"
-index af8674ece995ad58fe981909db7c56e93ecb5fb6..123461e3b43e0fff5ca3f8a2ef9968d93691f097 100644
+index af8674ece995ad58fe981909db7c56e93ecb5fb6..12b119ebc8f77b4579d7f3992a849c1c0be1d953 100644
 --- "a/\320\260\321\203\320\264\320\270\321\202/\320\260\320\264\320\260\320\277\321\202\320\265\321\200\320\270/gemini/\320\277\320\265\321\200\320\265\320\262\321\226\321\200\320\272\320\260/\321\201\321\206\320\265\320\275\320\260\321\200\321\226\321\227_\320\267\320\264\320\276\321\200\320\276\320\262\321\217.ps1"
 +++ "b/\320\260\321\203\320\264\320\270\321\202/\320\260\320\264\320\260\320\277\321\202\320\265\321\200\320\270/gemini/\320\277\320\265\321\200\320\265\320\262\321\226\321\200\320\272\320\260/\321\201\321\206\320\265\320\275\320\260\321\200\321\226\321\227_\320\267\320\264\320\276\321\200\320\276\320\262\321\217.ps1"
 @@ -53,7 +53,7 @@ try {
@@ -167,15 +167,6 @@ index af8674ece995ad58fe981909db7c56e93ecb5fb6..123461e3b43e0fff5ca3f8a2ef9968d9
      foreach ($dir in @($RunsDir, $OutDir, $LaneDir)) { [void][System.IO.Directory]::CreateDirectory($dir) }
      $script:StateDir = Join-Path $RunsDir 'state'; [void][System.IO.Directory]::CreateDirectory($script:StateDir)
      $script:SlotDir = Join-Path $RunsDir 'slots'; [void][System.IO.Directory]::CreateDirectory($script:SlotDir)
-@@ -153,7 +153,7 @@ try {
-     Check 'gemini-run: під час очікування CLI пише UTC, смуги й слоти' ($beat.read_utc -match 'Z$' -and $beat.lanes.Count -eq 2)
- 
-     $gemOut = $OutDir
--    . (Join-Path $SourceDir 'claude_run.ps1') -WorkDir "$tmpRoot/owner" -RepoDir $tmpRoot -GeminiOutDir $gemOut -PublishDir "$tmpRoot/exhaust/pub" -GhExe "$tmpRoot/gh.cmd" -LaneDir "$tmpRoot/lanes"
-+    . (Join-Path $SourceDir 'claude_run.ps1') -WorkDir "$tmpRoot/owner" -RepoDir $tmpRoot -GeminiOutDir $gemOut -PublishDir "$tmpRoot/exhaust/pub" -GhExe "$tmpRoot/gh.cmd" -LaneDir "$tmpRoot/lanes" -ProfileDir "$tmpRoot/profile"
-     foreach ($dir in @($WorkDir, $LaneDir)) { [void][System.IO.Directory]::CreateDirectory($dir) }
-     $script:StateDir = Join-Path $WorkDir 'state'; [void][System.IO.Directory]::CreateDirectory($script:StateDir)
-     $script:SlotDir = Join-Path $WorkDir 'slots'; [void][System.IO.Directory]::CreateDirectory($script:SlotDir)
 diff --git "a/\320\260\321\203\320\264\320\270\321\202/\320\260\320\264\320\260\320\277\321\202\320\265\321\200\320\270/gemini/\320\277\320\265\321\200\320\265\320\262\321\226\321\200\320\272\320\260/\321\201\321\206\320\265\320\275\320\260\321\200\321\226\321\227_\320\272\320\276\320\264\321\203_\320\267\320\261\321\226\321\200\320\272\320\270.ps1" "b/\320\260\321\203\320\264\320\270\321\202/\320\260\320\264\320\260\320\277\321\202\320\265\321\200\320\270/gemini/\320\277\320\265\321\200\320\265\320\262\321\226\321\200\320\272\320\260/\321\201\321\206\320\265\320\275\320\260\321\200\321\226\321\227_\320\272\320\276\320\264\321\203_\320\267\320\261\321\226\321\200\320\272\320\270.ps1"
 index 3f09e39d3dc0af96674114625e987e8645f84feb..612d4f5ed7990a930b00099fdc1ad11bf1f765fa 100644
 --- "a/\320\260\321\203\320\264\320\270\321\202/\320\260\320\264\320\260\320\277\321\202\320\265\321\200\320\270/gemini/\320\277\320\265\321\200\320\265\320\262\321\226\321\200\320\272\320\260/\321\201\321\206\320\265\320\275\320\260\321\200\321\226\321\227_\320\272\320\276\320\264\321\203_\320\267\320\261\321\226\321\200\320\272\320\270.ps1"
@@ -200,10 +191,10 @@ index 3f09e39d3dc0af96674114625e987e8645f84feb..612d4f5ed7990a930b00099fdc1ad11b
  function Get-ChainPulls { @() }
 diff --git "a/\320\260\321\203\320\264\320\270\321\202/\320\260\320\264\320\260\320\277\321\202\320\265\321\200\320\270/gemini/\320\277\320\265\321\200\320\265\320\262\321\226\321\200\320\272\320\260/\321\201\321\206\320\265\320\275\320\260\321\200\321\226\321\227_\320\272\321\226\320\275\320\265\321\206\321\214_\321\200\320\276\320\261\320\276\321\202\320\270.ps1" "b/\320\260\321\203\320\264\320\270\321\202/\320\260\320\264\320\260\320\277\321\202\320\265\321\200\320\270/gemini/\320\277\320\265\321\200\320\265\320\262\321\226\321\200\320\272\320\260/\321\201\321\206\320\265\320\275\320\260\321\200\321\226\321\227_\320\272\321\226\320\275\320\265\321\206\321\214_\321\200\320\276\320\261\320\276\321\202\320\270.ps1"
 new file mode 100644
-index 0000000000000000000000000000000000000000..6a321248e282860d77e008fe2cb12006320809c5
+index 0000000000000000000000000000000000000000..a39ff8a6406f0f05f2bc212ce2efc78436c3fb0d
 --- /dev/null
 +++ "b/\320\260\321\203\320\264\320\270\321\202/\320\260\320\264\320\260\320\277\321\202\320\265\321\200\320\270/gemini/\320\277\320\265\321\200\320\265\320\262\321\226\321\200\320\272\320\260/\321\201\321\206\320\265\320\275\320\260\321\200\321\226\321\227_\320\272\321\226\320\275\320\265\321\206\321\214_\321\200\320\276\320\261\320\276\321\202\320\270.ps1"
-@@ -0,0 +1,102 @@
+@@ -0,0 +1,104 @@
 +﻿#Requires -Version 5.1
 +param([Parameter(Mandatory=$true)][string]$SourceDir, [switch]$Before)
 +$ErrorActionPreference = 'Stop'
@@ -222,8 +213,9 @@ index 0000000000000000000000000000000000000000..6a321248e282860d77e008fe2cb12006
 +        [void][IO.Directory]::CreateDirectory($dir)
 +    }
 +    $script:Main = 'a' * 40; $script:Pulls = @(); $script:Markers = @(); $script:Logs = @()
-+    function Get-RefSha { $script:Main }
++    function Get-RefSha { <# Повертає сталий main синтетичного стенда. #> $script:Main }
 +    function Invoke-Git {
++        <# Відтворює лише потрібні відповіді Git без зовнішніх процесів. #>
 +        param([string[]]$GitArgs, [switch]$AllowFail)
 +        $out = ''
 +        if ($GitArgs[0] -ceq 'cat-file' -and $GitArgs[-1] -like '*ланцюг.json') {
@@ -231,17 +223,18 @@ index 0000000000000000000000000000000000000000..6a321248e282860d77e008fe2cb12006
 +        }
 +        [pscustomobject]@{Code=0;Out=$out;Err=''}
 +    }
-+    function Complete-EngineDrafts { }
-+    function Get-ChainPulls { $script:Pulls }
++    function Complete-EngineDrafts { <# Виключає створення зовнішніх PR зі стенда. #> }
++    function Get-ChainPulls { <# Дає поточний знімок синтетичних PR. #> $script:Pulls }
 +    function Invoke-ChainApi([string]$Path) {
++        <# Дає свіжу дату синтетичної голови для початкового знімка. #>
 +        [pscustomobject]@{sha=($Path -split '/')[-1];commit=@{committer=@{date=[datetimeoffset]::UtcNow.AddMinutes(-1).ToString('o')}}}
 +    }
-+    function Test-LiveModels { $false }
-+    function Test-ChainCodePull { $true }
-+    function Test-ReviewedMerge { $false }
-+    function Get-ReviewDiff { 'стенд-diff' }
-+    function Add-ChainMarker($Slug, $Model, $Main, [switch]$Gpu) { $script:Markers += [string]$Slug }
-+    function Write-WrapperLog([string]$Text) { $script:Logs += $Text; if ($Text -like "*CHAIN_*") { Write-Host $Text } }
++    function Test-LiveModels { <# Лишає GPU-прогони поза пробою автоперевірки. #> $false }
++    function Test-ChainCodePull { <# Позначає синтетичні PR як зміни коду. #> $true }
++    function Test-ReviewedMerge { <# Виключає окремий випадок чистого злиття main. #> $false }
++    function Get-ReviewDiff { <# Повертає сталий diff для синтетичних голів. #> 'стенд-diff' }
++    function Add-ChainMarker($Slug, $Model, $Main, [switch]$Gpu) { <# Рахує позначки без зовнішнього push. #> $script:Markers += [string]$Slug }
++    function Write-WrapperLog([string]$Text) { <# Зберігає журнал і показує несподівані збої. #> $script:Logs += $Text; if ($Text -like "*CHAIN_*") { Write-Host $Text } }
 +    function Pull([int]$N, [string]$Branch, [string]$Head) {
 +        <# Довірений PR-чернетка з трьома послідовними головами. #>
 +        [pscustomobject]@{number=$N;title='Код';draft=$true;created_at=[datetimeoffset]::UtcNow.ToString('o');user=@{login='mightyrochy'};
@@ -252,7 +245,7 @@ index 0000000000000000000000000000000000000000..6a321248e282860d77e008fe2cb12006
 +        $script:Pulls = @((Pull 2386 $Branch $Head), (Pull 2400 'codex/хмара' ('e' * 40)))
 +        Invoke-WrapperChain
 +    }
-+    function CountReviews([string]$N) { @($script:Markers | Where-Object { $_ -like "автоперевірка-$N-*" }).Count }
++    function CountReviews([string]$N) { <# Рахує всі перевірки одного PR. #> @($script:Markers | Where-Object { $_ -like "автоперевірка-$N-*" }).Count }
 +    $slug = '5.3-повний-обхід-каталогу'
 +    $marker = "gemini-queue/$slug/cc-claude-sonnet-5-5-medium/8/p1"
 +    $info = "$tmp/claude-run/slots/claude-1.json"
