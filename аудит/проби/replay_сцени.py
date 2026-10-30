@@ -7,7 +7,9 @@
   python3 аудит/проби/replay_сцени.py <тека сцени> 1236 &
   CHROMIUM=/opt/pw-browsers/chromium-1194/chrome-linux/chrome MODEL_URL=http://127.0.0.1:1236/v1 MODEL=qwen/qwen3.5-9b \
   MODEL_MOVA=mamaylm-gemma-3-12b-it-v2.0 FOTO=1 ZHINKA=аудит/проби/жінки/ж2.json CHAT_TEXT='…' OTSINKA=0 NE_TSIA=1 \
-  NODE_PATH=джерела/node_modules node аудит/проби/рв6_стенд.js http://127.0.0.1:8765 <тека збірки> <тека pyodide> 3"""
+  NODE_PATH=джерела/node_modules node аудит/проби/рв6_стенд.js http://127.0.0.1:8765 <тека збірки> <тека pyodide> 3
+Порт 0 просить ОС виділити вільний порт. Стенд запускають лише після рядка REPLAY_READY з фактичною адресою:
+початкове «записів …» означає завантаження даних, а не готовність слухача."""
 import sys, os, re, json, threading
 from схожість_промптів import схожість
 from http.server import ThreadingHTTPServer, BaseHTTPRequestHandler
@@ -75,4 +77,6 @@ class Р(BaseHTTPRequestHandler):
         self.send_header("Content-Length", str(len(дані))); self.end_headers(); self.wfile.write(дані)
 
 
-ThreadingHTTPServer(("127.0.0.1", ПОРТ), Р).serve_forever()
+сервер = ThreadingHTTPServer(("127.0.0.1", ПОРТ), Р)
+print("REPLAY_READY http://127.0.0.1:%d/v1" % сервер.server_address[1], flush=True)
+сервер.serve_forever()
