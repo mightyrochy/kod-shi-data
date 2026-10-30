@@ -1,0 +1,27 @@
+{
+ "версія": 1,
+ "запит": {
+  "model": "qwen/qwen3.5-9b",
+  "max_tokens": 4000,
+  "messages": [
+   {
+    "role": "user",
+    "content": [
+     {
+      "type": "text",
+      "text": "{\"task\": {\"role\": \"You read the description of an outfit and list its items as data.\", \"rules\": [\"One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.\", \"One item carries one thing — of two alternatives list the first; a note in brackets is not an item.\", \"Slot \\\"accessory\\\" is for an item no other slot fits.\", \"\\\"is_outfit\\\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note.\"], \"limits\": [\"Rely only on the input: do not invent what it does not contain.\", \"The answer is one JSON object following \\\"answer_schema\\\", without explanations and without ```.\"], \"language\": \"English\", \"answer\": \"ITEM_LIST\", \"answer_schema\": {\"is_outfit\": \"yes|no\", \"items\": [{\"name\": \"<what the item is>\", \"details\": \"<its cut, length and fabric>\", \"slot\": \"top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory\", \"color_hex\": \"<#rrggbb or null>\", \"worn\": \"<true, or false when the description says the outfit goes without it>\"}]}, \"input\": [\"\\\"description\\\" — the outfit description\"]}, \"description\": \"Cream silk blouse with a relaxed collar in a straight cut reaching the hip, color #f4dcd8, fabric pure silk crepe de Chine\\nHigh-rise tailored trousers in a wide-leg silhouette falling to the ankle, color #e8e0db, fabric lightweight wool blend\\nLeather ankle boots with a low block heel in a pointed toe, color #c5a085, fabric polished calfskin\\nGold hoop earrings with a mixed metal finish, color #ffd700, material 14k gold and brass\\nDelicate pearl pendant necklace on an 18-inch chain, color #fffdd0, material freshwater pearls\\nA statement oversized brooch in emerald green enamel set in yellow gold pinned at the shoulder, color #50c878, material gold and enamel\\n\\nThis outfit strikes a bold balance between reverence for the church setting and a clear desire to stand out during the family lunch. The rich cream silk blouse paired with wide-leg wool trousers offers an elevated, neat silhouette that respects the occasion while providing comfort. The emerald green brooch serves as a powerful focal point that fulfills her wish to make a statement without being overtly flashy. Completing the look with earthy leather boots and gold jewelry grounds the outfit in autumnal tones, ensuring it feels both sophisticated and uniquely hers.\"}"
+     }
+    ]
+   }
+  ],
+  "temperature": 1
+ },
+ "відповідь": {
+  "status": 200,
+  "contentType": "application/json",
+  "headers": {
+   "x-model": "qwen/qwen3.5-9b"
+  },
+  "body": "{\"content\":[{\"type\":\"text\",\"text\":\"{\\n  \\\"is_outfit\\\": \\\"yes\\\",\\n  \\\"items\\\": [\\n    {\\n      \\\"name\\\": \\\"blouse\\\",\\n      \\\"details\\\": \\\"relaxed collar in a straight cut reaching the hip\\\",\\n      \\\"slot\\\": \\\"top\\\",\\n      \\\"color_hex\\\": \\\"#f4dcd8\\\",\\n      \\\"worn\\\": true\\n    },\\n    {\\n      \\\"name\\\": \\\"trousers\\\",\\n      \\\"details\\\": \\\"high-rise tailored wide-leg silhouette falling to the ankle\\\",\\n      \\\"slot\\\": \\\"bottom\\\",\\n      \\\"color_hex\\\": \\\"#e8e0db\\\",\\n      \\\"worn\\\": true\\n    },\\n    {\\n      \\\"name\\\": \\\"boots\\\",\\n      \\\"details\\\": \\\"leather ankle boots with a low block heel in a pointed toe\\\",\\n      \\\"slot\\\": \\\"shoes\\\",\\n      \\\"color_hex\\\": \\\"#c5a085\\\",\\n      \\\"worn\\\": true\\n    },\\n    {\\n      \\\"name\\\": \\\"earrings\\\",\\n      \\\"details\\\": \\\"gold hoop earrings with a mixed metal finish\\\",\\n      \\\"slot\\\": \\\"earrings\\\",\\n      \\\"color_hex\\\": \\\"#ffd700\\\",\\n      \\\"worn\\\": true\\n    },\\n    {\\n      \\\"name\\\": \\\"necklace\\\",\\n      \\\"details\\\": \\\"delicate pearl pendant on an 18-inch chain\\\",\\n      \\\"slot\\\": \\\"necklace\\\",\\n      \\\"color_hex\\\": \\\"#fffdd0\\\",\\n      \\\"worn\\\": true\\n    },\\n    {\\n      \\\"name\\\": \\\"brooch\\\",\\n      \\\"details\\\": \\\"statement oversized emerald green enamel set in yellow gold pinned at the shoulder\\\",\\n      \\\"slot\\\": \\\"brooch\\\",\\n      \\\"color_hex\\\": \\\"#50c878\\\",\\n      \\\"worn\\\": true\\n    }\\n  ]\\n}\"}],\"usage\":{\"input_tokens\":626,\"output_tokens\":395},\"stop_reason\":\"end_turn\"}"
+ }
+}
