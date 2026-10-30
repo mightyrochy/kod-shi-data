@@ -24,6 +24,7 @@ try {
         $head = (& git -C $seed rev-parse HEAD).Trim(); $other = 'a' * 40
         $bare = Join-Path $case 'repo.git'; & git clone -q --bare $remote $bare
         . (Join-Path $SourceDir 'gemini_publish.ps1') -WorkDir "$case/pub" -OutboxDir "$case/lines" -OutDir "$case/out"
+        $GeminiRunsDir = "$case/gemini-runs"
         $script:Repo = $bare; $script:NoHooks = Join-Path $case 'no-hooks'
         foreach ($d in @($WorkDir,"$WorkDir/seen",$OutboxDir,$OutDir)) { [void][IO.Directory]::CreateDirectory($d) }
         [void](Invoke-Git @('fetch','-q','origin','+refs/heads/main:refs/remotes/origin/main'))

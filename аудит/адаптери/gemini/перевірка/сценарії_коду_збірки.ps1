@@ -21,7 +21,8 @@ try {
     [IO.File]::WriteAllText("$seed/джерела/a.py", '1', $utf)
     & git -C $seed add -A; & git -C $seed commit -q -m 'початкова'; & git -C $seed push -q origin main
     & git clone -q --bare $remote $bare
-    . (Join-Path $SourceDir 'gemini_publish.ps1') -WorkDir "$tmp/pub" -OutboxDir "$tmp/out" -UpdateRoot "$tmp/update"
+    . (Join-Path $SourceDir 'gemini_publish.ps1') -WorkDir "$tmp/pub" -OutDir "$tmp/gem-out" -OutboxDir "$tmp/out" -UpdateRoot "$tmp/update"
+    $GeminiRunsDir = "$tmp/gemini-runs"
     foreach ($dir in @($WorkDir, "$WorkDir/seen", $OutboxDir)) { [void][IO.Directory]::CreateDirectory($dir) }
     $script:Repo = $bare; $script:NoHooks = Join-Path $tmp 'no-hooks'
     [void](Invoke-Git @('fetch','-q','origin','+refs/heads/main:refs/remotes/origin/main'))
@@ -108,7 +109,8 @@ try {
     $child = Join-Path $tmp 'restart.ps1'
     $childText = @"
 `$ErrorActionPreference = 'Stop'
-. '$((Join-Path $SourceDir 'gemini_publish.ps1').Replace("'","''"))' -WorkDir '$($WorkDir.Replace("'","''"))' -OutboxDir '$($OutboxDir.Replace("'","''"))'
+. '$((Join-Path $SourceDir 'gemini_publish.ps1').Replace("'","''"))' -WorkDir '$($WorkDir.Replace("'","''"))' -OutDir '$($OutDir.Replace("'","''"))' -OutboxDir '$($OutboxDir.Replace("'","''"))'
+`$GeminiRunsDir = '$($GeminiRunsDir.Replace("'","''"))'
 `$script:Repo = '$($bare.Replace("'","''"))'
 `$script:NoHooks = '$($script:NoHooks.Replace("'","''"))'
 function Get-ChainPulls { @() }

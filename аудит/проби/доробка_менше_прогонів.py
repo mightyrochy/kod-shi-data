@@ -60,6 +60,10 @@ def виконати():
         код = результат.returncode or int(bool(провалів) or тверджень == 0)
         запис = dict(стенд=назва, команда=команда, код_процесу=результат.returncode, код=код, тверджень=тверджень, провалів=провалів)
         результати.append(запис)
+        # Діагностика ACL потрібна і в зеленому CI: локальний токен не доводить властивостей раннера.
+        for рядок in вивід.splitlines():
+            if рядок.startswith(('ACL ДІАГНОСТИКА ', 'ACL ТОКЕН ', 'ACL ЧИТАННЯ ', 'ACL ЧИТАЧ ')):
+                print(рядок, flush=True)
         print(json.dumps(запис, ensure_ascii=False), flush=True)
         if код:
             print(вивід, file=sys.stderr, flush=True)
