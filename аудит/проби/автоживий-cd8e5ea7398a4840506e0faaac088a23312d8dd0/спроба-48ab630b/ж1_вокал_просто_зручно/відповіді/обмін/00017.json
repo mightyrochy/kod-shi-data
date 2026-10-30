@@ -1,0 +1,27 @@
+{
+ "версія": 1,
+ "запит": {
+  "model": "qwen/qwen3.5-9b",
+  "max_tokens": 4000,
+  "messages": [
+   {
+    "role": "user",
+    "content": [
+     {
+      "type": "text",
+      "text": "{\"task\": {\"role\": \"You read the description of an outfit and list its items as data.\", \"rules\": [\"One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.\", \"A slot the description says is not needed is not an item: give it worn false. One item carries one thing — of two alternatives list the first; a note in brackets is not an item.\", \"Slot \\\"accessory\\\" is for an item no other slot fits.\", \"\\\"is_outfit\\\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note; then items is empty.\"], \"limits\": [\"Rely only on the input: do not invent what it does not contain.\", \"The answer is one JSON object following \\\"answer_schema\\\", without explanations and without ```.\"], \"language\": \"English\", \"answer\": \"ITEM_LIST\", \"answer_schema\": {\"is_outfit\": \"yes|no\", \"items\": [{\"name\": \"<what the item is>\", \"details\": \"<its cut, length and fabric>\", \"slot\": \"top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory\", \"color_hex\": \"<#rrggbb or null>\", \"worn\": \"<true, or false when the description says the outfit goes without it>\"}]}, \"input\": [\"\\\"description\\\" — the outfit description\"]}, \"description\": \"Tailored blouse in a crisp light cream with a subtle woven texture, loose cut, longline hem reaching mid-hip, #deb295, cotton-linen blend; High-waisted trousers in dark charcoal wool, straight leg, ankle length, #1a1a1a, heavy twill.\\n\\nLeather loafers with a low block heel in soft tan, rounded toe, #8d6e63, smooth calfskin.\\n\\nThis outfit balances the professional atmosphere of an office vocal lesson with the specific request for sneakers replaced by comfortable loafers that still offer ease of movement. The neutral color palette creates a calm backdrop suitable for singing practice under artificial evening lighting while adhering to neat dress code standards. The loose cut of the blouse and breathable cotton-linen fabric ensure physical comfort, prioritizing the wearer's need for freedom during performance or preparation.\"}"
+     }
+    ]
+   }
+  ],
+  "temperature": 1
+ },
+ "відповідь": {
+  "status": 200,
+  "contentType": "application/json",
+  "headers": {
+   "x-model": "qwen/qwen3.5-9b"
+  },
+  "body": "{\"content\":[{\"type\":\"text\",\"text\":\"{\\n  \\\"is_outfit\\\": \\\"yes\\\",\\n  \\\"items\\\": [\\n    {\\n      \\\"name\\\": \\\"Tailored Blouse\\\",\\n      \\\"details\\\": \\\"loose cut, longline hem reaching mid-hip, crisp light cream with a subtle woven texture, cotton-linen blend\\\",\\n      \\\"slot\\\": \\\"top\\\",\\n      \\\"color_hex\\\": \\\"#deb295\\\",\\n      \\\"worn\\\": true\\n    },\\n    {\\n      \\\"name\\\": \\\"High-waisted Trousers\\\",\\n      \\\"details\\\": \\\"straight leg, ankle length, dark charcoal wool, heavy twill\\\",\\n      \\\"slot\\\": \\\"bottom\\\",\\n      \\\"color_hex\\\": \\\"#1a1a1a\\\",\\n      \\\"worn\\\": true\\n    },\\n    {\\n      \\\"name\\\": \\\"Leather Loafers\\\",\\n      \\\"details\\\": \\\"low block heel, rounded toe, smooth calfskin, soft tan\\\",\\n      \\\"slot\\\": \\\"shoes\\\",\\n      \\\"color_hex\\\": \\\"#8d6e63\\\",\\n      \\\"worn\\\": true\\n    }\\n  ]\\n}\"}],\"usage\":{\"input_tokens\":555,\"output_tokens\":237},\"stop_reason\":\"end_turn\"}"
+ }
+}
