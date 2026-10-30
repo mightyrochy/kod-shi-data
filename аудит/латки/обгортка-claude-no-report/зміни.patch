@@ -236,27 +236,6 @@ index 696c175..8cd3ea2 100644
 +у claude-run/no-report/<id>.json і claude-run.log. Останні три записи публікуються в стані ноутбука #1856
 +у розділі «Claude NO_REPORT» як екрановані дані. Нових рядків транспорту, входів і дозволів немає.
 +Після застосування латки потрібен запуск Claude з рядком звіту: стенд не є живим прийманням.
-diff --git a/аудит/адаптери/gemini/перевірка/fake_cc.py b/аудит/адаптери/gemini/перевірка/fake_cc.py
-index 3e4326a..f86cdbe 100644
---- a/аудит/адаптери/gemini/перевірка/fake_cc.py
-+++ b/аудит/адаптери/gemini/перевірка/fake_cc.py
-@@ -41,6 +41,16 @@ if sc == 'quota_until':
- if sc == 'done':
-     hold(slug)
-     result('Готово.\n\n**НОУТБУК ГОТОВО `%s` %s**' % (branch, push()))
-+if sc.startswith('response_'):
-+    sha = push()
-+    line = 'НОУТБУК ГОТОВО %s %s' % (branch, sha)
-+    if sc == 'response_empty' or sc == 'response_truncated':
-+        emit({'message': {'content': [{'type': 'text', 'text': line}]}, 'type': 'assistant'})
-+        emit({'result': '' if sc == 'response_empty' else line[:-12], 'is_error': False, 'type': 'result'})
-+        sys.exit(0)
-+    forms = {'response_short': 'НОУТБУК ГОТОВО %s %s' % (branch, sha[:8]),
-+             'response_suffix': line + ' — виконано', 'response_list': '- **' + line + '**'}
-+    result(forms[sc])
- if sc.startswith('report_'):
-     sha = push()
-     line = 'НОУТБУК ГОТОВО %s %s' % (branch, sha)
 diff --git a/аудит/адаптери/gemini/перевірка/side.ps1 b/аудит/адаптери/gemini/перевірка/side.ps1
 index 1eec938..330e99f 100644
 --- a/аудит/адаптери/gemini/перевірка/side.ps1
@@ -288,26 +267,6 @@ index 6ec9b02..66984ba 100644
  function Test-ExternalGpuFree { $true }
 +function Get-ExternalGpuMiB { <# Дає вільну GPU синтетичному планувальнику. #> 0 }
  exit (Main)
-diff --git a/аудит/адаптери/gemini/перевірка/сценарії_claude.sh b/аудит/адаптери/gemini/перевірка/сценарії_claude.sh
-index 994daeb..9c40e01 100644
---- a/аудит/адаптери/gemini/перевірка/сценарії_claude.sh
-+++ b/аудит/адаптери/gemini/перевірка/сценарії_claude.sh
-@@ -133,6 +133,15 @@ done
- code k9-wrong-sha report_wrong_sha "$M" NO_PUSH
- code k9-bad-branch report_bad_branch "$M" BAD_BRANCH
- 
-+echo "=== К9д відновлення звіту з подій та короткий SHA"
-+for form in empty truncated short suffix list; do
-+  setup "k9-response-$form"; mark "$SLUG/$M/1"; FAKE_CC_SCENARIO="response_$form" cr
-+  SHA=$(git -C "$W/origin.git" rev-parse "refs/heads/claude/$SLUG" 2>/dev/null)
-+  chk "response_$form → ГОТОВО з повним SHA origin" '[ "$(lines)" = "GEMINI ОБГОРТКА: ГОТОВО claude/$SLUG $SHA МОДЕЛЬ $M" ]'
-+done
-+setup k9-diagnostic; mark "$SLUG/$M/1"; FAKE_CC_SCENARIO=no_report cr
-+chk "NO_REPORT: діагностика з кодом і хвостом у стані issue" 'grep -l "Claude NO_REPORT" "$W"/gh/patch_*.json | xargs grep -q "System.String" && grep -q "Зроблено" "$W"/cr/no-report/*.json'
-+
- echo "=== К10 копія задачі: тека прогону, TEMP там же, після звіту — геть; незапушене лишається; давню копію слота прибрано"
- setup k10; mark "$SLUG/$M/1"
- git -C "$W/clone" fetch -q origin 2>/dev/null; git -C "$W/clone" worktree add -q --detach "$(wp "$W/cr/w/claude-1")" origin/main 2>/dev/null
 diff --git a/аудит/адаптери/gemini/перевірка/сценарії_no_report.ps1 b/аудит/адаптери/gemini/перевірка/сценарії_no_report.ps1
 new file mode 100644
 index 0000000..e5e68c7
@@ -477,6 +436,28 @@ index af8674e..12b119e 100644
      foreach ($dir in @($RunsDir, $OutDir, $LaneDir)) { [void][System.IO.Directory]::CreateDirectory($dir) }
      $script:StateDir = Join-Path $RunsDir 'state'; [void][System.IO.Directory]::CreateDirectory($script:StateDir)
      $script:SlotDir = Join-Path $RunsDir 'slots'; [void][System.IO.Directory]::CreateDirectory($script:SlotDir)
+diff --git a/аудит/адаптери/gemini/перевірка/сценарії_коду_збірки.ps1 b/аудит/адаптери/gemini/перевірка/сценарії_коду_збірки.ps1
+index 3f09e39..612d4f5 100644
+--- a/аудит/адаптери/gemini/перевірка/сценарії_коду_збірки.ps1
++++ b/аудит/адаптери/gemini/перевірка/сценарії_коду_збірки.ps1
+@@ -21,7 +21,7 @@ try {
+     [IO.File]::WriteAllText("$seed/джерела/a.py", '1', $utf)
+     & git -C $seed add -A; & git -C $seed commit -q -m 'початкова'; & git -C $seed push -q origin main
+     & git clone -q --bare $remote $bare
+-    . (Join-Path $SourceDir 'gemini_publish.ps1') -WorkDir "$tmp/pub" -OutboxDir "$tmp/out" -UpdateRoot "$tmp/update"
++    . (Join-Path $SourceDir 'gemini_publish.ps1') -WorkDir "$tmp/pub" -OutDir "$tmp/gem-out" -OutboxDir "$tmp/out" -UpdateRoot "$tmp/update"
+     foreach ($dir in @($WorkDir, "$WorkDir/seen", $OutboxDir)) { [void][IO.Directory]::CreateDirectory($dir) }
+     $script:Repo = $bare; $script:NoHooks = Join-Path $tmp 'no-hooks'
+     [void](Invoke-Git @('fetch','-q','origin','+refs/heads/main:refs/remotes/origin/main'))
+@@ -108,7 +108,7 @@ try {
+     $child = Join-Path $tmp 'restart.ps1'
+     $childText = @"
+ `$ErrorActionPreference = 'Stop'
+-. '$((Join-Path $SourceDir 'gemini_publish.ps1').Replace("'","''"))' -WorkDir '$($WorkDir.Replace("'","''"))' -OutboxDir '$($OutboxDir.Replace("'","''"))'
++. '$((Join-Path $SourceDir 'gemini_publish.ps1').Replace("'","''"))' -WorkDir '$($WorkDir.Replace("'","''"))' -OutDir '$($OutDir.Replace("'","''"))' -OutboxDir '$($OutboxDir.Replace("'","''"))'
+ `$script:Repo = '$($bare.Replace("'","''"))'
+ `$script:NoHooks = '$($script:NoHooks.Replace("'","''"))'
+ function Get-ChainPulls { @() }
 diff --git a/аудит/адаптери/gemini/перевірка/сценарії_ланцюга.ps1 b/аудит/адаптери/gemini/перевірка/сценарії_ланцюга.ps1
 index 9a73e1d..a4fc1c2 100644
 --- a/аудит/адаптери/gemini/перевірка/сценарії_ланцюга.ps1
@@ -490,3 +471,29 @@ index 9a73e1d..a4fc1c2 100644
      foreach ($d in @($WorkDir, (Join-Path $WorkDir 'seen'), $OutboxDir)) { [void][IO.Directory]::CreateDirectory($d) }
      $script:Repo = $bare; $script:NoHooks = Join-Path $tmpRoot 'no-hooks'
      [void](Invoke-Git @('fetch','-q','origin','+refs/heads/main:refs/remotes/origin/main'))
+diff --git a/аудит/адаптери/gemini/перевірка/сценарії_менше_прогонів.ps1 b/аудит/адаптери/gemini/перевірка/сценарії_менше_прогонів.ps1
+index 0970ac4..fdb8b07 100644
+--- a/аудит/адаптери/gemini/перевірка/сценарії_менше_прогонів.ps1
++++ b/аудит/адаптери/gemini/перевірка/сценарії_менше_прогонів.ps1
+@@ -15,7 +15,7 @@ function Scenario([string]$Name, [scriptblock]$Body) {
+     try { & $Body } catch { Check "$Name — $($_.Exception.Message) $($_.ScriptStackTrace)" $false }
+ }
+ try {
+-    . (Join-Path $SourceDir 'gemini_publish.ps1') -WorkDir "$tmp/pub" -OutboxDir "$tmp/out"
++    . (Join-Path $SourceDir 'gemini_publish.ps1') -WorkDir "$tmp/pub" -OutDir "$tmp/gem-out" -OutboxDir "$tmp/out"
+     foreach ($dir in @($WorkDir,"$WorkDir/state","$WorkDir/seen",$OutboxDir)) { [void][IO.Directory]::CreateDirectory($dir) }
+     . (Join-Path $SourceDir 'queue_lanes.ps1')
+     $config = [pscustomobject]@{codex='gpt-review';agy='gemini-review';claude='cc-claude-review'}
+diff --git a/аудит/адаптери/gemini/перевірка/сценарії_тихі_пробудження.ps1 b/аудит/адаптери/gemini/перевірка/сценарії_тихі_пробудження.ps1
+index bdb9f58..e56578e 100644
+--- a/аудит/адаптери/gemini/перевірка/сценарії_тихі_пробудження.ps1
++++ b/аудит/адаптери/gemini/перевірка/сценарії_тихі_пробудження.ps1
+@@ -13,7 +13,7 @@ function Scenario([string]$Name, [scriptblock]$Body) {
+     try { & $Body } catch { Check "$Name — $($_.Exception.Message) $($_.ScriptStackTrace)" $false }
+ }
+ try {
+-    . (Join-Path $SourceDir 'gemini_publish.ps1') -WorkDir "$tmp/pub" -OutboxDir "$tmp/out"
++    . (Join-Path $SourceDir 'gemini_publish.ps1') -WorkDir "$tmp/pub" -OutDir "$tmp/gem-out" -OutboxDir "$tmp/out"
+     foreach ($dir in @($WorkDir, "$WorkDir/state", "$WorkDir/seen", $OutboxDir)) { [void][IO.Directory]::CreateDirectory($dir) }
+     $sha = 'a' * 40
+     $script:Calls = @()
