@@ -862,6 +862,48 @@ function мостПриміркиЗаглушка(w){
     тест("без винятків", помилки.length === 0, помилки);
   }
 
+  розділ("1д-7. АДРЕСА В ПІДПИСІ: НАЗВА ЗБЕРЕЖЕНА, ДОПИС ПЕРЕВІРЕНО");
+  {
+    const {w, d, помилки} = сторінка({url: "https://mightyrochy.github.io/kod-shi-data/показ.html"});
+    await чекатиСтарт(w);
+    const шаблон = w.eval("ШАБЛОНИ_ЗБОЮ_П.without_text");
+    const підпис = d.createElement("p");
+    const показати = частини => {
+      w.__частини = частини; w.__підпис = підпис;
+      return w.eval("текстЖінціП(window.__підпис, typeof підписЗНазвоюП === 'function'"
+        + " ? підписЗНазвоюП(window.__частини) : window.__частини)");
+    };
+    for (const адреса of ["https://bridge.example/api", "https://ви.укр/api", "https://bridge.example/Вам"]){
+      тест("законна адреса лишається видимою: " + адреса,
+        показати(["Адреса: ", {назва: адреса}]) === "Адреса: " + адреса, підпис.textContent);
+    }
+    for (const частини of [
+      ["Вам сюди: ", {назва: "https://bridge.example/api"}],
+      ["Please retry later: ", {назва: "https://bridge.example/api"}],
+      ["palette_scheme_note: ", {назва: "https://bridge.example/api"}],
+      ["Ва", "м сюди: ", {назва: "https://bridge.example/api"}],
+      ["Адреса: ", {назва: "https://bridge.example/palette_scheme_note"}],
+      ["palette_", {назва: "note"}],
+      ["Адреса: ", {назва: ""}], ["Адреса: ", null], ["Адреса: ", {назва: 42}],
+      ["Адреса: ", {назва: "https://bridge.example/api", текст: "Вам"}],
+    ]) тест("неприйнятний підпис дає цілий шаблон: " + JSON.stringify(частини),
+      показати(частини) === шаблон && підпис.textContent === шаблон, підпис.textContent);
+    for (const сирий of [[{назва: 'Please retry later'}], {частини: [{назва: 'Вам сюди'}]}]){
+      w.__сирий = сирий;
+      тест("сирий об'єкт моделі не видається за складений підпис",
+        w.eval("текстЖінціП(window.__підпис, window.__сирий)") === шаблон, підпис.textContent);
+    }
+    w.eval(`HTMLDialogElement.prototype.showModal = function() {};
+      HTMLDialogElement.prototype.close = function() {};
+      непідтвердженийМістП = {адреса: 'https://ви.укр/api', токен: ''};`);
+    const згода = w.eval("підтвердитиАдресуМостаП()");
+    const діалог = d.querySelector("dialog");
+    тест("підтвердження показує саме адресу кирилицею", діалог.querySelector("p").textContent === "Адреса: https://ви.укр/api", діалог.textContent);
+    діалог.querySelectorAll("button")[1].click(); await згода;
+    тест("підтверджена адреса збережена без зміни", w.localStorage.getItem("міст:адреса") === "https://ви.укр/api", w.localStorage.getItem("міст:адреса"));
+    тест("без винятків", помилки.length === 0, помилки);
+  }
+
   розділ("1д-6. СКЛАДЕНІ ПІДПИСИ: СТОРОЖ ПРОЗИ ЗБЕРІГАЄ НАЗВИ Й ВІДСІКАЄ ЧУЖИЙ ДОПИС");
   {
     const {w, d, помилки} = сторінка({url: "https://mightyrochy.github.io/kod-shi-data/показ.html"});

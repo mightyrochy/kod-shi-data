@@ -1,0 +1,68 @@
+── ПРОМПТ (8736 симв.) ──
+Ти — перекладачка в застосунку-стилістці. Ти пишеш природною українською тексти, які зараз побачить жінка. Рішень не приймаєш, на питання не відповідаєш, змісту не міняєш.
+
+Вхід — JSON-об'єкт: ключ — номер тексту н, значення — текст, який склали код та інші моделі.
+
+Ключі відповіді — ті самі, що у вході, кожен: номер н тексту, значення — рядок, той самий зміст природною українською, без англійських слів і кодів; ПЕРЕКЛАДАЙ КОЖНЕ англійське слово, навіть одне посеред українського речення; латиницею лишай лише назви крамниць і брендів, «V-подібний» і «den»; текст, що вже природний і до неї на «ти», — без змін, а український текст на «ви» перепиши на «ти», решту лиши слово в слово.
+
+Вид кожної речі — теж зміст: річ у перекладі — та сама, що у вході, а не схожа чи сусідня. ankle boots — черевики чи ботильйони, boots — чоботи, heeled — на підборах, а не туфлі, pumps — туфлі-човники, loafers — лофери; pendant — кулон чи підвіска, necklace — намисто чи ланцюжок, а не каблучка, сережки чи браслет; ring — каблучка; earrings — сережки. Українські назви речей у вході (назви з крамниці, найчастіше перед « — ») переписуй літера в літеру: не міняй, не переставляй і не додавай у них жодного слова.
+
+Про жінку — лише до неї, на «ти» (ти, тебе, тобі, твій, твоя; хочеш, скинеш; наказ однини: розкажи, оберни, тримай, дай), і в питаннях теж: you, your, she, her про неї — «ти», «твій» (her skin tone — твій тон шкіри; when she turns her head — коли ти повертаєш голову; she looks taller — ти виглядаєш вищою), англійський наказ — наказом однини; «вона», «її» — лише про річ (сукню, сумку, куртку). Говорить стилістка — одна жінка: про себе — від першої особи однини й у жіночому роді (я підібрала, я б додала), не «ми», не від імені застосунку чи коду і ніколи словами самої жінки.
+
+Мова: літературна українська, як у текстах українських крамниць одягу. Кожне українське слово — літерами лише української абетки, без жодної латинської літери чи стороннього знака всередині слова. Кожне речення — одна остаточна версія, без виправлень посеред тексту. Словничок нижче — лише як перекласти англійське слово, коли воно є у вході; це не зміст: річ, тканина чи колір, яких у вході нема, у тексті не з'являються. Звичні українські назви для слів англійського джерела: trousers, pants — штани; dressy, dressier — ошатний, ошатніше; look, outfit — образ; taupe — сіро-бежевий; loose — вільний; suede — замша (жіночий рід); slip dress — сукня-комбінація; camel — кемел (колір). Назви речей і кольорів, які дала крамниця, — як є.
+
+Перевір кожне слово ДО відповіді: до неї — лише «ти», жодного «ви», «ваш» і наказу множини, і про неї жодного «вона», «її», «їй», жодне слово не стоїть двічі поспіль, кожна річ — того самого виду, що у вході (річ образу — іменником коду її виду з переліку, коли він є, і слова при ній узгоджені з цим іменником), а українська назва речі — слово в слово. Відповідь — рівно ОДИН JSON-об'єкт і нічого після нього: другої, виправленої версії, приміток і пояснень не пиши — помилку виправ у тому самому об'єкті.
+
+Речі образу — перелік речей картки (номер речі — як на картці, поруч — її коди):
+1 — kind code: blazer · colour code: chocolate · about it: text н=1
+2 — kind code: skirt · colour code: brown · about it: text н=2
+3 — kind code: pumps · colour code: black · about it: text н=3
+4 — kind code: bag_generic · colour code: ginger · about it: text н=4
+5 — kind code: scarf_generic · colour code: pink · about it: text н=5
+When a text speaks of an item of the list, call it by the Ukrainian noun of its kind code (kind code: …) — the same noun in the right case in every text (trench_coat — «тренч», sweater — «светр», loafers — «лофери»), not by another kind or a synonym of the English word, whatever word the English text uses; a code ending in _generic names only the family (dress_generic — a dress, bag_generic — a bag). Make every adjective, pronoun and verb with the item agree with that noun in gender and number («бежевий тренч, який…»; «шкіряні лофери, які…»). A name you translate in this same call (text н=K): give it one noun and call the item by it, in agreement, in every text. A text the list gives as about an item (about it: text н=M) speaks of that one item, and so does every other text where the English names it. The colour of an item of the list is its colour code (colour code: …): write the Ukrainian name of that code. The English colour words for that item are the stylist's impression of a photo: do not turn them into a colour of their own — the item's colour stands in their place. Colours of its details (trim, strap, buttons, print), its fabric and the rest — translate from the text. The list is for the items only: an item the English text does not name is not added to the translation — neither to the description nor to the advice.
+
+Colour codes: black — чорний; brown — коричневий; chocolate — шоколадний; ginger — рудий; pink — рожевий.
+
+ТЕКСТИ:
+{
+"1": "This is a relaxed-fit blazer in deep chocolate brown with soft, matte fabric. The cut flows freely without being tight, providing comfort for standing all evening while maintaining a structured silhouette that balances your upper body.",
+"2": "You are wearing a straight-cut skirt in warm brown tones that falls to your knee length. Its clean lines create a quiet foundation that lets the rest of your outfit shine without adding unnecessary bulk to your lower half.",
+"3": "These are sleek black pumps with a moderate heel height, offering support for moving through the club floor. Their solid color connects seamlessly with the darker tones of your blazer and skirt, extending your leg line elegantly.",
+"4": "This is a versatile ginger-colored bag made of smooth material, sized perfectly to hold your essentials for the night out. The warm tone adds an earthy accent that complements the browns in your top and bottom without clashing with the black shoes.",
+"5": "This large scarf features a soft pink and white check pattern with delicate fringed edges. Its generous size allows for comfortable draping around your neck or shoulders, adding texture and a touch of color to your monochromatic base.",
+"6": "For your rock concert at the club on this Friday evening, you are wearing a relaxed chocolate blazer over a straight brown skirt, paired with black pumps and a ginger bag. I have added a pink check scarf to tie everything together. The outfit works because the warm brown tones of the blazer and skirt feel cozy for autumn nights, while the classic style requested keeps it grounded against the rock energy. The bright pink scarf adds a perfect pop of color that will catch the light in the club without overpowering your look. This combination balances the volume of your shoulders with a clean line at the hips, leading the eye smoothly down to your legs.",
+"7": "Wrap the scarf loosely around your neck and let the fringed ends hang down your front for warmth while you stand in the crowd.",
+"8": "If you feel hot from being in the dense crowd, slide the blazer off your shoulders but keep it draped over your arms or wear it open at the front.",
+"9": "Tuck one side of the bag strap slightly under your arm to free up a hand for holding a drink or phone during the show.",
+"10": "Жакет гіркий шоколад KOIN — Adding brown pumps introduces a second lightness step and breaks the flatness of the all-black top/bottom combination, shifting the outfit's level up to match the smart occasion.",
+"11": "Жакет гіркий шоколад KOIN — Keeping the relaxed cut of the trousers follows your waistline instead of running straight past it, leading the look to the target X shape you carry.",
+"12": "Жакет гіркий шоколад KOIN — The relaxed cut of the trousers allows for more ease at the bust level, ensuring freedom of movement while standing in the crowd.",
+"13": "Жакет гіркий шоколад KOIN — Adding brown pumps creates an outer layer clearly shorter than the maxi trousers, breaking the horizontal line and adding interest.",
+"14": "Жакет гіркий шоколад KOIN — Swapping the black blazer for a brown one (from verdict) would add color, but keeping the black ensures the palette remains inside her scheme while adding brown pumps as the accent.",
+"15": "Жакет гіркий шоколад KOIN — Adding brown pumps adds a second lightness step to break the flatness of the all-black top/bottom combination, shifting the outfit's level up to match the smart occasion.",
+"16": "Жакет гіркий шоколад KOIN — The velvet texture of the blazer adds a non-texture source for the render, preventing texture loss in the try-on photograph.",
+"17": "Туфлі човники, ATTICO, шкіра, колір чорний — The brown pumps cut the leg line better than black ones when next to skin, matching neither leg nor bottom directly but creating a softer transition."
+}
+
+── ВІДПОВІДЬ (3773 симв., 31.0 с, HTTP 200) ──
+```json
+{
+"1": "Це блейзер вільного крою глибокого шоколадного кольору з м’якою матовою тканиною. Крій вільний і не облягає, забезпечуючи комфорт під час тривалого стояння увечері та зберігаючи структурований силует, який гармонійно балансує твій верх.",
+"2": "Ти одягла спідницю прямого крою теплих коричневих тонів довжиною до коліна. Її чіткі лінії створюють спокійну основу, яка дозволяє іншим елементам образу сяяти без зайвого об’єму в нижній частині тіла.",
+"3": "Це витончені чорні туфлі-човники на помірному підборі, які забезпечують підтримку при пересуванні по танцполу. Їхній однотонний колір бездоганно гармонує з темними тонами блейзера та спідниці, вишукано видовжуючи твої ноги.",
+"4": "Це універсальна сумка рудого кольору з гладкої тканини ідеального розміру для всіх необхідних речей на вечір. Теплий відтінок додає природний акцент, який доповнює коричневі тони верху та низу без конфлікту з чорним взуттям.",
+"5": "Цей великий шарф має м’який рожево-білий картатий візерунок і ніжні бахромчасті краї. Його розмір дозволяє зручно обернути навколо шиї або плечей, додаючи текстуру та відтінок кольору до твого монохромного образу.",
+"6": "Для рок-концерту в клубі цього п’ятничного вечора ти одягла шоколадний блейзер вільного крою поверх коричневої спідниці прямого крою, поєднавши з чорними туфлями та рудою сумкою. Я додала рожевий картатий шарф, щоб все гармонійно пов’язати. Образ працює тому, що теплі коричневі тони блейзера та спідниці створюють затишок для осінніх вечорів, а класичний стиль відповідає твоєму запиту і зберігає образ приземленим на тлі рок-енергії. Яскравий рожевий шарф додає чудовий колірний акцент, який буде грайливо відбиватися у світлі клубу без перевантаження образу. Це поєднання збалансовує об’єм плечей і чисту лінію на стегнах, плавно направляючи погляд до твоїх ніг.",
+"7": "Вільним рухом оберни шарф навколо шиї та дай бахромчасті кінці вільно звисати спереду для тепла під час стояння в натовпі.",
+"8": "Якщо тобі жарко від перебування у щільному натовпі, скинь блейзер з плечей і залиш його драпуватись на руках або носи розстебнутим спереду.",
+"9": "Злегка підверни одну сторону сумки під руку, щоб звільнити іншу для тримання напою чи телефону під час концерту.",
+"10": "Блейзер гіркий шоколад KOIN — Додавання коричневих туфель вводить другий крок легкості та руйнує плоскість поєднання чорного верху/низу, переміщуючи образ на рівень, що відповідає розумному випадку.",
+"11": "Блейзер гіркий шоколад KOIN — Вільний крій штанів повторює лінію твоєї талії замість того, щоб проходити прямо повз неї, направляючи образ до бажаної X-подібної форми, яку ти носиш.",
+"12": "Блейзер гіркий шоколад KOIN — Вільний крій штанів забезпечує більше простору на рівні грудей, гарантуючи свободу рухів під час стояння в натовпі.",
+"13": "Блейзер гіркий шоколад KOIN — Додавання коричневих туфель створює верхній шар, який явно коротший за штани-максі, розбиваючи горизонтальну лінію та додаючи інтерес.",
+"14": "Блейзер гіркий шоколад KOIN — Заміна чорного блейзера на коричневий (з вердикту) додала б кольору, але збереження чорного гарантує, що палітра залишається у твоїй схемі та доповнюється коричневими туфлями як акцентом.",
+"15": "Блейзер гіркий шоколад KOIN — Додавання коричневих туфель додає другий крок легкості для руйнування плоскість поєднання чорного верху/низу, переміщуючи образ на рівень, що відповідає розумному випадку.",
+"16": "Блейзер гіркий шоколад KOIN — Оксамитова текстура блейзера додає нетекстуроване джерело для рендерингу, запобігаючи втраті текстури у фотографії примірки.",
+"17": "Туфлі-човники ATTICO, шкіра, колір чорний — Коричневі туфлі краще обрізають лінію ноги, ніж чорні, коли вони біля шкіри, не збігаючись безпосередньо ні з ногою, ні з низом, але створюючи м’якший перехід."
+}
+```
