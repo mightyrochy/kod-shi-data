@@ -485,7 +485,7 @@ function рядокЗміниП(з, р){
     if (х.урл){ const л = елНазваП('a', null, х.назва || ''); л.href = х.урл; л.target = '_blank'; л.rel = 'noopener'; н.appendChild(л); }
     else if (х.назва) н.appendChild(елНазваП('span', 'назва', х.назва));
     const під = ел('div', 'під');
-    if (х.крамниця){ const тв = document.createTextNode(''); назваЖінціП(тв, х.крамниця + (х.ціна ? ' · ' : ''), undefined, 'data'); під.appendChild(тв); }
+    if (х.крамниця){ const тв = document.createTextNode(''); текстЖінціП(тв, підписЗНазвоюП([{назва: String(х.крамниця)}, х.ціна ? ' · ' : '']), undefined, undefined, 'data'); під.appendChild(тв); }
     if (х.ціна) під.appendChild(елЖінціП('span', 'ціна', грн(х.ціна)));
     н.appendChild(під);
   }
