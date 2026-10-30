@@ -54,7 +54,7 @@ sys.setrecursionlimit(20000)
 НЕ_ШЛЯХ_ІМ = re.compile(r"^(тест|gate_|audit_|стенд|батарея_|measure_|pair_test|мутанти|replay|проба)")
 РЕЄСТРОВІ_МОДУЛІ = frozenset(("slots", "внутрішня_мова"))
 
-Є_СЛОВО = re.compile(r"[A-Za-zА-Яа-яЇїІіЄєҐґ]{3,}")
+Є_СЛОВО = re.compile(r"[A-Za-zА-Яа-яЇїІіЄєҐґ]+")
 ЕСКЕЙП = re.compile(r"\\[A-Za-z]|\(\?[A-Za-z:=!<P]*(<[A-Za-z_]+>)?|\[:[a-z]+:\]|\\p\{[A-Za-z]+\}")
 ШЛЯХ_ЗАПИСІВ = re.compile(r"(каталог|catalog)[^/\"']*\.(xml|jsonl?)(\.gz)?$|\.jsonl|brief|/сирі|^сирі", re.I)
 ВЕРХ_ДОКУМЕНТА = re.compile(r"document\s*\.\s*(body|documentElement|title|head)\b|"
@@ -205,7 +205,7 @@ def base_or(множина):
 
 
 def слово_в_літералі(т):
-    return isinstance(т, str) and "\n" not in т and len(т) <= 200 and bool(Є_СЛОВО.search(т))
+    return isinstance(т, str) and bool(Є_СЛОВО.search(т))
 
 
 def слово_в_регексі(т):
@@ -297,6 +297,7 @@ class Аналіз:
         s.env, s.ret, s.об = {}, {}, {}
         s.лічильник = 0
         s.ТЕКСТОВІ_КЛЮЧІ, s.КОДОВІ_КЛЮЧІ = set(), set(s.реєстр.ключі_родин)
+        s.КОДОВІ_ДАНІ = set()      # ключі, що їх у запис пишуть кодами (роль з даних, не з переліку написань)
         s.записи = {}              # (id вузла, id об'єкта, ключ) → (О, ключ, значення, файл, рядок, умови D)
         s.читання3 = {}            # місце читання поля → причина (пункт 3)
         s.використання_переліків = {}   # id об'єкта-переліку → (файл, рядок використання)
@@ -489,6 +490,8 @@ class Аналіз:
             return
         ел = [a.v for a in літерали]
         р = s.реєстр.сім_я(ел) if len(ел) >= 2 else None
+        if not р and len(ел) >= 2 and all(isinstance(x, str) and КОД_ЛІТЕРАЛ.match(x) for x in ел):
+            р = "поза реєстром"        # перелік латинських кодів: родину дасть поле коду, яким його порівнюють
         if р:
             о.родина = р
 
@@ -504,9 +507,6 @@ class Аналіз:
                 s.зберегти_в_об(о, ключ.v, v)
                 s.зберегти_в_об(о, "#ключі", {("L", ключ.v)})
                 s.подія_запису(е, о, ключ.v, v | ум, ф, e_line=ключ.line or е.line)
-                if v and any(not об(x) and x[0] in ("TP", "TN", "TF") for x in v) and not о.рек:
-                    о.рек = True
-                    s.змін += 1
             elif ключ.k == "star":
                 for з in sorted((x for x in v if об(x)), key=lambda x: x.id):
                     for к2 in sorted(з.пол, key=str):
@@ -563,9 +563,12 @@ class Аналіз:
         р = set()
         if ключ in s.ТЕКСТОВІ_КЛЮЧІ:
             р.add(("TR", місце))
-        if ключ in s.КОДОВІ_КЛЮЧІ:
+        if s.код_ключ(ключ):
             р.add(("C", місце))
         return р
+
+    def код_ключ(s, ключ):
+        return ключ in s.КОДОВІ_КЛЮЧІ or (ключ in s.КОДОВІ_ДАНІ and ключ not in s.ТЕКСТОВІ_КЛЮЧІ)
 
     def поле(s, вал, ключ, місце):
         р = set()
@@ -590,10 +593,10 @@ class Аналіз:
             if v.вид == "rec":
                 ролі = s.роль(ключ, місце)
                 р |= ролі
-                if ключ not in s.КОДОВІ_КЛЮЧІ:
+                if not s.код_ключ(ключ):
                     р.add(("TR", місце))      # зчитаний із файлу запис: поле не код — можливі слова крамниці
                     р.add(v)
-            elif v.рек and v.вид in ("dict", "list") and ключ in s.КОДОВІ_КЛЮЧІ:
+            elif v.рек and v.вид in ("dict", "list") and s.код_ключ(ключ):
                 р.add(("C", місце))
             elif v.вид in ("feed", "page", "node"):
                 р |= {v}
@@ -820,15 +823,18 @@ class Аналіз:
         об_ = sorted((v for v in rv if об(v)), key=lambda x: x.id)
         # мережа / читання
         if ім == "json" and fn.k == "attr" and (ф.file.startswith("zhnyvarka/") or ф.lang == "js"):
-            return {s.новий(е, "rec", ф)}
-        if ім in ЧИТАННЯ_JSON and fn.k == "attr" and fn.a[0].k == "name" and fn.a[0].v in ("json", "JSON", "gzip", "pickle"):
-            шлях = any(не_об(v) and v[0] == "L" and ШЛЯХ_ЗАПИСІВ.search(v[1]) for v in усі)
-            if шлях or any(не_об(v) and v[0] == "H" for v in усі):
+            if s.шлях_запису(rv):
                 return {s.новий(е, "rec", ф)}
+            return {s.новий(е, "feed", ф)} if ф.file.startswith("zhnyvarka/") else set()
+        if ім in ЧИТАННЯ_JSON and fn.k == "attr" and fn.a[0].k == "name" and fn.a[0].v in ("json", "JSON", "gzip", "pickle"):
+            if s.шлях_запису(усі):
+                return {s.новий(е, "rec", ф)}
+            if any(не_об(v) and v[0] == "H" for v in усі) and ф.file.startswith("zhnyvarka/"):
+                return {s.новий(е, "feed", ф)}
             return set()
         if (ім in ("urlopen", "fetch", "urlretrieve") and fn.k == "name") or (
                 fn.k == "attr" and fn.a[0].k == "name" and fn.a[0].v in МЕРЕЖА and ім in ("get", "post", "request", "urlopen", "fetch")):
-            return {("H", місце)}
+            return {("H", місце)} | {("U", v[1]) for v in усі if не_об(v) and v[0] == "L"}
         if ім == "new_page" or ім == "newPage":
             return {s.новий(е, "page", ф)}
         # корені документа
@@ -1047,7 +1053,12 @@ class Аналіз:
         # конструктори й невідомі функції: нічого, окрім слідів шляху й тексту
         if є_користувацька:
             return set()
-        return {x for x in (set(rv) | усі) if not об(x) and x[0] in ("L", "H") + ТЕКСТ + ("C",) and (x[0] != "L" or (isinstance(x[1], str) and len(x[1]) < 200))}
+        return {x for x in (set(rv) | усі) if not об(x) and x[0] in ("L", "H", "U") + ТЕКСТ + ("C",) and (x[0] != "L" or (isinstance(x[1], str) and len(x[1]) < 200))}
+
+    @staticmethod
+    def шлях_запису(вал):
+        """Значення несе шлях до файлу чи адреси каталогу (`catalog.json`, `.jsonl`, `/сирі`): лише його читання дає запис."""
+        return any(не_об(v) and v[0] in ("L", "U") and isinstance(v[1], str) and ШЛЯХ_ЗАПИСІВ.search(v[1]) for v in вал)
 
     def слово_в_патерні(s, вираз, вал):
         if вираз.k == "str":
@@ -1104,6 +1115,9 @@ class Аналіз:
         if о.рек:
             if any(не_об(v) and v[0] in ("TP", "TN", "TF") for v in вал) and ключ not in s.ТЕКСТОВІ_КЛЮЧІ:
                 s.ТЕКСТОВІ_КЛЮЧІ.add(ключ)
+                s.змін += 1
+            if ключ not in s.КОДОВІ_ДАНІ and any(не_об(v) and (v[0] == "C" or (v[0] == "L" and isinstance(v[1], str) and КОД_ЛІТЕРАЛ.match(v[1]))) for v in вал):
+                s.КОДОВІ_ДАНІ.add(ключ)
                 s.змін += 1
 
     # ── прохід ────────────────────────────────────────────────────────────────────────────────────────────────
@@ -1177,16 +1191,16 @@ def обчислити(a):
             м[к] = чому
     реєстр = a.реєстр
     for _, (о, ключ, вал, файл, рядок) in sorted(a.записи.items(), key=lambda kv: (kv[1][3], kv[1][4], str(kv[1][1]), kv[1][0].id)):
+        ім = ключ if ключ is not None else "*"
+        for т in sorted(v[1] for v in вал if не_об(v) and v[0] == "TP"):
+            ф2, р2 = розібрати_місце(т)
+            додати(ф2, р2, 4, "текст з кореня документа сторінки доходить до поля «%s» (%s:%d)" % (ім, файл, рядок))
         if not о.рек:
             continue
-        ім = ключ if ключ is not None else "*"
         d = sorted(v[1] for v in вал if не_об(v) and v[0] == "D")
         if d:
             додати(файл, рядок, 1, "запис поля «%s»: значення виведено читачем слів (%s)" % (ім, d[0]))
-        for т in sorted(v[1] for v in вал if не_об(v) and v[0] == "TP"):
-            ф2, р2 = розібрати_місце(т)
-            додати(ф2, р2, 4, "текст з кореня документа сторінки доходить до запису поля «%s» (%s:%d)" % (ім, файл, рядок))
-        if ключ is not None and ключ in a.КОДОВІ_КЛЮЧІ and файл.rsplit("/", 1)[-1].split(".")[0] not in РЕЄСТРОВІ_МОДУЛІ:
+        if ключ is not None and a.код_ключ(ключ) and файл.rsplit("/", 1)[-1].split(".")[0] not in РЕЄСТРОВІ_МОДУЛІ:
             дозв = реєстр.дозволені(ключ)
             коди = sorted(v[1] for v in вал if не_об(v) and v[0] == "L" and
                           (КОД_ЛІТЕРАЛ.match(v[1]) or (" " not in v[1] and Є_СЛОВО.match(v[1]) and len(v[1]) <= 24)))
