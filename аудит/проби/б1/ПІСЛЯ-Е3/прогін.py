@@ -53,7 +53,7 @@ def prompt_profile(folder):
 def update_report():
     rows = [json.loads(p.read_text(encoding='utf-8')) for p in sorted(HERE.glob('*/результат.json'))]
     counts = collections.Counter(name for row in rows for name in set(row['звірки']))
-    cards = sum(row['карток'] > 0 for row in rows)
+    cards = sum(row['карток'] == 4 for row in rows)
     clean = sum(row['карток'] > 0 and not row['звірки'] and row['rc'] == 0 for row in rows)
     text = [f'SHA `main` на старті: {SHA}', '', '# Е3 наживо — серія 2 ПІСЛЯ', '',
             f'Завершено {len(rows)}/30 запитів. Картки: ДО 26/30 → ПІСЛЯ {cards}/{len(rows)}; '
@@ -69,7 +69,7 @@ def update_report():
             '| № | запит | rc | с | карток | звірок ВПАЛО | запис | стан |',
             '|---|---|---|---|---|---|---|---|']
     for row in rows:
-        status = 'виміряно' if row['карток'] else 'НЕ ВИМІРЯНО: ' + row['причина']
+        status = 'виміряно' if row['карток'] == 4 else 'НЕ ВИМІРЯНО ПОВНІСТЮ: ' + row['причина']
         text.append(f"| {row['номер']:02} | {row['сцена']} | {row['rc']} | {row['секунди']} | {row['карток']} | {row['впало']} | `{row['запис']}/` | {status} |")
     text += ['', '## Звірки → кількість запитів', '']
     text += [f'- {name}: **{n}**.' for name, n in counts.most_common()] or ['Невдалих звірок у завершених сценах немає.']
@@ -160,13 +160,15 @@ def main():
         text = (folder / 'лог.txt').read_text(encoding='utf-8')
         failures = re.findall(r'^\s*✗ (.+?)(?:  →|$)', text, re.M)
         totals = re.findall(r'^ВПАЛО (\d+)', text, re.M)
-        cards = len(list((folder / 'знімки').glob('kartka_poz*_ruka*_seed3.png')))
+        hands = [json.loads(value) for value in re.findall(r'^\s+рука [1-4] (\{.*\})$', text, re.M)]
+        hands = [hand for hand in hands if 'речей' in hand and 'збій' in hand]
+        cards = sum(hand['речей'] > 0 and not hand['збій'] for hand in hands)
         old = ROOT / f'аудит/проби/б1/ДО-2710/{number:02}_{scene}/VIDPOVIDI'
         old_profile, new_profile = prompt_profile(old), prompt_profile(folder / 'VIDPOVIDI')
         same = old_profile == new_profile if old_profile is not None and new_profile is not None else 'не виміряно'
         write_json(folder / 'профіль-ДО-ПІСЛЯ.json', {'ДО': old_profile, 'ПІСЛЯ': new_profile, 'збігаються': same,
                    'жінка': json.loads(Path(env['ZHINKA']).read_text(encoding='utf-8-sig'))})
-        reason = '' if cards else 'див. лог.txt; номер дошки має призначити диспетчер'
+        reason = '' if cards == 4 else 'див. лог.txt; номер дошки має призначити диспетчер'
         result = {'номер': number, 'сцена': scene, 'rc': rc, 'секунди': elapsed, 'карток': cards,
                   'впало': int(totals[-1]) if totals else len(failures), 'звірки': failures,
                   'запис': folder.relative_to(ROOT).as_posix(), 'причина': reason, 'профіль-збігається': same}
