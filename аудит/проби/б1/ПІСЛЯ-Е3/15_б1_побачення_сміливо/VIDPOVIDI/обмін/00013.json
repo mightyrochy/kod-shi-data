@@ -1,0 +1,27 @@
+{
+ "версія": 1,
+ "запит": {
+  "model": "qwen/qwen3.5-9b",
+  "max_tokens": 4000,
+  "messages": [
+   {
+    "role": "user",
+    "content": [
+     {
+      "type": "text",
+      "text": "{\"task\": {\"role\": \"You read the description of an outfit and list its items as data.\", \"rules\": [\"One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.\", \"One item carries one thing — of two alternatives list the first; a note in brackets is not an item.\", \"Slot \\\"accessory\\\" is for an item no other slot fits.\", \"\\\"is_outfit\\\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note.\"], \"limits\": [\"Rely only on the input: do not invent what it does not contain.\", \"The answer is one JSON object following \\\"answer_schema\\\", without explanations and without ```.\"], \"language\": \"English\", \"answer\": \"ITEM_LIST\", \"answer_schema\": {\"is_outfit\": \"yes|no\", \"items\": [{\"name\": \"<what the item is>\", \"details\": \"<its cut, length and fabric>\", \"slot\": \"top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory\", \"color_hex\": \"<#rrggbb or null>\", \"worn\": \"<true, or false when the description says the outfit goes without it>\"}]}, \"input\": [\"\\\"description\\\" — the outfit description\"]}, \"description\": \"Cream silk blouse in a soft drape cut that falls just below the elbow, #f5f1e6 color, smooth liquid silk.\\nTailored wool-blend trousers with a high waist and slim leg, #8c7b6d color, structured virgin wool with a fine herringbone texture.\\nA longline tailored blazer in a matching tonal palette, #8c7b6d color, three-quarter sleeves to elongate the silhouette, heavy wool blend.\\nBlack satin pumps with a stiletto heel and a pointed toe, #0a0a0a color, smooth glossy leather that catches the light.\\nA slender gold chain necklace with an emerald cut stone, #D4AF37 metallic gold tone, 18k gold vermeil setting.\\nThis ensemble works perfectly because it transforms a neat business dress code into a statement-making look for an evening date without breaking any rules. The longline blazer adds sophistication and length to the frame while the satin pumps introduce a touch of glamour suitable for restaurant lighting. Every element from the herringbone texture to the emerald accent stone ensures she stands out exactly as requested, balancing professional polish with bold expressive details.\"}"
+     }
+    ]
+   }
+  ],
+  "temperature": 1
+ },
+ "відповідь": {
+  "status": 200,
+  "contentType": "application/json",
+  "headers": {
+   "x-model": "qwen/qwen3.5-9b"
+  },
+  "body": "{\"content\":[{\"type\":\"text\",\"text\":\"{\\\"is_outfit\\\":\\\"yes\\\",\\\"items\\\":[{\\\"name\\\":\\\"blouse\\\",\\\"details\\\":\\\"soft drape cut that falls just below the elbow, smooth liquid silk\\\",\\\"slot\\\":\\\"top\\\",\\\"color_hex\\\":\\\"#f5f1e6\\\",\\\"worn\\\":true},{\\\"name\\\":\\\"trousers\\\",\\\"details\\\":\\\"tailored high waist and slim leg with a fine herringbone texture\\\",\\\"slot\\\":\\\"bottom\\\",\\\"color_hex\\\":\\\"#8c7b6d\\\",\\\"worn\\\":true},{\\\"name\\\":\\\"blazer\\\",\\\"details\\\":\\\"longline tailored with three-quarter sleeves to elongate the silhouette, heavy wool blend\\\",\\\"slot\\\":\\\"outerwear\\\",\\\"color_hex\\\":\\\"#8c7b6d\\\",\\\"worn\\\":true},{\\\"name\\\":\\\"pumps\\\",\\\"details\\\":\\\"stiletto heel and pointed toe, smooth glossy leather that catches the light\\\",\\\"slot\\\":\\\"shoes\\\",\\\"color_hex\\\":\\\"#0a0a0a\\\",\\\"worn\\\":true},{\\\"name\\\":\\\"necklace\\\",\\\"details\\\":\\\"slender gold chain with an emerald cut stone in 18k gold vermeil setting\\\",\\\"slot\\\":\\\"jewelry\\\",\\\"color_hex\\\":\\\"#D4AF37\\\",\\\"worn\\\":true}]}\"}],\"usage\":{\"input_tokens\":599,\"output_tokens\":232},\"stop_reason\":\"end_turn\"}"
+ }
+}
