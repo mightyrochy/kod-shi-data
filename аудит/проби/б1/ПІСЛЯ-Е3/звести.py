@@ -3,11 +3,31 @@ import importlib.util
 import json
 from pathlib import Path
 import re
+import subprocess
 
 HERE = Path(__file__).resolve().parent
 spec = importlib.util.spec_from_file_location('серія', HERE / 'прогін.py')
 run = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(run)
+
+
+def person(folder):
+    names = sorted(folder.glob('*ПАКЕТ_V1*.txt'))
+    if names:
+        text = names[0].read_text(encoding='utf-8-sig')
+    else:
+        names = subprocess.check_output(['git', 'ls-tree', '-r', '--name-only', '-z', 'HEAD', '--', folder.relative_to(run.ROOT).as_posix()], cwd=run.ROOT).decode('utf-8').split('\0')
+        names = sorted(name for name in names if 'ПАКЕТ_V1' in name and name.endswith('.txt'))
+        if not names:
+            return None
+        text = subprocess.check_output(['git', 'show', 'HEAD:' + names[0]], cwd=run.ROOT).decode('utf-8-sig')
+    value = json.JSONDecoder().raw_decode(text[text.index('{'):])[0].get('person')
+    if value is None:
+        return None
+    return {key: value.get(key) for key in ('body', 'contrast', 'undertone')} | {
+        'feature_measurements': value.get('palette', {}).get('feature_measurements')}
+
+
 for path in sorted(HERE.glob('*/результат.json')):
     result = json.loads(path.read_text(encoding='utf-8'))
     text = (path.parent / 'лог.txt').read_text(encoding='utf-8')
@@ -16,6 +36,11 @@ for path in sorted(HERE.glob('*/результат.json')):
     result['знімків-карток'] = len(list((path.parent / 'знімки').glob('kartka_poz*_ruka*_seed3.png')))
     result['карток'] = sum(hand['речей'] > 0 and not hand['збій'] for hand in hands)
     result['стани-рук'] = [{'рука': hand['рука'], 'речей': hand['речей'], 'збій': hand['збій']} for hand in hands]
+    old = run.ROOT / 'аудит/проби/б1/ДО-2710' / path.parent.name / 'VIDPOVIDI'
+    old_person, new_person = person(old), person(path.parent / 'VIDPOVIDI')
+    same = old_person == new_person if old_person is not None and new_person is not None else 'не виміряно'
+    run.write_json(path.parent / 'мірки-кольори-складання-ДО-ПІСЛЯ.json', {'ДО': old_person, 'ПІСЛЯ': new_person, 'збігаються': same})
+    result['мірки-кольори-складання-збігаються'] = same
     if result['карток'] < 4:
         failure = re.search(r'поломка руки [12]:[^\n]+?(?= · контроль:|$)', text, re.M)
         result['причина'] = (failure[0] if failure else 'не всі руки дійшли до карток') + '; номер дошки має призначити диспетчер'
