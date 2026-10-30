@@ -33,6 +33,8 @@ class Граф:
         self.нерозвязані = set()
         self.звязані_виклики = {}
         self.готові_вирази = set()
+        self.координати = {}
+        self.лічильники = defaultdict(int)
         for файл, текст in sorted(тексти.items()):
             with warnings.catch_warnings():
                 warnings.simplefilter('ignore', SyntaxWarning)
@@ -51,8 +53,12 @@ class Граф:
             self.ребра[звідки].add(куди)
             self.зворотні[куди].add(звідки)
 
-    def _оголосити(self, файл, вузол, область):
+    def _оголосити(self, файл, вузол, область, рядок=0):
         """Збирає означення й лексичні імпорти до аналізу викликів."""
+        if isinstance(вузол, ast.stmt):
+            рядок = вузол.lineno
+        self.лічильники[файл] += 1
+        self.координати[вузол] = (рядок, self.лічильники[файл])
         if isinstance(вузол, (ast.FunctionDef, ast.AsyncFunctionDef, ast.ClassDef)):
             область += '.' + вузол.name
             if not isinstance(вузол, ast.ClassDef):
@@ -71,7 +77,7 @@ class Граф:
             for пс in вузол.names:
                 self.імпорти[файл, область, пс.asname or пс.name.split('.')[0]] = (пс.name, '')
         for ч in ast.iter_child_nodes(вузол):
-            self._оголосити(файл, ч, область)
+            self._оголосити(файл, ч, область, рядок)
 
     def _змінна(self, файл, область, ім):
         """Ключ змінної розділяє однойменні локальні області."""
@@ -84,7 +90,11 @@ class Граф:
 
     def _точка(self, файл, область, вузол):
         """Стабільна координата вузла, незалежна від версії ast.dump."""
-        ключ = (файл, область, вузол.lineno, вузол.col_offset, type(вузол).__name__)
+        # Позиції виразів у багаторядкових f-рядках змінились у Python 3.12.
+        # До того ж кілька Constant можуть мати однаковий span. Ідентичність
+        # дає структурний номер, координату для читання — найближчий оператор.
+        рядок, номер = self.координати[вузол]
+        ключ = (файл, область, рядок, номер, type(вузол).__name__)
         self.точки[ключ] = вузол
         return ключ
 
@@ -201,10 +211,12 @@ class Граф:
         elif isinstance(ціль, (ast.Subscript, ast.Attribute)):
             self._ціль(файл, область, ціль.value, значення)
 
-    def _тіло(self, файл, тіло, область):
+    def _тіло(self, файл, тіло, область, контроль=()):
         """Будує залежності операторів без змішування вкладених функцій."""
         for оп in тіло:
             к = self._точка(файл, область, оп)
+            for умова in контроль:
+                self.ребро(умова, к)
             if isinstance(оп, (ast.FunctionDef, ast.AsyncFunctionDef)):
                 нова = область + '.' + оп.name
                 параметри = оп.args.posonlyargs + оп.args.args
@@ -243,9 +255,14 @@ class Граф:
             for поле in ('body', 'orelse', 'finalbody'):
                 вкладене = getattr(оп, поле, None)
                 if isinstance(вкладене, list):
-                    self._тіло(файл, вкладене, область)
+                    залежності = контроль + (к,) if isinstance(оп, (ast.If, ast.While, ast.For, ast.AsyncFor)) else контроль
+                    self._тіло(файл, вкладене, область, залежності)
             for обробник in getattr(оп, 'handlers', ()):
-                self._тіло(файл, обробник.body, область)
+                self._тіло(файл, обробник.body, область, контроль)
+            for випадок in getattr(оп, 'cases', ()):
+                if випадок.guard is not None:
+                    self.ребро(self._вираз(файл, область, випадок.guard), к)
+                self._тіло(файл, випадок.body, область, контроль + (к,))
 
     def від_джерел(self, джерела=None):
         """Поширює значення від джерел по прямих ребрах до нерухомої точки."""

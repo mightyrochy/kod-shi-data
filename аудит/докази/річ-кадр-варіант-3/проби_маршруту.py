@@ -119,6 +119,28 @@ def б(x):
     return а(x) or ел.get("src")
 запис = dict(фото=а(None))
 '''}),
+        ('багаторядковий f-рядок з кількома Constant', {'a.py': '''
+def узяти(ел):
+    return (f"колір {ел.get('data-hex')} "
+            f"для {назва(ел)}")
+запис = dict(колір=узяти(ел))
+'''}),
+        ('DOM умова визначає сталу доступність', {'a.py': '''
+def доступність(ел):
+    if ел.select_one('.buy'):
+        return True
+    return None
+запис = dict(available=доступність(ел))
+'''}),
+        ('match вибирає сталий колір', {'a.py': '''
+def колір(ел):
+    match ел.get('data-hex'):
+        case '#fff':
+            return 'білий'
+        case _:
+            return None
+запис = dict(колір=колір(ел))
+'''}),
     ]
     результати = [перевірити(*в) for в in випадки]
     текст = (КОРІНЬ / 'zhnyvarka/жниварка.py').read_text(encoding='utf-8-sig')
