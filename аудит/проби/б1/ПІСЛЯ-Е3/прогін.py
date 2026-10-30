@@ -38,9 +38,14 @@ def write_json(path, value):
 
 def prompt_profile(folder):
     files = sorted(folder.glob('*хід_розмови.txt'))
-    if not files:
-        return None
-    text = files[0].read_text(encoding='utf-8-sig')
+    if files:
+        text = files[0].read_text(encoding='utf-8-sig')
+    else:
+        names = subprocess.check_output(['git', 'ls-tree', '-r', '--name-only', '-z', 'HEAD', '--', folder.relative_to(ROOT).as_posix()], cwd=ROOT).decode('utf-8').split('\0')
+        names = sorted(name for name in names if name.endswith('хід_розмови.txt'))
+        if not names:
+            return None
+        text = subprocess.check_output(['git', 'show', 'HEAD:' + names[0]], cwd=ROOT).decode('utf-8-sig')
     obj = json.JSONDecoder().raw_decode(text[text.index('{'):])[0]
     return obj.get('profile')
 
@@ -81,6 +86,11 @@ def main():
     source = (ROOT / 'аудит/проби/б1_доречність.md').read_text(encoding='utf-8-sig')
     scenes = [line.split('|') for line in source.splitlines() if line.startswith('б1_')]
     assert len(scenes) == 30
+    html = (STAND / 'index.html').read_text(encoding='utf-8')
+    build_sha = re.search(r'const ЗБІРКА_ПОКАЗУ = "([0-9a-f]{40})"', html)[1]
+    source_diff = subprocess.check_output(['git', 'diff', SHA, build_sha, '--', 'джерела', 'аудит/проби/рв6_стенд.js', 'аудит/ноутбук_стенд_2/проксі_почергове.js'], cwd=ROOT)
+    assert not source_diff, 'Збірка чи прилади відрізняються від main'
+    write_json(HERE / 'збірка.json', {'sha-main': SHA, 'sha-збірки': build_sha, 'диф-продукту-й-приладів': source_diff.decode('utf-8')})
     assert subprocess.check_output(['git', 'branch', '--show-current'], cwd=ROOT, text=True, encoding='utf-8').strip() == 'gemini/Е3-наживо'
     for number, (scene, woman, chat, extra) in enumerate(scenes, 1):
         folder = HERE / f'{number:02}_{scene}'
@@ -109,7 +119,7 @@ def main():
                    str(STAND), r'C:\Users\gemini\pyodide', '3']
         write_json(folder / 'запуск.json', {'sha-main': SHA, 'команда': command,
                    'змінні': {key: env[key] for key in ('MODEL','MODEL_MOVA','MODEL_URL','LMS_MODE','CTX','OTSINKA','FOTO','ODNOCHASNO','CHAT_TEXT','ZHINKA')}})
-        (folder / 'код.txt').write_text(f'{SHA} {scene} ПІСЛЯ {MODEL}+{MOVA}\n', encoding='utf-8')
+        (folder / 'код.txt').write_text(f'{build_sha} {scene} ПІСЛЯ {MODEL}+{MOVA}\n', encoding='utf-8')
         start = time.monotonic()
         proxy = stand = None
         try:
