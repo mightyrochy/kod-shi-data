@@ -11,7 +11,7 @@ index 2013c9477..19ce4d280 100644
      [int]$MaxBundleMB = 512,
      [string]$OutboxDir = '',
 diff --git "a/\320\260\321\203\320\264\320\270\321\202/\320\260\320\264\320\260\320\277\321\202\320\265\321\200\320\270/gemini/m9v/\321\205\320\265\321\210\321\226.psd1" "b/\320\260\321\203\320\264\320\270\321\202/\320\260\320\264\320\260\320\277\321\202\320\265\321\200\320\270/gemini/m9v/\321\205\320\265\321\210\321\226.psd1"
-index 2e1af9e5c..b6d477a25 100644
+index 2e1af9e5c..3ec32f51a 100644
 --- "a/\320\260\321\203\320\264\320\270\321\202/\320\260\320\264\320\260\320\277\321\202\320\265\321\200\320\270/gemini/m9v/\321\205\320\265\321\210\321\226.psd1"
 +++ "b/\320\260\321\203\320\264\320\270\321\202/\320\260\320\264\320\260\320\277\321\202\320\265\321\200\320\270/gemini/m9v/\321\205\320\265\321\210\321\226.psd1"
 @@ -3,10 +3,10 @@
@@ -19,7 +19,7 @@ index 2e1af9e5c..b6d477a25 100644
      'wrapper_update.ps1' = '4156307A17BDAE3AF7249E532947F659E99AA1349D159239159FAE60CA7E4F2B'
      'wrapper_probe.ps1'  = '85116D04C22EB64CBFF52E66BCEAE9B1091577A889EDD58A8B634093A82BDBC6'
 -    'wrapper_chain.ps1'  = '99C1766CD93D0935C1804275B75F09C32C377427F347B91432D82869FAE34194'
-+    'wrapper_chain.ps1'  = '03EE0055AB6B9C6DF205E309CF3E1F09BDB875837A9361052F0769C3620D8603'
++    'wrapper_chain.ps1'  = '42DF20D3C3A567CA7B3E7BC932057CD7053B4E7289832FC27A803048C1B33795'
      'wrapper_health.ps1' = 'B3E2C44C4F342A915B814854A7D7619EDE2E019B48DC4A50CF4C9DB304C2E531'
      'gemini_run.ps1'     = 'ED151D76BA6658EA230A0442252F0D7D05C2F6D723461C383D8E10016206E8FE'
 -    'gemini_publish.ps1' = '73F2F2AA868DA86391FA9FACFD1F818AA8D1A76B9511F4DA891CBFE1E77087A9'
@@ -28,10 +28,10 @@ index 2e1af9e5c..b6d477a25 100644
      # (незмінний URL; той самий sha256 віддає https://chatgpt.com/codex/install.ps1 — редирект на releases.openai.com — і публікує реліз
      # openai/codex). 2_під_gemini.ps1 -WithCodex виконує його лише при збігу CodexInstaller і ставить саме цей реліз (-Release).
 diff --git "a/\320\260\321\203\320\264\320\270\321\202/\320\260\320\264\320\260\320\277\321\202\320\265\321\200\320\270/gemini/wrapper_chain.ps1" "b/\320\260\321\203\320\264\320\270\321\202/\320\260\320\264\320\260\320\277\321\202\320\265\321\200\320\270/gemini/wrapper_chain.ps1"
-index aa4f34bce..b566d8e71 100644
+index aa4f34bce..4ab6fdb5e 100644
 --- "a/\320\260\321\203\320\264\320\270\321\202/\320\260\320\264\320\260\320\277\321\202\320\265\321\200\320\270/gemini/wrapper_chain.ps1"
 +++ "b/\320\260\321\203\320\264\320\270\321\202/\320\260\320\264\320\260\320\277\321\202\320\265\321\200\320\270/gemini/wrapper_chain.ps1"
-@@ -405,6 +405,90 @@ function Request-CloudReview([string]$Number, [string]$Head) {
+@@ -405,6 +405,104 @@ function Request-CloudReview([string]$Number, [string]$Head) {
      Write-WrapperLog "ланцюг: #$Number $Head — перевірка хмарним Claude, рядок диспетчерові"
  }
  
@@ -72,6 +72,16 @@ index aa4f34bce..b566d8e71 100644
 +    }
 +}
 +
++function Read-ChainOptionalFile([string]$Path) {
++    <# Відсутній файл стану допускається; відмова доступу лишається помилкою слота. #>
++    try { [IO.File]::ReadAllText($Path, $script:Utf8) }
++    catch {
++        $cause = $_.Exception.GetBaseException()
++        if ($cause -isnot [IO.FileNotFoundException] -and $cause -isnot [IO.DirectoryNotFoundException]) { throw }
++        ''
++    }
++}
++
 +function Get-ChainBranchWork([string]$Branch) {
 +    <# Пов'язує гілку з активною позначкою; помилка чужого стану лишає звичайну перевірку цієї смуги.
 +
@@ -93,22 +103,26 @@ index aa4f34bce..b566d8e71 100644
 +                }
 +                $branches = @("claude/$slug")
 +                $saved = Join-Path (Join-Path $lane.dir 'state') ('branch-' + (Get-Sha256Hex $slug) + '.txt')
-+                if (Test-Path -LiteralPath $saved -ErrorAction Stop) { $branches += [IO.File]::ReadAllText($saved, $script:Utf8).Trim() }
++                $branches += ([string](Read-ChainOptionalFile $saved)).Trim()
 +                $copy = [string](Get-Prop $slot 'copy')
 +                if ($copy) {
 +                    $gitDir = Join-Path (Join-Path $copy 'repo') '.git'
-+                    if (Test-Path -LiteralPath $gitDir -PathType Leaf -ErrorAction Stop) {
-+                        $link = [IO.File]::ReadAllText($gitDir, $script:Utf8).Trim()
++                    $attributes = $null
++                    try { $attributes = [IO.File]::GetAttributes($gitDir) }
++                    catch {
++                        $cause = $_.Exception.GetBaseException()
++                        if ($cause -isnot [IO.FileNotFoundException] -and $cause -isnot [IO.DirectoryNotFoundException]) { throw }
++                    }
++                    if ($null -ne $attributes -and -not ($attributes -band [IO.FileAttributes]::Directory)) {
++                        $link = ([string](Read-ChainOptionalFile $gitDir)).Trim()
 +                        if ($link -cmatch '^gitdir: (.+)$') {
 +                            $gitDir = $Matches[1]
 +                            if (-not [IO.Path]::IsPathRooted($gitDir)) { $gitDir = Join-Path (Join-Path $copy 'repo') $gitDir }
 +                        }
 +                    }
 +                    $headPath = Join-Path $gitDir 'HEAD'
-+                    if (Test-Path -LiteralPath $headPath -ErrorAction Stop) {
-+                        $ref = [IO.File]::ReadAllText($headPath, $script:Utf8).Trim()
-+                        if ($ref -cmatch '^ref: refs/heads/(claude/[^/]+)$') { $branches += $Matches[1] }
-+                    }
++                    $ref = ([string](Read-ChainOptionalFile $headPath)).Trim()
++                    if ($ref -cmatch '^ref: refs/heads/(claude/[^/]+)$') { $branches += $Matches[1] }
 +                }
 +                if ($branches -ccontains $Branch) { return $marker }
 +            } catch {
@@ -122,7 +136,7 @@ index aa4f34bce..b566d8e71 100644
  function Invoke-WrapperChain {
      <# PR коду -> незалежна перевірка; новий штамп збірки -> один GPU-прогін на коміті збірки. #>
      if ($DryRun) { return }
-@@ -501,6 +585,9 @@ function Invoke-WrapperChain {
+@@ -501,6 +599,9 @@ function Invoke-WrapperChain {
              $eligible = Test-RecentReviewHead $pr $heads $installed $now $hours
              Write-FileAtomic $statePath (([ordered]@{ main=$main; reviewed=$reviewed; live_active=$liveActive; live_since=$liveSince; live_stamps=@($liveStamps.Keys); live_pending=@($livePending); reviews=@($seen.Keys); installed_utc=$installed.ToString('o'); heads=$heads }) | ConvertTo-Json -Compress -Depth 5)
              if (-not $eligible) { continue }
@@ -133,7 +147,7 @@ index aa4f34bce..b566d8e71 100644
                  foreach ($key in @($seen.Keys | Where-Object { $_ -cmatch ('^' + $n + ' [0-9a-f]{40} ') })) {
                      $oldHead = ($key -split ' ')[1]
 diff --git "a/\320\260\321\203\320\264\320\270\321\202/\320\260\320\264\320\260\320\277\321\202\320\265\321\200\320\270/gemini/\320\235\320\220\320\233\320\220\320\250\320\242\320\243\320\222\320\220\320\235\320\235\320\257.md" "b/\320\260\321\203\320\264\320\270\321\202/\320\260\320\264\320\260\320\277\321\202\320\265\321\200\320\270/gemini/\320\235\320\220\320\233\320\220\320\250\320\242\320\243\320\222\320\220\320\235\320\235\320\257.md"
-index 696c1758e..b0eea91e3 100644
+index 696c1758e..e05469080 100644
 --- "a/\320\260\321\203\320\264\320\270\321\202/\320\260\320\264\320\260\320\277\321\202\320\265\321\200\320\270/gemini/\320\235\320\220\320\233\320\220\320\250\320\242\320\243\320\222\320\220\320\235\320\235\320\257.md"
 +++ "b/\320\260\321\203\320\264\320\270\321\202/\320\260\320\264\320\260\320\277\321\202\320\265\321\200\320\270/gemini/\320\235\320\220\320\233\320\220\320\250\320\242\320\243\320\222\320\220\320\235\320\235\320\257.md"
 @@ -431,9 +431,9 @@ $f = Join-Path "$env:USERPROFILE\gemini-outbox" $n
@@ -141,7 +155,7 @@ index 696c1758e..b0eea91e3 100644
  | `wrapper_probe.ps1` | `85116D04C22EB64CBFF52E66BCEAE9B1091577A889EDD58A8B634093A82BDBC6` |
  | `wrapper_update.ps1` | `4156307A17BDAE3AF7249E532947F659E99AA1349D159239159FAE60CA7E4F2B` |
 -| `wrapper_chain.ps1` | `99C1766CD93D0935C1804275B75F09C32C377427F347B91432D82869FAE34194` |
-+| `wrapper_chain.ps1` | `03EE0055AB6B9C6DF205E309CF3E1F09BDB875837A9361052F0769C3620D8603` |
++| `wrapper_chain.ps1` | `42DF20D3C3A567CA7B3E7BC932057CD7053B4E7289832FC27A803048C1B33795` |
  | `gemini_run.ps1` | `ED151D76BA6658EA230A0442252F0D7D05C2F6D723461C383D8E10016206E8FE` |
 -| `gemini_publish.ps1` | `73F2F2AA868DA86391FA9FACFD1F818AA8D1A76B9511F4DA891CBFE1E77087A9` |
 +| `gemini_publish.ps1` | `3C97912267FFEF59F72A96D44D63B40A52BDA32174FF36E8F1438B076FFC225B` |
