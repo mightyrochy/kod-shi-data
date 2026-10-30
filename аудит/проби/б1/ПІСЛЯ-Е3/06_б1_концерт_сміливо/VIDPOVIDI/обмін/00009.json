@@ -1,0 +1,27 @@
+{
+ "версія": 1,
+ "запит": {
+  "model": "qwen/qwen3.5-9b",
+  "max_tokens": 4000,
+  "messages": [
+   {
+    "role": "user",
+    "content": [
+     {
+      "type": "text",
+      "text": "{\"task\": {\"role\": \"You are a personal stylist. Put together one outfit for her case.\", \"rules\": [\"Items one per line, garments first, then shoes and accessories: what it is, cut, length, color with its hex code, fabric.\", \"An outer layer only when the weather needs it; at +20 °C and warmer there is none.\", \"Last, why this outfit works, in 3–4 sentences.\"], \"limits\": [\"Do not name lightness numbers, body measurements or height in numbers, or body-type labels, and do not say you had limits.\", \"The answer is plain text laid out as the rules say, not JSON.\"], \"language\": \"English\", \"answer\": \"OUTFIT_TEXT\", \"input\": [\"\\\"case\\\" — her case: the occasion, where and when, the weather, the dress code, her wishes and refusals — as codes, her own words as quotes; do not take an item that goes against her refusals or her words\", \"\\\"formality\\\" — the level of dress she named: home (loungewear, athleisure, sportswear) < everyday (jeans, a T-shirt and sneakers; neat casual, dark denim) < neat (business: a blouse, a shirt or a refined knit with trousers or a skirt, a textured jacket or a cardigan, loafers, ballet flats or ankle boots; social: a day dress, a refined knit with a skirt or trousers, a textured jacket, neat flats or ankle boots) < smart (business: a jacket with trousers or a skirt, a blouse or a shirt, loafers or pumps; a sheath dress with a jacket; social: a cocktail dress, heeled shoes) < formal (business: a business suit — a jacket with trousers or a skirt of one fabric — with a blouse, pumps; social: a formal dress of a noble fabric, heeled shoes) < very_smart (an evening gown) < ceremonial (a full-length evening gown with long gloves)\", \"\\\"person\\\" — facts about her from her photo and measurements, without conclusions: colors in hex (one per measurement), sizes in cm\", \"\\\"intent\\\" — what matters most to her: comfort_first (comfort and freedom of movement), context_optimal (fitting the place and the event), statement (standing out), fashion_forward (a bold fashion look, at least two sources of interest), editorial (an editorial construction, at least one source of interest); count limits do not apply to fashion_forward or editorial\"]}, \"case\": {\"field_quotes\": {\"event\": \"рок-концерт у клубі, п'ятниця ввечері\", \"place\": \"рок-концерт у клубі, п'ятниця ввечері\", \"movement\": \"стоятиму в натовпі\", \"intent\": \"хочу виділитися — можна сміливо\", \"goal\": \"хочу виділитися — можна сміливо\", \"part_of_day\": \"п'ятниця ввечері\"}, \"event\": \"рок-концерт у клубі, п'ятниця ввечері\", \"movement\": \"walk_a_lot\", \"goal\": \"express\", \"place\": \"club\", \"goal_quote\": \"хочу виділитися — можна сміливо\", \"intent_quote\": \"хочу виділитися — можна сміливо\", \"formality\": [\"everyday\"], \"season\": \"autumn\", \"part_of_day\": \"evening\", \"light\": \"artificial\"}, \"person\": {\"skin_hex\": [\"#e3c3a2\", \"#dcb995\", \"#e9ccae\"], \"hair_hex\": [\"#14120f\", \"#211d19\"], \"eyes_hex\": \"#4a2f1f\", \"height_cm\": 154, \"girths_cm\": {\"shoulders\": 90, \"bust\": 84, \"waist\": 64, \"hips\": 88}, \"intent\": \"statement\"}}"
+     }
+    ]
+   }
+  ],
+  "temperature": 1
+ },
+ "відповідь": {
+  "status": 200,
+  "contentType": "application/json",
+  "headers": {
+   "x-model": "qwen/qwen3.5-9b"
+  },
+  "body": "{\"content\":[{\"type\":\"text\",\"text\":\"An asymmetrical cropped mesh top in black (#000000) with a geometric cut exposing the midriff, paired with high-waisted wide-leg trousers in a deep charcoal heather (#36454F) made of stretch cotton blend for movement. Oversized distressed denim jacket in washed indigo (#1E2C3A), featuring raw hems and frayed cuffs, layered over the top to allow for easy layering or removal as body temperature changes in the crowd. Chunky silver-tone platform sneakers with a sculptural sole design in metallic grey (#B0B0B0), combining athletic support with an avant-garde silhouette to anchor the look firmly in the rock context. A minimalist choker necklace with an industrial gear pendant in oxidized silver (#2F3135) and matte black leather fingerless gloves that add an edgy, protective texture while maintaining freedom of hand movement.\\n\\nThis outfit works by blending a rebellious rock aesthetic with functional comfort required for standing in a dense crowd throughout an evening event. The mesh top and wide-leg trousers create an elongated silhouette that stands out against the sea of bodies without compromising mobility, while the industrial jewelry references directly aligns with the concert's musical genre. The combination of dark, moody colors with silver hardware ensures high visibility under artificial club lighting, fulfilling her desire to be seen confidently. The oversized jacket provides a necessary layer for potential temperature drops in an unheated venue while maintaining a cool, effortless style that matches her bold intent.\"}],\"usage\":{\"input_tokens\":874,\"output_tokens\":311},\"stop_reason\":\"end_turn\"}"
+ }
+}

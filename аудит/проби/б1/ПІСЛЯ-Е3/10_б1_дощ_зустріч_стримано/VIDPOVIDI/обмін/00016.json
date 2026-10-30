@@ -1,0 +1,27 @@
+{
+ "версія": 1,
+ "запит": {
+  "model": "qwen/qwen3.5-9b",
+  "max_tokens": 4000,
+  "messages": [
+   {
+    "role": "user",
+    "content": [
+     {
+      "type": "text",
+      "text": "{\"task\": {\"role\": \"You read the description of an outfit and list its items as data.\", \"rules\": [\"One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.\", \"One item carries one thing — of two alternatives list the first; a note in brackets is not an item.\", \"Slot \\\"accessory\\\" is for an item no other slot fits.\", \"\\\"is_outfit\\\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note.\"], \"limits\": [\"Rely only on the input: do not invent what it does not contain.\", \"The answer is one JSON object following \\\"answer_schema\\\", without explanations and without ```.\"], \"language\": \"English\", \"answer\": \"ITEM_LIST\", \"answer_schema\": {\"is_outfit\": \"yes|no\", \"items\": [{\"name\": \"<what the item is>\", \"details\": \"<its cut, length and fabric>\", \"slot\": \"top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory\", \"color_hex\": \"<#rrggbb or null>\", \"worn\": \"<true, or false when the description says the outfit goes without it>\"}]}, \"input\": [\"\\\"description\\\" — the outfit description\"]}, \"description\": \"Charcoal gray wool-blend tailored blazer, sharp shoulder cut, mid-thigh length, charcoal gray (#36454F), dense woven wool.\\nCream silk-cotton blend structured blouse, relaxed collar, hip-length hem, ivory cream (#FFFFF0), smooth matte fabric.\\nClassic straight-leg dark denim trousers, standard taper leg, ankle length with slight break, navy black (#000080), sturdy cotton twill.\\nOxford-style leather loafers, rounded toe, mid-calf shaft, deep espresso brown (#3B1F1F), full-grain calfskin leather.\\nWater-resistant wool trench coat, belted waist, knee-length hem, forest green (#228B22), heavy gabardine weave with rubberized storm flap details.\\n\\nThis ensemble honors her wish for restraint and classic style by combining timeless tailoring with dark, neutral tones suitable for an autumn afternoon in the rain. The wool-blazer and trench coat provide essential protection against the persistent downpour while maintaining a polished, professional silhouette for meeting a client. By choosing refined natural fabrics like wool, silk-cotton, and full-grain leather, the outfit exudes quiet luxury that flatters without overwhelming the conservative mood of her request.\"}"
+     }
+    ]
+   }
+  ],
+  "temperature": 1
+ },
+ "відповідь": {
+  "status": 200,
+  "contentType": "application/json",
+  "headers": {
+   "x-model": "qwen/qwen3.5-9b"
+  },
+  "body": "{\"content\":[{\"type\":\"text\",\"text\":\"{\\n  \\\"is_outfit\\\": \\\"yes\\\",\\n  \\\"items\\\": [\\n    {\\n      \\\"name\\\": \\\"blazer\\\",\\n      \\\"details\\\": \\\"tailored with sharp shoulder cut and mid-thigh length, dense woven wool fabric\\\",\\n      \\\"slot\\\": \\\"outerwear\\\",\\n      \\\"color_hex\\\": \\\"#36454F\\\",\\n      \\\"worn\\\": true\\n    },\\n    {\\n      \\\"name\\\": \\\"blouse\\\",\\n      \\\"details\\\": \\\"structured with relaxed collar and hip-length hem, smooth matte fabric\\\",\\n      \\\"slot\\\": \\\"top\\\",\\n      \\\"color_hex\\\": \\\"#FFFFF0\\\",\\n      \\\"worn\\\": true\\n    },\\n    {\\n      \\\"name\\\": \\\"trousers\\\",\\n      \\\"details\\\": \\\"classic straight-leg standard taper leg ankle length with slight break, sturdy cotton twill fabric\\\",\\n      \\\"slot\\\": \\\"bottom\\\",\\n      \\\"color_hex\\\": \\\"#000080\\\",\\n      \\\"worn\\\": true\\n    },\\n    {\\n      \\\"name\\\": \\\"loafers\\\",\\n      \\\"details\\\": \\\"Oxford-style rounded toe mid-calf shaft, full-grain calfskin leather\\\",\\n      \\\"slot\\\": \\\"shoes\\\",\\n      \\\"color_hex\\\": \\\"#3B1F1F\\\",\\n      \\\"worn\\\": true\\n    },\\n    {\\n      \\\"name\\\": \\\"trench coat\\\",\\n      \\\"details\\\": \\\"belted waist knee-length hem with rubberized storm flap details, heavy gabardine weave\\\",\\n      \\\"slot\\\": \\\"outerwear\\\",\\n      \\\"color_hex\\\": \\\"#228B22\\\",\\n      \\\"worn\\\": true\\n    }\\n  ]\\n}\"}],\"usage\":{\"input_tokens\":611,\"output_tokens\":361},\"stop_reason\":\"end_turn\"}"
+ }
+}

@@ -1,0 +1,27 @@
+{
+ "версія": 1,
+ "запит": {
+  "model": "qwen/qwen3.5-9b",
+  "max_tokens": 4000,
+  "messages": [
+   {
+    "role": "user",
+    "content": [
+     {
+      "type": "text",
+      "text": "{\"task\": {\"role\": \"You read the description of an outfit and list its items as data.\", \"rules\": [\"One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.\", \"One item carries one thing — of two alternatives list the first; a note in brackets is not an item.\", \"Slot \\\"accessory\\\" is for an item no other slot fits.\", \"\\\"is_outfit\\\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note.\"], \"limits\": [\"Rely only on the input: do not invent what it does not contain.\", \"The answer is one JSON object following \\\"answer_schema\\\", without explanations and without ```.\"], \"language\": \"English\", \"answer\": \"ITEM_LIST\", \"answer_schema\": {\"is_outfit\": \"yes|no\", \"items\": [{\"name\": \"<what the item is>\", \"details\": \"<its cut, length and fabric>\", \"slot\": \"top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory\", \"color_hex\": \"<#rrggbb or null>\", \"worn\": \"<true, or false when the description says the outfit goes without it>\"}]}, \"input\": [\"\\\"description\\\" — the outfit description\"]}, \"description\": \"Deep charcoal wool-blend blazer, tailored fit with slightly padded shoulders for structure, cropped at the hip in a clean rectangular silhouette, color #362c25.\\nMid-weight stretch viscose midi skirt, A-line cut that flows from the waist to mid-calf length, rich forest green hue #1a3c31.\\nFine-gauge merino wool turtleneck knit top, slim but forgiving ribbed construction hugging the torso without restriction, soft cream color #f5f0e6.\\nCushioned leather ankle boots with a low block heel, sleek pointed toe and elastic side panels for ease of movement, deep espresso brown #3b2417.\\nMatte black silk scarf with subtle geometric weave, lightweight drape to add texture against the heavy coat layer, color #1c1c1c.\\n\\nThis outfit strikes the perfect balance between warmth and elegance for a rainy evening out. The structured blazer and wool skirt provide necessary protection against the wind and chill while maintaining a polished date-night appearance. Inside, the soft stretch knit ensures complete comfort during long walks to the theater and seated dinners, respecting her wish for an optimal fit that flatters without sacrificing ease. The rich earth tones complement each other harmoniously, creating a sophisticated look that feels both cozy and intentionally styled for the occasion.\"}"
+     }
+    ]
+   }
+  ],
+  "temperature": 1
+ },
+ "відповідь": {
+  "status": 200,
+  "contentType": "application/json",
+  "headers": {
+   "x-model": "qwen/qwen3.5-9b"
+  },
+  "body": "{\"content\":[{\"type\":\"text\",\"text\":\"{\\n  \\\"is_outfit\\\": \\\"yes\\\",\\n  \\\"items\\\": [\\n    {\\n      \\\"name\\\": \\\"blazer\\\",\\n      \\\"details\\\": \\\"Deep charcoal wool-blend with slightly padded shoulders, tailored fit, cropped at the hip in a clean rectangular silhouette\\\",\\n      \\\"slot\\\": \\\"outerwear\\\",\\n      \\\"color_hex\\\": \\\"#362c25\\\",\\n      \\\"worn\\\": true\\n    },\\n    {\\n      \\\"name\\\": \\\"skirt\\\",\\n      \\\"details\\\": \\\"Mid-weight stretch viscose midi skirt, A-line cut flowing from waist to mid-calf length\\\",\\n      \\\"slot\\\": \\\"bottom\\\",\\n      \\\"color_hex\\\": \\\"#1a3c31\\\",\\n      \\\"worn\\\": true\\n    },\\n    {\\n      \\\"name\\\": \\\"turtleneck knit top\\\",\\n      \\\"details\\\": \\\"Fine-gauge merino wool with slim but forgiving ribbed construction hugging the torso without restriction\\\",\\n      \\\"slot\\\": \\\"top\\\",\\n      \\\"color_hex\\\": \\\"#f5f0e6\\\",\\n      \\\"worn\\\": true\\n    },\\n    {\\n      \\\"name\\\": \\\"ankle boots\\\",\\n      \\\"details\\\": \\\"Cushioned leather with low block heel, sleek pointed toe and elastic side panels for ease of movement\\\",\\n      \\\"slot\\\": \\\"shoes\\\",\\n      \\\"color_hex\\\": \\\"#3b2417\\\",\\n      \\\"worn\\\": true\\n    },\\n    {\\n      \\\"name\\\": \\\"scarf\\\",\\n      \\\"details\\\": \\\"Matte black silk with subtle geometric weave and lightweight drape\\\",\\n      \\\"slot\\\": \\\"scarf\\\",\\n      \\\"color_hex\\\": \\\"#1c1c1c\\\",\\n      \\\"worn\\\": true\\n    }\\n  ]\\n}\"}],\"usage\":{\"input_tokens\":626,\"output_tokens\":377},\"stop_reason\":\"end_turn\"}"
+ }
+}
