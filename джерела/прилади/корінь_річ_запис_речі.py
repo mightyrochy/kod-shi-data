@@ -1278,21 +1278,23 @@ class Аналіз:
                         s.призначити(оп.t, s.елемент(s.ev(оп.val, ф)), ф, оп)
                 s.ланцюги.читач_формату(ф)
             s.ланцюги.зєднати_жнива()
-            s.ланцюги.зєднати_поля()
             if os.environ.get("РІЧ_ПРОФІЛЬ"):
                 print("ітерація %d; змін %d; об'єктів %d" % (s.ітерацій, s.змін, len(s.об)), file=sys.stderr, flush=True)
             if s.змін == 0:
                 if s.збирати_переходи:
-                    break
+                    s.ланцюги.очистити()
+                    while s.ланцюги.зєднати_поля():
+                        pass
+                    if s.змін == 0:
+                        break
+                    s.збирати_переходи = False
+                    continue
                 s.збирати_переходи = True
                 s.ланцюги.підготувати()
         s.ланцюги.очистити()
 
 def не_об(v):
     return not isinstance(v, О)
-
-def m_none(х):
-    return х is None
 
 def e_func(е):
     return е.a[0]

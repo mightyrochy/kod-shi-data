@@ -222,5 +222,16 @@
   "джерела": {
    "джерела/контроль.py": "import re\ndef читач(offer):\n return re.search('вовна',offer.get('назва'))\n"
   }
+ },
+ {
+  "назва": "добування доходить до файла лише словесною умовою",
+  "пункти": [
+   1,
+   3,
+   4
+  ],
+  "джерела": {
+   "джерела/контроль.py": "import json,re\nfrom bs4 import BeautifulSoup\ndef добути(html):\n суп=BeautifulSoup(html,'html.parser')\n return {'назва':суп.get_text()}\ndef записати(ф):\n р={'є':bool(re.search('вовна',ф['назва']))}\n json.dump([р],open('catalog.json','w'))\nзаписати(добути(html))\n"
+  }
  }
 ]
