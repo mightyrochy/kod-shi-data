@@ -93,27 +93,52 @@ def ознаки_п1(n):
 ІМ_ТОНУ_ТОЧНЕ = re.compile(r"^(?:h|hue|h_?\d|h_\w+|\w+_h|\w+_h\d)$", re.I)
 
 
-ІМ_КОЛЬОРУ = re.compile(r"^(?:lab|lch|L|C|Cc|C_|L_|hex\w*|дуг\w*|тон\w*|colou?r|колір\w*|Lab)$")
+def у_кольорі(тіло):
+    """Контекст кольору з документованого змісту, ключів даних і перетворень; адреса файлу не є доказом."""
+    for x in вузли(тіло):
+        if ознаки_п1(x):
+            return True
+        if isinstance(x, ast.Constant) and isinstance(x.value, str) and re.search(
+                r"\b(?:Lab|LCh|CIELAB|hue|undertone)\b|підтон|тон[уаі]?\b|дуг[аиу]|хром|"
+                r"оливков|рожев|жовт|червон|помаранч|фіолет|бірюз|синьо", x.value, re.I):
+            return True
+        if isinstance(x, ast.Call) and re.search(r"lab|lch|колір|підтон|hue", ім_виклику(x) or "", re.I):
+            return True
+    return False
 
 
-def у_кольорі(тіло, файл):
-    """Контекст кольору: у функції (чи модулі) є імена Lab/L/C/дуги/тону або файл — з кольором. `h` без цього — висота."""
-    if any(isinstance(x, ast.Name) and x.id in ("w", "width", "W") for x in вузли(тіло)):
-        return False   # поруч із шириною `h` — висота, не тон
-    return bool(re.search(r"колір|палітр|verify|palettes|фід_|жнива|річ|помада|bases|surface|міст_основи|brief", файл)) \
-        and any(isinstance(x, ast.Name) and ІМ_КОЛЬОРУ.match(x.id) for x in вузли(тіло))
-
-
-def ознаки_п1_межа_числом(n):
+def ознаки_п1_межа_числом(n, тони=()):
     """Межа тону числом у коді: `h < 30`, `20 ≤ h < 50` — власна межа сім'ї чи шва."""
     if not isinstance(n, ast.Compare):
         return []
     ел = [n.left] + list(n.comparators)
-    імена = [e for e in ел if isinstance(e, ast.Name) and ІМ_ТОНУ_ТОЧНЕ.match(e.id)]
+    імена = [e for e in ел if isinstance(e, ast.Name) and (e.id in тони or ІМ_ТОНУ_ТОЧНЕ.match(e.id))]
     числа = [e for e in ел if число(e) and 5 <= e.value <= 355]
     if імена and числа and all(isinstance(o, (ast.Lt, ast.LtE, ast.Gt, ast.GtE)) for o in n.ops):
         return ["межа тону числом у коді (`%s` проти %g)" % (імена[0].id, числа[0].value)]
     return []
+
+
+def тони_значень(тіло):
+    """Передає роль тону від поля hue/тону й третьої координати LCh через присвоєння й псевдоніми."""
+    тони = set()
+    присвоєння = [x for x in вузли(тіло) if isinstance(x, (ast.Assign, ast.AnnAssign)) and x.value is not None]
+    while True:
+        до = set(тони)
+        for x in присвоєння:
+            цілі = x.targets if isinstance(x, ast.Assign) else [x.target]
+            v = x.value
+            поле = isinstance(v, ast.Subscript) and isinstance(v.slice, ast.Constant) and v.slice.value in ("hue", "тон", "h")
+            поле = поле or (isinstance(v, ast.Attribute) and v.attr in ("hue", "тон"))
+            координата = (isinstance(v, ast.Call) and re.search(r"lch", ім_виклику(v) or "", re.I)) \
+                or (isinstance(v, ast.Name) and re.search(r"lch", v.id, re.I))
+            for ц in цілі:
+                if isinstance(ц, ast.Name) and (поле or isinstance(v, ast.Name) and v.id in тони):
+                    тони.add(ц.id)
+                if координата and isinstance(ц, (ast.Tuple, ast.List)) and len(ц.elts) == 3 and isinstance(ц.elts[2], ast.Name):
+                    тони.add(ц.elts[2].id)
+        if тони == до:
+            return тони
 
 
 ІМ_ХРОМИ = re.compile(r"^(?:C|Cc|C_\w*|c|хром\w*)$")
@@ -198,10 +223,13 @@ def ознаки_п2(n, є_коло):
     """Пункт 2: рівний сектор, HSV, канали RGB, кут CIELAB без кола художника."""
     ч = []
     знач = None
-    if isinstance(n, ast.BinOp) and isinstance(n.op, ast.FloorDiv) and число(n.right) and n.right.value in СЕКТОРИ_Н \
+    кандидат_сектора = (isinstance(n, ast.BinOp) and isinstance(n.op, ast.FloorDiv)) \
+        or (isinstance(n, ast.Call) and ім_виклику(n) in ("int", "floor", "round", "ceil"))
+    геометрія = кандидат_сектора and any(isinstance(x, ast.Name) and x.id in ("w", "width", "W") for x in ast.walk(n))
+    if not геометрія and isinstance(n, ast.BinOp) and isinstance(n.op, ast.FloorDiv) and число(n.right) and n.right.value in СЕКТОРИ_Н \
             and (має_тон(n.left) or any(isinstance(x, ast.BinOp) and число(x.right, 360) for x in ast.walk(n.left))):
         ч.append("рівний сектор кута (`h // %g`)" % n.right.value)
-    if isinstance(n, ast.Call) and ім_виклику(n) in ("int", "floor", "round", "ceil") and n.args \
+    if not геометрія and isinstance(n, ast.Call) and ім_виклику(n) in ("int", "floor", "round", "ceil") and n.args \
             and isinstance(n.args[0], ast.BinOp) and isinstance(n.args[0].op, ast.Div) and число(n.args[0].right) \
             and n.args[0].right.value in СЕКТОРИ_Н and має_тон(n.args[0].left):
         ч.append("рівний сектор кута (`int(h / %g)`)" % n.args[0].right.value)
@@ -343,7 +371,9 @@ def обхід_python(шлях, файл, збір, імена_визначен�
     рядки = t.split("\n")
 
     def шукати(тіло, ш, кутні, у_теплій=False):
-        колір = у_кольорі(тіло, файл)
+        колір = у_кольорі(тіло)
+        тони = тони_значень(тіло)
+        колір = колір or bool(тони)
         рад = рад_імена(тіло)
         for x in вузли(тіло):
             for ч in ознаки_п1_копія_перетворення(x, рад, у_теплій):
@@ -352,10 +382,10 @@ def обхід_python(шлях, файл, збір, імена_визначен�
                 збір.дод(файл, x.lineno, 2, "тепле ↔ холодне кутом CIELAB (sin/cos кута тону)", ш)
             if isinstance(x, ast.Call) and ім_виклику(x) in тепла_функції:
                 збір.дод(файл, x.lineno, 2, "тепле ↔ холодне кутом CIELAB (читач `%s`), а не вікном на колі художника" % ім_виклику(x), ш)
-            for ч in ознаки_п1(x) + ознаки_п1_дуга(x) + (ознаки_п1_вікно(x) + ознаки_п1_межа_числом(x) if колір else []):
+            for ч in ознаки_п1(x) + ознаки_п1_дуга(x) + (ознаки_п1_вікно(x) + ознаки_п1_межа_числом(x, тони) if колір else []):
                 збір.дод(файл, x.lineno, 1, ч, ш)
             if колір:
-                for ч in ознаки_п1_межа_числом(x):
+                for ч in ознаки_п1_межа_числом(x, тони):
                     збір.дод(файл, x.lineno, 2, "сім'я/шов тону кутом LCh числом, без вікна на колі художника", ш)
             for ч in ознаки_п2(x, ф_є_коло):
                 if колір or not ч.startswith("рівний сектор"):
@@ -368,8 +398,10 @@ def обхід_python(шлях, файл, збір, імена_визначен�
 
     # таблиці (присвоєння на будь-якому рівні) — шлях А
     for х in ast.walk(дерево):
-        if isinstance(х, ast.Assign) and any(isinstance(t_, ast.Name) for t_ in х.targets):
-            цілі = [t_.id for t_ in х.targets if isinstance(t_, ast.Name)]
+        if isinstance(х, (ast.Assign, ast.AnnAssign)) and х.value is not None:
+            цілі = [t_.id for t_ in (х.targets if isinstance(х, ast.Assign) else [х.target]) if isinstance(t_, ast.Name)]
+            if not цілі:
+                continue
             if х in дерево.body and any(ІМ_ТАБЛИЦІ_МЕЖ.search(ц) for ц in цілі) and таблиця_меж(х.value):
                 збір.дод(файл, х.lineno, 1, "власна межа/таблиця тону (%s)" % ",".join(цілі), "А")
             if not any(ІМ_ТАБЛИЦІ_МЕЖ.search(ц) for ц in цілі) or х not in дерево.body:
@@ -445,7 +477,9 @@ def таблиця_меж(v):
 def без_коментарів(t):
     t = re.sub(r"/\*.*?\*/", lambda m: "\n" * m.group(0).count("\n"), t, flags=re.S)
     t = re.sub(r"(?<![:\\'\"`])//[^\n]*", "", t)
-    return re.sub(r"'(?:\\.|[^'\\\n])*'|\"(?:\\.|[^\"\\\n])*\"", "''", t)
+    return re.sub(r"'(?:\\.|[^'\\\n])*'|\"(?:\\.|[^\"\\\n])*\"|`(?:\\.|[^`\\])*`",
+                  lambda m: " " * len(m.group(0)) if "\n" not in m.group(0) else
+                  "\n".join(" " * len(s) for s in m.group(0).split("\n")), t)
 
 
 JS_П1 = [(re.compile(r"%\s*360\b"), "`% 360` — власна лічба кола"), (re.compile(r"\b360\s*-\s*[\w(]"), "`360 − x` — власна згортка кута"),
@@ -458,11 +492,56 @@ JS_ДУГА = re.compile(r"\b([A-Za-zА-Яа-яІіЇїЄєҐґ_]*[hH]\w*)\s*>=?
 JS_ВІКНА = re.compile(r"^\s*['\"]?[\wа-яіїєґ' -]+['\"]?\s*:\s*\[\s*[\d.]+\s*,\s*[\d.]+\s*,\s*[\d.]+\s*,\s*[\d.]+")
 
 
+def js_копії(t):
+    """Парні C·cos(h), C·sin(h) з кутом у радіанах і виходом трьох координат — копія LCh→Lab."""
+    # Ідентифікатори довільні: зв'язуємо обидва виходи з тією самою хромою й кутом.
+    добуток = re.compile(r"\b(\w+)\s*\*\s*Math\.(cos|sin)\s*\(\s*([^();]+)\s*\)"
+                        r"|Math\.(cos|sin)\s*\(\s*([^();]+)\s*\)\s*\*\s*(\w+)")
+    блоки, стек, номер = {}, [0], 0
+    межі = {0: [0, len(t)]}
+    події = re.compile(r"[{}]|" + добуток.pattern)
+    for m in події.finditer(t):
+        if m.group() == "{":
+            номер += 1
+            стек.append(номер)
+            межі[номер] = [m.start(), len(t)]
+        elif m.group() == "}":
+            if len(стек) > 1:
+                межі[стек[-1]][1] = m.end()
+                стек.pop()
+        else:
+            c, дія, h = (m[1], m[2], m[3]) if m[1] else (m[6], m[4], m[5])
+            ключ = (стек[-1], c, re.sub(r"\s+", "", h))
+            блоки.setdefault(ключ, []).append((дія, m.start()))
+    for (блок, c, h), збіги in блоки.items():
+        if {дія for дія, _ in збіги} != {"cos", "sin"}:
+            continue
+        # Кут безпосередньо або через присвоєння перетворено з градусів.
+        до = t[:min(pos for _, pos in збіги)]
+        тіло = t[slice(*межі[блок])]
+        трійка = re.search(r"\breturn\s*\[\s*\w+\s*,[^,\]\n]+,[^\]\n]+\]", тіло)
+        lab = re.search(r"\{[^{}]*\b[Ll]\s*[:,][^{}]*\ba\s*[:,][^{}]*\bb\b", тіло)
+        рад = "Math.PI" in h or re.search(r"\b" + re.escape(h) + r"\s*=\s*[^;\n]*Math\.PI\s*/\s*180\b", до)
+        if рад and (трійка or lab):
+            for _, pos in збіги:
+                yield t.count("\n", 0, pos) + 1
+
+
+JS_RGB = re.compile(r"\b([rgbRGB])\s*(?:[<>]=?)\s*([rgbRGB])\b"
+                    r"|\b(\w+)\s*\[\s*([012])\s*\]\s*[<>]=?\s*\3\s*\[\s*([012])\s*\]")
+
+
 def обхід_js(шлях, файл, збір):
     t = open(шлях, encoding="utf-8").read()
     if re.search(r"згенеров|generated", t[:600], re.I):
         return
-    for i, рядок in enumerate(без_коментарів(t).split("\n"), 1):
+    чистий = без_коментарів(t)
+    for i in js_копії(чистий):
+        збір.дод(файл, i, 1, "парні cos/sin кута тону — друга копія LCh→Lab", "А")
+    for i, рядок in enumerate(чистий.split("\n"), 1):
+        for m in JS_RGB.finditer(рядок):
+            if (m[1] and m[1].lower() != m[2].lower()) or (m[3] and re.search(r"rgb", m[3], re.I) and m[4] != m[5]):
+                збір.дод(файл, i, 2, "сім'я/тон за порядком каналів RGB", "А")
         for р, ч in JS_П1:
             if р.search(рядок):
                 збір.дод(файл, i, 1, ч, "підлога")

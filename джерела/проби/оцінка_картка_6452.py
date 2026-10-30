@@ -45,7 +45,7 @@ def суд_з_промпту(п):
 
 
 if __name__ == "__main__":
-    функція = re.search(r"const НЕМА_НА_ФОТО_П[\s\S]*?\n}\n", Path("показ.html").read_text(encoding="utf-8")).group(0)
+    функція = re.search(r"const НЕМА_НА_ФОТО_П[\s\S]*?\n}\n", Path("показ/оцінка.js").read_text(encoding="utf-8")).group(0)
     коди = [[к for к in п.get("not_in_photo") or [] if к not in С._НЕ_РЕЧІ_КАРТКИ] for *_, п, _о, _в, _и in
             записи(sys.argv[1])]
     рядки = subprocess.run(["node", "-e", функція + "process.stdin.on('data', d => console.log(JSON.stringify("
