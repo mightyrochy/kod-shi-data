@@ -1,0 +1,106 @@
+{
+  "час_utc": "2026-10-30T13:24:53.077170+00:00",
+  "призначений_sha": "fa0fd9b44ff79cec3604914dde4c816a109b40fc",
+  "команди": [
+    {
+      "команда": [
+        "git",
+        "merge-base",
+        "--is-ancestor",
+        "fa0fd9b44ff79cec3604914dde4c816a109b40fc",
+        "origin/main"
+      ],
+      "тека": "C:\\Users\\gemini\\gemini-runs\\w\\20261030-152228-8c09e96274a7\\repo",
+      "rc": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "команда": [
+        "git",
+        "worktree",
+        "add",
+        "--detach",
+        "--no-checkout",
+        "C:\\Users\\gemini\\gemini-runs\\w\\20261030-152228-8c09e96274a7\\tmp\\assigned-build",
+        "fa0fd9b44ff79cec3604914dde4c816a109b40fc"
+      ],
+      "тека": "C:\\Users\\gemini\\gemini-runs\\w\\20261030-152228-8c09e96274a7\\repo",
+      "rc": 0,
+      "stdout": "",
+      "stderr": "Preparing worktree (detached HEAD fa0fd9b44)\n"
+    },
+    {
+      "команда": [
+        "git",
+        "sparse-checkout",
+        "set",
+        "--no-cone",
+        "/index.html",
+        "/build.txt",
+        "/аудит/проби/живі_сцени.txt",
+        "/аудит/проби/записати_сцену.py"
+      ],
+      "тека": "C:\\Users\\gemini\\gemini-runs\\w\\20261030-152228-8c09e96274a7\\tmp\\assigned-build",
+      "rc": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "команда": [
+        "git",
+        "checkout",
+        "--detach",
+        "fa0fd9b44ff79cec3604914dde4c816a109b40fc"
+      ],
+      "тека": "C:\\Users\\gemini\\gemini-runs\\w\\20261030-152228-8c09e96274a7\\tmp\\assigned-build",
+      "rc": 0,
+      "stdout": "",
+      "stderr": "HEAD is now at fa0fd9b44 збірка: e3a0dcf37415a26e062fe35fdc1057f67648ce10\n"
+    },
+    {
+      "команда": [
+        "git",
+        "rev-parse",
+        "HEAD"
+      ],
+      "тека": "C:\\Users\\gemini\\gemini-runs\\w\\20261030-152228-8c09e96274a7\\tmp\\assigned-build",
+      "rc": 0,
+      "stdout": "fa0fd9b44ff79cec3604914dde4c816a109b40fc\n",
+      "stderr": ""
+    },
+    {
+      "команда": [
+        "python",
+        "C:\\Users\\gemini\\gemini-runs\\w\\20261030-152228-8c09e96274a7\\tmp\\assigned-build\\аудит\\проби\\записати_сцену.py",
+        "C:\\Users\\gemini\\gemini-runs\\w\\20261030-152228-8c09e96274a7\\tmp\\assigned-build",
+        "C:\\Users\\gemini\\gemini-runs\\w\\20261030-152228-8c09e96274a7\\tmp\\pyodide-cache",
+        "C:\\Users\\gemini\\gemini-runs\\w\\20261030-152228-8c09e96274a7\\repo\\аудит\\проби\\автоживий-e3a0dcf37415a26e062fe35fdc1057f67648ce10\\обгортка",
+        "--сцена",
+        "обгортка"
+      ],
+      "тека": "C:\\Users\\gemini\\gemini-runs\\w\\20261030-152228-8c09e96274a7\\tmp\\assigned-build",
+      "rc": 1,
+      "stdout": "",
+      "stderr": "Traceback (most recent call last):\n  File \"C:\\Users\\gemini\\gemini-runs\\w\\20261030-152228-8c09e96274a7\\tmp\\assigned-build\\аудит\\проби\\записати_сцену.py\", line 119, in <module>\n    raise SystemExit(виконати())\n                     ^^^^^^^^^^\n  File \"C:\\Users\\gemini\\gemini-runs\\w\\20261030-152228-8c09e96274a7\\tmp\\assigned-build\\аудит\\проби\\записати_сцену.py\", line 46, in виконати\n    raise ValueError(\"Нема єдиної сцени в реєстрі: \" + п.сцена)\nValueError: Нема єдиної сцени в реєстрі: обгортка\n"
+    },
+    {
+      "команда": [
+        "git",
+        "worktree",
+        "remove",
+        "C:\\Users\\gemini\\gemini-runs\\w\\20261030-152228-8c09e96274a7\\tmp\\assigned-build"
+      ],
+      "тека": "C:\\Users\\gemini\\gemini-runs\\w\\20261030-152228-8c09e96274a7\\repo",
+      "rc": 0,
+      "stdout": "",
+      "stderr": ""
+    }
+  ],
+  "sha_тимчасового_дерева": "fa0fd9b44ff79cec3604914dde4c816a109b40fc",
+  "рядків_сцени_обгортка": 0,
+  "код_записувача": 1,
+  "живий_прогін_почався": false,
+  "примітка": "Записувач відмовив до читання кешу, запуску браузера, проксі та звернень до моделей.",
+  "тимчасове_дерево_прибрано": true
+}
