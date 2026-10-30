@@ -100,5 +100,4 @@ try {
     Remove-Item -LiteralPath $tmp -Recurse -Force
 }
 if ($bad) { "ПІДСУМОК: ✗ $bad"; exit 1 }
-'ПІДСУМОК: ✗ 0'
 exit 0
