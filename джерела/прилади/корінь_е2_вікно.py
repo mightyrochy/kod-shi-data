@@ -10,7 +10,10 @@
 МІСЦЕ — виклик `модельП(…)` / `модельП_блоки(…)` у `показ/*.js` (єдина лійка до моделі ноутбука: обидві функції →
 `плануватиВикликП` → `_дзвінокП`; інших викликів у показі нема), чий промпт код складає з даних змінного обсягу: перший
 аргумент не стала й не рядок-літерал, або разом із ним ідуть фото. Python-клієнти сервера моделі (жнива, розбір
-каталогу) — інструменти каталогу, а не шлях жінки чи режим виміру: друкуються окремо, у `місць` не входять.
+каталогу; рішення менеджера 30.10, #2474) — теж місця: функція `джерела/*.py`, що шле запит моделі (`urlopen`/`post` +
+`messages`/`max_tokens` чи адреса `…/completions`); проби й прилади — вимір, не клас. Дії щодо вікна в Python — за AST
+(умова з порівнянням токенів і вікна, рядковий ключ/ідентифікатор поля рушія, `pop/remove/del/зріз`) у функції й тих, що
+вона кличе в модулі (два кроки).
 
 ПУНКТИ КЛАСУ (кожне — механічне правило над КОДОМ конуса лійки й аргументом виклику; коментарі не рахуються):
   1  до виклику не відомо, що повний промпт у токенах цієї моделі разом зі стелею виводу влазить у вікно: у конусі
@@ -33,6 +36,7 @@
 
 Запуск з кореня репозиторію (чи `--корінь ШЛЯХ`): python3 джерела/прилади/корінь_е2_вікно.py [--json]
 Вивід детермінований; останній рядок `місць: <N>`; код 0."""
+import ast
 import glob
 import json
 import os
@@ -304,21 +308,74 @@ def місця(корінь):
             пункти, чому = порушення(True, "", ф, дії_вікна(тіло))
             вих.append(dict(файл=ім_ф, рядок=рядок, функція=ім, змінний=True, змінність="прямий транспорт до моделі повз лійку",
                             пункти=пункти, чому=чому, виклик_рядок=код.split("\n")[рядок - 1], виклик="транспорт", шлях="повз"))
+    вих += місця_python(корінь, ф)
     вих.sort(key=lambda x: (x["файл"], x["рядок"]))
     return вих, ф
 
 
-def клієнти_python(корінь):
-    """Python-клієнти сервера моделі (інструменти каталогу): файл:рядок читання відповіді `choices`."""
+def python_дії(функції, ім):
+    """Дії щодо вікна у функції `ім` модуля й тих, що вона кличе в цьому ж модулі (два кроки), за AST: умова
+    `if/while/?:` з порівнянням `<`, `<=`, `>`, `>=`, де є ідентифікатор токенів і вікна; поле вікна рушія
+    (рядковий ключ чи ідентифікатор); скорочення (`.pop/.remove/.splice`, `del`, присвоєння зрізу).
+    → (порівняння, поле, скорочення)."""
+    конус, черга = set(), [(ім, 0)]
+    while черга:
+        н, г = черга.pop(0)
+        if н in конус or н not in функції:
+            continue
+        конус.add(н)
+        if г < ГЛИБИНА_ЛІЙКИ:
+            for в in ast.walk(функції[н]):
+                if isinstance(в, ast.Call) and isinstance(в.func, ast.Name):
+                    черга.append((в.func.id, г + 1))
+    порівняння = поле = скорочення = False
+    for н in sorted(конус):
+        for в in ast.walk(функції[н]):
+            if isinstance(в, (ast.If, ast.While, ast.IfExp)):
+                for к in ast.walk(в.test):
+                    if isinstance(к, ast.Compare) and any(isinstance(о, (ast.Lt, ast.LtE, ast.Gt, ast.GtE)) for о in к.ops):
+                        імена = [ч.id for ч in ast.walk(к) if isinstance(ч, ast.Name)] + [ч.attr for ч in ast.walk(к) if isinstance(ч, ast.Attribute)]
+                        if any(ТОКЕН.search(і) for і in імена) and any(ВІКНО.search(і) for і in імена):
+                            порівняння = True
+            if (isinstance(в, ast.Constant) and isinstance(в.value, str) and ПОЛЯ_РУШІЯ.fullmatch(в.value)) \
+                    or (isinstance(в, ast.Name) and ПОЛЯ_РУШІЯ.fullmatch(в.id)) \
+                    or (isinstance(в, ast.Attribute) and ПОЛЯ_РУШІЯ.fullmatch(в.attr)):
+                поле = True
+            if (isinstance(в, ast.Call) and isinstance(в.func, ast.Attribute) and в.func.attr in ("pop", "remove", "splice")) \
+                    or isinstance(в, ast.Delete) \
+                    or (isinstance(в, ast.Assign) and any(isinstance(ц, ast.Subscript) and isinstance(ц.slice, ast.Slice) for ц in в.targets)):
+                скорочення = True
+    return порівняння, поле, скорочення
+
+
+def місця_python(корінь, ф):
+    """Місця Python: функція `джерела/*.py`, що шле запит серверові моделі — виклик `urlopen`/`requests.post` у функції, чиє
+    тіло складає запит із ключем `messages`/`max_tokens` чи називає адресу `…/completions`. Проби (`проба*`), прилади, тести й гейти — вимір, не клас."""
     вих = []
     for шлях in sorted(glob.glob(os.path.join(корінь, "джерела", "*.py"))):
-        ім = os.path.basename(шлях)
-        if re.match(r"(?:тест|gate|audit|build_|стенд)", ім):
+        ім_ф = os.path.basename(шлях)
+        if re.match(r"(?:тест|gate|audit|build_|стенд|проба|measure|pair_test)", ім_ф):
             continue
-        with open(шлях, encoding="utf-8") as ф:
-            for н, р in enumerate(ф, 1):
-                if re.search(r"""(?:\[|get\()\s*["']choices["']""", р):
-                    вих.append("джерела/%s:%d" % (ім, н))
+        with open(шлях, encoding="utf-8") as фх:
+            текст = фх.read()
+        if "urlopen" not in текст and "requests" not in текст:
+            continue
+        дерево = ast.parse(текст)
+        функції = {в.name: в for в in ast.walk(дерево) if isinstance(в, (ast.FunctionDef, ast.AsyncFunctionDef))}
+        for ім, функція in sorted(функції.items()):
+            ключі = {к.value for д in ast.walk(функція) if isinstance(д, ast.Dict) for к in д.keys
+                     if isinstance(к, ast.Constant) and isinstance(к.value, str)}
+            ключі |= {к.arg for д in ast.walk(функція) if isinstance(д, ast.Call) for к in д.keywords if к.arg}
+            адреса = any(isinstance(д, ast.Constant) and isinstance(д.value, str) and "completions" in д.value
+                         for д in ast.walk(функція))
+            if not (ключі & {"messages", "max_tokens"}) and not адреса:
+                continue
+            for в in ast.walk(функція):
+                if isinstance(в, ast.Call) and isinstance(в.func, ast.Attribute) and в.func.attr in ("urlopen", "post"):
+                    пункти, чому = порушення(True, "", ф, python_дії(функції, ім))
+                    вих.append(dict(файл="джерела/" + ім_ф, рядок=в.lineno, функція=ім, змінний=True,
+                                    змінність="Python-клієнт моделі: промпт з даних", пункти=пункти, чому=чому,
+                                    виклик_рядок="", виклик="python", шлях="python"))
     return вих
 
 
@@ -423,9 +480,6 @@ def головне(корінь, json_вихід=False):
             рядки.append("- %s (%s): %s · викликів %d · відмов вікна %d%s"
                          % (вид, з["модель"], форма(з), з["викликів"], з["відмов"], "" if вид in прив else " · вид без місця"))
     рядки.append("")
-    рядки.append("## Python-клієнти моделі (інструменти каталогу, у `місць` не входять): %s"
-                 % (", ".join(клієнти_python(корінь)) or "нема"))
-    рядки.append("")
     рядки.append("## Підсумки: п.1 — %d · п.2 — %d · п.3 — %d" % (пункти[1], пункти[2], пункти[3]))
     рядки.append("місць: %d" % len(порушують))
     if json_вихід:
@@ -457,7 +511,7 @@ def місць(вивід):
     return int(вивід.strip().split("\n")[-1].split(":")[1])
 
 
-def дерево(тека, додати_у_міст="", додати_файл=None, правки=()):
+def дерево(тека, додати_у_міст="", додати_файл=None, правки=(), додати_py=None):
     shutil.copytree(os.path.join(КОРІНЬ_РЕПО, "джерела", "показ"), os.path.join(тека, "джерела", "показ"))
     if додати_у_міст:
         с = os.path.join(тека, "джерела", "показ", "міст.js")
@@ -468,6 +522,10 @@ def дерево(тека, додати_у_міст="", додати_файл=No
                       "  await вмістити_запит_П(повідомлення, вміщВих);\n  await вмістити_у_вікно_П(повідомлення);\n  /* черга", 1)
         with open(с, "w", encoding="utf-8") as ф:
             ф.write(т)
+    if додати_py:
+        os.makedirs(os.path.join(тека, "джерела"), exist_ok=True)
+        with open(os.path.join(тека, "джерела", "нове_py_місце.py"), "w", encoding="utf-8") as ф:
+            ф.write(додати_py)
     for ім_ф, старе, нове in правки:
         с = os.path.join(тека, "джерела", "показ", ім_ф)
         with open(с, encoding="utf-8") as ф:
@@ -525,6 +583,10 @@ def стенд():
             ("наявну заміну речі переведено на прямий HTTP → як було (не 19)", dict(правки=(("картки.js", "модельП(з.текст)", прямий),)), база),
             ("наявну заміну речі: змінна історія → як було (не 19)", dict(правки=(("картки.js", "модельП(з.текст)",
                 "модельП('Продовжуй', null, [{role:'user', content:з.текст}])"),)), база),
+        )
+        випадки += (
+            ("Python-клієнт моделі зі змінним промптом → +1", dict(додати_py='import json, urllib.request\ndef запит(промпт):\n    тіло = json.dumps({"messages": [{"role": "user", "content": промпт}], "max_tokens": 600}).encode()\n    return urllib.request.urlopen(urllib.request.Request("http://x/v1/chat/completions", data=тіло))\n'), база + 1),
+            ("Python-клієнт з вікном рушія, порівнянням токенів і скороченням → +0", dict(додати_py='import json, urllib.request\ndef запит(промпт, історія):\n    вікно = json.load(urllib.request.urlopen("http://x/api/v0/models"))["loaded_context_length"]\n    токенів = len(промпт) // 3\n    while токенів + 600 > вікно:\n        історія.pop(0)\n        токенів -= 100\n    тіло = json.dumps({"messages": [{"role": "user", "content": промпт}], "max_tokens": 600}).encode()\n    return urllib.request.urlopen(urllib.request.Request("http://x/v1/chat/completions", data=тіло))\n'), база),
         )
         for н, (назва, арги, очік) in enumerate(випадки):
             тека_випадку = os.path.join(т, "в%d" % н)
