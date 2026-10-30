@@ -40,6 +40,23 @@ def ідентифікатори(значення):
     return list(dict.fromkeys(вих))
 
 
+def номерами(значення, номер):
+    """Те саме значення, де адреса предмета (`item_id`, `item_ids`) — номер речі виклику `номер(id)` замість повного
+    id: id несе крамницю й до моделі не йде (Е2-вхід-опису-кодами); поле, що несе крамницю цієї речі словом (домен
+    її id, рядок 11303), — теж. Код читає саму заяву; номер — лише для промпту."""
+    if isinstance(значення, dict):
+        # крамниця з адреси речі (домен після «@») — та сама адреса словом: поле з нею до моделі не йде
+        _дім = str(значення.get("item_id") or "").rpartition("@")[2] if "@" in str(значення.get("item_id") or "") else None
+        if _дім:
+            значення = {к: в for к, в in значення.items() if not (isinstance(в, str) and в.strip().lower() == _дім.lower())}
+        return {к: (номер(в) if к == "item_id" and в is not None
+                    else [номер(і) for і in в if і is not None] if к == "item_ids" and isinstance(в, (list, tuple))
+                    else номерами(в, номер)) for к, в in значення.items()}
+    if isinstance(значення, (list, tuple)):
+        return [номерами(в, номер) for в in значення]
+    return значення
+
+
 def створити(код, значення=None, *, recipient="woman", source="unknown", choice="unknown",
              rank=None, item_ids=(), part=None):
     """Повна заява зі стабільним ключем змісту; назва не підмінює ідентифікатор."""
