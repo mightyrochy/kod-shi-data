@@ -11,7 +11,7 @@ index 2013c9477..19ce4d280 100644
      [int]$MaxBundleMB = 512,
      [string]$OutboxDir = '',
 diff --git "a/\320\260\321\203\320\264\320\270\321\202/\320\260\320\264\320\260\320\277\321\202\320\265\321\200\320\270/gemini/m9v/\321\205\320\265\321\210\321\226.psd1" "b/\320\260\321\203\320\264\320\270\321\202/\320\260\320\264\320\260\320\277\321\202\320\265\321\200\320\270/gemini/m9v/\321\205\320\265\321\210\321\226.psd1"
-index 2e1af9e5c..f723fa54a 100644
+index 2e1af9e5c..b6d477a25 100644
 --- "a/\320\260\321\203\320\264\320\270\321\202/\320\260\320\264\320\260\320\277\321\202\320\265\321\200\320\270/gemini/m9v/\321\205\320\265\321\210\321\226.psd1"
 +++ "b/\320\260\321\203\320\264\320\270\321\202/\320\260\320\264\320\260\320\277\321\202\320\265\321\200\320\270/gemini/m9v/\321\205\320\265\321\210\321\226.psd1"
 @@ -3,10 +3,10 @@
@@ -19,7 +19,7 @@ index 2e1af9e5c..f723fa54a 100644
      'wrapper_update.ps1' = '4156307A17BDAE3AF7249E532947F659E99AA1349D159239159FAE60CA7E4F2B'
      'wrapper_probe.ps1'  = '85116D04C22EB64CBFF52E66BCEAE9B1091577A889EDD58A8B634093A82BDBC6'
 -    'wrapper_chain.ps1'  = '99C1766CD93D0935C1804275B75F09C32C377427F347B91432D82869FAE34194'
-+    'wrapper_chain.ps1'  = '11C79C8BB1B57E258A47ABC667B74312623A42BCBAD4D027250B836CE82A8744'
++    'wrapper_chain.ps1'  = '03EE0055AB6B9C6DF205E309CF3E1F09BDB875837A9361052F0769C3620D8603'
      'wrapper_health.ps1' = 'B3E2C44C4F342A915B814854A7D7619EDE2E019B48DC4A50CF4C9DB304C2E531'
      'gemini_run.ps1'     = 'ED151D76BA6658EA230A0442252F0D7D05C2F6D723461C383D8E10016206E8FE'
 -    'gemini_publish.ps1' = '73F2F2AA868DA86391FA9FACFD1F818AA8D1A76B9511F4DA891CBFE1E77087A9'
@@ -28,21 +28,27 @@ index 2e1af9e5c..f723fa54a 100644
      # (незмінний URL; той самий sha256 віддає https://chatgpt.com/codex/install.ps1 — редирект на releases.openai.com — і публікує реліз
      # openai/codex). 2_під_gemini.ps1 -WithCodex виконує його лише при збігу CodexInstaller і ставить саме цей реліз (-Release).
 diff --git "a/\320\260\321\203\320\264\320\270\321\202/\320\260\320\264\320\260\320\277\321\202\320\265\321\200\320\270/gemini/wrapper_chain.ps1" "b/\320\260\321\203\320\264\320\270\321\202/\320\260\320\264\320\260\320\277\321\202\320\265\321\200\320\270/gemini/wrapper_chain.ps1"
-index aa4f34bce..52ddbc2a3 100644
+index aa4f34bce..b566d8e71 100644
 --- "a/\320\260\321\203\320\264\320\270\321\202/\320\260\320\264\320\260\320\277\321\202\320\265\321\200\320\270/gemini/wrapper_chain.ps1"
 +++ "b/\320\260\321\203\320\264\320\270\321\202/\320\260\320\264\320\260\320\277\321\202\320\265\321\200\320\270/gemini/wrapper_chain.ps1"
-@@ -405,6 +405,81 @@ function Request-CloudReview([string]$Number, [string]$Head) {
+@@ -405,6 +405,90 @@ function Request-CloudReview([string]$Number, [string]$Head) {
      Write-WrapperLog "ланцюг: #$Number $Head — перевірка хмарним Claude, рядок диспетчерові"
  }
  
-+function Get-ChainBusySlots([string]$Dir, [string]$Pattern) {
-+    <# Читає JSON зайнятих слотів; недоступний стан обробляє викликач у межах однієї смуги.
++function Get-ChainBusySlots([string]$Dir, [string]$Pattern, [string]$Lane='невідома') {
++    <# Читає зайняті слоти незалежно; недоступний слот журналюється, решта лишається відомою.
 +
-+    Лише конфлікт спільного доступу означає зайнятість. Зниклий JSON/замок — завершення worker,
-+    решта помилок читання не доводить активності й має потрапити в журнал. #>
++    Прямий перелік відрізняє відсутню теку від відмови доступу, яку Test-Path може приховати.
++    Лише sharing violation замка доводить зайнятість; зниклий JSON/замок означає кінець worker. #>
 +    $slots = Join-Path $Dir 'slots'
-+    if (-not (Test-Path -LiteralPath $slots -ErrorAction Stop)) { return }
-+    foreach ($file in @(Get-ChildItem -LiteralPath $slots -Filter '*.json' -File -ErrorAction Stop)) {
++    try { $paths = [IO.Directory]::GetFiles($slots, '*.json') }
++    catch {
++        if ($_.Exception.GetBaseException() -is [IO.DirectoryNotFoundException]) { return }
++        Write-WrapperLog "стан смуги $Lane недоступний: $($_.Exception.GetType().Name): $($_.Exception.Message)"
++        return
++    }
++    foreach ($path in $paths) {
++        $file = [IO.FileInfo]$path
 +        if ($file.BaseName -cnotmatch $Pattern) { continue }
 +        $lockPath = [IO.Path]::ChangeExtension($file.FullName, '.lock')
 +        try {
@@ -54,19 +60,22 @@ index aa4f34bce..52ddbc2a3 100644
 +                if (($_.Exception.HResult -band 0xffff) -ne 32) { throw }
 +            }
 +            $slot = ConvertFrom-Json ([IO.File]::ReadAllText($file.FullName, $script:Utf8)) -ErrorAction Stop
-+        } catch [IO.FileNotFoundException] { continue }
-+          catch [IO.DirectoryNotFoundException] { continue }
-+        $slug = [string](Get-Prop $slot 'slug'); $marker = [string](Get-Prop $slot 'marker')
-+        if ($slug -cnotmatch $script:SlugPattern -or $slug.Contains('..') -or $slug.EndsWith('.lock') -or
-+            $marker -cnotmatch ('^gemini-queue/' + [regex]::Escape($slug) + '/[a-z0-9][a-z0-9.-]{1,63}/[1-9][0-9]*(?:/[^/]+)?$')) { throw 'CHAIN_LANE_STATE' }
-+        $slot
++            $slug = [string](Get-Prop $slot 'slug'); $marker = [string](Get-Prop $slot 'marker')
++            if ($slug -cnotmatch $script:SlugPattern -or $slug.Contains('..') -or $slug.EndsWith('.lock') -or
++                $marker -cnotmatch ('^gemini-queue/' + [regex]::Escape($slug) + '/[a-z0-9][a-z0-9.-]{1,63}/[1-9][0-9]*(?:/[^/]+)?$')) { throw 'CHAIN_LANE_STATE' }
++            $slot
++        } catch {
++            $cause = $_.Exception.GetBaseException()
++            if ($cause -is [IO.FileNotFoundException] -or $cause -is [IO.DirectoryNotFoundException]) { continue }
++            Write-WrapperLog "стан смуги $Lane недоступний: $($cause.GetType().Name): $($cause.Message)"
++        }
 +    }
 +}
 +
 +function Get-ChainBranchWork([string]$Branch) {
 +    <# Пов'язує гілку з активною позначкою; помилка чужого стану лишає звичайну перевірку цієї смуги.
 +
-+    Кожна смуга читається окремо: відмова Claude не зупиняє Codex/agy, відмова Codex не скасовує agy.
++    Кожний слот читається окремо: відмова Claude не зупиняє Codex/agy, відмова Codex не скасовує agy.
 +    Gemini/Codex пишуть gemini/<slug>; Claude також має збережену гілку та HEAD копії. #>
 +    $lanes = @()
 +    if ($Branch.StartsWith('gemini/')) {
@@ -75,8 +84,8 @@ index aa4f34bce..52ddbc2a3 100644
 +        $lanes = @(@{name='claude';dir=(Join-Path (Split-Path -Parent $WorkDir) 'claude-run')})
 +    }
 +    foreach ($lane in $lanes) {
-+        try {
-+            foreach ($slot in @(Get-ChainBusySlots $lane.dir ('^' + $lane.name + '-[1-9][0-9]*$'))) {
++        foreach ($slot in @(Get-ChainBusySlots $lane.dir ('^' + $lane.name + '-[1-9][0-9]*$') $lane.name)) {
++            try {
 +                $slug = [string]$slot.slug; $marker = [string]$slot.marker
 +                if ($lane.name -cne 'claude') {
 +                    if ($Branch -ceq "gemini/$slug") { return $marker }
@@ -102,9 +111,9 @@ index aa4f34bce..52ddbc2a3 100644
 +                    }
 +                }
 +                if ($branches -ccontains $Branch) { return $marker }
++            } catch {
++                Write-WrapperLog "стан смуги $($lane.name) недоступний: $($_.Exception.GetType().Name): $($_.Exception.Message)"
 +            }
-+        } catch {
-+            Write-WrapperLog "стан смуги $($lane.name) недоступний: $($_.Exception.GetType().Name): $($_.Exception.Message)"
 +        }
 +    }
 +    ''
@@ -113,7 +122,7 @@ index aa4f34bce..52ddbc2a3 100644
  function Invoke-WrapperChain {
      <# PR коду -> незалежна перевірка; новий штамп збірки -> один GPU-прогін на коміті збірки. #>
      if ($DryRun) { return }
-@@ -501,6 +576,9 @@ function Invoke-WrapperChain {
+@@ -501,6 +585,9 @@ function Invoke-WrapperChain {
              $eligible = Test-RecentReviewHead $pr $heads $installed $now $hours
              Write-FileAtomic $statePath (([ordered]@{ main=$main; reviewed=$reviewed; live_active=$liveActive; live_since=$liveSince; live_stamps=@($liveStamps.Keys); live_pending=@($livePending); reviews=@($seen.Keys); installed_utc=$installed.ToString('o'); heads=$heads }) | ConvertTo-Json -Compress -Depth 5)
              if (-not $eligible) { continue }
@@ -124,7 +133,7 @@ index aa4f34bce..52ddbc2a3 100644
                  foreach ($key in @($seen.Keys | Where-Object { $_ -cmatch ('^' + $n + ' [0-9a-f]{40} ') })) {
                      $oldHead = ($key -split ' ')[1]
 diff --git "a/\320\260\321\203\320\264\320\270\321\202/\320\260\320\264\320\260\320\277\321\202\320\265\321\200\320\270/gemini/\320\235\320\220\320\233\320\220\320\250\320\242\320\243\320\222\320\220\320\235\320\235\320\257.md" "b/\320\260\321\203\320\264\320\270\321\202/\320\260\320\264\320\260\320\277\321\202\320\265\321\200\320\270/gemini/\320\235\320\220\320\233\320\220\320\250\320\242\320\243\320\222\320\220\320\235\320\235\320\257.md"
-index 696c1758e..fc02ddc31 100644
+index 696c1758e..b0eea91e3 100644
 --- "a/\320\260\321\203\320\264\320\270\321\202/\320\260\320\264\320\260\320\277\321\202\320\265\321\200\320\270/gemini/\320\235\320\220\320\233\320\220\320\250\320\242\320\243\320\222\320\220\320\235\320\235\320\257.md"
 +++ "b/\320\260\321\203\320\264\320\270\321\202/\320\260\320\264\320\260\320\277\321\202\320\265\321\200\320\270/gemini/\320\235\320\220\320\233\320\220\320\250\320\242\320\243\320\222\320\220\320\235\320\235\320\257.md"
 @@ -431,9 +431,9 @@ $f = Join-Path "$env:USERPROFILE\gemini-outbox" $n
@@ -132,7 +141,7 @@ index 696c1758e..fc02ddc31 100644
  | `wrapper_probe.ps1` | `85116D04C22EB64CBFF52E66BCEAE9B1091577A889EDD58A8B634093A82BDBC6` |
  | `wrapper_update.ps1` | `4156307A17BDAE3AF7249E532947F659E99AA1349D159239159FAE60CA7E4F2B` |
 -| `wrapper_chain.ps1` | `99C1766CD93D0935C1804275B75F09C32C377427F347B91432D82869FAE34194` |
-+| `wrapper_chain.ps1` | `11C79C8BB1B57E258A47ABC667B74312623A42BCBAD4D027250B836CE82A8744` |
++| `wrapper_chain.ps1` | `03EE0055AB6B9C6DF205E309CF3E1F09BDB875837A9361052F0769C3620D8603` |
  | `gemini_run.ps1` | `ED151D76BA6658EA230A0442252F0D7D05C2F6D723461C383D8E10016206E8FE` |
 -| `gemini_publish.ps1` | `73F2F2AA868DA86391FA9FACFD1F818AA8D1A76B9511F4DA891CBFE1E77087A9` |
 +| `gemini_publish.ps1` | `3C97912267FFEF59F72A96D44D63B40A52BDA32174FF36E8F1438B076FFC225B` |
@@ -150,7 +159,7 @@ index 696c1758e..fc02ddc31 100644
  `Test-ReviewBranch` виключає `*/перевірка-*`, `*/pachka-*` й автозвіти.
  Після опублікованого вердикту `Test-ReviewedMerge` порівнює повний diff проти merge-base:
  чисте злиття main без зміни diff не створює нового наряду; звичайний коміт створює.
-@@ -630,3 +634,13 @@ CI й ноутбук запускають один повний перелік 
+@@ -630,3 +634,21 @@ CI й ноутбук запускають один повний перелік 
  `GEMINI ОБГОРТКА: ЗАБЛОКОВАНО GPU|SLOTS: <причина>, позначок N` (причина GPU стійка: замок, `процес <назва з compute-apps>`
  або зайнята пам'ять) — один на причину (повтор лише при зміні причини, стан `holds.json`); пульс диспетчера — лише
  запас. Той самий код у `gemini-run`: рядок іде в `out/alerts`, публікатор перевіряє його заново (`HoldLineTemplate`, `wrapper_health.ps1`) і кладе у вихідні. Тіло #1856 не стверджує «Оновлено понад 5 хв тому»: підказка умовна.
@@ -164,6 +173,14 @@ index 696c1758e..fc02ddc31 100644
 +ланцюг пише «стан смуги <назва> недоступний: <виняток>» і перевіряє її голову як звичайно.
 +Інші смуги далі відкладають активні голови. Зниклі під час читання JSON/замок означають
 +звільнений слот; відмова доступу до замка не означає зайнятість. Права читач не змінює.
++
++Читач слотів журналює недоступність окремого JSON/замка та продовжує читати решту слотів;
++читач гілок так само ізолює помилку branch-файла або HEAD одного слота. Прямий перелік
++slots відрізняє відсутність теки від недоступності батьківської теки без Test-Path.
++Windows ACL-фікстури виконують читання з обмеженим токеном потоку (CreateRestrictedToken);
++вихідний токен і ACL тимчасової теки відновлюються у finally. Стенд друкує SID, тип
++підвищення, привілеї та результат Get-ChildItem/Directory.GetFiles до й після обмеження.
++Спільний раннер виводить цю діагностику і в зеленому CI, а не лише зберігає у файлі.
 diff --git "a/\320\260\321\203\320\264\320\270\321\202/\320\260\320\264\320\260\320\277\321\202\320\265\321\200\320\270/gemini/\320\277\320\265\321\200\320\265\320\262\321\226\321\200\320\272\320\260/fake_cli.py" "b/\320\260\321\203\320\264\320\270\321\202/\320\260\320\264\320\260\320\277\321\202\320\265\321\200\320\270/gemini/\320\277\320\265\321\200\320\265\320\262\321\226\321\200\320\272\320\260/fake_cli.py"
 index 051ea51b7..52fb76c76 100755
 --- "a/\320\260\321\203\320\264\320\270\321\202/\320\260\320\264\320\260\320\277\321\202\320\265\321\200\320\270/gemini/\320\277\320\265\321\200\320\265\320\262\321\226\321\200\320\272\320\260/fake_cli.py"
@@ -338,10 +355,10 @@ index 3f09e39d3..6e8e1122f 100644
  function Get-ChainPulls { @() }
 diff --git "a/\320\260\321\203\320\264\320\270\321\202/\320\260\320\264\320\260\320\277\321\202\320\265\321\200\320\270/gemini/\320\277\320\265\321\200\320\265\320\262\321\226\321\200\320\272\320\260/\321\201\321\206\320\265\320\275\320\260\321\200\321\226\321\227_\320\272\321\226\320\275\320\265\321\206\321\214_\321\200\320\276\320\261\320\276\321\202\320\270.ps1" "b/\320\260\321\203\320\264\320\270\321\202/\320\260\320\264\320\260\320\277\321\202\320\265\321\200\320\270/gemini/\320\277\320\265\321\200\320\265\320\262\321\226\321\200\320\272\320\260/\321\201\321\206\320\265\320\275\320\260\321\200\321\226\321\227_\320\272\321\226\320\275\320\265\321\206\321\214_\321\200\320\276\320\261\320\276\321\202\320\270.ps1"
 new file mode 100644
-index 000000000..21f589703
+index 000000000..8c58b0fde
 --- /dev/null
 +++ "b/\320\260\321\203\320\264\320\270\321\202/\320\260\320\264\320\260\320\277\321\202\320\265\321\200\320\270/gemini/\320\277\320\265\321\200\320\265\320\262\321\226\321\200\320\272\320\260/\321\201\321\206\320\265\320\275\320\260\321\200\321\226\321\227_\320\272\321\226\320\275\320\265\321\206\321\214_\321\200\320\276\320\261\320\276\321\202\320\270.ps1"
-@@ -0,0 +1,268 @@
+@@ -0,0 +1,420 @@
 +﻿#Requires -Version 5.1
 +param([Parameter(Mandatory=$true)][string]$SourceDir, [switch]$Before, [switch]$AccessBefore)
 +$ErrorActionPreference = 'Stop'
@@ -460,7 +477,79 @@ index 000000000..21f589703
 +            Tick $blockedHead "gemini/спільний-$lane"; Tick $blockedHead "gemini/спільний-$lane"
 +            Check "${lane}: після ЗАБЛОКОВАНО — 1 перевірка" ((CountReviews 2386) -eq ($n+2))
 +        }
-+        function With-DeniedRead([string]$Path, [scriptblock]$Body) {
++        if ($env:OS -eq 'Windows_NT' -and -not ('ChainFixtureToken' -as [type])) {
++            # Обмежується лише токен потоку фікстури; вихідний токен та ACL робочих тек не змінюються.
++            # https://learn.microsoft.com/windows/win32/api/securitybaseapi/nf-securitybaseapi-createrestrictedtoken
++            Add-Type -TypeDefinition @'
++using System;
++using System.ComponentModel;
++using System.Runtime.InteropServices;
++using System.Security.Principal;
++using System.Text;
++public sealed class ChainFixtureToken : IDisposable {
++    [DllImport("advapi32.dll", SetLastError=true)]
++    static extern bool CreateRestrictedToken(IntPtr token, uint flags, uint ns, IntPtr s, uint np, IntPtr p, uint nr, IntPtr r, out IntPtr result);
++    [DllImport("advapi32.dll", SetLastError=true)]
++    static extern bool GetTokenInformation(IntPtr token, int kind, IntPtr data, int length, out int needed);
++    [DllImport("advapi32.dll", CharSet=CharSet.Unicode, SetLastError=true)]
++    static extern bool LookupPrivilegeName(string system, IntPtr luid, StringBuilder name, ref int length);
++    [DllImport("kernel32.dll")] static extern bool CloseHandle(IntPtr handle);
++    IntPtr token;
++    WindowsImpersonationContext context;
++    public ChainFixtureToken() {
++        using (var identity = WindowsIdentity.GetCurrent()) {
++            if (!CreateRestrictedToken(identity.Token, 1, 0, IntPtr.Zero, 0, IntPtr.Zero, 0, IntPtr.Zero, out token))
++                throw new Win32Exception(Marshal.GetLastWin32Error());
++        }
++        try { context = WindowsIdentity.Impersonate(token); }
++        catch { CloseHandle(token); token = IntPtr.Zero; throw; }
++    }
++    public static string Describe() {
++        using (var identity = WindowsIdentity.GetCurrent()) {
++            int needed;
++            GetTokenInformation(identity.Token, 3, IntPtr.Zero, 0, out needed);
++            IntPtr data = Marshal.AllocHGlobal(needed);
++            try {
++                if (!GetTokenInformation(identity.Token, 3, data, needed, out needed)) throw new Win32Exception(Marshal.GetLastWin32Error());
++                var result = new StringBuilder("sid=" + identity.User + "; impersonation=" + identity.ImpersonationLevel);
++                for (int i = 0; i < Marshal.ReadInt32(data); i++) {
++                    IntPtr entry = IntPtr.Add(data, 4 + i * 12);
++                    int size = 256;
++                    var name = new StringBuilder(size);
++                    if (!LookupPrivilegeName(null, entry, name, ref size)) throw new Win32Exception(Marshal.GetLastWin32Error());
++                    result.Append("; " + name + "=0x" + Marshal.ReadInt32(entry, 8).ToString("x"));
++                }
++                Marshal.FreeHGlobal(data); data = Marshal.AllocHGlobal(4);
++                foreach (int kind in new int[] { 18, 20 }) {
++                    if (!GetTokenInformation(identity.Token, kind, data, 4, out needed)) throw new Win32Exception(Marshal.GetLastWin32Error());
++                    result.Append("; " + (kind == 18 ? "elevationType=" : "elevated=") + Marshal.ReadInt32(data));
++                }
++                return result.ToString();
++            } finally { Marshal.FreeHGlobal(data); }
++        }
++    }
++    public void Dispose() {
++        try { if (context != null) { context.Dispose(); context = null; } }
++        finally { if (token != IntPtr.Zero) { CloseHandle(token); token = IntPtr.Zero; } }
++    }
++}
++'@
++        }
++        function Show-DirectoryAccess([string]$Path, [string]$Phase) {
++            <# Друкує фактичний результат читача на ноутбуці й CI, включно з винятком та ефективним токеном. #>
++            Write-Host "ACL ДІАГНОСТИКА $Phase $Path"
++            Write-Host ("ACL ТОКЕН " + [ChainFixtureToken]::Describe())
++            try {
++                $items = @(Get-ChildItem -LiteralPath $Path -ErrorAction Stop)
++                Write-Host "ACL ЧИТАННЯ Get-ChildItem: успіх, елементів $($items.Count)"
++            } catch { Write-Host "ACL ЧИТАННЯ Get-ChildItem: $($_.Exception.GetBaseException().GetType().FullName), HResult=$($_.Exception.GetBaseException().HResult): $($_.Exception.Message)" }
++            try {
++                $items = [IO.Directory]::GetFiles($Path, '*.json')
++                Write-Host "ACL ЧИТАННЯ Directory.GetFiles: успіх, файлів $($items.Count)"
++            } catch { Write-Host "ACL ЧИТАННЯ Directory.GetFiles: $($_.Exception.GetBaseException().GetType().FullName), HResult=$($_.Exception.GetBaseException().HResult): $($_.Exception.Message)" }
++        }
++
++        function With-DeniedRead([string]$Path, [scriptblock]$Body, [string]$Rights='ReadData') {
 +            <# Тимчасово забороняє читання лише власної фікстури; відновлює ACL/режим у finally. #>
 +            $full = [IO.Path]::GetFullPath($Path)
 +            if (-not $full.StartsWith(([IO.Path]::GetFullPath($tmp) + [IO.Path]::DirectorySeparatorChar), [StringComparison]::OrdinalIgnoreCase)) { throw 'ACL поза текою стенда' }
@@ -468,11 +557,22 @@ index 000000000..21f589703
 +                $acl = Get-Acl -LiteralPath $full
 +                $changed = Get-Acl -LiteralPath $full
 +                $sid = [Security.Principal.WindowsIdentity]::GetCurrent().User
-+                $inherit = $(if ([IO.Directory]::Exists($full)) { 'ContainerInherit,ObjectInherit' } else { 'None' })
-+                $rule = New-Object Security.AccessControl.FileSystemAccessRule($sid, 'ReadData', $inherit, 'None', 'Deny')
++                $isDirectory = [IO.Directory]::Exists($full)
++                $inherit = $(if ($isDirectory) { 'ContainerInherit,ObjectInherit' } else { 'None' })
++                $rule = New-Object Security.AccessControl.FileSystemAccessRule($sid, $Rights, $inherit, 'None', 'Deny')
 +                $changed.AddAccessRule($rule)
-+                try { Set-Acl -LiteralPath $full -AclObject $changed; & $Body }
-+                finally { Set-Acl -LiteralPath $full -AclObject $acl }
++                $token = $null
++                try {
++                    Set-Acl -LiteralPath $full -AclObject $changed
++                    if ($isDirectory) { Show-DirectoryAccess $full "вихідний токен, deny $Rights" }
++                    $token = New-Object ChainFixtureToken
++                    Check 'токен фікстури: привілеїв backup/restore немає' ([ChainFixtureToken]::Describe() -notmatch 'SeBackupPrivilege|SeRestorePrivilege')
++                    if ($isDirectory) { Show-DirectoryAccess $full "токен фікстури, deny $Rights" }
++                    & $Body
++                } finally {
++                    if ($null -ne $token) { $token.Dispose() }
++                    Set-Acl -LiteralPath $full -AclObject $acl
++                }
 +            } else {
 +                $mode = & stat -c '%a' -- $full
 +                if ($LASTEXITCODE) { throw 'stat фікстури' }
@@ -565,22 +665,91 @@ index 000000000..21f589703
 +            }
 +        } finally { foreach ($handle in $held) { $handle.Dispose() } }
 +
-+        # 11566а: worker прибирає JSON між переліком і читанням. Справжній Get-ChildItem
-+        # повертає FileInfo, після чого фікстура видаляє файл перед продовженням читача.
++        # Контрольоване зникнення після справжнього переліку вправляє саме читач,
++        # а не дублює його логіку у заглушці.
 +        $raceInfo = "$GeminiRunsDir/slots/codex-1.json"
++        $tokens = $null; $errors = $null
++        $ast = [Management.Automation.Language.Parser]::ParseFile((Join-Path $SourceDir 'wrapper_chain.ps1'), [ref]$tokens, [ref]$errors)
++        $reader = $ast.Find({ param($node) $node -is [Management.Automation.Language.FunctionDefinitionAst] -and $node.Name -ceq 'Get-ChainBusySlots' }, $true).Extent.Text
++        $anchor = "$" + "lockPath = [IO.Path]::ChangeExtension($" + "file.FullName, '.lock')"
++        if (-not $reader.Contains($anchor)) { throw 'Змінено межу відкриття замка' }
 +        Write-FileAtomic $raceInfo '{"slug":"гонка","marker":"gemini-queue/гонка/gpt-test/1/p1"}'
 +        $raceLock = [IO.File]::Open("$GeminiRunsDir/slots/codex-1.lock", 'Open', 'ReadWrite', 'None')
-+        function Get-ChildItem {
-+            param($LiteralPath, $Filter, [switch]$File, $ErrorAction)
-+            $files = @(Microsoft.PowerShell.Management\Get-ChildItem @PSBoundParameters)
-+            if ([IO.Path]::GetFullPath($LiteralPath) -ceq [IO.Path]::GetFullPath("$GeminiRunsDir/slots")) { [IO.File]::Delete($raceInfo) }
-+            $files
-+        }
++        $probe = $reader.Replace('function Get-ChainBusySlots(', 'function Test-GoneJson(').Replace($anchor, ($anchor + '; [IO.File]::Delete($file.FullName)'))
++        Invoke-Expression $probe
 +        try {
 +            $threw = $false
-+            try { $null = @(Get-ChainBusySlots $GeminiRunsDir '^codex-[1-9][0-9]*$') } catch { $threw = $true }
++            try { $null = @(Test-GoneJson $GeminiRunsDir '^codex-[1-9][0-9]*$') } catch { $threw = $true }
 +            Check '11566а: зниклий JSON (ДО виняток → ПІСЛЯ вільний слот)' ($threw -eq [bool]$AccessBefore)
-+        } finally { Remove-Item Function:Get-ChildItem; $raceLock.Dispose() }
++        } finally { $raceLock.Dispose() }
++
++        function Read-Case([scriptblock]$Read) {
++            <# Фіксує виняток старого читача без зупинки решти вимірів ДО. #>
++            try { & $Read } catch { Write-Host "ВИНЯТОК ЧИТАЧА: $($_.Exception.Message)" }
++        }
++        # Раніше один недоступний JSON/HEAD скасовував усі слоти смуги.
++        if (-not $AccessBefore) {
++            $previousRuns = $GeminiRunsDir; $previousWork = $WorkDir
++            $handles = @()
++            try {
++                $GeminiRunsDir = "$tmp/multiple/gemini-runs"
++                $WorkDir = "$tmp/multiple/pub"
++                [void][IO.Directory]::CreateDirectory("$GeminiRunsDir/slots")
++                [void][IO.Directory]::CreateDirectory("$tmp/multiple/claude-run/slots")
++                foreach ($i in @(1,2,3)) {
++                    Write-FileAtomic "$GeminiRunsDir/slots/codex-$i.json" ((@{slug="відомий-$i";marker="gemini-queue/відомий-$i/gpt-test/1/p1"}) | ConvertTo-Json)
++                    $handles += [IO.File]::Open("$GeminiRunsDir/slots/codex-$i.lock", 'OpenOrCreate', 'ReadWrite', 'None')
++                }
++                Write-FileAtomic "$GeminiRunsDir/slots/codex-2.json" '{'
++                $logStart = $script:Logs.Count
++                $known = @(Read-Case { Get-ChainBusySlots $GeminiRunsDir '^codex-[1-9][0-9]*$' 'codex' })
++                Check 'кілька JSON: збережено обидва справні слоти' ($known.Count -eq 2)
++                Check 'кілька JSON: зіпсований слот журналюється' (@($script:Logs | Select-Object -Skip $logStart | Where-Object { $_ -like 'стан смуги codex недоступний:*' }).Count -eq 1)
++                Check 'кілька JSON: активна гілка не йде на перевірку' ((Get-ChainBranchWork 'gemini/відомий-3') -ceq 'gemini-queue/відомий-3/gpt-test/1/p1')
++                foreach ($i in @(1,2)) {
++                    $copy = "$tmp/multiple/copy-$i"
++                    [void][IO.Directory]::CreateDirectory("$copy/repo/.git")
++                    Write-FileAtomic "$copy/repo/.git/HEAD" "ref: refs/heads/claude/відома-$i"
++                    Write-FileAtomic "$tmp/multiple/claude-run/slots/claude-$i.json" ((@{slug="слот-$i";marker="gemini-queue/слот-$i/cc-test/1/p1";copy=$copy}) | ConvertTo-Json)
++                    $handles += [IO.File]::Open("$tmp/multiple/claude-run/slots/claude-$i.lock", 'OpenOrCreate', 'ReadWrite', 'None')
++                }
++                With-DeniedRead "$tmp/multiple/copy-1/repo/.git/HEAD" {
++                    $logStart = $script:Logs.Count
++                    $found = Get-ChainBranchWork 'claude/відома-2'
++                    Check 'кілька HEAD: справний слот після недоступного збережено' ($found -ceq 'gemini-queue/слот-2/cc-test/1/p1')
++                    Check 'кілька HEAD: виняток першого слота у журналі' (@($script:Logs | Select-Object -Skip $logStart | Where-Object { $_ -like 'стан смуги claude недоступний:*' }).Count -eq 1)
++                }
++                With-DeniedRead "$tmp/multiple/claude-run" {
++                    $denied = $false
++                    try { $null = [IO.Directory]::GetFiles("$tmp/multiple/claude-run/slots", '*.json') }
++                    catch { $denied = $_.Exception.GetBaseException() -is [UnauthorizedAccessException] }
++                    Check 'батьківська тека: читання slots справді заборонено' $denied
++                    $logStart = $script:Logs.Count
++                    Check 'батьківська тека: звичайна перевірка без падіння' (-not (Get-ChainBranchWork 'claude/відома-2'))
++                    Check 'батьківська тека: недоступність не прихована як відсутність' (@($script:Logs | Select-Object -Skip $logStart | Where-Object { $_ -like 'стан смуги claude недоступний:*' }).Count -eq 1)
++                } 'ReadAndExecute'
++            } finally {
++                foreach ($handle in $handles) { $handle.Dispose() }
++                $GeminiRunsDir = $previousRuns; $WorkDir = $previousWork
++            }
++
++            # Клон AST підміняє лише результат системного Open; обробник помилок — справжній.
++            $open = '$lock = [IO.File]::Open($lockPath, ''Open'', ''ReadWrite'', ''None'')'
++            if (-not $reader.Contains($open)) { throw 'Змінено операцію відкриття замка' }
++            $ioDir = "$tmp/io-case"
++            [void][IO.Directory]::CreateDirectory("$ioDir/slots")
++            Write-FileAtomic "$ioDir/slots/codex-1.json" '{"slug":"io","marker":"gemini-queue/io/gpt-test/1/p1"}'
++            $probe = $reader.Replace('function Get-ChainBusySlots(', 'function Test-OtherIo(').Replace($open, 'throw (New-Object IO.IOException(''стенд: IO не 32''))')
++            Invoke-Expression $probe
++            $logStart = $script:Logs.Count
++            Check 'IOException не 32: не означає зайнятість' (@(Read-Case { Test-OtherIo $ioDir '^codex-[1-9][0-9]*$' 'codex' }).Count -eq 0)
++            Check 'IOException не 32: є причина у журналі' (@($script:Logs | Select-Object -Skip $logStart | Where-Object { $_ -like 'стан смуги codex недоступний:*IO*стенд: IO не 32*' }).Count -eq 1)
++            $probe = $reader.Replace('function Get-ChainBusySlots(', 'function Test-GoneLockParent(').Replace($open, ('[IO.Directory]::Move($Dir, ($Dir + ''-moved'')); ' + $open))
++            Invoke-Expression $probe
++            $logStart = $script:Logs.Count
++            Check 'PathNotFound замка: зникла тека не означає зайнятість' (@(Test-GoneLockParent $ioDir '^codex-[1-9][0-9]*$' 'codex').Count -eq 0)
++            Check 'PathNotFound замка: зникнення без журналу недоступності' ($script:Logs.Count -eq $logStart -and [IO.Directory]::Exists("$ioDir-moved"))
++        }
 +
 +        # 11566б: відтворюємо точне вікно між Open і Dispose, вставляючи виклик
 +        # справжнього Open-Lock worker у копію AST-функції; робочий читач не підміняється.
@@ -668,3 +837,18 @@ index 9fe905422..711487f67 100644
  done
  
  echo; [ $BAD = 0 ] && echo "ВСЕ ✓" || echo "ЗБІЙ ✗"; exit $BAD
+diff --git "a/\320\260\321\203\320\264\320\270\321\202/\320\277\321\200\320\276\320\261\320\270/\320\264\320\276\321\200\320\276\320\261\320\272\320\260_\320\274\320\265\320\275\321\210\320\265_\320\277\321\200\320\276\320\263\320\276\320\275\321\226\320\262.py" "b/\320\260\321\203\320\264\320\270\321\202/\320\277\321\200\320\276\320\261\320\270/\320\264\320\276\321\200\320\276\320\261\320\272\320\260_\320\274\320\265\320\275\321\210\320\265_\320\277\321\200\320\276\320\263\320\276\320\275\321\226\320\262.py"
+index 957fe0ea2..429298d9e 100644
+--- "a/\320\260\321\203\320\264\320\270\321\202/\320\277\321\200\320\276\320\261\320\270/\320\264\320\276\321\200\320\276\320\261\320\272\320\260_\320\274\320\265\320\275\321\210\320\265_\320\277\321\200\320\276\320\263\320\276\320\275\321\226\320\262.py"
++++ "b/\320\260\321\203\320\264\320\270\321\202/\320\277\321\200\320\276\320\261\320\270/\320\264\320\276\321\200\320\276\320\261\320\272\320\260_\320\274\320\265\320\275\321\210\320\265_\320\277\321\200\320\276\320\263\320\276\320\275\321\226\320\262.py"
+@@ -60,6 +60,10 @@ def виконати():
+         код = результат.returncode or int(bool(провалів) or тверджень == 0)
+         запис = dict(стенд=назва, команда=команда, код_процесу=результат.returncode, код=код, тверджень=тверджень, провалів=провалів)
+         результати.append(запис)
++        # Діагностика ACL потрібна і в зеленому CI: локальний токен не доводить властивостей раннера.
++        for рядок in вивід.splitlines():
++            if рядок.startswith(('ACL ДІАГНОСТИКА ', 'ACL ТОКЕН ', 'ACL ЧИТАННЯ ')):
++                print(рядок, flush=True)
+         print(json.dumps(запис, ensure_ascii=False), flush=True)
+         if код:
+             print(вивід, file=sys.stderr, flush=True)
