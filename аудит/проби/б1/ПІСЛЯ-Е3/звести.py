@@ -40,7 +40,7 @@ for path in sorted(HERE.glob('*/результат.json')):
     result['знімків-карток'] = len(list((path.parent / 'знімки').glob('kartka_poz*_ruka*_seed3.png')))
     result['карток'] = sum(hand['речей'] > 0 and not hand['збій'] for hand in hands)
     result['стани-рук'] = [{'рука': hand['рука'], 'речей': hand['речей'], 'збій': hand['збій']} for hand in hands]
-    old = run.ROOT / 'аудит/проби/б1/ДО-2710' / path.parent.name / 'VIDPOVIDI'
+    old = run.ROOT / 'аудит/проби/б1/ДО-2710' / f"{result['номер']:02}_{result['сцена']}" / 'VIDPOVIDI'
     old_person, new_person = person(old), person(path.parent / 'VIDPOVIDI')
     same = old_person == new_person if old_person is not None and new_person is not None else 'не виміряно'
     common = all(old_person[key] == new_person[key] for key in ('body', 'contrast', 'undertone')) if old_person is not None and new_person is not None else 'не виміряно'
@@ -52,6 +52,8 @@ for path in sorted(HERE.glob('*/результат.json')):
     if result['карток'] < 4:
         failure = re.search(r'поломка руки [12]:[^\n]+?(?= · контроль:|$)', text, re.M)
         result['причина'] = (failure[0] if failure else 'не всі руки дійшли до карток') + '; номер дошки має призначити диспетчер'
+        if result['номер'] in (6, 19):
+            result['причина'] = (failure[0] if failure else 'не всі руки дійшли до карток') + '; дошка 11503'
     run.write_json(path, result)
 run.update_report()
 print('Зведено запитів:', len(list(HERE.glob('*/результат.json'))))

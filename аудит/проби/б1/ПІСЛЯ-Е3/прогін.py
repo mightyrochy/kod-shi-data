@@ -110,6 +110,14 @@ def update_report():
                  'Після зупинки порт 1236 вільний, `loaded_instances=[]`; '
                  'повний стан збережено у `моделі-після-зупинки.json`.']
     text += ['', 'Образи не оцінювалися. Продукт і звірки не змінено; незалежного приймання немає.', '']
+    if (HERE / 'зупинка-спроба-2.json').exists():
+        text += ['Попередня спроба 24 перервана через 503 (11504); її записи лишилися у '
+                 '`24_б1_дощ_вечір_стримано/`, а продовження за доробкою 2 від 30.10 — '
+                 'у `24_б1_дощ_вечір_стримано_продовження/`. Запити 01–23 не повторювалися. '
+                 'Екрани збою руки 2 у 06 і 19 — рядок 11503.', '']
+    if len(rows) == 30:
+        text = [line.replace('До завершення 30 запитів порівняльного висновку немає; Е3 не закрито.',
+                            'Серію завершено. Е3 не закрито: мірило — 30/30 повних результатів і 30/30 без `✗`.') for line in text]
     REPORT.write_text('\n'.join(text), encoding='utf-8')
     return rows
 
@@ -126,6 +134,8 @@ def main():
     assert subprocess.check_output(['git', 'branch', '--show-current'], cwd=ROOT, text=True, encoding='utf-8').strip() == 'gemini/Е3-наживо'
     for number, (scene, woman, chat, extra) in enumerate(scenes, 1):
         folder = HERE / f'{number:02}_{scene}'
+        if number == 24:
+            folder = HERE / f'{number:02}_{scene}_продовження'
         if (folder / 'результат.json').exists():
             continue
         folder.mkdir(exist_ok=True)
@@ -169,12 +179,34 @@ def main():
                     raise RuntimeError('Проксі не відкрив порт')
                 print(f'{now()} СТАРТ {number:02}/30 {scene}; проксі PID={proxy.pid}', flush=True)
                 stand = subprocess.Popen(command, cwd=ROOT, env=env, stdout=log, stderr=subprocess.STDOUT, creationflags=subprocess.CREATE_NO_WINDOW)
+                blocked = False
+                previous_models = before
+                previous_time = now()
+                last_status = time.monotonic()
                 while stand.poll() is None:
                     try:
-                        stand.wait(timeout=30)
+                        stand.wait(timeout=2)
                     except subprocess.TimeoutExpired:
                         lines = (folder / 'лог.txt').read_text(encoding='utf-8').splitlines()
-                        print(f'{now()} {number:02}/30 {int(time.monotonic()-start)}с PID={stand.pid}: {lines[-1][:180] if lines else "очікування"}', flush=True)
+                        proxy_text = (folder / 'проксі.txt').read_text(encoding='utf-8')
+                        current_models = api()
+                        with (folder / 'спостереження-моделей.jsonl').open('a', encoding='utf-8') as observations:
+                            observations.write(json.dumps({'час': now(), 'models': current_models}, ensure_ascii=False) + '\n')
+                        if '503' in proxy_text or any('503' in line for line in lines):
+                            write_json(folder / 'відмова-діагностика.json', {
+                                'до-час': previous_time, 'до': previous_models,
+                                'після-час': now(), 'після': current_models,
+                                'проксі': proxy_text, 'стенд-PID': stand.pid, 'проксі-PID': proxy.pid})
+                            gpu_processes = subprocess.run(['nvidia-smi', '--query-compute-apps=pid,process_name,used_memory', '--format=csv'], capture_output=True, text=True)
+                            (folder / 'gpu-відмова.txt').write_text(gpu_processes.stdout + gpu_processes.stderr, encoding='utf-8')
+                            write_json(HERE / 'повторний-блокер.json', {'номер': number, 'сцена': scene, 'час': now(), 'запис': folder.relative_to(ROOT).as_posix(), 'секунди': round(time.monotonic()-start)})
+                            blocked = True
+                            print(f'{now()} ЗАБЛОКОВАНО {number:02}: повторна HTTP 503; діагностику збережено, повтору немає.', flush=True)
+                            break
+                        previous_models, previous_time = current_models, now()
+                        if time.monotonic() - last_status >= 30:
+                            print(f'{now()} {number:02}/30 {int(time.monotonic()-start)}с PID={stand.pid}: {lines[-1][:180] if lines else "очікування"}', flush=True)
+                            last_status = time.monotonic()
                 rc = stand.returncode
         finally:
             for child in (stand, proxy):
@@ -188,6 +220,8 @@ def main():
                     if instance['id'] in own:
                         unloaded.append(api('/unload', {'instance_id': instance['id']}))
             write_json(folder / 'прибирання.json', {'вивантажено': unloaded, 'моделі-після': api()})
+        if blocked:
+            return 3
         elapsed = round(time.monotonic() - start)
         text = (folder / 'лог.txt').read_text(encoding='utf-8')
         failures = re.findall(r'^ {2}✗ (.+?)(?:  →|$)', text, re.M)
