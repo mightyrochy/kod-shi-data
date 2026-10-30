@@ -194,7 +194,7 @@ function наповнитиКолаП(ред, ід){
   ред.колаВузол.innerHTML = ''; ред.кола.clear();
   п.довідник.кольори.filter(к=>п.всіКольори || к.часто).forEach(к=>{
     const б = ел('button', 'оц-коло'); б.type = 'button';
-    б.style.background = к.hex; назваЖінціП(б, к.ключ, undefined, 'title'); назваЖінціП(б, к.ключ, undefined, 'aria-label'); б.dataset.код = к.код;
+    б.style.background = к.hex; текстЖінціП(б, к.ключ, 'without_text', своїЕкрануП(), 'title'); текстЖінціП(б, к.ключ, 'without_text', своїЕкрануП(), 'aria-label'); б.dataset.код = к.код;
     б.onclick = ()=>{ дотикП(); виправитиПерелікП([{op: 'set', item: ід, color: к.код}]); };
     ред.колаВузол.appendChild(б); ред.кола.set(к.ключ, б);
   });
