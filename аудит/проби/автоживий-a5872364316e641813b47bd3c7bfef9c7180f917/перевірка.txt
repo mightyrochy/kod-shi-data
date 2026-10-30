@@ -1,0 +1,76 @@
+Час UTC: 2026-10-30T16:40:30.1678177Z
+Команда: git merge-base --is-ancestor afe95d98d3cf64d7e767ea78addd32e49121809f origin/main
+rc=0
+Команда: git rev-parse origin/main
+a63d7a71465eb66d132c5b8d6e3d44d5505aa2de
+rc=0
+Команда: git -C tmp/build-afe95d98 rev-parse HEAD
+afe95d98d3cf64d7e767ea78addd32e49121809f
+rc=0
+Команда: git diff --name-only afe95d98d3cf64d7e767ea78addd32e49121809f origin/main -- джерела
+rc=0
+Команда: git diff --numstat a5872364316e641813b47bd3c7bfef9c7180f917 afe95d98d3cf64d7e767ea78addd32e49121809f -- три файли лабораторії
+1	0	джерела/лабораторія/колір_сім_ї_низ.json
+196	0	джерела/лабораторія/колір_сім_ї_низ.py
+1	0	джерела/лабораторія/колір_сім_ї_скінченні.json
+rc=0
+Команда: git ls-remote origin refs/heads/gemini/автоживий-a5872364316e641813b47bd3c7bfef9c7180f917
+rc=0; публікацію гілки виконує обгортка
+Команда: GET http://127.0.0.1:1234/api/v1/models після прогону
+[
+    {
+        "key":  "lapa-v0.1.3-instruct",
+        "loaded_instances":  [
+
+                             ]
+    },
+    {
+        "key":  "gemma-4-e4b-it",
+        "loaded_instances":  [
+
+                             ]
+    },
+    {
+        "key":  "gemma-4-12b-it",
+        "loaded_instances":  [
+
+                             ]
+    },
+    {
+        "key":  "mamaylm-gemma-3-12b-it-v2.0",
+        "loaded_instances":  [
+
+                             ]
+    },
+    {
+        "key":  "qwen/qwen3.5-9b",
+        "loaded_instances":  [
+
+                             ]
+    },
+    {
+        "key":  "gemma-4-12b-it-qat",
+        "loaded_instances":  [
+
+                             ]
+    },
+    {
+        "key":  "qwen3-vl-8b-instruct",
+        "loaded_instances":  [
+
+                             ]
+    },
+    {
+        "key":  "text-embedding-nomic-embed-text-v1.5",
+        "loaded_instances":  [
+
+                             ]
+    }
+]
+Команда: netstat -ano, слухачі :1235 після прогону
+rc=0
+Команда: python джерела/прилади/згорнути_дошку.py --лише-перевірити
+файлів 1, згорнуто 1; нових рядків 0, замін 0, змін стану 2, вже було 0; помилок 0
+rc=0
+Команда: git worktree remove C:\Users\gemini\gemini-runs\w\20261030-181808-f31de84629ae\tmp\build-afe95d98
+rc=0; дерево прибрано
