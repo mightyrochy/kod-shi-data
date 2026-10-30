@@ -1,0 +1,37 @@
+── ПРОМПТ (2226 симв.) ──
+{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.", "One item carries one thing — of two alternatives list the first; a note in brackets is not an item.", "Slot \"accessory\" is for an item no other slot fits.", "\"is_outfit\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "ITEM_LIST", "answer_schema": {"is_outfit": "yes|no", "items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory", "color_hex": "<#rrggbb or null>", "worn": "<true, or false when the description says the outfit goes without it>"}]}, "input": ["\"description\" — the outfit description"]}, "description": "Tailored wool-blend blazer, slim fit, knee-length hem, charcoal grey #2F4F4F, heavy woven fabric\nSilk-poplin blouse, relaxed collar, straight cut, ivory white #FFFFF0, smooth lightweight fabric\nHigh-waisted pleated trousers, wide leg, full length, black #000000, structured cotton-blend fabric\nChunky leather loafers, square toe, ankle height, oxblood brown #4A0404, durable grained leather\n\nThis outfit strikes the perfect balance between classic refinement and rock-concert energy by leveraging a monochromatic base that anchors the bold atmosphere of the venue. The tailored blazer provides the requested \"smart\" dress code adherence while offering warmth against autumn chill, yet its structured silhouette ensures you can stand comfortably in the crowd without feeling weighed down. Rich jewel tones like oxblood and charcoal add an edgy contrast to the traditional fabrics, allowing your style to shine under artificial club lighting without sacrificing elegance."}
+
+── ВІДПОВІДЬ (679 симв., 4.2 с, HTTP 200) ──
+{
+"is_outfit": "yes",
+"items": [
+{
+"name": "tailored wool-blend blazer",
+"details": "slim fit, knee-length hem, heavy woven fabric",
+"slot": "outerwear",
+"color_hex": "#2F4F4F",
+"worn": true
+},
+{
+"name": "silk-poplin blouse",
+"details": "relaxed collar, straight cut, smooth lightweight fabric",
+"slot": "top",
+"color_hex": "#FFFFF0",
+"worn": true
+},
+{
+"name": "high-waisted pleated trousers",
+"details": "wide leg, full length, structured cotton-blend fabric",
+"slot": "bottom",
+"color_hex": "#000000",
+"worn": true
+},
+{
+"name": "chunky leather loafers",
+"details": "square toe, ankle height, durable grained leather",
+"slot": "shoes",
+"color_hex": "#4A0404",
+"worn": true
+}
+]
+}
