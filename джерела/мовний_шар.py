@@ -833,7 +833,7 @@ def прийняти(розмітка, відповідь):
              "internal language — JSON with codes. You make no decisions.",
         # КВ-1: дотик пояснює слова («так, через колір»), але поля не заповнює — інакше
         # «слова дали те саме, що кнопки» вимірювало б переписаний дотик, а не її слова
-        вхід=(("items", "the items of this look: id, slot, name"),
+        вхід=(("items", "items of this look: local id, slot, kind, color"),
               ("tapped", "what she tapped on the card: wear, mine, aspects with a sign (plus — what worked, minus — "
                          "what bothers her) and the card question she wrote to (question)",
                "only to understand her words: a field her words say nothing about is not copied from it"),
@@ -860,7 +860,7 @@ def прийняти(розмітка, відповідь):
             "reasons": "what bothers her in the look",
             "good": "what worked in the look or what she likes",
             "about_items": "the items of this look she spoke about",
-            "about_items.id": "the id of an item from \"items\"",
+            "about_items.id": "local id from \"items\"",
             "about_items.opinion": "what she thinks of this item",
             "about_items.reasons": "why",
             "shift": "where, by her words, to move the next look of this outing",
@@ -1083,6 +1083,18 @@ def промпт_входу(вид, слова, контекст=None):
     к = контекст if isinstance(контекст, dict) else {}
     дані = dict({п[0]: к.get(п[0]) for п in в["вхід"][:-1]}, **{в["вхід"][-1][0]: str(слова or "").strip() or U})
     return _json_.dumps(_ЗП_Р.зібрати(ОГОЛОШЕННЯ_ВХОДУ[вид], дані, мова_тексту=_МОВА_ЇЇ_EN), ensure_ascii=False)
+
+
+def _речі_коментаря_для_моделі(речі):
+    """Речі коментаря → місцеві номери з кодами й відповідність номерів повним id лише для коду."""
+    перелік, відповідники = [], {}
+    for н, р in enumerate(речі, 1):
+        номер = str(н)
+        коди = _ВМ.річ_заяви(р) or {}
+        перелік.append(dict(id=номер, slot=_ВМ.код("slot", р.get("слот")) or U,
+                            **{к: в for к, в in коди.items() if к != "item_id"}))
+        відповідники[номер] = str(р["id"])
+    return перелік, відповідники
 
 
 # Слот речі «будь-яка частина образу» — код моделі, якого в переліку слотів нема: річ без слота
@@ -1717,6 +1729,12 @@ def прийняти_вхід(вид, відповідь, ід_речей=None, 
                     причина="not_json_object: %s" % (чому_не or type(об).__name__))
     в = ВИДИ_ВХОДУ[вид]
     сирий, перше, решта_списку = об, [], []
+    не_ці_речі = []
+    if ід_речей is not None and isinstance(об.get("about_items"), list):
+        не_ці_речі = ["about_items.id=%s" % р.get("id") for р in об["about_items"]
+                       if isinstance(р, dict) and not (isinstance(р.get("id"), str) and р["id"] in ід_речей)]
+        об = dict(об, about_items=[р for р in об["about_items"]
+                                  if not isinstance(р, dict) or isinstance(р.get("id"), str) and р["id"] in ід_речей])
     if вид == "scenario":
         об, перше, решта_списку = _перше_зі_списку(об, в["поля"])
     об, на_своє = _на_своє_поле(об) if вид == "scenario" else (об, [])
@@ -1730,7 +1748,7 @@ def прийняти_вхід(вид, відповідь, ід_речей=None, 
     об, причина = _ознака_причини_в_межі(об, слоти_речей) if {"about_items", "vetoes"} <= set(ВИДИ_ВХОДУ[вид]["поля"]) else (об, [])
     об, слот_лише = _слот_без_ознаки(об, слоти_речей) if {"about_items", "wants"} <= set(ВИДИ_ВХОДУ[вид]["поля"]) else (об, [])
     на_своє = на_своє + однина + заперечене + її_річ + причина + слот_лише
-    поля, незнайомі, невідомо = в["поля"], межі_без_слів + без_опори, []
+    поля, незнайомі, невідомо = в["поля"], не_ці_речі + межі_без_слів + без_опори, []
     внутрішня, цитати = {}, {}
     for к, v in об.items():
         if к not in поля:
@@ -5228,18 +5246,18 @@ def мова(вхід):
         return дамп(dict(промпт=промпт_розмови(d), вибірка=ВИБІРКА))
     if d.get("вхід"):
         речі = [р for р in d.get("речі") or [] if isinstance(р, dict) and р.get("id")]
+        місцеві, відповідники = _речі_коментаря_для_моделі(речі)
         if d.get("відповідь_моделі") is not None:
             р = прийняти_вхід(d["вхід"], d["відповідь_моделі"],
-                                      ід_речей=({str(р["id"]) for р in речі} if "речі" in d else None),
-                                      слоти_речей={str(р["id"]): _ВМ.код("slot", р.get("слот")) for р in речі
-                                                   if _ВМ.код("slot", р.get("слот"))},
+                                      ід_речей=(set(відповідники) if d["вхід"] == "verdict_comment" or "речі" in d else None),
+                                      слоти_речей={р["id"]: р["slot"] for р in місцеві if р["slot"] != U},
                                       слова=(str(d["слова"]) if d.get("слова") is not None else None))
+            for про in р["внутрішня"].get("about_items", []):
+                про["id"] = відповідники[про["id"]]
             return дамп(р)
         контекст = d.get("контекст")
-        if речі:     # речі образу для коментаря — кодами, id для точного посилання
-            контекст = dict(контекст or {}, items=[dict(
-                id=str(р["id"]), slot=_ВМ.код("slot", р.get("слот")) or U,
-                name={"free_text": str(р.get("назва") or ""), "lang": "uk"}) for р in речі])
+        if d["вхід"] == "verdict_comment" or "речі" in d:
+            контекст = dict(контекст or {}, items=місцеві)
         п = промпт_входу(d["вхід"], d.get("слова"), контекст)
         п = _ДМШ.пояснити_повтор(п, d.get("помилка_формату"))
         return дамп(dict(промпт=п, вибірка=ВИБІРКА))
