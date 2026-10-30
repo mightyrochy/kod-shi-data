@@ -891,6 +891,7 @@ def обчислити(тека, закріплені=("ДОВІДНИК",)):
             ід = re.search(r"\bid\s*=\s*[\"']([^\"']+)[\"']", мм.group(2))
             if ід: ЕЛЕМЕНТИ.setdefault(ід.group(1), (мм.group(1), мм.group(2)))
     п = Програма(модулі + мод_html, закріплені)
+    п.корінь = тека
     стоки, обгортки = знайти_стоки(п)
     служб_модулі = []
     for шлях, ім in ((os.path.join(тека, "проба.html"), "проба.html"), (os.path.join(тека, "..", "показ_зонд.html"), "показ_зонд.html")):
@@ -986,6 +987,7 @@ function іншаНазва(е, т){ const копія = т; назваЖінці
         ('каталог-чуже-імя-методу', "const fs={writeFileSync(){}}; fs.writeFileSync('каталог.json', JSON.stringify([{ім: $('ввід').value}])); async function ф(){const д=await (await fetch('каталог.json')).json(); д.forEach(р=>назваЖінціП(document.body, р.ім));}", 1),
         ('поле-порожній-писач', "function ф(){const п={назви:{}}; назваЖінціП(document.body, п.назви[ід] || '');}", 1),
         ('поле-вкладений-писач', "const п={назви:{}}; п.назви[ід] = невідоме; назваЖінціП(document.body, п.назви[ід]);", 1),
+        ('каталог-python-кандидат', "async function ф(){const д=await (await fetch('каталог.json')).json(); назваЖінціП(document.body, д.name);}", 1),
     ]
     хиб = 0
     with tempfile.TemporaryDirectory() as тека:
@@ -993,11 +995,15 @@ function іншаНазва(е, т){ const копія = т; назваЖінці
         with open(os.path.join(тека, 'показ', 'мовний_шар.js'), 'w', encoding='utf8') as ф: ф.write(точка)
         with open(os.path.join(тека, 'показ.html'), 'w', encoding='utf8') as ф:
             ф.write('<input id="ввід"><select id="ключ"></select>')
+        with open(os.path.join(тека, 'писач.py'), 'w', encoding='utf8') as ф:
+            ф.write("def запис(крамниця):\n    return {'name': крамниця['title']}\n")
         for ім, код, очікується in проби:
             with open(os.path.join(тека, 'показ', 'проба.js'), 'w', encoding='utf8') as ф: ф.write(код)
             п, стоки, _, _, _ = обчислити(тека)
             вих = [с for с in стоки if not с.обгортка and є_місцем(с)]
             ок = len(вих) == очікується
+            if ім == 'каталог-python-кандидат':
+                ок = ок and any('писач.py:2' in д and 'недоведений' in д for с in вих for д in с.писачі)
             print('%s: %d, очікується %d — %s' % (ім, len(вих), очікується, 'так' if ок else 'НІ'))
             хиб += not ок
             if ім == 'модель-її-назва':

@@ -16,6 +16,7 @@ class Походження:
         с.контекст, с.контексти, с.номери = 0, [{}], {(): 0}
         с.докази, с.сліди = set(), {}
         с.писачі = None
+        с.поля_каталогу = None
 
     def звязати(с, ф, м, арг):
         """Зв'язує параметри з аргументами одного виклику, зберігаючи їхні пари."""
@@ -196,6 +197,7 @@ class Походження:
                 if ім in ('postMessage', 'runPython', 'runPythonAsync', 'містП'):
                     с.докази.add('писач недоведений · %s:%d · %s · поле %s' % (
                         м.шлях, м.рядок(о - 1), ім, '.'.join(поля) or 'відповідь'))
+                    с.кандидати_поля(поля)
                     return {'невідоме'}
                 if ім in ('$', 'createElement', 'getElementById', 'querySelector'):
                     if поля and поля[0] == 'value':
@@ -575,7 +577,50 @@ class Походження:
                 вих.add('невідоме')
                 с.докази.add('писач недоведений · файл/відповідь %s · поле %s' % (
                     ''.join(адреса), '.'.join(поля) or 'відповідь'))
+                с.кандидати_поля(поля)
         return вих or {'невідоме'}
+
+    def кандидати_поля(с, поля):
+        """Знаходить писачів поля в Python; збіг поля без доведеного зв'язку з читачем не дає винятку."""
+        import ast
+        import warnings
+        from pathlib import Path
+        if not поля or not getattr(с.п, 'корінь', None):
+            return
+        if с.поля_каталогу is None:
+            с.поля_каталогу = {}
+            корінь = Path(с.п.корінь)
+            for шлях in sorted(корінь.rglob('*.py')):
+                if 'node_modules' in шлях.parts or '__pycache__' in шлях.parts:
+                    continue
+                try:
+                    with warnings.catch_warnings():
+                        warnings.simplefilter('ignore', SyntaxWarning)
+                        дерево = ast.parse(шлях.read_text(encoding='utf-8-sig'))
+                except (SyntaxError, UnicodeError) as помилка:
+                    с.поля_каталогу.setdefault('*', set()).add(
+                        '%s · Python не розібрано: %s' % (шлях.relative_to(корінь).as_posix(), type(помилка).__name__))
+                    continue
+                for вузол in ast.walk(дерево):
+                    записи = []
+                    if isinstance(вузол, ast.Dict):
+                        записи = [(к.value, з) for к, з in zip(вузол.keys, вузол.values)
+                                  if isinstance(к, ast.Constant) and isinstance(к.value, str)]
+                    elif isinstance(вузол, ast.Call):
+                        записи = [(к.arg, к.value) for к in вузол.keywords if к.arg]
+                    elif isinstance(вузол, (ast.Assign, ast.AnnAssign, ast.AugAssign)):
+                        цілі = вузол.targets if isinstance(вузол, ast.Assign) else [вузол.target]
+                        for ціль in цілі:
+                            if isinstance(ціль, ast.Subscript) and isinstance(ціль.slice, ast.Constant) and isinstance(ціль.slice.value, str):
+                                записи.append((ціль.slice.value, вузол.value))
+                            elif isinstance(ціль, ast.Attribute):
+                                записи.append((ціль.attr, вузол.value))
+                    for поле, значення in записи:
+                        с.поля_каталогу.setdefault(поле, set()).add('%s:%d · %s' % (
+                            шлях.relative_to(корінь).as_posix(), вузол.lineno, type(значення).__name__))
+        поле = next((п for п in reversed(поля) if п != '*'), '*')
+        for доказ in sorted(с.поля_каталогу.get(поле, set()) | с.поля_каталогу.get('*', set())):
+            с.докази.add('кандидат писача поля %s · %s · зв’язок із читачем недоведений' % (поле, доказ))
 
     def файловий_писач(с, м, і):
         """Доводить модуль fs у писача файла, відкидаючи однойменні методи об'єктів."""
