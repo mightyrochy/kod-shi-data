@@ -1,0 +1,231 @@
+diff --git "a/\320\260\321\203\320\264\320\270\321\202/\320\260\320\264\320\260\320\277\321\202\320\265\321\200\320\270/gemini/m9v/\321\205\320\265\321\210\321\226.psd1" "b/\320\260\321\203\320\264\320\270\321\202/\320\260\320\264\320\260\320\277\321\202\320\265\321\200\320\270/gemini/m9v/\321\205\320\265\321\210\321\226.psd1"
+index 2e1af9e5c13f981229c99c456dc6c9251f8e3555..bb87abeb8187aca42785653f98a117fb2149eba6 100644
+--- "a/\320\260\321\203\320\264\320\270\321\202/\320\260\320\264\320\260\320\277\321\202\320\265\321\200\320\270/gemini/m9v/\321\205\320\265\321\210\321\226.psd1"
++++ "b/\320\260\321\203\320\264\320\270\321\202/\320\260\320\264\320\260\320\277\321\202\320\265\321\200\320\270/gemini/m9v/\321\205\320\265\321\210\321\226.psd1"
+@@ -3,7 +3,7 @@
+ @{
+     'wrapper_update.ps1' = '4156307A17BDAE3AF7249E532947F659E99AA1349D159239159FAE60CA7E4F2B'
+     'wrapper_probe.ps1'  = '85116D04C22EB64CBFF52E66BCEAE9B1091577A889EDD58A8B634093A82BDBC6'
+-    'wrapper_chain.ps1'  = '99C1766CD93D0935C1804275B75F09C32C377427F347B91432D82869FAE34194'
++    'wrapper_chain.ps1'  = '823456204B6F0C22F08786E09D3B8B937CCF6BB65952BF751DF26AA1B67F0ABA'
+     'wrapper_health.ps1' = 'B3E2C44C4F342A915B814854A7D7619EDE2E019B48DC4A50CF4C9DB304C2E531'
+     'gemini_run.ps1'     = 'ED151D76BA6658EA230A0442252F0D7D05C2F6D723461C383D8E10016206E8FE'
+     'gemini_publish.ps1' = '73F2F2AA868DA86391FA9FACFD1F818AA8D1A76B9511F4DA891CBFE1E77087A9'
+diff --git "a/\320\260\321\203\320\264\320\270\321\202/\320\260\320\264\320\260\320\277\321\202\320\265\321\200\320\270/gemini/wrapper_chain.ps1" "b/\320\260\321\203\320\264\320\270\321\202/\320\260\320\264\320\260\320\277\321\202\320\265\321\200\320\270/gemini/wrapper_chain.ps1"
+index aa4f34bce38ca68054e41f8704a1b24671889ef3..fe82d02d0531d0606ac2930a31358481c220f014 100644
+--- "a/\320\260\321\203\320\264\320\270\321\202/\320\260\320\264\320\260\320\277\321\202\320\265\321\200\320\270/gemini/wrapper_chain.ps1"
++++ "b/\320\260\321\203\320\264\320\270\321\202/\320\260\320\264\320\260\320\277\321\202\320\265\321\200\320\270/gemini/wrapper_chain.ps1"
+@@ -405,6 +405,62 @@ function Request-CloudReview([string]$Number, [string]$Head) {
+     Write-WrapperLog "ланцюг: #$Number $Head — перевірка хмарним Claude, рядок диспетчерові"
+ }
+ 
++function Get-ChainBranchWork([string]$Branch) {
++    <# Повертає активну позначку гілки з наявного стану смуг, без нового таймера чи реєстру.
++
++    Gemini/Codex пишуть gemini/<slug>; Claude може продовжувати іншу гілку зі state/branch-<hash>.txt.
++    Поточний HEAD копії Claude враховує і першу спробу, яка ще не зберегла гілку продовження. #>
++    if ($Branch.StartsWith('gemini/')) {
++        $hb = Read-QuotaJson $OutDir 'heartbeat.json'
++        if ($null -ne $hb) {
++            foreach ($lane in @(Get-Prop $hb 'lanes')) {
++                if ($null -eq $lane -or [string](Get-Prop $lane 'lane') -cnotmatch '^(codex|agy)$') { continue }
++                foreach ($slot in @(Get-Prop $lane 'busy')) {
++                    if ($null -eq $slot) { continue }
++                    $marker = [string](Get-Prop $slot 'marker')
++                    if ($marker -cmatch '^gemini-queue/([^/]+)/([a-z0-9][a-z0-9.-]{1,63})/[1-9][0-9]*(?:/[^/]+)?$' -and
++                        $Branch -ceq "gemini/$($Matches[1])") { return $marker }
++                }
++            }
++        }
++    }
++    if ($Branch.StartsWith('claude/')) {
++        $dir = Join-Path (Split-Path -Parent $WorkDir) 'claude-run'
++        foreach ($file in @(Get-ChildItem -LiteralPath (Join-Path $dir 'slots') -Filter 'claude-*.json' -File -ErrorAction SilentlyContinue)) {
++            if ($file.BaseName -cnotmatch '^claude-[1-9][0-9]*$') { continue }
++            $lockPath = [IO.Path]::ChangeExtension($file.FullName, '.lock')
++            if (-not (Test-Path -LiteralPath $lockPath)) { continue }
++            try { $lock = [IO.File]::Open($lockPath, 'Open', 'ReadWrite', 'None'); $lock.Dispose(); continue }
++            catch [IO.IOException] { $null = $_ }
++            $slot = ConvertFrom-Json ([IO.File]::ReadAllText($file.FullName, $script:Utf8))
++            $slug = [string](Get-Prop $slot 'slug'); $marker = [string](Get-Prop $slot 'marker')
++            if ($slug -cnotmatch $script:SlugPattern -or $slug.Contains('..') -or $slug.EndsWith('.lock') -or
++                $marker -cnotmatch ('^gemini-queue/' + [regex]::Escape($slug) + '/')) { throw 'CHAIN_LANE_STATE' }
++            $branches = @("claude/$slug")
++            $saved = Join-Path (Join-Path $dir 'state') ('branch-' + (Get-Sha256Hex $slug) + '.txt')
++            if (Test-Path -LiteralPath $saved) { $branches += [IO.File]::ReadAllText($saved, $script:Utf8).Trim() }
++            $copy = [string](Get-Prop $slot 'copy')
++            if ($copy) {
++                $gitDir = Join-Path (Join-Path $copy 'repo') '.git'
++                if (Test-Path -LiteralPath $gitDir -PathType Leaf) {
++                    $link = [IO.File]::ReadAllText($gitDir, $script:Utf8).Trim()
++                    if ($link -cmatch '^gitdir: (.+)$') {
++                        $gitDir = $Matches[1]
++                        if (-not [IO.Path]::IsPathRooted($gitDir)) { $gitDir = Join-Path (Join-Path $copy 'repo') $gitDir }
++                    }
++                }
++                $headPath = Join-Path $gitDir 'HEAD'
++                if (Test-Path -LiteralPath $headPath) {
++                    $ref = [IO.File]::ReadAllText($headPath, $script:Utf8).Trim()
++                    if ($ref -cmatch '^ref: refs/heads/(claude/[^/]+)$') { $branches += $Matches[1] }
++                }
++            }
++            if ($branches -ccontains $Branch) { return $marker }
++        }
++    }
++    ''
++}
++
+ function Invoke-WrapperChain {
+     <# PR коду -> незалежна перевірка; новий штамп збірки -> один GPU-прогін на коміті збірки. #>
+     if ($DryRun) { return }
+@@ -501,6 +557,9 @@ function Invoke-WrapperChain {
+             $eligible = Test-RecentReviewHead $pr $heads $installed $now $hours
+             Write-FileAtomic $statePath (([ordered]@{ main=$main; reviewed=$reviewed; live_active=$liveActive; live_since=$liveSince; live_stamps=@($liveStamps.Keys); live_pending=@($livePending); reviews=@($seen.Keys); installed_utc=$installed.ToString('o'); heads=$heads }) | ConvertTo-Json -Compress -Depth 5)
+             if (-not $eligible) { continue }
++            $work = Get-ChainBranchWork ([string]$pr.head.ref)
++            if ($work) { Write-WrapperLog "ланцюг: #$n $head — смуга ще пише ($work), перевірка після кінця"; continue }
++            Write-WrapperLog "ланцюг: #$n $head — активної смуги нема, звичайна перевірка голови"
+             if (-not $reviewed.ContainsKey($n)) {
+                 foreach ($key in @($seen.Keys | Where-Object { $_ -cmatch ('^' + $n + ' [0-9a-f]{40} ') })) {
+                     $oldHead = ($key -split ' ')[1]
+diff --git "a/\320\260\321\203\320\264\320\270\321\202/\320\260\320\264\320\260\320\277\321\202\320\265\321\200\320\270/gemini/\320\235\320\220\320\233\320\220\320\250\320\242\320\243\320\222\320\220\320\235\320\235\320\257.md" "b/\320\260\321\203\320\264\320\270\321\202/\320\260\320\264\320\260\320\277\321\202\320\265\321\200\320\270/gemini/\320\235\320\220\320\233\320\220\320\250\320\242\320\243\320\222\320\220\320\235\320\235\320\257.md"
+index 696c1758e4e9abc03924d5d6e0b16f8b28ad5115..96124f2614e8fad08d14c4320bedc67c4535eb37 100644
+--- "a/\320\260\321\203\320\264\320\270\321\202/\320\260\320\264\320\260\320\277\321\202\320\265\321\200\320\270/gemini/\320\235\320\220\320\233\320\220\320\250\320\242\320\243\320\222\320\220\320\235\320\235\320\257.md"
++++ "b/\320\260\321\203\320\264\320\270\321\202/\320\260\320\264\320\260\320\277\321\202\320\265\321\200\320\270/gemini/\320\235\320\220\320\233\320\220\320\250\320\242\320\243\320\222\320\220\320\235\320\235\320\257.md"
+@@ -431,7 +431,7 @@ $f = Join-Path "$env:USERPROFILE\gemini-outbox" $n
+ |---|---|
+ | `wrapper_probe.ps1` | `85116D04C22EB64CBFF52E66BCEAE9B1091577A889EDD58A8B634093A82BDBC6` |
+ | `wrapper_update.ps1` | `4156307A17BDAE3AF7249E532947F659E99AA1349D159239159FAE60CA7E4F2B` |
+-| `wrapper_chain.ps1` | `99C1766CD93D0935C1804275B75F09C32C377427F347B91432D82869FAE34194` |
++| `wrapper_chain.ps1` | `823456204B6F0C22F08786E09D3B8B937CCF6BB65952BF751DF26AA1B67F0ABA` |
+ | `gemini_run.ps1` | `ED151D76BA6658EA230A0442252F0D7D05C2F6D723461C383D8E10016206E8FE` |
+ | `gemini_publish.ps1` | `73F2F2AA868DA86391FA9FACFD1F818AA8D1A76B9511F4DA891CBFE1E77087A9` |
+ | `gemini_watch.ps1` | `69EFEBB07FF1AF51C382B753A95C50F3C1AC27B3008F2489992BEBE3FD0213AA` |
+@@ -582,6 +582,10 @@ Claude; автор Gemini чи невідомий → Codex, потім хмар
+ 
+ `Get-ReviewModels` вибирає одного іншого постачальника для `gemini/*`: фактичний `gpt-*`
+ з опублікованого стану/рядка ГОТОВО → Claude з `ланцюг.json`; Gemini/`cc-*`/невідомий → Codex.
++`Get-ChainBranchWork` відкладає перевірку активної смуги: Gemini/Codex — `heartbeat.json/lanes/busy`,
++Claude — зайнятий замок слота, `state/branch-<hash>.txt` та HEAD робочої копії. Відкладена голова
++лишається придатною в `heads`; після кінця перевіряється один раз. Пропуск і шлях без активної
++смуги видно в журналі ланцюга.
+ `Test-ReviewBranch` виключає `*/перевірка-*`, `*/pachka-*` й автозвіти.
+ Після опублікованого вердикту `Test-ReviewedMerge` порівнює повний diff проти merge-base:
+ чисте злиття main без зміни diff не створює нового наряду; звичайний коміт створює.
+diff --git "a/\320\260\321\203\320\264\320\270\321\202/\320\260\320\264\320\260\320\277\321\202\320\265\321\200\320\270/gemini/\320\277\320\265\321\200\320\265\320\262\321\226\321\200\320\272\320\260/\321\201\321\206\320\265\320\275\320\260\321\200\321\226\321\227_\320\272\321\226\320\275\320\265\321\206\321\214_\321\200\320\276\320\261\320\276\321\202\320\270.ps1" "b/\320\260\321\203\320\264\320\270\321\202/\320\260\320\264\320\260\320\277\321\202\320\265\321\200\320\270/gemini/\320\277\320\265\321\200\320\265\320\262\321\226\321\200\320\272\320\260/\321\201\321\206\320\265\320\275\320\260\321\200\321\226\321\227_\320\272\321\226\320\275\320\265\321\206\321\214_\321\200\320\276\320\261\320\276\321\202\320\270.ps1"
+new file mode 100644
+index 0000000000000000000000000000000000000000..6a321248e282860d77e008fe2cb12006320809c5
+--- /dev/null
++++ "b/\320\260\321\203\320\264\320\270\321\202/\320\260\320\264\320\260\320\277\321\202\320\265\321\200\320\270/gemini/\320\277\320\265\321\200\320\265\320\262\321\226\321\200\320\272\320\260/\321\201\321\206\320\265\320\275\320\260\321\200\321\226\321\227_\320\272\321\226\320\275\320\265\321\206\321\214_\321\200\320\276\320\261\320\276\321\202\320\270.ps1"
+@@ -0,0 +1,102 @@
++﻿#Requires -Version 5.1
++param([Parameter(Mandatory=$true)][string]$SourceDir, [switch]$Before)
++$ErrorActionPreference = 'Stop'
++[Console]::OutputEncoding = New-Object Text.UTF8Encoding($false)
++$tmp = Join-Path ([IO.Path]::GetTempPath()) ('end-test-' + [guid]::NewGuid().ToString('N'))
++[void][IO.Directory]::CreateDirectory($tmp)
++$bad = 0; $lock = $null
++function Check([string]$Name, [bool]$Ok) {
++    <# Провал мірила визначає код завершення стенда. #>
++    if ($Ok) { "✓ $Name" } else { "✗ $Name"; $script:bad++ }
++}
++try {
++    . (Join-Path $SourceDir 'gemini_publish.ps1') -WorkDir "$tmp/pub" -OutboxDir "$tmp/out"
++    $OutDir = "$tmp/gem-out"
++    foreach ($dir in @($WorkDir, "$WorkDir/seen", "$WorkDir/state", $OutboxDir, $OutDir, "$tmp/claude-run/slots", "$tmp/claude-run/state")) {
++        [void][IO.Directory]::CreateDirectory($dir)
++    }
++    $script:Main = 'a' * 40; $script:Pulls = @(); $script:Markers = @(); $script:Logs = @()
++    function Get-RefSha { $script:Main }
++    function Invoke-Git {
++        param([string[]]$GitArgs, [switch]$AllowFail)
++        $out = ''
++        if ($GitArgs[0] -ceq 'cat-file' -and $GitArgs[-1] -like '*ланцюг.json') {
++            $out = '{"v":1,"codex":"gpt-review","agy":"gemini-review","claude":"cc-claude-review"}'
++        }
++        [pscustomobject]@{Code=0;Out=$out;Err=''}
++    }
++    function Complete-EngineDrafts { }
++    function Get-ChainPulls { $script:Pulls }
++    function Invoke-ChainApi([string]$Path) {
++        [pscustomobject]@{sha=($Path -split '/')[-1];commit=@{committer=@{date=[datetimeoffset]::UtcNow.AddMinutes(-1).ToString('o')}}}
++    }
++    function Test-LiveModels { $false }
++    function Test-ChainCodePull { $true }
++    function Test-ReviewedMerge { $false }
++    function Get-ReviewDiff { 'стенд-diff' }
++    function Add-ChainMarker($Slug, $Model, $Main, [switch]$Gpu) { $script:Markers += [string]$Slug }
++    function Write-WrapperLog([string]$Text) { $script:Logs += $Text; if ($Text -like "*CHAIN_*") { Write-Host $Text } }
++    function Pull([int]$N, [string]$Branch, [string]$Head) {
++        <# Довірений PR-чернетка з трьома послідовними головами. #>
++        [pscustomobject]@{number=$N;title='Код';draft=$true;created_at=[datetimeoffset]::UtcNow.ToString('o');user=@{login='mightyrochy'};
++            head=@{ref=$Branch;sha=$Head;repo=@{full_name=$GitHubRepo}};base=@{ref='main';repo=@{full_name=$GitHubRepo}}}
++    }
++    function Tick([string]$Head, [string]$Branch='claude/5.3-повний-обхід') {
++        <# Один справжній прохід ланцюга з незмінним хмарним PR поруч. #>
++        $script:Pulls = @((Pull 2386 $Branch $Head), (Pull 2400 'codex/хмара' ('e' * 40)))
++        Invoke-WrapperChain
++    }
++    function CountReviews([string]$N) { @($script:Markers | Where-Object { $_ -like "автоперевірка-$N-*" }).Count }
++    $slug = '5.3-повний-обхід-каталогу'
++    $marker = "gemini-queue/$slug/cc-claude-sonnet-5-5-medium/8/p1"
++    $info = "$tmp/claude-run/slots/claude-1.json"
++    Write-FileAtomic $info ((@{slug=$slug;marker=$marker}) | ConvertTo-Json -Compress)
++    Write-FileAtomic ("$tmp/claude-run/state/branch-" + (Get-Sha256Hex $slug) + '.txt') 'claude/5.3-повний-обхід'
++    $lock = [IO.File]::Open("$tmp/claude-run/slots/claude-1.lock", 'OpenOrCreate', 'ReadWrite', 'None')
++    foreach ($head in @(('b'*40), ('c'*40), ('d'*40))) { Tick $head }
++    $state = ConvertFrom-Json ([IO.File]::ReadAllText("$WorkDir/chain.json"))
++    Check 'активна голова лишається придатною в heads' ($state.heads.'2386'.sha -ceq ('d'*40) -and $state.heads.'2386'.eligible)
++    Check "проміжних позначок: $(CountReviews 2386)" ((CountReviews 2386) -eq $(if ($Before) { 3 } else { 0 }))
++    Check 'хмарний PR без смуги: рівно 1' ((CountReviews 2400) -eq 1)
++    # Complete-Task записує кінець до звільнення слота; SHA3 вже є головою PR.
++    Write-FileAtomic "$WorkDir/state/done.json" ((@{line="GEMINI ОБГОРТКА: ГОТОВО claude/5.3-повний-обхід $('d'*40) МОДЕЛЬ cc-claude-sonnet-5-5-medium"}) | ConvertTo-Json)
++    $lock.Dispose(); $lock = $null
++    Tick ('d'*40); Tick ('d'*40)
++    Check "три голови й ГОТОВО: перевірок $(CountReviews 2386) (ДО 3 → ПІСЛЯ 1)" ((CountReviews 2386) -eq $(if ($Before) { 3 } else { 1 }))
++    Check 'перевірка кінцевої SHA3' (@($script:Markers | Where-Object { $_ -ceq "автоперевірка-2386-$('d'*40)" }).Count -eq 1)
++    Check 'PR без смуги: ДО 1 → ПІСЛЯ 1' ((CountReviews 2400) -eq 1)
++    if (-not $Before) {
++        Check 'пропуск і хмарний шлях видимі в журналі' (@($script:Logs | Where-Object { $_ -like '*смуга ще пише*' }).Count -eq 3 -and
++            @($script:Logs | Where-Object { $_ -like '*#2400*активної смуги нема*' }).Count -gt 0)
++        Check 'старий JSON слота з вільним замком не блокує' (-not (Get-ChainBranchWork 'claude/5.3-повний-обхід'))
++        $lock = [IO.File]::Open("$tmp/claude-run/slots/claude-1.lock", 'Open', 'ReadWrite', 'None')
++        # Перша спроба ще не має branch-<hash>: гілка вже видима в HEAD її робочої копії.
++        $copy = "$tmp/claude-copy"; [void][IO.Directory]::CreateDirectory("$copy/repo/.git")
++        Write-FileAtomic "$copy/repo/.git/HEAD" 'ref: refs/heads/claude/нова-гілка'
++        Write-FileAtomic $info ((@{slug=$slug;marker=$marker;copy=$copy}) | ConvertTo-Json -Compress)
++        Check 'HEAD копії першої спроби повʼязує іншу гілку' ((Get-ChainBranchWork 'claude/нова-гілка') -ceq $marker)
++        # Worktree має .git-файл з gitdir, а не теку.
++        Move-Item -LiteralPath "$copy/repo/.git" -Destination "$copy/meta"
++        Write-FileAtomic "$copy/repo/.git" 'gitdir: ../meta'
++        Check 'HEAD worktree читається через gitdir' ((Get-ChainBranchWork 'claude/нова-гілка') -ceq $marker)
++        $lock.Dispose(); $lock = $null
++        foreach ($lane in @('codex','agy')) {
++            $gm = "gemini-queue/спільний/gpt-test/2/p1"
++            Write-FileAtomic "$OutDir/heartbeat.json" ((@{lanes=@(@{lane=$lane;busy=@(@{marker=$gm})})}) | ConvertTo-Json -Depth 6)
++            Check "${lane}: активна позначка повʼязує gemini/спільний" ((Get-ChainBranchWork 'gemini/спільний') -ceq $gm)
++            Tick ('f'*40) 'gemini/спільний'
++            Check "${lane}: активна голова не отримала перевірки" (@($script:Markers | Where-Object { $_ -ceq "автоперевірка-2386-$('f'*40)" }).Count -eq 0)
++        }
++        Write-FileAtomic "$OutDir/heartbeat.json" '{"lanes":[{"lane":"codex","busy":[]}]}'
++        Write-FileAtomic "$WorkDir/state/blocked.json" ((@{line='GEMINI ОБГОРТКА: ЗАБЛОКОВАНО gemini/спільний BLOCKED'}) | ConvertTo-Json)
++        Tick ('f'*40) 'gemini/спільний'; Tick ('f'*40) 'gemini/спільний'
++        Check 'ЗАБЛОКОВАНО теж звільняє голову: одна перевірка' (@($script:Markers | Where-Object { $_ -ceq "автоперевірка-2386-$('f'*40)" }).Count -eq 1)
++    }
++} finally {
++    if ($null -ne $lock) { $lock.Dispose() }
++    if (-not ([IO.Path]::GetFullPath($tmp)).StartsWith([IO.Path]::GetFullPath([IO.Path]::GetTempPath()), [StringComparison]::OrdinalIgnoreCase)) { throw 'Тека стенда поза TEMP' }
++    Remove-Item -LiteralPath $tmp -Recurse -Force
++}
++if ($bad) { "ПІДСУМОК: ✗ $bad"; exit 1 }
++'ПІДСУМОК: ✗ 0'
++exit 0
+diff --git "a/\320\260\321\203\320\264\320\270\321\202/\320\260\320\264\320\260\320\277\321\202\320\265\321\200\320\270/gemini/\320\277\320\265\321\200\320\265\320\262\321\226\321\200\320\272\320\260/\321\201\321\206\320\265\320\275\320\260\321\200\321\226\321\227_\320\273\320\260\320\275\321\206\321\216\320\263\320\260.sh" "b/\320\260\321\203\320\264\320\270\321\202/\320\260\320\264\320\260\320\277\321\202\320\265\321\200\320\270/gemini/\320\277\320\265\321\200\320\265\320\262\321\226\321\200\320\272\320\260/\321\201\321\206\320\265\320\275\320\260\321\200\321\226\321\227_\320\273\320\260\320\275\321\206\321\216\320\263\320\260.sh"
+index 9afd43a4973115030b5783986e5cf43e913d97d2..25c2e1494ea751a59599e1207f1343d7e63f4683 100644
+--- "a/\320\260\321\203\320\264\320\270\321\202/\320\260\320\264\320\260\320\277\321\202\320\265\321\200\320\270/gemini/\320\277\320\265\321\200\320\265\320\262\321\226\321\200\320\272\320\260/\321\201\321\206\320\265\320\275\320\260\321\200\321\226\321\227_\320\273\320\260\320\275\321\206\321\216\320\263\320\260.sh"
++++ "b/\320\260\321\203\320\264\320\270\321\202/\320\260\320\264\320\260\320\277\321\202\320\265\321\200\320\270/gemini/\320\277\320\265\321\200\320\265\320\262\321\226\321\200\320\272\320\260/\321\201\321\206\320\265\320\275\320\260\321\200\321\226\321\227_\320\273\320\260\320\275\321\206\321\216\320\263\320\260.sh"
+@@ -4,3 +4,4 @@ H=$(cd "$(dirname "$0")" && pwd); . "$H/середовище.sh"
+ "${PWSH:-pwsh}" -NoProfile -File "$(wp "$H/сценарії_ланцюга.ps1")"
+ "${PWSH:-pwsh}" -NoProfile -File "$(wp "$H/сценарії_коду_збірки.ps1")"
+ "${PWSH:-pwsh}" -NoProfile -File "$(wp "$H/сценарії_менше_прогонів.ps1")" -SourceDir "$(wp "$H/..")"
++"${PWSH:-pwsh}" -NoProfile -File "$(wp "$H/сценарії_кінець_роботи.ps1")" -SourceDir "$(wp "$H/..")"
