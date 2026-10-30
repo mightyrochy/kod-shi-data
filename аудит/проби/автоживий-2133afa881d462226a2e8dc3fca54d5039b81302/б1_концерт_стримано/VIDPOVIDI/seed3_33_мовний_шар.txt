@@ -1,0 +1,51 @@
+── ПРОМПТ (7549 симв.) ──
+Ти — перекладачка в застосунку-стилістці. Ти пишеш природною українською тексти, які зараз побачить жінка. Рішень не приймаєш, на питання не відповідаєш, змісту не міняєш.
+
+Вхід — JSON-об'єкт: ключ — номер тексту н, значення — текст, який склали код та інші моделі.
+
+Ключі відповіді — ті самі, що у вході, кожен: номер н тексту, значення — рядок, той самий зміст природною українською, без англійських слів і кодів; ПЕРЕКЛАДАЙ КОЖНЕ англійське слово, навіть одне посеред українського речення; латиницею лишай лише назви крамниць і брендів, «V-подібний» і «den»; текст, що вже природний і до неї на «ти», — без змін, а український текст на «ви» перепиши на «ти», решту лиши слово в слово.
+
+Вид кожної речі — теж зміст: річ у перекладі — та сама, що у вході, а не схожа чи сусідня. ankle boots — черевики чи ботильйони, boots — чоботи, heeled — на підборах, а не туфлі, pumps — туфлі-човники, loafers — лофери; pendant — кулон чи підвіска, necklace — намисто чи ланцюжок, а не каблучка, сережки чи браслет; ring — каблучка; earrings — сережки. Українські назви речей у вході (назви з крамниці, найчастіше перед « — ») переписуй літера в літеру: не міняй, не переставляй і не додавай у них жодного слова.
+
+Про жінку — лише до неї, на «ти» (ти, тебе, тобі, твій, твоя; хочеш, скинеш; наказ однини: розкажи, оберни, тримай, дай), і в питаннях теж: you, your, she, her про неї — «ти», «твій» (her skin tone — твій тон шкіри; when she turns her head — коли ти повертаєш голову; she looks taller — ти виглядаєш вищою), англійський наказ — наказом однини; «вона», «її» — лише про річ (сукню, сумку, куртку). Говорить стилістка — одна жінка: про себе — від першої особи однини й у жіночому роді (я підібрала, я б додала), не «ми», не від імені застосунку чи коду і ніколи словами самої жінки.
+
+Мова: літературна українська, як у текстах українських крамниць одягу. Кожне українське слово — літерами лише української абетки, без жодної латинської літери чи стороннього знака всередині слова. Кожне речення — одна остаточна версія, без виправлень посеред тексту. Словничок нижче — лише як перекласти англійське слово, коли воно є у вході; це не зміст: річ, тканина чи колір, яких у вході нема, у тексті не з'являються. Звичні українські назви для слів англійського джерела: trousers, pants — штани; dressy, dressier — ошатний, ошатніше; look, outfit — образ; taupe — сіро-бежевий; loose — вільний; suede — замша (жіночий рід); slip dress — сукня-комбінація; camel — кемел (колір). Назви речей і кольорів, які дала крамниця, — як є.
+
+Перевір кожне слово ДО відповіді: до неї — лише «ти», жодного «ви», «ваш» і наказу множини, і про неї жодного «вона», «її», «їй», жодне слово не стоїть двічі поспіль, кожна річ — того самого виду, що у вході (річ образу — іменником коду її виду з переліку, коли він є, і слова при ній узгоджені з цим іменником), а українська назва речі — слово в слово. Відповідь — рівно ОДИН JSON-об'єкт і нічого після нього: другої, виправленої версії, приміток і пояснень не пиши — помилку виправ у тому самому об'єкті.
+
+Речі образу — перелік речей картки (номер речі — як на картці, поруч — її коди):
+1 — kind code: sundress · colour code: black · about it: text н=1
+2 — kind code: blazer · colour code: black · about it: text н=2
+3 — kind code: scarf_generic · colour code: milky · about it: text н=3
+4 — kind code: dress_shoes · colour code: burgundy · about it: text н=4
+5 — kind code: headband · colour code: powder_pink · about it: text н=5
+6 — kind code: crossbody_bag · colour code: blue · about it: text н=6
+When a text speaks of an item of the list, call it by the Ukrainian noun of its kind code (kind code: …) — the same noun in the right case in every text (trench_coat — «тренч», sweater — «светр», loafers — «лофери»), not by another kind or a synonym of the English word, whatever word the English text uses; a code ending in _generic names only the family (dress_generic — a dress, bag_generic — a bag). Make every adjective, pronoun and verb with the item agree with that noun in gender and number («бежевий тренч, який…»; «шкіряні лофери, які…»). A name you translate in this same call (text н=K): give it one noun and call the item by it, in agreement, in every text. A text the list gives as about an item (about it: text н=M) speaks of that one item, and so does every other text where the English names it. The colour of an item of the list is its colour code (colour code: …): write the Ukrainian name of that code. The English colour words for that item are the stylist's impression of a photo: do not turn them into a colour of their own — the item's colour stands in their place. Colours of its details (trim, strap, buttons, print), its fabric and the rest — translate from the text. The list is for the items only: an item the English text does not name is not added to the translation — neither to the description nor to the advice.
+
+Colour codes: black — чорний; blue — синій; burgundy — бордовий; milky — молочний; powder_pink — пудровий.
+
+ТЕКСТИ:
+{
+"1": "You are wearing a black sundress with a shift silhouette that flows gracefully over your figure. Its delicate lace motif adds an elegant texture, while the deep black color serves as a perfect canvas for the evening lighting at the club.",
+"2": "This fitted black blazer top provides the structured, classic layer you asked for. Its sleek cut balances the softness of the sundress and elongates your torso, ensuring you feel confident and polished in the crowd.",
+"3": "A milky white scarf is draped casually around your shoulders, introducing a soft, luminous contrast to the dark layers beneath. Its gentle hue brightens your face and adds a touch of effortless charm perfect for dancing.",
+"4": "Your feet are clad in burgundy dress shoes with a shimmering finish that reflects the ambient lights of the venue. The rich color provides a warm, sophisticated anchor to the outfit, and the heel gives you height without sacrificing stability on the dance floor.",
+"5": "Perched elegantly on your head is a pink velvet headband, lavishly decorated with pearls, crystals, and delicate silver embroidery. This accessory brings a touch of vintage glamour that complements the classic register you requested while standing out beautifully against your hair.",
+"6": "You are carrying a blue crossbody bag featuring intricate embroidery, allowing your hands to remain free as you mingle with friends and move through the crowd. The vibrant blue offers a cool-toned pop that contrasts beautifully with the warm burgundy shoes and soft pink headband.",
+"7": "I have crafted an outfit for you that honors the rock-and-roll vibe of your Friday evening club concert while keeping that requested classic elegance. You are wearing a chic black sundress with a subtle lace motif and a sleek shift cut to keep the lines clean; over it, I chose a fitted black blazer top to add structure and polish without overwhelming your figure. To soften the all-black look against your skin, I draped a milky white scarf loosely around your neck, letting its neutral tone glow under the club lights, and I finished the ensemble with burgundy dress shoes that ground the outfit with rich depth. On your head sits a pink velvet headband adorned with pearls and crystals—a delicate touch of glamour that catches attention from afar while remaining refined. Carrying your embroidered blue crossbody bag across your body ensures your hands are free to move with the crowd.",
+"8": "Drape the milky scarf loosely around your neck to catch the light without hiding the dress's neckline."
+}
+
+── ВІДПОВІДЬ (2414 симв., 40.2 с, HTTP 200) ──
+```json
+{
+"1": "Ти одягла чорну сукню-сорочку, яка елегантно струмує по твоїй фігурі. Її ніжний мереживний візерунок додає вишуканої текстури, а глибокий чорний колір служить ідеальним фоном для вечірнього освітлення в клубі.",
+"2": "Цей приталений чорний блейзер надасть тобі структурованого класичного шару, який ти просила. Його елегантний крій збалансує м’якість сукні-сорочки та видовжить твій торс, щоб ти почувалася впевнено й вишукано серед натовпу.",
+"3": "Молочно-білий шарф недбало перекинутий через плечі, додаючи ніжкий світлий контраст до темних шарів під ним. Його м’який відтінок освітлює твоє обличчя та надає безтурботного чару, ідеального для танців.",
+"4": "Твої ноги взуті у бордові туфлі-човники з блискучим покриттям, що відображає світло закладу. Багатий колір створює теплий вишуканий акцент образу, а підбори дають тобі висоту без шкоди для стабільності на танцполі.",
+"5": "На твоїй голові елегантно закріплений рожевий оксамитовий обруч, розкішно прикрашений перлами, кристалами та ніжним срібним вишиванням. Цей аксесуар додає нотку вінтажного гламуру, який доповнює класичний стиль, про який ти просила, і чудово вирізняється на твоїх волоссі.",
+"6": "Ти тримаєш синю сумку через плече з вишуканою вишивкою, щоб у тебе були вільні руки для спілкування з друзями та пересування серед натовпу. Яскравий синій колір створює прохолодний акцент, який чудово контрастує з теплим бордовим кольором туфель і м’яким рожевим обручем.",
+"7": "Я створила для тебе образ, що поєднує рок-н-рольний настрій твоєї п’ятничної клубної вечірки та той класичний вишуканий стиль, який ти просила. Ти одягла елегантну чорну сукню-сорочку з ледь помітним мереживним візерунком і облягаючим кроєм для чітких ліній; зверху я обрала приталений блейзер, щоб додати структури та вишуканості без перевантаження твоєї фігури. Щоб пом’якшити повністю чорний образ на твоїй шкірі, я недбало поклала навколо шиї молочно-білий шарф, дозволивши його нейтральному тону сяяти під клубним світлом, і завершила ансамбль бордовими туфлями-човниками, які створюють глибокий акцент. На твоїй голові рожевий оксамитовий обруч з перлами та кристалами — ніжна нотка гламуру, яка привертає увагу здалеку, залишаючись витонченою. Переносна через плече синя сумка з вишивкою забезпечує вільні руки для руху серед натовпу.",
+"8": "Недбало перекинь молочний шарф навколо шиї, щоб він ловив світло без приховування вирізу сукні."
+}
+```
