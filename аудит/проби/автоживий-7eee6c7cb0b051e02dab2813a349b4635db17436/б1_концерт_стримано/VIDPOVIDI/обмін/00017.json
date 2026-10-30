@@ -1,0 +1,27 @@
+{
+ "версія": 1,
+ "запит": {
+  "model": "qwen/qwen3.5-9b",
+  "max_tokens": 4000,
+  "messages": [
+   {
+    "role": "user",
+    "content": [
+     {
+      "type": "text",
+      "text": "{\"task\": {\"role\": \"You read the description of an outfit and list its items as data.\", \"rules\": [\"One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.\", \"One item carries one thing — of two alternatives list the first; a note in brackets is not an item.\", \"Slot \\\"accessory\\\" is for an item no other slot fits.\", \"\\\"is_outfit\\\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note.\"], \"limits\": [\"Rely only on the input: do not invent what it does not contain.\", \"The answer is one JSON object following \\\"answer_schema\\\", without explanations and without ```.\"], \"language\": \"English\", \"answer\": \"ITEM_LIST\", \"answer_schema\": {\"is_outfit\": \"yes|no\", \"items\": [{\"name\": \"<what the item is>\", \"details\": \"<its cut, length and fabric>\", \"slot\": \"top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory\", \"color_hex\": \"<#rrggbb or null>\", \"worn\": \"<true, or false when the description says the outfit goes without it>\"}]}, \"input\": [\"\\\"description\\\" — the outfit description\"]}, \"description\": \"Structured wool-blend blazer in charcoal, tailored fit with notched lapels and a single button closure, deep slate gray #2F4F4F, fine woven fabric.\\nHigh-waisted pleated trousers in mid-weight twill, straight-leg cut reaching the ankle, dark forest green #1A3C34, crisp cotton-polyester blend.\\nSilk-blend blouse with a pointed collar and subtle pintuck detailing across the chest, relaxed silhouette, muted rust #B85C38, smooth semi-sheer fabric.\\nLeather loafers with a slight wedge heel, rounded toe and minimal branding, matte black #260000, full-grain leather.\\nMatte-finish structured handbag in deep burgundy, rectangular silhouette with gold-tone hardware, soft pebbled leather.\\nPearl-drop stud earrings, 925 sterling silver post, round freshwater pearl pendant, polished metal and lustrous organic stone.\\n\\nThis outfit embodies a refined classicism that stands out against the chaotic energy of a rock concert, perfectly honoring her request for a streamlined and traditional aesthetic. The tailored blazer and pleated trousers provide structure and comfort for walking extensively through crowds, while the earthy color palette offers a sophisticated contrast to typical loud stage lighting without appearing overly flashy. Choosing an autumn-appropriate fabric weight ensures warmth in the evening club atmosphere, yet the breathable silk blouse keeps her feeling fresh throughout the night.\"}"
+     }
+    ]
+   }
+  ],
+  "temperature": 1
+ },
+ "відповідь": {
+  "status": 200,
+  "contentType": "application/json",
+  "headers": {
+   "x-model": "qwen/qwen3.5-9b"
+  },
+  "body": "{\"content\":[{\"type\":\"text\",\"text\":\"{\\n  \\\"is_outfit\\\": \\\"yes\\\",\\n  \\\"items\\\": [\\n    {\\n      \\\"name\\\": \\\"structured wool-blend blazer\\\",\\n      \\\"details\\\": \\\"tailored fit with notched lapels and a single button closure, fine woven fabric\\\",\\n      \\\"slot\\\": \\\"outerwear\\\",\\n      \\\"color_hex\\\": \\\"#2F4F4F\\\",\\n      \\\"worn\\\": true\\n    },\\n    {\\n      \\\"name\\\": \\\"high-waisted pleated trousers\\\",\\n      \\\"details\\\": \\\"straight-leg cut reaching the ankle, crisp cotton-polyester blend\\\",\\n      \\\"slot\\\": \\\"bottom\\\",\\n      \\\"color_hex\\\": \\\"#1A3C34\\\",\\n      \\\"worn\\\": true\\n    },\\n    {\\n      \\\"name\\\": \\\"silk-blend blouse\\\",\\n      \\\"details\\\": \\\"relaxed silhouette with a pointed collar and subtle pintuck detailing across the chest, smooth semi-sheer fabric\\\",\\n      \\\"slot\\\": \\\"top\\\",\\n      \\\"color_hex\\\": \\\"#B85C38\\\",\\n      \\\"worn\\\": true\\n    },\\n    {\\n      \\\"name\\\": \\\"leather loafers\\\",\\n      \\\"details\\\": \\\"slight wedge heel, rounded toe and minimal branding\\\",\\n      \\\"slot\\\": \\\"shoes\\\",\\n      \\\"color_hex\\\": \\\"#260000\\\",\\n      \\\"worn\\\": true\\n    },\\n    {\\n      \\\"name\\\": \\\"structured handbag\\\",\\n      \\\"details\\\": \\\"rectangular silhouette with gold-tone hardware, soft pebbled leather\\\",\\n      \\\"slot\\\": \\\"bag\\\",\\n      \\\"color_hex\\\": \\\"#800020\\\",\\n      \\\"worn\\\": true\\n    },\\n    {\\n      \\\"name\\\": \\\"pearl-drop stud earrings\\\",\\n      \\\"details\\\": \\\"925 sterling silver post, round freshwater pearl pendant, polished metal and lustrous organic stone\\\",\\n      \\\"slot\\\": \\\"earrings\\\",\\n      \\\"color_hex\\\": \\\"#FFFFFF\\\",\\n      \\\"worn\\\": true\\n    }\\n  ]\\n}\"}],\"usage\":{\"input_tokens\":652,\"output_tokens\":441},\"stop_reason\":\"end_turn\"}"
+ }
+}

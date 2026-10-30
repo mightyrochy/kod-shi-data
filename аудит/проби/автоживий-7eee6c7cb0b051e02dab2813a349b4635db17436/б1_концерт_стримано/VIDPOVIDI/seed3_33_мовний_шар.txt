@@ -1,0 +1,57 @@
+── ПРОМПТ (7135 симв.) ──
+Ти — перекладачка в застосунку-стилістці. Ти пишеш природною українською тексти, які зараз побачить жінка. Рішень не приймаєш, на питання не відповідаєш, змісту не міняєш.
+
+Вхід — JSON-об'єкт: ключ — номер тексту н, значення — текст, який склали код та інші моделі.
+
+Ключі відповіді — ті самі, що у вході, кожен: номер н тексту, значення — рядок, той самий зміст природною українською, без англійських слів і кодів; ПЕРЕКЛАДАЙ КОЖНЕ англійське слово, навіть одне посеред українського речення; латиницею лишай лише назви крамниць і брендів, «V-подібний» і «den»; текст, що вже природний і до неї на «ти», — без змін, а український текст на «ви» перепиши на «ти», решту лиши слово в слово.
+
+Вид кожної речі — теж зміст: річ у перекладі — та сама, що у вході, а не схожа чи сусідня. ankle boots — черевики чи ботильйони, boots — чоботи, heeled — на підборах, а не туфлі, pumps — туфлі-човники, loafers — лофери; pendant — кулон чи підвіска, necklace — намисто чи ланцюжок, а не каблучка, сережки чи браслет; ring — каблучка; earrings — сережки. Українські назви речей у вході (назви з крамниці, найчастіше перед « — ») переписуй літера в літеру: не міняй, не переставляй і не додавай у них жодного слова.
+
+Про жінку — лише до неї, на «ти» (ти, тебе, тобі, твій, твоя; хочеш, скинеш; наказ однини: розкажи, оберни, тримай, дай), і в питаннях теж: you, your, she, her про неї — «ти», «твій» (her skin tone — твій тон шкіри; when she turns her head — коли ти повертаєш голову; she looks taller — ти виглядаєш вищою), англійський наказ — наказом однини; «вона», «її» — лише про річ (сукню, сумку, куртку). Говорить стилістка — одна жінка: про себе — від першої особи однини й у жіночому роді (я підібрала, я б додала), не «ми», не від імені застосунку чи коду і ніколи словами самої жінки.
+
+Мова: літературна українська, як у текстах українських крамниць одягу. Кожне українське слово — літерами лише української абетки, без жодної латинської літери чи стороннього знака всередині слова. Кожне речення — одна остаточна версія, без виправлень посеред тексту. Словничок нижче — лише як перекласти англійське слово, коли воно є у вході; це не зміст: річ, тканина чи колір, яких у вході нема, у тексті не з'являються. Звичні українські назви для слів англійського джерела: trousers, pants — штани; dressy, dressier — ошатний, ошатніше; look, outfit — образ; taupe — сіро-бежевий; loose — вільний; suede — замша (жіночий рід); slip dress — сукня-комбінація; camel — кемел (колір). Назви речей і кольорів, які дала крамниця, — як є.
+
+Перевір кожне слово ДО відповіді: до неї — лише «ти», жодного «ви», «ваш» і наказу множини, і про неї жодного «вона», «її», «їй», жодне слово не стоїть двічі поспіль, кожна річ — того самого виду, що у вході (річ образу — іменником коду її виду з переліку, коли він є, і слова при ній узгоджені з цим іменником), а українська назва речі — слово в слово. Відповідь — рівно ОДИН JSON-об'єкт і нічого після нього: другої, виправленої версії, приміток і пояснень не пиши — помилку виправ у тому самому об'єкті.
+
+Речі образу — перелік речей картки (номер речі — як на картці, поруч — її коди):
+1 — kind code: heeled_sandals · colour code: green · about it: text н=1
+2 — kind code: blazer · colour code: black · about it: text н=2
+3 — kind code: necklace · colour code: golden · about it: text н=3
+4 — kind code: dress_generic · colour code: black · about it: text н=4
+5 — kind code: scarf_generic · colour code: purple · about it: text н=5
+6 — kind code: bag_generic · colour code: terracotta · about it: text н=6
+When a text speaks of an item of the list, call it by the Ukrainian noun of its kind code (kind code: …) — the same noun in the right case in every text (trench_coat — «тренч», sweater — «светр», loafers — «лофери»), not by another kind or a synonym of the English word, whatever word the English text uses; a code ending in _generic names only the family (dress_generic — a dress, bag_generic — a bag). Make every adjective, pronoun and verb with the item agree with that noun in gender and number («бежевий тренч, який…»; «шкіряні лофери, які…»). A name you translate in this same call (text н=K): give it one noun and call the item by it, in agreement, in every text. A text the list gives as about an item (about it: text н=M) speaks of that one item, and so does every other text where the English names it. The colour of an item of the list is its colour code (colour code: …): write the Ukrainian name of that code. The English colour words for that item are the stylist's impression of a photo: do not turn them into a colour of their own — the item's colour stands in their place. Colours of its details (trim, strap, buttons, print), its fabric and the rest — translate from the text. The list is for the items only: an item the English text does not name is not added to the translation — neither to the description nor to the advice.
+
+Colour codes: black — чорний; golden — золотий; green — зелений; purple — фіолетовий; terracotta — теракотовий.
+
+ТЕКСТИ:
+{
+"1": "These are heeled sandals in a brownish hue that offer height and comfort for standing.",
+"2": "This is a fitted blazer in black, designed to follow the lines of your body while keeping a sleek silhouette.",
+"3": "This piece is a necklace with golden tones intended to add subtle shine near the collarbone.",
+"4": "This item is a dress in black, featuring a belted waist and an a-line shape that flows smoothly from the hips.",
+"5": "It is a large scarf in a dusty purple shade with long fringes along the bottom edge, perfect for draping over your shoulders.",
+"6": "This bag comes in a warm terracotta color to provide a rich contrast against the monochrome layers of your outfit.",
+"7": "I have put together a sharp and elegant look for your Friday evening rock concert at the club. This fitted black blazer over your black dress gives you that smart, classic register you asked for, creating a polished silhouette that stands tall even in the crowd. The soft purple scarf adds a gentle touch of color against the dark layers, while the terracotta bag offers a warm, grounded accent to tie your palette together.",
+"8": "Keep the blazer buttoned or loosely closed over the dress to maintain a clean vertical line that elongates your figure.",
+"9": "Let the long purple scarf drape comfortably around your neck; since it is so soft and wide, you can easily remove it later if you want a lighter feel while dancing.",
+"10": "Босоніжки жіночі, RIEKER, екошкіра, колір салатовий — I kept these green heeled sandals despite the code's warning about their seasonal feel; they are the only shoes that reach the formal level your occasion demands, and the velvet blazer balances their casual edge.",
+"11": "Босоніжки жіночі, RIEKER, екошкіра, колір салатовий, Чорний жакет з фігурними рукавами, Золотисте намисто з двох ланцюжків, Сукня міді з акцентом на талії CELINE чорна, Шарф кашеміровий із дредами, Сумка Камея теракота — I accept this gate about mixed registers because the classic velvet blazer leads the look, successfully framing the rock elements as intentional contrast rather than confusion for an evening in the crowd."
+}
+
+── ВІДПОВІДЬ (1896 симв., 16.5 с, HTTP 200) ──
+```json
+{
+"1": "Це босоніжки на підборах коричневого відтінку, які дарують висоту та комфорт для стояння.",
+"2": "Це приталений блейзер чорного кольору, розроблений так, щоб повторювати лінії твого тіла, зберігаючи елегантний силует.",
+"3": "Цей виріб — намисто із золотистими тонами, призначене для того, щоб додати ледь помітне сяйво біля ключиці.",
+"4": "Це сукня чорного кольору з підкресленою талією і трапецієподібним силуетом, який плавно розширюється від стегон.",
+"5": "Це великий шарф пильно-фіолетового відтінку з довгими китицями по нижньому краю, ідеальний для того, щоб накинути на плечі.",
+"6": "Ця сумка має теплий теракотовий колір, який створює насичений контраст із монохромними шарами твого образу.",
+"7": "Я підібрала тобі стильний і елегантний образ для твоєї п’ятничної вечірки в рок-клубі. Цей приталений чорний блейзер, накинутий поверх чорної сукні, дає той розумний, класичний вигляд, який ти просила, створюючи стрункий силует, що вирізняється навіть у натовпі. М’який фіолетовий шарф додає ніжну нотку кольору до темних шарів, а теракотова сумка дарує теплий і збалансований акцент, який завершує твою палітру.",
+"8": "Застебни блейзер або залиш його трохи розстібнутим поверх сукні, щоб зберегти чисту вертикальну лінію, яка подовжує фігуру.",
+"9": "Дозволь довгому фіолетовому шарфу вільно звисати навколо шиї; оскільки він такий м’який і широкий, ти легко зможеш його зняти пізніше, якщо захочеш відчувати себе легше під час танців.",
+"10": "Я залишила ці зелені босоніжки на підборах попри попередження коду про їх сезонність; вони єдине взуття, яке відповідає формальному рівню твого випадку, а оксамитовий блейзер збалансовує їхній повсякденний вигляд.",
+"11": "Я приймаю це зауваження щодо змішаних стилів, адже класичний оксамитовий блейзер задає тон образу, успішно підкреслюючи рок-елементи як навмисний контраст, а не плутанину для вечора в натовпі."
+}
+```
