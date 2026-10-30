@@ -1,5 +1,5 @@
 diff --git "a/\320\260\321\203\320\264\320\270\321\202/\320\260\320\264\320\260\320\277\321\202\320\265\321\200\320\270/gemini/gemini_publish.ps1" "b/\320\260\321\203\320\264\320\270\321\202/\320\260\320\264\320\260\320\277\321\202\320\265\321\200\320\270/gemini/gemini_publish.ps1"
-index 2013c9477..19ce4d280 100644
+index 2013c94..19ce4d2 100644
 --- "a/\320\260\321\203\320\264\320\270\321\202/\320\260\320\264\320\260\320\277\321\202\320\265\321\200\320\270/gemini/gemini_publish.ps1"
 +++ "b/\320\260\321\203\320\264\320\270\321\202/\320\260\320\264\320\260\320\277\321\202\320\265\321\200\320\270/gemini/gemini_publish.ps1"
 @@ -30,6 +30,7 @@ param(
@@ -10,8 +10,213 @@ index 2013c9477..19ce4d280 100644
      [string]$WrapperDir = 'аудит/адаптери/gemini/',
      [int]$MaxBundleMB = 512,
      [string]$OutboxDir = '',
+diff --git "a/\320\260\321\203\320\264\320\270\321\202/\320\260\320\264\320\260\320\277\321\202\320\265\321\200\320\270/gemini/m9v/2_\320\277\321\226\320\264_gemini.ps1" "b/\320\260\321\203\320\264\320\270\321\202/\320\260\320\264\320\260\320\277\321\202\320\265\321\200\320\270/gemini/m9v/2_\320\277\321\226\320\264_gemini.ps1"
+index 577fab2..100d2ec 100644
+--- "a/\320\260\321\203\320\264\320\270\321\202/\320\260\320\264\320\260\320\277\321\202\320\265\321\200\320\270/gemini/m9v/2_\320\277\321\226\320\264_gemini.ps1"
++++ "b/\320\260\321\203\320\264\320\270\321\202/\320\260\320\264\320\260\320\277\321\202\320\265\321\200\320\270/gemini/m9v/2_\320\277\321\226\320\264_gemini.ps1"
+@@ -1,100 +1,100 @@
+-﻿#Requires -Version 5.1
+-<#
+-.SYNOPSIS
+-М.9-В, підготовка, частина gemini: крок 0 (клон, git config), Codex CLI, вхід, крок 4. Запуск — під gemini.
+-
+-.DESCRIPTION
+-Запускається один раз, ПІСЛЯ 1_адмін.ps1 (обгортка в C:\ProgramData\gemini-wrapper уже стоїть); повторний запуск безпечний.
+-Паролів і токенів не читає й не виводить: про вхід судить лише наявність файлу чи код `codex login status`.
+-Codex без `-WithCodex` скрипт не ставить і не входить. Рішення власника 25.10 (9738): Codex під gemini вмикається з основним
+-акаунтом ChatGPT власника, ризик прийнято (токен лежить у `~/.codex/auth.json` профілю gemini — секрет у межі цього
+-користувача, у репозиторій не йде, 9739; ізоляцію рушіїв веде М.9-Г). З `-WithCodex`:
+-  Codex CLI  — інсталятор закріплено за релізом (без Node.js, https://github.com/openai/codex): файл
+-               https://releases.openai.com/codex/releases/<CodexRelease>/install.ps1 качається у файл, sha256 звіряється з
+-               `CodexInstaller` у хеші.psd1 і лише тоді виконується з `-Release <CodexRelease>` (9741); хеш порожній чи інший —
+-               СТОП, інсталятор не виконується (сам інсталятор несе блок підпису Authenticode — не перевірено — і звіряє SHA256SUMS пакета);
+-               вхід — `codex login --device-auth` (код на сторінці, без браузера на цьому ноутбуці):
+-               https://learn.chatgpt.com/docs/developer-commands?surface=cli
+-Gemini CLI не ставимо (рішення диспетчера 25.10: для Google One його замінено Antigravity CLI з 18.06.2026, README google-gemini/gemini-cli); другий рушій Gemini — наявний agy.
+-Команди кроків 0 і 4 — дослівно з НАЛАШТУВАННЯ.md.
+-#>
+-# Continue, не Stop: у Windows PowerShell 5.1 stderr рідних команд (git clone, npm) при Stop — виняток; коди виходу перевіряються вручну
+-param([switch]$WithCodex)
+-$ErrorActionPreference = 'Continue'
+-function Stop-Here([string]$m) { Write-Host "СТОП: $m" -ForegroundColor Red; Write-Host 'Напиши диспетчерові: ЗАБЛОКОВАНО + цей текст.'; exit 1 }
+-function Step([string]$m) { Write-Host "`n== $m" -ForegroundColor Cyan }
+-function Update-Path { $env:Path = [Environment]::GetEnvironmentVariable('Path', 'Machine') + ';' + [Environment]::GetEnvironmentVariable('Path', 'User') }
+-function Has([string]$n) { [bool](Get-Command $n -ErrorAction SilentlyContinue) }
+-
+-if ($env:USERNAME -ne 'gemini') { Stop-Here "це має бути користувач gemini, а тут $env:USERNAME (Win+L → gemini)." }
+-if (([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)) {
+-    Stop-Here 'gemini має бути без прав адміністратора (ізоляція 19.10).' }
+-
+-# --- вимоги ---
+-Step 'Вимоги: git 2.30+ і обгортка'
+-Update-Path
+-if (-not (Has git)) { Stop-Here 'git не знайдено під gemini (НАЛАШТУВАННЯ.md, крок 0: git має бути).' }
+-if ((git --version) -notmatch '(\d+\.\d+\.\d+)') { Stop-Here 'git --version не розібрано.' }
+-$gv = [version]$Matches[1]
+-if ($gv -lt [version]'2.30') { Stop-Here "git $gv старіший за 2.30." }
+-Write-Host "git $gv — ок."
+-if (-not (Test-Path 'C:\ProgramData\gemini-wrapper\gemini_run.ps1')) {
+-    Stop-Here 'обгортки в C:\ProgramData\gemini-wrapper нема: спершу 1_адмін.ps1 (адмінський PowerShell під власником), потім цей скрипт.' }
+-
+-# --- крок 0 ---
+-Step 'Крок 0: клон і git config'
+-if (-not (Test-Path "$env:USERPROFILE\kod-shi-data\.git")) {
+-    git clone --depth 1 https://github.com/mightyrochy/kod-shi-data "$env:USERPROFILE\kod-shi-data"
+-    if ($LASTEXITCODE -ne 0) { Stop-Here "git clone повернув код $LASTEXITCODE." }
+-} else { Write-Host 'Клон уже є.' }
+-if (-not (git config --global user.email)) { git config --global user.name 'gemini'; git config --global user.email "gemini@$env:COMPUTERNAME" }
+-
+-# --- Codex CLI (лише -WithCodex, після рішення власника про акаунт, 9738) ---
+-if (-not $WithCodex) {
+-    Write-Host "`nCodex пропущено: без -WithCodex не ставиться й не входить (рішення власника 25.10, 9738: вмикати з -WithCodex)." -ForegroundColor Yellow
+-} else {
+-    Step 'Codex CLI'
+-    if (-not (Has codex)) {
+-        $expected = Import-PowerShellDataFile (Join-Path $PSScriptRoot 'хеші.psd1') -ErrorAction SilentlyContinue
+-        $want = $(if ($expected -and $expected.ContainsKey('CodexInstaller')) { [string]$expected['CodexInstaller'] } else { '' })
+-        $rel = $(if ($expected -and $expected.ContainsKey('CodexRelease')) { [string]$expected['CodexRelease'] } else { '' })
+-        if ($rel -notmatch '^\d+\.\d+\.\d+$') { Stop-Here "CodexRelease у хеші.psd1 порожній чи не виду x.y.z ('$rel'). Інсталятор не виконано." }
+-        $inst = "$env:TEMP\codex_install.ps1"
+-        Invoke-WebRequest "https://releases.openai.com/codex/releases/$rel/install.ps1" -OutFile $inst -UseBasicParsing
+-        $got = (Get-FileHash $inst -Algorithm SHA256).Hash
+-        Write-Host "sha256 інсталятора: $got"
+-        if (-not $want) { Stop-Here "хеш інсталятора Codex не зафіксовано в хеші.psd1 (CodexInstaller). Звір sha256 вище з офіційним джерелом, запиши його PR-ом; інсталятор не виконано." }
+-        if ($got -ne $want) { Stop-Here "sha256 інсталятора не збігся з хеші.psd1 (чекав $want). Інсталятор не виконано." }
+-        $env:CODEX_NON_INTERACTIVE = '1'
+-        & powershell -NoProfile -ExecutionPolicy Bypass -File $inst -Release $rel
+-        Update-Path
+-        if (-not (Has codex)) { Stop-Here 'codex не знайдено після установки; відкрий нове вікно PowerShell і запусти скрипт знову.' }
+-    }
+-    Write-Host "codex: $(& codex --version)"
+-
+-    Step 'Вхід Codex (ChatGPT, --device-auth)'
+-    & codex login status *> $null
+-    if ($LASTEXITCODE -eq 0) { Write-Host 'Вхід ChatGPT вже є.' }
+-    else {
+-        Write-Host 'Відкрий показану адресу на телефоні, введи код і увійди основним акаунтом ChatGPT (рішення власника 25.10, 9738).' -ForegroundColor Yellow
+-        & codex login --device-auth
+-        & codex login status *> $null
+-        if ($LASTEXITCODE -ne 0) { Stop-Here 'вхід Codex не вдався (код не введено чи сплив): запусти цей самий рядок ще раз.' }
+-    }
+-    Write-Host 'Рушій Codex у задачі gemini-run вмикає 1_адмін.ps1 -EnableCodex (НАЛАШТУВАННЯ.md, «Пули й каскад»).'
+-}
+-
+-# --- крок 4 ---
+-Step 'Крок 4: перевірка ізоляції'
+-powershell -NoProfile -ExecutionPolicy Bypass -File C:\ProgramData\gemini-wrapper\gemini_run.ps1
+-Get-Content C:\Users\Public\gemini\out\heartbeat.json      # має бути "isolation":"OK"
+-$hb = Get-Content C:\Users\Public\gemini\out\heartbeat.json -Raw | ConvertFrom-Json
+-if ($hb.isolation -ne 'OK') {
+-    Stop-Here "isolation=$($hb.isolation): WHOAMI — не той користувач, NET_SESSION — права адміністратора, PROFILES — бачить чужий профіль, DRIVES — інший диск, ENV — змінна з KEY/TOKEN/SECRET/PASSWORD." }
+-$denied = $false
+-try { Add-Content C:\ProgramData\gemini-wrapper\gemini_run.ps1 '#' -ErrorAction Stop } catch { $denied = $true }   # має бути відмова в доступі
+-if (-not $denied) { Stop-Here 'gemini зміг дописати в gemini_run.ps1 — права теки неправильні (крок 3).' }
+-Write-Host 'Запис у обгортку відхилено — як і треба.' -ForegroundColor Green
+-agy models                                                  # список моделей (диспетчерові не треба — обгортка сама)
+-
+-Write-Host "`nГОТОВО: isolation OK$(if ($WithCodex) { ', Codex увійшов' } else { ', Codex вимкнено' }). Далі — ЩО_НАТИСНУТИ.md (повернутись до себе, перевірка heartbeat)." -ForegroundColor Green
++﻿#Requires -Version 5.1
++<#
++.SYNOPSIS
++М.9-В, підготовка, частина gemini: крок 0 (клон, git config), Codex CLI, вхід, крок 4. Запуск — під gemini.
++
++.DESCRIPTION
++Запускається один раз, ПІСЛЯ 1_адмін.ps1 (обгортка в C:\ProgramData\gemini-wrapper уже стоїть); повторний запуск безпечний.
++Паролів і токенів не читає й не виводить: про вхід судить лише наявність файлу чи код `codex login status`.
++Codex без `-WithCodex` скрипт не ставить і не входить. Рішення власника 25.10 (9738): Codex під gemini вмикається з основним
++акаунтом ChatGPT власника, ризик прийнято (токен лежить у `~/.codex/auth.json` профілю gemini — секрет у межі цього
++користувача, у репозиторій не йде, 9739; ізоляцію рушіїв веде М.9-Г). З `-WithCodex`:
++  Codex CLI  — інсталятор закріплено за релізом (без Node.js, https://github.com/openai/codex): файл
++               https://releases.openai.com/codex/releases/<CodexRelease>/install.ps1 качається у файл, sha256 звіряється з
++               `CodexInstaller` у хеші.psd1 і лише тоді виконується з `-Release <CodexRelease>` (9741); хеш порожній чи інший —
++               СТОП, інсталятор не виконується (сам інсталятор несе блок підпису Authenticode — не перевірено — і звіряє SHA256SUMS пакета);
++               вхід — `codex login --device-auth` (код на сторінці, без браузера на цьому ноутбуці):
++               https://learn.chatgpt.com/docs/developer-commands?surface=cli
++Gemini CLI не ставимо (рішення диспетчера 25.10: для Google One його замінено Antigravity CLI з 18.06.2026, README google-gemini/gemini-cli); другий рушій Gemini — наявний agy.
++Команди кроків 0 і 4 — дослівно з НАЛАШТУВАННЯ.md.
++#>
++# Continue, не Stop: у Windows PowerShell 5.1 stderr рідних команд (git clone, npm) при Stop — виняток; коди виходу перевіряються вручну
++param([switch]$WithCodex)
++$ErrorActionPreference = 'Continue'
++function Stop-Here([string]$m) { Write-Host "СТОП: $m" -ForegroundColor Red; Write-Host 'Напиши диспетчерові: ЗАБЛОКОВАНО + цей текст.'; exit 1 }
++function Step([string]$m) { Write-Host "`n== $m" -ForegroundColor Cyan }
++function Update-Path { $env:Path = [Environment]::GetEnvironmentVariable('Path', 'Machine') + ';' + [Environment]::GetEnvironmentVariable('Path', 'User') }
++function Has([string]$n) { [bool](Get-Command $n -ErrorAction SilentlyContinue) }
++
++if ($env:USERNAME -ne 'gemini') { Stop-Here "це має бути користувач gemini, а тут $env:USERNAME (Win+L → gemini)." }
++if (([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)) {
++    Stop-Here 'gemini має бути без прав адміністратора (ізоляція 19.10).' }
++
++# --- вимоги ---
++Step 'Вимоги: git 2.30+ і обгортка'
++Update-Path
++if (-not (Has git)) { Stop-Here 'git не знайдено під gemini (НАЛАШТУВАННЯ.md, крок 0: git має бути).' }
++if ((git --version) -notmatch '(\d+\.\d+\.\d+)') { Stop-Here 'git --version не розібрано.' }
++$gv = [version]$Matches[1]
++if ($gv -lt [version]'2.30') { Stop-Here "git $gv старіший за 2.30." }
++Write-Host "git $gv — ок."
++if (-not (Test-Path 'C:\ProgramData\gemini-wrapper\gemini_run.ps1')) {
++    Stop-Here 'обгортки в C:\ProgramData\gemini-wrapper нема: спершу 1_адмін.ps1 (адмінський PowerShell під власником), потім цей скрипт.' }
++
++# --- крок 0 ---
++Step 'Крок 0: клон і git config'
++if (-not (Test-Path "$env:USERPROFILE\kod-shi-data\.git")) {
++    git clone --depth 1 https://github.com/mightyrochy/kod-shi-data "$env:USERPROFILE\kod-shi-data"
++    if ($LASTEXITCODE -ne 0) { Stop-Here "git clone повернув код $LASTEXITCODE." }
++} else { Write-Host 'Клон уже є.' }
++if (-not (git config --global user.email)) { git config --global user.name 'gemini'; git config --global user.email "gemini@$env:COMPUTERNAME" }
++
++# --- Codex CLI (лише -WithCodex, після рішення власника про акаунт, 9738) ---
++if (-not $WithCodex) {
++    Write-Host "`nCodex пропущено: без -WithCodex не ставиться й не входить (рішення власника 25.10, 9738: вмикати з -WithCodex)." -ForegroundColor Yellow
++} else {
++    Step 'Codex CLI'
++    if (-not (Has codex)) {
++        $expected = Import-PowerShellDataFile (Join-Path $PSScriptRoot 'хеші.psd1') -ErrorAction SilentlyContinue
++        $want = $(if ($expected -and $expected.ContainsKey('CodexInstaller')) { [string]$expected['CodexInstaller'] } else { '' })
++        $rel = $(if ($expected -and $expected.ContainsKey('CodexRelease')) { [string]$expected['CodexRelease'] } else { '' })
++        if ($rel -notmatch '^\d+\.\d+\.\d+$') { Stop-Here "CodexRelease у хеші.psd1 порожній чи не виду x.y.z ('$rel'). Інсталятор не виконано." }
++        $inst = "$env:TEMP\codex_install.ps1"
++        Invoke-WebRequest "https://releases.openai.com/codex/releases/$rel/install.ps1" -OutFile $inst -UseBasicParsing
++        $got = (Get-FileHash $inst -Algorithm SHA256).Hash
++        Write-Host "sha256 інсталятора: $got"
++        if (-not $want) { Stop-Here "хеш інсталятора Codex не зафіксовано в хеші.psd1 (CodexInstaller). Звір sha256 вище з офіційним джерелом, запиши його PR-ом; інсталятор не виконано." }
++        if ($got -ne $want) { Stop-Here "sha256 інсталятора не збігся з хеші.psd1 (чекав $want). Інсталятор не виконано." }
++        $env:CODEX_NON_INTERACTIVE = '1'
++        & powershell -NoProfile -ExecutionPolicy Bypass -File $inst -Release $rel
++        Update-Path
++        if (-not (Has codex)) { Stop-Here 'codex не знайдено після установки; відкрий нове вікно PowerShell і запусти скрипт знову.' }
++    }
++    Write-Host "codex: $(& codex --version)"
++
++    Step 'Вхід Codex (ChatGPT, --device-auth)'
++    & codex login status *> $null
++    if ($LASTEXITCODE -eq 0) { Write-Host 'Вхід ChatGPT вже є.' }
++    else {
++        Write-Host 'Відкрий показану адресу на телефоні, введи код і увійди основним акаунтом ChatGPT (рішення власника 25.10, 9738).' -ForegroundColor Yellow
++        & codex login --device-auth
++        & codex login status *> $null
++        if ($LASTEXITCODE -ne 0) { Stop-Here 'вхід Codex не вдався (код не введено чи сплив): запусти цей самий рядок ще раз.' }
++    }
++    Write-Host 'Рушій Codex у задачі gemini-run вмикає 1_адмін.ps1 -EnableCodex (НАЛАШТУВАННЯ.md, «Пули й каскад»).'
++}
++
++# --- крок 4 ---
++Step 'Крок 4: перевірка ізоляції'
++powershell -NoProfile -ExecutionPolicy Bypass -File C:\ProgramData\gemini-wrapper\gemini_run.ps1
++Get-Content C:\Users\Public\gemini\out\heartbeat.json      # має бути "isolation":"OK"
++$hb = Get-Content C:\Users\Public\gemini\out\heartbeat.json -Raw | ConvertFrom-Json
++if ($hb.isolation -ne 'OK') {
++    Stop-Here "isolation=$($hb.isolation): WHOAMI — не той користувач, NET_SESSION — права адміністратора, PROFILES — бачить чужий профіль, DRIVES — інший диск, ENV — змінна з KEY/TOKEN/SECRET/PASSWORD." }
++$denied = $false
++try { Add-Content C:\ProgramData\gemini-wrapper\gemini_run.ps1 '#' -ErrorAction Stop } catch { $denied = $true }   # має бути відмова в доступі
++if (-not $denied) { Stop-Here 'gemini зміг дописати в gemini_run.ps1 — права теки неправильні (крок 3).' }
++Write-Host 'Запис у обгортку відхилено — як і треба.' -ForegroundColor Green
++agy models                                                  # список моделей (диспетчерові не треба — обгортка сама)
++
++Write-Host "`nГОТОВО: isolation OK$(if ($WithCodex) { ', Codex увійшов' } else { ', Codex вимкнено' }). Далі — ЩО_НАТИСНУТИ.md (повернутись до себе, перевірка heartbeat)." -ForegroundColor Green
 diff --git "a/\320\260\321\203\320\264\320\270\321\202/\320\260\320\264\320\260\320\277\321\202\320\265\321\200\320\270/gemini/m9v/\321\205\320\265\321\210\321\226.psd1" "b/\320\260\321\203\320\264\320\270\321\202/\320\260\320\264\320\260\320\277\321\202\320\265\321\200\320\270/gemini/m9v/\321\205\320\265\321\210\321\226.psd1"
-index 2e1af9e5c..3ec32f51a 100644
+index 2e1af9e..f805981 100644
 --- "a/\320\260\321\203\320\264\320\270\321\202/\320\260\320\264\320\260\320\277\321\202\320\265\321\200\320\270/gemini/m9v/\321\205\320\265\321\210\321\226.psd1"
 +++ "b/\320\260\321\203\320\264\320\270\321\202/\320\260\320\264\320\260\320\277\321\202\320\265\321\200\320\270/gemini/m9v/\321\205\320\265\321\210\321\226.psd1"
 @@ -3,10 +3,10 @@
@@ -19,7 +224,7 @@ index 2e1af9e5c..3ec32f51a 100644
      'wrapper_update.ps1' = '4156307A17BDAE3AF7249E532947F659E99AA1349D159239159FAE60CA7E4F2B'
      'wrapper_probe.ps1'  = '85116D04C22EB64CBFF52E66BCEAE9B1091577A889EDD58A8B634093A82BDBC6'
 -    'wrapper_chain.ps1'  = '99C1766CD93D0935C1804275B75F09C32C377427F347B91432D82869FAE34194'
-+    'wrapper_chain.ps1'  = '42DF20D3C3A567CA7B3E7BC932057CD7053B4E7289832FC27A803048C1B33795'
++    'wrapper_chain.ps1'  = '0A254E6884FA61DF9B4FC709EBC3AD05AE8CCD1A25A1F09D87D97C1A43A57184'
      'wrapper_health.ps1' = 'B3E2C44C4F342A915B814854A7D7619EDE2E019B48DC4A50CF4C9DB304C2E531'
      'gemini_run.ps1'     = 'ED151D76BA6658EA230A0442252F0D7D05C2F6D723461C383D8E10016206E8FE'
 -    'gemini_publish.ps1' = '73F2F2AA868DA86391FA9FACFD1F818AA8D1A76B9511F4DA891CBFE1E77087A9'
@@ -28,10 +233,10 @@ index 2e1af9e5c..3ec32f51a 100644
      # (незмінний URL; той самий sha256 віддає https://chatgpt.com/codex/install.ps1 — редирект на releases.openai.com — і публікує реліз
      # openai/codex). 2_під_gemini.ps1 -WithCodex виконує його лише при збігу CodexInstaller і ставить саме цей реліз (-Release).
 diff --git "a/\320\260\321\203\320\264\320\270\321\202/\320\260\320\264\320\260\320\277\321\202\320\265\321\200\320\270/gemini/wrapper_chain.ps1" "b/\320\260\321\203\320\264\320\270\321\202/\320\260\320\264\320\260\320\277\321\202\320\265\321\200\320\270/gemini/wrapper_chain.ps1"
-index aa4f34bce..4ab6fdb5e 100644
+index aa4f34b..69baa54 100644
 --- "a/\320\260\321\203\320\264\320\270\321\202/\320\260\320\264\320\260\320\277\321\202\320\265\321\200\320\270/gemini/wrapper_chain.ps1"
 +++ "b/\320\260\321\203\320\264\320\270\321\202/\320\260\320\264\320\260\320\277\321\202\320\265\321\200\320\270/gemini/wrapper_chain.ps1"
-@@ -405,6 +405,104 @@ function Request-CloudReview([string]$Number, [string]$Head) {
+@@ -405,6 +405,111 @@ function Request-CloudReview([string]$Number, [string]$Head) {
      Write-WrapperLog "ланцюг: #$Number $Head — перевірка хмарним Claude, рядок диспетчерові"
  }
  
@@ -120,6 +325,13 @@ index aa4f34bce..4ab6fdb5e 100644
 +                            if (-not [IO.Path]::IsPathRooted($gitDir)) { $gitDir = Join-Path (Join-Path $copy 'repo') $gitDir }
 +                        }
 +                    }
++                    # GetAttributes не перевіряє ListDirectory; HEAD може мати явний дозвіл.
++                    # Це стосується також теки, на яку вказує gitdir файла worktree.
++                    try { $null = [IO.Directory]::GetFiles($gitDir, 'HEAD') }
++                    catch {
++                        $cause = $_.Exception.GetBaseException()
++                        if ($cause -isnot [IO.FileNotFoundException] -and $cause -isnot [IO.DirectoryNotFoundException]) { throw }
++                    }
 +                    $headPath = Join-Path $gitDir 'HEAD'
 +                    $ref = ([string](Read-ChainOptionalFile $headPath)).Trim()
 +                    if ($ref -cmatch '^ref: refs/heads/(claude/[^/]+)$') { $branches += $Matches[1] }
@@ -136,7 +348,7 @@ index aa4f34bce..4ab6fdb5e 100644
  function Invoke-WrapperChain {
      <# PR коду -> незалежна перевірка; новий штамп збірки -> один GPU-прогін на коміті збірки. #>
      if ($DryRun) { return }
-@@ -501,6 +599,9 @@ function Invoke-WrapperChain {
+@@ -501,6 +606,9 @@ function Invoke-WrapperChain {
              $eligible = Test-RecentReviewHead $pr $heads $installed $now $hours
              Write-FileAtomic $statePath (([ordered]@{ main=$main; reviewed=$reviewed; live_active=$liveActive; live_since=$liveSince; live_stamps=@($liveStamps.Keys); live_pending=@($livePending); reviews=@($seen.Keys); installed_utc=$installed.ToString('o'); heads=$heads }) | ConvertTo-Json -Compress -Depth 5)
              if (-not $eligible) { continue }
@@ -147,7 +359,7 @@ index aa4f34bce..4ab6fdb5e 100644
                  foreach ($key in @($seen.Keys | Where-Object { $_ -cmatch ('^' + $n + ' [0-9a-f]{40} ') })) {
                      $oldHead = ($key -split ' ')[1]
 diff --git "a/\320\260\321\203\320\264\320\270\321\202/\320\260\320\264\320\260\320\277\321\202\320\265\321\200\320\270/gemini/\320\235\320\220\320\233\320\220\320\250\320\242\320\243\320\222\320\220\320\235\320\235\320\257.md" "b/\320\260\321\203\320\264\320\270\321\202/\320\260\320\264\320\260\320\277\321\202\320\265\321\200\320\270/gemini/\320\235\320\220\320\233\320\220\320\250\320\242\320\243\320\222\320\220\320\235\320\235\320\257.md"
-index 696c1758e..e05469080 100644
+index 696c175..6fd129c 100644
 --- "a/\320\260\321\203\320\264\320\270\321\202/\320\260\320\264\320\260\320\277\321\202\320\265\321\200\320\270/gemini/\320\235\320\220\320\233\320\220\320\250\320\242\320\243\320\222\320\220\320\235\320\235\320\257.md"
 +++ "b/\320\260\321\203\320\264\320\270\321\202/\320\260\320\264\320\260\320\277\321\202\320\265\321\200\320\270/gemini/\320\235\320\220\320\233\320\220\320\250\320\242\320\243\320\222\320\220\320\235\320\235\320\257.md"
 @@ -431,9 +431,9 @@ $f = Join-Path "$env:USERPROFILE\gemini-outbox" $n
@@ -155,7 +367,7 @@ index 696c1758e..e05469080 100644
  | `wrapper_probe.ps1` | `85116D04C22EB64CBFF52E66BCEAE9B1091577A889EDD58A8B634093A82BDBC6` |
  | `wrapper_update.ps1` | `4156307A17BDAE3AF7249E532947F659E99AA1349D159239159FAE60CA7E4F2B` |
 -| `wrapper_chain.ps1` | `99C1766CD93D0935C1804275B75F09C32C377427F347B91432D82869FAE34194` |
-+| `wrapper_chain.ps1` | `42DF20D3C3A567CA7B3E7BC932057CD7053B4E7289832FC27A803048C1B33795` |
++| `wrapper_chain.ps1` | `0A254E6884FA61DF9B4FC709EBC3AD05AE8CCD1A25A1F09D87D97C1A43A57184` |
  | `gemini_run.ps1` | `ED151D76BA6658EA230A0442252F0D7D05C2F6D723461C383D8E10016206E8FE` |
 -| `gemini_publish.ps1` | `73F2F2AA868DA86391FA9FACFD1F818AA8D1A76B9511F4DA891CBFE1E77087A9` |
 +| `gemini_publish.ps1` | `3C97912267FFEF59F72A96D44D63B40A52BDA32174FF36E8F1438B076FFC225B` |
@@ -173,7 +385,7 @@ index 696c1758e..e05469080 100644
  `Test-ReviewBranch` виключає `*/перевірка-*`, `*/pachka-*` й автозвіти.
  Після опублікованого вердикту `Test-ReviewedMerge` порівнює повний diff проти merge-base:
  чисте злиття main без зміни diff не створює нового наряду; звичайний коміт створює.
-@@ -630,3 +634,21 @@ CI й ноутбук запускають один повний перелік 
+@@ -630,3 +634,33 @@ CI й ноутбук запускають один повний перелік 
  `GEMINI ОБГОРТКА: ЗАБЛОКОВАНО GPU|SLOTS: <причина>, позначок N` (причина GPU стійка: замок, `процес <назва з compute-apps>`
  або зайнята пам'ять) — один на причину (повтор лише при зміні причини, стан `holds.json`); пульс диспетчера — лише
  запас. Той самий код у `gemini-run`: рядок іде в `out/alerts`, публікатор перевіряє його заново (`HoldLineTemplate`, `wrapper_health.ps1`) і кладе у вихідні. Тіло #1856 не стверджує «Оновлено понад 5 хв тому»: підказка умовна.
@@ -195,8 +407,20 @@ index 696c1758e..e05469080 100644
 +вихідний токен і ACL тимчасової теки відновлюються у finally. Стенд друкує SID, тип
 +підвищення, привілеї та результат Get-ChildItem/Directory.GetFiles до й після обмеження.
 +Спільний раннер виводить цю діагностику і в зеленому CI, а не лише зберігає у файлі.
++
++Доробка 4: ACL-фікстура виконує передумову й увесь виклик читача через
++WindowsIdentity.RunImpersonated. Перед кожною файловою операцією справжніх
++читачів стенд звіряє TokenId, SID і привілеї з токеном передумови; збіг
++перевіряється окремим твердженням. Рядки ACL ЧИТАЧ видно також у зеленому CI.
++Deny ставиться явно на кожний об'єкт власної фікстури; знімки всіх ACL
++беруться до змін, застосування йде від дочірніх об'єктів, відновлення — від батька.
++Це не покладається на порядок успадкованого deny та явних дозволів дочірніх об'єктів.
++Для батьківської теки діагностика читає також slots під тим самим токеном.
++Читач .git перевіряє ListDirectory перед HEAD: читання файла окремо
++може бути дозволене при забороненому переліку теки. Недоступна тека
++журналюється, як і решта недоступного стану; доступні смуги незалежні.
 diff --git "a/\320\260\321\203\320\264\320\270\321\202/\320\260\320\264\320\260\320\277\321\202\320\265\321\200\320\270/gemini/\320\277\320\265\321\200\320\265\320\262\321\226\321\200\320\272\320\260/fake_cli.py" "b/\320\260\321\203\320\264\320\270\321\202/\320\260\320\264\320\260\320\277\321\202\320\265\321\200\320\270/gemini/\320\277\320\265\321\200\320\265\320\262\321\226\321\200\320\272\320\260/fake_cli.py"
-index 051ea51b7..52fb76c76 100755
+index 051ea51..52fb76c 100644
 --- "a/\320\260\321\203\320\264\320\270\321\202/\320\260\320\264\320\260\320\277\321\202\320\265\321\200\320\270/gemini/\320\277\320\265\321\200\320\265\320\262\321\226\321\200\320\272\320\260/fake_cli.py"
 +++ "b/\320\260\321\203\320\264\320\270\321\202/\320\260\320\264\320\260\320\277\321\202\320\265\321\200\320\270/gemini/\320\277\320\265\321\200\320\265\320\262\321\226\321\200\320\272\320\260/fake_cli.py"
 @@ -42,15 +42,17 @@ def commit(path):
@@ -221,7 +445,7 @@ index 051ea51b7..52fb76c76 100755
  slug = m.group(1) if m else '?'
  def done():
 diff --git "a/\320\260\321\203\320\264\320\270\321\202/\320\260\320\264\320\260\320\277\321\202\320\265\321\200\320\270/gemini/\320\277\320\265\321\200\320\265\320\262\321\226\321\200\320\272\320\260/fake_timeline.py" "b/\320\260\321\203\320\264\320\270\321\202/\320\260\320\264\320\260\320\277\321\202\320\265\321\200\320\270/gemini/\320\277\320\265\321\200\320\265\320\262\321\226\321\200\320\272\320\260/fake_timeline.py"
-index ecb285aed..8ccb21f44 100644
+index ecb285a..8ccb21f 100644
 --- "a/\320\260\321\203\320\264\320\270\321\202/\320\260\320\264\320\260\320\277\321\202\320\265\321\200\320\270/gemini/\320\277\320\265\321\200\320\265\320\262\321\226\321\200\320\272\320\260/fake_timeline.py"
 +++ "b/\320\260\321\203\320\264\320\270\321\202/\320\260\320\264\320\260\320\277\321\202\320\265\321\200\320\270/gemini/\320\277\320\265\321\200\320\265\320\262\321\226\321\200\320\272\320\260/fake_timeline.py"
 @@ -2,13 +2,15 @@
@@ -267,7 +491,7 @@ index ecb285aed..8ccb21f44 100644
  def тримати(слаг):
      """Позначає початок і кінець заданого часу роботи заглушки."""
 diff --git "a/\320\260\321\203\320\264\320\270\321\202/\320\260\320\264\320\260\320\277\321\202\320\265\321\200\320\270/gemini/\320\277\320\265\321\200\320\265\320\262\321\226\321\200\320\272\320\260/side.ps1" "b/\320\260\321\203\320\264\320\270\321\202/\320\260\320\264\320\260\320\277\321\202\320\265\321\200\320\270/gemini/\320\277\320\265\321\200\320\265\320\262\321\226\321\200\320\272\320\260/side.ps1"
-index 1eec93807..db724d4ab 100644
+index 1eec938..db724d4 100644
 --- "a/\320\260\321\203\320\264\320\270\321\202/\320\260\320\264\320\260\320\277\321\202\320\265\321\200\320\270/gemini/\320\277\320\265\321\200\320\265\320\262\321\226\321\200\320\272\320\260/side.ps1"
 +++ "b/\320\260\321\203\320\264\320\270\321\202/\320\260\320\264\320\260\320\277\321\202\320\265\321\200\320\270/gemini/\320\277\320\265\321\200\320\265\320\262\321\226\321\200\320\272\320\260/side.ps1"
 @@ -4,6 +4,10 @@ param([string]$Script, [string]$ArgsJson)
@@ -299,7 +523,7 @@ index 1eec93807..db724d4ab 100644
 +function Get-ExternalGpuMiB { <# Дає вільну GPU синтетичному планувальнику. #> 0 }
  exit (Main)
 diff --git "a/\320\260\321\203\320\264\320\270\321\202/\320\260\320\264\320\260\320\277\321\202\320\265\321\200\320\270/gemini/\320\277\320\265\321\200\320\265\320\262\321\226\321\200\320\272\320\260/side_claude.ps1" "b/\320\260\321\203\320\264\320\270\321\202/\320\260\320\264\320\260\320\277\321\202\320\265\321\200\320\270/gemini/\320\277\320\265\321\200\320\265\320\262\321\226\321\200\320\272\320\260/side_claude.ps1"
-index 6ec9b02f9..57395eec4 100644
+index 6ec9b02..57395ee 100644
 --- "a/\320\260\321\203\320\264\320\270\321\202/\320\260\320\264\320\260\320\277\321\202\320\265\321\200\320\270/gemini/\320\277\320\265\321\200\320\265\320\262\321\226\321\200\320\272\320\260/side_claude.ps1"
 +++ "b/\320\260\321\203\320\264\320\270\321\202/\320\260\320\264\320\260\320\277\321\202\320\265\321\200\320\270/gemini/\320\277\320\265\321\200\320\265\320\262\321\226\321\200\320\272\320\260/side_claude.ps1"
 @@ -31,4 +31,6 @@ function Get-TaskRows {
@@ -310,7 +534,7 @@ index 6ec9b02f9..57395eec4 100644
 +function Get-ExternalGpuMiB { <# Дає вільну GPU синтетичному планувальнику. #> 0 }
  exit (Main)
 diff --git "a/\320\260\321\203\320\264\320\270\321\202/\320\260\320\264\320\260\320\277\321\202\320\265\321\200\320\270/gemini/\320\277\320\265\321\200\320\265\320\262\321\226\321\200\320\272\320\260/\321\201\321\206\320\265\320\275\320\260\321\200\321\226\321\227_\320\266\320\270\320\262\320\270\321\205_pr.ps1" "b/\320\260\321\203\320\264\320\270\321\202/\320\260\320\264\320\260\320\277\321\202\320\265\321\200\320\270/gemini/\320\277\320\265\321\200\320\265\320\262\321\226\321\200\320\272\320\260/\321\201\321\206\320\265\320\275\320\260\321\200\321\226\321\227_\320\266\320\270\320\262\320\270\321\205_pr.ps1"
-index d51b9f6a7..cddb8f591 100644
+index d51b9f6..cddb8f5 100644
 --- "a/\320\260\321\203\320\264\320\270\321\202/\320\260\320\264\320\260\320\277\321\202\320\265\321\200\320\270/gemini/\320\277\320\265\321\200\320\265\320\262\321\226\321\200\320\272\320\260/\321\201\321\206\320\265\320\275\320\260\321\200\321\226\321\227_\320\266\320\270\320\262\320\270\321\205_pr.ps1"
 +++ "b/\320\260\321\203\320\264\320\270\321\202/\320\260\320\264\320\260\320\277\321\202\320\265\321\200\320\270/gemini/\320\277\320\265\321\200\320\265\320\262\321\226\321\200\320\272\320\260/\321\201\321\206\320\265\320\275\320\260\321\200\321\226\321\227_\320\266\320\270\320\262\320\270\321\205_pr.ps1"
 @@ -24,6 +24,7 @@ try {
@@ -322,7 +546,7 @@ index d51b9f6a7..cddb8f591 100644
          foreach ($d in @($WorkDir,"$WorkDir/seen",$OutboxDir,$OutDir)) { [void][IO.Directory]::CreateDirectory($d) }
          [void](Invoke-Git @('fetch','-q','origin','+refs/heads/main:refs/remotes/origin/main'))
 diff --git "a/\320\260\321\203\320\264\320\270\321\202/\320\260\320\264\320\260\320\277\321\202\320\265\321\200\320\270/gemini/\320\277\320\265\321\200\320\265\320\262\321\226\321\200\320\272\320\260/\321\201\321\206\320\265\320\275\320\260\321\200\321\226\321\227_\320\267\320\264\320\276\321\200\320\276\320\262\321\217.ps1" "b/\320\260\321\203\320\264\320\270\321\202/\320\260\320\264\320\260\320\277\321\202\320\265\321\200\320\270/gemini/\320\277\320\265\321\200\320\265\320\262\321\226\321\200\320\272\320\260/\321\201\321\206\320\265\320\275\320\260\321\200\321\226\321\227_\320\267\320\264\320\276\321\200\320\276\320\262\321\217.ps1"
-index af8674ece..12b119ebc 100644
+index af8674e..12b119e 100644
 --- "a/\320\260\321\203\320\264\320\270\321\202/\320\260\320\264\320\260\320\277\321\202\320\265\321\200\320\270/gemini/\320\277\320\265\321\200\320\265\320\262\321\226\321\200\320\272\320\260/\321\201\321\206\320\265\320\275\320\260\321\200\321\226\321\227_\320\267\320\264\320\276\321\200\320\276\320\262\321\217.ps1"
 +++ "b/\320\260\321\203\320\264\320\270\321\202/\320\260\320\264\320\260\320\277\321\202\320\265\321\200\320\270/gemini/\320\277\320\265\321\200\320\265\320\262\321\226\321\200\320\272\320\260/\321\201\321\206\320\265\320\275\320\260\321\200\321\226\321\227_\320\267\320\264\320\276\321\200\320\276\320\262\321\217.ps1"
 @@ -53,7 +53,7 @@ try {
@@ -344,7 +568,7 @@ index af8674ece..12b119ebc 100644
      $script:StateDir = Join-Path $RunsDir 'state'; [void][System.IO.Directory]::CreateDirectory($script:StateDir)
      $script:SlotDir = Join-Path $RunsDir 'slots'; [void][System.IO.Directory]::CreateDirectory($script:SlotDir)
 diff --git "a/\320\260\321\203\320\264\320\270\321\202/\320\260\320\264\320\260\320\277\321\202\320\265\321\200\320\270/gemini/\320\277\320\265\321\200\320\265\320\262\321\226\321\200\320\272\320\260/\321\201\321\206\320\265\320\275\320\260\321\200\321\226\321\227_\320\272\320\276\320\264\321\203_\320\267\320\261\321\226\321\200\320\272\320\270.ps1" "b/\320\260\321\203\320\264\320\270\321\202/\320\260\320\264\320\260\320\277\321\202\320\265\321\200\320\270/gemini/\320\277\320\265\321\200\320\265\320\262\321\226\321\200\320\272\320\260/\321\201\321\206\320\265\320\275\320\260\321\200\321\226\321\227_\320\272\320\276\320\264\321\203_\320\267\320\261\321\226\321\200\320\272\320\270.ps1"
-index 3f09e39d3..6e8e1122f 100644
+index 3f09e39..6e8e112 100644
 --- "a/\320\260\321\203\320\264\320\270\321\202/\320\260\320\264\320\260\320\277\321\202\320\265\321\200\320\270/gemini/\320\277\320\265\321\200\320\265\320\262\321\226\321\200\320\272\320\260/\321\201\321\206\320\265\320\275\320\260\321\200\321\226\321\227_\320\272\320\276\320\264\321\203_\320\267\320\261\321\226\321\200\320\272\320\270.ps1"
 +++ "b/\320\260\321\203\320\264\320\270\321\202/\320\260\320\264\320\260\320\277\321\202\320\265\321\200\320\270/gemini/\320\277\320\265\321\200\320\265\320\262\321\226\321\200\320\272\320\260/\321\201\321\206\320\265\320\275\320\260\321\200\321\226\321\227_\320\272\320\276\320\264\321\203_\320\267\320\261\321\226\321\200\320\272\320\270.ps1"
 @@ -21,7 +21,8 @@ try {
@@ -369,10 +593,10 @@ index 3f09e39d3..6e8e1122f 100644
  function Get-ChainPulls { @() }
 diff --git "a/\320\260\321\203\320\264\320\270\321\202/\320\260\320\264\320\260\320\277\321\202\320\265\321\200\320\270/gemini/\320\277\320\265\321\200\320\265\320\262\321\226\321\200\320\272\320\260/\321\201\321\206\320\265\320\275\320\260\321\200\321\226\321\227_\320\272\321\226\320\275\320\265\321\206\321\214_\321\200\320\276\320\261\320\276\321\202\320\270.ps1" "b/\320\260\321\203\320\264\320\270\321\202/\320\260\320\264\320\260\320\277\321\202\320\265\321\200\320\270/gemini/\320\277\320\265\321\200\320\265\320\262\321\226\321\200\320\272\320\260/\321\201\321\206\320\265\320\275\320\260\321\200\321\226\321\227_\320\272\321\226\320\275\320\265\321\206\321\214_\321\200\320\276\320\261\320\276\321\202\320\270.ps1"
 new file mode 100644
-index 000000000..375e095b7
+index 0000000..1bc11f5
 --- /dev/null
 +++ "b/\320\260\321\203\320\264\320\270\321\202/\320\260\320\264\320\260\320\277\321\202\320\265\321\200\320\270/gemini/\320\277\320\265\321\200\320\265\320\262\321\226\321\200\320\272\320\260/\321\201\321\206\320\265\320\275\320\260\321\200\321\226\321\227_\320\272\321\226\320\275\320\265\321\206\321\214_\321\200\320\276\320\261\320\276\321\202\320\270.ps1"
-@@ -0,0 +1,427 @@
+@@ -0,0 +1,500 @@
 +﻿#Requires -Version 5.1
 +param([Parameter(Mandatory=$true)][string]$SourceDir, [switch]$Before, [switch]$AccessBefore)
 +$ErrorActionPreference = 'Stop'
@@ -500,23 +724,23 @@ index 000000000..375e095b7
 +using System.Runtime.InteropServices;
 +using System.Security.Principal;
 +using System.Text;
-+public sealed class ChainFixtureToken : IDisposable {
++using Microsoft.Win32.SafeHandles;
++public sealed class ChainFixtureToken {
 +    [DllImport("advapi32.dll", SetLastError=true)]
 +    static extern bool CreateRestrictedToken(IntPtr token, uint flags, uint ns, IntPtr s, uint np, IntPtr p, uint nr, IntPtr r, out IntPtr result);
 +    [DllImport("advapi32.dll", SetLastError=true)]
 +    static extern bool GetTokenInformation(IntPtr token, int kind, IntPtr data, int length, out int needed);
 +    [DllImport("advapi32.dll", CharSet=CharSet.Unicode, SetLastError=true)]
 +    static extern bool LookupPrivilegeName(string system, IntPtr luid, StringBuilder name, ref int length);
-+    [DllImport("kernel32.dll")] static extern bool CloseHandle(IntPtr handle);
-+    IntPtr token;
-+    WindowsImpersonationContext context;
-+    public ChainFixtureToken() {
++    public static object Run(Func<object> body) {
++        IntPtr token;
 +        using (var identity = WindowsIdentity.GetCurrent()) {
 +            if (!CreateRestrictedToken(identity.Token, 1, 0, IntPtr.Zero, 0, IntPtr.Zero, 0, IntPtr.Zero, out token))
 +                throw new Win32Exception(Marshal.GetLastWin32Error());
 +        }
-+        try { context = WindowsIdentity.Impersonate(token); }
-+        catch { CloseHandle(token); token = IntPtr.Zero; throw; }
++        using (var handle = new SafeAccessTokenHandle(token)) {
++            return WindowsIdentity.RunImpersonated(handle, body);
++        }
 +    }
 +    public static string Describe() {
 +        using (var identity = WindowsIdentity.GetCurrent()) {
@@ -538,14 +762,15 @@ index 000000000..375e095b7
 +                    if (!GetTokenInformation(identity.Token, kind, data, 4, out needed)) throw new Win32Exception(Marshal.GetLastWin32Error());
 +                    result.Append("; " + (kind == 18 ? "elevationType=" : "elevated=") + Marshal.ReadInt32(data));
 +                }
++                GetTokenInformation(identity.Token, 10, IntPtr.Zero, 0, out needed);
++                Marshal.FreeHGlobal(data); data = Marshal.AllocHGlobal(needed);
++                if (!GetTokenInformation(identity.Token, 10, data, needed, out needed)) throw new Win32Exception(Marshal.GetLastWin32Error());
++                result.Append("; tokenId=" + Marshal.ReadInt64(data).ToString("x"));
 +                return result.ToString();
 +            } finally { Marshal.FreeHGlobal(data); }
 +        }
 +    }
-+    public void Dispose() {
-+        try { if (context != null) { context.Dispose(); context = null; } }
-+        finally { if (token != IntPtr.Zero) { CloseHandle(token); token = IntPtr.Zero; } }
-+    }
++
 +}
 +'@
 +        }
@@ -563,39 +788,84 @@ index 000000000..375e095b7
 +            } catch { Write-Host "ACL ЧИТАННЯ Directory.GetFiles: $($_.Exception.GetBaseException().GetType().FullName), HResult=$($_.Exception.GetBaseException().HResult): $($_.Exception.Message)" }
 +        }
 +
-+        function With-DeniedRead([string]$Path, [scriptblock]$Body, [string]$Rights='ReadData') {
++        function With-DeniedRead([string]$Path, [scriptblock]$Body, [string]$Rights='ReadData', [switch]$DirectoryOnly) {
 +            <# Тимчасово забороняє читання лише власної фікстури; відновлює ACL/режим у finally. #>
++            function Read-FixtureAcl([string]$Entry) {
++                <# Бере лише DACL; SACL та власника фікстура не змінює. #>
++                if ([IO.Directory]::Exists($Entry)) { [IO.Directory]::GetAccessControl($Entry, 'Access') }
++                else { [IO.File]::GetAccessControl($Entry, 'Access') }
++            }
++            function Write-FixtureAcl([string]$Entry, $Acl) {
++                <# Відновлює DACL через WRITE_DAC, навіть коли READ_CONTROL заборонено. #>
++                $isDirectoryAcl = $Acl -is [Security.AccessControl.DirectorySecurity]
++                $copy = $(if ($isDirectoryAcl) { New-Object Security.AccessControl.DirectorySecurity } else { New-Object Security.AccessControl.FileSecurity })
++                # SetAccessControl пише лише змінені секції: позначаємо DACL навіть у знімку.
++                $copy.SetSecurityDescriptorSddlForm($Acl.GetSecurityDescriptorSddlForm('Access'), 'Access')
++                if ($isDirectoryAcl) { [IO.Directory]::SetAccessControl($Entry, $copy) }
++                else { [IO.File]::SetAccessControl($Entry, $copy) }
++            }
 +            $full = [IO.Path]::GetFullPath($Path)
 +            if (-not $full.StartsWith(([IO.Path]::GetFullPath($tmp) + [IO.Path]::DirectorySeparatorChar), [StringComparison]::OrdinalIgnoreCase)) { throw 'ACL поза текою стенда' }
 +            if ($env:OS -eq 'Windows_NT') {
-+                $acl = Get-Acl -LiteralPath $full
-+                $changed = Get-Acl -LiteralPath $full
 +                $sid = [Security.Principal.WindowsIdentity]::GetCurrent().User
 +                $isDirectory = [IO.Directory]::Exists($full)
-+                $inherit = $(if ($isDirectory) { 'ContainerInherit,ObjectInherit' } else { 'None' })
-+                $rule = New-Object Security.AccessControl.FileSystemAccessRule($sid, $Rights, $inherit, 'None', 'Deny')
-+                $changed.AddAccessRule($rule)
-+                $token = $null
++                # Явні дозволи дочірнього об'єкта можуть випереджати успадкований deny.
++                # Ставимо явний deny на всю власну фікстуру й відновлюємо кожний ACL.
++                $paths = @($full)
++                if ($isDirectory -and -not $DirectoryOnly) { $paths += @(Get-ChildItem -LiteralPath $full -Recurse -Force | ForEach-Object { $_.FullName }) }
++                $savedAcls = @()
++                $changedAcls = @()
 +                try {
-+                    Set-Acl -LiteralPath $full -AclObject $changed
++                    foreach ($entry in $paths) {
++                        $acl = Read-FixtureAcl $entry
++                        $savedAcls += @{path=$entry;acl=$acl}
++                        $changed = Read-FixtureAcl $entry
++                        $inherit = $(if ([IO.Directory]::Exists($entry) -and -not $DirectoryOnly) { 'ContainerInherit,ObjectInherit' } else { 'None' })
++                        $rule = New-Object Security.AccessControl.FileSystemAccessRule($sid, $Rights, $inherit, 'None', 'Deny')
++                        $changed.AddAccessRule($rule)
++                        $changedAcls += @{path=$entry;acl=$changed}
++                    }
++                    [array]::Reverse($changedAcls)
++                    foreach ($entry in $changedAcls) { Write-FixtureAcl $entry.path $entry.acl }
 +                    if ($isDirectory) { Show-DirectoryAccess $full "вихідний токен, deny $Rights" }
-+                    $token = New-Object ChainFixtureToken
-+                    Check 'токен фікстури: привілеїв backup/restore немає' ([ChainFixtureToken]::Describe() -notmatch 'SeBackupPrivilege|SeRestorePrivilege')
-+                    if ($isDirectory) { Show-DirectoryAccess $full "токен фікстури, deny $Rights" }
-+                    & $Body
++                    $script:FixtureReaders = @{}; $script:TokenMismatches = 0
++                    [ChainFixtureToken]::Run([Func[object]]{
++                        $script:FixtureToken = [ChainFixtureToken]::Describe()
++                        Check 'токен фікстури: привілеїв backup/restore немає' ($script:FixtureToken -notmatch 'SeBackupPrivilege|SeRestorePrivilege')
++                        if ($isDirectory) { Show-DirectoryAccess $full "токен фікстури, deny $Rights" }
++                        & $Body
++                    })
++                    Check 'читачі виконані під тим самим токеном, що й передумова' ($script:FixtureReaders.Count -gt 0 -and $script:TokenMismatches -eq 0)
 +                } finally {
-+                    if ($null -ne $token) { $token.Dispose() }
-+                    Set-Acl -LiteralPath $full -AclObject $acl
++                    $script:FixtureToken = $null
++                    foreach ($entry in $savedAcls) { Write-FixtureAcl $entry.path $entry.acl }
 +                }
 +            } else {
 +                $mode = & stat -c '%a' -- $full
 +                if ($LASTEXITCODE) { throw 'stat фікстури' }
 +                try {
-+                    & chmod 000 -- $full
++                    & chmod $(if ($DirectoryOnly) { '100' } else { '000' }) -- $full
 +                    if ($LASTEXITCODE) { throw 'chmod фікстури' }
 +                    & $Body
 +                } finally { & chmod $mode -- $full }
 +            }
++        }
++        function Assert-FixtureToken([string]$Reader) {
++            <# Звіряє ефективний токен саме перед справжнім читанням, а не лише в передумові. #>
++            if ($script:FixtureToken) {
++                $actual = [ChainFixtureToken]::Describe()
++                if ($actual -cne $script:FixtureToken) { $script:TokenMismatches++; throw "ACL TOKEN_MISMATCH ${Reader}: $actual" }
++                if (-not $script:FixtureReaders.ContainsKey($Reader)) { Write-Host "ACL ЧИТАЧ $Reader $actual" }
++                $script:FixtureReaders[$Reader] = $true
++            }
++        }
++        foreach ($name in @('Get-ChainBusySlots', 'Get-ChainBranchWork', 'Read-ChainOptionalFile')) {
++            $definition = (Get-Command $name).Definition.Replace("`r`n", "`n")
++            $definition = [regex]::Replace($definition, '(?m)^([^\r\n]*(?:\[IO\.(?:File|Directory)\]::(?:GetFiles|GetAttributes|ReadAllText|Open))[^\r\n]*)$', {
++                param($match)
++                "Assert-FixtureToken '$name'`n" + $match.Value
++            })
++            Set-Item -LiteralPath "Function:$name" -Value ([scriptblock]::Create($definition))
 +        }
 +        # Кожна недоступна ділянка перевіряється справжнім ACL/chmod, без підміни читача.
 +        $claudeSlots = "$tmp/claude-run/slots"
@@ -638,6 +908,16 @@ index 000000000..375e095b7
 +                    }
 +                }
 +            }
++            With-DeniedRead "$copy/repo/.git" {
++                $denied = $false
++                try { $null = [IO.Directory]::GetFiles("$copy/repo/.git", 'HEAD') }
++                catch { $denied = $_.Exception.GetBaseException() -is [UnauthorizedAccessException] }
++                Check '.git без ListDirectory: перелік справді заборонено' $denied
++                Check '.git без ListDirectory: HEAD окремо читається' ([IO.File]::ReadAllText("$copy/repo/.git/HEAD") -cmatch 'refs/heads/claude/доступ')
++                $logStart = $script:Logs.Count
++                Check '.git без ListDirectory: недоступна тека дає звичайну перевірку' (-not (Get-ChainBranchWork 'claude/доступ'))
++                Check '.git без ListDirectory: причина у журналі' (@($script:Logs | Select-Object -Skip $logStart | Where-Object { $_ -like 'стан смуги claude недоступний:*' }).Count -eq 1)
++            } -DirectoryOnly
 +            # Недоступний lock перевіряється без чужого відкритого handle: це ACL, не sharing violation.
 +            $claudeLock.Dispose()
 +            With-DeniedRead "$claudeSlots/claude-1.lock" {
@@ -664,6 +944,16 @@ index 000000000..375e095b7
 +                    Check 'ACL .git-файла: звичайний шлях і журнал' (-not $work -and @($script:Logs | Select-Object -Skip $logStart | Where-Object { $_ -like 'стан смуги claude недоступний:*' }).Count -eq 1)
 +                }
 +            }
++            With-DeniedRead "$copy/meta" {
++                $denied = $false
++                try { $null = [IO.Directory]::GetFiles("$copy/meta", 'HEAD') }
++                catch { $denied = $_.Exception.GetBaseException() -is [UnauthorizedAccessException] }
++                Check 'gitdir без ListDirectory: перелік справді заборонено' $denied
++                Check 'gitdir без ListDirectory: HEAD окремо читається' ([IO.File]::ReadAllText("$copy/meta/HEAD") -cmatch 'refs/heads/claude/доступ')
++                $logStart = $script:Logs.Count
++                Check 'gitdir без ListDirectory: звичайна перевірка' (-not (Get-ChainBranchWork 'claude/доступ'))
++                Check 'gitdir без ListDirectory: причина у журналі' (@($script:Logs | Select-Object -Skip $logStart | Where-Object { $_ -like 'стан смуги claude недоступний:*' }).Count -eq 1)
++            } -DirectoryOnly
 +            # Відмова читання Codex не скасовує активність agy у спільній теці slots.
 +            if (-not $AccessBefore) {
 +                With-DeniedRead "$GeminiRunsDir/slots/codex-1.json" {
@@ -740,7 +1030,14 @@ index 000000000..375e095b7
 +                    Check 'кілька HEAD: справний слот після недоступного збережено' ($found -ceq 'gemini-queue/слот-2/cc-test/1/p1')
 +                    Check 'кілька HEAD: виняток першого слота у журналі' (@($script:Logs | Select-Object -Skip $logStart | Where-Object { $_ -like 'стан смуги claude недоступний:*' }).Count -eq 1)
 +                }
++                if ($env:OS -eq 'Windows_NT') {
++                    # Явний дозвіл на slots не має зробити фікстуру залежною від успадкування.
++                    $acl = Get-Acl -LiteralPath "$tmp/multiple/claude-run/slots"
++                    $acl.SetAccessRuleProtection($true, $true)
++                    Set-Acl -LiteralPath "$tmp/multiple/claude-run/slots" -AclObject $acl
++                }
 +                With-DeniedRead "$tmp/multiple/claude-run" {
++                    if ($env:OS -eq 'Windows_NT') { Show-DirectoryAccess "$tmp/multiple/claude-run/slots" 'дочірня тека, той самий токен читача' }
 +                    $denied = $false
 +                    try { $null = [IO.Directory]::GetFiles("$tmp/multiple/claude-run/slots", '*.json') }
 +                    catch { $denied = $_.Exception.GetBaseException() -is [UnauthorizedAccessException] }
@@ -801,7 +1098,7 @@ index 000000000..375e095b7
 +if ($bad) { "ПІДСУМОК: ✗ $bad"; exit 1 }
 +exit 0
 diff --git "a/\320\260\321\203\320\264\320\270\321\202/\320\260\320\264\320\260\320\277\321\202\320\265\321\200\320\270/gemini/\320\277\320\265\321\200\320\265\320\262\321\226\321\200\320\272\320\260/\321\201\321\206\320\265\320\275\320\260\321\200\321\226\321\227_\320\273\320\260\320\275\321\206\321\216\320\263\320\260.ps1" "b/\320\260\321\203\320\264\320\270\321\202/\320\260\320\264\320\260\320\277\321\202\320\265\321\200\320\270/gemini/\320\277\320\265\321\200\320\265\320\262\321\226\321\200\320\272\320\260/\321\201\321\206\320\265\320\275\320\260\321\200\321\226\321\227_\320\273\320\260\320\275\321\206\321\216\320\263\320\260.ps1"
-index 9a73e1d5e..f71a55e64 100644
+index 9a73e1d..f71a55e 100644
 --- "a/\320\260\321\203\320\264\320\270\321\202/\320\260\320\264\320\260\320\277\321\202\320\265\321\200\320\270/gemini/\320\277\320\265\321\200\320\265\320\262\321\226\321\200\320\272\320\260/\321\201\321\206\320\265\320\275\320\260\321\200\321\226\321\227_\320\273\320\260\320\275\321\206\321\216\320\263\320\260.ps1"
 +++ "b/\320\260\321\203\320\264\320\270\321\202/\320\260\320\264\320\260\320\277\321\202\320\265\321\200\320\270/gemini/\320\277\320\265\321\200\320\265\320\262\321\226\321\200\320\272\320\260/\321\201\321\206\320\265\320\275\320\260\321\200\321\226\321\227_\320\273\320\260\320\275\321\206\321\216\320\263\320\260.ps1"
 @@ -20,7 +20,8 @@ try {
@@ -815,7 +1112,7 @@ index 9a73e1d5e..f71a55e64 100644
      $script:Repo = $bare; $script:NoHooks = Join-Path $tmpRoot 'no-hooks'
      [void](Invoke-Git @('fetch','-q','origin','+refs/heads/main:refs/remotes/origin/main'))
 diff --git "a/\320\260\321\203\320\264\320\270\321\202/\320\260\320\264\320\260\320\277\321\202\320\265\321\200\320\270/gemini/\320\277\320\265\321\200\320\265\320\262\321\226\321\200\320\272\320\260/\321\201\321\206\320\265\320\275\320\260\321\200\321\226\321\227_\320\273\320\260\320\275\321\206\321\216\320\263\320\260.sh" "b/\320\260\321\203\320\264\320\270\321\202/\320\260\320\264\320\260\320\277\321\202\320\265\321\200\320\270/gemini/\320\277\320\265\321\200\320\265\320\262\321\226\321\200\320\272\320\260/\321\201\321\206\320\265\320\275\320\260\321\200\321\226\321\227_\320\273\320\260\320\275\321\206\321\216\320\263\320\260.sh"
-index 9afd43a49..25c2e1494 100644
+index 9afd43a..25c2e14 100644
 --- "a/\320\260\321\203\320\264\320\270\321\202/\320\260\320\264\320\260\320\277\321\202\320\265\321\200\320\270/gemini/\320\277\320\265\321\200\320\265\320\262\321\226\321\200\320\272\320\260/\321\201\321\206\320\265\320\275\320\260\321\200\321\226\321\227_\320\273\320\260\320\275\321\206\321\216\320\263\320\260.sh"
 +++ "b/\320\260\321\203\320\264\320\270\321\202/\320\260\320\264\320\260\320\277\321\202\320\265\321\200\320\270/gemini/\320\277\320\265\321\200\320\265\320\262\321\226\321\200\320\272\320\260/\321\201\321\206\320\265\320\275\320\260\321\200\321\226\321\227_\320\273\320\260\320\275\321\206\321\216\320\263\320\260.sh"
 @@ -4,3 +4,4 @@ H=$(cd "$(dirname "$0")" && pwd); . "$H/середовище.sh"
@@ -824,7 +1121,7 @@ index 9afd43a49..25c2e1494 100644
  "${PWSH:-pwsh}" -NoProfile -File "$(wp "$H/сценарії_менше_прогонів.ps1")" -SourceDir "$(wp "$H/..")"
 +"${PWSH:-pwsh}" -NoProfile -File "$(wp "$H/сценарії_кінець_роботи.ps1")" -SourceDir "$(wp "$H/..")"
 diff --git "a/\320\260\321\203\320\264\320\270\321\202/\320\260\320\264\320\260\320\277\321\202\320\265\321\200\320\270/gemini/\320\277\320\265\321\200\320\265\320\262\321\226\321\200\320\272\320\260/\321\201\321\206\320\265\320\275\320\260\321\200\321\226\321\227_\320\274\320\265\320\275\321\210\320\265_\320\277\321\200\320\276\320\263\320\276\320\275\321\226\320\262.ps1" "b/\320\260\321\203\320\264\320\270\321\202/\320\260\320\264\320\260\320\277\321\202\320\265\321\200\320\270/gemini/\320\277\320\265\321\200\320\265\320\262\321\226\321\200\320\272\320\260/\321\201\321\206\320\265\320\275\320\260\321\200\321\226\321\227_\320\274\320\265\320\275\321\210\320\265_\320\277\321\200\320\276\320\263\320\276\320\275\321\226\320\262.ps1"
-index 0970ac484..f09c751ba 100644
+index 0970ac4..f09c751 100644
 --- "a/\320\260\321\203\320\264\320\270\321\202/\320\260\320\264\320\260\320\277\321\202\320\265\321\200\320\270/gemini/\320\277\320\265\321\200\320\265\320\262\321\226\321\200\320\272\320\260/\321\201\321\206\320\265\320\275\320\260\321\200\321\226\321\227_\320\274\320\265\320\275\321\210\320\265_\320\277\321\200\320\276\320\263\320\276\320\275\321\226\320\262.ps1"
 +++ "b/\320\260\321\203\320\264\320\270\321\202/\320\260\320\264\320\260\320\277\321\202\320\265\321\200\320\270/gemini/\320\277\320\265\321\200\320\265\320\262\321\226\321\200\320\272\320\260/\321\201\321\206\320\265\320\275\320\260\321\200\321\226\321\227_\320\274\320\265\320\275\321\210\320\265_\320\277\321\200\320\276\320\263\320\276\320\275\321\226\320\262.ps1"
 @@ -15,7 +15,8 @@ function Scenario([string]$Name, [scriptblock]$Body) {
@@ -838,7 +1135,7 @@ index 0970ac484..f09c751ba 100644
      . (Join-Path $SourceDir 'queue_lanes.ps1')
      $config = [pscustomobject]@{codex='gpt-review';agy='gemini-review';claude='cc-claude-review'}
 diff --git "a/\320\260\321\203\320\264\320\270\321\202/\320\260\320\264\320\260\320\277\321\202\320\265\321\200\320\270/gemini/\320\277\320\265\321\200\320\265\320\262\321\226\321\200\320\272\320\260/\321\201\321\206\320\265\320\275\320\260\321\200\321\226\321\227_\321\201\320\274\321\203\320\263.sh" "b/\320\260\321\203\320\264\320\270\321\202/\320\260\320\264\320\260\320\277\321\202\320\265\321\200\320\270/gemini/\320\277\320\265\321\200\320\265\320\262\321\226\321\200\320\272\320\260/\321\201\321\206\320\265\320\275\320\260\321\200\321\226\321\227_\321\201\320\274\321\203\320\263.sh"
-index 9fe905422..711487f67 100644
+index 9fe9054..711487f 100644
 --- "a/\320\260\321\203\320\264\320\270\321\202/\320\260\320\264\320\260\320\277\321\202\320\265\321\200\320\270/gemini/\320\277\320\265\321\200\320\265\320\262\321\226\321\200\320\272\320\260/\321\201\321\206\320\265\320\275\320\260\321\200\321\226\321\227_\321\201\320\274\321\203\320\263.sh"
 +++ "b/\320\260\321\203\320\264\320\270\321\202/\320\260\320\264\320\260\320\277\321\202\320\265\321\200\320\270/gemini/\320\277\320\265\321\200\320\265\320\262\321\226\321\200\320\272\320\260/\321\201\321\206\320\265\320\275\320\260\321\200\321\226\321\227_\321\201\320\274\321\203\320\263.sh"
 @@ -149,6 +149,16 @@ for N in 6 8; do
@@ -859,7 +1156,7 @@ index 9fe905422..711487f67 100644
  
  echo; [ $BAD = 0 ] && echo "ВСЕ ✓" || echo "ЗБІЙ ✗"; exit $BAD
 diff --git "a/\320\260\321\203\320\264\320\270\321\202/\320\277\321\200\320\276\320\261\320\270/\320\264\320\276\321\200\320\276\320\261\320\272\320\260_\320\274\320\265\320\275\321\210\320\265_\320\277\321\200\320\276\320\263\320\276\320\275\321\226\320\262.py" "b/\320\260\321\203\320\264\320\270\321\202/\320\277\321\200\320\276\320\261\320\270/\320\264\320\276\321\200\320\276\320\261\320\272\320\260_\320\274\320\265\320\275\321\210\320\265_\320\277\321\200\320\276\320\263\320\276\320\275\321\226\320\262.py"
-index 957fe0ea2..429298d9e 100644
+index 957fe0e..ea73051 100644
 --- "a/\320\260\321\203\320\264\320\270\321\202/\320\277\321\200\320\276\320\261\320\270/\320\264\320\276\321\200\320\276\320\261\320\272\320\260_\320\274\320\265\320\275\321\210\320\265_\320\277\321\200\320\276\320\263\320\276\320\275\321\226\320\262.py"
 +++ "b/\320\260\321\203\320\264\320\270\321\202/\320\277\321\200\320\276\320\261\320\270/\320\264\320\276\321\200\320\276\320\261\320\272\320\260_\320\274\320\265\320\275\321\210\320\265_\320\277\321\200\320\276\320\263\320\276\320\275\321\226\320\262.py"
 @@ -60,6 +60,10 @@ def виконати():
@@ -868,7 +1165,7 @@ index 957fe0ea2..429298d9e 100644
          результати.append(запис)
 +        # Діагностика ACL потрібна і в зеленому CI: локальний токен не доводить властивостей раннера.
 +        for рядок in вивід.splitlines():
-+            if рядок.startswith(('ACL ДІАГНОСТИКА ', 'ACL ТОКЕН ', 'ACL ЧИТАННЯ ')):
++            if рядок.startswith(('ACL ДІАГНОСТИКА ', 'ACL ТОКЕН ', 'ACL ЧИТАННЯ ', 'ACL ЧИТАЧ ')):
 +                print(рядок, flush=True)
          print(json.dumps(запис, ensure_ascii=False), flush=True)
          if код:
