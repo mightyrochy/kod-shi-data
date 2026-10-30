@@ -497,9 +497,15 @@ def запустити_проби(проби, корінь):
             результат[код] = True
             print(f"проба {код}: тут не ганяється (нема pwsh); тримає CI `obhortka` (Windows) · {команда}")
             continue
-        п = subprocess.run(команда, shell=True, cwd=корінь, capture_output=True, text=True, timeout=900)
-        результат[код] = п.returncode == 0
-        print(f"проба {код}: {'тримає' if п.returncode == 0 else 'НЕ ТРИМАЄ'} · {команда}")
+        середовище = {**os.environ, "PYTHONUTF8": "1", "PYTHONIOENCODING": "utf-8"}
+        try:
+            п = subprocess.run(команда, shell=True, cwd=корінь, capture_output=True, text=True, encoding="utf-8",
+                               errors="replace", env=середовище, timeout=900)
+            добре, причина = п.returncode == 0, f"код {п.returncode}: {(п.stderr or п.stdout).strip()[-200:]!r}"
+        except (OSError, subprocess.SubprocessError) as е:
+            добре, причина = False, f"не запустилась: {type(е).__name__}: {е}"
+        результат[код] = добре
+        print(f"проба {код}: {'тримає' if добре else 'НЕ ТРИМАЄ — ' + причина} · {команда}")
     return результат
 
 
@@ -546,8 +552,12 @@ def головна(арг=None):
         for адреса in нема[:40]:
             print(f"вада приладу: непокрите речення {адреса}")
         print(f"проб, що не тримають: {len(незбіг)} {sorted(незбіг)}")
+        for к in правила:
+            збої = [п for п in проби_рядка(к) if п in незбіг]
+            if збої:
+                print(f"місце через пробу: {к[0]} — проба {', '.join(збої)} не тримає, механізм не підтверджено")
         print(f"місць: {місць + len(нема)}")
-        return 0
+        return 1 if незбіг else 0
     if not (а.сесія and а.диспетчер and а.менеджер):
         п.error("потрібні --сесія, --диспетчер, --менеджер (чи --перелік)")
     усі, по_сесіях = [], []
