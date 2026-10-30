@@ -1092,7 +1092,7 @@ class Аналіз:
                                         "search", "match", "fullmatch", "exec", "matchAll")
                 return s.читач_регекс(None, тексти, місце, "регекс зі словом", текст_резульат)
             if (тексти or s.тексти(rv)) and ім in ("search", "match", "fullmatch", "findall", "split", "sub", "exec"):
-                return set(тексти | s.тексти(rv))  
+                return set(тексти | s.тексти(rv))
         # читачі слів: методи рядка
         if fn.k == "attr" and (ім in МЕТОДИ_РЯДКА_БУЛ or ім in МЕТОДИ_РЯДКА_ТЕКСТ):
             тексти_отр = s.тексти(rv)
