@@ -405,65 +405,6 @@ function Request-CloudReview([string]$Number, [string]$Head) {
     Write-WrapperLog "ланцюг: #$Number $Head — перевірка хмарним Claude, рядок диспетчерові"
 }
 
-function Get-ChainBusySlots([string]$Dir, [string]$Pattern) {
-    <# Читає JSON лише зайнятих слотів: той самий замок worker визначає активність усіх смуг.
-
-    Heartbeat може не мати lanes або лишитися старим після завершення, тому не визначає активність. #>
-    $slots = Join-Path $Dir 'slots'
-    if (-not (Test-Path -LiteralPath $slots)) { return }
-    foreach ($file in @(Get-ChildItem -LiteralPath $slots -Filter '*.json' -File -ErrorAction Stop)) {
-        if ($file.BaseName -cnotmatch $Pattern) { continue }
-        $lockPath = [IO.Path]::ChangeExtension($file.FullName, '.lock')
-        if (-not (Test-Path -LiteralPath $lockPath)) { continue }
-        try { $lock = [IO.File]::Open($lockPath, 'Open', 'ReadWrite', 'None'); $lock.Dispose(); continue }
-        catch [IO.IOException] { $null = $_ }
-        $slot = ConvertFrom-Json ([IO.File]::ReadAllText($file.FullName, $script:Utf8))
-        $slug = [string](Get-Prop $slot 'slug'); $marker = [string](Get-Prop $slot 'marker')
-        if ($slug -cnotmatch $script:SlugPattern -or $slug.Contains('..') -or $slug.EndsWith('.lock') -or
-            $marker -cnotmatch ('^gemini-queue/' + [regex]::Escape($slug) + '/[a-z0-9][a-z0-9.-]{1,63}/[1-9][0-9]*(?:/[^/]+)?$')) { throw 'CHAIN_LANE_STATE' }
-        $slot
-    }
-}
-
-function Get-ChainBranchWork([string]$Branch) {
-    <# Повертає активну позначку гілки з наявного стану смуг, без нового таймера чи реєстру.
-
-    Gemini/Codex пишуть gemini/<slug>; Claude може продовжувати іншу гілку зі state/branch-<hash>.txt.
-    Поточний HEAD копії Claude враховує і першу спробу, яка ще не зберегла гілку продовження. #>
-    if ($Branch.StartsWith('gemini/')) {
-        foreach ($slot in @(Get-ChainBusySlots $GeminiRunsDir '^(codex|agy)-[1-9][0-9]*$')) {
-            if ($Branch -ceq "gemini/$($slot.slug)") { return [string]$slot.marker }
-        }
-    }
-    if ($Branch.StartsWith('claude/')) {
-        $dir = Join-Path (Split-Path -Parent $WorkDir) 'claude-run'
-        foreach ($slot in @(Get-ChainBusySlots $dir '^claude-[1-9][0-9]*$')) {
-            $slug = [string]$slot.slug; $marker = [string]$slot.marker
-            $branches = @("claude/$slug")
-            $saved = Join-Path (Join-Path $dir 'state') ('branch-' + (Get-Sha256Hex $slug) + '.txt')
-            if (Test-Path -LiteralPath $saved) { $branches += [IO.File]::ReadAllText($saved, $script:Utf8).Trim() }
-            $copy = [string](Get-Prop $slot 'copy')
-            if ($copy) {
-                $gitDir = Join-Path (Join-Path $copy 'repo') '.git'
-                if (Test-Path -LiteralPath $gitDir -PathType Leaf) {
-                    $link = [IO.File]::ReadAllText($gitDir, $script:Utf8).Trim()
-                    if ($link -cmatch '^gitdir: (.+)$') {
-                        $gitDir = $Matches[1]
-                        if (-not [IO.Path]::IsPathRooted($gitDir)) { $gitDir = Join-Path (Join-Path $copy 'repo') $gitDir }
-                    }
-                }
-                $headPath = Join-Path $gitDir 'HEAD'
-                if (Test-Path -LiteralPath $headPath) {
-                    $ref = [IO.File]::ReadAllText($headPath, $script:Utf8).Trim()
-                    if ($ref -cmatch '^ref: refs/heads/(claude/[^/]+)$') { $branches += $Matches[1] }
-                }
-            }
-            if ($branches -ccontains $Branch) { return $marker }
-        }
-    }
-    ''
-}
-
 function Invoke-WrapperChain {
     <# PR коду -> незалежна перевірка; новий штамп збірки -> один GPU-прогін на коміті збірки. #>
     if ($DryRun) { return }
@@ -560,9 +501,6 @@ function Invoke-WrapperChain {
             $eligible = Test-RecentReviewHead $pr $heads $installed $now $hours
             Write-FileAtomic $statePath (([ordered]@{ main=$main; reviewed=$reviewed; live_active=$liveActive; live_since=$liveSince; live_stamps=@($liveStamps.Keys); live_pending=@($livePending); reviews=@($seen.Keys); installed_utc=$installed.ToString('o'); heads=$heads }) | ConvertTo-Json -Compress -Depth 5)
             if (-not $eligible) { continue }
-            $work = Get-ChainBranchWork ([string]$pr.head.ref)
-            if ($work) { Write-WrapperLog "ланцюг: #$n $head — смуга ще пише ($work), перевірка після кінця"; continue }
-            Write-WrapperLog "ланцюг: #$n $head — активної смуги нема, звичайна перевірка голови"
             if (-not $reviewed.ContainsKey($n)) {
                 foreach ($key in @($seen.Keys | Where-Object { $_ -cmatch ('^' + $n + ' [0-9a-f]{40} ') })) {
                     $oldHead = ($key -split ' ')[1]
