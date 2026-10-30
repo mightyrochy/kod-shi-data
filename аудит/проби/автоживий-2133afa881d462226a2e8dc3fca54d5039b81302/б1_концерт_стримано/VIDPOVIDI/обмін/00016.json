@@ -1,0 +1,27 @@
+{
+ "версія": 1,
+ "запит": {
+  "model": "qwen/qwen3.5-9b",
+  "max_tokens": 4000,
+  "messages": [
+   {
+    "role": "user",
+    "content": [
+     {
+      "type": "text",
+      "text": "{\"task\": {\"role\": \"You read the description of an outfit and list its items as data.\", \"rules\": [\"One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.\", \"One item carries one thing — of two alternatives list the first; a note in brackets is not an item.\", \"Slot \\\"accessory\\\" is for an item no other slot fits.\", \"\\\"is_outfit\\\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note.\"], \"limits\": [\"Rely only on the input: do not invent what it does not contain.\", \"The answer is one JSON object following \\\"answer_schema\\\", without explanations and without ```.\"], \"language\": \"English\", \"answer\": \"ITEM_LIST\", \"answer_schema\": {\"is_outfit\": \"yes|no\", \"items\": [{\"name\": \"<what the item is>\", \"details\": \"<its cut, length and fabric>\", \"slot\": \"top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory\", \"color_hex\": \"<#rrggbb or null>\", \"worn\": \"<true, or false when the description says the outfit goes without it>\"}]}, \"input\": [\"\\\"description\\\" — the outfit description\"]}, \"description\": \"Black silk blouse, classic fit, cropped length at the waist, hex #14120f, smooth woven fabric.\\nDark washed denim trousers, straight leg cut, full length reaching the ankle, hex #1c1b1a, sturdy cotton twill.\\nLeather structured jacket, tailored fit with notched lapels, hip length ending above the hip bone, hex #2d251e, heavy weight wool blend.\\nBlack leather ankle boots, pointed toe, block heel height of 7 cm, hex #0f0c0a, soft supple calfskin.\\nSilver geometric pendant necklace, medium chain length, hex #e8e6da, polished sterling silver.\\nSmall black clutch bag, rigid box shape, hex #0a0a0a, structured vegan leather with gold hardware.\\n\\nThis outfit works because it balances the energetic atmosphere of a rock concert with your requested classic and restrained style through tailored silhouettes and dark tones. The denim trousers provide comfort for standing in the crowd while the leather jacket adds necessary texture and an edge suitable for the venue. Choosing neutral colors allows you to let any stage lights or band visuals stand out without clashing, creating a cohesive look from evening till late night.\"}"
+     }
+    ]
+   }
+  ],
+  "temperature": 1
+ },
+ "відповідь": {
+  "status": 200,
+  "contentType": "application/json",
+  "headers": {
+   "x-model": "qwen/qwen3.5-9b"
+  },
+  "body": "{\"content\":[{\"type\":\"text\",\"text\":\"{\\n  \\\"is_outfit\\\": \\\"yes\\\",\\n  \\\"items\\\": [\\n    {\\n      \\\"name\\\": \\\"Black silk blouse\\\",\\n      \\\"details\\\": \\\"Classic fit, cropped length at the waist, smooth woven fabric\\\",\\n      \\\"slot\\\": \\\"top\\\",\\n      \\\"color_hex\\\": \\\"#14120f\\\",\\n      \\\"worn\\\": true\\n    },\\n    {\\n      \\\"name\\\": \\\"Dark washed denim trousers\\\",\\n      \\\"details\\\": \\\"Straight leg cut, full length reaching the ankle, sturdy cotton twill\\\",\\n      \\\"slot\\\": \\\"bottom\\\",\\n      \\\"color_hex\\\": \\\"#1c1b1a\\\",\\n      \\\"worn\\\": true\\n    },\\n    {\\n      \\\"name\\\": \\\"Leather structured jacket\\\",\\n      \\\"details\\\": \\\"Tailored fit with notched lapels, hip length ending above the hip bone, heavy weight wool blend\\\",\\n      \\\"slot\\\": \\\"outerwear\\\",\\n      \\\"color_hex\\\": \\\"#2d251e\\\",\\n      \\\"worn\\\": true\\n    },\\n    {\\n      \\\"name\\\": \\\"Black leather ankle boots\\\",\\n      \\\"details\\\": \\\"Pointed toe, block heel height of 7 cm, soft supple calfskin\\\",\\n      \\\"slot\\\": \\\"shoes\\\",\\n      \\\"color_hex\\\": \\\"#0f0c0a\\\",\\n      \\\"worn\\\": true\\n    },\\n    {\\n      \\\"name\\\": \\\"Silver geometric pendant necklace\\\",\\n      \\\"details\\\": \\\"Medium chain length, polished sterling silver\\\",\\n      \\\"slot\\\": \\\"necklace\\\",\\n      \\\"color_hex\\\": \\\"#e8e6da\\\",\\n      \\\"worn\\\": true\\n    },\\n    {\\n      \\\"name\\\": \\\"Small black clutch bag\\\",\\n      \\\"details\\\": \\\"Rigid box shape, structured vegan leather with gold hardware\\\",\\n      \\\"slot\\\": \\\"bag\\\",\\n      \\\"color_hex\\\": \\\"#0a0a0a\\\",\\n      \\\"worn\\\": true\\n    }\\n  ]\\n}\"}],\"usage\":{\"input_tokens\":610,\"output_tokens\":425},\"stop_reason\":\"end_turn\"}"
+ }
+}
