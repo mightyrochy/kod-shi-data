@@ -131,5 +131,22 @@
   "джерела": {
    "zhnyvarka/контроль.py": "import json\nfrom bs4 import BeautifulSoup\np=BeautifulSoup(html,'html.parser')\nр={'назва':p.get_text()}\njson.dump({'картка':р},open('сирі/a.jsonl','w'))\n"
   }
+ },
+ {
+  "назва": "форматування не вкладає контейнер у запис",
+  "пункти": [],
+  "джерела": {
+   "джерела/контроль.py": "import json\nfor р in json.load(open('catalog.json')):\n    службове={'стан':'idle'}\n    р['id']='%s' % (службове,)\n    службове['стан']='failed'\n    if службове['стан']=='failed': print('так')\n"
+  }
+ },
+ {
+  "назва": "JS title є полем запису",
+  "пункти": [
+   1,
+   3
+  ],
+  "джерела": {
+   "джерела/показ/контроль.js": "const items=await(await fetch('catalog.json')).json();for(const r of items){r.тип=r.title.includes('coat')?'coat':'dress_generic';}"
+  }
  }
 ]

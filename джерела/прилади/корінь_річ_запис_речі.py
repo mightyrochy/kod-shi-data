@@ -104,6 +104,7 @@ class Реєстр:
 
     def __init__(s, корінь):
         s.родини, s.назви_ua, s.поля = {}, {}, set()
+        s.кодові_поля = {}
         таб = {}
         for ім in ("внутрішня_мова.schema.json", "каталог_розбір.schema.json"):
             try:
@@ -157,12 +158,20 @@ class Реєстр:
             for к, v in sorted(o.items()):
                 if к == "properties" and isinstance(v, dict):
                     s.поля |= set(v)
+                    for ім, схема in v.items():
+                        if isinstance(схема, dict) and isinstance(схема.get("enum"), list):
+                            коди = {зн for зн in схема["enum"] if isinstance(зн, str)}
+                            if коди:
+                                s.кодові_поля.setdefault(ім, set()).update(коди)
+                                s.родини.setdefault("поле:" + ім, set()).update(коди)
                 s._властивості(v)
         elif isinstance(o, list):
             for v in o:
                 s._властивості(v)
 
     def дозволені(s, ключ):
+        if ключ in s.кодові_поля:
+            return base_or(s.кодові_поля[ключ])
         р = s.ключі_родин.get(ключ)
         база = s.родини.get(р, set()) | s.назви_ua.get(р, set()) if р else s.коди | s.назви
         return base_or(база)
@@ -281,7 +290,7 @@ class Аналіз:
                 s.вкладені.setdefault((ф.parent.fid, ф.name), []).append(ф)
         s.env, s.ret, s.об = {}, {}, {}
         s.лічильник = 0
-        s.ТЕКСТОВІ_КЛЮЧІ, s.КОДОВІ_КЛЮЧІ = set(), set(s.реєстр.ключі_родин)
+        s.ТЕКСТОВІ_КЛЮЧІ, s.КОДОВІ_КЛЮЧІ = set(), set(s.реєстр.ключі_родин) | set(s.реєстр.кодові_поля)
         s.КОДИ_ЗАПИСІВ, s.ЧИТАНІ_З_ФАЙЛУ = {}, set()
         s.КОДОВІ_ДАНІ = set()      # ключі, що їх у запис пишуть кодами (роль з даних, не з переліку написань)
         s.записи = {}              # (id вузла, id об'єкта, ключ) → (О, ключ, значення, файл, рядок, умови D)
@@ -427,6 +436,18 @@ class Аналіз:
     def тексти(s, вал):
         return {v for v in вал if not об(v) and v[0] in ТЕКСТ}
 
+    def скаляр(s, вал):
+        """Рядкове перетворення зберігає походження тексту, не тотожність контейнера."""
+        р, черга, бачені = set(), list(вал), set()
+        while черга:
+            в = черга.pop()
+            if not об(в):
+                р.add(в)
+            elif в.id not in бачені and в.вид in ("tuple", "list", "pairs"):
+                бачені.add(в.id)
+                черга.extend(в.пол.get("*", ()))
+        return р
+
     def _ev(s, е, ф):
         k = е.k
         if k == "name":
@@ -434,7 +455,7 @@ class Аналіз:
         if k == "str":
             if not isinstance(е.v, str) or len(е.v) > 80 or not е.v:
                 return frozenset()
-            return frozenset({("L", е.v)})
+            return frozenset({("L", е.v)} | ({("F", е.v)} if s.ланцюги.файл({("L", е.v)}) else set()))
         if k == "const" or k == "regex":
             if k == "regex" and слово_в_регексі(е.v):
                 о = s.новий(е, "rx", ф)
@@ -445,6 +466,8 @@ class Аналіз:
             р = set()
             for а in е.a:
                 р |= s.ev(а, ф)
+            if k == "fstr" or (k == "bin" and any(а.k in ("str", "fstr") for а in е.a)):
+                р = s.скаляр(р)
             return frozenset(р)
         if k == "not":
             return frozenset(s.лише(s.ev(е.a[0], ф), "D"))
@@ -574,7 +597,7 @@ class Аналіз:
                 if v[0] in ТЕКСТ and ключ is None:
                     р.add(v)
                 continue
-            if ключ in s.ланцюги.стандарти:
+            if ключ in s.ланцюги.стандарти and ключ not in s.ТЕКСТОВІ_КЛЮЧІ:
                 р.add(("S", місце))
                 continue
             if ключ is None:
@@ -602,6 +625,8 @@ class Аналіз:
                 р.add(("C", місце))
             elif v.вид in ("feed", "page", "node"):
                 р |= {v}
+        if s.код_ключ(ключ) and any(об(в) and в.рек for в in вал):
+            р = {в for в in р if об(в) or в[0] not in ТЕКСТ}
         return р
 
     def копія_запису(s, о, вал, ф, рядок):
@@ -644,7 +669,8 @@ class Аналіз:
         elif ім in ("parent", "children", "contents", "next_sibling", "previous_sibling", "tbody", "head"):
             р |= {s.звузити(е, ф, v) for v in sorted((x for x in bv if об(x) and x.вид in ("page", "node")), key=lambda x: x.id)}
             р |= {v for v in bv if об(v) and v.вид == "feed"}
-        р |= s.поле(bv, ім, місце) if ім not in АТРИБУТИ_ТЕКСТУ else set()
+        поля = bv if ім not in АТРИБУТИ_ТЕКСТУ else {в for в in bv if not об(в) or в.вид not in ("page", "node", "feed", "dom")}
+        р |= s.поле(поля, ім, місце)
         return frozenset(р)
 
     def підстановка(s, е, ф):
@@ -801,6 +827,10 @@ class Аналіз:
             s.ланцюги.перенести(повернене, g.fid, ф.fid, (ф.file, е.line))
             s.файловий_договір(g, av, ф, е)
             р |= повернене
+            if g.mod == "покроковик" and g.name == "ганяти" and av:
+                # Абстрактне значення генератора — його return, не проміжні yield.
+                р |= av[0]
+                s.ланцюги.перенести(av[0], g.fid, ф.fid, (ф.file, е.line))
         # 2) вбудовані значення
         р |= s.вбудований(е, fn, ім, арги, av, kv, імена, rv, усі, ф, місце, bool(кандидати))
         return frozenset(р)
@@ -859,13 +889,12 @@ class Аналіз:
             зсув = 1
             if отримувач is not None and п:
                 s.писати_ім(g, п[0], set(отримувач))
-        рідко = s.виклики_за_іменем.get(g.name, 0) <= МЕЖА_ТЕГІВ
         for i, v in enumerate(av):
             if i + зсув < len(п):
-                s.писати_ім(g, п[i + зсув], set(v) if рідко else {x for x in v if об(x)})
+                s.писати_ім(g, п[i + зсув], set(v))
         for ім, v in zip(імена, kv):
             if ім in п:
-                s.писати_ім(g, ім, set(v) if рідко else {x for x in v if об(x)})
+                s.писати_ім(g, ім, set(v))
         for ім, вираз in zip(п[-len(g.defaults):] if g.defaults else (), g.defaults):
             if п.index(ім) >= len(av) + зсув and ім not in імена:
                 s.писати_ім(g, ім, set(s.ev(вираз, g.parent or g)))
@@ -1120,12 +1149,14 @@ class Аналіз:
                 return set()
             if fn.k == "attr" and ім in ("sort",):
                 return set()
+            if ім in ("str", "format", "format_map", "join", "encode", "decode", "lower", "upper", "casefold", "strip", "lstrip", "rstrip", "trim", "toString"):
+                return s.скаляр(set(rv) | усі)
             рез = {x for x in (set(rv) | усі) if not об(x) or x.вид in ("rec", "feed", "page", "node", "dict", "list", "tuple", "pairs")}
             return рез
         # конструктори й невідомі функції: нічого, окрім слідів шляху й тексту
         if є_користувацька:
             return set()
-        return {x for x in (set(rv) | усі) if not об(x) and x[0] in ("L", "H", "U") + ТЕКСТ + ("C",) and (x[0] != "L" or (isinstance(x[1], str) and len(x[1]) < 200))}
+        return {x for x in (set(rv) | усі) if not об(x) and x[0] in ("L", "H", "U", "F") + ТЕКСТ + ("C",) and (x[0] != "L" or (isinstance(x[1], str) and len(x[1]) < 200))}
 
     @staticmethod
     def шлях_запису(вал):
@@ -1232,13 +1263,7 @@ class Аналіз:
                             s.змін += 1
                     elif оп.k == "iter":
                         s.призначити(оп.t, s.елемент(s.ev(оп.val, ф)), ф, оп)
-                if ф.mod == "фід_розбір" and ф.name == "читати_yml_кроками" and ф.params:
-                    файл = s.ланцюги.файл(s.env.get((ф.fid, ф.params[0]), ()))
-                    читання = [в.line for оп in ф.stmts for в in вирази(оп.val)
-                               if в.k == "call" and в.a[0].k == "name" and в.a[0].v == "open"]
-                    if файл and читання:
-                        s.ланцюги.якір(s.ret.get(ф.fid, ()), ф, min(читання), файл,
-                                      "читання", ("0", "*"))
+                s.ланцюги.читач_формату(ф)
             s.ланцюги.зєднати_жнива()
             if os.environ.get("РІЧ_ПРОФІЛЬ"):
                 print("ітерація %d; змін %d; об'єктів %d" % (s.ітерацій, s.змін, len(s.об)), file=sys.stderr, flush=True)
@@ -1288,7 +1313,8 @@ def обчислити(a):
         к = (файл, рядок, пункт)
         if к not in м or чому < м[к]:
             м[к] = чому
-            a.свідки[к] = dict(доказ, ланки=доказ["ланки"] + [f"{файл}:{рядок}"])
+            ланки = ([f"{файл}:{рядок}"] + доказ["ланки"] if доказ["напрям"] == "запис" else доказ["ланки"] + [f"{файл}:{рядок}"])
+            a.свідки[к] = dict(доказ, ланки=ланки)
     реєстр = a.реєстр
     for _, (о, ключ, вал, файл, рядок) in sorted(a.записи.items(), key=lambda kv: (kv[1][3], kv[1][4], str(kv[1][1]), kv[1][0].id)):
         область = a.області_подій.get((о.id, файл, рядок))
