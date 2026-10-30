@@ -61,6 +61,8 @@ def причина(нотатка):
         return "BOT_CHALLENGE"
     if "sitemap +0" in н:
         return "EMPTY_SOURCE"
+    if "стеля" in н:
+        return "CEILING"
     if "timeout" in н or "тайм" in н:
         return "TIMEOUT"
     if "збій" in н:

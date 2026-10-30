@@ -1573,6 +1573,9 @@ def факти_з_картки(html_текст, url, селектори=None):
     except Exception as e:                            # noqa
         ф["dom_помилка"] = "%s: %s" % (type(e).__name__, str(e)[:80])   # П15: не мовчати, що DOM не читався
         return ф
+    # `<base href>` (25union: `/image/cache/…` від кореня, не від картки — 542 хибні адреси фото, 5629)
+    база_href = суп.find("base", href=True)
+    url_бази = urljoin(url, база_href["href"].strip()) if база_href else url
     for s in суп(["script", "style", "noscript", "svg"]):
         s.decompose()
     h1 = суп.find("h1")
@@ -1707,7 +1710,7 @@ def факти_з_картки(html_текст, url, селектори=None):
             if м:
                 hex_ = "#%02x%02x%02x" % tuple(int(x) for x in м.groups())
         img = ел.find("img") if ел.name != "img" else ел
-        кар = канонічна(img.get("data-src") or img.get("src") or "", url) if img else None
+        кар = канонічна(img.get("data-src") or img.get("src") or "", url_бази) if img else None
         if not hex_ and not кар:
             continue
         підпис = розекранувати(ел.get("title") or ел.get("aria-label") or ел.get("data-title") or ел.get("data-value") or
@@ -1766,7 +1769,7 @@ def факти_з_картки(html_текст, url, селектори=None):
             w = ел.get("width")
             if w and str(w).isdigit() and int(w) <= 300:
                 continue
-            картинки.extend(оригінал_фото(канонічна(v, url)) for v in адреси)
+            картинки.extend(оригінал_фото(канонічна(v, url_бази)) for v in адреси)
         для = [x for x in dict.fromkeys(картинки) if re.search(r"\.(jpe?g|png|webp|avif)(\?|$)|/image|/photo|/img|/media|/upload", x, re.I)]
         для = _найбільший_на_кадр(для)
         if для:
