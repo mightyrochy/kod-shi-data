@@ -833,7 +833,7 @@ def прийняти(розмітка, відповідь):
              "internal language — JSON with codes. You make no decisions.",
         # КВ-1: дотик пояснює слова («так, через колір»), але поля не заповнює — інакше
         # «слова дали те саме, що кнопки» вимірювало б переписаний дотик, а не її слова
-        вхід=(("items", "the items of this look: id is a local number for this call, slot, kind and color are codes"),
+        вхід=(("items", "items of this look: local id, slot, kind, color"),
               ("tapped", "what she tapped on the card: wear, mine, aspects with a sign (plus — what worked, minus — "
                          "what bothers her) and the card question she wrote to (question)",
                "only to understand her words: a field her words say nothing about is not copied from it"),
@@ -860,7 +860,7 @@ def прийняти(розмітка, відповідь):
             "reasons": "what bothers her in the look",
             "good": "what worked in the look or what she likes",
             "about_items": "the items of this look she spoke about",
-            "about_items.id": "the local number from \"items.id\", copied as a string",
+            "about_items.id": "local id from \"items\"",
             "about_items.opinion": "what she thinks of this item",
             "about_items.reasons": "why",
             "shift": "where, by her words, to move the next look of this outing",
