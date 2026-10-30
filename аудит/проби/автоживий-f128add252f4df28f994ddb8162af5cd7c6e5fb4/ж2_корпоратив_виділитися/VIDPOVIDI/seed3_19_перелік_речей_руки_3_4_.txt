@@ -1,0 +1,37 @@
+── ПРОМПТ (2195 симв.) ──
+{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.", "One item carries one thing — of two alternatives list the first; a note in brackets is not an item.", "Slot \"accessory\" is for an item no other slot fits.", "\"is_outfit\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "ITEM_LIST", "answer_schema": {"is_outfit": "yes|no", "items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory", "color_hex": "<#rrggbb or null>", "worn": "<true, or false when the description says the outfit goes without it>"}]}, "input": ["\"description\" — the outfit description"]}, "description": "Velvet sheath dress in a deep emerald green with a subtle satin bias cut, midi length, forest green, heavy velvet.\nStrappy gold-tone stilettos, pump style, metallic gold, patent leather with metal hardware.\nClutch handbag in matching velvet, rectangular shape, forest green, suede finish.\nPear drop earrings set in white gold and diamonds, teardrop shape, brilliant cut diamonds, polished white gold metal.\n\nThis emerald velvet ensemble transforms a standard restaurant setting into a memorable winter evening look that honors the New Year theme without being overly heavy for autumn weather. The rich metallic gold accessories and bold jewel tone ensure you stand out as requested, creating an electric contrast against typical dark holiday party attire. The midi silhouette strikes the perfect balance between elegance and comfort required for a cocktail dress code, allowing you to be expressive and confident throughout the celebration."}
+
+── ВІДПОВІДЬ (791 симв., 4.6 с, HTTP 200) ──
+{
+  "is_outfit": "yes",
+  "items": [
+    {
+      "name": "sheath dress",
+      "details": "subtle satin bias cut, midi length, heavy velvet fabric",
+      "slot": "dress",
+      "color_hex": "#004d25",
+      "worn": true
+    },
+    {
+      "name": "stilettos",
+      "details": "strappy pump style with patent leather upper and metal hardware",
+      "slot": "shoes",
+      "color_hex": "#FFD700",
+      "worn": true
+    },
+    {
+      "name": "clutch handbag",
+      "details": "rectangular shape with suede finish",
+      "slot": "bag",
+      "color_hex": "#004d25",
+      "worn": true
+    },
+    {
+      "name": "drop earrings",
+      "details": "pear shaped set in white gold with brilliant cut diamonds",
+      "slot": "earrings",
+      "color_hex": null,
+      "worn": true
+    }
+  ]
+}
