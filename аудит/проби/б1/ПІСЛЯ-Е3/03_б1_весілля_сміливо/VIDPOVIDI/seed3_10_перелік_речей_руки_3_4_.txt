@@ -1,0 +1,37 @@
+── ПРОМПТ (2205 симв.) ──
+{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.", "One item carries one thing — of two alternatives list the first; a note in brackets is not an item.", "Slot \"accessory\" is for an item no other slot fits.", "\"is_outfit\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "ITEM_LIST", "answer_schema": {"is_outfit": "yes|no", "items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory", "color_hex": "<#rrggbb or null>", "worn": "<true, or false when the description says the outfit goes without it>"}]}, "input": ["\"description\" — the outfit description"]}, "description": "Silk sheath dress, empire waist cut, midi length in sunset orange (#E67E22), chiffon and satin blend.\nStrappy sandal heels, pointed toe cut, mid-calf height in nude pink (#D4A59A), leather.\nPearl drop earrings, round shape, 3 cm length in white pearl (#FFFDD0), freshwater cultured pearl; velvet clutch bag, structured rectangular cut, compact size in charcoal grey (#36454F), fine wool felt.\n\nThis outfit works because the sunset orange hue creates a warm, radiant contrast against summer daylight that immediately draws attention without being harsh. The empire waist silhouette offers a flattering, comfortable fit that elongates the legs while maintaining elegance for an outdoor ceremony followed by a restaurant dinner. By combining a noble silk fabric with delicate strappy heels and pearl jewelry, the look balances bold color choices with timeless sophistication, perfectly fulfilling her wish to stand out gracefully at her sister's wedding."}
+
+── ВІДПОВІДЬ (815 симв., 6.5 с, HTTP 200) ──
+{
+  "is_outfit": "yes",
+  "items": [
+    {
+      "name": "sheath dress",
+      "details": "empire waist cut, midi length in silk and chiffon satin blend",
+      "slot": "dress",
+      "color_hex": "#E67E22",
+      "worn": true
+    },
+    {
+      "name": "sandal heels",
+      "details": "strappy cut, pointed toe, mid-calf height in leather",
+      "slot": "shoes",
+      "color_hex": "#D4A59A",
+      "worn": true
+    },
+    {
+      "name": "pearl drop earrings",
+      "details": "round shape, 3 cm length in freshwater cultured pearl",
+      "slot": "earrings",
+      "color_hex": "#FFFDD0",
+      "worn": true
+    },
+    {
+      "name": "clutch bag",
+      "details": "structured rectangular cut, compact size in fine wool felt",
+      "slot": "bag",
+      "color_hex": "#36454F",
+      "worn": true
+    }
+  ]
+}

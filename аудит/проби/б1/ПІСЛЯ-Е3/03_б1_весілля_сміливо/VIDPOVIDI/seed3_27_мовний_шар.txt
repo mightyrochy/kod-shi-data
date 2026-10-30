@@ -1,0 +1,65 @@
+── ПРОМПТ (8817 симв.) ──
+Ти — перекладачка в застосунку-стилістці. Ти пишеш природною українською тексти, які зараз побачить жінка. Рішень не приймаєш, на питання не відповідаєш, змісту не міняєш.
+
+Вхід — JSON-об'єкт: ключ — номер тексту н, значення — текст, який склали код та інші моделі.
+
+Ключі відповіді — ті самі, що у вході, кожен: номер н тексту, значення — рядок, той самий зміст природною українською, без англійських слів і кодів; ПЕРЕКЛАДАЙ КОЖНЕ англійське слово, навіть одне посеред українського речення; латиницею лишай лише назви крамниць і брендів, «V-подібний» і «den»; текст, що вже природний і до неї на «ти», — без змін, а український текст на «ви» перепиши на «ти», решту лиши слово в слово.
+
+Вид кожної речі — теж зміст: річ у перекладі — та сама, що у вході, а не схожа чи сусідня. ankle boots — черевики чи ботильйони, boots — чоботи, heeled — на підборах, а не туфлі, pumps — туфлі-човники, loafers — лофери; pendant — кулон чи підвіска, necklace — намисто чи ланцюжок, а не каблучка, сережки чи браслет; ring — каблучка; earrings — сережки. Українські назви речей у вході (назви з крамниці, найчастіше перед « — ») переписуй літера в літеру: не міняй, не переставляй і не додавай у них жодного слова.
+
+Про жінку — лише до неї, на «ти» (ти, тебе, тобі, твій, твоя; хочеш, скинеш; наказ однини: розкажи, оберни, тримай, дай), і в питаннях теж: you, your, she, her про неї — «ти», «твій» (her skin tone — твій тон шкіри; when she turns her head — коли ти повертаєш голову; she looks taller — ти виглядаєш вищою), англійський наказ — наказом однини; «вона», «її» — лише про річ (сукню, сумку, куртку). Говорить стилістка — одна жінка: про себе — від першої особи однини й у жіночому роді (я підібрала, я б додала), не «ми», не від імені застосунку чи коду і ніколи словами самої жінки.
+
+Мова: літературна українська, як у текстах українських крамниць одягу. Кожне українське слово — літерами лише української абетки, без жодної латинської літери чи стороннього знака всередині слова. Кожне речення — одна остаточна версія, без виправлень посеред тексту. Словничок нижче — лише як перекласти англійське слово, коли воно є у вході; це не зміст: річ, тканина чи колір, яких у вході нема, у тексті не з'являються. Звичні українські назви для слів англійського джерела: trousers, pants — штани; dressy, dressier — ошатний, ошатніше; look, outfit — образ; taupe — сіро-бежевий; loose — вільний; suede — замша (жіночий рід); slip dress — сукня-комбінація; camel — кемел (колір). Назви речей і кольорів, які дала крамниця, — як є.
+
+Перевір кожне слово ДО відповіді: до неї — лише «ти», жодного «ви», «ваш» і наказу множини, і про неї жодного «вона», «її», «їй», жодне слово не стоїть двічі поспіль, кожна річ — того самого виду, що у вході (річ образу — іменником її назви з переліку, коли він є, і слова при ній узгоджені з цим іменником), а українська назва речі — слово в слово. Відповідь — рівно ОДИН JSON-об'єкт і нічого після нього: другої, виправленої версії, приміток і пояснень не пиши — помилку виправ у тому самому об'єкті.
+
+Речі образу — перелік, який жінка бачить на картці (номер речі — назва біля неї):
+1 — Краватка-пояс вузька чорна · kind code: belt · colour code: black · about it: text н=1
+2 — Костюм піджак однобортний та палаццо синій · kind code: suit · colour code: blue · about it: text н=2
+3 — Туфлі жіночі Tourni · kind code: dress_shoes · colour code: black · about it: text н=3
+4 — Сережки "Pure" · kind code: earrings · colour code: white · about it: text н=4
+5 — Кольє-трансформер із білого золота · kind code: collar_necklace · colour code: white · about it: text н=5
+6 — Жіноча сумка тоут шкіряна чорна · kind code: tote · colour code: black · about it: text н=6
+When a text speaks of an item of the list, call it by the kind in its name — the same noun in the right case (list «Тренч бежевий подовжений» — text «тренч», «Светр в'язаний оверсайз» — «светр»), not by another kind or a synonym of the English word. Make every adjective, pronoun and verb with the item agree with that noun in gender and number («Тренч бежевий» — «бежевий тренч, який…»; «Лофери шкіряні» — «шкіряні лофери, які…»). A name you translate in this same call (text н=K): give it one noun and call the item by it, in agreement, in every text. A text the list gives as about an item (about it: text н=M) speaks of that one item, and so does every other text where the English names it. The colour of an item of the list is the colour of its name: keep the shop's colour word from its name; when its name has no colour word, write the Ukrainian name of its colour code. The English colour words for that item are the stylist's impression of a photo: do not turn them into a colour of their own — the item's colour stands in their place. Colours of its details (trim, strap, buttons, print), its fabric and the rest — translate from the text. The list is for names only: an item the English text does not name is not added to the translation — neither to the description nor to the advice. The kind code next to an item (kind code: …) is the code of its kind: every noun for that item, in every text, names this kind and no other, whatever word the English text uses; a code ending in _generic names only the family (dress_generic — a dress, bag_generic — a bag). The kind noun of its name and this code are the same kind: write the name's noun.
+
+Colour codes: black — чорний; blue — синій; white — білий.
+
+ТЕКСТИ:
+{
+"1": "This slim black belt is worn around your neck to create an edgy yet elegant focal point at your neckline. Its smooth texture contrasts beautifully with the navy suit, adding a touch of modern flair to your silhouette.",
+"2": "The navy blue two-piece suit features a tailored single-breasted blazer and flowing wide-leg palazzo trousers. The deep hue provides a sophisticated backdrop for your skin tone while the generous cuts offer comfort throughout your outdoor wedding day.",
+"3": "These black pointed-toe stiletto pumps feature a refined bow detail on the vamp and a sleek mid-height heel. The glossy finish complements the matte texture of your suit, creating visual interest while remaining appropriate for dancing at a wedding reception.",
+"4": "The pearl drop earrings combine lustrous irregular pearls with polished silver hoops for a contemporary twist on classic elegance. Their size provides just the right amount of drama without overpowering your other accessories.",
+"5": "This delicate gold chain necklace features a minimalist design with an adjustable tassel pendant that adds subtle movement and metallic shimmer to your neckline. Its slender profile keeps your look refined without competing with your earrings.",
+"6": "The structured black leather tote bag offers clean lines and dual top handles for effortless elegance. Its substantial size makes it perfect for carrying essentials during the wedding day while maintaining a polished aesthetic appropriate for both outdoor ceremony and indoor reception settings.",
+"7": "Your outfit is a striking choice for an outdoor August wedding ceremony followed by dinner. I chose the navy blue wide-leg suit set to give you a polished silhouette that feels both elegant and comfortable in the warm evening air, while the black accessories ground your look with sophistication. The gold hoops add a touch of classic charm against the deep blue, and the sleek black pumps offer the perfect blend of height and ease for standing through the ceremony or dining afterward.",
+"8": "If it gets warm during the outdoor ceremony, consider taking off your jacket to reveal the crisp white blouse underneath.",
+"9": "For the transition to dinner, you can leave everything on as is—the suit works beautifully in a restaurant setting.",
+"10": "Краватка-пояс вузька чорна — A wide belt at the natural waist defines your shape without clinging, solving the 'belt_waist_not_defined' finding while keeping the green break you wanted.",
+"11": "Костюм піджак однобортний та палаццо синій — A navy suit jacket and palazzo pants provide a formal structure that grounds the bold green, ensuring the outfit matches the 'formal' occasion level.",
+"12": "Костюм піджак однобортний та палаццо синій — Navy replaces the dress slot to satisfy the 'scheme_families_missing_on_big_items' finding for the triad scheme, bringing the missing family onto a large item.",
+"13": "Туфлі жіночі Tourni — Black leather pumps match the tone of the black base to continue the leg line and fix the 'shoes_cut_leg_line' issue.",
+"14": "Краватка-пояс вузька чорна — The narrow belt defines the waist formally without clinging, solving the structural issue while allowing the bold green shoes to act as your intended statement piece.",
+"15": "Сережки \"Pure\" — I added white earrings to echo the lightness near your face, which is recommended for deep skin and formal occasions."
+}
+
+── ВІДПОВІДЬ (3239 симв., 26.5 с, HTTP 200) ──
+```json
+{
+  "1": "Ця вузька чорна краватка-пояс носиться навколо шиї, щоб створити ефектний і водночас елегантний акцент на лінії твоєї шиї. Її гладка текстура чудово контрастує з темно-синім костюмом, додаючи сучасного шарму до твого силуету.",
+  "2": "Темно-синій двобортний піджак і широкі штани палаццо створюють елегантний комплект. Глибокий відтінок чудово поєднується з тоном твоєї шкіри, а вільні фасони забезпечують комфорт протягом усього дня на весіллі просто неба.",
+  "3": "Ці чорні туфлі-човники на шпильці мають витончений бантик на носку та елегантний середній підбор. Блискуча обробка доповнює матову текстуру твого костюма, створюючи візуальний інтерес і залишаючись при цьому відповідною для танців на весільному прийомі.",
+  "4": "Перлинні сережки-підвіски поєднують перли неправильної форми з відполірованими срібними кільцями, надаючи сучасний поворот класичній елегантності. Їхній розмір забезпечує достатньо драматизму без перевантаження інших аксесуарів.",
+  "5": "Цей ніжний золотий ланцюжок-намисто має мінімалістичний дизайн з регульованим підвісом у вигляді китиці, який додає ледь помітний рух і металевий блиск до твоєї шиї. Його тонкий профіль зберігає вишуканість твого образу без конкуренції з сережками.",
+  "6": "Структурована чорна шкіряна сумка-тоут має чисті лінії та дві зручні верхні ручки для легкості в носінні. Її місткість ідеально підходить для зберігання необхідних речей протягом дня весілля, при цьому вона залишається елегантною як на відкритій церемонії, так і у внутрішньому залі.",
+  "7": "Твій образ — чудовий вибір для літнього весільного обряду просто неба та вечері. Я обрала темно-синій костюм з широкими штанами, щоб створити елегантний силует, який поєднує в собі комфорт і стиль у теплий вечір, а чорні аксесуари підкреслюють вишуканість твого образу. Золоті сережки додають шарму до глибокого синього кольору, а лаконічні чорні туфлі на шпильці забезпечують ідеальну висоту та зручність для стояння протягом церемонії або вечері.",
+  "8": "Якщо стане жарко під час відкритої церемонії, ти можеш зняти піджак, щоб показати білу блузку." ,
+  "9": "Для переходу до вечері ти можеш залишити все як є — костюм чудово виглядає і в ресторані.",
+  "10": "Вузька чорна краватка-пояс на талії підкреслює твою фігуру, не обтяжуючи її. Це вирішує проблему «невизначена_талія», зберігаючи при цьому зелений акцент, який ти хотіла.",
+  "11": "Темно-синій костюм з однобортним піджаком і широкими штанами палаццо створює формальну структуру, яка гармонійно поєднується зі сміливим зеленим кольором. Це забезпечує відповідність образу рівню «формального» заходу.",
+  "12": "Темно-синій костюм замінює сукню в образі, щоб задовольнити вимогу «відсутні_сімейства_на_великих_предметах» для триадної схеми. Це додає відсутнє сімейство на великий предмет.",
+  "13": "Чорні шкіряні туфлі-човники продовжують лінію ноги, вирішуючи проблему «туфлі_розривають_лінію_ноги».",
+  "14": "Вузька чорна краватка-пояс підкреслює талію формально без обтяження. Це розв’язує структурну проблему, дозволяючи сміливим зеленим туфлям стати твоїм акцентним елементом.",
+  "15": "Я додала білі сережки, щоб додати легкості поблизу твоєї особи, що рекомендується для глибокого тону шкіри та формальних заходів."
+}
+```

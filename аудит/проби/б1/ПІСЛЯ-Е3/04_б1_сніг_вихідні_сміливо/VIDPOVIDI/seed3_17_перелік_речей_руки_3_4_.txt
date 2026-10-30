@@ -1,0 +1,37 @@
+── ПРОМПТ (2157 симв.) ──
+{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.", "One item carries one thing — of two alternatives list the first; a note in brackets is not an item.", "Slot \"accessory\" is for an item no other slot fits.", "\"is_outfit\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "ITEM_LIST", "answer_schema": {"is_outfit": "yes|no", "items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory", "color_hex": "<#rrggbb or null>", "worn": "<true, or false when the description says the outfit goes without it>"}]}, "input": ["\"description\" — the outfit description"]}, "description": "Tailored wool-blend coat in charcoal gray (#4A5053), straight cut with a relaxed fit for ease of movement, mid-thigh length, structured wool fabric.\nSilk-satin midi slip dress in deep emerald green (#046A38), A-line silhouette that drapes softly over the hips, knee-length hem, fluid satin material.\nChunky leather ankle boots in black with a slight platform for warmth on salted snow, low block heel for stability.\nWide-wool belt in forest green to define the waist and echo the dress color.\nThis outfit works because the deep emerald coatless slip dress creates an instant visual pop against the snowy backdrop and gray urban setting. The tailored yet relaxed outer layer respects her need for statement-making style while ensuring comfort during a winter walk. The dark leather boots anchor the look practically for cold, possibly salted conditions without sacrificing the bold aesthetic she desires."}
+
+── ВІДПОВІДЬ (901 симв., 6.3 с, HTTP 200) ──
+{
+  "is_outfit": "yes",
+  "items": [
+    {
+      "name": "Tailored wool-blend coat",
+      "details": "Straight cut with a relaxed fit for ease of movement, mid-thigh length, structured wool fabric",
+      "slot": "outerwear",
+      "color_hex": "#4A5053",
+      "worn": true
+    },
+    {
+      "name": "Silk-satin midi slip dress",
+      "details": "A-line silhouette that drapes softly over the hips, knee-length hem, fluid satin material",
+      "slot": "dress",
+      "color_hex": "#046A38",
+      "worn": true
+    },
+    {
+      "name": "Chunky leather ankle boots",
+      "details": "Slight platform for warmth on salted snow, low block heel for stability",
+      "slot": "shoes",
+      "color_hex": "#000000",
+      "worn": true
+    },
+    {
+      "name": "Wide-wool belt",
+      "details": "Defines the waist",
+      "slot": "belt",
+      "color_hex": "#046A38",
+      "worn": true
+    }
+  ]
+}

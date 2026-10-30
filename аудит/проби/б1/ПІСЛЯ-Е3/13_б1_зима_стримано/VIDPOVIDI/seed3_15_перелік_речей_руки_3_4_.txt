@@ -1,0 +1,44 @@
+── ПРОМПТ (2642 симв.) ──
+{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.", "One item carries one thing — of two alternatives list the first; a note in brackets is not an item.", "Slot \"accessory\" is for an item no other slot fits.", "\"is_outfit\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "ITEM_LIST", "answer_schema": {"is_outfit": "yes|no", "items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory", "color_hex": "<#rrggbb or null>", "worn": "<true, or false when the description says the outfit goes without it>"}]}, "input": ["\"description\" — the outfit description"]}, "description": "A thick wool-blend coat, a straight fit reaching mid-thigh for coverage against the cold, in charcoal grey with hex code #36454F, fabric woven tightly to resist wind and snow. A fitted turtleneck sweater made of soft cashmere, long sleeves extending to the wrists, in cream with hex code #FFFDD0, offering warmth without bulk under the outer layer. Dark denim jeans, a slim but comfortable cut for walking, in black with hex code #1C1C1C, durable enough for the snowy road salt conditions. Simple ankle boots with a low block heel, waterproof leather construction, in dark brown with hex code #4B3621, providing grip on slippery winter surfaces. Minimalist gold-plated stud earrings, small and unobtrusive for a work setting, in polished metal with hex code #D4AF37, adding a subtle touch of polish to the practical ensemble. This outfit works because it prioritizes essential warmth and weather protection needed at -10°C while maintaining a neat yet relaxed everyday style suitable for commuting on foot. The monochromatic base of dark grey and black grounds the look professionally, while the cream sweater provides a soft contrast that keeps the silhouette from appearing too heavy under the coat. Every piece chosen, from the waterproof boots to the wind-resistant fabric, ensures comfort and functionality during the brisk morning walk to work without sacrificing a polished appearance."}
+
+── ВІДПОВІДЬ (1224 симв., 7.6 с, HTTP 200) ──
+{
+  "is_outfit": "yes",
+  "items": [
+    {
+      "name": "wool-blend coat",
+      "details": "thick, straight fit reaching mid-thigh for coverage against cold with tightly woven fabric to resist wind and snow",
+      "slot": "outerwear",
+      "color_hex": "#36454F",
+      "worn": true
+    },
+    {
+      "name": "turtleneck sweater",
+      "details": "fitted, long sleeves extending to wrists made of soft cashmere offering warmth without bulk",
+      "slot": "top",
+      "color_hex": "#FFFDD0",
+      "worn": true
+    },
+    {
+      "name": "denim jeans",
+      "details": "slim but comfortable cut for walking, durable enough for snowy road salt conditions",
+      "slot": "bottom",
+      "color_hex": "#1C1C1C",
+      "worn": true
+    },
+    {
+      "name": "ankle boots",
+      "details": "low block heel with waterproof leather construction providing grip on slippery winter surfaces",
+      "slot": "shoes",
+      "color_hex": "#4B3621",
+      "worn": true
+    },
+    {
+      "name": "gold-plated stud earrings",
+      "details": "small and unobtrusive for a work setting made of polished metal adding a subtle touch of polish",
+      "slot": "earrings",
+      "color_hex": "#D4AF37",
+      "worn": true
+    }
+  ]
+}
