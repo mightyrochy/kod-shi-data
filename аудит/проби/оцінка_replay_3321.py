@@ -14,10 +14,12 @@ sys.path.insert(0, sys.argv[1]); import оцінка_образу as О
 for ф in sys.argv[2:]:
     т = open(ф, encoding="utf-8").read(); пр, відп = т.split("── ВІДПОВІДЬ", 1); відп = відп.split("\n", 1)[1]; д = json.loads(пр[пр.index("{"):])
     з = О.ід_з_дроту; речі = {з(x["id"]): x for x in д["items"]}; образ = [з(i) for i in д["outfit"]]; зап = [з(i) for i in д.get("alternatives", [])]
-    суд = {"образ": образ, "запасні": зап, "зміни": [{"ід": з(c["id"])} for c in д.get("changes", [])],
+    суд = {"образ": образ, "запасні": зап,
+           "зміни": [{"ід": з(c["id"]), "ціль": з(c["replace"][0]), "нова": з(c.get("with_own")),
+                      "звідки": "own" if c.get("with_own") else "shop"} for c in д.get("changes", [])],
            "речі": [{"ід": і, "палітра": {"стан": {"in": "у палітрі", "edge": "на межі", "out": "поза палітрою"}.get(x.get("palette"))}} for і, x in речі.items()],
            "суд": {"findings": [{"ід": з(f["id"]), "правило": f["rule"], "регістр": {"remark": "репліка", "gate": "гейт"}.get(f["register"]), "сила_нп": f.get("sila_np"),
-                                 "речі": [з(i) for i in f["items"]], "ремонт_заяви": f.get("fix")} for f in д["check"]["findings"]]}}
+                                 "речі": [з(i) for i in f.get("items", [])], "ремонт_заяви": f.get("fix")} for f in д["check"].get("findings", [])]}}
     в = О._ПР.розбір_останній(відп, ("answer", "verdict"))[0]; р = О.прийняти_оцінку(відп, суд); к = р["картка"] or {}
     if not isinstance(в, dict): print("%s: відповідь не розібрана: %s" % (ф.split("/")[-1][:8], р["причина"])); continue
     шоп = {з(c["id"]): (c.get("with_shop") or {}).get("slot") for c in д.get("changes", [])}
