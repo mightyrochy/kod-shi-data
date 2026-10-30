@@ -112,6 +112,92 @@ index 696c1758e4e9abc03924d5d6e0b16f8b28ad5115..96124f2614e8fad08d14c4320bedc67c
  `Test-ReviewBranch` виключає `*/перевірка-*`, `*/pachka-*` й автозвіти.
  Після опублікованого вердикту `Test-ReviewedMerge` порівнює повний diff проти merge-base:
  чисте злиття main без зміни diff не створює нового наряду; звичайний коміт створює.
+diff --git "a/\320\260\321\203\320\264\320\270\321\202/\320\260\320\264\320\260\320\277\321\202\320\265\321\200\320\270/gemini/\320\277\320\265\321\200\320\265\320\262\321\226\321\200\320\272\320\260/side.ps1" "b/\320\260\321\203\320\264\320\270\321\202/\320\260\320\264\320\260\320\277\321\202\320\265\321\200\320\270/gemini/\320\277\320\265\321\200\320\265\320\262\321\226\321\200\320\272\320\260/side.ps1"
+index 1eec9380708083889e2fdac0a0c058ba7964db9f..5b3dec77fc19bfdc82edc1905721fbe003681e9c 100644
+--- "a/\320\260\321\203\320\264\320\270\321\202/\320\260\320\264\320\260\320\277\321\202\320\265\321\200\320\270/gemini/\320\277\320\265\321\200\320\265\320\262\321\226\321\200\320\272\320\260/side.ps1"
++++ "b/\320\260\321\203\320\264\320\270\321\202/\320\260\320\264\320\260\320\277\321\202\320\265\321\200\320\270/gemini/\320\277\320\265\321\200\320\265\320\262\321\226\321\200\320\272\320\260/side.ps1"
+@@ -4,6 +4,10 @@ param([string]$Script, [string]$ArgsJson)
+ if ($env:OS -eq 'Windows_NT') { [Console]::InputEncoding = [Text.Encoding]::UTF8 }
+ $p = @{}
+ (ConvertFrom-Json $ArgsJson).PSObject.Properties | ForEach-Object { $p[$_.Name] = $_.Value }
++# Розмір профілю у синтетичному прогоні не потребує обходу справжнього профілю ноутбука.
++if ((Get-Command $Script).Parameters.ContainsKey('ProfileDir') -and -not $p.ContainsKey('ProfileDir')) {
++    $p['ProfileDir'] = Join-Path ([System.IO.Path]::GetTempPath()) ('profile-' + [guid]::NewGuid().ToString('N'))
++}
+ # Стенд не чіпає справжньої спільної теки ноутбука (C:\Users\Public\gemini\lanes): без LaneDir — тимчасова тека.
+ if ((Get-Command $Script).Parameters.ContainsKey('LaneDir') -and -not $p.ContainsKey('LaneDir')) {
+     $p['LaneDir'] = Join-Path ([System.IO.Path]::GetTempPath()) ('lanes-' + [guid]::NewGuid().ToString('N').Substring(0, 8))
+@@ -32,4 +36,6 @@ if ((Split-Path -Leaf $Script) -eq 'gemini_publish.ps1') {
+     function Test-DispatcherAction([string]$Line) { $true }
+ }
+ function Test-ExternalGpuFree { $true }
++# Планувальник читає той самий вхід напряму через Get-GpuBusyReason.
++function Get-ExternalGpuMiB { 0 }
+ exit (Main)
+diff --git "a/\320\260\321\203\320\264\320\270\321\202/\320\260\320\264\320\260\320\277\321\202\320\265\321\200\320\270/gemini/\320\277\320\265\321\200\320\265\320\262\321\226\321\200\320\272\320\260/side_claude.ps1" "b/\320\260\321\203\320\264\320\270\321\202/\320\260\320\264\320\260\320\277\321\202\320\265\321\200\320\270/gemini/\320\277\320\265\321\200\320\265\320\262\321\226\321\200\320\272\320\260/side_claude.ps1"
+index 6ec9b02f9c89581af3c1cd5ceb806a9fd5b27d30..e004491bbf03ccb009d66a1ddd13e47e445c649b 100644
+--- "a/\320\260\321\203\320\264\320\270\321\202/\320\260\320\264\320\260\320\277\321\202\320\265\321\200\320\270/gemini/\320\277\320\265\321\200\320\265\320\262\321\226\321\200\320\272\320\260/side_claude.ps1"
++++ "b/\320\260\321\203\320\264\320\270\321\202/\320\260\320\264\320\260\320\277\321\202\320\265\321\200\320\270/gemini/\320\277\320\265\321\200\320\265\320\262\321\226\321\200\320\272\320\260/side_claude.ps1"
+@@ -31,4 +31,6 @@ function Get-TaskRows {
+     }
+ }
+ function Test-ExternalGpuFree { $true }
++# Планувальник читає той самий вхід напряму через Get-GpuBusyReason.
++function Get-ExternalGpuMiB { 0 }
+ exit (Main)
+diff --git "a/\320\260\321\203\320\264\320\270\321\202/\320\260\320\264\320\260\320\277\321\202\320\265\321\200\320\270/gemini/\320\277\320\265\321\200\320\265\320\262\321\226\321\200\320\272\320\260/\321\201\321\206\320\265\320\275\320\260\321\200\321\226\321\227_\320\267\320\264\320\276\321\200\320\276\320\262\321\217.ps1" "b/\320\260\321\203\320\264\320\270\321\202/\320\260\320\264\320\260\320\277\321\202\320\265\321\200\320\270/gemini/\320\277\320\265\321\200\320\265\320\262\321\226\321\200\320\272\320\260/\321\201\321\206\320\265\320\275\320\260\321\200\321\226\321\227_\320\267\320\264\320\276\321\200\320\276\320\262\321\217.ps1"
+index af8674ece995ad58fe981909db7c56e93ecb5fb6..123461e3b43e0fff5ca3f8a2ef9968d93691f097 100644
+--- "a/\320\260\321\203\320\264\320\270\321\202/\320\260\320\264\320\260\320\277\321\202\320\265\321\200\320\270/gemini/\320\277\320\265\321\200\320\265\320\262\321\226\321\200\320\272\320\260/\321\201\321\206\320\265\320\275\320\260\321\200\321\226\321\227_\320\267\320\264\320\276\321\200\320\276\320\262\321\217.ps1"
++++ "b/\320\260\321\203\320\264\320\270\321\202/\320\260\320\264\320\260\320\277\321\202\320\265\321\200\320\270/gemini/\320\277\320\265\321\200\320\265\320\262\321\226\321\200\320\272\320\260/\321\201\321\206\320\265\320\275\320\260\321\200\321\226\321\227_\320\267\320\264\320\276\321\200\320\276\320\262\321\217.ps1"
+@@ -53,7 +53,7 @@ try {
+     Publish 'auth'
+     if ($Before) {
+         Check 'ДО: 401 — коментарів #1690 немає, рядок не доставлено' (@(Comments).Count -eq 0 -and -not (States 'auth').sent)
+-        . (Join-Path $SourceDir 'gemini_run.ps1') -RunsDir "$tmpRoot/gem/runs" -OutDir "$tmpRoot/gem/out" -RepoDir $tmpRoot -LaneDir "$tmpRoot/lanes"
++        . (Join-Path $SourceDir 'gemini_run.ps1') -RunsDir "$tmpRoot/gem/runs" -OutDir "$tmpRoot/gem/out" -RepoDir $tmpRoot -LaneDir "$tmpRoot/lanes" -ProfileDir "$tmpRoot/profile"
+         foreach ($dir in @($RunsDir, $OutDir, $LaneDir)) { [void][System.IO.Directory]::CreateDirectory($dir) }
+         $script:Limits = $null
+         $env:FAKE_HEALTH_MODE = 'agy_auth'
+@@ -111,7 +111,7 @@ try {
+     Publish 'response'
+     Check '401 у відповіді з успішним ok не стає тривогою з тексту агента' ((States 'response').sent -and @(States 'response').Count -eq 1)
+ 
+-    . (Join-Path $SourceDir 'gemini_run.ps1') -RunsDir "$tmpRoot/gem/runs" -OutDir "$tmpRoot/gem/out" -RepoDir $tmpRoot -AgyExe "$tmpRoot/agy.cmd" -LaneDir "$tmpRoot/lanes"
++    . (Join-Path $SourceDir 'gemini_run.ps1') -RunsDir "$tmpRoot/gem/runs" -OutDir "$tmpRoot/gem/out" -RepoDir $tmpRoot -AgyExe "$tmpRoot/agy.cmd" -LaneDir "$tmpRoot/lanes" -ProfileDir "$tmpRoot/profile"
+     foreach ($dir in @($RunsDir, $OutDir, $LaneDir)) { [void][System.IO.Directory]::CreateDirectory($dir) }
+     $script:StateDir = Join-Path $RunsDir 'state'; [void][System.IO.Directory]::CreateDirectory($script:StateDir)
+     $script:SlotDir = Join-Path $RunsDir 'slots'; [void][System.IO.Directory]::CreateDirectory($script:SlotDir)
+@@ -153,7 +153,7 @@ try {
+     Check 'gemini-run: під час очікування CLI пише UTC, смуги й слоти' ($beat.read_utc -match 'Z$' -and $beat.lanes.Count -eq 2)
+ 
+     $gemOut = $OutDir
+-    . (Join-Path $SourceDir 'claude_run.ps1') -WorkDir "$tmpRoot/owner" -RepoDir $tmpRoot -GeminiOutDir $gemOut -PublishDir "$tmpRoot/exhaust/pub" -GhExe "$tmpRoot/gh.cmd" -LaneDir "$tmpRoot/lanes"
++    . (Join-Path $SourceDir 'claude_run.ps1') -WorkDir "$tmpRoot/owner" -RepoDir $tmpRoot -GeminiOutDir $gemOut -PublishDir "$tmpRoot/exhaust/pub" -GhExe "$tmpRoot/gh.cmd" -LaneDir "$tmpRoot/lanes" -ProfileDir "$tmpRoot/profile"
+     foreach ($dir in @($WorkDir, $LaneDir)) { [void][System.IO.Directory]::CreateDirectory($dir) }
+     $script:StateDir = Join-Path $WorkDir 'state'; [void][System.IO.Directory]::CreateDirectory($script:StateDir)
+     $script:SlotDir = Join-Path $WorkDir 'slots'; [void][System.IO.Directory]::CreateDirectory($script:SlotDir)
+diff --git "a/\320\260\321\203\320\264\320\270\321\202/\320\260\320\264\320\260\320\277\321\202\320\265\321\200\320\270/gemini/\320\277\320\265\321\200\320\265\320\262\321\226\321\200\320\272\320\260/\321\201\321\206\320\265\320\275\320\260\321\200\321\226\321\227_\320\272\320\276\320\264\321\203_\320\267\320\261\321\226\321\200\320\272\320\270.ps1" "b/\320\260\321\203\320\264\320\270\321\202/\320\260\320\264\320\260\320\277\321\202\320\265\321\200\320\270/gemini/\320\277\320\265\321\200\320\265\320\262\321\226\321\200\320\272\320\260/\321\201\321\206\320\265\320\275\320\260\321\200\321\226\321\227_\320\272\320\276\320\264\321\203_\320\267\320\261\321\226\321\200\320\272\320\270.ps1"
+index 3f09e39d3dc0af96674114625e987e8645f84feb..612d4f5ed7990a930b00099fdc1ad11bf1f765fa 100644
+--- "a/\320\260\321\203\320\264\320\270\321\202/\320\260\320\264\320\260\320\277\321\202\320\265\321\200\320\270/gemini/\320\277\320\265\321\200\320\265\320\262\321\226\321\200\320\272\320\260/\321\201\321\206\320\265\320\275\320\260\321\200\321\226\321\227_\320\272\320\276\320\264\321\203_\320\267\320\261\321\226\321\200\320\272\320\270.ps1"
++++ "b/\320\260\321\203\320\264\320\270\321\202/\320\260\320\264\320\260\320\277\321\202\320\265\321\200\320\270/gemini/\320\277\320\265\321\200\320\265\320\262\321\226\321\200\320\272\320\260/\321\201\321\206\320\265\320\275\320\260\321\200\321\226\321\227_\320\272\320\276\320\264\321\203_\320\267\320\261\321\226\321\200\320\272\320\270.ps1"
+@@ -21,7 +21,7 @@ try {
+     [IO.File]::WriteAllText("$seed/джерела/a.py", '1', $utf)
+     & git -C $seed add -A; & git -C $seed commit -q -m 'початкова'; & git -C $seed push -q origin main
+     & git clone -q --bare $remote $bare
+-    . (Join-Path $SourceDir 'gemini_publish.ps1') -WorkDir "$tmp/pub" -OutboxDir "$tmp/out" -UpdateRoot "$tmp/update"
++    . (Join-Path $SourceDir 'gemini_publish.ps1') -WorkDir "$tmp/pub" -OutDir "$tmp/gem-out" -OutboxDir "$tmp/out" -UpdateRoot "$tmp/update"
+     foreach ($dir in @($WorkDir, "$WorkDir/seen", $OutboxDir)) { [void][IO.Directory]::CreateDirectory($dir) }
+     $script:Repo = $bare; $script:NoHooks = Join-Path $tmp 'no-hooks'
+     [void](Invoke-Git @('fetch','-q','origin','+refs/heads/main:refs/remotes/origin/main'))
+@@ -108,7 +108,7 @@ try {
+     $child = Join-Path $tmp 'restart.ps1'
+     $childText = @"
+ `$ErrorActionPreference = 'Stop'
+-. '$((Join-Path $SourceDir 'gemini_publish.ps1').Replace("'","''"))' -WorkDir '$($WorkDir.Replace("'","''"))' -OutboxDir '$($OutboxDir.Replace("'","''"))'
++. '$((Join-Path $SourceDir 'gemini_publish.ps1').Replace("'","''"))' -WorkDir '$($WorkDir.Replace("'","''"))' -OutDir '$($OutDir.Replace("'","''"))' -OutboxDir '$($OutboxDir.Replace("'","''"))'
+ `$script:Repo = '$($bare.Replace("'","''"))'
+ `$script:NoHooks = '$($script:NoHooks.Replace("'","''"))'
+ function Get-ChainPulls { @() }
 diff --git "a/\320\260\321\203\320\264\320\270\321\202/\320\260\320\264\320\260\320\277\321\202\320\265\321\200\320\270/gemini/\320\277\320\265\321\200\320\265\320\262\321\226\321\200\320\272\320\260/\321\201\321\206\320\265\320\275\320\260\321\200\321\226\321\227_\320\272\321\226\320\275\320\265\321\206\321\214_\321\200\320\276\320\261\320\276\321\202\320\270.ps1" "b/\320\260\321\203\320\264\320\270\321\202/\320\260\320\264\320\260\320\277\321\202\320\265\321\200\320\270/gemini/\320\277\320\265\321\200\320\265\320\262\321\226\321\200\320\272\320\260/\321\201\321\206\320\265\320\275\320\260\321\200\321\226\321\227_\320\272\321\226\320\275\320\265\321\206\321\214_\321\200\320\276\320\261\320\276\321\202\320\270.ps1"
 new file mode 100644
 index 0000000000000000000000000000000000000000..6a321248e282860d77e008fe2cb12006320809c5
@@ -220,6 +306,19 @@ index 0000000000000000000000000000000000000000..6a321248e282860d77e008fe2cb12006
 +if ($bad) { "ПІДСУМОК: ✗ $bad"; exit 1 }
 +'ПІДСУМОК: ✗ 0'
 +exit 0
+diff --git "a/\320\260\321\203\320\264\320\270\321\202/\320\260\320\264\320\260\320\277\321\202\320\265\321\200\320\270/gemini/\320\277\320\265\321\200\320\265\320\262\321\226\321\200\320\272\320\260/\321\201\321\206\320\265\320\275\320\260\321\200\321\226\321\227_\320\273\320\260\320\275\321\206\321\216\320\263\320\260.ps1" "b/\320\260\321\203\320\264\320\270\321\202/\320\260\320\264\320\260\320\277\321\202\320\265\321\200\320\270/gemini/\320\277\320\265\321\200\320\265\320\262\321\226\321\200\320\272\320\260/\321\201\321\206\320\265\320\275\320\260\321\200\321\226\321\227_\320\273\320\260\320\275\321\206\321\216\320\263\320\260.ps1"
+index 9a73e1d5ecfe891a38e6c44bf690dd4ca7834709..a4fc1c26983d7c8cf2937649bb77269012e6bba2 100644
+--- "a/\320\260\321\203\320\264\320\270\321\202/\320\260\320\264\320\260\320\277\321\202\320\265\321\200\320\270/gemini/\320\277\320\265\321\200\320\265\320\262\321\226\321\200\320\272\320\260/\321\201\321\206\320\265\320\275\320\260\321\200\321\226\321\227_\320\273\320\260\320\275\321\206\321\216\320\263\320\260.ps1"
++++ "b/\320\260\321\203\320\264\320\270\321\202/\320\260\320\264\320\260\320\277\321\202\320\265\321\200\320\270/gemini/\320\277\320\265\321\200\320\265\320\262\321\226\321\200\320\272\320\260/\321\201\321\206\320\265\320\275\320\260\321\200\321\226\321\227_\320\273\320\260\320\275\321\206\321\216\320\263\320\260.ps1"
+@@ -20,7 +20,7 @@ try {
+     [IO.File]::WriteAllText("$seed/джерела/a.py", '1', $utf)
+     & git -C $seed add -A; & git -C $seed commit -q -m 'початкова'; & git -C $seed push -q origin main
+     $bare = Join-Path $tmpRoot 'repo.git'; & git clone -q --bare $remote $bare
+-    . (Join-Path $SourceDir 'gemini_publish.ps1') -WorkDir "$tmpRoot/pub" -OutboxDir "$tmpRoot/out" -UpdateRoot "$tmpRoot/update"
++    . (Join-Path $SourceDir 'gemini_publish.ps1') -WorkDir "$tmpRoot/pub" -OutDir "$tmpRoot/gem-out" -OutboxDir "$tmpRoot/out" -UpdateRoot "$tmpRoot/update"
+     foreach ($d in @($WorkDir, (Join-Path $WorkDir 'seen'), $OutboxDir)) { [void][IO.Directory]::CreateDirectory($d) }
+     $script:Repo = $bare; $script:NoHooks = Join-Path $tmpRoot 'no-hooks'
+     [void](Invoke-Git @('fetch','-q','origin','+refs/heads/main:refs/remotes/origin/main'))
 diff --git "a/\320\260\321\203\320\264\320\270\321\202/\320\260\320\264\320\260\320\277\321\202\320\265\321\200\320\270/gemini/\320\277\320\265\321\200\320\265\320\262\321\226\321\200\320\272\320\260/\321\201\321\206\320\265\320\275\320\260\321\200\321\226\321\227_\320\273\320\260\320\275\321\206\321\216\320\263\320\260.sh" "b/\320\260\321\203\320\264\320\270\321\202/\320\260\320\264\320\260\320\277\321\202\320\265\321\200\320\270/gemini/\320\277\320\265\321\200\320\265\320\262\321\226\321\200\320\272\320\260/\321\201\321\206\320\265\320\275\320\260\321\200\321\226\321\227_\320\273\320\260\320\275\321\206\321\216\320\263\320\260.sh"
 index 9afd43a4973115030b5783986e5cf43e913d97d2..25c2e1494ea751a59599e1207f1343d7e63f4683 100644
 --- "a/\320\260\321\203\320\264\320\270\321\202/\320\260\320\264\320\260\320\277\321\202\320\265\321\200\320\270/gemini/\320\277\320\265\321\200\320\265\320\262\321\226\321\200\320\272\320\260/\321\201\321\206\320\265\320\275\320\260\321\200\321\226\321\227_\320\273\320\260\320\275\321\206\321\216\320\263\320\260.sh"
@@ -229,3 +328,16 @@ index 9afd43a4973115030b5783986e5cf43e913d97d2..25c2e1494ea751a59599e1207f1343d7
  "${PWSH:-pwsh}" -NoProfile -File "$(wp "$H/сценарії_коду_збірки.ps1")"
  "${PWSH:-pwsh}" -NoProfile -File "$(wp "$H/сценарії_менше_прогонів.ps1")" -SourceDir "$(wp "$H/..")"
 +"${PWSH:-pwsh}" -NoProfile -File "$(wp "$H/сценарії_кінець_роботи.ps1")" -SourceDir "$(wp "$H/..")"
+diff --git "a/\320\260\321\203\320\264\320\270\321\202/\320\260\320\264\320\260\320\277\321\202\320\265\321\200\320\270/gemini/\320\277\320\265\321\200\320\265\320\262\321\226\321\200\320\272\320\260/\321\201\321\206\320\265\320\275\320\260\321\200\321\226\321\227_\320\274\320\265\320\275\321\210\320\265_\320\277\321\200\320\276\320\263\320\276\320\275\321\226\320\262.ps1" "b/\320\260\321\203\320\264\320\270\321\202/\320\260\320\264\320\260\320\277\321\202\320\265\321\200\320\270/gemini/\320\277\320\265\321\200\320\265\320\262\321\226\321\200\320\272\320\260/\321\201\321\206\320\265\320\275\320\260\321\200\321\226\321\227_\320\274\320\265\320\275\321\210\320\265_\320\277\321\200\320\276\320\263\320\276\320\275\321\226\320\262.ps1"
+index 0970ac484d785d4745f2f0a8a852fd2443f41806..fdb8b07564634dc758606a9b21a46c894250ea0d 100644
+--- "a/\320\260\321\203\320\264\320\270\321\202/\320\260\320\264\320\260\320\277\321\202\320\265\321\200\320\270/gemini/\320\277\320\265\321\200\320\265\320\262\321\226\321\200\320\272\320\260/\321\201\321\206\320\265\320\275\320\260\321\200\321\226\321\227_\320\274\320\265\320\275\321\210\320\265_\320\277\321\200\320\276\320\263\320\276\320\275\321\226\320\262.ps1"
++++ "b/\320\260\321\203\320\264\320\270\321\202/\320\260\320\264\320\260\320\277\321\202\320\265\321\200\320\270/gemini/\320\277\320\265\321\200\320\265\320\262\321\226\321\200\320\272\320\260/\321\201\321\206\320\265\320\275\320\260\321\200\321\226\321\227_\320\274\320\265\320\275\321\210\320\265_\320\277\321\200\320\276\320\263\320\276\320\275\321\226\320\262.ps1"
+@@ -15,7 +15,7 @@ function Scenario([string]$Name, [scriptblock]$Body) {
+     try { & $Body } catch { Check "$Name — $($_.Exception.Message) $($_.ScriptStackTrace)" $false }
+ }
+ try {
+-    . (Join-Path $SourceDir 'gemini_publish.ps1') -WorkDir "$tmp/pub" -OutboxDir "$tmp/out"
++    . (Join-Path $SourceDir 'gemini_publish.ps1') -WorkDir "$tmp/pub" -OutDir "$tmp/gem-out" -OutboxDir "$tmp/out"
+     foreach ($dir in @($WorkDir,"$WorkDir/state","$WorkDir/seen",$OutboxDir)) { [void][IO.Directory]::CreateDirectory($dir) }
+     . (Join-Path $SourceDir 'queue_lanes.ps1')
+     $config = [pscustomobject]@{codex='gpt-review';agy='gemini-review';claude='cc-claude-review'}
