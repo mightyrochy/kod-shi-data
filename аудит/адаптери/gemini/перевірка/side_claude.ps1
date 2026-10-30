@@ -31,4 +31,5 @@ function Get-TaskRows {
     }
 }
 function Test-ExternalGpuFree { $true }
+function Get-ExternalGpuMiB { <# Дає вільну GPU синтетичному планувальнику. #> 0 }
 exit (Main)
