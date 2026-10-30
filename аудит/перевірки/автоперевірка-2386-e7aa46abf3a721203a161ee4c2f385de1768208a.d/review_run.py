@@ -11,9 +11,18 @@ commands = [(root, [sys.executable, 'джерела/прилади/схема_з
 commands += [(source, [sys.executable, name]) for name in ['стенд_знімок.py --дим', 'тест_живого_шляху.py', 'тест_протоколу.py', 'прилади/розділи_гейтів.py', 'audit_contracts.py']]
 commands[3] = (source, [sys.executable, 'стенд_знімок.py', '--дим'])
 commands += [(source, ['node', 'тест_показу.js'])]
-commands += [(source, [sys.executable, str(p.relative_to(source))]) for p in sorted((source/'проби').glob('каталог_*.py'))]
-results = []
-for i, (cwd, cmd) in enumerate(commands):
+probes = [p for p in sorted((source/'проби').glob('каталог_зависла_крамниця*.py'))
+          if not p.stem.endswith(('_до', '_проба', '_обрив_заміна'))]
+probes += [source/'проби'/name for name in ['каталог_цикл_53.py','каталог_рецепт_повтор.py',
+                                         'каталог_проблеми_г_стеля.py','каталог_проблеми_г_крамниці.py']]
+commands += [(source, [sys.executable, str(p.relative_to(source))]) for p in probes]
+results = json.loads((out/'results.json').read_text(encoding='utf8')) if (out/'results.json').exists() else []
+completed = {r['команда'] for r in results}
+index = max((int(p.stem) for p in out.glob('[0-9][0-9][0-9].txt')),default=-1)+1
+for cwd, cmd in commands:
+    if ' '.join(cmd[1:]) in completed:
+        continue
+    i=index; index+=1
     path = out / f'{i:03d}.txt'
     start = time.monotonic()
     with path.open('w', encoding='utf-8') as f:

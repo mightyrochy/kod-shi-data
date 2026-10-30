@@ -2,6 +2,7 @@ import collections, concurrent.futures, copy, gzip, importlib.util, json, pathli
 import urllib.request, urllib.error
 root = pathlib.Path(__file__).parent / 'pr2386'
 out = pathlib.Path(__file__).parent / 'evidence2386'
+out.mkdir(exist_ok=True)
 sys.path.insert(0, str(root/'zhnyvarka'))
 import складальник as s
 import жнива_каталог as harvest
