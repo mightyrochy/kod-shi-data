@@ -420,8 +420,9 @@ function _оцінкаПромптаП(повідомлення, ключ){
 /* Правило вердиктів: прапорці без змісту в твердженнях і ремонтах знахідок. → скільки полів знято (0 — правило не про цей промпт) */
 function _скоротитиВердиктиП(повідомлення){
   const м = (повідомлення || [])[(повідомлення || []).length - 1];
-  const бл = m_ => Array.isArray(m_.content) ? m_.content.filter(б => б && б.type === 'text').pop() : null;
-  const блок = м && бл(м);
+  const зміст = м && Array.isArray(м.content) ? м.content : null;
+  const і = зміст ? зміст.map(б => !!б && б.type === 'text').lastIndexOf(true) : -1;
+  const блок = і >= 0 ? зміст[і] : null;
   if (!блок) return 0;
   let о = null;
   try{ о = JSON.parse(блок.text); }catch(_){ return 0; }
@@ -434,7 +435,7 @@ function _скоротитиВердиктиП(повідомлення){
       for (const с of [...((зн && зн.statements) || []), ...((зн && зн.fix) || [])])
         for (const к of Object.keys(с || {}))
           if (порожнє(к, с[к])){ delete с[к]; знято++; }
-  if (знято) блок.text = JSON.stringify(о);
+  if (знято) зміст[і] = Object.assign({}, блок, {text: JSON.stringify(о)});
   return знято;
 }
 const СКОРОЧЕННЯ_ЗА_МЕТОЮ_П = [_скоротитиВердиктиП];
