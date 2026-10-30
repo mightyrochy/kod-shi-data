@@ -31,6 +31,10 @@ def person(folder):
 for path in sorted(HERE.glob('*/результат.json')):
     result = json.loads(path.read_text(encoding='utf-8'))
     text = (path.parent / 'лог.txt').read_text(encoding='utf-8')
+    result['звірки'] = re.findall(r'^ {2}✗ (.+?)(?:  →|$)', text, re.M)
+    result['діагностики-✗'] = [line.strip()[2:] for line in text.splitlines() if line.lstrip().startswith('✗ ') and not line.startswith('  ✗ ')]
+    if result['rc'] in (0, 1):
+        assert len(result['звірки']) == result['впало'], (path, len(result['звірки']), result['впало'])
     hands = [json.loads(value) for value in re.findall(r'^\s+рука [1-4] (\{.*\})$', text, re.M)]
     hands = [hand for hand in hands if 'речей' in hand and 'збій' in hand]
     result['знімків-карток'] = len(list((path.parent / 'знімки').glob('kartka_poz*_ruka*_seed3.png')))

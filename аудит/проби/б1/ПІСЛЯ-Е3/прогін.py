@@ -78,6 +78,9 @@ def update_report():
     for row in rows:
         text += ['', f"### {row['номер']:02} · {row['сцена']}", '']
         text += ['- ' + name for name in row['звірки']] or ['Жодної `✗`.']
+        if row.get('діагностики-✗'):
+            text += ['', 'Діагностики з `✗`, що пояснюють звірку й не додаються до підсумку ВПАЛО:', '']
+            text += ['- ' + value for value in row['діагностики-✗']]
         text += [f"Профіль ДО = ПІСЛЯ: **{row['профіль-збігається']}**."]
         text += [f"Мірки й кольори у вході складання ДО = ПІСЛЯ: **{row.get('мірки-кольори-складання-збігаються', 'перерахунок після серії')}**."]
         text += [f"Спільні поля (зріст, пропорції, контраст, підтон) збігаються: **{row.get('спільні-мірки-кольори-збігаються', 'перерахунок після серії')}**; додано числові `feature_measurements`: **{row.get('додано-feature_measurements', 'перерахунок після серії')}**."]
@@ -162,7 +165,7 @@ def main():
             write_json(folder / 'прибирання.json', {'вивантажено': unloaded, 'моделі-після': api()})
         elapsed = round(time.monotonic() - start)
         text = (folder / 'лог.txt').read_text(encoding='utf-8')
-        failures = re.findall(r'^\s*✗ (.+?)(?:  →|$)', text, re.M)
+        failures = re.findall(r'^ {2}✗ (.+?)(?:  →|$)', text, re.M)
         totals = re.findall(r'^ВПАЛО (\d+)', text, re.M)
         hands = [json.loads(value) for value in re.findall(r'^\s+рука [1-4] (\{.*\})$', text, re.M)]
         hands = [hand for hand in hands if 'речей' in hand and 'збій' in hand]
