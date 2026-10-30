@@ -1,0 +1,44 @@
+── ПРОМПТ (2359 симв.) ──
+{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.", "One item carries one thing — of two alternatives list the first; a note in brackets is not an item.", "Slot \"accessory\" is for an item no other slot fits.", "\"is_outfit\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "ITEM_LIST", "answer_schema": {"is_outfit": "yes|no", "items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory", "color_hex": "<#rrggbb or null>", "worn": "<true, or false when the description says the outfit goes without it>"}]}, "input": ["\"description\" — the outfit description"]}, "description": "Merino wool coat in charcoal grey (#3e4246), straight cut, knee length, woven with a dense weave for wind protection.\nCashmere-blend turtleneck sweater in soft oat (#e8e3d9), relaxed fit, hip length, fine-gauge knit for insulation without bulk.\nHigh-waisted wool trousers in slate blue (#5b6b7b), tailored straight leg, full length, heavy-weight fabric to resist snow and moisture.\nLeather ankle boots in black (#0a0a0a), rounded toe, mid-calf shaft, rubber lug sole with oil-resistant finish for salted streets.\nA thin leather belt in cognac (#8f5e43) at the natural waist defines the silhouette under the coat layers.\nThis outfit works perfectly because the heavy wool trousers and insulated sweater provide necessary warmth against -10°C frost while remaining breathable enough for a brisk twenty-minute walk. The dark, neutral palette of charcoal, oat, and slate creates a professional yet comfortable look suitable for a morning commute in snowy conditions. Sturdy ankle boots with deep treads ensure safety on icy, salted roads without sacrificing style or comfort during the daily journey to work."}
+
+── ВІДПОВІДЬ (1150 симв., 7.6 с, HTTP 200) ──
+{
+  "is_outfit": "yes",
+  "items": [
+    {
+      "name": "Merino wool coat",
+      "details": "straight cut, knee length, woven with a dense weave for wind protection",
+      "slot": "outerwear",
+      "color_hex": "#3e4246",
+      "worn": true
+    },
+    {
+      "name": "Cashmere-blend turtleneck sweater",
+      "details": "relaxed fit, hip length, fine-gauge knit for insulation without bulk",
+      "slot": "top",
+      "color_hex": "#e8e3d9",
+      "worn": true
+    },
+    {
+      "name": "High-waisted wool trousers",
+      "details": "tailored straight leg, full length, heavy-weight fabric to resist snow and moisture",
+      "slot": "bottom",
+      "color_hex": "#5b6b7b",
+      "worn": true
+    },
+    {
+      "name": "Leather ankle boots",
+      "details": "rounded toe, mid-calf shaft, rubber lug sole with oil-resistant finish for salted streets",
+      "slot": "shoes",
+      "color_hex": "#0a0a0a",
+      "worn": true
+    },
+    {
+      "name": "thin leather belt",
+      "details": "at the natural waist defines the silhouette under the coat layers",
+      "slot": "belt",
+      "color_hex": "#8f5e43",
+      "worn": true
+    }
+  ]
+}
