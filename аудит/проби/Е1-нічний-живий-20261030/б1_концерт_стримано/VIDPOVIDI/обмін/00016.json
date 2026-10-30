@@ -1,0 +1,27 @@
+{
+ "версія": 1,
+ "запит": {
+  "model": "qwen/qwen3.5-9b",
+  "max_tokens": 4000,
+  "messages": [
+   {
+    "role": "user",
+    "content": [
+     {
+      "type": "text",
+      "text": "{\"task\": {\"role\": \"You read the description of an outfit and list its items as data.\", \"rules\": [\"One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.\", \"One item carries one thing — of two alternatives list the first; a note in brackets is not an item.\", \"Slot \\\"accessory\\\" is for an item no other slot fits.\", \"\\\"is_outfit\\\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note.\"], \"limits\": [\"Rely only on the input: do not invent what it does not contain.\", \"The answer is one JSON object following \\\"answer_schema\\\", without explanations and without ```.\"], \"language\": \"English\", \"answer\": \"ITEM_LIST\", \"answer_schema\": {\"is_outfit\": \"yes|no\", \"items\": [{\"name\": \"<what the item is>\", \"details\": \"<its cut, length and fabric>\", \"slot\": \"top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory\", \"color_hex\": \"<#rrggbb or null>\", \"worn\": \"<true, or false when the description says the outfit goes without it>\"}]}, \"input\": [\"\\\"description\\\" — the outfit description\"]}, \"description\": \"Charcoal wool-blend structured blazer, sharp shoulder cut, hip-length hem, #211d19 color, heavy woven wool fabric.\\nClassic black silk-trimmed shirt, relaxed fit collar, cropped at the waistline, #0a0a0a color, smooth satin-weave cotton fabric.\\nHigh-waisted charcoal tailored trousers, straight-leg cut from hip to ankle, full length, #363636 color, fine gabardine wool fabric.\\nPointed-toe black leather pumps, moderate heel height, ankle-length opening, #1c1c1c color, polished calfskin leather.\\nMatte black leather clutch, rectangular shape, top handle and crossbody strap, #000000 color, smooth textured leather.\\nDelicate gold bar necklace, thin chain link design, sits at collarbone level, metallic gold finish, solid 18k gold vermeil metal.\\n\\nThis outfit works because it adheres to her request for a smart, restrained, and classic look suitable for a Friday evening rock concert in a club setting. The heavy wool textures of the blazer and trousers provide necessary warmth against autumn chill while maintaining a sharp silhouette that helps stand out slightly amidst a standing crowd. The monochromatic charcoal palette with black accents ensures she remains elegant and composed without sacrificing the edgy atmosphere of the venue, fulfilling her wish to appear both classic and appropriately dressed for the occasion.\"}"
+     }
+    ]
+   }
+  ],
+  "temperature": 1
+ },
+ "відповідь": {
+  "status": 200,
+  "contentType": "application/json",
+  "headers": {
+   "x-model": "qwen/qwen3.5-9b"
+  },
+  "body": "{\"content\":[{\"type\":\"text\",\"text\":\"{\\n  \\\"is_outfit\\\": \\\"yes\\\",\\n  \\\"items\\\": [\\n    {\\n      \\\"name\\\": \\\"blazer\\\",\\n      \\\"details\\\": \\\"structured cut with sharp shoulder hem at hip length, heavy woven wool fabric\\\",\\n      \\\"slot\\\": \\\"outerwear\\\",\\n      \\\"color_hex\\\": \\\"#211d19\\\",\\n      \\\"worn\\\": true\\n    },\\n    {\\n      \\\"name\\\": \\\"shirt\\\",\\n      \\\"details\\\": \\\"relaxed fit collar cropped at waistline smooth satin-weave cotton fabric with silk trim\\\",\\n      \\\"slot\\\": \\\"top\\\",\\n      \\\"color_hex\\\": \\\"#0a0a0a\\\",\\n      \\\"worn\\\": true\\n    },\\n    {\\n      \\\"name\\\": \\\"trousers\\\",\\n      \\\"details\\\": \\\"high-waisted tailored straight-leg cut from hip to ankle full length fine gabardine wool fabric\\\",\\n      \\\"slot\\\": \\\"bottom\\\",\\n      \\\"color_hex\\\": \\\"#363636\\\",\\n      \\\"worn\\\": true\\n    },\\n    {\\n      \\\"name\\\": \\\"pumps\\\",\\n      \\\"details\\\": \\\"pointed toe moderate heel height ankle-length opening polished calfskin leather\\\",\\n      \\\"slot\\\": \\\"shoes\\\",\\n      \\\"color_hex\\\": \\\"#1c1c1c\\\",\\n      \\\"worn\\\": true\\n    },\\n    {\\n      \\\"name\\\": \\\"clutch\\\",\\n      \\\"details\\\": \\\"rectangular shape with top handle and crossbody strap smooth textured leather\\\",\\n      \\\"slot\\\": \\\"bag\\\",\\n      \\\"color_hex\\\": \\\"#000000\\\",\\n      \\\"worn\\\": true\\n    },\\n    {\\n      \\\"name\\\": \\\"necklace\\\",\\n      \\\"details\\\": \\\"delicate gold bar thin chain link design sits at collarbone level metallic gold finish solid 18k gold vermeil metal\\\",\\n      \\\"slot\\\": \\\"collar_necklace\\\",\\n      \\\"color_hex\\\": null,\\n      \\\"worn\\\": true\\n    }\\n  ]\\n}\"}],\"usage\":{\"input_tokens\":651,\"output_tokens\":432},\"stop_reason\":\"end_turn\"}"
+ }
+}
