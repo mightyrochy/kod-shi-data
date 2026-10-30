@@ -312,5 +312,37 @@
   "джерела": {
    "джерела/контроль.py": "import json,re\nмапа={}\nfor р in json.load(open('catalog.json')):\n мапа[р['id']]=р\nfor ключ in мапа:\n offer=мапа[ключ]\n re.search('вовна',offer['назва'])\n"
   }
+ },
+ {
+  "назва": "пояснення до зчитаного запису не стає записом каталогу",
+  "пункти": [],
+  "джерела": {
+   "джерела/контроль.py": "import json,re\nfrom bs4 import BeautifulSoup\nр=json.load(open('catalog.json'))[0]\nсуп=BeautifulSoup(html,'html.parser')\nопис_моделі={'назва':суп.select_one('.product').get_text()}\nre.search('вовна',опис_моделі['назва'])\nр['пояснення']=опис_моделі['назва']\n"
+  }
+ },
+ {
+  "назва": "ключ поля переданий змінною зберігає межу",
+  "пункти": [
+   3
+  ],
+  "джерела": {
+   "джерела/контроль.py": "import json,re\nр=json.load(open('catalog.json'))[0]\nключ='назва'\nre.search('вовна',р.get(ключ))\n"
+  }
+ },
+ {
+  "назва": "ключ кодового поля у змінній лишається кодовим",
+  "пункти": [],
+  "джерела": {
+   "джерела/контроль.py": "import json,re\nр=json.load(open('catalog.json'))[0]\nключ='тип'\nre.search('coat',р[ключ])\n"
+  }
+ },
+ {
+  "назва": "невідомий ключ запису не підміняється самим записом",
+  "пункти": [
+   3
+  ],
+  "джерела": {
+   "джерела/контроль.py": "import json,re,sys\nр=json.load(open('catalog.json'))[0]\nключ=sys.argv[1]\nre.search('вовна',р[ключ])\n"
+  }
  }
 ]
