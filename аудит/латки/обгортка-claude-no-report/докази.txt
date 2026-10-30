@@ -14,9 +14,9 @@ BAD_BRANCH, NO_PUSH, AUTH, QUOTA та EXIT збережено.
 Нових шаблонів транспортних рядків немає. НАЛАШТУВАННЯ.md й маніфест оновлено тією самою латкою.
 
 Джерело виміру
-Вихідна голова: f18d8e20fb4bb5b4f9cbdc46e084bf1b467a01ee. Недоступні журнали Admin повторно не читалися, права не змінювалися.
+Вихідна голова: 6ae5cfda7d71d0739467b8213bfe843283a0a326. Недоступні журнали Admin повторно не читалися, права не змінювалися.
 Доробка 1 наряду дозволяє синтетичні варіанти замість недоступних справжніх записів 29–30.10.
-Файл варіанти.jsonl містить 30 синтетичних відповідей, а не записи чотирьох історичних запусків.
+Файл варіанти.jsonl містить 31 синтетичну відповідь, а не записи чотирьох історичних запусків.
 Гіпотеза: історичні NO_REPORT спричиняли формат звіту або втрата тексту між assistant і result;
 що саме сталося у чотирьох справжніх відповідях 29–30.10, не виміряно. Наступний NO_REPORT дасть діагностику.
 
@@ -44,6 +44,7 @@ BAD_BRANCH, NO_PUSH, AUTH, QUOTA та EXIT збережено.
 | без-звіту | NO_REPORT | NO_REPORT |
 | немає-відповіді | NO_REPORT | NO_REPORT |
 | приклад | NO_REPORT | NO_REPORT |
+| приклад-після-SHA | NO_REPORT | NO_REPORT |
 | код | NO_REPORT | NO_REPORT |
 | цитата | NO_REPORT | NO_REPORT |
 | старий-assistant | NO_REPORT | NO_REPORT |
@@ -59,10 +60,10 @@ BAD_BRANCH, NO_PUSH, AUTH, QUOTA та EXIT збережено.
 Команди (PowerShell 5.1, модель та встановлена обгортка не запускаються)
 powershell -NoProfile -ExecutionPolicy Bypass -File <дерево>/аудит/адаптери/gemini/перевірка/сценарії_no_report.ps1 -SourceDir <вихідний-репозиторій>/аудит/адаптери/gemini -Before
 powershell -NoProfile -ExecutionPolicy Bypass -File <дерево>/аудит/адаптери/gemini/перевірка/сценарії_no_report.ps1 -SourceDir <дерево>/аудит/адаптери/gemini
-Коди 0, тверджень 36 → 55; повний вивід — до.txt і після.txt.
+Коди 0, тверджень 37 → 56; повний вивід — до.txt і після.txt.
 git apply --check аудит/латки/обгортка-claude-no-report/зміни.patch — код 0.
-SHA-256 claude_run.ps1 (BOM + LF, git-блоб): 7D83502A01BED20514A279CB6AB1292E23C26E134382FE02ABD95D23B15D667F
-SHA-256 зміни.patch: 6C82B3F9817E75CBB238D80188F6250C0B12BF3BB2F74BA18D9E6034F694340B
+SHA-256 claude_run.ps1 (BOM + LF, git-блоб): 84C1FD02E7569F428ABC7C377B15E020A298B36682B6F726A9791196F68B7E6F
+SHA-256 зміни.patch: D99AE7485F8126EF55B47AF9B1BE9214F9419EFD3FAF543E3C0B1EAFBFF816FC
 
 Ізоляція стенда
 Перший повний запуск зупинено на К7 сценарії_claude.sh: старий side.ps1 не передавав ProfileDir,

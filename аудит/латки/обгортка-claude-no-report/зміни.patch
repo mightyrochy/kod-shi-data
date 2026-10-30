@@ -1,5 +1,5 @@
 diff --git a/аудит/адаптери/gemini/claude_run.ps1 b/аудит/адаптери/gemini/claude_run.ps1
-index 4493920..e2bf4b0 100644
+index 4493920..b157284 100644
 --- a/аудит/адаптери/gemini/claude_run.ps1
 +++ b/аудит/адаптери/gemini/claude_run.ps1
 @@ -427,6 +427,7 @@ function Get-StatusBody {
@@ -10,12 +10,23 @@ index 4493920..e2bf4b0 100644
      $localPath = Join-Path $PublishDir 'local-lines.json'
      if (Test-Path -LiteralPath $localPath) {
          $local = ConvertFrom-Json ([IO.File]::ReadAllText($localPath, $script:Utf8))
-@@ -571,13 +572,17 @@ function Get-Report([string]$Text) {
+@@ -534,7 +535,7 @@ function Remove-ReportDecoration([string]$Line, [switch]$Sentence) {
+ }
+ 
+ function Get-Report([string]$Text) {
+-    <# Читає єдиний окремий звіт у відповіді result, пропускаючи код, цитати й приклади.
++    <# Читає єдиний окремий звіт у тексті відповіді, пропускаючи код, цитати й приклади.
+ 
+     Позиція в кінці та markdown не визначають результат роботи. Цитований наряд і приклади не можуть його
+     підтвердити; неоднозначні відповіді відхиляються. Гілку й SHA перевіряє виклик через origin. #>
+@@ -571,13 +572,19 @@ function Get-Report([string]$Text) {
              if ($line.StartsWith($pair[0]) -and -not $line.TrimEnd('.').EndsWith($pair[1])) { $quote = $pair[1]; break }
          }
          if ($quote) { continue }
 +        $line = $line -replace '^[-+*]\s+', ''
          $line = Remove-ReportDecoration $line -Sentence
++        # Явна позначка прикладу лишається прикладом і після SHA.
++        if ($line -match '\s+[—–]\s+(?:приклад|зразок|цитата)\b') { continue }
 +        # Пояснення після звіту не є частиною SHA.
 +        $withoutNote = $line -replace '\s+[—–]\s+.+$', ''
 +        if ($withoutNote -cne $line) { $line = Remove-ReportDecoration $withoutNote -Sentence }
@@ -30,7 +41,7 @@ index 4493920..e2bf4b0 100644
              $branch = ''
              if ($line -cmatch "(claude/$script:SlugCore)") { $branch = $Matches[1].TrimEnd('.') }
              $reports += [pscustomobject]@{ Kind = 'BLOCKED'; Branch = $branch; Sha = '' }
-@@ -588,6 +593,92 @@ function Get-Report([string]$Text) {
+@@ -588,6 +595,92 @@ function Get-Report([string]$Text) {
  }
  
  
@@ -123,7 +134,7 @@ index 4493920..e2bf4b0 100644
  function Get-ErrorCode([string]$Text) {
      if ($Text -match 'issue with the selected model|unrecognized_model|model_not_found|not_found_error.{0,80}model') { return 'MODEL_INVALID' }
      if ($Text -match 'Not logged in|/login|authentication_error|Invalid API key|OAuth token|\b401\b') { return 'AUTH' }
-@@ -639,7 +730,7 @@ function Invoke-Claude([string]$Exe, [string[]]$ArgList, [string]$Prompt, [strin
+@@ -639,7 +732,7 @@ function Invoke-Claude([string]$Exe, [string[]]$ArgList, [string]$Prompt, [strin
      $w.Write($Prompt)
      $w.Close()
      $log = Join-Path $RunDir 'claude.jsonl'; $ev = Join-Path $RunDir 'events.tsv'; $errLog = Join-Path $RunDir 'claude.stderr.txt'
@@ -132,7 +143,7 @@ index 4493920..e2bf4b0 100644
      $err = New-Object System.Text.StringBuilder
      $last = Get-Date
      $outTask = $null; $errTask = $null; $outDone = $false; $errDone = $false
-@@ -675,14 +766,17 @@ function Invoke-Claude([string]$Exe, [string[]]$ArgList, [string]$Prompt, [strin
+@@ -675,14 +768,17 @@ function Invoke-Claude([string]$Exe, [string[]]$ArgList, [string]$Prompt, [strin
          [System.IO.File]::AppendAllText($log, $line + "`n", $script:Utf8)
          if ($line -match 'Unknown --effort value') { $res.Kind = 'EFFORT_INVALID'; break }
          $type = ''; $obj = $null
@@ -154,7 +165,7 @@ index 4493920..e2bf4b0 100644
          if ($type -eq 'rate_limit_event') {
              $info = Get-JsonProp $obj 'rate_limit_info'
              if ($null -ne $info) { $res.Limit = $info; Save-ClaudeQuota $info }
-@@ -783,18 +877,19 @@ function Invoke-ClaudeTask($M, $Job, [string]$Exe, [string]$TaskText, [string]$C
+@@ -783,18 +879,19 @@ function Invoke-ClaudeTask($M, $Job, [string]$Exe, [string]$TaskText, [string]$C
          return (Complete-Task $M $statePath $id 'CRASH')
      }
      if ($r.Kind) { return (Complete-Task $M $statePath $id $r.Kind) }
@@ -178,7 +189,7 @@ index 4493920..e2bf4b0 100644
          return (Complete-Task $M $statePath $id 'DONE' $rep.Branch $rep.Sha)
      }
      if ($null -ne $rep) { return (Complete-Task $M $statePath $id 'BLOCKED') }
-@@ -803,6 +898,7 @@ function Invoke-ClaudeTask($M, $Job, [string]$Exe, [string]$TaskText, [string]$C
+@@ -803,6 +900,7 @@ function Invoke-ClaudeTask($M, $Job, [string]$Exe, [string]$TaskText, [string]$C
          if ($code -eq 'QUOTA' -and (Enter-ClaudeQuotaWait $M $statePath $id $r ($text + "`n" + $r.Err))) { return }
          return (Complete-Task $M $statePath $id $code)
      }
@@ -187,7 +198,7 @@ index 4493920..e2bf4b0 100644
  }
  
 diff --git a/аудит/адаптери/gemini/m9v/хеші.psd1 b/аудит/адаптери/gemini/m9v/хеші.psd1
-index 2e1af9e..7c57ad1 100644
+index 2e1af9e..0877f38 100644
 --- a/аудит/адаптери/gemini/m9v/хеші.psd1
 +++ b/аудит/адаптери/gemini/m9v/хеші.psd1
 @@ -15,5 +15,5 @@
@@ -195,10 +206,10 @@ index 2e1af9e..7c57ad1 100644
      'gemini_watch.ps1'   = '69EFEBB07FF1AF51C382B753A95C50F3C1AC27B3008F2489992BEBE3FD0213AA'
      'queue_lanes.ps1'    = '02868BB9FFE5320952634BA7A3E3D7B2F34D0F4D11699844F7429DFFDC66B909'
 -    'claude_run.ps1'     = '9C9C96D9A065B8EA510C5B9023495806BA03D385ED2613067068842DFFD636C3'
-+    'claude_run.ps1'     = '7D83502A01BED20514A279CB6AB1292E23C26E134382FE02ABD95D23B15D667F'
++    'claude_run.ps1'     = '84C1FD02E7569F428ABC7C377B15E020A298B36682B6F726A9791196F68B7E6F'
  }
 diff --git a/аудит/адаптери/gemini/НАЛАШТУВАННЯ.md b/аудит/адаптери/gemini/НАЛАШТУВАННЯ.md
-index 696c175..810b217 100644
+index 696c175..8cd3ea2 100644
 --- a/аудит/адаптери/gemini/НАЛАШТУВАННЯ.md
 +++ b/аудит/адаптери/gemini/НАЛАШТУВАННЯ.md
 @@ -437,7 +437,7 @@ $f = Join-Path "$env:USERPROFILE\gemini-outbox" $n
@@ -206,7 +217,7 @@ index 696c175..810b217 100644
  | `wrapper_health.ps1` | `B3E2C44C4F342A915B814854A7D7619EDE2E019B48DC4A50CF4C9DB304C2E531` |
  | `queue_lanes.ps1` | `02868BB9FFE5320952634BA7A3E3D7B2F34D0F4D11699844F7429DFFDC66B909` |
 -| `claude_run.ps1` | `9C9C96D9A065B8EA510C5B9023495806BA03D385ED2613067068842DFFD636C3` |
-+| `claude_run.ps1` | `7D83502A01BED20514A279CB6AB1292E23C26E134382FE02ABD95D23B15D667F` |
++| `claude_run.ps1` | `84C1FD02E7569F428ABC7C377B15E020A298B36682B6F726A9791196F68B7E6F` |
  | `CodexInstaller` (`install.ps1` релізу Codex `CodexRelease`) | `A59CB66350098C33B021FF470D586AE8FE3B7CAF189CA7137B4FE3AF5D4DCE74` |
  
  Той самий список читають скрипти `m9v/` з `m9v/хеші.psd1` — міняти їх разом із таблицею. Підготовка одним проходом — `m9v/ЩО_НАТИСНУТИ.md`.
@@ -299,10 +310,10 @@ index 994daeb..9c40e01 100644
  git -C "$W/clone" fetch -q origin 2>/dev/null; git -C "$W/clone" worktree add -q --detach "$(wp "$W/cr/w/claude-1")" origin/main 2>/dev/null
 diff --git a/аудит/адаптери/gemini/перевірка/сценарії_no_report.ps1 b/аудит/адаптери/gemini/перевірка/сценарії_no_report.ps1
 new file mode 100644
-index 0000000..fcef11a
+index 0000000..e5e68c7
 --- /dev/null
 +++ b/аудит/адаптери/gemini/перевірка/сценарії_no_report.ps1
-@@ -0,0 +1,126 @@
+@@ -0,0 +1,127 @@
 +﻿#Requires -Version 5.1
 +param([string]$SourceDir = (Split-Path -Parent $PSScriptRoot), [switch]$Before, [string]$EvidenceDir = '')
 +Set-StrictMode -Version Latest
@@ -363,6 +374,7 @@ index 0000000..fcef11a
 +    @('без-звіту', 'Зроблено, без звіту.', 'працюю', 'NO_REPORT'),
 +    @('немає-відповіді', '', '', 'NO_REPORT'),
 +    @('приклад', "Приклад:`n$line", $line, 'NO_REPORT'),
++    @('приклад-після-SHA', "$line — приклад", '', 'NO_REPORT'),
 +    @('код', ('```' + "`n$line`n" + '```'), $line, 'NO_REPORT'),
 +    @('цитата', "> $line", $line, 'NO_REPORT'),
 +    @('старий-assistant', 'Остаточна відповідь без звіту.', $line, 'NO_REPORT'),
@@ -430,15 +442,16 @@ index 0000000..fcef11a
 +}
 +exit [int]($script:bad -gt 0)
 diff --git a/аудит/адаптери/gemini/перевірка/сценарії_звіту.ps1 b/аудит/адаптери/gemini/перевірка/сценарії_звіту.ps1
-index e8c5541..b15765a 100644
+index e8c5541..f7df89e 100644
 --- a/аудит/адаптери/gemini/перевірка/сценарії_звіту.ps1
 +++ b/аудит/адаптери/gemini/перевірка/сценарії_звіту.ps1
-@@ -32,7 +32,7 @@ $cases = @(
+@@ -32,7 +32,8 @@ $cases = @(
      @('порожня відповідь', '', ''),
      @('звичайна проза', 'Зроблено, усе гаразд.', ''),
      @('префікс', "Очікується: $line", ''),
 -    @('суфікс', "$line — приклад", ''),
 +    @('пояснення', "$line — виконано", 'DONE'),
++    @('суфікс-приклад', "$line — приклад", ''),
      @('цитата markdown', "> $line", ''),
      @('продовження цитати markdown', "> У наряді написано:`n$line", ''),
      @('цитата багаторядкова', "«У наряді написано:`n$line`nце цитата»", ''),
