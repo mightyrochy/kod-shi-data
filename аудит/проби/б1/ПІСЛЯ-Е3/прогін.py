@@ -9,6 +9,7 @@ import socket
 import subprocess
 import time
 import urllib.request
+import urllib.error
 
 HERE = Path(__file__).resolve().parent
 ROOT = HERE.parents[3]
@@ -189,7 +190,12 @@ def main():
                     except subprocess.TimeoutExpired:
                         lines = (folder / 'лог.txt').read_text(encoding='utf-8').splitlines()
                         proxy_text = (folder / 'проксі.txt').read_text(encoding='utf-8')
-                        current_models = api()
+                        try:
+                            current_models = api()
+                        except urllib.error.HTTPError as error:
+                            current_models = {'помилка-GET': error.code, 'відповідь': error.read().decode('utf-8', errors='replace')}
+                        except (OSError, TimeoutError) as error:
+                            current_models = {'помилка-GET': str(error)}
                         with (folder / 'спостереження-моделей.jsonl').open('a', encoding='utf-8') as observations:
                             observations.write(json.dumps({'час': now(), 'models': current_models}, ensure_ascii=False) + '\n')
                         if '503' in proxy_text or any('503' in line for line in lines):
