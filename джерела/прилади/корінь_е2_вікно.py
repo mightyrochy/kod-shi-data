@@ -326,8 +326,84 @@ def головне(корінь, json_вихід=False):
     return "\n".join(рядки)
 
 
+# ── СТЕНД (тест приладу на синтетичних деревах): python3 -I джерела/прилади/корінь_е2_вікно.py --стенд ─────────
+ТЕКА = os.path.dirname(os.path.abspath(__file__))
+КОРІНЬ_РЕПО = os.path.dirname(os.path.dirname(ТЕКА))
+ПРИЛАД = os.path.abspath(__file__)
+import shutil, subprocess, tempfile  # noqa: E402,E401
+ТОЧКА = """
+async function вмістити_у_вікно_П(повідомлення){
+  const вікно = (await налаштуванняРушія()).context_length;
+  const токенів = оцінкаТокенівП(повідомлення);
+  while (токенів + МАКС_ТОКЕНІВ_П > вікно) повідомлення.splice(0, 1);
+}
+"""
+
+
+def лічба(тека, *арг):
+    п = subprocess.run([sys.executable, "-W", "ignore", ПРИЛАД, "--корінь", тека, *арг], capture_output=True, text=True)
+    assert п.returncode == 0, п.stderr
+    return п.stdout
+
+
+def місць(вивід):
+    return int(вивід.strip().split("\n")[-1].split(":")[1])
+
+
+def дерево(тека, додати_у_міст="", додати_файл=None):
+    shutil.copytree(os.path.join(КОРІНЬ_РЕПО, "джерела", "показ"), os.path.join(тека, "джерела", "показ"))
+    if додати_у_міст:
+        с = os.path.join(тека, "джерела", "показ", "міст.js")
+        with open(с, encoding="utf-8") as ф:
+            т = ф.read()
+        т = т.replace("async function модельП_блоки(", додати_у_міст + "\nasync function модельП_блоки(", 1)
+        т = т.replace("  await вмістити_запит_П(повідомлення, вміщВих);\n  /* черга",
+                      "  await вмістити_запит_П(повідомлення, вміщВих);\n  await вмістити_у_вікно_П(повідомлення);\n  /* черга", 1)
+        with open(с, "w", encoding="utf-8") as ф:
+            ф.write(т)
+    if додати_файл:
+        with open(os.path.join(тека, "джерела", "показ", "нове_місце.js"), "w", encoding="utf-8") as ф:
+            ф.write(додати_файл)
+
+
+def стенд():
+    перевірки = []
+    with tempfile.TemporaryDirectory(prefix="стенд_вікно_") as т:
+        а = os.path.join(т, "а")
+        дерево(а)
+        вивід1, вивід2 = лічба(а), лічба(а)
+        база = місць(вивід1)
+        перевірки.append(("main: місць > 0", база > 0))
+        перевірки.append(("вивід детермінований", вивід1 == вивід2))
+
+        б = os.path.join(т, "б")
+        дерево(б, додати_у_міст=ТОЧКА)
+        перевірки.append(("точка вікно+токени+скорочення → 0", місць(лічба(б)) == 0))
+
+        в = os.path.join(т, "в")
+        дерево(в, додати_у_міст=ТОЧКА.replace("context_length", "стала").replace("splice", "ignore"))
+        рядок = лічба(в)
+        перевірки.append(("токени без поля вікна й скорочення → п.1 закрито, п.2 і п.3 лишаються",
+                          місць(рядок) == база and "п.1 — 0 ·" in рядок and "п.2 — 0" not in рядок and "п.3 — 0" not in рядок))
+
+        г = os.path.join(т, "г")
+        дерево(г, додати_файл="async function нове(дані){ return await модельП(складати(дані)); }\n")
+        перевірки.append(("новий виклик зі змінним промптом → +1", місць(лічба(г)) == база + 1))
+
+        д = os.path.join(т, "д")
+        дерево(д, додати_файл="async function нове2(){ return await модельП(ПРОМПТ_ФІКС); }\n")
+        перевірки.append(("виклик зі сталою без фото → не місце", місць(лічба(д)) == база))
+    провал = [н for н, ок in перевірки if not ок]
+    for н, ок in перевірки:
+        print(("ОК     " if ок else "ПРОВАЛ ") + н)
+    return 1 if провал else 0
+
+
+
 def main():
     арг = sys.argv[1:]
+    if "--стенд" in арг:
+        return стенд()
     корінь = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
     if "--корінь" in арг:
         корінь = арг[арг.index("--корінь") + 1]
