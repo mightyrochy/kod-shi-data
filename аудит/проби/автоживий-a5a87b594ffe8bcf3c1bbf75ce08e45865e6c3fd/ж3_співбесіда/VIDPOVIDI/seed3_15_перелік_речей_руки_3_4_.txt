@@ -1,0 +1,44 @@
+── ПРОМПТ (2481 симв.) ──
+{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.", "One item carries one thing — of two alternatives list the first; a note in brackets is not an item.", "Slot \"accessory\" is for an item no other slot fits.", "\"is_outfit\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "ITEM_LIST", "answer_schema": {"is_outfit": "yes|no", "items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory", "color_hex": "<#rrggbb or null>", "worn": "<true, or false when the description says the outfit goes without it>"}]}, "input": ["\"description\" — the outfit description"]}, "description": "Tailored wool blend blazer in a charcoal grey with a classic single-breasted cut, hitting just above the hip line.\nCrisp white silk blouse with a relaxed collar and soft drape at the waist.\nHigh-waisted wide-leg trousers in matching charcoal wool with a sharp crease down the front.\nLeather ankle boots in black with a low block heel for professional comfort during the walk.\nMinimalist gold hoop earrings to add a touch of subtle polish without distracting from your conversation skills.\n\nThis outfit strikes the perfect balance between approachability and authority required for an analytical role at a bank, adhering strictly to the 'smart' dress code requested. The monochromatic charcoal palette projects professionalism and focus, which is essential when discussing data and strategy early in the morning before lunchtime fatigue sets in. The choice of wide-leg trousers and block heels ensures you can stand confidently during long interview stretches while remaining comfortable enough to show genuine enthusiasm for the position. By incorporating a crisp white silk blouse, this ensemble adds a layer of freshness that aligns with the autumn daylight outside while maintaining a sleek, office-appropriate silhouette."}
+
+── ВІДПОВІДЬ (953 симв., 5.7 с, HTTP 200) ──
+{
+  "is_outfit": "yes",
+  "items": [
+    {
+      "name": "blazer",
+      "details": "tailored wool blend single-breasted cut hitting just above the hip line",
+      "slot": "outerwear",
+      "color_hex": "#36454F",
+      "worn": true
+    },
+    {
+      "name": "blouse",
+      "details": "crisp white silk relaxed collar with soft drape at the waist",
+      "slot": "top",
+      "color_hex": "#FFFFFF",
+      "worn": true
+    },
+    {
+      "name": "trousers",
+      "details": "high-waisted wide-leg sharp crease down the front",
+      "slot": "bottom",
+      "color_hex": "#36454F",
+      "worn": true
+    },
+    {
+      "name": "ankle boots",
+      "details": "leather low block heel for professional comfort",
+      "slot": "shoes",
+      "color_hex": "#000000",
+      "worn": true
+    },
+    {
+      "name": "earrings",
+      "details": "minimalist gold hoop",
+      "slot": "earrings",
+      "color_hex": "#FFD700",
+      "worn": true
+    }
+  ]
+}
