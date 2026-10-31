@@ -823,6 +823,19 @@
      ],
      "description": "наскільки ошатний цей вихід — смуга одного щабля драбини за шкалою коду 1–10 (модель дає код щабля, `мовний_шар._смуга_числом`): завжди — з її слів і події"
     },
+    "hour": {
+     "description": "година початку за 24-годинним годинником",
+     "oneOf": [
+      {
+       "type": "integer",
+       "minimum": 0,
+       "maximum": 23
+      },
+      {
+       "const": "unknown"
+      }
+     ]
+    },
     "temperature_c": {
      "description": "температура повітря, °C",
      "oneOf": [
@@ -1055,6 +1068,19 @@
      "items": {
       "$ref": "#/$defs/own_item"
      }
+    },
+    "minute": {
+     "description": "хвилини початку, коли названо разом із годиною (19:30 — 30; пів на восьму вечора — 30)",
+     "oneOf": [
+      {
+       "type": "integer",
+       "minimum": 0,
+       "maximum": 59
+      },
+      {
+       "const": "unknown"
+      }
+     ]
     },
     "place_words": {
      "oneOf": [
@@ -2307,6 +2333,10 @@
         "description": "наскільки ошатний цей вихід — смуга одного щабля драбини за шкалою коду 1–10 (модель дає код щабля, `мовний_шар._смуга_числом`): завжди — з її слів і події"
        },
        {
+        "const": "hour",
+        "description": "година початку за 24-годинним годинником"
+       },
+       {
         "const": "temperature_c",
         "description": "температура повітря, °C"
        },
@@ -2381,6 +2411,10 @@
        {
         "const": "own_items",
         "description": "її власні речі, які вона називає словами: усе, що вона зве своїм («моя», «у мене є», «з моєї шафи», «з фото»), — кожна річ окремо; слот, тип і тканина — завжди, кодом з її слів або \"unknown\""
+       },
+       {
+        "const": "minute",
+        "description": "хвилини початку, коли названо разом із годиною (19:30 — 30; пів на восьму вечора — 30)"
        },
        {
         "const": "place_words",
@@ -2709,6 +2743,38 @@
         "ceremonial",
         "unknown"
        ]
+      },
+      "hour": {
+       "type": "object",
+       "additionalProperties": false,
+       "required": [
+        "quote",
+        "value"
+       ],
+       "properties": {
+        "quote": {
+         "type": "string",
+         "minLength": 1
+        },
+        "value": {
+         "description": "година початку за 24-годинним годинником",
+         "oneOf": [
+          {
+           "type": "integer",
+           "minimum": 0,
+           "maximum": 23
+          },
+          {
+           "const": "unknown"
+          }
+         ]
+        },
+        "named": {
+         "enum": [
+          "clock_time"
+         ]
+        }
+       }
       },
       "temperature_c": {
        "type": "object",
@@ -3097,6 +3163,19 @@
         "$ref": "#/$defs/own_item"
        }
       },
+      "minute": {
+       "description": "хвилини початку, коли названо разом із годиною (19:30 — 30; пів на восьму вечора — 30)",
+       "oneOf": [
+        {
+         "type": "integer",
+         "minimum": 0,
+         "maximum": 59
+        },
+        {
+         "const": "unknown"
+        }
+       ]
+      },
       "place_words": {
        "oneOf": [
         {
@@ -3306,6 +3385,7 @@
           "dress_code",
           "palette",
           "formality",
+          "hour",
           "temperature_c",
           "weather_feel",
           "intent",
@@ -3325,6 +3405,7 @@
           "open_zones",
           "reserved_colour",
           "own_items",
+          "minute",
           "place_words",
           "rest",
           "stylist_note",
