@@ -28,7 +28,7 @@ try {
         Check '1 перше поле — голий id, коментарі не id' (-not ($registry.Keys -ccontains '#') -and ($registry.Keys -ccontains 'ж1_оціни_образ_6б'))
     }
     Scenario '2 розбір рядка' {
-        function Parse([string]$Text) { @(Get-LiveAfterLines $Text $registry) }
+        function Parse([string]$Text) { , @(Get-LiveAfterLines $Text $registry) }
         $ok = Parse 'ЖИВИЙ ПІСЛЯ: ж2_побачення_вечір — чи зник хибний ліміт → повне → main → ремонтів менше'
         Check '2 повний рядок розібрано: id і питання' ($ok.Count -eq 1 -and -not $ok[0].error -and $ok[0].id -ceq 'ж2_побачення_вечір' -and $ok[0].question.StartsWith('чи зник'))
         $series = Parse 'ЖИВИЙ ПІСЛЯ: серія 2 `б1_доречність` — у картці, бібліотеці'
@@ -78,7 +78,7 @@ try {
         [void][IO.Directory]::CreateDirectory("$planRepo/аудит/проби")
         & git -C $planRepo init -q -b main
         & git -C $planRepo config user.name 'Стенд'; & git -C $planRepo config user.email 'stand@local'
-        $script:RepoDir = $planRepo; $script:Repo = $planRepo
+        $script:RepoDir = $planRepo; $script:Repo = $planRepo; $script:NoHooks = Join-Path $tmp 'no-hooks'
         [IO.File]::WriteAllText("$planRepo/аудит/проби/живі_сцени.txt", $registryText, $utf)
         function Plan-Commit([string]$Date, [string]$Name) {
             $author = $env:GIT_AUTHOR_DATE; $committer = $env:GIT_COMMITTER_DATE
@@ -118,7 +118,7 @@ try {
     }
     Scenario '4 шаблон і CI' {
         $template = [IO.File]::ReadAllText((Join-Path $SourceDir '../../наряди/автоживий.md'), $utf)
-        Check '4 шаблон велить ЗАБЛОКОВАНО диспетчерові за вадним рядком і називає сцени «у хмарі»' ($template.Contains('"bad"') -and $template.Contains('ЗАБЛОКОВАНО') -and $template.Contains('"cloud"') -and $template.Contains('у хмарі'))
+        Check '4 шаблон велить ЗАБЛОКОВАНО диспетчерові за вадним рядком і називає сцени «у хмарі»' ($template.Contains('`bad`') -and $template.Contains('ЗАБЛОКОВАНО') -and $template.Contains('`cloud`') -and $template.Contains('у хмарі'))
         $workflow = [IO.File]::ReadAllText((Join-Path $SourceDir '../../../.github/workflows/zhyvyi-ryadok.yml'), $utf)
         Check '4 CI читає тіло PR з події через змінну середовища, не підстановкою в команду' ($workflow.Contains('PR_BODY: ${{ github.event.pull_request.body }}') -and -not ($workflow -match 'run:[^\n]*\$\{\{ *github\.event\.pull_request\.body'))
         Check '4 CI на opened, synchronize, edited, ready_for_review до main' ($workflow -match 'types: \[opened, synchronize, edited, ready_for_review\]' -and $workflow.Contains('branches: [main]'))
