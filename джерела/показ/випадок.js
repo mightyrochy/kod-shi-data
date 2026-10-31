@@ -339,7 +339,7 @@ ONBOARDING — three steps, once, while there is no profile yet. Step 1 {step_ab
 
 PROFILE (tab) — rows, each showing what is already there: {row_photo} (portrait and full length), {row_colours} (three swatches: skin, hair, eyes), {row_name} (and consent), {step_face} (her answers), {row_girths} (four numbers and height), {row_extra} (all optional: high hip, knee, calf and ankle refine the fit on the legs and hips; foot length in mm and head girth in cm check shoe and hat sizes), {row_people} ({whose_profile} switches between people and {new_profile} adds one: several people can use one phone, each with her own data). A tap on a row opens its editor as a sheet with the same fields as in onboarding. What is still missing for building is labelled in gold.
 
-CASE — the main screen; the one main thing on it is the chat. Before the chat starts, under the question {where_going} there is a letter sheet: she writes into it, as to a friend, where she is going, when, what the weather is, what she wants and does not want; below it are three example beads (a tap puts the example into the field without sending it) and {fill_by_hand} (shows an empty case card). From her words the stylist builds the case passport: event, occasion, place, formality, hour, temperature, precipitation, requirements and limits. The messages form a thread, and under the last answer lies the case card with rows: {row_occasion} ({occasions}), {row_place} ({places}), {row_formality} (the step of dress for this outing — home, everyday, neat, smart, strict, evening dress or ceremonial — set by whose standard holds there, not by the hour or the event's name; a dress code chosen by hand overrides it), {row_when} (hour, temperature, {precipitation}, wind, de-icing chemicals on the roads), {row_makeup} ({makeup_levels}; for the last two also a lip colour — noticeable makeup gives the outfit one more step of contrast near the face, bold makeup already holds the focus on the face; {stylist_chooses} hands this decision to the code on purpose; the lip colour is chosen from a ladder of shades split into those recommended for her and the rest, each with its reason, next to {own_shade} and {stylist_chooses} for the colour itself), {row_jewelry} ({jewelry} or {stylist_chooses}: the code matches gold and silver against the metal of the items and removes the opposite metal from the pick, no jewellery removes jewellery altogether, and pearls cannot be told from ethnic pieces because shops do not say so — the code says this in its report), {row_dont_want} ({zones} — a hard limit, not a wish: the code removes such items from the pick itself; limits the stylist heard in her words go here too — items, fabrics, prints, colours: the card row names only what the code actually holds, which is colours and what she refused in her own words, and the rest of what was heard is shown in the sheet, where a tap removes something heard by mistake) and {row_palette} (opens a separate screen). A tap on a row opens its editor as a sheet with tiles and lists; after a manual edit the passport is rebuilt from the whole chat before building. Grey values are defaults: she has not chosen there. The card also has the question {all_right} ({yes} confirms, {fix} returns to the field), the button {build} (it needs read colours, four girths and height, and an occasion or a description in her own words; the button says what is missing, and a hint with {to_profile} appears at the top of the screen) and {save_case} (into the library, with a name; an opened saved case can be updated with {update} or saved with {save_as_new}). When the stylist does not know something (for example, how formal), quick-answer beads from the reference tables appear above the field, and a tap sends the answer.
+CASE — the main screen; the one main thing on it is the chat. Before the chat starts, under the question {where_going} there is a letter sheet: she writes into it, as to a friend, where she is going, when, what the weather is, what she wants and does not want; below it are three example beads (a tap puts the example into the field without sending it) and {fill_by_hand} (shows an empty case card). From her words the stylist builds the case passport: event, occasion, place, formality, part of day, temperature, precipitation, requirements and limits. The messages form a thread, and under the last answer lies the case card with rows: {row_occasion} ({occasions}), {row_place} ({places}), {row_formality} (the step of dress for this outing — home, everyday, neat, smart, strict, evening dress or ceremonial — set by whose standard holds there, not by the hour or the event's name; a dress code chosen by hand overrides it), {row_when} (part of day, temperature, {precipitation}, wind, de-icing chemicals on the roads), {row_makeup} ({makeup_levels}; for the last two also a lip colour — noticeable makeup gives the outfit one more step of contrast near the face, bold makeup already holds the focus on the face; {stylist_chooses} hands this decision to the code on purpose; the lip colour is chosen from a ladder of shades split into those recommended for her and the rest, each with its reason, next to {own_shade} and {stylist_chooses} for the colour itself), {row_jewelry} ({jewelry} or {stylist_chooses}: the code matches gold and silver against the metal of the items and removes the opposite metal from the pick, no jewellery removes jewellery altogether, and pearls cannot be told from ethnic pieces because shops do not say so — the code says this in its report), {row_dont_want} ({zones} — a hard limit, not a wish: the code removes such items from the pick itself; limits the stylist heard in her words go here too — items, fabrics, prints, colours: the card row names only what the code actually holds, which is colours and what she refused in her own words, and the rest of what was heard is shown in the sheet, where a tap removes something heard by mistake) and {row_palette} (opens a separate screen). A tap on a row opens its editor as a sheet with tiles and lists; after a manual edit the passport is rebuilt from the whole chat before building. Grey values are defaults: she has not chosen there. The card also has the question {all_right} ({yes} confirms, {fix} returns to the field), the button {build} (it needs read colours, four girths and height, and an occasion or a description in her own words; the button says what is missing, and a hint with {to_profile} appears at the top of the screen) and {save_case} (into the library, with a name; an opened saved case can be updated with {update} or saved with {save_as_new}). When the stylist does not know something (for example, how formal), quick-answer beads from the reference tables appear above the field, and a tap sends the answer.
 ITEM PHOTOS: next to {send}, both in the letter sheet and in the chat field, there is a photo button — she can add one or several photos of an item (her own, or one she is thinking of buying) and ask whether it suits her and what to wear it with; a photo without words means exactly that question. The photo is shown as a thumbnail in her message; it stays on the phone with the case draft and is saved with the case in the library; a model receives it only within a call. The stylist names the item (what it is, colour, cut, length, fabric, whose it is), and the code measures its colour from the photo itself and decides whether the item suits her — it suits, it suits with a condition (for example, away from the face, with her neutral near the face), or another one would be better — and why; the stylist only retells this verdict. If she has not named an occasion, the item is judged for an ordinary day, and this is said. {build} puts the item from the photo into every outfit and picks the rest around it; on the card it stands with its photo and the mark {your_item} (or {item_from_photo}), without a shop or price, and {total} does not count it. An item that does not suit her can still be built with — the card says in one line what softens it.
 AN ITEM IN WORDS: she can also describe her own item without a photo; the stylist adds it to the case, and the code puts it into every outfit in the same way. Its colour then comes from her words, not from a measurement, and the card says so in the list of what the code does not know. Such a sentence, or a wish for an outfit with that item, written on any other screen, the code itself puts into the case chat and says it was added to the case; other questions outside the case do not go into building.
 VOICE: next to the photo button there is a microphone — here in the chat and on the outfit card under the verdict field. The first tap starts recording and the second stops it; while she speaks, the text appears in the field at once and is appended to what is already written, so she can correct it by hand. It goes nowhere by itself: {send} sends the message, {record_verdict} records the verdict. The voice is recognised not by Lyusterko but by the browser's service (Google in Chrome, Apple on iPhone), and the sound goes to it; only the text it returns lands in the field. Where recognition is unavailable or the microphone is blocked, the button says so and suggests the microphone on the phone's keyboard, which types into the same field. The owner's report shows that a comment or a message was dictated.
@@ -473,8 +473,8 @@ function словаМісцяП(м){
   return п ? String(п.місце_слова).trim() : (м.слова ? м.підпис : null);
 }
 let ПОРОЖНІ_ВІДКРИТО_П = false;   // рядок «Додати» картки відкрив порожні рядки (до нового сценарію)
-/* пора паспорта (код `внутрішня_мова` part_of_day) → слово рядка «Коли й погода» — ті самі слова, що в швидких
-   відповідях про годину */
+/* пора паспорта (код `внутрішня_мова` part_of_day) → слово рядка «Коли й погода» і поля «Коли» — ті самі слова,
+   що в швидких відповідях про частину дня */
 const ПОРА_СЛОВОМ_П = ДОВІДНИК.показ.пора_словом;
 function малюватиКарткуСценарію(){
   const к = $('сц-картка'); if (!к) return;
@@ -512,31 +512,20 @@ function малюватиКарткуСценарію(){
     /* Слово відчуття ширше за поле 44 px і різалося до «мо»: поле росте за довжиною слова, поки порожнє */
     пТемп.style.width = (відчПілюлі && !пТемп.value) ? (відчПілюлі.length * 0.66 + 0.6).toFixed(2) + 'em' : '';
   }
-  let г = parseInt($('сц-година').value), т = температураП(), хвКартки = хвилиниП();
+  const т = температураП();
   const оп = $('сц-опади').value;
   const вт = $('сц-вітер').value, рг = $('сц-реагенти').value;
-  /* ПОКАЗ-1: година з ходу плиток. Поле екрана, якого вона не торкалась, стоїть на типових 11:00, а
-     фоновий хід плиток уже зрозумів годину (театр — 20:00) — картка читає її з того самого паспорта, з якого
-     бере число ошатності (`паспортКартки`), доки поле типове; рука й назване нею слово важать над паспортом. */
-  const пК = типовеЧислоП('сц-година') ? паспортКартки() : null;
-  let гЗПаспорта = false;
-  if (пК && пК.година != null && isFinite(пК.година) && (пК.джерело_полів || {}).година !== ТИПОВЕ_ПОЛЕ_ФОРМИ_П){
-    г = parseInt(пК.година); хвКартки = пК.хвилини > 0 ? пК.хвилини : 0; гЗПаспорта = true;
-  }
-  /* Пора без годинника («субота ввечері») стоїть у паспорті порою, а не годиною — рядок каже її пору
-     словом плитки швидкої відповіді, а годинника, якого вона не називала, не малює */
-  const пораК = (пК && !гЗПаспорта && ПОРА_СЛОВОМ_П[пК.пора]) || null;
+  /* ЧАСТИНА ДНЯ, А НЕ ГОДИНА (корінь Е2-частина-дня). Поле «Коли» — вибір частини дня: обрана рукою чи
+     поставлена паспортом (`застосуватиПаспортДоЕкрана`) стоїть словом плитки швидкої відповіді. Поки поле порожнє,
+     частину дня, яку вже зрозумів фоновий хід плиток (театр — ввечері), картка читає з того самого паспорта, з якого
+     бере число ошатності (`паспортКартки`). Ні годинника, ні типової пори картка не малює: частини дня, якої вона не
+     назвала, нема. */
+  const пораК = ПОРА_СЛОВОМ_П[($('сц-пора') || {}).value] || ПОРА_СЛОВОМ_П[(паспортКартки() || {}).пора] || null;
   /* Відчуття з її слів стоїть замість типових градусів, а не поруч із ними */
   const відч = відчуттяКарткиП();
   позначитиВідчуттяП();
   /* шматки рядка парами [текст, типове] — типове стоїть сірим і тоді, коли решту рядка назвала вона */
-  /* Вшита година форми (11:00) — не її слово, і на картці вечірки «Коли — 11:00, мороз» казало про ранок, якого
-     вона не називала (правила беруть вечір). Поки години в її словах нема (рука не торкалась, паспорт її не дав і порою
-     не замінив), рядок її не друкує; поле й число лишаються в редакторі того ж рядка і в правилах (п.9). */
-  const годинаВшита = типовеЧислоП('сц-година') && !гЗПаспорта && !пораК;
-  const коли = [пораК ? [пораК, false] :
-                [isFinite(г) && !годинаВшита ? String(г).padStart(2, '0') + ':' + String(хвКартки).padStart(2, '0') : null,
-                 типовеЧислоП('сц-година') && !гЗПаспорта],
+  const коли = [[пораК, false],
                 [відч || (isFinite(т) ? (т > 0 ? '+' : '') + т + ' °C' : null),
                  !відч && типовеЧислоП('сц-темп')],
                 [оп ? ({нема:'без опадів', можливий_дощ:'можливий дощ', дощ:'дощ', сніг:'сніг'}[оп] || оп) : null,
@@ -825,7 +814,7 @@ const ШВИДКІ_ВІДПОВІДІ = {
   'місце':    ()=>(ДОВІДНИК.місця||[]).filter(о=>о.плитка).map(о=>о.підпис.toLowerCase()),
   'нагода':   ()=>(ДОВІДНИК.нагоди||[]).filter(о=>о.плитка).map(о=>о.підпис.toLowerCase()),
   'опади':    ()=>['без опадів', 'дощ', 'сніг'],
-  'година':   ()=>['вранці', 'вдень', 'ввечері']};
+  'пора':     ()=>Object.values(ПОРА_СЛОВОМ_П)};
 function малюватиШвидкіП(){
   const к = $('сц-швидкі'); if (!к) return;
   к.innerHTML = '';
@@ -966,7 +955,7 @@ function застосуватиПаспортДоЕкранаВтіло(п){
     словоПалітри('схема', п.схема.replaceAll('_', ' '));
     малюватиПалітруКоротко();
   }
-  if (п.година != null && isFinite(п.година)){ став('сц-година', Number(п.година)); $('сц-хвилини').value = String(п.хвилини > 0 ? п.хвилини : 0); }
+  if (ПОРА_СЛОВОМ_П[п.пора]) став('сц-пора', п.пора);
   if (п.темп_c != null && isFinite(п.темп_c)) став('сц-темп', Number(п.темп_c));
   /* паспорт, що несе погоду (градуси чи відчуття), переписує плитку відчуття — як решту плиток */
   if (($('сц-відчуття') || {}).value && ((п.темп_c != null && isFinite(п.темп_c)) || ВІДЧУТТЯ_П[п.погода_відчуття])) $('сц-відчуття').value = '';

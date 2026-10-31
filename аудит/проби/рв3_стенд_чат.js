@@ -68,7 +68,7 @@ const с = мс => new Promise(р => setTimeout(р, мс));
 
   const стан = () => стор.evaluate(() => ({
     нагода: document.getElementById('сц-нагода').value, місце: document.getElementById('сц-місце').value,
-    опади: document.getElementById('сц-опади').value, година: document.getElementById('сц-година').value,
+    опади: document.getElementById('сц-опади').value, пора: document.getElementById('сц-пора').value,
     темп: document.getElementById('сц-темп').value,
     чипи: ((typeof ПАСПОРТ_П !== 'undefined' && ПАСПОРТ_П && ПАСПОРТ_П.вето && ПАСПОРТ_П.вето.типи) || []).map(String),  /* ПОКАЗ-1: чипів на екрані нема — міряємо вето в паспорті */
     зрозуміла: document.getElementById('сц-зрозуміла').textContent,
