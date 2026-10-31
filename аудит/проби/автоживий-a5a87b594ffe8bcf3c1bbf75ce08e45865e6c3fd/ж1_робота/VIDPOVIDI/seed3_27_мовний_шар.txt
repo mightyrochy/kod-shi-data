@@ -1,0 +1,56 @@
+── ПРОМПТ (7724 симв.) ──
+Ти — перекладачка в застосунку-стилістці. Ти пишеш природною українською тексти, які зараз побачить жінка. Рішень не приймаєш, на питання не відповідаєш, змісту не міняєш.
+
+Вхід — JSON-об'єкт: ключ — номер тексту н, значення — текст, який склали код та інші моделі.
+
+Ключі відповіді — ті самі, що у вході, кожен: номер н тексту, значення — рядок, той самий зміст природною українською, без англійських слів і кодів; ПЕРЕКЛАДАЙ КОЖНЕ англійське слово, навіть одне посеред українського речення; латиницею лишай лише назви крамниць і брендів, «V-подібний» і «den»; текст, що вже природний і до неї на «ти», — без змін, а український текст на «ви» перепиши на «ти», решту лиши слово в слово.
+
+Вид кожної речі — теж зміст: річ у перекладі — та сама, що у вході, а не схожа чи сусідня. ankle boots — черевики чи ботильйони, boots — чоботи, heeled — на підборах, а не туфлі, pumps — туфлі-човники, loafers — лофери; pendant — кулон чи підвіска, necklace — намисто чи ланцюжок, а не каблучка, сережки чи браслет; ring — каблучка; earrings — сережки. Українські назви речей у вході (назви з крамниці, найчастіше перед « — ») переписуй літера в літеру: не міняй, не переставляй і не додавай у них жодного слова.
+
+Про жінку — лише до неї, на «ти» (ти, тебе, тобі, твій, твоя; хочеш, скинеш; наказ однини: розкажи, оберни, тримай, дай), і в питаннях теж: you, your, she, her про неї — «ти», «твій» (her skin tone — твій тон шкіри; when she turns her head — коли ти повертаєш голову; she looks taller — ти виглядаєш вищою), англійський наказ — наказом однини; «вона», «її» — лише про річ (сукню, сумку, куртку). Говорить стилістка — одна жінка: про себе — від першої особи однини й у жіночому роді (я підібрала, я б додала), не «ми», не від імені застосунку чи коду і ніколи словами самої жінки.
+
+Мова: літературна українська, як у текстах українських крамниць одягу. Кожне українське слово — літерами лише української абетки, без жодної латинської літери чи стороннього знака всередині слова. Кожне речення — одна остаточна версія, без виправлень посеред тексту. Словничок нижче — лише як перекласти англійське слово, коли воно є у вході; це не зміст: річ, тканина чи колір, яких у вході нема, у тексті не з'являються. Звичні українські назви для слів англійського джерела: trousers, pants — штани; dressy, dressier — ошатний, ошатніше; look, outfit — образ; taupe — сіро-бежевий; loose — вільний; suede — замша (жіночий рід); slip dress — сукня-комбінація; camel — кемел (колір). Назви речей і кольорів, які дала крамниця, — як є.
+
+Перевір кожне слово ДО відповіді: до неї — лише «ти», жодного «ви», «ваш» і наказу множини, і про неї жодного «вона», «її», «їй», жодне слово не стоїть двічі поспіль, кожна річ — того самого виду, що у вході (річ образу — іменником коду її виду з переліку, коли він є, і слова при ній узгоджені з цим іменником), а українська назва речі — слово в слово. Відповідь — рівно ОДИН JSON-об'єкт і нічого після нього: другої, виправленої версії, приміток і пояснень не пиши — помилку виправ у тому самому об'єкті.
+
+Речі образу — перелік речей картки (номер речі — як на картці, поруч — її коди):
+1 — kind code: blouse · colour code: light_blue · about it: text н=1
+2 — kind code: suit · colour code: beige · about it: text н=2
+3 — kind code: tote · colour code: light_blue · about it: text н=3
+4 — kind code: loafers · colour code: beige · about it: text н=4
+5 — kind code: kerchief · colour code: light_blue · about it: text н=5
+When a text speaks of an item of the list, call it by the Ukrainian noun of its kind code (kind code: …) — the same noun in the right case in every text (trench_coat — «тренч», sweater — «светр», loafers — «лофери»), not by another kind or a synonym of the English word, whatever word the English text uses; a code ending in _generic names only the family (dress_generic — a dress, bag_generic — a bag). Make every adjective, pronoun and verb with the item agree with that noun in gender and number («бежевий тренч, який…»; «шкіряні лофери, які…»). A name you translate in this same call (text н=K): give it one noun and call the item by it, in agreement, in every text. A text the list gives as about an item (about it: text н=M) speaks of that one item, and so does every other text where the English names it. The colour of an item of the list is its colour code (colour code: …): write the Ukrainian name of that code. The English colour words for that item are the stylist's impression of a photo: do not turn them into a colour of their own — the item's colour stands in their place. Colours of its details (trim, strap, buttons, print), its fabric and the rest — translate from the text. The list is for the items only: an item the English text does not name is not added to the translation — neither to the description nor to the advice.
+
+Colour codes: beige — бежевий; light_blue — блакитний.
+
+ТЕКСТИ:
+{
+"1": "This is a relaxed-fit blouse in a soft light blue, featuring a gathered ruffle neckline and matching cuffs with drawstrings for adjustable volume. The fabric drapes easily over the shoulders, adding a gentle flow to your upper body while maintaining a polished feel suitable for the office.",
+"2": "The set is tailored in a neutral beige tone, comprising a sleeveless fitted vest with a classic button front and matching shorts detailed with deep pleats at the waist. This piece offers a structured, professional foundation that balances the softer elements of your top and accessories.",
+"3": "This is a structured tote bag in light blue, designed to hold all your work essentials comfortably. Its shape provides a solid architectural element to carry alongside you, matching the color of your blouse for a cohesive look.",
+"4": "These are classic loafers in a soft beige hue, crafted with a flat sole for all-day comfort while maintaining a smart, refined silhouette that complements the shorts and vest.",
+"5": "A delicate printed silk kerchief in light blue and yellow tones, featuring artistic text and motifs. Its lightweight, shimmering fabric adds a sophisticated pop of color and texture when tied at your neck or waist.",
+"6": "For your smart workday in the office, I have selected a look that balances structure with softness. You will wear a fitted beige suit set, featuring a sleeveless vest and matching shorts with pleated fronts; over this crisp base, you choose a relaxed light-blue blouse with gathered ruffles at the neck and cuffs for a touch of elegance. Your footwear consists of sleek beige loafers, which ground the outfit in practical comfort. I have accessorized with a structured light-blue tote bag to carry your essentials and a printed silk kerchief, tied neatly around your neck near your collarbone, to add a pop of pattern that complements the blouse without overwhelming your look.",
+"7": "Tuck the relaxed blouse slightly into the pleated shorts at the front to define your waist and keep the silhouette clean.",
+"8": "Блакитний шкіряний тоут Fourre-tout — Adding this leather tote to resolve the 'no_bag' and 'incomplete' blockers, providing the necessary structure for an office look.",
+"9": "Лофери жіночі, ATTICO, замша, колір бежевий — Adding these loafers to fix the 'no_shoes' blocker and ground the outfit in a practical, office-appropriate footwear.",
+"10": "Блакитний шкіряний тоут Fourre-tout — The gate about the bag being below your event level is accepted because this leather tote brings the necessary structure and volume to complete your office look, resolving the 'incomplete' issue while staying within your style.",
+"11": "Блакитний шкіряний тоут Fourre-tout — Adding this large leather tote to fix the 'no_bag' blocker and add volume, answering the 'echo_accent_or_declare_focus' and 'no_bag' findings."
+}
+
+── ВІДПОВІДЬ (2715 симв., 23.1 с, HTTP 200) ──
+```json
+{
+"1": "Це вільна блузка м’якого блакитного кольору з зібраним воланом на горловині та манжетами, які можна регулювати завдяки шнуркам. Тканина легко драпірується по плечах, додаючи ніжний рух верхній частині тіла, зберігаючи при цьому охайний вигляд, який підходить для офісу.",
+"2": "Костюм виконано в нейтральному бежевому тоні та складається з безрукавного жилета класичного крою на ґудзиках і відповідних шортів із глибокими складками на талії. Цей комплект дає структуровану, професійну основу, яка гармонійно поєднується з м’якими елементами твоєї блузки й аксесуарів.",
+"3": "Це містка сумка-тоут блакитного кольору, розроблена для зручного розміщення всіх твоїх робочих речей. Її форма додає солідний архітектурний акцент до образу.",
+"4": "Ці класичні лофери виконані в м’якому бежевому відтінку з плоскою підошвою, що забезпечує комфорт протягом усього дня та зберігає витончений силует, який гармонує зі шортами й жилетом.",
+"5": "Ніжний шовковий хустинка в блакитно-жовтих тонах із художнім текстом і мотивами. Її легка блискуча тканина додасть вишуканого кольорового акценту та текстури, коли ти зав’яжеш її на шиї або талії.",
+"6": "Для твого ділового дня в офісі я підібрала образ, який поєднує структуру з м’якістю. Ти носитимеш бежевий костюм-двійку, що складається з безрукавного жилета й відповідних шортів із плісе на передній частині; поверх цього лаконічного комплекту ти вибереш вільну блакитну блузку зібраним воланом на горловині та манжетах для нотки елегантності. Твоє взуття — це стильні бежеві лофери, які збалансують образ практичним комфортом. Я доповнила його місткою блакитною сумкою-тоут і хустинкою з принтом, зав’язаною на шиї біля ключиці, щоб додати акцент у вигляді візерунка, який гармонійно поєднується з блузкою.",
+"7": "Злегка заправ блакитну блузку в плісировані шорти спереду, щоб підкреслити талію й зберегти силует чистим.",
+"8": "Блакитний шкіряний тоут Fourre-tout — Додавання цієї шкіряної сумки вирішить проблему 'no_bag' і 'incomplete', надавши необхідну структуру для офісного образу.",
+"9": "Жіночі лофери, ATTICO, замша, колір бежевий — Додавання цих лоферів допоможе усунути проблему 'no_shoes' і збалансує образ практичним взуттям, придатним для офісу.",
+"10": "Блакитний шкіряний тоут Fourre-tout — Твоя заувага щодо того, що сумка нижче твого рівня події, прийнята, адже ця шкіряна сумка додасть необхідної структури та об’єму для завершення офісного образу, вирішуючи проблему 'incomplete', залишаючись у межах твого стилю.",
+"11": "Блакитний шкіряний тоут Fourre-tout — Додавання цієї великої шкіряної сумки допоможе усунути проблему 'no_bag' і додати об’єму, відповідаючи на питання про акцент або визначення фокусу та відсутність сумки."
+}
+```

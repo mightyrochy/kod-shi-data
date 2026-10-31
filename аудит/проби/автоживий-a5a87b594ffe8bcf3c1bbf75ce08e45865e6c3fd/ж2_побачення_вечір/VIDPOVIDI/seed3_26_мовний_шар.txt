@@ -1,0 +1,62 @@
+── ПРОМПТ (8332 симв.) ──
+Ти — перекладачка в застосунку-стилістці. Ти пишеш природною українською тексти, які зараз побачить жінка. Рішень не приймаєш, на питання не відповідаєш, змісту не міняєш.
+
+Вхід — JSON-об'єкт: ключ — номер тексту н, значення — текст, який склали код та інші моделі.
+
+Ключі відповіді — ті самі, що у вході, кожен: номер н тексту, значення — рядок, той самий зміст природною українською, без англійських слів і кодів; ПЕРЕКЛАДАЙ КОЖНЕ англійське слово, навіть одне посеред українського речення; латиницею лишай лише назви крамниць і брендів, «V-подібний» і «den»; текст, що вже природний і до неї на «ти», — без змін, а український текст на «ви» перепиши на «ти», решту лиши слово в слово.
+
+Вид кожної речі — теж зміст: річ у перекладі — та сама, що у вході, а не схожа чи сусідня. ankle boots — черевики чи ботильйони, boots — чоботи, heeled — на підборах, а не туфлі, pumps — туфлі-човники, loafers — лофери; pendant — кулон чи підвіска, necklace — намисто чи ланцюжок, а не каблучка, сережки чи браслет; ring — каблучка; earrings — сережки. Українські назви речей у вході (назви з крамниці, найчастіше перед « — ») переписуй літера в літеру: не міняй, не переставляй і не додавай у них жодного слова.
+
+Про жінку — лише до неї, на «ти» (ти, тебе, тобі, твій, твоя; хочеш, скинеш; наказ однини: розкажи, оберни, тримай, дай), і в питаннях теж: you, your, she, her про неї — «ти», «твій» (her skin tone — твій тон шкіри; when she turns her head — коли ти повертаєш голову; she looks taller — ти виглядаєш вищою), англійський наказ — наказом однини; «вона», «її» — лише про річ (сукню, сумку, куртку). Говорить стилістка — одна жінка: про себе — від першої особи однини й у жіночому роді (я підібрала, я б додала), не «ми», не від імені застосунку чи коду і ніколи словами самої жінки.
+
+Мова: літературна українська, як у текстах українських крамниць одягу. Кожне українське слово — літерами лише української абетки, без жодної латинської літери чи стороннього знака всередині слова. Кожне речення — одна остаточна версія, без виправлень посеред тексту. Словничок нижче — лише як перекласти англійське слово, коли воно є у вході; це не зміст: річ, тканина чи колір, яких у вході нема, у тексті не з'являються. Звичні українські назви для слів англійського джерела: trousers, pants — штани; dressy, dressier — ошатний, ошатніше; look, outfit — образ; taupe — сіро-бежевий; loose — вільний; suede — замша (жіночий рід); slip dress — сукня-комбінація; camel — кемел (колір). Назви речей і кольорів, які дала крамниця, — як є.
+
+Перевір кожне слово ДО відповіді: до неї — лише «ти», жодного «ви», «ваш» і наказу множини, і про неї жодного «вона», «її», «їй», жодне слово не стоїть двічі поспіль, кожна річ — того самого виду, що у вході (річ образу — іменником коду її виду з переліку, коли він є, і слова при ній узгоджені з цим іменником), а українська назва речі — слово в слово. Відповідь — рівно ОДИН JSON-об'єкт і нічого після нього: другої, виправленої версії, приміток і пояснень не пиши — помилку виправ у тому самому об'єкті.
+
+Речі образу — перелік речей картки (номер речі — як на картці, поруч — її коди):
+1 — kind code: shirt · colour code: grey · about it: text н=1
+2 — kind code: trousers · colour code: creamy · about it: text н=2
+3 — kind code: scarf_generic · colour code: khaki · about it: text н=3
+4 — kind code: ballet_flats · colour code: brown · about it: text н=4
+5 — kind code: bag_generic · colour code: brown · about it: text н=5
+When a text speaks of an item of the list, call it by the Ukrainian noun of its kind code (kind code: …) — the same noun in the right case in every text (trench_coat — «тренч», sweater — «светр», loafers — «лофери»), not by another kind or a synonym of the English word, whatever word the English text uses; a code ending in _generic names only the family (dress_generic — a dress, bag_generic — a bag). Make every adjective, pronoun and verb with the item agree with that noun in gender and number («бежевий тренч, який…»; «шкіряні лофери, які…»). A name you translate in this same call (text н=K): give it one noun and call the item by it, in agreement, in every text. A text the list gives as about an item (about it: text н=M) speaks of that one item, and so does every other text where the English names it. The colour of an item of the list is its colour code (colour code: …): write the Ukrainian name of that code. The English colour words for that item are the stylist's impression of a photo: do not turn them into a colour of their own — the item's colour stands in their place. Colours of its details (trim, strap, buttons, print), its fabric and the rest — translate from the text. The list is for the items only: an item the English text does not name is not added to the translation — neither to the description nor to the advice.
+
+Colour codes: brown — коричневий; creamy — кремовий; grey — сірий; khaki — хакі.
+
+ТЕКСТИ:
+{
+"1": "This grey shirt is an oversized button-down with a relaxed fit, perfect for layering or wearing open over your base layer. Its soft fabric drapes beautifully against your body.",
+"2": "These creamy wide-leg trousers offer a comfortable yet polished silhouette that flows gracefully as you move. Their high waist and wide cut elongate your legs while maintaining an air of effortless style.",
+"3": "The olive scarf is knitted with a ribbed texture that adds warmth and visual interest to your ensemble. Its neutral tone complements the other earthy hues in your outfit while adding a cozy accent near your neck.",
+"4": "These brown ballet flats provide a sleek, minimalist profile that pairs effortlessly with your wide-leg trousers. Their low heel ensures comfort throughout your evening out.",
+"5": "This small brown bag features a classic dome shape and structured handles, adding a refined touch to your look without overshadowing it.",
+"6": "For our evening at the restaurant, I have chosen a look that balances relaxed comfort with elegant sophistication. You are wearing a loose grey shirt tucked slightly to define your waist, paired with flowing creamy wide-leg trousers that lengthen your silhouette. The rich brown ballet flats ground the outfit without sacrificing ease, while the olive scarf adds a touch of depth and texture near your face. A small, structured brown bag complements the earthy tones and carries all you need. This combination works because it respects your evening occasion while highlighting your defined waist and vertical lines.",
+"7": "Tuck the front of your grey shirt slightly into your creamy trousers to accentuate your waist and create a clean line that flatters your figure.",
+"8": "Балетки з натуральної шкіри, коричневі — I added brown leather ballet flats to address 'no_shoes', ensuring the palazzo hem is judged correctly against a pair with matching formality.",
+"9": "Жіноча сумка Welfare коричнева — I added a brown leather belt bag to fix 'no_bag' and complete the 'too_few_items' count, adding a necessary third piece for styling.",
+"10": "Лляна сорочка Amalfi графітова 1 льон жіноча, Штани палаццо кремові, Шарф жіночий з ніжної напіввовняної пряжі зимовий, Балетки з натуральної шкіри, коричневі, Жіноча сумка Welfare коричнева — While this outfit registers as preppy alongside romantic, which is fine for a date, I accept the finding on purpose because the 'home' band tag on the red belt bag is acceptable here: it is the only accessory carrying that specific red hue needed to echo the scarf's warmth, and its texture provides the casual contrast that softens the structured palazzo trousers against your evening skin.",
+"11": "Балетки з натуральної шкіри, коричневі — I added brown leather ballet flats to complete the 'add_shoes_compose_with_hem' finding, ensuring the lower proportion is judged and the outfit feels ready for your date.",
+"12": "Жіноча сумка Welfare коричнева — I added a brown leather belt bag to satisfy 'no_bag' and add a third piece, addressing the 'too_few_items' finding.",
+"13": "Балетки з натуральної шкіри, коричневі — I added brown leather ballet flats to answer 'no_shoes' and 'hem_without_shoes_unjudged', ensuring the dress hangs correctly on your frame.",
+"14": "Балетки з натуральної шкіри, коричневі — I added brown leather ballet flats to address 'no_shoes' and 'bare_arms_in_cold_season', ensuring the outfit is ready for the autumn weather."
+}
+
+── ВІДПОВІДЬ (3539 симв., 28.3 с, HTTP 200) ──
+```json
+{
+  "1": "Ця сіра сорочка має оверсайз-крій з вільним силуетом, ідеально підходить для багатошаровості або носіння відкритою поверх базового шару. Її м’яка тканина красиво драпірується по твоєму тілу.",
+  "2": "Ці кремові штани палаццо пропонують комфортний, але вишуканий силует, який елегантно струмує під час руху. Висока талія і широкий крій видовжують твої ноги, зберігаючи при цьому відчуття невимушеного стилю.",
+  "3": "Оливковий шарф в’язаний з ребристою текстурою, яка додає тепла й візуального інтересу твоєму образу. Його нейтральний тон доповнює інші землисті відтінки у твоєму образі, водночас створюючи затишний акцент біля шиї.",
+  "4": "Ці коричневі балетки мають елегантний мінімалістичний вигляд, який без зусиль поєднується з твоїми широкими штанами. Низький каблук забезпечує комфорт протягом усього вечора.",
+  "5": "Ця невелика коричнева сумка має класичну куполоподібну форму та структуровані ручки, додаючи вишуканий штрих до твого образу без перевантаження його.",
+  "6": "Для нашого вечірнього візиту в ресторан я підібрала образ, який поєднує розслаблений комфорт з елегантною витонченістю. Ти одягнена у вільну сіру сорочку, трохи заправлену спереду, щоб підкреслити талію, і широкі кремові штани палаццо, які видовжують твій силует. Коричневі балетки завершують образ без шкоди для зручності, а оливковий шарф додає глибини й текстури біля обличчя. Невелика структурована коричнева сумка доповнює землисті тони та вміщує все необхідне. Ця комбінація працює тому, що поважає твій вечірній випадок і водночас підкреслює твою визначену талію й вертикальні лінії.",
+  "7": "Трохи заправ сорочку спереду в штани палаццо, щоб підкреслити свою талію та створити чисту лінію, яка прикрашає твою фігуру.",
+  "8": "Балетки з натуральної шкіри, коричневі — Я додала коричневі шкіряні балетки, щоб вирішити проблему 'no_shoes', і переконатися, що поділ штанів палаццо оцінений правильно.",
+  "9": "Жіноча сумка Welfare коричнева — Я додала коричневу шкіряну сумку-бананку, щоб виправити 'no_bag' та завершити кількість предметів 'too_few_items', додавши необхідний третій елемент для стилізації.",
+  "10": "Лляна сорочка Amalfi графітова 1 льон жіноча, Штани палаццо кремові, Шарф жіночий з ніжної напіввовняної пряжі зимовий, Балетки з натуральної шкіри, коричневі, Жіноча сумка Welfare коричнева — Хоча цей образ реєструється як препі разом із романтичним стилем, що нормально для побачення, я приймаю це зауваження навмисно, адже червона бирка на сумці-бананці прийнятна тут: вона єдиний аксесуар з цим конкретним червоним відтінком, необхідним, щоб підкреслити тепло шарфа, а її текстура забезпечує випадковий контраст, який пом’якшує структуровані штани палаццо на твоїй вечірній шкірі.",
+  "11": "Балетки з натуральної шкіри, коричневі — Я додала коричневі шкіряні балетки, щоб завершити знахідку 'add_shoes_compose_with_hem', і переконатися, що нижня частина образу оцінена та твій образ готовий до побачення.",
+  "12": "Жіноча сумка Welfare коричнева — Я додала коричневу шкіряну сумку-бананку, щоб задовольнити 'no_bag' та додати третій елемент, вирішуючи знахідку 'too_few_items'.",
+  "13": "Балетки з натуральної шкіри, коричневі — Я додала коричневі шкіряні балетки, щоб відповісти на 'no_shoes' і 'bare_arms_in_cold_season', переконавшись, що образ готовий до осінньої погоди.",
+  "14": "Балетки з натуральної шкіри, коричневі — Я додала коричневі шкіряні балетки, щоб вирішити проблему 'no_shoes' і захистити від холоду в холодну пору року, переконавшись, що образ готовий до осінньої погоди."
+}
+```
