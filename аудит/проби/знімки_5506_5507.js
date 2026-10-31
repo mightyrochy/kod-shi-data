@@ -1,6 +1,6 @@
 // Chromium 390×844: ДО/ПІСЛЯ рядків 5506–5507 на ЗІБРАНІЙ сторінці. node знімки.js <index.html> <тека>
 const {chromium} = require('playwright');
-const zlib = require('zlib'), fs = require('fs');
+const fs = require('fs');
 const [,, файл, тека] = process.argv; fs.mkdirSync(тека, {recursive: true});
 const карт = (рука, речі) => ({рука, ітерацій: 1, викликів: 1, текст: 'Образ руки ' + рука + '. Світла сукня і тонкий пасок.',
   опис: 'Образ руки ' + рука, підпис: 'образ', речі, мітки: [], знахідки: [], питання: [], етапи: {викликів: 1, виклики: []},
@@ -8,9 +8,8 @@ const карт = (рука, речі) => ({рука, ітерацій: 1, вик
 const речі = н => [{id: `ж-${н}1@g.com`, назва: 'Сукня', ціна: 3000, слот: 'сукня', фото: null},
                   {id: `ж-${н}2@g.com`, назва: 'Пасок', ціна: 500, слот: 'пояс', фото: null}];
 const пакет = {в: 'ПОКАЗ-V1', збірка: 'знімок', каталог: 'каталог_стенд.xml · 639 речей', профіль: 'Оля', розклад: '3142',
-  прогін: 'пр-знімок-1', випадок: 'Робота · офіс', пул: 100,
+  прогін: 'пр-знімок-1', випадок_рядок: 'Робота · офіс', пул: 100,
   картки: [карт('3', речі(3)), карт('1', речі(1)), карт('4', речі(4)), карт('2', речі(2))]};
-const b64 = zlib.gzipSync(Buffer.from(JSON.stringify(пакет))).toString('base64').replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
 const вивід = {};
 (async () => {
   const br = await chromium.launch({executablePath: '/opt/pw-browsers/chromium-1194/chrome-linux/chrome'});
@@ -19,7 +18,10 @@ const вивід = {};
     const p = await ctx.newPage(); p.помилки = []; p.on('pageerror', e => p.помилки.push(String(e)));
     await p.addInitScript(() => { try { localStorage.setItem('міст:службове', '1'); } catch (e) {} });
     await p.route(/^https?:/, r => r.abort());
-    await p.goto('file://' + файл + '#' + b64);
+    /* пакет — вхід проби, а не хеш адреси (рішення 11824): `П` ставить проба, як шов збирання */
+    await p.goto('file://' + файл);
+    await p.waitForFunction(() => typeof (document.getElementById('сцн-новий') || {}).onclick === 'function', null, {timeout: 60000});
+    await p.evaluate(пк => { П = пк; рендер(); }, пакет);
     await p.waitForSelector('#картки .картка .список .річ', {timeout: 60000});
     return p;
   };

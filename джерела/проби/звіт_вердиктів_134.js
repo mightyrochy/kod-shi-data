@@ -53,11 +53,8 @@ const картка = рука => ({рука, ітерацій: рука <= "2" ?
     .replace(/<script [^>]*src="https:\/\/cdn\.jsdelivr\.net[^"]*"[^>]*><\/script>/, "<script>window.loadPyodide=null;</script>");
   const пакет = {в: "ПОКАЗ-V1", збірка: "проба-134", каталог: "каталог_стенд.xml · 639 речей",
     профіль: "Оля", розклад: "3142", пул: 364, картки: ["1", "2", "3", "4"].map(картка)};
-  const ст = new Uint8Array(await new Response(new Blob([new TextEncoder().encode(JSON.stringify(пакет))])
-    .stream().pipeThrough(new CompressionStream("gzip"))).arrayBuffer());
-  const хеш = Buffer.from(ст).toString("base64").replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
   const дом = new JSDOM(html, {runScripts: "dangerously", pretendToBeVisual: true,
-    url: "https://mightyrochy.github.io/kod-shi-data/показ.html#" + хеш,
+    url: "https://mightyrochy.github.io/kod-shi-data/показ.html",
     beforeParse(w) {
       w.indexedDB = new IDBFactory(); w.IDBKeyRange = IDBKeyRange;
       w.fetch = () => Promise.reject(new Error("мережі в пробі нема"));
@@ -69,8 +66,12 @@ const картка = рука => ({рука, ітерацій: рука <= "2" ?
   const доказ = new Доказ({прилад: "звіт_вердиктів_134", код: {дерево: головаДерева(ДЖ)}, режим: {прогонів: 5, рук: 4},
     модель: "без моделі (JSDOM)", входи: {показ: path.join(ДЖ, "показ.html")},
     очікувано: {вердиктів_1: 4, прогонів_1: 1, вердиктів_5: 20, прогонів_5: 5}});
+  /* Пакет — вхід проби, а не хеш адреси (рішення 11824): `П` ставить проба тим шляхом, що й шов збирання. */
+  await чекатиНа(() => w.eval("typeof (document.getElementById('сцн-новий') || {}).onclick === 'function'"), "старт показу");
+  w.__пакет = JSON.stringify(пакет);
+  w.eval("П = JSON.parse(window.__пакет); П.прогін = новийІдПрогону(); рендер();");
   await чекатиНа(() => w.eval("typeof П !== 'undefined' && !!П && Array.isArray(П.картки) && П.картки.length === 4"
-                              + " && !!document.getElementById('вст-3')"), "пакет із хеша розпаковано й картки намальовано");
+                              + " && !!document.getElementById('вст-3')"), "пакет проби поставлено й картки намальовано");
   w.eval("ПАСПОРТ_П = {джерело:'модель', нагода:'побачення', місце:'ресторан', година:19, темп_c:12,"
        + " опади:'ні', мета:'лестити', вето:{типи:[],тканини:[],принти:[],кольори:[],зони:[]},"
        + " бажання:['сукня'], настрій:[], невідомо:[], порада_людині:'Спитала б про прикраси'};"
