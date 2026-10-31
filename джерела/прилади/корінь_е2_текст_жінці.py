@@ -660,7 +660,7 @@ def знайти_стоки(п):
     аналіз = Походження(п, розділити, п.входи)
     for с in стоки:
         аналіз.докази.clear()
-        с.джерела = аналіз.вираз(с.мод, с.а, с.б)
+        с.джерела = аналіз.походження(с.мод, с.а, с.б)
         с.писачі = tuple(sorted(аналіз.докази))
     return стоки, обгортки
 
@@ -987,6 +987,18 @@ function іншаНазва(е, т){ const копія = т; назваЖінці
         ('каталог-чуже-імя-методу', "const fs={writeFileSync(){}}; fs.writeFileSync('каталог.json', JSON.stringify([{ім: $('ввід').value}])); async function ф(){const д=await (await fetch('каталог.json')).json(); д.forEach(р=>назваЖінціП(document.body, р.ім));}", 1),
         ('поле-порожній-писач', "function ф(){const п={назви:{}}; назваЖінціП(document.body, п.назви[ід] || '');}", 1),
         ('поле-вкладений-писач', "const п={назви:{}}; п.назви[ід] = невідоме; назваЖінціП(document.body, п.назви[ід]);", 1),
+        ('порожній-запас', "indexedDB.open('б'); const s = d.transaction('п').objectStore('п'); s.put({ім: $('ввід').value}, 'я'); const r = s.getAll(); (r.result || []).forEach(з=>їїСловаП(document.body, з.ім));", 0),
+        ('порожній-змінна', "function читати(){ return [{ім: $('ввід').value}]; } let сп = []; сп = читати(); сп.forEach(з=>їїСловаП(document.body, з.ім));", 0),
+        ('порожній-гілка', "function читати(){ return [{ім: $('ввід').value}]; } const р = читати(); (Array.isArray(р) ? р : []).forEach(з=>їїСловаП(document.body, з.ім));", 0),
+        ('порожній-у-записі', "const з = {сп: []}; з.сп.push({ім: fetch('/m')}); інше(з); з.сп.forEach(х=>їїСловаП(document.body, х.ім));", 1),
+        ('порожній-доповнений', "const сп = []; сп.push({ім: fetch('/m')}); сп.forEach(з=>їїСловаП(document.body, з.ім));", 1),
+        ('порожній-переданий', "function заповнити(а){ а.push({ім: fetch('/m')}); } const сп = []; заповнити(сп); сп.forEach(з=>їїСловаП(document.body, з.ім));", 1),
+        ('assign-останній', "const д = Object.assign({інше: 1}, {назва: $('ввід').value}); їїСловаП(document.body, д.назва);", 0),
+        ('assign-перезапис', "const д = Object.assign({назва: $('ввід').value}, {назва: fetch('/m')}); їїСловаП(document.body, д.назва);", 1),
+        ('assign-невідомий-аргумент', "const д = Object.assign({назва: $('ввід').value}, невідоме); їїСловаП(document.body, д.назва);", 1),
+        ('assign-ніхто', "const д = Object.assign({}, {інше: 1}); їїСловаП(document.body, д.назва);", 1),
+        ('spread-останній', "const б = {інше: fetch('/m')}; const д = {...б, назва: $('ввід').value}; їїСловаП(document.body, д.назва);", 0),
+        ('spread-після-ключа', "const д = {назва: $('ввід').value, ...невідоме}; їїСловаП(document.body, д.назва);", 1),
         ('каталог-python-кандидат', "async function ф(){const д=await (await fetch('каталог.json')).json(); назваЖінціП(document.body, д.name);}", 1),
     ]
     хиб = 0
