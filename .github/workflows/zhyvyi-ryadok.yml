@@ -28,4 +28,7 @@ jobs:
         shell: powershell
         env:
           PR_BODY: ${{ github.event.pull_request.body }}
-        run: powershell -NoProfile -ExecutionPolicy Bypass -File "аудит/адаптери/gemini/перевірка/перевірити_тіло_pr.ps1" -Root "$env:GITHUB_WORKSPACE"
+        # Кирилиця в аргументі -File псується у Windows PowerShell 5.1: скрипт викликається оператором & усередині кроку.
+        run: |
+          & (Join-Path $env:GITHUB_WORKSPACE 'аудит/адаптери/gemini/перевірка/перевірити_тіло_pr.ps1') -Root $env:GITHUB_WORKSPACE
+          exit $LASTEXITCODE
