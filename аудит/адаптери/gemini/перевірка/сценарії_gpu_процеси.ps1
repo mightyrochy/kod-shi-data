@@ -1,12 +1,13 @@
 ﻿#Requires -Version 5.1
-<# Стенд наряду «обгортка-вивантаження-моделі» (31.10): GPU-позначки стояли через робочий стіл Windows (уся відеопам'ять
-карти понад GpuIdleMiB) і модель LM Studio, яку ніхто не вивантажив; «Позначки без старту» в #1856 — порожні клітинки;
-позначка не за форматом стояла мовчки. Справжні функції обгортки; підмінено лише лічильник відеопам'яті процесів, nvidia-smi,
-назви процесів, перелік позначок, замки й CLI LM Studio — `fake_lms.py` іде справжнім процесом через Invoke-Native. #>
+<# Стенд наряду «обгортка-вивантаження-моделі» (31.10, редакція без вивантаження): GPU-позначки стояли через робочий стіл
+Windows (уся відеопам'ять карти понад GpuIdleMiB), а модель LM Studio — інструмент прогонів, не сторонній процес (власник
+31.10 ~21:33 UTC); «Позначки без старту» в #1856 — порожні клітинки; позначка не за форматом стояла мовчки. Справжні функції
+обгортки; підмінено лише лічильник відеопам'яті процесів, nvidia-smi, Get-Process, перелік позначок і замки. Кожен виклик
+Invoke-Native записано: обгортка не викликає `lms` (моделей не вивантажує). #>
 param([Parameter(Mandatory = $true)][string]$SourceDir)
 $ErrorActionPreference = 'Stop'
 [Console]::OutputEncoding = New-Object Text.UTF8Encoding($false)
-$tmp = Join-Path ([IO.Path]::GetTempPath()) ('vyvant-' + [guid]::NewGuid().ToString('N'))
+$tmp = Join-Path ([IO.Path]::GetTempPath()) ('gpuproc-' + [guid]::NewGuid().ToString('N'))
 [void][IO.Directory]::CreateDirectory($tmp)
 $utf = New-Object Text.UTF8Encoding($false)
 $bad = 0
@@ -18,167 +19,129 @@ function Scenario([string]$Name, [scriptblock]$Body) {
     try { & $Body } catch { Check "$Name — $($_.Exception.Message) $($_.ScriptStackTrace)" $false }
 }
 
-# --- підробний lms: справжній процес у теці з ASCII-шляхом (cmd.exe читає .cmd в OEM-кодуванні) -------------------------
-$onWin = ($env:OS -eq 'Windows_NT')
-$pyName = $(if ($onWin) { 'python' } else { 'python3' })
-$pyExe = @(Get-Command $pyName -CommandType Application -ErrorAction Stop)[0].Source
-$lmsDir = Join-Path $tmp 'lms'
-[void][IO.Directory]::CreateDirectory($lmsDir)
-Copy-Item -LiteralPath (Join-Path (Join-Path $SourceDir 'перевірка') 'fake_lms.py') -Destination (Join-Path $lmsDir 'fake_lms.py')
-if ($onWin) {
-    $script:Lms = Join-Path $lmsDir 'lms.cmd'
-    [IO.File]::WriteAllText($script:Lms, "@`"$pyExe`" `"$(Join-Path $lmsDir 'fake_lms.py')`" %*`r`n", [Text.Encoding]::ASCII)
-} else {
-    $script:Lms = Join-Path $lmsDir 'lms'
-    [IO.File]::WriteAllText($script:Lms, "#!/bin/sh`nexec `"$pyExe`" `"$(Join-Path $lmsDir 'fake_lms.py')`" `"`$@`"`n", $utf)
-    & chmod +x $script:Lms
-}
-$env:FAKE_LMS_STATE = Join-Path $tmp 'lms-state.json'
-$env:FAKE_LMS_LOG = Join-Path $tmp 'lms-calls.txt'
-Remove-Item Env:FAKE_LMS_NOJSON -ErrorAction SilentlyContinue
-
-function Set-Models([string[]]$Names) {
-    <# Моделі, «завантажені» в підробному LM Studio; журнал викликів lms — з нуля. #>
-    $json = '[' + ((@($Names) | ForEach-Object { '"' + $_ + '"' }) -join ',') + ']'
-    [IO.File]::WriteAllText($env:FAKE_LMS_STATE, $json, $utf)
-    Remove-Item -LiteralPath $env:FAKE_LMS_LOG -Force -ErrorAction SilentlyContinue
-}
-function Test-ModelLoaded { (Test-Path -LiteralPath $env:FAKE_LMS_STATE) -and ([IO.File]::ReadAllText($env:FAKE_LMS_STATE, $utf).Trim() -ne '[]') }
-function Get-LmsCalls { if (Test-Path -LiteralPath $env:FAKE_LMS_LOG) { @([IO.File]::ReadAllLines($env:FAKE_LMS_LOG, $utf)) } else { @() } }
-
-# Карта: процеси робочого столу (31.10 — ShellHost, CrossDeviceResume, оверлей NVIDIA) кожен під порогом, разом понад 512 MiB;
-# модель LM Studio (pid 7000) — 9000 MiB, поки підробний lms її тримає. Лічильник Windows дає байти на процес і адаптер.
-$script:Names = @{ 7000 = 'LM Studio'; 5100 = 'ShellHost'; 5200 = 'CrossDeviceResume'; 5300 = 'NVIDIA Overlay'; 5400 = 'dwm'; 4120 = 'chrome'; 3300 = 'AvastUI' }
-$script:DesktopProcs = @(@{ Pid = 5100; MiB = 310 }, @{ Pid = 5200; MiB = 260 }, @{ Pid = 5300; MiB = 240 }, @{ Pid = 5400; MiB = 180 })
+# Карта: процеси робочого столу (31.10 — ShellHost, CrossDeviceResume, оверлей NVIDIA) кожен під порогом, разом понад 512 MiB,
+# і оверлей понад поріг сам; LM Studio — вікно (pid 7000) і рушій моделі з теки `~\.lmstudio` (pid 7100, 9000 MiB).
+# Лічильник Windows дає байти на процес і адаптер.
+$script:Names = @{ 7000 = 'LM Studio'; 7100 = 'node'; 5100 = 'ShellHost'; 5200 = 'CrossDeviceResume'; 5300 = 'NVIDIA Overlay'; 5400 = 'dwm'; 4120 = 'chrome'; 3300 = 'AvastUI' }
+$script:Paths = @{ 7000 = 'C:\Users\x\AppData\Local\Programs\LM Studio\LM Studio.exe'; 7100 = 'C:\Users\x\.lmstudio\extensions\backends\llama.cpp-win-x86_64-nvidia-cuda12\llm_engine.node'
+    4120 = 'C:\Program Files\Google\Chrome\Application\chrome.exe' }
+$script:DesktopProcs = @(@{ Pid = 5100; MiB = 310 }, @{ Pid = 5200; MiB = 260 }, @{ Pid = 5300; MiB = 640 }, @{ Pid = 5400; MiB = 180 })
+$script:ModelProcs = @(@{ Pid = 7000; MiB = 120 }, @{ Pid = 7100; MiB = 9000 })
 $script:IdleProcs = @(@{ Pid = 3300; MiB = 57 })
-function Get-CardProcs {
-    $p = @($script:Procs)
-    if (Test-ModelLoaded) { $p += @{ Pid = 7000; MiB = 9000 } }
-    $p
-}
 $fakes = {
     function Get-GpuCounterRows {
         if ($script:NoCounter) { return $null }
-        , @(foreach ($p in @(Get-CardProcs)) {
+        , @(foreach ($p in @($script:Procs)) {
                 [pscustomobject]@{ Name = "pid_$($p.Pid)_luid_0x00000000_0x0000D1B2_phys_0"; DedicatedUsage = [uint64]($p.MiB * 1MB) }
             })
     }
-    function Get-Process { [CmdletBinding()] param([int]$Id) $n = $script:Names[$Id]; if (-not $n) { throw "процесу $Id нема" }; [pscustomobject]@{ ProcessName = $n } }
-    function Find-LmsExe { $script:Lms }
+    function Get-Process { [CmdletBinding()] param([int]$Id) $n = $script:Names[$Id]; if (-not $n) { throw "процесу $Id нема" }; [pscustomobject]@{ ProcessName = $n; Path = [string]$script:Paths[$Id] } }
     function Get-Command { [pscustomobject]@{ Source = 'nvidia-smi' } }
-    $script:RealNative = ${function:Invoke-Native}
+    $script:NativeCalls = New-Object System.Collections.ArrayList
     function Invoke-Native { param([string]$Exe, [string[]]$Arguments, [string]$Dir = '', [double]$TimeoutMinutes = 10)
-        if ($Exe -ne 'nvidia-smi') { return (& $script:RealNative $Exe $Arguments $Dir $TimeoutMinutes) }
-        if ($Arguments -contains '--query-gpu=memory.used') { $s = 0; foreach ($p in @(Get-CardProcs)) { $s += $p.MiB }; return [pscustomobject]@{ Code = 0; Out = "$s" } }
+        [void]$script:NativeCalls.Add("$Exe $($Arguments -join ' ')")
+        if ($Exe -ne 'nvidia-smi') { return [pscustomobject]@{ Code = 1; Out = ''; Err = 'стенд: лише nvidia-smi' } }
+        if ($Arguments -contains '--query-gpu=memory.used') { $s = 0; foreach ($p in @($script:Procs)) { $s += $p.MiB }; return [pscustomobject]@{ Code = 0; Out = "$s" } }
         [pscustomobject]@{ Code = 0; Out = $script:Apps } }
-    function Start-Sleep { }
     if ($null -eq $script:Bound) { $script:Bound = @{} }
     $script:Logged = New-Object System.Collections.ArrayList
     function Write-Log([string]$Text) { [void]$script:Logged.Add($Text) }
 }
+function Get-LmsCalls { @($script:NativeCalls | Where-Object { $_ -notlike 'nvidia-smi *' }) }
 
 # --- (а) карту тримає лише робочий стіл ----------------------------------------------------------------------------------
 Scenario 'а робочий стіл' {
     . (Join-Path $SourceDir 'queue_lanes.ps1')
     . $fakes
     function Test-LockFree { $true }
-    $LaneDir = $tmp; $script:StateDir = Join-Path $tmp 'a-state'; [void][IO.Directory]::CreateDirectory($script:StateDir)
+    $LaneDir = $tmp
     $script:Procs = $script:DesktopProcs + $script:IdleProcs; $script:Apps = '5100, C:\Windows\ShellHost.exe' + "`n" + '5200, C:\x\CrossDeviceResume.exe' + "`n" + '5300, C:\x\NVIDIA Overlay.exe'
-    Set-Models @()
     $why = Get-GpuBusyReason @()
-    Check "а робочий стіл (4 процеси, разом 990 MiB, кожен під 512) без навантаження — карту віддано: «$why»" ($why -eq '' -and (Test-ExternalGpuFree))
-    Check 'а карту з робочим столом віддано без звернення до LM Studio' ((Get-LmsCalls).Count -eq 0)
+    Check "а робочий стіл (4 процеси, разом 1390 MiB, оверлей 640) без навантаження — карту віддано: «$why»" ($why -eq '' -and (Test-ExternalGpuFree))
 }
 
-# --- (б) модель попереднього прогону: планувальник вивантажує й бере позначку тим самим проходом -------------------------
-Scenario 'б залишена модель' {
+# --- (б) модель LM Studio і робочий стіл: позначку взято тим самим проходом, lms не викликано ------------------------------
+Scenario 'б модель LM Studio' {
     $work = Join-Path $tmp 'cb'
     . (Join-Path $SourceDir 'claude_run.ps1') -WorkDir $work -RepoDir $tmp -OutboxDir "$tmp/cbbox" -PublishDir "$tmp/pub" -GeminiOutDir "$tmp/gout" -LaneDir "$tmp/cblanes" -TmpDir "$tmp/ctmp" -NoStatus
     foreach ($d in @($work, "$work/state", "$work/slots", "$tmp/cblanes")) { [void][IO.Directory]::CreateDirectory($d) }
     $script:StateDir = "$work/state"; $script:SlotDir = "$work/slots"
     $script:Limits = @{ slots = @{ claude = 2 }; source = 'код'; claude_laptop = @() }
-    $m = [pscustomobject]@{ Valid = $true; Lane = 'claude'; Ref = 'gemini-queue/п/cc-claude-sonnet-5-5-medium/1/p2-gpu'; Name = 'gemini-queue/п/cc-claude-sonnet-5-5-medium/1/p2-gpu'
-        Slug = 'п'; Model = 'cc-claude-sonnet-5-5-medium'; Sha = 'a' * 40; Time = [DateTimeOffset]::UtcNow.ToUnixTimeSeconds(); Gpu = $true; Prio = 2; Deadline = ''; N = '1'; Cond = 'p2-gpu'; Seen = 0 }
-    function Get-Markers { @($m) }
+    $mk = { param($slug, $cond) $n = "gemini-queue/$slug/cc-claude-sonnet-5-5-medium/1/$cond"
+        [pscustomobject]@{ Valid = $true; Lane = 'claude'; Ref = $n; Name = $n; Slug = $slug; Model = 'cc-claude-sonnet-5-5-medium'; Sha = 'a' * 40
+            Time = [DateTimeOffset]::UtcNow.ToUnixTimeSeconds(); Gpu = $true; Prio = 2; Deadline = ''; N = '1'; Cond = $cond; Seen = 0 } }
+    $script:Marker = & $mk 'п' 'p2-gpu'
+    function Get-Markers { @($script:Marker) }
     function Get-OrderedMarkers($x) { @($x) }
     function Test-SlugBusy { $false }
     function Test-LockFree { $true }
     function Get-FreeSlot { 'claude-1' }
     $script:Started = 0
-    function Start-Worker { $script:Started++; [pscustomobject]@{ Slot = 'claude-1'; Slug = $m.Slug; Gpu = $true; Marker = $m.Name; Proc = [pscustomobject]@{ HasExited = $false } } }
+    function Start-Worker { $script:Started++; [pscustomobject]@{ Slot = 'claude-1'; Slug = $script:Marker.Slug; Gpu = $true; Marker = $script:Marker.Name; Proc = [pscustomobject]@{ HasExited = $false } } }
     . $fakes
-    $script:Procs = $script:DesktopProcs + $script:IdleProcs; $script:Apps = ''
-    Set-Models @('qwen/qwen3.5-9b')
-    $w = New-Object System.Collections.ArrayList
-    $r = Start-Markers $w
-    $calls = @(Get-LmsCalls)
-    Check "б модель 9000 MiB у LM Studio без власного GPU-наряду — lms unload викликано: $($calls -join ' | ')" ($calls -contains '["unload", "--all"]' -and -not (Test-ModelLoaded))
-    Check "б рядок журналу з назвою моделі: $(@($script:Logged | Where-Object { $_ -like '*LM Studio*' }) -join ' | ')" (@($script:Logged | Where-Object { $_ -like '*вивантажено*qwen/qwen3.5-9b*' }).Count -eq 1)
-    Check 'б GPU-позначку взято тим самим проходом, утримання GPU нема' ($script:Started -eq 1 -and $r[0] -eq 1 -and -not $script:Held.ContainsKey('GPU'))
+    $script:Procs = $script:DesktopProcs + $script:ModelProcs + $script:IdleProcs; $script:Apps = ''
+    $r = Start-Markers (New-Object System.Collections.ArrayList)
+    Check "б робочий стіл і модель LM Studio 9000 MiB — GPU-позначку взято тим самим проходом, утримання GPU нема: $($script:Logged -join ' | ')" ($script:Started -eq 1 -and $r[0] -eq 1 -and -not $script:Held.ContainsKey('GPU'))
+    Check "б обгортка не викликала lms (моделей не вивантажує): $((Get-LmsCalls) -join ' | ')" ((Get-LmsCalls).Count -eq 0 -and -not (Test-Path function:Invoke-GpuModelUnload))
+    $script:Marker = & $mk 'Е2-вікно-переповнення' 'p3-gpu'
+    $script:Started = 0
+    $r = Start-Markers (New-Object System.Collections.ArrayList)
+    Check 'б друга GPU-позначка (Е2-вікно-переповнення) за тієї самої карти — теж взято' ($script:Started -eq 1 -and $r[0] -eq 1)
 }
 
-# --- (в) живий власний GPU-наряд: модель не чіпаємо --------------------------------------------------------------------
+# --- (в) живий власний GPU-наряд чи замок: карта зайнята -----------------------------------------------------------------
 Scenario 'в власний наряд' {
     . (Join-Path $SourceDir 'queue_lanes.ps1')
     . $fakes
-    $LaneDir = $tmp; $script:StateDir = Join-Path $tmp 'v-state'; [void][IO.Directory]::CreateDirectory($script:StateDir)
-    $script:Procs = $script:IdleProcs; $script:Apps = ''
-    Set-Models @('mamaylm-gemma-3-12b-it-v2.0')
+    $LaneDir = $tmp
+    $script:Procs = $script:ModelProcs + $script:IdleProcs; $script:Apps = ''
     function Test-LockFree { $true }
     $own = @([pscustomobject]@{ Slot = 'claude-1'; Slug = 'п'; Gpu = $true; Marker = 'x'; Proc = [pscustomobject]@{ HasExited = $false } })
     $why = Get-GpuBusyReason $own
-    Check "в живий власний GPU-наряд — модель не вивантажено: «$why»" ($why -ne '' -and (Test-ModelLoaded) -and (Get-LmsCalls).Count -eq 0)
+    Check "в живий власний GPU-наряд — другий не стартує: «$why»" ($why -ne '' -and (Get-LmsCalls).Count -eq 0)
     function Test-LockFree { $false }
     $why = Get-GpuBusyReason @()
-    Check "в замок GPU тримає наряд іншого облікового запису — модель не вивантажено: «$why»" ($why -ne '' -and (Test-ModelLoaded) -and (Get-LmsCalls).Count -eq 0)
+    Check "в замок GPU тримає наряд іншого облікового запису — не стартує: «$why»" ($why -ne '' -and (Get-LmsCalls).Count -eq 0)
 }
 
-# --- (г) кінець GPU-наряду за будь-якого підсумку — модель вивантажено ---------------------------------------------------
-Scenario 'г кінець наряду' {
+# --- (г) GPU-наряд за завантаженої моделі: воркер стартує, після кінця lms не викликано -----------------------------------
+Scenario 'г воркер' {
     $work = Join-Path $tmp 'cg'
     . (Join-Path $SourceDir 'claude_run.ps1') -WorkDir $work -RepoDir $tmp -OutboxDir "$tmp/cgbox" -PublishDir "$tmp/pub" -GeminiOutDir "$tmp/gout" -LaneDir "$tmp/cglanes" -TmpDir "$tmp/ctmp" -NoStatus
     foreach ($d in @($work, "$work/state", "$work/slots", "$tmp/cglanes")) { [void][IO.Directory]::CreateDirectory($d) }
     $script:StateDir = "$work/state"; $script:SlotDir = "$work/slots"
     . $fakes
-    $script:Procs = $script:IdleProcs; $script:Apps = ''
+    $script:Procs = $script:DesktopProcs + $script:ModelProcs + $script:IdleProcs; $script:Apps = ''
     function Remove-Claim { }
     function Close-FailedStart { }
     function Get-TaskCopyDir { '' }
     function Set-BrowserGpuPolicy { }
+    $script:Ran = 0
+    function Invoke-Task { $script:Ran++ }
     $limits = [pscustomobject]@{ slots = [pscustomobject]@{ claude = 2 }; source = 'код' }
-    foreach ($case in @('ГОТОВО', 'збій')) {
-        Set-Models @()
-        $script:Case = $case
-        # Наряд сам вантажить модель (як живий прогін) і кінчається успіхом чи винятком.
-        function Invoke-Task { [IO.File]::WriteAllText($env:FAKE_LMS_STATE, '["qwen/qwen3.5-9b"]', $utf); if ($script:Case -eq 'збій') { throw 'наряд упав' } }
-        $script:Job = [pscustomobject]@{ id = "g-$case"; slot = 'claude-1'; ref = 'gemini-queue/г/cc-claude-sonnet-5-5-medium/1/gpu'; name = 'gemini-queue/г/cc-claude-sonnet-5-5-medium/1/gpu'
-            sha = 'b' * 40; time = 0; slug = 'г'; model = 'cc-claude-sonnet-5-5-medium'; n = '1'; cond = 'gpu'; claude = 'claude-sonnet-5-5'; effort = 'medium'
-            gpu = $true; prio = 5; limits = $limits }
-        $code = Invoke-Worker
-        $calls = @(Get-LmsCalls)
-        Check "г GPU-наряд скінчився ($case, код $code) — модель вивантажено: $($calls -join ' | ')" ($calls -contains '["unload", "--all"]' -and -not (Test-ModelLoaded))
-    }
+    $script:Job = [pscustomobject]@{ id = 'g-1'; slot = 'claude-1'; ref = 'gemini-queue/г/cc-claude-sonnet-5-5-medium/1/gpu'; name = 'gemini-queue/г/cc-claude-sonnet-5-5-medium/1/gpu'
+        sha = 'b' * 40; time = 0; slug = 'г'; model = 'cc-claude-sonnet-5-5-medium'; n = '1'; cond = 'gpu'; claude = 'claude-sonnet-5-5'; effort = 'medium'
+        gpu = $true; prio = 5; limits = $limits }
+    $code = Invoke-Worker
+    Check "г GPU-наряд за моделі LM Studio на карті — воркер пройшов перевірку GPU (код $code) і наряд виконано; lms не викликано: $((Get-LmsCalls) -join ' | ')" ($script:Ran -eq 1 -and $code -ne $script:WorkerGpuBusy -and (Get-LmsCalls).Count -eq 0)
 }
 
-# --- (д) сторонній процес без моделі: позначка стоїть, причина з назвою й MiB ---------------------------------------------
+# --- (д) сторонній процес: позначка стоїть, причина з назвою й MiB -----------------------------------------------------
 Scenario 'д сторонній процес' {
     . (Join-Path $SourceDir 'queue_lanes.ps1')
     . $fakes
     function Test-LockFree { $true }
     $LaneDir = $tmp; $script:StateDir = Join-Path $tmp 'd-state'; [void][IO.Directory]::CreateDirectory($script:StateDir)
-    $script:Procs = @(@{ Pid = 4120; MiB = 2300 }) + $script:IdleProcs; $script:Apps = '4120, C:\Users\x\chrome.exe'
-    Set-Models @()
+    $script:Procs = @(@{ Pid = 4120; MiB = 2300 }) + $script:DesktopProcs + $script:ModelProcs + $script:IdleProcs; $script:Apps = '4120, C:\Users\x\chrome.exe'
     $why = Get-GpuBusyReason @()
-    Check "д сторонній процес 2300 MiB — карту не віддано, причина з назвою й MiB: «$why» / «$($script:GpuHoldReason)»" ($why -match 'chrome\.exe 2300 MiB' -and $script:GpuHoldReason -ceq 'процес chrome.exe 2300 MiB' -and -not (Test-ExternalGpuFree))
+    Check "д сторонній процес 2300 MiB поряд з робочим столом і моделлю — карту не віддано, причина лише з ним: «$why» / «$($script:GpuHoldReason)»" ($why -match 'зайнято 2300 MiB' -and $why -match 'chrome\.exe 2300 MiB' -and $script:GpuHoldReason -ceq 'процес chrome.exe 2300 MiB' -and -not (Test-ExternalGpuFree))
     $line = "GEMINI ОБГОРТКА: ЗАБЛОКОВАНО GPU: $($script:GpuHoldReason), позначок 1"
     Check "д рядок диспетчерові проходить шаблон: $line" (Test-HoldLine $line)
-    Check "д LM Studio спитано, моделей нема — нічого не вивантажено: $((Get-LmsCalls) -join ' | ')" (@(Get-LmsCalls | Where-Object { $_ -like '*unload*' }).Count -eq 0 -and @($script:Logged | Where-Object { $_ -like '*моделей нема*' }).Count -eq 1)
-    $n = (Get-LmsCalls).Count
-    [void](Get-GpuBusyReason @())
-    Check 'д той самий сторонній процес наступного проходу — LM Studio вдруге не питаємо' ((Get-LmsCalls).Count -eq $n -and @($script:Logged | Where-Object { $_ -like '*моделей нема*' }).Count -eq 1)
+    Check "д lms не викликано: $((Get-LmsCalls) -join ' | ')" ((Get-LmsCalls).Count -eq 0)
     # Сигнал запобіжника: MiB гуляють між проходами — повтору нема; змінилась назва — новий рядок.
-    $script:Limits = $null; $sent = New-Object System.Collections.ArrayList
-    $send = { param($l) [void]$sent.Add($l); $true }
+    # Update-HoldSignals має свою змінну $sent: рядки — у змінній скрипта, щоб блок не підхопив її динамічно.
+    $script:Limits = $null; $script:SentLines = New-Object System.Collections.ArrayList
+    $send = { param($l) [void]$script:SentLines.Add($l); $true }
     $held = { param($why) $h = @{}; Add-Hold $h 'GPU' $why 'gemini-queue/н/cc-m/1/gpu'; $h }
     Update-HoldSignals (& $held 'процес chrome.exe 2300 MiB') $send
     $f = Join-Path $script:StateDir 'holds.json'
@@ -188,26 +151,23 @@ Scenario 'д сторонній процес' {
     Update-HoldSignals (& $held 'процес chrome.exe 2300 MiB') $send
     Update-HoldSignals (& $held 'процес chrome.exe 2316 MiB') $send
     Update-HoldSignals (& $held 'процес game.exe 6100 MiB') $send
+    $sent = @($script:SentLines)
     Check "д сигнал: один рядок на назву, зміна MiB не повторює: $($sent -join ' | ')" ($sent.Count -eq 2 -and $sent[0] -ceq 'GEMINI ОБГОРТКА: ЗАБЛОКОВАНО GPU: процес chrome.exe 2300 MiB, позначок 1' -and $sent[1] -ceq 'GEMINI ОБГОРТКА: ЗАБЛОКОВАНО GPU: процес game.exe 6100 MiB, позначок 1')
 }
 
-# --- (е) старіший lms без --json і карта без лічильника процесів ----------------------------------------------------------
-Scenario 'е запасні шляхи' {
+# --- (е) карта без лічильника процесів: memory.used і назви compute-apps -------------------------------------------------
+Scenario 'е без лічильника' {
     . (Join-Path $SourceDir 'queue_lanes.ps1')
     . $fakes
     function Test-LockFree { $true }
-    $LaneDir = $tmp; $script:StateDir = Join-Path $tmp 'e-state'; [void][IO.Directory]::CreateDirectory($script:StateDir)
-    $script:Procs = $script:IdleProcs; $script:Apps = ''
-    $env:FAKE_LMS_NOJSON = '1'
-    Set-Models @('qwen/qwen3.5-9b')
+    $LaneDir = $tmp; $script:NoCounter = $true
+    $script:Procs = $script:DesktopProcs + $script:ModelProcs; $script:Apps = '7000, C:\Users\x\AppData\Local\Programs\LM Studio\LM Studio.exe' + "`n" + '5100, C:\Windows\ShellHost.exe'
     $why = Get-GpuBusyReason @()
-    Remove-Item Env:FAKE_LMS_NOJSON
-    Check "е lms без ps --json — модель з текстового переліку вивантажено, карту віддано: «$why»" ($why -eq '' -and -not (Test-ModelLoaded) -and @($script:Logged | Where-Object { $_ -like '*вивантажено qwen/qwen3.5-9b*' }).Count -eq 1)
-    $script:NoCounter = $true
-    Set-Models @('qwen/qwen3.5-9b')
+    Check "е без лічильника: compute-apps називає лише LM Studio й робочий стіл — карту віддано: «$why»" ($why -eq '')
+    $script:Procs += @(@{ Pid = 4120; MiB = 2300 }); $script:Apps += "`n" + '4120, C:\Users\x\chrome.exe'
     $why = Get-GpuBusyReason @()
+    Check "е без лічильника: сторонній chrome.exe — карту не віддано, причина з назвою: «$why» / «$($script:GpuHoldReason)»" ($why -ne '' -and $script:GpuHoldReason -ceq 'процес chrome.exe')
     $script:NoCounter = $false
-    Check "е без лічильника процесів (лише memory.used карти) — модель вивантажено, карту віддано: «$why»" ($why -eq '' -and -not (Test-ModelLoaded))
 }
 
 # --- (є) «Позначки без старту» в #1856: позначка, час і причина ----------------------------------------------------------

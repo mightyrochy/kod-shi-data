@@ -193,9 +193,10 @@ function Get-TaskRows {
 }
 
 # Файли skipped.json (позначки без старту) і blocked-reasons.json (причини BLOCKED без гілки) обох планувальників: пише
-# gemini — недовірений файл, тож у #1856 лише одним рядком, обрізаним і без символів розмітки таблиці.
+# gemini — недовірений файл, тож у #1856 лише одним рядком, обрізаним і без символів розмітки таблиці. Масив читає
+# Read-JsonArray (queue_lanes.ps1): 31.10 @(… | ConvertFrom-Json) під PowerShell 5.1 давав рядки з порожніми клітинками.
 function Read-NoteRows([string]$Path, [string[]]$Names) {
-    try { $rows = @([System.IO.File]::ReadAllText($Path, $script:Utf8) | ConvertFrom-Json) } catch { return @() }
+    $rows = @(Read-JsonArray $Path)
     @($rows | Select-Object -Last 12 | ForEach-Object {
         $r = $_
         $cells = foreach ($n in $Names) {
