@@ -1,0 +1,27 @@
+{
+ "версія": 1,
+ "запит": {
+  "model": "qwen/qwen3.5-9b",
+  "max_tokens": 4000,
+  "messages": [
+   {
+    "role": "user",
+    "content": [
+     {
+      "type": "text",
+      "text": "{\"task\": {\"role\": \"You read the description of an outfit and list its items as data.\", \"rules\": [\"One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.\", \"One item carries one thing — of two alternatives list the first; a note in brackets is not an item.\", \"Slot \\\"accessory\\\" is for an item no other slot fits.\", \"\\\"is_outfit\\\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note.\"], \"limits\": [\"Rely only on the input: do not invent what it does not contain.\", \"The answer is one JSON object following \\\"answer_schema\\\", without explanations and without ```.\"], \"language\": \"English\", \"answer\": \"ITEM_LIST\", \"answer_schema\": {\"is_outfit\": \"yes|no\", \"items\": [{\"name\": \"<what the item is>\", \"details\": \"<its cut, length and fabric>\", \"slot\": \"top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory\", \"color_hex\": \"<#rrggbb or null>\", \"worn\": \"<true, or false when the description says the outfit goes without it>\"}]}, \"input\": [\"\\\"description\\\" — the outfit description\"]}, \"description\": \"A structured dark denim jacket, boxy cut, hip length, deep charcoal gray, durable twill.\\nHigh-waisted straight-leg jeans in mid-rise, full-length, classic indigo, heavy weight cotton stretch.\\nA fitted crew-neck knit top, boat neck, cropped at the waist, soft oat beige, fine-gauge merino wool.\\nLeather Chelsea boots with a low block heel, ankle length, polished black, smooth calf leather.\\n\\nThis outfit strikes the perfect balance for an autumn evening date at a restaurant while adhering to her preference for \\\"everyday\\\" style. The structured denim jacket elevates the casual jeans and knit top into a refined yet comfortable look suitable for a dinner setting. The dark charcoal and indigo tones create a sophisticated palette that feels appropriate for the evening hour without crossing into formal territory. Completing the ensemble with sleek black leather boots adds a touch of polish and practicality for any outdoor arrival before settling into the restaurant.\"}"
+     }
+    ]
+   }
+  ],
+  "temperature": 1
+ },
+ "відповідь": {
+  "status": 200,
+  "contentType": "application/json",
+  "headers": {
+   "x-model": "qwen/qwen3.5-9b"
+  },
+  "body": "{\"content\":[{\"type\":\"text\",\"text\":\"{\\n  \\\"is_outfit\\\": \\\"yes\\\",\\n  \\\"items\\\": [\\n    {\\n      \\\"name\\\": \\\"structured dark denim jacket\\\",\\n      \\\"details\\\": \\\"boxy cut, hip length, durable twill fabric\\\",\\n      \\\"slot\\\": \\\"outerwear\\\",\\n      \\\"color_hex\\\": \\\"#363b40\\\",\\n      \\\"worn\\\": true\\n    },\\n    {\\n      \\\"name\\\": \\\"high-waisted straight-leg jeans\\\",\\n      \\\"details\\\": \\\"mid-rise, full-length, heavy weight cotton stretch fabric\\\",\\n      \\\"slot\\\": \\\"bottom\\\",\\n      \\\"color_hex\\\": \\\"#4b587d\\\",\\n      \\\"worn\\\": true\\n    },\\n    {\\n      \\\"name\\\": \\\"fitted crew-neck knit top\\\",\\n      \\\"details\\\": \\\"boat neck, cropped at the waist, fine-gauge merino wool fabric\\\",\\n      \\\"slot\\\": \\\"top\\\",\\n      \\\"color_hex\\\": \\\"#c8bfa8\\\",\\n      \\\"worn\\\": true\\n    },\\n    {\\n      \\\"name\\\": \\\"leather Chelsea boots\\\",\\n      \\\"details\\\": \\\"low block heel, ankle length, smooth calf leather\\\",\\n      \\\"slot\\\": \\\"shoes\\\",\\n      \\\"color_hex\\\": \\\"#000000\\\",\\n      \\\"worn\\\": true\\n    }\\n  ]\\n}\"}],\"usage\":{\"input_tokens\":549,\"output_tokens\":288},\"stop_reason\":\"end_turn\"}"
+ }
+}

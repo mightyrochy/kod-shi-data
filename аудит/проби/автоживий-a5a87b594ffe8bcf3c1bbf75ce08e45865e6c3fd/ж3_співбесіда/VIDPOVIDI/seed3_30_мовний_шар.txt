@@ -1,0 +1,57 @@
+── ПРОМПТ (7120 симв.) ──
+Ти — перекладачка в застосунку-стилістці. Ти пишеш природною українською тексти, які зараз побачить жінка. Рішень не приймаєш, на питання не відповідаєш, змісту не міняєш.
+
+Вхід — JSON-об'єкт: ключ — номер тексту н, значення — текст, який склали код та інші моделі.
+
+Ключі відповіді — ті самі, що у вході, кожен: номер н тексту, значення — рядок, той самий зміст природною українською, без англійських слів і кодів; ПЕРЕКЛАДАЙ КОЖНЕ англійське слово, навіть одне посеред українського речення; латиницею лишай лише назви крамниць і брендів, «V-подібний» і «den»; текст, що вже природний і до неї на «ти», — без змін, а український текст на «ви» перепиши на «ти», решту лиши слово в слово.
+
+Вид кожної речі — теж зміст: річ у перекладі — та сама, що у вході, а не схожа чи сусідня. ankle boots — черевики чи ботильйони, boots — чоботи, heeled — на підборах, а не туфлі, pumps — туфлі-човники, loafers — лофери; pendant — кулон чи підвіска, necklace — намисто чи ланцюжок, а не каблучка, сережки чи браслет; ring — каблучка; earrings — сережки. Українські назви речей у вході (назви з крамниці, найчастіше перед « — ») переписуй літера в літеру: не міняй, не переставляй і не додавай у них жодного слова.
+
+Про жінку — лише до неї, на «ти» (ти, тебе, тобі, твій, твоя; хочеш, скинеш; наказ однини: розкажи, оберни, тримай, дай), і в питаннях теж: you, your, she, her про неї — «ти», «твій» (her skin tone — твій тон шкіри; when she turns her head — коли ти повертаєш голову; she looks taller — ти виглядаєш вищою), англійський наказ — наказом однини; «вона», «її» — лише про річ (сукню, сумку, куртку). Говорить стилістка — одна жінка: про себе — від першої особи однини й у жіночому роді (я підібрала, я б додала), не «ми», не від імені застосунку чи коду і ніколи словами самої жінки.
+
+Мова: літературна українська, як у текстах українських крамниць одягу. Кожне українське слово — літерами лише української абетки, без жодної латинської літери чи стороннього знака всередині слова. Кожне речення — одна остаточна версія, без виправлень посеред тексту. Словничок нижче — лише як перекласти англійське слово, коли воно є у вході; це не зміст: річ, тканина чи колір, яких у вході нема, у тексті не з'являються. Звичні українські назви для слів англійського джерела: trousers, pants — штани; dressy, dressier — ошатний, ошатніше; look, outfit — образ; taupe — сіро-бежевий; loose — вільний; suede — замша (жіночий рід); slip dress — сукня-комбінація; camel — кемел (колір). Назви речей і кольорів, які дала крамниця, — як є.
+
+Перевір кожне слово ДО відповіді: до неї — лише «ти», жодного «ви», «ваш» і наказу множини, і про неї жодного «вона», «її», «їй», жодне слово не стоїть двічі поспіль, кожна річ — того самого виду, що у вході (річ образу — іменником коду її виду з переліку, коли він є, і слова при ній узгоджені з цим іменником), а українська назва речі — слово в слово. Відповідь — рівно ОДИН JSON-об'єкт і нічого після нього: другої, виправленої версії, приміток і пояснень не пиши — помилку виправ у тому самому об'єкті.
+
+Речі образу — перелік речей картки (номер речі — як на картці, поруч — її коди):
+1 — kind code: cardigan · colour code: turquoise · about it: text н=1
+2 — kind code: skirt · colour code: beige · about it: text н=2
+3 — kind code: loafers · colour code: camel · about it: text н=3
+4 — kind code: tote · colour code: black · about it: text н=4
+5 — kind code: coat · colour code: navy · about it: text н=5
+6 — kind code: scarf_generic · colour code: pink · about it: text н=6
+When a text speaks of an item of the list, call it by the Ukrainian noun of its kind code (kind code: …) — the same noun in the right case in every text (trench_coat — «тренч», sweater — «светр», loafers — «лофери»), not by another kind or a synonym of the English word, whatever word the English text uses; a code ending in _generic names only the family (dress_generic — a dress, bag_generic — a bag). Make every adjective, pronoun and verb with the item agree with that noun in gender and number («бежевий тренч, який…»; «шкіряні лофери, які…»). A name you translate in this same call (text н=K): give it one noun and call the item by it, in agreement, in every text. A text the list gives as about an item (about it: text н=M) speaks of that one item, and so does every other text where the English names it. The colour of an item of the list is its colour code (colour code: …): write the Ukrainian name of that code. The English colour words for that item are the stylist's impression of a photo: do not turn them into a colour of their own — the item's colour stands in their place. Colours of its details (trim, strap, buttons, print), its fabric and the rest — translate from the text. The list is for the items only: an item the English text does not name is not added to the translation — neither to the description nor to the advice.
+
+Colour codes: beige — бежевий; black — чорний; camel — кемел; navy — темно-синій; pink — рожевий; turquoise — бірюзовий.
+
+ТЕКСТИ:
+{
+"1": "This relaxed-fit turquoise cardigan features a soft knit texture and a V-neckline with dark buttons that add a polished detail to your upper half.",
+"2": "The straight-cut beige skirt offers a clean, elongated line that sits comfortably at the waist, providing a neutral foundation for your look.",
+"3": "These camel-colored loafers are crafted from suede with a low profile, offering quiet comfort and understated style for your morning commute.",
+"4": "A sleek black tote bag made of smooth leather stands ready to hold all the essentials you need for an office day.",
+"5": "The navy coat features a structured hood and a tailored silhouette that provides warmth and a professional edge against the autumn weather.",
+"6": "This pink scarf is lightweight and drapes gracefully, bringing a gentle pop of color to your ensemble without overpowering your outfit.",
+"7": "This ensemble is tailored for your bank interview, balancing the professional sharpness required with the subtle warmth of autumn. The turquoise cardigan offers a modern, sophisticated touch that stands out without being loud, perfectly complementing the neutral beige skirt to keep you grounded and focused. The classic camel loafers add a touch of casual elegance suitable for long hours, while the black tote provides practical space for your documents. The navy coat will shield you from the morning chill once you step into the daylight, and the pink scarf introduces a soft, approachable color near your face that reflects confidence.",
+"8": "Drape the turquoise cardigan over your shoulders for a relaxed look when you are not in the immediate interview room.",
+"9": "Бавовняна міді спідниця А-силуету темно-бежевого кольору Нікола — A skirt provides the missing bottom to create a proper outfit structure.",
+"10": "Лофери карамельні ROOT — Loafers complete the footwear slot and match the smart occasion level.",
+"11": "Бавовняна міді спідниця А-силуету темно-бежевого кольору Нікола — A skirt completes the outfit structure with a neutral base.",
+"12": "Лофери карамельні ROOT — Loafers match the leg line and provide the missing shoes for the occasion."
+}
+
+── ВІДПОВІДЬ (2094 симв., 18.8 с, HTTP 200) ──
+{
+"1": "Цей кардиган вільного крою бірюзового кольору має м’яку в’язану текстуру та V-подібний виріз з темними ґудзиками, які додають вишуканої деталі твоїй верхній частині.",
+"2": "Пряма бежева спідниця пропонує чисту, видовжену лінію, яка зручно сидить на талії, створюючи нейтральну основу для твого образу.",
+"3": "Ці лофери карамельного кольору виготовлені із замші з низьким профілем, забезпечуючи тиху комфортність і стриманий стиль для твоєї ранкової поїздки на роботу.",
+"4": "Стильна чорна сумка-тоут зі шкіри готова вмістити всі необхідні речі для твого робочого дня.",
+"5": "Темно-синій тренч має структурований капюшон і приталений силует, який забезпечує тепло та професійну елегантність проти осінньої погоди.",
+"6": "Цей рожевий шарф легкий і витончено драпірується, додаючи ніжний акцент кольору до твого ансамблю без перевантаження образу.",
+"7": "Цей образ підібрано для твоєї співбесіди в банку, поєднуючи професійну чіткість з тонким теплом осені. Бірюзовий кардиган додає сучасний і вишуканий штрих, який вирізняється без зайвої гучності, чудово доповнюючи нейтральну бежеву спідницю, щоб ти почувалася впевнено та зосереджено. Карамельні лофери додають нотку невимушеної елегантності для тривалих годин роботи, а чорна сумка-тоут забезпечує практичне місце для твоїх документів. Темно-синій тренч захистить тебе від ранкового холоду, коли ти вийдеш на вулицю, а рожевий шарф введе м’який і приємний колір біля обличчя, що відображає впевненість.",
+"8": "Одягни бірюзовий кардиган на плечі для невимушеного вигляду, коли ти не перебуваєш безпосередньо у кімнаті співбесіди.",
+"9": "Бавовняна міді спідниця А-силуету темно-бежевого кольору Нікола — A skirt provides the missing bottom to create a proper outfit structure.",
+"10": "Лофери карамельні ROOT — Loafers complete the footwear slot and match the smart occasion level.",
+"11": "Бавовняна міді спідниця А-силуету темно-бежевого кольору Нікола — A skirt completes the outfit structure with a neutral base.",
+"12": "Лофери карамельні ROOT — Loafers match the leg line and provide the missing shoes for the occasion."
+}
