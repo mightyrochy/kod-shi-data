@@ -1204,3 +1204,44 @@ function Update-HoldSignals([hashtable]$Held, [scriptblock]$Send) {
     $cur = $(if (Test-Path -LiteralPath $path) { [System.IO.File]::ReadAllText($path, $script:Utf8) } else { '' })
     if ($text -cne $cur) { Write-FileAtomic $path $text }
 }
+
+# --- простій увімкненого ноутбука ---------------------------------------------------------------------------------------
+# У ніч на 31.10 ноутбук за 13 год працював ~3 год 15 хв і стояв увімкненим до 2 год 20 хв поспіль, а диспетчер не знав
+# (власник 31.10 07:52: увімкнений ноутбук працює доцільно, без роботи — вимикається). Простій — ні прогону, ні позначки
+# в черзі поза нульовою квотою; початок — остання мить, коли прохід бачив роботу (≤ poll_minutes від кінця прогону чи
+# зняття позначки), після ввімкнення — перший прохід (вимкнений час не рахується). Межі в хвилинах нема: джерела для неї
+# нема (ядро, «Межа роботи»), тож рядок іде одразу, раз на простій.
+
+function Get-UtcProp($Obj, [string]$Name) {
+    <# Поле з idle.json як UTC-рядок: PowerShell 7 перетворює ISO-рядок JSON на дату, 5.1 лишає рядком. #>
+    $v = Get-JsonProp $Obj $Name
+    if ($v -is [datetime]) { return Get-UtcStamp $v }
+    [string]$v
+}
+
+function Update-Idle([bool]$Busy, [scriptblock]$Send, [bool]$Reset = $false) {
+    <# idle.json у теці стану: busy_utc — останній прохід із роботою; since — початок простою (порожній, доки є робота);
+    sent — рядок ПРОСТІЙ цього простою доставлено в теку вихідних. Новий рядок — лише після нової роботи. #>
+    $path = Join-Path $script:StateDir 'idle.json'
+    $now = Get-UtcStamp (Get-Date)
+    $prev = $null
+    if (Test-Path -LiteralPath $path) { try { $prev = [System.IO.File]::ReadAllText($path, $script:Utf8) | ConvertFrom-Json } catch { $null = $_ } }
+    if ($Busy) {
+        Write-FileAtomic $path ((@{ busy_utc = $now; since = ''; sent = $false }) | ConvertTo-Json -Compress)
+        return
+    }
+    $since = ''; $sent = $false
+    if ($null -ne $prev -and -not $Reset) {
+        $since = Get-UtcProp $prev 'since'; $sent = ((Get-JsonProp $prev 'sent') -eq $true)
+        if ($since -cnotmatch '^\d{4}-\d\d-\d\dT\d\d:\d\d:\d\dZ$') {
+            $b = Get-UtcProp $prev 'busy_utc'; $since = $(if ($b -cmatch '^\d{4}-\d\d-\d\dT\d\d:\d\d:\d\dZ$') { $b } else { $now }); $sent = $false
+        }
+    } else { $since = $now }
+    if (-not $sent) {
+        $from = [datetime]::ParseExact($since, "yyyy-MM-dd'T'HH:mm:ss'Z'", [cultureinfo]::InvariantCulture, [Globalization.DateTimeStyles]::AssumeUniversal -bor [Globalization.DateTimeStyles]::AdjustToUniversal)
+        $min = [Math]::Max(0, [int][Math]::Floor(([datetime]::UtcNow - $from).TotalMinutes))
+        if (& $Send "GEMINI ОБГОРТКА: ПРОСТІЙ $since $min") { $sent = $true }
+    }
+    $busyUtc = $(if ($null -ne $prev -and -not $Reset) { (Get-UtcProp $prev 'busy_utc') } else { '' })
+    Write-FileAtomic $path ((@{ busy_utc = $busyUtc; since = $since; sent = $sent }) | ConvertTo-Json -Compress)
+}

@@ -400,6 +400,7 @@ $script:OutboxTemplates = @(
     "\AGEMINI ОБГОРТКА: ЗАБЛОКОВАНО [A-Z0-9_]{2,40} ×[0-9]{1,5}: (?:gemini|codex|claude)/$script:SlugCore(?:, (?:gemini|codex|claude)/$script:SlugCore){0,4}(?: …)?\z"
     '\AGEMINI ОБГОРТКА: ТРИВОГА (?:AUTH (?:AGY|CODEX|CLAUDE|CLOUD)|ISOLATION (?:WHOAMI|NET_SESSION|PROFILES|DRIVES|ENV)|DISK FULL|ENGINE (?:AGY|CODEX|CLAUDE))\z'
     '\AGEMINI ОБГОРТКА: ВИМКНЕНО [0-9a-f]{40}\z'
+    '\AGEMINI ОБГОРТКА: ПРОСТІЙ 20[0-9]{2}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z [0-9]{1,6}\z'
     $script:HoldLineTemplate
     '\AGEMINI ОБГОРТКА: ПОТРІБНА ПЕРЕВІРКА CLAUDE #[1-9][0-9]{0,8} [0-9a-f]{40}\z'
     '\AGEMINI ОБГОРТКА: ЗНЯТО ПОЗНАЧОК ПЕРЕВІРКИ [1-9][0-9]{0,5}\z'
@@ -574,6 +575,8 @@ function Test-DispatcherAction([string]$Line) {
     if ($Line -cmatch '^GEMINI ОБГОРТКА: ЗАБЛОКОВАНО claude/автоперевірка-\S+ CLAUDE_NOT_LAPTOP$') { return $false }
     if ($Line -cmatch '^GEMINI ОБГОРТКА: ЗАБЛОКОВАНО \S+ (\S+)$') { return $Matches[1] -cnotmatch $script:QuietBlockedCodes }
     if ($Line -cmatch '^GEMINI ОБГОРТКА: ПОТРІБНА ПЕРЕВІРКА CLAUDE ') { return $true }
+    # Простій увімкненого ноутбука (власник 31.10): раз на простій — доцільна робота чи ВИМКНИ НОУТБУК.
+    if ($Line -cmatch '^GEMINI ОБГОРТКА: ПРОСТІЙ [0-9T:Z-]{20} [0-9]{1,6}$') { return $true }
     if ($Line -cmatch '^GEMINI ОБГОРТКА: (?:ЗАБЛОКОВАНО|ТРИВОГА|ЛАНЦЮГ)(?: |$)') { return $true }
     if ($Line -cmatch '^GEMINI ОБГОРТКА: ГОТОВО (?:gemini|claude|codex)/(?:автоперевірка-|перевірка-|pachka-|автоживий-|Е1-нічний-живий-)') { return $true }
     $false
