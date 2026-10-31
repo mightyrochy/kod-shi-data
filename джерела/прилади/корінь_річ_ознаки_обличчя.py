@@ -43,7 +43,10 @@ E = frozenset()
 HEX_РЕГ = re.compile(r"\[0-9a-fA-F\]\{6\}|\[0-9A-Fa-f\]\{6\}")
 ПОРЯДОК = (ast.Lt, ast.LtE, ast.Gt, ast.GtE)
 БУЛЕВІ = frozenset(("len", "isinstance", "issubclass", "hasattr", "callable", "bool", "any", "all", "id", "type",
-                    "print", "hash"))
+                    "print", "hash", "range"))
+# методи, що повертають позицію, лічбу чи так/ні, а не значення
+ПОЗИЦІЙНІ = frozenset(("find", "rfind", "index", "rindex", "count", "startswith", "endswith", "isdigit", "isalpha",
+                       "isalnum", "isspace", "islower", "isupper", "isnumeric", "isdecimal", "isidentifier"))
 МУТАЦІЇ = frozenset(("append", "extend", "add", "insert", "update", "setdefault", "appendleft", "extendleft"))
 Місце = collections.namedtuple("Місце", "файл рядок пункт чому")
 
@@ -246,7 +249,7 @@ class Аналіз:
         self.відвідано.add(ключ)
         if с.кортеж:
             було = self.кортежі.get(ключ)
-            нове = [x | y for x, y in zip(було, с.кортеж)] if було and len(було) == len(с.кортеж) else list(с.кортеж)
+            нове = [_злити_ел(x, y) for x, y in zip(було, с.кортеж)] if було and len(було) == len(с.кортеж) else list(с.кортеж)
             if нове != було:
                 self.кортежі[ключ] = нове
                 self.змінилось = True
@@ -282,13 +285,15 @@ class Аналіз:
         for i, з in enumerate(позиційні):
             if i < len(ф.позиційні):
                 дати(ф.позиційні[i], з)
-            elif ф.зірка:
-                дати(ф.зірка, (з[0] | _усі(з[1]), None) if isinstance(з, tuple) else з)
+            elif ф.зірка:   # `*а` — ключі за номером, щоб `f(*а)` далі ліг на ті самі параметри
+                дати(ф.зірка, з[0] | _усі(з[1]) if isinstance(з, tuple) else з)
+                дати("%s#%d" % (ф.зірка, i - len(ф.позиційні)), з)
         for ім, з in іменні.items():
             if ім in ф.позиційні or ім in ф.іменні:
                 дати(ім, з)
-            elif ф.дві_зірки:
-                дати(ф.дві_зірки, (з[0] | _усі(з[1]), None) if isinstance(з, tuple) else з)
+            elif ф.дві_зірки:   # `**к` — ключ за іменем аргументу
+                дати(ф.дві_зірки, (E, {ім: з[0] | _усі(з[1]) if isinstance(з, tuple) else з}))
+                дати("%s#%s" % (ф.дві_зірки, ім), з)
         if зірка:
             for п in ф.позиційні + ([ф.зірка] if ф.зірка else []):
                 дати(п, зірка)
@@ -446,6 +451,18 @@ def _усі(ключі):
     return вих
 
 
+def _ел(мітки, ключі=None):
+    """Елемент повернутого кортежу: мітки поза ключами й ключі dict (сталий, порівнюваний вигляд)."""
+    return frozenset(мітки), frozenset((к, frozenset(в)) for к, в in (ключі or {}).items() if в)
+
+
+def _злити_ел(а, б):
+    ключі = dict(а[1])
+    for к, в in б[1]:
+        ключі[к] = ключі.get(к, E) | в
+    return _ел(а[0] | б[0], ключі)
+
+
 def _ім_виклику(в):
     return в.id if isinstance(в, ast.Name) else в.attr if isinstance(в, ast.Attribute) else None
 
@@ -473,7 +490,12 @@ class Стан:
         self.а, self.ф, self.м = а, ф, ф.модуль
         self.env = {}
         self.ключі = collections.defaultdict(lambda: collections.defaultdict(frozenset))
+        self.розгорнуті = collections.defaultdict(dict)   # `*а`/`**к` → номер чи ім'я → (мітки, ключі)
         for п, мітки, км in контекст:
+            if "#" in п:
+                осн, _, де = п.partition("#")
+                self.розгорнуті[осн][int(де) if де.isdigit() else де] = (мітки, (dict(км) or None))
+                continue
             if мітки:
                 self.env[п] = мітки
             for кл, в in км:
@@ -573,8 +595,13 @@ class Стан:
                 for ц, з in zip(ціль.elts, значення.elts):
                     self.присвоїти(ц, self.e(з), з)
             elif к and len(к) == len(ціль.elts) and not any(isinstance(ц, ast.Starred) for ц in ціль.elts):
-                for ц, мк in zip(ціль.elts, к):
-                    self.присвоїти(ц, мк)
+                for ц, (мк, кл) in zip(ціль.elts, к):
+                    if isinstance(ц, ast.Name) and кл:
+                        self.писати(ц.id, мк)
+                        for кк, вв in кл:
+                            self.ключі[ц.id][кк] = self.ключі[ц.id][кк] | вв
+                    else:
+                        self.присвоїти(ц, мк | _усі(dict(кл)))
             else:
                 for ц in ціль.elts:
                     self.присвоїти(ц, мітки)
@@ -609,6 +636,17 @@ class Стан:
             поза, ключі = self.ключі_викликів[id(сам)]
             return поза, (dict(ключі) or None)
         return мітки, None
+
+    def ітерація(self, ціль, ітер):
+        """`for ціль in ітер`: номер `enumerate` і ключ `.items()` — позиція й ім'я, не значення про колорит."""
+        мітки = self.e(ітер) - {F}
+        if isinstance(ціль, ast.Tuple) and len(ціль.elts) == 2 and isinstance(ітер, ast.Call) and (
+                (isinstance(ітер.func, ast.Name) and ітер.func.id == "enumerate")
+                or (isinstance(ітер.func, ast.Attribute) and ітер.func.attr == "items" and not ітер.args)):
+            self.присвоїти(ціль.elts[0], E)
+            self.присвоїти(ціль.elts[1], мітки)
+            return
+        self.присвоїти(ціль, мітки)
 
     def з_ключами(self, в):
         return isinstance(в, ast.Dict) or (isinstance(в, ast.Call) and _ім_виклику(в.func) == "dict"
@@ -678,7 +716,7 @@ class Стан:
             if і.value is not None:
                 self.присвоїти(і.target, self.e(і.value), і.value)
         elif isinstance(і, (ast.For, ast.AsyncFor)):
-            self.присвоїти(і.target, self.e(і.iter) - {F})
+            self.ітерація(і.target, і.iter)
             self.тіло(і.body); self.тіло(і.orelse)
         elif isinstance(і, ast.While):
             self.e(і.test); self.тіло(і.body); self.тіло(і.orelse)
@@ -704,11 +742,11 @@ class Стан:
                 for к, з in (ключі or {}).items():
                     self.ключі_пов[к] = self.ключі_пов.get(к, E) | з
                 if isinstance(і.value, ast.Tuple) and not any(isinstance(x, ast.Starred) for x in і.value.elts):
-                    ел = [self.e(x) for x in і.value.elts]
+                    ел = [_ел(*self.значення(x)) for x in і.value.elts]
                     if self.кортеж is None and not self.кортеж_зламано:
                         self.кортеж = ел
                     elif self.кортеж is not None and len(self.кортеж) == len(ел):
-                        self.кортеж = [x | y for x, y in zip(self.кортеж, ел)]
+                        self.кортеж = [_злити_ел(x, y) for x, y in zip(self.кортеж, ел)]
                     else:
                         self.кортеж, self.кортеж_зламано = None, True
                 elif not (isinstance(і.value, ast.Constant) and і.value.value is None):
@@ -850,7 +888,7 @@ class Стан:
             return self.e(в.value)
         if isinstance(в, (ast.ListComp, ast.SetComp, ast.GeneratorExp, ast.DictComp)):
             for г in в.generators:
-                self.присвоїти(г.target, self.e(г.iter) - {F})
+                self.ітерація(г.target, г.iter)
                 for у in г.ifs:
                     self.e(у)
             if isinstance(в, ast.DictComp):
@@ -945,7 +983,14 @@ class Стан:
         поз_к, імен_к = [], {}   # те саме з ключами dict: (мітки поза ключами, ключі)
         лямбди = []
         for а in в.args:
-            if isinstance(а, ast.Starred):
+            рз = self.розгорнуті.get(а.value.id) if isinstance(а, ast.Starred) and isinstance(а.value, ast.Name) \
+                and а.value.id == self.ф.зірка else None
+            if рз:
+                for кл in sorted(рз):
+                    мітки, ключі = рз[кл]
+                    позиційні.append(мітки | _усі(ключі))
+                    поз_к.append((мітки, ключі) if ключі else мітки)
+            elif isinstance(а, ast.Starred):
                 зірка |= self.e(а.value)
             elif isinstance(а, ast.Lambda):
                 лямбди.append(а)
@@ -962,7 +1007,13 @@ class Стан:
                     іменні[к.arg] = E
                     імен_к[к.arg] = E
                 continue
-            if к.arg is None:
+            рз = self.розгорнуті.get(к.value.id) if isinstance(к.value, ast.Name) and к.arg is None \
+                and к.value.id == self.ф.дві_зірки else None
+            if рз:
+                for кл, (мітки, ключі) in рз.items():
+                    іменні[кл] = мітки | _усі(ключі)
+                    імен_к[кл] = (мітки, ключі) if ключі else мітки
+            elif к.arg is None:
                 дві |= self.e(к.value)
             else:
                 мітки, ключі = self.значення(к.value)
@@ -996,7 +1047,7 @@ class Стан:
                 if isinstance(в.func.value, ast.Name) and _рядок(в.args[0]):
                     return self.ключ_імені(в.func.value.id, в.args[0].value, в, в.args[1] if len(в.args) > 1 else None)
                 return self.індекс(приймач, в.args[0], в, в.args[1] if len(в.args) > 1 else None)
-            if ім == "keys":
+            if ім == "keys" or (ім in ПОЗИЦІЙНІ and not self.а.викликані(self.м, в.func, self.ф)):
                 return E
             if ім in ("items", "values", "copy"):
                 return приймач - ({F} if ім != "copy" else set())
@@ -1040,7 +1091,7 @@ class Стан:
             for кл, з in (self.а.останні_ключі or {}).items():
                 ключі_пов[кл] = ключі_пов.get(кл, E) | з
             к = self.а.останній_кортеж
-            кортеж = к if кортеж is None else ([x | y for x, y in zip(кортеж, к)] if к and len(к) == len(кортеж) else [])
+            кортеж = к if кортеж is None else ([_злити_ел(x, y) for x, y in zip(кортеж, к)] if к and len(к) == len(кортеж) else [])
             if ц.ім == "reliability" or (ц.модуль.ім.endswith("надійність") and "reliab" in ц.ім):
                 пов = пов | {R}
             вих |= пов
