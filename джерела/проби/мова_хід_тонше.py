@@ -17,7 +17,7 @@ print("промпт К7р, симв.: %d · rules %d (%d правил) · codes 
          len(json.dumps(п["task"]["codes"], ensure_ascii=False)), len(п["task"]["codes"]),
          len(json.dumps(п["task"]["input"], ensure_ascii=False))))
 # дубль → уривок, що лишився раз (0 — сказане зникло; 2+ — дубль повернувся)
-for що, уривок in (("вечірня сцена умов поради", "hour 18 or later"),
+for що, уривок in (("вечірня сцена умов поради", "part_of_day evening | night"),
                    ("«надворі» умов поради", "setting outdoor or mixed"),
                    ("part_of_day: місця вечора", "reads as evening by itself"),
                    ("цитата — її форми слів", "keeps her word forms"), ("приклади смуг — не коди", "for the band only"),
