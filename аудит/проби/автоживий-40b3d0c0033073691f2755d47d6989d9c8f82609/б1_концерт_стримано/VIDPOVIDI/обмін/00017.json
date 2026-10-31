@@ -1,0 +1,27 @@
+{
+ "версія": 1,
+ "запит": {
+  "model": "qwen/qwen3.5-9b",
+  "max_tokens": 4000,
+  "messages": [
+   {
+    "role": "user",
+    "content": [
+     {
+      "type": "text",
+      "text": "{\"task\": {\"role\": \"You read the description of an outfit and list its items as data.\", \"rules\": [\"One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.\", \"One item carries one thing — of two alternatives list the first; a note in brackets is not an item.\", \"Slot \\\"accessory\\\" is for an item no other slot fits.\", \"\\\"is_outfit\\\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note.\"], \"limits\": [\"Rely only on the input: do not invent what it does not contain.\", \"The answer is one JSON object following \\\"answer_schema\\\", without explanations and without ```.\"], \"language\": \"English\", \"answer\": \"ITEM_LIST\", \"answer_schema\": {\"is_outfit\": \"yes|no\", \"items\": [{\"name\": \"<what the item is>\", \"details\": \"<its cut, length and fabric>\", \"slot\": \"top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory\", \"color_hex\": \"<#rrggbb or null>\", \"worn\": \"<true, or false when the description says the outfit goes without it>\"}]}, \"input\": [\"\\\"description\\\" — the outfit description\"]}, \"description\": \"Sleek black silk blouse with a subtle sheen, tailored to a classic fit that falls just above the waistline, deep obsidian #000000, heavy crepe.\\nHigh-waisted wide-leg trousers in midnight navy, cut straight for structured elegance and ease of movement within a crowd, solid dark blue #191970, fine wool blend with a slight stretch.\\nStructured charcoal grey blazer with notched lapels, single-breasted closure maintaining a sharp silhouette without bulk, slate grey #2F4F4F, lightweight woven fabric for breathability in artificial light.\\nBlack leather ankle boots with a modest low heel, rounded toe design allowing for comfortable walking and standing on packed dance floors, matte black #0F0F0F, smooth calfskin.\\nThis outfit works because it masterfully balances the requested classic register with the practical need to move freely through a crowded club environment. The dark, neutral color palette ensures a timeless look that remains appropriate for an evening rock concert without appearing overly flashy or restrictive. By choosing structured tailoring in breathable autumn fabrics, the ensemble delivers the necessary \\\"smart\\\" formality while guaranteeing comfort during extended periods of standing and dancing.\"}"
+     }
+    ]
+   }
+  ],
+  "temperature": 1
+ },
+ "відповідь": {
+  "status": 200,
+  "contentType": "application/json",
+  "headers": {
+   "x-model": "qwen/qwen3.5-9b"
+  },
+  "body": "{\"content\":[{\"type\":\"text\",\"text\":\"{\\n  \\\"is_outfit\\\": \\\"yes\\\",\\n  \\\"items\\\": [\\n    {\\n      \\\"name\\\": \\\"blouse\\\",\\n      \\\"details\\\": \\\"sleek silk with a subtle sheen, tailored to a classic fit falling just above the waistline\\\",\\n      \\\"slot\\\": \\\"top\\\",\\n      \\\"color_hex\\\": \\\"#000000\\\",\\n      \\\"worn\\\": true\\n    },\\n    {\\n      \\\"name\\\": \\\"trousers\\\",\\n      \\\"details\\\": \\\"high-waisted wide-leg cut straight for structured elegance and ease of movement, fine wool blend with a slight stretch\\\",\\n      \\\"slot\\\": \\\"bottom\\\",\\n      \\\"color_hex\\\": \\\"#191970\\\",\\n      \\\"worn\\\": true\\n    },\\n    {\\n      \\\"name\\\": \\\"blazer\\\",\\n      \\\"details\\\": \\\"structured with notched lapels, single-breasted closure maintaining a sharp silhouette, lightweight woven fabric for breathability\\\",\\n      \\\"slot\\\": \\\"outerwear\\\",\\n      \\\"color_hex\\\": \\\"#2F4F4F\\\",\\n      \\\"worn\\\": true\\n    },\\n    {\\n      \\\"name\\\": \\\"boots\\\",\\n      \\\"details\\\": \\\"ankle height with a modest low heel, rounded toe design for comfortable walking and standing on packed dance floors, smooth calfskin\\\",\\n      \\\"slot\\\": \\\"shoes\\\",\\n      \\\"color_hex\\\": \\\"#0F0F0F\\\",\\n      \\\"worn\\\": true\\n    }\\n  ]\\n}\"}],\"usage\":{\"input_tokens\":602,\"output_tokens\":322},\"stop_reason\":\"end_turn\"}"
+ }
+}
