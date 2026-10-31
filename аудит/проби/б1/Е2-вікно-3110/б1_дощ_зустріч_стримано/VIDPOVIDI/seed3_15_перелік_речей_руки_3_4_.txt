@@ -1,0 +1,37 @@
+── ПРОМПТ (2202 симв.) ──
+{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.", "One item carries one thing — of two alternatives list the first; a note in brackets is not an item.", "Slot \"accessory\" is for an item no other slot fits.", "\"is_outfit\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "ITEM_LIST", "answer_schema": {"is_outfit": "yes|no", "items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory", "color_hex": "<#rrggbb or null>", "worn": "<true, or false when the description says the outfit goes without it>"}]}, "input": ["\"description\" — the outfit description"]}, "description": "A relaxed-fit wool-blend cardigan in warm camel with hex code #C19A6B, crew neckline, hip-length hem, soft drape.\nDark indigo straight-leg denim jeans with hex code #2A3D48, mid-rise waist, regular length.\nWhite cotton Oxford button-down shirt with hex code #F5F5DC, classic collar, cropped to hit at the natural waistline.\nMinimalist silver bar necklace in polished sterling silver with hex code #C0C0C0, small 10mm geometric pendant.\n\nThis outfit strikes the perfect balance for a professional yet comfortable coffee meeting on an autumn day, honoring your wish to flatter your figure while staying practical against the rain. The structured cardigan provides a sophisticated outer layer that contrasts beautifully with the casual denim, keeping you warm without looking bulky. By tucking the crisp white shirt in and pairing it with clean lines and metallic jewelry, the look elevates simple everyday wear into polished work-appropriate attire."}
+
+── ВІДПОВІДЬ (823 симв., 5.1 с, HTTP 200) ──
+{
+  "is_outfit": "yes",
+  "items": [
+    {
+      "name": "wool-blend cardigan",
+      "details": "relaxed-fit, crew neckline, hip-length hem, soft drape",
+      "slot": "outerwear",
+      "color_hex": "#C19A6B",
+      "worn": true
+    },
+    {
+      "name": "denim jeans",
+      "details": "straight-leg, mid-rise waist, regular length",
+      "slot": "bottom",
+      "color_hex": "#2A3D48",
+      "worn": true
+    },
+    {
+      "name": "Oxford button-down shirt",
+      "details": "classic collar, cropped to hit at the natural waistline",
+      "slot": "top",
+      "color_hex": "#F5F5DC",
+      "worn": true
+    },
+    {
+      "name": "silver bar necklace",
+      "details": "polished sterling silver, small 10mm geometric pendant",
+      "slot": "necklace",
+      "color_hex": "#C0C0C0",
+      "worn": true
+    }
+  ]
+}

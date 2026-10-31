@@ -1,0 +1,27 @@
+{
+ "версія": 1,
+ "запит": {
+  "model": "qwen/qwen3.5-9b",
+  "max_tokens": 4000,
+  "messages": [
+   {
+    "role": "user",
+    "content": [
+     {
+      "type": "text",
+      "text": "{\"task\": {\"role\": \"You read the description of an outfit and list its items as data.\", \"rules\": [\"One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.\", \"One item carries one thing — of two alternatives list the first; a note in brackets is not an item.\", \"Slot \\\"accessory\\\" is for an item no other slot fits.\", \"\\\"is_outfit\\\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note.\"], \"limits\": [\"Rely only on the input: do not invent what it does not contain.\", \"The answer is one JSON object following \\\"answer_schema\\\", without explanations and without ```.\"], \"language\": \"English\", \"answer\": \"ITEM_LIST\", \"answer_schema\": {\"is_outfit\": \"yes|no\", \"items\": [{\"name\": \"<what the item is>\", \"details\": \"<its cut, length and fabric>\", \"slot\": \"top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory\", \"color_hex\": \"<#rrggbb or null>\", \"worn\": \"<true, or false when the description says the outfit goes without it>\"}]}, \"input\": [\"\\\"description\\\" — the outfit description\"]}, \"description\": \"High-neck ribbed knit bodysuit in electric lime green, cropped at the waist to highlight the hips, featuring a sleek straight cut that sits high on the thigh, crafted from soft cotton jersey.\\nChunky platform sneakers in matte black with exaggerated soles and metallic silver eyelets, designed for stability while walking through crowds.\\nA chunky choker necklace in oxidized silver with an asymmetric geometric pendant and a wide cuff bracelet in brushed steel to add industrial edge.\\nThis outfit works because the vibrant lime color immediately captures attention under the club's artificial lighting, setting her apart from the typical dark attire of a rock concert. The cropped bodysuit accentuates her waistline while allowing for easy movement through the dense crowd, fulfilling her desire to express herself boldly. The black sneakers provide necessary comfort and an edgy aesthetic that aligns perfectly with the energetic atmosphere of a Friday evening at a venue.\"}"
+     }
+    ]
+   }
+  ],
+  "temperature": 1
+ },
+ "відповідь": {
+  "status": 200,
+  "contentType": "application/json",
+  "headers": {
+   "x-model": "qwen/qwen3.5-9b"
+  },
+  "body": "{\"content\":[{\"type\":\"text\",\"text\":\"{\\n  \\\"is_outfit\\\": \\\"yes\\\",\\n  \\\"items\\\": [\\n    {\\n      \\\"name\\\": \\\"Bodysuit\\\",\\n      \\\"details\\\": \\\"High-neck ribbed knit, cropped at the waist with a straight cut sitting high on the thigh\\\",\\n      \\\"slot\\\": \\\"top\\\",\\n      \\\"color_hex\\\": \\\"#00ff00\\\",\\n      \\\"worn\\\": true\\n    },\\n    {\\n      \\\"name\\\": \\\"Sneakers\\\",\\n      \\\"details\\\": \\\"Chunky platform sneakers with exaggerated soles and metallic silver eyelets\\\",\\n      \\\"slot\\\": \\\"shoes\\\",\\n      \\\"color_hex\\\": \\\"#000000\\\",\\n      \\\"worn\\\": true\\n    },\\n    {\\n      \\\"name\\\": \\\"Choker necklace\\\",\\n      \\\"details\\\": \\\"Chunky oxidized silver with an asymmetric geometric pendant\\\",\\n      \\\"slot\\\": \\\"collar_necklace\\\",\\n      \\\"color_hex\\\": \\\"#C0C0C0\\\",\\n      \\\"worn\\\": true\\n    },\\n    {\\n      \\\"name\\\": \\\"Cuff bracelet\\\",\\n      \\\"details\\\": \\\"Wide brushed steel cuff\\\",\\n      \\\"slot\\\": \\\"bracelet\\\",\\n      \\\"color_hex\\\": \\\"#708090\\\",\\n      \\\"worn\\\": true\\n    }\\n  ]\\n}\"}],\"usage\":{\"input_tokens\":534,\"output_tokens\":283},\"stop_reason\":\"end_turn\"}"
+ }
+}
