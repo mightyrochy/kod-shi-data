@@ -125,6 +125,11 @@ Scenario 'г воркер' {
         gpu = $true; prio = 5; limits = $limits }
     $code = Invoke-Worker
     Check "г GPU-наряд за моделі LM Studio на карті — воркер пройшов перевірку GPU (код $code) і наряд виконано; lms не викликано: $((Get-LmsCalls) -join ' | '); журнал: $($script:Logged -join ' | ')" ($script:Ran -eq 1 -and $code -ne $script:WorkerGpuBusy -and @(Get-LmsCalls).Count -eq 0)
+    # Сторонній процес з'явився між планувальником і воркером: воркер тримає замок сам — причина в журналі з назвою й MiB.
+    $script:Procs = @(@{ Pid = 4120; MiB = 2300 }) + $script:DesktopProcs + $script:ModelProcs; $script:Logged.Clear(); $script:Ran = 0
+    $code = Invoke-Worker
+    $gl = @($script:Logged | Where-Object { $_ -like 'GPU зайнята*' })
+    Check "г воркер за стороннього процесу — лишає наряд у черзі з причиною «chrome.exe 2300 MiB», а не «замок»: $($gl -join ' | ')" ($code -eq $script:WorkerGpuBusy -and $script:Ran -eq 0 -and $gl.Count -eq 1 -and $gl[0] -match 'chrome\.exe 2300 MiB' -and $gl[0] -notmatch 'замок')
 }
 
 # --- (д) сторонній процес: позначка стоїть, причина з назвою й MiB -----------------------------------------------------

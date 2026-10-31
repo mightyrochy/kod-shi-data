@@ -1188,12 +1188,13 @@ function Get-GpuComputeNames {
 
 $script:GpuHoldReason = ''
 
-function Get-GpuBusyReason($Workers) {
+function Get-GpuBusyReason($Workers, [switch]$LockHeld) {
     <# Чому GPU не віддати наряду зараз; '' — вільна. Єдине місце для планувальників обох облікових записів.
-    GpuHoldReason — причина для рядка сигналу (Update-HoldSignals порівнює її без MiB). #>
+    GpuHoldReason — причина для рядка сигналу (Update-HoldSignals порівнює її без MiB). LockHeld — замок GPU тримає сам
+    викликач (воркер після Open-Lock): причина — сторонній процес, а не «замок тримає інший процес». #>
     $script:GpuHoldReason = ''
     if (@($Workers | Where-Object { $_.Gpu -and -not $_.Proc.HasExited }).Count -gt 0) { $script:GpuHoldReason = 'замок GPU іншого наряду'; return 'GPU: її тримає власний наряд обгортки' }
-    if (-not (Test-LockFree (Get-GpuLockPath))) { $script:GpuHoldReason = 'замок GPU іншого наряду'; return "GPU: замок $(Get-GpuLockPath) тримає інший процес" }
+    if (-not $LockHeld -and -not (Test-LockFree (Get-GpuLockPath))) { $script:GpuHoldReason = 'замок GPU іншого наряду'; return "GPU: замок $(Get-GpuLockPath) тримає інший процес" }
     $load = Get-GpuLoad
     if ($load.MiB -lt 0) { $script:GpuHoldReason = 'nvidia-smi не відповів'; return 'GPU: nvidia-smi не відповів' }
     if ($load.MiB -gt $script:GpuIdleMiB) {
