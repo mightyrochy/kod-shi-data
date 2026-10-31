@@ -484,7 +484,13 @@ def фото_речей():
     річ», «фото самого взуття без верху й низу») не лишаються лише в оцінці: інакше в розмові повторювались би ті самі вади —
     слот поза кодами (`top_garment`), та сама пара взуття двома записами, спідниця ф1 записана на ф2.
     Правила й скелет спільні, а що відрізняє виклики, стоїть полем входу: оцінка шле «outfit» (тоді «in_outfit»
-    має сенс), розмова — «her_items_in_words» (тоді «owner» — з її слів); рядок «як» поля йде лише з полем."""
+    має сенс), розмова — «her_items_in_words» (тоді «owner» — з її слів); рядок «як» поля йде лише з полем.
+    Поле відповіді, якого читач виклику не бере, тим самим полем входу знято зі скелета (`Поле.вихід`): «in_outfit»
+    читає лише оцінка (`оцінка_образу._в_образі`), «owner» — лише розмова (оцінка ставить «невідомо»).
+    Що значення — коди з «codes», каже листок скелета кожного поля, а чужий код відсіює читач (`ключ_поля`,
+    `оцінка_образу._ключ`); загальне «лише коди» суперечило полям photo, name, frame, in_outfit і знято.
+    Вид — точніший код за слот: слот читачі беруть з виду (`внутрішня_мова.СЛОТ_ТИПУ`), тож «kind within its
+    slot» знято — вид з тієї самої форми, що й слот, слот — першим (шапка `оцінка_образу`, розділ 2)."""
     global ФОТО_РЕЧЕЙ
     if ФОТО_РЕЧЕЙ is None:
         ФОТО_РЕЧЕЙ = _ЗП.Оголошення(
@@ -496,6 +502,7 @@ def фото_речей():
                                    "«" + _ЗП.ПІДПИС_КАДРУ_EN % "<id>" + ":»", треба=True),
                 # «Оціни мій образ»: вона може показати поруч річ, яку думає вдягти НАТОМІСТЬ (`оцінка_образу._в_образі`)
                 _ЗП.Поле("outfit", "true: the photos show one outfit she has put together herself",
+                         вихід=("items[].in_outfit",), вихід_без=("items[].owner",),
                          як="\"in_outfit\" is true for items worn together in the outfit; false for an item shown as "
                             "an alternative to one of them; \"unknown\" when the photo does not show which of them she "
                             "wears (two pairs side by side, nothing on her)"),
@@ -517,29 +524,28 @@ def фото_речей():
                 "object per item. A garment under an open jacket is its own item, and so is each pair of shoes.",
                 "Each photo is a separate picture: \"photo\" is the id from the label right before the image where the "
                 "item itself is drawn. An item seen on several photos is listed once, with the photo where it is seen best.",
-                "\"slot\" follows the item's own shape, not where it lies on the photo: footwear has a sole and a "
+                "\"slot\" and \"kind\" follow the item's own shape, not where it lies on the photo: footwear has a sole and a "
                 "toe, boots also a shaft rising from them; a top has a neckline, shoulders and sleeves or straps; "
                 "a jacket, blazer or coat worn open over another garment is \"outerwear\", the garment under it "
                 "\"top\"; trousers have two legs; a skirt hangs from the waist in one piece.",
                 "A photo of shoes alone has no top or bottom: boot shafts are not trouser legs.",
-                "\"kind\" is the item's exact kind from \"codes.item_type\" within its \"slot\", read from the same shape.",
                 "\"frame\" is the item's box on its photo in thousandths of width and height (0–1000), tight "
                 "around the item itself, without background, skin or other items; " + РАМКА_НА_ОКО + ".",
-                "Field values are only codes from \"codes\"; what the photo does not show is null.",
+                "What the photo does not show is null.",
             ),
             вихід="PHOTO_ITEMS",
             скелет={"items": [{
                 "photo": "<photo id>",
                 "name": "<short English name, as a shop would call the item>",
                 "slot": "<code from codes.slot>",
-                "kind": "<code from codes.item_type: the exact kind of the item within its slot, or null>",
+                "kind": "<code from codes.item_type: the exact kind of the item, or null>",
                 "color": "<code from codes.color: the main color of the item itself>",
                 "fabric": "<code from codes.fabric when the texture is visible, else null>",
                 "cut": "<code from codes.cut or null>",
                 "length": "<code from codes.length or null>",
                 "pattern": "<code from codes.pattern>",
                 "formality": "<code from codes.formality: the occasion step the item suits — " + _БР.ЩАБЛІ_EN + ">",
-                "in_outfit": "<true | false | unknown; null without \"outfit\">",
+                "in_outfit": "<true | false | unknown>",
                 "owner": "<code from codes.owner>",
                 "frame": {"left": "<0–1000>", "top": "<0–1000>", "right": "<0–1000>", "bottom": "<0–1000>"},
             }]},
