@@ -1,0 +1,33 @@
+name: рядок ЖИВИЙ ПІСЛЯ у тілі PR
+
+on:
+  pull_request:
+    branches: [main]
+    types: [opened, synchronize, edited, ready_for_review]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: живий-рядок-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  zhyvyi_ryadok:
+    name: рядок ЖИВИЙ ПІСЛЯ розбирається
+    runs-on: windows-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
+        with:
+          persist-credentials: false
+          fetch-depth: 1
+
+      # Тіло PR — чужий текст: лише змінна середовища, у команду воно не підставляється.
+      - name: тіло PR розбирається тим самим кодом, що й планувальник
+        shell: bash
+        env:
+          PR_BODY: ${{ github.event.pull_request.body }}
+        # Кирилиця в тілі кроку powershell читається як ANSI і псується; bash, як у obhortka.yml, передає шлях Unicode-вірно.
+        run: |
+          powershell.exe -NoProfile -ExecutionPolicy Bypass -File "$(cygpath -w "$GITHUB_WORKSPACE")/аудит/адаптери/gemini/перевірка/перевірити_тіло_pr.ps1" -Root "$(cygpath -w "$GITHUB_WORKSPACE")"
