@@ -10,6 +10,7 @@ on:
       - '!джерела/аудит/ДОСЯЖНІСТЬ.md'
       - 'каталог_повний.xml.gz'
       - 'аудит/проби/**'
+      - '!аудит/проби/автоживий-*/**'
       - 'index.html'
       - 'build.txt'
       - '.github/workflows/zbirka.yml'
@@ -61,6 +62,8 @@ jobs:
             pravyla=false
             while IFS= read -r -d '' shliakh; do
               case "${shliakh}" in
+                # Звіти автоживого — дані, збірка їх не читає (читає лише аудит/проби/нічні й скрипти).
+                аудит/проби/автоживий-*) ;;
                 джерела/*|аудит/проби/*|каталог_повний.xml.gz|index.html|build.txt|.github/workflows/zbirka.yml) produkt=true ;;
               esac
               case "${shliakh}" in
@@ -80,7 +83,8 @@ jobs:
             fi
             if [[ "${SHTAMP}" =~ ^[0-9a-f]{40}$ ]] && git fetch --no-tags --depth=1 origin "${SHTAMP}" 2>/dev/null; then
               if [ -n "$(git -c core.quotepath=off diff --name-only "${SHTAMP}" "${GITHUB_SHA}" -- джерела аудит/проби \
-                         каталог_повний.xml.gz .github/workflows/zbirka.yml ':(exclude)джерела/аудит/ДОСЯЖНІСТЬ.md')" ]; then
+                         каталог_повний.xml.gz .github/workflows/zbirka.yml ':(exclude)джерела/аудит/ДОСЯЖНІСТЬ.md' \
+                         ':(exclude,glob)аудит/проби/автоживий-*/**')" ]; then
                 produkt=true
                 echo "джерела новіші за опублікований штамп ${SHTAMP} — повний шлях" >> "$GITHUB_STEP_SUMMARY"
               fi

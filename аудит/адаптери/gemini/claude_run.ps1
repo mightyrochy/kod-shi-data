@@ -850,6 +850,7 @@ function Invoke-Task($M, $Job) {
     if (-not $exe) { return (Complete-Task $M $statePath $id 'ENGINE_MISSING') }
     try { $taskText = Add-AutoTaskContext $M.Slug ((Invoke-Git @('cat-file', 'blob', "$($M.Sha):$taskPath")).Out) $M.Sha }
     catch { Enter-ReviewWait $M; Remove-Claim $statePath; return }
+    if (Test-AutoPlanEmpty $M.Slug $taskText) { return (Complete-Task $M $statePath $id 'EMPTY_PLAN') }
     $cont = Get-ContinueBranch $M.Slug
     $runDir = Join-Path (Join-Path $WorkDir 'runs') $id
     [void](New-Item -ItemType Directory -Force -Path $runDir)
@@ -897,7 +898,15 @@ function Invoke-ClaudeTask($M, $Job, [string]$Exe, [string]$TaskText, [string]$C
         $rep.Sha = $remote
         return (Complete-Task $M $statePath $id 'DONE' $rep.Branch $rep.Sha)
     }
-    if ($null -ne $rep) { return (Complete-Task $M $statePath $id 'BLOCKED') }
+    if ($null -ne $rep) {
+        # BLOCKED без гілки: причину знає лише останній рядок агента — він іде в #1856 (blocked-reasons.json), як у gemini_run.ps1.
+        if ($rep.Kind -eq 'BLOCKED' -and -not (Test-ClaudeBranch $rep.Branch) -and $text) {
+            $reason = @($text -split "`n" | Where-Object { $_.Trim() -cmatch '^(?:НОУТБУК )?ЗАБЛОКОВАНО' } | Select-Object -Last 1)
+            if ($reason.Count -eq 0) { $reason = @($text -split "`n" | Where-Object { $_.Trim() } | Select-Object -Last 1) }
+            try { Add-Note (Join-Path $GeminiOutDir 'blocked-reasons.json') "claude/$($M.Slug)" ([string]$reason[0]) } catch { Write-Log "причина BLOCKED не записана: $($_.Exception.Message)" }
+        }
+        return (Complete-Task $M $statePath $id 'BLOCKED')
+    }
     if ($isError -or $r.Code -ne 0) {
         $code = Get-ErrorCode ($text + "`n" + $r.Err)
         if ($code -eq 'QUOTA' -and (Enter-ClaudeQuotaWait $M $statePath $id $r ($text + "`n" + $r.Err))) { return }
