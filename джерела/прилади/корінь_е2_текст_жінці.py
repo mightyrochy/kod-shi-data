@@ -159,6 +159,7 @@ class Модуль:
         """Будує області, писачів і виклики одного джерела."""
         с.шлях, с.ток, с.пар, с.зсув, с.служб = шлях, ток, пари(ток), зсув, служб
         с.функції, с.оголош, с.присв, с.виклики, с.стоки, с.поля_запис = [], {}, [], [], [], []
+        с.позиції = {}                                  # (і оголошення, ключ імені) → місце імені в шаблоні `[a, b] of X`
         с.кеш_охоплення = {}
         с._функції(); с._оголошення(); с._присвоєння()
 
@@ -312,9 +313,15 @@ class Модуль:
                     continue
                 # контейнер: X.push(..) / X.f = .. / X[..] = ..
                 j = і + 1
-                while j < н and т[j][1] in (".", "?.", "[") :
+                while j < н and т[j][1] in (".", "?.", "[", "("):
                     if т[j][1] == "[":
                         if j not in пар: break
+                        j = пар[j] + 1
+                    elif т[j][1] == "(":
+                        # `X.get(к).push(…)` / `X.get(к).f = …` — запис у значення `Map` (11786); чи `X` — `Map`,
+                        # судить походження, для іншого `X` такий запис не рахується, як і досі.
+                        if not (т[j - 1][1] == "get" and j in пар and пар[j] + 1 < н and т[пар[j] + 1][1] in (".", "?.", "[")):
+                            break
                         j = пар[j] + 1
                     elif j + 1 < н and т[j + 1][0] == "id":
                         j += 2
@@ -350,9 +357,23 @@ class Модуль:
                 j = пар[і + 1] + 1
                 if j < н and т[j][1] in ("=", "of", "in"):
                     а, б = j + 1, с.кінець_виразу(j + 1) if т[j][1] == "=" else (пар[і - 1] if False else с.кінець_виразу(j + 1))
-                    for k in range(і + 2, пар[і + 1]):
-                        if т[k][0] == "id" and т[k][1] not in КЛЮЧОВІ and (k + 1 >= н or т[k + 1][1] != ":") and т[k - 1][1] not in (".", "?."):
+                    позиція, k = 0, і + 2
+                    while k < пар[і + 1]:
+                        if т[k][1] == "," and т[і + 1][1] == "[":
+                            позиція += 1
+                        elif т[k][0] == "id" and т[k][1] not in КЛЮЧОВІ and (k + 1 >= н or т[k + 1][1] != ":") and т[k - 1][1] not in (".", "?."):
                             с.присв.append((с.ключ(і, т[k][1]), "елемент" if т[j][1] != "=" else "=", (а, б), і))
+                            if т[і + 1][1] == "[" and т[j][1] == "of" and т[k - 1][1] in ("[", ",") and т[k + 1][1] in (",", "]"):
+                                # Ім'я на верхньому рівні шаблону масиву в `for…of`: елемент ітерації, місце `позиція` (11786).
+                                с.позиції[(і, с.ключ(і, т[k][1]))] = позиція
+                        if т[k][1] in ("[", "{", "(") and k in пар and т[і + 1][1] == "[":
+                            # Вкладений шаблон — імена в ньому без місця.
+                            for q in range(k + 1, пар[k]):
+                                if т[q][0] == "id" and т[q][1] not in КЛЮЧОВІ and (q + 1 >= н or т[q + 1][1] != ":") and т[q - 1][1] not in (".", "?."):
+                                    с.присв.append((с.ключ(і, т[q][1]), "елемент" if т[j][1] != "=" else "=", (а, б), і))
+                            k = пар[k] + 1
+                            continue
+                        k += 1
             elif x[0] == "id" and x[1] in ("const", "let", "var") and і + 2 < н and т[і + 1][0] == "id" and т[і + 2][0] == "id" \
                     and т[і + 2][1] in ("of", "in"):
                 а = і + 3
@@ -1036,6 +1057,33 @@ function іншаНазва(е, т){ const копія = т; назваЖінці
         ('псевдонім-виклику-чужий', "const В = {}; function відп(п){ if (!В[п]) В[п] = {ім: ''}; return В[п]; } function а(п){ const вх = відп(п); const та = document.createElement('textarea'); та.oninput = e => { вх.ім = e.target.value; }; їїСловаП(document.body, вх.ім || ''); } function б(п){ const в = відп(п); в.ім = fetch('/m'); }", 1),
         ('псевдонім-виклику-її', "const В = {}; function відп(п){ if (!В[п]) В[п] = {ім: ''}; return В[п]; } function а(п){ const вх = відп(п); const та = document.createElement('textarea'); та.oninput = e => { вх.ім = e.target.value; }; їїСловаП(document.body, вх.ім || ''); } function б(п){ const в = відп(п); в.ім = $('ввід').value; }", 0),
         ('свіжий-запис-виклику', "function нове(){ const з = {ім: ''}; return з; } function а(){ const вх = нове(); вх.ім = $('ввід').value; їїСловаП(document.body, вх.ім); } function б(){ const в = нове(); в.ім = fetch('/m'); }", 0),
+        # Доповнення 31.10 (11833, 11786, 11823): свій писач знімає місце, чужий поряд — лишає.
+        ('сховище-цикл-її', "let С = {ім: ''}; function стан(){ return {ім: С.ім}; } function зберегти(){ localStorage.setItem('с', JSON.stringify(стан())); } function відн(з){ С = {ім: з.ім}; } відн(JSON.parse(localStorage.getItem('с'))); С.ім = $('ввід').value; їїСловаП(document.body, С.ім);", 0),
+        ('сховище-цикл-чужий-поряд', "let С = {ім: ''}; function стан(){ return {ім: С.ім}; } function зберегти(){ localStorage.setItem('с', JSON.stringify(стан())); } function відн(з){ С = {ім: з.ім}; } відн(JSON.parse(localStorage.getItem('с'))); С.ім = $('ввід').value; localStorage.setItem('с', JSON.stringify({ім: fetch('/m')})); їїСловаП(document.body, С.ім);", 1),
+        ('розрізнювач-свій', "const Ч = []; Ч.push({хто: 'людина', текст: $('ввід').value}); Ч.push(Object.assign({хто: 'ші', текст: fetch('/m')}, {})); Ч.forEach(р => { if (р.хто === 'ші') текстЖінціП(document.body, р.текст); else їїСловаП(document.body, р.текст); });", 0),
+        ('розрізнювач-чужий-поряд', "const Ч = []; Ч.push({хто: 'людина', текст: $('ввід').value}); Ч.push({хто: 'людина', текст: fetch('/m')}); Ч.forEach(р => { if (р.хто === 'ші') текстЖінціП(document.body, р.текст); else їїСловаП(document.body, р.текст); });", 1),
+        ('розрізнювач-незнаний', "const Ч = []; Ч.push({хто: 'людина', текст: $('ввід').value}); Ч.push({хто: інше(), текст: fetch('/m')}); Ч.forEach(р => { if (р.хто === 'ші') текстЖінціП(document.body, р.текст); else їїСловаП(document.body, р.текст); });", 1),
+        ('розрізнювач-переписано', "const Ч = []; Ч.push({хто: 'людина', текст: $('ввід').value}); Ч.push({хто: 'ші', текст: fetch('/m')}); Ч.forEach(р => { р.хто = 'людина'; }); Ч.forEach(р => { if (р.хто === 'ші') текстЖінціП(document.body, р.текст); else їїСловаП(document.body, р.текст); });", 1),
+        ('розрізнювач-копія', "function коп(р){ return {хто: р.хто, текст: р.текст}; } const Ч = []; Ч.push({хто: 'людина', текст: $('ввід').value}); Ч.push({хто: 'ші', текст: fetch('/m')}); const К = Ч.map(коп); К.forEach(р => { if (р.хто === 'ші') текстЖінціП(document.body, р.текст); else їїСловаП(document.body, р.текст); });", 0),
+        ('розрізнювач-копія-чужа', "function коп(р){ return {хто: р.хто, текст: р.опис}; } const Ч = []; Ч.push({хто: 'людина', текст: $('ввід').value, опис: ''}); Ч.push({хто: 'ші', текст: fetch('/m'), опис: fetch('/m')}); const К = Ч.map(коп); К.forEach(р => { if (р.хто === 'ші') текстЖінціП(document.body, р.текст); else їїСловаП(document.body, р.текст); });", 1),
+        ('map-за-імʼям-свій', "function ім(р){ return р.ім; } const С = [{ім: $('ввід').value}]; С.map(ім).forEach(т => їїСловаП(document.body, т));", 0),
+        ('map-за-імʼям-чужий', "function ім(р){ return р.ім; } const С = [{ім: $('ввід').value}, {ім: fetch('/m')}]; С.map(ім).forEach(т => їїСловаП(document.body, т));", 1),
+        ('масив-гілка-свій', "function відн(з){ const С = Array.isArray(з.сп) ? з.сп : []; С.forEach(х => їїСловаП(document.body, х.ім)); } відн({}); відн({сп: [{ім: $('ввід').value}]});", 0),
+        ('масив-гілка-чужий', "function відн(з){ const С = Array.isArray(з.сп) ? з.сп : []; С.forEach(х => їїСловаП(document.body, х.ім)); } відн({}); відн({сп: [{ім: $('ввід').value}, {ім: fetch('/m')}]});", 1),
+        ('масив-без-умови', "function відн(з){ const С = з.сп || []; С.forEach(х => їїСловаП(document.body, х.ім)); } відн({ім: 'x'}); відн({сп: [{ім: $('ввід').value}]});", 1),
+        ('втеча-повернення-читання', "let С = []; const дай = () => С; С.push({ім: $('ввід').value}); function ф(сп){ return (сп || С).find(х => х); } ф(дай()); С.forEach(х => їїСловаП(document.body, х.ім));", 0),
+        ('втеча-повернення-запис', "let С = []; const дай = () => С; С.push({ім: $('ввід').value}); дай().push({ім: fetch('/m')}); С.forEach(х => їїСловаП(document.body, х.ім));", 1),
+        ('втеча-аргумент-запис', "let С = []; С.push({ім: $('ввід').value}); function доп(сп){ сп.push({ім: fetch('/m')}); } доп(С); С.forEach(х => їїСловаП(document.body, х.ім));", 1),
+        ('назва-поза-її', "const з = {назва: $('ввід').value}; полеЕкранаП(document.body, 'textContent', з.назва);", 0),
+        ('назва-поза-чужа', "const з = {назва: fetch('/m')}; полеЕкранаП(document.body, 'textContent', з.назва);", 1),
+        ('мапа-свій', "const М = new Map(); М.set('к', []); М.get('к').push({ім: $('ввід').value}); for (const [к, сп] of М) сп.forEach(х => їїСловаП(document.body, х.ім));", 0),
+        ('мапа-чужий-поряд', "const М = new Map(); М.set('к', []); М.get('к').push({ім: $('ввід').value}); М.get('к').push({ім: fetch('/m')}); for (const [к, сп] of М) сп.forEach(х => їїСловаП(document.body, х.ім));", 1),
+        ('мапа-get-окремо', "const М = new Map(); М.set('к', []); М.get('к').push({ім: $('ввід').value}); const с = М.get('к'); с.push({ім: fetch('/m')}); for (const [к, сп] of М) сп.forEach(х => їїСловаП(document.body, х.ім));", 1),
+        ('мапа-втеча', "const М = new Map(); М.set('к', []); М.get('к').push({ім: $('ввід').value}); обробити(М); for (const [к, сп] of М) сп.forEach(х => їїСловаП(document.body, х.ім));", 1),
+        ('розрізнювач-не-дорівнює', "const Ч = []; Ч.push({хто: 'людина', текст: $('ввід').value}); Ч.push({хто: 'ші', текст: fetch('/m')}); Ч.forEach(р => { if (р.хто !== 'ші') їїСловаП(document.body, р.текст); else текстЖінціП(document.body, р.текст); });", 0),
+        ('розрізнювач-не-дорівнює-чужий', "const Ч = []; Ч.push({хто: 'людина', текст: $('ввід').value}); Ч.push({хто: 'гість', текст: fetch('/m')}); Ч.forEach(р => { if (р.хто !== 'ші') їїСловаП(document.body, р.текст); else текстЖінціП(document.body, р.текст); });", 1),
+        ('два-виклики-свій', "function ім(р){ return р.ім; } const А = [{ім: $('ввід').value}]; const Б = [{ім: $('ввід').value}]; А.map(ім).forEach(т => їїСловаП(document.body, т)); Б.map(ім).forEach(т => їїСловаП(document.body, т));", 0),
+        ('два-виклики-чужий', "function ім(р){ return р.ім; } const А = [{ім: $('ввід').value}]; const Б = [{ім: fetch('/m')}]; А.map(ім).forEach(т => їїСловаП(document.body, т)); Б.map(ім).forEach(т => їїСловаП(document.body, т));", 1),
         ('каталог-python-кандидат', "async function ф(){const д=await (await fetch('каталог.json')).json(); назваЖінціП(document.body, д.name);}", 1),
     ]
     хиб = 0
