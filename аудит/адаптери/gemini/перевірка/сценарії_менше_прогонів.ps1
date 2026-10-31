@@ -75,6 +75,7 @@ try {
         function script:Get-ChainPulls { $script:TestPulls }
         function script:Complete-EngineDrafts { }
         function script:Test-ChainCodePull { $true }
+        function script:Get-ChainPullRisk { -1 }
         function script:Test-LiveModels { $true }
         function script:Add-ChainMarker($Slug,$Model,$Main,[switch]$Gpu) { $script:TestMarkers += $Slug }
         # Клон стенда без origin; зняття мертвих позначок на справжньому origin міряє сценарії_ланцюга.ps1.

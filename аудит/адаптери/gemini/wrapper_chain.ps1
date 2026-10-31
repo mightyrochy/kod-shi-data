@@ -115,7 +115,7 @@ function Complete-EngineDrafts {
         if ($existing.Count) { Remove-Item -LiteralPath $file.FullName; continue }
         # Звіт перевірки без рядків дошки лишається гілкою: PR несе повний CI і злиття без користі (`ПЕРЕВІРКА.md`, «Під обгорткою»).
         if (Test-ReviewBranch $branch) {
-            $rows = (Invoke-Git @('diff','--name-only','refs/remotes/origin/main...' + $head,'--','аудит/дошка') -AllowFail)
+            $rows = (Invoke-Git @('diff','--name-only',"refs/remotes/origin/main...$head",'--','аудит/дошка') -AllowFail)
             if ($rows.Code -eq 0 -and -not $rows.Out.Trim()) {
                 Write-WrapperLog "ланцюг: звіт $branch без рядків дошки — гілка без PR-чернетки"
                 Remove-Item -LiteralPath $file.FullName; continue

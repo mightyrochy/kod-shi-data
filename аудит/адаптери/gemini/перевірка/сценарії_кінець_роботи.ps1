@@ -35,13 +35,15 @@ try {
     }
     function Test-LiveModels { <# Лишає GPU-прогони поза пробою автоперевірки. #> $false }
     function Test-ChainCodePull { <# Позначає синтетичні PR як зміни коду. #> $true }
+    function Get-ChainPullRisk { <# Нарядів нема: ризик не знімає перевірку. #> -1 }
+    function Get-ReviewPatchId { <# Сталий patch-id синтетичних голів. #> 'стенд-pid' }
     function Test-ReviewedMerge { <# Виключає окремий випадок чистого злиття main. #> $false }
     function Get-ReviewDiff { <# Повертає сталий diff для синтетичних голів. #> 'стенд-diff' }
     function Add-ChainMarker($Slug, $Model, $Main, [switch]$Gpu) { <# Рахує позначки без зовнішнього push. #> $script:Markers += [string]$Slug }
     function Write-WrapperLog([string]$Text) { <# Зберігає журнал і показує несподівані збої. #> $script:Logs += $Text; if ($Text -like "*CHAIN_*") { Write-Host $Text } }
     function Pull([int]$N, [string]$Branch, [string]$Head) {
         <# Довірений PR-чернетка з трьома послідовними головами. #>
-        [pscustomobject]@{number=$N;title='Код';draft=$true;created_at=[datetimeoffset]::UtcNow.ToString('o');user=@{login='mightyrochy'};
+        [pscustomobject]@{number=$N;title='Код';draft=$false;created_at=[datetimeoffset]::UtcNow.ToString('o');user=@{login='mightyrochy'};
             head=@{ref=$Branch;sha=$Head;repo=@{full_name=$GitHubRepo}};base=@{ref='main';repo=@{full_name=$GitHubRepo}}}
     }
     function Tick([string]$Head, [string]$Branch='claude/5.3-повний-обхід') {
