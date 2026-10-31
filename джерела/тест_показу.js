@@ -114,8 +114,8 @@ const чекатиСтарт = async w => {
   if (!ок) тест("сторінка стартувала до привʼязки кнопок", false, "20 с");
 };
 
-/* ── ПАКЕТ ІЗ ХЕША: ЧЕКАТИ НА КАРТКИ, А НЕ НА ГОДИННИК ────
-   Сім розділів після `сторінка({url: …#пакет})` стояли на `пауза(500)`. 500 мс —
+/* ── ПАКЕТ РОЗДІЛУ: ЧЕКАТИ НА КАРТКИ, А НЕ НА ГОДИННИК ────
+   Сім розділів після `сторінка({url: …#пакет})` (до 11824 — пакет у хеші адреси) стояли на `пауза(500)`. 500 мс —
    це здогад про чужу машину, а не факт: розбір хеша йде через `gunzip`
    (`DecompressionStream`), IndexedDB і малювання карток, і на завантаженому
    runner'і він у цей час не вкладався. Тоді `П` ще `null`, а розділ уже кликав
@@ -131,8 +131,25 @@ const чекатиНаКартки = async (w, d, скільки) => {
   const ок = await чекатиНа(() => скільки_є() === скільки,
                             "карток пакета намальовано не " + скільки);
   let уП; try { уП = w.eval("П ? П.картки.length : null"); } catch(e){ уП = String(e); }
-  тест("пакет із хеша розібрано, карток намальовано " + скільки, ок, [скільки_є(), уП]);
+  тест("пакет розділу розібрано, карток намальовано " + скільки, ок, [скільки_є(), уП]);
   return ок;
+};
+
+/* ── ПАКЕТ РОЗДІЛУ — ВХІД ТЕСТУ, А НЕ ПРОДУКТУ (рішення 11824, корінь Е2-текст-жінці) ──
+   Доти розділ стискав пакет ПОКАЗ-V1 gzip і відкривав `показ.html#<пакет>`, а показ розпаковував його з хеша
+   адреси. Писача пакета, крім тестів і проб, у репозиторії нема, а посилання заповнить будь-хто, тож канал із
+   показу прибрано. Тест ставить `П` сам, тим самим шляхом, яким `П` ставить продукт: шов збирання
+   (`збирання_образів.js`: `П = {…}; рендер()`, ід — `новийІдПрогону()`) і відкриття з бібліотеки
+   (`показ.html`, `відкрити`: `П = …; рендер(); відновитиВердиктиПрогону()`). Рядок випадку — поле
+   `випадок_рядок`, як його пише шов; той самий прогін, відкритий удруге, — пакет із тим самим `прогін`. */
+const відкритиПакет = async (пакет, {idb = null} = {}) => {
+  const с = сторінка({url: "https://mightyrochy.github.io/kod-shi-data/показ.html", idb});
+  await чекатиСтарт(с.w);
+  с.w.__пакетРозділу = JSON.stringify(пакет);
+  с.w.eval("П = JSON.parse(window.__пакетРозділу); delete window.__пакетРозділу;"
+         + " if (!П.прогін) П.прогін = новийІдПрогону(); рендер();"
+         + " if (window.відновитиВердиктиПрогону) window.відновитиВердиктиПрогону().catch(() => {}); 0");
+  return с;
 };
 
 /* Довідник і підстановка шаблону — спільні з пробами JSDOM, див. показ_шаблон.js
@@ -1175,7 +1192,7 @@ function мостПриміркиЗаглушка(w){
     тест("без винятків", помилки.length === 0, помилки);
     тест("екрани введення НЕ сховано, панель на місці; профіль і розділи сховані лише тому, що це знайомство",
          $("е-профіль").style.display !== "none" && $("ніг").style.display !== "none"
-         && w.eval("РЕЖИМ") === "старт" && w.eval("ПАКЕТ_З_ХЕША") === false
+         && w.eval("РЕЖИМ") === "старт"
          && $("смуга-профілів").style.display === "none", [w.eval("РЕЖИМ"), $("смуга-профілів").style.display]);
     тест("шапка не каже «Пакет не розпакувався»", !/не розпакувався/.test($("ш-рядок").textContent), $("ш-рядок").textContent);
     тест("адреса й токен мосту прочитані з хеша", w.eval("МІСТ_П.адреса") === "https://lyusterko-mist.mighty-rochy.workers.dev"
@@ -1842,10 +1859,7 @@ function мостПриміркиЗаглушка(w){
            крій: "flared", крій_словами: "звужений до коліна, розширений від коліна"},
           {id: "ж-00010@gepur.com", назва: "Підвіска", ціна: 499, слот: "прикраса", колір: "срібний", код_кольору: "silvery"}],
          мітки: [], знахідки: []}]};
-    const байти = new TextEncoder().encode(JSON.stringify(пакет));
-    const ст = new Uint8Array(await new Response(new Blob([байти]).stream().pipeThrough(new CompressionStream("gzip"))).arrayBuffer());
-    const б64 = Buffer.from(ст).toString("base64").replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
-    const {w, d, помилки} = сторінка({url: "https://mightyrochy.github.io/kod-shi-data/показ.html#" + б64});
+    const {w, d, помилки} = await відкритиПакет(пакет);
     await чекатиНаКартки(w, d, пакет.картки.length);
     w.eval("читатиКв = async () => new Blob(['ф'], {type:'image/jpeg'});");
     w.createImageBitmap = async () => ({width: 1000, height: 1500, close(){}});
@@ -1893,10 +1907,7 @@ function мостПриміркиЗаглушка(w){
           {id: "м-светр-1", назва: "Тонкий кардиган молочний", слот: "верхній_шар", вигадана: true},
           {id: "м-взуття-2", назва: "Білі кеди", слот: "взуття", вигадана: true}],
          мітки: [], знахідки: []}]};
-    const байти = new TextEncoder().encode(JSON.stringify(пакет));
-    const ст = new Uint8Array(await new Response(new Blob([байти]).stream().pipeThrough(new CompressionStream("gzip"))).arrayBuffer());
-    const б64 = Buffer.from(ст).toString("base64").replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
-    const {w, d, помилки} = сторінка({url: "https://mightyrochy.github.io/kod-shi-data/показ.html#" + б64});
+    const {w, d, помилки} = await відкритиПакет(пакет);
     await чекатиНаКартки(w, d, пакет.картки.length);
     w.eval("читатиКв = async () => new Blob(['ф'], {type:'image/jpeg'});");
     w.eval("П.сценарій_знімок = {чат: [{фото: [{ід: 'ф1', тип: 'image/jpeg', дані: 'AAAA'}]}]};");
@@ -1939,10 +1950,7 @@ function мостПриміркиЗаглушка(w){
          речі: [{id: "ж-00003@gepur.com", назва: "Чорна сукня", ціна: 6999,
                  фото: "https://img.example/1.jpg", урл: "https://gepur.com/x", слот: "сукня"}],
          мітки: [], знахідки: []}]};
-    const байти = new TextEncoder().encode(JSON.stringify(пакет));
-    const ст = new Uint8Array(await new Response(new Blob([байти]).stream().pipeThrough(new CompressionStream("gzip"))).arrayBuffer());
-    const б64 = Buffer.from(ст).toString("base64").replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
-    const {w, d, помилки} = сторінка({url: "https://mightyrochy.github.io/kod-shi-data/показ.html#" + б64});
+    const {w, d, помилки} = await відкритиПакет(пакет);
     await чекатиНаКартки(w, d, пакет.картки.length);
     const $ = id => d.getElementById(id);
     const стан = () => $("прм-0").textContent;
@@ -2060,10 +2068,7 @@ function мостПриміркиЗаглушка(w){
           назва: "Річ " + і + "." + n, ціна: 100, фото: "https://img.example/" + і + n + ".jpg",
           урл: "https://gepur.com/x", слот: ["сукня", "взуття", "сумка", "пояс"][n - 1]})),
         мітки: [], знахідки: []}))};
-    const байти = new TextEncoder().encode(JSON.stringify(пакет));
-    const ст = new Uint8Array(await new Response(new Blob([байти]).stream().pipeThrough(new CompressionStream("gzip"))).arrayBuffer());
-    const б64 = Buffer.from(ст).toString("base64").replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
-    const {w, d, помилки} = сторінка({url: "https://mightyrochy.github.io/kod-shi-data/показ.html#" + б64});
+    const {w, d, помилки} = await відкритиПакет(пакет);
     мостПриміркиЗаглушка(w);
     await чекатиНаКартки(w, d, пакет.картки.length);
     w.eval("читатиКв = async () => new Blob(['ф'], {type:'image/jpeg'});");
@@ -2121,10 +2126,7 @@ function мостПриміркиЗаглушка(w){
          мітки: [], знахідки: []},
         {рука: "3", текст: "Проза без каталогу: сукня кольору вина, помада в тон.",
          речі: [], мітки: [], знахідки: []}]};
-    const байти = new TextEncoder().encode(JSON.stringify(пакет));
-    const ст = new Uint8Array(await new Response(new Blob([байти]).stream().pipeThrough(new CompressionStream("gzip"))).arrayBuffer());
-    const б64 = Buffer.from(ст).toString("base64").replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
-    const {w, d, помилки} = сторінка({url: "https://mightyrochy.github.io/kod-shi-data/показ.html#" + б64});
+    const {w, d, помилки} = await відкритиПакет(пакет);
     await чекатиНаКартки(w, d, пакет.картки.length);
     const $ = id => d.getElementById(id);
     const стан = п => $("прм-" + п).textContent;
@@ -2242,10 +2244,7 @@ function мостПриміркиЗаглушка(w){
          опис: "Жилет на голое тело.", як_носити: ["пояс поверх жакета"],
          речі: [{id: "ж-00010@gepur.com", назва: "Жилет", ціна: 1999, слот: "верх"}],
          мітки: [], знахідки: [], мова_ховати_опис: true}]};
-    const байти = new TextEncoder().encode(JSON.stringify(пакет));
-    const ст = new Uint8Array(await new Response(new Blob([байти]).stream().pipeThrough(new CompressionStream("gzip"))).arrayBuffer());
-    const б64 = Buffer.from(ст).toString("base64").replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
-    const {w, d, помилки} = сторінка({url: "https://mightyrochy.github.io/kod-shi-data/показ.html#" + б64});
+    const {w, d, помилки} = await відкритиПакет(пакет);
     await чекатиНаКартки(w, d, пакет.картки.length);
     const $ = id => d.getElementById(id);
     тест("без винятків", помилки.length === 0, помилки);
@@ -3285,10 +3284,7 @@ function мостПриміркиЗаглушка(w){
         {рука: "2", текст: "Повний образ.", неповний: "",
          речі: [{id: "ж-00011@gepur.com", назва: "Сумка", ціна: 1999, слот: "сумка"}],
          мітки: [], знахідки: []}]};
-    const байти = new TextEncoder().encode(JSON.stringify(пакет));
-    const ст = new Uint8Array(await new Response(new Blob([байти]).stream().pipeThrough(new CompressionStream("gzip"))).arrayBuffer());
-    const б64 = Buffer.from(ст).toString("base64").replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
-    const {w, d, помилки} = сторінка({url: "https://mightyrochy.github.io/kod-shi-data/показ.html#" + б64});
+    const {w, d, помилки} = await відкритиПакет(пакет);
     await чекатиНаКартки(w, d, пакет.картки.length);
     const $ = id => d.getElementById(id);
     тест("без винятків", помилки.length === 0, помилки);
@@ -4344,10 +4340,7 @@ function мостПриміркиЗаглушка(w){
       мова: [], мова_спроб: 0, мова_видано: "так", фото_не_ті: [], дібрав_код_слоти: []});
     const пакет = {в: "ПОКАЗ-V1", збірка: "тест-134", каталог: "каталог_стенд.xml · 639 речей",
       профіль: "Оля", розклад: "3142", пул: 364, картки: ["1", "2", "3", "4"].map(картка)};
-    const байти = new TextEncoder().encode(JSON.stringify(пакет));
-    const ст = new Uint8Array(await new Response(new Blob([байти]).stream().pipeThrough(new CompressionStream("gzip"))).arrayBuffer());
-    const б64 = Buffer.from(ст).toString("base64").replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
-    const {w, d, помилки} = сторінка({url: "https://mightyrochy.github.io/kod-shi-data/показ.html#" + б64});
+    const {w, d, помилки} = await відкритиПакет(пакет);
     await чекатиНа(() => d.querySelectorAll("#картки .картка").length === 4, "чотири картки пакета не намалювались");
     const $ = id => d.getElementById(id);
     /* Паспорт, розмова й драпіровка — спільне прогону: саме вони й не мають
@@ -5175,10 +5168,7 @@ function мостПриміркиЗаглушка(w){
     const пакет20 = {в: "ПОКАЗ-V1", збірка: "тест-6-8", каталог: "каталог_стенд.xml · 639 речей",
       профіль: "Оля", розклад: "1234", пул: 100,
       картки: [карт20("1"), карт20("2"), карт20("3"), карт20("4", true)]};
-    const байти20 = new TextEncoder().encode(JSON.stringify(пакет20));
-    const ст20 = new Uint8Array(await new Response(new Blob([байти20]).stream().pipeThrough(new CompressionStream("gzip"))).arrayBuffer());
-    const б6420 = Buffer.from(ст20).toString("base64").replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
-    const {w, d, помилки} = сторінка({url: "https://mightyrochy.github.io/kod-shi-data/показ.html#" + б6420});
+    const {w, d, помилки} = await відкритиПакет(пакет20);
     await чекатиНа(() => d.querySelectorAll("#картки .картка").length === 4, "чотири картки пакета не намалювались");
     const $ = id => d.getElementById(id);
     w.eval("містП = async (ім)=> (ім === 'вердикт' ? [] : {помилка:'заглушка'});");
@@ -5541,16 +5531,12 @@ function мостПриміркиЗаглушка(w){
       мова: [], мова_спроб: 0, мова_видано: "так", фото_не_ті: [], дібрав_код_слоти: []});
     const пакет22 = {в: "ПОКАЗ-V1", збірка: "тест-л7", каталог: "каталог_стенд.xml · 639 речей",
                      профіль: "Оля", розклад: "1234", пул: 100, картки: [карт22("прогін А")]};
-    const байти22 = new TextEncoder().encode(JSON.stringify(пакет22));
-    const ст22 = new Uint8Array(await new Response(new Blob([байти22]).stream().pipeThrough(new CompressionStream("gzip"))).arrayBuffer());
-    const б6422 = Buffer.from(ст22).toString("base64").replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
     const idb22 = new IDBFactory();
-    const урл22 = "https://mightyrochy.github.io/kod-shi-data/показ.html#" + б6422;
-    const {w, d, помилки} = сторінка({url: урл22, idb: idb22});
+    const {w, d, помилки} = await відкритиПакет(пакет22, {idb: idb22});
     await чекатиНа(() => d.querySelectorAll("#картки .картка").length === 1, "картка пакета не намалювалась");
     w.eval("містП = async () => [];");
     const ідА = w.eval("П.прогін");
-    тест("пакет, відкритий без іда, дістає свій ід РАЗ — і він внутрішньою мовою, без слів",
+    тест("прогін зі шва дістає свій ід РАЗ — і він внутрішньою мовою, без слів",
          /^пр-[0-9a-z]+$/.test(String(ідА)), ідА);
 
     /* ПЕРШИЙ ЗБІР: вердикт жінки на єдиній картці. */
@@ -5603,16 +5589,15 @@ function мостПриміркиЗаглушка(w){
          плитки22б.length === 3 && плитки22б.filter(т => т === "вдягну з поправкою").length === 1
          && плитки22б.filter(т => т === "вдягну як є").length === 1
          && плитки22б.filter(т => т === "не вдягну").length === 1, плитки22б);
-    /* ТЕ САМЕ ПОСИЛАННЯ, ВІДКРИТЕ ВДРУГЕ, — ТОЙ САМИЙ ПРОГІН (`ідПакетаП`). Ід із
-       годинника плодив би тут запис на кожне відкриття: власник відкриває
-       надіслане собі посилання по кілька разів, і «Усі образи» засмічувались би
-       копіями одного прогону. Сховище те саме (`idb22`), сторінка нова. */
+    /* ТОЙ САМИЙ ПРОГІН, ВІДКРИТИЙ УДРУГЕ (з бібліотеки, у новій сторінці), — ТОЙ САМИЙ ЗАПИС. Ід
+       прогону їде з `П` у запис бібліотеки й назад; новий ід на кожне відкриття плодив би в «Усіх
+       образах» копії одного прогону. Сховище те саме (`idb22`), сторінка нова. */
     {
-      const друге = сторінка({url: урл22, idb: idb22});
+      const друге = await відкритиПакет(Object.assign({}, пакет22, {прогін: ідА}), {idb: idb22});
       await чекатиНа(() => друге.d.querySelectorAll("#картки .картка").length === 1, "пакет не намалювався вдруге");
       await друге.w.eval("оновитиБібліотеку()");   /* дочікується запису образу цього відкриття */
       const записів = JSON.parse(await друге.w.eval("усіОбрази().then(о => JSON.stringify(о.map(з => String(з.ключ))))"));
-      тест("те саме посилання, відкрите вдруге, дописує СВІЙ запис, а не плодить новий",
+      тест("той самий прогін, відкритий удруге, дописує СВІЙ запис, а не плодить новий",
            друге.w.eval("П.прогін") === ідА && записів.length === 3 && записів.filter(к => к === ідА).length === 1,
            [друге.w.eval("П.прогін"), ідА, записів]);
     }
@@ -5644,12 +5629,9 @@ function мостПриміркиЗаглушка(w){
       мітки: [], знахідки: [], питання: [], етапи: {викликів: 1, виклики: []}, свідомі: [], невиконано: null,
       різноманітність: null, мова: [], мова_спроб: 0, мова_видано: "так", фото_не_ті: [], дібрав_код_слоти: []});
     const пакет23 = {в: "ПОКАЗ-V1", збірка: "тест-л8", каталог: "каталог_стенд.xml · 639 речей",
-                     профіль: "Оля", розклад: "1234", випадок: "Робота · офіс корпоративний", пул: 100,
+                     профіль: "Оля", розклад: "1234", випадок_рядок: "Робота · офіс корпоративний", пул: 100,
                      картки: [карт23("перший збір")]};
-    const байти23 = new TextEncoder().encode(JSON.stringify(пакет23));
-    const ст23 = new Uint8Array(await new Response(new Blob([байти23]).stream().pipeThrough(new CompressionStream("gzip"))).arrayBuffer());
-    const б6423 = Buffer.from(ст23).toString("base64").replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
-    const {w, d, помилки} = сторінка({url: "https://mightyrochy.github.io/kod-shi-data/показ.html#" + б6423, idb: new IDBFactory()});
+    const {w, d, помилки} = await відкритиПакет(пакет23, {idb: new IDBFactory()});
     await чекатиНа(() => d.querySelectorAll("#картки .картка").length === 1, "картка пакета не намалювалась");
     w.eval("містП = async () => [];");
     тест("до входу в бібліотеку список порожній — плитки малює саме вхід, а не збір",
@@ -5805,12 +5787,9 @@ function мостПриміркиЗаглушка(w){
       мітки: [], знахідки: [], питання: [], етапи: {викликів: 1, виклики: []}, свідомі: [], невиконано: null,
       різноманітність: null, мова: [], мова_спроб: 0, мова_видано: "так", фото_не_ті: [], дібрав_код_слоти: []};
     const пакет24 = {в: "ПОКАЗ-V1", збірка: "тест-ф143", каталог: "каталог_стенд.xml · 639 речей",
-                     профіль: "Оля", розклад: "1234", випадок: "Робота · офіс корпоративний", пул: 100,
+                     профіль: "Оля", розклад: "1234", випадок_рядок: "Робота · офіс корпоративний", пул: 100,
                      картки: [карт24]};
-    const байти24 = new TextEncoder().encode(JSON.stringify(пакет24));
-    const ст24 = new Uint8Array(await new Response(new Blob([байти24]).stream().pipeThrough(new CompressionStream("gzip"))).arrayBuffer());
-    const б6424 = Buffer.from(ст24).toString("base64").replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
-    const {w, d, помилки} = сторінка({url: "https://mightyrochy.github.io/kod-shi-data/показ.html#" + б6424, idb: new IDBFactory()});
+    const {w, d, помилки} = await відкритиПакет(пакет24, {idb: new IDBFactory()});
     await чекатиНа(() => d.querySelectorAll("#картки .картка .список .річ").length === 2, "картка з речами не намалювалась");
 
     /* РІЧ БЕЗ ЖОДНОГО КАДРУ — силует одразу, без чекання: чекати нема на що. */
@@ -5994,12 +5973,8 @@ function мостПриміркиЗаглушка(w){
       мова: [], мова_спроб: 0, мова_видано: "так", фото_не_ті: [], дібрав_код_слоти: []});
     const пакет28 = {в: "ПОКАЗ-V1", збірка: "тест-оцін1", каталог: "каталог_стенд.xml · 639 речей", профіль: "Оля",
                      розклад: "1234", пул: 100, картки: [карт28("1"), карт28("2"), карт28("3"), карт28("4", true)]};
-    const ст28 = new Uint8Array(await new Response(new Blob([new TextEncoder().encode(JSON.stringify(пакет28))])
-      .stream().pipeThrough(new CompressionStream("gzip"))).arrayBuffer());
-    const б6428 = Buffer.from(ст28).toString("base64").replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
-    const урл28 = "https://mightyrochy.github.io/kod-shi-data/показ.html#" + б6428;
     const idb28 = new IDBFactory();
-    const {w, d, помилки} = сторінка({url: урл28, idb: idb28});
+    const {w, d, помилки} = await відкритиПакет(пакет28, {idb: idb28});
     await чекатиНа(() => d.querySelectorAll("#картки .картка").length === 4, "чотири картки пакета не намалювались");
     const $ = id => d.getElementById(id);
     w.eval("window._ребер = 0; window._пер = 0; window._скрол = [];"
@@ -6118,10 +6093,10 @@ function мостПриміркиЗаглушка(w){
     /* ── 7. ПОВТОРНЕ ВІДКРИТТЯ ПРОГОНУ ПІДХОПЛЮЄ ВЕРДИКТИ ЗІ СХОВИЩА ── */
     await дочекатись(1);
     const до = await записи();
-    const друге = сторінка({url: урл28, idb: idb28});
+    const друге = await відкритиПакет(Object.assign({}, пакет28, {прогін: w.eval("П.прогін")}), {idb: idb28});
     await чекатиНа(() => друге.d.querySelectorAll("#картки .картка").length === 4, "пакет не намалювався вдруге");
     await чекатиНа(() => /оцінено 3 з 3/.test(друге.d.querySelector("#пейджер .пж-оц").textContent), "лічильник не підхопив вердикти");
-    тест("те саме посилання, відкрите вдруге: лічильник «оцінено 3 з 3» — вердикти прогону підхоплено",
+    тест("той самий прогін, відкритий удруге: лічильник «оцінено 3 з 3» — вердикти прогону підхоплено",
          друге.d.querySelector("#пейджер .пж-оц").textContent === "оцінено 3 з 3", друге.d.querySelector("#пейджер .пж-оц").textContent);
     const вибр = друге.d.querySelector("#к-0 .ряд[data-поле='верд'] .чип.вибр");
     тест("чип відповіді й слова жінки на місці після відкриття",
@@ -6458,12 +6433,9 @@ function мостПриміркиЗаглушка(w){
       мітки: [], знахідки: [], питання: [], етапи: {викликів: 1, виклики: []}, свідомі: [], невиконано: null,
       різноманітність: null, мова: [], мова_спроб: 0, мова_видано: "так", фото_не_ті: [], дібрав_код_слоти: []};
     const пакет4120 = {в: "ПОКАЗ-V1", збірка: "тест-4120", каталог: "каталог_стенд.xml · 639 речей",
-                       профіль: "Оля", розклад: "1234", випадок: "Робота · офіс корпоративний", пул: 100,
+                       профіль: "Оля", розклад: "1234", випадок_рядок: "Робота · офіс корпоративний", пул: 100,
                        картки: [карт4120]};
-    const стис4120 = new Uint8Array(await new Response(new Blob([new TextEncoder().encode(JSON.stringify(пакет4120))]).stream()
-      .pipeThrough(new CompressionStream("gzip"))).arrayBuffer());
-    const б64_4120 = Buffer.from(стис4120).toString("base64").replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
-    const {w, d, помилки} = сторінка({url: "https://mightyrochy.github.io/kod-shi-data/показ.html#" + б64_4120, idb: new IDBFactory()});
+    const {w, d, помилки} = await відкритиПакет(пакет4120, {idb: new IDBFactory()});
     await чекатиНа(() => d.querySelectorAll("#картки .картка .список .річ").length === 2, "картка з двома речами не намалювалась");
     const $ = id => d.getElementById(id);
     const картка = () => d.querySelector("#картки .картка");
@@ -6507,11 +6479,8 @@ function мостПриміркиЗаглушка(w){
       мітки: [], знахідки: [], питання: [], етапи: {викликів: 1, виклики: []}, свідомі: [], невиконано: null,
       різноманітність: null, мова: [], мова_спроб: 0, мова_видано: "так", фото_не_ті: [], дібрав_код_слоти: []});
     const пакет = {в: "ПОКАЗ-V1", збірка: "тест-5506", каталог: "каталог_стенд.xml · 639 речей", профіль: "Оля",
-                   розклад: "21", прогін: "пр-5506", випадок: "Робота", пул: 100, картки: [к("2", 1), к("1", 2)]};
-    const стис = new Uint8Array(await new Response(new Blob([new TextEncoder().encode(JSON.stringify(пакет))]).stream()
-      .pipeThrough(new CompressionStream("gzip"))).arrayBuffer());
-    const б64 = Buffer.from(стис).toString("base64").replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
-    const {w, d, помилки} = сторінка({url: "https://mightyrochy.github.io/kod-shi-data/показ.html#" + б64, idb: new IDBFactory()});
+                   розклад: "21", прогін: "пр-5506", випадок_рядок: "Робота", пул: 100, картки: [к("2", 1), к("1", 2)]};
+    const {w, d, помилки} = await відкритиПакет(пакет, {idb: new IDBFactory()});
     await чекатиНа(() => d.querySelectorAll("#картки .картка").length === 2, "дві картки не намалювались");
     w.eval(`ЗБ = {картки: П.картки, стадії: [], етап: [], ключ: [2, 1], готово: true, успіх: true, діагноз: [
       'hand_1 · blocks=1', 'prompt · hand_1_without_format · format=OBRAZ · variants=1',
@@ -6607,16 +6576,12 @@ function мостПриміркиЗаглушка(w){
        `ЗАМІНИ_П.has`, запис журналу); дві відповіді в переставленому порядку — той самий стан; скасована заміна й
        застаріла відповідь не міняють ні картки, ні сховища. Міст і модель — заглушки, керовані тестом. */
     const пакет45 = {в: "ПОКАЗ-V1", збірка: "тест-4.5", каталог: "каталог_стенд.xml · 639 речей", профіль: "Оля",
-      розклад: "1", прогін: "пр-4.5", випадок: "Робота", пул: 100,
+      розклад: "1", прогін: "пр-4.5", випадок_рядок: "Робота", пул: 100,
       картки: [{рука: "1", ітерацій: 1, викликів: 1, текст: "образ", опис: "образ", підпис: "образ",
         речі: [{id: "ж-1@g.com", назва: "Сукня", ціна: 3000, слот: "сукня", фото: null},
                {id: "ж-2@g.com", назва: "Пасок", ціна: 500, слот: "пояс", фото: null}],
         мітки: [], знахідки: [], питання: [], етапи: {викликів: 1, виклики: []}, свідомі: [], невиконано: null,
         різноманітність: null, мова: [], мова_спроб: 0, мова_видано: "так", фото_не_ті: [], дібрав_код_слоти: []}]};
-    const стис45 = new Uint8Array(await new Response(new Blob([new TextEncoder().encode(JSON.stringify(пакет45))]).stream()
-      .pipeThrough(new CompressionStream("gzip"))).arrayBuffer());
-    const адреса45 = "https://mightyrochy.github.io/kod-shi-data/показ.html#" + Buffer.from(стис45).toString("base64")
-      .replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
     const нова45 = {id: "ж-3@g.com", назва: "Сукня-футляр", ціна: 2800, слот: "сукня", фото: null};
     /* Заглушки: `від_моделі` віддає заміну одразу або чекає `__пустити()` з тесту; `мова` (дія коментаря) — так само. */
     const заглушки = (w, {чекатиЗаміну = false, чекатиМову = false} = {}) => w.eval(`
@@ -6645,7 +6610,7 @@ function мостПриміркиЗаглушка(w){
 
     /* (а) збереження → відновлення */
     {
-      const {w, d, помилки} = сторінка({url: адреса45, idb: new IDBFactory()});
+      const {w, d, помилки} = await відкритиПакет(пакет45, {idb: new IDBFactory()});
       await чекатиНа(() => d.querySelectorAll("#к-0 .річ").length === 2, "картка 4.5 не намалювалась");
       заглушки(w);
       d.querySelector("#к-0 button.замін").click();
@@ -6672,7 +6637,7 @@ function мостПриміркиЗаглушка(w){
 
     /* (б) дві відповіді в переставленому порядку: відповідь дії коментаря й новий сценарій */
     const порядок45 = async (спершуМова) => {
-      const {w, d, помилки} = сторінка({url: адреса45, idb: new IDBFactory()});
+      const {w, d, помилки} = await відкритиПакет(пакет45, {idb: new IDBFactory()});
       await чекатиНа(() => d.querySelectorAll("#к-0 .річ").length === 2, "картка 4.5 не намалювалась");
       заглушки(w, {чекатиМову: true});
       w.eval("const в = відповідь(0); в.верд = 'ні'; в.коментар = 'не люблю цю сукню'; позначитиЗмінуП(0); записатиВердиктП(0)");
@@ -6690,7 +6655,7 @@ function мостПриміркиЗаглушка(w){
 
     /* (в) скасована заміна: інший режим, поки міст думає; запізніла відповідь нічого не пише */
     {
-      const {w, d, помилки} = сторінка({url: адреса45, idb: new IDBFactory()});
+      const {w, d, помилки} = await відкритиПакет(пакет45, {idb: new IDBFactory()});
       await чекатиНа(() => d.querySelectorAll("#к-0 .річ").length === 2, "картка 4.5 не намалювалась");
       заглушки(w, {чекатиЗаміну: true});
       const до = стан45(w), зДо = await w.eval("усіВердикти().then(в => в.length)");
