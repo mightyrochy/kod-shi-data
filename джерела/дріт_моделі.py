@@ -115,12 +115,16 @@ _ДЖЕРЕЛО_КРАЮ = {"слово": "word", "річ": "item_data",
                  "виріб": "shop_cm"}    # composer `край_джерело`; «виріб» — довжина виробу в см від крамниці (Ф-9)
 # Поля випадку (протокол.ВИПАДОК), які «день» (`сценарій.день_кодами`) уже несе кодами:
 # коли день є, у випадку їх нема — ті самі факти двічі різними словами модель читала б як два.
+# Години на дроті нема — лише частина дня (`пора` → `part_of_day`; корінь Е2-частина-дня, крок 2): поля `_НЕ_НА_ДРОТІ`
+# випадок не везе ні полем, ні серед невідомих. Ім'я «година» в `ПОЛЯ_ВИПАДКУ` лишається лише для `form_defaults`
+# помічниці (`міст_помічниця`), доки поле панелі — година, а не частина дня.
+_НЕ_НА_ДРОТІ = frozenset({"година"})
 _ВИПАДОК_У_ДНІ = {"місце": "place", "формат": "setting", "рух": "movement", "дрес_код": "dress_code",
                   "тривалість_год": "duration_h", "темп_c": "temperature_c", "опади": "precipitation",
-                  "година": "start_hour", "ошатність": "formality"}
+                  "пора": "part_of_day", "ошатність": "formality"}
 ПОЛЯ_ВИПАДКУ = {"подія": "event", "нагода": "occasion", "місце": "place", "формат": "setting",
                  "тривалість_год": "duration_h", "рух": "movement", "дрес_код": "dress_code",
-                 "ошатність": "formality", "година": "start_hour", "темп_c": "temperature_c",
+                 "ошатність": "formality", "година": "start_hour", "пора": "part_of_day", "темп_c": "temperature_c",
                  "опади": "precipitation", "намір": "intent", "мета": "goal", "мета_зони": "goal_zones", "мета_важливо": "goal_extra", "макіяж": "makeup",
                  "прикраси": "jewelry", "реєстр_людини": "her_registers", "бажання": "wishes",
                  "вето": "refusals", "ноги_вище_см": "legs_shown_above_cm", "настрій": "mood",
@@ -678,7 +682,7 @@ def випадок(в, день=None):
         return в
     вих = {к: в[к] for к in ("field_quotes", "wish_quotes", "formality_reason") if в.get(к)}
     for к, v in в.items():
-        if к not in ПОЛЯ_ВИПАДКУ or v in (None, "", [], {}):
+        if к not in ПОЛЯ_ВИПАДКУ or к in _НЕ_НА_ДРОТІ or v in (None, "", [], {}):
             continue
         if день and к in _ВИПАДОК_У_ДНІ and _ВИПАДОК_У_ДНІ[к] in день:
             continue
@@ -732,7 +736,10 @@ def випадок(в, день=None):
             if not v:
                 continue
         elif к == "невідомо":
-            v = [ПОЛЯ_ВИПАДКУ.get(x, x) for x in v]
+            # невідомим буває лише поле, яке дріт несе: година — не питання до моделі
+            v = [ПОЛЯ_ВИПАДКУ.get(x, x) for x in v if x not in _НЕ_НА_ДРОТІ]
+            if not v:
+                continue
         elif isinstance(v, (int, float)) and not isinstance(v, bool):
             v = _число(v)
         вих[ключ] = v
