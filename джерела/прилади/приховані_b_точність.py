@@ -349,7 +349,155 @@ def клас_т2(файли):
     return [(місце, опис) for _, місце, опис in частина_б(файли)]
 
 
-КЛАСИ = {"Т1": клас_т1, "Т2": клас_т2, "Т3": клас_т3}
+# ─────────────────────────────── Т4–Т6: продовження (друга сесія частини б) ───────────────────────────────
+_ОЦІНКА = re.compile(r"оцін|бал|score|ваг|сил|ймовірн|впевнен|певн|рейтинг|відповідн|схож|якіст|"
+                     r"придатн|доречн|weight|prob|conf", re.I)
+
+
+def _імена(вузол):
+    """Імена, атрибути й рядкові ключі виразу — щоб зрозуміти, яку величину він несе."""
+    з = []
+    for x in ast.walk(вузол):
+        if isinstance(x, ast.Name):
+            з.append(x.id)
+        elif isinstance(x, ast.Attribute):
+            з.append(x.attr)
+        elif isinstance(x, ast.Subscript) and isinstance(x.slice, ast.Constant) and isinstance(x.slice.value, str):
+            з.append(x.slice.value)
+        elif isinstance(x, ast.Call) and isinstance(x.func, ast.Name):
+            з.append(x.func.id)
+    return з
+
+
+def клас_т4(файли):
+    """Т4 число точніше за вимір: `round(x, n≥2)`, формат `:.Nf`/`%.Nf` (N≥2) над оцінкою, вагою, силою, часткою чи
+    певністю — величиною, яку код не міряв, а склав із правил (ім'я виразу за `_ОЦІНКА`). Округлення фізичної
+    величини (Lab, ΔE, частка пікселів — виміряні) місцем не є і в лічбу не йде."""
+    місця = []
+    for ф in файли:
+        for в in ast.walk(_ast(ф)):
+            вираз, знаків = None, 0
+            if isinstance(в, ast.Call) and isinstance(в.func, ast.Name) and в.func.id == "round" and len(в.args) == 2 \
+                    and isinstance(в.args[1], ast.Constant) and isinstance(в.args[1].value, int) and в.args[1].value >= 2:
+                вираз, знаків = в.args[0], в.args[1].value
+            elif isinstance(в, ast.FormattedValue) and в.format_spec is not None:
+                спец = ast.unparse(в.format_spec)
+                м = re.search(r"\.(\d)f", спец)
+                if м and int(м.group(1)) >= 2:
+                    вираз, знаків = в.value, int(м.group(1))
+            if вираз is None:
+                continue
+            імена = _імена(вираз)
+            if any(_ОЦІНКА.search(і) for і in імена) and not any(re.search(r"(^|_)(de|lab|delta|ΔE|de00|L|hue|chroma|"
+                                                                          r"піксел|площ|світлот|насич)", і, re.I)
+                                                                for і in імена):
+                місця.append(("%s:%d" % (_відн(ф), в.lineno), "%d знаків над %s" % (знаків, ast.unparse(вираз)[:40])))
+    return місця
+
+
+_СВІТ = re.compile(r"(^|_)(місяц\w*|month|температ\w*|темп|temp|temperature\w*|t_?min|t_?max|зріст\w*|height|вік|age|ваг[аи]_тіла|"
+                   r"weight_kg|ціна|price|годин\w*|hour|weekday|день_тижня|широт\w*|lat|сезон_номер|uv\w*|"
+                   r"вологіст\w*|humidity|вітер|wind\w*|опади_мм|precip\w*)($|_)", re.I)
+
+
+def _світовий(x):
+    if isinstance(x, ast.Name):
+        return _СВІТ.search(x.id) and x.id
+    if isinstance(x, ast.Attribute):
+        return _СВІТ.search(x.attr) and x.attr
+    if isinstance(x, ast.Subscript) and isinstance(x.slice, ast.Constant) and isinstance(x.slice.value, str):
+        return _СВІТ.search(x.slice.value) and x.slice.value
+    if isinstance(x, ast.Call) and isinstance(x.func, ast.Attribute) and x.func.attr == "get" and x.args \
+            and isinstance(x.args[0], ast.Constant) and isinstance(x.args[0].value, str):
+        return _СВІТ.search(x.args[0].value) and x.args[0].value
+    return None
+
+
+def _корінь_великий(x):
+    """Поріг за іменем великими літерами: `ПОРІГ`, `_НАГОДА.МОРОЗ_ДО_C`, `РЕЄСТР["к"]`."""
+    while isinstance(x, (ast.Subscript, ast.Attribute)):
+        if isinstance(x, ast.Attribute) and x.attr.isupper():
+            return True
+        x = x.value
+    return isinstance(x, ast.Name) and x.id.lstrip("_").isupper()
+
+
+def клас_т5(файли):
+    """Т5 стала світу в коді: виміряний вхід світу (місяць, температура, вітер, зріст, вік, ціна, година) код
+    переводить у висновок порогом (літерал — без джерела; ім'я реєстру — джерело є, правило звіряє частина в) чи
+    таблицею місяців — знання світу й стилю живе в коді, а не в базі
+    знань чи моделі (сезон за місяцем бреше в теплий жовтень)."""
+    місця = []
+    for ф in файли:
+        for в in ast.walk(_ast(ф)):
+            if isinstance(в, ast.Compare) and any(isinstance(о, (ast.Lt, ast.LtE, ast.Gt, ast.GtE, ast.Eq, ast.In))
+                                                  for о in в.ops):
+                сторони = [в.left] + в.comparators
+                світ = [с for с in сторони if _світовий(с)]
+                числа = [с for с in сторони if _число(с) is not None] + [
+                    x for с in сторони if isinstance(с, (ast.Tuple, ast.List, ast.Set)) for x in с.elts
+                    if _число(x) is not None]
+                реєстр = [с for с in сторони if not _світовий(с) and _корінь_великий(с)]
+                if світ and числа:
+                    місця.append(("%s:%d" % (_відн(ф), в.lineno), "поріг світу %s ⋚ %r літералом" % (
+                        _світовий(світ[0]), _число(числа[0]))))
+                elif світ and реєстр:
+                    місця.append(("%s:%d" % (_відн(ф), в.lineno), "поріг світу %s ⋚ %s (реєстр)" % (
+                        _світовий(світ[0]), ast.unparse(реєстр[0])[:30])))
+            elif isinstance(в, ast.Dict) and len(в.keys) >= 3 and all(
+                    isinstance(k, ast.Constant) and isinstance(k.value, int) and not isinstance(k.value, bool)
+                    and 1 <= k.value <= 12 for k in в.keys) and any(isinstance(v, ast.Constant) and
+                                                                    isinstance(v.value, str) for v in в.values):
+                місця.append(("%s:%d" % (_відн(ф), в.lineno), "таблиця місяців → %r" % (в.values[0].value
+                              if isinstance(в.values[0], ast.Constant) else "…")))
+    return місця
+
+
+_КОД_КЛЮЧ = re.compile(r"^[a-z0-9_\-]+$|^[а-яіїєґ0-9]+(_[а-яіїєґ0-9]+)+$")
+_РЕЧЕННЯ = re.compile(r"[А-ЯІЇЄҐа-яіїєґʼ'’]{2,}")
+
+
+def _фраза(т, слів):
+    return isinstance(т, str) and len(_РЕЧЕННЯ.findall(т)) >= слів and " " in т.strip()
+
+
+def клас_т6(файли):
+    """Т6 код пише текст жінці сам: (а) таблиця «код → фраза» (словник ≥3 записів, ключі — коди, значення — кирилична
+    фраза ≥2 слів) — переклад коду моделі текстом, якого модель не бачила, друге визначення значення; (б) речення
+    (≥4 кириличні слова) значенням поля, що зветься як текст для людини (`текст`, `репліка`, `чому`, `пояснення`,
+    `питання`, `порада`, `підказка`, `повідомлення`, `заголовок`, `причина`) — фразу складає код, не мовна модель."""
+    поля = re.compile(r"^(текст|репліка|чому|пояснення|питання|порада|підказка|повідомлення|заголовок|причина|"
+                      r"text|message|hint|why|reason|label|title|рядок_жінці|для_жінки|жінці)(_|$)", re.I)
+    місця = []
+    for ф in файли:
+        д = _ast(ф)
+        док = _докстрінги(д)
+        for в in ast.walk(д):
+            if isinstance(в, ast.Dict) and len(в.keys) >= 3:
+                пари = [(k.value, v.value) for k, v in zip(в.keys, в.values)
+                        if isinstance(k, ast.Constant) and isinstance(k.value, str) and isinstance(v, ast.Constant)]
+                коди = [k for k, v in пари if _КОД_КЛЮЧ.match(k) and _фраза(v, 2)]
+                if len(коди) >= 3 and len(коди) >= len(в.keys) // 2:
+                    місця.append(("%s:%d" % (_відн(ф), в.lineno), "таблиця код→фраза, %d записів (%s…)" % (
+                        len(коди), коди[0][:20])))
+            пари = []
+            if isinstance(в, ast.Call):
+                пари = [(к.arg, к.value) for к in в.keywords if к.arg]
+            elif isinstance(в, ast.Dict):
+                пари = [(k.value, v) for k, v in zip(в.keys, в.values) if isinstance(k, ast.Constant)
+                        and isinstance(k.value, str)]
+            for к, v in пари:
+                if not поля.match(к) or id(v) in док:
+                    continue
+                текст = v.value if isinstance(v, ast.Constant) else " ".join(
+                    x.value for x in v.values if isinstance(x, ast.Constant) and isinstance(x.value, str)) \
+                    if isinstance(v, ast.JoinedStr) else None
+                if _фраза(текст, 4):
+                    місця.append(("%s:%d" % (_відн(ф), в.lineno), "%s= речення коду: %s" % (к, текст[:40])))
+    return місця
+
+
+КЛАСИ = {"Т1": клас_т1, "Т2": клас_т2, "Т3": клас_т3, "Т4": клас_т4, "Т5": клас_т5, "Т6": клас_т6}
 
 
 def main():
