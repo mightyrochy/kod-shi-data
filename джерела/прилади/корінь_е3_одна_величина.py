@@ -824,6 +824,9 @@ def виклики(л):
                         мод = м.псевдо.get(в.func.value.id)
                     else:
                         мод = None
+                    цілі = визначення_в(л, мод, ім)     # повторний експорт (`pipeline` → `повнота_образу`)
+                    if len(цілі) == 1:
+                        мод = цілі[0][0].ім
                     кеш.setdefault((мод, ім), []).append((м, м.функція(в), в))
         л._виклики = кеш
     return кеш
@@ -983,9 +986,53 @@ def _читає_поле(в, ім=None):
     return вих
 
 
-def джерело_збірки(л, м, ф, в, глибина=0):
+def джерело_збірки(л, м, ф, в, глибина=0, з_батьком=False):
     """Поле, з якого походить збірка: `X.get("образи")`, перелік над ним, локальне ім'я чи параметр (через виклики
     свого модуля) → «образи», інакше None."""
+    if в is None or глибина > ГЛИБИНА_СЛІДУ:
+        return None
+    f = _get_поле(в)
+    if f is not None:
+        return f if not з_батьком else (обʼєкт_збірки(л, м, ф, в.func.value if isinstance(в, ast.Call) else в.value,
+                                                     глибина + 1), f)
+    if isinstance(в, (ast.BoolOp, ast.IfExp)):
+        гілки = в.values if isinstance(в, ast.BoolOp) else (в.body, в.orelse)
+        return next((д for д in (джерело_збірки(л, м, ф, x, глибина + 1, з_батьком) for x in гілки) if д), None)
+    if isinstance(в, (ast.ListComp, ast.GeneratorExp, ast.SetComp)):
+        # елемент — з останнього генератора: `[z for о in обр for z in о["знахідки"]]` — знахідки, не образи
+        return джерело_збірки(л, м, ф, в.generators[-1].iter, глибина + 1, з_батьком)
+    if isinstance(в, ast.Call) and назва_виклику(в) in ("enumerate", "list", "tuple", "sorted", "reversed") and в.args:
+        return джерело_збірки(л, м, ф, в.args[0], глибина + 1, з_батьком)
+    if isinstance(в, ast.Call) and назва_виклику(в) == "range" and в.args and isinstance(в.args[0], ast.Call) \
+            and назва_виклику(в.args[0]) == "len" and в.args[0].args:
+        return джерело_збірки(л, м, ф, в.args[0].args[0], глибина + 1, з_батьком)
+    if isinstance(в, ast.Name):
+        while ф is not None:
+            if isinstance(ф, (ast.FunctionDef, ast.AsyncFunctionDef)):
+                присв = [п.value for п in ast.walk(ф) if isinstance(п, ast.Assign)
+                         and any(isinstance(ц, ast.Name) and ц.id == в.id for ц in п.targets)]
+                if присв:
+                    return next((д for д in (джерело_збірки(л, м, ф, x, глибина + 1, з_батьком) for x in присв) if д), None)
+                параметри = [а.arg for а in ф.args.posonlyargs + ф.args.args]
+                if в.id in параметри:
+                    і = параметри.index(в.id)
+                    for мм, фф, виклик in виклики(л).get((м.ім, ф.name), []):
+                        if і < len(виклик.args):
+                            д = джерело_збірки(л, мм, фф, виклик.args[і], глибина + 1, з_батьком)
+                            if д:
+                                return д
+                    return None
+            ф = м.функція(ф)
+    return None
+
+
+def обʼєкт_збірки(л, м, ф, в, глибина=0):
+    """Чий це перелік: ключ, з якого взято обʼєкт (`d.get("попередній_вердикт")` → «попередній_вердикт»), через
+    локальне ім'я чи параметр (аргументи викликів свого модуля); ключа нема ні на одному шляху — ім'я параметра."""
+    return _обʼєкт(л, м, ф, в, глибина, False) or _обʼєкт(л, м, ф, в, глибина, True)
+
+
+def _обʼєкт(л, м, ф, в, глибина, запасне):
     if в is None or глибина > ГЛИБИНА_СЛІДУ:
         return None
     f = _get_поле(в)
@@ -993,30 +1040,24 @@ def джерело_збірки(л, м, ф, в, глибина=0):
         return f
     if isinstance(в, (ast.BoolOp, ast.IfExp)):
         гілки = в.values if isinstance(в, ast.BoolOp) else (в.body, в.orelse)
-        return next((д for д in (джерело_збірки(л, м, ф, x, глибина + 1) for x in гілки) if д), None)
-    if isinstance(в, (ast.ListComp, ast.GeneratorExp, ast.SetComp)):
-        return джерело_збірки(л, м, ф, в.generators[0].iter, глибина + 1)
-    if isinstance(в, ast.Call) and назва_виклику(в) in ("enumerate", "list", "tuple", "sorted", "reversed") and в.args:
-        return джерело_збірки(л, м, ф, в.args[0], глибина + 1)
-    if isinstance(в, ast.Call) and назва_виклику(в) == "range" and в.args and isinstance(в.args[0], ast.Call) \
-            and назва_виклику(в.args[0]) == "len" and в.args[0].args:
-        return джерело_збірки(л, м, ф, в.args[0].args[0], глибина + 1)
+        return next((д for д in (_обʼєкт(л, м, ф, x, глибина + 1, запасне) for x in гілки
+                                 if not isinstance(x, (ast.Dict, ast.Constant))) if д), None)
     if isinstance(в, ast.Name):
         while ф is not None:
             if isinstance(ф, (ast.FunctionDef, ast.AsyncFunctionDef)):
                 присв = [п.value for п in ast.walk(ф) if isinstance(п, ast.Assign)
                          and any(isinstance(ц, ast.Name) and ц.id == в.id for ц in п.targets)]
                 if присв:
-                    return next((д for д in (джерело_збірки(л, м, ф, x, глибина + 1) for x in присв) if д), None)
+                    return next((д for д in (_обʼєкт(л, м, ф, x, глибина + 1, запасне) for x in присв) if д), None)
                 параметри = [а.arg for а in ф.args.posonlyargs + ф.args.args]
                 if в.id in параметри:
                     і = параметри.index(в.id)
                     for мм, фф, виклик in виклики(л).get((м.ім, ф.name), []):
                         if і < len(виклик.args):
-                            д = джерело_збірки(л, мм, фф, виклик.args[і], глибина + 1)
+                            д = _обʼєкт(л, мм, фф, виклик.args[і], глибина + 1, запасне)
                             if д:
                                 return д
-                    return None
+                    return в.id if запасне else None
             ф = м.функція(ф)
     return None
 
@@ -1032,8 +1073,8 @@ def пари_збірок(л):
             if isinstance(в, ast.DictComp) and len(в.generators) == 1 and isinstance(в.generators[0].target, ast.Name):
                 ц = в.generators[0].target.id
                 if isinstance(в.value, ast.Name) and в.value.id == ц and _читає_поле(в.key, ц):
-                    зб = джерело_збірки(л, м, ф, в.generators[0].iter)
-                    if not зб:
+                    зб = джерело_збірки(л, м, ф, в.generators[0].iter, з_батьком=True)
+                    if not зб or not зб[0]:
                         continue
                     вид = "полем «%s»" % ", ".join(sorted(_читає_поле(в.key, ц)))
                     батько = м.батько.get(в)
@@ -1061,8 +1102,8 @@ def пари_збірок(л):
                             свої = set().union(*(_читає_поле(п.left, ц) | _читає_поле(п.comparators[0], ц)
                                                  for ц in цілі)) if цілі else set()
                             if спільне and спільне & свої:
-                                зб = джерело_збірки(л, м, ф, г.iter)
-                                if зб:
+                                зб = джерело_збірки(л, м, ф, г.iter, з_батьком=True)
+                                if зб and зб[0]:
                                     вих.append((м.шлях, п.lineno, зб, "полем «%s»" % ", ".join(sorted(спільне))))
             elif isinstance(в, ast.Call) and назва_виклику(в) in ("max", "min") and isinstance(в.func, ast.Name) \
                     and в.args:
@@ -1070,8 +1111,8 @@ def пари_збірок(л):
                 if ключ is not None and any(isinstance(п, ast.Call) and назва_виклику(п) == "len" and п.args
                                             and isinstance(п.args[0], ast.BinOp)
                                             and isinstance(п.args[0].op, ast.BitAnd) for п in ast.walk(ключ)):
-                    зб = джерело_збірки(л, м, ф, в.args[0])
-                    if зб:
+                    зб = джерело_збірки(л, м, ф, в.args[0], з_батьком=True)
+                    if зб and зб[0]:
                         вих.append((м.шлях, в.lineno, зб, "найбільшим перетином складу"))
     return вих
 
@@ -1405,8 +1446,8 @@ def лічити(корінь):
         if len(види) < 2 or len({ф for ф, _, _ in сайти}) < 2:
             continue
         for ф, р, вид in сайти:
-            л.додати(ф, р, 3, "пара елемента «%s» — %s, а деінде — %s" % (
-                зб, вид, "; ".join(sorted(види - {вид})) or "тим самим способом в іншому модулі"))
+            л.додати(ф, р, 3, "пара елемента «%s.%s» — %s, а деінде — %s" % (
+                зб[0], зб[1], вид, "; ".join(sorted(види - {вид})) or "тим самим способом в іншому модулі"))
 
     # ── п.3(г): поле запису пишуть розбір і код — мапа заміни читає одного, запис поверх пише другий ──
     поверх = записи_поверх(л)
