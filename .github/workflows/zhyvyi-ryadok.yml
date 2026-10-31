@@ -25,10 +25,9 @@ jobs:
 
       # Тіло PR — чужий текст: лише змінна середовища, у команду воно не підставляється.
       - name: тіло PR розбирається тим самим кодом, що й планувальник
-        shell: powershell
+        shell: bash
         env:
           PR_BODY: ${{ github.event.pull_request.body }}
-        # Кирилиця в аргументі -File псується у Windows PowerShell 5.1: скрипт викликається оператором & усередині кроку.
+        # Кирилиця в тілі кроку powershell читається як ANSI і псується; bash, як у obhortka.yml, передає шлях Unicode-вірно.
         run: |
-          & (Join-Path $env:GITHUB_WORKSPACE 'аудит/адаптери/gemini/перевірка/перевірити_тіло_pr.ps1') -Root $env:GITHUB_WORKSPACE
-          exit $LASTEXITCODE
+          powershell.exe -NoProfile -ExecutionPolicy Bypass -File "$(cygpath -w "$GITHUB_WORKSPACE")/аудит/адаптери/gemini/перевірка/перевірити_тіло_pr.ps1" -Root "$(cygpath -w "$GITHUB_WORKSPACE")"
