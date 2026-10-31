@@ -89,6 +89,7 @@ warnings.simplefilter("ignore", SyntaxWarning)
                        r"\bо (?:першій|другій|третій|четвертій|п['ʼ]?ятій|шостій|сьомій|восьмій|дев['ʼ]?ятій|"
                        r"десятій|одинадцятій|дванадцятій)\b")
 ХВИЛИНИ_EN = re.compile(r"\bminutes of the start\b", re.IGNORECASE)
+ДІАПАЗОН_ДОБИ = re.compile(r"(?<![\d.])0\s?[–-]\s?23(?![\d.])")
 ФОРМАТ_ГОДИННИКА = re.compile(r"%0?2?d:%02d|\{:02d\}:\{:02d\}")
 ДОВГА = re.compile(r"\b(?:how many hours|hours? long|lasts?)\b", re.IGNORECASE)
 
@@ -113,7 +114,8 @@ def текст_години(т):
     причини = []
     if ГОДИННИК_ЛІТЕРАЛ.search(т):
         причини.append("годинник «%s»" % ГОДИННИК_ЛІТЕРАЛ.search(т).group(0))
-    for шаблон, імя in ((ГОДИНА_EN, "опис годинника"), (ГОДИНА_UK, "година словами"), (ХВИЛИНИ_EN, "хвилини початку")):
+    for шаблон, імя in ((ГОДИНА_EN, "опис годинника"), (ГОДИНА_UK, "година словами"), (ХВИЛИНИ_EN, "хвилини початку"),
+                        (ДІАПАЗОН_ДОБИ, "діапазон години")):
         м = шаблон.search(т)
         if м:
             причини.append("%s «%s»" % (імя, м.group(0)))
@@ -151,6 +153,7 @@ class Стан:
         self.Е = set()        # вечір із години: функції, ключі, параметри
         self.П = set()        # ключі частини дня (з перетворювача чи слова пори)
         self.С = set()        # прапорці походження години (`година_з_пори`): місця, але не значення години
+        self.ПЕР = set()      # функції переводу години в частину дня (повертають результат перетворювача)
         self.Л = {}           # локальні носії: (файл, ід області) → імена
         self.ЛЕ = {}          # локальний вечір із години
         self.звідки = {}      # ім'я → «файл:рядок · правило»
@@ -290,9 +293,18 @@ class АналізПі:
         self.модулі = модулі
         self.с = стан
         self.визначення = {}
+        self.під_ключі = set()    # (ключ поля години, під-ключ запису), які читають у носій години
+        self.геттери = set()      # функції з одним параметром-ключем: `def _з(k): … п.get(k) …` — значення поля
         for м in модулі:
             for ф in м.функції:
                 self.визначення.setdefault(ф.name, []).append((м, ф))
+                пар = [а.arg for а in ф.args.args]
+                if len(пар) == 1 and any(
+                        (isinstance(х, ast.Subscript) and isinstance(х.slice, ast.Name) and х.slice.id == пар[0])
+                        or (isinstance(х, ast.Call) and isinstance(х.func, ast.Attribute) and х.func.attr == "get"
+                            and х.args and isinstance(х.args[0], ast.Name) and х.args[0].id == пар[0])
+                        for х in ast.walk(ф)):
+                    self.геттери.add(ф.name)
         # ключі, що повторюються в dict-записах модуля (поля запису реєстру), — не ключ поля години
         self.повторні = {}
         for м in модулі:
@@ -326,7 +338,8 @@ class АналізПі:
         if назад:
             return len(значення) <= 2
         перевірка = self.є_година if множина == "Г" else self.є_вечір
-        return all(перевірка(м, з) or (isinstance(з, ast.Constant) and з.value in (None, "", False))
+        сам = lambda з: any(isinstance(х, ast.Name) and х.id == ім for х in ast.walk(з))   # `г = int(г)` — те саме
+        return all(перевірка(м, з) or сам(з) or (isinstance(з, ast.Constant) and з.value in (None, "", False))
                    for з in значення)
 
     def ключі_ланцюга(self, в):
@@ -376,9 +389,13 @@ class АналізПі:
                 return any(self.є_година(м, а) for а in в.args)
             if ім and ім in self.с.Г and ім not in self.с.КОНВ:
                 return True
-            # доступ до поля за назвою: `_пара("hour", с, в.get("hour"))` — значення названого поля години
+            # доступ до поля за назвою: `_пара("hour", с, в.get("hour"))` — значення названого поля години;
+            # геттер за самою назвою поля: `_з("година")` (усі аргументи — рядки, один — ключ години)
             if any(рядок_константи(а) in self.с.Г for а in в.args) \
                     and any(self.є_година(м, а) for а in list(в.args) + [к.value for к in в.keywords]):
+                return True
+            if len(в.args) == 1 and not в.keywords and рядок_константи(в.args[0]) in self.с.Г \
+                    and ім in self.геттери:
                 return True
             return False
         if isinstance(в, ast.BinOp):
@@ -590,6 +607,29 @@ class АналізПі:
                 if значуще(рк) and рз and (ГОДИНА_EN.search(поч) or ГОДИНА_UK.search(поч) or ХВИЛИНИ_EN.search(поч)) \
                         and not ДОВГА.search(поч):
                     с.додати(с.Г, рк, де(з), "опис поля словами годинника")
+        # функції переводу: повертають результат перетворювача від години (`_година_при_порі`)
+        for ф in м.функції:
+            if ф.name in с.КОНВ or ф.name in с.ПЕР:
+                continue
+            виклики = [х for х in ast.walk(ф) if isinstance(х, ast.Call) and self.ім_виклику(х) in с.КОНВ
+                       and any(self.є_година(м, а) for а in х.args)]
+            if not виклики:
+                continue
+            імена = {ц.id for х in ast.walk(ф) if isinstance(х, ast.Assign) and any(х.value is в for в in виклики)
+                     for ц in х.targets if isinstance(ц, ast.Name)}
+            for х in ast.walk(ф):
+                if isinstance(х, ast.Return) and х.value is not None and any(
+                        (isinstance(у, ast.Name) and у.id in імена) or any(у is в for в in виклики)
+                        for у in ast.walk(х.value)):
+                    с.додати(с.ПЕР, ф.name, де(ф), "повертає частину дня, переведену з години")
+                    break
+        # під-ключі записів поля години, які читають у носій години: `X["година"]["названа"]`
+        for в in м.вид("Assign"):
+            if len(в.targets) == 1 and self.є_година(м, в.value) and isinstance(в.value, ast.Subscript):
+                ключі = self.ключі_ланцюга(в.value)
+                for і in range(len(ключі) - 1):
+                    if ключі[і + 1] in с.Г and ключі[і] not in с.Г:
+                        self.під_ключі.add((ключі[і + 1], ключі[і]))
         # потік: присвоєння
         for в in м.вид("Assign", "AnnAssign"):
             цілі = в.targets if isinstance(в, ast.Assign) else [в.target]
@@ -746,6 +786,22 @@ class АналізПі:
             р = getattr(в, "lineno", None)
             if р is None:
                 continue
+            if isinstance(в, ast.Call) and self.ім_виклику(в) in с.ПЕР:
+                додати(м.шлях, р, 3, "виклик переводу години «%s»" % self.ім_виклику(в))
+            if isinstance(в, ast.Subscript) and ціле(в.slice) == 0 and isinstance(в.value, ast.Call) \
+                    and self.ім_виклику(в.value) == "split" and в.value.args and рядок_константи(в.value.args[0]) == ":":
+                # година з рядка годинника: «18:00» → 18 — у гілці `":" in т`, і ліва частина далі стає числом
+                п = м.батько.get(id(в))
+                б = м.батько.get(id(п))
+                ф = м.функція_області(в)
+                ціль = п.targets[0].id if isinstance(п, ast.Assign) and isinstance(п.targets[0], ast.Name) else None
+                if ціль and ф is not None and isinstance(б, ast.If) and any(
+                        isinstance(х, ast.Compare) and any(isinstance(о, ast.In) for о in х.ops)
+                        and рядок_константи(х.left) == ":" for х in ast.walk(б.test)) and any(
+                        isinstance(х, ast.Call) and self.ім_виклику(х) in ("float", "int") and х.args
+                        and isinstance(х.args[0], ast.Name) and х.args[0].id == ціль for х in ast.walk(ф)):
+                    додати(м.шлях, р, 1, "година з рядка годинника відповіді split(':')[0] → число")
+                    додати(м.шлях, б.test.lineno, 1, "рядок годинника «ГГ:ХХ» у відповіді моделі")
             if isinstance(в, ast.Name):
                 if self.носій_ім(м, в.id, в):
                     додати(м.шлях, р, 2, "ім'я «%s» несе годину" % в.id)
@@ -761,6 +817,11 @@ class АналізПі:
                 if в.attr in с.Е and значуще_е(в.attr):
                     додати(м.шлях, р, 5, "вечір із години «%s»" % в.attr)
             elif isinstance(в, (ast.FunctionDef, ast.AsyncFunctionDef)):
+                if в.name in с.ПЕР:
+                    додати(м.шлях, р, 3, "функція «%s» переводить годину в частину дня" % в.name)
+                    for х in ast.walk(в):
+                        if isinstance(х, ast.Constant) and х.value in с.П and isinstance(м.батько.get(id(х)), ast.Call):
+                            додати(м.шлях, х.lineno, 3, "частина дня проти години в «%s»" % в.name)
                 if в.name in с.Г:
                     додати(м.шлях, р, 2, "функція «%s» дає годину" % в.name)
                 if в.name in с.КОНВ:
@@ -846,11 +907,12 @@ class АналізПі:
                     if к is not None and рядок_константи(к) in с.Г and ціле(з) is not None and 0 <= ціле(з) <= 23:
                         додати(м.шлях, з.lineno, 3, "типова година %d" % ціле(з))
                     if к is not None and рядок_константи(к) in с.Г and isinstance(з, ast.Dict):
-                        # запис поля години в реєстрі (опис, схема, показ, мітка названої години) — увесь про годину
-                        for х in ast.walk(з):
-                            if hasattr(х, "lineno") and id(х) not in м.докстрінги:
-                                додати(м.шлях, х.lineno, 1 if self.схема_доби_в(з, х) else 2,
-                                       "запис поля «%s» у реєстрі" % рядок_константи(к))
+                        # запис поля години в реєстрі: місце — під-ключ, який код читає ланцюгом від ключа години
+                        # (`ПОЛЯ_ПАСПОРТА["година"]["названа"]` у носій години), а не кожен рядок запису
+                        for пк, пз in zip(з.keys, з.values):
+                            if пк is not None and (рядок_константи(к), рядок_константи(пк)) in self.під_ключі:
+                                додати(м.шлях, пк.lineno, 2, "під-ключ «%s» поля «%s» читають у носій години"
+                                       % (рядок_константи(пк), рядок_константи(к)))
             elif isinstance(в, ast.Tuple):
                 рр = [рядок_константи(х) for х in в.elts]
                 if any(р in с.Г for р in рр if р) and any(р and re.fullmatch(r"(?:[01]?\d|2[0-3])(?::00)?", р) for р in рр):
@@ -1459,8 +1521,34 @@ def точки_знаку(модулі, шаблон):
             elif isinstance(в, ast.Attribute):
                 текст = в.attr
             if текст and re.fullmatch(шаблон, текст):
-                точки.append((м, м.функція_області(в), в.lineno))
-    return sorted(set(точки), key=lambda т: (т[0].шлях, т[2]))
+                точки.append((м, м.функція_області(в), в.lineno, в))
+    бачені, вихід = set(), []
+    for т in sorted(точки, key=lambda т: (т[0].шлях, т[2], т[3].col_offset)):
+        if (т[0].шлях, т[2]) not in бачені:
+            бачені.add((т[0].шлях, т[2]))
+            вихід.append(т)
+    return вихід
+
+
+def досягає(аналіз, м, вузол):
+    """Значення години (чи вечора з години) доходить до точки правила: його читає сама інструкція з точкою або
+    заголовок охопної гілки (`if`/`while` — умова, `for` — ітерований), не решта функції."""
+    def читає(вираз):
+        return any(isinstance(х, (ast.Name, ast.Attribute, ast.Subscript, ast.Call))
+                   and (аналіз.є_година(м, х) or аналіз.є_вечір(м, х)) for х in ast.walk(вираз))
+    в = вузол
+    while в is not None and not isinstance(в, (ast.FunctionDef, ast.AsyncFunctionDef, ast.Module, ast.ClassDef)):
+        if isinstance(в, (ast.If, ast.While)):
+            if читає(в.test):
+                return True
+        elif isinstance(в, (ast.For, ast.AsyncFor)):
+            if читає(в.iter):
+                return True
+        elif isinstance(в, ast.stmt) and not isinstance(в, (ast.Try, ast.With, ast.AsyncWith)):
+            if читає(в):
+                return True
+        в = м.батько.get(id(в))
+    return False
 
 
 def правила_бази(корінь, модулі, аналіз, додати, звіт, без_бази=False):
@@ -1477,7 +1565,7 @@ def правила_бази(корінь, модулі, аналіз, додат
                 правило["межа"], ast.get_source_segment("\n".join(т[0].рядки), т[1]) or "")]
         функції = {(т[0].шлях, id(т[1])): т for т in точки if т[1] is not None}
         бере_пору, дія, з_години = False, False, False
-        for (шлях, _), (м, ф, _) in функції.items():
+        for (шлях, _), (м, ф, _, _) in функції.items():
             пора = any((isinstance(в, ast.Constant) and в.value in с.П) or
                        (isinstance(в, ast.Compare) and any(рядок_константи(х) in СЛОВА_ПОРИ for х in в.comparators))
                        for в in ast.walk(ф))
@@ -1511,16 +1599,23 @@ def правила_бази(корінь, модулі, аналіз, додат
             звіт.append("правило бази «%s»: у коді нема — місце на якорі %s:%s" % (
                 правило["вісь"], правило["база"][0], якір))
             continue
+        # місце правила — лише точка, до якої доходить значення години; нема таких — одне місце на якорі бази
+        досягнуті = [т for т in точки if досягає(аналіз, т[0], т[3])]
         чому = []
-        if з_години:
+        if досягнуті:
             чому.append("судить годиною (вечір із години)")
         if not бере_пору:
             чому.append("частини дня з паспорта не бере")
         if not дія:
             чому.append("дії бази нема (%s)" % правило["дія"])
-        for м, _, рядок in точки:
+        for м, _, рядок, _ in досягнуті:
             додати(м.шлях, рядок, 5, "правило бази «%s»: %s" % (правило["вісь"], ", ".join(чому)))
-        звіт.append("правило бази «%s»: %s — точок коду %d" % (правило["вісь"], ", ".join(чому), len(точки)))
+        if not досягнуті and not без_бази:
+            додати(правило["база"][0], якір, 5, "правило бази «%s»: %s; година до знаку в коді не доходить"
+                   % (правило["вісь"], ", ".join(чому)))
+        звіт.append("правило бази «%s»: %s — точок знаку %d, з них година доходить до %d%s" % (
+            правило["вісь"], ", ".join(чому), len(точки), len(досягнуті),
+            "" if досягнуті else "; місце на якорі %s:%s" % (правило["база"][0], якір)))
 
 
 # ── збирання ───────────────────────────────────────────────────────────────────────────────────────────────────
@@ -1610,6 +1705,7 @@ def друк(місця, стан, звіт, лік, тихо=False, імена=
     if імена:
         рядки.append("")
         for назва, множина in (("носії години", стан.Г), ("перетворювачі", стан.КОНВ), ("прапорці походження", стан.С),
+                               ("функції переводу", стан.ПЕР),
                                ("вечір із години", стан.Е), ("ключі частини дня", стан.П)):
             рядки.append("%s (%d):" % (назва, len(множина)))
             for ім in sorted(множина):
@@ -1668,6 +1764,47 @@ function тривалістьП(){ return 'пів години пішки'; }
 ''',
     "джерела/тест_щось.py": '''ГОДИНА = {"hour": 7}
 ''',
+    "джерела/правило.py": '''
+def світлота(нагода):
+    return ("K-KOH-06", "ошатність: світлота за нагодою")
+def блиск_удень(година):
+    if година is not None and година < 18:
+        return ("K-KOH-06", "ошатність: блиск удень")
+''',
+    "джерела/поля.py": '''
+ПОЛЯ = {
+    "година": {
+        "цитата": 'пара',
+        "названа": ('named', 'clock_time'),
+    },
+}
+_НАЗВАНА = ПОЛЯ["година"]["названа"]
+''',
+    "джерела/число.py": '''
+def число(с, т):
+    if с["type"] == "integer" and ":" in т:
+        т = т.split(":")[0]
+    return float(т)
+def назва(н):
+    if ":" in н:
+        return н.split(":")[0]
+''',
+    "джерела/шов.py": '''
+from сцена import частина_доби
+def з_сцени(п):
+    def _з(k):
+        return п.get(k)
+    година = _з("година")
+    try: година = int(float(година))
+    except (TypeError, ValueError): година = None
+    return година
+def пора_з_години(онов):
+    г = онов.get("hour")
+    пора = частина_доби(г)
+    return dict(онов, part_of_day=пора)
+def прийняти(онов):
+    return пора_з_години(онов)
+''',
 }
 ОЧІКУВАНІ = (
     ("опис поля «hour» — п.1", "джерела/опис.py", 1, 1),
@@ -1694,6 +1831,17 @@ function тривалістьП(){ return 'пів години пішки'; }
     ("типова година в розмітці — п.3", "джерела/сторінка.html", 2, 3),
     ("поле температури — не місце", "джерела/сторінка.html", 3, None),
     ("тест — поза класом", "джерела/тест_щось.py", 0, None),
+    ("знак правила без години — не місце", "джерела/правило.py", 2, None),
+    ("знак правила, до якого доходить година, — п.5", "джерела/правило.py", 5, 5),
+    ("рядок запису поля години, що не година, — не місце", "джерела/поля.py", 3, None),
+    ("під-ключ, який читають у носій години, — п.2", "джерела/поля.py", 4, 2),
+    ("година з рядка годинника відповіді — п.1", "джерела/число.py", 3, 1),
+    ("гілка «ГГ:ХХ» у відповіді — п.1", "джерела/число.py", 2, 1),
+    ("split(':')[0] не в число — не місце", "джерела/число.py", 7, None),
+    ("година з геттера поля в try — п.2", "джерела/шов.py", 6, 2),
+    ("скидання години в except — п.2", "джерела/шов.py", 7, 2),
+    ("функція переводу години в частину дня — п.3", "джерела/шов.py", 9, 3),
+    ("виклик переводу години — п.3", "джерела/шов.py", 14, 3),
 )
 
 
