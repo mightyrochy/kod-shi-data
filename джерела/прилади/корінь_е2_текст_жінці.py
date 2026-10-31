@@ -1015,6 +1015,27 @@ function іншаНазва(е, т){ const копія = т; назваЖінці
         ('число-у-полі', "const з = {ім: $('ввід').value || 0}; їїСловаП(document.body, з.ім);", 1),
         ('null-у-полі', "const з = {ім: ($('ввід').value || '').trim() || null}; назваЖінціП(document.body, з.ім || 'Без імені');", 0),
         ('сховище-напис', "localStorage.setItem('ім', $('ввід').value); localStorage.setItem('ім', 'Типове'); їїСловаП(document.body, localStorage.getItem('ім'));", 1),
+        # 11822: її ввід поза `$(…).value` — ціль події вводу, розпізнане мовлення, її слова через пробіл.
+        ('ціль-вводу-її', "const та = document.createElement('textarea'); let з = ''; та.oninput = e => { з = e.target.value; }; їїСловаП(document.body, з);", 0),
+        ('ціль-вводу-слухач', "const та = document.createElement('textarea'); let з = ''; та.addEventListener('input', e => { з = e.currentTarget.value; }); їїСловаП(document.body, з);", 0),
+        ('ціль-вводу-чужий-поряд', "const та = document.createElement('textarea'); let з = ''; та.oninput = e => { з = e.target.value; }; fetch('/m').then(р => { з = р; }); їїСловаП(document.body, з);", 1),
+        ('ціль-не-вводу', "const та = document.createElement('div'); let з = ''; та.onclick = e => { з = e.target.value; }; їїСловаП(document.body, з);", 1),
+        ('мовлення-її', "const К = window.SpeechRecognition || window.webkitSpeechRecognition || null; const р = new К(); let з = ''; р.onresult = п => { з = Array.from(п.results).map(x => x[0].transcript).join(' '); }; їїСловаП(document.body, з);", 0),
+        ('мовлення-не-клас', "const р = new Інше(); let з = ''; р.onresult = п => { з = Array.from(п.results).map(x => x[0].transcript).join(' '); }; їїСловаП(document.body, з);", 1),
+        ('мовлення-допис', "const р = new webkitSpeechRecognition(); let з = ''; р.onresult = п => { з = 'Сказала: ' + п.results[0][0].transcript; }; їїСловаП(document.body, з);", 1),
+        ('мовлення-інше-поле', "const р = new webkitSpeechRecognition(); let з = ''; р.onresult = п => { з = п.message; }; їїСловаП(document.body, з);", 1),
+        ('пробіл-між-її', "їїСловаП(document.body, $('ввід').value + ' ' + $('ввід').value.replace(/\\s+/g, ' '));", 0),
+        ('заміна-не-пробілу', "їїСловаП(document.body, $('ввід').value.replace(/а/g, 'б'));", 1),
+        # 11780: порожній літерал під ключем запису, доповнений через тримача чи псевдонім `v = X.поле`.
+        ('порожній-поле-псевдонім', "const О = {}; О.р = {сп: []}; const р = О.р; р.сп.push({ім: $('ввід').value}); (О.р.сп || []).forEach(х => їїСловаП(document.body, х.ім));", 0),
+        ('порожній-поле-серіалізація', "const О = {}; О.р = {сп: []}; const р = О.р; р.сп.push({ім: $('ввід').value}); localStorage.setItem('к', JSON.stringify({сп: р.сп})); (О.р.сп || []).forEach(х => їїСловаП(document.body, х.ім));", 0),
+        ('порожній-поле-чужий-поряд', "const О = {}; О.р = {сп: []}; const р = О.р; р.сп.push({ім: $('ввід').value}); р.сп.push({ім: fetch('/m')}); (О.р.сп || []).forEach(х => їїСловаП(document.body, х.ім));", 1),
+        ('порожній-поле-копія', "const О = {}; О.р = {сп: []}; const к = Object.assign({}, О.р); к.сп.push({ім: невідоме}); (О.р.сп || []).forEach(х => їїСловаП(document.body, х.ім));", 1),
+        ('порожній-поле-передано', "const О = {}; О.р = {сп: []}; інше(О.р.сп); (О.р.сп || []).forEach(х => їїСловаП(document.body, х.ім));", 1),
+        # 11861: поле в літералі запису, який повертає функція; писачі поля — через усі змінні з її виклику.
+        ('псевдонім-виклику-чужий', "const В = {}; function відп(п){ if (!В[п]) В[п] = {ім: ''}; return В[п]; } function а(п){ const вх = відп(п); const та = document.createElement('textarea'); та.oninput = e => { вх.ім = e.target.value; }; їїСловаП(document.body, вх.ім || ''); } function б(п){ const в = відп(п); в.ім = fetch('/m'); }", 1),
+        ('псевдонім-виклику-її', "const В = {}; function відп(п){ if (!В[п]) В[п] = {ім: ''}; return В[п]; } function а(п){ const вх = відп(п); const та = document.createElement('textarea'); та.oninput = e => { вх.ім = e.target.value; }; їїСловаП(document.body, вх.ім || ''); } function б(п){ const в = відп(п); в.ім = $('ввід').value; }", 0),
+        ('свіжий-запис-виклику', "function нове(){ const з = {ім: ''}; return з; } function а(){ const вх = нове(); вх.ім = $('ввід').value; їїСловаП(document.body, вх.ім); } function б(){ const в = нове(); в.ім = fetch('/m'); }", 0),
         ('каталог-python-кандидат', "async function ф(){const д=await (await fetch('каталог.json')).json(); назваЖінціП(document.body, д.name);}", 1),
     ]
     хиб = 0
