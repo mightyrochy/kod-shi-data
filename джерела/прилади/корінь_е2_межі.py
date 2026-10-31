@@ -823,6 +823,48 @@ class Структура:
                         вих.append((мод.ім, ім, значення.lineno, "у дроті моделі поле `%s` ← повний ід `%s` без перетворення на номер для дроту" % (ключ_к, з)))
         return вих
 
+    # п.5: перелік речей у контексті входу (`items=…` / `"items": …`) — будівник, що не зветься «для_моделі»
+    # (напр. вхід перекладу коментаря в `мова`): картка речі несе слово крамниці чи повний ід
+    def дріт_контекст(self):
+        вих = set()
+        for мод, ім, ф in self.функції():
+            for в in ast.walk(ф):
+                переліки = []
+                if isinstance(в, ast.Call) and текст_імені(в.func) == "dict":
+                    переліки = [к.value for к in в.keywords if к.arg == "items"]
+                elif isinstance(в, ast.Dict):
+                    переліки = [з for к, з in zip(в.keys, в.values) if isinstance(к, ast.Constant) and к.value == "items"]
+                for картка in (к for п in переліки for к in ast.walk(п)):
+                    пари = []
+                    if isinstance(картка, ast.Dict):
+                        пари = [(к.value, з) for к, з in zip(картка.keys, картка.values) if isinstance(к, ast.Constant)]
+                    elif isinstance(картка, ast.Call) and текст_імені(картка.func) == "dict":
+                        пари = [(к.arg, к.value) for к in картка.keywords if к.arg]
+                    if not {str(к) for к, _ in пари} & {"id", "slot", "kind"}:
+                        continue
+                    for ключ, значення in пари:
+                        for глибше in ast.walk(значення):
+                            з = self.ключ_значення(self.без_обгортки(глибше))
+                            if з in ТЕКСТ_КРАМНИЦІ:
+                                вих.add((мод.ім, ім, глибше.lineno, "у переліку речей контексту моделі поле `%s` ← слово "
+                                         "крамниці `%s` (замість коду)" % (ключ, з)))
+                        з = self.ключ_значення(self.без_обгортки(значення))
+                        if з in {"ід", "id"} and str(ключ) in {"id", "ід"}:
+                            вих.add((мод.ім, ім, значення.lineno, "у переліку речей контексту моделі поле `%s` ← повний ід "
+                                     "`%s` без перетворення на місцевий номер" % (ключ, з)))
+        return sorted(вих)
+
+    @staticmethod
+    def без_обгортки(в):
+        """`str(х)` / `х or ""` → `х`: обгортка не робить слово крамниці чи ід кодом."""
+        while True:
+            if isinstance(в, ast.Call) and текст_імені(в.func) == "str" and len(в.args) == 1:
+                в = в.args[0]
+            elif isinstance(в, ast.BoolOp) and isinstance(в.op, ast.Or):
+                в = в.values[0]
+            else:
+                return в
+
     @staticmethod
     def ключ_значення(в):
         """Ключ, яким значення читається з картки речі: `х["назва"]` / `х.get("назва")`; інакше None."""
@@ -1195,6 +1237,8 @@ def зібрати():
     збирачі = {x for x in у_конусі if any(текст_імені(в.func).endswith("зібрати") for в in ast.walk(а.м[x[0]].функції[x[1]])
                                           if isinstance(в, ast.Call))}
     for мод, ім, рядок, чому in ст.дріт(збирачі):
+        м.додати(файл_модуля(мод), рядок, 5, чому, "А")
+    for мод, ім, рядок, чому in ст.дріт_контекст():
         м.додати(файл_модуля(мод), рядок, 5, чому, "А")
     for функція, файл, рядок, виклик in js.сайти():
         власники = js.власники(функція)
