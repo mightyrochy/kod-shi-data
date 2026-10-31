@@ -783,15 +783,15 @@ class Стан:
         if isinstance(в, ast.Dict):
             for к, з in zip(в.keys, в.values):
                 if к is None:
-                    вих |= (self.читати_env(з.id) if isinstance(з, ast.Name) else self.e(з))
+                    вих |= self.значення(з)[0]
                 elif not _рядок(к):
                     вих |= self.e(з)
         else:
             for а in в.args:
-                вих |= (self.читати_env(а.id) if isinstance(а, ast.Name) else self.e(а))
+                вих |= self.значення(а)[0]
             for к in в.keywords:
                 if к.arg is None:
-                    вих |= (self.читати_env(к.value.id) if isinstance(к.value, ast.Name) else self.e(к.value))
+                    вих |= self.значення(к.value)[0]
         return вих
 
     def ключі_з(self, ім, в):
@@ -807,21 +807,18 @@ class Стан:
                     м, кк = self.значення(з)
                     вих[к.value] = вих.get(к.value, E) | м
                     вих = _злити_ключі(вих, _з_префіксом(к.value, кк))
-                elif к is None and isinstance(з, ast.Name):
-                    вих = _злити_ключі(вих, self.ключі.get(з.id, {}))
+                elif к is None:
+                    вих = _злити_ключі(вих, self.значення(з)[1])
         elif isinstance(в, ast.Call) and _ім_виклику(в.func) == "dict":
             for а in в.args:
-                if isinstance(а, ast.Name):
-                    вих.update(self.ключі.get(а.id, {}))
-                else:
-                    вих.update(self.ключі_виразу(а))
+                вих = _злити_ключі(вих, self.значення(а)[1])
             for к in в.keywords:
                 if к.arg:
                     м, кк = self.значення(к.value)
                     вих[к.arg] = вих.get(к.arg, E) | м
                     вих = _злити_ключі(вих, _з_префіксом(к.arg, кк))
-                elif isinstance(к.value, ast.Name):
-                    вих.update(self.ключі.get(к.value.id, {}))
+                else:
+                    вих = _злити_ключі(вих, self.значення(к.value)[1])
         elif isinstance(в, (ast.Await, ast.YieldFrom)):
             вих.update(self.ключі_виразу(в.value))
         elif isinstance(в, ast.Call):
@@ -1147,7 +1144,12 @@ class Стан:
                     іменні[кл] = мітки | _усі(ключі)
                     імен_к[кл] = (мітки, ключі) if ключі else мітки
             elif к.arg is None:
-                дві |= self.e(к.value)
+                мітки, ключі = self.значення(к.value)
+                дві |= мітки
+                for кл in {str(x).split("/")[0] for x in (ключі or {})}:   # `**запис`: кожен ключ — свій аргумент
+                    м, під = ключі.get(кл, E), _під(ключі, кл)
+                    іменні[кл] = іменні.get(кл, E) | м | _усі(під)
+                    імен_к[кл] = (м, під) if під else м
             else:
                 мітки, ключі = self.значення(к.value)
                 іменні[к.arg] = мітки | _усі(ключі)
@@ -1173,6 +1175,11 @@ class Стан:
                         self.писати(корінь, мітки - {F})
                         for кл, вв in (ключі or {}).items():
                             self.ключі[корінь][кл] = self.ключі[корінь][кл] | вв
+                elif ім == "update" and isinstance(в.func.value, ast.Name) and not в.args:
+                    pass   # лише іменні: кожне — свій ключ (нижче)
+                elif ім == "update" and isinstance(в.func.value, ast.Name):
+                    for з in поз_к:
+                        self.писати(корінь, (з[0] if isinstance(з, tuple) else з) - {F}, мутація=True)
                 elif корінь:
                     self.писати(корінь, (усі - приймач) - {F}, мутація=True)
                 if ім == "update" and isinstance(в.func.value, ast.Name):
@@ -1181,7 +1188,10 @@ class Стан:
                     for к in в.keywords:
                         if к.arg:
                             кк = self.ключі[в.func.value.id]
-                            кк[к.arg] = кк[к.arg] | self.e(к.value)
+                            м, підк = імен_к[к.arg] if isinstance(імен_к.get(к.arg), tuple) else (іменні.get(к.arg, E), None)
+                            кк[к.arg] = кк[к.arg] | м
+                            for кл, вв in _з_префіксом(к.arg, підк).items():
+                                кк[кл] = кк[кл] | вв
                 return (приймач | усі) - {F} if ім == "setdefault" else E
             if ім == "get" and в.args and not self.а.викликані(self.м, в.func, self.ф):
                 if isinstance(в.func.value, ast.Name) and _рядок(в.args[0]):
@@ -1223,7 +1233,14 @@ class Стан:
                 self.ключі_викликів[id(в)] = (мітки, ключі)
                 return мітки | _усі(ключі)
             if ім not in ВМІСТИЩА:
-                вих = _пара(приймач, зірка, дві, *позиційні, *іменні.values())
+                # зовнішня функція над записом бачить запис цілим, але число з неї — не поле запису: ключі запису
+                # з її колоритом у нього не йдуть (інакше один ключ із S робив S кожне число з пакета)
+                поза = [з[0] if isinstance(з, tuple) else з for з in поз_к + list(імен_к.values())]
+                пр = приймач
+                if isinstance(в.func, ast.Attribute) and isinstance(в.func.value, ast.Name) \
+                        and self.ключі.get(в.func.value.id):
+                    пр = self.читати_env(в.func.value.id)
+                вих = _пара(пр, зірка, дві, *поза)
             if ім == "reliability":
                 вих = вих | {R}
             if ім == "dict" and isinstance(в.func, ast.Name):
