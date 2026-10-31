@@ -28,6 +28,7 @@ $script:Paths = @{ 7000 = 'C:\Users\x\AppData\Local\Programs\LM Studio\LM Studio
 $script:DesktopProcs = @(@{ Pid = 5100; MiB = 310 }, @{ Pid = 5200; MiB = 260 }, @{ Pid = 5300; MiB = 640 }, @{ Pid = 5400; MiB = 180 })
 $script:ModelProcs = @(@{ Pid = 7000; MiB = 120 }, @{ Pid = 7100; MiB = 9000 })
 $script:IdleProcs = @(@{ Pid = 3300; MiB = 57 })
+$script:NoCounter = $false  # claude_run.ps1 вмикає Set-StrictMode: неініціалізована змінна — виняток
 $fakes = {
     function Get-GpuCounterRows {
         if ($script:NoCounter) { return $null }
@@ -123,7 +124,7 @@ Scenario 'г воркер' {
         sha = 'b' * 40; time = 0; slug = 'г'; model = 'cc-claude-sonnet-5-5-medium'; n = '1'; cond = 'gpu'; claude = 'claude-sonnet-5-5'; effort = 'medium'
         gpu = $true; prio = 5; limits = $limits }
     $code = Invoke-Worker
-    Check "г GPU-наряд за моделі LM Studio на карті — воркер пройшов перевірку GPU (код $code) і наряд виконано; lms не викликано: $((Get-LmsCalls) -join ' | ')" ($script:Ran -eq 1 -and $code -ne $script:WorkerGpuBusy -and (Get-LmsCalls).Count -eq 0)
+    Check "г GPU-наряд за моделі LM Studio на карті — воркер пройшов перевірку GPU (код $code) і наряд виконано; lms не викликано: $((Get-LmsCalls) -join ' | '); журнал: $($script:Logged -join ' | ')" ($script:Ran -eq 1 -and $code -ne $script:WorkerGpuBusy -and (Get-LmsCalls).Count -eq 0)
 }
 
 # --- (д) сторонній процес: позначка стоїть, причина з назвою й MiB -----------------------------------------------------
