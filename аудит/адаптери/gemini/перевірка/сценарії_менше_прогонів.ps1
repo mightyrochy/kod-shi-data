@@ -208,6 +208,9 @@ try {
                 (& git -C $planRepo rev-parse HEAD).Trim()
             } finally { $env:GIT_AUTHOR_DATE = $author; $env:GIT_COMMITTER_DATE = $committer }
         }
+        # Планувальник читає реєстр сцен із дерева збірки: без нього план не складається.
+        [void][IO.Directory]::CreateDirectory("$planRepo/аудит/проби")
+        [IO.File]::WriteAllText("$planRepo/аудит/проби/живі_сцени.txt", [IO.File]::ReadAllText((Join-Path $SourceDir '../../проби/живі_сцени.txt'), $utf), $utf)
         $old = Plan-Commit '2026-01-01T00:00:00Z' 'Попередній код'
         [IO.File]::WriteAllText("$planRepo/build.txt", $old, $utf)
         $checked = Plan-Commit '2026-01-02T00:00:00Z' 'Збірка попереднього прогону'

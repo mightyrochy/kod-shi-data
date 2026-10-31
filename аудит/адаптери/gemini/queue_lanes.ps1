@@ -876,6 +876,53 @@ function Get-AutoReviewInput([string]$Number) {
     ConvertTo-Json -InputObject @($result) -Depth 6 -Compress
 }
 
+function Get-LiveSceneRegistry([string]$Text) {
+    <# Реєстр `аудит/проби/живі_сцени.txt`: id — перше поле до «|», режим — п'яте; рядки `#` і короткі пропущено. #>
+    $registry = @{}
+    foreach ($row in ($Text -split "`n")) {
+        $row = $row.TrimEnd("`r").TrimStart([char]0xFEFF)
+        if (-not $row.Trim() -or $row.TrimStart().StartsWith('#')) { continue }
+        $fields = $row.Split('|')
+        if ($fields.Count -lt 5) { continue }
+        $registry[$fields[0].Trim()] = $fields[4].Trim()
+    }
+    $registry
+}
+
+function Get-LiveAfterLines([string]$Body, $Registry) {
+    <# Єдиний розбір рядків `ЖИВИЙ ПІСЛЯ: <id> — <питання>` для планувальника й CI на тілі PR. Рядок, що починається з
+    `ЖИВИЙ ПІСЛЯ` (після пробілів, маркера списку чи виділення), або розібрано повністю, або в ньому `error`. #>
+    $result = @()
+    foreach ($raw in ([string]$Body -split "`n")) {
+        $line = $raw.Trim()
+        if ($line -cnotmatch '^[-*+>#_\s]*ЖИВИЙ ПІСЛЯ') { continue }
+        $item = @{line=$line;id='';question='';mode='';error=''}
+        if ($line -cnotmatch '^ЖИВИЙ ПІСЛЯ: (.*)$') {
+            $item.error = 'рядок має починатися з «ЖИВИЙ ПІСЛЯ: » без маркера списку, виділення чи пропущеної двокрапки'
+        } else {
+            $rest = $Matches[1]
+            $at = $rest.IndexOf(' — ', [StringComparison]::Ordinal)
+            if ($at -lt 0) {
+                $item.error = 'нема « — » після id'
+            } else {
+                $id = $rest.Substring(0, $at).Trim()
+                $question = $rest.Substring($at + 3).Trim()
+                if ($id -cnotmatch '^[\p{L}\p{Nd}_-]+$') {
+                    $item.error = 'id «' + $id + '» не голий: лише літери, цифри, _ і -, без лапок, зворотних лапок і пояснень'
+                } elseif (-not ($Registry.Keys -ccontains $id)) {
+                    $item.error = 'id «' + $id + '» нема першим полем аудит/проби/живі_сцени.txt'
+                } elseif (-not $question) {
+                    $item.error = 'порожнє питання після « — »'
+                } else {
+                    $item.id = $id; $item.question = $question; $item.mode = [string]$Registry[$id]
+                }
+            }
+        }
+        $result += @($item)
+    }
+    $result
+}
+
 function Get-AutoLivePlan([string]$BuildMain) {
     <# Один план для автоживого й Е1: сцена один раз, питання всіх злитих довірених PR. #>
     $pulls = @(Get-AutoPublicItems 'pulls?state=all&sort=updated&direction=desc' | Where-Object {
@@ -908,21 +955,26 @@ function Get-AutoLivePlan([string]$BuildMain) {
             if ($commit.Trim()) { $covered[$commit.Trim()] = $true }
         }
     }
+    $registryText = (Invoke-Git @('cat-file','blob',"${BuildMain}:аудит/проби/живі_сцени.txt")).Out
+    $registry = Get-LiveSceneRegistry $registryText
+    if (-not $registry.Count) { throw 'AUTO_REGISTRY' }
     $scenes = [ordered]@{}
+    $cloud = [ordered]@{}
+    $bad = @()
     foreach ($pr in @($pulls | Sort-Object merged_at,number)) {
         if (-not $pr.merged_at) { continue }
         $merge = [string]$pr.merge_commit_sha
         if ($merge -cnotmatch '^[0-9a-f]{40}$') { throw 'AUTO_MERGE' }
         if (-not $history.ContainsKey($merge) -or $covered.ContainsKey($merge)) { continue }
-        foreach ($line in ([string]$pr.body -split "`n")) {
-            if ($line.Trim() -cmatch '^ЖИВИЙ ПІСЛЯ: ([\p{L}\p{Nd}_-]+) — (.+)$') {
-                $scene = $Matches[1]; $question = $Matches[2].Trim()
-                if (-not $scenes.Contains($scene)) { $scenes[$scene] = @() }
-                $scenes[$scene] = @($scenes[$scene]) + @(@{pr=$pr.number;question=$question})
-            }
+        foreach ($item in @(Get-LiveAfterLines ([string]$pr.body) $registry)) {
+            if ($item.error) { $bad += @(@{pr=$pr.number;line=$item.line;reason=$item.error}); continue }
+            # Сцена режиму «функція» — код без моделі: її ставить хмарна сесія, не ноутбук.
+            $target = if ($item.mode -cmatch '^функція') { $cloud } else { $scenes }
+            if (-not $target.Contains($item.id)) { $target[$item.id] = @() }
+            $target[$item.id] = @($target[$item.id]) + @(@{pr=$pr.number;question=$item.question})
         }
     }
-    ConvertTo-Json -InputObject @{since_sha=$checked;since=$since.ToString('o');until=$until.ToString('o');scenes=$scenes} -Depth 8 -Compress
+    ConvertTo-Json -InputObject @{since_sha=$checked;since=$since.ToString('o');until=$until.ToString('o');scenes=$scenes;cloud=$cloud;bad=$bad} -Depth 8 -Compress
 }
 
 function Add-AutoTaskContext([string]$Slug, [string]$Text, [string]$BuildMain = '') {
@@ -949,7 +1001,12 @@ function Test-AutoPlanEmpty([string]$Slug, [string]$Text) {
     if (-not $found.Success) { return $false }
     try { $plan = ConvertFrom-Json $found.Groups[1].Value } catch { return $false }
     $scenes = $plan.PSObject.Properties['scenes']
-    ($null -ne $scenes -and @($scenes.Value.PSObject.Properties).Count -eq 0)
+    if ($null -eq $scenes -or @($scenes.Value.PSObject.Properties).Count -ne 0) { return $false }
+    # Сцени «у хмарі» й вадні рядки теж потрібно донести до звіту: з ними план не порожній.
+    $cloud = $plan.PSObject.Properties['cloud']
+    if ($null -ne $cloud -and @($cloud.Value.PSObject.Properties).Count -ne 0) { return $false }
+    $bad = $plan.PSObject.Properties['bad']
+    -not ($null -ne $bad -and @($bad.Value).Count -ne 0)
 }
 
 function Set-BrowserGpuPolicy([string]$Directory) {
