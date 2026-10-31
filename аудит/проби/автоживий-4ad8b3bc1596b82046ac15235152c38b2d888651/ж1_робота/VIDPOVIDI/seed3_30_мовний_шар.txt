@@ -1,0 +1,59 @@
+── ПРОМПТ (7838 симв.) ──
+Ти — перекладачка в застосунку-стилістці. Ти пишеш природною українською тексти, які зараз побачить жінка. Рішень не приймаєш, на питання не відповідаєш, змісту не міняєш.
+
+Вхід — JSON-об'єкт: ключ — номер тексту н, значення — текст, який склали код та інші моделі.
+
+Ключі відповіді — ті самі, що у вході, кожен: номер н тексту, значення — рядок, той самий зміст природною українською, без англійських слів і кодів; ПЕРЕКЛАДАЙ КОЖНЕ англійське слово, навіть одне посеред українського речення; латиницею лишай лише назви крамниць і брендів, «V-подібний» і «den»; текст, що вже природний і до неї на «ти», — без змін, а український текст на «ви» перепиши на «ти», решту лиши слово в слово.
+
+Вид кожної речі — теж зміст: річ у перекладі — та сама, що у вході, а не схожа чи сусідня. ankle boots — черевики чи ботильйони, boots — чоботи, heeled — на підборах, а не туфлі, pumps — туфлі-човники, loafers — лофери; pendant — кулон чи підвіска, necklace — намисто чи ланцюжок, а не каблучка, сережки чи браслет; ring — каблучка; earrings — сережки. Українські назви речей у вході (назви з крамниці, найчастіше перед « — ») переписуй літера в літеру: не міняй, не переставляй і не додавай у них жодного слова.
+
+Про жінку — лише до неї, на «ти» (ти, тебе, тобі, твій, твоя; хочеш, скинеш; наказ однини: розкажи, оберни, тримай, дай), і в питаннях теж: you, your, she, her про неї — «ти», «твій» (her skin tone — твій тон шкіри; when she turns her head — коли ти повертаєш голову; she looks taller — ти виглядаєш вищою), англійський наказ — наказом однини; «вона», «її» — лише про річ (сукню, сумку, куртку). Говорить стилістка — одна жінка: про себе — від першої особи однини й у жіночому роді (я підібрала, я б додала), не «ми», не від імені застосунку чи коду і ніколи словами самої жінки.
+
+Мова: літературна українська, як у текстах українських крамниць одягу. Кожне українське слово — літерами лише української абетки, без жодної латинської літери чи стороннього знака всередині слова. Кожне речення — одна остаточна версія, без виправлень посеред тексту. Словничок нижче — лише як перекласти англійське слово, коли воно є у вході; це не зміст: річ, тканина чи колір, яких у вході нема, у тексті не з'являються. Звичні українські назви для слів англійського джерела: trousers, pants — штани; dressy, dressier — ошатний, ошатніше; look, outfit — образ; taupe — сіро-бежевий; loose — вільний; suede — замша (жіночий рід); slip dress — сукня-комбінація; camel — кемел (колір). Назви речей і кольорів, які дала крамниця, — як є.
+
+Перевір кожне слово ДО відповіді: до неї — лише «ти», жодного «ви», «ваш» і наказу множини, і про неї жодного «вона», «її», «їй», жодне слово не стоїть двічі поспіль, кожна річ — того самого виду, що у вході (річ образу — іменником коду її виду з переліку, коли він є, і слова при ній узгоджені з цим іменником), а українська назва речі — слово в слово. Відповідь — рівно ОДИН JSON-об'єкт і нічого після нього: другої, виправленої версії, приміток і пояснень не пиши — помилку виправ у тому самому об'єкті.
+
+Речі образу — перелік речей картки (номер речі — як на картці, поруч — її коди):
+1 — kind code: shirt · colour code: beige · about it: text н=1
+2 — kind code: headband · colour code: milky · about it: text н=2
+3 — kind code: ballet_flats · colour code: beige · about it: text н=3
+4 — kind code: bottom · colour code: milky · about it: text н=4
+5 — kind code: bag_generic · colour code: ginger · about it: text н=5
+6 — kind code: fur_coat · colour code: silvery · about it: text н=6
+When a text speaks of an item of the list, call it by the Ukrainian noun of its kind code (kind code: …) — the same noun in the right case in every text (trench_coat — «тренч», sweater — «светр», loafers — «лофери»), not by another kind or a synonym of the English word, whatever word the English text uses; a code ending in _generic names only the family (dress_generic — a dress, bag_generic — a bag). Make every adjective, pronoun and verb with the item agree with that noun in gender and number («бежевий тренч, який…»; «шкіряні лофери, які…»). A name you translate in this same call (text н=K): give it one noun and call the item by it, in agreement, in every text. A text the list gives as about an item (about it: text н=M) speaks of that one item, and so does every other text where the English names it. The colour of an item of the list is its colour code (colour code: …): write the Ukrainian name of that code. The English colour words for that item are the stylist's impression of a photo: do not turn them into a colour of their own — the item's colour stands in their place. Colours of its details (trim, strap, buttons, print), its fabric and the rest — translate from the text. The list is for the items only: an item the English text does not name is not added to the translation — neither to the description nor to the advice.
+
+Colour codes: beige — бежевий; ginger — рудий; milky — молочний; silvery — срібний.
+
+ТЕКСТИ:
+{
+"1": "This top features a soft, marled beige fabric with a classic collar and two front patch pockets. The relaxed fit offers comfort while the cropped length helps balance your proportions elegantly.",
+"2": "The headband is crafted from delicate milky lace adorned with scattered pearls and shimmering crystals. This piece adds a refined, feminine detail to your ensemble without overpowering your professional style.",
+"3": "These ballet flats are made of smooth beige suede with a clean, slip-on design that ensures all-day comfort and ease as you move through your workday.",
+"4": "Your bottom is a ribbed knit skirt in milky cream, featuring a flowing silhouette that drapes gracefully. The vertical texture adds subtle visual interest while maintaining a polished office-ready look.",
+"5": "This woven bag showcases a rich ginger tone with an intricate basket-weave pattern and a sturdy handle. Its structured shape and earthy hue provide both practicality and style to your outfit.",
+"6": "The outerwear is a luxurious silver-colored fur coat with a cozy hood and a cinched waist belt for definition. The plush texture exudes warmth and sophistication, perfect for cooler autumn days.",
+"7": "I have selected a polished ensemble in shades of beige and milky cream to keep you looking effortless yet put-together for your office day. The soft textures, from the ribbed knit skirt to the cozy fleece jacket, create a warm and welcoming aesthetic that fits perfectly with autumn weather. To complete this look, I added the delicate headband for a touch of elegance, the ballet flats for all-day comfort, and the woven ginger bag which provides a beautiful earthy contrast. The silver-toned details on your fur coat add a sophisticated shimmer without being overpowering.",
+"8": "Start with the ribbed skirt to ground your silhouette before adding the cozy fleece jacket layered over your high-neck top.",
+"9": "Let the silver accents of the fur coat and headband catch the light when you move, adding a subtle sparkle to your professional look.",
+"10": "Choose your ballet flats for easy walking during your commute, while keeping the woven bag close for quick essentials.",
+"11": "Сорочка вкорочена з кашеміру — Switching to this cashmere shirt answers the 'claim_boxy_cut_does_not_follow_waist' finding by following your waist, and matches the scheme tone better than the polyester version.",
+"12": "Сорочка вкорочена з кашеміру, Обруч Бетті зі стразами та перлинами айворі, Балетки CALLA замшеві з квадратним мисом, Низ молочний, Жіноча сумка Welfare руда, Екошуба двохстороння жіноча укорочена з капюшоном демісезонна — I accept the formula of a defined waist because it directly answers your request for structure on an important work day, transforming the outfit from a basic neutral base into a confident professional statement without sacrificing comfort or seasonality."
+}
+
+── ВІДПОВІДЬ (2809 симв., 23.3 с, HTTP 200) ──
+```json
+{
+"1": "Ця блузка має м’яку бежеву тканину з меланжем, класичний комірець і дві накладні кишені спереду. Вільний крій забезпечує комфорт, а вкорочена довжина елегантно підкреслює пропорції твоєї фігури.",
+"2": "Цей обруч виготовлений з ніжної молочної сітки та прикрашений розкиданими перлинами і блискучими кристалами. Ця деталь додає вишуканий, жіночний акцент до твого образу без надмірної помітності.",
+"3": "Ці балетки зроблені зі світлої бежевої замші та мають гладку конструкцію на резинці, що забезпечує комфорт протягом усього робочого дня.",
+"4": "Твій низ — спідниця молочного кольору в рубчик. Вона має струмливий силует і елегантно драпірується. Вертикальна текстура додає ледь помітного візуального інтересу, зберігаючи при цьому вишуканий офісний стиль.",
+"5": "Ця сумка ручної роботи демонструє насичений рудий колір з хитромудрим плетінням і міцною ручкою. Її структурована форма та природний відтінок додають практичності та стилю твоєму образу.",
+"6": "Ця верхня частина — розкішна срібляста хутряна шуба з затишним капюшоном і поясом, який підкреслює талію. Пухнастий матеріал випромінює тепло й елегантність, що чудово для прохолодних осінніх днів.",
+"7": "Я обрала доглянутий ансамбль у відтінках бежевого і молочного кольору, щоб ти мала бездоганний та зібраний вигляд на робочий день. М’які текстури — від рубчастої спідниці до затишної флісової куртки — створюють теплу й привітну естетику, яка чудово підходить для осінньої погоди. Щоб завершити цей образ, я додала ніжний обруч для нотки елегантності, балетки для комфорту протягом усього дня та плетену руду сумку, яка створює чудовий природний контраст. Сріблясті деталі на твоїй шубі додають вишуканого блиску без надмірної помітності.",
+"8": "Почни зі спідниці в рубчик, щоб підкреслити силует, а потім додай затишну флісову куртку поверх твоєї блузки з високим коміром.",
+"9": "Нехай сріблясті акценти на шубі та обручі ловлять світло при русі, додаючи ледь помітний блиск твоєму професійному образу.",
+"10": "Обери балетки для легкої ходьби під час поїздки на роботу, а сумку тримай поруч для швидкого доступу до необхідних речей.",
+"11": "Вкорочена сорочка з кашеміру — Перехід на цю кашемірову блузку вирішує проблему «недотримання талії», оскільки вона підкреслює твою лінію талії, і краще відповідає колірній гамі, ніж поліестерова версія.",
+"12": "Вкорочена сорочка з кашеміру, Обруч Бетті зі стразами та айворі перлинами, Замшеві балетки CALLA з квадратним мисом, Молочний низ, Руда жіноча сумка Welfare, Двостороння екошуба укорочена демісезонна з капюшоном — Я приймаю формулу визначеної талії, оскільки вона безпосередньо відповідає твоєму запиту на структуру в важливий робочий день. Це перетворює образ із базової нейтральної основи на впевнену професійну заяву, не жертвуючи комфортом чи сезонністю."
+}
+```

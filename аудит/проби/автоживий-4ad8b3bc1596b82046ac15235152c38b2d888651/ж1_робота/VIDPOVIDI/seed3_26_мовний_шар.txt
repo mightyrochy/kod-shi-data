@@ -1,0 +1,50 @@
+── ПРОМПТ (6697 симв.) ──
+Ти — перекладачка в застосунку-стилістці. Ти пишеш природною українською тексти, які зараз побачить жінка. Рішень не приймаєш, на питання не відповідаєш, змісту не міняєш.
+
+Вхід — JSON-об'єкт: ключ — номер тексту н, значення — текст, який склали код та інші моделі.
+
+Ключі відповіді — ті самі, що у вході, кожен: номер н тексту, значення — рядок, той самий зміст природною українською, без англійських слів і кодів; ПЕРЕКЛАДАЙ КОЖНЕ англійське слово, навіть одне посеред українського речення; латиницею лишай лише назви крамниць і брендів, «V-подібний» і «den»; текст, що вже природний і до неї на «ти», — без змін, а український текст на «ви» перепиши на «ти», решту лиши слово в слово.
+
+Вид кожної речі — теж зміст: річ у перекладі — та сама, що у вході, а не схожа чи сусідня. ankle boots — черевики чи ботильйони, boots — чоботи, heeled — на підборах, а не туфлі, pumps — туфлі-човники, loafers — лофери; pendant — кулон чи підвіска, necklace — намисто чи ланцюжок, а не каблучка, сережки чи браслет; ring — каблучка; earrings — сережки. Українські назви речей у вході (назви з крамниці, найчастіше перед « — ») переписуй літера в літеру: не міняй, не переставляй і не додавай у них жодного слова.
+
+Про жінку — лише до неї, на «ти» (ти, тебе, тобі, твій, твоя; хочеш, скинеш; наказ однини: розкажи, оберни, тримай, дай), і в питаннях теж: you, your, she, her про неї — «ти», «твій» (her skin tone — твій тон шкіри; when she turns her head — коли ти повертаєш голову; she looks taller — ти виглядаєш вищою), англійський наказ — наказом однини; «вона», «її» — лише про річ (сукню, сумку, куртку). Говорить стилістка — одна жінка: про себе — від першої особи однини й у жіночому роді (я підібрала, я б додала), не «ми», не від імені застосунку чи коду і ніколи словами самої жінки.
+
+Мова: літературна українська, як у текстах українських крамниць одягу. Кожне українське слово — літерами лише української абетки, без жодної латинської літери чи стороннього знака всередині слова. Кожне речення — одна остаточна версія, без виправлень посеред тексту. Словничок нижче — лише як перекласти англійське слово, коли воно є у вході; це не зміст: річ, тканина чи колір, яких у вході нема, у тексті не з'являються. Звичні українські назви для слів англійського джерела: trousers, pants — штани; dressy, dressier — ошатний, ошатніше; look, outfit — образ; taupe — сіро-бежевий; loose — вільний; suede — замша (жіночий рід); slip dress — сукня-комбінація; camel — кемел (колір). Назви речей і кольорів, які дала крамниця, — як є.
+
+Перевір кожне слово ДО відповіді: до неї — лише «ти», жодного «ви», «ваш» і наказу множини, і про неї жодного «вона», «її», «їй», жодне слово не стоїть двічі поспіль, кожна річ — того самого виду, що у вході (річ образу — іменником коду її виду з переліку, коли він є, і слова при ній узгоджені з цим іменником), а українська назва речі — слово в слово. Відповідь — рівно ОДИН JSON-об'єкт і нічого після нього: другої, виправленої версії, приміток і пояснень не пиши — помилку виправ у тому самому об'єкті.
+
+Речі образу — перелік речей картки (номер речі — як на картці, поруч — її коди):
+1 — kind code: blouse · colour code: pink · about it: text н=1
+2 — kind code: skirt · colour code: white · about it: text н=2
+3 — kind code: dress_shoes · colour code: beige · about it: text н=3
+4 — kind code: bag_generic · colour code: silvery · about it: text н=4
+5 — kind code: hair_clip · colour code: golden · about it: text н=5
+When a text speaks of an item of the list, call it by the Ukrainian noun of its kind code (kind code: …) — the same noun in the right case in every text (trench_coat — «тренч», sweater — «светр», loafers — «лофери»), not by another kind or a synonym of the English word, whatever word the English text uses; a code ending in _generic names only the family (dress_generic — a dress, bag_generic — a bag). Make every adjective, pronoun and verb with the item agree with that noun in gender and number («бежевий тренч, який…»; «шкіряні лофери, які…»). A name you translate in this same call (text н=K): give it one noun and call the item by it, in agreement, in every text. A text the list gives as about an item (about it: text н=M) speaks of that one item, and so does every other text where the English names it. The colour of an item of the list is its colour code (colour code: …): write the Ukrainian name of that code. The English colour words for that item are the stylist's impression of a photo: do not turn them into a colour of their own — the item's colour stands in their place. Colours of its details (trim, strap, buttons, print), its fabric and the rest — translate from the text. The list is for the items only: an item the English text does not name is not added to the translation — neither to the description nor to the advice.
+
+Colour codes: beige — бежевий; golden — золотий; pink — рожевий; silvery — срібний; white — білий.
+
+ТЕКСТИ:
+{
+"1": "This blouse features a relaxed fit with flowing, bell-shaped sleeves and a delicate self-tie neck bow. The fabric is sheer with an intricate paisley-like abstract pattern in warm tones of pink, peach, and blue against a soft coral background.",
+"2": "A straight-cut midi skirt made from delicate white lace with horizontal bands of geometric and floral motifs. Its lightweight structure adds texture without bulk, perfect for layering over or under other pieces.",
+"3": "These pointed-toe pumps feature a glossy beige finish and a sleek mid heel. Their classic silhouette elongates the leg and adds quiet polish suitable for professional settings.",
+"4": "A structured mini bag crafted from silvery pleated material with knotted handles that add organic texture. Its metallic sheen provides a modern, understated accent to your outfit.",
+"5": "This piece is made of shiny gold metal and adds a subtle shimmer to your ensemble without overpowering the delicate lace or patterned blouse.",
+"6": "I chose a look that balances your office day with soft, feminine details. The blouse’s relaxed pattern adds warmth without overwhelming your frame, while the white lace skirt brings breathability and a touch of elegance perfect for autumn. Heeled pumps in a warm tone ground the outfit, and the silvery bag offers a cool contrast to keep things fresh. This ensemble keeps you polished yet comfortable throughout your day at work.",
+"7": "Tuck the blouse slightly into the skirt to define your waist and streamline the silhouette for a smarter look.",
+"8": "Шовкова блуза рожевого кольору в абстрактний принт з бантом та рюшами на рукавах Зендая, Біла спідниця з мережива Поетрі — The second bag acts as a deliberate echo of your pink tones, adding visual rhythm and softness rather than chaos."
+}
+
+── ВІДПОВІДЬ (1756 симв., 15.4 с, HTTP 200) ──
+```json
+{
+"1": "Ця блуза має вільний крій із широкими рукавами-дзвонами та ніжним бантом на шиї. Тканина прозора з вишуканим абстрактним візерунком, що нагадує павине око, у теплих тонах рожевого, персикового й блакитного кольорів на м’якому кораловому тлі.",
+"2": "Пряма спідниця-міді з ніжної білої мережива з горизонтальними смугами геометричних і квіткових мотивів. Її легка структура додає текстури, не обтяжуючи силует, що чудово для носіння поверх або під іншими речами.",
+"3": "Ці туфлі-човники на шпильці мають глянцеве бежеве покриття та елегантний середній каблук. Їхня класична форма видовжує ноги й додає стриманої вишуканості, що підходить для ділових зустрічей.",
+"4": "Структурована міні-сумка з сріблястого гофрованого матеріалу з вузловими ручками, які надають органічної текстури. Її металевий блиск створює сучасний і стриманий акцент у твоєму образі.",
+"5": "Цей аксесуар виготовлений із глянцевого золотого металу та додає ледь помітного сяйва до твого ансамблю, не перевантажуючи ніжну мереживо чи візерункову блузу.",
+"6": "Я підібрала образ, який поєднує діловий стиль з м’якими й жіночними деталями. Вільний принт на блузі додає тепла без надмірності, а біла мереживна спідниця дарує легкість і нотку елегантності для осені. Чоботи на підборах у теплому тоні завершують образ, а срібляста сумка пропонує свіжий контраст. Цей ансамбль зберігає твій вигляд охайним і комфортним протягом робочого дня.",
+"7": "Злегка заправ блузу в спідницю, щоб підкреслити талію й зробити силует більш струнким для ділового вигляду.",
+"8": "Рожева шовкова блуза з абстрактним принтом і бантами на рукавах від Zendaya. Біла мереживна спідниця Poetry — Друга сумка підкреслює твої рожеві тони, додаючи візуальний ритм і м’якість замість хаосу."
+}
+```

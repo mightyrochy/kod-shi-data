@@ -1,0 +1,67 @@
+── ПРОМПТ (8434 симв.) ──
+Ти — перекладачка в застосунку-стилістці. Ти пишеш природною українською тексти, які зараз побачить жінка. Рішень не приймаєш, на питання не відповідаєш, змісту не міняєш.
+
+Вхід — JSON-об'єкт: ключ — номер тексту н, значення — текст, який склали код та інші моделі.
+
+Ключі відповіді — ті самі, що у вході, кожен: номер н тексту, значення — рядок, той самий зміст природною українською, без англійських слів і кодів; ПЕРЕКЛАДАЙ КОЖНЕ англійське слово, навіть одне посеред українського речення; латиницею лишай лише назви крамниць і брендів, «V-подібний» і «den»; текст, що вже природний і до неї на «ти», — без змін, а український текст на «ви» перепиши на «ти», решту лиши слово в слово.
+
+Вид кожної речі — теж зміст: річ у перекладі — та сама, що у вході, а не схожа чи сусідня. ankle boots — черевики чи ботильйони, boots — чоботи, heeled — на підборах, а не туфлі, pumps — туфлі-човники, loafers — лофери; pendant — кулон чи підвіска, necklace — намисто чи ланцюжок, а не каблучка, сережки чи браслет; ring — каблучка; earrings — сережки. Українські назви речей у вході (назви з крамниці, найчастіше перед « — ») переписуй літера в літеру: не міняй, не переставляй і не додавай у них жодного слова.
+
+Про жінку — лише до неї, на «ти» (ти, тебе, тобі, твій, твоя; хочеш, скинеш; наказ однини: розкажи, оберни, тримай, дай), і в питаннях теж: you, your, she, her про неї — «ти», «твій» (her skin tone — твій тон шкіри; when she turns her head — коли ти повертаєш голову; she looks taller — ти виглядаєш вищою), англійський наказ — наказом однини; «вона», «її» — лише про річ (сукню, сумку, куртку). Говорить стилістка — одна жінка: про себе — від першої особи однини й у жіночому роді (я підібрала, я б додала), не «ми», не від імені застосунку чи коду і ніколи словами самої жінки.
+
+Мова: літературна українська, як у текстах українських крамниць одягу. Кожне українське слово — літерами лише української абетки, без жодної латинської літери чи стороннього знака всередині слова. Кожне речення — одна остаточна версія, без виправлень посеред тексту. Словничок нижче — лише як перекласти англійське слово, коли воно є у вході; це не зміст: річ, тканина чи колір, яких у вході нема, у тексті не з'являються. Звичні українські назви для слів англійського джерела: trousers, pants — штани; dressy, dressier — ошатний, ошатніше; look, outfit — образ; taupe — сіро-бежевий; loose — вільний; suede — замша (жіночий рід); slip dress — сукня-комбінація; camel — кемел (колір). Назви речей і кольорів, які дала крамниця, — як є.
+
+Перевір кожне слово ДО відповіді: до неї — лише «ти», жодного «ви», «ваш» і наказу множини, і про неї жодного «вона», «її», «їй», жодне слово не стоїть двічі поспіль, кожна річ — того самого виду, що у вході (річ образу — іменником коду її виду з переліку, коли він є, і слова при ній узгоджені з цим іменником), а українська назва речі — слово в слово. Відповідь — рівно ОДИН JSON-об'єкт і нічого після нього: другої, виправленої версії, приміток і пояснень не пиши — помилку виправ у тому самому об'єкті.
+
+Речі образу — перелік речей картки (номер речі — як на картці, поруч — її коди):
+1 — kind code: fur_coat · colour code: beige · about it: text н=1
+2 — kind code: beanie · colour code: grey · about it: text н=2
+3 — kind code: bottom · colour code: navy · about it: text н=3
+4 — kind code: loafers · colour code: blue · about it: text н=4
+5 — kind code: sweater · colour code: powder · about it: text н=5
+6 — kind code: bag_generic · colour code: blue · about it: text н=6
+When a text speaks of an item of the list, call it by the Ukrainian noun of its kind code (kind code: …) — the same noun in the right case in every text (trench_coat — «тренч», sweater — «светр», loafers — «лофери»), not by another kind or a synonym of the English word, whatever word the English text uses; a code ending in _generic names only the family (dress_generic — a dress, bag_generic — a bag). Make every adjective, pronoun and verb with the item agree with that noun in gender and number («бежевий тренч, який…»; «шкіряні лофери, які…»). A name you translate in this same call (text н=K): give it one noun and call the item by it, in agreement, in every text. A text the list gives as about an item (about it: text н=M) speaks of that one item, and so does every other text where the English names it. The colour of an item of the list is its colour code (colour code: …): write the Ukrainian name of that code. The English colour words for that item are the stylist's impression of a photo: do not turn them into a colour of their own — the item's colour stands in their place. Colours of its details (trim, strap, buttons, print), its fabric and the rest — translate from the text. The list is for the items only: an item the English text does not name is not added to the translation — neither to the description nor to the advice.
+
+Colour codes: beige — бежевий; blue — синій; grey — сірий; navy — темно-синій; powder — пудра.
+
+ТЕКСТИ:
+{
+"1": "This relaxed beige fur coat is the centerpiece of your look. Its soft, plush texture brings a luxurious feel to your professional attire, while the neutral tone makes it easy to mix and match with various outfits throughout the season.",
+"2": "The grey beanie adds a casual yet sophisticated touch to your outfit. Its simple design complements the other pieces in your ensemble without overpowering them, making it perfect for those chilly office days.",
+"3": "These navy bottoms provide a solid foundation for your outfit. Their deep color offers a sleek contrast to the lighter tones of your top and coat, creating a balanced and polished appearance that is ideal for a professional setting.",
+"4": "The loafers in a soft blue hue complete your look with understated elegance. Their comfortable design ensures you can walk through the office with ease while maintaining a refined aesthetic.",
+"5": "This powder pink sweater brings warmth and femininity to your outfit. Its gentle color softens the more structured pieces around it, adding a personal touch to your professional image.",
+"6": "The bag with its subtle embroidery pattern ties your ensemble together effortlessly. Its versatile design allows you to carry essentials without detracting from the overall sophistication of your outfit.",
+"7": "Your ensemble is a study in elegant contrasts for the office. The relaxed beige fur coat acts as your perfect shield against the crisp autumn air, its softness contrasting beautifully with the structured navy bottom that defines your silhouette. Underneath, the powder pink sweater adds a touch of gentle femininity to your professional look, while the grey beanie offers a practical and stylish layer for cooler days.",
+"8": "The loose fit of the fur coat allows you to easily shed a jacket if you need to grab coffee during your break or take off layers when meeting colleagues.",
+"9": "Шапка “Skripka” сіра — I swapped the silvery bow headwear for a grey knitted beanie to match the 'tonal' scheme tone on large items and define the 'classic' register.",
+"10": "Низ — I added navy bottoms to create a proper top/bottom pair under the coat or as the base for the dress layer, answering 'no_top_bottom_or_dress'.",
+"11": "Светр Ната пудровий — I accepted this hue outside the scheme gate because your own choice of the 'tonal' register requires large items to share a single arc; by keeping the beige coat as the anchor and using the powder sweater within a compatible range, I preserved your intended harmony rather than breaking it.",
+"12": "Шапка “Skripka” сіра, Сумка Lady D-Lite з вишивкою — I accepted this duplicate print_source gate because you chose the boho/quiet_luxury register which values texture over variety; I kept the single focus on the coat's volume and let the bag serve as a subtle complementary detail that echoes the theme without competing for attention.",
+"13": "LeBERDES Лофери сині — I chose blue loafers to match the shoe cut recommendation for office wear rather than swapping to nude, using them to extend the leg line from the dress hem.",
+"14": "Низ — I added navy bottoms to create a top/bottom pair under the cardigan, answering 'no_top_bottom_or_dress' and establishing the tonal column properly.",
+"15": "Низ — I added navy trousers as the bottom piece to complete the outfit structure, answering 'no_top_bottom_or_dress'.",
+"16": "Низ — I added navy bottoms to complete the outfit structure, answering 'no_top_bottom_or_dress'."
+}
+
+── ВІДПОВІДЬ (3374 симв., 27.6 с, HTTP 200) ──
+```json
+{
+  "1": "Цей розслаблений бежевий тренч є центром твого образу. Його м'яка, пухнаста текстура надає твоєму професійному одягу розкішного відчуття, а нейтральний тон робить його легким у поєднанні з різними образами протягом сезону.",
+  "2": "Сіра шапка додає до твого образу невимушеної, але вишуканої нотки. Її простий дизайн гармонійно доповнює інші елементи вбрання без перевантаження їх, що робить її ідеальною для прохолодних офісних днів.",
+  "3": "Ці темно-сині штани створюють міцну основу твого образу. Їхній глибокий колір надає елегантний контраст світлим тонам твоєї верхньої частини та тренчу, створюючи збалансований і вишуканий вигляд, який чудово підходить для професійного середовища.",
+  "4": "Сині лофери завершують твій образ зі стриманою елегантністю. Їхній зручний дизайн дозволяє тобі легко пересуватися по офісу, зберігаючи при цьому витончений естетичний вигляд.",
+  "5": "Цей пудрово-рожевий светр додає тепла та жіночності твоєму образу. Його ніжний колір пом'якшує більш структуровані елементи вбрання, надаючи твоїй професійній зовнішності особистий штрих.",
+  "6": "Сумка з витонченим візерунком вишивки без зусиль поєднує весь ансамбль. Її універсальний дизайн дозволяє тобі носити необхідні речі, не відволікаючись від загальної вишуканості твого образу.",
+  "7": "Твій образ — це втілення елегантної контрастності для офісу. Розслаблений бежевий тренч слугує ідеальним захистом від свіжого осіннього повітря, його м’якість чудово поєднується зі структурованими темно-синіми штанами, які окреслюють твою фігуру. Під ним пудрово-рожевий светр додає нотку ніжної жіночності до твоєї професійної зовнішності, а сіра шапка пропонує практичний і стильний шар для холодніших днів.",
+  "8": "Вільний крій тренчу дозволяє тобі легко зняти піджак, якщо ти хочеш випити кави на перерві або позбутися зайвих шарів при зустрічі з колегами.",
+  "9": "Я замінила сріблясту бант-шапку на сіру в’язану шапку, щоб відповідала тональній схемі великих елементів і визначила класичний стиль.",
+  "10": "Я додала темно-сині штани, щоб створити повноцінний верх/низ під тренч або як основу для сукняного шару, відповідаючи на запит 'без верху, низу чи сукні'.",
+  "11": "Я прийняла цей відтінок за межами схеми, оскільки твій вибір тонального стилю потребує, щоб великі елементи мали єдиний колір; зберігаючи бежевий тренч як основу та використовуючи пудрово-рожевий светр у сумісній гамі, я зберегла твоє задумане гармонію замість того, щоб її порушити.",
+  "12": "Я прийняла це дублювання джерела принта, оскільки ти обрала стиль бохо/quiet_luxury, який цінує текстуру понад різноманітність; я зберегла єдиний акцент на об’ємі тренчу та дозволила сумці слугувати тонким доповнюючим елементом, що відлунює тему без конкуренції за увагу.",
+  "13": "Я обрала сині лофери, щоб відповідати рекомендаціям щодо взуття для офісу замість того, щоб переходити на нюдові кольори, використовуючи їх для продовження лінії ноги від подолу сукні.",
+  "14": "Я додала темно-сині штани як низ до комплекту одягу під кардиган, відповідаючи на запит 'без верху, низу чи сукні' та правильно встановивши тональну колону.",
+  "15": "Я додала темно-сині брюки як низ для завершення структури образу, відповідаючи на запит 'без верху, низу чи сукні'.",
+  "16": "Я додала темно-сині штани для завершення структури образу, відповідаючи на запит 'без верху, низу чи сукні'."
+}
+```

@@ -1,0 +1,58 @@
+── ПРОМПТ (2289 симв.) ──
+{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.", "One item carries one thing — of two alternatives list the first; a note in brackets is not an item.", "Slot \"accessory\" is for an item no other slot fits.", "\"is_outfit\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "ITEM_LIST", "answer_schema": {"is_outfit": "yes|no", "items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory", "color_hex": "<#rrggbb or null>", "worn": "<true, or false when the description says the outfit goes without it>"}]}, "input": ["\"description\" — the outfit description"]}, "description": "A structured wool-blend blazer in charcoal grey (#36454F), tailored with a single vent and notch lapels, falling to the hip line. Matching wide-leg trousers in charcoal grey (#36454F), cut straight from hem to ankle with a slight taper. A crisp white poplin blouse with a pointed collar, featuring a relaxed fit that tucks neatly into the waistband. Black leather ankle boots with a low block heel and a rounded toe, reaching just above the ankle bone. Silver-tone hoop earrings with a matte finish, a delicate silver chain necklace, and a sleek black leather clutch. This ensemble works perfectly for an autumn office day by balancing professional polish with seasonal warmth, as the charcoal tones are sophisticated yet understated for a work environment. The structured blazer and tailored trousers adhere to the requested smart dress code while the breathable poplin blouse ensures comfort throughout the day. Finally, the dark accessories anchor the look elegantly without overwhelming the neutral palette suitable for autumn weather."}
+
+── ВІДПОВІДЬ (1374 симв., 7.9 с, HTTP 200) ──
+{
+  "is_outfit": "yes",
+  "items": [
+    {
+      "name": "Blazer",
+      "details": "wool-blend, tailored with a single vent and notch lapels, falling to the hip line",
+      "slot": "outerwear",
+      "color_hex": "#36454F",
+      "worn": true
+    },
+    {
+      "name": "Trousers",
+      "details": "wide-leg, straight cut from hem to ankle with a slight taper",
+      "slot": "bottom",
+      "color_hex": "#36454F",
+      "worn": true
+    },
+    {
+      "name": "Blouse",
+      "details": "crisp white poplin, pointed collar, relaxed fit that tucks neatly into the waistband",
+      "slot": "top",
+      "color_hex": "#FFFFFF",
+      "worn": true
+    },
+    {
+      "name": "Boots",
+      "details": "black leather ankle boots with a low block heel and a rounded toe, reaching just above the ankle bone",
+      "slot": "shoes",
+      "color_hex": "#000000",
+      "worn": true
+    },
+    {
+      "name": "Earrings",
+      "details": "silver-tone hoop earrings with a matte finish",
+      "slot": "earrings",
+      "color_hex": "#C0C0C0",
+      "worn": true
+    },
+    {
+      "name": "Necklace",
+      "details": "delicate silver chain",
+      "slot": "necklace",
+      "color_hex": "#C0C0C0",
+      "worn": true
+    },
+    {
+      "name": "Clutch",
+      "details": "sleek black leather",
+      "slot": "bag",
+      "color_hex": "#000000",
+      "worn": true
+    }
+  ]
+}

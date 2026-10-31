@@ -1,0 +1,27 @@
+{
+ "версія": 1,
+ "запит": {
+  "model": "qwen/qwen3.5-9b",
+  "max_tokens": 4000,
+  "messages": [
+   {
+    "role": "user",
+    "content": [
+     {
+      "type": "text",
+      "text": "{\"task\": {\"role\": \"You read the description of an outfit and list its items as data.\", \"rules\": [\"One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.\", \"One item carries one thing — of two alternatives list the first; a note in brackets is not an item.\", \"Slot \\\"accessory\\\" is for an item no other slot fits.\", \"\\\"is_outfit\\\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note.\"], \"limits\": [\"Rely only on the input: do not invent what it does not contain.\", \"The answer is one JSON object following \\\"answer_schema\\\", without explanations and without ```.\"], \"language\": \"English\", \"answer\": \"ITEM_LIST\", \"answer_schema\": {\"is_outfit\": \"yes|no\", \"items\": [{\"name\": \"<what the item is>\", \"details\": \"<its cut, length and fabric>\", \"slot\": \"top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory\", \"color_hex\": \"<#rrggbb or null>\", \"worn\": \"<true, or false when the description says the outfit goes without it>\"}]}, \"input\": [\"\\\"description\\\" — the outfit description\"]}, \"description\": \"A structured blazer with a single-button closure, tailored shoulder width, knee-length hem, charcoal gray (#36454F), wool-blend flannel.\\nHigh-waisted wide-leg trousers with a flat front and hidden side zip, cropped just above the ankle to showcase footwear, soft sand (#C7B299), lightweight crepe.\\nA fitted silk blouse with a rounded neckline and subtle puff sleeves, mid-thigh length, pearl white (#F5F5F5), smooth satin.\\nPointed-toe pumps with a moderate 8 cm heel, almond shape toe box, black leather (#000000).\\nThin silver link chain necklace with a small geometric pendant.\\nMinimalist hoop earrings in polished silver.\\nThis outfit perfectly balances professional polish with approachable warmth for a morning autumn interview at an office. The tailored blazer and wide-leg trousers adhere to the \\\"smart\\\" dress code while the soft sand tones of the pants harmonize beautifully with her natural skin undertones. Adding a silk blouse introduces a refined texture that elevates the ensemble beyond basic business wear, making it memorable yet appropriate for an analytical role.\"}"
+     }
+    ]
+   }
+  ],
+  "temperature": 1
+ },
+ "відповідь": {
+  "status": 200,
+  "contentType": "application/json",
+  "headers": {
+   "x-model": "qwen/qwen3.5-9b"
+  },
+  "body": "{\"content\":[{\"type\":\"text\",\"text\":\"{\\\"is_outfit\\\": \\\"yes\\\", \\\"items\\\": [{\\\"name\\\": \\\"blazer\\\", \\\"details\\\": \\\"structured with single-button closure and tailored shoulder width, knee-length hem\\\", \\\"slot\\\": \\\"outerwear\\\", \\\"color_hex\\\": \\\"#36454F\\\", \\\"worn\\\": true}, {\\\"name\\\": \\\"trousers\\\", \\\"details\\\": \\\"high-waisted wide-leg flat front with hidden side zip, cropped just above ankle\\\", \\\"slot\\\": \\\"bottom\\\", \\\"color_hex\\\": \\\"#C7B299\\\", \\\"worn\\\": true}, {\\\"name\\\": \\\"blouse\\\", \\\"details\\\": \\\"fitted silk with rounded neckline and subtle puff sleeves, mid-thigh length\\\", \\\"slot\\\": \\\"top\\\", \\\"color_hex\\\": \\\"#F5F5F5\\\", \\\"worn\\\": true}, {\\\"name\\\": \\\"pumps\\\", \\\"details\\\": \\\"pointed-toe with moderate 8 cm heel, almond shape toe box\\\", \\\"slot\\\": \\\"shoes\\\", \\\"color_hex\\\": \\\"#000000\\\", \\\"worn\\\": true}, {\\\"name\\\": \\\"necklace\\\", \\\"details\\\": \\\"thin silver link chain with small geometric pendant\\\", \\\"slot\\\": \\\"collar_necklace\\\", \\\"color_hex\\\": null, \\\"worn\\\": true}, {\\\"name\\\": \\\"earrings\\\", \\\"details\\\": \\\"minimalist hoop in polished silver\\\", \\\"slot\\\": \\\"earrings\\\", \\\"color_hex\\\": null, \\\"worn\\\": true}]}\"}],\"usage\":{\"input_tokens\":590,\"output_tokens\":301},\"stop_reason\":\"end_turn\"}"
+ }
+}

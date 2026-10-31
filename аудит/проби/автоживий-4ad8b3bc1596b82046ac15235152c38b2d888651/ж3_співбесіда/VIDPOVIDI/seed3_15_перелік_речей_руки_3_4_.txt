@@ -1,0 +1,37 @@
+── ПРОМПТ (2327 симв.) ──
+{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.", "One item carries one thing — of two alternatives list the first; a note in brackets is not an item.", "Slot \"accessory\" is for an item no other slot fits.", "\"is_outfit\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "ITEM_LIST", "answer_schema": {"is_outfit": "yes|no", "items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory", "color_hex": "<#rrggbb or null>", "worn": "<true, or false when the description says the outfit goes without it>"}]}, "input": ["\"description\" — the outfit description"]}, "description": "Structured wool-blend blazer, tailored fit with sharp lapels and a single-breasted closure, charcoal grey (#2F4F4F), medium-weight woven fabric.\nSlim-fit tailored trousers, straight leg with a clean hem resting just above the ankle, slate blue (#6A7B8C), fine crepe material.\nSilk-blend blouse, relaxed collar with slight drape and hidden placket, soft white (#F5F5F5), smooth satin-finish fabric.\nMinimalist stud earrings, small hoops in polished silver (#C0C0C0), sterling metal.\n\nThis outfit works perfectly for a banking analyst interview as it strikes the precise balance of \"smart\" professionalism required by the financial sector without appearing overly rigid. The structured blazer signals authority and attention to detail, while the refined fabric choices in wool-blend and silk convey high-quality taste expected in corporate environments. By pairing neutral charcoal and slate tones with a crisp white top, the ensemble projects clarity and competence, ensuring she looks polished and ready to discuss complex data from 10 AM onwards on this autumn morning."}
+
+── ВІДПОВІДЬ (879 симв., 4.9 с, HTTP 200) ──
+{
+  "is_outfit": "yes",
+  "items": [
+    {
+      "name": "blazer",
+      "details": "structured wool-blend with tailored fit, sharp lapels, and single-breasted closure",
+      "slot": "outerwear",
+      "color_hex": "#2F4F4F",
+      "worn": true
+    },
+    {
+      "name": "trousers",
+      "details": "slim-fit tailored with straight leg and clean hem resting just above the ankle",
+      "slot": "bottom",
+      "color_hex": "#6A7B8C",
+      "worn": true
+    },
+    {
+      "name": "blouse",
+      "details": "silk-blend with relaxed collar, slight drape, hidden placket, and smooth satin-finish fabric",
+      "slot": "top",
+      "color_hex": "#F5F5F5",
+      "worn": true
+    },
+    {
+      "name": "earrings",
+      "details": "minimalist small hoops in polished silver sterling metal",
+      "slot": "earrings",
+      "color_hex": "#C0C0C0",
+      "worn": true
+    }
+  ]
+}

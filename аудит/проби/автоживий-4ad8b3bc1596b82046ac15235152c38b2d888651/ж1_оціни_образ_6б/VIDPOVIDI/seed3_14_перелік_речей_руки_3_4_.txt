@@ -1,0 +1,58 @@
+── ПРОМПТ (2163 симв.) ──
+{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.", "One item carries one thing — of two alternatives list the first; a note in brackets is not an item.", "Slot \"accessory\" is for an item no other slot fits.", "\"is_outfit\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "ITEM_LIST", "answer_schema": {"is_outfit": "yes|no", "items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory", "color_hex": "<#rrggbb or null>", "worn": "<true, or false when the description says the outfit goes without it>"}]}, "input": ["\"description\" — the outfit description"]}, "description": "A refined knit top in a structured silhouette, charcoal gray, wool blend.  \nTailored trousers with a clean straight leg, deep navy blue (#0a1f40), heavy woven cotton.  \nA textured blazer with notched lapels and single-button closure, slate gray (#6d7e88), fine tweed.  \nLow block-heeled pumps in polished leather, black (#000000), 3 inches.  \nMinimalist gold stud earrings, thin platinum band ring, and a structured leather tote bag in tan.  \nThis outfit works because the tailored knit and blazer establish a professional smart silhouette suitable for an office environment while maintaining comfort for autumn weather. The dark color palette conveys authority and focus without appearing overly severe, striking the right balance between business readiness and personal style. The low heel ensures all-day stability on various surfaces, and the practical bag keeps essentials accessible for a busy workday."}
+
+── ВІДПОВІДЬ (1236 симв., 6.9 с, HTTP 200) ──
+{
+  "is_outfit": true,
+  "items": [
+    {
+      "name": "Knit top",
+      "details": "Structured silhouette, charcoal gray wool blend",
+      "slot": "top",
+      "color_hex": "#36454F",
+      "worn": true
+    },
+    {
+      "name": "Trousers",
+      "details": "Clean straight leg, tailored, deep navy blue heavy woven cotton",
+      "slot": "bottom",
+      "color_hex": "#0a1f40",
+      "worn": true
+    },
+    {
+      "name": "Blazer",
+      "details": "Textured with notched lapels and single-button closure, slate gray fine tweed",
+      "slot": "outerwear",
+      "color_hex": "#6d7e88",
+      "worn": true
+    },
+    {
+      "name": "Pumps",
+      "details": "Low block-heeled, polished leather, 3 inches",
+      "slot": "shoes",
+      "color_hex": "#000000",
+      "worn": true
+    },
+    {
+      "name": "Earrings",
+      "details": "Minimalist gold studs",
+      "slot": "earrings",
+      "color_hex": null,
+      "worn": true
+    },
+    {
+      "name": "Ring",
+      "details": "Thin platinum band",
+      "slot": "ring",
+      "color_hex": null,
+      "worn": true
+    },
+    {
+      "name": "Tote bag",
+      "details": "Structured leather",
+      "slot": "bag",
+      "color_hex": "#D2B48C",
+      "worn": true
+    }
+  ]
+}

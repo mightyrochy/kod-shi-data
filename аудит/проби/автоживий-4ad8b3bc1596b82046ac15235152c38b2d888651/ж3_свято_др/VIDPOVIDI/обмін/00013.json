@@ -1,0 +1,27 @@
+{
+ "версія": 1,
+ "запит": {
+  "model": "qwen/qwen3.5-9b",
+  "max_tokens": 4000,
+  "messages": [
+   {
+    "role": "user",
+    "content": [
+     {
+      "type": "text",
+      "text": "{\"task\": {\"role\": \"You read the description of an outfit and list its items as data.\", \"rules\": [\"One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.\", \"One item carries one thing — of two alternatives list the first; a note in brackets is not an item.\", \"Slot \\\"accessory\\\" is for an item no other slot fits.\", \"\\\"is_outfit\\\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note.\"], \"limits\": [\"Rely only on the input: do not invent what it does not contain.\", \"The answer is one JSON object following \\\"answer_schema\\\", without explanations and without ```.\"], \"language\": \"English\", \"answer\": \"ITEM_LIST\", \"answer_schema\": {\"is_outfit\": \"yes|no\", \"items\": [{\"name\": \"<what the item is>\", \"details\": \"<its cut, length and fabric>\", \"slot\": \"top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory\", \"color_hex\": \"<#rrggbb or null>\", \"worn\": \"<true, or false when the description says the outfit goes without it>\"}]}, \"input\": [\"\\\"description\\\" — the outfit description\"]}, \"description\": \"A silk slip dress with a deep V-neckline and bias cut to the knee, color #e6cfaa (pale sand), fabric composed of 100% mulberry silk.\\nHeeled strappy sandals in a matching nude tone, height 8 cm, leather upper with suede lining, color #d4b999.\\nDelicate pearl drop earrings and a slim gold bangle bracelet to add subtle elegance without overpowering the outfit.\\n\\nThis ensemble works perfectly for an evening celebration at a friend's birthday party, balancing feminine charm with understated sophistication. The lightweight silk fabric drapes beautifully in autumn air while keeping you comfortable through the night, and the neutral sand tone complements the warm hex shades of skin that range from #f0d6d2 to #f4dcd8. Since the temperature will be above 20 °C, no outer layer is needed, allowing the focus to remain on the refined details like the strappy heels and pearl jewelry that elevate a simple slip dress into party-ready attire.\"}"
+     }
+    ]
+   }
+  ],
+  "temperature": 1
+ },
+ "відповідь": {
+  "status": 200,
+  "contentType": "application/json",
+  "headers": {
+   "x-model": "qwen/qwen3.5-9b"
+  },
+  "body": "{\"content\":[{\"type\":\"text\",\"text\":\"{\\n  \\\"is_outfit\\\": \\\"yes\\\",\\n  \\\"items\\\": [\\n    {\\n      \\\"name\\\": \\\"silk slip dress\\\",\\n      \\\"details\\\": \\\"deep V-neckline, bias cut to the knee, lightweight silk fabric\\\",\\n      \\\"slot\\\": \\\"dress\\\",\\n      \\\"color_hex\\\": \\\"#e6cfaa\\\",\\n      \\\"worn\\\": true\\n    },\\n    {\\n      \\\"name\\\": \\\"heeled strappy sandals\\\",\\n      \\\"details\\\": \\\"8 cm height, leather upper with suede lining\\\",\\n      \\\"slot\\\": \\\"shoes\\\",\\n      \\\"color_hex\\\": \\\"#d4b999\\\",\\n      \\\"worn\\\": true\\n    },\\n    {\\n      \\\"name\\\": \\\"pearl drop earrings\\\",\\n      \\\"details\\\": \\\"delicate\\\",\\n      \\\"slot\\\": \\\"earrings\\\",\\n      \\\"color_hex\\\": null,\\n      \\\"worn\\\": true\\n    },\\n    {\\n      \\\"name\\\": \\\"gold bangle bracelet\\\",\\n      \\\"details\\\": \\\"slim\\\",\\n      \\\"slot\\\": \\\"bracelet\\\",\\n      \\\"color_hex\\\": null,\\n      \\\"worn\\\": true\\n    }\\n  ]\\n}\"}],\"usage\":{\"input_tokens\":568,\"output_tokens\":254},\"stop_reason\":\"end_turn\"}"
+ }
+}

@@ -1,0 +1,37 @@
+── ПРОМПТ (2281 симв.) ──
+{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.", "One item carries one thing — of two alternatives list the first; a note in brackets is not an item.", "Slot \"accessory\" is for an item no other slot fits.", "\"is_outfit\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "ITEM_LIST", "answer_schema": {"is_outfit": "yes|no", "items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory", "color_hex": "<#rrggbb or null>", "worn": "<true, or false when the description says the outfit goes without it>"}]}, "input": ["\"description\" — the outfit description"]}, "description": "Tailored wool-blend blazer in a structured wide cut, knee-length, charcoal gray (#3E4550), heavy wool.\nSilk-blend blouse with a subtle sheen and relaxed collar, midi length, cream (#F5F0EB), lightweight viscose.\nHigh-waisted trousers with a straight leg and clean front pockets, full length, forest green (#2F4F4F), stretch cotton twill.\nAnkle boots with a low block heel and smooth leather finish, mid-calf height, taupe brown (#8B7D6B), calfskin.\n\nThis outfit works because the tailored blazer immediately establishes the smart business aesthetic required for an office environment, while the relaxed collar of the silk blouse softens the look to keep it comfortable for a full workday. The forest green trousers provide a rich, autumnal contrast that complements her warm skin tones without overpowering the professional silhouette. Completing the ensemble with ankle boots in a neutral taupe bridges the gap between polished footwear and practical movement, ensuring she feels confident and stylish throughout her routine."}
+
+── ВІДПОВІДЬ (835 симв., 7.3 с, HTTP 200) ──
+{
+  "is_outfit": "yes",
+  "items": [
+    {
+      "name": "Blazer",
+      "details": "Structured wide cut, knee-length, heavy wool-blend",
+      "slot": "outerwear",
+      "color_hex": "#3E4550",
+      "worn": true
+    },
+    {
+      "name": "Blouse",
+      "details": "Relaxed collar, midi length, subtle sheen, lightweight silk-blend viscose",
+      "slot": "top",
+      "color_hex": "#F5F0EB",
+      "worn": true
+    },
+    {
+      "name": "Trousers",
+      "details": "High-waisted straight leg with clean front pockets, full length, stretch cotton twill",
+      "slot": "bottom",
+      "color_hex": "#2F4F4F",
+      "worn": true
+    },
+    {
+      "name": "Ankle boots",
+      "details": "Low block heel, smooth finish, mid-calf height, calfskin",
+      "slot": "shoes",
+      "color_hex": "#8B7D6B",
+      "worn": true
+    }
+  ]
+}
