@@ -15,7 +15,7 @@ def виміряти(корпус, код=None):
     sys.path.insert(0, str(код or Path(__file__).resolve().parents[1]))
     with contextlib.redirect_stdout(io.StringIO()):
         import мовний_шар as м
-        import картка_запиту as к
+        import паспорт_поля as пп
     записи = json.loads(Path(корпус).read_text(encoding='utf8'))
     л = dict(ходів=0, поточних=0, her_без_уривка=0, година_без_числа=0,
              названих_годин=0, втрачено_годин=0, нагода_стерта=0,
@@ -60,12 +60,13 @@ def виміряти(корпус, код=None):
         л['поточних'] += int('ПІСЛЯ_main' in з['джерело'] or '/живі_3.2е/ПІСЛЯ/' in з['джерело'])
         л['her_без_уривка'] += sum(ф.get('джерело') == 'her' and not ф.get('уривок') for ф in картка.values())
         ф = картка.get('година', {})
-        л['година_без_числа'] += int(ф.get('джерело') == 'her' and not к._число_години(ф.get('значення'), ф.get('уривок')))
+        # її година — лише цифрами в її уривку (`паспорт_поля.дослівно`, рішення менеджера 31.10)
+        л['година_без_числа'] += int(ф.get('джерело') == 'her' and not пп.дослівно(ф.get('значення'), ф.get('уривок')))
         година = (відповідь.get('update') or {}).get('hour') or {}
-        if isinstance(година, dict) and година.get('named') == 'clock_time' and not к._число_години(година.get('value'), година.get('quote')):
+        if isinstance(година, dict) and година.get('named') == 'clock_time' and not пп.дослівно(година.get('value'), година.get('quote')):
             л['пор_від_години'] += 1
             л['пора_без_уривка'] += int(not картка.get('пора', {}).get('уривок'))
-        if isinstance(година, dict) and година.get('named') == 'clock_time' and к._число_години(година.get('value'), година.get('quote')):
+        if isinstance(година, dict) and година.get('named') == 'clock_time' and пп.дослівно(година.get('value'), година.get('quote')):
             л['названих_годин'] += 1
             л['втрачено_годин'] += int(п.get('година') != година['value'])
         л['нагода_стерта'] += int(bool(вн.get('occasion')) and not п.get('нагода'))
