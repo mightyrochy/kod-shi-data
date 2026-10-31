@@ -83,7 +83,7 @@ Scenario 'б модель LM Studio' {
     $script:Procs = $script:DesktopProcs + $script:ModelProcs + $script:IdleProcs; $script:Apps = ''
     $r = Start-Markers (New-Object System.Collections.ArrayList)
     Check "б робочий стіл і модель LM Studio 9000 MiB — GPU-позначку взято тим самим проходом, утримання GPU нема: $($script:Logged -join ' | ')" ($script:Started -eq 1 -and $r[0] -eq 1 -and -not $script:Held.ContainsKey('GPU'))
-    Check "б обгортка не викликала lms (моделей не вивантажує): $((Get-LmsCalls) -join ' | ')" ((Get-LmsCalls).Count -eq 0 -and -not (Test-Path function:Invoke-GpuModelUnload))
+    Check "б обгортка не викликала lms (моделей не вивантажує): $((Get-LmsCalls) -join ' | ')" (@(Get-LmsCalls).Count -eq 0 -and -not (Test-Path function:Invoke-GpuModelUnload))
     $script:Marker = & $mk 'Е2-вікно-переповнення' 'p3-gpu'
     $script:Started = 0
     $r = Start-Markers (New-Object System.Collections.ArrayList)
@@ -99,10 +99,10 @@ Scenario 'в власний наряд' {
     function Test-LockFree { $true }
     $own = @([pscustomobject]@{ Slot = 'claude-1'; Slug = 'п'; Gpu = $true; Marker = 'x'; Proc = [pscustomobject]@{ HasExited = $false } })
     $why = Get-GpuBusyReason $own
-    Check "в живий власний GPU-наряд — другий не стартує: «$why»" ($why -ne '' -and (Get-LmsCalls).Count -eq 0)
+    Check "в живий власний GPU-наряд — другий не стартує: «$why»" ($why -ne '' -and @(Get-LmsCalls).Count -eq 0)
     function Test-LockFree { $false }
     $why = Get-GpuBusyReason @()
-    Check "в замок GPU тримає наряд іншого облікового запису — не стартує: «$why»" ($why -ne '' -and (Get-LmsCalls).Count -eq 0)
+    Check "в замок GPU тримає наряд іншого облікового запису — не стартує: «$why»" ($why -ne '' -and @(Get-LmsCalls).Count -eq 0)
 }
 
 # --- (г) GPU-наряд за завантаженої моделі: воркер стартує, після кінця lms не викликано -----------------------------------
@@ -124,7 +124,7 @@ Scenario 'г воркер' {
         sha = 'b' * 40; time = 0; slug = 'г'; model = 'cc-claude-sonnet-5-5-medium'; n = '1'; cond = 'gpu'; claude = 'claude-sonnet-5-5'; effort = 'medium'
         gpu = $true; prio = 5; limits = $limits }
     $code = Invoke-Worker
-    Check "г GPU-наряд за моделі LM Studio на карті — воркер пройшов перевірку GPU (код $code) і наряд виконано; lms не викликано: $((Get-LmsCalls) -join ' | '); журнал: $($script:Logged -join ' | ')" ($script:Ran -eq 1 -and $code -ne $script:WorkerGpuBusy -and (Get-LmsCalls).Count -eq 0)
+    Check "г GPU-наряд за моделі LM Studio на карті — воркер пройшов перевірку GPU (код $code) і наряд виконано; lms не викликано: $((Get-LmsCalls) -join ' | '); журнал: $($script:Logged -join ' | ')" ($script:Ran -eq 1 -and $code -ne $script:WorkerGpuBusy -and @(Get-LmsCalls).Count -eq 0)
 }
 
 # --- (д) сторонній процес: позначка стоїть, причина з назвою й MiB -----------------------------------------------------
@@ -138,7 +138,7 @@ Scenario 'д сторонній процес' {
     Check "д сторонній процес 2300 MiB поряд з робочим столом і моделлю — карту не віддано, причина лише з ним: «$why» / «$($script:GpuHoldReason)»" ($why -match 'зайнято 2300 MiB' -and $why -match 'chrome\.exe 2300 MiB' -and $script:GpuHoldReason -ceq 'процес chrome.exe 2300 MiB' -and -not (Test-ExternalGpuFree))
     $line = "GEMINI ОБГОРТКА: ЗАБЛОКОВАНО GPU: $($script:GpuHoldReason), позначок 1"
     Check "д рядок диспетчерові проходить шаблон: $line" (Test-HoldLine $line)
-    Check "д lms не викликано: $((Get-LmsCalls) -join ' | ')" ((Get-LmsCalls).Count -eq 0)
+    Check "д lms не викликано: $((Get-LmsCalls) -join ' | ')" (@(Get-LmsCalls).Count -eq 0)
     # Сигнал запобіжника: MiB гуляють між проходами — повтору нема; змінилась назва — новий рядок.
     # Update-HoldSignals має свою змінну $sent: рядки — у змінній скрипта, щоб блок не підхопив її динамічно.
     $script:Limits = $null; $script:SentLines = New-Object System.Collections.ArrayList
