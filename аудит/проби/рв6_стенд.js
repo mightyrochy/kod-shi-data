@@ -2749,6 +2749,9 @@ function підсумокМоделі(){
   const вікноРушія = async (модель, змінна) => {
     if (!модель) return 0;
     if (Number(process.env[змінна]) > 0) return Number(process.env[змінна]);
+    /* `CTX` — {"ід моделі": контекст}, з яким почерговий проксі (`ноутбук_стенд_2/проксі_почергове.js`) вантажить екземпляр
+       моделі: це і є налаштування рушія, тож прогін ноутбука, що дав проксі `CTX`, окремо `MODEL_CTX` не передає (дошка 11669) */
+    try { const з = Number(JSON.parse(process.env.CTX || '{}')[модель]); if (з > 0) return з; } catch (_) { /* CTX не JSON — далі LM Studio */ }
     try {
       const р = await fetch(АДРЕСА_МОДЕЛІ.replace(/\/v1$/, '') + '/api/v0/models', {signal: AbortSignal.timeout(5000)});
       const м = ((await р.json()).data || []).find(х => х.id === модель && х.state === 'loaded');
