@@ -25,8 +25,9 @@ setup() { W="${TMPDIR:-/tmp}/claude-run/$1"; rm -rf "$W"; mkdir -p "$W"/{cr,out,
 mark() { git -C "$W/seed" push -q origin "${2:-main}:refs/heads/gemini-queue/$1" 2>/dev/null; }
 cr() { A=$($PY -c "import json,sys;print(json.dumps({**dict(WorkDir='$(wp "$W/cr")',RepoDir='$(wp "$W/clone")',OutboxDir='$(wp "$W/out")',PublishDir='$(wp "$W/pub")',GeminiOutDir='$(wp "$W/gem")',RepoUrl='$(wp "$W/origin.git")',ClaudeExe='$(stub fake_cc)',GhExe='$(stub fake_gh)',HangMinutes=0.05,OffWaitMinutes=0.05),**json.loads(sys.argv[1])}, ensure_ascii=False))" "${1:-{\}}")
   "$PW" -NoProfile -File "$(wp "$H/side_claude.ps1")" -Script "$(wp "$SRC/claude_run.ps1")" -ArgsJson "$A" >/dev/null 2>&1; }
-lines() { cat "$W"/out/*.txt 2>/dev/null; }
-nlines() { ls "$W/out" | grep -c '\.txt$'; }
+# Рядок ПРОСТІЙ (простій без роботи після кожного кінця прогону) не належить наряду: сценарії рахують решту.
+lines() { cat "$W"/out/*.txt 2>/dev/null | grep -v '^GEMINI ОБГОРТКА: ПРОСТІЙ ' ; true; }
+nlines() { lines | grep -c .; }
 argv() { $PY -c "import json
 for l in open('$(wp "$W/cc.log")', encoding='utf-8'): print(' '.join(json.loads(l)['argv']))" 2>/dev/null | tail -1; }
 prompt() { $PY -c "import json

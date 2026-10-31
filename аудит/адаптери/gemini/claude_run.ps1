@@ -37,6 +37,7 @@ param(
     [string]$OutboxDir = (Join-Path $env:USERPROFILE 'gemini-outbox'),
     [string]$PublishDir = (Join-Path $env:USERPROFILE 'gemini-publish'),
     [string]$GeminiOutDir = 'C:\Users\Public\gemini\out',
+    [string]$GeminiStateDir = (Join-Path $env:USERPROFILE 'gemini-runs\state'),
     [string]$LaneDir = 'C:\Users\Public\gemini\lanes',
     [string]$RepoUrl = 'https://github.com/mightyrochy/kod-shi-data',
     [string]$Repo = 'mightyrochy/kod-shi-data',
@@ -88,6 +89,7 @@ $script:LineTemplates = @(
     "\AGEMINI ОБГОРТКА: ГОТОВО claude/$script:SlugCore [0-9a-f]{40} МОДЕЛЬ [a-z0-9][a-z0-9.-]{1,63}\z",
     "\AGEMINI ОБГОРТКА: ЗАБЛОКОВАНО claude/$script:SlugCore [A-Z0-9_]{2,40}\z",
     '\AGEMINI ОБГОРТКА: ВИМКНЕНО [0-9a-f]{40}\z',
+    '\AGEMINI ОБГОРТКА: ПРОСТІЙ 20[0-9]{2}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z [0-9]{1,6}\z',
     $script:HoldLineTemplate
 )
 
@@ -397,6 +399,7 @@ function Get-StatusBody {
             $lines += "| $ln | $($l[0].N) | $($l[0].Busy.Count) | $($s.Marker) | $($s.Model) | $(Get-Minutes $s.Since) | $(if ($s.Gpu) { 'так' } else { '—' }) |"
         }
     }
+    $lines += @(Get-IdleLines)
     $lines += @('', "GPU: $(if ($gpuBy.Count) { 'зайнята — ' + ($gpuBy -join ', ') } else { 'вільна' }) · межі: claude-run — $(if ($null -ne $lim) { $lim.source } else { '?' }), gemini-run — $(if ($g.Limits) { $g.Limits } else { '?' })")
     $lines += @('', "heartbeat gemini-run (UTC): $($g.Time) · вік: $(Get-Minutes $g.Time) хв · isolation: $($g.Isolation) · понад 5 хв — джерело застаріле")
     # Межа без джерела (10970) діє з попереднього прийнятого значення; рядок — щоб її було видно, а не щоб зупинити.
@@ -968,6 +971,55 @@ function Test-ClaudeBusy {
     @(Get-BusySlots 'claude' @()).Count -gt 0
 }
 
+# Робота на ноутбуці: свій наряд чи наряд gemini-run йде, або в черзі є позначка, яку візьмуть. Не робота — позначка в стані
+# DONE (знято, STALE, виконана), у чеканні квоти (WAIT, скидання ще не настало) і на рушії з нульовою квотою: Claude —
+# вікно квоти з left 0 і скиданням у майбутньому чи свіжа відмова з майбутнім скиданням, Codex — відмова з майбутнім
+# скиданням (heartbeat). Стан позначок смуг codex/agy — тека стану gemini-run (-GeminiStateDir).
+function Test-FutureUtc([string]$Utc) {
+    $Utc -cmatch $script:UtcRx -and [datetime]::ParseExact($Utc, "yyyy-MM-dd'T'HH:mm:ss'Z'", [cultureinfo]::InvariantCulture, [Globalization.DateTimeStyles]::AssumeUniversal -bor [Globalization.DateTimeStyles]::AdjustToUniversal) -gt [datetime]::UtcNow
+}
+
+function Test-ClaudeQuotaZero {
+    $cq = Read-ClaudeQuota
+    if ($null -eq $cq) { return $false }
+    foreach ($w in @(Get-JsonProp $cq 'windows')) { if ($null -ne $w -and [string]$w.left -eq '0' -and (Test-FutureUtc ([string]$w.reset))) { return $true } }
+    ([string](Get-JsonProp $cq 'refused')) -ne '' -and (Test-FutureUtc ([string](Get-JsonProp $cq 'reset')))
+}
+
+function Get-MarkerStateIn($M, [string]$Dir) {
+    $keep = $script:StateDir; $script:StateDir = $Dir
+    try { Get-MarkerState $M } finally { $script:StateDir = $keep }
+}
+
+function Test-IdleBusy($G) {
+    if (Test-ClaudeBusy) { return $true }
+    if (Test-GeminiBusy) { return $true }
+    $claudeZero = Test-ClaudeQuotaZero
+    $codexZero = $null -ne $G.Codex -and (Test-FutureUtc ([string]$G.Codex.Reset))
+    $now = [DateTimeOffset]::UtcNow.ToUnixTimeSeconds()
+    foreach ($m in @(Get-Markers | Where-Object { $_.Valid })) {
+        if (($now - $m.Time) -gt $MarkerMaxAgeDays * 86400) { continue }
+        $st = $(if ($m.Lane -eq 'claude') { Get-MarkerState $m } else { Get-MarkerStateIn $m $GeminiStateDir })
+        if (-not (Test-MarkerReady $st)) { continue }
+        if (($m.Lane -eq 'claude' -and $claudeZero) -or ($m.Lane -eq 'codex' -and $codexZero)) { continue }
+        return $true
+    }
+    $false
+}
+
+# Рядок простою в стані ноутбука (#1856): з якого часу, скільки, чи дійшов рядок; нема простою — остання робота.
+function Get-IdleLines {
+    $j = $null
+    try { $j = [System.IO.File]::ReadAllText((Join-Path $script:StateDir 'idle.json'), $script:Utf8) | ConvertFrom-Json } catch { $null = $_ }
+    if ($null -eq $j) { return @('', 'Простій: не виміряно (ще не було проходу)') }
+    $since = Get-UtcProp $j 'since'
+    if ($since -cmatch $script:UtcRx) {
+        return @('', "Простій: з $since · $(Get-Minutes $since) хв · рядок ПРОСТІЙ $(if ((Get-JsonProp $j 'sent') -eq $true) { 'надіслано' } else { 'ще не надіслано' })")
+    }
+    $b = Get-UtcProp $j 'busy_utc'
+    @('', "Простій: нема (остання робота $(if ($b -cmatch $script:UtcRx) { $b } else { '?' }))")
+}
+
 function Invoke-Off($M) {
     $statePath = Get-StatePath (Get-MarkerKey $M)
     $main = Get-RefSha 'refs/remotes/origin/main'
@@ -1159,6 +1211,9 @@ function Main {
                 $r = Start-Markers $script:Workers
                 $started = $r[0]; $off = $r[1]
                 Update-HoldSignals $script:Held { param($l) Add-Line $l }
+                $busy = ($started -gt 0) -or ($null -ne $off) -or ($script:Workers.Count -gt 0)
+                if (-not $busy) { $busy = [bool](Test-IdleBusy (Read-GeminiBeat)) }
+                Update-Idle $busy { param($l) [bool](Add-Line $l) } $script:FreshBoot
             } catch { Add-HealthException $_.Exception; Write-Log "прохід: $($_.Exception.Message)" }
             if ($first) { Write-FileAtomic $bootFile $boot; $script:FreshBoot = $false; $first = $false }
             foreach ($w in @($script:Workers | Where-Object { $_.Proc.HasExited })) { $script:Workers.Remove($w) }
