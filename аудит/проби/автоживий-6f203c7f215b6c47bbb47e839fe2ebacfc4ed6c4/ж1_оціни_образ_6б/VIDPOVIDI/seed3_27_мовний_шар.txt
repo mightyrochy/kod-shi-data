@@ -1,0 +1,67 @@
+── ПРОМПТ (8810 симв.) ──
+Ти — перекладачка в застосунку-стилістці. Ти пишеш природною українською тексти, які зараз побачить жінка. Рішень не приймаєш, на питання не відповідаєш, змісту не міняєш.
+
+Вхід — JSON-об'єкт: ключ — номер тексту н, значення — текст, який склали код та інші моделі.
+
+Ключі відповіді — ті самі, що у вході, кожен: номер н тексту, значення — рядок, той самий зміст природною українською, без англійських слів і кодів; ПЕРЕКЛАДАЙ КОЖНЕ англійське слово, навіть одне посеред українського речення; латиницею лишай лише назви крамниць і брендів, «V-подібний» і «den»; текст, що вже природний і до неї на «ти», — без змін, а український текст на «ви» перепиши на «ти», решту лиши слово в слово.
+
+Вид кожної речі — теж зміст: річ у перекладі — та сама, що у вході, а не схожа чи сусідня. ankle boots — черевики чи ботильйони, boots — чоботи, heeled — на підборах, а не туфлі, pumps — туфлі-човники, loafers — лофери; pendant — кулон чи підвіска, necklace — намисто чи ланцюжок, а не каблучка, сережки чи браслет; ring — каблучка; earrings — сережки. Українські назви речей у вході (назви з крамниці, найчастіше перед « — ») переписуй літера в літеру: не міняй, не переставляй і не додавай у них жодного слова.
+
+Про жінку — лише до неї, на «ти» (ти, тебе, тобі, твій, твоя; хочеш, скинеш; наказ однини: розкажи, оберни, тримай, дай), і в питаннях теж: you, your, she, her про неї — «ти», «твій» (her skin tone — твій тон шкіри; when she turns her head — коли ти повертаєш голову; she looks taller — ти виглядаєш вищою), англійський наказ — наказом однини; «вона», «її» — лише про річ (сукню, сумку, куртку). Говорить стилістка — одна жінка: про себе — від першої особи однини й у жіночому роді (я підібрала, я б додала), не «ми», не від імені застосунку чи коду і ніколи словами самої жінки.
+
+Мова: літературна українська, як у текстах українських крамниць одягу. Кожне українське слово — літерами лише української абетки, без жодної латинської літери чи стороннього знака всередині слова. Кожне речення — одна остаточна версія, без виправлень посеред тексту. Словничок нижче — лише як перекласти англійське слово, коли воно є у вході; це не зміст: річ, тканина чи колір, яких у вході нема, у тексті не з'являються. Звичні українські назви для слів англійського джерела: trousers, pants — штани; dressy, dressier — ошатний, ошатніше; look, outfit — образ; taupe — сіро-бежевий; loose — вільний; suede — замша (жіночий рід); slip dress — сукня-комбінація; camel — кемел (колір). Назви речей і кольорів, які дала крамниця, — як є.
+
+Перевір кожне слово ДО відповіді: до неї — лише «ти», жодного «ви», «ваш» і наказу множини, і про неї жодного «вона», «її», «їй», жодне слово не стоїть двічі поспіль, кожна річ — того самого виду, що у вході (річ образу — іменником коду її виду з переліку, коли він є, і слова при ній узгоджені з цим іменником), а українська назва речі — слово в слово. Відповідь — рівно ОДИН JSON-об'єкт і нічого після нього: другої, виправленої версії, приміток і пояснень не пиши — помилку виправ у тому самому об'єкті.
+
+Речі образу — перелік речей картки (номер речі — як на картці, поруч — її коди):
+1 — kind code: scarf_generic · colour code: pink · about it: text н=1
+2 — kind code: shorts · colour code: white · about it: text н=2
+3 — kind code: coat · colour code: grey · about it: text н=3
+4 — kind code: loafers · colour code: white · about it: text н=4
+5 — kind code: necklace · colour code: white · about it: text н=5
+6 — kind code: earrings · colour code: golden · about it: text н=6
+7 — kind code: blouse · colour code: turquoise · about it: text н=7
+8 — kind code: saddle_bag · colour code: beige · about it: text н=8
+When a text speaks of an item of the list, call it by the Ukrainian noun of its kind code (kind code: …) — the same noun in the right case in every text (trench_coat — «тренч», sweater — «светр», loafers — «лофери»), not by another kind or a synonym of the English word, whatever word the English text uses; a code ending in _generic names only the family (dress_generic — a dress, bag_generic — a bag). Make every adjective, pronoun and verb with the item agree with that noun in gender and number («бежевий тренч, який…»; «шкіряні лофери, які…»). A name you translate in this same call (text н=K): give it one noun and call the item by it, in agreement, in every text. A text the list gives as about an item (about it: text н=M) speaks of that one item, and so does every other text where the English names it. The colour of an item of the list is its colour code (colour code: …): write the Ukrainian name of that code. The English colour words for that item are the stylist's impression of a photo: do not turn them into a colour of their own — the item's colour stands in their place. Colours of its details (trim, strap, buttons, print), its fabric and the rest — translate from the text. The list is for the items only: an item the English text does not name is not added to the translation — neither to the description nor to the advice.
+
+Colour codes: beige — бежевий; golden — золотий; grey — сірий; pink — рожевий; turquoise — бірюзовий; white — білий.
+
+ТЕКСТИ:
+{
+"1": "This is a large, soft scarf featuring a gentle two-tone design in dusty rose pink and creamy beige. It has a relaxed, wrap-around style with delicate fringe along the ends, providing warmth and a touch of texture to your ensemble.",
+"2": "These are white shorts with a straight-leg cut that fall cleanly from the hip. The fabric appears lightweight and structured, offering a neat silhouette that balances well with an upper layer that has more volume or color.",
+"3": "This is a regular-cut coat in a soft grey shade. It features a standard collar and appears to be made of a smooth, lightweight outerwear fabric that drapes well over the shoulders and torso.",
+"4": "These are classic loafers in a clean white leather with a textured grain. They feature a low-profile sole and a small decorative detail on the vamp, offering a polished yet comfortable finish to your footwear.",
+"5": "This is a multi-strand necklace featuring long rows of white faux pearls suspended from a sleek black satin bow at the neck. It creates an elegant, layered effect that adds instant sophistication to your neckline.",
+"6": "These are drop earrings in gold-tone metal with a single white pearl dangling from a small hoop. They provide a classic, luminous accent near the earlobe without overwhelming your face.",
+"7": "This is a sleeveless blouse in a vibrant turquoise hue with a deep V-neckline and white side panels that add subtle movement. The cut is fitted through the torso to accentuate the waist, making it ideal for smart office wear.",
+"8": "This is a compact saddle-style bag in a soft pale pink or blush tone with black leather detailing on the handle. It features a minimalist front flap closure and a small metallic logo, offering a chic touch of color that complements your scarf.",
+"9": "Your look is a smart yet effortless blend of autumnal tones, perfect for a day in the office. You start with a soft pink and cream two-tone scarf, draped loosely over your shoulders to add warmth without bulk. Underneath, you wear a fitted turquoise V-neck blouse that brings a fresh pop of color and balances your figure's defined waist, paired with neat white straight shorts that keep the silhouette clean. A sleek grey coat covers the top half, acting as an easy shield against the cool air, while simple white loafers ground the outfit in comfort. The metallic accents from your gold-and-silver earrings and the delicate black ribbon on your pearl necklace add a touch of refined elegance that bridges the casual shorts with the polished office setting.",
+"10": "Wrap the pink and cream scarf loosely around your neck so it falls naturally over the collar of the turquoise blouse, adding softness to your neckline without hiding the cut.",
+"11": "Сіре пальто із вовни прямого крою — Swaps in a long coat to fix 'no_top_bottom_or_dress' by adding a foundation that answers the need for smart structure (b-o9-1).",
+"12": "Білі лляні бермуди зі стрілками — Replaces white shorts with beige linen shorts to answer 'say_why_this_item_or_one_reaching_band' (f-o9-1) and fix formality issues while keeping the fabric casual yet neat.",
+"13": "Лофери жіночі білі — Replaces white loafers with grey loafers to answer 'face_item_in_lightness_window' (f-o9-2) and fix the contrast near the face, though this move is subtle as the shoes are low-cut.",
+"14": "М ятна романтична блуза з шовком Іга — The silk blouse is a deliberate edge inside your palette that softens the tonal base without breaking your scheme arc.",
+"15": "Сіре пальто із вовни прямого крою — Replaces the missing bottom by adding a straight wool coat to fix 'no_top_bottom_or_dress' (b-o2-1), answering the need for a smart foundation."
+}
+
+── ВІДПОВІДЬ (3657 симв., 30.9 с, HTTP 200) ──
+```json
+{
+"1": "Це великий, м’який шарф з ніжним двоколірним дизайном у кольорі пильно-рожевого та кремово-бежевому. Він має вільний стиль, який обгортається навколо шиї, і делікатну бахрому на кінцях, що додає тепла й текстури до твого образу.",
+"2": "Це білі шорти з прямим кроєм, які охайно спадають від стегна. Тканина здається легкою та структурованою, пропонуючи чіткий силует, який добре поєднується з верхнім шаром більшого об’єму або кольору.",
+"3": "Це пальто прямого крою в м’якому сірому відтінку. Воно має стандартний комір і виготовлене зі зручної легкої тканини для верху, яка добре драпірується на плечах та тулубі.",
+"4": "Це класичні лофери з чистої білої шкіри з текстурованою зернистістю. Вони мають низький профіль підошви й невелику декоративну деталь на носку, що пропонує вишуканий і водночас комфортний фініш твоєму взуттю.",
+"5": "Це багатошарове намисто з довгими рядами білих штучних перлів, підвішених до елегантної чорної атласної стрічки на шиї. Воно створює витончений ефект нашарування, який миттєво додає твоєму декольте солідності.",
+"6": "Це сережки-підвіски з металу золотистого кольору з одним білим перлом, що звисає на маленькому кільці. Вони надають класичний світлий акцент поблизу мочки вуха без перевантаження обличчя.",
+"7": "Це блузка без рукавів у яскравому бірюзовому відтінку з глибоким V-подібним вирізом і бічними вставками, які додають ледь помітний рух. Крій приталений по тулубу, щоб підкреслити талію, що робить її ідеальною для ділового одягу.",
+"8": "Це компактна сумка-сідло з м’якого блідо-рожевого або персикового відтінку зі шкіряними деталями чорного кольору на ручці. Вона має мінімальний клапан і невеликий металевий логотип, що пропонує елегантний колірний акцент, який доповнює твій шарф.",
+"9": "Твій образ — це розумний, але невимушений мікс осінніх тонів, ідеальний для дня в офісі. Ти починаєш з м’якого рожевого та кремово-бежевого двоколірного шарфа, який вільно обгорнутий навколо твоїх плечей, щоб додати тепла без зайвого об’єму. Під ним ти одягаєш приталену бірюзову блузку з V-подібним вирізом, яка додає свіжий колірний акцент і врівноважує визначену талію твоєї фігури, у поєднанні з охайними білими шортами прямого крою, які зберігають силует чистим. Сіре пальто покриває верхню половину тіла, слугуючи легким захистом від прохолодного повітря, а прості білі лофери завершують образ комфортом. Металеві акценти твоїх золотих і срібних сережок та ніжний чорний бантик на перловому намисті додають витончену елегантність, яка поєднує повсякденні шорти з діловим одягом.",
+"10": "Вільно обгорни рожево-кремовий шарф навколо шиї так, щоб він природно спадав на комір бірюзової блузки, додаючи м’якості твоєму декольте без приховування вирізу.",
+"11": "Сіре пальто із вовни прямого крою — Додаю довге пальто, щоб виправити 'no_top_bottom_or_dress', доповнивши образ структурою (b-o9-1).",
+"12": "Білі лляні бермуди зі стрілками — Замінюю білі шорти на бежеві лляні, щоб відповісти 'say_why_this_item_or_one_reaching_band' (f-o9-1) і вирішити питання формальності, зберігаючи при цьому тканину невимушеною та охайною.",
+"13": "Лофери жіночі білі — Замінюю білі лофери на сірі, щоб відповісти 'face_item_in_lightness_window' (f-o9-2) і виправити контраст поблизу обличчя, хоча цей крок ледь помітний, оскільки взуття має низький виріз.",
+"14": "М’ятна романтична блуза з шовком Іга — Шовкова блузка є свіжим акцентом у твоїй палітрі кольорів, який пом’якшує тонову основу без порушення колірної схеми.",
+"15": "Сіре пальто із вовни прямого крою — Замінюю відсутній низ, додаючи пряме вовняне пальто, щоб виправити 'no_top_bottom_or_dress' (b-o2-1), доповнивши образ структурою."
+}
+```

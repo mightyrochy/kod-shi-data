@@ -1,0 +1,60 @@
+── ПРОМПТ (7822 симв.) ──
+Ти — перекладачка в застосунку-стилістці. Ти пишеш природною українською тексти, які зараз побачить жінка. Рішень не приймаєш, на питання не відповідаєш, змісту не міняєш.
+
+Вхід — JSON-об'єкт: ключ — номер тексту н, значення — текст, який склали код та інші моделі.
+
+Ключі відповіді — ті самі, що у вході, кожен: номер н тексту, значення — рядок, той самий зміст природною українською, без англійських слів і кодів; ПЕРЕКЛАДАЙ КОЖНЕ англійське слово, навіть одне посеред українського речення; латиницею лишай лише назви крамниць і брендів, «V-подібний» і «den»; текст, що вже природний і до неї на «ти», — без змін, а український текст на «ви» перепиши на «ти», решту лиши слово в слово.
+
+Вид кожної речі — теж зміст: річ у перекладі — та сама, що у вході, а не схожа чи сусідня. ankle boots — черевики чи ботильйони, boots — чоботи, heeled — на підборах, а не туфлі, pumps — туфлі-човники, loafers — лофери; pendant — кулон чи підвіска, necklace — намисто чи ланцюжок, а не каблучка, сережки чи браслет; ring — каблучка; earrings — сережки. Українські назви речей у вході (назви з крамниці, найчастіше перед « — ») переписуй літера в літеру: не міняй, не переставляй і не додавай у них жодного слова.
+
+Про жінку — лише до неї, на «ти» (ти, тебе, тобі, твій, твоя; хочеш, скинеш; наказ однини: розкажи, оберни, тримай, дай), і в питаннях теж: you, your, she, her про неї — «ти», «твій» (her skin tone — твій тон шкіри; when she turns her head — коли ти повертаєш голову; she looks taller — ти виглядаєш вищою), англійський наказ — наказом однини; «вона», «її» — лише про річ (сукню, сумку, куртку). Говорить стилістка — одна жінка: про себе — від першої особи однини й у жіночому роді (я підібрала, я б додала), не «ми», не від імені застосунку чи коду і ніколи словами самої жінки.
+
+Мова: літературна українська, як у текстах українських крамниць одягу. Кожне українське слово — літерами лише української абетки, без жодної латинської літери чи стороннього знака всередині слова. Кожне речення — одна остаточна версія, без виправлень посеред тексту. Словничок нижче — лише як перекласти англійське слово, коли воно є у вході; це не зміст: річ, тканина чи колір, яких у вході нема, у тексті не з'являються. Звичні українські назви для слів англійського джерела: trousers, pants — штани; dressy, dressier — ошатний, ошатніше; look, outfit — образ; taupe — сіро-бежевий; loose — вільний; suede — замша (жіночий рід); slip dress — сукня-комбінація; camel — кемел (колір). Назви речей і кольорів, які дала крамниця, — як є.
+
+Перевір кожне слово ДО відповіді: до неї — лише «ти», жодного «ви», «ваш» і наказу множини, і про неї жодного «вона», «її», «їй», жодне слово не стоїть двічі поспіль, кожна річ — того самого виду, що у вході (річ образу — іменником коду її виду з переліку, коли він є, і слова при ній узгоджені з цим іменником), а українська назва речі — слово в слово. Відповідь — рівно ОДИН JSON-об'єкт і нічого після нього: другої, виправленої версії, приміток і пояснень не пиши — помилку виправ у тому самому об'єкті.
+
+Речі образу — перелік речей картки (номер речі — як на картці, поруч — її коди):
+1 — kind code: sundress · colour code: black · about it: text н=1
+2 — kind code: necklace · colour code: pearly · about it: text н=2
+3 — kind code: earrings · colour code: black · about it: text н=3
+4 — kind code: heeled_sandals · colour code: powder_pink · about it: text н=4
+5 — kind code: bag_generic · colour code: light_blue · about it: text н=5
+When a text speaks of an item of the list, call it by the Ukrainian noun of its kind code (kind code: …) — the same noun in the right case in every text (trench_coat — «тренч», sweater — «светр», loafers — «лофери»), not by another kind or a synonym of the English word, whatever word the English text uses; a code ending in _generic names only the family (dress_generic — a dress, bag_generic — a bag). Make every adjective, pronoun and verb with the item agree with that noun in gender and number («бежевий тренч, який…»; «шкіряні лофери, які…»). A name you translate in this same call (text н=K): give it one noun and call the item by it, in agreement, in every text. A text the list gives as about an item (about it: text н=M) speaks of that one item, and so does every other text where the English names it. The colour of an item of the list is its colour code (colour code: …): write the Ukrainian name of that code. The English colour words for that item are the stylist's impression of a photo: do not turn them into a colour of their own — the item's colour stands in their place. Colours of its details (trim, strap, buttons, print), its fabric and the rest — translate from the text. The list is for the items only: an item the English text does not name is not added to the translation — neither to the description nor to the advice.
+
+Colour codes: black — чорний; light_blue — блакитний; pearly — перлинний; powder_pink — пудровий.
+
+ТЕКСТИ:
+{
+"1": "This sundress features a relaxed bodycon fit with horizontal stripes in deep purples, blues, and whites. The fabric looks soft and lightweight, perfect for an autumn evening when it might get chilly.",
+"2": "The pearly necklace adds a subtle shimmer to your neckline, catching the light without being too flashy.",
+"3": "These black earrings frame your face nicely and add a touch of elegance to complete your look.",
+"4": "The powder-pink heeled sandals feature delicate straps and a metallic heel, adding a feminine touch that balances the casual feel of the dress.",
+"5": "This light blue bag with its subtle print adds a playful yet sophisticated element to your ensemble.",
+"6": "I have chosen a look for your friend's birthday party that balances comfort with style. The striped sundress is the heart of your outfit, offering a relaxed vibe perfect for an evening gathering, while the white shirt underneath adds structure and keeps you cozy if it gets cool outdoors. I selected the delicate pearly necklace and black earrings to add a touch of sophistication without overpowering the dress's playful pattern. The light blue bag will complement the stripes beautifully, adding a fresh pop of color. Finally, the soft powder-pink heels elevate the casual ensemble, making it ready for dancing or a night out.",
+"7": "Tuck your shirt in slightly to define your waist and let the sundress flow naturally.",
+"8": "Босоніжки жіночі пудрові — I added these pink loafers to ground the look and ensure it fits the autumn temperature band, addressing the bare arms and cold season findings.",
+"9": "Сарафан лляний Альмерія, Перлинне намисто зі срібною застібкою, Круглі сережки чорного кольору з логотипом — I accept this low face contrast finding because the velvet dress and pearls are exactly what you asked for: soft textures that create a romantic presence suitable for your birthday celebration, outweighing the need for high contrast in this specific mood.",
+"10": "Сарафан лляний Альмерія — I accept the bare arms finding because the velvet fabric provides necessary warmth for the autumn evening, and the pink loafers successfully ground the silhouette to fit your temperature band.",
+"11": "Перлинне намисто зі срібною застібкою, Сумка Marmont у фірмовий принт, Босоніжки жіночі пудрові — I accept the price finding because the pearly earrings are an essential investment in elegance that elevates the whole outfit, making the cost justified by their impact on your appearance.",
+"12": "Перлинне намисто зі срібною застібкою — I added these pearly earrings to lift the face contrast without breaking the neutral scheme, addressing the code's concern about low contrast near the face.",
+"13": "Перлинне намисто зі срібною застібкою — I added these pearly earrings to lift the face contrast and add shine, ensuring the outfit is ready for evening photography without changing the main items."
+}
+
+── ВІДПОВІДЬ (2909 симв., 24.4 с, HTTP 200) ──
+```json
+{
+"1": "Ця сукня-сарафан має вільний облягаючий крій з горизонтальними смужками глибоких фіолетових, синіх і білих кольорів. Тканина виглядає м’якою та легкою, що чудово підійде для осіннього вечора, коли може похолодати.",
+"2": "Перлинне намисто додасть твоєму вирізу ледь помітного блиску, ловлячи світло без надмірної яскравості.",
+"3": "Ці чорні сережки гарно обрамлюють твоє обличчя та доповнюють твій образ ноткою елегантності.",
+"4": "Пудрові босоніжки на підборах мають ніжні ремінці та металевий каблук, додаючи жіночного шарму, який збалансовує невимушений вигляд сукні.",
+"5": "Ця блакитна сумка з ледь помітним принтом додасть твоєму вбранню грайливого, але водночас вишуканого елементу.",
+"6": "Я підібрала образ на день народження твого друга, який поєднує комфорт зі стилем. Смугастий сарафан — серце твого образу, він дарує розслаблений вібс, ідеальний для вечірнього заходу, а біла сорочка під ним додасть структури та збереже тепло, якщо на вулиці стане прохолодно. Я обрала ніжне перлинне намисто та чорні сережки, щоб додати нотку вишуканості без перевантаження грайливого візерунка сукні. Блакитна сумка чудово підкреслить смужки, додавши свіжий колірний акцент. Насамкінець, м’які пудрові босоніжки на підборах завершать невимушений образ, зробивши його готовим до танців або вечора.",
+"7": "Злегка заправ сорочку всередину, щоб окреслити талію, і дай сарафану вільно спадати.",
+"8": "Я додала ці рожеві лофери, щоб збалансувати образ і забезпечити його відповідність осінній температурі, враховуючи відкриті руки та холодну погоду.",
+"9": "Лляний сарафан Альмерія, Перлинне намисто зі срібною застібкою, Чорні круглі сережки з логотипом — Я приймаю знахідку про низький контраст обличчя, адже оксамитовий сарафан і перли саме те, що ти попросила: м’які текстури, які створюють романтичну атмосферу, підходящу для твого дня народження, переважаючи потребу у високому контрасті в цьому конкретному настрої.",
+"10": "Лляний сарафан Альмерія — Я приймаю знахідку про відкриті руки, адже оксамитова тканина забезпечує необхідне тепло для осіннього вечора, а рожеві лофери успішно збалансовують силует і відповідають твоїй температурній зоні.",
+"11": "Перлинне намисто зі срібною застібкою, Сумка Marmont у фірмовий принт, Пудрові босоніжки — Я приймаю знахідку про ціну, адже перлинні сережки — це необхідна інвестиція в елегантність, яка піднімає весь образ на новий рівень, роблячи вартість виправданою їхнім впливом на твій зовнішній вигляд.",
+"12": "Перлинне намисто зі срібною застібкою — Я додала ці перлинні сережки, щоб підвищити контраст обличчя без порушення нейтральної колірної гами, враховуючи стурбованість коду щодо низького контрасту біля обличчя.",
+"13": "Перлинне намисто зі срібною застібкою — Я додала ці перлинні сережки, щоб підвищити контраст обличчя та додати блиску, забезпечивши готовність образу для вечірньої фотосесії без зміни основних елементів."
+}
+```

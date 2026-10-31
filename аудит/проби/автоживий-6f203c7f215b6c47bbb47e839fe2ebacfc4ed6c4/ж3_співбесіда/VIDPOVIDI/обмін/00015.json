@@ -1,0 +1,27 @@
+{
+ "версія": 1,
+ "запит": {
+  "model": "qwen/qwen3.5-9b",
+  "max_tokens": 4000,
+  "messages": [
+   {
+    "role": "user",
+    "content": [
+     {
+      "type": "text",
+      "text": "{\"task\": {\"role\": \"You read the description of an outfit and list its items as data.\", \"rules\": [\"One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.\", \"One item carries one thing — of two alternatives list the first; a note in brackets is not an item.\", \"Slot \\\"accessory\\\" is for an item no other slot fits.\", \"\\\"is_outfit\\\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note.\"], \"limits\": [\"Rely only on the input: do not invent what it does not contain.\", \"The answer is one JSON object following \\\"answer_schema\\\", without explanations and without ```.\"], \"language\": \"English\", \"answer\": \"ITEM_LIST\", \"answer_schema\": {\"is_outfit\": \"yes|no\", \"items\": [{\"name\": \"<what the item is>\", \"details\": \"<its cut, length and fabric>\", \"slot\": \"top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory\", \"color_hex\": \"<#rrggbb or null>\", \"worn\": \"<true, or false when the description says the outfit goes without it>\"}]}, \"input\": [\"\\\"description\\\" — the outfit description\"]}, \"description\": \"A structured blazer in navy blue with a tailored fit and notched lapels, crafted from a fine worsted wool blend, Hex #1B2956.\\nHigh-waisted trousers in matching midnight charcoal, featuring a clean crease and slim ankle silhouette, woven from stretch tropical wool, Hex #36454F.\\nA crisp silk-blend blouse in ivory with a subtle sheen and a button-front placket, cut with a relaxed but polished drape, Hex #FFFFF0.\\nLoafers in polished black leather with a low stacked heel and a sleek silhouette, finished with minimal branding, Hex #1C1C1C.\\nThis outfit strikes the perfect balance for an early morning banking interview by projecting professionalism and competence while remaining comfortable enough for all-day wear. The dark navy and charcoal tones convey authority and seriousness appropriate for the finance sector, while the ivory blouse adds a necessary touch of approachability. The choice of wool fabrics ensures warmth against the autumn chill without appearing overly bulky or restrictive during movement.\"}"
+     }
+    ]
+   }
+  ],
+  "temperature": 1
+ },
+ "відповідь": {
+  "status": 200,
+  "contentType": "application/json",
+  "headers": {
+   "x-model": "qwen/qwen3.5-9b"
+  },
+  "body": "{\"content\":[{\"type\":\"text\",\"text\":\"{\\n\\\"is_outfit\\\": \\\"yes\\\",\\n\\\"items\\\": [\\n{\\n\\\"name\\\": \\\"Blazer\\\",\\n\\\"details\\\": \\\"structured with tailored fit and notched lapels, crafted from fine worsted wool blend\\\",\\n\\\"slot\\\": \\\"outerwear\\\",\\n\\\"color_hex\\\": \\\"#1B2956\\\",\\n\\\"worn\\\": true\\n},\\n{\\n\\\"name\\\": \\\"Trousers\\\",\\n\\\"details\\\": \\\"high-waisted with clean crease and slim ankle silhouette, woven from stretch tropical wool\\\",\\n\\\"slot\\\": \\\"bottom\\\",\\n\\\"color_hex\\\": \\\"#36454F\\\",\\n\\\"worn\\\": true\\n},\\n{\\n\\\"name\\\": \\\"Blouse\\\",\\n\\\"details\\\": \\\"button-front placket with relaxed but polished drape, made of silk-blend\\\",\\n\\\"slot\\\": \\\"top\\\",\\n\\\"color_hex\\\": \\\"#FFFFF0\\\",\\n\\\"worn\\\": true\\n},\\n{\\n\\\"name\\\": \\\"Loafers\\\",\\n\\\"details\\\": \\\"low stacked heel with sleek silhouette and minimal branding, made of polished leather\\\",\\n\\\"slot\\\": \\\"shoes\\\",\\n\\\"color_hex\\\": \\\"#1C1C1C\\\",\\n\\\"worn\\\": true\\n}\\n]\\n}\"}],\"usage\":{\"input_tokens\":566,\"output_tokens\":253},\"stop_reason\":\"end_turn\"}"
+ }
+}
