@@ -1,0 +1,44 @@
+── ПРОМПТ (2671 симв.) ──
+{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.", "One item carries one thing — of two alternatives list the first; a note in brackets is not an item.", "Slot \"accessory\" is for an item no other slot fits.", "\"is_outfit\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "ITEM_LIST", "answer_schema": {"is_outfit": "yes|no", "items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory", "color_hex": "<#rrggbb or null>", "worn": "<true, or false when the description says the outfit goes without it>"}]}, "input": ["\"description\" — the outfit description"]}, "description": "A refined silk-blend blouse with a modest collar in deep forest green, structured at the shoulders and falling to mid-thigh, color #225538, smooth yet slightly draping fabric.\nTailored wool trousers in charcoal grey with a high waist and tapered leg, clean lines without excessive flare, color #36454F, fine worsted wool that breathes well in cool air.\nA textured blazer in navy blue with notched lapels and single-button closure, unlined for airflow, color #000080, a heavy cotton-linen blend to resist the evening chill of an autumn club.\nPointed-toe leather pumps in polished black with a moderate 4 cm heel, sleek silhouette that elongates the stride, color #000000, smooth calfskin ideal for walking through crowds.\nSmall structured clutch in matte black leather with minimal hardware and a secure magnetic flap, color #1a1a1a, compact enough to hold essentials without bulk.\nWhy this outfit works: This ensemble strikes the perfect balance between the requested classic register and the energetic atmosphere of a rock concert by offering sophistication that won't get crushed in a crowd. The tailored blazer and structured trousers provide necessary warmth for an autumn evening while allowing freedom of movement for standing or walking on dance floors. The dark, muted color palette aligns with the artificial club lighting, ensuring you look intentional rather than out of place amidst the music and lights."}
+
+── ВІДПОВІДЬ (1193 симв., 6.5 с, HTTP 200) ──
+{
+  "is_outfit": "yes",
+  "items": [
+    {
+      "name": "blouse",
+      "details": "refined silk-blend, modest collar, structured at shoulders, falling to mid-thigh, smooth yet slightly draping",
+      "slot": "top",
+      "color_hex": "#225538",
+      "worn": true
+    },
+    {
+      "name": "trousers",
+      "details": "tailored wool, high waist, tapered leg, clean lines without excessive flare, fine worsted wool",
+      "slot": "bottom",
+      "color_hex": "#36454F",
+      "worn": true
+    },
+    {
+      "name": "blazer",
+      "details": "textured navy blue with notched lapels and single-button closure, unlined for airflow, heavy cotton-linen blend",
+      "slot": "outerwear",
+      "color_hex": "#000080",
+      "worn": true
+    },
+    {
+      "name": "pumps",
+      "details": "pointed-toe leather, polished black with moderate 4 cm heel, sleek silhouette, smooth calfskin",
+      "slot": "shoes",
+      "color_hex": "#000000",
+      "worn": true
+    },
+    {
+      "name": "clutch",
+      "details": "small structured matte black leather with minimal hardware and secure magnetic flap, compact",
+      "slot": "bag",
+      "color_hex": "#1a1a1a",
+      "worn": true
+    }
+  ]
+}
