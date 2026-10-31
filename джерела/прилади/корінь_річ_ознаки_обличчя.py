@@ -34,7 +34,24 @@ import argparse, ast, collections, glob, os, re, sys, warnings
 
 ТУТ = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 ВИКЛЮЧЕНО = re.compile(r"^(батарея_|gate_|measure_|стенд_|тест_|audit_|pair_test|run_outfit|status_перевірки)")
-S, P, F, R = "S", "P", "F", "R"
+S, P, F, R, C = "S", "P", "F", "R", "C"
+# C — дані з файлу (каталог крамниць, кеші фіду): число з її ознаки й такого запису разом — про річ, не про її колорит
+ФАЙЛОВІ = frozenset(("open", "load", "parse", "fromstring", "iterparse", "read_text", "read_bytes", "urlopen",
+                     "reader", "DictReader", "XML"))
+ВМІСТИЩА = frozenset(("list", "tuple", "dict", "set", "frozenset", "sorted", "zip", "reversed", "enumerate", "filter",
+                      "map", "iter", "next", "chain", "deepcopy", "copy", "OrderedDict", "defaultdict", "Counter"))
+
+
+def _пара(*мітки):
+    """Мітки числа з кількох операндів. Її значення (S) разом з іншим зовнішнім значенням без S — входу (P) чи запису
+    з файлу (C): річ, нагода, лічба — число про пару, а не про її колорит, і S знімається; зі сталими й таблицями
+    коду (без міток) чи з іншою її ознакою S лишається."""
+    вих = E
+    for м in мітки:
+        вих = вих | м
+    if S in вих and any(S not in м and (P in м or C in м) for м in мітки):
+        вих = вих - {S}
+    return вих
 E = frozenset()
 СЛУЖБОВІ = re.compile(r"^(_meta|_макіяж|макіяж_|protocol$|from_photo$|source$|photo_note$)")
 НЕВІДОМЕ = re.compile(r"не стверджу|not_asserted|unknown|невідом|не визнач|н/д|^none$|не калібр|^free$|вільн|^—$",
@@ -47,7 +64,7 @@ HEX_РЕГ = re.compile(r"\[0-9a-fA-F\]\{6\}|\[0-9A-Fa-f\]\{6\}")
 # методи, що повертають позицію, лічбу чи так/ні, а не значення
 ПОЗИЦІЙНІ = frozenset(("find", "rfind", "index", "rindex", "count", "startswith", "endswith", "isdigit", "isalpha",
                        "isalnum", "isspace", "islower", "isupper", "isnumeric", "isdecimal", "isidentifier"))
-МУТАЦІЇ = frozenset(("append", "extend", "add", "insert", "update", "setdefault", "appendleft", "extendleft"))
+МУТАЦІЇ = frozenset(("append", "extend", "add", "insert", "update", "setdefault", "appendleft", "extendleft", "feed"))
 Місце = collections.namedtuple("Місце", "файл рядок пункт чому")
 
 
@@ -435,7 +452,7 @@ class Аналіз:
             if self.зерно and self.зерно.get("читач"):
                 ч = self.зерно["читач"]
                 self.виклик(ч, [frozenset({P})] * len(ч.позиційні), {})
-                поля = sorted(к for к, в in self.ключі_пов[ч.повне].items() if S in в)
+                поля = sorted({str(к).split("/")[0] for к, в in self.ключі_пов[ч.повне].items() if S in в})
                 if not self.носії:
                     self.межа_js(поля)
             for ф in входи:
@@ -448,6 +465,37 @@ def _усі(ключі):
     вих = E
     for в in (ключі or {}).values():
         вих = вих | в
+    return вих
+
+
+ГЛИБИНА = 3   # ключі запису за шляхом «ключ/під/…»: список записів ділить ключі з записом
+
+
+def _під(ключі, ключ):
+    """Ключі значення під `ключ` (шлях «ключ/під»)."""
+    п = "%s/" % ключ
+    return {к[len(п):]: в for к, в in (ключі or {}).items() if isinstance(к, str) and к.startswith(п)}
+
+
+def _з_префіксом(ключ, ключі):
+    return {"%s/%s" % (ключ, к): в for к, в in (ключі or {}).items() if str(к).count("/") < ГЛИБИНА - 1 and в}
+
+
+def _без_першого(ключі):
+    """Ключі елемента за змінним ключем: і ключі самого запису, і під будь-яким його ключем."""
+    вих = dict(ключі or {})
+    for к, в in (ключі or {}).items():
+        if isinstance(к, str) and "/" in к:
+            р = к.split("/", 1)[1]
+            вих[р] = вих.get(р, E) | в
+    return вих
+
+
+def _злити_ключі(*набори):
+    вих = {}
+    for н in набори:
+        for к, в in (н or {}).items():
+            вих[к] = вих.get(к, E) | в
     return вих
 
 
@@ -547,7 +595,9 @@ class Стан:
 
     def ключ_імені(self, ім, ключ, вузол, типове=None):
         """`ім["к"]` / `ім.get("к")`: значення ключа, записане тут, і правило індексу на решті міток імені."""
-        return self.ключі.get(ім, {}).get(ключ, E) | self.індекс(self.читати_env(ім), ast.Constant(ключ), вузол, типове)
+        км = self.ключі.get(ім, {})
+        return км.get(ключ, E) | _усі(_під(км, ключ)) | self.індекс(self.читати_env(ім), ast.Constant(ключ), вузол,
+                                                                типове)
 
     def читати_env(self, ім):
         if ім in self.env:
@@ -562,8 +612,12 @@ class Стан:
             return self.а.глоб.get((self.м.ім, ім), E)
         return E
 
-    def писати(self, ім, мітки):
+    def писати(self, ім, мітки, мутація=False):
+        """Мутація контейнера модуля з функції (`КЕШ[к] = …`, `ЗАПИСИ.append(…)`) — кеш чи слід: його читання в
+        іншому виклику не несе її значення далі (на шляху, що рахує, значення й так іде поверненням)."""
         if not мітки:
+            return
+        if мутація and ім not in self.локальні and ім not in self.глобальні:
             return
         if ім in self.локальні or ім not in self.м.присвоєння:
             self.env[ім] = self.env.get(ім, E) | мітки
@@ -575,8 +629,12 @@ class Стан:
 
     def присвоїти(self, ціль, мітки, значення=None):
         if isinstance(ціль, ast.Name):
-            сам = значення.value if isinstance(значення, ast.Await) else значення
-            if self.з_ключами(значення):
+            сам = значення.value if isinstance(значення, (ast.Await, ast.YieldFrom)) else значення
+            if isinstance(сам, (ast.IfExp, ast.BoolOp)):
+                мітки, кл = self.значення(сам)
+                for к, в in (кл or {}).items():
+                    self.ключі[ціль.id][к] = self.ключі[ціль.id][к] | в
+            elif self.з_ключами(значення):
                 мітки = self.без_ключів(значення)
             elif isinstance(сам, ast.Call) and id(сам) in self.ключі_викликів and self.ключі_викликів[id(сам)][1]:
                 мітки = self.ключі_викликів[id(сам)][0]
@@ -590,7 +648,7 @@ class Стан:
             if значення is not None:
                 self.ключі_з(ціль.id, значення)
         elif isinstance(ціль, (ast.Tuple, ast.List)):
-            к = self.кортежі_викликів.get(id(значення)) if isinstance(значення, (ast.Call, ast.Await)) else None
+            к = self.кортежі_викликів.get(id(значення)) if isinstance(значення, (ast.Call, ast.Await, ast.YieldFrom)) else None
             if isinstance(значення, (ast.Tuple, ast.List)) and len(значення.elts) == len(ціль.elts):
                 for ц, з in zip(ціль.elts, значення.elts):
                     self.присвоїти(ц, self.e(з), з)
@@ -610,19 +668,69 @@ class Стан:
         elif isinstance(ціль, (ast.Subscript, ast.Attribute)):
             if isinstance(ціль, ast.Subscript):
                 self.e(ціль.slice)
+                вм, вк = self.значення(значення) if значення is not None else (мітки, None)
                 if isinstance(ціль.value, ast.Name) and _рядок(ціль.slice):
                     к = self.ключі[ціль.value.id]
-                    к[ціль.slice.value] = к[ціль.slice.value] | мітки
+                    к[ціль.slice.value] = к[ціль.slice.value] | вм
+                    for кл, в in _з_префіксом(ціль.slice.value, вк).items():
+                        к[кл] = к[кл] | в
+                elif isinstance(ціль.value, ast.Name) and вк and ціль.value.id in self.локальні:
+                    # `d[ід] = запис`: ключі запису — ключі елемента d
+                    к = self.ключі[ціль.value.id]
+                    for кл, в in вк.items():
+                        к[кл] = к[кл] | в
+                    self.писати(ціль.value.id, вм - {F}, мутація=True)
+                    return
             корінь = _корінь_імені(ціль)
             ключем = isinstance(ціль, ast.Subscript) and isinstance(ціль.value, ast.Name) and _рядок(ціль.slice)
             if корінь and ключем and ціль.slice.value == "_meta":
-                self.писати(корінь, frozenset({F}))
+                self.писати(корінь, frozenset({F}), мутація=True)
             elif корінь and not ключем:
-                self.писати(корінь, мітки - {F})
+                self.писати(корінь, мітки - {F}, мутація=True)
 
     def значення(self, в):
         """Вираз → (мітки поза сталими ключами, ключі dict чи None): ключі dict ідуть у виклик і з повернення окремо."""
-        сам = в.value if isinstance(в, ast.Await) else в
+        сам = в.value if isinstance(в, (ast.Await, ast.YieldFrom)) else в
+        if isinstance(сам, (ast.IfExp, ast.BoolOp)):
+            гілки = [сам.body, сам.orelse] if isinstance(сам, ast.IfExp) else list(сам.values)
+            if isinstance(сам, ast.IfExp):
+                self.e(сам.test)
+            вих, ключі = E, {}
+            for г in гілки:
+                м, к = self.значення(г)
+                вих |= м
+                for кл, з in (к or {}).items():
+                    ключі[кл] = ключі.get(кл, E) | з
+            self.e(сам)   # місця гілки «невідомо» й запасного числа
+            return вих, (ключі or None)
+        if isinstance(сам, ast.Subscript) and isinstance(сам.value, ast.Name) and self.ключі.get(сам.value.id):
+            км = self.ключі[сам.value.id]
+            self.e(сам)
+            if _рядок(сам.slice):
+                к = сам.slice.value
+                return (км.get(к, E) | self.індекс(self.читати_env(сам.value.id), сам.slice, сам)), (_під(км, к) or None)
+            return self.індекс(self.читати_env(сам.value.id), сам.slice, сам), (_без_першого(км) or None)
+        if isinstance(сам, ast.Call) and isinstance(сам.func, ast.Attribute) and сам.func.attr == "get" and сам.args \
+                and _рядок(сам.args[0]) and isinstance(сам.func.value, ast.Name) and self.ключі.get(сам.func.value.id) \
+                and not self.а.викликані(self.м, сам.func, self.ф):
+            км = self.ключі[сам.func.value.id]
+            к = сам.args[0].value
+            self.e(сам)
+            типове = self.e(сам.args[1]) if len(сам.args) > 1 else E
+            return (км.get(к, E) | типове | self.індекс(self.читати_env(сам.func.value.id), сам.args[0], сам)), \
+                (_під(км, к) or None)
+        if isinstance(сам, (ast.List, ast.Set)) or (isinstance(сам, ast.BinOp) and isinstance(сам.op, ast.Add)):
+            частини = сам.elts if isinstance(сам, (ast.List, ast.Set)) else [сам.left, сам.right]
+            вих, ключі = E, {}
+            for ч in частини:
+                м, к = self.значення(ч.value if isinstance(ч, ast.Starred) else ч)
+                вих |= м
+                ключі = _злити_ключі(ключі, к)
+            return вих, (ключі or None)
+        if isinstance(сам, (ast.ListComp, ast.SetComp, ast.GeneratorExp)):
+            self.e(сам)
+            м, к = self.значення(сам.elt)
+            return м - {F}, к
         if isinstance(сам, ast.Name):
             к = self.ключі.get(сам.id)
             if к and any(к.values()):
@@ -639,14 +747,31 @@ class Стан:
 
     def ітерація(self, ціль, ітер):
         """`for ціль in ітер`: номер `enumerate` і ключ `.items()` — позиція й ім'я, не значення про колорит."""
+        if isinstance(ціль, ast.Tuple) and len(ціль.elts) == 2 and isinstance(ітер, ast.Call) and \
+                isinstance(ітер.func, ast.Name) and ітер.func.id == "enumerate" and ітер.args:
+            self.e(ітер)
+            self.присвоїти(ціль.elts[0], E)
+            self.елемент(ціль.elts[1], *self.значення(ітер.args[0]))
+            return
         мітки = self.e(ітер) - {F}
-        if isinstance(ціль, ast.Tuple) and len(ціль.elts) == 2 and isinstance(ітер, ast.Call) and (
-                (isinstance(ітер.func, ast.Name) and ітер.func.id == "enumerate")
-                or (isinstance(ітер.func, ast.Attribute) and ітер.func.attr == "items" and not ітер.args)):
+        if isinstance(ціль, ast.Tuple) and len(ціль.elts) == 2 and isinstance(ітер, ast.Call) and \
+                isinstance(ітер.func, ast.Attribute) and ітер.func.attr == "items" and not ітер.args:
             self.присвоїти(ціль.elts[0], E)
             self.присвоїти(ціль.elts[1], мітки)
             return
+        if isinstance(ціль, ast.Name):
+            self.елемент(ціль, *self.значення(ітер))
+            return
         self.присвоїти(ціль, мітки)
+
+    def елемент(self, ціль, мітки, ключі):
+        """Елемент списку записів: мітки поза ключами й ключі запису."""
+        if isinstance(ціль, ast.Name) and ключі:
+            self.писати(ціль.id, мітки - {F})
+            for кл, в in ключі.items():
+                self.ключі[ціль.id][кл] = self.ключі[ціль.id][кл] | в
+        else:
+            self.присвоїти(ціль, (мітки | _усі(ключі)) - {F})
 
     def з_ключами(self, в):
         return isinstance(в, ast.Dict) or (isinstance(в, ast.Call) and _ім_виклику(в.func) == "dict"
@@ -666,7 +791,7 @@ class Стан:
                 вих |= (self.читати_env(а.id) if isinstance(а, ast.Name) else self.e(а))
             for к in в.keywords:
                 if к.arg is None:
-                    вих |= self.e(к.value)
+                    вих |= (self.читати_env(к.value.id) if isinstance(к.value, ast.Name) else self.e(к.value))
         return вих
 
     def ключі_з(self, ім, в):
@@ -679,9 +804,11 @@ class Стан:
         if isinstance(в, ast.Dict):
             for к, з in zip(в.keys, в.values):
                 if _рядок(к):
-                    вих[к.value] = self.e(з)
+                    м, кк = self.значення(з)
+                    вих[к.value] = вих.get(к.value, E) | м
+                    вих = _злити_ключі(вих, _з_префіксом(к.value, кк))
                 elif к is None and isinstance(з, ast.Name):
-                    вих.update(self.ключі.get(з.id, {}))
+                    вих = _злити_ключі(вих, self.ключі.get(з.id, {}))
         elif isinstance(в, ast.Call) and _ім_виклику(в.func) == "dict":
             for а in в.args:
                 if isinstance(а, ast.Name):
@@ -690,8 +817,12 @@ class Стан:
                     вих.update(self.ключі_виразу(а))
             for к in в.keywords:
                 if к.arg:
-                    вих[к.arg] = self.e(к.value)
-        elif isinstance(в, ast.Await):
+                    м, кк = self.значення(к.value)
+                    вих[к.arg] = вих.get(к.arg, E) | м
+                    вих = _злити_ключі(вих, _з_префіксом(к.arg, кк))
+                elif isinstance(к.value, ast.Name):
+                    вих.update(self.ключі.get(к.value.id, {}))
+        elif isinstance(в, (ast.Await, ast.YieldFrom)):
             вих.update(self.ключі_виразу(в.value))
         elif isinstance(в, ast.Call):
             вих.update(self.ключі_викликів.get(id(в), (E, {}))[1])
@@ -847,7 +978,7 @@ class Стан:
         if isinstance(в, ast.Call):
             return self.виклик(в)
         if isinstance(в, ast.BinOp):
-            return (self.e(в.left) | self.e(в.right)) - {F}
+            return _пара(self.e(в.left), self.e(в.right)) - {F}
         if isinstance(в, ast.UnaryOp):
             return self.e(в.operand) - {F}
         if isinstance(в, ast.BoolOp):
@@ -958,6 +1089,8 @@ class Стан:
             л, п = мітки[i], мітки[i + 1]
             if S not in л and S not in п:
                 continue
+            if S not in _пара(л, п):   # її ознака проти запису з файлу — порівняння про річ
+                continue
             if isinstance(оп, ПОРЯДОК):
                 self.а.місце(self.м, в, 1, "поріг на пораховане з hex моделі: %s" % ast.unparse(в)[:70])
             elif isinstance(оп, (ast.Eq, ast.NotEq)):
@@ -1033,8 +1166,15 @@ class Стан:
         if isinstance(в.func, ast.Attribute):
             if ім in МУТАЦІЇ:
                 корінь = _корінь_імені(в.func.value)
-                if корінь:
-                    self.писати(корінь, (усі - приймач) - {F})
+                if ім in ("append", "add", "appendleft", "extend", "extendleft", "insert") and \
+                        isinstance(в.func.value, ast.Name) and корінь in self.локальні:
+                    for з in (поз_к[1:] if ім == "insert" else поз_к):
+                        мітки, ключі = з if isinstance(з, tuple) else (з, None)
+                        self.писати(корінь, мітки - {F})
+                        for кл, вв in (ключі or {}).items():
+                            self.ключі[корінь][кл] = self.ключі[корінь][кл] | вв
+                elif корінь:
+                    self.писати(корінь, (усі - приймач) - {F}, мутація=True)
                 if ім == "update" and isinstance(в.func.value, ast.Name):
                     for а in в.args:
                         self.ключі_з(в.func.value.id, а)
@@ -1075,6 +1215,15 @@ class Стан:
             if ім in БУЛЕВІ and isinstance(в.func, ast.Name):
                 return E
             вих = усі
+            if ім in ФАЙЛОВІ:
+                return frozenset((усі | {C}) - {S, F})
+            if ім in ("loads", "deepcopy", "copy", "list", "sorted", "tuple", "set", "reversed", "frozenset") \
+                    and len(поз_к) == 1 and isinstance(поз_к[0], tuple):
+                мітки, ключі = поз_к[0]   # той самий запис: ключі dict ідуть далі
+                self.ключі_викликів[id(в)] = (мітки, ключі)
+                return мітки | _усі(ключі)
+            if ім not in ВМІСТИЩА:
+                вих = _пара(приймач, зірка, дві, *позиційні, *іменні.values())
             if ім == "reliability":
                 вих = вих | {R}
             if ім == "dict" and isinstance(в.func, ast.Name):
@@ -1152,7 +1301,8 @@ class Стан:
         ключі = self.ключі_виразу(в.args[1])
         поля = self.а.оголошення[оголошення]
         м = self.а.модулі[оголошення[0]]
-        for к, мітки in ключі.items():
+        for к in sorted({str(кл).split("/")[0] for кл in ключі}):
+            мітки = ключі.get(к, E) | _усі(_під(ключі, к))
             if S in мітки and к in поля and ВИМІР.search(поля[к][1]):
                 рядок, текст = поля[к]
                 self.а.місця.setdefault((м.шлях, рядок), set()).add(
