@@ -3228,8 +3228,7 @@ _ПОЛЯ_EN = {
     "hour": "start hour on a 24-hour clock, only when she names a clock time, in digits or in words; a part of the "
             "day alone (evening, morning, also with a weekday or a date) is part_of_day, never hour. \"%s\": \"%s\" — "
             "you judge that her words name this hour on a clock; \"quote\" — only the words that name the hour, "
-            "not the whole phrase with the date or the day; an hour without \"%s\" is not taken. Give part_of_day "
-            "with it too: the code does not turn an hour into a part of the day"
+            "not the whole phrase with the date or the day; an hour without \"%s\" is dropped"
             % (_ВМ.ПОЛЯ_ПАСПОРТА["година"]["названа"] + _ВМ.ПОЛЯ_ПАСПОРТА["година"]["названа"][:1]),
     "minute": "minutes of the start time, only when she names them with the hour (19:30 — 30; half past "
               "seven in the evening — 30); never without \"hour\"",
@@ -3248,14 +3247,12 @@ _ПОЛЯ_EN = {
     # КОРІНЬ Е2-ЧАСТИНА-ДНЯ, КРОК 1 (власник 31.10): частину дня дає лише модель — її годину перетворює на частину дня,
     # а названу нею пору передає як є; «лише коли години нема» знято, бо код пори з години більше не рахує. Межа
     # вечора — з бази знань (Emily Post «after 6 p.m.», `тема-5_знання.md` §1.1), а не порогом коду
-    "part_of_day": "part of the day of the outing, whenever it is known: a part of the day she names (evening, "
-                   "morning, also with a weekday or a date) — as she names it; a time she names — the part of the "
-                   "day that time falls in (evening is after 6 p.m., as in Emily Post's dress conventions); also "
-                   "inside the phrase that names the event (said for one part of "
-                   "her day, it holds for the parts after it until she names another), or when the event or a tile "
-                   "in \"chosen\" names it or usually takes it (an evening reception, a theatre, a concert, an "
+    "part_of_day": "part of the day she names or of her time (evening from 6 p.m.), also inside "
+                   "the phrase that names the event (said for one part of her day, it "
+                   "holds for the later parts until she names another), or when the event or a tile "
+                   "in \"chosen\" names it or usually takes it (an evening reception, a theatre, concert or "
                    "opera, a holiday party held in the evening by custom — evening); an event that happens at any "
-                   "time of day, with no time named — absent",
+                   "time of day — absent",
     # Пора року рукам — з дати показу, бо місяця події паспорт не ніс: новорічний корпоратив, про
     # який вона пише 10.10, руки бачили осінню подією. Місяць — розуміння її слів моделлю (п.14), код слів не читає
     # Свята-приклади (новорічна вечірка й корпоратив — свята сцен) — тепер родом випадку
