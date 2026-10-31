@@ -51,7 +51,11 @@ warnings.simplefilter("ignore", SyntaxWarning)
 
 # ── межі обходу ─────────────────────────────────────────────────────────────────────────────────────────────────
 ПОЗА_ТЕКИ = {"проби", "прилади", "node_modules", "__pycache__"}
-ТЕСТ = re.compile(r"^(тест|test|стенд|батарея|gate_|pair_test|проба)|(_test|_тест)\.|\.test\.", re.IGNORECASE)
+# Стенди, аудити й прогони поза продуктом (`status.МОДУЛІ_ПРОДУКТУ` їх не має; `status` сам називає `audit_contracts`,
+# `gate_reach`, `pair_test`, `rule_genus`, `run_outfit` приладами): паспорт — «проби, прилади, стенди й тести — ні».
+ТЕСТ = re.compile(r"^(тест|test|стенд|батарея|gate_|pair_test|проба|audit_|аудит_|measure_|мутант|звірка|досяжність"
+                  r"|гейти_|run_outfit|rule_genus|status_перевірки|траса_|відбиток|зведення)|(_test|_тест)\.|\.test\.",
+                  re.IGNORECASE)
 РОЗШИРЕННЯ = (".py", ".js", ".mjs", ".html")
 
 # ── словник ─────────────────────────────────────────────────────────────────────────────────────────────────────
@@ -70,7 +74,7 @@ warnings.simplefilter("ignore", SyntaxWarning)
     "words", "word", "слово", "list_", "a", "b", "c", "lo", "hi", "low", "high", "від", "до", "межа", "поріг",
     "threshold", "limit", "ліміт", "мін", "макс", "сума", "total", "частка", "share", "ratio", "вага", "weight",
     "score", "бал", "бали", "крок", "step", "стор", "page", "path", "шлях", "file", "файл", "url",
-    "lang", "мова", "format", "формат", "flag", "прапор", "on", "off", "enabled", "show", "hide",
+    "скільки", "кількість", "лишити", "top", "topk", "top_k", "lang", "мова", "format", "формат", "flag", "прапор", "on", "off", "enabled", "show", "hide",
 }
 ОБГОРТКИ = {"float", "int", "round", "abs", "str", "bool"}
 ГЛИБИНА_СЛІДУ = 10     # кроків сліду джерела значення (параметр → виклик, ключ → писач, виклик → повернення)
@@ -136,15 +140,25 @@ def порожнє(в):
 
 
 def літерал_типове(в):
-    """Літерал типового (рядок, число, True) → значення, інакше None."""
-    if порожнє(в):
+    """Літерал типового (рядок чи число) → значення, інакше None.
+
+    Не величина: прапор (True/False — вибір поведінки виклику, не значення поля чи межі), нейтраль 0 і 1 (порожня
+    сума, множник «без зміни», запобіжник ділення `or 1`) і заповнювач («?», «—», «null» — показ відсутності)."""
+    if порожнє(в) or (isinstance(в, ast.Constant) and isinstance(в.value, bool)):
         return None
     if isinstance(в, ast.Constant) and isinstance(в.value, str):
-        return в.value if re.search(r"\w", в.value) else None     # «?», «—», «.» — заповнювач показу, не значення
-    if isinstance(в, ast.Constant) and isinstance(в.value, (int, float)):
-        return в.value
-    ч = число(в)
-    return ч
+        return в.value if значуще_типове(в.value) else None
+    ч = в.value if isinstance(в, ast.Constant) and isinstance(в.value, (int, float)) else число(в)
+    return None if ч is None or ч in (0, 1) else ч
+
+
+ЗАПОВНЮВАЧІ = {"null", "undefined", "none", "nan", "нема", "немає", "жодного", "жодної", "жодних", "порожньо"}
+
+
+def значуще_типове(зн):
+    if isinstance(зн, str):
+        return bool(re.search(r"\w", зн)) and зн.strip().lower() not in ЗАПОВНЮВАЧІ
+    return зн not in (0, 1)
 
 
 def рядки_тексту(в):
@@ -231,7 +245,12 @@ class Модуль:
                                 прав = [прав.value]
                             else:
                                 прав = []
-                            записи[к.value] = dict(рядок=к.lineno, val=число(кв["val"]),
+                            сире = кв["val"]
+                            межі = [число(сире)] if not isinstance(сире, (ast.Tuple, ast.List)) else \
+                                [число(е) for е in сире.elts]
+                            записи[к.value] = dict(рядок=к.lineno, val=число(сире),
+                                                   межа=bool(межі) and all(ч is not None for ч in межі),
+                                                   val_текст=ast.unparse(сире)[:30],
                                                    t=getattr(кв.get("t"), "value", None), прав=прав,
                                                    суть=рядки_тексту(кв.get("суть")) + " " + рядки_тексту(кв.get("джерело")))
                 if записи:
@@ -920,7 +939,7 @@ def переліки_ключів(л):
                             and п.slice.id == г.target.id)
                         for п in ast.walk(в.elt))
                     if читає:
-                        вих.append((м, м.функція(в), в.lineno, frozenset(е.value for е in г.iter.elts)))
+                        вих.append((м, м.функція(в), в.lineno, frozenset(е.value for е in г.iter.elts), frozenset()))
             elif isinstance(в, ast.Dict) and len(в.values) >= 3:
                 ключі, бази = set(), set()
                 for з in в.values:
@@ -934,7 +953,198 @@ def переліки_ключів(л):
                     ключі.add(читання[0].args[0].value)
                     бази.add(читання[0].func.value.id)
                 if ключі and len(ключі) >= 3 and len(бази) == 1:
-                    вих.append((м, м.функція(в), в.lineno, frozenset(ключі)))
+                    дротові = frozenset(к.value for к in в.keys if isinstance(к, ast.Constant) and isinstance(к.value, str))
+                    вих.append((м, м.функція(в), в.lineno, frozenset(ключі), дротові))
+    return вих
+
+
+# ── п.3: ключ пари, другий писач запису, читач відсутності ─────────────────────────────────────────────────────
+def _get_поле(в):
+    """`X.get("F")` / `X["F"]` → F, інакше None."""
+    if isinstance(в, ast.Call) and назва_виклику(в) == "get" and isinstance(в.func, ast.Attribute) and в.args \
+            and isinstance(в.args[0], ast.Constant) and isinstance(в.args[0].value, str):
+        return в.args[0].value
+    if isinstance(в, ast.Subscript) and isinstance(в.slice, ast.Constant) and isinstance(в.slice.value, str):
+        return в.slice.value
+    return None
+
+
+def _читає_поле(в, ім=None):
+    """Поля, які вираз читає `X.get("F")` (X — ім'я `ім`, коли задано)."""
+    вих = set()
+    for п in ast.walk(в):
+        f = _get_поле(п)
+        if f is None:
+            continue
+        база = п.func.value if isinstance(п, ast.Call) else п.value
+        if ім is None or (isinstance(база, ast.Name) and база.id == ім):
+            вих.add(f)
+    return вих
+
+
+def джерело_збірки(л, м, ф, в, глибина=0):
+    """Поле, з якого походить збірка: `X.get("образи")`, перелік над ним, локальне ім'я чи параметр (через виклики
+    свого модуля) → «образи», інакше None."""
+    if в is None or глибина > ГЛИБИНА_СЛІДУ:
+        return None
+    f = _get_поле(в)
+    if f is not None:
+        return f
+    if isinstance(в, (ast.BoolOp, ast.IfExp)):
+        гілки = в.values if isinstance(в, ast.BoolOp) else (в.body, в.orelse)
+        return next((д for д in (джерело_збірки(л, м, ф, x, глибина + 1) for x in гілки) if д), None)
+    if isinstance(в, (ast.ListComp, ast.GeneratorExp, ast.SetComp)):
+        return джерело_збірки(л, м, ф, в.generators[0].iter, глибина + 1)
+    if isinstance(в, ast.Call) and назва_виклику(в) in ("enumerate", "list", "tuple", "sorted", "reversed") and в.args:
+        return джерело_збірки(л, м, ф, в.args[0], глибина + 1)
+    if isinstance(в, ast.Call) and назва_виклику(в) == "range" and в.args and isinstance(в.args[0], ast.Call) \
+            and назва_виклику(в.args[0]) == "len" and в.args[0].args:
+        return джерело_збірки(л, м, ф, в.args[0].args[0], глибина + 1)
+    if isinstance(в, ast.Name):
+        while ф is not None:
+            if isinstance(ф, (ast.FunctionDef, ast.AsyncFunctionDef)):
+                присв = [п.value for п in ast.walk(ф) if isinstance(п, ast.Assign)
+                         and any(isinstance(ц, ast.Name) and ц.id == в.id for ц in п.targets)]
+                if присв:
+                    return next((д for д in (джерело_збірки(л, м, ф, x, глибина + 1) for x in присв) if д), None)
+                параметри = [а.arg for а in ф.args.posonlyargs + ф.args.args]
+                if в.id in параметри:
+                    і = параметри.index(в.id)
+                    for мм, фф, виклик in виклики(л).get((м.ім, ф.name), []):
+                        if і < len(виклик.args):
+                            д = джерело_збірки(л, мм, фф, виклик.args[і], глибина + 1)
+                            if д:
+                                return д
+                    return None
+            ф = м.функція(ф)
+    return None
+
+
+def пари_збірок(л):
+    """Місця, де елементу однієї збірки шукають пару в іншій: індекс `{f(x.get("F")): x for x in C}` і його
+    читання, `next(… for x in C if x.get("F") == o.get("F"))`, `max(C, key=… len(A & B) …)` →
+    [(файл, рядок, поле збірки, вид пари)]."""
+    вих = []
+    for м in л.модулі:
+        for в in ast.walk(м.дерево):
+            ф = м.функція(в)
+            if isinstance(в, ast.DictComp) and len(в.generators) == 1 and isinstance(в.generators[0].target, ast.Name):
+                ц = в.generators[0].target.id
+                if isinstance(в.value, ast.Name) and в.value.id == ц and _читає_поле(в.key, ц):
+                    зб = джерело_збірки(л, м, ф, в.generators[0].iter)
+                    if not зб:
+                        continue
+                    вид = "полем «%s»" % ", ".join(sorted(_читає_поле(в.key, ц)))
+                    батько = м.батько.get(в)
+                    читання = []
+                    if isinstance(батько, ast.Assign) and isinstance(батько.targets[0], ast.Name):
+                        ім = батько.targets[0].id
+                        обл = ф if ф is not None else м.дерево
+                        читання = sorted({п.lineno for п in ast.walk(обл)
+                                          if (isinstance(п, ast.Call) and назва_виклику(п) == "get"
+                                              and isinstance(п.func, ast.Attribute)
+                                              and isinstance(п.func.value, ast.Name) and п.func.value.id == ім)
+                                          or (isinstance(п, ast.Subscript) and isinstance(п.value, ast.Name)
+                                              and п.value.id == ім and isinstance(п.ctx, ast.Load))})
+                    for р in читання or [в.lineno]:
+                        вих.append((м.шлях, р, зб, вид))
+            elif isinstance(в, (ast.GeneratorExp, ast.ListComp)) and len(в.generators) == 1:
+                г = в.generators[0]
+                цілі = [г.target.id] if isinstance(г.target, ast.Name) else \
+                    [е.id for е in getattr(г.target, "elts", []) if isinstance(е, ast.Name)]
+                for умова in г.ifs:
+                    for п in ast.walk(умова):
+                        if isinstance(п, ast.Compare) and len(п.ops) == 1 and isinstance(п.ops[0], ast.Eq):
+                            ліве, праве = _читає_поле(п.left), _читає_поле(п.comparators[0])
+                            спільне = ліве & праве
+                            свої = set().union(*(_читає_поле(п.left, ц) | _читає_поле(п.comparators[0], ц)
+                                                 for ц in цілі)) if цілі else set()
+                            if спільне and спільне & свої:
+                                зб = джерело_збірки(л, м, ф, г.iter)
+                                if зб:
+                                    вих.append((м.шлях, п.lineno, зб, "полем «%s»" % ", ".join(sorted(спільне))))
+            elif isinstance(в, ast.Call) and назва_виклику(в) in ("max", "min") and isinstance(в.func, ast.Name) \
+                    and в.args:
+                ключ = next((кл.value for кл in в.keywords if кл.arg == "key"), None)
+                if ключ is not None and any(isinstance(п, ast.Call) and назва_виклику(п) == "len" and п.args
+                                            and isinstance(п.args[0], ast.BinOp)
+                                            and isinstance(п.args[0].op, ast.BitAnd) for п in ast.walk(ключ)):
+                    зб = джерело_збірки(л, м, ф, в.args[0])
+                    if зб:
+                        вих.append((м.шлях, в.lineno, зб, "найбільшим перетином складу"))
+    return вих
+
+
+def записи_поверх(л):
+    """Другий писач запису: `D = dict(X.get("F") or {})`, далі `D["K"] = …` чи цикл `for к, з in (("K", …), …):
+    D[к] = з` → {F: {K: (файл, рядок)}}."""
+    вих = {}
+    for м in л.модулі:
+        for ф in ast.walk(м.дерево):
+            if not isinstance(ф, (ast.FunctionDef, ast.AsyncFunctionDef)):
+                continue
+            копії = {}
+            for п in ast.walk(ф):
+                if isinstance(п, ast.Assign) and len(п.targets) == 1 and isinstance(п.targets[0], ast.Name) \
+                        and isinstance(п.value, ast.Call) and назва_виклику(п.value) == "dict" and п.value.args:
+                    а = п.value.args[0]
+                    а = а.values[0] if isinstance(а, ast.BoolOp) else а
+                    f = _get_поле(а)
+                    if f:
+                        копії[п.targets[0].id] = f
+            if not копії:
+                continue
+            for п in ast.walk(ф):
+                if isinstance(п, ast.Assign) and len(п.targets) == 1 and isinstance(п.targets[0], ast.Subscript) \
+                        and isinstance(п.targets[0].value, ast.Name) and п.targets[0].value.id in копії:
+                    сл = п.targets[0].slice
+                    f = копії[п.targets[0].value.id]
+                    if isinstance(сл, ast.Constant) and isinstance(сл.value, str):
+                        вих.setdefault(f, {}).setdefault(сл.value, (м.шлях, п.lineno))
+                    elif isinstance(сл, ast.Name):
+                        цикл = м.батько.get(п)
+                        while цикл is not None and not isinstance(цикл, ast.For):
+                            цикл = м.батько.get(цикл)
+                        if цикл is not None and isinstance(цикл.iter, (ast.Tuple, ast.List)) \
+                                and isinstance(цикл.target, ast.Tuple) and isinstance(цикл.target.elts[0], ast.Name) \
+                                and цикл.target.elts[0].id == сл.id:
+                            for е in цикл.iter.elts:
+                                if isinstance(е, ast.Tuple) and isinstance(е.elts[0], ast.Constant) \
+                                        and isinstance(е.elts[0].value, str):
+                                    вих.setdefault(f, {}).setdefault(е.elts[0].value, (м.шлях, цикл.lineno))
+    return вих
+
+
+def мапи_замін(л):
+    """Мапа «поле одного писача → поле другого про той самий факт»: сталий словник рядок→рядок (≥ 3), який
+    обходять `for к, з in М.items()` і читають `D.get(з)`, де D походить з `X.get("F")` → {F: [(файл, рядок, ім'я,
+    значення)]}."""
+    вих = {}
+    for м in л.модулі:
+        мапи = {}
+        for в in м.дерево.body:
+            if isinstance(в, ast.Assign) and len(в.targets) == 1 and isinstance(в.targets[0], ast.Name) \
+                    and isinstance(в.value, ast.Dict) and len(в.value.keys) >= 3 \
+                    and all(isinstance(к, ast.Constant) and isinstance(к.value, str) for к in в.value.keys) \
+                    and all(isinstance(з, ast.Constant) and isinstance(з.value, str) for з in в.value.values):
+                мапи[в.targets[0].id] = (в.lineno, {з.value for з in в.value.values})
+        if not мапи:
+            continue
+        for в in ast.walk(м.дерево):
+            if isinstance(в, ast.For) and isinstance(в.iter, ast.Call) and назва_виклику(в.iter) == "items" \
+                    and isinstance(в.iter.func, ast.Attribute) and isinstance(в.iter.func.value, ast.Name) \
+                    and в.iter.func.value.id in мапи and isinstance(в.target, ast.Tuple) \
+                    and isinstance(в.target.elts[1], ast.Name):
+                з = в.target.elts[1].id
+                for п in ast.walk(в):
+                    if isinstance(п, ast.Call) and назва_виклику(п) == "get" and isinstance(п.func, ast.Attribute) \
+                            and isinstance(п.func.value, ast.Name) and п.args and isinstance(п.args[0], ast.Name) \
+                            and п.args[0].id == з:
+                        f = джерело_збірки(л, м, м.функція(в), п.func.value)
+                        if f:
+                            рядок, значення = мапи[в.iter.func.value.id]
+                            вих.setdefault(f, []).append((м.шлях, рядок, в.iter.func.value.id, значення))
+                        break
     return вих
 
 
@@ -980,7 +1190,7 @@ def типові_js(л):
             for м in JS_ТИПОВЕ.finditer(р):
                 ліве, зн = м.group(1), м.group(3)
                 знач = зн[1:-1] if зн[0] in "\"'" else float(зн)
-                if знач in ("", 0) or (isinstance(знач, str) and not re.search(r"\w", знач)):
+                if not значуще_типове(знач):
                     continue
                 ім = re.findall(r"[\w$А-Яа-яЇїІіЄєҐґ]+", ліве)[-1]
                 вих.append((шлях, і, None if загальне(ім) else ("к", ім.lower()), знач, "||", ліве[:40]))
@@ -988,7 +1198,7 @@ def типові_js(л):
             for п in re.finditer(r"([\w$]+)\s*=\s*(\"[^\"\n]+\"|'[^'\n]+'|-?\d+(?:\.\d+)?)", м.group(1)):
                 зн = п.group(2)
                 знач = зн[1:-1] if зн[0] in "\"'" else float(зн)
-                if знач in ("", 0) or (isinstance(знач, str) and not re.search(r"\w", знач)):
+                if not значуще_типове(знач):
                     continue
                 і = текст.count("\n", 0, м.start(1) + п.start()) + 1
                 вих.append((шлях, і, None if загальне(п.group(1)) else ("к", п.group(1).lower()), знач, "параметр",
@@ -1050,7 +1260,9 @@ def лічити(корінь):
     for м in л.модулі:
         for ім, записи in м.реєстри.items():
             for ключ, з in записи.items():
-                if з["t"] != "T3" or not СЛОВО_СЕСІЇ.search(з["суть"]) or ПОСИЛАННЯ.search(з["суть"]):
+                # межа — число чи пара чисел; таблиця ваг (`дистанція.РЕЄСТР["якорі"]`) — не межа
+                if з["t"] != "T3" or not з["межа"] or not СЛОВО_СЕСІЇ.search(з["суть"]) \
+                        or ПОСИЛАННЯ.search(з["суть"]):
                     continue
                 if not any(isinstance(і, str) and ІД_ПРАВИЛА.match(і) for і in з["прав"]):
                     continue
@@ -1060,7 +1272,7 @@ def лічити(корінь):
                 назва = "%s.%s[%s]" % (м.ім, ім, ключ)
                 сесійні[назва] = з
                 л.додати(м.шлях, з["рядок"], 2, "запис T3 %s=%s (%s): опис сесії «%s», джерела нема" % (
-                    назва, з["val"], "/".join(з["прав"]), СЛОВО_СЕСІЇ.search(з["суть"]).group(0)))
+                    назва, з["val_текст"], "/".join(з["прав"]), СЛОВО_СЕСІЇ.search(з["суть"]).group(0)))
     for п in всі:
         if п["стала"] and п["стала"][0] in сесійні:
             л.додати(п["файл"], п["рядок"], 2, "%s %s %s — межа числом сесії (T3)" % (
@@ -1170,14 +1382,54 @@ def лічити(корінь):
 
     # ── п.3(б): переліки ключів ──
     пер = переліки_ключів(л)
-    for м1, ф1, р1, г1 in пер:
-        for м2, ф2, р2, г2 in пер:
+    читачі_відсутності = set()
+    for м1, ф1, р1, г1, д1 in пер:
+        for м2, ф2, р2, г2, _ in пер:
             if г1 < г2 and len(г1) >= 3 and (м1.шлях, ф1) != (м2.шлях, ф2):
                 різниця = ", ".join(sorted(г2 - г1))
+                if д1:
+                    читачі_відсутності.add((м1, р1, д1, м2.шлях.split("/")[-1], р2, різниця))
                 л.додати(м1.шлях, р1, 3, "ознака з ключів {%s} — менший перелік, ніж %s:%d (без: %s)" % (
                     ", ".join(sorted(г1)), м2.шлях.split("/")[-1], р2, різниця))
                 л.додати(м2.шлях, р2, 3, "ознака з ключів {%s} — більший перелік, ніж %s:%d (понад: %s)" % (
                     ", ".join(sorted(г2)), м1.шлях.split("/")[-1], р1, різниця))
+    # ── п.3(в): ключ пари — та сама збірка, різні способи знайти пару ──
+    за_збіркою = {}
+    for ф, р, зб, вид in пари_збірок(л):
+        за_збіркою.setdefault(зб, []).append((ф, р, вид))
+    for зб, сайти in за_збіркою.items():
+        види = {вид for _, _, вид in сайти}
+        if len(види) < 2 or len({ф for ф, _, _ in сайти}) < 2:
+            continue
+        for ф, р, вид in сайти:
+            л.додати(ф, р, 3, "пара елемента «%s» — %s, а деінде — %s" % (
+                зб, вид, "; ".join(sorted(види - {вид})) or "тим самим способом в іншому модулі"))
+
+    # ── п.3(г): поле запису пишуть розбір і код — мапа заміни читає одного, запис поверх пише другий ──
+    поверх = записи_поверх(л)
+    for f, мапи in мапи_замін(л).items():
+        for ф, р, ім, значення in мапи:
+            спільні = sorted(значення & set(поверх.get(f, {})))
+            if not спільні:
+                continue
+            л.додати(ф, р, 3, "%s бере поля {%s} з «%s» як є, а код пише їх поверх (%s)" % (
+                ім, ", ".join(спільні), f, ", ".join(sorted({"%s:%d" % (поверх[f][к][0].split("/")[-1],
+                                                                       поверх[f][к][1]) for к in спільні}))))
+            for к in спільні:
+                фф, рр = поверх[f][к]
+                л.додати(фф, рр, 3, "поле «%s» запису «%s» пише код поверх розбору, а %s:%d (%s) бере його з «%s»" % (
+                    к, f, ф.split("/")[-1], р, ім, f))
+
+    # Модель читає відсутність ключа меншого переліку як «не названо» (`Поле("occasion", …, без=…)`): той самий
+    # вхід, що суд рахує більшим переліком, — третє місце тієї самої ознаки.
+    for м1, р1, д1, ім2, р2, різниця in sorted(читачі_відсутності, key=lambda з: (з[0].шлях, з[1])):
+        for в in ast.walk(м1.дерево):
+            if isinstance(в, ast.Call) and в.args and isinstance(в.args[0], ast.Constant) \
+                    and в.args[0].value in д1 and any(кл.arg == "без" for кл in в.keywords):
+                рядок = next(кл.value.lineno for кл in в.keywords if кл.arg == "без")
+                л.додати(м1.шлях, рядок, 3, "модель читає відсутність «%s» (ознака з :%d) як «не названо», а %s:%d "
+                                            "рахує ознаку й з {%s}" % (в.args[0].value, р1, ім2, р2, різниця))
+
     звіт["кодувальників"] = len(л.кодувальники)
     return л, звіт
 
