@@ -217,6 +217,11 @@ try {
     Complete-EngineDrafts
     Complete-EngineDrafts
     Check 'DONE створює PR-чернетку сам, повтор POST відсутній' ($script:DraftPosts -eq 1 -and @(Get-ChildItem "$WorkDir/drafts/*.json").Count -eq 0)
+    $reportBranch = 'gemini/перевірка-3110-2'
+    [void](Invoke-Git @('push','-q','origin',"${newer}:refs/heads/$reportBranch"))
+    Save-DraftRequest $reportBranch $newer
+    Complete-EngineDrafts
+    Check 'звіт перевірки без рядків дошки лишається гілкою без PR-чернетки' ($script:DraftPosts -eq 1 -and @(Get-ChildItem "$WorkDir/drafts/*.json" -ErrorAction SilentlyContinue).Count -eq 0)
     # Мірило наряду обгортка-ресурс-слотів: 3 відкриті PR, у одного голова змінилась, один злито. ДО (за кодом до зміни)
     # лишалось 5 позначок: по одній на кожну побачену голову й ніякого зняття; ПІСЛЯ — одна на живу голову.
     $h1 = Merge 'три-pr.txt' '1'
@@ -247,6 +252,53 @@ try {
     Check 'зняття позначок — рядок у зведенні' (@(OutLines | Where-Object { $_ -ceq 'GEMINI ОБГОРТКА: ЗНЯТО ПОЗНАЧОК ПЕРЕВІРКИ 1' }).Count -eq 1)
     Check 'рядок зняття не будить диспетчера, рядок хмарного Claude будить' (-not (Test-DispatcherAction 'GEMINI ОБГОРТКА: ЗНЯТО ПОЗНАЧОК ПЕРЕВІРКИ 1') -and (Test-DispatcherAction "GEMINI ОБГОРТКА: ПОТРІБНА ПЕРЕВІРКА CLAUDE #44 $h2") -and (Test-OutboxLine "GEMINI ОБГОРТКА: ПОТРІБНА ПЕРЕВІРКА CLAUDE #44 $h2") -eq '' -and -not (Test-DispatcherAction "GEMINI ОБГОРТКА: ЗАБЛОКОВАНО claude/автоперевірка-44-$h2 CLAUDE_NOT_LAPTOP") -and (Test-DispatcherAction 'GEMINI ОБГОРТКА: ЗАБЛОКОВАНО claude/наряд CLAUDE_NOT_LAPTOP'))
     "  мірило: позначок cc- автоперевірки ДО 1 → ПІСЛЯ $(@(Markers | Where-Object { $_ -match 'автоперевірка-.*/cc-' }).Count)"
+    # Правила 31.10 (ПК-9): перевірка лише на голову з оголошеним кінцем і ризиком Р1–Р3; та сама зміна (patch-id) — без нової.
+    $script:FilePaths = @('джерела/a.py')
+    function Invoke-ChainApi([string]$Path) {
+        if ($Path -match '/files\?') { return @($script:FilePaths | ForEach-Object { [pscustomobject]@{filename=$_} }) }
+        [pscustomobject]@{sha=($Path -split '/')[-1];commit=@{committer=@{date=[datetimeoffset]::UtcNow.AddMinutes(-1).ToString('o')}}}
+    }
+    function DraftPull([int]$Number, [string]$Branch, [string]$Sha) { $p = Pull $Number $Branch $Sha; $p | Add-Member -NotePropertyName draft -NotePropertyValue $true; $p }
+    SetCodex $false; SetAgy $false; SetClaude $false
+    $head = Merge 'кінець-1.txt' '1'
+    $script:Pulls = @((DraftPull 80 'claude/кінець-a' $head)); Invoke-WrapperChain
+    Check 'чернетка без ГОТОВО смуги: перевірки нема' (@(SlugMarkers "автоперевірка-80-$head").Count -eq 0)
+    [IO.File]::WriteAllText("$WorkDir/state/done80.json", ((@{line="GEMINI ОБГОРТКА: ГОТОВО claude/кінець-a $head МОДЕЛЬ cc-claude-sonnet-5-5-medium"}) | ConvertTo-Json), $utf)
+    Invoke-WrapperChain
+    Check 'чернетка з ГОТОВО смуги на цій голові: одна перевірка' (@(SlugMarkers "автоперевірка-80-$head").Count -eq 1)
+    $head = Merge 'кінець-2.txt' '2'
+    $script:Pulls = @((Pull 81 'claude/кінець-b' $head)); Invoke-WrapperChain
+    Check 'PR не чернетка: одна перевірка' (@(SlugMarkers "автоперевірка-81-$head").Count -eq 1)
+    [void](Merge 'аудит/наряди/р0-проба.md' "р0-проба | вид: код | ризик Р0`nтіло`n")
+    $head = Merge 'ризик-1.txt' '1'
+    $script:FilePaths = @('джерела/a.py', 'аудит/наряди/р0-проба.md')
+    $script:Pulls = @((Pull 82 'claude/ризик-0' $head)); Invoke-WrapperChain
+    Check 'ризик Р0 у шапці наряду: перевірки нема' (@(SlugMarkers "автоперевірка-82-$head").Count -eq 0)
+    [void](Merge 'аудит/наряди/р2-проба.md' "р2-проба | вид: код | ризик Р2`n")
+    $head = Merge 'ризик-2.txt' '2'
+    $script:FilePaths = @('джерела/a.py', 'аудит/наряди/р2-проба.md')
+    $script:Pulls = @((Pull 83 'claude/ризик-2' $head)); Invoke-WrapperChain
+    Check 'ризик Р2: одна перевірка' (@(SlugMarkers "автоперевірка-83-$head").Count -eq 1)
+    $script:FilePaths = @('джерела/a.py')
+    $base = Get-RefSha 'refs/remotes/origin/main'
+    & git -C $seed checkout -q -b pid-a
+    [IO.File]::WriteAllText("$seed/джерела/пч.txt", 'x', $utf); & git -C $seed add -A; & git -C $seed commit -q -m 'a'
+    $pidA = (& git -C $seed rev-parse HEAD).Trim()
+    & git -C $seed checkout -q -b pid-b $base
+    [IO.File]::WriteAllText("$seed/джерела/пч.txt", 'x', $utf); & git -C $seed add -A; & git -C $seed commit -q -m 'b: інший текст коміту'
+    $pidB = (& git -C $seed rev-parse HEAD).Trim()
+    & git -C $seed push -q origin pid-a pid-b
+    & git -C $seed checkout -q main
+    [void](Invoke-Git @('fetch','-q','origin','+refs/heads/pid-a:refs/remotes/origin/pid-a','+refs/heads/pid-b:refs/remotes/origin/pid-b'))
+    $mainNow = Get-RefSha 'refs/remotes/origin/main'
+    $idA = Get-ReviewPatchId $pidA $mainNow
+    Check 'patch-id: та сама зміна в різних комітах має один id' ($idA -and $pidA -cne $pidB -and $idA -ceq (Get-ReviewPatchId $pidB $mainNow))
+    [IO.File]::WriteAllText("$WorkDir/state/done84.json", ((@{line="GEMINI ОБГОРТКА: ГОТОВО gemini/автоперевірка-84-$pidA $pidA"}) | ConvertTo-Json), $utf)
+    $rv = @{ '84' = @{head=$pidA;diff='';pid=$idA} }
+    Check 'нова голова з тим самим patch-id після звіту: нової перевірки нема' (Test-ReviewedMerge (Pull 84 'claude/пч' $pidB) $rv $mainNow)
+    $rv['84'].pid = 'інший'
+    Check 'інший patch-id: перевірка потрібна' (-not (Test-ReviewedMerge (Pull 84 'claude/пч' $pidB) $rv $mainNow))
+    Check 'звіти перевірки кирилицею, латинкою й новою формою виключені' ((Test-ReviewBranch 'claude/avtoperevirka-3110') -and (Test-ReviewBranch 'codex/perevirka-3110-1') -and (Test-ReviewBranch 'claude/перевірка-3110-1') -and -not (Test-ReviewBranch 'claude/наряд'))
     # Сторінки API розгортаються без втрати після першої сотні.
     $script:ApiPages = 0
     function Invoke-ChainApi([string]$Path) { $script:ApiPages++; if ($script:ApiPages -eq 1) { 1..100 } else { 101 } }
@@ -263,6 +315,11 @@ try {
     . (Join-Path $SourceDir 'queue_lanes.ps1')
     function Get-AutoLivePlan { '{}' }
     Check 'обидва планувальники можуть узяти шаблон автонаряду' ((Get-AutoTaskPath "автоперевірка-12-$newer") -ceq 'аудит/наряди/автоперевірка.md' -and (Add-AutoTaskContext "автоживий-$newer" 'текст' $built) -match $newer)
+    $emptyText = "наряд`nПЛАН ЖИВОГО — ДАНІ (JSON):`n" + '{"since_sha":"","scenes":{}}' + "`n"
+    $fullText = "наряд`nПЛАН ЖИВОГО — ДАНІ (JSON):`n" + '{"since_sha":"","scenes":{"ж1_сцена":[{"pr":1,"question":"q"}]}}' + "`n"
+    Check 'автоживий на порожньому плані: ні прогону, ні PR' (Test-AutoPlanEmpty "автоживий-$newer" $emptyText)
+    Check 'автоживий із рядками ЖИВИЙ ПІСЛЯ іде на прогін' (-not (Test-AutoPlanEmpty "автоживий-$newer" $fullText))
+    Check 'нічний Е1 на порожньому плані виконує мінімальну сцену' (-not (Test-AutoPlanEmpty 'Е1-нічний-живий-20261031' $emptyText))
     # Вікно рахується за SHA й committer, а коментар не оживляє початковий архів.
     $clock = [datetimeoffset]::UtcNow; $installed = $clock.AddDays(-2); $heads = @{}
     $script:HeadDate = $clock.AddHours(-25)

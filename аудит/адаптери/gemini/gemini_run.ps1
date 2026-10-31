@@ -958,6 +958,7 @@ function Invoke-Task($M, $Job) {
         if ($review -ne 'LIVE') { $status.code = $review; return }
         try { $taskText = Add-AutoTaskContext $M.Slug $taskText $M.Sha }
         catch { Enter-ReviewWait $M; $waiting = $true; return }
+        if (Test-AutoPlanEmpty $M.Slug $taskText) { $status.code = 'EMPTY_PLAN'; return }
         $taskDir = Join-Path (Join-Path $RunsDir 'w') $id
         try { [void](New-TaskCopy $taskDir $start $taskText) } catch { $copyFailed = $true; throw }
         [void](Invoke-Git @('checkout', '-q', '-f', '--ignore-other-worktrees', '-B', "gemini/$($M.Slug)", $start))

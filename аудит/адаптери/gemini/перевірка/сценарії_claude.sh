@@ -62,6 +62,9 @@ code k3a wrong_sha "$M" NO_PUSH
 code k3b bad_branch "$M" BAD_BRANCH
 code k3c blocked "$M" BLOCKED
 chk "гілка зі звіту ЗАБЛОКОВАНО збережена для продовження" '[ "$(cat "$W"/cr/state/branch-*.txt)" = "claude/$SLUG" ]'
+chk "BLOCKED з гілкою: причини без гілки не пишемо" '! [ -e "$W/gem/blocked-reasons.json" ]'
+code k3c2 blocked_nobranch "$M" BLOCKED
+chk "BLOCKED без гілки: причина (останній рядок агента) у blocked-reasons.json для #1856" 'grep -q "claude/$SLUG" "$W/gem/blocked-reasons.json" && grep -q "LM Studio не відповідає, гілки нема" "$W/gem/blocked-reasons.json"'
 code k3d no_report "$M" NO_REPORT
 code k3e die "$M" EXIT
 code k3f hang "$M" HANG

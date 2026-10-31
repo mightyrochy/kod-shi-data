@@ -941,6 +941,17 @@ function Add-AutoTaskContext([string]$Slug, [string]$Text, [string]$BuildMain = 
     $Text
 }
 
+function Test-AutoPlanEmpty([string]$Slug, [string]$Text) {
+    <# Автоживий за штампом без жодного `ЖИВИЙ ПІСЛЯ` у злитому з попереднього прогону: ні моделі, ні прогону, ні PR
+    (`аудит/КАРТИНА.md` §5, ПК-9). Нічний Е1 план не потребує. Не розібрано JSON — не порожній: прогін не губиться. #>
+    if ($Slug -cnotmatch '^автоживий-[0-9a-f]{40}$') { return $false }
+    $found = [regex]::Match($Text, '(?m)^ПЛАН ЖИВОГО — ДАНІ \(JSON\):\r?\n(\{.*\})\r?$')
+    if (-not $found.Success) { return $false }
+    try { $plan = ConvertFrom-Json $found.Groups[1].Value } catch { return $false }
+    $scenes = $plan.PSObject.Properties['scenes']
+    ($null -ne $scenes -and @($scenes.Value.PSObject.Properties).Count -eq 0)
+}
+
 function Set-BrowserGpuPolicy([string]$Directory) {
     <# Усі дочірні Node/Python Chromium працюють без GPU, включно з довільними пробами агента. #>
     [void][IO.Directory]::CreateDirectory($Directory)

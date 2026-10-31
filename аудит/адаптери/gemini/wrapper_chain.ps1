@@ -17,29 +17,67 @@ function Get-ChainPulls {
     throw 'CHAIN_PAGES'
 }
 
-function Test-ChainCodePull($Pull) {
-    <# Повний список файлів API відрізняє документацію від коду; неповна відповідь лишає повтор. #>
-    $code = $false; $count = 0
+$script:ChainPaths = @{}
+
+function Get-ChainPullPaths($Pull) {
+    <# Повний список файлів API (з попередніми іменами перейменувань), один раз на голову; неповна відповідь лишає повтор. #>
+    $key = "$($Pull.number) $($Pull.head.sha)"
+    if ($script:ChainPaths.ContainsKey($key)) { return @($script:ChainPaths[$key]) }
+    $all = @(); $count = 0
     for ($page = 1; $page -le 100; $page++) {
         $items = @(Invoke-ChainApi "repos/$GitHubRepo/pulls/$($Pull.number)/files?per_page=100&page=$page")
         foreach ($item in $items) {
             if ($item.filename -isnot [string] -or -not $item.filename) { throw 'CHAIN_FILES' }
-            $paths = @([string]$item.filename)
+            $all += [string]$item.filename
             if ($null -ne $item.PSObject.Properties['status'] -and $item.status -ceq 'renamed') {
                 if ($item.previous_filename -isnot [string] -or -not $item.previous_filename) { throw 'CHAIN_FILES' }
-                $paths += [string]$item.previous_filename
-            }
-            foreach ($path in $paths) {
-                if ($path -cnotmatch '^аудит/' -or $path -cmatch '^аудит/(адаптери|проби)/') { $code = $true }
+                $all += [string]$item.previous_filename
             }
             $count++
         }
         if ($items.Count -lt 100) {
             if (-not $count) { throw 'CHAIN_FILES' }
-            return $code
+            $script:ChainPaths = @{ $key = $all }
+            return $all
         }
     }
     throw 'CHAIN_PAGES'
+}
+
+function Test-ChainCodePull($Pull) {
+    <# Повний список файлів API відрізняє документацію від коду; неповна відповідь лишає повтор. #>
+    foreach ($path in @(Get-ChainPullPaths $Pull)) {
+        if ($path -cnotmatch '^аудит/' -or $path -cmatch '^аудит/(адаптери|проби)/') { return $true }
+    }
+    $false
+}
+
+function Get-ChainPullRisk($Pull, [string]$Main) {
+    <# Найвищий ризик Р0–Р3 із шапок нарядів, яких торкається PR (`аудит/наряди/*.md`; видалений у PR — з main, доданий —
+    з голови); -1 — нарядів нема чи шапка без ризику: перевіряємо, бо Р0 довести нічим. #>
+    $risk = -1; $head = [string]$Pull.head.sha
+    foreach ($path in @(Get-ChainPullPaths $Pull | Where-Object { $_ -cmatch '^аудит/наряди/[^/]+\.md$' })) {
+        $r = Invoke-Git @('cat-file','blob',"${Main}:$path") -AllowFail
+        if ($r.Code -ne 0) {
+            if ((Invoke-Git @('cat-file','-e',"$head^{commit}") -AllowFail).Code -ne 0) { [void](Invoke-Git @('fetch','-q','origin',$head) -AllowFail) }
+            $r = Invoke-Git @('cat-file','blob',"${head}:$path") -AllowFail
+        }
+        if ($r.Code -ne 0) { continue }
+        $first = ($r.Out -split "`n")[0]
+        if ($first -cmatch '\|\s*ризик\s+Р([0-3])(?![0-9])') { $risk = [Math]::Max($risk, [int]$Matches[1]) }
+    }
+    $risk
+}
+
+function Test-ChainEndAnnounced($Pull) {
+    <# Кінець роботи оголошено: PR не чернетка або смуга опублікувала «ГОТОВО <гілка> <ця голова>» (рядок станів обгортки). #>
+    if (-not [bool](Get-Prop $Pull 'draft')) { return $true }
+    $line = '^GEMINI ОБГОРТКА: ГОТОВО ' + [regex]::Escape("$($Pull.head.ref) $($Pull.head.sha)") + '(?: |$)'
+    foreach ($file in @(Get-ChildItem -LiteralPath (Join-Path $WorkDir 'state') -Filter '*.json' -File -ErrorAction SilentlyContinue)) {
+        $state = ConvertFrom-Json ([IO.File]::ReadAllText($file.FullName, $script:Utf8))
+        if ([string](Get-Prop $state 'line') -cmatch $line) { return $true }
+    }
+    $false
 }
 
 function Get-ChainBuildStamp([string]$Commit) {
@@ -75,6 +113,14 @@ function Complete-EngineDrafts {
         if (-not $r.Out.StartsWith($head + "`t")) { continue }
         $existing = @($pulls | Where-Object { $_.user.login -ceq 'mightyrochy' -and $_.head.ref -ceq $branch -and $_.head.repo.full_name -ceq $GitHubRepo })
         if ($existing.Count) { Remove-Item -LiteralPath $file.FullName; continue }
+        # Звіт перевірки без рядків дошки лишається гілкою: PR несе повний CI і злиття без користі (`ПЕРЕВІРКА.md`, «Під обгорткою»).
+        if (Test-ReviewBranch $branch) {
+            $rows = (Invoke-Git @('diff','--name-only','refs/remotes/origin/main...' + $head,'--','аудит/дошка') -AllowFail)
+            if ($rows.Code -eq 0 -and -not $rows.Out.Trim()) {
+                Write-WrapperLog "ланцюг: звіт $branch без рядків дошки — гілка без PR-чернетки"
+                Remove-Item -LiteralPath $file.FullName; continue
+            }
+        }
         $message = (Invoke-Git @('show','-s','--format=%B',$head)).Out
         # Спецзгадка не має запускати легасі-рушій із тексту звіту.
         $message = [regex]::Replace($message, '(?i)@' + 'codex\b', 'Codex')
@@ -263,6 +309,19 @@ function Get-ReviewDiff([string]$Head, [string]$Main) {
     Get-Sha256Hex (Invoke-Git @('-c','core.quotePath=true','diff','--binary','--full-index','--no-ext-diff','--no-textconv','--no-renames',$base,$Head,'--')).Out
 }
 
+function Get-ReviewPatchId([string]$Head, [string]$Main) {
+    <# `git patch-id --stable` диффу голови проти merge-base: той самий вміст після rebase чи злиття main має той самий id. #>
+    if ((Invoke-Git @('cat-file','-e',"$Head^{commit}") -AllowFail).Code -ne 0) {
+        [void](Invoke-Git @('fetch','-q','origin',$Head))
+    }
+    $base = (Invoke-Git @('merge-base',$Main,$Head)).Out.Trim()
+    $diff = (Invoke-Git @('-c','core.quotePath=true','diff','--binary','--full-index','--no-ext-diff','--no-textconv','--no-renames',$base,$Head,'--')).Out
+    if (-not $diff.Trim()) { return '' }
+    $r = Invoke-Native $GitExe @('patch-id','--stable') $WorkDir 2 $diff
+    if ($r.Code -ne 0) { throw 'CHAIN_PATCHID' }
+    ($r.Out.Trim() -split '\s+')[0]
+}
+
 function Test-ReviewedMerge($Pull, $Reviewed, [string]$Main) {
     <# Пропускає лише нащадка перевіреної голови з незмінним diff і самими merge у першій лінії. #>
     $n = [string]$Pull.number; $head = [string]$Pull.head.sha
@@ -276,6 +335,10 @@ function Test-ReviewedMerge($Pull, $Reviewed, [string]$Main) {
     # Голову, віддану хмарному Claude, перевіряє диспетчер: чисте злиття main нового рядка не породжує.
     if (-not $verdict -and (Test-Path -LiteralPath (Get-SeenPath "cloud-review $n $($old.head)"))) { $verdict = $true }
     if (-not $verdict) { return $false }
+    # Той самий patch-id, що вже перевірений, — без нової перевірки, зокрема після rebase і злиття main у гілку.
+    $oldId = $(if ($old -is [hashtable]) { [string]$old['pid'] } else { [string](Get-Prop $old 'pid') })
+    if ($oldId) { return (Get-ReviewPatchId $head $Main) -ceq $oldId }
+    # Запис старого формату (без patch-id): незмінний diff нащадка перевіреної голови.
     if ((Invoke-Git @('merge-base','--is-ancestor',[string]$old.head,$head) -AllowFail).Code -ne 0) { return $false }
     if ((Invoke-Git @('rev-list','--first-parent','--no-merges',"$($old.head)..$head")).Out.Trim()) { return $false }
     (Get-ReviewDiff $head $Main) -ceq [string]$old.diff
@@ -614,7 +677,7 @@ function Invoke-WrapperChain {
                     $oldHead = ($key -split ' ')[1]
                     if ((Invoke-Git @('cat-file','-e',"$oldHead^{commit}") -AllowFail).Code -eq 0 -and
                         (Invoke-Git @('merge-base','--is-ancestor',$oldHead,$head) -AllowFail).Code -eq 0) {
-                        $reviewed[$n] = @{head=$oldHead;diff=(Get-ReviewDiff $oldHead $main)}
+                        $reviewed[$n] = @{head=$oldHead;diff=(Get-ReviewDiff $oldHead $main);pid=(Get-ReviewPatchId $oldHead $main)}
                         if (Test-ReviewedMerge $pr $reviewed $main) { break }
                     }
                 }
@@ -623,9 +686,12 @@ function Invoke-WrapperChain {
             $models = @(Get-ReviewModels $pr $config $now)
             if (-not @($models | Where-Object { -not $seen.ContainsKey("$n $head $_") }).Count) { continue }
             if (-not (Test-ChainCodePull $pr)) { continue }
+            # Перевірка лише на голову, наряд якої оголосив кінець, і лише для ризику Р1–Р3: проміжна голова й Р0 — без позначки.
+            if (-not (Test-ChainEndAnnounced $pr)) { Write-WrapperLog "ланцюг: #$n $head — кінець роботи не оголошено (чернетка без ГОТОВО), перевірки нема"; continue }
+            if ((Get-ChainPullRisk $pr $main) -eq 0) { Write-WrapperLog "ланцюг: #$n $head — ризик Р0, перевірки нема"; continue }
             # Перевірку, що вже дала звіт, інший рушій не повторює.
             if (Test-ChainReviewDone $n $head) { continue }
-            $diff = Get-ReviewDiff $head $main
+            $diff = Get-ReviewDiff $head $main; $patchId = Get-ReviewPatchId $head $main
             foreach ($model in $models) {
                 $key = "$n $head $model"
                 if ($seen.ContainsKey($key)) { continue }
@@ -635,7 +701,7 @@ function Invoke-WrapperChain {
                 elseif ($marked) { [void](Move-BlockedMarkers "автоперевірка-$n-$head" $model $main $now) }
                 else { Add-ChainMarker "автоперевірка-$n-$head" $model $main }
                 $seen[$key] = $true
-                $reviewed[$n] = @{head=$head;diff=$diff}
+                $reviewed[$n] = @{head=$head;diff=$diff;pid=$patchId}
                 Write-FileAtomic $statePath (([ordered]@{ main=$main; reviewed=$reviewed; live_active=$liveActive; live_since=$liveSince; live_stamps=@($liveStamps.Keys); live_pending=@($livePending); reviews=@($seen.Keys); installed_utc=$installed.ToString('o'); heads=$heads }) | ConvertTo-Json -Compress -Depth 5)
             }
         }

@@ -64,6 +64,8 @@ if sc == 'bad_branch':
     result('НОУТБУК ГОТОВО main %s' % push())
 if sc == 'blocked':
     push(); result('НОУТБУК ЗАБЛОКОВАНО: LM Studio не відповідає, гілка %s.' % branch)
+if sc == 'blocked_nobranch':
+    result('НОУТБУК ЗАБЛОКОВАНО: LM Studio не відповідає, гілки нема.')
 if sc == 'unpushed':
     # Коміт лише в копії задачі, без пушу: обгортка копію лишає (COPY_KEPT).
     git('commit', '-q', '--allow-empty', '-m', 'незапушене')
