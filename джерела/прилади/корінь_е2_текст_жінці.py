@@ -1032,6 +1032,10 @@ function іншаНазва(е, т){ const копія = т; назваЖінці
         ('порожній-поле-чужий-поряд', "const О = {}; О.р = {сп: []}; const р = О.р; р.сп.push({ім: $('ввід').value}); р.сп.push({ім: fetch('/m')}); (О.р.сп || []).forEach(х => їїСловаП(document.body, х.ім));", 1),
         ('порожній-поле-копія', "const О = {}; О.р = {сп: []}; const к = Object.assign({}, О.р); к.сп.push({ім: невідоме}); (О.р.сп || []).forEach(х => їїСловаП(document.body, х.ім));", 1),
         ('порожній-поле-передано', "const О = {}; О.р = {сп: []}; інше(О.р.сп); (О.р.сп || []).forEach(х => їїСловаП(document.body, х.ім));", 1),
+        # 11861: поле в літералі запису, який повертає функція; писачі поля — через усі змінні з її виклику.
+        ('псевдонім-виклику-чужий', "const В = {}; function відп(п){ if (!В[п]) В[п] = {ім: ''}; return В[п]; } function а(п){ const вх = відп(п); const та = document.createElement('textarea'); та.oninput = e => { вх.ім = e.target.value; }; їїСловаП(document.body, вх.ім || ''); } function б(п){ const в = відп(п); в.ім = fetch('/m'); }", 1),
+        ('псевдонім-виклику-її', "const В = {}; function відп(п){ if (!В[п]) В[п] = {ім: ''}; return В[п]; } function а(п){ const вх = відп(п); const та = document.createElement('textarea'); та.oninput = e => { вх.ім = e.target.value; }; їїСловаП(document.body, вх.ім || ''); } function б(п){ const в = відп(п); в.ім = $('ввід').value; }", 0),
+        ('свіжий-запис-виклику', "function нове(){ const з = {ім: ''}; return з; } function а(){ const вх = нове(); вх.ім = $('ввід').value; їїСловаП(document.body, вх.ім); } function б(){ const в = нове(); в.ім = fetch('/m'); }", 0),
         ('каталог-python-кандидат', "async function ф(){const д=await (await fetch('каталог.json')).json(); назваЖінціП(document.body, д.name);}", 1),
     ]
     хиб = 0
