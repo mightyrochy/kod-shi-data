@@ -2203,7 +2203,7 @@ _МІСЦЯ_ОПЦІЙ = "where it is worn"
     "different_prints_mixed": "different prints are mixed in the outfit (values: prints — pattern codes)",
     "tie_prints_by_colour_or_one_dominates": "tie the prints by a shared colour, or let one dominate by area",
     "daytime_shine": "shiny sequins, lurex or rhinestones in the daytime, which is a daytime context (values: "
-                     "slot — slot code, hour — the starting hour)",
+                     "slot — slot code)",
     "matte_item_in_slot": "a matte item in this slot (values: slot — slot code)",
     "bag_type_below_event_level": "the bag's type (a backpack, a tote, a belt bag) is below the level of the "
                                   "event (values: event_level — the event's level)",
