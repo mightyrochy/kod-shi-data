@@ -150,13 +150,21 @@ class Прилад:
         self.походження = {}            # (fid, параметр, ключ) → рядок шляху
         self.пов_носій = {}             # fid → {рід}
         self.пов_читач = {}             # fid → {ключ}
+        self.запасні = {}               # ключ → {ключі, що стоять з ним в одному `a or b`}
+        self.явні = set()               # ключі, які код читає з носія сталим ключем (`kw.get("сонце")`)
+        self.через_зірки = set()        # параметри, які зв'язав `**носій` (`підготувати(**_мк)`)
+        self.рід_ключа = {}             # ключ → {рід носія, з якого його читають}
+        self.пов_інше = set()           # fid, що в іншій гілці вертає не носій
+        self.пов_поз = {}               # fid → {позиція кортежу повернення: ({рід}, {ключ})}
         self.ключі_носія = set()        # ключ, під яким код кладе носій «с» у словник (`сценарій_сирий`)
         self.рішення = {}               # (файл, рядок, ключ) → (fid, вид)
         self.записи_носія = {}          # ключ → {(файл:рядок, значення|None)}
         self.порівняння = []            # (файл, рядок, ключ, fid, [літерали])
         self._стан = {}                 # fid → (C, R) — для вкладених функцій
         self._ітер = {}                 # fid → імена змінних циклу над носієм
+        self._ітер_кл = {}              # fid → імена ключа циклу `for k, v in носій.items()`
         self._змінено = True
+        self._R = {}
 
     # ── розв'язання викликів ──
     def _символ(self, м, ім, глибина=0):
@@ -263,15 +271,17 @@ class Прилад:
             for к, в in бR.items():
                 if к != "**":
                     R.setdefault(к, set()).update(в)
+        self._R = R
+        тіло = list(self._вузли(f))
+        перезаписані = self._перезаписані(тіло, set(поз + kwo))
         for p in поз + kwo + ([kwarg] if kwarg else []):
             if (fid, p) in self.носії_пар:
                 C.setdefault(p, set()).update(self.носії_пар[(fid, p)])
-            if (fid, p) in self.читачі_пар:
+            if (fid, p) in self.читачі_пар and p not in перезаписані:
                 R.setdefault("**" if p == kwarg else p, set()).update(self.читачі_пар[(fid, p)])
-        тіло = list(self._вузли(f))
         for _ in range(5):                      # потік у межах функції без порядку — до нерухомої точки
             до = (sum(len(v) for v in C.values()), sum(len(v) for v in R.values()))
-            іт = {}
+            іт, іт_кл = {}, set()
             for n in тіло:
                 if isinstance(n, (ast.For, ast.comprehension)) and isinstance(n.iter, ast.Call) and \
                         isinstance(n.iter.func, ast.Attribute) and n.iter.func.attr in ("items", "values"):
@@ -280,7 +290,11 @@ class Прилад:
                         for x in ast.walk(n.target):
                             if isinstance(x, ast.Name):
                                 іт.setdefault(x.id, set()).update(р)
+                        if n.iter.func.attr == "items" and isinstance(n.target, ast.Tuple) and n.target.elts and \
+                                isinstance(n.target.elts[0], ast.Name):
+                            іт_кл.add(n.target.elts[0].id)
             self._ітер[fid] = іт
+            self._ітер_кл[fid] = іт_кл
             for n in тіло:
                 self._присвоєння(fid, n, C, R)
             if до == (sum(len(v) for v in C.values()), sum(len(v) for v in R.values())):
@@ -292,6 +306,21 @@ class Прилад:
                 батьки[ч] = n
         for n in тіло:
             self._вживання(fid, n, C, R, батьки)
+
+    @staticmethod
+    def _перезаписані(тіло, параметри):
+        """Параметри, які функція сама виводить з інших входів (`сцен = сценарій(місце=…)`): її рішення беруть
+        виведене кодом значення — код і є писачем. Типове (`роль = роль or "гість"`, стала) — не виведення."""
+        out = set()
+        for n in тіло:
+            if isinstance(n, ast.Assign) and len(n.targets) == 1 and isinstance(n.targets[0], ast.Name) and \
+                    n.targets[0].id in параметри:
+                v = n.value
+                if any(isinstance(x, ast.Name) and x.id == n.targets[0].id for x in ast.walk(v)):
+                    continue
+                if isinstance(v, ast.Call) and not Прилад._лише_копія(v) or isinstance(v, (ast.Dict, ast.DictComp)):
+                    out.add(n.targets[0].id)
+        return out
 
     @staticmethod
     def _вузли(f):
@@ -321,7 +350,7 @@ class Прилад:
                 if e.func.attr in ("get", "pop", "setdefault") and e.args:
                     return self._під_носій(fid, e.func.value, _const_str(e.args[0]), C)
             ц = self.розв(fid, e.func)
-            if ц and ц in self.пов_носій:
+            if ц and ц in self.пов_носій and ц not in self.пов_інше:
                 return set(self.пов_носій[ц])
             return set()
         if isinstance(e, ast.Subscript):
@@ -340,6 +369,10 @@ class Прилад:
                                         if k is None))
         if isinstance(e, ast.DictComp):
             out = set()
+            # копія з відбором (`{k: v for k, v in с.items() if …}`) — носій; перейменовані ключі — новий словник коду
+            ключ_циклу = {x.id for g in e.generators for x in ast.walk(g.target) if isinstance(x, ast.Name)}
+            if not (isinstance(e.key, ast.Name) and e.key.id in ключ_циклу):
+                return set()
             for g in e.generators:
                 if isinstance(g.iter, ast.Call) and isinstance(g.iter.func, ast.Attribute) and \
                         g.iter.func.attr in ("items", "keys", "values"):
@@ -361,19 +394,34 @@ class Прилад:
             return set()
         if ключ in ("сценарій", "паспорт") and "з" in self.носій(fid, база, C):
             return {"с"}
-        if ключ in self.ключі_носія and ключ not in ("сценарій", "паспорт"):
+        if ключ in self.ключі_носія and ключ not in ("сценарій", "паспорт") and \
+                "з" not in self.носій(fid, база, C) and not self.ключі(fid, база, C, self._R):     # пакет[«сценарій_сирий»], а не поле самого входу
             return {"с"}
         return set()
 
     def читання(self, fid, e, C):
         """Ключ, коли `e` — пряме читання носія: .get("к"), ["к"], .pop("к")."""
+        к, база = None, None
         if isinstance(e, ast.Call) and isinstance(e.func, ast.Attribute) and e.func.attr in ("get", "pop") and \
-                e.args and _const_str(e.args[0]) and self.носій(fid, e.func.value, C) - {"р"}:
-            return _const_str(e.args[0])
-        if isinstance(e, ast.Subscript) and isinstance(e.ctx, ast.Load) and _const_str(e.slice) and \
-                self.носій(fid, e.value, C) - {"р"}:
-            return _const_str(e.slice)
-        return None
+                e.args and _const_str(e.args[0]):
+            к, база = _const_str(e.args[0]), e.func.value
+        elif isinstance(e, ast.Subscript) and isinstance(e.ctx, ast.Load) and _const_str(e.slice):
+            к, база = _const_str(e.slice), e.value
+        if к is None:
+            return None
+        р = self.носій(fid, база, C) - {"р"}
+        if not р:
+            return None
+        self._рід(к, р)
+        self.явні.add(к)
+        return к
+
+    def _рід(self, к, р):
+        """Звідки поле: «з» — корінь запиту (профіль і службові поля виклику), «с» — сценарій чи паспорт."""
+        с = self.рід_ключа.setdefault(к, set())
+        if not р <= с:
+            с |= р
+            self._змінено = True
 
     def читання_kw(self, fid, e, R):
         """`kw.get("к")` над `**kw`, у який передано іменоване значення читача `к`."""
@@ -405,7 +453,17 @@ class Прилад:
                 return set(self.пов_читач[ц])
             return set()
         if isinstance(e, ast.BoolOp):
-            return set().union(*(self.ключі(fid, v, C, R) for v in e.values))
+            частини = [self.ключі(fid, v, C, R) for v in e.values]
+            усі = set().union(*частини)
+            if isinstance(e.op, ast.Or) and sum(1 for ч in частини if ч) > 1:
+                # `d.get("слова_розмови") or d.get("слова_ходу")`: запасний ключ — значення має писача, коли хоч
+                # один із ключів його має
+                for к in усі:
+                    з = self.запасні.setdefault(к, set())
+                    if not (усі - {к}) <= з:
+                        з |= усі - {к}
+                        self._змінено = True
+            return усі
         if isinstance(e, ast.IfExp):
             return self.ключі(fid, e.body, C, R) | self.ключі(fid, e.orelse, C, R)
         if isinstance(e, (ast.NamedExpr, ast.Await)):
@@ -425,26 +483,50 @@ class Прилад:
         роди = self.носій(fid, знач, C)
         кл = self.ключі(fid, знач, C, R)
         for ц in цілі:
-            імена = ([ц] if isinstance(ц, ast.Name) else
-                     [x for x in ast.walk(ц) if isinstance(x, ast.Name)] if isinstance(ц, (ast.Tuple, ast.List))
-                     else [])
-            for t in імена:
-                if роди:
-                    C.setdefault(t.id, set()).update(роди)
-                if кл:
-                    R.setdefault(t.id, set()).update(кл)
+            for t, р_t, к_t in self._розпакування(fid, ц, знач, роди, кл, C, R):
+                if р_t:
+                    C.setdefault(t.id, set()).update(р_t)
+                if к_t:
+                    R.setdefault(t.id, set()).update(к_t)
             # копія носія ключ за ключем робить словник носієм (`нагода[k] = v` у `з_показу`): ключ — змінна,
             # значення — з носія; запис сталого ключа — писач коду, а не копія входу
-            if isinstance(ц, ast.Subscript) and isinstance(ц.value, ast.Name) and _const_str(ц.slice) is None:
-                р = self._рід_копії(fid, знач, C)
+            if isinstance(ц, ast.Subscript) and isinstance(ц.value, ast.Name) and isinstance(ц.slice, ast.Name):
+                р = self._рід_копії(fid, знач, C, ц.slice.id)
                 if р and not р <= C.get(ц.value.id, set()):
                     C.setdefault(ц.value.id, set()).update(р)
 
-    def _рід_копії(self, fid, e, C):
+    def _розпакування(self, fid, ц, знач, роди, кл, C, R):
+        """(ім'я, роди, ключі) для цілі присвоєння; кортеж розпаковується за позицією, коли вона відома
+        (кортеж-літерал чи функція, що повертає кортеж), інакше кожне ім'я бере все значення."""
+        if isinstance(ц, ast.Name):
+            return [(ц, роди, кл)]
+        if isinstance(ц, ast.Starred):
+            return self._розпакування(fid, ц.value, знач, роди, кл, C, R)
+        if not isinstance(ц, (ast.Tuple, ast.List)):
+            return []          # `стан["F"] = …`, `о.поле = …` — не ім'я
+        поз = None
+        if isinstance(знач, (ast.Tuple, ast.List)) and len(знач.elts) == len(ц.elts):
+            поз = [(self.носій(fid, v, C), self.ключі(fid, v, C, R)) for v in знач.elts]
+        elif isinstance(знач, ast.Call):
+            ф = self.розв(fid, знач.func)
+            пп = self.пов_поз.get(ф) if ф else None
+            if пп is not None and not any(isinstance(x, ast.Starred) for x in ц.elts):
+                поз = [пп.get(i, (set(), set())) for i in range(len(ц.elts))]
+        out = []
+        for i, x in enumerate(ц.elts):
+            р_i, к_i = поз[i] if поз else (роди, кл)
+            out += self._розпакування(fid, x, None, р_i, к_i, C, R)
+        return out
+
+    def _рід_копії(self, fid, e, C, ключ):
+        """Копія під тим самим ключем: `ц[k] = с.get(k)`, `ц[k] = с[k]`, `ц[k] = v` з `for k, v in с.items()`;
+        під іншим ключем (`вих[ПОЛЯ.get(к)] = v`) — новий словник коду, не носій."""
         if isinstance(e, ast.Call) and isinstance(e.func, ast.Attribute) and e.func.attr in ("get", "pop") and \
-                e.args and _const_str(e.args[0]) is None:
+                e.args and isinstance(e.args[0], ast.Name) and e.args[0].id == ключ:
             return self.носій(fid, e.func.value, C) - {"р"}
-        if isinstance(e, ast.Name):
+        if isinstance(e, ast.Subscript) and isinstance(e.slice, ast.Name) and e.slice.id == ключ:
+            return self.носій(fid, e.value, C) - {"р"}
+        if isinstance(e, ast.Name) and ключ in self._ітер_кл.get(fid, ()):
             return set(self._ітер.get(fid, {}).get(e.id, ()))
         return set()
 
@@ -492,8 +574,9 @@ class Прилад:
         if isinstance(n, (ast.Assign, ast.AugAssign)):
             for ц in (n.targets if isinstance(n, ast.Assign) else [n.target]):
                 пари = [(ц, n.value)]
-                if isinstance(ц, ast.Tuple) and isinstance(n.value, ast.Tuple):
-                    пари = list(zip(ц.elts, n.value.elts))
+                if isinstance(ц, ast.Tuple):
+                    пари = list(zip(ц.elts, n.value.elts if isinstance(n.value, ast.Tuple)
+                                    else [n.value] * len(ц.elts)))
                 for t, v in пари:
                     if isinstance(t, ast.Subscript) and _const_str(t.slice):
                         if self.носій(fid, t.value, C) - {"р"}:
@@ -502,6 +585,20 @@ class Прилад:
                             self._ключ_носія(_const_str(t.slice))
         if isinstance(n, ast.Return) and n.value is not None:
             self._пов(fid, self.носій(fid, n.value, C), self.ключі(fid, n.value, C, R))
+            if not self.носій(fid, n.value, C) and not isinstance(n.value, (ast.Constant, ast.Tuple)) and \
+                    fid not in self.пов_інше:
+                # інша гілка вертає словник коду (`return вих` поруч із `return в`): повернення — не носій
+                self.пов_інше.add(fid)
+                self._змінено = True
+            if isinstance(n.value, ast.Tuple):
+                пп = self.пов_поз.setdefault(fid, {})
+                for i, v in enumerate(n.value.elts):
+                    р_i, к_i = пп.setdefault(i, (set(), set()))
+                    нр, нк = self.носій(fid, v, C), self.ключі(fid, v, C, R)
+                    if not (нр <= р_i and нк <= к_i):
+                        р_i |= нр
+                        к_i |= нк
+                        self._змінено = True
         if isinstance(n, ast.Compare) and len(n.ops) == 1 and isinstance(n.ops[0], (ast.In, ast.NotIn)) and \
                 _const_str(n.left) and self.носій(fid, n.comparators[0], C) - {"р"}:
             self._рішення(fid, n.lineno, _const_str(n.left), "ключ in носій")
@@ -619,6 +716,7 @@ class Прилад:
                 for p in поз + kwo:
                     if p not in зв and p != "self":
                         self._читач_пар(ц, p, {p}, шлях + " **")
+                        self.через_зірки.add(p)
                 if kwarg:
                     self._носій_пар(ц, kwarg, р)
             elif isinstance(kw.value, ast.Name) and kw.value.id == власний_kw and R.get("**"):
@@ -633,10 +731,26 @@ class Прилад:
     def _запис(self, fid, n, ключ, знач, C, R):
         if знач is None or _порожня(знач):
             return
-        if ключ in self.ключі(fid, знач, C, R):        # копія того самого ключа — не писач
+        if ключ in self.ключі(fid, знач, C, R) and self._лише_копія(знач):   # копія того самого ключа — не писач
             return
         файл = self.мод[fid[0]].ім + ".py"
         self.записи_носія.setdefault(ключ, set()).add(("%s:%d" % (файл, n.lineno), _const_str(знач)))
+
+    @staticmethod
+    def _лише_копія(e):
+        """Значення — лише прочитане (ім'я, читання, обгортка без доданих полів), а не нове: `dict(т0, близькість=…)`
+        пише ключ, хоч і бере старе значення за основу."""
+        if isinstance(e, ast.Call):
+            if e.keywords:
+                return False
+            if Прилад._ім_виклику(e.func) in ОБГОРТКИ and isinstance(e.func, ast.Name):
+                return all(Прилад._лише_копія(a) for a in e.args)
+            return isinstance(e.func, ast.Attribute) and e.func.attr in ("get", "pop", "copy")
+        if isinstance(e, ast.Dict):
+            return all(k is None and Прилад._лише_копія(v) for k, v in zip(e.keys, e.values))
+        if isinstance(e, ast.BoolOp):
+            return all(Прилад._лише_копія(v) or _порожня(v) for v in e.values)
+        return isinstance(e, (ast.Name, ast.Subscript, ast.Constant))
 
     def _рішення(self, fid, рядок, ключ, вид):
         к = (self.мод[fid[0]].ім + ".py", рядок, ключ)
@@ -656,6 +770,10 @@ class Прилад:
         elif isinstance(б.ops[0], (ast.In, ast.NotIn)) and б.left is ч and \
                 isinstance(інше, (ast.Tuple, ast.List, ast.Set)):
             літ = [_const_str(x) for x in інше.elts if _const_str(x)]
+        # п.2 — лише коли порівнюють саме поле: пряме читання носія чи параметр з іменем поля (`роль in (…)`);
+        # змінна, що зібрала кілька входів потоком без порядку, гілки одного поля не показує
+        if isinstance(n, ast.Name) and n.id not in кл:
+            return
         if літ:
             for к in кл:
                 self.порівняння.append((self.мод[fid[0]].ім + ".py", n.lineno, к, fid, літ))
@@ -699,6 +817,19 @@ def писачі_js(дж):
             ключі.setdefault(мітка.group(1), "%s:%d" % (ім, т.count("\n", 0, мітка.start()) + 1))
         for мітка in re.finditer(r"(?:[{,]\s*)['\"](%s+)['\"]\s*:" % ЛІТЕРА, т):
             ключі.setdefault(мітка.group(1), "%s:%d" % (ім, т.count("\n", 0, мітка.start()) + 1))
+        # скорочений запис об'єкта `{репліка, паспорт: П}`; деструктуризація (`const {a} = …`, `({a}) =>`) — читання
+        for мітка in re.finditer(r"\{([^{}]*)\}", т):
+            до = т[:мітка.start()].rstrip()
+            після = т[мітка.end():].lstrip()
+            if re.search(r"(?:\b(?:const|let|var|for)|\(|,)$", до) and (після[:1] == "=" and після[:2] != "==" or
+                                                                    після.startswith(")") and "=>" in після[:8]):
+                continue
+            if re.search(r"\b(?:const|let|var)$", до) or (після[:1] == "=" and після[:2] not in ("==", "=>")):
+                continue
+            for частина in мітка.group(1).split(","):
+                м = re.fullmatch(r"\s*(?:\.\.\.)?(%s+)\s*" % ЛІТЕРА, частина)
+                if м and not частина.strip().startswith("..."):
+                    ключі.setdefault(м.group(1), "%s:%d" % (ім, т.count("\n", 0, мітка.start()) + 1))
         for мітка in re.finditer(r"\.(%s+)\s*=(?!=)" % ЛІТЕРА, т):
             ключі.setdefault(мітка.group(1), "%s:%d" % (ім, т.count("\n", 0, мітка.start()) + 1))
         for мітка in re.finditer(r"\[\s*['\"](%s+)['\"]\s*\]\s*=(?!=)" % ЛІТЕРА, т):
@@ -761,6 +892,12 @@ class Паспорт:
         self.пов[fid] = вих
         return вих
 
+    def повертає_параметр(self, fid):
+        f = self.п.мод[fid[0]].функції[fid[1]]
+        поз = self.п.параметри(fid)[0]
+        return [поз.index(n.value.id) for n in Прилад._вузли(f)
+                if isinstance(n, ast.Return) and isinstance(n.value, ast.Name) and n.value.id in поз]
+
     def мутація(self, fid, i):
         if (fid, i) in self.мут:
             return self.мут[(fid, i)]
@@ -804,9 +941,8 @@ class Паспорт:
                         if isinstance(x, ast.Assign):
                             for t in x.targets:
                                 if isinstance(t, ast.Subscript) and isinstance(t.value, ast.Name) and \
-                                        isinstance(t.slice, ast.Name) and t.slice.id == ім_змінної and \
                                         (лише is None or t.value.id == лише):
-                                    for к in значення_ключів:
+                                    for к in self._ключі_зрізу(t.slice, ім_змінної, значення_ключів):
                                         if not _порожня(x.value):
                                             лок.setdefault(t.value.id, {})[к] = (self._місце(fid, x), None)
         for n in вузли:
@@ -819,8 +955,10 @@ class Паспорт:
                         з = self._значення(fid, n, n.value, _const_str(t.slice))
                         if з:
                             лок.setdefault(t.value.id, {})[_const_str(t.slice)] = з
-                    elif isinstance(t, ast.Tuple) and isinstance(n.value, ast.Tuple):
-                        for tt, vv in zip(t.elts, n.value.elts):
+                    elif isinstance(t, ast.Tuple):
+                        # `п["виміри"], п["звідки"] = виміри_нагоди(…)` — значення кожного з кортежу виклику
+                        знач_и = n.value.elts if isinstance(n.value, ast.Tuple) else [n.value] * len(t.elts)
+                        for tt, vv in zip(t.elts, знач_и):
                             if isinstance(tt, ast.Subscript) and isinstance(tt.value, ast.Name) and \
                                     _const_str(tt.slice) and (лише is None or tt.value.id == лише):
                                 з = self._значення(fid, n, vv, _const_str(tt.slice))
@@ -850,6 +988,18 @@ class Паспорт:
                             if м_кл:
                                 лок.setdefault(a.id, {}).update(м_кл)
         return лок
+
+    @staticmethod
+    def _ключі_зрізу(з, змінна, ключі):
+        """Ключі запису `п[з]` у циклі за таблицею: `п[ім]`, `п[ім + "_слова"]`, `п["в_" + ім]`."""
+        if isinstance(з, ast.Name) and з.id == змінна:
+            return list(ключі)
+        if isinstance(з, ast.BinOp) and isinstance(з.op, ast.Add):
+            if isinstance(з.left, ast.Name) and з.left.id == змінна and _const_str(з.right) is not None:
+                return [к + _const_str(з.right) for к in ключі]
+            if isinstance(з.right, ast.Name) and з.right.id == змінна and _const_str(з.left) is not None:
+                return [_const_str(з.left) + к for к in ключі]
+        return []
 
     def _ключі_циклу(self, м, n):
         """{змінна_ключа: [ключі]} для циклу за таблицею: літерал пар чи таблиця модуля."""
@@ -929,7 +1079,13 @@ class Паспорт:
                 return вих
             ц = self.п.розв(fid, e.func)
             if ц:
-                return dict(self.ключі_функції(ц))
+                вих = dict(self.ключі_функції(ц))
+                # функція повертає свій параметр (`return п`): ключі аргументу виклику — теж її повернення
+                for i in self.повертає_параметр(ц):
+                    if i < len(e.args):
+                        for к, з in self.ключі_виразу(fid, e.args[i], лок).items():
+                            вих.setdefault(к, з)
+                return вих
             return {}
         if isinstance(e, ast.Name):
             return dict(лок.get(e.id, {}))
@@ -974,8 +1130,25 @@ class Паспорт:
 
 # ── ЗБІРКА ─────────────────────────────────────────────────────────────────────────────────────────────────────
 
-def значення_осі(вм, писачі_місця, мод_прилад):
-    return None
+def _без_вкладених(п, місця):
+    """Читання поля в тілі гілки, умова якої вже місце того самого поля (`if роль in (…): ноти.append(… % роль)`),
+    — те саме рішення, не окреме місце."""
+    умови = {}
+    for м in місця:
+        умови.setdefault((м["файл"], м["поле"]), set()).add(м["рядок"])
+    за_файлом = {М.ім + ".py": М for М in п.мод.values()}
+    лишити, у_гілці = [], []
+    for м in місця:
+        М = за_файлом.get(м["файл"])
+        f = М.функції.get(м["функція"]) if М else None
+        вкладене = False
+        for n in (ast.walk(f) if f else ()):
+            if isinstance(n, ast.If) and n.test.lineno in умови[(м["файл"], м["поле"])] and \
+                    n.test.lineno != м["рядок"] and n.body[0].lineno <= м["рядок"] <= (n.body[-1].end_lineno or 0):
+                вкладене = True
+                break
+        (у_гілці if вкладене else лишити).append(м)
+    return лишити, у_гілці
 
 
 def лічба(корінь):
@@ -991,6 +1164,15 @@ def лічба(корінь):
     except Exception:
         пп = {}
     панель = {к: [i[0] for i in в.get("показ") or () if i and i[0] in js_ід] for к, в in пп.items()}
+    осі = {}
+    try:
+        _табл = importlib.import_module("внутрішня_мова").ТАБЛИЦЯ
+        for к, в in пп.items():
+            вісь = в.get("вісь")
+            if вісь and вісь[1] in _табл and isinstance(_табл[вісь[1]], dict):
+                осі[к] = {str(x) for x in _табл[вісь[1]].values()} | {"невідомо"}
+    except Exception:
+        pass
     зовнішні = set()
     try:
         дерево = ast.parse(open(os.path.join(дж, "суд_чеклісти.py"), encoding="utf-8").read())
@@ -1024,9 +1206,12 @@ def лічба(корінь):
                 return None
             зн |= опції[i]
         if к in паспорт:
-            if паспорт[к][1] is None:
+            if паспорт[к][1] is not None:
+                зн.add(паспорт[к][1])
+            elif осі.get(к) is not None:
+                зн |= осі[к]           # писач — розбір відповіді моделі кодом осі (`_ВМ.ключ(вісь, …)`)
+            else:
                 return None
-            зн.add(паспорт[к][1])
         for _, v in п.записи_носія.get(к, ()):
             if v is None:
                 return None
@@ -1034,11 +1219,29 @@ def лічба(корінь):
         return зн
 
     місця, сам_каже, без_писача, не_визначено = [], [], set(), set()
+    корінь_запиту, не_поле = {}, {}
+    поля_входу = set(пп)
+    try:
+        _сц = importlib.import_module("сценарій")
+        поля_входу |= set(_сц.ПОЛЯ) | set(_сц.СЛУЖБОВІ)
+    except Exception:
+        pass
     for (файл, рядок, к), (fid, вид) in sorted(п.рішення.items()):
         if к in зовнішні:
             continue
         пис = писачі(к)
         if пис:
+            continue
+        if any(писачі(з) for з in п.запасні.get(к, ())):
+            continue
+        if к in п.через_зірки and к not in п.явні and к not in поля_входу:
+            # параметр правила, який міг би прийти з `**сценарію`, але такого поля в сценарії й паспорті нема
+            # (`підготувати(шлях_фіду=…)` кличе стенд): не вхід про неї чи нагоду
+            не_поле.setdefault(к, []).append("%s:%d" % (файл, рядок))
+            continue
+        if п.рід_ключа.get(к) == {"з"} and к not in поля_входу:
+            # поле кореня запиту, не сценарію чи паспорта: профіль чи службове поле виклику — питання класу
+            корінь_запиту.setdefault(к, []).append("%s:%d" % (файл, рядок))
             continue
         if п.чесна(fid, к):
             сам_каже.append((файл, рядок, к, fid[1]))
@@ -1049,7 +1252,8 @@ def лічба(корінь):
             if ф == fid and кк == к:
                 шлях = "%s ← %s" % (пар, ш)
                 break
-        місця.append(dict(файл=файл, рядок=рядок, пункт=1, поле=к, функція=fid[1], вид=вид, шлях=шлях))
+        місця.append(dict(файл=файл, рядок=рядок, пункт=1, поле=к, функція=fid[1], вид=вид, шлях=шлях,
+                          рід="".join(sorted(п.рід_ключа.get(к, ())))))
     for файл, рядок, к, fid, літ in sorted(set((a, b, c, d, tuple(e)) for a, b, c, d, e in п.порівняння)):
         if к in зовнішні or not писачі(к):
             continue
@@ -1061,8 +1265,9 @@ def лічба(корінь):
         if мертві:
             місця.append(dict(файл=файл, рядок=рядок, пункт=2, поле=к, функція=fid[1], вид="порівняння",
                               шлях="літерали без писача: " + ", ".join(мертві)))
+    місця, у_гілці = _без_вкладених(п, місця)
     js = {к: js_читання[к] for к in sorted(без_писача) if к in js_читання}
-    return dict(місця=місця, сам_каже=сам_каже, без_писача=sorted(без_писача), js_читання=js,
+    return dict(місця=місця, у_гілці=у_гілці, корінь_запиту=корінь_запиту, не_поле=не_поле, сам_каже=сам_каже, без_писача=sorted(без_писача), js_читання=js,
                 п2_не_визначено=sorted(не_визначено), кроків=кроків, модулів=len(п.мод),
                 читачів=len(п.читачі_пар), рішень=len(п.рішення), писачі=писачі)
 
@@ -1082,7 +1287,7 @@ def main():
         print("модулів продукту: %d; параметрів-читачів: %d; рішень над входом: %d; кроків до нерухомої точки: %d"
               % (р["модулів"], р["читачів"], р["рішень"], р["кроків"]))
         for м in р["місця"]:
-            print("%s:%d · п.%d · %s · %s · %s · %s" % (м["файл"], м["рядок"], м["пункт"], м["поле"], м["функція"],
+            print("%s:%d · п.%d · %s · %s · %s · %s · %s" % (м["файл"], м["рядок"], м["пункт"], м["поле"], м.get("рід", ""), м["функція"],
                                                        м["вид"], м["шлях"]))
         print()
         print("поля без писача (%d): %s" % (len(р["без_писача"]), ", ".join(р["без_писача"])))
@@ -1091,6 +1296,15 @@ def main():
         if р["сам_каже"]:
             print("сам каже «входу нема» (не місце): " +
                   "; ".join("%s:%d %s" % (ф, р_, к) for ф, р_, к, _ in р["сам_каже"]))
+        if р["у_гілці"]:
+            print("читання в гілці, умова якої вже місце того самого поля (не окреме місце): " +
+                  "; ".join("%s:%d %s" % (м["файл"], м["рядок"], м["поле"]) for м in р["у_гілці"]))
+        if р["корінь_запиту"]:
+            print("поле кореня запиту без писача (не сценарій і не паспорт; у `місць` не входить — РІШЕННЯ класу): " +
+                  "; ".join("%s %s" % (к, ", ".join(в)) for к, в in sorted(р["корінь_запиту"].items())))
+        if р["не_поле"]:
+            print("параметр під `**сценарієм`, не поле сценарію чи паспорта (не місце): " +
+                  "; ".join("%s %s" % (к, ", ".join(в)) for к, в in sorted(р["не_поле"].items())))
         print("п.2 не визначено (значення писача невідомі): %s" % ", ".join(р["п2_не_визначено"]))
         if р["js_читання"]:
             print("JS читає поле без писача: " + "; ".join("%s %s" % (к, в) for к, в in р["js_читання"].items()))
