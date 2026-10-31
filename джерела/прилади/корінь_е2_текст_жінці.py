@@ -913,7 +913,7 @@ def подія(с):
 
 def писач(с):
     """Відділяє доведений допис коду від її слів і недоведеного джерела."""
-    if с.джерела & {'модель', 'складено', 'код'}:
+    if с.джерела & {'модель', 'складено', 'код', 'напис коду'}:
         return 'продукт'
     if 'невідоме' in с.джерела or not с.джерела:
         return 'недоведений'
@@ -999,6 +999,22 @@ function іншаНазва(е, т){ const копія = т; назваЖінці
         ('assign-ніхто', "const д = Object.assign({}, {інше: 1}); їїСловаП(document.body, д.назва);", 1),
         ('spread-останній', "const б = {інше: fetch('/m')}; const д = {...б, назва: $('ввід').value}; їїСловаП(document.body, д.назва);", 0),
         ('spread-після-ключа', "const д = {назва: $('ввід').value, ...невідоме}; їїСловаП(document.body, д.назва);", 1),
+        ('цикл-її', "indexedDB.open('б'); function писати(к, з){ d.transaction('кв').objectStore('кв').put(з, к); } function читати(к){ return d.transaction('кв').objectStore('кв').get(к).result; } let П = []; П = читати('п') || []; if (!П.length){ П = [{ід: 1, назва: ''}]; писати('п', П); } const а = П.find(x=>x.ід === 1); const нова = ($('ввід').value || '').trim(); if (а && нова){ а.назва = нова; писати('п', П); } П.forEach(п=>назваЖінціП(document.body, п.назва || 'Без назви'));", 0),
+        ('цикл-сталий-напис', "indexedDB.open('б'); function писати(к, з){ d.transaction('кв').objectStore('кв').put(з, к); } function читати(к){ return d.transaction('кв').objectStore('кв').get(к).result; } let П = []; П = читати('п') || []; if (!П.length){ П = [{ід: 1, назва: 'мій профіль'}]; писати('п', П); } const а = П.find(x=>x.ід === 1); const нова = ($('ввід').value || '').trim(); if (а && нова){ а.назва = нова; писати('п', П); } П.forEach(п=>назваЖінціП(document.body, п.назва || 'Без назви'));", 1),
+        ('цикл-сталий-push', "indexedDB.open('б'); function писати(к, з){ d.transaction('кв').objectStore('кв').put(з, к); } function читати(к){ return d.transaction('кв').objectStore('кв').get(к).result; } let П = []; П = читати('п') || []; П.push({ід: 2, назва: 'профіль ' + (П.length + 1)}); писати('п', П); const а = П.find(x=>x.ід === 1); const нова = ($('ввід').value || '').trim(); if (а && нова){ а.назва = нова; писати('п', П); } П.forEach(п=>назваЖінціП(document.body, п.назва || 'Без назви'));", 1),
+        ('цикл-без-писача', "indexedDB.open('б'); function писати(к, з){ d.transaction('кв').objectStore('кв').put(з, к); } function читати(к){ return d.transaction('кв').objectStore('кв').get(к).result; } let П = []; П = читати('п') || []; писати('п', П); П.forEach(п=>назваЖінціП(document.body, п.назва || 'Без назви'));", 1),
+        ('цикл-модель', "indexedDB.open('б'); function писати(к, з){ d.transaction('кв').objectStore('кв').put(з, к); } function читати(к){ return d.transaction('кв').objectStore('кв').get(к).result; } let П = []; П = читати('п') || []; П.push({ід: 2, назва: fetch('/m')}); писати('п', П); const а = П.find(x=>x.ід === 1); const нова = ($('ввід').value || '').trim(); if (а && нова){ а.назва = нова; писати('п', П); } П.forEach(п=>назваЖінціП(document.body, п.назва || 'Без назви'));", 1),
+        ('цикл-лічильник', "indexedDB.open('б'); const s = d.transaction('кв').objectStore('кв'); const ч = s.get('н'); const н = (ч.result || 0) + 1; s.put(н, 'н'); document.body.textContent = '№ ' + н;", 0),
+        ('носій-не-втеча', "let С = []; С.push({ім: $('ввід').value}); localStorage.setItem('с', JSON.stringify(С)); С.forEach(з=>їїСловаП(document.body, з.ім));", 0),
+        ('носій-без-ключа', "function передати(з){ інше(з); } let С = []; С.push({ім: $('ввід').value}); передати(С); С.forEach(з=>їїСловаП(document.body, з.ім));", 1),
+        ('псевдонім-запис', "const сп = [{ім: $('ввід').value}]; const е = сп.find(х=>х); е.ім = fetch('/m'); сп.forEach(з=>їїСловаП(document.body, з.ім));", 1),
+        ('псевдонім-її', "const сп = [{ім: ''}]; for (const е of сп) е.ім = $('ввід').value; сп.forEach(з=>їїСловаП(document.body, з.ім));", 0),
+        ('напис-у-полі', "const з = {ім: $('ввід').value || 'Без імені'}; їїСловаП(document.body, з.ім);", 1),
+        ('порожнє-у-полі', "const з = {ім: ($('ввід').value || '').trim()}; їїСловаП(document.body, з.ім);", 0),
+        ('напис-показу', "const з = {ім: $('ввід').value}; назваЖінціП(document.body, з.ім || 'Без імені');", 0),
+        ('число-у-полі', "const з = {ім: $('ввід').value || 0}; їїСловаП(document.body, з.ім);", 1),
+        ('null-у-полі', "const з = {ім: ($('ввід').value || '').trim() || null}; назваЖінціП(document.body, з.ім || 'Без імені');", 0),
+        ('сховище-напис', "localStorage.setItem('ім', $('ввід').value); localStorage.setItem('ім', 'Типове'); їїСловаП(document.body, localStorage.getItem('ім'));", 1),
         ('каталог-python-кандидат', "async function ф(){const д=await (await fetch('каталог.json')).json(); назваЖінціП(document.body, д.name);}", 1),
     ]
     хиб = 0
@@ -1014,6 +1030,11 @@ function іншаНазва(е, т){ const копія = т; назваЖінці
             п, стоки, _, _, _ = обчислити(тека)
             вих = [с for с in стоки if not с.обгортка and є_місцем(с)]
             ок = len(вих) == очікується
+            if ім in ('цикл-сталий-напис', 'цикл-сталий-push'):
+                # Місце — через сталий напис у полі її імені, а не через цикл (рішення 31.10, 11787).
+                ок = ок and all('напис коду' in с.джерела and 'невідоме' not in с.джерела for с in вих)
+            if ім == 'цикл-без-писача':
+                ок = ок and all('невідоме' in с.джерела for с in вих)
             if ім == 'каталог-python-кандидат':
                 ок = ок and any('писач.py:2' in д and 'недоведений' in д for с in вих for д in с.писачі)
             print('%s: %d, очікується %d — %s' % (ім, len(вих), очікується, 'так' if ок else 'НІ'))
