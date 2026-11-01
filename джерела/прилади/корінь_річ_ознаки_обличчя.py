@@ -54,7 +54,7 @@ def _пара(*мітки):
     return вих
 E = frozenset()
 СЛУЖБОВІ = re.compile(r"^(_meta|_макіяж|макіяж_|protocol$|from_photo$|source$|photo_note$)")
-НЕВІДОМЕ = re.compile(r"не стверджу|not_asserted|unknown|невідом|не визнач|н/д|^none$|не калібр|^free$|вільн|^—$",
+НЕВІДОМЕ = re.compile(r"не стверджу|not_asserted|unknown|невідом|не визнач|н/д|^none$|не калібр|^free$|вільн|^—$|\bнема\b|не чита",
                       re.IGNORECASE)
 ВИМІР = re.compile(r"(?<!not )(?<!un)(?<!не )\b(measured|measures|measure|виміря\w*|вимір\w*)", re.IGNORECASE)
 HEX_РЕГ = re.compile(r"\[0-9a-fA-F\]\{6\}|\[0-9A-Fa-f\]\{6\}")
@@ -169,6 +169,12 @@ def _формульні(дерево):
     вих = set()
     for в in ast.walk(дерево):
         т = getattr(в, "test", None)
+        if isinstance(в, ast.If) and not в.orelse and len(в.body) == 1 and isinstance(в.body[0], ast.AugAssign) \
+                and isinstance(т, ast.Compare) and len(т.ops) == 1 and isinstance(в.body[0].target, ast.Name) \
+                and _число(в.body[0].value) and abs(в.body[0].value.value) == 360 \
+                and в.body[0].target.id in _імена(т):
+            вих.add(id(т))   # `if b < a: b += 360` — розгортка дуги через 0°, а не поріг
+            continue
         порівняння = т.values if isinstance(т, ast.BoolOp) and isinstance(т.op, ast.And) else [т]
         if not all(isinstance(x, ast.Compare) and len(x.ops) == 1 and _число(x.comparators[0]) for x in порівняння):
             continue
@@ -1284,25 +1290,28 @@ class Стан:
             return _пара(self.читати_env(в.id), *[з for к, з in км.items() if к != МАПА])
         return self.e(в)
 
-    def значення_замість(self, в):
-        """Вираз — клас чи число, поставлене кодом (стала, стала модуля, параметр зі сталим типовим)."""
+    def значення_замість(self, в, число=False):
+        """Вираз — клас чи число, поставлене кодом (стала, стала модуля, параметр зі сталим типовим).
+        `число`: запасне за `or`/`.get` — лише число; рядок там — ім'я, шлях чи підпис, а не її клас (клас замість
+        незнання ловить гілка «невідомо»), крім рядка, що зве незнання виміром."""
         if isinstance(в, ast.Constant):
             з = в.value
             if з is None or isinstance(з, bool) or з == "":
                 return False
             if isinstance(з, str):
-                return not НЕВІДОМЕ.search(з)
-            return isinstance(з, (int, float))
+                return bool(ВИМІР.search(з)) if число else not НЕВІДОМЕ.search(з)
+            # ±1e9 замість межі — «межі нема», а не число замість її значення
+            return isinstance(з, (int, float)) and abs(з) < 1e6
         if isinstance(в, ast.UnaryOp) and isinstance(в.operand, ast.Constant):
-            return self.значення_замість(в.operand)
+            return self.значення_замість(в.operand, число)
         if isinstance(в, ast.Tuple) and в.elts:
-            return all(self.значення_замість(x) for x in в.elts)
+            return all(self.значення_замість(x, число) for x in в.elts)
         if isinstance(в, ast.Name) and not self.e(в):
             if в.id in self.ф.типові:
-                return self.значення_замість(self.ф.типові[в.id])
+                return self.значення_замість(self.ф.типові[в.id], число)
             з = self.м.присвоєння.get(в.id)
             if з is not None and в.id not in self.локальні:
-                return self.значення_замість(з)
+                return self.значення_замість(з, число)
         return False
 
     def невідоме_в_гілці(self, і):
@@ -1361,7 +1370,7 @@ class Стан:
         if isinstance(в, ast.BoolOp):
             мітки = [self.e(x) for x in в.values]
             if isinstance(в.op, ast.Or) and len(в.values) >= 2 and any(S in м for м in мітки[:-1]) \
-                    and self.значення_замість(в.values[-1]):
+                    and self.значення_замість(в.values[-1], число=True):
                 self.а.місце(self.м, в, 2, "запасне число: %s" % ast.unparse(в)[:70])
             вих = E
             for м in мітки:
@@ -1461,7 +1470,7 @@ class Стан:
         if типове is not None:
             мт = self.e(типове)
             вих |= мт
-            if S in вих and not мт and self.значення_замість(типове):
+            if S in вих and not мт and self.значення_замість(типове, число=True):
                 self.а.місце(self.м, вузол, 2, "запасне число: %s" % ast.unparse(вузол)[:70])
         return frozenset(вих)
 
@@ -2020,6 +2029,13 @@ def стенд():
                         в_г["ребер"] += 1
                         if в_г["ребер"] == 1:
                             pass
+                    дуга_а, дуга_б = F["очі"]["h"], F["шкіра"]["h"]
+                    if дуга_б < дуга_а:
+                        дуга_б += 360.0
+                    верх_b = F["шкіра"].get("b_max") or 1e9
+                    чому_б = F["очі"].get("чому") or "у профілі нема кольору очей — бік не читається"
+                    назва_р = F["шкіра"].get("назва") or "корінь"
+                    джерело_р = F["шкіра"].get("джерело") or "вимір"
                     зібрані = []
                     зібрані += [з for з in записи if з["id"] > 0]
                     for з in зібрані:
@@ -2081,6 +2097,11 @@ def стенд():
             ("не місце: край сітки таблиці", є("риси.py", r"край =", 1), False),
             ("не місце: копія запису з довірою", є("риси.py", r"копія =", 1), False),
             ("не місце: += записів — чужий ключ", є("риси.py", r'з\["id"\] > 7', 1), False),
+            ("не місце: розгортка дуги через 0°", є("риси.py", r"дуга_б < дуга_а", 1), False),
+            ("не місце: ±1e9 — межі нема", є("риси.py", r"верх_b =", 2), False),
+            ("не місце: текст, що називає незнання", є("риси.py", r"чому_б =", 2), False),
+            ("не місце: запасне ім'я-рядок", є("риси.py", r"назва_р =", 2), False),
+            ("п.2 запасне «вимір» замість джерела", є("риси.py", r"джерело_р =", 2), True),
             ("не місце: лічильник setdefault за її ключем", є("риси.py", r'в_г\["ребер"\] == 1', 1), False),
             ("п.3 наявність запису", є("риси.py", r"return lambda п: \(any", 3), True),
             ("п.3 рядок таблиці", є("риси.py", r'"why_her_contrast"', 3), True),
