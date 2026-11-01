@@ -1,0 +1,51 @@
+── ПРОМПТ (2303 симв.) ──
+{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.", "One item carries one thing — of two alternatives list the first; a note in brackets is not an item.", "Slot \"accessory\" is for an item no other slot fits.", "\"is_outfit\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "ITEM_LIST", "answer_schema": {"is_outfit": "yes|no", "items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory", "color_hex": "<#rrggbb or null>", "worn": "<true, or false when the description says the outfit goes without it>"}]}, "input": ["\"description\" — the outfit description"]}, "description": "Tailored blazer with a relaxed fit, cropped length at the hip, color forest green, fabric wool blend; silk-blend blouse with a soft drape, classic collar, knee-length hem, color ivory, fabric lightweight silk; wide-leg trousers, ankle-length break, color charcoal slate, fabric crepe; loafers, slip-on style, color oxblood, fabric calfskin leather; delicate gold hoop earrings, 18mm diameter, color antique gold, metal solid brass; thin leather belt, automatic buckle, color forest green to match the blazer, fabric genuine leather. This outfit strikes the perfect balance for a daytime autumn date by offering structured sophistication without appearing too severe for an afternoon setting. The earthy tones of the green jacket and charcoal trousers harmonize beautifully with the natural daylight, while the ivory blouse adds a fresh, breathable touch suitable for cooler weather. Completing the look with oxblood loafers grounds the ensemble in timeless elegance that transitions seamlessly from the restaurant entrance to a leisurely stroll outside."}
+
+── ВІДПОВІДЬ (1041 симв., 5.1 с, HTTP 200) ──
+{
+  "is_outfit": "yes",
+  "items": [
+    {
+      "name": "Tailored blazer",
+      "details": "relaxed fit, cropped length at the hip",
+      "slot": "outerwear",
+      "color_hex": "#228B22",
+      "worn": true
+    },
+    {
+      "name": "Silk-blend blouse",
+      "details": "soft drape, classic collar, knee-length hem",
+      "slot": "top",
+      "color_hex": "#FFFFF0",
+      "worn": true
+    },
+    {
+      "name": "Wide-leg trousers",
+      "details": "ankle-length break",
+      "slot": "bottom",
+      "color_hex": "#36454F",
+      "worn": true
+    },
+    {
+      "name": "Loafers",
+      "details": "slip-on style",
+      "slot": "shoes",
+      "color_hex": "#CC0000",
+      "worn": true
+    },
+    {
+      "name": "Hoop earrings",
+      "details": "18mm diameter, delicate gold",
+      "slot": "earrings",
+      "color_hex": "#B8860B",
+      "worn": true
+    },
+    {
+      "name": "Leather belt",
+      "details": "automatic buckle, thin leather",
+      "slot": "belt",
+      "color_hex": "#228B22",
+      "worn": true
+    }
+  ]
+}
