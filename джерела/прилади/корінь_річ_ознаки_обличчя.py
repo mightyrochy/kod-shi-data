@@ -178,12 +178,29 @@ def _формульні(дерево):
     return вих
 
 
+def _значення_полів(дерево):
+    """Поле → рядкові значення, які йому дають літерали словників модуля (`{"поле": "довжина_см"}`,
+    `dict(поле="верх_см")`): `р.get(сп["поле"])` читає лише ці ключі, а не всі ключі запису."""
+    вих = collections.defaultdict(set)
+    for в in ast.walk(дерево):
+        if isinstance(в, ast.Dict):
+            for к, з in zip(в.keys, в.values):
+                if _рядок(к) and _рядок(з):
+                    вих[к.value].add(з.value)
+        elif isinstance(в, ast.Call) and isinstance(в.func, ast.Name) and в.func.id == "dict":
+            for кв in в.keywords:
+                if кв.arg and _рядок(кв.value):
+                    вих[кв.arg].add(кв.value.value)
+    return {к: frozenset(в) for к, в in вих.items()}
+
+
 class Аналіз:
     def __init__(self, корінь):
         self.корінь = корінь
         self.модулі = {}
         self.синтетичні, self.тримати = {}, []   # `map(f, xs)` → виклик f(xs[і]); вузли тримаються, щоб id не мінявся
         self.формульні = set()
+        self.значення_полів = {}   # модуль → поле → рядки, які літерали словників модуля кладуть у це поле
         for шлях in sorted(glob.glob(os.path.join(корінь, "джерела", "*.py"))):
             ім = os.path.basename(шлях)[:-3]
             if ВИКЛЮЧЕНО.match(ім):
@@ -198,6 +215,7 @@ class Аналіз:
                     continue
             self.модулі[ім] = Модуль(ім, os.path.relpath(шлях, корінь), дерево)
             self.формульні |= _формульні(дерево)
+            self.значення_полів[ім] = _значення_полів(дерево)
         self.пам = {}             # (функція, контекст) → мітки повернення
         self.ключі_пов = collections.defaultdict(lambda: collections.defaultdict(frozenset))  # функція → ключ → мітки
         self.глоб = collections.defaultdict(frozenset)                                       # (модуль, ім) → мітки
@@ -686,6 +704,23 @@ class Стан:
             return self.а.глоб.get((self.м.ім, ім), E)
         return E
 
+    def наступний(self, в):
+        return isinstance(в, ast.Call) and isinstance(в.func, ast.Name) and в.func.id == "next" and bool(в.args) \
+            and not self.а.викликані(self.м, в.func, self.ф)
+
+    def можливі_ключі(self, в):
+        """Рядки, якими може бути ключ-вираз: ім'я циклу над кортежем рядків чи поле запису, якому літерали
+        модуля дають лише рядки (`сп["поле"]`, `сп.get("поле")`); інакше None."""
+        if isinstance(в, ast.Name):
+            return self.ключі_циклу.get(в.id)
+        поле = None
+        if isinstance(в, ast.Subscript) and _рядок(в.slice):
+            поле = в.slice.value
+        elif isinstance(в, ast.Call) and isinstance(в.func, ast.Attribute) and в.func.attr == "get" and в.args \
+                and _рядок(в.args[0]):
+            поле = в.args[0].value
+        return self.а.значення_полів.get(self.м.ім, {}).get(поле) if поле else None
+
     def писати(self, ім, мітки, мутація=False):
         """Мутація контейнера модуля з функції (`КЕШ[к] = …`, `ЗАПИСИ.append(…)`) — кеш чи слід: його читання в
         іншому виклику не несе її значення далі (на шляху, що рахує, значення й так іде поверненням)."""
@@ -715,7 +750,7 @@ class Стан:
             elif isinstance(сам, ast.Name) and any(self.ключі.get(сам.id, {}).values()):
                 мітки = self.читати_env(сам.id)
             elif isinstance(сам, (ast.ListComp, ast.SetComp, ast.GeneratorExp, ast.List, ast.Subscript, ast.BinOp,
-                                  ast.DictComp, ast.Tuple)):
+                                  ast.DictComp, ast.Tuple)) or self.наступний(сам):
                 м, кл = self.значення(сам)
                 if кл:
                     мітки = м
@@ -802,6 +837,18 @@ class Стан:
                     ключі[кл] = ключі.get(кл, E) | з
             self.e(сам)   # місця гілки «невідомо» й запасного числа
             return вих, (ключі or None)
+        if self.наступний(сам):
+            # `next(р for р in речі if …)`: елемент послідовності — запис із її ключами, а не всі ключі разом
+            м, к = self.значення(сам.args[0])
+            if к:
+                self.e(сам)
+                к = dict(к)
+                for д in сам.args[1:]:
+                    мд, кд = self.значення(д)
+                    м |= мд
+                    for кл, з in (кд or {}).items():
+                        к[кл] = к.get(кл, E) | з
+                return м - {F}, к
         if isinstance(сам, ast.Subscript) and isinstance(сам.value, ast.Name) and self.ключі.get(сам.value.id):
             км = self.ключі[сам.value.id]
             self.e(сам)
@@ -840,7 +887,7 @@ class Стан:
         if isinstance(сам, ast.Call) and isinstance(сам.func, ast.Attribute) and сам.func.attr in ("get", "pop") \
                 and сам.args and not _рядок(сам.args[0]) and isinstance(сам.func.value, ast.Name) \
                 and self.ключі.get(сам.func.value.id) and not self.а.викликані(self.м, сам.func, self.ф) \
-                and not (isinstance(сам.args[0], ast.Name) and сам.args[0].id in self.ключі_циклу):
+                and not self.можливі_ключі(сам.args[0]):
             # `d.get(змінний)`: елемент d за змінним ключем — як `d[змінний]`
             self.e(сам)
             км = self.ключі[сам.func.value.id]
@@ -1480,10 +1527,11 @@ class Стан:
                     if кз and (к in кз or _під(кз, к)):
                         return кз.get(к, E) | _усі(_під(кз, к)) | self.індекс(мз, в.args[0], в,
                                                                              в.args[1] if len(в.args) > 1 else None)
-                if isinstance(в.func.value, ast.Name) and isinstance(в.args[0], ast.Name) \
-                        and в.args[0].id in self.ключі_циклу and self.ключі.get(в.func.value.id):
+                if isinstance(в.func.value, ast.Name) and self.можливі_ключі(в.args[0]) \
+                        and self.ключі.get(в.func.value.id):
+                    self.e(в.args[0])
                     вих = set()
-                    for к in self.ключі_циклу[в.args[0].id]:
+                    for к in self.можливі_ключі(в.args[0]):
                         вих |= self.ключ_імені(в.func.value.id, к, в, в.args[1] if len(в.args) > 1 else None)
                     return frozenset(вих)
                 return self.індекс(приймач, в.args[0], в, в.args[1] if len(в.args) > 1 else None)
@@ -1783,6 +1831,15 @@ def стенд():
                     for з, н in zip(записи, range(3)):
                         if н > 1:
                             pass
+                    перший = next((з for з in записи if з["id"] > 0), None)
+                    if перший["id"] > 1:
+                        pass
+                    if перший["шкіра_L"] > 1:
+                        pass
+                    сп = {"поле": "id"}
+                    стан_х = звіт["стани"]["x"]
+                    if стан_х.get(сп["поле"]) > 1:
+                        pass
                     return знак(F, d.get("самозвіт") or {}), риси
             """,
         }
@@ -1828,6 +1885,9 @@ def стенд():
             ("п.1 поле за шляхом ключів", є("риси.py", r'\["x"\]\["L"\] < 10', 1), True),
             ("не місце: сусіднє поле за шляхом", є("риси.py", r'\["x"\]\["id"\] > 1', 1), False),
             ("не місце: друга послідовність zip", є("риси.py", r"н > 1", 1), False),
+            ("не місце: next над записами — чужий ключ", є("риси.py", r"перший\[.id.\] > 1", 1), False),
+            ("next над записами — її ключ", є("риси.py", r"перший\[.шкіра_L.\] > 1", 1), True),
+            ("не місце: ключ із поля літерала модуля", є("риси.py", r"сп\[.поле.\]\) > 1", 1), False),
             ("п.3 наявність запису", є("риси.py", r"return lambda п: \(any", 3), True),
             ("п.3 рядок таблиці", є("риси.py", r'"why_her_contrast"', 3), True),
             ("не п.3: значення metal", є("риси.py", r'"why_her_metal"', 3), False),
