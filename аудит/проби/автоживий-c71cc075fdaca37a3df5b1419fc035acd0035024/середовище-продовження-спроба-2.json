@@ -1,0 +1,558 @@
+{
+  "utc": "2026-11-01T22:49:44.306477+00:00",
+  "head": "453c1bfc6e4d6baa787431dbca3638436c5342cd",
+  "build": "3eef1bf6a5b1bdd9182a2ce34f043407430b0f29",
+  "build_txt": "c71cc075fdaca37a3df5b1419fc035acd0035024",
+  "html_sha256": "fd0ac09c4da32b1552a16bec7609f7864ecffe79784a4706812f771425f0dfc1",
+  "html_code": "c71cc075fdaca37a3df5b1419fc035acd0035024",
+  "models_before": {
+    "status": 200,
+    "body": {
+      "models": [
+        {
+          "type": "llm",
+          "publisher": "skypro1111",
+          "key": "lapa-v0.1.3-instruct",
+          "display_name": "Lapa v0.1.3 Instruct",
+          "architecture": "gemma3",
+          "quantization": {
+            "name": "Q8_0",
+            "bits_per_weight": 8
+          },
+          "size_bytes": 12510503072,
+          "params_string": "12B",
+          "loaded_instances": [],
+          "max_context_length": 131072,
+          "format": "gguf",
+          "capabilities": {
+            "vision": false,
+            "trained_for_tool_use": false
+          },
+          "description": null
+        },
+        {
+          "type": "llm",
+          "publisher": "unsloth",
+          "key": "gemma-4-e4b-it",
+          "display_name": "Gemma 4 E4B Instruct",
+          "architecture": "gemma4",
+          "quantization": {
+            "name": "Q4_K_M",
+            "bits_per_weight": 4
+          },
+          "size_bytes": 4977171584,
+          "params_string": "7.5B",
+          "loaded_instances": [],
+          "max_context_length": 131072,
+          "format": "gguf",
+          "capabilities": {
+            "vision": false,
+            "trained_for_tool_use": true,
+            "reasoning": {
+              "allowed_options": [
+                "off",
+                "on"
+              ],
+              "default": "on"
+            }
+          },
+          "description": null
+        },
+        {
+          "type": "llm",
+          "publisher": "unsloth",
+          "key": "gemma-4-12b-it",
+          "display_name": "Gemma 4 12B Instruct",
+          "architecture": "gemma4",
+          "quantization": {
+            "name": "Q3_K_M",
+            "bits_per_weight": 3
+          },
+          "size_bytes": 5868988800,
+          "params_string": "12B",
+          "loaded_instances": [],
+          "max_context_length": 262144,
+          "format": "gguf",
+          "capabilities": {
+            "vision": true,
+            "trained_for_tool_use": true,
+            "reasoning": {
+              "allowed_options": [
+                "off",
+                "on"
+              ],
+              "default": "on"
+            }
+          },
+          "description": null
+        },
+        {
+          "type": "llm",
+          "publisher": "INSAIT-Institute",
+          "key": "mamaylm-gemma-3-12b-it-v2.0",
+          "display_name": "MamayLM Gemma 3 12B Instruct v2.0",
+          "architecture": "gemma3",
+          "quantization": {
+            "name": "Q4_K_M",
+            "bits_per_weight": 4
+          },
+          "size_bytes": 7300778784,
+          "params_string": "12B",
+          "loaded_instances": [],
+          "max_context_length": 131072,
+          "format": "gguf",
+          "capabilities": {
+            "vision": false,
+            "trained_for_tool_use": false
+          },
+          "description": null
+        },
+        {
+          "type": "llm",
+          "publisher": "qwen",
+          "key": "qwen/qwen3.5-9b",
+          "display_name": "Qwen3.5 9B",
+          "architecture": "qwen35",
+          "quantization": {
+            "name": "Q4_K_M",
+            "bits_per_weight": 4
+          },
+          "size_bytes": 6548927711,
+          "params_string": "9B",
+          "loaded_instances": [],
+          "max_context_length": 262144,
+          "format": "gguf",
+          "capabilities": {
+            "vision": true,
+            "trained_for_tool_use": true,
+            "reasoning": {
+              "allowed_options": [
+                "off",
+                "on"
+              ],
+              "default": "on"
+            }
+          },
+          "description": null,
+          "variants": [
+            "qwen/qwen3.5-9b@q4_k_m",
+            "qwen/qwen3.5-9b@q8_0"
+          ],
+          "selected_variant": "qwen/qwen3.5-9b@q4_k_m"
+        },
+        {
+          "type": "llm",
+          "publisher": "lmstudio-community",
+          "key": "gemma-4-12b-it-qat",
+          "display_name": "Gemma 4 12B Instruct QAT",
+          "architecture": "gemma4",
+          "quantization": {
+            "name": "Q4_0",
+            "bits_per_weight": 4
+          },
+          "size_bytes": 7150994336,
+          "params_string": "12B",
+          "loaded_instances": [],
+          "max_context_length": 262144,
+          "format": "gguf",
+          "capabilities": {
+            "vision": true,
+            "trained_for_tool_use": true,
+            "reasoning": {
+              "allowed_options": [
+                "off",
+                "on"
+              ],
+              "default": "on"
+            }
+          },
+          "description": null
+        },
+        {
+          "type": "llm",
+          "publisher": "lmstudio-community",
+          "key": "qwen3-vl-8b-instruct",
+          "display_name": "Qwen3 VL 8B Instruct",
+          "architecture": "qwen3vl",
+          "quantization": {
+            "name": "Q4_K_M",
+            "bits_per_weight": 4
+          },
+          "size_bytes": 6186814624,
+          "params_string": "8B",
+          "loaded_instances": [],
+          "max_context_length": 262144,
+          "format": "gguf",
+          "capabilities": {
+            "vision": true,
+            "trained_for_tool_use": true
+          },
+          "description": null
+        },
+        {
+          "type": "embedding",
+          "publisher": "nomic-ai",
+          "key": "text-embedding-nomic-embed-text-v1.5",
+          "display_name": "Nomic Embed Text v1.5",
+          "quantization": {
+            "name": "Q4_K_M",
+            "bits_per_weight": 4
+          },
+          "size_bytes": 84106624,
+          "params_string": null,
+          "loaded_instances": [],
+          "max_context_length": 2048,
+          "format": "gguf"
+        }
+      ]
+    }
+  },
+  "checks": [
+    {
+      "model": "qwen/qwen3.5-9b",
+      "context": 57344,
+      "load": {
+        "status": 200,
+        "body": {
+          "type": "llm",
+          "instance_id": "qwen/qwen3.5-9b",
+          "load_time_seconds": 10.584,
+          "status": "loaded",
+          "load_config": {
+            "context_length": 57344,
+            "eval_batch_size": 2048,
+            "physical_batch_size": 512,
+            "parallel": 1,
+            "flash_attention": true,
+            "context_checkpoints": 32,
+            "reasoning_budget_message": "",
+            "speculative_draft_mtp": false,
+            "speculative_draft_simple": false,
+            "speculative_draft_model": "",
+            "speculative_draft_max_tokens": 3,
+            "speculative_draft_min_tokens": 0,
+            "speculative_draft_min_continue_probability": 0,
+            "offload_kv_cache_to_gpu": true,
+            "prompt_template": {
+              "type": "jinja",
+              "template": "{%- set image_count = namespace(value=0) %}\n{%- set video_count = namespace(value=0) %}\n{%- macro render_content(content, do_vision_count, is_system_content=false) %}\n    {%- if content is string %}\n        {{- content }}\n    {%- elif content is iterable and content is not mapping %}\n        {%- for item in content %}\n            {%- if 'image' in item or 'image_url' in item or item.type == 'image' %}\n                {%- if is_system_content %}\n                    {{- raise_exception('System message cannot contain images.') }}\n                {%- endif %}\n                {%- if do_vision_count %}\n                    {%- set image_count.value = image_count.value + 1 %}\n                {%- endif %}\n                {%- if add_vision_id %}\n                    {{- 'Picture ' ~ image_count.value ~ ': ' }}\n                {%- endif %}\n                {{- '<|vision_start|><|image_pad|><|vision_end|>' }}\n            {%- elif 'video' in item or item.type == 'video' %}\n                {%- if is_system_content %}\n                    {{- raise_exception('System message cannot contain videos.') }}\n                {%- endif %}\n                {%- if do_vision_count %}\n                    {%- set video_count.value = video_count.value + 1 %}\n                {%- endif %}\n                {%- if add_vision_id %}\n                    {{- 'Video ' ~ video_count.value ~ ': ' }}\n                {%- endif %}\n                {{- '<|vision_start|><|video_pad|><|vision_end|>' }}\n            {%- elif 'text' in item %}\n                {{- item.text }}\n            {%- else %}\n                {{- raise_exception('Unexpected item type in content.') }}\n            {%- endif %}\n        {%- endfor %}\n    {%- elif content is none or content is undefined %}\n        {{- '' }}\n    {%- else %}\n        {{- raise_exception('Unexpected content type.') }}\n    {%- endif %}\n{%- endmacro %}\n{%- if not messages %}\n    {{- raise_exception('No messages provided.') }}\n{%- endif %}\n{%- if tools and tools is iterable and tools is not mapping %}\n    {{- '<|im_start|>system\\n' }}\n    {{- \"# Tools\\n\\nYou have access to the following functions:\\n\\n<tools>\" }}\n    {%- for tool in tools %}\n        {{- \"\\n\" }}\n        {{- tool | tojson }}\n    {%- endfor %}\n    {{- \"\\n</tools>\" }}\n    {{- '\\n\\nIf you choose to call a function ONLY reply in the following format with NO suffix:\\n\\n<tool_call>\\n<function=example_function_name>\\n<parameter=example_parameter_1>\\nvalue_1\\n</parameter>\\n<parameter=example_parameter_2>\\nThis is the value for the second parameter\\nthat can span\\nmultiple lines\\n</parameter>\\n</function>\\n</tool_call>\\n\\n<IMPORTANT>\\nReminder:\\n- Function calls MUST follow the specified format: an inner <function=...></function> block must be nested within <tool_call></tool_call> XML tags\\n- Required parameters MUST be specified\\n- You may provide optional reasoning for your function call in natural language BEFORE the function call, but NOT after\\n- If there is no function call available, answer the question like normal with your current knowledge and do not tell the user about function calls\\n</IMPORTANT>' }}\n    {%- if messages[0].role == 'system' %}\n        {%- set content = render_content(messages[0].content, false, true)|trim %}\n        {%- if content %}\n            {{- '\\n\\n' + content }}\n        {%- endif %}\n    {%- endif %}\n    {{- '<|im_end|>\\n' }}\n{%- else %}\n    {%- if messages[0].role == 'system' %}\n        {%- set content = render_content(messages[0].content, false, true)|trim %}\n        {{- '<|im_start|>system\\n' + content + '<|im_end|>\\n' }}\n    {%- endif %}\n{%- endif %}\n{%- set ns = namespace(multi_step_tool=true, last_query_index=messages|length - 1) %}\n{%- for message in messages[::-1] %}\n    {%- set index = (messages|length - 1) - loop.index0 %}\n    {%- if ns.multi_step_tool and message.role == \"user\" %}\n        {%- set content = render_content(message.content, false)|trim %}\n        {%- if not(content.startswith('<tool_response>') and content.endswith('</tool_response>')) %}\n            {%- set ns.multi_step_tool = false %}\n            {%- set ns.last_query_index = index %}\n        {%- endif %}\n    {%- endif %}\n{%- endfor %}\n{%- if ns.multi_step_tool %}\n    {{- raise_exception('No user query found in messages.') }}\n{%- endif %}\n{%- for message in messages %}\n    {%- set content = render_content(message.content, true)|trim %}\n    {%- if message.role == \"system\" %}\n        {%- if not loop.first %}\n            {{- raise_exception('System message must be at the beginning.') }}\n        {%- endif %}\n    {%- elif message.role == \"user\" %}\n        {{- '<|im_start|>' + message.role + '\\n' + content + '<|im_end|>' + '\\n' }}\n    {%- elif message.role == \"assistant\" %}\n        {%- set reasoning_content = '' %}\n        {%- if message.reasoning_content is string %}\n            {%- set reasoning_content = message.reasoning_content %}\n        {%- else %}\n            {%- if '</think>' in content %}\n                {%- set reasoning_content = content.split('</think>')[0].rstrip('\\n').split('<think>')[-1].lstrip('\\n') %}\n                {%- set content = content.split('</think>')[-1].lstrip('\\n') %}\n            {%- endif %}\n        {%- endif %}\n        {%- set reasoning_content = reasoning_content|trim %}\n        {%- if loop.index0 > ns.last_query_index %}\n            {{- '<|im_start|>' + message.role + '\\n<think>\\n' + reasoning_content + '\\n</think>\\n\\n' + content }}\n        {%- else %}\n            {{- '<|im_start|>' + message.role + '\\n' + content }}\n        {%- endif %}\n        {%- if message.tool_calls and message.tool_calls is iterable and message.tool_calls is not mapping %}\n            {%- for tool_call in message.tool_calls %}\n                {%- if tool_call.function is defined %}\n                    {%- set tool_call = tool_call.function %}\n                {%- endif %}\n                {%- if loop.first %}\n                    {%- if content|trim %}\n                        {{- '\\n\\n<tool_call>\\n<function=' + tool_call.name + '>\\n' }}\n                    {%- else %}\n                        {{- '<tool_call>\\n<function=' + tool_call.name + '>\\n' }}\n                    {%- endif %}\n                {%- else %}\n                    {{- '\\n<tool_call>\\n<function=' + tool_call.name + '>\\n' }}\n                {%- endif %}\n                {%- if tool_call.arguments is defined %}\n                    {%- for args_name, args_value in tool_call.arguments|items %}\n                        {{- '<parameter=' + args_name + '>\\n' }}\n                        {%- set args_value = args_value | tojson | safe if args_value is mapping or (args_value is sequence and args_value is not string) else args_value | string %}\n                        {{- args_value }}\n                        {{- '\\n</parameter>\\n' }}\n                    {%- endfor %}\n                {%- endif %}\n                {{- '</function>\\n</tool_call>' }}\n            {%- endfor %}\n        {%- endif %}\n        {{- '<|im_end|>\\n' }}\n    {%- elif message.role == \"tool\" %}\n        {%- if loop.previtem and loop.previtem.role != \"tool\" %}\n            {{- '<|im_start|>user' }}\n        {%- endif %}\n        {{- '\\n<tool_response>\\n' }}\n        {{- content }}\n        {{- '\\n</tool_response>' }}\n        {%- if not loop.last and loop.nextitem.role != \"tool\" %}\n            {{- '<|im_end|>\\n' }}\n        {%- elif loop.last %}\n            {{- '<|im_end|>\\n' }}\n        {%- endif %}\n    {%- else %}\n        {{- raise_exception('Unexpected message role.') }}\n    {%- endif %}\n{%- endfor %}\n{%- if add_generation_prompt %}\n    {{- '<|im_start|>assistant\\n' }}\n    {%- if enable_thinking is defined and enable_thinking is false %}\n        {{- '<think>\\n\\n</think>\\n\\n' }}\n    {%- else %}\n        {{- '<think>\\n' }}\n    {%- endif %}\n{%- endif %}",
+              "stop_strings": []
+            }
+          }
+        }
+      },
+      "actual": {
+        "id": "qwen/qwen3.5-9b",
+        "config": {
+          "context_length": 57344,
+          "eval_batch_size": 2048,
+          "physical_batch_size": 512,
+          "parallel": 1,
+          "flash_attention": true,
+          "context_checkpoints": 32,
+          "reasoning_budget_message": "",
+          "speculative_draft_mtp": false,
+          "speculative_draft_simple": false,
+          "speculative_draft_model": "",
+          "speculative_draft_max_tokens": 3,
+          "speculative_draft_min_tokens": 0,
+          "speculative_draft_min_continue_probability": 0,
+          "offload_kv_cache_to_gpu": true
+        }
+      },
+      "unload": {
+        "status": 200,
+        "body": {
+          "instance_id": "qwen/qwen3.5-9b"
+        }
+      }
+    },
+    {
+      "model": "mamaylm-gemma-3-12b-it-v2.0",
+      "context": 16384,
+      "load": {
+        "status": 200,
+        "body": {
+          "type": "llm",
+          "instance_id": "mamaylm-gemma-3-12b-it-v2.0",
+          "load_time_seconds": 5.742,
+          "status": "loaded",
+          "load_config": {
+            "context_length": 16384,
+            "eval_batch_size": 2048,
+            "physical_batch_size": 512,
+            "parallel": 1,
+            "flash_attention": true,
+            "context_checkpoints": 32,
+            "reasoning_budget_message": "",
+            "speculative_draft_mtp": false,
+            "speculative_draft_simple": false,
+            "speculative_draft_model": "",
+            "speculative_draft_max_tokens": 3,
+            "speculative_draft_min_tokens": 0,
+            "speculative_draft_min_continue_probability": 0,
+            "offload_kv_cache_to_gpu": true,
+            "prompt_template": {
+              "type": "jinja",
+              "template": "{{ bos_token }}\n{%- if messages[0]['role'] == 'system' -%}\n    {%- if messages[0]['content'] is string -%}\n        {%- set first_user_prefix = messages[0]['content'] + '\n\n' -%}\n    {%- else -%}\n        {%- set first_user_prefix = messages[0]['content'][0]['text'] + '\n\n' -%}\n    {%- endif -%}\n    {%- set loop_messages = messages[1:] -%}\n{%- else -%}\n    {%- set first_user_prefix = \"\" -%}\n    {%- set loop_messages = messages -%}\n{%- endif -%}\n{%- for message in loop_messages -%}\n    {%- if (message['role'] == 'user') != (loop.index0 % 2 == 0) -%}\n        {{ raise_exception(\"Conversation roles must alternate user/assistant/user/assistant/...\") }}\n    {%- endif -%}\n    {%- if (message['role'] == 'assistant') -%}\n        {%- set role = \"model\" -%}\n    {%- else -%}\n        {%- set role = message['role'] -%}\n    {%- endif -%}\n    {{ '<start_of_turn>' + role + '\n' + (first_user_prefix if loop.first else \"\") }}\n    {%- if message['content'] is string -%}\n        {{ message['content'] | trim }}\n    {%- elif message['content'] is iterable -%}\n        {%- for item in message['content'] -%}\n            {%- if item['type'] == 'image' -%}\n                {{ '<start_of_image>' }}\n            {%- elif item['type'] == 'text' -%}\n                {{ item['text'] | trim }}\n            {%- endif -%}\n        {%- endfor -%}\n    {%- else -%}\n        {{ raise_exception(\"Invalid content type\") }}\n    {%- endif -%}\n    {{ '<end_of_turn>\n' }}\n{%- endfor -%}\n{%- if add_generation_prompt -%}\n    {{'<start_of_turn>model\n'}}\n{%- endif -%}\n",
+              "stop_strings": []
+            }
+          }
+        }
+      },
+      "actual": {
+        "id": "mamaylm-gemma-3-12b-it-v2.0",
+        "config": {
+          "context_length": 16384,
+          "eval_batch_size": 2048,
+          "physical_batch_size": 512,
+          "parallel": 1,
+          "flash_attention": true,
+          "context_checkpoints": 32,
+          "reasoning_budget_message": "",
+          "speculative_draft_mtp": false,
+          "speculative_draft_simple": false,
+          "speculative_draft_model": "",
+          "speculative_draft_max_tokens": 3,
+          "speculative_draft_min_tokens": 0,
+          "speculative_draft_min_continue_probability": 0,
+          "offload_kv_cache_to_gpu": true
+        }
+      },
+      "unload": {
+        "status": 200,
+        "body": {
+          "instance_id": "mamaylm-gemma-3-12b-it-v2.0"
+        }
+      }
+    }
+  ],
+  "node_options": "--require \"C:/Users/gemini/gemini-runs/slots/codex-6-browser/browser.cjs\"",
+  "pythonpath": "C:\\Users\\gemini\\gemini-runs\\slots\\codex-6-browser;",
+  "netstat": "\nActive Connections\n\n  Proto  Local Address          Foreign Address        State           PID\n  TCP    0.0.0.0:135            0.0.0.0:0              LISTENING       2104\n  TCP    0.0.0.0:445            0.0.0.0:0              LISTENING       4\n  TCP    0.0.0.0:5040           0.0.0.0:0              LISTENING       17360\n  TCP    0.0.0.0:7680           0.0.0.0:0              LISTENING       28408\n  TCP    0.0.0.0:27036          0.0.0.0:0              LISTENING       26120\n  TCP    0.0.0.0:49664          0.0.0.0:0              LISTENING       1952\n  TCP    0.0.0.0:49665          0.0.0.0:0              LISTENING       1780\n  TCP    0.0.0.0:49666          0.0.0.0:0              LISTENING       2664\n  TCP    0.0.0.0:49667          0.0.0.0:0              LISTENING       4032\n  TCP    0.0.0.0:49668          0.0.0.0:0              LISTENING       5248\n  TCP    0.0.0.0:49686          0.0.0.0:0              LISTENING       1896\n  TCP    127.0.0.1:1042         0.0.0.0:0              LISTENING       17400\n  TCP    127.0.0.1:1042         127.0.0.1:60823        ESTABLISHED     17400\n  TCP    127.0.0.1:1042         127.0.0.1:60829        ESTABLISHED     17400\n  TCP    127.0.0.1:1234         0.0.0.0:0              LISTENING       36232\n  TCP    127.0.0.1:5939         0.0.0.0:0              LISTENING       10088\n  TCP    127.0.0.1:7778         0.0.0.0:0              LISTENING       9220\n  TCP    127.0.0.1:9012         0.0.0.0:0              LISTENING       16492\n  TCP    127.0.0.1:9012         127.0.0.1:49800        ESTABLISHED     16492\n  TCP    127.0.0.1:9013         0.0.0.0:0              LISTENING       16492\n  TCP    127.0.0.1:9014         0.0.0.0:0              LISTENING       18644\n  TCP    127.0.0.1:12025        0.0.0.0:0              LISTENING       5312\n  TCP    127.0.0.1:12110        0.0.0.0:0              LISTENING       5312\n  TCP    127.0.0.1:12119        0.0.0.0:0              LISTENING       5312\n  TCP    127.0.0.1:12143        0.0.0.0:0              LISTENING       5312\n  TCP    127.0.0.1:12423        0.0.0.0:0              LISTENING       5312\n  TCP    127.0.0.1:12465        0.0.0.0:0              LISTENING       5312\n  TCP    127.0.0.1:12563        0.0.0.0:0              LISTENING       5312\n  TCP    127.0.0.1:12993        0.0.0.0:0              LISTENING       5312\n  TCP    127.0.0.1:12995        0.0.0.0:0              LISTENING       5312\n  TCP    127.0.0.1:13030        0.0.0.0:0              LISTENING       9468\n  TCP    127.0.0.1:13031        0.0.0.0:0              LISTENING       9332\n  TCP    127.0.0.1:13032        0.0.0.0:0              LISTENING       9332\n  TCP    127.0.0.1:13508        0.0.0.0:0              LISTENING       4\n  TCP    127.0.0.1:19292        0.0.0.0:0              LISTENING       6448\n  TCP    127.0.0.1:22112        0.0.0.0:0              LISTENING       9468\n  TCP    127.0.0.1:24830        0.0.0.0:0              LISTENING       9288\n  TCP    127.0.0.1:27275        0.0.0.0:0              LISTENING       5312\n  TCP    127.0.0.1:27339        0.0.0.0:0              LISTENING       4\n  TCP    127.0.0.1:28385        0.0.0.0:0              LISTENING       4\n  TCP    127.0.0.1:28390        0.0.0.0:0              LISTENING       4\n  TCP    127.0.0.1:41343        0.0.0.0:0              LISTENING       36232\n  TCP    127.0.0.1:49769        127.0.0.1:49770        ESTABLISHED     2228\n  TCP    127.0.0.1:49770        127.0.0.1:49769        ESTABLISHED     2228\n  TCP    127.0.0.1:49771        127.0.0.1:49772        ESTABLISHED     8828\n  TCP    127.0.0.1:49772        127.0.0.1:49771        ESTABLISHED     8828\n  TCP    127.0.0.1:49773        127.0.0.1:49774        ESTABLISHED     3936\n  TCP    127.0.0.1:49774        127.0.0.1:49773        ESTABLISHED     3936\n  TCP    127.0.0.1:49775        127.0.0.1:49776        ESTABLISHED     9588\n  TCP    127.0.0.1:49776        127.0.0.1:49775        ESTABLISHED     9588\n  TCP    127.0.0.1:49784        127.0.0.1:50100        ESTABLISHED     13728\n  TCP    127.0.0.1:49800        127.0.0.1:9012         ESTABLISHED     13728\n  TCP    127.0.0.1:50100        0.0.0.0:0              LISTENING       9332\n  TCP    127.0.0.1:50100        127.0.0.1:49784        ESTABLISHED     9332\n  TCP    127.0.0.1:50923        0.0.0.0:0              LISTENING       9220\n  TCP    127.0.0.1:51100        0.0.0.0:0              LISTENING       13728\n  TCP    127.0.0.1:57255        0.0.0.0:0              LISTENING       36232\n  TCP    127.0.0.1:57613        0.0.0.0:0              LISTENING       37188\n  TCP    127.0.0.1:57614        0.0.0.0:0              LISTENING       37188\n  TCP    127.0.0.1:60823        127.0.0.1:1042         ESTABLISHED     16820\n  TCP    127.0.0.1:60829        127.0.0.1:1042         ESTABLISHED     16492\n  TCP    127.0.0.1:60835        0.0.0.0:0              LISTENING       26120\n  TCP    127.0.0.1:60835        127.0.0.1:60841        ESTABLISHED     26120\n  TCP    127.0.0.1:60836        0.0.0.0:0              LISTENING       26120\n  TCP    127.0.0.1:60836        127.0.0.1:60840        ESTABLISHED     26120\n  TCP    127.0.0.1:60840        127.0.0.1:60836        ESTABLISHED     26212\n  TCP    127.0.0.1:60841        127.0.0.1:60835        ESTABLISHED     26212\n  TCP    192.168.0.100:139      0.0.0.0:0              LISTENING       4\n  TCP    192.168.0.100:49408    4.207.247.138:443      ESTABLISHED     9704\n  TCP    192.168.0.100:49741    35.196.143.54:7500     ESTABLISHED     5312\n  TCP    192.168.0.100:49754    13.60.234.125:443      ESTABLISHED     5312\n  TCP    192.168.0.100:49813    52.110.19.0:443        ESTABLISHED     20704\n  TCP    192.168.0.100:50178    160.79.104.10:443      ESTABLISHED     29504\n  TCP    192.168.0.100:50279    104.18.32.47:443       ESTABLISHED     28940\n  TCP    192.168.0.100:50443    155.133.229.4:27019    ESTABLISHED     26120\n  TCP    192.168.0.100:50683    160.79.104.10:443      ESTABLISHED     29504\n  TCP    192.168.0.100:50699    172.64.155.209:443     ESTABLISHED     11668\n  TCP    192.168.0.100:51680    160.79.104.10:443      ESTABLISHED     29504\n  TCP    192.168.0.100:51721    104.18.32.47:443       TIME_WAIT       0\n  TCP    192.168.0.100:52205    172.64.155.209:443     CLOSE_WAIT      27940\n  TCP    192.168.0.100:52811    172.64.148.235:443     ESTABLISHED     11668\n  TCP    192.168.0.100:52812    172.64.155.209:443     TIME_WAIT       0\n  TCP    192.168.0.100:52813    172.64.155.209:443     TIME_WAIT       0\n  TCP    192.168.0.100:52814    172.64.155.209:443     TIME_WAIT       0\n  TCP    192.168.0.100:52815    172.64.155.209:443     TIME_WAIT       0\n  TCP    192.168.0.100:52816    172.64.155.209:443     TIME_WAIT       0\n  TCP    192.168.0.100:52818    172.64.155.209:443     TIME_WAIT       0\n  TCP    192.168.0.100:52820    172.64.155.209:443     TIME_WAIT       0\n  TCP    192.168.0.100:52822    172.64.155.209:443     TIME_WAIT       0\n  TCP    192.168.0.100:52824    172.64.155.209:443     TIME_WAIT       0\n  TCP    192.168.0.100:52826    172.64.155.209:443     TIME_WAIT       0\n  TCP    192.168.0.100:52828    172.64.155.209:443     TIME_WAIT       0\n  TCP    192.168.0.100:52829    172.64.155.209:443     TIME_WAIT       0\n  TCP    192.168.0.100:52830    172.64.155.209:443     TIME_WAIT       0\n  TCP    192.168.0.100:52831    172.64.155.209:443     TIME_WAIT       0\n  TCP    192.168.0.100:52832    172.64.155.209:443     TIME_WAIT       0\n  TCP    192.168.0.100:52833    172.64.155.209:443     TIME_WAIT       0\n  TCP    192.168.0.100:52834    172.64.155.209:443     TIME_WAIT       0\n  TCP    192.168.0.100:52835    172.64.155.209:443     TIME_WAIT       0\n  TCP    192.168.0.100:52836    172.64.155.209:443     TIME_WAIT       0\n  TCP    192.168.0.100:52837    172.64.155.209:443     TIME_WAIT       0\n  TCP    192.168.0.100:52839    172.64.155.209:443     TIME_WAIT       0\n  TCP    192.168.0.100:52840    172.64.155.209:443     TIME_WAIT       0\n  TCP    192.168.0.100:52841    172.64.155.209:443     ESTABLISHED     21748\n  TCP    192.168.0.100:52842    172.64.155.209:443     ESTABLISHED     21748\n  TCP    192.168.0.100:52843    172.64.155.209:443     ESTABLISHED     21748\n  TCP    192.168.0.100:52844    172.64.155.209:443     TIME_WAIT       0\n  TCP    192.168.0.100:52845    172.64.155.209:443     TIME_WAIT       0\n  TCP    192.168.0.100:52846    172.64.155.209:443     ESTABLISHED     21748\n  TCP    192.168.0.100:52847    172.64.155.209:443     ESTABLISHED     21748\n  TCP    192.168.0.100:52848    172.64.155.209:443     TIME_WAIT       0\n  TCP    192.168.0.100:52849    172.64.155.209:443     TIME_WAIT       0\n  TCP    192.168.0.100:52850    172.64.155.209:443     ESTABLISHED     21748\n  TCP    192.168.0.100:52851    172.64.155.209:443     TIME_WAIT       0\n  TCP    192.168.0.100:52852    172.64.155.209:443     TIME_WAIT       0\n  TCP    192.168.0.100:52853    172.64.155.209:443     TIME_WAIT       0\n  TCP    192.168.0.100:52854    172.64.155.209:443     TIME_WAIT       0\n  TCP    192.168.0.100:52855    172.64.155.209:443     TIME_WAIT       0\n  TCP    192.168.0.100:52856    172.64.155.209:443     TIME_WAIT       0\n  TCP    192.168.0.100:52858    172.64.155.209:443     TIME_WAIT       0\n  TCP    192.168.0.100:52859    172.64.155.209:443     TIME_WAIT       0\n  TCP    192.168.0.100:52860    172.64.155.209:443     TIME_WAIT       0\n  TCP    192.168.0.100:53088    104.109.250.98:80      CLOSE_WAIT      5312\n  TCP    192.168.0.100:53148    2.19.183.39:443        CLOSE_WAIT      13016\n  TCP    192.168.0.100:53598    104.18.32.47:443       ESTABLISHED     27940\n  TCP    192.168.0.100:53703    172.64.155.209:443     CLOSE_WAIT      16032\n  TCP    192.168.0.100:55139    104.18.32.47:443       ESTABLISHED     40456\n  TCP    192.168.0.100:55201    4.225.11.201:443       ESTABLISHED     29504\n  TCP    192.168.0.100:55206    172.64.155.209:443     TIME_WAIT       0\n  TCP    192.168.0.100:55207    172.64.155.209:443     TIME_WAIT       0\n  TCP    192.168.0.100:55210    172.64.155.209:443     TIME_WAIT       0\n  TCP    192.168.0.100:55214    172.64.155.209:443     TIME_WAIT       0\n  TCP    192.168.0.100:55215    4.225.11.201:443       ESTABLISHED     43312\n  TCP    192.168.0.100:55522    34.98.110.65:443       CLOSE_WAIT      5312\n  TCP    192.168.0.100:56176    20.47.110.73:443       ESTABLISHED     5792\n  TCP    192.168.0.100:56487    172.64.148.235:443     ESTABLISHED     11668\n  TCP    192.168.0.100:57623    172.217.112.4:443      ESTABLISHED     37188\n  TCP    192.168.0.100:57636    172.217.116.4:443      ESTABLISHED     37188\n  TCP    192.168.0.100:58182    172.217.114.4:443      ESTABLISHED     37188\n  TCP    192.168.0.100:58842    172.64.148.235:443     ESTABLISHED     11668\n  TCP    192.168.0.100:58846    72.154.7.98:443        TIME_WAIT       0\n  TCP    192.168.0.100:58867    87.245.216.64:443      ESTABLISHED     5312\n  TCP    192.168.0.100:58880    20.166.131.27:443      TIME_WAIT       0\n  TCP    192.168.0.100:58891    172.64.155.209:443     TIME_WAIT       0\n  TCP    192.168.0.100:58892    172.64.155.209:443     TIME_WAIT       0\n  TCP    192.168.0.100:58893    172.64.155.209:443     TIME_WAIT       0\n  TCP    192.168.0.100:58894    172.64.155.209:443     TIME_WAIT       0\n  TCP    192.168.0.100:58895    172.64.155.209:443     TIME_WAIT       0\n  TCP    192.168.0.100:58896    172.64.155.209:443     TIME_WAIT       0\n  TCP    192.168.0.100:58897    172.64.155.209:443     TIME_WAIT       0\n  TCP    192.168.0.100:58898    172.64.155.209:443     TIME_WAIT       0\n  TCP    192.168.0.100:58899    172.64.155.209:443     TIME_WAIT       0\n  TCP    192.168.0.100:58900    172.64.155.209:443     TIME_WAIT       0\n  TCP    192.168.0.100:58901    172.64.155.209:443     TIME_WAIT       0\n  TCP    192.168.0.100:58902    172.64.155.209:443     TIME_WAIT       0\n  TCP    192.168.0.100:58903    172.64.155.209:443     TIME_WAIT       0\n  TCP    192.168.0.100:58904    172.64.155.209:443     TIME_WAIT       0\n  TCP    192.168.0.100:58905    172.64.155.209:443     TIME_WAIT       0\n  TCP    192.168.0.100:58907    172.64.155.209:443     TIME_WAIT       0\n  TCP    192.168.0.100:58908    172.64.155.209:443     TIME_WAIT       0\n  TCP    192.168.0.100:58909    172.64.155.209:443     TIME_WAIT       0\n  TCP    192.168.0.100:58910    172.64.155.209:443     TIME_WAIT       0\n  TCP    192.168.0.100:58911    172.64.155.209:443     TIME_WAIT       0\n  TCP    192.168.0.100:58912    172.64.155.209:443     TIME_WAIT       0\n  TCP    192.168.0.100:58913    172.64.155.209:443     TIME_WAIT       0\n  TCP    192.168.0.100:58914    172.64.155.209:443     TIME_WAIT       0\n  TCP    192.168.0.100:58915    172.64.155.209:443     TIME_WAIT       0\n  TCP    192.168.0.100:58916    172.64.155.209:443     TIME_WAIT       0\n  TCP    192.168.0.100:58917    172.64.155.209:443     TIME_WAIT       0\n  TCP    192.168.0.100:58918    172.64.155.209:443     TIME_WAIT       0\n  TCP    192.168.0.100:58919    172.64.155.209:443     ESTABLISHED     43508\n  TCP    192.168.0.100:58920    172.64.155.209:443     TIME_WAIT       0\n  TCP    192.168.0.100:58921    172.64.155.209:443     TIME_WAIT       0\n  TCP    192.168.0.100:58922    172.64.155.209:443     TIME_WAIT       0\n  TCP    192.168.0.100:58923    172.64.155.209:443     TIME_WAIT       0\n  TCP    192.168.0.100:58924    172.64.155.209:443     TIME_WAIT       0\n  TCP    192.168.0.100:58925    172.64.155.209:443     TIME_WAIT       0\n  TCP    192.168.0.100:58926    172.64.155.209:443     TIME_WAIT       0\n  TCP    192.168.0.100:58927    172.64.155.209:443     TIME_WAIT       0\n  TCP    192.168.0.100:58928    172.64.155.209:443     TIME_WAIT       0\n  TCP    192.168.0.100:58930    172.64.155.209:443     TIME_WAIT       0\n  TCP    192.168.0.100:58931    172.64.155.209:443     TIME_WAIT       0\n  TCP    192.168.0.100:58932    172.64.155.209:443     TIME_WAIT       0\n  TCP    192.168.0.100:58933    172.64.155.209:443     TIME_WAIT       0\n  TCP    192.168.0.100:58934    172.64.155.209:443     TIME_WAIT       0\n  TCP    192.168.0.100:58935    172.64.155.209:443     ESTABLISHED     10060\n  TCP    192.168.0.100:58936    172.64.155.209:443     TIME_WAIT       0\n  TCP    192.168.0.100:58937    172.64.155.209:443     TIME_WAIT       0\n  TCP    192.168.0.100:58938    172.64.155.209:443     TIME_WAIT       0\n  TCP    192.168.0.100:58939    172.64.155.209:443     TIME_WAIT       0\n  TCP    192.168.0.100:58940    172.64.155.209:443     TIME_WAIT       0\n  TCP    192.168.0.100:58941    172.64.155.209:443     TIME_WAIT       0\n  TCP    192.168.0.100:58942    172.64.155.209:443     TIME_WAIT       0\n  TCP    192.168.0.100:58943    172.64.155.209:443     TIME_WAIT       0\n  TCP    192.168.0.100:58944    172.64.155.209:443     TIME_WAIT       0\n  TCP    192.168.0.100:58946    172.64.155.209:443     TIME_WAIT       0\n  TCP    192.168.0.100:58947    172.64.155.209:443     TIME_WAIT       0\n  TCP    192.168.0.100:58948    172.64.155.209:443     TIME_WAIT       0\n  TCP    192.168.0.100:58949    172.64.155.209:443     TIME_WAIT       0\n  TCP    192.168.0.100:58950    172.64.155.209:443     TIME_WAIT       0\n  TCP    192.168.0.100:58951    172.64.155.209:443     TIME_WAIT       0\n  TCP    192.168.0.100:58952    172.64.155.209:443     TIME_WAIT       0\n  TCP    192.168.0.100:58953    172.64.155.209:443     TIME_WAIT       0\n  TCP    192.168.0.100:58954    172.64.155.209:443     TIME_WAIT       0\n  TCP    192.168.0.100:58955    172.64.155.209:443     TIME_WAIT       0\n  TCP    192.168.0.100:58956    172.64.155.209:443     TIME_WAIT       0\n  TCP    192.168.0.100:58957    172.64.155.209:443     TIME_WAIT       0\n  TCP    192.168.0.100:58958    172.64.155.209:443     TIME_WAIT       0\n  TCP    192.168.0.100:58959    172.64.155.209:443     TIME_WAIT       0\n  TCP    192.168.0.100:58960    172.64.155.209:443     TIME_WAIT       0\n  TCP    192.168.0.100:58961    172.64.155.209:443     TIME_WAIT       0\n  TCP    192.168.0.100:58962    172.64.155.209:443     TIME_WAIT       0\n  TCP    192.168.0.100:58964    172.64.155.209:443     TIME_WAIT       0\n  TCP    192.168.0.100:58965    172.64.155.209:443     TIME_WAIT       0\n  TCP    192.168.0.100:58966    172.64.155.209:443     TIME_WAIT       0\n  TCP    192.168.0.100:58967    172.64.155.209:443     TIME_WAIT       0\n  TCP    192.168.0.100:58968    172.64.155.209:443     TIME_WAIT       0\n  TCP    192.168.0.100:58970    172.64.155.209:443     TIME_WAIT       0\n  TCP    192.168.0.100:58971    172.64.155.209:443     TIME_WAIT       0\n  TCP    192.168.0.100:58972    172.64.155.209:443     TIME_WAIT       0\n  TCP    192.168.0.100:58973    172.64.155.209:443     TIME_WAIT       0\n  TCP    192.168.0.100:58976    172.64.155.209:443     TIME_WAIT       0\n  TCP    192.168.0.100:58979    172.64.155.209:443     TIME_WAIT       0\n  TCP    192.168.0.100:58980    172.64.155.209:443     TIME_WAIT       0\n  TCP    192.168.0.100:58982    172.64.155.209:443     TIME_WAIT       0\n  TCP    192.168.0.100:58983    172.64.155.209:443     TIME_WAIT       0\n  TCP    192.168.0.100:58985    172.64.155.209:443     TIME_WAIT       0\n  TCP    192.168.0.100:58986    172.64.155.209:443     TIME_WAIT       0\n  TCP    192.168.0.100:58987    172.64.155.209:443     TIME_WAIT       0\n  TCP    192.168.0.100:58988    172.64.155.209:443     TIME_WAIT       0\n  TCP    192.168.0.100:58989    172.64.155.209:443     TIME_WAIT       0\n  TCP    192.168.0.100:58990    172.64.155.209:443     TIME_WAIT       0\n  TCP    192.168.0.100:58991    172.64.155.209:443     TIME_WAIT       0\n  TCP    192.168.0.100:58993    172.64.155.209:443     TIME_WAIT       0\n  TCP    192.168.0.100:58994    172.64.155.209:443     TIME_WAIT       0\n  TCP    192.168.0.100:58995    172.64.155.209:443     TIME_WAIT       0\n  TCP    192.168.0.100:58996    172.64.155.209:443     TIME_WAIT       0\n  TCP    192.168.0.100:58997    172.64.155.209:443     TIME_WAIT       0\n  TCP    192.168.0.100:58998    172.64.155.209:443     TIME_WAIT       0\n  TCP    192.168.0.100:58999    104.18.32.47:443       ESTABLISHED     27940\n  TCP    192.168.0.100:59000    172.64.155.209:443     TIME_WAIT       0\n  TCP    192.168.0.100:59001    172.64.155.209:443     TIME_WAIT       0\n  TCP    192.168.0.100:59004    172.64.155.209:443     TIME_WAIT       0\n  TCP    192.168.0.100:59005    172.64.155.209:443     TIME_WAIT       0\n  TCP    192.168.0.100:59006    172.64.155.209:443     TIME_WAIT       0\n  TCP    192.168.0.100:59008    172.64.155.209:443     TIME_WAIT       0\n  TCP    192.168.0.100:59010    172.64.155.209:443     TIME_WAIT       0\n  TCP    192.168.0.100:59012    172.64.155.209:443     TIME_WAIT       0\n  TCP    192.168.0.100:59013    172.64.155.209:443     TIME_WAIT       0\n  TCP    192.168.0.100:59015    172.64.155.209:443     TIME_WAIT       0\n  TCP    192.168.0.100:59017    172.64.155.209:443     TIME_WAIT       0\n  TCP    192.168.0.100:59021    172.64.155.209:443     TIME_WAIT       0\n  TCP    192.168.0.100:59022    172.64.155.209:443     TIME_WAIT       0\n  TCP    192.168.0.100:59025    172.64.155.209:443     TIME_WAIT       0\n  TCP    192.168.0.100:59027    172.64.155.209:443     TIME_WAIT       0\n  TCP    192.168.0.100:59034    172.64.155.209:443     TIME_WAIT       0\n  TCP    192.168.0.100:59035    172.64.155.209:443     TIME_WAIT       0\n  TCP    192.168.0.100:59036    172.64.155.209:443     TIME_WAIT       0\n  TCP    192.168.0.100:59156    172.64.155.209:443     CLOSE_WAIT      16032\n  TCP    192.168.0.100:59401    160.79.104.10:443      ESTABLISHED     23396\n  TCP    192.168.0.100:61519    172.217.118.4:443      ESTABLISHED     37188\n  TCP    192.168.0.100:61603    160.79.104.10:443      ESTABLISHED     23396\n  TCP    192.168.0.100:61706    160.79.104.10:443      ESTABLISHED     29504\n  TCP    192.168.0.100:61725    172.64.155.209:443     TIME_WAIT       0\n  TCP    192.168.0.100:61815    52.110.19.2:443        ESTABLISHED     17492\n  TCP    192.168.0.100:61816    52.110.19.1:443        ESTABLISHED     17492\n  TCP    192.168.0.100:61817    52.110.19.1:443        ESTABLISHED     17492\n  TCP    192.168.0.100:61818    52.110.19.1:443        ESTABLISHED     17492\n  TCP    192.168.0.100:61819    52.110.19.1:443        ESTABLISHED     17492\n  TCP    192.168.0.100:61820    52.110.19.1:443        ESTABLISHED     17492\n  TCP    192.168.0.100:62600    104.18.39.21:443       ESTABLISHED     11668\n  TCP    192.168.0.100:63308    35.190.80.1:443        ESTABLISHED     11668\n  TCP    192.168.0.100:63310    172.64.155.209:443     TIME_WAIT       0\n  TCP    192.168.0.100:63311    172.64.155.209:443     TIME_WAIT       0\n  TCP    192.168.0.100:63313    172.64.155.209:443     TIME_WAIT       0\n  TCP    192.168.0.100:63315    172.64.155.209:443     TIME_WAIT       0\n  TCP    192.168.0.100:63316    172.64.155.209:443     TIME_WAIT       0\n  TCP    192.168.0.100:63317    172.64.155.209:443     TIME_WAIT       0\n  TCP    192.168.0.100:63319    172.64.155.209:443     TIME_WAIT       0\n  TCP    192.168.0.100:63322    172.64.155.209:443     TIME_WAIT       0\n  TCP    192.168.0.100:63323    172.64.155.209:443     TIME_WAIT       0\n  TCP    192.168.0.100:63326    172.64.155.209:443     TIME_WAIT       0\n  TCP    192.168.0.100:63327    104.18.32.47:443       ESTABLISHED     43508\n  TCP    192.168.0.100:63328    172.64.155.209:443     TIME_WAIT       0\n  TCP    192.168.0.100:63329    104.18.32.47:443       ESTABLISHED     10060\n  TCP    192.168.0.100:63333    172.64.155.209:443     TIME_WAIT       0\n  TCP    192.168.0.100:63842    172.64.148.235:443     ESTABLISHED     11668\n  TCP    192.168.0.100:63874    104.18.32.47:443       ESTABLISHED     40456\n  TCP    192.168.0.100:64805    172.64.155.209:443     ESTABLISHED     16032\n  TCP    192.168.0.100:64958    104.18.39.21:443       ESTABLISHED     11668\n  TCP    192.168.0.100:64980    104.18.37.228:443      ESTABLISHED     11668\n  TCP    192.168.0.100:65078    20.86.94.139:443       ESTABLISHED     18904\n  TCP    [::]:135               [::]:0                 LISTENING       2104\n  TCP    [::]:445               [::]:0                 LISTENING       4\n  TCP    [::]:7680              [::]:0                 LISTENING       28408\n  TCP    [::]:49664             [::]:0                 LISTENING       1952\n  TCP    [::]:49665             [::]:0                 LISTENING       1780\n  TCP    [::]:49666             [::]:0                 LISTENING       2664\n  TCP    [::]:49667             [::]:0                 LISTENING       4032\n  TCP    [::]:49668             [::]:0                 LISTENING       5248\n  TCP    [::]:49686             [::]:0                 LISTENING       1896\n  TCP    [::1]:12025            [::]:0                 LISTENING       5312\n  TCP    [::1]:12110            [::]:0                 LISTENING       5312\n  TCP    [::1]:12119            [::]:0                 LISTENING       5312\n  TCP    [::1]:12143            [::]:0                 LISTENING       5312\n  TCP    [::1]:12465            [::]:0                 LISTENING       5312\n  TCP    [::1]:12563            [::]:0                 LISTENING       5312\n  TCP    [::1]:12993            [::]:0                 LISTENING       5312\n  TCP    [::1]:12995            [::]:0                 LISTENING       5312\n  TCP    [::1]:27275            [::]:0                 LISTENING       5312\n  TCP    [::1]:42050            [::]:0                 LISTENING       40528\n  TCP    [::1]:49675            [::]:0                 LISTENING       11500\n  UDP    0.0.0.0:123            *:*                                    30240\n  UDP    0.0.0.0:500            *:*                                    9476\n  UDP    0.0.0.0:4500           *:*                                    9476\n  UDP    0.0.0.0:5050           *:*                                    17360\n  UDP    0.0.0.0:5353           *:*                                    26040\n  UDP    0.0.0.0:5353           *:*                                    26040\n  UDP    0.0.0.0:5353           *:*                                    35352\n  UDP    0.0.0.0:5353           *:*                                    26184\n  UDP    0.0.0.0:5353           *:*                                    11668\n  UDP    0.0.0.0:5353           *:*                                    35352\n  UDP    0.0.0.0:5353           *:*                                    26184\n  UDP    0.0.0.0:5353           *:*                                    26040\n  UDP    0.0.0.0:5353           *:*                                    26040\n  UDP    0.0.0.0:5353           *:*                                    11668\n  UDP    0.0.0.0:5353           *:*                                    2548\n  UDP    0.0.0.0:5355           *:*                                    2548\n  UDP    0.0.0.0:27036          *:*                                    26120\n  UDP    0.0.0.0:49673          *:*                                    10088\n  UDP    127.0.0.1:1900         *:*                                    13384\n  UDP    127.0.0.1:5353         *:*                                    10088\n  UDP    127.0.0.1:10010        *:*                                    13016\n  UDP    127.0.0.1:10011        *:*                                    18832\n  UDP    127.0.0.1:49667        127.0.0.1:49667                        9560\n  UDP    127.0.0.1:54386        *:*                                    13384\n  UDP    127.0.0.1:55701        *:*                                    13016\n  UDP    192.168.0.100:137      *:*                                    4\n  UDP    192.168.0.100:138      *:*                                    4\n  UDP    192.168.0.100:1900     *:*                                    13384\n  UDP    192.168.0.100:2177     *:*                                    13848\n  UDP    192.168.0.100:27036    *:*                                    26120\n  UDP    192.168.0.100:54385    *:*                                    13384\n  UDP    [::]:123               *:*                                    30240\n  UDP    [::]:500               *:*                                    9476\n  UDP    [::]:4500              *:*                                    9476\n  UDP    [::]:5353              *:*                                    26184\n  UDP    [::]:5353              *:*                                    2548\n  UDP    [::]:5353              *:*                                    11668\n  UDP    [::]:5353              *:*                                    35352\n  UDP    [::]:5353              *:*                                    26040\n  UDP    [::]:5353              *:*                                    26040\n  UDP    [::]:5355              *:*                                    2548\n  UDP    [::]:27036             *:*                                    26120\n  UDP    [::]:49674             *:*                                    10088\n  UDP    [::1]:1900             *:*                                    13384\n  UDP    [::1]:54384            *:*                                    13384\n  UDP    [fe80::f7a6:8eda:44ff:ae31%12]:1900  *:*                                    13384\n  UDP    [fe80::f7a6:8eda:44ff:ae31%12]:2177  *:*                                    13848\n  UDP    [fe80::f7a6:8eda:44ff:ae31%12]:54383  *:*                                    13384\n",
+  "gpu": "pid, process_name, used_gpu_memory [MiB]\n",
+  "cache": {
+    "pyodide-lock.json": {
+      "bytes": 106335,
+      "sha256": "cd50b49de944c579045e122fe8628b31f9ce446379f032f36c05e273d38766e0"
+    },
+    "pyodide.asm.js": {
+      "bytes": 1229099,
+      "sha256": "919560652ed3dad3707cb3a394785da1e046fb13dc0defa162058ff230cb7eed"
+    },
+    "pyodide.asm.wasm": {
+      "bytes": 10088051,
+      "sha256": "b7e66a19427a55010ac3367c1b6c64b893f9826f783412945fdf0c3337f3bc94"
+    },
+    "pyodide.js": {
+      "bytes": 14761,
+      "sha256": "c0069107621d5b942a659e737a12e774cc0451feaa2256f475d72e071d844ec7"
+    },
+    "python_stdlib.zip": {
+      "bytes": 2341872,
+      "sha256": "72894522b791858b9d613ac786b951d8b5094035dcf376313ea24a466810f336"
+    }
+  },
+  "models_after": {
+    "status": 200,
+    "body": {
+      "models": [
+        {
+          "type": "llm",
+          "publisher": "skypro1111",
+          "key": "lapa-v0.1.3-instruct",
+          "display_name": "Lapa v0.1.3 Instruct",
+          "architecture": "gemma3",
+          "quantization": {
+            "name": "Q8_0",
+            "bits_per_weight": 8
+          },
+          "size_bytes": 12510503072,
+          "params_string": "12B",
+          "loaded_instances": [],
+          "max_context_length": 131072,
+          "format": "gguf",
+          "capabilities": {
+            "vision": false,
+            "trained_for_tool_use": false
+          },
+          "description": null
+        },
+        {
+          "type": "llm",
+          "publisher": "unsloth",
+          "key": "gemma-4-e4b-it",
+          "display_name": "Gemma 4 E4B Instruct",
+          "architecture": "gemma4",
+          "quantization": {
+            "name": "Q4_K_M",
+            "bits_per_weight": 4
+          },
+          "size_bytes": 4977171584,
+          "params_string": "7.5B",
+          "loaded_instances": [],
+          "max_context_length": 131072,
+          "format": "gguf",
+          "capabilities": {
+            "vision": false,
+            "trained_for_tool_use": true,
+            "reasoning": {
+              "allowed_options": [
+                "off",
+                "on"
+              ],
+              "default": "on"
+            }
+          },
+          "description": null
+        },
+        {
+          "type": "llm",
+          "publisher": "unsloth",
+          "key": "gemma-4-12b-it",
+          "display_name": "Gemma 4 12B Instruct",
+          "architecture": "gemma4",
+          "quantization": {
+            "name": "Q3_K_M",
+            "bits_per_weight": 3
+          },
+          "size_bytes": 5868988800,
+          "params_string": "12B",
+          "loaded_instances": [],
+          "max_context_length": 262144,
+          "format": "gguf",
+          "capabilities": {
+            "vision": true,
+            "trained_for_tool_use": true,
+            "reasoning": {
+              "allowed_options": [
+                "off",
+                "on"
+              ],
+              "default": "on"
+            }
+          },
+          "description": null
+        },
+        {
+          "type": "llm",
+          "publisher": "INSAIT-Institute",
+          "key": "mamaylm-gemma-3-12b-it-v2.0",
+          "display_name": "MamayLM Gemma 3 12B Instruct v2.0",
+          "architecture": "gemma3",
+          "quantization": {
+            "name": "Q4_K_M",
+            "bits_per_weight": 4
+          },
+          "size_bytes": 7300778784,
+          "params_string": "12B",
+          "loaded_instances": [],
+          "max_context_length": 131072,
+          "format": "gguf",
+          "capabilities": {
+            "vision": false,
+            "trained_for_tool_use": false
+          },
+          "description": null
+        },
+        {
+          "type": "llm",
+          "publisher": "qwen",
+          "key": "qwen/qwen3.5-9b",
+          "display_name": "Qwen3.5 9B",
+          "architecture": "qwen35",
+          "quantization": {
+            "name": "Q4_K_M",
+            "bits_per_weight": 4
+          },
+          "size_bytes": 6548927711,
+          "params_string": "9B",
+          "loaded_instances": [],
+          "max_context_length": 262144,
+          "format": "gguf",
+          "capabilities": {
+            "vision": true,
+            "trained_for_tool_use": true,
+            "reasoning": {
+              "allowed_options": [
+                "off",
+                "on"
+              ],
+              "default": "on"
+            }
+          },
+          "description": null,
+          "variants": [
+            "qwen/qwen3.5-9b@q4_k_m",
+            "qwen/qwen3.5-9b@q8_0"
+          ],
+          "selected_variant": "qwen/qwen3.5-9b@q4_k_m"
+        },
+        {
+          "type": "llm",
+          "publisher": "lmstudio-community",
+          "key": "gemma-4-12b-it-qat",
+          "display_name": "Gemma 4 12B Instruct QAT",
+          "architecture": "gemma4",
+          "quantization": {
+            "name": "Q4_0",
+            "bits_per_weight": 4
+          },
+          "size_bytes": 7150994336,
+          "params_string": "12B",
+          "loaded_instances": [],
+          "max_context_length": 262144,
+          "format": "gguf",
+          "capabilities": {
+            "vision": true,
+            "trained_for_tool_use": true,
+            "reasoning": {
+              "allowed_options": [
+                "off",
+                "on"
+              ],
+              "default": "on"
+            }
+          },
+          "description": null
+        },
+        {
+          "type": "llm",
+          "publisher": "lmstudio-community",
+          "key": "qwen3-vl-8b-instruct",
+          "display_name": "Qwen3 VL 8B Instruct",
+          "architecture": "qwen3vl",
+          "quantization": {
+            "name": "Q4_K_M",
+            "bits_per_weight": 4
+          },
+          "size_bytes": 6186814624,
+          "params_string": "8B",
+          "loaded_instances": [],
+          "max_context_length": 262144,
+          "format": "gguf",
+          "capabilities": {
+            "vision": true,
+            "trained_for_tool_use": true
+          },
+          "description": null
+        },
+        {
+          "type": "embedding",
+          "publisher": "nomic-ai",
+          "key": "text-embedding-nomic-embed-text-v1.5",
+          "display_name": "Nomic Embed Text v1.5",
+          "quantization": {
+            "name": "Q4_K_M",
+            "bits_per_weight": 4
+          },
+          "size_bytes": 84106624,
+          "params_string": null,
+          "loaded_instances": [],
+          "max_context_length": 2048,
+          "format": "gguf"
+        }
+      ]
+    }
+  }
+}

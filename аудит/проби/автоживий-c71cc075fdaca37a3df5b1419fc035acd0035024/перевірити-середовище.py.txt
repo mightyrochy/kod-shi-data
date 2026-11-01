@@ -1,0 +1,53 @@
+import hashlib
+import json
+import os
+from pathlib import Path
+import re
+import subprocess
+import urllib.request
+from datetime import datetime, timezone
+
+repo = Path(__file__).resolve().parents[1] / 'repo'
+out = repo / 'аудит/проби/автоживий-c71cc075fdaca37a3df5b1419fc035acd0035024'
+build = Path(__file__).resolve().parent / 'build'
+
+def api(path='', data=None):
+    req = urllib.request.Request('http://127.0.0.1:1234/api/v1/models' + path,
+        data=None if data is None else json.dumps(data).encode(), headers={'Content-Type':'application/json'})
+    with urllib.request.urlopen(req, timeout=300) as r:
+        return {'status':r.status, 'body':json.load(r)}
+
+evidence = {'utc':datetime.now(timezone.utc).isoformat(),
+    'head':subprocess.check_output(['git','rev-parse','HEAD'],cwd=repo,text=True).strip(),
+    'build':subprocess.check_output(['git','rev-parse','HEAD'],cwd=build,text=True).strip(),
+    'build_txt':(build/'build.txt').read_text(),
+    'html_sha256':hashlib.sha256((build/'index.html').read_bytes()).hexdigest(),
+    'html_code':re.search(r'const ЗБІРКА_ПОКАЗУ = "([0-9a-f]{40})"', (build/'index.html').read_text(encoding='utf-8'))[1],
+    'models_before':api(), 'checks':[], 'node_options':os.environ.get('NODE_OPTIONS'),
+    'pythonpath':os.environ.get('PYTHONPATH'),
+    'netstat':subprocess.check_output(['netstat','-ano'],text=True),
+    'gpu':subprocess.check_output(['nvidia-smi','--query-compute-apps=pid,process_name,used_memory','--format=csv'],text=True),
+    'cache':{p.name:{'bytes':p.stat().st_size,'sha256':hashlib.sha256(p.read_bytes()).hexdigest()}
+             for p in Path('C:/Users/gemini/pyodide').iterdir() if p.is_file()}}
+try:
+    assert not any(m['loaded_instances'] for m in evidence['models_before']['body']['models']), 'Сервер тримає чужу модель'
+    assert evidence['build'] == '3eef1bf6a5b1bdd9182a2ce34f043407430b0f29'
+    assert evidence['html_code'] == evidence['build_txt'].strip() == 'c71cc075fdaca37a3df5b1419fc035acd0035024'
+    for model, context in [('qwen/qwen3.5-9b',57344),('mamaylm-gemma-3-12b-it-v2.0',16384)]:
+        loaded=api('/load',{'model':model,'context_length':context,'parallel':1,'echo_load_config':True})
+        entry={'model':model,'context':context,'load':loaded}
+        evidence['checks'].append(entry)
+        instance=loaded['body'].get('instance_id')
+        if not instance:
+            raise RuntimeError('Не завантажено '+model)
+        try:
+            state=api()
+            actual=next(i for m in state['body']['models'] for i in m['loaded_instances'] if i['id']==instance)
+            entry['actual']=actual
+            assert actual['config']['context_length']==context and actual['config']['parallel']==1
+        finally:
+            entry['unload']=api('/unload',{'instance_id':instance})
+        print('Підтверджено',model,context,'parallel=1',flush=True)
+finally:
+    evidence['models_after']=api()
+    (out/'середовище-продовження-спроба-2.json').write_text(json.dumps(evidence,ensure_ascii=False,indent=2)+'\n',encoding='utf-8')
