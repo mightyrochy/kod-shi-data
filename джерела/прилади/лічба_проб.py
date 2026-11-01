@@ -217,7 +217,8 @@ def гнати(шлях, стеля):
         rc, вивід, помилки = 124, '', 'СТЕЛЯ ЧАСУ %d с' % стеля
     хвіст = [x for x in (помилки or '').splitlines() if x.strip()]
     if rc == КОД_БЕЗ_ВХОДУ:      # чого бракує, проба каже у виводі, а не в stderr
-        хвіст = [x for x in (вивід or '').splitlines() if x.strip()] or хвіст
+        рядки = [x for x in (вивід or '').splitlines() if x.strip()]
+        хвіст = [x for x in рядки if 'БЕЗ ВХОДУ' in x][-1:] or рядки or хвіст
     return {'проба': шлях, 'rc': rc, 'сек': round(time.time() - почато, 1),
             'рядків_виводу': len((вивід or '').splitlines()),
             'причина': хвіст[-1][:300] if хвіст else ''}
