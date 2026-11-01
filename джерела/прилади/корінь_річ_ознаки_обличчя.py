@@ -479,7 +479,17 @@ def _під(ключі, ключ):
 
 
 def _з_префіксом(ключ, ключі):
-    return {"%s/%s" % (ключ, к): в for к, в in (ключі or {}).items() if str(к).count("/") < ГЛИБИНА - 1 and в}
+    """Ключі значення під `ключ`; глибше за ГЛИБИНУ — мітки найглибшого дозволеного предка (не губляться)."""
+    вих = {}
+    for к, в in (ключі or {}).items():
+        if not в:
+            continue
+        шлях = "%s/%s" % (ключ, к)
+        частини = шлях.split("/")
+        if len(частини) > ГЛИБИНА:
+            шлях = "/".join(частини[:ГЛИБИНА])
+        вих[шлях] = вих.get(шлях, E) | в
+    return вих
 
 
 def _без_першого(ключі):
@@ -776,7 +786,11 @@ class Стан:
             return вих, (ключі or None)
         if isinstance(сам, (ast.ListComp, ast.SetComp, ast.GeneratorExp)):
             self.e(сам)
-            м, к = self.значення(сам.elt)
+            збережено = self.область(сам)
+            try:
+                м, к = self.значення(сам.elt)
+            finally:
+                self.відновити(збережено)
             return м - {F}, к
         if isinstance(сам, ast.Call) and isinstance(сам.func, ast.Attribute) and сам.func.attr in ("get", "pop") \
                 and сам.args and not _рядок(сам.args[0]) and isinstance(сам.func.value, ast.Name) \
@@ -818,10 +832,15 @@ class Стан:
                 return self.індекс(мз, сам.slice, сам), (_без_першого(кз) or None)
         if isinstance(сам, ast.DictComp):
             self.e(сам)
-            мв, кв = self.значення(сам.value)
+            збережено = self.область(сам)
+            try:
+                мв, кв = self.значення(сам.value)
+                мк = self.значення(сам.key)[0]
+            finally:
+                self.відновити(збережено)
             if кв:
                 # ключ dict — рядок чи число, не запис: ключі запису, що їх несе ім'я ключа, у мітки не йдуть
-                return (self.значення(сам.key)[0] | мв) - {F}, кв
+                return (мк | мв) - {F}, кв
         if isinstance(сам, ast.Tuple) and сам.elts and not any(isinstance(x, ast.Starred) for x in сам.elts):
             ключі = {}
             for і, x in enumerate(сам.elts):
@@ -843,6 +862,28 @@ class Стан:
             поза, ключі = self.ключі_викликів[id(сам)]
             return поза, (dict(ключі) or None)
         return мітки, None
+
+    def область(self, в):
+        """Генератори виразу-включення у власній області (Python 3): імена циклу не чіпають однойменних імен функції."""
+        імена = {n.id for г in в.generators for n in ast.walk(г.target) if isinstance(n, ast.Name)}
+        збережено = {ім: (self.env.get(ім), dict(self.ключі[ім]) if ім in self.ключі else None,
+                          self.ключі_циклу.get(ім), self.невідомо.get(ім)) for ім in імена}
+        for г in в.generators:
+            self.ітерація(г.target, г.iter)
+            for у in г.ifs:
+                self.e(у)
+        return збережено
+
+    def відновити(self, збережено):
+        for ім, (env, ключі, цикл, невідомо) in збережено.items():
+            for сховище, значення in ((self.env, env), (self.ключі_циклу, цикл), (self.невідомо, невідомо)):
+                if значення is None:
+                    сховище.pop(ім, None)
+                else:
+                    сховище[ім] = значення
+            self.ключі.pop(ім, None)
+            if ключі is not None:
+                self.ключі[ім].update(ключі)
 
     def ітерація(self, ціль, ітер):
         """`for ціль in ітер`: номер `enumerate` і ключ `.items()` — позиція й ім'я, не значення про колорит.
@@ -1153,14 +1194,14 @@ class Стан:
         if isinstance(в, ast.Starred):
             return self.e(в.value)
         if isinstance(в, (ast.ListComp, ast.SetComp, ast.GeneratorExp, ast.DictComp)):
-            for г in в.generators:
-                self.ітерація(г.target, г.iter)
-                for у in г.ifs:
-                    self.e(у)
-            if isinstance(в, ast.DictComp):
-                self.e(в.key)
-                return self.e(в.value) - {F}
-            return self.e(в.elt) - {F}
+            збережено = self.область(в)
+            try:
+                if isinstance(в, ast.DictComp):
+                    self.e(в.key)
+                    return self.e(в.value) - {F}
+                return self.e(в.elt) - {F}
+            finally:
+                self.відновити(збережено)
         if isinstance(в, ast.JoinedStr):
             вих = E
             for x in в.values:
