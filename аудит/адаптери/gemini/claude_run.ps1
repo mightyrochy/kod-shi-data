@@ -193,9 +193,10 @@ function Get-TaskRows {
 }
 
 # Файли skipped.json (позначки без старту) і blocked-reasons.json (причини BLOCKED без гілки) обох планувальників: пише
-# gemini — недовірений файл, тож у #1856 лише одним рядком, обрізаним і без символів розмітки таблиці.
+# gemini — недовірений файл, тож у #1856 лише одним рядком, обрізаним і без символів розмітки таблиці. Масив читає
+# Read-JsonArray (queue_lanes.ps1): 31.10 @(… | ConvertFrom-Json) під PowerShell 5.1 давав рядки з порожніми клітинками.
 function Read-NoteRows([string]$Path, [string[]]$Names) {
-    try { $rows = @([System.IO.File]::ReadAllText($Path, $script:Utf8) | ConvertFrom-Json) } catch { return @() }
+    $rows = @(Read-JsonArray $Path)
     @($rows | Select-Object -Last 12 | ForEach-Object {
         $r = $_
         $cells = foreach ($n in $Names) {
@@ -1142,7 +1143,7 @@ function Invoke-Worker {
     try {
         if ($job.gpu) {
             $gpu = Open-Lock (Get-GpuLockPath)
-            $why = $(if ($null -eq $gpu) { 'замок GPU' } elseif (Test-ExternalGpuFree) { '' } else { Get-GpuBusyReason @() })
+            $why = $(if ($null -eq $gpu) { 'замок GPU' } elseif (Test-ExternalGpuFree) { '' } else { Get-GpuBusyReason @() -LockHeld })
             if ($why) { Remove-Claim $statePath; Write-Log "GPU зайнята ($why) — $($job.name) лишається в черзі"; return $script:WorkerGpuBusy }
         }
         Write-FileAtomic $info (([ordered]@{ slot = $job.slot; lane = 'claude'; marker = $job.name; slug = $job.slug
