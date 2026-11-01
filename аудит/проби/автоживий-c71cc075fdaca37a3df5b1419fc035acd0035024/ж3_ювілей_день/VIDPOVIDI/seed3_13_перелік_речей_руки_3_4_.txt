@@ -1,0 +1,37 @@
+── ПРОМПТ (2065 симв.) ──
+{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.", "One item carries one thing — of two alternatives list the first; a note in brackets is not an item.", "Slot \"accessory\" is for an item no other slot fits.", "\"is_outfit\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "ITEM_LIST", "answer_schema": {"is_outfit": "yes|no", "items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory", "color_hex": "<#rrggbb or null>", "worn": "<true, or false when the description says the outfit goes without it>"}]}, "input": ["\"description\" — the outfit description"]}, "description": "Silk-blend sheath dress in deep burgundy (#4a0e1f), A-line cut with a knee-length hem, tailored fit, rich velvet-finish fabric.\nGold-tone heeled pumps with a slim stiletto, pointed toe, polished leather finish.\nDelicate pearl choker necklace and drop earrings with simulated freshwater pearls, 18k gold plating.\n\nThis outfit works perfectly for your aunt's birthday banquet because the deep burgundy shade flatters your complexion while conveying the elegance required for a formal evening setting. The velvet-like fabric catches the warm artificial restaurant lighting beautifully, adding a touch of nobility without being overly heavy for an autumn afternoon that stretches into the night. The gold heel ties in with your accessories to create a cohesive, sophisticated look suitable for a celebratory dinner."}
+
+── ВІДПОВІДЬ (839 симв., 4.9 с, HTTP 200) ──
+{
+  "is_outfit": "yes",
+  "items": [
+    {
+      "name": "Silk-blend sheath dress",
+      "details": "A-line cut with a knee-length hem, tailored fit, velvet-finish fabric",
+      "slot": "dress",
+      "color_hex": "#4a0e1f",
+      "worn": true
+    },
+    {
+      "name": "Gold-tone heeled pumps",
+      "details": "Slim stiletto heel, pointed toe, polished leather finish",
+      "slot": "shoes",
+      "color_hex": null,
+      "worn": true
+    },
+    {
+      "name": "Pearl choker necklace",
+      "details": "Delicate, simulated freshwater pearls, 18k gold plating",
+      "slot": "collar_necklace",
+      "color_hex": null,
+      "worn": true
+    },
+    {
+      "name": "Drop earrings",
+      "details": "Simulated freshwater pearls, 18k gold plating",
+      "slot": "earrings",
+      "color_hex": null,
+      "worn": true
+    }
+  ]
+}
