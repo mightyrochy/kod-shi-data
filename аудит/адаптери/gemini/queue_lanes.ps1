@@ -51,11 +51,10 @@ $script:WorkerGpuBusy = 4
 $script:ReviewApiLimit = 30
 $script:ReviewApiWindow = 3600
 $script:ReviewApiBackoff = 120
-# Вимір 30.10: найбільший із доступних знімків живих прогонів — 8925 MiB усієї карти; простій — 0 %.
+# Вимір 30.10: найбільший із доступних знімків живих прогонів — 8925 MiB усієї карти.
 # Джерела й прогалини (пік каталогу, навантаження гри): аудит/корені/ПК-межа-без-джерела-gpu.md.
 # Це запасний бюджет за спостереженим максимумом, а не доведений пік будь-якої моделі.
 $script:GpuRunMiB = 8925
-$script:GpuIdlePercent = 0
 
 # --- процеси й файли ----------------------------------------------------------------------------------------------
 
@@ -1113,13 +1112,13 @@ function Get-GpuProcessInfo([int]$ProcessId) {
 }
 
 function Get-GpuLoad {
-    <# Єдине рішення за вільною VRAM, залишковою потребою наряду та обчисленнями.
+    <# Єдине рішення за вільною VRAM і залишковою потребою наряду.
     Пам'ять неактивної LM Studio вже належить інструменту прогону; без лічильника процесів її не зараховуємо.
-    Ненульове навантаження всієї карти блокує і гру, і активну модель, незалежно від назви процесу. #>
+    Навантаження карти — показник журналу й причини нестачі памʼяті, без порога запуску. #>
     $gpu = Get-GpuTelemetry
     $required = [long]$script:GpuRunMiB
     $modelBytes = 0L
-    if (-not $gpu.Error -and $gpu.Percent -le $script:GpuIdlePercent) {
+    if (-not $gpu.Error) {
         $rows = Get-GpuCounterRows
         $seen = @{}
         foreach ($row in @($rows)) {
@@ -1138,15 +1137,20 @@ function Get-GpuLoad {
     }
     $reason = [string]$gpu.Error
     if (-not $reason) {
-        if ($gpu.Percent -gt $script:GpuIdlePercent) { $reason = "навантаження $($gpu.Percent) %" }
-        elseif ($gpu.FreeMiB -lt $required) { $reason = "вільно $($gpu.FreeMiB) з потрібних $required MiB" }
+        if ($gpu.FreeMiB -lt $required) { $reason = "вільно $($gpu.FreeMiB) з потрібних $required MiB; навантаження $($gpu.Percent) %" }
     }
     [pscustomobject]@{ FreeMiB = $gpu.FreeMiB; RequiredMiB = $required; Percent = $gpu.Percent; Reason = $reason }
 }
 
-function Test-ExternalGpuFree {
-    <# Те саме рішення для воркера після узяття замка: зміна стану карти повертає наряд у чергу. #>
-    (Get-GpuLoad).Reason -eq ''
+function Test-ExternalGpuFree([switch]$LogAcquisition) {
+    <# Те саме рішення для воркера після узяття замка: зміна стану карти повертає наряд у чергу.
+    Журнал узяття містить показники того самого знімка, за яким дозволено старт. #>
+    $load = Get-GpuLoad
+    $free = $load.Reason -eq ''
+    if ($free -and $LogAcquisition) {
+        Write-Log "GPU взято: вільно $($load.FreeMiB) з потрібних $($load.RequiredMiB) MiB; навантаження $($load.Percent) %"
+    }
+    $free
 }
 
 $script:GpuHoldReason = ''

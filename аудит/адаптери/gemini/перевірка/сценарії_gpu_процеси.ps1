@@ -131,10 +131,10 @@ Scenario 'г воркер' {
     $code = Invoke-Worker
     Check "г GPU-наряд за моделі LM Studio на карті — воркер пройшов перевірку GPU (код $code) і наряд виконано; lms не викликано: $((Get-LmsCalls) -join ' | '); журнал: $($script:Logged -join ' | ')" ($script:Ran -eq 1 -and $code -ne $script:WorkerGpuBusy -and @(Get-LmsCalls).Count -eq 0)
     # Сторонній процес з'явився між планувальником і воркером: воркер тримає замок сам — причина в журналі з назвою й MiB.
-    $script:Procs = @(@{ Pid = 4120; MiB = 2300 }) + $script:DesktopProcs + $script:ModelProcs; $script:Logged.Clear(); $script:Ran = 0; $script:Percent = 74
+    $script:Procs = @(@{ Pid = 4120; MiB = 12000 }) + $script:DesktopProcs; $script:Logged.Clear(); $script:Ran = 0; $script:Percent = 74
     $code = Invoke-Worker
     $gl = @($script:Logged | Where-Object { $_ -like 'GPU зайнята*' })
-    Check "г воркер за стороннього процесу — лишає наряд у черзі з причиною «навантаження 74 %», а не «замок»: $($gl -join ' | ')" ($code -eq $script:WorkerGpuBusy -and $script:Ran -eq 0 -and $gl.Count -eq 1 -and $gl[0] -match 'навантаження 74 %' -and $gl[0] -notmatch 'замок')
+    Check "г воркер за стороннього процесу — лишає наряд у черзі з причиною нестачі VRAM і навантаженням, а не «замок»: $($gl -join ' | ')" ($code -eq $script:WorkerGpuBusy -and $script:Ran -eq 0 -and $gl.Count -eq 1 -and $gl[0] -match 'навантаження 74 %' -and $gl[0] -notmatch 'замок')
 }
 
 # --- (д) сторонній процес: позначка стоїть, причина з назвою й MiB -----------------------------------------------------
@@ -143,10 +143,10 @@ Scenario 'д сторонній процес' {
     . $fakes
     function Test-LockFree { $true }
     $LaneDir = $tmp; $script:StateDir = Join-Path $tmp 'd-state'; [void][IO.Directory]::CreateDirectory($script:StateDir)
-    $script:Procs = @(@{ Pid = 4120; MiB = 2300 }) + $script:DesktopProcs + $script:ModelProcs + $script:IdleProcs; $script:Apps = '4120, C:\Users\x\chrome.exe'
+    $script:Procs = @(@{ Pid = 4120; MiB = 12000 }) + $script:DesktopProcs + $script:IdleProcs; $script:Apps = '4120, C:\Users\x\chrome.exe'
     $script:Percent = 74
     $why = Get-GpuBusyReason @()
-    Check "д сторонній процес 2300 MiB поряд з робочим столом і моделлю — карту не віддано, причина лише з ним: «$why» / «$($script:GpuHoldReason)»" ($why -match 'навантаження 74 %' -and $script:GpuHoldReason -ceq 'навантаження 74 %' -and -not (Test-ExternalGpuFree))
+    Check "д сторонній процес 12000 MiB поряд з робочим столом — карту не віддано, причина за нестачею VRAM: «$why» / «$($script:GpuHoldReason)»" ($why -match 'вільно .* з потрібних 8925 MiB; навантаження 74 %' -and $script:GpuHoldReason -match '^вільно .*; навантаження 74 %$' -and -not (Test-ExternalGpuFree))
     $line = "GEMINI ОБГОРТКА: ЗАБЛОКОВАНО GPU: $($script:GpuHoldReason), позначок 1"
     Check "д рядок диспетчерові проходить шаблон: $line" (Test-HoldLine $line)
     Check "д lms не викликано: $((Get-LmsCalls) -join ' | ')" (@(Get-LmsCalls).Count -eq 0)

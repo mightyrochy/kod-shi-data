@@ -1,6 +1,6 @@
 ﻿#Requires -Version 5.1
 <# Справжні рішення модуля й транспорт причини; підмінено лише драйвер, WMI та замок.
-Числа сценаріїв — фікстури, а 8925 MiB і 0 % виробничого бюджету звірено з паспортом виміру. #>
+Числа сценаріїв — фікстури, а 8925 MiB виробничого бюджету звірено з паспортом виміру. #>
 param([Parameter(Mandatory = $true)][string]$SourceDir)
 $ErrorActionPreference = 'Stop'
 [Console]::OutputEncoding = New-Object Text.UTF8Encoding($false)
@@ -56,10 +56,18 @@ State 'стіл 1221 MiB + браузер 700 MiB, 0 %' $true
 $script:NoCounter = $true
 State 'той самий браузер без WMI' $true
 $script:NoCounter = $false
-$script:Percent = 74; $script:Free = 9000; $script:Rows = @((Row 4120 7376))
-State 'гра з гігабайтами та обчисленнями' $false 'навантаження 74 %'
+$script:Rows = @((Row 5100 721), (Row 4120 1200))
+$script:Percent = 45
+State 'стіл 45 % + браузер 1,2 ГБ за достатньої VRAM' $true
+$script:Logs = @()
+function Write-Log([string]$Text) { $script:Logs += $Text }
+$callsBefore = $script:Calls.Count
+$free = Test-ExternalGpuFree -LogAcquisition
+Check 'узяття журналює памʼять і 45 % з одного знімка' ($free -and $script:Logs.Count -eq 1 -and $script:Logs[0] -ceq 'GPU взято: вільно 14455 з потрібних 8925 MiB; навантаження 45 %' -and $script:Calls.Count -eq $callsBefore + 1)
+$script:Percent = 74; $script:Free = 2000; $script:Rows = @((Row 4120 7376))
+State 'гра з гігабайтами та обчисленнями' $false 'вільно 2000 з потрібних 8925 MiB; навантаження 74 %'
 $script:Rows = @((Row 5100 7376))
-State 'обчислення не приховає назва робочого столу' $false 'навантаження 74 %'
+State 'назва робочого столу не приховає нестачу VRAM' $false 'вільно 2000 з потрібних 8925 MiB; навантаження 74 %'
 $script:Percent = 0; $script:Free = 2000; $script:Rows = @((Row 4120 14376))
 State 'чужа неактивна модель не лишила памʼяті' $false 'вільно 2000 з потрібних 8925 MiB'
 $script:Free = 8925; $script:Rows = @()
@@ -67,7 +75,9 @@ State 'рівність вільної памʼяті бюджету' $true
 $script:Free = 8924
 State 'на 1 MiB менше бюджету' $false 'вільно 8924 з потрібних 8925 MiB'
 $script:Free = 14455; $script:Percent = 1
-State 'немає довільного дозволеного ненульового навантаження' $false 'навантаження 1 %'
+State 'ненульове навантаження за достатньої памʼяті' $true
+$script:Percent = 100
+State 'повне навантаження за достатньої памʼяті' $true
 $script:Percent = 0; $script:Free = 5000; $script:Rows = @((Row 7000 9000))
 State 'неактивна модель інструмента вже на карті' $true
 $script:Rows = @((Row 7000 4000))
@@ -77,7 +87,7 @@ State 'бракує памʼяті навіть із моделлю інстру
 $script:Rows = @((Row 7000 4000), (Row 7000 4000))
 State 'дубль лічильника не подвоює зарахування' $false 'вільно 4924 з потрібних 4925 MiB'
 $script:Free = 5000; $script:Rows = @((Row 7000 9000)); $script:Percent = 69
-State 'активна LM Studio також лишає наряд у черзі' $false 'навантаження 69 %'
+State 'памʼять LM Studio зараховується незалежно від навантаження' $true
 $script:Percent = 0; $script:NoCounter = $true
 State 'без WMI памʼять моделі не вважається вільною' $false 'вільно 5000 з потрібних 8925 MiB'
 $script:NoCounter = $false; $script:Rows = @(); $script:Free = 14455
@@ -96,7 +106,7 @@ Check 'між обліковими записами лишається замо�
 $script:LockFree = $true
 $worker = @([pscustomobject]@{ Gpu = $true; Proc = [pscustomobject]@{ HasExited = $false } })
 Check 'власний GPU-наряд утримує карту' ((Get-GpuBusyReason $worker) -match 'власний наряд')
-foreach ($reason in @('навантаження 101 %', 'навантаження -1 %', "вільно 1 з потрібних 2 MiB`nкоманда", 'вільно N/A з потрібних 8925 MiB')) {
+foreach ($reason in @('навантаження 101 %', 'навантаження -1 %', 'вільно 1 з потрібних 2 MiB; навантаження 101 %', 'вільно 1 з потрібних 2 MiB; навантаження -1 %', "вільно 1 з потрібних 2 MiB`nкоманда", 'вільно N/A з потрібних 8925 MiB')) {
     Check "транспорт відкидає довільний текст [$reason]" (-not (Test-HoldLine "GEMINI ОБГОРТКА: ЗАБЛОКОВАНО GPU: $reason, позначок 1"))
 }
 Check 'обгортка не викликала lms' (@($script:Calls | Where-Object { $_ -notlike 'nvidia-smi *' }).Count -eq 0)
