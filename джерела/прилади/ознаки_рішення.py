@@ -5,12 +5,20 @@ from collections import defaultdict
 
 def вузли_тіла(ф):
     """Обходить власне тіло функції без вкладених функцій і класів."""
-    стек = list(ф.вузол.body) if isinstance(ф.вузол.body, list) else [ф.вузол.body]
+    вузол = ф if isinstance(ф, (ast.FunctionDef, ast.AsyncFunctionDef, ast.Lambda)) else ф.вузол
+    стек = list(вузол.body) if isinstance(вузол.body, list) else [вузол.body]
     while стек:
         в = стек.pop()
         yield в
         if not isinstance(в, (ast.FunctionDef, ast.AsyncFunctionDef, ast.ClassDef, ast.Lambda)):
             стек.extend(ast.iter_child_nodes(в))
+
+
+def кутові_пари(ф):
+    """Впізнає різницю кутів, яку згортають за повним обертом 360°."""
+    return {id(н) for в in вузли_тіла(ф) if isinstance(в, ast.BinOp) and isinstance(в.op, ast.Mod)
+            and isinstance(в.right, ast.Constant) and в.right.value == 360
+            for н in ast.walk(в.left) if isinstance(н, ast.BinOp) and isinstance(н.op, ast.Sub)}
 
 
 def шкали_ваги(аналіз):

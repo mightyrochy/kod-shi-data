@@ -32,7 +32,7 @@ hex-поля й читач форми з `схеми_розбору`. Потік
 Запуск: python3 -W ignore джерела/прилади/корінь_річ_ознаки_обличчя.py [--корінь <дерево>] [--стенд]"""
 import argparse, ast, collections, functools, glob, os, re, sys, warnings
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-from ознаки_рішення import шкали_ваги, пари_функції, вузли_тіла
+from ознаки_рішення import шкали_ваги, пари_функції, вузли_тіла, кутові_пари
 
 ТУТ = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 ВИКЛЮЧЕНО = re.compile(r"^(батарея_|gate_|measure_|стенд_|тест_|audit_|pair_test|run_outfit|status_перевірки)")
@@ -178,6 +178,33 @@ def _словесні_пороги(дерево):
             for г in ast.walk(в):
                 if isinstance(г, ast.IfExp) and слова(г.body) and слова(г.orelse):
                     вихід.update(id(т) for т in ast.walk(г.test) if isinstance(т, ast.Compare))
+    for ф in ast.walk(дерево):
+        if not isinstance(ф, (ast.FunctionDef, ast.AsyncFunctionDef)):
+            continue
+        вузли = list(вузли_тіла(ф))
+        батьки = {id(д): в for в in вузли for д in ast.iter_child_nodes(в)}
+        for виклик in вузли:
+            if not (isinstance(виклик, ast.Call) and isinstance(виклик.func, ast.Attribute)
+                    and виклик.func.attr == 'append' and isinstance(виклик.func.value, ast.Name)
+                    and len(виклик.args) == 1 and isinstance(виклик.args[0], ast.IfExp)):
+                continue
+            г = виклик.args[0]
+            if not (слова(г.body) and слова(г.orelse)):
+                continue
+            ім = виклик.func.value.id
+            є_злиття, лише_текст = False, True
+            for н in вузли:
+                if not (isinstance(н, ast.Name) and isinstance(н.ctx, ast.Load) and н.id == ім):
+                    continue
+                б = батьки.get(id(н))
+                if isinstance(б, ast.Attribute) and б.value is н and б.attr == 'append':
+                    continue
+                if isinstance(б, ast.Call) and isinstance(б.func, ast.Attribute) and б.func.attr == 'join' and _рядок(б.func.value):
+                    є_злиття = True
+                    continue
+                лише_текст = False
+            if є_злиття and лише_текст:
+                вихід.update(id(т) for т in ast.walk(г.test) if isinstance(т, ast.Compare))
     return вихід
 
 
@@ -376,6 +403,7 @@ class Аналіз:
                          0 in self.виходи_шкал[ф.повне] and not any(isinstance(в, ast.Return) and
                          isinstance(в.value, ast.Tuple) and len(в.value.elts) > 2 for в in ast.walk(ф.вузол)))}
         self.пари = {ф.повне: пари_функції(ф) for м in self.модулі.values() for ф in м.функції.values()}
+        self.кутові = {ф.повне: кутові_пари(ф) for м in self.модулі.values() for ф in м.функції.values()}
         self.пара_глибина = 0
 
     # ── розв'язання імен ──────────────────────────────────────────────
@@ -1657,7 +1685,8 @@ class Стан:
             # число з довіри (вага × значення) — нове число, а не сама довіра: R далі не йде
             л, п = self.e(в.left), self.e(в.right)
             м = _пара(л, п) - {F, R}
-            if id(в) in self.пари and S in л | п and л & {S, P, C, K} and п & {S, P, C, K}:
+            стала_пара = id(в) in self.а.кутові.get(self.ф.повне, ()) and (not л or not п)
+            if id(в) in self.пари and S in л | п and (стала_пара or л & {S, P, C, K} and п & {S, P, C, K}):
                 if not self.а.пара_глибина:
                     self.а.місце(self.м, в, 1, "її значення входить в арифметику пари: %s" % _текст(в)[:70], вхід=True)
                     self.а.пара_глибина += 1
@@ -2338,6 +2367,9 @@ def стенд():
                         xx = x if x >= x0 else x + 360
                         if x0 <= xx <= x1:
                             return y0 + (xx - x0) * (y1 - y0) / (x1 - x0)
+                def кут_зі_сталим(а, б):
+                    кутова_різниця = (float(а) - float(б) + 180) % 360 - 180
+                    return abs(кутова_різниця) / 180
                 def кандидат_точками(F):
                     точки = [F["шкіра"]["L"] + i * 2 for i in range(3)]
                     for L in точки:
@@ -2526,6 +2558,14 @@ def стенд():
                     ширина_точки = ((F["очі"]["h"] - 30) % 360) or 1
                     з_походж = dict(правило="K-X", сила_нп=F["шкіра"]["L"], сила_нп_джерело=F["очі"]["h"])
                     опис_ваги = з_походж.get("сила_нп_джерело") or "вимір"
+                    кут_зі_сталим(30, F["очі"]["h"])
+                    підписи = []
+                    підписи.append("ясні" if F["очі"]["h"] > 4 else "приглушені")
+                    підпис_списку = ", ".join(підписи)
+                    класи = []
+                    класи.append("теплий" if F["очі"]["h"] > 6 else "холодний")
+                    if "теплий" in класи:
+                        pass
                     return знак(F, d.get("самозвіт") or {}), риси
             """,
             "протокол.py": """
@@ -2586,6 +2626,9 @@ def стенд():
             ("п.1 клас її риси зберігається", є("риси.py", r'діагноз_класу = ', 1), True),
             ("не місце: нуль арифметики не означає невідоме", є("риси.py", r'ширина_точки = ', 2), False),
             ("не місце: супровід ваги з протоколу", є("риси.py", r'опис_ваги = ', 2), False),
+            ("п.1 кутова пара зі сталим кандидатом", є("риси.py", r'кутова_різниця = ', 1), True),
+            ("не місце: список лише для злиття в підпис", є("риси.py", r'підписи.append', 1), False),
+            ("п.1 список класів для дальшого рішення", є("риси.py", r'класи.append', 1), True),
             ("зерно: поле skin", є("читач.py", r'об\.get\("skin"\)', 1), True),
             ("зерно: поле eyes", є("читач.py", r'об\.get\("eyes"\)', 1), True),
             ("не місце: light_cast", є("читач.py", r"light_cast", 1), False),
