@@ -1,0 +1,1715 @@
+diff --git a/аудит/адаптери/gemini/claude_run.ps1 b/аудит/адаптери/gemini/claude_run.ps1
+index 127f1f8f8e1cf6411d38ec29507ea93e77ef2c08..c08bf2638c7ea0bd0981894f56ab14a78b095d80 100644
+--- a/аудит/адаптери/gemini/claude_run.ps1
++++ b/аудит/адаптери/gemini/claude_run.ps1
+@@ -45,10 +45,10 @@ param(
+     [string]$GitExe = 'git',
+     [string]$ClaudeExe = 'claude',
+     [string]$GhExe = 'gh',
+-    [double]$HangMinutes = 120,
++    [double]$HangMinutes,
+     [double]$StatusMinutes = 5,
+-    [double]$PollMinutes = 2,
+-    [double]$QuotaWaitMinutes = 60,
++    [double]$PollMinutes,
++    [double]$QuotaWaitMinutes,
+     [int]$MarkerMaxAgeDays = 7,
+     [double]$OffWaitMinutes = 10,
+     [string[]]$TaskNames = @('claude-run', 'gemini-run', 'gemini-publish', 'gemini-watch'),
+@@ -245,13 +245,13 @@ function Read-GeminiBeat {
+     $lanes = @()
+     foreach ($l in @(Get-JsonProp $j 'lanes' | Select-Object -First 2)) {
+         $ln = & $get $l 'lane'; $n = & $get $l 'n'
+-        if ($ln -notin @('codex', 'agy') -or -not (Test-SlotCount $n)) { continue }
+-        $busy = @(foreach ($s in @(Get-JsonProp $l 'busy' | Select-Object -First $script:Ceil.slots[1])) {
++        if ($ln -notin @('codex', 'agy') -or ($n -cne 'без межі' -and -not (Test-SlotCount $n))) { continue }
++        $busy = @(foreach ($s in @(Get-JsonProp $l 'busy')) {
+             $sl = & $get $s 'slot'; $m = & $get $s 'marker'; $md = & $get $s 'model'; $since = & $utc (& $get $s 'since')
+             if (-not (Test-SlotName $sl @($ln)) -or $m -cnotmatch $script:MarkerRx -or $m.Contains('..') -or $md -cnotmatch $script:ModelPattern) { continue }
+             [pscustomobject]@{ Slot = $sl; Marker = $m; Model = $md; Since = $since; Gpu = ((& $get $s 'gpu') -eq 'True') }
+         })
+-        $lanes += [pscustomobject]@{ Lane = $ln; N = [int]$n; Busy = $busy }
++        $lanes += [pscustomobject]@{ Lane = $ln; N = $(if ($n -ceq 'без межі') { $n } else { [int]$n }); Busy = $busy }
+     }
+     $b.Lanes = $lanes
+     $q = Get-JsonProp $j 'quota'
+@@ -297,7 +297,9 @@ function Update-Health {
+     $h = $null
+     if (Test-Path -LiteralPath $path) { try { $h = [System.IO.File]::ReadAllText($path, $script:Utf8) | ConvertFrom-Json } catch { $null = $_ } }
+     $now = [DateTimeOffset]::UtcNow.ToUnixTimeSeconds()
+-    if ($null -ne $h -and $now - [long]$h.time -lt 60 * (Get-Limit $script:Limits 'UsageMinutes' 'usage_minutes')) { return $h }
++    # usage_minutes без джерела — кешу нема: здоров'я міряється щоразу.
++    $ua = Get-Limit $script:Limits 'UsageMinutes' 'usage_minutes'
++    if ($null -ne $h -and $null -ne $ua -and $now - [long]$h.time -lt ($ua * 60)) { return $h }
+     $samples = @(@(Get-JsonProp $h 'samples') | Where-Object { $null -ne $_ -and $now - [long]$_.t -le 2 * 86400 })
+     try { $samples += [pscustomobject]@{ t = $now; free = [long](Get-FreeBytes) } } catch { Write-Log "здоров'я: місце не виміряно" }
+     $dirs = @(foreach ($d in @(@('C:\tmp', $TmpDir), @('claude-run', $WorkDir))) {
+@@ -346,7 +348,8 @@ function Get-HealthLines($G, $Cq) {
+     $zero = { param($Refused, $Reset)
+         if ($Refused -notmatch $script:UtcRx) { return $false }
+         if ($Reset -match $script:UtcRx) { return [int](Get-Minutes $Reset) -lt 0 }
+-        [int](Get-Minutes $Refused) -lt (Get-Limit $script:Limits 'QuotaWaitMinutes' 'quota_wait_minutes') }
++        # Скидання невідоме — нульової квоти за часом не вгадуємо (поля в даних нема).
++        $false }
+     $cz = $(if ($null -ne $Cq -and (& $zero ([string](Get-JsonProp $Cq 'refused')) ([string](Get-JsonProp $Cq 'reset')))) { @($ms | Where-Object { $_.Lane -eq 'claude' }).Count } else { 0 })
+     $xz = $(if ($null -ne $G.Codex -and (& $zero $G.Codex.Refused $G.Codex.Reset)) { @($ms | Where-Object { $_.Lane -eq 'codex' }).Count } else { 0 })
+     $lines += @('', "Позначки на рушії з нульовою квотою: claude $cz · codex $xz · agy $(if ($G.Zero) { $G.Zero } else { '?' })")
+@@ -381,7 +384,7 @@ function Get-StatusBody {
+             }
+         }
+     }
+-    $n = $(if ($null -ne $lim) { [int]$lim.slots['claude'] } else { '?' })
++    $n = $(if ($null -eq $lim) { '?' } elseif ($null -eq $lim.slots['claude']) { 'без межі' } else { [int]$lim.slots['claude'] })
+     if ($own.Count -eq 0) { $lines += "| claude | $n | 0 | — | — | — | — |" }
+     foreach ($s in $own) {
+         if ($s.gpu) { $gpuBy += [string]$s.slot }
+@@ -424,7 +427,7 @@ function Get-StatusBody {
+         }
+         if ([string](Get-JsonProp $cq 'refused')) { $lines += "| claude · остання відмова | — | 0 % | $(if ($cq.reset) { [string]$cq.reset } else { 'CLI не дав' }) | $([string]$cq.refused) |" }
+     } else { $lines += '| claude | — | невідомо (ще не було прогону) | — | — |' }
+-    if ($null -ne $g.Codex -and $g.Codex.Refused) { $lines += "| codex · остання відмова | — | 0 % | $(if ($g.Codex.Reset) { $g.Codex.Reset } else { 'CLI не дав — чекання quota_wait_minutes' }) | $($g.Codex.Refused) |" }
++    if ($null -ne $g.Codex -and $g.Codex.Refused) { $lines += "| codex · остання відмова | — | 0 % | $(if ($g.Codex.Reset) { $g.Codex.Reset } else { 'CLI не дав' }) | $($g.Codex.Refused) |" }
+     else { $lines += '| codex | — | невідомо (CLI без ходу не дає; відмов не було) | — | — |' }
+     $wait = @(Get-WaitingMarkers) + @($g.Wait)
+     if ($wait.Count -gt 0) {
+@@ -746,7 +749,8 @@ function Invoke-Claude([string]$Exe, [string[]]$ArgList, [string]$Prompt, [strin
+     while ($true) {
+         if (-not $outDone -and $null -eq $outTask) { $outTask = $p.StandardOutput.ReadLineAsync() }
+         if (-not $errDone -and $null -eq $errTask) { $errTask = $p.StandardError.ReadLineAsync() }
+-        $left = ($last.AddMinutes($hang) - (Get-Date)).TotalMilliseconds
++        # claude_hang_minutes без джерела — межі завислості нема.
++        $left = $(if ($null -eq $hang) { [double]::PositiveInfinity } else { ($last.AddMinutes($hang) - (Get-Date)).TotalMilliseconds })
+         if ($left -le 0) { $res.Kind = 'HANG'; break }
+         $ms = [int][Math]::Min($left, 60000)
+         $wait = [System.Threading.Tasks.Task[]]@(@($outTask, $errTask) | Where-Object { $null -ne $_ })
+@@ -813,8 +817,8 @@ function Complete-Task($M, [string]$StatePath, [string]$Id, [string]$Code, [stri
+ }
+ 
+ # Відмова за квотою: позначка чекає скидання (resetsAt останньої `rate_limit_event` зі status rejected; інакше час
+-# із тексту `…|<unix>`; нема — quota_wait_minutes), рядок QUOTA0_CLAUDE_M<хв>; нова спроба продовжить гілку наряду.
+-# Понад MaxRetakes — $false (кінець QUOTA, як до смуг).
++# із тексту `…|<unix>`; нема — кінець QUOTA, рядок диспетчерові), рядок QUOTA0_CLAUDE_M<хв>; нова спроба продовжить гілку наряду.
++# Час скидання невідомий — $false (кінець QUOTA; лише -QuotaWaitMinutes руки власника дає чекання).
+ function Enter-ClaudeQuotaWait($M, [string]$StatePath, [string]$Id, $R, [string]$Text) {
+     $now = [DateTimeOffset]::UtcNow.ToUnixTimeSeconds()
+     $until = 0L
+@@ -824,9 +828,11 @@ function Enter-ClaudeQuotaWait($M, [string]$StatePath, [string]$Id, $R, [string]
+     }
+     if ($until -le $now -and $Text -match '\|([0-9]{10})\b') { $until = [long]$Matches[1] }
+     $known = $until -gt $now
+-    if (-not $known) { $until = $now + [long](60 * (Get-Limit $script:Limits 'QuotaWaitMinutes' 'quota_wait_minutes')) }
+-    $n = Set-MarkerWait $M $until @{ retake = $true; group = 'CLAUDE' }
+-    if ($null -eq $n) { return $false }
++    if (-not $known) {
++        $until = Get-QuotaWaitUntil $now
++        if ($null -eq $until) { Write-Log "квота: $($M.Name) — час скидання невідомий — кінець QUOTA"; return $false }
++    }
++    [void](Set-MarkerWait $M $until @{ retake = $true; group = 'CLAUDE' })
+     $q = Read-ClaudeQuota
+     $o = [ordered]@{ read = (Get-UtcStamp (Get-Date)); status = 'rejected'; windows = @(); refused = (Get-UtcStamp (Get-Date)); reset = $(if ($known) { Get-UtcStamp ([DateTimeOffset]::FromUnixTimeSeconds($until).UtcDateTime) } else { '' }) }
+     if ($null -ne $q) { $o.read = [string]$q.read; $o.status = [string]$q.status; $o.windows = @(Get-JsonProp $q 'windows') }
+@@ -920,11 +926,17 @@ function Invoke-ClaudeTask($M, $Job, [string]$Exe, [string]$TaskText, [string]$C
+     Complete-Task $M $statePath $id 'NO_REPORT'
+ }
+ 
+-# Відмова до STARTED: лічильник повернень і межа ті самі, що в квоти; на межі — кінцевий стан CRASH і рядок диспетчерові.
++# Відмова до STARTED: позначка повертається в чергу, лічильник повернень той самий, що в квоти; межі повернень нема.
+ function Close-FailedStart($M, [string]$Id, [string]$StatePath) {
+-    if ((Step-FailedStart $M $StatePath) -ne 'LIMIT') { return }
+-    Write-Log "позначка $($M.Name): відмов до запуску понад $script:MaxRetakes — кінець CRASH"
+-    Complete-Task $M $StatePath $Id 'CRASH'
++    if ((Step-FailedStart $M $StatePath) -ceq 'RETRY') {
++        # Межі повернень нема, тож відмова до старту не мовчить: один рядок на позначку (прапор поруч зі станом).
++        $flag = $StatePath + '.startfail'
++        if (-not (Test-Path -LiteralPath $flag)) {
++            $name = ([string]$M.Name -replace '[^\p{L}\p{Nd}._/-]', '_')
++            if ($name.Length -gt 173) { $name = $name.Substring(0, 173) }
++            if (Add-Line "GEMINI ОБГОРТКА: ЗАБЛОКОВАНО $name START") { Write-FileAtomic $flag '1' }
++        }
++    }
+ }
+ 
+ # Прогін, перерваний вимкненням чи зупинкою задачі (замок його слота вільний): живий claude без нагляду зупиняється,
+@@ -1099,7 +1111,7 @@ function Start-Markers($Workers) {
+             Complete-Task $m (Get-StatePath (Get-MarkerKey $m)) (New-Id) 'CLAUDE_NOT_LAPTOP'
+             continue
+         }
+-        $slot = Get-FreeSlot 'claude' ([int]$script:Limits.slots['claude']) $Workers
++        $slot = Get-FreeSlot 'claude' ($script:Limits.slots['claude']) $Workers
+         if (-not $slot) { Add-Skip $m 'нема вільного слота смуги claude'; Add-Hold $script:Held 'SLOTS' 'слоти зайняті' $m.Name; continue }
+         if ((@($Workers | Where-Object { $_.Slug -ceq $m.Slug -and -not $_.Proc.HasExited }).Count -gt 0) -or (Test-SlugBusy $m.Slug @('claude'))) { Add-Skip $m 'той самий наряд уже йде в слоті'; continue }
+         if ($m.Gpu) {
+@@ -1108,7 +1120,7 @@ function Start-Markers($Workers) {
+         }
+         $id = New-Id
+         if (-not (New-Claim $m $id)) { continue }
+-        # Усе між claim і STARTED — під одним обліком відмов (retakes, MaxRetakes, CRASH на межі), 10162/10182.
++        # Усе між claim і STARTED — під одним обліком відмов (retakes, повернення в чергу), 10162/10182.
+         try {
+             $dir = Join-Path (Join-Path $WorkDir 'runs') $id
+             [void](New-Item -ItemType Directory -Force -Path $dir)
+@@ -1195,7 +1207,7 @@ function Main {
+         Resume-Interrupted
+         $script:Workers = New-Object System.Collections.ArrayList
+         $script:Held = @{}
+-        $first = $true; $clean = $true; $ver = ''
++        $first = $true; $clean = $true; $ver = ''; $refused = ''
+         while ($true) {
+             $ver = Get-VersionSwitch
+             if ($ver) { Write-VersionSwitch $ver; break }
+@@ -1222,9 +1234,16 @@ function Main {
+             if ($null -ne $off) { Invoke-Off $off }
+             Update-Status -Force:($started -gt 0)
+             if ($script:Workers.Count -eq 0 -and $started -eq 0) { break }
+-            Wait-Workers $script:Workers (Get-Limit $script:Limits 'PollMinutes' 'poll_minutes')
++            $poll = Get-Limit $script:Limits 'PollMinutes' 'poll_minutes'
++            if ($null -eq $poll) {
++                # Період опитування без джерела не береться з коду: проходи не повторюємо, наряди доробляють окремі процеси.
++                Write-Log 'відмова: poll_minutes без джерела в смуги.json — період опитування не задано, цикл зупинено'
++                $refused = 'poll_minutes'
++                break
++            }
++            Wait-Workers $script:Workers $poll
+         }
+-        $script:Phase = $(if ($ver) { "оновлення версії: $ver" } else { 'чекає позначки' })
++        $script:Phase = $(if ($refused) { "відмова: $refused без джерела" } elseif ($ver) { "оновлення версії: $ver" } else { 'чекає позначки' })
+         Update-Status -Force
+         0
+     } catch {
+diff --git a/аудит/адаптери/gemini/gemini_publish.ps1 b/аудит/адаптери/gemini/gemini_publish.ps1
+index 974cdfcf3be7d7f5664a1b4651665663ba23f8b3..d3a24accf18c57164228794ed485dd4e28fdc400 100644
+--- a/аудит/адаптери/gemini/gemini_publish.ps1
++++ b/аудит/адаптери/gemini/gemini_publish.ps1
+@@ -316,7 +316,7 @@ function Get-Line([string]$Id) {
+     if ($code -eq 'QUOTA_ZERO') {
+         $g = [string](Get-Prop $s 'qgroup'); $r = [string](Get-Prop $s 'qreset')
+         if ($g -cnotmatch '^[A-Z0-9]{1,16}$' -or ($r -and $r -notmatch '^[0-9]{1,6}$')) { return Get-BadLine $Id 'не за форматом' }
+-        $kod = 'QUOTA0_' + $g + $(if ($r) { '_M' + [int]$r } else { '' })
++        $kod = 'QUOTA0_' + $g + $(if ($r -and [int]$r -gt 0) { '_M' + [int]$r } else { '' })
+         if (Test-Seen "$queue $marker $kod") { return $null }
+         Write-WrapperLog "кінець $Id — $run; група $g, скидання через $(if ($r) { "$r хв" } else { 'невідомо' })"
+         return [pscustomobject]@{ Outbox = "GEMINI ОБГОРТКА: ЗАБЛОКОВАНО $branch $kod" }
+diff --git a/аудит/адаптери/gemini/gemini_run.ps1 b/аудит/адаптери/gemini/gemini_run.ps1
+index 8bc0d736f9fc2ade51bf4fde91fa2d1f93fc3086..0e4276ec030fe0694310b33e82699f007187d21d 100644
+--- a/аудит/адаптери/gemini/gemini_run.ps1
++++ b/аудит/адаптери/gemini/gemini_run.ps1
+@@ -18,7 +18,7 @@
+       xhigh|max|ultra, відмову `codex exec` обгортка віддає кодом EFFORT_INVALID, без підміни), інша — `agy`; квота `agy`
+       як дані (`agy -p "/usage"`, 0 ходів, не частіше за `usage_minutes`): група моделі з 0 % — позначка чекає скидання
+       (рядок QUOTA0 диспетчерові раз), після скидання її бере та сама смуга; відмова за квотою посеред прогону (429) —
+-      так само, до MaxRetakes разів; коли задано `-CodexFallbackModel`, `agy` на 0 % замінює Codex з цією моделлю;
++      так само; коли задано `-CodexFallbackModel`, `agy` на 0 % замінює Codex з цією моделлю;
+   3. гілка `gemini/<наряд>` від свіжого `main` (чи від уже опублікованої `gemini/<наряд>` — доробка; чи від голови
+      прогону, зупиненого квотою);
+   4. прогін `agy` з межею часу; хід без звіту чи звіт, що не збігся з гілкою, — догонка тієї самої розмови;
+@@ -43,12 +43,12 @@ param(
+     [switch]$EnableCodex,
+     [ValidateSet('stream', 'print')]
+     [string]$Mode = 'stream',
+-    [double]$TurnMinutes = 120,
+-    [double]$TotalMinutes = 180,
+-    [double]$CodexStallMinutes = 60,
+-    [double]$PollMinutes = 2,
+-    [double]$UsageMinutes = 15,
+-    [double]$QuotaWaitMinutes = 60,
++    [double]$TurnMinutes,
++    [double]$TotalMinutes,
++    [double]$CodexStallMinutes,
++    [double]$PollMinutes,
++    [double]$UsageMinutes,
++    [double]$QuotaWaitMinutes,
+     [int]$MaxNudges = 4,
+     [double]$QuotaMinutes = 2,
+     [int]$MarkerMaxAgeDays = 7,
+@@ -110,8 +110,8 @@ function ConvertTo-JsonString([string]$Text) {
+ }
+ 
+ # Запуск без межі часу (Codex): процес зупиняє лише завислість — жодного нового рядка stdout (події `--json`) довше за
+-# $StallMinutes. Кожен рядок одразу йде в $LogFile, а мітка часу й тип події — в $EventsFile (щоб поріг вивіряти за прогонами).
+-function Invoke-NativeUntilStall([string]$Exe, [string[]]$Arguments, [string]$WorkDir, [double]$StallMinutes, [string]$LogFile, [string]$EventsFile) {
++# $StallMinutes ($null — межі нема, джерела codex_stall_minutes нема). Кожен рядок одразу йде в $LogFile, а мітка часу й тип події — в $EventsFile (щоб поріг вивіряти за прогонами).
++function Invoke-NativeUntilStall([string]$Exe, [string[]]$Arguments, [string]$WorkDir, $StallMinutes, [string]$LogFile, [string]$EventsFile) {
+     $psi = New-StartInfo $Exe $Arguments $WorkDir
+     $p = [System.Diagnostics.Process]::Start($psi)
+     $err = $p.StandardError.ReadToEndAsync()
+@@ -121,7 +121,7 @@ function Invoke-NativeUntilStall([string]$Exe, [string[]]$Arguments, [string]$Wo
+     $pending = $null
+     while ($true) {
+         if ($null -eq $pending) { $pending = $p.StandardOutput.ReadLineAsync() }
+-        $left = ($last.AddMinutes($StallMinutes) - (Get-Date)).TotalMilliseconds
++        $left = $(if ($null -eq $StallMinutes) { [double]::PositiveInfinity } else { ($last.AddMinutes($StallMinutes) - (Get-Date)).TotalMilliseconds })
+         if ($left -le 0) { $stalled = $true; break }
+         if (-not $pending.Wait([int][Math]::Min($left, 60000))) {
+             # stdout міг лишитись відкритим у нащадка завершеного процесу: це не завислість.
+@@ -138,7 +138,10 @@ function Invoke-NativeUntilStall([string]$Exe, [string[]]$Arguments, [string]$Wo
+         if ($line -match '"type"\s*:\s*"([^"]{1,60})"') { $type = $Matches[1] }
+         [System.IO.File]::AppendAllText($EventsFile, $last.ToString('s') + "`t" + $type + "`n", $script:Utf8)
+     }
+-    if (-not $stalled -and -not $p.WaitForExit([int][Math]::Min([double][int]::MaxValue, $StallMinutes * 60000))) { $stalled = $true }
++    if (-not $stalled) {
++        if ($null -eq $StallMinutes) { $p.WaitForExit() }
++        elseif (-not $p.WaitForExit([int][Math]::Min([double][int]::MaxValue, $StallMinutes * 60000))) { $stalled = $true }
++    }
+     if ($stalled) { Stop-Tree $p } else { $p.WaitForExit() }
+     $errText = ''
+     if ($err.Wait(15000)) { $errText = $err.Result }
+@@ -411,13 +414,13 @@ function Update-UsageCache {
+     [pscustomobject]$c
+ }
+ 
+-# Вікна квоти з кешу; -Fresh чи кеш старший за usage_minutes чи за -After (unix) — agy питаємо знову.
++# Вікна квоти з кешу; -Fresh, usage_minutes без джерела (кешу нема) чи кеш старший за usage_minutes чи за -After (unix) — agy питаємо знову.
+ function Read-Usage([switch]$Fresh, [long]$After = 0) {
+     $c = $null
+     try { $c = [System.IO.File]::ReadAllText((Join-Path $RunsDir 'usage.json'), $script:Utf8) | ConvertFrom-Json } catch { $null = $_ }
+     $now = [DateTimeOffset]::UtcNow.ToUnixTimeSeconds()
+-    $age = (Get-Limit $script:Limits 'UsageMinutes' 'usage_minutes') * 60
+-    if ($Fresh -or $null -eq $c -or [long]$c.time -lt $After -or ($now - [long]$c.time) -ge $age) {
++    $age = Get-Limit $script:Limits 'UsageMinutes' 'usage_minutes'
++    if ($Fresh -or $null -eq $c -or $null -eq $age -or [long]$c.time -lt $After -or ($now - [long]$c.time) -ge $age * 60) {
+         if (-not $script:Agy) { return [pscustomobject]@{ Known = $false; Windows = @(); Text = ''; Read = [DateTimeOffset]::UtcNow } }
+         $c = Update-UsageCache
+     }
+@@ -630,7 +633,9 @@ function Get-AgyArgs($M, [string]$Conversation, [string[]]$Head) {
+     $a = $Head + @('--output-format', $(if ($Mode -eq 'stream') { 'stream-json' } else { 'json' }),
+         '--model', $M.Model, '--dangerously-skip-permissions')
+     if ($Mode -eq 'stream') { $a = @('--input-format', 'stream-json') + $a }
+-    if (-not $NoPrintTimeoutFlag) { $a += @('--print-timeout', ('{0}m' -f [int][Math]::Ceiling($TurnMinutes))) }
++    # agy_turn_minutes без джерела — прапора межі ходу нема.
++    $turnLimit = Get-Limit $script:Limits 'TurnMinutes' 'agy_turn_minutes'
++    if (-not $NoPrintTimeoutFlag -and $null -ne $turnLimit) { $a += @('--print-timeout', ('{0}m' -f [int][Math]::Ceiling($turnLimit))) }
+     if ($Conversation) { $a += @('--conversation', $Conversation) }
+     $a
+ }
+@@ -696,10 +701,11 @@ function Invoke-OneShotTurn($M, $Run, [string]$Text) {
+     $a = @('exec', '-C', $RepoDir, '-m', $Run.Engine.Model)
+     if ($Run.Engine.Effort) { $a += @('-c', "model_reasoning_effort=$($Run.Engine.Effort)") }
+     $a += @('--json', '-o', $outFile, '--dangerously-bypass-approvals-and-sandbox', $short)
+-    $r = Invoke-NativeUntilStall $Run.Exe $a $RepoDir $CodexStallMinutes $Run.Log (Join-Path $Run.Dir 'codex.events.tsv')
++    $stall = Get-Limit $script:Limits 'CodexStallMinutes' 'codex_stall_minutes'
++    $r = Invoke-NativeUntilStall $Run.Exe $a $RepoDir $stall $Run.Log (Join-Path $Run.Dir 'codex.events.tsv')
+     [System.IO.File]::AppendAllText($Run.ErrLog, $r.Err, $script:Utf8)
+     if ($r.Stalled) {
+-        Write-Log "codex: нових подій нема понад $CodexStallMinutes хв — завислість, зупинено"
++        Write-Log "codex: нових подій нема понад $stall хв — завислість, зупинено"
+         return [pscustomobject]@{ Kind = 'stall'; Result = $null }
+     }
+     $resp = ''; $err = ''
+@@ -727,7 +733,8 @@ function Invoke-Turn($M, $Run, [string]$Text, [datetime]$Deadline) {
+     $file = Join-Path $Run.Dir ('turn{0}.md' -f $Run.Turn)
+     [System.IO.File]::WriteAllText($file, $Text, $script:Utf8)
+     $short = "Прочитай файл $file і виконай його повністю"
+-    $minutes = ($Deadline - (Get-Date)).TotalMinutes
++    # Строку всього прогону нема (поле agy_total_minutes знято, рішення менеджера 01.11) — і межі часу процесу нема.
++    $minutes = $(if ($Deadline -eq [datetime]::MaxValue) { [double]::PositiveInfinity } else { ($Deadline - (Get-Date)).TotalMinutes })
+     if ($minutes -le 0) { return [pscustomobject]@{ Kind = 'timeout'; Result = $null } }
+     # Запас 2 хв: agy має встигнути сам віддати конверт із conversation_id по своїй --print-timeout.
+     $r = Invoke-Native $script:Agy (Get-AgyArgs $M $Run.Conversation @('-p', $short)) $RepoDir ($minutes + 2)
+@@ -749,7 +756,11 @@ function Invoke-Agent($M, [string]$Start, [string]$Prompt, [string]$Dir, $Sel) {
+         Responses = New-Object System.Collections.Generic.List[string] }
+     # Codex без межі часу всього й ходу (власник 26.10): його зупиняє лише завислість; `agy` — як було.
+     $unlimited = ($Sel.Engine.Name -eq 'codex')
+-    $deadline = $(if ($unlimited) { [datetime]::MaxValue } else { (Get-Date).AddMinutes($TotalMinutes) })
++    # Строку всього прогону agy нема, як у Codex (завислість ловить сторож ходу); лише -TotalMinutes руки власника. Строк
++    # ходу — agy_turn_minutes з виміром; нема запису — без строку ходу.
++    $totalLimit = $(if ($script:Bound.ContainsKey('TotalMinutes')) { [double]$script:Bound['TotalMinutes'] } else { $null })
++    $turnLimit = Get-Limit $script:Limits 'TurnMinutes' 'agy_turn_minutes'
++    $deadline = $(if ($unlimited -or $null -eq $totalLimit) { [datetime]::MaxValue } else { (Get-Date).AddMinutes($totalLimit) })
+     $text = $Prompt
+     $turns = 0
+     $nudges = 0
+@@ -758,8 +769,8 @@ function Invoke-Agent($M, [string]$Start, [string]$Prompt, [string]$Dir, $Sel) {
+     try {
+         while ($true) {
+             $turnDeadline = $deadline
+-            if (-not $unlimited) {
+-                $turnDeadline = (Get-Date).AddMinutes($TurnMinutes)
++            if (-not $unlimited -and $null -ne $turnLimit) {
++                $turnDeadline = (Get-Date).AddMinutes($turnLimit)
+                 if ($turnDeadline -gt $deadline) { $turnDeadline = $deadline }
+             }
+             $turns++
+@@ -878,13 +889,17 @@ function Write-QuotaStatus($M, [string]$Id, [string]$Group, [long]$Until, [hasht
+     Write-Log "квота: $($M.Name) — група $Group на 0 %, чекає до $(Get-UtcStamp ([DateTimeOffset]::FromUnixTimeSeconds($Until).UtcDateTime))"
+ }
+ 
+-# Відмова до STARTED: лічильник повернень і межа ті самі, що в квоти; на межі — кінцевий стан CRASH і рядок диспетчерові.
++# Відмова до STARTED: позначка повертається в чергу, лічильник повернень той самий, що в квоти; межі повернень нема.
+ function Close-FailedStart($M, [string]$Id, [string]$StatePath) {
+-    if ((Step-FailedStart $M $StatePath) -ne 'LIMIT') { return }
+-    $status = [ordered]@{ v = 1; id = $Id; slug = $M.Slug; model = $M.Model; n = [int]$M.N; marker = $M.Sha; cond = $M.Cond; slot = ''
+-        start = ''; head = ''; code = 'CRASH'; report = 'NONE'; ahead = 0; turns = 0; minutes = 0; bundle = ''; engine = 'agy' }
+-    Write-Log "позначка $($M.Name): відмов до запуску понад $script:MaxRetakes — кінець CRASH"
+-    Complete-Status $status $StatePath '' ([datetime]::MinValue)
++    if ((Step-FailedStart $M $StatePath) -ceq 'RETRY') {
++        # Межі повернень нема, тож відмова до старту не мовчить: один рядок на позначку (прапор поруч зі станом).
++        $flag = $StatePath + '.startfail'
++        if (-not (Test-Path -LiteralPath $flag)) {
++            $name = ([string]$M.Name -replace '[^\p{L}\p{Nd}._/-]', '_')
++            if ($name.Length -gt 173) { $name = $name.Substring(0, 173) }
++            if (Add-HoldLine "GEMINI ОБГОРТКА: ЗАБЛОКОВАНО $name START") { Write-FileAtomic $flag '1' }
++        }
++    }
+ }
+ 
+ function New-RunId([string]$Key) { '{0:yyyyMMdd-HHmmss}-{1}' -f (Get-Date), (Get-Sha256Hex ($Key + [guid]::NewGuid())).Substring(0, 12) }
+@@ -996,8 +1011,8 @@ function Invoke-Task($M, $Job) {
+ }
+ 
+ # Відмова за квотою посеред прогону (429): позначка повертається в чергу до скидання (agy — з /usage, Codex — з тексту
+-# відмови, нема — quota_wait_minutes), зроблене лишається в гілці, повтор почне з її голови. Понад MaxRetakes — кінець
+-# із кодом QUOTA, як до смуг. $true — позначка чекає.
++# відмови, нема — кінець QUOTA), зроблене лишається в гілці, повтор почне з її голови. Скидання невідоме й
++# -QuotaWaitMinutes руки власника не задано — кінець із кодом QUOTA. $true — позначка чекає.
+ function Enter-RunQuotaWait($M, $Sel, $Status, $Res, [string]$Dir) {
+     $now = [DateTimeOffset]::UtcNow.ToUnixTimeSeconds()
+     $until = 0L; $group = 'CODEX'
+@@ -1013,10 +1028,12 @@ function Enter-RunQuotaWait($M, $Sel, $Status, $Res, [string]$Dir) {
+         try { Write-FileAtomic (Join-Path $RunsDir 'quota-codex.json') ($cq | ConvertTo-Json -Compress) } catch { $null = $_ }
+     }
+     $known = $until -gt 0
+-    if (-not $known) { $until = $now + [long](60 * (Get-Limit $script:Limits 'QuotaWaitMinutes' 'quota_wait_minutes')) }
++    if (-not $known) {
++        $until = Get-QuotaWaitUntil $now
++        if ($null -eq $until) { Write-Log "квота: $($M.Name) — час скидання невідомий — кінець QUOTA"; return $false }
++    }
+     $f = Get-Facts $M $Status.start
+     $n = Set-MarkerWait $M $until @{ retake = $true; group = $group; head = $(if ($f.Ahead -gt 0) { $f.Head } else { '' }) }
+-    if ($null -eq $n) { Write-Log "квота: $($M.Name) — повернень у чергу понад $script:MaxRetakes, кінець QUOTA"; return $false }
+     Write-QuotaStatus $M (New-RunId (Get-MarkerKey $M)) $group $until @{ engine = $Sel.Engine.Name; turns = $Status.turns; retake = $n }
+     $true
+ }
+@@ -1053,8 +1070,9 @@ function Test-GpuFree($Workers) { (Get-GpuBusyReason $Workers) -eq '' }
+ # входить у чекання вперше.
+ function Enter-StartQuotaWait($M, $Q, $State) {
+     $now = [DateTimeOffset]::UtcNow.ToUnixTimeSeconds()
+-    # Скидання — час із /usage; минув, а група ще на нулі, чи невідомий — quota_wait_minutes.
+-    $until = $(if ($Q.ResetAt -gt $now) { [long]$Q.ResetAt } else { $now + [long](60 * (Get-Limit $script:Limits 'QuotaWaitMinutes' 'quota_wait_minutes')) })
++    # Скидання — час із /usage; минув, а група ще на нулі, чи невідомий — чекання без вигаданого строку: позначка одразу
++    # диспетчерові (QUOTA0_*), наступний прохід спробує знову.
++    $until = $(if ($Q.ResetAt -gt $now) { [long]$Q.ResetAt } else { $w = Get-QuotaWaitUntil $now; $(if ($null -eq $w) { $now } else { $w }) })
+     $head = $(if ($State.Kind -eq 'WAIT') { [string](Get-JsonProp $State.Wait 'head') } else { '' })
+     [void](Set-MarkerWait $M $until @{ group = $Q.Group; head = $head })
+     if ($State.Kind -eq 'NEW') { Write-QuotaStatus $M (New-RunId (Get-MarkerKey $M)) $Q.Group $until @{} }
+@@ -1100,11 +1118,11 @@ function Start-Markers($Workers) {
+         if ($sel.Quota.Blocked) { Enter-StartQuotaWait $m $sel.Quota $st; continue }
+         # Слот і смуга — за фактичним рушієм після вибору (каскад agy -> Codex займає слот Codex і не перевищує його N).
+         $lane = $(if ($sel.Engine.Name -eq 'codex') { 'codex' } else { 'agy' })
+-        $slot = Get-FreeSlot $lane ([int]$script:Limits.slots[$lane]) $Workers
++        $slot = Get-FreeSlot $lane ($script:Limits.slots[$lane]) $Workers
+         if (-not $slot) { Add-Skip $m "нема вільного слота смуги $lane"; Add-Hold $script:Held 'SLOTS' 'слоти зайняті' $m.Name; continue }
+         $id = New-RunId (Get-MarkerKey $m)
+         if (-not (New-Claim $m $id)) { continue }
+-        # Усе між claim і STARTED — під одним обліком відмов (retakes, MaxRetakes, CRASH на межі), 10162/10182.
++        # Усе між claim і STARTED — під одним обліком відмов (retakes, повернення в чергу), 10162/10182.
+         try {
+             $dir = Join-Path $RunsDir $id
+             [void](New-Item -ItemType Directory -Force -Path $dir)
+@@ -1136,7 +1154,8 @@ function Get-GeminiHealth {
+     $c = $null
+     if (Test-Path -LiteralPath $path) { try { $c = [System.IO.File]::ReadAllText($path, $script:Utf8) | ConvertFrom-Json } catch { $null = $_ } }
+     $now = [DateTimeOffset]::UtcNow.ToUnixTimeSeconds()
+-    if ($null -eq $c -or $now - [long]$c.time -ge 60 * (Get-Limit $script:Limits 'UsageMinutes' 'usage_minutes')) {
++    $ua = Get-Limit $script:Limits 'UsageMinutes' 'usage_minutes'
++    if ($null -eq $c -or $null -eq $ua -or $now - [long]$c.time -ge ($ua * 60)) {
+         $r = Measure-DirBytes $ProfileDir
+         $c = [pscustomobject]@{ time = $now; read = (Get-UtcStamp (Get-Date)); profile = $(if ($null -ne $r) { [string]$r.Bytes } else { '' }); skipped = $(if ($null -ne $r) { [string]$r.Skipped } else { '' }) }
+         Write-FileAtomic $path ($c | ConvertTo-Json -Compress)
+@@ -1166,7 +1185,7 @@ function Write-Heartbeat([string]$Iso) {
+                 [ordered]@{ slot = [string]$s.slot; marker = [string]$s.marker; model = [string]$s.model; since = [string]$s.since; gpu = [bool]$s.gpu }
+             })
+             if ($null -eq $first -and $busy.Count -gt 0) { $first = $busy[0] }
+-            $lanes += [ordered]@{ lane = $ln; n = [int]$script:Limits.slots[$ln]; busy = $busy }
++            $lanes += [ordered]@{ lane = $ln; n = $(if ($null -eq $script:Limits.slots[$ln]) { 'без межі' } else { [int]$script:Limits.slots[$ln] }); busy = $busy }
+         }
+         $hb.lanes = $lanes
+         $hb.limits = $script:Limits.source
+@@ -1197,9 +1216,6 @@ function Invoke-Worker {
+     $lim = @{ slots = @{} }
+     foreach ($p in $job.limits.PSObject.Properties) { $lim[$p.Name] = $p.Value }
+     $script:Limits = $lim
+-    if (-not $script:Bound.ContainsKey('TurnMinutes')) { $script:TurnMinutes = [double]$lim['agy_turn_minutes'] }
+-    if (-not $script:Bound.ContainsKey('TotalMinutes')) { $script:TotalMinutes = [double]$lim['agy_total_minutes'] }
+-    if (-not $script:Bound.ContainsKey('CodexStallMinutes')) { $script:CodexStallMinutes = [double]$lim['codex_stall_minutes'] }
+     $statePath = Get-StatePath "$($job.ref) $($job.sha)"
+     $slotLock = Open-Lock (Join-Path $script:SlotDir "$($job.slot).lock")
+     if ($null -eq $slotLock) { Remove-Claim $statePath; Write-Log "слот $($job.slot) зайнятий — позначку не взято"; return $script:WorkerSlotBusy }
+@@ -1283,7 +1299,13 @@ function Main {
+             foreach ($w in @($workers | Where-Object { $_.Proc.HasExited })) { $workers.Remove($w) }
+             Write-Heartbeat ''
+             if ($workers.Count -eq 0 -and $started -eq 0) { break }
+-            Wait-Workers $workers (Get-Limit $script:Limits 'PollMinutes' 'poll_minutes')
++            $poll = Get-Limit $script:Limits 'PollMinutes' 'poll_minutes'
++            if ($null -eq $poll) {
++                # Період опитування без джерела не береться з коду: проходи не повторюємо, наряди доробляють окремі процеси.
++                Write-Log 'відмова: poll_minutes без джерела в смуги.json — період опитування не задано, цикл зупинено'
++                break
++            }
++            Wait-Workers $workers $poll
+         }
+         0
+     } catch {
+diff --git a/аудит/адаптери/gemini/m9v/2_під_gemini.ps1 b/аудит/адаптери/gemini/m9v/2_під_gemini.ps1
+index 577fab2f575b8b9d7dbfe65ff16f1068806d4fed..100d2ecdcd4bf904592a063561adf363ad4930e6 100644
+--- a/аудит/адаптери/gemini/m9v/2_під_gemini.ps1
++++ b/аудит/адаптери/gemini/m9v/2_під_gemini.ps1
+@@ -1,100 +1,100 @@
+-﻿#Requires -Version 5.1
+-<#
+-.SYNOPSIS
+-М.9-В, підготовка, частина gemini: крок 0 (клон, git config), Codex CLI, вхід, крок 4. Запуск — під gemini.
+-
+-.DESCRIPTION
+-Запускається один раз, ПІСЛЯ 1_адмін.ps1 (обгортка в C:\ProgramData\gemini-wrapper уже стоїть); повторний запуск безпечний.
+-Паролів і токенів не читає й не виводить: про вхід судить лише наявність файлу чи код `codex login status`.
+-Codex без `-WithCodex` скрипт не ставить і не входить. Рішення власника 25.10 (9738): Codex під gemini вмикається з основним
+-акаунтом ChatGPT власника, ризик прийнято (токен лежить у `~/.codex/auth.json` профілю gemini — секрет у межі цього
+-користувача, у репозиторій не йде, 9739; ізоляцію рушіїв веде М.9-Г). З `-WithCodex`:
+-  Codex CLI  — інсталятор закріплено за релізом (без Node.js, https://github.com/openai/codex): файл
+-               https://releases.openai.com/codex/releases/<CodexRelease>/install.ps1 качається у файл, sha256 звіряється з
+-               `CodexInstaller` у хеші.psd1 і лише тоді виконується з `-Release <CodexRelease>` (9741); хеш порожній чи інший —
+-               СТОП, інсталятор не виконується (сам інсталятор несе блок підпису Authenticode — не перевірено — і звіряє SHA256SUMS пакета);
+-               вхід — `codex login --device-auth` (код на сторінці, без браузера на цьому ноутбуці):
+-               https://learn.chatgpt.com/docs/developer-commands?surface=cli
+-Gemini CLI не ставимо (рішення диспетчера 25.10: для Google One його замінено Antigravity CLI з 18.06.2026, README google-gemini/gemini-cli); другий рушій Gemini — наявний agy.
+-Команди кроків 0 і 4 — дослівно з НАЛАШТУВАННЯ.md.
+-#>
+-# Continue, не Stop: у Windows PowerShell 5.1 stderr рідних команд (git clone, npm) при Stop — виняток; коди виходу перевіряються вручну
+-param([switch]$WithCodex)
+-$ErrorActionPreference = 'Continue'
+-function Stop-Here([string]$m) { Write-Host "СТОП: $m" -ForegroundColor Red; Write-Host 'Напиши диспетчерові: ЗАБЛОКОВАНО + цей текст.'; exit 1 }
+-function Step([string]$m) { Write-Host "`n== $m" -ForegroundColor Cyan }
+-function Update-Path { $env:Path = [Environment]::GetEnvironmentVariable('Path', 'Machine') + ';' + [Environment]::GetEnvironmentVariable('Path', 'User') }
+-function Has([string]$n) { [bool](Get-Command $n -ErrorAction SilentlyContinue) }
+-
+-if ($env:USERNAME -ne 'gemini') { Stop-Here "це має бути користувач gemini, а тут $env:USERNAME (Win+L → gemini)." }
+-if (([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)) {
+-    Stop-Here 'gemini має бути без прав адміністратора (ізоляція 19.10).' }
+-
+-# --- вимоги ---
+-Step 'Вимоги: git 2.30+ і обгортка'
+-Update-Path
+-if (-not (Has git)) { Stop-Here 'git не знайдено під gemini (НАЛАШТУВАННЯ.md, крок 0: git має бути).' }
+-if ((git --version) -notmatch '(\d+\.\d+\.\d+)') { Stop-Here 'git --version не розібрано.' }
+-$gv = [version]$Matches[1]
+-if ($gv -lt [version]'2.30') { Stop-Here "git $gv старіший за 2.30." }
+-Write-Host "git $gv — ок."
+-if (-not (Test-Path 'C:\ProgramData\gemini-wrapper\gemini_run.ps1')) {
+-    Stop-Here 'обгортки в C:\ProgramData\gemini-wrapper нема: спершу 1_адмін.ps1 (адмінський PowerShell під власником), потім цей скрипт.' }
+-
+-# --- крок 0 ---
+-Step 'Крок 0: клон і git config'
+-if (-not (Test-Path "$env:USERPROFILE\kod-shi-data\.git")) {
+-    git clone --depth 1 https://github.com/mightyrochy/kod-shi-data "$env:USERPROFILE\kod-shi-data"
+-    if ($LASTEXITCODE -ne 0) { Stop-Here "git clone повернув код $LASTEXITCODE." }
+-} else { Write-Host 'Клон уже є.' }
+-if (-not (git config --global user.email)) { git config --global user.name 'gemini'; git config --global user.email "gemini@$env:COMPUTERNAME" }
+-
+-# --- Codex CLI (лише -WithCodex, після рішення власника про акаунт, 9738) ---
+-if (-not $WithCodex) {
+-    Write-Host "`nCodex пропущено: без -WithCodex не ставиться й не входить (рішення власника 25.10, 9738: вмикати з -WithCodex)." -ForegroundColor Yellow
+-} else {
+-    Step 'Codex CLI'
+-    if (-not (Has codex)) {
+-        $expected = Import-PowerShellDataFile (Join-Path $PSScriptRoot 'хеші.psd1') -ErrorAction SilentlyContinue
+-        $want = $(if ($expected -and $expected.ContainsKey('CodexInstaller')) { [string]$expected['CodexInstaller'] } else { '' })
+-        $rel = $(if ($expected -and $expected.ContainsKey('CodexRelease')) { [string]$expected['CodexRelease'] } else { '' })
+-        if ($rel -notmatch '^\d+\.\d+\.\d+$') { Stop-Here "CodexRelease у хеші.psd1 порожній чи не виду x.y.z ('$rel'). Інсталятор не виконано." }
+-        $inst = "$env:TEMP\codex_install.ps1"
+-        Invoke-WebRequest "https://releases.openai.com/codex/releases/$rel/install.ps1" -OutFile $inst -UseBasicParsing
+-        $got = (Get-FileHash $inst -Algorithm SHA256).Hash
+-        Write-Host "sha256 інсталятора: $got"
+-        if (-not $want) { Stop-Here "хеш інсталятора Codex не зафіксовано в хеші.psd1 (CodexInstaller). Звір sha256 вище з офіційним джерелом, запиши його PR-ом; інсталятор не виконано." }
+-        if ($got -ne $want) { Stop-Here "sha256 інсталятора не збігся з хеші.psd1 (чекав $want). Інсталятор не виконано." }
+-        $env:CODEX_NON_INTERACTIVE = '1'
+-        & powershell -NoProfile -ExecutionPolicy Bypass -File $inst -Release $rel
+-        Update-Path
+-        if (-not (Has codex)) { Stop-Here 'codex не знайдено після установки; відкрий нове вікно PowerShell і запусти скрипт знову.' }
+-    }
+-    Write-Host "codex: $(& codex --version)"
+-
+-    Step 'Вхід Codex (ChatGPT, --device-auth)'
+-    & codex login status *> $null
+-    if ($LASTEXITCODE -eq 0) { Write-Host 'Вхід ChatGPT вже є.' }
+-    else {
+-        Write-Host 'Відкрий показану адресу на телефоні, введи код і увійди основним акаунтом ChatGPT (рішення власника 25.10, 9738).' -ForegroundColor Yellow
+-        & codex login --device-auth
+-        & codex login status *> $null
+-        if ($LASTEXITCODE -ne 0) { Stop-Here 'вхід Codex не вдався (код не введено чи сплив): запусти цей самий рядок ще раз.' }
+-    }
+-    Write-Host 'Рушій Codex у задачі gemini-run вмикає 1_адмін.ps1 -EnableCodex (НАЛАШТУВАННЯ.md, «Пули й каскад»).'
+-}
+-
+-# --- крок 4 ---
+-Step 'Крок 4: перевірка ізоляції'
+-powershell -NoProfile -ExecutionPolicy Bypass -File C:\ProgramData\gemini-wrapper\gemini_run.ps1
+-Get-Content C:\Users\Public\gemini\out\heartbeat.json      # має бути "isolation":"OK"
+-$hb = Get-Content C:\Users\Public\gemini\out\heartbeat.json -Raw | ConvertFrom-Json
+-if ($hb.isolation -ne 'OK') {
+-    Stop-Here "isolation=$($hb.isolation): WHOAMI — не той користувач, NET_SESSION — права адміністратора, PROFILES — бачить чужий профіль, DRIVES — інший диск, ENV — змінна з KEY/TOKEN/SECRET/PASSWORD." }
+-$denied = $false
+-try { Add-Content C:\ProgramData\gemini-wrapper\gemini_run.ps1 '#' -ErrorAction Stop } catch { $denied = $true }   # має бути відмова в доступі
+-if (-not $denied) { Stop-Here 'gemini зміг дописати в gemini_run.ps1 — права теки неправильні (крок 3).' }
+-Write-Host 'Запис у обгортку відхилено — як і треба.' -ForegroundColor Green
+-agy models                                                  # список моделей (диспетчерові не треба — обгортка сама)
+-
+-Write-Host "`nГОТОВО: isolation OK$(if ($WithCodex) { ', Codex увійшов' } else { ', Codex вимкнено' }). Далі — ЩО_НАТИСНУТИ.md (повернутись до себе, перевірка heartbeat)." -ForegroundColor Green
++﻿#Requires -Version 5.1
++<#
++.SYNOPSIS
++М.9-В, підготовка, частина gemini: крок 0 (клон, git config), Codex CLI, вхід, крок 4. Запуск — під gemini.
++
++.DESCRIPTION
++Запускається один раз, ПІСЛЯ 1_адмін.ps1 (обгортка в C:\ProgramData\gemini-wrapper уже стоїть); повторний запуск безпечний.
++Паролів і токенів не читає й не виводить: про вхід судить лише наявність файлу чи код `codex login status`.
++Codex без `-WithCodex` скрипт не ставить і не входить. Рішення власника 25.10 (9738): Codex під gemini вмикається з основним
++акаунтом ChatGPT власника, ризик прийнято (токен лежить у `~/.codex/auth.json` профілю gemini — секрет у межі цього
++користувача, у репозиторій не йде, 9739; ізоляцію рушіїв веде М.9-Г). З `-WithCodex`:
++  Codex CLI  — інсталятор закріплено за релізом (без Node.js, https://github.com/openai/codex): файл
++               https://releases.openai.com/codex/releases/<CodexRelease>/install.ps1 качається у файл, sha256 звіряється з
++               `CodexInstaller` у хеші.psd1 і лише тоді виконується з `-Release <CodexRelease>` (9741); хеш порожній чи інший —
++               СТОП, інсталятор не виконується (сам інсталятор несе блок підпису Authenticode — не перевірено — і звіряє SHA256SUMS пакета);
++               вхід — `codex login --device-auth` (код на сторінці, без браузера на цьому ноутбуці):
++               https://learn.chatgpt.com/docs/developer-commands?surface=cli
++Gemini CLI не ставимо (рішення диспетчера 25.10: для Google One його замінено Antigravity CLI з 18.06.2026, README google-gemini/gemini-cli); другий рушій Gemini — наявний agy.
++Команди кроків 0 і 4 — дослівно з НАЛАШТУВАННЯ.md.
++#>
++# Continue, не Stop: у Windows PowerShell 5.1 stderr рідних команд (git clone, npm) при Stop — виняток; коди виходу перевіряються вручну
++param([switch]$WithCodex)
++$ErrorActionPreference = 'Continue'
++function Stop-Here([string]$m) { Write-Host "СТОП: $m" -ForegroundColor Red; Write-Host 'Напиши диспетчерові: ЗАБЛОКОВАНО + цей текст.'; exit 1 }
++function Step([string]$m) { Write-Host "`n== $m" -ForegroundColor Cyan }
++function Update-Path { $env:Path = [Environment]::GetEnvironmentVariable('Path', 'Machine') + ';' + [Environment]::GetEnvironmentVariable('Path', 'User') }
++function Has([string]$n) { [bool](Get-Command $n -ErrorAction SilentlyContinue) }
++
++if ($env:USERNAME -ne 'gemini') { Stop-Here "це має бути користувач gemini, а тут $env:USERNAME (Win+L → gemini)." }
++if (([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)) {
++    Stop-Here 'gemini має бути без прав адміністратора (ізоляція 19.10).' }
++
++# --- вимоги ---
++Step 'Вимоги: git 2.30+ і обгортка'
++Update-Path
++if (-not (Has git)) { Stop-Here 'git не знайдено під gemini (НАЛАШТУВАННЯ.md, крок 0: git має бути).' }
++if ((git --version) -notmatch '(\d+\.\d+\.\d+)') { Stop-Here 'git --version не розібрано.' }
++$gv = [version]$Matches[1]
++if ($gv -lt [version]'2.30') { Stop-Here "git $gv старіший за 2.30." }
++Write-Host "git $gv — ок."
++if (-not (Test-Path 'C:\ProgramData\gemini-wrapper\gemini_run.ps1')) {
++    Stop-Here 'обгортки в C:\ProgramData\gemini-wrapper нема: спершу 1_адмін.ps1 (адмінський PowerShell під власником), потім цей скрипт.' }
++
++# --- крок 0 ---
++Step 'Крок 0: клон і git config'
++if (-not (Test-Path "$env:USERPROFILE\kod-shi-data\.git")) {
++    git clone --depth 1 https://github.com/mightyrochy/kod-shi-data "$env:USERPROFILE\kod-shi-data"
++    if ($LASTEXITCODE -ne 0) { Stop-Here "git clone повернув код $LASTEXITCODE." }
++} else { Write-Host 'Клон уже є.' }
++if (-not (git config --global user.email)) { git config --global user.name 'gemini'; git config --global user.email "gemini@$env:COMPUTERNAME" }
++
++# --- Codex CLI (лише -WithCodex, після рішення власника про акаунт, 9738) ---
++if (-not $WithCodex) {
++    Write-Host "`nCodex пропущено: без -WithCodex не ставиться й не входить (рішення власника 25.10, 9738: вмикати з -WithCodex)." -ForegroundColor Yellow
++} else {
++    Step 'Codex CLI'
++    if (-not (Has codex)) {
++        $expected = Import-PowerShellDataFile (Join-Path $PSScriptRoot 'хеші.psd1') -ErrorAction SilentlyContinue
++        $want = $(if ($expected -and $expected.ContainsKey('CodexInstaller')) { [string]$expected['CodexInstaller'] } else { '' })
++        $rel = $(if ($expected -and $expected.ContainsKey('CodexRelease')) { [string]$expected['CodexRelease'] } else { '' })
++        if ($rel -notmatch '^\d+\.\d+\.\d+$') { Stop-Here "CodexRelease у хеші.psd1 порожній чи не виду x.y.z ('$rel'). Інсталятор не виконано." }
++        $inst = "$env:TEMP\codex_install.ps1"
++        Invoke-WebRequest "https://releases.openai.com/codex/releases/$rel/install.ps1" -OutFile $inst -UseBasicParsing
++        $got = (Get-FileHash $inst -Algorithm SHA256).Hash
++        Write-Host "sha256 інсталятора: $got"
++        if (-not $want) { Stop-Here "хеш інсталятора Codex не зафіксовано в хеші.psd1 (CodexInstaller). Звір sha256 вище з офіційним джерелом, запиши його PR-ом; інсталятор не виконано." }
++        if ($got -ne $want) { Stop-Here "sha256 інсталятора не збігся з хеші.psd1 (чекав $want). Інсталятор не виконано." }
++        $env:CODEX_NON_INTERACTIVE = '1'
++        & powershell -NoProfile -ExecutionPolicy Bypass -File $inst -Release $rel
++        Update-Path
++        if (-not (Has codex)) { Stop-Here 'codex не знайдено після установки; відкрий нове вікно PowerShell і запусти скрипт знову.' }
++    }
++    Write-Host "codex: $(& codex --version)"
++
++    Step 'Вхід Codex (ChatGPT, --device-auth)'
++    & codex login status *> $null
++    if ($LASTEXITCODE -eq 0) { Write-Host 'Вхід ChatGPT вже є.' }
++    else {
++        Write-Host 'Відкрий показану адресу на телефоні, введи код і увійди основним акаунтом ChatGPT (рішення власника 25.10, 9738).' -ForegroundColor Yellow
++        & codex login --device-auth
++        & codex login status *> $null
++        if ($LASTEXITCODE -ne 0) { Stop-Here 'вхід Codex не вдався (код не введено чи сплив): запусти цей самий рядок ще раз.' }
++    }
++    Write-Host 'Рушій Codex у задачі gemini-run вмикає 1_адмін.ps1 -EnableCodex (НАЛАШТУВАННЯ.md, «Пули й каскад»).'
++}
++
++# --- крок 4 ---
++Step 'Крок 4: перевірка ізоляції'
++powershell -NoProfile -ExecutionPolicy Bypass -File C:\ProgramData\gemini-wrapper\gemini_run.ps1
++Get-Content C:\Users\Public\gemini\out\heartbeat.json      # має бути "isolation":"OK"
++$hb = Get-Content C:\Users\Public\gemini\out\heartbeat.json -Raw | ConvertFrom-Json
++if ($hb.isolation -ne 'OK') {
++    Stop-Here "isolation=$($hb.isolation): WHOAMI — не той користувач, NET_SESSION — права адміністратора, PROFILES — бачить чужий профіль, DRIVES — інший диск, ENV — змінна з KEY/TOKEN/SECRET/PASSWORD." }
++$denied = $false
++try { Add-Content C:\ProgramData\gemini-wrapper\gemini_run.ps1 '#' -ErrorAction Stop } catch { $denied = $true }   # має бути відмова в доступі
++if (-not $denied) { Stop-Here 'gemini зміг дописати в gemini_run.ps1 — права теки неправильні (крок 3).' }
++Write-Host 'Запис у обгортку відхилено — як і треба.' -ForegroundColor Green
++agy models                                                  # список моделей (диспетчерові не треба — обгортка сама)
++
++Write-Host "`nГОТОВО: isolation OK$(if ($WithCodex) { ', Codex увійшов' } else { ', Codex вимкнено' }). Далі — ЩО_НАТИСНУТИ.md (повернутись до себе, перевірка heartbeat)." -ForegroundColor Green
+diff --git a/аудит/адаптери/gemini/m9v/хеші.psd1 b/аудит/адаптери/gemini/m9v/хеші.psd1
+index 8aaa01af9312990877ae936a3b2c8263973157f1..83ecb3c8009b71c5999ca3329dd6c82a49ab8f57 100644
+--- a/аудит/адаптери/gemini/m9v/хеші.psd1
++++ b/аудит/адаптери/gemini/m9v/хеші.psd1
+@@ -3,10 +3,10 @@
+ @{
+     'wrapper_update.ps1' = '4156307A17BDAE3AF7249E532947F659E99AA1349D159239159FAE60CA7E4F2B'
+     'wrapper_probe.ps1'  = '85116D04C22EB64CBFF52E66BCEAE9B1091577A889EDD58A8B634093A82BDBC6'
+-    'wrapper_chain.ps1'  = '2C44BD77A2180F47054212220BCD473DEEC088B7EACE2646B3B40047752C8785'
+-    'wrapper_health.ps1' = 'BC7CDCBD744E360446B3D3721D0F70676A98D86B5770A3E3CB3713F9E770CEAB'
+-    'gemini_run.ps1'     = '73CC27D6BA6B109054526A2E23DA30BBDC391505D9030DC8C1E39193CDF28917'
+-    'gemini_publish.ps1' = '651718F8227770B4D9BADF001719DDCA60604DEE8BFEB3C8D19B6FC3D2D32DF8'
++    'wrapper_chain.ps1'  = '0BF2519191E0B7F268BFF48648E044FAE68026CF51C40A788D903B24F4041A4A'
++    'wrapper_health.ps1' = '32D0F325120C70C5FC2853065615F2B5FD74078F0D0EC1697555DB8EC8DC0FF0'
++    'gemini_run.ps1'     = 'E118D095C208FBC3E2D3C2AF17CA1AD751632F06184EEA087E0EBD2CAD189CD6'
++    'gemini_publish.ps1' = 'E80B5B5ECC597BDB5ED32447C95AADA96FEBFD4319E03840A6EEA2880379276C'
+     # Інсталятор Codex (9741) закріплено за релізом: install.ps1 — файл релізу https://releases.openai.com/codex/releases/<CodexRelease>/install.ps1
+     # (незмінний URL; той самий sha256 віддає https://chatgpt.com/codex/install.ps1 — редирект на releases.openai.com — і публікує реліз
+     # openai/codex). 2_під_gemini.ps1 -WithCodex виконує його лише при збігу CodexInstaller і ставить саме цей реліз (-Release).
+@@ -14,6 +14,6 @@
+     CodexRelease         = '0.164.0'
+     CodexInstaller       = 'A59CB66350098C33B021FF470D586AE8FE3B7CAF189CA7137B4FE3AF5D4DCE74'
+     'gemini_watch.ps1'   = '69EFEBB07FF1AF51C382B753A95C50F3C1AC27B3008F2489992BEBE3FD0213AA'
+-    'queue_lanes.ps1'    = '4080D12A974E5B216E2463C3E791D8DE368E1A6B2BDA92BA7644AEB7F19270F4'
+-    'claude_run.ps1'     = '1E3A40E4ABD79169CBB183EC2AC6CE045A892DFB02C6DD98EC294B7AD510D420'
++    'queue_lanes.ps1'    = 'EB5678375B36878ECA3D8BE11B69418767F7181C0E27564C5D44687E66241795'
++    'claude_run.ps1'     = '8EE343A9178894AAF07AB14F6B7D1EF415ADD868E43A6F68F029E95866B69484'
+ }
+diff --git a/аудит/адаптери/gemini/queue_lanes.ps1 b/аудит/адаптери/gemini/queue_lanes.ps1
+index 556a26d2b794b23790c7c80038ce7334f32cb7ea..10209a00196d2c44a4c24d08138879b0d7ebad69 100644
+--- a/аудит/адаптери/gemini/queue_lanes.ps1
++++ b/аудит/адаптери/gemini/queue_lanes.ps1
+@@ -31,19 +31,14 @@ $script:OnWindows = ($PSVersionTable.PSEdition -ne 'Core') -or [bool](Get-Variab
+ # Тека версії цього процесу: після самооновлення — `<корінь>\versions\<SHA40>`, поряд із коренем — `active.txt`.
+ $script:VersionDir = $PSScriptRoot
+ 
+-# Кількість слотів задає смуги.json; 64 — захист від помилки в даних, не виміряна межа ноутбука.
+-# Решта меж також під хешем; значення поза ними обрізаються. Параметр задачі власника не обрізаємо.
+-$script:Ceil = @{
+-    slots = @(0, 64); poll_minutes = @(1, 5); usage_minutes = @(5, 60); quota_wait_minutes = @(15, 1440)
+-    agy_total_minutes = @(30, 600); agy_turn_minutes = @(10, 600); codex_stall_minutes = @(10, 240); claude_hang_minutes = @(30, 240)
+-}
+-$script:Defaults = @{
+-    poll_minutes = 2; usage_minutes = 15; quota_wait_minutes = 60
+-    agy_total_minutes = 180; agy_turn_minutes = 120; codex_stall_minutes = 60; claude_hang_minutes = 120
+-}
+-$script:LaneDefaults = [ordered]@{ codex = 2; agy = 2; claude = 2 }
+-# Скільки разів відмова за квотою повертає ту саму позначку в чергу: далі — кінець із кодом квоти, як до смуг.
+-$script:MaxRetakes = 5
++# Межі роботи — лише з файла даних (`смуги.json`) і лише з джерелом (п.11): типових значень, стель і попередніх прийнятих
++# значень у коді нема. Поле без джерела — межі нема (слоти, сторожі завислості й ходу); для механізму, якому потрібен
++# період (poll_minutes), — відмова рядком у журналі з назвою поля. Поля-механізми (poll_minutes, usage_minutes) замість
++# виміру мають запис «механізм: …» (рішення менеджера 01.11). Криве значення (не число, від'ємне, нуль для хвилин,
++# дробові слоти) — відмова рядком, без обрізання. Тут лише імена полів і смуг.
++$script:LimitMinuteFields = @('poll_minutes', 'usage_minutes', 'agy_turn_minutes', 'codex_stall_minutes', 'claude_hang_minutes')
++$script:MechanismFields = @('poll_minutes', 'usage_minutes')
++$script:LaneNames = @('codex', 'agy', 'claude')
+ # Код виходу процесу наряду: слот чи GPU зайняті до старту — позначку не взято, вона лишається в черзі.
+ $script:WorkerSlotBusy = 3
+ $script:WorkerGpuBusy = 4
+@@ -158,7 +153,8 @@ function Invoke-Native([string]$Exe, [string[]]$Arguments, [string]$Dir = '', [d
+         $w.Write($StdIn)
+         $w.Close()
+     }
+-    $until = [datetime]::UtcNow.AddMinutes($TimeoutMinutes)
++    # Нескінченність — межі часу нема (джерела межі нема): процес чекаємо, доки не закінчиться.
++    $until = $(if ([double]::IsPositiveInfinity($TimeoutMinutes)) { [datetime]::MaxValue } else { [datetime]::UtcNow.AddMinutes($TimeoutMinutes) })
+     while (-not $p.WaitForExit(1000) -and [datetime]::UtcNow -lt $until) { Invoke-HealthBeat }
+     $timedOut = -not $p.HasExited
+     if ($timedOut) { Stop-Tree $p } else { $p.WaitForExit() }
+@@ -192,81 +188,76 @@ function Get-JsonProp($Obj, [string]$Name) {
+ }
+ 
+ function ConvertTo-Bounded($Value, $Range) {
+-    <# Число з JSON, обрізане до стелі [min, max]; не число — $null (тоді діє попереднє прийняте чи значення з коду). #>
++    <# Число з JSON, обрізане до стелі [min, max]; не число — $null. Для utilization і resetsAt, не меж роботи. #>
+     if ($Value -isnot [int] -and $Value -isnot [long] -and $Value -isnot [double] -and $Value -isnot [decimal]) { return $null }
+     [Math]::Min([double]$Range[1], [Math]::Max([double]$Range[0], [double]$Value))
+ }
+ 
+-# Джерело межі (п.11): «власник ДД.ММ …» чи «вимір: …» з датою ДД.ММ і ще хоч одним числом (10970).
+-$script:LimitDateRx = '(?<![0-9])(?:0[1-9]|[12][0-9]|3[01])\.(?:0[1-9]|1[0-2])(?![0-9])'
+-
+-function Test-LimitSource([string]$Text) {
+-    <# $true — у межі є джерело за форматом; інакше межа без джерела. Той самий розбір — у перевірка/перевірити_хеші.py. #>
+-    if ($Text.Length -gt 300 -or $Text -cmatch '[\x00-\x1f]') { return $false }
+-    if ($Text -cmatch ('\Aвласник ' + $script:LimitDateRx + '(?:[^0-9].*)?\z')) { return $true }
+-    if ($Text -cnotmatch '\Aвимір: ') { return $false }
+-    $d = [regex]::Match($Text, $script:LimitDateRx)
+-    $d.Success -and $Text.Remove($d.Index, $d.Length).Substring(6) -match '[0-9]'
+-}
+-
+ function Get-LimitFields {
+     <# Усі межі файла даних: слоти смуг і решта, у сталому порядку. #>
+-    @($script:LaneDefaults.Keys | ForEach-Object { "slots.$_" }) + @($script:Defaults.Keys | Sort-Object)
++    @($script:LaneNames | ForEach-Object { "slots.$_" }) + @($script:LimitMinuteFields | Sort-Object)
++}
++
++function ConvertTo-LimitNumber($Value, [bool]$Whole, [bool]$Positive) {
++    <# Число межі з JSON як є — без обрізання; не число, нескінченне, від'ємне (для хвилин — і нуль), для слотів не ціле чи непредставне як Int32 —
++    $null (виклик пише відмову рядком). #>
++    if ($Value -isnot [int] -and $Value -isnot [long] -and $Value -isnot [double] -and $Value -isnot [decimal]) { return $null }
++    $d = [double]$Value
++    if ([double]::IsNaN($d) -or [double]::IsInfinity($d) -or $d -lt 0 -or ($Positive -and $d -eq 0)) { return $null }
++    if ($Whole -and ($d -ne [Math]::Floor($d) -or $d -gt [int]::MaxValue)) { return $null }
++    $d
+ }
+ 
+ function Get-Limits {
+-    <# Межі смуг: `смуги.json` v2 з origin/main (не з робочої копії агента), обрізаний стелями.
+-
+-    v2 — кожна межа `{"n": число, "джерело": "власник ДД.ММ …" | "вимір: … ДД.ММ"}`. Межа без джерела, v1 (міграція: числа
+-    без джерел), нема файла, кривий чи невідомий формат — попереднє прийняте значення (стан limits.json; нема — з коду), а
+-    поле — в unsourced для рядка «межа без джерела» стану ноутбука. Зміна файла в main діє на наступному проході без
+-    перевстановлення копій: читається він після `git fetch`, який перезаписує й origin/main, змінений у клоні. #>
+-    $l = @{ slots = [ordered]@{}; source = 'код'; unsourced = @(); claude_laptop = @() }
+-    foreach ($k in $script:LaneDefaults.Keys) { $l.slots[$k] = $script:LaneDefaults[$k] }
+-    foreach ($k in $script:Defaults.Keys) { $l[$k] = $script:Defaults[$k] }
+-    # Без теки стану (читач меж поза планувальником) попереднє не зберігається.
+-    $sd = $(try { [string]$script:StateDir } catch { '' })
+-    $prevPath = $(if ($sd) { Join-Path $sd 'limits.json' } else { '' })
+-    $prev = $null
+-    if ($prevPath -and (Test-Path -LiteralPath $prevPath)) { try { $prev = [System.IO.File]::ReadAllText($prevPath, $script:Utf8) | ConvertFrom-Json } catch { $null = $_ } }
++    <# Межі смуг: `смуги.json` v2 з origin/main (не з робочої копії агента).
++
++    v2 — кожна межа `{"n": число, "джерело": "власник ДД.ММ …" | "вимір: … ДД.ММ" | "механізм: …" (лише poll_minutes, usage_minutes)}`. Межа без джерела (поле порожнє чи нема,
++    v1, нема файла, кривий чи невідомий формат) не діє: ні попереднього значення, ні типового з коду — ключа в результаті
++    нема, а поле — в unsourced для рядка «межа без джерела» стану ноутбука. Криве значення з джерелом (не число, від'ємне,
++    нуль для хвилин, дробові слоти) — відмова рядком у журналі з назвою поля, ключа нема, поле — у invalid. Зміна файла
++    в main діє на наступному проході без перевстановлення копій: читається він після `git fetch`. #>
++    $l = @{ slots = [ordered]@{}; source = 'код'; unsourced = @(); invalid = @(); claude_laptop = @() }
+     $doc = $null
+     $r = Invoke-Git @('cat-file', 'blob', "refs/remotes/origin/main:$script:LanesPath") -AllowFail
+     if ($r.Code -eq 0 -and $r.Out.Length -le 8192) {
+-        try { $doc = $r.Out | ConvertFrom-Json } catch { Write-Log 'смуги.json не читається як JSON — попередні межі' }
++        try { $doc = $r.Out | ConvertFrom-Json } catch { Write-Log 'смуги.json не читається як JSON — межі не діють' }
+     }
+     if ($null -ne $doc) { $l.source = 'origin/main' }
+     $v2 = $null -ne $doc -and [string](Get-JsonProp $doc 'v') -eq '2'
+-    $accepted = [ordered]@{}
+     foreach ($f in @(Get-LimitFields)) {
+         $lane = $(if ($f.StartsWith('slots.')) { $f.Substring(6) } else { '' })
+-        $range = $(if ($lane) { $script:Ceil.slots } else { $script:Ceil[$f] })
+         $node = $null
+         if ($v2) { $node = $(if ($lane) { Get-JsonProp (Get-JsonProp $doc 'slots') $lane } else { Get-JsonProp $doc $f }) }
+-        $v = $null
+-        if (Test-LimitSource ([string](Get-JsonProp $node 'джерело'))) { $v = ConvertTo-Bounded (Get-JsonProp $node 'n') $range }
++        if (-not (Test-LimitSource ([string](Get-JsonProp $node 'джерело')) ($script:MechanismFields -ccontains $f) (-not $lane -and $script:MechanismFields -cnotcontains $f))) { $l.unsourced += $f; continue }
++        $v = ConvertTo-LimitNumber (Get-JsonProp $node 'n') ([bool]$lane) (-not $lane)
+         if ($null -eq $v) {
+-            $l.unsourced += $f
+-            $v = ConvertTo-Bounded (Get-JsonProp $prev $f) $range
++            $l.invalid += $f
++            Write-Log "межа $f`: n не число, від'ємне, дробове чи непредставне як Int32 для слотів (для хвилин — і нуль) — відмова, межа не діє"
++            continue
+         }
+-        if ($null -eq $v) { continue }
+-        $accepted[$f] = $v
+         if ($lane) { $l.slots[$lane] = [int][Math]::Floor($v) } else { $l[$f] = $v }
+     }
+-    $text = $accepted | ConvertTo-Json -Compress
+-    $old = $(if ($prevPath -and (Test-Path -LiteralPath $prevPath)) { [System.IO.File]::ReadAllText($prevPath, $script:Utf8) } else { '' })
+-    if ($prevPath -and $accepted.Count -gt 0 -and $text -cne $old) { Write-FileAtomic $prevPath $text }
+     # Наряди Claude, яким потрібен ноутбук без відеокарти (LM Studio, фото, локальні програми): лише назви за шаблоном.
+     $l.claude_laptop = @(@(Get-JsonProp $doc 'claude_laptop') | Where-Object { $_ -is [string] -and $_ -cmatch $script:SlugPattern } | Select-Object -First 64)
+     $l
+ }
+ 
+ function Get-Limit($Limits, [string]$Param, [string]$Key) {
+-    <# Значення межі: параметр, заданий явно (задача планувальника, стенд), сильніший за файл даних. #>
++    <# Значення межі: параметр, заданий явно (задача планувальника, стенд), сильніший за файл даних. Нема ні параметра, ні
++    межі з джерелом у файлі — $null: межі нема, типового з коду не буває. #>
+     if ($script:Bound.ContainsKey($Param)) { return [double]$script:Bound[$Param] }
+-    if ($null -eq $Limits) { return [double]$script:Defaults[$Key] }
++    if ($null -eq $Limits -or -not $Limits.Contains($Key) -or $null -eq $Limits[$Key]) { return $null }
+     [double]$Limits[$Key]
+ }
+ 
++function Get-QuotaWaitUntil([long]$Now) {
++    <# Час (unix), до якого чекати, коли скидання квоти невідоме: лише параметр -QuotaWaitMinutes (рука власника, стенд);
++    поля в даних нема (рішення менеджера 01.11) — $null: чекати нема скільки, виклик закриває позначку кодом квоти (рядок
++    QUOTA диспетчерові) чи пробує знову в наступному проході. #>
++    if (-not $script:Bound.ContainsKey('QuotaWaitMinutes')) { return $null }
++    $Now + [long](60 * [double]$script:Bound['QuotaWaitMinutes'])
++}
++
+ # --- позначки ------------------------------------------------------------------------------------------------------
+ 
+ function Get-Lane([string]$Model) {
+@@ -466,7 +457,7 @@ function Remove-Claim([string]$StatePath) {
+ 
+ function Get-Retakes([string]$StatePath) {
+     <# Скільки разів позначку вже повернули в чергу за квотою: лічильник `retakes` несуть і WAIT, і STARTED (запуск не
+-    стирає його — інакше кожна відмова рахувалась би першою і межа MaxRetakes була б недосяжна). #>
++    стирає його — інакше кожна відмова рахувалась би першою і лічильник завжди починав би з нуля). #>
+     if (-not (Test-Path -LiteralPath $StatePath)) { return 0 }
+     $t = [System.IO.File]::ReadAllText($StatePath, $script:Utf8)
+     if ($t -match '^(WAIT|STARTED) .*"retakes":\s*([0-9]{1,3})') { return [int]$Matches[2] }
+@@ -475,11 +466,10 @@ function Get-Retakes([string]$StatePath) {
+ 
+ function Set-MarkerWait($M, [long]$Until, [hashtable]$Extra) {
+     <# Позначка чекає скидання квоти до $Until (unix): спроба не спалена, ту саму позначку візьме та сама смуга.
+-    Повертає число повернень у чергу; понад MaxRetakes — $null (чекання не записано, далі кінець із кодом квоти). #>
++    Повертає число повернень у чергу (межі повернень нема). #>
+     $sp = Get-StatePath (Get-MarkerKey $M)
+     $n = Get-Retakes $sp
+     if ($Extra.ContainsKey('retake') -and $Extra.retake) { $n++ }
+-    if ($n -gt $script:MaxRetakes) { return $null }
+     $j = [ordered]@{ until = $Until; until_utc = (Get-UtcStamp ([DateTimeOffset]::FromUnixTimeSeconds($Until).UtcDateTime)); marker = $M.Name; retakes = $n }
+     foreach ($k in $Extra.Keys) { if ($k -ne 'retake') { $j[$k] = $Extra[$k] } }
+     Write-FileAtomic $sp ('WAIT ' + ($j | ConvertTo-Json -Compress))
+@@ -498,9 +488,8 @@ function Clear-UnstartedClaim([string]$StatePath) {
+ 
+ function Step-FailedStart($M, [string]$StatePath) {
+     <# Відмова до STARTED (робоча копія, запуск процесу наряду) — та сама ланка claim -> STARTED, що й квота: рахується
+-    тим самим лічильником `retakes` і тією самою межею MaxRetakes. 'NONE' — claim уже звільнено (слот чи GPU зайняті,
+-    кінець, чекання) або є STARTED; 'RETRY' — claim звільнено, позначка в черзі (стан WAIT, група START, без чекання);
+-    'LIMIT' — межа: чекання не записано, claim лишається, викликач закриває позначку кінцевим станом і рядком. #>
++    тим самим лічильником `retakes` (межі нема). 'NONE' — claim уже звільнено (слот чи GPU зайняті,
++    кінець, чекання) або є STARTED; 'RETRY' — claim звільнено, позначка в черзі (стан WAIT, група START, без чекання). #>
+     $t = ''
+     if (Test-Path -LiteralPath $StatePath) { try { $t = [System.IO.File]::ReadAllText($StatePath, $script:Utf8) } catch { $null = $_ } }
+     if ($t.StartsWith('STARTED ') -or -not (Test-Path -LiteralPath (Get-ClaimPath $StatePath))) { return 'NONE' }
+@@ -508,8 +497,7 @@ function Step-FailedStart($M, [string]$StatePath) {
+     $head = ''
+     if ($t.StartsWith('WAIT {')) { try { $head = [string](Get-JsonProp ($t.Substring(5) | ConvertFrom-Json) 'head') } catch { $null = $_ } }
+     $n = Set-MarkerWait $M ([DateTimeOffset]::UtcNow.ToUnixTimeSeconds()) @{ retake = $true; group = 'START'; head = $head }
+-    if ($null -eq $n) { return 'LIMIT' }
+-    Write-Log "позначка $($M.Name): відмова до запуску, повернено в чергу ($n із $script:MaxRetakes)"
++    Write-Log "позначка $($M.Name): відмова до запуску, повернено в чергу ($n-те повернення)"
+     'RETRY'
+ }
+ 
+@@ -608,14 +596,13 @@ function Write-VersionSwitch([string]$Switch) {
+ # --- слоти, GPU, процес наряду -------------------------------------------------------------------------------------
+ 
+ function Test-SlotCount([string]$Value) {
+-    <# Ціла кількість слотів у спільному діапазоні; недовірені значення відкидаємо, не обрізаємо. #>
++    <# Ціла кількість слотів (число, що вміщується в int); недовірені значення відкидаємо, не обрізаємо. #>
+     $n = 0
+-    [regex]::IsMatch($Value, '\A(?:0|[1-9][0-9]*)\z') -and [int]::TryParse($Value, [ref]$n) -and
+-        $n -ge $script:Ceil.slots[0] -and $n -le $script:Ceil.slots[1]
++    [regex]::IsMatch($Value, '\A(?:0|[1-9][0-9]*)\z') -and [int]::TryParse($Value, [ref]$n)
+ }
+ 
+-function Test-SlotName([string]$Name, [string[]]$Lanes = @($script:LaneDefaults.Keys)) {
+-    <# Назва слота дозволеної смуги з додатним номером у спільному діапазоні.
++function Test-SlotName([string]$Name, [string[]]$Lanes = $script:LaneNames) {
++    <# Назва слота дозволеної смуги з додатним номером.
+ 
+     Номер не обмежуємо поточним N: після зменшення смуги вже запущені наряди мають завершитися. #>
+     $m = [regex]::Match($Name, '\A([a-z]+)-([1-9][0-9]*)\z')
+@@ -637,26 +624,45 @@ function Test-LockFree([string]$Path) {
+ 
+ function Get-GpuLockPath { Join-Path $LaneDir 'gpu.lock' }
+ 
++function Get-SlotNumbers([string]$Lane, $Workers) {
++    <# Номери слотів смуги, що можуть бути зайняті: файли замків і описів у теці слотів плюс слоти своїх процесів. Верхньої
++    межі номера нема — перелік скінченний, бо береться з диска й з живих процесів. #>
++    $nums = @{}
++    foreach ($f in @(Get-ChildItem -LiteralPath $script:SlotDir -File -ErrorAction SilentlyContinue)) {
++        $m = [regex]::Match($f.Name, '\A' + [regex]::Escape($Lane) + '-([1-9][0-9]*)\.(?:lock|json)\z')
++        $k = 0
++        if ($m.Success -and [int]::TryParse($m.Groups[1].Value, [ref]$k)) { $nums[$k] = 1 }
++    }
++    foreach ($w in @($Workers)) {
++        $m = [regex]::Match([string]$w.Slot, '\A' + [regex]::Escape($Lane) + '-([1-9][0-9]*)\z')
++        $k = 0
++        if ($m.Success -and [int]::TryParse($m.Groups[1].Value, [ref]$k)) { $nums[$k] = 1 }
++    }
++    @($nums.Keys | Sort-Object)
++}
++
+ function Get-BusySlots([string]$Lane, $Workers) {
+     <# Зайняті слоти смуги: свій живий процес наряду або чужий замок слота (наряд попереднього проходу ще йде). #>
+-    @(for ($k = 1; $k -le $script:Ceil.slots[1]; $k++) {
++    @(foreach ($k in @(Get-SlotNumbers $Lane $Workers)) {
+         $id = "$Lane-$k"
+         $own = @($Workers | Where-Object { $_.Slot -eq $id -and -not $_.Proc.HasExited }).Count -gt 0
+         if ($own -or -not (Test-LockFree (Join-Path $script:SlotDir "$id.lock"))) { $id }
+     })
+ }
+ 
+-function Get-FreeSlot([string]$Lane, [int]$N, $Workers) {
+-    <# Вільний слот смуги, коли зайнятих менше за N з файла даних; інакше ''. #>
++function Get-FreeSlot([string]$Lane, $N, $Workers) {
++    <# Вільний слот смуги, коли зайнятих менше за N з файла даних; N = $null — межі слотів нема (нема джерела), слот
++    найменшого вільного номера. Інакше ''. #>
+     $busy = @(Get-BusySlots $Lane $Workers)
+-    if ($busy.Count -ge $N) { return '' }
+-    for ($k = 1; $k -le $script:Ceil.slots[1]; $k++) { if ($busy -notcontains "$Lane-$k") { return "$Lane-$k" } }
++    if ($null -ne $N -and $busy.Count -ge [int]$N) { return '' }
++    # busy скінченний, тож найменший вільний номер знаходиться не далі busy.Count + 1.
++    for ($k = 1; $k -le $busy.Count + 1; $k++) { if ($busy -notcontains "$Lane-$k") { return "$Lane-$k" } }
+     ''
+ }
+ 
+ function Read-SlotInfo([string]$Lane) {
+     <# Що йде в слотах смуги зараз: файли `<слот>.json` при зайнятому замку слота. #>
+-    @(for ($k = 1; $k -le $script:Ceil.slots[1]; $k++) {
++    @(foreach ($k in @(Get-SlotNumbers $Lane @())) {
+         $id = "$Lane-$k"; $j = Join-Path $script:SlotDir "$id.json"
+         if (-not (Test-Path -LiteralPath $j)) { continue }
+         if (Test-LockFree (Join-Path $script:SlotDir "$id.lock")) { continue }
+@@ -1261,7 +1267,7 @@ function Test-TaskFile([string]$Sha, [string]$TaskPath) {
+ 
+ # --- сигнал про запобіжник, що тримає позначки ----------------------------------------------------------------------
+ # 29.10 GPU-наряд стояв у черзі з 15:06 UTC: журнал 144 рази "GPU зайнята", а диспетчер не знав. Запобіжник сам пише
+-# диспетчерові рядок, коли тримає позначки понад quota_wait_minutes (смуги.json, з джерелом).
++# диспетчерові рядок, коли тримає позначки: за причиною, що вимагає дії диспетчера, а не за часом.
+ 
+ function Add-Hold([hashtable]$Held, [string]$Resource, [string]$Reason, [string]$Marker) {
+     <# Ресурс тримає позначку за цього проходу; причина — перша за проходом. #>
+@@ -1269,8 +1275,16 @@ function Add-Hold([hashtable]$Held, [string]$Resource, [string]$Reason, [string]
+     [void]$Held[$Resource].Markers.Add($Marker)
+ }
+ 
++function Test-HoldNeedsAction([string]$Resource, [string]$Reason) {
++    <# Чи вимагає утримання дії диспетчера. Слоти зайняті й замок GPU іншого наряду цієї ж черги минають самі, коли
++    закінчить власна робота, — сигналу нема. Дії вимагає те, що саме не мине: сторонній процес на GPU, nvidia-smi без відповіді. #>
++    if ($Resource -ceq 'SLOTS') { return $false }
++    $Reason -cne 'замок GPU іншого наряду'
++}
++
+ function Update-HoldSignals([hashtable]$Held, [scriptblock]$Send) {
+-    <# Рядок "GEMINI ОБГОРТКА: ЗАБЛОКОВАНО <ресурс>: <причина>, позначок N" — один на причину, повтор лише при зміні причини.
++    <# Рядок "GEMINI ОБГОРТКА: ЗАБЛОКОВАНО <ресурс>: <причина>, позначок N" — лише за причиною, що вимагає дії диспетчера
++    (Test-HoldNeedsAction), один на причину, повтор лише при зміні причини.
+     Утримання зникло — запис знято, нове сигналить знову. Стан — holds.json у теці стану (переживає перезапуск проходу). #>
+     $path = Join-Path $script:StateDir 'holds.json'
+     $prev = @{}
+@@ -1278,14 +1292,13 @@ function Update-HoldSignals([hashtable]$Held, [scriptblock]$Send) {
+         try { foreach ($p in ([System.IO.File]::ReadAllText($path, $script:Utf8) | ConvertFrom-Json).PSObject.Properties) { $prev[$p.Name] = $p.Value } } catch { $null = $_ }
+     }
+     $now = [DateTimeOffset]::UtcNow.ToUnixTimeSeconds()
+-    $after = [double](Get-Limit $script:Limits 'QuotaWaitMinutes' 'quota_wait_minutes') * 60
+     $next = [ordered]@{}
+     foreach ($res in @($Held.Keys | Sort-Object)) {
+         $h = $Held[$res]; $old = $prev[$res]
+         $since = $(if ($null -ne $old) { [long]$old.since } else { $now })
+         $sent = $(if ($null -ne $old) { [string]$old.sent } else { '' })
+         # MiB процесів гуляють між проходами: повтор — лише коли змінилися назви, а не числа.
+-        if (($now - $since) -ge $after -and ($sent -replace ' [0-9]+ MiB', '') -cne ($h.Reason -replace ' [0-9]+ MiB', '')) {
++        if ((Test-HoldNeedsAction $res $h.Reason) -and ($sent -replace ' [0-9]+ MiB', '') -cne ($h.Reason -replace ' [0-9]+ MiB', '')) {
+             if (& $Send "GEMINI ОБГОРТКА: ЗАБЛОКОВАНО ${res}: $($h.Reason), позначок $($h.Markers.Count)") { $sent = $h.Reason }
+         }
+         $next[$res] = [ordered]@{ since = $since; reason = $h.Reason; sent = $sent }
+diff --git a/аудит/адаптери/gemini/wrapper_chain.ps1 b/аудит/адаптери/gemini/wrapper_chain.ps1
+index 3ed3cc47a838ce3a1712ceeb412a503dc06d43fc..dc2cc702b807dc0dccd02c67216d8c0841eecf4f 100644
+--- a/аудит/адаптери/gemini/wrapper_chain.ps1
++++ b/аудит/адаптери/gemini/wrapper_chain.ps1
+@@ -181,7 +181,7 @@ function ConvertFrom-QuotaStamp($Value) {
+ }
+ 
+ function Test-QuotaRefused($Refused, $Reset, [datetimeoffset]$Now) {
+-    <# Відмова за квотою діє до скидання; скидання невідоме — годину від відмови (quota_wait_minutes за замовчуванням). #>
++    <# Відмова за квотою діє до скидання; скидання невідоме — годину від відмови (вигадане значення без джерела, дошка 12203). #>
+     $until = ConvertFrom-QuotaStamp $Reset
+     if ($null -ne $until) { return $until -gt $Now }
+     $at = ConvertFrom-QuotaStamp $Refused
+@@ -363,10 +363,9 @@ function Get-LatestLivePending($Pending) {
+     @($items[-1])
+ }
+ 
+-function Test-RecentReviewHead($Pull, $Heads, [datetimeoffset]$Installed, [datetimeoffset]$Now, [int]$Hours) {
+-    <# Новий PR після встановлення, спостережена зміна SHA або свіжа голова у першому знімку.
+-
+-    updated_at PR змінюють і коментарі, тому для початкового вікна читаємо дату committer точного SHA. #>
++function Test-RecentReviewHead($Pull, $Heads, [datetimeoffset]$Installed, [datetimeoffset]$Now) {
++    <# Новий PR після встановлення чи спостережена зміна SHA. Вікна за віком коміту нема (review_hours знято, рішення
++    менеджера 01.11): давній архів, що був до встановлення, не добирається. #>
+     $n = [string]$Pull.number; $head = [string]$Pull.head.sha
+     $old = $Heads[$n]
+     if ($null -ne $old -and $old.sha -ceq $head) { return [bool]$old.eligible }
+@@ -374,12 +373,6 @@ function Test-RecentReviewHead($Pull, $Heads, [datetimeoffset]$Installed, [datet
+     if (-not $eligible) {
+         $created = [datetimeoffset]::Parse([string]$Pull.created_at, [Globalization.CultureInfo]::InvariantCulture)
+         $eligible = $created -ge $Installed -and $created -le $Now
+-        if (-not $eligible) {
+-            $commit = Invoke-ChainApi "repos/$GitHubRepo/commits/$head"
+-            if ($commit.sha -cne $head) { throw 'CHAIN_HEAD' }
+-            $time = [datetimeoffset]::Parse([string]$commit.commit.committer.date, [Globalization.CultureInfo]::InvariantCulture)
+-            $eligible = $time -ge $Now.AddHours(-$Hours) -and $time -le $Now
+-        }
+     }
+     $Heads[$n] = @{sha=$head;eligible=$eligible}
+     $eligible
+@@ -587,13 +580,6 @@ function Invoke-WrapperChain {
+         foreach ($path in @('аудит/наряди/автоперевірка.md','аудит/наряди/автоживий.md')) {
+             if ((Invoke-Git @('cat-file','-e',"${main}:$path") -AllowFail).Code -ne 0) { throw 'CHAIN_TEMPLATE' }
+         }
+-        $hours = 24
+-        $hoursProp = $config.PSObject.Properties['review_hours']
+-        if ($null -ne $hoursProp) {
+-            if ($hoursProp.Value -isnot [int] -and $hoursProp.Value -isnot [long]) { throw 'CHAIN_CONFIG' }
+-            $hours = [int]$hoursProp.Value
+-            if ($hours -lt 1 -or $hours -gt 168) { throw 'CHAIN_CONFIG' }
+-        }
+         $now = [datetimeoffset]::UtcNow; $installed = $now; $heads = @{}
+         $statePath = Join-Path $WorkDir 'chain.json'
+         $reviewed = @{}; $liveActive = $null; $liveSince = ''; $last = $main; $seen = @{}; $liveStamps = @{}; $livePending = @(); $hasLiveState = $false
+@@ -666,7 +652,7 @@ function Invoke-WrapperChain {
+         foreach ($pr in $pulls) {
+             if (-not (Test-ChainReviewPull $pr)) { continue }
+             $head = [string]$pr.head.sha; $n = [string]$pr.number
+-            $eligible = Test-RecentReviewHead $pr $heads $installed $now $hours
++            $eligible = Test-RecentReviewHead $pr $heads $installed $now
+             Write-FileAtomic $statePath (([ordered]@{ main=$main; reviewed=$reviewed; live_active=$liveActive; live_since=$liveSince; live_stamps=@($liveStamps.Keys); live_pending=@($livePending); reviews=@($seen.Keys); installed_utc=$installed.ToString('o'); heads=$heads }) | ConvertTo-Json -Compress -Depth 5)
+             if (-not $eligible) { continue }
+             $work = Get-ChainBranchWork ([string]$pr.head.ref)
+diff --git a/аудит/адаптери/gemini/wrapper_health.ps1 b/аудит/адаптери/gemini/wrapper_health.ps1
+index 0e856aa7697419446fecb98e0952a6b3abf2a54e..ac60a1d44ffe16019070a89657f68b434afe980c 100644
+--- a/аудит/адаптери/gemini/wrapper_health.ps1
++++ b/аудит/адаптери/gemini/wrapper_health.ps1
+@@ -9,7 +9,7 @@ $script:HealthDetails = @{
+ $script:HealthAlertDir = ''
+ # Сигнал запобіжника, що тримає позначки (queue_lanes.ps1, Update-HoldSignals), і позначка з назвою не за форматом
+ # (gemini_run.ps1, Start-Markers; назва — безпечними знаками): рядок рушія й шаблон публікації — тут одне місце.
+-$script:HoldLineTemplate = '\AGEMINI ОБГОРТКА: ЗАБЛОКОВАНО (?:(?:GPU|SLOTS): (?:замок GPU іншого наряду|слоти зайняті|nvidia-smi не відповів|GPU зайнята стороннім процесом|процес [A-Za-z0-9._+-]{1,92}|процес [A-Za-z0-9._-]{1,30} [0-9]{1,7} MiB(?:\+[A-Za-z0-9._-]{1,30} [0-9]{1,7} MiB){0,2}), позначок [1-9][0-9]{0,3}|gemini-queue/[\p{L}\p{Nd}._/-]{1,160} FORMAT)\z'
++$script:HoldLineTemplate = '\AGEMINI ОБГОРТКА: ЗАБЛОКОВАНО (?:(?:GPU|SLOTS): (?:замок GPU іншого наряду|слоти зайняті|nvidia-smi не відповів|GPU зайнята стороннім процесом|процес [A-Za-z0-9._+-]{1,92}|процес [A-Za-z0-9._-]{1,30} [0-9]{1,7} MiB(?:\+[A-Za-z0-9._-]{1,30} [0-9]{1,7} MiB){0,2}), позначок [1-9][0-9]{0,3}|gemini-queue/[\p{L}\p{Nd}._/-]{1,160} (?:FORMAT|START))\z'
+ 
+ function Test-HoldLine([string]$Line) { $Line -cmatch $script:HoldLineTemplate }
+ 
+@@ -111,3 +111,18 @@ function Get-ModelGroups([string]$Model, $Groups) {
+     if ($script:Families -notcontains $fam) { return @() }
+     @($Groups | Where-Object { @(Get-SpecificTokens $_.Name).Count -eq 0 -and @($_.Name.ToLowerInvariant() -split '[^a-z0-9]+') -contains $fam })
+ }
++
++# Джерело межі (п.11): «власник ДД.ММ …» чи «вимір: …» з датою ДД.ММ і ще хоч одним числом (10970).
++$script:LimitDateRx = '(?<![0-9])(?:0[1-9]|[12][0-9]|3[01])\.(?:0[1-9]|1[0-2])(?![0-9])'
++
++function Test-LimitSource([string]$Text, [bool]$Mechanism = $false, [bool]$Measurement = $false) {
++    <# $true — у межі є джерело за форматом; інакше межа без джерела. Той самий розбір — у перевірка/перевірити_хеші.py.
++    $Mechanism — поле-механізм (частота опитування, свіжість кешу; рішення менеджера 01.11): замість виміру приймається
++    запис «механізм: <що це і чому не межа роботи>». $Measurement — сторож: приймається лише вимір. #>
++    if ($Text.Length -gt 300 -or $Text -cmatch '[\x00-\x1f]') { return $false }
++    if ($Mechanism -and $Text -cmatch '\Aмеханізм: \S') { return $true }
++    if (-not $Measurement -and $Text -cmatch ('\Aвласник ' + $script:LimitDateRx + '(?:[^0-9].*)?\z')) { return $true }
++    if ($Text -cnotmatch '\Aвимір: ') { return $false }
++    $d = [regex]::Match($Text, $script:LimitDateRx)
++    $d.Success -and $Text.Remove($d.Index, $d.Length).Substring(6) -match '[0-9]'
++}
+diff --git a/аудит/адаптери/gemini/НАЛАШТУВАННЯ.md b/аудит/адаптери/gemini/НАЛАШТУВАННЯ.md
+index 8108bc8fab1513374125ccc33963602d4d63b977..0fd1e0fb98bc234a30ae70ad57f91d8a3dcf032c 100644
+--- a/аудит/адаптери/gemini/НАЛАШТУВАННЯ.md
++++ b/аудит/адаптери/gemini/НАЛАШТУВАННЯ.md
+@@ -180,7 +180,7 @@ Gemini CLI не ставимо (рішення диспетчера 25.10: дл
+   шукається в тексті, розкодованому з екранування JSON (`\u0027` → `'`), бо рядки подій `--json` приходять екранованими; `codex-cli 0.164.0`
+   називає прийнятими `none…xhigh, max`, `ultra` відмовляє), а диспетчер бачить найвище прийняте зусилля з виводу `codex exec`.
+   Межі часу всього прогону для Codex нема (`-TotalMinutes` на нього не діє, для `agy` — як було): зупиняє лише завислість —
+-  нових подій `--json` нема довше за `-CodexStallMinutes` (за замовчуванням 60 хв) → `ЗАБЛОКОВАНО <гілка> STALL`. Час і тип кожної
++  нових подій `--json` нема довше за `codex_stall_minutes` зі `смуги.json` (з джерелом; нема джерела — межі завислості нема; параметр `-CodexStallMinutes` сильніший) → `ЗАБЛОКОВАНО <гілка> STALL`. Час і тип кожної
+   події пише `gemini-runs\<id>\codex.events.tsv` — за ним поріг вивіряють; 60 хв узято з запасом, бо часових міток старих
+   прогонів не збереглося. Роль агента — з рядка `Роль — ВИКОНАВЕЦЬ|ПЕРЕВІРКА …` наряду (з першої колонки, слово ролі не продовжується літерою; кінець
+   тексту без переносу допустимий; рядки в огороджених блоках ```/~~~ — приклад, їх пропущено); нема рядка — виконавець. Захист не змінено: агент обгортки файлів `аудит/адаптери/gemini/` не міняє.
+@@ -259,17 +259,17 @@ alias `/quota`), https://antigravity.google/docs/cli/headless/ (команди,
+ Смуга на рушій — Codex, `agy`, Claude Code; смуги йдуть водночас, у смузі — до N нарядів водночас. Планувальників два
+ (облікові записи розведено): `gemini-run` під `gemini` веде смуги Codex і `agy`, `claude-run` під тобою — смугу Claude.
+ Спільне — модуль `queue_lanes.ps1` (поруч зі скриптом, під хешем). Запуск задачі — планувальник: опитує чергу раз на
+-`poll_minutes` (≤ 5 хв), доки йде хоч один його наряд; без нарядів виходить, задача стартує знову за 5 хв.
++`poll_minutes` зі `смуги.json` (джерело «механізм: …» чи слово/вимір), доки йде хоч один його наряд; без нарядів виходить, задача стартує знову за 5 хв. Нема джерела `poll_minutes` — період з коду не береться: рядок «відмова: poll_minutes без джерела» в журналі, цикл зупинено.
+ 
+ - **Межі** — `смуги.json` у цій теці; читає з `origin/main` (після `git fetch`, не з робочої копії агента) кожен прохід, тож
+-  зміна в `main` міняє паралельність без перевстановлення копій. Кількість слотів задає `смуги.json`; межа 0–64 у `queue_lanes.ps1` захищає від помилки в даних,
+-  а не визначає місткість ноутбука. Інші стелі коду:
+-  `poll_minutes` 1–5, `usage_minutes` 5–60, `quota_wait_minutes` 15–1440, `agy_total_minutes` 30–600, `agy_turn_minutes`
+-  10–600, `codex_stall_minutes` 10–240, `claude_hang_minutes` 30–240; значення поза межами обрізаються. Параметр задачі
+-  (рука власника) сильніший за файл. Формат v2 (ядро, «Межа роботи»): кожна межа — `{"n": число, "джерело": "…"}`,
+-  джерело — «власник ДД.ММ …» чи «вимір: …» з датою ДД.ММ і числом. Межа без джерела (порожнє, не за форматом), файл v1,
+-  кривий чи невідомий — береться попереднє прийняте значення (`state\limits.json` кожного облікового запису; нема — з
+-  коду), а в #1856 — рядок «межа без джерела: <поле>»; узяття це не зупиняє. Формат звіряє `перевірка/перевірити_хеші.py`.
++  зміна в `main` міняє паралельність без перевстановлення копій. Кількість слотів і решту меж (`poll_minutes`, `usage_minutes`, `agy_turn_minutes`, `codex_stall_minutes`,
++  `claude_hang_minutes`) задає лише `смуги.json`; полів `agy_total_minutes`, `quota_wait_minutes` і `review_hours` нема (знято, рішення менеджера 01.11): стель, типових значень і
++  меж повернень у коді нема. Параметр задачі (рука власника) сильніший за файл. Формат v2 (ядро, «Межа роботи»): кожна межа — `{"n": число, "джерело": "…"}`,
++  джерело — «власник ДД.ММ …» чи «вимір: …» з датою ДД.ММ і числом; лише для `poll_minutes` і `usage_minutes` (період механізму, що роботи не стелить) — ще «механізм: <що>» без виміру, а `agy_turn_minutes`, `codex_stall_minutes`, `claude_hang_minutes` — лише з виміром між подіями роботи здорових прогонів (дата, число прогонів, число; запасу нема). `claude_hang_minutes.n = null`: нема виміру, що представляє роботу (рішення менеджера 01.11, «КОЛО PR #2685» у `аудит/корені/ПК-межа-без-джерела.md`); проміжок після `result` роботою не є. Межа без джерела (порожнє, не за форматом), файл v1,
++  кривий чи невідомий — межі нема: ні попереднього значення, ні типового з коду (слоти — без обмеження кількості; `agy_turn_minutes` без джерела — прапор `--print-timeout` не передається, а типовий `--print-timeout` agy — 0 с (`agy --help`: чекає кінця ходу без межі); завислість,
++  тайм-аути ходу, кеш `/usage` і здоров'я — відсутні; прогін без строку; скидання квоти невідоме — кінець `QUOTA`, очікування за часом нема), а в #1856 — рядок «межа без джерела: <поле>»; узяття це не зупиняє.
++  Значення з джерелом, але кривe (не число, від'ємне, нуль для хвилин, дробові слоти), — відмова рядком у журналі з назвою
++  поля, межа не діє; обрізання до стелі нема. Формат звіряє `перевірка/перевірити_хеші.py`.
+ - **Наряд — окремий процес** того самого скрипта (`-WorkerFile`) зі своїм слотом (замок `slots\<смуга>-<k>.lock` на весь
+   прогін) і текою запуску. Копія задачі — тека `gemini-runs\w\<прогін>`, `claude-run\w\<прогін>` (`New-TaskCopy`):
+   `repo` — git worktree клону (спільні об'єкти) без тек-архівів `аудит/` (від третього рівня, ≥ 8 МіБ відстежуваних
+@@ -280,12 +280,12 @@ alias `/quota`), https://antigravity.google/docs/cli/headless/ (команди,
+   Узяття позначки атомарне (`state\<ключ>.claim`, CreateNew): дві смуги чи два слоти одну не візьмуть; один наряд
+   (назва) двома слотами водночас — ні.
+ - **Порядок** — умови в назві позначки (`ЧЕРГА.md`): пріоритет, строк, далі час першої появи позначки на ноутбуці.
+-- **Квота.** `agy`: `/usage` — не частіше за `usage_minutes` (кеш `usage.json`) і заново, коли минув час чекання;
++- **Квота.** `agy`: `/usage` — не частіше за `usage_minutes` (кеш `usage.json`) і заново, коли минув час чекання (нема `usage_minutes` — кешу нема, читає щоразу);
+   живий формат agy 1.4.7 — без заголовка, рядок на вікно (тиждень, 5 год), скидання ISO UTC; група моделі — за власним
+   словом («Gemini 4 Argon» ↔ `gemini-4-argon-*`), інакше група родини («Gemini Models», «Claude and GPT models»). Група на
+   0 % до старту — позначка чекає скидання, спроба не спалена; посеред прогону (429, Codex, Claude) — так само, з головою
+-  гілки для продовження, до 5 повернень. Відмова до старту наряду (робоча копія, запуск процесу) рахується тим самим лічильником
+-  і тією самою межею: позначка повертається в чергу, а на межі закінчується `ЗАБЛОКОВАНО <гілка> CRASH`. Рядок диспетчерові — `ЗАБЛОКОВАНО <гілка> QUOTA0_<ГРУПА>_M<хв>`, раз на чекання.
++  гілки для продовження; межі повернень нема. Відмова до старту наряду (робоча копія, запуск процесу) рахується тим самим лічильником:
++  позначка повертається в чергу. Рядок диспетчерові — `ЗАБЛОКОВАНО <гілка> QUOTA0_<ГРУПА>_M<хв>`, раз на чекання.
+ - **GPU** — замок `C:\Users\Public\gemini\lanes\gpu.lock` (пишуть INTERACTIVE і BATCH), спільний для обох облікових
+   записів: GPU-наряд тримає його весь прогін, другий GPU-наряд чекає в черзі.
+ 
+@@ -319,7 +319,7 @@ Claude («Смуги й черга» вище).
+   береться (доробка — `<спроба>+1`). `gemini-run` позначок `cc-` не бере й узятими не позначає: смуги Gemini (під `gemini`)
+   і Claude (під тобою) йдуть водночас; GPU-наряд — один на ноутбуці (замок).
+ - **Квота.** Відмова за квотою (`usage limit`, `hit your limit`, 429) — не кінець: позначка чекає скидання (час — `resetsAt`
+-  події `rate_limit_event` stream-json, яку `claude` 2.1 друкує на кожному прогоні; нема — `quota_wait_minutes`), рядок
++  події `rate_limit_event` stream-json, яку `claude` 2.1 друкує на кожному прогоні; нема — кінець `QUOTA`: часу чекання з коду чи даних нема), рядок
+   `ЗАБЛОКОВАНО claude/<наряд> QUOTA0_CLAUDE_M<хв>`, після скидання її бере ця ж смуга, сесія продовжує гілку наряду.
+ - **Звіт** — один окремий рядок у полі `result` події `result`. Дозволено збалансоване оформлення
+   жирним, inline-бектиками чи лапками і крапку в кінці; після рядка може бути підсумок. Цитати `>`,
+@@ -346,7 +346,7 @@ Claude («Смуги й черга» вище).
+ | `EFFORT_INVALID` | `claude` не прийняв зусилля (`Unknown --effort value` — він узяв би типове; це підміна, процес зупинено) |
+ | `ENGINE_MISSING` | `claude` не знайдено |
+ | `HANG` | завислість (вище) |
+-| `AUTH` / `QUOTA` | вхід Claude (`Not logged in`, 401) / ліміт понад 5 повернень у чергу (`usage limit`, 429, `overloaded`) |
++| `AUTH` / `QUOTA` | вхід Claude (`Not logged in`, 401) / ліміт, час скидання якого невідомий (`usage limit`, 429, `overloaded`) |
+ | `QUOTA0_CLAUDE_M<хв>` | ліміт Claude: позначка чекає скидання (хв), потім її візьме ця ж смуга — нової позначки не треба |
+ | `EXIT` | `claude` вийшов з помилкою без звіту |
+ | `NO_PUSH` / `BAD_BRANCH` | звіт ГОТОВО, а SHA на `origin` інший / гілка не `claude/…` |
+@@ -450,13 +450,13 @@ $f = Join-Path "$env:USERPROFILE\gemini-outbox" $n
+ |---|---|
+ | `wrapper_probe.ps1` | `85116D04C22EB64CBFF52E66BCEAE9B1091577A889EDD58A8B634093A82BDBC6` |
+ | `wrapper_update.ps1` | `4156307A17BDAE3AF7249E532947F659E99AA1349D159239159FAE60CA7E4F2B` |
+-| `wrapper_chain.ps1` | `2C44BD77A2180F47054212220BCD473DEEC088B7EACE2646B3B40047752C8785` |
+-| `gemini_run.ps1` | `73CC27D6BA6B109054526A2E23DA30BBDC391505D9030DC8C1E39193CDF28917` |
+-| `gemini_publish.ps1` | `651718F8227770B4D9BADF001719DDCA60604DEE8BFEB3C8D19B6FC3D2D32DF8` |
++| `wrapper_chain.ps1` | `0BF2519191E0B7F268BFF48648E044FAE68026CF51C40A788D903B24F4041A4A` |
++| `gemini_run.ps1` | `E118D095C208FBC3E2D3C2AF17CA1AD751632F06184EEA087E0EBD2CAD189CD6` |
++| `gemini_publish.ps1` | `E80B5B5ECC597BDB5ED32447C95AADA96FEBFD4319E03840A6EEA2880379276C` |
+ | `gemini_watch.ps1` | `69EFEBB07FF1AF51C382B753A95C50F3C1AC27B3008F2489992BEBE3FD0213AA` |
+-| `wrapper_health.ps1` | `BC7CDCBD744E360446B3D3721D0F70676A98D86B5770A3E3CB3713F9E770CEAB` |
+-| `queue_lanes.ps1` | `4080D12A974E5B216E2463C3E791D8DE368E1A6B2BDA92BA7644AEB7F19270F4` |
+-| `claude_run.ps1` | `1E3A40E4ABD79169CBB183EC2AC6CE045A892DFB02C6DD98EC294B7AD510D420` |
++| `wrapper_health.ps1` | `32D0F325120C70C5FC2853065615F2B5FD74078F0D0EC1697555DB8EC8DC0FF0` |
++| `queue_lanes.ps1` | `EB5678375B36878ECA3D8BE11B69418767F7181C0E27564C5D44687E66241795` |
++| `claude_run.ps1` | `8EE343A9178894AAF07AB14F6B7D1EF415ADD868E43A6F68F029E95866B69484` |
+ | `CodexInstaller` (`install.ps1` релізу Codex `CodexRelease`) | `A59CB66350098C33B021FF470D586AE8FE3B7CAF189CA7137B4FE3AF5D4DCE74` |
+ 
+ Той самий список читають скрипти `m9v/` з `m9v/хеші.psd1` — міняти їх разом із таблицею. Підготовка одним проходом — `m9v/ЩО_НАТИСНУТИ.md`.
+@@ -526,11 +526,10 @@ PR із `[НЕ ЗЛИВАТИ]` у назві пропускається. Док
+ `pulls/<PR>/files?per_page=100&page=<N>`; при перейменуванні враховується і попередній шлях.
+ Збій будь-якої сторінки або порожня відповідь не записується як виконана перевірка: наступний прохід повторює читання.
+ 
+-`review_hours` у `ланцюг.json` — ціле число 1–168, типово 24; у старому конфігу без поля також 24.
++Вікна за віком коміту нема (`review_hours` знято, рішення менеджера 01.11; типового 24 з коду теж нема): добираються лише PR, створені після встановлення, і зміни голови — давній архів не добирається.
+ Перший прохід нової версії зберігає `installed_utc` і базову лінію `heads` у `chain.json`,
+ не ставлячи перевірок на весь старий архів. PR допускається, якщо створений після цієї межі,
+-його SHA змінився після вже збереженого знімка або час committer точного SHA потрапляє у
+-включне UTC-вікно `[зараз − review_hours, зараз]`. `updated_at` PR не використовується: його змінюють і коментарі.
++його SHA змінився після вже збереженого знімка. `updated_at` PR не використовується: його змінюють і коментарі.
+ Початкове рішення зберігається з SHA, а зміна голови відкриває нову перевірку. Втрата локального стану
+ починає нову базову лінію; сталі віддалені позначки та lease захищають від повторного запуску старих спроб.
+ 
+@@ -670,10 +669,10 @@ CI й ноутбук запускають один повний перелік 
+ самий наряд), іде в журнал раз на причину й у `skipped.json` (`C:\Users\Public\gemini\out`, `claude-run\skipped.json`) →
+ розділ «Позначки без старту» в #1856 (масив читає `Read-JsonArray`: PowerShell 5.1 дає з `ConvertFrom-Json` масив
+ одним об'єктом, і 31.10 рядки були порожні). Позначка з назвою не за форматом — рядок `GEMINI ОБГОРТКА: ЗАБЛОКОВАНО
+-<позначка> FORMAT` раз на позначку (`gemini-run`, стан `INVALID_FORMAT`). BLOCKED без гілки (`ahead` 0) лишає останній рядок агента в `blocked-reasons.json` →
++<позначка> FORMAT` раз на позначку (`gemini-run`, стан `INVALID_FORMAT`); так само `<позначка> START` раз на позначку, коли відмова до запуску повертає її в чергу (межі повернень нема, тож мовчки крутитись вона не може; прапор — `<стан>.startfail`). BLOCKED без гілки (`ahead` 0) лишає останній рядок агента в `blocked-reasons.json` →
+ розділ «Причини ЗАБЛОКОВАНО без гілки» (дані, не наказ). Вирок `NO_TASK_FILE` дає лише `git` (`Test-TaskFile`); збій
+ виклику після трьох спроб повертає позначку в чергу. Агент зберігає NODE_OPTIONS/PYTHONPATH, а GPU-замок лишається спільним для моделей.
+-Запобіжник (GPU, слоти), що тримає позначки понад `quota_wait_minutes` (смуги.json, з джерелом), сам пише рядок
++Запобіжник (GPU, слоти), що тримає позначки (сигнал — лише за причиною, що вимагає дії диспетчера: сторонній процес на GPU, nvidia-smi без відповіді; слоти зайняті й замок GPU іншого наряду цієї черги минають самі — рядка нема; часової межі нема), сам пише рядок
+ `GEMINI ОБГОРТКА: ЗАБЛОКОВАНО GPU|SLOTS: <причина>, позначок N` (причина GPU: замок, `процес <назва> <MiB> MiB[+…]` з
+ лічильника, `процес <назва з compute-apps>` без нього або зайнята пам'ять) — один на причину (повтор лише при зміні
+ причини без огляду на MiB, стан `holds.json`); пульс диспетчера — лише
+diff --git a/аудит/адаптери/gemini/ланцюг.json b/аудит/адаптери/gemini/ланцюг.json
+index be9bd1ffcc716a527ab109ed300dffe49ce1b5f3..99acc5916d7ffc530e3d8e1010e7641a674a70f6 100644
+--- a/аудит/адаптери/gemini/ланцюг.json
++++ b/аудит/адаптери/gemini/ланцюг.json
+@@ -6,6 +6,5 @@
+   "models": [
+     "qwen/qwen3.5-9b",
+     "mamaylm-gemma-3-12b-it-v2.0"
+-  ],
+-  "review_hours": 24
++  ]
+ }
+diff --git a/аудит/адаптери/gemini/перевірка/перевірити_хеші.py b/аудит/адаптери/gemini/перевірка/перевірити_хеші.py
+index 43a7f973223d60657801a94fb372ed9207c9a58f..b37e4ca7d4a6d50735e909c02002abf540da38dd 100644
+--- a/аудит/адаптери/gemini/перевірка/перевірити_хеші.py
++++ b/аудит/адаптери/gemini/перевірка/перевірити_хеші.py
+@@ -1,6 +1,7 @@
+ """Звіряє маніфест і документацію з SHA-256 блобів git (LF) і формат `смуги.json` v2."""
+ import hashlib
+ import json
++import math
+ from pathlib import Path
+ import re
+ import subprocess
+@@ -10,11 +11,13 @@ import sys
+ ДАТА = r'(?<![0-9])(?:0[1-9]|[12][0-9]|3[01])\.(?:0[1-9]|1[0-2])(?![0-9])'
+ 
+ 
+-def є_джерело(текст):
+-    """Той самий розбір, що Test-LimitSource у queue_lanes.ps1: «власник ДД.ММ …» чи «вимір: …» з датою й числом."""
++def є_джерело(текст, механізм=False, вимір=False):
++    """Той самий розбір, що Test-LimitSource у wrapper_health.ps1: «власник ДД.ММ …» чи «вимір: …» з датою й числом."""
+     if len(текст) > 300 or re.search(r'[\x00-\x1f]', текст):
+         return False
+-    if re.fullmatch(r'власник ' + ДАТА + r'(?:[^0-9].*)?', текст, re.S):
++    if механізм and re.match(r'механізм: \S', текст):
++        return True
++    if not вимір and re.fullmatch(r'власник ' + ДАТА + r'(?:[^0-9].*)?', текст, re.S):
+         return True
+     if not текст.startswith('вимір: '):
+         return False
+@@ -23,12 +26,14 @@ def є_джерело(текст):
+ 
+ 
+ def перевірити_смуги(root):
+-    """Кожна межа — {"n": число в стелі коду, "джерело": "" чи за форматом}; порожнє джерело — друк, не помилка."""
++    """Кожна межа — {"n": число, "джерело": "" чи за форматом}; порожнє джерело — друк, не помилка. Стель у коді нема:
++    криве n (не число, від'ємне, нуль для хвилин, дробові слоти) — помилка даних, як і відмова обгортки."""
+     код = (root / 'queue_lanes.ps1').read_text(encoding='utf-8-sig')
+-    стелі = {k: (int(a), int(b)) for k, a, b in re.findall(r'(\w+) = @\((\d+), (\d+)\)', код.split('$script:Ceil = @{', 1)[1].split('\n}', 1)[0])}
+-    смуги = re.search(r"LaneDefaults = \[ordered\]@\{ ([^}]*) \}", код).group(1)
+-    поля = {'slots.' + k: стелі['slots'] for k in re.findall(r'(\w+) = \d+', смуги)}
+-    поля.update({k: v for k, v in стелі.items() if k != 'slots'})
++    хвилини = re.search(r"LimitMinuteFields = @\(([^)]*)\)", код).group(1)
++    смуги = re.search(r"LaneNames = @\(([^)]*)\)", код).group(1)
++    поля = {'slots.' + k: True for k in re.findall(r"'(\w+)'", смуги)}
++    поля.update({k: False for k in re.findall(r"'(\w+)'", хвилини)})
++    механізми = set(re.findall(r"'(\w+)'", re.search(r"MechanismFields = @\(([^)]*)\)", код).group(1)))
+     try:
+         дані = json.loads((root / 'смуги.json').read_text(encoding='utf-8'))
+     except ValueError as e:
+@@ -52,16 +57,21 @@ def перевірити_смуги(root):
+             вади.append(f'{k}: не {{"n", "джерело"}}')
+             continue
+         n, джерело = межа['n'], межа['джерело']
+-        if isinstance(n, bool) or not isinstance(n, (int, float)) or not поля[k][0] <= n <= поля[k][1]:
+-            вади.append(f'{k}: n поза стелею {поля[k]}')
+-        if not isinstance(джерело, str) or (джерело and not є_джерело(джерело)):
++        слоти = поля[k]
++        вимір = not слоти and k not in механізми
++        if n is None and isinstance(джерело, str) and джерело.startswith('нема виміру, що представляє роботу;') and вимір:
++            без.append(k)
++            continue
++        if isinstance(n, bool) or not isinstance(n, (int, float)) or not math.isfinite(n) or n < 0 or (слоти and n > 2147483647) or (not слоти and n == 0) or (слоти and n != int(n)):
++            вади.append(f'{k}: n не число, від\'ємне, нуль для хвилин чи дробові слоти')
++        if not isinstance(джерело, str) or (джерело and not є_джерело(джерело, k in механізми, вимір)):
+             вади.append(f'{k}: джерело не за форматом')
+         elif not джерело:
+             без.append(k)
+     for вада in вади:
+         print(f'✗ смуги.json: {вада}')
+     if not вади:
+-        print(f"✓ смуги.json: v2, полів {len(поля)}, без джерела (обгортка бере попереднє): {', '.join(без) or 'нема'}")
++        print(f"✓ смуги.json: v2, полів {len(поля)}, без джерела (межі нема): {', '.join(без) or 'нема'}")
+     return int(bool(вади))
+ 
+ 
+diff --git a/аудит/адаптери/gemini/перевірка/сценарії_claude.sh b/аудит/адаптери/gemini/перевірка/сценарії_claude.sh
+index 1c4971480cebea373e73de70d6da6b245274129e..ebf30757cb50f079fc6b6aa7f4166f6169aac3c6 100755
+--- a/аудит/адаптери/gemini/перевірка/сценарії_claude.sh
++++ b/аудит/адаптери/gemini/перевірка/сценарії_claude.sh
+@@ -23,7 +23,7 @@ setup() { W="${TMPDIR:-/tmp}/claude-run/$1"; rm -rf "$W"; mkdir -p "$W"/{cr,out,
+     FAKE_CLAUDE_LOG="$(wp "$W/claude.log")" FAKE_ISOLATION=
+   printf 'b1' > "$W/cr/boot.txt"; }
+ mark() { git -C "$W/seed" push -q origin "${2:-main}:refs/heads/gemini-queue/$1" 2>/dev/null; }
+-cr() { A=$($PY -c "import json,sys;print(json.dumps({**dict(WorkDir='$(wp "$W/cr")',RepoDir='$(wp "$W/clone")',OutboxDir='$(wp "$W/out")',PublishDir='$(wp "$W/pub")',GeminiOutDir='$(wp "$W/gem")',RepoUrl='$(wp "$W/origin.git")',ClaudeExe='$(stub fake_cc)',GhExe='$(stub fake_gh)',HangMinutes=0.05,OffWaitMinutes=0.05),**json.loads(sys.argv[1])}, ensure_ascii=False))" "${1:-{\}}")
++cr() { A=$($PY -c "import json,sys;print(json.dumps({**dict(WorkDir='$(wp "$W/cr")',RepoDir='$(wp "$W/clone")',OutboxDir='$(wp "$W/out")',PublishDir='$(wp "$W/pub")',GeminiOutDir='$(wp "$W/gem")',RepoUrl='$(wp "$W/origin.git")',ClaudeExe='$(stub fake_cc)',GhExe='$(stub fake_gh)',HangMinutes=0.05,OffWaitMinutes=0.05,PollMinutes=0.05),**json.loads(sys.argv[1])}, ensure_ascii=False))" "${1:-{\}}")
+   "$PW" -NoProfile -File "$(wp "$H/side_claude.ps1")" -Script "$(wp "$SRC/claude_run.ps1")" -ArgsJson "$A" >/dev/null 2>&1; }
+ # Рядок ПРОСТІЙ (простій без роботи після кожного кінця прогону) не належить наряду: сценарії рахують решту.
+ lines() { cat "$W"/out/*.txt 2>/dev/null | grep -v '^GEMINI ОБГОРТКА: ПРОСТІЙ ' ; true; }
+diff --git a/аудит/адаптери/gemini/перевірка/сценарії_доставки.sh b/аудит/адаптери/gemini/перевірка/сценарії_доставки.sh
+index 94e531c229370c117cf9d02daea697b10bd37a9d..e9fa41d9625cf37d2a6b1cedf0bdd8e645ccca72 100755
+--- a/аудит/адаптери/gemini/перевірка/сценарії_доставки.sh
++++ b/аудит/адаптери/gemini/перевірка/сценарії_доставки.sh
+@@ -11,7 +11,7 @@ setup() { W="${TMPDIR:-/tmp}/gemini-obhortka/$1"; rm -rf "$W"; mkdir -p "$W"/{fa
+   git clone -q "$W/origin.git" "$W/clone" 2>/dev/null; git -C "$W/clone" config user.name g; git -C "$W/clone" config user.email g@x
+   OB="$W/gemini-outbox"; WW=$(wp "$W")
+   export FAKE_STATE="$WW/fake" FAKE_CLAUDE_LOG="$WW/claude.log" FAKE_SCENARIO=abandon_then_done FAKE_ISOLATION= FAKE_CLAUDE_FAIL= FAKE_USAGE=ok FAKE_RESET=137; }
+-gem() { "$PW" -NoProfile -File "$(wp "$H/side.ps1")" -Script "$(wp "$SRC/gemini_run.ps1")" -ArgsJson "{\"RepoDir\":\"$WW/clone\",\"RunsDir\":\"$WW/runs\",\"OutDir\":\"$WW/out\",\"RepoUrl\":\"$WW/origin.git\",\"AgyExe\":\"$(stub fake_agy)\",\"TurnMinutes\":0.05,\"TotalMinutes\":0.5,\"MaxNudges\":3}" >/dev/null 2>&1; }
++gem() { "$PW" -NoProfile -File "$(wp "$H/side.ps1")" -Script "$(wp "$SRC/gemini_run.ps1")" -ArgsJson "{\"RepoDir\":\"$WW/clone\",\"RunsDir\":\"$WW/runs\",\"OutDir\":\"$WW/out\",\"RepoUrl\":\"$WW/origin.git\",\"AgyExe\":\"$(stub fake_agy)\",\"TurnMinutes\":0.05,\"TotalMinutes\":0.5,\"MaxNudges\":3,\"PollMinutes\":0.05}" >/dev/null 2>&1; }
+ pub() { "$PW" -NoProfile -File "$(wp "$H/side.ps1")" -Script "$(wp "$SRC/gemini_publish.ps1")" -ArgsJson "{\"WorkDir\":\"$WW/pub\",\"OutDir\":\"$WW/out\",\"RepoUrl\":\"$WW/origin.git\",\"ClaudeExe\":\"$(stub fake_claude)\",\"SendRetryDelaySeconds\":0${1:+,$1}}" >/dev/null 2>&1; }
+ mark() { git -C "$W/seed" push -q origin "main:refs/heads/gemini-queue/$1" 2>/dev/null; }
+ lines() { $PY -c "import json,sys
+diff --git a/аудит/адаптери/gemini/перевірка/сценарії_живих_pr.ps1 b/аудит/адаптери/gemini/перевірка/сценарії_живих_pr.ps1
+index cddb8f5913596bc145f4a01d6c8b9323897c8921..0fffd82e7ac78fed84af8544704148be2a9ea0b8 100644
+--- a/аудит/адаптери/gemini/перевірка/сценарії_живих_pr.ps1
++++ b/аудит/адаптери/gemini/перевірка/сценарії_живих_pr.ps1
+@@ -31,7 +31,7 @@ try {
+         $script:CaseModel = switch ($lane) { codex { 'gpt-6.1-sol-high' } agy { 'gemini-3.8-flash-high' } claude { 'cc-claude-opus-5-5-high' } }
+         function Pull([int]$Number, [string]$Branch, [string]$Sha, [string]$State='open') {
+             <# Закритий, змінений, давній, звіт і живий PR у формі GitHub REST. #>
+-            [pscustomobject]@{number=$Number;title='Код';state=$State;created_at=[datetimeoffset]::UtcNow.AddDays(-10).ToString('o');updated_at=[datetimeoffset]::UtcNow.ToString('o');user=@{login='mightyrochy'};head=@{ref=$Branch;sha=$Sha;repo=@{full_name='mightyrochy/kod-shi-data'}};base=@{ref='main';repo=@{full_name='mightyrochy/kod-shi-data'}}}
++            [pscustomobject]@{number=$Number;title='Код';state=$State;created_at=$(if ($Number -eq 3) { [datetimeoffset]::UtcNow.AddDays(-10).ToString('o') } else { [datetimeoffset]::UtcNow.ToString('o') });updated_at=[datetimeoffset]::UtcNow.ToString('o');user=@{login='mightyrochy'};head=@{ref=$Branch;sha=$Sha;repo=@{full_name='mightyrochy/kod-shi-data'}};base=@{ref='main';repo=@{full_name='mightyrochy/kod-shi-data'}}}
+         }
+         $script:Cases = @{
+             '1'=(Pull 1 'claude/закритий' $head 'closed'); '2'=(Pull 2 'claude/змінений' $other)
+@@ -49,6 +49,7 @@ try {
+             $date = if ($sha -eq ('a' * 40)) { [datetimeoffset]::UtcNow.AddDays(-10) } else { [datetimeoffset]::UtcNow.AddMinutes(-1) }
+             [pscustomobject]@{sha=$sha;commit=@{committer=@{date=$date.ToString('o')}}}
+         }
++        Write-FileAtomic (Join-Path $WorkDir 'chain.json') ((@{main=$head;installed_utc=[datetimeoffset]::UtcNow.AddDays(-1).ToString('o');reviews=@()}) | ConvertTo-Json -Compress)
+         Invoke-WrapperChain
+         $refs = @(& git -C $remote for-each-ref '--format=%(refname)' refs/heads/gemini-queue/)
+         Check "$MeasurePhase $lane : давній PR із сьогоднішнім коментарем" ((@($refs | Where-Object { $_ -match 'автоперевірка-3-' }).Count -eq 0) -eq ($MeasurePhase -eq 'ПІСЛЯ'))
+diff --git a/аудит/адаптери/gemini/перевірка/сценарії_звіту.ps1 b/аудит/адаптери/gemini/перевірка/сценарії_звіту.ps1
+index f7df89e33b4d2a74e60edfa47fd2815766b4dcd3..afdb4b2a38ca44b4fc3c9a7c395404515cd28ff4 100644
+--- a/аудит/адаптери/gemini/перевірка/сценарії_звіту.ps1
++++ b/аудит/адаптери/gemini/перевірка/сценарії_звіту.ps1
+@@ -76,7 +76,7 @@ foreach ($n in @(0, 6, 8, 16, 99)) {
+     $node = '{"n":' + $n + ',"джерело":"вимір: стенд 29.10 — ' + $n + '"}'
+     $script:LaneJson = '{"v":2,"slots":{"codex":' + $node + ',"agy":' + $node + ',"claude":' + $node + '}}'
+     $limits = Get-Limits
+-    $expected = [Math]::Min($n, 64)
++    $expected = $n
+     foreach ($lane in @('codex', 'agy', 'claude')) { Check "$lane з даних $n → $expected" ($limits.slots[$lane] -eq $expected) }
+ }
+ exit [int]($bad -gt 0)
+diff --git a/аудит/адаптери/gemini/перевірка/сценарії_кінець_роботи.ps1 b/аудит/адаптери/gemini/перевірка/сценарії_кінець_роботи.ps1
+index c4a2e07851504e0c4b2bb862b1bb5e283d93a2e4..98846a5a704b80fc94253a9edeca2c1f27e92c2c 100644
+--- a/аудит/адаптери/gemini/перевірка/сценарії_кінець_роботи.ps1
++++ b/аудит/адаптери/gemini/перевірка/сценарії_кінець_роботи.ps1
+@@ -52,6 +52,7 @@ try {
+         Invoke-WrapperChain
+     }
+     function CountReviews([string]$N) { <# Рахує всі перевірки одного PR. #> @($script:Markers | Where-Object { $_ -like "автоперевірка-$N-*" }).Count }
++    Invoke-WrapperChain
+     $slug = '5.3-повний-обхід-каталогу'
+     $marker = "gemini-queue/$slug/cc-claude-sonnet-5-5-medium/8/p1"
+     $info = "$tmp/claude-run/slots/claude-1.json"
+diff --git a/аудит/адаптери/gemini/перевірка/сценарії_ланцюга.ps1 b/аудит/адаптери/gemini/перевірка/сценарії_ланцюга.ps1
+index 0f34b11db90e8e365efe223673d68e18bdab0bfc..0f17a1000953c5c4ec7980837e7db3deb2ed39a4 100644
+--- a/аудит/адаптери/gemini/перевірка/сценарії_ланцюга.ps1
++++ b/аудит/адаптери/gemini/перевірка/сценарії_ланцюга.ps1
+@@ -40,6 +40,7 @@ try {
+         <# Дані API; довільного тексту в позначки не передаємо. #>
+         [pscustomobject]@{ created_at=[datetimeoffset]::UtcNow.ToString('o'); number=$Number;title='Код'; user=@{login=$Owner}; head=@{ref=$Branch;sha=$Sha;repo=@{full_name=$Repository}}; base=@{ref='main';repo=@{full_name='mightyrochy/kod-shi-data'}} }
+     }
++    Invoke-WrapperChain
+     $script:Pulls = @((Pull 12 'claude/наряд' $first), (Pull 13 'codex/наряд' $first), (Pull 14 'gemini/наряд' $first), (Pull 15 'claude/чужий' $first 'чужий'), (Pull 16 'claude/форк' $first 'mightyrochy' 'чужий/форк'), (Pull 17 "gemini/автоперевірка-12-$first" $first))
+     Invoke-WrapperChain
+     function Markers { @(& git -C $remote for-each-ref '--format=%(refname)' refs/heads/gemini-queue/) }
+@@ -69,6 +70,7 @@ try {
+     Check 'кілька злиттів однієї збірки отримали одну GPU-позначку за штампом' (@(Markers | Where-Object { $_ -match "автоживий-$newer/.*/1/p2-gpu$" }).Count -eq 1)
+     Invoke-WrapperChain
+     Check 'живий прогін не дублюється' (@(Markers | Where-Object { $_ -match 'автоживий-' }).Count -eq 1)
++    Invoke-WrapperChain
+     $script:Pulls = @((Pull 12 'claude/наряд' $newer)); Invoke-WrapperChain
+     Check 'нова голова PR отримала нову перевірку' (@(Markers | Where-Object { $_ -match "автоперевірка-12-$newer/" }).Count -eq 1)
+     # Квоти: вибір рушія за файлами, які смуги вже ведуть (heartbeat.json — Codex, quota-claude.json — Claude).
+@@ -199,6 +201,8 @@ try {
+     Check 'повний текст винятку — у журналі обгортки' ((Get-Content -Raw (Join-Path $WorkDir 'publish.log')) -match 'CHAIN_FAILED [A-Za-z.]+: ')
+     Remove-Item -LiteralPath $file
+     # Справжня постановка PR-завдання та POST із підміною лише gh.
++    # Після зіпсованого стану встановлення знову передує створенню нових PR.
++    Invoke-WrapperChain
+     $draftBranch = 'gemini/готовий'
+     [void](Invoke-Git @('push','-q','origin',"${newer}:refs/heads/$draftBranch"))
+     $script:NativeOriginal = (Get-Command Invoke-Native).ScriptBlock
+@@ -320,28 +324,21 @@ try {
+     Check 'автоживий на порожньому плані: ні прогону, ні PR' (Test-AutoPlanEmpty "автоживий-$newer" $emptyText)
+     Check 'автоживий із рядками ЖИВИЙ ПІСЛЯ іде на прогін' (-not (Test-AutoPlanEmpty "автоживий-$newer" $fullText))
+     Check 'нічний Е1 на порожньому плані виконує мінімальну сцену' (-not (Test-AutoPlanEmpty 'Е1-нічний-живий-20261031' $emptyText))
+-    # Вікно рахується за SHA й committer, а коментар не оживляє початковий архів.
++    # Вікна за віком коміту нема (review_hours знято, рішення менеджера 01.11): добір — за новим PR чи зміною SHA.
+     $clock = [datetimeoffset]::UtcNow; $installed = $clock.AddDays(-2); $heads = @{}
+-    $script:HeadDate = $clock.AddHours(-25)
+-    function Invoke-ChainApi([string]$Path) { [pscustomobject]@{sha=($Path -split '/')[-1];commit=@{committer=@{date=$script:HeadDate.ToString('o')}}} }
+     $oldPull = Pull 70 'claude/давній' $first
+     $oldPull.created_at = $clock.AddDays(-10).ToString('o')
+-    Check 'давня голова не потрапляє у початкове вікно 24 годин' (-not (Test-RecentReviewHead $oldPull $heads $installed $clock 24))
+-    $script:HeadDate = $clock.AddMinutes(-1)
+-    Check 'та сама давня голова не оживає від свіжих метаданих' (-not (Test-RecentReviewHead $oldPull $heads $installed $clock 24))
++    Check 'давня голова давнього PR не добирається' (-not (Test-RecentReviewHead $oldPull $heads $installed $clock))
++    Check 'та сама давня голова не оживає при повторі' (-not (Test-RecentReviewHead $oldPull $heads $installed $clock))
+     $oldPull.head.sha = $newer
+-    Check 'спостережена зміна SHA оживляє PR незалежно від дати коміту' (Test-RecentReviewHead $oldPull $heads $installed $clock 24)
++    Check 'спостережена зміна SHA оживляє PR' (Test-RecentReviewHead $oldPull $heads $installed $clock)
+     $savedHeads = ConvertFrom-Json ($heads | ConvertTo-Json -Depth 5)
+     $headsAgain = @{}; foreach ($entry in $savedHeads.PSObject.Properties) { $headsAgain[$entry.Name] = $entry.Value }
+-    Check 'право нової голови зберігається після перезапуску й за межами вікна' (Test-RecentReviewHead $oldPull $headsAgain $installed ($clock.AddDays(3)) 24)
+-    $oldPull.created_at = $clock.AddHours(-1).ToString('o'); $script:HeadDate = $clock.AddDays(-10)
+-    Check 'PR, створений після встановлення, допускає й старий коміт' (Test-RecentReviewHead $oldPull @{} $installed $clock 24)
+-    $oldPull.created_at = $clock.AddDays(-10).ToString('o'); $script:HeadDate = $clock.AddHours(-24)
+-    Check 'ліва межа вікна включена' (Test-RecentReviewHead $oldPull @{} $installed $clock 24)
+-    $script:HeadDate = $clock.AddHours(-24).AddSeconds(-1)
+-    Check 'секунда до лівої межі виключена' (-not (Test-RecentReviewHead $oldPull @{} $installed $clock 24))
+-    $script:HeadDate = $clock.AddMinutes(1)
+-    Check 'майбутня дата коміту не вважається рухом' (-not (Test-RecentReviewHead $oldPull @{} $installed $clock 24))
++    Check 'право нової голови зберігається після перезапуску' (Test-RecentReviewHead $oldPull $headsAgain $installed ($clock.AddDays(3)))
++    $oldPull.created_at = $clock.AddHours(-1).ToString('o')
++    Check 'PR, створений після встановлення, добирається' (Test-RecentReviewHead $oldPull @{} $installed $clock)
++    $cc = ConvertFrom-Json ([IO.File]::ReadAllText((Join-Path $SourceDir 'ланцюг.json')))
++    Check 'ланцюг.json без review_hours' ($null -eq $cc.PSObject.Properties['review_hours'])
+     $script:DryRun = $true; $script:Pulls = @((Pull 99 'claude/наряд' $newer)); Invoke-WrapperChain
+     Check 'DryRun нічого не ставить' (@(Markers | Where-Object { $_ -match 'автоперевірка-99-' }).Count -eq 0)
+ } catch { "✗ виняток стенда: $($_.Exception.Message) $($_.ScriptStackTrace)"; $failures++ }
+diff --git a/аудит/адаптери/gemini/перевірка/сценарії_межі_здоровя.ps1 b/аудит/адаптери/gemini/перевірка/сценарії_межі_здоровя.ps1
+index 0e1a4996f0c87a2c52acc81502c91d4f372831df..3b9306eba0732953a1df81c226e2e0dbcce1714d 100644
+--- a/аудит/адаптери/gemini/перевірка/сценарії_межі_здоровя.ps1
++++ b/аудит/адаптери/gemini/перевірка/сценарії_межі_здоровя.ps1
+@@ -25,7 +25,7 @@ function Put-Line([string]$Dir, [string]$Line) {
+ function Lanes([string]$ClaudeNode) {
+     <# смуги.json v2: slots.claude — заданий вузол, решта — з джерелом. #>
+     $src = '"джерело": "вимір: стенд 29.10 — 3 копії"'
+-    '{"v": 2, "slots": {"codex": {"n": 3, ' + $src + '}, "agy": {"n": 3, ' + $src + '}, "claude": ' + $ClaudeNode + '}, "poll_minutes": {"n": 2, "джерело": ""}}'
++    '{"v": 2, "slots": {"codex": {"n": 3, ' + $src + '}, "agy": {"n": 3, ' + $src + '}, "claude": ' + $ClaudeNode + '}, "poll_minutes": {"n": 2, "джерело": ""}, "usage_minutes": {"n": 15, "джерело": "механізм: кеш здоровя"}}'
+ }
+ 
+ try {
+@@ -43,23 +43,57 @@ try {
+             Check "1 джерело «$($t[0])» — $(if ($t[1]) { 'є' } else { 'нема' })" ((Test-LimitSource $t[0]) -eq $t[1])
+         }
+ 
++        Check '1 «механізм: …» приймається лише для періоду (poll/usage)' ((Test-LimitSource 'механізм: період опитування' $true) -and -not (Test-LimitSource 'механізм: період опитування' $false) -and -not (Test-LimitSource 'механізм:' $true) -and -not (Test-LimitSource 'механізм' $true))
++        $script:LanesText = '{"v": 2, "slots": {}, "poll_minutes": {"n": 2, "джерело": "механізм: період опитування"}, "claude_hang_minutes": {"n": 120, "джерело": "механізм: вигадка"}}'
++        $l = Get-Limits
++        Check '1 механізм діє для poll_minutes; для claude_hang_minutes — ні (потрібен вимір)' ($l['poll_minutes'] -eq 2 -and -not $l.ContainsKey('claude_hang_minutes') -and @($l.unsourced) -ccontains 'claude_hang_minutes')
+         $script:LanesText = Lanes '{"n": 7, "джерело": "власник 29.10"}'
+         $l = Get-Limits
+         Check "1 з джерелом slots.claude = $($l.slots['claude']) (7); слоти з джерелом, poll_minutes — без" ($l.slots['claude'] -eq 7 -and @($l.unsourced | Where-Object { $_ -like 'slots.*' }).Count -eq 0 -and @($l.unsourced) -ccontains 'poll_minutes')
+-        # Мірило: slots.claude без джерела — ДО (v1: число бралось як є) 40, ПІСЛЯ попереднє 7 і рядок у стані.
++        # Мірило: slots.claude без джерела — ДО (v1: число бралось як є; потім попереднє значення) 40 → 7, ПІСЛЯ межі нема.
+         $script:LanesText = Lanes '{"n": 40, "джерело": ""}'
+         $l = Get-Limits
+-        Check "1 без джерела slots.claude = $($l.slots['claude']) (ДО 40 → ПІСЛЯ попереднє 7)" ($l.slots['claude'] -eq 7 -and @($l.unsourced) -ccontains 'slots.claude')
++        Check "1 без джерела slots.claude: ключа нема, попереднього 7 і типового з коду нема" (-not $l.slots.Contains('claude') -and @($l.unsourced) -ccontains 'slots.claude')
++        Check '1 без джерела poll_minutes: ключа нема (типового 2 з коду нема)' (-not $l.ContainsKey('poll_minutes') -and $null -eq (Get-Limit $l 'ЧужийПараметр' 'poll_minutes'))
+         $script:LanesText = Lanes '40'
+-        Check '1 число без вузла (міграція v1) — попереднє 7' ((Get-Limits).slots['claude'] -eq 7)
++        Check '1 число без вузла (міграція v1) — межі нема' (-not (Get-Limits).slots.Contains('claude'))
+         $script:LanesText = '{"v": 1, "slots": {"codex": 9, "agy": 9, "claude": 9}}'
+         $l = Get-Limits
+-        Check "1 файл v1 — усі 10 полів без джерела, попередні значення" (@($l.unsourced).Count -eq 10 -and $l.slots['claude'] -eq 7 -and $l.slots['codex'] -eq 3)
++        Check "1 файл v1 — усі 8 полів без джерела, жодної межі" (@($l.unsourced).Count -eq 8 -and $l.slots.Count -eq 0)
+         $script:LanesText = 'не json'
+-        Check '1 кривий файл — попередні значення' ((Get-Limits).slots['agy'] -eq 3)
++        Check '1 кривий файл — жодної межі' ($null -eq (Get-Limits).slots['agy'] -and @((Get-Limits).unsourced).Count -eq 8)
++        # Криве значення з джерелом — відмова рядком у журналі з назвою поля, без обрізання; велике число — не стеля.
++        $logged = New-Object System.Collections.ArrayList
++        function Write-Log { param([string]$Text) [void]$logged.Add($Text) }
++        $script:LanesText = Lanes '{"n": 2.5, "джерело": "власник 29.10"}'
++        $l = Get-Limits
++        Check '1 дробові слоти з джерелом: відмова рядком з назвою поля, межа не діє' (@($l.invalid) -ccontains 'slots.claude' -and -not $l.slots.Contains('claude') -and @($logged | Where-Object { $_ -like '*slots.claude*' }).Count -eq 1)
++        $script:LanesText = Lanes '{"n": -3, "джерело": "власник 29.10"}'
++        Check '1 від''ємні слоти з джерелом — відмова, не обрізання до 0' (@((Get-Limits).invalid) -ccontains 'slots.claude')
++        $script:LanesText = Lanes '{"n": "десять", "джерело": "власник 29.10"}'
++        Check '1 не число з джерелом — відмова' (@((Get-Limits).invalid) -ccontains 'slots.claude')
++        foreach ($n in @('2147483648', '1e100')) {
++            $logged.Clear()
++            $script:LanesText = Lanes ('{"n": ' + $n + ', "джерело": "власник 01.11"}')
++            $l = Get-Limits
++            Check "1 слоти ${n}: відмова рядком без винятку Int32" (@($l.invalid) -ccontains 'slots.claude' -and -not $l.slots.Contains('claude') -and @($logged | Where-Object { $_ -like '*slots.claude*відмова*' }).Count -eq 1)
++        }
++        $script:LanesText = Lanes '{"n": 2147483647, "джерело": "власник 01.11"}'
++        Check '1 найбільше представне Int32 приймається без обрізання' ((Get-Limits).slots['claude'] -eq [int]::MaxValue)
++        foreach ($field in @('claude_hang_minutes', 'codex_stall_minutes', 'agy_turn_minutes')) {
++            $script:LanesText = '{"v":2,"slots":{},"' + $field + '":{"n":1,"джерело":"власник 01.11"}}'
++            $l = Get-Limits
++            Check "1 $field без виміру — межі нема" (-not $l.ContainsKey($field) -and @($l.unsourced) -ccontains $field)
++        }
++        $script:LanesText = Lanes '{"n": 99, "джерело": "власник 29.10"}'
++        Check '1 99 слотів з джерелом — 99, стелі 64 нема' ((Get-Limits).slots['claude'] -eq 99)
++        $script:LanesText = '{"v": 2, "slots": {}, "agy_turn_minutes": {"n": 9999, "джерело": "вимір: стенд 29.10 — 3 копії"}, "poll_minutes": {"n": 0, "джерело": "власник 29.10"}}'
++        $l = Get-Limits
++        Check '1 agy_turn_minutes 9999 з джерелом — 9999 (стелі 600 нема); poll_minutes 0 — відмова' ($l['agy_turn_minutes'] -eq 9999 -and @($l.invalid) -ccontains 'poll_minutes' -and -not $l.ContainsKey('poll_minutes'))
++        Check '1 Get-Limit: параметр задачі сильніший, без межі — $null' ($null -eq (Get-Limit $l 'ЧужийПараметр' 'claude_hang_minutes') -and (Get-Limit $l 'ЧужийПараметр' 'agy_turn_minutes') -eq 9999)
+         $script:LanesText = [IO.File]::ReadAllText((Join-Path $SourceDir 'смуги.json'), $utf)
+         $script:Limits = Get-Limits
+-        Check "1 смуги.json main: слоти з виміру $($script:Limits.slots['claude'])/$($script:Limits.slots['codex'])/$($script:Limits.slots['agy']), без джерела $(@($script:Limits.unsourced).Count)" ($script:Limits.slots['claude'] -eq 54 -and $script:Limits.slots['codex'] -eq 54 -and @($script:Limits.unsourced).Count -eq 7 -and @($script:Limits.unsourced) -cnotcontains 'slots.claude')
++        Check "1 смуги.json main: слоти з виміру $($script:Limits.slots['claude'])/$($script:Limits.slots['codex'])/$($script:Limits.slots['agy']), без джерела $(@($script:Limits.unsourced).Count)" ($script:Limits.slots['claude'] -eq 54 -and $script:Limits.slots['codex'] -eq 54 -and @($script:Limits.unsourced).Count -eq 1 -and @($script:Limits.unsourced) -ccontains 'claude_hang_minutes' -and -not $script:Limits.ContainsKey('claude_hang_minutes') -and $script:Limits['codex_stall_minutes'] -eq 21.87 -and $script:Limits['agy_turn_minutes'] -eq 102.69 -and $script:Limits['poll_minutes'] -eq 2 -and $script:Limits['usage_minutes'] -eq 15 -and -not $script:Limits.ContainsKey('agy_total_minutes') -and -not $script:Limits.ContainsKey('quota_wait_minutes') -and @($script:Limits.invalid).Count -eq 0)
+         $script:LanesText = Lanes '{"n": 40, "джерело": ""}'
+         $script:Limits = Get-Limits
+ 
+@@ -220,6 +254,19 @@ try {
+         $rc = @(Main)[-1]
+         Check "6 довгий процес: прибирань $($script:Cleans) за $($script:Fetches) fetch (1 — на першому успішному)" ($script:Fetches -ge 3 -and $script:Cleans -eq 1 -and $rc -eq 0)
+     }
++    Scenario '7 порожнє джерело періоду — відмова рядком' {
++        . Use-Main "$tmp/m7"
++        . (Join-Path $SourceDir 'queue_lanes.ps1')
++        $script:VersionDir = $SourceDir
++        function Invoke-Git { param([string[]]$GitArgs, [switch]$AllowFail, [double]$TimeoutMinutes = 10, [string]$Dir = '')
++            $text = if ($GitArgs[0] -eq 'cat-file') { Lanes '{"n": 7, "джерело": "власник 01.11"}' } else { $RepoUrl }
++            [pscustomobject]@{Code=0;Out=$text;Err=''}
++        }
++        function Start-Markers { $script:Starts++; @(1, $null) }
++        $rc = @(Main)[-1]
++        $log = [IO.File]::ReadAllText("$tmp/m7/claude-run.log", $utf)
++        Check '7 без джерела poll_minutes цикл відмовляє рядком, попереднього періоду нема' ($rc -eq 0 -and $script:Starts -eq 1 -and $script:Waits -eq 0 -and $log.Contains('відмова: poll_minutes без джерела'))
++    }
+ } finally {
+     Remove-Item -LiteralPath $tmp -Recurse -Force -ErrorAction SilentlyContinue
+ }
+diff --git a/аудит/адаптери/gemini/перевірка/сценарії_прогону.sh b/аудит/адаптери/gemini/перевірка/сценарії_прогону.sh
+index ed3ea12d86348866a9b66210e8e1c0e7237286fc..1b24b8ab00476e84c0dc1639b1b2daeece1154bb 100755
+--- a/аудит/адаптери/gemini/перевірка/сценарії_прогону.sh
++++ b/аудит/адаптери/gemini/перевірка/сценарії_прогону.sh
+@@ -64,7 +64,7 @@ git add -A; git commit -q -m init; git push -q origin main
+ git push -q origin "main:refs/heads/gemini-queue/$SLUG/$MODEL/1"
+ cd "$W"; git clone -q origin.git clone; git -C clone config user.name g; git -C clone config user.email g@x
+ export FAKE_SCENARIO=$SC FAKE_STATE="$(wp "$W/fake")" FAKE_CLAUDE_LOG="$(wp "$W/claude.log")"
+-GA=$($PY -c "import json,os;print(json.dumps({**dict(RepoDir='$(wp "$W/clone")',RunsDir='$(wp "$W/runs")',OutDir='$(wp "$W/out")',RepoUrl='$(wp "$W/origin.git")',AgyExe='$(stub fake_agy)',CodexExe='$(stub fake_codex)',Mode='$MODE',TurnMinutes=0.05,TotalMinutes=0.5,MaxNudges=3),**json.loads(os.environ.get('EXTRA','{}'))}))")
++GA=$($PY -c "import json,os;print(json.dumps({**dict(RepoDir='$(wp "$W/clone")',RunsDir='$(wp "$W/runs")',OutDir='$(wp "$W/out")',RepoUrl='$(wp "$W/origin.git")',AgyExe='$(stub fake_agy)',CodexExe='$(stub fake_codex)',Mode='$MODE',TurnMinutes=0.05,TotalMinutes=0.5,MaxNudges=3,PollMinutes=0.05),**json.loads(os.environ.get('EXTRA','{}'))}))")
+ "$PW" -NoProfile -File "$(wp "$H/side.ps1")" -Script "$(wp "$SRC/gemini_run.ps1")" -ArgsJson "$GA"; echo "gemini exit=$?"
+ [ -n "$HOOK" ] && (cd "$W" && eval "$HOOK")
+ PA=$($PY -c "import json;print(json.dumps(dict(WorkDir='$(wp "$W/pub")',OutDir='$(wp "$W/out")',RepoUrl='$(wp "$W/origin.git")',ClaudeExe='$(stub fake_claude)',SendRetryDelaySeconds=0)))")
+diff --git a/аудит/адаптери/gemini/перевірка/сценарії_простій_ресурсу.ps1 b/аудит/адаптери/gemini/перевірка/сценарії_простій_ресурсу.ps1
+index e56daf35e101321814347b4b941c6138bb9ba3e5..993604a55800f4b75f586b2bb742dd073b7f08af 100644
+--- a/аудит/адаптери/gemini/перевірка/сценарії_простій_ресурсу.ps1
++++ b/аудит/адаптери/gemini/перевірка/сценарії_простій_ресурсу.ps1
+@@ -99,28 +99,24 @@ Scenario 'в сигнал' {
+         [IO.File]::WriteAllText($f, ($o | ConvertTo-Json -Compress), $utf) }
+     $held = { param($why, [int]$n) $h = @{}; for ($i = 0; $i -lt $n; $i++) { Add-Hold $h 'GPU' $why "gemini-queue/н$i/cc-m/1" }; $h }
+ 
+-    Update-HoldSignals (& $held 'процес chrome.exe' 2) $send
+-    Check 'в утримання щойно почалось (менше порога) — рядка нема' (@(& $rows).Count -eq 0)
+-    & $age 4000
++    # Сигнал — лише за причиною, що вимагає дії диспетчера (рішення менеджера 01.11): без часового порога.
+     Update-HoldSignals (& $held 'процес chrome.exe' 2) $send
+     $r = @(& $rows)
+-    Check "в понад поріг — рівно один рядок: $($r -join ' | ')" ($r.Count -eq 1 -and $r[0] -ceq 'GEMINI ОБГОРТКА: ЗАБЛОКОВАНО GPU: процес chrome.exe, позначок 2')
++    Check "в сторонній процес — рівно один рядок одразу: $($r -join ' | ')" ($r.Count -eq 1 -and $r[0] -ceq 'GEMINI ОБГОРТКА: ЗАБЛОКОВАНО GPU: процес chrome.exe, позначок 2')
+     Update-HoldSignals (& $held 'процес chrome.exe' 2) $send
+     Update-HoldSignals (& $held 'процес chrome.exe' 3) $send
+     Check 'в повторний прохід (навіть з іншою кількістю позначок) — нових рядків нуль' (@(& $rows).Count -eq 1)
+     Update-HoldSignals (& $held 'замок GPU іншого наряду' 1) $send
+-    Check 'в зміна причини — другий рядок' (@(& $rows).Count -eq 2)
++    Check 'в замок GPU іншого наряду минає сам — рядка нема' (@(& $rows).Count -eq 1)
+     Update-HoldSignals @{} $send
+     Check 'в утримання зникло — запис знято' (-not (Test-Path -LiteralPath "$work/state/holds.json"))
+-    Update-HoldSignals (& $held 'процес chrome.exe' 1) $send
+-    & $age 4000
+-    Update-HoldSignals (& $held 'процес chrome.exe' 1) $send
+-    Check 'в нове утримання після зняття сигналить знову' (@(& $rows).Count -eq 3)
++    Update-HoldSignals (& $held 'nvidia-smi не відповів' 1) $send
++    Check 'в нове утримання, що вимагає дії, після зняття сигналить знову' (@(& $rows).Count -eq 2)
+     $h = @{}; Add-Hold $h 'SLOTS' 'слоти зайняті' 'gemini-queue/н/cc-m/1'
+     Update-HoldSignals $h $send
+     & $age 4000
+     Update-HoldSignals $h $send
+-    Check 'в слоти — теж рядок' ((& $rows) -contains 'GEMINI ОБГОРТКА: ЗАБЛОКОВАНО SLOTS: слоти зайняті, позначок 1')
++    Check 'в слоти зайняті минають самі — рядка нема' (@(& $rows).Count -eq 2 -and -not ((& $rows) -contains 'GEMINI ОБГОРТКА: ЗАБЛОКОВАНО SLOTS: слоти зайняті, позначок 1'))
+ 
+     # Рядки проходять шаблон публікатора: Add-Line вище вже відкинув би невідповідні шаблону claude_run.
+     . (Join-Path $SourceDir 'gemini_publish.ps1') -WorkDir "$tmp/pubw" -OutboxDir "$tmp/pubo"
+diff --git a/аудит/адаптери/gemini/перевірка/сценарії_смуг.sh b/аудит/адаптери/gemini/перевірка/сценарії_смуг.sh
+index 711487f67ae4ed44516efcc320428efad4ad91d0..f8d71902e76c8811de5e961f9418d330e51e4f40 100644
+--- a/аудит/адаптери/gemini/перевірка/сценарії_смуг.sh
++++ b/аудит/адаптери/gemini/перевірка/сценарії_смуг.sh
+@@ -18,14 +18,14 @@ setup() { W="${TMPDIR:-/tmp}/smuhy/$1"; rm -rf "$W"; mkdir -p "$W"/{fake,gr,gout
+    for s in а-codex б-codex в-agy г-agy-квота д-claude е-claude-gpu gpu-agy gpu-claude n-codex-1 n-codex-2 n-codex-3 n-codex-4; do
+      printf 'Т | наряд %s\n\nЗроби щось.\n' "$s" > "аудит/наряди/$s.md"; done
+    printf '| диспетчер | session_01TEST |\n' > аудит/СТАН.md; mkdir -p аудит/адаптери/gemini
+-   printf '{"v":1,"claude_laptop":["д-claude"]}\n' > аудит/адаптери/gemini/смуги.json
++   lanes 2 2 2 > аудит/адаптери/gemini/смуги.json
+    git add -A; git commit -q -m init; git push -q origin main 2>/dev/null)
+   for c in clone-g clone-c; do git clone -q "$W/origin.git" "$W/$c" 2>/dev/null; git -C "$W/$c" config user.name g; git -C "$W/$c" config user.email g@x; done
+   export FAKE_STATE="$(wp "$W/fake")" FAKE_TIMELINE="$(wp "$W/timeline.txt")" FAKE_HOLD="$HOLD" FAKE_SCENARIO=commit_done \
+     FAKE_CC_SCENARIO=done FAKE_CC_RL=1 FAKE_USAGE=live FAKE_CC_LOG="$(wp "$W/cc.log")" FAKE_GH_DIR="$(wp "$W/gh")" FAKE_BOOT=b1 \
+     FAKE_GEMINI_STATE= FAKE_CLAUDE_LOG="$(wp "$W/claude.log")" FAKE_ISOLATION=
+   printf 'b1' > "$W/cr/boot.txt"; }
+-# смуги.json v2: кожен слот з джерелом-виміром (без джерела обгортка бере попереднє значення).
++# смуги.json v2: кожен слот з джерелом-виміром (без джерела межі нема).
+ lanes() { local s='"джерело":"вимір: стенд 29.10 — 3 копії"'
+   printf '{"v":2,"slots":{"codex":{"n":%s,%s},"agy":{"n":%s,%s},"claude":{"n":%s,%s}},"claude_laptop":["д-claude"]}\n' "$1" "$s" "$2" "$s" "$3" "$s"; }
+ mark() { git -C "$W/seed" push -q origin "main:refs/heads/gemini-queue/$1" 2>/dev/null; }
+@@ -133,9 +133,9 @@ mark "n-codex-1/$CX/1"; mark "n-codex-2/$CX/1"; gem; A1=$(tl codex)
+ (cd "$W/seed"; lanes 99 2 2 > аудит/адаптери/gemini/смуги.json; git commit -q -am 'смуги 99'; git push -q origin main 2>/dev/null)
+ git -C "$W/clone-g" fetch -q origin main 2>/dev/null
+ CE=$("$PW" -NoProfile -c ". '$(wp "$SRC/queue_lanes.ps1")'; \$RepoDir='$(wp "$W/clone-g")'; \$GitExe='git'; \$script:NoHooks='x'; function Write-Log {}; (Get-Limits).slots['codex']" 2>/dev/null | tr -d '\r')
+-echo "  codex водночас: смуги.json codex=1 → $A1, codex=2 → $A2; codex=99 у даних → $CE (стеля в коді)"
++echo "  codex водночас: смуги.json codex=1 → $A1, codex=2 → $A2; codex=99 у даних з джерелом → $CE (стелі в коді нема)"
+ chk "N з файла даних міняє паралельність без перевстановлення (1 → 2)" '[ "$A1" = 1 ] && [ "$A2" = 2 ]'
+-chk "дані не перевищують стелі коду (99 → 64)" '[ "$CE" = 64 ]'
++chk "дані з джерелом не обрізаються стелею коду (99 → 99)" '[ "$CE" = 99 ]'
+ 
+ echo "=== Г: смуги.json задає 6 і 8 слотів, усі наряди справді працюють водночас"
+ for N in 6 8; do
+diff --git a/аудит/адаптери/gemini/перевірка/сценарії_тихі_пробудження.ps1 b/аудит/адаптери/gemini/перевірка/сценарії_тихі_пробудження.ps1
+index 32bdff77ebcc20e9352f8baa2053770c78876a22..eb2a9c277a344294eca448e8540d612018562d9f 100644
+--- a/аудит/адаптери/gemini/перевірка/сценарії_тихі_пробудження.ps1
++++ b/аудит/адаптери/gemini/перевірка/сценарії_тихі_пробудження.ps1
+@@ -54,6 +54,9 @@ try {
+             $want = $code -notin $quiet
+             Check "1 $code — $(if ($want) { 'будить' } else { 'зведення' })" ((Test-DispatcherAction "GEMINI ОБГОРТКА: ЗАБЛОКОВАНО gemini/крок $code") -eq $want)
+         }
++        foreach ($code in @('HANG', 'STALL', 'TIMEOUT')) {
++            Check "1 сторож $code будить і окремо, і зведеним рядком" ((Test-DispatcherAction "GEMINI ОБГОРТКА: ЗАБЛОКОВАНО gemini/крок $code") -and (Test-DispatcherAction "GEMINI ОБГОРТКА: ЗАБЛОКОВАНО $code ×2: gemini/а, claude/б"))
++        }
+         foreach ($code in @('BLOCKED', 'DONE_PUBLISHED', 'BLOCKED_PUBLISHED', 'NO_HEAD_PUBLISHED', 'STATE_INVALID', 'ISOLATION_FAILED', 'BOOT', 'НЕВІДОМИЙ')) {
+             Check "1 $code — будить" (Test-DispatcherAction "GEMINI ОБГОРТКА: ЗАБЛОКОВАНО gemini/крок $code")
+         }
+diff --git a/аудит/адаптери/gemini/перевірка/сценарії_черги.sh b/аудит/адаптери/gemini/перевірка/сценарії_черги.sh
+index 6619a6dfea3387e192ceaf213528c6d080b08e5c..a9bb2996782315d97022fbb7cb93bd2f71531fb3 100755
+--- a/аудит/адаптери/gemini/перевірка/сценарії_черги.sh
++++ b/аудит/адаптери/gemini/перевірка/сценарії_черги.sh
+@@ -10,7 +10,7 @@ setup() { W="${TMPDIR:-/tmp}/gemini-obhortka/$1"; rm -rf "$W"; mkdir -p "$W"/{fa
+    printf '| диспетчер | session_01TEST |\n' > аудит/СТАН.md; git add -A; git commit -q -m init; git push -q origin main 2>/dev/null)
+   git clone -q "$W/origin.git" "$W/clone" 2>/dev/null; git -C "$W/clone" config user.name g; git -C "$W/clone" config user.email g@x
+   WW=$(wp "$W"); export FAKE_STATE="$WW/fake" FAKE_CLAUDE_LOG="$WW/claude.log" FAKE_SCENARIO=abandon_then_done FAKE_ISOLATION= FAKE_CLAUDE_FAIL=; }
+-gem() { "$PW" -NoProfile -File "$(wp "$H/side.ps1")" -Script "$(wp "$SRC/gemini_run.ps1")" -ArgsJson "{\"RepoDir\":\"$WW/clone\",\"RunsDir\":\"$WW/runs\",\"OutDir\":\"$WW/out\",\"RepoUrl\":\"$WW/origin.git\",\"AgyExe\":\"$(stub fake_agy)\",\"TurnMinutes\":0.05,\"TotalMinutes\":0.5,\"MaxNudges\":3}"; }
++gem() { "$PW" -NoProfile -File "$(wp "$H/side.ps1")" -Script "$(wp "$SRC/gemini_run.ps1")" -ArgsJson "{\"RepoDir\":\"$WW/clone\",\"RunsDir\":\"$WW/runs\",\"OutDir\":\"$WW/out\",\"RepoUrl\":\"$WW/origin.git\",\"AgyExe\":\"$(stub fake_agy)\",\"TurnMinutes\":0.05,\"TotalMinutes\":0.5,\"MaxNudges\":3,\"PollMinutes\":0.05}"; }
+ pub() { "$PW" -NoProfile -File "$(wp "$H/side.ps1")" -Script "$(wp "$SRC/gemini_publish.ps1")" -ArgsJson "{\"WorkDir\":\"$WW/pub\",\"OutDir\":\"$WW/out\",\"RepoUrl\":\"$WW/origin.git\",\"ClaudeExe\":\"$(stub fake_claude)\",\"MaxSendAttempts\":2,\"SendRetryDelaySeconds\":0}"; }
+ mark() { git -C "$W/seed" push -q origin "${2:-main}:refs/heads/gemini-queue/$1" 2>/dev/null; }
+ show() { echo "  wrapper: $(grep -cE 'наряд .*->' "$W/runs/wrapper.log" 2>/dev/null) прогонів; $(grep -E 'пропущено|ізоляція|origin' "$W/runs/wrapper.log" 2>/dev/null | sed 's/^20[0-9-]* [0-9:]* //' | tr '\n' '|')"
+@@ -33,7 +33,7 @@ echo "=== 7 стара позначка, крива назва, не з main, н
+   for i in 1 2 3 4; do gem; done; pub; show; grep -ho '"code":"[A-Z_]*"' "$W"/out/*.json | sort | uniq -c
+ echo "=== 8 перерваний прогін: стан STARTED із JSON -> INTERRUPTED із бандлом"; setup r8; mark "$SLUG/$M/1"
+   export FAKE_SCENARIO=hang
+-  timeout -s KILL 5 "$PW" -NoProfile -File "$(wp "$H/side.ps1")" -Script "$(wp "$SRC/gemini_run.ps1")" -ArgsJson "{\"RepoDir\":\"$WW/clone\",\"RunsDir\":\"$WW/runs\",\"OutDir\":\"$WW/out\",\"RepoUrl\":\"$WW/origin.git\",\"AgyExe\":\"$(stub fake_agy)\",\"TurnMinutes\":5,\"TotalMinutes\":10,\"MaxNudges\":3}"
++  timeout -s KILL 5 "$PW" -NoProfile -File "$(wp "$H/side.ps1")" -Script "$(wp "$SRC/gemini_run.ps1")" -ArgsJson "{\"RepoDir\":\"$WW/clone\",\"RunsDir\":\"$WW/runs\",\"OutDir\":\"$WW/out\",\"RepoUrl\":\"$WW/origin.git\",\"AgyExe\":\"$(stub fake_agy)\",\"TurnMinutes\":5,\"TotalMinutes\":10,\"MaxNudges\":3,\"PollMinutes\":0.05}"
+   # Вимкнення ноутбука вбиває й процеси нарядів (М.9-Е: наряд — окремий процес, pid — у слоті): дерево кожного.
+   for f in "$W"/runs/slots/*.json; do [ -e "$f" ] || continue; pid=$($PY -c "import json,sys; print(json.load(open(sys.argv[1], encoding='utf-8-sig'))['pid'])" "$(wp "$f")")
+     if [ -n "$WIN" ]; then taskkill //F //T //PID "$pid" >/dev/null 2>&1; else pkill -9 -P "$pid" 2>/dev/null; kill -9 "$pid" 2>/dev/null; fi; done
+diff --git a/аудит/адаптери/gemini/смуги.json b/аудит/адаптери/gemini/смуги.json
+index e8bbb13b86d1d663343d651457d25be69e1efa73..52bbe8eb3e145bf3605ad404b501e9b1293ab115 100644
+--- a/аудит/адаптери/gemini/смуги.json
++++ b/аудит/адаптери/gemini/смуги.json
+@@ -16,31 +16,29 @@
+   },
+   "poll_minutes": {
+     "n": 2,
+-    "джерело": ""
++    "джерело": "механізм: період опитування черги планувальником — роботи не стелить і не сповільнює (рішення менеджера 01.11)"
+   },
+   "usage_minutes": {
+     "n": 15,
+-    "джерело": ""
+-  },
+-  "quota_wait_minutes": {
+-    "n": 60,
+-    "джерело": ""
+-  },
+-  "agy_total_minutes": {
+-    "n": 180,
+-    "джерело": ""
++    "джерело": "механізм: свіжість кешу /usage і здоров'я — роботи не стелить і не сповільнює (рішення менеджера 01.11)"
+   },
+   "agy_turn_minutes": {
+-    "n": 120,
+-    "джерело": ""
++    "n": 102.69,
++    "джерело": "вимір: 28.10 — найдовший хід agy здорового (DONE) прогону 102.69 хв, прогін 20261028-062755-c0a801cb925a, 61 здоровий із 98; ПК-межа-без-джерела-вимір-codex-agy.md, гілка gemini/вимір-сторожів-codex-agy 03b369eef50b"
+   },
+   "codex_stall_minutes": {
+-    "n": 60,
+-    "джерело": ""
++    "n": 21.87,
++    "джерело": "вимір: 28.10 — найбільший проміжок подій здорового (DONE) прогону Codex 21.87 хв, прогін 20261028-180607-781d6cbc197e, 232 здорових із 1852; ПК-межа-без-джерела-вимір-codex-agy.md, гілка gemini/вимір-сторожів-codex-agy 03b369eef50b"
+   },
+   "claude_hang_minutes": {
+-    "n": 120,
+-    "джерело": ""
+-  },
+-  "claude_laptop": ["5.3-повний-обхід-каталогу", "проба-рушія-claude", "Е0-самооновлення-один-раз", "Річ-запис-речі-мірило-Cloudflare", "вимір-сторожів-обгортки"]
++    "n": null,
++    "джерело": "нема виміру, що представляє роботу; рішення менеджера 01.11 — КОЛО PR #2685 і поріг claude_hang_minutes (12200), аудит/корені/ПК-межа-без-джерела.md"
++  },
++  "claude_laptop": [
++    "5.3-повний-обхід-каталогу",
++    "проба-рушія-claude",
++    "Е0-самооновлення-один-раз",
++    "Річ-запис-речі-мірило-Cloudflare",
++    "вимір-сторожів-обгортки"
++  ]
+ }
