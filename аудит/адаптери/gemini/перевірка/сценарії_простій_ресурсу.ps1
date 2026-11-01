@@ -18,7 +18,7 @@ function Scenario([string]$Name, [scriptblock]$Body) {
 $exeDir = Split-Path -Parent $SourceDir
 $sideDir = Join-Path $SourceDir 'перевірка'
 
-# --- (а) відеокарта зайнята лише справжнім навантаженням ----------------------------------------------------------------
+# --- (а) відеокарта зайнята за нестачі VRAM ----------------------------------------------------------------
 Scenario 'а GPU' {
     . (Join-Path $SourceDir 'queue_lanes.ps1')
     function Get-Command { [pscustomobject]@{ Source = 'nvidia-smi' } }
@@ -36,7 +36,7 @@ Scenario 'а GPU' {
     Check "а бракує памʼяті — зайнята, причина числом: «$why»" (-not (Test-ExternalGpuFree) -and $why -match 'вільно 2000 з потрібних 8925 MiB')
     $script:SmiFree = 14000; $script:SmiPercent = 74
     $why = Get-GpuBusyReason @()
-    Check 'а обчислення блокують навіть за достатньої памʼяті' ($why -match 'навантаження 74 %')
+    Check 'а обчислення за достатньої памʼяті не блокують' ($why -eq '' -and (Test-ExternalGpuFree))
     $script:SmiCode = 9
     $why = Get-GpuBusyReason @()
     Check 'а nvidia-smi не відповів — зайнята, причина названа' ($why -match 'nvidia-smi' -and $script:GpuHoldReason -ceq 'nvidia-smi не відповів')
@@ -143,10 +143,10 @@ Scenario 'в планувальник' {
     function Invoke-Native { param($Exe, $Arguments)
         if ($Arguments -contains '--query-gpu=memory.total,memory.free,utilization.gpu') { return [pscustomobject]@{ Code = 0; Out = $script:FakeTelemetry } }
         [pscustomobject]@{ Code = 0; Out = $script:FakeApps } }
-    $script:FakeTelemetry = '16376, 14076, 74'; $script:FakeApps = '4120, C:\Users\x\chrome.exe'
+    $script:FakeTelemetry = '16376, 2000, 74'; $script:FakeApps = '4120, C:\Users\x\chrome.exe'
     $w = New-Object System.Collections.ArrayList
     $r = Start-Markers $w
-    Check 'в2 GPU зайнята процесом — воркер не запущено, позначка лишилась без узяття' ($script:Started -eq 0 -and $r[0] -eq 0 -and $script:Held['GPU'].Reason -ceq 'навантаження 74 %' -and $script:Held['GPU'].Markers.Count -eq 1)
+    Check 'в2 GPU зайнята процесом — воркер не запущено, позначка лишилась без узяття' ($script:Started -eq 0 -and $r[0] -eq 0 -and $script:Held['GPU'].Reason -ceq 'вільно 2000 з потрібних 8925 MiB; навантаження 74 %' -and $script:Held['GPU'].Markers.Count -eq 1)
     $script:FakeTelemetry = '16376, 16319, 0'; $script:FakeApps = ''
     $r = Start-Markers $w
     Check 'в2 GPU вільна — наряд узято' ($script:Started -eq 1 -and $r[0] -eq 1 -and -not $script:Held.ContainsKey('GPU'))
@@ -171,11 +171,11 @@ Scenario 'в3 gemini-run' {
     function Get-Command { [pscustomobject]@{ Source = 'nvidia-smi' } }
     function Get-GpuCounterRows { <# Запасне джерело — nvidia-smi; лічильник процесів міряє сценарії_gpu_процеси.ps1. #> $null }
     function Invoke-Native { param($Exe, $Arguments)
-        if ($Arguments -contains '--query-gpu=memory.total,memory.free,utilization.gpu') { return [pscustomobject]@{ Code = 0; Out = '16376, 14076, 74' } }
+        if ($Arguments -contains '--query-gpu=memory.total,memory.free,utilization.gpu') { return [pscustomobject]@{ Code = 0; Out = '16376, 2000, 74' } }
         [pscustomobject]@{ Code = 0; Out = '4120, C:\Users\x\chrome.exe' } }
     $w = New-Object System.Collections.ArrayList
     [void](Start-Markers $w)
-    Check 'в3 GPU зайнята процесом — gemini-run не бере позначку й тримає GPU' ($script:Held['GPU'].Reason -ceq 'навантаження 74 %' -and $script:Held['GPU'].Markers.Count -eq 1)
+    Check 'в3 GPU зайнята процесом — gemini-run не бере позначку й тримає GPU' ($script:Held['GPU'].Reason -ceq 'вільно 2000 з потрібних 8925 MiB; навантаження 74 %' -and $script:Held['GPU'].Markers.Count -eq 1)
     $send = { param($l) Add-HoldLine $l }
     Update-HoldSignals $script:Held $send
     $f = "$work/state/holds.json"
@@ -185,7 +185,7 @@ Scenario 'в3 gemini-run' {
     Update-HoldSignals $script:Held $send
     Update-HoldSignals $script:Held $send
     $rows = @(Get-ChildItem -LiteralPath "$g3out/alerts" -Filter '*.txt' -File -ErrorAction SilentlyContinue | ForEach-Object { [IO.File]::ReadAllText($_.FullName, $utf).Trim() })
-    Check "в3 понад поріг — один рядок у out/alerts: $($rows -join ' | ')" ($rows.Count -eq 1 -and $rows[0] -ceq 'GEMINI ОБГОРТКА: ЗАБЛОКОВАНО GPU: навантаження 74 %, позначок 1')
+    Check "в3 понад поріг — один рядок у out/alerts: $($rows -join ' | ')" ($rows.Count -eq 1 -and $rows[0] -ceq 'GEMINI ОБГОРТКА: ЗАБЛОКОВАНО GPU: вільно 2000 з потрібних 8925 MiB; навантаження 74 %, позначок 1')
 }
 Scenario 'в3 публікатор' {
     . (Join-Path $SourceDir 'gemini_publish.ps1') -WorkDir "$tmp/g3pub" -OutDir $g3out -OutboxDir "$tmp/g3box"
@@ -193,7 +193,7 @@ Scenario 'в3 публікатор' {
     $script:HealthAlertDir = $OutboxDir   # як у Main публікатора
     Receive-HealthAlerts
     $rows = @(Get-ChildItem -LiteralPath $OutboxDir -Filter '*.txt' -File | ForEach-Object { [IO.File]::ReadAllText($_.FullName, $utf).Trim() })
-    Check "в3 публікатор перекладає рядок рушія у вихідні для диспетчера: $($rows -join ' | ')" ($rows.Count -eq 1 -and $rows[0] -ceq 'GEMINI ОБГОРТКА: ЗАБЛОКОВАНО GPU: навантаження 74 %, позначок 1' -and (Test-OutboxLine $rows[0]) -eq '')
+    Check "в3 публікатор перекладає рядок рушія у вихідні для диспетчера: $($rows -join ' | ')" ($rows.Count -eq 1 -and $rows[0] -ceq 'GEMINI ОБГОРТКА: ЗАБЛОКОВАНО GPU: вільно 2000 з потрібних 8925 MiB; навантаження 74 %, позначок 1' -and (Test-OutboxLine $rows[0]) -eq '')
     Receive-HealthAlerts
     Check 'в3 повторний імпорт — нових рядків нуль' (@(Get-ChildItem -LiteralPath $OutboxDir -Filter '*.txt' -File).Count -eq 1)
 }

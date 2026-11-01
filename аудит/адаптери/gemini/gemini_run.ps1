@@ -1046,7 +1046,7 @@ function Resolve-Exe([string]$Name) {
 # --- планувальник --------------------------------------------------------------------------------------------------
 
 # GPU вільна для нового наряду: свого живого GPU-наряду нема, замок відеокарти (спільний з claude-run) не тримає ніхто й
-# вистачає пам'яті й немає обчислювального навантаження (Get-GpuBusyReason).
+# вистачає пам'яті й телеметрія без помилки (Get-GpuBusyReason).
 function Test-GpuFree($Workers) { (Get-GpuBusyReason $Workers) -eq '' }
 
 # Позначка agy на нульовій квоті до старту: чекає скидання (спроба не спалена); рядок диспетчерові — раз, коли позначка
@@ -1208,7 +1208,7 @@ function Invoke-Worker {
     try {
         if ($job.gpu) {
             $gpu = Open-Lock (Get-GpuLockPath)
-            $why = $(if ($null -eq $gpu) { 'замок GPU' } elseif (Test-ExternalGpuFree) { '' } else { Get-GpuBusyReason @() -LockHeld })
+            $why = $(if ($null -eq $gpu) { 'замок GPU' } elseif (Test-ExternalGpuFree -LogAcquisition) { '' } else { Get-GpuBusyReason @() -LockHeld })
             if ($why) { Remove-Claim $statePath; Write-Log "GPU зайнята ($why) — $($job.name) лишається в черзі"; return $script:WorkerGpuBusy }
         }
         Write-FileAtomic $info (([ordered]@{ slot = $job.slot; lane = $job.lane; marker = $job.name; slug = $job.slug; model = $job.model
