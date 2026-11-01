@@ -180,7 +180,7 @@ try {
     [void][IO.Directory]::CreateDirectory("$WorkDir/state")
     $head = Merge 'квота-5.txt' '5'
     $script:Pulls = @((Pull 37 'claude/квота-g' $head)); Invoke-WrapperChain
-    [IO.File]::WriteAllText("$WorkDir/state/done37.json", ((@{line="GEMINI ОБГОРТКА: ГОТОВО gemini/автоперевірка-37-$head $head"}) | ConvertTo-Json), $utf)
+    [IO.File]::WriteAllText("$WorkDir/state/done37.json", ((@{slug="автоперевірка-37-$head";line="GEMINI ОБГОРТКА: ГОТОВО gemini/автоперевірка-37-$head $head"}) | ConvertTo-Json), $utf)
     SetAgy $true; Invoke-WrapperChain
     Check 'готовий звіт: нової позначки нема' (@(SlugMarkers "автоперевірка-37-$head").Count -eq 1)
     SetAgy $false
@@ -293,7 +293,7 @@ try {
     $mainNow = Get-RefSha 'refs/remotes/origin/main'
     $idA = Get-ReviewPatchId $pidA $mainNow
     Check 'patch-id: та сама зміна в різних комітах має один id' ($idA -and $pidA -cne $pidB -and $idA -ceq (Get-ReviewPatchId $pidB $mainNow))
-    [IO.File]::WriteAllText("$WorkDir/state/done84.json", ((@{line="GEMINI ОБГОРТКА: ГОТОВО gemini/автоперевірка-84-$pidA $pidA"}) | ConvertTo-Json), $utf)
+    [IO.File]::WriteAllText("$WorkDir/state/done84.json", ((@{slug="автоперевірка-84-$pidA";line="GEMINI ОБГОРТКА: ГОТОВО gemini/автоперевірка-84-$pidA $pidA"}) | ConvertTo-Json), $utf)
     $rv = @{ '84' = @{head=$pidA;diff='';pid=$idA} }
     Check 'нова голова з тим самим patch-id після звіту: нової перевірки нема' (Test-ReviewedMerge (Pull 84 'claude/пч' $pidB) $rv $mainNow)
     $rv['84'].pid = 'інший'

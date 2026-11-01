@@ -133,7 +133,7 @@ Invoke-WrapperChain
         $script:Ready = $true; Invoke-WrapperChain
         Check 'активний прогін не породжує наступної позначки' (@(Markers 'автоживий-').Count -eq 1)
         [void][IO.Directory]::CreateDirectory((Join-Path $WorkDir 'state'))
-        Write-FileAtomic (Join-Path $WorkDir 'state/report.json') ((@{line="GEMINI ОБГОРТКА: ГОТОВО gemini/автоживий-$product $built"}) | ConvertTo-Json)
+        Write-FileAtomic (Join-Path $WorkDir 'state/report.json') ((@{slug="автоживий-$product";line="GEMINI ОБГОРТКА: ГОТОВО gemini/автоживий-$product $built"}) | ConvertTo-Json)
         Invoke-WrapperChain
         Check 'після звіту лише останній штамп має позначку на коміті своєї збірки' (@(Markers 'автоживий-').Count -eq 2 -and @(Markers "автоживий-$second/").Count -eq 0 -and (& git -C $remote rev-parse @(Markers "автоживий-$third/")[0]).Trim() -ceq $thirdBuild)
         $back = Merge 'build.txt' $product; Invoke-WrapperChain

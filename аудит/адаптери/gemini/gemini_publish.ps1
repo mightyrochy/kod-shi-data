@@ -319,13 +319,13 @@ function Get-Line([string]$Id) {
         $kod = 'QUOTA0_' + $g + $(if ($r) { '_M' + [int]$r } else { '' })
         if (Test-Seen "$queue $marker $kod") { return $null }
         Write-WrapperLog "кінець $Id — $run; група $g, скидання через $(if ($r) { "$r хв" } else { 'невідомо' })"
-        return [pscustomobject]@{ Outbox = "GEMINI ОБГОРТКА: ЗАБЛОКОВАНО $branch $kod" }
+        return [pscustomobject]@{ Slug = $slug; Outbox = "GEMINI ОБГОРТКА: ЗАБЛОКОВАНО $branch $kod" }
     }
     if (-not (Get-Prop $s 'bundle')) {
         if (Test-Seen "$queue $marker $code") { return $null }
         $tail = $(if (Test-Path -LiteralPath (Join-Path $OutDir ($Id + '.tail.txt'))) { "; кінець виводу агента — $OutDir\$Id.tail.txt" } else { '' })
         Write-WrapperLog "кінець $Id — НЕ ЗАВЕРШЕНО $branch — $run; комітів нема$tail"
-        return [pscustomobject]@{ Outbox = "GEMINI ОБГОРТКА: ЗАБЛОКОВАНО $branch $code" }
+        return [pscustomobject]@{ Slug = $slug; Outbox = "GEMINI ОБГОРТКА: ЗАБЛОКОВАНО $branch $code" }
     }
     $res = Publish-Bundle $s $Id
     $pc = $res[0]; $files = $res[1]
@@ -351,13 +351,13 @@ function Get-Line([string]$Id) {
             # Фактична модель (каскад за пулом може відрізнятися від моделі позначки): лише за ModelPattern.
             $am = [string](Get-Prop $s 'actual')
             $ms = $(if ($am -cmatch $script:ModelPattern) { " МОДЕЛЬ $am" } else { '' })
-            return [pscustomobject]@{ Outbox = "GEMINI ОБГОРТКА: ГОТОВО $branch $head$qs$ms" }
+            return [pscustomobject]@{ Slug = $slug; Outbox = "GEMINI ОБГОРТКА: ГОТОВО $branch $head$qs$ms" }
         }
-        return [pscustomobject]@{ Outbox = "GEMINI ОБГОРТКА: ЗАБЛОКОВАНО $branch $(if ($code -eq 'DONE') { 'NO_HEAD' } else { $code })_PUBLISHED" }
+        return [pscustomobject]@{ Slug = $slug; Outbox = "GEMINI ОБГОРТКА: ЗАБЛОКОВАНО $branch $(if ($code -eq 'DONE') { 'NO_HEAD' } else { $code })_PUBLISHED" }
     }
     if (Test-Seen "$queue $marker refused $pc") { return $null }
     Write-WrapperLog "кінець $Id — НЕ ОПУБЛІКОВАНО $branch $head — $($script:PublishCodes[$pc]); $run; бандл $OutDir\$Id.bundle"
-    [pscustomobject]@{ Outbox = "GEMINI ОБГОРТКА: ЗАБЛОКОВАНО $branch $pc" }
+    [pscustomobject]@{ Slug = $slug; Outbox = "GEMINI ОБГОРТКА: ЗАБЛОКОВАНО $branch $pc" }
 }
 
 # Шлях до виконуваного: .NET із UseShellExecute=false дописує лише .exe, а CLI з npm — це .cmd.
@@ -500,7 +500,13 @@ function Receive-Outbox {
             continue
         }
         Write-WrapperLog "вихідні $($f.Name): $($r[0])"
-        Write-FileAtomic $statePath (([ordered]@{ line = $r[0]; sent = $false; attempts = 0 }) | ConvertTo-Json -Compress)
+        $slug = ''
+        $source = Join-Path (Join-Path $WorkDir 'state') ($f.BaseName + '.json')
+        if (Test-Path -LiteralPath $source) {
+            $origin = ConvertFrom-Json ([IO.File]::ReadAllText($source, $script:Utf8))
+            if ([string](Get-Prop $origin 'outbox') -ceq $f.Name) { $slug = [string](Get-Prop $origin 'slug') }
+        }
+        Write-FileAtomic $statePath (([ordered]@{ line = $r[0]; slug = $slug; sent = $false; attempts = 0 }) | ConvertTo-Json -Compress)
         Move-Outbox $f.Name 'done'
     }
     # Прийняті файли старші за 30 діб — зайві; карантин лишається до руки власника.
@@ -578,7 +584,13 @@ function Test-DispatcherAction([string]$Line) {
     # Простій увімкненого ноутбука (власник 31.10): раз на простій — доцільна робота чи ВИМКНИ НОУТБУК.
     if ($Line -cmatch '^GEMINI ОБГОРТКА: ПРОСТІЙ [0-9T:Z-]{20} [0-9]{1,6}$') { return $true }
     if ($Line -cmatch '^GEMINI ОБГОРТКА: (?:ЗАБЛОКОВАНО|ТРИВОГА|ЛАНЦЮГ)(?: |$)') { return $true }
-    if ($Line -cmatch '^GEMINI ОБГОРТКА: ГОТОВО (?:gemini|claude|codex)/(?:автоперевірка-|перевірка-|pachka-|автоживий-|Е1-нічний-живий-)') { return $true }
+    if ($Line -cnotmatch '^GEMINI ОБГОРТКА: ГОТОВО ') { return $false }
+    foreach ($result in @(Get-ChainTaskResults)) {
+        if ($result.Kind -ceq 'ГОТОВО' -and ($Line -ceq $result.Line -or $Line.StartsWith($result.Line + ' ', [StringComparison]::Ordinal))) {
+            return $result.Slug -cmatch '^(?:автоперевірка-|перевірка-|pachka-|автоживий-|Е1-нічний-живий-)'
+        }
+    }
+    if ($Line -cmatch '^GEMINI ОБГОРТКА: ГОТОВО (?:gemini|claude|codex)/(?:перевірка-|pachka-|Е1-нічний-живий-)') { return $true }
     $false
 }
 
@@ -614,7 +626,7 @@ function Merge-BlockedLines {
         }
         foreach ($it in $items) {
             $st = [System.IO.File]::ReadAllText($it.File.FullName, $script:Utf8) | ConvertFrom-Json
-            Write-FileAtomic $it.File.FullName (([ordered]@{ line = [string](Get-Prop $st 'line'); sent = $true; attempts = 0; channel = 'grouped'; group = ('g-' + $items[0].File.Name) }) | ConvertTo-Json -Compress)
+            Write-FileAtomic $it.File.FullName (([ordered]@{ line = [string](Get-Prop $st 'line'); slug = [string](Get-Prop $st 'slug'); sent = $true; attempts = 0; channel = 'grouped'; group = ('g-' + $items[0].File.Name) }) | ConvertTo-Json -Compress)
         }
         Write-WrapperLog "зведено $($items.Count) рядків ЗАБЛОКОВАНО $code в один"
     }
@@ -720,12 +732,12 @@ function Send-Pending([System.IO.FileInfo]$File) {
     if ($st.sent -or (Get-Prop $st 'exhausted') -eq $true) { return }
     if (-not (Test-DispatcherAction ([string]$st.line))) {
         Save-LocalLine ([string]$st.line)
-        Write-FileAtomic $File.FullName ((@{line=[string]$st.line;sent=$true;attempts=[int]$st.attempts;channel='local'}) | ConvertTo-Json -Compress)
+        Write-FileAtomic $File.FullName ((@{line=[string]$st.line;slug=[string](Get-Prop $st 'slug');sent=$true;attempts=[int]$st.attempts;channel='local'}) | ConvertTo-Json -Compress)
         return
     }
     $first = [string](Get-Prop $st 'first_failure_utc')
     if (-not $first) { $first = $File.CreationTimeUtc.ToString('o') }
-    $new = [ordered]@{ line = [string]$st.line; sent = $false; attempts = [int]$st.attempts
+    $new = [ordered]@{ line = [string]$st.line; slug = [string](Get-Prop $st 'slug'); sent = $false; attempts = [int]$st.attempts
         first_failure_utc = $first; fallback_attempts = [int](Get-Prop $st 'fallback_attempts'); channel = ''; exhausted = $false; cloud_auth = ((Get-Prop $st 'cloud_auth') -eq $true) }
     Write-FileAtomic $File.FullName ($new | ConvertTo-Json -Compress)
     if (-not $script:CloudAuthFailed -and -not $script:CloudUnavailable -and $new.attempts -lt $MaxSendAttempts) {
@@ -791,7 +803,7 @@ function Main {
             if ($line -isnot [string] -and $null -ne $line) {
                 # Кінець прогону: рядок — у теку вихідних під id стану; доставка — з неї, як для рядків інших скриптів.
                 Add-OutboxLine ($id + '.txt') $line.Outbox
-                Write-FileAtomic $statePath (([ordered]@{ line = ''; sent = $true; attempts = 0; outbox = ($id + '.txt') }) | ConvertTo-Json -Compress)
+                Write-FileAtomic $statePath (([ordered]@{ line = ''; slug = [string](Get-Prop $line 'Slug'); sent = $true; attempts = 0; outbox = ($id + '.txt') }) | ConvertTo-Json -Compress)
                 continue
             }
             if ($null -eq $line) {
