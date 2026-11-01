@@ -99,28 +99,24 @@ Scenario 'в сигнал' {
         [IO.File]::WriteAllText($f, ($o | ConvertTo-Json -Compress), $utf) }
     $held = { param($why, [int]$n) $h = @{}; for ($i = 0; $i -lt $n; $i++) { Add-Hold $h 'GPU' $why "gemini-queue/н$i/cc-m/1" }; $h }
 
-    Update-HoldSignals (& $held 'процес chrome.exe' 2) $send
-    Check 'в утримання щойно почалось (менше порога) — рядка нема' (@(& $rows).Count -eq 0)
-    & $age 4000
+    # Сигнал — лише за причиною, що вимагає дії диспетчера (рішення менеджера 01.11): без часового порога.
     Update-HoldSignals (& $held 'процес chrome.exe' 2) $send
     $r = @(& $rows)
-    Check "в понад поріг — рівно один рядок: $($r -join ' | ')" ($r.Count -eq 1 -and $r[0] -ceq 'GEMINI ОБГОРТКА: ЗАБЛОКОВАНО GPU: процес chrome.exe, позначок 2')
+    Check "в сторонній процес — рівно один рядок одразу: $($r -join ' | ')" ($r.Count -eq 1 -and $r[0] -ceq 'GEMINI ОБГОРТКА: ЗАБЛОКОВАНО GPU: процес chrome.exe, позначок 2')
     Update-HoldSignals (& $held 'процес chrome.exe' 2) $send
     Update-HoldSignals (& $held 'процес chrome.exe' 3) $send
     Check 'в повторний прохід (навіть з іншою кількістю позначок) — нових рядків нуль' (@(& $rows).Count -eq 1)
     Update-HoldSignals (& $held 'замок GPU іншого наряду' 1) $send
-    Check 'в зміна причини — другий рядок' (@(& $rows).Count -eq 2)
+    Check 'в замок GPU іншого наряду минає сам — рядка нема' (@(& $rows).Count -eq 1)
     Update-HoldSignals @{} $send
     Check 'в утримання зникло — запис знято' (-not (Test-Path -LiteralPath "$work/state/holds.json"))
-    Update-HoldSignals (& $held 'процес chrome.exe' 1) $send
-    & $age 4000
-    Update-HoldSignals (& $held 'процес chrome.exe' 1) $send
-    Check 'в нове утримання після зняття сигналить знову' (@(& $rows).Count -eq 3)
+    Update-HoldSignals (& $held 'nvidia-smi не відповів' 1) $send
+    Check 'в нове утримання, що вимагає дії, після зняття сигналить знову' (@(& $rows).Count -eq 2)
     $h = @{}; Add-Hold $h 'SLOTS' 'слоти зайняті' 'gemini-queue/н/cc-m/1'
     Update-HoldSignals $h $send
     & $age 4000
     Update-HoldSignals $h $send
-    Check 'в слоти — теж рядок' ((& $rows) -contains 'GEMINI ОБГОРТКА: ЗАБЛОКОВАНО SLOTS: слоти зайняті, позначок 1')
+    Check 'в слоти зайняті минають самі — рядка нема' (@(& $rows).Count -eq 2 -and -not ((& $rows) -contains 'GEMINI ОБГОРТКА: ЗАБЛОКОВАНО SLOTS: слоти зайняті, позначок 1'))
 
     # Рядки проходять шаблон публікатора: Add-Line вище вже відкинув би невідповідні шаблону claude_run.
     . (Join-Path $SourceDir 'gemini_publish.ps1') -WorkDir "$tmp/pubw" -OutboxDir "$tmp/pubo"

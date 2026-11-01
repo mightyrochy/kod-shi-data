@@ -9,7 +9,7 @@ $script:HealthDetails = @{
 $script:HealthAlertDir = ''
 # Сигнал запобіжника, що тримає позначки (queue_lanes.ps1, Update-HoldSignals), і позначка з назвою не за форматом
 # (gemini_run.ps1, Start-Markers; назва — безпечними знаками): рядок рушія й шаблон публікації — тут одне місце.
-$script:HoldLineTemplate = '\AGEMINI ОБГОРТКА: ЗАБЛОКОВАНО (?:(?:GPU|SLOTS): (?:замок GPU іншого наряду|слоти зайняті|nvidia-smi не відповів|GPU зайнята стороннім процесом|процес [A-Za-z0-9._+-]{1,92}|процес [A-Za-z0-9._-]{1,30} [0-9]{1,7} MiB(?:\+[A-Za-z0-9._-]{1,30} [0-9]{1,7} MiB){0,2}), позначок [1-9][0-9]{0,3}|gemini-queue/[\p{L}\p{Nd}._/-]{1,160} FORMAT)\z'
+$script:HoldLineTemplate = '\AGEMINI ОБГОРТКА: ЗАБЛОКОВАНО (?:(?:GPU|SLOTS): (?:замок GPU іншого наряду|слоти зайняті|nvidia-smi не відповів|GPU зайнята стороннім процесом|процес [A-Za-z0-9._+-]{1,92}|процес [A-Za-z0-9._-]{1,30} [0-9]{1,7} MiB(?:\+[A-Za-z0-9._-]{1,30} [0-9]{1,7} MiB){0,2}), позначок [1-9][0-9]{0,3}|gemini-queue/[\p{L}\p{Nd}._/-]{1,160} (?:FORMAT|START))\z'
 
 function Test-HoldLine([string]$Line) { $Line -cmatch $script:HoldLineTemplate }
 
@@ -110,4 +110,19 @@ function Get-ModelGroups([string]$Model, $Groups) {
     $fam = ($Model.ToLowerInvariant() -split '-')[0]
     if ($script:Families -notcontains $fam) { return @() }
     @($Groups | Where-Object { @(Get-SpecificTokens $_.Name).Count -eq 0 -and @($_.Name.ToLowerInvariant() -split '[^a-z0-9]+') -contains $fam })
+}
+
+# Джерело межі (п.11): «власник ДД.ММ …» чи «вимір: …» з датою ДД.ММ і ще хоч одним числом (10970).
+$script:LimitDateRx = '(?<![0-9])(?:0[1-9]|[12][0-9]|3[01])\.(?:0[1-9]|1[0-2])(?![0-9])'
+
+function Test-LimitSource([string]$Text, [bool]$Mechanism = $false) {
+    <# $true — у межі є джерело за форматом; інакше межа без джерела. Той самий розбір — у перевірка/перевірити_хеші.py.
+    $Mechanism — поле-механізм (частота опитування, свіжість кешу; рішення менеджера 01.11): замість виміру приймається
+    запис «механізм: <що це і чому не межа роботи>». #>
+    if ($Text.Length -gt 300 -or $Text -cmatch '[\x00-\x1f]') { return $false }
+    if ($Mechanism -and $Text -cmatch '\Aмеханізм: \S') { return $true }
+    if ($Text -cmatch ('\Aвласник ' + $script:LimitDateRx + '(?:[^0-9].*)?\z')) { return $true }
+    if ($Text -cnotmatch '\Aвимір: ') { return $false }
+    $d = [regex]::Match($Text, $script:LimitDateRx)
+    $d.Success -and $Text.Remove($d.Index, $d.Length).Substring(6) -match '[0-9]'
 }

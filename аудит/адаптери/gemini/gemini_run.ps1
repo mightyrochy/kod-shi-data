@@ -18,7 +18,7 @@
       xhigh|max|ultra, відмову `codex exec` обгортка віддає кодом EFFORT_INVALID, без підміни), інша — `agy`; квота `agy`
       як дані (`agy -p "/usage"`, 0 ходів, не частіше за `usage_minutes`): група моделі з 0 % — позначка чекає скидання
       (рядок QUOTA0 диспетчерові раз), після скидання її бере та сама смуга; відмова за квотою посеред прогону (429) —
-      так само, до MaxRetakes разів; коли задано `-CodexFallbackModel`, `agy` на 0 % замінює Codex з цією моделлю;
+      так само; коли задано `-CodexFallbackModel`, `agy` на 0 % замінює Codex з цією моделлю;
   3. гілка `gemini/<наряд>` від свіжого `main` (чи від уже опублікованої `gemini/<наряд>` — доробка; чи від голови
      прогону, зупиненого квотою);
   4. прогін `agy` з межею часу; хід без звіту чи звіт, що не збігся з гілкою, — догонка тієї самої розмови;
@@ -43,12 +43,12 @@ param(
     [switch]$EnableCodex,
     [ValidateSet('stream', 'print')]
     [string]$Mode = 'stream',
-    [double]$TurnMinutes = 120,
-    [double]$TotalMinutes = 180,
-    [double]$CodexStallMinutes = 60,
-    [double]$PollMinutes = 2,
-    [double]$UsageMinutes = 15,
-    [double]$QuotaWaitMinutes = 60,
+    [double]$TurnMinutes,
+    [double]$TotalMinutes,
+    [double]$CodexStallMinutes,
+    [double]$PollMinutes,
+    [double]$UsageMinutes,
+    [double]$QuotaWaitMinutes,
     [int]$MaxNudges = 4,
     [double]$QuotaMinutes = 2,
     [int]$MarkerMaxAgeDays = 7,
@@ -110,8 +110,8 @@ function ConvertTo-JsonString([string]$Text) {
 }
 
 # Запуск без межі часу (Codex): процес зупиняє лише завислість — жодного нового рядка stdout (події `--json`) довше за
-# $StallMinutes. Кожен рядок одразу йде в $LogFile, а мітка часу й тип події — в $EventsFile (щоб поріг вивіряти за прогонами).
-function Invoke-NativeUntilStall([string]$Exe, [string[]]$Arguments, [string]$WorkDir, [double]$StallMinutes, [string]$LogFile, [string]$EventsFile) {
+# $StallMinutes ($null — межі нема, джерела codex_stall_minutes нема). Кожен рядок одразу йде в $LogFile, а мітка часу й тип події — в $EventsFile (щоб поріг вивіряти за прогонами).
+function Invoke-NativeUntilStall([string]$Exe, [string[]]$Arguments, [string]$WorkDir, $StallMinutes, [string]$LogFile, [string]$EventsFile) {
     $psi = New-StartInfo $Exe $Arguments $WorkDir
     $p = [System.Diagnostics.Process]::Start($psi)
     $err = $p.StandardError.ReadToEndAsync()
@@ -121,7 +121,7 @@ function Invoke-NativeUntilStall([string]$Exe, [string[]]$Arguments, [string]$Wo
     $pending = $null
     while ($true) {
         if ($null -eq $pending) { $pending = $p.StandardOutput.ReadLineAsync() }
-        $left = ($last.AddMinutes($StallMinutes) - (Get-Date)).TotalMilliseconds
+        $left = $(if ($null -eq $StallMinutes) { [double]::PositiveInfinity } else { ($last.AddMinutes($StallMinutes) - (Get-Date)).TotalMilliseconds })
         if ($left -le 0) { $stalled = $true; break }
         if (-not $pending.Wait([int][Math]::Min($left, 60000))) {
             # stdout міг лишитись відкритим у нащадка завершеного процесу: це не завислість.
@@ -138,7 +138,10 @@ function Invoke-NativeUntilStall([string]$Exe, [string[]]$Arguments, [string]$Wo
         if ($line -match '"type"\s*:\s*"([^"]{1,60})"') { $type = $Matches[1] }
         [System.IO.File]::AppendAllText($EventsFile, $last.ToString('s') + "`t" + $type + "`n", $script:Utf8)
     }
-    if (-not $stalled -and -not $p.WaitForExit([int][Math]::Min([double][int]::MaxValue, $StallMinutes * 60000))) { $stalled = $true }
+    if (-not $stalled) {
+        if ($null -eq $StallMinutes) { $p.WaitForExit() }
+        elseif (-not $p.WaitForExit([int][Math]::Min([double][int]::MaxValue, $StallMinutes * 60000))) { $stalled = $true }
+    }
     if ($stalled) { Stop-Tree $p } else { $p.WaitForExit() }
     $errText = ''
     if ($err.Wait(15000)) { $errText = $err.Result }
@@ -411,13 +414,13 @@ function Update-UsageCache {
     [pscustomobject]$c
 }
 
-# Вікна квоти з кешу; -Fresh чи кеш старший за usage_minutes чи за -After (unix) — agy питаємо знову.
+# Вікна квоти з кешу; -Fresh, usage_minutes без джерела (кешу нема) чи кеш старший за usage_minutes чи за -After (unix) — agy питаємо знову.
 function Read-Usage([switch]$Fresh, [long]$After = 0) {
     $c = $null
     try { $c = [System.IO.File]::ReadAllText((Join-Path $RunsDir 'usage.json'), $script:Utf8) | ConvertFrom-Json } catch { $null = $_ }
     $now = [DateTimeOffset]::UtcNow.ToUnixTimeSeconds()
-    $age = (Get-Limit $script:Limits 'UsageMinutes' 'usage_minutes') * 60
-    if ($Fresh -or $null -eq $c -or [long]$c.time -lt $After -or ($now - [long]$c.time) -ge $age) {
+    $age = Get-Limit $script:Limits 'UsageMinutes' 'usage_minutes'
+    if ($Fresh -or $null -eq $c -or $null -eq $age -or [long]$c.time -lt $After -or ($now - [long]$c.time) -ge $age * 60) {
         if (-not $script:Agy) { return [pscustomobject]@{ Known = $false; Windows = @(); Text = ''; Read = [DateTimeOffset]::UtcNow } }
         $c = Update-UsageCache
     }
@@ -630,7 +633,9 @@ function Get-AgyArgs($M, [string]$Conversation, [string[]]$Head) {
     $a = $Head + @('--output-format', $(if ($Mode -eq 'stream') { 'stream-json' } else { 'json' }),
         '--model', $M.Model, '--dangerously-skip-permissions')
     if ($Mode -eq 'stream') { $a = @('--input-format', 'stream-json') + $a }
-    if (-not $NoPrintTimeoutFlag) { $a += @('--print-timeout', ('{0}m' -f [int][Math]::Ceiling($TurnMinutes))) }
+    # agy_turn_minutes без джерела — прапора межі ходу нема.
+    $turnLimit = Get-Limit $script:Limits 'TurnMinutes' 'agy_turn_minutes'
+    if (-not $NoPrintTimeoutFlag -and $null -ne $turnLimit) { $a += @('--print-timeout', ('{0}m' -f [int][Math]::Ceiling($turnLimit))) }
     if ($Conversation) { $a += @('--conversation', $Conversation) }
     $a
 }
@@ -696,10 +701,11 @@ function Invoke-OneShotTurn($M, $Run, [string]$Text) {
     $a = @('exec', '-C', $RepoDir, '-m', $Run.Engine.Model)
     if ($Run.Engine.Effort) { $a += @('-c', "model_reasoning_effort=$($Run.Engine.Effort)") }
     $a += @('--json', '-o', $outFile, '--dangerously-bypass-approvals-and-sandbox', $short)
-    $r = Invoke-NativeUntilStall $Run.Exe $a $RepoDir $CodexStallMinutes $Run.Log (Join-Path $Run.Dir 'codex.events.tsv')
+    $stall = Get-Limit $script:Limits 'CodexStallMinutes' 'codex_stall_minutes'
+    $r = Invoke-NativeUntilStall $Run.Exe $a $RepoDir $stall $Run.Log (Join-Path $Run.Dir 'codex.events.tsv')
     [System.IO.File]::AppendAllText($Run.ErrLog, $r.Err, $script:Utf8)
     if ($r.Stalled) {
-        Write-Log "codex: нових подій нема понад $CodexStallMinutes хв — завислість, зупинено"
+        Write-Log "codex: нових подій нема понад $stall хв — завислість, зупинено"
         return [pscustomobject]@{ Kind = 'stall'; Result = $null }
     }
     $resp = ''; $err = ''
@@ -727,7 +733,8 @@ function Invoke-Turn($M, $Run, [string]$Text, [datetime]$Deadline) {
     $file = Join-Path $Run.Dir ('turn{0}.md' -f $Run.Turn)
     [System.IO.File]::WriteAllText($file, $Text, $script:Utf8)
     $short = "Прочитай файл $file і виконай його повністю"
-    $minutes = ($Deadline - (Get-Date)).TotalMinutes
+    # Строку всього прогону нема (поле agy_total_minutes знято, рішення менеджера 01.11) — і межі часу процесу нема.
+    $minutes = $(if ($Deadline -eq [datetime]::MaxValue) { [double]::PositiveInfinity } else { ($Deadline - (Get-Date)).TotalMinutes })
     if ($minutes -le 0) { return [pscustomobject]@{ Kind = 'timeout'; Result = $null } }
     # Запас 2 хв: agy має встигнути сам віддати конверт із conversation_id по своїй --print-timeout.
     $r = Invoke-Native $script:Agy (Get-AgyArgs $M $Run.Conversation @('-p', $short)) $RepoDir ($minutes + 2)
@@ -749,7 +756,11 @@ function Invoke-Agent($M, [string]$Start, [string]$Prompt, [string]$Dir, $Sel) {
         Responses = New-Object System.Collections.Generic.List[string] }
     # Codex без межі часу всього й ходу (власник 26.10): його зупиняє лише завислість; `agy` — як було.
     $unlimited = ($Sel.Engine.Name -eq 'codex')
-    $deadline = $(if ($unlimited) { [datetime]::MaxValue } else { (Get-Date).AddMinutes($TotalMinutes) })
+    # Строку всього прогону agy нема, як у Codex (завислість ловить сторож ходу); лише -TotalMinutes руки власника. Строк
+    # ходу — agy_turn_minutes з виміром; нема запису — без строку ходу.
+    $totalLimit = $(if ($script:Bound.ContainsKey('TotalMinutes')) { [double]$script:Bound['TotalMinutes'] } else { $null })
+    $turnLimit = Get-Limit $script:Limits 'TurnMinutes' 'agy_turn_minutes'
+    $deadline = $(if ($unlimited -or $null -eq $totalLimit) { [datetime]::MaxValue } else { (Get-Date).AddMinutes($totalLimit) })
     $text = $Prompt
     $turns = 0
     $nudges = 0
@@ -758,8 +769,8 @@ function Invoke-Agent($M, [string]$Start, [string]$Prompt, [string]$Dir, $Sel) {
     try {
         while ($true) {
             $turnDeadline = $deadline
-            if (-not $unlimited) {
-                $turnDeadline = (Get-Date).AddMinutes($TurnMinutes)
+            if (-not $unlimited -and $null -ne $turnLimit) {
+                $turnDeadline = (Get-Date).AddMinutes($turnLimit)
                 if ($turnDeadline -gt $deadline) { $turnDeadline = $deadline }
             }
             $turns++
@@ -878,13 +889,17 @@ function Write-QuotaStatus($M, [string]$Id, [string]$Group, [long]$Until, [hasht
     Write-Log "квота: $($M.Name) — група $Group на 0 %, чекає до $(Get-UtcStamp ([DateTimeOffset]::FromUnixTimeSeconds($Until).UtcDateTime))"
 }
 
-# Відмова до STARTED: лічильник повернень і межа ті самі, що в квоти; на межі — кінцевий стан CRASH і рядок диспетчерові.
+# Відмова до STARTED: позначка повертається в чергу, лічильник повернень той самий, що в квоти; межі повернень нема.
 function Close-FailedStart($M, [string]$Id, [string]$StatePath) {
-    if ((Step-FailedStart $M $StatePath) -ne 'LIMIT') { return }
-    $status = [ordered]@{ v = 1; id = $Id; slug = $M.Slug; model = $M.Model; n = [int]$M.N; marker = $M.Sha; cond = $M.Cond; slot = ''
-        start = ''; head = ''; code = 'CRASH'; report = 'NONE'; ahead = 0; turns = 0; minutes = 0; bundle = ''; engine = 'agy' }
-    Write-Log "позначка $($M.Name): відмов до запуску понад $script:MaxRetakes — кінець CRASH"
-    Complete-Status $status $StatePath '' ([datetime]::MinValue)
+    if ((Step-FailedStart $M $StatePath) -ceq 'RETRY') {
+        # Межі повернень нема, тож відмова до старту не мовчить: один рядок на позначку (прапор поруч зі станом).
+        $flag = $StatePath + '.startfail'
+        if (-not (Test-Path -LiteralPath $flag)) {
+            $name = ([string]$M.Name -replace '[^\p{L}\p{Nd}._/-]', '_')
+            if ($name.Length -gt 173) { $name = $name.Substring(0, 173) }
+            if (Add-HoldLine "GEMINI ОБГОРТКА: ЗАБЛОКОВАНО $name START") { Write-FileAtomic $flag '1' }
+        }
+    }
 }
 
 function New-RunId([string]$Key) { '{0:yyyyMMdd-HHmmss}-{1}' -f (Get-Date), (Get-Sha256Hex ($Key + [guid]::NewGuid())).Substring(0, 12) }
@@ -996,8 +1011,8 @@ function Invoke-Task($M, $Job) {
 }
 
 # Відмова за квотою посеред прогону (429): позначка повертається в чергу до скидання (agy — з /usage, Codex — з тексту
-# відмови, нема — quota_wait_minutes), зроблене лишається в гілці, повтор почне з її голови. Понад MaxRetakes — кінець
-# із кодом QUOTA, як до смуг. $true — позначка чекає.
+# відмови, нема — кінець QUOTA), зроблене лишається в гілці, повтор почне з її голови. Скидання невідоме й
+# -QuotaWaitMinutes руки власника не задано — кінець із кодом QUOTA. $true — позначка чекає.
 function Enter-RunQuotaWait($M, $Sel, $Status, $Res, [string]$Dir) {
     $now = [DateTimeOffset]::UtcNow.ToUnixTimeSeconds()
     $until = 0L; $group = 'CODEX'
@@ -1013,10 +1028,12 @@ function Enter-RunQuotaWait($M, $Sel, $Status, $Res, [string]$Dir) {
         try { Write-FileAtomic (Join-Path $RunsDir 'quota-codex.json') ($cq | ConvertTo-Json -Compress) } catch { $null = $_ }
     }
     $known = $until -gt 0
-    if (-not $known) { $until = $now + [long](60 * (Get-Limit $script:Limits 'QuotaWaitMinutes' 'quota_wait_minutes')) }
+    if (-not $known) {
+        $until = Get-QuotaWaitUntil $now
+        if ($null -eq $until) { Write-Log "квота: $($M.Name) — час скидання невідомий — кінець QUOTA"; return $false }
+    }
     $f = Get-Facts $M $Status.start
     $n = Set-MarkerWait $M $until @{ retake = $true; group = $group; head = $(if ($f.Ahead -gt 0) { $f.Head } else { '' }) }
-    if ($null -eq $n) { Write-Log "квота: $($M.Name) — повернень у чергу понад $script:MaxRetakes, кінець QUOTA"; return $false }
     Write-QuotaStatus $M (New-RunId (Get-MarkerKey $M)) $group $until @{ engine = $Sel.Engine.Name; turns = $Status.turns; retake = $n }
     $true
 }
@@ -1053,8 +1070,9 @@ function Test-GpuFree($Workers) { (Get-GpuBusyReason $Workers) -eq '' }
 # входить у чекання вперше.
 function Enter-StartQuotaWait($M, $Q, $State) {
     $now = [DateTimeOffset]::UtcNow.ToUnixTimeSeconds()
-    # Скидання — час із /usage; минув, а група ще на нулі, чи невідомий — quota_wait_minutes.
-    $until = $(if ($Q.ResetAt -gt $now) { [long]$Q.ResetAt } else { $now + [long](60 * (Get-Limit $script:Limits 'QuotaWaitMinutes' 'quota_wait_minutes')) })
+    # Скидання — час із /usage; минув, а група ще на нулі, чи невідомий — чекання без вигаданого строку: позначка одразу
+    # диспетчерові (QUOTA0_*), наступний прохід спробує знову.
+    $until = $(if ($Q.ResetAt -gt $now) { [long]$Q.ResetAt } else { $w = Get-QuotaWaitUntil $now; $(if ($null -eq $w) { $now } else { $w }) })
     $head = $(if ($State.Kind -eq 'WAIT') { [string](Get-JsonProp $State.Wait 'head') } else { '' })
     [void](Set-MarkerWait $M $until @{ group = $Q.Group; head = $head })
     if ($State.Kind -eq 'NEW') { Write-QuotaStatus $M (New-RunId (Get-MarkerKey $M)) $Q.Group $until @{} }
@@ -1100,11 +1118,11 @@ function Start-Markers($Workers) {
         if ($sel.Quota.Blocked) { Enter-StartQuotaWait $m $sel.Quota $st; continue }
         # Слот і смуга — за фактичним рушієм після вибору (каскад agy -> Codex займає слот Codex і не перевищує його N).
         $lane = $(if ($sel.Engine.Name -eq 'codex') { 'codex' } else { 'agy' })
-        $slot = Get-FreeSlot $lane ([int]$script:Limits.slots[$lane]) $Workers
+        $slot = Get-FreeSlot $lane ($script:Limits.slots[$lane]) $Workers
         if (-not $slot) { Add-Skip $m "нема вільного слота смуги $lane"; Add-Hold $script:Held 'SLOTS' 'слоти зайняті' $m.Name; continue }
         $id = New-RunId (Get-MarkerKey $m)
         if (-not (New-Claim $m $id)) { continue }
-        # Усе між claim і STARTED — під одним обліком відмов (retakes, MaxRetakes, CRASH на межі), 10162/10182.
+        # Усе між claim і STARTED — під одним обліком відмов (retakes, повернення в чергу), 10162/10182.
         try {
             $dir = Join-Path $RunsDir $id
             [void](New-Item -ItemType Directory -Force -Path $dir)
@@ -1136,7 +1154,8 @@ function Get-GeminiHealth {
     $c = $null
     if (Test-Path -LiteralPath $path) { try { $c = [System.IO.File]::ReadAllText($path, $script:Utf8) | ConvertFrom-Json } catch { $null = $_ } }
     $now = [DateTimeOffset]::UtcNow.ToUnixTimeSeconds()
-    if ($null -eq $c -or $now - [long]$c.time -ge 60 * (Get-Limit $script:Limits 'UsageMinutes' 'usage_minutes')) {
+    $ua = Get-Limit $script:Limits 'UsageMinutes' 'usage_minutes'
+    if ($null -eq $c -or $null -eq $ua -or $now - [long]$c.time -ge ($ua * 60)) {
         $r = Measure-DirBytes $ProfileDir
         $c = [pscustomobject]@{ time = $now; read = (Get-UtcStamp (Get-Date)); profile = $(if ($null -ne $r) { [string]$r.Bytes } else { '' }); skipped = $(if ($null -ne $r) { [string]$r.Skipped } else { '' }) }
         Write-FileAtomic $path ($c | ConvertTo-Json -Compress)
@@ -1166,7 +1185,7 @@ function Write-Heartbeat([string]$Iso) {
                 [ordered]@{ slot = [string]$s.slot; marker = [string]$s.marker; model = [string]$s.model; since = [string]$s.since; gpu = [bool]$s.gpu }
             })
             if ($null -eq $first -and $busy.Count -gt 0) { $first = $busy[0] }
-            $lanes += [ordered]@{ lane = $ln; n = [int]$script:Limits.slots[$ln]; busy = $busy }
+            $lanes += [ordered]@{ lane = $ln; n = $(if ($null -eq $script:Limits.slots[$ln]) { 'без межі' } else { [int]$script:Limits.slots[$ln] }); busy = $busy }
         }
         $hb.lanes = $lanes
         $hb.limits = $script:Limits.source
@@ -1197,9 +1216,6 @@ function Invoke-Worker {
     $lim = @{ slots = @{} }
     foreach ($p in $job.limits.PSObject.Properties) { $lim[$p.Name] = $p.Value }
     $script:Limits = $lim
-    if (-not $script:Bound.ContainsKey('TurnMinutes')) { $script:TurnMinutes = [double]$lim['agy_turn_minutes'] }
-    if (-not $script:Bound.ContainsKey('TotalMinutes')) { $script:TotalMinutes = [double]$lim['agy_total_minutes'] }
-    if (-not $script:Bound.ContainsKey('CodexStallMinutes')) { $script:CodexStallMinutes = [double]$lim['codex_stall_minutes'] }
     $statePath = Get-StatePath "$($job.ref) $($job.sha)"
     $slotLock = Open-Lock (Join-Path $script:SlotDir "$($job.slot).lock")
     if ($null -eq $slotLock) { Remove-Claim $statePath; Write-Log "слот $($job.slot) зайнятий — позначку не взято"; return $script:WorkerSlotBusy }
@@ -1283,7 +1299,13 @@ function Main {
             foreach ($w in @($workers | Where-Object { $_.Proc.HasExited })) { $workers.Remove($w) }
             Write-Heartbeat ''
             if ($workers.Count -eq 0 -and $started -eq 0) { break }
-            Wait-Workers $workers (Get-Limit $script:Limits 'PollMinutes' 'poll_minutes')
+            $poll = Get-Limit $script:Limits 'PollMinutes' 'poll_minutes'
+            if ($null -eq $poll) {
+                # Період опитування без джерела не береться з коду: проходи не повторюємо, наряди доробляють окремі процеси.
+                Write-Log 'відмова: poll_minutes без джерела в смуги.json — період опитування не задано, цикл зупинено'
+                break
+            }
+            Wait-Workers $workers $poll
         }
         0
     } catch {

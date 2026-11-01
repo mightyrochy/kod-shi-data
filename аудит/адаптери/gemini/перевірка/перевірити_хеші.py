@@ -10,10 +10,12 @@ import sys
 ДАТА = r'(?<![0-9])(?:0[1-9]|[12][0-9]|3[01])\.(?:0[1-9]|1[0-2])(?![0-9])'
 
 
-def є_джерело(текст):
+def є_джерело(текст, механізм=False):
     """Той самий розбір, що Test-LimitSource у queue_lanes.ps1: «власник ДД.ММ …» чи «вимір: …» з датою й числом."""
     if len(текст) > 300 or re.search(r'[\x00-\x1f]', текст):
         return False
+    if механізм and re.match(r'механізм: \S', текст):
+        return True
     if re.fullmatch(r'власник ' + ДАТА + r'(?:[^0-9].*)?', текст, re.S):
         return True
     if not текст.startswith('вимір: '):
@@ -23,12 +25,14 @@ def є_джерело(текст):
 
 
 def перевірити_смуги(root):
-    """Кожна межа — {"n": число в стелі коду, "джерело": "" чи за форматом}; порожнє джерело — друк, не помилка."""
+    """Кожна межа — {"n": число, "джерело": "" чи за форматом}; порожнє джерело — друк, не помилка. Стель у коді нема:
+    криве n (не число, від'ємне, нуль для хвилин, дробові слоти) — помилка даних, як і відмова обгортки."""
     код = (root / 'queue_lanes.ps1').read_text(encoding='utf-8-sig')
-    стелі = {k: (int(a), int(b)) for k, a, b in re.findall(r'(\w+) = @\((\d+), (\d+)\)', код.split('$script:Ceil = @{', 1)[1].split('\n}', 1)[0])}
-    смуги = re.search(r"LaneDefaults = \[ordered\]@\{ ([^}]*) \}", код).group(1)
-    поля = {'slots.' + k: стелі['slots'] for k in re.findall(r'(\w+) = \d+', смуги)}
-    поля.update({k: v for k, v in стелі.items() if k != 'slots'})
+    хвилини = re.search(r"LimitMinuteFields = @\(([^)]*)\)", код).group(1)
+    смуги = re.search(r"LaneNames = @\(([^)]*)\)", код).group(1)
+    поля = {'slots.' + k: True for k in re.findall(r"'(\w+)'", смуги)}
+    поля.update({k: False for k in re.findall(r"'(\w+)'", хвилини)})
+    механізми = set(re.findall(r"'(\w+)'", re.search(r"MechanismFields = @\(([^)]*)\)", код).group(1)))
     try:
         дані = json.loads((root / 'смуги.json').read_text(encoding='utf-8'))
     except ValueError as e:
@@ -52,16 +56,17 @@ def перевірити_смуги(root):
             вади.append(f'{k}: не {{"n", "джерело"}}')
             continue
         n, джерело = межа['n'], межа['джерело']
-        if isinstance(n, bool) or not isinstance(n, (int, float)) or not поля[k][0] <= n <= поля[k][1]:
-            вади.append(f'{k}: n поза стелею {поля[k]}')
-        if not isinstance(джерело, str) or (джерело and not є_джерело(джерело)):
+        слоти = поля[k]
+        if isinstance(n, bool) or not isinstance(n, (int, float)) or n < 0 or (not слоти and n == 0) or (слоти and n != int(n)):
+            вади.append(f'{k}: n не число, від\'ємне, нуль для хвилин чи дробові слоти')
+        if not isinstance(джерело, str) or (джерело and not є_джерело(джерело, k in механізми)):
             вади.append(f'{k}: джерело не за форматом')
         elif not джерело:
             без.append(k)
     for вада in вади:
         print(f'✗ смуги.json: {вада}')
     if not вади:
-        print(f"✓ смуги.json: v2, полів {len(поля)}, без джерела (обгортка бере попереднє): {', '.join(без) or 'нема'}")
+        print(f"✓ смуги.json: v2, полів {len(поля)}, без джерела (межі нема): {', '.join(без) or 'нема'}")
     return int(bool(вади))
 
 
