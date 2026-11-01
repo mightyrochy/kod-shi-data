@@ -46,11 +46,53 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: python3 аудит/проби/поставити_нічну_позначку.py
 
-  obhortka:
+  obhortka_parts:
     if: github.event_name != 'schedule'
-    name: обгортка — Windows PowerShell 5.1
+    name: обгортка — частина ${{ matrix.part }}
     runs-on: windows-latest
     timeout-minutes: 60
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - part: 1
+            stands:
+              - 'сценарії_рушіїв.sh'
+          - part: 2
+            stands:
+              - 'сценарії_claude.sh'
+              - 'сценарії_менше_прогонів.ps1'
+              - 'перевірити_нічний_маркер.ps1'
+              - 'сценарії_тихі_пробудження.ps1'
+              - 'сценарії_простій.ps1'
+          - part: 3
+            stands:
+              - 'сценарії_смуг.sh'
+              - 'сценарії_спостерігача.sh'
+              - 'сценарії_копії.ps1'
+              - 'сценарії_здоровя.sh'
+              - 'сценарії_межі_здоровя.ps1'
+              - 'сценарії_живий_рядок.ps1'
+              - 'перевірити_хеші.py'
+          - part: 4
+            stands:
+              - 'сценарії_прогону.sh'
+              - 'сценарії_доставки.sh'
+              - 'сценарії_бандлів.sh'
+              - 'сценарії_простій_ресурсу.ps1'
+              - 'сценарії_m9v.sh'
+              - 'сценарії_gpu_процеси.ps1'
+              - 'сценарії_no_report.ps1'
+          - part: 5
+            stands:
+              - 'сценарії_черги.sh'
+              - 'сценарії_ланцюга.sh'
+              - 'сценарії_коду_збірки.ps1'
+              - 'сценарії_живих_pr.sh'
+              - 'сценарії_самооновлення.sh'
+              - 'сценарії_кінець_роботи.ps1'
+              - 'сценарії_звіту.sh'
+              - 'сценарії_gpu_память.ps1'
     defaults:
       run:
         shell: bash
@@ -80,8 +122,48 @@ jobs:
           echo "TMPDIR=$(cygpath -u "$RUNNER_TEMP")/obhortka" >> "$GITHUB_ENV"
           mkdir -p "$(cygpath -u "$RUNNER_TEMP")/obhortka"
 
-      - name: усі стенди обгортки, нічний стенд і хеші
+      - name: частина стендів обгортки
         if: ${{ !cancelled() }}
+        env:
+          STANDS: ${{ join(matrix.stands, ' ') }}
         run: |
           set -o pipefail
-          python аудит/проби/доробка_менше_прогонів.py --дерево . --журнали "$RUNNER_TEMP/obhortka-logs" 2>&1 | tee -a "$GITHUB_STEP_SUMMARY"
+          read -r -a stands <<< "$STANDS"
+          python аудит/проби/доробка_менше_прогонів.py --дерево . --журнали "$RUNNER_TEMP/obhortka-logs" --лише "${stands[@]}" 2>&1 | tee -a "$GITHUB_STEP_SUMMARY"
+
+      - name: результати частини
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: obhortka-${{ matrix.part }}
+          if-no-files-found: error
+          path: |
+            ${{ runner.temp }}/obhortka-logs/результати.json
+            ${{ runner.temp }}/obhortka-logs/*.log
+
+  obhortka:
+    name: обгортка — Windows PowerShell 5.1
+    needs: obhortka_parts
+    if: ${{ always() && github.event_name != 'schedule' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
+        with:
+          persist-credentials: false
+          fetch-depth: 1
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5.6.0
+        with:
+          python-version: '3.11'
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
+        with:
+          pattern: obhortka-*
+          path: ${{ runner.temp }}/obhortka-results
+      - name: усі стенди виконані рівно раз і зелені
+        if: ${{ !cancelled() }}
+        env:
+          PARTS_RESULT: ${{ needs.obhortka_parts.result }}
+        run: |
+          set -o pipefail
+          python3 аудит/проби/доробка_менше_прогонів.py --дерево . --журнали "$RUNNER_TEMP/obhortka-results" --зібрати 2>&1 | tee -a "$GITHUB_STEP_SUMMARY"
+          test "$PARTS_RESULT" = success
