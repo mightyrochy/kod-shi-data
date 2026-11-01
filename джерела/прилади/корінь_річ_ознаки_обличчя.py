@@ -641,10 +641,13 @@ class Стан:
                 мітки = self.ключі_викликів[id(сам)][0]
             elif isinstance(сам, ast.Name) and any(self.ключі.get(сам.id, {}).values()):
                 мітки = self.читати_env(сам.id)
-            elif isinstance(сам, (ast.ListComp, ast.SetComp, ast.GeneratorExp, ast.List, ast.Subscript, ast.BinOp)):
+            elif isinstance(сам, (ast.ListComp, ast.SetComp, ast.GeneratorExp, ast.List, ast.Subscript, ast.BinOp,
+                                  ast.DictComp, ast.Tuple)):
                 м, кл = self.значення(сам)
                 if кл:
                     мітки = м
+                    for к, в in кл.items():
+                        self.ключі[ціль.id][к] = self.ключі[ціль.id][к] | в
             self.писати(ціль.id, мітки)
             if isinstance(значення, ast.Compare):
                 г = self.гілка_невідомо(значення)
@@ -739,6 +742,22 @@ class Стан:
             self.e(сам)
             м, к = self.значення(сам.elt)
             return м - {F}, к
+        if isinstance(сам, ast.Subscript) and isinstance(сам.slice, ast.Slice):
+            self.e(сам)
+            return self.значення(сам.value)
+        if isinstance(сам, ast.Subscript) and not isinstance(сам.value, ast.Name):
+            мз, кз = self.значення(сам.value)
+            if кз:
+                self.e(сам)
+                if _рядок(сам.slice):
+                    к = сам.slice.value
+                    return (кз.get(к, E) | self.індекс(мз, сам.slice, сам)), (_під(кз, к) or None)
+                return self.індекс(мз, сам.slice, сам), (_без_першого(кз) or None)
+        if isinstance(сам, ast.DictComp):
+            self.e(сам)
+            мв, кв = self.значення(сам.value)
+            if кв:
+                return (self.e(сам.key) | мв) - {F}, кв
         if isinstance(сам, ast.Tuple) and сам.elts and not any(isinstance(x, ast.Starred) for x in сам.elts):
             ключі = {}
             for і, x in enumerate(сам.elts):
@@ -794,7 +813,12 @@ class Стан:
         if isinstance(ціль, ast.Tuple) and len(ціль.elts) == 2 and isinstance(ітер, ast.Call) and \
                 isinstance(ітер.func, ast.Attribute) and ітер.func.attr == "items" and not ітер.args:
             self.присвоїти(ціль.elts[0], E)
-            self.присвоїти(ціль.elts[1], мітки)
+            м, кл = self.значення(ітер.func.value)
+            if кл:
+                # значення dict за змінним ключем: мітки поза ключами й ключі елемента
+                self.елемент(ціль.elts[1], м - {F}, _без_першого(кл))
+            else:
+                self.присвоїти(ціль.elts[1], мітки)
             return
         if isinstance(ціль, ast.Name):
             if isinstance(ітер, (ast.Tuple, ast.List, ast.Set)) and ітер.elts and all(_рядок(x) for x in ітер.elts):
@@ -1519,6 +1543,22 @@ def стенд():
                     _ЗП.зібрати(ВИБІР, dict(person=особа, day=d.get("день")))
                     if d.get("зріст") > 150:
                         pass
+                    записи = [dict(id=i, шкіра_L=F["шкіра"]["L"]) for i in range(3)]
+                    пари = [(F["шкіра"]["L"], з) for з in записи]
+                    for л, з in пари:
+                        if л > 60:
+                            pass
+                        if з["id"] > 1:
+                            pass
+                    кошик = {}
+                    for з in записи:
+                        кошик[з["id"]] = з
+                    for _к, з in кошик.items():
+                        if з["шкіра_L"] < 20:
+                            pass
+                    for з, н in zip(записи, range(3)):
+                        if н > 1:
+                            pass
                     return знак(F, d.get("самозвіт") or {}), риси
             """,
         }
@@ -1558,6 +1598,10 @@ def стенд():
             ("п.2 запасне число", є("риси.py", r'get\("C"\) or 0', 2), True),
             ("не місце: самозвіт", є("риси.py", r'самозвіт\["w"\]', 1), False),
             ("не місце: зріст", є("риси.py", r"зріст", 1), False),
+            ("п.1 позиція кортежу зі списку", є("риси.py", r"л > 60", 1), True),
+            ("не місце: інша позиція кортежу", є("риси.py", r'з\["id"\] > 1', 1), False),
+            ("п.1 поле запису з .items()", є("риси.py", r'шкіра_L"\] < 20', 1), True),
+            ("не місце: друга послідовність zip", є("риси.py", r"н > 1", 1), False),
             ("п.3 наявність запису", є("риси.py", r"return lambda п: \(any", 3), True),
             ("п.3 рядок таблиці", є("риси.py", r'"why_her_contrast"', 3), True),
             ("не п.3: значення metal", є("риси.py", r'"why_her_metal"', 3), False),
