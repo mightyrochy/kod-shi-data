@@ -57,7 +57,8 @@ def _пара(*мітки):
         вих = вих - {S}
     return вих
 E = frozenset()
-СЛУЖБОВІ = re.compile(r"^(_meta|_макіяж|макіяж_|protocol$|from_photo$|source$|photo_note$)")
+# Лічильники масок мають окреме джерело — пікселі фото, а не hex відповіді моделі.
+СЛУЖБОВІ = re.compile(r"^(_meta|_пікселі$|_макіяж|макіяж_|protocol$|from_photo$|source$|photo_note$)")
 НЕВІДОМЕ = re.compile(r"не стверджу|not_asserted|unknown|невідом|не визнач|н/д|^none$|не калібр|^free$|вільн|^—$|\bнема\b|не чита",
                       re.IGNORECASE)
 ВИМІР = re.compile(r"(?<!not )(?<!un)(?<!не )\b(measured|measures|measure|виміря\w*|вимір\w*)", re.IGNORECASE)
@@ -255,6 +256,16 @@ def _формульні(дерево):
                                 for л, п in zip([т.left] + т.comparators, т.comparators)):
                     вих.add(id(т))
         т = getattr(в, "test", None)
+        if isinstance(в, ast.IfExp) and isinstance(в.body, ast.ListComp) \
+                and isinstance(в.body.elt, ast.Tuple) and isinstance(в.orelse, ast.List) \
+                and len(в.orelse.elts) == 1 and isinstance(в.orelse.elts[0], ast.Tuple) \
+                and len(в.orelse.elts[0].elts) == len(в.body.elt.elts) \
+                and all(_число(н) and н.value == 0 for н in в.orelse.elts[0].elts) \
+                and all(isinstance(н, ast.Name) for н in в.body.elt.elts) \
+                and _імена(в.body.elt) == set().union(*(_імена(г.target) for г in в.body.generators)) \
+                and isinstance(т, ast.Compare) and len(т.ops) == 1 and isinstance(т.ops[0], ast.Gt) \
+                and _число(т.comparators[0]) and т.comparators[0].value == 0:
+            вих.add(id(т))  # сітка зсувів або її виродження в нуль: спосіб інтегрування
         if isinstance(в, ast.If) and isinstance(т, ast.Compare) and len(т.ops) == 1 \
                 and isinstance(т.ops[0], ast.Eq) and isinstance(т.left, ast.BinOp) and isinstance(т.left.op, ast.Mult) \
                 and _число(т.comparators[0]) and т.comparators[0].value == 0 and в.body and в.orelse \
@@ -328,6 +339,7 @@ def _ваги_знахідки(корінь, супровід=False):
     return frozenset(к + '_джерело' for к in вих if к + '_джерело' in поля) if супровід else frozenset(вих)
 
 
+@functools.cache
 def _сітка(в):
     """Включення `[вираз з i for i in range(…)]`, де вираз — арифметика над номером кроку без читання з колекції:
     точки сітки, яку код будує сам у вікні. Кандидат сітки — не її значення (рішення менеджера 01.11)."""
@@ -904,15 +916,6 @@ class Стан:
         # несе лише нове); у гілці чи циклі — додає, бо інший шлях міг лишити старе
         self.верх = ф.верх
         self.зерно = ф.повне in а.функції_зерна
-
-    def _обійти(self, тіло):
-        стек = list(тіло)
-        while стек:
-            n = стек.pop()
-            yield n
-            if isinstance(n, (ast.FunctionDef, ast.AsyncFunctionDef, ast.ClassDef, ast.Lambda)):
-                continue
-            стек.extend(ast.iter_child_nodes(n))
 
     def виконати(self):
         в = self.ф.вузол
@@ -1574,9 +1577,9 @@ class Стан:
 
     def послідовності(self):
         """Локальні імена, яким функція присвоює лише перелік (`[]`, `[… for …]`, `list(…)`, `sorted(…)`)."""
-        if not hasattr(self, "_послідовності"):
+        if not hasattr(self.ф, "_послідовності"):
             види = collections.defaultdict(set)
-            for n in self._обійти(self.ф.вузол.body if isinstance(self.ф.вузол.body, list) else []):
+            for n in self.ф.власні:
                 if isinstance(n, ast.Assign):
                     пари = [(ц, n.value) for ц in n.targets]
                     for ц, з in list(пари):   # `а, б = [], []` — поелементно
@@ -1588,8 +1591,8 @@ class Стан:
                             види[ц.id].add(isinstance(з, self.ПОСЛІДОВНІСТЬ) or (
                                 isinstance(з, ast.Call) and isinstance(з.func, ast.Name)
                                 and з.func.id in ("list", "sorted", "tuple", "set")))
-            self._послідовності = {ім for ім, в in види.items() if в == {True}}
-        return self._послідовності
+            self.ф._послідовності = {ім for ім, в in види.items() if в == {True}}
+        return self.ф._послідовності
 
     def наявне(self, в):
         """Мітки, на які дивиться перевірка «є / нема» (`not x`, `x is None`) запису чи списку записів з ключами: як пара
@@ -1800,6 +1803,8 @@ class Стан:
             вих.add(K)
         if R in база:
             вих.add(R)
+        if Q in база:
+            вих.add(Q)
         if self.зерно and isinstance(к, str) and self.а.зерно and к in self.а.зерно["ключі"]:
             вих.add(S)
             self.а.місце(self.м, вузол, 1, "поле відповіді моделі зору `%s` (hex) стає її рисою без позначки оцінки" % к)
@@ -1855,20 +1860,20 @@ class Стан:
             self.а.місце(self.м, вузол, 1, "оцінці моделі дано довіру знімку (`AXIS_RELIABILITY`)")
 
     def з_таблиці_довіри(self, вираз):
-        if not hasattr(self, "_імена_довіри"):
+        if not hasattr(self.ф, "_імена_довіри"):
             імена = set()
-            присвоєння = [(ц.id, n.value) for n in self._обійти(self.ф.вузол.body if isinstance(self.ф.вузол.body, list)
-                                                                  else []) if isinstance(n, ast.Assign)
+            присвоєння = [(ц.id, n.value) for n in self.ф.власні if isinstance(n, ast.Assign)
                           for ц in n.targets if isinstance(ц, ast.Name)]
             while True:
-                нові = {ім for ім, з in присвоєння if ім not in імена and self._джерело_довіри(з, імена)}
+                нові = {ім for ім, з in присвоєння if ім not in імена and self._джерело_довіри(з, frozenset(імена))}
                 if not нові:
                     break
                 імена |= нові
-            self._імена_довіри = імена
-        return self._джерело_довіри(вираз, self._імена_довіри)
+            self.ф._імена_довіри = frozenset(імена)
+        return self._джерело_довіри(вираз, self.ф._імена_довіри)
 
     @staticmethod
+    @functools.cache
     def _джерело_довіри(вираз, імена):
         for n in ast.walk(вираз):
             if isinstance(n, ast.Attribute) and n.attr == "AXIS_RELIABILITY":
@@ -2082,6 +2087,12 @@ class Стан:
             вих = усі
             if ім in ФАЙЛОВІ:
                 return frozenset((усі | {C}) - {S, F})
+            if isinstance(в.func, ast.Attribute) and isinstance(в.func.value, ast.Name) \
+                    and self.м.імпорти.get(в.func.value.id) == 'math' and ім in ('erf', 'tanh'):
+                # Нелінійна обмежена шкала повертає силу/певність; її читачі не є новими входами.
+                if S in усі and not self.а.пара_глибина:
+                    self.а.місце(self.м, в, 1, "її значення входить у нелінійну шкалу рішення: %s" % _текст(в)[:70])
+                return frozenset((усі - {S, F}) | ({Q} if S in усі else set()))
             if ім in ("loads", "deepcopy", "copy", "list", "sorted", "tuple", "set", "reversed", "frozenset") \
                     and len(поз_к) == 1 and isinstance(поз_к[0], tuple):
                 мітки, ключі = поз_к[0]   # той самий запис: ключі dict ідуть далі
@@ -2330,6 +2341,7 @@ def стенд():
             """,
             "риси.py": """
                 import збирач_промптів as _ЗП
+                import math as обчислення
                 from надійність import reliability
                 ТАБЛ = {(15, 0): 30.0}
                 ВИБІР = _ЗП.Оголошення(задача="в", вхід=(_ЗП.Поле("person", "her colouring as the code measured it"),
@@ -2586,6 +2598,15 @@ def стенд():
                     кат_ваги, _ = категорія(F["шкіра"]["L"])
                     знайти(кат_ваги)
                     сире_положення, вага_довіри, _ = змішаний(F)
+                    нелінійна_сила = 0.5 + 0.5 * обчислення.erf(F["шкіра"]["L"] / 100)
+                    if нелінійна_сила >= 0.5:
+                        pass
+                    ворота_сили = 0.5 + 0.5 * обчислення.tanh(F["очі"]["h"] / 50)
+                    if ворота_сили > 0.4:
+                        pass
+                    вузли_зсуву = [(dl, db) for dl in (-1, 0, 1) for db in (-1, 0, 1)] if F["шкіра"]["L"] > 0 else [(0, 0)]
+                    пікселі_маски = F.get("_пікселі") or {}
+                    кількість_маски = (пікселі_маски.get("волосся") or 0) + (пікселі_маски.get("оправа") or 0)
                     з_дов = dict(сила_нп=вага_довіри)
                     if сире_положення > 45:
                         pass
@@ -2656,6 +2677,12 @@ def стенд():
             return any((н, пункт) in за[файл] for н in рядки)
 
         випадки = [
+            ("п.1 вхід у нелінійну шкалу erf", є("риси.py", r"нелінійна_сила =", 1), True),
+            ("не місце: споживач сили erf", є("риси.py", r"if нелінійна_сила", 1), False),
+            ("п.1 вхід у нелінійні ворота tanh", є("риси.py", r"ворота_сили =", 1), True),
+            ("не місце: споживач воріт tanh", є("риси.py", r"if ворота_сили", 1), False),
+            ("не місце: нульова ширина сітки інтегрування", є("риси.py", r"вузли_зсуву =", 1), False),
+            ("не місце: пікселі масок не походять із hex", є("риси.py", r"кількість_маски =", 2), False),
             ("не місце: маржа функції шкали ваги", є("риси.py", r"if маржа == 0.0", 1), False),
             ("не місце: стеля функції шкали ваги", є("риси.py", r"if нп > 0.8", 1), False),
             ("п.1 вхід пари без порогу", є("риси.py", r"різниця = ", 1), True),
