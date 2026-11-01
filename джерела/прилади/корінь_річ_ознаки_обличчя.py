@@ -138,11 +138,46 @@ class Модуль:
             стек.extend(ast.iter_child_nodes(n))
 
 
+def _імена(в):
+    return {x.id for x in ast.walk(в) if isinstance(x, ast.Name)}
+
+
+def _число(в):
+    return isinstance(в, ast.Constant) and isinstance(в.value, (int, float)) and not isinstance(в.value, bool)
+
+
+def _формульні(дерево):
+    """Порівняння — шматок формули, а не поріг рішення: кусково задана функція тієї самої величини
+    (`f(L) if L > 8.0 else g(L)`, `x / (a+b) if (a+b) > 0 else 0.0`) чи нормування кута
+    (`if d > 180: d = 360 - d`). Межу ставить формула, а не код про неї."""
+    вих = set()
+    for в in ast.walk(дерево):
+        т = getattr(в, "test", None)
+        if not (isinstance(т, ast.Compare) and len(т.ops) == 1 and _число(т.comparators[0])):
+            continue
+        ім = _імена(т.left)
+        if not ім:
+            continue
+        if isinstance(в, ast.IfExp):
+            if not isinstance(в.body, ast.BinOp) or not ім <= _імена(в.body):
+                continue
+            if ім <= _імена(в.orelse) and isinstance(в.orelse, (ast.BinOp, ast.Call, ast.Name)) \
+                    or _число(в.orelse) and в.orelse.value == 0:
+                вих.add(id(т))
+        elif isinstance(в, ast.If) and not в.orelse and len(в.body) == 1 and isinstance(в.body[0], ast.Assign) \
+                and isinstance(т.left, ast.Name) and isinstance(в.body[0].value, ast.BinOp) \
+                and [ц.id for ц in в.body[0].targets if isinstance(ц, ast.Name)] == [т.left.id] \
+                and т.left.id in _імена(в.body[0].value):
+            вих.add(id(т))
+    return вих
+
+
 class Аналіз:
     def __init__(self, корінь):
         self.корінь = корінь
         self.модулі = {}
         self.синтетичні, self.тримати = {}, []   # `map(f, xs)` → виклик f(xs[і]); вузли тримаються, щоб id не мінявся
+        self.формульні = set()
         for шлях in sorted(glob.glob(os.path.join(корінь, "джерела", "*.py"))):
             ім = os.path.basename(шлях)[:-3]
             if ВИКЛЮЧЕНО.match(ім):
@@ -156,6 +191,7 @@ class Аналіз:
                 except SyntaxError:
                     continue
             self.модулі[ім] = Модуль(ім, os.path.relpath(шлях, корінь), дерево)
+            self.формульні |= _формульні(дерево)
         self.пам = {}             # (функція, контекст) → мітки повернення
         self.ключі_пов = collections.defaultdict(lambda: collections.defaultdict(frozenset))  # функція → ключ → мітки
         self.глоб = collections.defaultdict(frozenset)                                       # (модуль, ім) → мітки
@@ -592,6 +628,9 @@ class Стан:
             elif isinstance(n, ast.Global):
                 self.глобальні.update(n.names)
         self.локальні -= self.глобальні
+        # інструкції верхнього рівня тіла: тут присвоєння імені замінює попереднє значення (далі по тілу ім'я
+        # несе лише нове); у гілці чи циклі — додає, бо інший шлях міг лишити старе
+        self.верх = set() if isinstance(ф.вузол, ast.Lambda) else {id(і) for і in ф.вузол.body}
         self.зерно = ф.повне in а.функції_зерна
 
     def _обійти(self, тіло):
@@ -1003,6 +1042,10 @@ class Стан:
     def інструкція(self, і):
         if isinstance(і, ast.Assign):
             мітки = self.e(і.value)
+            ц = і.targets[0]
+            if id(і) in self.верх and len(і.targets) == 1 and isinstance(ц, ast.Name) and ц.id in self.локальні \
+                    and ц.id not in _імена(і.value):
+                self.env.pop(ц.id, None); self.ключі.pop(ц.id, None); self.невідомо.pop(ц.id, None)
             for ц in і.targets:
                 self.присвоїти(ц, мітки, і.value)
         elif isinstance(і, ast.AugAssign):
@@ -1272,6 +1315,8 @@ class Стан:
             if S not in _пара(л, п):   # її ознака проти запису з файлу — порівняння про річ
                 continue
             if isinstance(оп, ПОРЯДОК):
+                if id(в) in self.а.формульні:
+                    continue
                 self.а.місце(self.м, в, 1, "поріг на пораховане з hex моделі: %s" % ast.unparse(в)[:70])
             elif isinstance(оп, (ast.Eq, ast.NotEq)):
                 інший = операнди[i + 1] if S in л else операнди[i]
