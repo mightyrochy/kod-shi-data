@@ -746,7 +746,12 @@ class Стан:
         return мітки, None
 
     def ітерація(self, ціль, ітер):
-        """`for ціль in ітер`: номер `enumerate` і ключ `.items()` — позиція й ім'я, не значення про колорит."""
+        """`for ціль in ітер`: номер `enumerate` і ключ `.items()` — позиція й ім'я, не значення про колорит.
+        Ім'я циклу щоразу прив'язане заново (сильне оновлення): два цикли з тим самим ім'ям не зливають елементів."""
+        for n in ast.walk(ціль):
+            if isinstance(n, ast.Name) and n.id in self.локальні and n.id not in self.глобальні:
+                self.env.pop(n.id, None)
+                self.ключі.pop(n.id, None)
         if isinstance(ціль, ast.Tuple) and len(ціль.elts) == 2 and isinstance(ітер, ast.Call) and \
                 isinstance(ітер.func, ast.Name) and ітер.func.id == "enumerate" and ітер.args:
             self.e(ітер)
