@@ -777,6 +777,23 @@ class Стан:
             self.e(сам)
             м, к = self.значення(сам.elt)
             return м - {F}, к
+        if isinstance(сам, ast.Call) and isinstance(сам.func, ast.Attribute) and сам.func.attr in ("get", "pop") \
+                and сам.args and _рядок(сам.args[0]) and not isinstance(сам.func.value, ast.Name) \
+                and not self.а.викликані(self.м, сам.func, self.ф):
+            мз, кз = self.значення(сам.func.value)
+            к = сам.args[0].value
+            if кз and (к in кз or _під(кз, к)):
+                self.e(сам)
+                типове = self.e(сам.args[1]) if len(сам.args) > 1 else E
+                return (кз.get(к, E) | типове | self.індекс(мз, сам.args[0], сам)), (_під(кз, к) or None)
+        if isinstance(сам, ast.Call) and isinstance(сам.func, ast.Attribute) and сам.func.attr == "pop" \
+                and isinstance(сам.func.value, ast.Name) and self.ключі.get(сам.func.value.id) \
+                and (not сам.args or (isinstance(сам.args[0], ast.Constant) and type(сам.args[0].value) is int)) \
+                and not self.а.викликані(self.м, сам.func, self.ф):
+            # `список.pop(і)`: елемент списку записів — ключі запису, не їхня сума
+            self.e(сам)
+            км = self.ключі[сам.func.value.id]
+            return self.індекс(self.читати_env(сам.func.value.id), ast.Constant(0), сам), (_без_першого(км) or None)
         if isinstance(сам, ast.Subscript) and isinstance(сам.slice, ast.Slice):
             self.e(сам)
             return self.значення(сам.value)
@@ -792,7 +809,8 @@ class Стан:
             self.e(сам)
             мв, кв = self.значення(сам.value)
             if кв:
-                return (self.e(сам.key) | мв) - {F}, кв
+                # ключ dict — рядок чи число, не запис: ключі запису, що їх несе ім'я ключа, у мітки не йдуть
+                return (self.значення(сам.key)[0] | мв) - {F}, кв
         if isinstance(сам, ast.Tuple) and сам.elts and not any(isinstance(x, ast.Starred) for x in сам.elts):
             ключі = {}
             for і, x in enumerate(сам.elts):
@@ -1145,8 +1163,12 @@ class Стан:
                 self.кортежі_викликів[id(в)] = self.кортежі_викликів[id(в.value)]
             return м
         if isinstance(в, ast.Yield):
-            м = self.e(в.value)
-            self.пов |= м
+            if в.value is not None:
+                self.e(в.value)
+                м, кл = self.значення(в.value)
+                self.пов |= м
+                for к, з in (кл or {}).items():
+                    self.ключі_пов[к] = self.ключі_пов.get(к, E) | з
             return E
         if isinstance(в, ast.NamedExpr):
             м = self.e(в.value)
@@ -1285,6 +1307,15 @@ class Стан:
                         for кл, вв in (ключі or {}).items():
                             self.ключі[корінь][кл] = self.ключі[корінь][кл] | вв
                 elif ім in ("append", "add", "appendleft", "extend", "extendleft", "insert") and \
+                        isinstance(в.func.value, ast.Subscript) and isinstance(в.func.value.value, ast.Name) and \
+                        not _рядок(в.func.value.slice) and корінь in self.локальні and корінь not in self.глобальні:
+                    # `d[ключ].append(запис)`: як `d[ід] = запис` — ключі запису стають ключами елемента d
+                    for з in (поз_к[1:] if ім == "insert" else поз_к):
+                        мітки, ключі = з if isinstance(з, tuple) else (з, None)
+                        self.писати(корінь, мітки - {F}, мутація=True)
+                        for кл, вв in (ключі or {}).items():
+                            self.ключі[корінь][кл] = self.ключі[корінь][кл] | вв
+                elif ім in ("append", "add", "appendleft", "extend", "extendleft", "insert") and \
                         isinstance(в.func.value, ast.Subscript) and _шлях(в.func.value)[1] and \
                         корінь in self.локальні and корінь not in self.глобальні:
                     for з in (поз_к[1:] if ім == "insert" else поз_к):
@@ -1311,6 +1342,12 @@ class Стан:
             if ім in ("get", "pop") and в.args and not self.а.викликані(self.м, в.func, self.ф):
                 if isinstance(в.func.value, ast.Name) and _рядок(в.args[0]):
                     return self.ключ_імені(в.func.value.id, в.args[0].value, в, в.args[1] if len(в.args) > 1 else None)
+                if not isinstance(в.func.value, ast.Name) and _рядок(в.args[0]):
+                    мз, кз = self.значення(в.func.value)
+                    к = в.args[0].value
+                    if кз and (к in кз or _під(кз, к)):
+                        return кз.get(к, E) | _усі(_під(кз, к)) | self.індекс(мз, в.args[0], в,
+                                                                             в.args[1] if len(в.args) > 1 else None)
                 if isinstance(в.func.value, ast.Name) and isinstance(в.args[0], ast.Name) \
                         and в.args[0].id in self.ключі_циклу and self.ключі.get(в.func.value.id):
                     вих = set()
