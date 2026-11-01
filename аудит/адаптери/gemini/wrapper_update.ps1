@@ -1,5 +1,15 @@
 ﻿#Requires -Version 5.1
 # Самооновлення викликає лише публікатор власника; джерело — його щойно fetched origin/main.
+function Read-WrapperManifest([string]$Path) {
+    <# Розбирає дані PowerShell і вимагає повний набір файлів самооновлення для ноутбука й CI. #>
+    $manifest = Import-PowerShellDataFile -LiteralPath $Path -ErrorAction Stop
+    $files = @($manifest.Keys | Where-Object { $_ -cmatch '^[a-z][a-z0-9_]*\.ps1$' })
+    foreach ($needed in @('gemini_run.ps1','gemini_publish.ps1','gemini_watch.ps1','claude_run.ps1','queue_lanes.ps1','wrapper_health.ps1','wrapper_update.ps1','wrapper_chain.ps1','wrapper_probe.ps1')) {
+        if ($needed -notin $files) { throw 'UPDATE_MANIFEST' }
+    }
+    $manifest
+}
+
 function Test-UpdateRoot([string]$Root, [Security.Principal.IdentityReference]$GeminiIdentity = ([Security.Principal.NTAccount]"$env:COMPUTERNAME\$GeminiUser")) {
     <# Відхиляє посилання та права запису gemini/загальних груп у захищеній теці. #>
     if (-not (Test-Path -LiteralPath $Root -PathType Container)) { return $false }
@@ -58,12 +68,9 @@ function Invoke-WrapperUpdate([string]$Root) {
         Add-Type -AssemblyName System.IO.Compression.FileSystem
         [IO.Compression.ZipFile]::ExtractToDirectory($zip, (Join-Path $stage 'archive'))
         $src = Join-Path (Join-Path $stage 'archive') $prefix
-        $manifest = Import-PowerShellDataFile (Join-Path $src 'm9v/хеші.psd1')
+        $manifest = Read-WrapperManifest (Join-Path $src 'm9v/хеші.psd1')
         $dest = Join-Path $stage 'version'; [void][IO.Directory]::CreateDirectory($dest)
         $files = @($manifest.Keys | Where-Object { $_ -cmatch '^[a-z][a-z0-9_]*\.ps1$' })
-        foreach ($needed in @('gemini_run.ps1','gemini_publish.ps1','gemini_watch.ps1','claude_run.ps1','queue_lanes.ps1','wrapper_health.ps1','wrapper_update.ps1','wrapper_chain.ps1','wrapper_probe.ps1')) {
-            if ($needed -notin $files) { throw 'UPDATE_MANIFEST' }
-        }
         foreach ($name in $files) {
             $file = Join-Path $src $name
             if ($manifest[$name] -cnotmatch '^[0-9A-F]{64}$' -or (Get-FileHash -LiteralPath $file -Algorithm SHA256).Hash -cne $manifest[$name]) { Write-WrapperLog "хеш кандидата не збігся: $name"; throw 'UPDATE_HASH' }
