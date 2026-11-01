@@ -23,12 +23,13 @@ def є_джерело(текст):
 
 
 def перевірити_смуги(root):
-    """Кожна межа — {"n": число в стелі коду, "джерело": "" чи за форматом}; порожнє джерело — друк, не помилка."""
+    """Кожна межа — {"n": число, "джерело": "" чи за форматом}; порожнє джерело — друк, не помилка. Стель у коді нема:
+    криве n (не число, від'ємне, нуль для хвилин, дробові слоти) — помилка даних, як і відмова обгортки."""
     код = (root / 'queue_lanes.ps1').read_text(encoding='utf-8-sig')
-    стелі = {k: (int(a), int(b)) for k, a, b in re.findall(r'(\w+) = @\((\d+), (\d+)\)', код.split('$script:Ceil = @{', 1)[1].split('\n}', 1)[0])}
-    смуги = re.search(r"LaneDefaults = \[ordered\]@\{ ([^}]*) \}", код).group(1)
-    поля = {'slots.' + k: стелі['slots'] for k in re.findall(r'(\w+) = \d+', смуги)}
-    поля.update({k: v for k, v in стелі.items() if k != 'slots'})
+    хвилини = re.search(r"LimitMinuteFields = @\(([^)]*)\)", код).group(1)
+    смуги = re.search(r"LaneNames = @\(([^)]*)\)", код).group(1)
+    поля = {'slots.' + k: True for k in re.findall(r"'(\w+)'", смуги)}
+    поля.update({k: False for k in re.findall(r"'(\w+)'", хвилини)})
     try:
         дані = json.loads((root / 'смуги.json').read_text(encoding='utf-8'))
     except ValueError as e:
@@ -52,8 +53,9 @@ def перевірити_смуги(root):
             вади.append(f'{k}: не {{"n", "джерело"}}')
             continue
         n, джерело = межа['n'], межа['джерело']
-        if isinstance(n, bool) or not isinstance(n, (int, float)) or not поля[k][0] <= n <= поля[k][1]:
-            вади.append(f'{k}: n поза стелею {поля[k]}')
+        слоти = поля[k]
+        if isinstance(n, bool) or not isinstance(n, (int, float)) or n < 0 or (not слоти and n == 0) or (слоти and n != int(n)):
+            вади.append(f'{k}: n не число, від\'ємне, нуль для хвилин чи дробові слоти')
         if not isinstance(джерело, str) or (джерело and not є_джерело(джерело)):
             вади.append(f'{k}: джерело не за форматом')
         elif not джерело:
@@ -61,7 +63,7 @@ def перевірити_смуги(root):
     for вада in вади:
         print(f'✗ смуги.json: {вада}')
     if not вади:
-        print(f"✓ смуги.json: v2, полів {len(поля)}, без джерела (обгортка бере попереднє): {', '.join(без) or 'нема'}")
+        print(f"✓ смуги.json: v2, полів {len(поля)}, без джерела (межі нема): {', '.join(без) or 'нема'}")
     return int(bool(вади))
 
 

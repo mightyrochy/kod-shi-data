@@ -1,4 +1,4 @@
-﻿#Requires -Version 5.1
+﻿﻿#Requires -Version 5.1
 <#
 .SYNOPSIS
 Спільне для двох планувальників ноутбука — `gemini_run.ps1` (під `gemini`: смуги Codex і `agy`) і `claude_run.ps1` (під
@@ -31,19 +31,12 @@ $script:OnWindows = ($PSVersionTable.PSEdition -ne 'Core') -or [bool](Get-Variab
 # Тека версії цього процесу: після самооновлення — `<корінь>\versions\<SHA40>`, поряд із коренем — `active.txt`.
 $script:VersionDir = $PSScriptRoot
 
-# Кількість слотів задає смуги.json; 64 — захист від помилки в даних, не виміряна межа ноутбука.
-# Решта меж також під хешем; значення поза ними обрізаються. Параметр задачі власника не обрізаємо.
-$script:Ceil = @{
-    slots = @(0, 64); poll_minutes = @(1, 5); usage_minutes = @(5, 60); quota_wait_minutes = @(15, 1440)
-    agy_total_minutes = @(30, 600); agy_turn_minutes = @(10, 600); codex_stall_minutes = @(10, 240); claude_hang_minutes = @(30, 240)
-}
-$script:Defaults = @{
-    poll_minutes = 2; usage_minutes = 15; quota_wait_minutes = 60
-    agy_total_minutes = 180; agy_turn_minutes = 120; codex_stall_minutes = 60; claude_hang_minutes = 120
-}
-$script:LaneDefaults = [ordered]@{ codex = 2; agy = 2; claude = 2 }
-# Скільки разів відмова за квотою повертає ту саму позначку в чергу: далі — кінець із кодом квоти, як до смуг.
-$script:MaxRetakes = 5
+# Межі роботи — лише з файла даних (`смуги.json`, `ланцюг.json`) і лише з джерелом (п.11): типових значень, стель і
+# попередніх прийнятих значень у коді нема. Поле без джерела — межі нема (стелі, тайм-аути, слоти); для механізму, якому
+# потрібен період (poll_minutes), — відмова рядком у журналі з назвою поля. Криве значення (не число, від'ємне, нуль для
+# хвилин, дробові слоти) — відмова рядком, без обрізання. Тут лише імена полів і смуг.
+$script:LimitMinuteFields = @('poll_minutes', 'usage_minutes', 'quota_wait_minutes', 'agy_total_minutes', 'agy_turn_minutes', 'codex_stall_minutes', 'claude_hang_minutes')
+$script:LaneNames = @('codex', 'agy', 'claude')
 # Код виходу процесу наряду: слот чи GPU зайняті до старту — позначку не взято, вона лишається в черзі.
 $script:WorkerSlotBusy = 3
 $script:WorkerGpuBusy = 4
@@ -158,7 +151,8 @@ function Invoke-Native([string]$Exe, [string[]]$Arguments, [string]$Dir = '', [d
         $w.Write($StdIn)
         $w.Close()
     }
-    $until = [datetime]::UtcNow.AddMinutes($TimeoutMinutes)
+    # Нескінченність — межі часу нема (джерела межі нема): процес чекаємо, доки не закінчиться.
+    $until = $(if ([double]::IsPositiveInfinity($TimeoutMinutes)) { [datetime]::MaxValue } else { [datetime]::UtcNow.AddMinutes($TimeoutMinutes) })
     while (-not $p.WaitForExit(1000) -and [datetime]::UtcNow -lt $until) { Invoke-HealthBeat }
     $timedOut = -not $p.HasExited
     if ($timedOut) { Stop-Tree $p } else { $p.WaitForExit() }
@@ -197,74 +191,69 @@ function ConvertTo-Bounded($Value, $Range) {
     [Math]::Min([double]$Range[1], [Math]::Max([double]$Range[0], [double]$Value))
 }
 
-# Джерело межі (п.11): «власник ДД.ММ …» чи «вимір: …» з датою ДД.ММ і ще хоч одним числом (10970).
-$script:LimitDateRx = '(?<![0-9])(?:0[1-9]|[12][0-9]|3[01])\.(?:0[1-9]|1[0-2])(?![0-9])'
-
-function Test-LimitSource([string]$Text) {
-    <# $true — у межі є джерело за форматом; інакше межа без джерела. Той самий розбір — у перевірка/перевірити_хеші.py. #>
-    if ($Text.Length -gt 300 -or $Text -cmatch '[\x00-\x1f]') { return $false }
-    if ($Text -cmatch ('\Aвласник ' + $script:LimitDateRx + '(?:[^0-9].*)?\z')) { return $true }
-    if ($Text -cnotmatch '\Aвимір: ') { return $false }
-    $d = [regex]::Match($Text, $script:LimitDateRx)
-    $d.Success -and $Text.Remove($d.Index, $d.Length).Substring(6) -match '[0-9]'
-}
-
 function Get-LimitFields {
     <# Усі межі файла даних: слоти смуг і решта, у сталому порядку. #>
-    @($script:LaneDefaults.Keys | ForEach-Object { "slots.$_" }) + @($script:Defaults.Keys | Sort-Object)
+    @($script:LaneNames | ForEach-Object { "slots.$_" }) + @($script:LimitMinuteFields | Sort-Object)
+}
+
+function ConvertTo-LimitNumber($Value, [bool]$Whole, [bool]$Positive) {
+    <# Число межі з JSON як є — без обрізання; не число, нескінченне, від'ємне (для хвилин — і нуль), для слотів не ціле —
+    $null (виклик пише відмову рядком). #>
+    if ($Value -isnot [int] -and $Value -isnot [long] -and $Value -isnot [double] -and $Value -isnot [decimal]) { return $null }
+    $d = [double]$Value
+    if ([double]::IsNaN($d) -or [double]::IsInfinity($d) -or $d -lt 0 -or ($Positive -and $d -eq 0)) { return $null }
+    if ($Whole -and $d -ne [Math]::Floor($d)) { return $null }
+    $d
 }
 
 function Get-Limits {
-    <# Межі смуг: `смуги.json` v2 з origin/main (не з робочої копії агента), обрізаний стелями.
+    <# Межі смуг: `смуги.json` v2 з origin/main (не з робочої копії агента).
 
-    v2 — кожна межа `{"n": число, "джерело": "власник ДД.ММ …" | "вимір: … ДД.ММ"}`. Межа без джерела, v1 (міграція: числа
-    без джерел), нема файла, кривий чи невідомий формат — попереднє прийняте значення (стан limits.json; нема — з коду), а
-    поле — в unsourced для рядка «межа без джерела» стану ноутбука. Зміна файла в main діє на наступному проході без
-    перевстановлення копій: читається він після `git fetch`, який перезаписує й origin/main, змінений у клоні. #>
-    $l = @{ slots = [ordered]@{}; source = 'код'; unsourced = @(); claude_laptop = @() }
-    foreach ($k in $script:LaneDefaults.Keys) { $l.slots[$k] = $script:LaneDefaults[$k] }
-    foreach ($k in $script:Defaults.Keys) { $l[$k] = $script:Defaults[$k] }
-    # Без теки стану (читач меж поза планувальником) попереднє не зберігається.
-    $sd = $(try { [string]$script:StateDir } catch { '' })
-    $prevPath = $(if ($sd) { Join-Path $sd 'limits.json' } else { '' })
-    $prev = $null
-    if ($prevPath -and (Test-Path -LiteralPath $prevPath)) { try { $prev = [System.IO.File]::ReadAllText($prevPath, $script:Utf8) | ConvertFrom-Json } catch { $null = $_ } }
+    v2 — кожна межа `{"n": число, "джерело": "власник ДД.ММ …" | "вимір: … ДД.ММ"}`. Межа без джерела (поле порожнє чи нема,
+    v1, нема файла, кривий чи невідомий формат) не діє: ні попереднього значення, ні типового з коду — ключа в результаті
+    нема, а поле — в unsourced для рядка «межа без джерела» стану ноутбука. Криве значення з джерелом (не число, від'ємне,
+    нуль для хвилин, дробові слоти) — відмова рядком у журналі з назвою поля, ключа нема, поле — у invalid. Зміна файла
+    в main діє на наступному проході без перевстановлення копій: читається він після `git fetch`. #>
+    $l = @{ slots = [ordered]@{}; source = 'код'; unsourced = @(); invalid = @(); claude_laptop = @() }
     $doc = $null
     $r = Invoke-Git @('cat-file', 'blob', "refs/remotes/origin/main:$script:LanesPath") -AllowFail
     if ($r.Code -eq 0 -and $r.Out.Length -le 8192) {
-        try { $doc = $r.Out | ConvertFrom-Json } catch { Write-Log 'смуги.json не читається як JSON — попередні межі' }
+        try { $doc = $r.Out | ConvertFrom-Json } catch { Write-Log 'смуги.json не читається як JSON — межі не діють' }
     }
     if ($null -ne $doc) { $l.source = 'origin/main' }
     $v2 = $null -ne $doc -and [string](Get-JsonProp $doc 'v') -eq '2'
-    $accepted = [ordered]@{}
     foreach ($f in @(Get-LimitFields)) {
         $lane = $(if ($f.StartsWith('slots.')) { $f.Substring(6) } else { '' })
-        $range = $(if ($lane) { $script:Ceil.slots } else { $script:Ceil[$f] })
         $node = $null
         if ($v2) { $node = $(if ($lane) { Get-JsonProp (Get-JsonProp $doc 'slots') $lane } else { Get-JsonProp $doc $f }) }
-        $v = $null
-        if (Test-LimitSource ([string](Get-JsonProp $node 'джерело'))) { $v = ConvertTo-Bounded (Get-JsonProp $node 'n') $range }
+        if (-not (Test-LimitSource ([string](Get-JsonProp $node 'джерело')))) { $l.unsourced += $f; continue }
+        $v = ConvertTo-LimitNumber (Get-JsonProp $node 'n') ([bool]$lane) (-not $lane)
         if ($null -eq $v) {
-            $l.unsourced += $f
-            $v = ConvertTo-Bounded (Get-JsonProp $prev $f) $range
+            $l.invalid += $f
+            Write-Log "межа $f`: n не число, від'ємне або дробове (для хвилин — і нуль) — відмова, межа не діє"
+            continue
         }
-        if ($null -eq $v) { continue }
-        $accepted[$f] = $v
         if ($lane) { $l.slots[$lane] = [int][Math]::Floor($v) } else { $l[$f] = $v }
     }
-    $text = $accepted | ConvertTo-Json -Compress
-    $old = $(if ($prevPath -and (Test-Path -LiteralPath $prevPath)) { [System.IO.File]::ReadAllText($prevPath, $script:Utf8) } else { '' })
-    if ($prevPath -and $accepted.Count -gt 0 -and $text -cne $old) { Write-FileAtomic $prevPath $text }
     # Наряди Claude, яким потрібен ноутбук без відеокарти (LM Studio, фото, локальні програми): лише назви за шаблоном.
     $l.claude_laptop = @(@(Get-JsonProp $doc 'claude_laptop') | Where-Object { $_ -is [string] -and $_ -cmatch $script:SlugPattern } | Select-Object -First 64)
     $l
 }
 
 function Get-Limit($Limits, [string]$Param, [string]$Key) {
-    <# Значення межі: параметр, заданий явно (задача планувальника, стенд), сильніший за файл даних. #>
+    <# Значення межі: параметр, заданий явно (задача планувальника, стенд), сильніший за файл даних. Нема ні параметра, ні
+    межі з джерелом у файлі — $null: межі нема, типового з коду не буває. #>
     if ($script:Bound.ContainsKey($Param)) { return [double]$script:Bound[$Param] }
-    if ($null -eq $Limits) { return [double]$script:Defaults[$Key] }
+    if ($null -eq $Limits -or -not $Limits.Contains($Key) -or $null -eq $Limits[$Key]) { return $null }
     [double]$Limits[$Key]
+}
+
+function Get-QuotaWaitUntil([long]$Now) {
+    <# Час (unix), до якого чекати, коли скидання квоти невідоме: quota_wait_minutes з джерелом; нема — $null (чекати нема
+    скільки: виклик закриває позначку кодом квоти чи пробує знову в наступному проході). #>
+    $w = Get-Limit $script:Limits 'QuotaWaitMinutes' 'quota_wait_minutes'
+    if ($null -eq $w) { return $null }
+    $Now + [long](60 * $w)
 }
 
 # --- позначки ------------------------------------------------------------------------------------------------------
@@ -466,7 +455,7 @@ function Remove-Claim([string]$StatePath) {
 
 function Get-Retakes([string]$StatePath) {
     <# Скільки разів позначку вже повернули в чергу за квотою: лічильник `retakes` несуть і WAIT, і STARTED (запуск не
-    стирає його — інакше кожна відмова рахувалась би першою і межа MaxRetakes була б недосяжна). #>
+    стирає його — інакше кожна відмова рахувалась би першою і лічильник завжди починав би з нуля). #>
     if (-not (Test-Path -LiteralPath $StatePath)) { return 0 }
     $t = [System.IO.File]::ReadAllText($StatePath, $script:Utf8)
     if ($t -match '^(WAIT|STARTED) .*"retakes":\s*([0-9]{1,3})') { return [int]$Matches[2] }
@@ -475,11 +464,10 @@ function Get-Retakes([string]$StatePath) {
 
 function Set-MarkerWait($M, [long]$Until, [hashtable]$Extra) {
     <# Позначка чекає скидання квоти до $Until (unix): спроба не спалена, ту саму позначку візьме та сама смуга.
-    Повертає число повернень у чергу; понад MaxRetakes — $null (чекання не записано, далі кінець із кодом квоти). #>
+    Повертає число повернень у чергу (межі повернень нема). #>
     $sp = Get-StatePath (Get-MarkerKey $M)
     $n = Get-Retakes $sp
     if ($Extra.ContainsKey('retake') -and $Extra.retake) { $n++ }
-    if ($n -gt $script:MaxRetakes) { return $null }
     $j = [ordered]@{ until = $Until; until_utc = (Get-UtcStamp ([DateTimeOffset]::FromUnixTimeSeconds($Until).UtcDateTime)); marker = $M.Name; retakes = $n }
     foreach ($k in $Extra.Keys) { if ($k -ne 'retake') { $j[$k] = $Extra[$k] } }
     Write-FileAtomic $sp ('WAIT ' + ($j | ConvertTo-Json -Compress))
@@ -498,9 +486,8 @@ function Clear-UnstartedClaim([string]$StatePath) {
 
 function Step-FailedStart($M, [string]$StatePath) {
     <# Відмова до STARTED (робоча копія, запуск процесу наряду) — та сама ланка claim -> STARTED, що й квота: рахується
-    тим самим лічильником `retakes` і тією самою межею MaxRetakes. 'NONE' — claim уже звільнено (слот чи GPU зайняті,
-    кінець, чекання) або є STARTED; 'RETRY' — claim звільнено, позначка в черзі (стан WAIT, група START, без чекання);
-    'LIMIT' — межа: чекання не записано, claim лишається, викликач закриває позначку кінцевим станом і рядком. #>
+    тим самим лічильником `retakes` (межі нема). 'NONE' — claim уже звільнено (слот чи GPU зайняті,
+    кінець, чекання) або є STARTED; 'RETRY' — claim звільнено, позначка в черзі (стан WAIT, група START, без чекання). #>
     $t = ''
     if (Test-Path -LiteralPath $StatePath) { try { $t = [System.IO.File]::ReadAllText($StatePath, $script:Utf8) } catch { $null = $_ } }
     if ($t.StartsWith('STARTED ') -or -not (Test-Path -LiteralPath (Get-ClaimPath $StatePath))) { return 'NONE' }
@@ -508,8 +495,7 @@ function Step-FailedStart($M, [string]$StatePath) {
     $head = ''
     if ($t.StartsWith('WAIT {')) { try { $head = [string](Get-JsonProp ($t.Substring(5) | ConvertFrom-Json) 'head') } catch { $null = $_ } }
     $n = Set-MarkerWait $M ([DateTimeOffset]::UtcNow.ToUnixTimeSeconds()) @{ retake = $true; group = 'START'; head = $head }
-    if ($null -eq $n) { return 'LIMIT' }
-    Write-Log "позначка $($M.Name): відмова до запуску, повернено в чергу ($n із $script:MaxRetakes)"
+    Write-Log "позначка $($M.Name): відмова до запуску, повернено в чергу ($n-те повернення)"
     'RETRY'
 }
 
@@ -608,14 +594,13 @@ function Write-VersionSwitch([string]$Switch) {
 # --- слоти, GPU, процес наряду -------------------------------------------------------------------------------------
 
 function Test-SlotCount([string]$Value) {
-    <# Ціла кількість слотів у спільному діапазоні; недовірені значення відкидаємо, не обрізаємо. #>
+    <# Ціла кількість слотів (число, що вміщується в int); недовірені значення відкидаємо, не обрізаємо. #>
     $n = 0
-    [regex]::IsMatch($Value, '\A(?:0|[1-9][0-9]*)\z') -and [int]::TryParse($Value, [ref]$n) -and
-        $n -ge $script:Ceil.slots[0] -and $n -le $script:Ceil.slots[1]
+    [regex]::IsMatch($Value, '\A(?:0|[1-9][0-9]*)\z') -and [int]::TryParse($Value, [ref]$n)
 }
 
-function Test-SlotName([string]$Name, [string[]]$Lanes = @($script:LaneDefaults.Keys)) {
-    <# Назва слота дозволеної смуги з додатним номером у спільному діапазоні.
+function Test-SlotName([string]$Name, [string[]]$Lanes = $script:LaneNames) {
+    <# Назва слота дозволеної смуги з додатним номером.
 
     Номер не обмежуємо поточним N: після зменшення смуги вже запущені наряди мають завершитися. #>
     $m = [regex]::Match($Name, '\A([a-z]+)-([1-9][0-9]*)\z')
@@ -637,26 +622,45 @@ function Test-LockFree([string]$Path) {
 
 function Get-GpuLockPath { Join-Path $LaneDir 'gpu.lock' }
 
+function Get-SlotNumbers([string]$Lane, $Workers) {
+    <# Номери слотів смуги, що можуть бути зайняті: файли замків і описів у теці слотів плюс слоти своїх процесів. Верхньої
+    межі номера нема — перелік скінченний, бо береться з диска й з живих процесів. #>
+    $nums = @{}
+    foreach ($f in @(Get-ChildItem -LiteralPath $script:SlotDir -File -ErrorAction SilentlyContinue)) {
+        $m = [regex]::Match($f.Name, '\A' + [regex]::Escape($Lane) + '-([1-9][0-9]*)\.(?:lock|json)\z')
+        $k = 0
+        if ($m.Success -and [int]::TryParse($m.Groups[1].Value, [ref]$k)) { $nums[$k] = 1 }
+    }
+    foreach ($w in @($Workers)) {
+        $m = [regex]::Match([string]$w.Slot, '\A' + [regex]::Escape($Lane) + '-([1-9][0-9]*)\z')
+        $k = 0
+        if ($m.Success -and [int]::TryParse($m.Groups[1].Value, [ref]$k)) { $nums[$k] = 1 }
+    }
+    @($nums.Keys | Sort-Object)
+}
+
 function Get-BusySlots([string]$Lane, $Workers) {
     <# Зайняті слоти смуги: свій живий процес наряду або чужий замок слота (наряд попереднього проходу ще йде). #>
-    @(for ($k = 1; $k -le $script:Ceil.slots[1]; $k++) {
+    @(foreach ($k in @(Get-SlotNumbers $Lane $Workers)) {
         $id = "$Lane-$k"
         $own = @($Workers | Where-Object { $_.Slot -eq $id -and -not $_.Proc.HasExited }).Count -gt 0
         if ($own -or -not (Test-LockFree (Join-Path $script:SlotDir "$id.lock"))) { $id }
     })
 }
 
-function Get-FreeSlot([string]$Lane, [int]$N, $Workers) {
-    <# Вільний слот смуги, коли зайнятих менше за N з файла даних; інакше ''. #>
+function Get-FreeSlot([string]$Lane, $N, $Workers) {
+    <# Вільний слот смуги, коли зайнятих менше за N з файла даних; N = $null — межі слотів нема (нема джерела), слот
+    найменшого вільного номера. Інакше ''. #>
     $busy = @(Get-BusySlots $Lane $Workers)
-    if ($busy.Count -ge $N) { return '' }
-    for ($k = 1; $k -le $script:Ceil.slots[1]; $k++) { if ($busy -notcontains "$Lane-$k") { return "$Lane-$k" } }
+    if ($null -ne $N -and $busy.Count -ge [int]$N) { return '' }
+    # busy скінченний, тож найменший вільний номер знаходиться не далі busy.Count + 1.
+    for ($k = 1; $k -le $busy.Count + 1; $k++) { if ($busy -notcontains "$Lane-$k") { return "$Lane-$k" } }
     ''
 }
 
 function Read-SlotInfo([string]$Lane) {
     <# Що йде в слотах смуги зараз: файли `<слот>.json` при зайнятому замку слота. #>
-    @(for ($k = 1; $k -le $script:Ceil.slots[1]; $k++) {
+    @(foreach ($k in @(Get-SlotNumbers $Lane @())) {
         $id = "$Lane-$k"; $j = Join-Path $script:SlotDir "$id.json"
         if (-not (Test-Path -LiteralPath $j)) { continue }
         if (Test-LockFree (Join-Path $script:SlotDir "$id.lock")) { continue }
@@ -1278,7 +1282,9 @@ function Update-HoldSignals([hashtable]$Held, [scriptblock]$Send) {
         try { foreach ($p in ([System.IO.File]::ReadAllText($path, $script:Utf8) | ConvertFrom-Json).PSObject.Properties) { $prev[$p.Name] = $p.Value } } catch { $null = $_ }
     }
     $now = [DateTimeOffset]::UtcNow.ToUnixTimeSeconds()
-    $after = [double](Get-Limit $script:Limits 'QuotaWaitMinutes' 'quota_wait_minutes') * 60
+    # Межі очікування без джерела нема — рядок одразу.
+    $aw = Get-Limit $script:Limits 'QuotaWaitMinutes' 'quota_wait_minutes'
+    $after = $(if ($null -eq $aw) { 0 } else { $aw * 60 })
     $next = [ordered]@{}
     foreach ($res in @($Held.Keys | Sort-Object)) {
         $h = $Held[$res]; $old = $prev[$res]

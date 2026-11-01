@@ -45,10 +45,10 @@ param(
     [string]$GitExe = 'git',
     [string]$ClaudeExe = 'claude',
     [string]$GhExe = 'gh',
-    [double]$HangMinutes = 120,
+    [double]$HangMinutes,
     [double]$StatusMinutes = 5,
-    [double]$PollMinutes = 2,
-    [double]$QuotaWaitMinutes = 60,
+    [double]$PollMinutes,
+    [double]$QuotaWaitMinutes,
     [int]$MarkerMaxAgeDays = 7,
     [double]$OffWaitMinutes = 10,
     [string[]]$TaskNames = @('claude-run', 'gemini-run', 'gemini-publish', 'gemini-watch'),
@@ -245,13 +245,13 @@ function Read-GeminiBeat {
     $lanes = @()
     foreach ($l in @(Get-JsonProp $j 'lanes' | Select-Object -First 2)) {
         $ln = & $get $l 'lane'; $n = & $get $l 'n'
-        if ($ln -notin @('codex', 'agy') -or -not (Test-SlotCount $n)) { continue }
-        $busy = @(foreach ($s in @(Get-JsonProp $l 'busy' | Select-Object -First $script:Ceil.slots[1])) {
+        if ($ln -notin @('codex', 'agy') -or ($n -cne 'без межі' -and -not (Test-SlotCount $n))) { continue }
+        $busy = @(foreach ($s in @(Get-JsonProp $l 'busy')) {
             $sl = & $get $s 'slot'; $m = & $get $s 'marker'; $md = & $get $s 'model'; $since = & $utc (& $get $s 'since')
             if (-not (Test-SlotName $sl @($ln)) -or $m -cnotmatch $script:MarkerRx -or $m.Contains('..') -or $md -cnotmatch $script:ModelPattern) { continue }
             [pscustomobject]@{ Slot = $sl; Marker = $m; Model = $md; Since = $since; Gpu = ((& $get $s 'gpu') -eq 'True') }
         })
-        $lanes += [pscustomobject]@{ Lane = $ln; N = [int]$n; Busy = $busy }
+        $lanes += [pscustomobject]@{ Lane = $ln; N = $(if ($n -ceq 'без межі') { $n } else { [int]$n }); Busy = $busy }
     }
     $b.Lanes = $lanes
     $q = Get-JsonProp $j 'quota'
@@ -297,7 +297,9 @@ function Update-Health {
     $h = $null
     if (Test-Path -LiteralPath $path) { try { $h = [System.IO.File]::ReadAllText($path, $script:Utf8) | ConvertFrom-Json } catch { $null = $_ } }
     $now = [DateTimeOffset]::UtcNow.ToUnixTimeSeconds()
-    if ($null -ne $h -and $now - [long]$h.time -lt 60 * (Get-Limit $script:Limits 'UsageMinutes' 'usage_minutes')) { return $h }
+    # usage_minutes без джерела — кешу нема: здоров'я міряється щоразу.
+    $ua = Get-Limit $script:Limits 'UsageMinutes' 'usage_minutes'
+    if ($null -ne $h -and $null -ne $ua -and $now - [long]$h.time -lt ($ua * 60)) { return $h }
     $samples = @(@(Get-JsonProp $h 'samples') | Where-Object { $null -ne $_ -and $now - [long]$_.t -le 2 * 86400 })
     try { $samples += [pscustomobject]@{ t = $now; free = [long](Get-FreeBytes) } } catch { Write-Log "здоров'я: місце не виміряно" }
     $dirs = @(foreach ($d in @(@('C:\tmp', $TmpDir), @('claude-run', $WorkDir))) {
@@ -346,7 +348,8 @@ function Get-HealthLines($G, $Cq) {
     $zero = { param($Refused, $Reset)
         if ($Refused -notmatch $script:UtcRx) { return $false }
         if ($Reset -match $script:UtcRx) { return [int](Get-Minutes $Reset) -lt 0 }
-        [int](Get-Minutes $Refused) -lt (Get-Limit $script:Limits 'QuotaWaitMinutes' 'quota_wait_minutes') }
+        $qw = Get-Limit $script:Limits 'QuotaWaitMinutes' 'quota_wait_minutes'
+        $null -ne $qw -and [int](Get-Minutes $Refused) -lt $qw }
     $cz = $(if ($null -ne $Cq -and (& $zero ([string](Get-JsonProp $Cq 'refused')) ([string](Get-JsonProp $Cq 'reset')))) { @($ms | Where-Object { $_.Lane -eq 'claude' }).Count } else { 0 })
     $xz = $(if ($null -ne $G.Codex -and (& $zero $G.Codex.Refused $G.Codex.Reset)) { @($ms | Where-Object { $_.Lane -eq 'codex' }).Count } else { 0 })
     $lines += @('', "Позначки на рушії з нульовою квотою: claude $cz · codex $xz · agy $(if ($G.Zero) { $G.Zero } else { '?' })")
@@ -381,7 +384,7 @@ function Get-StatusBody {
             }
         }
     }
-    $n = $(if ($null -ne $lim) { [int]$lim.slots['claude'] } else { '?' })
+    $n = $(if ($null -eq $lim) { '?' } elseif ($null -eq $lim.slots['claude']) { 'без межі' } else { [int]$lim.slots['claude'] })
     if ($own.Count -eq 0) { $lines += "| claude | $n | 0 | — | — | — | — |" }
     foreach ($s in $own) {
         if ($s.gpu) { $gpuBy += [string]$s.slot }
@@ -746,7 +749,8 @@ function Invoke-Claude([string]$Exe, [string[]]$ArgList, [string]$Prompt, [strin
     while ($true) {
         if (-not $outDone -and $null -eq $outTask) { $outTask = $p.StandardOutput.ReadLineAsync() }
         if (-not $errDone -and $null -eq $errTask) { $errTask = $p.StandardError.ReadLineAsync() }
-        $left = ($last.AddMinutes($hang) - (Get-Date)).TotalMilliseconds
+        # claude_hang_minutes без джерела — межі завислості нема.
+        $left = $(if ($null -eq $hang) { [double]::PositiveInfinity } else { ($last.AddMinutes($hang) - (Get-Date)).TotalMilliseconds })
         if ($left -le 0) { $res.Kind = 'HANG'; break }
         $ms = [int][Math]::Min($left, 60000)
         $wait = [System.Threading.Tasks.Task[]]@(@($outTask, $errTask) | Where-Object { $null -ne $_ })
@@ -814,7 +818,7 @@ function Complete-Task($M, [string]$StatePath, [string]$Id, [string]$Code, [stri
 
 # Відмова за квотою: позначка чекає скидання (resetsAt останньої `rate_limit_event` зі status rejected; інакше час
 # із тексту `…|<unix>`; нема — quota_wait_minutes), рядок QUOTA0_CLAUDE_M<хв>; нова спроба продовжить гілку наряду.
-# Понад MaxRetakes — $false (кінець QUOTA, як до смуг).
+# Час скидання невідомий і quota_wait_minutes без джерела — $false (кінець QUOTA): чекати нема скільки.
 function Enter-ClaudeQuotaWait($M, [string]$StatePath, [string]$Id, $R, [string]$Text) {
     $now = [DateTimeOffset]::UtcNow.ToUnixTimeSeconds()
     $until = 0L
@@ -824,9 +828,11 @@ function Enter-ClaudeQuotaWait($M, [string]$StatePath, [string]$Id, $R, [string]
     }
     if ($until -le $now -and $Text -match '\|([0-9]{10})\b') { $until = [long]$Matches[1] }
     $known = $until -gt $now
-    if (-not $known) { $until = $now + [long](60 * (Get-Limit $script:Limits 'QuotaWaitMinutes' 'quota_wait_minutes')) }
-    $n = Set-MarkerWait $M $until @{ retake = $true; group = 'CLAUDE' }
-    if ($null -eq $n) { return $false }
+    if (-not $known) {
+        $until = Get-QuotaWaitUntil $now
+        if ($null -eq $until) { Write-Log "квота: $($M.Name) — час скидання невідомий, quota_wait_minutes без джерела — кінець QUOTA"; return $false }
+    }
+    [void](Set-MarkerWait $M $until @{ retake = $true; group = 'CLAUDE' })
     $q = Read-ClaudeQuota
     $o = [ordered]@{ read = (Get-UtcStamp (Get-Date)); status = 'rejected'; windows = @(); refused = (Get-UtcStamp (Get-Date)); reset = $(if ($known) { Get-UtcStamp ([DateTimeOffset]::FromUnixTimeSeconds($until).UtcDateTime) } else { '' }) }
     if ($null -ne $q) { $o.read = [string]$q.read; $o.status = [string]$q.status; $o.windows = @(Get-JsonProp $q 'windows') }
@@ -920,11 +926,9 @@ function Invoke-ClaudeTask($M, $Job, [string]$Exe, [string]$TaskText, [string]$C
     Complete-Task $M $statePath $id 'NO_REPORT'
 }
 
-# Відмова до STARTED: лічильник повернень і межа ті самі, що в квоти; на межі — кінцевий стан CRASH і рядок диспетчерові.
+# Відмова до STARTED: позначка повертається в чергу, лічильник повернень той самий, що в квоти; межі повернень нема.
 function Close-FailedStart($M, [string]$Id, [string]$StatePath) {
-    if ((Step-FailedStart $M $StatePath) -ne 'LIMIT') { return }
-    Write-Log "позначка $($M.Name): відмов до запуску понад $script:MaxRetakes — кінець CRASH"
-    Complete-Task $M $StatePath $Id 'CRASH'
+    [void](Step-FailedStart $M $StatePath)
 }
 
 # Прогін, перерваний вимкненням чи зупинкою задачі (замок його слота вільний): живий claude без нагляду зупиняється,
@@ -1099,7 +1103,7 @@ function Start-Markers($Workers) {
             Complete-Task $m (Get-StatePath (Get-MarkerKey $m)) (New-Id) 'CLAUDE_NOT_LAPTOP'
             continue
         }
-        $slot = Get-FreeSlot 'claude' ([int]$script:Limits.slots['claude']) $Workers
+        $slot = Get-FreeSlot 'claude' ($script:Limits.slots['claude']) $Workers
         if (-not $slot) { Add-Skip $m 'нема вільного слота смуги claude'; Add-Hold $script:Held 'SLOTS' 'слоти зайняті' $m.Name; continue }
         if ((@($Workers | Where-Object { $_.Slug -ceq $m.Slug -and -not $_.Proc.HasExited }).Count -gt 0) -or (Test-SlugBusy $m.Slug @('claude'))) { Add-Skip $m 'той самий наряд уже йде в слоті'; continue }
         if ($m.Gpu) {
@@ -1108,7 +1112,7 @@ function Start-Markers($Workers) {
         }
         $id = New-Id
         if (-not (New-Claim $m $id)) { continue }
-        # Усе між claim і STARTED — під одним обліком відмов (retakes, MaxRetakes, CRASH на межі), 10162/10182.
+        # Усе між claim і STARTED — під одним обліком відмов (retakes, повернення в чергу), 10162/10182.
         try {
             $dir = Join-Path (Join-Path $WorkDir 'runs') $id
             [void](New-Item -ItemType Directory -Force -Path $dir)
@@ -1195,7 +1199,7 @@ function Main {
         Resume-Interrupted
         $script:Workers = New-Object System.Collections.ArrayList
         $script:Held = @{}
-        $first = $true; $clean = $true; $ver = ''
+        $first = $true; $clean = $true; $ver = ''; $refused = ''
         while ($true) {
             $ver = Get-VersionSwitch
             if ($ver) { Write-VersionSwitch $ver; break }
@@ -1222,9 +1226,16 @@ function Main {
             if ($null -ne $off) { Invoke-Off $off }
             Update-Status -Force:($started -gt 0)
             if ($script:Workers.Count -eq 0 -and $started -eq 0) { break }
-            Wait-Workers $script:Workers (Get-Limit $script:Limits 'PollMinutes' 'poll_minutes')
+            $poll = Get-Limit $script:Limits 'PollMinutes' 'poll_minutes'
+            if ($null -eq $poll) {
+                # Період опитування без джерела не береться з коду: проходи не повторюємо, наряди доробляють окремі процеси.
+                Write-Log 'відмова: poll_minutes без джерела в смуги.json — період опитування не задано, цикл зупинено'
+                $refused = 'poll_minutes'
+                break
+            }
+            Wait-Workers $script:Workers $poll
         }
-        $script:Phase = $(if ($ver) { "оновлення версії: $ver" } else { 'чекає позначки' })
+        $script:Phase = $(if ($refused) { "відмова: $refused без джерела" } elseif ($ver) { "оновлення версії: $ver" } else { 'чекає позначки' })
         Update-Status -Force
         0
     } catch {

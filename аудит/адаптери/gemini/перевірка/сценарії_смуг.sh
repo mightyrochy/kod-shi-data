@@ -133,9 +133,9 @@ mark "n-codex-1/$CX/1"; mark "n-codex-2/$CX/1"; gem; A1=$(tl codex)
 (cd "$W/seed"; lanes 99 2 2 > аудит/адаптери/gemini/смуги.json; git commit -q -am 'смуги 99'; git push -q origin main 2>/dev/null)
 git -C "$W/clone-g" fetch -q origin main 2>/dev/null
 CE=$("$PW" -NoProfile -c ". '$(wp "$SRC/queue_lanes.ps1")'; \$RepoDir='$(wp "$W/clone-g")'; \$GitExe='git'; \$script:NoHooks='x'; function Write-Log {}; (Get-Limits).slots['codex']" 2>/dev/null | tr -d '\r')
-echo "  codex водночас: смуги.json codex=1 → $A1, codex=2 → $A2; codex=99 у даних → $CE (стеля в коді)"
+echo "  codex водночас: смуги.json codex=1 → $A1, codex=2 → $A2; codex=99 у даних з джерелом → $CE (стелі в коді нема)"
 chk "N з файла даних міняє паралельність без перевстановлення (1 → 2)" '[ "$A1" = 1 ] && [ "$A2" = 2 ]'
-chk "дані не перевищують стелі коду (99 → 64)" '[ "$CE" = 64 ]'
+chk "дані з джерелом не обрізаються стелею коду (99 → 99)" '[ "$CE" = 99 ]'
 
 echo "=== Г: смуги.json задає 6 і 8 слотів, усі наряди справді працюють водночас"
 for N in 6 8; do

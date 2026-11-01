@@ -111,3 +111,16 @@ function Get-ModelGroups([string]$Model, $Groups) {
     if ($script:Families -notcontains $fam) { return @() }
     @($Groups | Where-Object { @(Get-SpecificTokens $_.Name).Count -eq 0 -and @($_.Name.ToLowerInvariant() -split '[^a-z0-9]+') -contains $fam })
 }
+
+# Джерело межі (п.11): «власник ДД.ММ …» чи «вимір: …» з датою ДД.ММ і ще хоч одним числом (10970).
+$script:LimitDateRx = '(?<![0-9])(?:0[1-9]|[12][0-9]|3[01])\.(?:0[1-9]|1[0-2])(?![0-9])'
+
+function Test-LimitSource([string]$Text) {
+    <# $true — у межі є джерело за форматом; інакше межа без джерела. Той самий розбір — у перевірка/перевірити_хеші.py;
+    живе тут, бо потрібне і queue_lanes.ps1, і wrapper_chain.ps1. #>
+    if ($Text.Length -gt 300 -or $Text -cmatch '[\x00-\x1f]') { return $false }
+    if ($Text -cmatch ('\Aвласник ' + $script:LimitDateRx + '(?:[^0-9].*)?\z')) { return $true }
+    if ($Text -cnotmatch '\Aвимір: ') { return $false }
+    $d = [regex]::Match($Text, $script:LimitDateRx)
+    $d.Success -and $Text.Remove($d.Index, $d.Length).Substring(6) -match '[0-9]'
+}

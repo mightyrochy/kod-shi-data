@@ -342,6 +342,10 @@ try {
     Check 'секунда до лівої межі виключена' (-not (Test-RecentReviewHead $oldPull @{} $installed $clock 24))
     $script:HeadDate = $clock.AddMinutes(1)
     Check 'майбутня дата коміту не вважається рухом' (-not (Test-RecentReviewHead $oldPull @{} $installed $clock 24))
+    $script:HeadDate = $clock.AddHours(-1)
+    Check 'review_hours без джерела: вікна нема — свіжа голова давнього PR не добирається' (-not (Test-RecentReviewHead $oldPull @{} $installed $clock $null))
+    $cc = ConvertFrom-Json ([IO.File]::ReadAllText((Join-Path $SourceDir 'ланцюг.json')))
+    Check 'review_hours: ланцюг.json без джерела (24 з кодом не береться)' ($cc.review_hours.n -eq 24 -and -not (Test-LimitSource ([string]$cc.review_hours.'джерело')))
     $script:DryRun = $true; $script:Pulls = @((Pull 99 'claude/наряд' $newer)); Invoke-WrapperChain
     Check 'DryRun нічого не ставить' (@(Markers | Where-Object { $_ -match 'автоперевірка-99-' }).Count -eq 0)
 } catch { "✗ виняток стенда: $($_.Exception.Message) $($_.ScriptStackTrace)"; $failures++ }
