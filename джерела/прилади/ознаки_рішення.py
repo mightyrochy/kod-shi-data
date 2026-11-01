@@ -242,7 +242,14 @@ def пари_функції(ф):
 
     def залежить(в):
         """Повертає параметри походження значень виразу."""
-        return set().union(*(залежності.get(н.id, set()) for н in ast.walk(в) if isinstance(н, ast.Name)))
+        if isinstance(в, ast.Name):
+            return залежності.get(в.id, set())
+        if isinstance(в, ast.Subscript):
+            # Спільний селектор осі не об'єднує джерела двох записів кольору.
+            return залежить(в.value)
+        if isinstance(в, ast.Call):
+            return set().union(*(залежить(н) for н in [*в.args, *(к.value for к in в.keywords)]))
+        return set().union(*(залежить(н) for н in ast.iter_child_nodes(в)))
 
     присвоєння = [(в.targets, в.value) for в in вузли if isinstance(в, ast.Assign)]
     присвоєння += [([в.target], в.value) for в in вузли if isinstance(в, ast.AnnAssign) and в.value is not None]
