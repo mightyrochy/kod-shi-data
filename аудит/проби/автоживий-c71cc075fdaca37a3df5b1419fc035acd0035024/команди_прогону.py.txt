@@ -1,0 +1,83 @@
+import hashlib
+import json
+import os
+from pathlib import Path
+import subprocess
+import sys
+import urllib.request
+from datetime import datetime, timezone
+
+repo = Path(__file__).resolve().parents[1] / 'repo'
+out = repo / 'аудит/проби/автоживий-c71cc075fdaca37a3df5b1419fc035acd0035024'
+build = Path(__file__).resolve().parent / 'build'
+cache = Path('C:/Users/gemini/pyodide')
+os.chdir(repo)
+os.environ.update(PYTHONUTF8='1', PYTHONIOENCODING='utf-8', NODE_PATH='C:/Users/gemini/kod-shi-test-node/node_modules')
+plan = json.loads((out / 'план.json').read_text(encoding='utf-8'))
+
+def now():
+    return datetime.now(timezone.utc).isoformat()
+
+def api(path='', data=None):
+    req = urllib.request.Request('http://127.0.0.1:1234/api/v1/models' + path,
+        data=None if data is None else json.dumps(data).encode(), headers={'Content-Type': 'application/json'})
+    try:
+        with urllib.request.urlopen(req, timeout=300) as response:
+            return {'status': response.status, 'body': json.load(response)}
+    except urllib.error.HTTPError as exc:
+        return {'status': exc.code, 'body': exc.read().decode()}
+
+if '--preflight' in sys.argv:
+    evidence = {'utc': now(), 'head': subprocess.check_output(['git', 'rev-parse', 'HEAD'], text=True).strip(),
+        'build': subprocess.check_output(['git', '-C', str(build), 'rev-parse', 'HEAD'], text=True).strip(),
+        'build_txt': (build / 'build.txt').read_text(), 'models': api(),
+        'node_options': os.environ.get('NODE_OPTIONS'), 'pythonpath': os.environ.get('PYTHONPATH'),
+        'cache': {p.name: {'bytes': p.stat().st_size, 'sha256': hashlib.sha256(p.read_bytes()).hexdigest()} for p in cache.iterdir() if p.is_file()},
+        'checks': []}
+    if any(m['loaded_instances'] for m in evidence['models']['body']['models']):
+        raise SystemExit('Сервер тримає чужу модель')
+    try:
+        for model, context in [('qwen/qwen3.5-9b', 57344), ('mamaylm-gemma-3-12b-it-v2.0', 16384)]:
+            loaded = api('/load', {'model': model, 'context_length': context, 'parallel': 1, 'echo_load_config': True})
+            entry = {'model': model, 'context': context, 'load': loaded}
+            evidence['checks'].append(entry)
+            instance = loaded['body'].get('instance_id') if isinstance(loaded['body'], dict) else None
+            if not instance:
+                raise RuntimeError('Не завантажено ' + model + ': ' + json.dumps(loaded, ensure_ascii=False))
+            try:
+                state = api()
+                entry['state'] = state
+                actual = next(i for m in state['body']['models'] for i in m['loaded_instances'] if i['id'] == instance)
+                if actual['config']['context_length'] != context or actual['config']['parallel'] != 1:
+                    raise RuntimeError('Не підтверджено контекст і parallel=1')
+            finally:
+                entry['unload'] = api('/unload', {'instance_id': instance})
+            print('Підтверджено', model, context, 'parallel=1', flush=True)
+    finally:
+        (out / 'середовище.json').write_text(json.dumps(evidence, ensure_ascii=False, indent=2) + '\n', encoding='utf-8')
+    raise SystemExit(0)
+
+finished = {json.loads(line)['сцена'] for line in (out / 'done.jsonl').read_text(encoding='utf-8').splitlines()} if (out / 'done.jsonl').exists() else set()
+selected = sys.argv[1:] or [scene for scene in plan['scenes'] if scene not in finished]
+for scene in selected:
+    if scene not in plan['scenes']:
+        raise SystemExit('Сцени немає у плані: ' + scene)
+    command = [sys.executable, 'аудит/проби/записати_сцену.py', str(build), str(cache), str(out / scene), '--сцена', scene]
+    print(now(), 'ПОЧАТОК', scene, flush=True)
+    started = now()
+    env = dict(os.environ)
+    if scene == 'ж1_робота':
+        env['MODEL_VYBIR'] = 'assess'
+    if scene == 'ж4_робота_стримано':
+        env['ZAMINA_RUK'] = '1,2'
+    with (out / (scene + '-запускач.txt')).open('w', encoding='utf-8') as log:
+        completed = subprocess.run(command, env=env, stdout=log, stderr=subprocess.STDOUT)
+    with (out / 'done.jsonl').open('a', encoding='utf-8') as log:
+        log.write(json.dumps({'початок': started, 'кінець': now(), 'сцена': scene, 'команда': command,
+            'додаткові_змінні': {k: env[k] for k in ['MODEL_VYBIR', 'ZAMINA_RUK'] if k in env},
+            'rc': completed.returncode}, ensure_ascii=False) + '\n')
+    print(now(), 'КІНЕЦЬ', scene, 'rc=' + str(completed.returncode), flush=True)
+    subprocess.run(['git', 'add', '--', str(out.relative_to(repo))], check=True)
+    subprocess.run(['git', 'commit', '-m', 'Записано живу сцену ' + scene], check=True)
+    if completed.returncode >= 2:
+        raise SystemExit(completed.returncode)
