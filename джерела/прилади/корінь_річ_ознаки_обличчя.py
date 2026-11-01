@@ -296,6 +296,13 @@ def _формульні(дерево):
         ім = _імена(т.left)
         if not ім:
             continue
+        if isinstance(в, ast.IfExp) and isinstance(т.left, ast.Name) \
+                and isinstance(т.ops[0], ПОРЯДОК) and (
+                    isinstance(в.body, ast.Name) and в.body.id == т.left.id
+                    and ast.dump(в.orelse) == ast.dump(т.comparators[0]) or
+                    isinstance(в.orelse, ast.Name) and в.orelse.id == т.left.id
+                    and ast.dump(в.body) == ast.dump(т.comparators[0])):
+            вих.add(id(т))  # min/max тієї самої величини, записаний умовним виразом
         if isinstance(в, ast.IfExp) and _край_таблиці(в, т):
             вих.add(id(т))
             continue
@@ -901,6 +908,7 @@ class Стан:
                 self.ключі[п][кл] = в
         self.ключі_пов = {}
         self.ключі_циклу = {}    # ім'я циклу над кортежем рядків → ці рядки (`kw.get(k)` читає лише їх)
+        self.пари_мап = {}       # ключ .items() → (ім'я значення, вираз словника)
         self.ключі_викликів = {}  # id(виклик) → (мітки поза ключами, ключі повернення)
         self.глобальні = set()
         self.псевдоніми = {}     # ім'я → мапа, елементом якої воно є (`е = d.setdefault(к, …)`)
@@ -1314,6 +1322,8 @@ class Стан:
         мітки = self.e(ітер) - {F}
         if isinstance(ціль, ast.Tuple) and len(ціль.elts) == 2 and isinstance(ітер, ast.Call) and \
                 isinstance(ітер.func, ast.Attribute) and ітер.func.attr == "items" and not ітер.args:
+            if all(isinstance(ц, ast.Name) for ц in ціль.elts):
+                self.пари_мап[ціль.elts[0].id] = (ціль.elts[1].id, ітер.func.value)
             self.присвоїти(ціль.elts[0], E)
             м, кл = self.значення(ітер.func.value)
             if кл:
@@ -1328,6 +1338,24 @@ class Стан:
             self.елемент(ціль, *_перебір(*self.значення(ітер)))
             return
         self.присвоїти(ціль, мітки)
+
+    def за_ключем_мапи(self, тест):
+        """Звужує значення .items() у решті AND після рівності ключа сталому рядку."""
+        if not (isinstance(тест, ast.Compare) and len(тест.ops) == 1 and isinstance(тест.ops[0], ast.Eq)
+                and isinstance(тест.left, ast.Name) and тест.left.id in self.пари_мап
+                and _рядок(тест.comparators[0])):
+            return {}
+        ім, вираз = self.пари_мап[тест.left.id]
+        збережено = {ім: (self.env.get(ім), dict(self.ключі[ім]) if ім in self.ключі else None,
+                          self.ключі_циклу.get(ім), self.невідомо.get(ім))}
+        м, кл = self.значення(вираз)
+        if not кл:
+            return {}
+        к = тест.comparators[0].value
+        self.env[ім] = кл.get(к, E) | self.індекс(м, тест.comparators[0], тест)
+        self.ключі.pop(ім, None)
+        self.ключі[ім].update(_під(кл, к))
+        return збережено
 
     def елемент(self, ціль, мітки, ключі):
         """Елемент списку записів: мітки поза ключами й ключі запису."""
@@ -1674,6 +1702,12 @@ class Стан:
         if isinstance(в, ast.Subscript):
             if isinstance(в.value, ast.Name) and _рядок(в.slice):
                 return self.ключ_імені(в.value.id, в.slice.value, в)
+            if isinstance(в.value, ast.Name) and isinstance(в.slice, ast.Constant) \
+                    and type(в.slice.value) is int and в.slice.value >= 0:
+                км = self.ключі.get(в.value.id, {})
+                if any(isinstance(к, str) and к.startswith('#') for к in км):
+                    к = '#%d' % в.slice.value
+                    return км.get(к, E) | _усі(_під(км, к)) | self.індекс(self.читати_env(в.value.id), в.slice, в)
             if isinstance(в.value, ast.Subscript) and _рядок(в.slice):
                 корінь, префікс, змінний = _шлях(в)
                 if корінь and not змінний and len(префікс) <= ГЛИБИНА and self.ключі.get(корінь):
@@ -1694,6 +1728,12 @@ class Стан:
             if isinstance(в.value, ast.Call) and _рядок(в.slice) and id(в.value) in self.ключі_викликів:
                 поза, ключі = self.ключі_викликів[id(в.value)]
                 return ключі.get(в.slice.value, E) | self.індекс(поза, в.slice, в)
+            if isinstance(в.value, ast.Call) and isinstance(в.slice, ast.Constant) \
+                    and type(в.slice.value) is int and в.slice.value >= 0 and id(в.value) in self.ключі_викликів:
+                поза, ключі = self.ключі_викликів[id(в.value)]
+                if any(isinstance(к, str) and к.startswith('#') for к in ключі):
+                    к = '#%d' % в.slice.value
+                    return ключі.get(к, E) | _усі(_під(ключі, к)) | self.індекс(поза, в.slice, в)
             return self.індекс(база, в.slice, в)
         if isinstance(в, ast.Call):
             return self.виклик(в)
@@ -1712,7 +1752,15 @@ class Стан:
         if isinstance(в, ast.UnaryOp):
             return self.e(в.operand) - {F}
         if isinstance(в, ast.BoolOp):
-            мітки = [self.e(x) for x in в.values]
+            мітки, збережено = [], {}
+            try:
+                for x in в.values:
+                    мітки.append(self.e(x))
+                    if isinstance(в.op, ast.And):
+                        for ім, стан in self.за_ключем_мапи(x).items():
+                            збережено.setdefault(ім, стан)
+            finally:
+                self.відновити(збережено)
             if isinstance(в.op, ast.Or) and len(в.values) >= 2 and any(S in м for м in мітки[:-1]) \
                     and self.значення_замість(в.values[-1], число=True) \
                     and not all(isinstance(х, ast.BinOp) or isinstance(х, ast.UnaryOp) and not isinstance(х.op, ast.Not)
@@ -2360,6 +2408,11 @@ def стенд():
                     return нп, "вага"
                 def згасання(а, б):
                     return 1.0 / (1.0 + abs(а - б))
+                def повернути_псевдонім(F):
+                    пара_псевдо = (0.5 + обчислення.erf(F["шкіра"]["L"]), F["очі"]["h"])
+                    return пара_псевдо
+                def додатна_частина(x):
+                    return x if x > 0 else 0
                 def лічити_маски(профіль):
                     маски_входу = профіль.get("_пікселі") or {}
                     пікселі_суми = (маски_входу.get("волосся") or 0) + (маски_входу.get("оправа") or 0)
@@ -2609,6 +2662,28 @@ def стенд():
                     ворота_сили = 0.5 + 0.5 * обчислення.tanh(F["очі"]["h"] / 50)
                     if ворота_сили > 0.4:
                         pass
+                    змішана_пара = (нелінійна_сила, F["шкіра"]["L"])
+                    копія_пари = змішана_пара
+                    if копія_пари[0] > 0.25:
+                        pass
+                    if копія_пари[1] > 17:
+                        pass
+                    if повернути_псевдонім(F)[0] > 0.25:
+                        pass
+                    if повернути_псевдонім(F)[1] > 17:
+                        pass
+                    додатна_частина(F["шкіра"]["L"])
+                    for м_ключ, м_риса in F.items():
+                        if м_ключ == "прикраса" and м_риса.get("C", 0) > 3:
+                            pass
+                        if м_ключ == "шкіра" and м_риса["L"] > 14:
+                            pass
+                    додаткові_риси = {"прикраса": {"C": F["шкіра"]["L"]}, "шкіра": {"L": 0}}
+                    for д_ключ, д_риса in додаткові_риси.items():
+                        if д_ключ == "прикраса" and д_риса.get("C", 0) > 4:
+                            pass
+                        if д_ключ == "шкіра" and д_риса["L"] > 4:
+                            pass
                     вузли_зсуву = [(dl, db) for dl in (-1, 0, 1) for db in (-1, 0, 1)] if F["шкіра"]["L"] > 0 else [(0, 0)]
                     пікселі_маски = F.get("_пікселі") or {}
                     лічити_маски(d.get("шкіра"))
@@ -2683,6 +2758,15 @@ def стенд():
             return any((н, пункт) in за[файл] for н in рядки)
 
         випадки = [
+            ("не місце: вага у псевдонімі змішаного кортежу", є("риси.py", r"копія_пари\[0\] >", 1), False),
+            ("п.1 сира риса у псевдонімі змішаного кортежу", є("риси.py", r"копія_пари\[1\] >", 1), True),
+            ("не місце: вага поверненого псевдоніма кортежу", є("риси.py", r"повернути_псевдонім\(F\)\[0\] >", 1), False),
+            ("п.1 сира риса поверненого псевдоніма", є("риси.py", r"повернути_псевдонім\(F\)\[1\] >", 1), True),
+            ("не місце: додатна частина як max(x,0)", є("риси.py", r"return x if x > 0 else 0", 1), False),
+            ("не місце: охорона ключа відділяє чужий запис", є("риси.py", r'м_риса.get\("C", 0\) > 3', 1), False),
+            ("п.1 охорона ключа зберігає власну рису", є("риси.py", r'м_риса\["L"\] > 14', 1), True),
+            ("п.1 додаткова риса зі справжнім походженням", є("риси.py", r'д_риса.get\("C", 0\) > 4', 1), True),
+            ("не місце: охорона ключа відділяє сталий запис", є("риси.py", r'д_риса\["L"\] > 4', 1), False),
             ("п.1 вхід у нелінійну шкалу erf", є("риси.py", r"нелінійна_сила =", 1), True),
             ("не місце: споживач сили erf", є("риси.py", r"if нелінійна_сила", 1), False),
             ("п.1 вхід у нелінійні ворота tanh", є("риси.py", r"ворота_сили =", 1), True),
