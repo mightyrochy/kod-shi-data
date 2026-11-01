@@ -531,6 +531,23 @@ def _рядок(в):
     return isinstance(в, ast.Constant) and isinstance(в.value, str)
 
 
+def _шлях(в):
+    """`d["а"]["б"][і]` → ("d", ["а", "б"], чи далі змінний ключ): сталий префікс шляху від імені."""
+    ключі = []
+    while isinstance(в, ast.Subscript):
+        ключі.append(в.slice.value if _рядок(в.slice) else None)
+        в = в.value
+    if not isinstance(в, ast.Name):
+        return None, [], False
+    ключі.reverse()
+    префікс = []
+    for к in ключі:
+        if к is None:
+            break
+        префікс.append(к)
+    return в.id, префікс, len(префікс) < len(ключі)
+
+
 class Стан:
     """Один аналіз функції в контексті: env імен → мітки, без порядку інструкцій (до нерухомої точки)."""
 
@@ -682,6 +699,8 @@ class Стан:
                     к[ціль.slice.value] = к[ціль.slice.value] | вм
                     for кл, в in _з_префіксом(ціль.slice.value, вк).items():
                         к[кл] = к[кл] | в
+                elif isinstance(ціль.value, ast.Subscript) and self.у_шлях(ціль, вм, вк):
+                    return
                 elif isinstance(ціль.value, ast.Name) and вк and ціль.value.id in self.локальні:
                     # `d[ід] = запис`: ключі запису — ключі елемента d
                     к = self.ключі[ціль.value.id]
@@ -695,6 +714,22 @@ class Стан:
                 self.писати(корінь, frozenset({F}), мутація=True)
             elif корінь and not ключем:
                 self.писати(корінь, мітки - {F}, мутація=True)
+
+    def у_шлях(self, ціль, вм, вк):
+        """Запис у `d["а"]["б"]…` (чи `.append` на ньому): мітки — ключу «а/б», ключі значення — під ним.
+        Змінний ключ у кінці — як `d[ід] = запис`; змінний посередині — усе значення ключу префікса."""
+        корінь, префікс, змінний = _шлях(ціль)
+        if not корінь or not префікс or корінь not in self.локальні or корінь in self.глобальні:
+            return False
+        if len(префікс) > ГЛИБИНА:
+            префікс, змінний = префікс[:ГЛИБИНА], True
+            вм, вк = вм | _усі(вк), None
+        шлях = "/".join(префікс)
+        км = self.ключі[корінь]
+        км[шлях] = км[шлях] | (вм - {F})
+        for кл, в in _з_префіксом(шлях, вк).items():
+            км[кл] = км[кл] | в
+        return True
 
     def значення(self, в):
         """Вираз → (мітки поза сталими ключами, ключі dict чи None): ключі dict ідуть у виклик і з повернення окремо."""
@@ -1030,6 +1065,14 @@ class Стан:
         if isinstance(в, ast.Subscript):
             if isinstance(в.value, ast.Name) and _рядок(в.slice):
                 return self.ключ_імені(в.value.id, в.slice.value, в)
+            if isinstance(в.value, ast.Subscript) and _рядок(в.slice):
+                корінь, префікс, змінний = _шлях(в)
+                if корінь and not змінний and len(префікс) <= ГЛИБИНА and self.ключі.get(корінь):
+                    км = self.ключі[корінь]
+                    вих = self.індекс(self.читати_env(корінь), ast.Constant(префікс[0]), в)
+                    for і in range(1, len(префікс) + 1):
+                        вих = вих | км.get("/".join(префікс[:і]), E)
+                    return вих | _усі(_під(км, "/".join(префікс)))
             if isinstance(в.value, ast.Name) and isinstance(в.slice, ast.Constant) and type(в.slice.value) is int \
                     and ("#%d" % в.slice.value) in self.ключі.get(в.value.id, {}):
                 return self.ключ_імені(в.value.id, "#%d" % в.slice.value, в)
@@ -1241,6 +1284,12 @@ class Стан:
                         self.писати(корінь, мітки - {F})
                         for кл, вв in (ключі or {}).items():
                             self.ключі[корінь][кл] = self.ключі[корінь][кл] | вв
+                elif ім in ("append", "add", "appendleft", "extend", "extendleft", "insert") and \
+                        isinstance(в.func.value, ast.Subscript) and _шлях(в.func.value)[1] and \
+                        корінь in self.локальні and корінь not in self.глобальні:
+                    for з in (поз_к[1:] if ім == "insert" else поз_к):
+                        мітки, ключі = з if isinstance(з, tuple) else (з, None)
+                        self.у_шлях(ast.Subscript(value=в.func.value, slice=ast.Name(id="_")), мітки, ключі)
                 elif ім == "update" and isinstance(в.func.value, ast.Name) and not в.args:
                     pass   # лише іменні: кожне — свій ключ (нижче)
                 elif ім == "update" and isinstance(в.func.value, ast.Name):
@@ -1556,6 +1605,12 @@ def стенд():
                     for _к, з in кошик.items():
                         if з["шкіра_L"] < 20:
                             pass
+                    звіт = {"стани": {}}
+                    звіт["стани"]["x"] = dict(id=1, L=F["шкіра"]["L"])
+                    if звіт["стани"]["x"]["id"] > 1:
+                        pass
+                    if звіт["стани"]["x"]["L"] < 10:
+                        pass
                     for з, н in zip(записи, range(3)):
                         if н > 1:
                             pass
@@ -1601,6 +1656,8 @@ def стенд():
             ("п.1 позиція кортежу зі списку", є("риси.py", r"л > 60", 1), True),
             ("не місце: інша позиція кортежу", є("риси.py", r'з\["id"\] > 1', 1), False),
             ("п.1 поле запису з .items()", є("риси.py", r'шкіра_L"\] < 20', 1), True),
+            ("п.1 поле за шляхом ключів", є("риси.py", r'\["x"\]\["L"\] < 10', 1), True),
+            ("не місце: сусіднє поле за шляхом", є("риси.py", r'\["x"\]\["id"\] > 1', 1), False),
             ("не місце: друга послідовність zip", є("риси.py", r"н > 1", 1), False),
             ("п.3 наявність запису", є("риси.py", r"return lambda п: \(any", 3), True),
             ("п.3 рядок таблиці", є("риси.py", r'"why_her_contrast"', 3), True),
