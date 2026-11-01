@@ -22,6 +22,7 @@ $sideDir = Join-Path $SourceDir 'перевірка'
 Scenario 'а GPU' {
     . (Join-Path $SourceDir 'queue_lanes.ps1')
     function Get-Command { [pscustomobject]@{ Source = 'nvidia-smi' } }
+    function Get-GpuCounterRows { <# Запасне джерело — nvidia-smi; лічильник процесів міряє сценарії_gpu_процеси.ps1. #> $null }
     # Пам'ять карти й перелік compute-процесів — два окремі запити nvidia-smi.
     function Invoke-Native { param($Exe, $Arguments)
         if ($Arguments -contains '--query-gpu=memory.used') { return [pscustomobject]@{ Code = $script:SmiCode; Out = $script:SmiMem } }
@@ -146,6 +147,7 @@ Scenario 'в планувальник' {
     $script:Started = 0
     function Start-Worker { $script:Started++; [pscustomobject]@{ Slot = 'claude-1'; Slug = 'п'; Gpu = $true; Marker = 'x'; Proc = [pscustomobject]@{ HasExited = $false } } }
     function Get-Command { [pscustomobject]@{ Source = 'nvidia-smi' } }
+    function Get-GpuCounterRows { <# Запасне джерело — nvidia-smi; лічильник процесів міряє сценарії_gpu_процеси.ps1. #> $null }
     function Invoke-Native { param($Exe, $Arguments)
         if ($Arguments -contains '--query-gpu=memory.used') { return [pscustomobject]@{ Code = 0; Out = $script:FakeMem } }
         [pscustomobject]@{ Code = 0; Out = $script:FakeApps } }
@@ -175,6 +177,7 @@ Scenario 'в3 gemini-run' {
     function Test-SlugBusy { $false }
     function Test-LockFree { $true }
     function Get-Command { [pscustomobject]@{ Source = 'nvidia-smi' } }
+    function Get-GpuCounterRows { <# Запасне джерело — nvidia-smi; лічильник процесів міряє сценарії_gpu_процеси.ps1. #> $null }
     function Invoke-Native { param($Exe, $Arguments)
         if ($Arguments -contains '--query-gpu=memory.used') { return [pscustomobject]@{ Code = 0; Out = '2300' } }
         [pscustomobject]@{ Code = 0; Out = '4120, C:\Users\x\chrome.exe' } }

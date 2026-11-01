@@ -1066,11 +1066,16 @@ function Start-Markers($Workers) {
     $started = 0
     $now = [DateTimeOffset]::UtcNow.ToUnixTimeSeconds()
     $all = @(Get-Markers | Where-Object { -not $_.Slug.StartsWith('Е1-нічний-живий-') }) + @(Get-NightlyMarker)
+    # Позначка з назвою не за форматом — рядок диспетчерові раз на позначку: 31.10 `ВИМКНИ-НОУТБУК/cc-off/31102` (спроба з
+    # п'яти цифр) стояла мовчки, у #1856 — лише «? наряд». Стан INVALID_NAME — до рядка FORMAT: такий отримує рядок раз.
     foreach ($m in @($all | Where-Object { -not $_.Valid })) {
         $state = Get-StatePath (Get-MarkerKey $m)
-        if (Test-Path -LiteralPath $state) { continue }
+        if ((Test-Path -LiteralPath $state) -and [System.IO.File]::ReadAllText($state, $script:Utf8).Trim() -cne 'INVALID_NAME') { continue }
         Write-Log "позначка $($m.Name): назва не за форматом gemini-queue/<наряд>/<модель>/<спроба>[/<умови>] — пропущено"
-        Write-FileAtomic $state 'INVALID_NAME'
+        $name = ([string]$m.Name -replace '[^\p{L}\p{Nd}._/-]', '_')
+        if ($name.Length -gt 173) { $name = $name.Substring(0, 173) }
+        if (-not (Add-HoldLine "GEMINI ОБГОРТКА: ЗАБЛОКОВАНО $name FORMAT")) { Write-Log "позначка $($m.Name): рядок FORMAT не записано" }
+        Write-FileAtomic $state 'INVALID_FORMAT'
     }
     $mine = @($all | Where-Object { $_.Valid -and $script:Lanes -contains $_.Lane })
     $skipFile = Join-Path $OutDir 'skipped.json'
@@ -1203,7 +1208,7 @@ function Invoke-Worker {
     try {
         if ($job.gpu) {
             $gpu = Open-Lock (Get-GpuLockPath)
-            $why = $(if ($null -eq $gpu) { 'замок GPU' } elseif (Test-ExternalGpuFree) { '' } else { Get-GpuBusyReason @() })
+            $why = $(if ($null -eq $gpu) { 'замок GPU' } elseif (Test-ExternalGpuFree) { '' } else { Get-GpuBusyReason @() -LockHeld })
             if ($why) { Remove-Claim $statePath; Write-Log "GPU зайнята ($why) — $($job.name) лишається в черзі"; return $script:WorkerGpuBusy }
         }
         Write-FileAtomic $info (([ordered]@{ slot = $job.slot; lane = $job.lane; marker = $job.name; slug = $job.slug; model = $job.model
