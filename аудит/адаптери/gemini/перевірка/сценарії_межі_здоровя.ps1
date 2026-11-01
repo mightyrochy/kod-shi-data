@@ -25,7 +25,7 @@ function Put-Line([string]$Dir, [string]$Line) {
 function Lanes([string]$ClaudeNode) {
     <# смуги.json v2: slots.claude — заданий вузол, решта — з джерелом. #>
     $src = '"джерело": "вимір: стенд 29.10 — 3 копії"'
-    '{"v": 2, "slots": {"codex": {"n": 3, ' + $src + '}, "agy": {"n": 3, ' + $src + '}, "claude": ' + $ClaudeNode + '}, "poll_minutes": {"n": 2, "джерело": ""}, "usage_minutes": {"n": 15, "джерело": "вимір: стенд 29.10 — кеш здоровя"}}'
+    '{"v": 2, "slots": {"codex": {"n": 3, ' + $src + '}, "agy": {"n": 3, ' + $src + '}, "claude": ' + $ClaudeNode + '}, "poll_minutes": {"n": 2, "джерело": ""}, "usage_minutes": {"n": 15, "джерело": "механізм: кеш здоровя"}}'
 }
 
 try {
