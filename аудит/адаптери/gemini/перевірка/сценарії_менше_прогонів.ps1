@@ -283,11 +283,11 @@ console.log('GPU_OFF');
         function Invoke-Native { [pscustomobject]@{Code=0;Out='37780'} }
         Check '5 чужий GPU-процес означає чекання' (-not (Test-ExternalGpuFree))
         # Випадок 29.10: після перезапуску 14:26 UTC nvidia-smi називає в --query-compute-apps порожній AvastUI (57 MiB), і кожен
-        # GPU-наряд (автоживий, Е3-наживо) стояв у черзі 6+ год. ДО — старий предикат; ПІСЛЯ — пам'ять із порогом.
+        # GPU-наряд (автоживий, Е3-наживо) стояв у черзі 6+ год. ДО — старий предикат; ПІСЛЯ — вільна пам'ять і навантаження.
         function Invoke-Native {
             param($Exe, $Arguments)
             if ($Arguments -contains '--query-compute-apps=pid,used_memory') { return [pscustomobject]@{Code=0;Out='23660, [N/A]'} }
-            if ($Arguments -contains '--query-gpu=memory.used') { return [pscustomobject]@{Code=0;Out='57'} }
+            if ($Arguments -contains '--query-gpu=memory.total,memory.free,utilization.gpu') { return [pscustomobject]@{Code=0;Out='16376, 16319, 0'} }
             [pscustomobject]@{Code=1;Out='';Err='невідомий виклик'}
         }
         $old = (Invoke-Native 'nvidia-smi' @('--query-compute-apps=pid,used_memory')).Out.Trim()
@@ -296,8 +296,8 @@ console.log('GPU_OFF');
         $script:Logged = @(); $LaneDir = $tmp
         function Write-Log([string]$Text) { $script:Logged += $Text }
         Check '5 ПІСЛЯ: причина зайнятості порожня' ((Get-GpuBusyReason @()) -eq '')
-        function Invoke-Native { param($Exe, $Arguments) [pscustomobject]@{Code=0;Out='9000'} }
-        Check '5 завантажена модель (9000 MiB) — причина названа числом' ((Get-GpuBusyReason @()) -match '9000 MiB')
+        function Invoke-Native { param($Exe, $Arguments) [pscustomobject]@{Code=0;Out='16376, 7376, 0'} }
+        Check '5 чужа модель (9000 MiB) — причина називає залишок і потребу' ((Get-GpuBusyReason @()) -match 'вільно 7376 з потрібних 8925 MiB')
         $m = [pscustomobject]@{Name='gemini-queue/Е3-наживо/gpt-6.1-sol-high/1/p1-gpu'}
         $skip = Join-Path $tmp 'skipped.json'
         Add-Skip $m 'GPU: тест'; Save-Skips $skip

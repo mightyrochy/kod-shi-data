@@ -51,9 +51,11 @@ $script:WorkerGpuBusy = 4
 $script:ReviewApiLimit = 30
 $script:ReviewApiWindow = 3600
 $script:ReviewApiBackoff = 120
-# Відеопам'ять (MiB), нижче якої сторонню зайнятість GPU не рахуємо: вікно AvastUI тримає 57 MiB (вимір 29.10 20:00 UTC),
-# завантажена модель — гігабайти.
-$script:GpuIdleMiB = 512
+# Вимір 30.10: найбільший із доступних знімків живих прогонів — 8925 MiB усієї карти; простій — 0 %.
+# Джерела й прогалини (пік каталогу, навантаження гри): аудит/корені/ПК-межа-без-джерела-gpu.md.
+# Це запасний бюджет за спостереженим максимумом, а не доведений пік будь-якої моделі.
+$script:GpuRunMiB = 8925
+$script:GpuIdlePercent = 0
 
 # --- процеси й файли ----------------------------------------------------------------------------------------------
 
@@ -1065,45 +1067,31 @@ builtins.__import__ = _gpu_import
     $env:PYTHONPATH = $Directory + [IO.Path]::PathSeparator + $env:PYTHONPATH
 }
 
-function Get-ExternalGpuMiB {
-    <# Відеопам'ять, зайнята зараз (MiB, усі карти); -1 — nvidia-smi не відповів. Запасне джерело Get-GpuLoad, коли лічильника
-    процесів Windows нема: --query-compute-apps під WDDM називає й порожній AvastUI.exe (його вікно живе від старту системи) —
-    29.10 від 14:27 UTC це лишало кожен GPU-наряд у черзі на 6+ год; з одним AvastUI зайнято 57 MiB (вимір 29.10 20:00 UTC). #>
+function Get-GpuTelemetry {
+    <# Один знімок вільної пам'яті й обчислень єдиної карти; невідомі дані не означають простій.
+    Місткості різних карт не складаємо: цей вимір і бюджет стосуються єдиної RTX 4090 ноутбука. #>
+    $errorResult = [pscustomobject]@{ Error = 'nvidia-smi не відповів'; TotalMiB = 0; FreeMiB = 0; Percent = 0 }
     $exe = Get-Command nvidia-smi -ErrorAction SilentlyContinue
-    if ($null -eq $exe) { return 0 }
-    $r = Invoke-Native $exe.Source @('--query-gpu=memory.used','--format=csv,noheader,nounits') '' 1
-    if ($r.Code -ne 0) { return -1 }
-    $sum = 0; $seen = $false
-    foreach ($line in ($r.Out -split "`n")) { $v = 0; if ([int]::TryParse($line.Trim(), [ref]$v)) { $sum += $v; $seen = $true } }
-    if ($seen) { $sum } else { -1 }
+    if ($null -eq $exe) { return $errorResult }
+    $r = Invoke-Native $exe.Source @('--query-gpu=memory.total,memory.free,utilization.gpu', '--format=csv,noheader,nounits') '' 1
+    if ($r.Code -ne 0) { return $errorResult }
+    $lines = @($r.Out -split '\r?\n' | Where-Object { $_.Trim() })
+    if ($lines.Count -gt 1) {
+        $errorResult.Error = 'кілька GPU: потрібен вимір однієї карти'
+        return $errorResult
+    }
+    if ($lines.Count -ne 1 -or $lines[0] -notmatch '^\s*([0-9]+)\s*,\s*([0-9]+)\s*,\s*([0-9]+)\s*$') { return $errorResult }
+    $total = 0L; $free = 0L; $percent = 0
+    if (-not [long]::TryParse($Matches[1], [ref]$total) -or -not [long]::TryParse($Matches[2], [ref]$free) -or
+        -not [int]::TryParse($Matches[3], [ref]$percent) -or $total -le 0 -or $free -gt $total -or $percent -gt 100) { return $errorResult }
+    [pscustomobject]@{ Error = ''; TotalMiB = $total; FreeMiB = $free; Percent = $percent }
 }
 
-# Зайнятість для запобіжника — відеопам'ять кожного процесу з лічильника Windows «GPU Process Memory», «Dedicated Usage»
-# (його показує Диспетчер завдань: https://devblogs.microsoft.com/directx/gpus-in-the-task-manager/). nvidia-smi під WDDM
-# пам'яті процесу не дає (used_memory: «Not available on Windows when running in WDDM mode», `nvidia-smi
-# --help-query-compute-apps`), а memory.used — уся карта разом із робочим столом: 31.10 з 20:15 UTC, коли власник був за
-# ноутбуком, обидві GPU-позначки стояли через «процес ShellHost.exe+CrossDeviceResume.exe+NVIDIA_Overlay.exe». Сторонній
-# процес — не робочий стіл, оболонка й оверлей Windows (Test-GpuToolProcess) і не LM Studio з її моделями: модель —
-# інструмент прогонів, наряд з іншою моделлю перевантажує її сам за аудит/НОУТБУК.md, обгортка моделей не вивантажує й LM
-# Studio не закриває (власник 31.10 ~21:33 UTC: «я так і не зрозумів навіщо вивантажувати модель, якщо її знову потрібно
-# завантажувати для прогону»). Навантаження — сторонній процес понад GpuIdleMiB: вікно без навантаження — 57 MiB (AvastUI,
-# 29.10), карта з Avast і вікном LM Studio без моделей — 78 MiB (аудит/проби/Е2-вікно-жнива-розбір-3110.md, 31.10),
-# завантажена модель — гігабайти (там само: qwen3-vl-8b, MamayLM).
-
-$script:GpuDesktopNames = @(
-    # Робочий стіл, оболонка й оверлей: три перші — з рядка обгортки 31.10; решта — складові оболонки Windows 11 і застосунку
-    # NVIDIA, які малюють вікна, а не рахують.
-    'ShellHost', 'CrossDeviceResume', 'NVIDIA Overlay', 'NVIDIA_Overlay', 'NVIDIA app', 'NVIDIA Share', 'nvcontainer',
-    'dwm', 'explorer', 'ShellExperienceHost', 'StartMenuExperienceHost', 'SearchHost', 'SearchApp', 'TextInputHost',
-    'LockApp', 'ApplicationFrameHost', 'SystemSettings', 'Widgets', 'WidgetService', 'PhoneExperienceHost', 'csrss', 'winlogon')
-
-function Test-GpuToolProcess([string]$Name, [string]$Path = '') {
-    <# Процес, що не займає карту для запобіжника: робочий стіл, оболонка й оверлей Windows (GpuDesktopNames) чи LM Studio —
-    вікно й рушій моделей (`LM Studio.exe` і його дочірні, `lms`, `llmster`, усе з теки LM Studio чи `~\.lmstudio`). Назва — без
-    `.exe`, як дає Get-Process, чи з ним, як у nvidia-smi; шлях може бути порожнім (процес іншого облікового запису). #>
+function Test-GpuModelProcess([string]$Name, [string]$Path = '') {
+    <# Чи це інструмент LM Studio: лише його виміряну пам'ять можна повторно використати в наряді.
+    Робочий стіл і браузер також займають фізичну пам'ять, але потребу наряду не зменшують. #>
     $n = ([string]$Name -replace '(?i)\.exe$', '').Trim()
     if (-not $n) { return $false }
-    foreach ($d in $script:GpuDesktopNames) { if ($n -ieq $d) { return $true } }
     if ($n -match '(?i)^(LM[ _]?Studio|lms|llmster)$') { return $true }
     [string]$Path -match '(?i)[\\/](LM[ _-]?Studio|\.lmstudio)[\\/]'
 }
@@ -1115,91 +1103,65 @@ function Get-GpuCounterRows {
     try { , @(Get-CimInstance -ClassName 'Win32_PerfFormattedData_GPUPerformanceCounters_GPUProcessMemory' -ErrorAction Stop) } catch { $null }
 }
 
-function ConvertTo-SafeProcessName([string]$Name) {
-    <# Назва процесу для журналу й рядка диспетчерові: лише безпечні знаки, до 30. #>
-    $safe = ($Name -replace '[^A-Za-z0-9._-]', '_')
-    if ($safe.Length -gt 30) { $safe = $safe.Substring(0, 30) }
-    $safe
-}
-
 function Get-GpuProcessInfo([int]$ProcessId) {
-    <# Назва (як у Get-Process), шлях і мітка для рядка (`<назва>.exe`, безпечні знаки) процесу за PID; шляху процесу іншого
-    облікового запису не видно — ''; процес уже вийшов — без назви, мітка `pid<PID>`. #>
-    try { $p = Get-Process -Id $ProcessId -ErrorAction Stop } catch { return [pscustomobject]@{ Name = ''; Path = ''; Label = "pid$ProcessId" } }
+    <# Назва (як у Get-Process) і шлях процесу за PID; шляху процесу іншого
+    облікового запису не видно — ''; процес уже вийшов — без назви. #>
+    try { $p = Get-Process -Id $ProcessId -ErrorAction Stop } catch { return [pscustomobject]@{ Name = ''; Path = '' } }
     $path = ''
     try { $path = [string]$p.Path } catch { $path = '' }
-    [pscustomobject]@{ Name = [string]$p.ProcessName; Path = $path; Label = (ConvertTo-SafeProcessName ([string]$p.ProcessName + '.exe')) }
+    [pscustomobject]@{ Name = [string]$p.ProcessName; Path = $path }
 }
 
 function Get-GpuLoad {
-    <# Навантаження карти сторонніми процесами: MiB (-1 — джерело не відповіло; понад GpuIdleMiB — зайнята), Who — хто (до
-    трьох, з MiB, коли їх дає лічильник). Лічильник Windows — MiB сторонніх процесів понад GpuIdleMiB кожен; без нього —
-    memory.used усієї карти, а коли compute-apps називає лише робочий стіл і LM Studio — карта вільна. #>
-    $rows = Get-GpuCounterRows
-    if ($null -ne $rows) {
-        $byPid = @{}
-        foreach ($r in @($rows)) {
-            if ([string]$r.Name -notmatch '^pid_([0-9]{1,10})_') { continue }
-            $id = [int]$Matches[1]; $v = 0L
-            [void][long]::TryParse([string]$r.DedicatedUsage, [ref]$v)
-            $byPid[$id] = [long]$byPid[$id] + $v
+    <# Єдине рішення за вільною VRAM, залишковою потребою наряду та обчисленнями.
+    Пам'ять неактивної LM Studio вже належить інструменту прогону; без лічильника процесів її не зараховуємо.
+    Ненульове навантаження всієї карти блокує і гру, і активну модель, незалежно від назви процесу. #>
+    $gpu = Get-GpuTelemetry
+    $required = [long]$script:GpuRunMiB
+    $modelBytes = 0L
+    if (-not $gpu.Error -and $gpu.Percent -le $script:GpuIdlePercent) {
+        $rows = Get-GpuCounterRows
+        $seen = @{}
+        foreach ($row in @($rows)) {
+            if ($null -eq $row -or [string]$row.Name -notmatch '^pid_([0-9]{1,10})_.*_phys_0$') { continue }
+            $processId = 0; $bytes = 0L
+            if (-not [int]::TryParse($Matches[1], [ref]$processId) -or
+                -not [long]::TryParse([string]$row.DedicatedUsage, [ref]$bytes) -or $bytes -lt 0 -or $seen.ContainsKey([string]$row.Name)) { continue }
+            $seen[[string]$row.Name] = $true
+            $p = Get-GpuProcessInfo $processId
+            if (Test-GpuModelProcess $p.Name $p.Path) {
+                # Обмеження фізично зайнятою пам'яттю захищає від переповнення й розбіжності двох знімків.
+                $modelBytes = [long][Math]::Min(($gpu.TotalMiB - $gpu.FreeMiB) * 1MB, $modelBytes + [double]$bytes)
+            }
         }
-        $load = @(@(foreach ($id in @($byPid.Keys)) {
-            $mib = [long][Math]::Floor($byPid[$id] / 1MB)
-            if ($mib -le $script:GpuIdleMiB) { continue }
-            $p = Get-GpuProcessInfo $id
-            if (Test-GpuToolProcess $p.Name $p.Path) { continue }
-            [pscustomobject]@{ Pid = $id; MiB = $mib; Label = $p.Label }
-        }) | Sort-Object -Property @{ Expression = 'MiB'; Descending = $true }, 'Pid')
-        $sum = 0L; foreach ($x in $load) { $sum += $x.MiB }
-        $who = (@($load | Select-Object -First 3 | ForEach-Object { "$($_.Label) $($_.MiB) MiB" })) -join '+'
-        return [pscustomobject]@{ MiB = $sum; Who = $who; PerProcess = $true }
+        $required = [long][Math]::Max(0, $required - [Math]::Floor($modelBytes / 1MB))
     }
-    $used = Get-ExternalGpuMiB
-    if ($used -le $script:GpuIdleMiB) { return [pscustomobject]@{ MiB = $used; Who = ''; PerProcess = $false } }
-    $names = @(Get-GpuComputeNames)
-    $foreign = @($names | Where-Object { -not (Test-GpuToolProcess $_) })
-    if ($names.Count -gt 0 -and $foreign.Count -eq 0) { return [pscustomobject]@{ MiB = 0; Who = ''; PerProcess = $false } }
-    [pscustomobject]@{ MiB = $used; Who = ((@($foreign | ForEach-Object { ConvertTo-SafeProcessName $_ }) | Select-Object -First 3) -join '+'); PerProcess = $false }
+    $reason = [string]$gpu.Error
+    if (-not $reason) {
+        if ($gpu.Percent -gt $script:GpuIdlePercent) { $reason = "навантаження $($gpu.Percent) %" }
+        elseif ($gpu.FreeMiB -lt $required) { $reason = "вільно $($gpu.FreeMiB) з потрібних $required MiB" }
+    }
+    [pscustomobject]@{ FreeMiB = $gpu.FreeMiB; RequiredMiB = $required; Percent = $gpu.Percent; Reason = $reason }
 }
 
 function Test-ExternalGpuFree {
-    <# Сторонній процес із відеопам'яттю лишає GPU-наряд у черзі, без кінцевого блокера. #>
-    $used = (Get-GpuLoad).MiB
-    $used -ge 0 -and $used -le $script:GpuIdleMiB
-}
-
-function Get-GpuComputeNames {
-    <# Назви процесів з переліку compute-apps (без теки, унікальні) — коли лічильника Windows нема: під WDDM пам'ять процесів
-    тут N/A, тож зайнятість міряє Get-ExternalGpuMiB, а це лише відповідь «хто». #>
-    $exe = Get-Command nvidia-smi -ErrorAction SilentlyContinue
-    if ($null -eq $exe) { return }
-    $r = Invoke-Native $exe.Source @('--query-compute-apps=pid,process_name', '--format=csv,noheader') '' 1
-    if ($r.Code -ne 0) { return }
-    $names = @()
-    foreach ($line in @($r.Out -split "`r?`n")) {
-        $f = @($line.Split(','))
-        if ($f.Count -lt 2) { continue }
-        $n = ((($f[1..($f.Count - 1)] -join ',').Trim() -split '[\\/]')[-1]).Trim()
-        if ($n) { $names += $n }
-    }
-    $names | Select-Object -Unique
+    <# Те саме рішення для воркера після узяття замка: зміна стану карти повертає наряд у чергу. #>
+    (Get-GpuLoad).Reason -eq ''
 }
 
 $script:GpuHoldReason = ''
 
 function Get-GpuBusyReason($Workers, [switch]$LockHeld) {
     <# Чому GPU не віддати наряду зараз; '' — вільна. Єдине місце для планувальників обох облікових записів.
-    GpuHoldReason — причина для рядка сигналу (Update-HoldSignals порівнює її без MiB). LockHeld — замок GPU тримає сам
+    GpuHoldReason — причина для рядка сигналу (Update-HoldSignals порівнює її без числових показників). LockHeld — замок GPU тримає сам
     викликач (воркер після Open-Lock): причина — сторонній процес, а не «замок тримає інший процес». #>
     $script:GpuHoldReason = ''
     if (@($Workers | Where-Object { $_.Gpu -and -not $_.Proc.HasExited }).Count -gt 0) { $script:GpuHoldReason = 'замок GPU іншого наряду'; return 'GPU: її тримає власний наряд обгортки' }
     if (-not $LockHeld -and -not (Test-LockFree (Get-GpuLockPath))) { $script:GpuHoldReason = 'замок GPU іншого наряду'; return "GPU: замок $(Get-GpuLockPath) тримає інший процес" }
     $load = Get-GpuLoad
-    if ($load.MiB -lt 0) { $script:GpuHoldReason = 'nvidia-smi не відповів'; return 'GPU: nvidia-smi не відповів' }
-    if ($load.MiB -gt $script:GpuIdleMiB) {
-        $script:GpuHoldReason = $(if ($load.Who) { "процес $($load.Who)" } else { 'GPU зайнята стороннім процесом' })
-        return "GPU: зайнято $($load.MiB) MiB стороннім процесом (поріг $script:GpuIdleMiB$(if ($load.PerProcess) { ' на процес' }))$(if ($load.Who) { ': ' + $load.Who })"
+    if ($load.Reason) {
+        $script:GpuHoldReason = $load.Reason
+        return "GPU: $($load.Reason)"
     }
     ''
 }
@@ -1284,8 +1246,8 @@ function Update-HoldSignals([hashtable]$Held, [scriptblock]$Send) {
         $h = $Held[$res]; $old = $prev[$res]
         $since = $(if ($null -ne $old) { [long]$old.since } else { $now })
         $sent = $(if ($null -ne $old) { [string]$old.sent } else { '' })
-        # MiB процесів гуляють між проходами: повтор — лише коли змінилися назви, а не числа.
-        if (($now - $since) -ge $after -and ($sent -replace ' [0-9]+ MiB', '') -cne ($h.Reason -replace ' [0-9]+ MiB', '')) {
+        # Числові показники гуляють між проходами: повтор лише при зміні причини, не MiB чи відсотка.
+        if (($now - $since) -ge $after -and ($sent -replace ' [0-9]+(?= MiB| %| з потрібних)', '') -cne ($h.Reason -replace ' [0-9]+(?= MiB| %| з потрібних)', '')) {
             if (& $Send "GEMINI ОБГОРТКА: ЗАБЛОКОВАНО ${res}: $($h.Reason), позначок $($h.Markers.Count)") { $sent = $h.Reason }
         }
         $next[$res] = [ordered]@{ since = $since; reason = $h.Reason; sent = $sent }

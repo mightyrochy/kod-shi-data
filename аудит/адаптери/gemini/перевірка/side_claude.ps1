@@ -32,7 +32,7 @@ function Get-TaskRows {
 }
 function Test-ExternalGpuFree { $true }
 # Планувальник читає той самий вхід напряму через Get-GpuBusyReason.
-function Get-ExternalGpuMiB { <# Дає вільну GPU синтетичному планувальнику. #> 0 }
+function Get-GpuTelemetry { <# Ізольована карта синтетичного планувальника. #> [pscustomobject]@{ Error = ''; TotalMiB = 16376; FreeMiB = 16376; Percent = 0 } }
 # Лічильник відеопам'яті процесів — справжній на ноутбуці: стенд не бачить карти (його міряє сценарії_gpu_процеси.ps1).
 function Get-GpuCounterRows { $null }
 exit (Main)
