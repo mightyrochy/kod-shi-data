@@ -73,7 +73,10 @@ jobs:
         with:
           python-version: "3.12"
       - run: 'python3 -m pip install --quiet --only-binary=:all: --require-hashes -r .github/requirements/жнива.txt'
-      - run: python3 -m playwright install --with-deps chromium
+      - name: залежності браузера
+        # 12114: apt-get без тайм-ауту кроку висів до тайм-ауту job; зелені кроки — до 400 с
+        timeout-minutes: 10
+        run: python3 -m playwright install --with-deps chromium
       - name: відновити журнал цього workflow/ref поза git
         id: restore
         env:
