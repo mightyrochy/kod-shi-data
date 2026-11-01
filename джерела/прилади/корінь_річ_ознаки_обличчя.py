@@ -142,6 +142,7 @@ class Аналіз:
     def __init__(self, корінь):
         self.корінь = корінь
         self.модулі = {}
+        self.синтетичні, self.тримати = {}, []   # `map(f, xs)` → виклик f(xs[і]); вузли тримаються, щоб id не мінявся
         for шлях in sorted(glob.glob(os.path.join(корінь, "джерела", "*.py"))):
             ім = os.path.basename(шлях)[:-3]
             if ВИКЛЮЧЕНО.match(ім):
@@ -778,6 +779,16 @@ class Стан:
             м, к = self.значення(сам.elt)
             return м - {F}, к
         if isinstance(сам, ast.Call) and isinstance(сам.func, ast.Attribute) and сам.func.attr in ("get", "pop") \
+                and сам.args and not _рядок(сам.args[0]) and isinstance(сам.func.value, ast.Name) \
+                and self.ключі.get(сам.func.value.id) and not self.а.викликані(self.м, сам.func, self.ф) \
+                and not (isinstance(сам.args[0], ast.Name) and сам.args[0].id in self.ключі_циклу):
+            # `d.get(змінний)`: елемент d за змінним ключем — як `d[змінний]`
+            self.e(сам)
+            км = self.ключі[сам.func.value.id]
+            типове = self.e(сам.args[1]) if len(сам.args) > 1 else E
+            return (self.індекс(self.читати_env(сам.func.value.id), сам.args[0], сам) | типове) - {F}, \
+                (_без_першого(км) or None)
+        if isinstance(сам, ast.Call) and isinstance(сам.func, ast.Attribute) and сам.func.attr in ("get", "pop") \
                 and сам.args and _рядок(сам.args[0]) and not isinstance(сам.func.value, ast.Name) \
                 and not self.а.викликані(self.м, сам.func, self.ф):
             мз, кз = self.значення(сам.func.value)
@@ -1235,6 +1246,21 @@ class Стан:
 
     def виклик(self, в):
         ім = _ім_виклику(в.func)
+        if ім == "map" and isinstance(в.func, ast.Name) and len(в.args) == 2 and not в.keywords \
+                and not isinstance(в.args[0], ast.Lambda) and not any(isinstance(x, ast.Starred) for x in в.args):
+            # `map(f, xs)`: f над елементом xs (мітки й ключі елемента), не над сумою списку
+            с = self.а.синтетичні.get(id(в))
+            if с is None:
+                с = ast.Call(func=в.args[0], args=[ast.Subscript(value=в.args[1], slice=ast.Name(id="_і"))],
+                             keywords=[])
+                ast.copy_location(с, в); ast.copy_location(с.args[0], в)
+                self.а.синтетичні[id(в)] = с
+                self.а.тримати.append((в, с))
+            self.e(в.args[1])
+            вих = self.e(с)
+            if id(с) in self.ключі_викликів:
+                self.ключі_викликів[id(в)] = self.ключі_викликів[id(с)]
+            return вих
         приймач = E
         if isinstance(в.func, ast.Attribute):
             приймач = self.e(в.func.value)
@@ -1290,9 +1316,23 @@ class Стан:
             усі |= м
         for м in іменні.values():
             усі |= м
+        елемент = None
+        if ім in ("sorted", "sort", "min", "max", "filter", "map", "nsmallest", "nlargest", "groupby"):
+            джерело = в.func.value if ім == "sort" and isinstance(в.func, ast.Attribute) else \
+                next((x for x in в.args if not isinstance(x, (ast.Lambda, ast.Starred, ast.Constant))), None)
+            if джерело is not None:
+                елемент = self.значення(джерело)
         for л in лямбди:
             for а in л.args.args:
-                self.env[а.arg] = self.env.get(а.arg, E) | (усі - {F})
+                if елемент is not None and len(л.args.args) == 1:
+                    # ключ сорту чи фільтр: параметр — елемент послідовності з ключами запису
+                    м, кл = елемент
+                    м = self.індекс(м, ast.Constant(0), в)
+                    self.env[а.arg] = self.env.get(а.arg, E) | (м - {F})
+                    for кк, вв in (_без_першого(кл) or {}).items():
+                        self.ключі[а.arg][кк] = self.ключі[а.arg][кк] | вв
+                else:
+                    self.env[а.arg] = self.env.get(а.arg, E) | (усі - {F})
                 self.локальні.add(а.arg)
             self.e(л.body)
         # методи-мутації й читання dict
