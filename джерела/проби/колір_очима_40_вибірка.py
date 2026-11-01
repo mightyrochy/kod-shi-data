@@ -1,4 +1,4 @@
-# КОЛІР-ОЧИМА-40 (рядок 2697): вибірка 40 відкинутих порогом згоди вимірів (сід 7, по 10 з груп 0.8/0.75/0.6/0.55). Запуск із джерела/: python3 проби/колір_очима_40_вибірка.py [файл виводу, типово sample40.json].
+# КОЛІР-ОЧИМА-40 (рядок 2697): вибірка 40 відкинутих порогом згоди вимірів (сід 7, по 10 з груп 0.8/0.75/0.6/0.55). Запуск із джерела/: python3 проби/колір_очима_40_вибірка.py [файл виводу; типово — тимчасовий поза деревом, бо голий прогін переписував джерела/sample40.json (Д11)].
 import json,gzip,sys,collections as K,random
 sys.path.insert(0,".")
 import bridge as B, стенд_знімок as СЗ, колір_річ as КР
@@ -22,5 +22,6 @@ print({k:len(v) for k,v in G.items()})
 rnd=random.Random(7); out=[]
 for g in ["0.8","0.75","0.6","0.55"]:
     xs=sorted(G[g]); rnd.shuffle(xs); out+= [dict(id=a,слово=b,hex=c,згода=d,магазин=e,назва=f,група=g) for a,b,c,d,e,f in xs[:10]]
-json.dump(out,open(sys.argv[1] if len(sys.argv)>1 else "sample40.json","w"),ensure_ascii=False,indent=0)
+import os,tempfile; вих=sys.argv[1] if len(sys.argv)>1 else os.path.join(tempfile.mkdtemp(),"sample40.json"); print("вихід:",вих)
+json.dump(out,open(вих,"w"),ensure_ascii=False,indent=0)
 print(len(out))

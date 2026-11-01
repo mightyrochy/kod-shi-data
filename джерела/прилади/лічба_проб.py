@@ -13,8 +13,8 @@
 `--гейт` (для того, хто сам захотів двійкового коду) виходить 1 при червоних.
 У CI приладу свідомо НЕ додано.
 
-ПРОГІН (з теки `джерела`; прилад сам розпаковує й чистить `каталог_повний.xml` перед нитками —
-`чистка_каталогу.забезпечити_чистим`):
+ПРОГІН (з теки `джерела`; кожна нитка має власне дерево поточного коміту,
+де прилад розпаковує й чистить каталог; незакомічені правки не запускаються):
     python3 прилади/лічба_проб.py                 # усе, крім переліку «окремо»
     python3 прилади/лічба_проб.py --окремо        # і «окремо» теж (довго, мережа)
     python3 прилади/лічба_проб.py --лише проби/chyp_simji.py проби/bas_ochi_81.py
@@ -35,11 +35,137 @@ env: NYTOK (ниток, типово 4), STELYA (стеля секунд на п
 """
 import sys, os, json, time, glob, subprocess, argparse
 import concurrent.futures as cf
+import contextlib
+import hashlib
+import queue
+import shutil
+import tempfile
+from pathlib import Path
 
 _ТУТ = os.path.dirname(os.path.abspath(__file__))
 ДЖЕРЕЛА = os.path.dirname(_ТУТ)
 КОРІНЬ = os.path.dirname(ДЖЕРЕЛА)
 РЕЄСТР = os.path.join(_ТУТ, 'лічба_проб_окремо.json')
+КОД_БЕЗ_ВХОДУ = 77
+
+
+def git(дерево, *аргументи):
+    """Виконує git у названому дереві; читання не освіжає індекс користувача."""
+    return subprocess.run(['git', '-C', str(дерево), *аргументи], check=True,
+                          capture_output=True, env=dict(os.environ, GIT_OPTIONAL_LOCKS='0')).stdout
+
+
+def файли_статусу(статус):
+    """Читає porcelain -z, включно з обома шляхами перейменування й індексом."""
+    записи = iter(статус.decode('utf-8', errors='surrogateescape').split('\0'))
+    файли = []
+    for запис in записи:
+        if not запис:
+            continue
+        файли.append(запис[3:])
+        if 'R' in запис[:2] or 'C' in запис[:2]:
+            файли.append(next(записи))
+    return sorted(set(файли))
+
+
+def знімок_користувача():
+    """Знімає вміст відстежених і нових файлів, HEAD та записи індексу без відновлення.
+
+    Самого status замало: файл міг бути брудним ще до прогону, а проба дописала
+    його знову. Індекс зберігається окремо від робочих байтів, з усіма стадіями.
+    Ігноровані каталоги, кеші й тимчасові файли не є записаними доказами git.
+    """
+    знімок = {'HEAD': git(КОРІНЬ, 'rev-parse', 'HEAD')}
+    індекс = {}
+    for запис in git(КОРІНЬ, 'ls-files', '--stage', '-z').split(b'\0'):
+        if запис:
+            дані, шлях = запис.split(b'\t', 1)
+            імя = шлях.decode('utf-8', errors='surrogateescape')
+            індекс.setdefault(імя, []).append(дані)
+    шляхи = git(КОРІНЬ, 'ls-files', '-z', '--cached', '--others', '--exclude-standard')
+    for шлях in set(шляхи.split(b'\0')) - {b''}:
+        імя = шлях.decode('utf-8', errors='surrogateescape')
+        файл = Path(КОРІНЬ, імя)
+        try:
+            if файл.is_symlink():
+                вміст = ('посилання', os.readlink(файл))
+            elif файл.is_file():
+                with файл.open('rb') as вх:
+                    вміст = hashlib.file_digest(вх, 'sha256').hexdigest()
+            else:
+                вміст = None
+        except FileNotFoundError:
+            вміст = None
+        знімок[імя] = (вміст, tuple(індекс.get(імя, [])))
+    return знімок
+
+
+class Дерево_проби:
+    """Власне відокремлене дерево нитки; очищення торкається лише цього дерева."""
+
+    def __init__(self, sha, каталог=None):
+        """Запам'ятовує незмінний коміт, спільний для всіх ниток прогону."""
+        self.sha = sha
+        self.каталог = каталог
+
+    def __enter__(self):
+        """Створює дерево й готує ігнорований каталог до запуску проб."""
+        self.тимчасова = tempfile.TemporaryDirectory(prefix='лічба_проб_')
+        self.корінь = os.path.join(self.тимчасова.name, 'repo')
+        початок = time.monotonic()
+        try:
+            git(КОРІНЬ, 'worktree', 'add', '--detach', self.корінь, self.sha)
+            self.джерела = os.path.join(self.корінь, 'джерела')
+            байтів = sum(ф.stat().st_size for ф in Path(self.корінь).rglob('*') if ф.is_file())
+            print('дерево: checkout %.1f с · %.3f ГіБ · %s'
+                  % (time.monotonic() - початок, байтів / 2**30, self.корінь), flush=True)
+            каталог = Path(self.джерела, 'каталог_повний.xml')
+            if self.каталог is not None:
+                shutil.copyfile(self.каталог, каталог)
+                for суфікс in ('.sha256', '.двійники.json'):
+                    запис = Path(str(self.каталог) + суфікс)
+                    if запис.exists():
+                        ціль = Path(str(каталог) + суфікс)
+                        if суфікс == '.sha256':
+                            хеш, архів = запис.read_text(encoding='utf-8').strip().split('  ', 1)
+                            відносний = Path(архів).relative_to(self.каталог.parent.parent)
+                            ціль.write_text('%s  %s\n' % (хеш, Path(self.корінь, відносний)), encoding='utf-8')
+                        else:
+                            shutil.copyfile(запис, ціль)
+            else:
+                subprocess.run([sys.executable, '-c',
+                                'import чистка_каталогу; '
+                                'чистка_каталогу.забезпечити_чистим("каталог_повний.xml")'],
+                               cwd=self.джерела, check=True, capture_output=True,
+                               env=self.середовище(), timeout=max(120, int(os.environ.get('STELYA', '120'))))
+            print('дерево: підготовка разом %.1f с · каталог %.3f ГіБ'
+                  % (time.monotonic() - початок, каталог.stat().st_size / 2**30 if каталог.exists() else 0),
+                  flush=True)
+            бруд = git(self.корінь, 'status', '--porcelain', '-z', '-uall')
+            if бруд:
+                raise RuntimeError('підготовка каталогу змінила дерево: ' + ', '.join(файли_статусу(бруд)))
+        except BaseException:
+            self.__exit__(None, None, None)
+            raise
+        return self
+
+    def середовище(self):
+        """Спрямовує імпорти тільки в дерево нитки, а не у живе дерево сесії."""
+        return dict(os.environ, PYTHONIOENCODING='utf-8',
+                    PYTHONPATH=self.джерела + os.pathsep + self.корінь)
+
+    def очистити(self):
+        """Повертає коміт та прибирає нові файли виключно в тимчасовому дереві."""
+        git(self.корінь, 'reset', '--hard', self.sha)
+        git(self.корінь, 'clean', '-fd')
+        if git(self.корінь, 'status', '--porcelain', '-z', '-uall'):
+            raise RuntimeError('дерево проби лишилося брудним після очищення')
+
+    def __exit__(self, *_):
+        """Знімає реєстрацію worktree та прибирає тільки створену тимчасову теку."""
+        if os.path.exists(os.path.join(self.корінь, '.git')):
+            git(КОРІНЬ, 'worktree', 'remove', '--force', self.корінь)
+        self.тимчасова.cleanup()
 
 
 def знайти_проби():
@@ -62,7 +188,7 @@ _ЗВІДКИ_ДЖЕРЕЛА = ('з теки `джерела`', 'із теки `
                    'cd джерела', 'Запуск із `джерела`')
 
 
-def тека_прогону(шлях):
+def тека_прогону(шлях, корінь=КОРІНЬ):
     """Тека, з якої проба просить себе запускати — її ж словами.
 
     Типово: `джерела` для `джерела/проби/*`, корінь репозиторію для `аудит/проби/*`.
@@ -72,20 +198,21 @@ def тека_прогону(шлях):
     `FileNotFoundError` — тобто прилад міряв би власний здогад про теку, а не пробу.
     Тому тека береться з ДОКСТРІНГА, коли він її називає; здогадів прилад не робить.
     """
-    типова = ДЖЕРЕЛА if шлях.startswith('джерела/') else КОРІНЬ
-    повний = os.path.join(КОРІНЬ, шлях)
+    джерела = os.path.join(корінь, 'джерела')
+    типова = джерела if шлях.startswith('джерела/') else корінь
+    повний = os.path.join(корінь, шлях)
     try:
         with open(повний, encoding='utf-8', errors='replace') as ф:
             шапка = ''.join(ф.readline() for _ in range(40))
     except OSError:
         return типова
-    return ДЖЕРЕЛА if any(м in шапка for м in _ЗВІДКИ_ДЖЕРЕЛА) else типова
+    return джерела if any(м in шапка for м in _ЗВІДКИ_ДЖЕРЕЛА) else типова
 
 
-def гнати(шлях, стеля):
+def гнати(шлях, стеля, дерево):
     """Одна проба підпроцесом, з теки, яку називає її власний докстрінг."""
-    cwd = тека_прогону(шлях)
-    арг = os.path.relpath(os.path.join(КОРІНЬ, шлях), cwd)
+    cwd = тека_прогону(шлях, дерево.корінь)
+    арг = os.path.relpath(os.path.join(дерево.корінь, шлях), cwd)
     почато = time.time()
     # PYTHONPATH = `джерела` + корінь, БО ТАК КАЖУТЬ САМІ ПРОБИ. 41 проба з 516 у
     # `джерела/проби/` документує прогін рядком `PYTHONPATH=. python3 проби/…`
@@ -100,27 +227,41 @@ def гнати(шлях, стеля):
     try:
         р = subprocess.run([sys.executable, арг], cwd=cwd, stdin=subprocess.DEVNULL,
                            capture_output=True, text=True, errors='replace',
-                           timeout=стеля, env=dict(os.environ, PYTHONIOENCODING='utf-8',
-                                                  PYTHONPATH=ДЖЕРЕЛА + os.pathsep + КОРІНЬ))
+                           encoding='utf-8', timeout=стеля, env=дерево.середовище())
         rc, вивід, помилки = р.returncode, р.stdout, р.stderr
     except subprocess.TimeoutExpired:
         rc, вивід, помилки = 124, '', 'СТЕЛЯ ЧАСУ %d с' % стеля
+    except OSError as е:
+        rc, вивід, помилки = 1, '', str(е)
     хвіст = [x for x in (помилки or '').splitlines() if x.strip()]
+    причина = хвіст[-1][:300] if хвіст else ''
+    if rc == КОД_БЕЗ_ВХОДУ:
+        причина = next((x for x in (вивід + помилки).splitlines() if 'БЕЗ ВХОДУ' in x), причина)
+    зміни = файли_статусу(git(дерево.корінь, 'status', '--porcelain', '-z', '-uall'))
+    if зміни:
+        rc, причина = 1, 'ПРОБА ПИШЕ В ДЕРЕВО: ' + ', '.join(зміни)
+    # Навіть проба, яка впала чи вичерпала час, мусить звільнити чисте дерево.
+    дерево.очистити()
     return {'проба': шлях, 'rc': rc, 'сек': round(time.time() - почато, 1),
             'рядків_виводу': len((вивід or '').splitlines()),
-            'причина': хвіст[-1][:300] if хвіст else ''}
+            'змінені_файли': зміни, 'причина': причина}
 
 
 def друкувати(звіти, окремо, зайві):
     зелені = [z for z in звіти if z['rc'] == 0]
-    червоні = [z for z in звіти if z['rc'] != 0]
-    print('\nпроб %d · зелених %d · червоних %d · окремо %d'
-          % (len(звіти) + len(окремо), len(зелені), len(червоні), len(окремо)))
+    червоні = [z for z in звіти if z['rc'] not in (0, КОД_БЕЗ_ВХОДУ)]
+    без_входу = [z for z in звіти if z['rc'] == КОД_БЕЗ_ВХОДУ]
+    print('\nпроб %d · зелених %d · червоних %d · без входу %d · окремо %d'
+          % (len(звіти) + len(окремо), len(зелені), len(червоні), len(без_входу), len(окремо)))
     if червоні:
         print('\nЧЕРВОНІ (%d):' % len(червоні))
         for z in sorted(червоні, key=lambda z: z['проба']):
             print('  ✗ %-52s rc %-4s %6.1f с  %s'
                   % (z['проба'], z['rc'], z['сек'], z['причина']))
+    if без_входу:
+        print('\nБЕЗ ВХОДУ (%d):' % len(без_входу))
+        for z in sorted(без_входу, key=lambda z: z['проба']):
+            print('  · %s: %s' % (z['проба'], z['причина']))
     if окремо:
         print('\nОКРЕМО — не міряють продукт із голого прогону (%d):' % len(окремо))
         for шлях, причина in sorted(окремо.items()):
@@ -136,13 +277,17 @@ def друкувати(звіти, окремо, зайві):
 
 
 def main():
+    """Міряє проби в деревах коміту та звіряє незмінність дерева користувача."""
     р = argparse.ArgumentParser(add_help=True)
     р.add_argument('--окремо', action='store_true', help='гнати й проби з реєстру «окремо»')
     р.add_argument('--гейт', action='store_true', help='rc 1, коли червоні є')
     р.add_argument('--лише', nargs='+', default=None, help='лише названі проби')
     а = р.parse_args()
 
+    до = знімок_користувача()
+    sha = git(КОРІНЬ, 'rev-parse', 'HEAD').decode().strip()
     усі, реєстр = знайти_проби(), читати_реєстр()
+    бракує = set()
     зайві = set(реєстр) - set(усі)
     if а.лише:
         черга, окремо = [x for x in усі if x in set(а.лише)], {}
@@ -156,39 +301,63 @@ def main():
         окремо = {к: v for к, v in реєстр.items() if к in set(усі)}
 
     ниток, стеля = int(os.environ.get('NYTOK', '4')), int(os.environ.get('STELYA', '120'))
-    # КАТАЛОГ ГОТУЄТЬСЯ ОДИН РАЗ І ДО НИТОК. Перша чистка фіду переписує
-    # `каталог_повний.xml` НА МІСЦІ; коли кілька проб стартують разом на брудному фіді,
-    # одна пише, інші читають напівзаписаний (або `FileNotFoundError`) — червоні, що на
-    # меншій кількості ниток зеленіють. Прилад не чекає, що хтось підготував теку.
-    try:
-        sys.path.insert(0, ДЖЕРЕЛА)
-        import чистка_каталогу as _ЧК
-        _ЧК.забезпечити_чистим('каталог_повний.xml')
-    except BaseException as е:
-        print('КАТАЛОГ НЕ ПІДГОТОВЛЕНО (%s): проби, що читають фід, можуть бути хибно червоні' % (str(е) or type(е).__name__)[:200])
+    if ниток < 1 or стеля < 1:
+        р.error('NYTOK і STELYA мають бути додатними')
+    ниток = min(ниток, len(черга))
+    print('коміт проб: ' + sha, flush=True)
     print('проб знайдено %d · у черзі %d · ниток %d · стеля %d с' % (len(усі), len(черга), ниток, стеля))
     звіт_файл = open(os.environ['ZVIT'], 'w', encoding='utf-8') if os.environ.get('ZVIT') else None
-    звіти = []
+    звіти, збої = [], []
     # `as_completed`, а не `map`: `map` віддає наслідки В ПОРЯДКУ ЧЕРГИ, тож одна повільна
     # проба тримала б звіт і `ZVIT` за собою (виміряно 27.09: 14 рядків журналу за 12 хв на
     # прогоні, де насправді вже було зміряно понад сотню). Прогін від цього не швидший —
     # чесним стає лише те, що видно на ходу.
-    with cf.ThreadPoolExecutor(max_workers=ниток) as пул:
-        завдання = {пул.submit(гнати, ш, стеля): ш for ш in черга}
-        for готово, майбутнє in enumerate(cf.as_completed(завдання), 1):
-            z = майбутнє.result()
-            звіти.append(z)
-            if звіт_файл:
-                звіт_файл.write(json.dumps(z, ensure_ascii=False) + '\n')
-                звіт_файл.flush()
-            if z['rc'] != 0:
-                print('  ✗ %s rc %s (%.0f с)' % (z['проба'], z['rc'], z['сек']), flush=True)
-            elif готово % 50 == 0:
-                print('  … %d / %d' % (готово, len(черга)), flush=True)
-    if звіт_файл:
-        звіт_файл.close()
+    дерева = queue.Queue()
+
+    def у_дереві(шлях):
+        """Дає завданню виключне володіння одним деревом до очищення."""
+        дерево = дерева.get()
+        try:
+            return гнати(шлях, стеля, дерево)
+        finally:
+            дерева.put(дерево)
+
+    try:
+        with contextlib.ExitStack() as стек:
+            каталог = None
+            for _ in range(ниток):
+                дерево = стек.enter_context(Дерево_проби(sha, каталог))
+                дерева.put(дерево)
+                шлях_каталогу = Path(дерево.джерела, 'каталог_повний.xml')
+                каталог = шлях_каталогу if шлях_каталогу.exists() else None
+            if ниток:
+                with cf.ThreadPoolExecutor(max_workers=ниток) as пул:
+                    завдання = {пул.submit(у_дереві, ш): ш for ш in черга}
+                    for готово, майбутнє in enumerate(cf.as_completed(завдання), 1):
+                        z = майбутнє.result()
+                        звіти.append(z)
+                        if звіт_файл:
+                            звіт_файл.write(json.dumps(z, ensure_ascii=False) + '\n')
+                            звіт_файл.flush()
+                        if z['rc'] not in (0, КОД_БЕЗ_ВХОДУ):
+                            print('  ✗ %s rc %s (%.0f с)' % (z['проба'], z['rc'], z['сек']), flush=True)
+                        elif готово % 50 == 0:
+                            print('  … %d / %d' % (готово, len(черга)), flush=True)
+    except (OSError, RuntimeError, subprocess.SubprocessError) as е:
+        збої.append('ПРОГІН НЕ ЗАВЕРШЕНО: ' + str(е))
+    finally:
+        if звіт_файл:
+            звіт_файл.close()
+        після = знімок_користувача()
+        зміни = sorted(ш for ш in до.keys() | після.keys() if до.get(ш) != після.get(ш))
+        if зміни:
+            збої.append('ДЕРЕВО КОРИСТУВАЧА ЗМІНИЛОСЯ: ' + ', '.join(зміни))
+        else:
+            print('дерево користувача після прогону: НЕЗМІННЕ (вміст та індекс)')
+    for збій in збої:
+        print('  ✗ ' + збій)
     червоних = друкувати(звіти, окремо, зайві)
-    return 1 if (а.гейт and червоних) else 0
+    return 1 if збої or (а.гейт and (червоних or бракує)) else 0
 
 
 if __name__ == '__main__':
