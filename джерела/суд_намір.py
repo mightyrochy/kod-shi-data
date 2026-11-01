@@ -15,6 +15,7 @@ context_optimal: промах формальності K-KOH-05 під цим н
 `намір_доречності` (2480–2543). Докстрінги переїхали разом із кодом.
 
 РЕБРА. Імпортує лише `реєстр_правил`; жодного модуля `суд_*` і не фасад."""
+from реєстр_правил import ТИПОВИЙ_НАМІР
 from реєстр_правил import (C, зн as _зн, джерело_гілки)
 from selection_policy import намір as _намір
 import внутрішня_мова as _ВМ
@@ -22,7 +23,7 @@ import accessory as _АР
 import фід_взуття as _ФВ
 
 
-def намір_комфорту(речі, intent="conventional", мета_важливо=None):
+def намір_комфорту(речі, intent=ТИПОВИЙ_НАМІР, мета_важливо=None):
     """K-PER-00, гілка comfort_first: «sensory and movement freedom as hard
     constraints». Пара з каблуком від стелі `каблук_смуга_низ` (K-SHO-16, T2 —
     там вартість носіння починає рости) — знахідка в регістрі гейт; пара, чиєї
@@ -80,7 +81,7 @@ def намір_комфорту(речі, intent="conventional", мета_важ
     return зн
 
 
-def намір_доречності(зн, intent="conventional", мета_важливо=None):
+def намір_доречності(зн, intent=ТИПОВИЙ_НАМІР, мета_важливо=None):
     """K-PER-00, гілка context_optimal: «maximise appropriateness/status in the
     environment». Промах формальності (K-KOH-05) під цим наміром — не облік, а
     порушення мети: сила піднімається до hard, число лишається виміряним.
