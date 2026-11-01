@@ -52,6 +52,7 @@ for row in done:
     item={'сцена':scene,'rc':row['rc'],'початок':row['початок'],'кінець':row['кінець'],
           'секунд':result.get('секунд'),'червоні':[s.strip() for s in log.splitlines() if '✗' in s],
           'зелених':len(re.findall(r'^  ✔',log,re.M)),'мовні_ходи':[],'запити_стилістки':[],'руки':[]}
+    item['картки_розмови']=[object_(line.split('KARTKA · після розмови:',1)[1].strip()) for line in log.splitlines() if 'KARTKA · після розмови:' in line]
     for path in sorted((folder/'VIDPOVIDI/обмін').glob('*.json')):
         exchange=json.loads(path.read_text(encoding='utf-8'))
         prompt=object_(text(exchange['запит']['messages'][0]['content']))
