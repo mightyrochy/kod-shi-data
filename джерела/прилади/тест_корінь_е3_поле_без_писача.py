@@ -102,6 +102,13 @@ class ПолеБезПисача(unittest.TestCase):
         """Паспорт пише `мета="лестити"`, гілка чекає `"приховати"` — місце п.2."""
         self.assertIn(("мета", 2), self.місця)
 
+    def test_причини_не_місць_є_на_main(self):
+        # кожне не-місце справжнього дерева має причину поіменно; ключ без причини — «БЕЗ ПРИЧИНИ» і код 1
+        р = subprocess.run([sys.executable, ПРИЛАД, "--тихо"], capture_output=True, text=True,
+                           cwd=os.path.join(os.path.dirname(ПРИЛАД), "..", ".."))
+        self.assertEqual(р.returncode, 0, р.stderr)
+        self.assertNotIn("БЕЗ ПРИЧИНИ", р.stderr)
+
     def test_не_місця_класу(self):
         """`ЗОВНІШНІ_ВХОДИ` чекліста, читач, що сам каже «входу нема», і параметр стенда — не місця."""
         поля = {п for п, _ in self.місця}
