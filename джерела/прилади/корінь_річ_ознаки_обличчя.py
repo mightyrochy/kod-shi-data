@@ -32,7 +32,7 @@ hex-поля й читач форми з `схеми_розбору`. Потік
 Запуск: python3 -W ignore джерела/прилади/корінь_річ_ознаки_обличчя.py [--корінь <дерево>] [--стенд]"""
 import argparse, ast, collections, functools, glob, os, re, sys, warnings
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-from ознаки_рішення import шкали_ваги, пари_функції
+from ознаки_рішення import шкали_ваги, пари_функції, вузли_тіла
 
 ТУТ = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 ВИКЛЮЧЕНО = re.compile(r"^(батарея_|gate_|measure_|стенд_|тест_|audit_|pair_test|run_outfit|status_перевірки)")
@@ -52,7 +52,7 @@ def _пара(*мітки):
     вих = E
     for м in мітки:
         вих = вих | м
-    if S in вих and any(S not in м and (P in м or C in м) for м in мітки):
+    if S in вих and any(S not in м and (P in м or C in м or K in м) for м in мітки):
         вих = вих - {S}
     return вих
 E = frozenset()
@@ -86,6 +86,10 @@ class Функція:
             if д is not None:
                 типові[x.arg] = д
         self.типові = типові
+        self.власні = tuple(вузли_тіла(self))
+        self.локальні = {в.id for в in self.власні if isinstance(в, ast.Name) and isinstance(в.ctx, ast.Store)}
+        self.глобальні = {ім for в in self.власні if isinstance(в, ast.Global) for ім in в.names}
+        self.верх = frozenset() if isinstance(вузол, ast.Lambda) else frozenset(id(в) for в in вузол.body)
 
     @property
     def повне(self):
@@ -141,12 +145,40 @@ class Модуль:
             стек.extend(ast.iter_child_nodes(n))
 
 
+@functools.lru_cache(maxsize=32768)
+def _текст(в):
+    """Кешує незмінний текст вузла AST для повторних контекстів потоку."""
+    return ast.unparse(в)
+
+
+@functools.cache
 def _імена(в):
     return {x.id for x in ast.walk(в) if isinstance(x, ast.Name)}
 
 
 def _число(в):
     return isinstance(в, ast.Constant) and isinstance(в.value, (int, float)) and not isinstance(в.value, bool)
+
+
+def _стала_формули(в):
+    """Впізнає числову сталу формули, зокрема дріб, без обчислення коду."""
+    return _число(в) or isinstance(в, ast.UnaryOp) and isinstance(в.op, (ast.UAdd, ast.USub)) \
+        and _стала_формули(в.operand) or isinstance(в, ast.BinOp) \
+        and _стала_формули(в.left) and _стала_формули(в.right)
+
+
+def _словесні_пороги(дерево):
+    """Знаходить вибір самих слів усередині форматованого підпису."""
+    def слова(в):
+        return _рядок(в) or isinstance(в, ast.JoinedStr) or isinstance(в, ast.IfExp) and слова(в.body) and слова(в.orelse)
+    вихід = set()
+    for в in ast.walk(дерево):
+        формат = isinstance(в, ast.JoinedStr) or isinstance(в, ast.BinOp) and isinstance(в.op, ast.Mod) and _рядок(в.left)
+        if формат:
+            for г in ast.walk(в):
+                if isinstance(г, ast.IfExp) and слова(г.body) and слова(г.orelse):
+                    вихід.update(id(т) for т in ast.walk(г.test) if isinstance(т, ast.Compare))
+    return вихід
 
 
 def _край_таблиці(в, т):
@@ -171,19 +203,38 @@ def _формульні(дерево):
     (`if d > 180: d = 360 - d`). Межу ставить формула, а не код про неї."""
     вих = set()
     for в in ast.walk(дерево):
+        сусідні = None
+        if isinstance(в, ast.For) and isinstance(в.iter, ast.Call) and len(в.iter.args) == 2:
+            сусідні = в.iter.args[1]
+            if isinstance(сусідні, ast.BinOp) and isinstance(сусідні.op, ast.Add):
+                сусідні = сусідні.left
         if isinstance(в, ast.For) and isinstance(в.iter, ast.Call) and isinstance(в.iter.func, ast.Name) \
                 and в.iter.func.id == "zip" and len(в.iter.args) == 2 and isinstance(в.iter.args[0], ast.Name) \
-                and isinstance(в.iter.args[1], ast.Subscript) and isinstance(в.iter.args[1].slice, ast.Slice) \
-                and isinstance(в.iter.args[1].value, ast.Name) and в.iter.args[1].value.id == в.iter.args[0].id:
+                and isinstance(сусідні, ast.Subscript) and isinstance(сусідні.slice, ast.Slice) \
+                and isinstance(сусідні.value, ast.Name) and сусідні.value.id == в.iter.args[0].id:
             # `for (x0, y0), (x1, y1) in zip(якорі, якорі[1:]): if g <= x1: …` — відрізок кусково-лінійної
             # функції за таблицею якорів, а не поріг: межі ставить таблиця формули
             цілі = _імена(в.target)
             for і in в.body:
-                т = getattr(і, "test", None)
-                if isinstance(і, ast.If) and isinstance(т, ast.Compare) and len(т.ops) == 1 \
-                        and _імена(т.comparators[0]) and _імена(т.comparators[0]) <= цілі:
+                т = і.value.test if isinstance(і, ast.Assign) and isinstance(і.value, ast.IfExp) else getattr(і, "test", None)
+                if isinstance(т, ast.Compare) and all(isinstance(оп, ПОРЯДОК) for оп in т.ops) \
+                        and all((_імена(л) and _імена(л) <= цілі) or (_імена(п) and _імена(п) <= цілі)
+                                for л, п in zip([т.left] + т.comparators, т.comparators)):
                     вих.add(id(т))
         т = getattr(в, "test", None)
+        if isinstance(в, ast.If) and isinstance(т, ast.Compare) and len(т.ops) == 1 \
+                and isinstance(т.ops[0], ast.Eq) and isinstance(т.left, ast.BinOp) and isinstance(т.left.op, ast.Mult) \
+                and _число(т.comparators[0]) and т.comparators[0].value == 0 and в.body and в.orelse \
+                and all(isinstance(і, (ast.Assign, ast.AugAssign)) for і in в.body + в.orelse) \
+                and any(isinstance(н, ast.BinOp) for і in в.orelse for н in ast.walk(і)) \
+                and not any(isinstance(н, ast.Constant) and isinstance(н.value, str) for н in ast.walk(в)):
+            вих.add(id(т))
+        if isinstance(в, ast.AugAssign) and isinstance(в.target, ast.Name) and isinstance(в.value, ast.IfExp):
+            числа = [н.value for н in ast.walk(в.value) if _число(н)]
+            if 360 in числа and all(abs(н) <= 360 for н in числа):
+                for к in ast.walk(в.value):
+                    if isinstance(к, ast.Compare) and _імена(к) == {в.target.id}:
+                        вих.add(id(к))
         if isinstance(в, ast.If) and not в.orelse and len(в.body) == 1 and isinstance(в.body[0], ast.AugAssign) \
                 and isinstance(т, ast.Compare) and len(т.ops) == 1 and isinstance(в.body[0].target, ast.Name) \
                 and _число(в.body[0].value) and abs(в.body[0].value.value) == 360 \
@@ -191,7 +242,7 @@ def _формульні(дерево):
             вих.add(id(т))   # `if b < a: b += 360` — розгортка дуги через 0°, а не поріг
             continue
         порівняння = т.values if isinstance(т, ast.BoolOp) and isinstance(т.op, ast.And) else [т]
-        if not all(isinstance(x, ast.Compare) and len(x.ops) == 1 and _число(x.comparators[0]) for x in порівняння):
+        if not all(isinstance(x, ast.Compare) and len(x.ops) == 1 and _стала_формули(x.comparators[0]) for x in порівняння):
             continue
         if len(порівняння) > 1:   # `f(r) if σ > 0 and r > 0 else 0.0` — охорона ділення чи кореня всієї формули
             if isinstance(в, ast.IfExp) and isinstance(в.body, ast.BinOp) and _число(в.orelse) and в.orelse.value == 0 \
@@ -218,12 +269,12 @@ def _формульні(дерево):
     return вих
 
 
-def _ваги_знахідки(корінь):
+def _ваги_знахідки(корінь, супровід=False):
     """Поля знахідки, оголошені в `протокол.ЗНАХІДКА` і `ЗНАХІДКА_ВЕРДИКТУ` числом (`ЧИСЛО`, `ЦІЛЕ`, `або_нуль(…)`):
     вага правила, лічильник злитих. Число виходить із правила, яке свій вхід уже порахувало; читач ваги не лічиться
     (рішення менеджера 01.11: вага, зведена з осей, — не місце; лічити читачів — «не латаємо окремих читачів»)."""
     шлях = os.path.join(корінь, "джерела", "протокол.py")
-    вих = set()
+    вих, поля = set(), set()
     try:
         with open(шлях, encoding="utf-8") as ф:
             дерево = ast.parse(ф.read())
@@ -235,11 +286,13 @@ def _ваги_знахідки(корінь):
                                              for ц in н.targets) and isinstance(н.value, ast.Call) and н.value.args \
                 and isinstance(н.value.args[0], ast.Dict):
             for к, з in zip(н.value.args[0].keys, н.value.args[0].values):
+                if _рядок(к):
+                    поля.add(к.value)
                 if isinstance(з, ast.Call) and _ім_виклику(з.func) == "або_нуль" and з.args:
                     з = з.args[0]
                 if _рядок(к) and isinstance(з, ast.Name) and з.id in числові:
                     вих.add(к.value)
-    return frozenset(вих)
+    return frozenset(к + '_джерело' for к in вих if к + '_джерело' in поля) if супровід else frozenset(вих)
 
 
 def _сітка(в):
@@ -251,7 +304,7 @@ def _сітка(в):
     if not (isinstance(г.iter, ast.Call) and _ім_виклику(г.iter.func) == "range" and isinstance(г.iter, ast.Call)
             and isinstance(г.iter.func, ast.Name) and isinstance(г.target, ast.Name)):
         return False
-    if any(isinstance(n, (ast.Subscript, ast.Attribute)) for n in ast.walk(в.elt)):
+    if any(isinstance(n, (ast.Subscript, ast.Attribute)) and г.target.id in _імена(n) for n in ast.walk(в.elt)):
         return False
     return any(isinstance(n, ast.BinOp) and any(isinstance(m, ast.Name) and m.id == г.target.id for m in ast.walk(n))
                for n in ast.walk(в.elt))
@@ -280,6 +333,8 @@ class Аналіз:
         self.синтетичні, self.тримати = {}, []   # `map(f, xs)` → виклик f(xs[і]); вузли тримаються, щоб id не мінявся
         self.формульні = set()
         self.ваги = _ваги_знахідки(корінь)
+        self.готові_поля = self.ваги | _ваги_знахідки(корінь, супровід=True)
+        self.словесні = set()
         self.сіткові = {}
         self.значення_полів = {}   # модуль → поле → рядки, які літерали словників модуля кладуть у це поле
         for шлях in sorted(glob.glob(os.path.join(корінь, "джерела", "*.py"))):
@@ -296,6 +351,7 @@ class Аналіз:
                     continue
             self.модулі[ім] = Модуль(ім, os.path.relpath(шлях, корінь).replace(os.sep, "/"), дерево)
             self.формульні |= _формульні(дерево)
+            self.словесні |= _словесні_пороги(дерево)
             self.значення_полів[ім] = _значення_полів(дерево)
         self.пам = {}             # (функція, контекст) → мітки повернення
         self.ключі_пов = collections.defaultdict(lambda: collections.defaultdict(frozenset))  # функція → ключ → мітки
@@ -421,17 +477,10 @@ class Аналіз:
         self.у_роботі.add(ключ)
         с = Стан(self, ф, контекст)
         попередній, self.поточний = self.поточний, ключ
-        пари = []
-        for вузол, ліві, праві in self.пари.get(ф.повне, ()):
-            л, п = set().union(*(с.читати(ім) for ім in ліві)), set().union(*(с.читати(ім) for ім in праві))
-            if S in л | п and л & {S, P, C, K} and п & {S, P, C, K}:
-                пари.append(вузол)
-        с.пари = {id(в) for в in пари}
-        if пари and not self.пара_глибина:
-            self.місце(ф.модуль, пари[0], 1, "її значення входить в арифметику пари: %s" % ast.unparse(пари[0])[:70], вхід=True)
-        self.пара_глибина += bool(пари)
+        с.пари = {id(в) for в, _, _ in self.пари.get(ф.повне, ())}
+        с.вхід_пари = False
         пов = с.виконати()
-        self.пара_глибина -= bool(пари)
+        self.пара_глибина -= с.вхід_пари
         if ф.повне in self.виходи_шкал:
             def вага(м):
                 """Залишає походження рішення, знімаючи походження сирої ознаки."""
@@ -540,7 +589,7 @@ class Аналіз:
                 if not isinstance(скелет, ast.Dict):
                     continue
                 hexи = [к.value for к, з in zip(скелет.keys, скелет.values) if isinstance(к, ast.Constant)
-                        and "<hex>" in ast.unparse(з)]
+                        and "<hex>" in _текст(з)]
                 if hexи and isinstance(кв.get("вихід"), ast.Constant):
                     self.зерно = dict(модуль=м.ім, ім=ім, ключі=frozenset(hexи), форма=кв["вихід"].value,
                                       рядок=в.lineno)
@@ -811,16 +860,12 @@ class Стан:
         self.кортеж, self.кортеж_зламано = None, False
         self.кортежі_викликів = {}
         self.локальні = set(self.env) | set(self.ключі) | set(ф.позиційні) | set(ф.іменні) | {ф.зірка, ф.дві_зірки}
-        вузли = ф.вузол.body if isinstance(ф.вузол.body, list) else []
-        for n in self._обійти(вузли):
-            if isinstance(n, (ast.Name,)) and isinstance(n.ctx, ast.Store):
-                self.локальні.add(n.id)
-            elif isinstance(n, ast.Global):
-                self.глобальні.update(n.names)
+        self.локальні.update(ф.локальні)
+        self.глобальні.update(ф.глобальні)
         self.локальні -= self.глобальні
         # інструкції верхнього рівня тіла: тут присвоєння імені замінює попереднє значення (далі по тілу ім'я
         # несе лише нове); у гілці чи циклі — додає, бо інший шлях міг лишити старе
-        self.верх = set() if isinstance(ф.вузол, ast.Lambda) else {id(і) for і in ф.вузол.body}
+        self.верх = ф.верх
         self.зерно = ф.повне in а.функції_зерна
 
     def _обійти(self, тіло):
@@ -1086,7 +1131,7 @@ class Стан:
                 м, к = self.значення(сам.elt)
             finally:
                 self.відновити(збережено)
-            return м - ({F, S} if _сітка(сам) else {F}), к
+            return ((м - {F, S}) | {K} if _сітка(сам) else м - {F}), к
         if isinstance(сам, ast.Call) and isinstance(сам.func, ast.Attribute) and сам.func.attr in ("get", "pop") \
                 and сам.args and not _рядок(сам.args[0]) and isinstance(сам.func.value, ast.Name) \
                 and self.ключі.get(сам.func.value.id) and not self.а.викликані(self.м, сам.func, self.ф) \
@@ -1285,7 +1330,7 @@ class Стан:
             for к, з in zip(в.keys, в.values):
                 if _рядок(к):
                     м, кк = self.значення(з)
-                    if к.value in self.а.ваги:
+                    if к.value in self.а.готові_поля:
                         м = м - {S}
                     вих[к.value] = вих.get(к.value, E) | м
                     вих = _злити_ключі(вих, _з_префіксом(к.value, кк))
@@ -1297,7 +1342,7 @@ class Стан:
             for к in в.keywords:
                 if к.arg:
                     м, кк = self.значення(к.value)
-                    if к.arg in self.а.ваги:
+                    if к.arg in self.а.готові_поля:
                         м = м - {S}
                     вих[к.arg] = вих.get(к.arg, E) | м
                     вих = _злити_ключі(вих, _з_префіксом(к.arg, кк))
@@ -1310,6 +1355,9 @@ class Стан:
         elif isinstance(в, ast.Name):
             вих.update(self.ключі.get(в.id, {}))
         токени = _токени(вих.get("code"))
+        if self.а.будує_сітку(self.ф) and {'L', 'C', 'h'} <= вих.keys() and any(K in вих[к] for к in ('L', 'C', 'h')):
+            for к in ('L', 'C', 'h'):
+                вих[к] = (вих[к] - {S}) | {K}
         if токени and self.з_ключами(в):
             for к in list(вих):
                 if (к == "values" or к.startswith("values/")) and S in вих[к]:
@@ -1561,7 +1609,7 @@ class Стан:
             в = x.value if isinstance(x, (ast.Assign, ast.Return)) else None
             if в is not None and self.значення_замість(в):
                 self.а.місце(self.м, і.test, 2, "гілка «невідомо» (%s) ставить %s"
-                             % (ast.unparse(і.test)[:60], ast.unparse(в)[:40]))
+                             % (_текст(і.test)[:60], _текст(в)[:40]))
                 return
 
     # ── вирази ──
@@ -1607,15 +1655,24 @@ class Стан:
             return self.виклик(в)
         if isinstance(в, ast.BinOp):
             # число з довіри (вага × значення) — нове число, а не сама довіра: R далі не йде
-            м = _пара(self.e(в.left), self.e(в.right)) - {F, R}
-            return (м - {S}) | {Q} if id(в) in self.пари else м
+            л, п = self.e(в.left), self.e(в.right)
+            м = _пара(л, п) - {F, R}
+            if id(в) in self.пари and S in л | п and л & {S, P, C, K} and п & {S, P, C, K}:
+                if not self.а.пара_глибина:
+                    self.а.місце(self.м, в, 1, "її значення входить в арифметику пари: %s" % _текст(в)[:70], вхід=True)
+                    self.а.пара_глибина += 1
+                    self.вхід_пари = True
+                return (м - {S}) | {Q}
+            return м
         if isinstance(в, ast.UnaryOp):
             return self.e(в.operand) - {F}
         if isinstance(в, ast.BoolOp):
             мітки = [self.e(x) for x in в.values]
             if isinstance(в.op, ast.Or) and len(в.values) >= 2 and any(S in м for м in мітки[:-1]) \
-                    and self.значення_замість(в.values[-1], число=True):
-                self.а.місце(self.м, в, 2, "запасне число: %s" % ast.unparse(в)[:70])
+                    and self.значення_замість(в.values[-1], число=True) \
+                    and not all(isinstance(х, ast.BinOp) or isinstance(х, ast.UnaryOp) and not isinstance(х.op, ast.Not)
+                                for х in в.values[:-1]):
+                self.а.місце(self.м, в, 2, "запасне число: %s" % _текст(в)[:70])
             вих = E
             for м in мітки:
                 вих |= м
@@ -1631,7 +1688,7 @@ class Стан:
                 if self.значення_замість(гілка) and not (_рядок(інша) and НЕВІДОМЕ.search(інша.value)):
                     # інша гілка сама каже «невідомо» — отже ця гілка не про незнання (`не_вимір(x) is None` — «вимір»)
                     self.а.місце(self.м, в, 2, "гілка «невідомо» (%s) ставить %s"
-                                 % (ast.unparse(в.test)[:50], ast.unparse(гілка)[:40]))
+                                 % (_текст(в.test)[:50], _текст(гілка)[:40]))
             return self.e(в.body) | self.e(в.orelse)
         if isinstance(в, ast.Dict):
             мітки = [self.e(з) for з in в.values]
@@ -1655,7 +1712,8 @@ class Стан:
                 if isinstance(в, ast.DictComp):
                     self.e(в.key)
                     return self.e(в.value) - {F}
-                return self.e(в.elt) - ({F, S} if _сітка(в) else {F})
+                м = self.e(в.elt)
+                return (м - {F, S}) | {K} if _сітка(в) else м - {F}
             finally:
                 self.відновити(збережено)
         if isinstance(в, ast.JoinedStr):
@@ -1704,7 +1762,7 @@ class Стан:
             вих.add(S)
             self.а.місце(self.м, вузол, 1, "поле відповіді моделі зору `%s` (hex) стає її рисою без позначки оцінки" % к)
         if S in база:
-            if isinstance(к, str) and (СЛУЖБОВІ.match(к) or к in self.а.ваги):
+            if isinstance(к, str) and (СЛУЖБОВІ.match(к) or к in self.а.готові_поля):
                 pass
             else:
                 вих.add(S)
@@ -1717,12 +1775,14 @@ class Стан:
             мт = self.e(типове)
             вих |= мт
             if S in вих and not мт and self.значення_замість(типове, число=True):
-                self.а.місце(self.м, вузол, 2, "запасне число: %s" % ast.unparse(вузол)[:70])
+                self.а.місце(self.м, вузол, 2, "запасне число: %s" % _текст(вузол)[:70])
         return frozenset(вих)
 
     def порівняння(self, в):
         мітки = [self.e(в.left)] + [self.e(x) for x in в.comparators]
         операнди = [в.left] + list(в.comparators)
+        if id(в) in self.а.словесні:
+            return E
         for i, оп in enumerate(в.ops):
             л, п = мітки[i], мітки[i + 1]
             if S not in л and S not in п:
@@ -1732,12 +1792,12 @@ class Стан:
             if isinstance(оп, ПОРЯДОК):
                 if id(в) in self.а.формульні:
                     continue
-                self.а.місце(self.м, в, 1, "поріг на пораховане з hex моделі: %s" % ast.unparse(в)[:70])
+                self.а.місце(self.м, в, 1, "поріг на пораховане з hex моделі: %s" % _текст(в)[:70])
             elif isinstance(оп, (ast.Eq, ast.NotEq)):
                 інший = операнди[i + 1] if S in л else операнди[i]
                 if isinstance(інший, ast.Constant) and isinstance(інший.value, (int, float)) \
                         and not isinstance(інший.value, bool):
-                    self.а.місце(self.м, в, 1, "рівність числу на порахованому з hex моделі: %s" % ast.unparse(в)[:70])
+                    self.а.місце(self.м, в, 1, "рівність числу на порахованому з hex моделі: %s" % _текст(в)[:70])
         return E
 
     def довіра(self, вузол, мітки, прямі):
@@ -2037,7 +2097,7 @@ class Стан:
                     and isinstance(вираз.args[1], ast.Dict) and not вираз.args[1].keys:
                 запис = вираз
             if запис is not None and S in self.e(запис):
-                self.а.місце(self.м, в, 3, "причина проходить за наявністю запису, не за значенням: %s" % ast.unparse(в)[:60])
+                self.а.місце(self.м, в, 3, "причина проходить за наявністю запису, не за значенням: %s" % _текст(в)[:60])
                 for м, к, код in self.а.перевірки[self.ф.повне]:
                     self.а.місця.setdefault((м.шлях, к.lineno), set()).add(
                         (3, "причина `%s` звіряється наявністю запису її ознаки, а не значенням" % код))
@@ -2049,9 +2109,9 @@ class Стан:
         if not є_оцінка:
             return
         if "from_photo" in іменні or any(к.arg == "from_photo" for к in в.keywords):
-            self.а.місце(self.м, в, 1, "hex моделі стає рисою з довірою знімку (`from_photo`): %s" % ast.unparse(в.func))
+            self.а.місце(self.м, в, 1, "hex моделі стає рисою з довірою знімку (`from_photo`): %s" % _текст(в.func))
         elif F in пов and any(F in м for м in аргументи):
-            self.а.місце(self.м, в, 1, "hex моделі додано рисою в запис рис з довірою знімку: %s" % ast.unparse(в.func))
+            self.а.місце(self.м, в, 1, "hex моделі додано рисою в запис рис з довірою знімку: %s" % _текст(в.func))
 
     def опис_полів(self, в):
         """п.4: поле оголошення, якому дано значення з цього джерела, а опис зве його виміром коду."""
@@ -2267,6 +2327,27 @@ def стенд():
                     return F["шкіра"]["L"], F["очі"]["h"] / 100, "довіра"
                 def породити(h):
                     return [h % 360, (h + 30) % 360]
+                def лічити(ліві, праві):
+                    різниця_лічби = len(ліві) - len(праві)
+                    return різниця_лічби
+                def формула(t):
+                    return t ** 3 if t ** 3 > 216 / 24389 else (t - 4 / 29) * 108 / 841
+                def інтерполювати(x):
+                    вузли = ((0, 0), (180, 170), (360, 360))
+                    for (x0, y0), (x1, y1) in zip(вузли, вузли[1:] + ((720, 720),)):
+                        xx = x if x >= x0 else x + 360
+                        if x0 <= xx <= x1:
+                            return y0 + (xx - x0) * (y1 - y0) / (x1 - x0)
+                def кандидат_точками(F):
+                    точки = [F["шкіра"]["L"] + i * 2 for i in range(3)]
+                    for L in точки:
+                        канд = dict(L=L, C=F["шкіра"]["L"], h=F["очі"]["h"], hex_риси=F["очі"]["h"])
+                        тон_канд = канд["h"] or 0
+                        if канд["C"] < F["шкіра"]["L"]:
+                            pass
+                        if канд["hex_риси"] > 10:
+                            pass
+                    return точки
                 def додати(F, ім, lab):
                     F = dict(F)
                     F[ім] = {"L": lab}
@@ -2436,6 +2517,15 @@ def стенд():
                     for кандидат_тону in породити(F["очі"]["h"]):
                         if кандидат_тону > 10:
                             pass
+                    лічити(F, d)
+                    формула(F["шкіра"]["L"])
+                    інтерполювати(F["очі"]["h"])
+                    кандидат_точками(F)
+                    підпис_готового = "%s" % ("теплий" if F["очі"]["h"] > 2 else "холодний")
+                    діагноз_класу = "теплий" if F["очі"]["h"] > 3 else "холодний"
+                    ширина_точки = ((F["очі"]["h"] - 30) % 360) or 1
+                    з_походж = dict(правило="K-X", сила_нп=F["шкіра"]["L"], сила_нп_джерело=F["очі"]["h"])
+                    опис_ваги = з_походж.get("сила_нп_джерело") or "вимір"
                     return знак(F, d.get("самозвіт") or {}), риси
             """,
             "протокол.py": """
@@ -2444,7 +2534,7 @@ def стенд():
                     return в
                 def обʼєкт(д):
                     return д
-                ЗНАХІДКА = обʼєкт({"сила_нп": або_нуль(ЧИСЛО), "суть": 1})
+                ЗНАХІДКА = обʼєкт({"сила_нп": або_нуль(ЧИСЛО), "сила_нп_джерело": 1, "суть": 1})
             """,
         }
         for ім, текст in файли.items():
@@ -2485,6 +2575,17 @@ def стенд():
             ("п.1 сире положення поруч із вагою", є("риси.py", r'if сире_положення', 1), True),
             ("не місце: окремий вихід ваги поруч із положенням", є("риси.py", r'if вага_довіри', 1), False),
             ("не місце: тон кандидата, побудованого з її тону", є("риси.py", r'if кандидат_тону', 1), False),
+            ("не місце: різниця лічб контейнерів з її ознакою", є("риси.py", r'різниця_лічби = ', 1), False),
+            ("не місце: межа формули дробом", є("риси.py", r't \*\* 3 > 216 / 24389', 1), False),
+            ("не місце: розгортка кута в інтерполяції", є("риси.py", r'xx = x if', 1), False),
+            ("не місце: відрізок замкненої таблиці", є("риси.py", r'if x0 <= xx', 1), False),
+            ("не місце: хрома побудованого кандидата", є("риси.py", r'if канд\["C"\]', 1), False),
+            ("не місце: тон побудованого кандидата", є("риси.py", r'тон_канд = ', 2), False),
+            ("п.1 її hex поруч із кандидатом зберігає походження", є("риси.py", r'if канд\["hex_риси"\]', 1), True),
+            ("не місце: поріг самих слів у форматованому підписі", є("риси.py", r'підпис_готового = ', 1), False),
+            ("п.1 клас її риси зберігається", є("риси.py", r'діагноз_класу = ', 1), True),
+            ("не місце: нуль арифметики не означає невідоме", є("риси.py", r'ширина_точки = ', 2), False),
+            ("не місце: супровід ваги з протоколу", є("риси.py", r'опис_ваги = ', 2), False),
             ("зерно: поле skin", є("читач.py", r'об\.get\("skin"\)', 1), True),
             ("зерно: поле eyes", є("читач.py", r'об\.get\("eyes"\)', 1), True),
             ("не місце: light_cast", є("читач.py", r"light_cast", 1), False),
