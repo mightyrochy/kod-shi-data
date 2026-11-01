@@ -802,10 +802,14 @@ function Complete-Task($M, [string]$StatePath, [string]$Id, [string]$Code, [stri
     if ($Code -eq 'ENGINE_MISSING') { Add-HealthAlert 'ENGINE' 'CLAUDE' }
     $line = $(if ($Code -eq 'DONE') { "GEMINI ОБГОРТКА: ГОТОВО $Branch $Sha МОДЕЛЬ $($M.Model)" }
               else { "GEMINI ОБГОРТКА: ЗАБЛОКОВАНО claude/$($M.Slug) $Code" })
-    if (-not (Add-Line $line)) { $Code = 'LINE_REJECTED' }
     $runDir = Join-Path (Join-Path $WorkDir 'runs') $Id
-    if (Test-Path -LiteralPath $runDir) {
-        Write-FileAtomic (Join-Path $runDir 'result.json') (([ordered]@{ marker = $M.Name; sha = $M.Sha; code = $Code; branch = $Branch; head = $Sha; end = (Get-Date).ToString('s') }) | ConvertTo-Json -Compress)
+    [void][IO.Directory]::CreateDirectory($runDir)
+    $result = [ordered]@{ marker = $M.Name; sha = $M.Sha; code = $Code; branch = $Branch; head = $Sha; end = (Get-Date).ToString('s') }
+    # Ідентичність наряду доступна публікаторові до появи рядка у вихідних, зокрема при ранній відмові.
+    Write-FileAtomic (Join-Path $runDir 'result.json') ($result | ConvertTo-Json -Compress)
+    if (-not (Add-Line $line)) {
+        $Code = 'LINE_REJECTED'; $result.code = $Code
+        Write-FileAtomic (Join-Path $runDir 'result.json') ($result | ConvertTo-Json -Compress)
     }
     Write-FileAtomic $StatePath "DONE $Id $Code"
     Remove-Claim $StatePath
