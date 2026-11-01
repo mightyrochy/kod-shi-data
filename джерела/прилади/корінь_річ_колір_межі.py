@@ -636,6 +636,7 @@ _ПРОХІДНІ_ВБУДОВАНІ = {"str", "list", "tuple", "set", "frozense
                        "dict", "enumerate", "zip", "filter", "deepcopy"}
 _ПРОХІДНІ_МЕТОДИ = {"strip", "lower", "upper", "title", "capitalize", "replace", "split", "rsplit", "partition",
                     "rpartition", "casefold", "lstrip", "rstrip", "copy", "splitlines", "removeprefix", "removesuffix"}
+_РЕГЕКС_МЕТОДИ = {"split", "findall", "finditer", "sub", "subn"}   # `_РЕГЕКС.split(текст)`: слово — аргумент, не одержувач
 _ДОДАТИ = {"append", "extend", "add", "insert", "appendleft"}
 _ВКЛАДЕНІ = (ast.FunctionDef, ast.AsyncFunctionDef, ast.ClassDef, ast.Lambda)
 
@@ -934,6 +935,11 @@ class _АналізГ10:
     def виклик(s, c, env):
         п, о = s.п, s.о
         f = c.func
+        if isinstance(f, ast.Name) and f.id == "map" and len(c.args) >= 2 and isinstance(c.args[0], (ast.Name, ast.Attribute)):
+            # функція як значення: `map(V.слово_крамниці, частини)` — виклик цієї функції на елементі
+            синт = ast.copy_location(ast.Call(func=c.args[0], args=c.args[1:2], keywords=[]), c)
+            if п.розв(о.м, синт):
+                return s.виклик(синт, env)
         арг = [s.L(a, env) for a in c.args]
         кв = [(k.arg, s.L(k.value, env), k.value) for k in c.keywords]
         цілі = п.розв(о.м, c)
@@ -995,6 +1001,8 @@ class _АналізГ10:
                 return _читати(v, None, п.чисті)
             if f.attr == "items":
                 return _поле("#1", _читати(v, None, п.чисті))
+            if f.attr in _РЕГЕКС_МЕТОДИ:
+                return v | _П.union(*арг)    # скомпільований шаблон (`_СЕП_КОЛЬОРУ`) не несе слова: його несе аргумент
             if f.attr in _ПРОХІДНІ_МЕТОДИ:
                 return v
             if f.attr in ("join", "format"):
