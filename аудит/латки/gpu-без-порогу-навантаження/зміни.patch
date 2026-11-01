@@ -1,0 +1,374 @@
+diff --git a/аудит/адаптери/gemini/claude_run.ps1 b/аудит/адаптери/gemini/claude_run.ps1
+index 127f1f8..42ba65b 100644
+--- a/аудит/адаптери/gemini/claude_run.ps1
++++ b/аудит/адаптери/gemini/claude_run.ps1
+@@ -1143,7 +1143,7 @@ function Invoke-Worker {
+     try {
+         if ($job.gpu) {
+             $gpu = Open-Lock (Get-GpuLockPath)
+-            $why = $(if ($null -eq $gpu) { 'замок GPU' } elseif (Test-ExternalGpuFree) { '' } else { Get-GpuBusyReason @() -LockHeld })
++            $why = $(if ($null -eq $gpu) { 'замок GPU' } elseif (Test-ExternalGpuFree -LogAcquisition) { '' } else { Get-GpuBusyReason @() -LockHeld })
+             if ($why) { Remove-Claim $statePath; Write-Log "GPU зайнята ($why) — $($job.name) лишається в черзі"; return $script:WorkerGpuBusy }
+         }
+         Write-FileAtomic $info (([ordered]@{ slot = $job.slot; lane = 'claude'; marker = $job.name; slug = $job.slug
+diff --git a/аудит/адаптери/gemini/gemini_run.ps1 b/аудит/адаптери/gemini/gemini_run.ps1
+index fbe6f43..7b61ae6 100644
+--- a/аудит/адаптери/gemini/gemini_run.ps1
++++ b/аудит/адаптери/gemini/gemini_run.ps1
+@@ -1046,7 +1046,7 @@ function Resolve-Exe([string]$Name) {
+ # --- планувальник --------------------------------------------------------------------------------------------------
+ 
+ # GPU вільна для нового наряду: свого живого GPU-наряду нема, замок відеокарти (спільний з claude-run) не тримає ніхто й
+-# вистачає пам'яті й немає обчислювального навантаження (Get-GpuBusyReason).
++# вистачає пам'яті й телеметрія без помилки (Get-GpuBusyReason).
+ function Test-GpuFree($Workers) { (Get-GpuBusyReason $Workers) -eq '' }
+ 
+ # Позначка agy на нульовій квоті до старту: чекає скидання (спроба не спалена); рядок диспетчерові — раз, коли позначка
+@@ -1208,7 +1208,7 @@ function Invoke-Worker {
+     try {
+         if ($job.gpu) {
+             $gpu = Open-Lock (Get-GpuLockPath)
+-            $why = $(if ($null -eq $gpu) { 'замок GPU' } elseif (Test-ExternalGpuFree) { '' } else { Get-GpuBusyReason @() -LockHeld })
++            $why = $(if ($null -eq $gpu) { 'замок GPU' } elseif (Test-ExternalGpuFree -LogAcquisition) { '' } else { Get-GpuBusyReason @() -LockHeld })
+             if ($why) { Remove-Claim $statePath; Write-Log "GPU зайнята ($why) — $($job.name) лишається в черзі"; return $script:WorkerGpuBusy }
+         }
+         Write-FileAtomic $info (([ordered]@{ slot = $job.slot; lane = $job.lane; marker = $job.name; slug = $job.slug; model = $job.model
+diff --git a/аудит/адаптери/gemini/m9v/хеші.psd1 b/аудит/адаптери/gemini/m9v/хеші.psd1
+index be62152..50cbcae 100644
+--- a/аудит/адаптери/gemini/m9v/хеші.psd1
++++ b/аудит/адаптери/gemini/m9v/хеші.psd1
+@@ -4,8 +4,8 @@
+     'wrapper_update.ps1' = '45F254E5CB2FB7D882BBB9CE7CA121988FDF23BACCFE65CB67A4CA3B3F426FE7'
+     'wrapper_probe.ps1'  = '85116D04C22EB64CBFF52E66BCEAE9B1091577A889EDD58A8B634093A82BDBC6'
+     'wrapper_chain.ps1'  = '2C44BD77A2180F47054212220BCD473DEEC088B7EACE2646B3B40047752C8785'
+-    'wrapper_health.ps1' = '60C5B00A3E986C387525BBF1DCDB4E0ED067E47A526D81748EA8FBAA1F9ABF22'
+-    'gemini_run.ps1'     = '3201B9494FF375A199FC542FF8A665487065A7E752A0081DCDB54E734E8A9AB3'
++    'wrapper_health.ps1' = 'F63CDFD76BCBE92440A843759BCD6CED4E49B4BCBAC19620CACA4B74B9D58AA5'
++    'gemini_run.ps1'     = 'ADC4A9549E85637C9ECF1E7EEE510CF44BD82EEC8553669B100DE02DA296F852'
+     'gemini_publish.ps1' = '651718F8227770B4D9BADF001719DDCA60604DEE8BFEB3C8D19B6FC3D2D32DF8'
+     # Інсталятор Codex (9741) закріплено за релізом: install.ps1 — файл релізу https://releases.openai.com/codex/releases/<CodexRelease>/install.ps1
+     # (незмінний URL; той самий sha256 віддає https://chatgpt.com/codex/install.ps1 — редирект на releases.openai.com — і публікує реліз
+@@ -14,6 +14,6 @@
+     CodexRelease         = '0.164.0'
+     CodexInstaller       = 'A59CB66350098C33B021FF470D586AE8FE3B7CAF189CA7137B4FE3AF5D4DCE74'
+     'gemini_watch.ps1'   = '69EFEBB07FF1AF51C382B753A95C50F3C1AC27B3008F2489992BEBE3FD0213AA'
+-    'queue_lanes.ps1'    = '12F0FBF86F7C4C481F3A39800B37E0E3D734BB3007C7F55D83D913B005A22414'
+-    'claude_run.ps1'     = '1E3A40E4ABD79169CBB183EC2AC6CE045A892DFB02C6DD98EC294B7AD510D420'
++    'queue_lanes.ps1'    = 'FEAD267F76D269476E00F48C44366D4BA9D282B2BFC85CC64712968D430B4AFD'
++    'claude_run.ps1'     = '3142A2D9BA3C74C1823B91AA64DC41F940477459F87488B6A19C1B1A4CC85168'
+ }
+diff --git a/аудит/адаптери/gemini/queue_lanes.ps1 b/аудит/адаптери/gemini/queue_lanes.ps1
+index 25f00a6..b82d9a8 100644
+--- a/аудит/адаптери/gemini/queue_lanes.ps1
++++ b/аудит/адаптери/gemini/queue_lanes.ps1
+@@ -51,11 +51,10 @@ $script:WorkerGpuBusy = 4
+ $script:ReviewApiLimit = 30
+ $script:ReviewApiWindow = 3600
+ $script:ReviewApiBackoff = 120
+-# Вимір 30.10: найбільший із доступних знімків живих прогонів — 8925 MiB усієї карти; простій — 0 %.
++# Вимір 30.10: найбільший із доступних знімків живих прогонів — 8925 MiB усієї карти.
+ # Джерела й прогалини (пік каталогу, навантаження гри): аудит/корені/ПК-межа-без-джерела-gpu.md.
+ # Це запасний бюджет за спостереженим максимумом, а не доведений пік будь-якої моделі.
+ $script:GpuRunMiB = 8925
+-$script:GpuIdlePercent = 0
+ 
+ # --- процеси й файли ----------------------------------------------------------------------------------------------
+ 
+@@ -1113,13 +1112,13 @@ function Get-GpuProcessInfo([int]$ProcessId) {
+ }
+ 
+ function Get-GpuLoad {
+-    <# Єдине рішення за вільною VRAM, залишковою потребою наряду та обчисленнями.
++    <# Єдине рішення за вільною VRAM і залишковою потребою наряду.
+     Пам'ять неактивної LM Studio вже належить інструменту прогону; без лічильника процесів її не зараховуємо.
+-    Ненульове навантаження всієї карти блокує і гру, і активну модель, незалежно від назви процесу. #>
++    Навантаження карти — показник журналу й причини нестачі памʼяті, без порога запуску. #>
+     $gpu = Get-GpuTelemetry
+     $required = [long]$script:GpuRunMiB
+     $modelBytes = 0L
+-    if (-not $gpu.Error -and $gpu.Percent -le $script:GpuIdlePercent) {
++    if (-not $gpu.Error) {
+         $rows = Get-GpuCounterRows
+         $seen = @{}
+         foreach ($row in @($rows)) {
+@@ -1138,15 +1137,20 @@ function Get-GpuLoad {
+     }
+     $reason = [string]$gpu.Error
+     if (-not $reason) {
+-        if ($gpu.Percent -gt $script:GpuIdlePercent) { $reason = "навантаження $($gpu.Percent) %" }
+-        elseif ($gpu.FreeMiB -lt $required) { $reason = "вільно $($gpu.FreeMiB) з потрібних $required MiB" }
++        if ($gpu.FreeMiB -lt $required) { $reason = "вільно $($gpu.FreeMiB) з потрібних $required MiB; навантаження $($gpu.Percent) %" }
+     }
+     [pscustomobject]@{ FreeMiB = $gpu.FreeMiB; RequiredMiB = $required; Percent = $gpu.Percent; Reason = $reason }
+ }
+ 
+-function Test-ExternalGpuFree {
+-    <# Те саме рішення для воркера після узяття замка: зміна стану карти повертає наряд у чергу. #>
+-    (Get-GpuLoad).Reason -eq ''
++function Test-ExternalGpuFree([switch]$LogAcquisition) {
++    <# Те саме рішення для воркера після узяття замка: зміна стану карти повертає наряд у чергу.
++    Журнал узяття містить показники того самого знімка, за яким дозволено старт. #>
++    $load = Get-GpuLoad
++    $free = $load.Reason -eq ''
++    if ($free -and $LogAcquisition) {
++        Write-Log "GPU взято: вільно $($load.FreeMiB) з потрібних $($load.RequiredMiB) MiB; навантаження $($load.Percent) %"
++    }
++    $free
+ }
+ 
+ $script:GpuHoldReason = ''
+diff --git a/аудит/адаптери/gemini/wrapper_health.ps1 b/аудит/адаптери/gemini/wrapper_health.ps1
+index 12d2d8d..a6e3e14 100644
+--- a/аудит/адаптери/gemini/wrapper_health.ps1
++++ b/аудит/адаптери/gemini/wrapper_health.ps1
+@@ -9,7 +9,7 @@ $script:HealthDetails = @{
+ $script:HealthAlertDir = ''
+ # Сигнал запобіжника, що тримає позначки (queue_lanes.ps1, Update-HoldSignals), і позначка з назвою не за форматом
+ # (gemini_run.ps1, Start-Markers; назва — безпечними знаками): рядок рушія й шаблон публікації — тут одне місце.
+-$script:HoldLineTemplate = '\AGEMINI ОБГОРТКА: ЗАБЛОКОВАНО (?:(?:GPU|SLOTS): (?:замок GPU іншого наряду|слоти зайняті|nvidia-smi не відповів|кілька GPU: потрібен вимір однієї карти|навантаження (?:100|[1-9]?[0-9]) %|вільно [0-9]{1,7} з потрібних [0-9]{1,7} MiB|GPU зайнята стороннім процесом|процес [A-Za-z0-9._+-]{1,92}|процес [A-Za-z0-9._-]{1,30} [0-9]{1,7} MiB(?:\+[A-Za-z0-9._-]{1,30} [0-9]{1,7} MiB){0,2}), позначок [1-9][0-9]{0,3}|gemini-queue/[\p{L}\p{Nd}._/-]{1,160} FORMAT)\z'
++$script:HoldLineTemplate = '\AGEMINI ОБГОРТКА: ЗАБЛОКОВАНО (?:(?:GPU|SLOTS): (?:замок GPU іншого наряду|слоти зайняті|nvidia-smi не відповів|кілька GPU: потрібен вимір однієї карти|навантаження (?:100|[1-9]?[0-9]) %|вільно [0-9]{1,7} з потрібних [0-9]{1,7} MiB(?:; навантаження (?:100|[1-9]?[0-9]) %)?|GPU зайнята стороннім процесом|процес [A-Za-z0-9._+-]{1,92}|процес [A-Za-z0-9._-]{1,30} [0-9]{1,7} MiB(?:\+[A-Za-z0-9._-]{1,30} [0-9]{1,7} MiB){0,2}), позначок [1-9][0-9]{0,3}|gemini-queue/[\p{L}\p{Nd}._/-]{1,160} FORMAT)\z'
+ 
+ function Test-HoldLine([string]$Line) { $Line -cmatch $script:HoldLineTemplate }
+ 
+diff --git a/аудит/адаптери/gemini/НАЛАШТУВАННЯ.md b/аудит/адаптери/gemini/НАЛАШТУВАННЯ.md
+index 04fc7af..eaeef6e 100644
+--- a/аудит/адаптери/gemini/НАЛАШТУВАННЯ.md
++++ b/аудит/адаптери/gemini/НАЛАШТУВАННЯ.md
+@@ -451,12 +451,12 @@ $f = Join-Path "$env:USERPROFILE\gemini-outbox" $n
+ | `wrapper_probe.ps1` | `85116D04C22EB64CBFF52E66BCEAE9B1091577A889EDD58A8B634093A82BDBC6` |
+ | `wrapper_update.ps1` | `45F254E5CB2FB7D882BBB9CE7CA121988FDF23BACCFE65CB67A4CA3B3F426FE7` |
+ | `wrapper_chain.ps1` | `2C44BD77A2180F47054212220BCD473DEEC088B7EACE2646B3B40047752C8785` |
+-| `gemini_run.ps1` | `3201B9494FF375A199FC542FF8A665487065A7E752A0081DCDB54E734E8A9AB3` |
++| `gemini_run.ps1` | `ADC4A9549E85637C9ECF1E7EEE510CF44BD82EEC8553669B100DE02DA296F852` |
+ | `gemini_publish.ps1` | `651718F8227770B4D9BADF001719DDCA60604DEE8BFEB3C8D19B6FC3D2D32DF8` |
+ | `gemini_watch.ps1` | `69EFEBB07FF1AF51C382B753A95C50F3C1AC27B3008F2489992BEBE3FD0213AA` |
+-| `wrapper_health.ps1` | `60C5B00A3E986C387525BBF1DCDB4E0ED067E47A526D81748EA8FBAA1F9ABF22` |
+-| `queue_lanes.ps1` | `12F0FBF86F7C4C481F3A39800B37E0E3D734BB3007C7F55D83D913B005A22414` |
+-| `claude_run.ps1` | `1E3A40E4ABD79169CBB183EC2AC6CE045A892DFB02C6DD98EC294B7AD510D420` |
++| `wrapper_health.ps1` | `F63CDFD76BCBE92440A843759BCD6CED4E49B4BCBAC19620CACA4B74B9D58AA5` |
++| `queue_lanes.ps1` | `FEAD267F76D269476E00F48C44366D4BA9D282B2BFC85CC64712968D430B4AFD` |
++| `claude_run.ps1` | `3142A2D9BA3C74C1823B91AA64DC41F940477459F87488B6A19C1B1A4CC85168` |
+ | `CodexInstaller` (`install.ps1` релізу Codex `CodexRelease`) | `A59CB66350098C33B021FF470D586AE8FE3B7CAF189CA7137B4FE3AF5D4DCE74` |
+ 
+ Той самий список читають скрипти `m9v/` з `m9v/хеші.psd1` — міняти їх разом із таблицею. Підготовка одним проходом — `m9v/ЩО_НАТИСНУТИ.md`.
+@@ -658,15 +658,15 @@ CI й ноутбук запускають один повний перелік 
+ Обидва worker перед агентом кличуть `Set-BrowserGpuPolicy`: дочірні Node/Python додають
+ `--disable-gpu` в Playwright launch і persistent context, зберігаючи решту аргументів.
+ `Test-ExternalGpuFree` і `Get-GpuBusyReason` читають одне рішення `Get-GpuLoad`: вільна VRAM має
+-покривати залишкову потребу GPU-наряду, навантаження карти має бути нульовим. Джерело — один знімок
+-`nvidia-smi --query-gpu=memory.total,memory.free,utilization.gpu`; абсолютного порога пам'яті стороннього процесу немає.
+-Бюджет `GpuRunMiB` і простій `GpuIdlePercent` — з виміру в `аудит/корені/ПК-межа-без-джерела-gpu.md`.
+-Запасний бюджет — найбільше спостережене використання живого прогону; піка каталогу й відсотка гри не виміряно,
+-тому більший дозволений відсоток не вигадується. Потребу зменшує тільки виміряна `DedicatedUsage` неактивної LM Studio
+-(`LM Studio`, `lms`, `llmster` або шлях у її теці / `~\.lmstudio`), до фізично зайнятої пам'яті карти.
+-Без WMI зарахування моделі немає. Робочий стіл і браузер не обходять облік фізичної VRAM;
+-ненульові обчислення блокують незалежно від назви процесу. Нема драйвера, невалідні дані чи кілька карт — чекання.
+-Причина сигналу називає ресурс: `вільно X з потрібних Y MiB` або `навантаження Z %`.
++покривати залишкову потребу GPU-наряду; навантаження карти не обмежує запуск (рішення менеджера 01.11, #2731).
++Джерело — один знімок `nvidia-smi --query-gpu=memory.total,memory.free,utilization.gpu`;
++абсолютного порога пам'яті стороннього процесу немає. Бюджет `GpuRunMiB` — найбільше спостережене використання
++живого прогону з виміру в `аудит/корені/ПК-межа-без-джерела-gpu.md`; піка каталогу не виміряно.
++Потребу зменшує тільки виміряна `DedicatedUsage` LM Studio (`LM Studio`, `lms`, `llmster` або шлях у її теці /
++`~\.lmstudio`), до фізично зайнятої пам'яті карти, незалежно від навантаження. Без WMI зарахування моделі немає.
++Робочий стіл і браузер не обходять облік фізичної VRAM. Нема драйвера, невалідні дані чи кілька карт — чекання.
++Причина відмови за пам'яттю — `вільно X з потрібних Y MiB; навантаження Z %`; журнал узяття містить ті самі показники.
++Окремої відмови за навантаженням немає. Транспорт також приймає старі причини від попередньої версії обгортки.
+ Обгортка не вивантажує моделей, не закриває LM Studio й не зупиняє чужих процесів (власник 31.10).
+ Те саме рішення
+ планувальники беруть до claim (`Get-GpuBusyReason`), а не лише в процесі наряду: позначка, яку не взято (GPU, слот, той
+diff --git a/аудит/адаптери/gemini/ЧЕРГА.md b/аудит/адаптери/gemini/ЧЕРГА.md
+index 1b89856..086b5d8 100644
+--- a/аудит/адаптери/gemini/ЧЕРГА.md
++++ b/аудит/адаптери/gemini/ЧЕРГА.md
+@@ -114,15 +114,15 @@ CI й ноутбук запускають один повний перелік 
+ Обидва worker перед агентом кличуть `Set-BrowserGpuPolicy`: дочірні Node/Python додають
+ `--disable-gpu` в Playwright launch і persistent context, зберігаючи решту аргументів.
+ `Test-ExternalGpuFree` і `Get-GpuBusyReason` читають одне рішення `Get-GpuLoad`: вільна VRAM має
+-покривати залишкову потребу GPU-наряду, навантаження карти має бути нульовим. Джерело — один знімок
+-`nvidia-smi --query-gpu=memory.total,memory.free,utilization.gpu`; абсолютного порога пам'яті стороннього процесу немає.
+-Бюджет `GpuRunMiB` і простій `GpuIdlePercent` — з виміру в `аудит/корені/ПК-межа-без-джерела-gpu.md`.
+-Запасний бюджет — найбільше спостережене використання живого прогону; піка каталогу й відсотка гри не виміряно,
+-тому більший дозволений відсоток не вигадується. Потребу зменшує тільки виміряна `DedicatedUsage` неактивної LM Studio
+-(`LM Studio`, `lms`, `llmster` або шлях у її теці / `~\.lmstudio`), до фізично зайнятої пам'яті карти.
+-Без WMI зарахування моделі немає. Робочий стіл і браузер не обходять облік фізичної VRAM;
+-ненульові обчислення блокують незалежно від назви процесу. Нема драйвера, невалідні дані чи кілька карт — чекання.
+-Причина сигналу називає ресурс: `вільно X з потрібних Y MiB` або `навантаження Z %`.
++покривати залишкову потребу GPU-наряду; навантаження карти не обмежує запуск (рішення менеджера 01.11, #2731).
++Джерело — один знімок `nvidia-smi --query-gpu=memory.total,memory.free,utilization.gpu`;
++абсолютного порога пам'яті стороннього процесу немає. Бюджет `GpuRunMiB` — найбільше спостережене використання
++живого прогону з виміру в `аудит/корені/ПК-межа-без-джерела-gpu.md`; піка каталогу не виміряно.
++Потребу зменшує тільки виміряна `DedicatedUsage` LM Studio (`LM Studio`, `lms`, `llmster` або шлях у її теці /
++`~\.lmstudio`), до фізично зайнятої пам'яті карти, незалежно від навантаження. Без WMI зарахування моделі немає.
++Робочий стіл і браузер не обходять облік фізичної VRAM. Нема драйвера, невалідні дані чи кілька карт — чекання.
++Причина відмови за пам'яттю — `вільно X з потрібних Y MiB; навантаження Z %`; журнал узяття містить ті самі показники.
++Окремої відмови за навантаженням немає. Транспорт також приймає старі причини від попередньої версії обгортки.
+ Обгортка не вивантажує моделей, не закриває LM Studio й не зупиняє чужих процесів (власник 31.10).
+ Те саме рішення
+ планувальники беруть до claim (`Get-GpuBusyReason`), а не лише в процесі наряду: позначка, яку не взято (GPU, слот, той
+@@ -132,5 +132,5 @@ CI й ноутбук запускають один повний перелік 
+ виклику після трьох спроб повертає позначку в чергу. Агент зберігає NODE_OPTIONS/PYTHONPATH, а GPU-замок лишається спільним для моделей.
+ Запобіжник (GPU, слоти), що тримає позначки понад `quota_wait_minutes` (смуги.json, з джерелом), сам пише рядок
+ `GEMINI ОБГОРТКА: ЗАБЛОКОВАНО GPU|SLOTS: <причина>, позначок N` (причина GPU: замок, телеметрія,
+-вільна пам'ять або навантаження) — один на причину (повтор лише при зміні виду причини, не числового показника; стан `holds.json`); пульс диспетчера — лише
++вільна пам'ять із показником навантаження) — один на причину (повтор лише при зміні виду причини, не числового показника; стан `holds.json`); пульс диспетчера — лише
+ запас. Той самий код у `gemini-run`: рядок іде в `out/alerts`, публікатор перевіряє його заново (`HoldLineTemplate`, `wrapper_health.ps1`) і кладе у вихідні. Тіло #1856 не стверджує «Оновлено понад 5 хв тому»: підказка умовна.
+diff --git a/аудит/адаптери/gemini/перевірка/сценарії_gpu_память.ps1 b/аудит/адаптери/gemini/перевірка/сценарії_gpu_память.ps1
+index 1ff170a..c03dfea 100644
+--- a/аудит/адаптери/gemini/перевірка/сценарії_gpu_память.ps1
++++ b/аудит/адаптери/gemini/перевірка/сценарії_gpu_память.ps1
+@@ -1,6 +1,6 @@
+ ﻿#Requires -Version 5.1
+ <# Справжні рішення модуля й транспорт причини; підмінено лише драйвер, WMI та замок.
+-Числа сценаріїв — фікстури, а 8925 MiB і 0 % виробничого бюджету звірено з паспортом виміру. #>
++Числа сценаріїв — фікстури, а 8925 MiB виробничого бюджету звірено з паспортом виміру. #>
+ param([Parameter(Mandatory = $true)][string]$SourceDir)
+ $ErrorActionPreference = 'Stop'
+ [Console]::OutputEncoding = New-Object Text.UTF8Encoding($false)
+@@ -56,10 +56,18 @@ State 'стіл 1221 MiB + браузер 700 MiB, 0 %' $true
+ $script:NoCounter = $true
+ State 'той самий браузер без WMI' $true
+ $script:NoCounter = $false
+-$script:Percent = 74; $script:Free = 9000; $script:Rows = @((Row 4120 7376))
+-State 'гра з гігабайтами та обчисленнями' $false 'навантаження 74 %'
++$script:Rows = @((Row 5100 721), (Row 4120 1200))
++$script:Percent = 45
++State 'стіл 45 % + браузер 1,2 ГБ за достатньої VRAM' $true
++$script:Logs = @()
++function Write-Log([string]$Text) { $script:Logs += $Text }
++$callsBefore = $script:Calls.Count
++$free = Test-ExternalGpuFree -LogAcquisition
++Check 'узяття журналює памʼять і 45 % з одного знімка' ($free -and $script:Logs.Count -eq 1 -and $script:Logs[0] -ceq 'GPU взято: вільно 14455 з потрібних 8925 MiB; навантаження 45 %' -and $script:Calls.Count -eq $callsBefore + 1)
++$script:Percent = 74; $script:Free = 2000; $script:Rows = @((Row 4120 7376))
++State 'гра з гігабайтами та обчисленнями' $false 'вільно 2000 з потрібних 8925 MiB; навантаження 74 %'
+ $script:Rows = @((Row 5100 7376))
+-State 'обчислення не приховає назва робочого столу' $false 'навантаження 74 %'
++State 'назва робочого столу не приховає нестачу VRAM' $false 'вільно 2000 з потрібних 8925 MiB; навантаження 74 %'
+ $script:Percent = 0; $script:Free = 2000; $script:Rows = @((Row 4120 14376))
+ State 'чужа неактивна модель не лишила памʼяті' $false 'вільно 2000 з потрібних 8925 MiB'
+ $script:Free = 8925; $script:Rows = @()
+@@ -67,7 +75,9 @@ State 'рівність вільної памʼяті бюджету' $true
+ $script:Free = 8924
+ State 'на 1 MiB менше бюджету' $false 'вільно 8924 з потрібних 8925 MiB'
+ $script:Free = 14455; $script:Percent = 1
+-State 'немає довільного дозволеного ненульового навантаження' $false 'навантаження 1 %'
++State 'ненульове навантаження за достатньої памʼяті' $true
++$script:Percent = 100
++State 'повне навантаження за достатньої памʼяті' $true
+ $script:Percent = 0; $script:Free = 5000; $script:Rows = @((Row 7000 9000))
+ State 'неактивна модель інструмента вже на карті' $true
+ $script:Rows = @((Row 7000 4000))
+@@ -77,7 +87,7 @@ State 'бракує памʼяті навіть із моделлю інстру
+ $script:Rows = @((Row 7000 4000), (Row 7000 4000))
+ State 'дубль лічильника не подвоює зарахування' $false 'вільно 4924 з потрібних 4925 MiB'
+ $script:Free = 5000; $script:Rows = @((Row 7000 9000)); $script:Percent = 69
+-State 'активна LM Studio також лишає наряд у черзі' $false 'навантаження 69 %'
++State 'памʼять LM Studio зараховується незалежно від навантаження' $true
+ $script:Percent = 0; $script:NoCounter = $true
+ State 'без WMI памʼять моделі не вважається вільною' $false 'вільно 5000 з потрібних 8925 MiB'
+ $script:NoCounter = $false; $script:Rows = @(); $script:Free = 14455
+@@ -96,7 +106,7 @@ Check 'між обліковими записами лишається замо
+ $script:LockFree = $true
+ $worker = @([pscustomobject]@{ Gpu = $true; Proc = [pscustomobject]@{ HasExited = $false } })
+ Check 'власний GPU-наряд утримує карту' ((Get-GpuBusyReason $worker) -match 'власний наряд')
+-foreach ($reason in @('навантаження 101 %', 'навантаження -1 %', "вільно 1 з потрібних 2 MiB`nкоманда", 'вільно N/A з потрібних 8925 MiB')) {
++foreach ($reason in @('навантаження 101 %', 'навантаження -1 %', 'вільно 1 з потрібних 2 MiB; навантаження 101 %', 'вільно 1 з потрібних 2 MiB; навантаження -1 %', "вільно 1 з потрібних 2 MiB`nкоманда", 'вільно N/A з потрібних 8925 MiB')) {
+     Check "транспорт відкидає довільний текст [$reason]" (-not (Test-HoldLine "GEMINI ОБГОРТКА: ЗАБЛОКОВАНО GPU: $reason, позначок 1"))
+ }
+ Check 'обгортка не викликала lms' (@($script:Calls | Where-Object { $_ -notlike 'nvidia-smi *' }).Count -eq 0)
+diff --git a/аудит/адаптери/gemini/перевірка/сценарії_gpu_процеси.ps1 b/аудит/адаптери/gemini/перевірка/сценарії_gpu_процеси.ps1
+index 7a803a9..9f29626 100644
+--- a/аудит/адаптери/gemini/перевірка/сценарії_gpu_процеси.ps1
++++ b/аудит/адаптери/gemini/перевірка/сценарії_gpu_процеси.ps1
+@@ -131,10 +131,10 @@ Scenario 'г воркер' {
+     $code = Invoke-Worker
+     Check "г GPU-наряд за моделі LM Studio на карті — воркер пройшов перевірку GPU (код $code) і наряд виконано; lms не викликано: $((Get-LmsCalls) -join ' | '); журнал: $($script:Logged -join ' | ')" ($script:Ran -eq 1 -and $code -ne $script:WorkerGpuBusy -and @(Get-LmsCalls).Count -eq 0)
+     # Сторонній процес з'явився між планувальником і воркером: воркер тримає замок сам — причина в журналі з назвою й MiB.
+-    $script:Procs = @(@{ Pid = 4120; MiB = 2300 }) + $script:DesktopProcs + $script:ModelProcs; $script:Logged.Clear(); $script:Ran = 0; $script:Percent = 74
++    $script:Procs = @(@{ Pid = 4120; MiB = 12000 }) + $script:DesktopProcs; $script:Logged.Clear(); $script:Ran = 0; $script:Percent = 74
+     $code = Invoke-Worker
+     $gl = @($script:Logged | Where-Object { $_ -like 'GPU зайнята*' })
+-    Check "г воркер за стороннього процесу — лишає наряд у черзі з причиною «навантаження 74 %», а не «замок»: $($gl -join ' | ')" ($code -eq $script:WorkerGpuBusy -and $script:Ran -eq 0 -and $gl.Count -eq 1 -and $gl[0] -match 'навантаження 74 %' -and $gl[0] -notmatch 'замок')
++    Check "г воркер за стороннього процесу — лишає наряд у черзі з причиною нестачі VRAM і навантаженням, а не «замок»: $($gl -join ' | ')" ($code -eq $script:WorkerGpuBusy -and $script:Ran -eq 0 -and $gl.Count -eq 1 -and $gl[0] -match 'навантаження 74 %' -and $gl[0] -notmatch 'замок')
+ }
+ 
+ # --- (д) сторонній процес: позначка стоїть, причина з назвою й MiB -----------------------------------------------------
+@@ -143,10 +143,10 @@ Scenario 'д сторонній процес' {
+     . $fakes
+     function Test-LockFree { $true }
+     $LaneDir = $tmp; $script:StateDir = Join-Path $tmp 'd-state'; [void][IO.Directory]::CreateDirectory($script:StateDir)
+-    $script:Procs = @(@{ Pid = 4120; MiB = 2300 }) + $script:DesktopProcs + $script:ModelProcs + $script:IdleProcs; $script:Apps = '4120, C:\Users\x\chrome.exe'
++    $script:Procs = @(@{ Pid = 4120; MiB = 12000 }) + $script:DesktopProcs + $script:IdleProcs; $script:Apps = '4120, C:\Users\x\chrome.exe'
+     $script:Percent = 74
+     $why = Get-GpuBusyReason @()
+-    Check "д сторонній процес 2300 MiB поряд з робочим столом і моделлю — карту не віддано, причина лише з ним: «$why» / «$($script:GpuHoldReason)»" ($why -match 'навантаження 74 %' -and $script:GpuHoldReason -ceq 'навантаження 74 %' -and -not (Test-ExternalGpuFree))
++    Check "д сторонній процес 12000 MiB поряд з робочим столом — карту не віддано, причина за нестачею VRAM: «$why» / «$($script:GpuHoldReason)»" ($why -match 'вільно .* з потрібних 8925 MiB; навантаження 74 %' -and $script:GpuHoldReason -match '^вільно .*; навантаження 74 %$' -and -not (Test-ExternalGpuFree))
+     $line = "GEMINI ОБГОРТКА: ЗАБЛОКОВАНО GPU: $($script:GpuHoldReason), позначок 1"
+     Check "д рядок диспетчерові проходить шаблон: $line" (Test-HoldLine $line)
+     Check "д lms не викликано: $((Get-LmsCalls) -join ' | ')" (@(Get-LmsCalls).Count -eq 0)
+diff --git a/аудит/адаптери/gemini/перевірка/сценарії_простій_ресурсу.ps1 b/аудит/адаптери/gemini/перевірка/сценарії_простій_ресурсу.ps1
+index e9b635c..28b8119 100644
+--- a/аудит/адаптери/gemini/перевірка/сценарії_простій_ресурсу.ps1
++++ b/аудит/адаптери/gemini/перевірка/сценарії_простій_ресурсу.ps1
+@@ -18,7 +18,7 @@ function Scenario([string]$Name, [scriptblock]$Body) {
+ $exeDir = Split-Path -Parent $SourceDir
+ $sideDir = Join-Path $SourceDir 'перевірка'
+ 
+-# --- (а) відеокарта зайнята лише справжнім навантаженням ----------------------------------------------------------------
++# --- (а) відеокарта зайнята за нестачі VRAM ----------------------------------------------------------------
+ Scenario 'а GPU' {
+     . (Join-Path $SourceDir 'queue_lanes.ps1')
+     function Get-Command { [pscustomobject]@{ Source = 'nvidia-smi' } }
+@@ -36,7 +36,7 @@ Scenario 'а GPU' {
+     Check "а бракує памʼяті — зайнята, причина числом: «$why»" (-not (Test-ExternalGpuFree) -and $why -match 'вільно 2000 з потрібних 8925 MiB')
+     $script:SmiFree = 14000; $script:SmiPercent = 74
+     $why = Get-GpuBusyReason @()
+-    Check 'а обчислення блокують навіть за достатньої памʼяті' ($why -match 'навантаження 74 %')
++    Check 'а обчислення за достатньої памʼяті не блокують' ($why -eq '' -and (Test-ExternalGpuFree))
+     $script:SmiCode = 9
+     $why = Get-GpuBusyReason @()
+     Check 'а nvidia-smi не відповів — зайнята, причина названа' ($why -match 'nvidia-smi' -and $script:GpuHoldReason -ceq 'nvidia-smi не відповів')
+@@ -143,10 +143,10 @@ Scenario 'в планувальник' {
+     function Invoke-Native { param($Exe, $Arguments)
+         if ($Arguments -contains '--query-gpu=memory.total,memory.free,utilization.gpu') { return [pscustomobject]@{ Code = 0; Out = $script:FakeTelemetry } }
+         [pscustomobject]@{ Code = 0; Out = $script:FakeApps } }
+-    $script:FakeTelemetry = '16376, 14076, 74'; $script:FakeApps = '4120, C:\Users\x\chrome.exe'
++    $script:FakeTelemetry = '16376, 2000, 74'; $script:FakeApps = '4120, C:\Users\x\chrome.exe'
+     $w = New-Object System.Collections.ArrayList
+     $r = Start-Markers $w
+-    Check 'в2 GPU зайнята процесом — воркер не запущено, позначка лишилась без узяття' ($script:Started -eq 0 -and $r[0] -eq 0 -and $script:Held['GPU'].Reason -ceq 'навантаження 74 %' -and $script:Held['GPU'].Markers.Count -eq 1)
++    Check 'в2 GPU зайнята процесом — воркер не запущено, позначка лишилась без узяття' ($script:Started -eq 0 -and $r[0] -eq 0 -and $script:Held['GPU'].Reason -ceq 'вільно 2000 з потрібних 8925 MiB; навантаження 74 %' -and $script:Held['GPU'].Markers.Count -eq 1)
+     $script:FakeTelemetry = '16376, 16319, 0'; $script:FakeApps = ''
+     $r = Start-Markers $w
+     Check 'в2 GPU вільна — наряд узято' ($script:Started -eq 1 -and $r[0] -eq 1 -and -not $script:Held.ContainsKey('GPU'))
+@@ -171,11 +171,11 @@ Scenario 'в3 gemini-run' {
+     function Get-Command { [pscustomobject]@{ Source = 'nvidia-smi' } }
+     function Get-GpuCounterRows { <# Запасне джерело — nvidia-smi; лічильник процесів міряє сценарії_gpu_процеси.ps1. #> $null }
+     function Invoke-Native { param($Exe, $Arguments)
+-        if ($Arguments -contains '--query-gpu=memory.total,memory.free,utilization.gpu') { return [pscustomobject]@{ Code = 0; Out = '16376, 14076, 74' } }
++        if ($Arguments -contains '--query-gpu=memory.total,memory.free,utilization.gpu') { return [pscustomobject]@{ Code = 0; Out = '16376, 2000, 74' } }
+         [pscustomobject]@{ Code = 0; Out = '4120, C:\Users\x\chrome.exe' } }
+     $w = New-Object System.Collections.ArrayList
+     [void](Start-Markers $w)
+-    Check 'в3 GPU зайнята процесом — gemini-run не бере позначку й тримає GPU' ($script:Held['GPU'].Reason -ceq 'навантаження 74 %' -and $script:Held['GPU'].Markers.Count -eq 1)
++    Check 'в3 GPU зайнята процесом — gemini-run не бере позначку й тримає GPU' ($script:Held['GPU'].Reason -ceq 'вільно 2000 з потрібних 8925 MiB; навантаження 74 %' -and $script:Held['GPU'].Markers.Count -eq 1)
+     $send = { param($l) Add-HoldLine $l }
+     Update-HoldSignals $script:Held $send
+     $f = "$work/state/holds.json"
+@@ -185,7 +185,7 @@ Scenario 'в3 gemini-run' {
+     Update-HoldSignals $script:Held $send
+     Update-HoldSignals $script:Held $send
+     $rows = @(Get-ChildItem -LiteralPath "$g3out/alerts" -Filter '*.txt' -File -ErrorAction SilentlyContinue | ForEach-Object { [IO.File]::ReadAllText($_.FullName, $utf).Trim() })
+-    Check "в3 понад поріг — один рядок у out/alerts: $($rows -join ' | ')" ($rows.Count -eq 1 -and $rows[0] -ceq 'GEMINI ОБГОРТКА: ЗАБЛОКОВАНО GPU: навантаження 74 %, позначок 1')
++    Check "в3 понад поріг — один рядок у out/alerts: $($rows -join ' | ')" ($rows.Count -eq 1 -and $rows[0] -ceq 'GEMINI ОБГОРТКА: ЗАБЛОКОВАНО GPU: вільно 2000 з потрібних 8925 MiB; навантаження 74 %, позначок 1')
+ }
+ Scenario 'в3 публікатор' {
+     . (Join-Path $SourceDir 'gemini_publish.ps1') -WorkDir "$tmp/g3pub" -OutDir $g3out -OutboxDir "$tmp/g3box"
+@@ -193,7 +193,7 @@ Scenario 'в3 публікатор' {
+     $script:HealthAlertDir = $OutboxDir   # як у Main публікатора
+     Receive-HealthAlerts
+     $rows = @(Get-ChildItem -LiteralPath $OutboxDir -Filter '*.txt' -File | ForEach-Object { [IO.File]::ReadAllText($_.FullName, $utf).Trim() })
+-    Check "в3 публікатор перекладає рядок рушія у вихідні для диспетчера: $($rows -join ' | ')" ($rows.Count -eq 1 -and $rows[0] -ceq 'GEMINI ОБГОРТКА: ЗАБЛОКОВАНО GPU: навантаження 74 %, позначок 1' -and (Test-OutboxLine $rows[0]) -eq '')
++    Check "в3 публікатор перекладає рядок рушія у вихідні для диспетчера: $($rows -join ' | ')" ($rows.Count -eq 1 -and $rows[0] -ceq 'GEMINI ОБГОРТКА: ЗАБЛОКОВАНО GPU: вільно 2000 з потрібних 8925 MiB; навантаження 74 %, позначок 1' -and (Test-OutboxLine $rows[0]) -eq '')
+     Receive-HealthAlerts
+     Check 'в3 повторний імпорт — нових рядків нуль' (@(Get-ChildItem -LiteralPath $OutboxDir -Filter '*.txt' -File).Count -eq 1)
+ }
