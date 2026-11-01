@@ -50,6 +50,8 @@ import os
 import re
 import sys
 
+import обсяг_приладу as ОБСЯГ  # Д10: непрочитане — код 1, не менше місць
+
 ПРАВИЛА = ("AGENTS.md", "CLAUDE.md", "GEMINI.md", "аудит/CHATGPT.md", "аудит/НОУТБУК.md",
            "аудит/адаптери/CLAUDE_КЕРУВАННЯ.md", "аудит/адаптери/gemini/НАЛАШТУВАННЯ.md",
            "аудит/адаптери/gemini/ЧЕРГА.md", "аудит/адаптери/gemini/СПОСТЕРІГАЧ.md",
@@ -159,6 +161,7 @@ def правила(корінь):
     for ф in ПРАВИЛА:
         шлях = os.path.join(корінь, ф)
         if not os.path.exists(шлях):
+            ОБСЯГ.непрочитано(ф, "файлу правил нема на дереві")
             continue
         for н, пункт in _пункти(читати(шлях)):
             if пункт.startswith("#") or re.match(r"\|[\s|:-]+\|?$", пункт):
@@ -187,11 +190,13 @@ def конфіг(корінь):
     for ф in КОНФІГ:
         шлях = os.path.join(корінь, ф)
         if not os.path.exists(шлях):
+            ОБСЯГ.непрочитано(ф, "конфігу нема на дереві")
             continue
         текст = читати(шлях, "utf-8-sig")
         try:
             док = json.loads(текст)
-        except ValueError:
+        except ValueError as е:
+            ОБСЯГ.непрочитано(ф, "JSON: %s" % е)
             continue
 
         def додати(імя, значення, джерело, рядок):
@@ -223,7 +228,8 @@ def поля_смуг(корінь):
     шлях = os.path.join(корінь, КОНФІГ[0])
     try:
         док = json.loads(читати(шлях, "utf-8-sig"))
-    except (OSError, ValueError):
+    except (OSError, ValueError) as е:
+        ОБСЯГ.непрочитано(КОНФІГ[0], "%s: %s" % (type(е).__name__, е))
         return set(), set()
     поля = {к for к, в in док.items() if isinstance(в, dict) and "n" in в}
     лінії = set(док.get("slots", {}) or {})
@@ -423,6 +429,7 @@ def вердикти(корінь):
     шлях = os.path.join(корінь, ВЕРДИКТИ)
     вихід = {}
     if not os.path.exists(шлях):
+        ОБСЯГ.непрочитано(ВЕРДИКТИ, "вердиктів нема на дереві")
         return вихід
     for рядок in читати(шлях).split("\n"):
         if not рядок.strip() or рядок.startswith("#"):

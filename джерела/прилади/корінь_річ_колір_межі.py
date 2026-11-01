@@ -21,6 +21,8 @@
 появи). Згенеровані читачі (шапка «згенеровано») — не місця."""
 import ast, collections, functools, json, os, re, subprocess, sys, warnings
 
+import обсяг_приладу as ОБСЯГ  # Д10: непрочитане — код 1, не менше місць
+
 warnings.filterwarnings("ignore")
 
 МОДУЛЬ_ВИЗНАЧЕННЯ = "колір_тон"
@@ -368,9 +370,8 @@ def веде_до_вікна(f):
 
 def обхід_python(шлях, файл, збір, імена_визначень_усі, тепла_функції):
     t = open(шлях, encoding="utf-8").read()
-    try:
-        дерево = ast.parse(t)
-    except SyntaxError:
+    дерево = ОБСЯГ.розібрати(t, файл)
+    if дерево is None:
         return
     ф_є_коло = bool(КОЛО_ХУДОЖНИКА.search(t))
     рядки = t.split("\n")
@@ -585,9 +586,8 @@ def імена_визначень(корінь):
     for шлях, відн, вид in файли(корінь):
         if вид != "py":
             continue
-        try:
-            дерево = ast.parse(open(шлях, encoding="utf-8").read())
-        except SyntaxError:
+        дерево = ОБСЯГ.розібрати(open(шлях, encoding="utf-8").read(), відн)
+        if дерево is None:
             continue
         for f in функції(дерево):
             if ІМ_ВИЗНАЧЕННЯ.search(f.name) and len(f.name) > 2:
@@ -601,9 +601,8 @@ def тепла_кутом(корінь):
     for шлях, відн, вид in файли(корінь):
         if вид != "py":
             continue
-        try:
-            дерево = ast.parse(open(шлях, encoding="utf-8").read())
-        except SyntaxError:
+        дерево = ОБСЯГ.розібрати(open(шлях, encoding="utf-8").read(), відн)
+        if дерево is None:
             continue
         for f in функції(дерево):
             if ІМ_ТЕПЛА.search(f.name) and len(f.name) > 3:
@@ -1199,10 +1198,10 @@ def місця_г10(корінь):
     for шлях, в, вид in файли(корінь):
         if вид != "py":
             continue
-        try:
-            модулі[os.path.basename(шлях)[:-3]] = ast.parse(open(шлях, encoding="utf-8").read())
-        except SyntaxError:
+        дерево = ОБСЯГ.розібрати(open(шлях, encoding="utf-8").read(), в)
+        if дерево is None:
             continue
+        модулі[os.path.basename(шлях)[:-3]] = дерево
         відн[os.path.basename(шлях)[:-3]] = в
     if СТІК_Г10[0] not in модулі:
         return []
@@ -1228,8 +1227,13 @@ def таблиця_г2(корінь):
     try:
         вих = subprocess.run([sys.executable, "-I", "-c", код, дж, *ПОЛЯ_Г2], cwd=дж, capture_output=True, text=True,
                              timeout=120)
-        return json.loads(вих.stdout.strip().splitlines()[-1]) if вих.returncode == 0 else {}
-    except (subprocess.SubprocessError, ValueError, IndexError, OSError):
+        if вих.returncode == 0:
+            return json.loads(вих.stdout.strip().splitlines()[-1])
+        ОБСЯГ.непрочитано("джерела/%s.py" % МОДУЛЬ_ТАБЛИЦІ, "ТАБЛИЦЯ: код %d %s" % (
+            вих.returncode, (вих.stderr.strip().splitlines() or ["—"])[-1]))
+        return {}
+    except (subprocess.SubprocessError, ValueError, IndexError, OSError) as е:
+        ОБСЯГ.непрочитано("джерела/%s.py" % МОДУЛЬ_ТАБЛИЦІ, "ТАБЛИЦЯ: %s: %s" % (type(е).__name__, е))
         return {}
 
 
@@ -1244,9 +1248,8 @@ def місця_г2(корінь):
     for шлях, в, вид in файли(корінь):
         if вид != "py" or os.path.basename(шлях)[:-3] == МОДУЛЬ_ТАБЛИЦІ:
             continue
-        try:
-            дерево = ast.parse(open(шлях, encoding="utf-8").read())
-        except SyntaxError:
+        дерево = ОБСЯГ.розібрати(open(шлях, encoding="utf-8").read(), в)
+        if дерево is None:
             continue
         for x in ast.walk(дерево):
             if not isinstance(x, ast.Dict):

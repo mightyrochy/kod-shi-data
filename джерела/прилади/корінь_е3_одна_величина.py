@@ -47,6 +47,8 @@ import sys
 import tempfile
 import warnings
 
+import обсяг_приладу as ОБСЯГ  # Д10: непрочитане — код 1, не менше місць
+
 warnings.simplefilter("ignore", SyntaxWarning)
 
 # ── межі обходу ─────────────────────────────────────────────────────────────────────────────────────────────────
@@ -306,7 +308,8 @@ class Лічба:
                 if ф.endswith(".py"):
                     try:
                         self.модулі.append(Модуль(відн, текст))
-                    except SyntaxError:
+                    except SyntaxError as е:
+                        ОБСЯГ.непрочитано(відн, "SyntaxError: %s" % е)
                         continue
                 else:
                     self.js.append((відн, без_коментарів_js(текст)))
@@ -722,8 +725,8 @@ def означення_корпусу(корінь):
         правила = importlib.import_module("правила")
         if os.path.abspath(os.path.dirname(правила.__file__)) == os.path.abspath(дж):
             return set(правила.формулювання())
-    except Exception:
-        pass
+    except Exception as е:
+        ОБСЯГ.непрочитано_модуль(дж, "правила", "формулювання(): %s: %s" % (type(е).__name__, е))
     finally:
         if sys.path and sys.path[0] == дж:
             sys.path.pop(0)

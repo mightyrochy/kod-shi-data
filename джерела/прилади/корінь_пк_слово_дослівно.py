@@ -44,6 +44,8 @@ import os
 import re
 import sys
 
+import обсяг_приладу  # Д10: непрочитане — код 1, не менше місць
+
 КОРІНЬ = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 ЖУРНАЛ = "аудит/РІШЕННЯ_ВЛАСНИКА.md"
 ВЕРДИКТИ = "аудит/корені/ПК-слово-дослівно-вердикти.tsv"
@@ -231,6 +233,7 @@ def журнал_дат(корінь):
     дати = set()
     шлях = os.path.join(корінь, ЖУРНАЛ)
     if not os.path.exists(шлях):
+        обсяг_приладу.непрочитано(ЖУРНАЛ, "журналу нема на дереві")
         return дати
     for рядок in open(шлях, encoding="utf-8"):
         if рядок.startswith("## "):
@@ -246,6 +249,7 @@ def вердикти(корінь):
     шлях = os.path.join(корінь, ВЕРДИКТИ)
     вихід = {}
     if not os.path.exists(шлях):
+        обсяг_приладу.непрочитано(ВЕРДИКТИ, "вердиктів нема на дереві")
         return вихід
     for н, рядок in enumerate(open(шлях, encoding="utf-8"), 1):
         рядок = рядок.rstrip("\n")
@@ -265,6 +269,7 @@ def усі_одиниці(корінь):
         шлях = os.path.join(корінь, ф)
         if not os.path.exists(шлях):
             нема.append(ф)
+            обсяг_приладу.непрочитано(ф, "файлу обсягу нема на дереві")
             continue
         текст = open(шлях, encoding="utf-8").read()
         бачено = {}

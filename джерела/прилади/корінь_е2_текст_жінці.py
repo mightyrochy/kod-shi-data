@@ -12,6 +12,7 @@ HTML у Python перелічується окремо для перевірки
 Вивід: місця `файл:рядок · пункт · чому`, підсумки за пунктами, останній рядок `місць: <N>`, код 0 (формат храповика)."""
 import ast, os, re, sys
 from походження_тексту import Походження, невідповідний
+import обсяг_приладу as ОБСЯГ  # Д10: непрочитане — код 1, не менше місць
 
 ТУТ = next((а for а in sys.argv[1:] if not а.startswith("--")),
            "джерела" if os.path.isdir(os.path.join("джерела", "показ")) else os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -542,8 +543,13 @@ def довідник_дерева(тека):
                             "import json, sys; sys.path.insert(0, 'прилади'); from експорт_показу import довідник; "
                             "print(json.dumps(довідник(), ensure_ascii=False))"],
                            cwd=тека, capture_output=True, encoding='utf-8', timeout=600)
-        return json.loads(р.stdout.strip().split("\n")[-1]) if р.returncode == 0 and р.stdout.strip() else НЕВІДОМО
-    except (OSError, ValueError, subprocess.SubprocessError):
+        if р.returncode == 0 and р.stdout.strip():
+            return json.loads(р.stdout.strip().split("\n")[-1])
+        ОБСЯГ.непрочитано("джерела/прилади/експорт_показу.py", "довідник(): код %d %s" % (
+            р.returncode, (р.stderr.strip().splitlines() or ["—"])[-1]))
+        return НЕВІДОМО
+    except (OSError, ValueError, subprocess.SubprocessError) as е:
+        ОБСЯГ.непрочитано("джерела/прилади/експорт_показу.py", "довідник(): %s: %s" % (type(е).__name__, е))
         return НЕВІДОМО
 
 

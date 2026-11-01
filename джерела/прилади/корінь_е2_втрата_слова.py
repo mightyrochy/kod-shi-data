@@ -64,6 +64,8 @@ import re
 import sys
 import warnings
 
+import обсяг_приладу as ОБСЯГ  # Д10: непрочитане — код 1, не менше місць
+
 warnings.simplefilter("ignore", SyntaxWarning)
 
 # Файли поза продуктом (той самий перелік, що в `корінь_е2_межі.py`, і тести): проби, стенди, батареї, заміри.
@@ -210,7 +212,8 @@ def зібрати_модулі():
     for ш in файли_продукту(".py"):
         try:
             м = Модуль(ш)
-        except (SyntaxError, ValueError):
+        except (SyntaxError, ValueError) as е:
+            ОБСЯГ.непрочитано(відн(ш), "%s: %s" % (type(е).__name__, е))
             continue
         мм.setdefault(м.ім, м)
     return мм
