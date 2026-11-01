@@ -3203,10 +3203,12 @@ _ПОЛЯ_EN = {
                        "ivory and cream belong to the bride when she is not the bride herself",
     # «відкритого не хочу» — сід 5 з 3 поклав межу в goal_zones (зона мети
     # «приховати»), код узяв «none» як невідомо, і пряма заборона загубилась; опис знав лише норму події.
-    # «її межа сильніша за норму події» стояла ще в R9, «межа — open_zones, не goal_zones» — у R2; тепер тут
-    "open_zones": "how many body zones (neckline or back, legs, shoulders) it is appropriate to show "
-                  "at this event: none — church, funeral, interview and other reserved settings; one; two. Her own "
-                  "limit on how much of her body she shows (none, or one when she allows a single zone) sets it too "
+    # «її межа сильніша за норму події» стояла ще в R9, «межа — open_zones, не goal_zones» — у R2; тепер тут.
+    # Звичну норму (удень одна зона, ввечері дві — K-KOH-10) код бере з частини дня; поле — лише інша норма події
+    # (корінь Е2-частина-дня, крок 3): «one» на кожну вечерю гасило другу вечірню зону.
+    "open_zones": "how many body zones (neckline or back, legs, shoulders) to show at this event if not one by "
+                  "day, two in the evening: none — church, funeral, interview, other reserved settings; one; "
+                  "two. Her own limit on what she shows (none, or one when she allows a single zone) sets it too "
                   "and overrides the event's norm",
     "setting": "indoors, outdoors or mixed",
     "duration_h": "how many hours the event lasts",
@@ -3238,7 +3240,7 @@ _ПОЛЯ_EN = {
     # ДОЩ-1: «новорічний корпоратив у ресторані» лишав `start_hour` невідомим (ж7, ж2) — свято
     # «будь-якої пори», хоча новорічна вечірка сама каже вечір; тепер вона серед прикладів однієї пори.
     # МОВА-ХІД-ТОНШЕ: окреме правило ходу слово в слово повторювало цей опис; його місця вечора —
-    # тепер тут (місць, що «самі несуть вечір», з наряду 3.7 нема: вечір — лише світло, щабля не міняє)
+    # тепер тут (місць, що «самі несуть вечір», з наряду 3.7 нема; підйом щабля ввечері рахує код — K-KOH-06)
     # «йога зранку, потім кава» — кава теж зранку, а `part_of_day` не дано (ДО того ж сіду — morning)
     # «Йду ввечері на вечірку…» — «ввечері» сиділо в цитаті нагоди, пори 0/5
     # «новорічна вечірка» (сцена ж2_новорічна_мороз) — тепер родом: свято, яке звичай святкує ввечері

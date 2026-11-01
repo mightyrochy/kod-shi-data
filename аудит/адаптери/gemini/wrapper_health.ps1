@@ -7,8 +7,9 @@ $script:HealthDetails = @{
     ENGINE = @('AGY', 'CODEX', 'CLAUDE')
 }
 $script:HealthAlertDir = ''
-# Сигнал запобіжника, що тримає позначки (queue_lanes.ps1, Update-HoldSignals): рядок рушія й шаблон публікації — тут одне місце.
-$script:HoldLineTemplate = '\AGEMINI ОБГОРТКА: ЗАБЛОКОВАНО (?:GPU|SLOTS): (?:замок GPU іншого наряду|слоти зайняті|nvidia-smi не відповів|GPU зайнята стороннім процесом|процес [A-Za-z0-9._+-]{1,92}), позначок [1-9][0-9]{0,3}\z'
+# Сигнал запобіжника, що тримає позначки (queue_lanes.ps1, Update-HoldSignals), і позначка з назвою не за форматом
+# (gemini_run.ps1, Start-Markers; назва — безпечними знаками): рядок рушія й шаблон публікації — тут одне місце.
+$script:HoldLineTemplate = '\AGEMINI ОБГОРТКА: ЗАБЛОКОВАНО (?:(?:GPU|SLOTS): (?:замок GPU іншого наряду|слоти зайняті|nvidia-smi не відповів|GPU зайнята стороннім процесом|процес [A-Za-z0-9._+-]{1,92}|процес [A-Za-z0-9._-]{1,30} [0-9]{1,7} MiB(?:\+[A-Za-z0-9._-]{1,30} [0-9]{1,7} MiB){0,2}), позначок [1-9][0-9]{0,3}|gemini-queue/[\p{L}\p{Nd}._/-]{1,160} FORMAT)\z'
 
 function Test-HoldLine([string]$Line) { $Line -cmatch $script:HoldLineTemplate }
 

@@ -279,6 +279,7 @@ console.log('GPU_OFF');
         $out = & python "$tmp/test.py"
         Check '5 Python launch і persistent context мають --disable-gpu' ($LASTEXITCODE -eq 0 -and $out -eq 'GPU_OFF')
         function Get-Command { [pscustomobject]@{Source='nvidia-smi'} }
+        function Get-GpuCounterRows { $null }
         function Invoke-Native { [pscustomobject]@{Code=0;Out='37780'} }
         Check '5 чужий GPU-процес означає чекання' (-not (Test-ExternalGpuFree))
         # Випадок 29.10: після перезапуску 14:26 UTC nvidia-smi називає в --query-compute-apps порожній AvastUI (57 MiB), і кожен
