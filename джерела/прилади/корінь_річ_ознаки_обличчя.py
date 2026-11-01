@@ -1167,8 +1167,15 @@ class Стан:
             for ц in і.targets:
                 self.присвоїти(ц, мітки, і.value)
         elif isinstance(і, ast.AugAssign):
-            мітки = self.e(і.value) | self.e(і.target)
-            self.присвоїти(і.target, мітки - {F})
+            мк = self.значення(і.value) if isinstance(і.target, ast.Name) and isinstance(і.op, ast.Add) else (E, None)
+            if мк[1] and МАПА not in мк[1]:
+                # `записи += інші_записи`: список записів росте записами — ключі ідуть ключами, а не в мітки списку
+                self.писати(і.target.id, мк[0] - {F}, мутація=True)
+                for кл, в in мк[1].items():
+                    self.ключі[і.target.id][кл] = self.ключі[і.target.id][кл] | в
+            else:
+                мітки = self.e(і.value) | self.e(і.target)
+                self.присвоїти(і.target, мітки - {F})
         elif isinstance(і, ast.AnnAssign):
             if і.value is not None:
                 self.присвоїти(і.target, self.e(і.value), і.value)
@@ -1636,6 +1643,9 @@ class Стан:
                 elif ім == "update" and isinstance(в.func.value, ast.Name):
                     for з in поз_к:
                         self.писати(корінь, (з[0] if isinstance(з, tuple) else з) - {F}, мутація=True)
+                elif ім == "setdefault" and len(в.args) == 2 and isinstance(в.func.value, ast.Name) \
+                        and корінь in self.локальні:
+                    pass   # запис у мапу — нижче; ключ, як у `d[ід] = запис`, міток елемента не дає
                 elif корінь:
                     self.писати(корінь, (усі - приймач) - {F}, мутація=True)
                 if ім == "update" and isinstance(в.func.value, ast.Name):
@@ -1656,6 +1666,7 @@ class Стан:
                     for кл, вв in (кд or {}).items():
                         км[кл] = км[кл] | вв
                     км[МАПА] = МАПА_М
+                    self.писати(корінь, мд - {F}, мутація=True)
                     ключі = _злити_ключі(_без_першого(км), кд)
                     поза = (self.читати_env(корінь) | мд) - {F}
                     if ключі:
@@ -2003,6 +2014,17 @@ def стенд():
                     клас_в = "так" if F["очі"].get("h") is None else "невідомо"
                     край = ТАБЛ.get((15, 0)) if F["шкіра"]["L"] < 15 else None
                     копія = dict(риси["шкіра"], L2=F["шкіра"]["L"])
+                    вузли_г = {}
+                    for з in записи:
+                        в_г = вузли_г.setdefault(F["шкіра"]["L"], dict(ребер=0))
+                        в_г["ребер"] += 1
+                        if в_г["ребер"] == 1:
+                            pass
+                    зібрані = []
+                    зібрані += [з for з in записи if з["id"] > 0]
+                    for з in зібрані:
+                        if з["id"] > 7:
+                            pass
                     return знак(F, d.get("самозвіт") or {}), риси
             """,
         }
@@ -2058,6 +2080,8 @@ def стенд():
             ("не місце: інша гілка — «невідомо»", є("риси.py", r"клас_в =", 2), False),
             ("не місце: край сітки таблиці", є("риси.py", r"край =", 1), False),
             ("не місце: копія запису з довірою", є("риси.py", r"копія =", 1), False),
+            ("не місце: += записів — чужий ключ", є("риси.py", r'з\["id"\] > 7', 1), False),
+            ("не місце: лічильник setdefault за її ключем", є("риси.py", r'в_г\["ребер"\] == 1', 1), False),
             ("п.3 наявність запису", є("риси.py", r"return lambda п: \(any", 3), True),
             ("п.3 рядок таблиці", є("риси.py", r'"why_her_contrast"', 3), True),
             ("не п.3: значення metal", є("риси.py", r'"why_her_metal"', 3), False),
