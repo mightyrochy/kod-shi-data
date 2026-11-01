@@ -1,7 +1,7 @@
 """Контекст одного виконання функції у потоці ознак обличчя."""
 import ast, collections, functools
 from ознаки_основа import (
-    B, C, E, F, HEX_РЕГ, K, P, Q, R, S, _без_мапи, _без_першого, _ел, _з_префіксом, _звузити, _злити_ел,
+    B, C, E, F, HEX_РЕГ, K, P, Q, R, S, V, _без_мапи, _без_першого, _ел, _з_префіксом, _звузити, _злити_ел,
     _злити_ключі, _корінь_імені, _пара, _перебір, _під, _рядок, _сітка, _текст, _токени, _усі, _шлях,
     _ім_виклику, _імена, БУЛЕВІ, ВИМІР, ВМІСТИЩА, ГЛИБИНА, МАПА, МАПА_М, МУТАЦІЇ, НЕВІДОМЕ, ПОЗИЦІЙНІ,
     ПОРЯДОК, СЛУЖБОВІ, ТОКЕН, ФАЙЛОВІ
@@ -62,8 +62,18 @@ class Стан:
     def ключ_імені(self, ім, ключ, вузол, типове=None):
         """`ім["к"]` / `ім.get("к")`: значення ключа, записане тут, і правило індексу на решті міток імені."""
         км = self.ключі.get(ім, {})
-        return self.готове_поле(ключ, км.get(ключ, E) | _усі(_під(км, ключ)) |
-                               self.індекс(self.читати_env(ім), ast.Constant(ключ), вузол, типове))
+        return self.готове_поле(ключ, self.джерело_поля(self.читати_env(ім), км, ключ, вузол, типове) |
+                               _усі(_під(км, ключ)))
+
+    def джерело_поля(self, база, ключі, шлях, вузол, типове=None):
+        """Читає явний перезапис точно, а невідоме поле — з консервативним походженням запису."""
+        збережено = ключі.get(шлях, E)
+        ключ = шлях.rsplit('/', 1)[-1]
+        if V in збережено:
+            вих = збережено - {V}
+        else:
+            вих = збережено | self.індекс(база, ast.Constant(ключ), вузол, типове)
+        return self.готове_поле(ключ, вих)
 
     def готове_поле(self, ключ, мітки):
         """Походження поля ваги з протоколу є походженням рішення також після мутації запису."""
@@ -272,7 +282,7 @@ class Стан:
             self.e(сам)
             if _рядок(сам.slice):
                 к = сам.slice.value
-                м = self.готове_поле(к, км.get(к, E) | self.індекс(self.читати_env(сам.value.id), сам.slice, сам))
+                м = self.джерело_поля(self.читати_env(сам.value.id), км, к, сам)
                 під = _під(км, к)
                 return м, ({п: self.готове_поле(к, з) for п, з in під.items()} or None)
             if isinstance(сам.slice, ast.Constant) and type(сам.slice.value) is int and ("#%d" % сам.slice.value) in км:
@@ -285,8 +295,8 @@ class Стан:
             км = self.ключі[сам.func.value.id]
             к = сам.args[0].value
             self.e(сам)
-            типове = self.e(сам.args[1]) if len(сам.args) > 1 else E
-            м = self.готове_поле(к, км.get(к, E) | типове | self.індекс(self.читати_env(сам.func.value.id), сам.args[0], сам))
+            типове = сам.args[1] if len(сам.args) > 1 else None
+            м = self.джерело_поля(self.читати_env(сам.func.value.id), км, к, сам, типове)
             return м, ({п: self.готове_поле(к, з) for п, з in _під(км, к).items()} or None)
         if isinstance(сам, (ast.List, ast.Set)) or (isinstance(сам, ast.BinOp) and isinstance(сам.op, ast.Add)):
             частини = сам.elts if isinstance(сам, (ast.List, ast.Set)) else [сам.left, сам.right]
@@ -330,8 +340,8 @@ class Стан:
             к = сам.args[0].value
             if кз and (к in кз or _під(кз, к)):
                 self.e(сам)
-                типове = self.e(сам.args[1]) if len(сам.args) > 1 else E
-                return (кз.get(к, E) | типове | self.індекс(мз, сам.args[0], сам)), (_під(кз, к) or None)
+                типове = сам.args[1] if len(сам.args) > 1 else None
+                return self.джерело_поля(мз, кз, к, сам, типове), (_під(кз, к) or None)
         if isinstance(сам, ast.Call) and isinstance(сам.func, ast.Attribute) and сам.func.attr == "pop" \
                 and isinstance(сам.func.value, ast.Name) and self.ключі.get(сам.func.value.id) \
                 and (not сам.args or (isinstance(сам.args[0], ast.Constant) and type(сам.args[0].value) is int)) \
@@ -356,7 +366,7 @@ class Стан:
                 self.e(сам)
                 if _рядок(сам.slice):
                     к = сам.slice.value
-                    return (кз.get(к, E) | self.індекс(мз, сам.slice, сам)), (_під(кз, к) or None)
+                    return self.джерело_поля(мз, кз, к, сам), (_під(кз, к) or None)
                 return self.індекс(мз, сам.slice, сам), (_без_першого(кз) or None)
         if isinstance(сам, ast.DictComp):
             self.e(сам)
@@ -634,6 +644,17 @@ class Стан:
                 self.env.pop(ц.id, None); self.ключі.pop(ц.id, None); self.невідомо.pop(ц.id, None)
             for ц in і.targets:
                 self.присвоїти(ц, мітки, і.value)
+            if id(і) in self.ф.точні_записи:
+                for ц in і.targets:
+                    if isinstance(ц, ast.Subscript) and isinstance(ц.value, ast.Name) and _рядок(ц.slice) \
+                            and ц.value.id in self.локальні and ц.value.id not in self.глобальні:
+                        м, під = self.значення(і.value)
+                        км, к = self.ключі[ц.value.id], ц.slice.value
+                        for кл in list(км):
+                            if кл == к or isinstance(кл, str) and кл.startswith(к + '/'):
+                                км.pop(кл)
+                        км[к] = м | {V}
+                        км.update(_з_префіксом(к, під))
         elif isinstance(і, ast.AugAssign):
             мк = self.значення(і.value) if isinstance(і.target, ast.Name) and isinstance(і.op, ast.Add) else (E, None)
             if мк[1] and МАПА not in мк[1]:
@@ -836,9 +857,9 @@ class Стан:
                 корінь, префікс, змінний = _шлях(в)
                 if корінь and not змінний and len(префікс) <= ГЛИБИНА and self.ключі.get(корінь):
                     км = self.ключі[корінь]
-                    вих = self.індекс(self.читати_env(корінь), ast.Constant(префікс[0]), в)
+                    вих = self.читати_env(корінь)
                     for і in range(1, len(префікс) + 1):
-                        вих = вих | км.get("/".join(префікс[:і]), E)
+                        вих = self.джерело_поля(вих, км, "/".join(префікс[:і]), в)
                     return вих | _усі(_під(км, "/".join(префікс)))
             if isinstance(в.value, ast.Name) and isinstance(в.slice, ast.Constant) and type(в.slice.value) is int \
                     and ("#%d" % в.slice.value) in self.ключі.get(в.value.id, {}):
@@ -866,7 +887,8 @@ class Стан:
             л, п = self.e(в.left), self.e(в.right)
             м = _пара(л, п) - {F, R}
             стала_пара = id(в) in self.а.кутові.get(self.ф.повне, ()) and (not л or not п)
-            if id(в) in self.пари and S in л | п and (стала_пара or л & {S, P, C, K} and п & {S, P, C, K}):
+            if id(в) in self.пари and S in л | п and (стала_пара or self.ф.повне not in self.а.шкали
+                    or л & {S, P, C, K} and п & {S, P, C, K}):
                 if not self.а.пара_глибина:
                     self.а.місце(self.м, в, 1, "її значення входить в арифметику пари: %s" % _текст(в)[:70], вхід=True)
                     self.а.пара_глибина += 1
@@ -1219,8 +1241,8 @@ class Стан:
                     мз, кз = self.значення(в.func.value)
                     к = в.args[0].value
                     if кз and (к in кз or _під(кз, к)):
-                        return кз.get(к, E) | _усі(_під(кз, к)) | self.індекс(мз, в.args[0], в,
-                                                                             в.args[1] if len(в.args) > 1 else None)
+                        м = self.джерело_поля(мз, кз, к, в, в.args[1] if len(в.args) > 1 else None)
+                        return self.готове_поле(к, м | _усі(_під(кз, к)))
                 if isinstance(в.func.value, ast.Name) and self.можливі_ключі(в.args[0]) \
                         and self.ключі.get(в.func.value.id):
                     self.e(в.args[0])

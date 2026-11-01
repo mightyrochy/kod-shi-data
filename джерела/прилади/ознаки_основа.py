@@ -5,8 +5,9 @@ from ознаки_рішення import (шкали_ваги, пари_функ�
 
 ТУТ = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 ВИКЛЮЧЕНО = re.compile(r"^(батарея_|gate_|measure_|стенд_|тест_|audit_|pair_test|run_outfit|status_перевірки)")
-S, P, F, R, C, Q, K, B = "S", "P", "F", "R", "C", "Q", "K", "B"
+S, P, F, R, C, Q, K, B, V = "S", "P", "F", "R", "C", "Q", "K", "B", "V"
 # B — саме пакет входу шва. Однаковий ключ у вкладених даних не є полем hex цього пакета.
+# V — поле явно перезаписане до можливого повернення; його джерело не успадковується від цілого запису.
 # Q — пораховане рішення: вага чи сила пари, споживач якої вже не є входом її ознаки.
 # C — дані з файлу (каталог крамниць, кеші фіду): число з її ознаки й такого запису разом — про річ, не про її колорит
 ФАЙЛОВІ = frozenset(("open", "load", "parse", "fromstring", "iterparse", "read_text", "read_bytes", "urlopen",
@@ -61,6 +62,9 @@ class Функція:
         self.локальні = {в.id for в in self.власні if isinstance(в, ast.Name) and isinstance(в.ctx, ast.Store)}
         self.глобальні = {ім for в in self.власні if isinstance(в, ast.Global) for ім in в.names}
         self.верх = frozenset() if isinstance(вузол, ast.Lambda) else frozenset(id(в) for в in вузол.body)
+        перше_повернення = min((в.lineno for в in self.власні if isinstance(в, ast.Return)), default=float('inf'))
+        self.точні_записи = frozenset() if isinstance(вузол, ast.Lambda) else frozenset(
+            id(в) for в in вузол.body if isinstance(в, ast.Assign) and в.lineno < перше_повернення)
         self.множини = множини_функції(self)
         self.вільні_пари = вільні_свідки_пари(self)
         self.прогресії, self.предикати_формул, self.числовий_пошук, self.повертає_сітку = числові_цикли(self)
@@ -372,8 +376,10 @@ def _звузити(мітки, дозволені):
 
 def _усі(ключі):
     if ключі and МАПА not in ключі:
-        return E.union(*set(ключі.values()))
-    return E.union(*(в for к, в in (ключі or {}).items() if к != МАПА))
+        вих = E.union(*set(ключі.values()))
+    else:
+        вих = E.union(*(в for к, в in (ключі or {}).items() if к != МАПА))
+    return вих - {V} if V in вих else вих
 
 
 def _без_мапи(ключі):
@@ -414,6 +420,7 @@ def _з_префіксом(ключ, ключі):
         if len(частини) > ГЛИБИНА:
             if частини[-1] == МАПА:
                 continue
+            в = в - {V}  # точне поле не робить точним згорнутий запис-предок
             шлях = "/".join(частини[:ГЛИБИНА])
         вих[шлях] = вих.get(шлях, E) | в
     return вих
