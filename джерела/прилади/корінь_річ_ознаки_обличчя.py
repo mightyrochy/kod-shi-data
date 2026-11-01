@@ -1411,6 +1411,19 @@ class Стан:
             return _пара(self.читати_env(в.id), *[з for к, з in км.items() if к != МАПА])
         return self.e(в)
 
+    @staticmethod
+    def ціла_область(в):
+        """Пара сталих (−c, c), c > 0: межі обох боків симетричні й однакові — діапазон усієї області, а не число замість незнання."""
+        ч = []
+        for x in в.elts:
+            знак = 1
+            if isinstance(x, ast.UnaryOp) and isinstance(x.op, ast.USub):
+                x, знак = x.operand, -1
+            if not (isinstance(x, ast.Constant) and isinstance(x.value, (int, float)) and not isinstance(x.value, bool)):
+                return False
+            ч.append(знак * x.value)
+        return ч[0] < 0 < ч[1] and ч[0] == -ч[1]
+
     def значення_замість(self, в, число=False):
         """Вираз — клас чи число, поставлене кодом (стала, стала модуля, параметр зі сталим типовим).
         `число`: запасне за `or`/`.get` — лише число; рядок там — ім'я, шлях чи підпис, а не її клас (клас замість
@@ -1425,6 +1438,8 @@ class Стан:
             return isinstance(з, (int, float)) and abs(з) < 1e6
         if isinstance(в, ast.UnaryOp) and isinstance(в.operand, ast.Constant):
             return self.значення_замість(в.operand, число)
+        if isinstance(в, ast.Tuple) and len(в.elts) == 2 and self.ціла_область(в):
+            return False   # (−c, c): інтервал на всю область, «будь-яка» — межі нема, як ±1e9
         if isinstance(в, ast.Tuple) and в.elts:
             return all(self.значення_замість(x, число) for x in в.elts)
         if isinstance(в, ast.Name) and not self.e(в):
@@ -2118,6 +2133,7 @@ def стенд():
                     _ЗП.зібрати(ВИБІР, dict(person=особа, day=d.get("день")))
                     if d.get("зріст") > 150:
                         pass
+                    область_а = (-1.0, 1.0) if F["очі"].get("h") is None else (F["очі"]["h"], 1.0)
                     заяви_х = [заява("colour_her", L=F["шкіра"]["L"]), заява("level_item", level=d.get("рівень"))]
                     for з_х in заяви_х:
                         дріт(з_х["code"], з_х["values"])
@@ -2228,6 +2244,7 @@ def стенд():
             ("не місце: light_cast", є("читач.py", r"light_cast", 1), False),
             ("межа JS: носії", sorted(а.носії) == ["очі", "очі_кільце", "шкіра"], True),
             ("п.1 from_photo", є("риси.py", r"F = features\(", 1), True),
+            ("не місце: `x is None` → (−c, c) — уся область", є("риси.py", r"область_а =", 2), False),
             ("п.1 заява її коду — поріг під охороною коду", є("риси.py", r'в\["L"\] > 5', 1), True),
             ("не місце: значення заяви іншого коду (охорона `код in ТАБЛ`)", є("риси.py", r"x <= 3", 1), False),
             ("п.1 риса в запис", є("риси.py", r"F = додати\(", 1), True),
