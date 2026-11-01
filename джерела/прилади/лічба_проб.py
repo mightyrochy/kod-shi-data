@@ -115,6 +115,9 @@ class Дерево_проби:
         початок = time.monotonic()
         try:
             git(КОРІНЬ, 'worktree', 'add', '--detach', self.корінь, self.sha)
+            # Проби читають і архівні записи: sparse-викладка користувача не є
+            # повним входом. Налаштування й індекс змінюються лише в новому worktree.
+            git(self.корінь, 'sparse-checkout', 'disable')
             self.джерела = os.path.join(self.корінь, 'джерела')
             байтів = sum(ф.stat().st_size for ф in Path(self.корінь).rglob('*') if ф.is_file())
             print('дерево: checkout %.1f с · %.3f ГіБ · %s'
