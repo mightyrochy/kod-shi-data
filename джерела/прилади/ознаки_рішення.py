@@ -21,6 +21,46 @@ def кутові_пари(ф):
             for н in ast.walk(в.left) if isinstance(н, ast.BinOp) and isinstance(н.op, ast.Sub)}
 
 
+def числові_цикли(ф):
+    """Розрізняє прогресію кандидатів та предикат звуження числового інтервалу."""
+    вузли = list(вузли_тіла(ф))
+    прогресії, формули, межі = set(), set(), set()
+    повернені = {в.value.id for в in вузли if isinstance(в, ast.Return) and isinstance(в.value, ast.Name)}
+    for в in вузли:
+        if isinstance(в, ast.While):
+            for к in ast.walk(в):
+                if isinstance(к, ast.Call) and isinstance(к.func, ast.Attribute) and к.func.attr == 'append' \
+                        and isinstance(к.func.value, ast.Name) and len(к.args) == 1 \
+                        and isinstance(к.args[0], ast.BinOp) and isinstance(к.args[0].op, ast.Add):
+                    ім = к.func.value.id
+                    if any(isinstance(н, ast.Subscript) and isinstance(н.value, ast.Name) and н.value.id == ім
+                           for н in ast.walk(к.args[0])) and any(isinstance(н, ast.Name) and н.id == ім for н in ast.walk(в.test)):
+                        прогресії.add(ім)
+        if not isinstance(в, (ast.For, ast.While)):
+            continue
+        for с in в.body:
+            if not (isinstance(с, ast.Assign) and len(с.targets) == 1 and isinstance(с.targets[0], ast.Name)
+                    and isinstance(с.value, ast.BinOp) and isinstance(с.value.op, ast.Div)
+                    and isinstance(с.value.right, ast.Constant) and с.value.right.value == 2
+                    and isinstance(с.value.left, ast.BinOp) and isinstance(с.value.left.op, ast.Add)
+                    and isinstance(с.value.left.left, ast.Name) and isinstance(с.value.left.right, ast.Name)):
+                continue
+            середина = с.targets[0].id
+            кінці = {с.value.left.left.id, с.value.left.right.id}
+            for г in в.body:
+                if not (isinstance(г, ast.If) and len(г.body) == len(г.orelse) == 1):
+                    continue
+                присвоєння = г.body + г.orelse
+                if all(isinstance(а, ast.Assign) and len(а.targets) == 1 and isinstance(а.targets[0], ast.Name)
+                       and isinstance(а.value, ast.Name) and а.value.id == середина for а in присвоєння) \
+                        and {а.targets[0].id for а in присвоєння} == кінці:
+                    формули.update(id(т) for т in ast.walk(г.test) if isinstance(т, ast.Compare))
+                    межі.update(кінці)
+    початки = {id(в) for в in вузли if isinstance(в, ast.Assign) and isinstance(в.value, ast.List)
+               and any(isinstance(ц, ast.Name) and ц.id in прогресії for ц in в.targets)}
+    return початки, формули, bool(межі & повернені), bool(прогресії & повернені)
+
+
 def множини_функції(ф):
     """Виводить локальні імена множин із побудови й псевдонімів, включно із замиканням."""
     визначення = defaultdict(list)

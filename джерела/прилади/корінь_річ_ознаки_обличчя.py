@@ -33,7 +33,7 @@ hex-поля й читач форми з `схеми_розбору`. Потік
 import argparse, ast, collections, functools, glob, os, re, sys, warnings
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from ознаки_рішення import (шкали_ваги, пари_функції, вузли_тіла, кутові_пари,
-                           множини_функції, вільні_свідки_пари)
+                           множини_функції, вільні_свідки_пари, числові_цикли)
 
 ТУТ = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 ВИКЛЮЧЕНО = re.compile(r"^(батарея_|gate_|measure_|стенд_|тест_|audit_|pair_test|run_outfit|status_перевірки)")
@@ -93,6 +93,9 @@ class Функція:
         self.верх = frozenset() if isinstance(вузол, ast.Lambda) else frozenset(id(в) for в in вузол.body)
         self.множини = множини_функції(self)
         self.вільні_пари = вільні_свідки_пари(self)
+        self.прогресії, self.предикати_формул, self.числовий_пошук, self.повертає_сітку = числові_цикли(self)
+        self.сіткові_імена = {ц.id for в in self.власні if id(в) in self.прогресії
+                            for ц in в.targets if isinstance(ц, ast.Name)}
 
     @property
     def повне(self):
@@ -382,6 +385,7 @@ class Аналіз:
             self.модулі[ім] = Модуль(ім, os.path.relpath(шлях, корінь).replace(os.sep, "/"), дерево)
             self.формульні |= _формульні(дерево)
             self.словесні |= _словесні_пороги(дерево)
+            self.формульні.update(п for ф in self.модулі[ім].функції.values() for п in ф.предикати_формул)
             self.значення_полів[ім] = _значення_полів(дерево)
         self.пам = {}             # (функція, контекст) → мітки повернення
         self.ключі_пов = collections.defaultdict(lambda: collections.defaultdict(frozenset))  # функція → ключ → мітки
@@ -496,7 +500,7 @@ class Аналіз:
     def будує_сітку(self, ф):
         р = self.сіткові.get(ф.повне)
         if р is None:
-            р = self.сіткові[ф.повне] = any(_сітка(n) or isinstance(n, ast.Return) and isinstance(n.value, ast.List)
+            р = self.сіткові[ф.повне] = ф.повертає_сітку or any(_сітка(n) or isinstance(n, ast.Return) and isinstance(n.value, ast.List)
                 and any(isinstance(в, ast.BinOp) and isinstance(в.op, ast.Mod) and _число(в.right)
                         and в.right.value == 360 for в in ast.walk(n.value)) for n in ast.walk(ф.вузол))
         return р
@@ -512,6 +516,8 @@ class Аналіз:
         с.вхід_пари = False
         пов = с.виконати()
         self.пара_глибина -= с.вхід_пари
+        if ф.числовий_пошук and any(K in м or any(K in з for _, з in кл) for _, м, кл in контекст):
+            пов = пов | {K}
         if ф.повне in self.виходи_шкал:
             def вага(м):
                 """Залишає походження рішення, знімаючи походження сирої ознаки."""
@@ -1465,6 +1471,8 @@ class Стан:
     def інструкція(self, і):
         if isinstance(і, ast.Assign):
             мітки = self.e(і.value)
+            if id(і) in self.ф.прогресії:
+                мітки = (мітки - {S}) | {K}
             ц = і.targets[0]
             if id(і) in self.верх and len(і.targets) == 1 and isinstance(ц, ast.Name) and ц.id in self.локальні \
                     and ц.id not in _імена(і.value):
@@ -1970,6 +1978,8 @@ class Стан:
                         isinstance(в.func.value, ast.Name) and корінь in self.локальні:
                     for з in (поз_к[1:] if ім == "insert" else поз_к):
                         мітки, ключі = з if isinstance(з, tuple) else (з, None)
+                        if корінь in self.ф.сіткові_імена:
+                            мітки = (мітки - {S}) | {K}
                         self.писати(корінь, мітки - {F})
                         for кл, вв in (ключі or {}).items():
                             self.ключі[корінь][кл] = self.ключі[корінь][кл] | вв
@@ -2386,6 +2396,25 @@ def стенд():
                     if б is None:
                         return а[0], а[0]
                     return min(((x, y) for x in а for y in б), key=lambda п: abs(п[0] - п[1]))
+                def межа_числом(L, h):
+                    lo, hi = 0.0, 100.0
+                    for i in range(5):
+                        m = (lo + hi) / 2
+                        if m * h + L < 80:
+                            lo = m
+                        else:
+                            hi = m
+                    return lo
+                def числова_сітка(F):
+                    ряд = [F["шкіра"]["L"]]
+                    while ряд[-1] + 1 < F["шкіра"]["L"] + 5:
+                        ряд.append(ряд[-1] + 1)
+                    ряд.append(F["шкіра"]["L"] + 5)
+                    for L in ряд:
+                        стеля_канд = межа_числом(L, F["очі"]["h"])
+                        if стеля_канд < F["шкіра"]["L"]:
+                            pass
+                    return dict(ряд=ряд, її_тон=F["очі"]["h"])
                 def кандидат_точками(F):
                     точки = [F["шкіра"]["L"] + i * 2 for i in range(3)]
                     for L in точки:
@@ -2591,6 +2620,9 @@ def стенд():
                     if певність["довіра"] > 0.5:
                         pass
                     свідок_діапазонів((F["очі"]["h"], F["очі"]["h"]), (F["шкіра"]["L"], F["шкіра"]["L"]))
+                    пошук_кандидатів = числова_сітка(F)
+                    if пошук_кандидатів["її_тон"] > 1:
+                        pass
                     return знак(F, d.get("самозвіт") or {}), риси
             """,
             "протокол.py": """
@@ -2657,6 +2689,10 @@ def стенд():
             ("не місце: включення множин ідентифікаторів у замиканні", є("риси.py", r'return іди_запису <=', 1), False),
             ("не місце: поріг довіри готової оцінки", є("риси.py", r'if певність\["довіра"\]', 1), False),
             ("не місце: спільний свідок двох вільних областей", є("риси.py", r'if а is None and б is None', 2), False),
+            ("не місце: межа числового пошуку", є("риси.py", r'if m \* h \+ L < 80', 1), False),
+            ("не місце: прогресія кандидатів у while", є("риси.py", r'while ряд\[-1\]', 1), False),
+            ("не місце: стеля гамуту зберігає походження кандидата", є("риси.py", r'if стеля_канд', 1), False),
+            ("п.1 її тон поруч із внутрішньою сіткою зберігається", є("риси.py", r'if пошук_кандидатів', 1), True),
             ("зерно: поле skin", є("читач.py", r'об\.get\("skin"\)', 1), True),
             ("зерно: поле eyes", є("читач.py", r'об\.get\("eyes"\)', 1), True),
             ("не місце: light_cast", є("читач.py", r"light_cast", 1), False),
