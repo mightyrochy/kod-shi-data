@@ -3433,6 +3433,8 @@ def визначення_заяв(коди):
  'edge_closeness_penalty': 'a penalty for the closeness of edges',
  'edge_contrast_draws_line': 'the edge contrast draws a line across the leg',
  'edge_contrast_reduced': 'the edge contrast is reduced',
+ 'evening_admits_second_zone': 'in the evening a second open zone of the body is admitted',
+ 'evening_lift_by_tier': 'the evening raises the step of dress by the level of the event',
  'exact_edge_match_dispute': 'an exact match of edges: the rules dispute it',
  'exactly_one_formality_outlier_x06': 'exactly one formality outlier: x0.6',
  'fabric_off_season': 'the fabric is not for the season',
