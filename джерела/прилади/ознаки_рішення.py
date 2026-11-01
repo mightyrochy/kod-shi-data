@@ -21,6 +21,70 @@ def кутові_пари(ф):
             for н in ast.walk(в.left) if isinstance(н, ast.BinOp) and isinstance(н.op, ast.Sub)}
 
 
+def множини_функції(ф):
+    """Виводить локальні імена множин із побудови й псевдонімів, включно із замиканням."""
+    визначення = defaultdict(list)
+    for в in вузли_тіла(ф):
+        if isinstance(в, ast.Assign):
+            for ц in в.targets:
+                if isinstance(ц, ast.Name):
+                    визначення[ц.id].append(в.value)
+    затінені = set(визначення) | set(ф.позиційні + ф.іменні)
+    вихід = set(getattr(ф.батько, 'множини', ())) - затінені
+
+    def множина(в):
+        """Розрізняє множину та число без виконання виразу."""
+        return isinstance(в, (ast.Set, ast.SetComp)) or isinstance(в, ast.Name) and в.id in вихід \
+            or isinstance(в, ast.Call) and isinstance(в.func, ast.Name) and в.func.id in ('set', 'frozenset') \
+            or isinstance(в, ast.IfExp) and множина(в.body) and множина(в.orelse) \
+            or isinstance(в, ast.BinOp) and isinstance(в.op, (ast.BitOr, ast.BitAnd, ast.BitXor, ast.Sub)) \
+            and множина(в.left) and множина(в.right)
+    for _ in range(len(визначення) + 1):
+        нові = {ім for ім, вирази in визначення.items() if all(множина(в) for в in вирази)} - вихід
+        вихід.update(нові)
+        if not нові:
+            break
+    return frozenset(вихід)
+
+
+def вільні_свідки_пари(ф):
+    """Впізнає спільну опорну точку двох вільних областей у пошуку найближчої пари.
+
+    Одне вільне обмеження бере точку другого; коли вільні обидва, однакова опора
+    є свідком нульової відстані. Пошук min над декартовим добутком відрізняє
+    геометричний свідок від підстановки значень двох фізичних ознак.
+    """
+    вузли = list(вузли_тіла(ф))
+    інші = {}
+    def відсутній(т):
+        """Повертає параметр у перевірці `параметр is None`."""
+        return т.left.id if isinstance(т, ast.Compare) and isinstance(т.left, ast.Name) \
+            and т.left.id in ф.позиційні + ф.іменні and len(т.ops) == 1 and isinstance(т.ops[0], ast.Is) \
+            and isinstance(т.comparators[0], ast.Constant) and т.comparators[0].value is None else None
+    for в in вузли:
+        if isinstance(в, ast.If) and відсутній(в.test) and len(в.body) == 1 and isinstance(в.body[0], ast.Return):
+            р = в.body[0].value
+            if isinstance(р, ast.Tuple) and len(р.elts) == 2 and ast.dump(р.elts[0]) == ast.dump(р.elts[1]) \
+                    and isinstance(р.elts[0], ast.Subscript) and isinstance(р.elts[0].value, ast.Name):
+                інші[відсутній(в.test)] = р.elts[0].value.id
+    добутки = [в for в in вузли if isinstance(в, ast.Call) and isinstance(в.func, ast.Name)
+               and в.func.id == 'min' and в.args and isinstance(в.args[0], ast.GeneratorExp)
+               and len(в.args[0].generators) == 2]
+    вихід = set()
+    for в in вузли:
+        if not (isinstance(в, ast.If) and isinstance(в.test, ast.BoolOp) and isinstance(в.test.op, ast.And)
+                and len(в.test.values) == 2 and len(в.body) == 1 and isinstance(в.body[0], ast.Return)):
+            continue
+        а, б = (відсутній(т) for т in в.test.values)
+        р = в.body[0].value
+        if а and б and інші.get(а) == б and інші.get(б) == а and isinstance(р, ast.Tuple) and len(р.elts) == 2 \
+                and ast.dump(р.elts[0]) == ast.dump(р.elts[1]) and isinstance(р.elts[0], ast.Constant) \
+                and isinstance(р.elts[0].value, (int, float)) and any(
+                    {г.iter.id for г in д.args[0].generators if isinstance(г.iter, ast.Name)} == {а, б} for д in добутки):
+            вихід.add(id(в.test))
+    return вихід
+
+
 def шкали_ваги(аналіз):
     """Знаходить функції, чий числовий вихід безпосередньо пишуть у вагу протоколу.
 

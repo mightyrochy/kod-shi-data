@@ -32,7 +32,8 @@ hex-поля й читач форми з `схеми_розбору`. Потік
 Запуск: python3 -W ignore джерела/прилади/корінь_річ_ознаки_обличчя.py [--корінь <дерево>] [--стенд]"""
 import argparse, ast, collections, functools, glob, os, re, sys, warnings
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-from ознаки_рішення import шкали_ваги, пари_функції, вузли_тіла, кутові_пари
+from ознаки_рішення import (шкали_ваги, пари_функції, вузли_тіла, кутові_пари,
+                           множини_функції, вільні_свідки_пари)
 
 ТУТ = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 ВИКЛЮЧЕНО = re.compile(r"^(батарея_|gate_|measure_|стенд_|тест_|audit_|pair_test|run_outfit|status_перевірки)")
@@ -90,6 +91,8 @@ class Функція:
         self.локальні = {в.id for в in self.власні if isinstance(в, ast.Name) and isinstance(в.ctx, ast.Store)}
         self.глобальні = {ім for в in self.власні if isinstance(в, ast.Global) for ім in в.names}
         self.верх = frozenset() if isinstance(вузол, ast.Lambda) else frozenset(id(в) for в in вузол.body)
+        self.множини = множини_функції(self)
+        self.вільні_пари = вільні_свідки_пари(self)
 
     @property
     def повне(self):
@@ -360,7 +363,7 @@ class Аналіз:
         self.синтетичні, self.тримати = {}, []   # `map(f, xs)` → виклик f(xs[і]); вузли тримаються, щоб id не мінявся
         self.формульні = set()
         self.ваги = _ваги_знахідки(корінь)
-        self.готові_поля = self.ваги | _ваги_знахідки(корінь, супровід=True)
+        self.готові_поля = self.ваги | _ваги_знахідки(корінь, супровід=True) | {'довіра', 'надійність'}
         self.словесні = set()
         self.сіткові = {}
         self.значення_полів = {}   # модуль → поле → рядки, які літерали словників модуля кладуть у це поле
@@ -1629,6 +1632,8 @@ class Стан:
         return False
 
     def невідоме_в_гілці(self, і):
+        if id(і.test) in self.ф.вільні_пари:
+            return
         г = self.гілка_невідомо(і.test)
         if not г:
             return
@@ -1810,6 +1815,9 @@ class Стан:
     def порівняння(self, в):
         мітки = [self.e(в.left)] + [self.e(x) for x in в.comparators]
         операнди = [в.left] + list(в.comparators)
+        if all(isinstance(х, (ast.Set, ast.SetComp)) or isinstance(х, ast.Name) and х.id in self.ф.множини
+               or isinstance(х, ast.Call) and isinstance(х.func, ast.Name) and х.func.id in ('set', 'frozenset') for х in операнди):
+            return E
         if id(в) in self.а.словесні:
             return E
         for i, оп in enumerate(в.ops):
@@ -2370,6 +2378,14 @@ def стенд():
                 def кут_зі_сталим(а, б):
                     кутова_різниця = (float(а) - float(б) + 180) % 360 - 180
                     return abs(кутова_різниця) / 180
+                def свідок_діапазонів(а, б):
+                    if а is None and б is None:
+                        return 0.0, 0.0
+                    if а is None:
+                        return б[0], б[0]
+                    if б is None:
+                        return а[0], а[0]
+                    return min(((x, y) for x in а for y in б), key=lambda п: abs(п[0] - п[1]))
                 def кандидат_точками(F):
                     точки = [F["шкіра"]["L"] + i * 2 for i in range(3)]
                     for L in точки:
@@ -2566,6 +2582,15 @@ def стенд():
                     класи.append("теплий" if F["очі"]["h"] > 6 else "холодний")
                     if "теплий" in класи:
                         pass
+                    свої_іди = {str(F["шкіра"]["L"])}
+                    def лише_свої(з):
+                        іди_запису = {str(x) for x in з} if з else set()
+                        return іди_запису <= свої_іди
+                    лише_свої([F["очі"]["h"]])
+                    певність = dict(довіра=F["шкіра"]["L"] / 100, надійність=F["очі"]["h"] / 360)
+                    if певність["довіра"] > 0.5:
+                        pass
+                    свідок_діапазонів((F["очі"]["h"], F["очі"]["h"]), (F["шкіра"]["L"], F["шкіра"]["L"]))
                     return знак(F, d.get("самозвіт") or {}), риси
             """,
             "протокол.py": """
@@ -2629,6 +2654,9 @@ def стенд():
             ("п.1 кутова пара зі сталим кандидатом", є("риси.py", r'кутова_різниця = ', 1), True),
             ("не місце: список лише для злиття в підпис", є("риси.py", r'підписи.append', 1), False),
             ("п.1 список класів для дальшого рішення", є("риси.py", r'класи.append', 1), True),
+            ("не місце: включення множин ідентифікаторів у замиканні", є("риси.py", r'return іди_запису <=', 1), False),
+            ("не місце: поріг довіри готової оцінки", є("риси.py", r'if певність\["довіра"\]', 1), False),
+            ("не місце: спільний свідок двох вільних областей", є("риси.py", r'if а is None and б is None', 2), False),
             ("зерно: поле skin", є("читач.py", r'об\.get\("skin"\)', 1), True),
             ("зерно: поле eyes", є("читач.py", r'об\.get\("eyes"\)', 1), True),
             ("не місце: light_cast", є("читач.py", r"light_cast", 1), False),
