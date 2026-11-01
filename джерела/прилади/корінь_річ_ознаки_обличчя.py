@@ -559,6 +559,21 @@ class Аналіз:
                 break
 
 
+ТОКЕН = "#"   # токен коду заяви: мітка "#<код>" — заява цього коду; S з токенами — її значення в заявах цих кодів
+
+
+def _токени(мітки):
+    return frozenset(м for м in (мітки or ()) if isinstance(м, str) and м.startswith(ТОКЕН))
+
+
+def _звузити(мітки, дозволені):
+    """Мітки значення в гілці, що йде лише для кодів `дозволені`: значення заяв інших кодів її колориту не несуть."""
+    т = _токени(мітки)
+    if S in мітки and т and not (т & дозволені):
+        return frozenset(мітки - {S} - т)
+    return мітки
+
+
 МАПА, МАПА_М = "{}", frozenset({"D"})
 # Ключ-позначка МАПА: значення — словник за змінним ключем (`d[ід] = запис`, `{с: пул for …}`), його ключі — ключі
 # елемента. Перебір (`for к in d`, `list(d)`, `sorted(d)`) дає ключі-рядки, а не записи; `d.values()` — записи.
@@ -1193,12 +1208,79 @@ class Стан:
             вих.update(self.ключі_викликів.get(id(в), (E, {}))[1])
         elif isinstance(в, ast.Name):
             вих.update(self.ключі.get(в.id, {}))
+        токени = _токени(вих.get("code"))
+        if токени and self.з_ключами(в):
+            for к in list(вих):
+                if (к == "values" or к.startswith("values/")) and S in вих[к]:
+                    вих[к] = вих[к] | токени
         return вих
 
     # ── інструкції ──
     def тіло(self, інструкції):
-        for і in інструкції:
+        for н, і in enumerate(інструкції):
             self.інструкція(і)
+            if isinstance(і, ast.If) and not і.orelse and і.body \
+                    and isinstance(і.body[-1], (ast.Return, ast.Raise, ast.Continue, ast.Break)):
+                # `if код not in ТАБЛ: return` — решта тіла йде лише з кодів, що пройшли охорону
+                self.у_звуженні(self.звуження(і.test)[1], інструкції[н + 1:])
+                return
+
+    def звуження(self, т):
+        """Тест на код заяви → (дозволені токени в тілі, в гілці else) чи None. Код — вираз, що несе токени кодів
+        (`код`, `з["code"]`); порівняння з рядком чи переліком сталих рядків (літерал чи таблиця модуля).
+        Таблицю з включенням беремо з запасом (більше кодів): лише для тіла, для else потрібен точний перелік."""
+        if isinstance(т, ast.BoolOp) and isinstance(т.op, ast.And):
+            тіла = [x for x in (self.звуження(у)[0] for у in т.values) if x is not None]
+            return (frozenset.intersection(*тіла) if тіла else None), None
+        if not (isinstance(т, ast.Compare) and len(т.ops) == 1 and len(т.comparators) == 1):
+            return None, None
+        токени = _токени(self.e(т.left))
+        if not токени:
+            return None, None
+        оп, право = т.ops[0], т.comparators[0]
+        коди, точно = None, False
+        if isinstance(оп, (ast.Eq, ast.NotEq)) and _рядок(право):
+            коди, точно = {право.value}, True
+        elif isinstance(оп, (ast.In, ast.NotIn)):
+            вузол = право
+            if isinstance(право, ast.Name) and право.id in self.м.присвоєння and право.id not in self.локальні:
+                вузол = self.м.присвоєння[право.id]
+            if isinstance(вузол, (ast.Tuple, ast.List, ast.Set)) and all(_рядок(x) for x in вузол.elts):
+                коди, точно = {x.value for x in вузол.elts}, True
+            elif isinstance(вузол, ast.Dict) and None not in вузол.keys and all(_рядок(x) for x in вузол.keys):
+                коди, точно = {x.value for x in вузол.keys}, True
+            elif isinstance(вузол, (ast.Dict, ast.Tuple, ast.List, ast.Set, ast.DictComp, ast.SetComp, ast.ListComp,
+                                    ast.Call)):
+                коди = {n.value for n in ast.walk(вузол) if _рядок(n)}
+        if коди is None:
+            return None, None
+        в_наборі = frozenset(токени & {ТОКЕН + к for к in коди})
+        поза = frozenset(токени - {ТОКЕН + к for к in коди}) if точно else None
+        return (в_наборі, поза) if isinstance(оп, (ast.Eq, ast.In)) else (поза, в_наборі if точно else None)
+
+    def у_звуженні(self, дозволені, інструкції):
+        """Тіло гілки з кодами `дозволені`: мітка S лишається лише на значеннях, чий код серед них (токени без
+        перетину з дозволеними знімають S). Без звуження — як є. Записане в гілці додається до незвуженого."""
+        if not інструкції:
+            return
+        if дозволені is None:
+            self.тіло(інструкції)
+            return
+        до_env = dict(self.env)
+        до_ключі = {ім: dict(км) for ім, км in self.ключі.items()}
+        self.env = {ім: _звузити(м, дозволені) for ім, м in до_env.items()}
+        self.ключі = collections.defaultdict(lambda: collections.defaultdict(frozenset),
+                                             {ім: collections.defaultdict(frozenset, {к: _звузити(м, дозволені)
+                                                                                      for к, м in км.items()})
+                                              for ім, км in до_ключі.items()})
+        try:
+            self.тіло(інструкції)
+        finally:
+            for ім, м in до_env.items():
+                self.env[ім] = self.env.get(ім, E) | м
+            for ім, км in до_ключі.items():
+                for к, м in км.items():
+                    self.ключі[ім][к] = self.ключі[ім][к] | м
 
     def інструкція(self, і):
         if isinstance(і, ast.Assign):
@@ -1230,7 +1312,9 @@ class Стан:
         elif isinstance(і, ast.If):
             self.e(і.test)
             self.невідоме_в_гілці(і)
-            self.тіло(і.body); self.тіло(і.orelse)
+            в_тілі, в_іншому = self.звуження(і.test)
+            self.у_звуженні(в_тілі, і.body)
+            self.у_звуженні(в_іншому, і.orelse)
         elif isinstance(і, (ast.With, ast.AsyncWith)):
             for п in і.items:
                 м = self.e(п.context_expr)
@@ -1795,6 +1879,10 @@ class Стан:
         кортеж = None
         ключі_пов = {}
         for ц in цілі:
+            if в.args and _рядок(в.args[0]) and ц.позиційні and ц.позиційні[0] == "код" and поз_к:
+                # заява за кодом: сталий код несе токен, і значення її заяви (`ключі_виразу`) знають, з якого
+                # вони коду; неоднорідний перелік заяв читач звужує перевіркою коду (`звуження`)
+                поз_к = [frozenset({ТОКЕН + в.args[0].value})] + list(поз_к[1:])
             пов = self.а.виклик(ц, поз_к, імен_к, зірка, дві)
             for кл, з in (self.а.останні_ключі or {}).items():
                 ключі_пов[кл] = ключі_пов.get(кл, E) | з
@@ -2004,6 +2092,19 @@ def стенд():
                     C = F["очі"].get("C") or 0
                     return клас, h, C
                 ЯКОРІ = ((0.0, 25.0), (22.0, 25.0), (100.0, 100.0))
+                def створити_з(код, значення):
+                    return dict(code=код, values=значення)
+                def заява(код, **значення):
+                    return створити_з(код, значення)
+                ТАБ_РІВНІВ = {"level_item": ("level",), "level_other": ("level",)}
+                def рівень_кодом(x):
+                    return 1 if x <= 3 else 2
+                def дріт(код, в):
+                    if код in ТАБ_РІВНІВ:
+                        return {к: рівень_кодом(v) for к, v in в.items()}
+                    if код == "colour_her":
+                        return в["L"] > 5
+                    return в
                 def поле_сл(F):
                     return dict(L=F["шкіра"]["L"], спроба=0), 1
                 def палітра(d):
@@ -2017,6 +2118,9 @@ def стенд():
                     _ЗП.зібрати(ВИБІР, dict(person=особа, day=d.get("день")))
                     if d.get("зріст") > 150:
                         pass
+                    заяви_х = [заява("colour_her", L=F["шкіра"]["L"]), заява("level_item", level=d.get("рівень"))]
+                    for з_х in заяви_х:
+                        дріт(з_х["code"], з_х["values"])
                     записи = [dict(id=i, шкіра_L=F["шкіра"]["L"]) for i in range(3)]
                     пари = [(F["шкіра"]["L"], з) for з in записи]
                     for л, з in пари:
@@ -2124,6 +2228,8 @@ def стенд():
             ("не місце: light_cast", є("читач.py", r"light_cast", 1), False),
             ("межа JS: носії", sorted(а.носії) == ["очі", "очі_кільце", "шкіра"], True),
             ("п.1 from_photo", є("риси.py", r"F = features\(", 1), True),
+            ("п.1 заява її коду — поріг під охороною коду", є("риси.py", r'в\["L"\] > 5', 1), True),
+            ("не місце: значення заяви іншого коду (охорона `код in ТАБЛ`)", є("риси.py", r"x <= 3", 1), False),
             ("п.1 риса в запис", є("риси.py", r"F = додати\(", 1), True),
             ("п.1 довіра знімку", є("риси.py", r"риси = \{", 1), True),
             ("п.1 поріг", є("риси.py", r"L > 45", 1), True),
