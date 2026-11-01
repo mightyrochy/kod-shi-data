@@ -1,4 +1,4 @@
-﻿﻿#Requires -Version 5.1
+﻿#Requires -Version 5.1
 <#
 .SYNOPSIS
 Спільне для двох планувальників ноутбука — `gemini_run.ps1` (під `gemini`: смуги Codex і `agy`) і `claude_run.ps1` (під
@@ -1275,8 +1275,16 @@ function Add-Hold([hashtable]$Held, [string]$Resource, [string]$Reason, [string]
     [void]$Held[$Resource].Markers.Add($Marker)
 }
 
+function Test-HoldNeedsAction([string]$Resource, [string]$Reason) {
+    <# Чи вимагає утримання дії диспетчера. Слоти зайняті й замок GPU іншого наряду цієї ж черги минають самі, коли
+    закінчить власна робота, — сигналу нема. Дії вимагає те, що саме не мине: сторонній процес на GPU, nvidia-smi без відповіді. #>
+    if ($Resource -ceq 'SLOTS') { return $false }
+    $Reason -cne 'замок GPU іншого наряду'
+}
+
 function Update-HoldSignals([hashtable]$Held, [scriptblock]$Send) {
-    <# Рядок "GEMINI ОБГОРТКА: ЗАБЛОКОВАНО <ресурс>: <причина>, позначок N" — один на причину, повтор лише при зміні причини.
+    <# Рядок "GEMINI ОБГОРТКА: ЗАБЛОКОВАНО <ресурс>: <причина>, позначок N" — лише за причиною, що вимагає дії диспетчера
+    (Test-HoldNeedsAction), один на причину, повтор лише при зміні причини.
     Утримання зникло — запис знято, нове сигналить знову. Стан — holds.json у теці стану (переживає перезапуск проходу). #>
     $path = Join-Path $script:StateDir 'holds.json'
     $prev = @{}
@@ -1290,7 +1298,7 @@ function Update-HoldSignals([hashtable]$Held, [scriptblock]$Send) {
         $since = $(if ($null -ne $old) { [long]$old.since } else { $now })
         $sent = $(if ($null -ne $old) { [string]$old.sent } else { '' })
         # MiB процесів гуляють між проходами: повтор — лише коли змінилися назви, а не числа.
-        if (($sent -replace ' [0-9]+ MiB', '') -cne ($h.Reason -replace ' [0-9]+ MiB', '')) {
+        if ((Test-HoldNeedsAction $res $h.Reason) -and ($sent -replace ' [0-9]+ MiB', '') -cne ($h.Reason -replace ' [0-9]+ MiB', '')) {
             if (& $Send "GEMINI ОБГОРТКА: ЗАБЛОКОВАНО ${res}: $($h.Reason), позначок $($h.Markers.Count)") { $sent = $h.Reason }
         }
         $next[$res] = [ordered]@{ since = $since; reason = $h.Reason; sent = $sent }

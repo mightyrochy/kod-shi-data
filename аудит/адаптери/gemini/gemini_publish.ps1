@@ -316,7 +316,7 @@ function Get-Line([string]$Id) {
     if ($code -eq 'QUOTA_ZERO') {
         $g = [string](Get-Prop $s 'qgroup'); $r = [string](Get-Prop $s 'qreset')
         if ($g -cnotmatch '^[A-Z0-9]{1,16}$' -or ($r -and $r -notmatch '^[0-9]{1,6}$')) { return Get-BadLine $Id 'не за форматом' }
-        $kod = 'QUOTA0_' + $g + $(if ($r) { '_M' + [int]$r } else { '' })
+        $kod = 'QUOTA0_' + $g + $(if ($r -and [int]$r -gt 0) { '_M' + [int]$r } else { '' })
         if (Test-Seen "$queue $marker $kod") { return $null }
         Write-WrapperLog "кінець $Id — $run; група $g, скидання через $(if ($r) { "$r хв" } else { 'невідомо' })"
         return [pscustomobject]@{ Outbox = "GEMINI ОБГОРТКА: ЗАБЛОКОВАНО $branch $kod" }

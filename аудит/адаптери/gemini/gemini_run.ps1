@@ -891,7 +891,15 @@ function Write-QuotaStatus($M, [string]$Id, [string]$Group, [long]$Until, [hasht
 
 # Відмова до STARTED: позначка повертається в чергу, лічильник повернень той самий, що в квоти; межі повернень нема.
 function Close-FailedStart($M, [string]$Id, [string]$StatePath) {
-    [void](Step-FailedStart $M $StatePath)
+    if ((Step-FailedStart $M $StatePath) -ceq 'RETRY') {
+        # Межі повернень нема, тож відмова до старту не мовчить: один рядок на позначку (прапор поруч зі станом).
+        $flag = $StatePath + '.startfail'
+        if (-not (Test-Path -LiteralPath $flag)) {
+            $name = ([string]$M.Name -replace '[^\p{L}\p{Nd}._/-]', '_')
+            if ($name.Length -gt 173) { $name = $name.Substring(0, 173) }
+            if (Add-HoldLine "GEMINI ОБГОРТКА: ЗАБЛОКОВАНО $name START") { Write-FileAtomic $flag '1' }
+        }
+    }
 }
 
 function New-RunId([string]$Key) { '{0:yyyyMMdd-HHmmss}-{1}' -f (Get-Date), (Get-Sha256Hex ($Key + [guid]::NewGuid())).Substring(0, 12) }

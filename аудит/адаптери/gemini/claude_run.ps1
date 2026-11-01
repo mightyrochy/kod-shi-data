@@ -928,7 +928,15 @@ function Invoke-ClaudeTask($M, $Job, [string]$Exe, [string]$TaskText, [string]$C
 
 # Відмова до STARTED: позначка повертається в чергу, лічильник повернень той самий, що в квоти; межі повернень нема.
 function Close-FailedStart($M, [string]$Id, [string]$StatePath) {
-    [void](Step-FailedStart $M $StatePath)
+    if ((Step-FailedStart $M $StatePath) -ceq 'RETRY') {
+        # Межі повернень нема, тож відмова до старту не мовчить: один рядок на позначку (прапор поруч зі станом).
+        $flag = $StatePath + '.startfail'
+        if (-not (Test-Path -LiteralPath $flag)) {
+            $name = ([string]$M.Name -replace '[^\p{L}\p{Nd}._/-]', '_')
+            if ($name.Length -gt 173) { $name = $name.Substring(0, 173) }
+            if (Add-Line "GEMINI ОБГОРТКА: ЗАБЛОКОВАНО $name START") { Write-FileAtomic $flag '1' }
+        }
+    }
 }
 
 # Прогін, перерваний вимкненням чи зупинкою задачі (замок його слота вільний): живий claude без нагляду зупиняється,
