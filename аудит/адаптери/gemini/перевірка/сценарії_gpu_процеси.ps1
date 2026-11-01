@@ -1,6 +1,6 @@
 ﻿#Requires -Version 5.1
 <# Стенд наряду «обгортка-вивантаження-моделі» (31.10, редакція без вивантаження): GPU-позначки стояли через робочий стіл
-Windows (уся відеопам'ять карти понад GpuIdleMiB), а модель LM Studio — інструмент прогонів, не сторонній процес (власник
+Windows (абсолютний поріг пам'яті процесу), а модель LM Studio — інструмент прогонів, не сторонній процес (власник
 31.10 ~21:33 UTC); «Позначки без старту» в #1856 — порожні клітинки; позначка не за форматом стояла мовчки. Справжні функції
 обгортки; підмінено лише лічильник відеопам'яті процесів, nvidia-smi, Get-Process, перелік позначок і замки. Кожен виклик
 Invoke-Native записано: обгортка не викликає `lms` (моделей не вивантажує). #>
@@ -38,10 +38,15 @@ $fakes = {
     }
     function Get-Process { [CmdletBinding()] param([int]$Id) $n = $script:Names[$Id]; if (-not $n) { throw "процесу $Id нема" }; [pscustomobject]@{ ProcessName = $n; Path = [string]$script:Paths[$Id] } }
     function Get-Command { [pscustomobject]@{ Source = 'nvidia-smi' } }
+    $script:Percent = 0
     $script:NativeCalls = New-Object System.Collections.ArrayList
     function Invoke-Native { param([string]$Exe, [string[]]$Arguments, [string]$Dir = '', [double]$TimeoutMinutes = 10)
         [void]$script:NativeCalls.Add("$Exe $($Arguments -join ' ')")
         if ($Exe -ne 'nvidia-smi') { return [pscustomobject]@{ Code = 1; Out = ''; Err = 'стенд: лише nvidia-smi' } }
+        if ($Arguments -contains '--query-gpu=memory.total,memory.free,utilization.gpu') {
+            $s = 0; foreach ($p in @($script:Procs)) { $s += $p.MiB }
+            return [pscustomobject]@{ Code = 0; Out = "16376, $([Math]::Max(0, 16376 - $s)), $script:Percent" }
+        }
         if ($Arguments -contains '--query-gpu=memory.used') { $s = 0; foreach ($p in @($script:Procs)) { $s += $p.MiB }; return [pscustomobject]@{ Code = 0; Out = "$s" } }
         [pscustomobject]@{ Code = 0; Out = $script:Apps } }
     if ($null -eq $script:Bound) { $script:Bound = @{} }
@@ -126,10 +131,10 @@ Scenario 'г воркер' {
     $code = Invoke-Worker
     Check "г GPU-наряд за моделі LM Studio на карті — воркер пройшов перевірку GPU (код $code) і наряд виконано; lms не викликано: $((Get-LmsCalls) -join ' | '); журнал: $($script:Logged -join ' | ')" ($script:Ran -eq 1 -and $code -ne $script:WorkerGpuBusy -and @(Get-LmsCalls).Count -eq 0)
     # Сторонній процес з'явився між планувальником і воркером: воркер тримає замок сам — причина в журналі з назвою й MiB.
-    $script:Procs = @(@{ Pid = 4120; MiB = 2300 }) + $script:DesktopProcs + $script:ModelProcs; $script:Logged.Clear(); $script:Ran = 0
+    $script:Procs = @(@{ Pid = 4120; MiB = 2300 }) + $script:DesktopProcs + $script:ModelProcs; $script:Logged.Clear(); $script:Ran = 0; $script:Percent = 74
     $code = Invoke-Worker
     $gl = @($script:Logged | Where-Object { $_ -like 'GPU зайнята*' })
-    Check "г воркер за стороннього процесу — лишає наряд у черзі з причиною «chrome.exe 2300 MiB», а не «замок»: $($gl -join ' | ')" ($code -eq $script:WorkerGpuBusy -and $script:Ran -eq 0 -and $gl.Count -eq 1 -and $gl[0] -match 'chrome\.exe 2300 MiB' -and $gl[0] -notmatch 'замок')
+    Check "г воркер за стороннього процесу — лишає наряд у черзі з причиною «навантаження 74 %», а не «замок»: $($gl -join ' | ')" ($code -eq $script:WorkerGpuBusy -and $script:Ran -eq 0 -and $gl.Count -eq 1 -and $gl[0] -match 'навантаження 74 %' -and $gl[0] -notmatch 'замок')
 }
 
 # --- (д) сторонній процес: позначка стоїть, причина з назвою й MiB -----------------------------------------------------
@@ -139,8 +144,9 @@ Scenario 'д сторонній процес' {
     function Test-LockFree { $true }
     $LaneDir = $tmp; $script:StateDir = Join-Path $tmp 'd-state'; [void][IO.Directory]::CreateDirectory($script:StateDir)
     $script:Procs = @(@{ Pid = 4120; MiB = 2300 }) + $script:DesktopProcs + $script:ModelProcs + $script:IdleProcs; $script:Apps = '4120, C:\Users\x\chrome.exe'
+    $script:Percent = 74
     $why = Get-GpuBusyReason @()
-    Check "д сторонній процес 2300 MiB поряд з робочим столом і моделлю — карту не віддано, причина лише з ним: «$why» / «$($script:GpuHoldReason)»" ($why -match 'зайнято 2300 MiB' -and $why -match 'chrome\.exe 2300 MiB' -and $script:GpuHoldReason -ceq 'процес chrome.exe 2300 MiB' -and -not (Test-ExternalGpuFree))
+    Check "д сторонній процес 2300 MiB поряд з робочим столом і моделлю — карту не віддано, причина лише з ним: «$why» / «$($script:GpuHoldReason)»" ($why -match 'навантаження 74 %' -and $script:GpuHoldReason -ceq 'навантаження 74 %' -and -not (Test-ExternalGpuFree))
     $line = "GEMINI ОБГОРТКА: ЗАБЛОКОВАНО GPU: $($script:GpuHoldReason), позначок 1"
     Check "д рядок диспетчерові проходить шаблон: $line" (Test-HoldLine $line)
     Check "д lms не викликано: $((Get-LmsCalls) -join ' | ')" (@(Get-LmsCalls).Count -eq 0)
@@ -149,16 +155,16 @@ Scenario 'д сторонній процес' {
     $script:Limits = $null; $script:SentLines = New-Object System.Collections.ArrayList
     $send = { param($l) [void]$script:SentLines.Add($l); $true }
     $held = { param($why) $h = @{}; Add-Hold $h 'GPU' $why 'gemini-queue/н/cc-m/1/gpu'; $h }
-    Update-HoldSignals (& $held 'процес chrome.exe 2300 MiB') $send
+    Update-HoldSignals (& $held 'навантаження 74 %') $send
     $f = Join-Path $script:StateDir 'holds.json'
     $o = [IO.File]::ReadAllText($f, $utf) | ConvertFrom-Json
     $o.GPU.since = [DateTimeOffset]::UtcNow.ToUnixTimeSeconds() - 4000
     [IO.File]::WriteAllText($f, ($o | ConvertTo-Json -Compress), $utf)
-    Update-HoldSignals (& $held 'процес chrome.exe 2300 MiB') $send
-    Update-HoldSignals (& $held 'процес chrome.exe 2316 MiB') $send
-    Update-HoldSignals (& $held 'процес game.exe 6100 MiB') $send
+    Update-HoldSignals (& $held 'навантаження 74 %') $send
+    Update-HoldSignals (& $held 'навантаження 79 %') $send
+    Update-HoldSignals (& $held 'вільно 2000 з потрібних 8925 MiB') $send
     $sent = @($script:SentLines)
-    Check "д сигнал: один рядок на назву, зміна MiB не повторює: $($sent -join ' | ')" ($sent.Count -eq 2 -and $sent[0] -ceq 'GEMINI ОБГОРТКА: ЗАБЛОКОВАНО GPU: процес chrome.exe 2300 MiB, позначок 1' -and $sent[1] -ceq 'GEMINI ОБГОРТКА: ЗАБЛОКОВАНО GPU: процес game.exe 6100 MiB, позначок 1')
+    Check "д сигнал: один рядок на причину, зміна показника не повторює: $($sent -join ' | ')" ($sent.Count -eq 2 -and $sent[0] -ceq 'GEMINI ОБГОРТКА: ЗАБЛОКОВАНО GPU: навантаження 74 %, позначок 1' -and $sent[1] -ceq 'GEMINI ОБГОРТКА: ЗАБЛОКОВАНО GPU: вільно 2000 з потрібних 8925 MiB, позначок 1')
 }
 
 # --- (е) карта без лічильника процесів: memory.used і назви compute-apps -------------------------------------------------
@@ -167,12 +173,12 @@ Scenario 'е без лічильника' {
     . $fakes
     function Test-LockFree { $true }
     $LaneDir = $tmp; $script:NoCounter = $true
-    $script:Procs = $script:DesktopProcs + $script:ModelProcs; $script:Apps = '7000, C:\Users\x\AppData\Local\Programs\LM Studio\LM Studio.exe' + "`n" + '5100, C:\Windows\ShellHost.exe'
+    $script:Procs = $script:DesktopProcs; $script:Apps = '7000, C:\Users\x\AppData\Local\Programs\LM Studio\LM Studio.exe' + "`n" + '5100, C:\Windows\ShellHost.exe'
     $why = Get-GpuBusyReason @()
-    Check "е без лічильника: compute-apps називає лише LM Studio й робочий стіл — карту віддано: «$why»" ($why -eq '')
-    $script:Procs += @(@{ Pid = 4120; MiB = 2300 }); $script:Apps += "`n" + '4120, C:\Users\x\chrome.exe'
+    Check "е без лічильника: робочий стіл не віднімає бюджет наряду двічі — карту віддано: «$why»" ($why -eq '')
+    $script:Procs += @(@{ Pid = 4120; MiB = 14376 }); $script:Apps += "`n" + '4120, C:\Users\x\chrome.exe'
     $why = Get-GpuBusyReason @()
-    Check "е без лічильника: сторонній chrome.exe — карту не віддано, причина з назвою: «$why» / «$($script:GpuHoldReason)»" ($why -ne '' -and $script:GpuHoldReason -ceq 'процес chrome.exe')
+    Check "е без лічильника: сторонній chrome.exe — карту не віддано, причина з назвою: «$why» / «$($script:GpuHoldReason)»" ($why -ne '' -and $script:GpuHoldReason -match 'вільно 610 з потрібних 8925 MiB')
     $script:NoCounter = $false
 }
 
@@ -187,13 +193,13 @@ Scenario 'є позначки без старту' {
     $skip = Join-Path $work 'skipped.json'
     $a = [pscustomobject]@{ Name = 'gemini-queue/автоживий-173ba2da/cc-claude-sonnet-5-5-medium/1/p2-gpu' }
     $b = [pscustomobject]@{ Name = 'gemini-queue/Е2-вікно-переповнення/cc-claude-sonnet-5-5-medium/1/p3-gpu' }
-    Add-Skip $a 'GPU: зайнято 9990 MiB стороннім процесом (поріг 512)'; Add-Skip $b 'GPU: зайнято 9990 MiB стороннім процесом (поріг 512)'; Save-Skips $skip
+    Add-Skip $a 'GPU: вільно 2000 з потрібних 8925 MiB'; Add-Skip $b 'GPU: вільно 2000 з потрібних 8925 MiB'; Save-Skips $skip
     $rows = @(Read-NoteRows $skip @('marker', 'since', 'why'))
     $full = @($rows | Where-Object { $_[0] -like 'gemini-queue/*' -and $_[1] -ne '' -and $_[2] -like 'GPU:*' })
     Check "є дві позначки — два рядки таблиці з позначкою, часом і причиною: $(@($rows | ForEach-Object { $_ -join ' ; ' }) -join ' | ')" ($rows.Count -eq 2 -and $full.Count -eq 2)
     $since = @($rows | ForEach-Object { $_[1] })
     Start-Sleep -Seconds 1
-    Add-Skip $a 'GPU: зайнято 9990 MiB стороннім процесом (поріг 512)'; Add-Skip $b 'GPU: зайнято 9990 MiB стороннім процесом (поріг 512)'; Save-Skips $skip
+    Add-Skip $a 'GPU: вільно 2000 з потрібних 8925 MiB'; Add-Skip $b 'GPU: вільно 2000 з потрібних 8925 MiB'; Save-Skips $skip
     $again = @(@(Read-NoteRows $skip @('marker', 'since', 'why')) | ForEach-Object { $_[1] })
     Check 'є та сама причина наступного проходу — since не зсувається, рядок журналу не повторюється' (($again -join ',') -ceq ($since -join ',') -and @($script:Logged | Where-Object { $_ -like '*не стартує*' }).Count -eq 2)
     [IO.File]::WriteAllText((Join-Path "$tmp/ceout" 'skipped.json'), '[]', $utf)
