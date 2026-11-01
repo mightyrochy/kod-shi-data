@@ -37,6 +37,7 @@ def вимір(код, сценарій):
             'def забезпечити_чистим(*args): pass\n', encoding='utf-8')
         (репо / 'README.md').write_bytes(b'base\n')
         (репо / 'AGENTS.md').write_bytes(b'base\n')
+        (репо / 'джерела/код_із_дерева.py').write_text('стан = "база"\n', encoding='utf-8')
         (репо / '.gitignore').write_text('__pycache__/\n', encoding='utf-8')
         маркер = тека / 'одноразовий'
         if сценарій == 'одноразовий':
@@ -68,6 +69,7 @@ def вимір(код, сценарій):
         (проби / 'writer.py').write_text(текст, encoding='utf-8')
         (проби / 'neighbor.py').write_text(
             'from pathlib import Path\nimport time\ntime.sleep(0.6)\n'
+            'import код_із_дерева\nassert код_із_дерева.стан == "база"\n'
             'assert Path("../README.md").read_bytes() == b"base\\n"\n', encoding='utf-8')
         git(репо, 'add', '.')
         git(репо, 'commit', '-qm', 'Початок виміру')
@@ -76,7 +78,8 @@ def вимір(код, сценарій):
             git(репо, 'add', 'README.md')
             (репо / 'README.md').write_bytes(b'user unstaged\n')
             (репо / 'untracked.txt').write_bytes(b'user untracked\n')
-        до = {ш: (репо / ш).read_bytes() for ш in ('README.md', 'AGENTS.md')}
+            (репо / 'джерела/код_із_дерева.py').write_text('стан = "правка сесії"\n', encoding='utf-8')
+        до = {ш: (репо / ш).read_bytes() for ш in ('README.md', 'AGENTS.md', 'джерела/код_із_дерева.py')}
         індекс_до = git(репо, 'ls-files', '--stage', '-z')
         журнал = тека / 'звіт.jsonl'
         р = subprocess.run([sys.executable, '-X', 'utf8', str(прилади / 'лічба_проб.py'),

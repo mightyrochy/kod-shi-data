@@ -154,7 +154,7 @@ class Дерево_проби:
 
     def середовище(self):
         """Спрямовує імпорти тільки в дерево нитки, а не у живе дерево сесії."""
-        return dict(os.environ, PYTHONIOENCODING='utf-8',
+        return dict(os.environ, PYTHONIOENCODING='utf-8', PYTHONUTF8='1',
                     PYTHONPATH=self.джерела + os.pathsep + self.корінь)
 
     def очистити(self):
