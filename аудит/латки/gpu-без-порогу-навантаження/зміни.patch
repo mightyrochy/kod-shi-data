@@ -1,5 +1,5 @@
 diff --git a/аудит/адаптери/gemini/claude_run.ps1 b/аудит/адаптери/gemini/claude_run.ps1
-index 127f1f8..42ba65b 100644
+index 127f1f8f8e1cf6411d38ec29507ea93e77ef2c08..42ba65b123ad67a822f6cc14bf52e1dd43f7915e 100644
 --- a/аудит/адаптери/gemini/claude_run.ps1
 +++ b/аудит/адаптери/gemini/claude_run.ps1
 @@ -1143,7 +1143,7 @@ function Invoke-Worker {
@@ -12,7 +12,7 @@ index 127f1f8..42ba65b 100644
          }
          Write-FileAtomic $info (([ordered]@{ slot = $job.slot; lane = 'claude'; marker = $job.name; slug = $job.slug
 diff --git a/аудит/адаптери/gemini/gemini_run.ps1 b/аудит/адаптери/gemini/gemini_run.ps1
-index fbe6f43..7b61ae6 100644
+index fbe6f43c4f2a851164b4dab217bc59ef7fb65c14..7b61ae63be731be3b86aa42d7169b07ad4f0a399 100644
 --- a/аудит/адаптери/gemini/gemini_run.ps1
 +++ b/аудит/адаптери/gemini/gemini_run.ps1
 @@ -1046,7 +1046,7 @@ function Resolve-Exe([string]$Name) {
@@ -34,7 +34,7 @@ index fbe6f43..7b61ae6 100644
          }
          Write-FileAtomic $info (([ordered]@{ slot = $job.slot; lane = $job.lane; marker = $job.name; slug = $job.slug; model = $job.model
 diff --git a/аудит/адаптери/gemini/m9v/хеші.psd1 b/аудит/адаптери/gemini/m9v/хеші.psd1
-index be62152..50cbcae 100644
+index be621523ec8ef0f7511d3b620b91dd30f543489a..50cbcaec0dc68445390780e0e896370a1717f7b8 100644
 --- a/аудит/адаптери/gemini/m9v/хеші.psd1
 +++ b/аудит/адаптери/gemini/m9v/хеші.psd1
 @@ -4,8 +4,8 @@
@@ -58,7 +58,7 @@ index be62152..50cbcae 100644
 +    'claude_run.ps1'     = '3142A2D9BA3C74C1823B91AA64DC41F940477459F87488B6A19C1B1A4CC85168'
  }
 diff --git a/аудит/адаптери/gemini/queue_lanes.ps1 b/аудит/адаптери/gemini/queue_lanes.ps1
-index 25f00a6..b82d9a8 100644
+index 25f00a6b3e5e020752283736f7ef572db74a79cc..b82d9a891a1369a1adecc5804f2b473ff950a2cc 100644
 --- a/аудит/адаптери/gemini/queue_lanes.ps1
 +++ b/аудит/адаптери/gemini/queue_lanes.ps1
 @@ -51,11 +51,10 @@ $script:WorkerGpuBusy = 4
@@ -118,7 +118,7 @@ index 25f00a6..b82d9a8 100644
  
  $script:GpuHoldReason = ''
 diff --git a/аудит/адаптери/gemini/wrapper_health.ps1 b/аудит/адаптери/gemini/wrapper_health.ps1
-index 12d2d8d..a6e3e14 100644
+index 12d2d8daa5ca3b2c1ee581992cb985d406c79dda..a6e3e1432d11897607be2d0baa4cadf900acfa51 100644
 --- a/аудит/адаптери/gemini/wrapper_health.ps1
 +++ b/аудит/адаптери/gemini/wrapper_health.ps1
 @@ -9,7 +9,7 @@ $script:HealthDetails = @{
@@ -131,7 +131,7 @@ index 12d2d8d..a6e3e14 100644
  function Test-HoldLine([string]$Line) { $Line -cmatch $script:HoldLineTemplate }
  
 diff --git a/аудит/адаптери/gemini/НАЛАШТУВАННЯ.md b/аудит/адаптери/gemini/НАЛАШТУВАННЯ.md
-index 04fc7af..eaeef6e 100644
+index 04fc7afb148fb49e50b895bad974559209d53949..eaeef6e2733a6f86b5430a2d2ca0fe2b81580b34 100644
 --- a/аудит/адаптери/gemini/НАЛАШТУВАННЯ.md
 +++ b/аудит/адаптери/gemini/НАЛАШТУВАННЯ.md
 @@ -451,12 +451,12 @@ $f = Join-Path "$env:USERPROFILE\gemini-outbox" $n
@@ -177,7 +177,7 @@ index 04fc7af..eaeef6e 100644
  Те саме рішення
  планувальники беруть до claim (`Get-GpuBusyReason`), а не лише в процесі наряду: позначка, яку не взято (GPU, слот, той
 diff --git a/аудит/адаптери/gemini/ЧЕРГА.md b/аудит/адаптери/gemini/ЧЕРГА.md
-index 1b89856..086b5d8 100644
+index 1b8985698cb9a036113ecaf02bbae613300455fa..086b5d882298cd543f9dc589bcb79d5b14639a3a 100644
 --- a/аудит/адаптери/gemini/ЧЕРГА.md
 +++ b/аудит/адаптери/gemini/ЧЕРГА.md
 @@ -114,15 +114,15 @@ CI й ноутбук запускають один повний перелік 
@@ -213,7 +213,7 @@ index 1b89856..086b5d8 100644
 +вільна пам'ять із показником навантаження) — один на причину (повтор лише при зміні виду причини, не числового показника; стан `holds.json`); пульс диспетчера — лише
  запас. Той самий код у `gemini-run`: рядок іде в `out/alerts`, публікатор перевіряє його заново (`HoldLineTemplate`, `wrapper_health.ps1`) і кладе у вихідні. Тіло #1856 не стверджує «Оновлено понад 5 хв тому»: підказка умовна.
 diff --git a/аудит/адаптери/gemini/перевірка/сценарії_gpu_память.ps1 b/аудит/адаптери/gemini/перевірка/сценарії_gpu_память.ps1
-index 1ff170a..c03dfea 100644
+index 1ff170a552cefe70c75d9470d4996df770b8da51..c03dfea24a270990491ffa16ca80b5f2e6ee9e1c 100644
 --- a/аудит/адаптери/gemini/перевірка/сценарії_gpu_память.ps1
 +++ b/аудит/адаптери/gemini/перевірка/сценарії_gpu_память.ps1
 @@ -1,6 +1,6 @@
@@ -276,7 +276,7 @@ index 1ff170a..c03dfea 100644
  }
  Check 'обгортка не викликала lms' (@($script:Calls | Where-Object { $_ -notlike 'nvidia-smi *' }).Count -eq 0)
 diff --git a/аудит/адаптери/gemini/перевірка/сценарії_gpu_процеси.ps1 b/аудит/адаптери/gemini/перевірка/сценарії_gpu_процеси.ps1
-index 7a803a9..9f29626 100644
+index 7a803a972bf75ebbdc7749cc3512dbac1d137a54..9f29626b922abb25523935458d212cf54be02308 100644
 --- a/аудит/адаптери/gemini/перевірка/сценарії_gpu_процеси.ps1
 +++ b/аудит/адаптери/gemini/перевірка/сценарії_gpu_процеси.ps1
 @@ -131,10 +131,10 @@ Scenario 'г воркер' {
@@ -306,7 +306,7 @@ index 7a803a9..9f29626 100644
      Check "д рядок диспетчерові проходить шаблон: $line" (Test-HoldLine $line)
      Check "д lms не викликано: $((Get-LmsCalls) -join ' | ')" (@(Get-LmsCalls).Count -eq 0)
 diff --git a/аудит/адаптери/gemini/перевірка/сценарії_простій_ресурсу.ps1 b/аудит/адаптери/gemini/перевірка/сценарії_простій_ресурсу.ps1
-index e9b635c..28b8119 100644
+index e9b635cb50b0fffb4b5fd0c614b8a1f7c8aef576..28b8119bec7e8d91beaa8e35d4901b4633d75b4f 100644
 --- a/аудит/адаптери/gemini/перевірка/сценарії_простій_ресурсу.ps1
 +++ b/аудит/адаптери/gemini/перевірка/сценарії_простій_ресурсу.ps1
 @@ -18,7 +18,7 @@ function Scenario([string]$Name, [scriptblock]$Body) {
