@@ -1,0 +1,27 @@
+{
+ "версія": 1,
+ "запит": {
+  "model": "qwen/qwen3.5-9b",
+  "max_tokens": 4000,
+  "messages": [
+   {
+    "role": "user",
+    "content": [
+     {
+      "type": "text",
+      "text": "{\"task\": {\"role\": \"You read the description of an outfit and list its items as data.\", \"rules\": [\"One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.\", \"One item carries one thing — of two alternatives list the first; a note in brackets is not an item.\", \"Slot \\\"accessory\\\" is for an item no other slot fits.\", \"\\\"is_outfit\\\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note.\"], \"limits\": [\"Rely only on the input: do not invent what it does not contain.\", \"The answer is one JSON object following \\\"answer_schema\\\", without explanations and without ```.\"], \"language\": \"English\", \"answer\": \"ITEM_LIST\", \"answer_schema\": {\"is_outfit\": \"yes|no\", \"items\": [{\"name\": \"<what the item is>\", \"details\": \"<its cut, length and fabric>\", \"slot\": \"top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory\", \"color_hex\": \"<#rrggbb or null>\", \"worn\": \"<true, or false when the description says the outfit goes without it>\"}]}, \"input\": [\"\\\"description\\\" — the outfit description\"]}, \"description\": \"Navy blue wool crepe blazer, tailored single-breasted fit with notch lapels, mid-thigh length, midnight blue (#191970), structured wool blend.\\nWhite silk satin blouse, classic pointed collar and French cuffs, knee-length hem, crisp white (#FFFFFF), smooth liquid silk.\\nCharcoal grey wool pencil skirt, straight cut with a slight A-line flare at the hip, just below the knee, charcoal grey (#36454F), heavy worsted wool.\\nBlack patent leather pumps, sleek almond toe with a 7cm stiletto heel, black (#000000), glossy calfskin leather.\\nSilver geometric drop earrings, medium drop length, silver (#C0C0C0), polished sterling silver.\\nMinimalist diamond-accent watch, slim bracelet band, white face with minimal markings, stainless steel and white ceramic.\\n\\nThis outfit works perfectly for an autumn bank interview because the navy blazer and charcoal skirt establish a professional, authoritative silhouette suitable for finance while the midnight blue shade conveys trust and stability. The crisp white silk blouse adds a touch of refined elegance that elevates the look beyond standard corporate wear without appearing ostentatious, striking the right balance between formality and approachability. Completing the ensemble with black patent pumps ensures a polished finish appropriate for a morning appearance at 10 AM, while the silver accessories add a modern, intelligent edge that signals attention to detail expected of an analyst.\"}"
+     }
+    ]
+   }
+  ],
+  "temperature": 1
+ },
+ "відповідь": {
+  "status": 200,
+  "contentType": "application/json",
+  "headers": {
+   "x-model": "qwen/qwen3.5-9b"
+  },
+  "body": "{\"content\":[{\"type\":\"text\",\"text\":\"{\\n\\\"is_outfit\\\": \\\"yes\\\",\\n\\\"items\\\": [\\n{\\n\\\"name\\\": \\\"Navy blue wool crepe blazer\\\",\\n\\\"details\\\": \\\"tailored single-breasted fit with notch lapels, mid-thigh length, structured wool blend\\\",\\n\\\"slot\\\": \\\"outerwear\\\",\\n\\\"color_hex\\\": \\\"#191970\\\",\\n\\\"worn\\\": true\\n},\\n{\\n\\\"name\\\": \\\"White silk satin blouse\\\",\\n\\\"details\\\": \\\"classic pointed collar and French cuffs, knee-length hem, smooth liquid silk\\\",\\n\\\"slot\\\": \\\"top\\\",\\n\\\"color_hex\\\": \\\"#FFFFFF\\\",\\n\\\"worn\\\": true\\n},\\n{\\n\\\"name\\\": \\\"Charcoal grey wool pencil skirt\\\",\\n\\\"details\\\": \\\"straight cut with a slight A-line flare at the hip, just below the knee, heavy worsted wool\\\",\\n\\\"slot\\\": \\\"bottom\\\",\\n\\\"color_hex\\\": \\\"#36454F\\\",\\n\\\"worn\\\": true\\n},\\n{\\n\\\"name\\\": \\\"Black patent leather pumps\\\",\\n\\\"details\\\": \\\"sleek almond toe with a 7cm stiletto heel, glossy calfskin leather\\\",\\n\\\"slot\\\": \\\"shoes\\\",\\n\\\"color_hex\\\": \\\"#000000\\\",\\n\\\"worn\\\": true\\n},\\n{\\n\\\"name\\\": \\\"Silver geometric drop earrings\\\",\\n\\\"details\\\": \\\"medium drop length, polished sterling silver\\\",\\n\\\"slot\\\": \\\"earrings\\\",\\n\\\"color_hex\\\": \\\"#C0C0C0\\\",\\n\\\"worn\\\": true\\n},\\n{\\n\\\"name\\\": \\\"Minimalist diamond-accent watch\\\",\\n\\\"details\\\": \\\"slim bracelet band, white face with minimal markings, stainless steel and white ceramic\\\",\\n\\\"slot\\\": \\\"watch\\\",\\n\\\"color_hex\\\": null,\\n\\\"worn\\\": true\\n}\\n]\\n}\"}],\"usage\":{\"input_tokens\":657,\"output_tokens\":381},\"stop_reason\":\"end_turn\"}"
+ }
+}

@@ -1,0 +1,51 @@
+── ПРОМПТ (2254 симв.) ──
+{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.", "One item carries one thing — of two alternatives list the first; a note in brackets is not an item.", "Slot \"accessory\" is for an item no other slot fits.", "\"is_outfit\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "ITEM_LIST", "answer_schema": {"is_outfit": "yes|no", "items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory", "color_hex": "<#rrggbb or null>", "worn": "<true, or false when the description says the outfit goes without it>"}]}, "input": ["\"description\" — the outfit description"]}, "description": "Silk camisole top with a relaxed drape cut and knee-length hem in midnight blue (#001a3f) and soft chiffon flowy trousers with wide legs in charcoal gray (#36454f); Strappy stiletto sandals in metallic silver (#c0c0c0) with a thin heel and adjustable ankle strap; Gold vermeil hoop earrings with textured surface, a delicate chain link necklace in rose gold (#b76e79), and a structured leather clutch in deep olive green (#3f4a3d). This outfit strikes the perfect balance for your friend's birthday party by offering elevated comfort suitable for an evening autumn celebration under artificial lighting. The rich jewel tones of midnight blue and charcoal gray feel sophisticated yet relaxed, adhering strictly to your everyday formality preference while ensuring you stay warm against the fall chill without feeling overdressed. The metallic accents and flowy silhouettes add a touch of glamour perfect for dancing or mingling, honoring your wish for something special that still feels authentically you."}
+
+── ВІДПОВІДЬ (1050 симв., 5.6 с, HTTP 200) ──
+{
+  "is_outfit": "yes",
+  "items": [
+    {
+      "name": "Silk camisole top",
+      "details": "relaxed drape cut with knee-length hem",
+      "slot": "top",
+      "color_hex": "#001a3f",
+      "worn": true
+    },
+    {
+      "name": "soft chiffon flowy trousers",
+      "details": "wide legs",
+      "slot": "bottom",
+      "color_hex": "#36454f",
+      "worn": true
+    },
+    {
+      "name": "Strappy stiletto sandals",
+      "details": "thin heel with adjustable ankle strap",
+      "slot": "shoes",
+      "color_hex": "#c0c0c0",
+      "worn": true
+    },
+    {
+      "name": "Gold vermeil hoop earrings",
+      "details": "textured surface",
+      "slot": "earrings",
+      "color_hex": null,
+      "worn": true
+    },
+    {
+      "name": "chain link necklace",
+      "details": "delicate chain in rose gold",
+      "slot": "necklace",
+      "color_hex": "#b76e79",
+      "worn": true
+    },
+    {
+      "name": "structured leather clutch",
+      "details": null,
+      "slot": "bag",
+      "color_hex": "#3f4a3d",
+      "worn": true
+    }
+  ]
+}

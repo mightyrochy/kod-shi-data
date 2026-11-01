@@ -1,0 +1,27 @@
+{
+ "версія": 1,
+ "запит": {
+  "model": "qwen/qwen3.5-9b",
+  "max_tokens": 4000,
+  "messages": [
+   {
+    "role": "user",
+    "content": [
+     {
+      "type": "text",
+      "text": "{\"task\": {\"role\": \"You read the description of an outfit and list its items as data.\", \"rules\": [\"One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.\", \"One item carries one thing — of two alternatives list the first; a note in brackets is not an item.\", \"Slot \\\"accessory\\\" is for an item no other slot fits.\", \"\\\"is_outfit\\\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note.\"], \"limits\": [\"Rely only on the input: do not invent what it does not contain.\", \"The answer is one JSON object following \\\"answer_schema\\\", without explanations and without ```.\"], \"language\": \"English\", \"answer\": \"ITEM_LIST\", \"answer_schema\": {\"is_outfit\": \"yes|no\", \"items\": [{\"name\": \"<what the item is>\", \"details\": \"<its cut, length and fabric>\", \"slot\": \"top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory\", \"color_hex\": \"<#rrggbb or null>\", \"worn\": \"<true, or false when the description says the outfit goes without it>\"}]}, \"input\": [\"\\\"description\\\" — the outfit description\"]}, \"description\": \"Midi skirt, straight cut, knee length, charcoal grey, wool blend.\\nWaxed cotton blouse, relaxed fit, elbow length, navy blue, heavy twill.\\nChunky knit cardigan, V-neck, hip length, oatmeal, soft merino wool.\\nOxford shoes, square toe, mid-heel, taupe, smooth leather with rubber sole.\\nLeather tote bag, structured shape, medium handle drop, black, full-grain cowhide.\\n\\nThis outfit perfectly balances the \\\"everyday\\\" formality level required for a calm office day while strictly adhering to your wish for a non-vivid palette. The deep charcoal and navy tones create a grounded, professional silhouette that flatters without drawing excessive attention, ensuring you feel polished yet comfortable throughout your work stream. Layering with the oatmeal cardigan adds essential warmth for autumn evenings while maintaining a refined texture contrast against the smooth leather shoes and waxed blouse. Ultimately, every piece works together to deliver the serene, unobtrusive elegance you described for your daily professional routine.\"}"
+     }
+    ]
+   }
+  ],
+  "temperature": 1
+ },
+ "відповідь": {
+  "status": 200,
+  "contentType": "application/json",
+  "headers": {
+   "x-model": "qwen/qwen3.5-9b"
+  },
+  "body": "{\"content\":[{\"type\":\"text\",\"text\":\"{\\n  \\\"is_outfit\\\": \\\"yes\\\",\\n  \\\"items\\\": [\\n    {\\n      \\\"name\\\": \\\"Midi skirt\\\",\\n      \\\"details\\\": \\\"straight cut, knee length\\\",\\n      \\\"slot\\\": \\\"bottom\\\",\\n      \\\"color_hex\\\": \\\"#36454F\\\",\\n      \\\"worn\\\": true\\n    },\\n    {\\n      \\\"name\\\": \\\"Waxed cotton blouse\\\",\\n      \\\"details\\\": \\\"relaxed fit, elbow length\\\",\\n      \\\"slot\\\": \\\"top\\\",\\n      \\\"color_hex\\\": \\\"#001F3F\\\",\\n      \\\"worn\\\": true\\n    },\\n    {\\n      \\\"name\\\": \\\"Chunky knit cardigan\\\",\\n      \\\"details\\\": \\\"V-neck, hip length\\\",\\n      \\\"slot\\\": \\\"outerwear\\\",\\n      \\\"color_hex\\\": \\\"#D2C6A4\\\",\\n      \\\"worn\\\": true\\n    },\\n    {\\n      \\\"name\\\": \\\"Oxford shoes\\\",\\n      \\\"details\\\": \\\"square toe, mid-heel\\\",\\n      \\\"slot\\\": \\\"shoes\\\",\\n      \\\"color_hex\\\": \\\"#97856F\\\",\\n      \\\"worn\\\": true\\n    },\\n    {\\n      \\\"name\\\": \\\"Leather tote bag\\\",\\n      \\\"details\\\": \\\"structured shape, medium handle drop\\\",\\n      \\\"slot\\\": \\\"bag\\\",\\n      \\\"color_hex\\\": \\\"#000000\\\",\\n      \\\"worn\\\": true\\n    }\\n  ]\\n}\"}],\"usage\":{\"input_tokens\":569,\"output_tokens\":317},\"stop_reason\":\"end_turn\"}"
+ }
+}
