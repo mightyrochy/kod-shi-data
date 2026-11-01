@@ -86,7 +86,7 @@ try {
     function SlugMarkers([string]$Slug) { @(Markers | Where-Object { $_ -match [regex]::Escape("/$Slug/") }) }
     function SetAgy([bool]$Blocked) {
         $left = if ($Blocked) { 0 } else { 40 }
-        [IO.File]::WriteAllText("$OutDir/pools.json", ((@{v=1;groups=@(@{g='GEMINIFLASH';left=$left;reset=90}, @{g='GEMINIPRO';left=$left;reset=90})}) | ConvertTo-Json -Compress -Depth 4), $utf)
+        [IO.File]::WriteAllText("$OutDir/pools.json", ((@{v=1;groups=@(@{g='GEMINIMODELS';n='gemini models';left=0;reset=90}, @{g='GEMINI4ARGON';n='gemini 4 argon';left=$left;reset=90})}) | ConvertTo-Json -Compress -Depth 4), $utf)
     }
     function OutLines { @(Get-ChildItem -LiteralPath $OutboxDir -File -ErrorAction SilentlyContinue | ForEach-Object { [IO.File]::ReadAllText($_.FullName, $utf).Trim() }) }
     function CloudLines([string]$N) { @(OutLines | Where-Object { $_ -cmatch ('^GEMINI ОБГОРТКА: ПОТРІБНА ПЕРЕВІРКА CLAUDE #' + $N + ' [0-9a-f]{40}$') }) }
@@ -94,9 +94,9 @@ try {
     SetCodex $false; SetClaude $false; SetAgy $false
     $head = Merge 'квота-1.txt' '1'
     $script:Pulls = @((Pull 31 'claude/квота-a' $head)); Invoke-WrapperChain
-    Check 'автор Claude: перевіряє agy, не claude -p' (@(SlugMarkers "автоперевірка-31-$head").Count -eq 1 -and @(SlugMarkers "автоперевірка-31-$head")[0] -match '/gemini-3\.8-flash-high/1/p2$')
+    Check 'автор Claude, Gemini Models 0 %, Argon вільний: перевіряє Argon' (@(SlugMarkers "автоперевірка-31-$head").Count -eq 1 -and @(SlugMarkers "автоперевірка-31-$head")[0] -match '/gemini-4-argon-high/1/p2$')
     $script:Pulls = @((Pull 39 'codex/квота-i' $head)); Invoke-WrapperChain
-    Check 'автор GPT: перевіряє agy' (@(SlugMarkers "автоперевірка-39-$head").Count -eq 1 -and @(SlugMarkers "автоперевірка-39-$head")[0] -match '/gemini-3\.8-flash-high/1/p2$')
+    Check 'автор GPT, Gemini Models 0 %, Argon вільний: перевіряє Argon' (@(SlugMarkers "автоперевірка-39-$head").Count -eq 1 -and @(SlugMarkers "автоперевірка-39-$head")[0] -match '/gemini-4-argon-high/1/p2$')
     $script:Pulls = @((Pull 40 'gemini/квота-j' $head)); Invoke-WrapperChain
     Check 'автор Gemini: перевіряє Codex' (@(SlugMarkers "автоперевірка-40-$head").Count -eq 1 -and @(SlugMarkers "автоперевірка-40-$head")[0] -match '/gpt-6\.1-sol-high/1/p2$')
     SetAgy $true
@@ -113,12 +113,12 @@ try {
     Check 'жодної позначки cc- для перевірки' (@(Markers | Where-Object { $_ -match 'автоперевірка-.*/cc-' }).Count -eq 0)
     $head = Merge 'квота-3.txt' '3'
     $script:Pulls = @((Pull 35 'claude/квота-e' $head)); Invoke-WrapperChain
-    Check 'обидва на квоті: позначка чекає першого постачальника за порядком' (@(SlugMarkers "автоперевірка-35-$head").Count -eq 1 -and @(SlugMarkers "автоперевірка-35-$head")[0] -match '/gemini-3\.8-flash-high/1/p2$')
+    Check 'обидва на квоті: позначка чекає першого постачальника за порядком' (@(SlugMarkers "автоперевірка-35-$head").Count -eq 1 -and @(SlugMarkers "автоперевірка-35-$head")[0] -match '/gemini-4-argon-high/1/p2$')
     # Позначка, що чекає вичерпаної квоти, переходить до доступного рушія без дубля.
     SetCodex $false; SetAgy $false
     $head = Merge 'квота-4.txt' '4'
     $script:Pulls = @((Pull 36 'claude/квота-f' $head)); Invoke-WrapperChain
-    Check 'до квоти: позначка agy' (@(SlugMarkers "автоперевірка-36-$head").Count -eq 1 -and @(SlugMarkers "автоперевірка-36-$head")[0] -match '/gemini-3\.8-flash-high/1/p2$')
+    Check 'до квоти: позначка agy' (@(SlugMarkers "автоперевірка-36-$head").Count -eq 1 -and @(SlugMarkers "автоперевірка-36-$head")[0] -match '/gemini-4-argon-high/1/p2$')
     SetAgy $true; Invoke-WrapperChain
     $moved = @(SlugMarkers "автоперевірка-36-$head")
     Check 'agy вичерпано: позначка перейшла до Codex, одна' ($moved.Count -eq 1 -and $moved[0] -match '/gpt-6\.1-sol-high/1/p2$')
@@ -133,11 +133,12 @@ try {
     Check 'Codex вичерпано: позначку знято, один рядок хмарному Claude' (@(SlugMarkers "автоперевірка-38-$head").Count -eq 0 -and @(CloudLines 38).Count -eq 1)
     SetCodex $false; Invoke-WrapperChain
     Check 'відновлення Codex не ставить другої перевірки' (@(SlugMarkers "автоперевірка-38-$head").Count -eq 0)
-    # Мірило наряду обгортка-рецензент-за-групою-квоти: квота agy — за групою саме обраної моделі (gemini-3.8-flash-high →
-    # «Gemini Models»), а не за будь-якою групою pools.json. ДО — той самий pools.json без слів назви: так його пише main, і
-    # Test-ModelQuota судить його правилом main (усі групи на 0 %). «Зараз» — 2026-10-29T19:00Z.
-    function SetPools($Gem, $Cg, [switch]$Old) {
-        $gs = @([ordered]@{g='GEMINIMODELS';left=$Gem;reset=90;n='gemini models'}, [ordered]@{g='CLAUDEANDGPTMODE';left=$Cg;reset=90;n='claude and gpt models'})
+    # Argon має власну групу GEMINI4ARGON: нуль у Gemini Models чи Claude and GPT Models його не блокує.
+    # Старий pools.json без назв груп зберігає сумісність: agy недоступний лише коли всі групи на нулі.
+    function SetPools($Gem, $Cg, $Argon, [switch]$Old) {
+        $gs = @([ordered]@{g='GEMINIMODELS';left=$Gem;reset=90;n='gemini models'},
+                [ordered]@{g='CLAUDEANDGPTMODE';left=$Cg;reset=90;n='claude and gpt models'},
+                [ordered]@{g='GEMINI4ARGON';left=$Argon;reset=90;n='gemini 4 argon'})
         if ($Old) { foreach ($g in $gs) { $g.Remove('n') } }
         [IO.File]::WriteAllText("$OutDir/pools.json", ((@{v=1;groups=$gs}) | ConvertTo-Json -Compress -Depth 4), $utf)
     }
@@ -149,31 +150,36 @@ try {
     $at19 = [datetimeoffset]::new(2026, 10, 29, 19, 0, 0, [timespan]::Zero)
     $tablePull = Pull 50 'claude/таблиця-квоти' $head
     $cases = @(
-        @{N=1; Gem=0; Cg=1; Refused='2026-10-29T15:18:00Z'; Want='gpt-6.1-sol-high'},
-        @{N=2; Gem=0; Cg=1; Refused='2026-10-29T18:30:00Z'; Want='gemini-3.8-flash-high'},
-        @{N=3; Gem=100; Cg=0; Refused='2026-10-29T15:18:00Z'; Want='gemini-3.8-flash-high'},
-        @{N=4; Gem=0; Cg=0; Refused=''; Want='gpt-6.1-sol-high'},
-        @{N=5; Gem=$null; Cg=$null; Refused=''; Want='gemini-3.8-flash-high'})
+        @{N=1; Gem=0; Cg=1; Argon=40; Refused='2026-10-29T15:18:00Z'; OldWant='gemini-4-argon-high'; Want='gemini-4-argon-high'; Why='Gemini Models 0 %, Argon вільний: перший кандидат agy'},
+        @{N=2; Gem=0; Cg=1; Argon=0; Refused='2026-10-29T18:30:00Z'; OldWant='gemini-4-argon-high'; Want='gemini-4-argon-high'; Why='Argon і Codex на квоті: перший кандидат чекає скидання'},
+        @{N=3; Gem=100; Cg=0; Argon=0; Refused='2026-10-29T15:18:00Z'; OldWant='gemini-4-argon-high'; Want='gpt-6.1-sol-high'; Why='Gemini Models вільний, Argon 0 %: доступний Codex'},
+        @{N=4; Gem=0; Cg=0; Argon=0; Refused=''; OldWant='gpt-6.1-sol-high'; Want='gpt-6.1-sol-high'; Why='усі групи agy 0 %, відмови Codex нема'},
+        @{N=5; Gem=$null; Cg=$null; Argon=$null; Refused=''; OldWant='gemini-4-argon-high'; Want='gemini-4-argon-high'; Why='pools.json відсутній: квота agy невідома, перший кандидат доступний'},
+        @{N=6; Gem=0; Cg=1; Argon=0; Refused='2026-10-29T15:18:00Z'; OldWant='gemini-4-argon-high'; Want='gpt-6.1-sol-high'; Why='Claude and GPT Models вільний, Argon 0 %: доступний Codex'},
+        @{N=7; Gem=0; Cg=0; Argon=40; Refused='2026-10-29T18:30:00Z'; OldWant='gemini-4-argon-high'; Want='gemini-4-argon-high'; Why='лише Argon вільний, Codex на квоті: доступний agy'},
+        @{N=8; Gem=0; Cg=0; Argon=0; Refused='2026-10-29T18:30:00Z'; OldWant='gemini-4-argon-high'; Want='gemini-4-argon-high'; Why='усі групи 0 % і свіжа відмова Codex: перший кандидат чекає'})
     foreach ($c in $cases) {
         SetRefused $c.Refused
-        if ($null -eq $c.Gem) { Remove-Item -LiteralPath "$OutDir/pools.json" -ErrorAction SilentlyContinue } else { SetPools $c.Gem $c.Cg -Old }
+        if ($null -eq $c.Gem) { Remove-Item -LiteralPath "$OutDir/pools.json" -ErrorAction SilentlyContinue } else { SetPools $c.Gem $c.Cg $c.Argon -Old }
         $was = @(Get-ReviewModels $tablePull $chainCfg $at19)
-        if ($null -ne $c.Gem) { SetPools $c.Gem $c.Cg }
+        Check "випадок $($c.N), pools.json без назв: рецензент $($c.OldWant)" ($was.Count -eq 1 -and $was[0] -ceq $c.OldWant)
+        if ($null -ne $c.Gem) { SetPools $c.Gem $c.Cg $c.Argon }
         $got = @(Get-ReviewModels $tablePull $chainCfg $at19)
-        Check "випадок $($c.N) таблиці: рецензент $($c.Want)" ($got.Count -eq 1 -and $got[0] -ceq $c.Want)
-        "  мірило: випадок $($c.N) — ДО $($was -join ',') → ПІСЛЯ $($got -join ',')"
+        Check "випадок $($c.N): $($c.Why) — рецензент $($c.Want)" ($got.Count -eq 1 -and $got[0] -ceq $c.Want)
+        "  мірило: випадок $($c.N), без назв $($was -join ',') → з назвами $($got -join ',')"
     }
-    # Випадок 1 для поставленої позначки: …/gemini-3.8-flash-high/… знімається, ставиться …/gpt-6.1-sol-high/…, один раз.
-    SetCodex $false; SetPools 40 1
+    # Та сама позначка Argon лишається за старого формату, а після розпізнання його нульової групи переходить до Codex.
+    SetCodex $false; SetPools 0 1 40
     $head = Merge 'квота-група.txt' '1'
     $script:Pulls = @((Pull 51 'claude/квота-група' $head)); Invoke-WrapperChain
-    Check 'група: до квоти позначка agy' (@(SlugMarkers "автоперевірка-51-$head").Count -eq 1 -and @(SlugMarkers "автоперевірка-51-$head")[0] -match '/gemini-3\.8-flash-high/1/p2$')
-    SetRefused (Stamp -3.7); SetPools 0 1 -Old; Invoke-WrapperChain
+    Check 'група: Gemini Models 0 %, Argon 40 % — позначка agy' (@(SlugMarkers "автоперевірка-51-$head").Count -eq 1 -and @(SlugMarkers "автоперевірка-51-$head")[0] -match '/gemini-4-argon-high/1/p2$')
+    SetRefused (Stamp -3.7); SetPools 0 1 0 -Old; Invoke-WrapperChain
     $was = @(SlugMarkers "автоперевірка-51-$head")
-    SetPools 0 1; Invoke-WrapperChain; Invoke-WrapperChain
+    Check 'без назв груп: ненульова стороння група лишає позначку Argon' ($was.Count -eq 1 -and $was[0] -match '/gemini-4-argon-high/1/p2$')
+    SetPools 0 1 0; Invoke-WrapperChain; Invoke-WrapperChain
     $got = @(SlugMarkers "автоперевірка-51-$head")
-    Check 'група GEMINIMODELS 0 %, CLAUDEANDGPTMODE 1 %: позначка перейшла до Codex, одна' ($got.Count -eq 1 -and $got[0] -match '/gpt-6\.1-sol-high/1/p2$')
-    "  мірило: заміна позначки у випадку 1 — ДО $(@($was | ForEach-Object { ($_ -split '/')[-3] }) -join ',') → ПІСЛЯ $(@($got | ForEach-Object { ($_ -split '/')[-3] }) -join ',')"
+    Check 'GEMINI4ARGON 0 %, стороння група 1 %: позначка перейшла до Codex, одна' ($got.Count -eq 1 -and $got[0] -match '/gpt-6\.1-sol-high/1/p2$')
+    "  мірило: заміна позначки — без назв $(@($was | ForEach-Object { ($_ -split '/')[-3] }) -join ',') → з назвами $(@($got | ForEach-Object { ($_ -split '/')[-3] }) -join ',')"
     SetCodex $false
     # Звіт, що вже опубліковано, інший рушій не повторює.
     SetAgy $false
@@ -248,7 +254,7 @@ try {
     $before = @(SlugMarkers "автоперевірка-44-$h2")
     Invoke-WrapperChain
     $now44 = @(SlugMarkers "автоперевірка-44-$h2")
-    Check 'старий вибір: позначку cc- знято, рецензент — agy' ($before.Count -eq 1 -and $before[0] -match '/cc-' -and $now44.Count -eq 1 -and $now44[0] -match '/gemini-3\.8-flash-high/1/p2$' -and ([IO.File]::ReadAllText((Join-Path $WorkDir 'publish.log'), $utf)).Contains('знято — Claude на ноутбуці не перевіряє'))
+    Check 'старий вибір: позначку cc- знято, рецензент — agy' ($before.Count -eq 1 -and $before[0] -match '/cc-' -and $now44.Count -eq 1 -and $now44[0] -match '/gemini-4-argon-high/1/p2$' -and ([IO.File]::ReadAllText((Join-Path $WorkDir 'publish.log'), $utf)).Contains('знято — Claude на ноутбуці не перевіряє'))
     Check 'зняття позначок — рядок у зведенні' (@(OutLines | Where-Object { $_ -ceq 'GEMINI ОБГОРТКА: ЗНЯТО ПОЗНАЧОК ПЕРЕВІРКИ 1' }).Count -eq 1)
     Check 'рядок зняття не будить диспетчера, рядок хмарного Claude будить' (-not (Test-DispatcherAction 'GEMINI ОБГОРТКА: ЗНЯТО ПОЗНАЧОК ПЕРЕВІРКИ 1') -and (Test-DispatcherAction "GEMINI ОБГОРТКА: ПОТРІБНА ПЕРЕВІРКА CLAUDE #44 $h2") -and (Test-OutboxLine "GEMINI ОБГОРТКА: ПОТРІБНА ПЕРЕВІРКА CLAUDE #44 $h2") -eq '' -and -not (Test-DispatcherAction "GEMINI ОБГОРТКА: ЗАБЛОКОВАНО claude/автоперевірка-44-$h2 CLAUDE_NOT_LAPTOP") -and (Test-DispatcherAction 'GEMINI ОБГОРТКА: ЗАБЛОКОВАНО claude/наряд CLAUDE_NOT_LAPTOP'))
     "  мірило: позначок cc- автоперевірки ДО 1 → ПІСЛЯ $(@(Markers | Where-Object { $_ -match 'автоперевірка-.*/cc-' }).Count)"
