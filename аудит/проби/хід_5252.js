@@ -89,7 +89,7 @@ const пауза = мс => new Promise(р => setTimeout(р, мс));
   const стан = await с.evaluate(() => ({
     чат: ЧАТ_П.map(р => р.хто + ':' + String(р.текст).slice(0, 60)),
     паспорт: ПАСПОРТ_П ? {нагода: ПАСПОРТ_П.нагода, місце: ПАСПОРТ_П.місце, ош: ПАСПОРТ_П.ошатність, джерело: ПАСПОРТ_П.джерело} : null,
-    поля: Object.fromEntries(['сц-нагода', 'сц-місце', 'сц-дрес', 'сц-опади', 'сц-година'].map(і => [і, document.getElementById(і).value])),
+    поля: Object.fromEntries(['сц-нагода', 'сц-місце', 'сц-дрес', 'сц-опади', 'сц-пора'].map(і => [і, document.getElementById(і).value])),
     рядки: ['зн-нагода', 'зн-місце', 'зн-дрес'].map(і => (document.getElementById(і) || {}).textContent),
     змінено: ВИПАДОК_ЗМІНЕНО_П, стан: (document.getElementById('чат-стан') || {}).textContent,
     виклики: (typeof ВИКЛИКИ_РОЗМОВИ_П !== 'undefined') ? ВИКЛИКИ_РОЗМОВИ_П.length : null }));
