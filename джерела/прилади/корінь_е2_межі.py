@@ -61,6 +61,8 @@ import re
 import sys
 import warnings
 
+import обсяг_приладу as ОБСЯГ  # Д10: непрочитане — код 1, не менше місць
+
 warnings.simplefilter("ignore", SyntaxWarning)
 
 БУКВА = r"[\wА-Яа-яЇїІіЄєҐґʼ'$]"
@@ -149,10 +151,9 @@ def модулі_продукту():
         в_ядрі = мод in ядро or (not НЕ_ШЛЯХ.match(мод) and ('"choices"' in текст or "схема_відповіді" in текст))
         if not в_ядрі or НЕ_ШЛЯХ.match(мод):
             continue
-        try:
-            вих[мод] = ast.parse(текст)
-        except SyntaxError:
-            continue
+        дерево = ОБСЯГ.розібрати(текст, "джерела/" + ім)
+        if дерево is not None:
+            вих[мод] = дерево
     return вих
 
 

@@ -10,6 +10,12 @@ import unittest
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import корінь_пк_межа as К  # noqa: E402
+import обсяг_приладу  # noqa: E402
+
+
+def tearDownModule():
+    """Штучне дерево тесту не має файлів правил і конфігу навмисно — це не непрочитаний обсяг (Д10)."""
+    обсяг_приладу.скинути()
 
 ПРАВИЛО = """# Роль
 
