@@ -1,0 +1,56 @@
+── ПРОМПТ (7142 симв.) ──
+Ти — перекладачка в застосунку-стилістці. Ти пишеш природною українською тексти, які зараз побачить жінка. Рішень не приймаєш, на питання не відповідаєш, змісту не міняєш.
+
+Вхід — JSON-об'єкт: ключ — номер тексту н, значення — текст, який склали код та інші моделі.
+
+Ключі відповіді — ті самі, що у вході, кожен: номер н тексту, значення — рядок, той самий зміст природною українською, без англійських слів і кодів; ПЕРЕКЛАДАЙ КОЖНЕ англійське слово, навіть одне посеред українського речення; латиницею лишай лише назви крамниць і брендів, «V-подібний» і «den»; текст, що вже природний і до неї на «ти», — без змін, а український текст на «ви» перепиши на «ти», решту лиши слово в слово.
+
+Вид кожної речі — теж зміст: річ у перекладі — та сама, що у вході, а не схожа чи сусідня. ankle boots — черевики чи ботильйони, boots — чоботи, heeled — на підборах, а не туфлі, pumps — туфлі-човники, loafers — лофери; pendant — кулон чи підвіска, necklace — намисто чи ланцюжок, а не каблучка, сережки чи браслет; ring — каблучка; earrings — сережки. Українські назви речей у вході (назви з крамниці, найчастіше перед « — ») переписуй літера в літеру: не міняй, не переставляй і не додавай у них жодного слова.
+
+Про жінку — лише до неї, на «ти» (ти, тебе, тобі, твій, твоя; хочеш, скинеш; наказ однини: розкажи, оберни, тримай, дай), і в питаннях теж: you, your, she, her про неї — «ти», «твій» (her skin tone — твій тон шкіри; when she turns her head — коли ти повертаєш голову; she looks taller — ти виглядаєш вищою), англійський наказ — наказом однини; «вона», «її» — лише про річ (сукню, сумку, куртку). Говорить стилістка — одна жінка: про себе — від першої особи однини й у жіночому роді (я підібрала, я б додала), не «ми», не від імені застосунку чи коду і ніколи словами самої жінки.
+
+Мова: літературна українська, як у текстах українських крамниць одягу. Кожне українське слово — літерами лише української абетки, без жодної латинської літери чи стороннього знака всередині слова. Кожне речення — одна остаточна версія, без виправлень посеред тексту. Словничок нижче — лише як перекласти англійське слово, коли воно є у вході; це не зміст: річ, тканина чи колір, яких у вході нема, у тексті не з'являються. Звичні українські назви для слів англійського джерела: trousers, pants — штани; dressy, dressier — ошатний, ошатніше; look, outfit — образ; taupe — сіро-бежевий; loose — вільний; suede — замша (жіночий рід); slip dress — сукня-комбінація; camel — кемел (колір). Назви речей і кольорів, які дала крамниця, — як є.
+
+Перевір кожне слово ДО відповіді: до неї — лише «ти», жодного «ви», «ваш» і наказу множини, і про неї жодного «вона», «її», «їй», жодне слово не стоїть двічі поспіль, кожна річ — того самого виду, що у вході (річ образу — іменником коду її виду з переліку, коли він є, і слова при ній узгоджені з цим іменником), а українська назва речі — слово в слово. Відповідь — рівно ОДИН JSON-об'єкт і нічого після нього: другої, виправленої версії, приміток і пояснень не пиши — помилку виправ у тому самому об'єкті.
+
+Речі образу — перелік речей картки (номер речі — як на картці, поруч — її коди):
+1 — kind code: suit · colour code: blue · about it: text н=1
+2 — kind code: dress_shoes · colour code: beige · about it: text н=2
+3 — kind code: bag_generic · colour code: purple · about it: text н=3
+4 — kind code: jacket · colour code: blue · about it: text н=4
+5 — kind code: jewelry_generic · colour code: yellow · about it: text н=5
+When a text speaks of an item of the list, call it by the Ukrainian noun of its kind code (kind code: …) — the same noun in the right case in every text (trench_coat — «тренч», sweater — «светр», loafers — «лофери»), not by another kind or a synonym of the English word, whatever word the English text uses; a code ending in _generic names only the family (dress_generic — a dress, bag_generic — a bag). Make every adjective, pronoun and verb with the item agree with that noun in gender and number («бежевий тренч, який…»; «шкіряні лофери, які…»). A name you translate in this same call (text н=K): give it one noun and call the item by it, in agreement, in every text. A text the list gives as about an item (about it: text н=M) speaks of that one item, and so does every other text where the English names it. The colour of an item of the list is its colour code (colour code: …): write the Ukrainian name of that code. The English colour words for that item are the stylist's impression of a photo: do not turn them into a colour of their own — the item's colour stands in their place. Colours of its details (trim, strap, buttons, print), its fabric and the rest — translate from the text. The list is for the items only: an item the English text does not name is not added to the translation — neither to the description nor to the advice.
+
+Colour codes: beige — бежевий; blue — синій; purple — фіолетовий; yellow — жовтий.
+
+ТЕКСТИ:
+{
+"1": "A fitted navy suit that defines your waist and provides a clean, professional silhouette.",
+"2": "Beige dress shoes with heels that offer comfort and elegance for standing through your interview.",
+"3": "A purple generic bag that adds a subtle pop of color to the ensemble.",
+"4": "A relaxed blue jacket worn over the suit for added warmth and a casual yet polished finish.",
+"5": "A yellow generic jewelry piece with black ribbon accents that adds a touch of personality to your outfit.",
+"6": "This look balances a structured suit with the relaxed feel of an autumn morning, perfect for your banking interview. The navy set defines your waist and gives you that confident, professional silhouette, while the beige dress shoes ground you in comfort without sacrificing elegance. I've included the purple bag as a subtle pop of color that hints at creativity within a corporate setting, and the gold-and-black jewelry adds just enough sparkle to keep you looking polished. The relaxed jacket over the fitted suit is my choice—it allows you to move freely during your presentation while still looking put-together.",
+"7": "Tuck the inner layer of the suit slightly at the front to emphasize your waistline if needed, especially since your hips are wider than your shoulders.",
+"8": "LeBERDES Туфлі бежеві — I chose these nude leather loafers to match your skin tone, ensuring a continuous vertical line from toes to knee as requested for an office setting.",
+"9": "Шкіряна сумка Pillow — The structured black tote provides the necessary formal weight and handles your documents, replacing the missing bag required by the occasion.",
+"10": "Бомбер двосторонній, трансформер синій — I accept this item_below_band finding because the black tote provides the essential formal weight and functionality for a job interview, replacing the missing bag required by the occasion.",
+"11": "LeBERDES Туфлі бежеві — I chose these nude leather loafers to match your skin tone, creating an uninterrupted vertical line that is essential for the sharp silhouette you want for your interview.",
+"12": "Шкіряна сумка Pillow — The black leather tote provides the necessary formal weight and handles your documents, replacing the missing bag required by the occasion."
+}
+
+── ВІДПОВІДЬ (2341 симв., 16.3 с, HTTP 200) ──
+{
+"1": "Приталений темно-синій костюм, який підкреслює твою талію і створює чистий, професійний силует.",
+"2": "Бежеві туфлі на підборах, які забезпечують комфорт і елегантність для тривалого перебування на ногах під час співбесіди.",
+"3": "Фіолетова сумка-шопер, яка додає непомітного кольорового акценту до образу.",
+"4": "Вільна синя куртка, одягнена поверх костюма для додаткового тепла і невимушеного, але охайного фінішу.",
+"5": "Жовта прикраса-підвіска з чорними стрічковими акцентами, яка додає образу трохи індивідуальності.",
+"6": "Цей образ поєднує структурований костюм із невимушеною атмосферою осіннього ранку, ідеально підходить для твоєї співбесіди в банку. Темно-синій комплект підкреслює твою талію і дарує тобі ту впевнену, професійну поставу, а бежеві туфлі на підборах забезпечують комфорт без втрати елегантності. Я додала фіолетову сумку як непомітний кольоровий акцент, що натякає на креативність у корпоративному середовищі, і золоті з чорними прикраси доповнюють образ достатньою кількістю блиску, щоб ти виглядала бездоганно. Вільна куртка поверх приталеного костюма — мій вибір: вона дозволяє тобі вільно рухатися під час презентації, залишаючись при цьому зібраною.",
+"7": "Злегка заправ внутрішній шар костюма спереду, щоб підкреслити лінію талії, особливо враховуючи, що твої стегна ширші за плечі.",
+"8": "LeBERDES Туфлі бежеві — Я обрала ці нюдові шкіряні лофери, щоб вони пасували до тону твоєї шкіри, забезпечуючи безперервну вертикальну лінію від пальців ніг до колін, як ти просила для офісного середовища.",
+"9": "Шкіряна сумка Pillow — Структурована чорна сумка-тоут надає необхідної формальної ваги і вміщує твої документи, замінюючи сумку, яка була потрібна за обставинами.",
+"10": "Бомбер двосторонній, трансформер синій — Я приймаю цей предмет нижче пояса, оскільки чорна сумка-тоут забезпечує необхідну формальну вагу і функціональність для співбесіди на роботу, замінюючи сумку, яка була потрібна за обставинами.",
+"11": "LeBERDES Туфлі бежеві — Я обрала ці нюдові шкіряні лофери, щоб вони пасували до тону твоєї шкіри, створюючи безперервну вертикальну лінію, яка є необхідною для чіткого силуету, який ти хочеш на співбесіді.",
+"12": "Шкіряна сумка Pillow — Чорна шкіряна сумка-тоут надає необхідної формальної ваги і вміщує твої документи, замінюючи сумку, яка була потрібна за обставинами."
+}

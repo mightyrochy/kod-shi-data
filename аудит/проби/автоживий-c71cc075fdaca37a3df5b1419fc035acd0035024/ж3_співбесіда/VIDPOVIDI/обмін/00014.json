@@ -1,0 +1,27 @@
+{
+ "версія": 1,
+ "запит": {
+  "model": "qwen/qwen3.5-9b",
+  "max_tokens": 4000,
+  "messages": [
+   {
+    "role": "user",
+    "content": [
+     {
+      "type": "text",
+      "text": "{\"task\": {\"role\": \"You read the description of an outfit and list its items as data.\", \"rules\": [\"One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.\", \"One item carries one thing — of two alternatives list the first; a note in brackets is not an item.\", \"Slot \\\"accessory\\\" is for an item no other slot fits.\", \"\\\"is_outfit\\\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note.\"], \"limits\": [\"Rely only on the input: do not invent what it does not contain.\", \"The answer is one JSON object following \\\"answer_schema\\\", without explanations and without ```.\"], \"language\": \"English\", \"answer\": \"ITEM_LIST\", \"answer_schema\": {\"is_outfit\": \"yes|no\", \"items\": [{\"name\": \"<what the item is>\", \"details\": \"<its cut, length and fabric>\", \"slot\": \"top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory\", \"color_hex\": \"<#rrggbb or null>\", \"worn\": \"<true, or false when the description says the outfit goes without it>\"}]}, \"input\": [\"\\\"description\\\" — the outfit description\"]}, \"description\": \"Silk blouse, tailored fit, knee-length hemline, charcoal grey (#36454F), lightweight woven fabric.\\nSlim-fit trousers, tapered leg, full length, deep navy blue (#000080), high-quality wool blend.\\nStructured blazer, boxy silhouette, hip length, forest green (#228B22), smooth cotton-linen mix.\\nLeather loafers, classic cap-toe cut, mid-calf height, chocolate brown (#4B3621), soft calfskin leather.\\nMinimalist gold bar necklace, thin band design, long drop, brushed metal, 18k gold vermeil.\\nStructured black leather clutch, rectangular shape, top handle with wrist strap, matte finish, durable synthetic leather.\\nThis outfit perfectly balances professionalism and personality for a banking interview while adhering to your request for a smart look. The tailored trousers and silk blouse offer a polished base that signals attention to detail, essential for an analytical role. A textured blazer adds a layer of authority without feeling stiff, ensuring you feel confident throughout the morning session. The earthy color palette of charcoal, navy, and forest green grounds the look in seriousness while allowing the gold accessories to provide a subtle touch of elegance suitable for daylight hours.\"}"
+     }
+    ]
+   }
+  ],
+  "temperature": 1
+ },
+ "відповідь": {
+  "status": 200,
+  "contentType": "application/json",
+  "headers": {
+   "x-model": "qwen/qwen3.5-9b"
+  },
+  "body": "{\"content\":[{\"type\":\"text\",\"text\":\"{\\\"is_outfit\\\": \\\"yes\\\", \\\"items\\\": [{\\\"name\\\": \\\"Silk blouse\\\", \\\"details\\\": \\\"tailored fit, knee-length hemline, lightweight woven fabric\\\", \\\"slot\\\": \\\"top\\\", \\\"color_hex\\\": \\\"#36454F\\\", \\\"worn\\\": true}, {\\\"name\\\": \\\"Slim-fit trousers\\\", \\\"details\\\": \\\"tapered leg, full length, high-quality wool blend\\\", \\\"slot\\\": \\\"bottom\\\", \\\"color_hex\\\": \\\"#000080\\\", \\\"worn\\\": true}, {\\\"name\\\": \\\"Structured blazer\\\", \\\"details\\\": \\\"boxy silhouette, hip length, smooth cotton-linen mix\\\", \\\"slot\\\": \\\"outerwear\\\", \\\"color_hex\\\": \\\"#228B22\\\", \\\"worn\\\": true}, {\\\"name\\\": \\\"Leather loafers\\\", \\\"details\\\": \\\"classic cap-toe cut, mid-calf height, soft calfskin leather\\\", \\\"slot\\\": \\\"shoes\\\", \\\"color_hex\\\": \\\"#4B3621\\\", \\\"worn\\\": true}, {\\\"name\\\": \\\"Minimalist gold bar necklace\\\", \\\"details\\\": \\\"thin band design, long drop, brushed metal\\\", \\\"slot\\\": \\\"collar_necklace\\\", \\\"color_hex\\\": null, \\\"worn\\\": true}, {\\\"name\\\": \\\"Structured black leather clutch\\\", \\\"details\\\": \\\"rectangular shape, top handle with wrist strap, matte finish, durable synthetic leather\\\", \\\"slot\\\": \\\"bag\\\", \\\"color_hex\\\": \\\"#000000\\\", \\\"worn\\\": true}]}\"}],\"usage\":{\"input_tokens\":615,\"output_tokens\":316},\"stop_reason\":\"end_turn\"}"
+ }
+}
