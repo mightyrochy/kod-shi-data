@@ -1,0 +1,97 @@
+"""Витяг фактів із записів, без нового виклику моделей та оцінки стилю."""
+import json
+from pathlib import Path
+import re
+
+root=Path.cwd()/'аудит/проби/автоживий-c71cc075fdaca37a3df5b1419fc035acd0035024'
+plan=json.loads((root/'план.json').read_text(encoding='utf-8'))
+done=[json.loads(s) for s in (root/'done-продовження.jsonl').read_text(encoding='utf-8').splitlines()]
+
+def text(block):
+    if isinstance(block,str):
+        return block
+    if isinstance(block,list):
+        return '\n'.join(b.get('text','') for b in block if isinstance(b,dict))
+    return ''
+
+def object_(s):
+    try:
+        return json.loads(s)
+    except ValueError:
+        try:
+            return json.JSONDecoder().raw_decode(s[s.index('{'):])[0]
+        except (ValueError,TypeError):
+            return {}
+
+def clockpaths(obj,prefix=''):
+    result=[]
+    if isinstance(obj,dict):
+        for key,value in obj.items():
+            path=prefix+'.'+key if prefix else key
+            if key in ('hour','minute','start_hour','start_minute','end_hour','end_minute','година','хвилина'):
+                result.append({'шлях':path,'значення':value})
+            result.extend(clockpaths(value,path))
+    elif isinstance(obj,list):
+        for i,value in enumerate(obj):
+            result.extend(clockpaths(value,prefix+f'[{i}]'))
+    return result
+
+def unique(rows):
+    result=[]
+    for row in rows:
+        if row not in result:
+            result.append(row)
+    return result
+
+measurements=[]
+for row in done:
+    scene=row['сцена']
+    folder=root/scene
+    log=(folder/'лог.txt').read_text(encoding='utf-8',errors='replace') if (folder/'лог.txt').exists() else ''
+    result=json.loads((folder/'результат.json').read_text(encoding='utf-8')) if (folder/'результат.json').exists() else {}
+    item={'сцена':scene,'rc':row['rc'],'початок':row['початок'],'кінець':row['кінець'],
+          'секунд':result.get('секунд'),'червоні':[s.strip() for s in log.splitlines() if '✗' in s],
+          'зелених':len(re.findall(r'^  ✔',log,re.M)),'мовні_ходи':[],'запити_стилістки':[],'руки':[]}
+    for path in sorted((folder/'VIDPOVIDI/обмін').glob('*.json')):
+        exchange=json.loads(path.read_text(encoding='utf-8'))
+        prompt=object_(text(exchange['запит']['messages'][0]['content']))
+        body=object_(exchange['відповідь']['body'])
+        response=text(body.get('content',[])) if isinstance(body,dict) else ''
+        if not response and isinstance(body,dict):
+            response='\n'.join(c.get('message',{}).get('content','') for c in body.get('choices',[]))
+        answer=object_(response)
+        if not isinstance(prompt,dict):
+            continue
+        if 'her_new_message' in prompt:
+            item['мовні_ходи'].append({'файл':path.relative_to(root).as_posix(),'format_error':prompt.get('format_error'),
+                'chosen':prompt.get('chosen'),'passport':prompt.get('passport'),'update':answer.get('update') if isinstance(answer,dict) else None,
+                'text':answer.get('text') if isinstance(answer,dict) else None,'ask':answer.get('ask') if isinstance(answer,dict) else None})
+        if 'day' in prompt:
+            item['запити_стилістки'].append({'файл':path.relative_to(root).as_posix(),'day':prompt['day'],
+                'годинникові_поля_case_day':clockpaths({'case':prompt.get('case',{}),'day':prompt['day']})})
+    verdict=folder/'вердикти.txt'
+    if verdict.exists():
+        data=json.loads(verdict.read_text(encoding='utf-8'))
+        passport=data.get('спільне',{}).get('паспорт',{})
+        item['паспорт']={k:passport.get(k) for k in ('пора','ошатність','гілка_ошатності','виміри','не_взято_кодом')}
+        item['годинникові_поля_паспорта']=clockpaths(passport)
+        for run in data.get('прогони',[]):
+            for v in run.get('вердикти',[]):
+                judge=v.get('етапи',{}).get('суд',{})
+                rules=judge.get('слід_правил',[])
+                findings=judge.get('знахідки',[])
+                item['руки'].append({'рука':v['рука'],'блокує':judge.get('блокує'),
+                    'речей':len(v.get('речі_образу',[])),
+                    'K-CRA-04_слід':[r for r in rules if 'K-CRA-04' in json.dumps(r,ensure_ascii=False)] if isinstance(rules,list) else rules,
+                    'K-CRA-04_знахідки':[f for f in findings if 'K-CRA-04' in json.dumps(f,ensure_ascii=False)] if isinstance(findings,list) else findings,
+                    'K-OUT-06_знахідки':[f for f in findings if 'K-OUT-06' in json.dumps(f,ensure_ascii=False)] if isinstance(findings,list) else findings})
+    proof=folder/'знімки/доказ.json'
+    if proof.exists():
+        data=json.loads(proof.read_text(encoding='utf-8'))
+        item['факт_доказу']=data.get('факт')
+        item['вердикт_приладу']=data.get('вердикт')
+    item['тексти_події']=[s.strip() for s in log.splitlines() if any(x in s for x in ('НЕ ЦЯ','не ця','Зібрати ще раз','ЗАМІНА руки','ROZMOVA','formality','part_of_day')) and len(s)<2000]
+    measurements.append(item)
+
+(root/'виміри-продовження.json').write_text(json.dumps(measurements,ensure_ascii=False,indent=2)+'\n',encoding='utf-8')
+print('Витягнуто факти',len(measurements),'сцен')
