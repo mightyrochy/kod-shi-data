@@ -3161,13 +3161,13 @@ _ПОЛЯ_EN = {
     # 6188: «рід заняття, не частота» (ШКАЛА-2) стояло в правилі ходу R7, «пішки на роботу —
     # нагода й рух» — ще в R2 і в описі `movement`; тепер лише тут. Приклади-фрази живих сцен (на роботу пішки, вечірка в
     # клубі, «ввечері», вокал, весілля подруги чи сестри) зняті: живий прогін сцени міряв би заучену відповідь
-    "occasion": "what kind of event it is: the kind of what she does, not how often or where: working is work "
-                "even at home (place home); studying at a school, a university or courses is school, also every "
-                "day; someone else's wedding is wedding_guest, never celebration; a lesson she takes as a hobby is "
-                "everyday — never work, and never theatre: she takes part, she does not watch. The phrase that "
-                "names the outing gives its other fields too, on the same quote: when it also says how she gets "
-                "there — movement as well, never movement alone; the place it names — place; the part of the day "
-                "it names — part_of_day",
+    "occasion": "the kind of what she does, not how often or where: date is a romantic outing, never a social "
+                "meeting inferred from company or venue. Ordinary social or leisure outings without their own "
+                "code use everyday; event keeps her own name for it. Working is work even at home (place home); "
+                "studying at school, university or courses is school, also every day; a hobby lesson is everyday, "
+                "not work or theatre: she takes part, not watches; someone else's wedding is wedding_guest, never "
+                "celebration. The outing phrase also gives movement when it says how she gets there, never "
+                "movement alone; place where named; part_of_day when named — on the same quote",
     # «йога зранку, потім кава з подругою» → `occasion_part: sport` з уривком йоги:
     # правило «частина не названа — перша не спортивна» стояло лише в правилі ходу, не в описі поля
     # «йога зранку, потім кава» — `occasion_part: sport` 3/3: «sport when it is for doing
@@ -3285,8 +3285,9 @@ _ПОЛЯ_EN = {
     "precipitation": "the precipitation she says the day brings, in any of her words (rain, drizzle, it pours, "
                      "snow, wet snow), also in the phrase that names the degrees, with that word as quote; none "
                      "when she says it stays dry; possible_rain when she says rain is only possible — not rain",
-    # МОВА-ХІД-ТОНШЕ: «завжди, без цитати, за якорями» каже правило ходу — тут лише щаблі
-    "formality": "how dressy this outing is: the code of one step of the ladder",
+    # Щабель моделі — норма без вечірнього підйому; його за ярусом рахує код з part_of_day.
+    "formality": "the outing's base dressiness before the evening lift: one ladder step; the app applies the "
+                 "tier's evening lift once from part_of_day",
     # Гілку ставить та сама норма, що щабель, — модель, а не назва події в коді
     "formality_reason": "why the ladder puts her on this step: written — a named written dress code; norm — the usual standard of the place or people; evaluated — +1 because she is evaluated; representing — +1 because she represents others; her_words — her explicit wish. Give it with formality",
     "formality_branch": "the branch of that step, given by the same standard that puts the outing on it: business — "
@@ -3628,7 +3629,7 @@ _ПРАВИЛО_ОШАТНОСТІ = (
     "the occasion (she presents, gives a speech or a toast, leads the talks, is the hostess, the one "
     "celebrated or the closest family of the one celebrated) — never above formal. (4) One step up or down "
     "only when she says so: she wants to dress up; it is simple, nothing special. Never a reason for a step: "
-    "the hour or the part of the day, the event's name, how important, serious or nervous it is to her, who "
+    "the part of the day, the event's name, how important, serious or nervous it is to her, who "
     "will be there. She said nothing more — the step the rule gives.")
 
 
@@ -3727,7 +3728,7 @@ _ПРАВИЛО_НОРМИ = (
     "Values are only the codes and forms from \"codes\". goal_zones holds only a body zone her words name; her "
     "limit on showing her body that names no zone is open_zones none, never a zone of goal_zones.",
     # М-1 В-1 і Ч-5: назва події — опора і для `event`, і для коду нагоди чи місця; МОВА-1 (02.10): подія
-    # без свого підпису (гостини, місцевий звичай) — код найближчого виду, суть — у `stylist_note`.
+    # без свого підпису — код із тими самими правилами, суть — у `stylist_note`.
     # «Різдвяна вечеря», «новорічний корпоратив», «Новорічна
     # вечірка» — `month` 0 з 5, і руки бачили осінь (`season: autumn`); 0 з 71 записаного ходу обох прогонів має `month`
     # узагалі, і Ж:09 «весілля сестри в серпні» — теж без нього. Опис поля (`_ПОЛЯ_EN["month"]`) модель читає, коли
@@ -3738,7 +3739,7 @@ _ПРАВИЛО_НОРМИ = (
     "names this event or one of its kind, with the name of the event as quote. Her words that date it — a date, "
     "a month, or a holiday that falls in one month — also give \"month\", with that word as quote; an event "
     "whose name or custom keeps a time of day (a dinner, an evening party) also gives \"part_of_day\". An event "
-    "with no label of its own (a family visit, a local custom) takes the code of its nearest kind, and "
+    "with no label of its own takes a code with the same rules, and "
     "\"stylist_note\" says what the event really is.",
     # Хрестини «спершу церква, потім обід у ресторані» давали нагоду однієї частини й місце іншої — або
     # без місця; «працюю з дому» — то home, то work. Нагода — що вона робить, місце — де; обидва про одне,
