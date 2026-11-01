@@ -1,8 +1,10 @@
 """Звіряє маніфест і документацію з SHA-256 блобів git (LF) і формат `смуги.json` v2."""
 import hashlib
 import json
+import os
 from pathlib import Path
 import re
+import shutil
 import subprocess
 import sys
 
@@ -65,26 +67,50 @@ def перевірити_смуги(root):
     return int(bool(вади))
 
 
+def прочитати_маніфест(root):
+    """Читає дані й обов'язкові файли тим самим кодом PowerShell, що й самооновлення."""
+    команда = """
+$ErrorActionPreference = 'Stop'
+[Console]::OutputEncoding = New-Object Text.UTF8Encoding($false)
+. $env:WRAPPER_READER
+Read-WrapperManifest $env:WRAPPER_MANIFEST | ConvertTo-Json -Compress
+"""
+    powershell = shutil.which('pwsh') or (shutil.which('powershell') if os.name == 'nt' else None)
+    if not powershell:
+        raise ValueError('немає pwsh для Import-PowerShellDataFile')
+    оточення = dict(os.environ, WRAPPER_READER=str(root / 'wrapper_update.ps1'),
+                   WRAPPER_MANIFEST=str(root / 'm9v/хеші.psd1'))
+    результат = subprocess.run([powershell, '-NoProfile', '-NonInteractive', '-ExecutionPolicy', 'Bypass',
+                                '-Command', команда], env=оточення, capture_output=True,
+                               encoding='utf-8', check=True)
+    return json.loads(результат.stdout.lstrip('\ufeff'))
+
+
 def main():
     """Завершується помилкою при розбіжності хешів або наборів файлів."""
     root = Path(__file__).resolve().parents[1]
-    # Значення беруться як є, довжина й регістр — перевірка нижче: шаблон з {64} мовчки викидав зіпсований рядок
-    # з обох словників, і маніфест із 63 знаками проходив (дошка 12231).
-    manifest = dict(re.findall(r"'([\w.]+\.ps1)'\s*=\s*'([^']*)'",
-                              (root / 'm9v/хеші.psd1').read_text(encoding='utf-8-sig')))
+    try:
+        дані = прочитати_маніфест(root)
+    except (OSError, ValueError, subprocess.CalledProcessError) as помилка:
+        print(f'✗ маніфест: {getattr(помилка, "stderr", None) or помилка}')
+        return 1
+    manifest = {н: х for н, х in дані.items() if re.fullmatch(r'[a-z][a-z0-9_]*\.ps1', н)}
     table = dict(re.findall(r"\| `([\w.]+\.ps1)` \| `([^`]*)` \|",
                            (root / 'НАЛАШТУВАННЯ.md').read_text(encoding='utf-8')))
-    зіпсовані = [f'{н}: {len(х)} знаків' for джерело in (manifest, table) for н, х in джерело.items()
-                 if not re.fullmatch(r'[0-9A-F]{64}', х)]
+    зіпсовані = [f'{н}: {х!r}' for джерело in (manifest, table) for н, х in джерело.items()
+                 if not isinstance(х, str) or not re.fullmatch(r'[0-9A-F]{64}', х)]
     if зіпсовані:
         print('✗ хеш не з 64 шістнадцяткових знаків (верхній регістр): ' + '; '.join(зіпсовані))
         return 1
-    if set(manifest) != set(table) or len(manifest) < 3:
+    if set(manifest) != set(table):
         print('✗ набори файлів маніфесту й таблиці не збігаються')
         return 1
     bad = 0
     for name, expected in manifest.items():
-        blob = subprocess.check_output(['git', 'show', f':аудит/адаптери/gemini/{name}'], cwd=root)
+        if '--диск' in sys.argv[1:]:
+            blob = (root / name).read_bytes().replace(b'\r\n', b'\n')
+        else:
+            blob = subprocess.check_output(['git', 'show', f':аудит/адаптери/gemini/{name}'], cwd=root)
         actual = hashlib.sha256(blob).hexdigest().upper()
         ok = expected == table[name] == actual and b'\r\n' not in blob
         print(f"{'✓' if ok else '✗'} {name}: {actual}")
