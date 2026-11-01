@@ -1,0 +1,37 @@
+── ПРОМПТ (2098 симв.) ──
+{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.", "One item carries one thing — of two alternatives list the first; a note in brackets is not an item.", "Slot \"accessory\" is for an item no other slot fits.", "\"is_outfit\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "ITEM_LIST", "answer_schema": {"is_outfit": "yes|no", "items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory", "color_hex": "<#rrggbb or null>", "worn": "<true, or false when the description says the outfit goes without it>"}]}, "input": ["\"description\" — the outfit description"]}, "description": "Wool-blend knit top in soft camel (#D4AF37), relaxed fit with long sleeves and a ribbed hem. Wide-leg trousers in charcoal gray (#36454F), high-waisted cut with a straight leg falling to mid-calf length, made of structured cotton-lyocell blend. Leather ankle boots in deep espresso brown (#4B3621), pointed toe with a modest 5 cm stacked heel and side zipper. Gold hoop earrings in polished brass (#D4AF37) and a slim leather clutch in matching camel tone. This ensemble strikes the right balance for a friend's birthday party by blending comfort with polished sophistication, perfect for an autumn evening under artificial light. The neutral palette allows her to shine while the relaxed knit offers ease of movement, yet the tailored trousers and ankle boots ensure the look remains appropriate for social celebration rather than casual lounging."}
+
+── ВІДПОВІДЬ (835 симв., 5.5 с, HTTP 200) ──
+{
+  "is_outfit": "yes",
+  "items": [
+    {
+      "name": "Wool-blend knit top",
+      "details": "relaxed fit with long sleeves and a ribbed hem",
+      "slot": "top",
+      "color_hex": "#D4AF37",
+      "worn": true
+    },
+    {
+      "name": "Wide-leg trousers",
+      "details": "high-waisted cut with a straight leg falling to mid-calf length, made of structured cotton-lyocell blend",
+      "slot": "bottom",
+      "color_hex": "#36454F",
+      "worn": true
+    },
+    {
+      "name": "Leather ankle boots",
+      "details": "pointed toe with a modest 5 cm stacked heel and side zipper",
+      "slot": "shoes",
+      "color_hex": "#4B3621",
+      "worn": true
+    },
+    {
+      "name": "Gold hoop earrings",
+      "details": "polished brass",
+      "slot": "earrings",
+      "color_hex": "#D4AF37",
+      "worn": true
+    }
+  ]
+}

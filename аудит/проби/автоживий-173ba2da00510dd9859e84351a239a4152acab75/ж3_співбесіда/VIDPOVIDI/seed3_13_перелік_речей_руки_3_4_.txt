@@ -1,0 +1,51 @@
+── ПРОМПТ (2690 симв.) ──
+{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.", "One item carries one thing — of two alternatives list the first; a note in brackets is not an item.", "Slot \"accessory\" is for an item no other slot fits.", "\"is_outfit\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "ITEM_LIST", "answer_schema": {"is_outfit": "yes|no", "items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory", "color_hex": "<#rrggbb or null>", "worn": "<true, or false when the description says the outfit goes without it>"}]}, "input": ["\"description\" — the outfit description"]}, "description": "Navy blue wool crepe blazer, tailored single-breasted fit with notch lapels, mid-thigh length, midnight blue (#191970), structured wool blend.\nWhite silk satin blouse, classic pointed collar and French cuffs, knee-length hem, crisp white (#FFFFFF), smooth liquid silk.\nCharcoal grey wool pencil skirt, straight cut with a slight A-line flare at the hip, just below the knee, charcoal grey (#36454F), heavy worsted wool.\nBlack patent leather pumps, sleek almond toe with a 7cm stiletto heel, black (#000000), glossy calfskin leather.\nSilver geometric drop earrings, medium drop length, silver (#C0C0C0), polished sterling silver.\nMinimalist diamond-accent watch, slim bracelet band, white face with minimal markings, stainless steel and white ceramic.\n\nThis outfit works perfectly for an autumn bank interview because the navy blazer and charcoal skirt establish a professional, authoritative silhouette suitable for finance while the midnight blue shade conveys trust and stability. The crisp white silk blouse adds a touch of refined elegance that elevates the look beyond standard corporate wear without appearing ostentatious, striking the right balance between formality and approachability. Completing the ensemble with black patent pumps ensures a polished finish appropriate for a morning appearance at 10 AM, while the silver accessories add a modern, intelligent edge that signals attention to detail expected of an analyst."}
+
+── ВІДПОВІДЬ (1171 симв., 6.0 с, HTTP 200) ──
+{
+"is_outfit": "yes",
+"items": [
+{
+"name": "Navy blue wool crepe blazer",
+"details": "tailored single-breasted fit with notch lapels, mid-thigh length, structured wool blend",
+"slot": "outerwear",
+"color_hex": "#191970",
+"worn": true
+},
+{
+"name": "White silk satin blouse",
+"details": "classic pointed collar and French cuffs, knee-length hem, smooth liquid silk",
+"slot": "top",
+"color_hex": "#FFFFFF",
+"worn": true
+},
+{
+"name": "Charcoal grey wool pencil skirt",
+"details": "straight cut with a slight A-line flare at the hip, just below the knee, heavy worsted wool",
+"slot": "bottom",
+"color_hex": "#36454F",
+"worn": true
+},
+{
+"name": "Black patent leather pumps",
+"details": "sleek almond toe with a 7cm stiletto heel, glossy calfskin leather",
+"slot": "shoes",
+"color_hex": "#000000",
+"worn": true
+},
+{
+"name": "Silver geometric drop earrings",
+"details": "medium drop length, polished sterling silver",
+"slot": "earrings",
+"color_hex": "#C0C0C0",
+"worn": true
+},
+{
+"name": "Minimalist diamond-accent watch",
+"details": "slim bracelet band, white face with minimal markings, stainless steel and white ceramic",
+"slot": "watch",
+"color_hex": null,
+"worn": true
+}
+]
+}

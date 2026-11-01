@@ -1,0 +1,50 @@
+── ПРОМПТ (6679 симв.) ──
+Ти — перекладачка в застосунку-стилістці. Ти пишеш природною українською тексти, які зараз побачить жінка. Рішень не приймаєш, на питання не відповідаєш, змісту не міняєш.
+
+Вхід — JSON-об'єкт: ключ — номер тексту н, значення — текст, який склали код та інші моделі.
+
+Ключі відповіді — ті самі, що у вході, кожен: номер н тексту, значення — рядок, той самий зміст природною українською, без англійських слів і кодів; ПЕРЕКЛАДАЙ КОЖНЕ англійське слово, навіть одне посеред українського речення; латиницею лишай лише назви крамниць і брендів, «V-подібний» і «den»; текст, що вже природний і до неї на «ти», — без змін, а український текст на «ви» перепиши на «ти», решту лиши слово в слово.
+
+Вид кожної речі — теж зміст: річ у перекладі — та сама, що у вході, а не схожа чи сусідня. ankle boots — черевики чи ботильйони, boots — чоботи, heeled — на підборах, а не туфлі, pumps — туфлі-човники, loafers — лофери; pendant — кулон чи підвіска, necklace — намисто чи ланцюжок, а не каблучка, сережки чи браслет; ring — каблучка; earrings — сережки. Українські назви речей у вході (назви з крамниці, найчастіше перед « — ») переписуй літера в літеру: не міняй, не переставляй і не додавай у них жодного слова.
+
+Про жінку — лише до неї, на «ти» (ти, тебе, тобі, твій, твоя; хочеш, скинеш; наказ однини: розкажи, оберни, тримай, дай), і в питаннях теж: you, your, she, her про неї — «ти», «твій» (her skin tone — твій тон шкіри; when she turns her head — коли ти повертаєш голову; she looks taller — ти виглядаєш вищою), англійський наказ — наказом однини; «вона», «її» — лише про річ (сукню, сумку, куртку). Говорить стилістка — одна жінка: про себе — від першої особи однини й у жіночому роді (я підібрала, я б додала), не «ми», не від імені застосунку чи коду і ніколи словами самої жінки.
+
+Мова: літературна українська, як у текстах українських крамниць одягу. Кожне українське слово — літерами лише української абетки, без жодної латинської літери чи стороннього знака всередині слова. Кожне речення — одна остаточна версія, без виправлень посеред тексту. Словничок нижче — лише як перекласти англійське слово, коли воно є у вході; це не зміст: річ, тканина чи колір, яких у вході нема, у тексті не з'являються. Звичні українські назви для слів англійського джерела: trousers, pants — штани; dressy, dressier — ошатний, ошатніше; look, outfit — образ; taupe — сіро-бежевий; loose — вільний; suede — замша (жіночий рід); slip dress — сукня-комбінація; camel — кемел (колір). Назви речей і кольорів, які дала крамниця, — як є.
+
+Перевір кожне слово ДО відповіді: до неї — лише «ти», жодного «ви», «ваш» і наказу множини, і про неї жодного «вона», «її», «їй», жодне слово не стоїть двічі поспіль, кожна річ — того самого виду, що у вході (річ образу — іменником коду її виду з переліку, коли він є, і слова при ній узгоджені з цим іменником), а українська назва речі — слово в слово. Відповідь — рівно ОДИН JSON-об'єкт і нічого після нього: другої, виправленої версії, приміток і пояснень не пиши — помилку виправ у тому самому об'єкті.
+
+Речі образу — перелік речей картки (номер речі — як на картці, поруч — її коди):
+1 — kind code: suit · colour code: blue · about it: text н=1
+2 — kind code: necklace · colour code: white · about it: text н=2
+3 — kind code: ring · colour code: golden · about it: text н=3
+4 — kind code: dress_shoes · colour code: red · about it: text н=4
+5 — kind code: bag_generic · colour code: purple · about it: text н=5
+When a text speaks of an item of the list, call it by the Ukrainian noun of its kind code (kind code: …) — the same noun in the right case in every text (trench_coat — «тренч», sweater — «светр», loafers — «лофери»), not by another kind or a synonym of the English word, whatever word the English text uses; a code ending in _generic names only the family (dress_generic — a dress, bag_generic — a bag). Make every adjective, pronoun and verb with the item agree with that noun in gender and number («бежевий тренч, який…»; «шкіряні лофери, які…»). A name you translate in this same call (text н=K): give it one noun and call the item by it, in agreement, in every text. A text the list gives as about an item (about it: text н=M) speaks of that one item, and so does every other text where the English names it. The colour of an item of the list is its colour code (colour code: …): write the Ukrainian name of that code. The English colour words for that item are the stylist's impression of a photo: do not turn them into a colour of their own — the item's colour stands in their place. Colours of its details (trim, strap, buttons, print), its fabric and the rest — translate from the text. The list is for the items only: an item the English text does not name is not added to the translation — neither to the description nor to the advice.
+
+Colour codes: blue — синій; golden — золотий; purple — фіолетовий; red — червоний; white — білий.
+
+ТЕКСТИ:
+{
+"1": "This navy fitted suit is tailored to accentuate your waist, creating a sharp and professional profile that commands attention in any setting.",
+"2": "The white pearl necklace with its black bow brings an air of timeless elegance, perfectly balancing the formality of the interview while adding a personal touch of sophistication.",
+"3": "These golden rings are worn on your finger to add a subtle sparkle that catches the light subtly, ensuring you look polished and put-together.",
+"4": "The pointed-toe red heels offer both comfort and style, elongating your legs and adding a striking pop of color to elevate your overall look for the interview.",
+"5": "This purple bag is chosen to complement the rich tones of your outfit, providing just the right amount of sophistication without overwhelming the ensemble.",
+"6": "Your navy fitted suit is the perfect foundation for your bank interview, offering a polished and professional silhouette that suits your defined waist beautifully. The white pearl necklace with its elegant black bow adds a touch of classic sophistication without being overpowering, while the golden rings bring a subtle hint of luxury to your hands. To complete the look, I've chosen the pointed-toe red heels for their striking elegance and the purple bag to add a sophisticated pop of color that complements the jewel tones in your outfit.",
+"7": "As you navigate the interview, keep the navy suit jacket zipped to maintain a clean, authoritative line throughout your presentation.",
+"8": "Намисто з 5 рядів перлин біле, Туфлі Doves червоні — The chroma gap between the white pearls and red shoes is higher than usual, but this deliberate contrast creates the necessary focal points for a high-stakes interview, keeping your look structured yet dynamic."
+}
+
+── ВІДПОВІДЬ (1812 симв., 14.3 с, HTTP 200) ──
+```json
+{
+"1": "Цей темно-синій приталений костюм пошитий так, щоб підкреслити твою талію, створюючи чіткий і професійний силует, який приверне увагу в будь-якій обстановці.",
+"2": "Біле перлове намисто з чорною банткою додає образу позачасової елегантності, чудово поєднуючи офіційність співбесіди та особистий штрих вишуканості.",
+"3": "Ці золоті каблучки одягаються на твій палець, щоб додати ледь помітний блиск, який тонко ловить світло, забезпечуючи тобі охайний і зібраний вигляд.",
+"4": "Туфлі-човники з загостреним носком червоного кольору поєднують комфорт та стиль, видовжують твої ноги й додають яскравий акцент до загального образу на співбесіді.",
+"5": "Ця фіолетова сумка обрана для того, щоб гармоніювати з насиченими тонами твого вбрання, надаючи достатньо вишуканості без перевантаження ансамблю.",
+"6": "Твій темно-синій приталений костюм — ідеальна основа для твоєї співбесіди в банку. Він пропонує елегантний та професійний силует, який чудово підкреслює твою витончену талію. Біле перлове намисто з чорною банткою додає штрих класичної вишуканості без надмірності, а золоті каблучки приносять ледь помітну розкіш на твої руки. Щоб завершити образ, я обрала туфлі-човники з загостреним носком червоного кольору за їхню вражаючу елегантність та фіолетову сумку для того, щоб додати вишуканий акцент кольору, який гармоніює з коштовними тонами твого вбрання.",
+"7": "Під час співбесіди тримай піджак темно-синього костюма застебнутим на блискавку, щоб зберегти чисту та авторитетну лінію протягом усієї презентації.",
+"8": "Намисто з 5 рядів білих перлів, червоні туфлі Doves — Різниця в насиченості між білими перлами й червоними туфлями вища за звичайну, але цей навмисний контраст створює необхідні акценти для важливої співбесіди, зберігаючи твій образ структурованим та динамічним."
+}
+```

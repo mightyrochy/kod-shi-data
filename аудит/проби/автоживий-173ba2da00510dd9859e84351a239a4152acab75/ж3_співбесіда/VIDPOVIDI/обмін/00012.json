@@ -1,0 +1,27 @@
+{
+ "версія": 1,
+ "запит": {
+  "model": "qwen/qwen3.5-9b",
+  "max_tokens": 4000,
+  "messages": [
+   {
+    "role": "user",
+    "content": [
+     {
+      "type": "text",
+      "text": "{\"task\": {\"role\": \"You read the description of an outfit and list its items as data.\", \"rules\": [\"One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.\", \"One item carries one thing — of two alternatives list the first; a note in brackets is not an item.\", \"Slot \\\"accessory\\\" is for an item no other slot fits.\", \"\\\"is_outfit\\\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note.\"], \"limits\": [\"Rely only on the input: do not invent what it does not contain.\", \"The answer is one JSON object following \\\"answer_schema\\\", without explanations and without ```.\"], \"language\": \"English\", \"answer\": \"ITEM_LIST\", \"answer_schema\": {\"is_outfit\": \"yes|no\", \"items\": [{\"name\": \"<what the item is>\", \"details\": \"<its cut, length and fabric>\", \"slot\": \"top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory\", \"color_hex\": \"<#rrggbb or null>\", \"worn\": \"<true, or false when the description says the outfit goes without it>\"}]}, \"input\": [\"\\\"description\\\" — the outfit description\"]}, \"description\": \"Structured blazer with trousers, sharp lapel cut, full length reaching mid-thigh, charcoal gray #3a3f45, fine wool blend with a subtle herringbone weave.\\nSilk blouse, tailored collar, standard fit extending to the hips, ivory white #f8f6f2, crisp 100% silk with a slight sheen.\\nPumps, pointed toe, classic stiletto heel height of 7 cm, deep navy blue #1b2a41, smooth polished leather with a rounded square silhouette.\\nThis outfit works because the structured charcoal blazer and matching trousers immediately project the professional authority required for an analyst role at a bank. The ivory silk blouse provides a necessary visual break against the dark outer layer while maintaining a crisp, clean neckline appropriate for a morning interview at ten o'clock. The pointed-toe navy pumps elevate the ensemble from casual business wear to formal attire without appearing overly severe or distracting from your qualifications.\"}"
+     }
+    ]
+   }
+  ],
+  "temperature": 1
+ },
+ "відповідь": {
+  "status": 200,
+  "contentType": "application/json",
+  "headers": {
+   "x-model": "qwen/qwen3.5-9b"
+  },
+  "body": "{\"content\":[{\"type\":\"text\",\"text\":\"{\\n  \\\"is_outfit\\\": \\\"yes\\\",\\n  \\\"items\\\": [\\n    {\\n      \\\"name\\\": \\\"structured blazer with trousers\\\",\\n      \\\"details\\\": \\\"sharp lapel cut, full length reaching mid-thigh, fine wool blend with a subtle herringbone weave\\\",\\n      \\\"slot\\\": \\\"set\\\",\\n      \\\"color_hex\\\": \\\"#3a3f45\\\",\\n      \\\"worn\\\": true\\n    },\\n    {\\n      \\\"name\\\": \\\"silk blouse\\\",\\n      \\\"details\\\": \\\"tailored collar, standard fit extending to the hips, crisp 100% silk with a slight sheen\\\",\\n      \\\"slot\\\": \\\"top\\\",\\n      \\\"color_hex\\\": \\\"#f8f6f2\\\",\\n      \\\"worn\\\": true\\n    },\\n    {\\n      \\\"name\\\": \\\"pumps\\\",\\n      \\\"details\\\": \\\"pointed toe, classic stiletto heel height of 7 cm, smooth polished leather with a rounded square silhouette\\\",\\n      \\\"slot\\\": \\\"shoes\\\",\\n      \\\"color_hex\\\": \\\"#1b2a41\\\",\\n      \\\"worn\\\": true\\n    }\\n  ]\\n}\"}],\"usage\":{\"input_tokens\":550,\"output_tokens\":249},\"stop_reason\":\"end_turn\"}"
+ }
+}
