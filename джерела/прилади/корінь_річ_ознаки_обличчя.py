@@ -168,6 +168,18 @@ def _формульні(дерево):
     (`if d > 180: d = 360 - d`). Межу ставить формула, а не код про неї."""
     вих = set()
     for в in ast.walk(дерево):
+        if isinstance(в, ast.For) and isinstance(в.iter, ast.Call) and isinstance(в.iter.func, ast.Name) \
+                and в.iter.func.id == "zip" and len(в.iter.args) == 2 and isinstance(в.iter.args[0], ast.Name) \
+                and isinstance(в.iter.args[1], ast.Subscript) and isinstance(в.iter.args[1].slice, ast.Slice) \
+                and isinstance(в.iter.args[1].value, ast.Name) and в.iter.args[1].value.id == в.iter.args[0].id:
+            # `for (x0, y0), (x1, y1) in zip(якорі, якорі[1:]): if g <= x1: …` — відрізок кусково-лінійної
+            # функції за таблицею якорів, а не поріг: межі ставить таблиця формули
+            цілі = _імена(в.target)
+            for і in в.body:
+                т = getattr(і, "test", None)
+                if isinstance(і, ast.If) and isinstance(т, ast.Compare) and len(т.ops) == 1 \
+                        and _імена(т.comparators[0]) and _імена(т.comparators[0]) <= цілі:
+                    вих.add(id(т))
         т = getattr(в, "test", None)
         if isinstance(в, ast.If) and not в.orelse and len(в.body) == 1 and isinstance(в.body[0], ast.AugAssign) \
                 and isinstance(т, ast.Compare) and len(т.ops) == 1 and isinstance(в.body[0].target, ast.Name) \
@@ -824,6 +836,20 @@ class Стан:
                         self.писати(ц.id, мк)
                         for кк, вв in кл:
                             self.ключі[ц.id][кк] = self.ключі[ц.id][кк] | вв
+                    elif isinstance(ц, ast.Subscript) and isinstance(ц.value, ast.Name) and кл \
+                            and ц.value.id in self.локальні:
+                        # `d[к], інше = f(…)`: запис позиції кортежу — як `d[к] = запис`, ключі окремо від міток
+                        self.e(ц.slice)
+                        км = self.ключі[ц.value.id]
+                        if _рядок(ц.slice):
+                            км[ц.slice.value] = км[ц.slice.value] | (мк - {F})
+                            for кк, вв in _з_префіксом(ц.slice.value, dict(кл)).items():
+                                км[кк] = км[кк] | вв
+                        else:
+                            for кк, вв in кл:
+                                км[кк] = км[кк] | вв
+                            км[МАПА] = МАПА_М
+                            self.писати(ц.value.id, мк - {F}, мутація=True)
                     else:
                         self.присвоїти(ц, мк | _усі(dict(кл)))
             else:
@@ -844,6 +870,17 @@ class Стан:
                         for кл, в in _з_префіксом(ціль.slice.value, вк).items():
                             к[кл] = к[кл] | в
                 elif isinstance(ціль.value, ast.Subscript) and self.у_шлях(ціль, вм, вк):
+                    return
+                elif isinstance(ціль.value, ast.Subscript) and isinstance(ціль.value.value, ast.Name) \
+                        and not _рядок(ціль.value.slice) and _рядок(ціль.slice) \
+                        and ціль.value.value.id in self.локальні and ціль.value.value.id not in self.глобальні:
+                    # `d[к]["поле"] = x`: поле елемента мапи d, а не мітка всієї d
+                    self.e(ціль.value.slice)
+                    км = self.ключі[ціль.value.value.id]
+                    км[ціль.slice.value] = км[ціль.slice.value] | (вм - {F})
+                    for кл, в in _з_префіксом(ціль.slice.value, вк).items():
+                        км[кл] = км[кл] | в
+                    км[МАПА] = МАПА_М
                     return
                 elif isinstance(ціль.value, ast.Name) and вк and ціль.value.id in self.локальні:
                     # `d[ід] = запис`: ключі запису — ключі елемента d, d — мапа
@@ -1966,6 +2003,9 @@ def стенд():
                     h = 30.0 if вільний else F["очі"]["h"]
                     C = F["очі"].get("C") or 0
                     return клас, h, C
+                ЯКОРІ = ((0.0, 25.0), (22.0, 25.0), (100.0, 100.0))
+                def поле_сл(F):
+                    return dict(L=F["шкіра"]["L"], спроба=0), 1
                 def палітра(d):
                     F = features(d["шкіра"], d["очі"], from_photo=True)
                     F = додати(F, "очі_кільце", d["очі_кільце"])
@@ -2036,6 +2076,19 @@ def стенд():
                     чому_б = F["очі"].get("чому") or "у профілі нема кольору очей — бік не читається"
                     назва_р = F["шкіра"].get("назва") or "корінь"
                     джерело_р = F["шкіра"].get("джерело") or "вимір"
+                    поля_сл = {}
+                    for с in ("верх", "низ"):
+                        поля_сл[с], _зайве = поле_сл(F)
+                    for с, v_сл in поля_сл.items():
+                        if v_сл["спроба"] > 0:
+                            pass
+                        if v_сл["L"] > 9:
+                            pass
+                    for (x0_я, y0_я), (x1_я, y1_я) in zip(ЯКОРІ, ЯКОРІ[1:]):
+                        if F["шкіра"]["L"] <= x1_я:
+                            pass
+                    for с in ("верх",):
+                        поля_сл[с]["якір"] = F["шкіра"]["L"]
                     зібрані = []
                     зібрані += [з for з in записи if з["id"] > 0]
                     for з in зібрані:
@@ -2102,6 +2155,10 @@ def стенд():
             ("не місце: текст, що називає незнання", є("риси.py", r"чому_б =", 2), False),
             ("не місце: запасне ім'я-рядок", є("риси.py", r"назва_р =", 2), False),
             ("п.2 запасне «вимір» замість джерела", є("риси.py", r"джерело_р =", 2), True),
+            ("не місце: запис позиції кортежу в мапу — чужий ключ", є("риси.py", r'v_сл\["спроба"\] > 0', 1), False),
+            ("не місце: поле елемента мапи d[к][\"поле\"] — чужий ключ", є("риси.py", r'v_сл\["спроба"\] > 0', 1), False),
+            ("п.1 запис позиції кортежу в мапу — її ключ", є("риси.py", r'v_сл\["L"\] > 9', 1), True),
+            ("не місце: відрізок інтерполяції за якорями", є("риси.py", r"<= x1_я", 1), False),
             ("не місце: лічильник setdefault за її ключем", є("риси.py", r'в_г\["ребер"\] == 1', 1), False),
             ("п.3 наявність запису", є("риси.py", r"return lambda п: \(any", 3), True),
             ("п.3 рядок таблиці", є("риси.py", r'"why_her_contrast"', 3), True),
