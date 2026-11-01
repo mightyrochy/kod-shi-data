@@ -549,6 +549,7 @@ class Стан:
             for кл, в in км:
                 self.ключі[п][кл] = в
         self.ключі_пов = {}
+        self.ключі_циклу = {}    # ім'я циклу над кортежем рядків → ці рядки (`kw.get(k)` читає лише їх)
         self.ключі_викликів = {}  # id(виклик) → (мітки поза ключами, ключі повернення)
         self.глобальні = set()
         self.невідомо = {}       # ім'я → гілка «невідомо» ("так"/"ні"), коли ім'я — перевірка невідомого на S
@@ -640,6 +641,10 @@ class Стан:
                 мітки = self.ключі_викликів[id(сам)][0]
             elif isinstance(сам, ast.Name) and any(self.ключі.get(сам.id, {}).values()):
                 мітки = self.читати_env(сам.id)
+            elif isinstance(сам, (ast.ListComp, ast.SetComp, ast.GeneratorExp, ast.List, ast.Subscript, ast.BinOp)):
+                м, кл = self.значення(сам)
+                if кл:
+                    мітки = м
             self.писати(ціль.id, мітки)
             if isinstance(значення, ast.Compare):
                 г = self.гілка_невідомо(значення)
@@ -709,8 +714,11 @@ class Стан:
             if _рядок(сам.slice):
                 к = сам.slice.value
                 return (км.get(к, E) | self.індекс(self.читати_env(сам.value.id), сам.slice, сам)), (_під(км, к) or None)
+            if isinstance(сам.slice, ast.Constant) and type(сам.slice.value) is int and ("#%d" % сам.slice.value) in км:
+                к = "#%d" % сам.slice.value
+                return (км[к] | self.індекс(self.читати_env(сам.value.id), ast.Constant(к), сам)), (_під(км, к) or None)
             return self.індекс(self.читати_env(сам.value.id), сам.slice, сам), (_без_першого(км) or None)
-        if isinstance(сам, ast.Call) and isinstance(сам.func, ast.Attribute) and сам.func.attr == "get" and сам.args \
+        if isinstance(сам, ast.Call) and isinstance(сам.func, ast.Attribute) and сам.func.attr in ("get", "pop") and сам.args \
                 and _рядок(сам.args[0]) and isinstance(сам.func.value, ast.Name) and self.ключі.get(сам.func.value.id) \
                 and not self.а.викликані(self.м, сам.func, self.ф):
             км = self.ключі[сам.func.value.id]
@@ -731,6 +739,14 @@ class Стан:
             self.e(сам)
             м, к = self.значення(сам.elt)
             return м - {F}, к
+        if isinstance(сам, ast.Tuple) and сам.elts and not any(isinstance(x, ast.Starred) for x in сам.elts):
+            ключі = {}
+            for і, x in enumerate(сам.elts):
+                м, к = self.значення(x)
+                if м:
+                    ключі["#%d" % і] = м
+                ключі.update(_з_префіксом("#%d" % і, к))
+            return E, (ключі or None)
         if isinstance(сам, ast.Name):
             к = self.ключі.get(сам.id)
             if к and any(к.values()):
@@ -758,6 +774,22 @@ class Стан:
             self.присвоїти(ціль.elts[0], E)
             self.елемент(ціль.elts[1], *self.значення(ітер.args[0]))
             return
+        if isinstance(ціль, ast.Tuple) and isinstance(ітер, ast.Call) and isinstance(ітер.func, ast.Name) and \
+                ітер.func.id == "zip" and len(ітер.args) == len(ціль.elts) and not ітер.keywords and \
+                not any(isinstance(x, ast.Starred) for x in ітер.args + ціль.elts):
+            self.e(ітер)
+            for ц, а in zip(ціль.elts, ітер.args):
+                self.елемент(ц, *self.значення(а))
+            return
+        if isinstance(ціль, ast.Tuple) and not any(isinstance(x, ast.Starred) for x in ціль.elts) and \
+                not (isinstance(ітер, ast.Call) and _ім_виклику(ітер.func) in ("enumerate", "items")):
+            м, кл = self.значення(ітер)
+            if кл and any(isinstance(к, str) and к.startswith("#") for к in кл):
+                self.e(ітер)
+                for і, ц in enumerate(ціль.elts):
+                    п = "#%d" % і
+                    self.елемент(ц, (м | кл.get(п, E)) - {F}, _під(кл, п) or None)
+                return
         мітки = self.e(ітер) - {F}
         if isinstance(ціль, ast.Tuple) and len(ціль.elts) == 2 and isinstance(ітер, ast.Call) and \
                 isinstance(ітер.func, ast.Attribute) and ітер.func.attr == "items" and not ітер.args:
@@ -765,6 +797,8 @@ class Стан:
             self.присвоїти(ціль.elts[1], мітки)
             return
         if isinstance(ціль, ast.Name):
+            if isinstance(ітер, (ast.Tuple, ast.List, ast.Set)) and ітер.elts and all(_рядок(x) for x in ітер.elts):
+                self.ключі_циклу[ціль.id] = self.ключі_циклу.get(ціль.id, frozenset()) | {x.value for x in ітер.elts}
             self.елемент(ціль, *self.значення(ітер))
             return
         self.присвоїти(ціль, мітки)
@@ -972,6 +1006,9 @@ class Стан:
         if isinstance(в, ast.Subscript):
             if isinstance(в.value, ast.Name) and _рядок(в.slice):
                 return self.ключ_імені(в.value.id, в.slice.value, в)
+            if isinstance(в.value, ast.Name) and isinstance(в.slice, ast.Constant) and type(в.slice.value) is int \
+                    and ("#%d" % в.slice.value) in self.ключі.get(в.value.id, {}):
+                return self.ключ_імені(в.value.id, "#%d" % в.slice.value, в)
             база = self.e(в.value)
             if isinstance(в.value, ast.Call) and _рядок(в.slice) and id(в.value) in self.ключі_викликів:
                 поза, ключі = self.ключі_викликів[id(в.value)]
@@ -1198,9 +1235,15 @@ class Стан:
                             for кл, вв in _з_префіксом(к.arg, підк).items():
                                 кк[кл] = кк[кл] | вв
                 return (приймач | усі) - {F} if ім == "setdefault" else E
-            if ім == "get" and в.args and not self.а.викликані(self.м, в.func, self.ф):
+            if ім in ("get", "pop") and в.args and not self.а.викликані(self.м, в.func, self.ф):
                 if isinstance(в.func.value, ast.Name) and _рядок(в.args[0]):
                     return self.ключ_імені(в.func.value.id, в.args[0].value, в, в.args[1] if len(в.args) > 1 else None)
+                if isinstance(в.func.value, ast.Name) and isinstance(в.args[0], ast.Name) \
+                        and в.args[0].id in self.ключі_циклу and self.ключі.get(в.func.value.id):
+                    вих = set()
+                    for к in self.ключі_циклу[в.args[0].id]:
+                        вих |= self.ключ_імені(в.func.value.id, к, в, в.args[1] if len(в.args) > 1 else None)
+                    return frozenset(вих)
                 return self.індекс(приймач, в.args[0], в, в.args[1] if len(в.args) > 1 else None)
             if ім == "keys" or (ім in ПОЗИЦІЙНІ and not self.а.викликані(self.м, в.func, self.ф)):
                 return E
