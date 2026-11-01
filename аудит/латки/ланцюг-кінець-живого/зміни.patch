@@ -121,7 +121,7 @@ index 974cdfc..6dccca1 100644
              }
              if ($null -eq $line) {
 diff --git a/аудит/адаптери/gemini/m9v/хеші.psd1 b/аудит/адаптери/gemini/m9v/хеші.psd1
-index 50cbcae..b98b023 100644
+index 50cbcae..d7db56f 100644
 --- a/аудит/адаптери/gemini/m9v/хеші.psd1
 +++ b/аудит/адаптери/gemini/m9v/хеші.psd1
 @@ -3,10 +3,10 @@
@@ -129,7 +129,7 @@ index 50cbcae..b98b023 100644
      'wrapper_update.ps1' = '45F254E5CB2FB7D882BBB9CE7CA121988FDF23BACCFE65CB67A4CA3B3F426FE7'
      'wrapper_probe.ps1'  = '85116D04C22EB64CBFF52E66BCEAE9B1091577A889EDD58A8B634093A82BDBC6'
 -    'wrapper_chain.ps1'  = '2C44BD77A2180F47054212220BCD473DEEC088B7EACE2646B3B40047752C8785'
-+    'wrapper_chain.ps1'  = 'E9DD1EA970E772AB4636F0898BDED85133BDF0713E5149CC03B90A483C31A447'
++    'wrapper_chain.ps1'  = 'ABE9238B05AB0EAB3E65912867159FC06EDE415188EC22E9C4D8DD2DD88487BA'
      'wrapper_health.ps1' = 'F63CDFD76BCBE92440A843759BCD6CED4E49B4BCBAC19620CACA4B74B9D58AA5'
      'gemini_run.ps1'     = 'ADC4A9549E85637C9ECF1E7EEE510CF44BD82EEC8553669B100DE02DA296F852'
 -    'gemini_publish.ps1' = '651718F8227770B4D9BADF001719DDCA60604DEE8BFEB3C8D19B6FC3D2D32DF8'
@@ -145,10 +145,10 @@ index 50cbcae..b98b023 100644
 +    'claude_run.ps1'     = '54CEB63CD621ED319370CF830BA206D68D48973407E3A4DAA01F5F95EBDA8C55'
  }
 diff --git a/аудит/адаптери/gemini/wrapper_chain.ps1 b/аудит/адаптери/gemini/wrapper_chain.ps1
-index 3ed3cc4..5efdb02 100644
+index 3ed3cc4..7376245 100644
 --- a/аудит/адаптери/gemini/wrapper_chain.ps1
 +++ b/аудит/адаптери/gemini/wrapper_chain.ps1
-@@ -264,13 +264,60 @@ function Get-ReviewModels($Pull, $Config, [datetimeoffset]$Now = [datetimeoffset
+@@ -264,13 +264,71 @@ function Get-ReviewModels($Pull, $Config, [datetimeoffset]$Now = [datetimeoffset
      @($pick)
  }
  
@@ -156,12 +156,14 @@ index 3ed3cc4..5efdb02 100644
 -    <# Опублікований звіт автоперевірки цієї голови — кінець; позначку іншого рушія вже не ставимо. #>
 +function Get-ChainTaskResults {
 +    <# Назва наряду береться з позначки смуги, а рядок — лише з прийнятого стану чи результату Claude після публікації. #>
++    $accepted = @()
      foreach ($file in @(Get-ChildItem -LiteralPath (Join-Path $WorkDir 'state') -Filter '*.json' -File -ErrorAction SilentlyContinue)) {
          $state = ConvertFrom-Json ([IO.File]::ReadAllText($file.FullName, $script:Utf8))
 -        if ([string](Get-Prop $state 'line') -cmatch ('^GEMINI ОБГОРТКА: ГОТОВО (?:gemini|claude|codex)/автоперевірка-' + $Number + '-' + $Head + ' ')) { return $true }
 +        $line = [string](Get-Prop $state 'line')
 +        if ($line -cnotmatch '^GEMINI ОБГОРТКА: (ГОТОВО|ЗАБЛОКОВАНО) ') { continue }
 +        $kind = $Matches[1]; $slug = [string](Get-Prop $state 'slug')
++        $accepted += [pscustomobject]@{ Line=$line; Utc=$file.CreationTimeUtc.ToString('o') }
 +        # Старий стан публікатора: id зберігає зв'язок із перевіреним результатом Codex/agy у теці обміну.
 +        if (-not $slug -and $file.BaseName -cmatch ('^(?:o-)?(' + ($script:IdPattern -replace '^\^|\$$','') + ')$')) {
 +            $path = Join-Path $OutDir ($Matches[1] + '.json')
@@ -173,8 +175,7 @@ index 3ed3cc4..5efdb02 100644
 +        }
 +        if ($slug -cnotmatch $script:SlugPattern) { continue }
 +        [pscustomobject]@{ Slug=$slug; Kind=$kind; Line=$line; Utc=$file.CreationTimeUtc.ToString('o') }
-     }
--    $false
++    }
 +    # Результат Claude вже має повну позначку, навіть коли виконавець скоротив назву гілки.
 +    $runs = Join-Path (Join-Path (Split-Path -Parent $WorkDir) 'claude-run') 'runs'
 +    foreach ($dir in @(Get-ChildItem -LiteralPath $runs -Directory -ErrorAction SilentlyContinue)) {
@@ -184,14 +185,24 @@ index 3ed3cc4..5efdb02 100644
 +        $marker = [string](Get-Prop $run 'marker'); $code = [string](Get-Prop $run 'code')
 +        if ($marker -cnotmatch '^gemini-queue/([^/]+)/[a-z0-9][a-z0-9.-]{1,63}/[1-9][0-9]*(?:/[^/]+)?$') { continue }
 +        $slug = $Matches[1]
-+        if ($slug -cnotmatch $script:SlugPattern -or $code -cnotmatch '^[A-Z][A-Z0-9_]{1,39}$' -or $code -cin @('QUOTA_WAIT','LINE_REJECTED')) { continue }
++        if ($slug -cnotmatch $script:SlugPattern -or $code -cnotmatch '^[A-Z][A-Z0-9_]{1,39}$' -or $code -ceq 'LINE_REJECTED') { continue }
++        if ($code -ceq 'QUOTA_WAIT') {
++            # Саме чекання не є кінцем; прийнятий ЗАБЛОКОВАНО за його позначкою — є.
++            foreach ($notice in $accepted) {
++                if ($notice.Line -cmatch ('^GEMINI ОБГОРТКА: ЗАБЛОКОВАНО claude/' + [regex]::Escape($slug) + ' QUOTA0_CLAUDE(?:_M[0-9]{1,6})?$')) {
++                    [pscustomobject]@{ Slug=$slug; Kind='ЗАБЛОКОВАНО'; Line=$notice.Line; Utc=$notice.Utc }
++                }
++            }
++            continue
++        }
 +        if ($code -ceq 'DONE') {
 +            $branch = [string](Get-Prop $run 'branch'); $head = [string](Get-Prop $run 'head')
 +            if ($branch -cnotmatch '^claude/[^/ ]+$' -or $head -cnotmatch $script:ShaPattern) { continue }
 +            $kind = 'ГОТОВО'; $line = "GEMINI ОБГОРТКА: ГОТОВО $branch $head"
 +        } else { $kind = 'ЗАБЛОКОВАНО'; $line = "GEMINI ОБГОРТКА: ЗАБЛОКОВАНО claude/$slug $code" }
 +        [pscustomobject]@{ Slug=$slug; Kind=$kind; Line=$line; Utc=(Get-Item -LiteralPath $path).LastWriteTimeUtc.ToString('o') }
-+    }
+     }
+-    $false
 +}
 +
 +function Get-ChainTaskCompletion([string]$Slug, [switch]$ReadyOnly, [switch]$Removed) {
@@ -213,7 +224,7 @@ index 3ed3cc4..5efdb02 100644
  }
  
  function Move-BlockedMarkers([string]$Slug, [string]$Model, [string]$Main, [datetimeoffset]$Now, [switch]$Gpu) {
-@@ -327,11 +374,7 @@ function Test-ReviewedMerge($Pull, $Reviewed, [string]$Main) {
+@@ -327,11 +385,7 @@ function Test-ReviewedMerge($Pull, $Reviewed, [string]$Main) {
      $n = [string]$Pull.number; $head = [string]$Pull.head.sha
      if (-not $Reviewed.ContainsKey($n)) { return $false }
      $old = $Reviewed[$n]
@@ -226,7 +237,7 @@ index 3ed3cc4..5efdb02 100644
      # Голову, віддану хмарному Claude, перевіряє диспетчер: чисте злиття main нового рядка не породжує.
      if (-not $verdict -and (Test-Path -LiteralPath (Get-SeenPath "cloud-review $n $($old.head)"))) { $verdict = $true }
      if (-not $verdict) { return $false }
-@@ -345,14 +388,10 @@ function Test-ReviewedMerge($Pull, $Reviewed, [string]$Main) {
+@@ -345,14 +399,10 @@ function Test-ReviewedMerge($Pull, $Reviewed, [string]$Main) {
  }
  
  function Get-LiveCompletion($Active) {
@@ -246,7 +257,7 @@ index 3ed3cc4..5efdb02 100644
  
  function Get-LatestLivePending($Pending) {
 diff --git a/аудит/адаптери/gemini/НАЛАШТУВАННЯ.md b/аудит/адаптери/gemini/НАЛАШТУВАННЯ.md
-index eaeef6e..cec89fe 100644
+index eaeef6e..5c6fee7 100644
 --- a/аудит/адаптери/gemini/НАЛАШТУВАННЯ.md
 +++ b/аудит/адаптери/gemini/НАЛАШТУВАННЯ.md
 @@ -450,13 +450,13 @@ $f = Join-Path "$env:USERPROFILE\gemini-outbox" $n
@@ -254,7 +265,7 @@ index eaeef6e..cec89fe 100644
  | `wrapper_probe.ps1` | `85116D04C22EB64CBFF52E66BCEAE9B1091577A889EDD58A8B634093A82BDBC6` |
  | `wrapper_update.ps1` | `45F254E5CB2FB7D882BBB9CE7CA121988FDF23BACCFE65CB67A4CA3B3F426FE7` |
 -| `wrapper_chain.ps1` | `2C44BD77A2180F47054212220BCD473DEEC088B7EACE2646B3B40047752C8785` |
-+| `wrapper_chain.ps1` | `E9DD1EA970E772AB4636F0898BDED85133BDF0713E5149CC03B90A483C31A447` |
++| `wrapper_chain.ps1` | `ABE9238B05AB0EAB3E65912867159FC06EDE415188EC22E9C4D8DD2DD88487BA` |
  | `gemini_run.ps1` | `ADC4A9549E85637C9ECF1E7EEE510CF44BD82EEC8553669B100DE02DA296F852` |
 -| `gemini_publish.ps1` | `651718F8227770B4D9BADF001719DDCA60604DEE8BFEB3C8D19B6FC3D2D32DF8` |
 +| `gemini_publish.ps1` | `53D8542D7AC9FC822D7E75BA490E1EC3AA24CB4680E5887072749CC85076384D` |
@@ -266,7 +277,7 @@ index eaeef6e..cec89fe 100644
  | `CodexInstaller` (`install.ps1` релізу Codex `CodexRelease`) | `A59CB66350098C33B021FF470D586AE8FE3B7CAF189CA7137B4FE3AF5D4DCE74` |
  
  Той самий список читають скрипти `m9v/` з `m9v/хеші.psd1` — міняти їх разом із таблицею. Підготовка одним проходом — `m9v/ЩО_НАТИСНУТИ.md`.
-@@ -618,7 +618,15 @@ SHA для того самого PR. PR-чернетку звіту переві
+@@ -618,7 +618,16 @@ SHA для того самого PR. PR-чернетку звіту переві
  звіт лишається гілкою (`ПЕРЕВІРКА.md`, «Під обгорткою»).
  
  `Get-LatestLivePending` згортає штампи до останньої готової збірки й журналює пропущені.
@@ -275,8 +286,9 @@ index eaeef6e..cec89fe 100644
 +незалежно від рушія (Claude, Codex, agy) й назви гілки звіту. `Get-ChainTaskResults` читає `slug` прийнятого стану
 +публікатора та повну `marker` у `claude-run/runs/*/result.json`; старі стани Codex/agy без `slug` відновлює через id
 +результату в теці обміну. Публікатор переносить `slug` у стан вихідних і зберігає при доставці та зведенні.
-+Claude записує результат із позначкою до рядка вихідних, включно з ранніми відмовами. `QUOTA_WAIT` і `LINE_REJECTED`
-+не є кінцем. Рядок `ЗАБЛОКОВАНО` за цією позначкою чи зняття всіх її віддалених ref теж звільняє активний прогін;
++Claude записує результат із позначкою до рядка вихідних, включно з ранніми відмовами. Самі `QUOTA_WAIT` і `LINE_REJECTED`
++не є кінцем; прийнятий рядок `ЗАБЛОКОВАНО` квоти зв'язується з позначкою з `QUOTA_WAIT`.
++Рядок `ЗАБЛОКОВАНО` за цією позначкою чи зняття всіх її віддалених ref теж звільняє активний прогін;
 +неопублікований резерв і збій читання GitHub його не звільняють.
 +Автоперевірка й рішення про пробудження диспетчера читають те саме джерело позначки; повтор перевірки голови
 +пригнічує лише звіт `ГОТОВО`. Поки активний прогін не закінчився, наступна позначка не створюється; після кінця —
@@ -298,10 +310,10 @@ index 6e8e112..b3260af 100644
          $back = Merge 'build.txt' $product; Invoke-WrapperChain
 diff --git a/аудит/адаптери/gemini/перевірка/сценарії_кінця_позначки.ps1 b/аудит/адаптери/gemini/перевірка/сценарії_кінця_позначки.ps1
 new file mode 100644
-index 0000000..9be7260
+index 0000000..2c25820
 --- /dev/null
 +++ b/аудит/адаптери/gemini/перевірка/сценарії_кінця_позначки.ps1
-@@ -0,0 +1,143 @@
+@@ -0,0 +1,146 @@
 +﻿#Requires -Version 5.1
 +param([string]$SourceDir = (Split-Path -Parent $PSScriptRoot))
 +$ErrorActionPreference = 'Stop'
@@ -389,6 +401,9 @@ index 0000000..9be7260
 +    Write-FileAtomic "$run/result.json" ((@{marker="gemini-queue/автоживий-$removed/cc-claude-test/1/p2-gpu";code='QUOTA_WAIT'}) | ConvertTo-Json)
 +    # Віддалену позначку вже прибрано: окремо перевіряємо, що QUOTA_WAIT не є результатом.
 +    Check 'очікування квоти не є кінцем смуги' (-not (Get-ChainTaskCompletion "автоживий-$removed"))
++    Write-FileAtomic "$WorkDir/state/quota.json" ((@{line="GEMINI ОБГОРТКА: ЗАБЛОКОВАНО claude/автоживий-$removed QUOTA0_CLAUDE_M60"}) | ConvertTo-Json)
++    Check 'прийнятий ЗАБЛОКОВАНО за позначкою очікування квоти — кінець' ([bool](Get-ChainTaskCompletion "автоживий-$removed"))
++    Remove-Item -LiteralPath "$WorkDir/state/quota.json"
 +    Check 'прибрана позначка — кінець' ([bool](Get-LiveCompletion ([pscustomobject]@{stamp=$removed;published=$true})))
 +    Check 'неопублікований резерв без позначки — ще не кінець' (-not (Get-LiveCompletion ([pscustomobject]@{stamp=('f'*40);published=$false})))
 +    $reviewHead = 'a'*40
