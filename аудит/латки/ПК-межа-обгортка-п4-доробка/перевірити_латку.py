@@ -17,18 +17,18 @@ def перевірити():
     with tempfile.TemporaryDirectory(prefix='patch-index-') as тимчасова:
         середовище = dict(os.environ, GIT_INDEX_FILE=str(Path(тимчасова) / 'index'))
 
-        def git(*аргументи):
+        def виклик(*аргументи):
             """Викликає git лише з ізольованим індексом."""
             return subprocess.check_output(['git', *аргументи], cwd=корінь, env=середовище)
 
-        git('read-tree', дані['база'])
-        git('apply', '--cached', '--check', str(латка))
-        git('apply', '--cached', str(латка))
+        виклик('read-tree', дані['база'])
+        виклик('apply', '--cached', '--check', str(латка))
+        виклик('apply', '--cached', str(латка))
         for файл, очікуваний in дані['sha256_файлів'].items():
-            blob = git('show', ':' + файл)
-            assert hashlib.sha256(blob).hexdigest() == очікуваний, файл
-        дерево = git('write-tree').decode('ascii').strip()
-        обгортка = git('rev-parse', дерево + ':аудит/адаптери/gemini').decode('ascii').strip()
+            вміст = виклик('show', ':' + файл)
+            assert hashlib.sha256(вміст).hexdigest() == очікуваний, файл
+        дерево = виклик('write-tree').decode('ascii').strip()
+        обгортка = виклик('rev-parse', дерево + ':аудит/адаптери/gemini').decode('ascii').strip()
     print(f'✓ git apply --cached --check: база {дані["база"]}')
     print(f'✓ точні SHA-256: {len(дані["sha256_файлів"])} файли')
     print(f'✓ дерево обгортки: {обгортка}')

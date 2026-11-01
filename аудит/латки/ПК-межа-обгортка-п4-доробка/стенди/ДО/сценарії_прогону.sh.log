@@ -1,0 +1,345 @@
+  ✗ a (abandon_then_done, stream), код 0, очікування ГОТОВО
+warning: in the working copy of '.github/workflows/x.yml', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'аудит/СТАН.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'аудит/адаптери/gemini/gemini_publish.ps1', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'аудит/наряди/М.2-проба-обгортки.md', LF will be replaced by CRLF the next time Git touches it
+warning: remote HEAD refers to nonexistent ref, unable to checkout
+gemini exit=0
+publish exit=0
+--- out:
+heartbeat.json
+pools.json
+skipped.json
+{"read_utc":"2026-11-01T12:47:15Z","time":"2026-11-01T14:47:15","isolation":"OK","lanes":[{"lane":"codex","n":"без межі","busy":[]},{"lane":"agy","n":"без межі","busy":[]}],"limits":"код","unsourced":["slots.codex","slots.agy","slots.claude","agy_turn_minutes","claude_hang_minutes","codex_stall_minutes","poll_minutes","usage_minutes"],"quota":{"read":"2026-11-01T12:47:14Z","known":true,"windows":[{"g":"GEMINI35FLASH","w":"","left":34,"reset":"2026-11-01T15:04:14Z"},{"g":"GEMINI31PRO","w":"","left":0,"reset":"2026-11-01T15:04:14Z"},{"g":"CLAUDEGPT","w":"","left":0,"reset":"2026-11-01T15:04:14Z"}]},"wait":[],"health":{"profile":"","skipped":"","read":"2026-11-01T12:47:15Z","zero":"0"}}{"v":1,"time":"2026-11-01T14:47:14","agy":"1.1.11","groups":[{"g":"GEMINI35FLASH","left":34,"reset":137,"n":"gemini 3 5 flash"},{"g":"GEMINI31PRO","left":0,"reset":137,"n":"gemini 3 1 pro"},{"g":"CLAUDEGPT","left":0,"reset":137,"n":"claude gpt"}],"models":["gemini-3.8-flash-high","claude-opus-5-5-high"],"unknown":false}[]
+
+--- wrapper.log:
+2026-11-01 14:47:15 позначка gemini-queue/М.2-проба-обгортки/gemini-3.8-flash-high/1: слот agy-1, пріоритет 5 -> 20261101-144714-411deb475ff3
+2026-11-01 14:47:15 відмова: poll_minutes без джерела в смуги.json — період опитування не задано, цикл зупинено
+2026-11-01 14:47:15 [5552] наряд gemini-queue/М.2-проба-обгортки/gemini-3.8-flash-high/1 a5ffed4805345640ca367870dfcc6a87ceb1fbad -> 20261101-144714-411deb475ff3 (слот agy-1)
+2026-11-01 14:47:16 [5552] копія задачі C:\Users\gemini\gemini-runs\w\20261101-143938-288abd956fc3\tmp\before\tmp\gemini-obhortka\ci-a\runs\w\20261101-144714-411deb475ff3\repo (a5ffed4805345640ca367870dfcc6a87ceb1fbad): тек-архівів не викладено — 0
+2026-11-01 14:47:16 [5552] догонка 1 (none)
+--- publish.log:
+2026-11-01 14:47:16 вихідні 20261101-144716-46492c06beee.txt: GEMINI ОБГОРТКА: ПУЛИ V=1.1.11 G=GEMINI35FLASH:34:137 G=GEMINI31PRO:0:137 G=CLAUDEGPT:0:137 M=gemini-3.8-flash-high,claude-opus-5-5-high
+--- claude:
+{"argv": ["-p", "--cloud", "session_01TEST", "--output-format", "json"], "stdin": "GEMINI ОБГОРТКА: ПУЛИ V=1.1.11 G=GEMINI35FLASH:34:137 G=GEMINI31PRO:0:137 G=CLAUDEGPT:0:137 M=gemini-3.8-flash-high,claude-opus-5-5-high"}
+--- origin gemini/:
+  ✗ b (github, stream), код 0, очікування GITHUB_DIR
+warning: in the working copy of '.github/workflows/x.yml', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'аудит/СТАН.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'аудит/адаптери/gemini/gemini_publish.ps1', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'аудит/наряди/М.2-проба-обгортки.md', LF will be replaced by CRLF the next time Git touches it
+warning: remote HEAD refers to nonexistent ref, unable to checkout
+gemini exit=0
+publish exit=0
+--- out:
+heartbeat.json
+pools.json
+skipped.json
+{"read_utc":"2026-11-01T12:47:20Z","time":"2026-11-01T14:47:20","isolation":"OK","lanes":[{"lane":"codex","n":"без межі","busy":[]},{"lane":"agy","n":"без межі","busy":[]}],"limits":"код","unsourced":["slots.codex","slots.agy","slots.claude","agy_turn_minutes","claude_hang_minutes","codex_stall_minutes","poll_minutes","usage_minutes"],"quota":{"read":"2026-11-01T12:47:20Z","known":true,"windows":[{"g":"GEMINI35FLASH","w":"","left":34,"reset":"2026-11-01T15:04:20Z"},{"g":"GEMINI31PRO","w":"","left":0,"reset":"2026-11-01T15:04:20Z"},{"g":"CLAUDEGPT","w":"","left":0,"reset":"2026-11-01T15:04:20Z"}]},"wait":[],"health":{"profile":"","skipped":"","read":"2026-11-01T12:47:20Z","zero":"0"}}{"v":1,"time":"2026-11-01T14:47:20","agy":"1.1.11","groups":[{"g":"GEMINI35FLASH","left":34,"reset":137,"n":"gemini 3 5 flash"},{"g":"GEMINI31PRO","left":0,"reset":137,"n":"gemini 3 1 pro"},{"g":"CLAUDEGPT","left":0,"reset":137,"n":"claude gpt"}],"models":["gemini-3.8-flash-high","claude-opus-5-5-high"],"unknown":false}[]
+
+--- wrapper.log:
+2026-11-01 14:47:20 позначка gemini-queue/М.2-проба-обгортки/gemini-3.8-flash-high/1: слот agy-1, пріоритет 5 -> 20261101-144720-79d91a5a80a0
+2026-11-01 14:47:20 відмова: poll_minutes без джерела в смуги.json — період опитування не задано, цикл зупинено
+2026-11-01 14:47:21 [37920] наряд gemini-queue/М.2-проба-обгортки/gemini-3.8-flash-high/1 45390d945e2083fbd52b6e438c8a7d216c8f136a -> 20261101-144720-79d91a5a80a0 (слот agy-1)
+2026-11-01 14:47:21 [37920] копія задачі C:\Users\gemini\gemini-runs\w\20261101-143938-288abd956fc3\tmp\before\tmp\gemini-obhortka\ci-b\runs\w\20261101-144720-79d91a5a80a0\repo (45390d945e2083fbd52b6e438c8a7d216c8f136a): тек-архівів не викладено — 0
+--- publish.log:
+2026-11-01 14:47:22 вихідні 20261101-144722-46492c06beee.txt: GEMINI ОБГОРТКА: ПУЛИ V=1.1.11 G=GEMINI35FLASH:34:137 G=GEMINI31PRO:0:137 G=CLAUDEGPT:0:137 M=gemini-3.8-flash-high,claude-opus-5-5-high
+--- claude:
+{"argv": ["-p", "--cloud", "session_01TEST", "--output-format", "json"], "stdin": "GEMINI ОБГОРТКА: ПУЛИ V=1.1.11 G=GEMINI35FLASH:34:137 G=GEMINI31PRO:0:137 G=CLAUDEGPT:0:137 M=gemini-3.8-flash-high,claude-opus-5-5-high"}
+--- origin gemini/:
+  ✗ c (github_renamed, stream), код 0, очікування GITHUB_DIR
+warning: in the working copy of '.github/workflows/x.yml', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'аудит/СТАН.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'аудит/адаптери/gemini/gemini_publish.ps1', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'аудит/наряди/М.2-проба-обгортки.md', LF will be replaced by CRLF the next time Git touches it
+warning: remote HEAD refers to nonexistent ref, unable to checkout
+gemini exit=0
+publish exit=0
+--- out:
+heartbeat.json
+pools.json
+skipped.json
+{"read_utc":"2026-11-01T12:47:26Z","time":"2026-11-01T14:47:26","isolation":"OK","lanes":[{"lane":"codex","n":"без межі","busy":[]},{"lane":"agy","n":"без межі","busy":[]}],"limits":"код","unsourced":["slots.codex","slots.agy","slots.claude","agy_turn_minutes","claude_hang_minutes","codex_stall_minutes","poll_minutes","usage_minutes"],"quota":{"read":"2026-11-01T12:47:25Z","known":true,"windows":[{"g":"GEMINI35FLASH","w":"","left":34,"reset":"2026-11-01T15:04:26Z"},{"g":"GEMINI31PRO","w":"","left":0,"reset":"2026-11-01T15:04:26Z"},{"g":"CLAUDEGPT","w":"","left":0,"reset":"2026-11-01T15:04:26Z"}]},"wait":[],"health":{"profile":"","skipped":"","read":"2026-11-01T12:47:26Z","zero":"0"}}{"v":1,"time":"2026-11-01T14:47:26","agy":"1.1.11","groups":[{"g":"GEMINI35FLASH","left":34,"reset":137,"n":"gemini 3 5 flash"},{"g":"GEMINI31PRO","left":0,"reset":137,"n":"gemini 3 1 pro"},{"g":"CLAUDEGPT","left":0,"reset":137,"n":"claude gpt"}],"models":["gemini-3.8-flash-high","claude-opus-5-5-high"],"unknown":false}[]
+
+--- wrapper.log:
+2026-11-01 14:47:26 позначка gemini-queue/М.2-проба-обгортки/gemini-3.8-flash-high/1: слот agy-1, пріоритет 5 -> 20261101-144726-f728e35c0941
+2026-11-01 14:47:26 відмова: poll_minutes без джерела в смуги.json — період опитування не задано, цикл зупинено
+2026-11-01 14:47:26 [38264] наряд gemini-queue/М.2-проба-обгортки/gemini-3.8-flash-high/1 5c66f268100de626cdce5e275c33522fd27dacd1 -> 20261101-144726-f728e35c0941 (слот agy-1)
+2026-11-01 14:47:27 [38264] копія задачі C:\Users\gemini\gemini-runs\w\20261101-143938-288abd956fc3\tmp\before\tmp\gemini-obhortka\ci-c\runs\w\20261101-144726-f728e35c0941\repo (5c66f268100de626cdce5e275c33522fd27dacd1): тек-архівів не викладено — 0
+--- publish.log:
+2026-11-01 14:47:27 вихідні 20261101-144727-46492c06beee.txt: GEMINI ОБГОРТКА: ПУЛИ V=1.1.11 G=GEMINI35FLASH:34:137 G=GEMINI31PRO:0:137 G=CLAUDEGPT:0:137 M=gemini-3.8-flash-high,claude-opus-5-5-high
+--- claude:
+{"argv": ["-p", "--cloud", "session_01TEST", "--output-format", "json"], "stdin": "GEMINI ОБГОРТКА: ПУЛИ V=1.1.11 G=GEMINI35FLASH:34:137 G=GEMINI31PRO:0:137 G=CLAUDEGPT:0:137 M=gemini-3.8-flash-high,claude-opus-5-5-high"}
+--- origin gemini/:
+  ✗ d (wrapper, stream), код 0, очікування WRAPPER_FILES
+warning: in the working copy of '.github/workflows/x.yml', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'аудит/СТАН.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'аудит/адаптери/gemini/gemini_publish.ps1', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'аудит/наряди/М.2-проба-обгортки.md', LF will be replaced by CRLF the next time Git touches it
+warning: remote HEAD refers to nonexistent ref, unable to checkout
+gemini exit=0
+publish exit=0
+--- out:
+heartbeat.json
+pools.json
+skipped.json
+{"read_utc":"2026-11-01T12:47:31Z","time":"2026-11-01T14:47:31","isolation":"OK","lanes":[{"lane":"codex","n":"без межі","busy":[]},{"lane":"agy","n":"без межі","busy":[]}],"limits":"код","unsourced":["slots.codex","slots.agy","slots.claude","agy_turn_minutes","claude_hang_minutes","codex_stall_minutes","poll_minutes","usage_minutes"],"quota":{"read":"2026-11-01T12:47:30Z","known":true,"windows":[{"g":"GEMINI35FLASH","w":"","left":34,"reset":"2026-11-01T15:04:31Z"},{"g":"GEMINI31PRO","w":"","left":0,"reset":"2026-11-01T15:04:31Z"},{"g":"CLAUDEGPT","w":"","left":0,"reset":"2026-11-01T15:04:31Z"}]},"wait":[],"health":{"profile":"","skipped":"","read":"2026-11-01T12:47:31Z","zero":"0"}}{"v":1,"time":"2026-11-01T14:47:31","agy":"1.1.11","groups":[{"g":"GEMINI35FLASH","left":34,"reset":137,"n":"gemini 3 5 flash"},{"g":"GEMINI31PRO","left":0,"reset":137,"n":"gemini 3 1 pro"},{"g":"CLAUDEGPT","left":0,"reset":137,"n":"claude gpt"}],"models":["gemini-3.8-flash-high","claude-opus-5-5-high"],"unknown":false}[]
+
+--- wrapper.log:
+2026-11-01 14:47:31 позначка gemini-queue/М.2-проба-обгортки/gemini-3.8-flash-high/1: слот agy-1, пріоритет 5 -> 20261101-144731-45cbd14c12bf
+2026-11-01 14:47:31 відмова: poll_minutes без джерела в смуги.json — період опитування не задано, цикл зупинено
+2026-11-01 14:47:31 [33508] наряд gemini-queue/М.2-проба-обгортки/gemini-3.8-flash-high/1 f07783b2213432f994cd531199c64d651dc4f0ae -> 20261101-144731-45cbd14c12bf (слот agy-1)
+2026-11-01 14:47:32 [33508] копія задачі C:\Users\gemini\gemini-runs\w\20261101-143938-288abd956fc3\tmp\before\tmp\gemini-obhortka\ci-d\runs\w\20261101-144731-45cbd14c12bf\repo (f07783b2213432f994cd531199c64d651dc4f0ae): тек-архівів не викладено — 0
+--- publish.log:
+2026-11-01 14:47:32 вихідні 20261101-144732-46492c06beee.txt: GEMINI ОБГОРТКА: ПУЛИ V=1.1.11 G=GEMINI35FLASH:34:137 G=GEMINI31PRO:0:137 G=CLAUDEGPT:0:137 M=gemini-3.8-flash-high,claude-opus-5-5-high
+--- claude:
+{"argv": ["-p", "--cloud", "session_01TEST", "--output-format", "json"], "stdin": "GEMINI ОБГОРТКА: ПУЛИ V=1.1.11 G=GEMINI35FLASH:34:137 G=GEMINI31PRO:0:137 G=CLAUDEGPT:0:137 M=gemini-3.8-flash-high,claude-opus-5-5-high"}
+--- origin gemini/:
+  ✗ e (blocked, stream), код 0, очікування BLOCKED_PUBLISHED
+warning: in the working copy of '.github/workflows/x.yml', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'аудит/СТАН.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'аудит/адаптери/gemini/gemini_publish.ps1', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'аудит/наряди/М.2-проба-обгортки.md', LF will be replaced by CRLF the next time Git touches it
+warning: remote HEAD refers to nonexistent ref, unable to checkout
+gemini exit=0
+publish exit=0
+--- out:
+heartbeat.json
+pools.json
+skipped.json
+{"read_utc":"2026-11-01T12:47:36Z","time":"2026-11-01T14:47:36","isolation":"OK","lanes":[{"lane":"codex","n":"без межі","busy":[]},{"lane":"agy","n":"без межі","busy":[]}],"limits":"код","unsourced":["slots.codex","slots.agy","slots.claude","agy_turn_minutes","claude_hang_minutes","codex_stall_minutes","poll_minutes","usage_minutes"],"quota":{"read":"2026-11-01T12:47:36Z","known":true,"windows":[{"g":"GEMINI35FLASH","w":"","left":34,"reset":"2026-11-01T15:04:36Z"},{"g":"GEMINI31PRO","w":"","left":0,"reset":"2026-11-01T15:04:36Z"},{"g":"CLAUDEGPT","w":"","left":0,"reset":"2026-11-01T15:04:36Z"}]},"wait":[],"health":{"profile":"","skipped":"","read":"2026-11-01T12:47:36Z","zero":"0"}}{"v":1,"time":"2026-11-01T14:47:36","agy":"1.1.11","groups":[{"g":"GEMINI35FLASH","left":34,"reset":137,"n":"gemini 3 5 flash"},{"g":"GEMINI31PRO","left":0,"reset":137,"n":"gemini 3 1 pro"},{"g":"CLAUDEGPT","left":0,"reset":137,"n":"claude gpt"}],"models":["gemini-3.8-flash-high","claude-opus-5-5-high"],"unknown":false}[]
+
+--- wrapper.log:
+2026-11-01 14:47:36 позначка gemini-queue/М.2-проба-обгортки/gemini-3.8-flash-high/1: слот agy-1, пріоритет 5 -> 20261101-144736-c0f7e3af320b
+2026-11-01 14:47:36 відмова: poll_minutes без джерела в смуги.json — період опитування не задано, цикл зупинено
+2026-11-01 14:47:36 [37152] наряд gemini-queue/М.2-проба-обгортки/gemini-3.8-flash-high/1 44244d6ba2fc1edc16dc9cdb39eaf518db2446d3 -> 20261101-144736-c0f7e3af320b (слот agy-1)
+2026-11-01 14:47:37 [37152] копія задачі C:\Users\gemini\gemini-runs\w\20261101-143938-288abd956fc3\tmp\before\tmp\gemini-obhortka\ci-e\runs\w\20261101-144736-c0f7e3af320b\repo (44244d6ba2fc1edc16dc9cdb39eaf518db2446d3): тек-архівів не викладено — 0
+--- publish.log:
+2026-11-01 14:47:38 вихідні 20261101-144737-46492c06beee.txt: GEMINI ОБГОРТКА: ПУЛИ V=1.1.11 G=GEMINI35FLASH:34:137 G=GEMINI31PRO:0:137 G=CLAUDEGPT:0:137 M=gemini-3.8-flash-high,claude-opus-5-5-high
+--- claude:
+{"argv": ["-p", "--cloud", "session_01TEST", "--output-format", "json"], "stdin": "GEMINI ОБГОРТКА: ПУЛИ V=1.1.11 G=GEMINI35FLASH:34:137 G=GEMINI31PRO:0:137 G=CLAUDEGPT:0:137 M=gemini-3.8-flash-high,claude-opus-5-5-high"}
+--- origin gemini/:
+  ✗ f (wrong_sha, stream), код 0, очікування ГОТОВО
+warning: in the working copy of '.github/workflows/x.yml', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'аудит/СТАН.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'аудит/адаптери/gemini/gemini_publish.ps1', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'аудит/наряди/М.2-проба-обгортки.md', LF will be replaced by CRLF the next time Git touches it
+warning: remote HEAD refers to nonexistent ref, unable to checkout
+gemini exit=0
+publish exit=0
+--- out:
+heartbeat.json
+pools.json
+skipped.json
+{"read_utc":"2026-11-01T12:47:41Z","time":"2026-11-01T14:47:41","isolation":"OK","lanes":[{"lane":"codex","n":"без межі","busy":[]},{"lane":"agy","n":"без межі","busy":[]}],"limits":"код","unsourced":["slots.codex","slots.agy","slots.claude","agy_turn_minutes","claude_hang_minutes","codex_stall_minutes","poll_minutes","usage_minutes"],"quota":{"read":"2026-11-01T12:47:41Z","known":true,"windows":[{"g":"GEMINI35FLASH","w":"","left":34,"reset":"2026-11-01T15:04:41Z"},{"g":"GEMINI31PRO","w":"","left":0,"reset":"2026-11-01T15:04:41Z"},{"g":"CLAUDEGPT","w":"","left":0,"reset":"2026-11-01T15:04:41Z"}]},"wait":[],"health":{"profile":"","skipped":"","read":"2026-11-01T12:47:41Z","zero":"0"}}{"v":1,"time":"2026-11-01T14:47:41","agy":"1.1.11","groups":[{"g":"GEMINI35FLASH","left":34,"reset":137,"n":"gemini 3 5 flash"},{"g":"GEMINI31PRO","left":0,"reset":137,"n":"gemini 3 1 pro"},{"g":"CLAUDEGPT","left":0,"reset":137,"n":"claude gpt"}],"models":["gemini-3.8-flash-high","claude-opus-5-5-high"],"unknown":false}[]
+
+--- wrapper.log:
+2026-11-01 14:47:41 позначка gemini-queue/М.2-проба-обгортки/gemini-3.8-flash-high/1: слот agy-1, пріоритет 5 -> 20261101-144741-6cc06f7da041
+2026-11-01 14:47:41 відмова: poll_minutes без джерела в смуги.json — період опитування не задано, цикл зупинено
+2026-11-01 14:47:42 [33788] наряд gemini-queue/М.2-проба-обгортки/gemini-3.8-flash-high/1 94f8c9db674740da8d4732c651c444cc6addbcf4 -> 20261101-144741-6cc06f7da041 (слот agy-1)
+2026-11-01 14:47:42 [33788] копія задачі C:\Users\gemini\gemini-runs\w\20261101-143938-288abd956fc3\tmp\before\tmp\gemini-obhortka\ci-f\runs\w\20261101-144741-6cc06f7da041\repo (94f8c9db674740da8d4732c651c444cc6addbcf4): тек-архівів не викладено — 0
+2026-11-01 14:47:43 [33788] догонка 1 (mismatch)
+--- publish.log:
+2026-11-01 14:47:43 вихідні 20261101-144743-46492c06beee.txt: GEMINI ОБГОРТКА: ПУЛИ V=1.1.11 G=GEMINI35FLASH:34:137 G=GEMINI31PRO:0:137 G=CLAUDEGPT:0:137 M=gemini-3.8-flash-high,claude-opus-5-5-high
+--- claude:
+{"argv": ["-p", "--cloud", "session_01TEST", "--output-format", "json"], "stdin": "GEMINI ОБГОРТКА: ПУЛИ V=1.1.11 G=GEMINI35FLASH:34:137 G=GEMINI31PRO:0:137 G=CLAUDEGPT:0:137 M=gemini-3.8-flash-high,claude-opus-5-5-high"}
+--- origin gemini/:
+  ✗ g (dirty, stream), код 0, очікування ГОТОВО
+warning: in the working copy of '.github/workflows/x.yml', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'аудит/СТАН.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'аудит/адаптери/gemini/gemini_publish.ps1', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'аудит/наряди/М.2-проба-обгортки.md', LF will be replaced by CRLF the next time Git touches it
+warning: remote HEAD refers to nonexistent ref, unable to checkout
+gemini exit=0
+publish exit=0
+--- out:
+heartbeat.json
+pools.json
+skipped.json
+{"read_utc":"2026-11-01T12:47:46Z","time":"2026-11-01T14:47:46","isolation":"OK","lanes":[{"lane":"codex","n":"без межі","busy":[]},{"lane":"agy","n":"без межі","busy":[]}],"limits":"код","unsourced":["slots.codex","slots.agy","slots.claude","agy_turn_minutes","claude_hang_minutes","codex_stall_minutes","poll_minutes","usage_minutes"],"quota":{"read":"2026-11-01T12:47:46Z","known":true,"windows":[{"g":"GEMINI35FLASH","w":"","left":34,"reset":"2026-11-01T15:04:46Z"},{"g":"GEMINI31PRO","w":"","left":0,"reset":"2026-11-01T15:04:46Z"},{"g":"CLAUDEGPT","w":"","left":0,"reset":"2026-11-01T15:04:46Z"}]},"wait":[],"health":{"profile":"","skipped":"","read":"2026-11-01T12:47:46Z","zero":"0"}}{"v":1,"time":"2026-11-01T14:47:46","agy":"1.1.11","groups":[{"g":"GEMINI35FLASH","left":34,"reset":137,"n":"gemini 3 5 flash"},{"g":"GEMINI31PRO","left":0,"reset":137,"n":"gemini 3 1 pro"},{"g":"CLAUDEGPT","left":0,"reset":137,"n":"claude gpt"}],"models":["gemini-3.8-flash-high","claude-opus-5-5-high"],"unknown":false}[]
+
+--- wrapper.log:
+2026-11-01 14:47:46 позначка gemini-queue/М.2-проба-обгортки/gemini-3.8-flash-high/1: слот agy-1, пріоритет 5 -> 20261101-144746-b7ac3d0c061f
+2026-11-01 14:47:46 відмова: poll_minutes без джерела в смуги.json — період опитування не задано, цикл зупинено
+2026-11-01 14:47:47 [17156] наряд gemini-queue/М.2-проба-обгортки/gemini-3.8-flash-high/1 d96200e32f917cf968a3b72534633934c00a4f71 -> 20261101-144746-b7ac3d0c061f (слот agy-1)
+2026-11-01 14:47:47 [17156] копія задачі C:\Users\gemini\gemini-runs\w\20261101-143938-288abd956fc3\tmp\before\tmp\gemini-obhortka\ci-g\runs\w\20261101-144746-b7ac3d0c061f\repo (d96200e32f917cf968a3b72534633934c00a4f71): тек-архівів не викладено — 0
+2026-11-01 14:47:48 [17156] догонка 1 (mismatch)
+--- publish.log:
+2026-11-01 14:47:47 вихідні 20261101-144747-46492c06beee.txt: GEMINI ОБГОРТКА: ПУЛИ V=1.1.11 G=GEMINI35FLASH:34:137 G=GEMINI31PRO:0:137 G=CLAUDEGPT:0:137 M=gemini-3.8-flash-high,claude-opus-5-5-high
+--- claude:
+{"argv": ["-p", "--cloud", "session_01TEST", "--output-format", "json"], "stdin": "GEMINI ОБГОРТКА: ПУЛИ V=1.1.11 G=GEMINI35FLASH:34:137 G=GEMINI31PRO:0:137 G=CLAUDEGPT:0:137 M=gemini-3.8-flash-high,claude-opus-5-5-high"}
+--- origin gemini/:
+  ✗ h (never, stream), код 0, очікування NO_REPORT
+warning: in the working copy of '.github/workflows/x.yml', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'аудит/СТАН.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'аудит/адаптери/gemini/gemini_publish.ps1', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'аудит/наряди/М.2-проба-обгортки.md', LF will be replaced by CRLF the next time Git touches it
+warning: remote HEAD refers to nonexistent ref, unable to checkout
+gemini exit=0
+publish exit=0
+--- out:
+heartbeat.json
+pools.json
+skipped.json
+{"read_utc":"2026-11-01T12:47:51Z","time":"2026-11-01T14:47:51","isolation":"OK","lanes":[{"lane":"codex","n":"без межі","busy":[]},{"lane":"agy","n":"без межі","busy":[]}],"limits":"код","unsourced":["slots.codex","slots.agy","slots.claude","agy_turn_minutes","claude_hang_minutes","codex_stall_minutes","poll_minutes","usage_minutes"],"quota":{"read":"2026-11-01T12:47:51Z","known":true,"windows":[{"g":"GEMINI35FLASH","w":"","left":34,"reset":"2026-11-01T15:04:51Z"},{"g":"GEMINI31PRO","w":"","left":0,"reset":"2026-11-01T15:04:51Z"},{"g":"CLAUDEGPT","w":"","left":0,"reset":"2026-11-01T15:04:51Z"}]},"wait":[],"health":{"profile":"","skipped":"","read":"2026-11-01T12:47:51Z","zero":"0"}}{"v":1,"time":"2026-11-01T14:47:51","agy":"1.1.11","groups":[{"g":"GEMINI35FLASH","left":34,"reset":137,"n":"gemini 3 5 flash"},{"g":"GEMINI31PRO","left":0,"reset":137,"n":"gemini 3 1 pro"},{"g":"CLAUDEGPT","left":0,"reset":137,"n":"claude gpt"}],"models":["gemini-3.8-flash-high","claude-opus-5-5-high"],"unknown":false}[]
+
+--- wrapper.log:
+2026-11-01 14:47:51 позначка gemini-queue/М.2-проба-обгортки/gemini-3.8-flash-high/1: слот agy-1, пріоритет 5 -> 20261101-144751-2d5434292630
+2026-11-01 14:47:52 відмова: poll_minutes без джерела в смуги.json — період опитування не задано, цикл зупинено
+2026-11-01 14:47:52 [9376] наряд gemini-queue/М.2-проба-обгортки/gemini-3.8-flash-high/1 f9f248fb41e8f59eeb27a8545a8cd58e4af26d09 -> 20261101-144751-2d5434292630 (слот agy-1)
+2026-11-01 14:47:52 [9376] копія задачі C:\Users\gemini\gemini-runs\w\20261101-143938-288abd956fc3\tmp\before\tmp\gemini-obhortka\ci-h\runs\w\20261101-144751-2d5434292630\repo (f9f248fb41e8f59eeb27a8545a8cd58e4af26d09): тек-архівів не викладено — 0
+2026-11-01 14:47:53 [9376] догонка 1 (none)
+--- publish.log:
+2026-11-01 14:47:53 вихідні 20261101-144753-46492c06beee.txt: GEMINI ОБГОРТКА: ПУЛИ V=1.1.11 G=GEMINI35FLASH:34:137 G=GEMINI31PRO:0:137 G=CLAUDEGPT:0:137 M=gemini-3.8-flash-high,claude-opus-5-5-high
+--- claude:
+{"argv": ["-p", "--cloud", "session_01TEST", "--output-format", "json"], "stdin": "GEMINI ОБГОРТКА: ПУЛИ V=1.1.11 G=GEMINI35FLASH:34:137 G=GEMINI31PRO:0:137 G=CLAUDEGPT:0:137 M=gemini-3.8-flash-high,claude-opus-5-5-high"}
+--- origin gemini/:
+  ✗ i (hang, stream), код 0, очікування ГОТОВО
+warning: in the working copy of '.github/workflows/x.yml', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'аудит/СТАН.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'аудит/адаптери/gemini/gemini_publish.ps1', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'аудит/наряди/М.2-проба-обгортки.md', LF will be replaced by CRLF the next time Git touches it
+warning: remote HEAD refers to nonexistent ref, unable to checkout
+gemini exit=0
+publish exit=0
+--- out:
+heartbeat.json
+pools.json
+skipped.json
+{"read_utc":"2026-11-01T12:47:56Z","time":"2026-11-01T14:47:56","isolation":"OK","lanes":[{"lane":"codex","n":"без межі","busy":[]},{"lane":"agy","n":"без межі","busy":[]}],"limits":"код","unsourced":["slots.codex","slots.agy","slots.claude","agy_turn_minutes","claude_hang_minutes","codex_stall_minutes","poll_minutes","usage_minutes"],"quota":{"read":"2026-11-01T12:47:56Z","known":true,"windows":[{"g":"GEMINI35FLASH","w":"","left":34,"reset":"2026-11-01T15:04:56Z"},{"g":"GEMINI31PRO","w":"","left":0,"reset":"2026-11-01T15:04:56Z"},{"g":"CLAUDEGPT","w":"","left":0,"reset":"2026-11-01T15:04:56Z"}]},"wait":[],"health":{"profile":"","skipped":"","read":"2026-11-01T12:47:56Z","zero":"0"}}{"v":1,"time":"2026-11-01T14:47:56","agy":"1.1.11","groups":[{"g":"GEMINI35FLASH","left":34,"reset":137,"n":"gemini 3 5 flash"},{"g":"GEMINI31PRO","left":0,"reset":137,"n":"gemini 3 1 pro"},{"g":"CLAUDEGPT","left":0,"reset":137,"n":"claude gpt"}],"models":["gemini-3.8-flash-high","claude-opus-5-5-high"],"unknown":false}[]
+
+--- wrapper.log:
+2026-11-01 14:47:56 позначка gemini-queue/М.2-проба-обгортки/gemini-3.8-flash-high/1: слот agy-1, пріоритет 5 -> 20261101-144756-032416c3aebc
+2026-11-01 14:47:56 відмова: poll_minutes без джерела в смуги.json — період опитування не задано, цикл зупинено
+2026-11-01 14:47:56 [25928] наряд gemini-queue/М.2-проба-обгортки/gemini-3.8-flash-high/1 cff464a5a0cd4e5e8bac96f68616e4fa2de43da0 -> 20261101-144756-032416c3aebc (слот agy-1)
+2026-11-01 14:47:57 [25928] копія задачі C:\Users\gemini\gemini-runs\w\20261101-143938-288abd956fc3\tmp\before\tmp\gemini-obhortka\ci-i\runs\w\20261101-144756-032416c3aebc\repo (cff464a5a0cd4e5e8bac96f68616e4fa2de43da0): тек-архівів не викладено — 0
+--- publish.log:
+2026-11-01 14:47:57 вихідні 20261101-144757-46492c06beee.txt: GEMINI ОБГОРТКА: ПУЛИ V=1.1.11 G=GEMINI35FLASH:34:137 G=GEMINI31PRO:0:137 G=CLAUDEGPT:0:137 M=gemini-3.8-flash-high,claude-opus-5-5-high
+--- claude:
+{"argv": ["-p", "--cloud", "session_01TEST", "--output-format", "json"], "stdin": "GEMINI ОБГОРТКА: ПУЛИ V=1.1.11 G=GEMINI35FLASH:34:137 G=GEMINI31PRO:0:137 G=CLAUDEGPT:0:137 M=gemini-3.8-flash-high,claude-opus-5-5-high"}
+--- origin gemini/:
+  ✗ j (die, stream), код 0, очікування ГОТОВО
+warning: in the working copy of '.github/workflows/x.yml', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'аудит/СТАН.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'аудит/адаптери/gemini/gemini_publish.ps1', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'аудит/наряди/М.2-проба-обгортки.md', LF will be replaced by CRLF the next time Git touches it
+warning: remote HEAD refers to nonexistent ref, unable to checkout
+gemini exit=0
+publish exit=0
+--- out:
+heartbeat.json
+pools.json
+skipped.json
+{"read_utc":"2026-11-01T12:48:02Z","time":"2026-11-01T14:48:02","isolation":"OK","lanes":[{"lane":"codex","n":"без межі","busy":[]},{"lane":"agy","n":"без межі","busy":[]}],"limits":"код","unsourced":["slots.codex","slots.agy","slots.claude","agy_turn_minutes","claude_hang_minutes","codex_stall_minutes","poll_minutes","usage_minutes"],"quota":{"read":"2026-11-01T12:48:01Z","known":true,"windows":[{"g":"GEMINI35FLASH","w":"","left":34,"reset":"2026-11-01T15:05:01Z"},{"g":"GEMINI31PRO","w":"","left":0,"reset":"2026-11-01T15:05:01Z"},{"g":"CLAUDEGPT","w":"","left":0,"reset":"2026-11-01T15:05:01Z"}]},"wait":[],"health":{"profile":"","skipped":"","read":"2026-11-01T12:48:02Z","zero":"0"}}{"v":1,"time":"2026-11-01T14:48:01","agy":"1.1.11","groups":[{"g":"GEMINI35FLASH","left":34,"reset":137,"n":"gemini 3 5 flash"},{"g":"GEMINI31PRO","left":0,"reset":137,"n":"gemini 3 1 pro"},{"g":"CLAUDEGPT","left":0,"reset":137,"n":"claude gpt"}],"models":["gemini-3.8-flash-high","claude-opus-5-5-high"],"unknown":false}[]
+
+--- wrapper.log:
+2026-11-01 14:48:02 позначка gemini-queue/М.2-проба-обгортки/gemini-3.8-flash-high/1: слот agy-1, пріоритет 5 -> 20261101-144801-bc991a38ccce
+2026-11-01 14:48:02 відмова: poll_minutes без джерела в смуги.json — період опитування не задано, цикл зупинено
+2026-11-01 14:48:02 [21660] наряд gemini-queue/М.2-проба-обгортки/gemini-3.8-flash-high/1 0fd4a35a7011476ea5fad534f3a357489f77a7da -> 20261101-144801-bc991a38ccce (слот agy-1)
+2026-11-01 14:48:03 [21660] копія задачі C:\Users\gemini\gemini-runs\w\20261101-143938-288abd956fc3\tmp\before\tmp\gemini-obhortka\ci-j\runs\w\20261101-144801-bc991a38ccce\repo (0fd4a35a7011476ea5fad534f3a357489f77a7da): тек-архівів не викладено — 0
+2026-11-01 14:48:03 [21660] догонка 1 (eof)
+--- publish.log:
+2026-11-01 14:48:03 вихідні 20261101-144803-46492c06beee.txt: GEMINI ОБГОРТКА: ПУЛИ V=1.1.11 G=GEMINI35FLASH:34:137 G=GEMINI31PRO:0:137 G=CLAUDEGPT:0:137 M=gemini-3.8-flash-high,claude-opus-5-5-high
+--- claude:
+{"argv": ["-p", "--cloud", "session_01TEST", "--output-format", "json"], "stdin": "GEMINI ОБГОРТКА: ПУЛИ V=1.1.11 G=GEMINI35FLASH:34:137 G=GEMINI31PRO:0:137 G=CLAUDEGPT:0:137 M=gemini-3.8-flash-high,claude-opus-5-5-high"}
+--- origin gemini/:
+  ✗ k (nothing, stream), код 0, очікування BLOCKED
+warning: in the working copy of '.github/workflows/x.yml', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'аудит/СТАН.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'аудит/адаптери/gemini/gemini_publish.ps1', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'аудит/наряди/М.2-проба-обгортки.md', LF will be replaced by CRLF the next time Git touches it
+warning: remote HEAD refers to nonexistent ref, unable to checkout
+gemini exit=0
+publish exit=0
+--- out:
+heartbeat.json
+pools.json
+skipped.json
+{"read_utc":"2026-11-01T12:48:07Z","time":"2026-11-01T14:48:07","isolation":"OK","lanes":[{"lane":"codex","n":"без межі","busy":[]},{"lane":"agy","n":"без межі","busy":[]}],"limits":"код","unsourced":["slots.codex","slots.agy","slots.claude","agy_turn_minutes","claude_hang_minutes","codex_stall_minutes","poll_minutes","usage_minutes"],"quota":{"read":"2026-11-01T12:48:07Z","known":true,"windows":[{"g":"GEMINI35FLASH","w":"","left":34,"reset":"2026-11-01T15:05:07Z"},{"g":"GEMINI31PRO","w":"","left":0,"reset":"2026-11-01T15:05:07Z"},{"g":"CLAUDEGPT","w":"","left":0,"reset":"2026-11-01T15:05:07Z"}]},"wait":[],"health":{"profile":"","skipped":"","read":"2026-11-01T12:48:07Z","zero":"0"}}{"v":1,"time":"2026-11-01T14:48:07","agy":"1.1.11","groups":[{"g":"GEMINI35FLASH","left":34,"reset":137,"n":"gemini 3 5 flash"},{"g":"GEMINI31PRO","left":0,"reset":137,"n":"gemini 3 1 pro"},{"g":"CLAUDEGPT","left":0,"reset":137,"n":"claude gpt"}],"models":["gemini-3.8-flash-high","claude-opus-5-5-high"],"unknown":false}[]
+
+--- wrapper.log:
+2026-11-01 14:48:07 позначка gemini-queue/М.2-проба-обгортки/gemini-3.8-flash-high/1: слот agy-1, пріоритет 5 -> 20261101-144807-6ea9135aeac8
+2026-11-01 14:48:07 відмова: poll_minutes без джерела в смуги.json — період опитування не задано, цикл зупинено
+2026-11-01 14:48:08 [10156] наряд gemini-queue/М.2-проба-обгортки/gemini-3.8-flash-high/1 61de95450db318d6e671092a0eea659af714a1a9 -> 20261101-144807-6ea9135aeac8 (слот agy-1)
+2026-11-01 14:48:08 [10156] копія задачі C:\Users\gemini\gemini-runs\w\20261101-143938-288abd956fc3\tmp\before\tmp\gemini-obhortka\ci-k\runs\w\20261101-144807-6ea9135aeac8\repo (61de95450db318d6e671092a0eea659af714a1a9): тек-архівів не викладено — 0
+--- publish.log:
+2026-11-01 14:48:09 вихідні 20261101-144809-46492c06beee.txt: GEMINI ОБГОРТКА: ПУЛИ V=1.1.11 G=GEMINI35FLASH:34:137 G=GEMINI31PRO:0:137 G=CLAUDEGPT:0:137 M=gemini-3.8-flash-high,claude-opus-5-5-high
+--- claude:
+{"argv": ["-p", "--cloud", "session_01TEST", "--output-format", "json"], "stdin": "GEMINI ОБГОРТКА: ПУЛИ V=1.1.11 G=GEMINI35FLASH:34:137 G=GEMINI31PRO:0:137 G=CLAUDEGPT:0:137 M=gemini-3.8-flash-high,claude-opus-5-5-high"}
+--- origin gemini/:
+  ✗ l (abandon_then_done, print), код 0, очікування ГОТОВО
+warning: in the working copy of '.github/workflows/x.yml', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'аудит/СТАН.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'аудит/адаптери/gemini/gemini_publish.ps1', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'аудит/наряди/М.2-проба-обгортки.md', LF will be replaced by CRLF the next time Git touches it
+warning: remote HEAD refers to nonexistent ref, unable to checkout
+gemini exit=0
+publish exit=0
+--- out:
+heartbeat.json
+pools.json
+skipped.json
+{"read_utc":"2026-11-01T12:48:13Z","time":"2026-11-01T14:48:13","isolation":"OK","lanes":[{"lane":"codex","n":"без межі","busy":[]},{"lane":"agy","n":"без межі","busy":[]}],"limits":"код","unsourced":["slots.codex","slots.agy","slots.claude","agy_turn_minutes","claude_hang_minutes","codex_stall_minutes","poll_minutes","usage_minutes"],"quota":{"read":"2026-11-01T12:48:13Z","known":true,"windows":[{"g":"GEMINI35FLASH","w":"","left":34,"reset":"2026-11-01T15:05:13Z"},{"g":"GEMINI31PRO","w":"","left":0,"reset":"2026-11-01T15:05:13Z"},{"g":"CLAUDEGPT","w":"","left":0,"reset":"2026-11-01T15:05:13Z"}]},"wait":[],"health":{"profile":"","skipped":"","read":"2026-11-01T12:48:13Z","zero":"0"}}{"v":1,"time":"2026-11-01T14:48:13","agy":"1.1.11","groups":[{"g":"GEMINI35FLASH","left":34,"reset":137,"n":"gemini 3 5 flash"},{"g":"GEMINI31PRO","left":0,"reset":137,"n":"gemini 3 1 pro"},{"g":"CLAUDEGPT","left":0,"reset":137,"n":"claude gpt"}],"models":["gemini-3.8-flash-high","claude-opus-5-5-high"],"unknown":false}[]
+
+--- wrapper.log:
+2026-11-01 14:48:13 позначка gemini-queue/М.2-проба-обгортки/gemini-3.8-flash-high/1: слот agy-1, пріоритет 5 -> 20261101-144813-5a57788a67d4
+2026-11-01 14:48:13 відмова: poll_minutes без джерела в смуги.json — період опитування не задано, цикл зупинено
+2026-11-01 14:48:14 [25592] наряд gemini-queue/М.2-проба-обгортки/gemini-3.8-flash-high/1 17cd7ebf2d7dd0eab22df76d13015f63be1094f4 -> 20261101-144813-5a57788a67d4 (слот agy-1)
+2026-11-01 14:48:14 [25592] копія задачі C:\Users\gemini\gemini-runs\w\20261101-143938-288abd956fc3\tmp\before\tmp\gemini-obhortka\ci-l\runs\w\20261101-144813-5a57788a67d4\repo (17cd7ebf2d7dd0eab22df76d13015f63be1094f4): тек-архівів не викладено — 0
+2026-11-01 14:48:15 [25592] догонка 1 (none)
+--- publish.log:
+2026-11-01 14:48:15 вихідні 20261101-144815-46492c06beee.txt: GEMINI ОБГОРТКА: ПУЛИ V=1.1.11 G=GEMINI35FLASH:34:137 G=GEMINI31PRO:0:137 G=CLAUDEGPT:0:137 M=gemini-3.8-flash-high,claude-opus-5-5-high
+--- claude:
+{"argv": ["-p", "--cloud", "session_01TEST", "--output-format", "json"], "stdin": "GEMINI ОБГОРТКА: ПУЛИ V=1.1.11 G=GEMINI35FLASH:34:137 G=GEMINI31PRO:0:137 G=CLAUDEGPT:0:137 M=gemini-3.8-flash-high,claude-opus-5-5-high"}
+--- origin gemini/:
+  ✗ m (hang, print), код 0, очікування TIMEOUT_PUBLISHED
+warning: in the working copy of '.github/workflows/x.yml', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'аудит/СТАН.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'аудит/адаптери/gemini/gemini_publish.ps1', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'аудит/наряди/М.2-проба-обгортки.md', LF will be replaced by CRLF the next time Git touches it
+warning: remote HEAD refers to nonexistent ref, unable to checkout
+gemini exit=0
+publish exit=0
+--- out:
+heartbeat.json
+pools.json
+skipped.json
+{"read_utc":"2026-11-01T12:48:20Z","time":"2026-11-01T14:48:20","isolation":"OK","lanes":[{"lane":"codex","n":"без межі","busy":[]},{"lane":"agy","n":"без межі","busy":[]}],"limits":"код","unsourced":["slots.codex","slots.agy","slots.claude","agy_turn_minutes","claude_hang_minutes","codex_stall_minutes","poll_minutes","usage_minutes"],"quota":{"read":"2026-11-01T12:48:20Z","known":true,"windows":[{"g":"GEMINI35FLASH","w":"","left":34,"reset":"2026-11-01T15:05:20Z"},{"g":"GEMINI31PRO","w":"","left":0,"reset":"2026-11-01T15:05:20Z"},{"g":"CLAUDEGPT","w":"","left":0,"reset":"2026-11-01T15:05:20Z"}]},"wait":[],"health":{"profile":"","skipped":"","read":"2026-11-01T12:48:20Z","zero":"0"}}{"v":1,"time":"2026-11-01T14:48:20","agy":"1.1.11","groups":[{"g":"GEMINI35FLASH","left":34,"reset":137,"n":"gemini 3 5 flash"},{"g":"GEMINI31PRO","left":0,"reset":137,"n":"gemini 3 1 pro"},{"g":"CLAUDEGPT","left":0,"reset":137,"n":"claude gpt"}],"models":["gemini-3.8-flash-high","claude-opus-5-5-high"],"unknown":false}[]
+
+--- wrapper.log:
+2026-11-01 14:48:20 позначка gemini-queue/М.2-проба-обгортки/gemini-3.8-flash-high/1: слот agy-1, пріоритет 5 -> 20261101-144820-4c58d953c7d1
+2026-11-01 14:48:20 відмова: poll_minutes без джерела в смуги.json — період опитування не задано, цикл зупинено
+2026-11-01 14:48:21 [42268] наряд gemini-queue/М.2-проба-обгортки/gemini-3.8-flash-high/1 57bbb64eb34c599517500238130d8bff52c5852c -> 20261101-144820-4c58d953c7d1 (слот agy-1)
+2026-11-01 14:48:21 [42268] копія задачі C:\Users\gemini\gemini-runs\w\20261101-143938-288abd956fc3\tmp\before\tmp\gemini-obhortka\ci-m\runs\w\20261101-144820-4c58d953c7d1\repo (57bbb64eb34c599517500238130d8bff52c5852c): тек-архівів не викладено — 0
+--- publish.log:
+2026-11-01 14:48:21 вихідні 20261101-144821-46492c06beee.txt: GEMINI ОБГОРТКА: ПУЛИ V=1.1.11 G=GEMINI35FLASH:34:137 G=GEMINI31PRO:0:137 G=CLAUDEGPT:0:137 M=gemini-3.8-flash-high,claude-opus-5-5-high
+--- claude:
+{"argv": ["-p", "--cloud", "session_01TEST", "--output-format", "json"], "stdin": "GEMINI ОБГОРТКА: ПУЛИ V=1.1.11 G=GEMINI35FLASH:34:137 G=GEMINI31PRO:0:137 G=CLAUDEGPT:0:137 M=gemini-3.8-flash-high,claude-opus-5-5-high"}
+--- origin gemini/:
+  ✗ n (abandon_then_done, stream), код 0, очікування MODEL_INVALID
+warning: in the working copy of '.github/workflows/x.yml', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'аудит/СТАН.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'аудит/адаптери/gemini/gemini_publish.ps1', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'аудит/наряди/М.2-проба-обгортки.md', LF will be replaced by CRLF the next time Git touches it
+warning: remote HEAD refers to nonexistent ref, unable to checkout
+gemini exit=0
+publish exit=0
+--- out:
+heartbeat.json
+pools.json
+skipped.json
+{"read_utc":"2026-11-01T12:48:25Z","time":"2026-11-01T14:48:25","isolation":"OK","lanes":[{"lane":"codex","n":"без межі","busy":[]},{"lane":"agy","n":"без межі","busy":[]}],"limits":"код","unsourced":["slots.codex","slots.agy","slots.claude","agy_turn_minutes","claude_hang_minutes","codex_stall_minutes","poll_minutes","usage_minutes"],"quota":{"read":"2026-11-01T12:48:25Z","known":true,"windows":[{"g":"GEMINI35FLASH","w":"","left":34,"reset":"2026-11-01T15:05:25Z"},{"g":"GEMINI31PRO","w":"","left":0,"reset":"2026-11-01T15:05:25Z"},{"g":"CLAUDEGPT","w":"","left":0,"reset":"2026-11-01T15:05:25Z"}]},"wait":[],"health":{"profile":"","skipped":"","read":"2026-11-01T12:48:25Z","zero":"0"}}{"v":1,"time":"2026-11-01T14:48:25","agy":"1.1.11","groups":[{"g":"GEMINI35FLASH","left":34,"reset":137,"n":"gemini 3 5 flash"},{"g":"GEMINI31PRO","left":0,"reset":137,"n":"gemini 3 1 pro"},{"g":"CLAUDEGPT","left":0,"reset":137,"n":"claude gpt"}],"models":["gemini-3.8-flash-high","claude-opus-5-5-high"],"unknown":false}[]
+
+--- wrapper.log:
+2026-11-01 14:48:25 квота: групу моделі bad-model не розпізнано; вивід /usage: {"model_quotas": [{"name": "Gemini 3.5 Flash", "remaining_percent": 34, "reset_time": "2026-11-01T15:05:25Z"}, {"name": "Gemini 3.1 Pro", "remaining_percent": 0, "reset_time": "2026-11-01T15:05:25Z"}, {"name": "Claude & GPT", "remaining_percent": 0, "reset_time": "2026-11-01T15:05:25Z"}]}
+2026-11-01 14:48:25 позначка gemini-queue/М.2-проба-обгортки/bad-model/1: слот agy-1, пріоритет 5 -> 20261101-144825-187aff6ed8a0
+2026-11-01 14:48:25 відмова: poll_minutes без джерела в смуги.json — період опитування не задано, цикл зупинено
+2026-11-01 14:48:26 [41864] наряд gemini-queue/М.2-проба-обгортки/bad-model/1 83a3c8e940d40d6a31f05e3562c3c5e29bff01a9 -> 20261101-144825-187aff6ed8a0 (слот agy-1)
+2026-11-01 14:48:26 [41864] копія задачі C:\Users\gemini\gemini-runs\w\20261101-143938-288abd956fc3\tmp\before\tmp\gemini-obhortka\ci-n\runs\w\20261101-144825-187aff6ed8a0\repo (83a3c8e940d40d6a31f05e3562c3c5e29bff01a9): тек-архівів не викладено — 0
+2026-11-01 14:48:26 [41864] agy: статус ERROR (MODEL_INVALID)
+--- publish.log:
+2026-11-01 14:48:26 вихідні 20261101-144826-46492c06beee.txt: GEMINI ОБГОРТКА: ПУЛИ V=1.1.11 G=GEMINI35FLASH:34:137 G=GEMINI31PRO:0:137 G=CLAUDEGPT:0:137 M=gemini-3.8-flash-high,claude-opus-5-5-high
+--- claude:
+{"argv": ["-p", "--cloud", "session_01TEST", "--output-format", "json"], "stdin": "GEMINI ОБГОРТКА: ПУЛИ V=1.1.11 G=GEMINI35FLASH:34:137 G=GEMINI31PRO:0:137 G=CLAUDEGPT:0:137 M=gemini-3.8-flash-high,claude-opus-5-5-high"}
+--- origin gemini/:
+ПІДСУМОК сценарії_прогону.sh: ✓ 0 / ✗ 14; код стенда 1; код логу 0

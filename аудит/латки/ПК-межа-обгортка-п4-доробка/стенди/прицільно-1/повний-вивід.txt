@@ -1,0 +1,266 @@
+ВИКОНУЄТЬСЯ сценарії_живих_pr.sh
+{"стенд": "сценарії_живих_pr.sh", "команда": ["C:\\Program Files\\Git\\bin\\bash.exe", "C:/Users/gemini/gemini-runs/w/20261101-143938-288abd956fc3/tmp/обгортка/аудит/адаптери/gemini/перевірка/запустити_стенд.sh", "сценарії_живих_pr.sh"], "код_процесу": 0, "код": 0, "тверджень": 56, "провалів": 0}
+ВИКОНУЄТЬСЯ сценарії_звіту.sh
+{"стенд": "сценарії_звіту.sh", "команда": ["C:\\Program Files\\Git\\bin\\bash.exe", "C:/Users/gemini/gemini-runs/w/20261101-143938-288abd956fc3/tmp/обгортка/аудит/адаптери/gemini/перевірка/запустити_стенд.sh", "сценарії_звіту.sh"], "код_процесу": 0, "код": 0, "тверджень": 56, "провалів": 0}
+ВИКОНУЄТЬСЯ сценарії_ланцюга.sh
+{"стенд": "сценарії_ланцюга.sh", "команда": ["C:\\Program Files\\Git\\bin\\bash.exe", "C:/Users/gemini/gemini-runs/w/20261101-143938-288abd956fc3/tmp/обгортка/аудит/адаптери/gemini/перевірка/запустити_стенд.sh", "сценарії_ланцюга.sh"], "код_процесу": 1, "код": 1, "тверджень": 68, "провалів": 2}
+ВИКОНУЄТЬСЯ сценарії_кінець_роботи.ps1
+python : ✓ готові PR автоматично отримали незалежні рушії, Gemini — один
+At line:8 char:1
++ python 'аудит/проби/доробка_менше_прогонів.py' --дерево . --журнали ' ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (✓ готові PR авт..., Gemini — один:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+
+✓ чужий автор, форк та автозвіт не породили нарядів
+
+✓ повтор після перезапуску не дублює позначки
+
+✓ втрата локального списку не перезаписує наявні позначки
+
+✓ документація не займає GPU
+
+✓ злиття продукту без штампу чекає збірки
+
+✓ збірка збережена в очікуванні моделей
+
+✓ кілька злиттів однієї збірки отримали одну GPU-позначку за штампом
+
+✓ живий прогін не дублюється
+
+✓ нова голова PR отримала нову перевірку
+
+✓ автор Claude: перевіряє agy, не claude -p
+
+✓ автор GPT: перевіряє agy
+
+✓ автор Gemini: перевіряє Codex
+
+✓ автор Claude, agy на квоті: Codex
+
+✓ автор GPT, agy на квоті: рядок хмарному Claude, позначки нема
+
+✓ повтор не дублює рядок хмарному Claude
+
+✓ автор Gemini, Codex на квоті: хмарний Claude
+
+✓ жодної позначки cc- для перевірки
+
+✓ обидва на квоті: позначка чекає першого постачальника за порядком
+
+✓ до квоти: позначка agy
+
+✓ agy вичерпано: позначка перейшла до Codex, одна
+
+✓ повтор і відновлення agy не дублюють перевірку
+
+✓ до квоти: позначка Codex роботи Gemini
+
+✓ Codex вичерпано: позначку знято, один рядок хмарному Claude
+
+✓ відновлення Codex не ставить другої перевірки
+
+✓ випадок 1 таблиці: рецензент gpt-6.1-sol-high
+
+  мірило: випадок 1 — ДО gemini-3.8-flash-high → ПІСЛЯ gpt-6.1-sol-high
+
+✓ випадок 2 таблиці: рецензент gemini-3.8-flash-high
+
+  мірило: випадок 2 — ДО gemini-3.8-flash-high → ПІСЛЯ gemini-3.8-flash-high
+
+✓ випадок 3 таблиці: рецензент gemini-3.8-flash-high
+
+  мірило: випадок 3 — ДО gemini-3.8-flash-high → ПІСЛЯ gemini-3.8-flash-high
+
+✓ випадок 4 таблиці: рецензент gpt-6.1-sol-high
+
+  мірило: випадок 4 — ДО gpt-6.1-sol-high → ПІСЛЯ gpt-6.1-sol-high
+
+✓ випадок 5 таблиці: рецензент gemini-3.8-flash-high
+
+  мірило: випадок 5 — ДО gemini-3.8-flash-high → ПІСЛЯ gemini-3.8-flash-high
+
+✓ група: до квоти позначка agy
+
+✓ група GEMINIMODELS 0 %, CLAUDEANDGPTMODE 1 %: позначка перейшла до Codex, одна
+
+  мірило: заміна позначки у випадку 1 — ДО gemini-3.8-flash-high → ПІСЛЯ gpt-6.1-sol-high
+
+✓ готовий звіт: нової позначки нема
+
+✓ автоживий при Codex на квоті — одна позначка Claude
+
+✓ відновлення Codex не дублює автоживий
+
+✓ збій проходу: тип і рядок скрипту в рядку ЛАНЦЮГ
+
+✓ у рядку нема шляхів і тексту з даних
+
+✓ повний текст винятку — у журналі обгортки
+
+✓ DONE створює PR-чернетку сам, повтор POST відсутній
+
+✓ звіт перевірки без рядків дошки лишається гілкою без PR-чернетки
+
+✗ три PR — три позначки
+
+✓ ПІСЛЯ: по одній позначці на живу голову відкритого PR
+
+✗ мертві позначки знято до узяття: стара голова, злитий PR, дубль
+
+  мірило: позначок ДО 5 (за кодом main) → ПІСЛЯ 2
+
+✓ старий вибір: позначку cc- знято, рецензент — agy
+
+✓ зняття позначок — рядок у зведенні
+
+✓ рядок зняття не будить диспетчера, рядок хмарного Claude будить
+
+  мірило: позначок cc- автоперевірки ДО 1 → ПІСЛЯ 0
+
+✓ чернетка без ГОТОВО смуги: перевірки нема
+
+✓ чернетка з ГОТОВО смуги на цій голові: одна перевірка
+
+✓ PR не чернетка: одна перевірка
+
+✓ ризик Р0 у шапці наряду: перевірки нема
+
+✓ ризик Р2: одна перевірка
+
+✓ patch-id: та сама зміна в різних комітах має один id
+
+✓ нова голова з тим самим patch-id після звіту: нової перевірки нема
+
+✓ інший patch-id: перевірка потрібна
+
+✓ звіти перевірки кирилицею, латинкою й новою формою виключені
+
+✓ відкриті PR читаються з усіх сторінок API
+
+✓ каталог незавантажених моделей допускає постановку без двох моделей у VRAM
+
+✓ однієї доступної моделі недостатньо
+
+✓ недоступний сервер лишає очікування
+
+✓ обидва планувальники можуть узяти шаблон автонаряду
+
+✓ автоживий на порожньому плані: ні прогону, ні PR
+
+✓ автоживий із рядками ЖИВИЙ ПІСЛЯ іде на прогін
+
+✓ нічний Е1 на порожньому плані виконує мінімальну сцену
+
+✓ давня голова давнього PR не добирається
+
+✓ та сама давня голова не оживає при повторі
+
+✓ спостережена зміна SHA оживляє PR
+
+✓ право нової голови зберігається після перезапуску
+
+✓ PR, створений після встановлення, добирається
+
+✓ ланцюг.json без review_hours
+
+✓ DryRun нічого не ставить
+
+ПІДСУМОК сценарії_ланцюга.sh: ✓ 68 / ✗ 2; код стенда 1; код логу 0
+
+ACL ДІАГНОСТИКА вихідний токен, deny ReadData C:\Users\gemini\gemini-runs\w\20261101-143938-288abd956fc3\tmp\end-test-e4cd011bcc36441e83bd53f3ca9015a3\claude-run\slots
+ACL ТОКЕН sid=S-1-5-21-1181779009-255427698-639005139-1005; impersonation=None; SeShutdownPrivilege=0x0; SeChangeNotifyPrivilege=0x3; SeUndockPrivilege=0x0; SeIncreaseWorkingSetPrivilege=0x0; SeTimeZonePrivilege=0x0; elevationType=1; elevated=0; tokenId=20690188
+ACL ЧИТАННЯ Get-ChildItem: System.UnauthorizedAccessException, HResult=-2147024891: Access to the path 'C:\Users\gemini\gemini-runs\w\20261101-143938-288abd956fc3\tmp\end-test-e4cd011bcc36441e83bd53f3ca9015a3\claude-run\slots' is denied.
+ACL ЧИТАННЯ Directory.GetFiles: System.UnauthorizedAccessException, HResult=-2147024891: Exception calling "GetFiles" with "2" argument(s): "Access to the path 'C:\Users\gemini\gemini-runs\w\20261101-143938-288abd956fc3\tmp\end-test-e4cd011bcc36441e83bd53f3ca9015a3\claude-run\slots' is denied."
+ACL ДІАГНОСТИКА токен фікстури, deny ReadData C:\Users\gemini\gemini-runs\w\20261101-143938-288abd956fc3\tmp\end-test-e4cd011bcc36441e83bd53f3ca9015a3\claude-run\slots
+ACL ТОКЕН sid=S-1-5-21-1181779009-255427698-639005139-1005; impersonation=Impersonation; SeChangeNotifyPrivilege=0x3; elevationType=1; elevated=0; tokenId=207ac50b
+ACL ЧИТАННЯ Get-ChildItem: System.UnauthorizedAccessException, HResult=-2147024891: Access to the path 'C:\Users\gemini\gemini-runs\w\20261101-143938-288abd956fc3\tmp\end-test-e4cd011bcc36441e83bd53f3ca9015a3\claude-run\slots' is denied.
+ACL ЧИТАННЯ Directory.GetFiles: System.UnauthorizedAccessException, HResult=-2147024891: Exception calling "GetFiles" with "2" argument(s): "Access to the path 'C:\Users\gemini\gemini-runs\w\20261101-143938-288abd956fc3\tmp\end-test-e4cd011bcc36441e83bd53f3ca9015a3\claude-run\slots' is denied."
+ACL ЧИТАЧ Get-ChainBusySlots sid=S-1-5-21-1181779009-255427698-639005139-1005; impersonation=Impersonation; SeChangeNotifyPrivilege=0x3; elevationType=1; elevated=0; tokenId=207ac50b
+ACL ЧИТАЧ Get-ChainBusySlots sid=S-1-5-21-1181779009-255427698-639005139-1005; impersonation=Impersonation; SeChangeNotifyPrivilege=0x3; elevationType=1; elevated=0; tokenId=207b93fb
+ACL ЧИТАЧ Get-ChainBusySlots sid=S-1-5-21-1181779009-255427698-639005139-1005; impersonation=Impersonation; SeChangeNotifyPrivilege=0x3; elevationType=1; elevated=0; tokenId=207beb0f
+ACL ЧИТАЧ Read-ChainOptionalFile sid=S-1-5-21-1181779009-255427698-639005139-1005; impersonation=Impersonation; SeChangeNotifyPrivilege=0x3; elevationType=1; elevated=0; tokenId=207beb0f
+ACL ДІАГНОСТИКА вихідний токен, deny ReadData C:\Users\gemini\gemini-runs\w\20261101-143938-288abd956fc3\tmp\end-test-e4cd011bcc36441e83bd53f3ca9015a3\access-copy\repo\.git
+ACL ТОКЕН sid=S-1-5-21-1181779009-255427698-639005139-1005; impersonation=None; SeShutdownPrivilege=0x0; SeChangeNotifyPrivilege=0x3; SeUndockPrivilege=0x0; SeIncreaseWorkingSetPrivilege=0x0; SeTimeZonePrivilege=0x0; elevationType=1; elevated=0; tokenId=20690188
+ACL ЧИТАННЯ Get-ChildItem: System.UnauthorizedAccessException, HResult=-2147024891: Access to the path 'C:\Users\gemini\gemini-runs\w\20261101-143938-288abd956fc3\tmp\end-test-e4cd011bcc36441e83bd53f3ca9015a3\access-copy\repo\.git' is denied.
+ACL ЧИТАННЯ Directory.GetFiles: System.UnauthorizedAccessException, HResult=-2147024891: Exception calling "GetFiles" with "2" argument(s): "Access to the path 'C:\Users\gemini\gemini-runs\w\20261101-143938-288abd956fc3\tmp\end-test-e4cd011bcc36441e83bd53f3ca9015a3\access-copy\repo\.git' is denied."
+ACL ДІАГНОСТИКА токен фікстури, deny ReadData C:\Users\gemini\gemini-runs\w\20261101-143938-288abd956fc3\tmp\end-test-e4cd011bcc36441e83bd53f3ca9015a3\access-copy\repo\.git
+ACL ТОКЕН sid=S-1-5-21-1181779009-255427698-639005139-1005; impersonation=Impersonation; SeChangeNotifyPrivilege=0x3; elevationType=1; elevated=0; tokenId=207c960b
+ACL ЧИТАННЯ Get-ChildItem: System.UnauthorizedAccessException, HResult=-2147024891: Access to the path 'C:\Users\gemini\gemini-runs\w\20261101-143938-288abd956fc3\tmp\end-test-e4cd011bcc36441e83bd53f3ca9015a3\access-copy\repo\.git' is denied.
+ACL ЧИТАННЯ Directory.GetFiles: System.UnauthorizedAccessException, HResult=-2147024891: Exception calling "GetFiles" with "2" argument(s): "Access to the path 'C:\Users\gemini\gemini-runs\w\20261101-143938-288abd956fc3\tmp\end-test-e4cd011bcc36441e83bd53f3ca9015a3\access-copy\repo\.git' is denied."
+ACL ЧИТАЧ Get-ChainBusySlots sid=S-1-5-21-1181779009-255427698-639005139-1005; impersonation=Impersonation; SeChangeNotifyPrivilege=0x3; elevationType=1; elevated=0; tokenId=207c960b
+ACL ЧИТАЧ Read-ChainOptionalFile sid=S-1-5-21-1181779009-255427698-639005139-1005; impersonation=Impersonation; SeChangeNotifyPrivilege=0x3; elevationType=1; elevated=0; tokenId=207c960b
+ACL ЧИТАЧ Get-ChainBranchWork sid=S-1-5-21-1181779009-255427698-639005139-1005; impersonation=Impersonation; SeChangeNotifyPrivilege=0x3; elevationType=1; elevated=0; tokenId=207c960b
+ACL ЧИТАЧ Get-ChainBusySlots sid=S-1-5-21-1181779009-255427698-639005139-1005; impersonation=Impersonation; SeChangeNotifyPrivilege=0x3; elevationType=1; elevated=0; tokenId=207d694b
+ACL ЧИТАЧ Read-ChainOptionalFile sid=S-1-5-21-1181779009-255427698-639005139-1005; impersonation=Impersonation; SeChangeNotifyPrivilege=0x3; elevationType=1; elevated=0; tokenId=207d694b
+ACL ЧИТАЧ Get-ChainBranchWork sid=S-1-5-21-1181779009-255427698-639005139-1005; impersonation=Impersonation; SeChangeNotifyPrivilege=0x3; elevationType=1; elevated=0; tokenId=207d694b
+ACL ДІАГНОСТИКА вихідний токен, deny ReadData C:\Users\gemini\gemini-runs\w\20261101-143938-288abd956fc3\tmp\end-test-e4cd011bcc36441e83bd53f3ca9015a3\access-copy\repo\.git
+ACL ТОКЕН sid=S-1-5-21-1181779009-255427698-639005139-1005; impersonation=None; SeShutdownPrivilege=0x0; SeChangeNotifyPrivilege=0x3; SeUndockPrivilege=0x0; SeIncreaseWorkingSetPrivilege=0x0; SeTimeZonePrivilege=0x0; elevationType=1; elevated=0; tokenId=20690188
+ACL ЧИТАННЯ Get-ChildItem: System.UnauthorizedAccessException, HResult=-2147024891: Access to the path 'C:\Users\gemini\gemini-runs\w\20261101-143938-288abd956fc3\tmp\end-test-e4cd011bcc36441e83bd53f3ca9015a3\access-copy\repo\.git' is denied.
+ACL ЧИТАННЯ Directory.GetFiles: System.UnauthorizedAccessException, HResult=-2147024891: Exception calling "GetFiles" with "2" argument(s): "Access to the path 'C:\Users\gemini\gemini-runs\w\20261101-143938-288abd956fc3\tmp\end-test-e4cd011bcc36441e83bd53f3ca9015a3\access-copy\repo\.git' is denied."
+ACL ДІАГНОСТИКА токен фікстури, deny ReadData C:\Users\gemini\gemini-runs\w\20261101-143938-288abd956fc3\tmp\end-test-e4cd011bcc36441e83bd53f3ca9015a3\access-copy\repo\.git
+ACL ТОКЕН sid=S-1-5-21-1181779009-255427698-639005139-1005; impersonation=Impersonation; SeChangeNotifyPrivilege=0x3; elevationType=1; elevated=0; tokenId=207dfeeb
+ACL ЧИТАННЯ Get-ChildItem: System.UnauthorizedAccessException, HResult=-2147024891: Access to the path 'C:\Users\gemini\gemini-runs\w\20261101-143938-288abd956fc3\tmp\end-test-e4cd011bcc36441e83bd53f3ca9015a3\access-copy\repo\.git' is denied.
+ACL ЧИТАННЯ Directory.GetFiles: System.UnauthorizedAccessException, HResult=-2147024891: Exception calling "GetFiles" with "2" argument(s): "Access to the path 'C:\Users\gemini\gemini-runs\w\20261101-143938-288abd956fc3\tmp\end-test-e4cd011bcc36441e83bd53f3ca9015a3\access-copy\repo\.git' is denied."
+ACL ЧИТАЧ Get-ChainBusySlots sid=S-1-5-21-1181779009-255427698-639005139-1005; impersonation=Impersonation; SeChangeNotifyPrivilege=0x3; elevationType=1; elevated=0; tokenId=207dfeeb
+ACL ЧИТАЧ Read-ChainOptionalFile sid=S-1-5-21-1181779009-255427698-639005139-1005; impersonation=Impersonation; SeChangeNotifyPrivilege=0x3; elevationType=1; elevated=0; tokenId=207dfeeb
+ACL ЧИТАЧ Get-ChainBranchWork sid=S-1-5-21-1181779009-255427698-639005139-1005; impersonation=Impersonation; SeChangeNotifyPrivilege=0x3; elevationType=1; elevated=0; tokenId=207dfeeb
+ACL ЧИТАЧ Get-ChainBusySlots sid=S-1-5-21-1181779009-255427698-639005139-1005; impersonation=Impersonation; SeChangeNotifyPrivilege=0x3; elevationType=1; elevated=0; tokenId=207e2d97
+ACL ЧИТАЧ Get-ChainBusySlots sid=S-1-5-21-1181779009-255427698-639005139-1005; impersonation=Impersonation; SeChangeNotifyPrivilege=0x3; elevationType=1; elevated=0; tokenId=207e3763
+ACL ЧИТАЧ Read-ChainOptionalFile sid=S-1-5-21-1181779009-255427698-639005139-1005; impersonation=Impersonation; SeChangeNotifyPrivilege=0x3; elevationType=1; elevated=0; tokenId=207e3763
+ACL ЧИТАЧ Get-ChainBranchWork sid=S-1-5-21-1181779009-255427698-639005139-1005; impersonation=Impersonation; SeChangeNotifyPrivilege=0x3; elevationType=1; elevated=0; tokenId=207e3763
+ACL ДІАГНОСТИКА вихідний токен, deny ReadData C:\Users\gemini\gemini-runs\w\20261101-143938-288abd956fc3\tmp\end-test-e4cd011bcc36441e83bd53f3ca9015a3\access-copy\meta
+ACL ТОКЕН sid=S-1-5-21-1181779009-255427698-639005139-1005; impersonation=None; SeShutdownPrivilege=0x0; SeChangeNotifyPrivilege=0x3; SeUndockPrivilege=0x0; SeIncreaseWorkingSetPrivilege=0x0; SeTimeZonePrivilege=0x0; elevationType=1; elevated=0; tokenId=20690188
+ACL ЧИТАННЯ Get-ChildItem: System.UnauthorizedAccessException, HResult=-2147024891: Access to the path 'C:\Users\gemini\gemini-runs\w\20261101-143938-288abd956fc3\tmp\end-test-e4cd011bcc36441e83bd53f3ca9015a3\access-copy\meta' is denied.
+ACL ЧИТАННЯ Directory.GetFiles: System.UnauthorizedAccessException, HResult=-2147024891: Exception calling "GetFiles" with "2" argument(s): "Access to the path 'C:\Users\gemini\gemini-runs\w\20261101-143938-288abd956fc3\tmp\end-test-e4cd011bcc36441e83bd53f3ca9015a3\access-copy\meta' is denied."
+ACL ДІАГНОСТИКА токен фікстури, deny ReadData C:\Users\gemini\gemini-runs\w\20261101-143938-288abd956fc3\tmp\end-test-e4cd011bcc36441e83bd53f3ca9015a3\access-copy\meta
+ACL ТОКЕН sid=S-1-5-21-1181779009-255427698-639005139-1005; impersonation=Impersonation; SeChangeNotifyPrivilege=0x3; elevationType=1; elevated=0; tokenId=207e5189
+ACL ЧИТАННЯ Get-ChildItem: System.UnauthorizedAccessException, HResult=-2147024891: Access to the path 'C:\Users\gemini\gemini-runs\w\20261101-143938-288abd956fc3\tmp\end-test-e4cd011bcc36441e83bd53f3ca9015a3\access-copy\meta' is denied.
+ACL ЧИТАННЯ Directory.GetFiles: System.UnauthorizedAccessException, HResult=-2147024891: Exception calling "GetFiles" with "2" argument(s): "Access to the path 'C:\Users\gemini\gemini-runs\w\20261101-143938-288abd956fc3\tmp\end-test-e4cd011bcc36441e83bd53f3ca9015a3\access-copy\meta' is denied."
+ACL ЧИТАЧ Get-ChainBusySlots sid=S-1-5-21-1181779009-255427698-639005139-1005; impersonation=Impersonation; SeChangeNotifyPrivilege=0x3; elevationType=1; elevated=0; tokenId=207e5189
+ACL ЧИТАЧ Read-ChainOptionalFile sid=S-1-5-21-1181779009-255427698-639005139-1005; impersonation=Impersonation; SeChangeNotifyPrivilege=0x3; elevationType=1; elevated=0; tokenId=207e5189
+ACL ЧИТАЧ Get-ChainBranchWork sid=S-1-5-21-1181779009-255427698-639005139-1005; impersonation=Impersonation; SeChangeNotifyPrivilege=0x3; elevationType=1; elevated=0; tokenId=207e5189
+ACL ЧИТАЧ Get-ChainBusySlots sid=S-1-5-21-1181779009-255427698-639005139-1005; impersonation=Impersonation; SeChangeNotifyPrivilege=0x3; elevationType=1; elevated=0; tokenId=207e6f69
+ACL ЧИТАЧ Get-ChainBusySlots sid=S-1-5-21-1181779009-255427698-639005139-1005; impersonation=Impersonation; SeChangeNotifyPrivilege=0x3; elevationType=1; elevated=0; tokenId=207f348b
+ACL ЧИТАЧ Read-ChainOptionalFile sid=S-1-5-21-1181779009-255427698-639005139-1005; impersonation=Impersonation; SeChangeNotifyPrivilege=0x3; elevationType=1; elevated=0; tokenId=207f348b
+ACL ЧИТАЧ Get-ChainBranchWork sid=S-1-5-21-1181779009-255427698-639005139-1005; impersonation=Impersonation; SeChangeNotifyPrivilege=0x3; elevationType=1; elevated=0; tokenId=207f348b
+ACL ДІАГНОСТИКА вихідний токен, deny ReadAndExecute C:\Users\gemini\gemini-runs\w\20261101-143938-288abd956fc3\tmp\end-test-e4cd011bcc36441e83bd53f3ca9015a3\multiple\claude-run
+ACL ТОКЕН sid=S-1-5-21-1181779009-255427698-639005139-1005; impersonation=None; SeShutdownPrivilege=0x0; SeChangeNotifyPrivilege=0x3; SeUndockPrivilege=0x0; SeIncreaseWorkingSetPrivilege=0x0; SeTimeZonePrivilege=0x0; elevationType=1; elevated=0; tokenId=20690188
+ACL ЧИТАННЯ Get-ChildItem: System.UnauthorizedAccessException, HResult=-2147024891: Access to the path 'C:\Users\gemini\gemini-runs\w\20261101-143938-288abd956fc3\tmp\end-test-e4cd011bcc36441e83bd53f3ca9015a3\multiple\claude-run' is denied.
+ACL ЧИТАННЯ Directory.GetFiles: System.UnauthorizedAccessException, HResult=-2147024891: Exception calling "GetFiles" with "2" argument(s): "Access to the path 'C:\Users\gemini\gemini-runs\w\20261101-143938-288abd956fc3\tmp\end-test-e4cd011bcc36441e83bd53f3ca9015a3\multiple\claude-run' is denied."
+ACL ДІАГНОСТИКА токен фікстури, deny ReadAndExecute C:\Users\gemini\gemini-runs\w\20261101-143938-288abd956fc3\tmp\end-test-e4cd011bcc36441e83bd53f3ca9015a3\multiple\claude-run
+ACL ТОКЕН sid=S-1-5-21-1181779009-255427698-639005139-1005; impersonation=Impersonation; SeChangeNotifyPrivilege=0x3; elevationType=1; elevated=0; tokenId=208009eb
+ACL ЧИТАННЯ Get-ChildItem: System.UnauthorizedAccessException, HResult=-2147024891: Access to the path 'C:\Users\gemini\gemini-runs\w\20261101-143938-288abd956fc3\tmp\end-test-e4cd011bcc36441e83bd53f3ca9015a3\multiple\claude-run' is denied.
+ACL ЧИТАННЯ Directory.GetFiles: System.UnauthorizedAccessException, HResult=-2147024891: Exception calling "GetFiles" with "2" argument(s): "Access to the path 'C:\Users\gemini\gemini-runs\w\20261101-143938-288abd956fc3\tmp\end-test-e4cd011bcc36441e83bd53f3ca9015a3\multiple\claude-run' is denied."
+ACL ДІАГНОСТИКА дочірня тека, той самий токен читача C:\Users\gemini\gemini-runs\w\20261101-143938-288abd956fc3\tmp\end-test-e4cd011bcc36441e83bd53f3ca9015a3/multiple/claude-run/slots
+ACL ТОКЕН sid=S-1-5-21-1181779009-255427698-639005139-1005; impersonation=Impersonation; SeChangeNotifyPrivilege=0x3; elevationType=1; elevated=0; tokenId=208009eb
+ACL ЧИТАННЯ Get-ChildItem: System.ComponentModel.Win32Exception, HResult=-2147467259: Access is denied
+ACL ЧИТАННЯ Directory.GetFiles: System.UnauthorizedAccessException, HResult=-2147024891: Exception calling "GetFiles" with "2" argument(s): "Access to the path 'C:\Users\gemini\gemini-runs\w\20261101-143938-288abd956fc3\tmp\end-test-e4cd011bcc36441e83bd53f3ca9015a3\multiple\claude-run\slots' is denied."
+ACL ЧИТАЧ Get-ChainBusySlots sid=S-1-5-21-1181779009-255427698-639005139-1005; impersonation=Impersonation; SeChangeNotifyPrivilege=0x3; elevationType=1; elevated=0; tokenId=208009eb
+{"стенд": "сценарії_кінець_роботи.ps1", "команда": ["powershell.exe", "-NoProfile", "-ExecutionPolicy", "Bypass", "-File", "C:\\Users\\gemini\\gemini-runs\\w\\20261101-143938-288abd956fc3\\tmp\\обгортка\\аудит\\адаптери\\gemini\\перевірка\\сценарії_кінець_роботи.ps1", "-SourceDir", "C:\\Users\\gemini\\gemini-runs\\w\\20261101-143938-288abd956fc3\\tmp\\обгортка\\аудит\\адаптери\\gemini"], "код_процесу": 0, "код": 0, "тверджень": 104, "провалів": 0}
+ВИКОНУЄТЬСЯ сценарії_межі_здоровя.ps1
+{"стенд": "сценарії_межі_здоровя.ps1", "команда": ["powershell.exe", "-NoProfile", "-ExecutionPolicy", "Bypass", "-File", "C:\\Users\\gemini\\gemini-runs\\w\\20261101-143938-288abd956fc3\\tmp\\обгортка\\аудит\\адаптери\\gemini\\перевірка\\сценарії_межі_здоровя.ps1", "-SourceDir", "C:\\Users\\gemini\\gemini-runs\\w\\20261101-143938-288abd956fc3\\tmp\\обгортка\\аудит\\адаптери\\gemini"], "код_процесу": 1, "код": 1, "тверджень": 0, "провалів": 0}
+At C:\Users\gemini\gemini-runs\w\20261101-143938-288abd956fc3\tmp\обгортка\аудит\адаптери\gemini\перевірка\сценарії_меж
+
+і_здоровя.ps1:79 char:28
+
++             Check "1 слоти $n: відмова рядком без винятку Int32" (@($ ...
+
++                            ~~~
+
+Variable reference is not valid. ':' was not followed by a valid variable name character. Consider using ${} to delimit
+
+ the name.
+
+    + CategoryInfo          : ParserError: (:) [], ParentContainsErrorRecordException
+
+    + FullyQualifiedErrorId : InvalidVariableReferenceWithDrive
+
+ 
+ВИКОНУЄТЬСЯ сценарії_тихі_пробудження.ps1
+
+
+{"стенд": "сценарії_тихі_пробудження.ps1", "команда": ["powershell.exe", "-NoProfile", "-ExecutionPolicy", "Bypass", "-File", "C:\\Users\\gemini\\gemini-runs\\w\\20261101-143938-288abd956fc3\\tmp\\обгортка\\аудит\\адаптери\\gemini\\перевірка\\сценарії_тихі_пробудження.ps1", "-SourceDir", "C:\\Users\\gemini\\gemini-runs\\w\\20261101-143938-288abd956fc3\\tmp\\обгортка\\аудит\\адаптери\\gemini"], "код_процесу": 0, "код": 0, "тверджень": 77, "провалів": 0}
+ВИКОНУЄТЬСЯ перевірити_хеші.py
+{"стенд": "перевірити_хеші.py", "команда": ["C:\\Users\\gemini\\AppData\\Local\\Programs\\Python\\Python312\\python.exe", "-X", "utf8", "C:\\Users\\gemini\\gemini-runs\\w\\20261101-143938-288abd956fc3\\tmp\\обгортка\\аудит\\адаптери\\gemini\\перевірка\\перевірити_хеші.py"], "код_процесу": 0, "код": 0, "тверджень": 10, "провалів": 0}

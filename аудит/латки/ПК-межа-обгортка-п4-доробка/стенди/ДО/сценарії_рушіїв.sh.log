@@ -1,0 +1,54 @@
+FAIL codex-done: чекав «ГОТОВО gemini/М.2-проба-обгортки», є «GEMINI ОБГОРТКА: ПУЛИ V=1.1.11 G=GEMINI35FLASH:34:137 G=GEMINI31PRO:0:137 G=CLAUDEGPT:0:137 M=gemini-3.8-flash-high,claude-opus-5-5-high»
+ok   codex-github
+FAIL codex-blocked: чекав «BLOCKED», є «GEMINI ОБГОРТКА: ПУЛИ V=1.1.11 G=GEMINI35FLASH:34:137 G=GEMINI31PRO:0:137 G=CLAUDEGPT:0:137 M=gemini-3.8-flash-high,claude-opus-5-5-high»
+ok   codex-missing
+FAIL fallback-to-codex: чекав «МОДЕЛЬ gpt-6.1-sol-high», є «GEMINI ОБГОРТКА: ПУЛИ V=1.1.11 G=GEMINI35FLASH:0:137 G=GEMINI31PRO:0:137 G=CLAUDEGPT:0:137 M=gemini-3.8-flash-high,claude-opus-5-5-high»
+FAIL fallback-not-needed: чекав «КВОТА GEMINI35FLASH», є «GEMINI ОБГОРТКА: ПУЛИ V=1.1.11 G=GEMINI35FLASH:34:137 G=GEMINI31PRO:0:137 G=CLAUDEGPT:0:137 M=gemini-3.8-flash-high,claude-opus-5-5-high»
+ok   no-fallback-zero
+ok   codex-429
+ok   codex-auth
+FAIL agy-unchanged: чекав «КВОТА GEMINI35FLASH 34», є «GEMINI ОБГОРТКА: ПУЛИ V=1.1.11 G=GEMINI35FLASH:34:137 G=GEMINI31PRO:0:137 G=CLAUDEGPT:0:137 M=gemini-3.8-flash-high,claude-opus-5-5-high»
+ok   codex-off-label
+ok   codex-off-label-not-called
+ok   codex-off-fallback
+FAIL secret-path: чекав «ЗАБЛОКОВАНО gemini/М.2-проба-обгортки SECRET», є «GEMINI ОБГОРТКА: ПУЛИ V=1.1.11 G=GEMINI35FLASH:34:137 G=GEMINI31PRO:0:137 G=CLAUDEGPT:0:137 M=gemini-3.8-flash-high,claude-opus-5-5-high»
+FAIL secret-content: чекав «ЗАБЛОКОВАНО gemini/М.2-проба-обгортки SECRET», є «GEMINI ОБГОРТКА: ПУЛИ V=1.1.11 G=GEMINI35FLASH:34:137 G=GEMINI31PRO:0:137 G=CLAUDEGPT:0:137 M=gemini-3.8-flash-high,claude-opus-5-5-high»
+FAIL cascade-code-stays: чекав «МОДЕЛЬ gemini-3.5-flash», є «GEMINI ОБГОРТКА: ПУЛИ V=1.1.11 G=GEMINI35FLASH:34:137 G=GEMINI31PRO:0:137 G=CLAUDEGPT:0:137 M=gemini-3.8-flash-high,claude-opus-5-5-high»
+FAIL cascade-design-claude: чекав «МОДЕЛЬ claude-opus-5-5-high», є «GEMINI ОБГОРТКА: ПУЛИ V=1.1.11 G=GEMINI35FLASH:34:137 G=GEMINI31PRO:0:137 G=CLAUDEGPT:50:137 M=gemini-3.8-flash-high,claude-opus-5-5-high»
+FAIL cascade-design-codex: чекав «МОДЕЛЬ gpt-6.1-sol-high», є «GEMINI ОБГОРТКА: ПУЛИ V=1.1.11 G=GEMINI35FLASH:34:137 G=GEMINI31PRO:0:137 G=CLAUDEGPT:0:137 M=gemini-3.8-flash-high,claude-opus-5-5-high»
+ok   cascade-design-none
+FAIL usage-tsv: чекав «КВОТА GEMINI35FLASH 34», є «GEMINI ОБГОРТКА: ПУЛИ V=1.1.11 G=GEMINI35FLASH:34:137 G=GEMINI31PRO:0:137 G=CLAUDEGPT:0:137 M=gemini-3.8-flash-high,claude-opus-5-5-high»
+FAIL usage-nohdr: чекав «ГОТОВО gemini/М.2-проба-обгортки», є «GEMINI ОБГОРТКА: ПУЛИ V=1.1.11 Q=? M=gemini-3.8-flash-high,claude-opus-5-5-high»
+FAIL usage-old: чекав «ГОТОВО gemini/М.2-проба-обгортки», є «GEMINI ОБГОРТКА: ПУЛИ V=1.1.10 Q=? M=gemini-3.8-flash-high,claude-opus-5-5-high»
+FAIL usage-oldnoquota: чекав «МОДЕЛЬ gemini-3.5-flash», є «GEMINI ОБГОРТКА: ПУЛИ V=1.1.10 Q=? M=gemini-3.8-flash-high,claude-opus-5-5-high»
+ok   usage-old-argv
+FAIL ver-date-only: чекав «ГОТОВО gemini/М.2-проба-обгортки», є «GEMINI ОБГОРТКА: ПУЛИ V=- Q=? M=gemini-3.8-flash-high,claude-opus-5-5-high»
+ok   ver-date-only-argv
+FAIL ver-date-before: чекав «ГОТОВО gemini/М.2-проба-обгортки», є «GEMINI ОБГОРТКА: ПУЛИ V=1.1.10 Q=? M=gemini-3.8-flash-high,claude-opus-5-5-high»
+ok   ver-date-before-argv
+FAIL ver-agy-line: чекав «КВОТА GEMINI35FLASH 34», є «GEMINI ОБГОРТКА: ПУЛИ V=1.2.15 G=GEMINI35FLASH:34:137 G=GEMINI31PRO:0:137 G=CLAUDEGPT:0:137 M=gemini-3.8-flash-high,claude-opus-5-5-high»
+ok   usage-nohdr-pools
+ok   usage-nohdr-log
+ok   pools-hook-narrow
+ok   pools-line
+ok   codex-argv
+FAIL codex-max: чекав «МОДЕЛЬ gpt-6.1-sol-max», є «GEMINI ОБГОРТКА: ПУЛИ V=1.1.11 G=GEMINI35FLASH:34:137 G=GEMINI31PRO:0:137 G=CLAUDEGPT:0:137 M=gemini-3.8-flash-high,claude-opus-5-5-high»
+ok   codex-max-argv
+FAIL codex-effort-rejected: чекав «ЗАБЛОКОВАНО gemini/М.2-проба-обгортки EFFORT_INVALID», є «GEMINI ОБГОРТКА: ПУЛИ V=1.1.11 G=GEMINI35FLASH:34:137 G=GEMINI31PRO:0:137 G=CLAUDEGPT:0:137 M=gemini-3.8-flash-high,claude-opus-5-5-high»
+ok   codex-effort-rejected-one-call
+FAIL codex-long-run: чекав «ГОТОВО gemini/М.2-проба-обгортки», є «GEMINI ОБГОРТКА: ПУЛИ V=1.1.11 G=GEMINI35FLASH:34:137 G=GEMINI31PRO:0:137 G=CLAUDEGPT:0:137 M=gemini-3.8-flash-high,claude-opus-5-5-high»
+FAIL codex-long-run-events: подій 1
+FAIL codex-stall: чекав «ЗАБЛОКОВАНО gemini/М.2-проба-обгортки STALL», є «GEMINI ОБГОРТКА: ПУЛИ V=1.1.11 G=GEMINI35FLASH:34:137 G=GEMINI31PRO:0:137 G=CLAUDEGPT:0:137 M=gemini-3.8-flash-high,claude-opus-5-5-high»
+FAIL role-default: чекав «ГОТОВО gemini/М.2-проба-обгортки», є «GEMINI ОБГОРТКА: ПУЛИ V=1.1.11 G=GEMINI35FLASH:34:137 G=GEMINI31PRO:0:137 G=CLAUDEGPT:0:137 M=gemini-3.8-flash-high,claude-opus-5-5-high»
+ok   role-default-prompt
+FAIL role-review: чекав «ГОТОВО gemini/М.2-проба-обгортки», є «GEMINI ОБГОРТКА: ПУЛИ V=1.1.11 G=GEMINI35FLASH:34:137 G=GEMINI31PRO:0:137 G=CLAUDEGPT:0:137 M=gemini-3.8-flash-high,claude-opus-5-5-high»
+ok   role-review-prompt
+FAIL role-agy: чекав «КВОТА GEMINI35FLASH 34», є «GEMINI ОБГОРТКА: ПУЛИ V=1.1.11 G=GEMINI35FLASH:34:137 G=GEMINI31PRO:0:137 G=CLAUDEGPT:0:137 M=gemini-3.8-flash-high,claude-opus-5-5-high»
+ok   role-agy-unchanged
+FAIL role-fenced-example: чекав «ГОТОВО gemini/М.2-проба-обгортки», є «GEMINI ОБГОРТКА: ПУЛИ V=1.1.11 G=GEMINI35FLASH:34:137 G=GEMINI31PRO:0:137 G=CLAUDEGPT:0:137 M=gemini-3.8-flash-high,claude-opus-5-5-high»
+ok   role-fenced-example-prompt
+FAIL role-bare-eof: чекав «ГОТОВО gemini/М.2-проба-обгортки», є «GEMINI ОБГОРТКА: ПУЛИ V=1.1.11 G=GEMINI35FLASH:34:137 G=GEMINI31PRO:0:137 G=CLAUDEGPT:0:137 M=gemini-3.8-flash-high,claude-opus-5-5-high»
+ok   role-bare-eof-prompt
+ok   codex-effort-payload
+FAIL codex-effort-escaped: чекав «ЗАБЛОКОВАНО gemini/М.2-проба-обгортки EFFORT_INVALID», є «GEMINI ОБГОРТКА: ПУЛИ V=1.1.11 G=GEMINI35FLASH:34:137 G=GEMINI31PRO:0:137 G=CLAUDEGPT:0:137 M=gemini-3.8-flash-high,claude-opus-5-5-high»
+ПІДСУМОК сценарії_рушіїв.sh: ✓ 25 / ✗ 28; код стенда 1; код логу 0

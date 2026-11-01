@@ -6,33 +6,33 @@ from pathlib import Path
 
 def перевірити():
     """Звіряє максимум, обсяг і вилучення за всіма рядками записаного виміру."""
-    SOURCE = '03b369eef50b'
-    PATH = 'аудит/корені/ПК-межа-без-джерела-вимір-codex-agy.tsv'
-    blob = Path(__file__).with_name(PATH.rsplit('/', 1)[-1]).read_bytes()
-    rows = list(csv.DictReader(io.StringIO(blob.decode('utf-8-sig')), delimiter='\t'))
-    assert len(rows) == 1951
-    print('Джерело: ' + SOURCE + ':' + PATH)
-    print('Рядків: ' + str(len(rows)))
-    for engine in ('codex', 'agy'):
-        chosen = [r for r in rows if r['рушій'] == engine and r['код_кінця'] == 'DONE']
-        measured = [r for r in chosen if r['без_міжходових_сек']]
-        winner = max(measured, key=lambda r: float(r['без_міжходових_сек']))
-        print(f'{engine}: DONE {len(chosen)}, виміряно {len(measured)}; максимум {winner["без_міжходових_хв"]} хв; {winner["прогін"]}')
-        print('  Події: ' + (winner['внутрішня_подія_1'] or winner['подія_1']) + ' → ' + (winner['внутрішня_подія_2'] or winner['подія_2']))
-        if engine == 'codex':
-            excluded = [r for r in chosen if int(r['міжходових_пар'] or 0)]
-            assert sum(int(r['міжходових_пар']) for r in excluded) == 12 and len(excluded) == 5
-            assert len(chosen) == 232 and len(measured) == 209
-            assert winner['без_міжходових_хв'] == '21.87'
-            for r in excluded:
-                print(f'  Виключено міжходових пар: {r["прогін"]}: {r["міжходових_пар"]}')
+    ДЖЕРЕЛО = '03b369eef50b'
+    ШЛЯХ = 'аудит/корені/ПК-межа-без-джерела-вимір-codex-agy.tsv'
+    вміст = Path(__file__).with_name(ШЛЯХ.rsplit('/', 1)[-1]).read_bytes()
+    рядки = list(csv.DictReader(io.StringIO(вміст.decode('utf-8-sig')), delimiter='\t'))
+    assert len(рядки) == 1951
+    print('Джерело: ' + ДЖЕРЕЛО + ':' + ШЛЯХ)
+    print('Рядків: ' + str(len(рядки)))
+    for рушій in ('codex', 'agy'):
+        здорові = [рядок for рядок in рядки if рядок['рушій'] == рушій and рядок['код_кінця'] == 'DONE']
+        виміряні = [рядок for рядок in здорові if рядок['без_міжходових_сек']]
+        максимум = max(виміряні, key=lambda рядок: float(рядок['без_міжходових_сек']))
+        print(f'{рушій}: DONE {len(здорові)}, виміряно {len(виміряні)}; максимум {максимум["без_міжходових_хв"]} хв; {максимум["прогін"]}')
+        print('  Події: ' + (максимум['внутрішня_подія_1'] or максимум['подія_1']) + ' → ' + (максимум['внутрішня_подія_2'] or максимум['подія_2']))
+        if рушій == 'codex':
+            вилучені = [рядок for рядок in здорові if int(рядок['міжходових_пар'] or 0)]
+            assert sum(int(рядок['міжходових_пар']) for рядок in вилучені) == 12 and len(вилучені) == 5
+            assert len(здорові) == 232 and len(виміряні) == 209
+            assert максимум['без_міжходових_хв'] == '21.87'
+            for рядок in вилучені:
+                print(f'  Виключено міжходових пар: {рядок["прогін"]}: {рядок["міжходових_пар"]}')
             print('  Виключено: turn.completed/turn.failed → наступний turn.started, включно з thread.started; нездорові прогони; 23 DONE без журналу не домислено.')
         else:
-            turns = [turn for r in chosen for turn in json.loads(r['усі_ходи'])]
-            assert len(chosen) == len(measured) == 61 and len(turns) == 62
-            assert all(t['статус'] == 'SUCCESS' for t in turns)
-            assert winner['без_міжходових_хв'] == '102.69'
-            assert round(max(t['секунди'] for t in turns) / 60, 2) == 102.69
+            ходи = [хід for рядок in здорові for хід in json.loads(рядок['усі_ходи'])]
+            assert len(здорові) == len(виміряні) == 61 and len(ходи) == 62
+            assert all(хід['статус'] == 'SUCCESS' for хід in ходи)
+            assert максимум['без_міжходових_хв'] == '102.69'
+            assert round(max(хід['секунди'] for хід in ходи) / 60, 2) == 102.69
             print('  Виключено: очікування між ходами, підготовка й завершення обгортки; взято result.duration_seconds кожного з 62 SUCCESS-ходів, не зовнішній час прогону.')
     print('Claude: n=null; нема виміру, що представляє роботу — рішення менеджера 01.11, КОЛО PR #2685 у паспорті кореня.')
 
