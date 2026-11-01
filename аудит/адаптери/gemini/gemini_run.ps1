@@ -733,7 +733,7 @@ function Invoke-Turn($M, $Run, [string]$Text, [datetime]$Deadline) {
     $file = Join-Path $Run.Dir ('turn{0}.md' -f $Run.Turn)
     [System.IO.File]::WriteAllText($file, $Text, $script:Utf8)
     $short = "Прочитай файл $file і виконай його повністю"
-    # Строку нема (agy_total_minutes без джерела) — і межі часу процесу нема.
+    # Строку всього прогону нема (поле agy_total_minutes знято, рішення менеджера 01.11) — і межі часу процесу нема.
     $minutes = $(if ($Deadline -eq [datetime]::MaxValue) { [double]::PositiveInfinity } else { ($Deadline - (Get-Date)).TotalMinutes })
     if ($minutes -le 0) { return [pscustomobject]@{ Kind = 'timeout'; Result = $null } }
     # Запас 2 хв: agy має встигнути сам віддати конверт із conversation_id по своїй --print-timeout.
@@ -756,8 +756,9 @@ function Invoke-Agent($M, [string]$Start, [string]$Prompt, [string]$Dir, $Sel) {
         Responses = New-Object System.Collections.Generic.List[string] }
     # Codex без межі часу всього й ходу (власник 26.10): його зупиняє лише завислість; `agy` — як було.
     $unlimited = ($Sel.Engine.Name -eq 'codex')
-    # agy без джерела agy_total_minutes / agy_turn_minutes — без строку всього / ходу, як Codex.
-    $totalLimit = Get-Limit $script:Limits 'TotalMinutes' 'agy_total_minutes'
+    # Строку всього прогону agy нема, як у Codex (завислість ловить сторож ходу); лише -TotalMinutes руки власника. Строк
+    # ходу — agy_turn_minutes з виміром; нема запису — без строку ходу.
+    $totalLimit = $(if ($script:Bound.ContainsKey('TotalMinutes')) { [double]$script:Bound['TotalMinutes'] } else { $null })
     $turnLimit = Get-Limit $script:Limits 'TurnMinutes' 'agy_turn_minutes'
     $deadline = $(if ($unlimited -or $null -eq $totalLimit) { [datetime]::MaxValue } else { (Get-Date).AddMinutes($totalLimit) })
     $text = $Prompt
@@ -1002,8 +1003,8 @@ function Invoke-Task($M, $Job) {
 }
 
 # Відмова за квотою посеред прогону (429): позначка повертається в чергу до скидання (agy — з /usage, Codex — з тексту
-# відмови, нема — quota_wait_minutes з джерелом), зроблене лишається в гілці, повтор почне з її голови. Скидання невідоме й
-# quota_wait_minutes без джерела — кінець із кодом QUOTA. $true — позначка чекає.
+# відмови, нема — кінець QUOTA), зроблене лишається в гілці, повтор почне з її голови. Скидання невідоме й
+# -QuotaWaitMinutes руки власника не задано — кінець із кодом QUOTA. $true — позначка чекає.
 function Enter-RunQuotaWait($M, $Sel, $Status, $Res, [string]$Dir) {
     $now = [DateTimeOffset]::UtcNow.ToUnixTimeSeconds()
     $until = 0L; $group = 'CODEX'
@@ -1021,7 +1022,7 @@ function Enter-RunQuotaWait($M, $Sel, $Status, $Res, [string]$Dir) {
     $known = $until -gt 0
     if (-not $known) {
         $until = Get-QuotaWaitUntil $now
-        if ($null -eq $until) { Write-Log "квота: $($M.Name) — час скидання невідомий, quota_wait_minutes без джерела — кінець QUOTA"; return $false }
+        if ($null -eq $until) { Write-Log "квота: $($M.Name) — час скидання невідомий — кінець QUOTA"; return $false }
     }
     $f = Get-Facts $M $Status.start
     $n = Set-MarkerWait $M $until @{ retake = $true; group = $group; head = $(if ($f.Ahead -gt 0) { $f.Head } else { '' }) }
@@ -1061,8 +1062,8 @@ function Test-GpuFree($Workers) { (Get-GpuBusyReason $Workers) -eq '' }
 # входить у чекання вперше.
 function Enter-StartQuotaWait($M, $Q, $State) {
     $now = [DateTimeOffset]::UtcNow.ToUnixTimeSeconds()
-    # Скидання — час із /usage; минув, а група ще на нулі, чи невідомий — quota_wait_minutes.
-    # Нема джерела quota_wait_minutes — чекання без вигаданого строку: наступний прохід спробує знову.
+    # Скидання — час із /usage; минув, а група ще на нулі, чи невідомий — чекання без вигаданого строку: позначка одразу
+    # диспетчерові (QUOTA0_*), наступний прохід спробує знову.
     $until = $(if ($Q.ResetAt -gt $now) { [long]$Q.ResetAt } else { $w = Get-QuotaWaitUntil $now; $(if ($null -eq $w) { $now } else { $w }) })
     $head = $(if ($State.Kind -eq 'WAIT') { [string](Get-JsonProp $State.Wait 'head') } else { '' })
     [void](Set-MarkerWait $M $until @{ group = $Q.Group; head = $head })

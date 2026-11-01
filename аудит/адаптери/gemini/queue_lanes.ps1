@@ -31,11 +31,13 @@ $script:OnWindows = ($PSVersionTable.PSEdition -ne 'Core') -or [bool](Get-Variab
 # Тека версії цього процесу: після самооновлення — `<корінь>\versions\<SHA40>`, поряд із коренем — `active.txt`.
 $script:VersionDir = $PSScriptRoot
 
-# Межі роботи — лише з файла даних (`смуги.json`, `ланцюг.json`) і лише з джерелом (п.11): типових значень, стель і
-# попередніх прийнятих значень у коді нема. Поле без джерела — межі нема (стелі, тайм-аути, слоти); для механізму, якому
-# потрібен період (poll_minutes), — відмова рядком у журналі з назвою поля. Криве значення (не число, від'ємне, нуль для
-# хвилин, дробові слоти) — відмова рядком, без обрізання. Тут лише імена полів і смуг.
-$script:LimitMinuteFields = @('poll_minutes', 'usage_minutes', 'quota_wait_minutes', 'agy_total_minutes', 'agy_turn_minutes', 'codex_stall_minutes', 'claude_hang_minutes')
+# Межі роботи — лише з файла даних (`смуги.json`) і лише з джерелом (п.11): типових значень, стель і попередніх прийнятих
+# значень у коді нема. Поле без джерела — межі нема (слоти, сторожі завислості й ходу); для механізму, якому потрібен
+# період (poll_minutes), — відмова рядком у журналі з назвою поля. Поля-механізми (poll_minutes, usage_minutes) замість
+# виміру мають запис «механізм: …» (рішення менеджера 01.11). Криве значення (не число, від'ємне, нуль для хвилин,
+# дробові слоти) — відмова рядком, без обрізання. Тут лише імена полів і смуг.
+$script:LimitMinuteFields = @('poll_minutes', 'usage_minutes', 'agy_turn_minutes', 'codex_stall_minutes', 'claude_hang_minutes')
+$script:MechanismFields = @('poll_minutes', 'usage_minutes')
 $script:LaneNames = @('codex', 'agy', 'claude')
 # Код виходу процесу наряду: слот чи GPU зайняті до старту — позначку не взято, вона лишається в черзі.
 $script:WorkerSlotBusy = 3
@@ -209,7 +211,7 @@ function ConvertTo-LimitNumber($Value, [bool]$Whole, [bool]$Positive) {
 function Get-Limits {
     <# Межі смуг: `смуги.json` v2 з origin/main (не з робочої копії агента).
 
-    v2 — кожна межа `{"n": число, "джерело": "власник ДД.ММ …" | "вимір: … ДД.ММ"}`. Межа без джерела (поле порожнє чи нема,
+    v2 — кожна межа `{"n": число, "джерело": "власник ДД.ММ …" | "вимір: … ДД.ММ" | "механізм: …" (лише poll_minutes, usage_minutes)}`. Межа без джерела (поле порожнє чи нема,
     v1, нема файла, кривий чи невідомий формат) не діє: ні попереднього значення, ні типового з коду — ключа в результаті
     нема, а поле — в unsourced для рядка «межа без джерела» стану ноутбука. Криве значення з джерелом (не число, від'ємне,
     нуль для хвилин, дробові слоти) — відмова рядком у журналі з назвою поля, ключа нема, поле — у invalid. Зміна файла
@@ -226,7 +228,7 @@ function Get-Limits {
         $lane = $(if ($f.StartsWith('slots.')) { $f.Substring(6) } else { '' })
         $node = $null
         if ($v2) { $node = $(if ($lane) { Get-JsonProp (Get-JsonProp $doc 'slots') $lane } else { Get-JsonProp $doc $f }) }
-        if (-not (Test-LimitSource ([string](Get-JsonProp $node 'джерело')))) { $l.unsourced += $f; continue }
+        if (-not (Test-LimitSource ([string](Get-JsonProp $node 'джерело')) ($script:MechanismFields -ccontains $f))) { $l.unsourced += $f; continue }
         $v = ConvertTo-LimitNumber (Get-JsonProp $node 'n') ([bool]$lane) (-not $lane)
         if ($null -eq $v) {
             $l.invalid += $f
@@ -249,11 +251,11 @@ function Get-Limit($Limits, [string]$Param, [string]$Key) {
 }
 
 function Get-QuotaWaitUntil([long]$Now) {
-    <# Час (unix), до якого чекати, коли скидання квоти невідоме: quota_wait_minutes з джерелом; нема — $null (чекати нема
-    скільки: виклик закриває позначку кодом квоти чи пробує знову в наступному проході). #>
-    $w = Get-Limit $script:Limits 'QuotaWaitMinutes' 'quota_wait_minutes'
-    if ($null -eq $w) { return $null }
-    $Now + [long](60 * $w)
+    <# Час (unix), до якого чекати, коли скидання квоти невідоме: лише параметр -QuotaWaitMinutes (рука власника, стенд);
+    поля в даних нема (рішення менеджера 01.11) — $null: чекати нема скільки, виклик закриває позначку кодом квоти (рядок
+    QUOTA диспетчерові) чи пробує знову в наступному проході. #>
+    if (-not $script:Bound.ContainsKey('QuotaWaitMinutes')) { return $null }
+    $Now + [long](60 * [double]$script:Bound['QuotaWaitMinutes'])
 }
 
 # --- позначки ------------------------------------------------------------------------------------------------------
@@ -1265,7 +1267,7 @@ function Test-TaskFile([string]$Sha, [string]$TaskPath) {
 
 # --- сигнал про запобіжник, що тримає позначки ----------------------------------------------------------------------
 # 29.10 GPU-наряд стояв у черзі з 15:06 UTC: журнал 144 рази "GPU зайнята", а диспетчер не знав. Запобіжник сам пише
-# диспетчерові рядок, коли тримає позначки понад quota_wait_minutes (смуги.json, з джерелом).
+# диспетчерові рядок, коли тримає позначки: за причиною, що вимагає дії диспетчера, а не за часом.
 
 function Add-Hold([hashtable]$Held, [string]$Resource, [string]$Reason, [string]$Marker) {
     <# Ресурс тримає позначку за цього проходу; причина — перша за проходом. #>
@@ -1282,16 +1284,13 @@ function Update-HoldSignals([hashtable]$Held, [scriptblock]$Send) {
         try { foreach ($p in ([System.IO.File]::ReadAllText($path, $script:Utf8) | ConvertFrom-Json).PSObject.Properties) { $prev[$p.Name] = $p.Value } } catch { $null = $_ }
     }
     $now = [DateTimeOffset]::UtcNow.ToUnixTimeSeconds()
-    # Межі очікування без джерела нема — рядок одразу.
-    $aw = Get-Limit $script:Limits 'QuotaWaitMinutes' 'quota_wait_minutes'
-    $after = $(if ($null -eq $aw) { 0 } else { $aw * 60 })
     $next = [ordered]@{}
     foreach ($res in @($Held.Keys | Sort-Object)) {
         $h = $Held[$res]; $old = $prev[$res]
         $since = $(if ($null -ne $old) { [long]$old.since } else { $now })
         $sent = $(if ($null -ne $old) { [string]$old.sent } else { '' })
         # MiB процесів гуляють між проходами: повтор — лише коли змінилися назви, а не числа.
-        if (($now - $since) -ge $after -and ($sent -replace ' [0-9]+ MiB', '') -cne ($h.Reason -replace ' [0-9]+ MiB', '')) {
+        if (($sent -replace ' [0-9]+ MiB', '') -cne ($h.Reason -replace ' [0-9]+ MiB', '')) {
             if (& $Send "GEMINI ОБГОРТКА: ЗАБЛОКОВАНО ${res}: $($h.Reason), позначок $($h.Markers.Count)") { $sent = $h.Reason }
         }
         $next[$res] = [ordered]@{ since = $since; reason = $h.Reason; sent = $sent }

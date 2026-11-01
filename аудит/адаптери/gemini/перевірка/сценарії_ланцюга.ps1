@@ -320,32 +320,21 @@ try {
     Check 'автоживий на порожньому плані: ні прогону, ні PR' (Test-AutoPlanEmpty "автоживий-$newer" $emptyText)
     Check 'автоживий із рядками ЖИВИЙ ПІСЛЯ іде на прогін' (-not (Test-AutoPlanEmpty "автоживий-$newer" $fullText))
     Check 'нічний Е1 на порожньому плані виконує мінімальну сцену' (-not (Test-AutoPlanEmpty 'Е1-нічний-живий-20261031' $emptyText))
-    # Вікно рахується за SHA й committer, а коментар не оживляє початковий архів.
+    # Вікна за віком коміту нема (review_hours знято, рішення менеджера 01.11): добір — за новим PR чи зміною SHA.
     $clock = [datetimeoffset]::UtcNow; $installed = $clock.AddDays(-2); $heads = @{}
-    $script:HeadDate = $clock.AddHours(-25)
-    function Invoke-ChainApi([string]$Path) { [pscustomobject]@{sha=($Path -split '/')[-1];commit=@{committer=@{date=$script:HeadDate.ToString('o')}}} }
     $oldPull = Pull 70 'claude/давній' $first
     $oldPull.created_at = $clock.AddDays(-10).ToString('o')
-    Check 'давня голова не потрапляє у початкове вікно 24 годин' (-not (Test-RecentReviewHead $oldPull $heads $installed $clock 24))
-    $script:HeadDate = $clock.AddMinutes(-1)
-    Check 'та сама давня голова не оживає від свіжих метаданих' (-not (Test-RecentReviewHead $oldPull $heads $installed $clock 24))
+    Check 'давня голова давнього PR не добирається' (-not (Test-RecentReviewHead $oldPull $heads $installed $clock))
+    Check 'та сама давня голова не оживає при повторі' (-not (Test-RecentReviewHead $oldPull $heads $installed $clock))
     $oldPull.head.sha = $newer
-    Check 'спостережена зміна SHA оживляє PR незалежно від дати коміту' (Test-RecentReviewHead $oldPull $heads $installed $clock 24)
+    Check 'спостережена зміна SHA оживляє PR' (Test-RecentReviewHead $oldPull $heads $installed $clock)
     $savedHeads = ConvertFrom-Json ($heads | ConvertTo-Json -Depth 5)
     $headsAgain = @{}; foreach ($entry in $savedHeads.PSObject.Properties) { $headsAgain[$entry.Name] = $entry.Value }
-    Check 'право нової голови зберігається після перезапуску й за межами вікна' (Test-RecentReviewHead $oldPull $headsAgain $installed ($clock.AddDays(3)) 24)
-    $oldPull.created_at = $clock.AddHours(-1).ToString('o'); $script:HeadDate = $clock.AddDays(-10)
-    Check 'PR, створений після встановлення, допускає й старий коміт' (Test-RecentReviewHead $oldPull @{} $installed $clock 24)
-    $oldPull.created_at = $clock.AddDays(-10).ToString('o'); $script:HeadDate = $clock.AddHours(-24)
-    Check 'ліва межа вікна включена' (Test-RecentReviewHead $oldPull @{} $installed $clock 24)
-    $script:HeadDate = $clock.AddHours(-24).AddSeconds(-1)
-    Check 'секунда до лівої межі виключена' (-not (Test-RecentReviewHead $oldPull @{} $installed $clock 24))
-    $script:HeadDate = $clock.AddMinutes(1)
-    Check 'майбутня дата коміту не вважається рухом' (-not (Test-RecentReviewHead $oldPull @{} $installed $clock 24))
-    $script:HeadDate = $clock.AddHours(-1)
-    Check 'review_hours без джерела: вікна нема — свіжа голова давнього PR не добирається' (-not (Test-RecentReviewHead $oldPull @{} $installed $clock $null))
+    Check 'право нової голови зберігається після перезапуску' (Test-RecentReviewHead $oldPull $headsAgain $installed ($clock.AddDays(3)))
+    $oldPull.created_at = $clock.AddHours(-1).ToString('o')
+    Check 'PR, створений після встановлення, добирається' (Test-RecentReviewHead $oldPull @{} $installed $clock)
     $cc = ConvertFrom-Json ([IO.File]::ReadAllText((Join-Path $SourceDir 'ланцюг.json')))
-    Check 'review_hours: ланцюг.json без джерела (24 з кодом не береться)' ($cc.review_hours.n -eq 24 -and -not (Test-LimitSource ([string]$cc.review_hours.'джерело')))
+    Check 'ланцюг.json без review_hours' ($null -eq $cc.PSObject.Properties['review_hours'])
     $script:DryRun = $true; $script:Pulls = @((Pull 99 'claude/наряд' $newer)); Invoke-WrapperChain
     Check 'DryRun нічого не ставить' (@(Markers | Where-Object { $_ -match 'автоперевірка-99-' }).Count -eq 0)
 } catch { "✗ виняток стенда: $($_.Exception.Message) $($_.ScriptStackTrace)"; $failures++ }

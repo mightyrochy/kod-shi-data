@@ -181,7 +181,7 @@ function ConvertFrom-QuotaStamp($Value) {
 }
 
 function Test-QuotaRefused($Refused, $Reset, [datetimeoffset]$Now) {
-    <# Відмова за квотою діє до скидання; скидання невідоме — годину від відмови (quota_wait_minutes за замовчуванням). #>
+    <# Відмова за квотою діє до скидання; скидання невідоме — годину від відмови (вигадане значення без джерела, дошка 12203). #>
     $until = ConvertFrom-QuotaStamp $Reset
     if ($null -ne $until) { return $until -gt $Now }
     $at = ConvertFrom-QuotaStamp $Refused
@@ -363,10 +363,9 @@ function Get-LatestLivePending($Pending) {
     @($items[-1])
 }
 
-function Test-RecentReviewHead($Pull, $Heads, [datetimeoffset]$Installed, [datetimeoffset]$Now, $Hours) {
-    <# Новий PR після встановлення, спостережена зміна SHA або свіжа голова у першому знімку.
-
-    updated_at PR змінюють і коментарі, тому для початкового вікна читаємо дату committer точного SHA. #>
+function Test-RecentReviewHead($Pull, $Heads, [datetimeoffset]$Installed, [datetimeoffset]$Now) {
+    <# Новий PR після встановлення чи спостережена зміна SHA. Вікна за віком коміту нема (review_hours знято, рішення
+    менеджера 01.11): давній архів, що був до встановлення, не добирається. #>
     $n = [string]$Pull.number; $head = [string]$Pull.head.sha
     $old = $Heads[$n]
     if ($null -ne $old -and $old.sha -ceq $head) { return [bool]$old.eligible }
@@ -374,12 +373,6 @@ function Test-RecentReviewHead($Pull, $Heads, [datetimeoffset]$Installed, [datet
     if (-not $eligible) {
         $created = [datetimeoffset]::Parse([string]$Pull.created_at, [Globalization.CultureInfo]::InvariantCulture)
         $eligible = $created -ge $Installed -and $created -le $Now
-        if (-not $eligible -and $null -ne $Hours) {
-            $commit = Invoke-ChainApi "repos/$GitHubRepo/commits/$head"
-            if ($commit.sha -cne $head) { throw 'CHAIN_HEAD' }
-            $time = [datetimeoffset]::Parse([string]$commit.commit.committer.date, [Globalization.CultureInfo]::InvariantCulture)
-            $eligible = $time -ge $Now.AddHours(-$Hours) -and $time -le $Now
-        }
     }
     $Heads[$n] = @{sha=$head;eligible=$eligible}
     $eligible
@@ -587,20 +580,6 @@ function Invoke-WrapperChain {
         foreach ($path in @('аудит/наряди/автоперевірка.md','аудит/наряди/автоживий.md')) {
             if ((Invoke-Git @('cat-file','-e',"${main}:$path") -AllowFail).Code -ne 0) { throw 'CHAIN_TEMPLATE' }
         }
-        # review_hours — вікно добору PR з початкового знімка: `{"n": години, "джерело": "власник ДД.ММ …" | "вимір: … ДД.ММ"}`.
-        # Без джерела вікна нема (типового з коду не буває): добираються лише нові PR після встановлення й зміни голови.
-        # Криве значення з джерелом (не ціле, менше 1) — CHAIN_CONFIG, без обрізання.
-        $hours = $null
-        $hoursProp = $config.PSObject.Properties['review_hours']
-        if ($null -ne $hoursProp) {
-            $node = $hoursProp.Value
-            if ($node -isnot [pscustomobject] -or $null -eq $node.PSObject.Properties['n'] -or $null -eq $node.PSObject.Properties['джерело']) { throw 'CHAIN_CONFIG' }
-            if (Test-LimitSource ([string]$node.'джерело')) {
-                if ($node.n -isnot [int] -and $node.n -isnot [long]) { throw 'CHAIN_CONFIG' }
-                $hours = [int]$node.n
-                if ($hours -lt 1) { throw 'CHAIN_CONFIG' }
-            }
-        }
         $now = [datetimeoffset]::UtcNow; $installed = $now; $heads = @{}
         $statePath = Join-Path $WorkDir 'chain.json'
         $reviewed = @{}; $liveActive = $null; $liveSince = ''; $last = $main; $seen = @{}; $liveStamps = @{}; $livePending = @(); $hasLiveState = $false
@@ -673,7 +652,7 @@ function Invoke-WrapperChain {
         foreach ($pr in $pulls) {
             if (-not (Test-ChainReviewPull $pr)) { continue }
             $head = [string]$pr.head.sha; $n = [string]$pr.number
-            $eligible = Test-RecentReviewHead $pr $heads $installed $now $hours
+            $eligible = Test-RecentReviewHead $pr $heads $installed $now
             Write-FileAtomic $statePath (([ordered]@{ main=$main; reviewed=$reviewed; live_active=$liveActive; live_since=$liveSince; live_stamps=@($liveStamps.Keys); live_pending=@($livePending); reviews=@($seen.Keys); installed_utc=$installed.ToString('o'); heads=$heads }) | ConvertTo-Json -Compress -Depth 5)
             if (-not $eligible) { continue }
             $work = Get-ChainBranchWork ([string]$pr.head.ref)

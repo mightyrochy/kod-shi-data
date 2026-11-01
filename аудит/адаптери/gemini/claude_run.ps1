@@ -348,8 +348,8 @@ function Get-HealthLines($G, $Cq) {
     $zero = { param($Refused, $Reset)
         if ($Refused -notmatch $script:UtcRx) { return $false }
         if ($Reset -match $script:UtcRx) { return [int](Get-Minutes $Reset) -lt 0 }
-        $qw = Get-Limit $script:Limits 'QuotaWaitMinutes' 'quota_wait_minutes'
-        $null -ne $qw -and [int](Get-Minutes $Refused) -lt $qw }
+        # Скидання невідоме — нульової квоти за часом не вгадуємо (поля в даних нема).
+        $false }
     $cz = $(if ($null -ne $Cq -and (& $zero ([string](Get-JsonProp $Cq 'refused')) ([string](Get-JsonProp $Cq 'reset')))) { @($ms | Where-Object { $_.Lane -eq 'claude' }).Count } else { 0 })
     $xz = $(if ($null -ne $G.Codex -and (& $zero $G.Codex.Refused $G.Codex.Reset)) { @($ms | Where-Object { $_.Lane -eq 'codex' }).Count } else { 0 })
     $lines += @('', "Позначки на рушії з нульовою квотою: claude $cz · codex $xz · agy $(if ($G.Zero) { $G.Zero } else { '?' })")
@@ -427,7 +427,7 @@ function Get-StatusBody {
         }
         if ([string](Get-JsonProp $cq 'refused')) { $lines += "| claude · остання відмова | — | 0 % | $(if ($cq.reset) { [string]$cq.reset } else { 'CLI не дав' }) | $([string]$cq.refused) |" }
     } else { $lines += '| claude | — | невідомо (ще не було прогону) | — | — |' }
-    if ($null -ne $g.Codex -and $g.Codex.Refused) { $lines += "| codex · остання відмова | — | 0 % | $(if ($g.Codex.Reset) { $g.Codex.Reset } else { 'CLI не дав — чекання quota_wait_minutes' }) | $($g.Codex.Refused) |" }
+    if ($null -ne $g.Codex -and $g.Codex.Refused) { $lines += "| codex · остання відмова | — | 0 % | $(if ($g.Codex.Reset) { $g.Codex.Reset } else { 'CLI не дав' }) | $($g.Codex.Refused) |" }
     else { $lines += '| codex | — | невідомо (CLI без ходу не дає; відмов не було) | — | — |' }
     $wait = @(Get-WaitingMarkers) + @($g.Wait)
     if ($wait.Count -gt 0) {
@@ -817,8 +817,8 @@ function Complete-Task($M, [string]$StatePath, [string]$Id, [string]$Code, [stri
 }
 
 # Відмова за квотою: позначка чекає скидання (resetsAt останньої `rate_limit_event` зі status rejected; інакше час
-# із тексту `…|<unix>`; нема — quota_wait_minutes), рядок QUOTA0_CLAUDE_M<хв>; нова спроба продовжить гілку наряду.
-# Час скидання невідомий і quota_wait_minutes без джерела — $false (кінець QUOTA): чекати нема скільки.
+# із тексту `…|<unix>`; нема — кінець QUOTA, рядок диспетчерові), рядок QUOTA0_CLAUDE_M<хв>; нова спроба продовжить гілку наряду.
+# Час скидання невідомий — $false (кінець QUOTA; лише -QuotaWaitMinutes руки власника дає чекання).
 function Enter-ClaudeQuotaWait($M, [string]$StatePath, [string]$Id, $R, [string]$Text) {
     $now = [DateTimeOffset]::UtcNow.ToUnixTimeSeconds()
     $until = 0L
@@ -830,7 +830,7 @@ function Enter-ClaudeQuotaWait($M, [string]$StatePath, [string]$Id, $R, [string]
     $known = $until -gt $now
     if (-not $known) {
         $until = Get-QuotaWaitUntil $now
-        if ($null -eq $until) { Write-Log "квота: $($M.Name) — час скидання невідомий, quota_wait_minutes без джерела — кінець QUOTA"; return $false }
+        if ($null -eq $until) { Write-Log "квота: $($M.Name) — час скидання невідомий — кінець QUOTA"; return $false }
     }
     [void](Set-MarkerWait $M $until @{ retake = $true; group = 'CLAUDE' })
     $q = Read-ClaudeQuota

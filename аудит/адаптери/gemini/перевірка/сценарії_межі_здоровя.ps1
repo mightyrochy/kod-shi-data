@@ -43,6 +43,10 @@ try {
             Check "1 джерело «$($t[0])» — $(if ($t[1]) { 'є' } else { 'нема' })" ((Test-LimitSource $t[0]) -eq $t[1])
         }
 
+        Check '1 «механізм: …» приймається лише для періоду (poll/usage)' ((Test-LimitSource 'механізм: період опитування' $true) -and -not (Test-LimitSource 'механізм: період опитування' $false) -and -not (Test-LimitSource 'механізм:' $true) -and -not (Test-LimitSource 'механізм' $true))
+        $script:LanesText = '{"v": 2, "slots": {}, "poll_minutes": {"n": 2, "джерело": "механізм: період опитування"}, "claude_hang_minutes": {"n": 120, "джерело": "механізм: вигадка"}}'
+        $l = Get-Limits
+        Check '1 механізм діє для poll_minutes; для claude_hang_minutes — ні (потрібен вимір)' ($l['poll_minutes'] -eq 2 -and -not $l.ContainsKey('claude_hang_minutes') -and @($l.unsourced) -ccontains 'claude_hang_minutes')
         $script:LanesText = Lanes '{"n": 7, "джерело": "власник 29.10"}'
         $l = Get-Limits
         Check "1 з джерелом slots.claude = $($l.slots['claude']) (7); слоти з джерелом, poll_minutes — без" ($l.slots['claude'] -eq 7 -and @($l.unsourced | Where-Object { $_ -like 'slots.*' }).Count -eq 0 -and @($l.unsourced) -ccontains 'poll_minutes')
@@ -55,9 +59,9 @@ try {
         Check '1 число без вузла (міграція v1) — межі нема' (-not (Get-Limits).slots.Contains('claude'))
         $script:LanesText = '{"v": 1, "slots": {"codex": 9, "agy": 9, "claude": 9}}'
         $l = Get-Limits
-        Check "1 файл v1 — усі 10 полів без джерела, жодної межі" (@($l.unsourced).Count -eq 10 -and $l.slots.Count -eq 0)
+        Check "1 файл v1 — усі 8 полів без джерела, жодної межі" (@($l.unsourced).Count -eq 8 -and $l.slots.Count -eq 0)
         $script:LanesText = 'не json'
-        Check '1 кривий файл — жодної межі' ($null -eq (Get-Limits).slots['agy'] -and @((Get-Limits).unsourced).Count -eq 10)
+        Check '1 кривий файл — жодної межі' ($null -eq (Get-Limits).slots['agy'] -and @((Get-Limits).unsourced).Count -eq 8)
         # Криве значення з джерелом — відмова рядком у журналі з назвою поля, без обрізання; велике число — не стеля.
         $logged = New-Object System.Collections.ArrayList
         function Write-Log { param([string]$Text) [void]$logged.Add($Text) }
@@ -70,13 +74,13 @@ try {
         Check '1 не число з джерелом — відмова' (@((Get-Limits).invalid) -ccontains 'slots.claude')
         $script:LanesText = Lanes '{"n": 99, "джерело": "власник 29.10"}'
         Check '1 99 слотів з джерелом — 99, стелі 64 нема' ((Get-Limits).slots['claude'] -eq 99)
-        $script:LanesText = '{"v": 2, "slots": {}, "agy_total_minutes": {"n": 9999, "джерело": "вимір: стенд 29.10 — 3 копії"}, "poll_minutes": {"n": 0, "джерело": "власник 29.10"}}'
+        $script:LanesText = '{"v": 2, "slots": {}, "agy_turn_minutes": {"n": 9999, "джерело": "вимір: стенд 29.10 — 3 копії"}, "poll_minutes": {"n": 0, "джерело": "власник 29.10"}}'
         $l = Get-Limits
-        Check '1 agy_total_minutes 9999 з джерелом — 9999 (стелі 600 нема); poll_minutes 0 — відмова' ($l['agy_total_minutes'] -eq 9999 -and @($l.invalid) -ccontains 'poll_minutes' -and -not $l.ContainsKey('poll_minutes'))
-        Check '1 Get-Limit: параметр задачі сильніший, без межі — $null' ($null -eq (Get-Limit $l 'ЧужийПараметр' 'claude_hang_minutes') -and (Get-Limit $l 'ЧужийПараметр' 'agy_total_minutes') -eq 9999)
+        Check '1 agy_turn_minutes 9999 з джерелом — 9999 (стелі 600 нема); poll_minutes 0 — відмова' ($l['agy_turn_minutes'] -eq 9999 -and @($l.invalid) -ccontains 'poll_minutes' -and -not $l.ContainsKey('poll_minutes'))
+        Check '1 Get-Limit: параметр задачі сильніший, без межі — $null' ($null -eq (Get-Limit $l 'ЧужийПараметр' 'claude_hang_minutes') -and (Get-Limit $l 'ЧужийПараметр' 'agy_turn_minutes') -eq 9999)
         $script:LanesText = [IO.File]::ReadAllText((Join-Path $SourceDir 'смуги.json'), $utf)
         $script:Limits = Get-Limits
-        Check "1 смуги.json main: слоти з виміру $($script:Limits.slots['claude'])/$($script:Limits.slots['codex'])/$($script:Limits.slots['agy']), без джерела $(@($script:Limits.unsourced).Count)" ($script:Limits.slots['claude'] -eq 54 -and $script:Limits.slots['codex'] -eq 54 -and @($script:Limits.unsourced).Count -eq 7 -and @($script:Limits.unsourced) -cnotcontains 'slots.claude' -and @($script:Limits.invalid).Count -eq 0)
+        Check "1 смуги.json main: слоти з виміру $($script:Limits.slots['claude'])/$($script:Limits.slots['codex'])/$($script:Limits.slots['agy']), без джерела $(@($script:Limits.unsourced).Count)" ($script:Limits.slots['claude'] -eq 54 -and $script:Limits.slots['codex'] -eq 54 -and @($script:Limits.unsourced).Count -eq 3 -and @($script:Limits.unsourced) -cnotcontains 'slots.claude' -and @($script:Limits.unsourced) -ccontains 'codex_stall_minutes' -and $script:Limits['poll_minutes'] -eq 2 -and $script:Limits['usage_minutes'] -eq 15 -and -not $script:Limits.ContainsKey('agy_total_minutes') -and -not $script:Limits.ContainsKey('quota_wait_minutes') -and @($script:Limits.invalid).Count -eq 0)
         $script:LanesText = Lanes '{"n": 40, "джерело": ""}'
         $script:Limits = Get-Limits
 
