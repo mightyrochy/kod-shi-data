@@ -1,7 +1,8 @@
 """Спільні визначення й чисті операції AST для приладу ознак обличчя."""
 import ast, collections, functools, os, re
 from ознаки_рішення import (шкали_ваги, пари_функції, вузли_тіла, кутові_пари,
-                           множини_функції, вільні_свідки_пари, числові_цикли)
+                           множини_функції, вільні_свідки_пари, числові_цикли,
+                           форматований_текст, поля_підписів, межі_сортування)
 
 ТУТ = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 ВИКЛЮЧЕНО = re.compile(r"^(батарея_|gate_|measure_|стенд_|тест_|audit_|pair_test|run_outfit|status_перевірки)")
@@ -68,6 +69,7 @@ class Функція:
         self.множини = множини_функції(self)
         self.вільні_пари = вільні_свідки_пари(self)
         self.прогресії, self.предикати_формул, self.числовий_пошук, self.повертає_сітку = числові_цикли(self)
+        self.предикати_формул.update(межі_сортування(self))
         self.сіткові_імена = {ц.id for в in self.власні if id(в) in self.прогресії
                             for ц in в.targets if isinstance(ц, ast.Name)}
 
@@ -147,12 +149,20 @@ def _стала_формули(в):
         and _стала_формули(в.left) and _стала_формули(в.right)
 
 
-def _словесні_пороги(дерево):
+def _словесні_пороги(дерево, поля=()):
     """Знаходить вибір самих слів усередині форматованого підпису."""
     def слова(в):
         return _рядок(в) or isinstance(в, ast.JoinedStr) or isinstance(в, ast.IfExp) and слова(в.body) and слова(в.orelse)
+    def лише_підпис(тіло):
+        """Відрізняє зміну самого підпису від зміни числа чи класу поруч із ним."""
+        return all(isinstance(і, ast.Pass) or isinstance(і, ast.Assign) and форматований_текст(і.value)
+                   and all(isinstance(ц, ast.Subscript) and _рядок(ц.slice) and ц.slice.value in поля for ц in і.targets)
+                   or isinstance(і, ast.If) and лише_підпис(і.body) and лише_підпис(і.orelse) for і in тіло)
     вихід = set()
     for в in ast.walk(дерево):
+        if isinstance(в, ast.If) and лише_підпис(в.body) and лише_підпис(в.orelse) \
+                and any(isinstance(н, ast.Assign) for і in в.body + в.orelse for н in ast.walk(і)):
+            вихід.update(id(т) for т in ast.walk(в.test) if isinstance(т, ast.Compare))
         формат = isinstance(в, ast.JoinedStr) or isinstance(в, ast.BinOp) and isinstance(в.op, ast.Mod) and _рядок(в.left)
         if формат:
             for г in ast.walk(в):
@@ -163,6 +173,45 @@ def _словесні_пороги(дерево):
             continue
         вузли = list(вузли_тіла(ф))
         батьки = {id(д): в for в in вузли for д in ast.iter_child_nodes(в)}
+        усі = list(ast.walk(ф))
+        предки = {id(д): в for в in усі for д in ast.iter_child_nodes(в)}
+        псевдоніми, джерела, читання = collections.defaultdict(set), {}, collections.defaultdict(list)
+        for н in усі:
+            if isinstance(н, ast.Assign) and len(н.targets) == 1 and isinstance(н.targets[0], ast.Name):
+                ім = н.targets[0].id
+                if isinstance(н.value, ast.Name):
+                    псевдоніми[н.value.id].add(ім)
+                elif isinstance(н.value, ast.IfExp) and слова(н.value):
+                    джерела[ім] = н.value
+            if isinstance(н, ast.Name) and isinstance(н.ctx, ast.Load):
+                читання[н.id].append(н)
+        текстові, нетекстові = set(), set()
+        for ім in set(псевдоніми) | set(джерела) | set().union(*псевдоніми.values(), set()):
+            for н in читання[ім]:
+                б = предки.get(id(н))
+                if isinstance(б, ast.Assign) and б.value is н and len(б.targets) == 1 and isinstance(б.targets[0], ast.Name):
+                    continue
+                формат = False
+                while б is not None:
+                    if форматований_текст(б):
+                        формат = True
+                        break
+                    if isinstance(б, (ast.Call, ast.Compare, ast.stmt)):
+                        break
+                    б = предки.get(id(б))
+                (текстові if формат else нетекстові).add(ім)
+        while True:
+            погані = {ім for ім, до in псевдоніми.items() if до & нетекстові} - нетекстові
+            добрі = {ім for ім, до in псевдоніми.items() if до & текстові} - текстові
+            if not погані and not добрі:
+                break
+            нетекстові |= погані
+            текстові |= добрі
+        for ім, вираз in джерела.items():
+            if ім in текстові and ім not in нетекстові:
+                for г in ast.walk(вираз):
+                    if isinstance(г, ast.IfExp) and слова(г):
+                        вихід.update(id(т) for т in ast.walk(г.test) if isinstance(т, ast.Compare))
         for виклик in вузли:
             if not (isinstance(виклик, ast.Call) and isinstance(виклик.func, ast.Attribute)
                     and виклик.func.attr == 'append' and isinstance(виклик.func.value, ast.Name)

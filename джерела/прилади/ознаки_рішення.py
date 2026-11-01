@@ -3,6 +3,179 @@ import ast
 from collections import defaultdict
 
 
+def форматований_текст(в):
+    """Впізнає форматування чи злиття рядків, відрізняючи його від простого класу-слова."""
+    рядок = lambda н: isinstance(н, ast.Constant) and isinstance(н.value, str)
+    def рядковий_операнд(н):
+        """Розпізнає обидві текстові гілки всередині злиття, не називаючи сам клас форматуванням."""
+        return рядок(н) or форматований_текст(н) or isinstance(н, ast.IfExp) \
+            and рядковий_операнд(н.body) and рядковий_операнд(н.orelse)
+    return isinstance(в, ast.JoinedStr) or isinstance(в, ast.BinOp) and (
+        isinstance(в.op, ast.Mod) and рядок(в.left) or isinstance(в.op, ast.Add)
+        and any(рядковий_операнд(н) for н in (в.left, в.right))) or \
+        isinstance(в, ast.Call) and isinstance(в.func, ast.Attribute) and в.func.attr in ('format', 'join') \
+        and рядок(в.func.value)
+
+
+def поля_підписів(дерева):
+    """Знаходить поля, які всі писачі форматують, а читачі лише зливають у текст чи копіюють.
+
+    Клас-слово та поле, що бере участь у рішенні, не стають підписом через один текстовий читач.
+    """
+    записи, читачі = defaultdict(list), defaultdict(list)
+
+    def ключ(в):
+        """Читає сталий ключ індексу або get."""
+        н = в.slice if isinstance(в, ast.Subscript) else в.args[0] if isinstance(в, ast.Call) \
+            and isinstance(в.func, ast.Attribute) and в.func.attr == 'get' and в.args else None
+        return н.value if isinstance(н, ast.Constant) and isinstance(н.value, str) else None
+
+    def текстове_тіло(тіло):
+        """Перевіряє, що охорона наявності підпису лише дописує форматований текст."""
+        return bool(тіло) and all(isinstance(і, ast.Assign) and форматований_текст(і.value) for і in тіло)
+
+    for дерево in дерева:
+        батьки = {id(д): в for в in ast.walk(дерево) for д in ast.iter_child_nodes(в)}
+        for в in ast.walk(дерево):
+            if isinstance(в, ast.Assign):
+                for ц in в.targets:
+                    if isinstance(ц, ast.Subscript) and (к := ключ(ц)) is not None:
+                        записи[к].append(в.value)
+            elif isinstance(в, (ast.AnnAssign, ast.AugAssign)) and isinstance(в.target, ast.Subscript):
+                if (к := ключ(в.target)) is not None:
+                    записи[к].append(в.value if isinstance(в, ast.AnnAssign) else ast.Constant(0))
+            elif isinstance(в, ast.Dict):
+                for к, з in zip(в.keys, в.values):
+                    if isinstance(к, ast.Constant) and isinstance(к.value, str):
+                        записи[к.value].append(з)
+            elif isinstance(в, ast.Call):
+                for к in в.keywords:
+                    if к.arg:
+                        записи[к.arg].append(к.value)
+            к = ключ(в)
+            if к is not None and (isinstance(в, ast.Call) or isinstance(в.ctx, ast.Load)):
+                читачі[к].append((в, батьки))
+    кандидати = {к for к, значення in записи.items() if any(форматований_текст(з) for з in значення)
+                 and all(форматований_текст(з) or ключ(з) == к or isinstance(з, ast.Constant)
+                         and з.value is None for з in значення)}
+    вихід = set()
+    for к in кандидати:
+        лише_текст, є_підпис = True, False
+        for читач, батьки in читачі[к]:
+            н, дозволено = читач, False
+            while (б := батьки.get(id(н))) is not None:
+                if форматований_текст(б):
+                    дозволено, є_підпис = True, True
+                    break
+                власник = батьки.get(id(б))
+                if isinstance(б, ast.keyword) and б.arg == к and isinstance(власник, ast.Call) \
+                        and isinstance(власник.func, ast.Name) and власник.func.id == 'dict':
+                    дозволено = True
+                    break
+                if isinstance(б, ast.Dict) and any(з is н and isinstance(ім, ast.Constant) and ім.value == к
+                                                  for ім, з in zip(б.keys, б.values)):
+                    дозволено = True
+                    break
+                if isinstance(б, ast.If) and б.test is н and not б.orelse and текстове_тіло(б.body):
+                    дозволено = True
+                    break
+                if isinstance(б, (ast.Compare, ast.Call, ast.stmt)):
+                    break
+                н = б
+            лише_текст &= дозволено
+        if лише_текст and є_підпис:
+            вихід.add(к)
+    return вихід
+
+
+def межі_сортування(ф):
+    """Знаходить тотожну нижню межу: ключ елемента черги не нижчий за ключ її відсортованого початку."""
+    вузли = list(вузли_тіла(ф))
+    присвоєння = []
+    for в in вузли:
+        if isinstance(в, ast.Assign):
+            for ц in в.targets:
+                if isinstance(ц, ast.Tuple) and isinstance(в.value, ast.Tuple) and len(ц.elts) == len(в.value.elts):
+                    присвоєння.extend(zip(ц.elts, в.value.elts))
+                else:
+                    присвоєння.append((ц, в.value))
+    вихід = set()
+    лямбди = {ц.id: з for ц, з in присвоєння if isinstance(ц, ast.Name) and isinstance(з, ast.Lambda)}
+    for ц, з in присвоєння:
+        if not (isinstance(ц, ast.Name) and isinstance(з, ast.Call) and isinstance(з.func, ast.Name)
+                and з.func.id == 'sorted' and з.args):
+            continue
+        q = ц.id
+        к = next((к.value for к in з.keywords if к.arg == 'key'), None)
+        if not (isinstance(к, ast.Lambda) and len(к.args.args) == 1) or any(
+                к.arg == 'reverse' and not (isinstance(к.value, ast.Constant) and к.value.value is False) for к in з.keywords):
+            continue
+        вираз = к.body.elts[0] if isinstance(к.body, ast.Tuple) and к.body.elts else к.body
+        if not (isinstance(вираз, ast.Call) and isinstance(вираз.func, ast.Name) and len(вираз.args) == 1
+                and isinstance(вираз.args[0], ast.Name) and вираз.args[0].id == к.args.args[0].arg
+                and вираз.func.id in лямбди):
+            continue
+        f = вираз.func.id
+        л = лямбди[f]
+        if any(isinstance(н, ast.Call) for н in ast.walk(л.body)):
+            continue
+        замикання = {н.id for н in ast.walk(л.body) if isinstance(н, ast.Name)} - {а.arg for а in л.args.args}
+        стабільна = all(інша is з or isinstance(інша, ast.ListComp) and isinstance(інша.elt, ast.Name)
+                       and len(інша.generators) == 1 and isinstance(інша.generators[0].iter, ast.Name)
+                       and інша.generators[0].iter.id == q and isinstance(інша.generators[0].target, ast.Name)
+                       and інша.elt.id == інша.generators[0].target.id
+                       for тар, інша in присвоєння if isinstance(тар, ast.Name) and тар.id == q)
+        if not стабільна or any(isinstance(н, ast.Call) and isinstance(н.func, ast.Attribute)
+                               and isinstance(н.func.value, ast.Name) and н.func.value.id == q for н in вузли):
+            continue
+        for цикл in (н for н in вузли if isinstance(н, ast.While) and isinstance(н.test, ast.Name) and н.test.id == q):
+            всередині = list(ast.walk(цикл))
+            псевдоніми = set(замикання)
+            while True:
+                нові = {ц.id for н in всередині if isinstance(н, ast.Assign) and isinstance(н.value, ast.Name)
+                        and н.value.id in псевдоніми for ц in н.targets if isinstance(ц, ast.Name)} - псевдоніми
+                if not нові:
+                    break
+                псевдоніми |= нові
+            змінені = set()
+            for н in всередині:
+                if isinstance(н, ast.Name) and isinstance(н.ctx, ast.Store):
+                    змінені.add(н.id)
+                if isinstance(н, (ast.Subscript, ast.Attribute)) and isinstance(н.ctx, ast.Store):
+                    корінь = н.value
+                    while isinstance(корінь, (ast.Subscript, ast.Attribute)):
+                        корінь = корінь.value
+                    if isinstance(корінь, ast.Name):
+                        змінені.add(корінь.id)
+                if isinstance(н, ast.Call) and isinstance(н.func, ast.Attribute) and isinstance(н.func.value, ast.Name) \
+                        and н.func.attr in ('append', 'extend', 'pop', 'clear', 'update', 'sort', 'reverse', 'remove'):
+                    змінені.add(н.func.value.id)
+            if з in всередині or змінені & (псевдоніми | {f}):
+                continue
+            межі = set()
+            for і in цикл.body:
+                if isinstance(і, ast.Assign) and len(і.targets) == 1 and isinstance(і.targets[0], ast.Name) \
+                        and isinstance(і.value, ast.Call) and isinstance(і.value.func, ast.Name) and і.value.func.id == f \
+                        and len(і.value.args) == 1 and isinstance(і.value.args[0], ast.Subscript):
+                    а = і.value.args[0]
+                    if isinstance(а.value, ast.Name) and а.value.id == q and isinstance(а.slice, ast.Constant) and а.slice.value == 0:
+                        межі.add(і.targets[0].id)
+            межі = {м for м in межі if sum(isinstance(н, ast.Name) and isinstance(н.ctx, ast.Store)
+                                         and н.id == м for н in всередині) == 1}
+            for в in всередині:
+                if not (isinstance(в, ast.ListComp) and len(в.generators) == 1
+                        and isinstance(в.generators[0].iter, ast.Name) and в.generators[0].iter.id == q
+                        and isinstance(в.generators[0].target, ast.Name)):
+                    continue
+                for т in (н for у in в.generators[0].ifs for н in ast.walk(у) if isinstance(н, ast.Compare)):
+                    if len(т.ops) == 1 and isinstance(т.ops[0], ast.GtE) and isinstance(т.comparators[0], ast.Name) \
+                            and т.comparators[0].id in межі and isinstance(т.left, ast.Call) \
+                            and isinstance(т.left.func, ast.Name) and т.left.func.id == f and len(т.left.args) == 1 \
+                            and isinstance(т.left.args[0], ast.Name) and т.left.args[0].id == в.generators[0].target.id:
+                        вихід.add(id(т))
+    return вихід
+
+
 def вузли_тіла(ф):
     """Обходить власне тіло функції без вкладених функцій і класів."""
     вузол = ф if isinstance(ф, (ast.FunctionDef, ast.AsyncFunctionDef, ast.Lambda)) else ф.вузол
