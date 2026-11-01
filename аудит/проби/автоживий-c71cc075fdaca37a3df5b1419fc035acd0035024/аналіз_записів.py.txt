@@ -1,0 +1,47 @@
+from pathlib import Path
+import json
+import re
+
+out = Path(__file__).resolve().parents[1] / 'repo/аудит/проби/автоживий-c71cc075fdaca37a3df5b1419fc035acd0035024'
+plan = json.loads((out / 'план.json').read_text(encoding='utf-8'))
+
+def summarize(folder):
+    answer = {}
+    log = folder / 'лог.txt'
+    if not log.exists():
+        return answer
+    text = log.read_text(encoding='utf-8', errors='replace')
+    answer['зелених'] = len(re.findall(r'^  ✔', text, re.M))
+    answer['червоні'] = [s.strip() for s in text.splitlines() if '✗' in s]
+    answer['картка_після_розмови'] = [s.strip() for s in text.splitlines() if 'KARTKA · після розмови:' in s]
+    answer['підсумок'] = [s.strip() for s in text.splitlines() if s.startswith(('НГ-4', '   СТИЛІСТКА:', '   КАРТКА:', '   ВИМІРИ:', 'ВПАЛО', 'УСЕ ЗЕЛЕНЕ', 'ДОКАЗ', 'ЗАМІНА руки'))]
+    result = folder / 'результат.json'
+    if result.exists():
+        result = json.loads(result.read_text(encoding='utf-8'))
+        answer.update({k: result.get(k) for k in ['rc', 'sha', 'початок', 'кінець', 'секунд']})
+    verdict = folder / 'вердикти.txt'
+    if verdict.exists():
+        a = json.loads(verdict.read_text(encoding='utf-8'))
+        answer['паспорт'] = a.get('спільне', {}).get('паспорт')
+        answer['випадок_моделі'] = a.get('спільне', {}).get('випадок_моделі')
+        answer['руки'] = []
+        for run in a['прогони']:
+            for v in run['вердикти']:
+                stages = v.get('етапи', {})
+                judge = stages.get('суд', {})
+                answer['руки'].append({'рука': v['рука'], 'блокує': judge.get('блокує'),
+                    'склад': v.get('склад'), 'знахідки': judge.get('знахідки'),
+                    'слід_правил': judge.get('слід_правил'), 'речі': judge.get('речі'),
+                    'кроки': [{'крок': c.get('крок'), 'помилка': c.get('помилка'), 'повнота': c.get('повнота'),
+                        'блокує': c.get('блокує'), 'образів': c.get('образів'),
+                        'знахідки': c.get('знахідки'), 'вибір': c.get('вибір')}
+                        for c in stages.get('виклики', [])]})
+    return answer
+
+rows = []
+for scene, questions in plan['scenes'].items():
+    row = {'сцена': scene, 'питання': questions, 'ДО': summarize(out / 'ДО' / scene), 'ПІСЛЯ': summarize(out / scene)}
+    rows.append(row)
+    if row['ПІСЛЯ'].get('rc') is not None:
+        print(scene, 'rc', row['ПІСЛЯ']['rc'], 'червоних', len(row['ПІСЛЯ']['червоні']))
+(out / 'виміри.json').write_text(json.dumps(rows, ensure_ascii=False, indent=2) + '\n', encoding='utf-8')
