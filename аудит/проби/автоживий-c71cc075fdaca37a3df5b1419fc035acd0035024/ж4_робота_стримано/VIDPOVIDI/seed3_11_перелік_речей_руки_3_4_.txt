@@ -1,0 +1,37 @@
+── ПРОМПТ (2042 симв.) ──
+{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.", "One item carries one thing — of two alternatives list the first; a note in brackets is not an item.", "Slot \"accessory\" is for an item no other slot fits.", "\"is_outfit\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "ITEM_LIST", "answer_schema": {"is_outfit": "yes|no", "items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory", "color_hex": "<#rrggbb or null>", "worn": "<true, or false when the description says the outfit goes without it>"}]}, "input": ["\"description\" — the outfit description"]}, "description": "Refined knit sweater in a soft camel shade (#C19A6B) with a relaxed fit and long sleeves, crafted from a warm wool blend for autumn comfort.\nTailored trousers in deep charcoal (#36454F) featuring a straight leg cut and mid-rise waist made of structured cotton twill.\nMinimalist leather loafers in rich cognac (#805E40) with a slight heel and smooth finish.\nA simple pendant necklace in matte gold adds a subtle touch without being loud, while the muted palette ensures a calm, professional presence throughout the workday. This outfit perfectly balances warmth and polish for an office environment during cool autumn days. The neutral tones allow her to focus on her work while looking put-together, and the breathable fabrics provide all-day comfort without sacrificing a neat appearance."}
+
+── ВІДПОВІДЬ (837 симв., 4.7 с, HTTP 200) ──
+{
+  "is_outfit": "yes",
+  "items": [
+    {
+      "name": "Knit sweater",
+      "details": "Refined knit with relaxed fit, long sleeves, and warm wool blend fabric",
+      "slot": "top",
+      "color_hex": "#C19A6B",
+      "worn": true
+    },
+    {
+      "name": "Trousers",
+      "details": "Tailored straight leg cut with mid-rise waist, made of structured cotton twill",
+      "slot": "bottom",
+      "color_hex": "#36454F",
+      "worn": true
+    },
+    {
+      "name": "Loafers",
+      "details": "Minimalist leather with slight heel and smooth finish",
+      "slot": "shoes",
+      "color_hex": "#805E40",
+      "worn": true
+    },
+    {
+      "name": "Pendant necklace",
+      "details": "Simple pendant design in matte gold, adding a subtle touch",
+      "slot": "necklace",
+      "color_hex": null,
+      "worn": true
+    }
+  ]
+}
