@@ -2395,7 +2395,7 @@ def стенд():
                 ВИБІР = _ЗП.Оголошення(задача="в", вхід=(_ЗП.Поле("person", "her colouring as the code measured it"),
                                                        _ЗП.Поле("day", "the weather measured today")), вихід="X")
                 def features(ш, о, from_photo=False):
-                    F = {"шкіра": {"L": ш}, "очі": {"h": о}}
+                    F = {"шкіра": {"L": ш, "C": ш}, "очі": {"h": о, "C": о}}
                     F["_meta"] = dict(from_photo=from_photo, protocol="uncontrolled")
                     return F
                 def шкала(вхід, межа):
