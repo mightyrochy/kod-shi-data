@@ -37,6 +37,8 @@ import re
 import sys
 import warnings
 
+import обсяг_приладу as ОБСЯГ  # Д10: непрочитане — код 1, не менше місць
+
 ДІЯ_ЇЇ = r"(?:chose|named|kept|asked|said|wants|tapped|picked|wrote|described|refused|rejected|changed|holds)"
 ЇЙ_ПІДПИС = re.compile(
     r"\bher\s+(?:own\s+|exact\s+)?«?(?:words?|wish(?:es)?|request|style|intent|choice|registers?)\b|"
@@ -654,7 +656,8 @@ def оголошення(дж):
             continue
         try:
             М = importlib.import_module(ф[:-3])
-        except Exception:
+        except Exception as е:
+            ОБСЯГ.непрочитано("джерела/" + ф, "імпорт: %s: %s" % (type(е).__name__, е))
             continue
         for к, в in list(vars(М).items()):
             for вв in (в.values() if isinstance(в, dict) else [в]):
@@ -663,8 +666,8 @@ def оголошення(дж):
     try:
         фото = importlib.import_module("річ_з_фото").фото_речей()
         знайдені[id(фото)] = ("річ_з_фото", фото)
-    except Exception:
-        pass
+    except Exception as е:
+        ОБСЯГ.непрочитано_модуль(дж, "річ_з_фото", "фото_речей(): %s: %s" % (type(е).__name__, е))
     вих = []
     for мод, о in знайдені.values():
         for п in о.вхід:
@@ -883,11 +886,10 @@ def місця_п6(джерела, Модуль, Аналіз, НЕ_ШЛЯХ, п
     модулі = {}
     for ф in sorted(os.listdir(джерела)):
         if ф.endswith(".py") and not НЕ_ШЛЯХ.match(ф[:-3]) and not ф.startswith(("тест", "стенд")):
-            try:
-                with open(os.path.join(джерела, ф), encoding="utf-8") as фл:
-                    модулі[ф[:-3]] = ast.parse(фл.read())
-            except SyntaxError:
-                continue
+            with open(os.path.join(джерела, ф), encoding="utf-8") as фл:
+                дерево = ОБСЯГ.розібрати(фл.read(), "джерела/" + ф)
+            if дерево is not None:
+                модулі[ф[:-3]] = дерево
     а = Аналіз.__new__(Аналіз)
     а.м = {ім: Модуль(ім, д) for ім, д in модулі.items()}
     дріт = ДрітБезВиду(а, джерела)

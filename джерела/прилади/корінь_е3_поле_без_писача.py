@@ -72,6 +72,8 @@ import re
 import sys
 import warnings
 
+import обсяг_приладу as ОБСЯГ  # Д10: непрочитане — код 1, не менше місць
+
 warnings.simplefilter("ignore", SyntaxWarning)
 
 ВХІД_МОСТА = ("bridge", "виклик")
@@ -143,7 +145,8 @@ def модулі_продукту(дж):
             continue
         try:
             мод[м] = Модуль(м, os.path.join(дж, м + ".py"))
-        except SyntaxError:
+        except SyntaxError as е:
+            ОБСЯГ.непрочитано("джерела/%s.py" % м, "SyntaxError: %s" % е)
             continue
         for в in мод[м].імпорти.values():
             черга.append(в[1].split(".")[0])
@@ -871,7 +874,9 @@ class Паспорт:
         if м not in self._модулі:
             try:
                 self._модулі[м] = importlib.import_module(м)
-            except Exception:
+            except Exception as е:
+                if not (isinstance(е, ModuleNotFoundError) and е.name == м):  # модуля нема — нема й обсягу
+                    ОБСЯГ.непрочитано("джерела/%s.py" % м, "імпорт: %s: %s" % (type(е).__name__, е))
                 self._модулі[м] = None
         return self._модулі[м]
 
@@ -1177,7 +1182,8 @@ def лічба(корінь):
     js_ключі, js_ід, js_читання, опції = писачі_js(дж)
     try:
         пп = importlib.import_module("паспорт_поля").ПОЛЯ_ПАСПОРТА
-    except Exception:
+    except Exception as е:
+        ОБСЯГ.непрочитано_модуль(дж, "паспорт_поля", "ПОЛЯ_ПАСПОРТА: %s: %s" % (type(е).__name__, е))
         пп = {}
     панель = {к: [i[0] for i in в.get("показ") or () if i and i[0] in js_ід] for к, в in пп.items()}
     осі = {}
@@ -1187,8 +1193,8 @@ def лічба(корінь):
             вісь = в.get("вісь")
             if вісь and вісь[1] in _табл and isinstance(_табл[вісь[1]], dict):
                 осі[к] = {str(x) for x in _табл[вісь[1]].values()} | {"невідомо"}
-    except Exception:
-        pass
+    except Exception as е:
+        ОБСЯГ.непрочитано_модуль(дж, "внутрішня_мова", "ТАБЛИЦЯ: %s: %s" % (type(е).__name__, е))
     зовнішні = set()
     try:
         дерево = ast.parse(open(os.path.join(дж, "суд_чеклісти.py"), encoding="utf-8").read())
@@ -1196,8 +1202,8 @@ def лічба(корінь):
             if isinstance(n, ast.Assign) and any(isinstance(t, ast.Name) and t.id == "ЗОВНІШНІ_ВХОДИ"
                                                  for t in n.targets) and isinstance(n.value, ast.Dict):
                 зовнішні = {_const_str(k) for k in n.value.keys if _const_str(k)}
-    except (OSError, SyntaxError):
-        pass
+    except (OSError, SyntaxError) as е:
+        ОБСЯГ.непрочитано_модуль(дж, "суд_чеклісти", "ЗОВНІШНІ_ВХОДИ: %s: %s" % (type(е).__name__, е))
 
     def писачі(к):
         out = []
@@ -1240,8 +1246,8 @@ def лічба(корінь):
     try:
         _сц = importlib.import_module("сценарій")
         поля_входу |= set(_сц.ПОЛЯ) | set(_сц.СЛУЖБОВІ)
-    except Exception:
-        pass
+    except Exception as е:
+        ОБСЯГ.непрочитано_модуль(дж, "сценарій", "ПОЛЯ, СЛУЖБОВІ: %s: %s" % (type(е).__name__, е))
     for (файл, рядок, к), (fid, вид) in sorted(п.рішення.items()):
         if к in зовнішні:
             continue

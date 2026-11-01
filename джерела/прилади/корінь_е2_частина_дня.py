@@ -52,6 +52,8 @@ import sys
 import tempfile
 import warnings
 
+import обсяг_приладу as ОБСЯГ  # Д10: непрочитане — код 1, не менше місць
+
 warnings.simplefilter("ignore", SyntaxWarning)
 
 # ── межі обходу ─────────────────────────────────────────────────────────────────────────────────────────────────
@@ -1743,6 +1745,7 @@ def лічити(корінь, без_бази=False):
                 пі.append(Пі(шлях, текст))
             except SyntaxError as е:
                 помилки.append("%s: не розібрано (%s)" % (шлях, е.msg))
+                ОБСЯГ.непрочитано(шлях, "SyntaxError: %s" % е)
         elif шлях.endswith(".html"):
             джс.append(Хтмл(шлях, текст))
         else:

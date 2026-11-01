@@ -56,6 +56,8 @@ import re
 import sys
 import warnings
 
+import обсяг_приладу as ОБСЯГ  # Д10: непрочитане — код 1, не менше місць
+
 warnings.simplefilter("ignore", SyntaxWarning)
 
 # ── ід правила: той самий шаблон, що `ід_правил.ШАБЛОН` (копія, щоб прилад не залежав від модуля продукту) ──
@@ -88,9 +90,8 @@ def замикання(дж, старти=СТАРТИ):
     while край:
         м = край.pop()
         треба.add(м)
-        try:
-            дерево = ast.parse(open(os.path.join(дж, м + ".py"), encoding="utf-8").read())
-        except SyntaxError:
+        дерево = ОБСЯГ.розібрати(open(os.path.join(дж, м + ".py"), encoding="utf-8").read(), "джерела/%s.py" % м)
+        if дерево is None:
             continue
         for в in ast.walk(дерево):
             if isinstance(в, ast.Import):
@@ -171,8 +172,8 @@ class Продукт:
         for м, (шлях, текст) in модулі.items():
             try:
                 self.М[м] = Модуль(м, шлях, текст)
-            except SyntaxError:
-                pass
+            except SyntaxError as е:
+                ОБСЯГ.непрочитано(шлях, "SyntaxError: %s" % е)
         self.js = js
         self._визн = {}
         self._конструктори()

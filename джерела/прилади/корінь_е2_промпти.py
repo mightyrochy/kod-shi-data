@@ -37,6 +37,8 @@ import os
 import re
 import sys
 import warnings
+
+import обсяг_приладу as ОБСЯГ  # Д10: непрочитане — код 1, не менше місць
 from е2_збирання import зібрати_функції, повне_оголошення
 
 warnings.simplefilter("ignore")
@@ -411,7 +413,8 @@ def модулі_py(кор, файли):
             continue
         try:
             м = Мод(відн, open(os.path.join(кор, відн), encoding="utf-8").read())
-        except (SyntaxError, UnicodeDecodeError, ValueError):
+        except (SyntaxError, UnicodeDecodeError, ValueError) as е:
+            ОБСЯГ.непрочитано(відн, "%s: %s" % (type(е).__name__, е))
             continue
         вих[(os.path.dirname(відн), м.ім)] = м
     return вих
@@ -689,7 +692,8 @@ def місця_шляху_б(кор, файли):
         if тип == "py":
             try:
                 літ = літерали_py(текст)
-            except SyntaxError:
+            except SyntaxError as е:
+                ОБСЯГ.непрочитано(відн, "SyntaxError: %s" % е)
                 continue
         else:
             літ = [(р, з, "js", р + з.count("\n")) for р, з, _ in літерали_js(текст)]
@@ -776,7 +780,8 @@ def колекції_коду(кор, файли):
             continue
         try:
             д = ast.parse(open(os.path.join(кор, відн), encoding="utf-8").read())
-        except (SyntaxError, UnicodeDecodeError):
+        except (SyntaxError, UnicodeDecodeError) as е:
+            ОБСЯГ.непрочитано(відн, "%s: %s" % (type(е).__name__, е))
             continue
         for n in d_верх(д):
             ім = n.targets[0].id
@@ -798,7 +803,8 @@ def колекції_коду(кор, файли):
     for ф in glob.glob(os.path.join(кор, "джерела", "*.schema.json")):
         try:
             дані = json.load(open(ф, encoding="utf-8"))
-        except Exception:
+        except Exception as е:
+            ОБСЯГ.непрочитано(os.path.relpath(ф, кор), "%s: %s" % (type(е).__name__, е))
             continue
         def обхід(вузол, шлях):
             if isinstance(вузол, dict):
@@ -887,7 +893,8 @@ def числа_меж(кор, файли):
             continue
         try:
             д = ast.parse(open(os.path.join(кор, відн), encoding="utf-8").read())
-        except (SyntaxError, UnicodeDecodeError):
+        except (SyntaxError, UnicodeDecodeError) as е:
+            ОБСЯГ.непрочитано(відн, "%s: %s" % (type(е).__name__, е))
             continue
         for n in d_верх(д):
             ім = n.targets[0].id
@@ -979,7 +986,8 @@ def зібрані_оголошення(кор):
     збої = []
     try:
         import збирач_промптів as ЗП
-    except Exception as e:  # прилад не падає: число лишається, збій названо
+    except Exception as e:  # Д10: збій названо й код 1 (`обсяг_приладу`), число без модулів храповик не бере
+        ОБСЯГ.непрочитано("джерела/збирач_промптів.py", "імпорт: %s: %s" % (type(e).__name__, e))
         return {}, ["збирач_промптів: %s" % e]
     вих, бачено = {}, set()
     for ф in sorted(glob.glob(os.path.join(кор, "джерела", "*.py"))):
@@ -992,12 +1000,13 @@ def зібрані_оголошення(кор):
             мод = __import__(ім)
         except Exception as e:
             збої.append("%s: %s" % (ім, type(e).__name__))
+            ОБСЯГ.непрочитано(os.path.relpath(ф, кор), "імпорт: %s: %s" % (type(e).__name__, e))
             continue
         try:
             if callable(getattr(мод, "фото_речей", None)):
                 мод.фото_речей()
-        except Exception:
-            pass
+        except Exception as e:
+            ОБСЯГ.непрочитано(os.path.relpath(ф, кор), "фото_речей(): %s: %s" % (type(e).__name__, e))
         for н, в in vars(мод).items():
             пари = [(н, в)] if isinstance(в, ЗП.Оголошення) else (
                 [("%s[%s]" % (н, к), х) for к, х in в.items() if isinstance(х, ЗП.Оголошення)] if isinstance(в, dict) else [])
