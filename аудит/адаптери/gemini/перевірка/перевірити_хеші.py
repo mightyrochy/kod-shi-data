@@ -73,10 +73,17 @@ def перевірити_смуги(root):
 def main():
     """Завершується помилкою при розбіжності хешів або наборів файлів."""
     root = Path(__file__).resolve().parents[1]
-    manifest = dict(re.findall(r"'([\w.]+\.ps1)'\s*=\s*'([0-9A-F]{64})'",
+    # Значення беруться як є, довжина й регістр — перевірка нижче: шаблон з {64} мовчки викидав зіпсований рядок
+    # з обох словників, і маніфест із 63 знаками проходив (дошка 12231).
+    manifest = dict(re.findall(r"'([\w.]+\.ps1)'\s*=\s*'([^']*)'",
                               (root / 'm9v/хеші.psd1').read_text(encoding='utf-8-sig')))
-    table = dict(re.findall(r"\| `([\w.]+\.ps1)` \| `([0-9A-F]{64})` \|",
+    table = dict(re.findall(r"\| `([\w.]+\.ps1)` \| `([^`]*)` \|",
                            (root / 'НАЛАШТУВАННЯ.md').read_text(encoding='utf-8')))
+    зіпсовані = [f'{н}: {len(х)} знаків' for джерело in (manifest, table) for н, х in джерело.items()
+                 if not re.fullmatch(r'[0-9A-F]{64}', х)]
+    if зіпсовані:
+        print('✗ хеш не з 64 шістнадцяткових знаків (верхній регістр): ' + '; '.join(зіпсовані))
+        return 1
     if set(manifest) != set(table) or len(manifest) < 3:
         print('✗ набори файлів маніфесту й таблиці не збігаються')
         return 1
