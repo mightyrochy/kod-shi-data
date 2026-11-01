@@ -1,0 +1,38 @@
+"""Відтворює латку в окремому індексі git й звіряє точні SHA-256 файлів."""
+import hashlib
+import json
+import os
+from pathlib import Path
+import subprocess
+import tempfile
+
+
+def перевірити():
+    """Застосовує латку до записаної бази без зміни робочих файлів та поточного індексу."""
+    тека = Path(__file__).resolve().parent
+    корінь = тека.parents[2]
+    дані = json.loads((тека / 'файли.json').read_text(encoding='utf-8'))
+    латка = тека / 'обгортка.patch'
+    assert hashlib.sha256(латка.read_bytes()).hexdigest() == дані['sha256_латки']
+    with tempfile.TemporaryDirectory(prefix='patch-index-') as тимчасова:
+        середовище = dict(os.environ, GIT_INDEX_FILE=str(Path(тимчасова) / 'index'))
+
+        def git(*аргументи):
+            """Викликає git лише з ізольованим індексом."""
+            return subprocess.check_output(['git', *аргументи], cwd=корінь, env=середовище)
+
+        git('read-tree', дані['база'])
+        git('apply', '--cached', '--check', str(латка))
+        git('apply', '--cached', str(латка))
+        for файл, очікуваний in дані['sha256_файлів'].items():
+            blob = git('show', ':' + файл)
+            assert hashlib.sha256(blob).hexdigest() == очікуваний, файл
+        дерево = git('write-tree').decode('ascii').strip()
+        обгортка = git('rev-parse', дерево + ':аудит/адаптери/gemini').decode('ascii').strip()
+    print(f'✓ git apply --cached --check: база {дані["база"]}')
+    print(f'✓ точні SHA-256: {len(дані["sha256_файлів"])} файли')
+    print(f'✓ дерево обгортки: {обгортка}')
+
+
+if __name__ == '__main__':
+    перевірити()
