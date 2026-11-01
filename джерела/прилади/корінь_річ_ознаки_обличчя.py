@@ -153,7 +153,13 @@ def _формульні(дерево):
     вих = set()
     for в in ast.walk(дерево):
         т = getattr(в, "test", None)
-        if not (isinstance(т, ast.Compare) and len(т.ops) == 1 and _число(т.comparators[0])):
+        порівняння = т.values if isinstance(т, ast.BoolOp) and isinstance(т.op, ast.And) else [т]
+        if not all(isinstance(x, ast.Compare) and len(x.ops) == 1 and _число(x.comparators[0]) for x in порівняння):
+            continue
+        if len(порівняння) > 1:   # `f(r) if σ > 0 and r > 0 else 0.0` — охорона ділення чи кореня всієї формули
+            if isinstance(в, ast.IfExp) and isinstance(в.body, ast.BinOp) and _число(в.orelse) and в.orelse.value == 0 \
+                    and set().union(*(_імена(x.left) for x in порівняння)) <= _імена(в.body):
+                вих.update(id(x) for x in порівняння)
             continue
         ім = _імена(т.left)
         if not ім:
