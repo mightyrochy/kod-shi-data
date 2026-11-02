@@ -1,0 +1,30 @@
+── ПРОМПТ (1903 симв.) ──
+{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.", "One item carries one thing — of two alternatives list the first; a note in brackets is not an item.", "Slot \"accessory\" is for an item no other slot fits.", "\"is_outfit\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "ITEM_LIST", "answer_schema": {"is_outfit": "yes|no", "items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory", "color_hex": "<#rrggbb or null>", "worn": "<true, or false when the description says the outfit goes without it>"}]}, "input": ["\"description\" — the outfit description"]}, "description": "Silk blend sheath dress, column silhouette, midi length, ivory #F5F5DC, satin weave.\nLeather pumps, pointed toe, ankle height, black #000000, smooth calfskin.\nGold-plated pendant necklace and drop earrings, polished metal finish.\nThis ensemble honors the formal dress code required for an upscale wedding reception while ensuring you feel confident in the warm autumn evening air. The rich ivory silk offers a soft, elegant contrast to the deep black shoes, creating a timeless look that photographs beautifully under banquet lighting. Every element is selected to respect your wish to attend as a refined guest without compromising comfort or style."}
+
+── ВІДПОВІДЬ (601 симв., 3.7 с, HTTP 200) ──
+{
+  "is_outfit": "yes",
+  "items": [
+    {
+      "name": "Sheath dress",
+      "details": "Silk blend, column silhouette, midi length, satin weave",
+      "slot": "dress",
+      "color_hex": "#F5F5DC",
+      "worn": true
+    },
+    {
+      "name": "Pumps",
+      "details": "Leather, pointed toe, ankle height, smooth calfskin",
+      "slot": "shoes",
+      "color_hex": "#000000",
+      "worn": true
+    },
+    {
+      "name": "Pendant necklace and drop earrings",
+      "details": "Gold-plated, polished metal finish",
+      "slot": "jewelry",
+      "color_hex": null,
+      "worn": true
+    }
+  ]
+}
