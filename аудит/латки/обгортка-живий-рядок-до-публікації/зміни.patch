@@ -1,7 +1,8 @@
 diff --git a/.github/workflows/obhortka.yml b/.github/workflows/obhortka.yml
+index 4871f56..06e9391 100644
 --- a/.github/workflows/obhortka.yml
 +++ b/.github/workflows/obhortka.yml
-@@ -73,6 +73,7 @@
+@@ -73,6 +73,7 @@ jobs:
                - 'сценарії_здоровя.sh'
                - 'сценарії_межі_здоровя.ps1'
                - 'сценарії_живий_рядок.ps1'
@@ -10,9 +11,10 @@ diff --git a/.github/workflows/obhortka.yml b/.github/workflows/obhortka.yml
            - part: 4
              stands:
 diff --git a/аудит/адаптери/gemini/claude_run.ps1 b/аудит/адаптери/gemini/claude_run.ps1
+index 7528724..2faaf2b 100644
 --- a/аудит/адаптери/gemini/claude_run.ps1
 +++ b/аудит/адаптери/gemini/claude_run.ps1
-@@ -856,7 +856,7 @@
+@@ -856,7 +856,7 @@ function Invoke-Task($M, $Job) {
      if ($review -ne 'LIVE') { return (Complete-Task $M $statePath $id $review) }
      $exe = Find-Exe $ClaudeExe
      if (-not $exe) { return (Complete-Task $M $statePath $id 'ENGINE_MISSING') }
@@ -22,9 +24,10 @@ diff --git a/аудит/адаптери/gemini/claude_run.ps1 b/аудит/ад
      if (Test-AutoPlanEmpty $M.Slug $taskText) { return (Complete-Task $M $statePath $id 'EMPTY_PLAN') }
      $cont = Get-ContinueBranch $M.Slug
 diff --git a/аудит/адаптери/gemini/gemini_publish.ps1 b/аудит/адаптери/gemini/gemini_publish.ps1
+index 73a8ed6..192ca76 100644
 --- a/аудит/адаптери/gemini/gemini_publish.ps1
 +++ b/аудит/адаптери/gemini/gemini_publish.ps1
-@@ -520,13 +520,18 @@
+@@ -520,13 +520,18 @@ function Get-Line([string]$Id, [switch]$StatusOnly) {
          }
      }
      if ($pc -eq 'OK') {
@@ -45,9 +48,10 @@ diff --git a/аудит/адаптери/gemini/gemini_publish.ps1 b/аудит/
              $qg = [string](Get-Prop $s 'qgroup')
              $qs = $(if ($quotaLeft -match '^(?:100|[1-9]?[0-9])$' -and $qg -cmatch '^[A-Z0-9]{2,16}$') { " КВОТА $qg $quotaLeft" } else { '' })
 diff --git a/аудит/адаптери/gemini/gemini_run.ps1 b/аудит/адаптери/gemini/gemini_run.ps1
+index 0941ec7..ac991f3 100644
 --- a/аудит/адаптери/gemini/gemini_run.ps1
 +++ b/аудит/адаптери/gemini/gemini_run.ps1
-@@ -754,6 +754,7 @@
+@@ -754,6 +754,7 @@ function Invoke-Agent($M, [string]$Start, [string]$Prompt, [string]$Dir, $Sel) {
      $text = $Prompt
      $turns = 0
      $nudges = 0
@@ -55,7 +59,7 @@ diff --git a/аудит/адаптери/gemini/gemini_run.ps1 b/аудит/ад
      $code = ''
      $report = 'NONE'
      try {
-@@ -780,8 +781,28 @@
+@@ -780,9 +781,29 @@ function Invoke-Agent($M, [string]$Start, [string]$Prompt, [string]$Dir, $Sel) {
                      break
                  }
                  $check = Test-Report $M $Start $resp
@@ -77,15 +81,16 @@ diff --git a/аудит/адаптери/gemini/gemini_run.ps1 b/аудит/ад
 +                    $code = $check.Kind; $report = $check.Kind; break
 +                }
                  $why = $(if ($check.Kind -ne 'NONE') { 'mismatch' } else { 'none' })
-+            }
+             }
 +            if ($liveCorrection) {
 +                $code = 'BLOCKED'; $report = 'BLOCKED'
 +                $run.Responses.Add('ЗАБЛОКОВАНО: LIVE_AFTER_INVALID — хід виправлення не дав прийнятого звіту')
 +                break
-             }
++            }
              # Без id розмови догонка пішла б у нову розмову без наряду.
              if ($r.Kind -ne 'result' -and -not $run.Conversation) {
-@@ -1034,7 +1055,7 @@
+                 $code = $(if ($r.Kind -eq 'timeout') { 'TIMEOUT' } else { 'AGY_ERROR' })
+@@ -1034,7 +1055,7 @@ function Invoke-Task($M, $Job) {
              return
          }
          if ($review -ne 'LIVE') { $status.code = $review; return }
@@ -95,9 +100,10 @@ diff --git a/аудит/адаптери/gemini/gemini_run.ps1 b/аудит/ад
          if (Test-AutoPlanEmpty $M.Slug $taskText) { $status.code = 'EMPTY_PLAN'; return }
          $taskDir = Join-Path (Join-Path $RunsDir 'w') $id
 diff --git a/аудит/адаптери/gemini/m9v/0_власник.ps1 b/аудит/адаптери/gemini/m9v/0_власник.ps1
+index c45c9e1..d5d3437 100644
 --- a/аудит/адаптери/gemini/m9v/0_власник.ps1
 +++ b/аудит/адаптери/gemini/m9v/0_власник.ps1
-@@ -51,7 +51,7 @@
+@@ -51,7 +51,7 @@ foreach ($target in @($pub, $env:TEMP, $cr)) {
      if ((Get-FileHash "$target\wrapper_health.ps1" -Algorithm SHA256).Hash -ne $expected['wrapper_health.ps1']) { Stop-Here 'хеш wrapper_health.ps1 не збігся' }
  }
  # Нові модулі публікатора перевіряються до першого запуску копії.
@@ -107,6 +113,7 @@ diff --git a/аудит/адаптери/gemini/m9v/0_власник.ps1 b/ау�
      if ((Get-FileHash "$pub/$name" -Algorithm SHA256).Hash -cne $expected[$name]) { Stop-Here "хеш $name не збігся" }
  }
 diff --git a/аудит/адаптери/gemini/m9v/хеші.psd1 b/аудит/адаптери/gemini/m9v/хеші.psd1
+index c25cd29..71a56b8 100644
 --- a/аудит/адаптери/gemini/m9v/хеші.psd1
 +++ b/аудит/адаптери/gemini/m9v/хеші.psd1
 @@ -3,10 +3,10 @@
@@ -114,7 +121,7 @@ diff --git a/аудит/адаптери/gemini/m9v/хеші.psd1 b/аудит/�
      'wrapper_update.ps1' = '45F254E5CB2FB7D882BBB9CE7CA121988FDF23BACCFE65CB67A4CA3B3F426FE7'
      'wrapper_probe.ps1'  = '85116D04C22EB64CBFF52E66BCEAE9B1091577A889EDD58A8B634093A82BDBC6'
 -    'wrapper_chain.ps1'  = 'ABE9238B05AB0EAB3E65912867159FC06EDE415188EC22E9C4D8DD2DD88487BA'
-+    'wrapper_chain.ps1'  = '71226DA4D4035B7014DDB209135AAFC3C6D1953225E3081E085FE77DDC0553B0'
++    'wrapper_chain.ps1'  = '52D6A12EB4A0B1E7FE98893752A292CD23F2746B12A97DEF34825D3DFEE58EFA'
      'wrapper_health.ps1' = 'F63CDFD76BCBE92440A843759BCD6CED4E49B4BCBAC19620CACA4B74B9D58AA5'
 -    'gemini_run.ps1'     = 'FC237180DABFF4007A977416099AFECAFE2C2EE4F800A6097CEB9B40ACEDAE8D'
 -    'gemini_publish.ps1' = '858D3D19CF97C3B792B67E09A4F8CE79422126404ABEF84E11099CB56C3577D4'
@@ -129,13 +136,14 @@ diff --git a/аудит/адаптери/gemini/m9v/хеші.psd1 b/аудит/�
      'gemini_watch.ps1'   = '69EFEBB07FF1AF51C382B753A95C50F3C1AC27B3008F2489992BEBE3FD0213AA'
 -    'queue_lanes.ps1'    = 'FEAD267F76D269476E00F48C44366D4BA9D282B2BFC85CC64712968D430B4AFD'
 -    'claude_run.ps1'     = '54CEB63CD621ED319370CF830BA206D68D48973407E3A4DAA01F5F95EBDA8C55'
-+    'queue_lanes.ps1'    = 'EB5CBC4F6B6A6B6939222C013BC5425F8EC51D830B6A513325FF5C9C2763C2A3'
++    'queue_lanes.ps1'    = 'C2E168714A6968AB2BC06EE1000C513F8FDB035969E2DB6C519504FE058D7818'
 +    'claude_run.ps1'     = '8C0610B95775267963CE5B1FC6B6A3E73EA348994BF6428711CE6EA2690FEC8D'
  }
 diff --git a/аудит/адаптери/gemini/queue_lanes.ps1 b/аудит/адаптери/gemini/queue_lanes.ps1
+index b82d9a8..7f98d55 100644
 --- a/аудит/адаптери/gemini/queue_lanes.ps1
 +++ b/аудит/адаптери/gemini/queue_lanes.ps1
-@@ -894,10 +894,20 @@
+@@ -894,10 +894,20 @@ function Get-LiveAfterLines([string]$Body, $Registry) {
      <# Єдиний розбір рядків `ЖИВИЙ ПІСЛЯ: <id> — <питання>` для планувальника й CI на тілі PR. Рядок, що починається з
      `ЖИВИЙ ПІСЛЯ` (після пробілів, маркера списку чи виділення), або розібрано повністю, або в ньому `error`. #>
      $result = @()
@@ -159,7 +167,7 @@ diff --git a/аудит/адаптери/gemini/queue_lanes.ps1 b/аудит/а�
          if ($line -cnotmatch '^ЖИВИЙ ПІСЛЯ: (.*)$') {
              $item.error = 'рядок має починатися з «ЖИВИЙ ПІСЛЯ: » без маркера списку, виділення чи пропущеної двокрапки'
          } else {
-@@ -924,6 +934,44 @@
+@@ -924,6 +934,87 @@ function Get-LiveAfterLines([string]$Body, $Registry) {
      $result
  }
  
@@ -182,15 +190,58 @@ diff --git a/аудит/адаптери/gemini/queue_lanes.ps1 b/аудит/а�
 +    [pscustomobject]@{ Body=($lines -join "`n"); Bad=$bad }
 +}
 +
-+function Get-HeadLivePublication([string]$Head) {
++function Merge-LivePublicationBody([string]$Body, [string]$ExistingBody, $Registry) {
++    <# Зберігає питання чинного PR: одна сцена має один рядок із усіма різними питаннями. #>
++    $items = @(Get-LiveAfterLines $Body $Registry)
++    $previous = @(Get-LiveAfterLines $ExistingBody $Registry)
++    $scenes = New-Object 'System.Collections.Generic.Dictionary[string,object]' ([StringComparer]::Ordinal)
++    $order = New-Object 'System.Collections.Generic.List[string]'
++    foreach ($item in @($items) + @($previous)) {
++        if ($item.error) { continue }
++        if (-not $scenes.ContainsKey($item.id)) {
++            $scenes[$item.id] = @{first=-1;questions=@()}
++            $order.Add($item.id)
++        }
++        foreach ($question in @($item.question -split ' ; ')) {
++            if ($scenes[$item.id].questions -cnotcontains $question) { $scenes[$item.id].questions += $question }
++        }
++    }
++    foreach ($item in $items) {
++        if (-not $item.error -and $scenes[$item.id].first -lt 0) { $scenes[$item.id].first = $item.first }
++    }
++    $lines = New-Object 'System.Collections.Generic.List[string]'
++    foreach ($line in @($Body -split "`n")) { $lines.Add($line.TrimEnd("`r")) }
++    foreach ($item in @($items | Sort-Object first -Descending)) {
++        if ($item.error) { continue }
++        $scene = $scenes[$item.id]
++        $lines.RemoveRange($item.first, $item.last - $item.first + 1)
++        if ($scene.first -eq $item.first) {
++            $lines.Insert($item.first, ('ЖИВИЙ ПІСЛЯ: ' + $item.id + ' — ' + ($scene.questions -join ' ; ')))
++        }
++    }
++    foreach ($id in $order) {
++        if ($scenes[$id].first -lt 0) {
++            $lines.Add('')
++            $lines.Add('ЖИВИЙ ПІСЛЯ: ' + $id + ' — ' + ($scenes[$id].questions -join ' ; '))
++        }
++    }
++    # Вада старого тіла також проходить спільне пояснення й блокер, а не зникає під час PATCH.
++    foreach ($item in @($previous | Where-Object { $_.error })) {
++        $lines.Add('')
++        $lines.Add($item.line)
++    }
++    ConvertTo-LivePublicationBody ($lines -join "`n") $Registry
++}
++
++function Get-HeadLivePublication([string]$Head, [string]$ExistingBody = '') {
 +    <# Читає коміт і реєстр із довіреної бази перед прийманням звіту або записом тіла PR. #>
 +    $body = (Invoke-Git @('show','-s','--format=%B',$Head)).Out
-+    if ($body -cnotmatch '(?m)^[-*+>#_\s]*ЖИВИЙ ПІСЛЯ') {
++    if (($body + "`n" + $ExistingBody) -cnotmatch '(?m)^[-*+>#_\s]*ЖИВИЙ ПІСЛЯ') {
 +        return (ConvertTo-LivePublicationBody $body @{})
 +    }
 +    $registry = Get-LiveSceneRegistry ((Invoke-Git @('show', 'refs/remotes/origin/main:аудит/проби/живі_сцени.txt')).Out)
 +    if (-not $registry.Count) { throw 'LIVE_AFTER_REGISTRY' }
-+    ConvertTo-LivePublicationBody $body $registry
++    Merge-LivePublicationBody $body $ExistingBody $registry
 +}
 +
 +function Get-LiveCorrectionPrompt($Publication) {
@@ -204,7 +255,7 @@ diff --git a/аудит/адаптери/gemini/queue_lanes.ps1 b/аудит/а�
  function Get-AutoLivePlan([string]$BuildMain) {
      <# Один план для автоживого й Е1: сцена один раз, питання всіх злитих довірених PR. #>
      $pulls = @(Get-AutoPublicItems 'pulls?state=all&sort=updated&direction=desc' | Where-Object {
-@@ -978,8 +1026,14 @@
+@@ -978,8 +1069,14 @@ function Get-AutoLivePlan([string]$BuildMain) {
      ConvertTo-Json -InputObject @{since_sha=$checked;since=$since.ToString('o');until=$until.ToString('o');scenes=$scenes;cloud=$cloud;bad=$bad} -Depth 8 -Compress
  }
  
@@ -221,22 +272,23 @@ diff --git a/аудит/адаптери/gemini/queue_lanes.ps1 b/аудит/а�
          $number = $Matches[1]; $head = $Matches[2]
          $inputData = Get-AutoReviewInput $number
 diff --git a/аудит/адаптери/gemini/wrapper_chain.ps1 b/аудит/адаптери/gemini/wrapper_chain.ps1
+index 7376245..3b5d129 100644
 --- a/аудит/адаптери/gemini/wrapper_chain.ps1
 +++ b/аудит/адаптери/gemini/wrapper_chain.ps1
-@@ -89,8 +89,20 @@
+@@ -89,8 +89,20 @@ function Get-ChainBuildStamp([string]$Commit) {
      $stamp
  }
  
-+function Get-EngineLivePublication([string]$Head) {
++function Get-EngineLivePublication([string]$Head, [string]$ExistingBody = '') {
 +    <# Бере лише функції читання з довіреної копії queue_lanes, без побічних дій планувальника. #>
 +    $errors = $null
 +    $ast = [Management.Automation.Language.Parser]::ParseFile((Join-Path $PSScriptRoot 'queue_lanes.ps1'), [ref]$null, [ref]$errors)
 +    if ($errors.Count) { throw 'LIVE_AFTER_PARSER' }
-+    $names = @('Get-LiveSceneRegistry','Get-LiveAfterLines','ConvertTo-LivePublicationBody','Get-HeadLivePublication')
++    $names = @('Get-LiveSceneRegistry','Get-LiveAfterLines','ConvertTo-LivePublicationBody','Merge-LivePublicationBody','Get-HeadLivePublication')
 +    $functions = @($ast.FindAll({ param($n) $n -is [Management.Automation.Language.FunctionDefinitionAst] -and $names -ccontains $n.Name }, $true))
 +    if ($functions.Count -ne $names.Count) { throw 'LIVE_AFTER_PARSER' }
 +    foreach ($function in $functions) { . ([scriptblock]::Create($function.Extent.Text)) }
-+    Get-HeadLivePublication $Head
++    Get-HeadLivePublication $Head $ExistingBody
 +}
 +
  function Save-DraftRequest([string]$Branch, [string]$Head, [string]$Model = '') {
@@ -245,7 +297,7 @@ diff --git a/аудит/адаптери/gemini/wrapper_chain.ps1 b/аудит/�
      if ($DryRun -or $Branch -cnotmatch '^gemini/[\p{L}\p{Nd}][\p{L}\p{Nd}._-]{0,79}$' -or $Head -cnotmatch $script:ShaPattern) { return }
      if ($Model -cmatch $script:ModelPattern) {
          $models = Join-Path $WorkDir 'engine-models'; [void][IO.Directory]::CreateDirectory($models)
-@@ -107,29 +119,38 @@
+@@ -107,29 +119,44 @@ function Complete-EngineDrafts {
          $job = ConvertFrom-Json ([IO.File]::ReadAllText($file.FullName, $script:Utf8))
          $branch = [string]$job.branch; $head = [string]$job.head
          if ($branch -cnotmatch '^gemini/[\p{L}\p{Nd}][\p{L}\p{Nd}._-]{0,79}$' -or $branch.Contains('..') -or $branch.EndsWith('.lock') -or $head -cnotmatch $script:ShaPattern) { throw 'CHAIN_DRAFT' }
@@ -270,7 +322,13 @@ diff --git a/аудит/адаптери/gemini/wrapper_chain.ps1 b/аудит/�
              }
          }
 -        $message = (Invoke-Git @('show','-s','--format=%B',$head)).Out
-+        $publication = Get-EngineLivePublication $head
++        # Список PR міг передувати допису перевірки: читаємо чинне тіло безпосередньо перед PATCH.
++        $currentBody = ''
++        if ($existing.Count) {
++            $current = Invoke-ChainApi "repos/$GitHubRepo/pulls/$($existing[0].number)"
++            $currentBody = [string]$current.body
++        }
++        $publication = Get-EngineLivePublication $head $currentBody
 +        $message = $publication.Body
          # Спецзгадка не має запускати легасі-рушій із тексту звіту.
          $message = [regex]::Replace($message, '(?i)@' + 'codex\b', 'Codex')
@@ -293,28 +351,29 @@ diff --git a/аудит/адаптери/gemini/wrapper_chain.ps1 b/аудит/�
      }
  }
 diff --git a/аудит/адаптери/gemini/НАЛАШТУВАННЯ.md b/аудит/адаптери/gemini/НАЛАШТУВАННЯ.md
+index 612f545..1bdc305 100644
 --- a/аудит/адаптери/gemini/НАЛАШТУВАННЯ.md
 +++ b/аудит/адаптери/gemini/НАЛАШТУВАННЯ.md
-@@ -450,13 +450,13 @@
+@@ -450,13 +450,13 @@ $f = Join-Path "$env:USERPROFILE\gemini-outbox" $n
  |---|---|
  | `wrapper_probe.ps1` | `85116D04C22EB64CBFF52E66BCEAE9B1091577A889EDD58A8B634093A82BDBC6` |
  | `wrapper_update.ps1` | `45F254E5CB2FB7D882BBB9CE7CA121988FDF23BACCFE65CB67A4CA3B3F426FE7` |
 -| `wrapper_chain.ps1` | `ABE9238B05AB0EAB3E65912867159FC06EDE415188EC22E9C4D8DD2DD88487BA` |
 -| `gemini_run.ps1` | `FC237180DABFF4007A977416099AFECAFE2C2EE4F800A6097CEB9B40ACEDAE8D` |
 -| `gemini_publish.ps1` | `858D3D19CF97C3B792B67E09A4F8CE79422126404ABEF84E11099CB56C3577D4` |
-+| `wrapper_chain.ps1` | `71226DA4D4035B7014DDB209135AAFC3C6D1953225E3081E085FE77DDC0553B0` |
++| `wrapper_chain.ps1` | `52D6A12EB4A0B1E7FE98893752A292CD23F2746B12A97DEF34825D3DFEE58EFA` |
 +| `gemini_run.ps1` | `8D30203E90DF003328A01D77426A7BD9C195516B86A6FFCE3C38EB239E6A9CAD` |
 +| `gemini_publish.ps1` | `0AF4A7E5833A5CB12E5A5C53E885B32E87791D863A95BCEFD8594396D5080598` |
  | `gemini_watch.ps1` | `69EFEBB07FF1AF51C382B753A95C50F3C1AC27B3008F2489992BEBE3FD0213AA` |
  | `wrapper_health.ps1` | `F63CDFD76BCBE92440A843759BCD6CED4E49B4BCBAC19620CACA4B74B9D58AA5` |
 -| `queue_lanes.ps1` | `FEAD267F76D269476E00F48C44366D4BA9D282B2BFC85CC64712968D430B4AFD` |
 -| `claude_run.ps1` | `54CEB63CD621ED319370CF830BA206D68D48973407E3A4DAA01F5F95EBDA8C55` |
-+| `queue_lanes.ps1` | `EB5CBC4F6B6A6B6939222C013BC5425F8EC51D830B6A513325FF5C9C2763C2A3` |
++| `queue_lanes.ps1` | `C2E168714A6968AB2BC06EE1000C513F8FDB035969E2DB6C519504FE058D7818` |
 +| `claude_run.ps1` | `8C0610B95775267963CE5B1FC6B6A3E73EA348994BF6428711CE6EA2690FEC8D` |
  | `CodexInstaller` (`install.ps1` релізу Codex `CodexRelease`) | `A59CB66350098C33B021FF470D586AE8FE3B7CAF189CA7137B4FE3AF5D4DCE74` |
  
  Той самий список читають скрипти `m9v/` з `m9v/хеші.psd1` — міняти їх разом із таблицею. Підготовка одним проходом — `m9v/ЩО_НАТИСНУТИ.md`.
-@@ -643,6 +643,14 @@
+@@ -643,6 +643,17 @@ Claude записує результат із позначкою до рядка
  `перевірка/перевірити_тіло_pr.ps1`; `opened`, `synchronize`, `edited`, `ready_for_review`) і падає з переліком вадних
  рядків. Вадний рядок злитого PR план несе в полі `bad` (PR, рядок, причина), агент автоживого закінчує прогін
  `ЗАБЛОКОВАНО` диспетчерові; сцени режиму `функція` — в полі `cloud` («у хмарі», ноутбук їх не жене).
@@ -324,6 +383,9 @@ diff --git a/аудит/адаптери/gemini/НАЛАШТУВАННЯ.md b/а
 +Невиправлений рядок замінюється поясненням із причиною й оригіналом без початкового префікса;
 +тіло закінчується `ЗАБЛОКОВАНО: LIVE_AFTER_INVALID`, а канал доставки несе `LIVE_AFTER_INVALID_PUBLISHED`.
 +Це стосується ГОТОВО, опублікованих блокерів, автоперевірок і POST/PATCH наявного PR.
++Перед PATCH обгортка окремим GET читає чинне тіло PR і тим самим читачем зберігає його сцени.
++Різні питання однієї сцени об'єднуються через ` ; ` в одному рядку; повтор не множить питань.
++Збій GET або PATCH лишає завдання для повтору. Вадний рядок чинного тіла також зберігається поясненням із блокером.
 +Перед запуском автоперевірки й `перевірка-<PR>` обидва планувальники додають у наряд
 +рядок «Модель перевірки:» з моделлю позначки у зворотних лапках.
  CI й ноутбук запускають один повний перелік через `аудит/проби/доробка_менше_прогонів.py`:
@@ -331,11 +393,12 @@ diff --git a/аудит/адаптери/gemini/НАЛАШТУВАННЯ.md b/а
  Зауваження Codex додаються до наряду перевірки через пагіновані публічні GET reviews/comments:
 diff --git a/аудит/адаптери/gemini/перевірка/сценарії_живий_до_pr.ps1 b/аудит/адаптери/gemini/перевірка/сценарії_живий_до_pr.ps1
 new file mode 100644
+index 0000000..b7c80a2
 --- /dev/null
 +++ b/аудит/адаптери/gemini/перевірка/сценарії_живий_до_pr.ps1
-@@ -0,0 +1,181 @@
+@@ -0,0 +1,240 @@
 +﻿#Requires -Version 5.1
-+param([Parameter(Mandatory=$true)][string]$SourceDir, [ValidateSet('ДО','ПІСЛЯ')][string]$Phase = 'ПІСЛЯ')
++param([Parameter(Mandatory=$true)][string]$SourceDir, [ValidateSet('ДО','ДОРОБКИ','ПІСЛЯ')][string]$Phase = 'ПІСЛЯ')
 +$ErrorActionPreference = 'Stop'
 +[Console]::OutputEncoding = New-Object Text.UTF8Encoding($false)
 +$utf = New-Object Text.UTF8Encoding($false)
@@ -366,7 +429,8 @@ new file mode 100644
 +    . (Join-Path $SourceDir 'gemini_publish.ps1') -WorkDir "$tmp/pub" -OutDir "$tmp/out" -OutboxDir "$tmp/box"
 +    foreach ($dir in @($WorkDir,"$WorkDir/drafts","$WorkDir/seen",$OutDir,$OutboxDir)) { [void][IO.Directory]::CreateDirectory($dir) }
 +    $parserNames = @('Get-LiveSceneRegistry','Get-LiveAfterLines')
-+    if ($Phase -eq 'ПІСЛЯ') { $parserNames += @('ConvertTo-LivePublicationBody','Get-HeadLivePublication','Get-LiveCorrectionPrompt') }
++    if ($Phase -ne 'ДО') { $parserNames += @('ConvertTo-LivePublicationBody','Get-HeadLivePublication','Get-LiveCorrectionPrompt') }
++    if ($Phase -eq 'ПІСЛЯ') { $parserNames += @('Merge-LivePublicationBody') }
 +    Import-Functions 'queue_lanes.ps1' $parserNames
 +    $script:RegistryText = [IO.File]::ReadAllText((Join-Path $SourceDir '../../проби/живі_сцени.txt'), $utf)
 +    $registry = Get-LiveSceneRegistry $script:RegistryText
@@ -380,8 +444,15 @@ new file mode 100644
 +        0 = $valid
 +    }
 +    $script:Body = ''; $script:Existing = @(); $script:Calls = @(); $script:ApiFail = $false
++    $script:CurrentBody = ''; $script:Reads = @(); $script:ReadFail = $false
 +    function Get-ChainPulls { $script:Existing }
 +    function Resolve-Exe([string]$Name) { 'стенд-gh' }
++    function Invoke-ChainApi([string]$Path) {
++        <# Чинне тіло навмисно відрізняється від застарілого списку PR. #>
++        $script:Reads += $Path
++        if ($script:ReadFail) { throw 'CHAIN_API' }
++        [pscustomobject]@{body=$script:CurrentBody}
++    }
 +    function Invoke-Git([string[]]$GitArgs, [switch]$AllowFail) {
 +        <# Підміняє лише джерело байтів git; читач і всі шляхи публікації справжні. #>
 +        $out = ''
@@ -413,7 +484,7 @@ new file mode 100644
 +            }
 +        }
 +    }
-+    if ($Phase -eq 'ПІСЛЯ') {
++    if ($Phase -ne 'ДО') {
 +        Scenario '2 межі перенесення й дані' {
 +            $wrapped = "ЖИВИЙ ПІСЛЯ: ж3_співбесіда`n— чи зникла вада → повне →`nmain → без вади"
 +            $publication = ConvertTo-LivePublicationBody $wrapped $registry
@@ -509,6 +580,57 @@ new file mode 100644
 +                }
 +            }
 +        }
++        Scenario '6 сцени перевірки зберігаються на PATCH' {
++            # Попередній розділ лишає завдання, що не належать цій пробі.
++            Get-ChildItem -LiteralPath "$WorkDir/drafts" -Filter '*.json' | Remove-Item
++            $script:Body = 'Новий звіт виконавця без сцен'
++            $script:CurrentBody = "Попередній звіт`n`n$valid"
++            $script:Existing = @([pscustomobject]@{number=91;body='Застарілий список без сцени';user=@{login='mightyrochy'};head=@{ref='gemini/проба';repo=@{full_name=$GitHubRepo}};base=@{ref='main';repo=@{full_name=$GitHubRepo}}})
++            $script:Calls=@(); $script:Reads=@()
++            Save-DraftRequest 'gemini/проба' $script:Head
++            Complete-EngineDrafts
++            $sent = $script:Calls[0].Payload.body
++            $count = @(Get-LiveAfterLines $sent $registry | Where-Object { -not $_.error }).Count
++            if ($Phase -eq 'ДОРОБКИ') {
++                Check "ДО доробки: сцени перевірки 1 → $count" ($script:Calls.Count -eq 1 -and $count -eq 0)
++                return
++            }
++            Check "ПІСЛЯ доробки: сцени перевірки 1 → $count" ($script:Calls.Count -eq 1 -and $count -eq 1 -and $sent.Contains($valid))
++            Check 'PATCH читає чинне тіло окремим GET' ($script:Reads.Count -eq 1 -and $script:Reads[0] -ceq "repos/$GitHubRepo/pulls/91")
++            Check 'новий звіт збережено, старий звіт не повертається' ($sent.Contains($script:Body) -and -not $sent.Contains('Попередній звіт'))
++            $other = 'ЖИВИЙ ПІСЛЯ: ж4_робота_стримано — друге питання → повне → main → краще'
++            foreach ($branch in @('gemini/проба',('gemini/автоперевірка-91-' + $script:Head),'gemini/перевірка-91')) {
++                $script:Existing[0].head.ref=$branch
++                $script:CurrentBody="$valid`n`n$other"
++                $script:Body=$valid; $script:Calls=@()
++                Save-DraftRequest $branch $script:Head
++                Complete-EngineDrafts
++                $parsed=@(Get-LiveAfterLines $script:Calls[0].Payload.body $registry)
++                Check "${branch}: PATCH зберігає дві сцени без дубля" ($script:Calls.Count -eq 1 -and $script:Calls[0].Args[2] -ceq 'PATCH' -and $parsed.Count -eq 2 -and @($parsed | Where-Object { $_.error }).Count -eq 0)
++            }
++            $merged = Merge-LivePublicationBody "$valid`n`n$valid" ($valid.Replace('чи зникла вада','питання перевірки')) $registry
++            $parsed = @(Get-LiveAfterLines $merged.Body $registry)
++            Check 'одна сцена з різними питаннями: один рядок, обидва питання' ($parsed.Count -eq 1 -and $parsed[0].question.Contains('чи зникла вада') -and $parsed[0].question.Contains('питання перевірки'))
++            $again = @(Get-LiveAfterLines (Merge-LivePublicationBody $valid $merged.Body $registry).Body $registry)
++            Check 'повтор PATCH не множить питання' ($again.Count -eq 1 -and $again[0].question -ceq $parsed[0].question)
++            $wrapped = "ЖИВИЙ ПІСЛЯ: ж3_співбесіда`n— питання перевірки → повне →`nmain → краще"
++            $merged = Merge-LivePublicationBody 'Новий звіт' $wrapped $registry
++            Check 'перенесена сцена чинного PR збережена одним рядком' (@(Get-LiveAfterLines $merged.Body $registry).Count -eq 1 -and $merged.Body.Contains('main → краще'))
++            $merged = Merge-LivePublicationBody $valid $bodies[2806] $registry
++            Check 'вада чинного PR також лишає оригінал і блокер без вадного префікса' ($merged.Bad.Count -eq 1 -and $merged.Body.Contains('оригінал: ЖИВИЙ ПІСЛЯ') -and $merged.Body.Contains('ЗАБЛОКОВАНО:') -and @(Get-LiveAfterLines $merged.Body $registry | Where-Object { $_.error }).Count -eq 0)
++            $script:Calls=@(); $script:ReadFail=$true
++            Save-DraftRequest 'gemini/перевірка-91' $script:Head
++            try { Complete-EngineDrafts; Check 'збій читання не приймається' $false } catch {
++                Check 'збій GET не стирає сцени: PATCH нема, запит лишається' ($script:Calls.Count -eq 0 -and @(Get-ChildItem "$WorkDir/drafts/*.json").Count -eq 1)
++            }
++            $script:ReadFail=$false; $script:ApiFail=$true
++            try { Complete-EngineDrafts; Check 'збій PATCH не приймається' $false } catch {
++                Check 'збій PATCH лишає запит для повтору' (@(Get-ChildItem "$WorkDir/drafts/*.json").Count -eq 1)
++            }
++            $script:ApiFail=$false; $script:Calls=@(); $script:CurrentBody="$valid`n`n$other"
++            Complete-EngineDrafts
++            Check 'повтор після відмови API знову зберігає чинні сцени' (@(Get-LiveAfterLines $script:Calls[0].Payload.body $registry).Count -eq 2 -and @(Get-ChildItem "$WorkDir/drafts/*.json").Count -eq 0)
++        }
 +    }
 +} finally {
 +    $resolved = [IO.Path]::GetFullPath($tmp)
@@ -516,17 +638,18 @@ new file mode 100644
 +}
 +exit [int]($bad -gt 0)
 diff --git a/аудит/адаптери/gemini/перевірка/сценарії_сну.ps1 b/аудит/адаптери/gemini/перевірка/сценарії_сну.ps1
+index f6278af..1cf7fe0 100644
 --- a/аудит/адаптери/gemini/перевірка/сценарії_сну.ps1
 +++ b/аудит/адаптери/gemini/перевірка/сценарії_сну.ps1
-@@ -57,6 +57,11 @@
-             $script:PublishCalls++
+@@ -58,6 +58,11 @@ try {
              if ($script:PublishCode -eq 'OK') { $script:PublishedHead = [string]$Status.head }
              @($script:PublishCode,1)
-+        }
+         }
 +        function Invoke-Git([string[]]$GitArgs, [switch]$AllowFail) {
 +            <# Тіло опублікованого коміту фікстури: після Publish-Bundle читач PR звіряє саме його. #>
 +            if ($GitArgs -contains '--format=%B') { return [pscustomobject]@{Code=0;Out='Звіт стенда сну';Err=''} }
 +            throw ('Неочікуваний git у стенді сну: ' + ($GitArgs -join ' '))
-         }
++        }
          function Status([string]$Id,[string]$Code,[string]$Parent='',[bool]$Bundle=$true) {
              <# Явні UTC охоплюють підмінений сон. #>
+             [pscustomobject][ordered]@{ v=1;id=$Id;slug='сон';model='gpt-test-high';n=1;marker=$script:Marker;head=$script:OutputHead;cond='';code=$Code;
