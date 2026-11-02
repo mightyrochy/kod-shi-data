@@ -1,0 +1,37 @@
+── ПРОМПТ (2612 симв.) ──
+{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.", "One item carries one thing — of two alternatives list the first; a note in brackets is not an item.", "Slot \"accessory\" is for an item no other slot fits.", "\"is_outfit\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "ITEM_LIST", "answer_schema": {"is_outfit": "yes|no", "items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory", "color_hex": "<#rrggbb or null>", "worn": "<true, or false when the description says the outfit goes without it>"}]}, "input": ["\"description\" — the outfit description"]}, "description": "A structured wool-blend blazer in navy blue (#000080) with a tailored fit and notch lapels, designed to block wind and handle the freezing -10 °C conditions.\nHigh-quality dark denim trousers in charcoal gray (#36454F), offering warmth while maintaining a professional neat appearance for business walking two blocks through snow.\nA crisp white Oxford button-down shirt with a classic collar, tucked neatly underneath to provide a polished base layer that remains breathable under heavy coats if needed later.\nClassic leather ankle boots in black (hex #000000) featuring a moderate heel and salt-resistant finish, ensuring stability and warmth during the 20-minute walk on icy, road-salted streets.\nA structured wool-blend blazer anchors this look with professional authority against the biting cold, while dark denim trousers balance warmth with the neatness required for a business meeting without looking too casual. The crisp white shirt peeks through at the collar and cuffs to add a refined touch that elevates the jeans into office-appropriate territory. The leather ankle boots are specifically chosen for their insulation and grip on slippery surfaces, making them practical yet sophisticated for walking in snow. This ensemble respects her wish for a neat business aesthetic while fully addressing the harsh weather conditions of a snowy -10 °C day."}
+
+── ВІДПОВІДЬ (894 симв., 3.8 с, HTTP 200) ──
+{
+  "is_outfit": "yes",
+  "items": [
+    {
+      "name": "wool-blend blazer",
+      "details": "tailored fit with notch lapels, structured to block wind",
+      "slot": "outerwear",
+      "color_hex": "#000080",
+      "worn": true
+    },
+    {
+      "name": "dark denim trousers",
+      "details": "charcoal gray offering warmth with a professional neat appearance",
+      "slot": "bottom",
+      "color_hex": "#36454F",
+      "worn": true
+    },
+    {
+      "name": "white Oxford button-down shirt",
+      "details": "classic collar, tucked neatly underneath as a breathable base layer",
+      "slot": "top",
+      "color_hex": "#FFFFFF",
+      "worn": true
+    },
+    {
+      "name": "leather ankle boots",
+      "details": "moderate heel with salt-resistant finish for stability and warmth on icy surfaces",
+      "slot": "shoes",
+      "color_hex": "#000000",
+      "worn": true
+    }
+  ]
+}
