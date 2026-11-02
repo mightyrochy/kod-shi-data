@@ -89,8 +89,20 @@ function Get-ChainBuildStamp([string]$Commit) {
     $stamp
 }
 
+function Get-EngineLivePublication([string]$Head, [string]$ExistingBody = '') {
+    <# Бере лише функції читання з довіреної копії queue_lanes, без побічних дій планувальника. #>
+    $errors = $null
+    $ast = [Management.Automation.Language.Parser]::ParseFile((Join-Path $PSScriptRoot 'queue_lanes.ps1'), [ref]$null, [ref]$errors)
+    if ($errors.Count) { throw 'LIVE_AFTER_PARSER' }
+    $names = @('Get-LiveSceneRegistry','Get-LiveAfterLines','ConvertTo-LivePublicationBody','Merge-LivePublicationBody','Get-HeadLivePublication')
+    $functions = @($ast.FindAll({ param($n) $n -is [Management.Automation.Language.FunctionDefinitionAst] -and $names -ccontains $n.Name }, $true))
+    if ($functions.Count -ne $names.Count) { throw 'LIVE_AFTER_PARSER' }
+    foreach ($function in $functions) { . ([scriptblock]::Create($function.Extent.Text)) }
+    Get-HeadLivePublication $Head $ExistingBody
+}
+
 function Save-DraftRequest([string]$Branch, [string]$Head, [string]$Model = '') {
-    <# Лише підтверджена публікація DONE лишає завдання створити PR; збій API не губить його. #>
+    <# Підтверджена публікація лишає завдання записати тіло PR; збій API не губить його. #>
     if ($DryRun -or $Branch -cnotmatch '^gemini/[\p{L}\p{Nd}][\p{L}\p{Nd}._-]{0,79}$' -or $Head -cnotmatch $script:ShaPattern) { return }
     if ($Model -cmatch $script:ModelPattern) {
         $models = Join-Path $WorkDir 'engine-models'; [void][IO.Directory]::CreateDirectory($models)
@@ -107,29 +119,44 @@ function Complete-EngineDrafts {
         $job = ConvertFrom-Json ([IO.File]::ReadAllText($file.FullName, $script:Utf8))
         $branch = [string]$job.branch; $head = [string]$job.head
         if ($branch -cnotmatch '^gemini/[\p{L}\p{Nd}][\p{L}\p{Nd}._-]{0,79}$' -or $branch.Contains('..') -or $branch.EndsWith('.lock') -or $head -cnotmatch $script:ShaPattern) { throw 'CHAIN_DRAFT' }
-        # DONE вже пройшов захист Publish-Bundle; повтор усе одно перевіряє поточний ref GitHub.
+        # Голова вже пройшла захист Publish-Bundle; повтор перевіряє поточний ref GitHub.
         $r = Invoke-Git @('ls-remote','--heads','origin',"refs/heads/$branch") -AllowFail
         if ($r.Code -ne 0) { throw 'CHAIN_REMOTE' }
         if (-not $r.Out.StartsWith($head + "`t")) { continue }
-        $existing = @($pulls | Where-Object { $_.user.login -ceq 'mightyrochy' -and $_.head.ref -ceq $branch -and $_.head.repo.full_name -ceq $GitHubRepo })
-        if ($existing.Count) { Remove-Item -LiteralPath $file.FullName; continue }
+        $existing = @($pulls | Where-Object {
+            $_.user.login -ceq 'mightyrochy' -and $_.head.ref -ceq $branch -and $_.head.repo.full_name -ceq $GitHubRepo -and
+            $_.base.repo.full_name -ceq $GitHubRepo -and $_.base.ref -ceq 'main'
+        })
         # Звіт перевірки без рядків дошки лишається гілкою: PR несе повний CI і злиття без користі (`ПЕРЕВІРКА.md`, «Під обгорткою»).
-        if (Test-ReviewBranch $branch) {
+        if (-not $existing.Count -and (Test-ReviewBranch $branch)) {
             $rows = (Invoke-Git @('diff','--name-only',"refs/remotes/origin/main...$head",'--','аудит/дошка') -AllowFail)
             if ($rows.Code -eq 0 -and -not $rows.Out.Trim()) {
                 Write-WrapperLog "ланцюг: звіт $branch без рядків дошки — гілка без PR-чернетки"
                 Remove-Item -LiteralPath $file.FullName; continue
             }
         }
-        $message = (Invoke-Git @('show','-s','--format=%B',$head)).Out
+        # Список PR міг передувати допису перевірки: читаємо чинне тіло безпосередньо перед PATCH.
+        $currentBody = ''
+        if ($existing.Count) {
+            $current = Invoke-ChainApi "repos/$GitHubRepo/pulls/$($existing[0].number)"
+            $currentBody = [string]$current.body
+        }
+        $publication = Get-EngineLivePublication $head $currentBody
+        $message = $publication.Body
         # Спецзгадка не має запускати легасі-рушій із тексту звіту.
         $message = [regex]::Replace($message, '(?i)@' + 'codex\b', 'Codex')
-        $body = @{title=('Звіт ' + $branch.Substring(7));head=$branch;base='main';draft=$true;body=$message} | ConvertTo-Json -Compress
-        $r = Invoke-Native (Resolve-Exe $GhExe) @('api','--method','POST',"repos/$GitHubRepo/pulls",'--input','-') $WorkDir 2 $body
+        $method = 'POST'; $endpoint = "repos/$GitHubRepo/pulls"
+        $payload = @{title=('Звіт ' + $branch.Substring(7));head=$branch;base='main';draft=$true;body=$message}
+        if ($existing.Count) {
+            $method = 'PATCH'; $endpoint += '/' + $existing[0].number
+            $payload = @{body=$message}
+        }
+        $body = $payload | ConvertTo-Json -Compress
+        $r = Invoke-Native (Resolve-Exe $GhExe) @('api','--method',$method,$endpoint,'--input','-') $WorkDir 2 $body
         if ($r.Code -ne 0) { throw 'CHAIN_DRAFT' }
         $pr = ConvertFrom-Json $r.Out
         if ([string]$pr.number -cnotmatch '^[1-9][0-9]{0,8}$') { throw 'CHAIN_DRAFT' }
-        Write-WrapperLog "ланцюг: створено PR-чернетку #$($pr.number) $branch $head"
+        Write-WrapperLog "ланцюг: $method PR-чернетки #$($pr.number) $branch $head"
         Remove-Item -LiteralPath $file.FullName
     }
 }
