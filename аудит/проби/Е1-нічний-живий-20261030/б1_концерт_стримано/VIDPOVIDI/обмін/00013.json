@@ -1,0 +1,27 @@
+{
+ "версія": 1,
+ "запит": {
+  "model": "qwen/qwen3.5-9b",
+  "max_tokens": 4000,
+  "messages": [
+   {
+    "role": "user",
+    "content": [
+     {
+      "type": "text",
+      "text": "{\"task\": {\"role\": \"You are a personal stylist. Put together one outfit for her case.\", \"rules\": [\"Items one per line, garments first, then shoes and accessories: what it is, cut, length, color with its hex code, fabric.\", \"An outer layer only when the weather needs it; at +20 °C and warmer there is none.\", \"Last, why this outfit works, in 3–4 sentences.\"], \"limits\": [\"Do not name lightness numbers, body measurements or height in numbers, or body-type labels, and do not say you had limits.\", \"The answer is plain text laid out as the rules say, not JSON.\"], \"language\": \"English\", \"answer\": \"OUTFIT_TEXT\", \"input\": [\"\\\"case\\\" — her case: the occasion, where and when, the weather, the dress code, her wishes and refusals — as codes, her own words as quotes; do not take an item that goes against her refusals or her words\", \"\\\"formality\\\" — the level of dress she named: home (loungewear, athleisure, sportswear) < everyday (jeans, a T-shirt and sneakers; neat casual, dark denim) < neat (business: a blouse, a shirt or a refined knit with trousers or a skirt, a textured jacket or a cardigan, loafers, ballet flats or ankle boots; social: a day dress, a refined knit with a skirt or trousers, a textured jacket, neat flats or ankle boots) < smart (business: a jacket with trousers or a skirt, a blouse or a shirt, loafers or pumps; a sheath dress with a jacket; social: a cocktail dress, heeled shoes) < formal (business: a business suit — a jacket with trousers or a skirt of one fabric — with a blouse, pumps; social: a formal dress of a noble fabric, heeled shoes) < very_smart (an evening gown) < ceremonial (a full-length evening gown with long gloves)\"]}, \"case\": {\"field_quotes\": {\"event\": \"рок-концерт у клубі\", \"place\": \"у клубі\", \"movement\": \"стоятиму в натовпі\", \"registers\": \"стримано й класично\", \"part_of_day\": \"п'ятниця ввечері\"}, \"event\": \"рок-концерт у клубі\", \"movement\": \"walk_a_lot\", \"her_registers\": [\"classic\"], \"place\": \"club\", \"formality\": [\"smart\"], \"season\": \"autumn\", \"part_of_day\": \"evening\", \"light\": \"artificial\"}}"
+     }
+    ]
+   }
+  ],
+  "temperature": 1
+ },
+ "відповідь": {
+  "status": 200,
+  "contentType": "application/json",
+  "headers": {
+   "x-model": "qwen/qwen3.5-9b"
+  },
+  "body": "{\"content\":[{\"type\":\"text\",\"text\":\"Tweed blazer, tailored fit, knee-length, charcoal gray with hex code #36454F, wool blend.\\nCotton-blend shirt, relaxed collar, hip-length, crisp white with hex code #FFFFFF, poplin.\\nSlim-fit trousers, straight-leg cut, ankle-length, deep navy with hex code #000080, heavy twill.\\nLeather loafers, rounded toe, mid-calf height, black with hex code #000000, smooth calfskin.\\nGold hoop earrings, medium gauge, polished finish, solid 18k gold plating.\\nMatte black clutch, structured box shape, short handle, vegan leather.\\n\\nThis outfit works because the smart formality level calls for a tailored jacket and trousers that offer structure while allowing you to move comfortably through a crowded rock concert environment. The classic register is achieved through the timeless charcoal tweed and crisp white shirt, creating a sophisticated contrast against the energetic but often chaotic atmosphere of a club. The neutral dark tones ensure you remain stylish without competing with the vibrant stage lights, while the sturdy loafers provide the necessary support for standing and walking on hard floors all evening.\"}],\"usage\":{\"input_tokens\":564,\"output_tokens\":247},\"stop_reason\":\"end_turn\"}"
+ }
+}

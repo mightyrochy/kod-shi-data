@@ -1,0 +1,62 @@
+── ПРОМПТ (8729 симв.) ──
+Ти — перекладачка в застосунку-стилістці. Ти пишеш природною українською тексти, які зараз побачить жінка. Рішень не приймаєш, на питання не відповідаєш, змісту не міняєш.
+
+Вхід — JSON-об'єкт: ключ — номер тексту н, значення — текст, який склали код та інші моделі.
+
+Ключі відповіді — ті самі, що у вході, кожен: номер н тексту, значення — рядок, той самий зміст природною українською, без англійських слів і кодів; ПЕРЕКЛАДАЙ КОЖНЕ англійське слово, навіть одне посеред українського речення; латиницею лишай лише назви крамниць і брендів, «V-подібний» і «den»; текст, що вже природний і до неї на «ти», — без змін, а український текст на «ви» перепиши на «ти», решту лиши слово в слово.
+
+Вид кожної речі — теж зміст: річ у перекладі — та сама, що у вході, а не схожа чи сусідня. ankle boots — черевики чи ботильйони, boots — чоботи, heeled — на підборах, а не туфлі, pumps — туфлі-човники, loafers — лофери; pendant — кулон чи підвіска, necklace — намисто чи ланцюжок, а не каблучка, сережки чи браслет; ring — каблучка; earrings — сережки. Українські назви речей у вході (назви з крамниці, найчастіше перед « — ») переписуй літера в літеру: не міняй, не переставляй і не додавай у них жодного слова.
+
+Про жінку — лише до неї, на «ти» (ти, тебе, тобі, твій, твоя; хочеш, скинеш; наказ однини: розкажи, оберни, тримай, дай), і в питаннях теж: you, your, she, her про неї — «ти», «твій» (her skin tone — твій тон шкіри; when she turns her head — коли ти повертаєш голову; she looks taller — ти виглядаєш вищою), англійський наказ — наказом однини; «вона», «її» — лише про річ (сукню, сумку, куртку). Говорить стилістка — одна жінка: про себе — від першої особи однини й у жіночому роді (я підібрала, я б додала), не «ми», не від імені застосунку чи коду і ніколи словами самої жінки.
+
+Мова: літературна українська, як у текстах українських крамниць одягу. Кожне українське слово — літерами лише української абетки, без жодної латинської літери чи стороннього знака всередині слова. Кожне речення — одна остаточна версія, без виправлень посеред тексту. Словничок нижче — лише як перекласти англійське слово, коли воно є у вході; це не зміст: річ, тканина чи колір, яких у вході нема, у тексті не з'являються. Звичні українські назви для слів англійського джерела: trousers, pants — штани; dressy, dressier — ошатний, ошатніше; look, outfit — образ; taupe — сіро-бежевий; loose — вільний; suede — замша (жіночий рід); slip dress — сукня-комбінація; camel — кемел (колір). Назви речей і кольорів, які дала крамниця, — як є.
+
+Перевір кожне слово ДО відповіді: до неї — лише «ти», жодного «ви», «ваш» і наказу множини, і про неї жодного «вона», «її», «їй», жодне слово не стоїть двічі поспіль, кожна річ — того самого виду, що у вході (річ образу — іменником її назви з переліку, коли він є, і слова при ній узгоджені з цим іменником), а українська назва речі — слово в слово. Відповідь — рівно ОДИН JSON-об'єкт і нічого після нього: другої, виправленої версії, приміток і пояснень не пиши — помилку виправ у тому самому об'єкті.
+
+Речі образу — перелік, який жінка бачить на картці (номер речі — назва біля неї):
+1 — Бежеве укорочене напівпальто · kind code: half_coat · colour code: beige · about it: text н=1
+2 — Класичні бермуди світло-сірі · kind code: shorts · colour code: grey · about it: text н=2
+3 — Футболка сатинова сірий · kind code: t_shirt · colour code: grey · about it: text н=3
+4 — Кеди шкіряні (Other Brand) · kind code: plimsolls · colour code: white · about it: text н=4
+5 — Мінісумка з текстурованої шкіри · kind code: bag_generic · colour code: peach · about it: text н=5
+When a text speaks of an item of the list, call it by the kind in its name — the same noun in the right case (list «Тренч бежевий подовжений» — text «тренч», «Светр в'язаний оверсайз» — «светр»), not by another kind or a synonym of the English word. Make every adjective, pronoun and verb with the item agree with that noun in gender and number («Тренч бежевий» — «бежевий тренч, який…»; «Лофери шкіряні» — «шкіряні лофери, які…»). A name you translate in this same call (text н=K): give it one noun and call the item by it, in agreement, in every text. A text the list gives as about an item (about it: text н=M) speaks of that one item, and so does every other text where the English names it. The colour of an item of the list is the colour of its name: keep the shop's colour word from its name; when its name has no colour word, write the Ukrainian name of its colour code. The English colour words for that item are the stylist's impression of a photo: do not turn them into a colour of their own — the item's colour stands in their place. Colours of its details (trim, strap, buttons, print), its fabric and the rest — translate from the text. The list is for names only: an item the English text does not name is not added to the translation — neither to the description nor to the advice. The kind code next to an item (kind code: …) is the code of its kind: every noun for that item, in every text, names this kind and no other, whatever word the English text uses; a code ending in _generic names only the family (dress_generic — a dress, bag_generic — a bag). The kind noun of its name and this code are the same kind: write the name's noun.
+
+Colour codes: beige — бежевий; grey — сірий; peach — персиковий; white — білий.
+
+ТЕКСТИ:
+{
+"1": "The beige half-coat features a relaxed, oversized fit that flows loosely over the shoulders while cinching at the waist with elegant bow details at the cuffs and hem. The soft wool fabric drapes beautifully, creating a structured yet comfortable silhouette perfect for layering in an office setting.",
+"2": "These light grey shorts offer a classic straight-leg cut with subtle pleating at the front, providing a clean and tailored line that balances your wider hips without adding extra volume. The lightweight fabric ensures you stay comfortable throughout your workday.",
+"3": "The silky grey V-neck top is designed in a loose, flowing cut that drapes softly over the shoulders and torso, offering ease of movement while maintaining a polished look. The smooth satin texture adds a subtle shine that elevates the overall ensemble.",
+"4": "These white leather plimsolls feature a bold design with silver star accents and animal print side panels, adding an unexpected edge to the outfit. The chunky sole provides stability for all-day wear while keeping you looking stylish and modern.",
+"5": "This peach-colored mini bag is crafted from textured leather with a structured shape that holds its form well. The chain strap adds a touch of luxury, making it perfect for carrying your essentials to the office or running errands after work.",
+"6": "This look is built for your workday in the office, balancing comfort with a neat, put-together silhouette. You are wearing a soft beige half-coat with distinctive bow details at the cuffs and hem, layered over light grey shorts that offer a clean, structured line to balance your wider hips, paired with a silky grey V-neck top that adds ease to your shoulders without adding volume. The outfit is grounded by white leather plimsolls featuring silver stars and animal print accents for a modern touch, finished with a peach-colored mini bag that brings a warm pop of color to the cool palette.",
+"7": "Tuck the silky front of the top slightly into the shorts at your waistline to define your figure without adding bulk.",
+"8": "Wear the half-coat open to show off the layered textures of the silk top and the structured fabric of the shorts.",
+"9": "Take the coat off confidently if you feel warm indoors, or let it drape loosely over your shoulders for a relaxed yet polished finish.",
+"10": "Бежеве укорочене напівпальто — I kept the camel coat as it anchors the outfit with warmth for autumn weather, answering your need for season-appropriate layering without forcing neutrals where you have a valid warm piece.",
+"11": "Футболка сатинова сірий — I kept the grey top because it carries the tonal scheme and works as a base, answering your palette choice even though its chroma is low.",
+"12": "Мінісумка з текстурованої шкіри — The peach bag carries a hue outside the cool-tonal scheme of the coat and shorts; it serves as a deliberate edge that breaks the neutrality without overpowering the occasion.",
+"13": "Класичні бермуди світло-сірі, Футболка сатинова сірий, Кеди шкіряні (Other Brand) — The grey items function below your neat intent, providing warmth and tonal depth appropriate for autumn weather without breaking professional decorum.",
+"14": "Мінісумка з текстурованої шкіри — The bag echoes the mint top's coolness with a complementary hue, creating a focal point that balances the warm coat rather than competing with it."
+}
+
+── ВІДПОВІДЬ (3516 симв., 28.2 с, HTTP 200) ──
+```json
+{
+  "1": "Бежеве укорочене напівпальто має вільний, оверсайз крій, який вільно спадає по плечах і підкреслює талію елегантними бантами на манжетах і подолі. М’яка вовняна тканина красиво драпірується, створюючи структурований, але комфортний силует, що чудово підходить для багатошаровості в офісному середовищі.",
+  "2": "Ці світло-сірі бермуди мають класичний прямий крій з ледь помітною защипкою спереду, створюючи чисту та елегантну лінію, яка гармонійно поєднується з твоїми широкими стегнами без зайвого об’єму. Легка тканина забезпечує комфорт протягом усього робочого дня.",
+  "3": "Ця шовкова сіра футболка має вільний крій, який м’яко спадає по плечах і тулубу, даруючи свободу рухів при цьому зберігаючи вишуканий вигляд. Гладка сатинова текстура додає ледь помітне сяйво, яке підкреслює загальний образ.",
+  "4": "Ці білі шкіряні кеди мають сміливий дизайн з металевими зірками та принтом тварин на боковинах, що додають несподіваний акцент до образу. Масивна підошва забезпечує стійкість для цілоденного носіння, зберігаючи при цьому стильний і сучасний вигляд.",
+  "5": "Ця міні-сумка персикового кольору виконана з текстурованої шкіри та має структуровану форму, яка добре тримає свою форму. Ланцюжок додає розкішного акценту, роблячи її ідеальною для носіння необхідних речей на роботу або під час походів у справах після роботи.",
+  "6": "Цей образ створений для твого робочого дня в офісі, гармонійно поєднуючи комфорт з охайним силуетом. Ти одягнена в м’яке бежеве напівпальто з виразними бантами на манжетах і подолі, яке носиш поверх світло-сірих бермуд, що створюють чисту та структуровану лінію для гармонійного поєднання з твоїми широкими стегнами. Доповнює образ шовкова сіра футболка V-подібної форми, яка додає легкості плечам без зайвого об’єму. Образ завершують білі шкіряні кеди зі сріблястими зірками та принтом тварин для сучасного акценту, а також персикова міні-сумка, що привносить теплий колірний акцент у прохолодну палітру.",
+  "7": "Злегка заправ топ спереду в бермуди на лінії талії, щоб підкреслити твою фігуру без зайвого об’єму.",
+  "8": "Носи напівпальто розстебнутим, щоб продемонструвати шари шовкової футболки та структурованої тканини бермуд.",
+  "9": "Зніми пальта впевнено, якщо тобі буде жарко всередині приміщення, або дозволь йому вільно звисати на плечах для розслабленого, але вишуканого фіналу.",
+  "10": "Бежеве укорочене напівпальто — Я залишила кемелове пальто, оскільки воно створює тепло в образі для осінньої погоди, відповідаючи твоїй потребі в багатошаровості без нав’язування нейтральних кольорів там, де є дійсний теплий елемент.",
+  "11": "Футболка сатинова сірий — Я залишила сіру футболку, оскільки вона підтримує тональний ряд і слугує базою, відповідаючи твоєму вибору палітри навіть попри її низький рівень насиченості кольору.",
+  "12": "Мінісумка з текстурованої шкіри — Персикова сумка відтінком доповнює прохолодність футболки м’ятного кольору, створюючи акцентний елемент, який гармонійно поєднується з теплим пальтом замість того, щоб конкурувати з ним.",
+  "13": "Класичні бермуди світло-сірі, Футболка сатинова сірий, Кеди шкіряні (Other Brand) — Сірі елементи створюють глибину та тепло під твоїм охайним образом, забезпечуючи відповідність осінній погоді без порушення професійного етикету.",
+  "14": "Мінісумка з текстурованої шкіри — Сумка відтінком перегукується з прохолодністю футболки м’ятного кольору, створюючи акцентний елемент, який гармонійно поєднується з теплим пальтом замість того, щоб конкурувати з ним."
+}
+```

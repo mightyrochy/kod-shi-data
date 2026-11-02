@@ -1,0 +1,189 @@
+diff --git a/аудит/адаптери/gemini/m9v/хеші.psd1 b/аудит/адаптери/gemini/m9v/хеші.psd1
+index 8aaa01af9..941e47189 100644
+--- a/аудит/адаптери/gemini/m9v/хеші.psd1
++++ b/аудит/адаптери/gemini/m9v/хеші.psd1
+@@ -1,7 +1,7 @@
+ ﻿# Очікувані SHA-256 файлів обгортки — єдине місце для скриптів m9v. Рядки тут мають збігатися з таблицею «Хеші файлів»
+ # у ../НАЛАШТУВАННЯ.md (стенд `перевірка/сценарії_m9v.sh` звіряє). Міняється разом із таблицею (PR, що чіпає обгортку).
+ @{
+-    'wrapper_update.ps1' = '4156307A17BDAE3AF7249E532947F659E99AA1349D159239159FAE60CA7E4F2B'
++    'wrapper_update.ps1' = '45F254E5CB2FB7D882BBB9CE7CA121988FDF23BACCFE65CB67A4CA3B3F426FE7'
+     'wrapper_probe.ps1'  = '85116D04C22EB64CBFF52E66BCEAE9B1091577A889EDD58A8B634093A82BDBC6'
+     'wrapper_chain.ps1'  = '2C44BD77A2180F47054212220BCD473DEEC088B7EACE2646B3B40047752C8785'
+     'wrapper_health.ps1' = 'BC7CDCBD744E360446B3D3721D0F70676A98D86B5770A3E3CB3713F9E770CEAB'
+diff --git a/аудит/адаптери/gemini/wrapper_update.ps1 b/аудит/адаптери/gemini/wrapper_update.ps1
+index baeaaf14f..5286ab554 100644
+--- a/аудит/адаптери/gemini/wrapper_update.ps1
++++ b/аудит/адаптери/gemini/wrapper_update.ps1
+@@ -1,5 +1,15 @@
+ ﻿#Requires -Version 5.1
+ # Самооновлення викликає лише публікатор власника; джерело — його щойно fetched origin/main.
++function Read-WrapperManifest([string]$Path) {
++    <# Розбирає дані PowerShell і вимагає повний набір файлів самооновлення для ноутбука й CI. #>
++    $manifest = Import-PowerShellDataFile -LiteralPath $Path -ErrorAction Stop
++    $files = @($manifest.Keys | Where-Object { $_ -cmatch '^[a-z][a-z0-9_]*\.ps1$' })
++    foreach ($needed in @('gemini_run.ps1','gemini_publish.ps1','gemini_watch.ps1','claude_run.ps1','queue_lanes.ps1','wrapper_health.ps1','wrapper_update.ps1','wrapper_chain.ps1','wrapper_probe.ps1')) {
++        if ($needed -notin $files) { throw 'UPDATE_MANIFEST' }
++    }
++    $manifest
++}
++
+ function Test-UpdateRoot([string]$Root, [Security.Principal.IdentityReference]$GeminiIdentity = ([Security.Principal.NTAccount]"$env:COMPUTERNAME\$GeminiUser")) {
+     <# Відхиляє посилання та права запису gemini/загальних груп у захищеній теці. #>
+     if (-not (Test-Path -LiteralPath $Root -PathType Container)) { return $false }
+@@ -58,12 +68,9 @@ function Invoke-WrapperUpdate([string]$Root) {
+         Add-Type -AssemblyName System.IO.Compression.FileSystem
+         [IO.Compression.ZipFile]::ExtractToDirectory($zip, (Join-Path $stage 'archive'))
+         $src = Join-Path (Join-Path $stage 'archive') $prefix
+-        $manifest = Import-PowerShellDataFile (Join-Path $src 'm9v/хеші.psd1')
++        $manifest = Read-WrapperManifest (Join-Path $src 'm9v/хеші.psd1')
+         $dest = Join-Path $stage 'version'; [void][IO.Directory]::CreateDirectory($dest)
+         $files = @($manifest.Keys | Where-Object { $_ -cmatch '^[a-z][a-z0-9_]*\.ps1$' })
+-        foreach ($needed in @('gemini_run.ps1','gemini_publish.ps1','gemini_watch.ps1','claude_run.ps1','queue_lanes.ps1','wrapper_health.ps1','wrapper_update.ps1','wrapper_chain.ps1','wrapper_probe.ps1')) {
+-            if ($needed -notin $files) { throw 'UPDATE_MANIFEST' }
+-        }
+         foreach ($name in $files) {
+             $file = Join-Path $src $name
+             if ($manifest[$name] -cnotmatch '^[0-9A-F]{64}$' -or (Get-FileHash -LiteralPath $file -Algorithm SHA256).Hash -cne $manifest[$name]) { Write-WrapperLog "хеш кандидата не збігся: $name"; throw 'UPDATE_HASH' }
+diff --git a/аудит/адаптери/gemini/НАЛАШТУВАННЯ.md b/аудит/адаптери/gemini/НАЛАШТУВАННЯ.md
+index 8108bc8fa..0ecfc434f 100644
+--- a/аудит/адаптери/gemini/НАЛАШТУВАННЯ.md
++++ b/аудит/адаптери/gemini/НАЛАШТУВАННЯ.md
+@@ -449,7 +449,7 @@ $f = Join-Path "$env:USERPROFILE\gemini-outbox" $n
+ | файл | SHA-256 |
+ |---|---|
+ | `wrapper_probe.ps1` | `85116D04C22EB64CBFF52E66BCEAE9B1091577A889EDD58A8B634093A82BDBC6` |
+-| `wrapper_update.ps1` | `4156307A17BDAE3AF7249E532947F659E99AA1349D159239159FAE60CA7E4F2B` |
++| `wrapper_update.ps1` | `45F254E5CB2FB7D882BBB9CE7CA121988FDF23BACCFE65CB67A4CA3B3F426FE7` |
+ | `wrapper_chain.ps1` | `2C44BD77A2180F47054212220BCD473DEEC088B7EACE2646B3B40047752C8785` |
+ | `gemini_run.ps1` | `73CC27D6BA6B109054526A2E23DA30BBDC391505D9030DC8C1E39193CDF28917` |
+ | `gemini_publish.ps1` | `651718F8227770B4D9BADF001719DDCA60604DEE8BFEB3C8D19B6FC3D2D32DF8` |
+diff --git a/аудит/адаптери/gemini/перевірка/перевірити_хеші.py b/аудит/адаптери/gemini/перевірка/перевірити_хеші.py
+index 43a7f9732..795fd7058 100644
+--- a/аудит/адаптери/gemini/перевірка/перевірити_хеші.py
++++ b/аудит/адаптери/gemini/перевірка/перевірити_хеші.py
+@@ -1,8 +1,10 @@
+ """Звіряє маніфест і документацію з SHA-256 блобів git (LF) і формат `смуги.json` v2."""
+ import hashlib
+ import json
++import os
+ from pathlib import Path
+ import re
++import shutil
+ import subprocess
+ import sys
+ 
+@@ -65,26 +67,50 @@ def перевірити_смуги(root):
+     return int(bool(вади))
+ 
+ 
++def прочитати_маніфест(root):
++    """Читає дані й обов'язкові файли тим самим кодом PowerShell, що й самооновлення."""
++    команда = """
++$ErrorActionPreference = 'Stop'
++[Console]::OutputEncoding = New-Object Text.UTF8Encoding($false)
++. $env:WRAPPER_READER
++Read-WrapperManifest $env:WRAPPER_MANIFEST | ConvertTo-Json -Compress
++"""
++    powershell = shutil.which('pwsh') or (shutil.which('powershell') if os.name == 'nt' else None)
++    if not powershell:
++        raise ValueError('немає pwsh для Import-PowerShellDataFile')
++    оточення = dict(os.environ, WRAPPER_READER=str(root / 'wrapper_update.ps1'),
++                   WRAPPER_MANIFEST=str(root / 'm9v/хеші.psd1'))
++    результат = subprocess.run([powershell, '-NoProfile', '-NonInteractive', '-ExecutionPolicy', 'Bypass',
++                                '-Command', команда], env=оточення, capture_output=True,
++                               encoding='utf-8', check=True)
++    return json.loads(результат.stdout.lstrip('\ufeff'))
++
++
+ def main():
+     """Завершується помилкою при розбіжності хешів або наборів файлів."""
+     root = Path(__file__).resolve().parents[1]
+-    # Значення беруться як є, довжина й регістр — перевірка нижче: шаблон з {64} мовчки викидав зіпсований рядок
+-    # з обох словників, і маніфест із 63 знаками проходив (дошка 12231).
+-    manifest = dict(re.findall(r"'([\w.]+\.ps1)'\s*=\s*'([^']*)'",
+-                              (root / 'm9v/хеші.psd1').read_text(encoding='utf-8-sig')))
++    try:
++        дані = прочитати_маніфест(root)
++    except (OSError, ValueError, subprocess.CalledProcessError) as помилка:
++        print(f'✗ маніфест: {getattr(помилка, "stderr", None) or помилка}')
++        return 1
++    manifest = {н: х for н, х in дані.items() if re.fullmatch(r'[a-z][a-z0-9_]*\.ps1', н)}
+     table = dict(re.findall(r"\| `([\w.]+\.ps1)` \| `([^`]*)` \|",
+                            (root / 'НАЛАШТУВАННЯ.md').read_text(encoding='utf-8')))
+-    зіпсовані = [f'{н}: {len(х)} знаків' for джерело in (manifest, table) for н, х in джерело.items()
+-                 if not re.fullmatch(r'[0-9A-F]{64}', х)]
++    зіпсовані = [f'{н}: {х!r}' for джерело in (manifest, table) for н, х in джерело.items()
++                 if not isinstance(х, str) or not re.fullmatch(r'[0-9A-F]{64}', х)]
+     if зіпсовані:
+         print('✗ хеш не з 64 шістнадцяткових знаків (верхній регістр): ' + '; '.join(зіпсовані))
+         return 1
+-    if set(manifest) != set(table) or len(manifest) < 3:
++    if set(manifest) != set(table):
+         print('✗ набори файлів маніфесту й таблиці не збігаються')
+         return 1
+     bad = 0
+     for name, expected in manifest.items():
+-        blob = subprocess.check_output(['git', 'show', f':аудит/адаптери/gemini/{name}'], cwd=root)
++        if '--диск' in sys.argv[1:]:
++            blob = (root / name).read_bytes().replace(b'\r\n', b'\n')
++        else:
++            blob = subprocess.check_output(['git', 'show', f':аудит/адаптери/gemini/{name}'], cwd=root)
+         actual = hashlib.sha256(blob).hexdigest().upper()
+         ok = expected == table[name] == actual and b'\r\n' not in blob
+         print(f"{'✓' if ok else '✗'} {name}: {actual}")
+diff --git a/аудит/адаптери/gemini/перевірка/сценарії_m9v.sh b/аудит/адаптери/gemini/перевірка/сценарії_m9v.sh
+index f9931d413..f39cfc399 100755
+--- a/аудит/адаптери/gemini/перевірка/сценарії_m9v.sh
++++ b/аудит/адаптери/gemini/перевірка/сценарії_m9v.sh
+@@ -7,20 +7,7 @@ for f in "$G"/m9v/*.ps1 "$G"/m9v/*.psd1; do
+   n=$(PSF="$(wp "$f")" "$PW" -NoProfile -c '$e=$null;$t=$null;[void][Management.Automation.Language.Parser]::ParseFile($env:PSF,[ref]$t,[ref]$e);$e.Count' 2>&1 | tail -1)
+   [ "$n" = 0 ] && ok "синтаксис $(basename "$f")" || bad "синтаксис $(basename "$f"): $n"
+ done
+-$PY - "$G" <<'P' && ok "хеші: psd1 = таблиця = файли" || F=1
+-import hashlib,re,sys
+-g=sys.argv[1]
+-psd=dict(re.findall(r"'([\w.]+\.ps1)'\s*=\s*'([^']*)'",open(g+'/m9v/хеші.psd1',encoding='utf-8-sig').read()))
+-tab=dict(re.findall(r"\| `([\w.]+\.ps1)` \| `([^`]*)` \|",open(g+'/НАЛАШТУВАННЯ.md',encoding='utf-8').read()))
+-bad=0
+-for n,h in list(psd.items())+list(tab.items()):
+-    if not re.fullmatch(r'[0-9A-F]{64}',h): print('ПОМИЛКА хеш не з 64 hex',n,len(h)); bad=1
+-for n,h in psd.items():
+-    d=hashlib.sha256(open(f'{g}/{n}','rb').read().replace(b'\r\n',b'\n')).hexdigest().upper()  # як блоб git (LF), що віддає raw.githubusercontent
+-    if not (h==tab.get(n)==d): print('ПОМИЛКА',n,h,tab.get(n),d); bad=1
+-if set(psd)!=set(tab) or len(psd)<3: print('ПОМИЛКА набір файлів',psd.keys(),tab.keys()); bad=1
+-sys.exit(bad)
+-P
++$PY "$(wp "$H/перевірити_хеші.py")" --диск && ok "хеші: psd1 = таблиця = файли" || F=1
+ # дослівні команди з НАЛАШТУВАННЯ.md / СПОСТЕРІГАЧ.md
+ $PY - "$G" <<'P' && ok "дослівні рядки команд" || F=1
+ import re,sys
+@@ -40,17 +27,24 @@ sys.exit(bad)
+ P
+ # Codex під gemini (М.9-В PR-3, 9738/9741): інсталятор закріплено релізом і хешем; ключ -EnableCodex у 1_адмін.ps1; кроки власника
+ $PY - "$G" <<'P' && ok "Codex: закріплений інсталятор, ключ -EnableCodex, кроки власника" || F=1
+-import re,sys
++import importlib.util,re,sys
++from pathlib import Path
+ g=sys.argv[1]; bad=0
++spec=importlib.util.spec_from_file_location('hash_check', Path(g)/'перевірка/перевірити_хеші.py')
++module=importlib.util.module_from_spec(spec); spec.loader.exec_module(module)
++try: manifest=module.прочитати_маніфест(Path(g))
++except Exception as e: print('ПОМИЛКА маніфест', e); sys.exit(1)
+ def rd(n): return open(f'{g}/{n}',encoding='utf-8-sig').read().replace('\r','')
+-psd,tab,adm,sub,nat=rd('m9v/хеші.psd1'),rd('НАЛАШТУВАННЯ.md'),rd('m9v/1_адмін.ps1'),rd('m9v/2_під_gemini.ps1'),rd('m9v/ЩО_НАТИСНУТИ.md')
++tab,adm,sub,nat=rd('НАЛАШТУВАННЯ.md'),rd('m9v/1_адмін.ps1'),rd('m9v/2_під_gemini.ps1'),rd('m9v/ЩО_НАТИСНУТИ.md')
+ def chk(c,m):
+     global bad
+     if not c: print('ПОМИЛКА',m); bad=1
+-h=re.search(r"CodexInstaller\s*=\s*'([0-9A-F]{64})'",psd); v=re.search(r"CodexRelease\s*=\s*'(\d+\.\d+\.\d+)'",psd)
++h=manifest.get("CodexInstaller"); v=manifest.get("CodexRelease")
++h=isinstance(h,str) and re.fullmatch(r"[0-9A-F]{64}",h)
++v=isinstance(v,str) and re.fullmatch(r"\d+\.\d+\.\d+",v)
+ chk(h and v,'хеші.psd1: CodexInstaller (64 hex верхнім регістром) і CodexRelease (x.y.z)')
+ if h and v:
+-    chk(re.search(r"\| `CodexInstaller`[^|]*\| `%s` \|"%h.group(1),tab),'таблиця «Хеші файлів» НАЛАШТУВАННЯ.md: рядок CodexInstaller = psd1')
++    chk(re.search(r"\| `CodexInstaller`[^|]*\| `%s` \|"%h.group(0),tab),'таблиця «Хеші файлів» НАЛАШТУВАННЯ.md: рядок CodexInstaller = psd1')
+ chk("releases.openai.com/codex/releases/$rel/install.ps1" in sub,'2_під_gemini.ps1: інсталятор з URL релізу $rel')
+ chk('chatgpt.com/codex/install.ps1' not in re.sub(r'(?s)<#.*?#>','',sub),'2_під_gemini.ps1: рухомий URL лише в коментарі')
+ chk('-Release $rel' in sub and '$got -ne $want' in sub,'2_під_gemini.ps1: -Release $rel і звірка хешу')

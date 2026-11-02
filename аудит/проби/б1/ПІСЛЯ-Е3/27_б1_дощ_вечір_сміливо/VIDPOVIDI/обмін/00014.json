@@ -1,0 +1,27 @@
+{
+ "версія": 1,
+ "запит": {
+  "model": "qwen/qwen3.5-9b",
+  "max_tokens": 4000,
+  "messages": [
+   {
+    "role": "user",
+    "content": [
+     {
+      "type": "text",
+      "text": "{\"task\": {\"role\": \"You read the description of an outfit and list its items as data.\", \"rules\": [\"One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.\", \"One item carries one thing — of two alternatives list the first; a note in brackets is not an item.\", \"Slot \\\"accessory\\\" is for an item no other slot fits.\", \"\\\"is_outfit\\\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note.\"], \"limits\": [\"Rely only on the input: do not invent what it does not contain.\", \"The answer is one JSON object following \\\"answer_schema\\\", without explanations and without ```.\"], \"language\": \"English\", \"answer\": \"ITEM_LIST\", \"answer_schema\": {\"is_outfit\": \"yes|no\", \"items\": [{\"name\": \"<what the item is>\", \"details\": \"<its cut, length and fabric>\", \"slot\": \"top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory\", \"color_hex\": \"<#rrggbb or null>\", \"worn\": \"<true, or false when the description says the outfit goes without it>\"}]}, \"input\": [\"\\\"description\\\" — the outfit description\"]}, \"description\": \"Wet-look silk slip dress in a bold geometric print, midi length, electric teal (#00C9FF), smooth satin with slight sheen; tailored wool-blend capelet in charcoal grey, knee-length, structured shoulder cut, heavy wool tweed to block wind and rain. \\nPointy-toe leather pumps in glossy black, mid-calf height, sleek almond shape, calf-skin leather for a polished finish; statement gold hoop earrings, bold rectangular clutch with chain strap, and a slim gold cuff bracelet.\\nThis outfit works because the electric teal slip dress delivers on her wish to stand out boldly indoors after the rain stops, while the charcoal capelet provides essential protection against the downpour and wind without adding bulk. The structured wool outer layer contrasts beautifully with the fluid silk underneath, creating an elegant silhouette perfect for a theatre date followed by dinner. The glossy black pumps and metallic gold accessories elevate the casual slip dress into a neat ensemble that feels both confident and appropriate for an evening out in autumn.\"}"
+     }
+    ]
+   }
+  ],
+  "temperature": 1
+ },
+ "відповідь": {
+  "status": 200,
+  "contentType": "application/json",
+  "headers": {
+   "x-model": "qwen/qwen3.5-9b"
+  },
+  "body": "{\"content\":[{\"type\":\"text\",\"text\":\"{\\n  \\\"is_outfit\\\": \\\"yes\\\",\\n  \\\"items\\\": [\\n    {\\n      \\\"name\\\": \\\"silk slip dress\\\",\\n      \\\"details\\\": \\\"wet-look with slight sheen, bold geometric print, midi length, smooth satin fabric\\\",\\n      \\\"slot\\\": \\\"dress\\\",\\n      \\\"color_hex\\\": \\\"#00C9FF\\\",\\n      \\\"worn\\\": true\\n    },\\n    {\\n      \\\"name\\\": \\\"wool-blend capelet\\\",\\n      \\\"details\\\": \\\"tailored with structured shoulder cut, knee-length, heavy wool tweed fabric to block wind and rain\\\",\\n      \\\"slot\\\": \\\"outerwear\\\",\\n      \\\"color_hex\\\": \\\"#36454F\\\",\\n      \\\"worn\\\": true\\n    },\\n    {\\n      \\\"name\\\": \\\"leather pumps\\\",\\n      \\\"details\\\": \\\"pointy-toe, mid-calf height, sleek almond shape, glossy calf-skin leather finish\\\",\\n      \\\"slot\\\": \\\"shoes\\\",\\n      \\\"color_hex\\\": \\\"#000000\\\",\\n      \\\"worn\\\": true\\n    },\\n    {\\n      \\\"name\\\": \\\"gold hoop earrings\\\",\\n      \\\"details\\\": \\\"statement style\\\",\\n      \\\"slot\\\": \\\"earrings\\\",\\n      \\\"color_hex\\\": null,\\n      \\\"worn\\\": true\\n    },\\n    {\\n      \\\"name\\\": \\\"rectangular clutch\\\",\\n      \\\"details\\\": \\\"bold design with chain strap\\\",\\n      \\\"slot\\\": \\\"bag\\\",\\n      \\\"color_hex\\\": null,\\n      \\\"worn\\\": true\\n    },\\n    {\\n      \\\"name\\\": \\\"gold cuff bracelet\\\",\\n      \\\"details\\\": \\\"slim design\\\",\\n      \\\"slot\\\": \\\"jewelry\\\",\\n      \\\"color_hex\\\": null,\\n      \\\"worn\\\": true\\n    }\\n  ]\\n}\"}],\"usage\":{\"input_tokens\":558,\"output_tokens\":393},\"stop_reason\":\"end_turn\"}"
+ }
+}

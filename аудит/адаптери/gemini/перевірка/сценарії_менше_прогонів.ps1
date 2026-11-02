@@ -15,7 +15,8 @@ function Scenario([string]$Name, [scriptblock]$Body) {
     try { & $Body } catch { Check "$Name — $($_.Exception.Message) $($_.ScriptStackTrace)" $false }
 }
 try {
-    . (Join-Path $SourceDir 'gemini_publish.ps1') -WorkDir "$tmp/pub" -OutboxDir "$tmp/out"
+    . (Join-Path $SourceDir 'gemini_publish.ps1') -WorkDir "$tmp/pub" -OutDir "$tmp/gem-out" -OutboxDir "$tmp/out"
+    $GeminiRunsDir = "$tmp/gemini-runs"
     foreach ($dir in @($WorkDir,"$WorkDir/state","$WorkDir/seen",$OutboxDir)) { [void][IO.Directory]::CreateDirectory($dir) }
     . (Join-Path $SourceDir 'queue_lanes.ps1')
     $config = [pscustomobject]@{codex='gpt-review';agy='gemini-review';claude='cc-claude-review'}
@@ -74,6 +75,7 @@ try {
         function script:Get-ChainPulls { $script:TestPulls }
         function script:Complete-EngineDrafts { }
         function script:Test-ChainCodePull { $true }
+        function script:Get-ChainPullRisk { -1 }
         function script:Test-LiveModels { $true }
         function script:Add-ChainMarker($Slug,$Model,$Main,[switch]$Gpu) { $script:TestMarkers += $Slug }
         # Клон стенда без origin; зняття мертвих позначок на справжньому origin міряє сценарії_ланцюга.ps1.
@@ -82,7 +84,7 @@ try {
         $pull = [pscustomobject]@{number=9;created_at=[datetimeoffset]::UtcNow.ToString('o');title='код';user=@{login='mightyrochy'};head=@{ref='claude/task';sha=$old;repo=@{full_name='mightyrochy/kod-shi-data'}};base=@{ref='main';repo=@{full_name='mightyrochy/kod-shi-data'}}}
         $script:TestPulls = @($pull)
         Invoke-WrapperChain
-        Write-FileAtomic "$WorkDir/state/review.json" ((@{line="GEMINI ОБГОРТКА: ГОТОВО gemini/автоперевірка-9-$old $sha"}) | ConvertTo-Json)
+        Write-FileAtomic "$WorkDir/state/review.json" ((@{slug="автоперевірка-9-$old";line="GEMINI ОБГОРТКА: ГОТОВО gemini/автоперевірка-9-$old $sha"}) | ConvertTo-Json)
         $pull.head.sha = $merged
         Invoke-WrapperChain
 
@@ -106,11 +108,11 @@ try {
         }
         Check '2 під час активного три штампи — одна позначка' (@($script:TestMarkers | Where-Object { $_ -like 'автоживий-*' }).Count -eq 1)
         Check '2 пропущений проміжний штамп має журнал' ([IO.File]::ReadAllText("$WorkDir/publish.log").Contains('пропущено проміжний штамп'))
-        Write-FileAtomic "$WorkDir/state/live.json" ((@{line="GEMINI ОБГОРТКА: ГОТОВО gemini/автоживий-$firstStamp $sha"}) | ConvertTo-Json)
+        Write-FileAtomic "$WorkDir/state/live.json" ((@{slug="автоживий-$firstStamp";line="GEMINI ОБГОРТКА: ГОТОВО gemini/автоживий-$firstStamp $sha"}) | ConvertTo-Json)
         Invoke-WrapperChain
         $live = @($script:TestMarkers | Where-Object { $_ -like 'автоживий-*' })
         Check '2 після звіту рівно наступна позначка останнього штампу' ($live.Count -eq 2 -and $live[-1] -ceq "автоживий-$stamp")
-        Write-FileAtomic "$WorkDir/state/live-next.json" ((@{line="GEMINI ОБГОРТКА: ГОТОВО gemini/автоживий-$stamp $sha"}) | ConvertTo-Json)
+        Write-FileAtomic "$WorkDir/state/live-next.json" ((@{slug="автоживий-$stamp";line="GEMINI ОБГОРТКА: ГОТОВО gemini/автоживий-$stamp $sha"}) | ConvertTo-Json)
         $script:FailLive = $true
         function script:Add-ChainMarker($Slug,$Model,$Main,[switch]$Gpu) {
             if ($Slug -cnotin $script:TestMarkers) { $script:TestMarkers += $Slug }
@@ -131,6 +133,7 @@ try {
 
     }
     Scenario '3 доставка' {
+        Write-FileAtomic "$WorkDir/state/auto-delivery.json" ((@{slug='автоживий-штамп';line="GEMINI ОБГОРТКА: ГОТОВО gemini/автоживий-штамп $sha"}) | ConvertTo-Json)
         if (-not (Get-Command Test-DispatcherAction -ErrorAction SilentlyContinue)) { function Test-DispatcherAction { $true } }
         foreach ($kind in @('ВЗЯТО gemini/крок','ГОТОВО gemini/крок','ОНОВЛЕНО код','ПУЛИ AGY')) {
             Check "3 $kind — локально" (-not (Test-DispatcherAction "GEMINI ОБГОРТКА: $kind $sha"))
@@ -206,6 +209,9 @@ try {
                 (& git -C $planRepo rev-parse HEAD).Trim()
             } finally { $env:GIT_AUTHOR_DATE = $author; $env:GIT_COMMITTER_DATE = $committer }
         }
+        # Планувальник читає реєстр сцен із дерева збірки: без нього план не складається.
+        [void][IO.Directory]::CreateDirectory("$planRepo/аудит/проби")
+        [IO.File]::WriteAllText("$planRepo/аудит/проби/живі_сцени.txt", [IO.File]::ReadAllText((Join-Path $SourceDir '../../проби/живі_сцени.txt'), $utf), $utf)
         $old = Plan-Commit '2026-01-01T00:00:00Z' 'Попередній код'
         [IO.File]::WriteAllText("$planRepo/build.txt", $old, $utf)
         $checked = Plan-Commit '2026-01-02T00:00:00Z' 'Збірка попереднього прогону'
@@ -274,14 +280,15 @@ console.log('GPU_OFF');
         $out = & python "$tmp/test.py"
         Check '5 Python launch і persistent context мають --disable-gpu' ($LASTEXITCODE -eq 0 -and $out -eq 'GPU_OFF')
         function Get-Command { [pscustomobject]@{Source='nvidia-smi'} }
+        function Get-GpuCounterRows { $null }
         function Invoke-Native { [pscustomobject]@{Code=0;Out='37780'} }
         Check '5 чужий GPU-процес означає чекання' (-not (Test-ExternalGpuFree))
         # Випадок 29.10: після перезапуску 14:26 UTC nvidia-smi називає в --query-compute-apps порожній AvastUI (57 MiB), і кожен
-        # GPU-наряд (автоживий, Е3-наживо) стояв у черзі 6+ год. ДО — старий предикат; ПІСЛЯ — пам'ять із порогом.
+        # GPU-наряд (автоживий, Е3-наживо) стояв у черзі 6+ год. ДО — старий предикат; ПІСЛЯ — вільна пам'ять і навантаження.
         function Invoke-Native {
             param($Exe, $Arguments)
             if ($Arguments -contains '--query-compute-apps=pid,used_memory') { return [pscustomobject]@{Code=0;Out='23660, [N/A]'} }
-            if ($Arguments -contains '--query-gpu=memory.used') { return [pscustomobject]@{Code=0;Out='57'} }
+            if ($Arguments -contains '--query-gpu=memory.total,memory.free,utilization.gpu') { return [pscustomobject]@{Code=0;Out='16376, 16319, 0'} }
             [pscustomobject]@{Code=1;Out='';Err='невідомий виклик'}
         }
         $old = (Invoke-Native 'nvidia-smi' @('--query-compute-apps=pid,used_memory')).Out.Trim()
@@ -290,8 +297,8 @@ console.log('GPU_OFF');
         $script:Logged = @(); $LaneDir = $tmp
         function Write-Log([string]$Text) { $script:Logged += $Text }
         Check '5 ПІСЛЯ: причина зайнятості порожня' ((Get-GpuBusyReason @()) -eq '')
-        function Invoke-Native { param($Exe, $Arguments) [pscustomobject]@{Code=0;Out='9000'} }
-        Check '5 завантажена модель (9000 MiB) — причина названа числом' ((Get-GpuBusyReason @()) -match '9000 MiB')
+        function Invoke-Native { param($Exe, $Arguments) [pscustomobject]@{Code=0;Out='16376, 7376, 0'} }
+        Check '5 чужа модель (9000 MiB) — причина називає залишок і потребу' ((Get-GpuBusyReason @()) -match 'вільно 7376 з потрібних 8925 MiB')
         $m = [pscustomobject]@{Name='gemini-queue/Е3-наживо/gpt-6.1-sol-high/1/p1-gpu'}
         $skip = Join-Path $tmp 'skipped.json'
         Add-Skip $m 'GPU: тест'; Save-Skips $skip

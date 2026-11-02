@@ -149,6 +149,16 @@ for N in 6 8; do
   ACTUAL=$(tl codex)
   chk "смуги.json codex=$N → $N водночас (є: $ACTUAL)" '[ "$ACTUAL" = "$N" ]'
   chk "усі $N нарядів закінчено" '[ "$(grep -c "^end " "$W/timeline.txt")" = "$N" ]'
+  chk "лічильник codex.turns зберіг усі $N ходів" '[ "$(cat "$W/fake/codex.turns")" = "$N" ]'
+  DONE=$($PY - "$(wp "$W/gout")" <<'P'
+import json, pathlib, re, sys
+print(sum(json.loads(p.read_text(encoding='utf-8-sig')).get('code') == 'DONE'
+          for p in pathlib.Path(sys.argv[1]).glob('*.json')
+          if re.fullmatch(r'[0-9]{8}-[0-9]{6}-[0-9a-f]{12}\.json', p.name)))
+P
+)
+  chk "worker опублікував $N результатів DONE (є: $DONE)" '[ "$DONE" = "$N" ]'
+
 done
 
 echo; [ $BAD = 0 ] && echo "ВСЕ ✓" || echo "ЗБІЙ ✗"; exit $BAD

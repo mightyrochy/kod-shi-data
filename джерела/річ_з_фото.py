@@ -106,7 +106,9 @@ import аксесуари_погода as _АП
     "фото": "id from \"фото_речей\" of the photo with the item",
     "назва": "short, as a shop would name the item",
     "слот": "one of \"списки_речі\".слоти",
-    "вид": "the exact kind of the item as a code from the item_type list (sandals, heeled_sandals, ankle_boots…) or null",
+    # перелік — у «списки_речі».види, тим самим, що приймає `_канон`: доти скелет посилався на список
+    # `item_type`, якого промпт паспорта не ніс (11731), і модель бачила лише три приклади з 99 кодів
+    "вид": "one code from \"списки_речі\".види — the exact kind of the item — or null",
     "колір": "one word from \"списки_речі\".кольори — the main colour of the item itself",
     "матеріал": "from \"списки_речі\".матеріали — only when the texture is visible on the photo, otherwise null",
     "крій": "from \"списки_речі\".крої or null",
@@ -187,9 +189,9 @@ def звіт_словами(словами, речі=None):
 
 
 def списки():
-    """Дозволені значення полів речі для промпта: слоти, кольори, матеріали, крої, принти."""
-    return dict(слоти=list(СЛОТИ_РЕЧІ), кольори=list(КОЛЬОРИ), матеріали=list(МАТЕРІАЛИ),
-                крої=list(КРОЇ), принти=list(ПРИНТИ))
+    """Дозволені значення полів речі для промпта: слоти, види, кольори, матеріали, крої, принти."""
+    return dict(слоти=list(СЛОТИ_РЕЧІ), види=list(_ВМ.ТАБЛИЦЯ["item_type"]), кольори=list(КОЛЬОРИ),
+                матеріали=list(МАТЕРІАЛИ), крої=list(КРОЇ), принти=list(ПРИНТИ))
 
 
 # ── КОДИ ПОЛІВ РЕЧІ ДЛЯ АНГЛІЙСЬКИХ ПРОМПТІВ (П-1) ────────────────────
@@ -481,9 +483,14 @@ def фото_речей():
     тож виправлення вад (підпис «Photo ф1:» перед кадром, форма слота, «пара взуття — одна
     річ», «фото самого взуття без верху й низу») не лишаються лише в оцінці: інакше в розмові повторювались би ті самі вади —
     слот поза кодами (`top_garment`), та сама пара взуття двома записами, спідниця ф1 записана на ф2.
-    Правила й описи полів спільні; `зібрати_фото` лишає в скелеті поле відповідного читача:
-    оцінка шле «outfit» й читає «in_outfit», розмова — «her_items_in_words» й читає «owner».
-    Рядок «як» поля йде лише з полем входу."""
+    Правила й скелет спільні, а що відрізняє виклики, стоїть полем входу: оцінка шле «outfit» (тоді «in_outfit»
+    має сенс), розмова — «her_items_in_words» (тоді «owner» — з її слів); рядок «як» поля йде лише з полем.
+    Поле відповіді, якого читач виклику не бере, тим самим полем входу знято зі скелета (`Поле.вихід`): «in_outfit»
+    читає лише оцінка (`оцінка_образу._в_образі`), «owner» — лише розмова (оцінка ставить «невідомо»).
+    Що значення — коди з «codes», каже листок скелета кожного поля, а чужий код відсіює читач (`ключ_поля`,
+    `оцінка_образу._ключ`); загальне «лише коди» суперечило полям photo, name, frame, in_outfit і знято.
+    Вид — точніший код за слот: слот читачі беруть з виду (`внутрішня_мова.СЛОТ_ТИПУ`), тож «kind within its
+    slot» знято — вид з тієї самої форми, що й слот, слот — першим (шапка `оцінка_образу`, розділ 2)."""
     global ФОТО_РЕЧЕЙ
     if ФОТО_РЕЧЕЙ is None:
         ФОТО_РЕЧЕЙ = _ЗП.Оголошення(
@@ -495,6 +502,7 @@ def фото_речей():
                                    "«" + _ЗП.ПІДПИС_КАДРУ_EN % "<id>" + ":»", треба=True),
                 # «Оціни мій образ»: вона може показати поруч річ, яку думає вдягти НАТОМІСТЬ (`оцінка_образу._в_образі`)
                 _ЗП.Поле("outfit", "true: the photos show one outfit she has put together herself",
+                         вихід=("items[].in_outfit",), вихід_без=("items[].owner",),
                          як="\"in_outfit\" is true for items worn together in the outfit; false for an item shown as "
                             "an alternative to one of them; \"unknown\" when the photo does not show which of them she "
                             "wears (two pairs side by side, nothing on her)"),
@@ -516,7 +524,7 @@ def фото_речей():
                 "object per item. A garment under an open jacket is its own item, and so is each pair of shoes.",
                 "Each photo is a separate picture: \"photo\" is the id from the label right before the image where the "
                 "item itself is drawn. An item seen on several photos is listed once, with the photo where it is seen best.",
-                "\"slot\" follows the item's own shape, not where it lies on the photo: footwear has a sole and a "
+                "\"slot\" and \"kind\" follow the item's own shape, not where it lies on the photo: footwear has a sole and a "
                 "toe, boots also a shaft rising from them; a top has a neckline, shoulders and sleeves or straps; "
                 "a jacket, blazer or coat worn open over another garment is \"outerwear\", the garment under it "
                 "\"top\"; trousers have two legs; a skirt hangs from the waist in one piece.",
@@ -547,18 +555,6 @@ def фото_речей():
     return ФОТО_РЕЧЕЙ
 
 
-def зібрати_фото(дані, поле):
-    """Збирає задачу фото зі скелетом полів, які читає відповідний виклик.
-
-    Спільне оголошення не змінюється: збирач копіює скелет для кожного запиту.
-    `owner` читає розмова, `in_outfit` — оцінка; решта полів потрібні обом."""
-    повідомлення = _ЗП.зібрати(фото_речей(), дані)
-    схема = повідомлення["task"]["answer_schema"]
-    схема["items"] = [{к: з for к, з in схема["items"][0].items()
-                       if к not in ("owner", "in_outfit") or к == поле}]
-    return повідомлення
-
-
 def промпт_фото(фото, власні=None, помилка=None):
     """Промпт задачі «речі з фото» рядком JSON. `фото` — [{ід, ширина, висота}] у порядку
     зображень; `власні` — `own_items` внутрішньої мови цього ходу (перекладач шару);
@@ -568,7 +564,7 @@ def промпт_фото(фото, власні=None, помилка=None):
          for х in (фото or []) if isinstance(х, dict) and х.get("ід")]
     дані = {"photos": ф, "her_items_in_words": [в for в in (власні or []) if isinstance(в, dict)],
             "codes": коди_полів(), "format_error": помилка}
-    return _json.dumps(зібрати_фото(дані, "owner"), ensure_ascii=False)
+    return _json.dumps(_ЗП.зібрати(фото_речей(), дані), ensure_ascii=False)
 
 
 def підписи_фото(фото):

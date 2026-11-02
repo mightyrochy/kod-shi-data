@@ -24,6 +24,7 @@
 """
 import argparse, ast, collections, gzip, hashlib, json, os, re, sys, warnings
 from походження_запису import Походження, константи_імпортів, ім_виклику
+import обсяг_приладу as ОБСЯГ  # Д10: непрочитане — код 1, не менше місць
 
 # ---- ОБСЯГ ----------------------------------------------------------------------------------------------------
 ВИКЛЮЧЕНО = re.compile(r"^(батарея_|gate_|measure_|стенд_|тест_|audit_|pair_test|run_outfit|status_перевірки)|.*_самотест\.py$")
@@ -503,7 +504,8 @@ def відомі_імена(корінь, файли_продукту):
         названі.add(os.path.basename(ш))
         try:
             д = розібрати(ш)
-        except (SyntaxError, ValueError, OSError):
+        except (SyntaxError, ValueError, OSError) as е:
+            ОБСЯГ.непрочитано(os.path.relpath(ш, корінь), "%s: %s" % (type(е).__name__, е))
             continue
         for н in ast.walk(д):
             if isinstance(н, ast.Constant) and isinstance(н.value, str) and 3 < len(н.value) < 120:
@@ -644,8 +646,9 @@ def головна(корінь):
     for ф in продукт + допоміжні:
         try:
             дерево = розібрати(os.path.join(корінь, ф))
-        except (SyntaxError, ValueError):
+        except (SyntaxError, ValueError) as е:
             без_розбору.append(ф)
+            ОБСЯГ.непрочитано(ф, "%s: %s" % (type(е).__name__, е))
             continue
         допоміжний = ф in допоміжні
         імпорти = константи_імпортів(дерево, os.path.dirname(os.path.join(корінь, ф)), читати_модуль) if допоміжний else {}

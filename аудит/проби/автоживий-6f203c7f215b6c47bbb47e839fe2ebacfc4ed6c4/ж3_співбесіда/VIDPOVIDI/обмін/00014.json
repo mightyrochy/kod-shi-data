@@ -1,0 +1,27 @@
+{
+ "версія": 1,
+ "запит": {
+  "model": "qwen/qwen3.5-9b",
+  "max_tokens": 4000,
+  "messages": [
+   {
+    "role": "user",
+    "content": [
+     {
+      "type": "text",
+      "text": "{\"task\": {\"role\": \"You read the description of an outfit and list its items as data.\", \"rules\": [\"One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.\", \"One item carries one thing — of two alternatives list the first; a note in brackets is not an item.\", \"Slot \\\"accessory\\\" is for an item no other slot fits.\", \"\\\"is_outfit\\\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note.\"], \"limits\": [\"Rely only on the input: do not invent what it does not contain.\", \"The answer is one JSON object following \\\"answer_schema\\\", without explanations and without ```.\"], \"language\": \"English\", \"answer\": \"ITEM_LIST\", \"answer_schema\": {\"is_outfit\": \"yes|no\", \"items\": [{\"name\": \"<what the item is>\", \"details\": \"<its cut, length and fabric>\", \"slot\": \"top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory\", \"color_hex\": \"<#rrggbb or null>\", \"worn\": \"<true, or false when the description says the outfit goes without it>\"}]}, \"input\": [\"\\\"description\\\" — the outfit description\"]}, \"description\": \"Cream linen blouse, relaxed fit with a slightly dropped shoulder and a loose A-line hem reaching mid-thigh, color #f0d6d2, fabric: natural linen.\\nNavy wool-blend wide-leg trousers, straight cut from high waist to ankle length just clearing the shoe, color #1a253a, fabric: fine merino wool blend.\\nOversized structured blazer with notched lapels and vented back, cropped slightly above the hip line for a modern silhouette, color #0d1b2a, fabric: heavy cotton gabardine.\\nTan leather loafers, classic penny style with a slight square toe, unlined for breathability in autumn morning air, color #c9a973, fabric: full-grain calfskin.\\nMatte black pearl-accented stud earrings, small hoops measuring 8mm diameter, color #000000, metal: oxidized sterling silver with faux cultured pearls.\\nWhy this outfit works: This ensemble strikes the perfect balance between professional polish and approachable warmth for an autumn morning interview in a bank setting. The tailored blazer provides the necessary structure and authority expected in a financial environment, while the relaxed linen blouse softens the look to show personality and creativity—key traits for an analyst. The wide-leg trousers offer comfort for a long day of standing or walking during networking, and the neutral color palette ensures you remain the focal point without distracting from your answers. Finally, the loafers provide essential comfort for all-day wear while maintaining a refined aesthetic that fits both smart business codes and morning daylight conditions.\"}"
+     }
+    ]
+   }
+  ],
+  "temperature": 1
+ },
+ "відповідь": {
+  "status": 200,
+  "contentType": "application/json",
+  "headers": {
+   "x-model": "qwen/qwen3.5-9b"
+  },
+  "body": "{\"content\":[{\"type\":\"text\",\"text\":\"{\\n\\\"is_outfit\\\": \\\"yes\\\",\\n\\\"items\\\": [\\n  {\\n    \\\"name\\\": \\\"blouse\\\",\\n    \\\"details\\\": \\\"relaxed fit with dropped shoulders and loose A-line hem reaching mid-thigh, natural linen fabric\\\",\\n    \\\"slot\\\": \\\"top\\\",\\n    \\\"color_hex\\\": \\\"#f0d6d2\\\"\\n  },\\n  {\\n    \\\"name\\\": \\\"trousers\\\",\\n    \\\"details\\\": \\\"wide-leg straight cut from high waist to ankle length just clearing the shoe, fine merino wool blend fabric\\\",\\n    \\\"slot\\\": \\\"bottom\\\",\\n    \\\"color_hex\\\": \\\"#1a253a\\\"\\n  },\\n  {\\n    \\\"name\\\": \\\"blazer\\\",\\n    \\\"details\\\": \\\"oversized structured with notched lapels and vented back, cropped slightly above the hip line, heavy cotton gabardine fabric\\\",\\n    \\\"slot\\\": \\\"outerwear\\\",\\n    \\\"color_hex\\\": \\\"#0d1b2a\\\"\\n  },\\n  {\\n    \\\"name\\\": \\\"loafers\\\",\\n    \\\"details\\\": \\\"classic penny style with slight square toe, unlined for breathability, full-grain calfskin fabric\\\",\\n    \\\"slot\\\": \\\"shoes\\\",\\n    \\\"color_hex\\\": \\\"#c9a973\\\"\\n  },\\n  {\\n    \\\"name\\\": \\\"earrings\\\",\\n    \\\"details\\\": \\\"small matte black pearl-accented hoops measuring 8mm diameter, oxidized sterling silver metal with faux cultured pearls\\\",\\n    \\\"slot\\\": \\\"earrings\\\",\\n    \\\"color_hex\\\": \\\"#000000\\\"\\n  }\\n]\\n}\"}],\"usage\":{\"input_tokens\":683,\"output_tokens\":356},\"stop_reason\":\"end_turn\"}"
+ }
+}

@@ -1,0 +1,27 @@
+{
+ "версія": 1,
+ "запит": {
+  "model": "qwen/qwen3.5-9b",
+  "max_tokens": 4000,
+  "messages": [
+   {
+    "role": "user",
+    "content": [
+     {
+      "type": "text",
+      "text": "{\"task\": {\"role\": \"You are a personal stylist. Put together one outfit for her case.\", \"rules\": [\"Items one per line, garments first, then shoes and accessories: what it is, cut, length, color with its hex code, fabric.\", \"An outer layer only when the weather needs it; at +20 °C and warmer there is none.\", \"Last, why this outfit works, in 3–4 sentences.\"], \"limits\": [\"Do not name lightness numbers, body measurements or height in numbers, or body-type labels, and do not say you had limits.\", \"The answer is plain text laid out as the rules say, not JSON.\"], \"language\": \"English\", \"answer\": \"OUTFIT_TEXT\", \"input\": [\"\\\"case\\\" — her case: the occasion, where and when, the weather, the dress code, her wishes and refusals — as codes, her own words as quotes; do not take an item that goes against her refusals or her words\", \"\\\"formality\\\" — the level of dress she named: home (loungewear, athleisure, sportswear) < everyday (jeans, a T-shirt and sneakers; neat casual, dark denim) < neat (business: a blouse, a shirt or a refined knit with trousers or a skirt, a textured jacket or a cardigan, loafers, ballet flats or ankle boots; social: a day dress, a refined knit with a skirt or trousers, a textured jacket, neat flats or ankle boots) < smart (business: a jacket with trousers or a skirt, a blouse or a shirt, loafers or pumps; a sheath dress with a jacket; social: a cocktail dress, heeled shoes) < formal (business: a business suit — a jacket with trousers or a skirt of one fabric — with a blouse, pumps; social: a formal dress of a noble fabric, heeled shoes) < very_smart (an evening gown) < ceremonial (a full-length evening gown with long gloves)\", \"\\\"person\\\" — facts about her from her photo and measurements, without conclusions: colors in hex (one per measurement), sizes in cm\"]}, \"case\": {\"field_quotes\": {\"occasion\": \"на роботу пішки 20 хвилин\", \"place\": \"вулиці\", \"movement\": \"йду на роботу пішки 20 хвилин\", \"temperature_c\": \"мінус десять\"}, \"formality_reason\": \"her_words\", \"event\": \"на роботу пішки 20 хвилин\", \"movement\": \"walk\", \"temperature_c\": -10, \"precipitation\": \"snow\", \"mood\": [\"немає\"], \"occasion\": \"work\", \"place\": \"walk\", \"formality\": [\"everyday\"], \"season\": \"autumn\", \"part_of_day\": \"morning\", \"light\": \"daylight\", \"road_salt\": true}, \"person\": {\"skin_hex\": [\"#f0d6d2\", \"#ead0cc\", \"#f4dcd8\"], \"hair_hex\": [\"#1f1c1f\", \"#2a2326\"], \"eyes_hex\": \"#5b6e82\", \"height_cm\": 168, \"girths_cm\": {\"shoulders\": 98, \"bust\": 92, \"waist\": 74, \"hips\": 99}}}"
+     }
+    ]
+   }
+  ],
+  "temperature": 1
+ },
+ "відповідь": {
+  "status": 200,
+  "contentType": "application/json",
+  "headers": {
+   "x-model": "qwen/qwen3.5-9b"
+  },
+  "body": "{\"content\":[{\"type\":\"text\",\"text\":\"A thick wool-blend coat, a straight fit reaching mid-thigh for coverage against the cold, in charcoal grey with hex code #36454F, fabric woven tightly to resist wind and snow. A fitted turtleneck sweater made of soft cashmere, long sleeves extending to the wrists, in cream with hex code #FFFDD0, offering warmth without bulk under the outer layer. Dark denim jeans, a slim but comfortable cut for walking, in black with hex code #1C1C1C, durable enough for the snowy road salt conditions. Simple ankle boots with a low block heel, waterproof leather construction, in dark brown with hex code #4B3621, providing grip on slippery winter surfaces. Minimalist gold-plated stud earrings, small and unobtrusive for a work setting, in polished metal with hex code #D4AF37, adding a subtle touch of polish to the practical ensemble. This outfit works because it prioritizes essential warmth and weather protection needed at -10°C while maintaining a neat yet relaxed everyday style suitable for commuting on foot. The monochromatic base of dark grey and black grounds the look professionally, while the cream sweater provides a soft contrast that keeps the silhouette from appearing too heavy under the coat. Every piece chosen, from the waterproof boots to the wind-resistant fabric, ensures comfort and functionality during the brisk morning walk to work without sacrificing a polished appearance.\"}],\"usage\":{\"input_tokens\":726,\"output_tokens\":291},\"stop_reason\":\"end_turn\"}"
+ }
+}

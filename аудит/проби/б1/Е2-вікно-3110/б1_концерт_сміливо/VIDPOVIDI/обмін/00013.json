@@ -1,0 +1,27 @@
+{
+ "версія": 1,
+ "запит": {
+  "model": "qwen/qwen3.5-9b",
+  "max_tokens": 4000,
+  "messages": [
+   {
+    "role": "user",
+    "content": [
+     {
+      "type": "text",
+      "text": "{\"task\": {\"role\": \"You read the description of an outfit and list its items as data.\", \"rules\": [\"One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.\", \"One item carries one thing — of two alternatives list the first; a note in brackets is not an item.\", \"Slot \\\"accessory\\\" is for an item no other slot fits.\", \"\\\"is_outfit\\\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note.\"], \"limits\": [\"Rely only on the input: do not invent what it does not contain.\", \"The answer is one JSON object following \\\"answer_schema\\\", without explanations and without ```.\"], \"language\": \"English\", \"answer\": \"ITEM_LIST\", \"answer_schema\": {\"is_outfit\": \"yes|no\", \"items\": [{\"name\": \"<what the item is>\", \"details\": \"<its cut, length and fabric>\", \"slot\": \"top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory\", \"color_hex\": \"<#rrggbb or null>\", \"worn\": \"<true, or false when the description says the outfit goes without it>\"}]}, \"input\": [\"\\\"description\\\" — the outfit description\"]}, \"description\": \"Asymmetric cropped top in electric violet with a deep V-neckline and raw-edge hem, relaxed fit cut from a stretchy poly-spandex blend, #C400E0.\\nHigh-waisted micro-mini skirt in glossy black patent leather with an exaggerated pleated front panel, A-line silhouette ending mid-thigh, #000000.\\nChunky platform boots in metallic chrome finish with a thick lug sole and side buckle, ankle height, #E8E8E8.\\nStatement earrings featuring oversized faceted crystals in rainbow hues hanging from thin silver hoops, long drop style, #FFD700.\\n\\nThis outfit works because the electric violet top immediately commands attention against a dark club setting, fulfilling her desire to stand out boldly. The glossy black leather mini skirt adds an edgy rock-and-roll vibe essential for a Friday night concert while keeping movement unrestricted in the crowd. The chrome boots and crystal earrings act as secondary focal points that sparkle under artificial club lights, ensuring she remains the center of attention without relying on traditional formality.\"}"
+     }
+    ]
+   }
+  ],
+  "temperature": 1
+ },
+ "відповідь": {
+  "status": 200,
+  "contentType": "application/json",
+  "headers": {
+   "x-model": "qwen/qwen3.5-9b"
+  },
+  "body": "{\"content\":[{\"type\":\"text\",\"text\":\"{\\n  \\\"is_outfit\\\": \\\"yes\\\",\\n  \\\"items\\\": [\\n    {\\n      \\\"name\\\": \\\"Asymmetric cropped top\\\",\\n      \\\"details\\\": \\\"deep V-neckline, raw-edge hem, relaxed fit cut from a stretchy poly-spandex blend\\\",\\n      \\\"slot\\\": \\\"top\\\",\\n      \\\"color_hex\\\": \\\"#C400E0\\\",\\n      \\\"worn\\\": true\\n    },\\n    {\\n      \\\"name\\\": \\\"High-waisted micro-mini skirt\\\",\\n      \\\"details\\\": \\\"glossy black patent leather, exaggerated pleated front panel, A-line silhouette ending mid-thigh\\\",\\n      \\\"slot\\\": \\\"bottom\\\",\\n      \\\"color_hex\\\": \\\"#000000\\\",\\n      \\\"worn\\\": true\\n    },\\n    {\\n      \\\"name\\\": \\\"Chunky platform boots\\\",\\n      \\\"details\\\": \\\"metallic chrome finish, thick lug sole, side buckle, ankle height\\\",\\n      \\\"slot\\\": \\\"shoes\\\",\\n      \\\"color_hex\\\": \\\"#E8E8E8\\\",\\n      \\\"worn\\\": true\\n    },\\n    {\\n      \\\"name\\\": \\\"Statement earrings\\\",\\n      \\\"details\\\": \\\"oversized faceted crystals in rainbow hues hanging from thin silver hoops, long drop style\\\",\\n      \\\"slot\\\": \\\"earrings\\\",\\n      \\\"color_hex\\\": \\\"#FFD700\\\",\\n      \\\"worn\\\": true\\n    }\\n  ]\\n}\"}],\"usage\":{\"input_tokens\":571,\"output_tokens\":309},\"stop_reason\":\"end_turn\"}"
+ }
+}

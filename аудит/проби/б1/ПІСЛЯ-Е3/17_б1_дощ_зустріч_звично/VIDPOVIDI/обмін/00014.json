@@ -1,0 +1,27 @@
+{
+ "версія": 1,
+ "запит": {
+  "model": "qwen/qwen3.5-9b",
+  "max_tokens": 4000,
+  "messages": [
+   {
+    "role": "user",
+    "content": [
+     {
+      "type": "text",
+      "text": "{\"task\": {\"role\": \"You read the description of an outfit and list its items as data.\", \"rules\": [\"One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.\", \"One item carries one thing — of two alternatives list the first; a note in brackets is not an item.\", \"Slot \\\"accessory\\\" is for an item no other slot fits.\", \"\\\"is_outfit\\\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note.\"], \"limits\": [\"Rely only on the input: do not invent what it does not contain.\", \"The answer is one JSON object following \\\"answer_schema\\\", without explanations and without ```.\"], \"language\": \"English\", \"answer\": \"ITEM_LIST\", \"answer_schema\": {\"is_outfit\": \"yes|no\", \"items\": [{\"name\": \"<what the item is>\", \"details\": \"<its cut, length and fabric>\", \"slot\": \"top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory\", \"color_hex\": \"<#rrggbb or null>\", \"worn\": \"<true, or false when the description says the outfit goes without it>\"}]}, \"input\": [\"\\\"description\\\" — the outfit description\"]}, \"description\": \"Raincoat with a tailored silhouette reaching mid-calf in charcoal grey (#3e4a4d), made of water-resistant technical wool blend.\\nKnitted blouse with a relaxed fit in navy blue (#2c3e50), featuring fine ribbed texture and elbow-length sleeves in soft cotton-wool mix.\\nStraight-leg trousers in dark denim (#1a252f) with a clean crease down the front, cut from sturdy but stretchable twill fabric for ease of movement.\\nAnkle boots with a low block heel in deep brown leather (#4e3629), providing stable support and protection against wet pavement.\\nThis outfit perfectly balances professional polish with practical warmth for an entire day of rain while meeting the requirements of a client meeting at a cafe. The structured outer layer shields from the autumn chill without adding bulk, ensuring comfort during long conversations or walks. Neutral tones like charcoal, navy, and brown create a sophisticated palette that flatters her skin tone and maintains context-appropriate elegance.\"}"
+     }
+    ]
+   }
+  ],
+  "temperature": 1
+ },
+ "відповідь": {
+  "status": 200,
+  "contentType": "application/json",
+  "headers": {
+   "x-model": "qwen/qwen3.5-9b"
+  },
+  "body": "{\"content\":[{\"type\":\"text\",\"text\":\"{\\n  \\\"is_outfit\\\": \\\"yes\\\",\\n  \\\"items\\\": [\\n    {\\n      \\\"name\\\": \\\"Raincoat\\\",\\n      \\\"details\\\": \\\"tailored silhouette reaching mid-calf in water-resistant technical wool blend\\\",\\n      \\\"slot\\\": \\\"outerwear\\\",\\n      \\\"color_hex\\\": \\\"#3e4a4d\\\",\\n      \\\"worn\\\": true\\n    },\\n    {\\n      \\\"name\\\": \\\"Blouse\\\",\\n      \\\"details\\\": \\\"relaxed fit knitted top with fine ribbed texture and elbow-length sleeves in soft cotton-wool mix\\\",\\n      \\\"slot\\\": \\\"top\\\",\\n      \\\"color_hex\\\": \\\"#2c3e50\\\",\\n      \\\"worn\\\": true\\n    },\\n    {\\n      \\\"name\\\": \\\"Trousers\\\",\\n      \\\"details\\\": \\\"straight-leg with a clean crease down the front cut from sturdy but stretchable twill fabric\\\",\\n      \\\"slot\\\": \\\"bottom\\\",\\n      \\\"color_hex\\\": \\\"#1a252f\\\",\\n      \\\"worn\\\": true\\n    },\\n    {\\n      \\\"name\\\": \\\"Ankle boots\\\",\\n      \\\"details\\\": \\\"low block heel providing stable support and protection against wet pavement in deep brown leather\\\",\\n      \\\"slot\\\": \\\"shoes\\\",\\n      \\\"color_hex\\\": \\\"#4e3629\\\",\\n      \\\"worn\\\": true\\n    }\\n  ]\\n}\"}],\"usage\":{\"input_tokens\":560,\"output_tokens\":300},\"stop_reason\":\"end_turn\"}"
+ }
+}

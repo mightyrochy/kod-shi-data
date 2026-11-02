@@ -1,0 +1,27 @@
+{
+ "версія": 1,
+ "запит": {
+  "model": "qwen/qwen3.5-9b",
+  "max_tokens": 4000,
+  "messages": [
+   {
+    "role": "user",
+    "content": [
+     {
+      "type": "text",
+      "text": "{\"task\": {\"role\": \"You are a personal stylist. Put together one outfit for her case.\", \"rules\": [\"Items one per line, garments first, then shoes and accessories: what it is, cut, length, color with its hex code, fabric.\", \"An outer layer only when the weather needs it; at +20 °C and warmer there is none.\", \"Last, why this outfit works, in 3–4 sentences.\"], \"limits\": [\"Do not name lightness numbers, body measurements or height in numbers, or body-type labels, and do not say you had limits.\", \"The answer is plain text laid out as the rules say, not JSON.\"], \"language\": \"English\", \"answer\": \"OUTFIT_TEXT\", \"input\": [\"\\\"case\\\" — her case: the occasion, where and when, the weather, the dress code, her wishes and refusals — as codes, her own words as quotes; do not take an item that goes against her refusals or her words\", \"\\\"formality\\\" — the level of dress she named: home (loungewear, athleisure, sportswear) < everyday (jeans, a T-shirt and sneakers; neat casual, dark denim) < neat (business: a blouse, a shirt or a refined knit with trousers or a skirt, a textured jacket or a cardigan, loafers, ballet flats or ankle boots; social: a day dress, a refined knit with a skirt or trousers, a textured jacket, neat flats or ankle boots) < smart (business: a jacket with trousers or a skirt, a blouse or a shirt, loafers or pumps; a sheath dress with a jacket; social: a cocktail dress, heeled shoes) < formal (business: a business suit — a jacket with trousers or a skirt of one fabric — with a blouse, pumps; social: a formal dress of a noble fabric, heeled shoes) < very_smart (an evening gown) < ceremonial (a full-length evening gown with long gloves)\", \"\\\"person\\\" — facts about her from her photo and measurements, without conclusions: colors in hex (one per measurement), sizes in cm\"]}, \"case\": {\"field_quotes\": {\"occasion\": \"на вулиці мінус десять і сніг, йду на роботу пішки 20 хвилин\", \"place\": \"на роботу\", \"duration_h\": \"20 хвилин\", \"movement\": \"йду на роботу пішки 20 хвилин\", \"temperature_c\": \"мінус десять\", \"weather_feel\": \"мінус десять і сніг\"}, \"formality_reason\": \"norm\", \"event\": \"на вулиці мінус десять і сніг, йду на роботу пішки 20 хвилин\", \"duration_h\": 1, \"movement\": \"walk\", \"temperature_c\": -10, \"precipitation\": \"snow\", \"occasion\": \"work\", \"place\": \"office\", \"formality\": [\"neat\"], \"season\": \"autumn\", \"part_of_day\": \"morning\", \"light\": \"daylight\", \"weather_feel\": \"frost\", \"road_salt\": true}, \"person\": {\"skin_hex\": [\"#f0d6d2\", \"#ead0cc\", \"#f4dcd8\"], \"hair_hex\": [\"#1f1c1f\", \"#2a2326\"], \"eyes_hex\": \"#5b6e82\", \"height_cm\": 168, \"girths_cm\": {\"shoulders\": 98, \"bust\": 92, \"waist\": 74, \"hips\": 99}}}"
+     }
+    ]
+   }
+  ],
+  "temperature": 1
+ },
+ "відповідь": {
+  "status": 200,
+  "contentType": "application/json",
+  "headers": {
+   "x-model": "qwen/qwen3.5-9b"
+  },
+  "body": "{\"content\":[{\"type\":\"text\",\"text\":\"Merino wool coat in charcoal grey (#3e4246), straight cut, knee length, woven with a dense weave for wind protection.\\nCashmere-blend turtleneck sweater in soft oat (#e8e3d9), relaxed fit, hip length, fine-gauge knit for insulation without bulk.\\nHigh-waisted wool trousers in slate blue (#5b6b7b), tailored straight leg, full length, heavy-weight fabric to resist snow and moisture.\\nLeather ankle boots in black (#0a0a0a), rounded toe, mid-calf shaft, rubber lug sole with oil-resistant finish for salted streets.\\nA thin leather belt in cognac (#8f5e43) at the natural waist defines the silhouette under the coat layers.\\nThis outfit works perfectly because the heavy wool trousers and insulated sweater provide necessary warmth against -10°C frost while remaining breathable enough for a brisk twenty-minute walk. The dark, neutral palette of charcoal, oat, and slate creates a professional yet comfortable look suitable for a morning commute in snowy conditions. Sturdy ankle boots with deep treads ensure safety on icy, salted roads without sacrificing style or comfort during the daily journey to work.\"}],\"usage\":{\"input_tokens\":786,\"output_tokens\":251},\"stop_reason\":\"end_turn\"}"
+ }
+}

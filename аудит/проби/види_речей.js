@@ -20,6 +20,10 @@ const відповідьЗадачі = об => {
       && ('verdict' in об.answer_schema || об.now)) return 'OUTFIT_REVIEW_V1';
   return НАЗВИ_EN[в] || в;
 };
+/* Допит під карткою оцінки — той самий промпт суду зі схемою лише «answer» і хвостом «now»; картка має схему з «verdict».
+   Сам хвіст «now» допиту не доводить: з #2401 його несе й промпт картки (рядок 12158). */
+const допитОцінки = об => !!(об && об.task && відповідьЗадачі(об) === 'OUTFIT_REVIEW_V1' && об.now
+  && !(об.answer_schema && 'verdict' in об.answer_schema));
 const ВИД_ТИПУ = {сукня: ['evening_dress', 'cocktail_dress', 'sheath_dress', 'sundress', 'jumpsuit'],
   верх: ['t_shirt', 'shirt', 'blouse', 'knitwear', 'sweater', 'hoodie', 'top_garment', 'sportswear'],
   низ: ['jeans', 'skirt', 'trousers', 'shorts', 'leggings'],
@@ -74,4 +78,4 @@ function пулЗаВидами(об){
   for (const р of (рядкиПулу(об.pool) || [])) { const в = р.two_piece ? 'комплект' : видРечі(р); (п[в] = п[в] || []).push({...р, н: р.n, назва: р.name || р.fe || р.features}); }
   return п;
 }
-module.exports = {відповідьЗадачі, видРечі, пулЗаВидами, рядкиПулу, ВИД_ТИПУ};
+module.exports = {відповідьЗадачі, допитОцінки, видРечі, пулЗаВидами, рядкиПулу, ВИД_ТИПУ};

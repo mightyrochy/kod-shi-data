@@ -1,0 +1,27 @@
+{
+ "версія": 1,
+ "запит": {
+  "model": "qwen/qwen3.5-9b",
+  "max_tokens": 4000,
+  "messages": [
+   {
+    "role": "user",
+    "content": [
+     {
+      "type": "text",
+      "text": "{\"task\": {\"role\": \"You read the description of an outfit and list its items as data.\", \"rules\": [\"One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.\", \"One item carries one thing — of two alternatives list the first; a note in brackets is not an item.\", \"Slot \\\"accessory\\\" is for an item no other slot fits.\", \"\\\"is_outfit\\\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note.\"], \"limits\": [\"Rely only on the input: do not invent what it does not contain.\", \"The answer is one JSON object following \\\"answer_schema\\\", without explanations and without ```.\"], \"language\": \"English\", \"answer\": \"ITEM_LIST\", \"answer_schema\": {\"is_outfit\": \"yes|no\", \"items\": [{\"name\": \"<what the item is>\", \"details\": \"<its cut, length and fabric>\", \"slot\": \"top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory\", \"color_hex\": \"<#rrggbb or null>\", \"worn\": \"<true, or false when the description says the outfit goes without it>\"}]}, \"input\": [\"\\\"description\\\" — the outfit description\"]}, \"description\": \"Midi silk slip dress in a fluid silhouette with an empire waistline, falling to mid-calf, featuring a deep burgundy hue (#5e2a36) and a lightweight liquid viscose fabric that catches the evening light.\\nCropped structured blazer with notched lapels and padded shoulders, tailored for a relaxed yet polished fit, in a warm camel tone (#d4c4a8) woven from soft wool blend to add texture without bulk.\\nStrappy block-heel sandals with a low 7cm platform, finished in a glossy metallic gold finish (#b5a642) on a flexible suede upper for all-day comfort during the restaurant visit.\\nPearl drop earrings with an 18mm diameter and simple sterling silver posts to add a touch of subtle elegance without overpowering the outfit.\\nA small structured clutch made of textured tan leather (#c3b090) with magnetic closure, holding essentials while complementing the neutral tones of the jacket and shoes.\\n\\nThis ensemble strikes the perfect balance for an evening date at a restaurant by blending feminine softness with sophisticated tailoring. The burgundy slip dress provides a romantic base that complements her warm skin tones, while the camel blazer adds just enough structure to elevate the look from everyday wear to neat smart occasion attire without appearing too formal for dinner. The metallic gold heels and pearl earrings introduce refined sparkle suitable for the autumn evening ambiance, ensuring she feels both comfortable walking through the venue and effortlessly stylish at the table.\"}"
+     }
+    ]
+   }
+  ],
+  "temperature": 1
+ },
+ "відповідь": {
+  "status": 200,
+  "contentType": "application/json",
+  "headers": {
+   "x-model": "qwen/qwen3.5-9b"
+  },
+  "body": "{\"content\":[{\"type\":\"text\",\"text\":\"{\\n  \\\"is_outfit\\\": \\\"yes\\\",\\n  \\\"items\\\": [\\n    {\\n      \\\"name\\\": \\\"slip dress\\\",\\n      \\\"details\\\": \\\"fluid silhouette with an empire waistline, falling to mid-calf, lightweight liquid viscose fabric\\\",\\n      \\\"slot\\\": \\\"dress\\\",\\n      \\\"color_hex\\\": \\\"#5e2a36\\\",\\n      \\\"worn\\\": true\\n    },\\n    {\\n      \\\"name\\\": \\\"blazer\\\",\\n      \\\"details\\\": \\\"cropped with notched lapels and padded shoulders, tailored for a relaxed yet polished fit, soft wool blend\\\",\\n      \\\"slot\\\": \\\"outerwear\\\",\\n      \\\"color_hex\\\": \\\"#d4c4a8\\\",\\n      \\\"worn\\\": true\\n    },\\n    {\\n      \\\"name\\\": \\\"sandals\\\",\\n      \\\"details\\\": \\\"strappy block-heel with a low 7cm platform, flexible suede upper\\\",\\n      \\\"slot\\\": \\\"shoes\\\",\\n      \\\"color_hex\\\": \\\"#b5a642\\\",\\n      \\\"worn\\\": true\\n    },\\n    {\\n      \\\"name\\\": \\\"earrings\\\",\\n      \\\"details\\\": \\\"pearl drop with an 18mm diameter and simple sterling silver posts\\\",\\n      \\\"slot\\\": \\\"earrings\\\",\\n      \\\"color_hex\\\": null,\\n      \\\"worn\\\": true\\n    },\\n    {\\n      \\\"name\\\": \\\"clutch\\\",\\n      \\\"details\\\": \\\"small structured made of textured leather with magnetic closure\\\",\\n      \\\"slot\\\": \\\"bag\\\",\\n      \\\"color_hex\\\": \\\"#c3b090\\\",\\n      \\\"worn\\\": true\\n    }\\n  ]\\n}\"}],\"usage\":{\"input_tokens\":659,\"output_tokens\":359},\"stop_reason\":\"end_turn\"}"
+ }
+}

@@ -120,21 +120,21 @@ try {
             $local = @()
             if (Test-Path -LiteralPath "$WorkDir/local-lines.json") { $local = @((ConvertFrom-Json ([IO.File]::ReadAllText("$WorkDir/local-lines.json")))) }
             if ($phase -eq 'ДО') {
-                Check "3 ДО: 12 збоїв CRASH за прохід — пробуджень $(@($wake | Where-Object { $_ -like '*CRASH' }).Count) (12), у зведенні QUOTA0 — $($local.Count) (3)" (@($wake | Where-Object { $_ -like '*CRASH' }).Count -eq 12 -and $local.Count -eq 3)
+                Check "3 ДО: 12 збоїв CRASH за прохід — пробуджень $(@($wake | Where-Object { $_ -like '*CRASH' }).Count) (12), QUOTA0 — перший будить, у зведенні $($local.Count) (2)" (@($wake | Where-Object { $_ -like '*CRASH' }).Count -eq 12 -and $local.Count -eq 2 -and @($wake | Where-Object { $_ -like '*QUOTA0*' }).Count -eq 1)
                 return
             }
             $agg = 'GEMINI ОБГОРТКА: ЗАБЛОКОВАНО CRASH ×12: claude/наряд-1, claude/наряд-2, claude/наряд-3, claude/наряд-4, claude/наряд-5 …'
-            Check "3 ПІСЛЯ: пробуджень $($wake.Count) — один «×12» і окремий інший код" ($wake.Count -eq 2 -and $wake -ccontains $agg -and $wake -ccontains $other)
+            Check "3 ПІСЛЯ: пробуджень $($wake.Count) — один «×12», один QUOTA0 «×3» і окремий інший код" ($wake.Count -eq 3 -and $wake -ccontains $agg -and $wake -ccontains $other -and $wake -ccontains 'GEMINI ОБГОРТКА: ЗАБЛОКОВАНО QUOTA0_CODEX ×3: codex/квота-M60, codex/квота-M30, codex/квота-M5')
             Check '3 зведений рядок — за шаблоном вихідних' ((Test-OutboxLine $agg) -eq '')
-            Check '3 QUOTA0 трьох хвилин — один рядок у зведенні, без пробудження' ($local.Count -eq 1 -and [string]$local[0].line -ceq 'GEMINI ОБГОРТКА: ЗАБЛОКОВАНО QUOTA0_CODEX ×3: codex/квота-M60, codex/квота-M30, codex/квота-M5')
+            Check '3 QUOTA0 трьох хвилин — один зведений рядок, одне пробудження, у зведенні без пробудження нічого' ($local.Count -eq 0)
             $groups = @((ConvertFrom-Json ([IO.File]::ReadAllText("$WorkDir/blocked-groups.json"))))
             $cr = @($groups | Where-Object { $_.code -ceq 'CRASH' })
             Check '3 лічба й повний перелік (12 гілок) — у blocked-groups.json' ($cr.Count -eq 1 -and [int]$cr[0].n -eq 12 -and @($cr[0].branches).Count -eq 12)
             Merge-BlockedLines
             foreach ($sf in @(Get-ChildItem -LiteralPath "$WorkDir/state" -Filter '*.json' -File | Sort-Object Name)) { Send-Pending $sf }
-            Check '3 повторний прохід — без нового зведення й листа' ($script:Calls.Count -eq 2 -and @((ConvertFrom-Json ([IO.File]::ReadAllText("$WorkDir/blocked-groups.json")))).Count -eq 2)
+            Check '3 повторний прохід — без нового зведення й листа' ($script:Calls.Count -eq 3 -and @((ConvertFrom-Json ([IO.File]::ReadAllText("$WorkDir/blocked-groups.json")))).Count -eq 2)
             Check '3 одиничний рядок не зводиться' (Test-DispatcherAction $other)
-            Check '3 зведений QUOTA0 не будить, CRASH будить' (-not (Test-DispatcherAction 'GEMINI ОБГОРТКА: ЗАБЛОКОВАНО QUOTA0_CODEX ×3: codex/а, codex/б') -and (Test-DispatcherAction $agg))
+            Check '3 зведений QUOTA0 у відкритому вікні тихий, CRASH будить' (-not (Test-DispatcherAction 'GEMINI ОБГОРТКА: ЗАБЛОКОВАНО QUOTA0_CODEX ×3: codex/а, codex/б') -and (Test-DispatcherAction $agg))
         }
     }
 

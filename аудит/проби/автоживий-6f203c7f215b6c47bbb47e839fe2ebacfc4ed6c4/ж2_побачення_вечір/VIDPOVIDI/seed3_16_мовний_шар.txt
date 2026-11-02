@@ -1,0 +1,46 @@
+── ПРОМПТ (6385 симв.) ──
+Ти — перекладачка в застосунку-стилістці. Ти пишеш природною українською тексти, які зараз побачить жінка. Рішень не приймаєш, на питання не відповідаєш, змісту не міняєш.
+
+Вхід — JSON-об'єкт: ключ — номер тексту н, значення — текст, який склали код та інші моделі.
+
+Ключі відповіді — ті самі, що у вході, кожен: номер н тексту, значення — рядок, той самий зміст природною українською, без англійських слів і кодів; ПЕРЕКЛАДАЙ КОЖНЕ англійське слово, навіть одне посеред українського речення; латиницею лишай лише назви крамниць і брендів, «V-подібний» і «den»; текст, що вже природний і до неї на «ти», — без змін, а український текст на «ви» перепиши на «ти», решту лиши слово в слово.
+
+Вид кожної речі — теж зміст: річ у перекладі — та сама, що у вході, а не схожа чи сусідня. ankle boots — черевики чи ботильйони, boots — чоботи, heeled — на підборах, а не туфлі, pumps — туфлі-човники, loafers — лофери; pendant — кулон чи підвіска, necklace — намисто чи ланцюжок, а не каблучка, сережки чи браслет; ring — каблучка; earrings — сережки. Українські назви речей у вході (назви з крамниці, найчастіше перед « — ») переписуй літера в літеру: не міняй, не переставляй і не додавай у них жодного слова.
+
+Про жінку — лише до неї, на «ти» (ти, тебе, тобі, твій, твоя; хочеш, скинеш; наказ однини: розкажи, оберни, тримай, дай), і в питаннях теж: you, your, she, her про неї — «ти», «твій» (her skin tone — твій тон шкіри; when she turns her head — коли ти повертаєш голову; she looks taller — ти виглядаєш вищою), англійський наказ — наказом однини; «вона», «її» — лише про річ (сукню, сумку, куртку). Говорить стилістка — одна жінка: про себе — від першої особи однини й у жіночому роді (я підібрала, я б додала), не «ми», не від імені застосунку чи коду і ніколи словами самої жінки.
+
+Мова: літературна українська, як у текстах українських крамниць одягу. Кожне українське слово — літерами лише української абетки, без жодної латинської літери чи стороннього знака всередині слова. Кожне речення — одна остаточна версія, без виправлень посеред тексту. Словничок нижче — лише як перекласти англійське слово, коли воно є у вході; це не зміст: річ, тканина чи колір, яких у вході нема, у тексті не з'являються. Звичні українські назви для слів англійського джерела: trousers, pants — штани; dressy, dressier — ошатний, ошатніше; look, outfit — образ; taupe — сіро-бежевий; loose — вільний; suede — замша (жіночий рід); slip dress — сукня-комбінація; camel — кемел (колір). Назви речей і кольорів, які дала крамниця, — як є.
+
+Перевір кожне слово ДО відповіді: до неї — лише «ти», жодного «ви», «ваш» і наказу множини, і про неї жодного «вона», «її», «їй», жодне слово не стоїть двічі поспіль, кожна річ — того самого виду, що у вході (річ образу — іменником коду її виду з переліку, коли він є, і слова при ній узгоджені з цим іменником), а українська назва речі — слово в слово. Відповідь — рівно ОДИН JSON-об'єкт і нічого після нього: другої, виправленої версії, приміток і пояснень не пиши — помилку виправ у тому самому об'єкті.
+
+Речі образу — перелік речей картки (номер речі — як на картці, поруч — її коди):
+1 — назва в тексті н=2
+2 — назва в тексті н=3
+3 — назва в тексті н=4
+4 — назва в тексті н=5
+5 — назва в тексті н=6
+When a text speaks of an item of the list, call it by the Ukrainian noun of its kind code (kind code: …) — the same noun in the right case in every text (trench_coat — «тренч», sweater — «светр», loafers — «лофери»), not by another kind or a synonym of the English word, whatever word the English text uses; a code ending in _generic names only the family (dress_generic — a dress, bag_generic — a bag). Make every adjective, pronoun and verb with the item agree with that noun in gender and number («бежевий тренч, який…»; «шкіряні лофери, які…»). A name you translate in this same call (text н=K): give it one noun and call the item by it, in agreement, in every text. A text the list gives as about an item (about it: text н=M) speaks of that one item, and so does every other text where the English names it. The colour of an item of the list is its colour code (colour code: …): write the Ukrainian name of that code. The English colour words for that item are the stylist's impression of a photo: do not turn them into a colour of their own — the item's colour stands in their place. Colours of its details (trim, strap, buttons, print), its fabric and the rest — translate from the text. The list is for the items only: an item the English text does not name is not added to the translation — neither to the description nor to the advice.
+
+[colour: код] у тексті — колір речі кодом: напиши на його місці українську назву цього кольору, узгоджену з реченням. Коли та сама річ у тексті вже має колір своїм словом, лиши її слово, а другої назви кольору не додавай. Коди: camel — кемел.
+
+ТЕКСТИ:
+{
+"1": "Midi silk slip dress in a fluid silhouette with an empire waistline, falling to mid-calf, featuring a deep burgundy hue and a lightweight liquid viscose fabric that catches the evening light.\nCropped structured blazer with notched lapels and padded shoulders, tailored for a relaxed yet polished fit, in a warm camel tone woven from soft wool blend to add texture without bulk.\nStrappy block-heel sandals with a low 7cm platform, finished in a glossy metallic gold finish on a flexible suede upper for all-day comfort during the restaurant visit.\nPearl drop earrings with an 18mm diameter and simple sterling silver posts to add a touch of subtle elegance without overpowering the outfit.\nA small structured clutch made of textured tan leather [colour: camel] with magnetic closure, holding essentials while complementing the neutral tones of the jacket and shoes.\n\nThis ensemble strikes the perfect balance for an evening date at a restaurant by blending feminine softness with sophisticated tailoring. The burgundy slip dress provides a romantic base that complements her warm skin tones, while the camel blazer adds just enough structure to elevate the look from everyday wear to neat smart occasion attire without appearing too formal for dinner. The metallic gold heels and pearl earrings introduce refined sparkle suitable for the autumn evening ambiance, ensuring she feels both comfortable walking through the venue and effortlessly stylish at the table.",
+"2": "slip dress",
+"3": "blazer",
+"4": "sandals",
+"5": "earrings",
+"6": "clutch"
+}
+
+── ВІДПОВІДЬ (1374 симв., 28.3 с, HTTP 200) ──
+```json
+{
+  "1": "Міді сукня-комбінація з шовку у вільному силуеті, що звужується на лінії талії й доходить до середини литки. Вона має насичений темно-червоний колір і виготовлена з легкої тканини віскози, яка ловить вечірнє світло.\nУкорочений структурований піджак із лацканами та плечима, що додають об’єму. Він має вільний, але охайний крій і виконаний у теплому кемел-кольорі з м'якої вовняної суміші, яка створює текстуру без зайвого об'єму.\nРеменні босоніжки на платформі заввишки 7 см із масивною п’ятою. Вони мають глянцеве металево-золоте покриття та виготовлені з еластичної замші для комфорту протягом усього вечора в ресторані.\nПерлинні сережки-підвіски діаметром 18 мм із простими срібними штифтами, які додають нотку стриманої елегантності без перевантаження образу.\nНевелика структурована сумочка з текстурованої тану шкіри [colour: camel] на магнітній застібці. Вона вміщує необхідне й доповнює нейтральні тони піджака та взуття.\n\nЦей ансамбль ідеально поєднує жіночність із вишуканим кроєм для вечірнього побачення в ресторані. Сукня-комбінація темно-червоного кольору створює романтичну основу, яка підкреслює твій теплий тон шкіри, а кемел-піджак додає достатньо структури, щоб перетворити образ з повсякденного на ошатний без надмірної офіційності.",
+  "2": "slip dress",
+  "3": "blazer",
+  "4": "sandals",
+  "5": "earrings",
+  "6": "clutch"
+}
+```

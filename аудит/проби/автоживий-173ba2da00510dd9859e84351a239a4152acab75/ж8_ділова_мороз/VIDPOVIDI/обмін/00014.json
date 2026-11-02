@@ -1,0 +1,27 @@
+{
+ "версія": 1,
+ "запит": {
+  "model": "qwen/qwen3.5-9b",
+  "max_tokens": 4000,
+  "messages": [
+   {
+    "role": "user",
+    "content": [
+     {
+      "type": "text",
+      "text": "{\"task\": {\"role\": \"You read the description of an outfit and list its items as data.\", \"rules\": [\"One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.\", \"One item carries one thing — of two alternatives list the first; a note in brackets is not an item.\", \"Slot \\\"accessory\\\" is for an item no other slot fits.\", \"\\\"is_outfit\\\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note.\"], \"limits\": [\"Rely only on the input: do not invent what it does not contain.\", \"The answer is one JSON object following \\\"answer_schema\\\", without explanations and without ```.\"], \"language\": \"English\", \"answer\": \"ITEM_LIST\", \"answer_schema\": {\"is_outfit\": \"yes|no\", \"items\": [{\"name\": \"<what the item is>\", \"details\": \"<its cut, length and fabric>\", \"slot\": \"top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory\", \"color_hex\": \"<#rrggbb or null>\", \"worn\": \"<true, or false when the description says the outfit goes without it>\"}]}, \"input\": [\"\\\"description\\\" — the outfit description\"]}, \"description\": \"Wool-blend wool skirt, knee-length A-line cut in a structured fit, charcoal grey (#36454F), fine woven wool; Wool-cotton blend blouse, classic pointed collar with soft pleats and long sleeves, navy blue (#000080), smooth poplin cotton; Tweed blazer, single-breasted with notch lapels and two front pockets, dark forest green (#1B3A2E), coarse herringbone tweed; Leather Chelsea ankle boots, rounded toe with a low block heel for traction on snow, black (#000000), full-grain nubuck leather. This outfit balances professional polish with essential warmth for a -10 °C walk in snowy conditions. The wool skirt and heavy tweed blazer provide the necessary insulation against the biting cold while maintaining a neat silhouette appropriate for a business meeting. Dark, rich tones like charcoal and forest green convey authority and stability without appearing overly severe for a standard work occasion.\"}"
+     }
+    ]
+   }
+  ],
+  "temperature": 1
+ },
+ "відповідь": {
+  "status": 200,
+  "contentType": "application/json",
+  "headers": {
+   "x-model": "qwen/qwen3.5-9b"
+  },
+  "body": "{\"content\":[{\"type\":\"text\",\"text\":\"{\\n  \\\"is_outfit\\\": \\\"yes\\\",\\n  \\\"items\\\": [\\n    {\\n      \\\"name\\\": \\\"wool-blend wool skirt\\\",\\n      \\\"details\\\": \\\"knee-length A-line cut in a structured fit, fine woven wool\\\",\\n      \\\"slot\\\": \\\"bottom\\\",\\n      \\\"color_hex\\\": \\\"#36454F\\\",\\n      \\\"worn\\\": true\\n    },\\n    {\\n      \\\"name\\\": \\\"wool-cotton blend blouse\\\",\\n      \\\"details\\\": \\\"classic pointed collar with soft pleats and long sleeves, smooth poplin cotton\\\",\\n      \\\"slot\\\": \\\"top\\\",\\n      \\\"color_hex\\\": \\\"#000080\\\",\\n      \\\"worn\\\": true\\n    },\\n    {\\n      \\\"name\\\": \\\"tweed blazer\\\",\\n      \\\"details\\\": \\\"single-breasted with notch lapels and two front pockets, coarse herringbone tweed\\\",\\n      \\\"slot\\\": \\\"outerwear\\\",\\n      \\\"color_hex\\\": \\\"#1B3A2E\\\",\\n      \\\"worn\\\": true\\n    },\\n    {\\n      \\\"name\\\": \\\"leather Chelsea ankle boots\\\",\\n      \\\"details\\\": \\\"rounded toe with a low block heel for traction on snow, full-grain nubuck leather\\\",\\n      \\\"slot\\\": \\\"shoes\\\",\\n      \\\"color_hex\\\": \\\"#000000\\\",\\n      \\\"worn\\\": true\\n    }\\n  ]\\n}\"}],\"usage\":{\"input_tokens\":554,\"output_tokens\":307},\"stop_reason\":\"end_turn\"}"
+ }
+}

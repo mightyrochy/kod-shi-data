@@ -1,0 +1,27 @@
+{
+ "версія": 1,
+ "запит": {
+  "model": "qwen/qwen3.5-9b",
+  "max_tokens": 4000,
+  "messages": [
+   {
+    "role": "user",
+    "content": [
+     {
+      "type": "text",
+      "text": "{\"task\": {\"role\": \"You read the description of an outfit and list its items as data.\", \"rules\": [\"One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.\", \"One item carries one thing — of two alternatives list the first; a note in brackets is not an item.\", \"Slot \\\"accessory\\\" is for an item no other slot fits.\", \"\\\"is_outfit\\\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note.\"], \"limits\": [\"Rely only on the input: do not invent what it does not contain.\", \"The answer is one JSON object following \\\"answer_schema\\\", without explanations and without ```.\"], \"language\": \"English\", \"answer\": \"ITEM_LIST\", \"answer_schema\": {\"is_outfit\": \"yes|no\", \"items\": [{\"name\": \"<what the item is>\", \"details\": \"<its cut, length and fabric>\", \"slot\": \"top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory\", \"color_hex\": \"<#rrggbb or null>\", \"worn\": \"<true, or false when the description says the outfit goes without it>\"}]}, \"input\": [\"\\\"description\\\" — the outfit description\"]}, \"description\": \"A refined knit top in slate gray with a subtle herringbone texture, cut to a relaxed fit and falling just below the hip, in soft wool blend.\\nTailored trousers in matching dark charcoal, featuring a wide pleated front for ease of movement and a straight-leg silhouette that ends at the ankle, crafted from heavy-weight wool flannel.\\nLeather ankle boots in deep oxblood with a low block heel, offering comfort for long office hours while adding a touch of personality, constructed from smooth calfskin.\\n\\nThis outfit embodies \\\"smart\\\" formality by balancing professional polish with autumnal warmth and texture. The monochromatic base in cool grays ensures a sophisticated look suitable for an office environment without feeling overly rigid. The subtle herringbone pattern on the knit adds visual interest that elevates the ensemble above standard business casual, while the oxblood boots provide a bold yet appropriate pop of color against the darker season.\"}"
+     }
+    ]
+   }
+  ],
+  "temperature": 1
+ },
+ "відповідь": {
+  "status": 200,
+  "contentType": "application/json",
+  "headers": {
+   "x-model": "qwen/qwen3.5-9b"
+  },
+  "body": "{\"content\":[{\"type\":\"text\",\"text\":\"{\\n  \\\"is_outfit\\\": \\\"yes\\\",\\n  \\\"items\\\": [\\n    {\\n      \\\"name\\\": \\\"refined knit top\\\",\\n      \\\"details\\\": \\\"relaxed fit with subtle herringbone texture, cut to fall just below the hip\\\",\\n      \\\"slot\\\": \\\"top\\\",\\n      \\\"color_hex\\\": \\\"#708090\\\",\\n      \\\"worn\\\": true\\n    },\\n    {\\n      \\\"name\\\": \\\"tailored trousers\\\",\\n      \\\"details\\\": \\\"wide pleated front for ease of movement, straight-leg silhouette ending at the ankle\\\",\\n      \\\"slot\\\": \\\"bottom\\\",\\n      \\\"color_hex\\\": \\\"#36454F\\\",\\n      \\\"worn\\\": true\\n    },\\n    {\\n      \\\"name\\\": \\\"leather ankle boots\\\",\\n      \\\"details\\\": \\\"low block heel, constructed from smooth calfskin\\\",\\n      \\\"slot\\\": \\\"shoes\\\",\\n      \\\"color_hex\\\": \\\"#821e16\\\",\\n      \\\"worn\\\": true\\n    }\\n  ]\\n}\"}],\"usage\":{\"input_tokens\":543,\"output_tokens\":225},\"stop_reason\":\"end_turn\"}"
+ }
+}

@@ -1,0 +1,27 @@
+{
+ "версія": 1,
+ "запит": {
+  "model": "qwen/qwen3.5-9b",
+  "max_tokens": 4000,
+  "messages": [
+   {
+    "role": "user",
+    "content": [
+     {
+      "type": "text",
+      "text": "{\"task\": {\"role\": \"You are a personal stylist. Put together one outfit for her case.\", \"rules\": [\"Items one per line, garments first, then shoes and accessories: what it is, cut, length, color with its hex code, fabric.\", \"An outer layer only when the weather needs it; at +20 °C and warmer there is none.\", \"Last, why this outfit works, in 3–4 sentences.\"], \"limits\": [\"Do not name lightness numbers, body measurements or height in numbers, or body-type labels, and do not say you had limits.\", \"The answer is plain text laid out as the rules say, not JSON.\"], \"language\": \"English\", \"answer\": \"OUTFIT_TEXT\", \"input\": [\"\\\"case\\\" — her case: the occasion, where and when, the weather, the dress code, her wishes and refusals — as codes, her own words as quotes; do not take an item that goes against her refusals or her words\", \"\\\"formality\\\" — the level of dress she named: home (loungewear, athleisure, sportswear) < everyday (jeans, a T-shirt and sneakers; neat casual, dark denim) < neat (business: a blouse, a shirt or a refined knit with trousers or a skirt, a textured jacket or a cardigan, loafers, ballet flats or ankle boots; social: a day dress, a refined knit with a skirt or trousers, a textured jacket, neat flats or ankle boots) < smart (business: a jacket with trousers or a skirt, a blouse or a shirt, loafers or pumps; a sheath dress with a jacket; social: a cocktail dress, heeled shoes) < formal (business: a business suit — a jacket with trousers or a skirt of one fabric — with a blouse, pumps; social: a formal dress of a noble fabric, heeled shoes) < very_smart (an evening gown) < ceremonial (a full-length evening gown with long gloves)\"]}, \"case\": {\"field_quotes\": {\"occasion\": \"вечірка на день народження подруги\", \"hour\": \"субота ввечері\", \"part_of_day\": \"ввечері\"}, \"formality_reason\": \"norm\", \"event\": \"вечірка на день народження подруги\", \"start_hour\": 19, \"occasion\": \"celebration\", \"formality\": [\"everyday\"], \"season\": \"autumn\", \"part_of_day\": \"evening\"}}"
+     }
+    ]
+   }
+  ],
+  "temperature": 1
+ },
+ "відповідь": {
+  "status": 200,
+  "contentType": "application/json",
+  "headers": {
+   "x-model": "qwen/qwen3.5-9b"
+  },
+  "body": "{\"content\":[{\"type\":\"text\",\"text\":\"Velvet slip dress, A-line silhouette with a subtle V-neckline extending to mid-calf length, color #800020 (Burgundy), smooth heavy velvet.\\nStrappy heeled sandals, slender T-strap design reaching the ankle for height and elegance, color #F5E6D3 (Champagne), polished satin leather.\\nPearl drop earrings, classic teardrop shape with a single faux pearl suspended from sterling silver hooks, color #FFFFFF (Ivory) accents on silver.\\n\\nThis ensemble transforms a simple velvet slip dress into an occasion-appropriate look for a birthday party by adding metallic heeled sandals that elevate the silhouette without crossing into overly formal territory. The burgundy hue offers a rich autumnal tone suitable for an evening gathering, while the champagne straps provide a delicate contrast that keeps the outfit feeling airy and celebratory rather than heavy. Pearls serve as a timeless accessory that adds just enough sophistication to match the \\\"everyday\\\" dress code request while honoring the desire for a special night out with a friend.\"}],\"usage\":{\"input_tokens\":544,\"output_tokens\":217},\"stop_reason\":\"end_turn\"}"
+ }
+}

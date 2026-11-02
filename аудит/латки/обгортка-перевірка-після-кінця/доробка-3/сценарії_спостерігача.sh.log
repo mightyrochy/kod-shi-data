@@ -1,0 +1,130 @@
+=== 1 базова лінія: перший прохід мовчить, другий теж
+warning: in the working copy of 'a.txt', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'аудит/адаптери/gemini/w.txt', LF will be replaced by CRLF the next time Git touches it
+  ✓ w1: прохід 1 — код 0, рядків 0 (очікувано 0)
+  ✓ w1: прохід 2 — код 0, рядків 0 (очікувано 0)
+  ✓ стан записано
+=== 2 коментарі: новий, змінено, чужі не йдуть, повтор мовчить
+warning: in the working copy of 'a.txt', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'аудит/адаптери/gemini/w.txt', LF will be replaced by CRLF the next time Git touches it
+  ✓ w2: базова лінія — код 0, рядків 0 (очікувано 0)
+  ✓ w2: нові — код 0, рядків 2 (очікувано 2)
+   СПОСТЕРІГАЧ КОМЕНТАР #1801 210 chatgpt-codex-connector[bot] новий
+   СПОСТЕРІГАЧ КОМЕНТАР #963 200 mightyrochy новий
+  ✓ w2: повтор — код 0, рядків 0 (очікувано 0)
+  ✓ w2: правка двох — код 0, рядків 2 (очікувано 2)
+   СПОСТЕРІГАЧ КОМЕНТАР #963 200 mightyrochy змінено
+   СПОСТЕРІГАЧ КОМЕНТАР #1801 210 chatgpt-codex-connector[bot] змінено
+  ✓ w2: після правки — код 0, рядків 0 (очікувано 0)
+=== 3 CI: pending мовчить, зміна стану йде, чужі PR ні, закритий зникає
+warning: in the working copy of 'a.txt', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'аудит/адаптери/gemini/w.txt', LF will be replaced by CRLF the next time Git touches it
+  ✓ w3: базова лінія — код 0, рядків 0 (очікувано 0)
+  ✓ w3: pending (рядків 0) — код 0, рядків 0 (очікувано 0)
+  ✓ w3: failure поверх success — код 0, рядків 1 (очікувано 1)
+   СПОСТЕРІГАЧ CI #1802 86f7e437faa5a7fce15d1ddcb9eaeaea377667b8 failure
+  ✓ w3: без змін — код 0, рядків 0 (очікувано 0)
+  ✓ w3: нова голова, cancelled — код 0, рядків 1 (очікувано 1)
+   СПОСТЕРІГАЧ CI #1802 3c363836cf4e16666669a25da280a1865c2d2874 cancelled
+  ✓ w3: нема перевірок -> pending — код 0, рядків 0 (очікувано 0)
+  ✓ w3: 1802 закрито — код 0, рядків 0 (очікувано 0)
+  1802 у стані: 0
+=== 4 перенос: diff лягає -> гілка codex/<наряд>, рядок, без повтору
+warning: in the working copy of 'a.txt', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'аудит/адаптери/gemini/w.txt', LF will be replaced by CRLF the next time Git touches it
+  ✓ w4: базова лінія — код 0, рядків 0 (очікувано 0)
+  ✓ w4: відповідь бота — код 0, рядків 2 (очікувано 2)
+   СПОСТЕРІГАЧ КОМЕНТАР #1801 400 chatgpt-codex-connector[bot] новий
+   СПОСТЕРІГАЧ ПЕРЕНЕСЕНО М.9-проба-спостерігача codex/М.9-проба-спостерігача 215d983b76ca98e2b00386e8ccb8449503b1c029 #1801
+  гілка: пересунута
+один|2|три|
+новий
+  коміт: Перенос diff Codex з коментаря 400 до PR #1801 (спостерігач без моделі)
+  ref refs/heads/codex/М.9-проба-спостерігача   ref refs/heads/main 
+  ✓ w4: повтор — код 0, рядків 0 (очікувано 0)
+  main недоторканий: один|два|три|
+=== 5 відмови переносу: код причини, гілка не рухається
+warning: in the working copy of 'a.txt', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'аудит/адаптери/gemini/w.txt', LF will be replaced by CRLF the next time Git touches it
+  ✓ w5: базова лінія — код 0, рядків 0 (очікувано 0)
+  ✓ w5: вісім поганих diff — код 0, рядків 16 (очікувано 16)
+   СПОСТЕРІГАЧ КОМЕНТАР #1801 501 chatgpt-codex-connector[bot] новий
+   СПОСТЕРІГАЧ КОМЕНТАР #1801 503 chatgpt-codex-connector[bot] новий
+   СПОСТЕРІГАЧ НЕ ПЕРЕНЕСЕНО М.9-проба-спостерігача FORBIDDEN_PATH
+   СПОСТЕРІГАЧ НЕ ПЕРЕНЕСЕНО М.9-проба-спостерігача APPLY_FAILED
+   СПОСТЕРІГАЧ НЕ ПЕРЕНЕСЕНО М.9-проба-спостерігача FFFD
+   СПОСТЕРІГАЧ КОМЕНТАР #1801 504 chatgpt-codex-connector[bot] новий
+   СПОСТЕРІГАЧ КОМЕНТАР #1801 502 chatgpt-codex-connector[bot] новий
+   СПОСТЕРІГАЧ КОМЕНТАР #1801 507 chatgpt-codex-connector[bot] новий
+   СПОСТЕРІГАЧ НЕ ПЕРЕНЕСЕНО М.9-проба-спостерігача APPLY_FAILED
+   СПОСТЕРІГАЧ НЕ ПЕРЕНЕСЕНО М.9-проба-спостерігача BINARY
+   СПОСТЕРІГАЧ КОМЕНТАР #1801 506 chatgpt-codex-connector[bot] новий
+   СПОСТЕРІГАЧ КОМЕНТАР #1801 508 chatgpt-codex-connector[bot] новий
+   СПОСТЕРІГАЧ НЕ ПЕРЕНЕСЕНО М.9-проба-спостерігача APPLY_FAILED
+   СПОСТЕРІГАЧ КОМЕНТАР #1801 505 chatgpt-codex-connector[bot] новий
+   СПОСТЕРІГАЧ НЕ ПЕРЕНЕСЕНО М.9-проба-спостерігача SPECIAL_MODE
+   СПОСТЕРІГАЧ НЕ ПЕРЕНЕСЕНО М.9-проба-спостерігача FORBIDDEN_PATH
+  ✓ w5: diff від не-бота: лише коментар власника — код 0, рядків 1 (очікувано 1)
+   СПОСТЕРІГАЧ КОМЕНТАР #1801 590 mightyrochy новий
+  ✓ гілка codex/М.9-проба-спостерігача не рухалась
+  ✓ w5: відповідь бота без diff: лише коментар — код 0, рядків 1 (очікувано 1)
+   СПОСТЕРІГАЧ КОМЕНТАР #1801 592 chatgpt-codex-connector[bot] новий
+  ✓ w5: правка bad -> ok: переноситься — код 0, рядків 2 (очікувано 2)
+   СПОСТЕРІГАЧ КОМЕНТАР #1801 501 chatgpt-codex-connector[bot] змінено
+   СПОСТЕРІГАЧ ПЕРЕНЕСЕНО М.9-проба-спостерігача codex/М.9-проба-спостерігача 283fa5741c095a26b5e3c06f2ac5fb968104f19a #1801
+  ✓ w5: TOO_BIG — код 0, рядків 2 (очікувано 2)
+   СПОСТЕРІГАЧ НЕ ПЕРЕНЕСЕНО М.9-проба-спостерігача TOO_BIG
+   СПОСТЕРІГАЧ КОМЕНТАР #1801 593 chatgpt-codex-connector[bot] новий
+=== 5б хеші: обрізаний diff при хешах повного -> HASH_MISMATCH; без блоку хешів -> NO_HASHES
+warning: in the working copy of 'a.txt', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'аудит/адаптери/gemini/w.txt', LF will be replaced by CRLF the next time Git touches it
+  ✓ w5b: базова лінія — код 0, рядків 0 (очікувано 0)
+  ✓ w5b: обрізаний і без хешів — код 0, рядків 4 (очікувано 4)
+   СПОСТЕРІГАЧ КОМЕНТАР #1801 520 chatgpt-codex-connector[bot] новий
+   СПОСТЕРІГАЧ НЕ ПЕРЕНЕСЕНО М.9-проба-спостерігача NO_HASHES
+   СПОСТЕРІГАЧ КОМЕНТАР #1801 521 chatgpt-codex-connector[bot] новий
+   СПОСТЕРІГАЧ НЕ ПЕРЕНЕСЕНО М.9-проба-спостерігача HASH_MISMATCH
+  ✓ w5b: хеш файлу інший — код 0, рядків 2 (очікувано 2)
+   СПОСТЕРІГАЧ КОМЕНТАР #1801 522 chatgpt-codex-connector[bot] новий
+   СПОСТЕРІГАЧ НЕ ПЕРЕНЕСЕНО М.9-проба-спостерігача HASH_MISMATCH
+  ✓ гілку не пересунуто
+=== 6 ворожі назви гілок і PR: нічого, крім шаблонів
+warning: in the working copy of 'a.txt', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'аудит/адаптери/gemini/w.txt', LF will be replaced by CRLF the next time Git touches it
+  ✓ w6: базова лінія — код 0, рядків 0 (очікувано 0)
+  ✓ w6: п'ять ворожих PR — код 0, рядків 4 (очікувано 4)
+   СПОСТЕРІГАЧ CI #1811 4a0a19218e082a343a1b17e5333409af9d98f0f5 success
+   СПОСТЕРІГАЧ CI #1812 54fd1711209fb1c0781092374132c66e79e2241b success
+   СПОСТЕРІГАЧ CI #1810 58e6b3a414a1e090dfc6029add0f3555ccba127f success
+   СПОСТЕРІГАЧ CI #1814 aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa success
+=== 7 збій gh: код 1, рядків нема, стан не просунувся, далі наздоганяє
+warning: in the working copy of 'a.txt', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'аудит/адаптери/gemini/w.txt', LF will be replaced by CRLF the next time Git touches it
+  ✓ w7: базова лінія — код 0, рядків 0 (очікувано 0)
+  ✓ gh не відповідає -> код виходу 1
+  рядків: 0
+  ✓ w7: gh знову працює — код 0, рядків 1 (очікувано 1)
+   СПОСТЕРІГАЧ КОМЕНТАР #963 700 mightyrochy новий
+=== 8 ліміт рядків: 5 нових коментарів при MaxRows 2 -> 3 проходи, без дублів
+warning: in the working copy of 'a.txt', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'аудит/адаптери/gemini/w.txt', LF will be replaced by CRLF the next time Git touches it
+  ✓ w8: базова лінія — код 0, рядків 0 (очікувано 0)
+  ✓ w8: прохід 1 — код 0, рядків 2 (очікувано 2)
+   СПОСТЕРІГАЧ КОМЕНТАР #963 801 mightyrochy новий
+   СПОСТЕРІГАЧ КОМЕНТАР #963 802 mightyrochy новий
+  ✓ w8: прохід 2 — код 0, рядків 2 (очікувано 2)
+   СПОСТЕРІГАЧ КОМЕНТАР #963 803 mightyrochy новий
+   СПОСТЕРІГАЧ КОМЕНТАР #963 804 mightyrochy новий
+  ✓ w8: прохід 3 — код 0, рядків 1 (очікувано 1)
+   СПОСТЕРІГАЧ КОМЕНТАР #963 805 mightyrochy новий
+  ✓ w8: прохід 4 — код 0, рядків 0 (очікувано 0)
+=== 9 формат теки вихідних для всього, що було у w2..w8
+  w2:   ✓ формат усіх 4 файлів: ім'я, UTF-8 без BOM, один рядок, шаблон
+  w3:   ✓ формат усіх 2 файлів: ім'я, UTF-8 без BOM, один рядок, шаблон
+  w4:   ✓ формат усіх 2 файлів: ім'я, UTF-8 без BOM, один рядок, шаблон
+  w5:   ✓ формат усіх 22 файлів: ім'я, UTF-8 без BOM, один рядок, шаблон
+  w5b:   ✓ формат усіх 6 файлів: ім'я, UTF-8 без BOM, один рядок, шаблон
+  w6:   ✓ формат усіх 4 файлів: ім'я, UTF-8 без BOM, один рядок, шаблон
+  w7:   ✓ формат усіх 1 файлів: ім'я, UTF-8 без BOM, один рядок, шаблон
+  w8:   ✓ формат усіх 5 файлів: ім'я, UTF-8 без BOM, один рядок, шаблон
+ПІДСУМОК сценарії_спостерігача.sh: ✓ 47 / ✗ 0; код стенда 0; код логу 0

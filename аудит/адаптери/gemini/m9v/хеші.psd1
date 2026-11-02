@@ -1,12 +1,12 @@
 ﻿# Очікувані SHA-256 файлів обгортки — єдине місце для скриптів m9v. Рядки тут мають збігатися з таблицею «Хеші файлів»
 # у ../НАЛАШТУВАННЯ.md (стенд `перевірка/сценарії_m9v.sh` звіряє). Міняється разом із таблицею (PR, що чіпає обгортку).
 @{
-    'wrapper_update.ps1' = '4156307A17BDAE3AF7249E532947F659E99AA1349D159239159FAE60CA7E4F2B'
+    'wrapper_update.ps1' = '45F254E5CB2FB7D882BBB9CE7CA121988FDF23BACCFE65CB67A4CA3B3F426FE7'
     'wrapper_probe.ps1'  = '85116D04C22EB64CBFF52E66BCEAE9B1091577A889EDD58A8B634093A82BDBC6'
-    'wrapper_chain.ps1'  = '99C1766CD93D0935C1804275B75F09C32C377427F347B91432D82869FAE34194'
-    'wrapper_health.ps1' = 'B3E2C44C4F342A915B814854A7D7619EDE2E019B48DC4A50CF4C9DB304C2E531'
-    'gemini_run.ps1'     = 'ED151D76BA6658EA230A0442252F0D7D05C2F6D723461C383D8E10016206E8FE'
-    'gemini_publish.ps1' = '73F2F2AA868DA86391FA9FACFD1F818AA8D1A76B9511F4DA891CBFE1E77087A9'
+    'wrapper_chain.ps1'  = 'ABE9238B05AB0EAB3E65912867159FC06EDE415188EC22E9C4D8DD2DD88487BA'
+    'wrapper_health.ps1' = 'F63CDFD76BCBE92440A843759BCD6CED4E49B4BCBAC19620CACA4B74B9D58AA5'
+    'gemini_run.ps1'     = 'FC237180DABFF4007A977416099AFECAFE2C2EE4F800A6097CEB9B40ACEDAE8D'
+    'gemini_publish.ps1' = '858D3D19CF97C3B792B67E09A4F8CE79422126404ABEF84E11099CB56C3577D4'
     # Інсталятор Codex (9741) закріплено за релізом: install.ps1 — файл релізу https://releases.openai.com/codex/releases/<CodexRelease>/install.ps1
     # (незмінний URL; той самий sha256 віддає https://chatgpt.com/codex/install.ps1 — редирект на releases.openai.com — і публікує реліз
     # openai/codex). 2_під_gemini.ps1 -WithCodex виконує його лише при збігу CodexInstaller і ставить саме цей реліз (-Release).
@@ -14,6 +14,6 @@
     CodexRelease         = '0.164.0'
     CodexInstaller       = 'A59CB66350098C33B021FF470D586AE8FE3B7CAF189CA7137B4FE3AF5D4DCE74'
     'gemini_watch.ps1'   = '69EFEBB07FF1AF51C382B753A95C50F3C1AC27B3008F2489992BEBE3FD0213AA'
-    'queue_lanes.ps1'    = '02868BB9FFE5320952634BA7A3E3D7B2F34D0F4D11699844F7429DFFDC66B909'
-    'claude_run.ps1'     = '9C9C96D9A065B8EA510C5B9023495806BA03D385ED2613067068842DFFD636C3'
+    'queue_lanes.ps1'    = 'FEAD267F76D269476E00F48C44366D4BA9D282B2BFC85CC64712968D430B4AFD'
+    'claude_run.ps1'     = '54CEB63CD621ED319370CF830BA206D68D48973407E3A4DAA01F5F95EBDA8C55'
 }

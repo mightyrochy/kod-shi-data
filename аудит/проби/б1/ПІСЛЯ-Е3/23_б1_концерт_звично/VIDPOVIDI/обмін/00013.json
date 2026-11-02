@@ -1,0 +1,27 @@
+{
+ "версія": 1,
+ "запит": {
+  "model": "qwen/qwen3.5-9b",
+  "max_tokens": 4000,
+  "messages": [
+   {
+    "role": "user",
+    "content": [
+     {
+      "type": "text",
+      "text": "{\"task\": {\"role\": \"You read the description of an outfit and list its items as data.\", \"rules\": [\"One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.\", \"One item carries one thing — of two alternatives list the first; a note in brackets is not an item.\", \"Slot \\\"accessory\\\" is for an item no other slot fits.\", \"\\\"is_outfit\\\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note.\"], \"limits\": [\"Rely only on the input: do not invent what it does not contain.\", \"The answer is one JSON object following \\\"answer_schema\\\", without explanations and without ```.\"], \"language\": \"English\", \"answer\": \"ITEM_LIST\", \"answer_schema\": {\"is_outfit\": \"yes|no\", \"items\": [{\"name\": \"<what the item is>\", \"details\": \"<its cut, length and fabric>\", \"slot\": \"top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory\", \"color_hex\": \"<#rrggbb or null>\", \"worn\": \"<true, or false when the description says the outfit goes without it>\"}]}, \"input\": [\"\\\"description\\\" — the outfit description\"]}, \"description\": \"A cropped asymmetrical leather jacket in deep crimson (#8a0303) cut from a durable matte lambskin with razor-sharp tailored shoulders and a mid-thigh hem that allows for unrestricted movement.\\nHigh-waisted wide-leg distressed denim trousers in an acid wash yellow (#f4d03f), featuring a relaxed straight fit through the thigh, a sharp taper at the ankle, and heavy-duty stitching in matching thread.\\nChunky platform combat boots in polished black leather (#0b0c10) with a substantial stacked heel for height, aggressive lug soles, and reinforced toe caps.\\nSilver layered choker necklace with geometric spikes, oversized rectangular sunglasses with amber lenses, and multiple silver ring stacks on the fingers.\\nThis outfit works because the bold acid yellow trousers against the dark club setting immediately grab attention while fulfilling your goal of making a statement without blending in. The leather jacket provides an edgy rock aesthetic perfect for Friday night energy while its cropped length ensures freedom of movement as you stand in the crowd. The chunky platforms add height and stability, allowing you to navigate tight spaces with confidence and style.\"}"
+     }
+    ]
+   }
+  ],
+  "temperature": 1
+ },
+ "відповідь": {
+  "status": 200,
+  "contentType": "application/json",
+  "headers": {
+   "x-model": "qwen/qwen3.5-9b"
+  },
+  "body": "{\"content\":[{\"type\":\"text\",\"text\":\"{\\n  \\\"is_outfit\\\": \\\"yes\\\",\\n  \\\"items\\\": [\\n    {\\n      \\\"name\\\": \\\"cropped asymmetrical leather jacket\\\",\\n      \\\"details\\\": \\\"cut from durable matte lambskin with razor-sharp tailored shoulders and a mid-thigh hem\\\",\\n      \\\"slot\\\": \\\"outerwear\\\",\\n      \\\"color_hex\\\": \\\"#8a0303\\\",\\n      \\\"worn\\\": true\\n    },\\n    {\\n      \\\"name\\\": \\\"high-waisted wide-leg distressed denim trousers\\\",\\n      \\\"details\\\": \\\"relaxed straight fit through the thigh, a sharp taper at the ankle, and heavy-duty stitching in matching thread\\\",\\n      \\\"slot\\\": \\\"bottom\\\",\\n      \\\"color_hex\\\": \\\"#f4d03f\\\",\\n      \\\"worn\\\": true\\n    },\\n    {\\n      \\\"name\\\": \\\"chunky platform combat boots\\\",\\n      \\\"details\\\": \\\"with a substantial stacked heel for height, aggressive lug soles, and reinforced toe caps\\\",\\n      \\\"slot\\\": \\\"shoes\\\",\\n      \\\"color_hex\\\": \\\"#0b0c10\\\",\\n      \\\"worn\\\": true\\n    },\\n    {\\n      \\\"name\\\": \\\"silver layered choker necklace\\\",\\n      \\\"details\\\": \\\"with geometric spikes\\\",\\n      \\\"slot\\\": \\\"collar_necklace\\\",\\n      \\\"color_hex\\\": null,\\n      \\\"worn\\\": true\\n    },\\n    {\\n      \\\"name\\\": \\\"oversized rectangular sunglasses\\\",\\n      \\\"details\\\": \\\"with amber lenses\\\",\\n      \\\"slot\\\": \\\"glasses\\\",\\n      \\\"color_hex\\\": null,\\n      \\\"worn\\\": true\\n    },\\n    {\\n      \\\"name\\\": \\\"multiple silver ring stacks\\\",\\n      \\\"details\\\": \\\"on the fingers\\\",\\n      \\\"slot\\\": \\\"ring\\\",\\n      \\\"color_hex\\\": null,\\n      \\\"worn\\\": true\\n    }\\n  ]\\n}\"}],\"usage\":{\"input_tokens\":583,\"output_tokens\":406},\"stop_reason\":\"end_turn\"}"
+ }
+}

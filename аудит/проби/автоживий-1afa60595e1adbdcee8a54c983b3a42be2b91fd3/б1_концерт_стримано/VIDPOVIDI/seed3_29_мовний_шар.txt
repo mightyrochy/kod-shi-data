@@ -1,0 +1,50 @@
+── ПРОМПТ (6740 симв.) ──
+Ти — перекладачка в застосунку-стилістці. Ти пишеш природною українською тексти, які зараз побачить жінка. Рішень не приймаєш, на питання не відповідаєш, змісту не міняєш.
+
+Вхід — JSON-об'єкт: ключ — номер тексту н, значення — текст, який склали код та інші моделі.
+
+Ключі відповіді — ті самі, що у вході, кожен: номер н тексту, значення — рядок, той самий зміст природною українською, без англійських слів і кодів; ПЕРЕКЛАДАЙ КОЖНЕ англійське слово, навіть одне посеред українського речення; латиницею лишай лише назви крамниць і брендів, «V-подібний» і «den»; текст, що вже природний і до неї на «ти», — без змін, а український текст на «ви» перепиши на «ти», решту лиши слово в слово.
+
+Вид кожної речі — теж зміст: річ у перекладі — та сама, що у вході, а не схожа чи сусідня. ankle boots — черевики чи ботильйони, boots — чоботи, heeled — на підборах, а не туфлі, pumps — туфлі-човники, loafers — лофери; pendant — кулон чи підвіска, necklace — намисто чи ланцюжок, а не каблучка, сережки чи браслет; ring — каблучка; earrings — сережки. Українські назви речей у вході (назви з крамниці, найчастіше перед « — ») переписуй літера в літеру: не міняй, не переставляй і не додавай у них жодного слова.
+
+Про жінку — лише до неї, на «ти» (ти, тебе, тобі, твій, твоя; хочеш, скинеш; наказ однини: розкажи, оберни, тримай, дай), і в питаннях теж: you, your, she, her про неї — «ти», «твій» (her skin tone — твій тон шкіри; when she turns her head — коли ти повертаєш голову; she looks taller — ти виглядаєш вищою), англійський наказ — наказом однини; «вона», «її» — лише про річ (сукню, сумку, куртку). Говорить стилістка — одна жінка: про себе — від першої особи однини й у жіночому роді (я підібрала, я б додала), не «ми», не від імені застосунку чи коду і ніколи словами самої жінки.
+
+Мова: літературна українська, як у текстах українських крамниць одягу. Кожне українське слово — літерами лише української абетки, без жодної латинської літери чи стороннього знака всередині слова. Кожне речення — одна остаточна версія, без виправлень посеред тексту. Словничок нижче — лише як перекласти англійське слово, коли воно є у вході; це не зміст: річ, тканина чи колір, яких у вході нема, у тексті не з'являються. Звичні українські назви для слів англійського джерела: trousers, pants — штани; dressy, dressier — ошатний, ошатніше; look, outfit — образ; taupe — сіро-бежевий; loose — вільний; suede — замша (жіночий рід); slip dress — сукня-комбінація; camel — кемел (колір). Назви речей і кольорів, які дала крамниця, — як є.
+
+Перевір кожне слово ДО відповіді: до неї — лише «ти», жодного «ви», «ваш» і наказу множини, і про неї жодного «вона», «її», «їй», жодне слово не стоїть двічі поспіль, кожна річ — того самого виду, що у вході (річ образу — іменником коду її виду з переліку, коли він є, і слова при ній узгоджені з цим іменником), а українська назва речі — слово в слово. Відповідь — рівно ОДИН JSON-об'єкт і нічого після нього: другої, виправленої версії, приміток і пояснень не пиши — помилку виправ у тому самому об'єкті.
+
+Речі образу — перелік речей картки (номер речі — як на картці, поруч — її коди):
+1 — kind code: blazer · colour code: grey · about it: text н=1
+2 — kind code: skirt · colour code: graphite · about it: text н=2
+3 — kind code: dress_shoes · colour code: brown · about it: text н=3
+4 — kind code: tote · colour code: black · about it: text н=4
+5 — kind code: jewelry_generic · colour code: black · about it: text н=5
+When a text speaks of an item of the list, call it by the Ukrainian noun of its kind code (kind code: …) — the same noun in the right case in every text (trench_coat — «тренч», sweater — «светр», loafers — «лофери»), not by another kind or a synonym of the English word, whatever word the English text uses; a code ending in _generic names only the family (dress_generic — a dress, bag_generic — a bag). Make every adjective, pronoun and verb with the item agree with that noun in gender and number («бежевий тренч, який…»; «шкіряні лофери, які…»). A name you translate in this same call (text н=K): give it one noun and call the item by it, in agreement, in every text. A text the list gives as about an item (about it: text н=M) speaks of that one item, and so does every other text where the English names it. The colour of an item of the list is its colour code (colour code: …): write the Ukrainian name of that code. The English colour words for that item are the stylist's impression of a photo: do not turn them into a colour of their own — the item's colour stands in their place. Colours of its details (trim, strap, buttons, print), its fabric and the rest — translate from the text. The list is for the items only: an item the English text does not name is not added to the translation — neither to the description nor to the advice.
+
+Colour codes: black — чорний; brown — коричневий; graphite — графіт; grey — сірий.
+
+ТЕКСТИ:
+{
+"1": "Your black fitted blazer has a clean, sharp silhouette that exudes classic elegance. Crafted from a structured fabric, it provides a polished look perfect for standing in a crowd.",
+"2": "This black pencil skirt features a sleek, straight cut that elongates your figure with its smooth vertical lines. Made from a refined material, it offers a sophisticated base for your evening out.",
+"3": "Your brown woven pumps bring an element of texture and warmth to the outfit. The pointed toe and slender heel add height and sophistication, ensuring you stand out in any setting.",
+"4": "This black tote bag offers a sleek, minimalist design with long handles for comfortable carrying. Its smooth texture complements the rest of your ensemble while providing ample space for essentials.",
+"5": "The black beaded necklace with its heart pendant adds a touch of subtle elegance to your look. The delicate beads and charming pendant create a perfect balance between classic style and modern flair.",
+"6": "Your black skirt, brown woven pumps, and sleek tote carry you through Friday's crowded club night with effortless cool. The classic register keeps your look grounded against the rock concert's energy, while the fitted blazer provides a sharp, structured silhouette that stands out even in the dim lighting.",
+"7": "Unbutton your blazer to reveal the crisp white shirt underneath for an air of relaxed confidence.",
+"8": "Let the woven heel slip off as you take a break, keeping your posture loose and grounded.",
+"9": "Спідниця максі пряма з середньою посадкою, LeBERDES Туфлі коричневі, Шопер “Triangle mini” чорний, Підвіска Noir — While the color coordination is bold (discordant), the grey blazer serves as a neutral canvas that lets your silver jewelry pop near your face, aligning with your need for a clear focal point in a chaotic environment."
+}
+
+── ВІДПОВІДЬ (1719 симв., 15.0 с, HTTP 200) ──
+{
+"1": "Твій чорний приталений блейзер має читкий силует, що випромінює класичну елегантність. Виготовлений з щільної тканини, він дарує доглянутий вигляд, ідеальний для того, щоб вирізнятися в натовпі.",
+"2": "Ця чорна спідниця-олівець має гладкий прямий крій, який видовжує твою фігуру завдяки плавним вертикальним лініям. Виготовлена з вишуканого матеріалу, вона пропонує елегантну основу для вечірнього образу.",
+"3": "Твої коричневі плетені лофери додають текстури та тепла до вбрання. Гострий носок і тонкий каблук підкреслюють твій зріст і вишуканість, гарантуючи тобі увагу будь-де.",
+"4": "Ця чорна сумка-тоут має лаконічний мінімалістичний дизайн з довгими ручками для зручного носіння. Її гладка текстура доповнює твій ансамбль і забезпечує достатньо місця для необхідних речей.",
+"5": "Чорний намисто з підвіскою у формі серця додає твоєму образу ледь помітної елегантності. Ніжні намистини та чарівна підвіска створюють ідеальний баланс між класичним стилем і сучасним шиком.",
+"6": "Твоя чорна спідниця, коричневі плетені лофери та лаконічна сумка-тоут дозволяють тобі легко влитися у натовп у п’ятничну ніч. Класичний стиль підтримує твій образ, а приталений блейзер дарує чіткий силует, який вирізняється навіть у тьмяному світлі.",
+"7": "Розстебни свій блейзер, щоб показати білу сорочку та додати образу розслабленої впевненості.",
+"8": "Зніми плетені лофери на хвилинку відпочинку, зберігаючи природну поставу.",
+"9": "Спідниця максі пряма з середньою посадкою, Підвіска Noir — Поки що колірне поєднання сміливе (дисонуюче), сірий блейзер слугує нейтральним фоном, який дозволяє твоїй срібній біжутерії виділятися біля обличчя, відповідаючи твоїй потребі у чіткому акценті в хаотичному середовищі."
+}

@@ -1,0 +1,415 @@
+diff --git "a/\320\260\321\203\320\264\320\270\321\202/\320\260\320\264\320\260\320\277\321\202\320\265\321\200\320\270/gemini/claude_run.ps1" "b/\320\260\321\203\320\264\320\270\321\202/\320\260\320\264\320\260\320\277\321\202\320\265\321\200\320\270/gemini/claude_run.ps1"
+index 44939208..d71b6a13 100644
+--- "a/\320\260\321\203\320\264\320\270\321\202/\320\260\320\264\320\260\320\277\321\202\320\265\321\200\320\270/gemini/claude_run.ps1"
++++ "b/\320\260\321\203\320\264\320\270\321\202/\320\260\320\264\320\260\320\277\321\202\320\265\321\200\320\270/gemini/claude_run.ps1"
+@@ -427,6 +427,7 @@ function Get-StatusBody {
+         $lines += @('', '### Чекають скидання квоти', '', '| позначка | до (UTC) | група |', '|---|---|---|')
+         foreach ($w in $wait) { $lines += "| $($w.Marker) | $($w.Until) | $($w.Group) |" }
+     }
++    $lines += @(Get-ClaudeNoReportLines)
+     $localPath = Join-Path $PublishDir 'local-lines.json'
+     if (Test-Path -LiteralPath $localPath) {
+         $local = ConvertFrom-Json ([IO.File]::ReadAllText($localPath, $script:Utf8))
+@@ -534,7 +535,7 @@ function Remove-ReportDecoration([string]$Line, [switch]$Sentence) {
+ }
+ 
+ function Get-Report([string]$Text) {
+-    <# Читає єдиний окремий звіт у відповіді result, пропускаючи код, цитати й приклади.
++    <# Читає єдиний окремий звіт у тексті відповіді, пропускаючи код, цитати й приклади.
+ 
+     Позиція в кінці та markdown не визначають результат роботи. Цитований наряд і приклади не можуть його
+     підтвердити; неоднозначні відповіді відхиляються. Гілку й SHA перевіряє виклик через origin. #>
+@@ -571,11 +572,17 @@ function Get-Report([string]$Text) {
+             if ($line.StartsWith($pair[0]) -and -not $line.TrimEnd('.').EndsWith($pair[1])) { $quote = $pair[1]; break }
+         }
+         if ($quote) { continue }
++        $line = $line -replace '^[-+*]\s+', ''
+         $line = Remove-ReportDecoration $line -Sentence
++        # Явна позначка прикладу лишається прикладом і після SHA.
++        if ($line -match '\s+[—–]\s+(?:приклад|зразок|цитата)\b') { continue }
++        # Пояснення після звіту не є частиною SHA.
++        $withoutNote = $line -replace '\s+[—–]\s+.+$', ''
++        if ($withoutNote -cne $line) { $line = Remove-ReportDecoration $withoutNote -Sentence }
+         if ($line -cmatch '^НОУТБУК ГОТОВО (\S+) (\S+)$') {
+             $branch = Remove-ReportDecoration $Matches[1]
+             $sha = Remove-ReportDecoration $Matches[2]
+-            if ($sha -cnotmatch '^[0-9a-fA-F]{40}$') { return $null }
++            if ($sha -cnotmatch '^[0-9a-fA-F]{7,40}$') { return $null }
+             $reports += [pscustomobject]@{ Kind = 'DONE'; Branch = $branch; Sha = $sha.ToLowerInvariant() }
+         } elseif ($line -cmatch '^НОУТБУК ЗАБЛОКОВАНО\b') {
+             $branch = ''
+@@ -588,6 +595,95 @@ function Get-Report([string]$Text) {
+ }
+ 
+ 
++
++function Get-ClaudeText($R) {
++    <# Читає лише текст result; інші типи не перетворює на уявний звіт. #>
++    $value = $null
++    if ($null -ne $R.Result) {
++        $property = $R.Result.PSObject.Properties['result']
++        if ($null -ne $property) { $value = $property.Value }
++    }
++    if ($value -is [string]) { return $value }
++    ''
++}
++
++function Get-ClaudeReport($R) {
++    <# Відновлює звіт із останньої відповіді assistant, коли result порожній або її префікс. #>
++    $text = Get-ClaudeText $R
++    $report = Get-Report $text
++    if ($null -ne $report) { return $report }
++    $assistant = [string](Get-JsonProp $R 'AssistantText')
++    # Інший непорожній result є остаточною відповіддю: приклади й цитати не стають звітом із попередньої події.
++    if (-not $text.Trim() -or $assistant.StartsWith($text.TrimEnd(), [StringComparison]::Ordinal)) {
++        return (Get-Report $assistant)
++    }
++    $null
++}
++
++function Read-ClaudeEvent($R, $Obj) {
++    <# Запам'ятовує result і останню текстову відповідь assistant, без tool_result та thinking. #>
++    $type = [string](Get-JsonProp $Obj 'type')
++    if ($type -eq 'result') { $R.Result = $Obj }
++    if ($type -eq 'assistant') {
++        $message = Get-JsonProp $Obj 'message'
++        $parts = @(foreach ($block in @(Get-JsonProp $message 'content')) {
++            if ((Get-JsonProp $block 'type') -eq 'text') { [string](Get-JsonProp $block 'text') }
++        })
++        $R.AssistantText = $parts -join "`n"
++    }
++}
++
++function Protect-ClaudeText([string]$Text) {
++    <# Знеособлює вміст до будь-якого запису діагностики, включно з іменами секретних полів. #>
++    $patterns = @(
++        ('ey' + 'J[A-Za-z0-9_-]{10,}'), ('s' + 'k-[A-Za-z0-9_-]{16,}'),
++        ('g' + 'h[pousr]_[A-Za-z0-9]{20,}'), ('github' + '_pat_[A-Za-z0-9_]{20,}'),
++        ('(?is)BE' + 'GIN [A-Z ]*PRIVATE KEY.*?(?:END [A-Z ]*PRIVATE KEY|\z)'),
++        # Значення секретного поля в будь-якій формі: JSON у лапках (закривальні лапки імені перед `:`), YAML, `ключ=значення`,
++        # заголовок `Authorization: …`; ім'я — будь-яке, що містить слово секрету. Значення в лапках — до закривальних, інакше до кінця рядка.
++        ('(?im)[A-Za-z0-9_.-]*(?:to' + 'ken|sec' + 'ret|pass' + 'w(?:or)?d|pwd|api[_-]?key|authori[sz]ation|credential|cookie|private[_-]?key)[A-Za-z0-9_.-]*[''"]?\s*[:=]\s*(?:"(?:[^"\\\r\n]|\\.)*"?|''[^''\r\n]*''?|[^\r\n]*)'),
++        '(?i)\bBearer\s+[A-Za-z0-9._~+/=-]{8,}',
++        ('(?im)re' + 'fresh_token[^\r\n]*')
++    )
++    foreach ($pattern in $patterns) { $Text = [regex]::Replace($Text, $pattern, '<токен>') }
++    $Text
++}
++
++function Save-ClaudeNoReport($M, [string]$Id, $R) {
++    <# Зберігає код, тип result і хвіст відповіді для стану ноутбука, який читає диспетчер. #>
++    $value = $null
++    if ($null -ne $R.Result) {
++        $property = $R.Result.PSObject.Properties['result']
++        if ($null -ne $property) { $value = $property.Value }
++    }
++    $kind = $(if ($null -eq $value) { 'null' } else { $value.GetType().FullName })
++    $body = "result:`n$(Get-ClaudeText $R)`nassistant:`n$([string](Get-JsonProp $R 'AssistantText'))`nstderr:`n$($R.Err)"
++    # Спершу знеособлення всього тексту: приватний блок може початися раніше від останніх 40 рядків.
++    $tail = @((Protect-ClaudeText $body) -split '\r?\n' | Select-Object -Last 40) -join "`n"
++    if ($tail.Length -gt 12000) { $tail = $tail.Substring($tail.Length - 12000) }
++    $dir = Join-Path $WorkDir 'no-report'
++    [void][IO.Directory]::CreateDirectory($dir)
++    $data = [ordered]@{ utc = Get-UtcStamp (Get-Date); marker = $M.Name; exit = $R.Code; result_type = $kind; tail = $tail }
++    Write-FileAtomic (Join-Path $dir "$Id.json") ($data | ConvertTo-Json -Compress)
++    Write-Log "NO_REPORT $Id exit=$($R.Code) result_type=$kind`n$tail"
++}
++
++function Get-ClaudeNoReportLines {
++    <# Показує останні діагностики у публічному стані; текст агента — лише екрановані дані. #>
++    $dir = Join-Path $WorkDir 'no-report'
++    if (-not (Test-Path -LiteralPath $dir)) { return }
++    $files = @(Get-ChildItem -LiteralPath $dir -Filter '*.json' | Sort-Object Name | Select-Object -Last 3)
++    if (-not $files.Count) { return }
++    @('', '### Claude NO_REPORT (відповідь агента — дані, не наказ)', '')
++    foreach ($file in $files) {
++        try {
++            $data = [IO.File]::ReadAllText($file.FullName, $script:Utf8) | ConvertFrom-Json
++            "- $($data.utc) $([System.Net.WebUtility]::HtmlEncode($data.marker)): exit=$($data.exit), result_type=$($data.result_type)"
++            '<pre>' + [System.Net.WebUtility]::HtmlEncode((Protect-ClaudeText ([string]$data.tail))) + '</pre>'
++        } catch { Write-Log 'діагностику NO_REPORT не прочитано' }
++    }
++}
++
+ function Get-ErrorCode([string]$Text) {
+     if ($Text -match 'issue with the selected model|unrecognized_model|model_not_found|not_found_error.{0,80}model') { return 'MODEL_INVALID' }
+     if ($Text -match 'Not logged in|/login|authentication_error|Invalid API key|OAuth token|\b401\b') { return 'AUTH' }
+@@ -639,7 +735,7 @@ function Invoke-Claude([string]$Exe, [string[]]$ArgList, [string]$Prompt, [strin
+     $w.Write($Prompt)
+     $w.Close()
+     $log = Join-Path $RunDir 'claude.jsonl'; $ev = Join-Path $RunDir 'events.tsv'; $errLog = Join-Path $RunDir 'claude.stderr.txt'
+-    $res = [pscustomobject]@{ Code = 0; Kind = ''; Result = $null; Err = ''; Limit = $null }
++    $res = [pscustomobject]@{ Code = 0; Kind = ''; Result = $null; AssistantText = ''; Err = ''; Limit = $null }
+     $err = New-Object System.Text.StringBuilder
+     $last = Get-Date
+     $outTask = $null; $errTask = $null; $outDone = $false; $errDone = $false
+@@ -675,14 +771,17 @@ function Invoke-Claude([string]$Exe, [string[]]$ArgList, [string]$Prompt, [strin
+         [System.IO.File]::AppendAllText($log, $line + "`n", $script:Utf8)
+         if ($line -match 'Unknown --effort value') { $res.Kind = 'EFFORT_INVALID'; break }
+         $type = ''; $obj = $null
+-        if ($line -match '^\s*\{\s*"type"\s*:\s*"([a-z_]{1,40})"') {
+-            $tp = $Matches[1]
+-            try { $obj = $line | ConvertFrom-Json -ErrorAction Stop; $type = $tp } catch { $null = $_ }
++        if ($line -match '^\s*\{') {
++            try {
++                $obj = $line | ConvertFrom-Json -ErrorAction Stop
++                $tp = [string](Get-JsonProp $obj 'type')
++                if ($tp -cmatch '^[a-z_]{1,40}$') { $type = $tp }
++            } catch { $null = $_ }
+         }
+         if (-not $type) { continue }
+         $last = Get-Date
+         [System.IO.File]::AppendAllText($ev, $last.ToString('s') + "`t" + $type + "`n", $script:Utf8)
+-        if ($type -eq 'result') { $res.Result = $obj }
++        Read-ClaudeEvent $res $obj
+         if ($type -eq 'rate_limit_event') {
+             $info = Get-JsonProp $obj 'rate_limit_info'
+             if ($null -ne $info) { $res.Limit = $info; Save-ClaudeQuota $info }
+@@ -783,18 +882,19 @@ function Invoke-ClaudeTask($M, $Job, [string]$Exe, [string]$TaskText, [string]$C
+         return (Complete-Task $M $statePath $id 'CRASH')
+     }
+     if ($r.Kind) { return (Complete-Task $M $statePath $id $r.Kind) }
+-    $text = ''; $isError = $false
++    $text = Get-ClaudeText $r; $isError = $false
+     if ($null -ne $r.Result) {
+-        $pr = $r.Result.PSObject.Properties['result']; if ($null -ne $pr -and $null -ne $pr.Value) { $text = [string]$pr.Value }
+         $pe = $r.Result.PSObject.Properties['is_error']; if ($null -ne $pe) { $isError = [bool]$pe.Value }
+     }
+-    $rep = $(if ($text) { Get-Report $text } else { $null })
++    $rep = Get-ClaudeReport $r
+     if ($null -ne $rep -and $rep.Branch -and (Test-ClaudeBranch $rep.Branch) -and (Get-RemoteSha $rep.Branch)) {
+         [System.IO.File]::WriteAllText((Get-BranchPath $M.Slug), $rep.Branch, $script:Utf8)
+     }
+     if ($null -ne $rep -and $rep.Kind -eq 'DONE') {
+         if (-not (Test-ClaudeBranch $rep.Branch)) { return (Complete-Task $M $statePath $id 'BAD_BRANCH') }
+-        if ((Get-RemoteSha $rep.Branch) -ne $rep.Sha) { return (Complete-Task $M $statePath $id 'NO_PUSH') }
++        $remote = Get-RemoteSha $rep.Branch
++        if (-not $remote -or -not $remote.StartsWith($rep.Sha, [StringComparison]::Ordinal)) { return (Complete-Task $M $statePath $id 'NO_PUSH') }
++        $rep.Sha = $remote
+         return (Complete-Task $M $statePath $id 'DONE' $rep.Branch $rep.Sha)
+     }
+     if ($null -ne $rep) { return (Complete-Task $M $statePath $id 'BLOCKED') }
+@@ -803,6 +903,7 @@ function Invoke-ClaudeTask($M, $Job, [string]$Exe, [string]$TaskText, [string]$C
+         if ($code -eq 'QUOTA' -and (Enter-ClaudeQuotaWait $M $statePath $id $r ($text + "`n" + $r.Err))) { return }
+         return (Complete-Task $M $statePath $id $code)
+     }
++    Save-ClaudeNoReport $M $id $r
+     Complete-Task $M $statePath $id 'NO_REPORT'
+ }
+ 
+diff --git "a/\320\260\321\203\320\264\320\270\321\202/\320\260\320\264\320\260\320\277\321\202\320\265\321\200\320\270/gemini/m9v/\321\205\320\265\321\210\321\226.psd1" "b/\320\260\321\203\320\264\320\270\321\202/\320\260\320\264\320\260\320\277\321\202\320\265\321\200\320\270/gemini/m9v/\321\205\320\265\321\210\321\226.psd1"
+index f805981a..2bfa397b 100644
+--- "a/\320\260\321\203\320\264\320\270\321\202/\320\260\320\264\320\260\320\277\321\202\320\265\321\200\320\270/gemini/m9v/\321\205\320\265\321\210\321\226.psd1"
++++ "b/\320\260\321\203\320\264\320\270\321\202/\320\260\320\264\320\260\320\277\321\202\320\265\321\200\320\270/gemini/m9v/\321\205\320\265\321\210\321\226.psd1"
+@@ -15,5 +15,5 @@
+     CodexInstaller       = 'A59CB66350098C33B021FF470D586AE8FE3B7CAF189CA7137B4FE3AF5D4DCE74'
+     'gemini_watch.ps1'   = '69EFEBB07FF1AF51C382B753A95C50F3C1AC27B3008F2489992BEBE3FD0213AA'
+     'queue_lanes.ps1'    = '02868BB9FFE5320952634BA7A3E3D7B2F34D0F4D11699844F7429DFFDC66B909'
+-    'claude_run.ps1'     = '9C9C96D9A065B8EA510C5B9023495806BA03D385ED2613067068842DFFD636C3'
++    'claude_run.ps1'     = 'C2E5B91E13B5B2DAC132716FF02769B691D55635BE913A31FD8A4A5B1D5575FE'
+ }
+diff --git "a/\320\260\321\203\320\264\320\270\321\202/\320\260\320\264\320\260\320\277\321\202\320\265\321\200\320\270/gemini/\320\235\320\220\320\233\320\220\320\250\320\242\320\243\320\222\320\220\320\235\320\235\320\257.md" "b/\320\260\321\203\320\264\320\270\321\202/\320\260\320\264\320\260\320\277\321\202\320\265\321\200\320\270/gemini/\320\235\320\220\320\233\320\220\320\250\320\242\320\243\320\222\320\220\320\235\320\235\320\257.md"
+index 6fd129c4..ae468be4 100644
+--- "a/\320\260\321\203\320\264\320\270\321\202/\320\260\320\264\320\260\320\277\321\202\320\265\321\200\320\270/gemini/\320\235\320\220\320\233\320\220\320\250\320\242\320\243\320\222\320\220\320\235\320\235\320\257.md"
++++ "b/\320\260\321\203\320\264\320\270\321\202/\320\260\320\264\320\260\320\277\321\202\320\265\321\200\320\270/gemini/\320\235\320\220\320\233\320\220\320\250\320\242\320\243\320\222\320\220\320\235\320\235\320\257.md"
+@@ -437,7 +437,7 @@ $f = Join-Path "$env:USERPROFILE\gemini-outbox" $n
+ | `gemini_watch.ps1` | `69EFEBB07FF1AF51C382B753A95C50F3C1AC27B3008F2489992BEBE3FD0213AA` |
+ | `wrapper_health.ps1` | `B3E2C44C4F342A915B814854A7D7619EDE2E019B48DC4A50CF4C9DB304C2E531` |
+ | `queue_lanes.ps1` | `02868BB9FFE5320952634BA7A3E3D7B2F34D0F4D11699844F7429DFFDC66B909` |
+-| `claude_run.ps1` | `9C9C96D9A065B8EA510C5B9023495806BA03D385ED2613067068842DFFD636C3` |
++| `claude_run.ps1` | `C2E5B91E13B5B2DAC132716FF02769B691D55635BE913A31FD8A4A5B1D5575FE` |
+ | `CodexInstaller` (`install.ps1` релізу Codex `CodexRelease`) | `A59CB66350098C33B021FF470D586AE8FE3B7CAF189CA7137B4FE3AF5D4DCE74` |
+ 
+ Той самий список читають скрипти `m9v/` з `m9v/хеші.psd1` — міняти їх разом із таблицею. Підготовка одним проходом — `m9v/ЩО_НАТИСНУТИ.md`.
+@@ -664,3 +664,14 @@ Deny ставиться явно на кожний об'єкт власної ф
+ Читач .git перевіряє ListDirectory перед HEAD: читання файла окремо
+ може бути дозволене при забороненому переліку теки. Недоступна тека
+ журналюється, як і решта недоступного стану; доступні смуги незалежні.
++
++## Діагностика Claude без звіту
++
++Звіт читається з текстового result; коли він порожній або урізаний до префікса останньої відповіді assistant,
++використовується її текст із stream-json. tool_result і thinking не підтверджують виконання.
++Однозначний звіт у списку чи з поясненням після тире приймається; SHA від 7 до 40 hex звіряється з поточною
++головою заявленої гілки на origin, а в рядок ГОТОВО йде повний SHA40. Цитати, приклади й код відкидаються.
++На NO_REPORT код виходу, тип result і останні 40 рядків (до 12000 символів) після знеособлення пишуться
++у claude-run/no-report/<id>.json і claude-run.log. Останні три записи публікуються в стані ноутбука #1856
++у розділі «Claude NO_REPORT» як екрановані дані. Нових рядків транспорту, входів і дозволів немає.
++Після застосування латки потрібен запуск Claude з рядком звіту: стенд не є живим прийманням.
+diff --git "a/\320\260\321\203\320\264\320\270\321\202/\320\260\320\264\320\260\320\277\321\202\320\265\321\200\320\270/gemini/\320\277\320\265\321\200\320\265\320\262\321\226\321\200\320\272\320\260/\321\201\321\206\320\265\320\275\320\260\321\200\321\226\321\227_no_report.ps1" "b/\320\260\321\203\320\264\320\270\321\202/\320\260\320\264\320\260\320\277\321\202\320\265\321\200\320\270/gemini/\320\277\320\265\321\200\320\265\320\262\321\226\321\200\320\272\320\260/\321\201\321\206\320\265\320\275\320\260\321\200\321\226\321\227_no_report.ps1"
+new file mode 100644
+index 00000000..d465c872
+--- /dev/null
++++ "b/\320\260\321\203\320\264\320\270\321\202/\320\260\320\264\320\260\320\277\321\202\320\265\321\200\320\270/gemini/\320\277\320\265\321\200\320\265\320\262\321\226\321\200\320\272\320\260/\321\201\321\206\320\265\320\275\320\260\321\200\321\226\321\227_no_report.ps1"
+@@ -0,0 +1,144 @@
++﻿#Requires -Version 5.1
++param([string]$SourceDir = (Split-Path -Parent $PSScriptRoot), [switch]$Before, [string]$EvidenceDir = '')
++Set-StrictMode -Version Latest
++$ErrorActionPreference = 'Stop'
++$script:Utf8 = New-Object Text.UTF8Encoding($false)
++$errors = $null; $tokens = $null
++$ast = [Management.Automation.Language.Parser]::ParseFile((Join-Path $SourceDir 'claude_run.ps1'), [ref]$tokens, [ref]$errors)
++if ($errors.Count) { throw ($errors | Out-String) }
++. (Join-Path $SourceDir 'queue_lanes.ps1')
++$names = @('Remove-ReportDecoration', 'Get-Report', 'Get-ClaudeText', 'Get-ClaudeReport', 'Read-ClaudeEvent', 'Protect-ClaudeText', 'Save-ClaudeNoReport', 'Get-ClaudeNoReportLines', 'Get-ErrorCode', 'Invoke-ClaudeTask')
++foreach ($name in $names) {
++    $node = $ast.Find({ param($n) $n -is [Management.Automation.Language.FunctionDefinitionAst] -and $n.Name -eq $name }, $true)
++    if ($node) { . ([scriptblock]::Create($node.Extent.Text)) }
++}
++$script:bad = 0
++function Check([string]$Name, [bool]$Ok) {
++    <# Невиконане твердження дає ненульовий код у кінці всього стенда. #>
++    if ($Ok) { "✓ $Name" } else { "✗ $Name"; $script:bad++ }
++}
++function Get-Prompt { 'синтетичний наряд' }
++function Write-Log { param($Text) }
++function Get-BranchPath { param($Slug) Join-Path $WorkDir 'branch.txt' }
++function Get-RemoteSha { param($Branch) if ($Branch -eq 'claude/проба-звіту') { $script:remote } else { '' } }
++function Test-ClaudeBranch { param($Branch) $Branch -cmatch '^claude/[\p{L}\p{Nd}._-]+$' }
++function Complete-Task {
++    param($M, $StatePath, $Id, $Code, $Branch = '', $Sha = '')
++    $script:completed = [pscustomobject]@{ Code = $Code; Branch = $Branch; Sha = $Sha }
++}
++function Enter-ClaudeQuotaWait { $false }
++function Invoke-Claude { $script:response }
++$WorkDir = Join-Path $env:TEMP ('no-report-' + [guid]::NewGuid().ToString('N'))
++[void][IO.Directory]::CreateDirectory($WorkDir)
++$runDir = Join-Path $WorkDir 'run'
++[void][IO.Directory]::CreateDirectory($runDir)
++$script:remote = 'a' * 40
++$branch = 'claude/проба-звіту'
++$line = "НОУТБУК ГОТОВО $branch $script:remote"
++$script:SlugCore = '[\p{L}\p{Nd}][\p{L}\p{Nd}._-]{0,79}'
++$m = [pscustomobject]@{ Name = 'gemini-queue/проба-звіту/cc-модель/1'; Slug = 'проба-звіту'; Claude = 'модель'; Effort = ''; Model = 'cc-модель' }
++$job = [pscustomobject]@{ id = '20261030-120000-0123456789ab'; slot = 'claude-1' }
++$cases = @(
++    @('простий', $line, '', 'DONE'),
++    @('жирний', "**$line**", '', 'DONE'),
++    @('крапка', "$line.", '', 'DONE'),
++    @('пояснення', "$line — виконано", '', 'DONE'),
++    @('жирний-пояснення', "**$line — виконано**", '', 'DONE'),
++    @('короткий-SHA', "НОУТБУК ГОТОВО $branch aaaaaaaa", '', 'DONE'),
++    @('CRLF-пробіли', "$line   `r`n", '', 'DONE'),
++    @('список', "- $line", '', 'DONE'),
++    @('список-жирний', "- **$line**", '', 'DONE'),
++    @('після-коду', ('```' + "`nкод`n" + '```' + "`n$line"), '', 'DONE'),
++    @('після-наряду', "----- НАРЯД -----`nприклад`n----- КІНЕЦЬ НАРЯДУ -----`n$line", '', 'DONE'),
++    @('порожній-result', '', $line, 'DONE'),
++    @('null-result', $null, $line, 'DONE'),
++    @('масив-result', @('не текст'), $line, 'DONE'),
++    @('урізаний-result', "НОУТБУК ГОТОВО $branch aaaa", $line, 'DONE'),
++    @('немає-події-result', '__відсутня__', $line, 'DONE'),
++    @('без-звіту', 'Зроблено, без звіту.', 'працюю', 'NO_REPORT'),
++    @('немає-відповіді', '', '', 'NO_REPORT'),
++    @('приклад', "Приклад:`n$line", $line, 'NO_REPORT'),
++    @('приклад-після-SHA', "$line — приклад", '', 'NO_REPORT'),
++    @('код', ('```' + "`n$line`n" + '```'), $line, 'NO_REPORT'),
++    @('цитата', "> $line", $line, 'NO_REPORT'),
++    @('старий-assistant', 'Остаточна відповідь без звіту.', $line, 'NO_REPORT'),
++    @('два-звіти', "$line`nНОУТБУК ЗАБЛОКОВАНО: причина", '', 'NO_REPORT'),
++    @('чужа-гілка', ('НОУТБУК ГОТОВО main ' + $script:remote), '', 'BAD_BRANCH'),
++    @('хибний-SHA', ('НОУТБУК ГОТОВО ' + $branch + ' ' + ('b' * 40)), '', 'NO_PUSH'),
++    @('хибний-короткий-SHA', "НОУТБУК ГОТОВО $branch bbbbbbbb", '', 'NO_PUSH'),
++    @('SHA-надто-короткий', "НОУТБУК ГОТОВО $branch aaa", '', 'NO_REPORT'),
++    @('блокер', 'НОУТБУК ЗАБЛОКОВАНО: причина', '', 'BLOCKED'),
++    @('блокер-без-префікса', 'ЗАБЛОКОВАНО: причина', '', 'NO_REPORT'),
++    @('exit', '', '', 'EXIT')
++)
++if ($EvidenceDir) { [void][IO.Directory]::CreateDirectory($EvidenceDir) }
++foreach ($case in $cases) {
++    $script:response = [pscustomobject]@{ Code = 0; Kind = ''; Result = $null; AssistantText = $case[2]; Err = ''; Limit = $null }
++    if ($case[0] -eq 'exit') { $script:response.Code = 3 }
++    if ($case[0] -ne 'немає-події-result') { $script:response.Result = [pscustomobject]@{ type = 'result'; result = $case[1]; is_error = $false } }
++    if ($EvidenceDir) {
++        $record = [ordered]@{ name = $case[0]; response = $script:response; expected = $case[3] }
++        [IO.File]::AppendAllText((Join-Path $EvidenceDir 'варіанти.jsonl'), ($record | ConvertTo-Json -Depth 8 -Compress) + "`n", $script:Utf8)
++    }
++    $script:completed = $null
++    Invoke-ClaudeTask $m $job 'синтетичний' 'наряд' '' $runDir 'стан' $WorkDir
++    $got = $script:completed.Code
++    $expected = $case[3]
++    if ($Before) {
++        $expected = switch ($case[0]) {
++            { $_ -in @('пояснення', 'жирний-пояснення', 'короткий-SHA', 'список', 'список-жирний', 'порожній-result', 'null-result', 'масив-result', 'урізаний-result', 'немає-події-result', 'хибний-короткий-SHA', 'блокер-без-префікса') } { 'NO_REPORT'; break }
++            default { $case[3] }
++        }
++    }
++    Check "$($case[0]): $got" ($got -ceq $expected)
++    if ($got -eq 'DONE') { Check "$($case[0]): повний SHA origin" ($script:completed.Sha -ceq $script:remote) }
++    "ВИМІР | $($case[0]) | $got"
++}
++if (-not $Before) {
++    $r = [pscustomobject]@{ Result = $null; AssistantText = '' }
++    Read-ClaudeEvent $r ([pscustomobject]@{ type = 'assistant'; message = [pscustomobject]@{ content = @([pscustomobject]@{ type = 'text'; text = $line }) } })
++    Read-ClaudeEvent $r ([pscustomobject]@{ type = 'assistant'; message = [pscustomobject]@{ content = @([pscustomobject]@{ type = 'tool_use'; input = $line }) } })
++    Check 'попередній звіт не зберігається після нового assistant' (-not $r.AssistantText)
++    Read-ClaudeEvent $r ([pscustomobject]@{ message = [pscustomobject]@{ content = @([pscustomobject]@{ type = 'thinking'; thinking = $line }, [pscustomobject]@{ type = 'text'; text = $line }) }; type = 'assistant' })
++    Read-ClaudeEvent $r ([pscustomobject]@{ result = ''; is_error = $false; type = 'result' })
++    Check 'події з довільним порядком полів; лише текст' ((Get-ClaudeReport $r).Kind -eq 'DONE')
++    $secrets = @(
++        ('ey' + 'J' + ('a' * 20)), ('s' + 'k-' + ('b' * 20)), ('g' + 'hp_' + ('c' * 25)),
++        ('github' + '_pat_' + ('d' * 25)), ('re' + 'fresh_token=значення'),
++        ('-----BE' + 'GIN RSA PRIVATE KEY-----' + "`n" + ('приховано' + "`n") * 50 + '-----END RSA PRIVATE KEY-----'),
++        'api_key=значення', 'Authorization: Bearer значення', 'password=значення'
++    )
++    # Значення секретних полів у всіх формах запису: у файлі, журналі й публічному стані їх бути не може.
++    $values = @('значення-а', 'значення-б', 'значення-в', 'значення-г', 'значення-д', 'значення-е', 'значення-є', 'значення-ж')
++    $forms = @(
++        '{"password":"значення-а"}', '{"Authorization":"Bearer значення-б"}', '{"api_key":"значення-в","ok":1}',
++        '  "client_secret" : "значення-г",', 'password: значення-д', "api-key: 'значення-е'",
++        'curl -H "Authorization: Bearer значення-є"', 'access_token=значення-ж'
++    )
++    $script:capturedLog = ''
++    function Write-Log { param($Text) $script:capturedLog += "$Text`n" }
++    $r = [pscustomobject]@{ Code = 0; Result = [pscustomobject]@{ result = ($forms -join "`n") + "`n<b>хвіст</b>" }; AssistantText = ''; Err = '' }
++    Save-ClaudeNoReport $m "$($job.id)-форми" $r
++    $rawForms = [IO.File]::ReadAllText((Join-Path $WorkDir "no-report/$($job.id)-форми.json"), $script:Utf8)
++    $publicForms = @(Get-ClaudeNoReportLines) -join "`n"
++    foreach ($place in @(@('файл', $rawForms), @('журнал', $script:capturedLog), @('публічний стан', $publicForms))) {
++        Check "значення секретних полів вилучено: $($place[0])" (@($values | Where-Object { $place[1].Contains($_) }).Count -eq 0)
++    }
++    Remove-Item -LiteralPath (Join-Path $WorkDir "no-report/$($job.id)-форми.json")
++    $r = [pscustomobject]@{ Code = 0; Result = [pscustomobject]@{ result = ($secrets -join "`n") + "`n<b>хвіст</b>" }; AssistantText = ''; Err = '' }
++    Save-ClaudeNoReport $m $job.id $r
++    $raw = [IO.File]::ReadAllText((Join-Path $WorkDir "no-report/$($job.id).json"), $script:Utf8)
++    $diagnostic = $raw | ConvertFrom-Json
++    Check 'код і тип result доступні' ($diagnostic.exit -eq 0 -and $diagnostic.result_type -eq 'System.String')
++    Check 'приватний блок вилучено до обрізання хвоста' (-not $raw.Contains('приховано'))
++    Check 'усі секретні форми вилучено' (@($secrets | Where-Object { $raw.Contains($_) }).Count -eq 0)
++    $public = @(Get-ClaudeNoReportLines) -join "`n"
++    Check 'діагностика йде в публічний стан із екрануванням' ($public.Contains('&lt;b&gt;хвіст&lt;/b&gt;') -and $public.Contains('result_type=System.String'))
++    $r.Result.result = (1..60 | ForEach-Object { "рядок $_" }) -join "`n"
++    Save-ClaudeNoReport $m $job.id $r
++    $diagnostic = [IO.File]::ReadAllText((Join-Path $WorkDir "no-report/$($job.id).json"), $script:Utf8) | ConvertFrom-Json
++    Check 'хвіст до 40 рядків; останні рядки збережено' (($diagnostic.tail -split "`n").Count -eq 40 -and $diagnostic.tail.Contains('рядок 60') -and -not $diagnostic.tail.Contains('рядок 1'))
++    Check 'AUTH збережено' ((Get-ErrorCode 'Not logged in /login') -eq 'AUTH')
++    Check 'квота збережена' ((Get-ErrorCode 'rate_limit_error 429') -eq 'QUOTA')
++}
++exit [int]($script:bad -gt 0)
+diff --git "a/\320\260\321\203\320\264\320\270\321\202/\320\260\320\264\320\260\320\277\321\202\320\265\321\200\320\270/gemini/\320\277\320\265\321\200\320\265\320\262\321\226\321\200\320\272\320\260/\321\201\321\206\320\265\320\275\320\260\321\200\321\226\321\227_\320\267\320\262\321\226\321\202\321\203.ps1" "b/\320\260\321\203\320\264\320\270\321\202/\320\260\320\264\320\260\320\277\321\202\320\265\321\200\320\270/gemini/\320\277\320\265\321\200\320\265\320\262\321\226\321\200\320\272\320\260/\321\201\321\206\320\265\320\275\320\260\321\200\321\226\321\227_\320\267\320\262\321\226\321\202\321\203.ps1"
+index e8c55412..f7df89e3 100644
+--- "a/\320\260\321\203\320\264\320\270\321\202/\320\260\320\264\320\260\320\277\321\202\320\265\321\200\320\270/gemini/\320\277\320\265\321\200\320\265\320\262\321\226\321\200\320\272\320\260/\321\201\321\206\320\265\320\275\320\260\321\200\321\226\321\227_\320\267\320\262\321\226\321\202\321\203.ps1"
++++ "b/\320\260\321\203\320\264\320\270\321\202/\320\260\320\264\320\260\320\277\321\202\320\265\321\200\320\270/gemini/\320\277\320\265\321\200\320\265\320\262\321\226\321\200\320\272\320\260/\321\201\321\206\320\265\320\275\320\260\321\200\321\226\321\227_\320\267\320\262\321\226\321\202\321\203.ps1"
+@@ -32,7 +32,8 @@ $cases = @(
+     @('порожня відповідь', '', ''),
+     @('звичайна проза', 'Зроблено, усе гаразд.', ''),
+     @('префікс', "Очікується: $line", ''),
+-    @('суфікс', "$line — приклад", ''),
++    @('пояснення', "$line — виконано", 'DONE'),
++    @('суфікс-приклад', "$line — приклад", ''),
+     @('цитата markdown', "> $line", ''),
+     @('продовження цитати markdown', "> У наряді написано:`n$line", ''),
+     @('цитата багаторядкова', "«У наряді написано:`n$line`nце цитата»", ''),
+diff --git "a/\320\260\321\203\320\264\320\270\321\202/\320\260\320\264\320\260\320\277\321\202\320\265\321\200\320\270/gemini/\320\277\320\265\321\200\320\265\320\262\321\226\321\200\320\272\320\260/\321\201\321\206\320\265\320\275\320\260\321\200\321\226\321\227_\321\202\320\270\321\205\321\226_\320\277\321\200\320\276\320\261\321\203\320\264\320\266\320\265\320\275\320\275\321\217.ps1" "b/\320\260\321\203\320\264\320\270\321\202/\320\260\320\264\320\260\320\277\321\202\320\265\321\200\320\270/gemini/\320\277\320\265\321\200\320\265\320\262\321\226\321\200\320\272\320\260/\321\201\321\206\320\265\320\275\320\260\321\200\321\226\321\227_\321\202\320\270\321\205\321\226_\320\277\321\200\320\276\320\261\321\203\320\264\320\266\320\265\320\275\320\275\321\217.ps1"
+index bdb9f58c..e56578e5 100644
+--- "a/\320\260\321\203\320\264\320\270\321\202/\320\260\320\264\320\260\320\277\321\202\320\265\321\200\320\270/gemini/\320\277\320\265\321\200\320\265\320\262\321\226\321\200\320\272\320\260/\321\201\321\206\320\265\320\275\320\260\321\200\321\226\321\227_\321\202\320\270\321\205\321\226_\320\277\321\200\320\276\320\261\321\203\320\264\320\266\320\265\320\275\320\275\321\217.ps1"
++++ "b/\320\260\321\203\320\264\320\270\321\202/\320\260\320\264\320\260\320\277\321\202\320\265\321\200\320\270/gemini/\320\277\320\265\321\200\320\265\320\262\321\226\321\200\320\272\320\260/\321\201\321\206\320\265\320\275\320\260\321\200\321\226\321\227_\321\202\320\270\321\205\321\226_\320\277\321\200\320\276\320\261\321\203\320\264\320\266\320\265\320\275\320\275\321\217.ps1"
+@@ -13,7 +13,7 @@ function Scenario([string]$Name, [scriptblock]$Body) {
+     try { & $Body } catch { Check "$Name — $($_.Exception.Message) $($_.ScriptStackTrace)" $false }
+ }
+ try {
+-    . (Join-Path $SourceDir 'gemini_publish.ps1') -WorkDir "$tmp/pub" -OutboxDir "$tmp/out"
++    . (Join-Path $SourceDir 'gemini_publish.ps1') -WorkDir "$tmp/pub" -OutDir "$tmp/gem-out" -OutboxDir "$tmp/out"
+     foreach ($dir in @($WorkDir, "$WorkDir/state", "$WorkDir/seen", $OutboxDir)) { [void][IO.Directory]::CreateDirectory($dir) }
+     $sha = 'a' * 40
+     $script:Calls = @()

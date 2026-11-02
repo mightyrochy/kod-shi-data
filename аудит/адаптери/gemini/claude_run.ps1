@@ -37,6 +37,7 @@ param(
     [string]$OutboxDir = (Join-Path $env:USERPROFILE 'gemini-outbox'),
     [string]$PublishDir = (Join-Path $env:USERPROFILE 'gemini-publish'),
     [string]$GeminiOutDir = 'C:\Users\Public\gemini\out',
+    [string]$GeminiStateDir = (Join-Path $env:USERPROFILE 'gemini-runs\state'),
     [string]$LaneDir = 'C:\Users\Public\gemini\lanes',
     [string]$RepoUrl = 'https://github.com/mightyrochy/kod-shi-data',
     [string]$Repo = 'mightyrochy/kod-shi-data',
@@ -88,6 +89,7 @@ $script:LineTemplates = @(
     "\AGEMINI ОБГОРТКА: ГОТОВО claude/$script:SlugCore [0-9a-f]{40} МОДЕЛЬ [a-z0-9][a-z0-9.-]{1,63}\z",
     "\AGEMINI ОБГОРТКА: ЗАБЛОКОВАНО claude/$script:SlugCore [A-Z0-9_]{2,40}\z",
     '\AGEMINI ОБГОРТКА: ВИМКНЕНО [0-9a-f]{40}\z',
+    '\AGEMINI ОБГОРТКА: ПРОСТІЙ 20[0-9]{2}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z [0-9]{1,6}\z',
     $script:HoldLineTemplate
 )
 
@@ -191,9 +193,10 @@ function Get-TaskRows {
 }
 
 # Файли skipped.json (позначки без старту) і blocked-reasons.json (причини BLOCKED без гілки) обох планувальників: пише
-# gemini — недовірений файл, тож у #1856 лише одним рядком, обрізаним і без символів розмітки таблиці.
+# gemini — недовірений файл, тож у #1856 лише одним рядком, обрізаним і без символів розмітки таблиці. Масив читає
+# Read-JsonArray (queue_lanes.ps1): 31.10 @(… | ConvertFrom-Json) під PowerShell 5.1 давав рядки з порожніми клітинками.
 function Read-NoteRows([string]$Path, [string[]]$Names) {
-    try { $rows = @([System.IO.File]::ReadAllText($Path, $script:Utf8) | ConvertFrom-Json) } catch { return @() }
+    $rows = @(Read-JsonArray $Path)
     @($rows | Select-Object -Last 12 | ForEach-Object {
         $r = $_
         $cells = foreach ($n in $Names) {
@@ -397,6 +400,7 @@ function Get-StatusBody {
             $lines += "| $ln | $($l[0].N) | $($l[0].Busy.Count) | $($s.Marker) | $($s.Model) | $(Get-Minutes $s.Since) | $(if ($s.Gpu) { 'так' } else { '—' }) |"
         }
     }
+    $lines += @(Get-IdleLines)
     $lines += @('', "GPU: $(if ($gpuBy.Count) { 'зайнята — ' + ($gpuBy -join ', ') } else { 'вільна' }) · межі: claude-run — $(if ($null -ne $lim) { $lim.source } else { '?' }), gemini-run — $(if ($g.Limits) { $g.Limits } else { '?' })")
     $lines += @('', "heartbeat gemini-run (UTC): $($g.Time) · вік: $(Get-Minutes $g.Time) хв · isolation: $($g.Isolation) · понад 5 хв — джерело застаріле")
     # Межа без джерела (10970) діє з попереднього прийнятого значення; рядок — щоб її було видно, а не щоб зупинити.
@@ -427,6 +431,7 @@ function Get-StatusBody {
         $lines += @('', '### Чекають скидання квоти', '', '| позначка | до (UTC) | група |', '|---|---|---|')
         foreach ($w in $wait) { $lines += "| $($w.Marker) | $($w.Until) | $($w.Group) |" }
     }
+    $lines += @(Get-ClaudeNoReportLines)
     $localPath = Join-Path $PublishDir 'local-lines.json'
     if (Test-Path -LiteralPath $localPath) {
         $local = ConvertFrom-Json ([IO.File]::ReadAllText($localPath, $script:Utf8))
@@ -534,7 +539,7 @@ function Remove-ReportDecoration([string]$Line, [switch]$Sentence) {
 }
 
 function Get-Report([string]$Text) {
-    <# Читає єдиний окремий звіт у відповіді result, пропускаючи код, цитати й приклади.
+    <# Читає єдиний окремий звіт у тексті відповіді, пропускаючи код, цитати й приклади.
 
     Позиція в кінці та markdown не визначають результат роботи. Цитований наряд і приклади не можуть його
     підтвердити; неоднозначні відповіді відхиляються. Гілку й SHA перевіряє виклик через origin. #>
@@ -571,11 +576,17 @@ function Get-Report([string]$Text) {
             if ($line.StartsWith($pair[0]) -and -not $line.TrimEnd('.').EndsWith($pair[1])) { $quote = $pair[1]; break }
         }
         if ($quote) { continue }
+        $line = $line -replace '^[-+*]\s+', ''
         $line = Remove-ReportDecoration $line -Sentence
+        # Явна позначка прикладу лишається прикладом і після SHA.
+        if ($line -match '\s+[—–]\s+(?:приклад|зразок|цитата)\b') { continue }
+        # Пояснення після звіту не є частиною SHA.
+        $withoutNote = $line -replace '\s+[—–]\s+.+$', ''
+        if ($withoutNote -cne $line) { $line = Remove-ReportDecoration $withoutNote -Sentence }
         if ($line -cmatch '^НОУТБУК ГОТОВО (\S+) (\S+)$') {
             $branch = Remove-ReportDecoration $Matches[1]
             $sha = Remove-ReportDecoration $Matches[2]
-            if ($sha -cnotmatch '^[0-9a-fA-F]{40}$') { return $null }
+            if ($sha -cnotmatch '^[0-9a-fA-F]{7,40}$') { return $null }
             $reports += [pscustomobject]@{ Kind = 'DONE'; Branch = $branch; Sha = $sha.ToLowerInvariant() }
         } elseif ($line -cmatch '^НОУТБУК ЗАБЛОКОВАНО\b') {
             $branch = ''
@@ -587,6 +598,95 @@ function Get-Report([string]$Text) {
     $null
 }
 
+
+
+function Get-ClaudeText($R) {
+    <# Читає лише текст result; інші типи не перетворює на уявний звіт. #>
+    $value = $null
+    if ($null -ne $R.Result) {
+        $property = $R.Result.PSObject.Properties['result']
+        if ($null -ne $property) { $value = $property.Value }
+    }
+    if ($value -is [string]) { return $value }
+    ''
+}
+
+function Get-ClaudeReport($R) {
+    <# Відновлює звіт із останньої відповіді assistant, коли result порожній або її префікс. #>
+    $text = Get-ClaudeText $R
+    $report = Get-Report $text
+    if ($null -ne $report) { return $report }
+    $assistant = [string](Get-JsonProp $R 'AssistantText')
+    # Інший непорожній result є остаточною відповіддю: приклади й цитати не стають звітом із попередньої події.
+    if (-not $text.Trim() -or $assistant.StartsWith($text.TrimEnd(), [StringComparison]::Ordinal)) {
+        return (Get-Report $assistant)
+    }
+    $null
+}
+
+function Read-ClaudeEvent($R, $Obj) {
+    <# Запам'ятовує result і останню текстову відповідь assistant, без tool_result та thinking. #>
+    $type = [string](Get-JsonProp $Obj 'type')
+    if ($type -eq 'result') { $R.Result = $Obj }
+    if ($type -eq 'assistant') {
+        $message = Get-JsonProp $Obj 'message'
+        $parts = @(foreach ($block in @(Get-JsonProp $message 'content')) {
+            if ((Get-JsonProp $block 'type') -eq 'text') { [string](Get-JsonProp $block 'text') }
+        })
+        $R.AssistantText = $parts -join "`n"
+    }
+}
+
+function Protect-ClaudeText([string]$Text) {
+    <# Знеособлює вміст до будь-якого запису діагностики, включно з іменами секретних полів. #>
+    $patterns = @(
+        ('ey' + 'J[A-Za-z0-9_-]{10,}'), ('s' + 'k-[A-Za-z0-9_-]{16,}'),
+        ('g' + 'h[pousr]_[A-Za-z0-9]{20,}'), ('github' + '_pat_[A-Za-z0-9_]{20,}'),
+        ('(?is)BE' + 'GIN [A-Z ]*PRIVATE KEY.*?(?:END [A-Z ]*PRIVATE KEY|\z)'),
+        # Значення секретного поля в будь-якій формі: JSON у лапках (закривальні лапки імені перед `:`), YAML, `ключ=значення`,
+        # заголовок `Authorization: …`; ім'я — будь-яке, що містить слово секрету. Значення в лапках — до закривальних, інакше до кінця рядка.
+        ('(?im)[A-Za-z0-9_.-]*(?:to' + 'ken|sec' + 'ret|pass' + 'w(?:or)?d|pwd|api[_-]?key|authori[sz]ation|credential|cookie|private[_-]?key)[A-Za-z0-9_.-]*[''"]?\s*[:=]\s*(?:"(?:[^"\\\r\n]|\\.)*"?|''[^''\r\n]*''?|[^\r\n]*)'),
+        '(?i)\bBearer\s+[A-Za-z0-9._~+/=-]{8,}',
+        ('(?im)re' + 'fresh_token[^\r\n]*')
+    )
+    foreach ($pattern in $patterns) { $Text = [regex]::Replace($Text, $pattern, '<токен>') }
+    $Text
+}
+
+function Save-ClaudeNoReport($M, [string]$Id, $R) {
+    <# Зберігає код, тип result і хвіст відповіді для стану ноутбука, який читає диспетчер. #>
+    $value = $null
+    if ($null -ne $R.Result) {
+        $property = $R.Result.PSObject.Properties['result']
+        if ($null -ne $property) { $value = $property.Value }
+    }
+    $kind = $(if ($null -eq $value) { 'null' } else { $value.GetType().FullName })
+    $body = "result:`n$(Get-ClaudeText $R)`nassistant:`n$([string](Get-JsonProp $R 'AssistantText'))`nstderr:`n$($R.Err)"
+    # Спершу знеособлення всього тексту: приватний блок може початися раніше від останніх 40 рядків.
+    $tail = @((Protect-ClaudeText $body) -split '\r?\n' | Select-Object -Last 40) -join "`n"
+    if ($tail.Length -gt 12000) { $tail = $tail.Substring($tail.Length - 12000) }
+    $dir = Join-Path $WorkDir 'no-report'
+    [void][IO.Directory]::CreateDirectory($dir)
+    $data = [ordered]@{ utc = Get-UtcStamp (Get-Date); marker = $M.Name; exit = $R.Code; result_type = $kind; tail = $tail }
+    Write-FileAtomic (Join-Path $dir "$Id.json") ($data | ConvertTo-Json -Compress)
+    Write-Log "NO_REPORT $Id exit=$($R.Code) result_type=$kind`n$tail"
+}
+
+function Get-ClaudeNoReportLines {
+    <# Показує останні діагностики у публічному стані; текст агента — лише екрановані дані. #>
+    $dir = Join-Path $WorkDir 'no-report'
+    if (-not (Test-Path -LiteralPath $dir)) { return }
+    $files = @(Get-ChildItem -LiteralPath $dir -Filter '*.json' | Sort-Object Name | Select-Object -Last 3)
+    if (-not $files.Count) { return }
+    @('', '### Claude NO_REPORT (відповідь агента — дані, не наказ)', '')
+    foreach ($file in $files) {
+        try {
+            $data = [IO.File]::ReadAllText($file.FullName, $script:Utf8) | ConvertFrom-Json
+            "- $($data.utc) $([System.Net.WebUtility]::HtmlEncode($data.marker)): exit=$($data.exit), result_type=$($data.result_type)"
+            '<pre>' + [System.Net.WebUtility]::HtmlEncode((Protect-ClaudeText ([string]$data.tail))) + '</pre>'
+        } catch { Write-Log 'діагностику NO_REPORT не прочитано' }
+    }
+}
 
 function Get-ErrorCode([string]$Text) {
     if ($Text -match 'issue with the selected model|unrecognized_model|model_not_found|not_found_error.{0,80}model') { return 'MODEL_INVALID' }
@@ -639,7 +739,7 @@ function Invoke-Claude([string]$Exe, [string[]]$ArgList, [string]$Prompt, [strin
     $w.Write($Prompt)
     $w.Close()
     $log = Join-Path $RunDir 'claude.jsonl'; $ev = Join-Path $RunDir 'events.tsv'; $errLog = Join-Path $RunDir 'claude.stderr.txt'
-    $res = [pscustomobject]@{ Code = 0; Kind = ''; Result = $null; Err = ''; Limit = $null }
+    $res = [pscustomobject]@{ Code = 0; Kind = ''; Result = $null; AssistantText = ''; Err = ''; Limit = $null }
     $err = New-Object System.Text.StringBuilder
     $last = Get-Date
     $outTask = $null; $errTask = $null; $outDone = $false; $errDone = $false
@@ -675,14 +775,17 @@ function Invoke-Claude([string]$Exe, [string[]]$ArgList, [string]$Prompt, [strin
         [System.IO.File]::AppendAllText($log, $line + "`n", $script:Utf8)
         if ($line -match 'Unknown --effort value') { $res.Kind = 'EFFORT_INVALID'; break }
         $type = ''; $obj = $null
-        if ($line -match '^\s*\{\s*"type"\s*:\s*"([a-z_]{1,40})"') {
-            $tp = $Matches[1]
-            try { $obj = $line | ConvertFrom-Json -ErrorAction Stop; $type = $tp } catch { $null = $_ }
+        if ($line -match '^\s*\{') {
+            try {
+                $obj = $line | ConvertFrom-Json -ErrorAction Stop
+                $tp = [string](Get-JsonProp $obj 'type')
+                if ($tp -cmatch '^[a-z_]{1,40}$') { $type = $tp }
+            } catch { $null = $_ }
         }
         if (-not $type) { continue }
         $last = Get-Date
         [System.IO.File]::AppendAllText($ev, $last.ToString('s') + "`t" + $type + "`n", $script:Utf8)
-        if ($type -eq 'result') { $res.Result = $obj }
+        Read-ClaudeEvent $res $obj
         if ($type -eq 'rate_limit_event') {
             $info = Get-JsonProp $obj 'rate_limit_info'
             if ($null -ne $info) { $res.Limit = $info; Save-ClaudeQuota $info }
@@ -699,10 +802,14 @@ function Complete-Task($M, [string]$StatePath, [string]$Id, [string]$Code, [stri
     if ($Code -eq 'ENGINE_MISSING') { Add-HealthAlert 'ENGINE' 'CLAUDE' }
     $line = $(if ($Code -eq 'DONE') { "GEMINI ОБГОРТКА: ГОТОВО $Branch $Sha МОДЕЛЬ $($M.Model)" }
               else { "GEMINI ОБГОРТКА: ЗАБЛОКОВАНО claude/$($M.Slug) $Code" })
-    if (-not (Add-Line $line)) { $Code = 'LINE_REJECTED' }
     $runDir = Join-Path (Join-Path $WorkDir 'runs') $Id
-    if (Test-Path -LiteralPath $runDir) {
-        Write-FileAtomic (Join-Path $runDir 'result.json') (([ordered]@{ marker = $M.Name; sha = $M.Sha; code = $Code; branch = $Branch; head = $Sha; end = (Get-Date).ToString('s') }) | ConvertTo-Json -Compress)
+    [void][IO.Directory]::CreateDirectory($runDir)
+    $result = [ordered]@{ marker = $M.Name; sha = $M.Sha; code = $Code; branch = $Branch; head = $Sha; end = (Get-Date).ToString('s') }
+    # Ідентичність наряду доступна публікаторові до появи рядка у вихідних, зокрема при ранній відмові.
+    Write-FileAtomic (Join-Path $runDir 'result.json') ($result | ConvertTo-Json -Compress)
+    if (-not (Add-Line $line)) {
+        $Code = 'LINE_REJECTED'; $result.code = $Code
+        Write-FileAtomic (Join-Path $runDir 'result.json') ($result | ConvertTo-Json -Compress)
     }
     Write-FileAtomic $StatePath "DONE $Id $Code"
     Remove-Claim $StatePath
@@ -751,6 +858,7 @@ function Invoke-Task($M, $Job) {
     if (-not $exe) { return (Complete-Task $M $statePath $id 'ENGINE_MISSING') }
     try { $taskText = Add-AutoTaskContext $M.Slug ((Invoke-Git @('cat-file', 'blob', "$($M.Sha):$taskPath")).Out) $M.Sha }
     catch { Enter-ReviewWait $M; Remove-Claim $statePath; return }
+    if (Test-AutoPlanEmpty $M.Slug $taskText) { return (Complete-Task $M $statePath $id 'EMPTY_PLAN') }
     $cont = Get-ContinueBranch $M.Slug
     $runDir = Join-Path (Join-Path $WorkDir 'runs') $id
     [void](New-Item -ItemType Directory -Force -Path $runDir)
@@ -783,26 +891,36 @@ function Invoke-ClaudeTask($M, $Job, [string]$Exe, [string]$TaskText, [string]$C
         return (Complete-Task $M $statePath $id 'CRASH')
     }
     if ($r.Kind) { return (Complete-Task $M $statePath $id $r.Kind) }
-    $text = ''; $isError = $false
+    $text = Get-ClaudeText $r; $isError = $false
     if ($null -ne $r.Result) {
-        $pr = $r.Result.PSObject.Properties['result']; if ($null -ne $pr -and $null -ne $pr.Value) { $text = [string]$pr.Value }
         $pe = $r.Result.PSObject.Properties['is_error']; if ($null -ne $pe) { $isError = [bool]$pe.Value }
     }
-    $rep = $(if ($text) { Get-Report $text } else { $null })
+    $rep = Get-ClaudeReport $r
     if ($null -ne $rep -and $rep.Branch -and (Test-ClaudeBranch $rep.Branch) -and (Get-RemoteSha $rep.Branch)) {
         [System.IO.File]::WriteAllText((Get-BranchPath $M.Slug), $rep.Branch, $script:Utf8)
     }
     if ($null -ne $rep -and $rep.Kind -eq 'DONE') {
         if (-not (Test-ClaudeBranch $rep.Branch)) { return (Complete-Task $M $statePath $id 'BAD_BRANCH') }
-        if ((Get-RemoteSha $rep.Branch) -ne $rep.Sha) { return (Complete-Task $M $statePath $id 'NO_PUSH') }
+        $remote = Get-RemoteSha $rep.Branch
+        if (-not $remote -or -not $remote.StartsWith($rep.Sha, [StringComparison]::Ordinal)) { return (Complete-Task $M $statePath $id 'NO_PUSH') }
+        $rep.Sha = $remote
         return (Complete-Task $M $statePath $id 'DONE' $rep.Branch $rep.Sha)
     }
-    if ($null -ne $rep) { return (Complete-Task $M $statePath $id 'BLOCKED') }
+    if ($null -ne $rep) {
+        # BLOCKED без гілки: причину знає лише останній рядок агента — він іде в #1856 (blocked-reasons.json), як у gemini_run.ps1.
+        if ($rep.Kind -eq 'BLOCKED' -and -not (Test-ClaudeBranch $rep.Branch) -and $text) {
+            $reason = @($text -split "`n" | Where-Object { $_.Trim() -cmatch '^(?:НОУТБУК )?ЗАБЛОКОВАНО' } | Select-Object -Last 1)
+            if ($reason.Count -eq 0) { $reason = @($text -split "`n" | Where-Object { $_.Trim() } | Select-Object -Last 1) }
+            try { Add-Note (Join-Path $GeminiOutDir 'blocked-reasons.json') "claude/$($M.Slug)" ([string]$reason[0]) } catch { Write-Log "причина BLOCKED не записана: $($_.Exception.Message)" }
+        }
+        return (Complete-Task $M $statePath $id 'BLOCKED')
+    }
     if ($isError -or $r.Code -ne 0) {
         $code = Get-ErrorCode ($text + "`n" + $r.Err)
         if ($code -eq 'QUOTA' -and (Enter-ClaudeQuotaWait $M $statePath $id $r ($text + "`n" + $r.Err))) { return }
         return (Complete-Task $M $statePath $id $code)
     }
+    Save-ClaudeNoReport $M $id $r
     Complete-Task $M $statePath $id 'NO_REPORT'
 }
 
@@ -856,6 +974,55 @@ function Test-GeminiBusy {
 function Test-ClaudeBusy {
     if ($null -ne $script:Workers -and @($script:Workers | Where-Object { -not $_.Proc.HasExited }).Count -gt 0) { return $true }
     @(Get-BusySlots 'claude' @()).Count -gt 0
+}
+
+# Робота на ноутбуці: свій наряд чи наряд gemini-run йде, або в черзі є позначка, яку візьмуть. Не робота — позначка в стані
+# DONE (знято, STALE, виконана), у чеканні квоти (WAIT, скидання ще не настало) і на рушії з нульовою квотою: Claude —
+# вікно квоти з left 0 і скиданням у майбутньому чи свіжа відмова з майбутнім скиданням, Codex — відмова з майбутнім
+# скиданням (heartbeat). Стан позначок смуг codex/agy — тека стану gemini-run (-GeminiStateDir).
+function Test-FutureUtc([string]$Utc) {
+    $Utc -cmatch $script:UtcRx -and [datetime]::ParseExact($Utc, "yyyy-MM-dd'T'HH:mm:ss'Z'", [cultureinfo]::InvariantCulture, [Globalization.DateTimeStyles]::AssumeUniversal -bor [Globalization.DateTimeStyles]::AdjustToUniversal) -gt [datetime]::UtcNow
+}
+
+function Test-ClaudeQuotaZero {
+    $cq = Read-ClaudeQuota
+    if ($null -eq $cq) { return $false }
+    foreach ($w in @(Get-JsonProp $cq 'windows')) { if ($null -ne $w -and [string]$w.left -eq '0' -and (Test-FutureUtc ([string]$w.reset))) { return $true } }
+    ([string](Get-JsonProp $cq 'refused')) -ne '' -and (Test-FutureUtc ([string](Get-JsonProp $cq 'reset')))
+}
+
+function Get-MarkerStateIn($M, [string]$Dir) {
+    $keep = $script:StateDir; $script:StateDir = $Dir
+    try { Get-MarkerState $M } finally { $script:StateDir = $keep }
+}
+
+function Test-IdleBusy($G) {
+    if (Test-ClaudeBusy) { return $true }
+    if (Test-GeminiBusy) { return $true }
+    $claudeZero = Test-ClaudeQuotaZero
+    $codexZero = $null -ne $G.Codex -and (Test-FutureUtc ([string]$G.Codex.Reset))
+    $now = [DateTimeOffset]::UtcNow.ToUnixTimeSeconds()
+    foreach ($m in @(Get-Markers | Where-Object { $_.Valid })) {
+        if (($now - $m.Time) -gt $MarkerMaxAgeDays * 86400) { continue }
+        $st = $(if ($m.Lane -eq 'claude') { Get-MarkerState $m } else { Get-MarkerStateIn $m $GeminiStateDir })
+        if (-not (Test-MarkerReady $st)) { continue }
+        if (($m.Lane -eq 'claude' -and $claudeZero) -or ($m.Lane -eq 'codex' -and $codexZero)) { continue }
+        return $true
+    }
+    $false
+}
+
+# Рядок простою в стані ноутбука (#1856): з якого часу, скільки, чи дійшов рядок; нема простою — остання робота.
+function Get-IdleLines {
+    $j = $null
+    try { $j = [System.IO.File]::ReadAllText((Join-Path $script:StateDir 'idle.json'), $script:Utf8) | ConvertFrom-Json } catch { $null = $_ }
+    if ($null -eq $j) { return @('', 'Простій: не виміряно (ще не було проходу)') }
+    $since = Get-UtcProp $j 'since'
+    if ($since -cmatch $script:UtcRx) {
+        return @('', "Простій: з $since · $(Get-Minutes $since) хв · рядок ПРОСТІЙ $(if ((Get-JsonProp $j 'sent') -eq $true) { 'надіслано' } else { 'ще не надіслано' })")
+    }
+    $b = Get-UtcProp $j 'busy_utc'
+    @('', "Простій: нема (остання робота $(if ($b -cmatch $script:UtcRx) { $b } else { '?' }))")
 }
 
 function Invoke-Off($M) {
@@ -980,7 +1147,7 @@ function Invoke-Worker {
     try {
         if ($job.gpu) {
             $gpu = Open-Lock (Get-GpuLockPath)
-            $why = $(if ($null -eq $gpu) { 'замок GPU' } elseif (Test-ExternalGpuFree) { '' } else { Get-GpuBusyReason @() })
+            $why = $(if ($null -eq $gpu) { 'замок GPU' } elseif (Test-ExternalGpuFree -LogAcquisition) { '' } else { Get-GpuBusyReason @() -LockHeld })
             if ($why) { Remove-Claim $statePath; Write-Log "GPU зайнята ($why) — $($job.name) лишається в черзі"; return $script:WorkerGpuBusy }
         }
         Write-FileAtomic $info (([ordered]@{ slot = $job.slot; lane = 'claude'; marker = $job.name; slug = $job.slug
@@ -1049,6 +1216,9 @@ function Main {
                 $r = Start-Markers $script:Workers
                 $started = $r[0]; $off = $r[1]
                 Update-HoldSignals $script:Held { param($l) Add-Line $l }
+                $busy = ($started -gt 0) -or ($null -ne $off) -or ($script:Workers.Count -gt 0)
+                if (-not $busy) { $busy = [bool](Test-IdleBusy (Read-GeminiBeat)) }
+                Update-Idle $busy { param($l) [bool](Add-Line $l) } $script:FreshBoot
             } catch { Add-HealthException $_.Exception; Write-Log "прохід: $($_.Exception.Message)" }
             if ($first) { Write-FileAtomic $bootFile $boot; $script:FreshBoot = $false; $first = $false }
             foreach ($w in @($script:Workers | Where-Object { $_.Proc.HasExited })) { $script:Workers.Remove($w) }
