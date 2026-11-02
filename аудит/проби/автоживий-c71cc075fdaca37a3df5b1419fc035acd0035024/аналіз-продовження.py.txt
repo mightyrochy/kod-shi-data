@@ -43,6 +43,11 @@ def unique(rows):
             result.append(row)
     return result
 
+def rule_rows(rows,code):
+    if isinstance(rows,dict):
+        return [{k:v} for k,v in rows.items() if code in k or code in json.dumps(v,ensure_ascii=False)]
+    return [r for r in (rows or []) if code in json.dumps(r,ensure_ascii=False)]
+
 measurements=[]
 for row in done:
     scene=row['сцена']
@@ -82,10 +87,10 @@ for row in done:
                 rules=judge.get('слід_правил',[])
                 findings=judge.get('знахідки',[])
                 item['руки'].append({'рука':v['рука'],'блокує':judge.get('блокує'),
-                    'речей':len(v.get('речі_образу',[])),
-                    'K-CRA-04_слід':[r for r in rules if 'K-CRA-04' in json.dumps(r,ensure_ascii=False)] if isinstance(rules,list) else rules,
-                    'K-CRA-04_знахідки':[f for f in findings if 'K-CRA-04' in json.dumps(f,ensure_ascii=False)] if isinstance(findings,list) else findings,
-                    'K-OUT-06_знахідки':[f for f in findings if 'K-OUT-06' in json.dumps(f,ensure_ascii=False)] if isinstance(findings,list) else findings})
+                    'речей':len(v.get('речі_образу') or []),
+                    'K-CRA-04_слід':rule_rows(rules,'K-CRA-04'),
+                    'K-CRA-04_знахідки':rule_rows(findings,'K-CRA-04'),
+                    'K-OUT-06_знахідки':rule_rows(findings,'K-OUT-06')})
     proof=folder/'знімки/доказ.json'
     if proof.exists():
         data=json.loads(proof.read_text(encoding='utf-8'))

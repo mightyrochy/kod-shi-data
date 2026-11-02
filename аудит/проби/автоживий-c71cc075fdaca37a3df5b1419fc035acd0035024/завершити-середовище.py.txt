@@ -1,0 +1,36 @@
+import json
+from pathlib import Path
+import shutil
+import socket
+import subprocess
+import urllib.request
+from datetime import datetime, timezone
+
+repo=Path.cwd().resolve()
+workspace=repo.parent
+out=repo/'аудит/проби/автоживий-c71cc075fdaca37a3df5b1419fc035acd0035024'
+with urllib.request.urlopen('http://127.0.0.1:1234/api/v1/models',timeout=10) as response:
+    models=json.load(response)
+assert not any(m['loaded_instances'] for m in models['models']), 'Після прогону є завантажена модель'
+with socket.socket() as check:
+    check.bind(('127.0.0.1',1235))
+assert not (repo/'R_chervone.json').exists()
+build=(workspace/'tmp/build').resolve(strict=True)
+assert build.is_relative_to(workspace) and build==workspace/'tmp/build'
+build_head=subprocess.check_output(['git','-C',str(build),'rev-parse','HEAD'],text=True).strip()
+assert build_head=='3eef1bf6a5b1bdd9182a2ce34f043407430b0f29'
+subprocess.run(['git','worktree','remove','--',str(build)],check=True)
+evidence={'utc':datetime.now(timezone.utc).isoformat(),'сервер_LM_Studio_залишено_працювати':True,
+    'моделей_завантажено_після':0,'порт_1235_вільний':True,'тимчасового_R_chervone_немає':True,
+    'прибране_власне_дерево':str(build),'SHA_дерева':build_head,
+    'порти':[s for s in subprocess.check_output(['netstat','-ano'],text=True).splitlines()
+             if any(':'+str(p)+' ' in s for p in (1234,1235)) and 'LISTENING' in s],
+    'моделі_після':[{k:m[k] for k in ('key','loaded_instances')} for m in models['models']]}
+(out/'прибирання-продовження.json').write_text(json.dumps(evidence,ensure_ascii=False,indent=2)+'\n',encoding='utf-8')
+for source,target in [('підсумувати.py','аналіз-продовження.py.txt'),('дописати_факти.py','дописати-факти.py.txt'),
+    ('звірити_записи.py','звірити-записи.py.txt'),('відновити_попередні.py','відновити-попередні.py.txt'),
+    ('завершити_середовище.py','завершити-середовище.py.txt')]:
+    shutil.copyfile(workspace/'tmp'/source,out/target)
+with (out/'ЗВІТ-продовження.md').open('a',encoding='utf-8') as report:
+    report.write('\nПрибирання завершено: власні проксі закриті, завантажених моделей немає, власне дерево призначеної збірки прибране; LM Studio продовжує працювати. Доказ: [прибирання-продовження.json](прибирання-продовження.json).\n')
+print('Моделей немає, порт проксі вільний, власне дерево прибране, LM Studio працює.')

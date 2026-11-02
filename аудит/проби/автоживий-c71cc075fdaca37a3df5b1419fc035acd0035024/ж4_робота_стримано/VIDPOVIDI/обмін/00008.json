@@ -1,0 +1,27 @@
+{
+ "версія": 1,
+ "запит": {
+  "model": "qwen/qwen3.5-9b",
+  "max_tokens": 4000,
+  "messages": [
+   {
+    "role": "user",
+    "content": [
+     {
+      "type": "text",
+      "text": "{\"task\": {\"role\": \"You are a personal stylist. Put together one outfit for her case.\", \"rules\": [\"Items one per line, garments first, then shoes and accessories: what it is, cut, length, color with its hex code, fabric.\", \"An outer layer only when the weather needs it; at +20 °C and warmer there is none.\", \"Last, why this outfit works, in 3–4 sentences.\"], \"limits\": [\"Do not name lightness numbers, body measurements or height in numbers, or body-type labels, and do not say you had limits.\", \"The answer is plain text laid out as the rules say, not JSON.\"], \"language\": \"English\", \"answer\": \"OUTFIT_TEXT\", \"input\": [\"\\\"case\\\" — her case: the occasion, where and when, the weather, the dress code, her wishes and refusals — as codes, her own words as quotes; do not take an item that goes against her refusals or her words\", \"\\\"formality\\\" — the level of dress she named: home (loungewear, athleisure, sportswear) < everyday (jeans, a T-shirt and sneakers; neat casual, dark denim) < neat (business: a blouse, a shirt or a refined knit with trousers or a skirt, a textured jacket or a cardigan, loafers, ballet flats or ankle boots; social: a day dress, a refined knit with a skirt or trousers, a textured jacket, neat flats or ankle boots) < smart (business: a jacket with trousers or a skirt, a blouse or a shirt, loafers or pumps; a sheath dress with a jacket; social: a cocktail dress, heeled shoes) < formal (business: a business suit — a jacket with trousers or a skirt of one fabric — with a blouse, pumps; social: a formal dress of a noble fabric, heeled shoes) < very_smart (an evening gown) < ceremonial (a full-length evening gown with long gloves)\"]}, \"case\": {\"field_quotes\": {\"occasion\": \"стриманий робочий день в офісі\", \"intent\": \"стриманий робочий день в офісі, без яскравого\", \"goal\": \"стриманий робочий день в офісі, без яскравого\"}, \"formality_reason\": \"norm\", \"event\": \"стриманий робочий день в офісі\", \"goal\": \"flatter\", \"occasion\": \"work\", \"place\": \"office\", \"goal_quote\": \"стриманий робочий день в офісі, без яскравого\", \"intent_quote\": \"стриманий робочий день в офісі, без яскравого\", \"formality\": [\"home\"], \"season\": \"autumn\"}}"
+     }
+    ]
+   }
+  ],
+  "temperature": 1
+ },
+ "відповідь": {
+  "status": 200,
+  "contentType": "application/json",
+  "headers": {
+   "x-model": "qwen/qwen3.5-9b"
+  },
+  "body": "{\"content\":[{\"type\":\"text\",\"text\":\"She requested a comfortable workday look for an office setting in autumn with a specific wish to avoid anything bright or flashy, preferring neutral and understated tones. To meet this need while respecting her desire for comfort during a regular workday, the outfit centers on a structured blazer made from a heavy wool blend in a deep charcoal grey (#36454F) featuring a classic notched lapel and single-breasted front that provides a polished silhouette without excess ornamentation. Underneath sits a soft merino wool turtleneck sweater in an oatmeal beige (#E8E3D9) with a relaxed but clean fit to ensure ease of movement throughout the day, paired with straight-leg trousers in matching charcoal grey (#36454F) crafted from a durable twill fabric that maintains its shape all afternoon. The ensemble is grounded by minimalist leather loafers in black (#1C1C1C) with a subtle shearling lining to add warmth against the autumn chill and a simple gold bar pendant necklace in 18k yellow gold (#FFD700) for a touch of refinement that remains discrete from afar. This outfit works because it harmonizes her request for understated elegance with practical comfort, offering a seamless transition between casual movement and professional presentation while strictly adhering to the requested neutral palette suitable for an office environment during fall weather.\"}],\"usage\":{\"input_tokens\":596,\"output_tokens\":277},\"stop_reason\":\"end_turn\"}"
+ }
+}

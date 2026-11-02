@@ -1,0 +1,60 @@
+import hashlib
+import json
+from pathlib import Path
+import struct
+import subprocess
+from datetime import datetime,timezone
+
+repo=Path.cwd()
+root=repo/'аудит/проби/автоживий-c71cc075fdaca37a3df5b1419fc035acd0035024'
+plan=json.loads((root/'план.json').read_text(encoding='utf-8'))
+previous=[json.loads(line) for line in (root/'попередній-done.jsonl').read_text(encoding='utf-8').splitlines()]
+done=[json.loads(line) for line in (root/'done-продовження.jsonl').read_text(encoding='utf-8').splitlines()]
+expected=[scene for scene in plan['scenes'] if scene not in {r['сцена'] for r in previous}]
+assert [r['сцена'] for r in done]==expected, 'Не всі 14 сцен записано в порядку плану'
+assert len(set(r['сцена'] for r in done))==14
+assert not any(r['сцена']=='ж4_робота_стримано' for r in done)
+assert len(plan['scenes'])==17
+assert all((root/scene/'результат.json').exists() for scene in plan['scenes']), 'Бракує записів першого прогону'
+old_env=json.loads((root/'попередній-середовище.json').read_text(encoding='utf-8'))
+new_env=json.loads((root/'середовище-продовження-спроба-2.json').read_text(encoding='utf-8'))
+assert all(new_env['cache'].get(k)==v for k,v in old_env['cache'].items())
+same_paths=['аудит/проби/записати_сцену.py','аудит/проби/рв6_стенд.js','аудит/ноутбук_стенд_2/проксі_почергове.js','аудит/проби/живі_сцени.txt','аудит/проби/жінки']
+subprocess.run(['git','diff','--exit-code','6c44a6c5edac74caeb499ebee919bc71a763d181','HEAD','--',*same_paths],check=True,capture_output=True)
+proxy=hashlib.sha256((repo/'аудит/ноутбук_стенд_2/проксі_почергове.js').read_bytes()).hexdigest()
+checks=[]
+for row in done:
+    folder=root/row['сцена']
+    result=json.loads((folder/'результат.json').read_text(encoding='utf-8'))
+    assert row['rc']==result['rc']
+    assert result['sha']=='c71cc075fdaca37a3df5b1419fc035acd0035024'
+    assert result['проксі_sha256']==proxy
+    assert result['команда'][-1]=='3'
+    env=result['змінні']
+    assert env['MODEL']=='qwen/qwen3.5-9b' and env['MODEL_MOVA']=='mamaylm-gemma-3-12b-it-v2.0'
+    assert env['LMS_MODE']=='http' and env['ODNOCHASNO']=='1'
+    assert json.loads(env['CTX'])=={'qwen/qwen3.5-9b':57344,'mamaylm-gemma-3-12b-it-v2.0':16384}
+    assert not any(m['loaded_instances'] for m in result['моделі_після'])
+    screenshot=folder/'знімки/scenarii_knopka_nad_panelliu_seed3.png'
+    is_viewport=screenshot.exists()
+    if not is_viewport:
+        screenshot=folder/'знімки/ng4_rozmova_seed3.png'
+    dimensions=struct.unpack('>II',screenshot.read_bytes()[16:24])
+    if is_viewport:
+        assert dimensions==(390,844), dimensions
+    else:
+        assert dimensions[0]==390 and dimensions[1]>=844, dimensions
+    assert (folder/'код.txt').read_text(encoding='utf-8').startswith(result['sha']+' '+row['сцена']+' ПІСЛЯ ')
+    checks.append({'сцена':row['сцена'],'rc':row['rc'],'seed':3,'знімок':screenshot.relative_to(root).as_posix(),
+                   'розміри_PNG':list(dimensions),'знімок_саме_вікна':is_viewport,'вікно_стенда':[390,844],
+                   'підстава_вікна':'PNG вікна' if is_viewport else 'ширина PNG повної сторінки; висота viewport=844 у незміненому стенді (DO=rozmova)',
+                   'моделей_після':0,'проксі_sha256':proxy,'SHA_коду':result['sha']})
+commits=subprocess.check_output(['git','log','a94352286..HEAD','--format=%s'],text=True,encoding='utf-8').splitlines()
+for scene in expected:
+    assert commits.count('Записано живу сцену '+scene)==1, scene
+report={'utc':datetime.now(timezone.utc).isoformat(),'сцен_плану':len(plan['scenes']),
+    'попередніх_спроб':len(previous),'нових_спроб':len(done),'повторів_сцен':0,
+    'кеш_Pyodide_збігається':True,'стенд_реєстр_профілі_збігаються':True,
+    'окремих_комітів_сцен':14,'перевірки':checks}
+(root/'звірка-записів-продовження.json').write_text(json.dumps(report,ensure_ascii=False,indent=2)+'\n',encoding='utf-8')
+print('Звірено 14 сцен: SHA, моделі, контекст, проксі, seed, 390×844, прибирання та окремі коміти.')
