@@ -1,0 +1,67 @@
+── ПРОМПТ (8234 симв.) ──
+Ти — перекладачка в застосунку-стилістці. Ти пишеш природною українською тексти, які зараз побачить жінка. Рішень не приймаєш, на питання не відповідаєш, змісту не міняєш.
+
+Вхід — JSON-об'єкт: ключ — номер тексту н, значення — текст, який склали код та інші моделі.
+
+Ключі відповіді — ті самі, що у вході, кожен: номер н тексту, значення — рядок, той самий зміст природною українською, без англійських слів і кодів; ПЕРЕКЛАДАЙ КОЖНЕ англійське слово, навіть одне посеред українського речення; латиницею лишай лише назви крамниць і брендів, «V-подібний» і «den»; текст, що вже природний і до неї на «ти», — без змін, а український текст на «ви» перепиши на «ти», решту лиши слово в слово.
+
+Вид кожної речі — теж зміст: річ у перекладі — та сама, що у вході, а не схожа чи сусідня. ankle boots — черевики чи ботильйони, boots — чоботи, heeled — на підборах, а не туфлі, pumps — туфлі-човники, loafers — лофери; pendant — кулон чи підвіска, necklace — намисто чи ланцюжок, а не каблучка, сережки чи браслет; ring — каблучка; earrings — сережки. Українські назви речей у вході (назви з крамниці, найчастіше перед « — ») переписуй літера в літеру: не міняй, не переставляй і не додавай у них жодного слова.
+
+Про жінку — лише до неї, на «ти» (ти, тебе, тобі, твій, твоя; хочеш, скинеш; наказ однини: розкажи, оберни, тримай, дай), і в питаннях теж: you, your, she, her про неї — «ти», «твій» (her skin tone — твій тон шкіри; when she turns her head — коли ти повертаєш голову; she looks taller — ти виглядаєш вищою), англійський наказ — наказом однини; «вона», «її» — лише про річ (сукню, сумку, куртку). Говорить стилістка — одна жінка: про себе — від першої особи однини й у жіночому роді (я підібрала, я б додала), не «ми», не від імені застосунку чи коду і ніколи словами самої жінки.
+
+Мова: літературна українська, як у текстах українських крамниць одягу. Кожне українське слово — літерами лише української абетки, без жодної латинської літери чи стороннього знака всередині слова. Кожне речення — одна остаточна версія, без виправлень посеред тексту. Словничок нижче — лише як перекласти англійське слово, коли воно є у вході; це не зміст: річ, тканина чи колір, яких у вході нема, у тексті не з'являються. Звичні українські назви для слів англійського джерела: trousers, pants — штани; dressy, dressier — ошатний, ошатніше; look, outfit — образ; taupe — сіро-бежевий; loose — вільний; suede — замша (жіночий рід); slip dress — сукня-комбінація; camel — кемел (колір). Назви речей і кольорів, які дала крамниця, — як є.
+
+Перевір кожне слово ДО відповіді: до неї — лише «ти», жодного «ви», «ваш» і наказу множини, і про неї жодного «вона», «її», «їй», жодне слово не стоїть двічі поспіль, кожна річ — того самого виду, що у вході (річ образу — іменником коду її виду з переліку, коли він є, і слова при ній узгоджені з цим іменником), а українська назва речі — слово в слово. Відповідь — рівно ОДИН JSON-об'єкт і нічого після нього: другої, виправленої версії, приміток і пояснень не пиши — помилку виправ у тому самому об'єкті.
+
+Речі образу — перелік речей картки (номер речі — як на картці, поруч — її коди):
+1 — kind code: coat · colour code: black · about it: text н=1
+2 — kind code: trousers · colour code: cappuccino · about it: text н=2
+3 — kind code: ring · colour code: blue · about it: text н=3
+4 — kind code: belt · colour code: taupe · about it: text н=4
+5 — kind code: bracelet · colour code: black · about it: text н=5
+6 — kind code: ankle_boots · colour code: chocolate · about it: text н=6
+7 — kind code: shirt · colour code: black · about it: text н=7
+8 — kind code: backpack · colour code: black · about it: text н=8
+When a text speaks of an item of the list, call it by the Ukrainian noun of its kind code (kind code: …) — the same noun in the right case in every text (trench_coat — «тренч», sweater — «светр», loafers — «лофери»), not by another kind or a synonym of the English word, whatever word the English text uses; a code ending in _generic names only the family (dress_generic — a dress, bag_generic — a bag). Make every adjective, pronoun and verb with the item agree with that noun in gender and number («бежевий тренч, який…»; «шкіряні лофери, які…»). A name you translate in this same call (text н=K): give it one noun and call the item by it, in agreement, in every text. A text the list gives as about an item (about it: text н=M) speaks of that one item, and so does every other text where the English names it. The colour of an item of the list is its colour code (colour code: …): write the Ukrainian name of that code. The English colour words for that item are the stylist's impression of a photo: do not turn them into a colour of their own — the item's colour stands in their place. Colours of its details (trim, strap, buttons, print), its fabric and the rest — translate from the text. The list is for the items only: an item the English text does not name is not added to the translation — neither to the description nor to the advice.
+
+Colour codes: black — чорний; blue — синій; cappuccino — капучино; chocolate — шоколадний; taupe — тауп.
+
+ТЕКСТИ:
+{
+"1": "Your outerwear is a black hooded coat featuring a double-breasted front and a defined waist with a belt. It offers substantial warmth for the frosty conditions while keeping your silhouette streamlined and professional.",
+"2": "These trousers are made in a flared cut, finished in a rich cappuccino shade that softens the sharp lines of the top while extending your legs elegantly.",
+"3": "This ring is set in blue metal, offering a cool contrast to your warm skin tone and dark fabrics.",
+"4": "A taupe belt cinches your waist with subtle texture, adding definition without competing with the outerwear or trousers.",
+"5": "This black bracelet features a reflective shine that catches the light, adding a touch of polish near your wrist.",
+"6": "Your ankle boots are finished in chocolate leather with a sturdy build designed for walking on snowy and potentially icy streets.",
+"7": "The top is a fitted black shirt with a clean silhouette that hugs your form without adding bulk, serving as the perfect base layer under the coat.",
+"8": "This backpack is constructed in solid black fabric, offering practical storage while maintaining a low profile against your dark outfit.",
+"9": "This look is anchored by your black fitted shirt and flared cappuccino trousers, creating a sleek yet structured silhouette perfect for walking into the office. The dark hooded coat wraps warmly around you with its double-breasted front and belt, keeping you protected against the cold snow while maintaining a professional edge. Your chocolate ankle boots ground the outfit with rich warmth, while the black backpack carries your essentials hands-free without disrupting the clean lines of your ensemble. The blue ring and black bracelet add subtle metallic flashes that catch the light as you move, balancing the deep neutrals with a cool accent.",
+"10": "Leave the coat unbuttoned at first to reveal the fitted shirt's collar before cinching the belt once you arrive at your meeting for a sharper waistline.",
+"11": "Каблучка з синім кристалом — This red ring adds the lightness needed to lift the face contrast against the cool daylight, answering the 'face_contrast_below_her_own' finding.",
+"12": "Сорочка з об’ємними квітами-жоржинами чорна, Жіноче вовняне двобортне пальто з поясом для осені та весни Stella Polare — I accept this finding because the black ring adds the necessary lightness and shine near your face to lift the contrast against the cool daylight, directly answering your need for visual balance in the frosty conditions.",
+"13": "Жіноче вовняне двобортне пальто з поясом для осені та весни Stella Polare — The hooded wool coat provides necessary warmth against -10°C frost and layers as requested, acting as a dominant anchor despite its formal cut.",
+"14": "Штани кльош із високою посадкою Siena капучино — Cappuccino cotton trousers offer high waist comfort for walking on salted roads while providing a straight line that flatters the X shape.",
+"15": "Шкіряний браслет Gancio Wrap — This scarf adds the required head coverage for -10°C frost, answering the 'frost_head_neck_uncovered' blocker directly with warmth."
+}
+
+── ВІДПОВІДЬ (3037 симв., 25.4 с, HTTP 200) ──
+```json
+{
+"1": "Твоя верхня одежа — чорний тренч з капюшоном і подвійною лівою застібкою. Він має чітко окреслений пояс, який підкреслює твою фігуру та додає професійного вигляду.",
+"2": "Ці штани мають розкльошений крій і пофарбовані в насичений капучиновий колір, що пом’якшує чіткі лінії верху та елегантно видовжує твої ноги.",
+"3": "Ця каблучка виготовлена з синього металу й створює прохолодний контраст із теплим тоном твоєї шкіри та темними тканинами.",
+"4": "Тауповий пояс підкреслює твою талію, додаючи текстуру без зайвої конкуренції з верхнім одягом або штанами.",
+"5": "Цей чорний браслет має відбиваючий блиск, який привертає увагу до твоєї руки.",
+"6": "Твої черевики на підборах виготовлені зі шкіри шоколадного кольору та мають міцну конструкцію для ходьби по засніжених і потенційно слизьких вулицях.",
+"7": "Ця сорочка має приталений чорний крій, який облягає твою фігуру без зайвого об’єму. Вона стане чудовою базою під тренч.",
+"8": "Цей рюкзак виготовлений із щільної чорної тканини та забезпечує практичне зберігання речей, не порушуючи лаконічних ліній твого образу.",
+"9": "Твій образ складається з чорної приталеної сорочки та капучинових штанів кльош. Він створює елегантний і структурований силует для прогулянки до офісу. Чорний тренч із капюшоном зігріває тебе в холодну погоду, а подвійна ліва застібка й пояс підкреслюють твою професійність. Шоколадні черевики на підборах додають тепла та завершують образ, а чорний рюкзак дозволяє носити необхідні речі без зайвих зусиль і не порушує лаконічність ансамблю. Синя каблучка й чорний браслет створюють металеві акценти, які привертають увагу під час руху та збалансовують глибокі нейтральні кольори.",
+"10": "Спочатку не застібай тренч, щоб показати комір сорочки. Коли ти дійдеш до зустрічі, підтягни пояс для більш чіткої лінії талії.",
+"11": "Каблучка з синім кристалом — Ця червона каблучка додає легкості, необхідної для того, щоб пом’якшити контраст із холодним денним світлом і відповідає на знахідку 'face_contrast_below_her_own'.",
+"12": "Сорочка з об’ємними квітами-жоржинами чорна, Жіноче вовняне двобортне пальто з поясом для осені та весни Stella Polare — Я приймаю цю знахідку, адже чорна каблучка додає необхідного блиску біля твого обличчя, щоб пом’якшити контраст із холодним денним світлом і безпосередньо відповідає на потребу у візуальному балансі в морозну погоду.",
+"13": "Жіноче вовняне двобортне пальто з поясом для осені та весни Stella Polare — З капюшоном, цей тренч забезпечує необхідний захист від -10°C морозу й добре поєднується з іншими речами. Він є домінуючим елементом образу, незважаючи на свій формальний крій.",
+"14": "Штани кльош із високою посадкою Siena капучино — Капучинові бавовняні штани забезпечують комфортну посадку з високою талією для ходьби по засолених дорогах і створюють пряму лінію, яка підкреслює твою фігуру.",
+"15": "Шкіряний браслет Gancio Wrap — Цей шарф додає необхідного захисту голови від -10°C морозу та відповідає на проблему 'frost_head_neck_uncovered' безпосередньо, зігріваючи тебе."
+}
+```
