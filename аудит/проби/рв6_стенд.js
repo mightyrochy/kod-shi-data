@@ -2407,6 +2407,16 @@ function підсумокМоделі(){
   const консоль = [];
   стор.on('console', m => { if (m.type() === 'error' || m.type() === 'warning') консоль.push(m.type() + ': ' + m.text().slice(0, 300)); });
   стор.on('pageerror', e => консоль.push('pageerror: ' + String(e).slice(0, 300)));
+  async function діагностикаОчікування(поз, причина) {
+    const стан = await стор.evaluate(і => {
+      const к = П.картки[і], ел = document.querySelector('#к-' + і);
+      return {картка: к, замінюється: ЗАМІНИ_П.has(к), не_ця: [...НЕ_ЦЯ_П],
+        кнопки: ел ? [...ел.querySelectorAll('button.замін')].map(кн => ({id: кн.dataset.id,
+          disabled: кн.disabled, html: кн.outerHTML})) : [], текст: ел ? ел.innerText : null};
+    }, поз);
+    console.log('ДІАГНОСТИКА ОЧІКУВАННЯ ' + JSON.stringify({причина, стан, консоль}));
+    if (ЗНІМКИ) await стор.screenshot({path: path.join(ЗНІМКИ, 'таймаут.png')});
+  }
   /* ── ЧОМУ ФОТО НЕ ПРИЙШЛО: ЛИСТИ МЕРЕЖІ ПРО КАРТИНКИ (FOTO=1) ──────────────
      Порожня мініатюра на знімку однаково читається і як «крамниця не дала», і
      як «фід дав, але хост відмовив». Ці два рядки розрізняють їх іменами: 404
@@ -4858,7 +4868,8 @@ function підсумокМоделі(){
          картки вже нема в `ЗАМІНИ_П` (його `finally` минув) і останній етап має `закінчено`. */
       await чекатиСтан(стор, 'кінець заміни речі (етапи.заміни, ЗАМІНИ_П) на руці ' + рука,
         ([п_, н]) => { const к = П.картки[п_], з = ((к.етапи || {}).заміни) || [];
-        return з.length > н && !!з[з.length - 1].закінчено && !ЗАМІНИ_П.has(к); }, [поз, до.заміни], 120000);
+        return з.length > н && !!з[з.length - 1].закінчено && !ЗАМІНИ_П.has(к); }, [поз, до.заміни], 120000)
+        .catch(async е => { await діагностикаОчікування(поз, е.message); throw е; });
       const після = await стан();
       const етап = await стор.evaluate(п_ => { const з = ((П.картки[п_].етапи || {}).заміни || []).slice(-1)[0] || {};
         return {помилка: з.помилка || null, нова: з.нова || null, викликів: (з.виклики || []).length}; }, поз);
@@ -5562,7 +5573,8 @@ function підсумокМоделі(){
     await знімок('ne_tsia_perelik_do', null, true);
     const замінДо = await стор.evaluate(і => ((П.картки[і].етапи || {}).заміни || []).length, рука1);
     await стор.locator('#к-' + рука1 + ' button.замін').first().click();
-    await чекатиСтан(стор, 'позначка «не ця» (НЕ_ЦЯ_П)', () => typeof НЕ_ЦЯ_П !== 'undefined' && НЕ_ЦЯ_П.size > 0, null, 10000);
+    await чекатиСтан(стор, 'позначка «не ця» (НЕ_ЦЯ_П)', () => typeof НЕ_ЦЯ_П !== 'undefined' && НЕ_ЦЯ_П.size > 0, null, 10000)
+      .catch(async е => { await діагностикаОчікування(рука1, е.message); throw е; });
     await доПерелік(); /* усталення скролу scrollTo після кліку (дії ядра нема) */ await с(200);
     const після_напис = await стор.evaluate(і => { const к = document.querySelector('#к-' + і + ' button.замін'); const р = к.closest('.річ');
       const в = р.querySelector('.відп-заміни');
