@@ -410,6 +410,7 @@ _ЛАПКИ_ДОВКОЛА = re.compile(r'^["«„“”]\s*([^"«»„“”]*?
     "role": {к: к for к in ("guest", "close_family", "main_person", "host", "candidate",
                             "speaker", "worker", "mourner_close", "acquaintance")},
     "audience": {к: к for к in ("usual", "conservative")},
+    "direct_sun": {"yes": True, "no": False},
     "religious_place": {к: к for к in ("none", "temple", "written_rule_place")},
     "mourning_closeness": {к: к for к in ("none", "acquaintance", "close")},
     "look_volume": {к: к for к in ("one_look", "travel_day")},
@@ -3232,6 +3233,7 @@ if _спільні:
 # кожне правило пункту стоїть у його визначенні). Імена пунктів українською лишаються в
 # обʼєкті коду — для звіту власника (`чекліст_вердикту`).
 ПУНКТИ_ЧЕКЛІСТА = {
+    "direct_sun_heat": "direct sunlight is known before judging dark close-fitting garments (K-WEA-03)",
     # надлишок (K-SYS-08)
     "chroma_budget": "at most 1–2 loud colours in the outfit, hair and glasses frames included (K-COL-02)",
     "single_focus": "exactly one focal point (K-CRA-02, K-COL-05)",
@@ -3304,7 +3306,7 @@ if _спільні:
 }
 # ід пункту (`суд_чеклісти.ЧЕКЛІСТ_*`, перше поле) → код. Ід унікальні через усі чотири списки;
 # «K-CLR-02» — пункт контрасту біля обличчя, який оцінка образу додає до них сама (ВМ-3б).
-ЧЕКЛІСТ_КОДИ = {1: "chroma_budget", 2: "single_focus", 3: "lightness_steps", 4: "one_silhouette_letter",
+ЧЕКЛІСТ_КОДИ = {21: "direct_sun_heat", 1: "chroma_budget", 2: "single_focus", 3: "lightness_steps", 4: "one_silhouette_letter",
     5: "formality_spread", 6: "shine_budget", 7: "print_budget", 8: "layering_depth", 9: "accent_echo",
     10: "one_sprezzatura", 11: "hem_off_widest_point", 12: "one_metal", 13: "genre_dominant",
     14: "one_trend_item", 15: "fabric_cut_formality", 16: "scale_to_person", 17: "layer_hems_apart",

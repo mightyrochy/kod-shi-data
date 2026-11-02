@@ -1062,6 +1062,14 @@
       "unknown"
      ]
     },
+    "direct_sun": {
+     "description": "пряме сонце на неї: yes — назвала пряме сонце; no — назвала тінь чи відсутність сонця; unknown — не сказала; не виводити з температури, опадів чи пори року",
+     "enum": [
+      "yes",
+      "no",
+      "unknown"
+     ]
+    },
     "own_items": {
      "description": "її власні речі, які вона називає словами: усе, що вона зве своїм («моя», «у мене є», «з моєї шафи», «з фото»), — кожна річ окремо; слот, тип і тканина — завжди, кодом з її слів або \"unknown\"",
      "type": "array",
@@ -2409,6 +2417,10 @@
         "description": "колір, що на цій події належить іншій особі"
        },
        {
+        "const": "direct_sun",
+        "description": "пряме сонце на неї: yes — назвала пряме сонце; no — назвала тінь чи відсутність сонця; unknown — не сказала; не виводити з температури, опадів чи пори року"
+       },
+       {
         "const": "own_items",
         "description": "її власні речі, які вона називає словами: усе, що вона зве своїм («моя», «у мене є», «з моєї шафи», «з фото»), — кожна річ окремо; слот, тип і тканина — завжди, кодом з її слів або \"unknown\""
        },
@@ -3156,6 +3168,28 @@
         "unknown"
        ]
       },
+      "direct_sun": {
+       "type": "object",
+       "additionalProperties": false,
+       "required": [
+        "quote",
+        "value"
+       ],
+       "properties": {
+        "quote": {
+         "type": "string",
+         "minLength": 1
+        },
+        "value": {
+         "description": "пряме сонце на неї: yes — назвала пряме сонце; no — назвала тінь чи відсутність сонця; unknown — не сказала; не виводити з температури, опадів чи пори року",
+         "enum": [
+          "yes",
+          "no",
+          "unknown"
+         ]
+        }
+       }
+      },
       "own_items": {
        "description": "її власні речі, які вона називає словами: усе, що вона зве своїм («моя», «у мене є», «з моєї шафи», «з фото»), — кожна річ окремо; слот, тип і тканина — завжди, кодом з її слів або \"unknown\"",
        "type": "array",
@@ -3404,6 +3438,7 @@
           "formality_branch",
           "open_zones",
           "reserved_colour",
+          "direct_sun",
           "own_items",
           "minute",
           "place_words",
@@ -7513,6 +7548,10 @@
           "description": "a typology label used as a MECHANISM rather than a vocabulary bridge. Instead: the bridge translated into axes — the label outside, the axes inside"
          },
          {
+          "const": "direct_sun_heat",
+          "description": "direct sunlight is known before judging dark close-fitting garments (K-WEA-03)"
+         },
+         {
           "const": "chroma_budget",
           "description": "at most 1–2 loud colours in the outfit, hair and glasses frames included (K-COL-02)"
          },
@@ -8681,6 +8720,10 @@
   "audience": {
    "usual": "usual",
    "conservative": "conservative"
+  },
+  "direct_sun": {
+   "yes": true,
+   "no": false
   },
   "religious_place": {
    "none": "none",

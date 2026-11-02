@@ -328,6 +328,12 @@ import re
     },
     "сонце": {
         "сценарій": ('пряме сонце (ясно й день): другий множник K-WEA-03 — темне × облягання гріє шкіру лише без тіні', ('pipeline', 'суд_образу')),
+        "лише_шар": True,
+        "вісь": ('direct_sun', 'direct_sun'),
+        "схема": lambda м: 'yes | no | unknown; direct sunlight on her, only from her words; no inference from temperature, rain or season',
+        "поле": 'direct_sun',
+        "мова": lambda м: м.перелік('direct_sun', 'пряме сонце на неї: yes — назвала пряме сонце; no — назвала тінь чи відсутність сонця; unknown — не сказала; не виводити з температури, опадів чи пори року'),
+        "цитата": 'пара',
     },
     "реагенти": {
         "сценарій": ('сіль і реагенти на дорозі — ворота замші K-WEA-05', ('outer', 'accessory', 'pipeline')),

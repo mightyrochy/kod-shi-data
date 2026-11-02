@@ -88,7 +88,7 @@ def review(F, речі, source="uncontrolled", фокус=None, intent="conventi
            драп=None, мета="лестити", нагода=None, дрес_код=None, фото=False, траур=None,
            сцен=None, місце=None, пора=None, господар=False, креативне=False,
            роль=None, супутник_рівень=None, активність=None, сезон=None,
-           темп_c=None, опади=None, вітер=None, сонце=False, формат=None, прикраси=None,
+           темп_c=None, опади=None, вітер=None, сонце=None, формат=None, прикраси=None,
            шар_ошатності=None, траур_пулу=None, траур_заяви=None,
            відкриті_зони=None, зарезервований_колір=None, ошатність=None, мета_зони=None,
            погода_відчуття=None, темп_з_відчуття=False, мета_важливо=None, пора_року=None,

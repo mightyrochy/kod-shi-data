@@ -2254,6 +2254,13 @@ def паспорт_з_шару(внутрішня, сценарій, вето_ч
     тв["без_читача"] = [w for к in ("типи", "тканини", "принти", "кольори") for w in тв[к]
                         if not _ПН.читач_вето(к, w)]
     п["вето_тверде"] = тв
+    # Булевий код не проходить текстові переліки виклику 0; False — названа тінь.
+    _сонце = _ВМ.ключ("direct_sun", в.get("direct_sun"))
+    if _сонце is not None:
+        п["сонце"] = _сонце
+        об["сонце"] = _сонце
+    elif isinstance(досі.get("сонце"), bool):
+        п["сонце"] = досі["сонце"]
     for поле, ім in (("activity", "активність"), ("surface", "поверхня")):
         к = _ВМ.ключ(поле, в.get(поле)) or досі.get(ім)
         if к:
@@ -3149,6 +3156,7 @@ def _драбина_en():
 
 
 _ПОЛЯ_EN = {
+    "direct_sun": "direct sunlight on her: yes only when her words name direct sun, no when they name shade or no sun; otherwise unknown; do not infer from temperature, precipitation or season",
     "palette": "the palette scheme she chose for this outfit",
     # «Йду ввечері на вечірку в клуб» — `occasion` з цим уривком, `place` — ні (клас
     # 4206): правило ходу каже про місце в назві події, а опис поля, яке модель заповнює першим, — ні
