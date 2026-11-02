@@ -1,0 +1,27 @@
+{
+ "версія": 1,
+ "запит": {
+  "model": "qwen/qwen3.5-9b",
+  "max_tokens": 4000,
+  "messages": [
+   {
+    "role": "user",
+    "content": [
+     {
+      "type": "text",
+      "text": "{\"task\": {\"role\": \"You are a personal stylist. Put together one outfit for her case.\", \"rules\": [\"Items one per line, garments first, then shoes and accessories: what it is, cut, length, color with its hex code, fabric.\", \"An outer layer only when the weather needs it; at +20 °C and warmer there is none.\", \"Last, why this outfit works, in 3–4 sentences.\"], \"limits\": [\"Do not name lightness numbers, body measurements or height in numbers, or body-type labels, and do not say you had limits.\", \"The answer is plain text laid out as the rules say, not JSON.\"], \"language\": \"English\", \"answer\": \"OUTFIT_TEXT\", \"input\": [\"\\\"case\\\" — her case: the occasion, where and when, the weather, the dress code, her wishes and refusals — as codes, her own words as quotes; do not take an item that goes against her refusals or her words\", \"\\\"formality\\\" — the level of dress she named: home (loungewear, athleisure, sportswear) < everyday (jeans, a T-shirt and sneakers; neat casual, dark denim) < neat (business: a blouse, a shirt or a refined knit with trousers or a skirt, a textured jacket or a cardigan, loafers, ballet flats or ankle boots; social: a day dress, a refined knit with a skirt or trousers, a textured jacket, neat flats or ankle boots) < smart (business: a jacket with trousers or a skirt, a blouse or a shirt, loafers or pumps; a sheath dress with a jacket; social: a cocktail dress, heeled shoes) < formal (business: a business suit — a jacket with trousers or a skirt of one fabric — with a blouse, pumps; social: a formal dress of a noble fabric, heeled shoes) < very_smart (an evening gown) < ceremonial (a full-length evening gown with long gloves)\"]}, \"case\": {\"field_quotes\": {\"occasion\": \"завтра співбесіда в банку на посаду аналітика\", \"hour\": \"о десятій ранку\", \"part_of_day\": \"о десятій ранку\"}, \"event\": \"завтра співбесіда в банку на посаду аналітика\", \"occasion\": \"job_interview\", \"formality\": [\"smart\"], \"season\": \"autumn\", \"part_of_day\": \"morning\", \"light\": \"daylight\"}}"
+     }
+    ]
+   }
+  ],
+  "temperature": 1
+ },
+ "відповідь": {
+  "status": 200,
+  "contentType": "application/json",
+  "headers": {
+   "x-model": "qwen/qwen3.5-9b"
+  },
+  "body": "{\"content\":[{\"type\":\"text\",\"text\":\"Silk blouse, tailored fit, knee-length hemline, charcoal grey (#36454F), lightweight woven fabric.\\nSlim-fit trousers, tapered leg, full length, deep navy blue (#000080), high-quality wool blend.\\nStructured blazer, boxy silhouette, hip length, forest green (#228B22), smooth cotton-linen mix.\\nLeather loafers, classic cap-toe cut, mid-calf height, chocolate brown (#4B3621), soft calfskin leather.\\nMinimalist gold bar necklace, thin band design, long drop, brushed metal, 18k gold vermeil.\\nStructured black leather clutch, rectangular shape, top handle with wrist strap, matte finish, durable synthetic leather.\\nThis outfit perfectly balances professionalism and personality for a banking interview while adhering to your request for a smart look. The tailored trousers and silk blouse offer a polished base that signals attention to detail, essential for an analytical role. A textured blazer adds a layer of authority without feeling stiff, ensuring you feel confident throughout the morning session. The earthy color palette of charcoal, navy, and forest green grounds the look in seriousness while allowing the gold accessories to provide a subtle touch of elegance suitable for daylight hours.\"}],\"usage\":{\"input_tokens\":541,\"output_tokens\":264},\"stop_reason\":\"end_turn\"}"
+ }
+}
