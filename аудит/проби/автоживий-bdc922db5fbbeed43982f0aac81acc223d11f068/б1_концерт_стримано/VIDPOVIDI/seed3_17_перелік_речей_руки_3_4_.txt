@@ -1,0 +1,37 @@
+── ПРОМПТ (2232 симв.) ──
+{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.", "One item carries one thing — of two alternatives list the first; a note in brackets is not an item.", "Slot \"accessory\" is for an item no other slot fits.", "\"is_outfit\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "ITEM_LIST", "answer_schema": {"is_outfit": "yes|no", "items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory", "color_hex": "<#rrggbb or null>", "worn": "<true, or false when the description says the outfit goes without it>"}]}, "input": ["\"description\" — the outfit description"]}, "description": "A refined silk blouse, tailored fit, crisp white, 100% mulberry silk.\nHigh-waisted wide-leg trousers in dark denim, straight cut, charcoal grey, heavy stretch twill.\nStructured blazer in a subtle herringbone pattern, cropped length, classic navy, wool blend with fine cotton.\nLeather ankle boots, pointed toe, glossy finish, oxblood red, smooth calfskin leather.\n\nThis outfit balances her request for \"streamlined and classic\" style with the energy of a rock concert by pairing an elegant silk blouse and structured blazer with durable dark denim trousers that allow for standing comfortably in a crowd. The cropped length of the jacket ensures freedom of movement while maintaining a polished silhouette, and the bold oxblood boots add a touch of modern edge suitable for an autumn evening under artificial club lighting. Choosing smart formality with these specific pieces respects her wish to look refined without compromising on comfort or the active nature of the event."}
+
+── ВІДПОВІДЬ (811 симв., 5.1 с, HTTP 200) ──
+{
+  "is_outfit": "yes",
+  "items": [
+    {
+      "name": "silk blouse",
+      "details": "tailored fit, crisp white, 100% mulberry silk",
+      "slot": "top",
+      "color_hex": "#FFFFFF",
+      "worn": true
+    },
+    {
+      "name": "wide-leg trousers",
+      "details": "high-waisted, straight cut, heavy stretch twill",
+      "slot": "bottom",
+      "color_hex": "#36454F",
+      "worn": true
+    },
+    {
+      "name": "blazer",
+      "details": "structured, subtle herringbone pattern, cropped length, wool blend with fine cotton",
+      "slot": "outerwear",
+      "color_hex": "#00008B",
+      "worn": true
+    },
+    {
+      "name": "ankle boots",
+      "details": "pointed toe, glossy finish, smooth calfskin leather",
+      "slot": "shoes",
+      "color_hex": "#CC241E",
+      "worn": true
+    }
+  ]
+}
