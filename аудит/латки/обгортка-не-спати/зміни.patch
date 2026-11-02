@@ -12,7 +12,7 @@ diff --git a/.github/workflows/obhortka.yml b/.github/workflows/obhortka.yml
 diff --git a/аудит/адаптери/gemini/gemini_publish.ps1 b/аудит/адаптери/gemini/gemini_publish.ps1
 --- a/аудит/адаптери/gemini/gemini_publish.ps1
 +++ b/аудит/адаптери/gemini/gemini_publish.ps1
-@@ -270,6 +270,168 @@
+@@ -270,6 +270,184 @@
      [pscustomobject]@{ Outbox = 'GEMINI ОБГОРТКА: ЗАБЛОКОВАНО gemini/невідомо STATE_INVALID' }
  }
  
@@ -20,6 +20,12 @@ diff --git a/аудит/адаптери/gemini/gemini_publish.ps1 b/аудит/
 +function Get-PowerTime {
 +    <# Годинник обліку живлення; стенд підміняє його разом із часом подій. #>
 +    [datetime]::UtcNow
++}
++
++function Get-PowerBoot {
++    <# Час поточного завантаження відрізняє навіть коротке вимкнення від звичайного інтервалу heartbeat. #>
++    try { (Get-CimInstance Win32_OperatingSystem -ErrorAction Stop).LastBootUpTime.ToUniversalTime() }
++    catch { return $null }
 +}
 +
 +function Get-SleepTime([string]$Text) {
@@ -54,18 +60,24 @@ diff --git a/аудит/адаптери/gemini/gemini_publish.ps1 b/аудит/
 +}
 +
 +function Get-RunSleep($Status) {
-+    <# Повертає сон, який повністю лежить усередині прогону, без припущень за кодом помилки. #>
++    <# Зіставляє прогін із виміряним сном або підтвердженою зміною завантаження. #>
 +    $from = Get-SleepRunStart $Status; $to = Get-SleepRunEnd $Status
 +    if ($null -eq $from -or $null -eq $to) { return }
 +    foreach ($event in @($script:SleepEvents)) {
 +        $sleepFrom = Get-SleepTime ([string]$event.from); $sleepTo = Get-SleepTime ([string]$event.to)
-+        if ($null -ne $sleepFrom -and $null -ne $sleepTo -and $from -le $sleepFrom -and $to -ge $sleepTo) { return $event }
++        if ($null -eq $sleepFrom -or $null -eq $sleepTo) { continue }
++        $before = $from -le $sleepFrom
++        # За зміни завантаження початок прогону до boot доводить, що це ще попередня Windows,
++        # навіть якщо новий наряд стартував між останнім heartbeat і втратою живлення.
++        if ([string](Get-Prop $event 'source') -ceq 'heartbeat/boot') { $before = $from -lt $sleepTo }
++        if ($before -and $to -ge $sleepTo) { return $event }
 +    }
 +}
 +
 +function Get-SleepTaskCount($Event) {
-+    <# Рахує унікальні позначки, що йшли на початку сну: heartbeat і завершені результати. #>
++    <# Рахує унікальні позначки на межі перерви: heartbeat і завершені результати. #>
 +    $from = Get-SleepTime ([string]$Event.from); $seen = @{}
++    if ([string](Get-Prop $Event 'source') -ceq 'heartbeat/boot') { $from = Get-SleepTime ([string]$Event.to) }
 +    try {
 +        $beat = [IO.File]::ReadAllText((Join-Path $OutDir 'heartbeat.json'), $script:Utf8) | ConvertFrom-Json
 +        foreach ($lane in @(Get-Prop $beat 'lanes')) {
@@ -98,26 +110,30 @@ diff --git a/аудит/адаптери/gemini/gemini_publish.ps1 b/аудит/
 +    $events = @(); if ($null -ne $saved) { $events = @(Get-Prop $saved 'events') }
 +    if ($null -ne $last) {
 +        $rows = @(Get-WakeRows $last)
++        $boot = Get-PowerBoot
++        $reboot = $null -ne $boot -and $boot -gt $last -and $boot -le $now
 +        # Планувальник публікатора — щохвилини (НАЛАШТУВАННЯ.md, крок 5).
 +        # П'ять пропущених heartbeat — запасне джерело для вимкнення без події пробудження.
-+        if ($rows.Count -eq 0 -and ($now - $last).TotalMinutes -gt 5) {
++        if ($rows.Count -eq 0 -and ($reboot -or ($now - $last).TotalMinutes -gt 5)) {
 +            # Першу ознаку роботи після паузи могли вже записати смуги чи фінал наряду.
 +            # Не ставимо кінець паузи пізніше за цей фінал: інакше перетин ніколи не справдиться.
 +            $resume = $now
++            if ($reboot) { $resume = $boot }
++            $after = $(if ($reboot) { $boot } else { $last })
 +            try {
 +                $beat = [IO.File]::ReadAllText((Join-Path $OutDir 'heartbeat.json'), $script:Utf8) | ConvertFrom-Json
 +                $stamp = Get-SleepTime ([string](Get-Prop $beat 'read_utc'))
-+                if ($null -ne $stamp -and $stamp -gt $last -and $stamp -lt $resume) { $resume = $stamp }
++                if ($null -ne $stamp -and $stamp -gt $after -and $stamp -lt $resume) { $resume = $stamp }
 +            } catch { $null = $_ }
 +            foreach ($file in @(Get-ChildItem -LiteralPath $OutDir -Filter '*.json' -File -ErrorAction SilentlyContinue)) {
 +                if ($file.BaseName -cnotmatch $script:IdPattern -or $file.Length -gt 65536) { continue }
 +                try {
 +                    $status = [IO.File]::ReadAllText($file.FullName, $script:Utf8) | ConvertFrom-Json
 +                    $start = Get-SleepRunStart $status; $end = Get-SleepRunEnd $status
-+                    if ($null -ne $start -and $null -ne $end -and $start -le $last -and $end -gt $last -and $end -lt $resume) { $resume = $end }
++                    if ($null -ne $start -and $null -ne $end -and $start -le $last -and $end -gt $after -and $end -lt $resume) { $resume = $end }
 +                } catch { $null = $_ }
 +            }
-+            $rows = @([pscustomobject]@{ from=$last.ToString('o'); to=$resume.ToString('o'); source='heartbeat' })
++            $rows = @([pscustomobject]@{ from=$last.ToString('o'); to=$resume.ToString('o'); source=$(if ($reboot) { 'heartbeat/boot' } else { 'heartbeat' }) })
 +        }
 +        foreach ($row in $rows) {
 +            $key = Get-Sha256Hex ($row.from + ' ' + $row.to)
@@ -181,18 +197,27 @@ diff --git a/аудит/адаптери/gemini/gemini_publish.ps1 b/аудит/
  # Один стан -> рядок диспетчерові. Усе в рядку — з переліків цього файлу, перевірених назв і чисел.
  # 'RETRY' — пуш не вдався: той самий стан ще раз на наступному запуску, рядок — лише після години невдач.
  function Get-Line([string]$Id) {
-@@ -303,7 +465,9 @@
+@@ -303,7 +481,18 @@
      }
      # Стан пише gemini, тож будь-який стан може бути підробленим: опублікована позначка закрита для всіх наступних,
      # а неопублікований результат займає лише свій код — підроблений ранній стан не забирає місця справжньої публікації.
 -    if (Test-Path -LiteralPath (Get-SeenPath "published $queue $marker")) { return $null }
 +    $publicationKey = Get-SleepPublicationKey $s $queue $marker
 +    if (-not $publicationKey) { return Get-BadLine $Id 'без дозволу повтору після сну' }
-+    if (Test-Path -LiteralPath (Get-SeenPath $publicationKey)) { return $null }
++    $publishedPath = Get-SeenPath $publicationKey
++    if (Test-Path -LiteralPath $publishedPath) {
++        # Після збою між публікацією й запитом повтору той самий результат відновлює запит.
++        # ID з власного стану не дозволяє чужому JSON відкрити вже закриту позначку.
++        if ([IO.File]::ReadAllText($publishedPath, $script:Utf8) -ceq ($publicationKey + "`n" + $Id) -and
++            $head -and (Get-RefSha "refs/remotes/origin/gemini/$slug") -ceq $head) {
++            [void](Request-SleepRetry $s $queue $marker $head)
++        }
++        return $null
++    }
      $turns = Get-Int $s 'turns'; $minutes = Get-Int $s 'minutes'; $ahead = Get-Int $s 'ahead'
      # Лише слова цього файлу: поля стану поза переліками (зокрема `models`) у рядок не потрапляють.
      if ($code -eq 'AUTH') { Add-HealthAlert 'AUTH' $(if ($model -like 'gpt-*') { 'CODEX' } else { 'AGY' }) }
-@@ -322,6 +486,7 @@
+@@ -322,6 +511,7 @@
          return [pscustomobject]@{ Slug = $slug; Outbox = "GEMINI ОБГОРТКА: ЗАБЛОКОВАНО $branch $kod" }
      }
      if (-not (Get-Prop $s 'bundle')) {
@@ -200,19 +225,19 @@ diff --git a/аудит/адаптери/gemini/gemini_publish.ps1 b/аудит/
          if (Test-Seen "$queue $marker $code") { return $null }
          $tail = $(if (Test-Path -LiteralPath (Join-Path $OutDir ($Id + '.tail.txt'))) { "; кінець виводу агента — $OutDir\$Id.tail.txt" } else { '' })
          Write-WrapperLog "кінець $Id — НЕ ЗАВЕРШЕНО $branch — $run; комітів нема$tail"
-@@ -339,9 +504,10 @@
+@@ -339,9 +529,10 @@
          }
      }
      if ($pc -eq 'OK') {
 -        [void](Test-Seen "published $queue $marker")
-+        [void](Test-Seen $publicationKey)
++        Write-FileAtomic (Get-SeenPath $publicationKey) ($publicationKey + "`n" + $Id)
          $what = $(if ($DryRun) { 'ПЕРЕВІРЕНО (без пушу)' } else { 'ОПУБЛІКОВАНО' })
          Write-WrapperLog "кінець $Id — $what $branch $head; комітів $ahead, файлів до main $files; без .github/ і файлів обгортки; $run"
 +        if (Request-SleepRetry $s $queue $marker $head) { return $null }
          # ГОТОВО — лише звіт агента ГОТОВО з опублікованою головою; решта опублікованого — код прогону з _PUBLISHED.
          if ($code -eq 'DONE' -and $head) {
              Save-DraftRequest $branch $head ([string](Get-Prop $s 'actual'))
-@@ -391,6 +557,7 @@
+@@ -391,6 +582,7 @@
  $script:OutboxNamePattern = '^[0-9]{8}-[0-9]{6}-[0-9a-f]{12}\.txt$'
  $script:SlugCore = $script:SlugPattern -replace '^\^|\\z$', ''
  $script:OutboxTemplates = @(
@@ -220,7 +245,7 @@ diff --git a/аудит/адаптери/gemini/gemini_publish.ps1 b/аудит/
      '^GEMINI ОБГОРТКА: ЛАНЦЮГ CHAIN_[A-Z_]{1,32}(?: [A-Za-z0-9]{1,40} [a-z_]{1,40}\.ps1:[0-9]{1,5})?\z',
      '^GEMINI ОБГОРТКА: ОНОВЛЕНО [0-9a-f]{40} СЕКУНД [0-9]{1,12}\z',
      '^GEMINI ОБГОРТКА: ОНОВЛЕННЯ [0-9a-f]{40} UPDATE_[A-Z_]{1,32}\z',
-@@ -789,6 +956,7 @@
+@@ -789,6 +981,7 @@
                  '+refs/heads/gemini/*:refs/remotes/origin/gemini/*',
                  '+refs/heads/gemini-queue/*:refs/remotes/origin/gemini-queue/*'))
          if (Test-Path -LiteralPath (Join-Path $UpdateRoot 'selfupdate.ready')) { Invoke-WrapperUpdate $UpdateRoot }
@@ -314,7 +339,7 @@ diff --git a/аудит/адаптери/gemini/m9v/хеші.psd1 b/аудит/�
 -    'gemini_run.ps1'     = 'ADC4A9549E85637C9ECF1E7EEE510CF44BD82EEC8553669B100DE02DA296F852'
 -    'gemini_publish.ps1' = '53D8542D7AC9FC822D7E75BA490E1EC3AA24CB4680E5887072749CC85076384D'
 +    'gemini_run.ps1'     = '2BC7418C0BE1332434576CACCB1BFE6E5A3A041757059E222A27C3E220FB3954'
-+    'gemini_publish.ps1' = '7484C76AEFAAC7E5C8D5C5C08EF2C33EE37601A45DEA592603F57DCE220E16A8'
++    'gemini_publish.ps1' = 'FA1208F56CA2C925F34AE0F4B5F5879429EF53F72199ED388E319B1D8974D55B'
      # Інсталятор Codex (9741) закріплено за релізом: install.ps1 — файл релізу https://releases.openai.com/codex/releases/<CodexRelease>/install.ps1
      # (незмінний URL; той самий sha256 віддає https://chatgpt.com/codex/install.ps1 — редирект на releases.openai.com — і публікує реліз
      # openai/codex). 2_під_gemini.ps1 -WithCodex виконує його лише при збігу CodexInstaller і ставить саме цей реліз (-Release).
@@ -328,7 +353,7 @@ diff --git a/аудит/адаптери/gemini/НАЛАШТУВАННЯ.md b/а
 -| `gemini_run.ps1` | `ADC4A9549E85637C9ECF1E7EEE510CF44BD82EEC8553669B100DE02DA296F852` |
 -| `gemini_publish.ps1` | `53D8542D7AC9FC822D7E75BA490E1EC3AA24CB4680E5887072749CC85076384D` |
 +| `gemini_run.ps1` | `2BC7418C0BE1332434576CACCB1BFE6E5A3A041757059E222A27C3E220FB3954` |
-+| `gemini_publish.ps1` | `7484C76AEFAAC7E5C8D5C5C08EF2C33EE37601A45DEA592603F57DCE220E16A8` |
++| `gemini_publish.ps1` | `FA1208F56CA2C925F34AE0F4B5F5879429EF53F72199ED388E319B1D8974D55B` |
  | `gemini_watch.ps1` | `69EFEBB07FF1AF51C382B753A95C50F3C1AC27B3008F2489992BEBE3FD0213AA` |
  | `wrapper_health.ps1` | `F63CDFD76BCBE92440A843759BCD6CED4E49B4BCBAC19620CACA4B74B9D58AA5` |
  | `queue_lanes.ps1` | `FEAD267F76D269476E00F48C44366D4BA9D282B2BFC85CC64712968D430B4AFD` |
@@ -336,7 +361,7 @@ diff --git a/аудит/адаптери/gemini/перевірка/сценар�
 new file mode 100644
 --- /dev/null
 +++ b/аудит/адаптери/gemini/перевірка/сценарії_сну.ps1
-@@ -0,0 +1,175 @@
+@@ -0,0 +1,203 @@
 +﻿#Requires -Version 5.1
 +param([string]$SourceDir = (Split-Path -Parent $PSScriptRoot), [switch]$Before)
 +$ErrorActionPreference = 'Stop'
@@ -372,7 +397,9 @@ new file mode 100644
 +        $script:PublishCode = 'OK'; $script:PublishCalls = 0
 +        $script:WakeRows = @([pscustomobject]@{ from='2026-11-02T01:00:00.0000000Z';to='2026-11-02T02:00:00.0000000Z';source='Power-Troubleshooter/1' })
 +        $script:Clock = [datetime]'2026-11-02T02:30:00Z'
++        $script:Boot = $null
 +        function Get-PowerTime { $script:Clock }
++        function Get-PowerBoot { $script:Boot }
 +        function Get-WinEvent {
 +            <# XML подій підміняється, його розбирає справжній Get-WakeRows. #>
 +            foreach ($row in $script:WakeRows) {
@@ -417,6 +444,14 @@ new file mode 100644
 +            $requests = @(Get-ChildItem -LiteralPath $OutDir -Filter 'sleep-retry-*.json').Count
 +            [void](Get-Line $first)
 +            [pscustomobject]@{Name='повтор обробки першого результату не дублює запит';Ok=(@(Get-ChildItem -LiteralPath $OutDir -Filter 'sleep-retry-*.json').Count -eq $requests -and $script:PublishCalls -eq 1)}
++            $requestPath = Join-Path $OutDir ('sleep-retry-'+$first+'.json')
++            $originalRequest = [IO.File]::ReadAllText($requestPath,$script:Utf8)
++            Remove-Item -LiteralPath $requestPath
++            [void](Get-Line $first)
++            [pscustomobject]@{Name='збій після публікації не губить запит повтору';Ok=((Test-Path -LiteralPath $requestPath) -and $script:PublishCalls -eq 1)}
++            $forgedFirst = Status '20261102-003000-000000000099' 'STALL'; Save-Status $forgedFirst
++            [void](Get-Line $forgedFirst.id)
++            [pscustomobject]@{Name='інший ID не повторює вже опубліковану позначку';Ok=(-not (Test-Path -LiteralPath (Join-Path $OutDir ('sleep-retry-'+$forgedFirst.id+'.json'))))}
 +            $script:WakeRows = @([pscustomobject]@{from='2026-11-02T03:00:00Z';to='2026-11-02T04:00:00Z';source='Power-Troubleshooter/1'})
 +            $script:Clock = [datetime]'2026-11-02T04:30:00Z'
 +            Update-SleepEvents
@@ -434,6 +469,7 @@ new file mode 100644
 +                $s = Status $first $code '' $false
 +                [pscustomobject]@{Name="$code належить класу перерваних сном";Ok=(Request-SleepRetry $s $script:Queue $script:Marker '')}
 +            }
++            Write-FileAtomic $requestPath $originalRequest
 +            $s = Status $first 'AGY_ERROR' '' $false; $s.started_utc='2026-11-02T01:30:00Z'
 +            [pscustomobject]@{Name='початок посеред сну не дає повтору';Ok=(-not (Request-SleepRetry $s $script:Queue $script:Marker ''))}
 +            $s.started_utc='2026-11-02T00:30:00Z';$s.ended_utc='2026-11-02T01:30:00Z'
@@ -452,6 +488,23 @@ new file mode 100644
 +            Update-SleepEvents
 +            [pscustomobject]@{Name='ввімкнення без події має межу останнього heartbeat';Ok=($script:SleepEvents.Count -eq 1 -and $script:SleepEvents[0].source -ceq 'heartbeat' -and $script:SleepEvents[0].from -ceq '2026-11-02T00:30:00.0000000Z')}
 +            [pscustomobject]@{Name='фінал після ввімкнення входить у heartbeat-період';Ok=($script:SleepEvents[0].to -ceq '2026-11-02T02:30:00.0000000Z')}
++            $script:Clock = [datetime]'2026-11-02T05:02:00Z'
++            $script:Boot = ([datetime]'2026-11-02T05:01:00Z').ToUniversalTime()
++            Write-FileAtomic (Join-Path $WorkDir 'sleep-events.json') ('{"read_utc":"2026-11-02T05:00:00Z","events":[]}')
++            Update-SleepEvents
++            [pscustomobject]@{Name='коротке вимкнення дає рядок навіть за паузи менше 5 хвилин';Ok=($script:SleepEvents.Count -eq 1 -and $script:SleepEvents[0].to -ceq '2026-11-02T05:01:00.0000000Z')}
++            $duringGap=Status '20261102-050030-000000000008' 'STALL'
++            $duringGap.started_utc='2026-11-02T05:00:30Z';$duringGap.ended_utc='2026-11-02T05:01:30Z'
++            [pscustomobject]@{Name='наряд між heartbeat і вимкненням також належить попередньому завантаженню';Ok=($null -ne (Get-RunSleep $duringGap))}
++            $script:SleepEvents=@([pscustomobject]@{key='e'*64;from='2026-11-02T01:00:00Z';to='2026-11-02T02:00:00Z'})
++            $script:Marker='e'*40;$script:PublishCode='OK'
++            $noBundle = Status '20261102-003000-000000000006' 'AGY_ERROR' '' $false
++            Save-Status $noBundle;$publishBefore=$script:PublishCalls;$result=Get-Line $noBundle.id
++            $request=[IO.File]::ReadAllText((Join-Path $OutDir ('sleep-retry-'+$noBundle.id+'.json')),$script:Utf8)|ConvertFrom-Json
++            [pscustomobject]@{Name='AGY_ERROR без нових комітів повторюється від наявної опублікованої голови';Ok=($null -eq $result -and $request.head -ceq $script:PublishedHead -and $script:PublishCalls -eq $publishBefore)}
++            $noBundleRetry=Status '20261102-023000-000000000007' 'AGY_ERROR' $noBundle.id $false
++            Save-Status $noBundleRetry;$result=Get-Line $noBundleRetry.id
++            [pscustomobject]@{Name='повтор без нових комітів завершується ЗАБЛОКОВАНО';Ok=($result.Outbox -ceq 'GEMINI ОБГОРТКА: ЗАБЛОКОВАНО gemini/сон AGY_ERROR')}
 +        }
 +        Export-ModuleMember -Function Run
 +    }
