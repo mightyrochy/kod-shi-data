@@ -81,7 +81,7 @@
 """
 import argparse, collections, concurrent.futures, csv, datetime, functools, gzip, html, io, json, os, re, sys, threading, time
 import xml.etree.ElementTree as ET
-from urllib.parse import urljoin, urlparse, urlunparse, parse_qs, parse_qsl, urlencode
+from urllib.parse import urljoin, urlparse, urlunparse, parse_qs, parse_qsl, urlencode, quote
 
 try:
     import requests
@@ -1597,6 +1597,9 @@ def факти_з_картки(html_текст, url, селектори=None):
     except Exception as e:                            # noqa
         ф["dom_помилка"] = "%s: %s" % (type(e).__name__, str(e)[:80])   # П15: не мовчати, що DOM не читався
         return ф
+    # `<base href>` (25union: `/image/cache/…` від кореня, не від картки — 542 хибні адреси фото, 5629)
+    база_href = суп.find("base", href=True)
+    url_бази = urljoin(url, база_href["href"].strip()) if база_href else url
     for s in суп(["script", "style", "noscript", "svg"]):
         s.decompose()
     h1 = суп.find("h1")
@@ -1735,7 +1738,7 @@ def факти_з_картки(html_текст, url, селектори=None):
             if м:
                 hex_ = "#%02x%02x%02x" % tuple(int(x) for x in м.groups())
         img = ел.find("img") if ел.name != "img" else ел
-        кар = канонічна(img.get("data-src") or img.get("src") or "", url) if img else None
+        кар = канонічна(img.get("data-src") or img.get("src") or "", url_бази) if img else None
         if not hex_ and not кар:
             continue
         підпис = розекранувати(ел.get("title") or ел.get("aria-label") or ел.get("data-title") or ел.get("data-value") or
@@ -1794,7 +1797,7 @@ def факти_з_картки(html_текст, url, селектори=None):
             w = ел.get("width")
             if w and str(w).isdigit() and int(w) <= 300:
                 continue
-            картинки.extend(оригінал_фото(канонічна(v, url)) for v in адреси)
+            картинки.extend(оригінал_фото(канонічна(v, url_бази)) for v in адреси)
         для = [x for x in dict.fromkeys(картинки) if re.search(r"\.(jpe?g|png|webp|avif)(\?|$)|/image|/photo|/img|/media|/upload", x, re.I)]
         для = _найбільший_на_кадр(для)
         if для:
@@ -2137,6 +2140,8 @@ def слот_речі(крихти, назва, url):
     # НАЗВА вирішує родину, коли її іменник однозначний — це те, що людина бачить (П3: «Сумка Maybelle» у «верх»).
     for кр in reversed(крихти or []):          # найглибша крихта — найточніша
         зк = _слот_у_тексті(кр)
+        if зк == "комплект":
+            continue          # «комплект» — лише слова назви (вище): крихта «костюми» не робить кофту набором
         if зк:
             if зн and зн != зк and _слот_у_тексті(назва.split()[0] if назва else "") == зн:
                 return зн, "назва (перше слово) переважила крихту «%s»" % кр
@@ -2297,6 +2302,14 @@ def гейти_речі(з):
     return причини
 
 
+_АСКІ_ДРУК = "".join(chr(c) for c in range(33, 127))
+
+
+def кадр_закодований(url):
+    """Адреса кадру без пробілів і не-ASCII (`…/winter 2025-26 maneken/….webp` не відкривається): `%XX`, наявні лишаються."""
+    return quote(url, safe=_АСКІ_ДРУК)
+
+
 def чисті_фото(фото, url="", артикул=None, відкинуті=None):
     вих = []
     for ф in фото or []:
@@ -2304,7 +2317,7 @@ def чисті_фото(фото, url="", артикул=None, відкинут�
             if відкинуті is not None and ф and len(відкинуті) < 3:
                 відкинуті.append(ф)
             continue
-        ф = оригінал_фото(ф)                       # документ 2: оригінал, не мініатюра
+        ф = кадр_закодований(оригінал_фото(ф))     # документ 2: оригінал, не мініатюра
         if ф not in вих:
             вих.append(ф)
     # П2, доказовий фільтр gepur: номер товару з url у шляху картинки — лишаються лише «свої»

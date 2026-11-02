@@ -1,0 +1,44 @@
+── ПРОМПТ (2294 симв.) ──
+{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.", "One item carries one thing — of two alternatives list the first; a note in brackets is not an item.", "Slot \"accessory\" is for an item no other slot fits.", "\"is_outfit\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "ITEM_LIST", "answer_schema": {"is_outfit": "yes|no", "items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory", "color_hex": "<#rrggbb or null>", "worn": "<true, or false when the description says the outfit goes without it>"}]}, "input": ["\"description\" — the outfit description"]}, "description": "A refined wool-blend blazer in charcoal gray (#2F373C), tailored fit with a single vent at the back.\nHigh-waisted trousers in black crepe (#000000), straight-leg cut reaching just above the ankle.\nA silk blouse in cream (#FFFDD0) with a relaxed collar and subtle pleats down the front.\nRound-toe pumps in black leather (#1C1C1C), heel height of 7 cm.\nStatement silver hoop earrings.\nWhy this outfit works: This ensemble perfectly balances her request for \"strictly classical\" style with the energetic atmosphere of a rock concert by keeping the silhouette clean and structured while allowing her to stand comfortably in a crowd. The dark, neutral palette of charcoal and black ensures she looks polished without blending into the background under club lighting, while the cream blouse adds a necessary touch of warmth and contrast against the autumn evening setting. Choosing tailored separates over a full suit offers the versatility needed for an evening event where she can move freely from standing in a line to dancing on the floor."}
+
+── ВІДПОВІДЬ (924 симв., 6.5 с, HTTP 200) ──
+{
+  "is_outfit": "yes",
+  "items": [
+    {
+      "name": "blazer",
+      "details": "refined wool-blend tailored fit with single vent at back",
+      "slot": "outerwear",
+      "color_hex": "#2F373C",
+      "worn": true
+    },
+    {
+      "name": "trousers",
+      "details": "high-waisted straight-leg black crepe reaching just above ankle",
+      "slot": "bottom",
+      "color_hex": "#000000",
+      "worn": true
+    },
+    {
+      "name": "blouse",
+      "details": "silk relaxed collar with subtle pleats down front",
+      "slot": "top",
+      "color_hex": "#FFFDD0",
+      "worn": true
+    },
+    {
+      "name": "pumps",
+      "details": "round-toe black leather heel height 7 cm",
+      "slot": "shoes",
+      "color_hex": "#1C1C1C",
+      "worn": true
+    },
+    {
+      "name": "earrings",
+      "details": "statement silver hoop",
+      "slot": "earrings",
+      "color_hex": null,
+      "worn": true
+    }
+  ]
+}

@@ -35,23 +35,25 @@ jobs:
         with:
           python-version: '3.11'
 
-      - name: стенд храповика (випадки мірила)
-        run: |
-          set -o pipefail
-          python3 джерела/прилади/стенд_храповика_кореня.py | tee -a "$GITHUB_STEP_SUMMARY"
-
       # PR — коміт злиття проти свого першого батька (той `main`, з яким злито; глибини 2 досить): `base.sha` давній,
       # якщо PR влив свіжий `main`, і дав би чужі файли (дошка 11353). Не злиття — `base.sha`. Push — проти
       # `event.before`. Ручний запуск бази не має: прилад друкує пропуск (дошка 10720).
       - name: храповик кореня
+        id: khrapovyk
         env:
           BASE: ${{ github.event_name == 'pull_request' && github.event.pull_request.base.sha || github.event.before }}
         run: |
           if [ "${{ github.event_name }}" = pull_request ]; then
-            python3 джерела/прилади/храповик_кореня.py --пр --база "${BASE}"
+            python3 джерела/прилади/храповик_кореня.py --пр --база "${BASE}" --ознака-стенда "$GITHUB_OUTPUT"
             exit
           fi
           if [ -n "${BASE//0/}" ]; then
             git fetch --no-tags --depth=1 origin "${BASE}" || echo "базу ${BASE} не отримано з origin"
           fi
-          python3 джерела/прилади/храповик_кореня.py --база "${BASE}"
+          python3 джерела/прилади/храповик_кореня.py --база "${BASE}" --ознака-стенда "$GITHUB_OUTPUT"
+
+      - name: стенд храповика (випадки мірила)
+        if: ${{ !cancelled() && steps.khrapovyk.outputs['стенд'] != 'false' }}
+        run: |
+          set -o pipefail
+          python3 джерела/прилади/стенд_храповика_кореня.py | tee -a "$GITHUB_STEP_SUMMARY"

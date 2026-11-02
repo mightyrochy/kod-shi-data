@@ -1,0 +1,27 @@
+{
+ "версія": 1,
+ "запит": {
+  "model": "qwen/qwen3.5-9b",
+  "max_tokens": 4000,
+  "messages": [
+   {
+    "role": "user",
+    "content": [
+     {
+      "type": "text",
+      "text": "{\"task\": {\"role\": \"You read the description of an outfit and list its items as data.\", \"rules\": [\"One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.\", \"One item carries one thing — of two alternatives list the first; a note in brackets is not an item.\", \"Slot \\\"accessory\\\" is for an item no other slot fits.\", \"\\\"is_outfit\\\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note.\"], \"limits\": [\"Rely only on the input: do not invent what it does not contain.\", \"The answer is one JSON object following \\\"answer_schema\\\", without explanations and without ```.\"], \"language\": \"English\", \"answer\": \"ITEM_LIST\", \"answer_schema\": {\"is_outfit\": \"yes|no\", \"items\": [{\"name\": \"<what the item is>\", \"details\": \"<its cut, length and fabric>\", \"slot\": \"top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory\", \"color_hex\": \"<#rrggbb or null>\", \"worn\": \"<true, or false when the description says the outfit goes without it>\"}]}, \"input\": [\"\\\"description\\\" — the outfit description\"]}, \"description\": \"Wool-blend tailored coat in a structured straight cut to hip length, color #2a3b4c, fabric with a soft matte finish.\\nCrew-neck fine-gauge knit sweater in a relaxed fit, color #f1d7c4, fabric that breathes and moves gently with the body.\\nDark wash denim jeans in a classic straight-leg silhouette, color #1c1c1c, fabric sturdy yet flexible for walking.\\nLeather ankle boots with a low block heel, color #3e2723, sole designed for grip on salted snowy streets.\\nThis ensemble honors your wish for a restrained and classic look while perfectly fitting the cold, snowy Saturday in the city center. The tailored coat provides necessary warmth against the -3°C temperature without feeling bulky, allowing you to walk comfortably by evening under artificial light. The neutral palette of charcoal, dark denim, and soft camel tones creates a timeless silhouette that feels elegant yet effortless for an afternoon out with friends. Every piece prioritizes context optimality, ensuring you stay stylish and cozy from the moment you step out into the winter air until you return home.\"}"
+     }
+    ]
+   }
+  ],
+  "temperature": 1
+ },
+ "відповідь": {
+  "status": 200,
+  "contentType": "application/json",
+  "headers": {
+   "x-model": "qwen/qwen3.5-9b"
+  },
+  "body": "{\"content\":[{\"type\":\"text\",\"text\":\"{\\n  \\\"is_outfit\\\": \\\"yes\\\",\\n  \\\"items\\\": [\\n    {\\n      \\\"name\\\": \\\"Wool-blend tailored coat\\\",\\n      \\\"details\\\": \\\"Structured straight cut to hip length with a soft matte finish\\\",\\n      \\\"slot\\\": \\\"outerwear\\\",\\n      \\\"color_hex\\\": \\\"#2a3b4c\\\",\\n      \\\"worn\\\": true\\n    },\\n    {\\n      \\\"name\\\": \\\"Fine-gauge knit sweater\\\",\\n      \\\"details\\\": \\\"Crew-neck in a relaxed fit with breathable, gently moving fabric\\\",\\n      \\\"slot\\\": \\\"top\\\",\\n      \\\"color_hex\\\": \\\"#f1d7c4\\\",\\n      \\\"worn\\\": true\\n    },\\n    {\\n      \\\"name\\\": \\\"Dark wash denim jeans\\\",\\n      \\\"details\\\": \\\"Classic straight-leg silhouette with sturdy yet flexible fabric\\\",\\n      \\\"slot\\\": \\\"bottom\\\",\\n      \\\"color_hex\\\": \\\"#1c1c1c\\\",\\n      \\\"worn\\\": true\\n    },\\n    {\\n      \\\"name\\\": \\\"Leather ankle boots\\\",\\n      \\\"details\\\": \\\"Low block heel with a sole designed for grip on salted snowy streets\\\",\\n      \\\"slot\\\": \\\"shoes\\\",\\n      \\\"color_hex\\\": \\\"#3e2723\\\",\\n      \\\"worn\\\": true\\n    }\\n  ]\\n}\"}],\"usage\":{\"input_tokens\":584,\"output_tokens\":287},\"stop_reason\":\"end_turn\"}"
+ }
+}

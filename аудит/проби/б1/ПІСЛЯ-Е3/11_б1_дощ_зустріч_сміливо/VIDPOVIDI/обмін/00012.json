@@ -1,0 +1,27 @@
+{
+ "версія": 1,
+ "запит": {
+  "model": "qwen/qwen3.5-9b",
+  "max_tokens": 4000,
+  "messages": [
+   {
+    "role": "user",
+    "content": [
+     {
+      "type": "text",
+      "text": "{\"task\": {\"role\": \"You read the description of an outfit and list its items as data.\", \"rules\": [\"One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.\", \"One item carries one thing — of two alternatives list the first; a note in brackets is not an item.\", \"Slot \\\"accessory\\\" is for an item no other slot fits.\", \"\\\"is_outfit\\\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note.\"], \"limits\": [\"Rely only on the input: do not invent what it does not contain.\", \"The answer is one JSON object following \\\"answer_schema\\\", without explanations and without ```.\"], \"language\": \"English\", \"answer\": \"ITEM_LIST\", \"answer_schema\": {\"is_outfit\": \"yes|no\", \"items\": [{\"name\": \"<what the item is>\", \"details\": \"<its cut, length and fabric>\", \"slot\": \"top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory\", \"color_hex\": \"<#rrggbb or null>\", \"worn\": \"<true, or false when the description says the outfit goes without it>\"}]}, \"input\": [\"\\\"description\\\" — the outfit description\"]}, \"description\": \"A structured wool-blend blazer in deep forest green (#1a3c34), tailored with sharp shoulders and a cropped waist, featuring a two-button front closure. Beneath it, a silk-blend blouse in burnt orange (#cc5500) with a subtle diagonal weave pattern and a relaxed collar that drapes softly over the shoulders. A midi pencil skirt in matching forest green (#1a3c34), crafted from heavy crepe to resist wind, falling just below the knee with a slight kickpleat at the back for movement. On the feet, pointed-toe ankle boots in polished black leather (#0f0f0f) with a low block heel and water-resistant coating suitable for wet autumn streets. As an accessory, a structured clutch in dark burgundy (#4a0f18) with gold-tone hardware and a wide-brim felt hat in charcoal grey (#36454f) to shield from rain while adding architectural interest. This outfit works because the bold contrast between the earthy green palette and vibrant orange immediately satisfies her desire to stand out as requested. The structured silhouette of the blazer and skirt provides a polished professional look appropriate for meeting a client, while the chosen fabrics like crepe and wool-blend offer durability against autumn wind and light rain. The ankle boots ensure she remains comfortable and secure on potentially wet pavement without sacrificing style, striking the perfect balance between her statement goal and the practical needs of a rainy autumn day.\"}"
+     }
+    ]
+   }
+  ],
+  "temperature": 1
+ },
+ "відповідь": {
+  "status": 200,
+  "contentType": "application/json",
+  "headers": {
+   "x-model": "qwen/qwen3.5-9b"
+  },
+  "body": "{\"content\":[{\"type\":\"text\",\"text\":\"{\\n  \\\"is_outfit\\\": \\\"yes\\\",\\n  \\\"items\\\": [\\n    {\\n      \\\"name\\\": \\\"wool-blend blazer\\\",\\n      \\\"details\\\": \\\"tailored with sharp shoulders and a cropped waist, featuring a two-button front closure\\\",\\n      \\\"slot\\\": \\\"outerwear\\\",\\n      \\\"color_hex\\\": \\\"#1a3c34\\\",\\n      \\\"worn\\\": true\\n    },\\n    {\\n      \\\"name\\\": \\\"silk-blend blouse\\\",\\n      \\\"details\\\": \\\"with a subtle diagonal weave pattern and a relaxed collar that drapes softly over the shoulders\\\",\\n      \\\"slot\\\": \\\"top\\\",\\n      \\\"color_hex\\\": \\\"#cc5500\\\",\\n      \\\"worn\\\": true\\n    },\\n    {\\n      \\\"name\\\": \\\"midi pencil skirt\\\",\\n      \\\"details\\\": \\\"crafted from heavy crepe, falling just below the knee with a slight kickpleat at the back for movement\\\",\\n      \\\"slot\\\": \\\"bottom\\\",\\n      \\\"color_hex\\\": \\\"#1a3c34\\\",\\n      \\\"worn\\\": true\\n    },\\n    {\\n      \\\"name\\\": \\\"pointed-toe ankle boots\\\",\\n      \\\"details\\\": \\\"with a low block heel and water-resistant coating\\\",\\n      \\\"slot\\\": \\\"shoes\\\",\\n      \\\"color_hex\\\": \\\"#0f0f0f\\\",\\n      \\\"worn\\\": true\\n    },\\n    {\\n      \\\"name\\\": \\\"structured clutch\\\",\\n      \\\"details\\\": \\\"with gold-tone hardware\\\",\\n      \\\"slot\\\": \\\"bag\\\",\\n      \\\"color_hex\\\": \\\"#4a0f18\\\",\\n      \\\"worn\\\": true\\n    },\\n    {\\n      \\\"name\\\": \\\"wide-brim felt hat\\\",\\n      \\\"details\\\": \\\"\\\",\\n      \\\"slot\\\": \\\"headwear\\\",\\n      \\\"color_hex\\\": \\\"#36454f\\\",\\n      \\\"worn\\\": true\\n    }\\n  ]\\n}\"}],\"usage\":{\"input_tokens\":653,\"output_tokens\":413},\"stop_reason\":\"end_turn\"}"
+ }
+}

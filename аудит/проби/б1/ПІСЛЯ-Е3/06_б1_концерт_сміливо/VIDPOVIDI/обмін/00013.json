@@ -1,0 +1,27 @@
+{
+ "версія": 1,
+ "запит": {
+  "model": "qwen/qwen3.5-9b",
+  "max_tokens": 4000,
+  "messages": [
+   {
+    "role": "user",
+    "content": [
+     {
+      "type": "text",
+      "text": "{\"task\": {\"role\": \"You read the description of an outfit and list its items as data.\", \"rules\": [\"One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.\", \"One item carries one thing — of two alternatives list the first; a note in brackets is not an item.\", \"Slot \\\"accessory\\\" is for an item no other slot fits.\", \"\\\"is_outfit\\\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note.\"], \"limits\": [\"Rely only on the input: do not invent what it does not contain.\", \"The answer is one JSON object following \\\"answer_schema\\\", without explanations and without ```.\"], \"language\": \"English\", \"answer\": \"ITEM_LIST\", \"answer_schema\": {\"is_outfit\": \"yes|no\", \"items\": [{\"name\": \"<what the item is>\", \"details\": \"<its cut, length and fabric>\", \"slot\": \"top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory\", \"color_hex\": \"<#rrggbb or null>\", \"worn\": \"<true, or false when the description says the outfit goes without it>\"}]}, \"input\": [\"\\\"description\\\" — the outfit description\"]}, \"description\": \"An asymmetrical cropped mesh top in black (#000000) with a geometric cut exposing the midriff, paired with high-waisted wide-leg trousers in a deep charcoal heather (#36454F) made of stretch cotton blend for movement. Oversized distressed denim jacket in washed indigo (#1E2C3A), featuring raw hems and frayed cuffs, layered over the top to allow for easy layering or removal as body temperature changes in the crowd. Chunky silver-tone platform sneakers with a sculptural sole design in metallic grey (#B0B0B0), combining athletic support with an avant-garde silhouette to anchor the look firmly in the rock context. A minimalist choker necklace with an industrial gear pendant in oxidized silver (#2F3135) and matte black leather fingerless gloves that add an edgy, protective texture while maintaining freedom of hand movement.\\n\\nThis outfit works by blending a rebellious rock aesthetic with functional comfort required for standing in a dense crowd throughout an evening event. The mesh top and wide-leg trousers create an elongated silhouette that stands out against the sea of bodies without compromising mobility, while the industrial jewelry references directly aligns with the concert's musical genre. The combination of dark, moody colors with silver hardware ensures high visibility under artificial club lighting, fulfilling her desire to be seen confidently. The oversized jacket provides a necessary layer for potential temperature drops in an unheated venue while maintaining a cool, effortless style that matches her bold intent.\"}"
+     }
+    ]
+   }
+  ],
+  "temperature": 1
+ },
+ "відповідь": {
+  "status": 200,
+  "contentType": "application/json",
+  "headers": {
+   "x-model": "qwen/qwen3.5-9b"
+  },
+  "body": "{\"content\":[{\"type\":\"text\",\"text\":\"{\\n  \\\"is_outfit\\\": \\\"yes\\\",\\n  \\\"items\\\": [\\n    {\\n      \\\"name\\\": \\\"mesh top\\\",\\n      \\\"details\\\": \\\"asymmetrical cropped with geometric cut exposing the midriff\\\",\\n      \\\"slot\\\": \\\"top\\\",\\n      \\\"color_hex\\\": \\\"#000000\\\",\\n      \\\"worn\\\": true\\n    },\\n    {\\n      \\\"name\\\": \\\"high-waisted wide-leg trousers\\\",\\n      \\\"details\\\": \\\"made of stretch cotton blend for movement\\\",\\n      \\\"slot\\\": \\\"bottom\\\",\\n      \\\"color_hex\\\": \\\"#36454F\\\",\\n      \\\"worn\\\": true\\n    },\\n    {\\n      \\\"name\\\": \\\"oversized distressed denim jacket\\\",\\n      \\\"details\\\": \\\"featuring raw hems and frayed cuffs\\\",\\n      \\\"slot\\\": \\\"outerwear\\\",\\n      \\\"color_hex\\\": \\\"#1E2C3A\\\",\\n      \\\"worn\\\": true\\n    },\\n    {\\n      \\\"name\\\": \\\"chunky silver-tone platform sneakers\\\",\\n      \\\"details\\\": \\\"with a sculptural sole design in metallic grey\\\",\\n      \\\"slot\\\": \\\"shoes\\\",\\n      \\\"color_hex\\\": \\\"#B0B0B0\\\",\\n      \\\"worn\\\": true\\n    },\\n    {\\n      \\\"name\\\": \\\"choker necklace\\\",\\n      \\\"details\\\": \\\"industrial gear pendant\\\",\\n      \\\"slot\\\": \\\"collar_necklace\\\",\\n      \\\"color_hex\\\": \\\"#2F3135\\\",\\n      \\\"worn\\\": true\\n    },\\n    {\\n      \\\"name\\\": \\\"fingerless gloves\\\",\\n      \\\"details\\\": \\\"matte black leather for an edgy, protective texture\\\",\\n      \\\"slot\\\": \\\"gloves\\\",\\n      \\\"color_hex\\\": \\\"#000000\\\",\\n      \\\"worn\\\": true\\n    }\\n  ]\\n}\"}],\"usage\":{\"input_tokens\":663,\"output_tokens\":402},\"stop_reason\":\"end_turn\"}"
+ }
+}

@@ -1,0 +1,27 @@
+{
+ "версія": 1,
+ "запит": {
+  "model": "qwen/qwen3.5-9b",
+  "max_tokens": 4000,
+  "messages": [
+   {
+    "role": "user",
+    "content": [
+     {
+      "type": "text",
+      "text": "{\"task\": {\"role\": \"You are a personal stylist. Put together one outfit for her case.\", \"rules\": [\"Items one per line, garments first, then shoes and accessories: what it is, cut, length, color with its hex code, fabric.\", \"An outer layer only when the weather needs it; at +20 °C and warmer there is none.\", \"Last, why this outfit works, in 3–4 sentences.\"], \"limits\": [\"Do not name lightness numbers, body measurements or height in numbers, or body-type labels, and do not say you had limits.\", \"The answer is plain text laid out as the rules say, not JSON.\"], \"language\": \"English\", \"answer\": \"OUTFIT_TEXT\", \"input\": [\"\\\"case\\\" — her case: the occasion, where and when, the weather, the dress code, her wishes and refusals — as codes, her own words as quotes; do not take an item that goes against her refusals or her words\", \"\\\"formality\\\" — the level of dress she named: home (loungewear, athleisure, sportswear) < everyday (jeans, a T-shirt and sneakers; neat casual, dark denim) < neat (business: a blouse, a shirt or a refined knit with trousers or a skirt, a textured jacket or a cardigan, loafers, ballet flats or ankle boots; social: a day dress, a refined knit with a skirt or trousers, a textured jacket, neat flats or ankle boots) < smart (business: a jacket with trousers or a skirt, a blouse or a shirt, loafers or pumps; a sheath dress with a jacket; social: a cocktail dress, heeled shoes) < formal (business: a business suit — a jacket with trousers or a skirt of one fabric — with a blouse, pumps; social: a formal dress of a noble fabric, heeled shoes) < very_smart (an evening gown) < ceremonial (a full-length evening gown with long gloves)\"]}, \"case\": {\"field_quotes\": {\"occasion\": \"я гостя на весіллі сестри в серпні, церемонія надворі о 16:00, потім ресторан\", \"hour\": \"о 16:00\", \"month\": \"в серпні\", \"place_words\": \"надворі о 16:00, потім ресторан\"}, \"formality_reason\": \"her_words\", \"event\": \"я гостя на весіллі сестри в серпні, церемонія надворі о 16:00, потім ресторан\", \"start_hour\": 16, \"occasion\": \"wedding_guest\", \"formality\": [\"formal\"], \"season\": \"summer\", \"part_of_day\": \"day\", \"light\": \"daylight\"}}"
+     }
+    ]
+   }
+  ],
+  "temperature": 1
+ },
+ "відповідь": {
+  "status": 200,
+  "contentType": "application/json",
+  "headers": {
+   "x-model": "qwen/qwen3.5-9b"
+  },
+  "body": "{\"content\":[{\"type\":\"text\",\"text\":\"Silk-blend sheath dress, midi length with a subtle V-neckline, soft champagne color (#F5E6CA), lightweight woven fabric.\\nStrappy sandal heel pump, open toe design, metallic gold finish (#D4AF37), smooth leather material.\\nDelicate pearl drop earrings and a thin diamond solitaire ring to add a touch of elegance without overwhelming the natural daylight.\\n\\nThis outfit works perfectly for an August garden wedding transitioning into a dinner at 16:00 because the champagne silk-blend fabric breathes well in warm summer weather while maintaining the polish required for formal outdoor etiquette. The metallic gold heels complement the daylight setting and bridge the gap between casual lawn festivities and the more refined atmosphere of the subsequent restaurant meal. Pearl jewelry adds a classic, understated shine that honors the occasion without competing with potential floral arrangements or other guests' attire.\"}],\"usage\":{\"input_tokens\":612,\"output_tokens\":180},\"stop_reason\":\"end_turn\"}"
+ }
+}

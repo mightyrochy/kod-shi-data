@@ -1,0 +1,51 @@
+── ПРОМПТ (2706 симв.) ──
+{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.", "One item carries one thing — of two alternatives list the first; a note in brackets is not an item.", "Slot \"accessory\" is for an item no other slot fits.", "\"is_outfit\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "ITEM_LIST", "answer_schema": {"is_outfit": "yes|no", "items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory", "color_hex": "<#rrggbb or null>", "worn": "<true, or false when the description says the outfit goes without it>"}]}, "input": ["\"description\" — the outfit description"]}, "description": "A tailored wool-blend trench coat in deep charcoal (#2F2F2F), a classic H-line cut falling to mid-calf with a water-resistant finish. A structured navy blue blazer with a single button front and sharp lapels, sized for a relaxed fit through the shoulders. High-waisted wide-leg trousers in black crepe fabric, cut straight from hip to ankle length to accommodate movement on wet pavement. A silk camisole top in forest green (#1E4D2B), featuring a square neckline and elbow-length sleeves for modesty under rain. Chunky leather ankle boots in oxblood red (#7C1616) with a thick block heel and a grippy rubber sole to handle the storm. A structured tote bag in black pebbled leather with gold hardware, spacious enough for a ticket stub and evening essentials. This outfit works because the trench coat shields her from the rain and wind while maintaining a sophisticated silhouette suitable for both the theater entrance and the subsequent dinner. The color palette of charcoal, navy, and forest green creates a harmonious, moody look appropriate for an evening date under artificial lighting, while the oxblood boots add a touch of boldness that elevates the casual \"everyday\" requirement into something special. The wide-leg trousers allow for comfortable walking on potentially slippery streets without sacrificing elegance, perfectly balancing her need for protection against the cold weather with the desire to look put-together for her evening out."}
+
+── ВІДПОВІДЬ (1224 симв., 7.9 с, HTTP 200) ──
+{
+  "is_outfit": "yes",
+  "items": [
+    {
+      "name": "trench coat",
+      "details": "tailored wool-blend cut, H-line falling to mid-calf with a water-resistant finish",
+      "slot": "outerwear",
+      "color_hex": "#2F2F2F",
+      "worn": true
+    },
+    {
+      "name": "blazer",
+      "details": "structured single button front with sharp lapels, relaxed fit through the shoulders",
+      "slot": "top",
+      "color_hex": null,
+      "worn": false
+    },
+    {
+      "name": "trousers",
+      "details": "high-waisted wide-leg black crepe fabric cut straight from hip to ankle",
+      "slot": "bottom",
+      "color_hex": null,
+      "worn": true
+    },
+    {
+      "name": "camisole top",
+      "details": "silk square neckline with elbow-length sleeves",
+      "slot": "top",
+      "color_hex": "#1E4D2B",
+      "worn": false
+    },
+    {
+      "name": "ankle boots",
+      "details": "chunky leather thick block heel with grippy rubber sole",
+      "slot": "shoes",
+      "color_hex": "#7C1616",
+      "worn": true
+    },
+    {
+      "name": "tote bag",
+      "details": "structured black pebbled leather with gold hardware, spacious",
+      "slot": "bag",
+      "color_hex": null,
+      "worn": true
+    }
+  ]
+}

@@ -1,0 +1,69 @@
+[
+ {
+  "команда": [
+   "git",
+   "merge-base",
+   "--is-ancestor",
+   "32736b6ea78ca066ff88cb5fd3f00dfd12e461cd",
+   "origin/main"
+  ],
+  "rc": 0,
+  "stdout": "",
+  "stderr": ""
+ },
+ {
+  "команда": [
+   "git",
+   "rev-parse",
+   "HEAD",
+   "origin/main"
+  ],
+  "rc": 0,
+  "stdout": "27cdb3a7f8fde9de50276857be0babcece8befdc\n226b3838272aa817ce8650706431036711f52124\n",
+  "stderr": ""
+ },
+ {
+  "команда": [
+   "git",
+   "-C",
+   "../tmp/збірка",
+   "rev-parse",
+   "HEAD"
+  ],
+  "rc": 0,
+  "stdout": "32736b6ea78ca066ff88cb5fd3f00dfd12e461cd\n",
+  "stderr": ""
+ },
+ {
+  "команда": [
+   "nvidia-smi",
+   "--query-gpu=name,memory.total,memory.used,utilization.gpu",
+   "--format=csv"
+  ],
+  "rc": 0,
+  "stdout": "name, memory.total [MiB], memory.used [MiB], utilization.gpu [%]\nNVIDIA GeForce RTX 4090 Laptop GPU, 16376 MiB, 32 MiB, 0 %\n",
+  "stderr": ""
+ },
+ {
+  "команда": [
+   "node",
+   "-e",
+   "const {chromium}=require(\"playwright\"); console.log(JSON.stringify({chromium:chromium.executablePath(),node:process.version,NODE_OPTIONS:process.env.NODE_OPTIONS||null}));"
+  ],
+  "rc": 0,
+  "stdout": "{\"chromium\":\"C:\\\\Users\\\\gemini\\\\AppData\\\\Local\\\\ms-playwright\\\\chromium-1248\\\\chrome-win64\\\\chrome.exe\",\"node\":\"v22.23.4\",\"NODE_OPTIONS\":\"--require \\\"C:/Users/gemini/gemini-runs/slots/codex-4-browser/browser.cjs\\\"\"}\n",
+  "stderr": ""
+ },
+ {
+  "середовище": {
+   "NODE_PATH": "C:\\Users\\gemini\\kod-shi-test-node\\node_modules",
+   "NODE_OPTIONS": "--require \"C:/Users/gemini/gemini-runs/slots/codex-4-browser/browser.cjs\"",
+   "PYTHONPATH": "C:\\Users\\gemini\\gemini-runs\\slots\\codex-4-browser;",
+   "TEMP": "C:\\Users\\gemini\\gemini-runs\\w\\20261030-133820-e1bd8630d7d2\\tmp",
+   "TMP": "C:\\Users\\gemini\\gemini-runs\\w\\20261030-133820-e1bd8630d7d2\\tmp",
+   "PYTHONUTF8": "1",
+   "PYTHONIOENCODING": "utf-8"
+  },
+  "час_utc": "2026-10-30T11:40:13.334027+00:00"
+ }
+]

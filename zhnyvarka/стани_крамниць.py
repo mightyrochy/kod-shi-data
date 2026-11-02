@@ -10,7 +10,7 @@ import xml.etree.ElementTree as ET
 
 СТАНИ = frozenset(("CATALOG", "WAIT", "DISABLED", "RECON"))
 ПРИЧИНИ = frozenset(("UNKNOWN", "HTTP", "BOT_CHALLENGE", "TIMEOUT", "TRANSPORT",
-                    "UNSUPPORTED_API", "EMPTY_SOURCE", "EXCEPTION"))
+                    "UNSUPPORTED_API", "EMPTY_SOURCE", "EXCEPTION", "CEILING"))
 ДОСТУП = frozenset(("UNKNOWN", "CLOUD", "HOME_ONLY", "JS_CHALLENGE", "UNAVAILABLE"))
 
 

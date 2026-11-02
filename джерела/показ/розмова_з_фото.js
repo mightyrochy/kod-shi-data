@@ -194,7 +194,7 @@ function наповнитиКолаП(ред, ід){
   ред.колаВузол.innerHTML = ''; ред.кола.clear();
   п.довідник.кольори.filter(к=>п.всіКольори || к.часто).forEach(к=>{
     const б = ел('button', 'оц-коло'); б.type = 'button';
-    б.style.background = к.hex; назваЖінціП(б, к.ключ, undefined, 'title'); назваЖінціП(б, к.ключ, undefined, 'aria-label'); б.dataset.код = к.код;
+    б.style.background = к.hex; текстЖінціП(б, к.ключ, 'without_text', своїЕкрануП(), 'title'); текстЖінціП(б, к.ключ, 'without_text', своїЕкрануП(), 'aria-label'); б.dataset.код = к.код;
     б.onclick = ()=>{ дотикП(); виправитиПерелікП([{op: 'set', item: ід, color: к.код}]); };
     ред.колаВузол.appendChild(б); ред.кола.set(к.ключ, б);
   });
@@ -485,7 +485,7 @@ function рядокЗміниП(з, р){
     if (х.урл){ const л = елНазваП('a', null, х.назва || ''); л.href = х.урл; л.target = '_blank'; л.rel = 'noopener'; н.appendChild(л); }
     else if (х.назва) н.appendChild(елНазваП('span', 'назва', х.назва));
     const під = ел('div', 'під');
-    if (х.крамниця){ const тв = document.createTextNode(''); назваЖінціП(тв, х.крамниця + (х.ціна ? ' · ' : ''), undefined, 'data'); під.appendChild(тв); }
+    if (х.крамниця){ const тв = document.createTextNode(''); текстЖінціП(тв, підписЗНазвоюП([{назва: String(х.крамниця)}, х.ціна ? ' · ' : '']), undefined, undefined, 'data'); під.appendChild(тв); }
     if (х.ціна) під.appendChild(елЖінціП('span', 'ціна', грн(х.ціна)));
     н.appendChild(під);
   }

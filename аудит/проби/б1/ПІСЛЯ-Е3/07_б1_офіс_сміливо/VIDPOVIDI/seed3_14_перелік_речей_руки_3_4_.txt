@@ -1,0 +1,37 @@
+── ПРОМПТ (2448 симв.) ──
+{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.", "One item carries one thing — of two alternatives list the first; a note in brackets is not an item.", "Slot \"accessory\" is for an item no other slot fits.", "\"is_outfit\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "ITEM_LIST", "answer_schema": {"is_outfit": "yes|no", "items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory", "color_hex": "<#rrggbb or null>", "worn": "<true, or false when the description says the outfit goes without it>"}]}, "input": ["\"description\" — the outfit description"]}, "description": "A refined knit top with a subtle texture in charcoal gray (#36454F), cut with a relaxed fit that falls just above the waist, crafted from soft merino wool for autumn warmth.\nTailored trousers in matching charcoal gray (#36454F), featuring a straight-leg silhouette and an ankle-length hem to show off footwear, made of structured wool-blend fabric.\nA textured wool blazer in deep slate blue (#2F4F4F), cut with single-breasted buttons and notch lapels, falling to the hip line to add a polished layer without bulk.\nLeather ankle boots in espresso brown (#3B2720) with a low block heel and a pointed toe, designed for comfort during long office days while maintaining elegance.\nThis outfit works because it balances your desire to stand out with professional appropriateness by using rich, contrasting colors like slate and charcoal that command attention without being loud. The structured wool pieces add visual weight and sophistication suitable for an autumn day, ensuring you feel confident and expressive in a work setting. By choosing refined textures rather than bold patterns or logos, the look remains chic and grounded while still achieving your goal of making a memorable impression."}
+
+── ВІДПОВІДЬ (924 симв., 5.1 с, HTTP 200) ──
+{
+  "is_outfit": "yes",
+  "items": [
+    {
+      "name": "knit top",
+      "details": "relaxed fit that falls just above the waist, crafted from soft merino wool",
+      "slot": "top",
+      "color_hex": "#36454F",
+      "worn": true
+    },
+    {
+      "name": "tailored trousers",
+      "details": "straight-leg silhouette and an ankle-length hem, made of structured wool-blend fabric",
+      "slot": "bottom",
+      "color_hex": "#36454F",
+      "worn": true
+    },
+    {
+      "name": "wool blazer",
+      "details": "single-breasted buttons and notch lapels, falling to the hip line",
+      "slot": "outerwear",
+      "color_hex": "#2F4F4F",
+      "worn": true
+    },
+    {
+      "name": "leather ankle boots",
+      "details": "low block heel and a pointed toe, designed for comfort during long office days while maintaining elegance",
+      "slot": "shoes",
+      "color_hex": "#3B2720",
+      "worn": true
+    }
+  ]
+}

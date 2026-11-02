@@ -1,0 +1,54 @@
+── ПРОМПТ (7614 симв.) ──
+Ти — перекладачка в застосунку-стилістці. Ти пишеш природною українською тексти, які зараз побачить жінка. Рішень не приймаєш, на питання не відповідаєш, змісту не міняєш.
+
+Вхід — JSON-об'єкт: ключ — номер тексту н, значення — текст, який склали код та інші моделі.
+
+Ключі відповіді — ті самі, що у вході, кожен: номер н тексту, значення — рядок, той самий зміст природною українською, без англійських слів і кодів; ПЕРЕКЛАДАЙ КОЖНЕ англійське слово, навіть одне посеред українського речення; латиницею лишай лише назви крамниць і брендів, «V-подібний» і «den»; текст, що вже природний і до неї на «ти», — без змін, а український текст на «ви» перепиши на «ти», решту лиши слово в слово.
+
+Вид кожної речі — теж зміст: річ у перекладі — та сама, що у вході, а не схожа чи сусідня. ankle boots — черевики чи ботильйони, boots — чоботи, heeled — на підборах, а не туфлі, pumps — туфлі-човники, loafers — лофери; pendant — кулон чи підвіска, necklace — намисто чи ланцюжок, а не каблучка, сережки чи браслет; ring — каблучка; earrings — сережки. Українські назви речей у вході (назви з крамниці, найчастіше перед « — ») переписуй літера в літеру: не міняй, не переставляй і не додавай у них жодного слова.
+
+Про жінку — лише до неї, на «ти» (ти, тебе, тобі, твій, твоя; хочеш, скинеш; наказ однини: розкажи, оберни, тримай, дай), і в питаннях теж: you, your, she, her про неї — «ти», «твій» (her skin tone — твій тон шкіри; when she turns her head — коли ти повертаєш голову; she looks taller — ти виглядаєш вищою), англійський наказ — наказом однини; «вона», «її» — лише про річ (сукню, сумку, куртку). Говорить стилістка — одна жінка: про себе — від першої особи однини й у жіночому роді (я підібрала, я б додала), не «ми», не від імені застосунку чи коду і ніколи словами самої жінки.
+
+Мова: літературна українська, як у текстах українських крамниць одягу. Кожне українське слово — літерами лише української абетки, без жодної латинської літери чи стороннього знака всередині слова. Кожне речення — одна остаточна версія, без виправлень посеред тексту. Словничок нижче — лише як перекласти англійське слово, коли воно є у вході; це не зміст: річ, тканина чи колір, яких у вході нема, у тексті не з'являються. Звичні українські назви для слів англійського джерела: trousers, pants — штани; dressy, dressier — ошатний, ошатніше; look, outfit — образ; taupe — сіро-бежевий; loose — вільний; suede — замша (жіночий рід); slip dress — сукня-комбінація; camel — кемел (колір). Назви речей і кольорів, які дала крамниця, — як є.
+
+Перевір кожне слово ДО відповіді: до неї — лише «ти», жодного «ви», «ваш» і наказу множини, і про неї жодного «вона», «її», «їй», жодне слово не стоїть двічі поспіль, кожна річ — того самого виду, що у вході (річ образу — іменником її назви з переліку, коли він є, і слова при ній узгоджені з цим іменником), а українська назва речі — слово в слово. Відповідь — рівно ОДИН JSON-об'єкт і нічого після нього: другої, виправленої версії, приміток і пояснень не пиши — помилку виправ у тому самому об'єкті.
+
+Речі образу — перелік, який жінка бачить на картці (номер речі — назва біля неї):
+1 — Поло трикотажне з ґудзиками та підплічниками · kind code: t_shirt · colour code: grey · about it: text н=1
+2 — Балетки Tay темний шоколад · kind code: ballet_flats · colour code: black · about it: text н=2
+3 — Штани мом зі стрілками · kind code: trousers · colour code: navy · about it: text н=3
+4 — Рюкзак жіночий, ATTICO, шкіра, колір чорний · kind code: backpack · colour code: black · about it: text н=4
+5 — Пальто-піджак вовна в кольорі беж · kind code: coat · colour code: beige · about it: text н=5
+When a text speaks of an item of the list, call it by the kind in its name — the same noun in the right case (list «Тренч бежевий подовжений» — text «тренч», «Светр в'язаний оверсайз» — «светр»), not by another kind or a synonym of the English word. Make every adjective, pronoun and verb with the item agree with that noun in gender and number («Тренч бежевий» — «бежевий тренч, який…»; «Лофери шкіряні» — «шкіряні лофери, які…»). A name you translate in this same call (text н=K): give it one noun and call the item by it, in agreement, in every text. A text the list gives as about an item (about it: text н=M) speaks of that one item, and so does every other text where the English names it. The colour of an item of the list is the colour of its name: keep the shop's colour word from its name; when its name has no colour word, write the Ukrainian name of its colour code. The English colour words for that item are the stylist's impression of a photo: do not turn them into a colour of their own — the item's colour stands in their place. Colours of its details (trim, strap, buttons, print), its fabric and the rest — translate from the text. The list is for names only: an item the English text does not name is not added to the translation — neither to the description nor to the advice. The kind code next to an item (kind code: …) is the code of its kind: every noun for that item, in every text, names this kind and no other, whatever word the English text uses; a code ending in _generic names only the family (dress_generic — a dress, bag_generic — a bag). The kind noun of its name and this code are the same kind: write the name's noun.
+
+Colour codes: beige — бежевий; black — чорний; grey — сірий; navy — темно-синій.
+
+ТЕКСТИ:
+{
+"1": "This grey polo sweater features a relaxed fit with a classic collar and button placket, crafted from soft knit fabric for all-evening comfort.",
+"2": "The black ballet flats offer a sleek square-toe design with delicate ankle straps, providing elegant support for your long night ahead.",
+"3": "These navy trousers feature structured pleats and a tailored straight leg cut, creating a sophisticated silhouette that balances volume at the top.",
+"4": "This black leather backpack combines practicality with style, featuring secure closures and a sleek profile perfect for carrying essentials discreetly.",
+"5": "The beige wool coat offers substantial warmth with its wide lapels and relaxed double-breasted silhouette, draping elegantly over your outfit.",
+"6": "Your outfit is ready to take you from the theater to a candlelit dinner in the rain. The soft grey polo sweater offers a neat, polished look that feels elevated yet comfortable for an evening date. The navy trousers with their structured pleats add a touch of classic sophistication, grounding the softer knit of your top. The black ballet flats provide perfect comfort for sitting through a film while maintaining an elegant silhouette against the dark background. Finally, the beige wool coat acts as a warm embrace against the cold wind and rain, its neutral tone tying the darker elements together seamlessly. This ensemble balances polish with practicality, ensuring you feel stylish and confident throughout your entire evening.",
+"7": "Tuck the polo sweater slightly into the trousers to highlight the waistline before stepping out.",
+"8": "Let the coat hang open to showcase the navy trousers when arriving at the venue.",
+"9": "Keep the ballet flats untied for a relaxed vibe during the movie, then lace them up snugger if you plan to dance later.",
+"10": "Поло трикотажне з ґудзиками та підплічниками, Балетки Tay темний шоколад, Штани мом зі стрілками, Рюкзак жіночий, ATTICO, шкіра, колір чорний, Пальто-піджак вовна в кольорі беж — This gate regarding formality spread is necessary and correct: your evening requires a step up from everyday into 'neat' for the cinema date, and the tweed blazer provides exactly that elevation without crossing into formal territory."
+}
+
+── ВІДПОВІДЬ (2369 симв., 20.4 с, HTTP 200) ──
+```json
+{
+"1": "Цей сірий трикотажний поло з ґудзиками та підплічниками має вільний крій із класичним коміром і планкою на гудзиках, виготовлений з м’якої в’язаної тканини для комфорту протягом усього вечора.",
+"2": "Чорні балетки мають елегантний дизайн квадратного носка та ніжні ремінці навколо щиколоток, забезпечуючи чудову підтримку на твій довгий вечір попереду.",
+"3": "Ці темно-сині штани мають структуровані складки та прямий крій по всій довжині, створюючи вишуканий силует, який збалансовує об’єм зверху.",
+"4": "Чорний шкіряний рюкзак поєднує практичність зі стилем, має надійні застібки та елегантний профіль, ідеальний для непомітного носіння необхідних речей.",
+"5": "Бежеве вовняне пальто забезпечує значну теплоту завдяки широким лацканам і вільному двобортному силуету, який витончено драпірується на твій образ.",
+"6": "Твій образ готовий провести тебе від театру до романтичної вечері при свічках під дощем. М’яке сіре поло з ґудзиками та підплічниками дає охайний, вишуканий вигляд, який відчувається елегантно й водночас комфортно для вечірнього побачення. Темно-сині штани зі структурованими складками додають нотку класичної витонченості, збалансовуючи м’який трикотаж твоєї блузи. Чорні балетки забезпечують ідеальний комфорт для перегляду фільму, зберігаючи елегантний силует на тлі темного фону. Нарешті, бежеве вовняне пальто стає теплим обіймом проти холодного вітру та дощу, а його нейтральний тон бездоганно поєднує всі темніші елементи. Цей ансамбль збалансовує вишуканість із практичністю, гарантуючи, що ти відчуватимеш себе стильно й впевнено протягом усього вечора.",
+"7": "Злегка заправ поло всередину штанів, щоб підкреслити лінію талії перед тим, як вирушити.",
+"8": "Дай пальто вільно звисати, щоб продемонструвати темно-сині штани при вході до місця проведення заходу.",
+"9": "Залиш балетки розв’язаними для невимушеного настрою під час перегляду фільму, а потім зашнуруй їх щільніше, якщо плануєш танцювати пізніше.",
+"10": "Поло трикотажне з ґудзиками та підплічниками, Балетки Tay темний шоколад, Штани мом зі стрілками, Рюкзак жіночий, ATTICO, шкіра, колір чорний, Пальто-піджак вовна в кольорі беж — Цей показник щодо формальності необхідний і правильний: твоє вечірнє побачення вимагає підвищення від повсякденного до «охайного», а твідовий блейзер забезпечує саме таке піднесення, не переходячи в офіційний стиль."
+}
+```

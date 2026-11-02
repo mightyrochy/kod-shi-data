@@ -1,0 +1,56 @@
+── ПРОМПТ (7836 симв.) ──
+Ти — перекладачка в застосунку-стилістці. Ти пишеш природною українською тексти, які зараз побачить жінка. Рішень не приймаєш, на питання не відповідаєш, змісту не міняєш.
+
+Вхід — JSON-об'єкт: ключ — номер тексту н, значення — текст, який склали код та інші моделі.
+
+Ключі відповіді — ті самі, що у вході, кожен: номер н тексту, значення — рядок, той самий зміст природною українською, без англійських слів і кодів; ПЕРЕКЛАДАЙ КОЖНЕ англійське слово, навіть одне посеред українського речення; латиницею лишай лише назви крамниць і брендів, «V-подібний» і «den»; текст, що вже природний і до неї на «ти», — без змін, а український текст на «ви» перепиши на «ти», решту лиши слово в слово.
+
+Вид кожної речі — теж зміст: річ у перекладі — та сама, що у вході, а не схожа чи сусідня. ankle boots — черевики чи ботильйони, boots — чоботи, heeled — на підборах, а не туфлі, pumps — туфлі-човники, loafers — лофери; pendant — кулон чи підвіска, necklace — намисто чи ланцюжок, а не каблучка, сережки чи браслет; ring — каблучка; earrings — сережки. Українські назви речей у вході (назви з крамниці, найчастіше перед « — ») переписуй літера в літеру: не міняй, не переставляй і не додавай у них жодного слова.
+
+Про жінку — лише до неї, на «ти» (ти, тебе, тобі, твій, твоя; хочеш, скинеш; наказ однини: розкажи, оберни, тримай, дай), і в питаннях теж: you, your, she, her про неї — «ти», «твій» (her skin tone — твій тон шкіри; when she turns her head — коли ти повертаєш голову; she looks taller — ти виглядаєш вищою), англійський наказ — наказом однини; «вона», «її» — лише про річ (сукню, сумку, куртку). Говорить стилістка — одна жінка: про себе — від першої особи однини й у жіночому роді (я підібрала, я б додала), не «ми», не від імені застосунку чи коду і ніколи словами самої жінки.
+
+Мова: літературна українська, як у текстах українських крамниць одягу. Кожне українське слово — літерами лише української абетки, без жодної латинської літери чи стороннього знака всередині слова. Кожне речення — одна остаточна версія, без виправлень посеред тексту. Словничок нижче — лише як перекласти англійське слово, коли воно є у вході; це не зміст: річ, тканина чи колір, яких у вході нема, у тексті не з'являються. Звичні українські назви для слів англійського джерела: trousers, pants — штани; dressy, dressier — ошатний, ошатніше; look, outfit — образ; taupe — сіро-бежевий; loose — вільний; suede — замша (жіночий рід); slip dress — сукня-комбінація; camel — кемел (колір). Назви речей і кольорів, які дала крамниця, — як є.
+
+Перевір кожне слово ДО відповіді: до неї — лише «ти», жодного «ви», «ваш» і наказу множини, і про неї жодного «вона», «її», «їй», жодне слово не стоїть двічі поспіль, кожна річ — того самого виду, що у вході (річ образу — іменником її назви з переліку, коли він є, і слова при ній узгоджені з цим іменником), а українська назва речі — слово в слово. Відповідь — рівно ОДИН JSON-об'єкт і нічого після нього: другої, виправленої версії, приміток і пояснень не пиши — помилку виправ у тому самому об'єкті.
+
+Речі образу — перелік, який жінка бачить на картці (номер речі — назва біля неї):
+1 — Чорний приталений жакет із овечої шкіри · kind code: blazer · colour code: black · about it: text н=1
+2 — Шорти з костюмної тканини темно-сірий · kind code: shorts · colour code: grey · about it: text н=2
+3 — Сумка жіноча, ATTICO, екошкіра, колір рудий · kind code: bag_generic · colour code: ginger · about it: text н=3
+4 — Круглі сережки чорного кольору з логотипом · kind code: earrings · colour code: black · about it: text н=4
+5 — Туфлі-човники, ATTICO, замша, колір чорний · kind code: pumps · colour code: black · about it: text н=5
+When a text speaks of an item of the list, call it by the kind in its name — the same noun in the right case (list «Тренч бежевий подовжений» — text «тренч», «Светр в'язаний оверсайз» — «светр»), not by another kind or a synonym of the English word. Make every adjective, pronoun and verb with the item agree with that noun in gender and number («Тренч бежевий» — «бежевий тренч, який…»; «Лофери шкіряні» — «шкіряні лофери, які…»). A name you translate in this same call (text н=K): give it one noun and call the item by it, in agreement, in every text. A text the list gives as about an item (about it: text н=M) speaks of that one item, and so does every other text where the English names it. The colour of an item of the list is the colour of its name: keep the shop's colour word from its name; when its name has no colour word, write the Ukrainian name of its colour code. The English colour words for that item are the stylist's impression of a photo: do not turn them into a colour of their own — the item's colour stands in their place. Colours of its details (trim, strap, buttons, print), its fabric and the rest — translate from the text. The list is for names only: an item the English text does not name is not added to the translation — neither to the description nor to the advice. The kind code next to an item (kind code: …) is the code of its kind: every noun for that item, in every text, names this kind and no other, whatever word the English text uses; a code ending in _generic names only the family (dress_generic — a dress, bag_generic — a bag). The kind noun of its name and this code are the same kind: write the name's noun.
+
+Colour codes: black — чорний; ginger — рудий; grey — сірий.
+
+ТЕКСТИ:
+{
+"1": "This black leather blazer features a fitted cut, structured lapels, and two buttons that define your upper silhouette for a sharp, modern look.",
+"2": "These high-waisted shorts are made from dark grey melange suiting fabric with deep pleats that add texture and clean lines to your lower half.",
+"3": "This ATTICO bag is crafted from ginger-coloured eko-skin, offering a warm, earthy tone that contrasts beautifully with the cool tones of your outfit.",
+"4": "These are round stud earrings featuring black centres with gold 'miu miu' logos on a polished gold-tone border, adding a touch of designer statement to your ears.",
+"5": "These pumps are made of black velvet with a pointed toe and low heel, providing a soft yet sophisticated finish that grounds the entire ensemble.",
+"6": "I have crafted a look for you that balances classic elegance with rock concert energy. You will wear the black fitted leather blazer, which defines your upper silhouette and adds a tough edge, paired with high-waisted dark grey pleated shorts that elongate your legs. Your ensemble is finished with ginger-coloured ATTICO eko-skin bags that act as a vibrant pop against the monochrome base, gold-and-silver logo stud earrings for subtle metallic shine, and classic black velvet pumps to ground the outfit.",
+"7": "Tuck your blouse under the blazer waist if you wear one, or let it hang naturally for a relaxed silhouette.",
+"8": "Чорний приталений жакет із овечої шкіри — I replaced the grey scarf with this black leather belt to add structure and edge without cluttering the neck, directly answering the 'remove_duplicate_accessory' finding by turning a soft accessory into a structural one.",
+"9": "Шорти з костюмної тканини темно-сірий — This straight-leg wool trouser replaces the jersey version to meet the occasion's 'smart' formality band, fixing the 'item_below_occasion_band_unexplained' issue.",
+"10": "Сумка жіноча, ATTICO, екошкіра, колір рудий — This orange hue sits inside your palette's scheme arc, honoring your chosen 'neutrals_plus_accent' harmony rather than ignoring it.",
+"11": "Чорний приталений жакет із овечої шкіри, Шорти з костюмної тканини темно-сірий, Сумка жіноча, ATTICO, екошкіра, колір рудий, Круглі сережки чорного кольору з логотипом, Туфлі-човники, ATTICO, замша, колір чорний — The neutral base and single accent structure serves as a clean foundation for the rock event, letting the atmosphere provide the extra noise you seek."
+}
+
+── ВІДПОВІДЬ (2572 симв., 21.7 с, HTTP 200) ──
+```json
+{
+"1": "Цей чорний шкіряний жакет має приталений крій, структуровані лацкани та дві ґудзики, які визначають твій верхній силует для гострого, сучасного образу.",
+"2": "Ці шорти з високою посадкою виготовлені з темно-сірої костюмної тканини в рубчик із глибокими складками, що додають текстури та чистих ліній твоїй нижній частині тіла.",
+"3": "Ця сумка ATTICO виготовлена зі шкіри еко-замші кольору рудого відтінку, пропонуючи теплий, землистий тон, який чудово контрастує з холодними тонами твого образу.",
+"4": "Це круглі сережки-гвіздок із чорним центром і золотими логотипами 'miu miu' на відполірованій позолоченій облямівці, додаючи до твоїх вушок нотку дизайнерської виразності.",
+"5": "Ці туфлі-човники зроблені з чорного оксамиту зі загостреним миском і низьким підбором, забезпечуючи м’який, але вишуканий фініш, який завершує весь ансамбль.",
+"6": "Я створила для тебе образ, що поєднує класичну елегантність із енергією рок-концерту. Ти носитимеш чорний приталений шкіряний жакет, який визначає твій верхній силует і додає зухвалого шарму, у парі з шортами темно-сірого кольору в рубчик із високою посадкою, які видовжують ноги. Твій ансамбль завершується сумкою ATTICO рудого кольору зі шкіри еко-замші, яка слугує яскравим акцентом на тлі монохромної основи, золотими та срібними сережками з логотипом для ледь помітного металевого блиску та класичними чорними оксамитовими туфлями-човниками, щоб завершити образ.",
+"7": "Заправ сорочку під пояс жакета, якщо носиш її, або залиш вільно висіти для невимушеного силуету.",
+"8": "Чорний приталений жакет із овечої шкіри — Я замінила сірий шарф на цей чорний шкіряний ремінь, щоб додати структури та зухвалості без перевантаження шиї, прямо відповідаючи знахідці 'remove_duplicate_accessory', перетворивши м’який аксесуар у структурний.",
+"9": "Шорти з костюмної тканини темно-сірий — Ці прямі вовняні штани замінюють джерсеєву версію, щоб відповідати формальності заходу 'smart', вирішуючи проблему 'item_below_occasion_band_unexplained'.",
+"10": "Сумка жіноча, ATTICO, екошкіра, колір рудий — Цей помаранчевий відтінок знаходиться в межах твоєї палітри кольорів, шануючи твою обрану гармонію 'neutrals_plus_accent', а не ігноруючи її.",
+"11": "Чорний приталений жакет із овечої шкіри, Шорти з костюмної тканини темно-сірий, Сумка жіноча, ATTICO, екошкіра, колір рудий, Круглі сережки чорного кольору з логотипом, Туфлі-човники, ATTICO, замша, колір чорний — Нейтральна основа та єдиний акцент створюють чисту основу для рок-події, дозволяючи атмосфері забезпечити додатковий шум, який ти шукаєш."
+}
+```

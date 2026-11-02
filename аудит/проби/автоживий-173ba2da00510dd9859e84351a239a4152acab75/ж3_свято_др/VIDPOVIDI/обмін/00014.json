@@ -1,0 +1,27 @@
+{
+ "версія": 1,
+ "запит": {
+  "model": "qwen/qwen3.5-9b",
+  "max_tokens": 4000,
+  "messages": [
+   {
+    "role": "user",
+    "content": [
+     {
+      "type": "text",
+      "text": "{\"task\": {\"role\": \"You read the description of an outfit and list its items as data.\", \"rules\": [\"One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.\", \"One item carries one thing — of two alternatives list the first; a note in brackets is not an item.\", \"Slot \\\"accessory\\\" is for an item no other slot fits.\", \"\\\"is_outfit\\\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note.\"], \"limits\": [\"Rely only on the input: do not invent what it does not contain.\", \"The answer is one JSON object following \\\"answer_schema\\\", without explanations and without ```.\"], \"language\": \"English\", \"answer\": \"ITEM_LIST\", \"answer_schema\": {\"is_outfit\": \"yes|no\", \"items\": [{\"name\": \"<what the item is>\", \"details\": \"<its cut, length and fabric>\", \"slot\": \"top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory\", \"color_hex\": \"<#rrggbb or null>\", \"worn\": \"<true, or false when the description says the outfit goes without it>\"}]}, \"input\": [\"\\\"description\\\" — the outfit description\"]}, \"description\": \"Silk camisole top with a relaxed drape cut and knee-length hem in midnight blue (#001a3f) and soft chiffon flowy trousers with wide legs in charcoal gray (#36454f); Strappy stiletto sandals in metallic silver (#c0c0c0) with a thin heel and adjustable ankle strap; Gold vermeil hoop earrings with textured surface, a delicate chain link necklace in rose gold (#b76e79), and a structured leather clutch in deep olive green (#3f4a3d). This outfit strikes the perfect balance for your friend's birthday party by offering elevated comfort suitable for an evening autumn celebration under artificial lighting. The rich jewel tones of midnight blue and charcoal gray feel sophisticated yet relaxed, adhering strictly to your everyday formality preference while ensuring you stay warm against the fall chill without feeling overdressed. The metallic accents and flowy silhouettes add a touch of glamour perfect for dancing or mingling, honoring your wish for something special that still feels authentically you.\"}"
+     }
+    ]
+   }
+  ],
+  "temperature": 1
+ },
+ "відповідь": {
+  "status": 200,
+  "contentType": "application/json",
+  "headers": {
+   "x-model": "qwen/qwen3.5-9b"
+  },
+  "body": "{\"content\":[{\"type\":\"text\",\"text\":\"{\\n  \\\"is_outfit\\\": \\\"yes\\\",\\n  \\\"items\\\": [\\n    {\\n      \\\"name\\\": \\\"Silk camisole top\\\",\\n      \\\"details\\\": \\\"relaxed drape cut with knee-length hem\\\",\\n      \\\"slot\\\": \\\"top\\\",\\n      \\\"color_hex\\\": \\\"#001a3f\\\",\\n      \\\"worn\\\": true\\n    },\\n    {\\n      \\\"name\\\": \\\"soft chiffon flowy trousers\\\",\\n      \\\"details\\\": \\\"wide legs\\\",\\n      \\\"slot\\\": \\\"bottom\\\",\\n      \\\"color_hex\\\": \\\"#36454f\\\",\\n      \\\"worn\\\": true\\n    },\\n    {\\n      \\\"name\\\": \\\"Strappy stiletto sandals\\\",\\n      \\\"details\\\": \\\"thin heel with adjustable ankle strap\\\",\\n      \\\"slot\\\": \\\"shoes\\\",\\n      \\\"color_hex\\\": \\\"#c0c0c0\\\",\\n      \\\"worn\\\": true\\n    },\\n    {\\n      \\\"name\\\": \\\"Gold vermeil hoop earrings\\\",\\n      \\\"details\\\": \\\"textured surface\\\",\\n      \\\"slot\\\": \\\"earrings\\\",\\n      \\\"color_hex\\\": null,\\n      \\\"worn\\\": true\\n    },\\n    {\\n      \\\"name\\\": \\\"chain link necklace\\\",\\n      \\\"details\\\": \\\"delicate chain in rose gold\\\",\\n      \\\"slot\\\": \\\"necklace\\\",\\n      \\\"color_hex\\\": \\\"#b76e79\\\",\\n      \\\"worn\\\": true\\n    },\\n    {\\n      \\\"name\\\": \\\"structured leather clutch\\\",\\n      \\\"details\\\": null,\\n      \\\"slot\\\": \\\"bag\\\",\\n      \\\"color_hex\\\": \\\"#3f4a3d\\\",\\n      \\\"worn\\\": true\\n    }\\n  ]\\n}\"}],\"usage\":{\"input_tokens\":565,\"output_tokens\":369},\"stop_reason\":\"end_turn\"}"
+ }
+}

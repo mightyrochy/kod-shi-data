@@ -1,0 +1,27 @@
+{
+ "версія": 1,
+ "запит": {
+  "model": "qwen/qwen3.5-9b",
+  "max_tokens": 4000,
+  "messages": [
+   {
+    "role": "user",
+    "content": [
+     {
+      "type": "text",
+      "text": "{\"task\": {\"role\": \"You are a personal stylist. Put together one outfit for her case.\", \"rules\": [\"Items one per line, garments first, then shoes and accessories: what it is, cut, length, color with its hex code, fabric.\", \"An outer layer only when the weather needs it; at +20 °C and warmer there is none.\", \"Last, why this outfit works, in 3–4 sentences.\"], \"limits\": [\"Do not name lightness numbers, body measurements or height in numbers, or body-type labels, and do not say you had limits.\", \"The answer is plain text laid out as the rules say, not JSON.\"], \"language\": \"English\", \"answer\": \"OUTFIT_TEXT\", \"input\": [\"\\\"case\\\" — her case: the occasion, where and when, the weather, the dress code, her wishes and refusals — as codes, her own words as quotes; do not take an item that goes against her refusals or her words\", \"\\\"formality\\\" — the level of dress she named: home (loungewear, athleisure, sportswear) < everyday (jeans, a T-shirt and sneakers; neat casual, dark denim) < neat (business: a blouse, a shirt or a refined knit with trousers or a skirt, a textured jacket or a cardigan, loafers, ballet flats or ankle boots; social: a day dress, a refined knit with a skirt or trousers, a textured jacket, neat flats or ankle boots) < smart (business: a jacket with trousers or a skirt, a blouse or a shirt, loafers or pumps; a sheath dress with a jacket; social: a cocktail dress, heeled shoes) < formal (business: a business suit — a jacket with trousers or a skirt of one fabric — with a blouse, pumps; social: a formal dress of a noble fabric, heeled shoes) < very_smart (an evening gown) < ceremonial (a full-length evening gown with long gloves)\", \"\\\"person\\\" — facts about her from her photo and measurements, without conclusions: colors in hex (one per measurement), sizes in cm\", \"\\\"intent\\\" — what matters most to her: comfort_first (comfort and freedom of movement), context_optimal (fitting the place and the event), statement (standing out), fashion_forward (a bold fashion look, at least two sources of interest), editorial (an editorial construction, at least one source of interest); count limits do not apply to fashion_forward or editorial\"]}, \"case\": {\"field_quotes\": {\"occasion\": \"осінь, дощ цілий день, зустріч з клієнтом у кав’ярні\", \"month\": \"осінь\", \"place_words\": \"зустріч з клієнтом у кав’ярні\"}, \"formality_reason\": \"norm\", \"event\": \"осінь, дощ цілий день, зустріч з клієнтом у кав’ярні\", \"precipitation\": \"rain\", \"goal\": \"flatter\", \"occasion\": \"work\", \"formality\": [\"everyday\"], \"season\": \"autumn\", \"part_of_day\": \"day\", \"light\": \"daylight\"}, \"person\": {\"skin_hex\": [\"#c8a27a\", \"#bd9669\", \"#d1ad87\"], \"hair_hex\": [\"#3a2a20\", \"#4a362a\"], \"eyes_hex\": \"#7a5a36\", \"height_cm\": 163, \"girths_cm\": {\"shoulders\": 94, \"bust\": 86, \"waist\": 70, \"hips\": 106}, \"intent\": \"context_optimal\"}}"
+     }
+    ]
+   }
+  ],
+  "temperature": 1
+ },
+ "відповідь": {
+  "status": 200,
+  "contentType": "application/json",
+  "headers": {
+   "x-model": "qwen/qwen3.5-9b"
+  },
+  "body": "{\"content\":[{\"type\":\"text\",\"text\":\"A tailored wool-blend blazer in charcoal grey (#2F353B), structured yet soft shoulders for a flattering silhouette, hip-length cut, charcoal grey (#2F353B), heavy wool blend. High-waisted wide-leg trousers in dark denim with a subtle stretch, full length reaching the ankle, navy blue (#1B263B), cotton twill with elastane. Chunky leather loafers with a slight platform for comfort and rain resistance, rounded toe, deep forest green (#1A3C34), smooth calfskin. A silk scarf in autumnal rust tones (#C05838) tied loosely around the neck to add warmth against the damp weather.\\n\\nThis outfit works because it balances professional polish with practical comfort for a rainy day meeting at a café. The wide-leg trousers and platform loafers ensure ease of movement while maintaining an elegant, elongated line that flatters her figure without being restrictive. The wool blazer provides necessary warmth during cool autumn rains, while the scarf adds a touch of seasonal color that complements her warm skin tone. Together, these pieces create a context-optimally appropriate look that respects her need for both style and functionality in an informal work setting.\"}],\"usage\":{\"input_tokens\":799,\"output_tokens\":253},\"stop_reason\":\"end_turn\"}"
+ }
+}

@@ -7,7 +7,11 @@
   python3 аудит/проби/replay_сцени.py <тека сцени> 1236 &
   CHROMIUM=/opt/pw-browsers/chromium-1194/chrome-linux/chrome MODEL_URL=http://127.0.0.1:1236/v1 MODEL=qwen/qwen3.5-9b \
   MODEL_MOVA=mamaylm-gemma-3-12b-it-v2.0 FOTO=1 ZHINKA=аудит/проби/жінки/ж2.json CHAT_TEXT='…' OTSINKA=0 NE_TSIA=1 \
-  NODE_PATH=джерела/node_modules node аудит/проби/рв6_стенд.js http://127.0.0.1:8765 <тека збірки> <тека pyodide> 3"""
+  NODE_PATH=джерела/node_modules node аудит/проби/рв6_стенд.js http://127.0.0.1:8765 <тека збірки> <тека pyodide> 3
+--за-порядком бере записи кожного класу за номером виклику: для порівняння промптів на тих самих відповідях,
+без залежності вибору відповіді від нових слів. Картка й допит — різні класи, хоч їхній початок однаковий.
+Порт 0 просить ОС виділити вільний порт. Стенд запускають лише після рядка REPLAY_READY з фактичною адресою:
+початкове «записів …» означає завантаження даних, а не готовність слухача."""
 import sys, os, re, json, threading
 from схожість_промптів import схожість
 from http.server import ThreadingHTTPServer, BaseHTTPRequestHandler
@@ -31,8 +35,21 @@ print("записів", len(ЗАПИСИ), "· у стелю", sorted(СТЕЛЯ
 
 
 def клас(т):
+    """Розрізняє картку й допит за структурою, інші запити — за початком тексту."""
     # підписи фото — і номером («Photo 1»), і ідом її фото («Photo ф1:», ОЦІНКА): у записі стенда їх нема
     рядки = [р for р in т.split("\n") if р.strip() and not re.match(r"Photo ф?\d+|\(image not delivered\)", р)]
+    рядок = "\n".join(рядки)
+    try:
+        об, _ = json.JSONDecoder().raw_decode(рядок[рядок.index("{"):])
+    except (ValueError, json.JSONDecodeError):
+        об = {}
+    if isinstance(об, dict):
+        хвіст = об.get("now")
+        if isinstance(хвіст, dict) and {"question", "previous"} <= хвіст.keys():
+            return "оцінка: допит"
+        схема = об.get("answer_schema") or (об.get("task") or {}).get("answer_schema") or {}
+        if isinstance(схема, dict) and {"verdict", "works", "change"} <= схема.keys():
+            return "оцінка: картка"
     return re.sub(r"\d+", "#", (рядки or [""])[0][:140])
 
 
@@ -55,7 +72,8 @@ class Р(BaseHTTPRequestHandler):
         with ЗАМОК:
             свої = [з for з in ЗАПИСИ if з["клас"] == клас(текст)]
             кандидати = [з for з in свої if з["н"] not in ВЗЯТО] or свої
-            найкращий = max(кандидати, key=lambda з: (round(схожість(текст, з["промпт"]), 3), -з["н"]), default=None)
+            найкращий = (min(кандидати, key=lambda з: з["н"], default=None) if "--за-порядком" in sys.argv else
+                          max(кандидати, key=lambda з: (round(схожість(текст, з["промпт"]), 3), -з["н"]), default=None))
             if найкращий:
                 ВЗЯТО.add(найкращий["н"])
         if not найкращий:
@@ -75,4 +93,6 @@ class Р(BaseHTTPRequestHandler):
         self.send_header("Content-Length", str(len(дані))); self.end_headers(); self.wfile.write(дані)
 
 
-ThreadingHTTPServer(("127.0.0.1", ПОРТ), Р).serve_forever()
+сервер = ThreadingHTTPServer(("127.0.0.1", ПОРТ), Р)
+print("REPLAY_READY http://127.0.0.1:%d/v1" % сервер.server_address[1], flush=True)
+сервер.serve_forever()

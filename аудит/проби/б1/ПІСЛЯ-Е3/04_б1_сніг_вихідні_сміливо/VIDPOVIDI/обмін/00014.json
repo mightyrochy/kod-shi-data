@@ -1,0 +1,27 @@
+{
+ "версія": 1,
+ "запит": {
+  "model": "qwen/qwen3.5-9b",
+  "max_tokens": 4000,
+  "messages": [
+   {
+    "role": "user",
+    "content": [
+     {
+      "type": "text",
+      "text": "{\"task\": {\"role\": \"You are a personal stylist. Put together one outfit for her case.\", \"rules\": [\"Items one per line, garments first, then shoes and accessories: what it is, cut, length, color with its hex code, fabric.\", \"An outer layer only when the weather needs it; at +20 °C and warmer there is none.\", \"Last, why this outfit works, in 3–4 sentences.\"], \"limits\": [\"Do not name lightness numbers, body measurements or height in numbers, or body-type labels, and do not say you had limits.\", \"The answer is plain text laid out as the rules say, not JSON.\"], \"language\": \"English\", \"answer\": \"OUTFIT_TEXT\", \"input\": [\"\\\"case\\\" — her case: the occasion, where and when, the weather, the dress code, her wishes and refusals — as codes, her own words as quotes; do not take an item that goes against her refusals or her words\", \"\\\"formality\\\" — the level of dress she named: home (loungewear, athleisure, sportswear) < everyday (jeans, a T-shirt and sneakers; neat casual, dark denim) < neat (business: a blouse, a shirt or a refined knit with trousers or a skirt, a textured jacket or a cardigan, loafers, ballet flats or ankle boots; social: a day dress, a refined knit with a skirt or trousers, a textured jacket, neat flats or ankle boots) < smart (business: a jacket with trousers or a skirt, a blouse or a shirt, loafers or pumps; a sheath dress with a jacket; social: a cocktail dress, heeled shoes) < formal (business: a business suit — a jacket with trousers or a skirt of one fabric — with a blouse, pumps; social: a formal dress of a noble fabric, heeled shoes) < very_smart (an evening gown) < ceremonial (a full-length evening gown with long gloves)\"]}, \"case\": {\"field_quotes\": {\"occasion\": \"гуляємо з подругою центром до вечора, заходимо в кав’ярні\", \"temperature_c\": \"мінус три\", \"intent\": \"хочу виділитися — можна сміливо\", \"goal\": \"хочу виділитися — можна сміливо\", \"part_of_day\": \"до вечора\", \"place_words\": \"центром\"}, \"event\": \"гуляємо з подругою центром до вечора, заходимо в кав’ярні\", \"temperature_c\": -3, \"precipitation\": \"snow\", \"goal\": \"express\", \"occasion\": \"walk\", \"goal_quote\": \"хочу виділитися — можна сміливо\", \"intent_quote\": \"хочу виділитися — можна сміливо\", \"formality\": [\"neat\"], \"season\": \"autumn\", \"part_of_day\": \"evening\", \"light\": \"artificial\", \"road_salt\": true}}"
+     }
+    ]
+   }
+  ],
+  "temperature": 1
+ },
+ "відповідь": {
+  "status": 200,
+  "contentType": "application/json",
+  "headers": {
+   "x-model": "qwen/qwen3.5-9b"
+  },
+  "body": "{\"content\":[{\"type\":\"text\",\"text\":\"A refined wool-blend knit dress, straight cut, knee-length, deep emerald green with hex code #04392B, heavy woven fabric.\\nBlack leather ankle boots, slim silhouette, mid-calf height, matte black finish, smooth calfskin leather.\\nA structured cashmere-blend blazer, tailored fit, cropped length at the waist, charcoal grey with hex code #36454F, soft textured wool blend.\\nThis ensemble works perfectly for a chilly autumn evening in the city center while allowing her to stand out boldly among casual winter crowds. The deep emerald dress serves as the dramatic focal point requested by her desire to be seen, contrasting beautifully against the snowy backdrop and artificial café lighting. The tailored charcoal blazer adds necessary warmth without hiding her figure, balancing the \\\"expressive\\\" intent with the neat dress code required for walking downtown and visiting cafes.\"}],\"usage\":{\"input_tokens\":656,\"output_tokens\":184},\"stop_reason\":\"end_turn\"}"
+ }
+}

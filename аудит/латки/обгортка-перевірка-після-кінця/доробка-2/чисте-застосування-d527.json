@@ -1,0 +1,131 @@
+{
+  "база": "d527d414e8dcbbaa7040192b0858f8f49c7a6c18",
+  "команди": [
+    {
+      "команда": [
+        "powershell",
+        "-NoProfile",
+        "-ExecutionPolicy",
+        "Bypass",
+        "-File",
+        "C:\\Users\\gemini\\gemini-runs\\w\\20261030-151128-4feac4751f3b\\tmp\\chain-work\\аудит\\адаптери\\gemini\\перевірка\\сценарії_кінець_роботи.ps1",
+        "-SourceDir",
+        "C:\\Users\\gemini\\gemini-runs\\w\\20261030-151128-4feac4751f3b\\tmp\\chain-before\\аудит\\адаптери\\gemini",
+        "-Before"
+      ],
+      "тека": "C:\\Users\\gemini\\gemini-runs\\w\\20261030-151128-4feac4751f3b\\repo",
+      "код": 0,
+      "вивід": "✓ активна голова лишається придатною в heads\n✓ проміжних позначок: 3\n✓ хмарний PR без смуги: рівно 1\n✓ три голови й ГОТОВО: перевірок 3 (ДО 3 → ПІСЛЯ 1)\n✓ перевірка кінцевої SHA3\n✓ PR без смуги: ДО 1 → ПІСЛЯ 1\n"
+    },
+    {
+      "команда": [
+        "git",
+        "init",
+        "-q"
+      ],
+      "тека": "C:\\Users\\gemini\\gemini-runs\\w\\20261030-151128-4feac4751f3b\\tmp\\chain-clean",
+      "код": 0,
+      "вивід": ""
+    },
+    {
+      "команда": [
+        "git",
+        "config",
+        "core.autocrlf",
+        "false"
+      ],
+      "тека": "C:\\Users\\gemini\\gemini-runs\\w\\20261030-151128-4feac4751f3b\\tmp\\chain-clean",
+      "код": 0,
+      "вивід": ""
+    },
+    {
+      "команда": [
+        "git",
+        "apply",
+        "--check",
+        "C:\\Users\\gemini\\gemini-runs\\w\\20261030-151128-4feac4751f3b\\repo\\аудит\\латки\\обгортка-перевірка-після-кінця\\зміни.patch"
+      ],
+      "тека": "C:\\Users\\gemini\\gemini-runs\\w\\20261030-151128-4feac4751f3b\\tmp\\chain-clean",
+      "код": 0,
+      "вивід": ""
+    },
+    {
+      "команда": [
+        "git",
+        "apply",
+        "C:\\Users\\gemini\\gemini-runs\\w\\20261030-151128-4feac4751f3b\\repo\\аудит\\латки\\обгортка-перевірка-після-кінця\\зміни.patch"
+      ],
+      "тека": "C:\\Users\\gemini\\gemini-runs\\w\\20261030-151128-4feac4751f3b\\tmp\\chain-clean",
+      "код": 0,
+      "вивід": ""
+    },
+    {
+      "команда": [
+        "git",
+        "add",
+        "."
+      ],
+      "тека": "C:\\Users\\gemini\\gemini-runs\\w\\20261030-151128-4feac4751f3b\\tmp\\chain-clean",
+      "код": 0,
+      "вивід": ""
+    },
+    {
+      "команда": [
+        "python",
+        "-X",
+        "utf8",
+        "C:\\Users\\gemini\\gemini-runs\\w\\20261030-151128-4feac4751f3b\\tmp\\chain-clean\\аудит\\адаптери\\gemini\\перевірка\\перевірити_хеші.py"
+      ],
+      "тека": "C:\\Users\\gemini\\gemini-runs\\w\\20261030-151128-4feac4751f3b\\tmp\\chain-clean",
+      "код": 0,
+      "вивід": "✓ wrapper_update.ps1: 4156307A17BDAE3AF7249E532947F659E99AA1349D159239159FAE60CA7E4F2B\n✓ wrapper_probe.ps1: 85116D04C22EB64CBFF52E66BCEAE9B1091577A889EDD58A8B634093A82BDBC6\n✓ wrapper_chain.ps1: 11C79C8BB1B57E258A47ABC667B74312623A42BCBAD4D027250B836CE82A8744\n✓ wrapper_health.ps1: B3E2C44C4F342A915B814854A7D7619EDE2E019B48DC4A50CF4C9DB304C2E531\n✓ gemini_run.ps1: ED151D76BA6658EA230A0442252F0D7D05C2F6D723461C383D8E10016206E8FE\n✓ gemini_publish.ps1: 3C97912267FFEF59F72A96D44D63B40A52BDA32174FF36E8F1438B076FFC225B\n✓ gemini_watch.ps1: 69EFEBB07FF1AF51C382B753A95C50F3C1AC27B3008F2489992BEBE3FD0213AA\n✓ queue_lanes.ps1: 02868BB9FFE5320952634BA7A3E3D7B2F34D0F4D11699844F7429DFFDC66B909\n✓ claude_run.ps1: 9C9C96D9A065B8EA510C5B9023495806BA03D385ED2613067068842DFFD636C3\n✓ смуги.json: v2, полів 10, без джерела (обгортка бере попереднє): agy_total_minutes, agy_turn_minutes, claude_hang_minutes, codex_stall_minutes, poll_minutes, quota_wait_minutes, usage_minutes\n"
+    },
+    {
+      "команда": [
+        "powershell",
+        "-NoProfile",
+        "-Command",
+        "$ErrorActionPreference='Stop'; [Console]::OutputEncoding=New-Object Text.UTF8Encoding($false); $manifestData=Import-PowerShellDataFile -LiteralPath 'C:\\Users\\gemini\\gemini-runs\\w\\20261030-151128-4feac4751f3b\\tmp\\chain-clean\\аудит\\адаптери\\gemini\\m9v\\хеші.psd1'; if ($manifestData['wrapper_chain.ps1'] -notmatch '^[0-9A-F]{64}$') { throw 'Маніфест' }; [Console]::WriteLine('BOM EF BB BF; Import-PowerShellDataFile: код 0; PowerShell '+$PSVersionTable.PSVersion)"
+      ],
+      "тека": "C:\\Users\\gemini\\gemini-runs\\w\\20261030-151128-4feac4751f3b\\tmp\\chain-clean",
+      "код": 0,
+      "вивід": "BOM EF BB BF; Import-PowerShellDataFile: код 0; PowerShell 5.1.26100.9711\n"
+    },
+    {
+      "команда": [
+        "powershell",
+        "-NoProfile",
+        "-ExecutionPolicy",
+        "Bypass",
+        "-File",
+        "C:\\Users\\gemini\\gemini-runs\\w\\20261030-151128-4feac4751f3b\\repo\\аудит\\латки\\обгортка-перевірка-після-кінця\\heartbeat-fixed.ps1",
+        "-SourceDir",
+        "C:\\Users\\gemini\\gemini-runs\\w\\20261030-151128-4feac4751f3b\\tmp\\chain-work\\аудит\\адаптери\\gemini",
+        "-Template",
+        "C:\\Users\\gemini\\gemini-runs\\w\\20261030-151128-4feac4751f3b\\repo\\аудит\\латки\\обгортка-перевірка-після-кінця\\heartbeat-template.ps1"
+      ],
+      "тека": "C:\\Users\\gemini\\gemini-runs\\w\\20261030-151128-4feac4751f3b\\repo",
+      "код": 0,
+      "вивід": "✓ активна голова лишається придатною в heads\n✓ проміжних позначок: 0\n✓ хмарний PR без смуги: рівно 1\n✓ три голови й ГОТОВО: перевірок 1 (ДО 3 → ПІСЛЯ 1)\n✓ перевірка кінцевої SHA3\n✓ PR без смуги: ДО 1 → ПІСЛЯ 1\n✓ пропуск і хмарний шлях видимі в журналі\n✓ старий JSON слота з вільним замком не блокує\n✓ HEAD копії першої спроби повʼязує іншу гілку\n✓ HEAD worktree читається через gitdir\n✓ codex: heartbeat ізоляції не має lanes\n✓ codex: справжній замок слота досі зайнятий\n✓ codex: перевірок активної голови 0, інваріант вимагає 0\n✓ codex: після ГОТОВО і звільнення слота перевірок 1, інваріант вимагає 1\n✓ agy: heartbeat ізоляції не має lanes\n✓ agy: справжній замок слота досі зайнятий\n✓ agy: перевірок активної голови 0, інваріант вимагає 0\n✓ agy: після ГОТОВО і звільнення слота перевірок 1, інваріант вимагає 1\n"
+    }
+  ],
+  "тотожні_файли": [
+    {
+      "файл": "аудит/адаптери/gemini/m9v/хеші.psd1",
+      "sha256": "cde359de38df840042b82692c6eb06e5f944736978ea9d7bb08fb7aac3c3d41f"
+    },
+    {
+      "файл": "аудит/адаптери/gemini/wrapper_chain.ps1",
+      "sha256": "11c79c8bb1b57e258a47abc667b74312623a42bcbad4d027250b836ce82a8744"
+    },
+    {
+      "файл": "аудит/адаптери/gemini/НАЛАШТУВАННЯ.md",
+      "sha256": "a22f89e5fc479ac8fd25eaf55a7b3fbaf3bfb6652de861701d153e3631f2b084"
+    },
+    {
+      "файл": "аудит/адаптери/gemini/перевірка/сценарії_кінець_роботи.ps1",
+      "sha256": "e317f9eac4f06b6d2696b7bc7bc01175a3bbf2fb5cbd7e9bc8eed8f61b7e11c1"
+    }
+  ],
+  "BOM": "EF BB BF"
+}

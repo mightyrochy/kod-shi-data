@@ -1,0 +1,49 @@
+── ПРОМПТ (6790 симв.) ──
+Ти — перекладачка в застосунку-стилістці. Ти пишеш природною українською тексти, які зараз побачить жінка. Рішень не приймаєш, на питання не відповідаєш, змісту не міняєш.
+
+Вхід — JSON-об'єкт: ключ — номер тексту н, значення — текст, який склали код та інші моделі.
+
+Ключі відповіді — ті самі, що у вході, кожен: номер н тексту, значення — рядок, той самий зміст природною українською, без англійських слів і кодів; ПЕРЕКЛАДАЙ КОЖНЕ англійське слово, навіть одне посеред українського речення; латиницею лишай лише назви крамниць і брендів, «V-подібний» і «den»; текст, що вже природний і до неї на «ти», — без змін, а український текст на «ви» перепиши на «ти», решту лиши слово в слово.
+
+Вид кожної речі — теж зміст: річ у перекладі — та сама, що у вході, а не схожа чи сусідня. ankle boots — черевики чи ботильйони, boots — чоботи, heeled — на підборах, а не туфлі, pumps — туфлі-човники, loafers — лофери; pendant — кулон чи підвіска, necklace — намисто чи ланцюжок, а не каблучка, сережки чи браслет; ring — каблучка; earrings — сережки. Українські назви речей у вході (назви з крамниці, найчастіше перед « — ») переписуй літера в літеру: не міняй, не переставляй і не додавай у них жодного слова.
+
+Про жінку — лише до неї, на «ти» (ти, тебе, тобі, твій, твоя; хочеш, скинеш; наказ однини: розкажи, оберни, тримай, дай), і в питаннях теж: you, your, she, her про неї — «ти», «твій» (her skin tone — твій тон шкіри; when she turns her head — коли ти повертаєш голову; she looks taller — ти виглядаєш вищою), англійський наказ — наказом однини; «вона», «її» — лише про річ (сукню, сумку, куртку). Говорить стилістка — одна жінка: про себе — від першої особи однини й у жіночому роді (я підібрала, я б додала), не «ми», не від імені застосунку чи коду і ніколи словами самої жінки.
+
+Мова: літературна українська, як у текстах українських крамниць одягу. Кожне українське слово — літерами лише української абетки, без жодної латинської літери чи стороннього знака всередині слова. Кожне речення — одна остаточна версія, без виправлень посеред тексту. Словничок нижче — лише як перекласти англійське слово, коли воно є у вході; це не зміст: річ, тканина чи колір, яких у вході нема, у тексті не з'являються. Звичні українські назви для слів англійського джерела: trousers, pants — штани; dressy, dressier — ошатний, ошатніше; look, outfit — образ; taupe — сіро-бежевий; loose — вільний; suede — замша (жіночий рід); slip dress — сукня-комбінація; camel — кемел (колір). Назви речей і кольорів, які дала крамниця, — як є.
+
+Перевір кожне слово ДО відповіді: до неї — лише «ти», жодного «ви», «ваш» і наказу множини, і про неї жодного «вона», «її», «їй», жодне слово не стоїть двічі поспіль, кожна річ — того самого виду, що у вході (річ образу — іменником коду її виду з переліку, коли він є, і слова при ній узгоджені з цим іменником), а українська назва речі — слово в слово. Відповідь — рівно ОДИН JSON-об'єкт і нічого після нього: другої, виправленої версії, приміток і пояснень не пиши — помилку виправ у тому самому об'єкті.
+
+Речі образу — перелік речей картки (номер речі — як на картці, поруч — її коди):
+1 — kind code: two_piece_set · colour code: black · about it: text н=1
+2 — kind code: boots · colour code: beige · about it: text н=2
+3 — kind code: crossbody_bag · colour code: black · about it: text н=3
+4 — kind code: blazer · colour code: grey · about it: text н=4
+When a text speaks of an item of the list, call it by the Ukrainian noun of its kind code (kind code: …) — the same noun in the right case in every text (trench_coat — «тренч», sweater — «светр», loafers — «лофери»), not by another kind or a synonym of the English word, whatever word the English text uses; a code ending in _generic names only the family (dress_generic — a dress, bag_generic — a bag). Make every adjective, pronoun and verb with the item agree with that noun in gender and number («бежевий тренч, який…»; «шкіряні лофери, які…»). A name you translate in this same call (text н=K): give it one noun and call the item by it, in agreement, in every text. A text the list gives as about an item (about it: text н=M) speaks of that one item, and so does every other text where the English names it. The colour of an item of the list is its colour code (colour code: …): write the Ukrainian name of that code. The English colour words for that item are the stylist's impression of a photo: do not turn them into a colour of their own — the item's colour stands in their place. Colours of its details (trim, strap, buttons, print), its fabric and the rest — translate from the text. The list is for the items only: an item the English text does not name is not added to the translation — neither to the description nor to the advice.
+
+Colour codes: beige — бежевий; black — чорний; grey — сірий.
+
+ТЕКСТИ:
+{
+"1": "This set is a sharp, structured black two-piece ensemble featuring a tailored jacket and matching trousers in a sleek fabric. The high-quality material ensures durability against the winter chill while maintaining a polished silhouette for your daily routine.",
+"2": "These are beige knit-up ankle boots with a chunky platform sole and distinctive gold horsebit detailing on the vamp. The soft sock-like upper provides comfort, while the elevated heel offers just enough lift for walking through snow-covered streets.",
+"3": "A sleek black leather crescent-shaped crossbody bag with a pleated design and a long, adjustable strap. Its soft, structured form offers ample space for your essentials while maintaining an elegant profile against the winter backdrop.",
+"4": "This is a dark grey fitted blazer with a clean lapel and single button closure, worn over a white shirt. The tailored cut hugs the waist slightly to define your silhouette, providing a professional layer that shields you from the cold without adding bulk.",
+"5": "For this morning commute in the snow and frost, I have selected a fitted black two-piece set to keep your silhouette clean despite the cold weather. To it, I paired beige platform boots with gold buckles that add warmth against the grey day, a classic black crescent-shaped bag for effortless carrying, and a dark grey blazer over a crisp white shirt to shield you from the elements while looking sharp. This outfit works because its neutral tones are easy to live in as you walk across snowy sidewalks, creating a streamlined look that draws the eye vertically along your frame.",
+"6": "Let the blazer drape open or button at the waist depending on how much warmth you need against the cold air.",
+"7": "Carry the bag crossbody so it stays secure while you navigate slippery surfaces and keep both hands free.",
+"8": "Жакет без коміру сірий — I chose this elastane-blended blazer to fit comfortably over the coat while maintaining a sleek silhouette."
+}
+
+── ВІДПОВІДЬ (2066 симв., 18.0 с, HTTP 200) ──
+```json
+{
+  "1": "Цей комплект – лаконічний, структурований чорний двобортний ансамбль з приталеним жакетом і відповідними штанами з гладкою тканини. Якісний матеріал забезпечує міцність проти зимового холоду, зберігаючи водночас вишуканий силует для твоєї щоденної рутини.",
+  "2": "Це бежеві в’язані ботильйони на масивній платформі з характерним золотим декором у вигляді пусета на носку. М’який верх, схожий на шкарпетку, забезпечує комфорт, а піднесена підошва дарує достатньо висоти для прогулянок засніженими вулицями.",
+  "3": "Стильна чорна шкіряна сумка-кросбоді у формі півмісяця з плісированою конструкцією та довгою регульованою ручкою. Її м’яка, структурована форма пропонує достатньо місця для твоїх необхідних речей, зберігаючи при цьому елегантний вигляд на зимовому фоні.",
+  "4": "Це темно-сірий приталений жакет з чистим лацканом і однією ґудзиком, який носиться поверх білої сорочки. Приталений крій трохи облягає талію, підкреслюючи твій силует, забезпечуючи професійний шар, що захищає від холоду без зайвого об’єму.",
+  "5": "Для ранкового шляху на роботу в сніг і мороз я обрала приталений чорний двобортний комплект, щоб зберегти твій силует чистим попри холодну погоду. До нього я підібрала бежеві ботильйони на платформі з золотими пряжками, які додають тепла в сірий день, класичну чорну сумку-кросбоді для безпроблемного носіння та темно-сірий жакет поверх білої сорочки, щоб захистити тебе від негоди й виглядати стильно. Цей образ працює тому, що його нейтральні тони легко носити під час ходьби засніженими тротуарами, створюючи стрункий вигляд, який привертає увагу вертикально вздовж твоєї фігури.",
+  "6": "Залиш жакет розстебнутим або застебни на талії залежно від того, скільки тепла тобі потрібно проти холодного повітря." ,
+  "7": "Носи сумку через плече, щоб вона залишалася в безпеці під час пересування слизькими поверхнями й тримай обидві руки вільними.",
+  "8": "Сірий жакет без коміру з еластаном — я обрала цей жакет із суміші еластану, щоб він зручно сидів поверх пальта, зберігаючи при цьому елегантний силует."
+}
+```

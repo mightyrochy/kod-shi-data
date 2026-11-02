@@ -326,6 +326,7 @@ def скелет_мовного_шару():
 def форма_мовного_шару(визначення=True):
     """Закритий договір ходу: ті самі поля та коди, що читають розбір і сторож."""
     from copy import deepcopy
+    import паспорт_нагоди as _ПН_   # лінивий: паспорт_нагоди імпортує цей модуль
     поля = {}
     for опис in мова.ПОЛЯ_ПАСПОРТА.values():
         поле = опис.get("поле")
@@ -350,8 +351,9 @@ def форма_мовного_шару(визначення=True):
         "invite_topics": {"type": "array", "items": {"enum": list(мова.ТЕМИ_ПОРАДИ)}},
         "invite": {"type": "string"}, "ask_code": {"enum": list(мова.ОБОВʼЯЗКОВЕ) + [""]},
         "ask": {"type": "string"},
+        # ключі шапки — з одного переліку, який читає розбір (`паспорт_нагоди.ШАПКА_ПОЛЯ`), а не другим списком тут
         "header": {"type": "object", "additionalProperties": False,
-                   "properties": {к: {"type": "string"} for к in ("hour", "temperature_c", "precipitation", "wants", "vetoes", "mood")}},
+                   "properties": {к: {"type": "string"} for к, _ in _ПН_.ШАПКА_ПОЛЯ}},
     }
     форма = {"type": "object", "additionalProperties": False, "required": ["update", "need", "text"],
              "properties": частини}

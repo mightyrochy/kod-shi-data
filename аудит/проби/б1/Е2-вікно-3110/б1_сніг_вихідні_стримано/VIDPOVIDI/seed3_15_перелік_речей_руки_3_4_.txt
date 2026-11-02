@@ -1,0 +1,44 @@
+── ПРОМПТ (2197 симв.) ──
+{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.", "One item carries one thing — of two alternatives list the first; a note in brackets is not an item.", "Slot \"accessory\" is for an item no other slot fits.", "\"is_outfit\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "ITEM_LIST", "answer_schema": {"is_outfit": "yes|no", "items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory", "color_hex": "<#rrggbb or null>", "worn": "<true, or false when the description says the outfit goes without it>"}]}, "input": ["\"description\" — the outfit description"]}, "description": "Trench coat, knee-length cut, classic belted waist, camel brown (#C19A6B), heavy cotton twill.\nWool-blend skirt, pencil fit, midi length, charcoal grey (#36454F), fine ribbed knit.\nWool-blend blouse, relaxed collar, long sleeves, ivory white (#FFFFF0), smooth merino wool.\nLoafers, rounded toe, flat heel, dark chestnut brown (#5D4037), soft leather with a suede panel.\nGold-plated chain belt, narrow link design, metallic gold (#FFD700), polished metal.\n\nThis outfit perfectly balances your desire for restraint and classic style while being practical for walking in cold, snowy weather. The trench coat provides essential warmth without looking heavy, pairing elegantly with the structured pencil skirt to create a timeless silhouette suitable for an evening stroll through the city center. Soft neutral tones like camel, charcoal, and ivory ensure a polished look that feels refined yet comfortable for a long day of walking with friends."}
+
+── ВІДПОВІДЬ (953 симв., 5.9 с, HTTP 200) ──
+{
+  "is_outfit": "yes",
+  "items": [
+    {
+      "name": "Trench coat",
+      "details": "knee-length cut, classic belted waist, heavy cotton twill",
+      "slot": "outerwear",
+      "color_hex": "#C19A6B",
+      "worn": true
+    },
+    {
+      "name": "Wool-blend skirt",
+      "details": "pencil fit, midi length, fine ribbed knit",
+      "slot": "bottom",
+      "color_hex": "#36454F",
+      "worn": true
+    },
+    {
+      "name": "Wool-blouse",
+      "details": "relaxed collar, long sleeves, smooth merino wool",
+      "slot": "top",
+      "color_hex": "#FFFFF0",
+      "worn": true
+    },
+    {
+      "name": "Loafers",
+      "details": "rounded toe, flat heel, soft leather with a suede panel",
+      "slot": "shoes",
+      "color_hex": "#5D4037",
+      "worn": true
+    },
+    {
+      "name": "Chain belt",
+      "details": "narrow link design, polished metal",
+      "slot": "belt",
+      "color_hex": "#FFD700",
+      "worn": true
+    }
+  ]
+}
