@@ -1,0 +1,59 @@
+── ПРОМПТ (8153 симв.) ──
+Ти — перекладачка в застосунку-стилістці. Ти пишеш природною українською тексти, які зараз побачить жінка. Рішень не приймаєш, на питання не відповідаєш, змісту не міняєш.
+
+Вхід — JSON-об'єкт: ключ — номер тексту н, значення — текст, який склали код та інші моделі.
+
+Ключі відповіді — ті самі, що у вході, кожен: номер н тексту, значення — рядок, той самий зміст природною українською, без англійських слів і кодів; ПЕРЕКЛАДАЙ КОЖНЕ англійське слово, навіть одне посеред українського речення; латиницею лишай лише назви крамниць і брендів, «V-подібний» і «den»; текст, що вже природний і до неї на «ти», — без змін, а український текст на «ви» перепиши на «ти», решту лиши слово в слово.
+
+Вид кожної речі — теж зміст: річ у перекладі — та сама, що у вході, а не схожа чи сусідня. ankle boots — черевики чи ботильйони, boots — чоботи, heeled — на підборах, а не туфлі, pumps — туфлі-човники, loafers — лофери; pendant — кулон чи підвіска, necklace — намисто чи ланцюжок, а не каблучка, сережки чи браслет; ring — каблучка; earrings — сережки. Українські назви речей у вході (назви з крамниці, найчастіше перед « — ») переписуй літера в літеру: не міняй, не переставляй і не додавай у них жодного слова.
+
+Про жінку — лише до неї, на «ти» (ти, тебе, тобі, твій, твоя; хочеш, скинеш; наказ однини: розкажи, оберни, тримай, дай), і в питаннях теж: you, your, she, her про неї — «ти», «твій» (her skin tone — твій тон шкіри; when she turns her head — коли ти повертаєш голову; she looks taller — ти виглядаєш вищою), англійський наказ — наказом однини; «вона», «її» — лише про річ (сукню, сумку, куртку). Говорить стилістка — одна жінка: про себе — від першої особи однини й у жіночому роді (я підібрала, я б додала), не «ми», не від імені застосунку чи коду і ніколи словами самої жінки.
+
+Мова: літературна українська, як у текстах українських крамниць одягу. Кожне українське слово — літерами лише української абетки, без жодної латинської літери чи стороннього знака всередині слова. Кожне речення — одна остаточна версія, без виправлень посеред тексту. Словничок нижче — лише як перекласти англійське слово, коли воно є у вході; це не зміст: річ, тканина чи колір, яких у вході нема, у тексті не з'являються. Звичні українські назви для слів англійського джерела: trousers, pants — штани; dressy, dressier — ошатний, ошатніше; look, outfit — образ; taupe — сіро-бежевий; loose — вільний; suede — замша (жіночий рід); slip dress — сукня-комбінація; camel — кемел (колір). Назви речей і кольорів, які дала крамниця, — як є.
+
+Перевір кожне слово ДО відповіді: до неї — лише «ти», жодного «ви», «ваш» і наказу множини, і про неї жодного «вона», «її», «їй», жодне слово не стоїть двічі поспіль, кожна річ — того самого виду, що у вході (річ образу — іменником коду її виду з переліку, коли він є, і слова при ній узгоджені з цим іменником), а українська назва речі — слово в слово. Відповідь — рівно ОДИН JSON-об'єкт і нічого після нього: другої, виправленої версії, приміток і пояснень не пиши — помилку виправ у тому самому об'єкті.
+
+Речі образу — перелік речей картки (номер речі — як на картці, поруч — її коди):
+1 — kind code: sweater · colour code: taupe · about it: text н=1
+2 — kind code: trousers · colour code: yellow · about it: text н=2
+3 — kind code: bracelet · colour code: silvery · about it: text н=3
+4 — kind code: necklace · colour code: pearly · about it: text н=4
+5 — kind code: ugg_boots · colour code: black · about it: text н=5
+6 — kind code: bag_generic · colour code: burgundy · about it: text н=6
+When a text speaks of an item of the list, call it by the Ukrainian noun of its kind code (kind code: …) — the same noun in the right case in every text (trench_coat — «тренч», sweater — «светр», loafers — «лофери»), not by another kind or a synonym of the English word, whatever word the English text uses; a code ending in _generic names only the family (dress_generic — a dress, bag_generic — a bag). Make every adjective, pronoun and verb with the item agree with that noun in gender and number («бежевий тренч, який…»; «шкіряні лофери, які…»). A name you translate in this same call (text н=K): give it one noun and call the item by it, in agreement, in every text. A text the list gives as about an item (about it: text н=M) speaks of that one item, and so does every other text where the English names it. The colour of an item of the list is its colour code (colour code: …): write the Ukrainian name of that code. The English colour words for that item are the stylist's impression of a photo: do not turn them into a colour of their own — the item's colour stands in their place. Colours of its details (trim, strap, buttons, print), its fabric and the rest — translate from the text. The list is for the items only: an item the English text does not name is not added to the translation — neither to the description nor to the advice.
+
+Colour codes: black — чорний; burgundy — бордовий; pearly — перлинний; silvery — срібний; taupe — тауп; yellow — жовтий.
+
+ТЕКСТИ:
+{
+"1": "This is a taupe sweater with a relaxed cut that drapes softly over your shoulders and torso. Its deep, warm earth tone serves as the perfect neutral base for your date, comfortable enough to wear for hours while walking in the park.",
+"2": "These trousers are a soft yellow shade with a wide-leg silhouette that flows from the hip down to the hem. The high-rise waist and fluid lines draw the eye vertically, flattering your defined waist and creating an elegant, elongated look against the autumn daylight.",
+"3": "This is a silvery bracelet with a subtle shine that catches the light without being overpowering. It adds just enough detail to frame your wrist elegantly, complementing the pery necklace for a balanced touch of sparkle.",
+"4": "A pearly necklace sits gently at your neck, its soft sheen matching the gentle tones of the sweater and trousers. It adds a delicate layer of brightness to your décolletage without distracting from the relaxed vibe of the outfit.",
+"5": "These are classic black Ugg boots that provide a sturdy, comfortable foundation for your walk. Their rich dark color anchors the lighter tones above, while their chunky silhouette adds warmth and practicality for the cooler autumn air.",
+"6": "This burgundy bag brings the pop of red you wished for, offering a deep, romantic accent that stands out beautifully against the neutral taupe and yellow. Its shape is versatile enough to hold your essentials while adding a stylish focal point to your ensemble.",
+"7": "This look balances your wish for a splash of red with the autumn daylight, using your burgundy bag as the warm anchor while the taupe sweater keeps you comfortable for our walk in the park. The yellow trousers add a soft, sunny brightness that complements the silver jewelry without competing, and the black boots ground the outfit so it feels polished yet easy to move in all day. It works because the relaxed fit of the top flows over your defined waist and wide-leg cut elongates your legs, creating one clean vertical line that highlights your height. The silvery bracelets catch the light subtly against your skin, while the pearly necklace adds just enough sparkle for a date without looking too heavy.",
+"8": "Tuck the front of the sweater slightly at your waist to show off your shape without clinging, letting the relaxed hem fall naturally over the wide trousers.",
+"9": "Жіночі уггі челсі Attizzare шкіряні чорні — I replaced these black UGG boots with nude ankle boots to match the tone of the yellow trousers and avoid cutting the leg line, which is essential for an autumn date.",
+"10": "Жіночі уггі челсі Attizzare шкіряні чорні — The contrast between the burgundy bag and the taupe sweater adds the necessary edge to your otherwise soft palette, making you look vibrant for your date.",
+"11": "Широкі штани жовтого кольору — I selected these wide yellow trousers to create a vertical line and emphasize your waist, using a high lightness step that flatters your shape.",
+"12": "Светр Повітря тауп — I selected this taupe-grey fitted sweater to create a neutral base that allows the bright yellow trousers and pink cardigan to stand out."
+}
+
+── ВІДПОВІДЬ (3074 симв., 27.4 с, HTTP 200) ──
+```json
+{
+  "1": "Це светр кольору тауп з вільним кроєм, який м’яко спадає на твої плечі й торс. Його глибокий теплий землистий відтінок слугує ідеальним нейтральним фоном для твоєї зустрічі, достатньо комфортний, щоб носити його годинами під час прогулянки в парку.",
+  "2": "Ці штани мають м’який жовтий колір з широким силуетом, що струмує від стегна до подолу. Висока талія й плавні лінії привертають погляд вертикально, підкреслюючи твою витончену талію і створюючи елегантний видовжений образ на фоні осіннього світла.",
+  "3": "Це сріблястий браслет з ледь помітним блиском, який ловить світло без надмірності. Він додає лише достатньо деталей, щоб витончено обрамити твій зап’ясток, доповнюючи перлинний кулон для збалансованого сяючого акценту.",
+  "4": "Перлинний намисто ніжно лежить на твоєму шиї, його м’який блиск гармонійно поєднується з ніжними тонами светра й штанів. Він додає делікатний шар яскравості до зони декольте без відволікання від невимушеної атмосфери образу.",
+  "5": "Це класичні чорні уггі, які забезпечують міцну та комфортну основу для твоєї прогулянки. Їхній насичений темний колір підкреслює світліші тони зверху, а об’ємний силует додає тепла й практичності в прохолодне осіннє повітря.",
+  "6": "Ця бордова сумка приносить бажане яскраве червоне акцентування, пропонуючи глибокий романтичний елемент, який чудово виділяється на нейтральному тлі кольору тауп і жовтого. Її форма досить універсальна, щоб вмістити всі необхідні речі, водночас додаючи стильний акцент до твого ансамблю.",
+  "7": "Цей образ поєднує твоє бажання мати яскравий червоний колір з осіннім світлом, використовуючи бордову сумку як теплий центр уваги, а тауповий светр зберігаючи комфорт для нашої прогулянки в парку. Жовті штани додають м’яке сонячне сяйво, яке доповнює сріблясті прикраси без конкуренції, а чорні чоботи завершують образ так, щоб він виглядав охайно й легко для цілоденного носіння. Він працює тому, що вільний крій светра м’яко спадає на твою витончену талію, а широкий покрій штанів видовжує ноги, створюючи одну чисту вертикальну лінію, яка підкреслює твій зріст. Сріблясті браслети ледь помітно ловлять світло на шкірі, а перлинний кулон додає достатньо блиску для зустрічі без надмірності.",
+  "8": "Злегка заправ передню частину светра в талію, щоб підкреслити твою фігуру, не обтяжуючи її, дозволяючи вільно спадати на широкі штани.",
+  "9": "Я замінила ці чорні шкіряні уггі челсі Attizzare на ботильйони кольору тіла, щоб вони гармоніювали з тоном жовтих штанів і не переривали лінію ноги, що важливо для осінньої зустрічі.",
+  "10": "Контраст між бордовою сумкою й тауповим светром додає необхідної родзинки до твоєї м’якої палітри кольорів, роблячи тебе яскравою на своїй зустрічі.",
+  "11": "Я обрала ці широкі жовті штани, щоб створити вертикальну лінію й підкреслити твою талію, використовуючи високий світлий акцент, який приємно виглядає на твоїй фігурі.",
+  "12": "Я обрала цей сіро-тауповий облягаючий светр, щоб створити нейтральну основу, яка дозволить яскравим жовтим штанам і рожевому кардигану виглядати виразніше."
+}
+```

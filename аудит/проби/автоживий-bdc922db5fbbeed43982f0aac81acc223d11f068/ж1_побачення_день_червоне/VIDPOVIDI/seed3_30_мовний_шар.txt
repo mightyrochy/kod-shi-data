@@ -1,0 +1,52 @@
+── ПРОМПТ (7575 симв.) ──
+Ти — перекладачка в застосунку-стилістці. Ти пишеш природною українською тексти, які зараз побачить жінка. Рішень не приймаєш, на питання не відповідаєш, змісту не міняєш.
+
+Вхід — JSON-об'єкт: ключ — номер тексту н, значення — текст, який склали код та інші моделі.
+
+Ключі відповіді — ті самі, що у вході, кожен: номер н тексту, значення — рядок, той самий зміст природною українською, без англійських слів і кодів; ПЕРЕКЛАДАЙ КОЖНЕ англійське слово, навіть одне посеред українського речення; латиницею лишай лише назви крамниць і брендів, «V-подібний» і «den»; текст, що вже природний і до неї на «ти», — без змін, а український текст на «ви» перепиши на «ти», решту лиши слово в слово.
+
+Вид кожної речі — теж зміст: річ у перекладі — та сама, що у вході, а не схожа чи сусідня. ankle boots — черевики чи ботильйони, boots — чоботи, heeled — на підборах, а не туфлі, pumps — туфлі-човники, loafers — лофери; pendant — кулон чи підвіска, necklace — намисто чи ланцюжок, а не каблучка, сережки чи браслет; ring — каблучка; earrings — сережки. Українські назви речей у вході (назви з крамниці, найчастіше перед « — ») переписуй літера в літеру: не міняй, не переставляй і не додавай у них жодного слова.
+
+Про жінку — лише до неї, на «ти» (ти, тебе, тобі, твій, твоя; хочеш, скинеш; наказ однини: розкажи, оберни, тримай, дай), і в питаннях теж: you, your, she, her про неї — «ти», «твій» (her skin tone — твій тон шкіри; when she turns her head — коли ти повертаєш голову; she looks taller — ти виглядаєш вищою), англійський наказ — наказом однини; «вона», «її» — лише про річ (сукню, сумку, куртку). Говорить стилістка — одна жінка: про себе — від першої особи однини й у жіночому роді (я підібрала, я б додала), не «ми», не від імені застосунку чи коду і ніколи словами самої жінки.
+
+Мова: літературна українська, як у текстах українських крамниць одягу. Кожне українське слово — літерами лише української абетки, без жодної латинської літери чи стороннього знака всередині слова. Кожне речення — одна остаточна версія, без виправлень посеред тексту. Словничок нижче — лише як перекласти англійське слово, коли воно є у вході; це не зміст: річ, тканина чи колір, яких у вході нема, у тексті не з'являються. Звичні українські назви для слів англійського джерела: trousers, pants — штани; dressy, dressier — ошатний, ошатніше; look, outfit — образ; taupe — сіро-бежевий; loose — вільний; suede — замша (жіночий рід); slip dress — сукня-комбінація; camel — кемел (колір). Назви речей і кольорів, які дала крамниця, — як є.
+
+Перевір кожне слово ДО відповіді: до неї — лише «ти», жодного «ви», «ваш» і наказу множини, і про неї жодного «вона», «її», «їй», жодне слово не стоїть двічі поспіль, кожна річ — того самого виду, що у вході (річ образу — іменником коду її виду з переліку, коли він є, і слова при ній узгоджені з цим іменником), а українська назва речі — слово в слово. Відповідь — рівно ОДИН JSON-об'єкт і нічого після нього: другої, виправленої версії, приміток і пояснень не пиши — помилку виправ у тому самому об'єкті.
+
+Речі образу — перелік речей картки (номер речі — як на картці, поруч — її коди):
+1 — kind code: blouse · colour code: red · about it: text н=1
+2 — kind code: jeans · colour code: light_blue · about it: text н=2
+3 — kind code: kerchief · colour code: red · about it: text н=3
+4 — kind code: plimsolls · colour code: ginger · about it: text н=4
+5 — kind code: bag_generic · colour code: burgundy · about it: text н=5
+When a text speaks of an item of the list, call it by the Ukrainian noun of its kind code (kind code: …) — the same noun in the right case in every text (trench_coat — «тренч», sweater — «светр», loafers — «лофери»), not by another kind or a synonym of the English word, whatever word the English text uses; a code ending in _generic names only the family (dress_generic — a dress, bag_generic — a bag). Make every adjective, pronoun and verb with the item agree with that noun in gender and number («бежевий тренч, який…»; «шкіряні лофери, які…»). A name you translate in this same call (text н=K): give it one noun and call the item by it, in agreement, in every text. A text the list gives as about an item (about it: text н=M) speaks of that one item, and so does every other text where the English names it. The colour of an item of the list is its colour code (colour code: …): write the Ukrainian name of that code. The English colour words for that item are the stylist's impression of a photo: do not turn them into a colour of their own — the item's colour stands in their place. Colours of its details (trim, strap, buttons, print), its fabric and the rest — translate from the text. The list is for the items only: an item the English text does not name is not added to the translation — neither to the description nor to the advice.
+
+Colour codes: burgundy — бордовий; ginger — рудий; light_blue — блакитний; red — червоний.
+
+ТЕКСТИ:
+{
+"1": "A soft cream blouse with a round neckline and short sleeves, detailed with burgundy patterned trim at the collar and cuffs. The fabric drapes gently, and the relaxed fit keeps it comfortable for strolling without sacrificing style.",
+"2": "Straight-cut black trousers with a clean line that falls smoothly from the waist to the ankle. Their structure provides balance to the layered upper half and keeps the focus where you want it—at your chosen red accents.",
+"3": "A burgundy patterned kerchief tied loosely around the waist like a sash, adding movement and a dash of your requested color. The intricate white-on-maroon design complements the blouse without competing with it.",
+"4": "Ginger plimsolls with a casual yet polished look, perfect for walking on park paths all day. Their neutral tone ties in with both the cream and black pieces while adding warmth to your feet.",
+"5": "A burgundy bag that echoes the tones in your blouse and kerchief, creating a cohesive look without feeling overdone. Its shape is simple enough not to distract from your outfit’s key moments.",
+"6": "You chose a look defined by your desire for something red, so I've woven that color into two pieces: a cream blouse with burgundy patterns at the collar and sleeves, paired with a matching patterned kerchief tied loosely around your waist. The rest of the outfit keeps things clean—straight-cut black trousers that let the upper half shine—and ginger plimsolls that ground the ensemble comfortably. This choice honors your wish for red while keeping the silhouette simple and easy to carry through your Sunday in the park. The cream tone balances the rich burgundy without overpowering it, and the straight pants offer a quiet foundation that lets your chosen red details take center stage.",
+"7": "Tuck the blouse in at the front but leave the back loose to show the patterned kerchief as a waist-defining belt instead of a separate accessory.",
+"8": "Блуза-сорочка з шовкуз рукавами-ліхтариками, Хустка \"День Незалежності\" — The red scarf near your face creates a bold window that harmonizes perfectly with the red blouse and the overall warmth you requested, serving as a deliberate accent rather than a mistake.",
+"9": "Блуза-сорочка з шовкуз рукавами-ліхтариками, Хустка \"День Незалежності\", Сумка Марсала абстракція — Having three focal points allows this outfit to feel dynamic and celebratory for a date, rather than flat or boring, balancing the 'too many loud items' concern by making them work together.",
+"10": "Блуза-сорочка з шовкуз рукавами-ліхтариками — This blouse carries your specific wish for red fabric, anchoring the color palette despite its relaxed register."
+}
+
+── ВІДПОВІДЬ (2530 симв., 23.4 с, HTTP 200) ──
+```json
+{
+"1": "М'яка кремова блузка з круглим вирізом і короткими рукавами, прикрашена бордовими візерунчастими вставками на комірі та манжетах. Тканина ніжно драпірується, а вільний крій робить її комфортною для прогулянок без шкоди для стилю.",
+"2": "Прямі чорні штани з чітким силуетом, що плавно спадають від талії до щиколоток. Їхня структура додає балансу верхній частині образу і привертає увагу туди, де ти хочеш — на твої обрані червоні акценти.",
+"3": "Бордовий візерунчастий хустинку, недбало зав'язаний навколо талії як пояс, додаючи руху й нотку бажаного тобою кольору. Складний білий малюнок на бордовому тлі доповнює блузку без зайвої конкуренції.",
+"4": "Руді пламсоли з невимушеним і водночас вишуканим виглядом, ідеальні для прогулянок парковими стежками цілий день. Їхній нейтральний тон гармонійно поєднується як із кремовими, так і чорними речами, додаючи тепла твоїм ногам.",
+"5": "Бордова сумка, що перегукується з тонами блузки та хустинки, створюючи цілісний образ без надмірності. Її проста форма не відволікає увагу від ключових моментів твоєї сукні.",
+"6": "Ти обрала образ, визначений твоїм бажанням чогось червоного, тому я вплела цей колір у два предмети: кремову блузку з бордовими візерунками на комірі та рукавах, поєднану з хустинкою такого ж малюнку, недбало зав'язаною навколо твоєї талії. Решта образу зберігає простоту — прямі чорні штани, які дозволяють верхній частині сяяти, і руді пламсоли, що зручно завершують ансамбль. Цей вибір вшановує твою вимогу червоного кольору, водночас підтримуючи простий силует, який легко носити протягом недільного дня у парку. Кремовий тон збалансовує насичений бордовий колір без перевантаження, а прямі штани створюють тихий фон, що дозволяє твоїм обраним червоним деталям зайняти центральне місце.",
+"7": "Заправ блузку спереду і залиш її вільною ззаду, щоб показати хустинку як пояс, який підкреслює талію замість окремого аксесуару.",
+"8": "Шовкова сорочка-блузка з рукавами-ліхтариками. Хустка \"День Незалежності\" — Червоний шарф біля твого обличчя створює сміливе вікно, яке ідеально гармонує з червоною блузкою та загальним теплом, якого ти просила, слугуючи навмисним акцентом замість помилки.",
+"9": "Шовкова сорочка-блузка з рукавами-ліхтариками. Хустка \"День Незалежності\". Сумка Марсала абстракція — Наявність трьох фокусних точок дозволяє цьому образу відчуватися динамічним і святковим для побачення, а не плоским або нудним, балансуючи занепокоєння щодо «занадто великої кількості гучних предметів», змушуючи їх працювати разом.",
+"1

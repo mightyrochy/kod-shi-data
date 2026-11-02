@@ -1,0 +1,30 @@
+── ПРОМПТ (2053 симв.) ──
+{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.", "One item carries one thing — of two alternatives list the first; a note in brackets is not an item.", "Slot \"accessory\" is for an item no other slot fits.", "\"is_outfit\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "ITEM_LIST", "answer_schema": {"is_outfit": "yes|no", "items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory", "color_hex": "<#rrggbb or null>", "worn": "<true, or false when the description says the outfit goes without it>"}]}, "input": ["\"description\" — the outfit description"]}, "description": "Red silk blouse with a relaxed fit, falling to the hips, in color #E63946, made of smooth silk.\nBrown suede loafers with a slight heel and a soft sole.\nA small gold geometric pendant necklace.\nThis outfit works perfectly for a Sunday afternoon date in the park because the red blouse aligns exactly with her wish for something red while remaining comfortable enough to walk around freely. The relaxed fit of the silk fabric allows for ease of movement during a casual stroll, avoiding any restrictive structures that would feel out of place at home or in a relaxed setting. Completing the look with brown suede loafers and a delicate gold necklace adds a touch of refined polish without crossing into formal territory, striking the ideal balance between neat casual charm and special occasion appeal."}
+
+── ВІДПОВІДЬ (451 симв., 3.5 с, HTTP 200) ──
+{
+"is_outfit": "yes",
+"items": [
+{
+"name": "Red silk blouse",
+"details": "Relaxed fit falling to the hips made of smooth silk",
+"slot": "top",
+"color_hex": "#E63946",
+"worn": true
+},
+{
+"name": "Brown suede loafers",
+"details": "Slight heel and soft sole",
+"slot": "shoes",
+"color_hex": null,
+"worn": true
+},
+{
+"name": "Small gold geometric pendant necklace",
+"details": "Delicate gold pendant",
+"slot": "jewelry",
+"color_hex": null,
+"worn": true
+}
+]
+}
