@@ -894,10 +894,20 @@ function Get-LiveAfterLines([string]$Body, $Registry) {
     <# Єдиний розбір рядків `ЖИВИЙ ПІСЛЯ: <id> — <питання>` для планувальника й CI на тілі PR. Рядок, що починається з
     `ЖИВИЙ ПІСЛЯ` (після пробілів, маркера списку чи виділення), або розібрано повністю, або в ньому `error`. #>
     $result = @()
-    foreach ($raw in ([string]$Body -split "`n")) {
-        $line = $raw.Trim()
+    $lines = @([string]$Body -split "`n")
+    for ($i = 0; $i -lt $lines.Count; $i++) {
+        $line = $lines[$i].Trim()
         if ($line -cnotmatch '^[-*+>#_\s]*ЖИВИЙ ПІСЛЯ') { continue }
-        $item = @{line=$line;id='';question='';mode='';error=''}
+        $first = $i
+        # Звичайне продовження того самого абзацу склеюємо. Межі Markdown, новий рядок
+        # протоколу й підпис поля не поглинаємо: вони не можуть дописати id чи питання.
+        while ($i + 1 -lt $lines.Count) {
+            $next = $lines[$i + 1].Trim()
+            if (-not $next -or $next -cmatch '^(?:ЖИВИЙ ПІСЛЯ|[-*+>#_`~]|\d+[.)]\s|\p{Lu}[^:]*:|\|)') { break }
+            $line += ' ' + $next
+            $i++
+        }
+        $item = @{line=$line;first=$first;last=$i;id='';question='';mode='';error=''}
         if ($line -cnotmatch '^ЖИВИЙ ПІСЛЯ: (.*)$') {
             $item.error = 'рядок має починатися з «ЖИВИЙ ПІСЛЯ: » без маркера списку, виділення чи пропущеної двокрапки'
         } else {
@@ -922,6 +932,44 @@ function Get-LiveAfterLines([string]$Body, $Registry) {
         $result += @($item)
     }
     $result
+}
+
+function ConvertTo-LivePublicationBody([string]$Body, $Registry) {
+    <# Готує тіло тим самим читачем, зберігаючи ваду й оригінал без виконуваного префікса. #>
+    $items = @(Get-LiveAfterLines $Body $Registry)
+    $lines = New-Object 'System.Collections.Generic.List[string]'
+    foreach ($line in @($Body -split "`n")) { $lines.Add($line.TrimEnd("`r")) }
+    $bad = @($items | Where-Object { $_.error })
+    foreach ($item in @($items | Sort-Object first -Descending)) {
+        $replacement = $item.line
+        if ($item.error) { $replacement = "Вадний рядок живого прогону: $($item.error); оригінал: $($item.line)" }
+        $lines.RemoveRange($item.first, $item.last - $item.first + 1)
+        $lines.Insert($item.first, $replacement)
+    }
+    if ($bad.Count) {
+        $lines.Add('')
+        $lines.Add('ЗАБЛОКОВАНО: LIVE_AFTER_INVALID — ' + (($bad | ForEach-Object { $_.error }) -join '; '))
+    }
+    [pscustomobject]@{ Body=($lines -join "`n"); Bad=$bad }
+}
+
+function Get-HeadLivePublication([string]$Head) {
+    <# Читає коміт і реєстр із довіреної бази перед прийманням звіту або записом тіла PR. #>
+    $body = (Invoke-Git @('show','-s','--format=%B',$Head)).Out
+    if ($body -cnotmatch '(?m)^[-*+>#_\s]*ЖИВИЙ ПІСЛЯ') {
+        return (ConvertTo-LivePublicationBody $body @{})
+    }
+    $registry = Get-LiveSceneRegistry ((Invoke-Git @('show', 'refs/remotes/origin/main:аудит/проби/живі_сцени.txt')).Out)
+    if (-not $registry.Count) { throw 'LIVE_AFTER_REGISTRY' }
+    ConvertTo-LivePublicationBody $body $registry
+}
+
+function Get-LiveCorrectionPrompt($Publication) {
+    <# Дає тому самому виконавцю один хід із причинами та точним форматом. #>
+    $details = ($Publication.Bad | ForEach-Object { "Вада: $($_.error)`nРядок: $($_.line)" }) -join "`n"
+    "Тіло останнього коміту не розбирається до публікації PR.`n$details`n" +
+        'Один хід на виправлення в тій самій гілці й тому самому наряді. Формат: ЖИВИЙ ПІСЛЯ: <id> — <питання правки> → <режим> → <ДО звідки> → <що вважати кращим>. ' +
+        'id — голе перше поле аудит/проби/живі_сцени.txt; одна сцена — один рядок. Закоміть виправлений звіт; останній рядок — за адаптером.'
 }
 
 function Get-AutoLivePlan([string]$BuildMain) {
@@ -978,8 +1026,14 @@ function Get-AutoLivePlan([string]$BuildMain) {
     ConvertTo-Json -InputObject @{since_sha=$checked;since=$since.ToString('o');until=$until.ToString('o');scenes=$scenes;cloud=$cloud;bad=$bad} -Depth 8 -Compress
 }
 
-function Add-AutoTaskContext([string]$Slug, [string]$Text, [string]$BuildMain = '') {
+function Add-AutoTaskContext([string]$Slug, [string]$Text, [string]$BuildMain = '', [string]$Model = '') {
     <# Додає перевірені числа і JSON-дані; довільний текст не стає інструкціями обгортки. #>
+    if ($Slug -cmatch '^(?:автоперевірка-[1-9][0-9]{0,8}-[0-9a-f]{40}|перевірка-[1-9][0-9]{0,8})$') {
+        if ($Model) {
+            if ($Model -cnotmatch '^[a-z0-9][a-z0-9.-]{1,63}$') { throw 'REVIEW_MODEL' }
+            $Text += "`nМодель перевірки: ``$Model```n"
+        }
+    }
     if ($Slug -cmatch '^автоперевірка-([1-9][0-9]{0,8})-([0-9a-f]{40})$') {
         $number = $Matches[1]; $head = $Matches[2]
         $inputData = Get-AutoReviewInput $number
