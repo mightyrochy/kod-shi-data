@@ -117,11 +117,11 @@ _ДЖЕРЕЛО_КРАЮ = {"слово": "word", "річ": "item_data",
 # коли день є, у випадку їх нема — ті самі факти двічі різними словами модель читала б як два.
 # Частина дня — ключем «пора» (корінь Е2-частина-дня, крок 2); «година» лишається, доки є поле паспорта й панелі (крок 4).
 _ВИПАДОК_У_ДНІ = {"місце": "place", "формат": "setting", "рух": "movement", "дрес_код": "dress_code",
-                  "тривалість_год": "duration_h", "темп_c": "temperature_c", "опади": "precipitation",
+                  "тривалість_год": "duration_h", "темп_c": "temperature_c", "смуга_погоди": "weather_band", "опади": "precipitation",
                   "година": "start_hour", "пора": "part_of_day", "ошатність": "formality"}
 ПОЛЯ_ВИПАДКУ = {"подія": "event", "нагода": "occasion", "місце": "place", "формат": "setting",
                  "тривалість_год": "duration_h", "рух": "movement", "дрес_код": "dress_code",
-                 "ошатність": "formality", "година": "start_hour", "пора": "part_of_day", "темп_c": "temperature_c",
+                 "ошатність": "formality", "година": "start_hour", "пора": "part_of_day", "темп_c": "temperature_c", "смуга_погоди": "weather_band",
                  "опади": "precipitation", "намір": "intent", "мета": "goal", "мета_зони": "goal_zones", "мета_важливо": "goal_extra", "макіяж": "makeup",
                  "прикраси": "jewelry", "реєстр_людини": "her_registers", "бажання": "wishes",
                  "вето": "refusals", "ноги_вище_см": "legs_shown_above_cm", "настрій": "mood",
