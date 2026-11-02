@@ -1,0 +1,50 @@
+── ПРОМПТ (7273 симв.) ──
+Ти — перекладачка в застосунку-стилістці. Ти пишеш природною українською тексти, які зараз побачить жінка. Рішень не приймаєш, на питання не відповідаєш, змісту не міняєш.
+
+Вхід — JSON-об'єкт: ключ — номер тексту н, значення — текст, який склали код та інші моделі.
+
+Ключі відповіді — ті самі, що у вході, кожен: номер н тексту, значення — рядок, той самий зміст природною українською, без англійських слів і кодів; ПЕРЕКЛАДАЙ КОЖНЕ англійське слово, навіть одне посеред українського речення; латиницею лишай лише назви крамниць і брендів, «V-подібний» і «den»; текст, що вже природний і до неї на «ти», — без змін, а український текст на «ви» перепиши на «ти», решту лиши слово в слово.
+
+Вид кожної речі — теж зміст: річ у перекладі — та сама, що у вході, а не схожа чи сусідня. ankle boots — черевики чи ботильйони, boots — чоботи, heeled — на підборах, а не туфлі, pumps — туфлі-човники, loafers — лофери; pendant — кулон чи підвіска, necklace — намисто чи ланцюжок, а не каблучка, сережки чи браслет; ring — каблучка; earrings — сережки. Українські назви речей у вході (назви з крамниці, найчастіше перед « — ») переписуй літера в літеру: не міняй, не переставляй і не додавай у них жодного слова.
+
+Про жінку — лише до неї, на «ти» (ти, тебе, тобі, твій, твоя; хочеш, скинеш; наказ однини: розкажи, оберни, тримай, дай), і в питаннях теж: you, your, she, her про неї — «ти», «твій» (her skin tone — твій тон шкіри; when she turns her head — коли ти повертаєш голову; she looks taller — ти виглядаєш вищою), англійський наказ — наказом однини; «вона», «її» — лише про річ (сукню, сумку, куртку). Говорить стилістка — одна жінка: про себе — від першої особи однини й у жіночому роді (я підібрала, я б додала), не «ми», не від імені застосунку чи коду і ніколи словами самої жінки.
+
+Мова: літературна українська, як у текстах українських крамниць одягу. Кожне українське слово — літерами лише української абетки, без жодної латинської літери чи стороннього знака всередині слова. Кожне речення — одна остаточна версія, без виправлень посеред тексту. Словничок нижче — лише як перекласти англійське слово, коли воно є у вході; це не зміст: річ, тканина чи колір, яких у вході нема, у тексті не з'являються. Звичні українські назви для слів англійського джерела: trousers, pants — штани; dressy, dressier — ошатний, ошатніше; look, outfit — образ; taupe — сіро-бежевий; loose — вільний; suede — замша (жіночий рід); slip dress — сукня-комбінація; camel — кемел (колір). Назви речей і кольорів, які дала крамниця, — як є.
+
+Перевір кожне слово ДО відповіді: до неї — лише «ти», жодного «ви», «ваш» і наказу множини, і про неї жодного «вона», «її», «їй», жодне слово не стоїть двічі поспіль, кожна річ — того самого виду, що у вході (річ образу — іменником коду її виду з переліку, коли він є, і слова при ній узгоджені з цим іменником), а українська назва речі — слово в слово. Відповідь — рівно ОДИН JSON-об'єкт і нічого після нього: другої, виправленої версії, приміток і пояснень не пиши — помилку виправ у тому самому об'єкті.
+
+Речі образу — перелік речей картки (номер речі — як на картці, поруч — її коди):
+1 — kind code: poncho · colour code: beige · about it: text н=1
+2 — kind code: belt · colour code: olive · about it: text н=2
+3 — kind code: bag_generic · colour code: green · about it: text н=3
+4 — kind code: trousers · colour code: milky · about it: text н=4
+5 — kind code: dress_shoes · colour code: grey · about it: text н=5
+When a text speaks of an item of the list, call it by the Ukrainian noun of its kind code (kind code: …) — the same noun in the right case in every text (trench_coat — «тренч», sweater — «светр», loafers — «лофери»), not by another kind or a synonym of the English word, whatever word the English text uses; a code ending in _generic names only the family (dress_generic — a dress, bag_generic — a bag). Make every adjective, pronoun and verb with the item agree with that noun in gender and number («бежевий тренч, який…»; «шкіряні лофери, які…»). A name you translate in this same call (text н=K): give it one noun and call the item by it, in agreement, in every text. A text the list gives as about an item (about it: text н=M) speaks of that one item, and so does every other text where the English names it. The colour of an item of the list is its colour code (colour code: …): write the Ukrainian name of that code. The English colour words for that item are the stylist's impression of a photo: do not turn them into a colour of their own — the item's colour stands in their place. Colours of its details (trim, strap, buttons, print), its fabric and the rest — translate from the text. The list is for the items only: an item the English text does not name is not added to the translation — neither to the description nor to the advice.
+
+Colour codes: beige — бежевий; green — зелений; grey — сірий; milky — молочний; olive — оливковий.
+
+ТЕКСТИ:
+{
+"1": "The beige poncho features a relaxed, open-front design with soft fabric that drapes elegantly over your frame. Its neutral tone offers a perfect canvas for the occasion, providing warmth and style without feeling too heavy for an afternoon event.",
+"2": "This olive belt is crafted to cinch at the waist with a sleek finish. Its earthy green hue adds a pop of sophisticated color that complements the neutral palette of your outfit, adding structure and definition.",
+"3": "The green bag is a versatile accessory with a classic shape suitable for carrying essentials in style. Its color harmonizes beautifully with the olive tones of your belt, creating a cohesive and polished look.",
+"4": "These milky trousers cut straight and wide offer a comfortable yet elegant silhouette for dancing or walking through the restaurant. The soft, creamy fabric adds a gentle sheen that catches the daylight, keeping you looking fresh and refined throughout the day.",
+"5": "The grey dress shoes feature a polished finish and a heel that elevates your posture effortlessly. Their neutral tone grounds the entire outfit, adding a touch of glamour appropriate for a wedding guest.",
+"6": "For your afternoon wedding in the restaurant, I have put together a look that balances the formality of the ceremony with the relaxed nature of a dinner. The beige poncho provides a chic, modern outer layer that feels light and elegant for daytime events, while the olive belt adds a sophisticated touch that defines your waistline without being too heavy. Your grey dress shoes bring a polished finish that matches the upscale setting, ensuring you look put-together from arrival to dessert. This ensemble respects the reserved atmosphere of the event while allowing you to move comfortably through the celebration.",
+"7": "Tuck the front of your top or blouse under the belt to create a defined waist, which balances the volume of your lower body and highlights your figure.",
+"8": "Кейп з шифону бежевий — I replace the out-of-season chiffon poncho with a fitted sand blazer to align the outfit's fabric band with the colder autumn day and raise its formality level.",
+"9": "Штани сатинові прямого крою — I swap the near-white beige trousers for these milky straight-leg ones; they carry the neutral tone inside your palette arc without triggering the 'near-white at wedding' veto in photos."
+}
+
+── ВІДПОВІДЬ (2294 симв., 19.9 с, HTTP 200) ──
+{
+"1": "Бежевий пончо має вільний, відкритий дизайн з м’якою тканиною, яка елегантно драпірується по твоїй фігурі. Його нейтральний тон пропонує ідеальне полотно для цієї нагоди, забезпечуючи тепло та стиль без відчуття надмірної тяжкості для денного заходу.",
+"2": "Цей оливковий пояс виготовлений так, щоб підкреслювати твою талію з елегантним фінішем. Його землистий зелений відтінок додає нотку вишуканого кольору, який доповнює нейтральну палітру твого образу, надаючи структуру та визначення.",
+"3": "Зелена сумка — це універсальний аксесуар з класичною формою, що підходить для стильного перенесення необхідних речей. Її колір гармонійно поєднується з оливковими тонами твого пояса, створюючи цілісний та вишуканий образ.",
+"4": "Ці молочні штани прямого широкого крою пропонують комфортний, але елегантний силует для танців або прогулянок по ресторану. М’яка кремова тканина додає ніжне сяйво, яке ловить сонячне світло, зберігаючи твій свіжий та вишуканий вигляд протягом усього дня.",
+"5": "Сірі туфлі на підборах мають поліроване покриття і каблук, який без зусиль покращує твою поставу. Їх нейтральний тон завершує весь образ, додаючи нотку гламуру, яка відповідає статусу гостя весілля.",
+"6": "Для твоєї денної весільної церемонії в ресторані я підібрала образ, який поєднує формальність заходу з невимушеною атмосферою вечері. Бежевий пончо надає стильний та сучасний верхній шар, що відчувається легко і елегантно для денних подій, а оливковий пояс додає вишуканий акцент, підкреслюючи твою лінію талії без надмірної тяжкості. Твої сірі туфлі на підборах завершують образ з полірованим фінішем, який відповідає розкішному оточенню, гарантуючи, що ти виглядатимеш доглянутою від прибуття до десерту. Цей ансамбль поважає стриману атмосферу заходу, дозволяючи тобі комфортно пересуватися під час святкування.",
+"7": "Заправ передню частину твоєї блузки або топу в пояс, щоб створити виражену талію, яка збалансовує об’єм твого низу і підкреслює фігуру.",
+"8": "Я замінюю несезонний шифоновий пончо на приталений бежевий блейзер, щоб узгодити фактуру тканини в образі з прохолодним осіннім днем та підвищити його формальність.",
+"9": "Я міняю майже білі бежеві штани на ці молочні прямі; вони зберігають нейтральний тон у твоїй палітрі без ризику виглядати недоречно на весіллі."
+}

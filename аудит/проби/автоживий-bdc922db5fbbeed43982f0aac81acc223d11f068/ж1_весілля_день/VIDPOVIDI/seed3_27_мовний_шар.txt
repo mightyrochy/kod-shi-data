@@ -1,0 +1,50 @@
+── ПРОМПТ (6778 симв.) ──
+Ти — перекладачка в застосунку-стилістці. Ти пишеш природною українською тексти, які зараз побачить жінка. Рішень не приймаєш, на питання не відповідаєш, змісту не міняєш.
+
+Вхід — JSON-об'єкт: ключ — номер тексту н, значення — текст, який склали код та інші моделі.
+
+Ключі відповіді — ті самі, що у вході, кожен: номер н тексту, значення — рядок, той самий зміст природною українською, без англійських слів і кодів; ПЕРЕКЛАДАЙ КОЖНЕ англійське слово, навіть одне посеред українського речення; латиницею лишай лише назви крамниць і брендів, «V-подібний» і «den»; текст, що вже природний і до неї на «ти», — без змін, а український текст на «ви» перепиши на «ти», решту лиши слово в слово.
+
+Вид кожної речі — теж зміст: річ у перекладі — та сама, що у вході, а не схожа чи сусідня. ankle boots — черевики чи ботильйони, boots — чоботи, heeled — на підборах, а не туфлі, pumps — туфлі-човники, loafers — лофери; pendant — кулон чи підвіска, necklace — намисто чи ланцюжок, а не каблучка, сережки чи браслет; ring — каблучка; earrings — сережки. Українські назви речей у вході (назви з крамниці, найчастіше перед « — ») переписуй літера в літеру: не міняй, не переставляй і не додавай у них жодного слова.
+
+Про жінку — лише до неї, на «ти» (ти, тебе, тобі, твій, твоя; хочеш, скинеш; наказ однини: розкажи, оберни, тримай, дай), і в питаннях теж: you, your, she, her про неї — «ти», «твій» (her skin tone — твій тон шкіри; when she turns her head — коли ти повертаєш голову; she looks taller — ти виглядаєш вищою), англійський наказ — наказом однини; «вона», «її» — лише про річ (сукню, сумку, куртку). Говорить стилістка — одна жінка: про себе — від першої особи однини й у жіночому роді (я підібрала, я б додала), не «ми», не від імені застосунку чи коду і ніколи словами самої жінки.
+
+Мова: літературна українська, як у текстах українських крамниць одягу. Кожне українське слово — літерами лише української абетки, без жодної латинської літери чи стороннього знака всередині слова. Кожне речення — одна остаточна версія, без виправлень посеред тексту. Словничок нижче — лише як перекласти англійське слово, коли воно є у вході; це не зміст: річ, тканина чи колір, яких у вході нема, у тексті не з'являються. Звичні українські назви для слів англійського джерела: trousers, pants — штани; dressy, dressier — ошатний, ошатніше; look, outfit — образ; taupe — сіро-бежевий; loose — вільний; suede — замша (жіночий рід); slip dress — сукня-комбінація; camel — кемел (колір). Назви речей і кольорів, які дала крамниця, — як є.
+
+Перевір кожне слово ДО відповіді: до неї — лише «ти», жодного «ви», «ваш» і наказу множини, і про неї жодного «вона», «її», «їй», жодне слово не стоїть двічі поспіль, кожна річ — того самого виду, що у вході (річ образу — іменником коду її виду з переліку, коли він є, і слова при ній узгоджені з цим іменником), а українська назва речі — слово в слово. Відповідь — рівно ОДИН JSON-об'єкт і нічого після нього: другої, виправленої версії, приміток і пояснень не пиши — помилку виправ у тому самому об'єкті.
+
+Речі образу — перелік речей картки (номер речі — як на картці, поруч — її коди):
+1 — kind code: dress_generic · colour code: grey · about it: text н=1
+2 — kind code: coat · colour code: camel · about it: text н=2
+3 — kind code: pumps · colour code: milky · about it: text н=3
+4 — kind code: earrings · colour code: camel · about it: text н=4
+5 — kind code: bag_generic · colour code: burgundy · about it: text н=5
+When a text speaks of an item of the list, call it by the Ukrainian noun of its kind code (kind code: …) — the same noun in the right case in every text (trench_coat — «тренч», sweater — «светр», loafers — «лофери»), not by another kind or a synonym of the English word, whatever word the English text uses; a code ending in _generic names only the family (dress_generic — a dress, bag_generic — a bag). Make every adjective, pronoun and verb with the item agree with that noun in gender and number («бежевий тренч, який…»; «шкіряні лофери, які…»). A name you translate in this same call (text н=K): give it one noun and call the item by it, in agreement, in every text. A text the list gives as about an item (about it: text н=M) speaks of that one item, and so does every other text where the English names it. The colour of an item of the list is its colour code (colour code: …): write the Ukrainian name of that code. The English colour words for that item are the stylist's impression of a photo: do not turn them into a colour of their own — the item's colour stands in their place. Colours of its details (trim, strap, buttons, print), its fabric and the rest — translate from the text. The list is for the items only: an item the English text does not name is not added to the translation — neither to the description nor to the advice.
+
+Colour codes: burgundy — бордовий; camel — кемел; grey — сірий; milky — молочний.
+
+ТЕКСТИ:
+{
+"1": "This grey striped dress features a bodycon cut that hugs your figure, highlighting the defined waist area characteristic of your X shape while maintaining an elegant vertical line for the restaurant setting.",
+"2": "The camel coat is styled as an oversized outer layer with a hood and regular sleeves, designed to be worn open over the dress or closed depending on the evening's chill outside.",
+"3": "These milky pumps provide a soft contrast to your grey and camel tones, offering comfort for dining while their heel adds a touch of formality suitable for a wedding guest.",
+"4": "The camel earrings with shine catch the daylight in the restaurant without overpowering your reserved white requirement, adding subtle sparkle that complements your makeup.",
+"5": "This burgundy bag serves as a rich accent piece, introducing depth to your palette while remaining compact enough to navigate the upscale restaurant environment with ease.",
+"6": "For your friend's wedding, I have chosen a sophisticated ensemble that balances the formal occasion with autumn elegance. The dress is grey with stripes and bodycon cut, while the outerwear coat is camel with an oversize fit featuring a hood. Your pumps are milky in color, and the earrings are camel with shine. Finally, the bag is burgundy, adding a rich accent to your look. This outfit lives through your day perfectly: you can take off the oversized coat if the restaurant setting feels too warm, keeping just the fitted dress which defines your X shape waist beautifully.",
+"7": "Keep the hood of the camel coat folded down or open to maintain clean lines for your formal occasion, but wear it over the grey striped dress for warmth during arrival or outdoor moments.",
+"8": "Сіра приталена сукня в смугастий принт — A grey dress is replaced by a beige suit to match the warm undertones of her skin and avoid a clash with the mint base."
+}
+
+── ВІДПОВІДЬ (1940 симв., 18.6 с, HTTP 200) ──
+```json
+{
+  "1": "Ця сіра смугаста сукня має облягаючий крій, який підкреслює твою фігуру, виділяючи чітко окреслену талію, характерну для твоєї X-подібної форми, водночас зберігаючи елегантну вертикальну лінію для ресторану.",
+  "2": "Кемел тренч стилізований як об’ємна верхня частина з капюшоном і рукавами стандартного крою, розроблений так, щоб носити його відкритим поверх сукні або закритим залежно від прохолоди вечора.",
+  "3": "Ці молочні туфлі-човники створюють м’який контраст з твоїми сірими та кемел тонами, забезпечуючи комфорт під час вечері, а їхній каблук додає нотку формальності, яка відповідає весільному гостю.",
+  "4": "Кемел сережки зі сяйвом ловлять денне світло в ресторані без того, щоб перевантажувати твою стриману білу вимогу, додаючи ледь помітний блиск, який доповнює твій макіяж.",
+  "5": "Ця бордова сумка служить насиченим акцентним елементом, надаючи глибини твоїй палітрі, залишаючись при цьому досить компактною, щоб легко орієнтуватися у вишуканому ресторані.",
+  "6": "Для весілля твоєї подруги я підібрала витончений ансамбль, який поєднує формальний захід з осінньою елегантністю. Сукня сіра в смужку та облягаючого крою, а верхній одяг — кемел тренч вільного силуету з капюшоном. Твої туфлі-човники молочного кольору, а сережки кемел зі сяйвом. Насамкінець сумка бордова, яка додає насичений акцент до твого образу. Цей образ ідеально проживе весь день: ти можеш зняти об’ємний тренч, якщо в ресторані буде занадто тепло, залишивши лише приталену сукню, яка чудово підкреслює твою X-подібну талію.",
+  "7": "Залиш капюшон кемел тренчу складеним або розгорни його, щоб зберегти чіткі лінії для формального заходу, але одягни його поверх сірої смугастої сукні на випадок прохолоди під час прибуття чи перебування надворі.",
+  "8": "Сіра приталена сукня в смугастий принт — Сіру сукню замінено бежевим костюмом, щоб відповідати теплим тонам твоєї шкіри та уникнути конфлікту з м’ятною основою."
+}
+```

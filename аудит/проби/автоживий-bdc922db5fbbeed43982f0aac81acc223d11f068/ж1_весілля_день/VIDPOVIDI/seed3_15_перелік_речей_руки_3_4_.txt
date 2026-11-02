@@ -1,0 +1,30 @@
+── ПРОМПТ (2175 симв.) ──
+{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.", "One item carries one thing — of two alternatives list the first; a note in brackets is not an item.", "Slot \"accessory\" is for an item no other slot fits.", "\"is_outfit\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "ITEM_LIST", "answer_schema": {"is_outfit": "yes|no", "items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory", "color_hex": "<#rrggbb or null>", "worn": "<true, or false when the description says the outfit goes without it>"}]}, "input": ["\"description\" — the outfit description"]}, "description": "Silk shantung sheath dress, A-line cut falling to the mid-calf, color champagne gold (#F5E6CA), woven silk with a subtle textured sheen.\nPointed-toe stiletto pumps, sleek silhouette in a classic pump style, color charcoal grey (#36454F), smooth calfskin leather.\nPearl drop earrings, round pearl beads suspended from a thin chain, color white (#FFFFFF), cultured freshwater pearls with an 18k gold setting.\n\nThis outfit works perfectly for your friend's wedding as it balances the formality required for a daytime restaurant reception with autumnal sophistication. The champagne silk sheath dress offers an elegant silhouette appropriate for a formal event without appearing overly heavy for the afternoon hour, while the charcoal pumps ground the look with a modern touch. Finally, the pearl earrings add a classic, timeless detail that complements your golden attire and respects the celebratory nature of the occasion."}
+
+── ВІДПОВІДЬ (725 симв., 4.3 с, HTTP 200) ──
+{
+  "is_outfit": "yes",
+  "items": [
+    {
+      "name": "Silk shantung sheath dress",
+      "details": "A-line cut falling to the mid-calf, woven silk with a subtle textured sheen",
+      "slot": "dress",
+      "color_hex": "#F5E6CA",
+      "worn": true
+    },
+    {
+      "name": "Pointed-toe stiletto pumps",
+      "details": "Sleek silhouette in a classic pump style, smooth calfskin leather",
+      "slot": "shoes",
+      "color_hex": "#36454F",
+      "worn": true
+    },
+    {
+      "name": "Pearl drop earrings",
+      "details": "Round pearl beads suspended from a thin chain, cultured freshwater pearls with an 18k gold setting",
+      "slot": "earrings",
+      "color_hex": "#FFFFFF",
+      "worn": true
+    }
+  ]
+}

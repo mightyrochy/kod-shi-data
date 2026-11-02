@@ -1,0 +1,30 @@
+── ПРОМПТ (2104 симв.) ──
+{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.", "One item carries one thing — of two alternatives list the first; a note in brackets is not an item.", "Slot \"accessory\" is for an item no other slot fits.", "\"is_outfit\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "ITEM_LIST", "answer_schema": {"is_outfit": "yes|no", "items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory", "color_hex": "<#rrggbb or null>", "worn": "<true, or false when the description says the outfit goes without it>"}]}, "input": ["\"description\" — the outfit description"]}, "description": "Silk chiffon sheath dress, knee-length A-line silhouette, soft champagne beige (#f5ebd9), lightweight woven fabric with a subtle luster.\nLeather block-heel pumps, mid-calf height, polished cognac brown (#8b5a2b), smooth calfskin with a pointed toe.\nPearl drop earrings and a delicate gold pendant necklace, simple round studs, classic freshwater pearls, 14k yellow gold vermeil.\nThis ensemble strikes the perfect balance for an upscale autumn wedding, offering elegance without sacrificing comfort during a long lunch service. The champagne hue complements her warm skin tone while remaining neutral enough to pair beautifully with any bridal party color palette. The structured block heel provides stability on restaurant flooring, and the silk fabric drapes fluidly in the daylight, creating a refined silhouette that respects the formal dress code."}
+
+── ВІДПОВІДЬ (710 симв., 5.3 с, HTTP 200) ──
+{
+  "is_outfit": "yes",
+  "items": [
+    {
+      "name": "silk chiffon sheath dress",
+      "details": "knee-length A-line silhouette, lightweight woven fabric with a subtle luster",
+      "slot": "dress",
+      "color_hex": "#f5ebd9",
+      "worn": true
+    },
+    {
+      "name": "leather block-heel pumps",
+      "details": "mid-calf height, polished smooth calfskin with a pointed toe",
+      "slot": "shoes",
+      "color_hex": "#8b5a2b",
+      "worn": true
+    },
+    {
+      "name": "pearl drop earrings and gold pendant necklace",
+      "details": "simple round studs, classic freshwater pearls, 14k yellow gold vermeil",
+      "slot": "jewelry",
+      "color_hex": null,
+      "worn": true
+    }
+  ]
+}
