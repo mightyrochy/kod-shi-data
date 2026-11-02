@@ -1,0 +1,27 @@
+{
+ "версія": 1,
+ "запит": {
+  "model": "qwen/qwen3.5-9b",
+  "max_tokens": 4000,
+  "messages": [
+   {
+    "role": "user",
+    "content": [
+     {
+      "type": "text",
+      "text": "{\"task\": {\"role\": \"You are a personal stylist. Put together one outfit for her case.\", \"rules\": [\"Items one per line, garments first, then shoes and accessories: what it is, cut, length, color with its hex code, fabric.\", \"An outer layer only when the weather needs it; at +20 °C and warmer there is none.\", \"Last, why this outfit works, in 3–4 sentences.\"], \"limits\": [\"Do not name lightness numbers, body measurements or height in numbers, or body-type labels, and do not say you had limits.\", \"The answer is plain text laid out as the rules say, not JSON.\"], \"language\": \"English\", \"answer\": \"OUTFIT_TEXT\", \"input\": [\"\\\"case\\\" — her case: the occasion, where and when, the weather, the dress code, her wishes and refusals — as codes, her own words as quotes; do not take an item that goes against her refusals or her words\", \"\\\"formality\\\" — the level of dress she named: home (loungewear, athleisure, sportswear) < everyday (jeans, a T-shirt and sneakers; neat casual, dark denim) < neat (business: a blouse, a shirt or a refined knit with trousers or a skirt, a textured jacket or a cardigan, loafers, ballet flats or ankle boots; social: a day dress, a refined knit with a skirt or trousers, a textured jacket, neat flats or ankle boots) < smart (business: a jacket with trousers or a skirt, a blouse or a shirt, loafers or pumps; a sheath dress with a jacket; social: a cocktail dress, heeled shoes) < formal (business: a business suit — a jacket with trousers or a skirt of one fabric — with a blouse, pumps; social: a formal dress of a noble fabric, heeled shoes) < very_smart (an evening gown) < ceremonial (a full-length evening gown with long gloves)\", \"\\\"person\\\" — facts about her from her photo and measurements, without conclusions: colors in hex (one per measurement), sizes in cm\", \"\\\"intent\\\" — what matters most to her: comfort_first (comfort and freedom of movement), context_optimal (fitting the place and the event), statement (standing out), fashion_forward (a bold fashion look, at least two sources of interest), editorial (an editorial construction, at least one source of interest); count limits do not apply to fashion_forward or editorial\"]}, \"case\": {\"field_quotes\": {\"occasion\": \"стриманий робочий день в офісі\", \"intent\": \"стриманий робочий день в офісі, без яскравого\", \"goal\": \"стриманий робочий день в офісі, без яскравого\"}, \"formality_reason\": \"norm\", \"event\": \"стриманий робочий день в офісі\", \"goal\": \"flatter\", \"occasion\": \"work\", \"place\": \"office\", \"goal_quote\": \"стриманий робочий день в офісі, без яскравого\", \"intent_quote\": \"стриманий робочий день в офісі, без яскравого\", \"formality\": [\"home\"], \"season\": \"autumn\"}, \"person\": {\"skin_hex\": [\"#5a3a2a\", \"#4e3022\", \"#664332\"], \"hair_hex\": [\"#16110e\", \"#241a15\"], \"eyes_hex\": \"#3b2417\", \"height_cm\": 165, \"girths_cm\": {\"shoulders\": 112, \"bust\": 114, \"waist\": 104, \"hips\": 114}, \"intent\": \"context_optimal\"}}"
+     }
+    ]
+   }
+  ],
+  "temperature": 1
+ },
+ "відповідь": {
+  "status": 200,
+  "contentType": "application/json",
+  "headers": {
+   "x-model": "qwen/qwen3.5-9b"
+  },
+  "body": "{\"content\":[{\"type\":\"text\",\"text\":\"Structured Blazer in charcoal grey wool blend, tailored with a slightly dropped shoulder cut for a relaxed yet polished silhouette, knee-length, #36454f, fine worsted wool.\\nHigh-waisted Straight-leg Trousers in dark navy cotton twill, mid-thigh to ankle length with a clean crease, #1c2430, durable poplin twill.\\nSilk-blend Crisp Blouse in ivory with a subtle sheen, classic button-down collar and slightly voluminous sleeves, hip-length, #fdfdfd, smooth georgette.\\n\\nLeather Ankle Boots in black with a low stacked heel, rounded toe and sleek side zipper, 9 cm height, #0a0a0a, full-grain calfskin leather.\\nMinimalist Gold Hoop Earrings in 14k gold-filled, medium gauge for understated elegance, #d4af37, polished metal.\\nLeather Belt in dark brown with a small brass buckle, narrow waist definition, #523e31, supple vegetable-tanned leather.\\n\\nThis outfit perfectly balances professional polish with comfortable ease for a long office day while adhering to the \\\"no bright\\\" request. The neutral palette of charcoal, navy, ivory, and black ensures you blend seamlessly into a corporate environment without drawing excessive attention, fulfilling your desire for something understated yet flattering. The structured blazer provides necessary warmth for autumn weather while maintaining a streamlined silhouette that accommodates your measurements comfortably. Every piece prioritizes context optimization, ensuring you feel confident and ready for work without feeling restricted or overdressed.\"}],\"usage\":{\"input_tokens\":821,\"output_tokens\":334},\"stop_reason\":\"end_turn\"}"
+ }
+}

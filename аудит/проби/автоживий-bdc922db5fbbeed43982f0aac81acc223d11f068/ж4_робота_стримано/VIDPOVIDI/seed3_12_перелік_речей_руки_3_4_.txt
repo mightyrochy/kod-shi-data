@@ -1,0 +1,30 @@
+── ПРОМПТ (2602 симв.) ──
+{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.", "One item carries one thing — of two alternatives list the first; a note in brackets is not an item.", "Slot \"accessory\" is for an item no other slot fits.", "\"is_outfit\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "ITEM_LIST", "answer_schema": {"is_outfit": "yes|no", "items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory", "color_hex": "<#rrggbb or null>", "worn": "<true, or false when the description says the outfit goes without it>"}]}, "input": ["\"description\" — the outfit description"]}, "description": "Based on the Ukrainian text in your case (\"стриманий робочий день в офісі\" meaning a streamlined workday at the office) and the specified season of autumn, here is the styled outfit. The formality level for a professional office setting in autumn is **neat**, which accommodates trousers or a skirt paired with a refined knit and ankle boots.\n\nRefined Knit Sweater\nRelaxed fit silhouette, mid-length hitting at the hipbone, charcoal gray color (#36454F), soft merino wool blend with subtle texture.\nStraight-leg Wool Trousers\nClassic cut, full length reaching the ankle bone, deep navy blue color (#0A1929), structured virgin wool for warmth and drape.\nLeather Ankle Boots\nPointed toe shape, mid-calf height just above the malleolus, oxblood red color (#741313), smooth calfskin leather with a low block heel.\n\nThis ensemble works perfectly for an autumn office day because the refined knit and wool trousers provide the necessary warmth against cooler temperatures while maintaining a polished professional silhouette. The dark, neutral base of the sweater and pants creates a streamlined look that honors your request to avoid anything bright or flashy. Finally, the oxblood boots add a sophisticated pop of deep color that grounds the outfit without overwhelming it, ensuring you feel comfortable yet put-together throughout your workday."}
+
+── ВІДПОВІДЬ (777 симв., 4.6 с, HTTP 200) ──
+{
+  "is_outfit": "yes",
+  "items": [
+    {
+      "name": "Refined Knit Sweater",
+      "details": "Relaxed fit silhouette, mid-length hitting at the hipbone, soft merino wool blend with subtle texture",
+      "slot": "top",
+      "color_hex": "#36454F",
+      "worn": true
+    },
+    {
+      "name": "Straight-leg Wool Trousers",
+      "details": "Classic cut, full length reaching the ankle bone, structured virgin wool for warmth and drape",
+      "slot": "bottom",
+      "color_hex": "#0A1929",
+      "worn": true
+    },
+    {
+      "name": "Leather Ankle Boots",
+      "details": "Pointed toe shape, mid-calf height just above the malleolus, smooth calfskin leather with a low block heel",
+      "slot": "shoes",
+      "color_hex": "#741313",
+      "worn": true
+    }
+  ]
+}

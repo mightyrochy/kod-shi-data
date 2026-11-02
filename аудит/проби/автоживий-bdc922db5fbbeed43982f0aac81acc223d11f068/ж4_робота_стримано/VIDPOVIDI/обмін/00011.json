@@ -1,0 +1,27 @@
+{
+ "версія": 1,
+ "запит": {
+  "model": "qwen/qwen3.5-9b",
+  "max_tokens": 4000,
+  "messages": [
+   {
+    "role": "user",
+    "content": [
+     {
+      "type": "text",
+      "text": "{\"task\": {\"role\": \"You read the description of an outfit and list its items as data.\", \"rules\": [\"One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.\", \"One item carries one thing — of two alternatives list the first; a note in brackets is not an item.\", \"Slot \\\"accessory\\\" is for an item no other slot fits.\", \"\\\"is_outfit\\\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note.\"], \"limits\": [\"Rely only on the input: do not invent what it does not contain.\", \"The answer is one JSON object following \\\"answer_schema\\\", without explanations and without ```.\"], \"language\": \"English\", \"answer\": \"ITEM_LIST\", \"answer_schema\": {\"is_outfit\": \"yes|no\", \"items\": [{\"name\": \"<what the item is>\", \"details\": \"<its cut, length and fabric>\", \"slot\": \"top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory\", \"color_hex\": \"<#rrggbb or null>\", \"worn\": \"<true, or false when the description says the outfit goes without it>\"}]}, \"input\": [\"\\\"description\\\" — the outfit description\"]}, \"description\": \"Structured Blazer in charcoal grey wool blend, tailored with a slightly dropped shoulder cut for a relaxed yet polished silhouette, knee-length, #36454f, fine worsted wool.\\nHigh-waisted Straight-leg Trousers in dark navy cotton twill, mid-thigh to ankle length with a clean crease, #1c2430, durable poplin twill.\\nSilk-blend Crisp Blouse in ivory with a subtle sheen, classic button-down collar and slightly voluminous sleeves, hip-length, #fdfdfd, smooth georgette.\\n\\nLeather Ankle Boots in black with a low stacked heel, rounded toe and sleek side zipper, 9 cm height, #0a0a0a, full-grain calfskin leather.\\nMinimalist Gold Hoop Earrings in 14k gold-filled, medium gauge for understated elegance, #d4af37, polished metal.\\nLeather Belt in dark brown with a small brass buckle, narrow waist definition, #523e31, supple vegetable-tanned leather.\\n\\nThis outfit perfectly balances professional polish with comfortable ease for a long office day while adhering to the \\\"no bright\\\" request. The neutral palette of charcoal, navy, ivory, and black ensures you blend seamlessly into a corporate environment without drawing excessive attention, fulfilling your desire for something understated yet flattering. The structured blazer provides necessary warmth for autumn weather while maintaining a streamlined silhouette that accommodates your measurements comfortably. Every piece prioritizes context optimization, ensuring you feel confident and ready for work without feeling restricted or overdressed.\"}"
+     }
+    ]
+   }
+  ],
+  "temperature": 1
+ },
+ "відповідь": {
+  "status": 200,
+  "contentType": "application/json",
+  "headers": {
+   "x-model": "qwen/qwen3.5-9b"
+  },
+  "body": "{\"content\":[{\"type\":\"text\",\"text\":\"{\\n  \\\"is_outfit\\\": \\\"yes\\\",\\n  \\\"items\\\": [\\n    {\\n      \\\"name\\\": \\\"Structured Blazer\\\",\\n      \\\"details\\\": \\\"tailored with a slightly dropped shoulder cut for a relaxed yet polished silhouette, knee-length, fine worsted wool\\\",\\n      \\\"slot\\\": \\\"outerwear\\\",\\n      \\\"color_hex\\\": \\\"#36454f\\\",\\n      \\\"worn\\\": true\\n    },\\n    {\\n      \\\"name\\\": \\\"Straight-leg Trousers\\\",\\n      \\\"details\\\": \\\"high-waisted, mid-thigh to ankle length with a clean crease, durable poplin twill\\\",\\n      \\\"slot\\\": \\\"bottom\\\",\\n      \\\"color_hex\\\": \\\"#1c2430\\\",\\n      \\\"worn\\\": true\\n    },\\n    {\\n      \\\"name\\\": \\\"Crisp Blouse\\\",\\n      \\\"details\\\": \\\"classic button-down collar and slightly voluminous sleeves, hip-length, smooth georgette\\\",\\n      \\\"slot\\\": \\\"top\\\",\\n      \\\"color_hex\\\": \\\"#fdfdfd\\\",\\n      \\\"worn\\\": true\\n    },\\n    {\\n      \\\"name\\\": \\\"Ankle Boots\\\",\\n      \\\"details\\\": \\\"with a low stacked heel, rounded toe and sleek side zipper, 9 cm height, full-grain calfskin leather\\\",\\n      \\\"slot\\\": \\\"shoes\\\",\\n      \\\"color_hex\\\": \\\"#0a0a0a\\\",\\n      \\\"worn\\\": true\\n    },\\n    {\\n      \\\"name\\\": \\\"Hoop Earrings\\\",\\n      \\\"details\\\": \\\"medium gauge for understated elegance, polished metal\\\",\\n      \\\"slot\\\": \\\"earrings\\\",\\n      \\\"color_hex\\\": \\\"#d4af37\\\",\\n      \\\"worn\\\": true\\n    },\\n    {\\n      \\\"name\\\": \\\"Belt\\\",\\n      \\\"details\\\": \\\"with a small brass buckle, narrow waist definition, supple vegetable-tanned leather\\\",\\n      \\\"slot\\\": \\\"belt\\\",\\n      \\\"color_hex\\\": \\\"#523e31\\\",\\n      \\\"worn\\\": true\\n    }\\n  ]\\n}\"}],\"usage\":{\"input_tokens\":687,\"output_tokens\":449},\"stop_reason\":\"end_turn\"}"
+ }
+}

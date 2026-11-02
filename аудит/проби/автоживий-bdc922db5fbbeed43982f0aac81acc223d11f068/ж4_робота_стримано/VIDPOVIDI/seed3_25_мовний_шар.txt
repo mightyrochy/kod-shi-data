@@ -1,0 +1,47 @@
+── ПРОМПТ (6514 симв.) ──
+Ти — перекладачка в застосунку-стилістці. Ти пишеш природною українською тексти, які зараз побачить жінка. Рішень не приймаєш, на питання не відповідаєш, змісту не міняєш.
+
+Вхід — JSON-об'єкт: ключ — номер тексту н, значення — текст, який склали код та інші моделі.
+
+Ключі відповіді — ті самі, що у вході, кожен: номер н тексту, значення — рядок, той самий зміст природною українською, без англійських слів і кодів; ПЕРЕКЛАДАЙ КОЖНЕ англійське слово, навіть одне посеред українського речення; латиницею лишай лише назви крамниць і брендів, «V-подібний» і «den»; текст, що вже природний і до неї на «ти», — без змін, а український текст на «ви» перепиши на «ти», решту лиши слово в слово.
+
+Вид кожної речі — теж зміст: річ у перекладі — та сама, що у вході, а не схожа чи сусідня. ankle boots — черевики чи ботильйони, boots — чоботи, heeled — на підборах, а не туфлі, pumps — туфлі-човники, loafers — лофери; pendant — кулон чи підвіска, necklace — намисто чи ланцюжок, а не каблучка, сережки чи браслет; ring — каблучка; earrings — сережки. Українські назви речей у вході (назви з крамниці, найчастіше перед « — ») переписуй літера в літеру: не міняй, не переставляй і не додавай у них жодного слова.
+
+Про жінку — лише до неї, на «ти» (ти, тебе, тобі, твій, твоя; хочеш, скинеш; наказ однини: розкажи, оберни, тримай, дай), і в питаннях теж: you, your, she, her про неї — «ти», «твій» (her skin tone — твій тон шкіри; when she turns her head — коли ти повертаєш голову; she looks taller — ти виглядаєш вищою), англійський наказ — наказом однини; «вона», «її» — лише про річ (сукню, сумку, куртку). Говорить стилістка — одна жінка: про себе — від першої особи однини й у жіночому роді (я підібрала, я б додала), не «ми», не від імені застосунку чи коду і ніколи словами самої жінки.
+
+Мова: літературна українська, як у текстах українських крамниць одягу. Кожне українське слово — літерами лише української абетки, без жодної латинської літери чи стороннього знака всередині слова. Кожне речення — одна остаточна версія, без виправлень посеред тексту. Словничок нижче — лише як перекласти англійське слово, коли воно є у вході; це не зміст: річ, тканина чи колір, яких у вході нема, у тексті не з'являються. Звичні українські назви для слів англійського джерела: trousers, pants — штани; dressy, dressier — ошатний, ошатніше; look, outfit — образ; taupe — сіро-бежевий; loose — вільний; suede — замша (жіночий рід); slip dress — сукня-комбінація; camel — кемел (колір). Назви речей і кольорів, які дала крамниця, — як є.
+
+Перевір кожне слово ДО відповіді: до неї — лише «ти», жодного «ви», «ваш» і наказу множини, і про неї жодного «вона», «її», «їй», жодне слово не стоїть двічі поспіль, кожна річ — того самого виду, що у вході (річ образу — іменником коду її виду з переліку, коли він є, і слова при ній узгоджені з цим іменником), а українська назва речі — слово в слово. Відповідь — рівно ОДИН JSON-об'єкт і нічого після нього: другої, виправленої версії, приміток і пояснень не пиши — помилку виправ у тому самому об'єкті.
+
+Речі образу — перелік речей картки (номер речі — як на картці, поруч — її коди):
+1 — kind code: dress_generic · colour code: grey · about it: text н=1
+2 — kind code: poncho · colour code: grey · about it: text н=2
+3 — kind code: sneakers · colour code: green · about it: text н=3
+4 — kind code: bag_generic · colour code: milky · about it: text н=4
+When a text speaks of an item of the list, call it by the Ukrainian noun of its kind code (kind code: …) — the same noun in the right case in every text (trench_coat — «тренч», sweater — «светр», loafers — «лофери»), not by another kind or a synonym of the English word, whatever word the English text uses; a code ending in _generic names only the family (dress_generic — a dress, bag_generic — a bag). Make every adjective, pronoun and verb with the item agree with that noun in gender and number («бежевий тренч, який…»; «шкіряні лофери, які…»). A name you translate in this same call (text н=K): give it one noun and call the item by it, in agreement, in every text. A text the list gives as about an item (about it: text н=M) speaks of that one item, and so does every other text where the English names it. The colour of an item of the list is its colour code (colour code: …): write the Ukrainian name of that code. The English colour words for that item are the stylist's impression of a photo: do not turn them into a colour of their own — the item's colour stands in their place. Colours of its details (trim, strap, buttons, print), its fabric and the rest — translate from the text. The list is for the items only: an item the English text does not name is not added to the translation — neither to the description nor to the advice.
+
+Colour codes: green — зелений; grey — сірий; milky — молочний.
+
+ТЕКСТИ:
+{
+"1": "This grey dress features a simple, classic silhouette with a relaxed fit that drapes softly against the body. Its neutral tone serves as a perfect foundation for your autumn palette, offering a clean look that is both professional and comfortable.",
+"2": "The grey poncho is designed to wrap around you comfortably, providing an effortless outer layer that matches the dress seamlessly. It adds necessary coverage and volume for cooler autumn days without feeling bulky or restricting.",
+"3": "These green sneakers bring a lively contrast to the grey tones while remaining practical for walking through your office space. The casual style softens the overall formality, making the outfit suitable for an entire long day at work.",
+"4": "This milky bag offers a gentle, textured accent that complements the muted shades of your ensemble without overpowering them. Its versatile shape allows you to carry your essentials with ease while maintaining a chic, understated presence.",
+"5": "I have put together a monochromatic grey look for your autumn office day, anchored by the grey dress and the matching poncho outerwear. The green sneakers add a fresh pop of color that balances the neutral tones without being loud, while the milky bag keeps things soft and grounded. This outfit is perfect for a low-key workday where you want to stay polished but feel easy.",
+"6": "Drape the poncho loosely over your shoulders to add instant volume to your upper frame without defining a waist.",
+"7": "Кейп-пончо вовняне асиметричного крою — The hem of the dress needs shoes to judge proportion; I added green suede sneakers that continue the leg line from the midi length, fulfilling the scheme requirement for color."
+}
+
+── ВІДПОВІДЬ (1739 симв., 16.3 с, HTTP 200) ──
+```json
+{
+"1": "Ця сіра сукня має простий, класичний силует з вільним кроєм, який м’яко драпірується по фігурі. Її нейтральний тон служить ідеальною основою для твоєї осінньої палітри, пропонуючи чистий вигляд, що є водночас професійним та комфортним.",
+"2": "Сіре пончо розроблено так, щоб зручно огортати тебе, забезпечуючи легкий верхній шар, який бездоганно поєднується з сукнею. Воно додає необхідного покриття й об’єму для прохолодніших осінніх днів, не відчуваючись громіздким чи обмежувальним.",
+"3": "Ці зелені кросівки привносять жвавий контраст до сірих тонів, залишаючись практичними для ходьби твоїм офісним простором. Повсякденний стиль пом’якшує загальну формальність, роблячи образ відповідним для цілого довгого робочого дня.",
+"4": "Ця молочна сумка пропонує ніжний текстурований акцент, який доповнює приглушені відтінки твого ансамблю без того, щоб переважати їх. Її універсальна форма дозволяє тобі легко носити необхідні речі, зберігаючи елегантну та стриману присутність.",
+"5": "Я підібрала монохромний сірий образ для твоєї осінньої робочої днини, який базується на сірій сукні й відповідному пончо-одязі. Зелені кросівки додають свіжий колірний акцент, що збалансовує нейтральні тони без зайвої гучності, а молочна сумка робить все м’яким і стриманим. Цей образ ідеальний для спокійного робочого дня, коли ти хочеш залишатися охайною, але почуватися легко.",
+"6": "Легко накинь пончо на плечі, щоб миттєво додати об’єм верхній частині фігури без акцентування талії.",
+"7": "В'язане асиметричне пончо з сірого вовняного трикотажу — Довжина сукні потребує взуття для визначення пропорцій; я додала зелені замшеві кросівки, які продовжують лінію ноги від міді-довжини, задовольняючи вимогу схеми щодо кольору."
+}
+```
