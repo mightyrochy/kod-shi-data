@@ -43,7 +43,7 @@ tail = r'''
 script = source / '_перевірка2814.cjs'
 script.write_text(prefix + tail, encoding='utf-8')
 try:
-    env = dict(os.environ, PYTHONUTF8='1', PYTHONIOENCODING='utf-8', NODE_PATH=r'C:\Users\gemini\kod-shi-test-node\node_modules')
+    env = dict(os.environ, PYTHONUTF8='1', PYTHONIOENCODING='utf-8')
     result = subprocess.run(['node', str(script)], cwd=source, env=env)
     sys.exit(result.returncode)
 finally:
