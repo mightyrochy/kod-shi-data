@@ -40,12 +40,16 @@ def вимір(код, сценарій):
         (репо / 'джерела/код_із_дерева.py').write_text('стан = "база"\n', encoding='utf-8')
         (репо / '.gitignore').write_text('__pycache__/\n', encoding='utf-8')
         маркер = тека / 'одноразовий'
-        if сценарій == 'одноразовий':
+        if сценарій in ('одноразовий', 'постійний', 'частковий_збіг'):
             текст = ('from pathlib import Path\nimport time\ntime.sleep(0.2)\n'
                      f'm = Path({str(маркер)!r})\n'
                      'if not m.exists():\n    m.write_text("1")\n'
                      '    p = Path("../README.md")\n'
                      '    p.write_bytes(p.read_bytes() + b"writer\\n")\n')
+            if сценарій != 'одноразовий':
+                текст = текст.replace('if not m.exists():', 'if True:')
+            if сценарій == 'частковий_збіг':
+                текст += '    Path("../AGENTS.md").write_bytes(b"writer\\n")\n'
         elif сценарій == 'індекс':
             текст = ('from pathlib import Path\nimport subprocess\n'
                      'Path("../README.md").write_bytes(b"staged by probe\\n")\n'
@@ -71,6 +75,9 @@ def вимір(код, сценарій):
             'from pathlib import Path\nimport time\ntime.sleep(0.6)\n'
             'import код_із_дерева\nassert код_із_дерева.стан == "база"\n'
             'assert Path("../README.md").read_bytes() == b"base\\n"\n', encoding='utf-8')
+        if сценарій == 'частковий_збіг':
+            with (проби / 'neighbor.py').open('a', encoding='utf-8') as ф:
+                ф.write('Path("../README.md").write_bytes(b"neighbor\\n")\n')
         git(репо, 'add', '.')
         git(репо, 'commit', '-qm', 'Початок виміру')
         if сценарій in ('чистий', 'чужий_абсолютний'):
@@ -81,6 +88,7 @@ def вимір(код, сценарій):
             (репо / 'джерела/код_із_дерева.py').write_text('стан = "правка сесії"\n', encoding='utf-8')
         до = {ш: (репо / ш).read_bytes() for ш in ('README.md', 'AGENTS.md', 'джерела/код_із_дерева.py')}
         індекс_до = git(репо, 'ls-files', '--stage', '-z')
+        байти_індексу_до = (репо / '.git/index').read_bytes()
         журнал = тека / 'звіт.jsonl'
         р = subprocess.run([sys.executable, '-X', 'utf8', str(прилади / 'лічба_проб.py'),
                             '--гейт', '--лише', 'джерела/проби/writer.py', 'джерела/проби/neighbor.py'],
@@ -94,6 +102,8 @@ def вимір(код, сценарій):
                          файли=писач.get('змінені_файли', []),
                          незмінний_вміст=all((репо / ш).read_bytes() == в for ш, в in до.items()),
                          незмінний_індекс=git(репо, 'ls-files', '--stage', '-z') == індекс_до,
+                         незмінні_байти_індексу=(репо / '.git/index').read_bytes() == байти_індексу_до,
+                         файли_сусіда=сусід.get('змінені_файли', []),
                          відомі_дерева=len(git(репо, 'worktree', 'list', '--porcelain').split(b'worktree ')) - 1,
                          помилка_користувача='ДЕРЕВО КОРИСТУВАЧА ЗМІНИЛОСЯ: README.md, untracked.txt' in р.stdout)
         if сценарій == 'чужий_абсолютний':
@@ -114,7 +124,8 @@ def main():
     код = (git(корінь, 'show', а.до + ':джерела/прилади/лічба_проб.py') if а.до
            else (корінь / 'джерела/прилади/лічба_проб.py').read_bytes())
     результати = [вимір(код, с) for с in
-                  ('одноразовий', 'індекс', 'чистий', 'чужий_абсолютний', 'без_входу', 'стеля')]
+                  ('одноразовий', 'постійний', 'частковий_збіг', 'індекс', 'чистий',
+                   'чужий_абсолютний', 'без_входу', 'стеля')]
     if а.звіт:
         а.звіт.write_text(json.dumps(результати, ensure_ascii=False, indent=2) + '\n', encoding='utf-8')
     if not а.до:
@@ -122,8 +133,12 @@ def main():
             assert р['відомі_дерева'] == 1, р
             if р['сценарій'] == 'чужий_абсолютний':
                 assert р['rc'] == 1 and р['помилка_користувача'] and р['правки_не_стерті'], р
+            elif р['сценарій'] == 'частковий_збіг':
+                assert р['rc'] == 1 and р['писач'] == 1 and р['сусід'] == 1, р
+                assert р['файли'] == ['AGENTS.md', 'README.md'] and р['файли_сусіда'] == ['README.md'], р
+                assert р['незмінний_вміст'] and р['незмінний_індекс'] and р['незмінні_байти_індексу'], р
             else:
-                assert р['незмінний_вміст'] and р['незмінний_індекс'] and р['сусід'] == 0, р
+                assert р['незмінний_вміст'] and р['незмінний_індекс'] and р['незмінні_байти_індексу'] and р['сусід'] == 0, р
                 if р['сценарій'] in ('чистий', 'без_входу'):
                     assert р['rc'] == 0 and р['писач'] == (77 if р['сценарій'] == 'без_входу' else 0), р
                 else:
