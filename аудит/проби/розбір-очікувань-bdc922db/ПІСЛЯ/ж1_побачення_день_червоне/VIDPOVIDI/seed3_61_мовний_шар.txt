@@ -1,0 +1,62 @@
+── ПРОМПТ (8268 симв.) ──
+Ти — перекладачка в застосунку-стилістці. Ти пишеш природною українською тексти, які зараз побачить жінка. Рішень не приймаєш, на питання не відповідаєш, змісту не міняєш.
+
+Вхід — JSON-об'єкт: ключ — номер тексту н, значення — текст, який склали код та інші моделі.
+
+Ключі відповіді — ті самі, що у вході, кожен: номер н тексту, значення — рядок, той самий зміст природною українською, без англійських слів і кодів; ПЕРЕКЛАДАЙ КОЖНЕ англійське слово, навіть одне посеред українського речення; латиницею лишай лише назви крамниць і брендів, «V-подібний» і «den»; текст, що вже природний і до неї на «ти», — без змін, а український текст на «ви» перепиши на «ти», решту лиши слово в слово.
+
+Вид кожної речі — теж зміст: річ у перекладі — та сама, що у вході, а не схожа чи сусідня. ankle boots — черевики чи ботильйони, boots — чоботи, heeled — на підборах, а не туфлі, pumps — туфлі-човники, loafers — лофери; pendant — кулон чи підвіска, necklace — намисто чи ланцюжок, а не каблучка, сережки чи браслет; ring — каблучка; earrings — сережки. Українські назви речей у вході (назви з крамниці, найчастіше перед « — ») переписуй літера в літеру: не міняй, не переставляй і не додавай у них жодного слова.
+
+Про жінку — лише до неї, на «ти» (ти, тебе, тобі, твій, твоя; хочеш, скинеш; наказ однини: розкажи, оберни, тримай, дай), і в питаннях теж: you, your, she, her про неї — «ти», «твій» (her skin tone — твій тон шкіри; when she turns her head — коли ти повертаєш голову; she looks taller — ти виглядаєш вищою), англійський наказ — наказом однини; «вона», «її» — лише про річ (сукню, сумку, куртку). Говорить стилістка — одна жінка: про себе — від першої особи однини й у жіночому роді (я підібрала, я б додала), не «ми», не від імені застосунку чи коду і ніколи словами самої жінки.
+
+Мова: літературна українська, як у текстах українських крамниць одягу. Кожне українське слово — літерами лише української абетки, без жодної латинської літери чи стороннього знака всередині слова. Кожне речення — одна остаточна версія, без виправлень посеред тексту. Словничок нижче — лише як перекласти англійське слово, коли воно є у вході; це не зміст: річ, тканина чи колір, яких у вході нема, у тексті не з'являються. Звичні українські назви для слів англійського джерела: trousers, pants — штани; dressy, dressier — ошатний, ошатніше; look, outfit — образ; taupe — сіро-бежевий; loose — вільний; suede — замша (жіночий рід); slip dress — сукня-комбінація; camel — кемел (колір). Назви речей і кольорів, які дала крамниця, — як є.
+
+Перевір кожне слово ДО відповіді: до неї — лише «ти», жодного «ви», «ваш» і наказу множини, і про неї жодного «вона», «її», «їй», жодне слово не стоїть двічі поспіль, кожна річ — того самого виду, що у вході (річ образу — іменником коду її виду з переліку, коли він є, і слова при ній узгоджені з цим іменником), а українська назва речі — слово в слово. Відповідь — рівно ОДИН JSON-об'єкт і нічого після нього: другої, виправленої версії, приміток і пояснень не пиши — помилку виправ у тому самому об'єкті.
+
+Речі образу — перелік речей картки (номер речі — як на картці, поруч — її коди):
+1 — kind code: blouse · colour code: red · about it: text н=1
+2 — kind code: ankle_boots · colour code: ginger · about it: text н=2
+3 — kind code: trousers · colour code: light_blue · about it: text н=3
+4 — kind code: bag_generic · colour code: blue · about it: text н=4
+5 — kind code: belt · colour code: khaki · about it: text н=5
+When a text speaks of an item of the list, call it by the Ukrainian noun of its kind code (kind code: …) — the same noun in the right case in every text (trench_coat — «тренч», sweater — «светр», loafers — «лофери»), not by another kind or a synonym of the English word, whatever word the English text uses; a code ending in _generic names only the family (dress_generic — a dress, bag_generic — a bag). Make every adjective, pronoun and verb with the item agree with that noun in gender and number («бежевий тренч, який…»; «шкіряні лофери, які…»). A name you translate in this same call (text н=K): give it one noun and call the item by it, in agreement, in every text. A text the list gives as about an item (about it: text н=M) speaks of that one item, and so does every other text where the English names it. The colour of an item of the list is its colour code (colour code: …): write the Ukrainian name of that code. The English colour words for that item are the stylist's impression of a photo: do not turn them into a colour of their own — the item's colour stands in their place. Colours of its details (trim, strap, buttons, print), its fabric and the rest — translate from the text. The list is for the items only: an item the English text does not name is not added to the translation — neither to the description nor to the advice.
+
+Colour codes: blue — синій; ginger — рудий; khaki — хакі; light_blue — блакитний; red — червоний.
+
+ТЕКСТИ:
+{
+"1": "This fitted red blouse features a clean silhouette that skims your upper body, highlighting your defined waist without adding bulk. Its vibrant hue is rich and bold, perfect for catching the eye on a first date while its fabric drapes softly over your frame.",
+"2": "The ankle boots are crafted in a warm ginger tone with a subtle animal print that adds instant texture and personality to the outfit. Their snug fit wraps around your ankle, creating a streamlined look that balances the straight lines of your trousers.",
+"3": "These light blue trousers offer a straight cut that falls cleanly from hip to hem, providing a comfortable yet structured base for your day. The soft pastel shade offers a cool contrast to the warm red top and ginger shoes.",
+"4": "A versatile blue bag in a generic shape serves as a practical accessory that complements the trousers while offering enough space for your date essentials like your phone and wallet.",
+"5": "The khaki belt acts as a functional and stylish anchor, cinching the blouse to define your waist and creating a perfect transition between the fitted top and flowing trousers.",
+"6": "This look brings your wish for something red right into the spotlight with a fitted blouse that hugs your defined waist, creating a vertical line that elongates your frame perfectly for a park stroll. The ginger ankle boots add warmth and texture against the light blue trousers, while the khaki belt cinches everything at your narrowest point to emphasize your X shape without hiding it. I chose this specific red because you asked for it, knowing that its vibrancy works beautifully in daylight against autumn leaves and turns heads on a first date exactly where you want them.",
+"7": "Keep the blouse tucked in and belted to maintain that clean, elongated vertical line from shoulders to ankles as you walk through the park.",
+"8": "Carry the blue bag on your shoulder or across your body so it sits comfortably between you and the world while you hold hands.",
+"9": "Черевики замшеві (Other Brand) Other Brand — Replaced the beige shawl with these ginger suede ankle boots to add warmth and texture at the hem, creating a deliberate break in the tonal scheme that feels grounded yet interesting.",
+"10": "Прямі штани лазурового кольору — Added wide-leg light blue trousers to replace the missing bottom slot. The cool blue tone creates a necessary contrast with the warm red blouse, preventing the outfit from reading as a flat tonal block.",
+"11": "Дорожня сумка із синьої шкіри — Added this blue leather bag to pick up the hue in the trousers. It anchors the bottom half and provides a cohesive link between the skirt/trousers and the shoes, solving the lack of accessories.",
+"12": "Ремінь жіночий Welfare хакі — Added this khaki belt to define the waist on the wide trousers. It adds a third texture and a neutral bridge between the red top and blue bottom, ensuring the outfit feels styled rather than dressed.",
+"13": "Прямі штани лазурового кольору — The blue trousers break the warm red/ginger dominance and answer your need for 'something red' without overwhelming your autumn palette.",
+"14": "Блуза на запах червона — This is the correct trade-off: placing the red blouse away from the face (in a mid-thigh slot) protects you from the off-palette risk while keeping the color vibrant as the hero of the outfit."
+}
+
+── ВІДПОВІДЬ (3460 симв., 22.7 с, HTTP 200) ──
+```json
+{
+"1": "Ця червона приталена блузка має читкий силует, який ледь торкається твоєї верхньої частини тіла, підкреслюючи твою витончену талію без зайвого об’єму. Її яскравий відтінок насичений і сміливий, ідеальний для того, щоб привернути увагу на першому побаченні, а тканина м’яко драпірується по фігурі.",
+"2": "Ці руді черевики з ледь помітним принтом тваринного забарвлення миттєво додають текстури та індивідуальності твоєму образу. Їхня зручна посадка облягає щиколотку, створюючи стрункий вигляд, який гармонійно поєднується з прямими лініями твоїх штанів.",
+"3": "Ці блакитні штани мають прямий крій і вільно спадають від стегна до подолу, забезпечуючи комфортний, але структурований базовий елемент для твого дня. М’який пастельний відтінок створює прохолодну контрастність з теплим червоним верхом та рудим взуттям.",
+"4": "Універсальна синя сумка простої форми слугуватиме практичним аксесуаром, який доповнює твої штани і при цьому має достатньо місця для необхідних речей на побаченні, таких як телефон і гаманець.",
+"5": "Цей хакі пояс виконує функцію стильного акценту, підкреслюючи талію та створюючи плавний перехід між облягаючим верхом і вільними штанами.",
+"6": "Цей образ виносить твоє бажання чогось червоного на перший план за допомогою приталеної блузки, яка обтягує твою тонку талію, створюючи вертикальну лінію, що чудово подовжує твій силует для прогулянки в парку. Руді черевики додають тепла і текстури до блакитних штанів, а хакі пояс підкреслює найвужчу частину твоєї фігури, щоб акцентувати X-подібний тип статури без його приховування. Я обрала саме цей червоний відтінок, знаючи, що він чудово виглядає на природному світлі серед осіннього листя і привертає увагу там, де ти цього хочеш.",
+"7": "Заправ блузку в штани та підпережи її поясом, щоб зберегти чисту подовжену вертикальну лінію від плечей до щиколоток, коли йдеш парком.",
+"8": "Носи синю сумку на плечі або через тіло так, щоб вона зручно розміщувалася між тобою і світом, поки ти тримаєшся за руки.",
+"9": "Черевики замшеві (Other Brand) Other Brand — Замінила бежевий шарф цими рудими замшевими черевичками на щиколотці, щоб додати тепла та текстури внизу, створивши навмисний перехід у тональній схемі, який відчувається збалансованим і цікавим.",
+"10": "Прямі штани лазурового кольору — Додала широкі блакитні штани замість відсутнього елементу внизу. Прохолодний синій тон створює необхідну контрастність з теплим червоним верхом, запобігаючи тому, щоб образ виглядав як монотонна тональна пляма.",
+"11": "Дорожня сумка із синьої шкіри — Додала цю синю шкіряну сумку, щоб підкреслити відтінок у штанах. Вона створює основу внизу і забезпечує гармонійний зв’язок між спідницею/штанами та взуттям, вирішуючи проблему з браком аксесуарів.",
+"12": "Ремінь жіночий Welfare хакі — Додала цей пояс хакі, щоб підкреслити талію на широких штанах. Він додає третю текстуру і нейтральний перехід між червоним верхом і синіми низом, забезпечуючи те, що образ виглядає стильно, а не просто одягнено.",
+"13": "Прямі штани лазурового кольору — Блакитні штани розбавляють домінування теплого рудо-червоного відтінку і відповідають твоєму бажанню чогось червоного без перевантаження осінньої палітри.",
+"14": "Блуза на запах червона — Це правильний компроміс: розмістивши червону блузку подалі від обличчя (у слоті посередині стегна), ти захищаєш себе від ризику невідповідного кольору, зберігаючи при цьому яскравість цього кольору як головного елементу образу."
+}
+```
