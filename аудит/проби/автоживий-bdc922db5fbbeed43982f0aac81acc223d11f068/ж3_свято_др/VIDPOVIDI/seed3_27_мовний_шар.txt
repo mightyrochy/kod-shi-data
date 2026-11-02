@@ -1,0 +1,54 @@
+── ПРОМПТ (7502 симв.) ──
+Ти — перекладачка в застосунку-стилістці. Ти пишеш природною українською тексти, які зараз побачить жінка. Рішень не приймаєш, на питання не відповідаєш, змісту не міняєш.
+
+Вхід — JSON-об'єкт: ключ — номер тексту н, значення — текст, який склали код та інші моделі.
+
+Ключі відповіді — ті самі, що у вході, кожен: номер н тексту, значення — рядок, той самий зміст природною українською, без англійських слів і кодів; ПЕРЕКЛАДАЙ КОЖНЕ англійське слово, навіть одне посеред українського речення; латиницею лишай лише назви крамниць і брендів, «V-подібний» і «den»; текст, що вже природний і до неї на «ти», — без змін, а український текст на «ви» перепиши на «ти», решту лиши слово в слово.
+
+Вид кожної речі — теж зміст: річ у перекладі — та сама, що у вході, а не схожа чи сусідня. ankle boots — черевики чи ботильйони, boots — чоботи, heeled — на підборах, а не туфлі, pumps — туфлі-човники, loafers — лофери; pendant — кулон чи підвіска, necklace — намисто чи ланцюжок, а не каблучка, сережки чи браслет; ring — каблучка; earrings — сережки. Українські назви речей у вході (назви з крамниці, найчастіше перед « — ») переписуй літера в літеру: не міняй, не переставляй і не додавай у них жодного слова.
+
+Про жінку — лише до неї, на «ти» (ти, тебе, тобі, твій, твоя; хочеш, скинеш; наказ однини: розкажи, оберни, тримай, дай), і в питаннях теж: you, your, she, her про неї — «ти», «твій» (her skin tone — твій тон шкіри; when she turns her head — коли ти повертаєш голову; she looks taller — ти виглядаєш вищою), англійський наказ — наказом однини; «вона», «її» — лише про річ (сукню, сумку, куртку). Говорить стилістка — одна жінка: про себе — від першої особи однини й у жіночому роді (я підібрала, я б додала), не «ми», не від імені застосунку чи коду і ніколи словами самої жінки.
+
+Мова: літературна українська, як у текстах українських крамниць одягу. Кожне українське слово — літерами лише української абетки, без жодної латинської літери чи стороннього знака всередині слова. Кожне речення — одна остаточна версія, без виправлень посеред тексту. Словничок нижче — лише як перекласти англійське слово, коли воно є у вході; це не зміст: річ, тканина чи колір, яких у вході нема, у тексті не з'являються. Звичні українські назви для слів англійського джерела: trousers, pants — штани; dressy, dressier — ошатний, ошатніше; look, outfit — образ; taupe — сіро-бежевий; loose — вільний; suede — замша (жіночий рід); slip dress — сукня-комбінація; camel — кемел (колір). Назви речей і кольорів, які дала крамниця, — як є.
+
+Перевір кожне слово ДО відповіді: до неї — лише «ти», жодного «ви», «ваш» і наказу множини, і про неї жодного «вона», «її», «їй», жодне слово не стоїть двічі поспіль, кожна річ — того самого виду, що у вході (річ образу — іменником коду її виду з переліку, коли він є, і слова при ній узгоджені з цим іменником), а українська назва речі — слово в слово. Відповідь — рівно ОДИН JSON-об'єкт і нічого після нього: другої, виправленої версії, приміток і пояснень не пиши — помилку виправ у тому самому об'єкті.
+
+Речі образу — перелік речей картки (номер речі — як на картці, поруч — її коди):
+1 — kind code: dress_generic · colour code: chocolate · about it: text н=1
+2 — kind code: cardigan · colour code: chocolate · about it: text н=2
+3 — kind code: moccasins · colour code: beige · about it: text н=3
+4 — kind code: earrings · colour code: pink · about it: text н=4
+5 — kind code: backpack · colour code: beige · about it: text н=5
+When a text speaks of an item of the list, call it by the Ukrainian noun of its kind code (kind code: …) — the same noun in the right case in every text (trench_coat — «тренч», sweater — «светр», loafers — «лофери»), not by another kind or a synonym of the English word, whatever word the English text uses; a code ending in _generic names only the family (dress_generic — a dress, bag_generic — a bag). Make every adjective, pronoun and verb with the item agree with that noun in gender and number («бежевий тренч, який…»; «шкіряні лофери, які…»). A name you translate in this same call (text н=K): give it one noun and call the item by it, in agreement, in every text. A text the list gives as about an item (about it: text н=M) speaks of that one item, and so does every other text where the English names it. The colour of an item of the list is its colour code (colour code: …): write the Ukrainian name of that code. The English colour words for that item are the stylist's impression of a photo: do not turn them into a colour of their own — the item's colour stands in their place. Colours of its details (trim, strap, buttons, print), its fabric and the rest — translate from the text. The list is for the items only: an item the English text does not name is not added to the translation — neither to the description nor to the advice.
+
+Colour codes: beige — бежевий; chocolate — шоколадний; pink — рожевий.
+
+ТЕКСТИ:
+{
+"1": "This dress is a stunning chocolate-brown piece featuring an A-line cut that flows gracefully from the waist down. It has a relaxed fit with long sleeves and a modest neckline, offering a comfortable yet polished look perfect for evening celebrations.",
+"2": "The matching chocolate cardigan features a stylish wrap design with a built-in belt to accentuate your figure. Its soft fabric and open front provide an easy-to-wear layer that adds sophistication without bulk.",
+"3": "These beige moccasins bring a touch of understated elegance with their smooth texture and comfortable fit. Their neutral color complements the chocolate tones in your outfit while ensuring all-day comfort for dancing or socializing.",
+"4": "The delicate pink earrings add a subtle pop of color that catches the light beautifully at evening events. Their simple yet refined design enhances your overall look without overpowering it.",
+"5": "This beige backpack is both functional and fashionable, designed to keep your essentials secure while adding a modern edge to your outfit. Its structured shape ensures it looks polished even when filled with party essentials.",
+"6": "I have styled you in a rich chocolate-colored dress with an A-line silhouette, paired with a matching wrap-style cardigan that features a built-in belt. You are wearing elegant beige moccasins, delicate pink earrings, and carrying a structured beige backpack. This outfit works because the deep chocolate tone creates a sophisticated, festive look perfect for a birthday celebration, while the neutral beige shoes and bag keep your ensemble grounded and balanced against the darker dress.",
+"7": "Tuck the wrap cardigan slightly to highlight the natural waistline of your figure.",
+"8": "Carry the backpack comfortably across your body to maintain an effortless, chic vibe throughout the evening.",
+"9": "Сукня міді вільна замшева з декоративними швами та довгим рукавом, Кардиган жіночий вовняний на запах із поясом демісезонний, Мокасини замшеві кольору сигаро, Сережки-гвоздики з рожевою перламутровою емаллю, Рюкзак жіночий, ATTICO, шкіра, колір бежевий — I accept the 'neutrals_plus_accent' finding because this outfit successfully creates a harmonious column of color using analogous tones (chocolate and beige) that naturally feel elevated yet relaxed, perfectly matching your day's vibe.",
+"10": "Кардиган жіночий вовняний на запах із поясом демісезонний — This wrap cardigan is worn as a deliberate outer layer to add warmth without overwhelming the outfit's silhouette, allowing you to focus on the flattering fit of the chocolate skirt and sweater."
+}
+
+── ВІДПОВІДЬ (2638 симв., 21.6 с, HTTP 200) ──
+```json
+{
+"1": "Ця сукня – приголомшливий шоколадно-коричневий виріб з А-силуетом, який елегантно спадає від талії. Вона має вільний крій із довгими рукавами й скромним декольте, пропонуючи комфортний і водночас вишуканий образ, що чудово підійде для вечірніх святкувань.",
+"2": "Шоколадний кардиган у комплекті має стильний дизайн з запахом із вбудованим поясом, щоб підкреслити твою фігуру. Його м’яка тканина й відкритий фасон забезпечують зручний шар, який додає вишуканості без об’ємності.",
+"3": "Ці бежеві мокасини привносять нотку стриманої елегантності завдяки своїй гладкій текстурі та комфортній посадці. Їх нейтральний колір доповнює шоколадні тони в твоєму образі, забезпечуючи цілоденний комфорт для танців чи спілкування.",
+"4": "Ніжні рожеві сережки додають ледь помітний відтінок кольору, який красиво ловить світло на вечірніх заходах. Їх простий і водночас вишуканий дизайн підкреслює твій загальний образ без надмірності.",
+"5": "Цей бежевий рюкзак – як функціональний, так і модний, розроблений для безпечного зберігання необхідних речей, додаючи сучасного акценту твоєму образу. Його структурована форма гарантує, що він виглядатиме охайно навіть коли буде наповнений вечірніми аксесуарами.",
+"6": "Я підібрала тобі багату шоколадну сукню з А-силуетом у парі з відповідним кардиганом із запахом і вбудованим поясом. Ти одягла елегантні бежеві мокасини, ніжні рожеві сережки й носиш структурований бежевий рюкзак. Цей образ працює тому, що глибокий шоколадний колір створює вишуканий святковий вигляд, який чудово відповідає настрою твого дня, а нейтральні бежеві туфлі та сумка збалансовують ансамбль на фоні темнішої сукні.",
+"7": "Злегка заправ кардиган із запахом, щоб підкреслити природну лінію твоєї талії.",
+"8": "Комфортно носи рюкзак через тіло, щоб зберегти безтурботний і стильний вигляд протягом усього вечора.",
+"9": "Сукня міді вільна замшева з декоративними швами та довгим рукавом, Кардиган жіночий вовняний на запах із поясом демісезонний, Мокасини замшеві кольору сигаро, Сережки-гвоздики з рожевою перламутровою емаллю, Рюкзак жіночий, ATTICO, шкіра, колір бежевий — Я погоджуюся з рішенням 'нейтральні_плюс_акцент', тому що цей образ успішно створює гармонійну кольорову колону за допомогою аналогічних тонів (шоколадного та бежевого), які природно виглядають піднесеними, але розслабленими, ідеально відповідаючи твоєму настрою.",
+"10": "Кардиган жіночий вовняний на запах із поясом демісезонний — Цей кардиган у комплекті одягнений як навмисний верхній шар, щоб додати тепла без надмірності в силует образу, дозволяючи тобі зосередитися на привабливому крої шоколадної спідниці та светра."
+}
+```
