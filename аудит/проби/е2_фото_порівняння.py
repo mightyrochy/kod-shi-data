@@ -8,7 +8,7 @@ import tempfile
 КОРІНЬ = Path(__file__).resolve().parents[2]
 
 
-def git(*арг):
+def читати_гіт(*арг):
     """Читає версіоновані джерела й записи без зміни робочого дерева."""
     return subprocess.run(["git", "-C", str(КОРІНЬ), "-c", "core.quotepath=false", *арг],
                           capture_output=True, check=True).stdout
@@ -55,11 +55,11 @@ def головна():
     записи = []
     for гілка, тека, оцінка in (("origin/claude/zhyvi-1016-1", "аудит/живі_1016_1", True),
                                 (база, "аудит/живі_12/Б", False)):
-        for файл in git("ls-tree", "-r", "--name-only", гілка, "--", тека).decode().splitlines():
+        for файл in читати_гіт("ls-tree", "-r", "--name-only", гілка, "--", тека).decode().splitlines():
             if "/VIDPOVIDI/" not in файл or not файл.endswith(
                     "_ОЦІНКА_речі_на_фото.txt" if оцінка else "_речі_з_фото_шар_.txt"):
                 continue
-            текст = git("show", гілка + ":" + файл).decode()
+            текст = читати_гіт("show", гілка + ":" + файл).decode()
             до, після = текст.split("── ВІДПОВІДЬ", 1)
             промпт = json.JSONDecoder().raw_decode(до[до.index("{"):])[0]
             записи.append(dict(файл=файл, оцінка=оцінка, промпт=промпт,
@@ -68,7 +68,7 @@ def головна():
     with tempfile.TemporaryDirectory(prefix="е2-фото-") as тека:
         т = Path(тека)
         for ім in ("річ_з_фото", "оцінка_образу"):
-            (т / (ім + ".py")).write_bytes(git("show", база + ":джерела/" + ім + ".py"))
+            (т / (ім + ".py")).write_bytes(читати_гіт("show", база + ":джерела/" + ім + ".py"))
         вхід = т / "записи.json"
         вхід.write_text(json.dumps(записи, ensure_ascii=False), encoding="utf-8")
         виходи = [json.loads(subprocess.run([sys.executable, __file__, "--вимір", str(ш), str(вхід)],
