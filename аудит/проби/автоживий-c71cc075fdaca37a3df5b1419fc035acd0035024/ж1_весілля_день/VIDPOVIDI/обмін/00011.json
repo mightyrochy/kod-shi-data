@@ -1,0 +1,27 @@
+{
+ "версія": 1,
+ "запит": {
+  "model": "qwen/qwen3.5-9b",
+  "max_tokens": 4000,
+  "messages": [
+   {
+    "role": "user",
+    "content": [
+     {
+      "type": "text",
+      "text": "{\"task\": {\"role\": \"You are a personal stylist. Put together one outfit for her case.\", \"rules\": [\"Items one per line, garments first, then shoes and accessories: what it is, cut, length, color with its hex code, fabric.\", \"An outer layer only when the weather needs it; at +20 °C and warmer there is none.\", \"Last, why this outfit works, in 3–4 sentences.\"], \"limits\": [\"Do not name lightness numbers, body measurements or height in numbers, or body-type labels, and do not say you had limits.\", \"The answer is plain text laid out as the rules say, not JSON.\"], \"language\": \"English\", \"answer\": \"OUTFIT_TEXT\", \"input\": [\"\\\"case\\\" — her case: the occasion, where and when, the weather, the dress code, her wishes and refusals — as codes, her own words as quotes; do not take an item that goes against her refusals or her words\", \"\\\"formality\\\" — the level of dress she named: home (loungewear, athleisure, sportswear) < everyday (jeans, a T-shirt and sneakers; neat casual, dark denim) < neat (business: a blouse, a shirt or a refined knit with trousers or a skirt, a textured jacket or a cardigan, loafers, ballet flats or ankle boots; social: a day dress, a refined knit with a skirt or trousers, a textured jacket, neat flats or ankle boots) < smart (business: a jacket with trousers or a skirt, a blouse or a shirt, loafers or pumps; a sheath dress with a jacket; social: a cocktail dress, heeled shoes) < formal (business: a business suit — a jacket with trousers or a skirt of one fabric — with a blouse, pumps; social: a formal dress of a noble fabric, heeled shoes) < very_smart (an evening gown) < ceremonial (a full-length evening gown with long gloves)\"]}, \"case\": {\"field_quotes\": {\"occasion\": \"я гостя на весіллі подруги, розпис і обід у ресторані\", \"place\": \"у ресторані\", \"hour\": \"о 12:00\", \"part_of_day\": \"о 12:00\"}, \"formality_reason\": \"norm\", \"event\": \"я гостя на весіллі подруги, розпис і обід у ресторані\", \"occasion\": \"wedding_guest\", \"place\": \"restaurant_upscale\", \"formality\": [\"formal\"], \"season\": \"autumn\", \"part_of_day\": \"day\", \"light\": \"daylight\"}}"
+     }
+    ]
+   }
+  ],
+  "temperature": 1
+ },
+ "відповідь": {
+  "status": 200,
+  "contentType": "application/json",
+  "headers": {
+   "x-model": "qwen/qwen3.5-9b"
+  },
+  "body": "{\"content\":[{\"type\":\"text\",\"text\":\"Sheath dress, midi length, midnight blue, silk crepe.\\nTailored wool-blend blazer, cropped jacket silhouette, charcoal grey, fine tweed.\\nBlock-heel pumps, pointed toe, metallic gold, smooth leather.\\nDelicate pearl drop earrings, single strand cultured pearl necklace, slim gold watch with a leather strap.\\n\\nThis outfit works perfectly for an upscale wedding reception in autumn, balancing the required formal dress code with seasonal warmth and elegance. The midnight blue sheath dress provides a sophisticated base that honors the ceremony's significance without appearing too heavy for a midday event under daylight. Adding the structured charcoal blazer offers necessary coverage against cooler fall air while maintaining a polished business-appropriate silhouette suitable for a restaurant setting. Finally, the metallic gold shoes and pearls introduce a subtle celebratory sparkle that respects the occasion's joyous nature without overwhelming the refined atmosphere.\"}],\"usage\":{\"input_tokens\":577,\"output_tokens\":179},\"stop_reason\":\"end_turn\"}"
+ }
+}
