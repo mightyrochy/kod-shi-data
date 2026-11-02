@@ -181,7 +181,7 @@ def промпт_речей(фото):
     «outfit»: фото — ід і розмір (самі зображення їдуть блоками, кожне під підписом `річ_з_фото.підписи_фото`)."""
     ф = [dict(id=str(х.get("ід")), width=х.get("ширина"), height=х.get("висота"))
          for х in (фото or []) if isinstance(х, dict) and х.get("ід")]
-    return _json.dumps(_ЗП.зібрати(_РФ.фото_речей(), {"photos": ф, "outfit": True, "codes": _РФ.коди_полів()}),
+    return _json.dumps(_РФ.зібрати_фото({"photos": ф, "outfit": True, "codes": _РФ.коди_полів()}, "in_outfit"),
                        ensure_ascii=False)
 
 

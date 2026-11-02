@@ -481,8 +481,9 @@ def фото_речей():
     тож виправлення вад (підпис «Photo ф1:» перед кадром, форма слота, «пара взуття — одна
     річ», «фото самого взуття без верху й низу») не лишаються лише в оцінці: інакше в розмові повторювались би ті самі вади —
     слот поза кодами (`top_garment`), та сама пара взуття двома записами, спідниця ф1 записана на ф2.
-    Правила й скелет спільні, а що відрізняє виклики, стоїть полем входу: оцінка шле «outfit» (тоді «in_outfit»
-    має сенс), розмова — «her_items_in_words» (тоді «owner» — з її слів); рядок «як» поля йде лише з полем."""
+    Правила й описи полів спільні; `зібрати_фото` лишає в скелеті поле відповідного читача:
+    оцінка шле «outfit» й читає «in_outfit», розмова — «her_items_in_words» й читає «owner».
+    Рядок «як» поля йде лише з полем входу."""
     global ФОТО_РЕЧЕЙ
     if ФОТО_РЕЧЕЙ is None:
         ФОТО_РЕЧЕЙ = _ЗП.Оголошення(
@@ -520,31 +521,42 @@ def фото_речей():
                 "a jacket, blazer or coat worn open over another garment is \"outerwear\", the garment under it "
                 "\"top\"; trousers have two legs; a skirt hangs from the waist in one piece.",
                 "A photo of shoes alone has no top or bottom: boot shafts are not trouser legs.",
-                "\"kind\" is the item's exact kind from \"codes.item_type\" within its \"slot\", read from the same shape.",
                 "\"frame\" is the item's box on its photo in thousandths of width and height (0–1000), tight "
                 "around the item itself, without background, skin or other items; " + РАМКА_НА_ОКО + ".",
-                "Field values are only codes from \"codes\"; what the photo does not show is null.",
+                "What the photo does not show is null.",
             ),
             вихід="PHOTO_ITEMS",
             скелет={"items": [{
                 "photo": "<photo id>",
                 "name": "<short English name, as a shop would call the item>",
                 "slot": "<code from codes.slot>",
-                "kind": "<code from codes.item_type: the exact kind of the item within its slot, or null>",
+                "kind": "<code from codes.item_type: exact kind read from the item's shape, or null>",
                 "color": "<code from codes.color: the main color of the item itself>",
                 "fabric": "<code from codes.fabric when the texture is visible, else null>",
                 "cut": "<code from codes.cut or null>",
                 "length": "<code from codes.length or null>",
                 "pattern": "<code from codes.pattern>",
                 "formality": "<code from codes.formality: the occasion step the item suits — " + _БР.ЩАБЛІ_EN + ">",
-                "in_outfit": "<true | false | unknown; null without \"outfit\">",
+                "in_outfit": "<true | false | unknown>",
                 "owner": "<code from codes.owner>",
                 "frame": {"left": "<0–1000>", "top": "<0–1000>", "right": "<0–1000>", "bottom": "<0–1000>"},
             }]},
-            межі=("лише_вхід", "невідомо"),
+            межі=("лише_вхід",),
             мова_промпту="en",
         )
     return ФОТО_РЕЧЕЙ
+
+
+def зібрати_фото(дані, поле):
+    """Збирає задачу фото зі скелетом полів, які читає відповідний виклик.
+
+    Спільне оголошення не змінюється: збирач копіює скелет для кожного запиту.
+    `owner` читає розмова, `in_outfit` — оцінка; решта полів потрібні обом."""
+    повідомлення = _ЗП.зібрати(фото_речей(), дані)
+    схема = повідомлення["task"]["answer_schema"]
+    схема["items"] = [{к: з for к, з in схема["items"][0].items()
+                       if к not in ("owner", "in_outfit") or к == поле}]
+    return повідомлення
 
 
 def промпт_фото(фото, власні=None, помилка=None):
@@ -556,7 +568,7 @@ def промпт_фото(фото, власні=None, помилка=None):
          for х in (фото or []) if isinstance(х, dict) and х.get("ід")]
     дані = {"photos": ф, "her_items_in_words": [в for в in (власні or []) if isinstance(в, dict)],
             "codes": коди_полів(), "format_error": помилка}
-    return _json.dumps(_ЗП.зібрати(фото_речей(), дані), ensure_ascii=False)
+    return _json.dumps(зібрати_фото(дані, "owner"), ensure_ascii=False)
 
 
 def підписи_фото(фото):
