@@ -11,13 +11,21 @@ index 43867e60c16e0e0e660f9fb320067fffc684145e..4871f563b2987dd54d251c8e64af1efb
              stands:
                - 'сценарії_черги.sh'
 diff --git a/аудит/адаптери/gemini/gemini_publish.ps1 b/аудит/адаптери/gemini/gemini_publish.ps1
-index 6dccca13f9b968a6e421370bf35f1291f4d1f5dd..065a8adc4bb6f06e6d237fa4c1e7c6e977e95b9b 100644
+index 6dccca13f9b968a6e421370bf35f1291f4d1f5dd..73a8ed69a97edb7215fca5bb4c7457c8926d560f 100644
 --- a/аудит/адаптери/gemini/gemini_publish.ps1
 +++ b/аудит/адаптери/gemini/gemini_publish.ps1
-@@ -270,6 +270,169 @@ function Get-BadLine([string]$Id, [string]$Why) {
+@@ -265,18 +265,187 @@ function Get-Sha256Hex([string]$Text) {
+ }
+
+ function Get-BadLine([string]$Id, [string]$Why) {
++    # Єдиний викликач — Get-Line. Його режим читання не споживає повідомлення STATE_INVALID.
++    $statusOnly = Get-Variable -Name StatusOnly -Scope 1 -ValueOnly -ErrorAction SilentlyContinue
++    if ($statusOnly) { return $null }
+     Write-WrapperLog "стан $Id $Why — не опубліковано"
+     if (Test-Seen ('bad ' + (Get-Date -Format 'yyyyMMdd'))) { return $null }
      [pscustomobject]@{ Outbox = 'GEMINI ОБГОРТКА: ЗАБЛОКОВАНО gemini/невідомо STATE_INVALID' }
  }
- 
+
 +# Облік живлення використовує лише журнал Windows і власний heartbeat публікатора.
 +function Get-PowerTime {
 +    <# Годинник обліку живлення; стенд підміняє його разом із часом подій. #>
@@ -92,7 +100,7 @@ index 6dccca13f9b968a6e421370bf35f1291f4d1f5dd..065a8adc4bb6f06e6d237fa4c1e7c6e9
 +    foreach ($file in @(Get-ChildItem -LiteralPath $OutDir -Filter '*.json' -File -ErrorAction SilentlyContinue)) {
 +        if ($file.BaseName -cnotmatch $script:IdPattern) { continue }
 +        try {
-+            $status = [IO.File]::ReadAllText($file.FullName, $script:Utf8) | ConvertFrom-Json
++            $status = Get-Line $file.BaseName -StatusOnly
 +            $start = Get-SleepRunStart $status; $end = Get-SleepRunEnd $status
 +            if ($null -ne $start -and $null -ne $end -and $start -le $from -and $end -ge $from) {
 +                $marker = "gemini-queue/$($status.slug)/$($status.model)/$($status.n)$(if ($status.cond) { '/' + $status.cond })"
@@ -183,8 +191,19 @@ index 6dccca13f9b968a6e421370bf35f1291f4d1f5dd..065a8adc4bb6f06e6d237fa4c1e7c6e9
 +
  # Один стан -> рядок диспетчерові. Усе в рядку — з переліків цього файлу, перевірених назв і чисел.
  # 'RETRY' — пуш не вдався: той самий стан ще раз на наступному запуску, рядок — лише після години невдач.
- function Get-Line([string]$Id) {
-@@ -303,7 +466,18 @@ function Get-Line([string]$Id) {
+-function Get-Line([string]$Id) {
++function Get-Line([string]$Id, [switch]$StatusOnly) {
+     $path = Join-Path $OutDir ($Id + '.json')
+     if ((Get-Item -LiteralPath $path).Length -gt 65536) { return Get-BadLine $Id 'завеликий' }
+     try { $s = [System.IO.File]::ReadAllText($path, $script:Utf8) | ConvertFrom-Json }
+     catch { return Get-BadLine $Id 'не читається як JSON' }
++    # Облік живлення використовує той самий читач формату й чинну межу Get-Line.
++    # Тут вихід до будь-якої публікації, дозволу повтору чи зміни seen.
++    if ($StatusOnly) { return $s }
+     $code = [string](Get-Prop $s 'code')
+     if ((Get-Prop $s 'v') -ne 1 -or (Get-Prop $s 'id') -ne $Id) { return Get-BadLine $Id 'не за форматом' }
+     if ($code -eq 'ISOLATION') {
+@@ -303,7 +472,18 @@ function Get-Line([string]$Id) {
      }
      # Стан пише gemini, тож будь-який стан може бути підробленим: опублікована позначка закрита для всіх наступних,
      # а неопублікований результат займає лише свій код — підроблений ранній стан не забирає місця справжньої публікації.
@@ -204,7 +223,7 @@ index 6dccca13f9b968a6e421370bf35f1291f4d1f5dd..065a8adc4bb6f06e6d237fa4c1e7c6e9
      $turns = Get-Int $s 'turns'; $minutes = Get-Int $s 'minutes'; $ahead = Get-Int $s 'ahead'
      # Лише слова цього файлу: поля стану поза переліками (зокрема `models`) у рядок не потрапляють.
      if ($code -eq 'AUTH') { Add-HealthAlert 'AUTH' $(if ($model -like 'gpt-*') { 'CODEX' } else { 'AGY' }) }
-@@ -322,6 +496,7 @@ function Get-Line([string]$Id) {
+@@ -322,6 +502,7 @@ function Get-Line([string]$Id) {
          return [pscustomobject]@{ Slug = $slug; Outbox = "GEMINI ОБГОРТКА: ЗАБЛОКОВАНО $branch $kod" }
      }
      if (-not (Get-Prop $s 'bundle')) {
@@ -212,7 +231,7 @@ index 6dccca13f9b968a6e421370bf35f1291f4d1f5dd..065a8adc4bb6f06e6d237fa4c1e7c6e9
          if (Test-Seen "$queue $marker $code") { return $null }
          $tail = $(if (Test-Path -LiteralPath (Join-Path $OutDir ($Id + '.tail.txt'))) { "; кінець виводу агента — $OutDir\$Id.tail.txt" } else { '' })
          Write-WrapperLog "кінець $Id — НЕ ЗАВЕРШЕНО $branch — $run; комітів нема$tail"
-@@ -339,9 +514,10 @@ function Get-Line([string]$Id) {
+@@ -339,9 +520,10 @@ function Get-Line([string]$Id) {
          }
      }
      if ($pc -eq 'OK') {
@@ -224,7 +243,7 @@ index 6dccca13f9b968a6e421370bf35f1291f4d1f5dd..065a8adc4bb6f06e6d237fa4c1e7c6e9
          # ГОТОВО — лише звіт агента ГОТОВО з опублікованою головою; решта опублікованого — код прогону з _PUBLISHED.
          if ($code -eq 'DONE' -and $head) {
              Save-DraftRequest $branch $head ([string](Get-Prop $s 'actual'))
-@@ -391,6 +567,7 @@ function Reset-State([string]$Id) {
+@@ -391,6 +573,7 @@ function Reset-State([string]$Id) {
  $script:OutboxNamePattern = '^[0-9]{8}-[0-9]{6}-[0-9a-f]{12}\.txt$'
  $script:SlugCore = $script:SlugPattern -replace '^\^|\\z$', ''
  $script:OutboxTemplates = @(
@@ -232,7 +251,7 @@ index 6dccca13f9b968a6e421370bf35f1291f4d1f5dd..065a8adc4bb6f06e6d237fa4c1e7c6e9
      '^GEMINI ОБГОРТКА: ЛАНЦЮГ CHAIN_[A-Z_]{1,32}(?: [A-Za-z0-9]{1,40} [a-z_]{1,40}\.ps1:[0-9]{1,5})?\z',
      '^GEMINI ОБГОРТКА: ОНОВЛЕНО [0-9a-f]{40} СЕКУНД [0-9]{1,12}\z',
      '^GEMINI ОБГОРТКА: ОНОВЛЕННЯ [0-9a-f]{40} UPDATE_[A-Z_]{1,32}\z',
-@@ -789,6 +966,7 @@ function Main {
+@@ -789,6 +972,7 @@ function Main {
                  '+refs/heads/gemini/*:refs/remotes/origin/gemini/*',
                  '+refs/heads/gemini-queue/*:refs/remotes/origin/gemini-queue/*'))
          if (Test-Path -LiteralPath (Join-Path $UpdateRoot 'selfupdate.ready')) { Invoke-WrapperUpdate $UpdateRoot }
@@ -255,7 +274,7 @@ index 7b61ae63be731be3b86aa42d7169b07ad4f0a399..0941ec7a2074cd9df76d2ff06bb76071
 @@ -828,6 +829,82 @@ function Write-Pools($Version, $Usage, $Models) {
      Write-FileAtomic (Join-Path $OutDir 'pools.json') ($doc | ConvertTo-Json -Compress -Depth 4)
  }
- 
+
 +function Test-SleepRetryPath([string]$Path) {
 +    <# Доводить, що агент не може підмінити встановлений канал чи окремий дозвіл.
 +    Корінь має наявний ACL інсталяції; власник і писачі файла — лише писачі цього кореня.
@@ -333,7 +352,7 @@ index 7b61ae63be731be3b86aa42d7169b07ad4f0a399..0941ec7a2074cd9df76d2ff06bb76071
 +
 +
  # --- один наряд ---------------------------------------------------------------------------------------------------
- 
+
  # Кінець прогону: факти гілки, бандл (коли є нові коміти), стан у теці обміну. Спільне для звичайного кінця й
 @@ -861,6 +938,7 @@ function Complete-Status($Status, [string]$StatePath, [string]$Tail, [datetime]$
          if ($reason.Count -eq 0) { $reason = @($Tail -split "`n" | Where-Object { $_.Trim() } | Select-Object -Last 1) }
@@ -361,7 +380,7 @@ index 7b61ae63be731be3b86aa42d7169b07ad4f0a399..0941ec7a2074cd9df76d2ff06bb76071
                  $script:Agy = Find-EngineExe $AgyExe
                  if ($script:Agy) { [void](Read-Usage) }
 diff --git a/аудит/адаптери/gemini/m9v/хеші.psd1 b/аудит/адаптери/gemini/m9v/хеші.psd1
-index d7db56f02f6b5d1efb1663170e6f4a5d564e563c..0bc05ee136d4d16e56e87e0790c609025dfd3381 100644
+index d7db56f02f6b5d1efb1663170e6f4a5d564e563c..c25cd29661cc0eb075e4391f8673cb72699be142 100644
 --- a/аудит/адаптери/gemini/m9v/хеші.psd1
 +++ b/аудит/адаптери/gemini/m9v/хеші.psd1
 @@ -5,8 +5,8 @@
@@ -371,12 +390,12 @@ index d7db56f02f6b5d1efb1663170e6f4a5d564e563c..0bc05ee136d4d16e56e87e0790c60902
 -    'gemini_run.ps1'     = 'ADC4A9549E85637C9ECF1E7EEE510CF44BD82EEC8553669B100DE02DA296F852'
 -    'gemini_publish.ps1' = '53D8542D7AC9FC822D7E75BA490E1EC3AA24CB4680E5887072749CC85076384D'
 +    'gemini_run.ps1'     = 'FC237180DABFF4007A977416099AFECAFE2C2EE4F800A6097CEB9B40ACEDAE8D'
-+    'gemini_publish.ps1' = 'F7F75BD1257B229D5E3FD0748AED11F5D1844515B464966055A7F17B53BCDC06'
++    'gemini_publish.ps1' = '858D3D19CF97C3B792B67E09A4F8CE79422126404ABEF84E11099CB56C3577D4'
      # Інсталятор Codex (9741) закріплено за релізом: install.ps1 — файл релізу https://releases.openai.com/codex/releases/<CodexRelease>/install.ps1
      # (незмінний URL; той самий sha256 віддає https://chatgpt.com/codex/install.ps1 — редирект на releases.openai.com — і публікує реліз
      # openai/codex). 2_під_gemini.ps1 -WithCodex виконує його лише при збігу CodexInstaller і ставить саме цей реліз (-Release).
 diff --git a/аудит/адаптери/gemini/НАЛАШТУВАННЯ.md b/аудит/адаптери/gemini/НАЛАШТУВАННЯ.md
-index 5c6fee729ddb16bd35f7022951fda1e6f24eee54..1ce51ca17bec715811c692b359ba57d9654e5637 100644
+index 5c6fee729ddb16bd35f7022951fda1e6f24eee54..612f545af99437f606b842f062f5534ebafd3c10 100644
 --- a/аудит/адаптери/gemini/НАЛАШТУВАННЯ.md
 +++ b/аудит/адаптери/gemini/НАЛАШТУВАННЯ.md
 @@ -451,8 +451,8 @@ $f = Join-Path "$env:USERPROFILE\gemini-outbox" $n
@@ -386,16 +405,16 @@ index 5c6fee729ddb16bd35f7022951fda1e6f24eee54..1ce51ca17bec715811c692b359ba57d9
 -| `gemini_run.ps1` | `ADC4A9549E85637C9ECF1E7EEE510CF44BD82EEC8553669B100DE02DA296F852` |
 -| `gemini_publish.ps1` | `53D8542D7AC9FC822D7E75BA490E1EC3AA24CB4680E5887072749CC85076384D` |
 +| `gemini_run.ps1` | `FC237180DABFF4007A977416099AFECAFE2C2EE4F800A6097CEB9B40ACEDAE8D` |
-+| `gemini_publish.ps1` | `F7F75BD1257B229D5E3FD0748AED11F5D1844515B464966055A7F17B53BCDC06` |
++| `gemini_publish.ps1` | `858D3D19CF97C3B792B67E09A4F8CE79422126404ABEF84E11099CB56C3577D4` |
  | `gemini_watch.ps1` | `69EFEBB07FF1AF51C382B753A95C50F3C1AC27B3008F2489992BEBE3FD0213AA` |
  | `wrapper_health.ps1` | `F63CDFD76BCBE92440A843759BCD6CED4E49B4BCBAC19620CACA4B74B9D58AA5` |
  | `queue_lanes.ps1` | `FEAD267F76D269476E00F48C44366D4BA9D282B2BFC85CC64712968D430B4AFD` |
 diff --git a/аудит/адаптери/gemini/перевірка/сценарії_сну.ps1 b/аудит/адаптери/gemini/перевірка/сценарії_сну.ps1
 new file mode 100644
-index 0000000000000000000000000000000000000000..157465d250bc8d91008f93e929da3aac002ce08e
+index 0000000000000000000000000000000000000000..f6278affda1f254aedae3d1f5fcf522aff38d1a7
 --- /dev/null
 +++ b/аудит/адаптери/gemini/перевірка/сценарії_сну.ps1
-@@ -0,0 +1,227 @@
+@@ -0,0 +1,233 @@
 +﻿#Requires -Version 5.1
 +param([string]$SourceDir = (Split-Path -Parent $PSScriptRoot), [switch]$Before)
 +$ErrorActionPreference = 'Stop'
@@ -464,6 +483,12 @@ index 0000000000000000000000000000000000000000..157465d250bc8d91008f93e929da3aac
 +        function Save-Status($Status) { Write-FileAtomic (Join-Path $OutDir ($Status.id+'.json')) ($Status | ConvertTo-Json -Compress) }
 +        function Run {
 +            <# Один цикл: подія → рядок СОН → опублікований результат → дозвіл повтору. #>
++            $badId='20261102-000000-000000000098'
++            Write-FileAtomic (Join-Path $OutDir ($badId+'.json')) '{'
++            $raw=Get-Line $badId -StatusOnly
++            $bad=Get-Line $badId
++            [pscustomobject]@{Name='читання невалідного JSON для лічби не споживає повідомлення STATE_INVALID';Ok=($null -eq $raw -and $bad.Outbox -ceq 'GEMINI ОБГОРТКА: ЗАБЛОКОВАНО gemini/невідомо STATE_INVALID')}
++            Remove-Item -LiteralPath (Join-Path $OutDir ($badId+'.json'))
 +            $first = '20261102-003000-000000000001'
 +            $s = Status $first 'STALL'; Save-Status $s
 +            Write-FileAtomic (Join-Path $WorkDir 'sleep-events.json') ('{"read_utc":"2026-11-02T00:00:00Z","events":[]}')
