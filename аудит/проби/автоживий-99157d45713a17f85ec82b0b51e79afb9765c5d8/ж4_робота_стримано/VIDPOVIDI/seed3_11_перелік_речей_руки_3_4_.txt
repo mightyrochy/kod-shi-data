@@ -1,0 +1,37 @@
+── ПРОМПТ (2206 симв.) ──
+{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.", "One item carries one thing — of two alternatives list the first; a note in brackets is not an item.", "Slot \"accessory\" is for an item no other slot fits.", "\"is_outfit\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "ITEM_LIST", "answer_schema": {"is_outfit": "yes|no", "items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory", "color_hex": "<#rrggbb or null>", "worn": "<true, or false when the description says the outfit goes without it>"}]}, "input": ["\"description\" — the outfit description"]}, "description": "A refined wool-blend blazer with a structured shoulder and notch lapel in charcoal grey (#3e4548), tailored to a relaxed fit for comfort. High-waisted wide-leg trousers made from soft crepe in deep olive green (#4b5320), falling to mid-calf length with a gentle drape. A silk-blend blouse with a subtle sheen in cream white (#f5f5dc), featuring a rounded neckline and drop shoulders for ease of movement. Minimalist leather ankle boots in black (#1a1a1a) with a low block heel, sized for all-day stability. The outfit works perfectly for an autumn office day by balancing professional polish with the comfort-first approach she requested; the dark and earthy tones create a sophisticated yet understated look that flatters her figure without drawing excessive attention. The wide-leg trousers provide freedom of movement while the blazer adds necessary structure for a neat casual aesthetic, ensuring she feels confident and at ease throughout her workday."}
+
+── ВІДПОВІДЬ (824 симв., 6.5 с, HTTP 200) ──
+{
+  "is_outfit": "yes",
+  "items": [
+    {
+      "name": "wool-blend blazer",
+      "details": "structured shoulder and notch lapel, relaxed fit",
+      "slot": "outerwear",
+      "color_hex": "#3e4548",
+      "worn": true
+    },
+    {
+      "name": "wide-leg trousers",
+      "details": "high-waisted, soft crepe fabric, mid-calf length with gentle drape",
+      "slot": "bottom",
+      "color_hex": "#4b5320",
+      "worn": true
+    },
+    {
+      "name": "silk-blend blouse",
+      "details": "subtle sheen, rounded neckline, drop shoulders",
+      "slot": "top",
+      "color_hex": "#f5f5dc",
+      "worn": true
+    },
+    {
+      "name": "leather ankle boots",
+      "details": "black with low block heel, sized for all-day stability",
+      "slot": "shoes",
+      "color_hex": "#1a1a1a",
+      "worn": true
+    }
+  ]
+}
