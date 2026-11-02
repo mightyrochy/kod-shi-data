@@ -8,6 +8,8 @@ import re
 факти = {}
 for назва in план["scenes"]:
     т = Т / назва
+    if not т.exists() and (Т / "місця_записів.json").exists():
+        т = Т.parents[2] / json.loads((Т / "місця_записів.json").read_text(encoding="utf-8"))[назва]
     р = т / "результат.json"
     if not р.exists():
         факти[назва] = {"стан": "немає результату"}
