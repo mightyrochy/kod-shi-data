@@ -754,6 +754,7 @@ function Invoke-Agent($M, [string]$Start, [string]$Prompt, [string]$Dir, $Sel) {
     $text = $Prompt
     $turns = 0
     $nudges = 0
+    $liveCorrection = $false
     $code = ''
     $report = 'NONE'
     try {
@@ -780,8 +781,28 @@ function Invoke-Agent($M, [string]$Start, [string]$Prompt, [string]$Dir, $Sel) {
                     break
                 }
                 $check = Test-Report $M $Start $resp
-                if ($check.Accepted) { $code = $check.Kind; $report = $check.Kind; break }
+                if ($check.Accepted) {
+                    if ($check.Facts.Ahead -gt 0) {
+                        $publication = Get-HeadLivePublication $check.Facts.Head
+                        if ($publication.Bad.Count) {
+                            if (-not $liveCorrection) {
+                                $liveCorrection = $true
+                                $text = Get-LiveCorrectionPrompt $publication
+                                continue
+                            }
+                            $code = 'BLOCKED'; $report = 'BLOCKED'
+                            $run.Responses.Add('ЗАБЛОКОВАНО: LIVE_AFTER_INVALID — ' + (($publication.Bad | ForEach-Object { $_.error }) -join '; '))
+                            break
+                        }
+                    }
+                    $code = $check.Kind; $report = $check.Kind; break
+                }
                 $why = $(if ($check.Kind -ne 'NONE') { 'mismatch' } else { 'none' })
+            }
+            if ($liveCorrection) {
+                $code = 'BLOCKED'; $report = 'BLOCKED'
+                $run.Responses.Add('ЗАБЛОКОВАНО: LIVE_AFTER_INVALID — хід виправлення не дав прийнятого звіту')
+                break
             }
             # Без id розмови догонка пішла б у нову розмову без наряду.
             if ($r.Kind -ne 'result' -and -not $run.Conversation) {
@@ -1034,7 +1055,7 @@ function Invoke-Task($M, $Job) {
             return
         }
         if ($review -ne 'LIVE') { $status.code = $review; return }
-        try { $taskText = Add-AutoTaskContext $M.Slug $taskText $M.Sha }
+        try { $taskText = Add-AutoTaskContext $M.Slug $taskText $M.Sha $M.Model }
         catch { Enter-ReviewWait $M; $waiting = $true; return }
         if (Test-AutoPlanEmpty $M.Slug $taskText) { $status.code = 'EMPTY_PLAN'; return }
         $taskDir = Join-Path (Join-Path $RunsDir 'w') $id

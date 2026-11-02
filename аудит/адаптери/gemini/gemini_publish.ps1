@@ -520,13 +520,18 @@ function Get-Line([string]$Id, [switch]$StatusOnly) {
         }
     }
     if ($pc -eq 'OK') {
+        $publication = Get-EngineLivePublication $head
         Write-FileAtomic (Get-SeenPath $publicationKey) ($publicationKey + "`n" + $Id)
         $what = $(if ($DryRun) { 'ПЕРЕВІРЕНО (без пушу)' } else { 'ОПУБЛІКОВАНО' })
         Write-WrapperLog "кінець $Id — $what $branch $head; комітів $ahead, файлів до main $files; без .github/ і файлів обгортки; $run"
         if (Request-SleepRetry $s $queue $marker $head) { return $null }
+        if ($head) { Save-DraftRequest $branch $head ([string](Get-Prop $s 'actual')) }
+        if ($publication.Bad.Count) {
+            Write-WrapperLog ('вада тіла PR: ' + (($publication.Bad | ForEach-Object { $_.error }) -join '; '))
+            return [pscustomobject]@{ Slug=$slug; Outbox="GEMINI ОБГОРТКА: ЗАБЛОКОВАНО $branch LIVE_AFTER_INVALID_PUBLISHED" }
+        }
         # ГОТОВО — лише звіт агента ГОТОВО з опублікованою головою; решта опублікованого — код прогону з _PUBLISHED.
         if ($code -eq 'DONE' -and $head) {
-            Save-DraftRequest $branch $head ([string](Get-Prop $s 'actual'))
             # Квота групи (рішення диспетчера 9611): суфікс лише коли стан має групу й відсоток 0–100.
             $qg = [string](Get-Prop $s 'qgroup')
             $qs = $(if ($quotaLeft -match '^(?:100|[1-9]?[0-9])$' -and $qg -cmatch '^[A-Z0-9]{2,16}$') { " КВОТА $qg $quotaLeft" } else { '' })
