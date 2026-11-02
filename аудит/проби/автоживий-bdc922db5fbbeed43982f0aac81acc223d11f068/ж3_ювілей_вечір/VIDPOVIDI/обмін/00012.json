@@ -1,0 +1,27 @@
+{
+ "версія": 1,
+ "запит": {
+  "model": "qwen/qwen3.5-9b",
+  "max_tokens": 4000,
+  "messages": [
+   {
+    "role": "user",
+    "content": [
+     {
+      "type": "text",
+      "text": "{\"task\": {\"role\": \"You read the description of an outfit and list its items as data.\", \"rules\": [\"One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.\", \"One item carries one thing — of two alternatives list the first; a note in brackets is not an item.\", \"Slot \\\"accessory\\\" is for an item no other slot fits.\", \"\\\"is_outfit\\\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note.\"], \"limits\": [\"Rely only on the input: do not invent what it does not contain.\", \"The answer is one JSON object following \\\"answer_schema\\\", without explanations and without ```.\"], \"language\": \"English\", \"answer\": \"ITEM_LIST\", \"answer_schema\": {\"is_outfit\": \"yes|no\", \"items\": [{\"name\": \"<what the item is>\", \"details\": \"<its cut, length and fabric>\", \"slot\": \"top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory\", \"color_hex\": \"<#rrggbb or null>\", \"worn\": \"<true, or false when the description says the outfit goes without it>\"}]}, \"input\": [\"\\\"description\\\" — the outfit description\"]}, \"description\": \"Silk sheath dress in emerald green (#0f5e3c), knee-length, fluid silhouette with a subtle V-neckline and long sleeves. The fabric is high-lustre silk satin that catches the warm banquet lights beautifully. Matching velvet clutch handbag in deep forest green (#1a3c29) and pearl drop earrings.\\n\\nThis outfit works perfectly for an evening aunt's birthday celebration as it meets the formal dress code while respecting her wish to look elegant without being overly stiff. The rich emerald shade complements her warm skin tones and stands out against the artificial restaurant lighting, creating a sophisticated focal point. The knee-length cut and long sleeves offer modesty suitable for a family gathering while maintaining the graceful silhouette expected at a dinner banquet.\"}"
+     }
+    ]
+   }
+  ],
+  "temperature": 1
+ },
+ "відповідь": {
+  "status": 200,
+  "contentType": "application/json",
+  "headers": {
+   "x-model": "qwen/qwen3.5-9b"
+  },
+  "body": "{\"content\":[{\"type\":\"text\",\"text\":\"{\\n  \\\"is_outfit\\\": \\\"yes\\\",\\n  \\\"items\\\": [\\n    {\\n      \\\"name\\\": \\\"Sheath dress\\\",\\n      \\\"details\\\": \\\"fluid silhouette, knee-length, subtle V-neckline, long sleeves, high-lustre silk satin\\\",\\n      \\\"slot\\\": \\\"dress\\\",\\n      \\\"color_hex\\\": \\\"#0f5e3c\\\",\\n      \\\"worn\\\": true\\n    },\\n    {\\n      \\\"name\\\": \\\"Velvet clutch handbag\\\",\\n      \\\"details\\\": \\\"matching deep forest green velvet\\\",\\n      \\\"slot\\\": \\\"bag\\\",\\n      \\\"color_hex\\\": \\\"#1a3c29\\\",\\n      \\\"worn\\\": true\\n    },\\n    {\\n      \\\"name\\\": \\\"Pearl drop earrings\\\",\\n      \\\"details\\\": null,\\n      \\\"slot\\\": \\\"earrings\\\",\\n      \\\"color_hex\\\": null,\\n      \\\"worn\\\": true\\n    }\\n  ]\\n}\"}],\"usage\":{\"input_tokens\":507,\"output_tokens\":203},\"stop_reason\":\"end_turn\"}"
+ }
+}

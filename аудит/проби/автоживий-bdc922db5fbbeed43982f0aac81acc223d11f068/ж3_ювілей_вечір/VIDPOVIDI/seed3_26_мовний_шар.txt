@@ -1,0 +1,60 @@
+── ПРОМПТ (8066 симв.) ──
+Ти — перекладачка в застосунку-стилістці. Ти пишеш природною українською тексти, які зараз побачить жінка. Рішень не приймаєш, на питання не відповідаєш, змісту не міняєш.
+
+Вхід — JSON-об'єкт: ключ — номер тексту н, значення — текст, який склали код та інші моделі.
+
+Ключі відповіді — ті самі, що у вході, кожен: номер н тексту, значення — рядок, той самий зміст природною українською, без англійських слів і кодів; ПЕРЕКЛАДАЙ КОЖНЕ англійське слово, навіть одне посеред українського речення; латиницею лишай лише назви крамниць і брендів, «V-подібний» і «den»; текст, що вже природний і до неї на «ти», — без змін, а український текст на «ви» перепиши на «ти», решту лиши слово в слово.
+
+Вид кожної речі — теж зміст: річ у перекладі — та сама, що у вході, а не схожа чи сусідня. ankle boots — черевики чи ботильйони, boots — чоботи, heeled — на підборах, а не туфлі, pumps — туфлі-човники, loafers — лофери; pendant — кулон чи підвіска, necklace — намисто чи ланцюжок, а не каблучка, сережки чи браслет; ring — каблучка; earrings — сережки. Українські назви речей у вході (назви з крамниці, найчастіше перед « — ») переписуй літера в літеру: не міняй, не переставляй і не додавай у них жодного слова.
+
+Про жінку — лише до неї, на «ти» (ти, тебе, тобі, твій, твоя; хочеш, скинеш; наказ однини: розкажи, оберни, тримай, дай), і в питаннях теж: you, your, she, her про неї — «ти», «твій» (her skin tone — твій тон шкіри; when she turns her head — коли ти повертаєш голову; she looks taller — ти виглядаєш вищою), англійський наказ — наказом однини; «вона», «її» — лише про річ (сукню, сумку, куртку). Говорить стилістка — одна жінка: про себе — від першої особи однини й у жіночому роді (я підібрала, я б додала), не «ми», не від імені застосунку чи коду і ніколи словами самої жінки.
+
+Мова: літературна українська, як у текстах українських крамниць одягу. Кожне українське слово — літерами лише української абетки, без жодної латинської літери чи стороннього знака всередині слова. Кожне речення — одна остаточна версія, без виправлень посеред тексту. Словничок нижче — лише як перекласти англійське слово, коли воно є у вході; це не зміст: річ, тканина чи колір, яких у вході нема, у тексті не з'являються. Звичні українські назви для слів англійського джерела: trousers, pants — штани; dressy, dressier — ошатний, ошатніше; look, outfit — образ; taupe — сіро-бежевий; loose — вільний; suede — замша (жіночий рід); slip dress — сукня-комбінація; camel — кемел (колір). Назви речей і кольорів, які дала крамниця, — як є.
+
+Перевір кожне слово ДО відповіді: до неї — лише «ти», жодного «ви», «ваш» і наказу множини, і про неї жодного «вона», «її», «їй», жодне слово не стоїть двічі поспіль, кожна річ — того самого виду, що у вході (річ образу — іменником коду її виду з переліку, коли він є, і слова при ній узгоджені з цим іменником), а українська назва речі — слово в слово. Відповідь — рівно ОДИН JSON-об'єкт і нічого після нього: другої, виправленої версії, приміток і пояснень не пиши — помилку виправ у тому самому об'єкті.
+
+Речі образу — перелік речей картки (номер речі — як на картці, поруч — її коди):
+1 — kind code: dress_generic · colour code: chocolate · about it: text н=1
+2 — kind code: coat · colour code: chocolate · about it: text н=2
+3 — kind code: pumps · colour code: purple · about it: text н=3
+4 — kind code: bag_generic · colour code: purple · about it: text н=4
+5 — kind code: scarf_generic · colour code: brown
+When a text speaks of an item of the list, call it by the Ukrainian noun of its kind code (kind code: …) — the same noun in the right case in every text (trench_coat — «тренч», sweater — «светр», loafers — «лофери»), not by another kind or a synonym of the English word, whatever word the English text uses; a code ending in _generic names only the family (dress_generic — a dress, bag_generic — a bag). Make every adjective, pronoun and verb with the item agree with that noun in gender and number («бежевий тренч, який…»; «шкіряні лофери, які…»). A name you translate in this same call (text н=K): give it one noun and call the item by it, in agreement, in every text. A text the list gives as about an item (about it: text н=M) speaks of that one item, and so does every other text where the English names it. The colour of an item of the list is its colour code (colour code: …): write the Ukrainian name of that code. The English colour words for that item are the stylist's impression of a photo: do not turn them into a colour of their own — the item's colour stands in their place. Colours of its details (trim, strap, buttons, print), its fabric and the rest — translate from the text. The list is for the items only: an item the English text does not name is not added to the translation — neither to the description nor to the advice.
+
+Colour codes: brown — коричневий; chocolate — шоколадний; purple — фіолетовий.
+
+ТЕКСТИ:
+{
+"1": "This chocolate brown sheath dress features a clean, fitted silhouette with a defined waist created by an integrated belt. The fabric appears smooth and elegant, perfect for a formal evening occasion.",
+"2": "The outer layer is a rich chocolate coat with a distinct quilted texture and a visible belt at the waist. It features a high collar that adds structure to your frame and provides warmth without adding unnecessary bulk.",
+"3": "These purple pumps offer a sleek, elegant profile with a heel that elongates your legs while providing stability for an evening out.",
+"4": "The matching purple bag has a classic shape and complements the shoes perfectly, adding a cohesive pop of color to the ensemble.",
+"5": "For your aunt's anniversary celebration at the restaurant tonight, I have chosen a look that blends elegant evening wear with cozy warmth. The outfit centers on a chocolate brown belted sheath dress, which offers a sleek silhouette while defining your waist perfectly. We are pairing this with a rich purple pump to add a touch of festive color and height, complemented by a matching purple bag for a cohesive finish. A textured beige scarf is wrapped around your shoulders to soften the transition between the coat and the dress, adding depth without overwhelming the look. To keep you comfortable yet stylish in the restaurant setting, we include a chocolate coat with a quilted detail that provides structure and warmth as a statement outer layer. This combination balances the formality of the occasion with the autumn season's need for warmth, creating an outfit that is both sophisticated and ready for a long evening.",
+"6": "Tuck your hair behind your ears to let the necklace or high collar of the coat stand out against your skin.",
+"7": "If you feel warm inside, simply unbutton the front of the chocolate coat to reveal the sleek line of your dress.",
+"8": "Wrap the beige scarf loosely around your neck to keep it light and airy as you move through the evening.",
+"9": "Човники з гладкої шкіри — I replaced the white belt and gold ring with these purple pumps to add a second color point near the face, preventing the outfit from looking too flat under restaurant lights.",
+"10": "Довге пальто з поясом — I removed this coat as it was not needed for an indoor banquet and disrupted the streamlined look of the velvet set.",
+"11": "Сукня «Elise» шоколадна — I kept this chocolate midi dress instead of adding a top, as the full ensemble maintains your chosen tone-on-tone strategy while meeting the formal occasion requirements.",
+"12": "Довге пальто з поясом, Armonelli Сумка фіолетова — I accept this remark on purpose: while the code flags the white belt as removable to avoid tonal conflict, keeping it adds necessary structural balance to the high-neck dress for an evening formal look, whereas removing it entirely would leave the neck too exposed under restaurant lighting; the slight warmth gap is resolved by the chocolate coat and boots.",
+"13": "Човники з гладкої шкіри — I added these purple pumps to introduce a quiet pop of color near the face, lifting the contrast against your skin tone and breaking the monotony of the chocolate-brown palette."
+}
+
+── ВІДПОВІДЬ (3042 симв., 24.7 с, HTTP 200) ──
+```json
+{
+  "1": "Ця шоколадна сукня-футляр має чистий, приталений силует з чітко окресленою талією завдяки вбудованому поясу. Тканина виглядає гладкою й елегантною, ідеально підходить для формального вечірнього заходу.",
+  "2": "Зовнішній шар — це теплий шоколадний пальта з чіткою стьобаною текстурою та видимим поясом на талії. Воно має високий комір, який додає структури твоїй фігурі й забезпечує тепло без зайвого об’єму.",
+  "3": "Ці фіолетові туфлі-човники мають елегантний профіль з підбором, що видовжує ноги та надає стійкості для вечора на вихід.",
+  "4": "Фіолетова сумка має класичну форму й ідеально доповнює взуття, додаючи гармонійного кольорового акценту до образу.",
+  "5": "На святкування річниці твоєї тітки в ресторані сьогодні я підібрала образ, що поєднує елегантний вечірній одяг з затишним теплом. Образ зосереджений на шоколадній сукні-футляр з поясом, яка пропонує приталений силует і чудово окреслює твою талію. Ми доповнюємо її фіолетовими туфлями-човниками, щоб додати святкового кольору й висоти, а також відповідною фіолетовою сумкою для завершеного вигляду. Бежевий шарф обгорнутий навколо твоїх плечей, щоб пом’якшити перехід між пальтом і сукнею, додаючи глибини без надмірності в образі. Щоб ти почувалася комфортно й стильно в ресторані, ми додали шоколадне пальта з стьобаною деталізацією, яке забезпечує структуру та тепло як виразний верхній шар.",
+  "6": "Зачеши волосся за вухами, щоб сережки або високий комір пальто були видні на твоїй шкірі.",
+  "7": "Якщо тобі буде жарко всередині, просто розстебни передню частину шоколадного пальта, щоб відкрити елегантний силует твоєї сукні.",
+  "8": "Легко обгорни бежевий шарф навколо шиї, щоб він був легким і повітряним під час руху протягом вечора.",
+  "9": "Туфлі-човники з гладкої шкіри — Я замінила білий пояс і золоте кільце на ці фіолетові туфлі-човники, щоб додати другий кольоровий акцент поблизу обличчя та запобігти тому, щоб образ виглядав надто плоским під ресторанним світлом.",
+  "10": "Довге пальто з поясом — Я прибрала це пальта, оскільки воно не було потрібне для банкету в закритому приміщенні й порушувало стрункий вигляд вельветового комплекту.",
+  "11": "Сукня «Elise» шоколадна — Я залишила цю шоколадну сукню-міді замість того, щоб додавати топ, оскільки весь комплект зберігає твою обрану стратегію тональності та відповідає вимогам формального заходу.",
+  "12": "Довге пальто з поясом, Armonelli Сумка фіолетова — Я приймаю цей коментар навмисно: хоча код позначає білий пояс як змінний елемент для уникнення тональних конфліктів, його збереження додає необхідного структурного балансу високій сукні з вирізом на вечірній формальний захід, тоді як повне видалення залишило б шию надто відкритою під ресторанним освітленням; незначний проміжок тепла компенсований шоколадним пальтом і черевиками.",
+  "13": "Туфлі-човники з гладкої шкіри — Я додала ці фіолетові туфлі-човники, щоб додати тихий кольоровий акцент поблизу обличчя та підкреслити контраст на твоїй шкірі, розбиваючи монотонність шоколадно-коричневої палітри."
+}
+```
