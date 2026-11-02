@@ -2408,14 +2408,20 @@ function підсумокМоделі(){
   стор.on('console', m => { if (m.type() === 'error' || m.type() === 'warning') консоль.push(m.type() + ': ' + m.text().slice(0, 300)); });
   стор.on('pageerror', e => консоль.push('pageerror: ' + String(e).slice(0, 300)));
   async function діагностикаОчікування(поз, причина) {
-    const стан = await стор.evaluate(і => {
-      const к = П.картки[і], ел = document.querySelector('#к-' + і);
-      return {картка: к, режим: РЕЖИМ, замінюється: ЗАМІНИ_П.has(к), не_ця: НЕ_ЦЯ_П.знімок(),
+    const стан = await стор.показПідЧасМоста.evaluate(і => {
+      const к = П?.картки[і], ел = document.querySelector('#к-' + і);
+      return {картка: к, картки: П?.картки, режим: РЕЖИМ, замінюється: ЗАМІНИ_П.has(к), не_ця: НЕ_ЦЯ_П.знімок(),
+        остання_дія: ОСТАННЯ_ДІЯ_П, дії: [...ДІЇ_П.values()].map(д => ({назва: д.назва, стан: д.стан, річ: д.річ, рука: д.рука})),
         кнопки: ел ? [...ел.querySelectorAll('button.замін')].map(кн => ({id: кн.dataset.id,
           disabled: кн.disabled, html: кн.outerHTML})) : [], текст: ел ? ел.innerText : null};
-    }, поз);
-    console.log('ДІАГНОСТИКА ОЧІКУВАННЯ ' + JSON.stringify({причина, стан, консоль}));
-    if (ЗНІМКИ) await стор.screenshot({path: path.join(ЗНІМКИ, 'таймаут.png')});
+    }, поз).catch(е => ({помилка_діагностики: е.message}));
+    const діагностика = {причина, стан, консоль};
+    console.log('ДІАГНОСТИКА ОЧІКУВАННЯ ' + JSON.stringify(діагностика));
+    if (ЗНІМКИ){
+      fs.writeFileSync(path.join(ЗНІМКИ, 'очікування.json'), JSON.stringify(діагностика, null, 2));
+      await стор.знімокПосеред({path: path.join(ЗНІМКИ, 'таймаут.png')})
+        .catch(е => console.error('Не знято стан очікування:', е.message));
+    }
   }
   /* ── ЧОМУ ФОТО НЕ ПРИЙШЛО: ЛИСТИ МЕРЕЖІ ПРО КАРТИНКИ (FOTO=1) ──────────────
      Порожня мініатюра на знімку однаково читається і як «крамниця не дала», і
@@ -2631,6 +2637,7 @@ function підсумокМоделі(){
         await стор.тишаМосту();
         return await route.fulfill(відповідь);
       } catch (помилка) {
+        await діагностикаОчікування(null, помилка.message);
         console.error('ВІДТВОРЕННЯ:', помилка.message);
         if (ЗНІМКИ) fs.writeFileSync(path.join(ЗНІМКИ, 'помилка_відтворення.json'),
           JSON.stringify({причина: помилка.message, код: помилка.code || null,
