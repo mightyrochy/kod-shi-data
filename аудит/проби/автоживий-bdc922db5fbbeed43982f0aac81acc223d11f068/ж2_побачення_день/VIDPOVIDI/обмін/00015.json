@@ -1,0 +1,27 @@
+{
+ "версія": 1,
+ "запит": {
+  "model": "qwen/qwen3.5-9b",
+  "max_tokens": 4000,
+  "messages": [
+   {
+    "role": "user",
+    "content": [
+     {
+      "type": "text",
+      "text": "{\"task\": {\"role\": \"You read the description of an outfit and list its items as data.\", \"rules\": [\"One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.\", \"One item carries one thing — of two alternatives list the first; a note in brackets is not an item.\", \"Slot \\\"accessory\\\" is for an item no other slot fits.\", \"\\\"is_outfit\\\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note.\"], \"limits\": [\"Rely only on the input: do not invent what it does not contain.\", \"The answer is one JSON object following \\\"answer_schema\\\", without explanations and without ```.\"], \"language\": \"English\", \"answer\": \"ITEM_LIST\", \"answer_schema\": {\"is_outfit\": \"yes|no\", \"items\": [{\"name\": \"<what the item is>\", \"details\": \"<its cut, length and fabric>\", \"slot\": \"top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory\", \"color_hex\": \"<#rrggbb or null>\", \"worn\": \"<true, or false when the description says the outfit goes without it>\"}]}, \"input\": [\"\\\"description\\\" — the outfit description\"]}, \"description\": \"A refined knit top with a subtle texture, relaxed fit, hip-length, soft oat color (#D2Cfc3), fine merino wool.\\nTailored trousers in dark denim, straight leg, full length, charcoal gray (#36454F), heavy twill.\\nAn unlined textured blazer, single-breasted, elbow length with rolled sleeves, navy blue (#000080), wool blend.\\nLoafers with a low heel and suede finish, classic square toe, brown leather (#8B4513).\\n\\nThis ensemble strikes the perfect balance for a daytime restaurant date in autumn, offering warmth without looking overdressed for early afternoon hours. The dark denim trousers ground the look with effortless coolness while the oat knit provides a soft, approachable contrast that feels intimate yet polished. Adding the navy blazer elevates the outfit from casual wear to \\\"neat\\\" smart-casual attire, respecting the venue's ambiance without overpowering the daylight setting. Finally, the brown leather loafers tie the color palette together with rich earthy tones that complement the autumn season perfectly.\"}"
+     }
+    ]
+   }
+  ],
+  "temperature": 1
+ },
+ "відповідь": {
+  "status": 200,
+  "contentType": "application/json",
+  "headers": {
+   "x-model": "qwen/qwen3.5-9b"
+  },
+  "body": "{\"content\":[{\"type\":\"text\",\"text\":\"{\\\"is_outfit\\\": \\\"yes\\\", \\\"items\\\": [{\\\"name\\\": \\\"refined knit top\\\", \\\"details\\\": \\\"relaxed fit, hip-length, fine merino wool\\\", \\\"slot\\\": \\\"top\\\", \\\"color_hex\\\": \\\"#D2Cfc3\\\", \\\"worn\\\": true}, {\\\"name\\\": \\\"tailored trousers\\\", \\\"details\\\": \\\"straight leg, full length, heavy twill\\\", \\\"slot\\\": \\\"bottom\\\", \\\"color_hex\\\": \\\"#36454F\\\", \\\"worn\\\": true}, {\\\"name\\\": \\\"unlined textured blazer\\\", \\\"details\\\": \\\"single-breasted, elbow length with rolled sleeves, wool blend\\\", \\\"slot\\\": \\\"outerwear\\\", \\\"color_hex\\\": \\\"#000080\\\", \\\"worn\\\": true}, {\\\"name\\\": \\\"loafers\\\", \\\"details\\\": \\\"low heel, suede finish, classic square toe\\\", \\\"slot\\\": \\\"shoes\\\", \\\"color_hex\\\": \\\"#8B4513\\\", \\\"worn\\\": true}]}\"}],\"usage\":{\"input_tokens\":581,\"output_tokens\":206},\"stop_reason\":\"end_turn\"}"
+ }
+}

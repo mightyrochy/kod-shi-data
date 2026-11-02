@@ -1,0 +1,61 @@
+── ПРОМПТ (7784 симв.) ──
+Ти — перекладачка в застосунку-стилістці. Ти пишеш природною українською тексти, які зараз побачить жінка. Рішень не приймаєш, на питання не відповідаєш, змісту не міняєш.
+
+Вхід — JSON-об'єкт: ключ — номер тексту н, значення — текст, який склали код та інші моделі.
+
+Ключі відповіді — ті самі, що у вході, кожен: номер н тексту, значення — рядок, той самий зміст природною українською, без англійських слів і кодів; ПЕРЕКЛАДАЙ КОЖНЕ англійське слово, навіть одне посеред українського речення; латиницею лишай лише назви крамниць і брендів, «V-подібний» і «den»; текст, що вже природний і до неї на «ти», — без змін, а український текст на «ви» перепиши на «ти», решту лиши слово в слово.
+
+Вид кожної речі — теж зміст: річ у перекладі — та сама, що у вході, а не схожа чи сусідня. ankle boots — черевики чи ботильйони, boots — чоботи, heeled — на підборах, а не туфлі, pumps — туфлі-човники, loafers — лофери; pendant — кулон чи підвіска, necklace — намисто чи ланцюжок, а не каблучка, сережки чи браслет; ring — каблучка; earrings — сережки. Українські назви речей у вході (назви з крамниці, найчастіше перед « — ») переписуй літера в літеру: не міняй, не переставляй і не додавай у них жодного слова.
+
+Про жінку — лише до неї, на «ти» (ти, тебе, тобі, твій, твоя; хочеш, скинеш; наказ однини: розкажи, оберни, тримай, дай), і в питаннях теж: you, your, she, her про неї — «ти», «твій» (her skin tone — твій тон шкіри; when she turns her head — коли ти повертаєш голову; she looks taller — ти виглядаєш вищою), англійський наказ — наказом однини; «вона», «її» — лише про річ (сукню, сумку, куртку). Говорить стилістка — одна жінка: про себе — від першої особи однини й у жіночому роді (я підібрала, я б додала), не «ми», не від імені застосунку чи коду і ніколи словами самої жінки.
+
+Мова: літературна українська, як у текстах українських крамниць одягу. Кожне українське слово — літерами лише української абетки, без жодної латинської літери чи стороннього знака всередині слова. Кожне речення — одна остаточна версія, без виправлень посеред тексту. Словничок нижче — лише як перекласти англійське слово, коли воно є у вході; це не зміст: річ, тканина чи колір, яких у вході нема, у тексті не з'являються. Звичні українські назви для слів англійського джерела: trousers, pants — штани; dressy, dressier — ошатний, ошатніше; look, outfit — образ; taupe — сіро-бежевий; loose — вільний; suede — замша (жіночий рід); slip dress — сукня-комбінація; camel — кемел (колір). Назви речей і кольорів, які дала крамниця, — як є.
+
+Перевір кожне слово ДО відповіді: до неї — лише «ти», жодного «ви», «ваш» і наказу множини, і про неї жодного «вона», «її», «їй», жодне слово не стоїть двічі поспіль, кожна річ — того самого виду, що у вході (річ образу — іменником коду її виду з переліку, коли він є, і слова при ній узгоджені з цим іменником), а українська назва речі — слово в слово. Відповідь — рівно ОДИН JSON-об'єкт і нічого після нього: другої, виправленої версії, приміток і пояснень не пиши — помилку виправ у тому самому об'єкті.
+
+Речі образу — перелік речей картки (номер речі — як на картці, поруч — її коди):
+1 — kind code: skirt · colour code: green · about it: text н=1
+2 — kind code: top · colour code: graphite · about it: text н=2
+3 — kind code: blazer · colour code: graphite · about it: text н=3
+4 — kind code: mules · colour code: red · about it: text н=4
+5 — kind code: necklace · colour code: pearly · about it: text н=5
+6 — kind code: tote · colour code: grey · about it: text н=6
+When a text speaks of an item of the list, call it by the Ukrainian noun of its kind code (kind code: …) — the same noun in the right case in every text (trench_coat — «тренч», sweater — «светр», loafers — «лофери»), not by another kind or a synonym of the English word, whatever word the English text uses; a code ending in _generic names only the family (dress_generic — a dress, bag_generic — a bag). Make every adjective, pronoun and verb with the item agree with that noun in gender and number («бежевий тренч, який…»; «шкіряні лофери, які…»). A name you translate in this same call (text н=K): give it one noun and call the item by it, in agreement, in every text. A text the list gives as about an item (about it: text н=M) speaks of that one item, and so does every other text where the English names it. The colour of an item of the list is its colour code (colour code: …): write the Ukrainian name of that code. The English colour words for that item are the stylist's impression of a photo: do not turn them into a colour of their own — the item's colour stands in their place. Colours of its details (trim, strap, buttons, print), its fabric and the rest — translate from the text. The list is for the items only: an item the English text does not name is not added to the translation — neither to the description nor to the advice.
+
+Colour codes: graphite — графіт; green — зелений; grey — сірий; pearly — перлинний; red — червоний.
+
+ТЕКСТИ:
+{
+"1": "This is a straight-cut skirt in a rich green tone that falls with a clean line to provide structure for your lower body, while its fabric offers a smooth drape suitable for an afternoon out.",
+"2": "The top is a sleek piece in graphite that pairs seamlessly with the skirt to create a cohesive look, featuring a fitted silhouette that complements your defined waist.",
+"3": "This graphite blazer provides a polished outer layer for our outing, offering easy coverage if needed while maintaining a relaxed vibe thanks to its classic cut and neutral color.",
+"4": "The mules are in a bold red shade that adds an instant pop of color to the outfit, serving as a fun accent that draws the eye while keeping your feet comfortable for dining.",
+"5": "This necklace features a soft pearly finish that catches the light gently, acting as a delicate yet noticeable accessory to elevate the simplicity of the top and skirt combination.",
+"6": "The tote bag is styled in a practical grey tone, offering ample space for your essentials while its soft shape keeps the overall look grounded and effortless.",
+"7": "For our lunch date at the restaurant today, I chose this polished green skirt, the graphite blazer and top, the red mules, the grey tote, and the pearly necklace to create a look that feels both special and perfectly relaxed for the afternoon. The outfit works because the deep green and graphite tones form a sophisticated neutral base, while the bright red shoes and metallic necklace add just the right amount of festive energy without overpowering your casual daytime style. You can easily take off the blazer halfway through the meal to let you breathe, or use the bag as a hands-free anchor while you enjoy your time together.",
+"8": "Take the graphite blazer off once you are seated at the table to feel lighter and more relaxed during the conversation.",
+"9": "Мюлі жіночі червоні — Adding red mules to match the warm undertones of the skin and belt, continuing the leg line and raising the formality level required by the occasion.",
+"10": "Перлинне намисто зі срібною застібкою — Adding a pearl necklace to soften the neckline of the skirt set, providing a romantic finishing touch that fits the date context without competing with the bold belt.",
+"11": "Жакет NOLA графіт — This item was kept as it provides a neutral base and structural balance to the earthy palette, despite earlier concerns about its price per combination.",
+"12": "Мюлі жіночі червоні — Adding red mules to match the warm undertones of the skin and skirt, continuing the leg line and raising the formality level required by the occasion.",
+"13": "Перлинне намисто зі срібною застібкою — Adding a pearl necklace to soften the neckline of the dress and add romantic elegance suitable for the date context without competing with the bold belt."
+}
+
+── ВІДПОВІДЬ (2782 симв., 22.9 с, HTTP 200) ──
+```json
+{
+"1": "Це спідниця прямого крою насиченого зеленого кольору, яка елегантно спадає і формує силует вашого тіла. Її тканина має гарний драпірувальний ефект, що робить її чудовим вибором для денної прогулянки.",
+"2": "Цей топ графітового відтінку — стильна річ, яка бездоганно поєднується зі спідницею і створює цілісний образ. Він має приталений силует, який підкреслює твою тонку талію.",
+"3": "Цей жакет графітового кольору додасть завершеності нашому образу, забезпечуючи легке покриття у разі потреби, але зберігаючи невимушену атмосферу завдяки класичному крою і нейтральному відтінку.",
+"4": "Мюлі червоного кольору миттєво доповнять образ яскравим акцентом. Вони не тільки привертають увагу, а й забезпечують комфорт для твоїх ніг під час обіду.",
+"5": "Цей кулон має ніжний перламутровий відтінок, який м’яко переливається на світлі і виступає як делікатна, але помітна прикраса, що доповнює простоту поєднання топа та спідниці.",
+"6": "Цю сумку-тоут виконано в практичному сірому кольорі. Вона має достатньо місця для твоїх необхідних речей і зберігає загальний образ невимушеним завдяки своїй м’якій формі.",
+"7": "Для нашого обіднього побачення сьогодні я обрала цю елегантну зелену спідницю, жакет та топ графітового кольору, червоні мюлі, сіру сумку і перловий кулон. Цей образ поєднує в собі особливість і невимушеність для денного часу. Він працює завдяки глибоким зеленим і графітовим відтінкам, які створюють вишуканий нейтральний фон, а яскраві червоні туфлі та металевий кулон додають потрібну кількість святкового настрою без перевантаження твого повсякденного стилю. Ти можеш легко зняти жакет посередині трапези, щоб було легше дихати, або використовувати сумку як зручну річ під час спілкування.",
+"8": "Зніми графітовий жакет, коли сядеш за стіл, щоб почуватися більш вільно і розслаблено під час розмови.",
+"9": "Червоні жіночі мюлі — Додала червоні мюлі, які гармонують з теплим тоном шкіри та ременем. Вони продовжують лінію ніг і підвищують рівень формальності, необхідний для цієї події.",
+"10": "Перлинне намисто зі срібною застібкою — Додала перлове намисто, щоб пом’якшити виріз спідниці та додати романтичного штриха, який підходить для побачення і не конкурує з ременем.",
+"11": "Жакет NOLA графіт — Цю річ залишили, оскільки вона створює нейтральну основу і структурний баланс у земній палітрі, попри попередні сумніви щодо її вартості на одну комбінацію.",
+"12": "Червоні жіночі мюлі — Додала червоні мюлі, які гармонують з теплим тоном шкіри та спідниці. Вони продовжують лінію ніг і підвищують рівень формальності, необхідний для цієї події.",
+"13": "Перлинне намисто зі срібною застібкою — Додала перлове намисто, щоб пом’якшити виріз сукні та додати романтичної елегантності, яка підходить для побачення і не конкурує з ременем."
+}
+```

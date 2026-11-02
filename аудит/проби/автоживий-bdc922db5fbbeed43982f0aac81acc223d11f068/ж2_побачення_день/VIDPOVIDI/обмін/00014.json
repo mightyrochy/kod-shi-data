@@ -1,0 +1,27 @@
+{
+ "версія": 1,
+ "запит": {
+  "model": "qwen/qwen3.5-9b",
+  "max_tokens": 4000,
+  "messages": [
+   {
+    "role": "user",
+    "content": [
+     {
+      "type": "text",
+      "text": "{\"task\": {\"role\": \"You read the description of an outfit and list its items as data.\", \"rules\": [\"One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.\", \"One item carries one thing — of two alternatives list the first; a note in brackets is not an item.\", \"Slot \\\"accessory\\\" is for an item no other slot fits.\", \"\\\"is_outfit\\\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note.\"], \"limits\": [\"Rely only on the input: do not invent what it does not contain.\", \"The answer is one JSON object following \\\"answer_schema\\\", without explanations and without ```.\"], \"language\": \"English\", \"answer\": \"ITEM_LIST\", \"answer_schema\": {\"is_outfit\": \"yes|no\", \"items\": [{\"name\": \"<what the item is>\", \"details\": \"<its cut, length and fabric>\", \"slot\": \"top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory\", \"color_hex\": \"<#rrggbb or null>\", \"worn\": \"<true, or false when the description says the outfit goes without it>\"}]}, \"input\": [\"\\\"description\\\" — the outfit description\"]}, \"description\": \"Cream trench coat, straight cut, knee-length, #F5F5DC, cotton twill with wool blend\\nMilk silk blouse, relaxed fit, hip-length, #FFFDD0, pure silk crepe\\nCharcoal grey wide-leg trousers, tapered leg, ankle-length, #36454F, heavy-weight stretch wool\\nLeather loafers, almond toe, mid-calf height, #2F2F2F, smooth calfskin\\nGold hoop earrings, medium diameter, #D4AF37, polished brass\\nStructured leather clutch bag, rectangular shape, #8B4513, vegan leather\\n\\nThis outfit strikes the perfect balance for a daytime date, offering the sophistication of a restaurant setting while remaining comfortable enough for lunch at one. The trench coat provides essential warmth against the autumn chill without being overdressed, as it can easily be removed if the indoor temperature is high. Neutral tones like cream and charcoal grey create an elegant foundation that complements her skin and hair without overwhelming them. The relaxed fit of the blouse combined with tailored trousers ensures she feels confident and at ease throughout the meal.\"}"
+     }
+    ]
+   }
+  ],
+  "temperature": 1
+ },
+ "відповідь": {
+  "status": 200,
+  "contentType": "application/json",
+  "headers": {
+   "x-model": "qwen/qwen3.5-9b"
+  },
+  "body": "{\"content\":[{\"type\":\"text\",\"text\":\"{\\n  \\\"is_outfit\\\": \\\"yes\\\",\\n  \\\"items\\\": [\\n    {\\n      \\\"name\\\": \\\"Leather loafers\\\",\\n      \\\"details\\\": \\\"almond toe, mid-calf height, smooth calfskin\\\",\\n      \\\"slot\\\": \\\"shoes\\\",\\n      \\\"color_hex\\\": \\\"#2F2F2F\\\",\\n      \\\"worn\\\": true\\n    },\\n    {\\n      \\\"name\\\": \\\"Gold hoop earrings\\\",\\n      \\\"details\\\": \\\"medium diameter, polished brass\\\",\\n      \\\"slot\\\": \\\"earrings\\\",\\n      \\\"color_hex\\\": \\\"#D4AF37\\\",\\n      \\\"worn\\\": true\\n    },\\n    {\\n      \\\"name\\\": \\\"Structured leather clutch bag\\\",\\n      \\\"details\\\": \\\"rectangular shape, vegan leather\\\",\\n      \\\"slot\\\": \\\"bag\\\",\\n      \\\"color_hex\\\": \\\"#8B4513\\\",\\n      \\\"worn\\\": true\\n    },\\n    {\\n      \\\"name\\\": \\\"Cream trench coat\\\",\\n      \\\"details\\\": \\\"straight cut, knee-length, cotton twill with wool blend\\\",\\n      \\\"slot\\\": \\\"outerwear\\\",\\n      \\\"color_hex\\\": \\\"#F5F5DC\\\",\\n      \\\"worn\\\": true\\n    },\\n    {\\n      \\\"name\\\": \\\"Milk silk blouse\\\",\\n      \\\"details\\\": \\\"relaxed fit, hip-length, pure silk crepe\\\",\\n      \\\"slot\\\": \\\"top\\\",\\n      \\\"color_hex\\\": \\\"#FFFDD0\\\",\\n      \\\"worn\\\": true\\n    },\\n    {\\n      \\\"name\\\": \\\"Charcoal grey wide-leg trousers\\\",\\n      \\\"details\\\": \\\"tapered leg, ankle-length, heavy-weight stretch wool\\\",\\n      \\\"slot\\\": \\\"bottom\\\",\\n      \\\"color_hex\\\": \\\"#36454F\\\",\\n      \\\"worn\\\": true\\n    }\\n  ]\\n}\"}],\"usage\":{\"input_tokens\":584,\"output_tokens\":399},\"stop_reason\":\"end_turn\"}"
+ }
+}
