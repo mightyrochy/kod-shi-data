@@ -6,7 +6,7 @@ import fit
 import accessory as А
 import outer
 import реєстр_правил as Р
-from сила_погода import мірило as мірило_погоди
+from проби.сила_погода import мірило as мірило_погоди
 
 def мірило():
     """Звіряє стелі сил і обидва боки змінюваного допуску капелюха."""
