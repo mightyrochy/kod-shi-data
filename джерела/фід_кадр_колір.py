@@ -102,6 +102,7 @@ def вимір_кадру(в):
 
     Старий Lab галереї без придатності й розкиду не доводить виміру поверхні.
     Власність кадру цей читач не встановлює: вона потребує окремих фактів байтів.
+    Збій читання передається споживачу винятком.
     """
     if not isinstance(в, dict) or в.get("колір_тип") != "вимір" or в.get("придатна") is not True:
         return None
@@ -109,12 +110,9 @@ def вимір_кадру(в):
     if (isinstance(розкид, bool) or not isinstance(розкид, (int, float))
             or not math.isfinite(розкид) or розкид < 0 or в.get("слово") not in V.ЛЕКСИКОН):
         return None
-    try:
-        lab = _КР_ТИП.точка_кольору(в)
-        if (lab is None or len(lab) != 3
-                or any(isinstance(x, bool) or not isinstance(x, (int, float)) or not math.isfinite(x) for x in lab)):
-            return None
-    except (TypeError, ValueError):
+    lab = _КР_ТИП.точка_кольору(в)
+    if (lab is None or len(lab) != 3
+            or any(isinstance(x, bool) or not isinstance(x, (int, float)) or not math.isfinite(x) for x in lab)):
         return None
     return в["слово"], lab
 
