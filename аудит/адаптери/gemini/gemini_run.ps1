@@ -33,6 +33,7 @@ param(
     [string]$RunsDir = (Join-Path $env:USERPROFILE 'gemini-runs'),
     [string]$OutDir = 'C:\Users\Public\gemini\out',
     [string]$LaneDir = 'C:\Users\Public\gemini\lanes',
+    [string]$UpdateRoot = 'C:\ProgramData\gemini-wrapper',
     [string]$RepoUrl = 'https://github.com/mightyrochy/kod-shi-data',
     [string]$ExpectedUser = 'gemini',
     [string]$ProfileDir = (Join-Path 'C:\Users' $ExpectedUser),
@@ -828,6 +829,82 @@ function Write-Pools($Version, $Usage, $Models) {
     Write-FileAtomic (Join-Path $OutDir 'pools.json') ($doc | ConvertTo-Json -Compress -Depth 4)
 }
 
+function Test-SleepRetryPath([string]$Path) {
+    <# Доводить, що агент не може підмінити встановлений канал чи окремий дозвіл.
+    Корінь має наявний ACL інсталяції; власник і писачі файла — лише писачі цього кореня.
+    Відхиляємо також власність агента: власник може переписати DACL навіть без WriteData. #>
+    try {
+        $identity = [Security.Principal.WindowsIdentity]::GetCurrent()
+        $untrusted = @($identity.User.Value) + @($identity.Groups | ForEach-Object { $_.Value })
+        $write = [Security.AccessControl.FileSystemRights]'WriteData,AppendData,WriteExtendedAttributes,WriteAttributes,Delete,ChangePermissions,TakeOwnership,DeleteSubdirectoriesAndFiles'
+        $item = Get-Item -LiteralPath $UpdateRoot -ErrorAction Stop
+        while ($null -ne $item) {
+            if ($item.Attributes -band [IO.FileAttributes]::ReparsePoint) { return $false }
+            $item = $item.Parent
+        }
+        $rootAcl = Get-Acl -LiteralPath $UpdateRoot -ErrorAction Stop
+        $owner = $rootAcl.GetOwner([Security.Principal.SecurityIdentifier]).Value
+        if ($owner -in $untrusted) { return $false }
+        $writers = @($owner)
+        foreach ($rule in $rootAcl.Access) {
+            if ($rule.AccessControlType -ne 'Allow' -or -not ($rule.FileSystemRights -band $write)) { continue }
+            $sid = $rule.IdentityReference.Translate([Security.Principal.SecurityIdentifier]).Value
+            if ($sid -in $untrusted) { return $false }
+            $writers += $sid
+        }
+        $file = Get-Item -LiteralPath $Path -ErrorAction Stop
+        if ($file.Directory.FullName -cne [IO.Path]::GetFullPath($UpdateRoot) -or ($file.Attributes -band [IO.FileAttributes]::ReparsePoint)) { return $false }
+        $acl = Get-Acl -LiteralPath $Path -ErrorAction Stop
+        if ($acl.GetOwner([Security.Principal.SecurityIdentifier]).Value -notin $writers) { return $false }
+        foreach ($rule in $acl.Access) {
+            if ($rule.AccessControlType -ne 'Allow' -or -not ($rule.FileSystemRights -band $write)) { continue }
+            if ($rule.IdentityReference.Translate([Security.Principal.SecurityIdentifier]).Value -notin $writers) { return $false }
+        }
+        return $true
+    } catch { return $false }
+}
+
+function Import-SleepRetries {
+    <# Приймає запит публікатора лише після fetch опублікованої голови й кінця старого прогону. #>
+    foreach ($file in @(Get-ChildItem -LiteralPath $UpdateRoot -Filter 'sleep-retry-*.json' -File -ErrorAction SilentlyContinue)) {
+        try {
+        if (-not (Test-SleepRetryPath $file.FullName) -or $file.Name -cnotmatch '^sleep-retry-([0-9]{8}-[0-9]{6}-[0-9a-f]{12})\.json$') { continue }
+        $parent = $Matches[1]
+        $request = [IO.File]::ReadAllText($file.FullName, $script:Utf8) | ConvertFrom-Json
+        if ($request.parent -cne $parent -or $request.head -cnotmatch '^[0-9a-f]{40}$' -or $request.marker -cnotmatch '^[0-9a-f]{40}$' -or $request.sleep -cnotmatch '^[0-9a-f]{64}$') { continue }
+        $matches = @(Get-Markers | Where-Object { $_.Valid -and $_.Name -ceq $request.queue -and $_.Sha -ceq $request.marker -and $script:Lanes -contains $_.Lane })
+        if ($matches.Count -ne 1) { continue }
+        $m = $matches[0]; $key = Get-MarkerKey $m
+        $state = Get-StatePath $key
+        $retry = $state + '.sleep.json'
+        if (Test-Path -LiteralPath $retry) {
+            $previous = [IO.File]::ReadAllText($retry, $script:Utf8) | ConvertFrom-Json
+            # Стан WAIT міг не встигнути записатися до вимкнення.
+            if ($previous.parent -cne $parent) { continue }
+        }
+        if (-not (Test-Path -LiteralPath $state) -or [IO.File]::ReadAllText($state, $script:Utf8) -cnotmatch ('^DONE ' + [regex]::Escape($parent) + ' (?:STALL|STALL_PUBLISHED|AGY_ERROR|BLOCKED|BLOCKED_PUBLISHED|INTERRUPTED)$')) { continue }
+        if (Test-SlugBusy $m.Slug $script:Lanes) { continue }
+        $head = Get-RefSha "refs/remotes/origin/gemini/$($m.Slug)"
+        if (-not $head) { $head = Get-RefSha 'refs/remotes/origin/main' }
+        if (-not $head -or (Invoke-Git @('merge-base','--is-ancestor',$request.head,$head) -AllowFail).Code -ne 0) { continue }
+        Write-FileAtomic $retry ($request | ConvertTo-Json -Compress)
+        # Лічильник сну незалежний від квоти: її повтори не витрачають і не скидають цей дозвіл.
+        [void](Set-MarkerWait $m ([DateTimeOffset]::UtcNow.ToUnixTimeSeconds()) @{group='SLEEP'; head=$head})
+        Write-Log "сон: $($m.Name) повернено в чергу від опублікованої голови $head"
+        } catch { Write-Log "запит повтору після сну $($file.Name) відкинуто: $($_.Exception.Message)" }
+    }
+}
+
+function Get-SleepParent([string]$StatePath) {
+    <# Дозвіл повтору переживає WAIT, STARTED і відмови за квотою. #>
+    $path = $StatePath + '.sleep.json'
+    if (Test-Path -LiteralPath $path) {
+        $retry = [IO.File]::ReadAllText($path, $script:Utf8) | ConvertFrom-Json
+        [string]$retry.parent
+    } else { '' }
+}
+
+
 # --- один наряд ---------------------------------------------------------------------------------------------------
 
 # Кінець прогону: факти гілки, бандл (коли є нові коміти), стан у теці обміну. Спільне для звичайного кінця й
@@ -861,6 +938,7 @@ function Complete-Status($Status, [string]$StatePath, [string]$Tail, [datetime]$
         if ($reason.Count -eq 0) { $reason = @($Tail -split "`n" | Where-Object { $_.Trim() } | Select-Object -Last 1) }
         try { Add-Note (Join-Path $OutDir 'blocked-reasons.json') "gemini/$($Status.slug)" ([string]$reason[0]) } catch { Write-Log "причина BLOCKED не записана: $($_.Exception.Message)" }
     }
+    $Status.ended_utc = [datetime]::UtcNow.ToString('o')
     Write-FileAtomic (Join-Path $OutDir ($Status.id + '.json')) ($Status | ConvertTo-Json -Compress)
     Write-FileAtomic $StatePath "DONE $($Status.id) $($Status.code)"
     Remove-Claim $StatePath
@@ -912,7 +990,7 @@ function Invoke-Task($M, $Job) {
     $statePath = Get-StatePath $key
     $status = [ordered]@{ v = 1; id = $id; slug = $M.Slug; model = $M.Model; n = [int]$M.N; marker = $M.Sha; cond = $M.Cond; slot = [string]$Job.slot
         start = ''; head = ''; code = ''; report = 'NONE'; ahead = 0; turns = 0; minutes = 0; bundle = ''; engine = 'agy'
-        retakes = (Get-Retakes $statePath) }
+        retakes = (Get-Retakes $statePath); started_utc = [datetime]::UtcNow.ToString('o'); ended_utc = ''; sleep_parent = (Get-SleepParent $statePath) }
     $prev = $(if (Test-Path -LiteralPath $statePath) { [IO.File]::ReadAllText($statePath, $script:Utf8) } else { $null })
     Write-FileAtomic $statePath ('STARTED ' + ($status | ConvertTo-Json -Compress))
     $dir = [string]$Job.dir
@@ -1273,6 +1351,7 @@ function Main {
                 $script:Limits = Get-Limits
                 # Перервані й накопичене — після першого успішного fetch: прохід, що впав на fetch, їх не знімає.
                 if ($clean) { Resume-Interrupted; Clear-TaskCopies (Join-Path $RunsDir 'w') @('--branches', '--remotes'); $clean = $false }
+                Import-SleepRetries
                 Clear-OrphanClaims $RunsDir
                 $script:Agy = Find-EngineExe $AgyExe
                 if ($script:Agy) { [void](Read-Usage) }
