@@ -2410,7 +2410,7 @@ function підсумокМоделі(){
   async function діагностикаОчікування(поз, причина) {
     const стан = await стор.evaluate(і => {
       const к = П.картки[і], ел = document.querySelector('#к-' + і);
-      return {картка: к, замінюється: ЗАМІНИ_П.has(к), не_ця: [...НЕ_ЦЯ_П],
+      return {картка: к, режим: РЕЖИМ, замінюється: ЗАМІНИ_П.has(к), не_ця: НЕ_ЦЯ_П.знімок(),
         кнопки: ел ? [...ел.querySelectorAll('button.замін')].map(кн => ({id: кн.dataset.id,
           disabled: кн.disabled, html: кн.outerHTML})) : [], текст: ел ? ел.innerText : null};
     }, поз);
