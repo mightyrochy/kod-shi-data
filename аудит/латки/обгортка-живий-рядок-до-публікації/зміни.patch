@@ -114,7 +114,7 @@ diff --git a/аудит/адаптери/gemini/m9v/хеші.psd1 b/аудит/�
      'wrapper_update.ps1' = '45F254E5CB2FB7D882BBB9CE7CA121988FDF23BACCFE65CB67A4CA3B3F426FE7'
      'wrapper_probe.ps1'  = '85116D04C22EB64CBFF52E66BCEAE9B1091577A889EDD58A8B634093A82BDBC6'
 -    'wrapper_chain.ps1'  = 'ABE9238B05AB0EAB3E65912867159FC06EDE415188EC22E9C4D8DD2DD88487BA'
-+    'wrapper_chain.ps1'  = 'CF8863A03C3B1A6D0A090032CF0727D2030B4F08F2790BA09FD0284E584CF6EC'
++    'wrapper_chain.ps1'  = '71226DA4D4035B7014DDB209135AAFC3C6D1953225E3081E085FE77DDC0553B0'
      'wrapper_health.ps1' = 'F63CDFD76BCBE92440A843759BCD6CED4E49B4BCBAC19620CACA4B74B9D58AA5'
 -    'gemini_run.ps1'     = 'FC237180DABFF4007A977416099AFECAFE2C2EE4F800A6097CEB9B40ACEDAE8D'
 -    'gemini_publish.ps1' = '858D3D19CF97C3B792B67E09A4F8CE79422126404ABEF84E11099CB56C3577D4'
@@ -245,7 +245,7 @@ diff --git a/аудит/адаптери/gemini/wrapper_chain.ps1 b/аудит/�
      if ($DryRun -or $Branch -cnotmatch '^gemini/[\p{L}\p{Nd}][\p{L}\p{Nd}._-]{0,79}$' -or $Head -cnotmatch $script:ShaPattern) { return }
      if ($Model -cmatch $script:ModelPattern) {
          $models = Join-Path $WorkDir 'engine-models'; [void][IO.Directory]::CreateDirectory($models)
-@@ -107,29 +119,35 @@
+@@ -107,29 +119,38 @@
          $job = ConvertFrom-Json ([IO.File]::ReadAllText($file.FullName, $script:Utf8))
          $branch = [string]$job.branch; $head = [string]$job.head
          if ($branch -cnotmatch '^gemini/[\p{L}\p{Nd}][\p{L}\p{Nd}._-]{0,79}$' -or $branch.Contains('..') -or $branch.EndsWith('.lock') -or $head -cnotmatch $script:ShaPattern) { throw 'CHAIN_DRAFT' }
@@ -254,8 +254,12 @@ diff --git a/аудит/адаптери/gemini/wrapper_chain.ps1 b/аудит/�
          $r = Invoke-Git @('ls-remote','--heads','origin',"refs/heads/$branch") -AllowFail
          if ($r.Code -ne 0) { throw 'CHAIN_REMOTE' }
          if (-not $r.Out.StartsWith($head + "`t")) { continue }
-         $existing = @($pulls | Where-Object { $_.user.login -ceq 'mightyrochy' -and $_.head.ref -ceq $branch -and $_.head.repo.full_name -ceq $GitHubRepo })
+-        $existing = @($pulls | Where-Object { $_.user.login -ceq 'mightyrochy' -and $_.head.ref -ceq $branch -and $_.head.repo.full_name -ceq $GitHubRepo })
 -        if ($existing.Count) { Remove-Item -LiteralPath $file.FullName; continue }
++        $existing = @($pulls | Where-Object {
++            $_.user.login -ceq 'mightyrochy' -and $_.head.ref -ceq $branch -and $_.head.repo.full_name -ceq $GitHubRepo -and
++            $_.base.repo.full_name -ceq $GitHubRepo -and $_.base.ref -ceq 'main'
++        })
          # Звіт перевірки без рядків дошки лишається гілкою: PR несе повний CI і злиття без користі (`ПЕРЕВІРКА.md`, «Під обгорткою»).
 -        if (Test-ReviewBranch $branch) {
 +        if (-not $existing.Count -and (Test-ReviewBranch $branch)) {
@@ -298,7 +302,7 @@ diff --git a/аудит/адаптери/gemini/НАЛАШТУВАННЯ.md b/а
 -| `wrapper_chain.ps1` | `ABE9238B05AB0EAB3E65912867159FC06EDE415188EC22E9C4D8DD2DD88487BA` |
 -| `gemini_run.ps1` | `FC237180DABFF4007A977416099AFECAFE2C2EE4F800A6097CEB9B40ACEDAE8D` |
 -| `gemini_publish.ps1` | `858D3D19CF97C3B792B67E09A4F8CE79422126404ABEF84E11099CB56C3577D4` |
-+| `wrapper_chain.ps1` | `CF8863A03C3B1A6D0A090032CF0727D2030B4F08F2790BA09FD0284E584CF6EC` |
++| `wrapper_chain.ps1` | `71226DA4D4035B7014DDB209135AAFC3C6D1953225E3081E085FE77DDC0553B0` |
 +| `gemini_run.ps1` | `8D30203E90DF003328A01D77426A7BD9C195516B86A6FFCE3C38EB239E6A9CAD` |
 +| `gemini_publish.ps1` | `0AF4A7E5833A5CB12E5A5C53E885B32E87791D863A95BCEFD8594396D5080598` |
  | `gemini_watch.ps1` | `69EFEBB07FF1AF51C382B753A95C50F3C1AC27B3008F2489992BEBE3FD0213AA` |
@@ -329,7 +333,7 @@ diff --git a/аудит/адаптери/gemini/перевірка/сценар�
 new file mode 100644
 --- /dev/null
 +++ b/аудит/адаптери/gemini/перевірка/сценарії_живий_до_pr.ps1
-@@ -0,0 +1,177 @@
+@@ -0,0 +1,181 @@
 +﻿#Requires -Version 5.1
 +param([Parameter(Mandatory=$true)][string]$SourceDir, [ValidateSet('ДО','ПІСЛЯ')][string]$Phase = 'ПІСЛЯ')
 +$ErrorActionPreference = 'Stop'
@@ -457,7 +461,7 @@ new file mode 100644
 +            foreach ($branch in @('gemini/проба',('gemini/автоперевірка-91-' + $script:Head),'gemini/перевірка-91')) {
 +                foreach ($existing in @($false,$true)) {
 +                    $script:Existing = @()
-+                    if ($existing) { $script:Existing = @([pscustomobject]@{number=91;user=@{login='mightyrochy'};head=@{ref=$branch;repo=@{full_name=$GitHubRepo}}}) }
++                    if ($existing) { $script:Existing = @([pscustomobject]@{number=91;user=@{login='mightyrochy'};head=@{ref=$branch;repo=@{full_name=$GitHubRepo}};base=@{ref='main';repo=@{full_name=$GitHubRepo}}}) }
 +                    $script:Body=$bodies[2816]; $script:Calls=@()
 +                    Save-DraftRequest $branch $script:Head
 +                    Complete-EngineDrafts
@@ -465,6 +469,10 @@ new file mode 100644
 +                    Check "$branch ($existing): спільна перевірка перед POST/PATCH" ($script:Calls.Count -eq 1 -and $sent.Args[2] -ceq $(if ($existing) {'PATCH'} else {'POST'}) -and @(Get-LiveAfterLines $sent.Payload.body $registry | Where-Object { $_.error }).Count -eq 0 -and $sent.Payload.body.Contains('ЗАБЛОКОВАНО:'))
 +                }
 +            }
++            $script:Existing[0].base.ref = 'інша-база'; $script:Calls=@()
++            Save-DraftRequest 'gemini/перевірка-91' $script:Head
++            Complete-EngineDrafts
++            Check 'PR іншої бази не отримує PATCH' ($script:Calls.Count -eq 1 -and $script:Calls[0].Args[2] -ceq 'POST')
 +            $script:Existing=@(); $script:ApiFail=$true
 +            Save-DraftRequest 'gemini/проба' $script:Head
 +            try { Complete-EngineDrafts; Check 'збій API не приймається' $false } catch { Check 'збій API лишає запит для повтору' (@(Get-ChildItem "$WorkDir/drafts/*.json").Count -eq 1) }
