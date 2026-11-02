@@ -53,7 +53,7 @@ try {
     Publish 'auth'
     if ($Before) {
         Check 'ДО: 401 — коментарів #1690 немає, рядок не доставлено' (@(Comments).Count -eq 0 -and -not (States 'auth').sent)
-        . (Join-Path $SourceDir 'gemini_run.ps1') -RunsDir "$tmpRoot/gem/runs" -OutDir "$tmpRoot/gem/out" -RepoDir $tmpRoot -LaneDir "$tmpRoot/lanes"
+        . (Join-Path $SourceDir 'gemini_run.ps1') -RunsDir "$tmpRoot/gem/runs" -OutDir "$tmpRoot/gem/out" -RepoDir $tmpRoot -LaneDir "$tmpRoot/lanes" -ProfileDir "$tmpRoot/profile"
         foreach ($dir in @($RunsDir, $OutDir, $LaneDir)) { [void][System.IO.Directory]::CreateDirectory($dir) }
         $script:Limits = $null
         $env:FAKE_HEALTH_MODE = 'agy_auth'
@@ -111,7 +111,7 @@ try {
     Publish 'response'
     Check '401 у відповіді з успішним ok не стає тривогою з тексту агента' ((States 'response').sent -and @(States 'response').Count -eq 1)
 
-    . (Join-Path $SourceDir 'gemini_run.ps1') -RunsDir "$tmpRoot/gem/runs" -OutDir "$tmpRoot/gem/out" -RepoDir $tmpRoot -AgyExe "$tmpRoot/agy.cmd" -LaneDir "$tmpRoot/lanes"
+    . (Join-Path $SourceDir 'gemini_run.ps1') -RunsDir "$tmpRoot/gem/runs" -OutDir "$tmpRoot/gem/out" -RepoDir $tmpRoot -AgyExe "$tmpRoot/agy.cmd" -LaneDir "$tmpRoot/lanes" -ProfileDir "$tmpRoot/profile"
     foreach ($dir in @($RunsDir, $OutDir, $LaneDir)) { [void][System.IO.Directory]::CreateDirectory($dir) }
     $script:StateDir = Join-Path $RunsDir 'state'; [void][System.IO.Directory]::CreateDirectory($script:StateDir)
     $script:SlotDir = Join-Path $RunsDir 'slots'; [void][System.IO.Directory]::CreateDirectory($script:SlotDir)

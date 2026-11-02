@@ -5,7 +5,7 @@
      node проби/kadr_syluet_f143.js <корінь зі зібраним index.html> <знімок.png> */
 const { chromium } = require('playwright');
 const { чекатиСтан } = require('./очікування.js');
-const fs = require('fs'), path = require('path'), os = require('os'), zlib = require('zlib');
+const fs = require('fs'), path = require('path'), os = require('os');
 const КОРІНЬ = process.argv[2] || path.join(os.tmpdir(), 'стенд'), ЗНІМОК = process.argv[3] || path.join(os.tmpdir(), 'kadr_syluet_f143.png');
 const БАЗА = 'http://127.0.0.1:8765';
 const ЖИВЕ = 'https://www.sunwin-store.com/wp-content/uploads/2026/07/2968_champagne_2.webp';
@@ -16,9 +16,9 @@ const карт = {рука: '1', ітерацій: 1, викликів: 1, те�
          річ(3, 'Сумка шкіряна', 'сумка', null, [])],
   мітки: [], знахідки: [], питання: [], етапи: {викликів: 1, виклики: []}, свідомі: [], невиконано: null,
   різноманітність: null, мова: [], мова_спроб: 0, мова_видано: 'так', фото_не_ті: [], дібрав_код_слоти: []};
-const б64 = zlib.gzipSync(Buffer.from(JSON.stringify({в: 'ПОКАЗ-V1', збірка: 'ф143', каталог: 'каталог · 3 речі',
-  профіль: 'Оля', розклад: '1234', випадок: 'Робота · офіс корпоративний', пул: 100, картки: [карт]})))
-  .toString('base64').replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+/* пакет — вхід проби, а не хеш адреси (рішення 11824): `П` ставить проба, як шов збирання */
+const ПАКЕТ = {в: 'ПОКАЗ-V1', збірка: 'ф143', каталог: 'каталог · 3 речі', профіль: 'Оля', розклад: '1234', прогін: 'пр-ф143',
+  випадок_рядок: 'Робота · офіс корпоративний', пул: 100, картки: [карт]};
 (async () => {
   const бр = await chromium.launch({executablePath: process.env.CHROMIUM});
   const ст = await (await бр.newContext({viewport: {width: 390, height: 844}})).newPage();
@@ -31,7 +31,9 @@ const б64 = zlib.gzipSync(Buffer.from(JSON.stringify({в: 'ПОКАЗ-V1', зб
   /* той самий таймаут на кадр, що в стенді (Ф-143): крамниця не тримає прилад */
   await ст.route(u => u.origin !== new URL(БАЗА).origin, async r => {
     try { await r.fulfill({response: await r.fetch({timeout: 12000})}); } catch (_) { try { await r.abort(); } catch (__) {} } });
-  await ст.goto(БАЗА + '/index.html#' + б64, {waitUntil: 'domcontentloaded'});
+  await ст.goto(БАЗА + '/index.html', {waitUntil: 'domcontentloaded'});
+  await чекатиСтан(ст, 'старт показу', () => typeof (document.getElementById('сцн-новий') || {}).onclick === 'function', null, 60000);
+  await ст.evaluate(пк => { П = пк; рендер(); }, ПАКЕТ);
   await чекатиСтан(ст, 'три речі в списку картки', () => document.querySelectorAll('#картки .картка .список .річ').length === 3, null, 60000);
   await ст.waitForTimeout(8000);          // два кола ряду плюс запас на мережу
   console.log(JSON.stringify(await ст.evaluate(() => ({

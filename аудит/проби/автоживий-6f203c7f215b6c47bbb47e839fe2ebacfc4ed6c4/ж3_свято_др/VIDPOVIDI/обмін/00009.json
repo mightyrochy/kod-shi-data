@@ -1,0 +1,27 @@
+{
+ "версія": 1,
+ "запит": {
+  "model": "qwen/qwen3.5-9b",
+  "max_tokens": 4000,
+  "messages": [
+   {
+    "role": "user",
+    "content": [
+     {
+      "type": "text",
+      "text": "{\"task\": {\"role\": \"You are a personal stylist. Put together one outfit for her case.\", \"rules\": [\"Items one per line, garments first, then shoes and accessories: what it is, cut, length, color with its hex code, fabric.\", \"An outer layer only when the weather needs it; at +20 °C and warmer there is none.\", \"Last, why this outfit works, in 3–4 sentences.\"], \"limits\": [\"Do not name lightness numbers, body measurements or height in numbers, or body-type labels, and do not say you had limits.\", \"The answer is plain text laid out as the rules say, not JSON.\"], \"language\": \"English\", \"answer\": \"OUTFIT_TEXT\", \"input\": [\"\\\"case\\\" — her case: the occasion, where and when, the weather, the dress code, her wishes and refusals — as codes, her own words as quotes; do not take an item that goes against her refusals or her words\", \"\\\"formality\\\" — the level of dress she named: home (loungewear, athleisure, sportswear) < everyday (jeans, a T-shirt and sneakers; neat casual, dark denim) < neat (business: a blouse, a shirt or a refined knit with trousers or a skirt, a textured jacket or a cardigan, loafers, ballet flats or ankle boots; social: a day dress, a refined knit with a skirt or trousers, a textured jacket, neat flats or ankle boots) < smart (business: a jacket with trousers or a skirt, a blouse or a shirt, loafers or pumps; a sheath dress with a jacket; social: a cocktail dress, heeled shoes) < formal (business: a business suit — a jacket with trousers or a skirt of one fabric — with a blouse, pumps; social: a formal dress of a noble fabric, heeled shoes) < very_smart (an evening gown) < ceremonial (a full-length evening gown with long gloves)\", \"\\\"person\\\" — facts about her from her photo and measurements, without conclusions: colors in hex (one per measurement), sizes in cm\"]}, \"case\": {\"field_quotes\": {\"occasion\": \"вечірка на день народження подруги\", \"hour\": \"субота ввечері\", \"part_of_day\": \"ввечері\"}, \"formality_reason\": \"norm\", \"event\": \"вечірка на день народження подруги\", \"start_hour\": 19, \"occasion\": \"celebration\", \"formality\": [\"everyday\"], \"season\": \"autumn\", \"part_of_day\": \"evening\"}, \"person\": {\"skin_hex\": [\"#f0d6d2\", \"#ead0cc\", \"#f4dcd8\"], \"hair_hex\": [\"#1f1c1f\", \"#2a2326\"], \"eyes_hex\": \"#5b6e82\", \"height_cm\": 168, \"girths_cm\": {\"shoulders\": 98, \"bust\": 92, \"waist\": 74, \"hips\": 99}}}"
+     }
+    ]
+   }
+  ],
+  "temperature": 1
+ },
+ "відповідь": {
+  "status": 200,
+  "contentType": "application/json",
+  "headers": {
+   "x-model": "qwen/qwen3.5-9b"
+  },
+  "body": "{\"content\":[{\"type\":\"text\",\"text\":\"Silk slip dress, fluid bias-cut silhouette falling to mid-calf length, #e6c0b0 soft rose champagne, lightweight woven silk.\\nAnkle booties, sleek pointed toe with a moderate stiletto heel, #2a2424 espresso black, smooth calfskin leather.\\nGold drop earrings and a delicate pearl pendant necklace.\\n\\nThis outfit works because the fluid silk slip dress offers an elegant evening silhouette perfect for a friend's birthday celebration without feeling overly formal. The deep espresso ankle boots ground the soft rose champagne color of the dress while adding sophistication appropriate for a Saturday night out in autumn. Together, these pieces create a balanced look that transitions seamlessly from dinner to dancing while respecting her preference for everyday style levels.\"}],\"usage\":{\"input_tokens\":678,\"output_tokens\":153},\"stop_reason\":\"end_turn\"}"
+ }
+}

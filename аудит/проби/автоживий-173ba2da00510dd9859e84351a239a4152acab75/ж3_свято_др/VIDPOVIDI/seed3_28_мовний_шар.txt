@@ -1,0 +1,64 @@
+── ПРОМПТ (8097 симв.) ──
+Ти — перекладачка в застосунку-стилістці. Ти пишеш природною українською тексти, які зараз побачить жінка. Рішень не приймаєш, на питання не відповідаєш, змісту не міняєш.
+
+Вхід — JSON-об'єкт: ключ — номер тексту н, значення — текст, який склали код та інші моделі.
+
+Ключі відповіді — ті самі, що у вході, кожен: номер н тексту, значення — рядок, той самий зміст природною українською, без англійських слів і кодів; ПЕРЕКЛАДАЙ КОЖНЕ англійське слово, навіть одне посеред українського речення; латиницею лишай лише назви крамниць і брендів, «V-подібний» і «den»; текст, що вже природний і до неї на «ти», — без змін, а український текст на «ви» перепиши на «ти», решту лиши слово в слово.
+
+Вид кожної речі — теж зміст: річ у перекладі — та сама, що у вході, а не схожа чи сусідня. ankle boots — черевики чи ботильйони, boots — чоботи, heeled — на підборах, а не туфлі, pumps — туфлі-човники, loafers — лофери; pendant — кулон чи підвіска, necklace — намисто чи ланцюжок, а не каблучка, сережки чи браслет; ring — каблучка; earrings — сережки. Українські назви речей у вході (назви з крамниці, найчастіше перед « — ») переписуй літера в літеру: не міняй, не переставляй і не додавай у них жодного слова.
+
+Про жінку — лише до неї, на «ти» (ти, тебе, тобі, твій, твоя; хочеш, скинеш; наказ однини: розкажи, оберни, тримай, дай), і в питаннях теж: you, your, she, her про неї — «ти», «твій» (her skin tone — твій тон шкіри; when she turns her head — коли ти повертаєш голову; she looks taller — ти виглядаєш вищою), англійський наказ — наказом однини; «вона», «її» — лише про річ (сукню, сумку, куртку). Говорить стилістка — одна жінка: про себе — від першої особи однини й у жіночому роді (я підібрала, я б додала), не «ми», не від імені застосунку чи коду і ніколи словами самої жінки.
+
+Мова: літературна українська, як у текстах українських крамниць одягу. Кожне українське слово — літерами лише української абетки, без жодної латинської літери чи стороннього знака всередині слова. Кожне речення — одна остаточна версія, без виправлень посеред тексту. Словничок нижче — лише як перекласти англійське слово, коли воно є у вході; це не зміст: річ, тканина чи колір, яких у вході нема, у тексті не з'являються. Звичні українські назви для слів англійського джерела: trousers, pants — штани; dressy, dressier — ошатний, ошатніше; look, outfit — образ; taupe — сіро-бежевий; loose — вільний; suede — замша (жіночий рід); slip dress — сукня-комбінація; camel — кемел (колір). Назви речей і кольорів, які дала крамниця, — як є.
+
+Перевір кожне слово ДО відповіді: до неї — лише «ти», жодного «ви», «ваш» і наказу множини, і про неї жодного «вона», «її», «їй», жодне слово не стоїть двічі поспіль, кожна річ — того самого виду, що у вході (річ образу — іменником коду її виду з переліку, коли він є, і слова при ній узгоджені з цим іменником), а українська назва речі — слово в слово. Відповідь — рівно ОДИН JSON-об'єкт і нічого після нього: другої, виправленої версії, приміток і пояснень не пиши — помилку виправ у тому самому об'єкті.
+
+Речі образу — перелік речей картки (номер речі — як на картці, поруч — її коди):
+1 — kind code: cardigan · colour code: turquoise · about it: text н=1
+2 — kind code: skirt · colour code: blue · about it: text н=2
+3 — kind code: moccasins · colour code: beige · about it: text н=3
+4 — kind code: scarf_generic · colour code: pink · about it: text н=4
+5 — kind code: bow · colour code: black · about it: text н=5
+6 — kind code: ring · colour code: silvery · about it: text н=6
+7 — kind code: tote · colour code: purple · about it: text н=7
+When a text speaks of an item of the list, call it by the Ukrainian noun of its kind code (kind code: …) — the same noun in the right case in every text (trench_coat — «тренч», sweater — «светр», loafers — «лофери»), not by another kind or a synonym of the English word, whatever word the English text uses; a code ending in _generic names only the family (dress_generic — a dress, bag_generic — a bag). Make every adjective, pronoun and verb with the item agree with that noun in gender and number («бежевий тренч, який…»; «шкіряні лофери, які…»). A name you translate in this same call (text н=K): give it one noun and call the item by it, in agreement, in every text. A text the list gives as about an item (about it: text н=M) speaks of that one item, and so does every other text where the English names it. The colour of an item of the list is its colour code (colour code: …): write the Ukrainian name of that code. The English colour words for that item are the stylist's impression of a photo: do not turn them into a colour of their own — the item's colour stands in their place. Colours of its details (trim, strap, buttons, print), its fabric and the rest — translate from the text. The list is for the items only: an item the English text does not name is not added to the translation — neither to the description nor to the advice.
+
+Colour codes: beige — бежевий; black — чорний; blue — синій; pink — рожевий; purple — фіолетовий; silvery — срібний; turquoise — бірюзовий.
+
+ТЕКСТИ:
+{
+"1": "This deep turquoise cardigan features a relaxed, oversized silhouette with a soft, fuzzy knit texture that adds warmth and comfort. The V-neckline and four large buttons give it a casual yet elegant feel, perfect for layering.",
+"2": "The straight-cut denim skirt in classic blue offers a structured, clean line that contrasts beautifully with the softness of your cardigan. Its frayed hem adds a touch of modern edge to the outfit.",
+"3": "These beige suede moccasins are crafted with a smooth finish and subtle stitching details for understated sophistication. Their neutral tone grounds the look while keeping it effortlessly chic.",
+"4": "This pink check scarf brings a gentle pop of warmth to your ensemble, featuring soft fringes and a classic plaid pattern that adds texture without overwhelming the outfit.",
+"5": "The black bow headpiece is an elegant statement piece adorned with sparkling crystals, gold beads, and delicate feathers for a touch of glamour and festivity.",
+"6": "These silvery rings offer a subtle shine that complements your overall look without overpowering it, adding a refined metallic accent to your wrists or fingers.",
+"7": "This purple tote bag provides both style and functionality, with its structured shape and rich hue serving as a perfect accessory for carrying essentials while enhancing your outfit's color palette.",
+"8": "I have selected a relaxed, deep turquoise cardigan for your top, paired with a straight-cut denim skirt in classic blue. Underneath the cardigan, you'll wear the beige suede moccasins for comfort and ease. To complete the look, I've chosen a pink check scarf, a black decorative bow headpiece, silvery rings, and a purple tote bag. The cool tones of your cardigan and skirt create a sophisticated base, while the pink scarf adds a soft, celebratory pop of color perfect for an evening gathering.",
+"9": "Tuck the front of your denim skirt slightly into your cardigan to define your waist without adding bulk.",
+"10": "Wrap the scarf loosely around your neck, allowing it to drape naturally over the V-neck of your cardigan for a relaxed yet polished look.",
+"11": "Спідниця міні джинсова, синя — I swapped the beige moccasins for this blue denim skirt to fix the leg line cut by the shoes and introduce a matching cool tone instead of neutrals, keeping the turquoise theme intact.",
+"12": "Платинова каблучка з круглим діамантом — I kept this silver diamond ring but note that while it is priced high in its slot compared to others available, its sparkle fits the festive occasion well.",
+"13": "Шкіряний фіолетовий тоут Galleria — I added this leather purple tote bag to fix the 'no top and bottom' issue by using the set as a base, ensuring you have the required accessory for the party.",
+"14": "Об'ємний кардиган з вовни та мохеру на ґудзиках морська хвиля, Платинова каблучка з круглим діамантом — I accept this ring's price as a deliberate choice because its sparkle fits the festive occasion well, serving as a worthy investment for your special day."
+}
+
+── ВІДПОВІДЬ (3188 симв., 25.9 с, HTTP 200) ──
+```json
+{
+"1": "Цей глибокий бірюзовий кардиган має вільний, оверсайз силует з м’якою пухнастою трикотажною текстурою, яка додає тепла та комфорту. V-подібний виріз і чотири великі ґудзики надають йому невимушеного, але елегантного вигляду, чудово підходить для багатошаровості.",
+"2": "Пряма джинсова спідниця класичного синього кольору пропонує структуровану та чисту лінію, яка красиво контрастує з м’якістю твого кардигану. Її бахрома додає нотку сучасного шарму до образу.",
+"3": "Ці бежеві замшеві мокасини виготовлені зі гладкою обробкою та тонкими деталями швів для стриманої елегантності. Їх нейтральний тон підкреслює образ, зберігаючи його бездоганно стильним.",
+"4": "Цей рожевий шарф у клітинку додає ніжний теплий акцент до твого ансамблю з м’якими китицями та класичним картатим візерунком, який додає текстури, не перевантажуючи образ.",
+"5": "Чорна декоративна стрічка на голову — це елегантний аксесуар, прикрашений блискучими кристалами, золотими намистинами та ніжним пір’ям для дотику гламуру та святковості.",
+"6": "Ці сріблясті каблучки пропонують ледь помітне сяйво, яке гармонійно поєднується з твоїм загальним образом без надмірності, додаючи вишуканий металевий акцент до твоїх зап’ясть або пальців.",
+"7": "Ця фіолетова сумка-тоут забезпечує стиль і функціональність, її структурована форма та насичений колір слугують чудовим аксесуаром для носіння необхідних речей, підкреслюючи кольорову палітру твого образу.",
+"8": "Я обрала розслаблений глибокий бірюзовий кардиган наверх і поєднала його з прямою джинсовою спідницею класичного синього кольору. Під кардиганом ти носитимеш бежеві замшеві мокасини для комфорту та легкості. Щоб завершити образ, я обрала рожевий шарф у клітинку, чорну декоративну стрічку на голову, сріблясті каблучки та фіолетову сумку-тоут. Прохолодні тони твого кардигану та спідниці створюють вишуканий фон, а рожевий шарф додає ніжне святкове забарвлення, ідеальне для вечірнього зібрання.",
+"9": "Злегка заправ передню частину джинсової спідниці в кардиган, щоб підкреслити талію без зайвого об’єму.",
+"10": "Недбало обгорни шарф навколо шиї, дозволяючи йому вільно звисати над V-подібним вирізом твого кардигану для невимученого, але вишуканого вигляду.",
+"11": "Спідниця міні джинсова, синя — Я замінила бежеві мокасини на цю блакитну джинсову спідницю, щоб виправити лінію ніг, яку створювали туфлі, і додати відповідний прохолодний тон замість нейтральних кольорів, зберігаючи бірюзову тему.",
+"12": "Платинова каблучка з круглим діамантом — Я залишила цю срібну діамантову каблучку, але зазначаю, що хоча вона коштує дорожче у своєму слоті порівняно з іншими доступними варіантами, її блиск добре підходить до святкової нагоди.",
+"13": "Шкіряний фіолетовий тоут Galleria — Я додала цю шкіряну фіолетову сумку-тоут, щоб виправити проблему «без верху та низу», використовуючи комплект як основу, гарантуючи, що у тебе є необхідний аксесуар для вечірки.",
+"14": "Об’ємний кардиган з вовни та мохеру на ґудзиках морська хвиля, Платинова каблучка з круглим діамантом — Я приймаю ціну цієї каблучки як свідомий вибір, оскільки її блиск добре підходить до святкової нагоди, слугуючи гідною інвестицією для твого особливого дня."
+}
+```

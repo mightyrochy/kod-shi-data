@@ -1,0 +1,26 @@
+Команда: C:\Users\gemini\AppData\Local\Programs\Python\Python312\python.exe джерела/прилади/стенд_храповика_кореня.py
+Код виходу: 1
+Exception in thread Thread-13 (_readerthread):
+Traceback (most recent call last):
+  File "C:\Users\gemini\AppData\Local\Programs\Python\Python312\Lib\threading.py", line 1075, in _bootstrap_inner
+    self.run()
+  File "C:\Users\gemini\AppData\Local\Programs\Python\Python312\Lib\threading.py", line 1012, in run
+    self._target(*self._args, **self._kwargs)
+  File "C:\Users\gemini\AppData\Local\Programs\Python\Python312\Lib\subprocess.py", line 1599, in _readerthread
+    buffer.append(fh.read())
+                  ^^^^^^^^^
+  File "C:\Users\gemini\AppData\Local\Programs\Python\Python312\Lib\encodings\cp1251.py", line 23, in decode
+    return codecs.charmap_decode(input,self.errors,decoding_table)[0]
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+UnicodeDecodeError: 'charmap' codec can't decode byte 0x98 in position 52: character maps to <undefined>
+Traceback (most recent call last):
+  File "C:\Users\gemini\gemini-runs\w\20261030-163541-8726c4602f94\tmp\pr2462\джерела\прилади\стенд_храповика_кореня.py", line 305, in <module>
+    sys.exit(головний())
+             ^^^^^^^^^^
+  File "C:\Users\gemini\gemini-runs\w\20261030-163541-8726c4602f94\tmp\pr2462\джерела\прилади\стенд_храповика_кореня.py", line 270, in головний
+    код_виходу, текст = прогнати(база, голова, храповик)
+                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\gemini\gemini-runs\w\20261030-163541-8726c4602f94\tmp\pr2462\джерела\прилади\стенд_храповика_кореня.py", line 181, in прогнати
+    текст = вихід.stdout + вихід.stderr
+            ~~~~~~~~~~~~~^~~~~~~~~~~~~~
+TypeError: unsupported operand type(s) for +: 'NoneType' and 'str'

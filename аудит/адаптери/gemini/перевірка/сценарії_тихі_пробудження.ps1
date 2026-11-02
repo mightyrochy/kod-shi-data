@@ -13,7 +13,7 @@ function Scenario([string]$Name, [scriptblock]$Body) {
     try { & $Body } catch { Check "$Name — $($_.Exception.Message) $($_.ScriptStackTrace)" $false }
 }
 try {
-    . (Join-Path $SourceDir 'gemini_publish.ps1') -WorkDir "$tmp/pub" -OutboxDir "$tmp/out"
+    . (Join-Path $SourceDir 'gemini_publish.ps1') -WorkDir "$tmp/pub" -OutDir "$tmp/gem-out" -OutboxDir "$tmp/out"
     foreach ($dir in @($WorkDir, "$WorkDir/state", "$WorkDir/seen", $OutboxDir)) { [void][IO.Directory]::CreateDirectory($dir) }
     $sha = 'a' * 40
     $script:Calls = @()
@@ -28,12 +28,14 @@ try {
         $script:Calls = @()
         foreach ($f in @(Get-ChildItem "$WorkDir/state" -File -ErrorAction SilentlyContinue)) { Remove-Item -LiteralPath $f.FullName -Force }
         Remove-Item -LiteralPath "$WorkDir/local-lines.json" -Force -ErrorAction SilentlyContinue
+        Remove-Item -LiteralPath "$WorkDir/quota-windows.json" -Force -ErrorAction SilentlyContinue
     }
     function Deliver([string[]]$Lines) {
         <# Рядок проходить справжню доставку: стан → Send-Pending. #>
         foreach ($l in $Lines) {
             $path = "$WorkDir/state/{0:D4}.json" -f ($script:Seq++)
-            Write-FileAtomic $path ((@{line = $l; sent = $false; attempts = 0}) | ConvertTo-Json -Compress)
+            $slug = if ($l -cmatch '^GEMINI ОБГОРТКА: (?:ГОТОВО|ЗАБЛОКОВАНО) [^/]+/([^ ]+) ') { $Matches[1] } else { '' }
+            Write-FileAtomic $path ((@{slug = $slug; line = $l; sent = $false; attempts = 0}) | ConvertTo-Json -Compress)
             Send-Pending (Get-Item $path)
         }
     }
@@ -48,7 +50,7 @@ try {
 
     Scenario '1 закритий перелік кодів' {
         # Усі коди з $script:RunCodes, $script:IsolationChecks, кодів публікації та службових рядків.
-        $quiet = @('STALE', 'REVIEW_API')
+        $quiet = @('STALE', 'REVIEW_API', 'EMPTY_PLAN')
         foreach ($code in @($script:RunCodes.Keys | Where-Object { $_ -notin @('QUOTA_ZERO', 'DONE', 'BLOCKED') })) {
             $want = $code -notin $quiet
             Check "1 $code — $(if ($want) { 'будить' } else { 'зведення' })" ((Test-DispatcherAction "GEMINI ОБГОРТКА: ЗАБЛОКОВАНО gemini/крок $code") -eq $want)
@@ -58,13 +60,14 @@ try {
         }
         foreach ($code in @($script:PublishCodes.Keys)) { Check "1 публікація $code — будить" (Test-DispatcherAction "GEMINI ОБГОРТКА: ЗАБЛОКОВАНО gemini/крок $code") }
         foreach ($code in @('QUOTA0_CODEX_M60', 'QUOTA0_CLAUDE_M5', 'QUOTA0_GPT', 'QUOTA0_A1_M0')) {
-            Check "1 $code — зведення" (-not (Test-DispatcherAction "GEMINI ОБГОРТКА: ЗАБЛОКОВАНО claude/крок $code"))
+            Check "1 $code — перший рядок групи будить" (Test-DispatcherAction "GEMINI ОБГОРТКА: ЗАБЛОКОВАНО claude/крок $code")
         }
         Check '1 нерозібраний ЗАБЛОКОВАНО будить' (Test-DispatcherAction 'GEMINI ОБГОРТКА: ЗАБЛОКОВАНО')
         Check '1 STALE із зайвим словом у рядку будить' (Test-DispatcherAction 'GEMINI ОБГОРТКА: ЗАБЛОКОВАНО gemini/крок X STALE')
         Check '1 ТРИВОГА будить' (Test-DispatcherAction 'GEMINI ОБГОРТКА: ТРИВОГА AUTH CLOUD')
         Check '1 ЛАНЦЮГ будить' (Test-DispatcherAction 'GEMINI ОБГОРТКА: ЛАНЦЮГ CHAIN_API')
         foreach ($kind in @('перевірка-12', 'pachka-3', 'автоживий-штамп', 'автоперевірка-9', 'Е1-нічний-живий-1')) {
+            Write-FileAtomic "$WorkDir/state/kind.json" ((@{slug=$kind;line="GEMINI ОБГОРТКА: ГОТОВО gemini/$kind $sha"}) | ConvertTo-Json)
             Check "1 ГОТОВО $kind — будить" (Test-DispatcherAction "GEMINI ОБГОРТКА: ГОТОВО gemini/$kind $sha")
         }
         Check '1 ГОТОВО виконавця — зведення' (-not (Test-DispatcherAction "GEMINI ОБГОРТКА: ГОТОВО gemini/крок $sha"))
@@ -77,7 +80,7 @@ try {
         $stored = @((ConvertFrom-Json ([IO.File]::ReadAllText("$WorkDir/local-lines.json"))))
         Check '2 усі 14 лишились у local-lines.json' ($stored.Count -eq 14)
         Deliver @($quota)
-        Check '2 QUOTA0 теж без пробудження' ($script:Calls.Count -eq 0)
+        Check '2 QUOTA0 першого вікна будить, зі зведенням 14' ($script:Calls.Count -eq 1 -and ($script:Calls[0] -split "`n")[1] -ceq 'ЗВЕДЕННЯ БЕЗ ПРОБУДЖЕННЯ: 14')
     }
     Scenario '3 рядок, що будить, — одне пробудження зі зведенням' {
         Reset-Run
@@ -98,6 +101,37 @@ try {
         Deliver @($wake)
         Check '3 нове накопичене — нове зведення з 1' ($script:Calls.Count -eq 3 -and ($script:Calls[2] -split "`n")[1] -ceq 'ЗВЕДЕННЯ БЕЗ ПРОБУДЖЕННЯ: 1')
     }
+    Scenario '3а QUOTA0: одне пробудження на групу на вікно квоти' {
+        Reset-Run
+        $line = { param($n) "GEMINI ОБГОРТКА: ЗАБЛОКОВАНО codex/квота-$n QUOTA0_CODEX_M60" }
+        Deliver @(1..5 | ForEach-Object { & $line $_ })
+        Check "3а 5 рядків QUOTA0_CODEX одного вікна — пробуджень $($script:Calls.Count) (ДО 0 → ПІСЛЯ 1)" ($script:Calls.Count -eq 1 -and $script:Calls[0] -ceq (& $line 1))
+        Check '3а стан вікна — у файлі теки стану, не в пам''яті' ((Get-Content -LiteralPath "$WorkDir/quota-windows.json" -Raw -Encoding UTF8) -match '"CODEX"' -and (Test-QuotaWindowOpen 'CODEX'))
+        Deliver @('GEMINI ОБГОРТКА: ЗАБЛОКОВАНО QUOTA0_CODEX ×5: codex/квота-1, codex/квота-2')
+        Check '3а зведений рядок того ж вікна — тихий' ($script:Calls.Count -eq 1)
+        Deliver @('GEMINI ОБГОРТКА: ЗАБЛОКОВАНО claude/крок QUOTA0_CLAUDE_M10')
+        Check '3а інша група будить окремо' ($script:Calls.Count -eq 2)
+        Deliver @($facts[0])
+        Check '3а STALE — без пробудження' ($script:Calls.Count -eq 2)
+        # Скидання квоти: вікно минуло — файл із простроченим кінцем.
+        [IO.File]::WriteAllText("$WorkDir/quota-windows.json", '{"CODEX":"2000-01-01T00:00:00Z","CLAUDE":"2999-01-01T00:00:00Z"}', (New-Object Text.UTF8Encoding($false)))
+        Deliver @(& $line 6)
+        Check "3а друге вікно (після скидання) — ще пробудження: $($script:Calls.Count) (3)" ($script:Calls.Count -eq 3)
+        Deliver @(& $line 7)
+        Check '3а друге вікно: наступний рядок тихий' ($script:Calls.Count -eq 3)
+        Reset-Run
+        Deliver @('GEMINI ОБГОРТКА: ЗАБЛОКОВАНО QUOTA0_CODEX ×3: codex/а, codex/б, codex/в')
+        Deliver @('GEMINI ОБГОРТКА: ЗАБЛОКОВАНО QUOTA0_CODEX ×2: codex/г, codex/д')
+        Check '3а зведений рядок першим будить, наступний у вікні — ні' ($script:Calls.Count -eq 1)
+        # Недоставлений лист вікна не відкриває.
+        Reset-Run
+        $keepRetries = $script:SendRetries
+        function Invoke-Native { param($Exe, $Arguments, $WorkDirectory, $TimeoutMinutes, $StdIn) $script:Calls += , [string]$StdIn; [pscustomobject]@{Code = 1; Out = ''; Err = 'збій'} }
+        $script:SendRetries = 1; $script:SendRetryDelaySeconds = 0
+        Deliver @(& $line 8)
+        Check '3а збій доставки — вікно не відкрито' (-not (Test-QuotaWindowOpen 'CODEX'))
+        $script:SendRetries = $keepRetries; $script:CloudUnavailable = $false
+    }
     Scenario '4 недоставлене зведення не губиться' {
         Reset-Run
         Deliver ($facts)
@@ -112,6 +146,7 @@ try {
         Deliver ($facts)
         $script:GhBodies = @()
         function Invoke-Native { param($Exe, $Arguments, $WorkDirectory, $TimeoutMinutes, $StdIn) $script:GhBodies += , [string]$StdIn; [pscustomobject]@{Code = 0; Out = '{"id":7}'; Err = ''} }
+        Write-FileAtomic "$WorkDir/state/wake.json" ((@{slug="автоперевірка-9-$sha";line=$wake;sent=$false;attempts=0}) | ConvertTo-Json -Compress)
         Check '5 запасний канал підтверджено' (Send-Fallback $wake)
         $body = ($script:GhBodies[0] | ConvertFrom-Json).body
         Check '5 у тілі коментаря — основний рядок і зведення 14' (($body -split "`n")[0] -ceq $wake -and ($body -split "`n")[1] -ceq 'ЗВЕДЕННЯ БЕЗ ПРОБУДЖЕННЯ: 14')

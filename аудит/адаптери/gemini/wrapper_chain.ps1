@@ -17,29 +17,67 @@ function Get-ChainPulls {
     throw 'CHAIN_PAGES'
 }
 
-function Test-ChainCodePull($Pull) {
-    <# Повний список файлів API відрізняє документацію від коду; неповна відповідь лишає повтор. #>
-    $code = $false; $count = 0
+$script:ChainPaths = @{}
+
+function Get-ChainPullPaths($Pull) {
+    <# Повний список файлів API (з попередніми іменами перейменувань), один раз на голову; неповна відповідь лишає повтор. #>
+    $key = "$($Pull.number) $($Pull.head.sha)"
+    if ($script:ChainPaths.ContainsKey($key)) { return @($script:ChainPaths[$key]) }
+    $all = @(); $count = 0
     for ($page = 1; $page -le 100; $page++) {
         $items = @(Invoke-ChainApi "repos/$GitHubRepo/pulls/$($Pull.number)/files?per_page=100&page=$page")
         foreach ($item in $items) {
             if ($item.filename -isnot [string] -or -not $item.filename) { throw 'CHAIN_FILES' }
-            $paths = @([string]$item.filename)
+            $all += [string]$item.filename
             if ($null -ne $item.PSObject.Properties['status'] -and $item.status -ceq 'renamed') {
                 if ($item.previous_filename -isnot [string] -or -not $item.previous_filename) { throw 'CHAIN_FILES' }
-                $paths += [string]$item.previous_filename
-            }
-            foreach ($path in $paths) {
-                if ($path -cnotmatch '^аудит/' -or $path -cmatch '^аудит/(адаптери|проби)/') { $code = $true }
+                $all += [string]$item.previous_filename
             }
             $count++
         }
         if ($items.Count -lt 100) {
             if (-not $count) { throw 'CHAIN_FILES' }
-            return $code
+            $script:ChainPaths = @{ $key = $all }
+            return $all
         }
     }
     throw 'CHAIN_PAGES'
+}
+
+function Test-ChainCodePull($Pull) {
+    <# Повний список файлів API відрізняє документацію від коду; неповна відповідь лишає повтор. #>
+    foreach ($path in @(Get-ChainPullPaths $Pull)) {
+        if ($path -cnotmatch '^аудит/' -or $path -cmatch '^аудит/(адаптери|проби)/') { return $true }
+    }
+    $false
+}
+
+function Get-ChainPullRisk($Pull, [string]$Main) {
+    <# Найвищий ризик Р0–Р3 із шапок нарядів, яких торкається PR (`аудит/наряди/*.md`; видалений у PR — з main, доданий —
+    з голови); -1 — нарядів нема чи шапка без ризику: перевіряємо, бо Р0 довести нічим. #>
+    $risk = -1; $head = [string]$Pull.head.sha
+    foreach ($path in @(Get-ChainPullPaths $Pull | Where-Object { $_ -cmatch '^аудит/наряди/[^/]+\.md$' })) {
+        $r = Invoke-Git @('cat-file','blob',"${Main}:$path") -AllowFail
+        if ($r.Code -ne 0) {
+            if ((Invoke-Git @('cat-file','-e',"$head^{commit}") -AllowFail).Code -ne 0) { [void](Invoke-Git @('fetch','-q','origin',$head) -AllowFail) }
+            $r = Invoke-Git @('cat-file','blob',"${head}:$path") -AllowFail
+        }
+        if ($r.Code -ne 0) { continue }
+        $first = ($r.Out -split "`n")[0]
+        if ($first -cmatch '\|\s*ризик\s+Р([0-3])(?![0-9])') { $risk = [Math]::Max($risk, [int]$Matches[1]) }
+    }
+    $risk
+}
+
+function Test-ChainEndAnnounced($Pull) {
+    <# Кінець роботи оголошено: PR не чернетка або смуга опублікувала «ГОТОВО <гілка> <ця голова>» (рядок станів обгортки). #>
+    if (-not [bool](Get-Prop $Pull 'draft')) { return $true }
+    $line = '^GEMINI ОБГОРТКА: ГОТОВО ' + [regex]::Escape("$($Pull.head.ref) $($Pull.head.sha)") + '(?: |$)'
+    foreach ($file in @(Get-ChildItem -LiteralPath (Join-Path $WorkDir 'state') -Filter '*.json' -File -ErrorAction SilentlyContinue)) {
+        $state = ConvertFrom-Json ([IO.File]::ReadAllText($file.FullName, $script:Utf8))
+        if ([string](Get-Prop $state 'line') -cmatch $line) { return $true }
+    }
+    $false
 }
 
 function Get-ChainBuildStamp([string]$Commit) {
@@ -75,6 +113,14 @@ function Complete-EngineDrafts {
         if (-not $r.Out.StartsWith($head + "`t")) { continue }
         $existing = @($pulls | Where-Object { $_.user.login -ceq 'mightyrochy' -and $_.head.ref -ceq $branch -and $_.head.repo.full_name -ceq $GitHubRepo })
         if ($existing.Count) { Remove-Item -LiteralPath $file.FullName; continue }
+        # Звіт перевірки без рядків дошки лишається гілкою: PR несе повний CI і злиття без користі (`ПЕРЕВІРКА.md`, «Під обгорткою»).
+        if (Test-ReviewBranch $branch) {
+            $rows = (Invoke-Git @('diff','--name-only',"refs/remotes/origin/main...$head",'--','аудит/дошка') -AllowFail)
+            if ($rows.Code -eq 0 -and -not $rows.Out.Trim()) {
+                Write-WrapperLog "ланцюг: звіт $branch без рядків дошки — гілка без PR-чернетки"
+                Remove-Item -LiteralPath $file.FullName; continue
+            }
+        }
         $message = (Invoke-Git @('show','-s','--format=%B',$head)).Out
         # Спецзгадка не має запускати легасі-рушій із тексту звіту.
         $message = [regex]::Replace($message, '(?i)@' + 'codex\b', 'Codex')
@@ -218,13 +264,71 @@ function Get-ReviewModels($Pull, $Config, [datetimeoffset]$Now = [datetimeoffset
     @($pick)
 }
 
-function Test-ChainReviewDone([string]$Number, [string]$Head) {
-    <# Опублікований звіт автоперевірки цієї голови — кінець; позначку іншого рушія вже не ставимо. #>
+function Get-ChainTaskResults {
+    <# Назва наряду береться з позначки смуги, а рядок — лише з прийнятого стану чи результату Claude після публікації. #>
+    $accepted = @()
     foreach ($file in @(Get-ChildItem -LiteralPath (Join-Path $WorkDir 'state') -Filter '*.json' -File -ErrorAction SilentlyContinue)) {
         $state = ConvertFrom-Json ([IO.File]::ReadAllText($file.FullName, $script:Utf8))
-        if ([string](Get-Prop $state 'line') -cmatch ('^GEMINI ОБГОРТКА: ГОТОВО (?:gemini|claude|codex)/автоперевірка-' + $Number + '-' + $Head + ' ')) { return $true }
+        $line = [string](Get-Prop $state 'line')
+        if ($line -cnotmatch '^GEMINI ОБГОРТКА: (ГОТОВО|ЗАБЛОКОВАНО) ') { continue }
+        $kind = $Matches[1]; $slug = [string](Get-Prop $state 'slug')
+        $accepted += [pscustomobject]@{ Line=$line; Utc=$file.CreationTimeUtc.ToString('o') }
+        # Старий стан публікатора: id зберігає зв'язок із перевіреним результатом Codex/agy у теці обміну.
+        if (-not $slug -and $file.BaseName -cmatch ('^(?:o-)?(' + ($script:IdPattern -replace '^\^|\$$','') + ')$')) {
+            $path = Join-Path $OutDir ($Matches[1] + '.json')
+            if (Test-Path -LiteralPath $path) {
+                $run = ConvertFrom-Json ([IO.File]::ReadAllText($path, $script:Utf8))
+                $candidate = [string](Get-Prop $run 'slug')
+                if ($candidate -cmatch $script:SlugPattern -and $line.StartsWith("GEMINI ОБГОРТКА: $kind gemini/$candidate ", [StringComparison]::Ordinal)) { $slug = $candidate }
+            }
+        }
+        if ($slug -cnotmatch $script:SlugPattern) { continue }
+        [pscustomobject]@{ Slug=$slug; Kind=$kind; Line=$line; Utc=$file.CreationTimeUtc.ToString('o') }
     }
-    $false
+    # Результат Claude вже має повну позначку, навіть коли виконавець скоротив назву гілки.
+    $runs = Join-Path (Join-Path (Split-Path -Parent $WorkDir) 'claude-run') 'runs'
+    foreach ($dir in @(Get-ChildItem -LiteralPath $runs -Directory -ErrorAction SilentlyContinue)) {
+        $path = Join-Path $dir.FullName 'result.json'
+        if (-not (Test-Path -LiteralPath $path)) { continue }
+        $run = ConvertFrom-Json ([IO.File]::ReadAllText($path, $script:Utf8))
+        $marker = [string](Get-Prop $run 'marker'); $code = [string](Get-Prop $run 'code')
+        if ($marker -cnotmatch '^gemini-queue/([^/]+)/[a-z0-9][a-z0-9.-]{1,63}/[1-9][0-9]*(?:/[^/]+)?$') { continue }
+        $slug = $Matches[1]
+        if ($slug -cnotmatch $script:SlugPattern -or $code -cnotmatch '^[A-Z][A-Z0-9_]{1,39}$' -or $code -ceq 'LINE_REJECTED') { continue }
+        if ($code -ceq 'QUOTA_WAIT') {
+            # Саме чекання не є кінцем; прийнятий ЗАБЛОКОВАНО за його позначкою — є.
+            foreach ($notice in $accepted) {
+                if ($notice.Line -cmatch ('^GEMINI ОБГОРТКА: ЗАБЛОКОВАНО claude/' + [regex]::Escape($slug) + ' QUOTA0_CLAUDE(?:_M[0-9]{1,6})?$')) {
+                    [pscustomobject]@{ Slug=$slug; Kind='ЗАБЛОКОВАНО'; Line=$notice.Line; Utc=$notice.Utc }
+                }
+            }
+            continue
+        }
+        if ($code -ceq 'DONE') {
+            $branch = [string](Get-Prop $run 'branch'); $head = [string](Get-Prop $run 'head')
+            if ($branch -cnotmatch '^claude/[^/ ]+$' -or $head -cnotmatch $script:ShaPattern) { continue }
+            $kind = 'ГОТОВО'; $line = "GEMINI ОБГОРТКА: ГОТОВО $branch $head"
+        } else { $kind = 'ЗАБЛОКОВАНО'; $line = "GEMINI ОБГОРТКА: ЗАБЛОКОВАНО claude/$slug $code" }
+        [pscustomobject]@{ Slug=$slug; Kind=$kind; Line=$line; Utc=(Get-Item -LiteralPath $path).LastWriteTimeUtc.ToString('o') }
+    }
+}
+
+function Get-ChainTaskCompletion([string]$Slug, [switch]$ReadyOnly, [switch]$Removed) {
+    <# Одне джерело кінця автоживого й автоперевірки; відсутність позначки рахується лише для опублікованого живого. #>
+    foreach ($result in @(Get-ChainTaskResults)) {
+        if ($result.Slug -ceq $Slug -and (-not $ReadyOnly -or $result.Kind -ceq 'ГОТОВО')) { return $result.Utc }
+    }
+    if ($Removed) {
+        $r = Invoke-Git @('ls-remote','--heads','origin',"refs/heads/gemini-queue/$Slug/*") -AllowFail
+        if ($r.Code -ne 0) { throw 'CHAIN_REMOTE' }
+        if (-not $r.Out.Trim()) { return [datetime]::UtcNow.ToString('o') }
+    }
+    ''
+}
+
+function Test-ChainReviewDone([string]$Number, [string]$Head) {
+    <# Опублікований звіт позначки цієї голови — кінець; гілку звіту може назвати виконавець. #>
+    [bool](Get-ChainTaskCompletion "автоперевірка-$Number-$Head" -ReadyOnly)
 }
 
 function Move-BlockedMarkers([string]$Slug, [string]$Model, [string]$Main, [datetimeoffset]$Now, [switch]$Gpu) {
@@ -263,33 +367,42 @@ function Get-ReviewDiff([string]$Head, [string]$Main) {
     Get-Sha256Hex (Invoke-Git @('-c','core.quotePath=true','diff','--binary','--full-index','--no-ext-diff','--no-textconv','--no-renames',$base,$Head,'--')).Out
 }
 
+function Get-ReviewPatchId([string]$Head, [string]$Main) {
+    <# `git patch-id --stable` диффу голови проти merge-base: той самий вміст після rebase чи злиття main має той самий id. #>
+    if ((Invoke-Git @('cat-file','-e',"$Head^{commit}") -AllowFail).Code -ne 0) {
+        [void](Invoke-Git @('fetch','-q','origin',$Head))
+    }
+    $base = (Invoke-Git @('merge-base',$Main,$Head)).Out.Trim()
+    $diff = (Invoke-Git @('-c','core.quotePath=true','diff','--binary','--full-index','--no-ext-diff','--no-textconv','--no-renames',$base,$Head,'--')).Out
+    if (-not $diff.Trim()) { return '' }
+    $r = Invoke-Native $GitExe @('patch-id','--stable') $WorkDir 2 $diff
+    if ($r.Code -ne 0) { throw 'CHAIN_PATCHID' }
+    ($r.Out.Trim() -split '\s+')[0]
+}
+
 function Test-ReviewedMerge($Pull, $Reviewed, [string]$Main) {
     <# Пропускає лише нащадка перевіреної голови з незмінним diff і самими merge у першій лінії. #>
     $n = [string]$Pull.number; $head = [string]$Pull.head.sha
     if (-not $Reviewed.ContainsKey($n)) { return $false }
     $old = $Reviewed[$n]
-    $verdict = $false
-    foreach ($file in @(Get-ChildItem -LiteralPath (Join-Path $WorkDir 'state') -Filter '*.json' -File -ErrorAction SilentlyContinue)) {
-        $state = ConvertFrom-Json ([IO.File]::ReadAllText($file.FullName, $script:Utf8))
-        if ([string](Get-Prop $state 'line') -cmatch ('^GEMINI ОБГОРТКА: ГОТОВО (?:gemini|claude|codex)/автоперевірка-' + $n + '-' + [string]$old.head + ' ')) { $verdict = $true; break }
-    }
+    $verdict = Test-ChainReviewDone $n ([string]$old.head)
     # Голову, віддану хмарному Claude, перевіряє диспетчер: чисте злиття main нового рядка не породжує.
     if (-not $verdict -and (Test-Path -LiteralPath (Get-SeenPath "cloud-review $n $($old.head)"))) { $verdict = $true }
     if (-not $verdict) { return $false }
+    # Той самий patch-id, що вже перевірений, — без нової перевірки, зокрема після rebase і злиття main у гілку.
+    $oldId = $(if ($old -is [hashtable]) { [string]$old['pid'] } else { [string](Get-Prop $old 'pid') })
+    if ($oldId) { return (Get-ReviewPatchId $head $Main) -ceq $oldId }
+    # Запис старого формату (без patch-id): незмінний diff нащадка перевіреної голови.
     if ((Invoke-Git @('merge-base','--is-ancestor',[string]$old.head,$head) -AllowFail).Code -ne 0) { return $false }
     if ((Invoke-Git @('rev-list','--first-parent','--no-merges',"$($old.head)..$head")).Out.Trim()) { return $false }
     (Get-ReviewDiff $head $Main) -ceq [string]$old.diff
 }
 
 function Get-LiveCompletion($Active) {
-    <# Кінець — прийнятий опублікований звіт, а не взяття позначки чи вихід процесу. #>
-    foreach ($file in @(Get-ChildItem -LiteralPath (Join-Path $WorkDir 'state') -Filter '*.json' -File -ErrorAction SilentlyContinue)) {
-        $state = ConvertFrom-Json ([IO.File]::ReadAllText($file.FullName, $script:Utf8))
-        if ([string](Get-Prop $state 'line') -cmatch ('^GEMINI ОБГОРТКА: (ГОТОВО|ЗАБЛОКОВАНО) (?:gemini|claude)/автоживий-' + [regex]::Escape([string]$Active.stamp) + ' ')) {
-            return $file.CreationTimeUtc.ToString('o')
-        }
-    }
-    ''
+    <# Кінець активного наряду — за позначкою, незалежно від рушія й назви гілки звіту. #>
+    $published = Get-Prop $Active 'published'
+    if ($null -ne $published -and -not $published) { return '' }
+    Get-ChainTaskCompletion ("автоживий-" + [string]$Active.stamp) -Removed
 }
 
 function Get-LatestLivePending($Pending) {
@@ -405,6 +518,111 @@ function Request-CloudReview([string]$Number, [string]$Head) {
     Write-WrapperLog "ланцюг: #$Number $Head — перевірка хмарним Claude, рядок диспетчерові"
 }
 
+function Get-ChainBusySlots([string]$Dir, [string]$Pattern, [string]$Lane='невідома') {
+    <# Читає зайняті слоти незалежно; недоступний слот журналюється, решта лишається відомою.
+
+    Прямий перелік відрізняє відсутню теку від відмови доступу, яку Test-Path може приховати.
+    Лише sharing violation замка доводить зайнятість; зниклий JSON/замок означає кінець worker. #>
+    $slots = Join-Path $Dir 'slots'
+    try { $paths = [IO.Directory]::GetFiles($slots, '*.json') }
+    catch {
+        if ($_.Exception.GetBaseException() -is [IO.DirectoryNotFoundException]) { return }
+        Write-WrapperLog "стан смуги $Lane недоступний: $($_.Exception.GetType().Name): $($_.Exception.Message)"
+        return
+    }
+    foreach ($path in $paths) {
+        $file = [IO.FileInfo]$path
+        if ($file.BaseName -cnotmatch $Pattern) { continue }
+        $lockPath = [IO.Path]::ChangeExtension($file.FullName, '.lock')
+        try {
+            try {
+                $lock = [IO.File]::Open($lockPath, 'Open', 'ReadWrite', 'None')
+                $lock.Dispose(); continue
+            } catch [IO.IOException] {
+                # FileShare.None worker дає ERROR_SHARING_VIOLATION (32), не довільну IOException.
+                if (($_.Exception.HResult -band 0xffff) -ne 32) { throw }
+            }
+            $slot = ConvertFrom-Json ([IO.File]::ReadAllText($file.FullName, $script:Utf8)) -ErrorAction Stop
+            $slug = [string](Get-Prop $slot 'slug'); $marker = [string](Get-Prop $slot 'marker')
+            if ($slug -cnotmatch $script:SlugPattern -or $slug.Contains('..') -or $slug.EndsWith('.lock') -or
+                $marker -cnotmatch ('^gemini-queue/' + [regex]::Escape($slug) + '/[a-z0-9][a-z0-9.-]{1,63}/[1-9][0-9]*(?:/[^/]+)?$')) { throw 'CHAIN_LANE_STATE' }
+            $slot
+        } catch {
+            $cause = $_.Exception.GetBaseException()
+            if ($cause -is [IO.FileNotFoundException] -or $cause -is [IO.DirectoryNotFoundException]) { continue }
+            Write-WrapperLog "стан смуги $Lane недоступний: $($cause.GetType().Name): $($cause.Message)"
+        }
+    }
+}
+
+function Read-ChainOptionalFile([string]$Path) {
+    <# Відсутній файл стану допускається; відмова доступу лишається помилкою слота. #>
+    try { [IO.File]::ReadAllText($Path, $script:Utf8) }
+    catch {
+        $cause = $_.Exception.GetBaseException()
+        if ($cause -isnot [IO.FileNotFoundException] -and $cause -isnot [IO.DirectoryNotFoundException]) { throw }
+        ''
+    }
+}
+
+function Get-ChainBranchWork([string]$Branch) {
+    <# Пов'язує гілку з активною позначкою; помилка чужого стану лишає звичайну перевірку цієї смуги.
+
+    Кожний слот читається окремо: відмова Claude не зупиняє Codex/agy, відмова Codex не скасовує agy.
+    Gemini/Codex пишуть gemini/<slug>; Claude також має збережену гілку та HEAD копії. #>
+    $lanes = @()
+    if ($Branch.StartsWith('gemini/')) {
+        $lanes = @(@{name='codex';dir=$GeminiRunsDir}, @{name='agy';dir=$GeminiRunsDir})
+    } elseif ($Branch.StartsWith('claude/')) {
+        $lanes = @(@{name='claude';dir=(Join-Path (Split-Path -Parent $WorkDir) 'claude-run')})
+    }
+    foreach ($lane in $lanes) {
+        foreach ($slot in @(Get-ChainBusySlots $lane.dir ('^' + $lane.name + '-[1-9][0-9]*$') $lane.name)) {
+            try {
+                $slug = [string]$slot.slug; $marker = [string]$slot.marker
+                if ($lane.name -cne 'claude') {
+                    if ($Branch -ceq "gemini/$slug") { return $marker }
+                    continue
+                }
+                $branches = @("claude/$slug")
+                $saved = Join-Path (Join-Path $lane.dir 'state') ('branch-' + (Get-Sha256Hex $slug) + '.txt')
+                $branches += ([string](Read-ChainOptionalFile $saved)).Trim()
+                $copy = [string](Get-Prop $slot 'copy')
+                if ($copy) {
+                    $gitDir = Join-Path (Join-Path $copy 'repo') '.git'
+                    $attributes = $null
+                    try { $attributes = [IO.File]::GetAttributes($gitDir) }
+                    catch {
+                        $cause = $_.Exception.GetBaseException()
+                        if ($cause -isnot [IO.FileNotFoundException] -and $cause -isnot [IO.DirectoryNotFoundException]) { throw }
+                    }
+                    if ($null -ne $attributes -and -not ($attributes -band [IO.FileAttributes]::Directory)) {
+                        $link = ([string](Read-ChainOptionalFile $gitDir)).Trim()
+                        if ($link -cmatch '^gitdir: (.+)$') {
+                            $gitDir = $Matches[1]
+                            if (-not [IO.Path]::IsPathRooted($gitDir)) { $gitDir = Join-Path (Join-Path $copy 'repo') $gitDir }
+                        }
+                    }
+                    # GetAttributes не перевіряє ListDirectory; HEAD може мати явний дозвіл.
+                    # Це стосується також теки, на яку вказує gitdir файла worktree.
+                    try { $null = [IO.Directory]::GetFiles($gitDir, 'HEAD') }
+                    catch {
+                        $cause = $_.Exception.GetBaseException()
+                        if ($cause -isnot [IO.FileNotFoundException] -and $cause -isnot [IO.DirectoryNotFoundException]) { throw }
+                    }
+                    $headPath = Join-Path $gitDir 'HEAD'
+                    $ref = ([string](Read-ChainOptionalFile $headPath)).Trim()
+                    if ($ref -cmatch '^ref: refs/heads/(claude/[^/]+)$') { $branches += $Matches[1] }
+                }
+                if ($branches -ccontains $Branch) { return $marker }
+            } catch {
+                Write-WrapperLog "стан смуги $($lane.name) недоступний: $($_.Exception.GetType().Name): $($_.Exception.Message)"
+            }
+        }
+    }
+    ''
+}
+
 function Invoke-WrapperChain {
     <# PR коду -> незалежна перевірка; новий штамп збірки -> один GPU-прогін на коміті збірки. #>
     if ($DryRun) { return }
@@ -501,12 +719,15 @@ function Invoke-WrapperChain {
             $eligible = Test-RecentReviewHead $pr $heads $installed $now $hours
             Write-FileAtomic $statePath (([ordered]@{ main=$main; reviewed=$reviewed; live_active=$liveActive; live_since=$liveSince; live_stamps=@($liveStamps.Keys); live_pending=@($livePending); reviews=@($seen.Keys); installed_utc=$installed.ToString('o'); heads=$heads }) | ConvertTo-Json -Compress -Depth 5)
             if (-not $eligible) { continue }
+            $work = Get-ChainBranchWork ([string]$pr.head.ref)
+            if ($work) { Write-WrapperLog "ланцюг: #$n $head — смуга ще пише ($work), перевірка після кінця"; continue }
+            Write-WrapperLog "ланцюг: #$n $head — активної смуги нема, звичайна перевірка голови"
             if (-not $reviewed.ContainsKey($n)) {
                 foreach ($key in @($seen.Keys | Where-Object { $_ -cmatch ('^' + $n + ' [0-9a-f]{40} ') })) {
                     $oldHead = ($key -split ' ')[1]
                     if ((Invoke-Git @('cat-file','-e',"$oldHead^{commit}") -AllowFail).Code -eq 0 -and
                         (Invoke-Git @('merge-base','--is-ancestor',$oldHead,$head) -AllowFail).Code -eq 0) {
-                        $reviewed[$n] = @{head=$oldHead;diff=(Get-ReviewDiff $oldHead $main)}
+                        $reviewed[$n] = @{head=$oldHead;diff=(Get-ReviewDiff $oldHead $main);pid=(Get-ReviewPatchId $oldHead $main)}
                         if (Test-ReviewedMerge $pr $reviewed $main) { break }
                     }
                 }
@@ -515,9 +736,12 @@ function Invoke-WrapperChain {
             $models = @(Get-ReviewModels $pr $config $now)
             if (-not @($models | Where-Object { -not $seen.ContainsKey("$n $head $_") }).Count) { continue }
             if (-not (Test-ChainCodePull $pr)) { continue }
+            # Перевірка лише на голову, наряд якої оголосив кінець, і лише для ризику Р1–Р3: проміжна голова й Р0 — без позначки.
+            if (-not (Test-ChainEndAnnounced $pr)) { Write-WrapperLog "ланцюг: #$n $head — кінець роботи не оголошено (чернетка без ГОТОВО), перевірки нема"; continue }
+            if ((Get-ChainPullRisk $pr $main) -eq 0) { Write-WrapperLog "ланцюг: #$n $head — ризик Р0, перевірки нема"; continue }
             # Перевірку, що вже дала звіт, інший рушій не повторює.
             if (Test-ChainReviewDone $n $head) { continue }
-            $diff = Get-ReviewDiff $head $main
+            $diff = Get-ReviewDiff $head $main; $patchId = Get-ReviewPatchId $head $main
             foreach ($model in $models) {
                 $key = "$n $head $model"
                 if ($seen.ContainsKey($key)) { continue }
@@ -527,7 +751,7 @@ function Invoke-WrapperChain {
                 elseif ($marked) { [void](Move-BlockedMarkers "автоперевірка-$n-$head" $model $main $now) }
                 else { Add-ChainMarker "автоперевірка-$n-$head" $model $main }
                 $seen[$key] = $true
-                $reviewed[$n] = @{head=$head;diff=$diff}
+                $reviewed[$n] = @{head=$head;diff=$diff;pid=$patchId}
                 Write-FileAtomic $statePath (([ordered]@{ main=$main; reviewed=$reviewed; live_active=$liveActive; live_since=$liveSince; live_stamps=@($liveStamps.Keys); live_pending=@($livePending); reviews=@($seen.Keys); installed_utc=$installed.ToString('o'); heads=$heads }) | ConvertTo-Json -Compress -Depth 5)
             }
         }

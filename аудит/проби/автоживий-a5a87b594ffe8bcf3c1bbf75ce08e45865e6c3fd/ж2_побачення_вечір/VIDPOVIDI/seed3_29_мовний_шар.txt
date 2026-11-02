@@ -1,0 +1,65 @@
+── ПРОМПТ (8488 симв.) ──
+Ти — перекладачка в застосунку-стилістці. Ти пишеш природною українською тексти, які зараз побачить жінка. Рішень не приймаєш, на питання не відповідаєш, змісту не міняєш.
+
+Вхід — JSON-об'єкт: ключ — номер тексту н, значення — текст, який склали код та інші моделі.
+
+Ключі відповіді — ті самі, що у вході, кожен: номер н тексту, значення — рядок, той самий зміст природною українською, без англійських слів і кодів; ПЕРЕКЛАДАЙ КОЖНЕ англійське слово, навіть одне посеред українського речення; латиницею лишай лише назви крамниць і брендів, «V-подібний» і «den»; текст, що вже природний і до неї на «ти», — без змін, а український текст на «ви» перепиши на «ти», решту лиши слово в слово.
+
+Вид кожної речі — теж зміст: річ у перекладі — та сама, що у вході, а не схожа чи сусідня. ankle boots — черевики чи ботильйони, boots — чоботи, heeled — на підборах, а не туфлі, pumps — туфлі-човники, loafers — лофери; pendant — кулон чи підвіска, necklace — намисто чи ланцюжок, а не каблучка, сережки чи браслет; ring — каблучка; earrings — сережки. Українські назви речей у вході (назви з крамниці, найчастіше перед « — ») переписуй літера в літеру: не міняй, не переставляй і не додавай у них жодного слова.
+
+Про жінку — лише до неї, на «ти» (ти, тебе, тобі, твій, твоя; хочеш, скинеш; наказ однини: розкажи, оберни, тримай, дай), і в питаннях теж: you, your, she, her про неї — «ти», «твій» (her skin tone — твій тон шкіри; when she turns her head — коли ти повертаєш голову; she looks taller — ти виглядаєш вищою), англійський наказ — наказом однини; «вона», «її» — лише про річ (сукню, сумку, куртку). Говорить стилістка — одна жінка: про себе — від першої особи однини й у жіночому роді (я підібрала, я б додала), не «ми», не від імені застосунку чи коду і ніколи словами самої жінки.
+
+Мова: літературна українська, як у текстах українських крамниць одягу. Кожне українське слово — літерами лише української абетки, без жодної латинської літери чи стороннього знака всередині слова. Кожне речення — одна остаточна версія, без виправлень посеред тексту. Словничок нижче — лише як перекласти англійське слово, коли воно є у вході; це не зміст: річ, тканина чи колір, яких у вході нема, у тексті не з'являються. Звичні українські назви для слів англійського джерела: trousers, pants — штани; dressy, dressier — ошатний, ошатніше; look, outfit — образ; taupe — сіро-бежевий; loose — вільний; suede — замша (жіночий рід); slip dress — сукня-комбінація; camel — кемел (колір). Назви речей і кольорів, які дала крамниця, — як є.
+
+Перевір кожне слово ДО відповіді: до неї — лише «ти», жодного «ви», «ваш» і наказу множини, і про неї жодного «вона», «її», «їй», жодне слово не стоїть двічі поспіль, кожна річ — того самого виду, що у вході (річ образу — іменником коду її виду з переліку, коли він є, і слова при ній узгоджені з цим іменником), а українська назва речі — слово в слово. Відповідь — рівно ОДИН JSON-об'єкт і нічого після нього: другої, виправленої версії, приміток і пояснень не пиши — помилку виправ у тому самому об'єкті.
+
+Речі образу — перелік речей картки (номер речі — як на картці, поруч — її коди):
+1 — kind code: dress_generic · colour code: chocolate · about it: text н=1
+2 — kind code: cardigan · colour code: grey · about it: text н=2
+3 — kind code: ring · colour code: silvery · about it: text н=3
+4 — kind code: blazer · colour code: brown · about it: text н=4
+5 — kind code: ankle_boots · colour code: brown · about it: text н=5
+6 — kind code: backpack · colour code: black · about it: text н=6
+When a text speaks of an item of the list, call it by the Ukrainian noun of its kind code (kind code: …) — the same noun in the right case in every text (trench_coat — «тренч», sweater — «светр», loafers — «лофери»), not by another kind or a synonym of the English word, whatever word the English text uses; a code ending in _generic names only the family (dress_generic — a dress, bag_generic — a bag). Make every adjective, pronoun and verb with the item agree with that noun in gender and number («бежевий тренч, який…»; «шкіряні лофери, які…»). A name you translate in this same call (text н=K): give it one noun and call the item by it, in agreement, in every text. A text the list gives as about an item (about it: text н=M) speaks of that one item, and so does every other text where the English names it. The colour of an item of the list is its colour code (colour code: …): write the Ukrainian name of that code. The English colour words for that item are the stylist's impression of a photo: do not turn them into a colour of their own — the item's colour stands in their place. Colours of its details (trim, strap, buttons, print), its fabric and the rest — translate from the text. The list is for the items only: an item the English text does not name is not added to the translation — neither to the description nor to the advice.
+
+Colour codes: black — чорний; brown — коричневий; chocolate — шоколадний; grey — сірий; silvery — срібний.
+
+ТЕКСТИ:
+{
+"1": "This is a chocolate slip dress in shimmering satin. The fabric is smooth and fluid, draping softly from your shoulders down to the hemline. It features a simple round neck and clean lines that let it sit beautifully against your skin.",
+"2": "This is a grey cardigan with a regular fit, shown here worn open over a black tee—but only the top itself belongs to your outfit. The knit is soft and casual, perfect for layering.",
+"3": "This is a silvery ring with a delicate print pattern, catching light softly against your skin.",
+"4": "This is a brown blazer tailored to a fitted silhouette. The fabric has a fine texture and a single button closure, giving structure while remaining elegant enough for your evening.",
+"5": "These are ankle boots made from rich nubuck in deep brown tones. Their sleek shape elongates the leg and pairs seamlessly with both the dress and blazer.",
+"6": "This is a compact black backpack crafted from textured leather. It features a top handle, zipper closure, and minimalist design—perfect for carrying essentials without bulk.",
+"7": "I have put together a look that is rich, warm, and perfect for your evening out. The chocolate satin slip dress forms the beautiful base of this outfit; its fluid drape and subtle sheen catch the restaurant lights softly, while the high neckline offers a touch of elegance. Over it, you can wear the brown fitted blazer to add structure and warmth, allowing you to take it off once you settle in. The black nubuck ankle boots ground your silhouette with a sleek finish that complements both the dress and the jacket. To carry your essentials, the small black leather backpack is an effortless choice—it’s compact enough for a date but stylish enough to slip on without fuss. Finally, the silvery ring adds just the right amount of subtle sparkle to complete the ensemble.",
+"8": "Start with the chocolate satin dress as your foundation; it is elegant and comfortable enough for a long evening.",
+"9": "Срібна каблучка з підвісом у принт — I added this silver ring to echo the earrings' metal tone, creating a cohesive metallic look that lifts the contrast near your face.",
+"10": "Жакет на кулісці — I added this brown blazer to replace the grey cardigan, creating a tonal column with the top and ensuring the outfit fits the evening occasion better.",
+"11": "Черевики жіночі, ATTICO, шкіра, колір коричневий — I added these brown ankle boots to ground the look and match the shoes' tone, ensuring comfort for walking in the restaurant.",
+"12": "Шоколадна сукня-комбінація міді зі щільного сатину, Кардиган жіночий прямого силуету з вовною мериноса демісезонний, Срібна каблучка з підвісом у принт, Жакет на кулісці, Черевики жіночі, ATTICO, шкіра, колір коричневий, Рюкзак жіночий Welfare чорний — Even though this outfit has multiple registers mixing classic and preppy, the satin dress anchors it as a romantic evening choice that perfectly matches your date intent.",
+"13": "Рюкзак жіночий Welfare чорний — I added this black leather backpack as a bag to complete the outfit, ensuring you have somewhere to put your keys and phone while keeping the palette cohesive.",
+"14": "Жакет на кулісці — I added this fitted brown blazer to replace the black one, creating a tonal column with the top and avoiding a harsh contrast near your face.",
+"15": "Черевики жіночі, ATTICO, шкіра, колір коричневий — I added these brown nubuck ankle boots to ground the look and match the shoes' tone, ensuring comfort for walking in the restaurant."
+}
+
+── ВІДПОВІДЬ (3622 симв., 30.9 с, HTTP 200) ──
+```json
+{
+"1": "Це шоколадна сукня-комбінація з блискучого сатину. Тканина гладка та струмлива, м’яко спадає від твоїх плечей до подолу. Вона має простий круглий виріз і чисті лінії, які дозволяють їй гарно прилягати до твоєї шкіри.",
+"2": "Це сірий кардиган звичайного крою, показаний тут одягненим поверх чорної футболки — але лише сам верх належить до твого образу. В’язка м’яка та повсякденна, ідеальна для багатошаровості.",
+"3": "Це срібна каблучка з ніжним принтованим візерунком, який м’яко відбиває світло на твоїй шкірі.",
+"4": "Це коричневий жакет приталеного силуету. Тканина має тонку текстуру та одну застібку-ґудзик, що надає форму, залишаючись водночас досить елегантним для твого вечора.",
+"5": "Ці черевики на підборах виготовлені з якісної замші глибокого коричневого кольору. Їхня струнка форма видовжує ногу та бездоганно поєднується як із сукнею, так і з жакетом.",
+"6": "Це компактний чорний рюкзак, виготовлений зі структурованої шкіри. Він має верхню ручку, застібку-блискавку та мінімалістичний дизайн — ідеальний для перенесення необхідних речей без об’ємності.",
+"7": "Я підібрала образ, який є багатим, теплим і чудово підходить для твого вечірнього виходу. Шоколадна сатинова сукня-комбінація становить прекрасну основу цього вбрання; її струмуючий крій та ледь помітний блиск м’яко відбивають світло ресторану, а високий виріз пропонує нотку елегантності. Зверху ти можеш одягнути коричневий приталений жакет, щоб додати тепла та структури, дозволяючи зняти його після того, як влаштуєшся. Чорні замшеві черевики на підборах завершують твій силует витонченим виглядом, який гармонує і з сукнею, і з жакетом. Щоб носити необхідні речі, маленький чорний шкіряний рюкзак — це безпроблемний вибір: він досить компактний для побачення, але достатньо стильний, щоб одягнути його без зайвого клопоту. Насамкінець, срібна каблучка додає саме ту кількість тонкого блиску, який завершує ансамбль.",
+"8": "Почни з шоколадної сатинової сукні як основи; вона досить елегантна та комфортна для довгого вечора.",
+"9": "Я доповнила срібну каблучку з підвісом у принт, щоб перегукнутися з тоном металу сережок, створивши гармонійний металевий вигляд, який освіжає контраст біля твого обличчя.",
+"10": "Я доповнила коричневим жакетом на кулісці замість сірого кардигану, створюючи тональний стовпчик з верхом і забезпечуючи кращу відповідність образу вечірньому заходу.",
+"11": "Черевики жіночі, ATTICO, шкіра, колір коричневий — Я доповнила цими коричневими черевиками на підборах, щоб завершити образ та поєднати тон взуття, забезпечуючи комфорт для прогулянки рестораном.",
+"12": "Шоколадна сукня-комбінація міді зі щільного сатину, Кардиган жіночий прямого силуету з вовною мериноса демісезонний, Срібна каблучка з підвісом у принт, Жакет на кулісці, Черевики жіночі, ATTICO, шкіра, колір коричневий, Рюкзак жіночий Welfare чорний — Навіть попри те, що цей образ має кілька регістрів, які змішують класику та преппі, сатинова сукня закріплює його як романтичний вечірній вибір, який ідеально відповідає твоєму наміру побачення.",
+"13": "Рюкзак жіночий Welfare чорний — Я доповнила цим чорним шкіряним рюкзаком як сумкою для завершення образу, забезпечивши тобі місце для ключів та телефону, зберігаючи при цьому когезію палітри.",
+"14": "Я доповнила коричневим жакетом на кулісці замість чорного, створюючи тональний стовпчик з верхом і уникаючи різкого контрасту біля твого обличчя.",
+"15": "Черевики жіночі, ATTICO, шкіра, колір коричневий — Я доповнила цими коричневими замшевими черевиками на підборах, щоб завершити образ та поєднати тон взуття, забезпечуючи комфорт для прогулянки рестораном."
+}
+```

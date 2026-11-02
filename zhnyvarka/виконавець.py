@@ -31,9 +31,9 @@ import argparse, asyncio, csv, datetime, hashlib, json, os, re, sys, time, threa
 from urllib.parse import urlparse, urljoin
 from pathlib import Path
 from журнал_проходу import ЖурналПроходу, відбиток_рецепта
-from json_прохід import позначити, відновити, сторінка, МЕЖА_СТОРІНОК
+from json_прохід import позначити, відновити, сторінка, МЕЖА_СТОРІНОК, прочитати_json, записати as записати_json
 from журнал_карток import прочитати
-from журнал_таблиці import дописати
+from журнал_таблиці import дописати, створити
 from журнал_проходу import ЗАВЕРШЕНІ
 
 ВЕРСІЯ = "виконавець v1 · 2026-09-07"
@@ -413,8 +413,7 @@ class Виконавець:
         self.проходи = {}
         self.замок = threading.Lock()
         self.зведення = self.корінь / "зведення_жнив.tsv"
-        if not self.зведення.exists() or not self.зведення.stat().st_size:
-            open(self.зведення, "w", encoding="utf-8").write("\t".join(ШАПКА_ЗВЕДЕННЯ) + "\n")
+        створити(self.зведення, ШАПКА_ЗВЕДЕННЯ)
 
     # ── журнал ──
     def _журнал(self, домен):
@@ -428,15 +427,7 @@ class Виконавець:
     def _стан(self, домен):
         """Читає курсор пошуку; обірваний JSON діагностує й повторює пошук від початку."""
         ш = str(self.корінь / "сирі" / f"{домен}.стан.json")
-        if os.path.exists(ш):
-            try:
-                стан = json.loads(Path(ш).read_bytes())
-                if not isinstance(стан, dict):
-                    raise ValueError("STATE_INVALID")
-                return ш, стан
-            except ValueError:
-                лог(f"JOURNAL_CORRUPT: {ш}")
-        return ш, {"розділи": {}, "sitemap": [], "помилки": []}
+        return ш, прочитати_json(ш) or {"розділи": {}, "sitemap": [], "помилки": []}
 
     def _пиши(self, ш, зап):
         """Дописує цілий запис окремим рядком, навіть після обірваного хвоста."""
@@ -591,7 +582,8 @@ class Виконавець:
 
     async def _json_сімейство(self, контекст, р, л, ш, взято, корінь):
         """Продовжує збережені JSON-сторінки; кінець доводить порожня порція з HTTP 200."""
-        підпис = hashlib.sha256(json.dumps(р, sort_keys=True).encode()).hexdigest()
+        підпис = відбиток_рецепта(р)
+        взято = {з["url"]: з.get("стан") for з in прочитати(ш)[0] if з.get("рецепт") == підпис}
         збережений = відновити(self.корінь, р["домен"], підпис, getattr(self.a, "оновити_перелік", False))
         n = збережений.get("сторінка", 1)
         шаблон = р["пошук"].replace("per_page=100", "per_page=50")
@@ -638,8 +630,13 @@ class Виконавець:
                 л["відкрито"] += 1
                 стан = завершити(к)
                 л[стан] = л.get(стан, 0) + 1; л["бали"].append(к["бал"])
+                import жниварка as ж
+                факти = (ж.факти_shopify(p, корінь) if р["сімейство"] == "shopify" else
+                         ж.факти_woo(p, корінь, ж.woo_рецепт(р["домен"])))
+                записи = [ж.канонічний_запис(ф, {"домен": р["домен"]}, р["сімейство"]) for ф in факти]
                 self._пиши(ш, {"url": к["url"], "хеш": hashlib.md5(json.dumps(p, sort_keys=True).encode()).hexdigest()[:12],
-                               "дата": datetime.date.today().isoformat(), "стан": стан, "бал": к["бал"], "поля_є": к["поля_є"], "картка": к})
+                               "дата": datetime.date.today().isoformat(), "стан": стан, "бал": к["бал"], "поля_є": к["поля_є"], "картка": к,
+                               "рецепт": підпис, "записи": записи})
                 if л["відкрито"] >= self.a.стеля:
                     позначити(self.корінь, р["домен"], False, n, префікси[0], підпис)
                     л["нотатка"] += f"стеля {self.a.стеля}; "; return
@@ -662,7 +659,7 @@ class Виконавець:
             л["нотатка"] += "sitemap: " + str(e)[:80] + "; "
         рх = re.compile(р["річ_regex"]) if р.get("річ_regex") else None
         адреси = [a for a in dict.fromkeys(адреси) if not _СЛУЖБОВЕ.search(a) and (not рх or рх.search(urlparse(a).path))]
-        json.dump(стан, open(str(self.корінь / "сирі" / f"{р['домен']}.стан.json"), "w", encoding="utf-8"), ensure_ascii=False, indent=1)
+        записати_json(self.корінь / "сирі" / f"{р['домен']}.стан.json", стан)
         return адреси
 
     async def _sitemap_адреси(self, контекст, р, л, корінь):
@@ -765,7 +762,7 @@ class Виконавець:
         finally:
             await сторінка.close()
             стан["розділи_знайдено"] = розділи
-            json.dump(стан, open(ш_стан, "w", encoding="utf-8"), ensure_ascii=False, indent=1)
+            записати_json(Path(ш_стан), стан)
         return list(dict.fromkeys(адреси))
 
     async def _картка(self, сторінка, р, л, ш, url):
@@ -793,12 +790,21 @@ class Виконавець:
                 self._пиши(ш, зап); return
             dom = await сторінка.evaluate(ЗЛІПОК_DOM)
             к = картка_з_dom(сторінка.url, html, dom)
+            import жниварка as ж
+            селектори = {к: р[кол] for к, кол in (("опис", "селектор_опису"), ("склад", "селектор_складу"),
+                                                  ("характеристик", "селектор_характеристик")) if р.get(кол)}
+            ф = ж.факти_з_картки(html, сторінка.url, селектори)
+            ф["url"] = сторінка.url
+            if ф.get("dom_помилка"):
+                raise ValueError("PRODUCT_DOM_INVALID")
             # це взагалі картка? назва + (ціна або ld Product або og product)
-            if not (к["назва"] and (к["ціна"] or к["ld"] or (к["og"].get("og:type") or "").startswith("product"))):
+            if not ф.get("є_товар"):
                 зап["стан"] = "не_картка"; л["не_картка"] += 1; self._пиши(ш, зап); return
             стан = завершити(к)
             л[стан] = л.get(стан, 0) + 1; л["бали"].append(к["бал"])
-            зап.update({"хеш": hashlib.md5(html.encode("utf-8", "replace")).hexdigest()[:12], "стан": стан, "бал": к["бал"], "поля_є": к["поля_є"], "картка": к})
+            з = ж.канонічний_запис(ф, {"домен": р["домен"]}, "картка")
+            зап.update({"хеш": hashlib.md5(html.encode("utf-8", "replace")).hexdigest()[:12], "стан": стан, "бал": к["бал"], "поля_є": к["поля_є"], "картка": к,
+                        "записи": [з], "рецепт": відбиток_рецепта(р)})
             self._пиши(ш, зап)
         except Exception as e:  # noqa
             зап["стан"], зап["помилка"] = "збій", str(e).splitlines()[0][:160]; л["збій"] += 1
@@ -843,9 +849,12 @@ class Виконавець:
 
 
 def читати_рецепти(шлях):
+    """Читає рецепти з тими самими стартами для виконавця й рішення про повтор обходу."""
+    from розвідка import МАГАЗИНИ
+    старти = dict(МАГАЗИНИ)
     з = list(csv.DictReader(open(шлях, encoding="utf-8"), delimiter="\t"))
     for р in з:
-        р["старт"] = р.get("старт") or ""
+        р["старт"] = р.get("старт") or старти.get(р["домен"], "https://" + р["домен"] + "/")
     return з
 
 

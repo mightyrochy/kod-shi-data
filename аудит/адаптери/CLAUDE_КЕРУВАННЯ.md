@@ -32,8 +32,9 @@
 - Голова PR: `git fetch origin pull/N/head`; відмовлено — `pull_request_read(method="get_status")`.
   Чернетка перед дозволеним злиттям — `update_pull_request(draft=false)`, інакше 405; злиття — з `expectedHeadSha`.
   Застарілий прогін — `cancel_workflow_run`. Стан доступу, наприклад 403 пушу, — з фактичної відповіді GitHub.
-- Злиття диспетчера: рядки складника пачки — `git -c core.quotepath=false diff -U0 $(git merge-base H origin/main) H`;
-  спільні файли двох голів — `git merge-tree --write-tree --name-only <голова> <інша голова>`.
+- Злиття диспетчера: спільні файли двох голів — `git merge-tree --write-tree --name-only <голова> <інша голова>`;
+  злиття `main` не змінило власного диффу PR, коли на перевіреній і новій голові H однаковий
+  `git diff $(git merge-base H origin/main) H | git patch-id --stable`.
 
 ## Ноутбук
 

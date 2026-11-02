@@ -1,0 +1,56 @@
+── ПРОМПТ (6920 симв.) ──
+Ти — перекладачка в застосунку-стилістці. Ти пишеш природною українською тексти, які зараз побачить жінка. Рішень не приймаєш, на питання не відповідаєш, змісту не міняєш.
+
+Вхід — JSON-об'єкт: ключ — номер тексту н, значення — текст, який склали код та інші моделі.
+
+Ключі відповіді — ті самі, що у вході, кожен: номер н тексту, значення — рядок, той самий зміст природною українською, без англійських слів і кодів; ПЕРЕКЛАДАЙ КОЖНЕ англійське слово, навіть одне посеред українського речення; латиницею лишай лише назви крамниць і брендів, «V-подібний» і «den»; текст, що вже природний і до неї на «ти», — без змін, а український текст на «ви» перепиши на «ти», решту лиши слово в слово.
+
+Вид кожної речі — теж зміст: річ у перекладі — та сама, що у вході, а не схожа чи сусідня. ankle boots — черевики чи ботильйони, boots — чоботи, heeled — на підборах, а не туфлі, pumps — туфлі-човники, loafers — лофери; pendant — кулон чи підвіска, necklace — намисто чи ланцюжок, а не каблучка, сережки чи браслет; ring — каблучка; earrings — сережки. Українські назви речей у вході (назви з крамниці, найчастіше перед « — ») переписуй літера в літеру: не міняй, не переставляй і не додавай у них жодного слова.
+
+Про жінку — лише до неї, на «ти» (ти, тебе, тобі, твій, твоя; хочеш, скинеш; наказ однини: розкажи, оберни, тримай, дай), і в питаннях теж: you, your, she, her про неї — «ти», «твій» (her skin tone — твій тон шкіри; when she turns her head — коли ти повертаєш голову; she looks taller — ти виглядаєш вищою), англійський наказ — наказом однини; «вона», «її» — лише про річ (сукню, сумку, куртку). Говорить стилістка — одна жінка: про себе — від першої особи однини й у жіночому роді (я підібрала, я б додала), не «ми», не від імені застосунку чи коду і ніколи словами самої жінки.
+
+Мова: літературна українська, як у текстах українських крамниць одягу. Кожне українське слово — літерами лише української абетки, без жодної латинської літери чи стороннього знака всередині слова. Кожне речення — одна остаточна версія, без виправлень посеред тексту. Словничок нижче — лише як перекласти англійське слово, коли воно є у вході; це не зміст: річ, тканина чи колір, яких у вході нема, у тексті не з'являються. Звичні українські назви для слів англійського джерела: trousers, pants — штани; dressy, dressier — ошатний, ошатніше; look, outfit — образ; taupe — сіро-бежевий; loose — вільний; suede — замша (жіночий рід); slip dress — сукня-комбінація; camel — кемел (колір). Назви речей і кольорів, які дала крамниця, — як є.
+
+Перевір кожне слово ДО відповіді: до неї — лише «ти», жодного «ви», «ваш» і наказу множини, і про неї жодного «вона», «її», «їй», жодне слово не стоїть двічі поспіль, кожна річ — того самого виду, що у вході (річ образу — іменником коду її виду з переліку, коли він є, і слова при ній узгоджені з цим іменником), а українська назва речі — слово в слово. Відповідь — рівно ОДИН JSON-об'єкт і нічого після нього: другої, виправленої версії, приміток і пояснень не пиши — помилку виправ у тому самому об'єкті.
+
+Речі образу — перелік речей картки (номер речі — як на картці, поруч — її коди):
+1 — kind code: vest · colour code: green · about it: text н=1
+2 — kind code: trousers · colour code: beige · about it: text н=2
+3 — kind code: t_shirt · colour code: black · about it: text н=3
+4 — kind code: ankle_boots · colour code: camel · about it: text н=4
+5 — kind code: belt · colour code: black
+6 — kind code: earrings · colour code: pink · about it: text н=5
+7 — kind code: bag_generic · colour code: purple · about it: text н=6
+When a text speaks of an item of the list, call it by the Ukrainian noun of its kind code (kind code: …) — the same noun in the right case in every text (trench_coat — «тренч», sweater — «светр», loafers — «лофери»), not by another kind or a synonym of the English word, whatever word the English text uses; a code ending in _generic names only the family (dress_generic — a dress, bag_generic — a bag). Make every adjective, pronoun and verb with the item agree with that noun in gender and number («бежевий тренч, який…»; «шкіряні лофери, які…»). A name you translate in this same call (text н=K): give it one noun and call the item by it, in agreement, in every text. A text the list gives as about an item (about it: text н=M) speaks of that one item, and so does every other text where the English names it. The colour of an item of the list is its colour code (colour code: …): write the Ukrainian name of that code. The English colour words for that item are the stylist's impression of a photo: do not turn them into a colour of their own — the item's colour stands in their place. Colours of its details (trim, strap, buttons, print), its fabric and the rest — translate from the text. The list is for the items only: an item the English text does not name is not added to the translation — neither to the description nor to the advice.
+
+Colour codes: beige — бежевий; black — чорний; camel — кемел; green — зелений; pink — рожевий; purple — фіолетовий.
+
+ТЕКСТИ:
+{
+"1": "A dark green fitted vest with a wrap-style front and metal ring detail, worn over a floral blouse for layered texture.",
+"2": "Green skinny trousers that match the vest perfectly, cropped at the ankle to show off your boots.",
+"3": "Black relaxed t-shirt (included in outfit list but not worn with this look).",
+"4": "Pointed camel ankle boots with a sleek kitten heel and soft suede finish.",
+"5": "Delicate gold and silver drop earrings that add just a touch of sparkle near your face.",
+"6": "A two-tone purple tote bag with smooth leather top and suede bottom—versatile for holding essentials or gifts during the party.",
+"7": "For your birthday girl celebration, I’ve chosen an outfit that balances a cozy autumn palette with a sharp, confident silhouette. You’re wearing a dark green fitted vest layered over a floral blouse with contrasting blue cuffs, paired with matching green skinny trousers and pointed camel ankle boots. The look is anchored by a wide black belt at the waist, accented with gold and silver earrings and carried in a rich purple tote bag. This ensemble feels warm yet polished—perfect for an evening out while keeping you comfortable as you celebrate.",
+"8": "Tuck your floral blouse into the vest to define your waist and let the pattern peek through just at the collar and cuffs.",
+"9": "Keep the camel boots snug around the ankle to elongate your legs, and slide one foot slightly forward when standing for a relaxed but stylish pose.",
+"10": "Жіночий офісний жилет великого розміру, Бежеві штани з защипами на талії і стрілками, Футболка сатинова чорна, Ботильйони кемел поні CODY на шкірі, Широкий ремінь зі шкіри з металевим декором, Сережки-гвоздики з рожевою перламутровою емаллю, Bella Bertucci Сумка фіолетова — The mix of registers like romantic and preppy adds a lovely playful warmth to your party, showing confidence and joy rather than rigidity."
+}
+
+── ВІДПОВІДЬ (1982 симв., 18.2 с, HTTP 200) ──
+```json
+{
+"1": "Темно-зелений приталений жилет з перехресним верхом і металевими кільцями, одягнений поверх квітчастої блузки для багатошаровості.",
+"2": "Зелені скінні штани, які чудово поєднуються з жилетом, укорочені на щиколотці, щоб показати твої черевики." ,
+"3": "Чорна вільна футболка (входить до списку образу, але не одягнена з цим образом)." ,
+"4": "Гостроносі кемел черевички на тонкому підборі та м’якій замші." ,
+"5": "Ніжні золоті й срібні сережки-підвіски, які додають лише трохи блиску біля твого обличчя." ,
+"6": "Двоколірна фіолетова сумка-тоут з гладкою шкіряною верхньою частиною та замшевою нижньою — універсальна для зберігання необхідних речей або подарунків під час вечірки." ,
+"7": "Для святкування твого дня народження я обрала образ, який поєднує затишний осінній колір з чітким і впевненим силуетом. Ти одягла темно-зелений приталений жилет поверх квітчастої блузки з контрастними синіми манжетами, у парі зі скінні зеленими штанами та гостроносими кемел черевичками на підборах. Образ доповнює широкий чорний пояс на талії, акцентований золотими й срібними сережками та фіолетовою сумкою-тоут. Цей ансамбль відчувається теплим і вишуканим — ідеальним для вечора в місті, зберігаючи при цьому твій комфорт під час святкування." ,
+"8": "Заправ квітчасту блузку у жилет, щоб окреслити талію, дозволяючи візерунку злегка виглядати на комірі й манжетах." ,
+"9": "Тримай кемел черевички щільно навколо щиколотки, щоб подовжити ноги, і трохи вистав одну ногу вперед під час стояння для розслабленої та стильної пози." ,
+"10": "Жіночий офісний жилет великого розміру. Бежеві штани з защипами на талії й стрілками. Сатинова чорна футболка. Черевички кемел поні CODY зі шкіри. Широкий ремінь зі шкіри з металевим декором. Сережки-гвоздики з рожевою перламутровою емаллю. Bella Bertucci Сумка фіолетова — Поєднання стилів, таких як романтичний і препі, додає чудової грайливої теплоти твоєму святкуванню, показуючи впевненість і радість замість жорсткості."
+}
+```

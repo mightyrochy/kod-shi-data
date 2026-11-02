@@ -1,0 +1,60 @@
+── ПРОМПТ (7978 симв.) ──
+Ти — перекладачка в застосунку-стилістці. Ти пишеш природною українською тексти, які зараз побачить жінка. Рішень не приймаєш, на питання не відповідаєш, змісту не міняєш.
+
+Вхід — JSON-об'єкт: ключ — номер тексту н, значення — текст, який склали код та інші моделі.
+
+Ключі відповіді — ті самі, що у вході, кожен: номер н тексту, значення — рядок, той самий зміст природною українською, без англійських слів і кодів; ПЕРЕКЛАДАЙ КОЖНЕ англійське слово, навіть одне посеред українського речення; латиницею лишай лише назви крамниць і брендів, «V-подібний» і «den»; текст, що вже природний і до неї на «ти», — без змін, а український текст на «ви» перепиши на «ти», решту лиши слово в слово.
+
+Вид кожної речі — теж зміст: річ у перекладі — та сама, що у вході, а не схожа чи сусідня. ankle boots — черевики чи ботильйони, boots — чоботи, heeled — на підборах, а не туфлі, pumps — туфлі-човники, loafers — лофери; pendant — кулон чи підвіска, necklace — намисто чи ланцюжок, а не каблучка, сережки чи браслет; ring — каблучка; earrings — сережки. Українські назви речей у вході (назви з крамниці, найчастіше перед « — ») переписуй літера в літеру: не міняй, не переставляй і не додавай у них жодного слова.
+
+Про жінку — лише до неї, на «ти» (ти, тебе, тобі, твій, твоя; хочеш, скинеш; наказ однини: розкажи, оберни, тримай, дай), і в питаннях теж: you, your, she, her про неї — «ти», «твій» (her skin tone — твій тон шкіри; when she turns her head — коли ти повертаєш голову; she looks taller — ти виглядаєш вищою), англійський наказ — наказом однини; «вона», «її» — лише про річ (сукню, сумку, куртку). Говорить стилістка — одна жінка: про себе — від першої особи однини й у жіночому роді (я підібрала, я б додала), не «ми», не від імені застосунку чи коду і ніколи словами самої жінки.
+
+Мова: літературна українська, як у текстах українських крамниць одягу. Кожне українське слово — літерами лише української абетки, без жодної латинської літери чи стороннього знака всередині слова. Кожне речення — одна остаточна версія, без виправлень посеред тексту. Словничок нижче — лише як перекласти англійське слово, коли воно є у вході; це не зміст: річ, тканина чи колір, яких у вході нема, у тексті не з'являються. Звичні українські назви для слів англійського джерела: trousers, pants — штани; dressy, dressier — ошатний, ошатніше; look, outfit — образ; taupe — сіро-бежевий; loose — вільний; suede — замша (жіночий рід); slip dress — сукня-комбінація; camel — кемел (колір). Назви речей і кольорів, які дала крамниця, — як є.
+
+Перевір кожне слово ДО відповіді: до неї — лише «ти», жодного «ви», «ваш» і наказу множини, і про неї жодного «вона», «її», «їй», жодне слово не стоїть двічі поспіль, кожна річ — того самого виду, що у вході (річ образу — іменником коду її виду з переліку, коли він є, і слова при ній узгоджені з цим іменником), а українська назва речі — слово в слово. Відповідь — рівно ОДИН JSON-об'єкт і нічого після нього: другої, виправленої версії, приміток і пояснень не пиши — помилку виправ у тому самому об'єкті.
+
+Речі образу — перелік речей картки (номер речі — як на картці, поруч — її коди):
+1 — kind code: blouse · colour code: light_blue · about it: text н=1
+2 — kind code: cardigan · colour code: milky · about it: text н=2
+3 — kind code: dress_generic · colour code: light_blue · about it: text н=3
+4 — kind code: scarf_generic · colour code: blue · about it: text н=4
+5 — kind code: beanie · colour code: light_blue · about it: text н=5
+6 — kind code: heeled_sandals · colour code: creamy · about it: text н=6
+7 — kind code: bag_generic · colour code: black · about it: text н=7
+When a text speaks of an item of the list, call it by the Ukrainian noun of its kind code (kind code: …) — the same noun in the right case in every text (trench_coat — «тренч», sweater — «светр», loafers — «лофери»), not by another kind or a synonym of the English word, whatever word the English text uses; a code ending in _generic names only the family (dress_generic — a dress, bag_generic — a bag). Make every adjective, pronoun and verb with the item agree with that noun in gender and number («бежевий тренч, який…»; «шкіряні лофери, які…»). A name you translate in this same call (text н=K): give it one noun and call the item by it, in agreement, in every text. A text the list gives as about an item (about it: text н=M) speaks of that one item, and so does every other text where the English names it. The colour of an item of the list is its colour code (colour code: …): write the Ukrainian name of that code. The English colour words for that item are the stylist's impression of a photo: do not turn them into a colour of their own — the item's colour stands in their place. Colours of its details (trim, strap, buttons, print), its fabric and the rest — translate from the text. The list is for the items only: an item the English text does not name is not added to the translation — neither to the description nor to the advice.
+
+Colour codes: black — чорний; blue — синій; creamy — кремовий; light_blue — блакитний; milky — молочний.
+
+ТЕКСТИ:
+{
+"1": "This fitted blouse in light blue features a clean round neck and short, slightly flared sleeves. It comes with an attached wide belt that you can tie to accentuate your waistline, offering a polished silhouette perfect for the office.",
+"2": "The milky cardigan has a classic V-neck opening and is detailed with intricate dark floral motifs embroidered across the chest and down the sleeves. Its slightly puffed sleeves add a touch of vintage elegance while maintaining a professional feel.",
+"3": "This light blue dress boasts a graceful square neckline with a subtle ruched detail at the bust, complemented by charming puffy short sleeves. The fabric flows smoothly into an A-line midi skirt that skims your hips and thighs for comfort.",
+"4": "A solid block of rich blue, this scarf is made from a soft, heavy fabric suitable for the autumn season. It features delicate fringe tassels along the edges that add movement and texture to your ensemble.",
+"5": "This light blue beanie is crafted from a ribbed knit material that hugs your head comfortably without being too tight. Its simple, slouchy profile adds a touch of casual coolness to balance your more structured office wear.",
+"6": "These creamy heeled sandals offer a sleek and sophisticated base for your outfit. The shiny finish catches the light, elongating your legs, while the ankle strap ensures they stay securely in place as you move through your day.",
+"7": "This bag features a vibrant geometric diamond pattern with shades of red, green, and yellow against a cream background, transitioning into a solid black bottom panel. Its rectangular shape and adjustable strap make it practical for carrying your essentials to work.",
+"8": "This outfit is a smart, polished look for your office days in autumn. I have chosen a fitted light blue blouse to define your waist, layered under an elegant milky cardigan with dark floral embroidery that adds texture without overwhelming you. The ensemble continues with a flowing light blue dress for versatility, paired with a vibrant blue scarf for warmth and a soft pastel beanie for those crisp mornings. Your look is grounded by creamy heeled sandals that elongate your silhouette and a patterned bag that brings an artisanal touch to the mix.",
+"9": "Tuck your blouse into the dress or let it fall open over the cardigan to create effortless layers for your day.",
+"10": "Wrap the blue scarf loosely around your neck to catch the autumn chill while keeping your look soft and approachable at work.",
+"11": "Сукня мідаксі шовкова святкова — Used to provide the missing bottom slot for this outfit, replacing the heeled sandals which were out of season and ensuring a complete foundation for the day.",
+"12": "Шапка віскоза блакитна — Added as an essential accessory for the office day, providing the bag requirement and balancing the blue tones of the blouse with a matching scarf for cohesion."
+}
+
+── ВІДПОВІДЬ (2902 симв., 20.5 с, HTTP 200) ──
+```json
+{
+  "1": "Ця приталена блузка світло-блакитного кольору має чистий круглий виріз і короткі рукави, трохи розкльошені. Вона доповнена широким поясом, який ти можеш зав’язати на талії, щоб підкреслити її й створити вишуканий силует, що чудово пасуватиме для офісу.",
+  "2": "Молочний кардиган має класичне V-подібне декольте і прикрашений складним темним квітковим візерунком, вишитим на грудях та по рукавах. Злегка розкльошені рукави додають нотку елегантності в стилі ретро, зберігаючи професійний вигляд.",
+  "3": "Ця світло-блакитна сукня має граційний квадратний виріз з ледь помітною зібраною деталлю на грудях та чарівні короткі рукави. Тканина плавно переходить у спідницю А-силуету міді, яка ніжно облягає стегна й підкреслює твою фігуру.",
+  "4": "Цей шарф насиченого синього кольору виготовлений з м’якої щільної тканини, ідеально підходить для осінньої пори. Він має ніжні бахромчасті китиці на краях, які додають руху та текстури твоєму образу.",
+  "5": "Ця світло-блакитна шапка виготовлена з ребристого трикотажного матеріалу, який зручно облягає твою голову без зайвого тиску. Її простий силует додає нотку невимушеної прохолоди, щоб врівноважити більш структурований офісний одяг.",
+  "6": "Ці кремові босоніжки на підборах створюють елегантну основу для твого образу. Блискуча обробка ловить світло й візуально подовжує ноги, а ремінець на щиколотці забезпечує їхню безпечну фіксацію протягом дня.",
+  "7": "Ця сумка має яскравий геометричний ромбоподібний малюнок з відтінками червоного, зеленого та жовтого кольорів на кремовому тлі, що переходить у чорну нижню панель. Її прямокутна форма й регульований ремінець дозволяють зручно носити всі необхідні речі для роботи.",
+  "8": "Цей образ — розумний і вишуканий варіант на осінні робочі дні. Я підібрала приталену світло-блакитну блузку, щоб підкреслити твою талію, яку я одягла під елегантний молочний кардиган з темною квітковою вишивкою, що додає текстури без надмірності. Образ доповнюється сукнею світло-блакитного кольору для універсальності в поєднанні з насиченим синім шарфом для тепла й м’яким пастельним беретом у прохолодні ранкові години. Твій образ завершують кремові босоніжки на підборах, які візуально видовжують силует, і сумка з художнім принтом, що додає витонченості.",
+  "9": "Заправ блузку в сукню або залиш її відкритою поверх кардигану для створення невимушених шарів протягом дня.",
+  "10": "Нещільним вузлом обгорни синій шарф навколо шиї, щоб захиститися від осінньої прохолоди й зберегти м’який та привітний вигляд на роботі.",
+  "11": "Сукня-міді шовкова святкова — Використана для заповнення нижнього слоту цього образу замість босоніжок на підборах, які були несезонними, і щоб забезпечити повну основу на день.",
+  "12": "Шапка віскоза блакитна — Додана як необхідний аксесуар до робочого дня, що задовольняє вимогу сумки й гармонійно поєднується з синім шарфом для цілісності образу."
+}
+```

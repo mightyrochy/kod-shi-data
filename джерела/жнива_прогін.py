@@ -24,7 +24,7 @@ gzip і ctypes — ліниво всередині функцій, як і бу�
 import argparse, collections, hashlib, json, os, queue, random, shutil, sys, tempfile, threading, time
 from concurrent.futures import ThreadPoolExecutor, as_completed
 import feed as F
-from жнива_реєстр import КАТАЛОГ, ВИБІРКА_ФАЙЛ, ПОВНИЙ_ФАЙЛ, ФОТО_ТЕКА, ЗАГЛУШКОВІ_КРАМНИЦІ, група_слота
+from жнива_реєстр import ВИБІРКА_ФАЙЛ, ПОВНИЙ_ФАЙЛ, ФОТО_ТЕКА, ЗАГЛУШКОВІ_КРАМНИЦІ, група_слота
 from жнива_фото import (_качати, _відкрити, _майже_біле, збільшити_url, взяти_фото, фото_зі_сторінки,
                         позначити_одну, позначити_заглушки)
 from жнива_запис import обробити, записати_атомарно, прибрати_кеш, злити
@@ -282,7 +282,7 @@ def main():
     ap.add_argument("--потоки", type=int, default=3)
     ap.add_argument("--фото", type=int, default=6, help="скільки фото речі качати")
     ap.add_argument("--модель", default="qwen3-vl-8b-instruct")
-    ap.add_argument("--каталог", default=КАТАЛОГ)
+    ap.add_argument("--каталог", default=None, help="YML чи .gz; без нього — каталог на диску")
     ap.add_argument("--вихід", default=None)
     а = ap.parse_args()
     if а.вихід is None:
@@ -305,10 +305,16 @@ def main():
         print("ComfyUI %s:%d %s" % (COMFY_ХОСТ, COMFY_ПОРТ, "піднятий — маски через SAM 3.1"
               if _comfy() else "НЕ піднятий — маски підуть без SAM, самою ATR і запасною"), flush=True)
 
-    import gzip
-    відкр = gzip.open if а.каталог.endswith(".gz") else open
-    with відкр(а.каталог, "rb") as f:
-        offers, _ = F.читати_yml(f)
+    # `читати_yml` бере ШЛЯХ до розпакованого YML, а не дескриптор; без `--каталог` — каталог поруч чи на рівень
+    # вище (`каталог_на_диску` розпаковує архів сам), типового КАТАЛОГ-файлу в репозиторії нема.
+    шлях = а.каталог or F.каталог_на_диску()
+    if шлях.endswith(".gz"):
+        import gzip
+        розпаковано = os.path.join(tempfile.mkdtemp(prefix="жнива_каталог_"), "каталог.xml")
+        with gzip.open(шлях, "rb") as вх, open(розпаковано, "wb") as вих:
+            shutil.copyfileobj(вх, вих)
+        шлях = розпаковано
+    offers, _ = F.читати_yml(шлях)
     print("каталог: %d речей" % len(offers), flush=True)
 
     if а.повний:

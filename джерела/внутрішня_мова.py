@@ -2203,7 +2203,7 @@ _МІСЦЯ_ОПЦІЙ = "where it is worn"
     "different_prints_mixed": "different prints are mixed in the outfit (values: prints — pattern codes)",
     "tie_prints_by_colour_or_one_dominates": "tie the prints by a shared colour, or let one dominate by area",
     "daytime_shine": "shiny sequins, lurex or rhinestones in the daytime, which is a daytime context (values: "
-                     "slot — slot code, hour — the starting hour)",
+                     "slot — slot code)",
     "matte_item_in_slot": "a matte item in this slot (values: slot — slot code)",
     "bag_type_below_event_level": "the bag's type (a backpack, a tote, a belt bag) is below the level of the "
                                   "event (values: event_level — the event's level)",
@@ -3433,6 +3433,8 @@ def визначення_заяв(коди):
  'edge_closeness_penalty': 'a penalty for the closeness of edges',
  'edge_contrast_draws_line': 'the edge contrast draws a line across the leg',
  'edge_contrast_reduced': 'the edge contrast is reduced',
+ 'evening_admits_second_zone': 'in the evening a second open zone of the body is admitted',
+ 'evening_lift_by_tier': 'the evening raises the step of dress by the level of the event',
  'exact_edge_match_dispute': 'an exact match of edges: the rules dispute it',
  'exactly_one_formality_outlier_x06': 'exactly one formality outlier: x0.6',
  'fabric_off_season': 'the fabric is not for the season',

@@ -1,0 +1,89 @@
+[
+  {
+    "перевірка": "git-apply-check",
+    "команда": [
+      "git",
+      "apply",
+      "--check",
+      "C:\\Users\\gemini\\gemini-runs\\w\\20261030-171431-a271b8415e61\\repo\\аудит\\латки\\обгортка-перевірка-після-кінця\\зміни.patch"
+    ],
+    "код": 0
+  },
+  {
+    "перевірка": "git-apply",
+    "команда": [
+      "git",
+      "apply",
+      "C:\\Users\\gemini\\gemini-runs\\w\\20261030-171431-a271b8415e61\\repo\\аудит\\латки\\обгортка-перевірка-після-кінця\\зміни.patch"
+    ],
+    "код": 0
+  },
+  {
+    "перевірка": "git-add",
+    "команда": [
+      "git",
+      "add",
+      "аудит/адаптери/gemini",
+      "аудит/проби/доробка_менше_прогонів.py"
+    ],
+    "код": 0
+  },
+  {
+    "перевірка": "хеші-чистого-застосування",
+    "команда": [
+      "python",
+      "-X",
+      "utf8",
+      "C:\\Users\\gemini\\gemini-runs\\w\\20261030-171431-a271b8415e61\\tmp\\clean-tree\\аудит\\адаптери\\gemini\\перевірка\\перевірити_хеші.py"
+    ],
+    "код": 0
+  },
+  {
+    "перевірка": "побайтова-тотожність",
+    "файлів": 63,
+    "розбіжності": []
+  },
+  {
+    "перевірка": "heartbeat-ПІСЛЯ",
+    "команда": [
+      "powershell",
+      "-NoProfile",
+      "-ExecutionPolicy",
+      "Bypass",
+      "-File",
+      "C:\\Users\\gemini\\gemini-runs\\w\\20261030-171431-a271b8415e61\\repo\\аудит\\латки\\обгортка-перевірка-після-кінця\\heartbeat-fixed.ps1",
+      "-SourceDir",
+      "C:\\Users\\gemini\\gemini-runs\\w\\20261030-171431-a271b8415e61\\tmp\\clean-tree\\аудит\\адаптери\\gemini",
+      "-Template",
+      "C:\\Users\\gemini\\gemini-runs\\w\\20261030-171431-a271b8415e61\\repo\\аудит\\латки\\обгортка-перевірка-після-кінця\\heartbeat-template.ps1"
+    ],
+    "код": 0
+  },
+  {
+    "перевірка": "маніфест-PS51",
+    "команда": [
+      "powershell",
+      "-NoProfile",
+      "-ExecutionPolicy",
+      "Bypass",
+      "-Command",
+      "$m = Import-PowerShellDataFile -LiteralPath 'C:\\Users\\gemini\\gemini-runs\\w\\20261030-171431-a271b8415e61\\tmp\\clean-tree\\аудит\\адаптери\\gemini\\m9v\\хеші.psd1'; if ($m.Count -lt 3) { exit 1 }; Write-Output ('Записів маніфесту: ' + $m.Count)"
+    ],
+    "код": 0
+  },
+  {
+    "перевірка": "git-diff-check",
+    "команда": [
+      "git",
+      "diff",
+      "--cached",
+      "--check"
+    ],
+    "код": 0
+  },
+  {
+    "перевірка": "BOM",
+    "значення": "efbbbf",
+    "sha256_латки": "2d52e470b3d4858c25e50f5750da2c2b7d1ec32184d1b696f9d406732489b514"
+  }
+]
