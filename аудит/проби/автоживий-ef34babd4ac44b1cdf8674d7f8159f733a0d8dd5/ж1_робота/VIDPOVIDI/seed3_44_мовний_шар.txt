@@ -1,0 +1,70 @@
+── ПРОМПТ (8897 симв.) ──
+Ти — перекладачка в застосунку-стилістці. Ти пишеш природною українською тексти, які зараз побачить жінка. Рішень не приймаєш, на питання не відповідаєш, змісту не міняєш.
+
+Вхід — JSON-об'єкт: ключ — номер тексту н, значення — текст, який склали код та інші моделі.
+
+Ключі відповіді — ті самі, що у вході, кожен: номер н тексту, значення — рядок, той самий зміст природною українською, без англійських слів і кодів; ПЕРЕКЛАДАЙ КОЖНЕ англійське слово, навіть одне посеред українського речення; латиницею лишай лише назви крамниць і брендів, «V-подібний» і «den»; текст, що вже природний і до неї на «ти», — без змін, а український текст на «ви» перепиши на «ти», решту лиши слово в слово.
+
+Вид кожної речі — теж зміст: річ у перекладі — та сама, що у вході, а не схожа чи сусідня. ankle boots — черевики чи ботильйони, boots — чоботи, heeled — на підборах, а не туфлі, pumps — туфлі-човники, loafers — лофери; pendant — кулон чи підвіска, necklace — намисто чи ланцюжок, а не каблучка, сережки чи браслет; ring — каблучка; earrings — сережки. Українські назви речей у вході (назви з крамниці, найчастіше перед « — ») переписуй літера в літеру: не міняй, не переставляй і не додавай у них жодного слова.
+
+Про жінку — лише до неї, на «ти» (ти, тебе, тобі, твій, твоя; хочеш, скинеш; наказ однини: розкажи, оберни, тримай, дай), і в питаннях теж: you, your, she, her про неї — «ти», «твій» (her skin tone — твій тон шкіри; when she turns her head — коли ти повертаєш голову; she looks taller — ти виглядаєш вищою), англійський наказ — наказом однини; «вона», «її» — лише про річ (сукню, сумку, куртку). Говорить стилістка — одна жінка: про себе — від першої особи однини й у жіночому роді (я підібрала, я б додала), не «ми», не від імені застосунку чи коду і ніколи словами самої жінки.
+
+Мова: літературна українська, як у текстах українських крамниць одягу. Кожне українське слово — літерами лише української абетки, без жодної латинської літери чи стороннього знака всередині слова. Кожне речення — одна остаточна версія, без виправлень посеред тексту. Словничок нижче — лише як перекласти англійське слово, коли воно є у вході; це не зміст: річ, тканина чи колір, яких у вході нема, у тексті не з'являються. Звичні українські назви для слів англійського джерела: trousers, pants — штани; dressy, dressier — ошатний, ошатніше; look, outfit — образ; taupe — сіро-бежевий; loose — вільний; suede — замша (жіночий рід); slip dress — сукня-комбінація; camel — кемел (колір). Назви речей і кольорів, які дала крамниця, — як є.
+
+Перевір кожне слово ДО відповіді: до неї — лише «ти», жодного «ви», «ваш» і наказу множини, і про неї жодного «вона», «її», «їй», жодне слово не стоїть двічі поспіль, кожна річ — того самого виду, що у вході (річ образу — іменником коду її виду з переліку, коли він є, і слова при ній узгоджені з цим іменником), а українська назва речі — слово в слово. Відповідь — рівно ОДИН JSON-об'єкт і нічого після нього: другої, виправленої версії, приміток і пояснень не пиши — помилку виправ у тому самому об'єкті.
+
+Речі образу — перелік речей картки (номер речі — як на картці, поруч — її коди):
+1 — kind code: suit · colour code: beige · about it: text н=1
+2 — kind code: loafers · colour code: brown · about it: text н=2
+3 — kind code: bag_generic · colour code: brown · about it: text н=3
+4 — kind code: vest · colour code: beige · about it: text н=4
+5 — kind code: blazer · colour code: beige · about it: text н=5
+When a text speaks of an item of the list, call it by the Ukrainian noun of its kind code (kind code: …) — the same noun in the right case in every text (trench_coat — «тренч», sweater — «светр», loafers — «лофери»), not by another kind or a synonym of the English word, whatever word the English text uses; a code ending in _generic names only the family (dress_generic — a dress, bag_generic — a bag). Make every adjective, pronoun and verb with the item agree with that noun in gender and number («бежевий тренч, який…»; «шкіряні лофери, які…»). A name you translate in this same call (text н=K): give it one noun and call the item by it, in agreement, in every text. A text the list gives as about an item (about it: text н=M) speaks of that one item, and so does every other text where the English names it. The colour of an item of the list is its colour code (colour code: …): write the Ukrainian name of that code. The English colour words for that item are the stylist's impression of a photo: do not turn them into a colour of their own — the item's colour stands in their place. Colours of its details (trim, strap, buttons, print), its fabric and the rest — translate from the text. The list is for the items only: an item the English text does not name is not added to the translation — neither to the description nor to the advice.
+
+Colour codes: beige — бежевий; brown — коричневий.
+
+ТЕКСТИ:
+{
+"1": "This fitted beige suit set features a sharp, professional silhouette that anchors your look. The fabric is smooth and the cut follows your lines cleanly, providing structure for an office day without feeling restrictive.",
+"2": "These brown loafers offer comfortable support for walking through your day. Their classic shape matches the suit's elegance, grounding the outfit with a touch of understated style.",
+"3": "The dark brown bag provides a rich contrast to the lighter beige tones of your jacket and vest. Its solid form balances the lighter colors while remaining practical for carrying your essentials.",
+"4": "Worn under the blazer, this fitted beige vest adds a layer of sophistication and warmth. Its close fit accentuates your waist and complements the suit's tone seamlessly.",
+"5": "The single-breasted beige blazer sits perfectly over the vest, maintaining a streamlined profile. Its tailored cut enhances your shoulders while keeping the overall look neat and polished for work.",
+"6": "I have chosen a fitted beige suit with a matching beige vest worn underneath, finished with brown loafers and a dark brown bag. This look brings your smart office day to life with clean lines and a professional silhouette that moves comfortably through your work hours. The warm beige tones create a soft, elegant atmosphere, while the deep bag adds necessary contrast without feeling heavy.",
+"7": "Tuck the vest neatly into the suit jacket to highlight your defined waist and keep the look streamlined for meetings.",
+"8": "Костюм бежевий піджак на запах — I kept the beige suit but ensure the cut is sharp to define your waistline, avoiding a shapeless silhouette that would read as casual for your work occasion.",
+"9": "Жіноча сумка Welfare коричнева — I selected this brown bag instead of the pink one to match the tonal warmth of your shoes and suit, creating a unified ground rather than an orphaned accent.",
+"10": "Жіноча сумка Welfare коричнева — I kept this brown bag over the pink one to avoid breaking the tonal scheme's warmth and to ensure the outerwear doesn't look disjointed from the base.",
+"11": "Піджак однобортний беж — I kept this single-breasted blazer as a strong, structured layer to define your waist and provide a clear outer edge that is longer than the top.",
+"12": "LeBERDES Лофери коричневі — I paired these suede loafers to bridge the gap between the dress shoes formality and your casual vibe, offering a smarter alternative while keeping comfort.",
+"13": "Костюм бежевий піджак на запах, LeBERDES Лофери коричневі, Жилет з коноплі з високим вирізом та завʼязкою на спині, Піджак однобортний беж — This remark about level is accepted because the unbuttoned blazer creates a vertical line essential for a work setting, and the tonal warmth of the suit and loafers ensures you look put-together without feeling stifled by formality.",
+"14": "Костюм бежевий піджак на запах, LeBERDES Лофери коричневі, Жіноча сумка Welfare коричнева, Жилет з коноплі з високим вирізом та завʼязкою на спині, Піджак однобортний беж — The outfit feels ready despite the tonal scheme because the structured layers—the suit jacket and vest—provide the necessary architectural edges to avoid a flat, shapeless look.",
+"15": "Піджак однобортний беж — I kept the beige fitted blazer to provide the smart outer layer structure, buttoning it to define the waist and creating a clear visual break between layers.",
+"16": "Жилет з коноплі з високим вирізом та завʼязкою на спині — I kept this beige vest to add a third piece of structure between the top and bottom, creating visible steps in layering depth rather than one thick horizontal line.",
+"17": "Піджак однобортний беж — I kept this blazer buttoned or worn in a state that shows a clear step between layers, avoiding the unbuttoned look which gives nothing to the eye.",
+"18": "Жилет з коноплі з високим вирізом та завʼязкою на спині — I kept this beige vest to add a third piece of structure, defining the waist and breaking the mono-object silhouette of just a dress and skirt."
+}
+
+── ВІДПОВІДЬ (4131 симв., 27.8 с, HTTP 200) ──
+```json
+{
+"1": "Цей приталений бежевий костюмний комплект має чіткий професійний силует, який формує твій образ. Тканина гладка, а крій чисто повторює лінії тіла, забезпечуючи структуру для робочого дня без відчуття обмеження.",
+"2": "Ці коричневі лофери пропонують комфортну підтримку під час ходьби протягом усього дня. Їхня класична форма гармоніює з елегантністю костюма, заземлюючи образ із ноткою стриманого стилю.",
+"3": "Темно-коричнева сумка створює насичений контраст до світлих бежевих тонів твого жакета та жилета. Її лаконічна форма збалансовує світлі кольори, залишаючись практичною для носіння необхідних речей.",
+"4": "Одягнений під блейзер, цей приталений бежевий жилет додає шар вишуканості та тепла. Його щільний крій підкреслює твою талію та бездоганно доповнює тон костюма.",
+"5": "Однобортний бежевий блейзер ідеально сидить поверх жилета, зберігаючи стрункий профіль. Його приталений крій підкреслює плечі, а загальний вигляд залишається охайним та елегантним для роботи.",
+"6": "Я обрала приталений бежевий костюм з відповідним бежевим жилетом, одягненим знизу, доповнений коричневими лоферами та темно-коричневою сумкою. Цей образ оживляє твій розумний робочий день чистими лініями та професійним силуетом, який зручно рухається протягом усього дня. Теплі бежеві тони створюють м’яку елегантну атмосферу, а глибока сумка додає необхідний контраст без відчуття тяжкості.",
+"7": "Акуратно заправ жилет під костюмний жакет, щоб підкреслити твою витончену талію і зберегти образ струнким для зустрічей.",
+"8": "Костюм бежевий піджак на запах — Я залишила бежевий костюм, але переконалася, що крій чіткий, щоб визначити лінію талії, уникаючи безформного силуету, який виглядатиме занадто неформально для твоєї робочої події.",
+"9": "Жіноча сумка Welfare коричнева — Я обрала цю коричневу сумку замість рожевої, щоб вона гармоніювала з теплими тонами твого взуття та костюма, створюючи єдину основу, а не окремий акцент.",
+"10": "Жіноча сумка Welfare коричнева — Я залишила цю коричневу сумку замість рожевої, щоб зберегти теплоту колірної схеми і переконатися, що верхній одяг гармоніює з основою.",
+"11": "Піджак однобортний беж — Я залишила цей однобортний блейзер як міцну структуровану деталь для визначення талії та створення чіткого зовнішнього краю, який довший за верхній одяг.",
+"12": "LeBERDES Лофери коричневі — Я підібрала ці замшеві лофери, щоб згладити різницю між формальністю туфель і твоїм невимушеним настроєм, пропонуючи розумну альтернативу при збереженні комфорту.",
+"13": "Костюм бежевий піджак на запах, LeBERDES Лофери коричневі, Жилет з коноплі з високим вирізом та завʼязкою на спині, Піджак однобортний беж — Ця заувага про рівень прийнята, тому що розстебнутий блейзер створює вертикальну лінію, необхідну для робочого середовища, а теплі тони костюма та лоферів гарантують, що ти виглядаєш охайно без відчуття задухи від формальності.",
+"14": "Костюм бежевий піджак на запах, LeBERDES Лофери коричневі, Жіноча сумка Welfare коричнева, Жилет з коноплі з високим вирізом та завʼязкою на спині, Піджак однобортний беж — Образ виглядає готовим попри теплу тональність, тому що структуровані шари – костюмний жакет і жилет – забезпечують необхідні архітектурні краї, щоб уникнути плоскої та безформної зовнішності.",
+"15": "Піджак однобортний беж — Я залишила приталений бежевий блейзер для створення розумного зовнішнього шару структури, застебнувши його, щоб визначити лінію талії і створити чіткий візуальний поділ між шарами.",
+"16": "Жилет з коноплі з високим вирізом та завʼязкою на спині — Я залишила цей бежевий жилет для додавання третього елемента структури між верхом і низом, створюючи видимі сходинки в глибині шарів замість однієї товстої горизонтальної лінії.",
+"17": "Піджак однобортний беж — Я залишила цей блейзер застебнутим або у такому стані, який показує чіткий поділ між шарами, уникаючи розстебнутого вигляду, який нічого не дає оку.",
+"18": "Жилет з коноплі з високим вирізом та завʼязкою на спині — Я залишила цей бежевий жилет для додавання третього елемента структури, визначення лінії талії і розбиття моно-об’єктного силуету просто сукні та спідниці."
+}
+```
