@@ -2156,7 +2156,7 @@ _МІСЦЯ_ОПЦІЙ = "where it is worn"
     "shift_outfit_level": "shift the outfit's level towards the occasion's steps (values: direction — up or "
                           "down)",
     "open_zones_over_limit": "more zones of the body are open than the context asks for (values: zones — zone "
-                             "codes: neckline, back, arms, shoulders, legs, belly, neckline_back — décolleté "
+                             "codes: " + ", ".join(ТАБЛИЦЯ["zone"]) + ", neckline_back — décolleté "
                              "or back; limit — the limit, two when the event names no stricter norm; "
                              "conservative — a reserved audience or a place of worship, where the "
                              "limit is one lower)",
