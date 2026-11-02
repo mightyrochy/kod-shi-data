@@ -9,14 +9,20 @@ async function головна(){
   const html = fs.readFileSync(сторінка, 'utf8');
   const b64 = /МОДУЛІ_ПОКАЗУ\s*=\s*"([A-Za-z0-9+/=]+)"/.exec(html)[1];
   py.unpackArchive(new Uint8Array(Buffer.from(b64, 'base64')), 'zip', {extractDir:'/показ'});
-  for (const ім of ['міст_пакет.py', 'міст_запити.py', 'міст_відповіді.py'])
+  for (const ім of ['міст_пакет.py', 'міст_запити.py', 'міст_відповіді.py']) {
     py.FS.writeFile('/показ/' + ім, fs.readFileSync(path.resolve('джерела', ім)));
+    const pyc = '/показ/__pycache__/' + ім.slice(0, -3) + '.cpython-312.pyc';
+    if (py.FS.analyzePath(pyc).exists) py.FS.unlink(pyc);
+  }
   const запис = fs.readFileSync(входи);
   py.FS.writeFile('/входи.jsonl', входи.endsWith('.gz') ? zlib.gunzipSync(запис) : запис);
   py.FS.writeFile('/вимір.py', fs.readFileSync(path.join(__dirname, 'вимір.py')));
   await py.runPythonAsync(`
 __name__ = 'дим'
 exec(open('/вимір.py', encoding='utf-8').read())
+sys.path.insert(0, '/показ')
+import міст_запити as _МЗ
+assert 'вже_були_прогону' in _МЗ.пул_руки_1.__code__.co_consts
 входи = [json.loads(р) for р in open('/входи.jsonl', encoding='utf-8')]
 вибрані = [next(р for р in входи if р['ім'] == 'запити')]
 вибрані += [р for р in входи if р['ім'] == 'від_моделі' and json.loads(р['вхід']).get('заміна')]
