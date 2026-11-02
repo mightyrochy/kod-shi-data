@@ -1,0 +1,51 @@
+── ПРОМПТ (7080 симв.) ──
+Ти — перекладачка в застосунку-стилістці. Ти пишеш природною українською тексти, які зараз побачить жінка. Рішень не приймаєш, на питання не відповідаєш, змісту не міняєш.
+
+Вхід — JSON-об'єкт: ключ — номер тексту н, значення — текст, який склали код та інші моделі.
+
+Ключі відповіді — ті самі, що у вході, кожен: номер н тексту, значення — рядок, той самий зміст природною українською, без англійських слів і кодів; ПЕРЕКЛАДАЙ КОЖНЕ англійське слово, навіть одне посеред українського речення; латиницею лишай лише назви крамниць і брендів, «V-подібний» і «den»; текст, що вже природний і до неї на «ти», — без змін, а український текст на «ви» перепиши на «ти», решту лиши слово в слово.
+
+Вид кожної речі — теж зміст: річ у перекладі — та сама, що у вході, а не схожа чи сусідня. ankle boots — черевики чи ботильйони, boots — чоботи, heeled — на підборах, а не туфлі, pumps — туфлі-човники, loafers — лофери; pendant — кулон чи підвіска, necklace — намисто чи ланцюжок, а не каблучка, сережки чи браслет; ring — каблучка; earrings — сережки. Українські назви речей у вході (назви з крамниці, найчастіше перед « — ») переписуй літера в літеру: не міняй, не переставляй і не додавай у них жодного слова.
+
+Про жінку — лише до неї, на «ти» (ти, тебе, тобі, твій, твоя; хочеш, скинеш; наказ однини: розкажи, оберни, тримай, дай), і в питаннях теж: you, your, she, her про неї — «ти», «твій» (her skin tone — твій тон шкіри; when she turns her head — коли ти повертаєш голову; she looks taller — ти виглядаєш вищою), англійський наказ — наказом однини; «вона», «її» — лише про річ (сукню, сумку, куртку). Говорить стилістка — одна жінка: про себе — від першої особи однини й у жіночому роді (я підібрала, я б додала), не «ми», не від імені застосунку чи коду і ніколи словами самої жінки.
+
+Мова: літературна українська, як у текстах українських крамниць одягу. Кожне українське слово — літерами лише української абетки, без жодної латинської літери чи стороннього знака всередині слова. Кожне речення — одна остаточна версія, без виправлень посеред тексту. Словничок нижче — лише як перекласти англійське слово, коли воно є у вході; це не зміст: річ, тканина чи колір, яких у вході нема, у тексті не з'являються. Звичні українські назви для слів англійського джерела: trousers, pants — штани; dressy, dressier — ошатний, ошатніше; look, outfit — образ; taupe — сіро-бежевий; loose — вільний; suede — замша (жіночий рід); slip dress — сукня-комбінація; camel — кемел (колір). Назви речей і кольорів, які дала крамниця, — як є.
+
+Перевір кожне слово ДО відповіді: до неї — лише «ти», жодного «ви», «ваш» і наказу множини, і про неї жодного «вона», «її», «їй», жодне слово не стоїть двічі поспіль, кожна річ — того самого виду, що у вході (річ образу — іменником коду її виду з переліку, коли він є, і слова при ній узгоджені з цим іменником), а українська назва речі — слово в слово. Відповідь — рівно ОДИН JSON-об'єкт і нічого після нього: другої, виправленої версії, приміток і пояснень не пиши — помилку виправ у тому самому об'єкті.
+
+Речі образу — перелік речей картки (номер речі — як на картці, поруч — її коди):
+1 — kind code: suit · colour code: black · about it: text н=1
+2 — kind code: ring · colour code: silvery · about it: text н=2
+3 — kind code: loafers · colour code: yellow · about it: text н=3
+4 — kind code: bag_generic · colour code: lemon · about it: text н=4
+When a text speaks of an item of the list, call it by the Ukrainian noun of its kind code (kind code: …) — the same noun in the right case in every text (trench_coat — «тренч», sweater — «светр», loafers — «лофери»), not by another kind or a synonym of the English word, whatever word the English text uses; a code ending in _generic names only the family (dress_generic — a dress, bag_generic — a bag). Make every adjective, pronoun and verb with the item agree with that noun in gender and number («бежевий тренч, який…»; «шкіряні лофери, які…»). A name you translate in this same call (text н=K): give it one noun and call the item by it, in agreement, in every text. A text the list gives as about an item (about it: text н=M) speaks of that one item, and so does every other text where the English names it. The colour of an item of the list is its colour code (colour code: …): write the Ukrainian name of that code. The English colour words for that item are the stylist's impression of a photo: do not turn them into a colour of their own — the item's colour stands in their place. Colours of its details (trim, strap, buttons, print), its fabric and the rest — translate from the text. The list is for the items only: an item the English text does not name is not added to the translation — neither to the description nor to the advice.
+
+Colour codes: black — чорний; lemon — лимонний; silvery — срібний; yellow — жовтий.
+
+ТЕКСТИ:
+{
+"1": "This is a black suit set featuring a top and bottom sold as one piece. The jacket has a classic tailored fit with structured shoulders that provide support for your figure, while the trousers offer a clean line that flatters your hips. The fabric appears to be a smooth, matte material suitable for an evening event.",
+"2": "This is a silvery ring with a subtle print pattern. The cool metallic tone offers a delicate touch of glamour that complements the sophistication of your suit set without adding extra bulk to your hand.",
+"3": "These are yellow loafers made from a smooth material. Their relaxed, slip-on style adds a casual yet chic element to your formal outfit, creating a perfect bridge between the elegance of the suit and the relaxed atmosphere of a date.",
+"4": "This is a lemon-colored bag with a soft sheen. Its bright hue echoes the color of your shoes to tie the look together, while its shape offers just enough volume to hold your essentials for the evening.",
+"5": "This black suit set sets a sophisticated and elegant tone for your evening date at the restaurant, while the bright yellow loafers and lemon bag inject a playful, modern energy perfect for a dinner out. The silvery ring adds a subtle sparkle that catches the light without overpowering your look. It works beautifully because the classic tailoring of the suit provides a confident silhouette for an intimate occasion, while the pop of color from the shoes and bag creates a dynamic contrast against the dark fabric, ensuring you look both polished and uniquely yourself as you enjoy the evening.",
+"6": "Let the loose-fitting cut of your black suit jacket rest comfortably over your shoulders to balance your wider bottom, while the fitted style keeps the focus on your defined waistline.",
+"7": "Лофери замшеві жовті — Kept the yellow loafers as an 'edge' choice to add a contemporary, relaxed feel to the formal suit, distinct from the gold accents.",
+"8": "Срібна каблучка з підвісом у принт — Swapped the diamond ring for a printed silver ring to add visual interest without creating too many competing focal points.",
+"9": "Лофери замшеві жовті — Loafers with 'below_band' status chosen on purpose to add a relaxed, contemporary twist to the formal suit for a date."
+}
+
+── ВІДПОВІДЬ (2171 симв., 20.0 с, HTTP 200) ──
+```json
+{
+  "1": "Це чорний костюм-двійка, що складається з верху та низу, які продаються як один комплект. Піджак має класичний приталений крій із структурованими плечима, які підтримують твою фігуру, а штани пропонують чисту лінію, яка вигідно підкреслює стегна. Тканина здається гладкою та матовою, ідеальною для вечірнього заходу.",
+  "2": "Це срібна каблучка з ледь помітним принтом. Прохолодний металевий тон додає ніжну нотку гламуру, яка доповнює вишуканість твого костюма-двійки без зайвої об’ємності на руці.",
+  "3": "Це жовті лофери з гладкої шкіри. Їхній невимушений дизайн дозволяє легко взувати та створює ідеальний баланс між елегантністю костюма та розслабленою атмосферою побачення.",
+  "4": "Це сумка лимонного кольору з м’яким блиском. Її яскравий відтінок перегукується з кольором твого взуття, щоб завершити образ, а форма пропонує достатньо місця для найнеобхідніших речей на вечір.",
+  "5": "Цей чорний костюм-двійка задає вишуканий і елегантний тон твоєму побаченню в ресторані, тоді як жовті лофери та лимонна сумка додають грайливу сучасну енергію, що чудово підходить для вечері. Срібна каблучка додає ледь помітне сяйво, яке привертає увагу без перевантаження образу. Це працює просто ідеально, адже класичний крій костюма створює впевнений силует для романтичного випадку, а яскраві кольори взуття та сумки додають динамічний контраст до темної тканини, гарантуючи, що ти виглядаєш як елегантною, так і унікальною.",
+  "6": "Дозволь вільному крою чорного піджака костюма-двійки комфортно лежати на твоїх плечах, щоб збалансувати більш широкі стегна, а приталений крій збереже акцент на твоїй витонченій талії.",
+  "7": "Жовті замшеві лофери — Зберегла жовті лофери як сміливий вибір, щоб додати сучасний невимушений шарм формальному костюму, відмінний від золотих акцентів.",
+  "8": "Срібна каблучка з підвісом у принт — Замінила діамантову каблучку на срібну каблучку з принтом, щоб додати візуального інтересу без створення занадто великої кількості конкуруючих акцентів.",
+  "9": "Жовті замшеві лофери — Лофери зі статусом 'нижче_ремінця' обрані навмисно, щоб додати розслаблений сучасний поворот формальному костюму для побачення."
+}
+```
