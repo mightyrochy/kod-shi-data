@@ -1062,8 +1062,24 @@
       "unknown"
      ]
     },
+    "host_context": {
+     "description": "подія з господарем або зі ставками: yes — це названо; no — явно заперечено; unknown — не сказала; не її роль господині",
+     "enum": [
+      "yes",
+      "no",
+      "unknown"
+     ]
+    },
     "direct_sun": {
      "description": "пряме сонце на неї: yes — назвала пряме сонце; no — назвала тінь чи відсутність сонця; unknown — не сказала; не виводити з температури, опадів чи пори року",
+     "enum": [
+      "yes",
+      "no",
+      "unknown"
+     ]
+    },
+    "creative_environment": {
+     "description": "творче середовище події: yes — назвала; no — явно заперечила; unknown — не сказала; не намір сміливого образу",
      "enum": [
       "yes",
       "no",
@@ -2417,8 +2433,16 @@
         "description": "колір, що на цій події належить іншій особі"
        },
        {
+        "const": "host_context",
+        "description": "подія з господарем або зі ставками: yes — це названо; no — явно заперечено; unknown — не сказала; не її роль господині"
+       },
+       {
         "const": "direct_sun",
         "description": "пряме сонце на неї: yes — назвала пряме сонце; no — назвала тінь чи відсутність сонця; unknown — не сказала; не виводити з температури, опадів чи пори року"
+       },
+       {
+        "const": "creative_environment",
+        "description": "творче середовище події: yes — назвала; no — явно заперечила; unknown — не сказала; не намір сміливого образу"
        },
        {
         "const": "own_items",
@@ -3168,6 +3192,28 @@
         "unknown"
        ]
       },
+      "host_context": {
+       "type": "object",
+       "additionalProperties": false,
+       "required": [
+        "quote",
+        "value"
+       ],
+       "properties": {
+        "quote": {
+         "type": "string",
+         "minLength": 1
+        },
+        "value": {
+         "description": "подія з господарем або зі ставками: yes — це названо; no — явно заперечено; unknown — не сказала; не її роль господині",
+         "enum": [
+          "yes",
+          "no",
+          "unknown"
+         ]
+        }
+       }
+      },
       "direct_sun": {
        "type": "object",
        "additionalProperties": false,
@@ -3182,6 +3228,28 @@
         },
         "value": {
          "description": "пряме сонце на неї: yes — назвала пряме сонце; no — назвала тінь чи відсутність сонця; unknown — не сказала; не виводити з температури, опадів чи пори року",
+         "enum": [
+          "yes",
+          "no",
+          "unknown"
+         ]
+        }
+       }
+      },
+      "creative_environment": {
+       "type": "object",
+       "additionalProperties": false,
+       "required": [
+        "quote",
+        "value"
+       ],
+       "properties": {
+        "quote": {
+         "type": "string",
+         "minLength": 1
+        },
+        "value": {
+         "description": "творче середовище події: yes — назвала; no — явно заперечила; unknown — не сказала; не намір сміливого образу",
          "enum": [
           "yes",
           "no",
@@ -3438,7 +3506,9 @@
           "formality_branch",
           "open_zones",
           "reserved_colour",
+          "host_context",
           "direct_sun",
+          "creative_environment",
           "own_items",
           "minute",
           "place_words",
@@ -7552,6 +7622,14 @@
           "description": "direct sunlight is known before judging dark close-fitting garments (K-WEA-03)"
          },
          {
+          "const": "host_context_known",
+          "description": "whether the event has a host or stakes is known before applying risk asymmetry (K-KOH-07)"
+         },
+         {
+          "const": "creative_environment_known",
+          "description": "whether the environment is creative is known before inverting risk asymmetry (K-KOH-07)"
+         },
+         {
           "const": "chroma_budget",
           "description": "at most 1–2 loud colours in the outfit, hair and glasses frames included (K-COL-02)"
          },
@@ -8722,6 +8800,14 @@
    "conservative": "conservative"
   },
   "direct_sun": {
+   "yes": true,
+   "no": false
+  },
+  "host_context": {
+   "yes": true,
+   "no": false
+  },
+  "creative_environment": {
    "yes": true,
    "no": false
   },

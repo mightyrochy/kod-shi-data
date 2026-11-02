@@ -2261,6 +2261,18 @@ def паспорт_з_шару(внутрішня, сценарій, вето_ч
         об["сонце"] = _сонце
     elif isinstance(досі.get("сонце"), bool):
         п["сонце"] = досі["сонце"]
+    _господар = _ВМ.ключ("host_context", в.get("host_context"))
+    if _господар is not None:
+        п["господар"] = _господар
+        об["господар"] = _господар
+    elif isinstance(досі.get("господар"), bool):
+        п["господар"] = досі["господар"]
+    _креативне = _ВМ.ключ("creative_environment", в.get("creative_environment"))
+    if _креативне is not None:
+        п["креативне"] = _креативне
+        об["креативне"] = _креативне
+    elif isinstance(досі.get("креативне"), bool):
+        п["креативне"] = досі["креативне"]
     for поле, ім in (("activity", "активність"), ("surface", "поверхня")):
         к = _ВМ.ключ(поле, в.get(поле)) or досі.get(ім)
         if к:
@@ -3156,6 +3168,8 @@ def _драбина_en():
 
 
 _ПОЛЯ_EN = {
+    "host_context": "whether the event has a host or stakes: yes when her words name one, no when explicitly absent, otherwise unknown; not whether she herself is the host; do not infer from the occasion type",
+    "creative_environment": "whether the event is in a creative environment: yes when named, no when explicitly denied, otherwise unknown; not her wish for a bold outfit; do not infer from the occasion type",
     "direct_sun": "direct sunlight on her: yes only when her words name direct sun, no when they name shade or no sun; otherwise unknown; do not infer from temperature, precipitation or season",
     "palette": "the palette scheme she chose for this outfit",
     # «Йду ввечері на вечірку в клуб» — `occasion` з цим уривком, `place` — ні (клас

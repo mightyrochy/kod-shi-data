@@ -86,7 +86,7 @@ def review(F, речі, source="uncontrolled", фокус=None, intent="conventi
            мисматч=None,
            розкид_каталогу=None, масштаб_особи=None, зона_камуфляж=None, зріст_см=None,
            драп=None, мета="лестити", нагода=None, дрес_код=None, фото=False, траур=None,
-           сцен=None, місце=None, пора=None, господар=False, креативне=False,
+           сцен=None, місце=None, пора=None, господар=None, креативне=None,
            роль=None, супутник_рівень=None, активність=None, сезон=None,
            темп_c=None, опади=None, вітер=None, сонце=None, формат=None, прикраси=None,
            шар_ошатності=None, траур_пулу=None, траур_заяви=None,
