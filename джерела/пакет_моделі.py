@@ -566,7 +566,7 @@ import внутрішня_мова as _ВМ_П
                  як="keep to it: one item from another register is a welcome quote; two or more change "
                     "the language"),
         _ВИМ.поле("day", як="check every item of every outfit against this day, not only the shoes"),
-        _ЗП.Поле("day.unknown", "what she has not told about her day: the place, the hour, the weather",
+        _ЗП.Поле("day.unknown", "what she has not told about her day: the place, the part of day, the weather",
                  як="do not assume a value for it; prefer items that hold either way"),
         _ВИМ.поле("person"),
         _ЗП.Поле("person.goal", "the outfit-wide goal: flatter, conceal, express or taller; this is an "
