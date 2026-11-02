@@ -11,3 +11,7 @@
 Програму не визначено: події 42, 506, 507, Power-Troubleshooter 1 та 105 її не називають. Окремих журналів ASUS/Armoury за `Get-WinEvent -ListLog '*'` не знайдено; `powercfg /systemsleepdiagnostics` повідомляє про заміну на `/systempowerreport`, а `/systempowerreport` і `/sleepstudy` відмовляють у доступі. Гіпотеза: сон викликає програма керування живленням після переходу на батарею; її не виміряно.
 
 Рядок СОН, автоматичний повтор, стенд та латка до обгортки не реалізовані й не перевірені. Голова цієї гілки походить від `1cbca4d7`, а вказаний у наряді `main` — `7ef034f`; останній не є її предком.
+
+## Прямий доказ виклику сну
+
+Повторний вимір System 02.11: Kernel-Power 187 (record 71122, 71179, 71239) о 01:05:03.5880014, 07:09:31.9279517, 11:58:44.2634825 UTC називає ApiCallerName = \\Device\\HarddiskVolume3\\Program Files\\ASUS\\Armoury Crate Service\\ArmouryCrate.UserSessionHelper.exe, SystemAction=3, LightestSystemState=2. Отже, програму визначено: ArmouryCrate.UserSessionHelper.exe. Структурований вимір без даних облікового запису — живлення.json. Причинний зв'язок внутрішнього рішення ASUS із втратою світла залишається гіпотезою; переходи на батарею й час виклику виміряно.
