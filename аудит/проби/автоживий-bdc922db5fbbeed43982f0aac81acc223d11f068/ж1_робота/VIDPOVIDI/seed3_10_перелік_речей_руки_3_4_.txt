@@ -1,0 +1,51 @@
+── ПРОМПТ (2593 симв.) ──
+{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.", "One item carries one thing — of two alternatives list the first; a note in brackets is not an item.", "Slot \"accessory\" is for an item no other slot fits.", "\"is_outfit\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "ITEM_LIST", "answer_schema": {"is_outfit": "yes|no", "items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory", "color_hex": "<#rrggbb or null>", "worn": "<true, or false when the description says the outfit goes without it>"}]}, "input": ["\"description\" — the outfit description"]}, "description": "Charcoal grey wool-blend blazer with a structured lapel, single-breasted cut hitting at the hip, matte charcoal hex code #36454F, heavy wool texture.\nCream silk blouse with a彼得潘领 (peter pan collar), relaxed fit through the shoulders, knee-length hemline, soft ivory cream hex code #FFFDD0, smooth satin weave.\nHigh-waisted navy pinstripe tailored trousers, straight-leg cut falling just above the ankle, deep midnight blue hex code #191970, crisp cotton-wool blend fabric.\nTan leather ankle boots with a low 3 cm block heel, rounded toe shape reaching mid-calf, light cognac tan hex code #C19A6B, smooth calfskin leather.\nGold vermeil stud earrings in a simple circular design and a slim brown leather belt matching the boots tone.\n\nThis outfit works perfectly for an autumn workday as it adheres to the \"smart\" dress code required for the office while providing warmth through the structured blazer without appearing too heavy. The neutral palette of charcoal, cream, and navy creates a professional silhouette that complements her warm skin tones in shades like #deb295 and #e2ba9f, while the ivory blouse softens the sharp lines of the suit. The pinstripe trousers add a subtle textural interest appropriate for autumn weather, and the tan leather accessories ground the look with an earthy warmth that fits the seasonal atmosphere."}
+
+── ВІДПОВІДЬ (1247 симв., 7.7 с, HTTP 200) ──
+{
+  "is_outfit": "yes",
+  "items": [
+    {
+      "name": "blazer",
+      "details": "structured lapel, single-breasted cut hitting at the hip, heavy wool texture",
+      "slot": "outerwear",
+      "color_hex": "#36454F",
+      "worn": true
+    },
+    {
+      "name": "blouse",
+      "details": "彼得潘领 (peter pan collar), relaxed fit through the shoulders, knee-length hemline, smooth satin weave",
+      "slot": "top",
+      "color_hex": "#FFFDD0",
+      "worn": true
+    },
+    {
+      "name": "trousers",
+      "details": "high-waisted tailored straight-leg cut falling just above the ankle, crisp cotton-wool blend fabric",
+      "slot": "bottom",
+      "color_hex": "#191970",
+      "worn": true
+    },
+    {
+      "name": "ankle boots",
+      "details": "low 3 cm block heel, rounded toe shape reaching mid-calf, smooth calfskin leather",
+      "slot": "shoes",
+      "color_hex": "#C19A6B",
+      "worn": true
+    },
+    {
+      "name": "earrings",
+      "details": "simple circular design",
+      "slot": "earrings",
+      "color_hex": null,
+      "worn": true
+    },
+    {
+      "name": "belt",
+      "details": "slim brown leather matching the boots tone",
+      "slot": "belt",
+      "color_hex": "#C19A6B",
+      "worn": true
+    }
+  ]
+}
