@@ -1,7 +1,8 @@
 diff --git a/.github/workflows/obhortka.yml b/.github/workflows/obhortka.yml
+index 43867e60c16e0e0e660f9fb320067fffc684145e..4871f563b2987dd54d251c8e64af1efbdfa0805c 100644
 --- a/.github/workflows/obhortka.yml
 +++ b/.github/workflows/obhortka.yml
-@@ -83,6 +83,7 @@
+@@ -83,6 +83,7 @@ jobs:
                - 'сценарії_m9v.sh'
                - 'сценарії_gpu_процеси.ps1'
                - 'сценарії_no_report.ps1'
@@ -10,9 +11,10 @@ diff --git a/.github/workflows/obhortka.yml b/.github/workflows/obhortka.yml
              stands:
                - 'сценарії_черги.sh'
 diff --git a/аудит/адаптери/gemini/gemini_publish.ps1 b/аудит/адаптери/gemini/gemini_publish.ps1
+index 6dccca13f9b968a6e421370bf35f1291f4d1f5dd..065a8adc4bb6f06e6d237fa4c1e7c6e977e95b9b 100644
 --- a/аудит/адаптери/gemini/gemini_publish.ps1
 +++ b/аудит/адаптери/gemini/gemini_publish.ps1
-@@ -270,6 +270,184 @@
+@@ -270,6 +270,169 @@ function Get-BadLine([string]$Id, [string]$Why) {
      [pscustomobject]@{ Outbox = 'GEMINI ОБГОРТКА: ЗАБЛОКОВАНО gemini/невідомо STATE_INVALID' }
  }
  
@@ -88,7 +90,7 @@ diff --git a/аудит/адаптери/gemini/gemini_publish.ps1 b/аудит/
 +        }
 +    } catch { $null = $_ }
 +    foreach ($file in @(Get-ChildItem -LiteralPath $OutDir -Filter '*.json' -File -ErrorAction SilentlyContinue)) {
-+        if ($file.BaseName -cnotmatch $script:IdPattern -or $file.Length -gt 65536) { continue }
++        if ($file.BaseName -cnotmatch $script:IdPattern) { continue }
 +        try {
 +            $status = [IO.File]::ReadAllText($file.FullName, $script:Utf8) | ConvertFrom-Json
 +            $start = Get-SleepRunStart $status; $end = Get-SleepRunEnd $status
@@ -112,28 +114,10 @@ diff --git a/аудит/адаптери/gemini/gemini_publish.ps1 b/аудит/
 +        $rows = @(Get-WakeRows $last)
 +        $boot = Get-PowerBoot
 +        $reboot = $null -ne $boot -and $boot -gt $last -and $boot -le $now
-+        # Планувальник публікатора — щохвилини (НАЛАШТУВАННЯ.md, крок 5).
-+        # П'ять пропущених heartbeat — запасне джерело для вимкнення без події пробудження.
-+        if ($rows.Count -eq 0 -and ($reboot -or ($now - $last).TotalMinutes -gt 5)) {
-+            # Першу ознаку роботи після паузи могли вже записати смуги чи фінал наряду.
-+            # Не ставимо кінець паузи пізніше за цей фінал: інакше перетин ніколи не справдиться.
-+            $resume = $now
-+            if ($reboot) { $resume = $boot }
-+            $after = $(if ($reboot) { $boot } else { $last })
-+            try {
-+                $beat = [IO.File]::ReadAllText((Join-Path $OutDir 'heartbeat.json'), $script:Utf8) | ConvertFrom-Json
-+                $stamp = Get-SleepTime ([string](Get-Prop $beat 'read_utc'))
-+                if ($null -ne $stamp -and $stamp -gt $after -and $stamp -lt $resume) { $resume = $stamp }
-+            } catch { $null = $_ }
-+            foreach ($file in @(Get-ChildItem -LiteralPath $OutDir -Filter '*.json' -File -ErrorAction SilentlyContinue)) {
-+                if ($file.BaseName -cnotmatch $script:IdPattern -or $file.Length -gt 65536) { continue }
-+                try {
-+                    $status = [IO.File]::ReadAllText($file.FullName, $script:Utf8) | ConvertFrom-Json
-+                    $start = Get-SleepRunStart $status; $end = Get-SleepRunEnd $status
-+                    if ($null -ne $start -and $null -ne $end -and $start -le $last -and $end -gt $after -and $end -lt $resume) { $resume = $end }
-+                } catch { $null = $_ }
-+            }
-+            $rows = @([pscustomobject]@{ from=$last.ToString('o'); to=$resume.ToString('o'); source=$(if ($reboot) { 'heartbeat/boot' } else { 'heartbeat' }) })
++        # Сама пауза публікатора не доводить сну й не дає дозволу повтору.
++        # Heartbeat задає початок перерви лише при підтвердженому новому завантаженні.
++        if ($rows.Count -eq 0 -and $reboot) {
++            $rows = @([pscustomobject]@{ from=$last.ToString('o'); to=$boot.ToString('o'); source='heartbeat/boot' })
 +        }
 +        foreach ($row in $rows) {
 +            $key = Get-Sha256Hex ($row.from + ' ' + $row.to)
@@ -149,7 +133,7 @@ diff --git a/аудит/адаптери/gemini/gemini_publish.ps1 b/аудит/
 +        $n = Get-SleepTaskCount $event
 +        $line = "GEMINI ОБГОРТКА: СОН $($from.ToString('yyyy-MM-ddTHH:mm:ssZ')) → $($to.ToString('yyyy-MM-ddTHH:mm:ssZ')), нарядів $n"
 +        # Стале ім'я витримує збій між записом вихідних і збереженням announced.
-+        Add-OutboxLine ($to.ToString('yyyyMMdd-HHmmss') + '-' + $event.key.Substring(0,12) + '.txt') $line
++        Add-OutboxLine ($to.ToString('yyyyMMdd-HHmmss') + '-' + ([regex]::Match($event.key, '^[0-9a-f]{12}').Value) + '.txt') $line # Суфікс — формат чинного OutboxNamePattern.
 +        $event.announced = $true
 +        Write-WrapperLog ($line + '; джерело ' + $event.source)
 +    }
@@ -186,7 +170,10 @@ diff --git a/аудит/адаптери/gemini/gemini_publish.ps1 b/аудит/
 +    $permit = [ordered]@{parent=[string]$Status.id; queue=$Queue; marker=$Marker; head=$Head; sleep=$event.key}
 +    $text = $permit | ConvertTo-Json -Compress
 +    Write-FileAtomic (Join-Path $dir ($Status.id + '.json')) $text
-+    Write-FileAtomic (Join-Path $OutDir ('sleep-retry-' + $Status.id + '.json')) $text
++    # Канал до планувальника — встановлена тека з RX для gemini, а не його OutDir.
++    # Перевірка наявного ACL не змінює прав і не запитує підвищення.
++    if (-not (Test-UpdateRoot $UpdateRoot)) { throw 'SLEEP_RETRY_ACL' }
++    Write-FileAtomic (Join-Path $UpdateRoot ('sleep-retry-' + $Status.id + '.json')) $text
 +    Write-WrapperLog "сон: $Queue — один автоматичний повтор від $Head"
 +    $true
 +}
@@ -197,7 +184,7 @@ diff --git a/аудит/адаптери/gemini/gemini_publish.ps1 b/аудит/
  # Один стан -> рядок диспетчерові. Усе в рядку — з переліків цього файлу, перевірених назв і чисел.
  # 'RETRY' — пуш не вдався: той самий стан ще раз на наступному запуску, рядок — лише після години невдач.
  function Get-Line([string]$Id) {
-@@ -303,7 +481,18 @@
+@@ -303,7 +466,18 @@ function Get-Line([string]$Id) {
      }
      # Стан пише gemini, тож будь-який стан може бути підробленим: опублікована позначка закрита для всіх наступних,
      # а неопублікований результат займає лише свій код — підроблений ранній стан не забирає місця справжньої публікації.
@@ -217,7 +204,7 @@ diff --git a/аудит/адаптери/gemini/gemini_publish.ps1 b/аудит/
      $turns = Get-Int $s 'turns'; $minutes = Get-Int $s 'minutes'; $ahead = Get-Int $s 'ahead'
      # Лише слова цього файлу: поля стану поза переліками (зокрема `models`) у рядок не потрапляють.
      if ($code -eq 'AUTH') { Add-HealthAlert 'AUTH' $(if ($model -like 'gpt-*') { 'CODEX' } else { 'AGY' }) }
-@@ -322,6 +511,7 @@
+@@ -322,6 +496,7 @@ function Get-Line([string]$Id) {
          return [pscustomobject]@{ Slug = $slug; Outbox = "GEMINI ОБГОРТКА: ЗАБЛОКОВАНО $branch $kod" }
      }
      if (-not (Get-Prop $s 'bundle')) {
@@ -225,7 +212,7 @@ diff --git a/аудит/адаптери/gemini/gemini_publish.ps1 b/аудит/
          if (Test-Seen "$queue $marker $code") { return $null }
          $tail = $(if (Test-Path -LiteralPath (Join-Path $OutDir ($Id + '.tail.txt'))) { "; кінець виводу агента — $OutDir\$Id.tail.txt" } else { '' })
          Write-WrapperLog "кінець $Id — НЕ ЗАВЕРШЕНО $branch — $run; комітів нема$tail"
-@@ -339,9 +529,10 @@
+@@ -339,9 +514,10 @@ function Get-Line([string]$Id) {
          }
      }
      if ($pc -eq 'OK') {
@@ -237,7 +224,7 @@ diff --git a/аудит/адаптери/gemini/gemini_publish.ps1 b/аудит/
          # ГОТОВО — лише звіт агента ГОТОВО з опублікованою головою; решта опублікованого — код прогону з _PUBLISHED.
          if ($code -eq 'DONE' -and $head) {
              Save-DraftRequest $branch $head ([string](Get-Prop $s 'actual'))
-@@ -391,6 +582,7 @@
+@@ -391,6 +567,7 @@ function Reset-State([string]$Id) {
  $script:OutboxNamePattern = '^[0-9]{8}-[0-9]{6}-[0-9a-f]{12}\.txt$'
  $script:SlugCore = $script:SlugPattern -replace '^\^|\\z$', ''
  $script:OutboxTemplates = @(
@@ -245,7 +232,7 @@ diff --git a/аудит/адаптери/gemini/gemini_publish.ps1 b/аудит/
      '^GEMINI ОБГОРТКА: ЛАНЦЮГ CHAIN_[A-Z_]{1,32}(?: [A-Za-z0-9]{1,40} [a-z_]{1,40}\.ps1:[0-9]{1,5})?\z',
      '^GEMINI ОБГОРТКА: ОНОВЛЕНО [0-9a-f]{40} СЕКУНД [0-9]{1,12}\z',
      '^GEMINI ОБГОРТКА: ОНОВЛЕННЯ [0-9a-f]{40} UPDATE_[A-Z_]{1,32}\z',
-@@ -789,6 +981,7 @@
+@@ -789,6 +966,7 @@ function Main {
                  '+refs/heads/gemini/*:refs/remotes/origin/gemini/*',
                  '+refs/heads/gemini-queue/*:refs/remotes/origin/gemini-queue/*'))
          if (Test-Path -LiteralPath (Join-Path $UpdateRoot 'selfupdate.ready')) { Invoke-WrapperUpdate $UpdateRoot }
@@ -254,20 +241,64 @@ diff --git a/аудит/адаптери/gemini/gemini_publish.ps1 b/аудит/
          if ($Retry) { Reset-State $Retry }
          $files = @(Get-ChildItem -LiteralPath $OutDir -Filter '*.json' -File -ErrorAction SilentlyContinue | Sort-Object Name)
 diff --git a/аудит/адаптери/gemini/gemini_run.ps1 b/аудит/адаптери/gemini/gemini_run.ps1
+index 7b61ae63be731be3b86aa42d7169b07ad4f0a399..0941ec7a2074cd9df76d2ff06bb76071f2427d6e 100644
 --- a/аудит/адаптери/gemini/gemini_run.ps1
 +++ b/аудит/адаптери/gemini/gemini_run.ps1
-@@ -828,6 +828,47 @@
+@@ -33,6 +33,7 @@ param(
+     [string]$RunsDir = (Join-Path $env:USERPROFILE 'gemini-runs'),
+     [string]$OutDir = 'C:\Users\Public\gemini\out',
+     [string]$LaneDir = 'C:\Users\Public\gemini\lanes',
++    [string]$UpdateRoot = 'C:\ProgramData\gemini-wrapper',
+     [string]$RepoUrl = 'https://github.com/mightyrochy/kod-shi-data',
+     [string]$ExpectedUser = 'gemini',
+     [string]$ProfileDir = (Join-Path 'C:\Users' $ExpectedUser),
+@@ -828,6 +829,82 @@ function Write-Pools($Version, $Usage, $Models) {
      Write-FileAtomic (Join-Path $OutDir 'pools.json') ($doc | ConvertTo-Json -Compress -Depth 4)
  }
  
++function Test-SleepRetryPath([string]$Path) {
++    <# Доводить, що агент не може підмінити встановлений канал чи окремий дозвіл.
++    Корінь має наявний ACL інсталяції; власник і писачі файла — лише писачі цього кореня.
++    Відхиляємо також власність агента: власник може переписати DACL навіть без WriteData. #>
++    try {
++        $identity = [Security.Principal.WindowsIdentity]::GetCurrent()
++        $untrusted = @($identity.User.Value) + @($identity.Groups | ForEach-Object { $_.Value })
++        $write = [Security.AccessControl.FileSystemRights]'WriteData,AppendData,WriteExtendedAttributes,WriteAttributes,Delete,ChangePermissions,TakeOwnership,DeleteSubdirectoriesAndFiles'
++        $item = Get-Item -LiteralPath $UpdateRoot -ErrorAction Stop
++        while ($null -ne $item) {
++            if ($item.Attributes -band [IO.FileAttributes]::ReparsePoint) { return $false }
++            $item = $item.Parent
++        }
++        $rootAcl = Get-Acl -LiteralPath $UpdateRoot -ErrorAction Stop
++        $owner = $rootAcl.GetOwner([Security.Principal.SecurityIdentifier]).Value
++        if ($owner -in $untrusted) { return $false }
++        $writers = @($owner)
++        foreach ($rule in $rootAcl.Access) {
++            if ($rule.AccessControlType -ne 'Allow' -or -not ($rule.FileSystemRights -band $write)) { continue }
++            $sid = $rule.IdentityReference.Translate([Security.Principal.SecurityIdentifier]).Value
++            if ($sid -in $untrusted) { return $false }
++            $writers += $sid
++        }
++        $file = Get-Item -LiteralPath $Path -ErrorAction Stop
++        if ($file.Directory.FullName -cne [IO.Path]::GetFullPath($UpdateRoot) -or ($file.Attributes -band [IO.FileAttributes]::ReparsePoint)) { return $false }
++        $acl = Get-Acl -LiteralPath $Path -ErrorAction Stop
++        if ($acl.GetOwner([Security.Principal.SecurityIdentifier]).Value -notin $writers) { return $false }
++        foreach ($rule in $acl.Access) {
++            if ($rule.AccessControlType -ne 'Allow' -or -not ($rule.FileSystemRights -band $write)) { continue }
++            if ($rule.IdentityReference.Translate([Security.Principal.SecurityIdentifier]).Value -notin $writers) { return $false }
++        }
++        return $true
++    } catch { return $false }
++}
++
 +function Import-SleepRetries {
 +    <# Приймає запит публікатора лише після fetch опублікованої голови й кінця старого прогону. #>
-+    foreach ($file in @(Get-ChildItem -LiteralPath $OutDir -Filter 'sleep-retry-*.json' -File -ErrorAction SilentlyContinue)) {
++    foreach ($file in @(Get-ChildItem -LiteralPath $UpdateRoot -Filter 'sleep-retry-*.json' -File -ErrorAction SilentlyContinue)) {
 +        try {
-+        if ($file.Length -gt 4096 -or $file.Name -cnotmatch '^sleep-retry-([0-9]{8}-[0-9]{6}-[0-9a-f]{12})\.json$') { continue }
++        if (-not (Test-SleepRetryPath $file.FullName) -or $file.Name -cnotmatch '^sleep-retry-([0-9]{8}-[0-9]{6}-[0-9a-f]{12})\.json$') { continue }
 +        $parent = $Matches[1]
 +        $request = [IO.File]::ReadAllText($file.FullName, $script:Utf8) | ConvertFrom-Json
-+        if ($request.parent -cne $parent -or $request.head -cnotmatch '^[0-9a-f]{40}$' -or $request.marker -cnotmatch '^[0-9a-f]{40}$') { continue }
++        if ($request.parent -cne $parent -or $request.head -cnotmatch '^[0-9a-f]{40}$' -or $request.marker -cnotmatch '^[0-9a-f]{40}$' -or $request.sleep -cnotmatch '^[0-9a-f]{64}$') { continue }
 +        $matches = @(Get-Markers | Where-Object { $_.Valid -and $_.Name -ceq $request.queue -and $_.Sha -ceq $request.marker -and $script:Lanes -contains $_.Lane })
 +        if ($matches.Count -ne 1) { continue }
 +        $m = $matches[0]; $key = Get-MarkerKey $m
@@ -278,7 +309,7 @@ diff --git a/аудит/адаптери/gemini/gemini_run.ps1 b/аудит/ад
 +            # Стан WAIT міг не встигнути записатися до вимкнення.
 +            if ($previous.parent -cne $parent) { continue }
 +        }
-+        if (-not (Test-Path -LiteralPath $state) -or [IO.File]::ReadAllText($state, $script:Utf8) -cnotmatch ('^DONE ' + [regex]::Escape($parent) + ' ')) { continue }
++        if (-not (Test-Path -LiteralPath $state) -or [IO.File]::ReadAllText($state, $script:Utf8) -cnotmatch ('^DONE ' + [regex]::Escape($parent) + ' (?:STALL|STALL_PUBLISHED|AGY_ERROR|BLOCKED|BLOCKED_PUBLISHED|INTERRUPTED)$')) { continue }
 +        if (Test-SlugBusy $m.Slug $script:Lanes) { continue }
 +        $head = Get-RefSha "refs/remotes/origin/gemini/$($m.Slug)"
 +        if (-not $head) { $head = Get-RefSha 'refs/remotes/origin/main' }
@@ -304,7 +335,7 @@ diff --git a/аудит/адаптери/gemini/gemini_run.ps1 b/аудит/ад
  # --- один наряд ---------------------------------------------------------------------------------------------------
  
  # Кінець прогону: факти гілки, бандл (коли є нові коміти), стан у теці обміну. Спільне для звичайного кінця й
-@@ -861,6 +902,7 @@
+@@ -861,6 +938,7 @@ function Complete-Status($Status, [string]$StatePath, [string]$Tail, [datetime]$
          if ($reason.Count -eq 0) { $reason = @($Tail -split "`n" | Where-Object { $_.Trim() } | Select-Object -Last 1) }
          try { Add-Note (Join-Path $OutDir 'blocked-reasons.json') "gemini/$($Status.slug)" ([string]$reason[0]) } catch { Write-Log "причина BLOCKED не записана: $($_.Exception.Message)" }
      }
@@ -312,7 +343,7 @@ diff --git a/аудит/адаптери/gemini/gemini_run.ps1 b/аудит/ад
      Write-FileAtomic (Join-Path $OutDir ($Status.id + '.json')) ($Status | ConvertTo-Json -Compress)
      Write-FileAtomic $StatePath "DONE $($Status.id) $($Status.code)"
      Remove-Claim $StatePath
-@@ -912,7 +954,7 @@
+@@ -912,7 +990,7 @@ function Invoke-Task($M, $Job) {
      $statePath = Get-StatePath $key
      $status = [ordered]@{ v = 1; id = $id; slug = $M.Slug; model = $M.Model; n = [int]$M.N; marker = $M.Sha; cond = $M.Cond; slot = [string]$Job.slot
          start = ''; head = ''; code = ''; report = 'NONE'; ahead = 0; turns = 0; minutes = 0; bundle = ''; engine = 'agy'
@@ -321,7 +352,7 @@ diff --git a/аудит/адаптери/gemini/gemini_run.ps1 b/аудит/ад
      $prev = $(if (Test-Path -LiteralPath $statePath) { [IO.File]::ReadAllText($statePath, $script:Utf8) } else { $null })
      Write-FileAtomic $statePath ('STARTED ' + ($status | ConvertTo-Json -Compress))
      $dir = [string]$Job.dir
-@@ -1273,6 +1315,7 @@
+@@ -1273,6 +1351,7 @@ function Main {
                  $script:Limits = Get-Limits
                  # Перервані й накопичене — після першого успішного fetch: прохід, що впав на fetch, їх не знімає.
                  if ($clean) { Resume-Interrupted; Clear-TaskCopies (Join-Path $RunsDir 'w') @('--branches', '--remotes'); $clean = $false }
@@ -330,6 +361,7 @@ diff --git a/аудит/адаптери/gemini/gemini_run.ps1 b/аудит/ад
                  $script:Agy = Find-EngineExe $AgyExe
                  if ($script:Agy) { [void](Read-Usage) }
 diff --git a/аудит/адаптери/gemini/m9v/хеші.psd1 b/аудит/адаптери/gemini/m9v/хеші.psd1
+index d7db56f02f6b5d1efb1663170e6f4a5d564e563c..0bc05ee136d4d16e56e87e0790c609025dfd3381 100644
 --- a/аудит/адаптери/gemini/m9v/хеші.psd1
 +++ b/аудит/адаптери/gemini/m9v/хеші.psd1
 @@ -5,8 +5,8 @@
@@ -338,30 +370,32 @@ diff --git a/аудит/адаптери/gemini/m9v/хеші.psd1 b/аудит/�
      'wrapper_health.ps1' = 'F63CDFD76BCBE92440A843759BCD6CED4E49B4BCBAC19620CACA4B74B9D58AA5'
 -    'gemini_run.ps1'     = 'ADC4A9549E85637C9ECF1E7EEE510CF44BD82EEC8553669B100DE02DA296F852'
 -    'gemini_publish.ps1' = '53D8542D7AC9FC822D7E75BA490E1EC3AA24CB4680E5887072749CC85076384D'
-+    'gemini_run.ps1'     = '2BC7418C0BE1332434576CACCB1BFE6E5A3A041757059E222A27C3E220FB3954'
-+    'gemini_publish.ps1' = 'FA1208F56CA2C925F34AE0F4B5F5879429EF53F72199ED388E319B1D8974D55B'
++    'gemini_run.ps1'     = 'FC237180DABFF4007A977416099AFECAFE2C2EE4F800A6097CEB9B40ACEDAE8D'
++    'gemini_publish.ps1' = 'F7F75BD1257B229D5E3FD0748AED11F5D1844515B464966055A7F17B53BCDC06'
      # Інсталятор Codex (9741) закріплено за релізом: install.ps1 — файл релізу https://releases.openai.com/codex/releases/<CodexRelease>/install.ps1
      # (незмінний URL; той самий sha256 віддає https://chatgpt.com/codex/install.ps1 — редирект на releases.openai.com — і публікує реліз
      # openai/codex). 2_під_gemini.ps1 -WithCodex виконує його лише при збігу CodexInstaller і ставить саме цей реліз (-Release).
 diff --git a/аудит/адаптери/gemini/НАЛАШТУВАННЯ.md b/аудит/адаптери/gemini/НАЛАШТУВАННЯ.md
+index 5c6fee729ddb16bd35f7022951fda1e6f24eee54..1ce51ca17bec715811c692b359ba57d9654e5637 100644
 --- a/аудит/адаптери/gemini/НАЛАШТУВАННЯ.md
 +++ b/аудит/адаптери/gemini/НАЛАШТУВАННЯ.md
-@@ -451,8 +451,8 @@
+@@ -451,8 +451,8 @@ $f = Join-Path "$env:USERPROFILE\gemini-outbox" $n
  | `wrapper_probe.ps1` | `85116D04C22EB64CBFF52E66BCEAE9B1091577A889EDD58A8B634093A82BDBC6` |
  | `wrapper_update.ps1` | `45F254E5CB2FB7D882BBB9CE7CA121988FDF23BACCFE65CB67A4CA3B3F426FE7` |
  | `wrapper_chain.ps1` | `ABE9238B05AB0EAB3E65912867159FC06EDE415188EC22E9C4D8DD2DD88487BA` |
 -| `gemini_run.ps1` | `ADC4A9549E85637C9ECF1E7EEE510CF44BD82EEC8553669B100DE02DA296F852` |
 -| `gemini_publish.ps1` | `53D8542D7AC9FC822D7E75BA490E1EC3AA24CB4680E5887072749CC85076384D` |
-+| `gemini_run.ps1` | `2BC7418C0BE1332434576CACCB1BFE6E5A3A041757059E222A27C3E220FB3954` |
-+| `gemini_publish.ps1` | `FA1208F56CA2C925F34AE0F4B5F5879429EF53F72199ED388E319B1D8974D55B` |
++| `gemini_run.ps1` | `FC237180DABFF4007A977416099AFECAFE2C2EE4F800A6097CEB9B40ACEDAE8D` |
++| `gemini_publish.ps1` | `F7F75BD1257B229D5E3FD0748AED11F5D1844515B464966055A7F17B53BCDC06` |
  | `gemini_watch.ps1` | `69EFEBB07FF1AF51C382B753A95C50F3C1AC27B3008F2489992BEBE3FD0213AA` |
  | `wrapper_health.ps1` | `F63CDFD76BCBE92440A843759BCD6CED4E49B4BCBAC19620CACA4B74B9D58AA5` |
  | `queue_lanes.ps1` | `FEAD267F76D269476E00F48C44366D4BA9D282B2BFC85CC64712968D430B4AFD` |
 diff --git a/аудит/адаптери/gemini/перевірка/сценарії_сну.ps1 b/аудит/адаптери/gemini/перевірка/сценарії_сну.ps1
 new file mode 100644
+index 0000000000000000000000000000000000000000..157465d250bc8d91008f93e929da3aac002ce08e
 --- /dev/null
 +++ b/аудит/адаптери/gemini/перевірка/сценарії_сну.ps1
-@@ -0,0 +1,203 @@
+@@ -0,0 +1,227 @@
 +﻿#Requires -Version 5.1
 +param([string]$SourceDir = (Split-Path -Parent $PSScriptRoot), [switch]$Before)
 +$ErrorActionPreference = 'Stop'
@@ -377,27 +411,28 @@ new file mode 100644
 +try {
 +    Check 'Windows PowerShell 5.1' ($PSVersionTable.PSVersion.Major -eq 5 -and $PSVersionTable.PSVersion.Minor -eq 1)
 +    if ($Before) {
-+        . (Join-Path $SourceDir 'gemini_publish.ps1') -WorkDir "$tmp/pub" -OutDir "$tmp/out" -OutboxDir "$tmp/outbox"
-+        foreach ($dir in @($WorkDir,"$WorkDir/seen",$OutDir,$OutboxDir)) { [void][IO.Directory]::CreateDirectory($dir) }
++        . (Join-Path $SourceDir 'gemini_publish.ps1') -WorkDir "$tmp/pub" -OutDir "$tmp/out" -OutboxDir "$tmp/outbox" -UpdateRoot "$tmp/trusted"
++        foreach ($dir in @($WorkDir,"$WorkDir/seen",$OutDir,$OutboxDir,$UpdateRoot)) { [void][IO.Directory]::CreateDirectory($dir) }
 +        function Get-RefSha { 'a'*40 }
 +        $id='20261102-003000-000000000001'
 +        $s=@{v=1;id=$id;slug='сон';model='gpt-test-high';n=1;marker=('a'*40);head='';cond='';code='STALL';turns=1;minutes=120;ahead=0;bundle='';started_utc='2026-11-02T00:30:00Z';ended_utc='2026-11-02T02:30:00Z'}
 +        Write-FileAtomic (Join-Path $OutDir ($id+'.json')) ($s|ConvertTo-Json -Compress)
 +        $result=Get-Line $id
 +        Check 'ДО: перерваний STALL одразу дає ЗАБЛОКОВАНО' ($result.Outbox -ceq 'GEMINI ОБГОРТКА: ЗАБЛОКОВАНО gemini/сон STALL')
-+        Check 'ДО: рядків СОН 0, запитів автоматичного повтору 0' (@(Get-ChildItem -LiteralPath $OutboxDir -Filter '*.txt').Count -eq 0 -and @(Get-ChildItem -LiteralPath $OutDir -Filter 'sleep-retry-*.json').Count -eq 0)
++        Check 'ДО: рядків СОН 0, запитів автоматичного повтору 0' (@(Get-ChildItem -LiteralPath $OutboxDir -Filter '*.txt').Count -eq 0 -and @(Get-ChildItem -LiteralPath $UpdateRoot -Filter 'sleep-retry-*.json').Count -eq 0)
 +        exit ([int]($bad -gt 0))
 +    }
 +    $pub = New-Module -ArgumentList $SourceDir,$tmp -ScriptBlock {
 +        param($src,$tmp)
-+        . (Join-Path $src 'gemini_publish.ps1') -WorkDir "$tmp/pub" -OutDir "$tmp/out" -OutboxDir "$tmp/outbox"
-+        foreach ($dir in @($WorkDir,"$WorkDir/seen",$OutDir,$OutboxDir)) { [void][IO.Directory]::CreateDirectory($dir) }
++        . (Join-Path $src 'gemini_publish.ps1') -WorkDir "$tmp/pub" -OutDir "$tmp/out" -OutboxDir "$tmp/outbox" -UpdateRoot "$tmp/trusted"
++        foreach ($dir in @($WorkDir,"$WorkDir/seen",$OutDir,$OutboxDir,$UpdateRoot)) { [void][IO.Directory]::CreateDirectory($dir) }
 +        $script:MainHead = 'a'*40; $script:PublishedHead = 'b'*40; $script:OutputHead = 'c'*40
 +        $script:Marker = 'a'*40; $script:Queue = 'gemini-queue/сон/gpt-test-high/1'
 +        $script:PublishCode = 'OK'; $script:PublishCalls = 0
 +        $script:WakeRows = @([pscustomobject]@{ from='2026-11-02T01:00:00.0000000Z';to='2026-11-02T02:00:00.0000000Z';source='Power-Troubleshooter/1' })
 +        $script:Clock = [datetime]'2026-11-02T02:30:00Z'
 +        $script:Boot = $null
++        function Test-UpdateRoot { $true }
 +        function Get-PowerTime { $script:Clock }
 +        function Get-PowerBoot { $script:Boot }
 +        function Get-WinEvent {
@@ -439,19 +474,19 @@ new file mode 100644
 +            [pscustomobject]@{Name='рядок СОН проходить доставку';Ok=(-not (Test-OutboxLine $line))}
 +            [pscustomobject]@{Name='довільний текст у рядок СОН не проходить';Ok=([bool](Test-OutboxLine ($line+' зайве')))}
 +            $result = Get-Line $first
-+            $request = [IO.File]::ReadAllText((Join-Path $OutDir ('sleep-retry-'+$first+'.json')),$script:Utf8) | ConvertFrom-Json
++            $request = [IO.File]::ReadAllText((Join-Path $UpdateRoot ('sleep-retry-'+$first+'.json')),$script:Utf8) | ConvertFrom-Json
 +            [pscustomobject]@{Name='STALL_PUBLISHED — один повтор після публікації голови';Ok=($null -eq $result -and $script:PublishCalls -eq 1 -and $request.head -ceq $script:PublishedHead -and $request.head -ceq $script:OutputHead)}
-+            $requests = @(Get-ChildItem -LiteralPath $OutDir -Filter 'sleep-retry-*.json').Count
++            $requests = @(Get-ChildItem -LiteralPath $UpdateRoot -Filter 'sleep-retry-*.json').Count
 +            [void](Get-Line $first)
-+            [pscustomobject]@{Name='повтор обробки першого результату не дублює запит';Ok=(@(Get-ChildItem -LiteralPath $OutDir -Filter 'sleep-retry-*.json').Count -eq $requests -and $script:PublishCalls -eq 1)}
-+            $requestPath = Join-Path $OutDir ('sleep-retry-'+$first+'.json')
++            [pscustomobject]@{Name='повтор обробки першого результату не дублює запит';Ok=(@(Get-ChildItem -LiteralPath $UpdateRoot -Filter 'sleep-retry-*.json').Count -eq $requests -and $script:PublishCalls -eq 1)}
++            $requestPath = Join-Path $UpdateRoot ('sleep-retry-'+$first+'.json')
 +            $originalRequest = [IO.File]::ReadAllText($requestPath,$script:Utf8)
 +            Remove-Item -LiteralPath $requestPath
 +            [void](Get-Line $first)
 +            [pscustomobject]@{Name='збій після публікації не губить запит повтору';Ok=((Test-Path -LiteralPath $requestPath) -and $script:PublishCalls -eq 1)}
 +            $forgedFirst = Status '20261102-003000-000000000099' 'STALL'; Save-Status $forgedFirst
 +            [void](Get-Line $forgedFirst.id)
-+            [pscustomobject]@{Name='інший ID не повторює вже опубліковану позначку';Ok=(-not (Test-Path -LiteralPath (Join-Path $OutDir ('sleep-retry-'+$forgedFirst.id+'.json'))))}
++            [pscustomobject]@{Name='інший ID не повторює вже опубліковану позначку';Ok=(-not (Test-Path -LiteralPath (Join-Path $UpdateRoot ('sleep-retry-'+$forgedFirst.id+'.json'))))}
 +            $script:WakeRows = @([pscustomobject]@{from='2026-11-02T03:00:00Z';to='2026-11-02T04:00:00Z';source='Power-Troubleshooter/1'})
 +            $script:Clock = [datetime]'2026-11-02T04:30:00Z'
 +            Update-SleepEvents
@@ -460,7 +495,7 @@ new file mode 100644
 +            Save-Status $second
 +            $result = Get-Line $second.id
 +            [pscustomobject]@{Name='другий сон — ЗАБЛОКОВАНО, публікація повтору не губиться';Ok=($result.Outbox -ceq 'GEMINI ОБГОРТКА: ЗАБЛОКОВАНО gemini/сон STALL_PUBLISHED' -and $script:PublishedHead -ceq $second.head -and $script:PublishCalls -eq 2)}
-+            [pscustomobject]@{Name='другий сон не створює третього прогону';Ok=(@(Get-ChildItem -LiteralPath $OutDir -Filter 'sleep-retry-*.json').Count -eq 1)}
++            [pscustomobject]@{Name='другий сон не створює третього прогону';Ok=(@(Get-ChildItem -LiteralPath $UpdateRoot -Filter 'sleep-retry-*.json').Count -eq 1)}
 +            $forged = Status '20261102-043000-000000000003' 'DONE' '20261102-000000-ffffffffffff'
 +            Save-Status $forged; [void](Get-Line $forged.id)
 +            [pscustomobject]@{Name='поле sleep_parent без власного дозволу не відкриває публікацію';Ok=($script:PublishCalls -eq 2)}
@@ -480,14 +515,13 @@ new file mode 100644
 +            # Нова позначка — окремий незалежний наряд.
 +            $script:Marker='f'*40;$s.marker=$script:Marker;Save-Status $s
 +            $script:PublishCode='WRAPPER_FILES';$result=Get-Line $s.id
-+            [pscustomobject]@{Name='відмова запобіжника публікації не дає повтору';Ok=($result.Outbox -match ' WRAPPER_FILES$' -and -not (Test-Path -LiteralPath (Join-Path $OutDir ('sleep-retry-'+$s.id+'.json'))))}
++            [pscustomobject]@{Name='відмова запобіжника публікації не дає повтору';Ok=($result.Outbox -match ' WRAPPER_FILES$' -and -not (Test-Path -LiteralPath (Join-Path $UpdateRoot ('sleep-retry-'+$s.id+'.json'))))}
 +            # Новий процес читає збережений стан події й не створює другого рядка.
 +            $script:SleepEvents=@();$script:WakeRows=@();Update-SleepEvents
 +            [pscustomobject]@{Name='перезапуск публікатора зберігає дедуплікацію';Ok=(@(Get-ChildItem -LiteralPath $OutboxDir -Filter '*.txt').Count -eq 2)}
 +            Write-FileAtomic (Join-Path $WorkDir 'sleep-events.json') ('{"read_utc":"2026-11-02T00:30:00Z","events":[]}')
 +            Update-SleepEvents
-+            [pscustomobject]@{Name='ввімкнення без події має межу останнього heartbeat';Ok=($script:SleepEvents.Count -eq 1 -and $script:SleepEvents[0].source -ceq 'heartbeat' -and $script:SleepEvents[0].from -ceq '2026-11-02T00:30:00.0000000Z')}
-+            [pscustomobject]@{Name='фінал після ввімкнення входить у heartbeat-період';Ok=($script:SleepEvents[0].to -ceq '2026-11-02T02:30:00.0000000Z')}
++            [pscustomobject]@{Name='сама тривала пауза публікатора без сну чи boot не дає події';Ok=($script:SleepEvents.Count -eq 0)}
 +            $script:Clock = [datetime]'2026-11-02T05:02:00Z'
 +            $script:Boot = ([datetime]'2026-11-02T05:01:00Z').ToUniversalTime()
 +            Write-FileAtomic (Join-Path $WorkDir 'sleep-events.json') ('{"read_utc":"2026-11-02T05:00:00Z","events":[]}')
@@ -500,7 +534,7 @@ new file mode 100644
 +            $script:Marker='e'*40;$script:PublishCode='OK'
 +            $noBundle = Status '20261102-003000-000000000006' 'AGY_ERROR' '' $false
 +            Save-Status $noBundle;$publishBefore=$script:PublishCalls;$result=Get-Line $noBundle.id
-+            $request=[IO.File]::ReadAllText((Join-Path $OutDir ('sleep-retry-'+$noBundle.id+'.json')),$script:Utf8)|ConvertFrom-Json
++            $request=[IO.File]::ReadAllText((Join-Path $UpdateRoot ('sleep-retry-'+$noBundle.id+'.json')),$script:Utf8)|ConvertFrom-Json
 +            [pscustomobject]@{Name='AGY_ERROR без нових комітів повторюється від наявної опублікованої голови';Ok=($null -eq $result -and $request.head -ceq $script:PublishedHead -and $script:PublishCalls -eq $publishBefore)}
 +            $noBundleRetry=Status '20261102-023000-000000000007' 'AGY_ERROR' $noBundle.id $false
 +            Save-Status $noBundleRetry;$result=Get-Line $noBundleRetry.id
@@ -511,7 +545,7 @@ new file mode 100644
 +    foreach ($check in @(& $pub { Run })) { Check $check.Name $check.Ok }
 +    $worker = New-Module -ArgumentList $SourceDir,$tmp -ScriptBlock {
 +        param($src,$tmp)
-+        . (Join-Path $src 'gemini_run.ps1') -RunsDir "$tmp/runs" -OutDir "$tmp/out" -LaneDir "$tmp/lanes"
++        . (Join-Path $src 'gemini_run.ps1') -RunsDir "$tmp/runs" -OutDir "$tmp/out" -LaneDir "$tmp/lanes" -UpdateRoot "$tmp/trusted"
 +        $script:StateDir=Join-Path $RunsDir 'state';$script:SlotDir=Join-Path $RunsDir 'slots'
 +        foreach($dir in @($RunsDir,$script:StateDir,$script:SlotDir,$LaneDir)) {[void][IO.Directory]::CreateDirectory($dir)}
 +        $script:Head='c'*40;$script:Marker='a'*40
@@ -534,6 +568,30 @@ new file mode 100644
 +        function Run {
 +            <# Запит не запускає модель до появи голови у fetched origin. #>
 +            $state=Get-StatePath (Get-MarkerKey $script:M);$parent='20261102-003000-000000000001'
++            Write-FileAtomic $state "DONE $parent STALL"
++            # Негативна проба перевірки: успішний DONE, жодної події чи дозволу публікатора.
++            $permitPath=Join-Path $UpdateRoot ('sleep-retry-'+$parent+'.json')
++            $permit=[IO.File]::ReadAllText($permitPath,$script:Utf8)
++            Remove-Item -LiteralPath $permitPath
++            Write-FileAtomic $state "DONE $parent DONE"
++            $forged=@{parent=$parent;queue=$script:M.Name;marker=$script:M.Sha;head=$script:Head;sleep=('f'*64)}
++            $forgedPath=Join-Path $OutDir ('sleep-retry-'+$parent+'.json')
++            Write-FileAtomic $forgedPath ($forged|ConvertTo-Json -Compress)
++            Import-SleepRetries
++            $workers=New-Object Collections.ArrayList
++            $started=Start-Markers $workers
++            [pscustomobject]@{Name='підроблений OutDir без сну й дозволу: DONE лишається DONE, запусків 0';Ok=((Get-MarkerState $script:M).Kind -eq 'DONE' -and $started -eq 0 -and $script:Jobs.Count -eq 0 -and -not (Test-Path ($state+'.sleep.json')))}
++            Write-FileAtomic $state "DONE $parent STALL"
++            Import-SleepRetries
++            [pscustomobject]@{Name='підроблений OutDir з кодом STALL теж не відкриває повтор';Ok=((Get-MarkerState $script:M).Kind -eq 'DONE' -and -not (Test-Path ($state+'.sleep.json')))}
++            Write-FileAtomic $state "DONE $parent DONE"
++            [pscustomobject]@{Name='справжня перевірка ACL відхиляє файл і корінь, доступні агенту для запису';Ok=(-not (Test-SleepRetryPath $forgedPath))}
++            # Стенд однієї особи не може створити канал іншого власника: далі підмінено
++            # тільки ACL-межу. Вибір теки, розбір, кінцеві коди й планувальник справжні.
++            function script:Test-SleepRetryPath { $true }
++            Write-FileAtomic $permitPath $permit
++            Import-SleepRetries
++            [pscustomobject]@{Name='навіть дозвіл каналу не відкриває успішний код DONE';Ok=((Get-MarkerState $script:M).Kind -eq 'DONE')}
 +            Write-FileAtomic $state "DONE $parent STALL"
 +            $script:Head='b'*40
 +            function script:Invoke-Git {[pscustomobject]@{Code=1;Out='';Err=''}}
