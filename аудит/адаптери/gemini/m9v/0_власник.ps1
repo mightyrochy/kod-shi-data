@@ -51,7 +51,7 @@ foreach ($target in @($pub, $env:TEMP, $cr)) {
     if ((Get-FileHash "$target\wrapper_health.ps1" -Algorithm SHA256).Hash -ne $expected['wrapper_health.ps1']) { Stop-Here 'хеш wrapper_health.ps1 не збігся' }
 }
 # Нові модулі публікатора перевіряються до першого запуску копії.
-foreach ($name in @('wrapper_update.ps1','wrapper_chain.ps1','wrapper_probe.ps1')) {
+foreach ($name in @('wrapper_update.ps1','wrapper_chain.ps1','wrapper_probe.ps1','queue_lanes.ps1')) {
     Invoke-WebRequest "$base/$name" -OutFile "$pub/$name" -UseBasicParsing
     if ((Get-FileHash "$pub/$name" -Algorithm SHA256).Hash -cne $expected[$name]) { Stop-Here "хеш $name не збігся" }
 }

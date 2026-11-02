@@ -265,18 +265,187 @@ function Get-Sha256Hex([string]$Text) {
 }
 
 function Get-BadLine([string]$Id, [string]$Why) {
+    # Єдиний викликач — Get-Line. Його режим читання не споживає повідомлення STATE_INVALID.
+    $statusOnly = Get-Variable -Name StatusOnly -Scope 1 -ValueOnly -ErrorAction SilentlyContinue
+    if ($statusOnly) { return $null }
     Write-WrapperLog "стан $Id $Why — не опубліковано"
     if (Test-Seen ('bad ' + (Get-Date -Format 'yyyyMMdd'))) { return $null }
     [pscustomobject]@{ Outbox = 'GEMINI ОБГОРТКА: ЗАБЛОКОВАНО gemini/невідомо STATE_INVALID' }
 }
 
+# Облік живлення використовує лише журнал Windows і власний heartbeat публікатора.
+function Get-PowerTime {
+    <# Годинник обліку живлення; стенд підміняє його разом із часом подій. #>
+    [datetime]::UtcNow
+}
+
+function Get-PowerBoot {
+    <# Час поточного завантаження відрізняє навіть коротке вимкнення від звичайного інтервалу heartbeat. #>
+    try { (Get-CimInstance Win32_OperatingSystem -ErrorAction Stop).LastBootUpTime.ToUniversalTime() }
+    catch { return $null }
+}
+
+function Get-SleepTime([string]$Text) {
+    <# Читає час із явним UTC/зсувом; старі локальні дати результатів сюди не потрапляють. #>
+    if ($Text -notmatch '(?:Z|[+-][0-9]{2}:[0-9]{2})$') { return $null }
+    $stamp = [datetimeoffset]::MinValue
+    if ([datetimeoffset]::TryParse($Text, [cultureinfo]::InvariantCulture, [Globalization.DateTimeStyles]::None, [ref]$stamp)) { return $stamp.UtcDateTime }
+}
+
+function Get-WakeRows([datetime]$Since) {
+    <# Межі сну з Power-Troubleshooter 1; брак доступу залишає джерелом heartbeat. #>
+    try {
+        foreach ($event in @(Get-WinEvent -FilterHashtable @{LogName='System'; ProviderName='Microsoft-Windows-Power-Troubleshooter'; Id=1; StartTime=$Since.ToLocalTime()} -ErrorAction Stop)) {
+            $xml = [xml]$event.ToXml(); $data = @{}
+            foreach ($item in $xml.Event.EventData.Data) { $data[[string]$item.Name] = [string]$item.'#text' }
+            $from = Get-SleepTime ([string]$data['SleepTime']); $to = Get-SleepTime ([string]$data['WakeTime'])
+            if ($null -ne $from -and $null -ne $to -and $from -lt $to -and $to -gt $Since) {
+                [pscustomobject]@{ from=$from.ToString('o'); to=$to.ToString('o'); source='Power-Troubleshooter/1' }
+            }
+        }
+    } catch { Write-WrapperLog 'живлення: нових подій Power-Troubleshooter немає або журнал недоступний' }
+}
+
+function Get-SleepRunStart($Status) {
+    <# Нові результати мають UTC початку; старий формат не доводить перетину зі сном. #>
+    Get-SleepTime ([string](Get-Prop $Status 'started_utc'))
+}
+
+function Get-SleepRunEnd($Status) {
+    <# Кінець живого процесу чи закриття STARTED після ввімкнення. #>
+    Get-SleepTime ([string](Get-Prop $Status 'ended_utc'))
+}
+
+function Get-RunSleep($Status) {
+    <# Зіставляє прогін із виміряним сном або підтвердженою зміною завантаження. #>
+    $from = Get-SleepRunStart $Status; $to = Get-SleepRunEnd $Status
+    if ($null -eq $from -or $null -eq $to) { return }
+    foreach ($event in @($script:SleepEvents)) {
+        $sleepFrom = Get-SleepTime ([string]$event.from); $sleepTo = Get-SleepTime ([string]$event.to)
+        if ($null -eq $sleepFrom -or $null -eq $sleepTo) { continue }
+        $before = $from -le $sleepFrom
+        # За зміни завантаження початок прогону до boot доводить, що це ще попередня Windows,
+        # навіть якщо новий наряд стартував між останнім heartbeat і втратою живлення.
+        if ([string](Get-Prop $event 'source') -ceq 'heartbeat/boot') { $before = $from -lt $sleepTo }
+        if ($before -and $to -ge $sleepTo) { return $event }
+    }
+}
+
+function Get-SleepTaskCount($Event) {
+    <# Рахує унікальні позначки на межі перерви: heartbeat і завершені результати. #>
+    $from = Get-SleepTime ([string]$Event.from); $seen = @{}
+    if ([string](Get-Prop $Event 'source') -ceq 'heartbeat/boot') { $from = Get-SleepTime ([string]$Event.to) }
+    try {
+        $beat = [IO.File]::ReadAllText((Join-Path $OutDir 'heartbeat.json'), $script:Utf8) | ConvertFrom-Json
+        foreach ($lane in @(Get-Prop $beat 'lanes')) {
+            foreach ($busy in @(Get-Prop $lane 'busy')) {
+                $since = Get-SleepTime ([string](Get-Prop $busy 'since')); $marker = [string](Get-Prop $busy 'marker')
+                if ($marker -and $null -ne $since -and $since -le $from) { $seen[$marker] = 1 }
+            }
+        }
+    } catch { $null = $_ }
+    foreach ($file in @(Get-ChildItem -LiteralPath $OutDir -Filter '*.json' -File -ErrorAction SilentlyContinue)) {
+        if ($file.BaseName -cnotmatch $script:IdPattern) { continue }
+        try {
+            $status = Get-Line $file.BaseName -StatusOnly
+            $start = Get-SleepRunStart $status; $end = Get-SleepRunEnd $status
+            if ($null -ne $start -and $null -ne $end -and $start -le $from -and $end -ge $from) {
+                $marker = "gemini-queue/$($status.slug)/$($status.model)/$($status.n)$(if ($status.cond) { '/' + $status.cond })"
+                $seen[$marker] = 1
+            }
+        } catch { $null = $_ }
+    }
+    $seen.Count
+}
+
+function Update-SleepEvents {
+    <# Пише один рядок на пробудження; зберігає події та heartbeat між запусками публікатора. #>
+    $path = Join-Path $WorkDir 'sleep-events.json'; $now = (Get-PowerTime).ToUniversalTime()
+    $saved = $null
+    if (Test-Path -LiteralPath $path) { $saved = [IO.File]::ReadAllText($path, $script:Utf8) | ConvertFrom-Json }
+    $last = $null; if ($null -ne $saved) { $last = Get-SleepTime ([string](Get-Prop $saved 'read_utc')) }
+    $events = @(); if ($null -ne $saved) { $events = @(Get-Prop $saved 'events') }
+    if ($null -ne $last) {
+        $rows = @(Get-WakeRows $last)
+        $boot = Get-PowerBoot
+        $reboot = $null -ne $boot -and $boot -gt $last -and $boot -le $now
+        # Сама пауза публікатора не доводить сну й не дає дозволу повтору.
+        # Heartbeat задає початок перерви лише при підтвердженому новому завантаженні.
+        if ($rows.Count -eq 0 -and $reboot) {
+            $rows = @([pscustomobject]@{ from=$last.ToString('o'); to=$boot.ToString('o'); source='heartbeat/boot' })
+        }
+        foreach ($row in $rows) {
+            $key = Get-Sha256Hex ($row.from + ' ' + $row.to)
+            if (@($events | Where-Object { $_.key -ceq $key }).Count -eq 0) {
+                $events += [pscustomobject]@{ key=$key; from=$row.from; to=$row.to; source=$row.source; announced=$false }
+            }
+        }
+    }
+    $script:SleepEvents = $events
+    foreach ($event in $events) {
+        if ($event.announced) { continue }
+        $from = Get-SleepTime $event.from; $to = Get-SleepTime $event.to
+        $n = Get-SleepTaskCount $event
+        $line = "GEMINI ОБГОРТКА: СОН $($from.ToString('yyyy-MM-ddTHH:mm:ssZ')) → $($to.ToString('yyyy-MM-ddTHH:mm:ssZ')), нарядів $n"
+        # Стале ім'я витримує збій між записом вихідних і збереженням announced.
+        Add-OutboxLine ($to.ToString('yyyyMMdd-HHmmss') + '-' + ([regex]::Match($event.key, '^[0-9a-f]{12}').Value) + '.txt') $line # Суфікс — формат чинного OutboxNamePattern.
+        $event.announced = $true
+        Write-WrapperLog ($line + '; джерело ' + $event.source)
+    }
+    Write-FileAtomic $path (([ordered]@{read_utc=$now.ToString('o'); events=$events}) | ConvertTo-Json -Depth 5 -Compress)
+}
+
+function Get-SleepPublicationKey($Status, [string]$Queue, [string]$Marker) {
+    <# Одна дозволена публікація повтору: дозвіл походить із власного стану публікатора. #>
+    $parent = [string](Get-Prop $Status 'sleep_parent')
+    $key = "published $Queue $Marker"
+    if (-not $parent) { return $key }
+    if ($parent -cnotmatch $script:IdPattern) { return '' }
+    $path = Join-Path (Join-Path $WorkDir 'sleep-retries') ($parent + '.json')
+    if (-not (Test-Path -LiteralPath $path)) { return '' }
+    $permit = [IO.File]::ReadAllText($path, $script:Utf8) | ConvertFrom-Json
+    if ($permit.queue -cne $Queue -or $permit.marker -cne $Marker) { return '' }
+    "$key sleep $parent"
+}
+
+function Request-SleepRetry($Status, [string]$Queue, [string]$Marker, [string]$Head) {
+    <# Повертає перерваний сном прогін у чергу після публікації; повторного дозволу не видає. #>
+    if ($DryRun -or [string](Get-Prop $Status 'sleep_parent')) { return $false }
+    if ([string]$Status.code -notin @('STALL','STALL_PUBLISHED','AGY_ERROR','BLOCKED','BLOCKED_PUBLISHED','INTERRUPTED')) { return $false }
+    $event = Get-RunSleep $Status
+    if ($null -eq $event) { return $false }
+    if (-not $Head) { $Head = Get-RefSha "refs/remotes/origin/gemini/$($Status.slug)" }
+    if (-not $Head) { $Head = Get-RefSha 'refs/remotes/origin/main' }
+    if ($Head -cnotmatch $script:ShaPattern) { return $false }
+    $dir = Join-Path $WorkDir 'sleep-retries'; [void][IO.Directory]::CreateDirectory($dir)
+    $guard = Join-Path $dir ((Get-Sha256Hex ($Queue + ' ' + $Marker)) + '.parent')
+    if (Test-Path -LiteralPath $guard) {
+        if ([IO.File]::ReadAllText($guard, $script:Utf8) -cne [string]$Status.id) { return $false }
+    } else { Write-FileAtomic $guard ([string]$Status.id) }
+    $permit = [ordered]@{parent=[string]$Status.id; queue=$Queue; marker=$Marker; head=$Head; sleep=$event.key}
+    $text = $permit | ConvertTo-Json -Compress
+    Write-FileAtomic (Join-Path $dir ($Status.id + '.json')) $text
+    # Канал до планувальника — встановлена тека з RX для gemini, а не його OutDir.
+    # Перевірка наявного ACL не змінює прав і не запитує підвищення.
+    if (-not (Test-UpdateRoot $UpdateRoot)) { throw 'SLEEP_RETRY_ACL' }
+    Write-FileAtomic (Join-Path $UpdateRoot ('sleep-retry-' + $Status.id + '.json')) $text
+    Write-WrapperLog "сон: $Queue — один автоматичний повтор від $Head"
+    $true
+}
+
+$script:SleepEvents = @()
+
+
 # Один стан -> рядок диспетчерові. Усе в рядку — з переліків цього файлу, перевірених назв і чисел.
 # 'RETRY' — пуш не вдався: той самий стан ще раз на наступному запуску, рядок — лише після години невдач.
-function Get-Line([string]$Id) {
+function Get-Line([string]$Id, [switch]$StatusOnly) {
     $path = Join-Path $OutDir ($Id + '.json')
     if ((Get-Item -LiteralPath $path).Length -gt 65536) { return Get-BadLine $Id 'завеликий' }
     try { $s = [System.IO.File]::ReadAllText($path, $script:Utf8) | ConvertFrom-Json }
     catch { return Get-BadLine $Id 'не читається як JSON' }
+    # Облік живлення використовує той самий читач формату й чинну межу Get-Line.
+    # Тут вихід до будь-якої публікації, дозволу повтору чи зміни seen.
+    if ($StatusOnly) { return $s }
     $code = [string](Get-Prop $s 'code')
     if ((Get-Prop $s 'v') -ne 1 -or (Get-Prop $s 'id') -ne $Id) { return Get-BadLine $Id 'не за форматом' }
     if ($code -eq 'ISOLATION') {
@@ -303,7 +472,18 @@ function Get-Line([string]$Id) {
     }
     # Стан пише gemini, тож будь-який стан може бути підробленим: опублікована позначка закрита для всіх наступних,
     # а неопублікований результат займає лише свій код — підроблений ранній стан не забирає місця справжньої публікації.
-    if (Test-Path -LiteralPath (Get-SeenPath "published $queue $marker")) { return $null }
+    $publicationKey = Get-SleepPublicationKey $s $queue $marker
+    if (-not $publicationKey) { return Get-BadLine $Id 'без дозволу повтору після сну' }
+    $publishedPath = Get-SeenPath $publicationKey
+    if (Test-Path -LiteralPath $publishedPath) {
+        # Після збою між публікацією й запитом повтору той самий результат відновлює запит.
+        # ID з власного стану не дозволяє чужому JSON відкрити вже закриту позначку.
+        if ([IO.File]::ReadAllText($publishedPath, $script:Utf8) -ceq ($publicationKey + "`n" + $Id) -and
+            $head -and (Get-RefSha "refs/remotes/origin/gemini/$slug") -ceq $head) {
+            [void](Request-SleepRetry $s $queue $marker $head)
+        }
+        return $null
+    }
     $turns = Get-Int $s 'turns'; $minutes = Get-Int $s 'minutes'; $ahead = Get-Int $s 'ahead'
     # Лише слова цього файлу: поля стану поза переліками (зокрема `models`) у рядок не потрапляють.
     if ($code -eq 'AUTH') { Add-HealthAlert 'AUTH' $(if ($model -like 'gpt-*') { 'CODEX' } else { 'AGY' }) }
@@ -322,6 +502,7 @@ function Get-Line([string]$Id) {
         return [pscustomobject]@{ Slug = $slug; Outbox = "GEMINI ОБГОРТКА: ЗАБЛОКОВАНО $branch $kod" }
     }
     if (-not (Get-Prop $s 'bundle')) {
+        if (Request-SleepRetry $s $queue $marker '') { return $null }
         if (Test-Seen "$queue $marker $code") { return $null }
         $tail = $(if (Test-Path -LiteralPath (Join-Path $OutDir ($Id + '.tail.txt'))) { "; кінець виводу агента — $OutDir\$Id.tail.txt" } else { '' })
         Write-WrapperLog "кінець $Id — НЕ ЗАВЕРШЕНО $branch — $run; комітів нема$tail"
@@ -339,12 +520,18 @@ function Get-Line([string]$Id) {
         }
     }
     if ($pc -eq 'OK') {
-        [void](Test-Seen "published $queue $marker")
+        $publication = Get-EngineLivePublication $head
+        Write-FileAtomic (Get-SeenPath $publicationKey) ($publicationKey + "`n" + $Id)
         $what = $(if ($DryRun) { 'ПЕРЕВІРЕНО (без пушу)' } else { 'ОПУБЛІКОВАНО' })
         Write-WrapperLog "кінець $Id — $what $branch $head; комітів $ahead, файлів до main $files; без .github/ і файлів обгортки; $run"
+        if (Request-SleepRetry $s $queue $marker $head) { return $null }
+        if ($head) { Save-DraftRequest $branch $head ([string](Get-Prop $s 'actual')) }
+        if ($publication.Bad.Count) {
+            Write-WrapperLog ('вада тіла PR: ' + (($publication.Bad | ForEach-Object { $_.error }) -join '; '))
+            return [pscustomobject]@{ Slug=$slug; Outbox="GEMINI ОБГОРТКА: ЗАБЛОКОВАНО $branch LIVE_AFTER_INVALID_PUBLISHED" }
+        }
         # ГОТОВО — лише звіт агента ГОТОВО з опублікованою головою; решта опублікованого — код прогону з _PUBLISHED.
         if ($code -eq 'DONE' -and $head) {
-            Save-DraftRequest $branch $head ([string](Get-Prop $s 'actual'))
             # Квота групи (рішення диспетчера 9611): суфікс лише коли стан має групу й відсоток 0–100.
             $qg = [string](Get-Prop $s 'qgroup')
             $qs = $(if ($quotaLeft -match '^(?:100|[1-9]?[0-9])$' -and $qg -cmatch '^[A-Z0-9]{2,16}$') { " КВОТА $qg $quotaLeft" } else { '' })
@@ -391,6 +578,7 @@ function Reset-State([string]$Id) {
 $script:OutboxNamePattern = '^[0-9]{8}-[0-9]{6}-[0-9a-f]{12}\.txt$'
 $script:SlugCore = $script:SlugPattern -replace '^\^|\\z$', ''
 $script:OutboxTemplates = @(
+    '\AGEMINI ОБГОРТКА: СОН [0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z → [0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z, нарядів [0-9]{1,5}\z'
     '^GEMINI ОБГОРТКА: ЛАНЦЮГ CHAIN_[A-Z_]{1,32}(?: [A-Za-z0-9]{1,40} [a-z_]{1,40}\.ps1:[0-9]{1,5})?\z',
     '^GEMINI ОБГОРТКА: ОНОВЛЕНО [0-9a-f]{40} СЕКУНД [0-9]{1,12}\z',
     '^GEMINI ОБГОРТКА: ОНОВЛЕННЯ [0-9a-f]{40} UPDATE_[A-Z_]{1,32}\z',
@@ -789,6 +977,7 @@ function Main {
                 '+refs/heads/gemini/*:refs/remotes/origin/gemini/*',
                 '+refs/heads/gemini-queue/*:refs/remotes/origin/gemini-queue/*'))
         if (Test-Path -LiteralPath (Join-Path $UpdateRoot 'selfupdate.ready')) { Invoke-WrapperUpdate $UpdateRoot }
+        Update-SleepEvents
         Invoke-WrapperChain
         if ($Retry) { Reset-State $Retry }
         $files = @(Get-ChildItem -LiteralPath $OutDir -Filter '*.json' -File -ErrorAction SilentlyContinue | Sort-Object Name)
