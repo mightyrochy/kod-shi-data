@@ -1,9 +1,10 @@
-/* Справжній Pyodide й вантаж c71cc075; змінюються лише три модулі правки. Модель — SYNTHETIC. */
+/* Справжній Pyodide й вантаж c71cc075. --точний відтворює тільки записані входи обох замін. */
 const fs = require('fs'), path = require('path');
 const zlib = require('zlib');
 
 async function головна(){
-  const [кеш, сторінка, входи, вихід] = process.argv.slice(2);
+  const [кеш, сторінка, входи, вихід, режим] = process.argv.slice(2);
+  if (режим && режим !== '--точний') throw new Error('Невідомий режим виміру: ' + режим);
   const {loadPyodide} = require(path.resolve(кеш, 'pyodide.js'));
   const py = await loadPyodide({indexURL: path.resolve(кеш) + path.sep});
   const html = fs.readFileSync(сторінка, 'utf8');
@@ -26,7 +27,7 @@ assert 'вже_були_прогону' in _МЗ.пул_руки_1.__code__.co_c
 входи = [json.loads(р) for р in open('/входи.jsonl', encoding='utf-8')]
 вибрані = [next(р for р in входи if р['ім'] == 'запити')]
 вибрані += [р for р in входи if р['ім'] == 'від_моделі' and json.loads(р['вхід']).get('заміна')]
-результат = виміряти(вибрані, Path('/показ'), Path('/показ'))
+результат = виміряти(вибрані, Path('/показ'), Path('/показ'), сценарний=${режим === '--точний' ? 'False' : 'True'})
 open('/результат.json', 'w', encoding='utf-8').write(json.dumps(результат, ensure_ascii=False, indent=2))
 `);
   fs.writeFileSync(вихід, py.FS.readFile('/результат.json'));

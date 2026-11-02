@@ -9,8 +9,8 @@ import sys
 import time
 
 
-def виміряти(входи, модулі, каталог):
-    """Відтворює складання й послідовні заміни; лише відсутня відповідь моделі — сценарна."""
+def виміряти(входи, модулі, каталог, сценарний=True):
+    """Відтворює записані входи; окремий сценарний режим доповнює обірвану руку 2."""
     sys.path.insert(0, str(модулі))
     os.chdir(каталог)
     import bridge
@@ -43,7 +43,8 @@ def виміряти(входи, модулі, каталог):
         р = json.loads(bridge.виклик(запис["ім"], d))
         заміна = d.get("заміна")
         рядок = dict(ім=запис["ім"], рука=d.get("рука"), заміна=bool(заміна),
-                     раунд=(1 if заміна and ("текст" in заміна or "відповіді" in заміна) else 0),
+                     раунд=(2 if заміна and "відповіді" in заміна
+                            else 1 if заміна and "текст" in заміна else 0),
                      с=round(time.perf_counter()-початок, 3), події=list(події),
                      побудов=sum(п["побудова"] for п in події))
         рядок['речей_каталогу'] = sorted({len(п.get('_каталог') or []) for п in МП.КЕШ_ПАКЕТА.values()})
@@ -56,7 +57,7 @@ def виміряти(входи, модулі, каталог):
                 assert рядок['нова_річ'], р['заміна']
         звіт.append(рядок)
         print(json.dumps(рядок, ensure_ascii=False), flush=True)
-        if заміна and d.get("рука") == '2' and not р["заміна"].get("готово"):
+        if сценарний and заміна and d.get("рука") == '2' and not р["заміна"].get("готово"):
             # Запис обривається до відповіді #32. Це окремий SYNTHETIC дим завершення,
             # який не оголошується точним REPLAY_EXCHANGE чи живим прогоном.
             запит = р["заміна"]["запити"][0]
@@ -71,6 +72,10 @@ def виміряти(входи, модулі, каталог):
             рядок["сценарний_фінал"] = dict(річ=річ["id"], слот=річ["слот"],
                                             побудов=sum(п["побудова"] for п in події))
             print('SYNTHETIC:', json.dumps(рядок["сценарний_фінал"], ensure_ascii=False), flush=True)
+    if not сценарний:
+        for рука in ('1', '2'):
+            assert any(р.get('рука') == рука and р.get('результат', {}).get('готово')
+                       for р in звіт), f'Нема записаного завершення руки {рука}'
     return звіт
 
 
@@ -80,6 +85,7 @@ if __name__ == '__main__':
     parser.add_argument('--модулі', type=Path, required=True)
     parser.add_argument('--каталог', type=Path, required=True)
     parser.add_argument('--вихід', type=Path, required=True)
+    parser.add_argument('--точний', action='store_true', help='Лише записані входи, без SYNTHETIC')
     a = parser.parse_args()
     вихід = a.вихід.resolve()
     читати = gzip.open if a.входи.suffix == '.gz' else open
@@ -88,5 +94,5 @@ if __name__ == '__main__':
     # Кеші наповнює справжній початковий запит; після нього — записані заміни.
     вибрані = [next(р for р in входи if р['ім'] == 'запити')]
     вибрані += [р for р in входи if р['ім'] == 'від_моделі' and json.loads(р['вхід']).get('заміна')]
-    результат = виміряти(вибрані, a.модулі.resolve(), a.каталог.resolve())
+    результат = виміряти(вибрані, a.модулі.resolve(), a.каталог.resolve(), сценарний=not a.точний)
     вихід.write_text(json.dumps(результат, ensure_ascii=False, indent=2)+'\n', encoding='utf-8')
