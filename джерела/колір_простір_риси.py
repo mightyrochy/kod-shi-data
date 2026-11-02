@@ -190,9 +190,15 @@ def поля_риси(lab, kind=None, lex=None):
 
 
 def features(lab_skin, lab_hair, lab_eye, lab_glasses=None,
-             from_photo=False, protocol="uncontrolled", lex=None):
-    """from_photo=True: волосся корегується виміряним зсувом (Grimes'09), шкіра —
-    НЕ корегується (інша фізика), натомість несе невизначеність за протоколом."""
+             from_photo=False, protocol="uncontrolled", lex=None, *, джерело=None):
+    """Будує риси з походженням; невизначеність камери додає лише до піксельного виміру.
+
+    `model_hex` — оцінка моделі, її розкиду не виміряно. Умови зйомки не є її довірою.
+    Без явного джерела збережено контракт ручного Lab-входу та `from_photo`."""
+    if джерело is not None:
+        reliability(джерело)  # невідоме джерело — помилка викликача
+        protocol = джерело
+        from_photo = джерело in ("uncontrolled", "protocolized")
     # Волосся МОЖЕ бути двома кольорами (балаяж, мелірування) — це різні пасма.
     # Шкіра НЕ може: ластовиння, рум'янець, засмага — це текстура однієї шкіри,
     # а не друга шкіра. Тому дроблення на голоси дозволене лише для волосся.
@@ -261,10 +267,11 @@ def features(lab_skin, lab_hair, lab_eye, lab_glasses=None,
     # hair_corrected=bool(from_photo) було ПРЯМОЮ НЕПРАВДОЮ: from_image() вимкнено,
     # волосся зсувом не коригується (див. hair_photo_uncertainty). Метадані мусять
     # казати те, що сталось, інакше наступний шар вирішує на вигаданому статусі.
-    F["_meta"]=dict(from_photo=from_photo, protocol=protocol if from_photo else None,
+    F["_meta"]=dict(from_photo=from_photo, protocol=джерело or (protocol if from_photo else None),
                     hair_corrected=False,
                     skin_corrected=False,
-                    корекції="жодних: обидві риси несуть невизначеність, а не зсув",
+                    корекції=("жодних: розкид оцінки моделі не виміряно" if джерело == "model_hex" else
+                              "жодних: обидві риси несуть невизначеність, а не зсув"),
                     tier=tier("hair_nat_L","olive"))
     return F
 
