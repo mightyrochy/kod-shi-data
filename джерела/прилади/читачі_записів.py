@@ -19,6 +19,7 @@ import sys
 import warnings
 from pathlib import Path
 from functools import lru_cache
+from urllib.parse import unquote
 
 
 ТЕКСТОВІ = {'.md', '.py', '.js', '.mjs', '.html', '.yml', '.yaml', '.json', '.ts',
@@ -106,6 +107,7 @@ def частини(вузол, константи=None):
 
 def посилання(шлях, текст):
     """Добуває повні, відносні, glob і складені шляхи, пропускаючи історію."""
+    оригінал = текст
     текст = ІСТОРІЯ.sub('', текст)
     if шлях.endswith(('.yml', '.yaml')):
         # Фільтр запуску й git diff читають імена змінених файлів, не їхній вміст.
@@ -124,6 +126,10 @@ def посилання(шлях, текст):
                 блок = False
         текст = '\n'.join(рядки)
     знайдені = set(ТОКЕНИ.findall(текст))
+    for збіг in re.finditer(r'''[`"']([^`"'\n]+)[`"']|\]\(([^)\n]+)\)''', текст):
+        значення = unquote((збіг[1] or збіг[2]).strip().strip('<>')).split('#', 1)[0]
+        if '/' in значення:
+            знайдені.add(значення)
     if шлях.endswith('.py'):
         try:
             with warnings.catch_warnings():
@@ -132,6 +138,18 @@ def посилання(шлях, текст):
         except SyntaxError:
             код = None
         if код:
+            документація = set()
+            for вузол in ast.walk(код):
+                тіло = getattr(вузол, 'body', None)
+                if isinstance(тіло, list) and тіло and isinstance(тіло[0], ast.Expr):
+                    значення = тіло[0].value
+                    if isinstance(значення, ast.Constant) and isinstance(значення.value, str):
+                        документація.add(id(значення))
+            літерали = [в.value for в in ast.walk(код) if isinstance(в, ast.Constant)
+                        and isinstance(в.value, str) and id(в) not in документація]
+            # Приклад CLI в docstring і коментар не читають усі однойменні файли.
+            знайдені = set(ТОКЕНИ.findall('\n'.join(літерали)))
+            знайдені.update(в for в in літерали if '/' in в and '\n' not in в)
             константи = {}
             for _ in range(3):
                 for вузол in ast.walk(код):
@@ -154,7 +172,7 @@ def посилання(шлях, текст):
                 if '.' not in posixpath.basename(повний):
                     знайдені.add(повний + '/**')
     для_читача = перевірені_маски().get(шлях)
-    if для_читача and hashlib.sha256(текст.encode('utf-8')).hexdigest() == для_читача['sha256']:
+    if для_читача and hashlib.sha256(оригінал.encode('utf-8')).hexdigest() == для_читача['sha256']:
         for обмеження in для_читача['маски']:
             if обмеження['широка'] in знайдені:
                 знайдені.discard(обмеження['широка'])
@@ -263,6 +281,7 @@ def вимір(файли, читання, читати_великий=None):
 
 def звіт(ревізія, вихід):
     """Пише повну таблицю, кандидатів і підсумок з виміряним розподілом розмірів."""
+    ревізія = git('rev-parse', '--verify', ревізія + '^{commit}').decode().strip()
     файли = дерево(ревізія)
     print(f'Дерево: {len(файли)} файлів; читання blob...', file=sys.stderr, flush=True)
     читання = dict(тексти(файли))
@@ -294,7 +313,7 @@ def звіт(ревізія, вихід):
     for низ, верх in zip(межі, межі[1:]):
         група = [р for п, (р, _) in файли.items() if п.startswith('аудит/') and not захищений(п) and низ <= р < верх]
         розподіл.append({'від': низ, 'до': верх, 'файлів': len(група), 'байтів': sum(група)})
-    результат = {'ревізія': git('rev-parse', ревізія).decode().strip(),
+    результат = {'ревізія': ревізія,
                  'дерево_файлів': len(файли), 'дерево_байтів': sum(р for р, _ in файли.values()),
                  'кандидатів': len(кандидати), 'байтів_кандидатів': sum(файли[п][0] for п in кандидати),
                  'теки': dict(sorted(теки.items())), 'розподіл': розподіл}
