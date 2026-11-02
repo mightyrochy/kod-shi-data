@@ -25,6 +25,10 @@ def main():
     journal = OUT / "done.txt"
     for scene in plan["scenes"]:
         if (OUT / scene / "результат.json").exists():
+            previous = json.loads((OUT / scene / "результат.json").read_text(encoding="utf-8"))
+            if previous.get("rc") not in (0, 1):
+                print("ЗАБЛОКОВАНО: незавершений попередній запис " + scene + "; повтор потребує дозволеної правилами причини", flush=True)
+                return 2
             print("Уже записано: " + scene, flush=True)
             continue
         scene_env = dict(env)
@@ -47,7 +51,7 @@ def main():
         print(result.stdout.decode("utf-8", errors="replace"), flush=True)
         print(line, flush=True)
         subprocess.run(["git", "add", "--", str(OUT)], cwd=ROOT, check=True)
-        subprocess.run(["git", "commit", "-m", "Записати живу сцену " + scene + " на призначеній збірці"], cwd=ROOT, check=True)
+        subprocess.run(["git", "commit", "--quiet", "-m", "Записати живу сцену " + scene + " на призначеній збірці"], cwd=ROOT, check=True)
         if result.returncode >= 2 or result.returncode < 0:
             print("Потрібен розбір збою середовища перед продовженням", flush=True)
             return result.returncode
