@@ -1,0 +1,58 @@
+── ПРОМПТ (7630 симв.) ──
+Ти — перекладачка в застосунку-стилістці. Ти пишеш природною українською тексти, які зараз побачить жінка. Рішень не приймаєш, на питання не відповідаєш, змісту не міняєш.
+
+Вхід — JSON-об'єкт: ключ — номер тексту н, значення — текст, який склали код та інші моделі.
+
+Ключі відповіді — ті самі, що у вході, кожен: номер н тексту, значення — рядок, той самий зміст природною українською, без англійських слів і кодів; ПЕРЕКЛАДАЙ КОЖНЕ англійське слово, навіть одне посеред українського речення; латиницею лишай лише назви крамниць і брендів, «V-подібний» і «den»; текст, що вже природний і до неї на «ти», — без змін, а український текст на «ви» перепиши на «ти», решту лиши слово в слово.
+
+Вид кожної речі — теж зміст: річ у перекладі — та сама, що у вході, а не схожа чи сусідня. ankle boots — черевики чи ботильйони, boots — чоботи, heeled — на підборах, а не туфлі, pumps — туфлі-човники, loafers — лофери; pendant — кулон чи підвіска, necklace — намисто чи ланцюжок, а не каблучка, сережки чи браслет; ring — каблучка; earrings — сережки. Українські назви речей у вході (назви з крамниці, найчастіше перед « — ») переписуй літера в літеру: не міняй, не переставляй і не додавай у них жодного слова.
+
+Про жінку — лише до неї, на «ти» (ти, тебе, тобі, твій, твоя; хочеш, скинеш; наказ однини: розкажи, оберни, тримай, дай), і в питаннях теж: you, your, she, her про неї — «ти», «твій» (her skin tone — твій тон шкіри; when she turns her head — коли ти повертаєш голову; she looks taller — ти виглядаєш вищою), англійський наказ — наказом однини; «вона», «її» — лише про річ (сукню, сумку, куртку). Говорить стилістка — одна жінка: про себе — від першої особи однини й у жіночому роді (я підібрала, я б додала), не «ми», не від імені застосунку чи коду і ніколи словами самої жінки.
+
+Мова: літературна українська, як у текстах українських крамниць одягу. Кожне українське слово — літерами лише української абетки, без жодної латинської літери чи стороннього знака всередині слова. Кожне речення — одна остаточна версія, без виправлень посеред тексту. Словничок нижче — лише як перекласти англійське слово, коли воно є у вході; це не зміст: річ, тканина чи колір, яких у вході нема, у тексті не з'являються. Звичні українські назви для слів англійського джерела: trousers, pants — штани; dressy, dressier — ошатний, ошатніше; look, outfit — образ; taupe — сіро-бежевий; loose — вільний; suede — замша (жіночий рід); slip dress — сукня-комбінація; camel — кемел (колір). Назви речей і кольорів, які дала крамниця, — як є.
+
+Перевір кожне слово ДО відповіді: до неї — лише «ти», жодного «ви», «ваш» і наказу множини, і про неї жодного «вона», «її», «їй», жодне слово не стоїть двічі поспіль, кожна річ — того самого виду, що у вході (річ образу — іменником коду її виду з переліку, коли він є, і слова при ній узгоджені з цим іменником), а українська назва речі — слово в слово. Відповідь — рівно ОДИН JSON-об'єкт і нічого після нього: другої, виправленої версії, приміток і пояснень не пиши — помилку виправ у тому самому об'єкті.
+
+Речі образу — перелік речей картки (номер речі — як на картці, поруч — її коди):
+1 — kind code: blouse · colour code: red · about it: text н=1
+2 — kind code: jeans · colour code: light_blue · about it: text н=2
+3 — kind code: trench_coat · colour code: beige · about it: text н=3
+4 — kind code: shoes · colour code: beige · about it: text н=4
+5 — kind code: bag_generic · colour code: pink · about it: text н=5
+When a text speaks of an item of the list, call it by the Ukrainian noun of its kind code (kind code: …) — the same noun in the right case in every text (trench_coat — «тренч», sweater — «светр», loafers — «лофери»), not by another kind or a synonym of the English word, whatever word the English text uses; a code ending in _generic names only the family (dress_generic — a dress, bag_generic — a bag). Make every adjective, pronoun and verb with the item agree with that noun in gender and number («бежевий тренч, який…»; «шкіряні лофери, які…»). A name you translate in this same call (text н=K): give it one noun and call the item by it, in agreement, in every text. A text the list gives as about an item (about it: text н=M) speaks of that one item, and so does every other text where the English names it. The colour of an item of the list is its colour code (colour code: …): write the Ukrainian name of that code. The English colour words for that item are the stylist's impression of a photo: do not turn them into a colour of their own — the item's colour stands in their place. Colours of its details (trim, strap, buttons, print), its fabric and the rest — translate from the text. The list is for the items only: an item the English text does not name is not added to the translation — neither to the description nor to the advice.
+
+Colour codes: beige — бежевий; light_blue — блакитний; pink — рожевий; red — червоний.
+
+ТЕКСТИ:
+{
+"1": "This red blouse features a classic cut that sits beautifully on your defined waist. Its rich crimson hue offers the bold accent you asked for, providing a romantic and vibrant focal point for your evening.",
+"2": "These light blue jeans have a straight and wide silhouette that creates a clean vertical line from hip to ankle. The soft denim fabric ensures comfort as you walk, while the lighter wash balances the depth of your red top.",
+"3": "This fitted beige trench coat is tailored to hug your waist and shoulders, adding a sophisticated structure to the ensemble. The double-breasted front adds a classic detail that elevates the look without overpowering it.",
+"4": "Your heels in this neutral beige tone offer a subtle lift and graceful posture for your walk through the park. The heel height enhances your figure by elongating the leg line, adding an elegant touch to your casual outfit.",
+"5": "This pink bag serves as a sweet counterpoint to your red blouse, softening the overall palette with its gentle hue. Its versatile shape makes it easy to carry while holding all your essentials for the day.",
+"6": "This red blouse is the heart of your outfit, bringing warmth and a romantic touch perfect for a first date in the autumn park. The straight-leg jeans provide a comfortable foundation that lets you wander freely, while the fitted beige trench coat adds a polished layer for when the temperature drops. Your choice of heels gives you height and confidence, and the soft pink bag offers a gentle, feminine contrast to the bold red top.",
+"7": "Leave the double-breasted trench coat open to keep that effortless, flowing look as you stroll through the park, allowing the red blouse to remain the focal point.",
+"8": "If you feel the need for more coverage or warmth, pull the trench coat closed over your shoulders while sitting for coffee to maintain a chic, put-together silhouette.",
+"9": "Двобортний бежевий шкіряний тренч — I swap the soft pink cardigan for this structured beige trench to add a defined waist and sharper lines for the occasion.",
+"10": "Сумка жіноча, ATTICO, шкіра, колір пудра — I add this powder leather bag to match your other neutral tones and carry essentials comfortably.",
+"11": "Блуза-сорочка з шовкуз рукавами-ліхтариками, Джинси WIDE LEG світло блакитні, Двобортний бежевий шкіряний тренч, Взуття темно-бежеве, Сумка жіноча, ATTICO, шкіра, колір пудра — The mixed register of preppy and classic works here because your red blouse provides the necessary boldness for a date while the beige trench keeps it grounded in your autumn palette.",
+"12": "Взуття темно-бежеве — I add these beige sneakers to complete the leg line, replacing the ankle boots with a more relaxed, park-friendly shoe."
+}
+
+── ВІДПОВІДЬ (2740 симв., 45.2 с, HTTP 200) ──
+```json
+{
+  "1": "Ця червона блуза має класичний крій, який чудово сидить на твоїй витонченій талії. Її насичений гранатовий колір дає той сміливий акцент, про який ти просила, створюючи романтичну й жваву центральну точку для твого вечірнього образу.",
+  "2": "Ці блакитні джинси мають прямий і широкий силует, що створює чисту вертикаль від стегна до щиколотки. М’яка денімна тканина забезпечує комфорт під час ходьби, а світліший колір збалансовує глибину твоєї червоної блузи.",
+  "3": "Цей приталений бежевий тренч пошитий так, щоб облягати твою талію й плечі, додаючи вишукану структуру всьому ансамблю. Двобортний фасад додає класичну деталь, яка підкреслює образ без надмірності.",
+  "4": "Твої бежеві туфлі на нейтральному тлі дають тобі ледь помітне збільшення зросту й витончену поставу для прогулянки в парку. Висота каблука подовжує лінію ніг, додаючи елегантний штрих до твого повсякденного образу.",
+  "5": "Ця рожева сумка слугує милим контрастом до твоєї червоної блузи, пом’якшуючи загальну палітру своїм ніжним відтінком. Її універсальна форма дозволяє легко носити її з собою та вміщувати всі необхідні речі на день.",
+  "6": "Ця червона блуза — серце твого образу, що дарує тепло й романтичний штрих для першого побачення в осінньому парку. Прямі джинси створюють комфортну основу, яка дозволяє тобі вільно гуляти, а приталений бежевий тренч додає вишуканий шар на той випадок, якщо похолодає. Твій вибір туфель дарує тобі зріст і впевненість, а м’яка рожева сумка пропонує ніжний жіночний контраст до сміливої червоної блузи.",
+  "7": "Залиш двобортний тренч відкритим, щоб зберегти легкий, струмливий вигляд під час прогулянки в парку, дозволяючи червоній блузі залишатися центральною точкою образу.",
+  "8": "Якщо тобі потрібне більше покриття або тепла, застебни тренч на плечах, коли сядеш пити каву, щоб зберегти елегантний і зібраний силует.",
+  "9": "Двобортний бежевий шкіряний тренч — Я замінюю м’який рожевий кардиган цим структурованим бежевим тренчем, щоб додати визначену талію й чіткіші лінії для цієї нагоди.",
+  "10": "Сумка жіноча, ATTICO, шкіра, колір пудра — Я додаю цю пудрову шкіряну сумку, щоб вона гармоніювала з твоїми іншими нейтральними тонами й зручно вміщувала необхідні речі.",
+  "11": "Блуза-сорочка з шовкуз рукавами-ліхтариками, Джинси WIDE LEG світло блакитні, Двобортний бежевий шкіряний тренч, Взуття темно-бежеве, Сумка жіноча, ATTICO, шкіра, колір пудра — Змішання стилів преппі й класичного працює тут тому, що твоя червона блуза дарує необхідну сміливість для побачення, а бежевий тренч зберігає її в осінній палітрі.",
+  "12": "Взуття темно-бежеве — Я додаю ці бежеві кросівки, щоб завершити лінію ніг, замінюючи ботильйони на більш розслаблене й зручне для парку взуття."
+}
+```
