@@ -1,0 +1,37 @@
+── ПРОМПТ (2272 симв.) ──
+{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.", "One item carries one thing — of two alternatives list the first; a note in brackets is not an item.", "Slot \"accessory\" is for an item no other slot fits.", "\"is_outfit\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "ITEM_LIST", "answer_schema": {"is_outfit": "yes|no", "items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory", "color_hex": "<#rrggbb or null>", "worn": "<true, or false when the description says the outfit goes without it>"}]}, "input": ["\"description\" — the outfit description"]}, "description": "Velvet blazer in midnight blue (#0a0e14), tailored fit with a single-button front and notched lapels.\nSilk-blend midi slip dress in emerald green (#043825), fluid silhouette that drapes from the shoulders to mid-calf length.\nLeather ankle boots in polished oxblood (#631c20), pointed toe with a moderate stiletto heel.\nDelicate gold bar necklace in 18k vermeil with a matte finish and matching stud earrings in brushed gold.\nThis outfit strikes the perfect balance between casual elegance and festive polish for a bachelorette party on an autumn evening. The velvet blazer provides sophisticated warmth without feeling too formal, while the emerald slip dress introduces a pop of rich color that complements her warm skin tones. The pointed-toe boots extend the leg line visually, creating a streamlined silhouette appropriate for dancing and socializing in low artificial light. Overall, the combination of textures and deep jewel tones ensures she looks both relaxed and intentionally dressed-up for the celebration."}
+
+── ВІДПОВІДЬ (819 симв., 8.7 с, HTTP 200) ──
+{
+  "is_outfit": "yes",
+  "items": [
+    {
+      "name": "Velvet blazer",
+      "details": "tailored fit with a single-button front and notched lapels",
+      "slot": "outerwear",
+      "color_hex": "#0a0e14",
+      "worn": true
+    },
+    {
+      "name": "Silk-blend midi slip dress",
+      "details": "fluid silhouette that drapes from the shoulders to mid-calf length",
+      "slot": "dress",
+      "color_hex": "#043825",
+      "worn": true
+    },
+    {
+      "name": "Leather ankle boots",
+      "details": "pointed toe with a moderate stiletto heel",
+      "slot": "shoes",
+      "color_hex": "#631c20",
+      "worn": true
+    },
+    {
+      "name": "Delicate gold bar necklace",
+      "details": "18k vermeil with a matte finish",
+      "slot": "necklace",
+      "color_hex": null,
+      "worn": true
+    }
+  ]
+}
