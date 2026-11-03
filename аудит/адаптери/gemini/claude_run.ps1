@@ -95,7 +95,7 @@ $script:LineTemplates = @(
 
 # --- допоміжне ----------------------------------------------------------------------------------------------------
 
-function Write-Log([string]$Text) {
+function Write-Log([string]$Text, [switch]$Required) {
     <# Рядок у claude-run.log. Пишуть водночас планувальник і процеси нарядів: зайнятий файл — кілька спроб. #>
     $path = Join-Path $WorkDir 'claude-run.log'
     $tag = $(if ($WorkerFile) { "[$PID] " } else { '' })
@@ -108,6 +108,7 @@ function Write-Log([string]$Text) {
             [System.IO.File]::AppendAllText($path, $line + "`n", $script:Utf8); return
         } catch { Start-Sleep -Milliseconds 50 }
     }
+    if ($Required) { throw "Не вдалося записати обов'язковий рядок журналу" }
 }
 
 # Шлях до виконуваного або ''. .NET із UseShellExecute=false дописує лише .exe, а CLI з npm — це .cmd.
@@ -1079,6 +1080,8 @@ function Test-OffMarker($M) {
 # Один прохід: позначки смуги Claude за порядком черги — у вільні слоти; позначка вимкнення нових нарядів не пускає.
 # Повертає число запущених і позначку вимкнення, яку треба спробувати.
 function Start-Markers($Workers) {
+    $script:Held = @{}
+    if (-not (Repair-GpuModels)) { return @(0, $null) }
     $started = 0; $off = $null
     $script:Held = @{}
     $now = [DateTimeOffset]::UtcNow.ToUnixTimeSeconds()
@@ -1149,6 +1152,7 @@ function Invoke-Worker {
             $gpu = Open-Lock (Get-GpuLockPath)
             $why = $(if ($null -eq $gpu) { 'замок GPU' } elseif (Test-ExternalGpuFree -LogAcquisition) { '' } else { Get-GpuBusyReason @() -LockHeld })
             if ($why) { Remove-Claim $statePath; Write-Log "GPU зайнята ($why) — $($job.name) лишається в черзі"; return $script:WorkerGpuBusy }
+            Start-GpuModels $job
         }
         Write-FileAtomic $info (([ordered]@{ slot = $job.slot; lane = 'claude'; marker = $job.name; slug = $job.slug
                     model = "$($job.claude)$(if ($job.effort) { ' ' + $job.effort })"; since = (Get-UtcStamp (Get-Date)); gpu = [bool]$job.gpu; prio = $job.prio; pid = $PID
@@ -1162,10 +1166,14 @@ function Invoke-Worker {
         Write-Log "процес наряду $($job.name): $($_.Exception.Message)"
         1
     } finally {
+        if ($null -ne $gpu) {
+            try { Complete-GpuModels }
+            catch { Write-Log "GPU прибирання відкладено: $($_.Exception.Message)" }
+            finally { $gpu.Dispose() }
+        }
         Remove-Item -LiteralPath $info -Force -ErrorAction SilentlyContinue
         # Помилка до STARTED (робоча копія тощо) не лишає claim: позначка повертається в чергу (10162).
         Close-FailedStart ([pscustomobject]@{ Ref = $job.ref; Name = $job.name; Sha = $job.sha; Slug = $job.slug; Model = $job.model }) ([string]$job.id) $statePath
-        if ($null -ne $gpu) { $gpu.Dispose() }
         $slotLock.Dispose()
     }
 }
@@ -1205,6 +1213,7 @@ function Main {
             if ($ver) { Write-VersionSwitch $ver; break }
             $started = 0; $off = $null
             try {
+                [void](Repair-GpuModels)
                 [void](Invoke-Git @('fetch', '-q', '--prune', '--no-tags', 'origin',
                         '+refs/heads/main:refs/remotes/origin/main',
                         '+refs/heads/gemini-queue/*:refs/remotes/origin/gemini-queue/*') -TimeoutMinutes 15)
@@ -1237,6 +1246,7 @@ function Main {
         Update-Status -Force
         1
     } finally {
+        [void](Repair-GpuModels)
         $lockFile.Dispose()
     }
 }

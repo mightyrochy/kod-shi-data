@@ -638,6 +638,64 @@ function Test-LockFree([string]$Path) {
 
 function Get-GpuLockPath { Join-Path $LaneDir 'gpu.lock' }
 
+function Get-LmsInstances {
+    <# Читає екземпляри локального LM Studio; неповна відповідь не є порожнім сервером. #>
+    # Сервер не слухає :1234 (LM Studio закрито чи ще не запущено) — завантажених екземплярів нема: інакше закритий
+    # LM Studio зупиняв би GPU-наряди, що піднімають його самі, і разом із незакритим знімком — усю смугу.
+    try { $v = Invoke-RestMethod 'http://127.0.0.1:1234/api/v1/models' -TimeoutSec 15 -ErrorAction Stop }
+    catch [System.Net.WebException] {
+        if ($_.Exception.Status -eq [System.Net.WebExceptionStatus]::ConnectFailure) { return }
+        throw
+    }
+    if ((Get-JsonProp $v 'error') -or $v.models -isnot [array]) { throw 'LM Studio: немає переліку models' }
+    foreach ($m in $v.models) {
+        if (-not $m.key -or $m.loaded_instances -isnot [array]) { throw 'LM Studio: неповна модель' }
+        foreach ($i in $m.loaded_instances) {
+            if (-not ($i.id -is [string]) -or -not $i.id) { throw 'LM Studio: немає ID екземпляра' }
+            [pscustomobject]@{ id = $i.id; model = $m.key }
+        }
+    }
+}
+
+function Complete-GpuModels {
+    <# Під GPU-замком прибирає різницю зі збереженим знімком; збій лишає запис для повтору. #>
+    $path = Join-Path $LaneDir 'gpu-models.json'
+    if (-not [IO.File]::Exists($path)) { return }
+    $lease = [IO.File]::ReadAllText($path, $script:Utf8) | ConvertFrom-Json -ErrorAction Stop
+    if ($lease.v -ne 1 -or -not $lease.marker -or -not $lease.run -or $lease.before -isnot [array]) { throw 'GPU: неповний знімок моделей' }
+    $ids = New-Object 'System.Collections.Generic.HashSet[string]' ([StringComparer]::Ordinal)
+    foreach ($i in $lease.before) {
+        if (-not $i.id -or -not $i.model) { throw 'GPU: неповний початковий екземпляр' }
+        [void]$ids.Add([string]$i.id)
+    }
+    foreach ($i in @(Get-LmsInstances)) {
+        if ($ids.Contains($i.id)) { continue }
+        Write-Log "GPU вивантаження: модель=$($i.model); екземпляр=$($i.id); наряд=$($lease.marker); прогін=$($lease.run)" -Required
+        $body = @{ instance_id = $i.id } | ConvertTo-Json -Compress
+        $v = Invoke-RestMethod 'http://127.0.0.1:1234/api/v1/models/unload' -Method Post -ContentType 'application/json' -Body $body -TimeoutSec 120 -ErrorAction Stop
+        if (Get-JsonProp $v 'error') { throw 'LM Studio: відмова вивантаження' }
+    }
+    if (@(Get-LmsInstances | Where-Object { -not $ids.Contains($_.id) }).Count) { throw 'GPU: нові екземпляри ще завантажені' }
+    Remove-Item -LiteralPath $path -Force -ErrorAction Stop
+}
+
+function Start-GpuModels($Job) {
+    <# До агента й під його GPU-замком зберігає межу власності незалежно від життя дерева процесів. #>
+    Complete-GpuModels
+    $lease = [ordered]@{ v = 1; marker = [string]$Job.name; run = [string]$Job.id; before = @(Get-LmsInstances) }
+    Write-FileAtomic (Join-Path $LaneDir 'gpu-models.json') ($lease | ConvertTo-Json -Depth 6 -Compress)
+}
+
+function Repair-GpuModels {
+    <# Планувальник прибирає залишки вбитого дерева перед воротами GPU, навіть коли черга порожня. #>
+    $gpuLock = Open-Lock (Get-GpuLockPath)
+    if ($null -eq $gpuLock) { return $true }
+    try { Complete-GpuModels; $true }
+    catch { Write-Log "GPU прибирання відкладено: $($_.Exception.Message)"; $false }
+    finally { $gpuLock.Dispose() }
+}
+
+
 function Get-BusySlots([string]$Lane, $Workers) {
     <# Зайняті слоти смуги: свій живий процес наряду або чужий замок слота (наряд попереднього проходу ще йде). #>
     @(for ($k = 1; $k -le $script:Ceil.slots[1]; $k++) {
