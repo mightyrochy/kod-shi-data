@@ -13,7 +13,8 @@ async function вимір(стан){
       повідомлення, заяви: [з], текст: стан === 'missing_text' || стан === 'retry' && і ? null : 'An answer.',
       стан: стан === 'retry' ? і ? 'missing_text' : 'foreign_language' : стан})));
     const запис = {напрям: 'out_messages', де: де + '.code_unknowns',
-      вхід: Object.fromEntries(елементи.map(([, ім, пов]) => [ім, пов])), заяви};
+      вхід: Object.fromEntries(елементи.map(([, ім, пов]) => [ім, пов])),
+      вихід: Object.fromEntries(елементи.map(([, ім]) => [ім, '— без тексту'])), заяви};
     const записи = [запис];
     if (стан === 'retry') записи.push({...запис,
       вхід: Object.fromEntries(елементи.map(([, ім, пов]) => [ім, {...пов, statements: пов.statements.slice(1)}])),
@@ -35,6 +36,7 @@ async function вимір(стан){
   assert.strictEqual(перша.мова_шару.length, стан === 'retry' ? 2 : 1);
   const спільні = друга.мова_шару.filter(з => з.спільний_виклик);
   assert.deepStrictEqual([...new Set(спільні.flatMap(з => Array.from(з.заяви, р => р.повідомлення)))], ['питання.1', 'кнопка']);
+  assert(спільні.every(з => Object.keys(з.вхід).every(кв => з.вихід[кв] === '— без тексту')));
   assert(!JSON.stringify(друга.мова_шару).includes('source_only'));
 }
 (async () => { for (const стан of ['translated', 'foreign_language', 'latin_remainder', 'missing_text', 'retry']) await вимір(стан); })()
