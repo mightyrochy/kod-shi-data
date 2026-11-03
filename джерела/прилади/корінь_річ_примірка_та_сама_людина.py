@@ -19,10 +19,13 @@
 Розпізнані джерела: відповідь модельП_блоки, inlineData/inline_data у відповіді
 генератора, типові image-generation API Python/JS. Прозорі перетворення
 фото зберігають походження на кожному виклику, не змішують виклики.
-Невідоме перетворення не очищає походження. Назва «маска» чи «повернути»
+Тіла обгорток аналізуються; зовнішні API мають явні схеми перенесення байтів.
+Назва «маска» чи «повернути»
 та промпт не доводять повернення пікселів. Копіювання пікселів перевіряється
 окремо: прилад поки консервативно залишає такий шлях місцем, доки немає
 верифікованого контракту повернення. Це обмеження називається у переліку.
+Вкладені зображення визначаються схемами ПІКСЕЛІ; службові поля запису не
+перетворюються на фото. Довільні прочитані поля все одно переносять значення.
 
 Запуск: python джерела/прилади/корінь_річ_примірка_та_сама_людина.py
   [--корінь ШЛЯХ] [--докладно] [--json ФАЙЛ]
@@ -211,6 +214,12 @@ class Граф:
         self.скалярні = set()
         self.джерела_функцій = set()
         self.адреси_викликів = {}
+        self.адреси_вузлів = {}
+        self.передачі = {}
+        self.обробляється = None
+        self.види = {}
+        self.читання_кешу = defaultdict(list)
+        self.копії = set()
 
     def нове(self, обʼєкт=False):
         """Виділяє вузол; об'єкт має власну ідентичність для записів у поля."""
@@ -243,7 +252,7 @@ class Граф:
         вих = self.нове(False)
         if обʼєкт in self.символічні:
             о = self.символічні[обʼєкт]
-            адреса = (о, к)
+            адреса = (о, '*' if isinstance(к, tuple) else к)
             if адреса not in self.символічні_поля:
                 self.символічні_поля[адреса] = self.нове(True)
             дитина = self.символічні_поля[адреса]
@@ -255,6 +264,12 @@ class Граф:
     def запис(self, обʼєкт, к, значення):
         """Додає запис конкретного поля, не забруднює сусідні поля."""
         self.записи.add((обʼєкт, к, значення))
+
+    def ключ_вузла(self, в, с):
+        """Ключ з масиву імен має дочекатися значення індексу, зокрема порожнього callback."""
+        if в.get('computed') and в['property']['type'] != 'Literal':
+            return ('ключ', self.вираз(в['property'], с))
+        return ключ(в)
 
     def звʼязати_ціль(self, в, с, з):
         """Присвоює ім'я, поле або деструктурований шаблон."""
@@ -268,7 +283,7 @@ class Граф:
                 self.звʼязати(з, self.змінна(ключ(в), 0))
             else:
                 б = self.вираз(в['object'], с)
-                self.запис(б, ключ(в), з)
+                self.запис(б, self.ключ_вузла(в, с), з)
                 if ключ(в) in {'src', 'srcset', 'innerHTML', 'outerHTML'}:
                     self.входи.append(Вхід(self.файл, в['loc']['start']['line'], 'б', (з,), 'запис ' + ключ(в), б))
         elif т in {'ArrayPattern', 'ArrayExpression'}:
@@ -311,6 +326,9 @@ class Граф:
         к = (id(в), с, повернення)
         if к not in self.кеш_вузлів:
             self.кеш_вузлів[к] = self._вираз(в, с, повернення)
+            р = self.кеш_вузлів[к]
+            if р:
+                self.адреси_вузлів.setdefault(р, f"{self.файл}:{в.get('loc', {}).get('start', {}).get('line', 1)} {в['type']} {в.get('name', '')}")
         return self.кеш_вузлів[к]
 
     def _вираз(self, в, с=0, повернення=0):
@@ -329,6 +347,8 @@ class Граф:
                     self.знач[р].add('рядок:' + з)
                 if re.search(r'<(?:img|canvas)\b', з, re.I):
                     self.знач[р].add('розмітка:зображення')
+            elif isinstance(з, (int, float, bool)):
+                self.знач[р].add('число:' + str(з))
             return р
         if т in {'FunctionDeclaration', 'FunctionExpression', 'ArrowFunctionExpression'}:
             р = self.нове(True)
@@ -374,7 +394,7 @@ class Граф:
                 # Це двійковий блок відповіді; запит inline_data сам не є генератором.
                 р = self.поле(б, ключ(в))
                 return р
-            return self.поле(б, ключ(в))
+            return self.поле(б, self.ключ_вузла(в, с))
         if т in {'ObjectExpression', 'ArrayExpression'}:
             р = self.нове(True)
             if т == 'ArrayExpression':
@@ -384,7 +404,7 @@ class Граф:
             else:
                 for п in в.get('properties', []):
                     if п['type'] == 'SpreadElement':
-                        self.звʼязати(self.вираз(п['argument'], с), р)
+                        self.копії.add((self.вираз(п['argument'], с), р))
                     else:
                         к = п['key']
                         к = '*' if п.get('computed') else str(к.get('name', к.get('value', '*')))
@@ -449,6 +469,8 @@ class Граф:
             return з
         if т in {'BinaryExpression', 'LogicalExpression', 'ConditionalExpression', 'SequenceExpression', 'TemplateLiteral', 'AwaitExpression', 'ChainExpression', 'SpreadElement', 'AssignmentPattern'}:
             р = self.нове(False)
+            if т in {'BinaryExpression', 'TemplateLiteral'}:
+                self.знач[р].add('ключ:невідомий')
             for к, д in ((к, д) for к, з in в.items() for д in (з if isinstance(з, list) else [з]) if isinstance(д, dict) and 'type' in д):
                 з = self.вираз(д, с, повернення)
                 if к != 'test' and в.get('operator') not in {'===', '!==', '==', '!=', '<', '>', '<=', '>='}:
@@ -459,9 +481,11 @@ class Граф:
             self.вираз(д, с, повернення)
         return 0
 
-    def до_функції(self, функ, арг, вих):
+    def до_функції(self, функ, арг, вих, умова=0):
         """Параметри й повернення для можливих адресатів виклику."""
-        self.застосування.add((функ, tuple(арг), вих))
+        self.застосування.add((функ, tuple(арг), вих, умова))
+        if умова:
+            return
         for ф in tuple(self.знач[функ]):
             if ф in self.функції:
                 параметри, пов = self.функції[ф]
@@ -492,6 +516,8 @@ class Граф:
         прозорі = ПРОЗОРІ - генерують
         # Розклад сталих native-операцій будуємо лише раз.
         for р, функ, б, ім, назва, арг, файл, н in self.виклики:
+            if ім == 'Map':
+                self.види[р] = 'мапа'
             if ім == 'модельП_блоки':
                 блок, дані = self.нове(True), self.нове(True)
                 self.поля[р, '*'].add(блок)
@@ -558,10 +584,9 @@ class Граф:
                 self.резолвери[рез] = р
                 self.до_функції(арг[0], (рез,), 0)
             elif ім == 'assign' and арг:
-                for з in арг:
-                    self.звʼязати(з, р)
+                self.звʼязати(арг[0], р)
                 for з in арг[1:]:
-                    self.звʼязати(з, арг[0])
+                    self.копії.add((з, арг[0]))
             elif ім in {'getImageData', 'toDataURL', 'toBlob'} and б:
                 self.звʼязати(self.поле(б, '@пікселі'), р)
             elif ім in {'drawImage', 'putImageData'} and б and арг:
@@ -569,20 +594,21 @@ class Граф:
             elif ім == 'objectStore' and арг:
                 к = tuple(sorted(str(з) for з in self.знач[арг[0]] if isinstance(з, str)))
                 сх = self.сховища.setdefault(к, self.нове(True))
+                self.види[сх] = 'сховище'
                 self.звʼязати(сх, р)
             elif ім == 'tx' and len(арг) >= 4:
                 к = tuple(sorted(str(з) for з in self.знач[арг[1]] if isinstance(з, str)))
                 сх = self.сховища.setdefault(к, self.нове(True))
+                self.види[сх] = 'сховище'
                 self.до_функції(арг[3], (сх,), р)
-            elif ім in {'getAll', 'get'} and б:
+            elif ім == 'get' and б:
+                кк = {з[6:] for з in self.знач[арг[0]] if isinstance(з, str) and з.startswith('рядок:')} if арг else set()
+                self.читання_кешу[б].append((р, кк))
+            elif ім == 'getAll' and б:
                 збережене = self.поле(б, '@збережене')
-                if ім == 'getAll':
-                    масив = self.нове(True)
-                    self.запис(масив, '*', збережене)
-                    self.запис(р, 'result', масив)
-                else:
-                    self.звʼязати(збережене, р)
-                    self.запис(р, 'result', збережене)
+                масив = self.нове(True)
+                self.запис(масив, '*', збережене)
+                self.запис(р, 'result', масив)
             elif ім in {'put', 'set'} and б and арг:
                 self.запис(б, '@збережене', арг[-1] if ім == 'set' else арг[0])
                 if ім == 'set' and len(арг) >= 2:
@@ -607,15 +633,17 @@ class Граф:
                 if р not in self.елементи_викликів:
                     self.елементи_викликів[р] = (self.поле(б, '*'), self.нове(), self.нове())
                 всі, повернене, ел = self.елементи_викликів[р]
+                індекс = self.нове()
+                self.знач[індекс].add('число:0')
                 if р in self.вибір_типу:
                     фільтри[всі].append((ел, self.вибір_типу[р]))
                 else:
                     self.звʼязати(всі, ел)
                 if ім in {'map', 'flatMap'}:
-                    self.до_функції(арг[0], (ел,), повернене)
+                    self.до_функції(арг[0], (ел, індекс), повернене, ел)
                     self.запис(р, '*', повернене)
                 else:
-                    self.до_функції(арг[0], (ел,), 0)
+                    self.до_функції(арг[0], (ел, індекс), 0, ел)
                     if ім == 'find':
                         self.звʼязати(ел, р)
                     elif ім == 'filter':
@@ -627,7 +655,7 @@ class Граф:
                     self.звʼязати(а, р)
             elif ім == 'then' and б and арг:
                 self.до_функції(арг[0], (б,), р)
-            elif ім not in ДЖЕРЕЛА | прозорі | {'модельП', 'викликОцінкиП', 'блокиВТекст', 'ел', 'createElement', '$', 'querySelector', 'getElementById', 'getContext', 'Promise', 'assign', 'objectStore', 'tx'}:
+            elif ім not in ДЖЕРЕЛА | прозорі | {'модельП', 'викликОцінкиП', 'блокиВТекст', 'розміткаЖінціП', 'ел', 'createElement', '$', 'querySelector', 'getElementById', 'getContext', 'Promise', 'assign', 'objectStore', 'tx'}:
                 self.до_функції(функ, арг, р)
         додавання = defaultdict(list)
         for _, _, _, ім, _, арг, _, _ in self.виклики:
@@ -641,15 +669,27 @@ class Граф:
             читачі[б].append((вих, к))
         for б, к, з in self.записи:
             писачі[б].append((к, з))
-        for ф, арг, вих in self.застосування:
-            викличі[ф].append((арг, вих))
+        ключові, умовні = defaultdict(list), defaultdict(list)
+        for вих, б, к in self.читання:
+            if isinstance(к, tuple):
+                ключові[к[1]].append(('читати', вих, б))
+        for б, к, значення in self.записи:
+            if isinstance(к, tuple):
+                ключові[к[1]].append(('писати', значення, б))
+        for ф, арг, вих, умова in self.застосування:
+            викличі[ф].append((арг, вих, умова))
+            if умова:
+                умовні[умова].append((ф, арг, вих))
         наступні = defaultdict(set)
         for з, до in self.ребра:
             наступні[з].add(до)
         черга, очікує = deque(), defaultdict(set)
-        def додати(до, значення):
+        def додати(до, значення, звідки=None):
             нові = set(значення) - self.знач[до]
             if нові:
+                for з in нові:
+                    if isinstance(з, str) and з.startswith('генератор:'):
+                        self.передачі[до, з] = звідки if звідки is not None else self.обробляється
                 self.знач[до].update(нові)
                 if not очікує[до]:
                     черга.append(до)
@@ -657,17 +697,33 @@ class Граф:
         def ребро(з, до):
             if з and до and з != до and до not in наступні[з]:
                 наступні[з].add(до)
-                додати(до, self.знач[з])
+                додати(до, self.знач[з], з)
         адреси, поля_обʼєкта, усі_читачі = {}, defaultdict(set), defaultdict(set)
+        копії_обʼєктів, ключі_обʼєктів = defaultdict(set), defaultdict(set)
+        копії_джерела, копії_цілі = defaultdict(set), defaultdict(set)
+        for з, до in self.копії:
+            копії_джерела[з].add(до)
+            копії_цілі[до].add(з)
         def поле(о, к):
             адреса = (о, к)
             if адреса not in адреси:
                 в = self.нове()
                 адреси[адреса] = в
+                ключі_обʼєктів[о].add(к)
+                self.адреси_вузлів[в] = self.адреси_вузлів.get(о, str(о)) + ' поле ' + к
                 поля_обʼєкта[о].add(в)
                 for вих in усі_читачі[о]:
                     ребро(в, вих)
+                for до in tuple(копії_обʼєктів[о]):
+                    ребро(в, поле(до, к))
             return адреси[адреса]
+        def копіювати(джерела, цілі):
+            for з in джерела:
+                for до in цілі:
+                    if isinstance(з, int) and isinstance(до, int) and з != до and до not in копії_обʼєктів[з]:
+                        копії_обʼєктів[з].add(до)
+                        for к in tuple(ключі_обʼєктів[з]):
+                            ребро(поле(з, к), поле(до, к))
         for (о, к), значення in tuple(self.поля.items()):
             додати(поле(о, к), значення)
         for з, значення in enumerate(self.знач):
@@ -677,16 +733,16 @@ class Граф:
                 очікує[з].update(значення)
         for о in self.видимі & self.зображення:
             ребро(поле(о, 'src'), поле(self.дом, 'src'))
-        while черга:
-            з = черга.popleft()
-            нові = очікує.pop(з)
-            self.кроків += 1
-            for до in tuple(наступні[з]):
-                додати(до, нові)
-            for до in скалярні[з]:
-                додати(до, (в for в in нові if isinstance(в, str)))
-            for вих, к in читачі[з]:
-                for о in нові:
+        def імена_ключа(к):
+            if not isinstance(к, tuple):
+                return {к}
+            значення = self.знач[к[1]]
+            if any(isinstance(з, str) and (з.startswith('число:') or з == 'ключ:невідомий') for з in значення):
+                return {'*'}
+            return {з[6:] for з in значення if isinstance(з, str) and з.startswith('рядок:')}
+        def читати(вих, обʼєкти, ключі):
+            for к in ключі:
+                for о in обʼєкти:
                     if isinstance(о, str):
                         if о.startswith('генератор:') and к not in ЧИСЛОВІ:
                             додати(вих, [о])
@@ -696,21 +752,57 @@ class Граф:
                             ребро(в, вих)
                     else:
                         ребро(поле(о, к), вих)
-            for к, значення in писачі[з]:
-                for о in нові:
+        def писати(значення, обʼєкти, ключі):
+            for к in ключі:
+                for о in обʼєкти:
                     if isinstance(о, int):
                         ребро(значення, поле(о, к))
-            for арг, вих in викличі[з]:
-                for ф in нові:
-                    if ф in self.джерела_функцій and вих:
-                        додати(вих, ['генератор:' + self.адреси_викликів[вих]])
-                    if ф in self.функції:
-                        параметри, пов = self.функції[ф]
-                        for а, п in zip(арг, параметри):
-                            ребро(а, п)
-                        ребро(пов, вих)
-                    if ф in self.резолвери and арг:
-                        ребро(арг[0], self.резолвери[ф])
+        def викликати(функції, арг, вих):
+            for ф in функції:
+                if ф in self.джерела_функцій and вих:
+                    додати(вих, ['генератор:' + self.адреси_викликів[вих]])
+                if ф in self.функції:
+                    параметри, пов = self.функції[ф]
+                    for а, п in zip(арг, параметри):
+                        ребро(а, п)
+                    ребро(пов, вих)
+                if ф in self.резолвери and арг:
+                    ребро(арг[0], self.резолвери[ф])
+        while черга:
+            з = черга.popleft()
+            self.обробляється = з
+            нові = очікує.pop(з)
+            self.кроків += 1
+            for до in tuple(наступні[з]):
+                додати(до, нові)
+            for до in скалярні[з]:
+                додати(до, (в for в in нові if isinstance(в, str)))
+            for до in копії_джерела[з]:
+                копіювати(нові, self.знач[до])
+            for дж in копії_цілі[з]:
+                копіювати(self.знач[дж], нові)
+            for вих, ключі in self.читання_кешу[з]:
+                for о in нові:
+                    if not isinstance(о, int):
+                        continue
+                    if self.види.get(о) == 'сховище':
+                        ребро(поле(о, '@збережене'), поле(вих, 'result'))
+                    elif self.види.get(о) == 'мапа':
+                        ребро(поле(о, '@збережене'), вих)
+                    else:
+                        for к in ключі:
+                            ребро(поле(о, к), вих)
+            for вих, к in читачі[з]:
+                читати(вих, нові, імена_ключа(к))
+            for к, значення in писачі[з]:
+                писати(значення, нові, імена_ключа(к))
+            for вид, значення, б in ключові[з]:
+                (читати if вид == 'читати' else писати)(значення, self.знач[б], імена_ключа(('ключ', з)))
+            for арг, вих, умова in викличі[з]:
+                if not умова or self.знач[умова]:
+                    викликати(нові, арг, вих)
+            for ф, арг, вих in умовні[з]:
+                викликати(self.знач[ф], арг, вих)
             for вих, тип in фільтри[з]:
                 for о in нові:
                     типи = self.поля.get((о, 'type'), set())
@@ -723,6 +815,7 @@ class Граф:
                         if о in self.зображення:
                             ребро(поле(о, 'src'), поле(self.дом, 'src'))
         self.поля = {адреса: self.знач[в] for адреса, в in адреси.items()}
+        self.номери_полів = адреси
 
     def походження(self, входи):
         """Простежує споживача назад через значення і вкладені поля."""
@@ -773,6 +866,46 @@ class Граф:
         унік = {(р['файл'], р['рядок'], р['умова'], р['вхід']): р for р in рядки}
         return sorted(унік.values(), key=lambda р: (р['файл'], р['рядок'], р['умова'], р['вхід']))
 
+    def слід(self, файл, рядок):
+        """Найкоротший структурний шлях конкретного входу до генератора для звірки."""
+        входи = [в for в in self.входи if в.файл == файл and в.рядок == рядок]
+        край = deque((з, []) for в in входи for з in в.значення)
+        бачені, поля = set(), defaultdict(list)
+        імена = {з: f'оточення {с}: {ім}' for с, о in enumerate(self.оточення) for ім, з in о.items()}
+        for (б, к), зн in self.поля.items():
+            if к in ПІКСЕЛІ:
+                поля[б].extend((з, к) for з in зн)
+        while край:
+            з, шлях = край.popleft()
+            if з in бачені:
+                continue
+            бачені.add(з)
+            if isinstance(з, str):
+                if з.startswith('генератор:'):
+                    return шлях + [з]
+                continue
+            де = self.адреси_вузлів.get(з, імена.get(з, f'вузол {з}'))
+            for д in self.знач[з]:
+                if д != з:
+                    if isinstance(д, str) and д.startswith('генератор:'):
+                        предки, був, п = [], set(), з
+                        while п is not None and п not in був:
+                            був.add(п)
+                            предки.append(self.адреси_вузлів.get(п, імена.get(п, str(п))))
+                            п = self.передачі.get((п, д))
+                        край.append((д, шлях + предки))
+                    else:
+                        край.append((д, шлях + [де]))
+            for д, к in поля[з]:
+                предки, був, п = [], set(), self.номери_полів.get((з, к))
+                if isinstance(д, str) and д.startswith('генератор:'):
+                    while п is not None and п not in був:
+                        був.add(п)
+                        предки.append(self.адреси_вузлів.get(п, імена.get(п, str(п))))
+                        п = self.передачі.get((п, д))
+                край.append((д, шлях + [де + ' → поле ' + к] + предки))
+        return []
+
 
 def обсяг(корінь):
     """Читає все дерево мов класу; кожне виключення має названу причину."""
@@ -794,7 +927,7 @@ def обсяг(корінь):
     return файли, виключені
 
 
-def лічба(корінь):
+def лічба(корінь, слід=None):
     """Будує граф всього обсягу й повертає відтворюваний звіт."""
     файли, виключені = обсяг(Path(корінь))
     js = {ф: т for ф, т in файли.items() if not ф.endswith('.py')}
@@ -859,9 +992,13 @@ def лічба(корінь):
             г.запис(м, ім, з)
     г.замкнути()
     рядки = г.результат()
-    return dict(файли=dict(Counter(Path(ф).suffix for ф in файли)), обсяг=sorted(файли),
+    звіт = dict(файли=dict(Counter(Path(ф).suffix for ф in файли)), обсяг=sorted(файли),
                 виключені=виключені, кроків=г.кроків, входи=рядки,
                 місць=len({(р['файл'], р['рядок']) for р in рядки if р['місце']}))
+    if слід:
+        ф, н = слід.rsplit(':', 1)
+        звіт['слід'] = г.слід(ф, int(н))
+    return звіт
 
 
 def main():
@@ -870,14 +1007,17 @@ def main():
     ап.add_argument('--корінь', default='.')
     ап.add_argument('--докладно', action='store_true')
     ап.add_argument('--json')
+    ап.add_argument('--слід')
     а = ап.parse_args()
     try:
-        звіт = лічба(а.корінь)
+        звіт = лічба(а.корінь, а.слід)
     except (OSError, ValueError, subprocess.SubprocessError) as е:
         print(f'непрочитано: {е}', file=sys.stderr)
         return 1
     if а.json:
         Path(а.json).write_text(json.dumps(звіт, ensure_ascii=False, indent=2) + '\n', encoding='utf-8')
+    if а.слід:
+        print('слід: ' + ' → '.join(звіт['слід']))
     for р in звіт['входи']:
         if р['місце'] or а.докладно:
             print(f"{'місце' if р['місце'] else 'не місце'} · {р['файл']}:{р['рядок']} · ({р['умова']}) {р['вхід']} · {р['чому']}")

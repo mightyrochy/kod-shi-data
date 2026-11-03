@@ -196,6 +196,58 @@ class Прилад(unittest.TestCase):
         """Перейменування операції генерації не приховує її походження."""
         self.перевірити({'а.js': 'const draw=generate_image;\njudge(draw());'}, 1)
 
+    def test_порожній_перелік_полів(self):
+        """Порожній масив ключів не читає всі поля запису."""
+        self.перевірити({'а.js': "const k={картинка:generate_image()};const out={};\n[].forEach(p=>out[p]=k[p]);\njudge(out);"}, 0)
+
+    def test_точні_назви_полів(self):
+        """Перелік текстових полів не копіює картинку."""
+        self.перевірити({'а.js': "const k={picture:generate_image(),name:'original'};const out={};\n['name'].forEach(p=>out[p]=k[p]);\njudge(out.name);"}, 0)
+
+    def test_перелік_з_кадром(self):
+        """Включення поля картинки в перелік справді переносить пікселі."""
+        self.перевірити({'а.js': "const k={picture:generate_image()};const out={};\n['picture'].forEach(p=>out[p]=k[p]);\njudge(out.picture);"}, 1)
+
+    def test_порожня_map(self):
+        """Порожня map не повертає результат її callback."""
+        self.перевірити({'а.js': 'const a=[].map(()=>generate_image());\njudge(a[0]);'}, 0)
+
+    def test_числова_map(self):
+        """Числовий елемент також активує callback."""
+        self.перевірити({'а.js': 'const a=[1].map(()=>generate_image());\njudge(a[0]);'}, 1)
+
+    def test_індекс_callback(self):
+        """Другий аргумент callback з'єднує запис та читання елемента."""
+        self.перевірити({'а.js': 'const a=[];[generate_image()].forEach((x,i)=>a[i]=x);\njudge(a[0]);'}, 1)
+
+    def test_spread_не_аліас(self):
+        """Запис у розгорнуту копію не змінює оригінал."""
+        self.перевірити({'а.js': 'const original={};const clone={...original};\nclone.picture=generate_image();\njudge(original.picture);'}, 0)
+
+    def test_assign_не_аліас(self):
+        """Object.assign копіює поля у ціль, а не зливає ідентичності."""
+        self.перевірити({'а.js': 'const original={};const clone=Object.assign({},original);\nclone.picture=generate_image();\njudge(original.picture);'}, 0)
+
+    def test_spread_копіює_кадр(self):
+        """Копія успадковує поле кадру та його походження."""
+        self.перевірити({'а.js': 'const original={picture:generate_image()};const clone={...original};\njudge(clone.picture);'}, 1)
+
+    def test_map_get_не_idb_request(self):
+        """Map.get не створює result у збереженому об'єкті."""
+        self.перевірити({'а.js': "const m=new Map();m.set('a',{picture:generate_image()});\nconst a=m.get('a');\njudge(a.result);"}, 0)
+
+    def test_idb_get_повертає_request(self):
+        """IndexedDB.get має пікселі лише в result, не в самому запиті."""
+        self.перевірити({'а.js': "tx(db,'runs','readwrite',s=>s.put({picture:generate_image()},'k'));\nconst r=db.transaction('runs').objectStore('runs').get('k');\njudge(r.picture);\njudge(r.result.picture);"}, 1)
+
+    def test_python_get(self):
+        """Python dict.get читає назване поле, а не API IndexedDB."""
+        self.перевірити({'а.py': 'p = {"picture": generate_image()}\njudge(p.get("picture"))\n'}, 1)
+
+    def test_єдиний_контракт_html(self):
+        """Операція через HTML-контракт не рахується вдруге в його тілі."""
+        self.перевірити({'а.js': "function розміткаЖінціП(el,html){el.innerHTML=html;}\nрозміткаЖінціП(document.body,'<img src=\"'+generate_image()+'\">');"}, 1)
+
 
 if __name__ == '__main__':
     unittest.main()
