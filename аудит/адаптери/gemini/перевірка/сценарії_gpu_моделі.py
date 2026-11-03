@@ -66,6 +66,7 @@ $script:Job = [pscustomobject]@{name='gemini-queue/стенд/gpt-test/1/gpu'; i
     ref='ref';sha='sha';slot='test-slot';gpu=($TestMode -ne 'cpu');lane=$Lane;slug='стенд';model='gpt-test';n='1';cond='gpu';prio=1;deadline='';time=1;claude='cc-test';effort='high'}
 if ($TestMode -eq 'recover') { Start-Markers @() | Out-Null; if ($null -eq $script:Held) { throw 'Не ініціалізовано стан утримань' }; exit 0 }
 if ($TestMode -eq 'offline') { exit (Main) }
+if ($TestMode -eq 'busy') { [Console]::Out.Write((Get-GpuBusyReason @())); exit 0 }
 if ($TestMode -eq 'take') { $lock_ = Open-Lock (Get-GpuLockPath); try { Start-GpuModels $script:Job } finally { $lock_.Dispose() }; exit 0 }
 if ($TestMode -eq 'locked') {
     $lock_ = Open-Lock (Get-GpuLockPath)
@@ -247,6 +248,8 @@ def main():
                 run('recover')
                 check(lane + '/' + fault + ': збій лишає знімок і власний екземпляр',
                       (d / 'gpu-models.json').exists() and 'job-job-model' in Studio.loaded)
+                check(lane + '/' + fault + ': незакритий знімок тримає ворота GPU',
+                      'незакритий знімок' in run('busy').stdout.decode('utf-8', errors='replace'))
                 Studio.fault = ''
                 run('recover')
                 check(lane + '/' + fault + ': повтор відновлює тільки початкову модель', Studio.loaded == {'owner-id': 'owner-model'})

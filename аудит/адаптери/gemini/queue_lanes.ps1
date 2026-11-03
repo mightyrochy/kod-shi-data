@@ -640,13 +640,7 @@ function Get-GpuLockPath { Join-Path $LaneDir 'gpu.lock' }
 
 function Get-LmsInstances {
     <# Читає екземпляри локального LM Studio; неповна відповідь не є порожнім сервером. #>
-    # Сервер не слухає :1234 (LM Studio закрито чи ще не запущено) — завантажених екземплярів нема: інакше закритий
-    # LM Studio зупиняв би GPU-наряди, що піднімають його самі, і разом із незакритим знімком — усю смугу.
-    try { $v = Invoke-RestMethod 'http://127.0.0.1:1234/api/v1/models' -TimeoutSec 15 -ErrorAction Stop }
-    catch [System.Net.WebException] {
-        if ($_.Exception.Status -eq [System.Net.WebExceptionStatus]::ConnectFailure) { return }
-        throw
-    }
+    $v = Invoke-RestMethod 'http://127.0.0.1:1234/api/v1/models' -TimeoutSec 15 -ErrorAction Stop
     if ((Get-JsonProp $v 'error') -or $v.models -isnot [array]) { throw 'LM Studio: немає переліку models' }
     foreach ($m in $v.models) {
         if (-not $m.key -or $m.loaded_instances -isnot [array]) { throw 'LM Studio: неповна модель' }
@@ -1338,6 +1332,11 @@ function Get-GpuBusyReason($Workers, [switch]$LockHeld) {
     $script:GpuHoldReason = ''
     if (@($Workers | Where-Object { $_.Gpu -and -not $_.Proc.HasExited }).Count -gt 0) { $script:GpuHoldReason = 'замок GPU іншого наряду'; return 'GPU: її тримає власний наряд обгортки' }
     if (-not $LockHeld -and -not (Test-LockFree (Get-GpuLockPath))) { $script:GpuHoldReason = 'замок GPU іншого наряду'; return "GPU: замок $(Get-GpuLockPath) тримає інший процес" }
+    # Незакритий знімок моделей (прибирання попереднього GPU-наряду не вдалось) тримає лише GPU-наряди: решта смуги йде.
+    if (-not $LockHeld -and [IO.File]::Exists((Join-Path $LaneDir 'gpu-models.json'))) {
+        $script:GpuHoldReason = 'незакритий знімок моделей GPU'
+        return 'GPU: незакритий знімок моделей попереднього наряду (lanes/gpu-models.json)'
+    }
     $load = Get-GpuLoad
     if ($load.Reason) {
         $script:GpuHoldReason = $load.Reason

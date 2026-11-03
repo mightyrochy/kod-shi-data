@@ -1081,7 +1081,7 @@ function Test-OffMarker($M) {
 # Повертає число запущених і позначку вимкнення, яку треба спробувати.
 function Start-Markers($Workers) {
     $script:Held = @{}
-    if (-not (Repair-GpuModels)) { return @(0, $null) }
+    [void](Repair-GpuModels)
     $started = 0; $off = $null
     $script:Held = @{}
     $now = [DateTimeOffset]::UtcNow.ToUnixTimeSeconds()

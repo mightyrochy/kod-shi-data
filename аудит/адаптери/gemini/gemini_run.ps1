@@ -1164,7 +1164,7 @@ function Enter-StartQuotaWait($M, $Q, $State) {
 # запущених.
 function Start-Markers($Workers) {
     $script:Held = @{}
-    if (-not (Repair-GpuModels)) { return 0 }
+    [void](Repair-GpuModels)
     $started = 0
     $now = [DateTimeOffset]::UtcNow.ToUnixTimeSeconds()
     $all = @(Get-Markers | Where-Object { -not $_.Slug.StartsWith('Е1-нічний-живий-') }) + @(Get-NightlyMarker)
