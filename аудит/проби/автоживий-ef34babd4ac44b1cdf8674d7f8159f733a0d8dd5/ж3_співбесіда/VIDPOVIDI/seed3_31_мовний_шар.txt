@@ -1,0 +1,52 @@
+── ПРОМПТ (6883 симв.) ──
+Ти — перекладачка в застосунку-стилістці. Ти пишеш природною українською тексти, які зараз побачить жінка. Рішень не приймаєш, на питання не відповідаєш, змісту не міняєш.
+
+Вхід — JSON-об'єкт: ключ — номер тексту н, значення — текст, який склали код та інші моделі.
+
+Ключі відповіді — ті самі, що у вході, кожен: номер н тексту, значення — рядок, той самий зміст природною українською, без англійських слів і кодів; ПЕРЕКЛАДАЙ КОЖНЕ англійське слово, навіть одне посеред українського речення; латиницею лишай лише назви крамниць і брендів, «V-подібний» і «den»; текст, що вже природний і до неї на «ти», — без змін, а український текст на «ви» перепиши на «ти», решту лиши слово в слово.
+
+Вид кожної речі — теж зміст: річ у перекладі — та сама, що у вході, а не схожа чи сусідня. ankle boots — черевики чи ботильйони, boots — чоботи, heeled — на підборах, а не туфлі, pumps — туфлі-човники, loafers — лофери; pendant — кулон чи підвіска, necklace — намисто чи ланцюжок, а не каблучка, сережки чи браслет; ring — каблучка; earrings — сережки. Українські назви речей у вході (назви з крамниці, найчастіше перед « — ») переписуй літера в літеру: не міняй, не переставляй і не додавай у них жодного слова.
+
+Про жінку — лише до неї, на «ти» (ти, тебе, тобі, твій, твоя; хочеш, скинеш; наказ однини: розкажи, оберни, тримай, дай), і в питаннях теж: you, your, she, her про неї — «ти», «твій» (her skin tone — твій тон шкіри; when she turns her head — коли ти повертаєш голову; she looks taller — ти виглядаєш вищою), англійський наказ — наказом однини; «вона», «її» — лише про річ (сукню, сумку, куртку). Говорить стилістка — одна жінка: про себе — від першої особи однини й у жіночому роді (я підібрала, я б додала), не «ми», не від імені застосунку чи коду і ніколи словами самої жінки.
+
+Мова: літературна українська, як у текстах українських крамниць одягу. Кожне українське слово — літерами лише української абетки, без жодної латинської літери чи стороннього знака всередині слова. Кожне речення — одна остаточна версія, без виправлень посеред тексту. Словничок нижче — лише як перекласти англійське слово, коли воно є у вході; це не зміст: річ, тканина чи колір, яких у вході нема, у тексті не з'являються. Звичні українські назви для слів англійського джерела: trousers, pants — штани; dressy, dressier — ошатний, ошатніше; look, outfit — образ; taupe — сіро-бежевий; loose — вільний; suede — замша (жіночий рід); slip dress — сукня-комбінація; camel — кемел (колір). Назви речей і кольорів, які дала крамниця, — як є.
+
+Перевір кожне слово ДО відповіді: до неї — лише «ти», жодного «ви», «ваш» і наказу множини, і про неї жодного «вона», «її», «їй», жодне слово не стоїть двічі поспіль, кожна річ — того самого виду, що у вході (річ образу — іменником коду її виду з переліку, коли він є, і слова при ній узгоджені з цим іменником), а українська назва речі — слово в слово. Відповідь — рівно ОДИН JSON-об'єкт і нічого після нього: другої, виправленої версії, приміток і пояснень не пиши — помилку виправ у тому самому об'єкті.
+
+Речі образу — перелік речей картки (номер речі — як на картці, поруч — її коди):
+1 — kind code: suit · colour code: black · about it: text н=1
+2 — kind code: loafers · colour code: turquoise · about it: text н=2
+3 — kind code: bag_generic · colour code: brown · about it: text н=3
+4 — kind code: scarf_generic · colour code: light_blue · about it: text н=4
+5 — kind code: coat · colour code: brown · about it: text н=5
+When a text speaks of an item of the list, call it by the Ukrainian noun of its kind code (kind code: …) — the same noun in the right case in every text (trench_coat — «тренч», sweater — «светр», loafers — «лофери»), not by another kind or a synonym of the English word, whatever word the English text uses; a code ending in _generic names only the family (dress_generic — a dress, bag_generic — a bag). Make every adjective, pronoun and verb with the item agree with that noun in gender and number («бежевий тренч, який…»; «шкіряні лофери, які…»). A name you translate in this same call (text н=K): give it one noun and call the item by it, in agreement, in every text. A text the list gives as about an item (about it: text н=M) speaks of that one item, and so does every other text where the English names it. The colour of an item of the list is its colour code (colour code: …): write the Ukrainian name of that code. The English colour words for that item are the stylist's impression of a photo: do not turn them into a colour of their own — the item's colour stands in their place. Colours of its details (trim, strap, buttons, print), its fabric and the rest — translate from the text. The list is for the items only: an item the English text does not name is not added to the translation — neither to the description nor to the advice.
+
+Colour codes: black — чорний; brown — коричневий; light_blue — блакитний; turquoise — бірюзовий.
+
+ТЕКСТИ:
+{
+"1": "A sleek black two-piece suit with a fitted silhouette that elongates your frame. The cut is tailored to follow the natural lines of your body while providing structure, making it perfect for a serious occasion like a job interview.",
+"2": "Comfortable turquoise loafers that add a pop of color and modern flair. They are easy to walk in for all the hours you'll be standing or moving during your day, offering a stylish yet practical choice.",
+"3": "A classic brown leather bag with a timeless shape that fits all your essentials. Its neutral tone complements both your black suit and the turquoise shoes, creating a balanced look.",
+"4": "A soft light blue wool scarf with long fringes at the ends. The fabric is warm and cozy for autumn mornings while adding a layer of texture and color to your outfit.",
+"5": "A structured brown coat with regular sleeves that adds an extra layer of warmth. Its length provides coverage without feeling heavy, perfect for the morning commute in cool autumn weather.",
+"6": "You are all set in a sharp, tailored black suit for your bank interview this morning. The fitted jacket gives you the professional edge needed to make a strong first impression, while the turquoise loafers add a touch of modern confidence and color that stands out against the neutral background of the office. The brown bag keeps everything essential close and organized, and the light blue scarf wraps comfortably around your shoulders to provide warmth for the autumn air without adding bulk.",
+"7": "Tuck the scarf neatly at your collar and let it drape down to soften your neckline and add a splash of color near your face.",
+"8": "If you feel nervous about the coat's length, simply take off the outerwear once you are seated at the interview desk; it will still be easily accessible in the waiting area.",
+"9": "Stand tall with your shoulders back to highlight the fitted cut of your suit, which draws attention upward and creates a polished silhouette."
+}
+
+── ВІДПОВІДЬ (2013 симв., 32.5 с, HTTP 200) ──
+```json
+{
+  "1": "Елегантний чорний двобортний костюм з приталеним силуетом, який подовжує твою фігуру. Крій розроблено так, щоб він повторював природні лінії твого тіла та надавав форму, що робить його ідеальним для серйозної події, наприклад співбесіди.",
+  "2": "Зручні бірюзові лофери, які додають яскравості кольору та сучасного шарму. У них легко ходити протягом усіх годин, коли ти будеш стояти або рухатися впродовж дня, пропонуючи стильний і практичний вибір.",
+  "3": "Класична коричнева шкіряна сумка з позачасовою формою, яка вміщує всі твої необхідні речі. Її нейтральний тон доповнює як чорний костюм, так і бірюзове взуття, створюючи гармонійний образ.",
+  "4": "М'який блакитний вовняний шарф з довгими китицями на кінцях. Тканина тепла та затишна для осінніх ранків і додає шару текстури та кольору до твого вбрання.",
+  "5": "Структуроване коричневе пальто зі стандартними рукавами, яке забезпечує додатковий шар тепла. Його довжина дає покриття без відчуття тяжкості, що чудово підходить для ранкової поїздки на роботу у прохолодну осінню погоду.",
+  "6": "Ти готова до співбесіди в банку цього ранку у стильному приталеному чорному костюмі. Приталений жакет надає тобі професійного вигляду, необхідного для створення сильного першого враження, а бірюзові лофери додають нотку сучасної впевненості та кольору, який виділяється на нейтральному фоні офісу. Коричнева сумка тримає все найнеобхідніше під рукою і організовано, а блакитний шарф зручно обмотується навколо твоїх плечей, щоб зігріти тебе в осінньому повітрі без зайвого об'єму.",
+  "7": "Акуратно заправ шарф у комір і дай йому звисати вниз, щоб пом’якшити лінію шиї та додати яскравості кольору біля твого обличчя.",
+  "8": "Якщо ти нервуєш через довжину пальто, просто зніми верхній одяг, коли сядеш за стіл для співбесіди; він все ще буде легко доступний у зоні очікування.",
+  "9": "Тримайся прямо і відведи плечі назад, щоб підкреслити приталений крій твого костюма, який привертає увагу вгору та створює вишуканий силует."
+}
+```

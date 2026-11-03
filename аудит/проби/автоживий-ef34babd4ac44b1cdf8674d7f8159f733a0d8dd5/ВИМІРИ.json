@@ -6535,5 +6535,3317 @@
     ]
    }
   }
+ },
+ "ж2_побачення_вечір": {
+  "питання": [
+   {
+    "pr": 2609,
+    "question": "у паспорті пора «вечір» поруч із годиною 19 → повне → ДО: `python3 аудит/проби/живі_до.py ж2_побачення_вечір 5fb42eb5` → у дні рук `part_of_day: evening`; образ вечірній, доречність і рівень ошатності не гірші за ДО"
+   },
+   {
+    "pr": 2629,
+    "question": "образ вечірній (бриф «вечірнє світло», світло дня рук штучне), доречність і рівень ошатності не гірші → повне → origin/claude/zhyvyi-zh7-funktsiia:аудит/проби/автоживий-6f203c7f215b6c47bbb47e839fe2ebacfc4ed6c4/ж2_побачення_вечір → вечір з пори, годин і хвилин у запитах до стилістки нема"
+   },
+   {
+    "pr": 2630,
+    "question": "у картці частина дня «ввечері», а не «19:30»; годин і хвилин у картці нема → розмова → ДО: `main` 173ba2da, плитка картки «19:30» з години паспорта → картка несе її частину дня без годинника"
+   },
+   {
+    "pr": 2632,
+    "question": "«о 19:30»: «Записала» й `chosen` несуть пору, а не годину → розмова → ДО нема на 173ba2da (`аудит/проби/живі_до.py`; перший прогін — ПІСЛЯ кроку 1, дошка 11901) → `chosen`: part_of_day evening без hour/minute; «Записала» без мітки «19:30» від коду"
+   },
+   {
+    "pr": 2628,
+    "question": "у паспорті й картці «Ввечері», годин і хвилин нема ні в паспорті, ні в шапці → розмова → ДО: записаний перший хід `аудит/проби/автоживий-*/ж2_побачення_вечір` (шапка «о 19:30», година 19) → час дня над картками — частина дня, а не годинник"
+   },
+   {
+    "pr": 2631,
+    "question": "образ вечірній, доречність і рівень ошатності не гірші за ДО, у суті й заявах суду годин нема → повне → ДО: `main` 173ba2da (суть K-KOH-06 «о ГГ:00», заява з `hour`) → суть «удень», заява лише зі `slot`"
+   },
+   {
+    "pr": 2667,
+    "question": "смуга пулу й брифу на щабель вища, ніж у ж2_побачення_день (smart); образ вечірній, доречність не гірша за ДО"
+   },
+   {
+    "pr": 2682,
+    "question": "ярус за рівнем нагоди, вечір вище за день, друга зона; дивитись верхній шар і сумку (12189) → повне → з коду на main 295ba008 (той самий щабель) → смуга пулу й брифу smart, образ вечірній"
+   }
+  ],
+  "rc": 1,
+  "секунд": 667.1,
+  "червоні": [
+   "✗ руки 1–2: жінка БАЧИТЬ фото речей на картці (речей із видимим знімком ≥ речей із власним фото), а не силуети [FOTO=0: мережі нема, фото не міряються]  →  [[\"3\",0,0],[\"4\",0,0],[\"1\",7,0],[\"2\",6,0]]"
+  ],
+  "фото_моделі": [
+   "↔ модель #22 ОПИС_V1→ОПИС_ВІДПОВІДЬ_V1 (16219 симв., разом 19174, фото 7 (не дійшло 7)) → 8.7 с · HTTP 200 · 2127 симв.",
+   "↔ модель #23 ОПИС_V1→ОПИС_ВІДПОВІДЬ_V1 (14697 симв., разом 17262, фото 6 (не дійшло 6)) → 10.4 с · HTTP 200 · 2966 симв.",
+   "кадрів не дійшло до моделі: 13 · отримання/декодування UNABLE_TO_VERIFY_LEAF_SIGNATURE · https://alot.com.ua/imgs/mg4062.jpg | отримання/декодування UNABLE_TO_VERIFY_LEAF_SIGNATURE · https://feelyou.com.ua/wp-content/uploads/2026/02/feelyou_ira2647-scaled.jpg | отримання/декодування UNABLE_TO_VERIFY_LEAF_SIGNATURE · https://images.theoriginals.com.ua/cache/webp/catalog/product_photo/88405/lodochki-iz-sero | отримання/декодування UNABLE_TO_VERIFY_LEAF_SIGNATURE · https://images.theoriginals.com.ua/cache/webp/catalog/product_photo/56864/kolco-love-1-700 | отримання/декодування UNABLE_TO_VERIFY_LEAF_SIGNATURE · https://skripka.com.ua/wp-content/uploads/2023/05/IMG_3893.webp"
+  ],
+  "заміни": [],
+  "перший_хід_моделі": {
+   "update": {
+    "occasion": {
+     "quote": "побачення в ресторані ввечері, о 19:30",
+     "value": "date"
+    },
+    "hour": {
+     "quote": "о 19:30",
+     "value": 19,
+     "named": "clock_time"
+    },
+    "part_of_day": {
+     "quote": "ввечері",
+     "value": "evening"
+    },
+    "formality": {
+     "quote": null,
+     "value": "smart"
+    },
+    "formality_reason": {
+     "quote": null,
+     "value": "norm"
+    },
+    "formality_branch": {
+     "quote": null,
+     "value": "social"
+    }
+   },
+   "need": "none",
+   "text": [
+    {
+     "about": "occasion",
+     "says": "Занотувала: побачення в ресторані ввечері о 19:30. Це буде вишуканий ресторан, тому одягайся трохи святково."
+    }
+   ],
+   "invite_topics": [
+    "jewelry"
+   ],
+   "invite": "Можеш додати прикраси — сережки чи намисто.",
+   "ask_code": null,
+   "ask": null,
+   "header": {
+    "temperature_c": "невідомо",
+    "precipitation": "невідомо",
+    "wants": "немає",
+    "vetoes": "немає",
+    "mood": "невідомо"
+   }
+  },
+  "доказ": {
+   "код": {
+    "дерево": "4ee2f284af6282ce68bb7451da4c3e182083949b",
+    "збірка": "ef34babd4ac44b1cdf8674d7f8159f733a0d8dd5",
+    "відбиток": "c2794db0a676",
+    "каталог": null
+   },
+   "факт": {
+    "обривів_до_повтору · збирання → чотири картки": 0,
+    "стінний_с · збирання → чотири картки": 410.9,
+    "карток": 4,
+    "живих_карток": 4,
+    "фото_прийшло": 0,
+    "фото_картинок": 4,
+    "вердиктів_у_файлі": 4,
+    "обривів_до_повтору · увесь прогін": 0,
+    "стінний_с · увесь прогін": 642.4,
+    "збоїв_транспорту_моделі": 0
+   },
+   "вердикт": {
+    "доведено": true,
+    "чому": []
+   }
+  },
+  "паспорт": {
+   "подія": "побачення в ресторані ввечері, о 19:30",
+   "формат": "невідомо",
+   "тривалість_год": null,
+   "рух": "невідомо",
+   "дрес_код": null,
+   "ошатність": [
+    7,
+    7
+   ],
+   "пора": "вечір",
+   "темп_c": 18,
+   "опади": "невідомо",
+   "намір": "conventional",
+   "мета": "невідомо",
+   "мета_важливо": [],
+   "макіяж": null,
+   "прикраси": "невідомо",
+   "реєстр_людини": [],
+   "бажання": [],
+   "вето": {
+    "типи": [],
+    "тканини": [],
+    "принти": [],
+    "кольори": [],
+    "зони": []
+   },
+   "зони_чипами": [],
+   "настрій": [],
+   "невідомо": [],
+   "питання_людині": [],
+   "відповідь_людині": "",
+   "джерело": "модель",
+   "помилка_формату": null,
+   "нагода": "побачення",
+   "місце": "ресторан_районний",
+   "слова": "",
+   "джерело_полів": {
+    "темп_c": "form_default"
+   },
+   "перекладено_шаром": true,
+   "порада_людині": "",
+   "поради_дані": [
+    "прикраси"
+   ],
+   "порада_не_озвучена": {
+    "причина": "empty_advice",
+    "теми": [
+     "прикраси",
+     "реєстр"
+    ]
+   },
+   "вето_тверде": {
+    "типи": [],
+    "тканини": [],
+    "принти": [],
+    "кольори": [],
+    "зони": [],
+    "слоти": {},
+    "без_читача": []
+   },
+   "гілка_ошатності": "social",
+   "причина_ошатності": "norm",
+   "картка_запиту": {
+    "подія": {
+     "значення": "побачення в ресторані ввечері, о 19:30",
+     "джерело": "reading",
+     "уривок": ""
+    },
+    "нагода": {
+     "значення": "побачення",
+     "джерело": "her",
+     "уривок": "побачення в ресторані ввечері, о 19:30"
+    },
+    "місце": {
+     "значення": "ресторан_районний",
+     "джерело": "reading",
+     "уривок": "побачення в ресторані ввечері, о 19:30"
+    },
+    "формат": {
+     "значення": "невідомо",
+     "джерело": "default",
+     "уривок": ""
+    },
+    "рух": {
+     "значення": "невідомо",
+     "джерело": "default",
+     "уривок": ""
+    },
+    "ошатність": {
+     "значення": [
+      7,
+      7
+     ],
+     "джерело": "reading",
+     "уривок": ""
+    },
+    "темп_c": {
+     "значення": 18,
+     "джерело": "default",
+     "уривок": ""
+    },
+    "опади": {
+     "значення": "невідомо",
+     "джерело": "reading",
+     "уривок": ""
+    },
+    "намір": {
+     "значення": "conventional",
+     "джерело": "default",
+     "уривок": ""
+    },
+    "мета": {
+     "значення": "невідомо",
+     "джерело": "default",
+     "уривок": ""
+    },
+    "прикраси": {
+     "значення": "невідомо",
+     "джерело": "default",
+     "уривок": ""
+    },
+    "вето": {
+     "значення": {
+      "типи": [],
+      "тканини": [],
+      "принти": [],
+      "кольори": [],
+      "зони": []
+     },
+     "джерело": "reading",
+     "уривок": ""
+    },
+    "пора": {
+     "значення": "вечір",
+     "джерело": "reading",
+     "уривок": "ввечері"
+    },
+    "виміри": {
+     "значення": {
+      "recurrence": "once",
+      "volume": "one_look",
+      "mourning": "none",
+      "religious_place": "none",
+      "audience": "usual",
+      "role": "unknown",
+      "like": "unknown",
+      "kind": "unknown",
+      "occasion": "date",
+      "place": "restaurant_casual",
+      "setting": "unknown",
+      "movement": "unknown",
+      "dress_code": "unknown",
+      "precipitation": "unknown",
+      "intent": "conventional",
+      "goal": "flatter",
+      "jewelry": "unknown",
+      "part_of_day": "evening",
+      "surface": "unknown",
+      "open_zones": "unknown",
+      "reserved_colour": "unknown",
+      "activity": "unknown",
+      "temperature_c": 18,
+      "duration_h": null,
+      "formality": [
+       7,
+       7
+      ],
+      "makeup_level": "unknown",
+      "parts": []
+     },
+     "джерело": "default",
+     "уривок": ""
+    },
+    "звідки": {
+     "значення": {
+      "recurrence": "default",
+      "volume": "default",
+      "mourning": "default",
+      "religious_place": "default",
+      "audience": "default",
+      "role": "unknown",
+      "like": "unknown",
+      "kind": "unknown",
+      "occasion": "default",
+      "place": "default",
+      "setting": "unknown",
+      "movement": "unknown",
+      "dress_code": "unknown",
+      "precipitation": "unknown",
+      "intent": "default",
+      "goal": "default",
+      "jewelry": "unknown",
+      "part_of_day": "default",
+      "surface": "unknown",
+      "open_zones": "unknown",
+      "reserved_colour": "unknown",
+      "activity": "unknown",
+      "temperature_c": "default",
+      "duration_h": "unknown",
+      "formality": "default",
+      "makeup_level": "unknown",
+      "parts": "unknown"
+     },
+     "джерело": "default",
+     "уривок": ""
+    },
+    "поля_шару": {
+     "значення": [
+      "вето",
+      "година",
+      "гілка_ошатності",
+      "місце",
+      "нагода",
+      "опади",
+      "ошатність",
+      "подія",
+      "пора",
+      "причина_ошатності"
+     ],
+     "джерело": "default",
+     "уривок": ""
+    },
+    "вето_тверде": {
+     "значення": {
+      "типи": [],
+      "тканини": [],
+      "принти": [],
+      "кольори": [],
+      "зони": [],
+      "слоти": {},
+      "без_читача": []
+     },
+     "джерело": "default",
+     "уривок": ""
+    }
+   },
+   "виміри": {
+    "recurrence": "once",
+    "volume": "one_look",
+    "mourning": "none",
+    "religious_place": "none",
+    "audience": "usual",
+    "role": "unknown",
+    "like": "unknown",
+    "kind": "unknown",
+    "occasion": "date",
+    "place": "restaurant_casual",
+    "setting": "unknown",
+    "movement": "unknown",
+    "dress_code": "unknown",
+    "precipitation": "unknown",
+    "intent": "conventional",
+    "goal": "flatter",
+    "jewelry": "unknown",
+    "part_of_day": "evening",
+    "surface": "unknown",
+    "open_zones": "unknown",
+    "reserved_colour": "unknown",
+    "activity": "unknown",
+    "temperature_c": 18,
+    "duration_h": null,
+    "formality": [
+     7,
+     7
+    ],
+    "makeup_level": "unknown",
+    "parts": []
+   },
+   "звідки": {
+    "recurrence": "default",
+    "volume": "default",
+    "mourning": "default",
+    "religious_place": "default",
+    "audience": "default",
+    "role": "unknown",
+    "like": "unknown",
+    "kind": "unknown",
+    "occasion": "her_words",
+    "place": "sub",
+    "setting": "unknown",
+    "movement": "unknown",
+    "dress_code": "unknown",
+    "precipitation": "unknown",
+    "intent": "default",
+    "goal": "default",
+    "jewelry": "unknown",
+    "part_of_day": "sub",
+    "surface": "unknown",
+    "open_zones": "unknown",
+    "reserved_colour": "unknown",
+    "activity": "unknown",
+    "temperature_c": "default",
+    "duration_h": "unknown",
+    "formality": "sub",
+    "makeup_level": "unknown",
+    "parts": "unknown"
+   },
+   "цитати_полів": {
+    "нагода": "побачення в ресторані ввечері, о 19:30",
+    "місце": "побачення в ресторані ввечері, о 19:30",
+    "година": "о 19:30",
+    "пора": "ввечері"
+   },
+   "поля_шару": [
+    "вето",
+    "година",
+    "гілка_ошатності",
+    "місце",
+    "нагода",
+    "опади",
+    "ошатність",
+    "подія",
+    "пора",
+    "причина_ошатності"
+   ],
+   "розмову_вела": "мовна модель"
+  },
+  "випадок_моделі": "{\"field_quotes\": {\"occasion\": \"побачення в ресторані ввечері, о 19:30\", \"place\": \"побачення в ресторані ввечері, о 19:30\", \"hour\": \"о 19:30\", \"part_of_day\": \"ввечері\"}, \"formality_reason\": \"norm\", \"event\": \"побачення в ресторані ввечері, о 19:30\", \"occasion\": \"date\", \"place\": \"restaurant_casual\", \"formality\": [\"smart\"], \"season\": \"autumn\", \"part_of_day\": \"evening\", \"light\": \"artificial\"}",
+  "руки": [
+   {
+    "рука": "3",
+    "склад": "м-001+м-002+м-003",
+    "діагноз": [
+     "hand_3 · items_source=separate_call · model_named=3 · on_card=3",
+     "hand_3 · layer · dir=out · model=mamaylm-gemma-3-12b-it-v2.0 · ms=57032 · texts=4 · changed=4",
+     "hand_3.retry · layer · dir=out · model=mamaylm-gemma-3-12b-it-v2.0 · ms=61464 · texts=1 · changed=1 · notes=input_form_read"
+    ],
+    "слід_питань": [
+     {
+      "правило": "K-KOH-06",
+      "ярлик": "evening_lift_by_tier",
+      "де": "формальність.смуга_ошатності",
+      "значення": "smart → formal..formal → formal (+1.0..+2.0)",
+      "сила": null,
+      "напрям": "угору",
+      "рука": "B",
+      "спрацювань": 12
+     },
+     {
+      "правило": "K-KOH-06",
+      "ярлик": "день_вечір",
+      "де": "бриф",
+      "значення": "день_вечір",
+      "сила": null,
+      "напрям": null,
+      "рука": "B",
+      "спрацювань": 3
+     }
+    ],
+    "суд": {
+     "день": null,
+     "блокує": [],
+     "повнота": null,
+     "знахідки": [],
+     "структура": null
+    },
+    "кроки": [
+     {
+      "крок": "assembly",
+      "стадія": "assembly",
+      "помилка": null,
+      "повнота": null,
+      "блокує": [],
+      "структура": null,
+      "дні": []
+     },
+     {
+      "крок": "item_list",
+      "стадія": "item_list",
+      "помилка": null,
+      "повнота": null,
+      "блокує": [],
+      "структура": null,
+      "дні": []
+     }
+    ]
+   },
+   {
+    "рука": "4",
+    "склад": "м-001+м-002+м-003+м-004+м-005+м-006",
+    "діагноз": [
+     "hand_4 · items_source=separate_call · model_named=6 · on_card=6",
+     "hand_4 · layer · dir=out · model=mamaylm-gemma-3-12b-it-v2.0 · ms=67147 · texts=7 · changed=7",
+     "hand_4.retry · layer · dir=out · model=mamaylm-gemma-3-12b-it-v2.0 · ms=60744 · texts=1 · changed=1 · notes=input_form_read"
+    ],
+    "слід_питань": [
+     {
+      "правило": "K-KOH-06",
+      "ярлик": "evening_lift_by_tier",
+      "де": "формальність.смуга_ошатності",
+      "значення": "smart → formal..formal → formal (+1.0..+2.0)",
+      "сила": null,
+      "напрям": "угору",
+      "рука": "B",
+      "спрацювань": 12
+     },
+     {
+      "правило": "K-KOH-06",
+      "ярлик": "день_вечір",
+      "де": "бриф",
+      "значення": "день_вечір",
+      "сила": null,
+      "напрям": null,
+      "рука": "B",
+      "спрацювань": 3
+     }
+    ],
+    "суд": {
+     "день": null,
+     "блокує": [],
+     "повнота": null,
+     "знахідки": [],
+     "структура": null
+    },
+    "кроки": [
+     {
+      "крок": "assembly",
+      "стадія": "assembly",
+      "помилка": null,
+      "повнота": null,
+      "блокує": [],
+      "структура": null,
+      "дні": []
+     },
+     {
+      "крок": "item_list",
+      "стадія": "item_list",
+      "помилка": null,
+      "повнота": null,
+      "блокує": [],
+      "структура": null,
+      "дні": []
+     }
+    ]
+   },
+   {
+    "рука": "1",
+    "склад": "ж-05232@alot.com.ua+ж-07039@feelyou.com.ua+ж53-d4c45efa6e48e3f2ab8c@theoriginals.com.ua+ж-11798@theoriginals.com.ua+ж-11120@skripka.com.ua+ж53-667fafc4cca2db9dccdd@theoriginals.com.ua+ж-11536@theoriginals.com.ua",
+    "діагноз": [
+     "hand_1 · usable_but_off_schema · schema=OBRAZY_V1 · errors=образи[8].полюс=not_one_of(«tone_on_tone»: фільтр-і-ранг, якір першим, тональна колона, послабити вузол, розрив, вільний)",
+     "hand_1 · completeness_repair · before_choice · attempt=1 · with_holes=5 · outfits=5 · without_blockers=0→3 · untouched=0",
+     "hand_1 · choice_gates_accepted · outfit=о3 · rules=K-PAL-03",
+     "hand_1 · remove_not_done · item=#485·29 · why=у своєму слоті вона одна, а прибирати дозволено лише другу річ у слоті",
+     "hand_1.code_unknowns · layer · dir=out_messages · model=mamaylm-gemma-3-12b-it-v2.0 · ms=30536 · messages=15 · said=23",
+     "hand_1.code_unknowns · layer · dir=out_messages · model=mamaylm-gemma-3-12b-it-v2.0 · ms=32932 · messages=2 · said=2",
+     "hand_1 · layer · dir=out_messages · model=mamaylm-gemma-3-12b-it-v2.0 · ms=17666 · messages=1 · said=1",
+     "hand_1 · layer · dir=out · model=mamaylm-gemma-3-12b-it-v2.0 · ms=50842 · texts=12 · changed=12"
+    ],
+    "слід_питань": [
+     {
+      "правило": "K-KOH-06",
+      "ярлик": "evening_lift_by_tier",
+      "де": "формальність.смуга_ошатності",
+      "значення": "smart → formal..formal → formal (+1.0..+2.0)",
+      "сила": null,
+      "напрям": "угору",
+      "рука": "B",
+      "спрацювань": 12
+     },
+     {
+      "правило": "K-KOH-06",
+      "ярлик": "день_вечір",
+      "де": "бриф",
+      "значення": "день_вечір",
+      "сила": null,
+      "напрям": null,
+      "рука": "B",
+      "спрацювань": 3
+     },
+     {
+      "правило": "K-KOH-10",
+      "ярлик": "evening_admits_second_zone",
+      "де": "формальність.ліміт_відкритих_зон",
+      "значення": "2 зони",
+      "сила": null,
+      "напрям": null,
+      "рука": "B",
+      "спрацювань": 10
+     },
+     {
+      "правило": "K-OUT-06",
+      "ярлик": "allowance_ladder_no_input",
+      "де": "драбина_припусків",
+      "значення": "1 речей без припуску",
+      "сила": 0,
+      "напрям": "черга на вхід",
+      "рука": "B",
+      "спрацювань": 1
+     },
+     {
+      "правило": "K-CRA-04",
+      "ярлик": "finding_fired",
+      "де": "перевірити_образ",
+      "значення": "«ж-11120@skripka.com.ua» можна зняти — жодна метрика не падає",
+      "сила": 0.05,
+      "напрям": "репліка",
+      "рука": "B",
+      "спрацювань": 1
+     },
+     {
+      "правило": "K-CRA-04",
+      "ярлик": "finding_fired",
+      "де": "перевірити_образ",
+      "значення": "«ж-11536@theoriginals.com.ua» можна зняти — жодна метрика не падає",
+      "сила": 0.05,
+      "напрям": "репліка",
+      "рука": "B",
+      "спрацювань": 1
+     },
+     {
+      "правило": "K-OUT-06",
+      "ярлик": "finding_fired",
+      "де": "перевірити_образ",
+      "значення": "припуску немає у фіді — ворота посадки шарів мовчать",
+      "сила": 0,
+      "напрям": "питання",
+      "рука": "B",
+      "спрацювань": 1
+     }
+    ],
+    "суд": {
+     "день": {
+      "place": "restaurant_casual",
+      "season": "autumn",
+      "part_of_day": "evening",
+      "light": "artificial",
+      "formality": {
+       "from": 7,
+       "to": 7
+      },
+      "occasion_requirements": {
+       "profile": "unknown",
+       "light": "evening",
+       "mourning": false,
+       "lightness_range": null,
+       "lightness_max": null,
+       "chroma_max": null,
+       "loudness_max": null,
+       "loudness_source": "unknown",
+       "near_white_veto": false,
+       "shine_near_face_from": null,
+       "festive_trim_shine_from": null,
+       "decorated_headwear_or_nonmetal_jewelry": [],
+       "loud_patterns_large_or_near_face": []
+      },
+      "unknown": [
+       "temperature_c"
+      ]
+     },
+     "блокує": [],
+     "повнота": {
+      "ід": [
+       "ж-05232@alot.com.ua",
+       "ж-07039@feelyou.com.ua",
+       "ж53-d4c45efa6e48e3f2ab8c@theoriginals.com.ua",
+       "ж-11798@theoriginals.com.ua",
+       "ж-11120@skripka.com.ua",
+       "ж53-667fafc4cca2db9dccdd@theoriginals.com.ua",
+       "ж-11536@theoriginals.com.ua"
+      ],
+      "частини": {},
+      "номери": {
+       "ж-05232@alot.com.ua": "#355·01",
+       "ж-07039@feelyou.com.ua": "#241·11",
+       "ж53-d4c45efa6e48e3f2ab8c@theoriginals.com.ua": "#478·33",
+       "ж-11798@theoriginals.com.ua": "#266·33",
+       "ж-11120@skripka.com.ua": "#485·29",
+       "ж53-667fafc4cca2db9dccdd@theoriginals.com.ua": "#392·33",
+       "ж-11536@theoriginals.com.ua": "#54·33"
+      },
+      "образ": "о1",
+      "повний": true,
+      "рядок": null,
+      "чому": null,
+      "свідомі": [],
+      "підпис": null,
+      "день": null,
+      "слова_знято": null,
+      "заяви_знято": null,
+      "дібрані": [],
+      "рядок_добору": null,
+      "добір_ні": null
+     },
+     "знахідки": [
+      {
+       "правило": "K-CRA-02",
+       "сила": "soft",
+       "сила_нп": 0.5,
+       "суть": "фокусів 2 при стелі 1 — увага ділиться",
+       "чому": "кожна група тягне око сама: «ж-11120@skripka.com.ua»; «ж-11536@theoriginals.com.ua». Відлуння одного кольору — один фокус (K-COMP-05), фактура — інтерес без фокусу (K-COMP-06)",
+       "речі": [
+        "ж-11120@skripka.com.ua",
+        "ж-11536@theoriginals.com.ua"
+       ],
+       "регістр": "репліка",
+       "ремонт": [
+        "як варіанти:",
+        "лишити ОДИН фокус, решту стишити тихішою річчю того самого слота: нижча хрома, дрібніший масштаб принта — не видалення"
+       ],
+       "заяви": [
+        {
+         "code": "focus_count_over_ceiling",
+         "values": {
+          "count": 2,
+          "ceiling": 1
+         },
+         "recipient": "woman",
+         "source": "unknown",
+         "choice": "unknown",
+         "rank": null,
+         "item_ids": [],
+         "key": "s_a72ebf027e47905a97a470dc"
+        }
+       ],
+       "ремонт_заяви": [
+        {
+         "code": "keep_one_focus_quiet_rest",
+         "values": {},
+         "recipient": "woman",
+         "source": "unknown",
+         "choice": "unknown",
+         "rank": null,
+         "item_ids": [],
+         "key": "s_5030875266d5251fdde7c833"
+        }
+       ]
+      },
+      {
+       "правило": "K-COL-03",
+       "сила": "default",
+       "сила_нп": 0.5,
+       "суть": "схема «нейтрали+акцент» обіцяє нейтралі + ОДИН акцент, а образ несе 2 кольорові тони: зелена, жовта",
+       "чому": "обіцянка схеми симетрична: нуль акцентів і два акценти однаково лишають жінку з образом, якого вона не обирала",
+       "речі": [
+        "ж-11120@skripka.com.ua",
+        "ж-11536@theoriginals.com.ua"
+       ],
+       "регістр": "репліка",
+       "ремонт": "лиши кольоровим один тон (оголошений, коли він є), решту заміни на нейтралі тієї самої смуги світлоти",
+       "заяви": [
+        {
+         "code": "scheme_one_accent_look_has_more",
+         "values": {
+          "families": [
+           "green",
+           "yellow"
+          ]
+         },
+         "recipient": "woman",
+         "source": "unknown",
+         "choice": "unknown",
+         "rank": null,
+         "item_ids": [],
+         "key": "s_3a8d455b78e14ce25ce0fbee"
+        }
+       ],
+       "ремонт_заяви": [
+        {
+         "code": "keep_one_coloured_rest_neutral",
+         "values": {},
+         "recipient": "woman",
+         "source": "unknown",
+         "choice": "unknown",
+         "rank": null,
+         "item_ids": [],
+         "key": "s_8bbd3d8e813c840fd65efe81"
+        }
+       ]
+      },
+      {
+       "правило": "K-COL-05",
+       "сила": "default",
+       "сила_нп": 0.5,
+       "суть": "акцент «жовта» стоїть в одному акцентному слоті («сумка») і більше ніде — око не знаходить наміру",
+       "чому": "гештальтний повтор: колір, який не відлунює у другій рознесеній зоні і не оголошений фокусом, читається як шум, а не як хід",
+       "речі": [
+        "ж-11536@theoriginals.com.ua"
+       ],
+       "регістр": "репліка",
+       "ремонт": "повторити цей колір у другій рознесеній зоні (взуття ↔ сумка ↔ шарф ↔ прикраси) АБО оголосити цю зону фокусом АБО прибрати",
+       "заяви": [
+        {
+         "code": "accent_orphan",
+         "values": {
+          "colour": "yellow",
+          "hue": 100,
+          "slot": "bag"
+         },
+         "recipient": "woman",
+         "source": "unknown",
+         "choice": "unknown",
+         "rank": null,
+         "item_ids": [],
+         "key": "s_62e4756bf9a8342b8b15feac"
+        }
+       ],
+       "ремонт_заяви": [
+        {
+         "code": "echo_accent_or_declare_focus",
+         "values": {},
+         "recipient": "woman",
+         "source": "unknown",
+         "choice": "unknown",
+         "rank": null,
+         "item_ids": [],
+         "key": "s_33d6498819385b285848712a"
+        }
+       ]
+      },
+      {
+       "правило": "K-COL-05",
+       "сила": "default",
+       "сила_нп": 0.5,
+       "суть": "акцент «зелена» стоїть в одному акцентному слоті («головний_убір») і більше ніде — око не знаходить наміру",
+       "чому": "гештальтний повтор: колір, який не відлунює у другій рознесеній зоні і не оголошений фокусом, читається як шум, а не як хід",
+       "речі": [
+        "ж-11120@skripka.com.ua"
+       ],
+       "регістр": "репліка",
+       "ремонт": "повторити цей колір у другій рознесеній зоні (взуття ↔ сумка ↔ шарф ↔ прикраси) АБО оголосити цю зону фокусом АБО прибрати",
+       "заяви": [
+        {
+         "code": "accent_orphan",
+         "values": {
+          "colour": "green",
+          "hue": 153,
+          "slot": "headwear"
+         },
+         "recipient": "woman",
+         "source": "unknown",
+         "choice": "unknown",
+         "rank": null,
+         "item_ids": [],
+         "key": "s_050a0500d2a97c57edf54282"
+        }
+       ],
+       "ремонт_заяви": [
+        {
+         "code": "echo_accent_or_declare_focus",
+         "values": {},
+         "recipient": "woman",
+         "source": "unknown",
+         "choice": "unknown",
+         "rank": null,
+         "item_ids": [],
+         "key": "s_33d6498819385b285848712a"
+        }
+       ]
+      },
+      {
+       "правило": "K-PAL-03",
+       "сила": "strong",
+       "сила_нп": 0.45,
+       "суть": "схема «нейтрали+акцент»: слот «головний_убір» (роль акцент) тримає тон 8–50°, колір речі поза дугою",
+       "чому": "поза дугою образ не тримає схеми, але схему обрала не жінка — це порада, не межа",
+       "речі": [
+        "ж-11120@skripka.com.ua"
+       ],
+       "регістр": "репліка",
+       "ремонт": null,
+       "заяви": [
+        {
+         "code": "item_hue_outside_scheme_arc",
+         "values": {
+          "scheme": "neutrals_plus_accent",
+          "slot": "headwear",
+          "role": "accent",
+          "arc": [
+           8,
+           50
+          ],
+          "hue": 153,
+          "chroma": 25
+         },
+         "recipient": "woman",
+         "source": "unknown",
+         "choice": "unknown",
+         "rank": null,
+         "item_ids": [],
+         "key": "s_b254d1eeffa34173b7c6f083"
+        }
+       ],
+       "ремонт_заяви": [
+        {
+         "code": "item_in_arc_or_neutral",
+         "values": {
+          "slot": "headwear"
+         },
+         "recipient": "woman",
+         "source": "unknown",
+         "choice": "unknown",
+         "rank": null,
+         "item_ids": [],
+         "key": "s_4c591460f82f32c385870276"
+        }
+       ],
+       "свідомий": "Зелена кепка I don`t give a damn (one size) — I removed this headband because its green hue and low chroma conflict with your warm skin tone and the neutral palette's intent; keeping it would break the monochromatic flow."
+      },
+      {
+       "правило": "K-PAL-03",
+       "сила": "strong",
+       "сила_нп": 0.45,
+       "суть": "схема «нейтрали+акцент»: слот «сумка» (роль акцент) тримає тон 8–50°, колір речі поза дугою",
+       "чому": "поза дугою образ не тримає схеми, але схему обрала не жінка — це порада, не межа",
+       "речі": [
+        "ж-11536@theoriginals.com.ua"
+       ],
+       "регістр": "репліка",
+       "ремонт": null,
+       "заяви": [
+        {
+         "code": "item_hue_outside_scheme_arc",
+         "values": {
+          "scheme": "neutrals_plus_accent",
+          "slot": "bag",
+          "role": "accent",
+          "arc": [
+           8,
+           50
+          ],
+          "hue": 100,
+          "chroma": 42
+         },
+         "recipient": "woman",
+         "source": "unknown",
+         "choice": "unknown",
+         "rank": null,
+         "item_ids": [],
+         "key": "s_d8ff9b3561b58d1f649f8b5e"
+        }
+       ],
+       "ремонт_заяви": [
+        {
+         "code": "item_in_arc_or_neutral",
+         "values": {
+          "slot": "bag"
+         },
+         "recipient": "woman",
+         "source": "unknown",
+         "choice": "unknown",
+         "rank": null,
+         "item_ids": [],
+         "key": "s_71c4f5ed80840187bdad62bb"
+        }
+       ],
+       "свідомий": "Сумка Grace зі шкіри, Зелена кепка I don`t give a damn (one size) — The green hue in the headwear was a deliberate choice to add a single point of color that echoes your eyes, though I kept it only because it sits at the top where it acts as a focal point; removing it would have made the look too flat for an evening date."
+      },
+      {
+       "правило": "K-PAL-18",
+       "сила": "soft",
+       "сила_нп": 0.35,
+       "суть": "схема «нейтрали+акцент» дала слоту «взуття» роль акценту (хрома від 28), а річ у ньому має 11 — у пулі було 8 речей із хромою",
+       "чому": "вибір проти власної спеки: акцент був доступний і не взятий",
+       "речі": null,
+       "регістр": null,
+       "ремонт": null,
+       "заяви": [
+        {
+         "code": "accent_role_lost",
+         "values": {
+          "scheme": "neutrals_plus_accent",
+          "slot": "shoes",
+          "chroma_from": 28,
+          "chroma": 11,
+          "pool_count": 8
+         },
+         "recipient": "woman",
+         "source": "unknown",
+         "choice": "unknown",
+         "rank": null,
+         "item_ids": [],
+         "key": "s_8e1db2cda67ae140d59b387f"
+        }
+       ],
+       "ремонт_заяви": [
+        {
+         "code": "item_chroma_at_least_in_slot",
+         "values": {
+          "chroma_from": 28,
+          "slot": "shoes"
+         },
+         "recipient": "woman",
+         "source": "unknown",
+         "choice": "unknown",
+         "rank": null,
+         "item_ids": [],
+         "key": "s_b0c85cf9bbb559abb6f73d02"
+        }
+       ]
+      },
+      {
+       "правило": "K-PAL-18",
+       "сила": "soft",
+       "сила_нп": 0.35,
+       "суть": "схема «нейтрали+акцент» дала слоту «головний_убір» роль акценту (хрома від 28), а річ у ньому має 25 — у пулі було 2 речей із хромою",
+       "чому": "вибір проти власної спеки: акцент був доступний і не взятий",
+       "речі": null,
+       "регістр": null,
+       "ремонт": null,
+       "заяви": [
+        {
+         "code": "accent_role_lost",
+         "values": {
+          "scheme": "neutrals_plus_accent",
+          "slot": "headwear",
+          "chroma_from": 28,
+          "chroma": 25,
+          "pool_count": 2
+         },
+         "recipient": "woman",
+         "source": "unknown",
+         "choice": "unknown",
+         "rank": null,
+         "item_ids": [],
+         "key": "s_39160c578de93f58d167ed2f"
+        }
+       ],
+       "ремонт_заяви": [
+        {
+         "code": "item_chroma_at_least_in_slot",
+         "values": {
+          "chroma_from": 28,
+          "slot": "headwear"
+         },
+         "recipient": "woman",
+         "source": "unknown",
+         "choice": "unknown",
+         "rank": null,
+         "item_ids": [],
+         "key": "s_e5b410a76bc6b9f471530460"
+        }
+       ]
+      },
+      {
+       "правило": "K-PAL-18",
+       "сила": "soft",
+       "сила_нп": 0.35,
+       "суть": "схема «нейтрали+акцент» дала слоту «каблучка» роль акценту (хрома від 28), а річ у ньому має 8 — у пулі було 1 речей із хромою",
+       "чому": "вибір проти власної спеки: акцент був доступний і не взятий",
+       "речі": null,
+       "регістр": null,
+       "ремонт": null,
+       "заяви": [
+        {
+         "code": "accent_role_lost",
+         "values": {
+          "scheme": "neutrals_plus_accent",
+          "slot": "ring",
+          "chroma_from": 28,
+          "chroma": 8,
+          "pool_count": 1
+         },
+         "recipient": "woman",
+         "source": "unknown",
+         "choice": "unknown",
+         "rank": null,
+         "item_ids": [],
+         "key": "s_4fedf85fe3d73f4761d9c74e"
+        }
+       ],
+       "ремонт_заяви": [
+        {
+         "code": "item_chroma_at_least_in_slot",
+         "values": {
+          "chroma_from": 28,
+          "slot": "ring"
+         },
+         "recipient": "woman",
+         "source": "unknown",
+         "choice": "unknown",
+         "rank": null,
+         "item_ids": [],
+         "key": "s_3d2112302e6b18b4ebdf8741"
+        }
+       ]
+      },
+      {
+       "правило": "K-PRC-01",
+       "сила": "hint",
+       "сила_нп": 0.25,
+       "суть": "«Пряме пальто чорна ялинка з блиском - купити» — верхня чверть свого слота за ціною на образ (дешевших у пулі 10 із 12); обхват 26",
+       "чому": "вісь тут не ціна, а ціна, поділена на КОМБІНАТОРНИЙ ОБХВАТ — у скількох образах наявного пулу ця річ може взяти участь. Це єдина метрика теми, яку система рахує краще за людину: людині доводиться вгадувати кількість носінь, а система їх перебирає",
+       "речі": [
+        "ж-05232@alot.com.ua"
+       ],
+       "регістр": "репліка",
+       "ремонт": [
+        "як варіанти:",
+        "у цьому ж слоті пулу є 10 речей, що на образ коштують дешевше — порівняти саме з ними"
+       ],
+       "заяви": [
+        {
+         "code": "price_top_quarter_of_slot",
+         "values": {
+          "slot": "outerwear",
+          "cheaper": 10,
+          "of": 12,
+          "reach": 26
+         },
+         "recipient": "woman",
+         "source": "unknown",
+         "choice": "unknown",
+         "rank": null,
+         "item_ids": [],
+         "key": "s_594b49f0ad0633ecab4d5123"
+        }
+       ],
+       "ремонт_заяви": [
+        {
+         "code": "compare_with_cheaper_in_slot",
+         "values": {
+          "cheaper": 10
+         },
+         "recipient": "woman",
+         "source": "unknown",
+         "choice": "unknown",
+         "rank": null,
+         "item_ids": [],
+         "key": "s_e49e50f3c7fe8450e66734a1"
+        }
+       ]
+      },
+      {
+       "правило": "K-PRC-01",
+       "сила": "hint",
+       "сила_нп": 0.25,
+       "суть": "«Сумка Grace зі шкіри» — верхня чверть свого слота за ціною на образ (дешевших у пулі 36 із 42); обхват 9",
+       "чому": "вісь тут не ціна, а ціна, поділена на КОМБІНАТОРНИЙ ОБХВАТ — у скількох образах наявного пулу ця річ може взяти участь. Це єдина метрика теми, яку система рахує краще за людину: людині доводиться вгадувати кількість носінь, а система їх перебирає. Аксесуар карається за ціну СЛАБШЕ: у гардеробі він має найвищу частоту використання, і ранжувати всі слоти однаково означало б помилятись систематично",
+       "речі": [
+        "ж-11536@theoriginals.com.ua"
+       ],
+       "регістр": "репліка",
+       "ремонт": [
+        "як варіанти:",
+        "у цьому ж слоті пулу є 36 речей, що на образ коштують дешевше — порівняти саме з ними"
+       ],
+       "заяви": [
+        {
+         "code": "price_top_quarter_of_slot",
+         "values": {
+          "slot": "bag",
+          "cheaper": 36,
+          "of": 42,
+          "reach": 9
+         },
+         "recipient": "woman",
+         "source": "unknown",
+         "choice": "unknown",
+         "rank": null,
+         "item_ids": [],
+         "key": "s_cd7233f5bd9a1ffcf21f9dd6"
+        }
+       ],
+       "ремонт_заяви": [
+        {
+         "code": "compare_with_cheaper_in_slot",
+         "values": {
+          "cheaper": 36
+         },
+         "recipient": "woman",
+         "source": "unknown",
+         "choice": "unknown",
+         "rank": null,
+         "item_ids": [],
+         "key": "s_efb69b70728d6de7c342aef0"
+        }
+       ]
+      },
+      {
+       "правило": "K-OUT-18",
+       "сила": "hint",
+       "сила_нп": 0.25,
+       "суть": "вовни в складі менше за смугу — цей шар у холод іде нижче за вовняні",
+       "чому": "вовни 40 % — нижче за смугу 60–70 % K-OUT-18; це не вирок, це названий ранг",
+       "речі": [
+        "Пряме пальто чорна ялинка з блиском - купити Пальта в Києві та Україні, ціни на Пальта в інтернет-магазині жіночого одягу a LOT"
+       ],
+       "регістр": "репліка",
+       "ремонт": null,
+       "заяви": [
+        {
+         "code": "wool_below_band_goes_lower",
+         "values": {},
+         "recipient": "woman",
+         "source": "unknown",
+         "choice": "unknown",
+         "rank": null,
+         "item_ids": [],
+         "key": "s_c1abdb19a571e29dc4247b4a"
+        }
+       ]
+      },
+      {
+       "правило": "K-OUT-17",
+       "сила": "hint",
+       "сила_нп": 0.25,
+       "суть": "наскрізна простібка трохи холодніша за коробчасту — лише тайбрейк між рівними",
+       "чому": "наскрізна простібка: до 7 % втрати CLO проти коробчастих перегородок (K-OUT-17). Це менше за різницю між двома розмірами пуху, тож як окремий вхід воно шум — придатне лише як тайбрейк",
+       "речі": [
+        "Пряме пальто чорна ялинка з блиском - купити Пальта в Києві та Україні, ціни на Пальта в інтернет-магазині жіночого одягу a LOT"
+       ],
+       "регістр": "репліка",
+       "ремонт": null,
+       "заяви": [
+        {
+         "code": "through_quilting_slightly_colder",
+         "values": {},
+         "recipient": "woman",
+         "source": "unknown",
+         "choice": "unknown",
+         "rank": null,
+         "item_ids": [],
+         "key": "s_fb32287d6f1364d017763120"
+        }
+       ]
+      },
+      {
+       "правило": "K-OUT-25",
+       "сила": "hint",
+       "сила_нп": 0.2,
+       "суть": "геометрія простібки: видима вісь обʼєму",
+       "чому": "великі секції додають більше обʼєму, ніж вузькі; менші й численніші займають менше ширини (StyleCaster; докладний опис реальної носійки). Це другий після простібки тепловий-та-зоровий вхід, який фід реально несе — на відміну від грамажу й CLO, секції видно на фото товару",
+       "речі": [
+        "Пряме пальто чорна ялинка з блиском - купити Пальта в Києві та Україні, ціни на Пальта в інтернет-магазині жіночого одягу a LOT"
+       ],
+       "регістр": "репліка",
+       "ремонт": null,
+       "заяви": [
+        {
+         "code": "quilting_geometry_visible_axis",
+         "values": {},
+         "recipient": "woman",
+         "source": "unknown",
+         "choice": "unknown",
+         "rank": null,
+         "item_ids": [],
+         "key": "s_f4b5a1495cb0c6ece189da98"
+        }
+       ]
+      },
+      {
+       "правило": "K-PAL-02",
+       "сила": "hint",
+       "сила_нп": 0.2,
+       "суть": "слот «головний_убір» несе акцент поза сім'єю ваших очей (82–140°)",
+       "чому": "Perrett 2023: одяг обирають до райдужки, не до шкіри; практики ставлять перегук очей першим прийомом — це колір, який у людини вже є",
+       "речі": [
+        "ж-11120@skripka.com.ua"
+       ],
+       "регістр": "репліка",
+       "ремонт": null,
+       "заяви": [
+        {
+         "code": "accent_not_from_eyes",
+         "values": {
+          "slot": "headwear",
+          "hue": 153,
+          "eye_arcs": [
+           [
+            82,
+            140
+           ]
+          ]
+         },
+         "recipient": "woman",
+         "source": "unknown",
+         "choice": "unknown",
+         "rank": null,
+         "item_ids": [],
+         "key": "s_856951cf337e5bf82c26f569"
+        }
+       ]
+      },
+      {
+       "правило": "K-PAL-02",
+       "сила": "hint",
+       "сила_нп": 0.2,
+       "суть": "слот «сумка» несе акцент поза сім'єю ваших очей (82–140°)",
+       "чому": "Perrett 2023: одяг обирають до райдужки, не до шкіри; практики ставлять перегук очей першим прийомом — це колір, який у людини вже є",
+       "речі": [
+        "ж-11536@theoriginals.com.ua"
+       ],
+       "регістр": "репліка",
+       "ремонт": null,
+       "заяви": [
+        {
+         "code": "accent_not_from_eyes",
+         "values": {
+          "slot": "bag",
+          "hue": 100,
+          "eye_arcs": [
+           [
+            82,
+            140
+           ]
+          ]
+         },
+         "recipient": "woman",
+         "source": "unknown",
+         "choice": "unknown",
+         "rank": null,
+         "item_ids": [],
+         "key": "s_8f351210d37669fde7d2fed0"
+        }
+       ]
+      },
+      {
+       "правило": "K-KOH-05",
+       "сила": "hint",
+       "сила_нп": 0.17,
+       "суть": "рівень образу вище за те, що просить сценарій",
+       "чому": "медіанний рівень 7.5 проти цілі 7.0–7.0; постава ризику: neutral",
+       "речі": [
+        "ж-07039@feelyou.com.ua",
+        "ж53-d4c45efa6e48e3f2ab8c@theoriginals.com.ua"
+       ],
+       "регістр": "репліка",
+       "ремонт": null,
+       "заяви": [
+        {
+         "code": "outfit_level_off_occasion",
+         "values": {
+          "direction": "above",
+          "level": 7.5,
+          "target": [
+           7,
+           7
+          ],
+          "risk_posture": "neutral"
+         },
+         "recipient": "woman",
+         "source": "unknown",
+         "choice": "unknown",
+         "rank": null,
+         "item_ids": [],
+         "key": "s_5a1dbee1343539ce7c59c7fa"
+        }
+       ],
+       "ремонт_заяви": [
+        {
+         "code": "shift_outfit_level",
+         "values": {
+          "steps": 0.5,
+          "direction": "down"
+         },
+         "recipient": "woman",
+         "source": "unknown",
+         "choice": "unknown",
+         "rank": null,
+         "item_ids": [],
+         "key": "s_5c40493f5dc12f46dcf84047"
+        }
+       ]
+      },
+      {
+       "правило": "K-COMP-04",
+       "сила": "hint",
+       "сила_нп": 0.16,
+       "суть": "розрив хроми 0.070 OKLab: гучніша річ «ж-11536@theoriginals.com.ua», тихіша «ж-07039@feelyou.com.ua» — приглушити гучнішу або підняти тихішу",
+       "чому": "хроми 0.034 і 0.104 при різниці тонів 96°. Корпус: сумісність тримається близькістю ІНТЕНСИВНОСТІ, а не відносиною тонів — приглушений із приглушеним координується за будь-якого тону, приглушений із неоновим ні. Тут частка інтенсивності в загальній відстані 100%",
+       "речі": [
+        "ж-07039@feelyou.com.ua",
+        "ж-11536@theoriginals.com.ua"
+       ],
+       "регістр": "репліка",
+       "ремонт": [
+        "як варіанти:",
+        "звести хроми до одного регістру: або приглушити гучнішу річ, або підняти хрому тихішої — тон при цьому міняти не треба"
+       ],
+       "заяви": [
+        {
+         "code": "chroma_gap_between_items",
+         "values": {
+          "gap": 0.07,
+          "threshold": 0.044,
+          "louder": 2
+         },
+         "recipient": "woman",
+         "source": "unknown",
+         "choice": "unknown",
+         "rank": null,
+         "item_ids": [],
+         "key": "s_489b5ced007472fcb1a586b7"
+        }
+       ],
+       "ремонт_заяви": [
+        {
+         "code": "match_chroma_register",
+         "values": {},
+         "recipient": "woman",
+         "source": "unknown",
+         "choice": "unknown",
+         "rank": null,
+         "item_ids": [],
+         "key": "s_fe02220a635020c11e4970e2"
+        }
+       ]
+      },
+      {
+       "правило": "K-KOH-05",
+       "сила": "hint",
+       "сила_нп": 0.08,
+       "суть": "рівень образу нижче за те, що просить сценарій",
+       "чому": "медіанний рівень 6.8 проти цілі 7.0–7.0; постава ризику: neutral",
+       "речі": [
+        "ж-05232@alot.com.ua",
+        "ж53-d4c45efa6e48e3f2ab8c@theoriginals.com.ua"
+       ],
+       "регістр": "репліка",
+       "ремонт": null,
+       "заяви": [
+        {
+         "code": "outfit_level_off_occasion",
+         "values": {
+          "direction": "below",
+          "level": 6.8,
+          "target": [
+           7,
+           7
+          ],
+          "risk_posture": "neutral"
+         },
+         "recipient": "woman",
+         "source": "unknown",
+         "choice": "unknown",
+         "rank": null,
+         "item_ids": [],
+         "key": "s_4017ad1ef42a7fc6252f988f"
+        }
+       ],
+       "ремонт_заяви": [
+        {
+         "code": "shift_outfit_level",
+         "values": {
+          "steps": 0.2,
+          "direction": "up"
+         },
+         "recipient": "woman",
+         "source": "unknown",
+         "choice": "unknown",
+         "rank": null,
+         "item_ids": [],
+         "key": "s_2dce452dd15a322493663bfe"
+        }
+       ]
+      },
+      {
+       "правило": "K-CRA-04",
+       "сила": "soft",
+       "сила_нп": 0.05,
+       "суть": "«ж-11120@skripka.com.ua» можна зняти — жодна метрика не падає",
+       "чому": "без нього: знахідок 3 (було 3), вага 0.17 (було 0.17), інтерес 1 (підлога 1). Тобто елемент не несе роботи",
+       "речі": [
+        "ж-11120@skripka.com.ua"
+       ],
+       "регістр": "репліка",
+       "ремонт": [
+        "як варіанти:",
+        "зняти «ж-11120@skripka.com.ua»"
+       ],
+       "заяви": [
+        {
+         "code": "item_removable_no_metric_drops",
+         "values": {},
+         "recipient": "woman",
+         "source": "unknown",
+         "choice": "unknown",
+         "rank": null,
+         "item_ids": [],
+         "key": "s_9a94257fd2ac63bde09b5d4d"
+        }
+       ],
+       "ремонт_заяви": [
+        {
+         "code": "remove_this_item",
+         "values": {},
+         "recipient": "woman",
+         "source": "unknown",
+         "choice": "unknown",
+         "rank": null,
+         "item_ids": [],
+         "key": "s_8933f32b7d089092a6c11cd3"
+        }
+       ]
+      },
+      {
+       "правило": "K-CRA-04",
+       "сила": "soft",
+       "сила_нп": 0.05,
+       "суть": "«ж-11536@theoriginals.com.ua» можна зняти — жодна метрика не падає",
+       "чому": "без нього: знахідок 3 (було 3), вага 0.17 (було 0.17), інтерес 1 (підлога 1). Тобто елемент не несе роботи",
+       "речі": [
+        "ж-11536@theoriginals.com.ua"
+       ],
+       "регістр": "репліка",
+       "ремонт": [
+        "як варіанти:",
+        "зняти «ж-11536@theoriginals.com.ua»"
+       ],
+       "заяви": [
+        {
+         "code": "item_removable_no_metric_drops",
+         "values": {},
+         "recipient": "woman",
+         "source": "unknown",
+         "choice": "unknown",
+         "rank": null,
+         "item_ids": [],
+         "key": "s_9a94257fd2ac63bde09b5d4d"
+        }
+       ],
+       "ремонт_заяви": [
+        {
+         "code": "remove_this_item",
+         "values": {},
+         "recipient": "woman",
+         "source": "unknown",
+         "choice": "unknown",
+         "rank": null,
+         "item_ids": [],
+         "key": "s_8933f32b7d089092a6c11cd3"
+        }
+       ]
+      }
+     ],
+     "структура": []
+    },
+    "кроки": [
+     {
+      "крок": "assembly",
+      "стадія": "assembly",
+      "помилка": null,
+      "повнота": {
+       "ід": [
+        "ж-05274@bella-bicchi.com",
+        "ж53-e0323cd1a0222c51a400@theoriginals.com.ua",
+        "ж-09669@attico.ua",
+        "ж-13166@honchstudio.com",
+        "ж-16647@wearme.ua",
+        "ж-07655@honchstudio.com",
+        "ж53-36b76419959646230f4e@theoriginals.com.ua"
+       ],
+       "частини": {},
+       "номери": {
+        "ж-05274@bella-bicchi.com": "#28·03",
+        "ж53-e0323cd1a0222c51a400@theoriginals.com.ua": "#491·33",
+        "ж-09669@attico.ua": "#461·02",
+        "ж-13166@honchstudio.com": "#319·14",
+        "ж-16647@wearme.ua": "#455·39",
+        "ж-07655@honchstudio.com": "#137·14",
+        "ж53-36b76419959646230f4e@theoriginals.com.ua": "#349·33"
+       },
+       "образ": "о8",
+       "повний": true,
+       "рядок": null,
+       "чому": null,
+       "свідомі": [],
+       "підпис": "A cool-toned blue and grey mix with a navy coat for evening",
+       "день": "I selected this cool-toned outfit to contrast with the warm autumn season, creating a fresh look for your 19:30 date. The navy coat and grey trousers maintain a 'smart' formality level appropriate for a restaurant. The blue earrings and bracelet provide an accent that is close to your face but balanced by the neutral grey of the main items. The white pearls add lightness without breaking the cool tone.",
+       "слова_знято": null,
+       "заяви_знято": null,
+       "дібрані": [],
+       "рядок_добору": null,
+       "добір_ні": null
+      },
+      "блокує": [
+       "слот_двічі:сумка",
+       "слот_двічі:головний_убір",
+       "нема_взуття"
+      ],
+      "структура": [
+       "слот_двічі:сумка",
+       "слот_двічі:головний_убір",
+       "нема_взуття"
+      ],
+      "дні": [
+       {
+        "образ": "о1",
+        "день": "This outfit is perfect for your 19:30 date at a restaurant, using the 'smart' formality of the coat and trousers to meet evening requirements. The brick shoes and belt provide the warm accent color that matches your eyes against the artificial light. The grey blazer adds structure to flatter your X shape while remaining appropriate for an autumn evening out.",
+        "ід": [
+         "ж-05326@alot.com.ua",
+         "ж53-349b1082bbed3beb7296@sunwin-store.com",
+         "ж-09016@cultboutique.com.ua",
+         "ж-08641@likeangel.com.ua",
+         "ж53-79b8d7f85af263bbcfa9@rito.ua",
+         "ж-13171@honchstudio.com",
+         "ж-14655@wearme.ua"
+        ]
+       },
+       {
+        "образ": "о2",
+        "день": "This ensemble works for your evening outing by keeping the palette within your scheme's arc (olive, white) while adding a pop of pink via the headband and bracelet. The fitted cut of the top addresses your body knot on the shoulders. The 'smart' blazer elevates the casual trousers to suit a restaurant setting without breaking formality rules.",
+        "ід": [
+         "ж-12128@theoriginals.com.ua",
+         "ж53-652850180176b8e0cca3@theoriginals.com.ua",
+         "ж-10325@giardini-shoes.com",
+         "ж-07622@likeangel.com.ua",
+         "ж-08571@likeangel.com.ua",
+         "ж-11794@theoriginals.com.ua",
+         "ж-11119@skripka.com.ua"
+        ]
+       },
+       {
+        "образ": "о3",
+        "день": "The all-neutral graphite and chocolate palette reads as calm and sophisticated for your 19:30 date. The long coat and maxi skirt create a vertical line that flatters your X shape by leading the eye up to the face and down the legs. The warm undertones in the shoes and jewelry harmonize with your skin, while the fitted jacket provides necessary structure.",
+        "ід": [
+         "ж-05232@alot.com.ua",
+         "ж-07039@feelyou.com.ua",
+         "ж53-d4c45efa6e48e3f2ab8c@theoriginals.com.ua",
+         "ж-11798@theoriginals.com.ua",
+         "ж-11120@skripka.com.ua",
+         "ж-07662@honchstudio.com",
+         "ж53-9e83631d370a79a441d0@miraton.ua"
+        ]
+       },
+       {
+        "образ": "о4",
+        "день": "This outfit is designed for your evening date by balancing the cool lilac with warm beige and a bright pink headband that catches the restaurant's artificial light. The relaxed cut of the cardigan softens the shoulders, while the fitted top under it defines the waist to address your X shape. The sheer poncho adds texture suitable for an autumn outing.",
+        "ід": [
+         "ж-04418@likeangel.com.ua",
+         "ж-11762@theoriginals.com.ua",
+         "ж53-b30d33cd12906311c5b8@theoriginals.com.ua",
+         "ж-13208@honchstudio.com",
+         "ж-16647@wearme.ua",
+         "ж-07621@jecomestudio.com",
+         "ж-14647@wearme.ua"
+        ]
+       },
+       {
+        "образ": "о5",
+        "день": "I chose this bold orange and brown combination to express your mood for the 19:30 date, as it carries high chroma near the face in the shoes and earrings. The neutral_warm tones of the coat and belt bridge the gap between your warm skin and the vivid orange accent. The straight-cut trousers and fitted jacket work together to flatter your X shape while meeting the 'smart' dress code.",
+        "ід": [
+         "ж53-6063d3957f29b8535a76@emmeliedelage.com",
+         "ж-12173@musthave.ua",
+         "ж-09321@emmeliedelage.com",
+         "ж-08673@likeangel.com.ua",
+         "ж-07616@natalibolgar.com",
+         "ж-13191@honchstudio.com",
+         "ж53-e5cfd58b230e95089851@favoriteshoes.com.ua"
+        ]
+       },
+       {
+        "образ": "о6",
+        "день": "This outfit relies on the neutral base of grey and chocolate to ensure you look composed in the restaurant's evening light. The brown belt cinches at your waist to emphasize the X shape without adding volume to the hips. The black coat provides a long vertical line that is flattering for your contour. The red earrings add a small, safe accent that stands out against the dark palette.",
+        "ід": [
+         "ж53-1b53534a7c0d493924a6@dolcedonna.com.ua",
+         "ж53-5686618b6eedfcce7bbf@theoriginals.com.ua",
+         "ж53-29eddb4a34b717ef9c11@likeangel.com.ua",
+         "ж-14792@wearme.ua",
+         "ж-08574@likeangel.com.ua",
+         "ж-11081@skripka.com.ua",
+         "ж-11807@theoriginals.com.ua"
+        ]
+       },
+       {
+        "образ": "о7",
+        "день": "This look uses the muted green family to create a calm, cohesive outfit for your evening date. The fitted blazer and straight trousers flatter your X shape by creating clean lines. The chocolate scarf and belt tie in with the shoe color, grounding the look. The warm undertones of the brown items complement your skin even under artificial restaurant lighting.",
+        "ід": [
+         "ж-12173@musthave.ua",
+         "ж53-61040bd7e3dbe6330e94@emmeliedelage.com",
+         "ж-09669@attico.ua",
+         "ж-08574@likeangel.com.ua",
+         "ж-11794@theoriginals.com.ua",
+         "ж-16647@wearme.ua",
+         "ж53-d45e2869aefc99a8e81c@welfare.ua"
+        ]
+       },
+       {
+        "образ": "о8",
+        "день": "I selected this cool-toned outfit to contrast with the warm autumn season, creating a fresh look for your 19:30 date. The navy coat and grey trousers maintain a 'smart' formality level appropriate for a restaurant. The blue earrings and bracelet provide an accent that is close to your face but balanced by the neutral grey of the main items. The white pearls add lightness without breaking the cool tone.",
+        "ід": [
+         "ж-05274@bella-bicchi.com",
+         "ж53-e0323cd1a0222c51a400@theoriginals.com.ua",
+         "ж-09669@attico.ua",
+         "ж-13166@honchstudio.com",
+         "ж-16647@wearme.ua",
+         "ж-07655@honchstudio.com",
+         "ж53-36b76419959646230f4e@theoriginals.com.ua"
+        ]
+       },
+       {
+        "образ": "о9",
+        "день": "This outfit leans into the evening setting by using deep, rich colors like plum and chocolate that look stunning under restaurant lighting. The fitted jacket and straight trousers address your X shape with precision. The warm undertones of the brown belt and shoes prevent the cool plum from feeling too distant from your skin. The pearl necklace adds a touch of elegance suitable for the occasion.",
+        "ід": [
+         "ж-06691@vilni.store",
+         "ж53-a89c78e270f3fd12d750@theoriginals.com.ua",
+         "ж-11710@theoriginals.com.ua",
+         "ж-13208@honchstudio.com",
+         "ж-16647@wearme.ua",
+         "ж53-667fafc4cca2db9dccdd@theoriginals.com.ua",
+         "ж-13171@honchstudio.com"
+        ]
+       },
+       {
+        "образ": "о10",
+        "день": "I designed this outfit around the idea of organic warmth for your autumn date, using a rich burgundy bag to ground the look and earthy browns that feel natural against your skin. The relaxed poncho softens the shoulders while the fitted trousers maintain structure at the waist. This combination keeps you comfortable yet stylish in an evening restaurant setting without feeling too formal.",
+        "ід": [
+         "ж-08047@welfare.ua",
+         "ж-02890@alot.com.ua",
+         "ж-07916@yakfaino.com",
+         "ж53-52908435c4d6a0d293ad@rito.ua",
+         "ж-07653@honchstudio.com",
+         "ж-11719@theoriginals.com.ua",
+         "ж-07562@honchstudio.com"
+        ]
+       }
+      ]
+     },
+     {
+      "крок": "repair",
+      "стадія": "repair",
+      "помилка": null,
+      "повнота": {
+       "ід": [
+        "ж-05232@alot.com.ua",
+        "ж-07039@feelyou.com.ua",
+        "ж53-d4c45efa6e48e3f2ab8c@theoriginals.com.ua",
+        "ж-11798@theoriginals.com.ua",
+        "ж-11120@skripka.com.ua",
+        "ж53-667fafc4cca2db9dccdd@theoriginals.com.ua"
+       ],
+       "частини": {},
+       "номери": {
+        "ж-05232@alot.com.ua": "#355·01",
+        "ж-07039@feelyou.com.ua": "#241·11",
+        "ж53-d4c45efa6e48e3f2ab8c@theoriginals.com.ua": "#478·33",
+        "ж-11798@theoriginals.com.ua": "#266·33",
+        "ж-11120@skripka.com.ua": "#485·29",
+        "ж53-667fafc4cca2db9dccdd@theoriginals.com.ua": "#392·33"
+       },
+       "образ": "о3",
+       "повний": false,
+       "рядок": {
+        "kind": "card_incomplete",
+        "statements": [
+         {
+          "code": "look_incomplete",
+          "values": {},
+          "recipient": "woman",
+          "source": "unknown",
+          "choice": "unknown",
+          "rank": null,
+          "item_ids": [],
+          "key": "s_b4ee8436a99063a5ed67015b"
+         },
+         {
+          "code": "no_bag",
+          "values": {},
+          "recipient": "woman",
+          "source": "unknown",
+          "choice": "unknown",
+          "rank": null,
+          "item_ids": [],
+          "key": "s_cb3af1c7fab22f3a092435d4"
+         }
+        ]
+       },
+       "чому": "structural_blocker=no_bag | blockers_full=нема_сумки",
+       "свідомі": [],
+       "підпис": null,
+       "день": null,
+       "слова_знято": null,
+       "заяви_знято": null,
+       "дібрані": [],
+       "рядок_добору": null,
+       "добір_ні": null
+      },
+      "блокує": [
+       "нема_верху_низу",
+       "нема_взуття",
+       "нема_сумки"
+      ],
+      "структура": [
+       "нема_верху_низу",
+       "нема_взуття",
+       "нема_сумки"
+      ],
+      "дні": [
+       {
+        "образ": "о3",
+        "день": "This all-neutral graphite and chocolate palette reads as calm and sophisticated under restaurant lights, while the long coat and maxi skirt create a vertical line that flatters your X shape.",
+        "ід": [
+         "ж-05232@alot.com.ua",
+         "ж-07039@feelyou.com.ua",
+         "ж53-d4c45efa6e48e3f2ab8c@theoriginals.com.ua",
+         "ж-11798@theoriginals.com.ua",
+         "ж-11120@skripka.com.ua",
+         "ж53-667fafc4cca2db9dccdd@theoriginals.com.ua"
+        ]
+       },
+       {
+        "образ": "о7",
+        "день": "This muted green family creates a calm, cohesive outfit for the evening. The fitted blazer and straight trousers flatter your X shape, while the chocolate belt ties in with the shoe color to ground the look.",
+        "ід": [
+         "ж-12173@musthave.ua",
+         "ж53-61040bd7e3dbe6330e94@emmeliedelage.com",
+         "ж-09669@attico.ua",
+         "ж-08574@likeangel.com.ua",
+         "ж-11794@theoriginals.com.ua",
+         "ж-16647@wearme.ua"
+        ]
+       },
+       {
+        "образ": "о10",
+        "день": "This outfit feels natural against your skin in autumn, using a rich burgundy bag to ground the look. The relaxed poncho softens the shoulders while the fitted trousers maintain structure.",
+        "ід": [
+         "ж-02890@alot.com.ua",
+         "ж-07916@yakfaino.com",
+         "ж53-52908435c4d6a0d293ad@rito.ua",
+         "ж-07653@honchstudio.com",
+         "ж-11719@theoriginals.com.ua"
+        ]
+       },
+       {
+        "образ": "о9",
+        "день": "This outfit leans into the evening setting with deep, rich colors like plum and chocolate that look stunning under restaurant lights. The fitted jacket and straight trousers address your X shape.",
+        "ід": [
+         "ж-06691@vilni.store",
+         "ж53-a89c78e270f3fd12d750@theoriginals.com.ua",
+         "ж-11710@theoriginals.com.ua",
+         "ж-13208@honchstudio.com",
+         "ж-13171@honchstudio.com"
+        ]
+       },
+       {
+        "образ": "о4",
+        "день": "This outfit balances cool lilac with warm beige for the evening, catching restaurant lights. The relaxed cut softens shoulders while defining the waist.",
+        "ід": [
+         "ж-04418@likeangel.com.ua",
+         "ж-11762@theoriginals.com.ua",
+         "ж53-b30d33cd12906311c5b8@theoriginals.com.ua",
+         "ж-13208@honchstudio.com",
+         "ж-07621@jecomestudio.com",
+         "ж-14647@wearme.ua"
+        ]
+       }
+      ]
+     },
+     {
+      "крок": "completeness_repair",
+      "стадія": "completeness_repair",
+      "помилка": null,
+      "повнота": {
+       "ід": [
+        "ж-04418@likeangel.com.ua",
+        "ж-11762@theoriginals.com.ua",
+        "ж53-b30d33cd12906311c5b8@theoriginals.com.ua",
+        "ж-13208@honchstudio.com",
+        "ж-07621@jecomestudio.com",
+        "ж-14647@wearme.ua",
+        "ж-07127@feelyou.com.ua",
+        "ж-08853@brenda.ua",
+        "ж-11536@theoriginals.com.ua"
+       ],
+       "частини": {},
+       "номери": {
+        "ж-04418@likeangel.com.ua": "#4·16",
+        "ж-11762@theoriginals.com.ua": "#217·33",
+        "ж53-b30d33cd12906311c5b8@theoriginals.com.ua": "#451·33",
+        "ж-13208@honchstudio.com": "#484·14",
+        "ж-07621@jecomestudio.com": "#278·15",
+        "ж-14647@wearme.ua": "#103·39",
+        "ж-07127@feelyou.com.ua": "#308·11",
+        "ж-08853@brenda.ua": "#357·04",
+        "ж-11536@theoriginals.com.ua": "#54·33"
+       },
+       "образ": "о4",
+       "повний": true,
+       "рядок": null,
+       "чому": null,
+       "свідомі": [],
+       "підпис": "Soft tonal lilac and beige mix",
+       "день": null,
+       "слова_знято": null,
+       "заяви_знято": null,
+       "дібрані": [],
+       "рядок_добору": null,
+       "добір_ні": null
+      },
+      "блокує": [],
+      "структура": [],
+      "дні": [
+       {
+        "образ": "о3",
+        "день": "This all-neutral graphite and chocolate palette reads as calm and sophisticated under restaurant lights, while the long coat and maxi skirt create a vertical line that flatters your X shape.",
+        "ід": [
+         "ж-05232@alot.com.ua",
+         "ж-07039@feelyou.com.ua",
+         "ж53-d4c45efa6e48e3f2ab8c@theoriginals.com.ua",
+         "ж-11798@theoriginals.com.ua",
+         "ж-11120@skripka.com.ua",
+         "ж53-667fafc4cca2db9dccdd@theoriginals.com.ua",
+         "ж-11536@theoriginals.com.ua"
+        ]
+       }
+      ]
+     },
+     {
+      "крок": "choice",
+      "стадія": "choice",
+      "помилка": null,
+      "повнота": {
+       "ід": [
+        "ж-05232@alot.com.ua",
+        "ж-07039@feelyou.com.ua",
+        "ж53-d4c45efa6e48e3f2ab8c@theoriginals.com.ua",
+        "ж-11798@theoriginals.com.ua",
+        "ж-11120@skripka.com.ua",
+        "ж53-667fafc4cca2db9dccdd@theoriginals.com.ua",
+        "ж-11536@theoriginals.com.ua"
+       ],
+       "частини": {},
+       "номери": {
+        "ж-05232@alot.com.ua": "#355·01",
+        "ж-07039@feelyou.com.ua": "#241·11",
+        "ж53-d4c45efa6e48e3f2ab8c@theoriginals.com.ua": "#478·33",
+        "ж-11798@theoriginals.com.ua": "#266·33",
+        "ж-11120@skripka.com.ua": "#485·29",
+        "ж53-667fafc4cca2db9dccdd@theoriginals.com.ua": "#392·33",
+        "ж-11536@theoriginals.com.ua": "#54·33"
+       },
+       "образ": "о3",
+       "повний": true,
+       "рядок": null,
+       "чому": null,
+       "свідомі": [
+        {
+         "ід": [
+          "ж-11120@skripka.com.ua"
+         ],
+         "текст": "Зелена кепка I don`t give a damn (one size) — I removed this headband because its green hue and low chroma conflict with your warm skin tone and the neutral palette's intent; keeping it would break the monochromatic flow.",
+         "правило": "K-PAL-03",
+         "заяви": [
+          {
+           "code": "item_hue_outside_scheme_arc",
+           "values": {
+            "scheme": "neutrals_plus_accent",
+            "slot": "headwear",
+            "role": "accent",
+            "arc": [
+             8,
+             50
+            ],
+            "hue": 153,
+            "chroma": 25
+           },
+           "recipient": "woman",
+           "source": "unknown",
+           "choice": "unknown",
+           "rank": null,
+           "item_ids": [],
+           "key": "s_b254d1eeffa34173b7c6f083"
+          },
+          {
+           "code": "item_hue_outside_scheme_arc",
+           "values": {
+            "scheme": "neutrals_plus_accent",
+            "slot": "bag",
+            "role": "accent",
+            "arc": [
+             8,
+             50
+            ],
+            "hue": 100,
+            "chroma": 42
+           },
+           "recipient": "woman",
+           "source": "unknown",
+           "choice": "unknown",
+           "rank": null,
+           "item_ids": [],
+           "key": "s_d8ff9b3561b58d1f649f8b5e"
+          }
+         ]
+        },
+        {
+         "ід": [
+          "ж53-d4c45efa6e48e3f2ab8c@theoriginals.com.ua"
+         ],
+         "текст": "Човники із сірої шкіри на шпильці — I removed this ring because the knot of tension is on the headwear, not a shoe or accessory slot; adding jewelry here dilutes the vertical line and adds unnecessary focus.",
+         "правило": "K-COL-05",
+         "заяви": [
+          {
+           "code": "accent_orphan",
+           "values": {
+            "colour": "yellow",
+            "hue": 100,
+            "slot": "bag"
+           },
+           "recipient": "woman",
+           "source": "unknown",
+           "choice": "unknown",
+           "rank": null,
+           "item_ids": [],
+           "key": "s_62e4756bf9a8342b8b15feac"
+          },
+          {
+           "code": "accent_orphan",
+           "values": {
+            "colour": "green",
+            "hue": 153,
+            "slot": "headwear"
+           },
+           "recipient": "woman",
+           "source": "unknown",
+           "choice": "unknown",
+           "rank": null,
+           "item_ids": [],
+           "key": "s_050a0500d2a97c57edf54282"
+          }
+         ]
+        },
+        {
+         "ід": [
+          "ж-11536@theoriginals.com.ua",
+          "ж-11120@skripka.com.ua"
+         ],
+         "текст": "Сумка Grace зі шкіри, Зелена кепка I don`t give a damn (one size) — The green hue in the headwear was a deliberate choice to add a single point of color that echoes your eyes, though I kept it only because it sits at the top where it acts as a focal point; removing it would have made the look too flat for an evening date.",
+         "правило": "K-PAL-03",
+         "заяви": [
+          {
+           "code": "item_hue_outside_scheme_arc",
+           "values": {
+            "scheme": "neutrals_plus_accent",
+            "slot": "headwear",
+            "role": "accent",
+            "arc": [
+             8,
+             50
+            ],
+            "hue": 153,
+            "chroma": 25
+           },
+           "recipient": "woman",
+           "source": "unknown",
+           "choice": "unknown",
+           "rank": null,
+           "item_ids": [],
+           "key": "s_b254d1eeffa34173b7c6f083"
+          },
+          {
+           "code": "item_hue_outside_scheme_arc",
+           "values": {
+            "scheme": "neutrals_plus_accent",
+            "slot": "bag",
+            "role": "accent",
+            "arc": [
+             8,
+             50
+            ],
+            "hue": 100,
+            "chroma": 42
+           },
+           "recipient": "woman",
+           "source": "unknown",
+           "choice": "unknown",
+           "rank": null,
+           "item_ids": [],
+           "key": "s_d8ff9b3561b58d1f649f8b5e"
+          }
+         ]
+        }
+       ],
+       "підпис": "Sophisticated graphite and chocolate look",
+       "день": "This all-neutral graphite and chocolate palette reads as calm and sophisticated under restaurant lights, while the long coat and maxi skirt create a vertical line that flatters your X shape.",
+       "слова_знято": null,
+       "заяви_знято": null,
+       "дібрані": [],
+       "рядок_добору": null,
+       "добір_ні": null
+      },
+      "блокує": [],
+      "структура": [],
+      "дні": []
+     },
+     {
+      "крок": "description",
+      "стадія": "description",
+      "помилка": null,
+      "повнота": {
+       "ід": [
+        "ж-05232@alot.com.ua",
+        "ж-07039@feelyou.com.ua",
+        "ж53-d4c45efa6e48e3f2ab8c@theoriginals.com.ua",
+        "ж-11798@theoriginals.com.ua",
+        "ж-11120@skripka.com.ua",
+        "ж53-667fafc4cca2db9dccdd@theoriginals.com.ua",
+        "ж-11536@theoriginals.com.ua"
+       ],
+       "частини": {},
+       "номери": {
+        "ж-05232@alot.com.ua": "#355·01",
+        "ж-07039@feelyou.com.ua": "#241·11",
+        "ж53-d4c45efa6e48e3f2ab8c@theoriginals.com.ua": "#478·33",
+        "ж-11798@theoriginals.com.ua": "#266·33",
+        "ж-11120@skripka.com.ua": "#485·29",
+        "ж53-667fafc4cca2db9dccdd@theoriginals.com.ua": "#392·33",
+        "ж-11536@theoriginals.com.ua": "#54·33"
+       },
+       "образ": "о1",
+       "повний": true,
+       "рядок": null,
+       "чому": null,
+       "свідомі": [],
+       "підпис": null,
+       "день": null,
+       "слова_знято": null,
+       "заяви_знято": null,
+       "дібрані": [],
+       "рядок_добору": null,
+       "добір_ні": null
+      },
+      "блокує": [],
+      "структура": [],
+      "дні": []
+     }
+    ]
+   },
+   {
+    "рука": "2",
+    "склад": "ж53-c7fb944dfee48fbcd652@theoriginals.com.ua+ж-08581@likeangel.com.ua+ж-11737@theoriginals.com.ua+ж-09018@cultboutique.com.ua+ж-11781@theoriginals.com.ua+ж-11633@theoriginals.com.ua",
+    "діагноз": [
+     "hand_2 · assembly · read_with_normalisation=number_read_as_enum_word: версія",
+     "hand_2 · completeness_repair · before_choice · attempt=1 · with_holes=5 · outfits=5 · without_blockers=0→2 · untouched=0",
+     "hand_2 · choice_gates_accepted · outfit=о2 · rules=K-PAL-03",
+     "hand_2.code_unknowns · layer · dir=out_messages · model=mamaylm-gemma-3-12b-it-v2.0 · ms=46568 · messages=8 · said=11",
+     "hand_2 · layer · dir=out_messages · model=mamaylm-gemma-3-12b-it-v2.0 · ms=0 · messages=1 · said=1",
+     "hand_2 · layer · dir=out · model=mamaylm-gemma-3-12b-it-v2.0 · ms=71022 · texts=15 · changed=15"
+    ],
+    "слід_питань": [
+     {
+      "правило": "K-KOH-06",
+      "ярлик": "evening_lift_by_tier",
+      "де": "формальність.смуга_ошатності",
+      "значення": "smart → formal..formal → formal (+1.0..+2.0)",
+      "сила": null,
+      "напрям": "угору",
+      "рука": "B",
+      "спрацювань": 17
+     },
+     {
+      "правило": "K-KOH-06",
+      "ярлик": "день_вечір",
+      "де": "бриф",
+      "значення": "день_вечір",
+      "сила": null,
+      "напрям": null,
+      "рука": "B",
+      "спрацювань": 4
+     },
+     {
+      "правило": "K-KOH-10",
+      "ярлик": "evening_admits_second_zone",
+      "де": "формальність.ліміт_відкритих_зон",
+      "значення": "2 зони",
+      "сила": null,
+      "напрям": null,
+      "рука": "B",
+      "спрацювань": 5
+     },
+     {
+      "правило": "K-CRA-04",
+      "ярлик": "finding_fired",
+      "де": "перевірити_образ",
+      "значення": "«ж-08581@likeangel.com.ua» можна зняти — жодна метрика не падає",
+      "сила": 0.05,
+      "напрям": "репліка",
+      "рука": "B",
+      "спрацювань": 1
+     },
+     {
+      "правило": "K-CRA-04",
+      "ярлик": "finding_fired",
+      "де": "перевірити_образ",
+      "значення": "«ж-11633@theoriginals.com.ua» можна зняти — жодна метрика не падає",
+      "сила": 0.05,
+      "напрям": "репліка",
+      "рука": "B",
+      "спрацювань": 1
+     }
+    ],
+    "суд": {
+     "день": {
+      "place": "restaurant_casual",
+      "season": "autumn",
+      "part_of_day": "evening",
+      "light": "artificial",
+      "formality": {
+       "from": 7,
+       "to": 7
+      },
+      "occasion_requirements": {
+       "profile": "unknown",
+       "light": "evening",
+       "mourning": false,
+       "lightness_range": null,
+       "lightness_max": null,
+       "chroma_max": null,
+       "loudness_max": null,
+       "loudness_source": "unknown",
+       "near_white_veto": false,
+       "shine_near_face_from": null,
+       "festive_trim_shine_from": null,
+       "decorated_headwear_or_nonmetal_jewelry": [],
+       "loud_patterns_large_or_near_face": []
+      },
+      "unknown": [
+       "temperature_c"
+      ]
+     },
+     "блокує": [],
+     "повнота": {
+      "ід": [
+       "ж53-c7fb944dfee48fbcd652@theoriginals.com.ua",
+       "ж-08581@likeangel.com.ua",
+       "ж-11737@theoriginals.com.ua",
+       "ж-09018@cultboutique.com.ua",
+       "ж-11781@theoriginals.com.ua",
+       "ж-11633@theoriginals.com.ua"
+      ],
+      "частини": {},
+      "номери": {
+       "ж53-c7fb944dfee48fbcd652@theoriginals.com.ua": "#471·33",
+       "ж-08581@likeangel.com.ua": "#297·16",
+       "ж-11737@theoriginals.com.ua": "#158·33",
+       "ж-09018@cultboutique.com.ua": "#408·06",
+       "ж-11781@theoriginals.com.ua": "#232·33",
+       "ж-11633@theoriginals.com.ua": "#62·33"
+      },
+      "образ": "о1",
+      "повний": true,
+      "рядок": null,
+      "чому": null,
+      "свідомі": [],
+      "підпис": null,
+      "день": null,
+      "слова_знято": null,
+      "заяви_знято": null,
+      "дібрані": [],
+      "рядок_добору": null,
+      "добір_ні": null
+     },
+     "знахідки": [
+      {
+       "правило": "K-COL-05",
+       "сила": "soft",
+       "сила_нп": 0.5,
+       "суть": "акцент «синя» присутній в одній зоні і малий — сирота",
+       "чому": "площа 0.02 < 0.15 і зона одна: око не знаходить наміру",
+       "речі": [
+        "ж-11633@theoriginals.com.ua"
+       ],
+       "регістр": "репліка",
+       "ремонт": null,
+       "заяви": [
+        {
+         "code": "accent_orphan",
+         "values": {
+          "colour": "blue",
+          "slot": "bag",
+          "hue": 309
+         },
+         "recipient": "woman",
+         "source": "unknown",
+         "choice": "unknown",
+         "rank": null,
+         "item_ids": [],
+         "key": "s_69381659e121a3700c796df2"
+        }
+       ],
+       "ремонт_заяви": [
+        {
+         "code": "echo_accent_or_declare_focus",
+         "values": {},
+         "recipient": "woman",
+         "source": "unknown",
+         "choice": "unknown",
+         "rank": null,
+         "item_ids": [],
+         "key": "s_33d6498819385b285848712a"
+        }
+       ]
+      },
+      {
+       "правило": "K-ACC-06",
+       "сила": "default",
+       "сила_нп": 0.5,
+       "суть": "«Фіолетова шкіряна сумка» може стати джерелом інтересу без кольору: несиметричне місце (плече, кросбоді)",
+       "чому": "класична теорія композиції дає окремий хід: не ДОДАТИ предмет, а ЗЛАМАТИ симетрію — брошка на одному боці, хустка через одне плече, сумка на одному плечі. Для підлоги інтересу (K-INT-04) це ЧЕТВЕРТЕ джерело поруч із принтом, фактурою й хроматичним акцентом, і воно не витрачає ані кольору, ані принта: саме тому цілком нейтральний образ може закрити підлогу без жодного кольору, і ця річ тиха (C 26 при порозі 40)",
+       "речі": [
+        "Фіолетова шкіряна сумка"
+       ],
+       "регістр": "репліка",
+       "ремонт": [
+        "як варіанти:",
+        "покласти річ несиметрично: плече, кросбоді",
+        "місце обирає композитор — воно не властивість товару (K-ACC-12)"
+       ],
+       "заяви": [
+        {
+         "code": "asymmetry_interest_source_available",
+         "values": {
+          "places": [
+           "shoulder",
+           "crossbody"
+          ]
+         },
+         "recipient": "woman",
+         "source": "unknown",
+         "choice": "unknown",
+         "rank": null,
+         "item_ids": [],
+         "key": "s_454c398094322d91d0be011c"
+        }
+       ],
+       "ремонт_заяви": [
+        {
+         "code": "wear_item_asymmetrically",
+         "values": {
+          "places": [
+           "shoulder",
+           "crossbody"
+          ]
+         },
+         "recipient": "woman",
+         "source": "unknown",
+         "choice": "unknown",
+         "rank": null,
+         "item_ids": [],
+         "key": "s_8ab4190b9e1159ab410161e5"
+        }
+       ]
+      },
+      {
+       "правило": "K-COMP-07",
+       "сила": "hint",
+       "сила_нп": 0.25,
+       "суть": "формула «нейтрали+акцент» узята за готову, а образ провалює 2 пункти підлоги прісності",
+       "чому": "стандартні поєднання — це РОЗВ'ЯЗАНІ заготовки, з яких починають, а не вирок, яким закінчують: формула засіває генерацію й ніколи не перевіряє вихід. Провалені пункти: interest_sources; not_default_formula",
+       "речі": [
+        "ж53-c7fb944dfee48fbcd652@theoriginals.com.ua",
+        "ж-08581@likeangel.com.ua",
+        "ж-11737@theoriginals.com.ua",
+        "ж-09018@cultboutique.com.ua",
+        "ж-11781@theoriginals.com.ua",
+        "ж-11633@theoriginals.com.ua"
+       ],
+       "регістр": "репліка",
+       "ремонт": [
+        "як варіанти:",
+        "пройтись по названих пунктах прісності окремо — правильна схема жодного з них не закриває"
+       ],
+       "заяви": [
+        {
+         "code": "formula_taken_as_ready",
+         "values": {
+          "scheme": "neutrals_plus_accent",
+          "blandness_failed": 2
+         },
+         "recipient": "woman",
+         "source": "unknown",
+         "choice": "unknown",
+         "rank": null,
+         "item_ids": [],
+         "key": "s_ff61d616e412ff145dd67c26"
+        }
+       ],
+       "ремонт_заяви": [
+        {
+         "code": "walk_failed_blandness_points",
+         "values": {},
+         "recipient": "woman",
+         "source": "unknown",
+         "choice": "unknown",
+         "rank": null,
+         "item_ids": [],
+         "key": "s_db821b5ad3ecdc6103bcad52"
+        }
+       ]
+      },
+      {
+       "правило": "K-SIL-09",
+       "сила": "soft",
+       "сила_нп": 0.5,
+       "суть": "сукня — моно-об'єкт силуету: образ одягнений, не стилізований",
+       "чому": "сукня фіксує верх, низ і силует одночасно; задача зводиться до взуття + шару + аксесуарів, і без них образ читається як «одягнена», не «стилізована» (тема-4 PART V)",
+       "речі": [
+        "Чорна сукня Camellia Lisa"
+       ],
+       "регістр": "репліка",
+       "ремонт": [
+        "як варіанти:",
+        "додати третю річ: взуття в тоні поділу, відкритий шар або структурний аксесуар"
+       ],
+       "заяви": [
+        {
+         "code": "mono_object_silhouette",
+         "values": {
+          "dress": true
+         },
+         "recipient": "woman",
+         "source": "unknown",
+         "choice": "unknown",
+         "rank": null,
+         "item_ids": [],
+         "key": "s_a97c7240299d2d29ce7908da"
+        }
+       ],
+       "ремонт_заяви": [
+        {
+         "code": "add_third_piece_to_mono",
+         "values": {},
+         "recipient": "woman",
+         "source": "unknown",
+         "choice": "unknown",
+         "rank": null,
+         "item_ids": [],
+         "key": "s_98dfc58b4334c151442ebe6c"
+        }
+       ]
+      },
+      {
+       "правило": "K-COL-05",
+       "сила": "default",
+       "сила_нп": 0.5,
+       "суть": "акцент «фіолетова» стоїть в одному акцентному слоті («сумка») і більше ніде — око не знаходить наміру",
+       "чому": "гештальтний повтор: колір, який не відлунює у другій рознесеній зоні і не оголошений фокусом, читається як шум, а не як хід",
+       "речі": [
+        "ж-11633@theoriginals.com.ua"
+       ],
+       "регістр": "репліка",
+       "ремонт": "повторити цей колір у другій рознесеній зоні (взуття ↔ сумка ↔ шарф ↔ прикраси) АБО оголосити цю зону фокусом АБО прибрати",
+       "заяви": [
+        {
+         "code": "accent_orphan",
+         "values": {
+          "colour": "violet",
+          "hue": 309,
+          "slot": "bag"
+         },
+         "recipient": "woman",
+         "source": "unknown",
+         "choice": "unknown",
+         "rank": null,
+         "item_ids": [],
+         "key": "s_bed43ac1f17064dddcb553ce"
+        }
+       ],
+       "ремонт_заяви": [
+        {
+         "code": "echo_accent_or_declare_focus",
+         "values": {},
+         "recipient": "woman",
+         "source": "unknown",
+         "choice": "unknown",
+         "rank": null,
+         "item_ids": [],
+         "key": "s_33d6498819385b285848712a"
+        }
+       ]
+      },
+      {
+       "правило": "K-PAL-03",
+       "сила": "strong",
+       "сила_нп": 0.45,
+       "суть": "схема «нейтрали+акцент»: слот «сумка» (роль акцент) тримає тон 8–50°, колір речі поза дугою",
+       "чому": "поза дугою образ не тримає схеми, але схему обрала не жінка — це порада, не межа",
+       "речі": [
+        "ж-11633@theoriginals.com.ua"
+       ],
+       "регістр": "репліка",
+       "ремонт": null,
+       "заяви": [
+        {
+         "code": "item_hue_outside_scheme_arc",
+         "values": {
+          "scheme": "neutrals_plus_accent",
+          "slot": "bag",
+          "role": "accent",
+          "arc": [
+           8,
+           50
+          ],
+          "hue": 309,
+          "chroma": 26
+         },
+         "recipient": "woman",
+         "source": "unknown",
+         "choice": "unknown",
+         "rank": null,
+         "item_ids": [],
+         "key": "s_91b56fa2bedc21fe3c282060"
+        }
+       ],
+       "ремонт_заяви": [
+        {
+         "code": "item_in_arc_or_neutral",
+         "values": {
+          "slot": "bag"
+         },
+         "recipient": "woman",
+         "source": "unknown",
+         "choice": "unknown",
+         "rank": null,
+         "item_ids": [],
+         "key": "s_71c4f5ed80840187bdad62bb"
+        }
+       ],
+       "свідомий": "Фіолетова шкіряна сумка — I accept this remark because the black bracelet was a deliberate choice to create enough visual interest on your upper body so you don't feel too quiet near the face."
+      },
+      {
+       "правило": "K-INT-04",
+       "сила": "soft",
+       "сила_нп": 0.3,
+       "суть": "в образі 0 джерел інтересу при підлозі 1",
+       "чому": "жодна річ не несе ні хроми ≥18, ні принту, ні виразної фактури — образ складається лише з нейтралей. Підлога інтересу діє й на ЗІБРАНОМУ образі, не лише під час вибору",
+       "речі": [
+        "ж53-c7fb944dfee48fbcd652@theoriginals.com.ua",
+        "ж-08581@likeangel.com.ua",
+        "ж-11737@theoriginals.com.ua",
+        "ж-09018@cultboutique.com.ua",
+        "ж-11781@theoriginals.com.ua",
+        "ж-11633@theoriginals.com.ua"
+       ],
+       "регістр": "репліка",
+       "ремонт": [
+        "як варіанти:",
+        "виразна фактура в слоті, найближчому до обличчя — у стриманому контексті вона додає інтересу, не додаючи другого колірного чи мотивного фокусу (K-COMP-06)",
+        "АБО акцентний колір або принт у слоті, найближчому до обличчя"
+       ],
+       "також_правила": [
+        "K-COMP-06"
+       ],
+       "заяви": [
+        {
+         "code": "interest_sources_below_floor",
+         "values": {
+          "count": 0,
+          "floor": 1
+         },
+         "recipient": "woman",
+         "source": "unknown",
+         "choice": "unknown",
+         "rank": null,
+         "item_ids": [],
+         "key": "s_343fc96013ea0d5ebeab1053"
+        }
+       ],
+       "ремонт_заяви": [
+        {
+         "code": "texture_near_face",
+         "values": {},
+         "recipient": "woman",
+         "source": "unknown",
+         "choice": "unknown",
+         "rank": null,
+         "item_ids": [],
+         "key": "s_bf8529c3aed821c9c5c21fdc"
+        },
+        {
+         "code": "accent_colour_or_print_near_face",
+         "values": {},
+         "recipient": "woman",
+         "source": "unknown",
+         "choice": "unknown",
+         "rank": null,
+         "item_ids": [],
+         "key": "s_1f983cf45bccae14ba92bbfb"
+        }
+       ],
+       "свідомий": "Шкіряний браслет Gancio Wrap — I added this black bracelet to satisfy the need for more visual focus on your upper body, ensuring the outfit isn't too quiet near the face."
+      },
+      {
+       "правило": "K-FIT-03",
+       "сила": "hint",
+       "сила_нп": 0.25,
+       "суть": "поділ на її зрості може лягти на опуклість «стегна» — залежить від розміру",
+       "чому": "довжина виробу 51.0 см від «плечі»: на цьому зрості поділ стає на 86.8 см від підлоги, і смуга розмірної сітки ±4 см накриває найширше місце «стегна» (87.4 см) у 2 із 5 точок",
+       "речі": [
+        "ж53-c7fb944dfee48fbcd652@theoriginals.com.ua"
+       ],
+       "регістр": "репліка",
+       "ремонт": null,
+       "заяви": [
+        {
+         "code": "measured_hem_may_land_on_widest",
+         "values": {
+          "slot": "dress",
+          "level": "hips"
+         },
+         "recipient": "woman",
+         "source": "unknown",
+         "choice": "unknown",
+         "rank": null,
+         "item_ids": [],
+         "key": "s_40027952cffbe00257bcbdf4"
+        }
+       ]
+      },
+      {
+       "правило": "K-PRC-01",
+       "сила": "hint",
+       "сила_нп": 0.25,
+       "суть": "«Туфлі-слінгбеки жіночі Giza» — верхня чверть свого слота за ціною на образ (дешевших у пулі 23 із 25); обхват 16",
+       "чому": "вісь тут не ціна, а ціна, поділена на КОМБІНАТОРНИЙ ОБХВАТ — у скількох образах наявного пулу ця річ може взяти участь. Це єдина метрика теми, яку система рахує краще за людину: людині доводиться вгадувати кількість носінь, а система їх перебирає. Аксесуар карається за ціну СЛАБШЕ: у гардеробі він має найвищу частоту використання, і ранжувати всі слоти однаково означало б помилятись систематично",
+       "речі": [
+        "ж-09018@cultboutique.com.ua"
+       ],
+       "регістр": "репліка",
+       "ремонт": [
+        "як варіанти:",
+        "у цьому ж слоті пулу є 23 речей, що на образ коштують дешевше — порівняти саме з ними"
+       ],
+       "заяви": [
+        {
+         "code": "price_top_quarter_of_slot",
+         "values": {
+          "slot": "shoes",
+          "cheaper": 23,
+          "of": 25,
+          "reach": 16
+         },
+         "recipient": "woman",
+         "source": "unknown",
+         "choice": "unknown",
+         "rank": null,
+         "item_ids": [],
+         "key": "s_429b07108009d98692b5d221"
+        }
+       ],
+       "ремонт_заяви": [
+        {
+         "code": "compare_with_cheaper_in_slot",
+         "values": {
+          "cheaper": 23
+         },
+         "recipient": "woman",
+         "source": "unknown",
+         "choice": "unknown",
+         "rank": null,
+         "item_ids": [],
+         "key": "s_505ed3c8af7d187d1badf121"
+        }
+       ]
+      },
+      {
+       "правило": "K-PAL-02",
+       "сила": "hint",
+       "сила_нп": 0.2,
+       "суть": "слот «сумка» несе акцент поза сім'єю ваших очей (82–140°)",
+       "чому": "Perrett 2023: одяг обирають до райдужки, не до шкіри; практики ставлять перегук очей першим прийомом — це колір, який у людини вже є",
+       "речі": [
+        "ж-11633@theoriginals.com.ua"
+       ],
+       "регістр": "репліка",
+       "ремонт": null,
+       "заяви": [
+        {
+         "code": "accent_not_from_eyes",
+         "values": {
+          "slot": "bag",
+          "hue": 309,
+          "eye_arcs": [
+           [
+            82,
+            140
+           ]
+          ]
+         },
+         "recipient": "woman",
+         "source": "unknown",
+         "choice": "unknown",
+         "rank": null,
+         "item_ids": [],
+         "key": "s_f48db88c9e9eb2157b7d47e2"
+        }
+       ]
+      },
+      {
+       "правило": "K-CRA-04",
+       "сила": "soft",
+       "сила_нп": 0.05,
+       "суть": "«ж-08581@likeangel.com.ua» можна зняти — жодна метрика не падає",
+       "чому": "без нього: знахідок 1 (було 1), вага 0.00 (було 0.00), інтерес 0 (підлога 1). Тобто елемент не несе роботи",
+       "речі": [
+        "ж-08581@likeangel.com.ua"
+       ],
+       "регістр": "репліка",
+       "ремонт": [
+        "як варіанти:",
+        "зняти «ж-08581@likeangel.com.ua»"
+       ],
+       "заяви": [
+        {
+         "code": "item_removable_no_metric_drops",
+         "values": {},
+         "recipient": "woman",
+         "source": "unknown",
+         "choice": "unknown",
+         "rank": null,
+         "item_ids": [],
+         "key": "s_9a94257fd2ac63bde09b5d4d"
+        }
+       ],
+       "ремонт_заяви": [
+        {
+         "code": "remove_this_item",
+         "values": {},
+         "recipient": "woman",
+         "source": "unknown",
+         "choice": "unknown",
+         "rank": null,
+         "item_ids": [],
+         "key": "s_8933f32b7d089092a6c11cd3"
+        }
+       ]
+      },
+      {
+       "правило": "K-CRA-04",
+       "сила": "soft",
+       "сила_нп": 0.05,
+       "суть": "«ж-11633@theoriginals.com.ua» можна зняти — жодна метрика не падає",
+       "чому": "без нього: знахідок 1 (було 1), вага 0.00 (було 0.00), інтерес 0 (підлога 1). Тобто елемент не несе роботи",
+       "речі": [
+        "ж-11633@theoriginals.com.ua"
+       ],
+       "регістр": "репліка",
+       "ремонт": [
+        "як варіанти:",
+        "зняти «ж-11633@theoriginals.com.ua»"
+       ],
+       "заяви": [
+        {
+         "code": "item_removable_no_metric_drops",
+         "values": {},
+         "recipient": "woman",
+         "source": "unknown",
+         "choice": "unknown",
+         "rank": null,
+         "item_ids": [],
+         "key": "s_9a94257fd2ac63bde09b5d4d"
+        }
+       ],
+       "ремонт_заяви": [
+        {
+         "code": "remove_this_item",
+         "values": {},
+         "recipient": "woman",
+         "source": "unknown",
+         "choice": "unknown",
+         "rank": null,
+         "item_ids": [],
+         "key": "s_8933f32b7d089092a6c11cd3"
+        }
+       ]
+      }
+     ],
+     "структура": []
+    },
+    "кроки": [
+     {
+      "крок": "assembly",
+      "стадія": "assembly",
+      "помилка": null,
+      "повнота": {
+       "ід": [
+        "ж53-c7fb944dfee48fbcd652@theoriginals.com.ua",
+        "ж-08581@likeangel.com.ua",
+        "ж-11737@theoriginals.com.ua",
+        "ж-09018@cultboutique.com.ua"
+       ],
+       "частини": {},
+       "номери": {
+        "ж53-c7fb944dfee48fbcd652@theoriginals.com.ua": "#471·33",
+        "ж-08581@likeangel.com.ua": "#297·16",
+        "ж-11737@theoriginals.com.ua": "#158·33",
+        "ж-09018@cultboutique.com.ua": "#408·06"
+       },
+       "образ": "о2",
+       "повний": false,
+       "рядок": {
+        "kind": "card_incomplete",
+        "statements": [
+         {
+          "code": "look_incomplete",
+          "values": {},
+          "recipient": "woman",
+          "source": "unknown",
+          "choice": "unknown",
+          "rank": null,
+          "item_ids": [],
+          "key": "s_b4ee8436a99063a5ed67015b"
+         },
+         {
+          "code": "no_bag",
+          "values": {},
+          "recipient": "woman",
+          "source": "unknown",
+          "choice": "unknown",
+          "rank": null,
+          "item_ids": [],
+          "key": "s_cb3af1c7fab22f3a092435d4"
+         }
+        ]
+       },
+       "чому": "structural_blocker=no_bag | blockers_full=нема_сумки",
+       "свідомі": [],
+       "підпис": null,
+       "день": null,
+       "слова_знято": null,
+       "заяви_знято": null,
+       "дібрані": [],
+       "рядок_добору": null,
+       "добір_ні": null
+      },
+      "блокує": [
+       "слот_двічі:сукня",
+       "нема_сумки"
+      ],
+      "структура": [
+       "слот_двічі:сукня",
+       "нема_сумки"
+      ],
+      "дні": [
+       {
+        "образ": "о1",
+        "день": "For the 19:30 restaurant date, the brick base and olive accent match your evening mood, while the grey suit keeps you looking smart but not overly formal. The fitted cut flatters your defined waist, and the scarf adds a touch of romance.",
+        "ід": [
+         "ж53-ce365e482bbde350ba52@feelyou.com.ua",
+         "ж-12128@theoriginals.com.ua",
+         "ж-11808@theoriginals.com.ua",
+         "ж-16734@wearme.ua"
+        ]
+       },
+       {
+        "образ": "о2",
+        "день": "This outfit works for the evening restaurant setting because the black dress feels classic and smart enough for a date. The olive belt defines your waist, and the burgundy shoe ties the whole look together perfectly.",
+        "ід": [
+         "ж53-c7fb944dfee48fbcd652@theoriginals.com.ua",
+         "ж-08581@likeangel.com.ua",
+         "ж-11737@theoriginals.com.ua",
+         "ж-09018@cultboutique.com.ua"
+        ]
+       },
+       {
+        "образ": "о3",
+        "день": "Perfect for a cozy autumn evening at the restaurant, this outfit uses chocolate and camel tones that match your palette perfectly. The warm light of the room will make the earthy colors look rich and sophisticated.",
+        "ід": [
+         "ж53-61040bd7e3dbe6330e94@emmeliedelage.com",
+         "ж-06195@25union.com.ua",
+         "ж-08413@welfare.ua",
+         "ж-13355@nyni.shop"
+        ]
+       },
+       {
+        "образ": "о4",
+        "день": "For the 19:30 date, the chocolate jacket and grey trousers create a balanced silhouette that flatters your X shape. The relaxed top softens the formal suit elements, making it feel perfect for an evening outing.",
+        "ід": [
+         "ж-07039@feelyou.com.ua",
+         "ж-11808@theoriginals.com.ua",
+         "ж-11735@theoriginals.com.ua"
+        ]
+       },
+       {
+        "образ": "о5",
+        "день": "I chose the black dress as the base because it is timeless and elegant for any restaurant occasion. The pink earrings and rose-gold ring add a delicate, feminine touch that shines under artificial lighting.",
+        "ід": [
+         "ж53-14fa5f89ba9645560553@onebyone.ua",
+         "ж53-dd2be10fbe96acaffc56@miraton.ua",
+         "ж-07556@jecomestudio.com",
+         "ж-09667@attico.ua"
+        ]
+       },
+       {
+        "образ": "о6",
+        "день": "This combination works beautifully for the evening restaurant setting. The olive blazer adds a structured, professional edge while the grey trousers maintain a sleek line. The powder belt introduces a soft contrast.",
+        "ід": [
+         "ж-12173@musthave.ua",
+         "ж53-f09019c086bfd7b035a4@onebyone.ua",
+         "ж-11808@theoriginals.com.ua",
+         "ж-08457@likeangel.com.ua"
+        ]
+       },
+       {
+        "образ": "о7",
+        "день": "The black slip dress provides a sleek silhouette suitable for an evening event. The red shoes stand out as a bold accent, drawing attention to your legs and adding excitement to the outfit.",
+        "ід": [
+         "ж53-1ecf0d3ccb4cddf1ccd8@tm-beart.com",
+         "ж-12402@welfare.ua",
+         "ж-07556@jecomestudio.com",
+         "ж53-dd2be10fbe96acaffc56@miraton.ua"
+        ]
+       },
+       {
+        "образ": "о8",
+        "день": "This outfit features a harmonious blend of beige, sand, and brown tones, ideal for a warm autumn evening. The cashmere beret adds texture and sophistication.",
+        "ід": [
+         "ж-06195@25union.com.ua",
+         "ж-07746@honchstudio.com",
+         "ж-11808@theoriginals.com.ua",
+         "ж-08423@likeangel.com.ua"
+        ]
+       },
+       {
+        "образ": "о9",
+        "день": "The grey cravat and black pumps create a classic, polished look perfect for a restaurant dinner. The olive belt adds warmth and definition to the waist.",
+        "ід": [
+         "ж-04483@morandi.ua",
+         "ж-09018@cultboutique.com.ua",
+         "ж-08581@likeangel.com.ua",
+         "ж-11735@theoriginals.com.ua"
+        ]
+       },
+       {
+        "образ": "о10",
+        "день": "I've chosen the black dress to ensure versatility for any restaurant setting. The pink earrings and chocolate belt add unique details that make the outfit stand out.",
+        "ід": [
+         "ж53-14fa5f89ba9645560553@onebyone.ua",
+         "ж53-dd2be10fbe96acaffc56@miraton.ua",
+         "ж-07556@jecomestudio.com",
+         "ж-06691@vilni.store"
+        ]
+       }
+      ]
+     },
+     {
+      "крок": "repair",
+      "стадія": "repair",
+      "помилка": null,
+      "повнота": {
+       "ід": [
+        "ж53-c7fb944dfee48fbcd652@theoriginals.com.ua",
+        "ж-08581@likeangel.com.ua",
+        "ж-11737@theoriginals.com.ua",
+        "ж-09018@cultboutique.com.ua",
+        "ж-11781@theoriginals.com.ua"
+       ],
+       "частини": {},
+       "номери": {
+        "ж53-c7fb944dfee48fbcd652@theoriginals.com.ua": "#471·33",
+        "ж-08581@likeangel.com.ua": "#297·16",
+        "ж-11737@theoriginals.com.ua": "#158·33",
+        "ж-09018@cultboutique.com.ua": "#408·06",
+        "ж-11781@theoriginals.com.ua": "#232·33"
+       },
+       "образ": "о2",
+       "повний": false,
+       "рядок": {
+        "kind": "card_incomplete",
+        "statements": [
+         {
+          "code": "look_incomplete",
+          "values": {},
+          "recipient": "woman",
+          "source": "unknown",
+          "choice": "unknown",
+          "rank": null,
+          "item_ids": [],
+          "key": "s_b4ee8436a99063a5ed67015b"
+         },
+         {
+          "code": "no_bag",
+          "values": {},
+          "recipient": "woman",
+          "source": "unknown",
+          "choice": "unknown",
+          "rank": null,
+          "item_ids": [],
+          "key": "s_cb3af1c7fab22f3a092435d4"
+         }
+        ]
+       },
+       "чому": "structural_blocker=no_bag | blockers_full=нема_сумки",
+       "свідомі": [],
+       "підпис": null,
+       "день": null,
+       "слова_знято": null,
+       "заяви_знято": null,
+       "дібрані": [],
+       "рядок_добору": null,
+       "добір_ні": null
+      },
+      "блокує": [
+       "нема_сумки"
+      ],
+      "структура": [
+       "нема_сумки"
+      ],
+      "дні": [
+       {
+        "образ": "о1",
+        "день": "For your 19:30 restaurant date, the brick base and olive accent match your evening mood. I kept the fitted cut to flatter your waist, though the linen fabric feels out of season for autumn; I chose it anyway because the warm colors suit your palette better than cold neutrals would.",
+        "ід": [
+         "ж53-ce365e482bbde350ba52@feelyou.com.ua",
+         "ж-12128@theoriginals.com.ua",
+         "ж-11808@theoriginals.com.ua",
+         "ж-16734@wearme.ua"
+        ]
+       },
+       {
+        "образ": "о2",
+        "день": "This outfit works for your evening restaurant date because the black dress feels classic and smart. The olive belt defines your waist, and the burgundy shoe ties the look together perfectly under artificial light. I added a leather bracelet to ensure you have enough visual interest without competing with the shoes.",
+        "ід": [
+         "ж53-c7fb944dfee48fbcd652@theoriginals.com.ua",
+         "ж-08581@likeangel.com.ua",
+         "ж-11737@theoriginals.com.ua",
+         "ж-09018@cultboutique.com.ua",
+         "ж-11781@theoriginals.com.ua"
+        ]
+       },
+       {
+        "образ": "о3",
+        "день": "Perfect for a cozy autumn evening, this outfit uses chocolate and camel tones that match your palette perfectly. The warm light of the room will make the earthy colors look rich and sophisticated.",
+        "ід": [
+         "ж53-61040bd7e3dbe6330e94@emmeliedelage.com",
+         "ж-06195@25union.com.ua",
+         "ж-08413@welfare.ua"
+        ]
+       },
+       {
+        "образ": "о4",
+        "день": "For the 19:30 date, the chocolate jacket and grey trousers create a balanced silhouette. The relaxed top softens the formal suit elements, making it perfect for an evening outing.",
+        "ід": [
+         "ж-07039@feelyou.com.ua",
+         "ж53-f09019c086bfd7b035a4@onebyone.ua",
+         "ж-11808@theoriginals.com.ua"
+        ]
+       },
+       {
+        "образ": "о5",
+        "день": "I chose the black dress as the base because it is timeless and elegant for any restaurant occasion. The pink earrings and rose-gold ring add a delicate, feminine touch that shines under artificial lighting.",
+        "ід": [
+         "ж53-14fa5f89ba9645560553@onebyone.ua",
+         "ж53-dd2be10fbe96acaffc56@miraton.ua",
+         "ж-07556@jecomestudio.com",
+         "ж-09667@attico.ua"
+        ]
+       }
+      ]
+     },
+     {
+      "крок": "completeness_repair",
+      "стадія": "completeness_repair",
+      "помилка": null,
+      "повнота": {
+       "ід": [
+        "ж53-c7fb944dfee48fbcd652@theoriginals.com.ua",
+        "ж-08581@likeangel.com.ua",
+        "ж-11737@theoriginals.com.ua",
+        "ж-09018@cultboutique.com.ua",
+        "ж-11781@theoriginals.com.ua",
+        "ж-11633@theoriginals.com.ua"
+       ],
+       "частини": {},
+       "номери": {
+        "ж53-c7fb944dfee48fbcd652@theoriginals.com.ua": "#471·33",
+        "ж-08581@likeangel.com.ua": "#297·16",
+        "ж-11737@theoriginals.com.ua": "#158·33",
+        "ж-09018@cultboutique.com.ua": "#408·06",
+        "ж-11781@theoriginals.com.ua": "#232·33",
+        "ж-11633@theoriginals.com.ua": "#62·33"
+       },
+       "образ": "о2",
+       "повний": true,
+       "рядок": null,
+       "чому": null,
+       "свідомі": [
+        {
+         "ід": [
+          "ж-11781@theoriginals.com.ua"
+         ],
+         "текст": "Шкіряний браслет Gancio Wrap — I added this black bracelet to satisfy the need for more visual focus on your upper body, ensuring the outfit isn't too quiet near the face.",
+         "правило": "K-INT-04",
+         "заяви": [
+          {
+           "code": "interest_sources_below_floor",
+           "values": {
+            "count": 0,
+            "floor": 1
+           },
+           "recipient": "woman",
+           "source": "unknown",
+           "choice": "unknown",
+           "rank": null,
+           "item_ids": [],
+           "key": "s_343fc96013ea0d5ebeab1053"
+          }
+         ]
+        }
+       ],
+       "підпис": "Black dress with burgundy shoes and brown belt",
+       "день": "This outfit works for your evening restaurant date because the black dress feels classic and smart. The olive belt defines your waist, and the burgundy shoe ties the look together perfectly under artificial light. I added a leather bracelet to ensure you have enough visual interest without competing with the shoes.",
+       "слова_знято": null,
+       "заяви_знято": null,
+       "дібрані": [],
+       "рядок_добору": null,
+       "добір_ні": null
+      },
+      "блокує": [],
+      "структура": [],
+      "дні": [
+       {
+        "образ": "о1",
+        "день": "For your 19:30 restaurant date, the brick base and olive accent match your evening mood. I kept the fitted cut to flatter your waist, though the linen fabric feels out of season for autumn; I chose it anyway because the warm colors suit your palette better than cold neutrals would.",
+        "ід": [
+         "ж53-ce365e482bbde350ba52@feelyou.com.ua",
+         "ж-12128@theoriginals.com.ua",
+         "ж-11808@theoriginals.com.ua",
+         "ж-16734@wearme.ua",
+         "ж-11633@theoriginals.com.ua"
+        ]
+       },
+       {
+        "образ": "о2",
+        "день": "This outfit works for your evening restaurant date because the black dress feels classic and smart. The olive belt defines your waist, and the burgundy shoe ties the look together perfectly under artificial light. I added a leather bracelet to ensure you have enough visual interest without competing with the shoes.",
+        "ід": [
+         "ж53-c7fb944dfee48fbcd652@theoriginals.com.ua",
+         "ж-08581@likeangel.com.ua",
+         "ж-11737@theoriginals.com.ua",
+         "ж-09018@cultboutique.com.ua",
+         "ж-11781@theoriginals.com.ua",
+         "ж-11633@theoriginals.com.ua"
+        ]
+       },
+       {
+        "образ": "о3",
+        "день": "Perfect for a cozy autumn evening, this outfit uses chocolate and camel tones that match your palette perfectly. The warm light of the room will make the earthy colors look rich and sophisticated.",
+        "ід": [
+         "ж53-61040bd7e3dbe6330e94@emmeliedelage.com",
+         "ж-06195@25union.com.ua",
+         "ж-08413@welfare.ua",
+         "ж-11633@theoriginals.com.ua",
+         "ж-11735@theoriginals.com.ua"
+        ]
+       },
+       {
+        "образ": "о4",
+        "день": "For the 19:30 date, the chocolate jacket and grey trousers create a balanced silhouette. The relaxed top softens the formal suit elements, making it perfect for an evening outing.",
+        "ід": [
+         "ж-07039@feelyou.com.ua",
+         "ж-11808@theoriginals.com.ua",
+         "ж-11633@theoriginals.com.ua",
+         "ж-11735@theoriginals.com.ua"
+        ]
+       },
+       {
+        "образ": "о5",
+        "день": "I chose the black dress as the base because it is timeless and elegant for any restaurant occasion. The pink earrings and rose-gold ring add a delicate, feminine touch that shines under artificial lighting.",
+        "ід": [
+         "ж53-14fa5f89ba9645560553@onebyone.ua",
+         "ж53-dd2be10fbe96acaffc56@miraton.ua",
+         "ж-07556@jecomestudio.com",
+         "ж-09667@attico.ua",
+         "ж-11633@theoriginals.com.ua"
+        ]
+       }
+      ]
+     },
+     {
+      "крок": "choice",
+      "стадія": "choice",
+      "помилка": null,
+      "повнота": {
+       "ід": [
+        "ж53-c7fb944dfee48fbcd652@theoriginals.com.ua",
+        "ж-08581@likeangel.com.ua",
+        "ж-11737@theoriginals.com.ua",
+        "ж-09018@cultboutique.com.ua",
+        "ж-11781@theoriginals.com.ua",
+        "ж-11633@theoriginals.com.ua"
+       ],
+       "частини": {},
+       "номери": {
+        "ж53-c7fb944dfee48fbcd652@theoriginals.com.ua": "#471·33",
+        "ж-08581@likeangel.com.ua": "#297·16",
+        "ж-11737@theoriginals.com.ua": "#158·33",
+        "ж-09018@cultboutique.com.ua": "#408·06",
+        "ж-11781@theoriginals.com.ua": "#232·33",
+        "ж-11633@theoriginals.com.ua": "#62·33"
+       },
+       "образ": "о2",
+       "повний": true,
+       "рядок": null,
+       "чому": null,
+       "свідомі": [
+        {
+         "ід": [
+          "ж-11781@theoriginals.com.ua"
+         ],
+         "текст": "Шкіряний браслет Gancio Wrap — I added this black bracelet to satisfy the need for more visual focus on your upper body, ensuring the outfit isn't too quiet near the face.",
+         "правило": "K-INT-04",
+         "заяви": [
+          {
+           "code": "interest_sources_below_floor",
+           "values": {
+            "count": 0,
+            "floor": 1
+           },
+           "recipient": "woman",
+           "source": "unknown",
+           "choice": "unknown",
+           "rank": null,
+           "item_ids": [],
+           "key": "s_343fc96013ea0d5ebeab1053"
+          }
+         ]
+        },
+        {
+         "ід": [
+          "ж-11633@theoriginals.com.ua"
+         ],
+         "текст": "Фіолетова шкіряна сумка — I accept this remark because the black bracelet was a deliberate choice to create enough visual interest on your upper body so you don't feel too quiet near the face.",
+         "правило": "K-PAL-03",
+         "заяви": [
+          {
+           "code": "item_hue_outside_scheme_arc",
+           "values": {
+            "scheme": "neutrals_plus_accent",
+            "slot": "bag",
+            "role": "accent",
+            "arc": [
+             8,
+             50
+            ],
+            "hue": 309,
+            "chroma": 26
+           },
+           "recipient": "woman",
+           "source": "unknown",
+           "choice": "unknown",
+           "rank": null,
+           "item_ids": [],
+           "key": "s_91b56fa2bedc21fe3c282060"
+          }
+         ]
+        }
+       ],
+       "підпис": "Black dress with burgundy shoes and brown belt",
+       "день": "This outfit works for your evening restaurant date because the black dress feels classic and smart. The olive belt defines your waist, and the burgundy shoe ties the look together perfectly under artificial light. I added a leather bracelet to ensure you have enough visual interest without competing with the shoes.",
+       "слова_знято": null,
+       "заяви_знято": null,
+       "дібрані": [],
+       "рядок_добору": null,
+       "добір_ні": null
+      },
+      "блокує": [],
+      "структура": [],
+      "дні": []
+     },
+     {
+      "крок": "description",
+      "стадія": "description",
+      "помилка": null,
+      "повнота": {
+       "ід": [
+        "ж53-c7fb944dfee48fbcd652@theoriginals.com.ua",
+        "ж-08581@likeangel.com.ua",
+        "ж-11737@theoriginals.com.ua",
+        "ж-09018@cultboutique.com.ua",
+        "ж-11781@theoriginals.com.ua",
+        "ж-11633@theoriginals.com.ua"
+       ],
+       "частини": {},
+       "номери": {
+        "ж53-c7fb944dfee48fbcd652@theoriginals.com.ua": "#471·33",
+        "ж-08581@likeangel.com.ua": "#297·16",
+        "ж-11737@theoriginals.com.ua": "#158·33",
+        "ж-09018@cultboutique.com.ua": "#408·06",
+        "ж-11781@theoriginals.com.ua": "#232·33",
+        "ж-11633@theoriginals.com.ua": "#62·33"
+       },
+       "образ": "о1",
+       "повний": true,
+       "рядок": null,
+       "чому": null,
+       "свідомі": [],
+       "підпис": null,
+       "день": null,
+       "слова_знято": null,
+       "заяви_знято": null,
+       "дібрані": [],
+       "рядок_добору": null,
+       "добір_ні": null
+      },
+      "блокує": [],
+      "структура": [],
+      "дні": []
+     }
+    ]
+   }
+  ]
  }
 }
