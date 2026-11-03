@@ -15,6 +15,8 @@ LOGS = Path(__file__).resolve().parent
 os.environ['PYTHONIOENCODING'] = 'utf-8'
 os.environ['PYTHONUTF8'] = '1'
 os.environ['PYTHONWARNINGS'] = 'ignore'
+for key in ('MODEL_URL', 'MODEL_MOVA'):
+    os.environ.pop(key, None)
 sys.path.insert(0, str(SOURCE))
 os.chdir(SOURCE)
 results = []
