@@ -70,7 +70,9 @@ if __name__ == '__main__':
     for name in ('е2_смуга_погоди', 'е2_смуга_читачі'):
         probe(name)
     for path in sorted((SOURCE / 'проби').glob('wea_*.py')):
-        if path.stem in ('wea_канон', 'wea_спека'):
+        if path.stem == 'wea_вхід':
+            probe(path.stem, (SOURCE,))
+        elif path.stem in ('wea_канон', 'wea_спека'):
             import bridge
             catalog = bridge.каталог_останнього_пакета()
             assert catalog, 'каталог останнього пакета порожній'
