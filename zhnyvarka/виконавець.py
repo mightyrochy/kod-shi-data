@@ -120,13 +120,26 @@ _РОЗДІЛ_ТАК = re.compile(r"sukn|platt|plat[iy]|dress|bluz|blous|sorochk
   return {href: a.href, text: (a.innerText || '').trim().slice(0, 80), img: !!a.querySelector('img'), near: near.slice(0, 300)};
 })"""
 
-ЗЛІПОК_DOM = """() => {
+ЗЛІПОК_DOM = """(селектор) => {
+  const h1 = document.querySelector('h1');
+  let кандидати = [];
+  try {
+    кандидати = селектор ? [...document.querySelectorAll(селектор)] : [...document.querySelectorAll('[itemtype$="/Product"], [itemtype$="/Product/"]')];
+  } catch (e) { кандидати = []; }
+  кандидати = кандидати.filter(e => e.tagName !== 'BODY' && e.tagName !== 'HTML');
+  if (h1) {
+    let p = h1.parentElement;
+    const предки = [];
+    while (p) { предки.push(p); p = p.parentElement; }
+    кандидати = предки.filter(p => кандидати.includes(p));
+  } else if (кандидати.length !== 1) { кандидати = []; }
+  const блок = кандидати[0] || null;
   const T = e => (e && (e.innerText || e.textContent) || '').replace(/\\s+/g, ' ').trim();
   const rows = [];
-  document.querySelectorAll('tr').forEach(tr => { const c = tr.querySelectorAll('td,th'); if (c.length === 2) rows.push([T(c[0]), T(c[1])]); });
-  document.querySelectorAll('dl').forEach(dl => { const dt = dl.querySelectorAll('dt'), dd = dl.querySelectorAll('dd');
+  (блок ? блок.querySelectorAll('tr') : []).forEach(tr => { const c = tr.querySelectorAll('td,th'); if (c.length === 2) rows.push([T(c[0]), T(c[1])]); });
+  (блок ? блок.querySelectorAll('dl') : []).forEach(dl => { const dt = dl.querySelectorAll('dt'), dd = dl.querySelectorAll('dd');
     for (let i = 0; i < Math.min(dt.length, dd.length); i++) rows.push([T(dt[i]), T(dd[i])]); });
-  document.querySelectorAll('li, p, div, span').forEach(el => { if (el.children.length <= 3) { const t = T(el);
+  (блок ? блок.querySelectorAll('li, p, div, span') : []).forEach(el => { if (el.children.length <= 3) { const t = T(el);
     if (t.length > 4 && t.length < 160) { const m = t.match(/^([^:]{2,40}):\\s*(.{1,120})$/); if (m) rows.push([m[1].trim(), m[2].trim()]); } } });
   // ── ЧИЙ ЦЕ ЗНІМОК (рядок 126 дошки, 21.09.2026) ────────────────────────────
   // Доти `imgs` брався з УСІХ `img, source` сторінки. На brenda.ua це означало
@@ -164,19 +177,16 @@ _РОЗДІЛ_ТАК = re.compile(r"sukn|platt|plat[iy]|dress|bluz|blous|sorochk
   });
   const imgs = сире
     .filter(Boolean).flatMap(s => String(s).split(',').map(x => x.trim().split(' ')[0])).filter(s => /\\.(jpe?g|webp|png)/i.test(s) && !/logo|icon|sprite|payment|visa|master|flag|banner|placeholder|pixel|1x1|sizes?\\.(jpe?g|png|webp)|size[-_]?(chart|table|guide)/i.test(s));
-  let main0 = document.body, best = 0;
-  document.querySelectorAll('main, [role=main], #content, .product-page, .product, .card-product, #product, .product-detail, .product__info, [itemtype*=Product]').forEach(e => {
-    const n = (e.textContent || '').length; if (n > best) { best = n; main0 = e; } });
-  if (best < 500) main0 = document.body;
-  const main = main0.cloneNode(true); main.querySelectorAll('script, style, noscript, header, footer, nav').forEach(e => e.remove());
+  const main = блок ? блок.cloneNode(true) : null;
+  if (main) main.querySelectorAll('script, style, noscript, header, footer, nav').forEach(e => e.remove());
   const sizeRe = /^(XXS|XS|S|M|L|XL|XXL|XXXL|3XL|4XL|5XL|\\d{2}([-\\/]\\d{2})?|ONE ?SIZE|UNI|універсальн\\w*|один розмір)$/i;
   const sizes = [];
-  document.querySelectorAll('select option, button, label, a, span, li, div').forEach(e => { if (e.children.length <= 1) { const t = T(e);
+  (блок ? блок.querySelectorAll('select option, button, label, a, span, li, div') : []).forEach(e => { if (e.children.length <= 1) { const t = T(e);
     if (sizeRe.test(t)) sizes.push({р: t.toUpperCase(), нема: !!(e.disabled || /disabled|out-of-stock|outofstock|sold|nostock|unavailable|not-available|нема|немає/i.test(e.className + ' ' + (e.title || '')))}); } });
   const crumbs = [...document.querySelectorAll('[class*=breadcrumb] a, [class*=breadcrumb] span, nav[aria-label*=read] a, [itemtype*=BreadcrumbList] [itemprop=name]')].map(T).filter(Boolean);
   const opts = [...document.querySelectorAll('[class*=color] [title], [class*=colour] [title], [data-color], [class*=color] option')].map(e => e.title || e.dataset.color || T(e)).filter(Boolean);
-  return {h1: T(document.querySelector('h1')), title: document.title, rows, imgs: [...new Set(imgs)], text: (main.textContent || '').replace(/\\s+/g, ' ').trim().slice(0, 30000),
-          sizes, crumbs, opts: [...new Set(opts)].slice(0, 30), has_table: !!document.querySelector('table, dl, [class*=characteristic], [class*=attribute], [class*=params], [class*=specif]')};
+  return {h1: T(блок ? h1 : null), title: document.title, rows, imgs: [...new Set(imgs)], text: (main ? main.textContent : '').replace(/\\s+/g, ' ').trim().slice(0, 30000),
+          sizes, crumbs, opts: [...new Set(opts)].slice(0, 30), has_table: !!(блок && блок.querySelector('table, dl, [class*=characteristic], [class*=attribute], [class*=params], [class*=specif]'))};
 }"""
 
 
@@ -788,11 +798,11 @@ class Виконавець:
             if (r and r.status >= 400) or len(html) < 1500:
                 зап["стан"], зап["код"] = "збій", (r.status if r else None); л["збій"] += 1
                 self._пиши(ш, зап); return
-            dom = await сторінка.evaluate(ЗЛІПОК_DOM)
+            dom = await сторінка.evaluate(ЗЛІПОК_DOM, р.get("селектор_блоку") or None)
             к = картка_з_dom(сторінка.url, html, dom)
             import жниварка as ж
             селектори = {к: р[кол] for к, кол in (("опис", "селектор_опису"), ("склад", "селектор_складу"),
-                                                  ("характеристик", "селектор_характеристик")) if р.get(кол)}
+                                                  ("характеристик", "селектор_характеристик"), ("блок", "селектор_блоку")) if р.get(кол)}
             ф = ж.факти_з_картки(html, сторінка.url, селектори)
             ф["url"] = сторінка.url
             if ф.get("dom_помилка"):
