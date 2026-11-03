@@ -1,0 +1,52 @@
+── ПРОМПТ (7277 симв.) ──
+Ти — перекладачка в застосунку-стилістці. Ти пишеш природною українською тексти, які зараз побачить жінка. Рішень не приймаєш, на питання не відповідаєш, змісту не міняєш.
+
+Вхід — JSON-об'єкт: ключ — номер тексту н, значення — текст, який склали код та інші моделі.
+
+Ключі відповіді — ті самі, що у вході, кожен: номер н тексту, значення — рядок, той самий зміст природною українською, без англійських слів і кодів; ПЕРЕКЛАДАЙ КОЖНЕ англійське слово, навіть одне посеред українського речення; латиницею лишай лише назви крамниць і брендів, «V-подібний» і «den»; текст, що вже природний і до неї на «ти», — без змін, а український текст на «ви» перепиши на «ти», решту лиши слово в слово.
+
+Вид кожної речі — теж зміст: річ у перекладі — та сама, що у вході, а не схожа чи сусідня. ankle boots — черевики чи ботильйони, boots — чоботи, heeled — на підборах, а не туфлі, pumps — туфлі-човники, loafers — лофери; pendant — кулон чи підвіска, necklace — намисто чи ланцюжок, а не каблучка, сережки чи браслет; ring — каблучка; earrings — сережки. Українські назви речей у вході (назви з крамниці, найчастіше перед « — ») переписуй літера в літеру: не міняй, не переставляй і не додавай у них жодного слова.
+
+Про жінку — лише до неї, на «ти» (ти, тебе, тобі, твій, твоя; хочеш, скинеш; наказ однини: розкажи, оберни, тримай, дай), і в питаннях теж: you, your, she, her про неї — «ти», «твій» (her skin tone — твій тон шкіри; when she turns her head — коли ти повертаєш голову; she looks taller — ти виглядаєш вищою), англійський наказ — наказом однини; «вона», «її» — лише про річ (сукню, сумку, куртку). Говорить стилістка — одна жінка: про себе — від першої особи однини й у жіночому роді (я підібрала, я б додала), не «ми», не від імені застосунку чи коду і ніколи словами самої жінки.
+
+Мова: літературна українська, як у текстах українських крамниць одягу. Кожне українське слово — літерами лише української абетки, без жодної латинської літери чи стороннього знака всередині слова. Кожне речення — одна остаточна версія, без виправлень посеред тексту. Словничок нижче — лише як перекласти англійське слово, коли воно є у вході; це не зміст: річ, тканина чи колір, яких у вході нема, у тексті не з'являються. Звичні українські назви для слів англійського джерела: trousers, pants — штани; dressy, dressier — ошатний, ошатніше; look, outfit — образ; taupe — сіро-бежевий; loose — вільний; suede — замша (жіночий рід); slip dress — сукня-комбінація; camel — кемел (колір). Назви речей і кольорів, які дала крамниця, — як є.
+
+Перевір кожне слово ДО відповіді: до неї — лише «ти», жодного «ви», «ваш» і наказу множини, і про неї жодного «вона», «її», «їй», жодне слово не стоїть двічі поспіль, кожна річ — того самого виду, що у вході (річ образу — іменником коду її виду з переліку, коли він є, і слова при ній узгоджені з цим іменником), а українська назва речі — слово в слово. Відповідь — рівно ОДИН JSON-об'єкт і нічого після нього: другої, виправленої версії, приміток і пояснень не пиши — помилку виправ у тому самому об'єкті.
+
+Речі образу — перелік речей картки (номер речі — як на картці, поруч — її коди):
+1 — kind code: dress_generic · colour code: black · about it: text н=1
+2 — kind code: pumps · colour code: light_blue · about it: text н=2
+3 — kind code: collar_necklace · colour code: black · about it: text н=3
+4 — kind code: sweater · colour code: chocolate · about it: text н=4
+5 — kind code: bag_generic · colour code: camel · about it: text н=5
+When a text speaks of an item of the list, call it by the Ukrainian noun of its kind code (kind code: …) — the same noun in the right case in every text (trench_coat — «тренч», sweater — «светр», loafers — «лофери»), not by another kind or a synonym of the English word, whatever word the English text uses; a code ending in _generic names only the family (dress_generic — a dress, bag_generic — a bag). Make every adjective, pronoun and verb with the item agree with that noun in gender and number («бежевий тренч, який…»; «шкіряні лофери, які…»). A name you translate in this same call (text н=K): give it one noun and call the item by it, in agreement, in every text. A text the list gives as about an item (about it: text н=M) speaks of that one item, and so does every other text where the English names it. The colour of an item of the list is its colour code (colour code: …): write the Ukrainian name of that code. The English colour words for that item are the stylist's impression of a photo: do not turn them into a colour of their own — the item's colour stands in their place. Colours of its details (trim, strap, buttons, print), its fabric and the rest — translate from the text. The list is for the items only: an item the English text does not name is not added to the translation — neither to the description nor to the advice.
+
+Colour codes: black — чорний; camel — кемел; chocolate — шоколадний; light_blue — блакитний.
+
+ТЕКСТИ:
+{
+"1": "This is a sleek black A-line dress that flows from your shoulders to your hips, creating a gentle silhouette. Its dark charcoal tone offers a sophisticated base for the evening, and the smooth fabric catches the club lights beautifully while maintaining a structured, elegant line.",
+"2": "These light blue pumps feature a classic pointed toe and a secure heel that adds height without sacrificing stability. The cool-toned hue brings a refreshing pop of color against your black dress, making the outfit feel modern and ready for an energetic night out.",
+"3": "A delicate black collar necklace rests neatly at your neckline, adding a touch of metallic definition without competing with the rest of the outfit. Its simple, geometric shape complements the classic lines of the dress while keeping the focus on your face.",
+"4": "This chocolate-colored sweater has a relaxed fit and soft texture that wraps comfortably around your shoulders. The rich brown tone adds warmth to the cool blue and black palette, creating a cozy yet stylish layer perfect for an autumn evening.",
+"5": "A versatile camel bag with clean lines holds all your essentials securely. Its warm, earthy tone connects naturally with the chocolate sweater and provides a sophisticated contrast to the black dress, finishing the ensemble with polished ease.",
+"6": "This look blends a classic edge with rock-star attitude for your Friday evening at the club. The black A-line dress anchors your silhouette with a sleek, timeless shape that stands up well to standing in a crowd. I paired it with light blue pumps to introduce a cool, electric contrast against the dark fabric, perfect for catching the club lights without overwhelming your features. A simple black collar necklace keeps the neck area clean and sophisticated, while the chocolate-colored relaxed sweater adds warmth and texture over your shoulders. Your camel bag offers a soft, neutral bridge between the bold black and the subtle blue tones.",
+"7": "Tuck the front of the sweater slightly into the dress waist to highlight your defined shape while keeping the look effortless.",
+"8": "Туфлі-човники замшеві блакитні TAIKAN — Black shoes match the leg tone and continue the line under the midi dress.",
+"9": "Светр «Cozy» шоколадний — I replaced the soft blouse with this jacket to anchor the volume and follow your waist."
+}
+
+── ВІДПОВІДЬ (2335 симв., 37.5 с, HTTP 200) ──
+```json
+{
+"1": "Це елегантна чорна сукня-трапеція, яка струмує від твоїх плечей до стегон, створюючи ніжний силует. Її темно-графітовий тон пропонує вишукану основу для вечора, а гладка тканина чудово ловить світло дискотеки, зберігаючи при цьому структурований і елегантний вигляд.",
+"2": "Ці блакитні туфлі-човники мають класичний загострений носок і стійкий каблук, який додає зросту без шкоди для стабільності. Прохолодний відтінок привносить свіжий колір на твою чорну сукню, роблячи образ сучасним і готовим до енергійного вечора.",
+"3": "Ніжний чорний кулон-комір лежить акуратно біля твоєї лінії шиї, додаючи металевий акцент без конкуренції з рештою вбрання. Його проста геометрична форма підкреслює класичні лінії сукні, зберігаючи увагу на твоєму обличчі.",
+"4": "Цей шоколадний светр має вільний крій і м’яку текстуру, яка зручно огортає твої плечі. Багатий коричневий відтінок додає тепла до прохолодної блакитно-чорної палітри, створюючи затишний, але стильний шар, який чудово підійде для осіннього вечора.",
+"5": "Універсальна кемелова сумка з чіткими лініями надійно вміщує всі твої необхідні речі. Її теплий, землистий відтінок природно поєднується зі светром шоколадного кольору і створює вишуканий контраст до чорної сукні, завершуючи ансамбль з елегантним шиком.",
+"6": "Цей образ поєднує класичний стиль із рок-н-рольним настроєм для твого п’ятничного вечора в клубі. Чорна трапецієподібна сукня підкреслює силует, створюючи елегантний і позачасовий вигляд, який добре тримається у натовпі. Я доповнила її блакитними туфлями-човниками, щоб створити прохолодний електричний контраст із темною тканиною — це чудово для того, щоб привернути увагу дискотечних вогнів без перевантаження твоїх рис. Простий чорний кулон-комір тримає область шиї чистою та вишуканою, а шоколадний светр вільного крою додає тепла і текстури на плечі. Твоя кемелова сумка пропонує м’який нейтральний перехід між сміливим чорним кольором і ніжними блакитними тонами.",
+"7": "Злегка заправ передню частину светра в талію сукні, щоб підкреслити твою фігуру, зберігаючи при цьому безтурботний вигляд.",
+"8": "Замшеві туфлі-човники блакитні TAIKAN — Чорне взуття гармонує з тоном ніг і продовжує лінію під міді сукнею.",
+"9": "Светр «Cozy» шоколадний — Я замінила ніжну блузку на цей светр, щоб зафіксувати об’єм і слідувати твоїй талії."
+}
+```
