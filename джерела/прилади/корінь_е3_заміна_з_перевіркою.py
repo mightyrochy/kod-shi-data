@@ -312,16 +312,22 @@ class Аналіз:
                 вих.extend(self.виклики(інший, інший.функції[ім], бачені))
         return вих
 
-    def склад_містить(self, м, ф, склад, річ, до):
+    def склад_містить(self, м, ф, склад, річ, виклик, охорона):
         """Доводить явне складання образу з попереднього складу й кандидата."""
-        if річ is None:
+        if not isinstance(річ, ast.Name) or not isinstance(склад, ast.Name):
             return False
         ціль = ast.dump(річ, include_attributes=False)
-        if isinstance(склад, ast.Name):
-            значення = [з for з in м.присвоєння.get((ф, склад.id), []) if з.lineno < до]
-            if len(значення) != 1 or м.батьки.get(значення[0]) not in ф.body:
-                return False
-            склад = значення[0]
+        значення = [з for з in м.присвоєння.get((ф, склад.id), []) if з.lineno < виклик.lineno]
+        if len(значення) != 1:
+            return False
+        присвоєння = м.батьки.get(значення[0])
+        суд = м.батьки.get(виклик)
+        if (присвоєння not in ф.body or суд not in ф.body or охорона not in ф.body
+                or not isinstance(суд, (ast.Assign, ast.AnnAssign)) or суд.value is not виклик
+                or ф.body.index(суд) != ф.body.index(присвоєння) + 1
+                or ф.body.index(охорона) != ф.body.index(суд) + 1):
+            return False
+        склад = значення[0]
         return (isinstance(склад, (ast.List, ast.Tuple))
                 and any(isinstance(з, ast.Starred) for з in склад.elts)
                 and any(ast.dump(з, include_attributes=False) == ціль for з in склад.elts))
@@ -331,7 +337,7 @@ class Аналіз:
         ф = м.охопна(вузол)
         річ = поля(вузол).get('річ')
         річ_вираз = ast.unparse(річ) if річ is not None else None
-        виконано, докази = set(), []
+        виконано, докази, охорони = set(), [], {}
         if ф is None:
             return виконано, докази
         # Лише попередні if на прямому шляху до емісії; вкладений сусідній if не домінує.
@@ -342,7 +348,7 @@ class Аналіз:
                 for ум in п.body[:п.body.index(блок)]:
                     if not isinstance(ум, ast.If) or not isinstance(ум.test, ast.UnaryOp) or not isinstance(ум.test.op, ast.Not):
                         continue
-                    if not ум.body or not isinstance(ум.body[-1], (ast.Return, ast.Raise)):
+                    if ум.orelse or len(ум.body) != 1 or not isinstance(ум.body[-1], (ast.Return, ast.Raise)):
                         continue
                     if isinstance(ум.body[-1], ast.Return) and ум.body[-1].value is not None:
                         if not (isinstance(ум.body[-1].value, ast.Constant) and ум.body[-1].value.value is None):
@@ -360,16 +366,33 @@ class Аналіз:
                                 continue
                             імя = ast.unparse(виклик.func)
                             if (статус_проходження and СУД.search(імя) and виклик.args
-                                    and self.склад_містить(м, ф, виклик.args[0], річ, ум.lineno)):
+                                    and self.склад_містить(м, ф, виклик.args[0], річ, виклик, ум)):
                                 виконано.add('а')
+                                охорони['а'] = ум
                             та_сама = виклик.args and ast.unparse(виклик.args[0]) == річ_вираз
                             if МЕЖІ.search(імя) and len(виклик.args) >= 2 and та_сама:
                                 виконано.add('б')
+                                охорони['б'] = ум
                             if ВИБІР.search(імя) and len(виклик.args) >= 2 and та_сама:
                                 виконано.add('в')
+                                охорони['в'] = ум
             блок = п
             if блок is ф:
                 break
+        # Зміна кандидата, вердикту чи складу після перевірки знищує доказ.
+        # Доводимо тільки прямий ряд охорон до повернення, без довільних дій
+        # між ними: виклик чи присвоєння може змінити стан навіть через аліас.
+        for умова, охорона in list(охорони.items()):
+            батько = м.батьки.get(охорона)
+            шлях = вузол
+            while шлях in м.батьки and м.батьки[шлях] is not батько:
+                шлях = м.батьки[шлях]
+            if батько is not ф or шлях not in ф.body:
+                виконано.discard(умова)
+                continue
+            між = ф.body[ф.body.index(охорона) + 1:ф.body.index(шлях)]
+            if any(дія not in охорони.values() for дія in між):
+                виконано.discard(умова)
         for ім, виклик, інший in self.виклики(м, ф):
             if СУД.search(ім) or re.search(r'кандидат|пул|крамниц|запасн|catalog|pool', ім):
                 докази.append(f'{інший.шлях}:{виклик.lineno} {ім}')
