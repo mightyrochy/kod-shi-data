@@ -3,7 +3,9 @@
    перед дочірнім процесом; цей preload виставляє потрібне нарядом значення
    до читання CTX проксі та стендом. Фактичний контекст підтверджує HTTP API. */
 if (process.env.SCENA === 'б1_концерт_стримано' && process.env.MODEL_CTX === '52000') {
-  process.env.CTX = JSON.stringify({'qwen/qwen3.5-9b': 52000,
+  // LM Studio округлює 52000 до 52224; просимо підтримуване значення,
+  // щоб проксі підтвердив конфігурацію точно. Бюджет сторінки MODEL_CTX=52000.
+  process.env.CTX = JSON.stringify({'qwen/qwen3.5-9b': 52224,
     'mamaylm-gemma-3-12b-it-v2.0': 16384});
   process.env.ZAPYS_VYKLYKIV = require('path').join(__dirname, 'б1_концерт_стримано', 'виклики_моста.jsonl');
 }

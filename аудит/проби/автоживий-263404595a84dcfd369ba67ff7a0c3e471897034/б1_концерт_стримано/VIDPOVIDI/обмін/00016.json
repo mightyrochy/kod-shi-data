@@ -1,0 +1,27 @@
+{
+ "версія": 1,
+ "запит": {
+  "model": "qwen/qwen3.5-9b",
+  "max_tokens": 4000,
+  "messages": [
+   {
+    "role": "user",
+    "content": [
+     {
+      "type": "text",
+      "text": "{\"task\": {\"role\": \"You read the description of an outfit and list its items as data.\", \"rules\": [\"One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.\", \"One item carries one thing — of two alternatives list the first; a note in brackets is not an item.\", \"Slot \\\"accessory\\\" is for an item no other slot fits.\", \"\\\"is_outfit\\\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note.\"], \"limits\": [\"Rely only on the input: do not invent what it does not contain.\", \"The answer is one JSON object following \\\"answer_schema\\\", without explanations and without ```.\"], \"language\": \"English\", \"answer\": \"ITEM_LIST\", \"answer_schema\": {\"is_outfit\": \"yes|no\", \"items\": [{\"name\": \"<what the item is>\", \"details\": \"<its cut, length and fabric>\", \"slot\": \"top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory\", \"color_hex\": \"<#rrggbb or null>\", \"worn\": \"<true, or false when the description says the outfit goes without it>\"}]}, \"input\": [\"\\\"description\\\" — the outfit description\"]}, \"description\": \"Black wool-blend blazer with a structured lapel and nipped waist, cut in an inverted triangle silhouette to elongate the frame, Color #14120f (deep black), heavy woven fabric.\\nMid-thigh A-line skirt in matte micro-terrycloth with a subtle sheen, cut straight through the hip with slight flare, Color #dcb995 (warm taupe), synthetic stretch blend.\\nWhite satin blouse with a modest high neckline and French cuffs, cut to skim the bust without gathering, Color #e3c3a2 (ivory white), liquid silk-feel polyester.\\nBlack leather ankle boots with a 7 cm block heel, cut with a rounded toe and stacked sole for stability in crowds, Color #14120f (jet black), smooth full-grain leather.\\n\\nThis outfit works because the structured black blazer instantly elevates the look to meet the \\\"smart\\\" dress code while the classic register ensures you feel appropriate amidst the rock concert energy. The warm taupe skirt provides a visual break from all-black attire, preventing the look from feeling too stiff for an evening at a club where you will be standing in a crowd. Finally, the block-heel ankle boots offer the necessary height and stability to navigate standing for hours without sacrificing comfort or style.\"}"
+     }
+    ]
+   }
+  ],
+  "temperature": 1
+ },
+ "відповідь": {
+  "status": 200,
+  "contentType": "application/json",
+  "headers": {
+   "x-model": "qwen/qwen3.5-9b"
+  },
+  "body": "{\"content\":[{\"type\":\"text\",\"text\":\"{\\n  \\\"is_outfit\\\": \\\"yes\\\",\\n  \\\"items\\\": [\\n    {\\n      \\\"name\\\": \\\"blazer\\\",\\n      \\\"details\\\": \\\"structured lapel, nipped waist, inverted triangle silhouette, heavy woven fabric\\\",\\n      \\\"slot\\\": \\\"outerwear\\\",\\n      \\\"color_hex\\\": \\\"#14120f\\\",\\n      \\\"worn\\\": true\\n    },\\n    {\\n      \\\"name\\\": \\\"skirt\\\",\\n      \\\"details\\\": \\\"mid-thigh A-line, straight cut through hip with slight flare, matte micro-terrycloth with subtle sheen\\\",\\n      \\\"slot\\\": \\\"bottom\\\",\\n      \\\"color_hex\\\": \\\"#dcb995\\\",\\n      \\\"worn\\\": true\\n    },\\n    {\\n      \\\"name\\\": \\\"blouse\\\",\\n      \\\"details\\\": \\\"modest high neckline, French cuffs, skims bust without gathering, liquid silk-feel polyester\\\",\\n      \\\"slot\\\": \\\"top\\\",\\n      \\\"color_hex\\\": \\\"#e3c3a2\\\",\\n      \\\"worn\\\": true\\n    },\\n    {\\n      \\\"name\\\": \\\"ankle boots\\\",\\n      \\\"details\\\": \\\"7 cm block heel, rounded toe, stacked sole for stability, smooth full-grain leather\\\",\\n      \\\"slot\\\": \\\"shoes\\\",\\n      \\\"color_hex\\\": \\\"#14120f\\\",\\n      \\\"worn\\\": true\\n    }\\n  ]\\n}\"}],\"usage\":{\"input_tokens\":624,\"output_tokens\":305},\"stop_reason\":\"end_turn\"}"
+ }
+}
