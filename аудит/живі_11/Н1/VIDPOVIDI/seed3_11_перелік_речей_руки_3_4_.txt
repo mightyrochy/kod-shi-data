@@ -1,0 +1,29 @@
+── ПРОМПТ (1991 симв.) ──
+{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.", "A slot the description says is not needed is not an item: give it worn false. One item carries one thing — of two alternatives list the first; a note in brackets is not an item."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "ITEM_LIST", "answer_schema": {"items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses", "color_hex": "<#rrggbb or null>", "worn": "<true, or false when the description says the outfit goes without it>"}]}, "input": ["\"description\" — the outfit description"]}, "description": "Silk sheath dress, column cut, midi length, midnight blue (#191970), woven silk satin.  \nPointed-toe pumps, classic almond silhouette, knee-high shaft, navy black (#000038), smooth calfskin leather.  \nPearl drop earrings, round bezel setting, 15mm diameter, white freshwater pearl, lustrous shell.\n\nThis ensemble balances your request for \"neat-formal\" with a sophisticated ease that avoids any pretense of trying too hard. The midnight blue silk feels luxurious yet understated, allowing you to feel special without making bold fashion statements that could invite unwanted commentary. The classic black pumps and simple pearl earrings elevate the look just enough to fit the district restaurant's atmosphere while maintaining that effortless \"no claims\" vibe you desire. Ultimately, this outfit lets you shine quietly, ensuring everyone notices your confidence rather than critiquing your style choices."}
+
+── ВІДПОВІДЬ (630 симв., 267.5 с, HTTP 200) ──
+{
+  "items": [
+    {
+      "name": "Silk sheath dress",
+      "details": "column cut, midi length, woven silk satin",
+      "slot": "dress",
+      "color_hex": "#191970",
+      "worn": true
+    },
+    {
+      "name": "Pumps",
+      "details": "pointed-toe, classic almond silhouette, knee-high shaft, smooth calfskin leather",
+      "slot": "shoes",
+      "color_hex": "#000038",
+      "worn": true
+    },
+    {
+      "name": "Pearl drop earrings",
+      "details": "round bezel setting, 15mm diameter, white freshwater pearl, lustrous shell",
+      "slot": "earrings",
+      "color_hex": "#FFFFFF",
+      "worn": true
+    }
+  ]
+}

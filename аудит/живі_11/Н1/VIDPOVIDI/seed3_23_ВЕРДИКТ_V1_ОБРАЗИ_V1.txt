@@ -1,0 +1,43 @@
+── ПРОМПТ (4506 симв.) ──
+{"version":"1","task":{"role":"You are the stylist. The code checked the outfits you put together for her, and none of them can be shown yet: each has a blocker in «structure». You finish one of them.","rules":["Choose ONE outfit — the one you would stand behind for her — and clear all of its blockers.","A missing kind of item: add one item for it from «showcase».","Several items of one kind: keep the one that suits the outfit best and remove the others.","Change nothing else: the remaining items, the caption and the day stay as they are.","Name every item by its «n» — in full, exactly as in «verdict» or «showcase».","Return exactly ONE outfit."],"limits":["Rely only on the input: do not invent what it does not contain.","The answer is one JSON object following \"answer_schema\", without explanations and without ```."],"language":"English","answer":"OUTFITS_V1","answer_schema":{"version":"1","outfits":[{"id":"<«id» of the outfit you finished>","caption":"<string>","pole":"filter_and_rank|anchor_first|tonal_column|ease_the_knot|break|free","items":["<«n» of all items of the finished outfit>"],"day":"<«day» of «your_outfit», unchanged>","deliberate":[{"item":"<string>","why":"<string>"}],"done":[{"finding":"<string>","action":"fixed|declined|partly","why":"<string>"}]}],"needed":[{"kind":"<string>","description":"<string>","type":"<string>","color":"<string>","fabric":"<string>"}]},"input":["\"case\" — her occasion in her and the code's words","\"day\" — her day as facts","\"verdict\" — your outfits and the code's check: «your_outfit» — items with their full descriptions and your caption; «structure.blockers» — what keeps the outfit from being shown: a missing kind of item, or several items of one kind («items» lists them)","\"statements\" and \"fix\" — what the code found and how to repair it: each entry is a code, or {code: values}; codes are defined in \"statement_codes\""],"statement_codes":{"set_with_separate_part":"a set (top and bottom in one item) together with a separate top or bottom is a doubling: keep the set, or take half of it and declare that a deliberate move (values: slots — codes of the separate slots)"}},"case":"свято, ресторан районний, ошатність: neat–formal. Мета: лестити — її слова: «без претензій». Намір її словами: «не хочу щоб вона знов щось сказала»","day":{"place":"restaurant_casual","formality":{"from":"neat","to":"formal"},"unknown":["start_hour","temperature_c"]},"verdict":[{"your_outfit":{"id":"o1","caption":"Бежева міді спідниця та оливковий костюм","items":[{"n":"#237·00","name":"Спідниця аріель міді а-силуету крем","price":1680,"type":"skirt","cut":"straight","fabric":["cotton"],"length":"midi","color":"creamy","hex":"#d1bfaf","family":"yellow","in_arc":true,"L":[62,95],"L_from":"word","hem_cm":[22,36],"hem_from":"word","formality":["home","smart"],"branch":"core"},{"n":"#369·01","name":"Лляний костюм з брюками-бананами","price":6498,"type":"two_piece_set","cut":"relaxed","fabric":["linen","woven"],"length":"mini","color":"green","hex":"#39873a","family":"green","in_arc":true,"L":[20,80],"L_from":"word","hem_cm":[56,72],"hem_from":"word","formality":["home","smart"],"fabric_c":[18,null],"register":"classic","branch":"core"},{"n":"#418·09","name":"Балетки шоколадні ORBY","price":6500,"type":"ballet_flats","fabric":["leather"],"color":"chocolate","hex":"#513827","family":"orange","in_arc":true,"L":[12,40],"L_from":"word","formality":["everyday","neat"],"heel":"none","register":"romantic","branch":"core"},{"n":"#20·00","name":"Жіночий кардиган пальто з тонкої віскози в перлинному кольорі MAREA","price":3350,"type":"cardigan","cut":"relaxed","fabric":["viscose","jersey"],"length":"mid_thigh","details":["oversize"],"shop_color":"перлина","hex":"#d6c1c7","in_arc":true,"L":[61,99],"L_from":"word","hem_cm":[82,92],"hem_from":"word","formality":"neat","register":"classic","branch":"core"},{"n":"#365·06","name":"Сумка жіноча Soli basket","price":25850,"type":"bag_generic","fabric":["leather"],"color":"beige","hex":"#f5f5dc","family":"yellow","in_arc":true,"L":[96,96],"L_from":"photo_point","branch":"core","below_band":"untyped_photo_below_band"}],"day":"Світла бежева спідниця та оливковий костюм створюють невимушений, але стильний образ для святкового вечора. Легке пальто додає захисту від холоду, а золоте кільце підкреслює святочне настрою."},"structure":{"ok":false,"blockers":[{"id":"b-o1-1","code":"kind_twice","items":["#369·01"],"statements":[{"set_with_separate_part":{"slots":["bottom"]}}]}]}}]}
+
+── ВІДПОВІДЬ (1222 симв., 30.1 с, HTTP 200) ──
+{
+"version": "1",
+"outfits": [
+{
+"id": "o1",
+"caption": "Бежева міді спідниця та оливковий костюм",
+"pole": "set_with_separate_part",
+"items": [
+"#237·00",
+"#418·09",
+"#20·00",
+"#365·06"
+],
+"day": "Світла бежева спідниця та оливковий костюм створюють невимушений, але стильний образ для святкового вечора. Легке пальто додає захисту від холоду, а золоте кільце підкреслює святочне настрою.",
+"deliberate": [
+{
+"item": "#237·00",
+"why": "Зберігаю повний комплект (#237·00 — бежева спідниця) як основну базу, оскільки вона не дублюється окремим верхом і відповідає формальності smart/formal."
+}
+],
+"done": [
+{
+"finding": "Утворювалася подвійність (doubling): присутній повний костюм (#369·01) разом із окремою спідницею одного типу (#237·00).",
+"action": "declined",
+"why": "Повністю відхилив окремий лляний костюм (#369·01), залишивши лише бежеву спідницю, щоб уникнути структурного конфлікту та дотриматися принципу 'neat–formal' без зайвих повторень."
+}
+]
+}
+],
+"needed": [
+{
+"kind": "top",
+"description": "Нудькуючий верх для поєднання з бежевою міді спідницею, який забезпечить повноту образу та відповідає формальності ресторану.",
+"type": "separate_top",
+"color": "neutral or olive",
+"fabric": "linen or viscose"
+}
+]
+}

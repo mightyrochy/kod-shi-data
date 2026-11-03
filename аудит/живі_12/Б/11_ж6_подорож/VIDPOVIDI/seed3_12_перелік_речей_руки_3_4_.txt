@@ -1,0 +1,36 @@
+── ПРОМПТ (2123 симв.) ──
+{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.", "A slot the description says is not needed is not an item: give it worn false. One item carries one thing — of two alternatives list the first; a note in brackets is not an item."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "ITEM_LIST", "answer_schema": {"items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses", "color_hex": "<#rrggbb or null>", "worn": "<true, or false when the description says the outfit goes without it>"}]}, "input": ["\"description\" — the outfit description"]}, "description": "Oversized unstructured blazer in sandstone with a fluid drape cut and knee-length hem, crafted from breathable linen-cotton blend; High-waisted wide-leg trousers in a stone grey tone featuring a relaxed fit through the hip and straight down to the ankle, made from soft stretch twill; Leather loafers in saddle brown with a low block heel for stable walking on cobblestones, finished in full-grain leather with minimal hardware; A small crossbody bag in burnt orange suede to pop against the neutral palette, equipped with an adjustable strap for hands-free convenience. This ensemble balances travel practicality with city sophistication, allowing easy movement during a four-hour transit and exploration without sacrificing style. The earthy color palette coordinates effortlessly with various environments from airport terminals to historic streets, while natural fabrics ensure comfort throughout the day. It honors the desire for effortless chic while adhering strictly to your request for no outer layers given the warm weather conditions."}
+
+── ВІДПОВІДЬ (760 симв., 86.9 с, HTTP 200) ──
+{
+  "items": [
+    {
+      "name": "blazer",
+      "details": "unstructured with a fluid drape cut and knee-length hem",
+      "slot": "outerwear",
+      "color_hex": "#E8A97F",
+      "worn": true
+    },
+    {
+      "name": "trousers",
+      "details": "high-waisted wide-leg with a relaxed fit through the hip and straight down to the ankle",
+      "slot": "bottom",
+      "color_hex": "#8F9590",
+      "worn": true
+    },
+    {
+      "name": "loafers",
+      "details": "low block heel with minimal hardware",
+      "slot": "shoes",
+      "color_hex": "#734A26",
+      "worn": true
+    },
+    {
+      "name": "crossbody bag",
+      "details": "small with an adjustable strap",
+      "slot": "bag",
+      "color_hex": "#CC5E1D",
+      "worn": true
+    }
+  ]
+}

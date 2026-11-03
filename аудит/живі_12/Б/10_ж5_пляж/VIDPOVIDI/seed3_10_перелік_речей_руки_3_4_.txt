@@ -1,0 +1,29 @@
+── ПРОМПТ (1689 симв.) ──
+{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.", "A slot the description says is not needed is not an item: give it worn false. One item carries one thing — of two alternatives list the first; a note in brackets is not an item."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "ITEM_LIST", "answer_schema": {"items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses", "color_hex": "<#rrggbb or null>", "worn": "<true, or false when the description says the outfit goes without it>"}]}, "input": ["\"description\" — the outfit description"]}, "description": "Sundress in a flowing midi length, color Sandstone with hex code #D4C5B9, lightweight viscose blend. Strappy sandals, flat heel, color Pearl White with hex code #F5F5F5, smooth leather. A wide-brimmed hat, crown diameter 8cm, color Natural Straw with hex code #E6DCCE, woven straw. This ensemble balances the relaxation of a beach celebration with the polished look needed for an evening meal after sunset. The neutral tones harmonize between the bright outdoor light and the warmer candlelight of the dinner venue. You will feel effortless yet intentionally dressed up without overcomplicating your silhouette."}
+
+── ВІДПОВІДЬ (535 симв., 85.1 с, HTTP 200) ──
+{
+  "items": [
+    {
+      "name": "Sundress",
+      "details": "flowing midi length, lightweight viscose blend",
+      "slot": "dress",
+      "color_hex": "#D4C5B9",
+      "worn": true
+    },
+    {
+      "name": "Strappy sandals",
+      "details": "flat heel, smooth leather",
+      "slot": "shoes",
+      "color_hex": "#F5F5F5",
+      "worn": true
+    },
+    {
+      "name": "Wide-brimmed hat",
+      "details": "crown diameter 8cm, woven straw",
+      "slot": "headwear",
+      "color_hex": "#E6DCCE",
+      "worn": true
+    }
+  ]
+}

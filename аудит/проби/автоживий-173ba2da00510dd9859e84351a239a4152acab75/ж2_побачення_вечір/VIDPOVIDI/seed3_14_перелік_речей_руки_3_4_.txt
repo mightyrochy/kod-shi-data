@@ -1,0 +1,51 @@
+── ПРОМПТ (2418 симв.) ──
+{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.", "One item carries one thing — of two alternatives list the first; a note in brackets is not an item.", "Slot \"accessory\" is for an item no other slot fits.", "\"is_outfit\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "ITEM_LIST", "answer_schema": {"is_outfit": "yes|no", "items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory", "color_hex": "<#rrggbb or null>", "worn": "<true, or false when the description says the outfit goes without it>"}]}, "input": ["\"description\" — the outfit description"]}, "description": "A silk-blend blouse with a subtle sheen and a relaxed collar, cut slightly loose at the shoulders and falling to mid-thigh, in color #e0bd9a, woven from smooth satin-jersey.\nA structured wool-blend blazer with notched lapels, tailored to fit through the waist without tightening, in color #6b5847, constructed from a fine autumn-weight tweed.\nTapered wide-leg trousers with a high rise and gentle creases, hemmed just above the heel line, in color #d1ab86, crafted from soft cotton-wool that drapes elegantly.\nPolished leather ankle boots with a low stacked heel and a square toe, in color #5c4d3e, made of supressed calfskin.\nA delicate gold chain necklace resting at the collarbone and small pearl stud earrings for a touch of refinement.\nThis outfit works perfectly for an evening date as it balances professional polish with romantic softness suitable for a restaurant setting. The warm earth tones harmonize beautifully with her natural skin and hair shades while the layered textures provide visual interest under autumn lighting. The tailored silhouette flatters her figure without feeling restrictive, ensuring comfort and confidence throughout the night."}
+
+── ВІДПОВІДЬ (1347 симв., 6.4 с, HTTP 200) ──
+{
+  "is_outfit": "yes",
+  "items": [
+    {
+      "name": "silk-blend blouse",
+      "details": "relaxed collar, slightly loose cut at the shoulders, falling to mid-thigh, smooth satin-jersey fabric with a subtle sheen",
+      "slot": "top",
+      "color_hex": "#e0bd9a",
+      "worn": true
+    },
+    {
+      "name": "structured wool-blend blazer",
+      "details": "notched lapels, tailored fit through the waist without tightening, fine autumn-weight tweed construction",
+      "slot": "outerwear",
+      "color_hex": "#6b5847",
+      "worn": true
+    },
+    {
+      "name": "tapered wide-leg trousers",
+      "details": "high rise, gentle creases, hemmed just above the heel line, soft cotton-wool fabric that drapes elegantly",
+      "slot": "bottom",
+      "color_hex": "#d1ab86",
+      "worn": true
+    },
+    {
+      "name": "polished leather ankle boots",
+      "details": "low stacked heel, square toe, supressed calfskin material",
+      "slot": "shoes",
+      "color_hex": "#5c4d3e",
+      "worn": true
+    },
+    {
+      "name": "delicate gold chain necklace",
+      "details": "resting at the collarbone",
+      "slot": "necklace",
+      "color_hex": null,
+      "worn": true
+    },
+    {
+      "name": "small pearl stud earrings",
+      "details": "",
+      "slot": "earrings",
+      "color_hex": null,
+      "worn": true
+    }
+  ]
+}

@@ -55,6 +55,7 @@ def main():
     проби = sorted(п for п in переліки[0] | переліки[1] if п.endswith('.py'))
     if а.лише:
         проби = [п for п in проби if п in а.лише]
+    проби.sort(key=lambda п: п not in а.без_стелі)
     а.вихід.mkdir(parents=True, exist_ok=True)
     початок = time.monotonic()
     результати = []

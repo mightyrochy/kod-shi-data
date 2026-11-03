@@ -1,0 +1,43 @@
+── ПРОМПТ (1812 симв.) ──
+{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.", "A slot the description says is not needed is not an item: give it worn false. One item carries one thing — of two alternatives list the first; a note in brackets is not an item."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "ITEM_LIST", "answer_schema": {"items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses", "color_hex": "<#rrggbb or null>", "worn": "<true, or false when the description says the outfit goes without it>"}]}, "input": ["\"description\" — the outfit description"]}, "description": "Relaxed-fit linen blend blouse in warm sand (#e3cfa5), long sleeves rolled to the elbow, hitting mid-hip; wide-leg pleated trousers in soft olive green (#8da399), falling straight to the ankle with a slight flare; minimalist leather slide sandals in cognac brown (#b07d56); delicate gold chain necklace and small structured crossbody bag in matte tan. This ensemble perfectly balances comfort for traveling with chic aesthetics for city strolls, while the neutral earth tones complement your skin complexion without overwhelming it. The breathable natural fabrics ensure you stay cool during the four-hour duration, and the loose silhouettes allow for ease of movement whether you are navigating an airport or exploring local streets."}
+
+── ВІДПОВІДЬ (937 симв., 5.8 с, HTTP 200) ──
+{
+  "items": [
+    {
+      "name": "linen blend blouse",
+      "details": "relaxed fit with long sleeves rolled to the elbow, hitting mid-hip",
+      "slot": "top",
+      "color_hex": "#e3cfa5",
+      "worn": true
+    },
+    {
+      "name": "wide-leg pleated trousers",
+      "details": "soft olive green, falling straight to the ankle with a slight flare",
+      "slot": "bottom",
+      "color_hex": "#8da399",
+      "worn": true
+    },
+    {
+      "name": "leather slide sandals",
+      "details": "minimalist design in cognac brown",
+      "slot": "shoes",
+      "color_hex": "#b07d56",
+      "worn": true
+    },
+    {
+      "name": "gold chain necklace",
+      "details": "delicate",
+      "slot": "necklace",
+      "color_hex": null,
+      "worn": true
+    },
+    {
+      "name": "crossbody bag",
+      "details": "small and structured in matte tan",
+      "slot": "bag",
+      "color_hex": "#b07d56",
+      "worn": true
+    }
+  ]
+}

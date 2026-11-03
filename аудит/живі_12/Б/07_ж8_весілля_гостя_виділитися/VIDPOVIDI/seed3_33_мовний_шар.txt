@@ -1,0 +1,28 @@
+── ПРОМПТ (3439 симв.) ──
+Ти — перекладачка в застосунку-стилістці. Ти пишеш природною українською тексти, які зараз побачить жінка. Рішень не приймаєш, на питання не відповідаєш, змісту не міняєш.
+
+Вхід — JSON-масив об'єктів із ключами н (номер тексту) і текст: тексти, які склали код та інші моделі. Об'єкт із ключем виправ несе текст, який ти вже переклала, а виправ — слова в ньому, написані не українською кирилицею чи з битими знаками: перепиши українською лише ці слова, решту тексту лиши слово в слово.
+
+Відповідь — лише JSON-об'єкт: ключ — номер н кожного тексту зі входу, значення — той самий зміст природною українською, без англійських слів і кодів (назви крамниць і брендів — як є); ПЕРЕКЛАДАЙ КОЖНЕ англійське слово, навіть одне посеред українського речення; латиницею лишай лише назви крамниць і брендів, «V-подібний» і «den»; до жінки — на «ти», і в питаннях теж; стилістка про себе — у жіночому роді; текст, що вже природний, — без змін.
+
+Мова: літературна українська, як у текстах українських крамниць одягу. Кожне українське слово — літерами лише української абетки, без жодної латинської літери чи стороннього знака всередині слова. Кожне речення — одна остаточна версія, без виправлень посеред тексту. Звичні українські назви для слів англійського джерела: trousers, pants — штани; pumps — туфлі-човники; dressy, dressier — ошатний, ошатніше; look, outfit — образ; taupe — сіро-бежевий; loose — вільний; suede — замша (з м'якої замші). Назви речей і кольорів, які дала крамниця, — як є.
+
+Перевір кожне слово ДО відповіді. Відповідь — рівно ОДИН JSON-об'єкт і нічого після нього: другої, виправленої версії, приміток і пояснень не пиши — помилку виправ у тому самому об'єкті.
+
+ТЕКСТИ:
+[
+{"н": 1, "текст": "You are wearing a black strapless bodice top made of shimmering sequins that hugs your figure from chest to waist. It pairs with high-waisted black trousers that follow a straight silhouette for a clean line down the leg. For outerwear, you have a navy blue denim jacket with a cropped fit and gold buttons layered over the entire ensemble to add texture and contrast. On your feet are beige suede platform loafers featuring fluffy white shearling lining at the collar and decorative pom-pom tassels in purple and gold that add a playful touch. Completing the look is a light brown suede tote bag with vertical panels and large lettering that keeps the silhouette balanced. The metallic accents of the denim buttons and shoe details echo a warm, silvery tone. This outfit works because it builds your presence through contrasting textures—from the sparkly bodice to the matte denim—while maintaining a dark palette that feels elegant yet modern. It is chosen to let you stand out as a wedding guest without overpowering the event itself."},
+{"н": 2, "текст": "Layer the navy denim jacket over the sequin top and black trousers to balance the shine of the dress with a casual, cool outerwear layer."},
+{"н": 3, "текст": "Жакет джинсовий, укорочений зі спущеною лінією плеча та круглим вирізом (Moschino) — Added a structured navy blazer to create 'anchor_first' logic: balancing the fluidity of the sequin dress with tailoring, ensuring the outfit is complete and sophisticated enough for a wedding guest role requiring 'expression' without losing elegance."},
+{"н": 4, "текст": "Вечірній корсет-бюстьє з блискітками — Kept for the bold 'stand out' intent despite being an evening gown in the daytime; it acts as the single focal point."}
+]
+
+── ВІДПОВІДЬ (1775 симв., 76.9 с, HTTP 200) ──
+```json
+{
+  "1": "Ти одягнена в чорний топ-бюстьє без бретельок, зроблений з блискучих паєток, який облягає твою фігуру від грудей до талії. Він поєднується з високими чорними брюками прямого крою для чистої лінії вздовж ноги. Як верхній одяг ти маєш темно-синю джинсову куртку укороченого фасону із золотими ґудзиками, накинуту поверх всього ансамблю, щоб додати текстури та контрасту. На ногах — бежеві замшеві лофери на платформі з пухнастим білим хутром всередині коміра та декоративними китицями у фіолетовому й золотому кольорі, які додають грайливого акценту. Завершує образ світло-коричнева замшева сумка тоут із вертикальними панелями та великими літерами, що зберігає збалансованість силуету. Металеві акценти ґудзиків на джинсовій куртці й деталей взуття відлунюють теплий сріблястий тон. Цей образ працює тому, що він створює твою присутність через контрастні текстури — від блискучого топа до матової джинси — зберігаючи при цьому темну палітру, яка виглядає елегантно й сучасно. Він обраний для того, щоб ти вирізнялася як гостя на весіллі без перевантаження самої події.",
+  "2": "Накинь темно-синню джинсову куртку поверх топа з паєтками та чорних штанів, щоб збалансувати блиск сукні повсякденним і стильним верхнім одягом.",
+  "3": "Жакет джинсовий, укорочений зі спущеною лінією плеча та круглим вирізом (Moschino) — Додала структурований темно-синій блейзер для створення логіки 'anchor_first': збалансувала плавність сукні з паєтками за допомогою крою, щоб образ був завершеним і достатньо вишуканим для весільної гості, яка потребує 'вираження' без втрати елегантності.",
+  "4": "Вечірній корсет-бюстьє з блискітками — Зберегла його заради сміливого наміру 'stand out', попри те, що це вечірня сукня вдень; він виступає як єдина центральна точка."
+}
+```

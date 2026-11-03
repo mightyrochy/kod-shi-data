@@ -1,0 +1,36 @@
+── ПРОМПТ (1764 симв.) ──
+{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.", "A slot the description says is not needed is not an item: give it worn false. One item carries one thing — of two alternatives list the first; a note in brackets is not an item."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "ITEM_LIST", "answer_schema": {"items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses", "color_hex": "<#rrggbb or null>", "worn": "<true, or false when the description says the outfit goes without it>"}]}, "input": ["\"description\" — the outfit description"]}, "description": "Silk slip dress with a deep V-neckline in #c49b6f color, bias cut for fluid movement to hip length. Heeled sandals in metallic gold finish, ankle strap design, pointed toe. Gold choker necklace with a single pearl pendant and matching drop earrings. This outfit works because the liquid silk silhouette ensures maximum comfort and freedom of movement while the deep V-neck elongates her frame. The metallic gold accents pick up the warm undertones of her skin, creating a unified glow that feels effortless rather than costumey. Finally, the bold cut and shimmering textures perfectly satisfy her desire to be memorable at the casual restaurant celebration without compromising on ease."}
+
+── ВІДПОВІДЬ (757 симв., 284.5 с, HTTP 200) ──
+{
+  "items": [
+    {
+      "name": "Silk slip dress",
+      "details": "Bias cut for fluid movement, deep V-neckline, hip length",
+      "slot": "dress",
+      "color_hex": "#c49b6f",
+      "worn": true
+    },
+    {
+      "name": "Heeled sandals",
+      "details": "Ankle strap design, pointed toe, metallic gold finish",
+      "slot": "shoes",
+      "color_hex": null,
+      "worn": true
+    },
+    {
+      "name": "Gold choker necklace with pearl pendant",
+      "details": "With a single pearl pendant",
+      "slot": "collar_necklace",
+      "color_hex": null,
+      "worn": true
+    },
+    {
+      "name": "Drop earrings",
+      "details": "Matching gold drop earrings",
+      "slot": "earrings",
+      "color_hex": null,
+      "worn": true
+    }
+  ]
+}

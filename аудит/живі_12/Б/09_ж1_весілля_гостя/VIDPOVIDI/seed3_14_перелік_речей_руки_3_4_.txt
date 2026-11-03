@@ -1,0 +1,52 @@
+── ПРОМПТ (2265 симв.) ──
+{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.", "A slot the description says is not needed is not an item: give it worn false. One item carries one thing — of two alternatives list the first; a note in brackets is not an item."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "ITEM_LIST", "answer_schema": {"items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses", "color_hex": "<#rrggbb or null>", "worn": "<true, or false when the description says the outfit goes without it>"}]}, "input": ["\"description\" — the outfit description"]}, "description": "Structured wool-blend blazer in deep charcoal grey with a relaxed but tailored silhouette, color #36454F, medium-weight woven fabric. High-waisted wide-leg trousers in matte black crepe that fall to the ankle, color #0B0C10, flowing drape cut. Silk blend sheath midi dress in emerald green with a subtle satin finish, color #50C878, knee-length hemline. Polished leather pumps in classic black with a 3-inch heel, color #1A1A1A, pointed toe. Delicate pearl drop earrings in white faux pearl and gold vermeil, color #FDFDFF and #D4AF37, minimal stud design. A small structured clutch in smooth beige calfskin, color #E5DBC7. This ensemble balances the request for both neat and formal elements by offering a sophisticated blazer-and-trouser option that transitions seamlessly into an elegant evening gown if the mood shifts. The dark neutrals and emerald accent ensure you look polished while walking among guests at 16:00, adhering to the warm weather constraint with breathable fabrics and no heavy outer layer. Every piece respects your wish for refined textures without sacrificing comfort during outdoor festivities, making you feel confident from the ceremony walk to the reception."}
+
+── ВІДПОВІДЬ (1302 симв., 226.6 с, HTTP 200) ──
+{
+  "answer": {
+    "items": [
+      {
+        "name": "structured wool-blend blazer",
+        "details": "relaxed but tailored silhouette, medium-weight woven fabric",
+        "slot": "outerwear",
+        "color_hex": "#36454F",
+        "worn": true
+      },
+      {
+        "name": "high-waisted wide-leg trousers",
+        "details": "matte black crepe, flowing drape cut, fall to the ankle",
+        "slot": "bottom",
+        "color_hex": "#0B0C10",
+        "worn": true
+      },
+      {
+        "name": "silk blend sheath midi dress",
+        "details": "subtle satin finish, knee-length hemline",
+        "slot": "dress",
+        "color_hex": "#50C878",
+        "worn": true
+      },
+      {
+        "name": "polished leather pumps",
+        "details": "classic black, 3-inch heel, pointed toe",
+        "slot": "shoes",
+        "color_hex": "#1A1A1A",
+        "worn": true
+      },
+      {
+        "name": "delicate pearl drop earrings",
+        "details": "white faux pearl and gold vermeil, minimal stud design",
+        "slot": "earrings",
+        "color_hex": "#FDFDFF",
+        "worn": true
+      },
+      {
+        "name": "small structured clutch",
+        "details": "smooth beige calfskin",
+        "slot": "bag",
+        "color_hex": "#E5DBC7",
+        "worn": true
+      }
+    ]
+  }
+}

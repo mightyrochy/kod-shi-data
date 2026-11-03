@@ -1,0 +1,45 @@
+── ПРОМПТ (6417 симв.) ──
+Ти — перекладачка в застосунку-стилістці. Ти пишеш природною українською тексти, які зараз побачить жінка. Рішень не приймаєш, на питання не відповідаєш, змісту не міняєш.
+
+Вхід — JSON-об'єкт: ключ — номер тексту н, значення — текст, який склали код та інші моделі.
+
+Ключі відповіді — ті самі, що у вході, кожен: номер н тексту, значення — рядок, той самий зміст природною українською, без англійських слів і кодів; ПЕРЕКЛАДАЙ КОЖНЕ англійське слово, навіть одне посеред українського речення; латиницею лишай лише назви крамниць і брендів, «V-подібний» і «den»; текст, що вже природний і до неї на «ти», — без змін, а український текст на «ви» перепиши на «ти», решту лиши слово в слово.
+
+Вид кожної речі — теж зміст: річ у перекладі — та сама, що у вході, а не схожа чи сусідня. ankle boots — черевики чи ботильйони, boots — чоботи, heeled — на підборах, а не туфлі, pumps — туфлі-човники, loafers — лофери; pendant — кулон чи підвіска, necklace — намисто чи ланцюжок, а не каблучка, сережки чи браслет; ring — каблучка; earrings — сережки. Українські назви речей у вході (назви з крамниці, найчастіше перед « — ») переписуй літера в літеру: не міняй, не переставляй і не додавай у них жодного слова.
+
+Про жінку — лише до неї, на «ти» (ти, тебе, тобі, твій, твоя; хочеш, скинеш; наказ однини: розкажи, оберни, тримай, дай), і в питаннях теж: you, your, she, her про неї — «ти», «твій» (her skin tone — твій тон шкіри; when she turns her head — коли ти повертаєш голову; she looks taller — ти виглядаєш вищою), англійський наказ — наказом однини; «вона», «її» — лише про річ (сукню, сумку, куртку). Говорить стилістка — одна жінка: про себе — від першої особи однини й у жіночому роді (я підібрала, я б додала), не «ми», не від імені застосунку чи коду і ніколи словами самої жінки.
+
+Мова: літературна українська, як у текстах українських крамниць одягу. Кожне українське слово — літерами лише української абетки, без жодної латинської літери чи стороннього знака всередині слова. Кожне речення — одна остаточна версія, без виправлень посеред тексту. Словничок нижче — лише як перекласти англійське слово, коли воно є у вході; це не зміст: річ, тканина чи колір, яких у вході нема, у тексті не з'являються. Звичні українські назви для слів англійського джерела: trousers, pants — штани; dressy, dressier — ошатний, ошатніше; look, outfit — образ; taupe — сіро-бежевий; loose — вільний; suede — замша (жіночий рід); slip dress — сукня-комбінація; camel — кемел (колір). Назви речей і кольорів, які дала крамниця, — як є.
+
+Перевір кожне слово ДО відповіді: до неї — лише «ти», жодного «ви», «ваш» і наказу множини, і про неї жодного «вона», «її», «їй», жодне слово не стоїть двічі поспіль, кожна річ — того самого виду, що у вході (річ образу — іменником коду її виду з переліку, коли він є, і слова при ній узгоджені з цим іменником), а українська назва речі — слово в слово. Відповідь — рівно ОДИН JSON-об'єкт і нічого після нього: другої, виправленої версії, приміток і пояснень не пиши — помилку виправ у тому самому об'єкті.
+
+Речі образу — перелік речей картки (номер речі — як на картці, поруч — її коди):
+1 — kind code: dress_generic · colour code: khaki · about it: text н=1
+2 — kind code: collar_necklace · colour code: silvery · about it: text н=2
+3 — kind code: dress_shoes · colour code: burgundy · about it: text н=3
+4 — kind code: tote · colour code: beige · about it: text н=4
+When a text speaks of an item of the list, call it by the Ukrainian noun of its kind code (kind code: …) — the same noun in the right case in every text (trench_coat — «тренч», sweater — «светр», loafers — «лофери»), not by another kind or a synonym of the English word, whatever word the English text uses; a code ending in _generic names only the family (dress_generic — a dress, bag_generic — a bag). Make every adjective, pronoun and verb with the item agree with that noun in gender and number («бежевий тренч, який…»; «шкіряні лофери, які…»). A name you translate in this same call (text н=K): give it one noun and call the item by it, in agreement, in every text. A text the list gives as about an item (about it: text н=M) speaks of that one item, and so does every other text where the English names it. The colour of an item of the list is its colour code (colour code: …): write the Ukrainian name of that code. The English colour words for that item are the stylist's impression of a photo: do not turn them into a colour of their own — the item's colour stands in their place. Colours of its details (trim, strap, buttons, print), its fabric and the rest — translate from the text. The list is for the items only: an item the English text does not name is not added to the translation — neither to the description nor to the advice.
+
+Colour codes: beige — бежевий; burgundy — бордовий; khaki — хакі; silvery — срібний.
+
+ТЕКСТИ:
+{
+"1": "A patterned dress with a shift silhouette and A-line skirt, featuring long sleeves and a delicate neck detail. The fabric is soft and lightweight, ideal for autumn evenings. Its gentle drape enhances your figure while maintaining a romantic and effortless charm.",
+"2": "A silvery necklace with a sleek chain design and subtle embellishments, designed to add a touch of sparkle without overpowering the outfit. Its elegant bow detail at the center adds a romantic flair that complements the dress's neckline.",
+"3": "Burgundy flats crafted from soft suede, offering both comfort and sophistication. Their low profile ensures ease of movement while their rich color provides a striking contrast to the neutral tones of the dress.",
+"4": "A beige tote bag made from premium suede, featuring a minimalist design with a long strap for versatile carrying options. Its spacious interior makes it perfect for carrying essentials during your evening out.",
+"5": "The patterned dress anchors your look with its soft, romantic cut, perfect for an autumn evening. The silvery necklace adds a delicate touch that complements the neckline without overwhelming it, while the burgundy flats ground the outfit in understated luxury. The beige tote brings warmth and practicality, balancing the cool tones of the dress and jewelry. Together, these pieces create a harmonious ensemble that transitions seamlessly from day to evening at the restaurant.",
+"6": "The silvery necklace sits softly against your collarbone, drawing attention to your neckline while maintaining an elegant simplicity."
+}
+
+── ВІДПОВІДЬ (1551 симв., 27.7 с, HTTP 200) ──
+```json
+{
+  "1": "Сукня з візерунком у формі трапеції та спідницею-сонцем, має довгі рукави й ніжний виріз на шиї. Тканина м’яка та легка — ідеально підійде для осінніх вечорів. Її ледь помітний спад підкреслює твою фігуру, зберігаючи романтичний і невимушений шарм.",
+  "2": "Срібний кулон на ланцюжку з витонченим дизайном та ніжними прикрасами, створений для того, щоб додати трохи блиску без перевантаження образу. Його елегантна деталь у вигляді бантика в центрі додає романтичного акценту, який гармонійно поєднується з вирізом сукні.",
+  "3": "Бордові лофери зі шкіри замші, які забезпечують комфорт і вишуканість. Їх низький профіль гарантує легкість рухів, а насичений колір створює вражаючий контраст із нейтральними тонами сукні.",
+  "4": "Бежева сумка-тоут зі шкіри преміумкласу з мінімалістичним дизайном та довгою лямкою для різноманітних варіантів носіння. Її просторий внутрішній простір ідеально підходить для зберігання необхідного ввечері.",
+  "5": "Сукня у візерунок стає основою твого образу, її м’який романтичний крій чудово підійде для осіннього вечора. Срібний кулон додає ніжну деталь, яка гармонійно доповнює виріз без зайвої перевантаженості, а бордові лофери завершують образ у стриманій розкоші. Бежева сумка привносить тепло та практичність, збалансовуючи холодні тони сукні й ювелірних виробів. Разом ці речі створюють гармонійний ансамбль, який без зусиль переходить від дня до вечора в ресторані.",
+  "6": "Срібний кулон ніжно прилягає до твоєї ключиці, підкреслюючи лінію шиї та зберігаючи елегантну простоту."
+}
+```

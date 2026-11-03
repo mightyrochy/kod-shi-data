@@ -1,0 +1,36 @@
+── ПРОМПТ (2584 симв.) ──
+{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.", "A slot the description says is not needed is not an item: give it worn false. One item carries one thing — of two alternatives list the first; a note in brackets is not an item."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "ITEM_LIST", "answer_schema": {"items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses", "color_hex": "<#rrggbb or null>", "worn": "<true, or false when the description says the outfit goes without it>"}]}, "input": ["\"description\" — the outfit description"]}, "description": "A cream linen blazer with a relaxed, oversized cut that falls to the hip, featuring wide lapels and subtle piping along the edges, in hex color #f5f0e8, woven from airy Italian linen.\nTailored beige trousers with a high waist and a straight leg tapering slightly at the ankle, finished with a soft drape front slit, in hex color #d4c5a7, crafted from breathable organic cotton twill.\nStrappy gold-tone sandals with a flat heel and thin ankle chain detailing for an effortless glint under candlelight, in hex color #e6c890, made of polished Italian leather.\nA chunky pearl-and-gold statement necklace to elevate the neckline without overwhelming the summer fabrics, in mixed metals with pearls set in sterling silver, weighing approximately 45 grams.\n\nThis outfit strikes the perfect balance between celebration and comfort for a beachside gathering or intimate dinner by blending breathable natural fibers like linen and cotton with refined tailoring. The neutral cream and beige palette complements warm skin tones while remaining versatile enough to transition from sunny daylight to evening candlelight without feeling overdone. The single outer layer in lightweight linen provides just enough structure to polish the look against an open-air venue, while the flat sandals ensure ease of movement on sand or grass. By focusing on texture—linen grain, twill drape, and smooth leather—the ensemble feels elevated yet relaxed, honoring the desire for a \"neat\" but never stifling evening wear option."}
+
+── ВІДПОВІДЬ (1067 симв., 83.8 с, HTTP 200) ──
+{
+  "items": [
+    {
+      "name": "Cream Linen Blazer",
+      "details": "Relaxed oversized cut falling to the hip, featuring wide lapels and subtle piping along the edges, woven from airy Italian linen",
+      "slot": "outerwear",
+      "color_hex": "#f5f0e8",
+      "worn": true
+    },
+    {
+      "name": "Beige Trousers",
+      "details": "High waist with a straight leg tapering slightly at the ankle, finished with a soft drape front slit, crafted from breathable organic cotton twill",
+      "slot": "bottom",
+      "color_hex": "#d4c5a7",
+      "worn": true
+    },
+    {
+      "name": "Strappy Gold-Tone Sandals",
+      "details": "Flat heel with thin ankle chain detailing for an effortless glint, made of polished Italian leather",
+      "slot": "shoes",
+      "color_hex": "#e6c890",
+      "worn": true
+    },
+    {
+      "name": "Chunky Pearl-and-Gold Statement Necklace",
+      "details": "Mixed metals with pearls set in sterling silver, weighing approximately 45 grams",
+      "slot": "jewelry",
+      "color_hex": null,
+      "worn": true
+    }
+  ]
+}

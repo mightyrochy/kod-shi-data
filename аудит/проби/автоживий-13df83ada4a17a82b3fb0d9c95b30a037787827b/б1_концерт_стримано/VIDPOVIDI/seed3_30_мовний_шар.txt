@@ -1,0 +1,63 @@
+── ПРОМПТ (8324 симв.) ──
+Ти — перекладачка в застосунку-стилістці. Ти пишеш природною українською тексти, які зараз побачить жінка. Рішень не приймаєш, на питання не відповідаєш, змісту не міняєш.
+
+Вхід — JSON-об'єкт: ключ — номер тексту н, значення — текст, який склали код та інші моделі.
+
+Ключі відповіді — ті самі, що у вході, кожен: номер н тексту, значення — рядок, той самий зміст природною українською, без англійських слів і кодів; ПЕРЕКЛАДАЙ КОЖНЕ англійське слово, навіть одне посеред українського речення; латиницею лишай лише назви крамниць і брендів, «V-подібний» і «den»; текст, що вже природний і до неї на «ти», — без змін, а український текст на «ви» перепиши на «ти», решту лиши слово в слово.
+
+Вид кожної речі — теж зміст: річ у перекладі — та сама, що у вході, а не схожа чи сусідня. ankle boots — черевики чи ботильйони, boots — чоботи, heeled — на підборах, а не туфлі, pumps — туфлі-човники, loafers — лофери; pendant — кулон чи підвіска, necklace — намисто чи ланцюжок, а не каблучка, сережки чи браслет; ring — каблучка; earrings — сережки. Українські назви речей у вході (назви з крамниці, найчастіше перед « — ») переписуй літера в літеру: не міняй, не переставляй і не додавай у них жодного слова.
+
+Про жінку — лише до неї, на «ти» (ти, тебе, тобі, твій, твоя; хочеш, скинеш; наказ однини: розкажи, оберни, тримай, дай), і в питаннях теж: you, your, she, her про неї — «ти», «твій» (her skin tone — твій тон шкіри; when she turns her head — коли ти повертаєш голову; she looks taller — ти виглядаєш вищою), англійський наказ — наказом однини; «вона», «її» — лише про річ (сукню, сумку, куртку). Говорить стилістка — одна жінка: про себе — від першої особи однини й у жіночому роді (я підібрала, я б додала), не «ми», не від імені застосунку чи коду і ніколи словами самої жінки.
+
+Мова: літературна українська, як у текстах українських крамниць одягу. Кожне українське слово — літерами лише української абетки, без жодної латинської літери чи стороннього знака всередині слова. Кожне речення — одна остаточна версія, без виправлень посеред тексту. Словничок нижче — лише як перекласти англійське слово, коли воно є у вході; це не зміст: річ, тканина чи колір, яких у вході нема, у тексті не з'являються. Звичні українські назви для слів англійського джерела: trousers, pants — штани; dressy, dressier — ошатний, ошатніше; look, outfit — образ; taupe — сіро-бежевий; loose — вільний; suede — замша (жіночий рід); slip dress — сукня-комбінація; camel — кемел (колір). Назви речей і кольорів, які дала крамниця, — як є.
+
+Перевір кожне слово ДО відповіді: до неї — лише «ти», жодного «ви», «ваш» і наказу множини, і про неї жодного «вона», «її», «їй», жодне слово не стоїть двічі поспіль, кожна річ — того самого виду, що у вході (річ образу — іменником коду її виду з переліку, коли він є, і слова при ній узгоджені з цим іменником), а українська назва речі — слово в слово. Відповідь — рівно ОДИН JSON-об'єкт і нічого після нього: другої, виправленої версії, приміток і пояснень не пиши — помилку виправ у тому самому об'єкті.
+
+Речі образу — перелік речей картки (номер речі — як на картці, поруч — її коди):
+1 — kind code: blazer · colour code: black · about it: text н=1
+2 — kind code: trousers · colour code: grey · about it: text н=2
+3 — kind code: dress_shoes · colour code: cherry · about it: text н=3
+4 — kind code: beret · colour code: golden · about it: text н=4
+5 — kind code: belt · colour code: red · about it: text н=5
+6 — kind code: crossbody_bag · colour code: black · about it: text н=6
+When a text speaks of an item of the list, call it by the Ukrainian noun of its kind code (kind code: …) — the same noun in the right case in every text (trench_coat — «тренч», sweater — «светр», loafers — «лофери»), not by another kind or a synonym of the English word, whatever word the English text uses; a code ending in _generic names only the family (dress_generic — a dress, bag_generic — a bag). Make every adjective, pronoun and verb with the item agree with that noun in gender and number («бежевий тренч, який…»; «шкіряні лофери, які…»). A name you translate in this same call (text н=K): give it one noun and call the item by it, in agreement, in every text. A text the list gives as about an item (about it: text н=M) speaks of that one item, and so does every other text where the English names it. The colour of an item of the list is its colour code (colour code: …): write the Ukrainian name of that code. The English colour words for that item are the stylist's impression of a photo: do not turn them into a colour of their own — the item's colour stands in their place. Colours of its details (trim, strap, buttons, print), its fabric and the rest — translate from the text. The list is for the items only: an item the English text does not name is not added to the translation — neither to the description nor to the advice.
+
+Colour codes: black — чорний; cherry — вишневий; golden — золотий; grey — сірий; red — червоний.
+
+ТЕКСТИ:
+{
+"1": "This black blazer features a fitted cut that hugs your torso and single-breasted detailing. Its sleek silhouette provides structure against the softer fabrics of the night, creating a sharp, professional line suitable for an evening out.",
+"2": "These wide-leg trousers are crafted in grey to offer fluid movement and a modern drape. The generous leg opening creates a long, vertical line that balances the shorter height of your figure and adds an elegant touch to the overall ensemble.",
+"3": "The cherry red dress shoes feature a heel design that elevates your stance while adding a striking pop of color. Their polished finish reflects the ambient lighting of the venue, ensuring you always feel grounded and stylish amidst the energetic atmosphere.",
+"4": "This navy beret is embellished with sparkling gemstones that catch the light as you move. The soft fabric provides a gentle contrast to the structured blazer, adding a touch of vintage glamour to your classic rock look.",
+"5": "The red belt features a sleek design that cinches at your waist, defining your figure against the fitted top. Its bold color serves as an accent point, drawing attention to your silhouette and adding a dynamic element to the monochrome base.",
+"6": "The black crossbody bag is designed with subtle shine details that reflect light subtly. Its compact shape allows you to carry essentials hands-free while maintaining a streamlined profile that doesn't disrupt the balance of your outfit.",
+"7": "You are dressed to stand strong in the crowd at the club, where the rock concert's electric energy meets your classic style. This black fitted blazer acts as your armor, providing structure and sophistication that keeps you anchored even when moving through a packed venue. The wide-leg grey trousers balance that sharp top layer with fluid comfort, allowing you to dance or walk without restriction while maintaining a polished silhouette. Finally, the cherry-colored dress shoes inject a vibrant pop of color against the dark background, giving your outfit a confident edge that speaks to your love for music and classic fashion.",
+"8": "Let the blazer remain unbuttoned as you move through the club so the fitted cut shapes your waistline without feeling restrictive in the crowd.",
+"9": "Tuck your top slightly or leave it open depending on how much air you need, trusting the wide trousers to maintain a clean vertical line that elongates your frame.",
+"10": "Wear the red belt loosely over the blazer if you want to emphasize your waist, or skip it for a more streamlined, effortless look under the rock concert lights.",
+"11": "Туфлі із замші на підборах з гострим носком — I replaced the black pumps with cherry suede pumps to match the leg tone and continue the line from toes to bottom.",
+"12": "Пасок з пірʼям червоний — I added this red belt to echo the accent color near your face and avoid a monochromatic look without an accent.",
+"13": "Берет Bloom із золотими акцентами чорний — I added this black beret with golden accents to lead the 'classic' register and close the skin band at your leg line, replacing the shoes I couldn't find in the palette that matched the velvet tone.",
+"14": "Берет Bloom із золотими акцентами чорний — I added this black beret to break the mono-object silhouette and add texture near your face, avoiding a monochromatic look."
+}
+
+── ВІДПОВІДЬ (3219 симв., 26.1 с, HTTP 200) ──
+```json
+{
+"1": "Цей чорний блейзер має приталений крій, який облягає твою фігуру, та однобортну деталь. Його елегантний силует додає структури м’яким тканинам вечора, створюючи чітку професійну лінію для виходу в світ.",
+"2": "Ці штани з широкими штанинами пошиті у сірому кольорі, щоб забезпечити плавний рух та сучасний драпірування. Широкий розтруб створює довгу вертикальну лінію, яка балансує нижчий зріст твоєї фігури і додає елегантності загальному образу.",
+"3": "Вишнево-червоні туфлі на підборах мають дизайн каблука, який витончено піднімає твою поставу та додає яскравий акцент кольору. Їхня полірована поверхня відбиває світло зали, забезпечуючи тобі відчуття впевненості і стилю серед енергійної атмосфери.",
+"4": "Цей темно-синій берет прикрашений блискучими коштовностями, які ловлять світло під час твоїх рухів. М’яка тканина створює ніжний контраст до структурованого блейзера, додаючи нотку вінтажного гламуру твоєму класичному рок-образу.",
+"5": "Червоний пасок має елегантний дизайн, який підкреслює твою талію на фоні приталеного верху. Його сміливий колір слугує акцентною точкою, привертаючи увагу до твоєї фігури і додаючи динамічний елемент монохромній основі.",
+"6": "Чорна сумка-кросбоді має деталі з ледь помітним блиском. Її компактний розмір дозволяє тобі носити необхідні речі, не займаючи рук, зберігаючи при цьому стрункий профіль, який не порушує баланс твого образу.",
+"7": "Ти одягнена так, щоб впевнено стояти у натовпі клубу, де електрична енергія рок-концерту зустрічається з твоїм класичним стилем. Цей чорний приталений блейзер слугує твоєю бронею, надаючи структуру і вишуканість, які тримають тебе впевнено навіть у русі серед натовпу. Штани з широкими штанинами сірого кольору балансують цей чіткий верхній шар комфортною свободою, дозволяючи тобі танцювати або ходити без обмежень, зберігаючи при цьому витончений силует. Нарешті, туфлі вишневого кольору додають яскравий акцент на темному фоні, надаючи твоєму образу впевнений шарм, який говорить про твою любов до музики і класичної моди.",
+"8": "Залиш блейзер розстебнутим під час руху по клубу, щоб приталений крій формував твою талію без відчуття обмеження у натовпі.",
+"9": "Злегка заправ верх або носи його відкритим залежно від того, скільки повітря тобі потрібно, довіряючи широким штанам підтримувати чисту вертикальну лінію, яка подовжує твій силует.",
+"10": "Одягни червоний пасок вільно поверх блейзера, якщо хочеш підкреслити талію, або пропусти його для більш стрункого і невимушеного вигляду у світлі рок-концерту.",
+"11": "Я замінила чорні туфлі на вишневі замшеві туфлі, щоб вони гармоніювали з тоном шкіри та продовжували лінію від пальців до низу.",
+"12": "Я додала цей червоний пасок із пір’ям, щоб він перегукувався з акцентним кольором біля твого обличчя і уникнути монохромного вигляду без акценту.",
+"13": "Я доповнила образ чорним беретом Bloom із золотими акцентами, щоб підкреслити «класичний» стиль та завершити лінію на рівні твоєї щиколотки, замінивши туфлі, які не змогла знайти у палітрі, що б відповідали тону оксамиту.",
+"14": "Я додала чорний берет Bloom із золотими акцентами, щоб розбити моно-об’єктний силует і додати текстуру біля твого обличчя, уникаючи монохромного вигляду."
+}
+```

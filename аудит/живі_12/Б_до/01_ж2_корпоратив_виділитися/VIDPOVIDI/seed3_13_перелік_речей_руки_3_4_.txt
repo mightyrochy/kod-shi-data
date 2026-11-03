@@ -1,0 +1,43 @@
+── ПРОМПТ (2410 симв.) ──
+{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.", "A slot the description says is not needed is not an item: give it worn false. One item carries one thing — of two alternatives list the first; a note in brackets is not an item."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "ITEM_LIST", "answer_schema": {"items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses", "color_hex": "<#rrggbb or null>", "worn": "<true, or false when the description says the outfit goes without it>"}]}, "input": ["\"description\" — the outfit description"]}, "description": "Emerald green silk blouse with a dramatic ruffled collar and deep V-neckline, loose drop-shoulder cut, hem falling at mid-hip in emerald green (#00a36c), fluid viscose-blend fabric.\nGold metallic brocade mini skirt with high-low asymmetrical hem, fitted through the hip flaring into geometric pleats from waist to knee-length on one side and micro-mini on the other, textured jacquard in metallic gold (#ffd700).\nStrappy open-toe sandal in patent black leather with a towering 12 cm stiletto heel, cut-out detailing across the foot and ankle in glossy black (#000000).\nChic oversized gold hoop earrings reaching the jawline and a bold ruby red cocktail ring set in yellow gold to accentuate the hand.\n\nThis outfit works by merging the sacred tradition of green with royal statement-making through high-low silhouette play, ensuring she stands out instantly in a neighborhood restaurant setting without violating cocktail dress code boundaries. The rich jewel tones contrast beautifully against her warm skin tones while the textured fabrics catch the light under dining room chandeliers to draw every eye toward her confident stance. By choosing an asymmetrical skirt and towering heel, she prioritizes maximum expression over comfort, perfectly aligning with her explicit wish to be unforgettable at this significant occasion."}
+
+── ВІДПОВІДЬ (1185 симв., 206.8 с, HTTP 200) ──
+{
+  "items": [
+    {
+      "name": "blouse",
+      "details": "silky fluid viscose-blend fabric, dramatic ruffled collar, deep V-neckline, loose drop-shoulder cut, hem falling at mid-hip",
+      "slot": "top",
+      "color_hex": "#00a36c",
+      "worn": true
+    },
+    {
+      "name": "skirt",
+      "details": "gold metallic brocade textured jacquard, high-low asymmetrical hem, fitted through hip flaring into geometric pleats from waist to knee-length on one side and micro-mini on the other",
+      "slot": "bottom",
+      "color_hex": "#ffd700",
+      "worn": true
+    },
+    {
+      "name": "sandal",
+      "details": "patent leather, strappy open-toe with cut-out detailing across foot and ankle, towering 12 cm stiletto heel",
+      "slot": "shoes",
+      "color_hex": "#000000",
+      "worn": true
+    },
+    {
+      "name": "earrings",
+      "details": "chic oversized gold hoop reaching the jawline",
+      "slot": "earrings",
+      "color_hex": null,
+      "worn": true
+    },
+    {
+      "name": "ring",
+      "details": "bold ruby red cocktail ring set in yellow gold to accentuate the hand",
+      "slot": "ring",
+      "color_hex": null,
+      "worn": true
+    }
+  ]
+}

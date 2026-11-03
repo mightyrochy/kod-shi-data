@@ -1,0 +1,29 @@
+── ПРОМПТ (1986 симв.) ──
+{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.", "A slot the description says is not needed is not an item: give it worn false. One item carries one thing — of two alternatives list the first; a note in brackets is not an item."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "ITEM_LIST", "answer_schema": {"items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses", "color_hex": "<#rrggbb or null>", "worn": "<true, or false when the description says the outfit goes without it>"}]}, "input": ["\"description\" — the outfit description"]}, "description": "Emerald green velvet wrap midi dress, flowing silhouette with a deep v-neckline and flutter sleeves that extend to the forearm, hex #50c878, rich textured velvet.\nGold metallic strappy sandals, open toe design with a sleek 7cm heel, hex #FFD700, polished metal finish.\nDelicate gold statement choker necklace featuring an intricate geometric pattern, hex #FFD700, lightweight metallic alloy.\nThis outfit works because the bold emerald velvet fabric immediately commands attention in a casual restaurant setting, perfectly fulfilling her wish to stand out during the celebration. The flowing wrap design ensures freedom of movement while the rich texture adds a luxurious cocktail-appropriate depth that elevates her natural warm tones. Finally, the striking contrast between the dark green dress and the shimmering gold accessories creates a memorable visual impact that guarantees she will be remembered."}
+
+── ВІДПОВІДЬ (678 симв., 216.4 с, HTTP 200) ──
+{
+  "items": [
+    {
+      "name": "wrap midi dress",
+      "details": "flowing silhouette with deep v-neckline and flutter sleeves extending to the forearm, made of rich textured velvet",
+      "slot": "dress",
+      "color_hex": "#50c878",
+      "worn": true
+    },
+    {
+      "name": "strappy sandals",
+      "details": "open toe design with a sleek 7cm heel, polished metal finish",
+      "slot": "shoes",
+      "color_hex": "#FFD700",
+      "worn": true
+    },
+    {
+      "name": "statement choker necklace",
+      "details": "intricate geometric pattern, lightweight metallic alloy",
+      "slot": "necklace",
+      "color_hex": "#FFD700",
+      "worn": true
+    }
+  ]
+}

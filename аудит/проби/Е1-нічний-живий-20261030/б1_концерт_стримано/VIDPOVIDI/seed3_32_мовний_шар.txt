@@ -1,0 +1,52 @@
+── ПРОМПТ (7089 симв.) ──
+Ти — перекладачка в застосунку-стилістці. Ти пишеш природною українською тексти, які зараз побачить жінка. Рішень не приймаєш, на питання не відповідаєш, змісту не міняєш.
+
+Вхід — JSON-об'єкт: ключ — номер тексту н, значення — текст, який склали код та інші моделі.
+
+Ключі відповіді — ті самі, що у вході, кожен: номер н тексту, значення — рядок, той самий зміст природною українською, без англійських слів і кодів; ПЕРЕКЛАДАЙ КОЖНЕ англійське слово, навіть одне посеред українського речення; латиницею лишай лише назви крамниць і брендів, «V-подібний» і «den»; текст, що вже природний і до неї на «ти», — без змін, а український текст на «ви» перепиши на «ти», решту лиши слово в слово.
+
+Вид кожної речі — теж зміст: річ у перекладі — та сама, що у вході, а не схожа чи сусідня. ankle boots — черевики чи ботильйони, boots — чоботи, heeled — на підборах, а не туфлі, pumps — туфлі-човники, loafers — лофери; pendant — кулон чи підвіска, necklace — намисто чи ланцюжок, а не каблучка, сережки чи браслет; ring — каблучка; earrings — сережки. Українські назви речей у вході (назви з крамниці, найчастіше перед « — ») переписуй літера в літеру: не міняй, не переставляй і не додавай у них жодного слова.
+
+Про жінку — лише до неї, на «ти» (ти, тебе, тобі, твій, твоя; хочеш, скинеш; наказ однини: розкажи, оберни, тримай, дай), і в питаннях теж: you, your, she, her про неї — «ти», «твій» (her skin tone — твій тон шкіри; when she turns her head — коли ти повертаєш голову; she looks taller — ти виглядаєш вищою), англійський наказ — наказом однини; «вона», «її» — лише про річ (сукню, сумку, куртку). Говорить стилістка — одна жінка: про себе — від першої особи однини й у жіночому роді (я підібрала, я б додала), не «ми», не від імені застосунку чи коду і ніколи словами самої жінки.
+
+Мова: літературна українська, як у текстах українських крамниць одягу. Кожне українське слово — літерами лише української абетки, без жодної латинської літери чи стороннього знака всередині слова. Кожне речення — одна остаточна версія, без виправлень посеред тексту. Словничок нижче — лише як перекласти англійське слово, коли воно є у вході; це не зміст: річ, тканина чи колір, яких у вході нема, у тексті не з'являються. Звичні українські назви для слів англійського джерела: trousers, pants — штани; dressy, dressier — ошатний, ошатніше; look, outfit — образ; taupe — сіро-бежевий; loose — вільний; suede — замша (жіночий рід); slip dress — сукня-комбінація; camel — кемел (колір). Назви речей і кольорів, які дала крамниця, — як є.
+
+Перевір кожне слово ДО відповіді: до неї — лише «ти», жодного «ви», «ваш» і наказу множини, і про неї жодного «вона», «її», «їй», жодне слово не стоїть двічі поспіль, кожна річ — того самого виду, що у вході (річ образу — іменником коду її виду з переліку, коли він є, і слова при ній узгоджені з цим іменником), а українська назва речі — слово в слово. Відповідь — рівно ОДИН JSON-об'єкт і нічого після нього: другої, виправленої версії, приміток і пояснень не пиши — помилку виправ у тому самому об'єкті.
+
+Речі образу — перелік речей картки (номер речі — як на картці, поруч — її коди):
+1 — kind code: dress_generic · colour code: black · about it: text н=1
+2 — kind code: belt · colour code: chocolate · about it: text н=2
+3 — kind code: boots · colour code: ginger · about it: text н=3
+4 — kind code: headband · colour code: pink · about it: text н=4
+5 — kind code: tote · colour code: beige · about it: text н=5
+When a text speaks of an item of the list, call it by the Ukrainian noun of its kind code (kind code: …) — the same noun in the right case in every text (trench_coat — «тренч», sweater — «светр», loafers — «лофери»), not by another kind or a synonym of the English word, whatever word the English text uses; a code ending in _generic names only the family (dress_generic — a dress, bag_generic — a bag). Make every adjective, pronoun and verb with the item agree with that noun in gender and number («бежевий тренч, який…»; «шкіряні лофери, які…»). A name you translate in this same call (text н=K): give it one noun and call the item by it, in agreement, in every text. A text the list gives as about an item (about it: text н=M) speaks of that one item, and so does every other text where the English names it. The colour of an item of the list is its colour code (colour code: …): write the Ukrainian name of that code. The English colour words for that item are the stylist's impression of a photo: do not turn them into a colour of their own — the item's colour stands in their place. Colours of its details (trim, strap, buttons, print), its fabric and the rest — translate from the text. The list is for the items only: an item the English text does not name is not added to the translation — neither to the description nor to the advice.
+
+Colour codes: beige — бежевий; black — чорний; chocolate — шоколадний; ginger — рудий; pink — рожевий.
+
+ТЕКСТИ:
+{
+"1": "This is a sleek black bodycon dress featuring a delicate lace motif pattern. Its form-fitting cut accentuates your silhouette, creating a polished and elegant look suitable for an evening out.",
+"2": "A sophisticated belt in a deep chocolate brown hue. It features a classic buckle design that cinches at the waist, adding definition and structure to your outfit.",
+"3": "These are ankle boots in a warm ginger tone with a rich brown undertone. They feature a sturdy heel and a sleek profile designed to walk comfortably through the evening.",
+"4": "This is a wide headband crafted from soft, blush-pink fabric. It features an elegant floral embroidery with subtle gold thread detailing that adds a touch of romantic texture to your look.",
+"5": "A spacious tote bag in a neutral beige tone. Its clean lines and structured shape offer practical elegance, making it easy to carry essentials while maintaining your smart aesthetic.",
+"6": "You have chosen a striking black bodycon dress with an intricate lace motif, which serves as the perfect foundation for your evening at the rock concert. I paired this bold, dark silhouette with rich chocolate-brown boots and a matching belt to ground the look in a sophisticated, almost classic tone that balances the 'rock' energy of your destination. This outfit works because it offers a streamlined, elegant vertical line that elongates your figure, drawing the eye up to your face and down to your legs while maintaining the smart formality required for a Friday evening out.",
+"7": "Keep your top tucked or define your waist with the belt to maintain a clean silhouette under the concert lights",
+"8": "Wear this ensemble confidently as one cohesive unit; the boots and belt anchor the dress while allowing you to move freely in the crowd",
+"9": "Пасок Базовий шоколад — I replaced the pink headband with this chocolate base belt to unify the warm tones of the boots and trousers, creating a single leading classic register.",
+"10": "Чоботи осінні руді з натуральної шкіри на підборах — I replaced the pink heeled sandals with these brown leather knee-high boots to match the heavy velvet fabric and correct the autumn temperature band."
+}
+
+── ВІДПОВІДЬ (2073 симв., 18.3 с, HTTP 200) ──
+{
+"1": "Це елегантна чорна облягаюча сукня з ніжним мереживним візерунком. Її приталений крій підкреслює твою фігуру, створюючи вишуканий і стильний образ для вечора.",
+"2": "Витончений пасок глибокого шоколадного кольору. Він має класичну пряжку, яка затягується на талії, додаючи чіткості й структури твоєму вбранню.",
+"3": "Це черевики до щиколотки теплого рудого відтінку з насиченим коричневим підтоном. Вони мають міцний каблук і елегантний силует для комфортної ходьби увечері.",
+"4": "Ця широка пов'язка на голову виготовлена ​​з м’якої рожевої тканини кольору пудри. Вона має елегантну квіткову вишивку з тонкими золотими нитками, які додають романтичної текстури твоєму образу.",
+"5": "Містка сумка-тоут нейтрального бежевого відтінку. Її чіткі лінії та структурована форма пропонують практичну елегантність, що дозволяє легко носити необхідні речі, зберігаючи твій вишуканий стиль.",
+"6": "Ти обрала ефектну чорну облягаючу сукню з мереживним візерунком, яка стане ідеальною основою для твоєї вечірки на рок-концерті. Я підібрала до неї насичені шоколадно-коричневі чоботи та ремінь у тон, щоб створити вишуканий, майже класичний образ, який збалансує «рок» енергію місця проведення заходу. Цей наряд працює тому, що він пропонує стрункий і елегантний вертикальний силует, який подовжує твою фігуру, привертаючи увагу до обличчя та ніг, зберігаючи розумну формальність для п’ятничного вечора.",
+"7": "Заправ сукню всередину або підкресли талію ременем, щоб зберегти чистий силует у світлі концерту",
+"8": "Носи цей ансамбль впевнено як єдине ціле; чоботи й пасок створюють основу для твоєї сукні, дозволяючи тобі вільно рухатися серед натовпу.",
+"9": "Пасок Базовий шоколад — Я замінила рожеву пов’язку на голову цим шоколадним ременем, щоб об’єднати теплі тони чобіт і штанів, створивши єдиний провідний класичний регістр.",
+"10": "Чоботи осінні руді з натуральної шкіри на підборах — Я замінила рожеві босоніжки на підборах цими коричневими шкіряними чобітьми до коліна, щоб відповідати щільній оксамитовій тканині та виправити температурний діапазон осені."
+}
