@@ -50,6 +50,7 @@ import порядок_запиту as _ПЗ
 import суд_погода as _ПОГ
 import trace as _СЛ_полюси
 import паспорт_нагоди as _ПН_сл
+import паспорт_поля as _ПП
 import аксесуари_погода as _АП_в
 import знання_дріт as _ЗД
 import fit as _ПС
@@ -557,9 +558,9 @@ import внутрішня_мова as _ВМ_П
                                          "pale yellow, pale blue) belong to the bride, and she is a guest; it "
                                          "reads as bridal on a large surface and next to her face, while small "
                                          "jewellery, shoes or a bag barely register"),
-        _ЗП.Поле("case.shoe_request", "what she asked for about heels: heel or no_heel",
-                 як="her own request: take no shoes against it"),
-        _ЗП.Поле("case.beliefs", "her own words about what she holds does not suit her",
+        _ЗП.Поле("case.shoe_request", "the code's heel constraint: heel or no_heel",
+                 як="take no shoes against it"),
+        _ЗП.Поле("case.beliefs", "the model's reading of what she thinks does not suit her",
                  як="a boundary of hers, not a mistake: do not argue with it, offer no item under it, "
                     "and do not raise the subject in the explanation"),
         _ЗП.Поле("case.her_registers", "the style language she dresses in",
@@ -1033,7 +1034,8 @@ def річ_пулу(r, ном, слот=None):
     # крок 3) звіряється з ЦИМ САМИМ списком кандидатів — тобто з тим самим словом,
     # яке модель і бачила.
     річ = {"н": ("#%d·%s" % _н) if _н else str(r.get("id") or ""),
-           "назва": _ФС.назва_для_людини(r)}
+           "назва": _ФС.назва_для_людини(r),
+           "гілка_типова": r.get("гілка_типова", not bool(r.get("гілка")))}
     for ключ, значення in (
             # Ціна 0 — це «магазин не сказав», а не «безкоштовно»: у прозі така
             # річ ішла без ціни, і поле тут так само не з'являється.
@@ -1105,7 +1107,7 @@ def річ_пулу(r, ном, слот=None):
     if r.get("осі"):
         річ["осі"] = dict(r["осі"])
     for ключ in ("колір_тип", "колір_вимір", "колір_слово", "власна", "чия", "закріплена", "джерело_кольору", "колір_не_вимір",
-                 "колір_стилістки", "формальність_фото", "вердикт_рівень", "пом_якшення", "lab"):
+                 "колір_стилістки", "формальність_фото", "вердикт_рівень", "пом_якшення", "lab", "впевненість_джерело"):
         if r.get(ключ) not in (None, "", [], ()):
             річ[ключ] = list(r[ключ]) if ключ == "lab" else r[ключ]
     # Чиє бажання ця річ виконує і чи стояла вона вже в її образах цього
@@ -1352,6 +1354,11 @@ def випадок_для_пакета(паспорт, рядок, сценар�
     _мв = [к for к in ((паспорт or {}).get("мета_важливо") or []) if к in _ВМ_П.ТАБЛИЦЯ["goal_extra"].values()]
     if _мв:
         в["мета_важливо"] = _мв
+    в["джерела_полів"] = {к: _ПП.походження_поля(паспорт, к) for к in sorted(в) if к != "джерела_полів"}
+    if в.get("прохання_взуття"):
+        в["джерела_полів"]["прохання_взуття"] = _ПП.походження(_ПП.ВИВЕДЕНЕ)
+    if в.get("переконання"):
+        в["джерела_полів"]["переконання"] = _ПП.походження(_ПП.ТЛУМАЧЕННЯ)
     return в
 
 
@@ -1604,6 +1611,7 @@ def _рядки_кандидатів_кроками(тіло, вікна, K, р�
                               # визначено», а не «річ поза реєстрами».
                               реєстр=(РЕ_кандидата(r) or None),
                               гілка=r.get("_гілка") or "ядро", схема=r.get("_схема"),
+                              гілка_типова=not bool(r.get("_гілка")),
                               # ПРАПОРЕЦЬ УТРИМАННЯ ПЕРЕЖИВАЄ ПЕРЕКЛАДАННЯ В РЯДОК
                               # Рядок кандидата будується тут з нуля, і
                               # мітка, поставлена на ЗАПИСІ пулу (`bridge._пакет_у_бюджет`

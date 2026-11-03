@@ -432,7 +432,7 @@ _ЛАПКИ_ДОВКОЛА = re.compile(r'^["«„“”]\s*([^"«»„“”]*?
     # ЗВІДКИ ВИМІР (§1.2): сила джерела, від письмового правила до «нічого не відомо».
     # Порядок переліку і є порядком сили — його тримає `паспорт_нагоди.ЗВІДКИ_СИЛА`.
     "evidence_source": {к: к for к in ("written", "her_words", "sub", "preset", "like",
-                                       "default", "unknown")},
+                                       "derived", "default", "unknown")},
 }
 
 
@@ -3737,7 +3737,7 @@ def схема():
 
 def записати_схему(шлях=ФАЙЛ_СХЕМИ):
     """Пише `схема()` у файл JSON Schema (той самий, що лежить у репозиторії)."""
-    with open(шлях, "w", encoding="utf-8") as ф:
+    with open(шлях, "w", encoding="utf-8", newline="\n") as ф:
         _json_.dump(схема(), ф, ensure_ascii=False, indent=1)
         ф.write("\n")
     return шлях
