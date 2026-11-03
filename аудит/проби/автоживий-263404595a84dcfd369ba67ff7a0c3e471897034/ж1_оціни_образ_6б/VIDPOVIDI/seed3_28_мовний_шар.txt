@@ -1,0 +1,52 @@
+── ПРОМПТ (6967 симв.) ──
+Ти — перекладачка в застосунку-стилістці. Ти пишеш природною українською тексти, які зараз побачить жінка. Рішень не приймаєш, на питання не відповідаєш, змісту не міняєш.
+
+Вхід — JSON-об'єкт: ключ — номер тексту н, значення — текст, який склали код та інші моделі.
+
+Ключі відповіді — ті самі, що у вході, кожен: номер н тексту, значення — рядок, той самий зміст природною українською, без англійських слів і кодів; ПЕРЕКЛАДАЙ КОЖНЕ англійське слово, навіть одне посеред українського речення; латиницею лишай лише назви крамниць і брендів, «V-подібний» і «den»; текст, що вже природний і до неї на «ти», — без змін, а український текст на «ви» перепиши на «ти», решту лиши слово в слово.
+
+Вид кожної речі — теж зміст: річ у перекладі — та сама, що у вході, а не схожа чи сусідня. ankle boots — черевики чи ботильйони, boots — чоботи, heeled — на підборах, а не туфлі, pumps — туфлі-човники, loafers — лофери; pendant — кулон чи підвіска, necklace — намисто чи ланцюжок, а не каблучка, сережки чи браслет; ring — каблучка; earrings — сережки. Українські назви речей у вході (назви з крамниці, найчастіше перед « — ») переписуй літера в літеру: не міняй, не переставляй і не додавай у них жодного слова.
+
+Про жінку — лише до неї, на «ти» (ти, тебе, тобі, твій, твоя; хочеш, скинеш; наказ однини: розкажи, оберни, тримай, дай), і в питаннях теж: you, your, she, her про неї — «ти», «твій» (her skin tone — твій тон шкіри; when she turns her head — коли ти повертаєш голову; she looks taller — ти виглядаєш вищою), англійський наказ — наказом однини; «вона», «її» — лише про річ (сукню, сумку, куртку). Говорить стилістка — одна жінка: про себе — від першої особи однини й у жіночому роді (я підібрала, я б додала), не «ми», не від імені застосунку чи коду і ніколи словами самої жінки.
+
+Мова: літературна українська, як у текстах українських крамниць одягу. Кожне українське слово — літерами лише української абетки, без жодної латинської літери чи стороннього знака всередині слова. Кожне речення — одна остаточна версія, без виправлень посеред тексту. Словничок нижче — лише як перекласти англійське слово, коли воно є у вході; це не зміст: річ, тканина чи колір, яких у вході нема, у тексті не з'являються. Звичні українські назви для слів англійського джерела: trousers, pants — штани; dressy, dressier — ошатний, ошатніше; look, outfit — образ; taupe — сіро-бежевий; loose — вільний; suede — замша (жіночий рід); slip dress — сукня-комбінація; camel — кемел (колір). Назви речей і кольорів, які дала крамниця, — як є.
+
+Перевір кожне слово ДО відповіді: до неї — лише «ти», жодного «ви», «ваш» і наказу множини, і про неї жодного «вона», «її», «їй», жодне слово не стоїть двічі поспіль, кожна річ — того самого виду, що у вході (річ образу — іменником коду її виду з переліку, коли він є, і слова при ній узгоджені з цим іменником), а українська назва речі — слово в слово. Відповідь — рівно ОДИН JSON-об'єкт і нічого після нього: другої, виправленої версії, приміток і пояснень не пиши — помилку виправ у тому самому об'єкті.
+
+Речі образу — перелік речей картки (номер речі — як на картці, поруч — її коди):
+1 — kind code: t_shirt · colour code: light_blue · about it: text н=1
+2 — kind code: skirt · colour code: grey · about it: text н=2
+3 — kind code: headband · colour code: mint · about it: text н=3
+4 — kind code: plimsolls · colour code: brown · about it: text н=4
+5 — kind code: bag_generic · colour code: burgundy · about it: text н=5
+When a text speaks of an item of the list, call it by the Ukrainian noun of its kind code (kind code: …) — the same noun in the right case in every text (trench_coat — «тренч», sweater — «светр», loafers — «лофери»), not by another kind or a synonym of the English word, whatever word the English text uses; a code ending in _generic names only the family (dress_generic — a dress, bag_generic — a bag). Make every adjective, pronoun and verb with the item agree with that noun in gender and number («бежевий тренч, який…»; «шкіряні лофери, які…»). A name you translate in this same call (text н=K): give it one noun and call the item by it, in agreement, in every text. A text the list gives as about an item (about it: text н=M) speaks of that one item, and so does every other text where the English names it. The colour of an item of the list is its colour code (colour code: …): write the Ukrainian name of that code. The English colour words for that item are the stylist's impression of a photo: do not turn them into a colour of their own — the item's colour stands in their place. Colours of its details (trim, strap, buttons, print), its fabric and the rest — translate from the text. The list is for the items only: an item the English text does not name is not added to the translation — neither to the description nor to the advice.
+
+Colour codes: brown — коричневий; burgundy — бордовий; grey — сірий; light_blue — блакитний; mint — м'ятний.
+
+ТЕКСТИ:
+{
+"1": "This light blue top is a relaxed cut t-shirt, offering a comfortable and easy-going feel that is perfect for an office day.",
+"2": "Your bottom is this grey skirt featuring distinct stripes, which adds a structured element to the outfit while keeping it visually interesting.",
+"3": "This mint green headband is crafted from plush velvet and elegantly embellished with rows of sparkling crystals and lustrous pearls, creating a beautiful focal point.",
+"4": "These brown plimsolls serve as the footwear, bringing a comfortable yet stylish finish that grounds the brighter tones above.",
+"5": "The burgundy bag is a versatile accessory that adds a deep, rich color to complete your ensemble.",
+"6": "For your office day, I have chosen a look that balances professional neatness with a touch of elegant comfort. You will wear a light blue relaxed t-shirt to keep the silhouette easy, paired with a grey striped skirt that brings necessary texture and structure to the ensemble. To add a sophisticated finish, a mint velvet headband adorned with sparkling crystals and pearls sits atop your hair, while deep burgundy plimsolls provide a rich contrast at your feet. The outfit is rounded off with a classic burgundy bag, allowing you to carry your essentials without breaking the flow of your professional attire.",
+"7": "Let the relaxed t-shirt remain unbuttoned or untucked to maintain that effortless office comfort while the skirt adds a polished line to your silhouette.",
+"8": "Обруч Габріелла зі стразами м'ятний — I moved this headband from the face area to a less prominent slot or reduced its prominence to avoid overwhelming your neutral base.",
+"9": "Спідниця-шорти сіра в смужку, Жіноча сумка Welfare бордова — Though having two accents near the face exceeds the single focus ceiling, here both items serve a specific function: the headband bridges your skin tone within the palette window, while the striped skirt provides necessary texture for autumn movement, preventing the look from feeling flat or monotonous in an office setting."
+}
+
+── ВІДПОВІДЬ (1982 симв., 15.0 с, HTTP 200) ──
+```json
+{
+"1": "Ця блакитна футболка — вільна сорочка з розслабленим кроєм, що дарує комфортне та невимушене відчуття, ідеальне для робочого дня.",
+"2": "Твої штани — сіра спідниця у смужку, яка додає структурований елемент до образу, водночас зберігаючи його візуальний інтерес.",
+"3": "Цей м’ятний обруч виготовлений з оксамитової тканини та прикрашений блискучими кристалами і перлинами, створюючи гарну центральну деталь.",
+"4": "Ці коричневі кеди слугують взуттям, завершуючи образ комфортною, але стильною ноткою, що збалансовує яскравіші тони зверху.",
+"5": "Бордова сумка — універсальний аксесуар, який додає глибокий і насичений колір до твого ансамблю.",
+"6": "Для твого робочого дня я підібрала образ, що поєднує професійну охайність з елегантним комфортом. Ти носитимеш блакитну вільну футболку для невимушеного силуету, у парі зі смугастою сірою спідницею, яка додасть необхідної текстури та структури до образу. Щоб завершити образ вишукано, м’ятний оксамитовий обруч з блискучими кристалами і перлинами прикрасить твоє волосся, а глибокі бордові кеди створять насичений контраст біля твоїх ніг. Образ доповнюється класичною бордовою сумкою, що дозволить тобі носити необхідні речі без порушення професійного стилю.",
+"7": "Залиш футболку розстебнутою або не заправленою всередину штанів, щоб зберегти невимушений робочий комфорт, а спідниця додасть витончену лінію до твого силуету.",
+"8": "Обруч Габріелла зі стразами м’ятний — Я перемістила цей обруч з лицьової зони в менш помітне місце або зменшила його значущість, щоб уникнути надмірної уваги до нейтральної основи.",
+"9": "Спідниця-шорти сіра в смужку, Жіноча сумка Welfare бордова — Хоч наявність двох акцентів біля обличчя перевищує межу єдиного фокусу, тут обидва предмети виконують конкретну функцію: обруч поєднує твій тон шкіри з палітрою кольорів, а смугаста спідниця додає необхідної текстури для осіннього руху, запобігаючи тому, щоб образ здавався плоским або монотонним в офісному середовищі."
+}
+```

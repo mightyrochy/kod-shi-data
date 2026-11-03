@@ -13,6 +13,8 @@ for сцена in ['ж2_довга_розмова_слова', 'ж1_оціни_�
     результат = json.loads((шлях / 'результат.json').read_text(encoding='utf-8'))
     журнал = шлях / 'знімки/модель_виклики.json'
     виклики = json.loads(журнал.read_text(encoding='utf-8')) if журнал.exists() else []
+    if isinstance(виклики, dict):
+        виклики = виклики.get('виклики', [])
     міри = []
     for і, файл in enumerate(sorted((шлях / 'VIDPOVIDI/обмін').glob('*.json'))):
         запис = json.loads(файл.read_text(encoding='utf-8'))
