@@ -1,0 +1,27 @@
+"""Перенесення трьох попередніх записів із призначеного коміту, без запуску стенда."""
+import json
+from pathlib import Path
+import subprocess
+from datetime import datetime, timezone
+
+repo=Path.cwd()
+root=repo/'аудит/проби/автоживий-c71cc075fdaca37a3df5b1419fc035acd0035024'
+source='6c44a6c5edac74caeb499ebee919bc71a763d181'
+previous=[json.loads(s) for s in (root/'попередній-done.jsonl').read_text(encoding='utf-8').splitlines()]
+paths=[(root/r['сцена']).relative_to(repo).as_posix() for r in previous]
+assert all(not (repo/p).exists() for p in paths), 'Попередні теки вже існують'
+subprocess.run(['git','restore','--source',source,'--worktree','--',*paths],check=True)
+evidence={'utc':datetime.now(timezone.utc).isoformat(),'джерело':source,'повторних_запусків':0,'перенесено':[]}
+for row,path in zip(previous,paths):
+    result=json.loads((root/row['сцена']/'результат.json').read_text(encoding='utf-8'))
+    tree=subprocess.check_output(['git','rev-parse',source+':'+path],text=True).strip()
+    files=list((repo/path).rglob('*'))
+    evidence['перенесено'].append({'сцена':row['сцена'],'дерево_джерела':tree,'rc':result['rc'],
+        'sha':result['sha'],'файлів':sum(p.is_file() for p in files),
+        'байтів':sum(p.stat().st_size for p in files if p.is_file())})
+for name in ('ЗВІТ.md','НАРЯД.md','НОВА_БАЗА.md'):
+    (root/('попередній-'+name)).write_bytes(subprocess.check_output(['git','show',source+':'+root.relative_to(repo).as_posix()+'/'+name]))
+subprocess.run(['git','add','--',*paths],check=True,capture_output=True)
+subprocess.run(['git','diff','--cached','--exit-code',source,'--',*paths],check=True,capture_output=True)
+(root/'походження-попередніх-записів.json').write_text(json.dumps(evidence,ensure_ascii=False,indent=2)+'\n',encoding='utf-8')
+print('Три попередні записи перенесено; індекс збігається з джерелом. Повторних запусків: 0.')

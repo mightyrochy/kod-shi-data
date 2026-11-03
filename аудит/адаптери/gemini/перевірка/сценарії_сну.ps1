@@ -58,6 +58,11 @@ try {
             if ($script:PublishCode -eq 'OK') { $script:PublishedHead = [string]$Status.head }
             @($script:PublishCode,1)
         }
+        function Invoke-Git([string[]]$GitArgs, [switch]$AllowFail) {
+            <# Тіло опублікованого коміту фікстури: після Publish-Bundle читач PR звіряє саме його. #>
+            if ($GitArgs -contains '--format=%B') { return [pscustomobject]@{Code=0;Out='Звіт стенда сну';Err=''} }
+            throw ('Неочікуваний git у стенді сну: ' + ($GitArgs -join ' '))
+        }
         function Status([string]$Id,[string]$Code,[string]$Parent='',[bool]$Bundle=$true) {
             <# Явні UTC охоплюють підмінений сон. #>
             [pscustomobject][ordered]@{ v=1;id=$Id;slug='сон';model='gpt-test-high';n=1;marker=$script:Marker;head=$script:OutputHead;cond='';code=$Code;

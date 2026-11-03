@@ -85,14 +85,15 @@ $script:Limits = $null
 
 # --- дрібні помічники ---------------------------------------------------------------------------------------------
 
-function Write-Log([string]$Text) {
+function Write-Log([string]$Text, [switch]$Required) {
     <# Рядок у wrapper.log. Пишуть водночас планувальник і процеси нарядів: зайнятий файл — кілька спроб, потім рядок
-    губиться, а не валить наряд. #>
+    губиться, якщо не вказано -Required. #>
     $tag = $(if ($WorkerFile) { "[$PID] " } else { '' })
     $line = '{0:yyyy-MM-dd HH:mm:ss} {1}{2}' -f (Get-Date), $tag, $Text
     for ($i = 0; $i -lt 20; $i++) {
         try { [System.IO.File]::AppendAllText((Join-Path $RunsDir 'wrapper.log'), $line + "`n", $script:Utf8); return } catch { Start-Sleep -Milliseconds 50 }
     }
+    if ($Required) { throw "Не вдалося записати обов'язковий рядок журналу" }
 }
 
 # JSON-рядок лише з ASCII: stdin процесу в .NET Framework кодується кодовою сторінкою консолі.
@@ -754,6 +755,7 @@ function Invoke-Agent($M, [string]$Start, [string]$Prompt, [string]$Dir, $Sel) {
     $text = $Prompt
     $turns = 0
     $nudges = 0
+    $liveCorrection = $false
     $code = ''
     $report = 'NONE'
     try {
@@ -780,8 +782,28 @@ function Invoke-Agent($M, [string]$Start, [string]$Prompt, [string]$Dir, $Sel) {
                     break
                 }
                 $check = Test-Report $M $Start $resp
-                if ($check.Accepted) { $code = $check.Kind; $report = $check.Kind; break }
+                if ($check.Accepted) {
+                    if ($check.Facts.Ahead -gt 0) {
+                        $publication = Get-HeadLivePublication $check.Facts.Head
+                        if ($publication.Bad.Count) {
+                            if (-not $liveCorrection) {
+                                $liveCorrection = $true
+                                $text = Get-LiveCorrectionPrompt $publication
+                                continue
+                            }
+                            $code = 'BLOCKED'; $report = 'BLOCKED'
+                            $run.Responses.Add('ЗАБЛОКОВАНО: LIVE_AFTER_INVALID — ' + (($publication.Bad | ForEach-Object { $_.error }) -join '; '))
+                            break
+                        }
+                    }
+                    $code = $check.Kind; $report = $check.Kind; break
+                }
                 $why = $(if ($check.Kind -ne 'NONE') { 'mismatch' } else { 'none' })
+            }
+            if ($liveCorrection) {
+                $code = 'BLOCKED'; $report = 'BLOCKED'
+                $run.Responses.Add('ЗАБЛОКОВАНО: LIVE_AFTER_INVALID — хід виправлення не дав прийнятого звіту')
+                break
             }
             # Без id розмови догонка пішла б у нову розмову без наряду.
             if ($r.Kind -ne 'result' -and -not $run.Conversation) {
@@ -1034,7 +1056,7 @@ function Invoke-Task($M, $Job) {
             return
         }
         if ($review -ne 'LIVE') { $status.code = $review; return }
-        try { $taskText = Add-AutoTaskContext $M.Slug $taskText $M.Sha }
+        try { $taskText = Add-AutoTaskContext $M.Slug $taskText $M.Sha $M.Model }
         catch { Enter-ReviewWait $M; $waiting = $true; return }
         if (Test-AutoPlanEmpty $M.Slug $taskText) { $status.code = 'EMPTY_PLAN'; return }
         $taskDir = Join-Path (Join-Path $RunsDir 'w') $id
@@ -1141,6 +1163,8 @@ function Enter-StartQuotaWait($M, $Q, $State) {
 # Один прохід: позначки смуг codex і agy за порядком черги — у вільні слоти, кожна окремим процесом. Повертає число
 # запущених.
 function Start-Markers($Workers) {
+    $script:Held = @{}
+    [void](Repair-GpuModels)
     $started = 0
     $now = [DateTimeOffset]::UtcNow.ToUnixTimeSeconds()
     $all = @(Get-Markers | Where-Object { -not $_.Slug.StartsWith('Е1-нічний-живий-') }) + @(Get-NightlyMarker)
@@ -1288,6 +1312,12 @@ function Invoke-Worker {
             $gpu = Open-Lock (Get-GpuLockPath)
             $why = $(if ($null -eq $gpu) { 'замок GPU' } elseif (Test-ExternalGpuFree -LogAcquisition) { '' } else { Get-GpuBusyReason @() -LockHeld })
             if ($why) { Remove-Claim $statePath; Write-Log "GPU зайнята ($why) — $($job.name) лишається в черзі"; return $script:WorkerGpuBusy }
+            try { Start-GpuModels $job }
+            catch {
+                Remove-Claim $statePath
+                Write-Log "GPU знімок недоступний ($($_.Exception.Message)) — $($job.name) лишається в черзі"
+                return $script:WorkerGpuBusy
+            }
         }
         Write-FileAtomic $info (([ordered]@{ slot = $job.slot; lane = $job.lane; marker = $job.name; slug = $job.slug; model = $job.model
                     since = (Get-UtcStamp (Get-Date)); gpu = [bool]$job.gpu; prio = $job.prio; pid = $PID
@@ -1301,11 +1331,15 @@ function Invoke-Worker {
         Add-HealthException $_.Exception; Write-Log "процес наряду $($job.name): $($_.Exception.Message)"
         1
     } finally {
+        if ($null -ne $gpu) {
+            try { Complete-GpuModels }
+            catch { Write-Log "GPU прибирання відкладено: $($_.Exception.Message)" }
+            finally { $gpu.Dispose() }
+        }
         Remove-Item -LiteralPath $info -Force -ErrorAction SilentlyContinue
         # Помилка до STARTED (робоча копія тощо) не лишає claim: позначка повертається в чергу (10162).
         Close-FailedStart ([pscustomobject]@{ Ref = $job.ref; Name = $job.name; Sha = $job.sha; Slug = $job.slug; Model = $job.model
                 N = [string]$job.n; Cond = [string]$job.cond }) ([string]$job.id) $statePath
-        if ($null -ne $gpu) { $gpu.Dispose() }
         $slotLock.Dispose()
     }
 }
@@ -1344,6 +1378,7 @@ function Main {
             }
             $started = 0
             try {
+                [void](Repair-GpuModels)
                 [void](Invoke-Git @('fetch', '-q', '--prune', '--no-tags', 'origin',
                         '+refs/heads/main:refs/remotes/origin/main',
                         '+refs/heads/gemini/*:refs/remotes/origin/gemini/*',
@@ -1369,6 +1404,7 @@ function Main {
         Add-HealthException $_.Exception; Write-Log "збій обгортки: $($_.Exception.Message)"
         1
     } finally {
+        [void](Repair-GpuModels)
         $lockFile.Dispose()
     }
 }

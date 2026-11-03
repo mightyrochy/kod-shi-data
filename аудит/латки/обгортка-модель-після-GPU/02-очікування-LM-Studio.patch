@@ -1,0 +1,392 @@
+diff --git a/аудит/адаптери/gemini/claude_run.ps1 b/аудит/адаптери/gemini/claude_run.ps1
+index 737f59b4c..cb9cd2b78 100644
+--- a/аудит/адаптери/gemini/claude_run.ps1
++++ b/аудит/адаптери/gemini/claude_run.ps1
+@@ -1152,7 +1152,12 @@ function Invoke-Worker {
+             $gpu = Open-Lock (Get-GpuLockPath)
+             $why = $(if ($null -eq $gpu) { 'замок GPU' } elseif (Test-ExternalGpuFree -LogAcquisition) { '' } else { Get-GpuBusyReason @() -LockHeld })
+             if ($why) { Remove-Claim $statePath; Write-Log "GPU зайнята ($why) — $($job.name) лишається в черзі"; return $script:WorkerGpuBusy }
+-            Start-GpuModels $job
++            try { Start-GpuModels $job }
++            catch {
++                Remove-Claim $statePath
++                Write-Log "GPU знімок недоступний ($($_.Exception.Message)) — $($job.name) лишається в черзі"
++                return $script:WorkerGpuBusy
++            }
+         }
+         Write-FileAtomic $info (([ordered]@{ slot = $job.slot; lane = 'claude'; marker = $job.name; slug = $job.slug
+                     model = "$($job.claude)$(if ($job.effort) { ' ' + $job.effort })"; since = (Get-UtcStamp (Get-Date)); gpu = [bool]$job.gpu; prio = $job.prio; pid = $PID
+diff --git a/аудит/адаптери/gemini/gemini_run.ps1 b/аудит/адаптери/gemini/gemini_run.ps1
+index 5bd09f3c8..4413c1093 100644
+--- a/аудит/адаптери/gemini/gemini_run.ps1
++++ b/аудит/адаптери/gemini/gemini_run.ps1
+@@ -1312,7 +1312,12 @@ function Invoke-Worker {
+             $gpu = Open-Lock (Get-GpuLockPath)
+             $why = $(if ($null -eq $gpu) { 'замок GPU' } elseif (Test-ExternalGpuFree -LogAcquisition) { '' } else { Get-GpuBusyReason @() -LockHeld })
+             if ($why) { Remove-Claim $statePath; Write-Log "GPU зайнята ($why) — $($job.name) лишається в черзі"; return $script:WorkerGpuBusy }
+-            Start-GpuModels $job
++            try { Start-GpuModels $job }
++            catch {
++                Remove-Claim $statePath
++                Write-Log "GPU знімок недоступний ($($_.Exception.Message)) — $($job.name) лишається в черзі"
++                return $script:WorkerGpuBusy
++            }
+         }
+         Write-FileAtomic $info (([ordered]@{ slot = $job.slot; lane = $job.lane; marker = $job.name; slug = $job.slug; model = $job.model
+                     since = (Get-UtcStamp (Get-Date)); gpu = [bool]$job.gpu; prio = $job.prio; pid = $PID
+diff --git a/аудит/адаптери/gemini/m9v/хеші.psd1 b/аудит/адаптери/gemini/m9v/хеші.psd1
+index 1ea70777c..4048019a1 100644
+--- a/аудит/адаптери/gemini/m9v/хеші.psd1
++++ b/аудит/адаптери/gemini/m9v/хеші.psd1
+@@ -4,8 +4,8 @@
+     'wrapper_update.ps1' = '45F254E5CB2FB7D882BBB9CE7CA121988FDF23BACCFE65CB67A4CA3B3F426FE7'
+     'wrapper_probe.ps1'  = '85116D04C22EB64CBFF52E66BCEAE9B1091577A889EDD58A8B634093A82BDBC6'
+     'wrapper_chain.ps1'  = '52D6A12EB4A0B1E7FE98893752A292CD23F2746B12A97DEF34825D3DFEE58EFA'
+-    'wrapper_health.ps1' = 'F63CDFD76BCBE92440A843759BCD6CED4E49B4BCBAC19620CACA4B74B9D58AA5'
+-    'gemini_run.ps1'     = 'A237E8CAFC624DF3D062282D97142DCE1C9C85FDD1CBB16559FB1FCBC1F22ADA'
++    'wrapper_health.ps1' = 'AB85BBF974EA56281C2824C12CA11BF775013C6AD7F9C67AD4E8DC433931E817'
++    'gemini_run.ps1'     = '561048BD8A8BC657A77EBCAFAF393F572ACE984768CD44A173CA5313BCA5DA29'
+     'gemini_publish.ps1' = '0AF4A7E5833A5CB12E5A5C53E885B32E87791D863A95BCEFD8594396D5080598'
+     # Інсталятор Codex (9741) закріплено за релізом: install.ps1 — файл релізу https://releases.openai.com/codex/releases/<CodexRelease>/install.ps1
+     # (незмінний URL; той самий sha256 віддає https://chatgpt.com/codex/install.ps1 — редирект на releases.openai.com — і публікує реліз
+@@ -14,6 +14,6 @@
+     CodexRelease         = '0.164.0'
+     CodexInstaller       = 'A59CB66350098C33B021FF470D586AE8FE3B7CAF189CA7137B4FE3AF5D4DCE74'
+     'gemini_watch.ps1'   = '69EFEBB07FF1AF51C382B753A95C50F3C1AC27B3008F2489992BEBE3FD0213AA'
+-    'queue_lanes.ps1'    = '438AACDADE3A27453339E47F6A5FFB947B2536831139067232B738CEFAF4009C'
+-    'claude_run.ps1'     = '01422B679F230E2674A01CC74468C12781FA1E83528CAE4ECBB3F2BCD3B1A0A5'
++    'queue_lanes.ps1'    = 'B896E0D5B5E7FD5C49A7EDC9F801A23C128B98BE660227CBEC6B2EF3380EB38C'
++    'claude_run.ps1'     = '7552849A31B329BBB9076FD769190364343CC4A174127E28BBF307035579D09D'
+ }
+diff --git a/аудит/адаптери/gemini/queue_lanes.ps1 b/аудит/адаптери/gemini/queue_lanes.ps1
+index 5be3139d0..7d95caa0e 100644
+--- a/аудит/адаптери/gemini/queue_lanes.ps1
++++ b/аудит/адаптери/gemini/queue_lanes.ps1
+@@ -676,15 +676,7 @@ function Complete-GpuModels {
+ function Start-GpuModels($Job) {
+     <# До агента й під його GPU-замком зберігає межу власності незалежно від життя дерева процесів. #>
+     Complete-GpuModels
+-    # LM Studio не слухає :1234 — переліку завантаженого нема: вимкнений сервер не означає вивантажених моделей, і
+-    # порожній знімок віддав би наряду моделі власника. Наряд іде без знімка (він може підняти сервер сам), а його
+-    # моделі обгортка не прибирає. Інша помилка REST — стоп до агента.
+-    try { $before = @(Get-LmsInstances) }
+-    catch [System.Net.WebException] {
+-        if ($_.Exception.Status -ne [System.Net.WebExceptionStatus]::ConnectFailure) { throw }
+-        Write-Log "GPU без знімка моделей: LM Studio не слухає :1234; наряд=$($Job.name); прогін=$($Job.id) — його моделі обгортка не прибере" -Required
+-        return
+-    }
++    $before = @(Get-LmsInstances)
+     $lease = [ordered]@{ v = 1; marker = [string]$Job.name; run = [string]$Job.id; before = $before }
+     Write-FileAtomic (Join-Path $LaneDir 'gpu-models.json') ($lease | ConvertTo-Json -Depth 6 -Compress)
+ }
+@@ -1346,6 +1338,11 @@ function Get-GpuBusyReason($Workers, [switch]$LockHeld) {
+         $script:GpuHoldReason = 'незакритий знімок моделей GPU'
+         return 'GPU: незакритий знімок моделей попереднього наряду (lanes/gpu-models.json)'
+     }
++    try { $null = @(Get-LmsInstances) }
++    catch {
++        $script:GpuHoldReason = 'LM Studio недоступний на :1234'
++        return 'GPU: LM Studio недоступний на :1234 — неможливо зберегти початкові екземпляри'
++    }
+     $load = Get-GpuLoad
+     if ($load.Reason) {
+         $script:GpuHoldReason = $load.Reason
+diff --git a/аудит/адаптери/gemini/wrapper_health.ps1 b/аудит/адаптери/gemini/wrapper_health.ps1
+index a6e3e1432..6a1871b3f 100644
+--- a/аудит/адаптери/gemini/wrapper_health.ps1
++++ b/аудит/адаптери/gemini/wrapper_health.ps1
+@@ -9,7 +9,7 @@ $script:HealthDetails = @{
+ $script:HealthAlertDir = ''
+ # Сигнал запобіжника, що тримає позначки (queue_lanes.ps1, Update-HoldSignals), і позначка з назвою не за форматом
+ # (gemini_run.ps1, Start-Markers; назва — безпечними знаками): рядок рушія й шаблон публікації — тут одне місце.
+-$script:HoldLineTemplate = '\AGEMINI ОБГОРТКА: ЗАБЛОКОВАНО (?:(?:GPU|SLOTS): (?:замок GPU іншого наряду|слоти зайняті|nvidia-smi не відповів|кілька GPU: потрібен вимір однієї карти|навантаження (?:100|[1-9]?[0-9]) %|вільно [0-9]{1,7} з потрібних [0-9]{1,7} MiB(?:; навантаження (?:100|[1-9]?[0-9]) %)?|GPU зайнята стороннім процесом|процес [A-Za-z0-9._+-]{1,92}|процес [A-Za-z0-9._-]{1,30} [0-9]{1,7} MiB(?:\+[A-Za-z0-9._-]{1,30} [0-9]{1,7} MiB){0,2}), позначок [1-9][0-9]{0,3}|gemini-queue/[\p{L}\p{Nd}._/-]{1,160} FORMAT)\z'
++$script:HoldLineTemplate = '\AGEMINI ОБГОРТКА: ЗАБЛОКОВАНО (?:(?:GPU|SLOTS): (?:замок GPU іншого наряду|незакритий знімок моделей GPU|LM Studio недоступний на :1234|слоти зайняті|nvidia-smi не відповів|кілька GPU: потрібен вимір однієї карти|навантаження (?:100|[1-9]?[0-9]) %|вільно [0-9]{1,7} з потрібних [0-9]{1,7} MiB(?:; навантаження (?:100|[1-9]?[0-9]) %)?|GPU зайнята стороннім процесом|процес [A-Za-z0-9._+-]{1,92}|процес [A-Za-z0-9._-]{1,30} [0-9]{1,7} MiB(?:\+[A-Za-z0-9._-]{1,30} [0-9]{1,7} MiB){0,2}), позначок [1-9][0-9]{0,3}|gemini-queue/[\p{L}\p{Nd}._/-]{1,160} FORMAT)\z'
+ 
+ function Test-HoldLine([string]$Line) { $Line -cmatch $script:HoldLineTemplate }
+ 
+diff --git a/аудит/адаптери/gemini/НАЛАШТУВАННЯ.md b/аудит/адаптери/gemini/НАЛАШТУВАННЯ.md
+index 06c67d3e4..0720cefd6 100644
+--- a/аудит/адаптери/gemini/НАЛАШТУВАННЯ.md
++++ b/аудит/адаптери/gemini/НАЛАШТУВАННЯ.md
+@@ -451,12 +451,12 @@ $f = Join-Path "$env:USERPROFILE\gemini-outbox" $n
+ | `wrapper_probe.ps1` | `85116D04C22EB64CBFF52E66BCEAE9B1091577A889EDD58A8B634093A82BDBC6` |
+ | `wrapper_update.ps1` | `45F254E5CB2FB7D882BBB9CE7CA121988FDF23BACCFE65CB67A4CA3B3F426FE7` |
+ | `wrapper_chain.ps1` | `52D6A12EB4A0B1E7FE98893752A292CD23F2746B12A97DEF34825D3DFEE58EFA` |
+-| `gemini_run.ps1` | `A237E8CAFC624DF3D062282D97142DCE1C9C85FDD1CBB16559FB1FCBC1F22ADA` |
++| `gemini_run.ps1` | `561048BD8A8BC657A77EBCAFAF393F572ACE984768CD44A173CA5313BCA5DA29` |
+ | `gemini_publish.ps1` | `0AF4A7E5833A5CB12E5A5C53E885B32E87791D863A95BCEFD8594396D5080598` |
+ | `gemini_watch.ps1` | `69EFEBB07FF1AF51C382B753A95C50F3C1AC27B3008F2489992BEBE3FD0213AA` |
+-| `wrapper_health.ps1` | `F63CDFD76BCBE92440A843759BCD6CED4E49B4BCBAC19620CACA4B74B9D58AA5` |
+-| `queue_lanes.ps1` | `438AACDADE3A27453339E47F6A5FFB947B2536831139067232B738CEFAF4009C` |
+-| `claude_run.ps1` | `01422B679F230E2674A01CC74468C12781FA1E83528CAE4ECBB3F2BCD3B1A0A5` |
++| `wrapper_health.ps1` | `AB85BBF974EA56281C2824C12CA11BF775013C6AD7F9C67AD4E8DC433931E817` |
++| `queue_lanes.ps1` | `B896E0D5B5E7FD5C49A7EDC9F801A23C128B98BE660227CBEC6B2EF3380EB38C` |
++| `claude_run.ps1` | `7552849A31B329BBB9076FD769190364343CC4A174127E28BBF307035579D09D` |
+ | `CodexInstaller` (`install.ps1` релізу Codex `CodexRelease`) | `A59CB66350098C33B021FF470D586AE8FE3B7CAF189CA7137B4FE3AF5D4DCE74` |
+ 
+ Той самий список читають скрипти `m9v/` з `m9v/хеші.psd1` — міняти їх разом із таблицею. Підготовка одним проходом — `m9v/ЩО_НАТИСНУТИ.md`.
+@@ -698,9 +698,12 @@ CI й ноутбук запускають один повний перелік 
+ Якщо завершено також планувальник, запис дочекається його наступного запуску задачею Windows.
+ Помилка REST або знімка не стирає запис; до успішного прибирання ворота GPU тримають лише GPU-наряди
+ («незакритий знімок моделей GPU»), а наряди без GPU тим часом ідуть. До першого знімка помилка REST зупиняє worker
+-без запуску агента. Сервер LM Studio не слухає `:1234` — наряд іде без знімка (рядок журналу «GPU без знімка моделей»),
+-і його моделі обгортка не прибирає: вимкнений сервер не означає вивантажених моделей, а порожній знімок віддав би
+-наряду моделі власника. Адреса REST — локальна `127.0.0.1:1234`.
++без запуску агента. Ворота `Get-GpuBusyReason` перевіряють доступність повного переліку LM Studio: вимкнений
++сервер або непридатна відповідь утримують GPU-позначку в черзі з причиною «LM Studio недоступний на :1234» у #1856
++і сигналі диспетчерові; наряди без GPU йдуть. Worker повторно знімає перелік під GPU-замком: якщо REST зник після
++перевірки воріт, claim звільняється без витрати повторів запуску, позначка лишається для наступного проходу.
++Порожній початковий перелік дозволено лише після успішного REST; вимкнений сервер порожнім переліком не вважається.
++Адреса REST — локальна `127.0.0.1:1234`.
+ Кожна спроба вивантаження журналюється перед POST: модель, ID екземпляра, позначка й ID прогону.
+ Наявні до замка екземпляри не вивантажуються. Прибирання не залежить від HTTP/CLI/JIT способу завантаження.
+ Стенд: `python перевірка/сценарії_gpu_моделі.py --source-dir <тека обгортки>` (Windows, Python, Node.js).
+diff --git a/аудит/адаптери/gemini/перевірка/side.ps1 b/аудит/адаптери/gemini/перевірка/side.ps1
+index c9cf04ce1..691ae7514 100644
+--- a/аудит/адаптери/gemini/перевірка/side.ps1
++++ b/аудит/адаптери/gemini/перевірка/side.ps1
+@@ -38,6 +38,8 @@ function Test-OwnerUser { $true }
+ if ((Split-Path -Leaf $Script) -eq 'gemini_publish.ps1') {
+     function Test-DispatcherAction([string]$Line) { $true }
+ }
++# Моделі в цьому стенді синтетичні: початковий і кінцевий переліки порожні.
++function Get-LmsInstances { }
+ function Test-ExternalGpuFree { $true }
+ # Планувальник читає той самий вхід напряму через Get-GpuBusyReason.
+ function Get-GpuTelemetry { <# Ізольована карта синтетичного планувальника. #> [pscustomobject]@{ Error = ''; TotalMiB = 16376; FreeMiB = 16376; Percent = 0 } }
+diff --git a/аудит/адаптери/gemini/перевірка/side_claude.ps1 b/аудит/адаптери/gemini/перевірка/side_claude.ps1
+index 25573f5d2..159d77cd3 100644
+--- a/аудит/адаптери/gemini/перевірка/side_claude.ps1
++++ b/аудит/адаптери/gemini/перевірка/side_claude.ps1
+@@ -30,6 +30,8 @@ function Get-TaskRows {
+         [pscustomobject]@{ Name = $n; Last = '2026-10-26T10:00:00Z'; Result = '0x0'; State = $st }
+     }
+ }
++# Моделі в цьому стенді синтетичні: початковий і кінцевий переліки порожні.
++function Get-LmsInstances { }
+ function Test-ExternalGpuFree { $true }
+ # Планувальник читає той самий вхід напряму через Get-GpuBusyReason.
+ function Get-GpuTelemetry { <# Ізольована карта синтетичного планувальника. #> [pscustomobject]@{ Error = ''; TotalMiB = 16376; FreeMiB = 16376; Percent = 0 } }
+diff --git a/аудит/адаптери/gemini/перевірка/сценарії_gpu_моделі.py b/аудит/адаптери/gemini/перевірка/сценарії_gpu_моделі.py
+index 834d6637b..aedce0829 100644
+--- a/аудит/адаптери/gemini/перевірка/сценарії_gpu_моделі.py
++++ b/аудит/адаптери/gemini/перевірка/сценарії_gpu_моделі.py
+@@ -18,6 +18,7 @@ $ErrorActionPreference = 'Stop'
+ [Console]::OutputEncoding = New-Object Text.UTF8Encoding($false)
+ . (Join-Path $SourceDir ($Lane + '_run.ps1'))
+ $script:RealWriteLog = ${function:Write-Log}
++$script:RealSaveSkips = ${function:Save-Skips}
+ $LaneDir = $TestDir
+ $RunsDir = $TestDir
+ $WorkDir = $TestDir
+@@ -36,9 +37,7 @@ function Invoke-RestMethod {
+     if ($null -ne $Body) { $args_.Body = $Body }
+     Microsoft.PowerShell.Utility\Invoke-RestMethod @args_
+ }
+-function Get-StatePath { Join-Path $TestDir 'state' }
+-function Close-FailedStart { }
+-function Remove-Claim { }
++function Get-StatePath { Join-Path $TestDir 'state.txt' }
+ function Set-BrowserGpuPolicy { }
+ function Test-ExternalGpuFree { $true }
+ function Add-HealthException { }
+@@ -67,6 +66,36 @@ function Invoke-Task {
+ }
+ $script:Job = [pscustomobject]@{name='gemini-queue/стенд/gpt-test/1/gpu'; id='стенд-прогін'; limits=[pscustomobject]@{};
+     ref='ref';sha='sha';slot='test-slot';gpu=($TestMode -ne 'cpu');lane=$Lane;slug='стенд';model='gpt-test';n='1';cond='gpu';prio=1;deadline='';time=1;claude='cc-test';effort='high'}
++if ($TestMode -eq 'schedule') {
++    # Реальний прохід черги; підроблено лише позначки, вибір агента й створення його процесу.
++    Set-Item Function:Save-Skips $script:RealSaveSkips
++    function Get-GpuLoad { [pscustomobject]@{ Reason = '' } }
++    function Get-Markers {
++        foreach ($slug in @('gpu', 'cpu')) {
++            $model = $(if ($Lane -eq 'claude') { 'cc-claude-sonnet-5-5-medium' } else { 'gpt-test' })
++            [pscustomobject]@{ Valid=$true; Lane=$Lane; Ref=$slug; Name="gemini-queue/$slug/$model/1"; Slug=$slug;
++                Model=$model; Sha=('a' * 40); Time=[DateTimeOffset]::UtcNow.ToUnixTimeSeconds(); Gpu=($slug -eq 'gpu');
++                Prio=1; Deadline=''; N='1'; Cond=''; Seen=0 }
++        }
++    }
++    function Get-OrderedMarkers($Markers) { $Markers }
++    function Test-SlugBusy { $false }
++    function Get-FreeSlot { 'test-slot' }
++    function New-Claim { $true }
++    function Select-Engine { [pscustomobject]@{ Engine=[pscustomobject]@{Name='codex'; Model='gpt-test'; Effort='high'};
++        Model='gpt-test'; Quota=[pscustomobject]@{Blocked=$false; Known=$true; Left=100; Group='CODEX'} } }
++    $script:StartedSlugs = @()
++    function Start-Worker($Job, $Dir) {
++        $script:StartedSlugs += $Job.slug
++        [pscustomobject]@{ Slot=$Job.slot; Slug=$Job.slug; Gpu=$Job.gpu; Marker=$Job.name; Proc=[pscustomobject]@{HasExited=$true} }
++    }
++    $script:Lanes = @($Lane)
++    $script:Limits = @{ slots=@{codex=2; agy=2; claude=2}; claude_laptop=@('cpu') }
++    Start-Markers (New-Object System.Collections.ArrayList) | Out-Null
++    [pscustomobject]@{ started=@($script:StartedSlugs); held=$script:Held;
++        signal=(Test-HoldLine 'GEMINI ОБГОРТКА: ЗАБЛОКОВАНО GPU: LM Studio недоступний на :1234, позначок 1') } | ConvertTo-Json -Compress -Depth 6
++    exit 0
++}
+ if ($TestMode -eq 'recover') { Start-Markers @() | Out-Null; if ($null -eq $script:Held) { throw 'Не ініціалізовано стан утримань' }; exit 0 }
+ if ($TestMode -eq 'offline') { exit (Main) }
+ if ($TestMode -eq 'busy') { [Console]::Out.Write((Get-GpuBusyReason @())); exit 0 }
+@@ -195,7 +224,7 @@ def main():
+                 def run(mode_):
+                     """Чекає завершення конкретного процесу; вивід читається тільки при збої."""
+                     p = subprocess.run(args + ['-TestMode', mode_], capture_output=True, timeout=45)
+-                    if p.returncode and mode_ not in ('timeout', 'agent-crash'):
++                    if p.returncode and mode_ not in ('timeout', 'agent-crash') and not (mode_ == 'done' and p.returncode == 4):
+                         print(p.stdout.decode('utf-8', errors='replace'), p.stderr.decode('utf-8', errors='replace'))
+                         if mode_ not in ('done', 'log-fail'):
+                             raise RuntimeError('Збій процесу стенда: ' + mode_)
+@@ -257,22 +286,41 @@ def main():
+                 run('recover')
+                 check(lane + '/' + fault + ': повтор відновлює тільки початкову модель', Studio.loaded == {'owner-id': 'owner-model'})
+             Studio.fault = 'get'
+-            run('done')
+-            check(lane + ': без початкового REST-знімка агент не вантажить моделей', Studio.loaded == {'owner-id': 'owner-model'})
++            no_snapshot = run('done')
++            check(lane + ': без початкового REST-знімка агент не вантажить моделей',
++                  no_snapshot.returncode == 4 and Studio.loaded == {'owner-id': 'owner-model'})
+             Studio.fault = ''
+             Studio.loaded = {}
+             run('done')
+             check(lane + ': порожня початкова множина відновлюється', not Studio.loaded and not (d / 'gpu-models.json').exists())
+-            # Сервер не слухає :1234: наряд іде без знімка, модель власника й моделі наряду обгортка не чіпає.
++            # Нова нагода після попередніх unload: вимір читає лише її виклики REST.
+             Studio.loaded = {'owner-id': 'owner-model'}
++            before_calls = len(Studio.calls)
++            (d / 'ready').unlink(missing_ok=True)
+             (d / 'down').write_text('так', encoding='utf-8')
++            scheduled = json.loads(run('schedule').stdout.decode('utf-8-sig'))
++            skipped = json.loads((d / 'skipped.json').read_text(encoding='utf-8-sig'))
++            check(lane + ': недоступний REST тримає GPU-позначку, CPU-позначка стартує',
++                  scheduled['started'] == ['cpu'] and 'GPU' in scheduled['held'])
++            check(lane + ': причина LM Studio доходить до таблиці #1856 і транспорту диспетчера',
++                  scheduled['signal'] and len(skipped) == 1 and 'LM Studio недоступний на :1234' in skipped[0]['why'])
++            (d / 'state.claim').write_text('стенд-прогін', encoding='utf-8')
+             down = run('done')
++            check(lane + ': REST зник після воріт — worker повертає GPU-наряд без старту агента',
++                  down.returncode == 4 and not (d / 'gpu-models.json').exists() and not (d / 'ready').exists()
++                  and Studio.loaded == {'owner-id': 'owner-model'} and not Studio.calls[before_calls:])
++            check(lane + ': відкладений GPU-наряд не губиться й не витрачає повторів запуску',
++                  not (d / 'state.claim').exists() and not (d / 'state.txt').exists())
++            cpu = run('cpu')
++            check(lane + ': CPU-worker працює при вимкненому LM Studio без REST',
++                  cpu.returncode == 0 and not Studio.calls[before_calls:])
+             (d / 'down').unlink()
+-            log = (d / 'wrapper.log').read_text(encoding='utf-8') if (d / 'wrapper.log').exists() else ''
+-            check(lane + ': вимкнений LM Studio — наряд без знімка, нічого не вивантажено',
+-                  down.returncode == 0 and not (d / 'gpu-models.json').exists() and Studio.loaded.get('owner-id') == 'owner-model'
+-                  and len(Studio.loaded) == 3 and not [c for c in Studio.calls if c[0] == 'POST' and c[1].endswith('/unload')]
+-                  and 'GPU без знімка моделей' in log)
++            scheduled = json.loads(run('schedule').stdout.decode('utf-8-sig'))
++            check(lane + ': після відновлення REST та сама GPU-позначка береться наступним проходом',
++                  scheduled['started'] == ['gpu', 'cpu'] and 'GPU' not in scheduled['held'])
++            run('done')
++            check(lane + ': відкладений наряд після повернення REST прибирає лише власні ID',
++                  Studio.loaded == {'owner-id': 'owner-model'} and not (d / 'gpu-models.json').exists())
+             Studio.loaded = {'owner-id': 'owner-model'}
+             run('take')
+             Studio.loaded['job-job-model'] = 'job-model'
+diff --git a/аудит/адаптери/gemini/перевірка/сценарії_gpu_память.ps1 b/аудит/адаптери/gemini/перевірка/сценарії_gpu_память.ps1
+index c03dfea24..a9ea10cfb 100644
+--- a/аудит/адаптери/gemini/перевірка/сценарії_gpu_память.ps1
++++ b/аудит/адаптери/gemini/перевірка/сценарії_gpu_память.ps1
+@@ -1,5 +1,5 @@
+ ﻿#Requires -Version 5.1
+-<# Справжні рішення модуля й транспорт причини; підмінено лише драйвер, WMI та замок.
++<# Справжні рішення модуля й транспорт причини; підмінено драйвер, WMI, замок і порожній перелік LM Studio.
+ Числа сценаріїв — фікстури, а 8925 MiB виробничого бюджету звірено з паспортом виміру. #>
+ param([Parameter(Mandatory = $true)][string]$SourceDir)
+ $ErrorActionPreference = 'Stop'
+@@ -11,6 +11,7 @@ function Check([string]$Name, [bool]$Ok) {
+     if ($Ok) { "✓ $Name" } else { "✗ $Name"; $script:bad++ }
+ }
+ $LaneDir = [IO.Path]::GetTempPath()
++function Get-LmsInstances { <# REST поза мірилом пам’яті; синтетичних моделей немає. #> }
+ $script:LockFree = $true
+ function Test-LockFree { $script:LockFree }
+ $script:Free = 14455; $script:Percent = 0; $script:SmiCode = 0; $script:SmiOut = $null
+diff --git a/аудит/адаптери/gemini/перевірка/сценарії_gpu_процеси.ps1 b/аудит/адаптери/gemini/перевірка/сценарії_gpu_процеси.ps1
+index 9f29626b9..b1d1aba82 100644
+--- a/аудит/адаптери/gemini/перевірка/сценарії_gpu_процеси.ps1
++++ b/аудит/адаптери/gemini/перевірка/сценарії_gpu_процеси.ps1
+@@ -2,7 +2,7 @@
+ <# Стенд наряду «обгортка-вивантаження-моделі» (31.10, редакція без вивантаження): GPU-позначки стояли через робочий стіл
+ Windows (абсолютний поріг пам'яті процесу), а модель LM Studio — інструмент прогонів, не сторонній процес (власник
+ 31.10 ~21:33 UTC); «Позначки без старту» в #1856 — порожні клітинки; позначка не за форматом стояла мовчки. Справжні функції
+-обгортки; підмінено лише лічильник відеопам'яті процесів, nvidia-smi, Get-Process, перелік позначок і замки. Кожен виклик
++обгортки; підмінено порожній перелік LM Studio, лічильник відеопам'яті процесів, nvidia-smi, Get-Process, перелік позначок і замки. Кожен виклик
+ Invoke-Native записано: обгортка не викликає `lms` (моделей не вивантажує). #>
+ param([Parameter(Mandatory = $true)][string]$SourceDir)
+ $ErrorActionPreference = 'Stop'
+@@ -30,6 +30,7 @@ $script:ModelProcs = @(@{ Pid = 7000; MiB = 120 }, @{ Pid = 7100; MiB = 9000 })
+ $script:IdleProcs = @(@{ Pid = 3300; MiB = 57 })
+ $script:NoCounter = $false  # claude_run.ps1 вмикає Set-StrictMode: неініціалізована змінна — виняток
+ $fakes = {
++    function Get-LmsInstances { <# REST поза мірилом процесів; синтетичних моделей немає. #> }
+     function Get-GpuCounterRows {
+         if ($script:NoCounter) { return $null }
+         , @(foreach ($p in @($script:Procs)) {
+diff --git a/аудит/адаптери/gemini/перевірка/сценарії_менше_прогонів.ps1 b/аудит/адаптери/gemini/перевірка/сценарії_менше_прогонів.ps1
+index 5671170df..83da1b39b 100644
+--- a/аудит/адаптери/gemini/перевірка/сценарії_менше_прогонів.ps1
++++ b/аудит/адаптери/gemini/перевірка/сценарії_менше_прогонів.ps1
+@@ -255,6 +255,7 @@ try {
+         Check '2 уже перевірена збірка має порожній план' (@($samePlan.scenes.PSObject.Properties).Count -eq 0)
+     }
+     Scenario '5 браузер без GPU' {
++        function Get-LmsInstances { <# Синтетичний порожній REST; мірило браузера не звертається до LM Studio. #> }
+         if (Get-Command Set-BrowserGpuPolicy -ErrorAction SilentlyContinue) { Set-BrowserGpuPolicy "$tmp/browser policy" }
+         $nodeModule = @'
+ module.exports = {chromium: {
+diff --git a/аудит/адаптери/gemini/перевірка/сценарії_простій_ресурсу.ps1 b/аудит/адаптери/gemini/перевірка/сценарії_простій_ресурсу.ps1
+index 28b8119be..e650ec20b 100644
+--- a/аудит/адаптери/gemini/перевірка/сценарії_простій_ресурсу.ps1
++++ b/аудит/адаптери/gemini/перевірка/сценарії_простій_ресурсу.ps1
+@@ -1,6 +1,6 @@
+ ﻿#Requires -Version 5.1
+ <# Стенд наряду «обгортка-GPU-простій» (29.10): хибне «GPU зайнята», стенд без Main (main.cpl), мовчазний запобіжник.
+-Справжні функції обгортки; підмінено лише nvidia-smi, перелік позначок і замки. #>
++Справжні функції обгортки; підмінено nvidia-smi, перелік позначок, замки й порожній перелік LM Studio. #>
+ param([Parameter(Mandatory = $true)][string]$SourceDir)
+ $ErrorActionPreference = 'Stop'
+ [Console]::OutputEncoding = New-Object Text.UTF8Encoding($false)
+@@ -21,6 +21,7 @@ $sideDir = Join-Path $SourceDir 'перевірка'
+ # --- (а) відеокарта зайнята за нестачі VRAM ----------------------------------------------------------------
+ Scenario 'а GPU' {
+     . (Join-Path $SourceDir 'queue_lanes.ps1')
++    function Get-LmsInstances { <# Синтетичний порожній REST; мірило простою не звертається до LM Studio. #> }
+     function Get-Command { [pscustomobject]@{ Source = 'nvidia-smi' } }
+     function Get-GpuCounterRows { <# Запасне джерело — nvidia-smi; лічильник процесів міряє сценарії_gpu_процеси.ps1. #> $null }
+     function Invoke-Native { param($Exe, $Arguments)
+@@ -80,6 +81,7 @@ Scenario 'б стенди' {
+ Scenario 'в сигнал' {
+     $work = Join-Path $tmp 'cr'; $box = Join-Path $tmp 'box'
+     . (Join-Path $SourceDir 'claude_run.ps1') -WorkDir $work -RepoDir $tmp -OutboxDir $box -PublishDir "$tmp/pub" -GeminiOutDir "$tmp/gout" -LaneDir "$tmp/lanes" -TmpDir "$tmp/ctmp" -NoStatus
++    function Get-LmsInstances { <# Синтетичний порожній REST; мірило простою не звертається до LM Studio. #> }
+     foreach ($d in @($work, "$work/state", "$work/slots", $box, "$tmp/lanes")) { [void][IO.Directory]::CreateDirectory($d) }
+     $script:StateDir = "$work/state"; $script:SlotDir = "$work/slots"; $script:Limits = $null
+     $send = { param($l) Add-Line $l }
+@@ -126,6 +128,7 @@ Scenario 'в сигнал' {
+ Scenario 'в планувальник' {
+     $work = Join-Path $tmp 'cp'
+     . (Join-Path $SourceDir 'claude_run.ps1') -WorkDir $work -RepoDir $tmp -OutboxDir "$tmp/cpbox" -PublishDir "$tmp/pub" -GeminiOutDir "$tmp/gout" -LaneDir "$tmp/lanes" -TmpDir "$tmp/ctmp" -NoStatus
++    function Get-LmsInstances { <# Синтетичний порожній REST; мірило простою не звертається до LM Studio. #> }
+     foreach ($d in @($work, "$work/state", "$work/slots", "$tmp/lanes")) { [void][IO.Directory]::CreateDirectory($d) }
+     $script:StateDir = "$work/state"; $script:SlotDir = "$work/slots"
+     $script:Limits = @{ slots = @{ claude = 2 }; source = 'код'; claude_laptop = @() }
+@@ -157,6 +160,7 @@ $g3out = Join-Path $tmp 'g3out'
+ Scenario 'в3 gemini-run' {
+     $work = Join-Path $tmp 'g3'
+     . (Join-Path $SourceDir 'gemini_run.ps1') -RepoDir $tmp -RepoUrl 'x' -RunsDir "$work/runs" -OutDir $g3out -LaneDir "$tmp/g3lanes" -AgyExe 'немає-cli' -ProfileDir $tmp
++    function Get-LmsInstances { <# Синтетичний порожній REST; мірило простою не звертається до LM Studio. #> }
+     foreach ($d in @("$work/runs", "$work/state", "$work/slots", $g3out, "$tmp/g3lanes")) { [void][IO.Directory]::CreateDirectory($d) }
+     $script:StateDir = "$work/state"; $script:SlotDir = "$work/slots"; $script:Limits = $null
+     $script:HealthAlertDir = Join-Path $g3out 'alerts'
+@@ -202,6 +206,7 @@ Scenario 'в3 публікатор' {
+ Scenario 'г банер' {
+     $work = Join-Path $tmp 'cg'
+     . (Join-Path $SourceDir 'claude_run.ps1') -WorkDir $work -RepoDir $tmp -OutboxDir "$tmp/cgbox" -PublishDir "$tmp/pub" -GeminiOutDir "$tmp/gout" -LaneDir "$tmp/lanes" -TmpDir "$tmp/ctmp" -NoStatus
++    function Get-LmsInstances { <# Синтетичний порожній REST; мірило простою не звертається до LM Studio. #> }
+     foreach ($d in @($work, "$work/state", "$work/slots", "$tmp/gout")) { [void][IO.Directory]::CreateDirectory($d) }
+     $script:StateDir = "$work/state"; $script:SlotDir = "$work/slots"; $script:Limits = $null
+     function Get-TaskRows { @() }

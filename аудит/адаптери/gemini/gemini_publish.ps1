@@ -520,13 +520,18 @@ function Get-Line([string]$Id, [switch]$StatusOnly) {
         }
     }
     if ($pc -eq 'OK') {
+        $publication = Get-EngineLivePublication $head
         Write-FileAtomic (Get-SeenPath $publicationKey) ($publicationKey + "`n" + $Id)
         $what = $(if ($DryRun) { 'ПЕРЕВІРЕНО (без пушу)' } else { 'ОПУБЛІКОВАНО' })
         Write-WrapperLog "кінець $Id — $what $branch $head; комітів $ahead, файлів до main $files; без .github/ і файлів обгортки; $run"
         if (Request-SleepRetry $s $queue $marker $head) { return $null }
+        if ($head) { Save-DraftRequest $branch $head ([string](Get-Prop $s 'actual')) }
+        if ($publication.Bad.Count) {
+            Write-WrapperLog ('вада тіла PR: ' + (($publication.Bad | ForEach-Object { $_.error }) -join '; '))
+            return [pscustomobject]@{ Slug=$slug; Outbox="GEMINI ОБГОРТКА: ЗАБЛОКОВАНО $branch LIVE_AFTER_INVALID_PUBLISHED" }
+        }
         # ГОТОВО — лише звіт агента ГОТОВО з опублікованою головою; решта опублікованого — код прогону з _PUBLISHED.
         if ($code -eq 'DONE' -and $head) {
-            Save-DraftRequest $branch $head ([string](Get-Prop $s 'actual'))
             # Квота групи (рішення диспетчера 9611): суфікс лише коли стан має групу й відсоток 0–100.
             $qg = [string](Get-Prop $s 'qgroup')
             $qs = $(if ($quotaLeft -match '^(?:100|[1-9]?[0-9])$' -and $qg -cmatch '^[A-Z0-9]{2,16}$') { " КВОТА $qg $quotaLeft" } else { '' })
@@ -574,7 +579,7 @@ $script:OutboxNamePattern = '^[0-9]{8}-[0-9]{6}-[0-9a-f]{12}\.txt$'
 $script:SlugCore = $script:SlugPattern -replace '^\^|\\z$', ''
 $script:OutboxTemplates = @(
     '\AGEMINI ОБГОРТКА: СОН [0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z → [0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z, нарядів [0-9]{1,5}\z'
-    '^GEMINI ОБГОРТКА: ЛАНЦЮГ CHAIN_[A-Z_]{1,32}(?: [A-Za-z0-9]{1,40} [a-z_]{1,40}\.ps1:[0-9]{1,5})?\z',
+    '^GEMINI ОБГОРТКА: ЛАНЦЮГ CHAIN_[A-Z_]{1,32}(?: [A-Za-z0-9]{1,40} (?:[a-z_]{1,40}\.ps1:[0-9]{1,5}|[A-Za-z][A-Za-z0-9-]{0,79}))?\z',
     '^GEMINI ОБГОРТКА: ОНОВЛЕНО [0-9a-f]{40} СЕКУНД [0-9]{1,12}\z',
     '^GEMINI ОБГОРТКА: ОНОВЛЕННЯ [0-9a-f]{40} UPDATE_[A-Z_]{1,32}\z',
     "\AGEMINI ОБГОРТКА: ГОТОВО (?:gemini|codex|claude)/$script:SlugCore [0-9a-f]{40}(?: КВОТА [A-Z0-9_]{2,40} (?:100|[1-9]?[0-9]))?(?: МОДЕЛЬ [a-z0-9][a-z0-9.-]{1,63})?\z"

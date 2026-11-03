@@ -1,0 +1,27 @@
+{
+ "версія": 1,
+ "запит": {
+  "model": "qwen/qwen3.5-9b",
+  "max_tokens": 4000,
+  "messages": [
+   {
+    "role": "user",
+    "content": [
+     {
+      "type": "text",
+      "text": "{\"task\": {\"role\": \"You read the description of an outfit and list its items as data.\", \"rules\": [\"One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.\", \"One item carries one thing — of two alternatives list the first; a note in brackets is not an item.\", \"Slot \\\"accessory\\\" is for an item no other slot fits.\", \"\\\"is_outfit\\\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note.\"], \"limits\": [\"Rely only on the input: do not invent what it does not contain.\", \"The answer is one JSON object following \\\"answer_schema\\\", without explanations and without ```.\"], \"language\": \"English\", \"answer\": \"ITEM_LIST\", \"answer_schema\": {\"is_outfit\": \"yes|no\", \"items\": [{\"name\": \"<what the item is>\", \"details\": \"<its cut, length and fabric>\", \"slot\": \"top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory\", \"color_hex\": \"<#rrggbb or null>\", \"worn\": \"<true, or false when the description says the outfit goes without it>\"}]}, \"input\": [\"\\\"description\\\" — the outfit description\"]}, \"description\": \"Sheath dress, midi length, midnight blue, silk crepe.\\nTailored wool-blend blazer, cropped jacket silhouette, charcoal grey, fine tweed.\\nBlock-heel pumps, pointed toe, metallic gold, smooth leather.\\nDelicate pearl drop earrings, single strand cultured pearl necklace, slim gold watch with a leather strap.\\n\\nThis outfit works perfectly for an upscale wedding reception in autumn, balancing the required formal dress code with seasonal warmth and elegance. The midnight blue sheath dress provides a sophisticated base that honors the ceremony's significance without appearing too heavy for a midday event under daylight. Adding the structured charcoal blazer offers necessary coverage against cooler fall air while maintaining a polished business-appropriate silhouette suitable for a restaurant setting. Finally, the metallic gold shoes and pearls introduce a subtle celebratory sparkle that respects the occasion's joyous nature without overwhelming the refined atmosphere.\"}"
+     }
+    ]
+   }
+  ],
+  "temperature": 1
+ },
+ "відповідь": {
+  "status": 200,
+  "contentType": "application/json",
+  "headers": {
+   "x-model": "qwen/qwen3.5-9b"
+  },
+  "body": "{\"content\":[{\"type\":\"text\",\"text\":\"{\\n\\\"is_outfit\\\": \\\"yes\\\",\\n\\\"items\\\": [\\n{\\n\\\"name\\\": \\\"Sheath dress\\\",\\n\\\"details\\\": \\\"midi length, silk crepe fabric\\\",\\n\\\"slot\\\": \\\"dress\\\",\\n\\\"color_hex\\\": \\\"#00003b\\\",\\n\\\"worn\\\": true\\n},\\n{\\n\\\"name\\\": \\\"Tailored wool-blend blazer\\\",\\n\\\"details\\\": \\\"cropped jacket silhouette, fine tweed fabric\\\",\\n\\\"slot\\\": \\\"outerwear\\\",\\n\\\"color_hex\\\": \\\"#36454f\\\",\\n\\\"worn\\\": true\\n},\\n{\\n\\\"name\\\": \\\"Block-heel pumps\\\",\\n\\\"details\\\": \\\"pointed toe, smooth leather\\\",\\n\\\"slot\\\": \\\"shoes\\\",\\n\\\"color_hex\\\": \\\"#d4af37\\\",\\n\\\"worn\\\": true\\n},\\n{\\n\\\"name\\\": \\\"Pearl drop earrings\\\",\\n\\\"details\\\": \\\"delicate single strand cultured pearl\\\",\\n\\\"slot\\\": \\\"earrings\\\",\\n\\\"color_hex\\\": \\\"#f8f8ff\\\",\\n\\\"worn\\\": true\\n},\\n{\\n\\\"name\\\": \\\"Cultured pearl necklace\\\",\\n\\\"details\\\": \\\"single strand\\\",\\n\\\"slot\\\": \\\"necklace\\\",\\n\\\"color_hex\\\": \\\"#f8f8ff\\\",\\n\\\"worn\\\": true\\n},\\n{\\n\\\"name\\\": \\\"Slim gold watch\\\",\\n\\\"details\\\": \\\"leather strap\\\",\\n\\\"slot\\\": \\\"watch\\\",\\n\\\"color_hex\\\": \\\"#d4af37\\\",\\n\\\"worn\\\": true\\n}\\n]\\n}\"}],\"usage\":{\"input_tokens\":531,\"output_tokens\":319},\"stop_reason\":\"end_turn\"}"
+ }
+}
