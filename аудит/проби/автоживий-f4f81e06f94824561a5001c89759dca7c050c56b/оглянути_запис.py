@@ -30,11 +30,19 @@ for сцена in ("б1_концерт_стримано", "ж4_робота", "�
              "sha": результат["sha"], "факт": доказ["факт"], "доведення_запису": доказ["вердикт"],
              "червоні": [р.strip() for р in лог.splitlines() if р.strip().startswith("✗")],
              "палітра": [р.strip() for р in лог.splitlines() if "П-7 вибір" in р or "чипів основи:" in р],
-             "person": [], "обмінів": 0, "транспортні_статуси": []}
+             "person": [], "обмінів": 0, "транспортні_статуси": [], "стелі_виводу": []}
     for файл in sorted((тека / "VIDPOVIDI/обмін").glob("*.json")):
         обмін = json.loads(файл.read_text(encoding="utf-8"))
         запис["обмінів"] += 1
         запис["транспортні_статуси"].append(обмін["відповідь"].get("status"))
+        try:
+            тіло = json.loads(обмін["відповідь"]["body"])
+        except (ValueError, TypeError, KeyError):
+            тіло = {}
+        if тіло.get("stop_reason") == "max_tokens":
+            запис["стелі_виводу"].append({"файл": str(файл.relative_to(ТЕКА)),
+                "модель": обмін["запит"].get("model"), "max_tokens": обмін["запит"].get("max_tokens"),
+                "usage": тіло.get("usage"), "stop_reason": тіло["stop_reason"]})
         for повідомлення in обмін["запит"].get("messages", []):
             вміст = повідомлення.get("content", [])
             блоки = вміст if isinstance(вміст, list) else [{"text": вміст}]
@@ -52,6 +60,8 @@ for сцена in ("б1_концерт_стримано", "ж4_робота", "�
     вихід.append(запис)
 
 (ТЕКА / "огляд-записів.json").write_text(json.dumps(вихід, ensure_ascii=False, indent=1) + "\n", encoding="utf-8")
+(ТЕКА / "стелі-виводу.json").write_text(json.dumps([стеля for запис in вихід for стеля in запис["стелі_виводу"]],
+    ensure_ascii=False, indent=1) + "\n", encoding="utf-8")
 for запис in вихід:
     print(запис["сцена"], "rc=", запис["rc"], "червоних=", len(запис["червоні"]),
           "обмінів=", запис["обмінів"], "person=", len(запис["person"]))
