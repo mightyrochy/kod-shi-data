@@ -1,7 +1,8 @@
 import json,urllib.request
+from pathlib import Path
 def act(op,**kw):
  with urllib.request.urlopen(urllib.request.Request('http://127.0.0.1:41236',data=json.dumps({'op':op,**kw}).encode(),headers={'Content-Type':'application/json'}),timeout=600) as r:v=json.load(r)
- print(v.get('screen',''),flush=True)
+ print(Path(v.get('screen','')).name,flush=True)
 act('click',selector='#вк-образи')
 act('click',selector='#до-бібліотеки')
 act('click',selector='summary:visible >> text=Вердикти')

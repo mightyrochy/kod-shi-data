@@ -1,8 +1,9 @@
 import argparse,json,urllib.request
+from pathlib import Path
 p=argparse.ArgumentParser();p.add_argument('text');p.add_argument('--photo');p.add_argument('--stay',action='store_true');a=p.parse_args()
 def act(op,**kw):
  with urllib.request.urlopen(urllib.request.Request('http://127.0.0.1:41236',data=json.dumps({'op':op,**kw}).encode(),headers={'Content-Type':'application/json'}),timeout=600) as r:v=json.load(r)
- print(v.get('screen',''),flush=True)
+ print(Path(v.get('screen','')).name,flush=True)
 if not a.stay:act('click',selector='#вк-сценарій')
 act('fill',selector='#чат-поле',value=a.text)
 if a.photo:act('file',selector='#чат-фото-вхід',file=a.photo)
