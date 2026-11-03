@@ -261,9 +261,20 @@ class Аналіз:
         if isinstance(вузол, ast.JoinedStr):
             return ''.join(ч.value if isinstance(ч, ast.Constant) and isinstance(ч.value, str) else '{}'
                            for ч in вузол.values)
+        if isinstance(вузол, ast.IfExp):
+            return self.значення(м, вузол.body, бачені) + ' ' + self.значення(м, вузол.orelse, бачені)
+        if isinstance(вузол, (ast.Subscript, ast.Compare)):
+            return ''  # поле даних/умова не створює нового тексту
         if isinstance(вузол, ast.BinOp) and isinstance(вузол.op, ast.Mod):
             return self.значення(м, вузол.left, бачені)
         if isinstance(вузол, (ast.Name, ast.Attribute)):
+            п = м.батьки.get(вузол)
+            while п is not None and not isinstance(п, (ast.FunctionDef, ast.AsyncFunctionDef)):
+                if isinstance(п, (ast.ListComp, ast.SetComp, ast.DictComp, ast.GeneratorExp)):
+                    звязані = {з.id for г in п.generators for з in ast.walk(г.target) if isinstance(з, ast.Name)}
+                    if isinstance(вузол, ast.Name) and вузол.id in звязані:
+                        return ''
+                п = м.батьки.get(п)
             інший, ім = self.визначення(м, вузол)
             if інший:
                 призначення = (м.охопна(вузол) if інший is м else None, ім)
