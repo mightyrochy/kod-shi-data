@@ -76,6 +76,9 @@ class Прилад(unittest.TestCase):
                 html = '<img id="photo" class="preview" data-preview><script>document.querySelector(' + json.dumps(селектор) + ').src=generate_image()</script>'
                 self.перевірити({'а.html': html}, 1)
         self.перевірити({'а.html': '<img class="other"><script>document.querySelector(".preview").src=generate_image()</script>'}, 0)
+        self.перевірити({'а.html': '<img class="preview"><script>document.querySelectorAll(".preview")[0].src=generate_image()</script>'}, 1)
+        self.перевірити({'а.html': '<img class="preview"><script>const s=".preview"; const t=s; document.querySelector(t).src=generate_image()</script>'}, 1)
+        self.перевірити({'а.html': '<img class="preview"><script>function s(){return ".preview"} document.querySelector(s()).src=generate_image()</script>'}, 1)
 
     def test_python_розпаковані_іменовані(self):
         код = 'def choose(original, generated):\n    return generated\na = {"generated": generate_image(), "original": load_photo()}\nf = choose\njudge(f(**a))\n'
