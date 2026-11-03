@@ -2308,7 +2308,7 @@ def паспорт_з_шару(внутрішня, сценарій, вето_ч
     # РЕШТА СКАЗАНОГО (М-1, В-5): те, що не лягло в жодне поле, не гине — їде моделям полем
     # випадку (`her_other_words`, `руки_без_коду.паспорт_рядком`), її мовою
     решта = [_текст(x) for x in list(досі.get("решта") or []) + [в.get("rest")]]
-    решта = list(dict.fromkeys(x for x in решта if x))[-6:]
+    решта = list(dict.fromkeys(x for x in решта if x))
     if решта:
         п["решта"] = решта
     # ПОЯСНЕННЯ МОВНОЇ МОДЕЛІ СТИЛІСТЦІ (НП-в6): нове замінює давнє, хід без нього лишає давнє —
@@ -2330,11 +2330,11 @@ def паспорт_з_шару(внутрішня, сценарій, вето_ч
     if _текст(в.get("place_words")) and not об.get("місце"):
         п["не_взято_кодом"] = list(п.get("не_взято_кодом") or []) + [
             "place_words_without_place · step=layer · field=place_words · model_said=%s · code=not_taken"
-            % _json_.dumps(_текст(в.get("place_words"))[:60], ensure_ascii=False)]
+            % _json_.dumps(_текст(в.get("place_words")), ensure_ascii=False)]
     if подія_без_смуги:
         п["не_взято_кодом"] = list(п.get("не_взято_кодом") or []) + [
             "event_without_scene · event=%s · required=event_place · verdict_vs_occasion=no_input"
-            % _json_.dumps(_текст(в.get("event"))[:60], ensure_ascii=False)]
+            % _json_.dumps(_текст(в.get("event")), ensure_ascii=False)]
     # ВИМІРИ — НАОСТАННЄ: `паспорт_з_json` рахував їх до того, як шов поставив опади, активність і
     # поверхню, тож паспорт казав `опади: дощ`, а `виміри.precipitation` — unknown (журнал і звіт власника)
     # Джерело поля — лише з того, що повернув шар (цього ходу чи давніх: `об` несе обидва, опади, активність і
