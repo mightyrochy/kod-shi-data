@@ -1,0 +1,46 @@
+from pathlib import Path
+import json, hashlib, struct, datetime
+base=Path(__file__).parent
+root=base.parent/'repo/аудит/проби/Живий-як-людина-20261103'
+issues=[]; exports=[]; frames=[]; count_json=0; count_png=0
+for f in sorted(root.rglob('*.json')):
+    try:
+        d=json.loads(f.read_text(encoding='utf-8-sig')); count_json+=1
+        if f.parent.name=='скріни':
+            if not f.with_suffix('.png').exists(): issues.append('Нема PNG: '+str(f.relative_to(root)))
+            frames.append([str(f.relative_to(root)),d.get('time_utc'),d.get('label')])
+        if f.name.startswith('verdykty-'):
+            exports.append({'файл':str(f.relative_to(root)),'байтів':f.stat().st_size,'sha256':hashlib.sha256(f.read_bytes()).hexdigest(),'формат':d.get('формат'),'вердиктів':d.get('вердиктів'),'прогонів':d.get('прогонів')})
+    except Exception as e: issues.append(str(f.relative_to(root))+': '+str(e))
+for f in sorted(root.rglob('*.png')):
+    b=f.read_bytes(); count_png+=1
+    if not b.startswith(b'\x89PNG\r\n\x1a\n'): issues.append('Не PNG: '+str(f.relative_to(root))); continue
+    w,h=struct.unpack('>II',b[16:24])
+    if f.parent.name=='скріни' and (w,h)!=(390,844): issues.append('Розмір кадру: '+str(f.relative_to(root))+' '+str((w,h)))
+meta=json.loads((root/'збірка-спроба-3.json').read_text(encoding='utf-8-sig'))
+html_hash=hashlib.sha256((base/'site/product.html').read_bytes()).hexdigest()
+if html_hash!=meta['html_sha256']: issues.append('SHA256 HTML не збігається з метаданими')
+seed=(base/'request.txt').read_text(encoding='utf-8')
+initial={}
+for n in (1,2):
+    folder=root/f'01-ж2-вечеря/запит-{n}/скріни'
+    matches=[]
+    for f in sorted(folder.glob('*.json')):
+        d=json.loads(f.read_text(encoding='utf-8'))
+        if any(c.get('id')=='чат-поле' and c.get('value')==seed for c in d.get('controls',[])): matches.append(f.name)
+    initial[str(n)]=matches
+    if not matches: issues.append('Не знайдено точного початкового тексту у запиті '+str(n))
+errors=[]
+for f in sorted((base/'browser-ipc').glob('*.result.json')):
+    try:
+        d=json.loads(f.read_text(encoding='utf-8'))
+        if d.get('error'):
+            ns=int(f.name.split('.')[0]); stamp=datetime.datetime.fromtimestamp(ns/1e9,datetime.timezone.utc).isoformat()
+            errors.append({'час_команди_utc':stamp,'id':str(ns),'помилка_керування':d['error']})
+    except Exception as e: issues.append('Журнал керування '+f.name+': '+str(e))
+(root/'керування-помилки.json').write_text(json.dumps(errors,ensure_ascii=False,indent=2),encoding='utf-8')
+(root/'покажчик-кадрів.tsv').write_text('файл\tчас_utc\tдія\n'+'\n'.join('\t'.join('' if x is None else str(x) for x in row) for row in frames)+'\n',encoding='utf-8')
+result={'час_utc':datetime.datetime.now(datetime.timezone.utc).isoformat(),'json_розібрано':count_json,'png_перевірено':count_png,'html_sha256':html_hash,'початковий_текст_sha256':hashlib.sha256(seed.encode()).hexdigest(),'точні_збіги_початкового_тексту':initial,'нативні_експорти':exports,'помилки_керування_окремо':len(errors),'порушення_цілісності':issues,'межа':'Перевірка файлів, не суд якості продукту й не прилад коренів.'}
+(root/'цілісність-спроба-3.json').write_text(json.dumps(result,ensure_ascii=False,indent=2),encoding='utf-8')
+print(json.dumps(result,ensure_ascii=False,indent=2))
+raise SystemExit(1 if issues else 0)

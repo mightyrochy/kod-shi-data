@@ -1,0 +1,143 @@
+import asyncio, json, os, sys, subprocess, traceback, datetime, mimetypes
+from pathlib import Path
+from urllib.parse import urlparse, unquote
+from playwright.async_api import async_playwright
+
+BASE=Path(__file__).parent
+REPO=BASE.parent/'repo'
+OUT=REPO/'аудит/проби/Живий-як-людина-20261103'
+IPC=BASE/'browser-ipc'; IPC.mkdir(exist_ok=True)
+SITE=BASE/'site'
+def now(): return datetime.datetime.now(datetime.timezone.utc).isoformat()
+
+async def main():
+    env=os.environ.copy()
+    env.update(PORT='1237', LMS_MODE='http', CTX=json.dumps({'qwen/qwen3.5-9b':57344,'mamaylm-gemma-3-12b-it-v2.0':16384}))
+    proxylog=open(OUT/'проксі-спроба-3.log','a',encoding='utf-8')
+    proxy=subprocess.Popen(['node',str(REPO/'аудит/ноутбук_стенд_2/проксі_почергове.js')],env=env,stdout=proxylog,stderr=subprocess.STDOUT,creationflags=subprocess.CREATE_NO_WINDOW)
+    print(json.dumps({'proxy_pid':proxy.pid},ensure_ascii=False),flush=True)
+    pw=await async_playwright().start()
+    browser=await pw.chromium.launch(headless=True,args=['--disable-gpu','--disable-dev-shm-usage','--remote-debugging-port=9227'])
+    context=None; page=None; folder=OUT/'підготовка'; step=0
+    async def route(r):
+        u=urlparse(r.request.url)
+        if u.hostname=='127.0.0.1' and u.port==8765:
+            if unquote(u.path)=='/міст':
+                if r.request.method=='OPTIONS':
+                    await r.fulfill(status=204,headers={'access-control-allow-origin':'*','access-control-allow-headers':'*'}); return
+                import urllib.request, urllib.error
+                payload=r.request.post_data_json
+                model=payload.get('model')
+                if model not in ('qwen/qwen3.5-9b','mamaylm-gemma-3-12b-it-v2.0'):
+                    await r.fulfill(status=400,json={'error':{'message':'Не визначено локальну модель: '+str(model),'keys':list(payload)}}); return
+                messages=[]
+                if payload.get('system'):
+                    system=payload['system']
+                    if isinstance(system,list): system='\n'.join(x.get('text','') for x in system)
+                    messages.append({'role':'system','content':system})
+                for m in payload.get('messages',[]):
+                    content=m['content']
+                    if isinstance(content,list):
+                        blocks=[]
+                        for b in content:
+                            if b['type']=='text': blocks.append({'type':'text','text':b['text']})
+                            elif b['type']=='image':
+                                s=b['source']; url=('data:'+s['media_type']+';base64,'+s['data']) if s['type']=='base64' else s['url']
+                                blocks.append({'type':'image_url','image_url':{'url':url}})
+                            else: raise ValueError('Непідтриманий транспортний блок '+b['type'])
+                        content=blocks
+                    messages.append({'role':m['role'],'content':content})
+                request={'model':model,'messages':messages,'max_tokens':payload.get('max_tokens',4000),'stream':False,'reasoning_effort':'none'}
+                if 'temperature' in payload: request['temperature']=payload['temperature']
+                started=now()
+                with open(OUT/'транспорт.jsonl','a',encoding='utf-8') as log: log.write(json.dumps({'start_utc':started,'model':model,'keys':list(payload),'folder':str(folder.relative_to(OUT))},ensure_ascii=False)+'\n')
+                def call():
+                    req=urllib.request.Request('http://127.0.0.1:1237/v1/chat/completions',data=json.dumps(request).encode(),headers={'Content-Type':'application/json'})
+                    try:
+                        with urllib.request.urlopen(req,timeout=900) as response: return response.status,json.loads(response.read())
+                    except urllib.error.HTTPError as e: return e.code,{'error':{'message':e.read().decode()}}
+                status,data=await asyncio.to_thread(call)
+                if status==200:
+                    choice=data['choices'][0]; usage=data.get('usage',{})
+                    response={'id':data['id'],'type':'message','role':'assistant','model':model,'content':[{'type':'text','text':choice['message'].get('content') or ''}], 'stop_reason':'max_tokens' if choice.get('finish_reason')=='length' else 'end_turn','usage':{'input_tokens':usage.get('prompt_tokens',0),'output_tokens':usage.get('completion_tokens',0)}}
+                else: response=data
+                with open(OUT/'транспорт.jsonl','a',encoding='utf-8') as log: log.write(json.dumps({'end_utc':now(),'start_utc':started,'model':model,'status':status},ensure_ascii=False)+'\n')
+                await r.fulfill(status=status,json=response,headers={'access-control-allow-origin':'*'}); return
+            f=SITE/(unquote(u.path).lstrip('/') or 'index.html')
+            if f.is_file(): await r.fulfill(path=str(f),content_type=mimetypes.guess_type(str(f))[0] or 'application/octet-stream')
+            else: await r.fulfill(status=404,body='Файл відсутній')
+        elif 'cdn.jsdelivr.net' in u.hostname and '/pyodide/' in u.path:
+            f=Path('C:/Users/gemini/pyodide')/u.path.split('/')[-1]
+            if f.is_file(): await r.fulfill(path=str(f),content_type=mimetypes.guess_type(str(f))[0] or 'application/octet-stream')
+            else: await r.continue_()
+        elif any(d in (u.hostname or '') for d in ['api.anthropic.com','api.openai.com','generativelanguage.googleapis.com']):
+            await r.abort('blockedbyclient')
+        else: await r.continue_()
+    async def download(d):
+        await d.save_as(str(folder/d.suggested_filename))
+    async def snap(label):
+        nonlocal step
+        step+=1
+        screens=folder/'скріни'; screens.mkdir(parents=True,exist_ok=True)
+        name=f'{step:03d}-{label}'
+        await page.screenshot(path=str(screens/(name+'.png')),timeout=15000)
+        body=await page.locator('body').inner_text()
+        controls=await page.locator('input,textarea,select,button,a,[role=button]').evaluate_all('els => els.filter(e=>e.getClientRects().length).map(e=>({tag:e.tagName,id:e.id,type:e.type,text:(e.innerText||e.getAttribute("aria-label")||"").slice(0,160),placeholder:e.placeholder,value:e.value}))')
+        data={'time_utc':now(),'label':label,'url':page.url,'text':body,'controls':controls}
+        (screens/(name+'.json')).write_text(json.dumps(data,ensure_ascii=False,indent=2),encoding='utf-8')
+        with open(folder/'хід.md','a',encoding='utf-8') as f:
+            f.write('\n\n### '+data['time_utc']+' — '+label+'\n\nЕкран: `скріни/'+name+'.png`. Дослівний видимий текст сторінки:\n\n```text\n'+body+'\n```\n')
+        return data
+    try:
+        print('ГОТОВИЙ ДО КОМАНД',flush=True)
+        while True:
+            files=sorted(IPC.glob('*.cmd.json'))
+            if not files:
+                await asyncio.sleep(.2); continue
+            f=files[0]; cmd=json.loads(f.read_text(encoding='utf-8-sig')); f.unlink()
+            try:
+                action=cmd['action']
+                if action=='open':
+                    if context: await context.close()
+                    folder=OUT/cmd.get('folder','підготовка'); folder.mkdir(parents=True,exist_ok=True); step=max([int(f.name.split('-')[0]) for f in (folder/'скріни').glob('*.json')] or [0]) if (folder/'скріни').exists() else 0
+                    context=await browser.new_context(viewport={'width':390,'height':844},device_scale_factor=1,is_mobile=True,has_touch=True,accept_downloads=True)
+                    await context.route('**/*',route)
+                    page=await context.new_page(); page.on('download',download)
+                    await page.goto('http://127.0.0.1:8765/index.html#міст=http://127.0.0.1:8765/міст&т=local-run&модель=qwen%2Fqwen3.5-9b&модель_мови=mamaylm-gemma-3-12b-it-v2.0&вікно=57344&вікно_мови=16384',wait_until='domcontentloaded')
+                elif action=='click':
+                    loc=page.locator(cmd['selector']) if 'selector' in cmd else page.get_by_text(cmd['text'],exact=cmd.get('exact',True))
+                    await loc.nth(cmd.get('nth',0)).click(timeout=15000)
+                elif action=='fill': await page.locator(cmd['selector']).fill(cmd['value'])
+                elif action=='select': await page.locator(cmd['selector']).select_option(cmd['value'])
+                elif action=='press': await page.locator(cmd['selector']).press(cmd['key'])
+                elif action=='upload': await page.locator(cmd['selector']).set_input_files(cmd['path'])
+                elif action=='reload': await page.reload(wait_until='domcontentloaded')
+                elif action=='goto': await page.goto(cmd['url'],wait_until='domcontentloaded')
+                elif action=='state': await context.storage_state(path=str(folder/'стан-браузера.json'),indexed_db=True)
+                elif action=='scroll': await page.mouse.wheel(0,cmd.get('dy',650))
+                elif action=='wait': await page.wait_for_timeout(cmd.get('ms',1000))
+                elif action=='note':
+                    with open(folder/'хід.md','a',encoding='utf-8') as out: out.write('\n\n'+now()+' — '+cmd['text']+'\n')
+                elif action=='stop':
+                    (IPC/(cmd['id']+'.result.json')).write_text('{}',encoding='utf-8'); break
+                else: raise ValueError(action)
+                await page.wait_for_timeout(cmd.get('settle',400))
+                result=await snap(cmd.get('label',action))
+            except Exception as e:
+                result={'error':str(e),'trace':traceback.format_exc()}
+            (IPC/(cmd['id']+'.result.json')).write_text(json.dumps(result,ensure_ascii=False,indent=2),encoding='utf-8')
+            print(json.dumps({'id':cmd['id'],'time':now(),'error':result.get('error')},ensure_ascii=False),flush=True)
+    finally:
+        await browser.close(); await pw.stop()
+        # На Windows SIGTERM не запускає node-handler; вивантажуємо лише записані проксі власні instance_id.
+        import urllib.request, re
+        proxylog.flush()
+        ids=re.findall(r'HTTP власний екземпляр (.+)',(OUT/'проксі-спроба-3.log').read_text(encoding='utf-8'))
+        for iid in set(ids):
+            try:
+                req=urllib.request.Request('http://127.0.0.1:1234/api/v1/models/unload',data=json.dumps({'instance_id':iid}).encode(),headers={'Content-Type':'application/json'})
+                with urllib.request.urlopen(req,timeout=30) as r: print(r.read().decode(),flush=True)
+            except Exception as e: print(str(e),flush=True)
+        proxy.terminate(); proxy.wait(timeout=20); proxylog.close()
+
+asyncio.run(main())
