@@ -1,0 +1,16 @@
+"""Облік власних файлів і часу, без читання вмісту нативного журналу."""
+import argparse, json, hashlib, subprocess
+from pathlib import Path
+p=argparse.ArgumentParser();p.add_argument('path');p.add_argument('--git',action='store_true');a=p.parse_args()
+root=Path.cwd(); base=root/'аудит/проби/Живий-як-людина-20261103/спроба-6'; target=base/a.path
+shots=[json.loads(x.read_text(encoding='utf-8-sig')) for x in sorted((target/'скріни').glob('*.json'))]
+records=[]
+for f in target.glob('verdykty-*.json'):
+ raw=f.read_bytes();item={'файл':f.name,'байти':len(raw),'sha256':hashlib.sha256(raw).hexdigest()}
+ if a.git:
+  blob=subprocess.check_output(['git','show','HEAD:'+f.relative_to(root).as_posix()])
+  item['ті_самі_байти_в_git']=blob==raw
+ records.append(item)
+out={'прохід':a.path,'початок_UTC':shots[0]['time'],'кінець_UTC':shots[-1]['time'],'екранів':len(shots),'нативні_файли':records}
+(target/'облік.json').write_text(json.dumps(out,ensure_ascii=False,indent=2)+'\n',encoding='utf-8')
+print(json.dumps(out,ensure_ascii=False,indent=2))
