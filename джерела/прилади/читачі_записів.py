@@ -116,6 +116,139 @@ def варіанти_шляху(читач, токен, від_файла=False)
     return {posixpath.normpath(posixpath.join(основа, токен)) for основа in основи}
 
 
+def git_посилання(читач, код, константи):
+    """Зберігає входи ls-tree → show/cat-file поточного дерева; архівні ревізії не тримають main."""
+    поточні = {'HEAD', '@', 'main', 'origin/main', 'refs/heads/main',
+               'refs/remotes/origin/main', 'FETCH_HEAD', 'HEAD^{tree}', 'HEAD^0', 'HEAD~0'}
+    батьки = {дитина: вузол for вузол in ast.walk(код) for дитина in ast.iter_child_nodes(вузол)}
+    присвоєні, цикли = {}, collections.defaultdict(list)
+
+    def присвоїти(ціль, значення):
+        """Розкладає також присвоєння ref, каталог = …, … без втрати архівного ref."""
+        if isinstance(ціль, ast.Name):
+            присвоєні[ціль.id] = значення
+        elif isinstance(ціль, (ast.Tuple, ast.List)) and isinstance(значення, (ast.Tuple, ast.List)):
+            for ч, з in zip(ціль.elts, значення.elts):
+                присвоїти(ч, з)
+
+    for вузол in ast.walk(код):
+        if isinstance(вузол, ast.Assign):
+            for ціль in вузол.targets:
+                присвоїти(ціль, вузол.value)
+    for вузол in ast.walk(код):
+        if not isinstance(вузол, ast.For):
+            continue
+        джерело = вузол.iter
+        if isinstance(джерело, ast.Name):
+            джерело = присвоєні.get(джерело.id, джерело)
+        пари = False
+        if isinstance(джерело, ast.Call) and isinstance(джерело.func, ast.Attribute):
+            пари = джерело.func.attr == 'items'
+            основа = джерело.func.value
+            джерело = присвоєні.get(основа.id, основа) if isinstance(основа, ast.Name) else основа
+        if isinstance(джерело, ast.Dict):
+            елементи = list(zip(джерело.keys, джерело.values)) if пари else джерело.keys
+        elif isinstance(джерело, (ast.Tuple, ast.List, ast.Set)):
+            елементи = джерело.elts
+        else:
+            continue
+        if isinstance(вузол.target, ast.Name):
+            цикли[вузол.target.id].extend(е for е in елементи if isinstance(е, ast.AST))
+        elif isinstance(вузол.target, (ast.Tuple, ast.List)):
+            for елемент in елементи:
+                поля = елемент if isinstance(елемент, tuple) else getattr(елемент, 'elts', ())
+                for ціль, значення in zip(вузол.target.elts, поля):
+                    if isinstance(ціль, ast.Name):
+                        цикли[ціль.id].append(значення)
+
+    def значення(вузол, бачені=frozenset(), типові=None):
+        """Розгортає сталі, типові значення CLI й невеликі переліки ревізій та каталогів."""
+        if вузол is None:
+            return {'*'}
+        if isinstance(вузол, ast.Name):
+            if вузол.id in бачені:
+                return {'*'}
+            далі = бачені | {вузол.id}
+            if типові and вузол.id in типові and типові[вузол.id] is not None:
+                return значення(типові[вузол.id], далі)
+            if вузол.id in цикли:
+                return set().union(*(значення(е, далі) for е in цикли[вузол.id]))
+            if типові and вузол.id in типові:
+                return {'*'}
+            if вузол.id in присвоєні:
+                return значення(присвоєні[вузол.id], далі)
+            return {константи.get(вузол.id, '*')}
+        if isinstance(вузол, ast.Constant):
+            return {str(вузол.value)} if isinstance(вузол.value, (str, int)) else {'*'}
+        if isinstance(вузол, ast.IfExp):
+            return значення(вузол.orelse, бачені, типові)
+        if isinstance(вузол, ast.BoolOp) and isinstance(вузол.op, ast.Or):
+            return значення(вузол.values[-1], бачені, типові)
+        if isinstance(вузол, ast.BinOp):
+            ліві = значення(вузол.left, бачені, типові)
+            if isinstance(вузол.op, ast.Mod):
+                return {re.sub(r'%[a-z]', '*', л) for л in ліві}
+            if isinstance(вузол.op, (ast.Add, ast.Div)):
+                праві = значення(вузол.right, бачені, типові)
+                if len(ліві) * len(праві) <= 128:
+                    return {л + ('/' if isinstance(вузол.op, ast.Div) else '') + п for л in ліві for п in праві}
+        if isinstance(вузол, ast.Call) and ast.unparse(вузол.func).endswith(('getenv', '.get')) and len(вузол.args) > 1:
+            return значення(вузол.args[1], бачені, типові)
+        return {частини(вузол, константи)}
+
+    команди = []
+    for вузол in ast.walk(код):
+        if not isinstance(вузол, ast.Call):
+            continue
+        аргументи = вузол.args
+        if аргументи and isinstance(аргументи[0], (ast.List, ast.Tuple)):
+            аргументи = аргументи[0].elts
+        for і, аргумент in enumerate(аргументи):
+            if isinstance(аргумент, ast.Constant) and аргумент.value in ('ls-tree', 'show', 'cat-file'):
+                команди.append((вузол, аргумент.value, аргументи[і + 1:]))
+                break
+    є_блоби = any(
+        команда == 'cat-file' and any(isinstance(а, ast.Constant) and а.value in ('blob', '--batch') for а in аргументи)
+        or команда == 'show' and any(isinstance(в, ast.Constant) and isinstance(в.value, str) and ':' in в.value
+                                     for а in аргументи for в in ast.walk(а))
+        for _, команда, аргументи in команди)
+    if not є_блоби:
+        return set()
+    літерали = [в.value for в in ast.walk(код) if isinstance(в, ast.Constant) and isinstance(в.value, str)]
+    вихід = set()
+    for виклик, команда, аргументи in команди:
+        if команда != 'ls-tree':
+            continue
+        значущі = [а for а in аргументи if not (isinstance(а, ast.Constant)
+                   and isinstance(а.value, str) and а.value.startswith('-'))]
+        if len(значущі) < 2:
+            continue
+        типові = {}
+        предок = батьки.get(виклик)
+        while предок is not None and not isinstance(предок, (ast.FunctionDef, ast.AsyncFunctionDef)):
+            предок = батьки.get(предок)
+        if предок is not None:
+            параметри = предок.args.posonlyargs + предок.args.args
+            типові = {п.arg: None for п in параметри}
+            типові.update({п.arg: т for п, т in zip(параметри[len(параметри) - len(предок.args.defaults):], предок.args.defaults)})
+        ревізії = значення(значущі[0], типові=типові)
+        if not any(р in поточні or ('*' in р and not р.startswith('origin/claude/')) for р in ревізії):
+            continue
+        шляхи = set().union(*(значення(а, типові=типові) for а in значущі[1:]))
+        if not any('аудит' in п for п in шляхи):
+            шляхи = {л for л in літерали if л.startswith(('аудит/', '../аудит/'))}
+        for шлях in шляхи:
+            if шлях.startswith(':/'):
+                шлях = шлях[2:]
+            форми = варіанти_шляху(читач, шлях)
+            if 'аудит/' in шлях:
+                форми.add(шлях[шлях.index('аудит/'):])
+            for форма in форми:
+                if форма == 'аудит' or форма.startswith('аудит/'):
+                    вихід.add(форма.rstrip('/') + '/**')
+    return вихід
+
+
 def посилання(шлях, текст):
     """Добуває повні, відносні, glob і складені шляхи, пропускаючи історію."""
     оригінал = текст
@@ -176,6 +309,7 @@ def посилання(шлях, текст):
                         знайдені.add(значення)
                         # Невідома основа ROOT/__file__ може бути коренем репозиторію.
                         знайдені.add(значення[значення.index('аудит/'):])
+            знайдені.update(git_посилання(шлях, код, константи))
     if шлях.endswith(('.js', '.mjs')):
         for виклик in re.finditer(r'path\.(?:join|resolve)\(__dirname,\s*([\'"])(.*?)\1', текст):
             відносний = виклик[2]
