@@ -745,7 +745,8 @@ def випадок(в, день=None):
 # тема-4:946); код, що писав би «H», вів би таке тіло стратегією «створити талію».
 ФІГУРА_КОДИ_EN = ("a routing code of her figure, not a verdict: A — hips wider than shoulders; V — shoulders "
                   "wider than hips; X — a marked waist; H — a straight contour without a marked waist; HX — "
-                  "a waist on the edge of being marked; O — the waist nearly as wide as the hips: lead the "
+                  "waist definition is undetermined by FFIT; waist_defined is null, not false; "
+                  "waist_basis states why; O — FFIT Oval or Diamond, the waist exceeds the hips: lead the "
                   "eye along a vertical, up to the face and down to the legs, the middle quiet")
 
 
