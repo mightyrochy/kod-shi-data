@@ -70,6 +70,18 @@ class Прилад(unittest.TestCase):
         self.перевірити({'а.py': 'def choose(original, generated):\n    return original\nx = choose(generated=generate_image(), original=load_photo())\njudge(x)\n'}, 0)
         self.перевірити({'а.py': 'judge(image=generate_image())\n'}, 1)
 
+    def test_css_складені_селектори(self):
+        for селектор in ('.preview', 'main img.preview', '[data-preview]', 'img#photo', 'div, .preview'):
+            with self.subTest(селектор=селектор):
+                html = '<img id="photo" class="preview" data-preview><script>document.querySelector(' + json.dumps(селектор) + ').src=generate_image()</script>'
+                self.перевірити({'а.html': html}, 1)
+        self.перевірити({'а.html': '<img class="other"><script>document.querySelector(".preview").src=generate_image()</script>'}, 0)
+
+    def test_python_розпаковані_іменовані(self):
+        код = 'def choose(original, generated):\n    return generated\na = {"generated": generate_image(), "original": load_photo()}\nf = choose\njudge(f(**a))\n'
+        self.перевірити({'а.py': код}, 1)
+        self.перевірити({'а.py': код.replace('return generated', 'return original')}, 0)
+
     def test_приховане_декодування(self):
         """Image, який нікуди не додано, не є показом жінці."""
         self.перевірити({'а.js': 'const i=new Image();\ni.src=generate_image();'}, 0)

@@ -177,14 +177,52 @@ class Розмітка(HTMLParser):
     def __init__(self):
         super().__init__()
         self.зображення, self.полотна, self.входи = set(), set(), []
+        self.елементи = []
 
     def handle_starttag(self, tag, attrs):
         """Називає кожний статичний вхід показу у вихідному HTML."""
         а = dict(attrs)
         if tag in {'img', 'canvas'}:
+            self.елементи.append((tag, а))
             if а.get('id'):
                 (self.зображення if tag == 'img' else self.полотна).add(а['id'])
             self.входи.append((self.getpos()[0], tag))
+
+
+def відповідає_селектору(селектор, тег, атрибути):
+    """Консервативно зіставляє ціль селектора з елементом HTML."""
+    for частина in селектор.split(','):
+        частини, буфер, глибина = [], '', 0
+        for знак in частина:
+            if знак in '[(':
+                глибина += 1
+            elif знак in '])':
+                глибина = max(0, глибина - 1)
+            if not глибина and (знак.isspace() or знак in '>+~'):
+                if буфер:
+                    частини.append(буфер)
+                    буфер = ''
+            else:
+                буфер += знак
+        if буфер:
+            частини.append(буфер)
+        if not частини:
+            continue
+        кінцева = re.sub(r':[\w-]+(?:\([^)]*\))?', '', частини[-1])
+        тип = re.match(r'^([\w-]+|\*)', кінцева)
+        if тип and тип.group(1).lower() not in {'*', тег}:
+            continue
+        без_атрибутів = re.sub(r'\[[^]]*\]', '', кінцева)
+        ід = re.findall(r'#([\w-]+)', без_атрибутів)
+        класи = re.findall(r'\.([\w-]+)', без_атрибутів)
+        if any(атрибути.get('id') != з for з in ід):
+            continue
+        if any(з not in (атрибути.get('class') or '').split() for з in класи):
+            continue
+        if any(назва not in атрибути for назва in re.findall(r'\[\s*([\w-]+)', кінцева)):
+            continue
+        return True
+    return False
 
 
 class Граф:
@@ -207,6 +245,8 @@ class Граф:
         self.символічні_поля = {}
         self.вибір_типу = {}
         self.ід_зображень, self.ід_полотен = set(), set()
+        self.html_елементи = []
+        self.розпаковані_поля = {}
         self.означення = {}
         self.застосування = set()
         self.імена_параметрів = {}
@@ -498,7 +538,7 @@ class Граф:
                         self.звʼязати(а, self.імена_параметрів[ф][ім])
                     elif ім is None:
                         for назва, п in self.імена_параметрів[ф].items():
-                            self.звʼязати(self.поле(а, назва), п)
+                            self.звʼязати(self.розпаковані_поля[а, назва], п)
                 self.звʼязати(пов, вих)
             if ф in self.резолвери and арг:
                 self.звʼязати(арг[0], self.резолвери[ф])
@@ -522,6 +562,13 @@ class Граф:
             було = len(генерують)
             генерують.update(ім for ім, вв in звʼязки.items() if вв & генерують)
         прозорі = ПРОЗОРІ - генерують
+        # Читання **kwargs створюємо до індексу й розв'язання викликів.
+        назви = {н for мапа in self.імена_параметрів.values() for н in мапа}
+        for пари in self.іменовані_виклики.values():
+            for ім, об in пари:
+                if ім is None:
+                    for назва in назви:
+                        self.розпаковані_поля[об, назва] = self.поле(об, назва)
         # Розклад сталих native-операцій будуємо лише раз.
         for р, функ, б, ім, назва, арг, файл, н in self.виклики:
             if ім == 'Map':
@@ -575,11 +622,15 @@ class Граф:
                     self.зображення.add(р)
                 elif арг:
                     текст = {з[6:] for з in self.знач[арг[0]] if isinstance(з, str) and з.startswith('рядок:')}
-                    css_ід = {з[1:] for з in текст if re.fullmatch(r'#[\w-]+', з)} if ім in {'$', 'querySelector', 'querySelectorAll'} else set()
-                    if текст & {'img', 'IMG'} or (текст | css_ід) & self.ід_зображень or any(re.search(r'(?:^|\s|>)img\b', з) for з in текст):
+                    селектори = ім in {'$', 'querySelector', 'querySelectorAll'}
+                    теги = {тег for селектор in текст for тег, атрибути in self.html_елементи
+                            if селектори and відповідає_селектору(селектор, тег, атрибути)}
+                    if текст & {'img', 'IMG'} or текст & self.ід_зображень or 'img' in теги:
                         self.зображення.add(р)
-                    if текст & {'canvas', 'CANVAS'} or (текст | css_ід) & self.ід_полотен:
+                    if текст & {'canvas', 'CANVAS'} or текст & self.ід_полотен or 'canvas' in теги:
                         self.полотна.add(р)
+                    if ім == 'querySelectorAll':
+                        self.запис(р, '*', р)
                 if ім in {'$', 'querySelector', 'querySelectorAll', 'getElementById'}:
                     self.видимі.add(р)
                     if р in self.зображення:
@@ -777,6 +828,9 @@ class Граф:
                     for ім, а in іменовані:
                         if ім in self.імена_параметрів[ф]:
                             ребро(а, self.імена_параметрів[ф][ім])
+                        elif ім is None:
+                            for назва, п in self.імена_параметрів[ф].items():
+                                ребро(self.розпаковані_поля[а, назва], п)
                     ребро(пов, вих)
                 if ф in self.резолвери and арг:
                     ребро(арг[0], self.резолвери[ф])
@@ -954,6 +1008,7 @@ def лічба(корінь, слід=None):
         if ф.endswith('.html'):
             html = Розмітка()
             html.feed(текст)
+            г.html_елементи.extend(html.елементи)
             г.ід_зображень.update(html.зображення)
             г.ід_полотен.update(html.полотна)
             for н, тег in html.входи:
