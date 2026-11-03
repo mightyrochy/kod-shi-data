@@ -86,6 +86,8 @@ def інвентар(корінь):
 
 
 if __name__ == '__main__':
+    sys.stdout.reconfigure(encoding='utf-8')
+    sys.stderr.reconfigure(encoding='utf-8')
     try:
         print(json.dumps(граф(sys.argv[1] if len(sys.argv) > 1 else '.'), ensure_ascii=False, indent=2))
     except (OSError, ValueError, subprocess.CalledProcessError) as помилка:

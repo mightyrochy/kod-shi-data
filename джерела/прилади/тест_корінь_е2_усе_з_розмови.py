@@ -1,6 +1,9 @@
 # -*- coding: utf-8 -*-
 """Синтетичні перевірки виявлення подій і повного шляху Е2, без продукту/API."""
 import tempfile
+import os
+import subprocess
+import sys
 from pathlib import Path
 import unittest
 
@@ -30,6 +33,17 @@ class ПриладЕ2(unittest.TestCase):
         """Видима дія без виклику моделлю є одним місцем."""
         р = self.лічба('function дія(х){return х;} кнопка.onclick=()=>дія(поле.value);')
         self.assertEqual([м['бракує'] for м in р['місця']], [['інструмента']])
+
+    def test_cli_utf8_незалежно_від_локалі(self):
+        """Храповик завжди може декодувати останній рядок як UTF-8, зокрема у Windows."""
+        with tempfile.TemporaryDirectory(prefix='е2-кодування-') as тека:
+            дж = Path(тека) / 'джерела'
+            дж.mkdir()
+            (дж / 'дія.js').write_text('function дія(){return 1;} к.onclick=()=>дія();', encoding='utf-8')
+            середовище = dict(os.environ, PYTHONIOENCODING='cp1251')
+            п = subprocess.run([sys.executable, str(Path(__file__).with_name('корінь_е2_усе_з_розмови.py')),
+                '--корінь', тека], env=середовище, capture_output=True, check=True)
+            self.assertEqual(п.stdout.decode('utf-8').splitlines()[-1], 'місць: 1')
 
     def test_повний_шлях(self):
         """Модель передає вхід у спільну функцію й кладе її результат у чат."""
@@ -191,7 +205,6 @@ class ПриладЕ2(unittest.TestCase):
 
     def test_синтаксична_помилка(self):
         """Пошкоджений JS не пропускається мовчки."""
-        import subprocess
         with self.assertRaises(subprocess.CalledProcessError):
             self.лічба('function {')
 
