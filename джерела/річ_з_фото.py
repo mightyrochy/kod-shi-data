@@ -32,6 +32,7 @@
   6. річ як запис каталогу для пулу, суду й картки (`запис_каталогу`) і закріплення в
      образі, яке тримає КОД, а не слухняність моделі (`закріпити_в_образі`).
 """
+from реєстр_правил import ТИПОВИЙ_НАМІР
 import base64 as _b64
 import re as _re
 import math as _math
@@ -538,7 +539,7 @@ def фото_речей():
                 "photo": "<photo id>",
                 "name": "<short English name, as a shop would call the item>",
                 "slot": "<code from codes.slot>",
-                "kind": "<code from codes.item_type: the exact kind of the item, or null>",
+                "kind": "<code from codes.item_type: exact kind read from the item's shape, or null>",
                 "color": "<code from codes.color: the main color of the item itself>",
                 "fabric": "<code from codes.fabric when the texture is visible, else null>",
                 "cut": "<code from codes.cut or null>",
@@ -549,7 +550,7 @@ def фото_речей():
                 "owner": "<code from codes.owner>",
                 "frame": {"left": "<0–1000>", "top": "<0–1000>", "right": "<0–1000>", "bottom": "<0–1000>"},
             }]},
-            межі=("лише_вхід", "невідомо"),
+            межі=("лише_вхід",),
             мова_промпту="en",
         )
     return ФОТО_РЕЧЕЙ
@@ -1582,7 +1583,7 @@ def _шкала_нагоди(сцен):
                                 else "смуга сценарію")
 
 
-def вердикт(річ, F, T, сцен=None, source="uncontrolled", intent="conventional", типова_нагода=False,
+def вердикт(річ, F, T, сцен=None, source="uncontrolled", intent=ТИПОВИЙ_НАМІР, типова_нагода=False,
             типові_поля=()):
     """«Чи підійде» — вердикт КОДУ над річчю з фото: знахідки, чекліст «без входу», ПОВІДОМЛЕННЯ
     жінці (Ч-1, аудит/ПРОДУКТ.md п.12: заяви кодами, речення складає мовна модель).
@@ -1794,7 +1795,7 @@ def вердикт(річ, F, T, сцен=None, source="uncontrolled", intent="c
                              без_входу=без_входу))
 
 
-def суд_у_виклику(річ, F, T, сцен, паспорт, source="uncontrolled", intent="conventional"):
+def суд_у_виклику(річ, F, T, сцен, паспорт, source="uncontrolled", intent=ТИПОВИЙ_НАМІР):
     """`вердикт` тими самими входами в кожному виклику, що його потребує (ендпойнт
     `річ_з_фото`, пакет рук 1–2, картка): нагода, яку підставив код, береться з паспорта."""
     типова = _ПО.нагода_типова_речі(паспорт)
@@ -1934,7 +1935,7 @@ def запис_каталогу(річ):
 ОСНОВНІ_СЛОТИ = ("сукня", "комплект", "верхній_шар", "верх", "низ")   # річ, що несе площу образу
 
 
-def основа_з_речі(речі, вибір, риси, source="uncontrolled", intent="conventional"):
+def основа_з_речі(речі, вибір, риси, source="uncontrolled", intent=ТИПОВИЙ_НАМІР):
     """Закріплена річ з фото стає ОСНОВОЮ образу, коли основи жінка не обирала сама.
 
     «Якір першим» (K-COMP-02) для її речі: `вибір_кольору.база_hex` → `якір_тон` дуг схеми і
