@@ -10,9 +10,9 @@
 |---|---|---|
 | beautifulsoup4-4.12.3-py3-none-any.whl | PyPI, beautifulsoup4 4.12.3 | MIT, `beautifulsoup4-4.12.3.dist-info/licenses/LICENSE` усередині wheel |
 | soupsieve-2.6-py3-none-any.whl | PyPI, soupsieve 2.6 | MIT, `soupsieve-2.6.dist-info/licenses/LICENSE.md` усередині wheel |
-| acorn.cjs | npm acorn 8.14.0, незмінний `package/dist/acorn.js` | MIT, `acorn-LICENSE` поруч |
+| acorn.cjs.gz | npm acorn 8.14.0, незмінний `package/dist/acorn.js`, gzip без дати | MIT, `acorn-LICENSE` поруч |
 
-Wheel читаються zipimport без розпакування. Необов'язкові транспорти requests/curl_cffi та lxml під час імпорту
+Wheel читаються zipimport, Acorn — gzip у пам'ять; на диск не розпаковуються. Необов'язкові транспорти requests/curl_cffi та lxml під час імпорту
 жнив недоступні: використовуються штатні гілки без транспорту й `html.parser` на обох деревах храповика.
 Сторінки, скрипти сайтів, CSS, картинки й API з мережі не завантажуються.
 

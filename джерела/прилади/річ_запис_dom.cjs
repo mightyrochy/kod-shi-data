@@ -6,7 +6,11 @@
 'use strict';
 const fs = require('node:fs');
 const vm = require('node:vm');
-const acorn = require('./річ_запис_дані/acorn.cjs');
+const zlib = require('node:zlib');
+const модуль_парсера = {exports: {}};
+vm.runInNewContext(zlib.gunzipSync(fs.readFileSync(__dirname + '/річ_запис_дані/acorn.cjs.gz')).toString('utf8'),
+  {exports: модуль_парсера.exports, module: модуль_парсера});
+const acorn = модуль_парсера.exports;
 
 class Рядок {
   constructor(значення, джерела) { this.значення = значення; this.джерела = [...new Set(джерела)]; }
