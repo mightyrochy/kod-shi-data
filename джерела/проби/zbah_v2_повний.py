@@ -13,8 +13,8 @@ import feed as F
 
 шлях = sys.argv[1] if len(sys.argv) > 1 else os.path.join(ТУТ, "каталог_збагачення_v2.json")
 if not os.path.exists(шлях):
-    print("файла нема: %s — прогін ще не писав" % шлях)
-    raise SystemExit(0)
+    print("БЕЗ ВХОДУ: файла нема: %s — прогін ще не писав" % шлях)
+    raise SystemExit(77)   # БЕЗ ВХОДУ (лічба_проб.КОД_БЕЗ_ВХОДУ), не «пройдено»
 д = json.load(io.open(шлях, encoding="utf-8"))
 ок = [з for з in д.values() if "помилка" not in з]
 збої = [з for з in д.values() if "помилка" in з]

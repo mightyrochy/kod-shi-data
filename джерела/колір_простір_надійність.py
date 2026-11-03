@@ -33,6 +33,9 @@ from колір_простір_перетворення import de00
 # R-COL-06, R-COL-09 і K-COND-03 — дубль K-PC-05: надійність осі за умовами зйомки —
 # колір каталожного фото не абсолют, освітлювач некерований, світло сцени судить кадр.
 AXIS_RELIABILITY = {
+ # Нуль позначає відсутність каліброваної довіри до hex моделі;
+ # це не ймовірність правильності відповіді й не надійність камери.
+ "model_hex":    dict(value=0.0, contrast=0.0, chroma=0.0, hue=0.0, undertone=0.0),
  "spectro":      dict(value=1.0, contrast=1.0, chroma=1.0, hue=1.0, undertone=1.0),
  "protocolized": dict(value=0.9, contrast=0.9, chroma=0.7, hue=0.7, undertone=0.5),
  "uncontrolled": dict(value=0.8, contrast=0.85, chroma=0.35, hue=0.35, undertone=0.15),

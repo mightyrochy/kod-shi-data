@@ -353,7 +353,7 @@ function Get-NightlyMarker([datetime]$Now = [datetime]::UtcNow) {
 
 function Get-MarkerKey($M) { "$($M.Ref) $($M.Sha)" }
 
-function Get-StatePath([string]$Key) { Join-Path $script:StateDir ((Get-Sha256Hex $Key) + '.txt') }
+function Get-StatePath([string]$Key, [string]$StateDir = $script:StateDir) { Join-Path $StateDir ((Get-Sha256Hex $Key) + '.txt') }
 
 function Get-ClaimPath([string]$StatePath) { $StatePath -replace '\.txt$', '.claim' }
 
@@ -433,9 +433,9 @@ function Enter-ReviewWait($M, [string]$Head = '') {
     Write-Log "позначка $($M.Name): REVIEW_API; спроба збережена, повтор у черзі"
 }
 
-function Get-MarkerState($M) {
+function Get-MarkerState($M, [string]$StateDir = $script:StateDir) {
     <# NEW — не бачили; TAKEN — узята (файл `.claim`); WAIT — чекає скидання квоти (Wait.until, unix); DONE — інше. #>
-    $sp = Get-StatePath (Get-MarkerKey $M)
+    $sp = Get-StatePath (Get-MarkerKey $M) $StateDir
     if (Test-Path -LiteralPath (Get-ClaimPath $sp)) { return [pscustomobject]@{ Kind = 'TAKEN'; Wait = $null } }
     if (-not (Test-Path -LiteralPath $sp)) { return [pscustomobject]@{ Kind = 'NEW'; Wait = $null } }
     $t = [System.IO.File]::ReadAllText($sp, $script:Utf8)
@@ -637,6 +637,59 @@ function Test-LockFree([string]$Path) {
 }
 
 function Get-GpuLockPath { Join-Path $LaneDir 'gpu.lock' }
+
+function Get-LmsInstances {
+    <# Читає екземпляри локального LM Studio; неповна відповідь не є порожнім сервером. #>
+    $v = Invoke-RestMethod 'http://127.0.0.1:1234/api/v1/models' -TimeoutSec 15 -ErrorAction Stop
+    if ((Get-JsonProp $v 'error') -or $v.models -isnot [array]) { throw 'LM Studio: немає переліку models' }
+    foreach ($m in $v.models) {
+        if (-not $m.key -or $m.loaded_instances -isnot [array]) { throw 'LM Studio: неповна модель' }
+        foreach ($i in $m.loaded_instances) {
+            if (-not ($i.id -is [string]) -or -not $i.id) { throw 'LM Studio: немає ID екземпляра' }
+            [pscustomobject]@{ id = $i.id; model = $m.key }
+        }
+    }
+}
+
+function Complete-GpuModels {
+    <# Під GPU-замком прибирає різницю зі збереженим знімком; збій лишає запис для повтору. #>
+    $path = Join-Path $LaneDir 'gpu-models.json'
+    if (-not [IO.File]::Exists($path)) { return }
+    $lease = [IO.File]::ReadAllText($path, $script:Utf8) | ConvertFrom-Json -ErrorAction Stop
+    if ($lease.v -ne 1 -or -not $lease.marker -or -not $lease.run -or $lease.before -isnot [array]) { throw 'GPU: неповний знімок моделей' }
+    $ids = New-Object 'System.Collections.Generic.HashSet[string]' ([StringComparer]::Ordinal)
+    foreach ($i in $lease.before) {
+        if (-not $i.id -or -not $i.model) { throw 'GPU: неповний початковий екземпляр' }
+        [void]$ids.Add([string]$i.id)
+    }
+    foreach ($i in @(Get-LmsInstances)) {
+        if ($ids.Contains($i.id)) { continue }
+        Write-Log "GPU вивантаження: модель=$($i.model); екземпляр=$($i.id); наряд=$($lease.marker); прогін=$($lease.run)" -Required
+        $body = @{ instance_id = $i.id } | ConvertTo-Json -Compress
+        $v = Invoke-RestMethod 'http://127.0.0.1:1234/api/v1/models/unload' -Method Post -ContentType 'application/json' -Body $body -TimeoutSec 120 -ErrorAction Stop
+        if (Get-JsonProp $v 'error') { throw 'LM Studio: відмова вивантаження' }
+    }
+    if (@(Get-LmsInstances | Where-Object { -not $ids.Contains($_.id) }).Count) { throw 'GPU: нові екземпляри ще завантажені' }
+    Remove-Item -LiteralPath $path -Force -ErrorAction Stop
+}
+
+function Start-GpuModels($Job) {
+    <# До агента й під його GPU-замком зберігає межу власності незалежно від життя дерева процесів. #>
+    Complete-GpuModels
+    $before = @(Get-LmsInstances)
+    $lease = [ordered]@{ v = 1; marker = [string]$Job.name; run = [string]$Job.id; before = $before }
+    Write-FileAtomic (Join-Path $LaneDir 'gpu-models.json') ($lease | ConvertTo-Json -Depth 6 -Compress)
+}
+
+function Repair-GpuModels {
+    <# Планувальник прибирає залишки вбитого дерева перед воротами GPU, навіть коли черга порожня. #>
+    $gpuLock = Open-Lock (Get-GpuLockPath)
+    if ($null -eq $gpuLock) { return $true }
+    try { Complete-GpuModels; $true }
+    catch { Write-Log "GPU прибирання відкладено: $($_.Exception.Message)"; $false }
+    finally { $gpuLock.Dispose() }
+}
+
 
 function Get-BusySlots([string]$Lane, $Workers) {
     <# Зайняті слоти смуги: свій живий процес наряду або чужий замок слота (наряд попереднього проходу ще йде). #>
@@ -1002,8 +1055,29 @@ function Get-HeadLivePublication([string]$Head, [string]$ExistingBody = '') {
     if (($body + "`n" + $ExistingBody) -cnotmatch '(?m)^[-*+>#_\s]*ЖИВИЙ ПІСЛЯ') {
         return (ConvertTo-LivePublicationBody $body @{})
     }
-    $registry = Get-LiveSceneRegistry ((Invoke-Git @('show', 'refs/remotes/origin/main:аудит/проби/живі_сцени.txt')).Out)
+    $registryText = (Invoke-Git @('show', 'refs/remotes/origin/main:аудит/проби/живі_сцени.txt')).Out
+    $registry = Get-LiveSceneRegistry $registryText
     if (-not $registry.Count) { throw 'LIVE_AFTER_REGISTRY' }
+    # Повний рядок сцени — стільки полів, скільки в шапці реєстру «# Поля: …»; коротший рядок гілки не додаємо.
+    $header = @(($registryText -split "`n") | Where-Object { $_.TrimStart([char]0xFEFF).StartsWith('# Поля:') })
+    if (-not $header.Count) { throw 'LIVE_AFTER_REGISTRY' }
+    $width = $header[0].TrimEnd("`r").Split('|').Count
+    # Лише додані рядки від спільної бази: зміни й видалення сцен main не змінюють їхній режим.
+    $base = (Invoke-Git @('merge-base', 'refs/remotes/origin/main', $Head)).Out.Trim()
+    if (-not $base) { throw 'LIVE_AFTER_MERGE_BASE' }
+    $baseRegistry = Get-LiveSceneRegistry ((Invoke-Git @('show', ($base + ':аудит/проби/живі_сцени.txt'))).Out)
+    $diff = (Invoke-Git @('diff', '--no-ext-diff', '--unified=0', $base, $Head, '--', 'аудит/проби/живі_сцени.txt')).Out
+    foreach ($line in ($diff -split "`n")) {
+        if (-not $line.StartsWith('+') -or $line.StartsWith('+++')) { continue }
+        $row = $line.Substring(1).TrimEnd("`r").TrimStart([char]0xFEFF)
+        if (-not $row.Trim() -or $row.TrimStart().StartsWith('#')) { continue }
+        $fields = $row.Split('|')
+        if ($fields.Count -lt $width -or -not $fields[0].Trim()) { continue }
+        $added = Get-LiveSceneRegistry $row
+        foreach ($id in $added.Keys) {
+            if (-not $registry.ContainsKey($id) -and -not $baseRegistry.ContainsKey($id)) { $registry[$id] = $added[$id] }
+        }
+    }
     Merge-LivePublicationBody $body $ExistingBody $registry
 }
 
@@ -1259,6 +1333,16 @@ function Get-GpuBusyReason($Workers, [switch]$LockHeld) {
     $script:GpuHoldReason = ''
     if (@($Workers | Where-Object { $_.Gpu -and -not $_.Proc.HasExited }).Count -gt 0) { $script:GpuHoldReason = 'замок GPU іншого наряду'; return 'GPU: її тримає власний наряд обгортки' }
     if (-not $LockHeld -and -not (Test-LockFree (Get-GpuLockPath))) { $script:GpuHoldReason = 'замок GPU іншого наряду'; return "GPU: замок $(Get-GpuLockPath) тримає інший процес" }
+    # Незакритий знімок моделей (прибирання попереднього GPU-наряду не вдалось) тримає лише GPU-наряди: решта смуги йде.
+    if (-not $LockHeld -and [IO.File]::Exists((Join-Path $LaneDir 'gpu-models.json'))) {
+        $script:GpuHoldReason = 'незакритий знімок моделей GPU'
+        return 'GPU: незакритий знімок моделей попереднього наряду (lanes/gpu-models.json)'
+    }
+    try { $null = @(Get-LmsInstances) }
+    catch {
+        $script:GpuHoldReason = 'LM Studio недоступний на :1234'
+        return 'GPU: LM Studio недоступний на :1234 — неможливо зберегти початкові екземпляри'
+    }
     $load = Get-GpuLoad
     if ($load.Reason) {
         $script:GpuHoldReason = $load.Reason

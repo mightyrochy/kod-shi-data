@@ -7,6 +7,7 @@ import glob
 import json
 import os
 import sys
+import tempfile
 
 if hasattr(sys.stdout, "reconfigure"):
     sys.stdout.reconfigure(encoding="utf-8")
@@ -18,6 +19,7 @@ import міст_відповіді
 feed.каталог_на_диску("каталог_brief.xml")
 каталог = os.path.abspath("джерела/каталог_brief.xml")
 файли = sorted(glob.glob("аудит/корпус_3_1_а/*.json"))
+КЕШ_КОЛЬОРІВ = os.path.join(tempfile.mkdtemp(), "кеш.json")
 
 
 def прогін():
@@ -25,6 +27,9 @@ def прогін():
     for ф in файли:
         вх = json.load(open(ф, encoding="utf-8"))
         вх["каталог"] = каталог
+        # кеш кольорів — поза деревом: корпус несе відносний `кеш.json`, і міст
+        # (`фід_каталог.каталог_із`) створював його в корені репозиторію (Д11)
+        вх["кеш_кольорів"] = КЕШ_КОЛЬОРІВ
         out = json.loads(міст_відповіді.від_моделі(вх))
         підсумок.append({
             "файл": os.path.basename(ф),
