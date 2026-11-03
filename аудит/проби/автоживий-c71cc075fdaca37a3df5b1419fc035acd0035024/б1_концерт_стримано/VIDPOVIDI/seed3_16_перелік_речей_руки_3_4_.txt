@@ -1,0 +1,44 @@
+── ПРОМПТ (2187 симв.) ──
+{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.", "One item carries one thing — of two alternatives list the first; a note in brackets is not an item.", "Slot \"accessory\" is for an item no other slot fits.", "\"is_outfit\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "ITEM_LIST", "answer_schema": {"is_outfit": "yes|no", "items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory", "color_hex": "<#rrggbb or null>", "worn": "<true, or false when the description says the outfit goes without it>"}]}, "input": ["\"description\" — the outfit description"]}, "description": "Black wool-blend tailored jacket with a structured lapel and matte finish\nDark charcoal slim-fit trousers in stretch crepe for comfort while standing in a crowd\nNude suede ankle boots with a moderate heel for stability on club floors\nGold-plated minimal hoop earrings to catch the artificial lights without overwhelming the look\nA thin silk scarf tied loosely at the neck to introduce softness against the classic registers\n\nThis outfit works because the tailored jacket and slim trousers meet the smart formality requirement while offering enough structure to handle standing in a dense crowd. The dark charcoal tone provides an elegant, timeless base that aligns with her request for a classic register without blending into the background too much. Nude ankle boots add necessary height and stability for movement through a busy venue, while the gold jewelry offers a subtle pop of warmth against the cool autumn evening lights."}
+
+── ВІДПОВІДЬ (918 симв., 5.2 с, HTTP 200) ──
+{
+  "is_outfit": "yes",
+  "items": [
+    {
+      "name": "Black wool-blend tailored jacket",
+      "details": "structured lapel and matte finish",
+      "slot": "outerwear",
+      "color_hex": "#000000",
+      "worn": true
+    },
+    {
+      "name": "Dark charcoal slim-fit trousers",
+      "details": "stretch crepe for comfort",
+      "slot": "bottom",
+      "color_hex": "#36454F",
+      "worn": true
+    },
+    {
+      "name": "Nude suede ankle boots",
+      "details": "moderate heel",
+      "slot": "shoes",
+      "color_hex": "#E3D5CA",
+      "worn": true
+    },
+    {
+      "name": "Gold-plated minimal hoop earrings",
+      "details": "to catch artificial lights",
+      "slot": "earrings",
+      "color_hex": "#FFD700",
+      "worn": true
+    },
+    {
+      "name": "Thin silk scarf",
+      "details": "tied loosely at the neck",
+      "slot": "scarf",
+      "color_hex": null,
+      "worn": true
+    }
+  ]
+}
