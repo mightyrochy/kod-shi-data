@@ -18,6 +18,7 @@ $ErrorActionPreference = 'Stop'
 [Console]::OutputEncoding = New-Object Text.UTF8Encoding($false)
 . (Join-Path $SourceDir ($Lane + '_run.ps1'))
 $script:RealWriteLog = ${function:Write-Log}
+$script:RealSaveSkips = ${function:Save-Skips}
 $LaneDir = $TestDir
 $RunsDir = $TestDir
 $WorkDir = $TestDir
@@ -36,9 +37,7 @@ function Invoke-RestMethod {
     if ($null -ne $Body) { $args_.Body = $Body }
     Microsoft.PowerShell.Utility\Invoke-RestMethod @args_
 }
-function Get-StatePath { Join-Path $TestDir 'state' }
-function Close-FailedStart { }
-function Remove-Claim { }
+function Get-StatePath { Join-Path $TestDir 'state.txt' }
 function Set-BrowserGpuPolicy { }
 function Test-ExternalGpuFree { $true }
 function Add-HealthException { }
@@ -67,6 +66,36 @@ function Invoke-Task {
 }
 $script:Job = [pscustomobject]@{name='gemini-queue/стенд/gpt-test/1/gpu'; id='стенд-прогін'; limits=[pscustomobject]@{};
     ref='ref';sha='sha';slot='test-slot';gpu=($TestMode -ne 'cpu');lane=$Lane;slug='стенд';model='gpt-test';n='1';cond='gpu';prio=1;deadline='';time=1;claude='cc-test';effort='high'}
+if ($TestMode -eq 'schedule') {
+    # Реальний прохід черги; підроблено лише позначки, вибір агента й створення його процесу.
+    Set-Item Function:Save-Skips $script:RealSaveSkips
+    function Get-GpuLoad { [pscustomobject]@{ Reason = '' } }
+    function Get-Markers {
+        foreach ($slug in @('gpu', 'cpu')) {
+            $model = $(if ($Lane -eq 'claude') { 'cc-claude-sonnet-5-5-medium' } else { 'gpt-test' })
+            [pscustomobject]@{ Valid=$true; Lane=$Lane; Ref=$slug; Name="gemini-queue/$slug/$model/1"; Slug=$slug;
+                Model=$model; Sha=('a' * 40); Time=[DateTimeOffset]::UtcNow.ToUnixTimeSeconds(); Gpu=($slug -eq 'gpu');
+                Prio=1; Deadline=''; N='1'; Cond=''; Seen=0 }
+        }
+    }
+    function Get-OrderedMarkers($Markers) { $Markers }
+    function Test-SlugBusy { $false }
+    function Get-FreeSlot { 'test-slot' }
+    function New-Claim { $true }
+    function Select-Engine { [pscustomobject]@{ Engine=[pscustomobject]@{Name='codex'; Model='gpt-test'; Effort='high'};
+        Model='gpt-test'; Quota=[pscustomobject]@{Blocked=$false; Known=$true; Left=100; Group='CODEX'} } }
+    $script:StartedSlugs = @()
+    function Start-Worker($Job, $Dir) {
+        $script:StartedSlugs += $Job.slug
+        [pscustomobject]@{ Slot=$Job.slot; Slug=$Job.slug; Gpu=$Job.gpu; Marker=$Job.name; Proc=[pscustomobject]@{HasExited=$true} }
+    }
+    $script:Lanes = @($Lane)
+    $script:Limits = @{ slots=@{codex=2; agy=2; claude=2}; claude_laptop=@('cpu') }
+    Start-Markers (New-Object System.Collections.ArrayList) | Out-Null
+    [pscustomobject]@{ started=@($script:StartedSlugs); held=$script:Held;
+        signal=(Test-HoldLine 'GEMINI ОБГОРТКА: ЗАБЛОКОВАНО GPU: LM Studio недоступний на :1234, позначок 1') } | ConvertTo-Json -Compress -Depth 6
+    exit 0
+}
 if ($TestMode -eq 'recover') { Start-Markers @() | Out-Null; if ($null -eq $script:Held) { throw 'Не ініціалізовано стан утримань' }; exit 0 }
 if ($TestMode -eq 'offline') { exit (Main) }
 if ($TestMode -eq 'busy') { [Console]::Out.Write((Get-GpuBusyReason @())); exit 0 }
@@ -195,7 +224,7 @@ def main():
                 def run(mode_):
                     """Чекає завершення конкретного процесу; вивід читається тільки при збої."""
                     p = subprocess.run(args + ['-TestMode', mode_], capture_output=True, timeout=45)
-                    if p.returncode and mode_ not in ('timeout', 'agent-crash'):
+                    if p.returncode and mode_ not in ('timeout', 'agent-crash') and not (mode_ == 'done' and p.returncode == 4):
                         print(p.stdout.decode('utf-8', errors='replace'), p.stderr.decode('utf-8', errors='replace'))
                         if mode_ not in ('done', 'log-fail'):
                             raise RuntimeError('Збій процесу стенда: ' + mode_)
@@ -257,22 +286,41 @@ def main():
                 run('recover')
                 check(lane + '/' + fault + ': повтор відновлює тільки початкову модель', Studio.loaded == {'owner-id': 'owner-model'})
             Studio.fault = 'get'
-            run('done')
-            check(lane + ': без початкового REST-знімка агент не вантажить моделей', Studio.loaded == {'owner-id': 'owner-model'})
+            no_snapshot = run('done')
+            check(lane + ': без початкового REST-знімка агент не вантажить моделей',
+                  no_snapshot.returncode == 4 and Studio.loaded == {'owner-id': 'owner-model'})
             Studio.fault = ''
             Studio.loaded = {}
             run('done')
             check(lane + ': порожня початкова множина відновлюється', not Studio.loaded and not (d / 'gpu-models.json').exists())
-            # Сервер не слухає :1234: наряд іде без знімка, модель власника й моделі наряду обгортка не чіпає.
+            # Нова нагода після попередніх unload: вимір читає лише її виклики REST.
             Studio.loaded = {'owner-id': 'owner-model'}
+            before_calls = len(Studio.calls)
+            (d / 'ready').unlink(missing_ok=True)
             (d / 'down').write_text('так', encoding='utf-8')
+            scheduled = json.loads(run('schedule').stdout.decode('utf-8-sig'))
+            skipped = json.loads((d / 'skipped.json').read_text(encoding='utf-8-sig'))
+            check(lane + ': недоступний REST тримає GPU-позначку, CPU-позначка стартує',
+                  scheduled['started'] == ['cpu'] and 'GPU' in scheduled['held'])
+            check(lane + ': причина LM Studio доходить до таблиці #1856 і транспорту диспетчера',
+                  scheduled['signal'] and len(skipped) == 1 and 'LM Studio недоступний на :1234' in skipped[0]['why'])
+            (d / 'state.claim').write_text('стенд-прогін', encoding='utf-8')
             down = run('done')
+            check(lane + ': REST зник після воріт — worker повертає GPU-наряд без старту агента',
+                  down.returncode == 4 and not (d / 'gpu-models.json').exists() and not (d / 'ready').exists()
+                  and Studio.loaded == {'owner-id': 'owner-model'} and not Studio.calls[before_calls:])
+            check(lane + ': відкладений GPU-наряд не губиться й не витрачає повторів запуску',
+                  not (d / 'state.claim').exists() and not (d / 'state.txt').exists())
+            cpu = run('cpu')
+            check(lane + ': CPU-worker працює при вимкненому LM Studio без REST',
+                  cpu.returncode == 0 and not Studio.calls[before_calls:])
             (d / 'down').unlink()
-            log = (d / 'wrapper.log').read_text(encoding='utf-8') if (d / 'wrapper.log').exists() else ''
-            check(lane + ': вимкнений LM Studio — наряд без знімка, нічого не вивантажено',
-                  down.returncode == 0 and not (d / 'gpu-models.json').exists() and Studio.loaded.get('owner-id') == 'owner-model'
-                  and len(Studio.loaded) == 3 and not [c for c in Studio.calls if c[0] == 'POST' and c[1].endswith('/unload')]
-                  and 'GPU без знімка моделей' in log)
+            scheduled = json.loads(run('schedule').stdout.decode('utf-8-sig'))
+            check(lane + ': після відновлення REST та сама GPU-позначка береться наступним проходом',
+                  scheduled['started'] == ['gpu', 'cpu'] and 'GPU' not in scheduled['held'])
+            run('done')
+            check(lane + ': відкладений наряд після повернення REST прибирає лише власні ID',
+                  Studio.loaded == {'owner-id': 'owner-model'} and not (d / 'gpu-models.json').exists())
             Studio.loaded = {'owner-id': 'owner-model'}
             run('take')
             Studio.loaded['job-job-model'] = 'job-model'

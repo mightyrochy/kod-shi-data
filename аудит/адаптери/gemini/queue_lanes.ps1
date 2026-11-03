@@ -676,15 +676,7 @@ function Complete-GpuModels {
 function Start-GpuModels($Job) {
     <# До агента й під його GPU-замком зберігає межу власності незалежно від життя дерева процесів. #>
     Complete-GpuModels
-    # LM Studio не слухає :1234 — переліку завантаженого нема: вимкнений сервер не означає вивантажених моделей, і
-    # порожній знімок віддав би наряду моделі власника. Наряд іде без знімка (він може підняти сервер сам), а його
-    # моделі обгортка не прибирає. Інша помилка REST — стоп до агента.
-    try { $before = @(Get-LmsInstances) }
-    catch [System.Net.WebException] {
-        if ($_.Exception.Status -ne [System.Net.WebExceptionStatus]::ConnectFailure) { throw }
-        Write-Log "GPU без знімка моделей: LM Studio не слухає :1234; наряд=$($Job.name); прогін=$($Job.id) — його моделі обгортка не прибере" -Required
-        return
-    }
+    $before = @(Get-LmsInstances)
     $lease = [ordered]@{ v = 1; marker = [string]$Job.name; run = [string]$Job.id; before = $before }
     Write-FileAtomic (Join-Path $LaneDir 'gpu-models.json') ($lease | ConvertTo-Json -Depth 6 -Compress)
 }
@@ -1345,6 +1337,11 @@ function Get-GpuBusyReason($Workers, [switch]$LockHeld) {
     if (-not $LockHeld -and [IO.File]::Exists((Join-Path $LaneDir 'gpu-models.json'))) {
         $script:GpuHoldReason = 'незакритий знімок моделей GPU'
         return 'GPU: незакритий знімок моделей попереднього наряду (lanes/gpu-models.json)'
+    }
+    try { $null = @(Get-LmsInstances) }
+    catch {
+        $script:GpuHoldReason = 'LM Studio недоступний на :1234'
+        return 'GPU: LM Studio недоступний на :1234 — неможливо зберегти початкові екземпляри'
     }
     $load = Get-GpuLoad
     if ($load.Reason) {

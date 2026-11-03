@@ -1312,7 +1312,12 @@ function Invoke-Worker {
             $gpu = Open-Lock (Get-GpuLockPath)
             $why = $(if ($null -eq $gpu) { 'замок GPU' } elseif (Test-ExternalGpuFree -LogAcquisition) { '' } else { Get-GpuBusyReason @() -LockHeld })
             if ($why) { Remove-Claim $statePath; Write-Log "GPU зайнята ($why) — $($job.name) лишається в черзі"; return $script:WorkerGpuBusy }
-            Start-GpuModels $job
+            try { Start-GpuModels $job }
+            catch {
+                Remove-Claim $statePath
+                Write-Log "GPU знімок недоступний ($($_.Exception.Message)) — $($job.name) лишається в черзі"
+                return $script:WorkerGpuBusy
+            }
         }
         Write-FileAtomic $info (([ordered]@{ slot = $job.slot; lane = $job.lane; marker = $job.name; slug = $job.slug; model = $job.model
                     since = (Get-UtcStamp (Get-Date)); gpu = [bool]$job.gpu; prio = $job.prio; pid = $PID
