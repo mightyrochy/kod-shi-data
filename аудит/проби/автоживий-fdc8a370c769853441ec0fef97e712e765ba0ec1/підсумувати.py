@@ -14,6 +14,7 @@ SHA = "6530d4324c6aee95d5e0d4a55cfd154c4c2a8e9a"
 
 def main():
     дані = json.loads((ТЕКА / "ФАКТИ.json").read_text(encoding="utf-8"))
+    середовище = json.loads((ТЕКА / "середовище.json").read_text(encoding="utf-8"))
     план = json.loads((ТЕКА / "НАРЯД.md").read_text(encoding="utf-8").split("ПЛАН ЖИВОГО — ДАНІ (JSON):\n", 1)[1].splitlines()[0])
     if set(дані) != set(план["scenes"]):
         raise RuntimeError("Зведення не відповідає плану")
@@ -22,6 +23,8 @@ def main():
             raise RuntimeError("Незавершений запис: " + сцена)
         if not (д.get("доказ") or {}).get("вердикт", {}).get("доведено"):
             raise RuntimeError("Неповний доказ: " + сцена)
+        if д["результат"].get("sha") != середовище["штамп"]:
+            raise RuntimeError("Інший штамп збірки: " + сцена)
     завершені = re.findall(r"^\S+ (\S+) rc=\d+$", (ТЕКА / "done.txt").read_text(encoding="utf-8"), re.M)
     if Counter(завершені) != Counter({с: 1 for с in план["scenes"]}):
         raise RuntimeError("У done.txt не рівно один завершений запуск кожної сцени")
@@ -30,7 +33,6 @@ def main():
     відповіді = (ТЕКА / "ВІДПОВІДІ.md").read_text(encoding="utf-8")
     if "ПІСЛЯ ЗАПИСУ" in відповіді:
         raise RuntimeError("Не завершено відповіді на всі питання")
-    середовище = json.loads((ТЕКА / "середовище.json").read_text(encoding="utf-8"))
     зелених = sum(д["зелених_звірок"] for д in дані.values())
     червоних = sum(д["червоних_звірок"] for д in дані.values())
     png = sum(д["знімків_png"] for д in дані.values())
