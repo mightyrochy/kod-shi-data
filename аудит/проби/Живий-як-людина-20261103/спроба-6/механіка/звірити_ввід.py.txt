@@ -1,0 +1,16 @@
+from pathlib import Path
+import json,hashlib,sys
+base=Path('аудит/проби/Живий-як-людина-20261103/спроба-6')
+case=base/sys.argv[1]
+def read(run):
+ texts=[];photos=[]
+ for p in sorted((case/run/'скріни').glob('*.json')):
+  d=json.loads(p.read_text(encoding='utf-8'));a=json.loads(d['action'])
+  if a.get('op')=='fill' and a.get('selector')=='#чат-поле':texts.append(a['value'])
+  if a.get('op')=='file':
+   f=Path(a['file']);photos.append({'вхід':a['selector'],'файл':f.name,'sha256':hashlib.sha256(f.read_bytes()).hexdigest()})
+ return {'власні_введені_репліки':texts,'завантажені_фото':photos}
+first=read('запит-1');second=read('запит-2')
+out={'предмет':'Звірка власного вводу; не нативний запис продукту і не оцінка його відповідей','ситуація':sys.argv[1],'репліки_тотожні':first['власні_введені_репліки']==second['власні_введені_репліки'],'фото_тотожні':first['завантажені_фото']==second['завантажені_фото'],'перший':first,'другий':second}
+folder=base/'звірка-вводу';folder.mkdir(exist_ok=True);target=folder/(sys.argv[1]+'.json');target.write_text(json.dumps(out,ensure_ascii=False,indent=2)+'\n',encoding='utf-8')
+print(json.dumps({'файл':str(target),'реплік':[len(first['власні_введені_репліки']),len(second['власні_введені_репліки'])],'репліки_тотожні':out['репліки_тотожні'],'фото_тотожні':out['фото_тотожні']},ensure_ascii=False))
