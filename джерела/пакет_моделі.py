@@ -613,11 +613,11 @@ import внутрішня_мова as _ВМ_П
                  як="an outfit in which none of them carries colour does not keep the scheme: it reads as "
                     "bland, not calm"),
         # Пулу — лише порядок щаблів; одяг щабля нагоди в її гілці — у рядку рівня (`occasion_level`)
-        _ЗП.Поле("pool", "the catalog items the code let through: in stock, right for this temperature and "
+        _ЗП.Поле("pool", "admitted catalog items: in stock, suited to the weather and "
                          "the stated dress code, within her palette's lightness and her refusals; «formality» — "
                          "the item's step or steps from…to, the same steps as the occasion: " + _БР_Щ.ЩАБЛІ_ПОРЯДОК_EN + "; «L» — lightness 0 to "
-                         "100; «hem_cm» — where the hem falls, cm above the floor; «fabric_bands» — the weather band codes the "
-                         "fabric suits; «register» — the item's style language",
+                         "100; «hem_cm» — where the hem falls, cm above the floor; «fabric_bands» — weather bands "
+                         "suited to the fabric; «register» — the item's style language",
                  як="take items only from here and name each by its «n» alone; fitness for the "
                     "occasion, taste and the unity of the outfit are yours", треба=True),
         # Пул — таблицею (`збирач_промптів.таблиця`): як її читати — рядок раз на
