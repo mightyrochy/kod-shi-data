@@ -1,6 +1,6 @@
 ﻿#Requires -Version 5.1
 <# Стенд наряду «обгортка-GPU-простій» (29.10): хибне «GPU зайнята», стенд без Main (main.cpl), мовчазний запобіжник.
-Справжні функції обгортки; підмінено лише nvidia-smi, перелік позначок і замки. #>
+Справжні функції обгортки; підмінено nvidia-smi, перелік позначок, замки й порожній перелік LM Studio. #>
 param([Parameter(Mandatory = $true)][string]$SourceDir)
 $ErrorActionPreference = 'Stop'
 [Console]::OutputEncoding = New-Object Text.UTF8Encoding($false)
@@ -21,6 +21,7 @@ $sideDir = Join-Path $SourceDir 'перевірка'
 # --- (а) відеокарта зайнята за нестачі VRAM ----------------------------------------------------------------
 Scenario 'а GPU' {
     . (Join-Path $SourceDir 'queue_lanes.ps1')
+    function Get-LmsInstances { <# Синтетичний порожній REST; мірило простою не звертається до LM Studio. #> }
     function Get-Command { [pscustomobject]@{ Source = 'nvidia-smi' } }
     function Get-GpuCounterRows { <# Запасне джерело — nvidia-smi; лічильник процесів міряє сценарії_gpu_процеси.ps1. #> $null }
     function Invoke-Native { param($Exe, $Arguments)
@@ -80,6 +81,7 @@ Scenario 'б стенди' {
 Scenario 'в сигнал' {
     $work = Join-Path $tmp 'cr'; $box = Join-Path $tmp 'box'
     . (Join-Path $SourceDir 'claude_run.ps1') -WorkDir $work -RepoDir $tmp -OutboxDir $box -PublishDir "$tmp/pub" -GeminiOutDir "$tmp/gout" -LaneDir "$tmp/lanes" -TmpDir "$tmp/ctmp" -NoStatus
+    function Get-LmsInstances { <# Синтетичний порожній REST; мірило простою не звертається до LM Studio. #> }
     foreach ($d in @($work, "$work/state", "$work/slots", $box, "$tmp/lanes")) { [void][IO.Directory]::CreateDirectory($d) }
     $script:StateDir = "$work/state"; $script:SlotDir = "$work/slots"; $script:Limits = $null
     $send = { param($l) Add-Line $l }
@@ -126,6 +128,7 @@ Scenario 'в сигнал' {
 Scenario 'в планувальник' {
     $work = Join-Path $tmp 'cp'
     . (Join-Path $SourceDir 'claude_run.ps1') -WorkDir $work -RepoDir $tmp -OutboxDir "$tmp/cpbox" -PublishDir "$tmp/pub" -GeminiOutDir "$tmp/gout" -LaneDir "$tmp/lanes" -TmpDir "$tmp/ctmp" -NoStatus
+    function Get-LmsInstances { <# Синтетичний порожній REST; мірило простою не звертається до LM Studio. #> }
     foreach ($d in @($work, "$work/state", "$work/slots", "$tmp/lanes")) { [void][IO.Directory]::CreateDirectory($d) }
     $script:StateDir = "$work/state"; $script:SlotDir = "$work/slots"
     $script:Limits = @{ slots = @{ claude = 2 }; source = 'код'; claude_laptop = @() }
@@ -157,6 +160,7 @@ $g3out = Join-Path $tmp 'g3out'
 Scenario 'в3 gemini-run' {
     $work = Join-Path $tmp 'g3'
     . (Join-Path $SourceDir 'gemini_run.ps1') -RepoDir $tmp -RepoUrl 'x' -RunsDir "$work/runs" -OutDir $g3out -LaneDir "$tmp/g3lanes" -AgyExe 'немає-cli' -ProfileDir $tmp
+    function Get-LmsInstances { <# Синтетичний порожній REST; мірило простою не звертається до LM Studio. #> }
     foreach ($d in @("$work/runs", "$work/state", "$work/slots", $g3out, "$tmp/g3lanes")) { [void][IO.Directory]::CreateDirectory($d) }
     $script:StateDir = "$work/state"; $script:SlotDir = "$work/slots"; $script:Limits = $null
     $script:HealthAlertDir = Join-Path $g3out 'alerts'
@@ -202,6 +206,7 @@ Scenario 'в3 публікатор' {
 Scenario 'г банер' {
     $work = Join-Path $tmp 'cg'
     . (Join-Path $SourceDir 'claude_run.ps1') -WorkDir $work -RepoDir $tmp -OutboxDir "$tmp/cgbox" -PublishDir "$tmp/pub" -GeminiOutDir "$tmp/gout" -LaneDir "$tmp/lanes" -TmpDir "$tmp/ctmp" -NoStatus
+    function Get-LmsInstances { <# Синтетичний порожній REST; мірило простою не звертається до LM Studio. #> }
     foreach ($d in @($work, "$work/state", "$work/slots", "$tmp/gout")) { [void][IO.Directory]::CreateDirectory($d) }
     $script:StateDir = "$work/state"; $script:SlotDir = "$work/slots"; $script:Limits = $null
     function Get-TaskRows { @() }
