@@ -54,3 +54,24 @@ with tempfile.TemporaryDirectory() as т:
                                   ("СУБАГЕНТ (subagents/agent-*.jsonl)", "s/subagents/agent-a1.jsonl", "user")):
         print(f"=== {назва}")
         print(запуск(т, імя, останній) or "(порожньо)")
+
+with tempfile.TemporaryDirectory() as т:
+    шлях = os.path.join(т, "черга.jsonl")
+    записи = [
+        {"type": "queue-operation", "operation": "enqueue", "timestamp": "2026-10-26T11:01:00Z", "content": "слово лише в черзі"},
+        {"type": "queue-operation", "operation": "enqueue", "timestamp": "2026-10-26T11:02:00Z", "content": "GEMINI ОБГОРТКА: лист"},
+        {"type": "queue-operation", "operation": "enqueue", "timestamp": "2026-10-26T11:03:00Z", "content": "доставлене слово"},
+        подія("доставлене слово", ЛЮДИНА, {}, 4),
+        {"type": "queue-operation", "operation": "enqueue", "timestamp": "2026-10-26T11:05:00Z", "content": "видалене слово"},
+        {"type": "queue-operation", "operation": "remove", "content": "видалене слово"},
+        {"type": "queue-operation", "operation": "enqueue", "timestamp": "2026-10-26T11:07:00Z", "content": "слово субагента", "isSidechain": True},
+    ]
+    with open(шлях, "w", encoding="utf-8") as ф:
+        for запис in записи:
+            ф.write(json.dumps(запис, ensure_ascii=False) + "\n")
+    р = subprocess.run([sys.executable, ХУК], input=json.dumps({"source": "compact", "transcript_path": шлях}),
+                       capture_output=True, text=True, check=True).stdout
+    assert "2026-10-26 11:01 UTC «слово лише в черзі»" in р and "не дійшло до сесії — лише в черзі" in р, р
+    assert р.count("доставлене слово") == 1 and "2026-10-26 11:03" in р, р
+    assert all(т not in р for т in ("GEMINI ОБГОРТКА: лист", "видалене слово", "слово субагента")), р
+    print("черга: ок")
