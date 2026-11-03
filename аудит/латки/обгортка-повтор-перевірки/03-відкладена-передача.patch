@@ -1,0 +1,236 @@
+diff --git a/аудит/адаптери/gemini/m9v/хеші.psd1 b/аудит/адаптери/gemini/m9v/хеші.psd1
+index 3aa73854250a7dc4c4472c91ed6f52cbefcb96d6..4cf511f8417eb93ca929a6f12c1f514f8c72be67 100644
+--- a/аудит/адаптери/gemini/m9v/хеші.psd1
++++ b/аудит/адаптери/gemini/m9v/хеші.psd1
+@@ -3,7 +3,7 @@
+ @{
+     'wrapper_update.ps1' = '45F254E5CB2FB7D882BBB9CE7CA121988FDF23BACCFE65CB67A4CA3B3F426FE7'
+     'wrapper_probe.ps1'  = '85116D04C22EB64CBFF52E66BCEAE9B1091577A889EDD58A8B634093A82BDBC6'
+-    'wrapper_chain.ps1'  = 'DAEF50444A23503EA26FC8E2254229D83E084C482A126209B5E3701CEACA9848'
++    'wrapper_chain.ps1'  = 'E9ECEC2E4D704710AEA82B181064C9BC18B827CC1ED837D8BC67F771415638EE'
+     'wrapper_health.ps1' = 'AB85BBF974EA56281C2824C12CA11BF775013C6AD7F9C67AD4E8DC433931E817'
+     'gemini_run.ps1'     = '561048BD8A8BC657A77EBCAFAF393F572ACE984768CD44A173CA5313BCA5DA29'
+     'gemini_publish.ps1' = 'D3441EB57A434F29CE885BB5155490977A25769A196875D782DA75DD55A49E4F'
+diff --git a/аудит/адаптери/gemini/wrapper_chain.ps1 b/аудит/адаптери/gemini/wrapper_chain.ps1
+index 5acfc0aa6483271844a603fbb3c0caa4a51f84b3..def0f767077eabc9514a50c298f292c34c43f992 100644
+--- a/аудит/адаптери/gemini/wrapper_chain.ps1
++++ b/аудит/адаптери/gemini/wrapper_chain.ps1
+@@ -419,10 +419,13 @@ function Get-ChainMarkers([string]$Slug) {
+ }
+ 
+ function Move-BlockedMarkers([string]$Slug, [string]$Model, [string]$Main, [datetimeoffset]$Now, [switch]$Gpu) {
+-    <# Переносить лише NEW/WAIT із вичерпаною квотою; кінцеві не заступають нову спробу, узяті не переносить. #>
+-    if (Test-ModelQuota $Model $Now) { return $false }
++    <# Переносить NEW/WAIT із вичерпаною квотою: $true — виконано, $false — не потрібно, $null — відкладено.
++
++    UNKNOWN і квота цільової моделі потребують повтору; узята чи вже доступна робота передачі не потребує. #>
++    if (Test-ModelQuota $Model $Now) { return $null }
+     $all = @(Get-ChainMarkers $Slug)
+-    if (@($all | Where-Object { $_.Kind -cin @('TAKEN','UNKNOWN') }).Count) { return $false }
++    if (@($all | Where-Object { $_.Kind -ceq 'UNKNOWN' }).Count) { return $null }
++    if (@($all | Where-Object { $_.Kind -ceq 'TAKEN' }).Count) { return $false }
+     $old = @($all | Where-Object { $_.Kind -cin @('NEW','WAIT') })
+     if (-not $old.Count -or @($old | Where-Object { $_.Model -ceq $Model -or -not (Test-ModelQuota $_.Model $Now) }).Count) { return $false }
+     $attempt = 1
+@@ -437,9 +440,10 @@ function Move-BlockedMarkers([string]$Slug, [string]$Model, [string]$Main, [date
+ }
+ 
+ function Test-CloudMove([string]$Slug, [datetimeoffset]$Now) {
+-    <# Хмарі передається лише NEW/WAIT на квоті; кінцеві не голосують, узятий прогін лишається смузі. #>
++    <# Визначає потребу передачі NEW/WAIT у хмару: $null — читання відкладене, $false — передача не потрібна. #>
+     $all = @(Get-ChainMarkers $Slug)
+-    if (@($all | Where-Object { $_.Kind -cin @('TAKEN','UNKNOWN') }).Count) { return $false }
++    if (@($all | Where-Object { $_.Kind -ceq 'UNKNOWN' }).Count) { return $null }
++    if (@($all | Where-Object { $_.Kind -ceq 'TAKEN' }).Count) { return $false }
+     $pending = @($all | Where-Object { $_.Kind -cin @('NEW','WAIT') })
+     $pending.Count -gt 0 -and -not @($pending | Where-Object { -not (Test-ModelQuota $_.Model $Now) }).Count
+ }
+@@ -588,9 +592,12 @@ function Remove-DeadReviewMarkers($Pulls, $Seen, [datetimeoffset]$Now) {
+ 
+ function Request-CloudReview([string]$Number, [string]$Head) {
+     <# Перевірку бере хмарний Claude: позначки тієї самої голови, що чекають вичерпаної квоти, знімаються, диспетчер
+-    отримує рядок «ПОТРІБНА ПЕРЕВІРКА CLAUDE #PR <SHA>» один раз на голову. #>
++    отримує рядок «ПОТРІБНА ПЕРЕВІРКА CLAUDE #PR <SHA>» один раз на голову.
++
++    Результат: $true — доставлено, $false — не потрібно, $null — відкладено до читання стану. #>
+     $markers = @(Get-ChainMarkers "автоперевірка-$Number-$Head")
+-    if (@($markers | Where-Object { $_.Kind -cin @('TAKEN','UNKNOWN') }).Count) { return }
++    if (@($markers | Where-Object { $_.Kind -ceq 'UNKNOWN' }).Count) { return $null }
++    if (@($markers | Where-Object { $_.Kind -ceq 'TAKEN' }).Count) { return $false }
+     foreach ($m in $markers) {
+         $d = Invoke-Git @('push','-q','--no-verify',"--force-with-lease=refs/heads/$($m.Ref):$($m.Sha)",'origin',":refs/heads/$($m.Ref)") -AllowFail
+         if ($d.Code -ne 0) { throw 'CHAIN_PUSH' }
+@@ -598,11 +605,13 @@ function Request-CloudReview([string]$Number, [string]$Head) {
+     }
+     # Позначка «відправлено» — після рядка: збій між ними повторить рядок, а не загубить його.
+     $sent = Get-SeenPath "cloud-review $Number $Head"
+-    if (-not (Test-Path -LiteralPath $sent)) {
++    $delivered = -not (Test-Path -LiteralPath $sent)
++    if ($delivered) {
+         Add-OutboxLine ((Get-Date -Format 'yyyyMMdd-HHmmss') + '-' + (Get-Sha256Hex "cloud-review $Number $Head").Substring(0,12) + '.txt') "GEMINI ОБГОРТКА: ПОТРІБНА ПЕРЕВІРКА CLAUDE #$Number $Head"
+         Write-FileAtomic $sent "cloud-review $Number $Head"
+     }
+     Write-WrapperLog "ланцюг: #$Number $Head — перевірка хмарним Claude, рядок диспетчерові"
++    $delivered
+ }
+ 
+ function Get-ChainBusySlots([string]$Dir, [string]$Pattern, [string]$Lane='невідома') {
+@@ -834,9 +843,15 @@ function Invoke-WrapperChain {
+                 if ($seen.ContainsKey($key)) { continue }
+                 # Одна перевірка на голову: позначка будь-якого рушія вже стоїть — нової не ставимо, лише переводимо позначки, що чекають вичерпаної квоти.
+                 $marked = @($seen.Keys | Where-Object { $_ -cmatch ('^' + $n + ' ' + $head + ' ') }).Count
+-                if ($model -ceq $script:CloudReview) { if (-not $marked -or (Test-CloudMove "автоперевірка-$n-$head" $now)) { Request-CloudReview $n $head } }
+-                elseif ($marked) { [void](Move-BlockedMarkers "автоперевірка-$n-$head" $model $main $now) }
++                $transfer = $true
++                if ($model -ceq $script:CloudReview) {
++                    $transfer = if ($marked) { Test-CloudMove "автоперевірка-$n-$head" $now } else { $true }
++                    if ($transfer) { $transfer = Request-CloudReview $n $head }
++                }
++                elseif ($marked) { $transfer = Move-BlockedMarkers "автоперевірка-$n-$head" $model $main $now }
+                 else { Add-ChainMarker "автоперевірка-$n-$head" $model $main }
++                # Лише виконана або непотрібна передача завершує рішення; відкладена повториться наступного проходу.
++                if ($null -eq $transfer) { continue }
+                 $seen[$key] = $true
+                 $reviewed[$n] = @{head=$head;diff=$diff;pid=$patchId}
+                 Write-FileAtomic $statePath (([ordered]@{ main=$main; reviewed=$reviewed; live_active=$liveActive; live_since=$liveSince; live_stamps=@($liveStamps.Keys); live_pending=@($livePending); reviews=@($seen.Keys); installed_utc=$installed.ToString('o'); heads=$heads }) | ConvertTo-Json -Compress -Depth 5)
+diff --git a/аудит/адаптери/gemini/НАЛАШТУВАННЯ.md b/аудит/адаптери/gemini/НАЛАШТУВАННЯ.md
+index 4b5f7fe7ef0ae571020df43982c11431aeb3bc11..d65463a3329a3a8926c3b1f6d3db4faca10fb49e 100644
+--- a/аудит/адаптери/gemini/НАЛАШТУВАННЯ.md
++++ b/аудит/адаптери/gemini/НАЛАШТУВАННЯ.md
+@@ -450,7 +450,7 @@ $f = Join-Path "$env:USERPROFILE\gemini-outbox" $n
+ |---|---|
+ | `wrapper_probe.ps1` | `85116D04C22EB64CBFF52E66BCEAE9B1091577A889EDD58A8B634093A82BDBC6` |
+ | `wrapper_update.ps1` | `45F254E5CB2FB7D882BBB9CE7CA121988FDF23BACCFE65CB67A4CA3B3F426FE7` |
+-| `wrapper_chain.ps1` | `DAEF50444A23503EA26FC8E2254229D83E084C482A126209B5E3701CEACA9848` |
++| `wrapper_chain.ps1` | `E9ECEC2E4D704710AEA82B181064C9BC18B827CC1ED837D8BC67F771415638EE` |
+ | `gemini_run.ps1` | `561048BD8A8BC657A77EBCAFAF393F572ACE984768CD44A173CA5313BCA5DA29` |
+ | `gemini_publish.ps1` | `D3441EB57A434F29CE885BB5155490977A25769A196875D782DA75DD55A49E4F` |
+ | `gemini_watch.ps1` | `69EFEBB07FF1AF51C382B753A95C50F3C1AC27B3008F2489992BEBE3FD0213AA` |
+@@ -546,7 +546,11 @@ PR закритий, SHA змінився, автор/база/репозито
+ Кінцеві `DONE`/`STALE` не заступають нову; `/10/` старша за `/2/`. Стан читається зі смуги тим самим ключем
+ `refs/remotes/origin/<позначка> <SHA>`. Недоступний стан однієї позначки зберігає всі позначки лише її голови;
+ очищення інших голів і наступні кроки проходу тривають. Ця голова до успішного читання також не переноситься
+-між постачальниками чи в хмару. Причина й позначка записуються в журнал; безпечний тип і місце — у рядок ланцюга.
++між постачальниками чи в хмару. Передача повертає три результати: виконано (`$true`), не потрібно (`$false`),
++відкладено (`$null`). Лише перші два записуються в `reviews` (`seen`) і `reviewed` у `chain.json`; відкладення
++через `UNKNOWN` або квоту цільової моделі наступний прохід повторює. Повторне читання перед хмарною доставкою
++дотримується того самого договору. Причина й позначка записуються в журнал; безпечний тип і місце — у рядок
++ланцюга.
+ Перенесення враховує лише `NEW`/`WAIT`, узяту не переносить; повтор доступного постачальника після його кінцевого
+ стану отримує наступний номер спроби. Зняття — під
+ lease на SHA позначки, кожне — рядок `publish.log` «ланцюг: <позначка> знято — <причина>».
+diff --git a/аудит/адаптери/gemini/перевірка/повтор_позначок.ps1 b/аудит/адаптери/gemini/перевірка/повтор_позначок.ps1
+index c557f45a45b5176689067cb00e8f8688d0ac5b47..5ef7b568a940b7dd5c506d35efe506d6fd560bdb 100644
+--- a/аудит/адаптери/gemini/перевірка/повтор_позначок.ps1
++++ b/аудит/адаптери/gemini/перевірка/повтор_позначок.ps1
+@@ -178,6 +178,86 @@ function Get-MarkerState($M, [string]$StateDir) {
+     Invoke-WrapperChain
+     $lines = @(Get-ChildItem -LiteralPath $OutboxDir -File | ForEach-Object { [IO.File]::ReadAllText($_.FullName,$utf).Trim() })
+     Check 'загальний catch теж передав тип і функцію текстового блоку' (@($lines | Where-Object { $_ -ceq 'GEMINI ОБГОРТКА: ЛАНЦЮГ CHAIN_FAILED InvalidOperationException Get-ChainPulls' }).Count -eq 1)
++
++    # Окремий простір даних: справжні проходи ланцюга, refs, chain.json і хмарний вихід.
++    & {
++        . (Join-Path $SourceDir 'gemini_publish.ps1') -WorkDir "$tmp/transfer/pub" -OutDir "$tmp/transfer/out" -OutboxDir "$tmp/transfer/outbox" -UpdateRoot "$tmp/transfer/update"
++        $script:Repo = "$seed/.git"; $script:NoHooks = "$tmp/no-hooks"
++        foreach ($dir in @($WorkDir,$OutboxDir,"$WorkDir/seen")) { [void][IO.Directory]::CreateDirectory($dir) }
++        function Complete-EngineDrafts { }
++        function Get-ChainBuildStamp { '' }
++        function Get-ChainBranchWork { '' }
++        function Test-RecentReviewHead { $true }
++        function Test-ReviewedMerge { $false }
++        function Test-ChainCodePull { $true }
++        function Test-ChainEndAnnounced { $true }
++        function Get-ChainPullRisk { 2 }
++        function Test-ChainReviewDone { $false }
++        function Get-ReviewDiff { 'проба' }
++        function Get-ReviewPatchId { 'проба' }
++        function Get-ReviewModels { @($script:TransferTarget) }
++        function Test-ModelQuota([string]$Model, $Now) { $Model -ceq 'gpt-6.1-terra-high' }
++        function Get-ChainPulls { $script:TransferPull }
++        function Get-ChainMarkerState($Ref, $Sha, $Model) {
++            if ($Ref.Contains("/$script:TransferSlug/")) {
++                $script:TransferReads++
++                if ($script:Unavailable -and ($script:FailAt -eq 0 -or $script:TransferReads -eq $script:FailAt)) {
++                    throw [UnauthorizedAccessException]::new('тимчасово недоступний стан')
++                }
++            }
++            [pscustomobject]@{ Kind=$script:TransferKind; Wait=$null }
++        }
++        function CloudLines([int]$Number) {
++            @(Get-ChildItem -LiteralPath $OutboxDir -File | ForEach-Object { [IO.File]::ReadAllText($_.FullName,$utf).Trim() } |
++                Where-Object { $_ -ceq "GEMINI ОБГОРТКА: ПОТРІБНА ПЕРЕВІРКА CLAUDE #$Number $head" })
++        }
++        foreach ($case in @(
++            @{Number=201;Target='gemini-4-argon-high';FailAt=0;Name='запасна модель'},
++            @{Number=202;Target='claude-cloud';FailAt=0;Name='хмара: попереднє читання'},
++            @{Number=203;Target='claude-cloud';FailAt=3;Name='хмара: повторне читання перед передачею'}
++        )) {
++            $n = $case.Number; $label = $case.Name
++            $script:TransferTarget = $case.Target; $script:FailAt = $case.FailAt
++            $script:TransferSlug = "автоперевірка-$n-$head"
++            $old = "refs/heads/gemini-queue/$script:TransferSlug/gpt-6.1-terra-high/1/p2"
++            & git -C $seed push -q origin "${head}:$old"
++            $script:TransferPull = [pscustomobject]@{number=$n;title='Проба';user=@{login='mightyrochy'};
++                head=@{ref='codex/проба';sha=$head;repo=@{full_name=$GitHubRepo}};
++                base=@{ref='main';repo=@{full_name=$GitHubRepo}}}
++            $statePath = Join-Path $WorkDir 'chain.json'
++            $oldKey = "$n $head gpt-6.1-terra-high"; $key = "$n $head $script:TransferTarget"
++            Write-FileAtomic $statePath (@{main=$head;reviewed=@{};reviews=@($oldKey)} | ConvertTo-Json -Depth 5)
++            $script:Unavailable = $true; $script:TransferReads = 0; $script:TransferKind = 'WAIT'
++            Invoke-WrapperChain
++            $first = ConvertFrom-Json ([IO.File]::ReadAllText($statePath,$utf))
++            Check "$label — відкладення не записане в seen і reviewed" ($key -cnotin @($first.reviews) -and $null -eq $first.reviewed.PSObject.Properties[[string]$n])
++            $refs = @(Refs $n)
++            Check "$label — UNKNOWN зберіг стару позначку без хмарної доставки" ($refs.Count -eq 1 -and $refs[0] -ceq $old -and @(CloudLines $n).Count -eq 0)
++            $script:Unavailable = $false
++            Invoke-WrapperChain
++            $second = ConvertFrom-Json ([IO.File]::ReadAllText($statePath,$utf))
++            $refs = @(Refs $n)
++            $delivered = if ($script:TransferTarget -ceq 'claude-cloud') {
++                $refs.Count -eq 0 -and @(CloudLines $n).Count -eq 1 -and (Test-Path -LiteralPath (Get-SeenPath "cloud-review $n $head"))
++            } else {
++                $refs.Count -eq 1 -and $refs[0] -ceq "refs/heads/gemini-queue/$script:TransferSlug/$script:TransferTarget/1/p2"
++            }
++            Check "$label — наступний прохід після відновлення фактично передав роботу" $delivered
++            Check "$label — seen записаний після передачі" ($key -cin @($second.reviews) -and $null -ne $second.reviewed.PSObject.Properties[[string]$n])
++            $beforeRefs = $refs -join '|'; $beforeLines = @(CloudLines $n).Count
++            Invoke-WrapperChain
++            Check "$label — третій прохід не дублює доставку" (((@(Refs $n) -join '|') -ceq $beforeRefs) -and @(CloudLines $n).Count -eq $beforeLines)
++        }
++        # Узяту роботу передавати не треба; це завершене рішення, на відміну від UNKNOWN.
++        foreach ($target in @('gemini-4-argon-high','claude-cloud')) {
++            $script:TransferTarget = $target; $script:TransferKind = 'TAKEN'
++            $script:TransferSlug = "автоперевірка-204-$head"
++            & git -C $seed push -q origin "${head}:refs/heads/gemini-queue/$script:TransferSlug/gpt-6.1-terra-high/1/p2"
++            $result = if ($target -ceq 'claude-cloud') { Test-CloudMove $script:TransferSlug ([datetimeoffset]::UtcNow) }
++                      else { Move-BlockedMarkers $script:TransferSlug $target $head ([datetimeoffset]::UtcNow) }
++            Check "$target — узята робота повертає рішення не потрібна" ($null -ne $result -and $result -ceq $false)
++        }
++    }
+ } catch { Check "виняток: $($_.Exception.Message) $($_.ScriptStackTrace)" $false }
+ finally {
+     $resolved = [IO.Path]::GetFullPath($tmp)
+diff --git a/аудит/дошка/gemini/обгортка-повтор-перевірки-03.md b/аудит/дошка/gemini/обгортка-повтор-перевірки-03.md
+new file mode 100644
+index 0000000000000000000000000000000000000000..2f0a7d6a83a529a6967b545eb60c626351fc3573
+--- /dev/null
++++ b/аудит/дошка/gemini/обгортка-повтор-перевірки-03.md
+@@ -0,0 +1,3 @@
++# Рядок перевірки перенесено дослівно: у базі #2912 його ще немає; тотожний рядок згортання пропускає.
++| 12592 | Перевірка #2912 · UNKNOWN передчасно позначає передачу виконаною <!-- дошка: дата=2026-11-03; рід=процес; попередник=тема 10802; механізм=неповна-правка --> | середня | **ВІДКРИТО** · На bcff31bc8652beb4ba6162c3b3df7d48e6dd5bd4 після тимчасової відмови читача Move-BlockedMarkers повертає false або Test-CloudMove відхиляє передачу, але Invoke-WrapperChain записує запасного постачальника в seen. Після відновлення читання наступний прохід відсіює цей ключ: нової позначки чи хмарної доставки немає, стара на квоті лишається. | Два послідовні справжні проходи на локальному bare origin: для gemini-4-argon-high і claude-cloud передчасний_seen=True, доставлено_після_відновлення=False; пряме перенесення після відновлення=True. Звіт і відтворення: `аудит/перевірки/автоперевірка-2912-bcff31bc8652beb4ba6162c3b3df7d48e6dd5bd4.md`; виявлено: перевірка; внесено: давнє | `аудит/адаптери/gemini/wrapper_chain.ps1:837–842`, Move-BlockedMarkers, Test-CloudMove | Після тимчасового UNKNOWN і відновлення читання наступний прохід фактично передає роботу доступному постачальнику; seen не фіксує відкладення як доставку. |
++стан 12592: **ЗАКРИТО** · Латка 03 до 57ad889f991ffce508e7d6dea2edfcc83b00cd3e відрізняє виконану, непотрібну й відкладену передачу. UNKNOWN не записує нового постачальника в seen або reviewed; після відновлення читання наступний справжній прохід передає роботу запасній моделі чи хмарному Claude. Охоплено також збій повторного читання безпосередньо перед хмарною доставкою та відсутність дубля на третьому проході. Мірило: 6/42 провалів ДО → 0/42 ПІСЛЯ; вихідні 25 перевірок проходять. Докази: `аудит/латки/обгортка-повтор-перевірки/03-README.md`, `03-журнали/`. <!-- дошка: механізм=неповна-правка; закриття=корінь; доказ=проба; дата-закриття=2026-11-03 -->
+diff --git a/аудит/корені/ПК-межа-без-джерела-вердикти.tsv b/аудит/корені/ПК-межа-без-джерела-вердикти.tsv
+index 498faf7e7437ce4a663db93e592eecb4927f0b4e..5254e4f3b0ca4872973cf7410e55c103e378fd98 100644
+--- a/аудит/корені/ПК-межа-без-джерела-вердикти.tsv
++++ b/аудит/корені/ПК-межа-без-джерела-вердикти.tsv
+@@ -77,8 +77,8 @@
+ правило|аудит/адаптери/gemini/НАЛАШТУВАННЯ.md|da942d93c00e|5 хвилин|1	НМ	ґм:аудит/адаптери/gemini/НАЛАШТУВАННЯ.md:491.2	частота запуску задач і запас свіжості, механізм
+ правило|аудит/адаптери/gemini/НАЛАШТУВАННЯ.md|aa14e877d4ec|слотів|1	НМ	ґм:аудит/адаптери/gemini/НАЛАШТУВАННЯ.md:502.1	слоти й перезапуск планувальника, механізм самооновлення
+ правило|аудит/адаптери/gemini/НАЛАШТУВАННЯ.md|aa14e877d4ec|2 хв|1	НМ	ґм:аудит/адаптери/gemini/НАЛАШТУВАННЯ.md:502.2	слоти й перезапуск планувальника, механізм самооновлення
+-правило|аудит/адаптери/gemini/НАЛАШТУВАННЯ.md|2bda1775224d|слоті|1	НМ	ґм:аудит/адаптери/gemini/НАЛАШТУВАННЯ.md:537.1	слоти в описі звірки автоперевірки, механізм
+-правило|аудит/адаптери/gemini/НАЛАШТУВАННЯ.md|2bda1775224d|слоти|1	НМ	ґм:аудит/адаптери/gemini/НАЛАШТУВАННЯ.md:537.2	слоти в описі звірки автоперевірки, механізм
++правило|аудит/адаптери/gemini/НАЛАШТУВАННЯ.md|c5e213e5b454|слоті|1	НМ	ґм:аудит/адаптери/gemini/НАЛАШТУВАННЯ.md:537.1	слоти в описі звірки автоперевірки, механізм
++правило|аудит/адаптери/gemini/НАЛАШТУВАННЯ.md|c5e213e5b454|слоти|1	НМ	ґм:аудит/адаптери/gemini/НАЛАШТУВАННЯ.md:537.2	слоти в описі звірки автоперевірки, механізм
+ правило|аудит/адаптери/gemini/НАЛАШТУВАННЯ.md|fa201344384b|3600 секунд|1	МБ	ґм:аудит/адаптери/gemini/НАЛАШТУВАННЯ.md:547.1	30 запитів за 3600 с — стеля постановки автоперевірок; квоти GitHub числом не названо
+ правило|аудит/адаптери/gemini/НАЛАШТУВАННЯ.md|fa201344384b|120 секунд|1	НМ	ґм:аудит/адаптери/gemini/НАЛАШТУВАННЯ.md:547.2	пауза повтору після відмови, механізм
+ правило|аудит/адаптери/gemini/НАЛАШТУВАННЯ.md|fa201344384b|120 секунд|2	НМ	ґм:аудит/адаптери/gemini/НАЛАШТУВАННЯ.md:547.3	пауза повтору після мережевої відмови, механізм

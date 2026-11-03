@@ -255,6 +255,7 @@ try {
         Check '2 уже перевірена збірка має порожній план' (@($samePlan.scenes.PSObject.Properties).Count -eq 0)
     }
     Scenario '5 браузер без GPU' {
+        function Get-LmsInstances { <# Синтетичний порожній REST; мірило браузера не звертається до LM Studio. #> }
         if (Get-Command Set-BrowserGpuPolicy -ErrorAction SilentlyContinue) { Set-BrowserGpuPolicy "$tmp/browser policy" }
         $nodeModule = @'
 module.exports = {chromium: {

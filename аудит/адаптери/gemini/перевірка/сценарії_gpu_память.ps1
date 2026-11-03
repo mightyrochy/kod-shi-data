@@ -1,5 +1,5 @@
 ﻿#Requires -Version 5.1
-<# Справжні рішення модуля й транспорт причини; підмінено лише драйвер, WMI та замок.
+<# Справжні рішення модуля й транспорт причини; підмінено драйвер, WMI, замок і порожній перелік LM Studio.
 Числа сценаріїв — фікстури, а 8925 MiB виробничого бюджету звірено з паспортом виміру. #>
 param([Parameter(Mandatory = $true)][string]$SourceDir)
 $ErrorActionPreference = 'Stop'
@@ -11,6 +11,7 @@ function Check([string]$Name, [bool]$Ok) {
     if ($Ok) { "✓ $Name" } else { "✗ $Name"; $script:bad++ }
 }
 $LaneDir = [IO.Path]::GetTempPath()
+function Get-LmsInstances { <# REST поза мірилом пам’яті; синтетичних моделей немає. #> }
 $script:LockFree = $true
 function Test-LockFree { $script:LockFree }
 $script:Free = 14455; $script:Percent = 0; $script:SmiCode = 0; $script:SmiOut = $null
