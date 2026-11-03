@@ -143,7 +143,7 @@ def поля(вузол):
     """Повертає поля літерала словника або виклику з іменованими аргументами."""
     вих = {}
     if isinstance(вузол, ast.IfExp):
-        return dict(поля(вузол.body), **поля(вузол.orelse))
+        return {}  # Гілки обходяться окремо, не затіняючи одна одну.
     if isinstance(вузол, ast.Dict):
         for к, з in zip(вузол.keys, вузол.values):
             if к is None:
@@ -312,6 +312,20 @@ class Аналіз:
                 вих.extend(self.виклики(інший, інший.функції[ім], бачені))
         return вих
 
+    def склад_містить(self, м, ф, склад, річ, до):
+        """Доводить явне складання образу з попереднього складу й кандидата."""
+        if річ is None:
+            return False
+        ціль = ast.dump(річ, include_attributes=False)
+        if isinstance(склад, ast.Name):
+            значення = [з for з in м.присвоєння.get((ф, склад.id), []) if з.lineno < до]
+            if len(значення) != 1 or м.батьки.get(значення[0]) not in ф.body:
+                return False
+            склад = значення[0]
+        return (isinstance(склад, (ast.List, ast.Tuple))
+                and any(isinstance(з, ast.Starred) for з in склад.elts)
+                and any(ast.dump(з, include_attributes=False) == ціль for з in склад.elts))
+
     def контракт(self, м, вузол):
         """Перевіряє домінуючі відмови; згадка перевірки в тексті не є контролем."""
         ф = м.охопна(вузол)
@@ -346,7 +360,7 @@ class Аналіз:
                                 continue
                             імя = ast.unparse(виклик.func)
                             if (статус_проходження and СУД.search(імя) and виклик.args
-                                    and НОВИЙ_СКЛАД.search(ast.unparse(виклик.args[0]))):
+                                    and self.склад_містить(м, ф, виклик.args[0], річ, ум.lineno)):
                                 виконано.add('а')
                             та_сама = виклик.args and ast.unparse(виклик.args[0]) == річ_вираз
                             if МЕЖІ.search(імя) and len(виклик.args) >= 2 and та_сама:
@@ -382,7 +396,8 @@ def кандидати_пайтону(аналіз, м):
         вузол = набір[головне]
         текст = ' '.join(аналіз.значення(м, набір[к]) for к in sorted(ремонтні))
         текст = аналіз.розкрити_коди(текст)
-        зайняті.update(ast.walk(в))
+        for ключ in ремонтні:
+            зайняті.update(ast.walk(набір[ключ]))
         так, причина = пропозиція(текст, ремонт=True)
         if 'запит_у_каталог' in ремонтні and поля(набір['запит_у_каталог']):
             так, причина = True, 'задане вікно/тип кандидата передається як спосіб ремонту'
