@@ -133,10 +133,8 @@ def пітон(в):
     if isinstance(в, ast.Subscript):
         return т('MemberExpression', object=пітон(в.value), property=пітон(в.slice), computed=True)
     if isinstance(в, ast.Call):
-        арг = пітон(в.args)
-        if в.keywords:
-            арг.append(т('ObjectExpression', properties=[т('Property', key=т('Literal', value=к.arg), value=пітон(к.value), computed=False) for к in в.keywords]))
-        return т('CallExpression', callee=пітон(в.func), arguments=арг)
+        return т('CallExpression', callee=пітон(в.func), arguments=пітон(в.args),
+                 keywords=[т('Property', key=т('Literal', value=к.arg), value=пітон(к.value)) for к in в.keywords])
     if isinstance(в, ast.Dict):
         return т('ObjectExpression', properties=[т('SpreadElement', argument=пітон(з)) if к is None else
                  т('Property', key=пітон(к), value=пітон(з), computed=False) for к, з in zip(в.keys, в.values)])
@@ -211,6 +209,8 @@ class Граф:
         self.ід_зображень, self.ід_полотен = set(), set()
         self.означення = {}
         self.застосування = set()
+        self.імена_параметрів = {}
+        self.іменовані_виклики = {}
         self.скалярні = set()
         self.джерела_функцій = set()
         self.адреси_викликів = {}
@@ -370,6 +370,7 @@ class Граф:
                 параметри.append(пв)
             пов = self.нове()
             self.функції[р] = (параметри, пов)
+            self.імена_параметрів[р] = {п['name']: пв for п, пв in zip(в.get('params', []), параметри) if п['type'] == 'Identifier'}
             self.оголосити(в['body'], нов)
             з = self.вираз(в['body'], нов, пов)
             if в['body']['type'] != 'BlockStatement':
@@ -429,11 +430,12 @@ class Граф:
                     край.extend(нащадки(д))
             self.виклики.append((р, функ, б, ім, назва, арг, self.файл, н))
             self.адреси_викликів[р] = f'{self.файл}:{н}'
+            self.іменовані_виклики[р] = tuple((к['key']['value'], self.вираз(к['value'], с)) for к in в.get('keywords', []))
             if ім in {'модельП', 'викликОцінкиП'}:
                 кадри = арг[1:2] if ім == 'модельП' else арг[2:3]
                 self.входи.append(Вхід(self.файл, н, 'а', кадри, 'фото в ' + ім))
             elif (СУД.search(ім) and ім not in НЕ_СУД and not ім.startswith(('малювати', 'записати', 'показати'))):
-                self.входи.append(Вхід(self.файл, н, 'а', арг, 'вхід ' + назва))
+                self.входи.append(Вхід(self.файл, н, 'а', арг + tuple(з for _, з in self.іменовані_виклики[р]), 'вхід ' + назва))
             elif ім == 'містП' and в.get('arguments'):
                 е = в['arguments'][0].get('value')
                 if е in {'оцінка', 'річ_фото', 'палітра', 'силует'}:
@@ -481,9 +483,9 @@ class Граф:
             self.вираз(д, с, повернення)
         return 0
 
-    def до_функції(self, функ, арг, вих, умова=0):
+    def до_функції(self, функ, арг, вих, умова=0, іменовані=()):
         """Параметри й повернення для можливих адресатів виклику."""
-        self.застосування.add((функ, tuple(арг), вих, умова))
+        self.застосування.add((функ, tuple(арг), вих, умова, іменовані))
         if умова:
             return
         for ф in tuple(self.знач[функ]):
@@ -491,6 +493,12 @@ class Граф:
                 параметри, пов = self.функції[ф]
                 for а, п in zip(арг, параметри):
                     self.звʼязати(а, п)
+                for ім, а in іменовані:
+                    if ім in self.імена_параметрів[ф]:
+                        self.звʼязати(а, self.імена_параметрів[ф][ім])
+                    elif ім is None:
+                        for назва, п in self.імена_параметрів[ф].items():
+                            self.звʼязати(self.поле(а, назва), п)
                 self.звʼязати(пов, вих)
             if ф in self.резолвери and арг:
                 self.звʼязати(арг[0], self.резолвери[ф])
@@ -567,9 +575,10 @@ class Граф:
                     self.зображення.add(р)
                 elif арг:
                     текст = {з[6:] for з in self.знач[арг[0]] if isinstance(з, str) and з.startswith('рядок:')}
-                    if текст & {'img', 'IMG'} or текст & self.ід_зображень or any(re.search(r'(?:^|\s|>)img\b', з) for з in текст):
+                    css_ід = {з[1:] for з in текст if re.fullmatch(r'#[\w-]+', з)} if ім in {'$', 'querySelector', 'querySelectorAll'} else set()
+                    if текст & {'img', 'IMG'} or (текст | css_ід) & self.ід_зображень or any(re.search(r'(?:^|\s|>)img\b', з) for з in текст):
                         self.зображення.add(р)
-                    if текст & {'canvas', 'CANVAS'} or текст & self.ід_полотен:
+                    if текст & {'canvas', 'CANVAS'} or (текст | css_ід) & self.ід_полотен:
                         self.полотна.add(р)
                 if ім in {'$', 'querySelector', 'querySelectorAll', 'getElementById'}:
                     self.видимі.add(р)
@@ -656,7 +665,7 @@ class Граф:
             elif ім == 'then' and б and арг:
                 self.до_функції(арг[0], (б,), р)
             elif ім not in ДЖЕРЕЛА | прозорі | {'модельП', 'викликОцінкиП', 'блокиВТекст', 'розміткаЖінціП', 'ел', 'createElement', '$', 'querySelector', 'getElementById', 'getContext', 'Promise', 'assign', 'objectStore', 'tx'}:
-                self.до_функції(функ, арг, р)
+                self.до_функції(функ, арг, р, іменовані=self.іменовані_виклики[р])
         додавання = defaultdict(list)
         for _, _, _, ім, _, арг, _, _ in self.виклики:
             if ім in {'appendChild', 'append', 'prepend', 'replaceChild', 'replaceChildren'} and арг:
@@ -676,10 +685,10 @@ class Граф:
         for б, к, значення in self.записи:
             if isinstance(к, tuple):
                 ключові[к[1]].append(('писати', значення, б))
-        for ф, арг, вих, умова in self.застосування:
-            викличі[ф].append((арг, вих, умова))
+        for ф, арг, вих, умова, іменовані in self.застосування:
+            викличі[ф].append((арг, вих, умова, іменовані))
             if умова:
-                умовні[умова].append((ф, арг, вих))
+                умовні[умова].append((ф, арг, вих, іменовані))
         наступні = defaultdict(set)
         for з, до in self.ребра:
             наступні[з].add(до)
@@ -757,7 +766,7 @@ class Граф:
                 for о in обʼєкти:
                     if isinstance(о, int):
                         ребро(значення, поле(о, к))
-        def викликати(функції, арг, вих):
+        def викликати(функції, арг, вих, іменовані):
             for ф in функції:
                 if ф in self.джерела_функцій and вих:
                     додати(вих, ['генератор:' + self.адреси_викликів[вих]])
@@ -765,6 +774,9 @@ class Граф:
                     параметри, пов = self.функції[ф]
                     for а, п in zip(арг, параметри):
                         ребро(а, п)
+                    for ім, а in іменовані:
+                        if ім in self.імена_параметрів[ф]:
+                            ребро(а, self.імена_параметрів[ф][ім])
                     ребро(пов, вих)
                 if ф in self.резолвери and арг:
                     ребро(арг[0], self.резолвери[ф])
@@ -798,11 +810,11 @@ class Граф:
                 писати(значення, нові, імена_ключа(к))
             for вид, значення, б in ключові[з]:
                 (читати if вид == 'читати' else писати)(значення, self.знач[б], імена_ключа(('ключ', з)))
-            for арг, вих, умова in викличі[з]:
+            for арг, вих, умова, іменовані in викличі[з]:
                 if not умова or self.знач[умова]:
-                    викликати(нові, арг, вих)
-            for ф, арг, вих in умовні[з]:
-                викликати(self.знач[ф], арг, вих)
+                    викликати(нові, арг, вих, іменовані)
+            for ф, арг, вих, іменовані in умовні[з]:
+                викликати(self.знач[ф], арг, вих, іменовані)
             for вих, тип in фільтри[з]:
                 for о in нові:
                     типи = self.поля.get((о, 'type'), set())

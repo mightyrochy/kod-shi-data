@@ -59,6 +59,17 @@ class Прилад(unittest.TestCase):
         звіт = self.перевірити({'а.html': '<html>\n<script>\nconst x=generate_image();\nconst h=\'<img src="\'+x+\'">\';\nрозміткаЖінціП(document.body,h);\n</script></html>'}, 1)
         self.assertEqual(next(р['рядок'] for р in звіт['входи'] if р['місце']), 5)
 
+    def test_css_ідентифікатор_зображення(self):
+        """CSS #id пов'язує запис src з наявним у HTML зображенням."""
+        self.перевірити({'а.html': '<img id="preview"><script>document.querySelector("#preview").src=generate_image()</script>'}, 1)
+        self.перевірити({'а.html': '<div id="preview"></div><script>document.querySelector("#preview").src=generate_image()</script>'}, 0)
+
+    def test_python_іменовані(self):
+        """Порядок іменованих аргументів не змінює походження значення."""
+        self.перевірити({'а.py': 'def choose(original, generated):\n    return generated\nx = choose(generated=generate_image(), original=load_photo())\njudge(x)\n'}, 1)
+        self.перевірити({'а.py': 'def choose(original, generated):\n    return original\nx = choose(generated=generate_image(), original=load_photo())\njudge(x)\n'}, 0)
+        self.перевірити({'а.py': 'judge(image=generate_image())\n'}, 1)
+
     def test_приховане_декодування(self):
         """Image, який нікуди не додано, не є показом жінці."""
         self.перевірити({'а.js': 'const i=new Image();\ni.src=generate_image();'}, 0)
