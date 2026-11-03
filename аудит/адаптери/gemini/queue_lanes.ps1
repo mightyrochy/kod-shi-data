@@ -1002,8 +1002,13 @@ function Get-HeadLivePublication([string]$Head, [string]$ExistingBody = '') {
     if (($body + "`n" + $ExistingBody) -cnotmatch '(?m)^[-*+>#_\s]*ЖИВИЙ ПІСЛЯ') {
         return (ConvertTo-LivePublicationBody $body @{})
     }
-    $registry = Get-LiveSceneRegistry ((Invoke-Git @('show', 'refs/remotes/origin/main:аудит/проби/живі_сцени.txt')).Out)
+    $registryText = (Invoke-Git @('show', 'refs/remotes/origin/main:аудит/проби/живі_сцени.txt')).Out
+    $registry = Get-LiveSceneRegistry $registryText
     if (-not $registry.Count) { throw 'LIVE_AFTER_REGISTRY' }
+    # Повний рядок сцени — стільки полів, скільки в шапці реєстру «# Поля: …»; коротший рядок гілки не додаємо.
+    $header = @(($registryText -split "`n") | Where-Object { $_.TrimStart([char]0xFEFF).StartsWith('# Поля:') })
+    if (-not $header.Count) { throw 'LIVE_AFTER_REGISTRY' }
+    $width = $header[0].TrimEnd("`r").Split('|').Count
     # Лише додані рядки від спільної бази: зміни й видалення сцен main не змінюють їхній режим.
     $base = (Invoke-Git @('merge-base', 'refs/remotes/origin/main', $Head)).Out.Trim()
     if (-not $base) { throw 'LIVE_AFTER_MERGE_BASE' }
@@ -1014,7 +1019,7 @@ function Get-HeadLivePublication([string]$Head, [string]$ExistingBody = '') {
         $row = $line.Substring(1).TrimEnd("`r").TrimStart([char]0xFEFF)
         if (-not $row.Trim() -or $row.TrimStart().StartsWith('#')) { continue }
         $fields = $row.Split('|')
-        if ($fields.Count -lt 10 -or -not $fields[0].Trim()) { continue }
+        if ($fields.Count -lt $width -or -not $fields[0].Trim()) { continue }
         $added = Get-LiveSceneRegistry $row
         foreach ($id in $added.Keys) {
             if (-not $registry.ContainsKey($id) -and -not $baseRegistry.ContainsKey($id)) { $registry[$id] = $added[$id] }
