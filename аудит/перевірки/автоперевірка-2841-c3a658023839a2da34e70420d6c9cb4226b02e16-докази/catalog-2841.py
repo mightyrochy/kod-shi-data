@@ -1,8 +1,8 @@
-﻿import sys, pathlib, json, os, hashlib, collections
+import sys, pathlib, json, os, hashlib, collections
 source=pathlib.Path(sys.argv[1]); sys.path.insert(0,str(source))
 import feed as Ф, fit as П, silhouette as С, hypergraph as Г, accessory as А, дріт_моделі as Д
-catalog=pathlib.Path(os.environ['TEMP'])/'pr-2841/джерела/каталог_повний.xml'
-root=pathlib.Path(os.environ['TEMP'])/'pr-2841'
+catalog=pathlib.Path(sys.argv[2])
+root=pathlib.Path(sys.argv[3])
 items,_=Ф.читати_yml(str(catalog))
 belts=[]
 for o in items:

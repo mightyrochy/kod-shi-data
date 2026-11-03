@@ -1,6 +1,6 @@
-﻿from decimal import Decimal as D
+from decimal import Decimal as D
 import sys, os, json, pathlib
-sys.path.insert(0,os.path.join(os.environ['TEMP'],'pr-2841','джерела'))
+sys.path.insert(0, sys.argv[1] if len(sys.argv)>1 else str(pathlib.Path(__file__).resolve().parents[3]/'джерела'))
 from body_shape import визначення
 bad=[]
 for waist in range(500,1401):
@@ -19,4 +19,4 @@ for waist in range(500,1401):
     if x['категорія'] != 'Hourglass': bad2.append((str(b),str(w),str(h),x))
 print('Межа bust-waist = 9 дюймів: перевірено',901,'розходжень',len(bad2))
 print(*bad2[:8],sep='\n')
-(pathlib.Path(os.environ['TEMP'])/'boundary-2841.json').write_text(json.dumps({'high_hip':bad,'bust_waist':bad2},ensure_ascii=False,indent=2),encoding='utf8')
+pathlib.Path(__file__).with_suffix('.json').write_text(json.dumps({'high_hip':bad,'bust_waist':bad2},ensure_ascii=False,indent=2),encoding='utf8')
