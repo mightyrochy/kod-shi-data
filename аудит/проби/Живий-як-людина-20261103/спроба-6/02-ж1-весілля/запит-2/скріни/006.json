@@ -1,0 +1,1492 @@
+{
+  "time": "2026-11-03T18:27:35.756Z",
+  "action": "{\"op\":\"file\",\"selector\":\"input[type=file] >> nth=0\",\"file\":\"C:\\\\Users\\\\gemini\\\\gemini-runs\\\\w\\\\20261103-171951-74e598df8314\\\\repo\\\\аудит\\\\проби\\\\Живий-як-людина-20261103\\\\спроба-6\\\\входи\\\\портрет-ж1.png\"}",
+  "text": "люстерко\nНіч\nКрок 1 з 3\nПро тебе\nДо лиця\nФігура\nЛюстерко покаже те, що тобі пасує.\n\nТри кроки — і далі ти лише кажеш, куди йдеш.\n\nНа повний зріст — для приміряння\nПортрет — для кольорів\n\nЩойно додаси портрет, кольори зчитаються самі.\n\nТвої кольори\n\nШкіра, волосся й очі з портрета — від них рахується палітра.\n\nСтилістка дивиться на портрет…\nЗчитати кольори з портрета\nІнший шлях — через будь-який чат-помічник\nЯк тебе звати\nІм'я або псевдонім\nДозволяю записати мої відтінки разом із вердиктами\n\nБез згоди вердикт запишеться без кольорів.\n\nСлужбове\nСпитати стилістку\nДалі",
+  "inputs": [
+    {
+      "tag": "BUTTON",
+      "id": "нова-версія-кн",
+      "type": "button",
+      "text": "Оновити",
+      "placeholder": null,
+      "value": "",
+      "visible": false
+    },
+    {
+      "tag": "BUTTON",
+      "id": "бік-знак",
+      "type": "button",
+      "text": "люстерко",
+      "placeholder": null,
+      "value": "",
+      "visible": false
+    },
+    {
+      "tag": "BUTTON",
+      "id": "бік-тема",
+      "type": "button",
+      "text": "Ніч",
+      "placeholder": null,
+      "value": "",
+      "visible": false
+    },
+    {
+      "tag": "BUTTON",
+      "id": "знак",
+      "type": "button",
+      "text": "люстерко",
+      "placeholder": null,
+      "value": "",
+      "visible": true
+    },
+    {
+      "tag": "BUTTON",
+      "id": "сц-відкрити",
+      "type": "button",
+      "text": "Збережені",
+      "placeholder": null,
+      "value": "",
+      "visible": false
+    },
+    {
+      "tag": "BUTTON",
+      "id": "сц-новий",
+      "type": "button",
+      "text": "Новий сценарій",
+      "placeholder": null,
+      "value": "",
+      "visible": false
+    },
+    {
+      "tag": "BUTTON",
+      "id": "тема-кнопка",
+      "type": "button",
+      "text": "Ніч",
+      "placeholder": null,
+      "value": "",
+      "visible": true
+    },
+    {
+      "tag": "BUTTON",
+      "id": "",
+      "type": "button",
+      "text": "Про тебе",
+      "placeholder": null,
+      "value": "",
+      "visible": true
+    },
+    {
+      "tag": "BUTTON",
+      "id": "",
+      "type": "button",
+      "text": "До лиця",
+      "placeholder": null,
+      "value": "",
+      "visible": true
+    },
+    {
+      "tag": "BUTTON",
+      "id": "",
+      "type": "button",
+      "text": "Фігура",
+      "placeholder": null,
+      "value": "",
+      "visible": true
+    },
+    {
+      "tag": "INPUT",
+      "id": "",
+      "type": "file",
+      "text": "",
+      "placeholder": null,
+      "value": "",
+      "visible": true
+    },
+    {
+      "tag": "BUTTON",
+      "id": "",
+      "type": "button",
+      "text": "",
+      "placeholder": null,
+      "value": "",
+      "visible": true
+    },
+    {
+      "tag": "INPUT",
+      "id": "",
+      "type": "file",
+      "text": "",
+      "placeholder": null,
+      "value": "",
+      "visible": true
+    },
+    {
+      "tag": "BUTTON",
+      "id": "",
+      "type": "button",
+      "text": "",
+      "placeholder": null,
+      "value": "",
+      "visible": true
+    },
+    {
+      "tag": "BUTTON",
+      "id": "кол-зчитати",
+      "type": "button",
+      "text": "Зчитати кольори з портрета",
+      "placeholder": null,
+      "value": "",
+      "visible": true
+    },
+    {
+      "tag": "TEXTAREA",
+      "id": "кол-запит",
+      "type": "textarea",
+      "text": "",
+      "placeholder": null,
+      "value": "{\"task\": {\"role\": \"You read a woman's own colours — skin, hair and eyes — from her portrait photo.\", \"rules\": [\"First decide whether the photo is usable. It is not when it is black-and-white or heavily filtered, the face takes less than a quarter of the frame, the eyes are covered by glasses or hair or narrowed, the light is coloured (stage or neon), or it is so overexposed that the skin turns white. Then give only the reason in \\\"photo\\\" and no colours.\", \"Skin: three points — cheek, forehead, jaw — each free of shadow, highlight, blush and foundation.\", \"Hair: first the tone that covers the largest area of the head, even when it is neither the lightest nor the darkest; then every other visible tone (highlights, balayage, roots, grey) as its own entry. Even single-tone hair is one entry. Do not merge different tones.\", \"Eyes: the body of the iris. A clearly darker ring along the edge of the iris goes to \\\"limbal_ring\\\".\", \"Take the colours from her, not from the background or her clothes.\", \"If the light makes the photo yellow or blue, correct the colours to neutral daylight and record the correction.\"], \"limits\": [\"Rely only on the input: do not invent what it does not contain.\", \"What you do not know is \\\"unknown\\\", null or an empty list, as the schema allows.\", \"The answer is one JSON object following \\\"answer_schema\\\", without explanations and without ```.\"], \"language\": \"English\", \"answer\": \"PORTRAIT_COLOURS\", \"answer_schema\": {\"photo\": \"usable|portrait_black_white|portrait_face_small|portrait_eyes_hidden|portrait_coloured_light|portrait_overexposed — usable, or why it is not\", \"skin\": [\"<#rrggbb: cheek, forehead, jaw>\"], \"hair\": [\"<#rrggbb, the largest-area tone first>\"], \"eyes\": \"<#rrggbb of the iris body>\", \"limbal_ring\": \"<#rrggbb, or null>\", \"light_cast\": \"none|yellow|blue — the cast you corrected\", \"light_correction\": \"none|slight|strong — how much you corrected it\"}, \"input\": [\"\\\"photo_of_her\\\" — her portrait photo, attached as an image\"]}, \"photo_of_her\": true}",
+      "visible": true
+    },
+    {
+      "tag": "BUTTON",
+      "id": "кол-копія",
+      "type": "button",
+      "text": "",
+      "placeholder": null,
+      "value": "",
+      "visible": true
+    },
+    {
+      "tag": "TEXTAREA",
+      "id": "кол-відповідь",
+      "type": "textarea",
+      "text": "",
+      "placeholder": "шкіра 1 #f2d6c4 шкіра 2 #efd0bc …",
+      "value": "",
+      "visible": true
+    },
+    {
+      "tag": "BUTTON",
+      "id": "кол-читати",
+      "type": "button",
+      "text": "",
+      "placeholder": null,
+      "value": "",
+      "visible": true
+    },
+    {
+      "tag": "INPUT",
+      "id": "пр-імʼя",
+      "type": "text",
+      "text": "",
+      "placeholder": "напр., Оля К.",
+      "value": "Марія",
+      "visible": true
+    },
+    {
+      "tag": "INPUT",
+      "id": "пр-згода",
+      "type": "checkbox",
+      "text": "",
+      "placeholder": null,
+      "value": "on",
+      "visible": true
+    },
+    {
+      "tag": "INPUT",
+      "id": "кд-м",
+      "type": "range",
+      "text": "",
+      "placeholder": null,
+      "value": "100",
+      "visible": false
+    },
+    {
+      "tag": "INPUT",
+      "id": "кд-x",
+      "type": "range",
+      "text": "",
+      "placeholder": null,
+      "value": "50",
+      "visible": false
+    },
+    {
+      "tag": "INPUT",
+      "id": "кд-y",
+      "type": "range",
+      "text": "",
+      "placeholder": null,
+      "value": "35",
+      "visible": false
+    },
+    {
+      "tag": "BUTTON",
+      "id": "",
+      "type": "button",
+      "text": "Золото",
+      "placeholder": null,
+      "value": "",
+      "visible": false
+    },
+    {
+      "tag": "BUTTON",
+      "id": "",
+      "type": "button",
+      "text": "Срібло",
+      "placeholder": null,
+      "value": "",
+      "visible": false
+    },
+    {
+      "tag": "BUTTON",
+      "id": "",
+      "type": "button",
+      "text": "Обидва однаково",
+      "placeholder": null,
+      "value": "",
+      "visible": false
+    },
+    {
+      "tag": "BUTTON",
+      "id": "",
+      "type": "button",
+      "text": "Чистий білий",
+      "placeholder": null,
+      "value": "",
+      "visible": false
+    },
+    {
+      "tag": "BUTTON",
+      "id": "",
+      "type": "button",
+      "text": "Молочний",
+      "placeholder": null,
+      "value": "",
+      "visible": false
+    },
+    {
+      "tag": "BUTTON",
+      "id": "",
+      "type": "button",
+      "text": "Не бачу різниці",
+      "placeholder": null,
+      "value": "",
+      "visible": false
+    },
+    {
+      "tag": "BUTTON",
+      "id": "",
+      "type": "button",
+      "text": "Теплі",
+      "placeholder": null,
+      "value": "",
+      "visible": false
+    },
+    {
+      "tag": "BUTTON",
+      "id": "",
+      "type": "button",
+      "text": "Холодні",
+      "placeholder": null,
+      "value": "",
+      "visible": false
+    },
+    {
+      "tag": "BUTTON",
+      "id": "",
+      "type": "button",
+      "text": "Не бачу різниці",
+      "placeholder": null,
+      "value": "",
+      "visible": false
+    },
+    {
+      "tag": "BUTTON",
+      "id": "",
+      "type": "button",
+      "text": "Скинути відповіді",
+      "placeholder": null,
+      "value": "",
+      "visible": false
+    },
+    {
+      "tag": "INPUT",
+      "id": "мр-плечі",
+      "type": "number",
+      "text": "",
+      "placeholder": "96",
+      "value": "",
+      "visible": false
+    },
+    {
+      "tag": "INPUT",
+      "id": "мр-груди",
+      "type": "number",
+      "text": "",
+      "placeholder": "94",
+      "value": "",
+      "visible": false
+    },
+    {
+      "tag": "INPUT",
+      "id": "мр-талія",
+      "type": "number",
+      "text": "",
+      "placeholder": "76",
+      "value": "",
+      "visible": false
+    },
+    {
+      "tag": "INPUT",
+      "id": "мр-стегна",
+      "type": "number",
+      "text": "",
+      "placeholder": "100",
+      "value": "",
+      "visible": false
+    },
+    {
+      "tag": "INPUT",
+      "id": "мр-зріст",
+      "type": "number",
+      "text": "",
+      "placeholder": null,
+      "value": "",
+      "visible": false
+    },
+    {
+      "tag": "INPUT",
+      "id": "мр-високе-стегно",
+      "type": "number",
+      "text": "",
+      "placeholder": "88",
+      "value": "",
+      "visible": false
+    },
+    {
+      "tag": "INPUT",
+      "id": "мр-коліно",
+      "type": "number",
+      "text": "",
+      "placeholder": "37",
+      "value": "",
+      "visible": false
+    },
+    {
+      "tag": "INPUT",
+      "id": "мр-литка",
+      "type": "number",
+      "text": "",
+      "placeholder": "36",
+      "value": "",
+      "visible": false
+    },
+    {
+      "tag": "INPUT",
+      "id": "мр-щиколотка",
+      "type": "number",
+      "text": "",
+      "placeholder": "22",
+      "value": "",
+      "visible": false
+    },
+    {
+      "tag": "INPUT",
+      "id": "мр-стопа",
+      "type": "number",
+      "text": "",
+      "placeholder": "245",
+      "value": "",
+      "visible": false
+    },
+    {
+      "tag": "INPUT",
+      "id": "мр-голова",
+      "type": "number",
+      "text": "",
+      "placeholder": "56",
+      "value": "",
+      "visible": false
+    },
+    {
+      "tag": "SELECT",
+      "id": "пф-вибір",
+      "type": "select-one",
+      "text": "Марія",
+      "placeholder": null,
+      "value": "пф-f2f0uo",
+      "visible": false
+    },
+    {
+      "tag": "BUTTON",
+      "id": "пф-новий",
+      "type": "button",
+      "text": "Новий профіль",
+      "placeholder": null,
+      "value": "",
+      "visible": false
+    },
+    {
+      "tag": "BUTTON",
+      "id": "",
+      "type": "button",
+      "text": "Фотопортрет і на повний зріст",
+      "placeholder": null,
+      "value": "",
+      "visible": false
+    },
+    {
+      "tag": "BUTTON",
+      "id": "",
+      "type": "button",
+      "text": "Твої кольорипотрібен портретще не зчитано",
+      "placeholder": null,
+      "value": "",
+      "visible": false
+    },
+    {
+      "tag": "BUTTON",
+      "id": "",
+      "type": "button",
+      "text": "Ім'яі згода на запис відтінківМарія",
+      "placeholder": null,
+      "value": "",
+      "visible": false
+    },
+    {
+      "tag": "BUTTON",
+      "id": "",
+      "type": "button",
+      "text": "Що тобі до лицяметали, білий, нейтраліще не відповідала",
+      "placeholder": null,
+      "value": "",
+      "visible": false
+    },
+    {
+      "tag": "BUTTON",
+      "id": "",
+      "type": "button",
+      "text": "Обхватиплечі · груди · талія · стегна · зрістне заповнено",
+      "placeholder": null,
+      "value": "",
+      "visible": false
+    },
+    {
+      "tag": "BUTTON",
+      "id": "",
+      "type": "button",
+      "text": "Розширені виміридля взуття, капелюхів, посадки на нозіне заповнено",
+      "placeholder": null,
+      "value": "",
+      "visible": false
+    },
+    {
+      "tag": "BUTTON",
+      "id": "",
+      "type": "button",
+      "text": "Люди на цьому телефонікожна зі своїми фото й сценаріямилише ти",
+      "placeholder": null,
+      "value": "",
+      "visible": false
+    },
+    {
+      "tag": "BUTTON",
+      "id": "",
+      "type": "button",
+      "text": "До профілю",
+      "placeholder": null,
+      "value": "",
+      "visible": false
+    },
+    {
+      "tag": "BUTTON",
+      "id": "зб-зібрати",
+      "type": "button",
+      "text": "Зібрати образи",
+      "placeholder": null,
+      "value": "",
+      "visible": false
+    },
+    {
+      "tag": "BUTTON",
+      "id": "сц-зберегти",
+      "type": "button",
+      "text": "Зберегти сценарій",
+      "placeholder": null,
+      "value": "",
+      "visible": false
+    },
+    {
+      "tag": "BUTTON",
+      "id": "",
+      "type": "button",
+      "text": "Нагодане обрано",
+      "placeholder": null,
+      "value": "",
+      "visible": false
+    },
+    {
+      "tag": "INPUT",
+      "id": "сц-нагода",
+      "type": "hidden",
+      "text": "",
+      "placeholder": null,
+      "value": "",
+      "visible": false
+    },
+    {
+      "tag": "BUTTON",
+      "id": "",
+      "type": "button",
+      "text": "Спорт, активність",
+      "placeholder": null,
+      "value": "",
+      "visible": false
+    },
+    {
+      "tag": "BUTTON",
+      "id": "",
+      "type": "button",
+      "text": "Подорожу дорозі: переліт, поїзд",
+      "placeholder": null,
+      "value": "",
+      "visible": false
+    },
+    {
+      "tag": "BUTTON",
+      "id": "",
+      "type": "button",
+      "text": "Звичайний деньпрогулянка, справи",
+      "placeholder": null,
+      "value": "",
+      "visible": false
+    },
+    {
+      "tag": "BUTTON",
+      "id": "",
+      "type": "button",
+      "text": "Побачення",
+      "placeholder": null,
+      "value": "",
+      "visible": false
+    },
+    {
+      "tag": "BUTTON",
+      "id": "",
+      "type": "button",
+      "text": "Театр, концерт",
+      "placeholder": null,
+      "value": "",
+      "visible": false
+    },
+    {
+      "tag": "BUTTON",
+      "id": "",
+      "type": "button",
+      "text": "Роботазустріч, презентація, співбесіда",
+      "placeholder": null,
+      "value": "",
+      "visible": false
+    },
+    {
+      "tag": "BUTTON",
+      "id": "",
+      "type": "button",
+      "text": "Свято, вечіркадень народження, Новий рік",
+      "placeholder": null,
+      "value": "",
+      "visible": false
+    },
+    {
+      "tag": "BUTTON",
+      "id": "",
+      "type": "button",
+      "text": "Іншескажу словами",
+      "placeholder": null,
+      "value": "",
+      "visible": false
+    },
+    {
+      "tag": "BUTTON",
+      "id": "",
+      "type": "button",
+      "text": "Де",
+      "placeholder": null,
+      "value": "",
+      "visible": false
+    },
+    {
+      "tag": "SELECT",
+      "id": "сц-місце",
+      "type": "select-one",
+      "text": "типове для нагодиВдомаНадворі — вулиця, парк, набережнаУ дорозі — транспорт, перелітЗаклад — кафе, ресторан, барЗал — театр, кіно, концерт, музей, конференціяОфісУрочистий зал — банкет, весілля, вечірка",
+      "placeholder": null,
+      "value": "",
+      "visible": false
+    },
+    {
+      "tag": "BUTTON",
+      "id": "",
+      "type": "button",
+      "text": "Ошатністьне обрано",
+      "placeholder": null,
+      "value": "",
+      "visible": false
+    },
+    {
+      "tag": "SELECT",
+      "id": "сц-дрес",
+      "type": "select-one",
+      "text": "за місцемБуденноОхайно буденноДілово, м'якоДілово, строгоКоктейльнеЧорна краваткаБіла краватка",
+      "placeholder": null,
+      "value": "",
+      "visible": false
+    },
+    {
+      "tag": "BUTTON",
+      "id": "",
+      "type": "button",
+      "text": "Коли й погодане вказано",
+      "placeholder": null,
+      "value": "",
+      "visible": false
+    },
+    {
+      "tag": "SELECT",
+      "id": "сц-пора",
+      "type": "select-one",
+      "text": "не знаювранцівденьввечерівночі",
+      "placeholder": null,
+      "value": "",
+      "visible": false
+    },
+    {
+      "tag": "INPUT",
+      "id": "сц-темп",
+      "type": "number",
+      "text": "",
+      "placeholder": null,
+      "value": "18",
+      "visible": false
+    },
+    {
+      "tag": "INPUT",
+      "id": "сц-відчуття",
+      "type": "hidden",
+      "text": "",
+      "placeholder": null,
+      "value": "",
+      "visible": false
+    },
+    {
+      "tag": "BUTTON",
+      "id": "",
+      "type": "button",
+      "text": "мороз",
+      "placeholder": null,
+      "value": "",
+      "visible": false
+    },
+    {
+      "tag": "BUTTON",
+      "id": "",
+      "type": "button",
+      "text": "холодно",
+      "placeholder": null,
+      "value": "",
+      "visible": false
+    },
+    {
+      "tag": "BUTTON",
+      "id": "",
+      "type": "button",
+      "text": "прохолодно",
+      "placeholder": null,
+      "value": "",
+      "visible": false
+    },
+    {
+      "tag": "BUTTON",
+      "id": "",
+      "type": "button",
+      "text": "тепло",
+      "placeholder": null,
+      "value": "",
+      "visible": false
+    },
+    {
+      "tag": "BUTTON",
+      "id": "",
+      "type": "button",
+      "text": "спекотно",
+      "placeholder": null,
+      "value": "",
+      "visible": false
+    },
+    {
+      "tag": "INPUT",
+      "id": "сц-опади",
+      "type": "hidden",
+      "text": "",
+      "placeholder": null,
+      "value": "",
+      "visible": false
+    },
+    {
+      "tag": "BUTTON",
+      "id": "",
+      "type": "button",
+      "text": "Без опадів",
+      "placeholder": null,
+      "value": "",
+      "visible": false
+    },
+    {
+      "tag": "BUTTON",
+      "id": "",
+      "type": "button",
+      "text": "Можливий дощ",
+      "placeholder": null,
+      "value": "",
+      "visible": false
+    },
+    {
+      "tag": "BUTTON",
+      "id": "",
+      "type": "button",
+      "text": "Дощ",
+      "placeholder": null,
+      "value": "",
+      "visible": false
+    },
+    {
+      "tag": "BUTTON",
+      "id": "",
+      "type": "button",
+      "text": "Сніг",
+      "placeholder": null,
+      "value": "",
+      "visible": false
+    },
+    {
+      "tag": "SELECT",
+      "id": "сц-вітер",
+      "type": "select-one",
+      "text": "\n          не знаюбезвітря\n          помірнийсильний",
+      "placeholder": null,
+      "value": "",
+      "visible": false
+    },
+    {
+      "tag": "SELECT",
+      "id": "сц-реагенти",
+      "type": "select-one",
+      "text": "\n          не знаюнема\n          є, сіль узимку",
+      "placeholder": null,
+      "value": "",
+      "visible": false
+    },
+    {
+      "tag": "BUTTON",
+      "id": "",
+      "type": "button",
+      "text": "Макіяж",
+      "placeholder": null,
+      "value": "",
+      "visible": false
+    },
+    {
+      "tag": "INPUT",
+      "id": "сц-макіяж",
+      "type": "hidden",
+      "text": "",
+      "placeholder": null,
+      "value": "",
+      "visible": false
+    },
+    {
+      "tag": "BUTTON",
+      "id": "",
+      "type": "button",
+      "text": "Нюд, непомітний",
+      "placeholder": null,
+      "value": "",
+      "visible": false
+    },
+    {
+      "tag": "BUTTON",
+      "id": "",
+      "type": "button",
+      "text": "Помітний",
+      "placeholder": null,
+      "value": "",
+      "visible": false
+    },
+    {
+      "tag": "BUTTON",
+      "id": "",
+      "type": "button",
+      "text": "Яскравий, виразний",
+      "placeholder": null,
+      "value": "",
+      "visible": false
+    },
+    {
+      "tag": "BUTTON",
+      "id": "",
+      "type": "button",
+      "text": "хай обере стилістка",
+      "placeholder": null,
+      "value": "",
+      "visible": false
+    },
+    {
+      "tag": "BUTTON",
+      "id": "сц-губи-свій",
+      "type": "button",
+      "text": "свій відтінок",
+      "placeholder": null,
+      "value": "",
+      "visible": false
+    },
+    {
+      "tag": "INPUT",
+      "id": "сц-губи",
+      "type": "color",
+      "text": "",
+      "placeholder": null,
+      "value": "#b0203a",
+      "visible": false
+    },
+    {
+      "tag": "INPUT",
+      "id": "сц-губи-обрано",
+      "type": "hidden",
+      "text": "",
+      "placeholder": null,
+      "value": "",
+      "visible": false
+    },
+    {
+      "tag": "BUTTON",
+      "id": "",
+      "type": "button",
+      "text": "Прикраси",
+      "placeholder": null,
+      "value": "",
+      "visible": false
+    },
+    {
+      "tag": "INPUT",
+      "id": "сц-прикраси",
+      "type": "hidden",
+      "text": "",
+      "placeholder": null,
+      "value": "",
+      "visible": false
+    },
+    {
+      "tag": "BUTTON",
+      "id": "",
+      "type": "button",
+      "text": "Золото",
+      "placeholder": null,
+      "value": "",
+      "visible": false
+    },
+    {
+      "tag": "BUTTON",
+      "id": "",
+      "type": "button",
+      "text": "Срібло",
+      "placeholder": null,
+      "value": "",
+      "visible": false
+    },
+    {
+      "tag": "BUTTON",
+      "id": "",
+      "type": "button",
+      "text": "Перли",
+      "placeholder": null,
+      "value": "",
+      "visible": false
+    },
+    {
+      "tag": "BUTTON",
+      "id": "",
+      "type": "button",
+      "text": "Етно: дерево, кістка, бісер",
+      "placeholder": null,
+      "value": "",
+      "visible": false
+    },
+    {
+      "tag": "BUTTON",
+      "id": "",
+      "type": "button",
+      "text": "Без прикрас",
+      "placeholder": null,
+      "value": "",
+      "visible": false
+    },
+    {
+      "tag": "BUTTON",
+      "id": "",
+      "type": "button",
+      "text": "хай обере стилістка",
+      "placeholder": null,
+      "value": "",
+      "visible": false
+    },
+    {
+      "tag": "BUTTON",
+      "id": "",
+      "type": "button",
+      "text": "Мета",
+      "placeholder": null,
+      "value": "",
+      "visible": false
+    },
+    {
+      "tag": "INPUT",
+      "id": "сц-мета",
+      "type": "hidden",
+      "text": "",
+      "placeholder": null,
+      "value": "",
+      "visible": false
+    },
+    {
+      "tag": "INPUT",
+      "id": "сц-мета-важливо",
+      "type": "hidden",
+      "text": "",
+      "placeholder": null,
+      "value": "",
+      "visible": false
+    },
+    {
+      "tag": "INPUT",
+      "id": "сц-мета-зони",
+      "type": "hidden",
+      "text": "",
+      "placeholder": null,
+      "value": "",
+      "visible": false
+    },
+    {
+      "tag": "BUTTON",
+      "id": "",
+      "type": "button",
+      "text": "ТихоСпокійні кольори, без блиску й відкритого — першими",
+      "placeholder": null,
+      "value": "",
+      "visible": false
+    },
+    {
+      "tag": "BUTTON",
+      "id": "",
+      "type": "button",
+      "text": "ЗвичноКольори до твого обличчя",
+      "placeholder": null,
+      "value": "",
+      "visible": false
+    },
+    {
+      "tag": "BUTTON",
+      "id": "",
+      "type": "button",
+      "text": "ПомітноХоча б одна річ тримає погляд",
+      "placeholder": null,
+      "value": "",
+      "visible": false
+    },
+    {
+      "tag": "BUTTON",
+      "id": "",
+      "type": "button",
+      "text": "Довша лініяКолона в один тон, пояс на талії",
+      "placeholder": null,
+      "value": "",
+      "visible": false
+    },
+    {
+      "tag": "BUTTON",
+      "id": "",
+      "type": "button",
+      "text": "Зручно рухатисьБез високих підборів",
+      "placeholder": null,
+      "value": "",
+      "visible": false
+    },
+    {
+      "tag": "BUTTON",
+      "id": "",
+      "type": "button",
+      "text": "Строго за нагодоюОшатність точно за рівнем події",
+      "placeholder": null,
+      "value": "",
+      "visible": false
+    },
+    {
+      "tag": "BUTTON",
+      "id": "",
+      "type": "button",
+      "text": "Відвести погляд від…Обери зону — вона лишиться тихою",
+      "placeholder": null,
+      "value": "",
+      "visible": false
+    },
+    {
+      "tag": "INPUT",
+      "id": "сц-вето-зони",
+      "type": "hidden",
+      "text": "",
+      "placeholder": null,
+      "value": "",
+      "visible": false
+    },
+    {
+      "tag": "BUTTON",
+      "id": "сц-ще",
+      "type": "button",
+      "text": "Додатиде, макіяж, прикраси, мета",
+      "placeholder": null,
+      "value": "",
+      "visible": false
+    },
+    {
+      "tag": "BUTTON",
+      "id": "пал-кнопка",
+      "type": "button",
+      "text": "Палітрахай обере стилістка",
+      "placeholder": null,
+      "value": "",
+      "visible": false
+    },
+    {
+      "tag": "BUTTON",
+      "id": "сц-рукою-показати",
+      "type": "button",
+      "text": "Або заповнити рукою",
+      "placeholder": null,
+      "value": "",
+      "visible": false
+    },
+    {
+      "tag": "INPUT",
+      "id": "сц-назва-поле",
+      "type": "text",
+      "text": "",
+      "placeholder": "напр., побачення в ресторані",
+      "value": "",
+      "visible": false
+    },
+    {
+      "tag": "BUTTON",
+      "id": "сц-збер-оновити",
+      "type": "button",
+      "text": "Оновити «Новий сценарій»",
+      "placeholder": null,
+      "value": "",
+      "visible": false
+    },
+    {
+      "tag": "BUTTON",
+      "id": "сц-збер-новий",
+      "type": "button",
+      "text": "Зберегти",
+      "placeholder": null,
+      "value": "",
+      "visible": false
+    },
+    {
+      "tag": "BUTTON",
+      "id": "сц-збер-скасувати",
+      "type": "button",
+      "text": "скасувати",
+      "placeholder": null,
+      "value": "",
+      "visible": false
+    },
+    {
+      "tag": "INPUT",
+      "id": "п-адреса",
+      "type": "text",
+      "text": "",
+      "placeholder": "claude.ai/public/artifacts/…",
+      "value": "",
+      "visible": false
+    },
+    {
+      "tag": "TEXTAREA",
+      "id": "п-пакет",
+      "type": "textarea",
+      "text": "",
+      "placeholder": null,
+      "value": "",
+      "visible": false
+    },
+    {
+      "tag": "BUTTON",
+      "id": "пал-назад",
+      "type": "button",
+      "text": "← До сценарію",
+      "placeholder": null,
+      "value": "",
+      "visible": false
+    },
+    {
+      "tag": "BUTTON",
+      "id": "пал-кольори",
+      "type": "button",
+      "text": "Додати кольори в профілі",
+      "placeholder": null,
+      "value": "",
+      "visible": false
+    },
+    {
+      "tag": "BUTTON",
+      "id": "оц-назад",
+      "type": "button",
+      "text": "← До сценарію",
+      "placeholder": null,
+      "value": "",
+      "visible": false
+    },
+    {
+      "tag": "INPUT",
+      "id": "оц-файл",
+      "type": "file",
+      "text": "",
+      "placeholder": null,
+      "value": "",
+      "visible": false
+    },
+    {
+      "tag": "TEXTAREA",
+      "id": "оц-питання",
+      "type": "textarea",
+      "text": "",
+      "placeholder": "необов'язково",
+      "value": "",
+      "visible": false
+    },
+    {
+      "tag": "SELECT",
+      "id": "оц-нагода",
+      "type": "select-one",
+      "text": "",
+      "placeholder": null,
+      "value": "",
+      "visible": false
+    },
+    {
+      "tag": "INPUT",
+      "id": "оц-темп",
+      "type": "number",
+      "text": "",
+      "placeholder": "—",
+      "value": "",
+      "visible": false
+    },
+    {
+      "tag": "BUTTON",
+      "id": "оц-оцінити",
+      "type": "button",
+      "text": "Оцінити",
+      "placeholder": null,
+      "value": "",
+      "visible": false
+    },
+    {
+      "tag": "BUTTON",
+      "id": "сцн-назад",
+      "type": "button",
+      "text": "← До сценарію",
+      "placeholder": null,
+      "value": "",
+      "visible": false
+    },
+    {
+      "tag": "BUTTON",
+      "id": "сцн-новий",
+      "type": "button",
+      "text": "Новий сценарій",
+      "placeholder": null,
+      "value": "",
+      "visible": false
+    },
+    {
+      "tag": "BUTTON",
+      "id": "обр-змінити",
+      "type": "button",
+      "text": "Змінити сценарій",
+      "placeholder": null,
+      "value": "",
+      "visible": false
+    },
+    {
+      "tag": "BUTTON",
+      "id": "зб-пуск",
+      "type": "button",
+      "text": "Зібрати ще раз",
+      "placeholder": null,
+      "value": "",
+      "visible": false
+    },
+    {
+      "tag": "BUTTON",
+      "id": "до-бібліотеки",
+      "type": "button",
+      "text": "Усі образи ›",
+      "placeholder": null,
+      "value": "",
+      "visible": false
+    },
+    {
+      "tag": "BUTTON",
+      "id": "обр-сценарій",
+      "type": "button",
+      "text": "Відкрити сценарій цього образу",
+      "placeholder": null,
+      "value": "",
+      "visible": false
+    },
+    {
+      "tag": "BUTTON",
+      "id": "",
+      "type": "button",
+      "text": "‹",
+      "placeholder": null,
+      "value": "",
+      "visible": false
+    },
+    {
+      "tag": "BUTTON",
+      "id": "",
+      "type": "button",
+      "text": "›",
+      "placeholder": null,
+      "value": "",
+      "visible": false
+    },
+    {
+      "tag": "BUTTON",
+      "id": "",
+      "type": "button",
+      "text": "‹ попередній",
+      "placeholder": null,
+      "value": "",
+      "visible": false
+    },
+    {
+      "tag": "BUTTON",
+      "id": "",
+      "type": "button",
+      "text": "наступний ›",
+      "placeholder": null,
+      "value": "",
+      "visible": false
+    },
+    {
+      "tag": "BUTTON",
+      "id": "біб-назад",
+      "type": "button",
+      "text": "← Останні образи",
+      "placeholder": null,
+      "value": "",
+      "visible": false
+    },
+    {
+      "tag": "BUTTON",
+      "id": "ж-файл",
+      "type": "button",
+      "text": "Зберегти всі вердикти файлом",
+      "placeholder": null,
+      "value": "",
+      "visible": false
+    },
+    {
+      "tag": "BUTTON",
+      "id": "ж-копія",
+      "type": "button",
+      "text": "Скопіювати всі вердикти",
+      "placeholder": null,
+      "value": "",
+      "visible": false
+    },
+    {
+      "tag": "BUTTON",
+      "id": "жв-нові",
+      "type": "button",
+      "text": "Лише не вивантажені",
+      "placeholder": null,
+      "value": "",
+      "visible": false
+    },
+    {
+      "tag": "BUTTON",
+      "id": "жв-всі",
+      "type": "button",
+      "text": "Позначити всі",
+      "placeholder": null,
+      "value": "",
+      "visible": false
+    },
+    {
+      "tag": "BUTTON",
+      "id": "жв-жодного",
+      "type": "button",
+      "text": "Зняти всі",
+      "placeholder": null,
+      "value": "",
+      "visible": false
+    },
+    {
+      "tag": "BUTTON",
+      "id": "жв-файл",
+      "type": "button",
+      "text": "Зберегти позначене файлом",
+      "placeholder": null,
+      "value": "",
+      "visible": false
+    },
+    {
+      "tag": "BUTTON",
+      "id": "",
+      "type": "button",
+      "text": "×",
+      "placeholder": null,
+      "value": "",
+      "visible": false
+    },
+    {
+      "tag": "BUTTON",
+      "id": "аркуш-скасувати",
+      "type": "button",
+      "text": "скасувати",
+      "placeholder": null,
+      "value": "",
+      "visible": false
+    },
+    {
+      "tag": "BUTTON",
+      "id": "аркуш-готово",
+      "type": "button",
+      "text": "Готово",
+      "placeholder": null,
+      "value": "",
+      "visible": false
+    },
+    {
+      "tag": "BUTTON",
+      "id": "ші-пілюля",
+      "type": "button",
+      "text": "Спитати стилістку",
+      "placeholder": null,
+      "value": "",
+      "visible": true
+    },
+    {
+      "tag": "BUTTON",
+      "id": "ші-згорнути",
+      "type": "button",
+      "text": "згорнути",
+      "placeholder": null,
+      "value": "",
+      "visible": false
+    },
+    {
+      "tag": "TEXTAREA",
+      "id": "чат-поле",
+      "type": "textarea",
+      "text": "",
+      "placeholder": "Щось незрозуміло? Спитай",
+      "value": "",
+      "visible": false
+    },
+    {
+      "tag": "INPUT",
+      "id": "чат-фото-вхід",
+      "type": "file",
+      "text": "",
+      "placeholder": null,
+      "value": "",
+      "visible": false
+    },
+    {
+      "tag": "BUTTON",
+      "id": "чат-мікрофон",
+      "type": "button",
+      "text": "",
+      "placeholder": null,
+      "value": "",
+      "visible": false
+    },
+    {
+      "tag": "BUTTON",
+      "id": "чат-слати",
+      "type": "button",
+      "text": "",
+      "placeholder": null,
+      "value": "",
+      "visible": false
+    },
+    {
+      "tag": "BUTTON",
+      "id": "н-назад",
+      "type": "button",
+      "text": "",
+      "placeholder": null,
+      "value": "",
+      "visible": true
+    },
+    {
+      "tag": "BUTTON",
+      "id": "н-далі",
+      "type": "button",
+      "text": "Далі",
+      "placeholder": null,
+      "value": "",
+      "visible": true
+    },
+    {
+      "tag": "BUTTON",
+      "id": "вк-сценарій",
+      "type": "button",
+      "text": "Сценарій",
+      "placeholder": null,
+      "value": "",
+      "visible": false
+    },
+    {
+      "tag": "BUTTON",
+      "id": "вк-образи",
+      "type": "button",
+      "text": "Образи",
+      "placeholder": null,
+      "value": "",
+      "visible": false
+    },
+    {
+      "tag": "BUTTON",
+      "id": "вк-оцінка",
+      "type": "button",
+      "text": "Оцінити",
+      "placeholder": null,
+      "value": "",
+      "visible": false
+    },
+    {
+      "tag": "BUTTON",
+      "id": "пф-кнопка",
+      "type": "button",
+      "text": "МПрофіль",
+      "placeholder": null,
+      "value": "",
+      "visible": false
+    }
+  ]
+}
