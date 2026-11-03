@@ -1,7 +1,7 @@
 /* Доставка спільної відповіді: журнал кожної картки, окремо від допуску мови. */
 const fs = require('fs'), path = require('path'), vm = require('vm'), assert = require('assert');
 const {питаньЗВідповіддю} = require('../../аудит/проби/записи_шару.js');
-const питання = code => ({повідомлення: {kind: 'card_unchecked', statements: [{code}]}});
+const питання = code => ({повідомлення: {kind: 'card_unchecked', statements: [{code}, {code: code + '_detail'}]}});
 async function вимір(стан){
   const к = vm.createContext({МОДЕЛЬ_МОВИ_П: 'stub', безМашинногоСліду: т => т});
   vm.runInContext(fs.readFileSync(path.join(__dirname, '../показ/мовний_шар.js'), 'utf8'), к);
@@ -9,12 +9,18 @@ async function вимір(стан){
   const готово = new Promise(р => { завершити = р; });
   к.питатиПачкамиП = async (елементи, де) => {
     викликів++; await готово;
-    const заяви = елементи.map(([ключ, повідомлення, пов]) => ({ключ,
-      повідомлення, заяви: пов.statements, текст: стан === 'missing_text' ? null : 'An answer.', стан}));
+    const заяви = елементи.flatMap(([ключ, повідомлення, пов]) => пов.statements.map((з, і) => ({ключ: ключ + і,
+      повідомлення, заяви: [з], текст: стан === 'missing_text' || стан === 'retry' && і ? null : 'An answer.',
+      стан: стан === 'retry' ? і ? 'missing_text' : 'foreign_language' : стан})));
+    const запис = {напрям: 'out_messages', де: де + '.code_unknowns',
+      вхід: Object.fromEntries(елементи.map(([, ім, пов]) => [ім, пов])), заяви};
+    const записи = [запис];
+    if (стан === 'retry') записи.push({...запис,
+      вхід: Object.fromEntries(елементи.map(([, ім, пов]) => [ім, {...пов, statements: пов.statements.slice(1)}])),
+      заяви: заяви.filter(з => з.стан === 'missing_text').map(з => ({...з, текст: 'An answer.', стан: 'foreign_language'}))});
     return {стани: new Map(елементи.map(([ключ]) => [ключ,
       {текст: '— без тексту', стан: стан === 'translated' ? стан : 'fallback'}])),
-      записи: [{напрям: 'out_messages', де: де + '.code_unknowns',
-        вхід: Object.fromEntries(елементи.map(([, ім, пов]) => [ім, пов])), заяви}]};
+      записи};
   };
   const перша = {питання: [питання('shared'), питання('source_only')]};
   const друга = {питання: [питання('own'), питання('shared')]};
@@ -26,9 +32,10 @@ async function вимір(стан){
   assert.strictEqual(викликів, 2);
   assert(друга.питання.every(п => п.стан_перекладу === (стан === 'translated' ? стан : 'fallback')));
   assert(!друга.питання_з_пам_яті);
-  assert.strictEqual(перша.мова_шару.length, 1);
-  assert.deepStrictEqual(Array.from(друга.мова_шару[1].заяви, з => з.повідомлення), ['питання.1', 'кнопка']);
+  assert.strictEqual(перша.мова_шару.length, стан === 'retry' ? 2 : 1);
+  const спільні = друга.мова_шару.filter(з => з.спільний_виклик);
+  assert.deepStrictEqual([...new Set(спільні.flatMap(з => Array.from(з.заяви, р => р.повідомлення)))], ['питання.1', 'кнопка']);
   assert(!JSON.stringify(друга.мова_шару).includes('source_only'));
 }
-(async () => { for (const стан of ['translated', 'foreign_language', 'latin_remainder', 'missing_text']) await вимір(стан); })()
+(async () => { for (const стан of ['translated', 'foreign_language', 'latin_remainder', 'missing_text', 'retry']) await вимір(стан); })()
   .catch(п => { console.error(п); process.exitCode = 1; });

@@ -661,9 +661,14 @@ async function питаннямиП(к, де, розгорнуто){
     .map(([к_, кв]) => [к_, кв]));
   for (const р of спільні) if (р.status === 'fulfilled'){
     for (const [к_, стан] of р.value.стани) стани.set(к_, стан);
+    const місцяДжерела = new Map();
+    for (const запис of р.value.записи) for (const [кв, пов] of Object.entries(запис.вхід || {})){
+      const місце = спільніМісця.get(JSON.stringify(пов));
+      if (місце) місцяДжерела.set(кв, місце);
+    }
     for (const запис of р.value.записи){
       const заяви = (запис.заяви || []).flatMap(з => {
-        const повідомлення = спільніМісця.get(JSON.stringify((запис.вхід || {})[з.повідомлення]));
+        const повідомлення = місцяДжерела.get(з.повідомлення);
         return повідомлення ? [{...з, повідомлення}] : [];
       });
       if (заяви.length) результат.записи.push({напрям: 'out_messages',
