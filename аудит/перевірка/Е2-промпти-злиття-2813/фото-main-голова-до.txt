@@ -1,0 +1,20 @@
+записів 44 (пропущено давніх 0): з her_items_in_words 0, з format_error 2
+Traceback (most recent call last):
+  File "C:\Users\gemini\gemini-runs\w\20261102-221936-561cc2a99138\repo\аудит\проби\е2_фото_порівняння.py", line 83, in <module>
+    прочитати(sys.argv[2], sys.argv[3]) if sys.argv[1:2] == ["--дерево"] else головна()
+                                                                              ^^^^^^^^^
+  File "C:\Users\gemini\gemini-runs\w\20261102-221936-561cc2a99138\repo\аудит\проби\е2_фото_порівняння.py", line 66, in головна
+    до, після = запуск(str(Path(тека, "джерела"))), запуск(str(корінь / "джерела"))
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\gemini\gemini-runs\w\20261102-221936-561cc2a99138\repo\аудит\проби\е2_фото_порівняння.py", line 63, in <lambda>
+    запуск = lambda д: json.loads(subprocess.run([sys.executable, "-W", "ignore", __file__, "--дерево", д,
+                                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\gemini\AppData\Local\Programs\Python\Python312\Lib\subprocess.py", line 548, in run
+    with Popen(*popenargs, **kwargs) as process:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\gemini\AppData\Local\Programs\Python\Python312\Lib\subprocess.py", line 1026, in __init__
+    self._execute_child(args, executable, preexec_fn, close_fds,
+  File "C:\Users\gemini\AppData\Local\Programs\Python\Python312\Lib\subprocess.py", line 1538, in _execute_child
+    hp, ht, pid, tid = _winapi.CreateProcess(executable, args,
+                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+NotADirectoryError: [WinError 267] The directory name is invalid

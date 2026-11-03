@@ -539,7 +539,7 @@ def фото_речей():
                 "photo": "<photo id>",
                 "name": "<short English name, as a shop would call the item>",
                 "slot": "<code from codes.slot>",
-                "kind": "<code from codes.item_type: the exact kind of the item, or null>",
+                "kind": "<code from codes.item_type: exact kind read from the item's shape, or null>",
                 "color": "<code from codes.color: the main color of the item itself>",
                 "fabric": "<code from codes.fabric when the texture is visible, else null>",
                 "cut": "<code from codes.cut or null>",
@@ -550,7 +550,7 @@ def фото_речей():
                 "owner": "<code from codes.owner>",
                 "frame": {"left": "<0–1000>", "top": "<0–1000>", "right": "<0–1000>", "bottom": "<0–1000>"},
             }]},
-            межі=("лише_вхід", "невідомо"),
+            межі=("лише_вхід",),
             мова_промпту="en",
         )
     return ФОТО_РЕЧЕЙ
