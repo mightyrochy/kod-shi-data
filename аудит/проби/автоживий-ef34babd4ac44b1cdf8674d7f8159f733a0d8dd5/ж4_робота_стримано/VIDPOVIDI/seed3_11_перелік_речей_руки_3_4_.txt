@@ -1,0 +1,51 @@
+── ПРОМПТ (2577 симв.) ──
+{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.", "One item carries one thing — of two alternatives list the first; a note in brackets is not an item.", "Slot \"accessory\" is for an item no other slot fits.", "\"is_outfit\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "ITEM_LIST", "answer_schema": {"is_outfit": "yes|no", "items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory", "color_hex": "<#rrggbb or null>", "worn": "<true, or false when the description says the outfit goes without it>"}]}, "input": ["\"description\" — the outfit description"]}, "description": "Blazer in charcoal grey with a subtle heather texture, tailored single-breasted cut with notch lapels, mid-length hitting just above the hip, wool blend for autumn warmth.\nStraight-leg trousers in matching charcoal heather wool, ankle length to balance the silhouette, structured fit at the waist and thigh.\nCotton oxford shirt in soft cream with a pointed collar, classic button-down front, slightly relaxed boxy cut for ease of movement.\nLeather loafers in dark taupe brown, slip-on style with minimal hardware, rounded toe for comfort throughout the day.\nGold stud earrings and a slim silver watch to add subtle polish without drawing excessive attention.\n\nThis outfit works perfectly for a standard office setting in autumn by providing a neat professional appearance while adhering to her refusal of anything flashy. The monochromatic charcoal base creates a streamlined look that flatters her figure, while the textured fabrics offer necessary warmth and depth appropriate for the season. The inclusion of a blazer ensures she meets business dress code expectations, yet the relaxed shirt cut and slip-on loafers prioritize comfort and freedom of movement for a long workday. Overall, it strikes an ideal balance between fitting the office context and respecting her wish for a restrained, non-glittering aesthetic."}
+
+── ВІДПОВІДЬ (1247 симв., 7.6 с, HTTP 200) ──
+{
+  "is_outfit": "no",
+  "items": [
+    {
+      "name": "Blazer",
+      "details": "tailored single-breasted cut with notch lapels, mid-length hitting just above the hip, wool blend fabric with subtle heather texture",
+      "slot": "outerwear",
+      "color_hex": "#36454F",
+      "worn": true
+    },
+    {
+      "name": "Trousers",
+      "details": "straight-leg ankle length, structured fit at the waist and thigh, matching charcoal heather wool fabric",
+      "slot": "bottom",
+      "color_hex": "#36454F",
+      "worn": true
+    },
+    {
+      "name": "Shirt",
+      "details": "classic button-down front with a pointed collar, slightly relaxed boxy cut for ease of movement",
+      "slot": "top",
+      "color_hex": "#FFFDD0",
+      "worn": true
+    },
+    {
+      "name": "Loafers",
+      "details": "slip-on style with minimal hardware, rounded toe for comfort",
+      "slot": "shoes",
+      "color_hex": "#5C4B36",
+      "worn": true
+    },
+    {
+      "name": "Earrings",
+      "details": "gold studs",
+      "slot": "earrings",
+      "color_hex": "#FFD700",
+      "worn": true
+    },
+    {
+      "name": "Watch",
+      "details": "slim silver design",
+      "slot": "watch",
+      "color_hex": "#C0C0C0",
+      "worn": true
+    }
+  ]
+}
