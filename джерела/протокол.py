@@ -1502,7 +1502,7 @@ _КОДИ_ВМ = lambda поле: слово(*_ВМ.ТАБЛИЦЯ[поле])
 ДЕНЬ = обʼєкт({"occasion_requirements": ПОТРЕБА_ПОДІЇ, "activity": _КОДИ_ВМ("activity"), "movement": _КОДИ_ВМ("movement"),
                "place": _КОДИ_ВМ("place"), "setting": _КОДИ_ВМ("setting"),
                "surface": _КОДИ_ВМ("surface"), "dress_code": _КОДИ_ВМ("dress_code"),
-               "duration_h": ЧИСЛО, "temperature_c": ЧИСЛО,
+               "duration_h": ЧИСЛО, "weather_band": слово(*_ВМ.ТАБЛИЦЯ["weather_band"]),
                "season": _КОДИ_ВМ("season"),
                "weather_band": _КОДИ_ВМ("weather_band"), "precipitation": _КОДИ_ВМ("precipitation"),
                "wind_ms": ЧИСЛО, "wind": обʼєкт({"free_text": РЯДОК, "lang": РЯДОК}),
