@@ -9148,7 +9148,70 @@
    "КАРТКА: Побачення · Заклад · Ввечері",
    "ВИМІРИ: recurrence=\"once\" (default) · volume=\"one_look\" (default) · mourning=\"none\" (default) · religious_place=\"none\" (default) · audience=\"usual\" (default) · occasion=\"date\" (sub) · place=\"restaurant_casual\" (sub) · intent=\"conventional\" (default) · goal=\"flatter\" (default) · part_of_day=\"evening\" (sub) · temperature_c=18 (default) · formality=[7,7] (sub)",
    "KARTKA · після розмови: {\"де\":\"Заклад\",\"ошатність_картки\":\"Ошатне · норма місця чи людей\",\"діапазон_рядок\":\"Візьмемо: ошатність — ошатне · норма місця чи людей.\",\"нагода\":\"Побачення\",\"коли\":\"ввечері\",\"число_моделі\":[7,7],\"дрес_код_моделі\":null,\"година_моделі\":null}"
-  ]
+  ],
+  "розмова": {
+   "вона": "Вечеря з подругою в ресторані о сьомій вечора",
+   "стилістка": "Записала: вечеря з подругою в ресторані о сьомій вечора.",
+   "випадок": "Побачення · Заклад · Ввечері",
+   "нагода": "побачення",
+   "місце": "ресторан_районний",
+   "дрес_код": null,
+   "виміри": [
+    "recurrence=\"once\" (default)",
+    "volume=\"one_look\" (default)",
+    "mourning=\"none\" (default)",
+    "religious_place=\"none\" (default)",
+    "audience=\"usual\" (default)",
+    "occasion=\"date\" (sub)",
+    "place=\"restaurant_casual\" (sub)",
+    "intent=\"conventional\" (default)",
+    "goal=\"flatter\" (default)",
+    "part_of_day=\"evening\" (sub)",
+    "temperature_c=18 (default)",
+    "formality=[7,7] (sub)"
+   ],
+   "не_взято": [
+    "invented · step=layer · field=place · model_said=\"restaurant_casual\" · quote=none · quote_in_her_words=no · code=kept_as_reading"
+   ],
+   "записи": [
+    {
+     "модель": "mamaylm-gemma-3-12b-it-v2.0",
+     "need": "none",
+     "теми": [],
+     "відкинуто": [
+      {
+       "частина": "text",
+       "чому": "extra_sentence",
+       "про": [
+        "occasion"
+       ],
+       "зняте": "Це побачення, і ти одягнешся зі смаком."
+      },
+      {
+       "частина": "text",
+       "чому": "no_card_confirmation",
+       "про": [
+        "occasion"
+       ],
+       "зняте": "Це побачення, і ти одягнешся зі смаком."
+      },
+      {
+       "частина": "invite",
+       "чому": "too_many_sentences",
+       "теми": [
+        "jewelry"
+       ],
+       "дозволені": [
+        "goal",
+        "makeup",
+        "jewelry",
+        "register"
+       ]
+      }
+     ]
+    }
+   ]
+  }
  },
  "ж7_театр_дата": {
   "питання": [
@@ -9239,7 +9302,43 @@
    "КАРТКА: Театр, концерт · Ввечері",
    "ВИМІРИ: recurrence=\"once\" (default) · volume=\"one_look\" (default) · mourning=\"none\" (default) · religious_place=\"none\" (default) · audience=\"usual\" (default) · occasion=\"theatre\" (her_words) · intent=\"conventional\" (default) · goal=\"flatter\" (default) · part_of_day=\"evening\" (sub) · open_zones=\"one\" (sub) · reserved_colour=\"near_white\" (sub) · temperature_c=18 (default) · formality=[5,6] (sub)",
    "KARTKA · після розмови: {\"де\":\"\",\"ошатність_картки\":\"Охайне · норма місця чи людей\",\"діапазон_рядок\":\"Візьмемо: середовище — зал, ошатність — охайне · норма місця чи людей.\",\"нагода\":\"Театр, концерт\",\"коли\":\"ввечері\",\"число_моделі\":[5,6],\"дрес_код_моделі\":null,\"година_моделі\":null}"
-  ]
+  ],
+  "розмова": {
+   "вона": "19 жовтня ввечері йду в театр на прем'єру, що вдягнути?",
+   "стилістка": "Ти йдеш на прем’єру в театр 19 жовтня ввечері. Можеш додати прикраси та обрати стиль, який тобі пасуватиме.",
+   "випадок": "Театр, концерт · Ввечері",
+   "нагода": "театр",
+   "місце": null,
+   "дрес_код": null,
+   "виміри": [
+    "recurrence=\"once\" (default)",
+    "volume=\"one_look\" (default)",
+    "mourning=\"none\" (default)",
+    "religious_place=\"none\" (default)",
+    "audience=\"usual\" (default)",
+    "occasion=\"theatre\" (her_words)",
+    "intent=\"conventional\" (default)",
+    "goal=\"flatter\" (default)",
+    "part_of_day=\"evening\" (sub)",
+    "open_zones=\"one\" (sub)",
+    "reserved_colour=\"near_white\" (sub)",
+    "temperature_c=18 (default)",
+    "formality=[5,6] (sub)"
+   ],
+   "не_взято": [
+    "invented · step=layer · field=occasion_part · model_said=\"other\" · quote=none · quote_in_her_words=no · code=kept_as_reading"
+   ],
+   "записи": [
+    {
+     "модель": "mamaylm-gemma-3-12b-it-v2.0",
+     "need": "none",
+     "теми": [
+      "jewelry",
+      "register"
+     ]
+    }
+   ]
+  }
  },
  "ж3_свято_др": {
   "питання": [
@@ -10961,5 +11060,382 @@
     ]
    }
   ]
+ },
+ "ж3_кафе_13": {
+  "питання": [
+   {
+    "pr": 2609,
+    "question": "пора «день» за годиною 13:00 → розмова → ДО: `python3 аудит/проби/живі_до.py ж3_кафе_13 5fb42eb5` → у паспорті пора «день»; рівень ошатності той самий, що в ж3_кафе_20"
+   },
+   {
+    "pr": 2629,
+    "question": "день кави: денне світло з пори, годин у запитах нема → розмова → origin/claude/zhyvi-3.7b:аудит/живі_3.7б/A/09_ж3_кафе_13 → рівень ошатності той самий, що в ж3_кафе_20"
+   },
+   {
+    "pr": 2630,
+    "question": "у картці «вдень», а не «13:00» → розмова → ДО: `main` 173ba2da, плитка «13:00» → частина дня без годинника"
+   },
+   {
+    "pr": 2632,
+    "question": "«о 13:00» → розмова → ДО нема на 173ba2da (`живі_до.py`) → `chosen`: part_of_day day без hour; «Записала» без «13:00» від коду"
+   },
+   {
+    "pr": 2628,
+    "question": "у паспорті й картці «Вдень», години 13 нема → розмова → ДО: повтор на main 610f4c90 → частина дня замість години"
+   },
+   {
+    "pr": 2667,
+    "question": "formality той самий, що в ж3_кафе_20"
+   }
+  ],
+  "rc": 0,
+  "секунд": 68.9,
+  "завершення": {
+   "формат": 1,
+   "прилад": "рв6_стенд",
+   "run_id": "run-mw0ffslr-6e6f69b0",
+   "почато": "2026-11-03T08:29:36.015Z",
+   "код": {
+    "дерево": "4ee2f284af6282ce68bb7451da4c3e182083949b",
+    "збірка": "ef34babd4ac44b1cdf8674d7f8159f733a0d8dd5",
+    "відбиток": "c2794db0a676",
+    "каталог": null
+   },
+   "режим": {
+    "DO": "rozmova",
+    "ZNIMKY": "C:\\Users\\gemini\\gemini-runs\\w\\20261103-095124-a9ac53ab29ae\\repo\\аудит\\проби\\автоживий-ef34babd4ac44b1cdf8674d7f8159f733a0d8dd5\\ж3_кафе_13\\знімки",
+    "FOTO": "0",
+    "CHAT_TEXT": "кава з подругою в кафе о 13:00",
+    "ZHINKA": "C:\\Users\\gemini\\gemini-runs\\w\\20261103-095124-a9ac53ab29ae\\tmp\\збірка\\аудит\\проби\\жінки\\ж3.json",
+    "MODEL": "qwen/qwen3.5-9b",
+    "SCENA": "ж3_кафе_13",
+    "MODEL_MOVA": "mamaylm-gemma-3-12b-it-v2.0",
+    "ODNOCHASNO": "1",
+    "MODEL_URL": "http://127.0.0.1:1235/v1",
+    "VIDPOVIDI": "C:\\Users\\gemini\\gemini-runs\\w\\20261103-095124-a9ac53ab29ae\\repo\\аудит\\проби\\автоживий-ef34babd4ac44b1cdf8674d7f8159f733a0d8dd5\\ж3_кафе_13\\VIDPOVIDI",
+    "CTX": "{\"qwen/qwen3.5-9b\": 57344, \"mamaylm-gemma-3-12b-it-v2.0\": 16384}",
+    "ZVIT_OUT": "C:\\Users\\gemini\\gemini-runs\\w\\20261103-095124-a9ac53ab29ae\\repo\\аудит\\проби\\автоживий-ef34babd4ac44b1cdf8674d7f8159f733a0d8dd5\\ж3_кафе_13\\вердикти.txt",
+    "сід": 3,
+    "сцена": {
+     "id": "ж3_кафе_13",
+     "режим": "розмова",
+     "як": "SCENA"
+    }
+   },
+   "модель": {
+    "стилістка": "qwen/qwen3.5-9b",
+    "мова": "mamaylm-gemma-3-12b-it-v2.0"
+   },
+   "входи": {
+    "сторінка": {
+     "шлях": "C:\\Users\\gemini\\gemini-runs\\w\\20261103-095124-a9ac53ab29ae\\tmp\\збірка\\index.html",
+     "sha256": "58a7b2b1871ce65c8f725af7cfde76e93f307f29bbefec38726fb4bfe82ed77d"
+    },
+    "жінка": {
+     "шлях": "C:\\Users\\gemini\\gemini-runs\\w\\20261103-095124-a9ac53ab29ae\\tmp\\збірка\\аудит\\проби\\жінки\\ж3.json",
+     "sha256": "52a30c757909e8dfcbb346e048e369a034805c2bbd410a459887492d9e653147"
+    }
+   },
+   "очікувано": {
+    "збоїв_транспорту_моделі": 0
+   },
+   "факт": {
+    "збоїв_транспорту_моделі": 0
+   },
+   "подія": "DO=rozmova: перший хід",
+   "кінець": "2026-11-03T08:30:42.157Z",
+   "вердикт": {
+    "доведено": true,
+    "чому": []
+   }
+  },
+  "червоні": [],
+  "час_у_знімках_тексту": [],
+  "руки": [],
+  "входи_стилістки": [],
+  "розмова_лог": [
+   "СТИЛІСТКА: кава з подругою в кафе о 13:00 · кафе · о 13:00",
+   "КАРТКА: Побачення · Кафе · Вдень",
+   "ВИМІРИ: recurrence=\"once\" (default) · volume=\"one_look\" (default) · mourning=\"none\" (default) · religious_place=\"none\" (default) · audience=\"usual\" (default) · occasion=\"date\" (sub) · place=\"cafe\" (her_words) · intent=\"conventional\" (default) · goal=\"flatter\" (default) · part_of_day=\"day\" (sub) · temperature_c=18 (default) · formality=[5,6] (sub)",
+   "KARTKA · після розмови: {\"де\":\"Кафе\",\"ошатність_картки\":\"Охайне · норма місця чи людей\",\"діапазон_рядок\":\"Візьмемо: середовище — кафе, ошатність — охайне · норма місця чи людей.\",\"нагода\":\"Побачення\",\"коли\":\"вдень\",\"число_моделі\":[5,6],\"дрес_код_моделі\":null,\"година_моделі\":null}"
+  ],
+  "розмова": {
+   "вона": "кава з подругою в кафе о 13:00",
+   "стилістка": "кава з подругою в кафе о 13:00 · кафе · о 13:00\nМожеш обрати стиль для цього образу.",
+   "випадок": "Побачення · Кафе · Вдень",
+   "нагода": "побачення",
+   "місце": "кафе",
+   "дрес_код": null,
+   "виміри": [
+    "recurrence=\"once\" (default)",
+    "volume=\"one_look\" (default)",
+    "mourning=\"none\" (default)",
+    "religious_place=\"none\" (default)",
+    "audience=\"usual\" (default)",
+    "occasion=\"date\" (sub)",
+    "place=\"cafe\" (her_words)",
+    "intent=\"conventional\" (default)",
+    "goal=\"flatter\" (default)",
+    "part_of_day=\"day\" (sub)",
+    "temperature_c=18 (default)",
+    "formality=[5,6] (sub)"
+   ],
+   "не_взято": [],
+   "записи": [
+    {
+     "модель": "mamaylm-gemma-3-12b-it-v2.0",
+     "need": "none",
+     "теми": [
+      "jewelry",
+      "register"
+     ],
+     "відкинуто": [
+      {
+       "частина": "text",
+       "чому": "not_about_recorded",
+       "про": [
+        "update"
+       ],
+       "чуже": [
+        "update"
+       ],
+       "зняте": "Записала: зустріч із подругою на каву о 13:00 у кафе. Це звичайний день, тому одягай щось зручне та повсякденне."
+      },
+      {
+       "частина": "text",
+       "чому": "not_about_recorded",
+       "про": [
+        "occasion_part,_formality"
+       ],
+       "чуже": [
+        "occasion_part,_formality"
+       ],
+       "зняте": "Звучить як зустріч з подругою в кафе о першій дня. Це неформальна прогулянка."
+      },
+      {
+       "частина": "text",
+       "чому": "no_card_confirmation",
+       "про": [
+        "occasion_part,_formality"
+       ],
+       "зняте": "Звучить як зустріч з подругою в кафе о першій дня."
+      },
+      {
+       "частина": "text",
+       "чому": "no_card_confirmation",
+       "про": [
+        "occasion_part,_formality"
+       ],
+       "зняте": "Це неформальна прогулянка."
+      },
+      {
+       "частина": "text",
+       "чому": "no_confirmation_text",
+       "зняте": "",
+       "числа": []
+      }
+     ]
+    },
+    {
+     "модель": "mamaylm-gemma-3-12b-it-v2.0",
+     "відкинуто": [
+      {
+       "частина": "text",
+       "чому": "no_card_confirmation",
+       "зняте": "Так, я підібрала образ на побачення з подругою в кафе о 13:00. Ошатність — невимушена.",
+       "числа": []
+      },
+      {
+       "частина": "text",
+       "чому": "no_card_confirmation",
+       "зняте": "Так, я підібрала образ на побачення з подругою в кафе о 13:00. Ошатний стиль буде доречним.",
+       "числа": []
+      }
+     ],
+     "причина": "only_questions"
+    }
+   ]
+  }
+ },
+ "ж3_кафе_20": {
+  "питання": [
+   {
+    "pr": 2609,
+    "question": "пора «вечір» за годиною 20:00 → розмова → ДО: `python3 аудит/проби/живі_до.py ж3_кафе_20 5fb42eb5` → у паспорті пора «вечір»; рівень ошатності той самий, що в ж3_кафе_13"
+   },
+   {
+    "pr": 2629,
+    "question": "вечір кави: штучне світло з пори, годин у запитах нема → розмова → origin/claude/zhyvi-2610-1-2:аудит/живі_2610-1-2/ж3_кафе_20 → рівень ошатності той самий, що в ж3_кафе_13"
+   },
+   {
+    "pr": 2630,
+    "question": "у картці «ввечері», а не «20:00» → розмова → ДО: `main` 173ba2da, плитка «20:00» → частина дня без годинника"
+   },
+   {
+    "pr": 2632,
+    "question": "«о 20:00» → розмова → ДО нема на 173ba2da (`живі_до.py`) → `chosen`: part_of_day evening без hour; «Записала» без «20:00» від коду"
+   },
+   {
+    "pr": 2628,
+    "question": "у паспорті й картці «Ввечері», години 20 нема → розмова → ДО: повтор на main 610f4c90 → частина дня замість години"
+   },
+   {
+    "pr": 2667,
+    "question": "formality той самий, що в ж3_кафе_13; part_of_day — вечір"
+   },
+   {
+    "pr": 2682,
+    "question": "everyday ввечері без підйому → розмова → раз, розмовою на main 295ba008 → formality той самий, що в ж3_кафе_13"
+   }
+  ],
+  "rc": 0,
+  "секунд": 63.3,
+  "завершення": {
+   "формат": 1,
+   "прилад": "рв6_стенд",
+   "run_id": "run-mw0fh9o2-8b57dc39",
+   "почато": "2026-11-03T08:30:44.786Z",
+   "код": {
+    "дерево": "4ee2f284af6282ce68bb7451da4c3e182083949b",
+    "збірка": "ef34babd4ac44b1cdf8674d7f8159f733a0d8dd5",
+    "відбиток": "c2794db0a676",
+    "каталог": null
+   },
+   "режим": {
+    "DO": "rozmova",
+    "ZNIMKY": "C:\\Users\\gemini\\gemini-runs\\w\\20261103-095124-a9ac53ab29ae\\repo\\аудит\\проби\\автоживий-ef34babd4ac44b1cdf8674d7f8159f733a0d8dd5\\ж3_кафе_20\\знімки",
+    "FOTO": "0",
+    "CHAT_TEXT": "кава з подругою в кафе о 20:00",
+    "ZHINKA": "C:\\Users\\gemini\\gemini-runs\\w\\20261103-095124-a9ac53ab29ae\\tmp\\збірка\\аудит\\проби\\жінки\\ж3.json",
+    "MODEL": "qwen/qwen3.5-9b",
+    "SCENA": "ж3_кафе_20",
+    "MODEL_MOVA": "mamaylm-gemma-3-12b-it-v2.0",
+    "ODNOCHASNO": "1",
+    "MODEL_URL": "http://127.0.0.1:1235/v1",
+    "VIDPOVIDI": "C:\\Users\\gemini\\gemini-runs\\w\\20261103-095124-a9ac53ab29ae\\repo\\аудит\\проби\\автоживий-ef34babd4ac44b1cdf8674d7f8159f733a0d8dd5\\ж3_кафе_20\\VIDPOVIDI",
+    "CTX": "{\"qwen/qwen3.5-9b\": 57344, \"mamaylm-gemma-3-12b-it-v2.0\": 16384}",
+    "ZVIT_OUT": "C:\\Users\\gemini\\gemini-runs\\w\\20261103-095124-a9ac53ab29ae\\repo\\аудит\\проби\\автоживий-ef34babd4ac44b1cdf8674d7f8159f733a0d8dd5\\ж3_кафе_20\\вердикти.txt",
+    "сід": 3,
+    "сцена": {
+     "id": "ж3_кафе_20",
+     "режим": "розмова",
+     "як": "SCENA"
+    }
+   },
+   "модель": {
+    "стилістка": "qwen/qwen3.5-9b",
+    "мова": "mamaylm-gemma-3-12b-it-v2.0"
+   },
+   "входи": {
+    "сторінка": {
+     "шлях": "C:\\Users\\gemini\\gemini-runs\\w\\20261103-095124-a9ac53ab29ae\\tmp\\збірка\\index.html",
+     "sha256": "58a7b2b1871ce65c8f725af7cfde76e93f307f29bbefec38726fb4bfe82ed77d"
+    },
+    "жінка": {
+     "шлях": "C:\\Users\\gemini\\gemini-runs\\w\\20261103-095124-a9ac53ab29ae\\tmp\\збірка\\аудит\\проби\\жінки\\ж3.json",
+     "sha256": "52a30c757909e8dfcbb346e048e369a034805c2bbd410a459887492d9e653147"
+    }
+   },
+   "очікувано": {
+    "збоїв_транспорту_моделі": 0
+   },
+   "факт": {
+    "збоїв_транспорту_моделі": 0
+   },
+   "подія": "DO=rozmova: перший хід",
+   "кінець": "2026-11-03T08:31:46.245Z",
+   "вердикт": {
+    "доведено": true,
+    "чому": []
+   }
+  },
+  "червоні": [],
+  "час_у_знімках_тексту": [],
+  "руки": [],
+  "входи_стилістки": [],
+  "розмова_лог": [
+   "СТИЛІСТКА: кава з подругою в кафе о 20:00 · о 20:00",
+   "КАРТКА: Побачення · Кафе · Ввечері",
+   "ВИМІРИ: recurrence=\"once\" (default) · volume=\"one_look\" (default) · mourning=\"none\" (default) · religious_place=\"none\" (default) · audience=\"usual\" (default) · occasion=\"date\" (sub) · place=\"cafe\" (her_words) · intent=\"conventional\" (default) · goal=\"flatter\" (default) · part_of_day=\"evening\" (sub) · open_zones=\"one\" (sub) · temperature_c=18 (default) · formality=[5,6] (sub)",
+   "KARTKA · після розмови: {\"де\":\"Кафе\",\"ошатність_картки\":\"Охайне · норма місця чи людей\",\"діапазон_рядок\":\"Візьмемо: середовище — кафе, ошатність — охайне · норма місця чи людей.\",\"нагода\":\"Побачення\",\"коли\":\"ввечері\",\"число_моделі\":[5,6],\"дрес_код_моделі\":null,\"година_моделі\":null}"
+  ],
+  "розмова": {
+   "вона": "кава з подругою в кафе о 20:00",
+   "стилістка": "кава з подругою в кафе о 20:00 · о 20:00\nМожеш подумати про прикраси до цього образу.",
+   "випадок": "Побачення · Кафе · Ввечері",
+   "нагода": "побачення",
+   "місце": "кафе",
+   "дрес_код": null,
+   "виміри": [
+    "recurrence=\"once\" (default)",
+    "volume=\"one_look\" (default)",
+    "mourning=\"none\" (default)",
+    "religious_place=\"none\" (default)",
+    "audience=\"usual\" (default)",
+    "occasion=\"date\" (sub)",
+    "place=\"cafe\" (her_words)",
+    "intent=\"conventional\" (default)",
+    "goal=\"flatter\" (default)",
+    "part_of_day=\"evening\" (sub)",
+    "open_zones=\"one\" (sub)",
+    "temperature_c=18 (default)",
+    "formality=[5,6] (sub)"
+   ],
+   "не_взято": [
+    "unknown_value · step=layer · field=reserved_colour · model_said={\"quote\": null, \"value\": null} · code=not_taken"
+   ],
+   "записи": [
+    {
+     "модель": "mamaylm-gemma-3-12b-it-v2.0",
+     "need": "none",
+     "теми": [
+      "jewelry",
+      "register"
+     ],
+     "відкинуто": [
+      {
+       "частина": "text",
+       "чому": "not_about_recorded",
+       "про": [
+        "update"
+       ],
+       "чуже": [
+        "update"
+       ],
+       "зняте": "Записала: кава з подругою в кафе о восьмій вечора. Це буде невимушений, але елегантний образ."
+      },
+      {
+       "частина": "ask",
+       "чому": "not_required_after_turn",
+       "код": "occasion"
+      },
+      {
+       "частина": "text",
+       "чому": "no_confirmation_text",
+       "зняте": "",
+       "числа": []
+      }
+     ]
+    },
+    {
+     "модель": "mamaylm-gemma-3-12b-it-v2.0",
+     "відкинуто": [
+      {
+       "частина": "text",
+       "чому": "no_card_confirmation",
+       "зняте": "Так, побачення з подругою в кафе о 20:00. Ошатний образ для вечора буде доречним.",
+       "числа": []
+      },
+      {
+       "частина": "text",
+       "чому": "no_card_confirmation",
+       "зняте": "Так, я підібрала образ для побачення з подругою в кафе о 20:00. Це буде вечірній вихід у невимушеній атмосфері.",
+       "числа": []
+      }
+     ],
+     "причина": "only_questions"
+    }
+   ]
+  }
  }
 }

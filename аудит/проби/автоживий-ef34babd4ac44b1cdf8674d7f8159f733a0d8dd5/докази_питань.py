@@ -40,6 +40,9 @@ for сцена, питання in план['scenes'].items():
          'розмова_лог': [x.strip() for x in лог.splitlines() if any(
              слово in x for слово in ['СТИЛІСТКА:', 'КАРТКА:', 'ВИМІРИ:', 'KARTKA ·'])]}
     текст_екранів = т / 'знімки/текст_екранів.txt'
+    розмова = т / 'знімки/ng4_rozmova_seed3.txt'
+    if розмова.exists():
+        д['розмова'] = json.JSONDecoder().raw_decode(розмова.read_text(encoding='utf-8').lstrip())[0]
     if текст_екранів.exists():
         д['час_у_знімках_тексту'] = [x for x in текст_екранів.read_text(encoding='utf-8').splitlines()
                                    if re.search(r'\b\d{1,2}:\d{2}\b|[Вв]вечері|[Зз]ранку|[Вв]ранці|[Вв]день', x)]
