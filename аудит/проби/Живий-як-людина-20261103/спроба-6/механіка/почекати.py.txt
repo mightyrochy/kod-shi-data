@@ -1,0 +1,13 @@
+import json,urllib.request
+from pathlib import Path
+def request(q):
+ with urllib.request.urlopen(urllib.request.Request('http://127.0.0.1:41236',data=json.dumps(q).encode(),headers={'Content-Type':'application/json'}),timeout=600) as r:return json.load(r)
+pending=['Думаю…','Тчеться','Роздивляюсь речі на фото…','Стилістка дивиться на портрет…','Ще мить…','Читаю твоє питання…','Звіряю образ цілим: кольори між собою, палітру, силует…','Складаю відповідь…']
+v=request({'op':'snapshot'})
+initial=v.get('text','')
+while any(x in v.get('text','') for x in pending):
+ print(json.dumps({'screen':Path(v['screen']).name,'стан':'очікування','на_екрані':[x for x in pending if x in v.get('text','')]},ensure_ascii=False),flush=True)
+ v=request({'op':'wait','ms':30000})
+text=v.get('text','');n=0
+while n<min(len(initial),len(text)) and initial[n]==text[n]:n+=1
+print(json.dumps({'screen':v.get('screen'),'новий_видимий_текст':text[n:] if n<len(text) else text[-4000:]},ensure_ascii=False),flush=True)
