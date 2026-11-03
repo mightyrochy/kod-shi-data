@@ -353,7 +353,7 @@ function Get-NightlyMarker([datetime]$Now = [datetime]::UtcNow) {
 
 function Get-MarkerKey($M) { "$($M.Ref) $($M.Sha)" }
 
-function Get-StatePath([string]$Key) { Join-Path $script:StateDir ((Get-Sha256Hex $Key) + '.txt') }
+function Get-StatePath([string]$Key, [string]$StateDir = $script:StateDir) { Join-Path $StateDir ((Get-Sha256Hex $Key) + '.txt') }
 
 function Get-ClaimPath([string]$StatePath) { $StatePath -replace '\.txt$', '.claim' }
 
@@ -433,9 +433,9 @@ function Enter-ReviewWait($M, [string]$Head = '') {
     Write-Log "позначка $($M.Name): REVIEW_API; спроба збережена, повтор у черзі"
 }
 
-function Get-MarkerState($M) {
+function Get-MarkerState($M, [string]$StateDir = $script:StateDir) {
     <# NEW — не бачили; TAKEN — узята (файл `.claim`); WAIT — чекає скидання квоти (Wait.until, unix); DONE — інше. #>
-    $sp = Get-StatePath (Get-MarkerKey $M)
+    $sp = Get-StatePath (Get-MarkerKey $M) $StateDir
     if (Test-Path -LiteralPath (Get-ClaimPath $sp)) { return [pscustomobject]@{ Kind = 'TAKEN'; Wait = $null } }
     if (-not (Test-Path -LiteralPath $sp)) { return [pscustomobject]@{ Kind = 'NEW'; Wait = $null } }
     $t = [System.IO.File]::ReadAllText($sp, $script:Utf8)
