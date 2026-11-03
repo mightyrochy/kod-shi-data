@@ -39,7 +39,7 @@ function реєструвати(в, о, ф, власник, батько){
     тут = {ід: функції.length, ...місце(в, ф), назва: ім, код: ф.код.slice(в.start, в.end),
       відбиток: crypto.createHash('sha256').update(JSON.stringify(ключ(в))).digest('hex'),
       ребра: [], аргументи: [], параметри: (в.params || []).map(назва),
-      записи: [], виклики: [], потоки: [], повернення: [], приймачі: [], батько: власник && власник.ід};
+      записи: [], виклики: [], потоки: [], дом_записи: [], повернення: [], приймачі: [], батько: власник && власник.ід};
     функції.push(тут);
     область = в.type === 'Program' ? о : {батько: о, імена: new Map()};
     if (ім) о.імена.set(ім, {значення: new Set([тут.ід])});
@@ -182,13 +182,17 @@ for (const к of виклики){
   к.запис.вхід = к.в.arguments.map(залежності);
 }
 function потоки(в){
-  const {власник} = вузли.get(в);
+  const {власник, о} = вузли.get(в);
   if (в.type === 'ArrowFunctionExpression' && в.body.type !== 'BlockStatement')
     власник.повернення.push(...залежності(в.body));
   if (в.type === 'VariableDeclarator' && в.init)
     власник.потоки.push({ціль: назва(в.id), з: залежності(в.init)});
   if (в.type === 'AssignmentExpression')
     власник.потоки.push({ціль: назва(в.left).split('.')[0], з: залежності(в.right)});
+  if (в.type === 'AssignmentExpression' && в.left.type === 'MemberExpression' && /^(?:value|checked)$/.test(назва(в.left.property))){
+    const дом = елемент(в.left.object, о);
+    if (дом) власник.дом_записи.push({елемент: дом.slice(1), з: залежності(в.right)});
+  }
   if (в.type === 'ReturnStatement') власник.повернення.push(...залежності(в.argument));
   if (в.type === 'CallExpression' && /^(?:window\.)?ЧАТ_П\.push$/.test(назва(в.callee)))
     власник.приймачі.push(...в.arguments.flatMap(залежності));
