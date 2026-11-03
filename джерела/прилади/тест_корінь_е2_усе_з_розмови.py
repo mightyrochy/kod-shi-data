@@ -1,4 +1,4 @@
-﻿# -*- coding: utf-8 -*-
+# -*- coding: utf-8 -*-
 """Синтетичні перевірки виявлення подій і повного шляху Е2, без продукту/API."""
 import tempfile
 from pathlib import Path

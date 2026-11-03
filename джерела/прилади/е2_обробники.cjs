@@ -1,4 +1,4 @@
-﻿/* Синтаксичний граф Е2: області імен, виклики, події та передані замикання. */
+/* Синтаксичний граф Е2: області імен, виклики, події та передані замикання. */
 'use strict';
 const fs = require('node:fs'), vm = require('node:vm'), zlib = require('node:zlib'), crypto = require('node:crypto');
 const модуль = {exports: {}};
