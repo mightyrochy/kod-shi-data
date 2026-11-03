@@ -178,6 +178,86 @@ function Get-MarkerState($M, [string]$StateDir) {
     Invoke-WrapperChain
     $lines = @(Get-ChildItem -LiteralPath $OutboxDir -File | ForEach-Object { [IO.File]::ReadAllText($_.FullName,$utf).Trim() })
     Check 'загальний catch теж передав тип і функцію текстового блоку' (@($lines | Where-Object { $_ -ceq 'GEMINI ОБГОРТКА: ЛАНЦЮГ CHAIN_FAILED InvalidOperationException Get-ChainPulls' }).Count -eq 1)
+
+    # Окремий простір даних: справжні проходи ланцюга, refs, chain.json і хмарний вихід.
+    & {
+        . (Join-Path $SourceDir 'gemini_publish.ps1') -WorkDir "$tmp/transfer/pub" -OutDir "$tmp/transfer/out" -OutboxDir "$tmp/transfer/outbox" -UpdateRoot "$tmp/transfer/update"
+        $script:Repo = "$seed/.git"; $script:NoHooks = "$tmp/no-hooks"
+        foreach ($dir in @($WorkDir,$OutboxDir,"$WorkDir/seen")) { [void][IO.Directory]::CreateDirectory($dir) }
+        function Complete-EngineDrafts { }
+        function Get-ChainBuildStamp { '' }
+        function Get-ChainBranchWork { '' }
+        function Test-RecentReviewHead { $true }
+        function Test-ReviewedMerge { $false }
+        function Test-ChainCodePull { $true }
+        function Test-ChainEndAnnounced { $true }
+        function Get-ChainPullRisk { 2 }
+        function Test-ChainReviewDone { $false }
+        function Get-ReviewDiff { 'проба' }
+        function Get-ReviewPatchId { 'проба' }
+        function Get-ReviewModels { @($script:TransferTarget) }
+        function Test-ModelQuota([string]$Model, $Now) { $Model -ceq 'gpt-6.1-terra-high' }
+        function Get-ChainPulls { $script:TransferPull }
+        function Get-ChainMarkerState($Ref, $Sha, $Model) {
+            if ($Ref.Contains("/$script:TransferSlug/")) {
+                $script:TransferReads++
+                if ($script:Unavailable -and ($script:FailAt -eq 0 -or $script:TransferReads -eq $script:FailAt)) {
+                    throw [UnauthorizedAccessException]::new('тимчасово недоступний стан')
+                }
+            }
+            [pscustomobject]@{ Kind=$script:TransferKind; Wait=$null }
+        }
+        function CloudLines([int]$Number) {
+            @(Get-ChildItem -LiteralPath $OutboxDir -File | ForEach-Object { [IO.File]::ReadAllText($_.FullName,$utf).Trim() } |
+                Where-Object { $_ -ceq "GEMINI ОБГОРТКА: ПОТРІБНА ПЕРЕВІРКА CLAUDE #$Number $head" })
+        }
+        foreach ($case in @(
+            @{Number=201;Target='gemini-4-argon-high';FailAt=0;Name='запасна модель'},
+            @{Number=202;Target='claude-cloud';FailAt=0;Name='хмара: попереднє читання'},
+            @{Number=203;Target='claude-cloud';FailAt=3;Name='хмара: повторне читання перед передачею'}
+        )) {
+            $n = $case.Number; $label = $case.Name
+            $script:TransferTarget = $case.Target; $script:FailAt = $case.FailAt
+            $script:TransferSlug = "автоперевірка-$n-$head"
+            $old = "refs/heads/gemini-queue/$script:TransferSlug/gpt-6.1-terra-high/1/p2"
+            & git -C $seed push -q origin "${head}:$old"
+            $script:TransferPull = [pscustomobject]@{number=$n;title='Проба';user=@{login='mightyrochy'};
+                head=@{ref='codex/проба';sha=$head;repo=@{full_name=$GitHubRepo}};
+                base=@{ref='main';repo=@{full_name=$GitHubRepo}}}
+            $statePath = Join-Path $WorkDir 'chain.json'
+            $oldKey = "$n $head gpt-6.1-terra-high"; $key = "$n $head $script:TransferTarget"
+            Write-FileAtomic $statePath (@{main=$head;reviewed=@{};reviews=@($oldKey)} | ConvertTo-Json -Depth 5)
+            $script:Unavailable = $true; $script:TransferReads = 0; $script:TransferKind = 'WAIT'
+            Invoke-WrapperChain
+            $first = ConvertFrom-Json ([IO.File]::ReadAllText($statePath,$utf))
+            Check "$label — відкладення не записане в seen і reviewed" ($key -cnotin @($first.reviews) -and $null -eq $first.reviewed.PSObject.Properties[[string]$n])
+            $refs = @(Refs $n)
+            Check "$label — UNKNOWN зберіг стару позначку без хмарної доставки" ($refs.Count -eq 1 -and $refs[0] -ceq $old -and @(CloudLines $n).Count -eq 0)
+            $script:Unavailable = $false
+            Invoke-WrapperChain
+            $second = ConvertFrom-Json ([IO.File]::ReadAllText($statePath,$utf))
+            $refs = @(Refs $n)
+            $delivered = if ($script:TransferTarget -ceq 'claude-cloud') {
+                $refs.Count -eq 0 -and @(CloudLines $n).Count -eq 1 -and (Test-Path -LiteralPath (Get-SeenPath "cloud-review $n $head"))
+            } else {
+                $refs.Count -eq 1 -and $refs[0] -ceq "refs/heads/gemini-queue/$script:TransferSlug/$script:TransferTarget/1/p2"
+            }
+            Check "$label — наступний прохід після відновлення фактично передав роботу" $delivered
+            Check "$label — seen записаний після передачі" ($key -cin @($second.reviews) -and $null -ne $second.reviewed.PSObject.Properties[[string]$n])
+            $beforeRefs = $refs -join '|'; $beforeLines = @(CloudLines $n).Count
+            Invoke-WrapperChain
+            Check "$label — третій прохід не дублює доставку" (((@(Refs $n) -join '|') -ceq $beforeRefs) -and @(CloudLines $n).Count -eq $beforeLines)
+        }
+        # Узяту роботу передавати не треба; це завершене рішення, на відміну від UNKNOWN.
+        foreach ($target in @('gemini-4-argon-high','claude-cloud')) {
+            $script:TransferTarget = $target; $script:TransferKind = 'TAKEN'
+            $script:TransferSlug = "автоперевірка-204-$head"
+            & git -C $seed push -q origin "${head}:refs/heads/gemini-queue/$script:TransferSlug/gpt-6.1-terra-high/1/p2"
+            $result = if ($target -ceq 'claude-cloud') { Test-CloudMove $script:TransferSlug ([datetimeoffset]::UtcNow) }
+                      else { Move-BlockedMarkers $script:TransferSlug $target $head ([datetimeoffset]::UtcNow) }
+            Check "$target — узята робота повертає рішення не потрібна" ($null -ne $result -and $result -ceq $false)
+        }
+    }
 } catch { Check "виняток: $($_.Exception.Message) $($_.ScriptStackTrace)" $false }
 finally {
     $resolved = [IO.Path]::GetFullPath($tmp)

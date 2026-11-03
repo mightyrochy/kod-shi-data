@@ -419,10 +419,13 @@ function Get-ChainMarkers([string]$Slug) {
 }
 
 function Move-BlockedMarkers([string]$Slug, [string]$Model, [string]$Main, [datetimeoffset]$Now, [switch]$Gpu) {
-    <# Переносить лише NEW/WAIT із вичерпаною квотою; кінцеві не заступають нову спробу, узяті не переносить. #>
-    if (Test-ModelQuota $Model $Now) { return $false }
+    <# Переносить NEW/WAIT із вичерпаною квотою: $true — виконано, $false — не потрібно, $null — відкладено.
+
+    UNKNOWN і квота цільової моделі потребують повтору; узята чи вже доступна робота передачі не потребує. #>
+    if (Test-ModelQuota $Model $Now) { return $null }
     $all = @(Get-ChainMarkers $Slug)
-    if (@($all | Where-Object { $_.Kind -cin @('TAKEN','UNKNOWN') }).Count) { return $false }
+    if (@($all | Where-Object { $_.Kind -ceq 'UNKNOWN' }).Count) { return $null }
+    if (@($all | Where-Object { $_.Kind -ceq 'TAKEN' }).Count) { return $false }
     $old = @($all | Where-Object { $_.Kind -cin @('NEW','WAIT') })
     if (-not $old.Count -or @($old | Where-Object { $_.Model -ceq $Model -or -not (Test-ModelQuota $_.Model $Now) }).Count) { return $false }
     $attempt = 1
@@ -437,9 +440,10 @@ function Move-BlockedMarkers([string]$Slug, [string]$Model, [string]$Main, [date
 }
 
 function Test-CloudMove([string]$Slug, [datetimeoffset]$Now) {
-    <# Хмарі передається лише NEW/WAIT на квоті; кінцеві не голосують, узятий прогін лишається смузі. #>
+    <# Визначає потребу передачі NEW/WAIT у хмару: $null — читання відкладене, $false — передача не потрібна. #>
     $all = @(Get-ChainMarkers $Slug)
-    if (@($all | Where-Object { $_.Kind -cin @('TAKEN','UNKNOWN') }).Count) { return $false }
+    if (@($all | Where-Object { $_.Kind -ceq 'UNKNOWN' }).Count) { return $null }
+    if (@($all | Where-Object { $_.Kind -ceq 'TAKEN' }).Count) { return $false }
     $pending = @($all | Where-Object { $_.Kind -cin @('NEW','WAIT') })
     $pending.Count -gt 0 -and -not @($pending | Where-Object { -not (Test-ModelQuota $_.Model $Now) }).Count
 }
@@ -588,9 +592,12 @@ function Remove-DeadReviewMarkers($Pulls, $Seen, [datetimeoffset]$Now) {
 
 function Request-CloudReview([string]$Number, [string]$Head) {
     <# Перевірку бере хмарний Claude: позначки тієї самої голови, що чекають вичерпаної квоти, знімаються, диспетчер
-    отримує рядок «ПОТРІБНА ПЕРЕВІРКА CLAUDE #PR <SHA>» один раз на голову. #>
+    отримує рядок «ПОТРІБНА ПЕРЕВІРКА CLAUDE #PR <SHA>» один раз на голову.
+
+    Результат: $true — доставлено, $false — не потрібно, $null — відкладено до читання стану. #>
     $markers = @(Get-ChainMarkers "автоперевірка-$Number-$Head")
-    if (@($markers | Where-Object { $_.Kind -cin @('TAKEN','UNKNOWN') }).Count) { return }
+    if (@($markers | Where-Object { $_.Kind -ceq 'UNKNOWN' }).Count) { return $null }
+    if (@($markers | Where-Object { $_.Kind -ceq 'TAKEN' }).Count) { return $false }
     foreach ($m in $markers) {
         $d = Invoke-Git @('push','-q','--no-verify',"--force-with-lease=refs/heads/$($m.Ref):$($m.Sha)",'origin',":refs/heads/$($m.Ref)") -AllowFail
         if ($d.Code -ne 0) { throw 'CHAIN_PUSH' }
@@ -598,11 +605,13 @@ function Request-CloudReview([string]$Number, [string]$Head) {
     }
     # Позначка «відправлено» — після рядка: збій між ними повторить рядок, а не загубить його.
     $sent = Get-SeenPath "cloud-review $Number $Head"
-    if (-not (Test-Path -LiteralPath $sent)) {
+    $delivered = -not (Test-Path -LiteralPath $sent)
+    if ($delivered) {
         Add-OutboxLine ((Get-Date -Format 'yyyyMMdd-HHmmss') + '-' + (Get-Sha256Hex "cloud-review $Number $Head").Substring(0,12) + '.txt') "GEMINI ОБГОРТКА: ПОТРІБНА ПЕРЕВІРКА CLAUDE #$Number $Head"
         Write-FileAtomic $sent "cloud-review $Number $Head"
     }
     Write-WrapperLog "ланцюг: #$Number $Head — перевірка хмарним Claude, рядок диспетчерові"
+    $delivered
 }
 
 function Get-ChainBusySlots([string]$Dir, [string]$Pattern, [string]$Lane='невідома') {
@@ -834,9 +843,15 @@ function Invoke-WrapperChain {
                 if ($seen.ContainsKey($key)) { continue }
                 # Одна перевірка на голову: позначка будь-якого рушія вже стоїть — нової не ставимо, лише переводимо позначки, що чекають вичерпаної квоти.
                 $marked = @($seen.Keys | Where-Object { $_ -cmatch ('^' + $n + ' ' + $head + ' ') }).Count
-                if ($model -ceq $script:CloudReview) { if (-not $marked -or (Test-CloudMove "автоперевірка-$n-$head" $now)) { Request-CloudReview $n $head } }
-                elseif ($marked) { [void](Move-BlockedMarkers "автоперевірка-$n-$head" $model $main $now) }
+                $transfer = $true
+                if ($model -ceq $script:CloudReview) {
+                    $transfer = if ($marked) { Test-CloudMove "автоперевірка-$n-$head" $now } else { $true }
+                    if ($transfer) { $transfer = Request-CloudReview $n $head }
+                }
+                elseif ($marked) { $transfer = Move-BlockedMarkers "автоперевірка-$n-$head" $model $main $now }
                 else { Add-ChainMarker "автоперевірка-$n-$head" $model $main }
+                # Лише виконана або непотрібна передача завершує рішення; відкладена повториться наступного проходу.
+                if ($null -eq $transfer) { continue }
                 $seen[$key] = $true
                 $reviewed[$n] = @{head=$head;diff=$diff;pid=$patchId}
                 Write-FileAtomic $statePath (([ordered]@{ main=$main; reviewed=$reviewed; live_active=$liveActive; live_since=$liveSince; live_stamps=@($liveStamps.Keys); live_pending=@($livePending); reviews=@($seen.Keys); installed_utc=$installed.ToString('o'); heads=$heads }) | ConvertTo-Json -Compress -Depth 5)
