@@ -61,8 +61,8 @@ def main():
         додано = команда(["git", "add", "--", str(ТЕКА.relative_to(КОРІНЬ))])
         if додано.returncode:
             raise RuntimeError(додано.stderr)
-        коміт = команда(["git", "commit", "-m", "Автоживий: записати сцену " + сцена + " (rc=" + str(р.returncode) + ")"])
-        print(коміт.stdout, flush=True)
+        коміт = команда(["git", "commit", "--quiet", "-m", "Автоживий: записати сцену " + сцена + " (rc=" + str(р.returncode) + ")"])
+        print("Коміт " + команда(["git", "rev-parse", "HEAD"]).stdout.strip(), flush=True)
         if коміт.returncode:
             raise RuntimeError(коміт.stderr)
         if р.returncode >= 2 or р.returncode < 0:
