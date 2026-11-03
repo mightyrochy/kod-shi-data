@@ -1,0 +1,170 @@
+{
+ "час_utc": "2026-11-03T14:24:24.894277+00:00",
+ "канал": "останній рядок відповіді обгортці",
+ "збірка": "1b77b2048ad1896b660c1f562a32145847f06563",
+ "код_штампа": "263404595a84dcfd369ba67ff7a0c3e471897034",
+ "змінні": {
+  "NODE_OPTIONS": "--require \"C:/Users/gemini/gemini-runs/slots/codex-2-browser/browser.cjs\"",
+  "PYTHONPATH": "C:\\Users\\gemini\\gemini-runs\\slots\\codex-2-browser;",
+  "NODE_PATH": "C:\\Users\\gemini\\kod-shi-test-node\\node_modules",
+  "TEMP": "C:\\Users\\gemini\\gemini-runs\\w\\20261103-161617-ef48ea0f19b4\\tmp",
+  "TMP": "C:\\Users\\gemini\\gemini-runs\\w\\20261103-161617-ef48ea0f19b4\\tmp"
+ },
+ "команди": [
+  {
+   "команда": [
+    "git",
+    "merge-base",
+    "--is-ancestor",
+    "1b77b2048ad1896b660c1f562a32145847f06563",
+    "origin/main"
+   ],
+   "rc": 0,
+   "stdout": "",
+   "stderr": ""
+  },
+  {
+   "команда": [
+    "git",
+    "rev-parse",
+    "HEAD",
+    "origin/main"
+   ],
+   "rc": 0,
+   "stdout": "d54668228665d07b4214c588e1a9c20129c0c91e\n455275ac07ed0563887481c1f641cd1c43991914\n",
+   "stderr": ""
+  },
+  {
+   "команда": [
+    "git",
+    "ls-remote",
+    "origin",
+    "refs/heads/gemini/автоживий-263404595a84dcfd369ba67ff7a0c3e471897034"
+   ],
+   "rc": 0,
+   "stdout": "",
+   "stderr": ""
+  },
+  {
+   "команда": [
+    "git",
+    "diff",
+    "--name-only",
+    "1b77b2048ad1896b660c1f562a32145847f06563",
+    "--",
+    "аудит/проби/рв6_стенд.js",
+    "аудит/проби/записати_сцену.py",
+    "аудит/ноутбук_стенд_2/проксі_почергове.js",
+    "джерела/міст_помічниця.py"
+   ],
+   "rc": 0,
+   "stdout": "",
+   "stderr": ""
+  },
+  {
+   "команда": [
+    "node",
+    "--version"
+   ],
+   "rc": 0,
+   "stdout": "v22.23.4\n",
+   "stderr": ""
+  },
+  {
+   "команда": [
+    "node",
+    "-e",
+    "console.log(require('playwright/package.json').version);console.log(require('playwright').chromium.executablePath())"
+   ],
+   "rc": 0,
+   "stdout": "1.64.1\nC:\\Users\\gemini\\AppData\\Local\\ms-playwright\\chromium-1248\\chrome-win64\\chrome.exe\n",
+   "stderr": ""
+  },
+  {
+   "команда": [
+    "nvidia-smi",
+    "--query-gpu=name,memory.used,memory.total,utilization.gpu",
+    "--format=csv,noheader"
+   ],
+   "rc": 0,
+   "stdout": "NVIDIA GeForce RTX 4090 Laptop GPU, 11298 MiB, 16376 MiB, 12 %\n",
+   "stderr": ""
+  }
+ ],
+ "моделі": [
+  {
+   "type": "llm",
+   "publisher": "INSAIT-Institute",
+   "key": "mamaylm-gemma-3-12b-it-v2.0",
+   "display_name": "MamayLM Gemma 3 12B Instruct v2.0",
+   "architecture": "gemma3",
+   "quantization": {
+    "name": "Q4_K_M",
+    "bits_per_weight": 4
+   },
+   "size_bytes": 7300778784,
+   "params_string": "12B",
+   "loaded_instances": [
+    {
+     "id": "mamaylm-gemma-3-12b-it-v2.0",
+     "config": {
+      "context_length": 16384,
+      "eval_batch_size": 2048,
+      "physical_batch_size": 512,
+      "parallel": 1,
+      "flash_attention": true,
+      "context_checkpoints": 32,
+      "reasoning_budget_message": "",
+      "speculative_draft_mtp": false,
+      "speculative_draft_simple": false,
+      "speculative_draft_model": "",
+      "speculative_draft_max_tokens": 3,
+      "speculative_draft_min_tokens": 0,
+      "speculative_draft_min_continue_probability": 0,
+      "offload_kv_cache_to_gpu": true
+     }
+    }
+   ],
+   "max_context_length": 131072,
+   "format": "gguf",
+   "capabilities": {
+    "vision": false,
+    "trained_for_tool_use": false
+   },
+   "description": null
+  },
+  {
+   "type": "llm",
+   "publisher": "qwen",
+   "key": "qwen/qwen3.5-9b",
+   "display_name": "Qwen3.5 9B",
+   "architecture": "qwen35",
+   "quantization": {
+    "name": "Q4_K_M",
+    "bits_per_weight": 4
+   },
+   "size_bytes": 6548927711,
+   "params_string": "9B",
+   "loaded_instances": [],
+   "max_context_length": 262144,
+   "format": "gguf",
+   "capabilities": {
+    "vision": true,
+    "trained_for_tool_use": true,
+    "reasoning": {
+     "allowed_options": [
+      "off",
+      "on"
+     ],
+     "default": "on"
+    }
+   },
+   "description": null,
+   "variants": [
+    "qwen/qwen3.5-9b@q4_k_m",
+    "qwen/qwen3.5-9b@q8_0"
+   ],
+   "selected_variant": "qwen/qwen3.5-9b@q4_k_m"
+  }
+ ]
+}

@@ -1,0 +1,27 @@
+{
+ "версія": 1,
+ "запит": {
+  "model": "qwen/qwen3.5-9b",
+  "max_tokens": 4000,
+  "messages": [
+   {
+    "role": "user",
+    "content": [
+     {
+      "type": "text",
+      "text": "{\"task\": {\"role\": \"You read the description of an outfit and list its items as data.\", \"rules\": [\"One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.\", \"One item carries one thing — of two alternatives list the first; a note in brackets is not an item.\", \"Slot \\\"accessory\\\" is for an item no other slot fits.\", \"\\\"is_outfit\\\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note.\"], \"limits\": [\"Rely only on the input: do not invent what it does not contain.\", \"The answer is one JSON object following \\\"answer_schema\\\", without explanations and without ```.\"], \"language\": \"English\", \"answer\": \"ITEM_LIST\", \"answer_schema\": {\"is_outfit\": \"yes|no\", \"items\": [{\"name\": \"<what the item is>\", \"details\": \"<its cut, length and fabric>\", \"slot\": \"top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory\", \"color_hex\": \"<#rrggbb or null>\", \"worn\": \"<true, or false when the description says the outfit goes without it>\"}]}, \"input\": [\"\\\"description\\\" — the outfit description\"]}, \"description\": \"A refined knit with a straight skirt, midi length, forest green, wool blend\\nAnkle boots with a low block heel, black, smooth leather\\nGold geometric pendant necklace and pearl stud earrings\\nThis outfit works because the forest green knit is cozy yet polished for the chilly library setting, allowing her to stay warm while sitting by the open window or standing in line. The midi skirt length provides an elegant silhouette that photographs beautifully against the vintage books without restricting movement for public transport. The gold jewelry adds a festive touch to express joy during the celebration and photo session, fulfilling her wish to look recognizable and happy in the photos.\"}"
+     }
+    ]
+   }
+  ],
+  "temperature": 1
+ },
+ "відповідь": {
+  "status": 200,
+  "contentType": "application/json",
+  "headers": {
+   "x-model": "qwen/qwen3.5-9b"
+  },
+  "body": "{\"content\":[{\"type\":\"text\",\"text\":\"{\\n  \\\"is_outfit\\\": \\\"yes\\\",\\n  \\\"items\\\": [\\n    {\\n      \\\"name\\\": \\\"knit\\\",\\n      \\\"details\\\": \\\"straight skirt, midi length, wool blend\\\",\\n      \\\"slot\\\": \\\"set\\\",\\n      \\\"color_hex\\\": \\\"#2E5936\\\",\\n      \\\"worn\\\": true\\n    },\\n    {\\n      \\\"name\\\": \\\"ankle boots\\\",\\n      \\\"details\\\": \\\"low block heel, smooth leather\\\",\\n      \\\"slot\\\": \\\"shoes\\\",\\n      \\\"color_hex\\\": \\\"#000000\\\",\\n      \\\"worn\\\": true\\n    },\\n    {\\n      \\\"name\\\": \\\"pendant necklace\\\",\\n      \\\"details\\\": \\\"gold geometric pendant\\\",\\n      \\\"slot\\\": \\\"necklace\\\",\\n      \\\"color_hex\\\": \\\"#FFD700\\\",\\n      \\\"worn\\\": true\\n    },\\n    {\\n      \\\"name\\\": \\\"earrings\\\",\\n      \\\"details\\\": \\\"pearl stud earrings\\\",\\n      \\\"slot\\\": \\\"earrings\\\",\\n      \\\"color_hex\\\": \\\"#FFFFFF\\\",\\n      \\\"worn\\\": true\\n    }\\n  ]\\n}\"}],\"usage\":{\"input_tokens\":477,\"output_tokens\":249},\"stop_reason\":\"end_turn\"}"
+ }
+}
