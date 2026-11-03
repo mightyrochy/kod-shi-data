@@ -357,5 +357,5 @@ finally {
 if ($failures) { exit 1 }
 
 # Окремий процес зберігає ізоляцію стану й функцій публікатора та планувальника.
-& (Get-Process -Id $PID).Path -NoProfile -NonInteractive -ExecutionPolicy Bypass -File (Join-Path $PSScriptRoot 'сценарії_повтору.ps1') -SourceDir $SourceDir
+& (Get-Process -Id $PID).Path -NoProfile -NonInteractive -ExecutionPolicy Bypass -File (Join-Path $PSScriptRoot 'повтор_позначок.ps1') -SourceDir $SourceDir
 if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
