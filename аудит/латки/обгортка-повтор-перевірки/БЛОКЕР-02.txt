@@ -1,0 +1,29 @@
+ЗАБЛОКОВАНО: обгортка-повтор-перевірки, спроба 2
+Час виміру: 2026-11-03 15:21:12 UTC
+
+Вимога наряду з turn1.md: спершу отримати повний текст і стек CHAIN_FAILED
+за 03.11 14:00–16:00 UTC; без доступу — блокер з дослівною відмовою.
+
+Команда читання:
+Get-Content -Encoding UTF8 -LiteralPath 'C:\Users\Admin\gemini-publish\publish.log' -ErrorAction Stop
+
+Дослівна відмова: Access is denied
+Тип: System.UnauthorizedAccessException
+Код PowerShell: ItemExistsUnauthorizedAccessError,Microsoft.PowerShell.Commands.GetContentCommand
+
+Шлях журналу підтверджує аудит/адаптери/gemini/gemini_publish.ps1:
+параметр WorkDir — USERPROFILE\gemini-publish; Write-WrapperLog пише publish.log.
+Профіль Admin — припущення за доступними назвами профілів, не підтверджений
+конфігурацією задачі: Get-ScheduledTask -TaskName 'gemini-publish' повернув
+CmdletizationQuery_NotFound_TaskName,Get-ScheduledTask.
+Вміст журналу не отримано; причину CHAIN_FAILED не встановлено.
+
+Що зроблено: прочитано доручення й договір ролі, виміряно відмову доступу.
+ДО → ПІСЛЯ: доступу до потрібного журналу немає → відмову збережено в гілці.
+Латку 02 не створено, код не змінено, стенди не запускалися.
+Наявні артефакти латки 01 з коміту 1b2bc06b13b0b1a99db77b79b556ba4c2db21640
+не змінювалися й не перевірялися в цьому ході; готовністю спроби 2 вони не є.
+
+Чекаю від диспетчера доступної копії повного запису CHAIN_FAILED зі стеком
+за 2026-11-03 14:00–16:00 UTC та підтвердженого шляху журналу задачі публікації.
+Вад поза мірилом не досліджено; нових вад не знайдено.
