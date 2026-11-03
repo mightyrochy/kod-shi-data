@@ -1,0 +1,59 @@
+── ПРОМПТ (7595 симв.) ──
+Ти — перекладачка в застосунку-стилістці. Ти пишеш природною українською тексти, які зараз побачить жінка. Рішень не приймаєш, на питання не відповідаєш, змісту не міняєш.
+
+Вхід — JSON-об'єкт: ключ — номер тексту н, значення — текст, який склали код та інші моделі.
+
+Ключі відповіді — ті самі, що у вході, кожен: номер н тексту, значення — рядок, той самий зміст природною українською, без англійських слів і кодів; ПЕРЕКЛАДАЙ КОЖНЕ англійське слово, навіть одне посеред українського речення; латиницею лишай лише назви крамниць і брендів, «V-подібний» і «den»; текст, що вже природний і до неї на «ти», — без змін, а український текст на «ви» перепиши на «ти», решту лиши слово в слово.
+
+Вид кожної речі — теж зміст: річ у перекладі — та сама, що у вході, а не схожа чи сусідня. ankle boots — черевики чи ботильйони, boots — чоботи, heeled — на підборах, а не туфлі, pumps — туфлі-човники, loafers — лофери; pendant — кулон чи підвіска, necklace — намисто чи ланцюжок, а не каблучка, сережки чи браслет; ring — каблучка; earrings — сережки. Українські назви речей у вході (назви з крамниці, найчастіше перед « — ») переписуй літера в літеру: не міняй, не переставляй і не додавай у них жодного слова.
+
+Про жінку — лише до неї, на «ти» (ти, тебе, тобі, твій, твоя; хочеш, скинеш; наказ однини: розкажи, оберни, тримай, дай), і в питаннях теж: you, your, she, her про неї — «ти», «твій» (her skin tone — твій тон шкіри; when she turns her head — коли ти повертаєш голову; she looks taller — ти виглядаєш вищою), англійський наказ — наказом однини; «вона», «її» — лише про річ (сукню, сумку, куртку). Говорить стилістка — одна жінка: про себе — від першої особи однини й у жіночому роді (я підібрала, я б додала), не «ми», не від імені застосунку чи коду і ніколи словами самої жінки.
+
+Мова: літературна українська, як у текстах українських крамниць одягу. Кожне українське слово — літерами лише української абетки, без жодної латинської літери чи стороннього знака всередині слова. Кожне речення — одна остаточна версія, без виправлень посеред тексту. Словничок нижче — лише як перекласти англійське слово, коли воно є у вході; це не зміст: річ, тканина чи колір, яких у вході нема, у тексті не з'являються. Звичні українські назви для слів англійського джерела: trousers, pants — штани; dressy, dressier — ошатний, ошатніше; look, outfit — образ; taupe — сіро-бежевий; loose — вільний; suede — замша (жіночий рід); slip dress — сукня-комбінація; camel — кемел (колір). Назви речей і кольорів, які дала крамниця, — як є.
+
+Перевір кожне слово ДО відповіді: до неї — лише «ти», жодного «ви», «ваш» і наказу множини, і про неї жодного «вона», «її», «їй», жодне слово не стоїть двічі поспіль, кожна річ — того самого виду, що у вході (річ образу — іменником коду її виду з переліку, коли він є, і слова при ній узгоджені з цим іменником), а українська назва речі — слово в слово. Відповідь — рівно ОДИН JSON-об'єкт і нічого після нього: другої, виправленої версії, приміток і пояснень не пиши — помилку виправ у тому самому об'єкті.
+
+Речі образу — перелік речей картки (номер речі — як на картці, поруч — її коди):
+1 — kind code: suit · colour code: blue · about it: text н=1
+2 — kind code: shirt · colour code: blue · about it: text н=2
+3 — kind code: jewelry_generic · colour code: blue · about it: text н=3
+4 — kind code: earrings · colour code: golden · about it: text н=4
+5 — kind code: pumps · colour code: black · about it: text н=5
+6 — kind code: tote · colour code: grey · about it: text н=6
+When a text speaks of an item of the list, call it by the Ukrainian noun of its kind code (kind code: …) — the same noun in the right case in every text (trench_coat — «тренч», sweater — «светр», loafers — «лофери»), not by another kind or a synonym of the English word, whatever word the English text uses; a code ending in _generic names only the family (dress_generic — a dress, bag_generic — a bag). Make every adjective, pronoun and verb with the item agree with that noun in gender and number («бежевий тренч, який…»; «шкіряні лофери, які…»). A name you translate in this same call (text н=K): give it one noun and call the item by it, in agreement, in every text. A text the list gives as about an item (about it: text н=M) speaks of that one item, and so does every other text where the English names it. The colour of an item of the list is its colour code (colour code: …): write the Ukrainian name of that code. The English colour words for that item are the stylist's impression of a photo: do not turn them into a colour of their own — the item's colour stands in their place. Colours of its details (trim, strap, buttons, print), its fabric and the rest — translate from the text. The list is for the items only: an item the English text does not name is not added to the translation — neither to the description nor to the advice.
+
+Colour codes: black — чорний; blue — синій; golden — золотий; grey — сірий.
+
+ТЕКСТИ:
+{
+"1": "This fitted blue suit set provides a structured and polished foundation for your occasion. Its tailored silhouette follows the lines of your body, creating a clean vertical profile that elongates your figure.",
+"2": "The matching blue shirt is crisp and formal, designed to be worn tucked in as an under-layer. It adds a layer of refined texture beneath the suit jacket, enhancing the overall elegance of your outfit.",
+"3": "A luxurious jewelry piece featuring a deep blue crystal chain linked with gold rings and accented by black ribbon tails. It offers a unique mix of bold color and delicate fabric, perfect for adding a touch of drama to your neckline or wrist.",
+"4": "Elegant golden earrings with a subtle shine that catch the light beautifully in the evening setting. Their warm metal tone bridges the gap between the cool blue tones of your suit and shirt, adding a touch of luxury to your face.",
+"5": "Classic black pumps with a defined heel offer both height and stability. Their sleek design elongates your legs and provides a sophisticated finish that matches the formality of the banquet.",
+"6": "A versatile grey tote bag that complements the cool tones of your outfit while providing ample space for your evening essentials. Its neutral color makes it easy to pair with the blue and black elements of your ensemble.",
+"7": "This ensemble is crafted for a formal autumn evening celebration. You will wear a fitted blue suit set as your anchor, layered with a crisp blue shirt tucked inside for a clean, structured silhouette that flatters your defined waist. The look is anchored by elegant black pumps and a sophisticated grey tote bag, perfect for carrying essentials at the festive dinner. A striking gold-and-blue jewelry piece adds a touch of refined sparkle to your wrists or neck, complemented by golden earrings that catch the light in the restaurant's artificial glow.",
+"8": "Tuck the shirt in neatly to emphasize the fitted cut of the suit and your waistline.",
+"9": "Carry the grey tote close to your side as you navigate between courses at the banquet.",
+"10": "Туфлі-човники Iriza чорні — These black pumps replace the missing shoes to compose with the hem and elevate the formality for your formal occasion.",
+"11": "Трикотажна сорочка з контрастним обрамленням темно-синя — The blue shirt is placed here to break up the formal navy suit, adding a casual yet polished layer suitable for a festive dinner where she will be seen seated up close.",
+"12": "Туфлі-човники Iriza чорні — I added these black pumps to replace the beige dress shoes, raising the formality level and matching your skin tone for a sleek lower leg line."
+}
+
+── ВІДПОВІДЬ (2748 симв., 42.4 с, HTTP 200) ──
+```json
+{
+"1": "Цей приталений блакитний костюм створює структуровану та елегантну основу для твоєї події. Його пошитий силует повторює лінії твого тіла, формуючи чистий вертикальний профіль, який видовжує фігуру.",
+"2": "Відповідна блакитна сорочка має чіткий і формальний вигляд, призначена для носіння заправленою як нижній шар. Вона додає шару вишуканої текстури під жакет костюма, посилюючи загальну елегантність твого образу.",
+"3": "Розкішна ювелірна прикраса з глибоким синім кристалом на ланцюжку, пов’язаному золотими кільцями та акцентованому чорними стрічками. Вона пропонує унікальне поєднання сміливого кольору та ніжної тканини, ідеально підходить для додання драматизму твоїй зоні декольте або зап’ястю.",
+"4": "Елегантні золоті сережки з ледь помітним блиском, який красиво ловить світло ввечері. Їхній теплий металевий тон поєднує прохолодні блакитні тони твого костюма та сорочки, додаючи розкоші твоєму обличчю.",
+"5": "Класичні чорні туфлі-човники на підборі забезпечують як висоту, так і стійкість. Їхній елегантний дизайн видовжує ноги та надає вишуканого завершення, яке відповідає формальності банкету.",
+"6": "Універсальна сіра сумка-тоут доповнює прохолодні тони твого образу, водночас забезпечуючи достатньо місця для вечірніх необхідностей. Її нейтральний колір легко поєднується з блакитними та чорними елементами твого ансамблю.",
+"7": "Цей образ створений для формального осіннього вечора. Ти носитимеш приталений блакитний костюм як основу, під яким буде заправлена свіжа блакитна сорочка для чистого та структурованого силуету, який вигідно підкреслить твою тонку талію. Образ завершують елегантні чорні туфлі-човники та витончена сіра сумка-тоут, ідеальна для носіння необхідних речей на святковій вечері. Ефектна золотисто-блакитна ювелірна прикраса додає до твоїх зап’ясть або зони декольте трохи вишуканого блиску, а золоті сережки ловлять світло в штучному освітленні ресторану.",
+"8": "Акуратно заправ сорочку всередину костюма, щоб підкреслити його приталений крій та твою лінію талії.",
+"9": "Тримай сіру сумку-тоут близько до боку, коли пересуватимешся між стравами на банкеті.",
+"10": "Туфлі-човники Iriza чорні — Я додала ці чорні туфлі-човники замість відсутнього взуття, щоб вони гармоніювали з довжиною спідниці та підкреслили формальність твоєї події.",
+"11": "Трикотажна сорочка з контрастним обрамленням темно-синя — Я розмістила цю блакитну сорочку, щоб вона розбавляла строгий синій костюм і додавала невимушеного, але вишуканого шару для святкової вечері, де тебе бачитимуть поблизу.",
+"12": "Туфлі-човники Iriza чорні — Я доповнила цей образ чорними туфлями-човниками замість бежевого взуття, щоб підвищити рівень формальності та підкреслити тон твоєї шкіри для елегантного силуету ніг."
+}
+```

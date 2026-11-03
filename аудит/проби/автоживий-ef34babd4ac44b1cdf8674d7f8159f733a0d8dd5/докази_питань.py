@@ -82,6 +82,9 @@ for сцена, питання in план['scenes'].items():
                     continue
                 д['входи_стилістки'].append({'обмін': ф.name, 'роль': м.get('role'),
                     'структурний_час': ключі_часу(тіло),
+                    'день': тіло.get('day'), 'стиль': тіло.get('style_rules'),
+                    'типи': {к: в for к, в in тіло.get('kind_notes', {}).items()
+                             if к in ['outerwear', 'bag']},
                     'згадки_годин': sorted(set(re.findall(r'\b\d{1,2}:\d{2}\b', текст)))})
     результати[сцена] = д
 (ТЕКА / 'ДОКАЗИ_ПИТАНЬ.json').write_text(json.dumps(результати, ensure_ascii=False, indent=1) + '\n', encoding='utf-8')
