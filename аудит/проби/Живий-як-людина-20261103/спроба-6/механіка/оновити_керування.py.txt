@@ -1,0 +1,6 @@
+from pathlib import Path
+import os
+p=Path(os.environ['TEMP'],'браузер.cjs')
+s=p.read_text(encoding='utf-8')
+s=s.replace("if(q.op==='fresh')await fresh();", "if(q.op==='reload'){delete require.cache[require.resolve('./локальний-транспорт.cjs')];Object.assign(adapter,require('./локальний-транспорт.cjs'));}if(q.op==='fresh')await fresh();")
+p.write_text(s,encoding='utf-8')
