@@ -1,0 +1,27 @@
+{
+ "версія": 1,
+ "запит": {
+  "model": "qwen/qwen3.5-9b",
+  "max_tokens": 4000,
+  "messages": [
+   {
+    "role": "user",
+    "content": [
+     {
+      "type": "text",
+      "text": "{\"task\": {\"role\": \"You read the description of an outfit and list its items as data.\", \"rules\": [\"One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.\", \"One item carries one thing — of two alternatives list the first; a note in brackets is not an item.\", \"Slot \\\"accessory\\\" is for an item no other slot fits.\", \"\\\"is_outfit\\\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note.\"], \"limits\": [\"Rely only on the input: do not invent what it does not contain.\", \"The answer is one JSON object following \\\"answer_schema\\\", without explanations and without ```.\"], \"language\": \"English\", \"answer\": \"ITEM_LIST\", \"answer_schema\": {\"is_outfit\": \"yes|no\", \"items\": [{\"name\": \"<what the item is>\", \"details\": \"<its cut, length and fabric>\", \"slot\": \"top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory\", \"color_hex\": \"<#rrggbb or null>\", \"worn\": \"<true, or false when the description says the outfit goes without it>\"}]}, \"input\": [\"\\\"description\\\" — the outfit description\"]}, \"description\": \"Refined knit in a soft oat tone (#E0D5C2), relaxed but structured fit, knee-length, lightweight wool blend for autumn warmth.\\nTailored trousers in dark charcoal grey (#3A3F45), straight-leg cut to length at ankle, fine merino wool with a subtle herringbone texture.\\nLeather loafers in polished cognac brown (#C19058), classic penny strap design with a low block heel for comfortable walking.\\nGold hoop earrings (#FFD700) and a thin silk scarf tied loosely around the neck in sage green (#9CAF88).\\n\\nThis outfit strikes the perfect balance between elegance and comfort for a daytime lunch date at a restaurant, adhering to her request for a neat but not overly formal look. The autumn-appropriate fabrics provide necessary warmth without feeling heavy, while the neutral color palette complements her warm skin tones and brown hair beautifully. Choosing loafers over heels ensures she can navigate the restaurant setting easily, honoring her practical wishes for an enjoyable evening.\"}"
+     }
+    ]
+   }
+  ],
+  "temperature": 1
+ },
+ "відповідь": {
+  "status": 200,
+  "contentType": "application/json",
+  "headers": {
+   "x-model": "qwen/qwen3.5-9b"
+  },
+  "body": "{\"content\":[{\"type\":\"text\",\"text\":\"{\\\"is_outfit\\\": \\\"yes\\\", \\\"items\\\": [{\\\"name\\\": \\\"Knit top\\\", \\\"details\\\": \\\"Relaxed but structured fit, knee-length, lightweight wool blend\\\", \\\"slot\\\": \\\"top\\\", \\\"color_hex\\\": \\\"#E0D5C2\\\", \\\"worn\\\": true}, {\\\"name\\\": \\\"Trousers\\\", \\\"details\\\": \\\"Tailored, straight-leg cut to length at ankle, fine merino wool with subtle herringbone texture\\\", \\\"slot\\\": \\\"bottom\\\", \\\"color_hex\\\": \\\"#3A3F45\\\", \\\"worn\\\": true}, {\\\"name\\\": \\\"Leather loafers\\\", \\\"details\\\": \\\"Classic penny strap design with low block heel\\\", \\\"slot\\\": \\\"shoes\\\", \\\"color_hex\\\": \\\"#C19058\\\", \\\"worn\\\": true}, {\\\"name\\\": \\\"Gold hoop earrings\\\", \\\"details\\\": \\\"\\\", \\\"slot\\\": \\\"earrings\\\", \\\"color_hex\\\": \\\"#FFD700\\\", \\\"worn\\\": true}, {\\\"name\\\": \\\"Silk scarf\\\", \\\"details\\\": \\\"Loosely tied around the neck\\\", \\\"slot\\\": \\\"scarf\\\", \\\"color_hex\\\": \\\"#9CAF88\\\", \\\"worn\\\": true}]}\"}],\"usage\":{\"input_tokens\":566,\"output_tokens\":247},\"stop_reason\":\"end_turn\"}"
+ }
+}
