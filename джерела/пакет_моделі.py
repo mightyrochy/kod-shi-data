@@ -2099,17 +2099,20 @@ def жорстке_відсічення(r, темп_c=None, вето=None, ош�
                 if своя is not None and _A.відстань_смуг(своя, float(темп_c)) > ДОПУСК_ВЗУТТЯ_C:
                     return "shoes_off_temperature"
         см = r.get("сезон_тканини")
-        if см and len(см) == 2:
+        if см is not None:
+            if not isinstance(см, (list, tuple)) or len(см) != 2:
+                raise ValueError("fabric_band_unreadable:%s" % r.get("id"))
             try:
                 _поза_тк = _V_тк.поза_смугою_тканини(см, темп_c)
-                _причина = "fabric_off_temperature" if _поза_тк > ДОПУСК_ТКАНИНИ_C else None
-                if _причина:
-                    _ПОЛ.свідок("K-MAT-03", "pool", слот=сл, прогін_руки=прогін_руки)
-                _причина = _ПОЛ.злам("K-MAT-03", "пул", _причина, поза=_поза_тк, допуск=ДОПУСК_ТКАНИНИ_C, слот=сл, прогін_руки=прогін_руки)
-                if _причина:
-                    return _причина
-            except (TypeError, ValueError, IndexError):
-                pass
+            except (TypeError, ValueError, IndexError) as збій:
+                # Не вдаємо, що K-MAT-03 пройдено: міст віддасть помилка + код.
+                raise ValueError("fabric_band_unreadable:%s" % r.get("id")) from збій
+            _причина = "fabric_off_temperature" if _поза_тк > ДОПУСК_ТКАНИНИ_C else None
+            if _причина:
+                _ПОЛ.свідок("K-MAT-03", "pool", слот=сл, прогін_руки=прогін_руки)
+            _причина = _ПОЛ.злам("K-MAT-03", "пул", _причина, поза=_поза_тк, допуск=ДОПУСК_ТКАНИНИ_C, слот=сл, прогін_руки=прогін_руки)
+            if _причина:
+                return _причина
     if вето:
         # `колір_назва_фото` — слово з фото поруч зі словом крамниці в `колір_назва`
         # Вето кольору — слово лексикону, і «без білого» мусить

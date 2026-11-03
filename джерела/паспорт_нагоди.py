@@ -1613,7 +1613,10 @@ def паспорт_з_json(текст, сценарій, слова, вето_ч
             if k in _типові_ф:          # ТИПОВЕ-1: число, яке почув шар, — не замовчування форми
                 п["джерело_полів"][k] = "conversation"
         except (TypeError, ValueError):
-            pass
+            п.setdefault("не_взято_кодом", []).append(
+                "not_taken · step=call0 · field=%s · model_said=%s · reason=invalid_number · kept=%s"
+                % (k, _json_.dumps(об[k], ensure_ascii=False),
+                   _json_.dumps(п[k], ensure_ascii=False) if k in п else "unknown"))
     # ── МАКІЯЖ ЗІ СЛІВ — ТИМ САМИМ КАНОНОМ, ЩО ПЛИТКА ─────────────
     # «невідомо» від моделі не затирає плитку: тоді лишається дефолт зі сценарію,
     # поставлений вище; названий рівень переписує її (рука після паспорта —
@@ -1717,7 +1720,10 @@ def паспорт_з_json(текст, сценарій, слова, вето_ч
     try:
         if об.get("ноги_вище_см") not in (None, ""): п["ноги_вище_см"] = float(об["ноги_вище_см"])
     except (TypeError, ValueError):
-        pass
+        п.setdefault("не_взято_кодом", []).append(
+            "not_taken · step=call0 · field=ноги_вище_см · model_said=%s · reason=invalid_number · kept=%s"
+            % (_json_.dumps(об["ноги_вище_см"], ensure_ascii=False),
+               _json_.dumps(п["ноги_вище_см"], ensure_ascii=False) if "ноги_вище_см" in п else "unknown"))
     # ── ДРАПІРОВКИ З ВІДПОВІДІ МОДЕЛІ НЕМА (Р-3) ─────────────────────
     # Доти тут лягав `драп_сирий` зі слів (Т-08 крок 5): виклик 0 писав драпіровку з розмови в паспорт,
     # а хід розмови такого поля не має — ті самі слова, різний паспорт двома шляхами. Драпіровка — лише
