@@ -676,7 +676,16 @@ function Complete-GpuModels {
 function Start-GpuModels($Job) {
     <# До агента й під його GPU-замком зберігає межу власності незалежно від життя дерева процесів. #>
     Complete-GpuModels
-    $lease = [ordered]@{ v = 1; marker = [string]$Job.name; run = [string]$Job.id; before = @(Get-LmsInstances) }
+    # LM Studio не слухає :1234 — переліку завантаженого нема: вимкнений сервер не означає вивантажених моделей, і
+    # порожній знімок віддав би наряду моделі власника. Наряд іде без знімка (він може підняти сервер сам), а його
+    # моделі обгортка не прибирає. Інша помилка REST — стоп до агента.
+    try { $before = @(Get-LmsInstances) }
+    catch [System.Net.WebException] {
+        if ($_.Exception.Status -ne [System.Net.WebExceptionStatus]::ConnectFailure) { throw }
+        Write-Log "GPU без знімка моделей: LM Studio не слухає :1234; наряд=$($Job.name); прогін=$($Job.id) — його моделі обгортка не прибере" -Required
+        return
+    }
+    $lease = [ordered]@{ v = 1; marker = [string]$Job.name; run = [string]$Job.id; before = $before }
     Write-FileAtomic (Join-Path $LaneDir 'gpu-models.json') ($lease | ConvertTo-Json -Depth 6 -Compress)
 }
 

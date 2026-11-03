@@ -28,6 +28,9 @@ $script:Limits = @{}
 function Write-Log([string]$Text, [switch]$Required) { [IO.File]::AppendAllText((Join-Path $TestDir 'wrapper.log'), $Text + "`n", $script:Utf8) }
 function Invoke-RestMethod {
     param([string]$Uri, [string]$Method = 'Get', [string]$ContentType, $Body, [int]$TimeoutSec, $ErrorAction)
+    if ([IO.File]::Exists((Join-Path $TestDir 'down'))) {
+        throw (New-Object System.Net.WebException('стенд: LM Studio не слухає', [System.Net.WebExceptionStatus]::ConnectFailure))
+    }
     $args_ = @{ Uri = $Uri.Replace('127.0.0.1:1234', "127.0.0.1:$Port"); Method = $Method; TimeoutSec = $TimeoutSec; ErrorAction = 'Stop' }
     if ($ContentType) { $args_.ContentType = $ContentType }
     if ($null -ne $Body) { $args_.Body = $Body }
@@ -260,6 +263,16 @@ def main():
             Studio.loaded = {}
             run('done')
             check(lane + ': порожня початкова множина відновлюється', not Studio.loaded and not (d / 'gpu-models.json').exists())
+            # Сервер не слухає :1234: наряд іде без знімка, модель власника й моделі наряду обгортка не чіпає.
+            Studio.loaded = {'owner-id': 'owner-model'}
+            (d / 'down').write_text('так', encoding='utf-8')
+            down = run('done')
+            (d / 'down').unlink()
+            log = (d / 'wrapper.log').read_text(encoding='utf-8') if (d / 'wrapper.log').exists() else ''
+            check(lane + ': вимкнений LM Studio — наряд без знімка, нічого не вивантажено',
+                  down.returncode == 0 and not (d / 'gpu-models.json').exists() and Studio.loaded.get('owner-id') == 'owner-model'
+                  and len(Studio.loaded) == 3 and not [c for c in Studio.calls if c[0] == 'POST' and c[1].endswith('/unload')]
+                  and 'GPU без знімка моделей' in log)
             Studio.loaded = {'owner-id': 'owner-model'}
             run('take')
             Studio.loaded['job-job-model'] = 'job-model'
