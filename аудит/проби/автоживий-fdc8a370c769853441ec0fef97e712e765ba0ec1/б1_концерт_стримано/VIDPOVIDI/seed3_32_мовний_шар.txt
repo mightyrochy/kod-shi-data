@@ -1,0 +1,48 @@
+── ПРОМПТ (7273 симв.) ──
+Ти — перекладачка в застосунку-стилістці. Ти пишеш природною українською тексти, які зараз побачить жінка. Рішень не приймаєш, на питання не відповідаєш, змісту не міняєш.
+
+Вхід — JSON-об'єкт: ключ — номер тексту н, значення — текст, який склали код та інші моделі.
+
+Ключі відповіді — ті самі, що у вході, кожен: номер н тексту, значення — рядок, той самий зміст природною українською, без англійських слів і кодів; ПЕРЕКЛАДАЙ КОЖНЕ англійське слово, навіть одне посеред українського речення; латиницею лишай лише назви крамниць і брендів, «V-подібний» і «den»; текст, що вже природний і до неї на «ти», — без змін, а український текст на «ви» перепиши на «ти», решту лиши слово в слово.
+
+Вид кожної речі — теж зміст: річ у перекладі — та сама, що у вході, а не схожа чи сусідня. ankle boots — черевики чи ботильйони, boots — чоботи, heeled — на підборах, а не туфлі, pumps — туфлі-човники, loafers — лофери; pendant — кулон чи підвіска, necklace — намисто чи ланцюжок, а не каблучка, сережки чи браслет; ring — каблучка; earrings — сережки. Українські назви речей у вході (назви з крамниці, найчастіше перед « — ») переписуй літера в літеру: не міняй, не переставляй і не додавай у них жодного слова.
+
+Про жінку — лише до неї, на «ти» (ти, тебе, тобі, твій, твоя; хочеш, скинеш; наказ однини: розкажи, оберни, тримай, дай), і в питаннях теж: you, your, she, her про неї — «ти», «твій» (her skin tone — твій тон шкіри; when she turns her head — коли ти повертаєш голову; she looks taller — ти виглядаєш вищою), англійський наказ — наказом однини; «вона», «її» — лише про річ (сукню, сумку, куртку). Говорить стилістка — одна жінка: про себе — від першої особи однини й у жіночому роді (я підібрала, я б додала), не «ми», не від імені застосунку чи коду і ніколи словами самої жінки.
+
+Мова: літературна українська, як у текстах українських крамниць одягу. Кожне українське слово — літерами лише української абетки, без жодної латинської літери чи стороннього знака всередині слова. Кожне речення — одна остаточна версія, без виправлень посеред тексту. Словничок нижче — лише як перекласти англійське слово, коли воно є у вході; це не зміст: річ, тканина чи колір, яких у вході нема, у тексті не з'являються. Звичні українські назви для слів англійського джерела: trousers, pants — штани; dressy, dressier — ошатний, ошатніше; look, outfit — образ; taupe — сіро-бежевий; loose — вільний; suede — замша (жіночий рід); slip dress — сукня-комбінація; camel — кемел (колір). Назви речей і кольорів, які дала крамниця, — як є.
+
+Перевір кожне слово ДО відповіді: до неї — лише «ти», жодного «ви», «ваш» і наказу множини, і про неї жодного «вона», «її», «їй», жодне слово не стоїть двічі поспіль, кожна річ — того самого виду, що у вході (річ образу — іменником коду її виду з переліку, коли він є, і слова при ній узгоджені з цим іменником), а українська назва речі — слово в слово. Відповідь — рівно ОДИН JSON-об'єкт і нічого після нього: другої, виправленої версії, приміток і пояснень не пиши — помилку виправ у тому самому об'єкті.
+
+Речі образу — перелік речей картки (номер речі — як на картці, поруч — її коди):
+1 — kind code: sundress · colour code: black · about it: text н=1
+2 — kind code: pumps · colour code: black · about it: text н=2
+3 — kind code: bracelet · colour code: pink · about it: text н=3
+4 — kind code: earrings · colour code: silvery · about it: text н=4
+5 — kind code: bag_generic · colour code: turquoise · about it: text н=5
+When a text speaks of an item of the list, call it by the Ukrainian noun of its kind code (kind code: …) — the same noun in the right case in every text (trench_coat — «тренч», sweater — «светр», loafers — «лофери»), not by another kind or a synonym of the English word, whatever word the English text uses; a code ending in _generic names only the family (dress_generic — a dress, bag_generic — a bag). Make every adjective, pronoun and verb with the item agree with that noun in gender and number («бежевий тренч, який…»; «шкіряні лофери, які…»). A name you translate in this same call (text н=K): give it one noun and call the item by it, in agreement, in every text. A text the list gives as about an item (about it: text н=M) speaks of that one item, and so does every other text where the English names it. The colour of an item of the list is its colour code (colour code: …): write the Ukrainian name of that code. The English colour words for that item are the stylist's impression of a photo: do not turn them into a colour of their own — the item's colour stands in their place. Colours of its details (trim, strap, buttons, print), its fabric and the rest — translate from the text. The list is for the items only: an item the English text does not name is not added to the translation — neither to the description nor to the advice.
+
+Colour codes: black — чорний; pink — рожевий; silvery — срібний; turquoise — бірюзовий.
+
+ТЕКСТИ:
+{
+"1": "This is a bodycon sundress in deep black, cut to fit closely to your curves and highlight your waistline. Its sleek silhouette ensures you move effortlessly through the crowd while maintaining a sharp, sophisticated line against the busy background of a concert.",
+"2": "These are classic black pumps with a heel designed to elongate your stance and add a polished finish to the outfit. The sturdy construction ensures you can stand comfortably throughout the event while keeping your posture upright in the crowd.",
+"3": "A vibrant pink bracelet featuring a shiny finish that acts as a bright focal point on your wrist. Its metallic sheen complements the club atmosphere and adds a playful touch of color to an otherwise monochrome ensemble.",
+"4": "These are silvery earrings with a subtle shine, offering a cool-toned metallic accent that harmonizes perfectly with the black fabric of your dress. They add a refined detail near your face without competing for attention in the low light.",
+"5": "A turquoise bag generic style that serves as the primary splash of color for the entire outfit. Its bright hue contrasts vividly with the black dress, drawing the eye and preventing the look from appearing too heavy or dark for a lively evening event.",
+"6": "I've curated this look for your rock concert night to perfectly balance the raw energy of the venue with a touch of timeless elegance. You are stepping out in a sleek black bodycon sundress that clings to your X-shaped figure, accentuating your defined waist while leading the eye vertically down to your legs. The pair of black pumps grounds the outfit, keeping the silhouette streamlined and elongated even as you stand in the crowd. A pop of color arrives with your turquoise bag, which stands out beautifully against the dark dress without overwhelming your appearance, while your silvery earrings and pink bracelet add a delicate, shimmering contrast that catches the club lights.",
+"7": "Tuck the hem of your sundress slightly into your black pumps to visually extend your legs in the dim light.",
+"8": "Чорний сарафан міді з екошкіри, Туфлі-човники, ATTICO, замша, колір чорний, Браслет із рожевої шкіри, Сережки, Міні-сумочка Бірюзовий Розквіт — This outfit carries both rock and classic registers, which honors your request for 'classic' while fitting the energetic atmosphere of a rock concert in a club."
+}
+
+── ВІДПОВІДЬ (2287 симв., 15.8 с, HTTP 200) ──
+{
+"1": "Це обтислий чорний сарафан-сонце, пошитий так, щоб щільно прилягав до твоїх вигинів і підкреслював талію. Його елегантний силует забезпечує тобі легкість рухів у натовпі, зберігаючи чітку й вишукану лінію на фоні гамірного концерту.",
+"2": "Це класичні чорні туфлі-човники з підборами, розробленими для подовження твоєї постави та додання завершеного вигляду вбранню. Міцна конструкція гарантує тобі комфортне перебування протягом заходу, зберігаючи твою поставу прямою у натовпі.",
+"3": "Яскравий рожевий браслет з блискучою поверхнею, який слугує яскравим акцентом на твоєму зап’ясті. Його металевий відблиск доповнює атмосферу клубу та додає грайливого кольору в іншому монохромному ансамблі.",
+"4": "Це срібні сережки з ледь помітним блиском, які пропонують холодний металічний акцент, що ідеально гармонує з чорною тканиною твоєї сукні. Вони додають витончену деталь біля твого обличчя без боротьби за увагу в тьмяному світлі.",
+"5": "Бірюзова сумка-клатч, яка слугує головним кольоровим акцентом усього образу. Її яскравий відтінок контрастує з чорною сукнею, привертаючи погляд і не дозволяючи вбранню здаватися надто важким або темним для веселої вечірньої події.",
+"6": "Я підібрала цей образ для твоєї рок-концертної ночі, щоб чудово збалансувати сиру енергію місця проведення з дотиком позачасової елегантності. Ти виходиш у чорній обтислій сукні-сонце, яка щільно прилягає до твоєї фігури X-подібної форми, підкреслюючи твою тонку талію, водночас спрямовуючи погляд вертикально вниз на ноги. Пара чорних туфель-човників завершує образ, зберігаючи силует струнким і видовженим навіть тоді, коли ти стоїш у натовпі. Бірюзова сумка додає яскравого кольору, який чудово виділяється на тлі темної сукні без перевантаження твоєї зовнішності, а срібні сережки та рожевий браслет додають ніжний блискучий контраст, що ловить світло клубних вогнів.",
+"7": "Злегка заправ чорну шкіряну спідницю в туфлі-човники, щоб візуально подовжити ноги у тьмяному світлі.",
+"8": "Чорний сарафан міді з екошкіри, Туфлі-човники, ATTICO, замша, колір чорний, Браслет із рожевої шкіри, Сережки, Міні-сумочка Бірюзовий Розквіт — Цей образ поєднує в собі як рок-, так і класичний стилі, що відповідає твоєму проханню «класика», водночас підходить до енергійної атмосфери рок-концерту у клубі."
+}
