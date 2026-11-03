@@ -355,3 +355,7 @@ finally {
     if ((Split-Path -Parent $tmpRoot) -eq [IO.Path]::GetTempPath().TrimEnd('\','/') -and (Split-Path -Leaf $tmpRoot) -cmatch '^e0-chain-[0-9a-f]{32}$') { Remove-Item -LiteralPath $tmpRoot -Recurse -Force }
 }
 if ($failures) { exit 1 }
+
+# Окремий процес зберігає ізоляцію стану й функцій публікатора та планувальника.
+& (Get-Process -Id $PID).Path -NoProfile -NonInteractive -ExecutionPolicy Bypass -File (Join-Path $PSScriptRoot 'повтор_позначок.ps1') -SourceDir $SourceDir
+if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
