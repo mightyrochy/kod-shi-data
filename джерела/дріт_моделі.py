@@ -743,11 +743,10 @@ def випадок(в, день=None):
 # Коди фігури (`person.body.shape`, `body.shape` опису) — визначення для англійського промпта.
 # O: маршрут рівного тіла без вузької точки на талії (FFIT Oval/Diamond, K-BOD-02
 # тема-4:946); код, що писав би «H», вів би таке тіло стратегією «створити талію».
-ФІГУРА_КОДИ_EN = ("a routing code of her figure, not a verdict: A — hips wider than shoulders; V — shoulders "
-                  "wider than hips; X — a marked waist; H — a straight contour without a marked waist; HX — "
-                  "waist definition is undetermined by FFIT; waist_defined is null, not false; "
-                  "waist_basis states why; O — FFIT Oval or Diamond, the waist exceeds the hips: lead the "
-                  "eye along a vertical, up to the face and down to the legs, the middle quiet")
+ФІГУРА_КОДИ_EN = ("figure route, not a verdict: A — hips wider than shoulders; V — shoulders wider than hips; "
+                  "X — a marked waist; H — straight, no marked waist; HX — waist undetermined by FFIT "
+                  "(waist_defined=null; waist_basis explains); O — FFIT Oval/Diamond, waist wider than hips: "
+                  "a vertical to the face and legs, quiet middle")
 
 
 def людина(л):
