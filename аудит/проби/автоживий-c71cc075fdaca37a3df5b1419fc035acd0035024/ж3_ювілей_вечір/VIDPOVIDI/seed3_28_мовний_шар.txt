@@ -1,0 +1,55 @@
+── ПРОМПТ (7601 симв.) ──
+Ти — перекладачка в застосунку-стилістці. Ти пишеш природною українською тексти, які зараз побачить жінка. Рішень не приймаєш, на питання не відповідаєш, змісту не міняєш.
+
+Вхід — JSON-об'єкт: ключ — номер тексту н, значення — текст, який склали код та інші моделі.
+
+Ключі відповіді — ті самі, що у вході, кожен: номер н тексту, значення — рядок, той самий зміст природною українською, без англійських слів і кодів; ПЕРЕКЛАДАЙ КОЖНЕ англійське слово, навіть одне посеред українського речення; латиницею лишай лише назви крамниць і брендів, «V-подібний» і «den»; текст, що вже природний і до неї на «ти», — без змін, а український текст на «ви» перепиши на «ти», решту лиши слово в слово.
+
+Вид кожної речі — теж зміст: річ у перекладі — та сама, що у вході, а не схожа чи сусідня. ankle boots — черевики чи ботильйони, boots — чоботи, heeled — на підборах, а не туфлі, pumps — туфлі-човники, loafers — лофери; pendant — кулон чи підвіска, necklace — намисто чи ланцюжок, а не каблучка, сережки чи браслет; ring — каблучка; earrings — сережки. Українські назви речей у вході (назви з крамниці, найчастіше перед « — ») переписуй літера в літеру: не міняй, не переставляй і не додавай у них жодного слова.
+
+Про жінку — лише до неї, на «ти» (ти, тебе, тобі, твій, твоя; хочеш, скинеш; наказ однини: розкажи, оберни, тримай, дай), і в питаннях теж: you, your, she, her про неї — «ти», «твій» (her skin tone — твій тон шкіри; when she turns her head — коли ти повертаєш голову; she looks taller — ти виглядаєш вищою), англійський наказ — наказом однини; «вона», «її» — лише про річ (сукню, сумку, куртку). Говорить стилістка — одна жінка: про себе — від першої особи однини й у жіночому роді (я підібрала, я б додала), не «ми», не від імені застосунку чи коду і ніколи словами самої жінки.
+
+Мова: літературна українська, як у текстах українських крамниць одягу. Кожне українське слово — літерами лише української абетки, без жодної латинської літери чи стороннього знака всередині слова. Кожне речення — одна остаточна версія, без виправлень посеред тексту. Словничок нижче — лише як перекласти англійське слово, коли воно є у вході; це не зміст: річ, тканина чи колір, яких у вході нема, у тексті не з'являються. Звичні українські назви для слів англійського джерела: trousers, pants — штани; dressy, dressier — ошатний, ошатніше; look, outfit — образ; taupe — сіро-бежевий; loose — вільний; suede — замша (жіночий рід); slip dress — сукня-комбінація; camel — кемел (колір). Назви речей і кольорів, які дала крамниця, — як є.
+
+Перевір кожне слово ДО відповіді: до неї — лише «ти», жодного «ви», «ваш» і наказу множини, і про неї жодного «вона», «її», «їй», жодне слово не стоїть двічі поспіль, кожна річ — того самого виду, що у вході (річ образу — іменником коду її виду з переліку, коли він є, і слова при ній узгоджені з цим іменником), а українська назва речі — слово в слово. Відповідь — рівно ОДИН JSON-об'єкт і нічого після нього: другої, виправленої версії, приміток і пояснень не пиши — помилку виправ у тому самому об'єкті.
+
+Речі образу — перелік речей картки (номер речі — як на картці, поруч — її коди):
+1 — kind code: dress_generic · colour code: black · about it: text н=1
+2 — kind code: belt · colour code: burgundy · about it: text н=2
+3 — kind code: dress_shoes · colour code: burgundy · about it: text н=3
+4 — kind code: bag_generic · colour code: purple · about it: text н=4
+When a text speaks of an item of the list, call it by the Ukrainian noun of its kind code (kind code: …) — the same noun in the right case in every text (trench_coat — «тренч», sweater — «светр», loafers — «лофери»), not by another kind or a synonym of the English word, whatever word the English text uses; a code ending in _generic names only the family (dress_generic — a dress, bag_generic — a bag). Make every adjective, pronoun and verb with the item agree with that noun in gender and number («бежевий тренч, який…»; «шкіряні лофери, які…»). A name you translate in this same call (text н=K): give it one noun and call the item by it, in agreement, in every text. A text the list gives as about an item (about it: text н=M) speaks of that one item, and so does every other text where the English names it. The colour of an item of the list is its colour code (colour code: …): write the Ukrainian name of that code. The English colour words for that item are the stylist's impression of a photo: do not turn them into a colour of their own — the item's colour stands in their place. Colours of its details (trim, strap, buttons, print), its fabric and the rest — translate from the text. The list is for the items only: an item the English text does not name is not added to the translation — neither to the description nor to the advice.
+
+Colour codes: black — чорний; burgundy — бордовий; purple — фіолетовий.
+
+ТЕКСТИ:
+{
+"1": "This is a black bodycon dress made from a sleek, stretchy fabric that clings to your curves without feeling restrictive. Its simple, unpatterned design provides a sophisticated backdrop for the accessories you chose, allowing the burgundy belt and shoes to become the statement pieces of the evening.",
+"2": "This burgundy belt is crafted from smooth leather with a classic buckle that secures your waist perfectly. The rich, deep red-brown tone adds an instant touch of luxury and warmth to the black dress, defining your silhouette while keeping the look timeless.",
+"3": "These burgundy dress shoes feature a heel designed for elegance and comfort, ensuring you can stand and dance throughout the banquet. Their color matches the belt exactly, creating a continuous vertical line that elongates your legs and anchors the outfit with style.",
+"4": "This purple bag is a versatile accessory made from a structured material that holds its shape beautifully. The vibrant purple hue offers a striking yet tasteful contrast to the monochrome dress and burgundy accessories, adding a modern flair suitable for a festive occasion.",
+"5": "This black bodycon dress acts as a sleek, elegant foundation for your aunt's birthday banquet, its simple silhouette ensuring the focus remains on you and the celebration. The burgundy leather belt cinches your waist to highlight your defined figure, creating a vertical line that draws the eye upward while adding a festive pop of color against the dark fabric. Your burgundy dress shoes match the belt perfectly, extending that rich hue down to your ankles for a seamless, long-legged effect, while the purple bag introduces a playful contrast that feels both sophisticated and age-appropriate for an evening gathering.",
+"6": "Dress this black bodycon look with confidence; its simple cut makes it perfect for an evening of dancing or mingling at the restaurant.",
+"7": "Tuck your blouse in if you were wearing one, but since this is a dress, simply let the hem fall naturally to avoid bunching when you sit down.",
+"8": "Hold your purple bag slightly away from your body as you move; this prevents the color from clashing with your heels and keeps the look airy.",
+"9": "Жіночі туфлі бордові сатинові — Red satin heels echo the belt's warmth and add necessary shine near the face to counter the render's texture loss.",
+"10": "Шкіряна сумка Icona — A purple clutch provides the third piece needed to style the dress rather than just wear it, echoing the bag's color from your palette.",
+"11": "Пасок шкіряний (Hermes Kelly) Hermes, Шкіряна сумка Icona — I chose this outfit despite the bag being a neutral tote because the dress's texture and color provide enough interest, and the belt ensures the top is anchored for an evening event."
+}
+
+── ВІДПОВІДЬ (2843 симв., 19.4 с, HTTP 200) ──
+```json
+{
+"1": "Це чорна обтисла сукня з гладкої еластичної тканини, яка прилягає до твоїх вигинів без відчуття обмеження. Її простий неповторний дизайн створює елегантне тло для аксесуарів, які ти обрала, дозволяючи бордовому паску та взуттю стати акцентними деталями вечора.",
+"2": "Цей бордовий пояс виготовлений з гладкої шкіри зі стильним пряжкою, яка ідеально підкреслює твою талію. Багатий глибокий червоно-коричневий відтінок миттєво додає розкішний теплий акцент до чорної сукні, окреслюючи твій силует і зберігаючи образ поза часом.",
+"3": "Ці бордові туфлі для вечірнього вбрання мають підбори, створені для елегантності та комфорту, гарантуючи, що ти зможеш стояти й танцювати протягом усього банкету. Їхній колір точно збігається з паском, створюючи безперервну вертикальну лінію, яка видовжує твої ноги та завершує образ зі стилем.",
+"4": "Ця фіолетова сумка — універсальний аксесуар, виготовлений з щільного матеріалу, який чудово тримає форму. Яскравий фіолетовий відтінок пропонує вражаючий і водночас елегантний контраст до монохромного вбрання та бордових аксесуарів, додаючи сучасну нотку, яка підходить для святкової події.",
+"5": "Ця чорна обтисла сукня слугує витонченим елегантним фоном для банкету з нагоди дня народження твоєї тітки. Її простий силует гарантує, що увага залишається зосередженою на тобі та святкуванні. Бордовий шкіряний пояс підкреслює твою фігуру, створюючи вертикальну лінію, яка привертає увагу вгору, водночас додаючи святковий відтінок кольору до темної тканини. Твої бордові туфлі для вечірнього вбрання ідеально поєднуються з паском, продовжуючи цей насичений колір до твоїх щиколоток для безперервного ефекту довгих ніг, а фіолетова сумка додає грайливий контраст, який відчувається водночас вишукано та відповідно віку для вечірнього зібрання.",
+"6": "Одягни цей чорний обтислий образ з упевненістю; його простий крій робить його ідеальним для вечора танців або спілкування в ресторані.",
+"7": "Заправ блузку, якщо ти її одягала. Але оскільки це сукня, просто дай подолу природно спадати вниз, щоб уникнути збирань під час сидіння.",
+"8": "Тримай фіолетову сумку трохи віддалено від тіла в русі; це запобігає змішуванню кольору з туфлями та зберігає образ повітряним.",
+"9": "Жіночі бордові сатинові туфлі — Червоні сатинові підбори повторюють тепло паска й додають необхідний блиск біля обличчя, щоб компенсувати втрату текстури рендером.",
+"10": "Шкіряна сумка Icona — Фіолетова сумочка забезпечує третій елемент, потрібний для стилізації сукні, а не просто її носіння, повторюючи колір сумки з твоєї палітри.",
+"11": "Пасок шкіряний (Hermes Kelly), Шкіряна сумка Icona — Я обрала цей образ попри те, що сумка нейтральна й містка, тому що текстура та колір сукні забезпечують достатньо інтересу, а пояс гарантує, що верхня частина вбрання надійно зафіксована для вечірнього заходу."
+}
+```

@@ -1,0 +1,44 @@
+── ПРОМПТ (2454 симв.) ──
+{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.", "One item carries one thing — of two alternatives list the first; a note in brackets is not an item.", "Slot \"accessory\" is for an item no other slot fits.", "\"is_outfit\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "ITEM_LIST", "answer_schema": {"is_outfit": "yes|no", "items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory", "color_hex": "<#rrggbb or null>", "worn": "<true, or false when the description says the outfit goes without it>"}]}, "input": ["\"description\" — the outfit description"]}, "description": "Structured black silk blouse with a subtle sheen, tailored fit, knee-length hem, deep onyx (#1a0b0e), fluid woven fabric.\nHigh-waisted charcoal grey wool-trimmed trousers, straight-leg cut, full length, slate grey (#2f3539), heavy gabardine material.\nClassic black leather blazer with notched lapels, single-button closure, hip-length hem, matte finish, structured virgin wool blend.\nBlack suede ankle boots with a 4cm block heel, pointed toe, zip closure, deep espresso brown undertone, soft nappa leather.\nThin gold chain necklace and small pearl stud earrings for subtle elegance against the dark palette.\n\nThis outfit respects her wish for a restrained and classic look by avoiding flashy patterns or excessive hardware often seen in rock settings. The structured wool blazer and tailored trousers provide the necessary \"smart\" formality while allowing freedom of movement as she stands in a crowd. Dark neutral tones like charcoal, slate, and onyx create a timeless silhouette that feels sophisticated without blending into the darkness of an artificial-lit venue. The sleek footwear and minimal jewelry complete the refined aesthetic while ensuring comfort for standing through the evening."}
+
+── ВІДПОВІДЬ (1161 симв., 10.2 с, HTTP 200) ──
+{
+  "is_outfit": true,
+  "items": [
+    {
+      "name": "Silk blouse",
+      "details": "structured black silk with subtle sheen, tailored fit, knee-length hem, fluid woven fabric",
+      "slot": "top",
+      "color_hex": "#1a0b0e",
+      "worn": true
+    },
+    {
+      "name": "Wool-trimmed trousers",
+      "details": "high-waisted straight-leg cut, full length, heavy gabardine material",
+      "slot": "bottom",
+      "color_hex": "#2f3539",
+      "worn": true
+    },
+    {
+      "name": "Leather blazer",
+      "details": "classic black with notched lapels, single-button closure, hip-length hem, matte finish, structured virgin wool blend",
+      "slot": "outerwear",
+      "color_hex": "#1a0b0e",
+      "worn": true
+    },
+    {
+      "name": "Suede ankle boots",
+      "details": "4cm block heel, pointed toe, zip closure, deep espresso brown undertone, soft nappa leather",
+      "slot": "shoes",
+      "color_hex": "#1a0b0e",
+      "worn": true
+    },
+    {
+      "name": "Gold chain necklace",
+      "details": "thin gold chain with small pearl stud earrings",
+      "slot": "collar_necklace",
+      "color_hex": null,
+      "worn": true
+    }
+  ]
+}
