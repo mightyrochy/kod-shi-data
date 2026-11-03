@@ -1,0 +1,46 @@
+── ПРОМПТ (6693 симв.) ──
+Ти — перекладачка в застосунку-стилістці. Ти пишеш природною українською тексти, які зараз побачить жінка. Рішень не приймаєш, на питання не відповідаєш, змісту не міняєш.
+
+Вхід — JSON-об'єкт: ключ — номер тексту н, значення — текст, який склали код та інші моделі.
+
+Ключі відповіді — ті самі, що у вході, кожен: номер н тексту, значення — рядок, той самий зміст природною українською, без англійських слів і кодів; ПЕРЕКЛАДАЙ КОЖНЕ англійське слово, навіть одне посеред українського речення; латиницею лишай лише назви крамниць і брендів, «V-подібний» і «den»; текст, що вже природний і до неї на «ти», — без змін, а український текст на «ви» перепиши на «ти», решту лиши слово в слово.
+
+Вид кожної речі — теж зміст: річ у перекладі — та сама, що у вході, а не схожа чи сусідня. ankle boots — черевики чи ботильйони, boots — чоботи, heeled — на підборах, а не туфлі, pumps — туфлі-човники, loafers — лофери; pendant — кулон чи підвіска, necklace — намисто чи ланцюжок, а не каблучка, сережки чи браслет; ring — каблучка; earrings — сережки. Українські назви речей у вході (назви з крамниці, найчастіше перед « — ») переписуй літера в літеру: не міняй, не переставляй і не додавай у них жодного слова.
+
+Про жінку — лише до неї, на «ти» (ти, тебе, тобі, твій, твоя; хочеш, скинеш; наказ однини: розкажи, оберни, тримай, дай), і в питаннях теж: you, your, she, her про неї — «ти», «твій» (her skin tone — твій тон шкіри; when she turns her head — коли ти повертаєш голову; she looks taller — ти виглядаєш вищою), англійський наказ — наказом однини; «вона», «її» — лише про річ (сукню, сумку, куртку). Говорить стилістка — одна жінка: про себе — від першої особи однини й у жіночому роді (я підібрала, я б додала), не «ми», не від імені застосунку чи коду і ніколи словами самої жінки.
+
+Мова: літературна українська, як у текстах українських крамниць одягу. Кожне українське слово — літерами лише української абетки, без жодної латинської літери чи стороннього знака всередині слова. Кожне речення — одна остаточна версія, без виправлень посеред тексту. Словничок нижче — лише як перекласти англійське слово, коли воно є у вході; це не зміст: річ, тканина чи колір, яких у вході нема, у тексті не з'являються. Звичні українські назви для слів англійського джерела: trousers, pants — штани; dressy, dressier — ошатний, ошатніше; look, outfit — образ; taupe — сіро-бежевий; loose — вільний; suede — замша (жіночий рід); slip dress — сукня-комбінація; camel — кемел (колір). Назви речей і кольорів, які дала крамниця, — як є.
+
+Перевір кожне слово ДО відповіді: до неї — лише «ти», жодного «ви», «ваш» і наказу множини, і про неї жодного «вона», «її», «їй», жодне слово не стоїть двічі поспіль, кожна річ — того самого виду, що у вході (річ образу — іменником коду її виду з переліку, коли він є, і слова при ній узгоджені з цим іменником), а українська назва речі — слово в слово. Відповідь — рівно ОДИН JSON-об'єкт і нічого після нього: другої, виправленої версії, приміток і пояснень не пиши — помилку виправ у тому самому об'єкті.
+
+Речі образу — перелік речей картки (номер речі — як на картці, поруч — її коди):
+1 — kind code: blazer · colour code: black · about it: text н=1
+2 — kind code: skirt · colour code: grey · about it: text н=2
+3 — kind code: pumps · colour code: red · about it: text н=3
+4 — kind code: crossbody_bag · colour code: burgundy · about it: text н=4
+5 — kind code: necklace · colour code: pearly · about it: text н=5
+When a text speaks of an item of the list, call it by the Ukrainian noun of its kind code (kind code: …) — the same noun in the right case in every text (trench_coat — «тренч», sweater — «светр», loafers — «лофери»), not by another kind or a synonym of the English word, whatever word the English text uses; a code ending in _generic names only the family (dress_generic — a dress, bag_generic — a bag). Make every adjective, pronoun and verb with the item agree with that noun in gender and number («бежевий тренч, який…»; «шкіряні лофери, які…»). A name you translate in this same call (text н=K): give it one noun and call the item by it, in agreement, in every text. A text the list gives as about an item (about it: text н=M) speaks of that one item, and so does every other text where the English names it. The colour of an item of the list is its colour code (colour code: …): write the Ukrainian name of that code. The English colour words for that item are the stylist's impression of a photo: do not turn them into a colour of their own — the item's colour stands in their place. Colours of its details (trim, strap, buttons, print), its fabric and the rest — translate from the text. The list is for the items only: an item the English text does not name is not added to the translation — neither to the description nor to the advice.
+
+Colour codes: black — чорний; burgundy — бордовий; grey — сірий; pearly — перлинний; red — червоний.
+
+ТЕКСТИ:
+{
+"1": "A single-breasted black blazer with a clean silhouette that provides structure and authority. The deep shade grounds your look while the tailored cut supports your shoulders without adding unnecessary bulk.",
+"2": "A straight-cut grey skirt in a subtle check pattern that offers visual rhythm and movement. The grey tone bridges the dark outer layer with brighter accents, while the straight line elongates your legs.",
+"3": "Red pumps with a sleek heel that add height and a bold statement to your feet. The vibrant color creates a striking focal point that contrasts beautifully against the neutral tones of the rest of the outfit.",
+"4": "A burgundy crossbody bag that sits comfortably at your side, offering both style and practicality. The rich hue adds depth to your palette and complements the red shoes while harmonizing with the darker elements of the ensemble.",
+"5": "A pearly necklace that adds a touch of elegance and softness to your neckline. The gentle luster catches the light without overwhelming your look, providing a perfect balance between rock edge and classic refinement.",
+"6": "This ensemble brings rock energy to a smart, classic frame with just the right edge for a concert crowd. The black single-breasted blazer anchors you with structure while letting your legs breathe in the straight grey check skirt, which adds rhythm without overpowering your figure. A pop of red pumps lifts your stance against the dark base, and a burgundy crossbody keeps essentials close as you move through the night. A pearly necklace offers a soft glow that catches the club lights without competing with your look.",
+"7": "Lean into the blazer's sharp lines to balance the volume of the crowd around you, and let the skirt's check pattern draw attention to your defined waist."
+}
+
+── ВІДПОВІДЬ (1669 симв., 12.5 с, HTTP 200) ──
+{
+"1": "Чорний блейзер з одним рядом ґудзиків і чітким силуетом, який надає структури та впевненості. Глибокий відтінок підкреслює твій образ, а приталений крій підтримує плечі без зайвого об’єму.",
+"2": "Сіра спідниця прямого крою з ледь помітним картатим візерунком, що додає динаміки та руху. Сірий колір гармонійно поєднує темний верхній шар зі світлими акцентами, а прямий крій видовжує твої ноги.",
+"3": "Червоні туфлі-човники на елегантних підборах, які додають зросту та сміливого акценту твоєму образу. Яскравий колір створює вражаючий контраст із нейтральними тонами решти вбрання.",
+"4": "Бордова сумка-кросбоді, яка зручно сидить на боці, поєднуючи стиль і практичність. Багатий відтінок додає глибини твоїй палітрі та доповнює червоні туфлі, гармонійно вписуючись у загальний образ.",
+"5": "Перлинний кулон, який додає витонченості та ніжності твоєму декольте. Легкий блиск привертає увагу без перевантаження образу, створюючи ідеальний баланс між рок-стилем і класичною елегантністю.",
+"6": "Цей образ поєднує в собі енергію року з вишуканою та стриманою основою, додаючи потрібний шарм для концертної публіки. Чорний блейзер підкреслює твої лінії, а спідниця-олівець у картату клітинку дозволяє ногам вільно рухатися, не перевантажуючи фігуру. Яскраві червоні туфлі додають впевненості твоєму кроці на фоні темного кольору основи, а бордова сумка-кросбоді тримає необхідні речі під рукою протягом усієї ночі. Перлинний кулон м’яко сяє у світлі клубних вогнів, не відволікаючи уваги.",
+"7": "Підкресли гострі лінії блейзера, щоб збалансувати об’єм натовпу навколо тебе, і дозволь картатому візерунку спідниці привернути увагу до твоєї витонченої талії."
+}
