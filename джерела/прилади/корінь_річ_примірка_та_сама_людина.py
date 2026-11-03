@@ -483,6 +483,17 @@ class Граф:
             self.виклики.append((р, функ, б, ім, назва, арг, self.файл, н))
             self.адреси_викликів[р] = f'{self.файл}:{н}'
             self.іменовані_виклики[р] = tuple((к['key']['value'], self.вираз(к['value'], с)) for к in в.get('keywords', []))
+            if ім == 'setAttribute' and б and len(арг) >= 2:
+                ключ_атрибута = в['arguments'][0].get('value')
+                if isinstance(ключ_атрибута, str):
+                    self.запис(б, ключ_атрибута, арг[1])
+            if (ім in {'add', 'toggle', 'replace'} and арг and
+                    в['callee']['type'] == 'MemberExpression' and
+                    в['callee']['object']['type'] == 'MemberExpression' and
+                    ключ(в['callee']['object']) == 'classList'):
+                елемент = self.вираз(в['callee']['object']['object'], с)
+                for а in арг:
+                    self.запис(елемент, 'className', а)
             if self.іменовані_виклики[р]:
                 словник = self.нове(True)
                 self.kwargs_викликів[р] = словник

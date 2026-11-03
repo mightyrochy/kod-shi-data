@@ -83,6 +83,7 @@ class Прилад(unittest.TestCase):
         self.перевірити({'а.html': html}, 1)
         self.перевірити({'а.js': 'const el=document.createElement("img"); el.id="preview"; document.body.appendChild(el); document.querySelector("#preview").src=generate_image();'}, 1)
         self.перевірити({'а.html': '<img id="preview"><script>const suffix="preview"; document.querySelector("#"+suffix).src=generate_image()</script>'}, 1)
+        self.перевірити({'а.js': 'const el=document.createElement("img"); el.classList.add("preview"); document.body.appendChild(el); document.querySelector(".preview").src=generate_image();'}, 1)
 
     def test_python_розпаковані_іменовані(self):
         код = 'def choose(original, generated):\n    return generated\na = {"generated": generate_image(), "original": load_photo()}\nf = choose\njudge(f(**a))\n'
