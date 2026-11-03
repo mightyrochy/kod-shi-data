@@ -1,0 +1,111 @@
+"""Послідовний запис решти плану; виконувати з кореня repo. Без повторів сцен."""
+import json
+import os
+from pathlib import Path
+import shutil
+import socket
+import subprocess
+import sys
+from datetime import datetime, timezone
+import urllib.request
+
+repo = Path.cwd()
+out = repo / 'аудит/проби/автоживий-c71cc075fdaca37a3df5b1419fc035acd0035024'
+build = repo.parent / 'tmp/build'
+cache = Path('C:/Users/gemini/pyodide')
+branch = 'gemini/живий-c71cc075-продовження'
+plan = json.loads((out / 'план.json').read_text(encoding='utf-8'))
+previous = [json.loads(line) for line in (out / 'попередній-done.jsonl').read_text(encoding='utf-8').splitlines()]
+selected = [scene for scene in plan['scenes'] if scene not in {r['сцена'] for r in previous}]
+os.environ.update(PYTHONUTF8='1', PYTHONIOENCODING='utf-8', NODE_PATH='C:/Users/gemini/kod-shi-test-node/node_modules')
+
+def now():
+    return datetime.now(timezone.utc).isoformat()
+
+def models():
+    with urllib.request.urlopen('http://127.0.0.1:1234/api/v1/models', timeout=10) as response:
+        return json.load(response)
+
+def records():
+    path = out / 'done-продовження.jsonl'
+    return [json.loads(line) for line in path.read_text(encoding='utf-8').splitlines()] if path.exists() else []
+
+def report(blocker=None):
+    done = {r['сцена']:r for r in records()}
+    rows = ['# Продовження автоживого c71cc075: спроба 2', '',
+        'Наряд: [НАРЯД-продовження-спроба-2.md](НАРЯД-продовження-спроба-2.md).', '',
+        'Призначена збірка: `3eef1bf6a5b1bdd9182a2ce34f043407430b0f29`; код сторінки та build.txt: `c71cc075fdaca37a3df5b1419fc035acd0035024`.', '',
+        'План і ДО: [план.json](план.json), [ДО.json](ДО.json), джерело попереднього прогону `6c44a6c5edac74caeb499ebee919bc71a763d181`. ДО не переганяли. Початковий блокер порожнього чужого сервера знято явним узгодженням диспетчера в наряді спроби 2.', '',
+        'Умови: qwen/qwen3.5-9b (57344) + mamaylm-gemma-3-12b-it-v2.0 (16384), parallel=1, почерговий HTTP-проксі, seed 3, телефон 390×844. Перевірка: [середовище-продовження-спроба-2.json](середовище-продовження-спроба-2.json).', '',
+        'Один запуск на сцену, повторів немає. Оцінки стилю не виконуємо; факти запису й автоматичні звірки стенда не є незалежною оцінкою продукту.', '']
+    if blocker:
+        rows += ['ЗАБЛОКОВАНО: ' + blocker, '']
+    for scene in selected:
+        rows += ['## ' + scene, '']
+        rows += ['- Питання плану (#' + str(q['pr']) + '): ' + q['question'] for q in plan['scenes'][scene]]
+        rows += ['']
+        if scene not in done:
+            rows += ['Факт: у цій спробі ще не запускалась. Питання плану — **не доведено**.', '']
+            continue
+        r = done[scene]
+        folder = out / scene
+        logfile = folder / 'лог.txt'
+        lines = logfile.read_text(encoding='utf-8', errors='replace').splitlines() if logfile.exists() else []
+        failed = [line.strip() for line in lines if '✗' in line]
+        facts = [line.strip() for line in lines if 'KARTKA · після розмови:' in line or line.startswith(('НГ-4', 'ВПАЛО', 'УСЕ ЗЕЛЕНЕ', 'ДОКАЗ', 'ЗАМІНА руки'))]
+        rows += [f"Факт запуску: `{r['початок']}` → `{r['кінець']}`, rc={r['rc']}. [Лог]({scene}/лог.txt), [параметри й прибирання]({scene}/результат.json).", '']
+        rows += ['- ' + fact for fact in facts]
+        rows += [f'- Автоматичних червоних звірок: {len(failed)}.']
+        rows += ['- ' + line for line in failed]
+        rows += ['', 'Доведено: зафіксовано наведену спробу та її фактичний результат. Відповіді на питання плану — **не доведено** до розбору записаних даних; оцінка якості належить окремому наряду.', '']
+    remaining = [scene for scene in selected if scene not in done]
+    rows += ['## Покриття', '', f'ДО → ПІСЛЯ: 3 попередні спроби / 14 незапущених → 3 попередні + {len(done)} нових спроб. ж4_робота_стримано не повторювали.', '']
+    incomplete = [scene for scene,r in done.items() if r['rc'] >= 2]
+    if not remaining and not incomplete:
+        rows += ['ПЕРЕВІРЕНО ЗБІРКУ: 3eef1bf6a5b1bdd9182a2ce34f043407430b0f29', '',
+            'Рядок означає покриття всіх 17 сцен спробами запису, включно з обірваною ж4 першого прогону; проходження всіх питань він не засвідчує.', '']
+    else:
+        rows += ['Незапущені сцени: ' + (', '.join(remaining) or 'немає') + '.', '',
+            'Нові сцени з незавершеним записом (rc≥2): ' + (', '.join(incomplete) or 'немає') + '.', '',
+            'Рядок підтвердження всієї збірки не поставлено.', '']
+    rows += ['Вад продукту поза мірилом не встановлено. Блокери окремих сцен наведено вище; їхній запис не зупиняє наступну сцену. Публікація гілки й доставка результату належать обгортці.', '']
+    (out / 'ЗВІТ-продовження.md').write_text('\n'.join(rows), encoding='utf-8')
+
+assert subprocess.check_output(['git','branch','--show-current'],text=True).strip() == branch
+finished = {r['сцена'] for r in records()}
+report()
+for scene in selected:
+    if scene in finished:
+        continue
+    try:
+        if any(m['loaded_instances'] for m in models()['models']):
+            raise RuntimeError('LM Studio тримає чужу модель перед сценою ' + scene)
+        with socket.socket() as check:
+            check.bind(('127.0.0.1',1235))
+    except Exception as exc:
+        report(str(exc))
+        subprocess.run(['git','add','--',str(out.relative_to(repo))],check=True)
+        subprocess.run(['git','commit','-m','Заблоковано продовження плану c71cc075','-m',str(exc)],check=True)
+        raise SystemExit(2)
+    red = repo / 'R_chervone.json'
+    if scene == 'ж1_побачення_день_червоне':
+        if red.exists():
+            raise RuntimeError('Тимчасовий R_chervone.json вже існує')
+        shutil.copyfile(out / 'R_chervone.json',red)
+    command = [sys.executable,'аудит/проби/записати_сцену.py',str(build),str(cache),str(out / scene),'--сцена',scene]
+    started = now()
+    print(started,'ПОЧАТОК',scene,flush=True)
+    try:
+        with (out / (scene + '-запускач.txt')).open('w',encoding='utf-8') as log:
+            result = subprocess.run(command,stdout=log,stderr=subprocess.STDOUT)
+    finally:
+        if scene == 'ж1_побачення_день_червоне':
+            red.unlink()
+    row = {'початок':started,'кінець':now(),'сцена':scene,'команда':command,'rc':result.returncode}
+    with (out / 'done-продовження.jsonl').open('a',encoding='utf-8') as log:
+        log.write(json.dumps(row,ensure_ascii=False)+'\n')
+    report()
+    subprocess.run(['git','add','--',str(out.relative_to(repo))],check=True,capture_output=True)
+    subprocess.run(['git','commit','--quiet','-m','Записано живу сцену '+scene],check=True)
+    print(now(),'КІНЕЦЬ',scene,'rc='+str(result.returncode),flush=True)
+print(now(),'Завершено всі 14 спроб; проксі та власні моделі прибрано записувачем.',flush=True)
