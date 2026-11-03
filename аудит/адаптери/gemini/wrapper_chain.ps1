@@ -89,8 +89,20 @@ function Get-ChainBuildStamp([string]$Commit) {
     $stamp
 }
 
+function Get-EngineLivePublication([string]$Head, [string]$ExistingBody = '') {
+    <# Бере лише функції читання з довіреної копії queue_lanes, без побічних дій планувальника. #>
+    $errors = $null
+    $ast = [Management.Automation.Language.Parser]::ParseFile((Join-Path $PSScriptRoot 'queue_lanes.ps1'), [ref]$null, [ref]$errors)
+    if ($errors.Count) { throw 'LIVE_AFTER_PARSER' }
+    $names = @('Get-LiveSceneRegistry','Get-LiveAfterLines','ConvertTo-LivePublicationBody','Merge-LivePublicationBody','Get-HeadLivePublication')
+    $functions = @($ast.FindAll({ param($n) $n -is [Management.Automation.Language.FunctionDefinitionAst] -and $names -ccontains $n.Name }, $true))
+    if ($functions.Count -ne $names.Count) { throw 'LIVE_AFTER_PARSER' }
+    foreach ($function in $functions) { . ([scriptblock]::Create($function.Extent.Text)) }
+    Get-HeadLivePublication $Head $ExistingBody
+}
+
 function Save-DraftRequest([string]$Branch, [string]$Head, [string]$Model = '') {
-    <# Лише підтверджена публікація DONE лишає завдання створити PR; збій API не губить його. #>
+    <# Підтверджена публікація лишає завдання записати тіло PR; збій API не губить його. #>
     if ($DryRun -or $Branch -cnotmatch '^gemini/[\p{L}\p{Nd}][\p{L}\p{Nd}._-]{0,79}$' -or $Head -cnotmatch $script:ShaPattern) { return }
     if ($Model -cmatch $script:ModelPattern) {
         $models = Join-Path $WorkDir 'engine-models'; [void][IO.Directory]::CreateDirectory($models)
@@ -107,29 +119,44 @@ function Complete-EngineDrafts {
         $job = ConvertFrom-Json ([IO.File]::ReadAllText($file.FullName, $script:Utf8))
         $branch = [string]$job.branch; $head = [string]$job.head
         if ($branch -cnotmatch '^gemini/[\p{L}\p{Nd}][\p{L}\p{Nd}._-]{0,79}$' -or $branch.Contains('..') -or $branch.EndsWith('.lock') -or $head -cnotmatch $script:ShaPattern) { throw 'CHAIN_DRAFT' }
-        # DONE вже пройшов захист Publish-Bundle; повтор усе одно перевіряє поточний ref GitHub.
+        # Голова вже пройшла захист Publish-Bundle; повтор перевіряє поточний ref GitHub.
         $r = Invoke-Git @('ls-remote','--heads','origin',"refs/heads/$branch") -AllowFail
         if ($r.Code -ne 0) { throw 'CHAIN_REMOTE' }
         if (-not $r.Out.StartsWith($head + "`t")) { continue }
-        $existing = @($pulls | Where-Object { $_.user.login -ceq 'mightyrochy' -and $_.head.ref -ceq $branch -and $_.head.repo.full_name -ceq $GitHubRepo })
-        if ($existing.Count) { Remove-Item -LiteralPath $file.FullName; continue }
+        $existing = @($pulls | Where-Object {
+            $_.user.login -ceq 'mightyrochy' -and $_.head.ref -ceq $branch -and $_.head.repo.full_name -ceq $GitHubRepo -and
+            $_.base.repo.full_name -ceq $GitHubRepo -and $_.base.ref -ceq 'main'
+        })
         # Звіт перевірки без рядків дошки лишається гілкою: PR несе повний CI і злиття без користі (`ПЕРЕВІРКА.md`, «Під обгорткою»).
-        if (Test-ReviewBranch $branch) {
+        if (-not $existing.Count -and (Test-ReviewBranch $branch)) {
             $rows = (Invoke-Git @('diff','--name-only',"refs/remotes/origin/main...$head",'--','аудит/дошка') -AllowFail)
             if ($rows.Code -eq 0 -and -not $rows.Out.Trim()) {
                 Write-WrapperLog "ланцюг: звіт $branch без рядків дошки — гілка без PR-чернетки"
                 Remove-Item -LiteralPath $file.FullName; continue
             }
         }
-        $message = (Invoke-Git @('show','-s','--format=%B',$head)).Out
+        # Список PR міг передувати допису перевірки: читаємо чинне тіло безпосередньо перед PATCH.
+        $currentBody = ''
+        if ($existing.Count) {
+            $current = Invoke-ChainApi "repos/$GitHubRepo/pulls/$($existing[0].number)"
+            $currentBody = [string]$current.body
+        }
+        $publication = Get-EngineLivePublication $head $currentBody
+        $message = $publication.Body
         # Спецзгадка не має запускати легасі-рушій із тексту звіту.
         $message = [regex]::Replace($message, '(?i)@' + 'codex\b', 'Codex')
-        $body = @{title=('Звіт ' + $branch.Substring(7));head=$branch;base='main';draft=$true;body=$message} | ConvertTo-Json -Compress
-        $r = Invoke-Native (Resolve-Exe $GhExe) @('api','--method','POST',"repos/$GitHubRepo/pulls",'--input','-') $WorkDir 2 $body
+        $method = 'POST'; $endpoint = "repos/$GitHubRepo/pulls"
+        $payload = @{title=('Звіт ' + $branch.Substring(7));head=$branch;base='main';draft=$true;body=$message}
+        if ($existing.Count) {
+            $method = 'PATCH'; $endpoint += '/' + $existing[0].number
+            $payload = @{body=$message}
+        }
+        $body = $payload | ConvertTo-Json -Compress
+        $r = Invoke-Native (Resolve-Exe $GhExe) @('api','--method',$method,$endpoint,'--input','-') $WorkDir 2 $body
         if ($r.Code -ne 0) { throw 'CHAIN_DRAFT' }
         $pr = ConvertFrom-Json $r.Out
         if ([string]$pr.number -cnotmatch '^[1-9][0-9]{0,8}$') { throw 'CHAIN_DRAFT' }
-        Write-WrapperLog "ланцюг: створено PR-чернетку #$($pr.number) $branch $head"
+        Write-WrapperLog "ланцюг: $method PR-чернетки #$($pr.number) $branch $head"
         Remove-Item -LiteralPath $file.FullName
     }
 }
@@ -264,13 +291,71 @@ function Get-ReviewModels($Pull, $Config, [datetimeoffset]$Now = [datetimeoffset
     @($pick)
 }
 
-function Test-ChainReviewDone([string]$Number, [string]$Head) {
-    <# Опублікований звіт автоперевірки цієї голови — кінець; позначку іншого рушія вже не ставимо. #>
+function Get-ChainTaskResults {
+    <# Назва наряду береться з позначки смуги, а рядок — лише з прийнятого стану чи результату Claude після публікації. #>
+    $accepted = @()
     foreach ($file in @(Get-ChildItem -LiteralPath (Join-Path $WorkDir 'state') -Filter '*.json' -File -ErrorAction SilentlyContinue)) {
         $state = ConvertFrom-Json ([IO.File]::ReadAllText($file.FullName, $script:Utf8))
-        if ([string](Get-Prop $state 'line') -cmatch ('^GEMINI ОБГОРТКА: ГОТОВО (?:gemini|claude|codex)/автоперевірка-' + $Number + '-' + $Head + ' ')) { return $true }
+        $line = [string](Get-Prop $state 'line')
+        if ($line -cnotmatch '^GEMINI ОБГОРТКА: (ГОТОВО|ЗАБЛОКОВАНО) ') { continue }
+        $kind = $Matches[1]; $slug = [string](Get-Prop $state 'slug')
+        $accepted += [pscustomobject]@{ Line=$line; Utc=$file.CreationTimeUtc.ToString('o') }
+        # Старий стан публікатора: id зберігає зв'язок із перевіреним результатом Codex/agy у теці обміну.
+        if (-not $slug -and $file.BaseName -cmatch ('^(?:o-)?(' + ($script:IdPattern -replace '^\^|\$$','') + ')$')) {
+            $path = Join-Path $OutDir ($Matches[1] + '.json')
+            if (Test-Path -LiteralPath $path) {
+                $run = ConvertFrom-Json ([IO.File]::ReadAllText($path, $script:Utf8))
+                $candidate = [string](Get-Prop $run 'slug')
+                if ($candidate -cmatch $script:SlugPattern -and $line.StartsWith("GEMINI ОБГОРТКА: $kind gemini/$candidate ", [StringComparison]::Ordinal)) { $slug = $candidate }
+            }
+        }
+        if ($slug -cnotmatch $script:SlugPattern) { continue }
+        [pscustomobject]@{ Slug=$slug; Kind=$kind; Line=$line; Utc=$file.CreationTimeUtc.ToString('o') }
     }
-    $false
+    # Результат Claude вже має повну позначку, навіть коли виконавець скоротив назву гілки.
+    $runs = Join-Path (Join-Path (Split-Path -Parent $WorkDir) 'claude-run') 'runs'
+    foreach ($dir in @(Get-ChildItem -LiteralPath $runs -Directory -ErrorAction SilentlyContinue)) {
+        $path = Join-Path $dir.FullName 'result.json'
+        if (-not (Test-Path -LiteralPath $path)) { continue }
+        $run = ConvertFrom-Json ([IO.File]::ReadAllText($path, $script:Utf8))
+        $marker = [string](Get-Prop $run 'marker'); $code = [string](Get-Prop $run 'code')
+        if ($marker -cnotmatch '^gemini-queue/([^/]+)/[a-z0-9][a-z0-9.-]{1,63}/[1-9][0-9]*(?:/[^/]+)?$') { continue }
+        $slug = $Matches[1]
+        if ($slug -cnotmatch $script:SlugPattern -or $code -cnotmatch '^[A-Z][A-Z0-9_]{1,39}$' -or $code -ceq 'LINE_REJECTED') { continue }
+        if ($code -ceq 'QUOTA_WAIT') {
+            # Саме чекання не є кінцем; прийнятий ЗАБЛОКОВАНО за його позначкою — є.
+            foreach ($notice in $accepted) {
+                if ($notice.Line -cmatch ('^GEMINI ОБГОРТКА: ЗАБЛОКОВАНО claude/' + [regex]::Escape($slug) + ' QUOTA0_CLAUDE(?:_M[0-9]{1,6})?$')) {
+                    [pscustomobject]@{ Slug=$slug; Kind='ЗАБЛОКОВАНО'; Line=$notice.Line; Utc=$notice.Utc }
+                }
+            }
+            continue
+        }
+        if ($code -ceq 'DONE') {
+            $branch = [string](Get-Prop $run 'branch'); $head = [string](Get-Prop $run 'head')
+            if ($branch -cnotmatch '^claude/[^/ ]+$' -or $head -cnotmatch $script:ShaPattern) { continue }
+            $kind = 'ГОТОВО'; $line = "GEMINI ОБГОРТКА: ГОТОВО $branch $head"
+        } else { $kind = 'ЗАБЛОКОВАНО'; $line = "GEMINI ОБГОРТКА: ЗАБЛОКОВАНО claude/$slug $code" }
+        [pscustomobject]@{ Slug=$slug; Kind=$kind; Line=$line; Utc=(Get-Item -LiteralPath $path).LastWriteTimeUtc.ToString('o') }
+    }
+}
+
+function Get-ChainTaskCompletion([string]$Slug, [switch]$ReadyOnly, [switch]$Removed) {
+    <# Одне джерело кінця автоживого й автоперевірки; відсутність позначки рахується лише для опублікованого живого. #>
+    foreach ($result in @(Get-ChainTaskResults)) {
+        if ($result.Slug -ceq $Slug -and (-not $ReadyOnly -or $result.Kind -ceq 'ГОТОВО')) { return $result.Utc }
+    }
+    if ($Removed) {
+        $r = Invoke-Git @('ls-remote','--heads','origin',"refs/heads/gemini-queue/$Slug/*") -AllowFail
+        if ($r.Code -ne 0) { throw 'CHAIN_REMOTE' }
+        if (-not $r.Out.Trim()) { return [datetime]::UtcNow.ToString('o') }
+    }
+    ''
+}
+
+function Test-ChainReviewDone([string]$Number, [string]$Head) {
+    <# Опублікований звіт позначки цієї голови — кінець; гілку звіту може назвати виконавець. #>
+    [bool](Get-ChainTaskCompletion "автоперевірка-$Number-$Head" -ReadyOnly)
 }
 
 function Move-BlockedMarkers([string]$Slug, [string]$Model, [string]$Main, [datetimeoffset]$Now, [switch]$Gpu) {
@@ -327,11 +412,7 @@ function Test-ReviewedMerge($Pull, $Reviewed, [string]$Main) {
     $n = [string]$Pull.number; $head = [string]$Pull.head.sha
     if (-not $Reviewed.ContainsKey($n)) { return $false }
     $old = $Reviewed[$n]
-    $verdict = $false
-    foreach ($file in @(Get-ChildItem -LiteralPath (Join-Path $WorkDir 'state') -Filter '*.json' -File -ErrorAction SilentlyContinue)) {
-        $state = ConvertFrom-Json ([IO.File]::ReadAllText($file.FullName, $script:Utf8))
-        if ([string](Get-Prop $state 'line') -cmatch ('^GEMINI ОБГОРТКА: ГОТОВО (?:gemini|claude|codex)/автоперевірка-' + $n + '-' + [string]$old.head + ' ')) { $verdict = $true; break }
-    }
+    $verdict = Test-ChainReviewDone $n ([string]$old.head)
     # Голову, віддану хмарному Claude, перевіряє диспетчер: чисте злиття main нового рядка не породжує.
     if (-not $verdict -and (Test-Path -LiteralPath (Get-SeenPath "cloud-review $n $($old.head)"))) { $verdict = $true }
     if (-not $verdict) { return $false }
@@ -345,14 +426,10 @@ function Test-ReviewedMerge($Pull, $Reviewed, [string]$Main) {
 }
 
 function Get-LiveCompletion($Active) {
-    <# Кінець — прийнятий опублікований звіт, а не взяття позначки чи вихід процесу. #>
-    foreach ($file in @(Get-ChildItem -LiteralPath (Join-Path $WorkDir 'state') -Filter '*.json' -File -ErrorAction SilentlyContinue)) {
-        $state = ConvertFrom-Json ([IO.File]::ReadAllText($file.FullName, $script:Utf8))
-        if ([string](Get-Prop $state 'line') -cmatch ('^GEMINI ОБГОРТКА: (ГОТОВО|ЗАБЛОКОВАНО) (?:gemini|claude)/автоживий-' + [regex]::Escape([string]$Active.stamp) + ' ')) {
-            return $file.CreationTimeUtc.ToString('o')
-        }
-    }
-    ''
+    <# Кінець активного наряду — за позначкою, незалежно від рушія й назви гілки звіту. #>
+    $published = Get-Prop $Active 'published'
+    if ($null -ne $published -and -not $published) { return '' }
+    Get-ChainTaskCompletion ("автоживий-" + [string]$Active.stamp) -Removed
 }
 
 function Get-LatestLivePending($Pending) {

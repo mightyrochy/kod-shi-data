@@ -84,7 +84,7 @@ try {
         $pull = [pscustomobject]@{number=9;created_at=[datetimeoffset]::UtcNow.ToString('o');title='код';user=@{login='mightyrochy'};head=@{ref='claude/task';sha=$old;repo=@{full_name='mightyrochy/kod-shi-data'}};base=@{ref='main';repo=@{full_name='mightyrochy/kod-shi-data'}}}
         $script:TestPulls = @($pull)
         Invoke-WrapperChain
-        Write-FileAtomic "$WorkDir/state/review.json" ((@{line="GEMINI ОБГОРТКА: ГОТОВО gemini/автоперевірка-9-$old $sha"}) | ConvertTo-Json)
+        Write-FileAtomic "$WorkDir/state/review.json" ((@{slug="автоперевірка-9-$old";line="GEMINI ОБГОРТКА: ГОТОВО gemini/автоперевірка-9-$old $sha"}) | ConvertTo-Json)
         $pull.head.sha = $merged
         Invoke-WrapperChain
 
@@ -108,11 +108,11 @@ try {
         }
         Check '2 під час активного три штампи — одна позначка' (@($script:TestMarkers | Where-Object { $_ -like 'автоживий-*' }).Count -eq 1)
         Check '2 пропущений проміжний штамп має журнал' ([IO.File]::ReadAllText("$WorkDir/publish.log").Contains('пропущено проміжний штамп'))
-        Write-FileAtomic "$WorkDir/state/live.json" ((@{line="GEMINI ОБГОРТКА: ГОТОВО gemini/автоживий-$firstStamp $sha"}) | ConvertTo-Json)
+        Write-FileAtomic "$WorkDir/state/live.json" ((@{slug="автоживий-$firstStamp";line="GEMINI ОБГОРТКА: ГОТОВО gemini/автоживий-$firstStamp $sha"}) | ConvertTo-Json)
         Invoke-WrapperChain
         $live = @($script:TestMarkers | Where-Object { $_ -like 'автоживий-*' })
         Check '2 після звіту рівно наступна позначка останнього штампу' ($live.Count -eq 2 -and $live[-1] -ceq "автоживий-$stamp")
-        Write-FileAtomic "$WorkDir/state/live-next.json" ((@{line="GEMINI ОБГОРТКА: ГОТОВО gemini/автоживий-$stamp $sha"}) | ConvertTo-Json)
+        Write-FileAtomic "$WorkDir/state/live-next.json" ((@{slug="автоживий-$stamp";line="GEMINI ОБГОРТКА: ГОТОВО gemini/автоживий-$stamp $sha"}) | ConvertTo-Json)
         $script:FailLive = $true
         function script:Add-ChainMarker($Slug,$Model,$Main,[switch]$Gpu) {
             if ($Slug -cnotin $script:TestMarkers) { $script:TestMarkers += $Slug }
@@ -133,6 +133,7 @@ try {
 
     }
     Scenario '3 доставка' {
+        Write-FileAtomic "$WorkDir/state/auto-delivery.json" ((@{slug='автоживий-штамп';line="GEMINI ОБГОРТКА: ГОТОВО gemini/автоживий-штамп $sha"}) | ConvertTo-Json)
         if (-not (Get-Command Test-DispatcherAction -ErrorAction SilentlyContinue)) { function Test-DispatcherAction { $true } }
         foreach ($kind in @('ВЗЯТО gemini/крок','ГОТОВО gemini/крок','ОНОВЛЕНО код','ПУЛИ AGY')) {
             Check "3 $kind — локально" (-not (Test-DispatcherAction "GEMINI ОБГОРТКА: $kind $sha"))

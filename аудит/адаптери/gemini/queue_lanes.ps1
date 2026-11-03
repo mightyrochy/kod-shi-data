@@ -894,10 +894,20 @@ function Get-LiveAfterLines([string]$Body, $Registry) {
     <# Єдиний розбір рядків `ЖИВИЙ ПІСЛЯ: <id> — <питання>` для планувальника й CI на тілі PR. Рядок, що починається з
     `ЖИВИЙ ПІСЛЯ` (після пробілів, маркера списку чи виділення), або розібрано повністю, або в ньому `error`. #>
     $result = @()
-    foreach ($raw in ([string]$Body -split "`n")) {
-        $line = $raw.Trim()
+    $lines = @([string]$Body -split "`n")
+    for ($i = 0; $i -lt $lines.Count; $i++) {
+        $line = $lines[$i].Trim()
         if ($line -cnotmatch '^[-*+>#_\s]*ЖИВИЙ ПІСЛЯ') { continue }
-        $item = @{line=$line;id='';question='';mode='';error=''}
+        $first = $i
+        # Звичайне продовження того самого абзацу склеюємо. Межі Markdown, новий рядок
+        # протоколу й підпис поля не поглинаємо: вони не можуть дописати id чи питання.
+        while ($i + 1 -lt $lines.Count) {
+            $next = $lines[$i + 1].Trim()
+            if (-not $next -or $next -cmatch '^(?:ЖИВИЙ ПІСЛЯ|[-*+>#_`~]|\d+[.)]\s|\p{Lu}[^:]*:|\|)') { break }
+            $line += ' ' + $next
+            $i++
+        }
+        $item = @{line=$line;first=$first;last=$i;id='';question='';mode='';error=''}
         if ($line -cnotmatch '^ЖИВИЙ ПІСЛЯ: (.*)$') {
             $item.error = 'рядок має починатися з «ЖИВИЙ ПІСЛЯ: » без маркера списку, виділення чи пропущеної двокрапки'
         } else {
@@ -922,6 +932,108 @@ function Get-LiveAfterLines([string]$Body, $Registry) {
         $result += @($item)
     }
     $result
+}
+
+function ConvertTo-LivePublicationBody([string]$Body, $Registry) {
+    <# Готує тіло тим самим читачем, зберігаючи ваду й оригінал без виконуваного префікса. #>
+    $items = @(Get-LiveAfterLines $Body $Registry)
+    $lines = New-Object 'System.Collections.Generic.List[string]'
+    foreach ($line in @($Body -split "`n")) { $lines.Add($line.TrimEnd("`r")) }
+    $bad = @($items | Where-Object { $_.error })
+    foreach ($item in @($items | Sort-Object first -Descending)) {
+        $replacement = $item.line
+        if ($item.error) { $replacement = "Вадний рядок живого прогону: $($item.error); оригінал: $($item.line)" }
+        $lines.RemoveRange($item.first, $item.last - $item.first + 1)
+        $lines.Insert($item.first, $replacement)
+    }
+    if ($bad.Count) {
+        $lines.Add('')
+        $lines.Add('ЗАБЛОКОВАНО: LIVE_AFTER_INVALID — ' + (($bad | ForEach-Object { $_.error }) -join '; '))
+    }
+    [pscustomobject]@{ Body=($lines -join "`n"); Bad=$bad }
+}
+
+function Merge-LivePublicationBody([string]$Body, [string]$ExistingBody, $Registry) {
+    <# Зберігає питання чинного PR: одна сцена має один рядок із усіма різними питаннями. #>
+    $items = @(Get-LiveAfterLines $Body $Registry)
+    $previous = @(Get-LiveAfterLines $ExistingBody $Registry)
+    $scenes = New-Object 'System.Collections.Generic.Dictionary[string,object]' ([StringComparer]::Ordinal)
+    $order = New-Object 'System.Collections.Generic.List[string]'
+    foreach ($item in @($items) + @($previous)) {
+        if ($item.error) { continue }
+        if (-not $scenes.ContainsKey($item.id)) {
+            $scenes[$item.id] = @{first=-1;questions=@()}
+            $order.Add($item.id)
+        }
+        foreach ($question in @($item.question -split ' ; ')) {
+            if ($scenes[$item.id].questions -cnotcontains $question) { $scenes[$item.id].questions += $question }
+        }
+    }
+    foreach ($item in $items) {
+        if (-not $item.error -and $scenes[$item.id].first -lt 0) { $scenes[$item.id].first = $item.first }
+    }
+    $lines = New-Object 'System.Collections.Generic.List[string]'
+    foreach ($line in @($Body -split "`n")) { $lines.Add($line.TrimEnd("`r")) }
+    foreach ($item in @($items | Sort-Object first -Descending)) {
+        if ($item.error) { continue }
+        $scene = $scenes[$item.id]
+        $lines.RemoveRange($item.first, $item.last - $item.first + 1)
+        if ($scene.first -eq $item.first) {
+            $lines.Insert($item.first, ('ЖИВИЙ ПІСЛЯ: ' + $item.id + ' — ' + ($scene.questions -join ' ; ')))
+        }
+    }
+    foreach ($id in $order) {
+        if ($scenes[$id].first -lt 0) {
+            $lines.Add('')
+            $lines.Add('ЖИВИЙ ПІСЛЯ: ' + $id + ' — ' + ($scenes[$id].questions -join ' ; '))
+        }
+    }
+    # Вада старого тіла також проходить спільне пояснення й блокер, а не зникає під час PATCH.
+    foreach ($item in @($previous | Where-Object { $_.error })) {
+        $lines.Add('')
+        $lines.Add($item.line)
+    }
+    ConvertTo-LivePublicationBody ($lines -join "`n") $Registry
+}
+
+function Get-HeadLivePublication([string]$Head, [string]$ExistingBody = '') {
+    <# Читає коміт і реєстр із довіреної бази перед прийманням звіту або записом тіла PR. #>
+    $body = (Invoke-Git @('show','-s','--format=%B',$Head)).Out
+    if (($body + "`n" + $ExistingBody) -cnotmatch '(?m)^[-*+>#_\s]*ЖИВИЙ ПІСЛЯ') {
+        return (ConvertTo-LivePublicationBody $body @{})
+    }
+    $registryText = (Invoke-Git @('show', 'refs/remotes/origin/main:аудит/проби/живі_сцени.txt')).Out
+    $registry = Get-LiveSceneRegistry $registryText
+    if (-not $registry.Count) { throw 'LIVE_AFTER_REGISTRY' }
+    # Повний рядок сцени — стільки полів, скільки в шапці реєстру «# Поля: …»; коротший рядок гілки не додаємо.
+    $header = @(($registryText -split "`n") | Where-Object { $_.TrimStart([char]0xFEFF).StartsWith('# Поля:') })
+    if (-not $header.Count) { throw 'LIVE_AFTER_REGISTRY' }
+    $width = $header[0].TrimEnd("`r").Split('|').Count
+    # Лише додані рядки від спільної бази: зміни й видалення сцен main не змінюють їхній режим.
+    $base = (Invoke-Git @('merge-base', 'refs/remotes/origin/main', $Head)).Out.Trim()
+    if (-not $base) { throw 'LIVE_AFTER_MERGE_BASE' }
+    $baseRegistry = Get-LiveSceneRegistry ((Invoke-Git @('show', ($base + ':аудит/проби/живі_сцени.txt'))).Out)
+    $diff = (Invoke-Git @('diff', '--no-ext-diff', '--unified=0', $base, $Head, '--', 'аудит/проби/живі_сцени.txt')).Out
+    foreach ($line in ($diff -split "`n")) {
+        if (-not $line.StartsWith('+') -or $line.StartsWith('+++')) { continue }
+        $row = $line.Substring(1).TrimEnd("`r").TrimStart([char]0xFEFF)
+        if (-not $row.Trim() -or $row.TrimStart().StartsWith('#')) { continue }
+        $fields = $row.Split('|')
+        if ($fields.Count -lt $width -or -not $fields[0].Trim()) { continue }
+        $added = Get-LiveSceneRegistry $row
+        foreach ($id in $added.Keys) {
+            if (-not $registry.ContainsKey($id) -and -not $baseRegistry.ContainsKey($id)) { $registry[$id] = $added[$id] }
+        }
+    }
+    Merge-LivePublicationBody $body $ExistingBody $registry
+}
+
+function Get-LiveCorrectionPrompt($Publication) {
+    <# Дає тому самому виконавцю один хід із причинами та точним форматом. #>
+    $details = ($Publication.Bad | ForEach-Object { "Вада: $($_.error)`nРядок: $($_.line)" }) -join "`n"
+    "Тіло останнього коміту не розбирається до публікації PR.`n$details`n" +
+        'Один хід на виправлення в тій самій гілці й тому самому наряді. Формат: ЖИВИЙ ПІСЛЯ: <id> — <питання правки> → <режим> → <ДО звідки> → <що вважати кращим>. ' +
+        'id — голе перше поле аудит/проби/живі_сцени.txt; одна сцена — один рядок. Закоміть виправлений звіт; останній рядок — за адаптером.'
 }
 
 function Get-AutoLivePlan([string]$BuildMain) {
@@ -978,8 +1090,14 @@ function Get-AutoLivePlan([string]$BuildMain) {
     ConvertTo-Json -InputObject @{since_sha=$checked;since=$since.ToString('o');until=$until.ToString('o');scenes=$scenes;cloud=$cloud;bad=$bad} -Depth 8 -Compress
 }
 
-function Add-AutoTaskContext([string]$Slug, [string]$Text, [string]$BuildMain = '') {
+function Add-AutoTaskContext([string]$Slug, [string]$Text, [string]$BuildMain = '', [string]$Model = '') {
     <# Додає перевірені числа і JSON-дані; довільний текст не стає інструкціями обгортки. #>
+    if ($Slug -cmatch '^(?:автоперевірка-[1-9][0-9]{0,8}-[0-9a-f]{40}|перевірка-[1-9][0-9]{0,8})$') {
+        if ($Model) {
+            if ($Model -cnotmatch '^[a-z0-9][a-z0-9.-]{1,63}$') { throw 'REVIEW_MODEL' }
+            $Text += "`nМодель перевірки: ``$Model```n"
+        }
+    }
     if ($Slug -cmatch '^автоперевірка-([1-9][0-9]{0,8})-([0-9a-f]{40})$') {
         $number = $Matches[1]; $head = $Matches[2]
         $inputData = Get-AutoReviewInput $number

@@ -34,7 +34,8 @@ try {
         <# Рядок проходить справжню доставку: стан → Send-Pending. #>
         foreach ($l in $Lines) {
             $path = "$WorkDir/state/{0:D4}.json" -f ($script:Seq++)
-            Write-FileAtomic $path ((@{line = $l; sent = $false; attempts = 0}) | ConvertTo-Json -Compress)
+            $slug = if ($l -cmatch '^GEMINI ОБГОРТКА: (?:ГОТОВО|ЗАБЛОКОВАНО) [^/]+/([^ ]+) ') { $Matches[1] } else { '' }
+            Write-FileAtomic $path ((@{slug = $slug; line = $l; sent = $false; attempts = 0}) | ConvertTo-Json -Compress)
             Send-Pending (Get-Item $path)
         }
     }
@@ -66,6 +67,7 @@ try {
         Check '1 ТРИВОГА будить' (Test-DispatcherAction 'GEMINI ОБГОРТКА: ТРИВОГА AUTH CLOUD')
         Check '1 ЛАНЦЮГ будить' (Test-DispatcherAction 'GEMINI ОБГОРТКА: ЛАНЦЮГ CHAIN_API')
         foreach ($kind in @('перевірка-12', 'pachka-3', 'автоживий-штамп', 'автоперевірка-9', 'Е1-нічний-живий-1')) {
+            Write-FileAtomic "$WorkDir/state/kind.json" ((@{slug=$kind;line="GEMINI ОБГОРТКА: ГОТОВО gemini/$kind $sha"}) | ConvertTo-Json)
             Check "1 ГОТОВО $kind — будить" (Test-DispatcherAction "GEMINI ОБГОРТКА: ГОТОВО gemini/$kind $sha")
         }
         Check '1 ГОТОВО виконавця — зведення' (-not (Test-DispatcherAction "GEMINI ОБГОРТКА: ГОТОВО gemini/крок $sha"))
@@ -144,6 +146,7 @@ try {
         Deliver ($facts)
         $script:GhBodies = @()
         function Invoke-Native { param($Exe, $Arguments, $WorkDirectory, $TimeoutMinutes, $StdIn) $script:GhBodies += , [string]$StdIn; [pscustomobject]@{Code = 0; Out = '{"id":7}'; Err = ''} }
+        Write-FileAtomic "$WorkDir/state/wake.json" ((@{slug="автоперевірка-9-$sha";line=$wake;sent=$false;attempts=0}) | ConvertTo-Json -Compress)
         Check '5 запасний канал підтверджено' (Send-Fallback $wake)
         $body = ($script:GhBodies[0] | ConvertFrom-Json).body
         Check '5 у тілі коментаря — основний рядок і зведення 14' (($body -split "`n")[0] -ceq $wake -and ($body -split "`n")[1] -ceq 'ЗВЕДЕННЯ БЕЗ ПРОБУДЖЕННЯ: 14')

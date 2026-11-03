@@ -1,0 +1,109 @@
+"""Дописати виміряні факти до звіту після завершення записувача."""
+import json
+from pathlib import Path
+
+root=Path.cwd()/'аудит/проби/автоживий-c71cc075fdaca37a3df5b1419fc035acd0035024'
+data=json.loads((root/'виміри-продовження.json').read_text(encoding='utf-8'))
+path=root/'ЗВІТ-продовження.md'
+report=path.read_text(encoding='utf-8')
+placeholder='Доведено: зафіксовано наведену спробу та її фактичний результат. Відповіді на питання плану — **не доведено** до розбору записаних даних; оцінка якості належить окремому наряду.'
+
+def fmt(obj):
+    return '`'+json.dumps(obj,ensure_ascii=False,separators=(',',':'))+'`'
+
+def unique(rows):
+    result=[]
+    for row in rows:
+        if row not in result:
+            result.append(row)
+    return result
+
+for row in data:
+    scene=row['сцена']
+    facts=['Факти щодо питань плану (повний витяг — [виміри-продовження.json](виміри-продовження.json), первинні дані — у файлах сцени):','']
+    passport=row.get('паспорт')
+    if passport:
+        facts += ['- Паспорт: пора '+fmt(passport.get('пора'))+'; part_of_day '+fmt((passport.get('виміри') or {}).get('part_of_day'))+'; ошатність '+fmt(passport.get('ошатність'))+'; гілка '+fmt(passport.get('гілка_ошатності'))+'.',
+            '- Поля годин і хвилин у паспорті (рекурсивно, включно з цитатами): '+fmt(row.get('годинникові_поля_паспорта'))+'.']
+    cards=row.get('картки_розмови',[])
+    for card in cards:
+        facts += ['- Картка після розмови: '+fmt(card)+'.']
+    days=unique([{k:r['day'].get(k) for k in ('part_of_day','light','formality','occasion_requirements')} for r in row['запити_стилістки']])
+    for day in days:
+        facts += ['- День запитів стилістки: '+fmt(day)+'.']
+    clocks=unique([p for r in row['запити_стилістки'] for p in r['годинникові_поля_case_day']])
+    if row['запити_стилістки']:
+        facts += ['- Поля годин і хвилин у case/day усіх записаних запитів (включно з field_quotes): '+fmt(clocks)+'.']
+    updates=unique([r['update'] for r in row['мовні_ходи'] if r['update']])
+    for update in updates:
+        picked={k:v for k,v in update.items() if k in ('part_of_day','hour','minute','formality','open_zones','occasion','place')}
+        facts += ['- Відповідь мовної моделі, поля за питаннями: '+fmt(picked)+'.']
+    errors=[r['format_error'] for r in row['мовні_ходи'] if r['format_error']]
+    if errors:
+        facts += ['- У записаному обміні були повторні відповіді на формат: '+fmt(errors)+'. Це не повтор сцени.']
+    if row.get('факт_доказу'):
+        facts += ['- Факти підсумкового приладу: '+fmt(row['факт_доказу'])+'.']
+    if scene=='б1_концерт_стримано':
+        for hand in row['руки']:
+            facts += ['- Рука '+str(hand['рука'])+': K-CRA-04 у сліді '+fmt(hand['K-CRA-04_слід'])+'; K-CRA-04 у знахідках '+fmt(hand['K-CRA-04_знахідки'])+'; K-OUT-06 у знахідках '+fmt(hand['K-OUT-06_знахідки'])+'.']
+        fired=sum(len(h['K-CRA-04_слід']) for h in row['руки'])
+        found=sum(len(h['K-CRA-04_знахідки']) for h in row['руки'])
+        missing=[t.get('значення') for h in row['руки'] for t in h['K-CRA-04_слід']
+                 if t.get('ярлик')=='finding_fired' and t.get('значення') not in {f.get('суть') for f in h['K-CRA-04_знахідки']}]
+        if fired and not missing:
+            facts += ['**Доведено для записаних вердиктів:** '+str(fired)+' записів K-CRA-04 у сліді, '+str(found)+' відповідних знахідок; усі тексти спрацювань присутні у знахідках тієї самої руки.']
+        else:
+            facts += ['**Не доведено:** передавання всіх спрацювань K-CRA-04; відсутні відповідності '+fmt(missing)+'.']
+        kout=sum(len(h['K-OUT-06_знахідки']) for h in row['руки'])
+        facts += [('**Доведено:**' if not kout else '**Не доведено:**')+' у '+str(len(row['руки']))+' записаних вердиктах кількість знахідок K-OUT-06 = '+str(kout)+'.']
+    if scene=='ж1_побачення_день_червоне':
+        action_lines=[s for s in row['тексти_події'] if any(k in s for k in ('не ця','НЕ ЦЯ','НЕ_ЦЯ','NE_TSIA','Зібрати ще раз'))]
+        facts += ['- Записані рядки дії «не ця» та повторного збирання: '+fmt(action_lines)+'.']
+        if row['rc']>=2:
+            facts += ['- Блокер сцени: у доказі зафіксовано тайм-аут очікування позначки «не ця» (НЕ_ЦЯ_П), 10000 мс. Картки були сформовані до обриву; збою середовища до збирання не встановлено, повтор не виконували. Питання #2679 про наступне збирання та збереження речей руки 2 — **не доведено**.']
+    facts += ['','**Доведено записом:** наведені значення, факт викликів та результат стенда.']
+    expected={'ж2_побачення_вечір':'evening','ж3_співбесіда':'morning','ж7_вечеря_сьомій':'evening',
+        'ж7_театр_дата':'evening','ж3_свято_др':'evening','ж3_кафе_13':'day','ж3_кафе_20':'evening',
+        'ж2_побачення_день':'day','ж3_ювілей_день':'day','ж3_ювілей_вечір':'evening',
+        'ж1_весілля_день':'day','ж1_весілля_вечір':'evening','ж1_побачення_день_червоне':'day','б1_концерт_стримано':'evening'}[scene]
+    actual=(passport.get('виміри') or {}).get('part_of_day') if passport else None
+    if actual is None and cards:
+        actual={'вдень':'day','ввечері':'evening','вранці':'morning','зранку':'morning','вночі':'night'}.get(cards[0].get('коли'))
+    if actual is None and days:
+        actual=days[0].get('part_of_day')
+    if actual==expected:
+        facts += ['**Доведено:** частина дня за питанням '+fmt(expected)+' присутня в наведених даних запису. Джерело конкретного значення наведено вище; день запиту не є доказом усіх видимих текстів картки.']
+    else:
+        facts += ['**Не доведено:** очікувана за питанням частина дня '+fmt(expected)+'; у доступних даних запису '+fmt(actual)+'.']
+    if row['rc']>=2:
+        facts += ['**Не доведено:** завершення сцени й питання, для яких потрібні відсутні картки або наступні дії. Блокер цієї сцени не зупинив решту плану.']
+    if cards:
+        facts += ['**Доведено:** картка показує '+fmt([c.get('коли') for c in cards])+'; година моделі '+fmt([c.get('година_моделі') for c in cards])+'.']
+    facts += ['**Не доведено цим звітом:** оцінка доречності, ошатності образів і порівняння «не гірше за ДО»; це робота окремого наряду іншого постачальника. Питання про chosen, відсутність годин у всіх видимих текстах чи другу відкриту зону вважаються недоведеними там, де відповідний факт не наведений вище.','']
+    if placeholder not in report:
+        raise RuntimeError('Звіт уже змінено або бракує секції '+scene)
+    report=report.replace(placeholder,'\n'.join(facts),1)
+by_scene={row['сцена']:row for row in data}
+comparisons=['## Порівняння записаних пар','',
+    'Це значення запису, без оцінки образів. Різні відповіді моделі в парі не є доказом впливу лише коду.','',
+    '| Пара | Перша сцена: ошатність паспорта/картки; день стилістки | Друга сцена: ошатність паспорта/картки; день стилістки |',
+    '|---|---|---|']
+for label,left,right in [('кафе','ж3_кафе_13','ж3_кафе_20'),('побачення','ж2_побачення_день','ж2_побачення_вечір'),
+    ('ювілей','ж3_ювілей_день','ж3_ювілей_вечір'),('весілля','ж1_весілля_день','ж1_весілля_вечір')]:
+    cells=[]
+    for scene in (left,right):
+        row=by_scene.get(scene,{})
+        formality=row.get('паспорт',{}).get('ошатність')
+        if formality is None and row.get('картки_розмови'):
+            formality=row['картки_розмови'][0].get('число_моделі')
+        days=unique([{k:r['day'].get(k) for k in ('part_of_day','light','formality')} for r in row.get('запити_стилістки',[])])
+        cells.append(fmt(formality)+'; '+fmt(days))
+    comparisons.append('| '+label+' | '+' | '.join(cells)+' |')
+comparisons.append('')
+report=report.replace('## Покриття','\n'.join(comparisons)+'\n## Покриття',1)
+incomplete=[row['сцена'] for row in data if row['rc']>=2]
+if incomplete:
+    report+='\nНезавершені до кінця записи плану: '+', '.join(incomplete)+' (ця спроба); ж4_робота_стримано (перший прогін, його окремий наряд розбору). Усі 14 призначених сцен були запущені; ж4 не повторювали.\n'
+report+='\nТри записи першого прогону перенесено без змін із `6c44a6c5edac74caeb499ebee919bc71a763d181` у цю гілку, без запуску стенда: [походження-попередніх-записів.json](походження-попередніх-записів.json). Звірка параметрів усіх 14 нових записів та окремих комітів: [звірка-записів-продовження.json](звірка-записів-продовження.json).\n'
+path.write_text(report,encoding='utf-8')
+print('Дописано факти',len(data),'сцен')
