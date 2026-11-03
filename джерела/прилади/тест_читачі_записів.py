@@ -5,11 +5,13 @@ import hashlib
 import io
 import json
 import tempfile
+import os
+import subprocess
 from contextlib import redirect_stdout, redirect_stderr
 from pathlib import Path
 from unittest.mock import patch
 
-from читачі_записів import вимір, посилання, звіт
+from читачі_записів import вимір, посилання, звіт, дерево
 from великі_записи import порушення
 
 
@@ -19,6 +21,25 @@ class Читачі(unittest.TestCase):
     def лічити(self, читання):
         """Подає маленьке повне дерево, а не файли поточної sparse-копії."""
         return вимір({п: (10, 'ша') for п in читання}, читання)
+
+    def test_повне_git_дерево_з_підкаталогу(self):
+        """Повний вимір не стає порожнім для аудит/, якщо прилад викликали з джерела/."""
+        with tempfile.TemporaryDirectory() as тека:
+            корінь = Path(тека).resolve()
+            self.assertTrue(корінь.is_relative_to(Path(tempfile.gettempdir()).resolve()))
+            for назва in ('аудит', 'джерела'):
+                (корінь / назва).mkdir()
+            (корінь / 'аудит/вхід.txt').write_text('{}', encoding='utf8')
+            (корінь / 'джерела/п.py').write_text('pass\n', encoding='utf8')
+            subprocess.run(['git', 'init', '--quiet', str(корінь)], check=True, capture_output=True)
+            subprocess.run(['git', '-C', str(корінь), 'add', '-f', '.'], check=True, capture_output=True)
+            знімок = subprocess.check_output(['git', '-C', str(корінь), 'write-tree']).decode().strip()
+            звідки = os.getcwd()
+            try:
+                os.chdir(корінь / 'джерела')
+                self.assertEqual(set(дерево(знімок)), {'аудит/вхід.txt', 'джерела/п.py'})
+            finally:
+                os.chdir(звідки)
 
     def test_транзитивність_і_мертвий_цикл(self):
         """Живий звіт зберігає залежність, два мертві звіти — ні."""
