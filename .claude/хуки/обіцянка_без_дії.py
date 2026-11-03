@@ -18,18 +18,18 @@ sys.stderr.reconfigure(encoding='utf-8')
 
 
 def збої(вміст):
-    """Виділяє предмет і причину кожного рядка збою у вході ходу."""
+    """Виділяє предмет і причину збою; час скидання квоти не входить до її групи."""
     for рядок in вміст.splitlines():
         збіг = ЗБІЙ.search(рядок)
         if not збіг:
             continue
         причина = ' '.join(рядок[збіг.start():].split()).casefold()
-        квота = re.search(r'QUOTA0_(\w+)', рядок)
+        квота = re.search(r'\bQUOTA0_([A-Z0-9]{1,16})(?:_M[0-9]{1,6})?\b', рядок)
         гілки = [г.rstrip('.') for г in ГІЛКА.findall(рядок)]
         номери = [next(н for н in м.groups() if н) for м in НОМЕР_ЗАПИТУ.finditer(рядок)]
         if квота:
-            назва = re.escape(квота[1]).replace('_', r'[\s_-]+')
-            ознаки = [rf'\b(?:QUOTA0_)?{re.escape(квота[1])}\b', rf'\b{назва}\b']
+            назва = re.escape(квота[1])
+            ознаки = [rf'\bQUOTA0_{назва}(?:_M[0-9]{{1,6}})?\b', rf'\b{назва}\b']
             if квота[1] == 'GEMINIMODELS':
                 ознаки.append(r'\bквот\w*\s+Gemini(?:[\s_-]+Models)?\b')
             предмети = [(f'квота {квота[1]}', ознаки)]
