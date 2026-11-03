@@ -197,7 +197,11 @@ class Читачі(unittest.TestCase):
         for текст in (
                 'г, т = "origin/claude/архів", "../аудит/серія"\nф = git("ls-tree", "-r", г, т)\n'
                 'git("show", "%s:%s" % (г, ф))\ngit("show", "HEAD:джерела/п.py")',
-                'ф = git("ls-tree", "-r", "HEAD", "../аудит/серія")\ngit("show", "--stat", "HEAD")'):
+                'ф = git("ls-tree", "-r", "HEAD", "../аудит/серія")\ngit("show", "--stat", "HEAD")',
+                'ФАЙЛИ = [f"аудит/{н}.md" for н in ("А", "Б")]\n'
+                'def читати(ref, файл):\n'
+                '    git("show", f"{ref}:{файл}")\n'
+                '    git("ls-tree", ref, "--", файл)\n'):
             with self.subTest(текст=текст):
                 self.assertNotIn('аудит/серія/вхід.txt', self.лічити({
                     'джерела/проби/п.py': текст, 'аудит/серія/вхід.txt': ''}))

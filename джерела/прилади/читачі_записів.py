@@ -214,7 +214,8 @@ def git_посилання(читач, код, константи):
         for _, команда, аргументи in команди)
     if not є_блоби:
         return set()
-    літерали = [в.value for в in ast.walk(код) if isinstance(в, ast.Constant) and isinstance(в.value, str)]
+    літерали = [в.value for в in ast.walk(код) if isinstance(в, ast.Constant) and isinstance(в.value, str)
+                and not isinstance(батьки.get(в), (ast.JoinedStr, ast.Expr))]
     вихід = set()
     for виклик, команда, аргументи in команди:
         if команда != 'ls-tree':
