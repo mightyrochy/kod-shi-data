@@ -141,6 +141,7 @@ class Читачі(unittest.TestCase):
         for читач in ('джерела/проби/п.py', 'джерела/прилади/п.py'):
             for вираз in ('open("../аудит/серія/вхід.json")',
                           'open(Path("..") / "аудит" / "серія" / "вхід.json")',
+                          'open(Path(__file__).resolve().parents[2] / "аудит" / "серія" / "вхід.json")',
                           'glob.glob("../аудит/серія/*.json")',
                           'Path("../аудит/серія").rglob("*.json")'):
                 with self.subTest(читач=читач, вираз=вираз):
