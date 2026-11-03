@@ -123,6 +123,7 @@ def пітон(в):
         return т('FunctionExpression' if isinstance(в, ast.Lambda) else 'FunctionDeclaration',
                  id=None if isinstance(в, ast.Lambda) else т('Identifier', name=в.name),
                  params=[т('Identifier', name=а.arg) for а in в.args.posonlyargs + в.args.args + в.args.kwonlyargs],
+                 kwargs=в.args.kwarg.arg if в.args.kwarg else None,
                  body=тіло)
     if isinstance(в, (ast.Assign, ast.AnnAssign, ast.AugAssign, ast.NamedExpr)):
         цілі = в.targets if isinstance(в, ast.Assign) else [в.target]
@@ -250,6 +251,8 @@ class Граф:
         self.означення = {}
         self.застосування = set()
         self.імена_параметрів = {}
+        self.kwargs_параметри = {}
+        self.kwargs_викликів = {}
         self.іменовані_виклики = {}
         self.скалярні = set()
         self.джерела_функцій = set()
@@ -411,6 +414,8 @@ class Граф:
             пов = self.нове()
             self.функції[р] = (параметри, пов)
             self.імена_параметрів[р] = {п['name']: пв for п, пв in zip(в.get('params', []), параметри) if п['type'] == 'Identifier'}
+            if в.get('kwargs'):
+                self.kwargs_параметри[р] = self.змінна(в['kwargs'], нов, True)
             self.оголосити(в['body'], нов)
             з = self.вираз(в['body'], нов, пов)
             if в['body']['type'] != 'BlockStatement':
@@ -471,6 +476,14 @@ class Граф:
             self.виклики.append((р, функ, б, ім, назва, арг, self.файл, н))
             self.адреси_викликів[р] = f'{self.файл}:{н}'
             self.іменовані_виклики[р] = tuple((к['key']['value'], self.вираз(к['value'], с)) for к in в.get('keywords', []))
+            if self.іменовані_виклики[р]:
+                словник = self.нове(True)
+                self.kwargs_викликів[р] = словник
+                for назва_аргументу, а in self.іменовані_виклики[р]:
+                    if назва_аргументу is None:
+                        self.копії.add((а, словник))
+                    else:
+                        self.запис(словник, назва_аргументу, а)
             if ім in {'модельП', 'викликОцінкиП'}:
                 кадри = арг[1:2] if ім == 'модельП' else арг[2:3]
                 self.входи.append(Вхід(self.файл, н, 'а', кадри, 'фото в ' + ім))
@@ -539,6 +552,8 @@ class Граф:
                     elif ім is None:
                         for назва, п in self.імена_параметрів[ф].items():
                             self.звʼязати(self.розпаковані_поля[а, назва], п)
+                if ф in self.kwargs_параметри and вих in self.kwargs_викликів:
+                    self.звʼязати(self.kwargs_викликів[вих], self.kwargs_параметри[ф])
                 self.звʼязати(пов, вих)
             if ф in self.резолвери and арг:
                 self.звʼязати(арг[0], self.резолвери[ф])
@@ -831,6 +846,8 @@ class Граф:
                         elif ім is None:
                             for назва, п in self.імена_параметрів[ф].items():
                                 ребро(self.розпаковані_поля[а, назва], п)
+                    if ф in self.kwargs_параметри and вих in self.kwargs_викликів:
+                        ребро(self.kwargs_викликів[вих], self.kwargs_параметри[ф])
                     ребро(пов, вих)
                 if ф in self.резолвери and арг:
                     ребро(арг[0], self.резолвери[ф])

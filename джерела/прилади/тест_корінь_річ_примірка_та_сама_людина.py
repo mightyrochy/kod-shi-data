@@ -82,6 +82,12 @@ class Прилад(unittest.TestCase):
         self.перевірити({'а.py': код}, 1)
         self.перевірити({'а.py': код.replace('return generated', 'return original')}, 0)
 
+    def test_python_словник_іменованих(self):
+        код = 'def forward(**kw):\n    return kw["generated"]\nf = forward\njudge(f(original=load_photo(), generated=generate_image()))\n'
+        self.перевірити({'а.py': код}, 1)
+        self.перевірити({'а.py': код.replace('return kw["generated"]', 'return kw["original"]')}, 0)
+        self.перевірити({'а.py': 'def forward(**kw):\n    return kw["generated"]\na = {"generated": generate_image()}\njudge(forward(**a))\n'}, 1)
+
     def test_приховане_декодування(self):
         """Image, який нікуди не додано, не є показом жінці."""
         self.перевірити({'а.js': 'const i=new Image();\ni.src=generate_image();'}, 0)
