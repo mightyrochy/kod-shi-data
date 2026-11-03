@@ -1,0 +1,22 @@
+import argparse,json,urllib.request
+p=argparse.ArgumentParser()
+p.add_argument('op',nargs='?',default='snapshot')
+for name in ('selector','value','text','file','dir'):
+ p.add_argument('--'+name)
+p.add_argument('--ms',type=int)
+p.add_argument('--y',type=int)
+p.add_argument('--short',action='store_true')
+p.add_argument('--quiet',action='store_true')
+p.add_argument('--label')
+a=vars(p.parse_args());short=a.pop('short');quiet=a.pop('quiet');label=a.pop('label');q={k:v for k,v in a.items() if v is not None}
+if label:q['value']={'label':label}
+req=urllib.request.Request('http://127.0.0.1:41236',data=json.dumps(q).encode(),headers={'Content-Type':'application/json'})
+try:
+ with urllib.request.urlopen(req,timeout=600) as r:v=json.load(r)
+ if quiet:print(json.dumps({'screen':v.get('screen')},ensure_ascii=False))
+ elif short:print(json.dumps({'screen':v.get('screen'),'text':v.get('text','')[-10000:]},ensure_ascii=False))
+ else:
+  if 'inputs'in v:v['inputs']=[x for x in v['inputs'] if x.get('visible') or x.get('type')=='file']
+  print(json.dumps(v,ensure_ascii=False))
+except urllib.error.HTTPError as e:
+ print(e.read().decode());raise SystemExit(1)
