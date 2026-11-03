@@ -1,0 +1,51 @@
+── ПРОМПТ (2600 симв.) ──
+{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.", "One item carries one thing — of two alternatives list the first; a note in brackets is not an item.", "Slot \"accessory\" is for an item no other slot fits.", "\"is_outfit\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "ITEM_LIST", "answer_schema": {"is_outfit": "yes|no", "items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory", "color_hex": "<#rrggbb or null>", "worn": "<true, or false when the description says the outfit goes without it>"}]}, "input": ["\"description\" — the outfit description"]}, "description": "Blazer in charcoal gray with a structured shoulder cut, knee-length hem, #3e4650 color, wool blend fabric.  \nTailored trousers in matching charcoal gray, straight-leg width, full-length, #3a4452 color, stretch cotton twill fabric.  \nSilk-blend blouse in soft ivory with a classic collar, cropped length hitting the hip bone, #fcfbf8 color, smooth silk fabric.  \nLeather pumps in polished black, pointed toe with moderate heel height, #0d0c0e color, calfskin leather fabric.  \nMatte gold stud earrings, simple round shape, #e6dbbc color, gold-plated brass alloy fabric.  \nMinimalist thin silver watch with a leather strap, rectangular face, #78a3ac color, stainless steel and genuine leather fabric.  \n\nThis outfit works because it strictly adheres to the formal dress code required for a bank analyst interview while prioritizing comfort through breathable autumn fabrics. The monochromatic base of charcoal and ivory creates a streamlined silhouette that appears professional and confident without being overpowering. The touch of metallic jewelry adds just enough sophistication to signal attention to detail, which is essential in finance, while the structured jacket ensures a polished look under office lighting. Overall, the ensemble balances authority with approachability, perfectly fitting the context of a morning daylight interview."}
+
+── ВІДПОВІДЬ (1191 симв., 5.8 с, HTTP 200) ──
+{
+  "is_outfit": "yes",
+  "items": [
+    {
+      "name": "blazer",
+      "details": "structured shoulder cut, knee-length hem, wool blend fabric",
+      "slot": "outerwear",
+      "color_hex": "#3e4650",
+      "worn": true
+    },
+    {
+      "name": "trousers",
+      "details": "straight-leg width, full-length, stretch cotton twill fabric",
+      "slot": "bottom",
+      "color_hex": "#3a4452",
+      "worn": true
+    },
+    {
+      "name": "blouse",
+      "details": "classic collar, cropped length hitting the hip bone, smooth silk fabric",
+      "slot": "top",
+      "color_hex": "#fcfbf8",
+      "worn": true
+    },
+    {
+      "name": "pumps",
+      "details": "pointed toe with moderate heel height, calfskin leather fabric",
+      "slot": "shoes",
+      "color_hex": "#0d0c0e",
+      "worn": true
+    },
+    {
+      "name": "earrings",
+      "details": "simple round shape, gold-plated brass alloy fabric",
+      "slot": "earrings",
+      "color_hex": "#e6dbbc",
+      "worn": true
+    },
+    {
+      "name": "watch",
+      "details": "rectangular face, stainless steel and genuine leather fabric",
+      "slot": "watch",
+      "color_hex": "#78a3ac",
+      "worn": true
+    }
+  ]
+}

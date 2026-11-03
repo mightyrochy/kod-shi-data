@@ -8,6 +8,20 @@ import re
 def прочитати(шлях):
     return json.loads(шлях.read_text(encoding="utf-8")) if шлях.exists() else None
 
+def пакети(звіт):
+    вихід = []
+    for прогін in звіт.get("прогони", []):
+        for в in прогін.get("вердикти", []):
+            for к in в.get("етапи", {}).get("виклики", []):
+                try:
+                    дані = json.loads(к.get("запит", {}).get("текст", ""))
+                except (ValueError, TypeError, AttributeError):
+                    continue
+                if isinstance(дані, dict) and "case" in дані and "day" in дані:
+                    вихід.append({"рука": в.get("рука"), "case": дані["case"], "day": дані["day"]})
+                    break
+    return вихід
+
 def main():
     план = json.loads((ТЕКА / "НАРЯД.md").read_text(encoding="utf-8").split("ПЛАН ЖИВОГО — ДАНІ (JSON):\n", 1)[1].splitlines()[0])
     підсумок = {}
@@ -42,6 +56,7 @@ def main():
         if звіт:
             дані["ключі_вердиктів"] = list(звіт)
             дані["спільне"] = звіт.get("спільне")
+            дані["пакети"] = пакети(звіт)
             дані["руки"] = [{"рука": в.get("рука"), "склад": в.get("склад"),
                 "фото_речей": в.get("фото_речей"), "речі_образу": в.get("речі_образу"),
                 "знахідки": в.get("етапи", {}).get("суд", {}).get("знахідки", [])}
