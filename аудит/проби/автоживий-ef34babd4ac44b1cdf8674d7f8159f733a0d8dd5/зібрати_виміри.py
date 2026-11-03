@@ -52,6 +52,6 @@ for сцена, питання in ПЛАН['scenes'].items():
                         'блокує', 'структура', 'дні']}
                         for з in е.get('виклики', [])]})
     ВИМІРИ[сцена] = в
-(ТЕКА / 'ВИМІРИ.json').write_text(json.dumps(ВИМІРИ, ensure_ascii=False, indent=1), encoding='utf-8')
+(ТЕКА / 'ВИМІРИ.json').write_text(json.dumps(ВИМІРИ, ensure_ascii=False, indent=1) + '\n', encoding='utf-8', newline='\n')
 for сцена, в in ВИМІРИ.items():
     print(сцена, 'rc=' + str(в['rc']), 'червоних=' + str(len(в['червоні'])), 'секунд=' + str(в['секунд']))
