@@ -1,0 +1,144 @@
+{
+  "time_utc": "2026-11-03T12:23:06.445456+00:00",
+  "label": "click",
+  "url": "http://127.0.0.1:8765/index.html#%D0%BC%D1%96%D1%81%D1%82=http://127.0.0.1:8765/%D0%BC%D1%96%D1%81%D1%82&%D1%82=local-run&%D0%BC%D0%BE%D0%B4%D0%B5%D0%BB%D1%8C=qwen%2Fqwen3.5-9b&%D0%BC%D0%BE%D0%B4%D0%B5%D0%BB%D1%8C_%D0%BC%D0%BE%D0%B2%D0%B8=mamaylm-gemma-3-12b-it-v2.0&%D0%B2%D1%96%D0%BA%D0%BD%D0%BE=57344&%D0%B2%D1%96%D0%BA%D0%BD%D0%BE_%D0%BC%D0%BE%D0%B2%D0%B8=16384",
+  "text": "люстерко\nНіч\nКрок 1 з 3\nПро тебе\nДо лиця\nФігура\nЛюстерко покаже те, що тобі пасує.\n\nТри кроки — і далі ти лише кажеш, куди йдеш.\n\nДодати портрет\nНа повний зріст\nНа повний зріст — для приміряння\nПортрет — для кольорів\n\nЩойно додаси портрет, кольори зчитаються самі.\n\nТвої кольори\n\nШкіра, волосся й очі з портрета — від них рахується палітра.\n\nЗчитати кольори з портрета\nІнший шлях — через будь-який чат-помічник\n\nСкопіюй запит, надішли його з фото обличчя в чат — і поверни відповідь сюди цілком.\n\nЗапит для чату\nСкопіювати запит\nВідповідь чату\nЗастосувати кольори\nЯк тебе звати\nІм'я або псевдонім\nДозволяю записати мої відтінки разом із вердиктами\n\nБез згоди вердикт запишеться без кольорів.\n\nСпитати стилістку\nДалі",
+  "controls": [
+    {
+      "tag": "BUTTON",
+      "id": "знак",
+      "type": "button",
+      "text": "люстерко",
+      "placeholder": null,
+      "value": ""
+    },
+    {
+      "tag": "BUTTON",
+      "id": "тема-кнопка",
+      "type": "button",
+      "text": "Ніч",
+      "placeholder": null,
+      "value": ""
+    },
+    {
+      "tag": "BUTTON",
+      "id": "",
+      "type": "button",
+      "text": "Про тебе",
+      "placeholder": null,
+      "value": ""
+    },
+    {
+      "tag": "BUTTON",
+      "id": "",
+      "type": "button",
+      "text": "До лиця",
+      "placeholder": null,
+      "value": ""
+    },
+    {
+      "tag": "BUTTON",
+      "id": "",
+      "type": "button",
+      "text": "Фігура",
+      "placeholder": null,
+      "value": ""
+    },
+    {
+      "tag": "INPUT",
+      "id": "",
+      "type": "file",
+      "text": "",
+      "placeholder": "",
+      "value": ""
+    },
+    {
+      "tag": "INPUT",
+      "id": "",
+      "type": "file",
+      "text": "",
+      "placeholder": "",
+      "value": ""
+    },
+    {
+      "tag": "BUTTON",
+      "id": "кол-зчитати",
+      "type": "button",
+      "text": "Зчитати кольори з портрета",
+      "placeholder": null,
+      "value": ""
+    },
+    {
+      "tag": "TEXTAREA",
+      "id": "кол-запит",
+      "type": "textarea",
+      "text": "",
+      "placeholder": "",
+      "value": "{\"task\": {\"role\": \"You read a woman's own colours — skin, hair and eyes — from her portrait photo.\", \"rules\": [\"First decide whether the photo is usable. It is not when it is black-and-white or heavily filtered, the face takes less than a quarter of the frame, the eyes are covered by glasses or hair or narrowed, the light is coloured (stage or neon), or it is so overexposed that the skin turns white. Then give only the reason in \\\"photo\\\" and no colours.\", \"Skin: three points — cheek, forehead, jaw — each free of shadow, highlight, blush and foundation.\", \"Hair: first the tone that covers the largest area of the head, even when it is neither the lightest nor the darkest; then every other visible tone (highlights, balayage, roots, grey) as its own entry. Even single-tone hair is one entry. Do not merge different tones.\", \"Eyes: the body of the iris. A clearly darker ring along the edge of the iris goes to \\\"limbal_ring\\\".\", \"Take the colours from her, not from the background or her clothes.\", \"If the light makes the photo yellow or blue, correct the colours to neutral daylight and record the correction.\"], \"limits\": [\"Rely only on the input: do not invent what it does not contain.\", \"What you do not know is \\\"unknown\\\", null or an empty list, as the schema allows.\", \"The answer is one JSON object following \\\"answer_schema\\\", without explanations and without ```.\"], \"language\": \"English\", \"answer\": \"PORTRAIT_COLOURS\", \"answer_schema\": {\"photo\": \"usable|portrait_black_white|portrait_face_small|portrait_eyes_hidden|portrait_coloured_light|portrait_overexposed — usable, or why it is not\", \"skin\": [\"<#rrggbb: cheek, forehead, jaw>\"], \"hair\": [\"<#rrggbb, the largest-area tone first>\"], \"eyes\": \"<#rrggbb of the iris body>\", \"limbal_ring\": \"<#rrggbb, or null>\", \"light_cast\": \"none|yellow|blue — the cast you corrected\", \"light_correction\": \"none|slight|strong — how much you corrected it\"}, \"input\": [\"\\\"photo_of_her\\\" — her portrait photo, attached as an image\"]}, \"photo_of_her\": true}"
+    },
+    {
+      "tag": "BUTTON",
+      "id": "кол-копія",
+      "type": "button",
+      "text": "Скопіювати запит",
+      "placeholder": null,
+      "value": ""
+    },
+    {
+      "tag": "TEXTAREA",
+      "id": "кол-відповідь",
+      "type": "textarea",
+      "text": "",
+      "placeholder": "шкіра 1 #f2d6c4 шкіра 2 #efd0bc …",
+      "value": "{\"skin\":[\"#d9b48f\",\"#d1ab86\",\"#e0bd9a\"],\"hair\":[\"#745a3b\",\"#664f34\"],\"eyes\":\"#7a7a4c\",\"limbal_ring\":\"#4f5232\"}\n"
+    },
+    {
+      "tag": "BUTTON",
+      "id": "кол-читати",
+      "type": "button",
+      "text": "Застосувати кольори",
+      "placeholder": null,
+      "value": ""
+    },
+    {
+      "tag": "INPUT",
+      "id": "пр-імʼя",
+      "type": "text",
+      "text": "",
+      "placeholder": "напр., Оля К.",
+      "value": ""
+    },
+    {
+      "tag": "INPUT",
+      "id": "пр-згода",
+      "type": "checkbox",
+      "text": "",
+      "placeholder": "",
+      "value": "on"
+    },
+    {
+      "tag": "BUTTON",
+      "id": "ші-пілюля",
+      "type": "button",
+      "text": "Спитати стилістку",
+      "placeholder": null,
+      "value": ""
+    },
+    {
+      "tag": "BUTTON",
+      "id": "н-назад",
+      "type": "button",
+      "text": "",
+      "placeholder": null,
+      "value": ""
+    },
+    {
+      "tag": "BUTTON",
+      "id": "н-далі",
+      "type": "button",
+      "text": "Далі",
+      "placeholder": null,
+      "value": ""
+    }
+  ]
+}
