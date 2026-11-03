@@ -1,0 +1,33 @@
+import urllib.request,json,argparse
+from pathlib import Path
+p=argparse.ArgumentParser();p.add_argument('actor');p.add_argument('--setup');p.add_argument('--finish',action='store_true');a=p.parse_args()
+people={
+'ж2':{'name':'Олена','measures':[100,96,80,104,168],'white':'Молочний','intensity':"Приглушені, м'які",'start':'У мене сьогодні побачення в ресторані о пів на восьму вечора. Надворі мороз і вітер, на вулиці посипано сіллю. Хочу гарно виглядати й не змерзнути.'},
+'ж1':{'name':'Марія','measures':[100,92,72,100,170],'white':'Молочний','intensity':"Приглушені, м'які",'start':'Мене запросили на весілля подруги вдень. Надворі прохолодно, приблизно дванадцять градусів, дощу немає. Підбери мені святковий образ, у якому зручно ходити.'},
+'ж4':{'name':'Ірина','measures':[112,114,104,114,165],'white':'Чистий білий','intensity':'Яскраві, помітні','start':'Завтра о десятій ранку в мене зустріч на роботі. Надворі прохолодно й може піти дощ. Хочу зручний охайний образ без високих підборів.'}}
+person=people[a.actor];v={}
+def act(op,**kw):
+ global v
+ q={'op':op,**kw}
+ with urllib.request.urlopen(urllib.request.Request('http://127.0.0.1:41236',data=json.dumps(q).encode(),headers={'Content-Type':'application/json'}),timeout=600) as r:v=json.load(r)
+ print(Path(v.get('screen','')).name,flush=True)
+if a.setup:
+ act('fresh',dir=a.setup)
+ act('text',text='Так, використовувати')
+ act('fill',selector='#пр-імʼя',value=person['name'])
+ act('click',selector='#пр-згода')
+ inputs=Path.cwd()/'аудит/проби/Живий-як-людина-20261103/спроба-6/входи'
+ act('file',selector='input[type=file] >> nth=1',file=str(inputs/f'образ-{a.actor}.png'))
+ act('file',selector='input[type=file] >> nth=0',file=str(inputs/f'портрет-{a.actor}.png'))
+if a.finish:
+ act('click',selector='#н-далі')
+ act('click',selector='button:visible >> text=Золото')
+ act('text',text=person['white'])
+ act('text',text='Теплі')
+ act('text',text=person['intensity'])
+ act('click',selector='#н-далі')
+ for part,value in zip(['плечі','груди','талія','стегна','зріст'],person['measures']):act('fill',selector='#мр-'+part,value=str(value))
+ act('click',selector='#н-далі')
+ act('fill',selector='#чат-поле',value=person['start'])
+ act('click',selector='#чат-слати')
+print(json.dumps({'screen':v.get('screen'),'text':v.get('text')},ensure_ascii=False))

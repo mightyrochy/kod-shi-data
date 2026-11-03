@@ -1,6 +1,9 @@
 const fs=require('fs'),path=require('path');
 module.exports={
 init:()=>{
+ localStorage.setItem('міст:модель','qwen/qwen3.5-9b');
+ localStorage.setItem('міст:модель_мови','mamaylm-gemma-3-12b-it-v2.0');
+ localStorage.setItem('міст:адреса','http://127.0.0.1:41235/bridge');
  const patch=()=>{
   const cache=u=>{try{const a=new URL(typeof u==='string'?u:u.url);return a.hostname==='cdn.jsdelivr.net'&&a.pathname.includes('/pyodide/')?'http://127.0.0.1:41235/pyodide/'+a.pathname.split('/').pop():u;}catch{return u;}};
   const remote=u=>{try{return /workers\.dev|api\.anthropic\.com|generativelanguage\.googleapis\.com/.test(new URL(typeof u==='string'?u:u.url).hostname)}catch{return false;}};
@@ -18,7 +21,8 @@ async bridge(req,res,base){
   const b=JSON.parse(raw),meta=[];
   for(const m of b.messages||[])for(const c of Array.isArray(m.content)?m.content:[{type:'text',text:m.content}])if(c.type==='text'){try{const v=JSON.parse(c.text);if(v.task)meta.push({answer:v.task.answer,keys:Object.keys(v.task),schemaKeys:v.task.answer_schema?Object.keys(v.task.answer_schema):[]});}catch{}}
   const answer=meta.map(m=>m.answer||'').join(' ');
-  const model=/ХІД_|РОЗМОВ|РЕПЛІК|МОВА|rozmova|conversation|dialog|reply|mova|stylist_message/i.test(answer)?'mamaylm-gemma-3-12b-it-v2.0':'qwen/qwen3.5-9b';
+  const model=b.model;
+  if(!['qwen/qwen3.5-9b','mamaylm-gemma-3-12b-it-v2.0'].includes(model))throw Error('Не налаштовано локальну модель: '+model);
   fs.appendFileSync(path.join(base,'транспорт-форма.jsonl'),JSON.stringify({time:new Date().toISOString(),keys:Object.keys(b),originalModel:b.model,model,tasks:meta})+'\n');
   const messages=[];if(b.system)messages.push({role:'system',content:typeof b.system==='string'?b.system:b.system.map(x=>x.text||'').join('\n')});
   for(const m of b.messages||[])messages.push({role:m.role,content:typeof m.content==='string'?m.content:m.content.map(c=>c.type==='image'?{type:'image_url',image_url:{url:'data:'+c.source.media_type+';base64,'+c.source.data}}:c)});
