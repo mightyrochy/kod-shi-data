@@ -166,8 +166,8 @@ def _до_очей(о, F):
                           "lightness band, \"clothing_maybe\" — how many more only may (the shop's "
                           "colour word); 0 — only accessories can carry this base; absent — not "
                           "counted (a neutral base)", треба=True),
-        _ЗП.Поле("fixed", "palette constraints; sources mark the code's defaults or inferences and her taps",
-                 "keep them and build around them", без="No fixed palette constraints."),
+        _ЗП.Поле("fixed", "palette constraints; sources",
+                 "keep; build around them", без="No fixed constraints."),
         _ЗП.Поле("reason_codes", "the only codes you may give as reasons, with their meaning",
                  треба=True),
     ),

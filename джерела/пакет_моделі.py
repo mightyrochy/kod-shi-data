@@ -558,9 +558,9 @@ import внутрішня_мова as _ВМ_П
                                          "pale yellow, pale blue) belong to the bride, and she is a guest; it "
                                          "reads as bridal on a large surface and next to her face, while small "
                                          "jewellery, shoes or a bag barely register"),
-        _ЗП.Поле("case.shoe_request", "the code's heel constraint from wishes or vetoes: heel or no_heel",
+        _ЗП.Поле("case.shoe_request", "the code's heel constraint: heel or no_heel",
                  як="take no shoes against it"),
-        _ЗП.Поле("case.beliefs", "the language model's reading of what she believes does not suit her",
+        _ЗП.Поле("case.beliefs", "the model's reading of what she thinks does not suit her",
                  як="a boundary of hers, not a mistake: do not argue with it, offer no item under it, "
                     "and do not raise the subject in the explanation"),
         _ЗП.Поле("case.her_registers", "the style language she dresses in",

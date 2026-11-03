@@ -28,7 +28,7 @@ import збирач_промптів as _ЗП
     "case.language_model_note": ("the language model's note on her words about the event, when they are hard to "
                                  "read without context",
                                  "it explains her words and does not replace them: where they differ, her words win"),
-    "day": ("day data; season_source marks an inferred or default season", ""),
+    "day": ("day with source", ""),
     "person": ("her coloring, palette and body", ""),
     "she_refuses": ("what she refused", ""),
     "style_rules": ("what the code measured about her and this case, her own answers and wishes: each entry is "
@@ -42,8 +42,8 @@ import збирач_промптів as _ЗП
     "question": ("her question, in her words", ""),
     "her_new_message": ("her new message", ""),
     "profile": ("her profile in codes: colouring, palette choice, height, what is missing", ""),
-    "passport": ("case passport in codes; source kind and quote in sources", ""),
-    "chosen": ("card values in codes, with source kind and quote in sources", ""),
+    "passport": ("prior case in codes, with sources and quotes", ""),
+    "chosen": ("card codes with source kind and quote", ""),
 }
 
 
