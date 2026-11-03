@@ -10,4 +10,5 @@ while any(x in v.get('text','') for x in pending) and not any(x in v.get('text',
  v=request({'op':'wait','ms':30000})
 text=v.get('text','');n=0
 while n<min(len(initial),len(text)) and initial[n]==text[n]:n+=1
+if n<len(text):n=text.rfind('\n',0,n)+1
 print(json.dumps({'screen':v.get('screen'),'новий_видимий_текст':text[n:] if n<len(text) else text[-4000:]},ensure_ascii=False),flush=True)
