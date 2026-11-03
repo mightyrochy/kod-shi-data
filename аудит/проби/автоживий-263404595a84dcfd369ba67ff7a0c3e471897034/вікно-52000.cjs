@@ -5,4 +5,5 @@
 if (process.env.SCENA === 'б1_концерт_стримано' && process.env.MODEL_CTX === '52000') {
   process.env.CTX = JSON.stringify({'qwen/qwen3.5-9b': 52000,
     'mamaylm-gemma-3-12b-it-v2.0': 16384});
+  process.env.ZAPYS_VYKLYKIV = require('path').join(__dirname, 'б1_концерт_стримано', 'виклики_моста.jsonl');
 }
