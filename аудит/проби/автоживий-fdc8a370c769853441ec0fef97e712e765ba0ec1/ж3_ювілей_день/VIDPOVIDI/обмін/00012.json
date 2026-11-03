@@ -1,0 +1,27 @@
+{
+ "версія": 1,
+ "запит": {
+  "model": "qwen/qwen3.5-9b",
+  "max_tokens": 4000,
+  "messages": [
+   {
+    "role": "user",
+    "content": [
+     {
+      "type": "text",
+      "text": "{\"task\": {\"role\": \"You read the description of an outfit and list its items as data.\", \"rules\": [\"One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.\", \"One item carries one thing — of two alternatives list the first; a note in brackets is not an item.\", \"Slot \\\"accessory\\\" is for an item no other slot fits.\", \"\\\"is_outfit\\\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note.\"], \"limits\": [\"Rely only on the input: do not invent what it does not contain.\", \"The answer is one JSON object following \\\"answer_schema\\\", without explanations and without ```.\"], \"language\": \"English\", \"answer\": \"ITEM_LIST\", \"answer_schema\": {\"is_outfit\": \"yes|no\", \"items\": [{\"name\": \"<what the item is>\", \"details\": \"<its cut, length and fabric>\", \"slot\": \"top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory\", \"color_hex\": \"<#rrggbb or null>\", \"worn\": \"<true, or false when the description says the outfit goes without it>\"}]}, \"input\": [\"\\\"description\\\" — the outfit description\"]}, \"description\": \"A sheath dress in a rich emerald green with a subtle damask weave, midi length that grazes the calf, hex code #50684D.\\nHeeled pumps with a moderate heel height and a pointed toe, crafted from black satin, hex code #000000.\\nDiamond stud drop earrings in clear crystals set in white gold, paired with a single strand of pearls on the left earlobe.\\nThis ensemble strikes the perfect balance for an afternoon aunt's birthday celebration at an upscale restaurant, meeting the requested formal dress code while respecting the early evening timing which precludes heavy evening gowns or ceremonial gloves. The deep emerald hue reflects elegantly under the warm artificial lighting without appearing too dark for the 2 PM start time, ensuring she looks polished and celebratory yet comfortable throughout the meal.\"}"
+     }
+    ]
+   }
+  ],
+  "temperature": 1
+ },
+ "відповідь": {
+  "status": 200,
+  "contentType": "application/json",
+  "headers": {
+   "x-model": "qwen/qwen3.5-9b"
+  },
+  "body": "{\"content\":[{\"type\":\"text\",\"text\":\"{\\n\\\"answer\\\": {\\n\\\"is_outfit\\\": \\\"yes\\\",\\n\\\"items\\\": [\\n{\\n\\\"name\\\": \\\"sheath dress\\\",\\n\\\"details\\\": \\\"rich emerald green with subtle damask weave, midi length grazing the calf\\\",\\n\\\"slot\\\": \\\"dress\\\",\\n\\\"color_hex\\\": \\\"#50684D\\\",\\n\\\"worn\\\": true\\n},\\n{\\n\\\"name\\\": \\\"heeled pumps\\\",\\n\\\"details\\\": \\\"moderate heel height, pointed toe, black satin\\\",\\n\\\"slot\\\": \\\"shoes\\\",\\n\\\"color_hex\\\": \\\"#000000\\\",\\n\\\"worn\\\": true\\n},\\n{\\n\\\"name\\\": \\\"diamond stud drop earrings\\\",\\n\\\"details\\\": \\\"clear crystals set in white gold on left earlobe\\\",\\n\\\"slot\\\": \\\"earrings\\\",\\n\\\"color_hex\\\": \\\"#E0FFFF\\\",\\n\\\"worn\\\": true\\n}\\n]\\n}\\n}\"}],\"usage\":{\"input_tokens\":522,\"output_tokens\":191},\"stop_reason\":\"end_turn\"}"
+ }
+}
