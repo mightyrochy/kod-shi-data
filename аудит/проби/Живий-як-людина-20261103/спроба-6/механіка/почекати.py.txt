@@ -5,7 +5,7 @@ def request(q):
 pending=['Думаю…','Тчеться','Роздивляюсь речі на фото…','Стилістка дивиться на портрет…','Ще мить…','Читаю твоє питання…','Звіряю образ цілим: кольори між собою, палітру, силует…','Складаю відповідь…']
 v=request({'op':'snapshot'})
 initial=v.get('text','')
-while any(x in v.get('text','') for x in pending):
+while any(x in v.get('text','') for x in pending) and not any(x in v.get('text','') for x in ['Так, оцінюй','Вдягнеш?']):
  print(json.dumps({'screen':Path(v['screen']).name,'стан':'очікування','на_екрані':[x for x in pending if x in v.get('text','')]},ensure_ascii=False),flush=True)
  v=request({'op':'wait','ms':30000})
 text=v.get('text','');n=0
