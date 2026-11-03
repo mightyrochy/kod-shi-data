@@ -38,6 +38,8 @@ function Test-OwnerUser { $true }
 if ((Split-Path -Leaf $Script) -eq 'gemini_publish.ps1') {
     function Test-DispatcherAction([string]$Line) { $true }
 }
+# Моделі в цьому стенді синтетичні: початковий і кінцевий переліки порожні.
+function Get-LmsInstances { }
 function Test-ExternalGpuFree { $true }
 # Планувальник читає той самий вхід напряму через Get-GpuBusyReason.
 function Get-GpuTelemetry { <# Ізольована карта синтетичного планувальника. #> [pscustomobject]@{ Error = ''; TotalMiB = 16376; FreeMiB = 16376; Percent = 0 } }

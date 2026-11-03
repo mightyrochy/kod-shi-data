@@ -1,0 +1,570 @@
+diff --git a/аудит/адаптери/gemini/claude_run.ps1 b/аудит/адаптери/gemini/claude_run.ps1
+index 2faaf2b..41ad2ee 100644
+--- a/аудит/адаптери/gemini/claude_run.ps1
++++ b/аудит/адаптери/gemini/claude_run.ps1
+@@ -95,7 +95,7 @@ $script:LineTemplates = @(
+ 
+ # --- допоміжне ----------------------------------------------------------------------------------------------------
+ 
+-function Write-Log([string]$Text) {
++function Write-Log([string]$Text, [switch]$Required) {
+     <# Рядок у claude-run.log. Пишуть водночас планувальник і процеси нарядів: зайнятий файл — кілька спроб. #>
+     $path = Join-Path $WorkDir 'claude-run.log'
+     $tag = $(if ($WorkerFile) { "[$PID] " } else { '' })
+@@ -108,6 +108,7 @@ function Write-Log([string]$Text) {
+             [System.IO.File]::AppendAllText($path, $line + "`n", $script:Utf8); return
+         } catch { Start-Sleep -Milliseconds 50 }
+     }
++    if ($Required) { throw "Не вдалося записати обов'язковий рядок журналу" }
+ }
+ 
+ # Шлях до виконуваного або ''. .NET із UseShellExecute=false дописує лише .exe, а CLI з npm — це .cmd.
+@@ -1079,6 +1080,8 @@ function Test-OffMarker($M) {
+ # Один прохід: позначки смуги Claude за порядком черги — у вільні слоти; позначка вимкнення нових нарядів не пускає.
+ # Повертає число запущених і позначку вимкнення, яку треба спробувати.
+ function Start-Markers($Workers) {
++    $script:Held = @{}
++    if (-not (Repair-GpuModels)) { return @(0, $null) }
+     $started = 0; $off = $null
+     $script:Held = @{}
+     $now = [DateTimeOffset]::UtcNow.ToUnixTimeSeconds()
+@@ -1149,6 +1152,7 @@ function Invoke-Worker {
+             $gpu = Open-Lock (Get-GpuLockPath)
+             $why = $(if ($null -eq $gpu) { 'замок GPU' } elseif (Test-ExternalGpuFree -LogAcquisition) { '' } else { Get-GpuBusyReason @() -LockHeld })
+             if ($why) { Remove-Claim $statePath; Write-Log "GPU зайнята ($why) — $($job.name) лишається в черзі"; return $script:WorkerGpuBusy }
++            Start-GpuModels $job
+         }
+         Write-FileAtomic $info (([ordered]@{ slot = $job.slot; lane = 'claude'; marker = $job.name; slug = $job.slug
+                     model = "$($job.claude)$(if ($job.effort) { ' ' + $job.effort })"; since = (Get-UtcStamp (Get-Date)); gpu = [bool]$job.gpu; prio = $job.prio; pid = $PID
+@@ -1162,10 +1166,14 @@ function Invoke-Worker {
+         Write-Log "процес наряду $($job.name): $($_.Exception.Message)"
+         1
+     } finally {
++        if ($null -ne $gpu) {
++            try { Complete-GpuModels }
++            catch { Write-Log "GPU прибирання відкладено: $($_.Exception.Message)" }
++            finally { $gpu.Dispose() }
++        }
+         Remove-Item -LiteralPath $info -Force -ErrorAction SilentlyContinue
+         # Помилка до STARTED (робоча копія тощо) не лишає claim: позначка повертається в чергу (10162).
+         Close-FailedStart ([pscustomobject]@{ Ref = $job.ref; Name = $job.name; Sha = $job.sha; Slug = $job.slug; Model = $job.model }) ([string]$job.id) $statePath
+-        if ($null -ne $gpu) { $gpu.Dispose() }
+         $slotLock.Dispose()
+     }
+ }
+@@ -1205,6 +1213,7 @@ function Main {
+             if ($ver) { Write-VersionSwitch $ver; break }
+             $started = 0; $off = $null
+             try {
++                [void](Repair-GpuModels)
+                 [void](Invoke-Git @('fetch', '-q', '--prune', '--no-tags', 'origin',
+                         '+refs/heads/main:refs/remotes/origin/main',
+                         '+refs/heads/gemini-queue/*:refs/remotes/origin/gemini-queue/*') -TimeoutMinutes 15)
+@@ -1237,6 +1246,7 @@ function Main {
+         Update-Status -Force
+         1
+     } finally {
++        [void](Repair-GpuModels)
+         $lockFile.Dispose()
+     }
+ }
+diff --git a/аудит/адаптери/gemini/gemini_run.ps1 b/аудит/адаптери/gemini/gemini_run.ps1
+index ac991f3..ff82697 100644
+--- a/аудит/адаптери/gemini/gemini_run.ps1
++++ b/аудит/адаптери/gemini/gemini_run.ps1
+@@ -85,14 +85,15 @@ $script:Limits = $null
+ 
+ # --- дрібні помічники ---------------------------------------------------------------------------------------------
+ 
+-function Write-Log([string]$Text) {
++function Write-Log([string]$Text, [switch]$Required) {
+     <# Рядок у wrapper.log. Пишуть водночас планувальник і процеси нарядів: зайнятий файл — кілька спроб, потім рядок
+-    губиться, а не валить наряд. #>
++    губиться, якщо не вказано -Required. #>
+     $tag = $(if ($WorkerFile) { "[$PID] " } else { '' })
+     $line = '{0:yyyy-MM-dd HH:mm:ss} {1}{2}' -f (Get-Date), $tag, $Text
+     for ($i = 0; $i -lt 20; $i++) {
+         try { [System.IO.File]::AppendAllText((Join-Path $RunsDir 'wrapper.log'), $line + "`n", $script:Utf8); return } catch { Start-Sleep -Milliseconds 50 }
+     }
++    if ($Required) { throw "Не вдалося записати обов'язковий рядок журналу" }
+ }
+ 
+ # JSON-рядок лише з ASCII: stdin процесу в .NET Framework кодується кодовою сторінкою консолі.
+@@ -1162,6 +1163,8 @@ function Enter-StartQuotaWait($M, $Q, $State) {
+ # Один прохід: позначки смуг codex і agy за порядком черги — у вільні слоти, кожна окремим процесом. Повертає число
+ # запущених.
+ function Start-Markers($Workers) {
++    $script:Held = @{}
++    if (-not (Repair-GpuModels)) { return 0 }
+     $started = 0
+     $now = [DateTimeOffset]::UtcNow.ToUnixTimeSeconds()
+     $all = @(Get-Markers | Where-Object { -not $_.Slug.StartsWith('Е1-нічний-живий-') }) + @(Get-NightlyMarker)
+@@ -1309,6 +1312,7 @@ function Invoke-Worker {
+             $gpu = Open-Lock (Get-GpuLockPath)
+             $why = $(if ($null -eq $gpu) { 'замок GPU' } elseif (Test-ExternalGpuFree -LogAcquisition) { '' } else { Get-GpuBusyReason @() -LockHeld })
+             if ($why) { Remove-Claim $statePath; Write-Log "GPU зайнята ($why) — $($job.name) лишається в черзі"; return $script:WorkerGpuBusy }
++            Start-GpuModels $job
+         }
+         Write-FileAtomic $info (([ordered]@{ slot = $job.slot; lane = $job.lane; marker = $job.name; slug = $job.slug; model = $job.model
+                     since = (Get-UtcStamp (Get-Date)); gpu = [bool]$job.gpu; prio = $job.prio; pid = $PID
+@@ -1322,11 +1326,15 @@ function Invoke-Worker {
+         Add-HealthException $_.Exception; Write-Log "процес наряду $($job.name): $($_.Exception.Message)"
+         1
+     } finally {
++        if ($null -ne $gpu) {
++            try { Complete-GpuModels }
++            catch { Write-Log "GPU прибирання відкладено: $($_.Exception.Message)" }
++            finally { $gpu.Dispose() }
++        }
+         Remove-Item -LiteralPath $info -Force -ErrorAction SilentlyContinue
+         # Помилка до STARTED (робоча копія тощо) не лишає claim: позначка повертається в чергу (10162).
+         Close-FailedStart ([pscustomobject]@{ Ref = $job.ref; Name = $job.name; Sha = $job.sha; Slug = $job.slug; Model = $job.model
+                 N = [string]$job.n; Cond = [string]$job.cond }) ([string]$job.id) $statePath
+-        if ($null -ne $gpu) { $gpu.Dispose() }
+         $slotLock.Dispose()
+     }
+ }
+@@ -1365,6 +1373,7 @@ function Main {
+             }
+             $started = 0
+             try {
++                [void](Repair-GpuModels)
+                 [void](Invoke-Git @('fetch', '-q', '--prune', '--no-tags', 'origin',
+                         '+refs/heads/main:refs/remotes/origin/main',
+                         '+refs/heads/gemini/*:refs/remotes/origin/gemini/*',
+@@ -1390,6 +1399,7 @@ function Main {
+         Add-HealthException $_.Exception; Write-Log "збій обгортки: $($_.Exception.Message)"
+         1
+     } finally {
++        [void](Repair-GpuModels)
+         $lockFile.Dispose()
+     }
+ }
+diff --git a/аудит/адаптери/gemini/m9v/хеші.psd1 b/аудит/адаптери/gemini/m9v/хеші.psd1
+index 129370f..e18b517 100644
+--- a/аудит/адаптери/gemini/m9v/хеші.psd1
++++ b/аудит/адаптери/gemini/m9v/хеші.psd1
+@@ -1,11 +1,11 @@
+-﻿# Очікувані SHA-256 файлів обгортки — єдине місце для скриптів m9v. Рядки тут мають збігатися з таблицею «Хеші файлів»
++# Очікувані SHA-256 файлів обгортки — єдине місце для скриптів m9v. Рядки тут мають збігатися з таблицею «Хеші файлів»
+ # у ../НАЛАШТУВАННЯ.md (стенд `перевірка/сценарії_m9v.sh` звіряє). Міняється разом із таблицею (PR, що чіпає обгортку).
+ @{
+     'wrapper_update.ps1' = '45F254E5CB2FB7D882BBB9CE7CA121988FDF23BACCFE65CB67A4CA3B3F426FE7'
+     'wrapper_probe.ps1'  = '85116D04C22EB64CBFF52E66BCEAE9B1091577A889EDD58A8B634093A82BDBC6'
+     'wrapper_chain.ps1'  = '52D6A12EB4A0B1E7FE98893752A292CD23F2746B12A97DEF34825D3DFEE58EFA'
+     'wrapper_health.ps1' = 'F63CDFD76BCBE92440A843759BCD6CED4E49B4BCBAC19620CACA4B74B9D58AA5'
+-    'gemini_run.ps1'     = '8D30203E90DF003328A01D77426A7BD9C195516B86A6FFCE3C38EB239E6A9CAD'
++    'gemini_run.ps1'     = '26EF20ED62C54C7B7546187CB49F0CD61D421C941FF3E523F3FC8D1327F73C56'
+     'gemini_publish.ps1' = '0AF4A7E5833A5CB12E5A5C53E885B32E87791D863A95BCEFD8594396D5080598'
+     # Інсталятор Codex (9741) закріплено за релізом: install.ps1 — файл релізу https://releases.openai.com/codex/releases/<CodexRelease>/install.ps1
+     # (незмінний URL; той самий sha256 віддає https://chatgpt.com/codex/install.ps1 — редирект на releases.openai.com — і публікує реліз
+@@ -14,6 +14,6 @@
+     CodexRelease         = '0.164.0'
+     CodexInstaller       = 'A59CB66350098C33B021FF470D586AE8FE3B7CAF189CA7137B4FE3AF5D4DCE74'
+     'gemini_watch.ps1'   = '69EFEBB07FF1AF51C382B753A95C50F3C1AC27B3008F2489992BEBE3FD0213AA'
+-    'queue_lanes.ps1'    = 'A49FE6CADA0F52EC7E603D477200D9FD004A5E1EBD8D98D8E843FC6724A55ADA'
+-    'claude_run.ps1'     = '8C0610B95775267963CE5B1FC6B6A3E73EA348994BF6428711CE6EA2690FEC8D'
++    'queue_lanes.ps1'    = '9865002BF572B533CD611DDE0506E0F16EE8A64F20E379FE4E70015FDEBC4B15'
++    'claude_run.ps1'     = 'FCE4DFD2F1A0A8B24A29888793FAFA66E15755444FD1A6BC2432E5E1325AFD97'
+ }
+diff --git a/аудит/адаптери/gemini/queue_lanes.ps1 b/аудит/адаптери/gemini/queue_lanes.ps1
+index 05d6124..ff74995 100644
+--- a/аудит/адаптери/gemini/queue_lanes.ps1
++++ b/аудит/адаптери/gemini/queue_lanes.ps1
+@@ -638,6 +638,58 @@ function Test-LockFree([string]$Path) {
+ 
+ function Get-GpuLockPath { Join-Path $LaneDir 'gpu.lock' }
+ 
++function Get-LmsInstances {
++    <# Читає екземпляри локального LM Studio; неповна відповідь не є порожнім сервером. #>
++    $v = Invoke-RestMethod 'http://127.0.0.1:1234/api/v1/models' -TimeoutSec 15 -ErrorAction Stop
++    if ((Get-JsonProp $v 'error') -or $v.models -isnot [array]) { throw 'LM Studio: немає переліку models' }
++    foreach ($m in $v.models) {
++        if (-not $m.key -or $m.loaded_instances -isnot [array]) { throw 'LM Studio: неповна модель' }
++        foreach ($i in $m.loaded_instances) {
++            if (-not ($i.id -is [string]) -or -not $i.id) { throw 'LM Studio: немає ID екземпляра' }
++            [pscustomobject]@{ id = $i.id; model = $m.key }
++        }
++    }
++}
++
++function Complete-GpuModels {
++    <# Під GPU-замком прибирає різницю зі збереженим знімком; збій лишає запис для повтору. #>
++    $path = Join-Path $LaneDir 'gpu-models.json'
++    if (-not [IO.File]::Exists($path)) { return }
++    $lease = [IO.File]::ReadAllText($path, $script:Utf8) | ConvertFrom-Json -ErrorAction Stop
++    if ($lease.v -ne 1 -or -not $lease.marker -or -not $lease.run -or $lease.before -isnot [array]) { throw 'GPU: неповний знімок моделей' }
++    $ids = New-Object 'System.Collections.Generic.HashSet[string]' ([StringComparer]::Ordinal)
++    foreach ($i in $lease.before) {
++        if (-not $i.id -or -not $i.model) { throw 'GPU: неповний початковий екземпляр' }
++        [void]$ids.Add([string]$i.id)
++    }
++    foreach ($i in @(Get-LmsInstances)) {
++        if ($ids.Contains($i.id)) { continue }
++        Write-Log "GPU вивантаження: модель=$($i.model); екземпляр=$($i.id); наряд=$($lease.marker); прогін=$($lease.run)" -Required
++        $body = @{ instance_id = $i.id } | ConvertTo-Json -Compress
++        $v = Invoke-RestMethod 'http://127.0.0.1:1234/api/v1/models/unload' -Method Post -ContentType 'application/json' -Body $body -TimeoutSec 120 -ErrorAction Stop
++        if (Get-JsonProp $v 'error') { throw 'LM Studio: відмова вивантаження' }
++    }
++    if (@(Get-LmsInstances | Where-Object { -not $ids.Contains($_.id) }).Count) { throw 'GPU: нові екземпляри ще завантажені' }
++    Remove-Item -LiteralPath $path -Force -ErrorAction Stop
++}
++
++function Start-GpuModels($Job) {
++    <# До агента й під його GPU-замком зберігає межу власності незалежно від життя дерева процесів. #>
++    Complete-GpuModels
++    $lease = [ordered]@{ v = 1; marker = [string]$Job.name; run = [string]$Job.id; before = @(Get-LmsInstances) }
++    Write-FileAtomic (Join-Path $LaneDir 'gpu-models.json') ($lease | ConvertTo-Json -Depth 6 -Compress)
++}
++
++function Repair-GpuModels {
++    <# Планувальник прибирає залишки вбитого дерева перед воротами GPU, навіть коли черга порожня. #>
++    $gpuLock = Open-Lock (Get-GpuLockPath)
++    if ($null -eq $gpuLock) { return $true }
++    try { Complete-GpuModels; $true }
++    catch { Write-Log "GPU прибирання відкладено: $($_.Exception.Message)"; $false }
++    finally { $gpuLock.Dispose() }
++}
++
++
+ function Get-BusySlots([string]$Lane, $Workers) {
+     <# Зайняті слоти смуги: свій живий процес наряду або чужий замок слота (наряд попереднього проходу ще йде). #>
+     @(for ($k = 1; $k -le $script:Ceil.slots[1]; $k++) {
+diff --git a/аудит/адаптери/gemini/НАЛАШТУВАННЯ.md b/аудит/адаптери/gemini/НАЛАШТУВАННЯ.md
+index 6a55ef8..8c732ef 100644
+--- a/аудит/адаптери/gemini/НАЛАШТУВАННЯ.md
++++ b/аудит/адаптери/gemini/НАЛАШТУВАННЯ.md
+@@ -451,12 +451,12 @@ $f = Join-Path "$env:USERPROFILE\gemini-outbox" $n
+ | `wrapper_probe.ps1` | `85116D04C22EB64CBFF52E66BCEAE9B1091577A889EDD58A8B634093A82BDBC6` |
+ | `wrapper_update.ps1` | `45F254E5CB2FB7D882BBB9CE7CA121988FDF23BACCFE65CB67A4CA3B3F426FE7` |
+ | `wrapper_chain.ps1` | `52D6A12EB4A0B1E7FE98893752A292CD23F2746B12A97DEF34825D3DFEE58EFA` |
+-| `gemini_run.ps1` | `8D30203E90DF003328A01D77426A7BD9C195516B86A6FFCE3C38EB239E6A9CAD` |
++| `gemini_run.ps1` | `26EF20ED62C54C7B7546187CB49F0CD61D421C941FF3E523F3FC8D1327F73C56` |
+ | `gemini_publish.ps1` | `0AF4A7E5833A5CB12E5A5C53E885B32E87791D863A95BCEFD8594396D5080598` |
+ | `gemini_watch.ps1` | `69EFEBB07FF1AF51C382B753A95C50F3C1AC27B3008F2489992BEBE3FD0213AA` |
+ | `wrapper_health.ps1` | `F63CDFD76BCBE92440A843759BCD6CED4E49B4BCBAC19620CACA4B74B9D58AA5` |
+-| `queue_lanes.ps1` | `A49FE6CADA0F52EC7E603D477200D9FD004A5E1EBD8D98D8E843FC6724A55ADA` |
+-| `claude_run.ps1` | `8C0610B95775267963CE5B1FC6B6A3E73EA348994BF6428711CE6EA2690FEC8D` |
++| `queue_lanes.ps1` | `9865002BF572B533CD611DDE0506E0F16EE8A64F20E379FE4E70015FDEBC4B15` |
++| `claude_run.ps1` | `FCE4DFD2F1A0A8B24A29888793FAFA66E15755444FD1A6BC2432E5E1325AFD97` |
+ | `CodexInstaller` (`install.ps1` релізу Codex `CodexRelease`) | `A59CB66350098C33B021FF470D586AE8FE3B7CAF189CA7137B4FE3AF5D4DCE74` |
+ 
+ Той самий список читають скрипти `m9v/` з `m9v/хеші.psd1` — міняти їх разом із таблицею. Підготовка одним проходом — `m9v/ЩО_НАТИСНУТИ.md`.
+@@ -687,7 +687,20 @@ CI й ноутбук запускають один повний перелік 
+ Робочий стіл і браузер не обходять облік фізичної VRAM. Нема драйвера, невалідні дані чи кілька карт — чекання.
+ Причина відмови за пам'яттю — `вільно X з потрібних Y MiB; навантаження Z %`; журнал узяття містить ті самі показники.
+ Окремої відмови за навантаженням немає. Транспорт також приймає старі причини від попередньої версії обгортки.
+-Обгортка не вивантажує моделей, не закриває LM Studio й не зупиняє чужих процесів (власник 31.10).
++Обгортка не вивантажує чужих моделей, не закриває LM Studio й не зупиняє чужих процесів (власник 31.10).
++При взятті GPU-замка worker обох планувальників зберігає перелік екземплярів REST LM Studio
++у спільному `lanes/gpu-models.json` до запуску агента. Своїми є лише ID, яких немає в цьому знімку,
++включно з новим екземпляром тієї самої моделі. `finally` вивантажує їх за ID перед звільненням замка;
++ГОТОВО, ЗАБЛОКОВАНО, тайм-аут і збій агента проходять той самий шлях.
++Після примусового завершення worker та його дерева наступний прохід будь-якого планувальника
++бере вільний GPU-замок і прибирає залишок за збереженим знімком до перевірки воріт і навіть без позначок.
++Це відбувається також перед мережевим fetch і в finally планувальника, тому збій GitHub прибирання не знімає.
++Якщо завершено також планувальник, запис дочекається його наступного запуску задачею Windows.
++Помилка REST або знімка не стирає запис і не дозволяє новий запуск до успішного прибирання;
++до першого знімка помилка REST зупиняє worker без запуску агента. Адреса REST — локальна `127.0.0.1:1234`.
++Кожна спроба вивантаження журналюється перед POST: модель, ID екземпляра, позначка й ID прогону.
++Наявні до замка екземпляри не вивантажуються. Прибирання не залежить від HTTP/CLI/JIT способу завантаження.
++Стенд: `python перевірка/сценарії_gpu_моделі.py --source-dir <тека обгортки>` (Windows, Python, Node.js).
+ Те саме рішення
+ планувальники беруть до claim (`Get-GpuBusyReason`), а не лише в процесі наряду: позначка, яку не взято (GPU, слот, той
+ самий наряд), іде в журнал раз на причину й у `skipped.json` (`C:\Users\Public\gemini\out`, `claude-run\skipped.json`) →
+diff --git a/аудит/адаптери/gemini/перевірка/сценарії_gpu_моделі.py b/аудит/адаптери/gemini/перевірка/сценарії_gpu_моделі.py
+new file mode 100644
+index 0000000..a599f13
+--- /dev/null
++++ b/аудит/адаптери/gemini/перевірка/сценарії_gpu_моделі.py
+@@ -0,0 +1,290 @@
++"""Мірило на справжніх worker і планувальниках, підробний лише локальний LM Studio та агент."""
++import argparse
++from contextlib import contextmanager
++from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
++import json
++import os
++from pathlib import Path
++import shutil
++import subprocess
++import tempfile
++import threading
++import time
++
++
++SCRIPT = r'''
++param([string]$SourceDir, [string]$TestDir, [string]$Lane, [string]$TestMode, [int]$Port)
++$ErrorActionPreference = 'Stop'
++[Console]::OutputEncoding = New-Object Text.UTF8Encoding($false)
++. (Join-Path $SourceDir ($Lane + '_run.ps1'))
++$script:RealWriteLog = ${function:Write-Log}
++$LaneDir = $TestDir
++$RunsDir = $TestDir
++$WorkDir = $TestDir
++$OutDir = $TestDir
++$script:SlotDir = $TestDir
++$script:Bound = @{}
++$script:Limits = @{}
++function Write-Log([string]$Text, [switch]$Required) { [IO.File]::AppendAllText((Join-Path $TestDir 'wrapper.log'), $Text + "`n", $script:Utf8) }
++function Invoke-RestMethod {
++    param([string]$Uri, [string]$Method = 'Get', [string]$ContentType, $Body, [int]$TimeoutSec, $ErrorAction)
++    $args_ = @{ Uri = $Uri.Replace('127.0.0.1:1234', "127.0.0.1:$Port"); Method = $Method; TimeoutSec = $TimeoutSec; ErrorAction = 'Stop' }
++    if ($ContentType) { $args_.ContentType = $ContentType }
++    if ($null -ne $Body) { $args_.Body = $Body }
++    Microsoft.PowerShell.Utility\Invoke-RestMethod @args_
++}
++function Get-StatePath { Join-Path $TestDir 'state' }
++function Close-FailedStart { }
++function Remove-Claim { }
++function Set-BrowserGpuPolicy { }
++function Test-ExternalGpuFree { $true }
++function Add-HealthException { }
++function Get-Markers { }
++function Get-NightlyMarker { }
++function Save-Skips { }
++function Test-Isolation { '' }
++function Test-OwnerUser { $true }
++function Get-VersionSwitch { '' }
++function Get-BootStamp { 'стенд-завантаження' }
++function Resume-Interrupted { }
++function Write-Heartbeat { }
++function Update-Status { }
++function Invoke-Git {
++    param([string[]]$GitArgs)
++    if ($GitArgs[0] -eq 'remote') { return [pscustomobject]@{Out=$RepoUrl;Code=0} }
++    [IO.File]::WriteAllText((Join-Path $TestDir 'fetch-failed'), 'так')
++    throw 'стенд: GitHub недоступний'
++}
++function Invoke-Task {
++    <# Агент вантажить дві моделі окремим дочірнім процесом, потім закінчується чи чекає вбивства. #>
++    $p = [Diagnostics.Process]::Start((New-StartInfo (Get-Command node).Source @((Join-Path $TestDir 'agent.js'), [string]$Port, $TestMode, $TestDir) $TestDir -NoRedirect))
++    $p.WaitForExit()
++    if ($TestMode -eq 'agent-crash') { throw 'стенд: збій агента' }
++    if ($TestMode -eq 'timeout') { throw 'стенд: тайм-аут' }
++}
++$script:Job = [pscustomobject]@{name='gemini-queue/стенд/gpt-test/1/gpu'; id='стенд-прогін'; limits=[pscustomobject]@{};
++    ref='ref';sha='sha';slot='test-slot';gpu=($TestMode -ne 'cpu');lane=$Lane;slug='стенд';model='gpt-test';n='1';cond='gpu';prio=1;deadline='';time=1;claude='cc-test';effort='high'}
++if ($TestMode -eq 'recover') { Start-Markers @() | Out-Null; if ($null -eq $script:Held) { throw 'Не ініціалізовано стан утримань' }; exit 0 }
++if ($TestMode -eq 'offline') { exit (Main) }
++if ($TestMode -eq 'take') { $lock_ = Open-Lock (Get-GpuLockPath); try { Start-GpuModels $script:Job } finally { $lock_.Dispose() }; exit 0 }
++if ($TestMode -eq 'locked') {
++    $lock_ = Open-Lock (Get-GpuLockPath)
++    try { Start-Markers @() | Out-Null } finally { $lock_.Dispose() }
++    exit 0
++}
++if ($TestMode -eq 'log-fail') {
++    Set-Item Function:Write-Log $script:RealWriteLog
++    $logName = $(if ($Lane -eq 'gemini') { 'wrapper.log' } else { 'claude-run.log' })
++    $file_ = [IO.File]::Open((Join-Path $TestDir $logName), 'OpenOrCreate', 'ReadWrite', 'None')
++    $lock_ = Open-Lock (Get-GpuLockPath)
++    try { Complete-GpuModels; exit 2 } catch { exit 0 } finally { $lock_.Dispose(); $file_.Dispose() }
++}
++exit (Invoke-Worker)
++'''
++
++AGENT = r'''
++const fs = require('fs'), path = require('path');
++const [port, mode, dir] = process.argv.slice(2);
++async function main() {
++  if (mode !== 'cpu') for (const model of ['owner-model', 'job-model']) {
++    const r = await fetch(`http://127.0.0.1:${port}/api/v1/models/load`, {
++      method: 'POST', headers: {'content-type': 'application/json'}, body: JSON.stringify({model})});
++    if (!r.ok) throw Error('стенд: завантаження');
++  }
++  fs.writeFileSync(path.join(dir, 'ready'), String(process.pid));
++  if (mode === 'kill-tree') setInterval(() => {}, 1000);
++}
++main().catch(e => { console.error(e); process.exit(1); });
++'''
++
++
++class Studio(BaseHTTPRequestHandler):
++    """REST з окремими ID: один початковий екземпляр і два екземпляри агента."""
++
++    loaded = {}
++    calls = []
++    fault = ''
++
++    def log_message(self, *_):
++        """Прибирає шум HTTP з виміру."""
++
++    def reply(self, value, status=200):
++        """Віддає JSON так само, як локальний сервер моделей."""
++        data = json.dumps(value).encode()
++        self.send_response(status)
++        self.send_header('Content-Type', 'application/json')
++        self.send_header('Content-Length', str(len(data)))
++        self.end_headers()
++        self.wfile.write(data)
++
++    def do_GET(self):
++        """Читає каталог або моделює відмову читання."""
++        self.calls.append(('GET', self.path))
++        if self.fault == 'get':
++            return self.reply({'error': 'недоступно'}, 503)
++        if self.fault == 'schema':
++            return self.reply({'models': None})
++        self.reply({'models': [dict(key=key, loaded_instances=[{'id': i} for i, m in self.loaded.items() if m == key])
++                               for key in ['owner-model', 'job-model']]})
++
++    def do_POST(self):
++        """Завантажує новий ID чи вивантажує лише названий екземпляр."""
++        body = json.loads(self.rfile.read(int(self.headers['Content-Length'])))
++        self.calls.append(('POST', self.path, body))
++        if self.path.endswith('/load'):
++            identifier = 'job-' + body['model']
++            self.loaded[identifier] = body['model']
++            return self.reply({'status': 'loaded', 'instance_id': identifier})
++        if self.fault == 'unload':
++            return self.reply({'error': 'відмова'}, 503)
++        self.loaded.pop(body['instance_id'], None)
++        self.reply({'status': 'unloaded'})
++
++
++@contextmanager
++def studio():
++    """Тримає підробний сервер окремо від дерева GPU-наряду до завершення виміру."""
++    server = ThreadingHTTPServer(('127.0.0.1', 0), Studio)
++    thread = threading.Thread(target=server.serve_forever, daemon=True)
++    thread.start()
++    try:
++        yield server.server_port
++    finally:
++        server.shutdown()
++        server.server_close()
++        thread.join()
++
++
++def main():
++    """Перевіряє нормальні й аварійні кінці та відновлення обома смугами без живої моделі."""
++    parser = argparse.ArgumentParser(description=__doc__)
++    parser.add_argument('--source-dir', type=Path, required=True)
++    parser.add_argument('--before', action='store_true', help='Очікувати історичний залишок після вбитого дерева')
++    opts = parser.parse_args()
++    if os.name != 'nt':
++        raise SystemExit('Потрібна Windows для мірилa taskkill /T /F')
++    powershell = shutil.which('powershell')
++    bad = 0
++
++    def check(name, ok):
++        """Кожний хибний факт робить результат стенда червоним."""
++        nonlocal bad
++        print(('✓ ' if ok else '✗ ') + name, flush=True)
++        bad += not ok
++
++    with tempfile.TemporaryDirectory(prefix='gpu-models-') as tmp, studio() as port:
++        root = Path(tmp)
++        script = root / 'worker.ps1'
++        script.write_text(SCRIPT, encoding='utf-8-sig')
++        for lane in ['gemini', 'claude']:
++            modes = ['kill-tree'] if opts.before else ['done', 'blocked', 'timeout', 'agent-crash', 'kill-tree', 'cpu']
++            for mode in modes:
++                d = root / (lane + '-' + mode)
++                d.mkdir()
++                (d / 'agent.js').write_text(AGENT, encoding='utf-8')
++                Studio.loaded = {'owner-id': 'owner-model'}
++                Studio.calls = []
++                Studio.fault = ''
++                args = [powershell, '-NoProfile', '-NonInteractive', '-ExecutionPolicy', 'Bypass', '-File', str(script),
++                        '-SourceDir', str(opts.source_dir.resolve()), '-TestDir', str(d), '-Lane', lane, '-Port', str(port)]
++
++                def run(mode_):
++                    """Чекає завершення конкретного процесу; вивід читається тільки при збої."""
++                    p = subprocess.run(args + ['-TestMode', mode_], capture_output=True, timeout=45)
++                    if p.returncode and mode_ not in ('timeout', 'agent-crash'):
++                        print(p.stdout.decode('utf-8', errors='replace'), p.stderr.decode('utf-8', errors='replace'))
++                        if mode_ not in ('done', 'log-fail'):
++                            raise RuntimeError('Збій процесу стенда: ' + mode_)
++                    return p
++
++                if mode == 'kill-tree':
++                    with (d / 'process.log').open('wb') as output:
++                        p = subprocess.Popen(args + ['-TestMode', mode], stdout=output, stderr=output)
++                        try:
++                            until = time.monotonic() + 30
++                            while not (d / 'ready').exists() and p.poll() is None and time.monotonic() < until:
++                                time.sleep(.05)
++                            if not (d / 'ready').exists():
++                                raise RuntimeError((d / 'process.log').read_text(encoding='utf-8', errors='replace'))
++                            check(lane + ': до вбивства завантажено 3 екземпляри', len(Studio.loaded) == 3)
++                            child = int((d / 'ready').read_text())
++                            killed = subprocess.run(['taskkill', '/PID', str(p.pid), '/T', '/F'], capture_output=True)
++                            gone = subprocess.run(['tasklist', '/FI', 'PID eq ' + str(child), '/NH', '/FO', 'CSV'], capture_output=True)
++                            check(lane + ': taskkill знищив worker і дочірній агент', str(child).encode() not in gone.stdout)
++                            p.wait(timeout=10)
++                        finally:
++                            if p.poll() is None:
++                                subprocess.run(['taskkill', '/PID', str(p.pid), '/T', '/F'], capture_output=True)
++                                p.wait(timeout=10)
++                    # Новий процес планувальника іншої смуги відтворює також перезапуск обгортки.
++                    args[args.index('-Lane') + 1] = 'claude' if lane == 'gemini' else 'gemini'
++                    run('recover')
++                else:
++                    result = run(mode)
++                    check(lane + '/' + mode + ': код завершення worker', result.returncode == (1 if mode in ('timeout', 'agent-crash') else 0))
++                clean = Studio.loaded == {'owner-id': 'owner-model'}
++                check(lane + '/' + mode + ': стан до замка відновлено' + (' (ДО: очікуваний залишок)' if opts.before else ''), not clean if opts.before else clean)
++                check(lane + '/' + mode + ': початкова модель збережена', Studio.loaded.get('owner-id') == 'owner-model')
++                if not opts.before:
++                    check(lane + '/' + mode + ': запис прибрано після підтвердження', not (d / 'gpu-models.json').exists())
++                    unloads = [c[2]['instance_id'] for c in Studio.calls if c[0] == 'POST' and c[1].endswith('/unload')]
++                    log = (d / 'wrapper.log').read_text(encoding='utf-8') if (d / 'wrapper.log').exists() else ''
++                    check(lane + '/' + mode + ': кожне вивантаження має модель, ID і наряд у журналі',
++                          len(unloads) == (0 if mode == 'cpu' else 2) and all(
++                              any(identifier in line and 'модель=' in line and 'наряд=gemini-queue/стенд/' in line and 'прогін=стенд-прогін' in line
++                                  for line in log.splitlines()) for identifier in unloads))
++                    if mode == 'cpu':
++                        check(lane + ': CPU-наряд не читає і не змінює LM Studio', not Studio.calls)
++            if opts.before:
++                continue
++            # Збої між знімком і прибиранням не стирають межу власності та не пускають наступний наряд.
++            for fault in ['unload', 'get', 'schema']:
++                Studio.loaded = {'owner-id': 'owner-model'}
++                Studio.fault = ''
++                run('take')
++                Studio.loaded['job-job-model'] = 'job-model'
++                Studio.fault = fault
++                run('recover')
++                check(lane + '/' + fault + ': збій лишає знімок і власний екземпляр',
++                      (d / 'gpu-models.json').exists() and 'job-job-model' in Studio.loaded)
++                Studio.fault = ''
++                run('recover')
++                check(lane + '/' + fault + ': повтор відновлює тільки початкову модель', Studio.loaded == {'owner-id': 'owner-model'})
++            Studio.fault = 'get'
++            run('done')
++            check(lane + ': без початкового REST-знімка агент не вантажить моделей', Studio.loaded == {'owner-id': 'owner-model'})
++            Studio.fault = ''
++            Studio.loaded = {}
++            run('done')
++            check(lane + ': порожня початкова множина відновлюється', not Studio.loaded and not (d / 'gpu-models.json').exists())
++            Studio.loaded = {'owner-id': 'owner-model'}
++            run('take')
++            Studio.loaded['job-job-model'] = 'job-model'
++            before_calls = len(Studio.calls)
++            run('locked')
++            check(lane + ': зайнятий GPU-замок не дозволяє прибирати активний наряд',
++                  len(Studio.calls) == before_calls and 'job-job-model' in Studio.loaded)
++            check(lane + ': недоступний журнал зупиняє POST unload',
++                  run('log-fail').returncode == 0 and len(Studio.calls) == before_calls + 1 and 'job-job-model' in Studio.loaded)
++            run('recover')
++            before_calls = len(Studio.calls)
++            run('recover')
++            check(lane + ': завершене прибирання не повторює REST і вивантаження',
++                  len(Studio.calls) == before_calls and Studio.loaded == {'owner-id': 'owner-model'})
++            (d / 'gpu-models.json').write_text('{"v":1}', encoding='utf-8')
++            run('recover')
++            check(lane + ': пошкоджений знімок не дозволяє вивантажувати початкову модель',
++                  (d / 'gpu-models.json').exists() and Studio.loaded == {'owner-id': 'owner-model'} and len(Studio.calls) == before_calls)
++            (d / 'gpu-models.json').unlink()
++            run('take')
++            Studio.loaded['job-job-model'] = 'job-model'
++            offline = run('offline')
++            check(lane + ': Main прибирає залишок, навіть якщо fetch падає',
++                  offline.returncode == 0 and (d / 'fetch-failed').exists() and Studio.loaded == {'owner-id': 'owner-model'}
++                  and not (d / 'gpu-models.json').exists())
++    print('ПІДСУМОК: провалів ' + str(bad))
++    return int(bool(bad))
++
++
++if __name__ == '__main__':
++    raise SystemExit(main())
