@@ -1430,7 +1430,7 @@ _СПІЛЬНІ_ПРАВИЛА_ОЦІНКИ = (
          "You see her photos and the code's check of the outfit as a whole. Her photos show what she chose to "
          "show, often not the whole outfit.",
     вхід=(
-        _ЗП.Поле("question", "her question in her words, in her language (lang); you answer in \"language\"",
+        _ЗП.Поле("question", "her words or translated question; lang_source marks a default; answer in \"language\"",
                  без="She asked no question."),
         _ЗП.Поле("occasion", "where she is going, as she named it",
                  без="She did not name the occasion: do not judge formality or fitness for an event."),
@@ -1641,7 +1641,9 @@ _ДОПИТ_ПРАВИЛО = ("Her new question about the same outfit: answer it
 
 def _питання_дроту(питання):
     """Її питання → «question» дроту: внутрішня мова перекладача як є, рядок — вільним текстом із мовою."""
-    return питання if isinstance(питання, dict) else {"free_text": str(питання), "lang": "uk"}
+    from паспорт_поля import походження, ТИПОВЕ
+    return питання if isinstance(питання, dict) else {"free_text": str(питання), "lang": "uk",
+                                                    "lang_source": походження(ТИПОВЕ)}
 
 
 def хвіст_допиту(питання, попередня):

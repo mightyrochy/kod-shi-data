@@ -40,6 +40,7 @@ import verify as _V
 import реєстри as _РЕ
 import протокол as _ПР
 import selection_policy as _ПВ
+import паспорт_поля as _ПП
 import колір_образу as _КО
 import знання_речі as _ЗН
 import колір_річ as _КР_ТИП
@@ -129,7 +130,7 @@ _ВИПАДОК_У_ДНІ = {"місце": "place", "формат": "setting", "
                  "мета_слова": "goal_quote", "намір_слова": "intent_quote", "решта": "her_other_words",
                  "намір_звідки": "intent_source",       # ВИБ-1: default — припущення коду
                  "пояснення_мови": "language_model_note", "зарезервований_колір": "reserved_colour",
-                 # Ч-8: прохання про каблук — кодом, переконання — її цитатами,
+                 # Прохання про каблук — висновок коду, переконання — тлумачення моделі,
                  # а не прозою коду в `her_words`
                  "прохання_взуття": "shoe_request", "переконання": "beliefs"}
 # закритий перелік `каблук.ПРОХАННЯ_КОДИ` → коди дроту
@@ -286,6 +287,7 @@ def осі(зона, рч=None):
         # кадр картки іншого кольору: світлота — межі слова крамниці й кадру разом
         # (`фід_кадр_колір.вікно_з_кадром`), а не лише слова
         вих["L_from"] = ("word_or_photo" if (р.get("кадр_кольору") or {}).get("стан") == "інший_колір"
+                         else "model_hex" if р.get("джерело_кольору") == "модель"
                          else "word" if р.get("джерело_кольору") == "назва_вікно" or str(к.get("джерело") or "").startswith("слово")
                          else ("photo" if к.get("розкид") is not None else "photo_point"))
     кр = з.get("край")
@@ -404,8 +406,8 @@ _СЛОВО_ПРИ_ВИМІРІ = {"color": "hex"}
 # нема (короткі ключі нічого не економили б, а просили б читати легенду).
 ОПИС_ТИПОВИХ = {
     "in_arc": "the color lies inside her palette's scheme arc",
-    "branch": "core or edge: both inside her palette; choose edge as freely as core. "
-              "break: outside her palette; declare it in deliberate, as with any condition you break",
+    "branch": "the code's palette classification: core or edge (inside), break (outside); "
+              "choose edge freely; declare break in deliberate. branch_source marks a default without measurement",
     "L_from": "where the lightness came from",
     "hem_from": "where the hem came from",
 }
@@ -526,6 +528,8 @@ def річ(r, короткий=False, пул=False, слот=None):
     if not isinstance(r, dict):
         return r
     о = {"n": r.get("н"), "name": r.get("назва")}
+    if r.get("впевненість_джерело"):
+        о["confidence_source"] = r["впевненість_джерело"]
     if _КР_ТИП.явний_тип_кольору(r):
         о["color_type"] = {"вимір": "measure", "інтервал": "interval", "невідомо": "unknown"}[_КР_ТИП.тип_кольору(r)]
         о["color_not_measured"] = _не_вимір(_КР_ТИП.не_вимір(r))
@@ -581,6 +585,8 @@ def річ(r, короткий=False, пул=False, слот=None):
                         ("lab", [_число(x) for x in _КР_ТИП.точка_кольору(r)] if _КР_ТИП.точка_кольору(r) else None)):
             if v not in (None, "", [], ()):
                 о[ключ] = v
+    if о.get("branch") or пул:
+        о["branch_source"] = _ПП.походження(_ПП.ТИПОВЕ if r.get("гілка_типова") or not о.get("branch") else _ПП.ВИВЕДЕНЕ)
     if r.get("за_бажанням"):
         о["for_her_wish"] = r["за_бажанням"]
     if r.get("за_запитом"):
@@ -678,6 +684,8 @@ def випадок(в, день=None):
     if not isinstance(в, dict):
         return в
     вих = {к: в[к] for к in ("field_quotes", "wish_quotes", "formality_reason") if в.get(к)}
+    if в.get("джерела_полів"):
+        вих["sources"] = {ПОЛЯ_ВИПАДКУ.get(к, к): з for к, з in в["джерела_полів"].items()}
     for к, v in в.items():
         if к not in ПОЛЯ_ВИПАДКУ or v in (None, "", [], {}):
             continue
@@ -1477,6 +1485,7 @@ def вердикт(в, ремонти=True, межі=None, вибір=False):
     if isinstance(р, dict):
         вих["register"] = {к2: v for к2, v in (("leading", реєстр(р.get("провідний"))),
                                                ("near", [реєстр(x) for x in (р.get("поруч") or [])])) if v}
+        вих["register"]["source"] = _ПП.походження(_ПП.ВИВЕДЕНЕ)
     з = в.get("завдання")
     if isinstance(з, dict) and з.get("образів"):
         вих["outfits_wanted"] = з["образів"]
