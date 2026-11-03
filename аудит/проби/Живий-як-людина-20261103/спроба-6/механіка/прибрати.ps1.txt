@@ -1,0 +1,41 @@
+$ErrorActionPreference = 'Stop'
+$repoPath = (Get-Location).Path
+$dataPath = Join-Path $repoPath 'аудит/проби/Живий-як-людина-20261103/спроба-6'
+$owned = Get-Content -Raw -Encoding UTF8 (Join-Path $dataPath 'узгоджене-середовище.json') | ConvertFrom-Json
+$beforePorts = @()
+foreach ($port in @(41235,41236,41237)) {
+    $listener = @(Get-NetTCPConnection -LocalPort $port -State Listen -ErrorAction SilentlyContinue)
+    $expectedOwner = if ($port -eq 41237) { [int]$owned.проксі_PID } else { [int]$owned.браузер_PID }
+    if ($listener.Count -ne 1 -or $listener[0].OwningProcess -ne $expectedOwner) { throw "Не підтверджено власника порту $port" }
+    $beforePorts += @{порт=$port;PID=$expectedOwner}
+}
+$closed = Invoke-RestMethod -Uri 'http://127.0.0.1:41236' -Method Post -ContentType 'application/json' -Body '{"op":"close"}'
+if (-not $closed.closed) { throw 'Браузер не підтвердив закриття' }
+Start-Sleep -Milliseconds 500
+$ownKeys = @('qwen/qwen3.5-9b','mamaylm-gemma-3-12b-it-v2.0')
+$modelsBefore = Invoke-RestMethod -Uri 'http://127.0.0.1:1234/api/v1/models' -Method Get
+$unloaded = @()
+foreach ($model in $modelsBefore.models | Where-Object { $_.key -in $ownKeys }) {
+    foreach ($instance in $model.loaded_instances) {
+        $reply = Invoke-RestMethod -Uri 'http://127.0.0.1:1234/api/v1/models/unload' -Method Post -ContentType 'application/json' -Body (@{instance_id=$instance.id} | ConvertTo-Json -Compress)
+        $unloaded += @{модель=$model.key;instance_id=$instance.id;відповідь=$reply}
+    }
+}
+$proxyListener = @(Get-NetTCPConnection -LocalPort 41237 -State Listen -ErrorAction SilentlyContinue)
+if ($proxyListener.Count -ne 1 -or $proxyListener[0].OwningProcess -ne [int]$owned.проксі_PID) { throw 'Власник проксі змінився' }
+Stop-Process -Id ([int]$owned.проксі_PID)
+Start-Sleep -Milliseconds 500
+$jobRoot = [IO.Path]::GetFullPath((Split-Path -Parent $repoPath))
+$buildPath = [IO.Path]::GetFullPath((Join-Path $env:TEMP 'збірка'))
+$expectedBuild = [IO.Path]::GetFullPath((Join-Path $jobRoot 'tmp/збірка'))
+if (-not $buildPath.Equals($expectedBuild,[StringComparison]::OrdinalIgnoreCase) -or -not $buildPath.StartsWith($jobRoot + [IO.Path]::DirectorySeparatorChar,[StringComparison]::OrdinalIgnoreCase)) { throw "Тека збірки поза власною задачею: $buildPath" }
+git worktree remove --force -- $buildPath
+if ($LASTEXITCODE -ne 0) { throw 'Не вдалося прибрати власне дерево збірки' }
+$modelsAfter = Invoke-RestMethod -Uri 'http://127.0.0.1:1234/api/v1/models' -Method Get
+$remainingOwn = @($modelsAfter.models | Where-Object { $_.key -in $ownKeys } | ForEach-Object { $_.loaded_instances })
+$remainingPorts = @(Get-NetTCPConnection -State Listen -ErrorAction SilentlyContinue | Where-Object { $_.LocalPort -in @(41235,41236,41237) })
+if ($remainingOwn.Count -gt 0 -or $remainingPorts.Count -gt 0 -or (Test-Path -LiteralPath $buildPath)) { throw 'Прибирання власного середовища не завершилося' }
+$report = [ordered]@{час_UTC=[DateTime]::UtcNow.ToString('o');перевірені_власні_порти=$beforePorts;браузер_закритий=$closed.closed;вивантажені_власні_моделі=$unloaded;власних_моделей_лишилось=$remainingOwn.Count;власних_портів_лишилось=$remainingPorts.Count;перевірений_абсолютний_шлях=$buildPath;дерево_збірки_прибрано=$true;LM_Studio_1234_відповідає=$true;джерело_REST='https://lmstudio.ai/docs/developer/rest/unload'}
+$text = $report | ConvertTo-Json -Depth 12
+[IO.File]::WriteAllText((Join-Path $dataPath 'очищення.json'),$text + [Environment]::NewLine,(New-Object Text.UTF8Encoding($false)))
+$text
