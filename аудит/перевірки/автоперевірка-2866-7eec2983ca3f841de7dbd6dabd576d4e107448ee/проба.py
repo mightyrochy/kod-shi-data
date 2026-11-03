@@ -35,6 +35,7 @@ def головна():
     прилади = голова / 'джерела/прилади'
     sys.path.insert(0, str(прилади))
     os.environ['PYTHONIOENCODING'] = 'utf-8'
+    os.environ.setdefault('PYTHONUTF8', '1')
     результат = {'голова': '7eec2983ca3f841de7dbd6dabd576d4e107448ee', 'проби': {}, 'команди': []}
     старий_sha = '69c82b1af8b6525af3cabc8303f795f8a97d83b4'
     шлях = 'джерела/прилади/корінь_е3_заміна_з_перевіркою.py'
@@ -75,8 +76,13 @@ def головна():
     def команда(назва, аргументи, cwd):
         """Чекає завершення команди та записує її повний вивід."""
         вих = subprocess.run(аргументи, cwd=cwd, capture_output=True, env=dict(os.environ))
+        stdout = вих.stdout.decode('utf-8', 'replace')
+        stderr = вих.stderr.decode('utf-8', 'replace')
         запис = {'назва': назва, 'команда': аргументи, 'cwd': str(cwd), 'код': вих.returncode,
-                 'stdout': вих.stdout.decode('utf-8', 'replace'), 'stderr': вих.stderr.decode('utf-8', 'replace')}
+                 'stdout_рядків': len(stdout.splitlines()), 'stderr_рядків': len(stderr.splitlines()),
+                 'stdout': '\n'.join(р[:1200] for р in stdout.splitlines()[-40:]),
+                 'stderr': '\n'.join(stderr.splitlines()[-25:]),
+                 'провали': [р for р in stdout.splitlines() if '✗' in р or 'ВПАЛО' in р]}
         результат['команди'].append(запис)
         print(f'{назва}: код {вих.returncode}', flush=True)
     команда('сім’я приладу', [sys.executable, 'джерела/прилади/тест_корінь_е3_заміна_з_перевіркою.py'], голова)
