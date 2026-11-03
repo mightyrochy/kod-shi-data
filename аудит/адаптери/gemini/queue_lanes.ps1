@@ -1004,6 +1004,22 @@ function Get-HeadLivePublication([string]$Head, [string]$ExistingBody = '') {
     }
     $registry = Get-LiveSceneRegistry ((Invoke-Git @('show', 'refs/remotes/origin/main:аудит/проби/живі_сцени.txt')).Out)
     if (-not $registry.Count) { throw 'LIVE_AFTER_REGISTRY' }
+    # Лише додані рядки від спільної бази: зміни й видалення сцен main не змінюють їхній режим.
+    $base = (Invoke-Git @('merge-base', 'refs/remotes/origin/main', $Head)).Out.Trim()
+    if (-not $base) { throw 'LIVE_AFTER_MERGE_BASE' }
+    $baseRegistry = Get-LiveSceneRegistry ((Invoke-Git @('show', ($base + ':аудит/проби/живі_сцени.txt'))).Out)
+    $diff = (Invoke-Git @('diff', '--no-ext-diff', '--unified=0', $base, $Head, '--', 'аудит/проби/живі_сцени.txt')).Out
+    foreach ($line in ($diff -split "`n")) {
+        if (-not $line.StartsWith('+') -or $line.StartsWith('+++')) { continue }
+        $row = $line.Substring(1).TrimEnd("`r").TrimStart([char]0xFEFF)
+        if (-not $row.Trim() -or $row.TrimStart().StartsWith('#')) { continue }
+        $fields = $row.Split('|')
+        if ($fields.Count -lt 10 -or -not $fields[0].Trim()) { continue }
+        $added = Get-LiveSceneRegistry $row
+        foreach ($id in $added.Keys) {
+            if (-not $registry.ContainsKey($id) -and -not $baseRegistry.ContainsKey($id)) { $registry[$id] = $added[$id] }
+        }
+    }
     Merge-LivePublicationBody $body $ExistingBody $registry
 }
 

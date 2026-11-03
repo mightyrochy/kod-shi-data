@@ -46,6 +46,7 @@ try {
     }
     $script:Body = ''; $script:Existing = @(); $script:Calls = @(); $script:ApiFail = $false
     $script:CurrentBody = ''; $script:Reads = @(); $script:ReadFail = $false
+    $script:SceneDiff = ''; $script:BaseRegistryText = $script:RegistryText
     function Get-ChainPulls { $script:Existing }
     function Resolve-Exe([string]$Name) { 'стенд-gh' }
     function Invoke-ChainApi([string]$Path) {
@@ -59,6 +60,9 @@ try {
         $out = ''
         if ($GitArgs[0] -eq 'ls-remote') { $out = $script:Head + "`trefs/heads/gemini/проба" }
         elseif ($GitArgs -contains '--format=%B') { $out = $script:Body }
+        elseif ($GitArgs[0] -eq 'merge-base') { $out = 'b' * 40 }
+        elseif ($GitArgs[0] -eq 'diff' -and $GitArgs -contains '--unified=0') { $out = $script:SceneDiff }
+        elseif ($GitArgs[-1] -eq (('b' * 40) + ':аудит/проби/живі_сцени.txt')) { $out = $script:BaseRegistryText }
         elseif ($GitArgs[-1] -like '*живі_сцени.txt') { $out = $script:RegistryText }
         elseif ($GitArgs[0] -eq 'diff') { $out = 'аудит/дошка/gemini/проба.md' }
         [pscustomobject]@{Code=0;Out=$out;Err=''}
@@ -180,6 +184,33 @@ try {
                     Check "$code ($invalid): кінець називає ваду й проходить канал доставки" ($result.Outbox -ceq $expected -and -not (Test-OutboxLine $result.Outbox))
                 }
             }
+        }
+        Scenario '7 нові сцени гілки' {
+            $new = 'гілка_нова|ж1|питання||розмова|1|правка|питання|краще|джерело'
+            $existing = 'ж3_співбесіда'
+            $script:SceneDiff = "@@ -1,0 +2 @@`n+$new`n+гілка_коротка|ж1|питання||розмова`n+$existing|ж1|питання||змінено|1|правка|питання|краще|джерело"
+            foreach ($case in @(
+                @{id='гілка_нова'; ok=$true}, @{id='гілка_відсутня'; ok=$false},
+                @{id='гілка_коротка'; ok=$false}, @{id=$existing; ok=$true}
+            )) {
+                $script:Body = 'ЖИВИЙ ПІСЛЯ: ' + $case.id + ' — питання'
+                $result = Get-HeadLivePublication $script:Head
+                $isValid = $result.Bad.Count -eq 0
+                if ($case.id -eq 'гілка_нова' -and $Phase -eq 'ДОРОБКИ') {
+                    Check 'ДО: нова сцена дає LIVE_AFTER_INVALID' (-not $isValid -and $result.Body.Contains('LIVE_AFTER_INVALID'))
+                } else {
+                    Check "сцена $($case.id): очікування $($case.ok)" ($isValid -eq $case.ok)
+                }
+                if ($case.id -eq $existing -and $Phase -ne 'ДОРОБКИ') {
+                    $parsed = @(Get-LiveAfterLines $result.Body $registry)
+                    Check 'режим наявної сцени не перезаписаний гілкою' ($parsed.Count -eq 1 -and $parsed[0].mode -ceq $registry[$existing])
+                }
+            }
+            $script:BaseRegistryText += "`nгілка_стара|ж1|питання||розмова|1|правка|питання|краще|джерело"
+            $script:SceneDiff += "`n+гілка_стара|ж1|змінено||повне|1|правка|питання|краще|джерело"
+            $script:Body = 'ЖИВИЙ ПІСЛЯ: гілка_стара — питання'
+            Check 'зміна сцени бази, видаленої з main, не додає її назад' ((Get-HeadLivePublication $script:Head).Bad.Count -eq 1)
+            $script:BaseRegistryText = $script:RegistryText; $script:SceneDiff = ''
         }
         Scenario '6 сцени перевірки зберігаються на PATCH' {
             # Попередній розділ лишає завдання, що не належать цій пробі.
