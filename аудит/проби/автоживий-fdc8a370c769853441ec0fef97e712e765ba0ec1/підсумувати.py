@@ -28,6 +28,8 @@ def main():
     база = (ТЕКА / "НОВА_БАЗА.md").read_text(encoding="utf-8")
     rc_бази = (ТЕКА / "нова_база_rc.txt").read_text(encoding="utf-8").strip()
     відповіді = (ТЕКА / "ВІДПОВІДІ.md").read_text(encoding="utf-8")
+    if "ПІСЛЯ ЗАПИСУ" in відповіді:
+        raise RuntimeError("Не завершено відповіді на всі питання")
     середовище = json.loads((ТЕКА / "середовище.json").read_text(encoding="utf-8"))
     зелених = sum(д["зелених_звірок"] for д in дані.values())
     червоних = sum(д["червоних_звірок"] for д in дані.values())
@@ -63,7 +65,10 @@ def main():
     (ТЕКА / "ЗВІТ.md").write_text(текст, encoding="utf-8")
     head = subprocess.check_output(["git", "rev-parse", "HEAD"], cwd=КОРІНЬ, text=True, encoding="utf-8").strip()
     url = "https://github.com/mightyrochy/kod-shi-data/tree/" + head + "/" + quote(str(ТЕКА.relative_to(КОРІНЬ)).replace("\\", "/"), safe="/")
-    коміт = f"Автоживий: {len(дані)} тестових сцен збірки fdc8a370 та невиміряні умови\n\n" + текст + "\nДокази записів: " + url + "\n"
+    коміт = f"Автоживий: {len(дані)} тестових сцен збірки fdc8a370 та невиміряні умови\n\n"
+    коміт += f"Що змінено: додано {len(дані)} записів, знімки, відповіді на питання й факти наявних симптомів дошки.\n"
+    коміт += "Перевірено: зібрана сторінка у справжньому Chromium із двома локальними моделями; повний доказ кожної сцени. Продукт і правила не змінювалися.\n\n"
+    коміт += текст + "\n[Докази записів](" + url + ")\n"
     (ТЕКА / "КОМІТ.txt").write_text(коміт, encoding="utf-8")
     print(f"Звіт: {len(дані)} сцен, {png} PNG, {зелених} зелених, {червоних} червоних; rc бази {rc_бази}")
 
