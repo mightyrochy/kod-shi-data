@@ -22,6 +22,12 @@ if __name__ == '__main__':
                ((36, 40, 38, 39), 'Diamond', False),
                ((40, 39, 38, 39), 'Oval', False),
                ((36, 27.001, 36, 30), 'Rectangle', False),
+               ((36, 30, 39.6, 30), 'Bottom Hourglass', True),
+               ((36, 30, 39.599, 30), 'Rectangle', False),
+               ((36, 30, 40, 35.79), 'Spoon', True),
+               ((36, 30, 40, 35.78999), 'Bottom Hourglass', True),
+               ((36, 40, 40, 35), 'Triangle', False),
+               ((36, 40.001, 40, 35), 'Diamond', False),
                ((36, 30, 40), None, True),  # Bottom Hourglass / Spoon: стан спільний
                ((36, 32, 40), None, None),  # Spoon / Triangle
                ((36, 30, 39), None, None),  # Spoon / Rectangle
