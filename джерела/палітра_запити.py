@@ -21,6 +21,7 @@ K-MUA-01 … `_перетин_дуг`; `запит_у_фід`. `personal_palette
 
 РЕБРА. `палітра_схеми` (з 22.09 — ще й МЕЖА_СІМ_Ї), `палітра_гамут` і зовнішнє (`colorspace`, `колір_образу`);
 не фасад."""
+from реєстр_правил import ТИПОВИЙ_НАМІР
 import colorspace as cs
 from colorspace import reliability, MIN_TO_EMIT
 import колір_образу as _КОЛІР
@@ -96,7 +97,7 @@ def тиск_знахідка(h_речі, h_шкіри, слот=None, роль=
         блокує=False)
 
 
-def тон_від_рис(F, схема, source="uncontrolled", _intent="conventional"):
+def тон_від_рис(F, схема, source="uncontrolled", _intent=ТИПОВИЙ_НАМІР):
     """Дуги тону, виведені З ЛЮДИНИ: по одній на кожну рису, БЕЗ усереднення.
 
     Гейт той самий, що й у схемного шляху (`R["hue"] >= MIN_TO_EMIT`, K-PC-05) — і

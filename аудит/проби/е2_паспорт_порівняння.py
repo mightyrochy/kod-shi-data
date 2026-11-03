@@ -4,11 +4,13 @@
 записаного промпту (обрано, типове, рукою, паспорт досі, розмова, фото), відповідь — записана.
 """
 import gzip
+import io
 import json
 from pathlib import Path
 import subprocess
 import sys
 import tempfile
+import tarfile
 
 ГІЛКА = "origin/claude/zhyvi-1016-1"
 
@@ -54,7 +56,8 @@ def головна():
     with tempfile.TemporaryDirectory(prefix="е2-паспорт-") as тека:
         Path(тека, "записи.json").write_text(json.dumps(записи, ensure_ascii=False), encoding="utf-8")
         архів = subprocess.run(["git", "-C", str(корінь), "archive", база, "джерела"], capture_output=True, check=True)
-        subprocess.run(["tar", "-x", "-C", тека], input=архів.stdout, check=True)
+        with tarfile.open(fileobj=io.BytesIO(архів.stdout)) as файли:
+            файли.extractall(тека, filter="data")
         запуск = lambda д: json.loads(subprocess.run([sys.executable, "-W", "ignore", __file__, "--дерево", д,
                                                      str(Path(тека, "записи.json"))], capture_output=True,
                                                     check=True, cwd=д).stdout)
