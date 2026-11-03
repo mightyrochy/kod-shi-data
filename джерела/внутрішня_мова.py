@@ -2994,9 +2994,9 @@ _МІСЦЯ_ОПЦІЙ = "where it is worn"
     # `вибиває` драбини (`формальність.ДРАБИНА`), щабель — свій у кожного з семи
     "level_breakers": "the level is held by fabric, finish and shoes, not by the item's name (values: level — the "
                       "step; out — what takes an outfit off this step; without out nothing is ruled out)",
-    "high_occasion_floor": "the event's level starts from this step: no item sits "
-                           "more than one step below it (canvas sneakers, trainers, denim, a knit top stay out); "
-                           "shoes at the outfit's level or above (values: from)",
+    "high_occasion_floor": "risk asymmetry (K-KOH-07): no item sits more than one step below "
+                           "the event's band; explain a deliberate lower item in deliberate, "
+                           "including a deliberate wrong shoe (K-SHO-03) (values: from)",
     "weather_layers": "the weather outside and the layers it asks for (values: temperature_c"
                       "; weather_feel — instead of temperature_c when she named no degrees, the weather as she put it; layers — how many "
                       "layers on the torso, a half is one more light removable layer; fabrics — fabric codes "
