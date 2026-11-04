@@ -1,0 +1,44 @@
+── ПРОМПТ (2525 симв.) ──
+{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.", "One item carries one thing — of two alternatives list the first; a note in brackets is not an item.", "Slot \"accessory\" is for an item no other slot fits.", "\"is_outfit\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "ITEM_LIST", "answer_schema": {"is_outfit": "yes|no", "items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory", "color_hex": "<#rrggbb or null>", "worn": "<true, or false when the description says the outfit goes without it>"}]}, "input": ["\"description\" — the outfit description"]}, "description": "A silk blouse in a deep emerald green (#0f5c4e), tailored with a relaxed yet structured box cut that falls to the hips, finished with a subtle sheen.\nWide-leg trousers in a charcoal wool blend (#36454f), featuring a high-rise waist and a straight leg that tapers slightly at the ankle for an elongated silhouette.\nA single-breasted blazer in navy blue velvet (#1e272e) worn open to add texture without bulk, with notched lapels and clean shoulder lines.\nGold-toned hoop earrings with intricate filigree detailing to catch the artificial party lights.\nStrappy heeled sandals in a metallic bronze finish (#cd9b3d) that complement the autumn palette while elevating the outfit from neat to smart.\n\nThis outfit works because it perfectly balances the celebratory nature of a friend's birthday with the specific request for \"smart\" formal wear, utilizing rich textures like velvet and silk that look exceptional under evening artificial lighting. The deep green and navy color palette feels sophisticated and seasonal for autumn without being overly dark or somber for a festive gathering. By keeping the silhouette clean and allowing the blazer to remain open, it creates an effortless elegance that aligns with her wish to feel stylish yet comfortable at a social event."}
+
+── ВІДПОВІДЬ (1055 симв., 6.2 с, HTTP 200) ──
+{
+  "is_outfit": "yes",
+  "items": [
+    {
+      "name": "Silk blouse",
+      "details": "relaxed yet structured box cut, deep emerald green silk with subtle sheen, falls to the hips",
+      "slot": "top",
+      "color_hex": "#0f5c4e",
+      "worn": true
+    },
+    {
+      "name": "Wide-leg trousers",
+      "details": "high-rise waist, straight leg tapering at ankle, charcoal wool blend",
+      "slot": "bottom",
+      "color_hex": "#36454f",
+      "worn": true
+    },
+    {
+      "name": "Single-breasted blazer",
+      "details": "navy blue velvet with notched lapels and clean shoulder lines, worn open",
+      "slot": "outerwear",
+      "color_hex": "#1e272e",
+      "worn": true
+    },
+    {
+      "name": "Gold-toned hoop earrings",
+      "details": "intricate filigree detailing to catch light",
+      "slot": "earrings",
+      "color_hex": null,
+      "worn": true
+    },
+    {
+      "name": "Strappy heeled sandals",
+      "details": "metallic bronze finish",
+      "slot": "shoes",
+      "color_hex": "#cd9b3d",
+      "worn": true
+    }
+  ]
+}
