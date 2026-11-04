@@ -31,7 +31,7 @@ def main():
                                   'команда': command}, ensure_ascii=False) + '\n')
         env = dict(ENV)
         if scene == 'ж7_збій_правил_без_підборів':
-            env['NODE_OPTIONS'] = env.get('NODE_OPTIONS', '') + ' --require "' + str(OUT / 'збій_каталогу.cjs') + '"'
+            env['NODE_OPTIONS'] = env.get('NODE_OPTIONS', '') + ' --require "' + (OUT / 'збій_каталогу.cjs').as_posix() + '"'
         process = subprocess.Popen(command, cwd=ROOT, env=env)
         while process.poll() is None:
             try:
