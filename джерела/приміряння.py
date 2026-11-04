@@ -78,10 +78,11 @@ def опис_речі(р):
 
 # ЧОМУ ЦІ РЯДКИ — у шапці модуля. «лише_вхід» — не додавати речей, яких в образі нема.
 _ЛИШАЄТЬСЯ = ("Change only the clothes on photo 1: her face, body, pose, hands, hair, light, background, "
-              "framing and angle stay exactly as on photo 1 — it is the same photo.")
+              "framing and angle stay exactly as on photo 1.")
 _ЛИШАЄТЬСЯ_З_МАКІЯЖЕМ = ("Change the clothes and the makeup on photo 1: her facial features, face shape, "
-                         "expression and angle stay exactly as on photo 1 — it is the same person — and so "
+                         "expression and angle stay exactly as on photo 1, and so "
                          "do her body, pose, hands, hair, light, background and framing.")
+_ЇЇ_РІЧ = "draw exactly this one"
 ПРИМІРЯННЯ = _ЗП.Оголошення(
     задача="приміряння",
     роль="Photo 1 is a woman. Dress her in the outfit below.",
@@ -95,10 +96,12 @@ _ЛИШАЄТЬСЯ_З_МАКІЯЖЕМ = ("Change the clothes and the makeup on
                  як="paint exactly this makeup on her face"),
         _ЗП.Поле("how_to_wear", "how the items are worn", як="follow it"),
         _ЗП.Поле("previous_picture", "what was wrong with the previous picture", як="draw it again"),
+        _ЗП.Поле("item_photos[].hers", "her own item", як=_ЇЇ_РІЧ),
+        _ЗП.Поле("items_without_photo[].hers", "her own item", як=_ЇЇ_РІЧ),
     ),
     правила=(
         _ЛИШАЄТЬСЯ,
-        "One frame in the proportions of photo 1, with the same single woman filling it.",
+        "One image with one frame: the same single woman filling the frame, in the proportions of photo 1.",
     ),
     вихід="TRY_ON_IMAGE",
     межі=("лише_вхід",),
@@ -124,8 +127,6 @@ def промпт(з_фото=(), без_фото=(), макіяж=None, як_н�
                 previous_picture=("wider than photo 1: several frames side by side" if повтор else None))
     о = ПРИМІРЯННЯ if not мк else _dc.replace(
         ПРИМІРЯННЯ, правила=(_ЛИШАЄТЬСЯ_З_МАКІЯЖЕМ,) + ПРИМІРЯННЯ.правила[1:])
-    if any(р.get("hers") for р in дані["item_photos"] + дані["items_without_photo"]):
-        о = _dc.replace(о, правила=о.правила + ("For any item marked «hers», draw exactly that item.",))
     return _json.dumps(_ЗП.зібрати(о, дані), ensure_ascii=False)
 
 
