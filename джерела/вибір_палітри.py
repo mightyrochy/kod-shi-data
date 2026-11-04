@@ -41,6 +41,7 @@ import внутрішня_мова as _ВМ
 import дріт_моделі as _ДМ
 import паспорт_нагоди as _ПН
 import colorspace as _cs
+import face_features as _ОБ
 import колір_річ as _КР
 import palettes as _ПЛ
 import міст_вхід as _МВ
@@ -114,7 +115,7 @@ _ПРИЧИН_МАКС = 3
 def _до_очей(о, F):
     """Відношення основи переліку до очей: "echo" / "set_off" / None (див. коментар вище)."""
     import math as _м
-    р = F.get("очі") or {}
+    р = _ОБ.виміряні_риси(F).get("очі") or {}
     if р.get("L") is None:
         return None
     тон_очей = р.get("h") is not None and float(р.get("C") or 0) >= _ТОН_РИСИ_С_МІН
@@ -309,18 +310,29 @@ def _сім_я(h, C):
 def _особа(F, п):
     """Її колорит кодами й числами: контраст і щілина, підтон (той самий клас і джерело, що бачить
     рука 1 — `пакет_моделі.людина_для_пакета`), очі, волосся, шкіра, бік очей на осі b*, метал."""
+    вимір = _ОБ.ознаки(F)
+    оцінка = вимір["протокол"] == "model_hex"
     л = _ПМ.людина_для_пакета(None, п.get("палітри"))
     о = {"contrast": {"level": _ДМ.КОНТРАСТ.get(п["особа"].get("рівень"), _ВМ.UNKNOWN),
                       "light_dark_gap": (round(float(п["особа"]["value_gap"]), 1)
                                          if п["особа"].get("value_gap") is not None else None)},
          "undertone": {"class": _ДМ.ТЕМПЕРАТУРА.get(л["температура"]["клас"], л["температура"]["клас"]),
                        "from": _ДМ.ДЖЕРЕЛО_ТЕМПЕРАТУРИ.get(л["температура"]["джерело"])}}
+    о["contrast"].update(source=_ОБ.для_моделі(вимір)["contrast"]["source"],
+                         confidence=вимір["контраст"]["довіра"])
+    if оцінка:
+        о["contrast"].update(level=_ВМ.UNKNOWN, light_dark_gap=None)
     for риса, ключ in (("очі", "eyes"), ("волосся", "hair"), ("шкіра", "skin")):
         р = F.get(риса) or {}
+        if оцінка:
+            if р.get("hex"):
+                о[ключ] = dict(estimate_hex=р["hex"], source="model_hex", confidence=0.0)
+            continue
         if р.get("L") is None:
             continue
         о[ключ] = {"family": _сім_я(р.get("h"), р.get("C")), "lightness": round(float(р["L"])),
-                   "chroma": round(float(р.get("C") or 0))}
+                   "chroma": (round(float(р["C"])) if р.get("C") is not None else None),
+                   "source": о["contrast"]["source"]}
     б = _П.бік_b_проти_людини(F)
     if "eyes" in о:
         о["eyes"]["yellow_blue"] = ("yellow" if б.get("бік", 0) > 0 else "blue" if б.get("бік", 0) < 0
@@ -334,6 +346,8 @@ def _особа(F, п):
     # рангів 1–2 «середні/насичені») ж3 і ж8 брали графіт і ставили «muted» у 3 з 3
     # прогонів. Тепер їде та сама вісь, якою код будує палітру (`palettes.осі`: волосся без
     # тону голосує лише світлотою), і ознака «обидва кінці світлоти» за високого контрасту.
+    if оцінка:
+        return о
     ос = _ПЛ.осі(F)
     о["axes"] = {"lightness": ос["коди"]["value"], "clarity": ос["коди"]["chroma"]}
     if ос.get("обидва_полюси_L"):

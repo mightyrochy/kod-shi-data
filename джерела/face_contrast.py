@@ -95,7 +95,8 @@ def опора_стрибка(F):
     """L* шкіри — те, від чого K-CLR-02 міряє стрибок біля обличчя і в ранзі основ
     (`bases.ранг`), і в суді (`колір_світлота.біля_обличчя`, `особа["L_шкіри"]`).
     None — шкіри в профілі нема."""
-    L = (F.get("шкіра") or {}).get("L")
+    from face_features import виміряні_риси
+    L = (виміряні_риси(F).get("шкіра") or {}).get("L")
     return None if L is None else float(L)
 
 
@@ -106,6 +107,8 @@ def value_обличчя(F):
     Не середнє по всьому — саме зважене, бо волосся зчитується першим і
     займає більшу площу навколо обличчя.
     """
+    from face_features import виміряні_риси
+    F = виміряні_риси(F)
     шк = (F.get("шкіра") or {}).get("L")
     вол = [v.get("L") for k, v in (F or {}).items()
            if k.startswith("волосся") and isinstance(v, dict) and v.get("L") is not None]
@@ -399,7 +402,8 @@ def домінантність(F, надійність_хроми=0.35):
     самих нейтралах — їй треба справжні кольори на близьких value.
     Рахується з хроми рис; сила висновку обмежена зверху надійністю хроми.
     """
-    C = [v.get("C") for k, v in (F or {}).items()
+    from face_features import виміряні_риси
+    C = [v.get("C") for k, v in виміряні_риси(F).items()
          if isinstance(v, dict) and v.get("C") is not None
          and (k == "шкіра" or k.startswith("волосся") or k == "очі")]
     if not C:
