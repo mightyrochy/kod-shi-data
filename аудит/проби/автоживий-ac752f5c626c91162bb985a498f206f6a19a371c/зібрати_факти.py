@@ -38,7 +38,15 @@ def main():
             record['паспорт'] = shared.get('паспорт')
             record['випадок_моделі'] = shared.get('випадок_моделі')
             record['правила'] = []
+            record['вигадані_речі'] = []
+            record['колірні_свідки'] = []
             for location, value in walk(data):
+                if value.get('джерело') == 'модель' and str(value.get('id') or '').startswith('м-'):
+                    record['вигадані_речі'].append({'шлях': location, **value})
+                if any(k in value for k in ['колір_джерело', 'впевненість_джерело',
+                                           'джерело_кольору', 'колір_вимір']):
+                    record['колірні_свідки'].append({'шлях': location, **{k: value[k] for k in
+                        ['id', 'назва', 'колір_джерело', 'впевненість_джерело', 'джерело_кольору', 'колір_вимір'] if k in value}})
                 if value.get('правило') in RULES:
                     record['правила'].append({'шлях': location, **{k: value[k] for k in
                         ['правило', 'сила', 'сила_нп', 'суть', 'де', 'значення', 'спрацювань', 'свідомий'] if k in value}})
@@ -58,7 +66,8 @@ def main():
                         'модель': request.get('model'), 'case': wire.get('case'), 'day': wire.get('day'),
                         'register': wire.get('register'),
                         'джерела': dict(Counter(value.get('kind') for _, value in walk(wire)
-                                               if value.get('kind') in {'word', 'touch', 'reading', 'default', 'derived', 'photo'}))})
+                                               if isinstance(value.get('kind'), str) and value.get('kind') in
+                                               {'her', 'word', 'touch', 'reading', 'default', 'derived', 'photo'}))})
         facts[folder.name] = record
     (OUT / 'ФАКТИ.json').write_text(json.dumps(facts, ensure_ascii=False, indent=1) + '\n', encoding='utf-8')
     for scene, data in facts.items():
