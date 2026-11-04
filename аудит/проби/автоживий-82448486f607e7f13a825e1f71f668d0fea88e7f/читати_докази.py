@@ -56,7 +56,8 @@ def читати(сцена):
         факти["виклики"].append(рядок)
     лог = сцена.joinpath("лог.txt").read_text(encoding="utf-8")
     факти["рядки_питань"] = [рядок for рядок in лог.splitlines() if any(слово in рядок for слово in
-        ["паспорт:", "паспорт ", "щаб", "part_of_day", "formality", "open_zones", "П-7", "утрим", "✘", "ДОКАЗ ·"])]
+        ["паспорт:", "паспорт ", "щаб", "part_of_day", "formality", "open_zones", "П-7", "утрим", "✗",
+         "КАРТКА:", "KARTKA ·", "ВИМІРИ:", "ЯДРО:", "ДОКАЗ ·"])]
     return факти
 
 if __name__ == "__main__":
