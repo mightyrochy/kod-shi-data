@@ -1,0 +1,51 @@
+── ПРОМПТ (2578 симв.) ──
+{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.", "One item carries one thing — of two alternatives list the first; a note in brackets is not an item.", "Slot \"accessory\" is for an item no other slot fits.", "\"is_outfit\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "ITEM_LIST", "answer_schema": {"is_outfit": "yes|no", "items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory", "color_hex": "<#rrggbb or null>", "worn": "<true, or false when the description says the outfit goes without it>"}]}, "input": ["\"description\" — the outfit description"]}, "description": "Navy blue wool-blend blazer, tailored single-breasted cut, knee-length with a slightly dropped shoulder, hex #001f3f, fine twill fabric.\nCrisp white silk-blend button-down shirt, relaxed but structured collar, hem falling just below the waistline, hex #FFFFFF, lightweight crepe de chine material.\nHigh-waisted charcoal grey wool trousers, straight-leg cut with a clean break at the ankle, full-length to show a hint of shoe, hex #36454F, heavy worsted wool fabric.\nBlack leather loafers, classic Penny loafer style with a low block heel for stability in a crowd, rounded toe, hex #111111, smooth calfskin leather material.\nA delicate silver chain necklace and small stud earrings to add subtle sparkle without overpowering the classic aesthetic.\n\nThis outfit works perfectly for a rock concert where you want to stand out in the crowd while maintaining a restrained and classic look as requested. The structured blazer and trousers provide a polished, smart silhouette that balances well with the energetic atmosphere of a club venue on an autumn evening. Choosing dark, neutral tones in wool and silk ensures warmth against the cool air inside the venue while keeping the profile sleek and timeless. The loafers offer the necessary comfort for standing all night without sacrificing the refined elegance of the ensemble."}
+
+── ВІДПОВІДЬ (1356 симв., 5.7 с, HTTP 200) ──
+{
+  "is_outfit": "yes",
+  "items": [
+    {
+      "name": "blazer",
+      "details": "tailored single-breasted cut, knee-length with a slightly dropped shoulder, fine twill fabric",
+      "slot": "outerwear",
+      "color_hex": "#001f3f",
+      "worn": true
+    },
+    {
+      "name": "shirt",
+      "details": "relaxed but structured collar, hem falling just below the waistline, lightweight crepe de chine material",
+      "slot": "top",
+      "color_hex": "#FFFFFF",
+      "worn": true
+    },
+    {
+      "name": "trousers",
+      "details": "straight-leg cut with a clean break at the ankle, full-length to show a hint of shoe, heavy worsted wool fabric",
+      "slot": "bottom",
+      "color_hex": "#36454F",
+      "worn": true
+    },
+    {
+      "name": "loafers",
+      "details": "classic Penny loafer style with a low block heel for stability, rounded toe, smooth calfskin leather material",
+      "slot": "shoes",
+      "color_hex": "#111111",
+      "worn": true
+    },
+    {
+      "name": "necklace",
+      "details": "delicate silver chain necklace",
+      "slot": "jewelry",
+      "color_hex": null,
+      "worn": true
+    },
+    {
+      "name": "earrings",
+      "details": "small stud earrings to add subtle sparkle without overpowering the classic aesthetic",
+      "slot": "earrings",
+      "color_hex": null,
+      "worn": true
+    }
+  ]
+}

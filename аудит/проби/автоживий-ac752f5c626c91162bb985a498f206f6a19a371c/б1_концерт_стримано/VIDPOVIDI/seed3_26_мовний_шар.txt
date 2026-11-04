@@ -1,0 +1,49 @@
+── ПРОМПТ (7003 симв.) ──
+Ти — перекладачка в застосунку-стилістці. Ти пишеш природною українською тексти, які зараз побачить жінка. Рішень не приймаєш, на питання не відповідаєш, змісту не міняєш.
+
+Вхід — JSON-об'єкт: ключ — номер тексту н, значення — текст, який склали код та інші моделі.
+
+Ключі відповіді — ті самі, що у вході, кожен: номер н тексту, значення — рядок, той самий зміст природною українською, без англійських слів і кодів; ПЕРЕКЛАДАЙ КОЖНЕ англійське слово, навіть одне посеред українського речення; латиницею лишай лише назви крамниць і брендів, «V-подібний» і «den»; текст, що вже природний і до неї на «ти», — без змін, а український текст на «ви» перепиши на «ти», решту лиши слово в слово.
+
+Вид кожної речі — теж зміст: річ у перекладі — та сама, що у вході, а не схожа чи сусідня. ankle boots — черевики чи ботильйони, boots — чоботи, heeled — на підборах, а не туфлі, pumps — туфлі-човники, loafers — лофери; pendant — кулон чи підвіска, necklace — намисто чи ланцюжок, а не каблучка, сережки чи браслет; ring — каблучка; earrings — сережки. Українські назви речей у вході (назви з крамниці, найчастіше перед « — ») переписуй літера в літеру: не міняй, не переставляй і не додавай у них жодного слова.
+
+Про жінку — лише до неї, на «ти» (ти, тебе, тобі, твій, твоя; хочеш, скинеш; наказ однини: розкажи, оберни, тримай, дай), і в питаннях теж: you, your, she, her про неї — «ти», «твій» (her skin tone — твій тон шкіри; when she turns her head — коли ти повертаєш голову; she looks taller — ти виглядаєш вищою), англійський наказ — наказом однини; «вона», «її» — лише про річ (сукню, сумку, куртку). Говорить стилістка — одна жінка: про себе — від першої особи однини й у жіночому роді (я підібрала, я б додала), не «ми», не від імені застосунку чи коду і ніколи словами самої жінки.
+
+Мова: літературна українська, як у текстах українських крамниць одягу. Кожне українське слово — літерами лише української абетки, без жодної латинської літери чи стороннього знака всередині слова. Кожне речення — одна остаточна версія, без виправлень посеред тексту. Словничок нижче — лише як перекласти англійське слово, коли воно є у вході; це не зміст: річ, тканина чи колір, яких у вході нема, у тексті не з'являються. Звичні українські назви для слів англійського джерела: trousers, pants — штани; dressy, dressier — ошатний, ошатніше; look, outfit — образ; taupe — сіро-бежевий; loose — вільний; suede — замша (жіночий рід); slip dress — сукня-комбінація; camel — кемел (колір). Назви речей і кольорів, які дала крамниця, — як є.
+
+Перевір кожне слово ДО відповіді: до неї — лише «ти», жодного «ви», «ваш» і наказу множини, і про неї жодного «вона», «її», «їй», жодне слово не стоїть двічі поспіль, кожна річ — того самого виду, що у вході (річ образу — іменником коду її виду з переліку, коли він є, і слова при ній узгоджені з цим іменником), а українська назва речі — слово в слово. Відповідь — рівно ОДИН JSON-об'єкт і нічого після нього: другої, виправленої версії, приміток і пояснень не пиши — помилку виправ у тому самому об'єкті.
+
+Речі образу — перелік речей картки (номер речі — як на картці, поруч — її коди):
+1 — kind code: dress_generic · colour code: black · about it: text н=1
+2 — kind code: coat · colour code: chocolate · about it: text н=2
+3 — kind code: pumps · colour code: beige · about it: text н=3
+4 — kind code: tote · colour code: black · about it: text н=4
+When a text speaks of an item of the list, call it by the Ukrainian noun of its kind code (kind code: …) — the same noun in the right case in every text (trench_coat — «тренч», sweater — «светр», loafers — «лофери»), not by another kind or a synonym of the English word, whatever word the English text uses; a code ending in _generic names only the family (dress_generic — a dress, bag_generic — a bag). Make every adjective, pronoun and verb with the item agree with that noun in gender and number («бежевий тренч, який…»; «шкіряні лофери, які…»). A name you translate in this same call (text н=K): give it one noun and call the item by it, in agreement, in every text. A text the list gives as about an item (about it: text н=M) speaks of that one item, and so does every other text where the English names it. The colour of an item of the list is its colour code (colour code: …): write the Ukrainian name of that code. The English colour words for that item are the stylist's impression of a photo: do not turn them into a colour of their own — the item's colour stands in their place. Colours of its details (trim, strap, buttons, print), its fabric and the rest — translate from the text. The list is for the items only: an item the English text does not name is not added to the translation — neither to the description nor to the advice.
+
+Colour codes: beige — бежевий; black — чорний; chocolate — шоколадний.
+
+ТЕКСТИ:
+{
+"1": "This is a black sheath dress featuring a subtle polka-dot pattern, cut with a fitted silhouette and a built-in belt at the waist to emphasize your defined shape.",
+"2": "The coat is crafted in a rich chocolate tone, designed as an outerwear layer that drapes elegantly over your dress without adding excessive bulk.",
+"3": "You have selected these beige pumps, which feature a sleek heel and a subtle shine finish to ground the outfit with classic polish.",
+"4": "This black tote bag offers a structured shape that complements the monochrome elements of your ensemble while providing practical space for your essentials.",
+"5": "You are ready for the concert in a sleek black sheath dress with a polka-dot pattern, accented by a chic chocolate coat and finished with classic beige pumps and a structured tote. This outfit lives through your evening by keeping you cool inside the dense crowd while remaining timeless enough to match the venue's atmosphere. The deep black of your dress grounds your figure, creating a clean vertical line that draws the eye upward to your face, while the rich chocolate tone of the coat adds warmth without competing with the rock concert vibe.",
+"6": "Let the fitted silhouette of your sheath dress and the belted waist define your narrowest point before the coat opens wide over it, balancing your broader shoulders with a clean under-layer.",
+"7": "Keep the chocolate coat open at the front to show off the polka dots, ensuring the dark inner layer doesn't get swallowed by the outerwear's volume.",
+"8": "Лаковані слінгбеки з бежевої шкіри — I chose beige patent leather pumps to ground the dark outfit and continue the leg line, ensuring you are seen clearly from head to toe in the dark club environment while adding a touch of elegance.",
+"9": "Пальто на еко-хутрі жіноче довгу зимове (10-162sh_sh), Лаковані слінгбеки з бежевої шкіри, ШОПЕР TOTE ECO-LEATHER чорний — The gate about formality is acceptable because the occasion demands a classic stance that stands out in the crowd; the smart-to-smart range of the items serves this intent better than a quiet look would, and the deliberate choice of beige shoes ensures clarity in the dark environment."
+}
+
+── ВІДПОВІДЬ (2172 симв., 15.2 с, HTTP 200) ──
+{
+"1": "Це чорна приталена сукня з ледь помітним гороховим візерунком. Вона має облягаючий силует і вбудований пояс на талії, щоб підкреслити твою витончену фігуру.",
+"2": "Пальто виконане у насиченому шоколадному кольорі й розроблено як верхній шар одягу, який елегантно драпірується поверх твоєї сукні без зайвого об’єму.",
+"3": "Ти обрала ці бежеві туфлі-човники на підборах з гладкою підошвою та ледь помітним блиском, щоб завершити образ класичною елегантністю.",
+"4": "Ця чорна сумка-тоут має чітку форму, яка доповнює монохромні деталі твого вбрання й забезпечує практичне місце для найнеобхідніших речей.",
+"5": "Ти готова до концерту у стильному чорному приталеному платті з гороховим візерунком, яке підкреслено елегантним шоколадним пальтом і завершено класичними бежевими туфлями-човниками та структурованою сумкою. Цей образ протримається протягом твого вечора, адже він дозволяє тобі залишатися комфортно в щільному натовпі й водночас достатньо позачасовим для атмосфери закладу. Глибокий чорний колір твоєї сукні підкреслює фігуру, створюючи чисту вертикальну лінію, яка привертає увагу до твого обличчя, а насичений шоколадний відтінок пальто додає тепла без конкуренції з атмосферою рок-концерту.",
+"6": "Нехай силует твоєї сукні та пояс на талії підкреслюють найвужчу частину твого тіла перед тим, як пальта розкриється над нею, врівноважуючи широкі плечі чистим внутрішнім шаром.",
+"7": "Залиш шоколадне пальто відкритим спереду, щоб показати гороховий візерунок і переконатися, що темний внутрішній шар не загубиться у об’ємі верхнього одягу.",
+"8": "Я обрала бежеві лаковані туфлі-човники, щоб підкреслити темне вбрання та продовжити лінію ніг. Це забезпечить твою видимість з голови до п’ят у темному клубному середовищі й додасть нотку елегантності.",
+"9": "Пальто на еко-хутрі жіноче довгу зимове (10-162sh_sh), лаковані слінгбеки з бежевої шкіри, ШОПЕР TOTE ECO-LEATHER чорний — Поріг формальності прийнятний, адже подія вимагає класичної позиції, яка вирізняється в натовпі; діапазон розумного до розумного стилю цих речей краще служить цьому задуму, ніж тихий образ, а навмисний вибір бежевого взуття забезпечує чіткість у темному середовищі."
+}

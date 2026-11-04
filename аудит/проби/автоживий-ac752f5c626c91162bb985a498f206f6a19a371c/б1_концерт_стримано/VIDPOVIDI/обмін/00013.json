@@ -1,0 +1,27 @@
+{
+ "версія": 1,
+ "запит": {
+  "model": "qwen/qwen3.5-9b",
+  "max_tokens": 4000,
+  "messages": [
+   {
+    "role": "user",
+    "content": [
+     {
+      "type": "text",
+      "text": "{\"task\": {\"role\": \"You read the description of an outfit and list its items as data.\", \"rules\": [\"One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.\", \"One item carries one thing — of two alternatives list the first; a note in brackets is not an item.\", \"Slot \\\"accessory\\\" is for an item no other slot fits.\", \"\\\"is_outfit\\\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note.\"], \"limits\": [\"Rely only on the input: do not invent what it does not contain.\", \"The answer is one JSON object following \\\"answer_schema\\\", without explanations and without ```.\"], \"language\": \"English\", \"answer\": \"ITEM_LIST\", \"answer_schema\": {\"is_outfit\": \"yes|no\", \"items\": [{\"name\": \"<what the item is>\", \"details\": \"<its cut, length and fabric>\", \"slot\": \"top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory\", \"color_hex\": \"<#rrggbb or null>\", \"worn\": \"<true, or false when the description says the outfit goes without it>\"}]}, \"input\": [\"\\\"description\\\" — the outfit description\"]}, \"description\": \"A refined black silk blouse with a subtle sheen, tailored in a classic slightly boxy cut to the shoulder line and falling to the hip, paired with high-waisted straight-leg dark denim trousers that taper just above the ankle. A structured charcoal wool blazer, cut with clean lines and minimal hardware, worn as an outer layer to provide warmth against the autumn chill while maintaining a professional silhouette. Chunky black leather loafers with a low heel, designed for stability while standing in a crowd, finished with a simple round toe and no excessive detailing. Small silver geometric stud earrings and a slim black leather clutch with magnetic closure complete the look without distracting from the classic aesthetic. This outfit works because it balances the raw energy of a rock concert with her desire for a restrained and classic appearance by using timeless tailoring and dark, neutral tones. The structured blazer adds a layer of sophistication appropriate for an evening out, while the sturdy loafers ensure she remains comfortable and grounded while standing in the crowd.\"}"
+     }
+    ]
+   }
+  ],
+  "temperature": 1
+ },
+ "відповідь": {
+  "status": 200,
+  "contentType": "application/json",
+  "headers": {
+   "x-model": "qwen/qwen3.5-9b"
+  },
+  "body": "{\"content\":[{\"type\":\"text\",\"text\":\"{\\\"is_outfit\\\": \\\"yes\\\", \\\"items\\\": [{\\\"name\\\": \\\"Blouse\\\", \\\"details\\\": \\\"refined black silk with subtle sheen, classic slightly boxy cut to shoulder line and falling to hip\\\", \\\"slot\\\": \\\"top\\\", \\\"color_hex\\\": \\\"#000000\\\", \\\"worn\\\": true}, {\\\"name\\\": \\\"Trousers\\\", \\\"details\\\": \\\"high-waisted straight-leg dark denim tapering just above ankle\\\", \\\"slot\\\": \\\"bottom\\\", \\\"color_hex\\\": \\\"#000000\\\", \\\"worn\\\": true}, {\\\"name\\\": \\\"Blazer\\\", \\\"details\\\": \\\"structured charcoal wool with clean lines and minimal hardware\\\", \\\"slot\\\": \\\"outerwear\\\", \\\"color_hex\\\": \\\"#36454F\\\", \\\"worn\\\": true}, {\\\"name\\\": \\\"Loafers\\\", \\\"details\\\": \\\"chunky black leather low heel round toe no excessive detailing\\\", \\\"slot\\\": \\\"shoes\\\", \\\"color_hex\\\": \\\"#000000\\\", \\\"worn\\\": true}, {\\\"name\\\": \\\"Earrings\\\", \\\"details\\\": \\\"small silver geometric studs\\\", \\\"slot\\\": \\\"earrings\\\", \\\"color_hex\\\": \\\"#C0C0C0\\\", \\\"worn\\\": true}, {\\\"name\\\": \\\"Clutch\\\", \\\"details\\\": \\\"slim black leather with magnetic closure\\\", \\\"slot\\\": \\\"bag\\\", \\\"color_hex\\\": \\\"#000000\\\", \\\"worn\\\": true}]}\"}],\"usage\":{\"input_tokens\":552,\"output_tokens\":300},\"stop_reason\":\"end_turn\"}"
+ }
+}
