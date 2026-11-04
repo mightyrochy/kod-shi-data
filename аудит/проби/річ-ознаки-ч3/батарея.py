@@ -17,9 +17,12 @@ def main():
     скрипти += ["проби/поділ_palette_ast.py", "проби/поділ_суд_ast.py"]
     команди = [[sys.executable, "-W", "ignore", *s.split()] for s in скрипти]
     команди.append([shutil.which("node"), "тест_показу.js"])
+    основа = "--основа" in sys.argv
+    if основа:
+        команди = команди[:5] + команди[-1:]
     середовище = dict(os.environ, PYTHONUTF8="1", PYTHONIOENCODING="utf-8", PYTHON=sys.executable,
                        NODE_PATH=str(дж / "node_modules"))
-    файл = Д / "батарея.json"
+    файл = Д / ("основа-фінал.json" if основа else "батарея.json")
     попередні = json.loads(файл.read_text("utf8")) if "--продовжити" in sys.argv else []
     вих = {tuple(x["команда"]): x for x in попередні}
     місць = int(sys.argv[sys.argv.index("--паралельно") + 1]) if "--паралельно" in sys.argv else 1
@@ -27,12 +30,9 @@ def main():
     def виконати(н, команда):
         """Очікує один процес і зберігає його повний журнал."""
         поч = time.monotonic()
-        try:
-            р = subprocess.run(команда, cwd=дж, env=середовище, capture_output=True, timeout=900)
-            код, лог = р.returncode, р.stdout + р.stderr
-        except subprocess.TimeoutExpired as п:
-            код, лог = 124, (п.stdout or b"") + (п.stderr or b"")
-        ім = str(н).zfill(2) + "-" + pathlib.Path(команда[-1]).stem + ".log"
+        р = subprocess.run(команда, cwd=дж, env=середовище, capture_output=True)
+        код, лог = р.returncode, р.stdout + р.stderr
+        ім = ("основа-фінал-" if основа else "") + str(н).zfill(2) + "-" + pathlib.Path(команда[-1]).stem + ".log"
         (Д / ім).write_bytes(лог)
         return dict(команда=команда, код=код, секунд=round(time.monotonic()-поч, 1), журнал=ім)
 

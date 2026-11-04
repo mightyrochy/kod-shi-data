@@ -29,7 +29,8 @@ def main():
                         assert запис["тип"] == "вимір" and запис["точка"] is not None
     if "--перевірити" in sys.argv:
         до = json.loads(pathlib.Path(__file__).with_name("читач-кольору-до.json").read_text("utf8"))
-        assert [x for x in до if x["джерело"] == "spectro"] == [x for x in вих if x["джерело"] == "spectro"]
+        серіалізовані = json.loads(json.dumps(вих, ensure_ascii=False))
+        assert [x for x in до if x["джерело"] == "spectro"] == [x for x in серіалізовані if x["джерело"] == "spectro"]
     print(json.dumps(вих, ensure_ascii=False, indent=2))
 
 

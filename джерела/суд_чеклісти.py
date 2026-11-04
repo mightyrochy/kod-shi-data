@@ -324,7 +324,9 @@ def входи_палітри(F, source="uncontrolled", самозвіт=None, �
     _хто = (_вс.get("обрала") or {}).get("scheme")   # her | stylist | code_rank
     тон_є = (н["undertone"] >= _КС.MIN_TO_EMIT
              or _ОБ.елісітація_зі_слів(самозвіт)["w"] is not None)
-    return dict(вікна=dict(L=_ПЛ.вікно_світлоти(ос) if н["value"] >= _КС.MIN_TO_EMIT else None,
+    світлота_є = н["value"] >= _КС.MIN_TO_EMIT and any(
+        f.get("L") is not None for f in _PP.дані(F or {}).values())
+    return dict(вікна=dict(L=_ПЛ.вікно_світлоти(ос) if світлота_є else None,
                           C=_ПЛ.вікно_хроми(ос) if н["chroma"] >= _КС.MIN_TO_EMIT else None,
                           сім_ї=_ПЛ.дуги_сімей(ос) if тон_є else {}),
                 бік_температури=тон_є and abs(ос["позиція"]["hue"]) >= _ПЛ.ДОМІНАНТА_МІН / 2,
