@@ -3,10 +3,24 @@ import unittest
 from unittest.mock import AsyncMock, Mock
 
 import виконавець
+import жниварка
 from playwright.sync_api import sync_playwright
 
 
 class ПередаванняМежі(unittest.TestCase):
+    def test_h1_не_читається_без_межі_товару(self):
+        html = '<html><body><h1>Чужа назва товару</h1><div class="product">Інша річ</div></body></html>'
+        факти = жниварка.факти_з_картки(html, 'https://shop.test/product/1', {'блок': '.product'})
+        self.assertFalse(факти['назва'])
+        self.assertIsNone(факти['сирий']['h1'])
+
+    def test_body_і_html_не_є_межею(self):
+        суп = жниварка.BeautifulSoup('<html><body><h1>Назва</h1></body></html>', 'html.parser')
+        for селектор in ('body', 'html'):
+            with self.subTest(селектор=селектор):
+                блок, _ = жниварка.вузол_товару(суп, суп.h1, {'блок': селектор})
+                self.assertIsNone(блок)
+
     def test_зліпок_читає_лише_блок_рецепта(self):
         with sync_playwright() as p:
             браузер = p.chromium.launch(headless=True)
