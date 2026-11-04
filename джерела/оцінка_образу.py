@@ -1705,7 +1705,8 @@ _ВХІД_КОД = {"lab": "item_colour", "візерунок": "item_pattern", 
              "вікна": "her_palette", "волосся": "her_hair_colour", "бік_температури": "her_undertone_side",
              "очі": "her_eye_colour", "шкіра_волосся": "her_skin_hair_colour", "den": "tights_den",
              "ланцюг_см": "chain_length", "ремінь_см": "bag_strap_length", "ремонтопридатна": "shoe_sole_construction",
-             "темп_c": "temperature", "частка_металу": "item_metal_share",
+             "темп_c": "temperature", "сонце": "direct_sun", "частка_металу": "item_metal_share",
+             "господар": "host_context", "креативне": "creative_environment",
              "довжина_виробу_см": "item_length_cm"}      # річ каталогу без числа крамниці
 # Похідне від входу сцени (клас E дослідження 5280): без нагоди нема й дистанції огляду, без погоди — погоди дня.
 _ПОХІДНЕ_ВІД = {"viewing_distance": "occasion", "temperature": "temperature"}
