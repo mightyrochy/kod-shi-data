@@ -35,15 +35,17 @@ _живий_річ[_живий_поле] = 'бите' if _живий_поле ==
 _живий_вето = П.сенсорний_збіг('підбори', dict(_живий_річ, тип='човники', каблук_см='бите')) if _живий_поле == 'каблук_см' else None
 json.dumps({'поле': _живий_поле, 'id': _живий_річ.get('id'), 'до': _живий_до.get(_живий_поле), 'після': _живий_річ[_живий_поле], 'інший_доказ_вето': _живий_вето}, ensure_ascii=False)
 `)), field);
+                mutation.паспорт = await page.evaluate(() => ПАСПОРТ_П);
                 console.log('Ж7: пошкоджено дані ' + JSON.stringify(mutation));
                 await click(selector, ...args);
-                await page.waitForFunction(() => ЗБ && ЗБ.діагноз.some(x => x.startsWith('build · failed:')) && !document.getElementById('зб-зібрати').disabled, null, {timeout: 600000});
+                await page.waitForFunction(() => ЗБ && (ЗБ.готово || ЗБ.діагноз.some(x => x.startsWith('build · failed:'))) && !document.getElementById('зб-зібрати').disabled, null, {timeout: 600000});
                 const visible = await page.evaluate(() => ({режим: РЕЖИМ, статус: document.getElementById('зб-статус').textContent,
                   діагноз: ЗБ.діагноз, карток: ЗБ.картки.length, готово: ЗБ.готово, успіх: ЗБ.успіх}));
+                visible.очікуваний_збій = visible.діагноз.some(x => x.includes(field === 'каблук_см' ? 'sensory_limit_unreadable' : 'fabric_band_unreadable'));
                 await page.screenshot({path: path.join(out, 'збій_' + field + '.png'), fullPage: true});
                 results.push({...mutation, ...visible});
                 await page.evaluate(async () => приладМостуП({}, "_живий_річ.clear()\n_живий_річ.update(_живий_до)\nБ._КЕШ_ПАКЕТА.clear()\n'відновлено'"));
-                console.log('Ж7: видима відмова ' + JSON.stringify({поле: field, статус: visible.статус}));
+                console.log('Ж7: результат ' + JSON.stringify({поле: field, очікуваний_збій: visible.очікуваний_збій, статус: visible.статус}));
               }
             } catch (error) {
               results.push({помилка_приладу: String(error.stack || error)});
