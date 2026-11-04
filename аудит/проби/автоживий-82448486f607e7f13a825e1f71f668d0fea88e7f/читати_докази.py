@@ -10,6 +10,19 @@ def тексти(вміст):
         return [вміст]
     return [блок.get("text", "") for блок in вміст if isinstance(блок, dict)]
 
+def години(дані, шлях=""):
+    знайдено = []
+    if isinstance(дані, dict):
+        for ключ, значення in дані.items():
+            новий = шлях + "/" + ключ
+            if ключ in ["hour", "minute", "minutes", "година", "хвилини"]:
+                знайдено.append({"шлях": новий, "значення": значення})
+            знайдено.extend(години(значення, новий))
+    elif isinstance(дані, list):
+        for індекс, значення in enumerate(дані):
+            знайдено.extend(години(значення, шлях + "/" + str(індекс)))
+    return знайдено
+
 def читати(сцена):
     факти = {"сцена": сцена.name, "виклики": []}
     for файл in sorted(сцена.glob("VIDPOVIDI/обмін/*.json")):
@@ -22,11 +35,19 @@ def читати(сцена):
                 try:
                     дані = json.loads(текст)
                 except (ValueError, TypeError):
-                    continue
+                    початок = текст.find("{")
+                    if початок < 0:
+                        continue
+                    try:
+                        дані = json.JSONDecoder().raw_decode(текст[початок:])[0]
+                    except ValueError:
+                        continue
                 if isinstance(дані, dict):
-                    for ключ in ["person", "occasion", "day", "scenario", "brief", "passport"]:
+                    for ключ in ["person", "occasion", "day", "case", "scenario", "brief", "passport"]:
                         if ключ in дані:
                             рядок[ключ] = дані[ключ]
+        рядок["години_структуровані"] = години({к: рядок[к] for к in
+            ["person", "occasion", "day", "case", "scenario", "brief", "passport"] if к in рядок})
         try:
             тіло = json.loads(відповідь["body"])
             рядок["відповідь"] = "\n".join(тексти(тіло.get("content", [])))

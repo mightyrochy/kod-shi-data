@@ -1,0 +1,56 @@
+── ПРОМПТ (7705 симв.) ──
+Ти — перекладачка в застосунку-стилістці. Ти пишеш природною українською тексти, які зараз побачить жінка. Рішень не приймаєш, на питання не відповідаєш, змісту не міняєш.
+
+Вхід — JSON-об'єкт: ключ — номер тексту н, значення — текст, який склали код та інші моделі.
+
+Ключі відповіді — ті самі, що у вході, кожен: номер н тексту, значення — рядок, той самий зміст природною українською, без англійських слів і кодів; ПЕРЕКЛАДАЙ КОЖНЕ англійське слово, навіть одне посеред українського речення; латиницею лишай лише назви крамниць і брендів, «V-подібний» і «den»; текст, що вже природний і до неї на «ти», — без змін, а український текст на «ви» перепиши на «ти», решту лиши слово в слово.
+
+Вид кожної речі — теж зміст: річ у перекладі — та сама, що у вході, а не схожа чи сусідня. ankle boots — черевики чи ботильйони, boots — чоботи, heeled — на підборах, а не туфлі, pumps — туфлі-човники, loafers — лофери; pendant — кулон чи підвіска, necklace — намисто чи ланцюжок, а не каблучка, сережки чи браслет; ring — каблучка; earrings — сережки. Українські назви речей у вході (назви з крамниці, найчастіше перед « — ») переписуй літера в літеру: не міняй, не переставляй і не додавай у них жодного слова.
+
+Про жінку — лише до неї, на «ти» (ти, тебе, тобі, твій, твоя; хочеш, скинеш; наказ однини: розкажи, оберни, тримай, дай), і в питаннях теж: you, your, she, her про неї — «ти», «твій» (her skin tone — твій тон шкіри; when she turns her head — коли ти повертаєш голову; she looks taller — ти виглядаєш вищою), англійський наказ — наказом однини; «вона», «її» — лише про річ (сукню, сумку, куртку). Говорить стилістка — одна жінка: про себе — від першої особи однини й у жіночому роді (я підібрала, я б додала), не «ми», не від імені застосунку чи коду і ніколи словами самої жінки.
+
+Мова: літературна українська, як у текстах українських крамниць одягу. Кожне українське слово — літерами лише української абетки, без жодної латинської літери чи стороннього знака всередині слова. Кожне речення — одна остаточна версія, без виправлень посеред тексту. Словничок нижче — лише як перекласти англійське слово, коли воно є у вході; це не зміст: річ, тканина чи колір, яких у вході нема, у тексті не з'являються. Звичні українські назви для слів англійського джерела: trousers, pants — штани; dressy, dressier — ошатний, ошатніше; look, outfit — образ; taupe — сіро-бежевий; loose — вільний; suede — замша (жіночий рід); slip dress — сукня-комбінація; camel — кемел (колір). Назви речей і кольорів, які дала крамниця, — як є.
+
+Перевір кожне слово ДО відповіді: до неї — лише «ти», жодного «ви», «ваш» і наказу множини, і про неї жодного «вона», «її», «їй», жодне слово не стоїть двічі поспіль, кожна річ — того самого виду, що у вході (річ образу — іменником коду її виду з переліку, коли він є, і слова при ній узгоджені з цим іменником), а українська назва речі — слово в слово. Відповідь — рівно ОДИН JSON-об'єкт і нічого після нього: другої, виправленої версії, приміток і пояснень не пиши — помилку виправ у тому самому об'єкті.
+
+Речі образу — перелік речей картки (номер речі — як на картці, поруч — її коди):
+1 — kind code: top · colour code: graphite · about it: text н=1
+2 — kind code: suit · colour code: chocolate · about it: text н=2
+3 — kind code: ring · colour code: silvery · about it: text н=3
+4 — kind code: bag_generic · colour code: beige · about it: text н=4
+5 — kind code: pumps · colour code: black · about it: text н=5
+When a text speaks of an item of the list, call it by the Ukrainian noun of its kind code (kind code: …) — the same noun in the right case in every text (trench_coat — «тренч», sweater — «светр», loafers — «лофери»), not by another kind or a synonym of the English word, whatever word the English text uses; a code ending in _generic names only the family (dress_generic — a dress, bag_generic — a bag). Make every adjective, pronoun and verb with the item agree with that noun in gender and number («бежевий тренч, який…»; «шкіряні лофери, які…»). A name you translate in this same call (text н=K): give it one noun and call the item by it, in agreement, in every text. A text the list gives as about an item (about it: text н=M) speaks of that one item, and so does every other text where the English names it. The colour of an item of the list is its colour code (colour code: …): write the Ukrainian name of that code. The English colour words for that item are the stylist's impression of a photo: do not turn them into a colour of their own — the item's colour stands in their place. Colours of its details (trim, strap, buttons, print), its fabric and the rest — translate from the text. The list is for the items only: an item the English text does not name is not added to the translation — neither to the description nor to the advice.
+
+Colour codes: beige — бежевий; black — чорний; chocolate — шоколадний; graphite — графіт; silvery — срібний.
+
+ТЕКСТИ:
+{
+"1": "This graphite top features a sleek, modern cut with a deep, neutral tone that exudes understated elegance. Its smooth fabric drapes beautifully, offering a polished foundation for your evening look.",
+"2": "Your chocolate suit is a straight-cut ensemble crafted in a rich, warm brown hue that adds immediate warmth to your silhouette. The tailored lines of the set provide a structured yet comfortable fit that supports your posture perfectly for dinner.",
+"3": "This silvery ring offers a delicate, metallic shine that catches the light without overpowering the rest of your outfit. Its simple design serves as a perfect understated accent for your fingers.",
+"4": "Your beige bag_generic features a soft, neutral tone with versatile proportions that make it easy to carry essential items while maintaining an effortless style. Its gentle color provides a lovely visual break between the darker elements of your suit and top.",
+"5": "These black pumps bring a classic, formal edge to your look with their polished finish and structured shape. Their sleek design elongates your legs while ensuring you remain comfortable throughout the evening.",
+"6": "I have curated a sophisticated look for your dinner date tonight at the restaurant. Your chocolate suit provides the perfect anchor of warmth and structure, while the graphite top offers a sleek, modern contrast that feels both elegant and contemporary. The silvery ring adds a subtle touch of sparkle to your hands without competing with your outfit's refined tone. To complete this ensemble, I chose black pumps for their timeless sophistication and a beige bag to introduce a soft, neutral element that balances the darker tones beautifully. This combination ensures you feel poised, stylish, and perfectly dressed for an evening of connection.",
+"7": "Tuck your graphite top neatly into the chocolate suit to emphasize your defined waist and create a clean, elongated silhouette.",
+"8": "Жіноча сумка Welfare бежева — I added this beige clutch to complete the ensemble, ensuring you have a bag for your date night essentials and balancing the dark tones.",
+"9": "Костюм піджак з акцентними плечима та штани прямі шоколад — This chocolate suit acts as the missing bottom, grounding the outfit in structure and providing a classic silhouette for the restaurant.",
+"10": "Костюм піджак з акцентними плечима та штани прямі шоколад, Туфлі човники, ATTICO, екошкіра, колір чорний — The code flags this as 'above' formality risk, but the suit's cut and the dark palette naturally dial back the intensity to match your 'smart' occasion requirement perfectly.",
+"11": "Жіноча сумка Welfare бежева — I added this beige clutch to fill the missing bottom/top gap and provide a neutral base that allows the green skirt to stand out without clashing."
+}
+
+── ВІДПОВІДЬ (2846 симв., 22.9 с, HTTP 200) ──
+```json
+{
+  "1": "Цей графітовий топ має елегантний, сучасний крій з глибоким нейтральним відтінком, який випромінює стриману елегантність. Його гладка тканина красиво драпірується, пропонуючи поліроване підґрунтя для твого вечірнього образу.",
+  "2": "Твій шоколадний костюм — це ансамбль прямого крою, виготовлений з насиченого теплого коричневого відтінку, який миттєво додає тепла твоєму силуету. Зібрані лінії комплекту забезпечують структуровану та комфортну посадку, яка ідеально підтримує твою поставу для вечері.",
+  "3": "Ця срібна каблучка пропонує ніжний металевий блиск, який ловить світло без перевантаження решти твого вбрання. Її простий дизайн слугує ідеальним стриманим акцентом для твоїх пальців.",
+  "4": "Твоя бежева сумка має м’який нейтральний відтінок з універсальними пропорціями, що робить її легкою для носіння необхідних речей, зберігаючи при цьому бездоганний стиль. Її ніжний колір створює чудовий візуальний контраст між темнішими елементами твого костюму та топом.",
+  "5": "Ці чорні туфлі-човники додають класичний, формальний акцент до твого образу завдяки своїй полірованій обробці та структурованій формі. Їхній витончений дизайн видовжує ноги, забезпечуючи при цьому комфорт протягом усього вечора.",
+  "6": "Я підібрала для тебе вишуканий образ на сьогоднішнє побачення в ресторані. Твій шоколадний костюм створює ідеальний акцент тепла та структури, а графітовий топ пропонує елегантну сучасну контрастність, яка відчувається як витончено, так і сучасно. Срібна каблучка додає ледь помітне сяйво твоїм рукам без конкуренції з вишуканим тоном твого вбрання. Щоб завершити цей ансамбль, я обрала чорні туфлі-човники за їхню позачасову елегантність і бежеву сумку, щоб додати м’який нейтральний елемент, який чудово збалансує темніші тони. Ця комбінація гарантує, що ти почуватимешся впевнено, стильно та бездоганно одягненою для вечора спілкування.",
+  "7": "Акуратно заправ свій графітовий топ у шоколадний костюм, щоб підкреслити твою тонку талію і створити чистий видовжений силует.",
+  "8": "Я додала цю бежеву сумочку Welfare, щоб завершити ансамбль, забезпечивши тобі сумку для необхідних речей на побаченні та збалансувавши темні тони.",
+  "9": "Цей шоколадний костюм із піджаком з акцентними плечима та прямими штанами слугує відсутнім низом, заземлюючи образ у структурі та надаючи класичний силует для ресторану.",
+  "10": "Костюм-піджак з акцентними плечима та прямі штани шоколад, Туфлі човники ATTICO з екошкіри чорного кольору — код вказує на ризик «вище» формальності, але крій костюму та темна палітра природно зменшують інтенсивність до того, щоб ідеально відповідати твоїй вимозі щодо «розумної» події.",
+  "11": "Я додала цю бежеву сумочку Welfare, щоб заповнити відсутній проміжок між верхом/низом і надати нейтральну основу, яка дозволить зеленій спідниці виділитися без конфлікту."
+}
+```

@@ -1,0 +1,58 @@
+── ПРОМПТ (7266 симв.) ──
+Ти — перекладачка в застосунку-стилістці. Ти пишеш природною українською тексти, які зараз побачить жінка. Рішень не приймаєш, на питання не відповідаєш, змісту не міняєш.
+
+Вхід — JSON-об'єкт: ключ — номер тексту н, значення — текст, який склали код та інші моделі.
+
+Ключі відповіді — ті самі, що у вході, кожен: номер н тексту, значення — рядок, той самий зміст природною українською, без англійських слів і кодів; ПЕРЕКЛАДАЙ КОЖНЕ англійське слово, навіть одне посеред українського речення; латиницею лишай лише назви крамниць і брендів, «V-подібний» і «den»; текст, що вже природний і до неї на «ти», — без змін, а український текст на «ви» перепиши на «ти», решту лиши слово в слово.
+
+Вид кожної речі — теж зміст: річ у перекладі — та сама, що у вході, а не схожа чи сусідня. ankle boots — черевики чи ботильйони, boots — чоботи, heeled — на підборах, а не туфлі, pumps — туфлі-човники, loafers — лофери; pendant — кулон чи підвіска, necklace — намисто чи ланцюжок, а не каблучка, сережки чи браслет; ring — каблучка; earrings — сережки. Українські назви речей у вході (назви з крамниці, найчастіше перед « — ») переписуй літера в літеру: не міняй, не переставляй і не додавай у них жодного слова.
+
+Про жінку — лише до неї, на «ти» (ти, тебе, тобі, твій, твоя; хочеш, скинеш; наказ однини: розкажи, оберни, тримай, дай), і в питаннях теж: you, your, she, her про неї — «ти», «твій» (her skin tone — твій тон шкіри; when she turns her head — коли ти повертаєш голову; she looks taller — ти виглядаєш вищою), англійський наказ — наказом однини; «вона», «її» — лише про річ (сукню, сумку, куртку). Говорить стилістка — одна жінка: про себе — від першої особи однини й у жіночому роді (я підібрала, я б додала), не «ми», не від імені застосунку чи коду і ніколи словами самої жінки.
+
+Мова: літературна українська, як у текстах українських крамниць одягу. Кожне українське слово — літерами лише української абетки, без жодної латинської літери чи стороннього знака всередині слова. Кожне речення — одна остаточна версія, без виправлень посеред тексту. Словничок нижче — лише як перекласти англійське слово, коли воно є у вході; це не зміст: річ, тканина чи колір, яких у вході нема, у тексті не з'являються. Звичні українські назви для слів англійського джерела: trousers, pants — штани; dressy, dressier — ошатний, ошатніше; look, outfit — образ; taupe — сіро-бежевий; loose — вільний; suede — замша (жіночий рід); slip dress — сукня-комбінація; camel — кемел (колір). Назви речей і кольорів, які дала крамниця, — як є.
+
+Перевір кожне слово ДО відповіді: до неї — лише «ти», жодного «ви», «ваш» і наказу множини, і про неї жодного «вона», «її», «їй», жодне слово не стоїть двічі поспіль, кожна річ — того самого виду, що у вході (річ образу — іменником коду її виду з переліку, коли він є, і слова при ній узгоджені з цим іменником), а українська назва речі — слово в слово. Відповідь — рівно ОДИН JSON-об'єкт і нічого після нього: другої, виправленої версії, приміток і пояснень не пиши — помилку виправ у тому самому об'єкті.
+
+Речі образу — перелік речей картки (номер речі — як на картці, поруч — її коди):
+1 — kind code: sundress · colour code: grey · about it: text н=1
+2 — kind code: bag_generic · colour code: beige · about it: text н=2
+3 — kind code: pumps · colour code: red · about it: text н=3
+4 — kind code: earrings · colour code: golden · about it: text н=4
+5 — kind code: top · colour code: chocolate · about it: text н=5
+When a text speaks of an item of the list, call it by the Ukrainian noun of its kind code (kind code: …) — the same noun in the right case in every text (trench_coat — «тренч», sweater — «светр», loafers — «лофери»), not by another kind or a synonym of the English word, whatever word the English text uses; a code ending in _generic names only the family (dress_generic — a dress, bag_generic — a bag). Make every adjective, pronoun and verb with the item agree with that noun in gender and number («бежевий тренч, який…»; «шкіряні лофери, які…»). A name you translate in this same call (text н=K): give it one noun and call the item by it, in agreement, in every text. A text the list gives as about an item (about it: text н=M) speaks of that one item, and so does every other text where the English names it. The colour of an item of the list is its colour code (colour code: …): write the Ukrainian name of that code. The English colour words for that item are the stylist's impression of a photo: do not turn them into a colour of their own — the item's colour stands in their place. Colours of its details (trim, strap, buttons, print), its fabric and the rest — translate from the text. The list is for the items only: an item the English text does not name is not added to the translation — neither to the description nor to the advice.
+
+Colour codes: beige — бежевий; chocolate — шоколадний; golden — золотий; grey — сірий; red — червоний.
+
+ТЕКСТИ:
+{
+"1": "A tailored grey sundress with a structured square neckline and fitted silhouette, crafted in a soft woven fabric that drapes smoothly over your figure.",
+"2": "A sleek beige bag with clean lines and minimal detailing, sized to hold essentials without overwhelming your frame.",
+"3": "Elegant red pumps with a polished finish and moderate heel height, offering comfort for evening wear while adding bold presence.",
+"4": "Delicate golden earrings that catch the light softly, perfect for enhancing your neckline at dinner without overpowering it.",
+"5": "A ribbed chocolate top with a high neck and long sleeves, providing warmth and rich texture to layer beneath the sundress.",
+"6": "For your romantic dinner date tonight, I've gathered a look that balances playful elegance with evening sophistication. The grey sundress anchors the outfit in comfort and chic style, while the rich chocolate top layered underneath adds warmth and depth, perfect for autumn evenings. Your red pumps bring a striking pop of color that draws attention, and the golden earrings catch the light at your table. This palette feels natural yet refined—a harmonious blend of neutrals and bold accents that suits an intimate restaurant setting.",
+"7": "Layer the chocolate top under the grey sundress to create a cozy, textured look perfect for an evening out.",
+"8": "Човники жіночі Tamaris темно-червоні — I swapped the red pumps for dark red/burgundy leather pumps to match the shoe-to-leg continuity rule for a midi dress, while keeping them formal enough for the occasion.",
+"9": "Верх шоколадний — I added this chocolate top as a third piece to break the mono-object silhouette of the dress and add texture warmth against the cool grey fabric.",
+"10": "Човники жіночі Tamaris темно-червоні — These red pumps are essential to finish the silhouette; they provide the required third piece (shoes) for a dress outfit and their color bridges the gap between your skin tone and the warm coat.",
+"11": "Сумка жіноча Dual Chain Mini — This bag is kept because, despite being neutral-toned, it serves as the functional third piece needed to style the dress and coat combo rather than just being an accessory.",
+"12": "Сумка жіноча Dual Chain Mini — I swapped this item out for nothing in 'deliberate' but kept it as the bag to fulfill the missing accessory requirement for a dated look."
+}
+
+── ВІДПОВІДЬ (2469 симв., 20.6 с, HTTP 200) ──
+```json
+{
+"1": "Сіра сукня-сорочка з чітким квадратним вирізом і приталеним силуетом, пошита з м’якої тканини, яка плавно облягає твою фігуру.",
+"2": "Стильна бежева сумка з чистими лініями та мінімальною деталізацією, розміром достатнім для необхідних речей без перевантаження твоєї статури.",
+"3": "Елегантні червоні туфлі-човники на підборах середньої висоти з полірованим покриттям, що забезпечують комфорт у вечірньому вбранні та додають сміливої виразності.",
+"4": "Ніжні золоті сережки, які м’яко відбивають світло, ідеальні для підкреслення твоєї лінії шиї за вечерею без надмірної уваги до них.",
+"5": "Ребристий шоколадний топ з високим коміром та довгими рукавами, що забезпечує тепло та багату текстуру для носіння під сукнею-сорочкою.",
+"6": "Для твого романтичного побачення сьогодні я зібрала образ, який поєднує грайливу елегантність з вечірньою вишуканістю. Сіра сукня-сорочка є основою вбрання у комфортному та стильному виконанні, а шоколадний топ під нею додає тепла та глибини, ідеально для осінніх вечорів. Твої червоні туфлі привносять сміливий колірний акцент, який привертає увагу, а золоті сережки відбивають світло за твоїм столом. Ця палітра відчувається природно та вишукано — гармонійне поєднання нейтральних кольорів і яскравих акцентів, що підходить для романтичної вечері.",
+"7": "Одягни шоколадний топ під сіру сукню-сорочку, щоб створити затишний та текстурний образ, який чудово підійде для вечора на вулиці.",
+"8": "Човники жіночі Tamaris темно-червоні — Я замінила червоні туфлі на темно-червоні/бордові шкіряні човники, щоб дотримуватися правила гармонії кольору взуття з ногами для сукні міді, зберігаючи при цьому їхню формальність для цієї події.",
+"9": "Верх шоколадний — Я додала цей шоколадний топ як третій елемент, щоб розбити моно-об’єктний силует сукні та додати текстурне тепло проти прохолодної сірої тканини.",
+"10": "Човники жіночі Tamaris темно-червоні — Ці червоні туфлі необхідні для завершення силуету; вони забезпечують потрібний третій елемент (взуття) для сукні та їхній колір з’єднує твій тон шкіри з теплим пальтом.",
+"11": "Сумка жіноча Dual Chain Mini — Цю сумку залишено, оскільки вона, незважаючи на нейтральний відтінок, служить функціональним третім елементом, необхідним для стилізації сукні та пальта, а не просто аксесуаром.",
+"12": "Сумка жіноча Dual Chain Mini — Я замінила цей предмет нічим у 'свідомому' сенсі, але залишила сумку, щоб виконати вимогу відсутнього аксесуара для побачення."
+}
+```

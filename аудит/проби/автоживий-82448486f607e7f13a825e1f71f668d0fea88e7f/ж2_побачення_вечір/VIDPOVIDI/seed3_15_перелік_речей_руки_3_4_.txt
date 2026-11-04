@@ -1,0 +1,44 @@
+── ПРОМПТ (2376 симв.) ──
+{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.", "One item carries one thing — of two alternatives list the first; a note in brackets is not an item.", "Slot \"accessory\" is for an item no other slot fits.", "\"is_outfit\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "ITEM_LIST", "answer_schema": {"is_outfit": "yes|no", "items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory", "color_hex": "<#rrggbb or null>", "worn": "<true, or false when the description says the outfit goes without it>"}]}, "input": ["\"description\" — the outfit description"]}, "description": "Silk blouse with a flowing neckline, relaxed cut, midnight blue, satin weave.  \nTailored wool-blend trousers, straight-leg cut, midi length, charcoal grey, heavy woven fabric.  \nStructured blazer with notched lapels, single-breasted cut, knee-length, deep forest green, fine tweed fabric.  \nPointed-toe pumps, sleek silhouette, ankle height, black, smooth leather material.  \nThin gold bracelet and matching delicate pendant necklace in 18k vermeil finish.  \n\nThis outfit strikes the perfect balance for an evening date at a restaurant in autumn, adhering to the \"smart\" dress code while respecting her wish for a refined yet comfortable look. The rich jewel tones of midnight blue and forest green create a sophisticated palette that stands out elegantly under artificial lighting without appearing too heavy for the season. A structured blazer adds instant polish suitable for dinner, while the relaxed blouse and straight-leg trousers ensure she can move gracefully throughout the evening. Finally, the subtle gold accessories add a touch of sparkle that complements the occasion without overshadowing her presence."}
+
+── ВІДПОВІДЬ (996 симв., 5.7 с, HTTP 200) ──
+{
+  "is_outfit": "yes",
+  "items": [
+    {
+      "name": "blouse",
+      "details": "flowing neckline, relaxed cut, satin weave",
+      "slot": "top",
+      "color_hex": "#000037",
+      "worn": true
+    },
+    {
+      "name": "trousers",
+      "details": "straight-leg cut, midi length, heavy woven fabric",
+      "slot": "bottom",
+      "color_hex": "#36454F",
+      "worn": true
+    },
+    {
+      "name": "blazer",
+      "details": "notched lapels, single-breasted cut, knee-length, fine tweed fabric",
+      "slot": "outerwear",
+      "color_hex": "#2F4F4F",
+      "worn": true
+    },
+    {
+      "name": "pumps",
+      "details": "pointed-toe, sleek silhouette, ankle height, smooth leather material",
+      "slot": "shoes",
+      "color_hex": "#000000",
+      "worn": true
+    },
+    {
+      "name": "bracelet",
+      "details": "thin gold bracelet, matching delicate pendant necklace in 18k vermeil finish",
+      "slot": "jewelry",
+      "color_hex": null,
+      "worn": true
+    }
+  ]
+}
