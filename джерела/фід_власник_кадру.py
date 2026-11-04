@@ -86,12 +86,13 @@ def доказ_варіанта(o, url):
 
     Точні адреси кадру й товару та сирі id платформи не дозволяють перенести
     прив'язку на сестру чи інший кадр із таким самим іменем файла.
+    Пошкоджений JSON зупиняє читача з id запису: це збій даних, а не невідомий власник.
     """
     параметри = o.get("параметри") or {}
     try:
         власник = json.loads(параметри.get("власник_кадру") or '"невідомо"')
-    except (TypeError, ValueError):
-        return None
+    except (TypeError, ValueError) as збій:
+        raise ValueError("Пошкоджений власник_кадру запису %s" % o.get("id")) from збій
     if (not isinstance(власник, dict) or власник.get("джерело") != "shopify:variant_ids"
             or власник.get("адреса") != o.get("url")):
         return None
