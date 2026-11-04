@@ -166,8 +166,8 @@ def _до_очей(о, F):
                           "lightness band, \"clothing_maybe\" — how many more only may (the shop's "
                           "colour word); 0 — only accessories can carry this base; absent — not "
                           "counted (a neutral base)", треба=True),
-        _ЗП.Поле("fixed", "what she chose herself", "keep it and build around it",
-                 без="She chose none of it herself."),
+        _ЗП.Поле("fixed", "palette constraints; sources",
+                 "keep; build around them", без="No fixed constraints."),
         _ЗП.Поле("reason_codes", "the only codes you may give as reasons, with their meaning",
                  треба=True),
     ),
@@ -466,6 +466,14 @@ def дані_промпта(пер):
         fixed["base"] = її_основа_дротом(її["база"])
     if її["гама"]:
         fixed["saturation"] = ГАМА_КОД.get(її["гама"], її["гама"])
+    if fixed:
+        from паспорт_поля import походження, походження_автора, ТИПОВЕ, ТЛУМАЧЕННЯ
+        автори = (її.get("вк") or {}).get("обрала") or {}
+        fixed["sources"] = {к: походження_автора(_СТ.автор(автори.get(к, "her"))) for к in fixed}
+        if "base" in fixed:
+            б = її["база"]
+            if б.get("база_за_замовчуванням") or б.get("база_з_речі"):
+                fixed["sources"]["base"] = походження(ТИПОВЕ if б.get("база_за_замовчуванням") else ТЛУМАЧЕННЯ)
     день = _назване(пер.get("день"))
     return dict(person=пер["особа"], occasion=_назване(пер["випадок"]), **({"day": день} if день else {}),
                 schemes=[dict({"rank": с["ранг"], "scheme": с["код"], "weight": с["вага"],

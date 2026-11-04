@@ -1844,46 +1844,31 @@ def факти_з_картки(html_текст, url, селектори=None):
 # ═══════════════ 5. ФАКТИ З BULK-КАНАЛІВ ═══════════════
 def факти_shopify(т, база):
     """products.json → факти. Кожен колір — окрема річ зі своїми фото (variant_ids у images)."""
-    опції = {(о.get("name") or "").strip().lower(): о.get("values") or [] for о in т.get("options") or []}
-    ім_кольору = next((n for n in опції if re.search(r"кол[іи]р|цвет|colou?r", n)), None)
-    ім_розміру = next((n for n in опції if re.search(r"розм[іи]р|размер|size", n)), None)
-    поз = {("option%d" % (i + 1)): (о.get("name") or "").strip().lower() for i, о in enumerate(т.get("options") or [])}
-    варіанти = т.get("variants") or []
-    групи = collections.OrderedDict()
-    for v in варіанти:
-        колір = розмір = None
-        for k, ім in поз.items():
-            if ім == ім_кольору:
-                колір = v.get(k)
-            if ім == ім_розміру:
-                розмір = v.get(k)
-        групи.setdefault(колір, []).append((v, розмір))
-    картинки = т.get("images") or []
+    from shopify_варіанти import варіанти_shopify
+    опції = [(о.get("name") or "").strip() for о in т.get("options") or []]
+    рецепт = {"колір": [ім for ім in опції if re.search(r"кол[іи]р|цвет|colou?r", ім, re.I)],
+              "розмір": [ім for ім in опції if re.search(r"розм[іи]р|размер|size", ім, re.I)]}
     опис = текст_з_html(т.get("body_html"))[:8000] or None
     вих = []
-    for колір, вар in групи.items():
-        ід = {v.get("id") for v, _ in вар}
-        свої = [i.get("src") for i in картинки if set(i.get("variant_ids") or []) & ід]
-        фото = свої or [i.get("src") for i in картинки]
-        ціни = [_ціна_число(v.get("price")) for v, _ in вар if _ціна_число(v.get("price"))]
-        старі = [_ціна_число(v.get("compare_at_price")) for v, _ in вар if _ціна_число(v.get("compare_at_price"))]
-        розміри = [str(р).upper() for _, р in вар if р]
-        в_наявн = [str(р).upper() for v, р in вар if р and v.get("available")]
-        є = any(v.get("available") for v, _ in вар)
+    for варіант in варіанти_shopify(т, рецепт) or []:
+        колір, є = варіант["слово"], варіант["є"]
         вих.append(dict(назва=розекранувати(т.get("title") or ""), назва_джерело="shopify",
-                        опис=опис, ціна=min(ціни) if ціни else None, ціна_стара=max(старі) if старі else None,
+                        опис=опис, ціна=варіант["ціна"] or None, ціна_стара=варіант["ціна_стара"] or None,
                         валюта=None, available=є, наявність=("є" if є else "нема"),
                         id_магазину=str(т.get("id") or ""), характеристики_сирі=([["Тип (магазин)", т.get("product_type")]] if т.get("product_type") else []) +
                         ([["Теги (магазин)", ", ".join(x for x in т.get("tags") or [] if isinstance(x, str))[:400]]] if т.get("tags") else []),
                         свотчі=[], таблиця_мірок=None,
-                        фото=[оригінал_фото(канонічна(x, база)) for x in фото if x], фото_джерело="shopify:images",
+                        фото=[оригінал_фото(канонічна(x, база)) for x in варіант["кадри"]],
+                        фото_джерело=варіант["кадри_джерело"] or "невідомо",
                         крихти=[x for x in (т.get("product_type") or "",) if x] + [t for t in (т.get("tags") or [])[:10] if isinstance(t, str)],
                         характеристики=({"колір": розекранувати(колір)} if колір else {}),
-                        розміри=розміри, розміри_в_наявності=в_наявн, розміри_джерело="shopify:variants" if розміри else None,
+                        розміри=варіант["розміри"], розміри_в_наявності=варіант["розміри_в_наявності"],
+                        розміри_джерело=варіант["розміри_джерело"],
                         бренд=розекранувати(т.get("vendor") or "") or None,
-                        артикул=next((v.get("sku") for v, _ in вар if v.get("sku")), None),
+                        артикул=варіант["артикул"],
                         колір_ld=None, мова_альт=None, group_id=str(т.get("id") or ""), варіанти=[],
-                        url=канонічна("/products/%s" % т.get("handle", ""), база) + (("?variant=%s" % вар[0][0].get("id")) if колір and len(групи) > 1 else "")))
+                        url=канонічна("/products/%s" % т.get("handle", ""), база) +
+                        (("?variant=%s" % варіант["ід_варіацій"][0]) if варіант["кольорів_у_товарі"] > 1 else "")))
     return вих
 
 

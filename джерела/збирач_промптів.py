@@ -358,7 +358,7 @@ class Поле:
     "selection_policy", "the shared selection constraints and goals",
     як="Gates and vetoes remain required. Item «selection_doses» records independent slot pool doses "
         "(edge, below_band, shine), not a quota for each outfit or a ranking of outfits. "
-        "Edge is inside her palette. Judge the whole outfit against her intent and occasion; "
+        "Edge is inside the palette. Judge against the code's intent policy and the occasion; "
         "neither position nor the number of remarks is quality. Preserve each candidate's id, "
         "pole and declared moves with their finding id and reason when repairing it; "
         "a local change keeps the other items and candidates.")
