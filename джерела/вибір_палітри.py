@@ -134,7 +134,7 @@ def _до_очей(о, F):
     роль=_ВИМ.РОЛЬ_ЗАСТОСУНКУ + " She left the colour scheme and the base "
          "colour of today's outfits to you; you choose them.",
     вхід=(
-        _ЗП.Поле("person", "her colouring as the code measured it: contrast level and light-dark gap "
+        _ЗП.Поле("person", "her colouring with its stated provenance: contrast level and light-dark gap "
                            "(L*) of her face; undertone class and where it comes from; eyes, hair, skin "
                            "— colour family, lightness L* 0-100, chroma C*; \"yellow_blue\" — the side of "
                            "her eyes on that axis (none: not claimable); metal that suits her face; "
@@ -311,7 +311,8 @@ def _особа(F, п):
     рука 1 — `пакет_моделі.людина_для_пакета`), очі, волосся, шкіра, бік очей на осі b*, метал."""
     л = _ПМ.людина_для_пакета(None, п.get("палітри"))
     о = {"contrast": {"level": _ДМ.КОНТРАСТ.get(п["особа"].get("рівень"), _ВМ.UNKNOWN),
-                      "light_dark_gap": round(float(п["особа"].get("value_gap") or 0), 1)},
+                      "light_dark_gap": (round(float(п["особа"]["value_gap"]), 1)
+                                         if п["особа"].get("value_gap") is not None else None)},
          "undertone": {"class": _ДМ.ТЕМПЕРАТУРА.get(л["температура"]["клас"], л["температура"]["клас"]),
                        "from": _ДМ.ДЖЕРЕЛО_ТЕМПЕРАТУРИ.get(л["температура"]["джерело"])}}
     for риса, ключ in (("очі", "eyes"), ("волосся", "hair"), ("шкіра", "skin")):
@@ -518,8 +519,15 @@ def _мета(код):
                               "goal=%s" % ((пер.get("випадок") or {}).get("goal") or "none"))
 
 
-def _у_особі(*к):
-    return lambda ч, о, пер: (any((пер["особа"].get(x) or {}) for x in к), "person_%s=none" % "|".join(к))
+def _у_особі(ключ, поле, допустимі=None):
+    def звірка(ч, о, пер):
+        запис = пер["особа"].get(ключ) or {}
+        значення = запис.get(поле)
+        є = значення is not None and значення not in ("", "unknown", "not_asserted")
+        if допустимі is not None:
+            є = є and значення in допустимі
+        return є, "person_%s=none" % ключ
+    return звірка
 
 
 # Її слова на дроті випадку — ті самі поля, що пише `дріт_моделі.випадок` (імена з його мапи, не копія списку):
@@ -528,10 +536,10 @@ def _у_особі(*к):
 _СЛОВА_ЇЇ = tuple(_ДМ.ПОЛЯ_ВИПАДКУ[к] for к in ("бажання", "вето", "вимоги_людини", "решта", "мета_слова", "намір_слова",
                                                 "переконання", "прохання_взуття")) + ("field_quotes", "wish_quotes")
 ЗВІРКА_ПРИЧИН = {
-    "why_her_contrast": _у_особі("contrast"),
+    "why_her_contrast": _у_особі("contrast", "level", ("low", "medium", "high")),
     "why_her_eyes": _ранг_і_очі,
-    "why_her_undertone": _у_особі("undertone"),
-    "why_her_hair": _у_особі("hair"),
+    "why_her_undertone": _у_особі("undertone", "class", ("warm", "cool", "neutral", "olive")),
+    "why_her_hair": _у_особі("hair", "family"),
     "why_her_metal": lambda ч, о, пер: (bool(пер["особа"].get("metal")), "metal=none"),
     "why_goal_flatter": _мета("flatter"),
     "why_goal_conceal": _мета("conceal"),
