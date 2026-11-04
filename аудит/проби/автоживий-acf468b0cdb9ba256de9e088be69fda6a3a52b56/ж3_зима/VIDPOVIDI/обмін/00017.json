@@ -1,0 +1,27 @@
+{
+ "версія": 1,
+ "запит": {
+  "model": "qwen/qwen3.5-9b",
+  "max_tokens": 4000,
+  "messages": [
+   {
+    "role": "user",
+    "content": [
+     {
+      "type": "text",
+      "text": "{\"task\": {\"role\": \"You read the description of an outfit and list its items as data.\", \"rules\": [\"One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.\", \"One item carries one thing — of two alternatives list the first; a note in brackets is not an item.\", \"Slot \\\"accessory\\\" is for an item no other slot fits.\", \"\\\"is_outfit\\\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note.\"], \"limits\": [\"Rely only on the input: do not invent what it does not contain.\", \"The answer is one JSON object following \\\"answer_schema\\\", without explanations and without ```.\"], \"language\": \"English\", \"answer\": \"ITEM_LIST\", \"answer_schema\": {\"is_outfit\": \"yes|no\", \"items\": [{\"name\": \"<what the item is>\", \"details\": \"<its cut, length and fabric>\", \"slot\": \"top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory\", \"color_hex\": \"<#rrggbb or null>\", \"worn\": \"<true, or false when the description says the outfit goes without it>\"}]}, \"input\": [\"\\\"description\\\" — the outfit description\"]}, \"description\": \"Outer coat, tailored wool blend with a slightly elongated length for wind protection, charcoal grey (#36454F), heavy textured wool.\\nTrench-style outerwear only because the temperature is -10°C and there is snow on the ground.\\nShearling-lined parka, structured but roomy cut for walking in snow, forest green (#225948), durable water-resistant nylon with shearling lining.\\n\\nThis outfit works because the heavy wool coat and wind-resistant outer layer ensure you stay warm during your twenty-minute walk through the snowy park before work. The dark forest green shade absorbs the morning daylight while looking polished enough to transition seamlessly into a work environment without needing a change. This combination respects your refusal of light layers by prioritizing thermal insulation against the freezing temperatures and precipitation, ensuring comfort upon arrival.\"}"
+     }
+    ]
+   }
+  ],
+  "temperature": 1
+ },
+ "відповідь": {
+  "status": 200,
+  "contentType": "application/json",
+  "headers": {
+   "x-model": "qwen/qwen3.5-9b"
+  },
+  "body": "{\"content\":[{\"type\":\"text\",\"text\":\"{\\n\\\"is_outfit\\\": \\\"no\\\",\\n\\\"items\\\": [\\n{\\n\\\"name\\\": \\\"charcoal grey outer coat\\\",\\n\\\"details\\\": \\\"tailored wool blend with a slightly elongated length, heavy textured wool fabric\\\",\\n\\\"slot\\\": \\\"outerwear\\\",\\n\\\"color_hex\\\": \\\"#36454F\\\",\\n\\\"worn\\\": true\\n},\\n{\\n\\\"name\\\": \\\"forest green shearling-lined parka\\\",\\n\\\"details\\\": \\\"trench-style structured but roomy cut for walking in snow, durable water-resistant nylon fabric with shearling lining\\\",\\n\\\"slot\\\": \\\"outerwear\\\",\\n\\\"color_hex\\\": \\\"#225948\\\",\\n\\\"worn\\\": true\\n}\\n]\\n}\"}],\"usage\":{\"input_tokens\":523,\"output_tokens\":150},\"stop_reason\":\"end_turn\"}"
+ }
+}

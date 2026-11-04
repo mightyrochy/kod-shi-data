@@ -1,0 +1,37 @@
+── ПРОМПТ (2288 симв.) ──
+{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.", "One item carries one thing — of two alternatives list the first; a note in brackets is not an item.", "Slot \"accessory\" is for an item no other slot fits.", "\"is_outfit\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "ITEM_LIST", "answer_schema": {"is_outfit": "yes|no", "items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory", "color_hex": "<#rrggbb or null>", "worn": "<true, or false when the description says the outfit goes without it>"}]}, "input": ["\"description\" — the outfit description"]}, "description": "A structured wool-blend coat in deep charcoal (#3D4247), knee-length cut with a straight silhouette to protect against wind and snow.\nUnderneath, a fine-gauge merino cashmere sweater in soft slate grey (#5B6668), crew-neck length that stays put while walking briskly.\nA pair of dark indigo heavy-weight denim jeans in a slim but flexible taper leg (#2F3A40), offering warmth without restricting movement on the icy walk.\nBlack leather ankle boots with a low block heel (#1C1C1C), waterproofed and sized to handle salted pavement and snow accumulation.\nThis outfit works because the charcoal coat provides essential insulation against the -10°C temperature while allowing you to move comfortably during your 20-minute walk through the snowy park. The dark indigo denim offers a neat, everyday casual look that adheres to your dress code without looking too dressed up for a simple commute. Every fabric chosen, from the wool-blend outer layer to the merino knit, prioritizes warmth and wind resistance for your morning arrival at work."}
+
+── ВІДПОВІДЬ (727 симв., 3.8 с, HTTP 200) ──
+{
+  "is_outfit": "yes",
+  "items": [
+    {
+      "name": "wool-blend coat",
+      "details": "knee-length cut with a straight silhouette",
+      "slot": "outerwear",
+      "color_hex": "#3D4247",
+      "worn": true
+    },
+    {
+      "name": "merino cashmere sweater",
+      "details": "crew-neck length",
+      "slot": "top",
+      "color_hex": "#5B6668",
+      "worn": true
+    },
+    {
+      "name": "heavy-weight denim jeans",
+      "details": "slim but flexible taper leg",
+      "slot": "bottom",
+      "color_hex": "#2F3A40",
+      "worn": true
+    },
+    {
+      "name": "leather ankle boots",
+      "details": "with a low block heel",
+      "slot": "shoes",
+      "color_hex": "#1C1C1C",
+      "worn": true
+    }
+  ]
+}
