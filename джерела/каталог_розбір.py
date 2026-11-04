@@ -551,16 +551,15 @@ def схема():
 _ПРАВИЛА = (
     "Parse only the item named in \"name\". The description may also hold blocks about other "
     "items, delivery or payment: ignore them.",
-    "Every field is a pair. \"quote\": the shortest words of this item's name, description or "
+    "\"quote\": the shortest words of this item's name, description or "
     "params that state the value, copied letter for letter in the shop's language, "
-    "not translated or retold. \"value\": one code from that field's list.",
+    "not translated or retold.",
     "No words state this very feature: quote \"\" and value \"unknown\". Never infer a value from "
     "what items of this type usually are, never put the most usual code of a list as a default.",
     "The quote must state the chosen code itself, not a nearby one: how deep a neckline is does "
     "not state its shape, one kind of collar does not state another, a style or model name does "
     "not state a cut. Words that fit no code exactly: \"unknown\".",
-    "A quote that only names the item type supports slot and item_type and nothing else: not "
-    "sleeve, neckline, length, cut, fabric or any other field.",
+    "A quote that only names the item type supports slot and item_type and nothing else.",
     "\"item_type\": the quote must name this very type. A kind of dress, top or coat needs its own "
     "word in the quote: length, colour, fabric and fit words do not name a kind, so a dress with no "
     "kind named is dress_generic. The words name a type that has no code in the list: value \"not_applicable\" with that quote, never the "
