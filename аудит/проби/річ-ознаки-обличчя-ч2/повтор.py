@@ -1,5 +1,6 @@
 """Порівнює числові рішення читачів на збережених профілях без викликів моделей."""
 import json
+import gzip
 from pathlib import Path
 import sys
 
@@ -39,7 +40,9 @@ def main():
                               L=96.0, lab=(96.0, 0.0, 0.0), виріз="закритий")], особа))
             зрізи.append(запис)
     assert зрізи, "нема збережених профілів"
-    Path(sys.argv[1]).write_text(json.dumps(зрізи, ensure_ascii=False, indent=2), encoding="utf-8")
+    вихід = Path(sys.argv[1])
+    текст = json.dumps(зрізи, ensure_ascii=False, indent=2)
+    вихід.write_bytes(gzip.compress(текст.encode("utf8"), mtime=0) if вихід.suffix == ".gz" else текст.encode("utf8"))
     print("профілів:", len(зрізи), "джерел: 4; винятків: 0")
 
 
