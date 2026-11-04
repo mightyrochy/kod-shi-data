@@ -2227,6 +2227,25 @@ def паспорт_з_шару(внутрішня, сценарій, вето_ч
     тв["без_читача"] = [w for к in ("типи", "тканини", "принти", "кольори") for w in тв[к]
                         if not _ПН.читач_вето(к, w)]
     п["вето_тверде"] = тв
+    # Булевий код не проходить текстові переліки виклику 0; False — названа тінь.
+    _сонце = _ВМ.ключ("direct_sun", в.get("direct_sun"))
+    if _сонце is not None:
+        п["сонце"] = _сонце
+        об["сонце"] = _сонце
+    elif isinstance(досі.get("сонце"), bool):
+        п["сонце"] = досі["сонце"]
+    _господар = _ВМ.ключ("host_context", в.get("host_context"))
+    if _господар is not None:
+        п["господар"] = _господар
+        об["господар"] = _господар
+    elif isinstance(досі.get("господар"), bool):
+        п["господар"] = досі["господар"]
+    _креативне = _ВМ.ключ("creative_environment", в.get("creative_environment"))
+    if _креативне is not None:
+        п["креативне"] = _креативне
+        об["креативне"] = _креативне
+    elif isinstance(досі.get("креативне"), bool):
+        п["креативне"] = досі["креативне"]
     for поле, ім in (("activity", "активність"), ("surface", "поверхня")):
         к = _ВМ.ключ(поле, в.get(поле)) or досі.get(ім)
         if к:
@@ -3120,7 +3139,17 @@ def _драбина_en():
     return " · ".join("%s — %s" % (щ["код"], " | ".join(гілка(г) for г in щ["гілки"])) for щ in _ФОРМ_.ДРАБИНА)
 
 
+def _тлумачення_кодів_en(поле, описи):
+    """Пояснення кодів поля в порядку його схеми; перелік дозволених значень дає схема."""
+    коди = [к for к in _ВМ.СЦЕНАРІЙ[поле]["enum"] if к != U]
+    assert set(коди) == set(описи), поле
+    return "; ".join("%s — %s" % (к, описи[к]) for к in коди)
+
+
 _ПОЛЯ_EN = {
+    "host_context": "whether the event has a host or stakes: yes when her words name one, no when explicitly absent, otherwise unknown; not whether she herself is the host; do not infer from the occasion type",
+    "creative_environment": "whether the event is in a creative environment: yes when named, no when explicitly denied, otherwise unknown; not her wish for a bold outfit; do not infer from the occasion type",
+    "direct_sun": "direct sunlight on her: yes only when her words name direct sun, no when they name shade or no sun; otherwise unknown; do not infer from temperature, precipitation or season",
     "palette": "the palette scheme she chose for this outfit",
     # «Йду ввечері на вечірку в клуб» — `occasion` з цим уривком, `place` — ні (клас
     # 4206): правило ходу каже про місце в назві події, а опис поля, яке модель заповнює першим, — ні
@@ -3244,7 +3273,10 @@ _ПОЛЯ_EN = {
     # Щабель моделі — норма без вечірнього підйому; його за ярусом рахує код з part_of_day.
     "formality": "base step without evening; code lifts once by tier from part_of_day",
     # Гілку ставить та сама норма, що щабель, — модель, а не назва події в коді
-    "formality_reason": "why the ladder puts her on this step, by the formality rule. Give it with formality",
+    "formality_reason": "why the ladder puts her on this step: " + _тлумачення_кодів_en("formality_reason", {
+        "written": "a named written dress code", "norm": "the usual standard of the place or people",
+        "evaluated": "+1 because she is evaluated", "representing": "+1 because she represents others",
+        "her_words": "her explicit wish"}) + ". Give it with formality",
     "formality_branch": "the branch of that step, given by the same standard that puts the outing on it: business — "
                         "her workplace, a job interview, a business meeting; social — a reception, a celebration, "
                         "her leisure; only for a step of the ladder that has both",
@@ -3262,16 +3294,20 @@ _ПОЛЯ_EN = {
     # 6188: «intent, не лише formality» (R2) — тепер тут; переклади фраз сцен (без питань до
     # неї, старші схвалять, яскрава) зняті — лишився рід: чужий суд, який вона хоче пройти; вразити, вирізнитись
     "intent": "what matters most to her (goal is a separate field with its own codes); her words about it are "
-              "intent, also when they say how dressy the outing is (formality is then set besides): comfort_first "
-              "— comfort and freedom of movement; context_optimal — being appropriate to the event and its level, "
-              "also flawless or strictly by the occasion (with strict in goal_extra), also when she says it only "
-              "through the judgement of others she wants to pass (that nobody finds fault with her look); "
-              "statement — she wants to impress, stand out or be noticed, however she words it — then goal "
-              "express is written too, on the same quote; conventional "
-              "— none of these, also when she wants to be unnoticed; fashion_forward — deliberate bold "
-              "fashion, including excess as a styling move, with at least two sources of interest; "
-              "editorial — an editorial construction where count limits do not apply, with at least "
-              "one source of interest; neither is inferred merely from wanting attention (statement)",
+              "intent, also when they say how dressy the outing is (formality is then set besides): "
+              + _тлумачення_кодів_en("intent", {
+                  "comfort_first": "comfort and freedom of movement",
+                  "context_optimal": "being appropriate to the event and its level, also flawless or strictly by "
+                                     "the occasion (with strict in goal_extra), also when she says it only through "
+                                     "the judgement of others she wants to pass (that nobody finds fault with her look)",
+                  "statement": "she wants to impress, stand out or be noticed, however she words it — then goal "
+                               "express is written too, on the same quote",
+                  "conventional": "none of these, also when she wants to be unnoticed",
+                  "fashion_forward": "deliberate bold fashion, including excess as a styling move, with at least "
+                                     "two sources of interest",
+                  "editorial": "an editorial construction where count limits do not apply, with at least "
+                               "one source of interest"})
+              + "; neither fashion_forward nor editorial is inferred merely from wanting attention (statement)",
     # Мета — дві осі. `goal` — лише скільки уваги; зони й «що ще
     # важливо» — свої поля, з будь-якою увагою (код читає їх окремо: `регістр_уваги`, `реєстр_намір._намір`)
     # «щоб на мене дивились», «без питань до неї» (сцени клубу й корпоративу) — тепер рід: помітність, чужий суд
@@ -3287,7 +3323,8 @@ _ПОЛЯ_EN = {
     "goal_extra": "what else matters to her in this look, several together: " + _ВИМ.КОДИ_GOAL_EXTRA,
     # «сховати живіт» — слова сцени ж4_клуб_приховати; тепер рід (сховати чи зменшити зону)
     "goal_zones": "body zones she wants to draw the eye away from (to hide or slim a zone), with any goal: these "
-                  "zones stay quiet, the rest of the look follows goal",
+                  "zones stay quiet, the rest of the look follows goal. Never for how much skin she shows: that is "
+                  "open_zones",
     "makeup": "make-up for this outing; lips_hex only when she named a lip colour",
     "jewelry": "jewellery she wants with this look; ethnic — wood, bone, beads; other — without metal",
     "registers": "style registers she described herself with",
@@ -3456,8 +3493,8 @@ def _коди_норми(поля=None):
         if поля and ім not in поля:
             continue
         опис = _ПОЛЯ_EN[ім]
-        форма = "see answer_schema.update.formality_reason" if ім == "formality_reason" else _тип_en(_ВМ.СЦЕНАРІЙ[ім])
-        р.append("- %s — %s; %s" % (ім, опис, форма))
+        р.append("- %s — %s%s" % (ім, опис, "" if ім == "formality_reason"
+                                  else "; " + _тип_en(_ВМ.СЦЕНАРІЙ[ім])))
     return р
 
 
@@ -3478,7 +3515,9 @@ def _коди_розмови():
             названа = next((о["названа"] for о in _ВМ.ПОЛЯ_ПАСПОРТА.values() if о.get("поле") == ім and о.get("названа")), None)
             if названа:
                 тип += '; {"quote": her words that name it, "value": its value, "%s": "%s"}' % названа
-            р.append("- %s — %s; %s" % (ім, _ПОЛЯ_EN[ім], тип))
+            р.append("- %s — %s" % (ім, _ПОЛЯ_EN[ім]))
+            if ім != "intent":
+                р.append("  · type: " + тип)
             # І 474: підвид офісу — лише за її словами; не названо — загальний `office` (ОФІС-1)
             if ім == "place":
                 р += ["  · %s — kinds of one place, %s: one of them only when her words say which kind; "
@@ -3507,6 +3546,8 @@ def _коди_розмови():
     for ім in _РЕЧІ_З_ЦИТАТОЮ:
         if ім != "own_items":
             р.append("- %s — %s" % (ім, _ПОЛЯ_EN[ім]))
+            if ім == "vetoes":
+                р.append("  · limit axes — " + ", ".join(_ДМ._ОСІ_СЛОВА_МЕЖІ))
     р += _ознаки_речі_en()
     # «одягну своє взуття з фото» — 3 з 3 сідів поле `shoes{…}` поза переліком із
     # вигаданими `ankle_boots, black` (на фото — біла сандаля): поле її речей одне, ознаки речі з фото — лише її слова
@@ -3532,6 +3573,7 @@ def _коди_розмови():
     р += ["  · %s — %s" % (сцена, коли) for сцена, коли in _сцени_умов().items()]
     р += ["- %s: %s · %s" % (к, _json_.dumps(про, ensure_ascii=False), коли) for к, (про, коли) in _умови_тем().items()]
     р.append("Required questions — code: what to ask · when it applies (after your update):")
+    р.append("  · dressiness fields — " + ", ".join(_СЦ._КОДИ_ВИЗНАЧАЛЬНИХ))
     р += ["- %s: %s · %s" % (к, що, коли) for к, (що, коли) in _ОБОВʼЯЗКОВЕ_EN.items()]
     р.append("need — who answers her this turn:")
     р += ["- %s — %s" % (к, о) for к, о in _ПОТРЕБИ_EN.items()]
