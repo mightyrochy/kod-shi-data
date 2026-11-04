@@ -1,0 +1,51 @@
+── ПРОМПТ (2550 симв.) ──
+{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.", "One item carries one thing — of two alternatives list the first; a note in brackets is not an item.", "Slot \"accessory\" is for an item no other slot fits.", "\"is_outfit\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "ITEM_LIST", "answer_schema": {"is_outfit": "yes|no", "items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory", "color_hex": "<#rrggbb or null>", "worn": "<true, or false when the description says the outfit goes without it>"}]}, "input": ["\"description\" — the outfit description"]}, "description": "A structured black wool-blend blazer with a notched lapel and sharp shoulder line in a tailored fit.\nCream silk-cotton poplin blouse with a subtle sheen, pointed collar, and relaxed but clean silhouette reaching mid-thigh length.\nHigh-waisted charcoal grey trousers with a flat front and slight stretch for movement under the jacket.\nBlack leather ankle boots with a low block heel to ensure stability while standing in a crowd.\nSmall silver stud earrings and a slim silver necklace to maintain a classic aesthetic without distracting from the energetic atmosphere.\nThis outfit respects her request for a restrained and classic register by choosing monochromatic neutrals and timeless silhouettes like the tailored blazer and pointed collar, yet it remains suitable for standing in an autumn evening crowd because the flat-front trousers offer comfort and the block heel provides stability on potentially crowded club floors. The cream blouse adds a necessary visual break against the darker outer layers while keeping the overall look sophisticated enough for a smart dress code without appearing overly formal or restrictive. By avoiding bright colors or excessive textures, the ensemble honors her specific wish to stay cool in tone while looking polished amidst the rock concert environment."}
+
+── ВІДПОВІДЬ (1115 симв., 5.7 с, HTTP 200) ──
+{
+  "is_outfit": "yes",
+  "items": [
+    {
+      "name": "black wool-blend blazer",
+      "details": "notched lapel, sharp shoulder line, tailored fit",
+      "slot": "outerwear",
+      "color_hex": "#000000",
+      "worn": true
+    },
+    {
+      "name": "cream silk-cotton poplin blouse",
+      "details": "subtle sheen, pointed collar, relaxed but clean silhouette, mid-thigh length",
+      "slot": "top",
+      "color_hex": "#F5F5DC",
+      "worn": true
+    },
+    {
+      "name": "charcoal grey trousers",
+      "details": "high-waisted, flat front, slight stretch",
+      "slot": "bottom",
+      "color_hex": "#36454F",
+      "worn": true
+    },
+    {
+      "name": "black leather ankle boots",
+      "details": "low block heel",
+      "slot": "shoes",
+      "color_hex": "#000000",
+      "worn": true
+    },
+    {
+      "name": "silver stud earrings",
+      "details": "small",
+      "slot": "earrings",
+      "color_hex": "C0C0C0",
+      "worn": true
+    },
+    {
+      "name": "silver necklace",
+      "details": "slim",
+      "slot": "necklace",
+      "color_hex": "C0C0C0",
+      "worn": true
+    }
+  ]
+}
