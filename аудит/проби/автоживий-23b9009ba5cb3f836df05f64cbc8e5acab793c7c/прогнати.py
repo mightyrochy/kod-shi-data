@@ -20,8 +20,6 @@ def main():
             continue
         command = [sys.executable, str(BUILD / 'аудит/проби/записати_сцену.py'),
                    str(BUILD), r'C:\Users\gemini\pyodide', str(OUT / scene), '--сцена', scene]
-        if scene == 'б1_концерт_стримано':
-            command = [sys.executable, str(OUT / 'концерт.py')]
         print(datetime.now(timezone.utc).isoformat(), scene, flush=True)
         with (OUT / 'команди.jsonl').open('a', encoding='utf-8') as log:
             log.write(json.dumps({'час': datetime.now(timezone.utc).isoformat(),
