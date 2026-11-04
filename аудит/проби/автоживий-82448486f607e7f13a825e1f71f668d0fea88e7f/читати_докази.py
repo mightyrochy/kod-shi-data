@@ -43,6 +43,7 @@ def читати(сцена):
                     except ValueError:
                         continue
                 if isinstance(дані, dict):
+                    рядок["поля_входу"] = list(дані)
                     for ключ in ["person", "occasion", "day", "case", "scenario", "brief", "passport"]:
                         if ключ in дані:
                             рядок[ключ] = дані[ключ]

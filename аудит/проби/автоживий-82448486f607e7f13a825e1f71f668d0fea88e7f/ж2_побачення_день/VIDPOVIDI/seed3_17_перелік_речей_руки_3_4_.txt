@@ -1,0 +1,37 @@
+── ПРОМПТ (2284 симв.) ──
+{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.", "One item carries one thing — of two alternatives list the first; a note in brackets is not an item.", "Slot \"accessory\" is for an item no other slot fits.", "\"is_outfit\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "ITEM_LIST", "answer_schema": {"is_outfit": "yes|no", "items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory", "color_hex": "<#rrggbb or null>", "worn": "<true, or false when the description says the outfit goes without it>"}]}, "input": ["\"description\" — the outfit description"]}, "description": "Tailored blazer in a soft charcoal heather grey, classic single-breasted cut with notch lapels and two button closures, falling to the hip line, lightweight wool blend with a subtle stretch. High-waisted trousers in matching charcoal heather grey, straight leg cut hitting just at the ankle bone for a clean silhouette, medium-weight wool crepe with a faint brushed texture. Classic pointed-toe loafers in polished black leather, almond shape with a low stacked heel and a minimal sole for quiet sophistication. A slim silk scarf in deep burgundy, rectangular cut tied loosely around the neck to add a pop of warm autumnal color against the neutral base. This outfit works perfectly for a daytime autumn date as it strikes a balance between neat professionalism and approachable romance without being too formal or too casual. The monochromatic grey foundation allows the scarf to serve as a thoughtful focal point that acknowledges the seasonal palette while maintaining a streamlined look suitable for an elegant restaurant setting."}
+
+── ВІДПОВІДЬ (979 симв., 5.0 с, HTTP 200) ──
+{
+  "is_outfit": "yes",
+  "items": [
+    {
+      "name": "blazer",
+      "details": "classic single-breasted cut with notch lapels and two button closures, falling to the hip line, lightweight wool blend with a subtle stretch",
+      "slot": "outerwear",
+      "color_hex": "#4f555a",
+      "worn": true
+    },
+    {
+      "name": "trousers",
+      "details": "high-waisted straight leg cut hitting just at the ankle bone for a clean silhouette, medium-weight wool crepe with a faint brushed texture",
+      "slot": "bottom",
+      "color_hex": "#4f555a",
+      "worn": true
+    },
+    {
+      "name": "loafers",
+      "details": "polished black leather, almond shape with a low stacked heel and a minimal sole",
+      "slot": "shoes",
+      "color_hex": "#000000",
+      "worn": true
+    },
+    {
+      "name": "scarf",
+      "details": "slim silk rectangular cut tied loosely around the neck",
+      "slot": "scarf",
+      "color_hex": "#800020",
+      "worn": true
+    }
+  ]
+}
