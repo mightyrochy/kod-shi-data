@@ -1,0 +1,44 @@
+── ПРОМПТ (2349 симв.) ──
+{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.", "One item carries one thing — of two alternatives list the first; a note in brackets is not an item.", "Slot \"accessory\" is for an item no other slot fits.", "\"is_outfit\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "ITEM_LIST", "answer_schema": {"is_outfit": "yes|no", "items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory", "color_hex": "<#rrggbb or null>", "worn": "<true, or false when the description says the outfit goes without it>"}]}, "input": ["\"description\" — the outfit description"]}, "description": "Velvet blend turtleneck sweater in a deep emerald green (#0f3a2f), tailored to a relaxed yet structured fit with ribbed cuffs and hem, falling just above the hips.\n\nHigh-waisted wide-leg trousers in wool-cashmere stretch fabric, charcoal grey (#36454f), cut with a drape that skims the hips and thighs before tapering slightly at the ankle.\n\nHeeled slingback pumps in polished black leather, mid-height heel for comfort during a long evening out.\n\nA delicate gold necklace featuring a single organic pearl pendant and matching drop earrings to catch the restaurant's ambient light.\n\nThis outfit strikes the perfect balance for an autumn evening date, offering enough texture with the velvet and wool to feel seasonal and sophisticated without being overly heavy. The emerald green complements her warm skin tone beautifully while providing a rich contrast against the charcoal trousers, creating an elegant silhouette that remains comfortable for dining. Subtle gold jewelry adds a touch of refinement that aligns with the restaurant setting without overpowering the outfit's natural warmth."}
+
+── ВІДПОВІДЬ (1072 симв., 5.1 с, HTTP 200) ──
+{
+  "is_outfit": "yes",
+  "items": [
+    {
+      "name": "Turtleneck sweater",
+      "details": "Velvet blend, relaxed yet structured fit with ribbed cuffs and hem, falling just above the hips",
+      "slot": "top",
+      "color_hex": "#0f3a2f",
+      "worn": true
+    },
+    {
+      "name": "Wide-leg trousers",
+      "details": "High-waisted, wool-cashmere stretch fabric with a drape that skims the hips and thighs before tapering at the ankle",
+      "slot": "bottom",
+      "color_hex": "#36454f",
+      "worn": true
+    },
+    {
+      "name": "Slingback pumps",
+      "details": "Polished leather, mid-height heel for comfort",
+      "slot": "shoes",
+      "color_hex": "#000000",
+      "worn": true
+    },
+    {
+      "name": "Necklace",
+      "details": "Delicate gold featuring a single organic pearl pendant",
+      "slot": "necklace",
+      "color_hex": null,
+      "worn": true
+    },
+    {
+      "name": "Drop earrings",
+      "details": "Matching delicate gold drop earrings",
+      "slot": "earrings",
+      "color_hex": null,
+      "worn": true
+    }
+  ]
+}
