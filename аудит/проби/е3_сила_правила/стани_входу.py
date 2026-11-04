@@ -1,11 +1,10 @@
-"""Порівняння справжніх емітентів із функціями бази та суд 64 складів каталогу.
+"""Порівняння справжніх емітентів із функціями бази та суд складів усіх стендових сцен.
 
 Запуск із кореня: python аудит/проби/е3_сила_правила/стани_входу.py <SHA бази> <JSON звіту>.
 Старі функції виконуються з поточними незміненими залежностями; це локальний повтор коду,
 а не окремий запуск повного старого дерева чи незалежна перевірка.
 """
 import ast
-import collections
 import copy
 import importlib
 import itertools
@@ -76,34 +75,43 @@ def element(item, slot, lab=(70, 0, 0), area=None):
 def main():
     """Зберігає ДО/ПІСЛЯ, охоплення емісій і різницю судів каталогу."""
     sha, output = sys.argv[1:3]
+    sha = subprocess.check_output(["git", "rev-parse", sha], cwd=ROOT).decode().strip()
     output = (ROOT / output).resolve()
     swaps, targets = old_functions(sha)
     seen = set()
     paths = {p for p, _ in targets}
     def trace(frame, event, _arg):
+        """Рахує виконані емісії у змінених модулях."""
         if frame.f_code.co_filename not in paths:
             return None
         if event == "line" and (frame.f_code.co_filename, frame.f_lineno) in targets:
             seen.add((frame.f_code.co_filename, frame.f_lineno))
         return trace
-    def evaluate(fn, old=False):
+    def evaluate(fn, old=False, collect=True):
+        """Виконує той самий виклик зі старими чи поточними емітентами."""
         for namespace, key, current, previous in swaps:
             namespace[key] = previous if old else current
         try:
-            sys.settrace(None if old else trace)
+            sys.settrace(trace if collect and not old else None)
             return copy.deepcopy(fn())
         finally:
             sys.settrace(None)
             for namespace, key, current, _previous in swaps:
                 namespace[key] = current
     report = dict(base=sha, limitation=__doc__.strip(), cases=[], catalogue=[], uncovered=[])
+    def save():
+        """Зберігає вже отримані факти, включно з невдалим порівнянням."""
+        output.parent.mkdir(parents=True, exist_ok=True)
+        output.write_text(json.dumps(report, ensure_ascii=False, indent=2), encoding="utf-8")
     def compare(label, fn):
+        """Порівнює фактичні виходи гілки й перевіряє вагу станів."""
         before, after = evaluate(fn, True), evaluate(fn)
         for z in Z.список(after):
             if z.get("сила") in STATES:
                 assert z.get("сила_нп") == 0.0 and z.get("блокує") is False, z
                 assert not ({"впевненість", "для_стиліста"} & z.keys()), z
         report["cases"].append(dict(case=label, before=before, after=after))
+        save()
     red = element("червоний", "верх", (60, 65, 20))
     red2 = element("червона сумка", "сумка", (60, 65, 20))
     white = element("оптичний", "верх", (90, 0, 0))
@@ -123,15 +131,21 @@ def main():
     compare("світлота: одна поверхня", lambda: KL.перевірка_value([dict(white, площа=0.7)]))
     compare("контраст: у межах", lambda: KL.біля_обличчя([dict(white, L=65, lab=(65, 0, 0))],
                 dict(доступно=True, L_шкіри=70, value_gap=5)))
-    features = CS.features(CS.hx("#cba58e"), CS.hx("#584237"), CS.hx("#597170"))
-    compare("хрома: немає площі", lambda: KC.бюджет_хроми([red, red2], features))
+    features = CS.features(CS.hx("#cba58e"), CS.hx("#1735c7"), CS.hx("#597170"))
+    features["оправа"] = dict(C=60.0, h=100.0)
+    compare("хрома: площі волосся й оправи немає", lambda: KC.бюджет_хроми([red, red2], features))
     compare("відлуння: немає площі", lambda: KC.відлуння([red, red2]))
-    compare("сукня: немає бала фото", lambda: FM.формальність_образу([dict(white, тип="сукня", слот="сукня")]))
+    compare("сукня: немає бала фото", lambda: FM.формальність_образу([dict(white, тип="сукня_без_уточнення", слот="сукня")]))
     # Варіанти класу слота мають різні поверхні за невідомої площі.
     for slot in ("сумка", "взуття", "шарф"):
         pair = [element("холодна річ", "верх", (70, 0, -4)), element("тепла річ", slot, (70, 4, 10))]
         compare("крос за слотом: " + slot, lambda pair=pair: KN.нейтралі_крос_за_слотом(pair))
         compare("світлота за слотом: " + slot, lambda pair=pair: KL.перевірка_value_за_слотом(pair))
+    report["emissions"] = dict(total=len(targets), covered=len(targets & seen))
+    report["uncovered"] = [dict(file=str(pathlib.Path(p).relative_to(ROOT)), line=n) for p, n in sorted(targets - seen)]
+    report["catalogue_scope"] = "Фінальні знахідки вердикт.образи[0].знахідки; вкладені діагностичні представлення не лічаться як емісії."
+    save()
+    print("ФАКТ · гілок емісії %d/%d" % (len(targets & seen), len(targets)), flush=True)
     inp = json.loads((SRC / "стенд_вх.json").read_text(encoding="utf-8"))
     for scene, scenario in SZ.СЦЕНАРІЇ.items():
         request = dict(inp, сценарій=scenario, випадок=scene)
@@ -140,11 +154,18 @@ def main():
         slots = [[c["id"] for c in candidates.get(s, [])[:2]] for s in ("верх", "низ", "взуття", "сумка")]
         for ids in itertools.product(*[s for s in slots if s]):
             fn = lambda ids=ids: json.loads(B.виклик("від_моделі", json.dumps(dict(request, ід=list(ids)), ensure_ascii=False)))
-            before, after = evaluate(fn, True), evaluate(fn)
-            old, new = Z.список(before), Z.список(after)
+            before, after = evaluate(fn, True, False), evaluate(fn, False, False)
+            def findings(result):
+                """Повертає один канонічний перелік фінального суду образу."""
+                assert not result.get("помилка"), result
+                return result["вердикт"]["образи"][0].get("знахідки") or []
+            old, new = findings(before), findings(after)
             key = lambda z: (z.get("правило"), z.get("суть"),
                              () if z.get("сила") == "ok" else tuple(z.get("речі") or []))
-            assert [key(z) for z in old] == [key(z) for z in new], (scene, ids, "змінився склад знахідок")
+            if [key(z) for z in old] != [key(z) for z in new]:
+                report["mismatch"] = dict(scene=scene, ids=ids, before=old, after=new)
+                save()
+                raise AssertionError("змінився склад знахідок")
             changes = []
             for a, b in zip(old, new):
                 if a == b:
