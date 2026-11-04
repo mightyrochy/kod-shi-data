@@ -1,0 +1,37 @@
+── ПРОМПТ (2050 симв.) ──
+{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.", "One item carries one thing — of two alternatives list the first; a note in brackets is not an item.", "Slot \"accessory\" is for an item no other slot fits.", "\"is_outfit\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "ITEM_LIST", "answer_schema": {"is_outfit": "yes|no", "items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory", "color_hex": "<#rrggbb or null>", "worn": "<true, or false when the description says the outfit goes without it>"}]}, "input": ["\"description\" — the outfit description"]}, "description": "The temperature of minus fifteen degrees with snow and road salt demands a warm outer layer that completely avoids the neckline while keeping heels off the ground. A long wool coat in charcoal grey (#36454F) offers essential warmth with a structured silhouette, paired with opaque black thermal leggings made from stretch cotton to ensure comfort during the walk home. The ensemble finishes with waterproof leather ankle boots in a matte black finish (#1C1C1C) and a chunky knit scarf in deep navy blue (#000080) wrapped loosely around the neck for extra insulation. This outfit works because it prioritizes absolute warmth and coverage against the freezing weather while strictly adhering to her refusal of open necklines and pumps, creating a cozy yet professional look suitable for a cold commute."}
+
+── ВІДПОВІДЬ (838 симв., 3.6 с, HTTP 200) ──
+{
+  "is_outfit": "yes",
+  "items": [
+    {
+      "name": "wool coat",
+      "details": "long structured silhouette completely avoids the neckline",
+      "slot": "outerwear",
+      "color_hex": "#36454F",
+      "worn": true
+    },
+    {
+      "name": "thermal leggings",
+      "details": "opaque black made from stretch cotton for comfort",
+      "slot": "bottom",
+      "color_hex": null,
+      "worn": true
+    },
+    {
+      "name": "leather ankle boots",
+      "details": "waterproof matte black finish chunky heel keeps heels off the ground",
+      "slot": "shoes",
+      "color_hex": "#1C1C1C",
+      "worn": true
+    },
+    {
+      "name": "knit scarf",
+      "details": "chunky knit deep navy blue wrapped loosely around the neck for insulation",
+      "slot": "scarf",
+      "color_hex": "#000080",
+      "worn": true
+    }
+  ]
+}

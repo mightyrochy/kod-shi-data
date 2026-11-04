@@ -1,0 +1,37 @@
+── ПРОМПТ (2230 симв.) ──
+{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.", "One item carries one thing — of two alternatives list the first; a note in brackets is not an item.", "Slot \"accessory\" is for an item no other slot fits.", "\"is_outfit\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "ITEM_LIST", "answer_schema": {"is_outfit": "yes|no", "items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory", "color_hex": "<#rrggbb or null>", "worn": "<true, or false when the description says the outfit goes without it>"}]}, "input": ["\"description\" — the outfit description"]}, "description": "Wool-blend structured coat, straight cut, hip-length, color #2f3a40 (charcoal), heavy tweed fabric.\nFine-gauge turtleneck sweater, slim fit, hip-length, color #e8dccd (soft beige), merino wool fabric.\nTailored trousers, tapered leg, ankle-length, color #1a1c20 (black), stretch twill fabric.\nLeather ankle boots, sleek profile, mid-calf height, color #3b3633 (dark taupe), smooth calfskin leather.\n\nThis outfit works because the tailored coat provides necessary protection against the -15°C freezing temperatures and snow while maintaining a professional silhouette for the workplace. The slim turtleneck keeps the neckline closed and modest, directly addressing her refusal of open necklines and aligning with her desire to draw attention away from that specific zone. The tapered trousers and sleek ankle boots offer warmth without exposing skin, ensuring complete comfort during her long walk to work while adhering strictly to her request against pumps or stiletto heels."}
+
+── ВІДПОВІДЬ (817 симв., 4.7 с, HTTP 200) ──
+{
+  "is_outfit": "yes",
+  "items": [
+    {
+      "name": "Wool-blend structured coat",
+      "details": "straight cut, hip-length, heavy tweed fabric",
+      "slot": "outerwear",
+      "color_hex": "#2f3a40",
+      "worn": true
+    },
+    {
+      "name": "Fine-gauge turtleneck sweater",
+      "details": "slim fit, hip-length, merino wool fabric",
+      "slot": "top",
+      "color_hex": "#e8dccd",
+      "worn": true
+    },
+    {
+      "name": "Tailored trousers",
+      "details": "tapered leg, ankle-length, stretch twill fabric",
+      "slot": "bottom",
+      "color_hex": "#1a1c20",
+      "worn": true
+    },
+    {
+      "name": "Leather ankle boots",
+      "details": "sleek profile, mid-calf height, smooth calfskin leather",
+      "slot": "shoes",
+      "color_hex": "#3b3633",
+      "worn": true
+    }
+  ]
+}

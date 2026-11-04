@@ -1,0 +1,27 @@
+{
+ "версія": 1,
+ "запит": {
+  "model": "qwen/qwen3.5-9b",
+  "max_tokens": 4000,
+  "messages": [
+   {
+    "role": "user",
+    "content": [
+     {
+      "type": "text",
+      "text": "{\"task\": {\"role\": \"You are a personal stylist. Put together one outfit for her case.\", \"rules\": [\"Items one per line, garments first, then shoes and accessories: what it is, cut, length, color with its hex code, fabric.\", \"An outer layer only when the weather needs it; at +20 °C and warmer there is none.\", \"Last, why this outfit works, in 3–4 sentences.\"], \"limits\": [\"Do not name lightness numbers, body measurements or height in numbers, or body-type labels, and do not say you had limits.\", \"The answer is plain text laid out as the rules say, not JSON.\"], \"language\": \"English\", \"answer\": \"OUTFIT_TEXT\", \"input\": [\"\\\"case\\\" — her case: the occasion, where and when, the weather, the dress code, her wishes and refusals — as codes, her own words as quotes; do not take an item that goes against her refusals or her words\", \"\\\"formality\\\" — the level of dress she named: home (loungewear, athleisure, sportswear) < everyday (jeans, a T-shirt and sneakers; neat casual, dark denim) < neat (business: a blouse, a shirt or a refined knit with trousers or a skirt, a textured jacket or a cardigan, loafers, ballet flats or ankle boots; social: a day dress, a refined knit with a skirt or trousers, a textured jacket, neat flats or ankle boots) < smart (business: a jacket with trousers or a skirt, a blouse or a shirt, loafers or pumps; a sheath dress with a jacket; social: a cocktail dress, heeled shoes) < formal (business: a business suit — a jacket with trousers or a skirt of one fabric — with a blouse, pumps; social: a formal dress of a noble fabric, heeled shoes) < very_smart (an evening gown) < ceremonial (a full-length evening gown with long gloves)\", \"\\\"goal_zones\\\" — the body zones she wants to draw the eye away from, with any goal; keep these zones quiet; the rest of the look follows goal\"]}, \"case\": {\"field_quotes\": {\"occasion\": \"на роботу\", \"movement\": \"йду на роботу пішки\", \"temperature_c\": \"мінус п'ятнадцять\", \"intent\": \"відкритого й підборів не хочу\", \"goal_zones\": \"відкритого\"}, \"formality_reason\": \"norm\", \"event\": \"на роботу\", \"movement\": \"walk\", \"temperature_c\": -15, \"precipitation\": \"snow\", \"occasion\": \"work\", \"goal_zones\": [\"neckline\"], \"intent_quote\": \"відкритого й підборів не хочу\", \"formality\": [\"home\"], \"season\": \"autumn\", \"part_of_day\": \"day\", \"light\": \"daylight\", \"road_salt\": true}}"
+     }
+    ]
+   }
+  ],
+  "temperature": 1
+ },
+ "відповідь": {
+  "status": 200,
+  "contentType": "application/json",
+  "headers": {
+   "x-model": "qwen/qwen3.5-9b"
+  },
+  "body": "{\"content\":[{\"type\":\"text\",\"text\":\"Merino wool tunic sweater with a high neckline, relaxed straight cut, length hitting mid-thigh, color charcoal heather (#36454F), brushed wool blend.\\nWaterproof insulated shell parka, boxy structured cut, hip-length hem, color slate blue (#2C3E50), hydrophobic coated nylon with thermal lining.\\nWool-blend straight-leg trousers, classic tapered cut, full ankle length, color deep forest green (#1B4D3E), heavy-weight merino wool for warmth.\\nChunky leather combat boots with a lug sole, rounded toe, mid-calf height, color black (#000000), waterproof nubuck leather.\\n\\nThis outfit strictly adheres to your refusal of exposed skin and pumps while ensuring you stay warm in the -15°C snowy commute. The high-neck tunic covers the neckline area you wished to downplay, creating a modest and cozy silhouette suitable for work without feeling frumpy. Layering the heavy wool trousers under an insulated parka keeps you dry from salted roads and warm against the biting cold. The chunky combat boots provide essential traction on icy pavement and replace the open footwear you wanted to avoid, completing a functional yet polished look for a winter day at work.\"}],\"usage\":{\"input_tokens\":630,\"output_tokens\":262},\"stop_reason\":\"end_turn\"}"
+ }
+}

@@ -23,7 +23,7 @@ for scene, questions in PLAN['scenes'].items():
         result=json.loads((folder/'результат.json').read_text(encoding='utf-8'))
         fact.update(стан='запис завершено',rc=result.get('rc'),секунд=result.get('секунд'),sha=result.get('sha'))
         log=(folder/'лог.txt').read_text(encoding='utf-8')
-        fact['червоні']=[s.strip() for s in log.splitlines() if '✗' in s]
+        fact['червоні']=[s.strip() for s in log.splitlines() if s.lstrip().startswith('✗')]
         if (folder/'знімки/доказ.json').exists():
             proof=json.loads((folder/'знімки/доказ.json').read_text(encoding='utf-8'))
             fact['доказ']=proof.get('вердикт')

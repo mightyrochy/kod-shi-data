@@ -1,0 +1,37 @@
+── ПРОМПТ (2408 симв.) ──
+{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.", "One item carries one thing — of two alternatives list the first; a note in brackets is not an item.", "Slot \"accessory\" is for an item no other slot fits.", "\"is_outfit\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "ITEM_LIST", "answer_schema": {"is_outfit": "yes|no", "items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory", "color_hex": "<#rrggbb or null>", "worn": "<true, or false when the description says the outfit goes without it>"}]}, "input": ["\"description\" — the outfit description"]}, "description": "Merino wool tunic sweater with a high neckline, relaxed straight cut, length hitting mid-thigh, color charcoal heather (#36454F), brushed wool blend.\nWaterproof insulated shell parka, boxy structured cut, hip-length hem, color slate blue (#2C3E50), hydrophobic coated nylon with thermal lining.\nWool-blend straight-leg trousers, classic tapered cut, full ankle length, color deep forest green (#1B4D3E), heavy-weight merino wool for warmth.\nChunky leather combat boots with a lug sole, rounded toe, mid-calf height, color black (#000000), waterproof nubuck leather.\n\nThis outfit strictly adheres to your refusal of exposed skin and pumps while ensuring you stay warm in the -15°C snowy commute. The high-neck tunic covers the neckline area you wished to downplay, creating a modest and cozy silhouette suitable for work without feeling frumpy. Layering the heavy wool trousers under an insulated parka keeps you dry from salted roads and warm against the biting cold. The chunky combat boots provide essential traction on icy pavement and replace the open footwear you wanted to avoid, completing a functional yet polished look for a winter day at work."}
+
+── ВІДПОВІДЬ (956 симв., 4.5 с, HTTP 200) ──
+{
+  "is_outfit": "yes",
+  "items": [
+    {
+      "name": "Merino wool tunic sweater",
+      "details": "high neckline, relaxed straight cut, mid-thigh length, brushed wool blend fabric",
+      "slot": "top",
+      "color_hex": "#36454F",
+      "worn": true
+    },
+    {
+      "name": "Waterproof insulated shell parka",
+      "details": "boxy structured cut, hip-length hem, thermal lining, hydrophobic coated nylon fabric",
+      "slot": "outerwear",
+      "color_hex": "#2C3E50",
+      "worn": true
+    },
+    {
+      "name": "Wool-blend straight-leg trousers",
+      "details": "classic tapered cut, full ankle length, heavy-weight merino wool fabric",
+      "slot": "bottom",
+      "color_hex": "#1B4D3E",
+      "worn": true
+    },
+    {
+      "name": "Chunky leather combat boots",
+      "details": "lug sole, rounded toe, mid-calf height, waterproof nubuck leather",
+      "slot": "shoes",
+      "color_hex": "#000000",
+      "worn": true
+    }
+  ]
+}
