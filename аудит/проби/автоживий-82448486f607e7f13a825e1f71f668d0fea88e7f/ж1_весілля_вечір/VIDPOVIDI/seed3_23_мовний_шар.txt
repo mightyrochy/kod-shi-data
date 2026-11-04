@@ -1,0 +1,67 @@
+── ПРОМПТ (8053 симв.) ──
+Ти — перекладачка в застосунку-стилістці. Ти пишеш природною українською тексти, які зараз побачить жінка. Рішень не приймаєш, на питання не відповідаєш, змісту не міняєш.
+
+Вхід — JSON-об'єкт: ключ — номер тексту н, значення — текст, який склали код та інші моделі.
+
+Ключі відповіді — ті самі, що у вході, кожен: номер н тексту, значення — рядок, той самий зміст природною українською, без англійських слів і кодів; ПЕРЕКЛАДАЙ КОЖНЕ англійське слово, навіть одне посеред українського речення; латиницею лишай лише назви крамниць і брендів, «V-подібний» і «den»; текст, що вже природний і до неї на «ти», — без змін, а український текст на «ви» перепиши на «ти», решту лиши слово в слово.
+
+Вид кожної речі — теж зміст: річ у перекладі — та сама, що у вході, а не схожа чи сусідня. ankle boots — черевики чи ботильйони, boots — чоботи, heeled — на підборах, а не туфлі, pumps — туфлі-човники, loafers — лофери; pendant — кулон чи підвіска, necklace — намисто чи ланцюжок, а не каблучка, сережки чи браслет; ring — каблучка; earrings — сережки. Українські назви речей у вході (назви з крамниці, найчастіше перед « — ») переписуй літера в літеру: не міняй, не переставляй і не додавай у них жодного слова.
+
+Про жінку — лише до неї, на «ти» (ти, тебе, тобі, твій, твоя; хочеш, скинеш; наказ однини: розкажи, оберни, тримай, дай), і в питаннях теж: you, your, she, her про неї — «ти», «твій» (her skin tone — твій тон шкіри; when she turns her head — коли ти повертаєш голову; she looks taller — ти виглядаєш вищою), англійський наказ — наказом однини; «вона», «її» — лише про річ (сукню, сумку, куртку). Говорить стилістка — одна жінка: про себе — від першої особи однини й у жіночому роді (я підібрала, я б додала), не «ми», не від імені застосунку чи коду і ніколи словами самої жінки.
+
+Мова: літературна українська, як у текстах українських крамниць одягу. Кожне українське слово — літерами лише української абетки, без жодної латинської літери чи стороннього знака всередині слова. Кожне речення — одна остаточна версія, без виправлень посеред тексту. Словничок нижче — лише як перекласти англійське слово, коли воно є у вході; це не зміст: річ, тканина чи колір, яких у вході нема, у тексті не з'являються. Звичні українські назви для слів англійського джерела: trousers, pants — штани; dressy, dressier — ошатний, ошатніше; look, outfit — образ; taupe — сіро-бежевий; loose — вільний; suede — замша (жіночий рід); slip dress — сукня-комбінація; camel — кемел (колір). Назви речей і кольорів, які дала крамниця, — як є.
+
+Перевір кожне слово ДО відповіді: до неї — лише «ти», жодного «ви», «ваш» і наказу множини, і про неї жодного «вона», «її», «їй», жодне слово не стоїть двічі поспіль, кожна річ — того самого виду, що у вході (річ образу — іменником коду її виду з переліку, коли він є, і слова при ній узгоджені з цим іменником), а українська назва речі — слово в слово. Відповідь — рівно ОДИН JSON-об'єкт і нічого після нього: другої, виправленої версії, приміток і пояснень не пиши — помилку виправ у тому самому об'єкті.
+
+Речі образу — перелік речей картки (номер речі — як на картці, поруч — її коди):
+1 — kind code: necklace · colour code: white · about it: text н=1
+2 — kind code: blouse · colour code: olive · about it: text н=2
+3 — kind code: coat · colour code: grey · about it: text н=3
+4 — kind code: bag_generic · colour code: brown · about it: text н=4
+5 — kind code: trousers · colour code: white · about it: text н=5
+6 — kind code: pumps · colour code: brown · about it: text н=6
+When a text speaks of an item of the list, call it by the Ukrainian noun of its kind code (kind code: …) — the same noun in the right case in every text (trench_coat — «тренч», sweater — «светр», loafers — «лофери»), not by another kind or a synonym of the English word, whatever word the English text uses; a code ending in _generic names only the family (dress_generic — a dress, bag_generic — a bag). Make every adjective, pronoun and verb with the item agree with that noun in gender and number («бежевий тренч, який…»; «шкіряні лофери, які…»). A name you translate in this same call (text н=K): give it one noun and call the item by it, in agreement, in every text. A text the list gives as about an item (about it: text н=M) speaks of that one item, and so does every other text where the English names it. The colour of an item of the list is its colour code (colour code: …): write the Ukrainian name of that code. The English colour words for that item are the stylist's impression of a photo: do not turn them into a colour of their own — the item's colour stands in their place. Colours of its details (trim, strap, buttons, print), its fabric and the rest — translate from the text. The list is for the items only: an item the English text does not name is not added to the translation — neither to the description nor to the advice.
+
+Colour codes: brown — коричневий; grey — сірий; olive — оливковий; white — білий.
+
+ТЕКСТИ:
+{
+"1": "This multi-strand pearl necklace features lustrous white beads arranged in three distinct lengths, finished with a contrasting black satin bow at the back. It is an elegant statement piece that catches the light beautifully.",
+"2": "The blouse is crafted from olive green fabric in a regular fit cut. Its sophisticated color provides a striking yet harmonious contrast to the white trousers and grey coat.",
+"3": "You are wearing a structured grey outerwear coat featuring a classic double-breasted front with dark buttons. This tailored silhouette is ideal for evening wear as it creates a sharp, professional line.",
+"4": "This versatile brown bag_generic offers a warm, earthy tone that complements the palette of your outfit. It is sized perfectly to carry your essentials comfortably while maintaining a sleek profile.",
+"5": "These white trousers are cut in a straight silhouette, offering a clean and timeless line that pairs effortlessly with the blouse and coat. The crisp color adds brightness to your ensemble.",
+"6": "The pair of brown pumps features a classic pointed toe design and a stable heel height suitable for walking on an event floor. Their rich leather texture ties the entire outfit together with warmth.",
+"7": "This ensemble is a perfect balance of sophisticated elegance and warm comfort for an evening wedding. The crisp white straight trousers provide a clean foundation, while the olive blouse adds a rich, earthy depth that feels both timeless and modern. Topped with a classic grey double-breasted coat, you will look poised and put-together as you enter the restaurant. To complete the look, I've chosen a brown leather bag to echo the metallic tones in your jewelry and ground the outfit with a touch of warmth.",
+"8": "Tuck the blouse neatly into the trousers to define your waist and streamline your silhouette before adding the coat over top.",
+"9": "Let the pearl necklace rest loosely at your collarbone; its length adds vertical lines that elongate your figure.",
+"10": "Двобортне пальто прямого крою з кишенями — White dress shoes replace the black boots to match the beige headwear and bring the lightness up towards your face, softening the contrast.",
+"11": "Сумка жіноча Le Grand Bambino — I added a brown leather bag to ground the bright top and add necessary formality for the occasion.",
+"12": "Сумка жіноча Le Grand Bambino — I added this leather tote from the showcase to resolve the 'no bag' blocker for your formal wedding guest occasion.",
+"13": "Сумка жіноча Le Grand Bambino — The leather bag is added to elevate the formality level of the ensemble for the banquet.",
+"14": "Сумка жіноча Le Grand Bambino — I added a brown suede bag from the showcase to resolve the 'no bag' blocker and complete the formal look.",
+"15": "Двобортне пальто прямого крою з кишенями — I replaced the black dress shoes with cream pumps (finding f-o1-2) to open the neckline as a buffer and match the lightness near your face.",
+"16": "Сумка жіноча Le Grand Bambino — The brown leather tote is added to resolve the 'no bag' blocker required for the wedding guest occasion."
+}
+
+── ВІДПОВІДЬ (3016 симв., 24.3 с, HTTP 200) ──
+```json
+{
+"1": "Цей багатошаровий перловий кулон має блискучі білі намистини, розташовані у трьох різних довжинах, і закінчується контрастним чорним атласним бантом на спині. Це елегантна прикраса, яка чудово відбиває світло.",
+"2": "Блузка виготовлена з оливкової тканини вільного крою. Її вишуканий колір створює вражаючий і гармонійний контраст із білими штанами та сірим пальтом.",
+"3": "Ти одягла структуроване сіре пальта, що має класичний двобортний фасад з темними ґудзиками. Цей елегантний силует чудово підходить для вечірнього вбрання, оскільки створює чітку та професійну лінію.",
+"4": "Ця універсальна коричнева сумка пропонує теплий і землистий відтінок, який доповнює палітру твого образу. Вона має оптимальний розмір для зручного носіння необхідних речей, зберігаючи при цьому елегантний вигляд.",
+"5": "Ці білі штани мають прямий силует, що пропонує чисту та позачасову лінію, яка легко поєднується з блузкою та пальтом. Свіжий колір додає яскравості твоєму ансамблю.",
+"6": "Пара коричневих туфель-човників має класичний загострений носок і стабільний підбор, зручний для ходьби на танцполі. Їхня багата шкіряна текстура завершує весь образ теплом.",
+"7": "Цей ансамбль — це ідеальний баланс витонченої елегантності та теплого комфорту для весільного прийому ввечері. Білі прямі штани створюють чисту основу, а оливкова блузка додає насичений землистий відтінок, який відчувається як позачасовим, так і сучасним. Доповнене класичним сірим двобортним пальтом, ти виглядатимеш впевненою та зібраною, коли увійдеш до ресторану. Щоб завершити образ, я обрала коричневу шкіряну сумку, яка підкреслить металевий блиск твоїх прикрас і додасть образу тепла.",
+"8": "Акуратно заправ блузку в штани, щоб визначити талію та зробити силует стрункішим перед тим, як одягнути пальта зверху.",
+"9": "Дай кулону вільно лежати на ключиці; його довжина додає вертикальні лінії, які подовжують твою фігуру.",
+"10": "Двобортне пальто прямого крою з кишенями — Білі туфлі замінюють чорні ботильйони, щоб відповідати бежевому головному убору та додати легкості біля обличчя, пом’якшуючи контраст.",
+"11": "Сумка жіноча Le Grand Bambino — Я додала коричневу шкіряну сумку, щоб збалансувати яскравий верх і надати необхідної урочистості для цієї події.",
+"12": "Сумка жіноча Le Grand Bambino — Я доповнила цей шкіряний тоут із вітрини, щоб вирішити проблему відсутності сумки для твого формального весільного образу.",
+"13": "Сумка жіноча Le Grand Bambino — Шкіряна сумка додається, щоб підвищити рівень урочистості ансамблю на банкеті.",
+"14": "Сумка жіноча Le Grand Bambino — Я доповнила коричневу замшеву сумку з вітрини, щоб вирішити проблему відсутності сумки та завершити формальний образ.",
+"15": "Двобортне пальто прямого крою з кишенями — Я замінила чорні туфлі на кремові лофери (знайшла f-o1-2), щоб відкрити лінію декольте як буфер і додати легкості біля обличчя.",
+"16": "Сумка жіноча Le Grand Bambino — Коричневий шкіряний тоут додається, щоб вирішити проблему відсутності сумки для весільного образу."
+}
+```
