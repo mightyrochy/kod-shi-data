@@ -326,7 +326,8 @@ def _особа(F, п):
         р = F.get(риса) or {}
         if оцінка:
             if р.get("hex"):
-                о[ключ] = dict(estimate_hex=р["hex"], source="model_hex", confidence=0.0)
+                о[ключ] = dict(estimate_hex=р["hex"], source="model_hex", confidence=0.0,
+                               family=_ВМ.UNKNOWN)
             continue
         if р.get("L") is None:
             continue

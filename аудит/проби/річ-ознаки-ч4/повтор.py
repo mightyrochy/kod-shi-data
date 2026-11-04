@@ -61,7 +61,8 @@ def повтор():
                 опора=факт["опора"] is not None,
                 домінантність=факт["домінантність"]["рід"] != "невідомо",
                 поділ=поділ["є"], свій=свій["рекомендована"] is not None,
-                дріт=any("family" in дріт.get(ключ, {}) for ключ in ("eyes", "hair", "skin")),
+                дріт=any(дріт.get(ключ, {}).get("family") not in (None, "unknown")
+                         for ключ in ("eyes", "hair", "skin")),
                 дріт_контраст=дріт["contrast"]["light_dark_gap"] is not None,
                 значення_моделі=any(р["value"] is not None for р in факт["для_моделі"].values()))
             # Вихід без шкіри означає брак виміру, а не фізичне чорне L*=0.
