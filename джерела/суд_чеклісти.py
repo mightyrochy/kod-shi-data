@@ -34,6 +34,7 @@ from суд_ремесло import (ЖЕСТИ_ID)
 import palettes as _ПЛ
 import personal_palette as _PP
 import colorspace as _КС
+import face_features as _ОБ
 import palette as _ПАЛ
 import trace as _СЛ
 import реєстр_правил as _РП
@@ -304,7 +305,10 @@ def входи_палітри(F, source="uncontrolled", самозвіт=None, �
     у `bridge.виклик` (`помилка` + `код`), і показ показує рядок жінці.
     """
     ос = _ПЛ.осі(F or {}, source, самозвіт)
-    волосся = [f for ім, f in (_PP.дані(F or {}) or {}).items() if str(ім).startswith("волосся")]
+    вимір = _ОБ.ознаки(F or {}, source)
+    н = вимір["надійність"]
+    волосся = [f for ім, f in вимір["риси"].items() if str(ім).startswith("волосся")
+               and f["довіра"]["chroma"] >= _КС.MIN_TO_EMIT]
     сивина = any(f.get("C") is not None and f["C"] < _КС.ACHROMATIC_C for f in волосся)
     _очі = _ПАЛ.бік_b_проти_людини(F or {}, прогін_руки=прогін_руки) or {}
     бік_b_очей = bool(_очі.get("вхід"))
@@ -318,12 +322,16 @@ def входи_палітри(F, source="uncontrolled", самозвіт=None, �
     # суддя цього не знає, і пункт так і каже, а не зараховує вибір, якого не бачив.
     _вс = вибір_схеми if isinstance(вибір_схеми, dict) else {}
     _хто = (_вс.get("обрала") or {}).get("scheme")   # her | stylist | code_rank
-    return dict(вікна=dict(L=_ПЛ.вікно_світлоти(ос), C=_ПЛ.вікно_хроми(ос), сім_ї=_ПЛ.дуги_сімей(ос)),
-                бік_температури=abs(ос["позиція"]["hue"]) >= _ПЛ.ДОМІНАНТА_МІН / 2,
+    тон_є = (н["undertone"] >= _КС.MIN_TO_EMIT
+             or _ОБ.елісітація_зі_слів(самозвіт)["w"] is not None)
+    return dict(вікна=dict(L=_ПЛ.вікно_світлоти(ос) if н["value"] >= _КС.MIN_TO_EMIT else None,
+                          C=_ПЛ.вікно_хроми(ос) if н["chroma"] >= _КС.MIN_TO_EMIT else None,
+                          сім_ї=_ПЛ.дуги_сімей(ос) if тон_є else {}),
+                бік_температури=тон_є and abs(ос["позиція"]["hue"]) >= _ПЛ.ДОМІНАНТА_МІН / 2,
                 сивина=bool(сивина),
                 бік_b_очей=бік_b_очей,      # R-COL-16: очі дають бік b* (не ITA шкіри)
                 вибір_схеми=(_хто in ("her", "stylist")),
-                м_яка=ос["позиція"]["chroma"] < 0,   # P9 (K-PAL-12): та сама вісь, що в `palettes.прийоми`
+                м_яка=н["chroma"] >= _КС.MIN_TO_EMIT and ос["позиція"]["chroma"] < 0,
                 не_стосується=не_стосується,
                 бракує_вибору=(None if _хто in ("her", "stylist") else
                                [dict(_брак("scheme_choice", ("вибір_схеми",), ("stylist_choice",)),
