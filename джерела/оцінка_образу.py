@@ -38,6 +38,7 @@
 нагоди ошатність не судиться, без температури — погода; це лягає в «чого я не знаю» (`без_входу`)
 кодом `occasion` / `temperature`, а не мовчанням. Типових 11:00 і +18 °C тут нема.
 """
+from реєстр_правил import ТИПОВИЙ_НАМІР
 import asyncio as _asyncio
 import json as _json
 import math as _math
@@ -698,7 +699,7 @@ def _сцена(сценарій, d):
     сцен, незн = _ПН.з_показу({к: v for к, v in (сценарій or {}).items() if v not in (None, "")}, None)
     if d.get("самозвіт"):
         сцен["самозвіт"] = _МВ.самозвіт(d)
-    сцен.setdefault("intent", d.get("намір") or "conventional")
+    сцен.setdefault("intent", d.get("намір") or ТИПОВИЙ_НАМІР)
     return сцен, незн
 
 
@@ -743,7 +744,7 @@ def _без_входу(о, сцен, речі):
     Пункт чекліста — лише «немає входу» (стан «без входу»); «не стосується» сюди не
     йде: його перелік із причиною — у звіті власника (`суд.checklist.….не_стосується_чому`)."""
     вих = []
-    if not any(сцен.get(к) for к in ("нагода", "місце", "дрес_код", "ошатність")):
+    if not _сцена_для_моделі({"сцена": сцен})[0]:
         вих.append(dict(input="occasion"))
     if сцен.get("темп_c") in (None, ""):
         вих.append(dict(input="temperature"))
@@ -900,7 +901,7 @@ def _крамниця_кроками(d, F, T, сцен, слоти):
                            and к in ("нагода", "місце", "дрес_код", "темп_c", "опади", "пора")})
     dd.pop("паспорт", None)
     F2, T2, зріст, kw = _МВ.збірка(dd)
-    п, гілка, _сх, _під = _МО.пакет_гілки(dd, F2, T2, зріст, kw, None, dd.get("намір") or "conventional")
+    п, гілка, _сх, _під = _МО.пакет_гілки(dd, F2, T2, зріст, kw, None, dd.get("намір") or ТИПОВИЙ_НАМІР)
     вх = _МП.входи_пакета(dd, F2, T2, None)
     схема = п["палітри"]["розвилка"][0 if гілка is None else гілка]["схема"]
     if (not _СЦ.є_сценарій(вх["сценарій"]) and not вх["вимоги"] and not вх["паспорт"]
@@ -1190,7 +1191,7 @@ def суд_кроками(d):
                                        плитки=d.get("сценарій_плитки"))
     сцен, незн = _сцена(сц, d)
     палітра = _ПЛ.палітра_практична(F, source=d.get("source") or "uncontrolled",
-                                    intent=сцен.get("intent") or "conventional",
+                                    intent=сцен.get("intent") or ТИПОВИЙ_НАМІР,
                                     насиченість=(d.get("вибір_кольору") or {}).get("насиченість"))
     yield
     шкіра = (F.get("шкіра") or {}).get("hex")
@@ -1374,7 +1375,8 @@ def _сцена_для_моделі(суд_):
     с = суд_.get("сцена") or {}
     нагода = {к: v for к, v in {"occasion": _ВМ.код("occasion", с.get("нагода")),
                                 "place": _ВМ.код("place", с.get("місце")),
-                                "dress_code": _ВМ.код("dress_code", с.get("дрес_код"))}.items() if v}
+                                "dress_code": _ВМ.код("dress_code", с.get("дрес_код")),
+                                "formality": _ДМ.ошатність_словом(с.get("ошатність"))}.items() if v}
     # Градуси, яких вона не казала (`темп_з_відчуття`), моделі не їдуть: число з відчуття — для правил, а
     # модель бачить відчуття кодом (як `день_кодами` і заяви суду, `внутрішня_мова.градуси_заяви`).
     градуси = (_ВМ.градуси_заяви(с.get("темп_c"), с.get("погода_відчуття") if с.get("темп_з_відчуття") else None)
@@ -1429,9 +1431,9 @@ _СПІЛЬНІ_ПРАВИЛА_ОЦІНКИ = (
          "You see her photos and the code's check of the outfit as a whole. Her photos show what she chose to "
          "show, often not the whole outfit.",
     вхід=(
-        _ЗП.Поле("question", "her question in her words, in her language (lang); you answer in \"language\"",
+        _ЗП.Поле("question", "her words or translated question; lang_source marks a default; answer in \"language\"",
                  без="She asked no question."),
-        _ЗП.Поле("occasion", "where she is going, as she named it",
+        _ЗП.Поле("occasion", "where she is going or the formality she named",
                  без="She did not name the occasion: do not judge formality or fitness for an event."),
         _ЗП.Поле("weather", "the weather she named",
                  без="She did not name the weather: do not judge warmth or weather."),
@@ -1640,7 +1642,9 @@ _ДОПИТ_ПРАВИЛО = ("Her new question about the same outfit: answer it
 
 def _питання_дроту(питання):
     """Її питання → «question» дроту: внутрішня мова перекладача як є, рядок — вільним текстом із мовою."""
-    return питання if isinstance(питання, dict) else {"free_text": str(питання), "lang": "uk"}
+    from паспорт_поля import походження, ТИПОВЕ
+    return питання if isinstance(питання, dict) else {"free_text": str(питання), "lang": "uk",
+                                                    "lang_source": походження(ТИПОВЕ)}
 
 
 def хвіст_допиту(питання, попередня):

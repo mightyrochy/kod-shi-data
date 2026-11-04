@@ -1,0 +1,42 @@
+── ПРОМПТ (5737 симв.) ──
+Ти — перекладачка в застосунку-стилістці. Ти пишеш природною українською тексти, які зараз побачить жінка. Рішень не приймаєш, на питання не відповідаєш, змісту не міняєш.
+
+Вхід — JSON-об'єкт: ключ — номер тексту н, значення — текст, який склали код та інші моделі.
+
+Ключі відповіді — ті самі, що у вході, кожен: номер н тексту, значення — рядок, той самий зміст природною українською, без англійських слів і кодів; ПЕРЕКЛАДАЙ КОЖНЕ англійське слово, навіть одне посеред українського речення; латиницею лишай лише назви крамниць і брендів, «V-подібний» і «den»; текст, що вже природний і до неї на «ти», — без змін, а український текст на «ви» перепиши на «ти», решту лиши слово в слово.
+
+Вид кожної речі — теж зміст: річ у перекладі — та сама, що у вході, а не схожа чи сусідня. ankle boots — черевики чи ботильйони, boots — чоботи, heeled — на підборах, а не туфлі, pumps — туфлі-човники, loafers — лофери; pendant — кулон чи підвіска, necklace — намисто чи ланцюжок, а не каблучка, сережки чи браслет; ring — каблучка; earrings — сережки. Українські назви речей у вході (назви з крамниці, найчастіше перед « — ») переписуй літера в літеру: не міняй, не переставляй і не додавай у них жодного слова.
+
+Про жінку — лише до неї, на «ти» (ти, тебе, тобі, твій, твоя; хочеш, скинеш; наказ однини: розкажи, оберни, тримай, дай), і в питаннях теж: you, your, she, her про неї — «ти», «твій» (her skin tone — твій тон шкіри; when she turns her head — коли ти повертаєш голову; she looks taller — ти виглядаєш вищою), англійський наказ — наказом однини; «вона», «її» — лише про річ (сукню, сумку, куртку). Говорить стилістка — одна жінка: про себе — від першої особи однини й у жіночому роді (я підібрала, я б додала), не «ми», не від імені застосунку чи коду і ніколи словами самої жінки.
+
+Мова: літературна українська, як у текстах українських крамниць одягу. Кожне українське слово — літерами лише української абетки, без жодної латинської літери чи стороннього знака всередині слова. Кожне речення — одна остаточна версія, без виправлень посеред тексту. Словничок нижче — лише як перекласти англійське слово, коли воно є у вході; це не зміст: річ, тканина чи колір, яких у вході нема, у тексті не з'являються. Звичні українські назви для слів англійського джерела: trousers, pants — штани; dressy, dressier — ошатний, ошатніше; look, outfit — образ; taupe — сіро-бежевий; loose — вільний; suede — замша (жіночий рід); slip dress — сукня-комбінація; camel — кемел (колір). Назви речей і кольорів, які дала крамниця, — як є.
+
+Перевір кожне слово ДО відповіді: до неї — лише «ти», жодного «ви», «ваш» і наказу множини, і про неї жодного «вона», «її», «їй», жодне слово не стоїть двічі поспіль, кожна річ — того самого виду, що у вході (річ образу — іменником коду її виду з переліку, коли він є, і слова при ній узгоджені з цим іменником), а українська назва речі — слово в слово. Відповідь — рівно ОДИН JSON-об'єкт і нічого після нього: другої, виправленої версії, приміток і пояснень не пиши — помилку виправ у тому самому об'єкті.
+
+Речі образу — перелік речей картки (номер речі — як на картці, поруч — її коди):
+1 — назва в тексті н=2
+2 — назва в тексті н=3
+3 — назва в тексті н=4
+4 — назва в тексті н=5
+5 — назва в тексті н=6
+When a text speaks of an item of the list, call it by the Ukrainian noun of its kind code (kind code: …) — the same noun in the right case in every text (trench_coat — «тренч», sweater — «светр», loafers — «лофери»), not by another kind or a synonym of the English word, whatever word the English text uses; a code ending in _generic names only the family (dress_generic — a dress, bag_generic — a bag). Make every adjective, pronoun and verb with the item agree with that noun in gender and number («бежевий тренч, який…»; «шкіряні лофери, які…»). A name you translate in this same call (text н=K): give it one noun and call the item by it, in agreement, in every text. A text the list gives as about an item (about it: text н=M) speaks of that one item, and so does every other text where the English names it. The colour of an item of the list is its colour code (colour code: …): write the Ukrainian name of that code. The English colour words for that item are the stylist's impression of a photo: do not turn them into a colour of their own — the item's colour stands in their place. Colours of its details (trim, strap, buttons, print), its fabric and the rest — translate from the text. The list is for the items only: an item the English text does not name is not added to the translation — neither to the description nor to the advice.
+
+ТЕКСТИ:
+{
+"1": "Wool-blend structured blazer, tailored fit, knee-length hem, charcoal gray, fine woven wool blend.\nSilk-poplin fitted blouse, classic collar, hip-length cut, off-white, smooth silk with a subtle sheen.\nHigh-waisted wide-leg trousers, straight leg opening, ankle length, charcoal gray, heavy cotton twill with slight stretch.\nLeather loafers, almond toe, low block heel, matte black .\nMinimalist gold-plated stud earrings, round shape, polished 18k gold vermeil.\n\nThis outfit respects the \"classic\" register while navigating the energetic atmosphere of a rock concert at a club on a Friday evening. The structured wool blazer and wide-leg trousers provide a refined silhouette that stands out against the crowd without looking out of place in an artificial light setting. The deep charcoal tones offer sophistication suitable for a smart dress code, while the silk blouse adds necessary texture to contrast with the potential roughness of the venue. This combination allows you to move comfortably through the crowd while maintaining a timeless, elegant look.",
+"2": "blazer",
+"3": "blouse",
+"4": "trousers",
+"5": "loafers",
+"6": "earrings"
+}
+
+── ВІДПОВІДЬ (1223 симв., 8.7 с, HTTP 200) ──
+{
+"1": "Вовняний структурований піджак, приталений крій, довжина до коліна, вугільно-сірий, високоякісна вовняна тканина.\nПриталена шовкова блуза з класичним коміром, довжиною по стегнах, кольору слонової кістки, гладка шовкова тканина з ледь помітним блиском.\nШирокі штани із завищеною талією, прямі брючини до щиколотки, вугільно-сірого кольору, щільний бавовняний твіл зі слабким розтягуванням.\nШкіряні лофери з загостреним носком, низький стійкий каблук, матова чорна шкіра.\nМінімалістичні золоті сережки-гвоздики, круглої форми, відполіроване золото у позолоченому покритті 18 каратів.\n\nЦей образ дотримується класичного стилю, водночас підходить для енергійної атмосфери рок-концерту в клубі у п’ятницю. Структурований вовняний піджак і широкі штани створюють вишуканий силует, який вирізнятиметься з натовпу, але не виглядатиме недоречно при штучному освітленні. Глибокі вугільно-сірі тони додають елегантності, що відповідає діловому дрес-коду, а шовкова блуза створює необхідний контраст із потенційною грубістю закладу. Ця комбінація дозволить тобі вільно пересуватися натовпом, зберігаючи при цьому позачасовий і вишуканий образ.",
+"2": "піджак",
+"3": "блуза",
+"4": "штани",
+"5": "лофери",
+"6": "сережки"
+}

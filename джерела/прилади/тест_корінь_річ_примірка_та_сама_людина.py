@@ -1,0 +1,290 @@
+# -*- coding: utf-8 -*-
+"""Штучні шляхи пікселів: джерело, перенесення, суд, видимий і прихований показ."""
+import json
+from pathlib import Path
+import subprocess
+import sys
+import tempfile
+import unittest
+
+from корінь_річ_примірка_та_сама_людина import лічба
+
+
+class Прилад(unittest.TestCase):
+    """Мініатюрні дерева без залежності від назв та рядків продукту."""
+
+    def перевірити(self, файли, кількість):
+        """Створює окреме дерево, запускає справжній обхід і звіряє число."""
+        with tempfile.TemporaryDirectory() as т:
+            дж = Path(т) / 'джерела'
+            дж.mkdir()
+            for ім, текст in файли.items():
+                ф = дж / ім
+                ф.parent.mkdir(parents=True, exist_ok=True)
+                ф.write_text(текст, encoding='utf-8')
+            звіт = лічба(т)
+            self.assertEqual(звіт['місць'], кількість, json.dumps(звіт['входи'], ensure_ascii=False, indent=2))
+            return звіт
+
+    def test_прямий_показ(self):
+        """Джерело має довільне локальне ім'я."""
+        self.перевірити({'а.js': "const x=generate_image();\nconst i=document.createElement('img');\ni.src=x;\ndocument.body.appendChild(i);"}, 1)
+
+    def test_суд(self):
+        """Генерований кадр у вимірі шкіри — умова а."""
+        self.перевірити({'а.js': "const x=generate_image();\nmeasure_skin(x);"}, 1)
+
+    def test_оригінал(self):
+        """Завантажений файл не стає генерацією через назву поля."""
+        self.перевірити({'а.js': "const картинка=input.files[0];\nconst i=document.createElement('img');\ni.src=картинка;document.body.appendChild(i);\njudge(картинка);"}, 0)
+
+    def test_відокремлені_поля(self):
+        """Картинка та портрет одного запису мають різне походження."""
+        self.перевірити({'а.js': "const k={картинка:generate_image(),портрет:input.files[0]};\njudge(k.портрет);\nconst i=document.createElement('img');i.src=k.картинка;document.body.appendChild(i);"}, 1)
+
+    def test_аліас_функція(self):
+        """Аргумент, повернення, аліас функції й поле не розривають шлях."""
+        self.перевірити({'а.js': "function f(a){return {value:a};}\nconst g=f;const q=g(generate_image());\njudge(q.value);"}, 1)
+
+    def test_масив_callback(self):
+        """Кадр проходить через масив та callback map/find."""
+        self.перевірити({'а.js': "const a=[generate_image()].map(x=>({v:x}));\nconst b=a.find(x=>x);\njudge(b.v);"}, 1)
+
+    def test_між_файлами(self):
+        """Спільні глобальні JS з'єднуються незалежно від порядку файлів."""
+        self.перевірити({'вкладена/а.js': 'judge(z.picture);', 'я.js': 'const z={picture:generate_image()};'}, 1)
+
+    def test_html(self):
+        """Вбудований JS має рядки вихідного HTML, текст промпту не виконується."""
+        звіт = self.перевірити({'а.html': '<html>\n<script>\nconst x=generate_image();\nconst h=\'<img src="\'+x+\'">\';\nрозміткаЖінціП(document.body,h);\n</script></html>'}, 1)
+        self.assertEqual(next(р['рядок'] for р in звіт['входи'] if р['місце']), 5)
+
+    def test_css_ідентифікатор_зображення(self):
+        """CSS #id пов'язує запис src з наявним у HTML зображенням."""
+        self.перевірити({'а.html': '<img id="preview"><script>document.querySelector("#preview").src=generate_image()</script>'}, 1)
+        self.перевірити({'а.html': '<div id="preview"></div><script>document.querySelector("#preview").src=generate_image()</script>'}, 0)
+
+    def test_python_іменовані(self):
+        """Порядок іменованих аргументів не змінює походження значення."""
+        self.перевірити({'а.py': 'def choose(original, generated):\n    return generated\nx = choose(generated=generate_image(), original=load_photo())\njudge(x)\n'}, 1)
+        self.перевірити({'а.py': 'def choose(original, generated):\n    return original\nx = choose(generated=generate_image(), original=load_photo())\njudge(x)\n'}, 0)
+        self.перевірити({'а.py': 'judge(image=generate_image())\n'}, 1)
+
+    def test_css_складені_селектори(self):
+        for селектор in ('.preview', 'main img.preview', '[data-preview]', 'img#photo', 'div, .preview'):
+            with self.subTest(селектор=селектор):
+                html = '<img id="photo" class="preview" data-preview><script>document.querySelector(' + json.dumps(селектор) + ').src=generate_image()</script>'
+                self.перевірити({'а.html': html}, 1)
+        self.перевірити({'а.html': '<img class="other"><script>document.querySelector(".preview").src=generate_image()</script>'}, 0)
+        self.перевірити({'а.html': '<img class="preview"><script>document.querySelectorAll(".preview")[0].src=generate_image()</script>'}, 1)
+        self.перевірити({'а.html': '<img class="preview"><script>const s=".preview"; const t=s; document.querySelector(t).src=generate_image()</script>'}, 1)
+        self.перевірити({'а.html': '<img class="preview"><script>function s(){return ".preview"} document.querySelector(s()).src=generate_image()</script>'}, 1)
+        html = '<img id="preview"><script>document.querySelector(' + json.dumps(r'#\70 review') + ').src=generate_image()</script>'
+        self.перевірити({'а.html': html}, 1)
+        self.перевірити({'а.js': 'const el=document.createElement("img"); el.id="preview"; document.body.appendChild(el); document.querySelector("#preview").src=generate_image();'}, 1)
+        self.перевірити({'а.html': '<img id="preview"><script>const suffix="preview"; document.querySelector("#"+suffix).src=generate_image()</script>'}, 1)
+        self.перевірити({'а.js': 'const el=document.createElement("img"); el.classList.add("preview"); document.body.appendChild(el); document.querySelector(".preview").src=generate_image();'}, 1)
+
+    def test_python_розпаковані_іменовані(self):
+        код = 'def choose(original, generated):\n    return generated\na = {"generated": generate_image(), "original": load_photo()}\nf = choose\njudge(f(**a))\n'
+        self.перевірити({'а.py': код}, 1)
+        self.перевірити({'а.py': код.replace('return generated', 'return original')}, 0)
+
+    def test_python_словник_іменованих(self):
+        код = 'def forward(**kw):\n    return kw["generated"]\nf = forward\njudge(f(original=load_photo(), generated=generate_image()))\n'
+        self.перевірити({'а.py': код}, 1)
+        self.перевірити({'а.py': код.replace('return kw["generated"]', 'return kw["original"]')}, 0)
+        self.перевірити({'а.py': 'def forward(**kw):\n    return kw["generated"]\na = {"generated": generate_image()}\njudge(forward(**a))\n'}, 1)
+
+    def test_приховане_декодування(self):
+        """Image, який нікуди не додано, не є показом жінці."""
+        self.перевірити({'а.js': 'const i=new Image();\ni.src=generate_image();'}, 0)
+
+    def test_промпт(self):
+        """Слова про шкіру і img у промпті — дані."""
+        self.перевірити({'а.py': 'PROMPT = "judge skin, keep face; <img src=generated>"\n'}, 0)
+
+    def test_не_продукт(self):
+        """Вкладені тести та прилади не збільшують число."""
+        self.перевірити({'проби/а.js': 'judge(generate_image());', 'прилади/а.py': 'judge(generate_image())',
+                         'ще/тест_а.js': 'judge(generate_image());'}, 0)
+
+    def test_python(self):
+        """Python також простежується від джерела до входу суду."""
+        self.перевірити({'а.py': 'def wrap(x):\n    return {"face": x}\np = wrap(generate_image())\njudge(p["face"])\n'}, 1)
+
+    def test_імпорт_python(self):
+        """Повернення через імпортований модуль зберігає джерело."""
+        self.перевірити({'а.py': 'from б import picture\njudge(picture())\n',
+                         'б.py': 'def picture():\n    return generate_image()\n'}, 1)
+
+    def test_два_поля_дві_умови(self):
+        """Одне файл:рядок рахується один раз при двох умовах."""
+        self.перевірити({'а.js': "const i=document.createElement('img'); i.src=generate_image(); document.body.appendChild(i); judge(i.src);"}, 1)
+
+    def test_назва_маски_не_доказ(self):
+        """Обгортка з обіцянкою повернення не очищає згенеровані пікселі."""
+        self.перевірити({'а.js': "function повернутиЗаМаскою(x,photo,mask){return x;}\njudge(повернутиЗаМаскою(generate_image(),input.files[0],mask));"}, 1)
+
+    def test_повернуто_оригінал(self):
+        """Результат, який справді є оригіналом, не є кадром генератора."""
+        self.перевірити({'а.js': "function restore(x,photo,mask){return photo;}\njudge(restore(generate_image(),input.files[0],mask));"}, 0)
+
+    def test_помилковий_js(self):
+        """Нерозбірний JS не дає зеленого нуля."""
+        with self.assertRaises(ValueError):
+            self.перевірити({'а.js': 'const = ;'}, 0)
+
+    def test_незалежні_виклики_перетворення(self):
+        """Транспорт фото не змішує походження двох викликів."""
+        self.перевірити({'а.js': 'const a=блобВБазу(generate_image());\nconst b=блобВБазу(input.files[0]);\njudge(b);\njudge(a);'}, 1)
+
+    def test_src_через_setAttribute(self):
+        """Атрибут src є таким самим входом показу, як властивість."""
+        self.перевірити({'а.js': "const i=document.createElement('img');\ni.setAttribute('src',generate_image());\ndocument.body.appendChild(i);"}, 1)
+
+    def test_порожній_обсяг_помилка(self):
+        """Відсутнє дерево не маскується нульовим числом."""
+        with tempfile.TemporaryDirectory() as т:
+            with self.assertRaises(ValueError):
+                лічба(т)
+
+    def test_текст_відповіді_не_пікселі(self):
+        """Текстовий блок генератора не є пікселями примірки."""
+        self.перевірити({'а.js': "const a=модельП_блоки([]);\nconst b=a.find(x=>x.type==='text');\njudge(b.text);"}, 0)
+
+    def test_блок_зображення(self):
+        """Справжні байти графічного блока доходять до суду."""
+        self.перевірити({'а.js': "const a=модельП_блоки([]);\nconst b=a.find(x=>x.type==='image');\njudge(b.source.data);"}, 1)
+
+    def test_збереження_json(self):
+        """JSON-копія не очищає походження згенерованого кадру."""
+        self.перевірити({'а.js': 'const a={picture:generate_image()};\nconst b=JSON.parse(JSON.stringify(a));\njudge(b.picture);'}, 1)
+
+    def test_повтор_генерації(self):
+        """Обидві альтернативи кадру доходять до одного місця показу."""
+        звіт = self.перевірити({'а.js': "let a=generate_image();\nif(retry)a=generate_image();\nconst i=document.createElement('img');\ni.src=a;\ndocument.body.appendChild(i);"}, 1)
+        self.assertIn('джерела/а.js:1', next(р['чому'] for р in звіт['входи'] if р['місце']))
+        self.assertIn('джерела/а.js:2', next(р['чому'] for р in звіт['входи'] if р['місце']))
+
+    def test_невидимий_журнал(self):
+        """Запис генерації в журналі не є судом і показом."""
+        self.перевірити({'а.js': 'const log={picture:generate_image()};\nconsole.log(log);'}, 0)
+
+    def test_деструктуризація(self):
+        """Деструктуризація об'єкта зберігає поле кадру."""
+        self.перевірити({'а.js': 'const {picture:q}={picture:generate_image()};\njudge(q);'}, 1)
+
+    def test_два_окремих_покази(self):
+        """Два місця src рахуються окремо."""
+        self.перевірити({'а.js': "const a=generate_image();\nconst i=document.createElement('img'), j=document.createElement('img');\ni.src=a;\nj.src=a;\ndocument.body.appendChild(i);document.body.appendChild(j);"}, 2)
+
+    def test_байти_та_розміри(self):
+        """Геометрія кадру не стає виміром шкіри."""
+        self.перевірити({'а.js': 'const a=generate_image();\nconst width=a.width;\nmeasure_skin(width);'}, 0)
+
+    def test_помилка_python_cli(self):
+        """Помилка Python у дочірньому процесі завершується кодом 1."""
+        with tempfile.TemporaryDirectory() as т:
+            дж = Path(т) / 'джерела'
+            дж.mkdir()
+            (дж / 'а.py').write_text('def (', encoding='utf-8')
+            процес = subprocess.run([sys.executable, str(Path(__file__).with_name('корінь_річ_примірка_та_сама_людина.py')),
+                                    '--корінь', т], capture_output=True, encoding='utf-8')
+            self.assertNotEqual(процес.returncode, 0)
+
+    def test_сталий_індекс_масиву(self):
+        """Сталий та змінний індекси читають елементи масиву."""
+        self.перевірити({'а.js': 'const a=[generate_image()];\njudge(a[0]);'}, 1)
+
+    def test_сховище(self):
+        """Кадр проходить put/getAll зі збереженням назви сховища."""
+        self.перевірити({'а.js': "const z={P:{cards:[{picture:generate_image()}]}};\ntx(db,'runs','readwrite',s=>s.put(z,'key'));\nconst r=db.transaction('runs').objectStore('runs').getAll();\njudge(r.result[0].P.cards[0].picture);"}, 1)
+
+    def test_повноекранний_показ(self):
+        """Повноекранний src простежується до вже показаного img."""
+        self.перевірити({'а.js': "const i=document.createElement('img');\ni.src=generate_image();\ndocument.body.appendChild(i);\nconst big=document.querySelector('img');\nbig.src=document.body.querySelector('img').src;"}, 2)
+
+    def test_не_зображення(self):
+        """src видимого script не стає показом зображення."""
+        self.перевірити({'а.js': "const s=document.createElement('script');\ns.src=generate_image();document.body.appendChild(s);"}, 0)
+
+    def test_транспорт_став_генератором(self):
+        """Зміна тіла транспортної функції не лишає старої гарантії."""
+        self.перевірити({'а.js': 'function блобВБазу(x){return generate_image();}\njudge(блобВБазу(input.files[0]));'}, 1)
+
+    def test_бібліотека_через_групи(self):
+        """Map бібліотеки переносить збережені картки в мініатюру."""
+        self.перевірити({'а.js': "const a=[{картинка:generate_image()}];\nconst groups=new Map();\na.forEach(x=>{groups.set('key',[]);groups.get('key').push(x)});\nfor(const [key,list] of groups){list.forEach(k=>розміткаЖінціП(document.body,'<img src=\"'+k.картинка+'\">'));}"}, 1)
+
+    def test_метадані_не_байти_blob(self):
+        """Запис бібліотеки не перетворюється на пікселі портрета."""
+        self.перевірити({'а.js': 'const record={картинка:generate_image()};\njudge(блобВБазу(record));'}, 0)
+
+    def test_урл_лише_з_даних_фото(self):
+        """URL фото читає дані, а не службову сусідню картинку."""
+        self.перевірити({'а.js': "const photo={дані:'original',картинка:generate_image()};\njudge(урлФотоП(photo));"}, 0)
+
+    def test_string_запису_не_пікселі(self):
+        """String(object) не серіалізує його графічні поля."""
+        self.перевірити({'а.js': 'const record={картинка:generate_image()};\njudge(String(record));'}, 0)
+
+    def test_аліас_джерела(self):
+        """Перейменування операції генерації не приховує її походження."""
+        self.перевірити({'а.js': 'const draw=generate_image;\njudge(draw());'}, 1)
+
+    def test_порожній_перелік_полів(self):
+        """Порожній масив ключів не читає всі поля запису."""
+        self.перевірити({'а.js': "const k={картинка:generate_image()};const out={};\n[].forEach(p=>out[p]=k[p]);\njudge(out);"}, 0)
+
+    def test_точні_назви_полів(self):
+        """Перелік текстових полів не копіює картинку."""
+        self.перевірити({'а.js': "const k={picture:generate_image(),name:'original'};const out={};\n['name'].forEach(p=>out[p]=k[p]);\njudge(out.name);"}, 0)
+
+    def test_перелік_з_кадром(self):
+        """Включення поля картинки в перелік справді переносить пікселі."""
+        self.перевірити({'а.js': "const k={picture:generate_image()};const out={};\n['picture'].forEach(p=>out[p]=k[p]);\njudge(out.picture);"}, 1)
+
+    def test_порожня_map(self):
+        """Порожня map не повертає результат її callback."""
+        self.перевірити({'а.js': 'const a=[].map(()=>generate_image());\njudge(a[0]);'}, 0)
+
+    def test_числова_map(self):
+        """Числовий елемент також активує callback."""
+        self.перевірити({'а.js': 'const a=[1].map(()=>generate_image());\njudge(a[0]);'}, 1)
+
+    def test_індекс_callback(self):
+        """Другий аргумент callback з'єднує запис та читання елемента."""
+        self.перевірити({'а.js': 'const a=[];[generate_image()].forEach((x,i)=>a[i]=x);\njudge(a[0]);'}, 1)
+
+    def test_spread_не_аліас(self):
+        """Запис у розгорнуту копію не змінює оригінал."""
+        self.перевірити({'а.js': 'const original={};const clone={...original};\nclone.picture=generate_image();\njudge(original.picture);'}, 0)
+
+    def test_assign_не_аліас(self):
+        """Object.assign копіює поля у ціль, а не зливає ідентичності."""
+        self.перевірити({'а.js': 'const original={};const clone=Object.assign({},original);\nclone.picture=generate_image();\njudge(original.picture);'}, 0)
+
+    def test_spread_копіює_кадр(self):
+        """Копія успадковує поле кадру та його походження."""
+        self.перевірити({'а.js': 'const original={picture:generate_image()};const clone={...original};\njudge(clone.picture);'}, 1)
+
+    def test_map_get_не_idb_request(self):
+        """Map.get не створює result у збереженому об'єкті."""
+        self.перевірити({'а.js': "const m=new Map();m.set('a',{picture:generate_image()});\nconst a=m.get('a');\njudge(a.result);"}, 0)
+
+    def test_idb_get_повертає_request(self):
+        """IndexedDB.get має пікселі лише в result, не в самому запиті."""
+        self.перевірити({'а.js': "tx(db,'runs','readwrite',s=>s.put({picture:generate_image()},'k'));\nconst r=db.transaction('runs').objectStore('runs').get('k');\njudge(r.picture);\njudge(r.result.picture);"}, 1)
+
+    def test_python_get(self):
+        """Python dict.get читає назване поле, а не API IndexedDB."""
+        self.перевірити({'а.py': 'p = {"picture": generate_image()}\njudge(p.get("picture"))\n'}, 1)
+
+    def test_єдиний_контракт_html(self):
+        """Операція через HTML-контракт не рахується вдруге в його тілі."""
+        self.перевірити({'а.js': "function розміткаЖінціП(el,html){el.innerHTML=html;}\nрозміткаЖінціП(document.body,'<img src=\"'+generate_image()+'\">');"}, 1)
+
+
+if __name__ == '__main__':
+    unittest.main()

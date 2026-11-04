@@ -1261,8 +1261,6 @@ def _норм(с, v, шлях, незнайомі):
         return None
     if с.get("type") in ("number", "integer"):
         т = str(v).replace(",", ".").replace("−", "-").strip().rstrip("CcСс").replace("°", "").strip()
-        if с["type"] == "integer" and ":" in т:      # година «18:00» — та сама година 18
-            т = т.split(":")[0]
         try:
             ч = float(т)
         except ValueError:
@@ -1776,8 +1774,6 @@ def прийняти_вхід(вид, відповідь, ід_речей=None, 
 def _знято_мовчки(сирий, внутрішня, невідомо, перенесено):
     """Ключі сирого `update`, яких нема ні у `внутрішня` (з урахуванням перенесеного `a->b`), ні в `невідомо`."""
     куди = dict(x.split("->", 1) for x in перенесено if "->" in x)
-    if куди.get("hour") == "part_of_day":            # хвилини йдуть разом із годиною, яку не взято: час несе пора
-        куди.setdefault("minute", "part_of_day")
     return [к for к in (сирий if isinstance(сирий, dict) else ())
             if к != "quotes" and к not in невідомо and куди.get(к, к) not in внутрішня]
 
@@ -2103,8 +2099,7 @@ def паспорт_з_шару(внутрішня, сценарій, вето_ч
     # R3: `occasion_part` — службовий код ходу, не писар факту нагоди. Він не
     # має права стирати процитовану `occasion` (йога зранку лишається спортом).
     конфлікт_нагоди = False
-    if в.get("occasion") == "sport" and not в.get("movement"):
-        в = dict(в, movement="sport", quotes=dict(в.get("quotes") or {}, movement=(в.get("quotes") or {}).get("occasion")))
+    рух_виведено = в.get("occasion") == "sport" and not в.get("movement")
     # ЇЇ РІЧ БЕЗ СТАНУ — НЕ ЗАПИСАНА. «Взуття — замшеві чоботи» модель дала в `own_items` без
     # `status` (у схемі він обов'язковий): річ трималась цитатою, але не ставала ні закріпленою, ні знятою — звіт казав
     # «не закріплено: мовний шар: None», а репліка «Записала: …» про неї мовчала. Чи буде річ в образі, вирішує мовна
@@ -2157,38 +2152,18 @@ def паспорт_з_шару(внутрішня, сценарій, вето_ч
     # ЗОНИ МЕТИ — ОКРЕМА ПЛИТКА: доти мета, названа ходом без
     # зон, скидала давні зони — бо «приховати» з зоною означало лише зону. Тепер зона
     # «відвести погляд від…» стоїть поруч із будь-якою увагою, тож нова увага давньої зони не знімає.
-    # ГОДИНА — ЛИШЕ НАЗВАНА, ПОРА — ЗАВЖДИ ЇЇ ПОРА ВІД МОДЕЛІ. Доти пора без годинника ставала годиною
-    # (`evening` → 20), і картка «Коли й погода» показувала 20:00, яких вона не казала; а названа година знімала пору,
-    # і частину дня далі рахував код із години. Тепер пору несе `пора` (цикл вимірів розмови вище) і поруч із годиною:
-    # її годину частиною дня робить модель (корінь Е2-частина-дня, крок 1). Нова година без пори ходу знімає давню
-    # пору — час змінено, а частини дня цього часу модель не дала.
-    об["година"] = в.get("hour")
-    if в.get("hour") is not None and not _ВМ.ключ("part_of_day", в.get("part_of_day")):
-        об["пора"] = []
     об["темп_c"] = в.get("temperature_c")
     об["погода_відчуття"] = в.get("weather_feel")
-    # ХВИЛИНИ: число `година` ціле, бо рахунки частини дня, світла й погоди йдуть
-    # годинами, а хвилини їдуть окремим полем `хвилини` лише до показу. Без години з її слів
-    # (`hour` не пройшов сторожа) хвилини нічого не значать і не беруться; нова година без
-    # хвилин ходу скидає старі.
-    об["хвилини"] = в.get("minute") if в.get("hour") is not None else None
     об["тривалість_год"] = в.get("duration_h")
     об["ноги_вище_см"] = в.get("legs_above_cm")
     # ПОГОДА: градуси й відчуття — ДВА подання одного; хід, що дав котре-небудь, скидає давнє інше
     # (виправлення «20 °C» на «насправді холодно» не лишає 20 °C керувати фільтрами).
     _нова_погода = в.get("temperature_c") is not None or в.get("weather_feel") is not None
-    for ім in ("година", "темп_c", "погода_відчуття", "тривалість_год", "ноги_вище_см"):
+    for ім in ("темп_c", "погода_відчуття", "тривалість_год", "ноги_вище_см"):
         if _нова_погода and ім in ("темп_c", "погода_відчуття"):
             continue
         if об[ім] is None and є(досі.get(ім)) and джерела_досі.get(ім) != _ПН.ТИПОВЕ_ПОЛЕ_ФОРМИ:
             об[ім] = досі[ім]
-    if об["хвилини"] is None and в.get("hour") is None and об["година"] == досі.get("година") and є(досі.get("хвилини")):
-        об["хвилини"] = досі["хвилини"]
-    # пора цього ходу без години проти давньої пори: та сама — давня година лишається; інша — новіше слово перебиває,
-    # і давня година з хвилинами знімається. Порівнюються пори моделі; години в пору код не перетворює
-    _пора = _ВМ.ключ("part_of_day", в.get("part_of_day")) if в.get("hour") is None else None
-    if _пора and є(об.get("година")) and _пора != досі.get("пора"):
-        об["година"] = об["хвилини"] = None
     # ── ОШАТНІСТЬ — ЧИСЛО МОВНОЇ МОДЕЛІ ЗАВЖДИ (НП-в крок 2, принцип власника 01.10) ──────
     # Доти смугу давали три джерела: її слова (`formality` з цитатою), смуга події без коду
     # (`event_formality`) і — коли обох нема — пресет плитки в коді (довідник видів, знято в НП-в).
@@ -2327,7 +2302,7 @@ def паспорт_з_шару(внутрішня, сценарій, вето_ч
     # РЕШТА СКАЗАНОГО (М-1, В-5): те, що не лягло в жодне поле, не гине — їде моделям полем
     # випадку (`her_other_words`, `руки_без_коду.паспорт_рядком`), її мовою
     решта = [_текст(x) for x in list(досі.get("решта") or []) + [в.get("rest")]]
-    решта = list(dict.fromkeys(x for x in решта if x))[-6:]
+    решта = list(dict.fromkeys(x for x in решта if x))
     if решта:
         п["решта"] = решта
     # ПОЯСНЕННЯ МОВНОЇ МОДЕЛІ СТИЛІСТЦІ (НП-в6): нове замінює давнє, хід без нього лишає давнє —
@@ -2349,11 +2324,11 @@ def паспорт_з_шару(внутрішня, сценарій, вето_ч
     if _текст(в.get("place_words")) and not об.get("місце"):
         п["не_взято_кодом"] = list(п.get("не_взято_кодом") or []) + [
             "place_words_without_place · step=layer · field=place_words · model_said=%s · code=not_taken"
-            % _json_.dumps(_текст(в.get("place_words"))[:60], ensure_ascii=False)]
+            % _json_.dumps(_текст(в.get("place_words")), ensure_ascii=False)]
     if подія_без_смуги:
         п["не_взято_кодом"] = list(п.get("не_взято_кодом") or []) + [
             "event_without_scene · event=%s · required=event_place · verdict_vs_occasion=no_input"
-            % _json_.dumps(_текст(в.get("event"))[:60], ensure_ascii=False)]
+            % _json_.dumps(_текст(в.get("event")), ensure_ascii=False)]
     # ВИМІРИ — НАОСТАННЄ: `паспорт_з_json` рахував їх до того, як шов поставив опади, активність і
     # поверхню, тож паспорт казав `опади: дощ`, а `виміри.precipitation` — unknown (журнал і звіт власника)
     # Джерело поля — лише з того, що повернув шар (цього ходу чи давніх: `об` несе обидва, опади, активність і
@@ -2374,6 +2349,8 @@ def паспорт_з_шару(внутрішня, сценарій, вето_ч
     _джерела_картки.update({к: _ПП.РУКА for к in рукою if к in _ПН.ПОЛЯ_ПАСПОРТА})
     скинуті = {ім for ім in скинуті if not є(п.get(ім)) and ім not in рукою}
     _КЗ.синхронізувати(п, _ПН.ПОЛЯ_ПАСПОРТА, джерела=_джерела_картки, уривки=уривки, скинуті=скинуті)
+    if рух_виведено:
+        _КЗ.записати(п, "рух", "спорт", _ПП.ВИВЕДЕНЕ)
     if лише_плитки:
         _КЗ.дотики(п, (сценарій or {}).get("події_руки"))
     п["виміри"], п["звідки"] = _ПН.виміри_нагоди(п, сценарій or {})
@@ -3190,13 +3167,12 @@ _ПОЛЯ_EN = {
     # 6188: «рід заняття, не частота» (ШКАЛА-2) стояло в правилі ходу R7, «пішки на роботу —
     # нагода й рух» — ще в R2 і в описі `movement`; тепер лише тут. Приклади-фрази живих сцен (на роботу пішки, вечірка в
     # клубі, «ввечері», вокал, весілля подруги чи сестри) зняті: живий прогін сцени міряв би заучену відповідь
-    "occasion": "what kind of event it is: the kind of what she does, not how often or where: working is work "
-                "even at home (place home); studying at a school, a university or courses is school, also every "
-                "day; someone else's wedding is wedding_guest, never celebration; a lesson she takes as a hobby is "
-                "everyday — never work, and never theatre: she takes part, she does not watch. The phrase that "
-                "names the outing gives its other fields too, on the same quote: when it also says how she gets "
-                "there — movement as well, never movement alone; the place it names — place; the part of the day "
-                "it names — part_of_day",
+    "occasion": "what she does, not its frequency or venue: date is romantic, never inferred from company or "
+                "venue alone. Unlisted ordinary social or leisure outings use everyday; event keeps her name. "
+                "Working is work even at home (place home); studying is school, even daily; a hobby lesson is "
+                "everyday, not work or theatre; someone else's wedding is wedding_guest, never celebration. "
+                "The outing quote also gives movement when it says how she gets there, never movement alone; "
+                "place where named; part_of_day when named",
     # «йога зранку, потім кава з подругою» → `occasion_part: sport` з уривком йоги:
     # правило «частина не названа — перша не спортивна» стояло лише в правилі ходу, не в описі поля
     # «йога зранку, потім кава» — `occasion_part: sport` 3/3: «sport when it is for doing
@@ -3205,7 +3181,7 @@ _ПОЛЯ_EN = {
     # само частини не вирішує) — тепер лише тут; приклад «йога, потім кава» з R7 знято
     "occasion_part": "which part of her day THIS outfit is for: the part she says it is for; when she has not "
                      "said, the first part that is not sport, or the sport part when there is no other; a place "
-                     "alone never decides it. A clock time or morning/evening is not a different activity: yoga in the morning is still sport. other — that part is not sport; sport — that part is doing the "
+                     "alone never decides it. Morning/evening is not a different activity: yoga in the morning is still sport. other — that part is not sport; sport — that part is doing the "
                      "sport; give it with occasion, with the quote of that selected part, not a quote of the "
                      "whole day; unknown when you cannot tell",
     # «Новорічна вечірка в ресторані» — `occasion` з цим уривком, а `place` — ні (Ж17 — так):
@@ -3248,19 +3224,6 @@ _ПОЛЯ_EN = {
                 "also when sport is only one part of her day",
     "activity": "what she will do there",
     "surface": "what is under her feet",
-    # «субота ввечері» → `hour: 19` з цитатою — «час словами — година» правила мови
-    # читалось і про пору дня без годинника; година — лише її час на годиннику, пора без нього — `part_of_day`.
-    # «субота ввечері» → `hour` 19 / «ввечері» → 18 і без `part_of_day` — шов
-    # `_година_лише_названа` тепер ловить і це, а опис називає пору з днем тижня
-    # 3.2-Е (9581): чи годину названо, судить модель кодом у парі, а уривок — лише слова години: «19 жовтня ввечері»
-    # з `value: 19` код лишав годиною за збігом числа дати, а «о сьомій» робив порою
-    "hour": "start hour on a 24-hour clock, only when she names a clock time, in digits or in words; a part of the "
-            "day alone (evening, morning, also with a weekday or a date) is part_of_day, never hour. \"%s\": \"%s\" — "
-            "you judge that her words name this hour on a clock; \"quote\" — only the words that name the hour, "
-            "not the whole phrase with the date or the day; an hour without \"%s\" is dropped"
-            % (_ВМ.ПОЛЯ_ПАСПОРТА["година"]["названа"] + _ВМ.ПОЛЯ_ПАСПОРТА["година"]["названа"][:1]),
-    "minute": "minutes of the start time, only when she names them with the hour (19:30 — 30; half past "
-              "seven in the evening — 30); never without \"hour\"",
     # Вечір плитки «Офіційний вечір» — розуміння моделі, не таблиця коду.
     # НГ-5: лише «назва каже вечір» мало — плитка «Театр, концерт» вечора не називає, і хід
     # плиток лишав паспорт на типових 11:00 форми. Тепер, як formality, — розуміння події: подія, що
@@ -3276,7 +3239,7 @@ _ПОЛЯ_EN = {
     # КОРІНЬ Е2-ЧАСТИНА-ДНЯ, КРОК 1 (власник 31.10): частину дня дає лише модель — її годину перетворює на частину дня,
     # а названу нею пору передає як є; «лише коли години нема» знято, бо код пори з години більше не рахує. Межа
     # вечора — з бази знань (Emily Post «after 6 p.m.», `тема-5_знання.md` §1.1), а не порогом коду
-    "part_of_day": "part of the day she names or of her time (evening from 6 p.m.), also inside "
+    "part_of_day": "part of the day she names or of her time (evening after 6 p.m.), also inside "
                    "the phrase that names the event (said for one part of her day, it "
                    "holds for the later parts until she names another), or when the event or a tile "
                    "in \"chosen\" names it or usually takes it (an evening reception, a theatre, concert or "
@@ -3314,8 +3277,8 @@ _ПОЛЯ_EN = {
     "precipitation": "the precipitation she says the day brings, in any of her words (rain, drizzle, it pours, "
                      "snow, wet snow), also in the phrase that names the degrees, with that word as quote; none "
                      "when she says it stays dry; possible_rain when she says rain is only possible — not rain",
-    # МОВА-ХІД-ТОНШЕ: «завжди, без цитати, за якорями» каже правило ходу — тут лише щаблі
-    "formality": "how dressy this outing is: the code of one step of the ladder",
+    # Щабель моделі — норма без вечірнього підйому; його за ярусом рахує код з part_of_day.
+    "formality": "base step without evening; code lifts once by tier from part_of_day",
     # Гілку ставить та сама норма, що щабель, — модель, а не назва події в коді
     "formality_reason": "why the ladder puts her on this step: " + _тлумачення_кодів_en("formality_reason", {
         "written": "a named written dress code", "norm": "the usual standard of the place or people",
@@ -3668,7 +3631,7 @@ _ПРАВИЛО_ОШАТНОСТІ = (
     "the occasion (she presents, gives a speech or a toast, leads the talks, is the hostess, the one "
     "celebrated or the closest family of the one celebrated) — never above formal. (4) One step up or down "
     "only when she says so: she wants to dress up; it is simple, nothing special. Never a reason for a step: "
-    "the hour or the part of the day, the event's name, how important, serious or nervous it is to her, who "
+    "the part of the day, the event's name, how important, serious or nervous it is to her, who "
     "will be there. She said nothing more — the step the rule gives.")
 
 
@@ -3701,7 +3664,7 @@ _ПРАВИЛО_ХОДУ_ПЛИТОК = (
     # «пора дня без годинника — part_of_day» — дослівно описи `hour` і `part_of_day`; тут знято.
     "Her message may be dictated by voice or written loosely: no punctuation, fillers, slang, dialect or "
     "surzhyk, irony, times and numbers in words, a correction in mid-sentence. Read what she means: what she "
-    "corrects herself to replaces what she corrected, irony is not a wish, a clock time in words is an hour. "
+    "corrects herself to replaces what she corrected, irony is not a wish, a named time gives the part of the day. "
     "\"quote\" still copies her letters exactly as written.",
     # Шов доливає дельту поверх паспорта досі (`паспорт_з_шару`); `retract` знімає бажання й межі.
     # МОВА-ХІД-ПОЛЯ: перший хід MamayLM клав на фразу одне поле — «мінус
@@ -3769,7 +3732,7 @@ _ПРАВИЛО_ХОДУ_ПЛИТОК = (
     "Values are only the codes and forms from \"codes\". goal_zones holds only a body zone her words name; her "
     "limit on showing her body that names no zone is open_zones none, never a zone of goal_zones.",
     # М-1 В-1 і Ч-5: назва події — опора і для `event`, і для коду нагоди чи місця; МОВА-1 (02.10): подія
-    # без свого підпису (гостини, місцевий звичай) — код найближчого виду, суть — у `stylist_note`.
+    # без свого підпису — код із тими самими правилами, суть — у `stylist_note`.
     # «Різдвяна вечеря», «новорічний корпоратив», «Новорічна
     # вечірка» — `month` 0 з 5, і руки бачили осінь (`season: autumn`); 0 з 71 записаного ходу обох прогонів має `month`
     # узагалі, і Ж:09 «весілля сестри в серпні» — теж без нього. Опис поля (`_ПОЛЯ_EN["month"]`) модель читає, коли
@@ -3780,7 +3743,7 @@ _ПРАВИЛО_ХОДУ_ПЛИТОК = (
     "names this event or one of its kind, with the name of the event as quote. Her words that date it — a date, "
     "a month, or a holiday that falls in one month — also give \"month\", with that word as quote; an event "
     "whose name or custom keeps a time of day (a dinner, an evening party) also gives \"part_of_day\". An event "
-    "with no label of its own (a family visit, a local custom) takes the code of its nearest kind, and "
+    "with no label of its own takes a code with the same rules, and "
     "\"stylist_note\" says what the event really is.",
     # Хрестини «спершу церква, потім обід у ресторані» давали нагоду однієї частини й місце іншої — або
     # без місця; «працюю з дому» — то home, то work. Нагода — що вона робить, місце — де; обидва про одне,
@@ -3892,7 +3855,7 @@ _ПРАВИЛО_ХОДУ_ПЛИТОК = (
     # ходом (без нового виклику, п.21): `header` — значення полів паспорта після `update` словами, кодами ключів.
     # Звертання — правило форми й межа `для_неї`, тут не повторюється.
     "\"header\" is the strip shown to her over her looks, beside the labels of the tiles: on every turn, for each "
-    "of hour, temperature_c, precipitation, wants, vetoes and mood that the passport has after your \"update\", "
+    "of part_of_day, temperature_c, precipitation, wants, vetoes and mood that the passport has after your \"update\", "
     "its key and that value in a few plain Ukrainian words, without codes; no key for a field the "
     "passport does not have.",
 )
@@ -4099,6 +4062,9 @@ def паспорт_кодами(п):
         вих["own_items"] = речі
     вих["quotes"] = {опис["поле"]: ц for ім, ц in (п.get("цитати_полів") or {}).items()
                        if (опис := _ВМ.ПОЛЯ_ПАСПОРТА.get(ім, {})).get("поле") in вих}
+    вих["sources"] = {поле: _ПП.походження_поля(п, ключ)
+                      for ключ, опис in _ПП.ПОЛЯ_ПАСПОРТА.items()
+                      if (поле := опис.get("поле")) in вих}
     return вих
 
 
@@ -4124,6 +4090,10 @@ def плитки_кодами(сценарій, паспорт=None):
     мк = _ПН.макіяж_канон(с.get("макіяж"))
     if isinstance(мк, dict) and _ВМ.код("makeup_level", мк.get("рівень")):
         вих["makeup"] = {"level": _ВМ.код("makeup_level", мк.get("рівень"))}
+    if вих:
+        вих["sources"] = {поле: _ПП.походження_поля(п, ключ)
+                          for ключ, опис in _ПП.ПОЛЯ_ПАСПОРТА.items()
+                          if (поле := опис.get("поле")) in вих}
     return вих
 
 
@@ -4449,33 +4419,6 @@ def _її_річ_на_слоті(оновлення):
     return нове, перенесено
 
 
-# ЧАСТИНУ ДНЯ ДАЄ МОДЕЛЬ, КОД ЇЇ НЕ РАХУЄ (корінь Е2-частина-дня, крок 1; власник 31.10: «Модель має перетворювати
-# години на частину дня, або передавати частину дня як її назвала людина»). `part_of_day` — завжди слово моделі: пору,
-# названу нею, — як є, її годину — частиною дня (опис поля). Доти шов сам рахував пору з години (`сценарій.
-# частина_доби`, пороги 5/11/17/22, яких у базі знань нема) і знімав `part_of_day`, коли година була названа, — тепер
-# пора йде як є завжди, а перетворення години в пору в коді нема. Година лишається, лише коли модель позначила її
-# названою (`named: clock_time`), — до кроку 4 кореня її ще читають правила; година без мітки (вигадані 19 на
-# «субота ввечері», 18 на «ввечері» — живі 3.2-Д, 3.2-Е) не береться разом із хвилинами, а пору тоді несе лише
-# `part_of_day` моделі. Слів код не читає (п.12). У `перенесено` — `hour->part_of_day`: час несе її пора (нема в
-# ході й пори — `_знято_мовчки` пише годину рядком `not_read`).
-_НАЗВАНА = _ВМ.ПОЛЯ_ПАСПОРТА["година"]["названа"]
-
-
-def _година_названа(пара):
-    """Чи модель позначила пару `hour` кодом `названа` (годинник у її словах — тлумачення моделі)."""
-    ключ, код = _НАЗВАНА
-    return isinstance(пара, dict) and пара.get(ключ) == код
-
-
-def _година_лише_названа(оновлення):
-    """(оновлення без `hour` і `minute`, якщо модель не позначила годину названою; `part_of_day` — як дала модель;
-    перенесене кодами)."""
-    година, _ = _пара("hour", {}, оновлення.get("hour"))
-    if "hour" not in оновлення or _порожнє(година) or _година_названа(оновлення.get("hour")):
-        return оновлення, []
-    return {к: в for к, в in оновлення.items() if к not in ("hour", "minute")}, ["hour->part_of_day"]
-
-
 # СПИСОК НА ПОЛІ ОДНОГО ЗНАЧЕННЯ — ПЕРШЕ ЗНАЧЕННЯ. «Пробіжка зранку, потім обід з колегою» —
 # `occasion: {quote, value: ["sport", "work"]}` і `part_of_day: ["morning", "day"]` (Ж:36), «йога зранку, потім кава» —
 # `occasion: ["work", "celebration"]`, `place: ["cafe", "bar"]` (Ж:49): поле одного значення списку не бере, і вся
@@ -4578,14 +4521,13 @@ def _смуга_числом(оновлення):
 
 def _на_своє_поле(оновлення):
     """(оновлення сценарію з кодом мети чи наміру, відчуття погоди чи опадів, нагоди чи місця, її річ на ключі слота,
-    година без мітки моделі `named` — знята, — на своєму полі, її річ — розгорнутою формою, ошатність одним числом —
+    на своєму полі, її річ — розгорнутою формою, ошатність одним числом —
     смугою, перенесене кодами). Кличе `прийняти_вхід("scenario")` — і для перекладача сценарію, і для `update` ходу
     розмови."""
-    оновлення, година = _година_лише_названа(оновлення)
     оновлення, форма = _її_речі_формою(оновлення)
     оновлення, речі = _її_річ_на_слоті(оновлення)
     оновлення, смуга = _смуга_числом(оновлення)
-    речі = година + форма + речі + смуга
+    речі = форма + речі + смуга
     чужі, перебиває = {}, {}
     for поле, сусід, сильніший in _СУСІДИ_КОДІВ:
         if поле in оновлення:

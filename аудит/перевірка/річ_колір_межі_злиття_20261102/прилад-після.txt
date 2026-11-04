@@ -1,0 +1,25 @@
+Exception in thread Thread-1 (_readerthread):
+Traceback (most recent call last):
+  File "C:\Users\gemini\AppData\Local\Programs\Python\Python312\Lib\threading.py", line 1075, in _bootstrap_inner
+    self.run()
+  File "C:\Users\gemini\AppData\Local\Programs\Python\Python312\Lib\threading.py", line 1012, in run
+    self._target(*self._args, **self._kwargs)
+  File "C:\Users\gemini\AppData\Local\Programs\Python\Python312\Lib\subprocess.py", line 1599, in _readerthread
+    buffer.append(fh.read())
+                  ^^^^^^^^^
+  File "<frozen codecs>", line 322, in decode
+UnicodeDecodeError: 'utf-8' codec can't decode byte 0xf7 in position 28: invalid start byte
+Traceback (most recent call last):
+  File "<репозиторій>\джерела\прилади\корінь_річ_колір_межі.py", line 1322, in <module>
+    sys.exit(головна(sys.argv[1:]))
+             ^^^^^^^^^^^^^^^^^^^^^
+  File "<репозиторій>\джерела\прилади\корінь_річ_колір_межі.py", line 1299, in головна
+    for файл, рядок, чому in місця_г2(корінь):
+                             ^^^^^^^^^^^^^^^^
+  File "<репозиторій>\джерела\прилади\корінь_річ_колір_межі.py", line 1250, in місця_г2
+    таблиця = таблиця_г2(корінь)
+              ^^^^^^^^^^^^^^^^^^
+  File "<репозиторій>\джерела\прилади\корінь_річ_колір_межі.py", line 1239, in таблиця_г2
+    return json.loads(вих.stdout.strip().splitlines()[-1])
+                      ^^^^^^^^^^^^^^^^
+AttributeError: 'NoneType' object has no attribute 'strip'

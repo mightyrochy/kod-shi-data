@@ -40,6 +40,7 @@ import verify as _V
 import реєстри as _РЕ
 import протокол as _ПР
 import selection_policy as _ПВ
+import паспорт_поля as _ПП
 import колір_образу as _КО
 import знання_речі as _ЗН
 import колір_річ as _КР_ТИП
@@ -115,15 +116,15 @@ _ДЖЕРЕЛО_КРАЮ = {"слово": "word", "річ": "item_data",
                  "виріб": "shop_cm"}    # composer `край_джерело`; «виріб» — довжина виробу в см від крамниці (Ф-9)
 # Поля випадку (протокол.ВИПАДОК), які «день» (`сценарій.день_кодами`) уже несе кодами:
 # коли день є, у випадку їх нема — ті самі факти двічі різними словами модель читала б як два.
-# Частина дня — ключем «пора» (корінь Е2-частина-дня, крок 2); «година» лишається, доки є поле паспорта й панелі (крок 4).
+# Частина дня з паспорта — ключем «пора».
 _ВИПАДОК_У_ДНІ = {"місце": "place", "формат": "setting", "рух": "movement", "дрес_код": "dress_code",
                   "тривалість_год": "duration_h", "темп_c": "temperature_c", "опади": "precipitation",
                   "сонце": "direct_sun",
                   "господар": "host_context", "креативне": "creative_environment",
-                  "година": "start_hour", "пора": "part_of_day", "ошатність": "formality"}
+                  "пора": "part_of_day", "ошатність": "formality"}
 ПОЛЯ_ВИПАДКУ = {"подія": "event", "нагода": "occasion", "місце": "place", "формат": "setting",
                  "тривалість_год": "duration_h", "рух": "movement", "дрес_код": "dress_code",
-                 "ошатність": "formality", "година": "start_hour", "пора": "part_of_day", "темп_c": "temperature_c",
+                 "ошатність": "formality", "пора": "part_of_day", "темп_c": "temperature_c",
                  "сонце": "direct_sun",
                  "господар": "host_context", "креативне": "creative_environment",
                  "опади": "precipitation", "намір": "intent", "мета": "goal", "мета_зони": "goal_zones", "мета_важливо": "goal_extra", "макіяж": "makeup",
@@ -133,7 +134,7 @@ _ВИПАДОК_У_ДНІ = {"місце": "place", "формат": "setting", "
                  "мета_слова": "goal_quote", "намір_слова": "intent_quote", "решта": "her_other_words",
                  "намір_звідки": "intent_source",       # ВИБ-1: default — припущення коду
                  "пояснення_мови": "language_model_note", "зарезервований_колір": "reserved_colour",
-                 # Ч-8: прохання про каблук — кодом, переконання — її цитатами,
+                 # Прохання про каблук — висновок коду, переконання — тлумачення моделі,
                  # а не прозою коду в `her_words`
                  "прохання_взуття": "shoe_request", "переконання": "beliefs"}
 # закритий перелік `каблук.ПРОХАННЯ_КОДИ` → коди дроту
@@ -290,6 +291,7 @@ def осі(зона, рч=None):
         # кадр картки іншого кольору: світлота — межі слова крамниці й кадру разом
         # (`фід_кадр_колір.вікно_з_кадром`), а не лише слова
         вих["L_from"] = ("word_or_photo" if (р.get("кадр_кольору") or {}).get("стан") == "інший_колір"
+                         else "model_hex" if р.get("джерело_кольору") == "модель"
                          else "word" if р.get("джерело_кольору") == "назва_вікно" or str(к.get("джерело") or "").startswith("слово")
                          else ("photo" if к.get("розкид") is not None else "photo_point"))
     кр = з.get("край")
@@ -408,8 +410,8 @@ _СЛОВО_ПРИ_ВИМІРІ = {"color": "hex"}
 # нема (короткі ключі нічого не економили б, а просили б читати легенду).
 ОПИС_ТИПОВИХ = {
     "in_arc": "the color lies inside her palette's scheme arc",
-    "branch": "core or edge: both inside her palette; choose edge as freely as core. "
-              "break: outside her palette; declare it in deliberate, as with any condition you break",
+    "branch": "the code's palette classification: core or edge (inside), break (outside); "
+              "choose edge freely; declare break in deliberate. branch_source marks a default without measurement",
     "L_from": "where the lightness came from",
     "hem_from": "where the hem came from",
 }
@@ -530,6 +532,8 @@ def річ(r, короткий=False, пул=False, слот=None):
     if not isinstance(r, dict):
         return r
     о = {"n": r.get("н"), "name": r.get("назва")}
+    if r.get("впевненість_джерело"):
+        о["confidence_source"] = r["впевненість_джерело"]
     if _КР_ТИП.явний_тип_кольору(r):
         о["color_type"] = {"вимір": "measure", "інтервал": "interval", "невідомо": "unknown"}[_КР_ТИП.тип_кольору(r)]
         о["color_not_measured"] = _не_вимір(_КР_ТИП.не_вимір(r))
@@ -585,6 +589,8 @@ def річ(r, короткий=False, пул=False, слот=None):
                         ("lab", [_число(x) for x in _КР_ТИП.точка_кольору(r)] if _КР_ТИП.точка_кольору(r) else None)):
             if v not in (None, "", [], ()):
                 о[ключ] = v
+    if о.get("branch") or пул:
+        о["branch_source"] = _ПП.походження(_ПП.ТИПОВЕ if r.get("гілка_типова") or not о.get("branch") else _ПП.ВИВЕДЕНЕ)
     if r.get("за_бажанням"):
         о["for_her_wish"] = r["за_бажанням"]
     if r.get("за_запитом"):
@@ -682,6 +688,8 @@ def випадок(в, день=None):
     if not isinstance(в, dict):
         return в
     вих = {к: в[к] for к in ("field_quotes", "wish_quotes", "formality_reason") if в.get(к)}
+    if в.get("джерела_полів"):
+        вих["sources"] = {ПОЛЯ_ВИПАДКУ.get(к, к): з for к, з in в["джерела_полів"].items()}
     for к, v in в.items():
         if к not in ПОЛЯ_ВИПАДКУ or v in (None, "", [], {}):
             continue
@@ -696,6 +704,8 @@ def випадок(в, день=None):
             v = код("occasion", v)
         elif к == "місце":
             v = код("place", v)
+        elif к == "пора":
+            v = код("part_of_day", v)
         elif к == "формат":
             v = код("setting", v)
         elif к == "рух":
@@ -983,9 +993,9 @@ def _ошатність_заяви(код_заяви, в):
        for к in ("cold_outer_layer_counts", "cold_outer_layer_optional")},
     "precipitation_shoes_materials": ("K-WEA-01", ("pool:пакет_моделі.жорстке_відсічення",
                                                    "judge:суд_погода.погода", "wire:day.precipitation")),
-    "high_occasion_floor": ("K-KOH-08", ("pool:пакет_моделі.жорстке_відсічення",
+    "high_occasion_floor": ("K-KOH-07", ("pool:пакет_моделі.жорстке_відсічення",
                                          "pool:композитор_придатні.поза_сценою",
-                                         "judge:формальність.нагода_палітра")),
+                                         "judge:суд_від_моделі.нижче_смуги_образу")),
     # цілі кольорів по слотах: пул уже стоїть у вікнах слотів, кожна річ несе `in_arc` і `branch`;
     # пришпилений hex («hue: fixed») звужував вибір до одного тону на слот поверх цього пулу.
     # СХЕМА-2: сам факт (центр вікна, площа, спільна роль) їде полем `person.palette.kind_colours`,
@@ -1481,6 +1491,7 @@ def вердикт(в, ремонти=True, межі=None, вибір=False):
     if isinstance(р, dict):
         вих["register"] = {к2: v for к2, v in (("leading", реєстр(р.get("провідний"))),
                                                ("near", [реєстр(x) for x in (р.get("поруч") or [])])) if v}
+        вих["register"]["source"] = _ПП.походження(_ПП.ВИВЕДЕНЕ)
     з = в.get("завдання")
     if isinstance(з, dict) and з.get("образів"):
         вих["outfits_wanted"] = з["образів"]
@@ -1772,7 +1783,7 @@ def пакет(п):
     # (`brief.бриф`, ребра `hypergraph`, рядки схеми й бажань `міст_пакет`), і сюди їдуть
     # лише заяви — коди зі значеннями; що означає код, каже словник промпта
     # (`збирач_промптів.КЛЮЧІ_ЗАЯВ` → `statement_codes`). Однакова заява двох рядків — раз.
-    # Рядки рівня нагоди (`формальність`, `ризик`, `маркери_щабля`, `K-KOH-08`) з НП-в6 теж несуть заяви. Рядок брифа без заяви (нового правила, ще не перекладеного) їде
+    # Рядки рівня нагоди (`формальність`, `ризик`, `маркери_щабля`) теж несуть заяви. Рядок брифа без заяви (нового правила, ще не перекладеного) їде
     # окремим `occasion_rules`, щоб перелік заяв не мішав кодів із реченнями.
     # БРИФ-1: заяви правил, які код уже застосував у пулі чи суді, не їдуть
     # (`ЗАЯВИ_ДІЮТЬ_У_КОДІ`); рядок, у якого не лишилось жодної, не їде зовсім — і не падає

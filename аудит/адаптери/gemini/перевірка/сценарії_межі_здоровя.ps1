@@ -59,7 +59,7 @@ try {
         Check '1 кривий файл — попередні значення' ((Get-Limits).slots['agy'] -eq 3)
         $script:LanesText = [IO.File]::ReadAllText((Join-Path $SourceDir 'смуги.json'), $utf)
         $script:Limits = Get-Limits
-        Check "1 смуги.json main: слоти з виміру $($script:Limits.slots['claude'])/$($script:Limits.slots['codex'])/$($script:Limits.slots['agy']), без джерела $(@($script:Limits.unsourced).Count)" ($script:Limits.slots['claude'] -eq 54 -and $script:Limits.slots['codex'] -eq 54 -and @($script:Limits.unsourced).Count -eq 7 -and @($script:Limits.unsourced) -cnotcontains 'slots.claude')
+        Check "1 смуги.json main: слоти з виміру $($script:Limits.slots['claude'])/$($script:Limits.slots['codex'])/$($script:Limits.slots['agy']), без джерела $(@($script:Limits.unsourced).Count)" ($script:Limits.slots['claude'] -eq 54 -and $script:Limits.slots['codex'] -eq 10 -and @($script:Limits.unsourced).Count -eq 7 -and @($script:Limits.unsourced) -cnotcontains 'slots.claude')
         $script:LanesText = Lanes '{"n": 40, "джерело": ""}'
         $script:Limits = Get-Limits
 
