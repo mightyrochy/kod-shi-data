@@ -429,7 +429,7 @@ _ЛАПКИ_ДОВКОЛА = re.compile(r'^["«„“”]\s*([^"«»„“”]*?
     # ЗВІДКИ ВИМІР (§1.2): сила джерела, від письмового правила до «нічого не відомо».
     # Порядок переліку і є порядком сили — його тримає `паспорт_нагоди.ЗВІДКИ_СИЛА`.
     "evidence_source": {к: к for к in ("written", "her_words", "sub", "preset", "like",
-                                       "default", "unknown")},
+                                       "derived", "default", "unknown")},
 }
 
 
@@ -2991,9 +2991,9 @@ _МІСЦЯ_ОПЦІЙ = "where it is worn"
     # `вибиває` драбини (`формальність.ДРАБИНА`), щабель — свій у кожного з семи
     "level_breakers": "the level is held by fabric, finish and shoes, not by the item's name (values: level — the "
                       "step; out — what takes an outfit off this step; without out nothing is ruled out)",
-    "high_occasion_floor": "the event's level starts from this step: no item sits "
-                           "more than one step below it (canvas sneakers, trainers, denim, a knit top stay out); "
-                           "shoes at the outfit's level or above (values: from)",
+    "high_occasion_floor": "risk asymmetry (K-KOH-07): no item sits more than one step below "
+                           "the event's band; explain a deliberate lower item in deliberate, "
+                           "including a deliberate wrong shoe (K-SHO-03) (values: from)",
     "weather_layers": "the weather outside and the layers it asks for (values: temperature_c"
                       "; weather_feel — instead of temperature_c when she named no degrees, the weather as she put it; layers — how many "
                       "layers on the torso, a half is one more light removable layer; fabrics — fabric codes "
@@ -3734,7 +3734,7 @@ def схема():
 
 def записати_схему(шлях=ФАЙЛ_СХЕМИ):
     """Пише `схема()` у файл JSON Schema (той самий, що лежить у репозиторії)."""
-    with open(шлях, "w", encoding="utf-8") as ф:
+    with open(шлях, "w", encoding="utf-8", newline="\n") as ф:
         _json_.dump(схема(), ф, ensure_ascii=False, indent=1)
         ф.write("\n")
     return шлях
