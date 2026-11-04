@@ -744,7 +744,7 @@ def _без_входу(о, сцен, речі):
     Пункт чекліста — лише «немає входу» (стан «без входу»); «не стосується» сюди не
     йде: його перелік із причиною — у звіті власника (`суд.checklist.….не_стосується_чому`)."""
     вих = []
-    if not any(сцен.get(к) for к in ("нагода", "місце", "дрес_код", "ошатність")):
+    if not _сцена_для_моделі({"сцена": сцен})[0]:
         вих.append(dict(input="occasion"))
     if сцен.get("темп_c") in (None, ""):
         вих.append(dict(input="temperature"))
@@ -1375,7 +1375,8 @@ def _сцена_для_моделі(суд_):
     с = суд_.get("сцена") or {}
     нагода = {к: v for к, v in {"occasion": _ВМ.код("occasion", с.get("нагода")),
                                 "place": _ВМ.код("place", с.get("місце")),
-                                "dress_code": _ВМ.код("dress_code", с.get("дрес_код"))}.items() if v}
+                                "dress_code": _ВМ.код("dress_code", с.get("дрес_код")),
+                                "formality": _ДМ.ошатність_словом(с.get("ошатність"))}.items() if v}
     # Градуси, яких вона не казала (`темп_з_відчуття`), моделі не їдуть: число з відчуття — для правил, а
     # модель бачить відчуття кодом (як `день_кодами` і заяви суду, `внутрішня_мова.градуси_заяви`).
     градуси = (_ВМ.градуси_заяви(с.get("темп_c"), с.get("погода_відчуття") if с.get("темп_з_відчуття") else None)
@@ -1432,7 +1433,7 @@ _СПІЛЬНІ_ПРАВИЛА_ОЦІНКИ = (
     вхід=(
         _ЗП.Поле("question", "her words or translated question; lang_source marks a default; answer in \"language\"",
                  без="She asked no question."),
-        _ЗП.Поле("occasion", "where she is going, as she named it",
+        _ЗП.Поле("occasion", "where she is going or the formality she named",
                  без="She did not name the occasion: do not judge formality or fitness for an event."),
         _ЗП.Поле("weather", "the weather she named",
                  без="She did not name the weather: do not judge warmth or weather."),
