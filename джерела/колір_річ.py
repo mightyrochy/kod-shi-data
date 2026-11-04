@@ -238,6 +238,8 @@ def тип_кольору(x):
     """
     if not isinstance(x, dict):
         return "невідомо"
+    if x.get("джерело") == "оцінка моделі" and x.get("колір_тип") != "інтервал":
+        return "невідомо"
     if "колір_тип" in x:
         т = x["колір_тип"]
         if т == "вимір" and not (x.get("lab") or x.get("hex")):
@@ -263,7 +265,8 @@ def не_вимір(x):
     нв = x.get("колір_не_вимір", x.get("не_вимір")) if isinstance(x, dict) else None
     нв = dict(нв) if isinstance(нв, dict) else {}
     if т == "невідомо":
-        нв.update(свідок="невідомо", вікно=None)
+        свідок = "model_hex" if isinstance(x, dict) and x.get("джерело") == "оцінка моделі" else "невідомо"
+        нв.update(свідок=свідок, вікно=None)
     elif not нв.get("вікно") and isinstance(x, dict):
         нв.setdefault("свідок", "shop_word")
         нв["вікно"] = x.get("вікно")
