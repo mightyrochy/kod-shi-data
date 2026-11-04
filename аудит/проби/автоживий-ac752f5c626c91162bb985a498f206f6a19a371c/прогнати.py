@@ -43,7 +43,7 @@ def main():
         with (OUT / 'done.txt').open('a', encoding='utf-8') as log:
             log.write(datetime.now(timezone.utc).isoformat() + ' ' + scene + ' rc=' + str(process.returncode) + '\n')
         subprocess.run(['git', 'add', '--', str(OUT.relative_to(ROOT))], cwd=ROOT, check=True)
-        subprocess.run(['git', 'commit', '-m', 'Записати сцену ' + scene + ' на збірці ac752f5c'], cwd=ROOT, check=True)
+        subprocess.run(['git', 'commit', '--quiet', '-m', 'Записати сцену ' + scene + ' на збірці ac752f5c'], cwd=ROOT, check=True)
     return 0
 
 
