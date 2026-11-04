@@ -1,5 +1,5 @@
 """Повний незмінений прилад на незмінному зрізі ДО або робочому дереві ПІСЛЯ."""
-import io, json, os, pathlib, subprocess, sys, tarfile, tempfile, time
+import json, os, pathlib, subprocess, sys, tarfile, tempfile, time
 
 
 def main():
@@ -9,17 +9,20 @@ def main():
     режим = sys.argv[1]
     дерево = К
     база = "f932312e77"
-    if режим == "до":
-        дерево = pathlib.Path(tempfile.gettempdir()) / "ознаки-ч3-до"
+    if режим in ("до", "до-311"):
+        дерево = pathlib.Path(tempfile.gettempdir()) / ("ознаки-ч3-до311" if режим == "до-311" else "ознаки-ч3-до")
         дерево.mkdir(exist_ok=True)
-        архів = subprocess.check_output(["git", "archive", база, "джерела"], cwd=К)
-        with tarfile.open(fileobj=io.BytesIO(архів)) as т:
-            for член in т.getmembers():
+        архів = subprocess.Popen(["git", "archive", база, "джерела"], cwd=К, stdout=subprocess.PIPE)
+        with tarfile.open(fileobj=архів.stdout, mode="r|") as т:
+            for член in т:
                 if not (дерево / член.name).resolve().is_relative_to(дерево.resolve()):
                     raise ValueError(член.name)
-            т.extractall(дерево, filter="data")
+                т.extract(член, дерево, filter="data")
+        архів.stdout.close()
+        if архів.wait() != 0:
+            raise RuntimeError("git archive не завершився")
     початок = time.monotonic()
-    команда = [sys.executable, "-W", "ignore", str(К / "джерела/прилади/корінь_річ_ознаки_обличчя.py"),
+    команда = [sys.executable, "-X", "utf8", "-W", "ignore", str(К / "джерела/прилади/корінь_річ_ознаки_обличчя.py"),
                "--корінь", str(дерево)]
     try:
         р = subprocess.run(команда, cwd=К, capture_output=True, timeout=900,
@@ -29,7 +32,8 @@ def main():
         код, вихід, помилка = 124, п.stdout or b"", п.stderr or b""
     (Д / (режим + ".txt")).write_bytes(вихід)
     (Д / (режим + "-помилка.txt")).write_bytes(помилка)
-    мета = dict(база=база, команда=команда, код=код, секунд=round(time.monotonic()-початок, 1))
+    мета = dict(база=база, команда=команда, код=код, секунд=round(time.monotonic()-початок, 1),
+                python=sys.version, голова=subprocess.check_output(["git", "rev-parse", "HEAD"], cwd=К).decode().strip())
     (Д / (режим + "-мірило.json")).write_text(json.dumps(мета, ensure_ascii=False, indent=2), "utf8")
     print(json.dumps(мета, ensure_ascii=False), flush=True)
     return код
