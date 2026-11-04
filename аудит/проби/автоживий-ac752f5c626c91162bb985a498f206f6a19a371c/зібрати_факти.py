@@ -47,7 +47,7 @@ def main():
                                            'джерело_кольору', 'колір_вимір']):
                     record['колірні_свідки'].append({'шлях': location, **{k: value[k] for k in
                         ['id', 'назва', 'колір_джерело', 'впевненість_джерело', 'джерело_кольору', 'колір_вимір'] if k in value}})
-                if value.get('правило') in RULES:
+                if isinstance(value.get('правило'), str) and value.get('правило') in RULES:
                     record['правила'].append({'шлях': location, **{k: value[k] for k in
                         ['правило', 'сила', 'сила_нп', 'суть', 'де', 'значення', 'спрацювань', 'свідомий'] if k in value}})
         record['дріт'] = []
