@@ -18,6 +18,8 @@ def main():
     промпт = "\n".join(М._коди_розмови())
     for опис in П.описи_підвидів("place"):
         assert опис in поле["description"] and опис in промпт
+        assert опис not in М.промпт_репліки({"not_recorded": ["place"]})
+    assert поле["title"] in М.промпт_репліки({"not_recorded": ["place"]})
     for код, цитата in (("office", "в офісі"), ("office_corporate", "у корпоративному офісі"),
                          ("office_creative", "у креативному офісі")):
         assert код in поле["enum"]
