@@ -1,0 +1,15 @@
+﻿Підготовка: python ../tmp/підготовка.py — rc=0; відповіді REST і фактичні контексти: підготовка.json.
+Канал доставки: останній рядок відповіді, публікацію виконує обгортка.
+git merge-base --is-ancestor 7827f08fa08232de52e39ffa59fd17a8137bd41b origin/main — rc=0.
+origin/main на початку: 414b638b9a41b053ae883e16423118556f6473eb.
+git worktree add --detach --no-checkout ../tmp/збірка 7827f08fa08232de52e39ffa59fd17a8137bd41b — rc=0.
+git -C ../tmp/збірка sparse-checkout init --cone — rc=0.
+git -C ../tmp/збірка sparse-checkout set джерела аудит/ноутбук_стенд_2 аудит/проби/жінки шрифти — rc=0.
+git -C ../tmp/збірка checkout --detach 7827f08fa08232de52e39ffa59fd17a8137bd41b — rc=0.
+git diff --stat 7827f08fa08232de52e39ffa59fd17a8137bd41b HEAD -- аудит/проби/записати_сцену.py аудит/проби/рв6_стенд.js аудит/ноутбук_стенд_2/проксі_почергове.js — rc=0, змін немає.
+Середовище: PYTHONUTF8=1; PYTHONIOENCODING=utf-8; NODE_PATH=C:/Users/gemini/kod-shi-test-node/node_modules.
+NODE_OPTIONS і PYTHONPATH обгортки збережено.
+nvidia-smi: NVIDIA GeForce RTX 4090 Laptop GPU, 16376 MiB; зайнято 651 MiB, навантаження 0 %.
+Перед запуском :1234 слухає PID 36232; :1235, :8000, :8765 вільні. REST /api/v1/models і /v1/models: HTTP 200, власних або чужих завантажених моделей немає.
+Контексти фактично перевірено через REST load/list/unload: qwen/qwen3.5-9b=57344, mamaylm-gemma-3-12b-it-v2.0=16384, parallel=1.
+python ../tmp/збірка/аудит/проби/записати_сцену.py ../tmp/збірка C:/Users/gemini/pyodide аудит/проби/Е1-нічний-живий-20261104/б1_концерт_стримано --сцена б1_концерт_стримано
