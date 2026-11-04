@@ -1,0 +1,27 @@
+{
+ "версія": 1,
+ "запит": {
+  "model": "qwen/qwen3.5-9b",
+  "max_tokens": 4000,
+  "messages": [
+   {
+    "role": "user",
+    "content": [
+     {
+      "type": "text",
+      "text": "{\"task\": {\"role\": \"You read the description of an outfit and list its items as data.\", \"rules\": [\"One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.\", \"One item carries one thing — of two alternatives list the first; a note in brackets is not an item.\", \"Slot \\\"accessory\\\" is for an item no other slot fits.\", \"\\\"is_outfit\\\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note.\"], \"limits\": [\"Rely only on the input: do not invent what it does not contain.\", \"The answer is one JSON object following \\\"answer_schema\\\", without explanations and without ```.\"], \"language\": \"English\", \"answer\": \"ITEM_LIST\", \"answer_schema\": {\"is_outfit\": \"yes|no\", \"items\": [{\"name\": \"<what the item is>\", \"details\": \"<its cut, length and fabric>\", \"slot\": \"top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory\", \"color_hex\": \"<#rrggbb or null>\", \"worn\": \"<true, or false when the description says the outfit goes without it>\"}]}, \"input\": [\"\\\"description\\\" — the outfit description\"]}, \"description\": \"Cream-colored wide-leg trousers crafted from structured wool crepe with a subtle herringbone weave, featuring a high waist and ankle length that sits just above the shoe line.\\nA tailored blazer in charcoal grey made of fine worsted wool with notched lapels, single-breasted closure, and a classic fit that drapes cleanly over the shoulders without adding bulk.\\nWhite button-down shirt constructed from crisp cotton poplin, worn tucked in with a neat collar to maintain a polished silhouette under the jacket.\\nMinimalist silver stud earrings for a touch of subtle shine without distracting from the professional headshot.\\nLeather-toe pumps in a dark espresso brown with a moderate three-inch heel and a rounded toe shape for all-day comfort during the interview process.\\nThis outfit works because it adheres strictly to your \\\"formal\\\" dress code while prioritizing your goal of looking optimal for the banking environment, signaling competence and seriousness immediately upon entry. The structured wool trousers and tailored blazer create a sharp, authoritative silhouette suitable for an analytical role, while the crisp white shirt provides a necessary visual break that keeps the look from appearing overly severe. Choosing espresso brown pumps instead of black adds a sophisticated warmth appropriate for the autumn season without sacrificing the professional distance required for a bank interview. Every element supports your context-optimal intent by balancing high-fashion tailoring with practicality, ensuring you feel confident and composed throughout the entire screening process.\"}"
+     }
+    ]
+   }
+  ],
+  "temperature": 1
+ },
+ "відповідь": {
+  "status": 200,
+  "contentType": "application/json",
+  "headers": {
+   "x-model": "qwen/qwen3.5-9b"
+  },
+  "body": "{\"content\":[{\"type\":\"text\",\"text\":\"{\\n  \\\"is_outfit\\\": \\\"yes\\\",\\n  \\\"items\\\": [\\n    {\\n      \\\"name\\\": \\\"Cream-colored wide-leg trousers\\\",\\n      \\\"details\\\": \\\"High waist, ankle length with structured wool crepe fabric and subtle herringbone weave\\\",\\n      \\\"slot\\\": \\\"bottom\\\",\\n      \\\"color_hex\\\": \\\"#FFFDD0\\\",\\n      \\\"worn\\\": true\\n    },\\n    {\\n      \\\"name\\\": \\\"Charcoal grey tailored blazer\\\",\\n      \\\"details\\\": \\\"Single-breasted, notched lapels, classic fit made of fine worsted wool\\\",\\n      \\\"slot\\\": \\\"outerwear\\\",\\n      \\\"color_hex\\\": \\\"#36454F\\\",\\n      \\\"worn\\\": true\\n    },\\n    {\\n      \\\"name\\\": \\\"White button-down shirt\\\",\\n      \\\"details\\\": \\\"Crisp cotton poplin, neat collar worn tucked in\\\",\\n      \\\"slot\\\": \\\"top\\\",\\n      \\\"color_hex\\\": \\\"#FFFFFF\\\",\\n      \\\"worn\\\": true\\n    },\\n    {\\n      \\\"name\\\": \\\"Minimalist silver stud earrings\\\",\\n      \\\"details\\\": \\\"Subtle shine for professional headshot context\\\",\\n      \\\"slot\\\": \\\"earrings\\\",\\n      \\\"color_hex\\\": \\\"#C0C0C0\\\",\\n      \\\"worn\\\": true\\n    },\\n    {\\n      \\\"name\\\": \\\"Leather-toe pumps\\\",\\n      \\\"details\\\": \\\"Moderate three-inch heel, rounded toe shape in dark espresso brown leather\\\",\\n      \\\"slot\\\": \\\"shoes\\\",\\n      \\\"color_hex\\\": \\\"#3B2F2F\\\",\\n      \\\"worn\\\": true\\n    }\\n  ]\\n}\"}],\"usage\":{\"input_tokens\":639,\"output_tokens\":357},\"stop_reason\":\"end_turn\"}"
+ }
+}
