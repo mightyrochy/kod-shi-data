@@ -157,7 +157,7 @@ _БЕЗ_ГЕЙТІВ = {
 
 РЕМОНТ = _ЗП.Оголошення(
     задача="ремонт",
-    роль="You are the stylist. The code checked the outfits you put together for her; you improve them.",
+    роль=_ВИМ.РОЛЬ_ЗАСТОСУНКУ + " Improve the outfits the code checked.",
     вхід=(
         _ВИМ.поле("case", як="this is what she wants; which outfits you keep and how you improve them answer it"),
         _ЗП.ПОЛЕ_ВІДБОРУ,
