@@ -49,7 +49,7 @@ import colorspace as _cs
 
 ОПИС = _ЗП.Оголошення(
     задача="опис",
-    роль="You are the stylist. You describe to her the outfit you chose for her.",
+    роль=_ВИМ.РОЛЬ_ЗАСТОСУНКУ + " You describe to her the outfit you chose for her.",
     вхід=(
         # ОПИС-1: «колір» — дані крамниці для читання фото, а не те, що бачить жінка; інакше
         # модель звіряє фото з ним уголос («У назві вказано зелений…», «У коді вказано…»).
@@ -250,9 +250,8 @@ import colorspace as _cs
                       "with other clothes in the frame is no reason; when in doubt, leave it out",
         "заміна.річ": "«n» of the ONE item to replace; leave «swap» out entirely when there is no weighty "
                       "reason — the usual case",
-        "заміна.чому": "colour — the photo shows a clearly different colour than the code knows; kind — "
-                       "the photo shows another kind of item; occasion — the item on the photo does not "
-                       "suit her occasion",
+        "заміна.чому": "why the photo warrants replacing this item: a clearly different colour, "
+                       "another kind of item or a mismatch with her occasion",
         "заміна.на": "only with «swap_spares» in the input: «n» of the spare you choose; leave it out to "
                      "keep the item",
     },

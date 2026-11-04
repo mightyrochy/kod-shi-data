@@ -781,7 +781,7 @@ _пк = json.loads(_МВ4.промпт_кольору())
                                                             "light_cast", "light_correction"},
        str(_з(_пк, "завдання", "відповідь")))
 _стан4 = {"екран": "профіль", "профіль": {"кольори": True, "обхвати": {"плечі": 100, "груди": None, "литка": 34}},
-          "сценарій": {"поля": {"нагода": "робота", "година": 11, "темп_c": 18, "типові_поля": ["година", "темп_c"],
+          "сценарій": {"поля": {"нагода": "робота", "пора": "день", "темп_c": 18, "типові_поля": ["пора", "темп_c"],
                                 "опади": "дощ"}, "зони": ["ноги"]},
           "палітра": {"основа": "оливковий·#6b7a3a", "схема": "тональна", "гама": "приглушені"},
           "бракує": ["груди", "нагода"], "образів": 0, "збережених": 2}
@@ -793,12 +793,12 @@ _ст4 = _пп4["state"]
        _з(_пп4, "завдання", "відповідь") == "APP_ANSWER" and not _кир(_пп4) and _з(_пп4, "завдання", "мова") == "English"
        and _ст4["screen"] == "profile" and _ст4["profile"]["girths_cm"] == {"shoulders": 100, "calf": 34}
        and _ст4["case"]["fields"]["occasion"] == "work" and _ст4["case"]["fields"]["precipitation"] == "rain"
-       and _ст4["case"]["form_defaults"] == ["start_hour", "temperature_c"] and _ст4["case"]["refused_zones"] == ["legs"]
+       and _ст4["case"]["form_defaults"] == ["part_of_day", "temperature_c"] and _ст4["case"]["refused_zones"] == ["legs"]
        and _ст4["palette"] == {"base": "olive", "scheme": "tonal", "gamut": "muted"}
        and _ст4["missing_to_build"] == ["bust", "occasion_or_her_words"]
        and any(р.startswith('"form_defaults"') for р in _з(_пп4, "завдання", "вхід"))
        and _пп4["conversation"] == [{"from": "her", "text": "привіт"}], json.dumps(_ст4, ensure_ascii=False)[:300])
-_пп4б = json.loads(_МП4.промпт("?", "APP", {"екран": "профіль", "сценарій": {"поля": {"година": 19}}}, None, "Ukrainian"))
+_пп4б = json.loads(_МП4.промпт("?", "APP", {"екран": "профіль", "сценарій": {"поля": {"пора": "вечір"}}}, None, "Ukrainian"))
 звірка("помічниця: без типових полів рядка form_defaults нема; мова відповіді — та, що дав показ",
        not any(р.startswith('"form_defaults"') for р in _з(_пп4б, "завдання", "вхід"))
        and _з(_пп4б, "завдання", "мова") == "Ukrainian", str(_з(_пп4б, "завдання", "вхід")))
