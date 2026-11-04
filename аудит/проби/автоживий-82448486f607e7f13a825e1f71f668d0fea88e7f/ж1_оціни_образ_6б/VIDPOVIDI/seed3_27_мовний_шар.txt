@@ -1,0 +1,59 @@
+── ПРОМПТ (7163 симв.) ──
+Ти — перекладачка в застосунку-стилістці. Ти пишеш природною українською тексти, які зараз побачить жінка. Рішень не приймаєш, на питання не відповідаєш, змісту не міняєш.
+
+Вхід — JSON-об'єкт: ключ — номер тексту н, значення — текст, який склали код та інші моделі.
+
+Ключі відповіді — ті самі, що у вході, кожен: номер н тексту, значення — рядок, той самий зміст природною українською, без англійських слів і кодів; ПЕРЕКЛАДАЙ КОЖНЕ англійське слово, навіть одне посеред українського речення; латиницею лишай лише назви крамниць і брендів, «V-подібний» і «den»; текст, що вже природний і до неї на «ти», — без змін, а український текст на «ви» перепиши на «ти», решту лиши слово в слово.
+
+Вид кожної речі — теж зміст: річ у перекладі — та сама, що у вході, а не схожа чи сусідня. ankle boots — черевики чи ботильйони, boots — чоботи, heeled — на підборах, а не туфлі, pumps — туфлі-човники, loafers — лофери; pendant — кулон чи підвіска, necklace — намисто чи ланцюжок, а не каблучка, сережки чи браслет; ring — каблучка; earrings — сережки. Українські назви речей у вході (назви з крамниці, найчастіше перед « — ») переписуй літера в літеру: не міняй, не переставляй і не додавай у них жодного слова.
+
+Про жінку — лише до неї, на «ти» (ти, тебе, тобі, твій, твоя; хочеш, скинеш; наказ однини: розкажи, оберни, тримай, дай), і в питаннях теж: you, your, she, her про неї — «ти», «твій» (her skin tone — твій тон шкіри; when she turns her head — коли ти повертаєш голову; she looks taller — ти виглядаєш вищою), англійський наказ — наказом однини; «вона», «її» — лише про річ (сукню, сумку, куртку). Говорить стилістка — одна жінка: про себе — від першої особи однини й у жіночому роді (я підібрала, я б додала), не «ми», не від імені застосунку чи коду і ніколи словами самої жінки.
+
+Мова: літературна українська, як у текстах українських крамниць одягу. Кожне українське слово — літерами лише української абетки, без жодної латинської літери чи стороннього знака всередині слова. Кожне речення — одна остаточна версія, без виправлень посеред тексту. Словничок нижче — лише як перекласти англійське слово, коли воно є у вході; це не зміст: річ, тканина чи колір, яких у вході нема, у тексті не з'являються. Звичні українські назви для слів англійського джерела: trousers, pants — штани; dressy, dressier — ошатний, ошатніше; look, outfit — образ; taupe — сіро-бежевий; loose — вільний; suede — замша (жіночий рід); slip dress — сукня-комбінація; camel — кемел (колір). Назви речей і кольорів, які дала крамниця, — як є.
+
+Перевір кожне слово ДО відповіді: до неї — лише «ти», жодного «ви», «ваш» і наказу множини, і про неї жодного «вона», «її», «їй», жодне слово не стоїть двічі поспіль, кожна річ — того самого виду, що у вході (річ образу — іменником коду її виду з переліку, коли він є, і слова при ній узгоджені з цим іменником), а українська назва речі — слово в слово. Відповідь — рівно ОДИН JSON-об'єкт і нічого після нього: другої, виправленої версії, приміток і пояснень не пиши — помилку виправ у тому самому об'єкті.
+
+Речі образу — перелік речей картки (номер речі — як на картці, поруч — її коди):
+1 — kind code: coat · colour code: grey · about it: text н=1
+2 — kind code: dress_generic · colour code: pink · about it: text н=2
+3 — kind code: scarf_generic · colour code: beige · about it: text н=3
+4 — kind code: necklace · colour code: white · about it: text н=4
+5 — kind code: sneakers · colour code: beige · about it: text н=5
+6 — kind code: tote · colour code: white · about it: text н=6
+When a text speaks of an item of the list, call it by the Ukrainian noun of its kind code (kind code: …) — the same noun in the right case in every text (trench_coat — «тренч», sweater — «светр», loafers — «лофери»), not by another kind or a synonym of the English word, whatever word the English text uses; a code ending in _generic names only the family (dress_generic — a dress, bag_generic — a bag). Make every adjective, pronoun and verb with the item agree with that noun in gender and number («бежевий тренч, який…»; «шкіряні лофери, які…»). A name you translate in this same call (text н=K): give it one noun and call the item by it, in agreement, in every text. A text the list gives as about an item (about it: text н=M) speaks of that one item, and so does every other text where the English names it. The colour of an item of the list is its colour code (colour code: …): write the Ukrainian name of that code. The English colour words for that item are the stylist's impression of a photo: do not turn them into a colour of their own — the item's colour stands in their place. Colours of its details (trim, strap, buttons, print), its fabric and the rest — translate from the text. The list is for the items only: an item the English text does not name is not added to the translation — neither to the description nor to the advice.
+
+Colour codes: beige — бежевий; grey — сірий; pink — рожевий; white — білий.
+
+ТЕКСТИ:
+{
+"1": "Your grey coat is cut with a relaxed silhouette and features soft shoulders that lend an effortless air to your ensemble.",
+"2": "The pink belted dress has a flattering shape defined by its belt and falls in an elegant A-line line from the waist.",
+"3": "This beige scarf is lightweight yet substantial enough to provide warmth, with delicate fringe details along the edges.",
+"4": "The white pearl necklace is composed of multiple strands that add a touch of classic sophistication near your neckline.",
+"5": "Your beige sneakers are designed with a low-profile sole and minimal branding for understated everyday comfort.",
+"6": "The white tote bag offers spacious storage with clean lines and a sturdy structure suited to your office visits.",
+"7": "You are wearing a grey relaxed coat layered over a pink belted dress, topped with a beige scarf that wraps warmly around your neck. A multi-layered white pearl necklace sits elegantly at your collarbone, while beige sneakers offer a comfortable finish to this look completed by a white tote bag.",
+"8": "Tuck the hem of your pink dress slightly into your grey coat to highlight the waistline and maintain a neat silhouette throughout the day.",
+"9": "Let the beige scarf drape naturally over your shoulders for warmth, or pull one end across your chest if you want a more structured look.",
+"10": "Сукня рожева — I kept this fitted pink dress because its straight cut complements the relaxed coat and fulfills the 'smart' formality requirement, unlike the straight cut beige dress which would double as a bottom.",
+"11": "Пальто вкорочене сіре, Сукня рожева, Шарф кашемір однотонний бежевий, Намисто Сабріна з перлин біле, Кросівки жіночі, ATTICO, замша/текстиль, колір бежевий, Білий тоут зі шкіри із золотистим лого — This tonal scheme serves you perfectly: it unifies the 'smart' dress with the relaxed coat under one elegant neutral palette, avoiding a mismatch in formality while maintaining the neatness you require for your office day.",
+"12": "Пальто вкорочене сіре — This grey coat is my anchor because its achromatic tone neutralizes any color conflict from the inner layers, and its relaxed fit provides the vertical length needed to calm her X shape."
+}
+
+── ВІДПОВІДЬ (1964 симв., 17.8 с, HTTP 200) ──
+```json
+{
+  "1": "Твоє сіре пальто має вільний силует і м’які плечі, які надають твоєму образу невимушеної легкості.",
+  "2": "Рожева сукня з поясом має лестиву форму, підкреслену ременем, і елегантно розширюється від талії в лінію А.",
+  "3": "Цей бежевий шарф легкий, але достатньо теплий, щоб зігріти тебе. Він прикрашений ніжними китицями по краях.",
+  "4": "Біле перлове намисто складається з кількох ниток і додає твоєму декольте нотку класичної вишуканості.",
+  "5": "Твої бежеві кросівки мають плоску підошву та мінімальну кількість логотипів для комфорту в повсякденному житті.",
+  "6": "Біла сумка-тоут пропонує просторе місце для зберігання речей з чистими лініями і міцною конструкцією, що підходить для твоїх візитів до офісу.",
+  "7": "Ти одягнена в сіре пальто з вільним силуетом поверх рожевої сукні з поясом. На шиї у тебе бежевий шарф, який тепло огортає твоє горло. Біле перлове намисто елегантно лежить на ключиці, а бежеві кросівки завершують цей образ, доповнений білою сумкою-тоут.",
+  "8": "Злегка заправ сукню рожевого кольору в сіре пальто, щоб підкреслити талію і зберегти охайний силует протягом дня.",
+  "9": "Дай шарфу бежевого кольору вільно звисати на плечах для тепла або перекинь один кінець через груди, якщо хочеш більш структурованого вигляду.",
+  "10": "Я залишила цю приталену рожеву сукню, тому що її прямий крій доповнює вільне пальто і відповідає вимозі «ошатного» формату. На відміну від бежевої сукні прямого крою, яка могла б стати низом.",
+  "11": "Сіре укорочене пальто — це моя основа, тому що його ахроматичний тон нейтралізує будь-який колірний конфлікт з внутрішніх шарів. А вільний крій забезпечує необхідну вертикальну довжину для заспокоєння твоєї X-подібної фігури.",
+  "12": "Сіре укорочене пальто — це моя основа, тому що його ахроматичний тон нейтралізує будь-який колірний конфлікт з внутрішніх шарів. А вільний крій забезпечує необхідну вертикальну довжину для заспокоєння твоєї X-подібної фігури."
+}
+```

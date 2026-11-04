@@ -1,0 +1,30 @@
+── ПРОМПТ (2106 симв.) ──
+{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.", "One item carries one thing — of two alternatives list the first; a note in brackets is not an item.", "Slot \"accessory\" is for an item no other slot fits.", "\"is_outfit\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "ITEM_LIST", "answer_schema": {"is_outfit": "yes|no", "items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory", "color_hex": "<#rrggbb or null>", "worn": "<true, or false when the description says the outfit goes without it>"}]}, "input": ["\"description\" — the outfit description"]}, "description": "A refined silk blend blouse with a subtle sheen, tailored to a relaxed fit that falls just above the hips, in deep charcoal grey (#36454F), lightweight woven fabric. A pair of high-waisted wide-leg trousers made from soft crepe wool, featuring a slight drape and a straight leg length that hits at mid-calf, in a matching charcoal tone (#36454F), structured yet fluid wool blend. Classic leather ankle boots with a low block heel, cut for comfort and elegance, in rich espresso brown (#2B1B0E), smooth full-grain leather. This ensemble works perfectly for an autumn workday at the office because it balances professional polish with the comfort needed for a relaxed neat dress code. The monochromatic palette creates a streamlined silhouette that feels sophisticated without being rigid, while the natural wool texture ensures warmth against cool fall air."}
+
+── ВІДПОВІДЬ (745 симв., 4.2 с, HTTP 200) ──
+{
+  "is_outfit": "yes",
+  "items": [
+    {
+      "name": "blouse",
+      "details": "silk blend with subtle sheen, relaxed fit falling just above hips, lightweight woven fabric",
+      "slot": "top",
+      "color_hex": "#36454F",
+      "worn": true
+    },
+    {
+      "name": "trousers",
+      "details": "high-waisted wide-leg made from soft crepe wool, slight drape, straight leg hitting mid-calf, structured yet fluid wool blend",
+      "slot": "bottom",
+      "color_hex": "#36454F",
+      "worn": true
+    },
+    {
+      "name": "ankle boots",
+      "details": "classic leather with low block heel, cut for comfort and elegance, smooth full-grain leather",
+      "slot": "shoes",
+      "color_hex": "#2B1B0E",
+      "worn": true
+    }
+  ]
+}
