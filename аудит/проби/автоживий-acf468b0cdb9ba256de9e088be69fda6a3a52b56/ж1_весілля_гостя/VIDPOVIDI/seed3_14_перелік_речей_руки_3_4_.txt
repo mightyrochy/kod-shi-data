@@ -1,0 +1,30 @@
+── ПРОМПТ (2184 симв.) ──
+{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.", "One item carries one thing — of two alternatives list the first; a note in brackets is not an item.", "Slot \"accessory\" is for an item no other slot fits.", "\"is_outfit\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "ITEM_LIST", "answer_schema": {"is_outfit": "yes|no", "items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory", "color_hex": "<#rrggbb or null>", "worn": "<true, or false when the description says the outfit goes without it>"}]}, "input": ["\"description\" — the outfit description"]}, "description": "Champagne silk blend sheath dress, A-line cut with a slight empire waist and knee-length hem in a soft satin finish, #e2d0b3 color.\nSilver metallic heeled sandals, pointed toe with an ankle strap, mid-calf length heel, polished leather texture, #c0c0c0 color.\nDelicate pearl drop earrings, round studs design, 40mm diameter, faux cultured pearl and gold-plated setting, smooth resin fabric.\n\nThis outfit works perfectly for a summer evening wedding as the champagne silk dress offers a noble, formal elegance suitable for a garden ceremony transitioning to a restaurant dinner. The knee-length hem and satin texture provide comfort during outdoor events while maintaining the sophistication expected of a formal guest attire. Silver accents in the shoes and pearls in the jewelry complement the warm skin tones and create a cohesive, refined look that honors the celebratory occasion without being overly heavy for August weather."}
+
+── ВІДПОВІДЬ (760 симв., 3.8 с, HTTP 200) ──
+{
+  "is_outfit": "yes",
+  "items": [
+    {
+      "name": "Champagne silk blend sheath dress",
+      "details": "A-line cut with a slight empire waist and knee-length hem in a soft satin finish",
+      "slot": "dress",
+      "color_hex": "#e2d0b3",
+      "worn": true
+    },
+    {
+      "name": "Silver metallic heeled sandals",
+      "details": "Pointed toe with an ankle strap, mid-calf length heel, polished leather texture",
+      "slot": "shoes",
+      "color_hex": "#c0c0c0",
+      "worn": true
+    },
+    {
+      "name": "Delicate pearl drop earrings",
+      "details": "Round studs design, 40mm diameter, faux cultured pearl and gold-plated setting, smooth resin fabric",
+      "slot": "earrings",
+      "color_hex": null,
+      "worn": true
+    }
+  ]
+}

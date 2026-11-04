@@ -1,0 +1,52 @@
+── ПРОМПТ (6720 симв.) ──
+Ти — перекладачка в застосунку-стилістці. Ти пишеш природною українською тексти, які зараз побачить жінка. Рішень не приймаєш, на питання не відповідаєш, змісту не міняєш.
+
+Вхід — JSON-об'єкт: ключ — номер тексту н, значення — текст, який склали код та інші моделі.
+
+Ключі відповіді — ті самі, що у вході, кожен: номер н тексту, значення — рядок, той самий зміст природною українською, без англійських слів і кодів; ПЕРЕКЛАДАЙ КОЖНЕ англійське слово, навіть одне посеред українського речення; латиницею лишай лише назви крамниць і брендів, «V-подібний» і «den»; текст, що вже природний і до неї на «ти», — без змін, а український текст на «ви» перепиши на «ти», решту лиши слово в слово.
+
+Вид кожної речі — теж зміст: річ у перекладі — та сама, що у вході, а не схожа чи сусідня. ankle boots — черевики чи ботильйони, boots — чоботи, heeled — на підборах, а не туфлі, pumps — туфлі-човники, loafers — лофери; pendant — кулон чи підвіска, necklace — намисто чи ланцюжок, а не каблучка, сережки чи браслет; ring — каблучка; earrings — сережки. Українські назви речей у вході (назви з крамниці, найчастіше перед « — ») переписуй літера в літеру: не міняй, не переставляй і не додавай у них жодного слова.
+
+Про жінку — лише до неї, на «ти» (ти, тебе, тобі, твій, твоя; хочеш, скинеш; наказ однини: розкажи, оберни, тримай, дай), і в питаннях теж: you, your, she, her про неї — «ти», «твій» (her skin tone — твій тон шкіри; when she turns her head — коли ти повертаєш голову; she looks taller — ти виглядаєш вищою), англійський наказ — наказом однини; «вона», «її» — лише про річ (сукню, сумку, куртку). Говорить стилістка — одна жінка: про себе — від першої особи однини й у жіночому роді (я підібрала, я б додала), не «ми», не від імені застосунку чи коду і ніколи словами самої жінки.
+
+Мова: літературна українська, як у текстах українських крамниць одягу. Кожне українське слово — літерами лише української абетки, без жодної латинської літери чи стороннього знака всередині слова. Кожне речення — одна остаточна версія, без виправлень посеред тексту. Словничок нижче — лише як перекласти англійське слово, коли воно є у вході; це не зміст: річ, тканина чи колір, яких у вході нема, у тексті не з'являються. Звичні українські назви для слів англійського джерела: trousers, pants — штани; dressy, dressier — ошатний, ошатніше; look, outfit — образ; taupe — сіро-бежевий; loose — вільний; suede — замша (жіночий рід); slip dress — сукня-комбінація; camel — кемел (колір). Назви речей і кольорів, які дала крамниця, — як є.
+
+Перевір кожне слово ДО відповіді: до неї — лише «ти», жодного «ви», «ваш» і наказу множини, і про неї жодного «вона», «її», «їй», жодне слово не стоїть двічі поспіль, кожна річ — того самого виду, що у вході (річ образу — іменником коду її виду з переліку, коли він є, і слова при ній узгоджені з цим іменником), а українська назва речі — слово в слово. Відповідь — рівно ОДИН JSON-об'єкт і нічого після нього: другої, виправленої версії, приміток і пояснень не пиши — помилку виправ у тому самому об'єкті.
+
+Речі образу — перелік речей картки (номер речі — як на картці, поруч — її коди):
+1 — kind code: shirt · colour code: pink · about it: text н=1
+2 — kind code: necklace · colour code: milky · about it: text н=2
+3 — kind code: dress_generic · colour code: cocoa · about it: text н=3
+4 — kind code: dress_shoes · colour code: white · about it: text н=4
+5 — kind code: crossbody_bag · colour code: white · about it: text н=5
+When a text speaks of an item of the list, call it by the Ukrainian noun of its kind code (kind code: …) — the same noun in the right case in every text (trench_coat — «тренч», sweater — «светр», loafers — «лофери»), not by another kind or a synonym of the English word, whatever word the English text uses; a code ending in _generic names only the family (dress_generic — a dress, bag_generic — a bag). Make every adjective, pronoun and verb with the item agree with that noun in gender and number («бежевий тренч, який…»; «шкіряні лофери, які…»). A name you translate in this same call (text н=K): give it one noun and call the item by it, in agreement, in every text. A text the list gives as about an item (about it: text н=M) speaks of that one item, and so does every other text where the English names it. The colour of an item of the list is its colour code (colour code: …): write the Ukrainian name of that code. The English colour words for that item are the stylist's impression of a photo: do not turn them into a colour of their own — the item's colour stands in their place. Colours of its details (trim, strap, buttons, print), its fabric and the rest — translate from the text. The list is for the items only: an item the English text does not name is not added to the translation — neither to the description nor to the advice.
+
+Colour codes: cocoa — какао; milky — молочний; pink — рожевий; white — білий.
+
+ТЕКСТИ:
+{
+"1": "This is a fitted pink check shirt, its colour soft and warm against the darker dress beneath it.",
+"2": "The necklace is milky white with delicate bows and pearls that catch the light without being too bright.",
+"3": "The dress is a cocoa-toned sheath cut, belted to define your waist and flow gently to an a-line skirt.",
+"4": "These are white heeled shoes that add height without competing with the reserved tone of your look.",
+"5": "The bag is a white crossbody style, simple in form and ready to be carried easily throughout the day.",
+"6": "I have chosen a dress that fits your body perfectly, bringing the eye down from your shoulders to your waist and legs, while adding the right volume where you need it. The shoes I picked are the only ones that work here: they carry the look through the evening but do not fight with the reserved colour rule; instead of looking like bridal wear in your photos, they keep the outfit grounded as a guest’s choice. The top is fitted to keep the balance on your figure, and the necklace adds a gentle sparkle without overwhelming the softness of the moment.",
+"7": "Leave the dress open or tuck it slightly to show your waist, which draws attention upward toward your face",
+"8": "Carry the bag across your body or hold it by the handle when you stand still, letting it rest lightly at your hip",
+"9": "Туфлі жіночі, ATTICO, шкіра, колір білий — I added these white leather pumps to ground the outfit in the hem-tone, fixing the 'no shoes' blocker and completing the lower proportion for the midi dress.",
+"10": "Туфлі жіночі, ATTICO, шкіра, колір білий — I accept the gate on the near-white pumps because they are essential to ground the midi dress at hem-level, preventing the outfit from feeling floaty under artificial evening light while respecting the 'near_white' requirement."
+}
+
+── ВІДПОВІДЬ (1785 симв., 12.9 с, HTTP 200) ──
+{
+"1": "Це приталена рожева картата сорочка, її колір м’який і теплий на тлі темнішої сукні під нею.",
+"2": "Намисто молочно-біле з ніжними бантами та перлами, які ловлять світло без надмірної яскравості.",
+"3": "Сукня какаового кольору має приталений крій, підперезана для визначення твоєї талії і м’яко розширюється до спідниці-сонця.",
+"4": "Це білі туфлі на підборах, які додають зросту без надмірної конкуренції з стриманим тоном твого образу.",
+"5": "Сумка — це біла сумка через плече простої форми і готова до зручного носіння протягом дня.",
+"6": "Я обрала сукню, яка ідеально підкреслює твою фігуру, привертаючи увагу від плечей до талії й ніг, водночас додаючи потрібний об’єм там, де це необхідно. Туфлі, які я вибрала, єдині, що тут працюють: вони завершують образ увечері, але не конкурують із правилом стриманого кольору; замість того щоб виглядати як весільний наряд на твоїх фотографіях, вони зберігають вбрання збалансованим вибором гості. Сорочка приталена, щоб зберегти баланс твоєї фігури, а намисто додає ніжний блиск без надмірності м’якості моменту.",
+"7": "Залиш сукню відкритою або злегка заправ її всередину, щоб показати твою талію, яка привертає увагу вгору до обличчя",
+"8": "Носи сумку через тіло або тримай її за ручку, коли стоїш нерухомо, дозволяючи їй легко лежати на стегні",
+"9": "Туфлі жіночі, ATTICO, шкіра, колір білий — Я додала ці білі шкіряні лофери, щоб збалансувати образ за кольором подолу, вирішивши проблему відсутності взуття та завершивши нижню частину для сукні міді.",
+"10": "Туфлі жіночі, ATTICO, шкіра, колір білий — Я приймаю декор на майже-білих туфлях, оскільки вони необхідні, щоб збалансувати сукню міді по лінії подолу, запобігаючи відчуттю легкості вбрання під штучним вечірнім світлом і дотримуючись вимоги «майже_білий»."
+}
