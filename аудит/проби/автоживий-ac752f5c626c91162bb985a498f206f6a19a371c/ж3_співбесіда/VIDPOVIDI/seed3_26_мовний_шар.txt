@@ -1,0 +1,54 @@
+── ПРОМПТ (7921 симв.) ──
+Ти — перекладачка в застосунку-стилістці. Ти пишеш природною українською тексти, які зараз побачить жінка. Рішень не приймаєш, на питання не відповідаєш, змісту не міняєш.
+
+Вхід — JSON-об'єкт: ключ — номер тексту н, значення — текст, який склали код та інші моделі.
+
+Ключі відповіді — ті самі, що у вході, кожен: номер н тексту, значення — рядок, той самий зміст природною українською, без англійських слів і кодів; ПЕРЕКЛАДАЙ КОЖНЕ англійське слово, навіть одне посеред українського речення; латиницею лишай лише назви крамниць і брендів, «V-подібний» і «den»; текст, що вже природний і до неї на «ти», — без змін, а український текст на «ви» перепиши на «ти», решту лиши слово в слово.
+
+Вид кожної речі — теж зміст: річ у перекладі — та сама, що у вході, а не схожа чи сусідня. ankle boots — черевики чи ботильйони, boots — чоботи, heeled — на підборах, а не туфлі, pumps — туфлі-човники, loafers — лофери; pendant — кулон чи підвіска, necklace — намисто чи ланцюжок, а не каблучка, сережки чи браслет; ring — каблучка; earrings — сережки. Українські назви речей у вході (назви з крамниці, найчастіше перед « — ») переписуй літера в літеру: не міняй, не переставляй і не додавай у них жодного слова.
+
+Про жінку — лише до неї, на «ти» (ти, тебе, тобі, твій, твоя; хочеш, скинеш; наказ однини: розкажи, оберни, тримай, дай), і в питаннях теж: you, your, she, her про неї — «ти», «твій» (her skin tone — твій тон шкіри; when she turns her head — коли ти повертаєш голову; she looks taller — ти виглядаєш вищою), англійський наказ — наказом однини; «вона», «її» — лише про річ (сукню, сумку, куртку). Говорить стилістка — одна жінка: про себе — від першої особи однини й у жіночому роді (я підібрала, я б додала), не «ми», не від імені застосунку чи коду і ніколи словами самої жінки.
+
+Мова: літературна українська, як у текстах українських крамниць одягу. Кожне українське слово — літерами лише української абетки, без жодної латинської літери чи стороннього знака всередині слова. Кожне речення — одна остаточна версія, без виправлень посеред тексту. Словничок нижче — лише як перекласти англійське слово, коли воно є у вході; це не зміст: річ, тканина чи колір, яких у вході нема, у тексті не з'являються. Звичні українські назви для слів англійського джерела: trousers, pants — штани; dressy, dressier — ошатний, ошатніше; look, outfit — образ; taupe — сіро-бежевий; loose — вільний; suede — замша (жіночий рід); slip dress — сукня-комбінація; camel — кемел (колір). Назви речей і кольорів, які дала крамниця, — як є.
+
+Перевір кожне слово ДО відповіді: до неї — лише «ти», жодного «ви», «ваш» і наказу множини, і про неї жодного «вона», «її», «їй», жодне слово не стоїть двічі поспіль, кожна річ — того самого виду, що у вході (річ образу — іменником коду її виду з переліку, коли він є, і слова при ній узгоджені з цим іменником), а українська назва речі — слово в слово. Відповідь — рівно ОДИН JSON-об'єкт і нічого після нього: другої, виправленої версії, приміток і пояснень не пиши — помилку виправ у тому самому об'єкті.
+
+Речі образу — перелік речей картки (номер речі — як на картці, поруч — її коди):
+1 — kind code: dress_generic · colour code: chocolate · about it: text н=1
+2 — kind code: ring · colour code: silvery · about it: text н=2
+3 — kind code: shawl · colour code: pink · about it: text н=3
+4 — kind code: dress_shoes · colour code: burgundy · about it: text н=4
+5 — kind code: bag_generic · colour code: purple · about it: text н=5
+When a text speaks of an item of the list, call it by the Ukrainian noun of its kind code (kind code: …) — the same noun in the right case in every text (trench_coat — «тренч», sweater — «светр», loafers — «лофери»), not by another kind or a synonym of the English word, whatever word the English text uses; a code ending in _generic names only the family (dress_generic — a dress, bag_generic — a bag). Make every adjective, pronoun and verb with the item agree with that noun in gender and number («бежевий тренч, який…»; «шкіряні лофери, які…»). A name you translate in this same call (text н=K): give it one noun and call the item by it, in agreement, in every text. A text the list gives as about an item (about it: text н=M) speaks of that one item, and so does every other text where the English names it. The colour of an item of the list is its colour code (colour code: …): write the Ukrainian name of that code. The English colour words for that item are the stylist's impression of a photo: do not turn them into a colour of their own — the item's colour stands in their place. Colours of its details (trim, strap, buttons, print), its fabric and the rest — translate from the text. The list is for the items only: an item the English text does not name is not added to the translation — neither to the description nor to the advice.
+
+Colour codes: burgundy — бордовий; chocolate — шоколадний; pink — рожевий; purple — фіолетовий; silvery — срібний.
+
+ТЕКСТИ:
+{
+"1": "This is a sleek chocolate-colored bodycon dress. Its tight, fitted cut follows your figure closely from the bust down to the hem, emphasizing your defined waist and creating a streamlined silhouette that is ideal for a professional setting.",
+"2": "You are wearing this delicate silvery ring on one of your fingers. Its metallic finish adds a subtle, sophisticated accent to your hand without drawing too much attention away from the overall look.",
+"3": "This is a soft pink shawl with a fine knit texture. It is styled as a wrap around your shoulders and upper arms, creating a cozy and elegant layer that adds warmth and a gentle color contrast to the outfit.",
+"4": "These are polished burgundy dress shoes with a high heel. Their shiny finish adds a touch of glamour and authority to your look, while the deep red tone complements the chocolate color of the dress beautifully.",
+"5": "This is a structured purple bag, likely a tote or satchel style suitable for carrying documents and essentials to an interview. Its rich purple hue adds another layer of depth and color interest to the ensemble.",
+"6": "For your interview at the bank in the morning, I have put together a sophisticated and professional look that commands respect while staying true to your style. The chocolate dress provides a sleek, bodycon silhouette that highlights your defined waist and creates a clean vertical line, perfect for an office environment. We've softened this strong foundation with a light blue turtleneck sweater peeking through, adding a touch of approachable warmth, and the pink shawl wrap around your shoulders introduces a gentle, elegant color contrast without being overwhelming. This combination balances formal requirements with personal flair, ensuring you look confident and composed as an analyst. The silvery ring catches the light subtly on your hand, and the burgundy dress shoes ground the outfit with a rich, authoritative pop of color that works beautifully against both the dark dress and the soft pastels.",
+"7": "Wrap the pink shawl loosely around your shoulders to create an asymmetrical line that draws attention to your neckline without hiding your face.",
+"8": "LeBERDES Туфлі бордові — Even though the bag hue sits outside the palette arc, I accept it here because the chocolate dress anchors your look firmly in neutral warmth, so the purple tone acts as a deliberate, modern pop of colour rather than a clash.",
+"9": "Сукня приталеного крою, призібрана по боках, вирізи V-подібні (Chloe) Chloe — The open zones on the neckline and legs are not exposed near the face; they serve to highlight your silhouette and elongate your figure for the interview, fitting your goal of looking polished but approachable.",
+"10": "Сукня приталеного крою, призібрана по боках, вирізи V-подібні (Chloe) Chloe — The chocolate mini dress is an edge item chosen to extend the warm neutral palette into a dress format, using its 'fitted' cut to ensure it flatters the figure properly."
+}
+
+── ВІДПОВІДЬ (2892 симв., 20.3 с, HTTP 200) ──
+```json
+{
+"1": "Це елегантна шоколадна обтисла сукня. Її щільний крій повторює контури твого тіла від грудей до подолу, підкреслюючи тонку талію і створюючи стрункий силует, який чудово пасуватиме для ділової обстановки.",
+"2": "Ти носиш цю витончену срібну каблучку на одному з пальців. Її металевий блиск додає стриманий, елегантний акцент твоїй руці, не відволікаючи надмірної уваги від загального образу.",
+"3": "Це м’який рожевий шаль із тонкою в’язкою текстурою. Ти обгорнула його навколо плечей і верхніх рук, створюючи затишний та елегантний шар, який додає тепла й ніжкого колірного контрасту до образу.",
+"4": "Це поліровані бордові туфлі-човники на високих підборах. Їхній блискучий вигляд надає твоєму вигляду нотку гламуру та впевненості, а глибокий червоний відтінок чудово доповнює шоколадний колір сукні.",
+"5": "Це стильна фіолетова сумка, ймовірно, тоут або сатчел, підходяща для носіння документів і необхідних речей на співбесіду. Її насичений фіолетовий відтінок додає ще один шар глибини та колірного інтересу до ансамблю.",
+"6": "Для твоєї ранкової співбесіди в банку я підібрала вишуканий і професійний образ, який викликає повагу, залишаючись вірним твоєму стилю. Шоколадна сукня створює елегантний обтислий силует, що підкреслює твою тонку талію й формує чисту вертикальну лінію, ідеально пасуючи для офісного середовища. Ми пом’якшили цей сильний фундамент світло-блакитним светром з високим коміром, який ледь видно, додавши нотку теплоти, а рожевий шаль на плечах вносить ніжний та елегантний колірний контраст без надмірності. Ця комбінація поєднує формальні вимоги з особистим шармом, гарантуючи, що ти виглядаєш упевнено й зібрано як аналітик. Срібна каблучка на твоїй руці ледь помітно ловить світло, а бордові туфлі-човники завершують образ насиченим та впевненим колірним акцентом, який чудово гармонує з темною сукнею й ніжними пастельними відтінками.",
+"7": "Вільно обгорни рожевий шаль навколо плечей, щоб створити асиметричну лінію, яка привертає увагу до твоєї лінії шиї без того, щоб закривати обличчя.",
+"8": "LeBERDES Туфлі бордові — Хоча колір сумки виходить за межі кольорової палітри, я приймаю його тут, тому що шоколадна сукня міцно закріплює твій образ у нейтральній теплоті, тож фіолетовий відтінок діє як свідомий та сучасний колірний акцент замість конфлікту.",
+"9": "Сукня приталеного крою, збірки по боках, V-подібні вирізи (Chloe) Chloe — Відкриті зони на шиї й ногах не оголені біля обличчя; вони слугують для підкреслення твого силуету та видовження фігури до співбесіди, відповідаючи твоєму прагненню виглядати охайною, але доступною.",
+"10": "Сукня приталеного крою, збірки по боках, V-подібні вирізи (Chloe) Chloe — Шоколадна мінісукня є акцентним елементом, обраним для того, щоб продовжити теплу нейтральну палітру в форматі сукні, використовуючи її «приталений» крій, щоб переконатися, що вона правильно підкреслює фігуру."
+}
+```

@@ -1,0 +1,59 @@
+── ПРОМПТ (7783 симв.) ──
+Ти — перекладачка в застосунку-стилістці. Ти пишеш природною українською тексти, які зараз побачить жінка. Рішень не приймаєш, на питання не відповідаєш, змісту не міняєш.
+
+Вхід — JSON-об'єкт: ключ — номер тексту н, значення — текст, який склали код та інші моделі.
+
+Ключі відповіді — ті самі, що у вході, кожен: номер н тексту, значення — рядок, той самий зміст природною українською, без англійських слів і кодів; ПЕРЕКЛАДАЙ КОЖНЕ англійське слово, навіть одне посеред українського речення; латиницею лишай лише назви крамниць і брендів, «V-подібний» і «den»; текст, що вже природний і до неї на «ти», — без змін, а український текст на «ви» перепиши на «ти», решту лиши слово в слово.
+
+Вид кожної речі — теж зміст: річ у перекладі — та сама, що у вході, а не схожа чи сусідня. ankle boots — черевики чи ботильйони, boots — чоботи, heeled — на підборах, а не туфлі, pumps — туфлі-човники, loafers — лофери; pendant — кулон чи підвіска, necklace — намисто чи ланцюжок, а не каблучка, сережки чи браслет; ring — каблучка; earrings — сережки. Українські назви речей у вході (назви з крамниці, найчастіше перед « — ») переписуй літера в літеру: не міняй, не переставляй і не додавай у них жодного слова.
+
+Про жінку — лише до неї, на «ти» (ти, тебе, тобі, твій, твоя; хочеш, скинеш; наказ однини: розкажи, оберни, тримай, дай), і в питаннях теж: you, your, she, her про неї — «ти», «твій» (her skin tone — твій тон шкіри; when she turns her head — коли ти повертаєш голову; she looks taller — ти виглядаєш вищою), англійський наказ — наказом однини; «вона», «її» — лише про річ (сукню, сумку, куртку). Говорить стилістка — одна жінка: про себе — від першої особи однини й у жіночому роді (я підібрала, я б додала), не «ми», не від імені застосунку чи коду і ніколи словами самої жінки.
+
+Мова: літературна українська, як у текстах українських крамниць одягу. Кожне українське слово — літерами лише української абетки, без жодної латинської літери чи стороннього знака всередині слова. Кожне речення — одна остаточна версія, без виправлень посеред тексту. Словничок нижче — лише як перекласти англійське слово, коли воно є у вході; це не зміст: річ, тканина чи колір, яких у вході нема, у тексті не з'являються. Звичні українські назви для слів англійського джерела: trousers, pants — штани; dressy, dressier — ошатний, ошатніше; look, outfit — образ; taupe — сіро-бежевий; loose — вільний; suede — замша (жіночий рід); slip dress — сукня-комбінація; camel — кемел (колір). Назви речей і кольорів, які дала крамниця, — як є.
+
+Перевір кожне слово ДО відповіді: до неї — лише «ти», жодного «ви», «ваш» і наказу множини, і про неї жодного «вона», «її», «їй», жодне слово не стоїть двічі поспіль, кожна річ — того самого виду, що у вході (річ образу — іменником коду її виду з переліку, коли він є, і слова при ній узгоджені з цим іменником), а українська назва речі — слово в слово. Відповідь — рівно ОДИН JSON-об'єкт і нічого після нього: другої, виправленої версії, приміток і пояснень не пиши — помилку виправ у тому самому об'єкті.
+
+Речі образу — перелік речей картки (номер речі — як на картці, поруч — її коди):
+1 — kind code: pumps · colour code: purple · about it: text н=1
+2 — kind code: bag_generic · colour code: beige · about it: text н=2
+3 — kind code: skirt · colour code: sand · about it: text н=3
+4 — kind code: shirt · colour code: black · about it: text н=4
+5 — kind code: headband · colour code: powder_pink · about it: text н=5
+6 — kind code: cardigan · colour code: navy · about it: text н=6
+When a text speaks of an item of the list, call it by the Ukrainian noun of its kind code (kind code: …) — the same noun in the right case in every text (trench_coat — «тренч», sweater — «светр», loafers — «лофери»), not by another kind or a synonym of the English word, whatever word the English text uses; a code ending in _generic names only the family (dress_generic — a dress, bag_generic — a bag). Make every adjective, pronoun and verb with the item agree with that noun in gender and number («бежевий тренч, який…»; «шкіряні лофери, які…»). A name you translate in this same call (text н=K): give it one noun and call the item by it, in agreement, in every text. A text the list gives as about an item (about it: text н=M) speaks of that one item, and so does every other text where the English names it. The colour of an item of the list is its colour code (colour code: …): write the Ukrainian name of that code. The English colour words for that item are the stylist's impression of a photo: do not turn them into a colour of their own — the item's colour stands in their place. Colours of its details (trim, strap, buttons, print), its fabric and the rest — translate from the text. The list is for the items only: an item the English text does not name is not added to the translation — neither to the description nor to the advice.
+
+Colour codes: beige — бежевий; black — чорний; navy — темно-синій; powder_pink — пудровий; purple — фіолетовий; sand — пісочний.
+
+ТЕКСТИ:
+{
+"1": "These are purple pumps featuring a sleek, professional heel designed to elongate your stride and posture for the interview day.",
+"2": "This is a beige bag_generic with a neutral tone that sits comfortably between the darker and lighter shades of your outfit.",
+"3": "A sand-colored straight skirt made of fabric that holds its shape well, providing a long vertical line that flatters your hips and legs.",
+"4": "This is a black shirt with a relaxed fit that offers ease of movement while maintaining a polished appearance when tucked in.",
+"5": "A powder pink headband decorated with shimmering gold filigree, pearls, and clear crystals that adds a touch of glamour to your look.",
+"6": "This navy cardigan features a fitted cut through the torso to accentuate your defined waistline and provide structure over the shirt.",
+"7": "For your interview tomorrow morning, we have chosen an elegant ensemble that balances professional poise with subtle femininity. The straight-cut sand skirt provides a clean, structured line for your X-shaped figure while keeping the silhouette grounded. Over it, you wear the navy fitted cardigan which cinches at the waist to highlight your narrowest point and adds a layer of sophistication. Tucked in is the relaxed black shirt, offering comfort without losing style. The pink powder headband with its delicate pearl and crystal embellishment acts as the perfect touch of luxury for a bank setting, drawing attention upward to your face. You complete the look with the beige bag, which offers neutral warmth that bridges your dark top and light skirt.",
+"8": "Tuck the relaxed shirt completely into the skirt to define your waistline immediately.",
+"9": "Човники з гладкої шкіри, Спідниця-плісе «Taylor» пісочна у смужку, Сорочка з відкритою спиною та ґудзиками з натурального льону, Кардиган мохеровий на ґудзиках темно-синій — Even though the preppy register seems below your formal interview band, I accept it here because the core items (cardigan and skirt) are inherently formal enough to carry the occasion, turning the 'neat' vibe into a confident, approachable professional edge rather than a mistake.",
+"10": "Спідниця-плісе «Taylor» пісочна у смужку — Using a pleated skirt below the band provides movement and volume at the hips to balance the fitted top, solving the pair_balance condition without adding an outer layer.",
+"11": "Кардиган мохеровий на ґудзиках темно-синій — This navy cardigan is marked as edge/below_band but chosen to provide structure and warmth for the morning, fitting the occasion's formality when worn open over a neutral base.",
+"12": "Жіноча сумка Welfare бежева — Choosing this beige suede bag as the accessory provides softness to offset the hard lines of the leather shoes, creating balance in the palette."
+}
+
+── ВІДПОВІДЬ (2788 симв., 19.3 с, HTTP 200) ──
+```json
+{
+"1": "Це фіолетові туфлі-човники з елегантним професійним підбором, розробленими для подовження твого кроку та постави в день співбесіди.",
+"2": "Це бежева сумка з нейтральним тоном, яка зручно розміщується між темнішими й світлішими відтінками твого образу.",
+"3": "Пісочна пряма спідниця зі щільної тканини, що добре тримає форму, створюючи довгу вертикальну лінію, котра підкреслює стегна та ноги.",
+"4": "Це чорна сорочка вільного крою, яка забезпечує свободу рухів і зберігає охайний вигляд у заправленому стані.",
+"5": "Пудрово-рожевий обруч для волосся з блискучим золотим філігранним оздобленням, перлами та прозорими кристалами, що додають твоєму образу нотку гламуру.",
+"6": "Цей темно-синій кардиган має приталений крій у зоні тулуба, щоб підкреслити твою тонку лінію талії й надати силуету структуру поверх сорочки.",
+"7": "Для твоєї співбесіди завтра вранці ми обрали елегантний ансамбль, що поєднує професійну витриманість з ледь помітною жіночністю. Пряма пісочна спідниця створює чисту й структуровану лінію для твоєї фігури у формі X, зберігаючи силует приземленим. Зверху ти одягла темно-синій приталений кардиган, який підкреслює твою найвужчу точку та додає шар вишуканості. Заправлена всередину чорна сорочка вільного крою забезпечує комфорт без втрати стилю. Пудрово-рожевий обруч для волосся з ніжним оздобленням перлами й кристалами є ідеальним штрихом розкоші для банківського середовища, привертаючи увагу до твого обличчя. Твій образ завершує бежева сумка, яка надає нейтральне тепло, що поєднує темний верх з легкою спідницею.",
+"8": "Повністю заправ сорочку вільного крою у спідницю, щоб одразу підкреслити лінію талії.",
+"9": "Шкіряні туфлі-човники, Пісочна плісирована спідниця «Taylor» в смужку, Сорочка з відкритою спиною на ґудзиках з натурального льону, Темно-синій мохеровий кардиган на ґудзиках — Хоча препі-стиль здається нижчим за твій формальний рівень співбесіди, я приймаю його тут, тому що основні елементи (кардиган і спідниця) самі по собі достатньо офіційні для цієї події. Це перетворює «охайний» вигляд на впевнений, доступний професійний образ замість помилки.",
+"10": "Пісочна плісирована спідниця «Taylor» в смужку — Використання плісованої спідниці нижче рівня пояса додає руху та об’єму стегнам для балансування приталеного верху, вирішуючи умову pair_balance без додавання зовнішнього шару.",
+"11": "Темно-синій мохеровий кардиган на ґудзиках — Цей темно-синій кардиган позначений як edge/below_band, але обраний для забезпечення структури та тепла вранці. Він відповідає формальності події у відкритому вигляді поверх нейтральної основи.",
+"12": "Жіноча сумка Welfare бежева — Вибір цієї бежевої замшевої сумки як аксесуару додає м’якості, щоб збалансувати жорсткі лінії шкіряного взуття, створюючи баланс у палітрі."
+}
+```
