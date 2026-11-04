@@ -1,0 +1,37 @@
+── ПРОМПТ (2218 симв.) ──
+{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.", "One item carries one thing — of two alternatives list the first; a note in brackets is not an item.", "Slot \"accessory\" is for an item no other slot fits.", "\"is_outfit\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "ITEM_LIST", "answer_schema": {"is_outfit": "yes|no", "items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory", "color_hex": "<#rrggbb or null>", "worn": "<true, or false when the description says the outfit goes without it>"}]}, "input": ["\"description\" — the outfit description"]}, "description": "Wool blend coat, straight cut, knee length, charcoal gray (#36454F), heavy wool; thermal turtleneck sweater, relaxed fit, hip length, cream white (#F5F5DC), soft merino wool; wide-leg trousers, tailored straight leg, ankle length with a slight break, slate blue (#2D4651), thickened ponte knit; leather ankle boots, low heel block style, calf height, black (#000000), water-resistant full-grain leather with a thermal lining.\n\nThis outfit works because the heavy wool coat and thickened ponte trousers provide essential insulation against the minus fifteen degree Celsius temperature and snowy conditions while she walks to work. The neutral charcoal and slate blue palette feels professional yet warm enough for an active morning commute in freezing weather, respecting her need to walk safely on salted roads. All materials selected are durable against precipitation and cold wind without sacrificing the neat, business-appropriate appearance required for her job."}
+
+── ВІДПОВІДЬ (753 симв., 3.7 с, HTTP 200) ──
+{
+  "is_outfit": "yes",
+  "items": [
+    {
+      "name": "Wool blend coat",
+      "details": "straight cut, knee length",
+      "slot": "outerwear",
+      "color_hex": "#36454F",
+      "worn": true
+    },
+    {
+      "name": "Thermal turtleneck sweater",
+      "details": "relaxed fit, hip length",
+      "slot": "top",
+      "color_hex": "#F5F5DC",
+      "worn": true
+    },
+    {
+      "name": "Wide-leg trousers",
+      "details": "tailored straight leg, ankle length with a slight break",
+      "slot": "bottom",
+      "color_hex": "#2D4651",
+      "worn": true
+    },
+    {
+      "name": "Leather ankle boots",
+      "details": "low heel block style, calf height",
+      "slot": "shoes",
+      "color_hex": "#000000",
+      "worn": true
+    }
+  ]
+}

@@ -1,43 +1,50 @@
-── ПРОМПТ (2451 симв.) ──
-{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.", "One item carries one thing — of two alternatives list the first; a note in brackets is not an item.", "Slot \"accessory\" is for an item no other slot fits.", "\"is_outfit\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "ITEM_LIST", "answer_schema": {"is_outfit": "yes|no", "items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory", "color_hex": "<#rrggbb or null>", "worn": "<true, or false when the description says the outfit goes without it>"}]}, "input": ["\"description\" — the outfit description"]}, "description": "A wool-blend cardigan in charcoal gray (#2F3542), relaxed fit with ribbed cuffs and hem, knee-length for layering warmth over trousers.\nWide-leg wool-twill trousers in deep forest green (#1B3626), mid-rise waist, full length reaching the ankle with a subtle crease for structure.\nSoft knit turtleneck in cream white (#F5F5DC), slim silhouette, hip-length to provide thermal insulation without bulk.\nChunky leather Chelsea boots in black oxblood (#4A0404), platform sole for snow traction, ankle height keeping cold out while walking to work.\nA thin merino wool scarf in heathered slate (#5D6E7C), rectangular drape style with fringed edges for texture contrast against the solid garments.\n\nThis outfit works because the three-layering system of a warm turtleneck, insulating cardigan, and sturdy trousers ensures comfort during the -15°C winter commute without restricting movement. The dark forest green trousers and charcoal outer layer provide a professional yet grounded aesthetic suitable for a work setting in snowy conditions. Chunky Chelsea boots offer essential grip on salted roads while the thick knit fabrics create a necessary barrier against biting wind and freezing precipitation."}
+── ПРОМПТ (2597 симв.) ──
+{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.", "One item carries one thing — of two alternatives list the first; a note in brackets is not an item.", "Slot \"accessory\" is for an item no other slot fits.", "\"is_outfit\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "ITEM_LIST", "answer_schema": {"is_outfit": "yes|no", "items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory", "color_hex": "<#rrggbb or null>", "worn": "<true, or false when the description says the outfit goes without it>"}]}, "input": ["\"description\" — the outfit description"]}, "description": "Heavy wool blend coat with a straight cut and knee-length hem in charcoal gray (#3d4246), providing essential wind protection against the -15°C temperature. Thick merino wool turtleneck sweater with a relaxed fit in long length for warmth, featuring a deep navy blue color (#0a192f). Dark denim jeans with a straight leg and medium rise to block snow and road salt while allowing easy movement for walking. Leather ankle boots with a low heel and rubber lug sole in black (#000000) to ensure traction on icy, salted pavement. A thick wool scarf in cream color (#f5f5dc) wrapped loosely around the neck for extra insulation. Cashmere beanie hat in light gray (#d3d3d3) with a folded cuff to keep ears warm during the morning commute. This outfit works because the heavy layers of wool and denim provide necessary thermal protection against freezing temperatures and snow accumulation, while the straight cuts and sturdy ankle boots allow her to walk comfortably to work on slippery surfaces. The dark and neutral color palette reflects professionalism suitable for an office environment without appearing overly casual, balancing her need for warmth with the requirements of her workplace dress code. Every piece is selected to withstand harsh winter conditions including road salt exposure, ensuring she arrives at work dry, warm, and presentable."}
 
-── ВІДПОВІДЬ (1190 симв., 5.7 с, HTTP 200) ──
+── ВІДПОВІДЬ (1295 симв., 6.2 с, HTTP 200) ──
 {
   "is_outfit": "yes",
   "items": [
     {
-      "name": "wool-blend cardigan",
-      "details": "relaxed fit with ribbed cuffs and hem, knee-length for layering warmth over trousers",
+      "name": "Heavy wool blend coat",
+      "details": "straight cut with a knee-length hem for essential wind protection",
       "slot": "outerwear",
-      "color_hex": "#2F3542",
+      "color_hex": "#3d4246",
       "worn": true
     },
     {
-      "name": "wide-leg wool-twill trousers",
-      "details": "mid-rise waist, full length reaching the ankle with a subtle crease for structure",
-      "slot": "bottom",
-      "color_hex": "#1B3626",
-      "worn": true
-    },
-    {
-      "name": "soft knit turtleneck",
-      "details": "slim silhouette, hip-length to provide thermal insulation without bulk",
+      "name": "Thick merino wool turtleneck sweater",
+      "details": "relaxed fit with a long length to ensure warmth",
       "slot": "top",
-      "color_hex": "#F5F5DC",
+      "color_hex": "#0a192f",
       "worn": true
     },
     {
-      "name": "chunky leather Chelsea boots",
-      "details": "platform sole for snow traction, ankle height keeping cold out while walking to work",
+      "name": "Dark denim jeans",
+      "details": "straight leg and medium rise to block snow and road salt while allowing easy movement",
+      "slot": "bottom",
+      "color_hex": "null",
+      "worn": true
+    },
+    {
+      "name": "Leather ankle boots",
+      "details": "low heel with a rubber lug sole for traction on icy, salted pavement",
       "slot": "shoes",
-      "color_hex": "#4A0404",
+      "color_hex": "#000000",
       "worn": true
     },
     {
-      "name": "thin merino wool scarf",
-      "details": "rectangular drape style with fringed edges for texture contrast against the solid garments",
+      "name": "Thick wool scarf",
+      "details": "wrapped loosely around the neck for extra insulation",
       "slot": "scarf",
-      "color_hex": "#5D6E7C",
+      "color_hex": "#f5f5dc",
+      "worn": true
+    },
+    {
+      "name": "Cashmere beanie hat",
+      "details": "with a folded cuff to keep ears warm during the morning commute",
+      "slot": "headwear",
+      "color_hex": "#d3d3d3",
       "worn": true
     }
   ]
