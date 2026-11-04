@@ -95,13 +95,10 @@ _ЛИШАЄТЬСЯ_З_МАКІЯЖЕМ = ("Change the clothes and the makeup on
                  як="paint exactly this makeup on her face"),
         _ЗП.Поле("how_to_wear", "how the items are worn", як="follow it"),
         _ЗП.Поле("previous_picture", "what was wrong with the previous picture", як="draw it again"),
-        # її власна річ — «саме ця»; рядок іде лише тоді, коли така річ у списку є
-        _ЗП.Поле("item_photos[].hers", "her own item", як="draw exactly this one"),
-        _ЗП.Поле("items_without_photo[].hers", "her own item", як="draw exactly this one"),
     ),
     правила=(
         _ЛИШАЄТЬСЯ,
-        "One image with one frame: the same single woman filling the frame, in the proportions of photo 1.",
+        "One frame in the proportions of photo 1, with the same single woman filling it.",
     ),
     вихід="TRY_ON_IMAGE",
     межі=("лише_вхід",),
@@ -127,6 +124,8 @@ def промпт(з_фото=(), без_фото=(), макіяж=None, як_н�
                 previous_picture=("wider than photo 1: several frames side by side" if повтор else None))
     о = ПРИМІРЯННЯ if not мк else _dc.replace(
         ПРИМІРЯННЯ, правила=(_ЛИШАЄТЬСЯ_З_МАКІЯЖЕМ,) + ПРИМІРЯННЯ.правила[1:])
+    if any(р.get("hers") for р in дані["item_photos"] + дані["items_without_photo"]):
+        о = _dc.replace(о, правила=о.правила + ("For any item marked «hers», draw exactly that item.",))
     return _json.dumps(_ЗП.зібрати(о, дані), ensure_ascii=False)
 
 

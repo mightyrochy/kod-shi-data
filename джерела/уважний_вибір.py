@@ -107,8 +107,7 @@ _КОНТЕКСТ = (
 # код рахує причини, а дві на річ робили б лічбу подвійною.
 ОЦІНКА = _ЗП.Оголошення(
     задача="оцінка_речей",
-    роль=("You are the stylist. Before any outfit is put together, you judge every item "
-          "of the list on its own: does it suit her and this occasion?"),
+    роль=_ВИМ.РОЛЬ_ЗАСТОСУНКУ,
     вхід=_КОНТЕКСТ + (
         _ЗП.Поле("items", "the items to judge, grouped by kind; " + _ОПИС_РЕЧІ, треба=True),
     ),
@@ -132,8 +131,7 @@ _КОНТЕКСТ = (
 # порожнім; «порівнюй усередині групи» — сенс турніру в короткому списку.
 ТУРНІР = _ЗП.Оголошення(
     задача="турнір_речей",
-    роль=("You are the stylist. The items are split into small groups, each of one slot; "
-          "from every group you pick the items that suit her and this occasion best."),
+    роль=_ВИМ.РОЛЬ_ЗАСТОСУНКУ + " Pick the items that suit her and this occasion best.",
     вхід=_КОНТЕКСТ + (
         _ЗП.Поле("groups", "the groups; the key names the kind and the group; " + _ОПИС_РЕЧІ,
                  треба=True),
