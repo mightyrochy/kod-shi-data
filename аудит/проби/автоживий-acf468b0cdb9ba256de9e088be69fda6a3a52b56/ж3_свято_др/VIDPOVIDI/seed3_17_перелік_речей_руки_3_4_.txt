@@ -1,0 +1,45 @@
+── ПРОМПТ (2655 симв.) ──
+{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.", "One item carries one thing — of two alternatives list the first; a note in brackets is not an item.", "Slot \"accessory\" is for an item no other slot fits.", "\"is_outfit\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "ITEM_LIST", "answer_schema": {"is_outfit": "yes|no", "items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory", "color_hex": "<#rrggbb or null>", "worn": "<true, or false when the description says the outfit goes without it>"}]}, "input": ["\"description\" — the outfit description"]}, "description": "A fitted silk blouse in midnight blue, flowing cut that skims the torso with a slightly dropped shoulder, soft satin finish, #191970 color, smooth woven fabric.\nA tailored wool-blend blazer in charcoal gray, structured yet soft silhouette, knee-length hem, matte weave texture, #36454F color, heavy felted fabric.\nSlim-leg trousers in the same charcoal wool blend, tapered leg that ends just above a sharp heel, full length, subtle stretch for comfort, #36454F color, structured woven material.\nHeeled pumps in polished black leather, classic pointed toe, 8 cm height, sleek silhouette, #000000 color, smooth calfskin fabric.\nA delicate gold necklace with a single pendant and matching stud earrings, thin chain cut, medium length, champagne hue, #F7E7CE color, high-carat metal.\nThis outfit perfectly balances the \"smart\" dress code required for an evening birthday celebration while embracing the autumn season's cooler temperature through the inclusion of a tailored blazer. The deep charcoal and midnight blue tones harmonize beautifully under artificial party lighting, creating an elegant and cohesive look that feels celebratory without being overly formal. You are clearly expressing your wish to look refined and polished for a close friend's special occasion, with the trousers providing comfort and the heels adding just the right amount of sophistication for dancing later in the night."}
+
+── ВІДПОВІДЬ (1258 симв., 5.4 с, HTTP 200) ──
+{
+  "is_outfit": "yes",
+  "items": [
+    {
+      "name": "blouse",
+      "details": "fitted silk blouse with flowing cut, slightly dropped shoulder, soft satin finish",
+      "slot": "top",
+      "color_hex": "#191970"
+    },
+    {
+      "name": "blazer",
+      "details": "tailored wool-blend blazer, structured yet soft silhouette, knee-length hem, matte weave texture",
+      "slot": "outerwear",
+      "color_hex": "#36454F"
+    },
+    {
+      "name": "trousers",
+      "details": "slim-leg trousers in same charcoal wool blend, tapered leg ending just above heel, full length, subtle stretch, structured woven material",
+      "slot": "bottom",
+      "color_hex": "#36454F"
+    },
+    {
+      "name": "shoes",
+      "details": "heeled pumps with polished black leather, classic pointed toe, 8 cm height, sleek silhouette",
+      "slot": "shoes",
+      "color_hex": "#000000"
+    },
+    {
+      "name": "necklace",
+      "details": "delicate gold necklace with single pendant, thin chain cut, medium length",
+      "slot": "collar_necklace",
+      "color_hex": "#F7E7CE"
+    },
+    {
+      "name": "earrings",
+      "details": "matching stud earrings with thin chain cut, medium length",
+      "slot": "earrings",
+      "color_hex": "#F7E7CE"
+    }
+  ]
+}
