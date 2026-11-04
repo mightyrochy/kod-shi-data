@@ -265,7 +265,8 @@ def не_вимір(x):
     if т == "невідомо":
         нв.update(свідок="невідомо", вікно=None)
     elif not нв.get("вікно") and isinstance(x, dict):
-        нв.update(свідок="shop_word", вікно=x.get("вікно"))
+        нв.setdefault("свідок", "shop_word")
+        нв["вікно"] = x.get("вікно")
     return нв or dict(свідок="невідомо", вікно=None)
 
 
