@@ -29,7 +29,7 @@ async function головна(){
     const {chromium} = require('playwright');
     const браузер = await chromium.launch({channel: 'chrome', headless: true});
     try { const сторінка = await браузер.newPage({viewport: {width: 390, height: 844}});
-      const стиль = fs.readFileSync(path.join(джерела, 'показ.html'), 'utf8').match(/<style[^>]*>([\s\S]*?)<\/style>/)[1];
+      const стиль = fs.readFileSync(path.join(джерела, 'показ.css'), 'utf8');
       for (const [імя, д] of [['ДО', до], ['ПІСЛЯ', після]]) { await сторінка.setContent(д.serialize());
         await сторінка.addStyleTag({content: стиль}); await сторінка.screenshot({path: path.join(вихід, імя + '.png')}); }
     } finally { await браузер.close(); }
