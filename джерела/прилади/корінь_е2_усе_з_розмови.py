@@ -150,7 +150,8 @@ def відбиток_контексту(функції, і):
         if вигляд(ф):
             continue
         цілі = dict(записи=sorted({з['ціль'] for з in ф['записи']}),
-            приймачі=sorted(set(ф['приймачі'])),
+            приймачі=sorted({к['назва'].removeprefix('window.') for к in ф['виклики']
+                if к['назва'] in ('ЧАТ_П.push', 'window.ЧАТ_П.push')}),
             дом=sorted({з['елемент'] for з in ф['дом_записи']}),
             сховище=sorted({json.dumps(з, ensure_ascii=False, sort_keys=True)
                 for з in ф['сховище_записи']}))
