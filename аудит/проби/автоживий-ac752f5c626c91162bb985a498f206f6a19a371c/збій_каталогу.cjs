@@ -45,6 +45,9 @@ json.dumps({'поле': _живий_поле, 'id': _живий_річ.get('id')
                 await page.evaluate(async () => приладМостуП({}, "_живий_річ.clear()\n_живий_річ.update(_живий_до)\nБ._КЕШ_ПАКЕТА.clear()\n'відновлено'"));
                 console.log('Ж7: видима відмова ' + JSON.stringify({поле: field, статус: visible.статус}));
               }
+            } catch (error) {
+              results.push({помилка_приладу: String(error.stack || error)});
+              console.log('Ж7: пошкодження не перевірено: ' + String(error.message || error));
             } finally {
               fs.writeFileSync(path.join(out, 'пошкоджені_поля.json'), JSON.stringify(results, null, 2));
               await page.evaluate(async () => приладМостуП({}, "if '_живий_до' in globals():\n    _живий_річ.clear()\n    _живий_річ.update(_живий_до)\n    Б._КЕШ_ПАКЕТА.clear()\n'відновлено'"));
