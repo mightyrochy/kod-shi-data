@@ -7,6 +7,8 @@
 `feed` не імпортує.
 """
 from фід_слот import (слот, тип_речі, альтернативні_слоти as _альтернативні_слоти)
+import ast
+import json
 
 # ── АТРИБУТИ ВЕРХНЬОГО ШАРУ (тема-11) ──────────────────────────────────────
 # ЩО ЦЕ МІНЯЄ В РІШЕННІ (before/after). Тема-11 має 44 чинні правила, і майже кожне
@@ -193,6 +195,20 @@ def верхні_атрибути(offer):
                                   "простібка_орієнтація", "ворс", "оверсайз", "довжина_рівень",
                                   "довжина_джерело", "наповнювач", "вовна_частка", "fill_power",
                                   "грамаж_г", "fp_без_грамажу") if к in р}
+    # Читаємо форму параметрів до всіх споживачів, зокрема визначення слота й типу.
+    # Готовий запис вище не потребує сирих параметрів крамниці.
+    пар = offer.get("параметри")
+    if isinstance(пар, str):
+        try:
+            пар = json.loads(пар)
+        except json.JSONDecodeError:
+            try:
+                пар = ast.literal_eval(пар)
+            except (ValueError, SyntaxError) as збій:
+                raise ValueError("shop_params_unreadable:%s" % offer.get("id")) from збій
+        if not isinstance(пар, dict):
+            raise ValueError("shop_params_not_object:%s" % offer.get("id"))
+        offer = dict(offer, параметри=пар)
     сл = слот(offer)
     альт = _альтернативні_слоти(offer, сл) if сл else ()
     if сл != "верхній_шар" and "верхній_шар" not in альт:
@@ -200,14 +216,6 @@ def верхні_атрибути(offer):
     текст = ("%s %s %s" % (offer.get("категорія") or "", offer.get("назва") or "",
                            offer.get("опис") or "")).lower()
     пар = offer.get("параметри") or {}
-    if isinstance(пар, str):
-        # П.14 (СТАНДАРТ §4, випадок «б» — інгест, не живий шлях): `параметри`
-        # приходять рядком із ЧУЖОГО фіду, і рядок, який не є літералом Python,
-        # — це нормальний стан такого входу, а не поломка коду. Тому тип вузький
-        # і названий: `literal_eval` кидає рівно ValueError (не літерал) і
-        # SyntaxError (не розбирається). Будь-що інше — наше, і летить далі.
-        try: пар = __import__("ast").literal_eval(пар)
-        except (ValueError, SyntaxError): пар = {}
     текст_пар = " ".join("%s %s" % (k, v) for k, v in пар.items()).lower()
     повний = текст + " " + текст_пар
     a = {}
