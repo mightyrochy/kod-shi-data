@@ -1033,7 +1033,7 @@ def опори_зниклих_образів(образи, попередній_
     пари = set(_ПВ.пари_ремонту(нові, поп))
     живі = [(_ключ_опори(x), {str(r).split("/")[0] for r in (x.get("речі") or [])})
             for о in нові for x in (о.get("опори") or []) if isinstance(x, dict)]
-    return [_утрачена(x, п) for j, п in enumerate(поп) if j not in пари
+    return [_утрачена(x, п) for позиція, п in enumerate(поп) if позиція not in пари
             for x in (п.get("опори") or []) if isinstance(x, dict)
             and not any(к == _ключ_опори(x) and р & {str(r).split("/")[0] for r in (x.get("речі") or [])}
                         for к, р in живі)]

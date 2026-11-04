@@ -30,8 +30,8 @@ def пари_ремонту(нові, попередні):
         if вих[к] is not None:
             continue
         мій = склад_ремонту(о)
-        п = max((j for j in range(len(попередні)) if j not in взято),
-                key=lambda j: (len(мій & склади[j]), -len(мій ^ склади[j]), -j), default=None)
+        п = max((позиція for позиція in range(len(попередні)) if позиція not in взято),
+                key=lambda позиція: (len(мій & склади[позиція]), -len(мій ^ склади[позиція]), -позиція), default=None)
         if п is not None and мій & склади[п]:
             вих[к] = п
             взято.add(п)
