@@ -1,0 +1,27 @@
+{
+ "версія": 1,
+ "запит": {
+  "model": "qwen/qwen3.5-9b",
+  "max_tokens": 4000,
+  "messages": [
+   {
+    "role": "user",
+    "content": [
+     {
+      "type": "text",
+      "text": "{\"task\": {\"role\": \"You read the description of an outfit and list its items as data.\", \"rules\": [\"One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.\", \"One item carries one thing — of two alternatives list the first; a note in brackets is not an item.\", \"Slot \\\"accessory\\\" is for an item no other slot fits.\", \"\\\"is_outfit\\\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note.\"], \"limits\": [\"Rely only on the input: do not invent what it does not contain.\", \"The answer is one JSON object following \\\"answer_schema\\\", without explanations and without ```.\"], \"language\": \"English\", \"answer\": \"ITEM_LIST\", \"answer_schema\": {\"is_outfit\": \"yes|no\", \"items\": [{\"name\": \"<what the item is>\", \"details\": \"<its cut, length and fabric>\", \"slot\": \"top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory\", \"color_hex\": \"<#rrggbb or null>\", \"worn\": \"<true, or false when the description says the outfit goes without it>\"}]}, \"input\": [\"\\\"description\\\" — the outfit description\"]}, \"description\": \"A structured blazer in charcoal grey with a sharp shoulder line and notched lapel, medium length hitting just above the hip, cut from a durable wool-blend twill with a matte finish.\\nA tailored straight-leg trouser in dark indigo denim that falls to the ankle, featuring a clean front without distressing, crafted from sturdy cotton with a slight stretch for comfort during movement.\\nA fitted crewneck blouse in cream white made of smooth poplin fabric that drapes neatly under the blazer, providing a soft contrast to the structured outer layers.\\nMinimalist gold hoop earrings in polished brass to add a touch of subtle elegance without being distracting in a professional setting.\\nA sleek leather tote bag in black with a structured base and one main compartment, sized to hold a laptop and interview essentials while maintaining a polished silhouette.\\nLow-top ankle boots in smooth black leather with a modest block heel and a rounded toe, offering stability and ease of walking through the office floors.\\n\\nThis outfit works because it strikes the perfect balance between professional polish and approachable casualness required for an entry-level analyst role at a tech startup. The blazer and denim combination adheres to the 'everyday' formality band while signaling readiness for a morning interview in autumn weather, as no outer coat is needed above 20°C or if it remains cool indoors. The neutral color palette of charcoal, indigo, cream, and black allows her features to stand out without clashing with the bank's likely modern office aesthetic, and the practical footwear ensures she feels confident moving between the reception area and potential interview rooms.\"}"
+     }
+    ]
+   }
+  ],
+  "temperature": 1
+ },
+ "відповідь": {
+  "status": 200,
+  "contentType": "application/json",
+  "headers": {
+   "x-model": "qwen/qwen3.5-9b"
+  },
+  "body": "{\"content\":[{\"type\":\"text\",\"text\":\"{\\n  \\\"is_outfit\\\": \\\"yes\\\",\\n  \\\"items\\\": [\\n    {\\n      \\\"name\\\": \\\"blazer\\\",\\n      \\\"details\\\": \\\"structured with a sharp shoulder line, notched lapel, medium length hitting just above the hip, cut from durable wool-blend twill with a matte finish\\\",\\n      \\\"slot\\\": \\\"outerwear\\\",\\n      \\\"color_hex\\\": \\\"#36454F\\\",\\n      \\\"worn\\\": true\\n    },\\n    {\\n      \\\"name\\\": \\\"trouser\\\",\\n      \\\"details\\\": \\\"tailored straight-leg, falls to the ankle, clean front without distressing, crafted from sturdy cotton with a slight stretch\\\",\\n      \\\"slot\\\": \\\"bottom\\\",\\n      \\\"color_hex\\\": \\\"#192A56\\\",\\n      \\\"worn\\\": true\\n    },\\n    {\\n      \\\"name\\\": \\\"blouse\\\",\\n      \\\"details\\\": \\\"fitted crewneck, made of smooth poplin fabric that drapes neatly under the blazer\\\",\\n      \\\"slot\\\": \\\"top\\\",\\n      \\\"color_hex\\\": \\\"#FFFEF0\\\",\\n      \\\"worn\\\": true\\n    },\\n    {\\n      \\\"name\\\": \\\"earrings\\\",\\n      \\\"details\\\": \\\"minimalist hoop in polished brass to add subtle elegance\\\",\\n      \\\"slot\\\": \\\"earrings\\\",\\n      \\\"color_hex\\\": \\\"#FFD700\\\",\\n      \\\"worn\\\": true\\n    },\\n    {\\n      \\\"name\\\": \\\"bag\\\",\\n      \\\"details\\\": \\\"sleek tote with a structured base and one main compartment, sized to hold a laptop and interview essentials\\\",\\n      \\\"slot\\\": \\\"bag\\\",\\n      \\\"color_hex\\\": \\\"#000000\\\",\\n      \\\"worn\\\": true\\n    },\\n    {\\n      \\\"name\\\": \\\"boots\\\",\\n      \\\"details\\\": \\\"low-top ankle boots with a modest block heel and rounded toe, smooth leather offering stability\\\",\\n      \\\"slot\\\": \\\"shoes\\\",\\n      \\\"color_hex\\\": \\\"#000000\\\",\\n      \\\"worn\\\": true\\n    }\\n  ]\\n}\"}],\"usage\":{\"input_tokens\":677,\"output_tokens\":453},\"stop_reason\":\"end_turn\"}"
+ }
+}
