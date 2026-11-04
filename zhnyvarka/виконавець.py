@@ -131,16 +131,31 @@ _РОЗДІЛ_ТАК = re.compile(r"sukn|platt|plat[iy]|dress|bluz|blous|sorochk
   кандидати = кандидати.filter(e => e.tagName !== 'BODY' && e.tagName !== 'HTML');
   const зНазвою = кандидати.filter(e => e.querySelector(назва));
   if (зНазвою.length) кандидати = зНазвою;
-  else if (h1) кандидати = [];
-  const вузол = кандидати[кандидати.length - 1];
-  const однозначно = вузол && кандидати.every(e => {
-    let предок = вузол;
-    while (предок) { if (предок === e) return true; предок = предок.parentElement; }
+  else if (h1 || (рецепт && рецепт.назва)) кандидати = [];
+  const містить = (обгортка, елемент) => {
+    let предок = елемент;
+    while (предок) { if (предок === обгортка) return true; предок = предок.parentElement; }
     return false;
+  };
+  const обгортка = кандидати[0];
+  const однозначно = обгортка && кандидати.every(e => містить(обгортка, e));
+  const власники = [];
+  (однозначно ? обгортка.querySelectorAll(назва) : []).forEach(заголовок => {
+    const предки = кандидати.filter(e => містить(e, заголовок));
+    const власник = предки[предки.length - 1];
+    if (!власники.includes(власник)) власники.push(власник);
   });
-  const блок = однозначно ? вузол.cloneNode(true) : null;
+  const основні = власники.filter(e => !власники.some(інший => інший !== e && містить(інший, e)));
+  const вузол = основні.length === 1 ? основні[0] : кандидати[кандидати.length - 1];
+  const підтверджено = основні.length === 1 || (!основні.length && кандидати.every(e => містить(e, вузол)));
+  const блок = однозначно && підтверджено ? вузол.cloneNode(true) : null;
   if (блок && рецепт && рецепт.виключити) блок.querySelectorAll(рецепт.виключити).forEach(e => e.remove());
   if (блок) {
+    const вкладені = [...блок.querySelectorAll(селектор || '[itemtype$="/Product"], [itemtype$="/Product/"]')];
+    h1 = [...блок.querySelectorAll(назва)].find(e => !вкладені.some(інший => містить(інший, e))) || null;
+    if (h1) вкладені.forEach(e => {
+      if (!містить(e, h1) && e.querySelector(назва)) e.remove();
+    });
     блок.querySelectorAll('script, style, noscript, [class*="related"], [class*="similar"], [class*="recommend"], [class*="upsell"], [class*="viewed"]').forEach(e => e.remove());
     блок.querySelectorAll('header, footer, nav').forEach(e => { if (!e.querySelector(назва)) e.remove(); });
   }

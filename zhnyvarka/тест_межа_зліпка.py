@@ -128,6 +128,22 @@ class ПередаванняМежі(unittest.TestCase):
         self.assertNotIn('Зовнішній текст', dom['text'])
         self.assertNotIn('чужий', dom['text'])
 
+    def test_неоднозначні_межі_без_заголовка(self):
+        """Не обирає останнього сусіда без заголовка, що підтверджує власника."""
+        html = '''<article class="product"><section class="product"><div class="desc">Перша річ</div></section>
+            <section class="product"><div class="desc">Друга річ</div></section></article>'''
+        рецепт = {'блок': '.product', 'опис': '.desc'}
+        факти = жниварка.факти_з_картки(html, 'https://shop.test/product/1', рецепт)
+        self.assertIsNone(факти['опис'])
+        self.assertEqual(факти['межа_блоку'], 'неоднозначна_межа_блоку')
+        with sync_playwright() as p:
+            браузер = p.chromium.launch(headless=True)
+            сторінка = браузер.new_page()
+            сторінка.set_content(html)
+            dom = сторінка.evaluate(виконавець.ЗЛІПОК_DOM, рецепт)
+            браузер.close()
+        self.assertEqual(dom['text'], '')
+
     def test_сирий_текст_зліпка_не_дає_складу_й_ціни(self):
         """Бере склад і ціну з фактів власного блоку, попри чужий сирий текст."""
         html = '''<div itemscope itemtype="https://schema.org/Product">
@@ -139,6 +155,41 @@ class ПередаванняМежі(unittest.TestCase):
                                           {'text': 'Чужа пропозиція: 500 грн, 80% поліестер'})
         self.assertEqual(картка['склад'], ['100% льон'])
         self.assertEqual(картка['ціна'], '2500.0 UAH')
+
+    def test_вкладений_товар_не_підміняє_основний(self):
+        """Звужує обгортки одного заголовка, зберігаючи власника всіх полів."""
+        with sync_playwright() as p:
+            браузер = p.chromium.launch(headless=True)
+            сторінка = браузер.new_page()
+            for мікродані in (False, True):
+                for тег in ('h1', 'h4'):
+                    for є_опис in (False, True):
+                        with self.subTest(мікродані=мікродані, тег=тег, є_опис=є_опис):
+                            атрибут = 'itemscope itemtype="https://schema.org/Product"' if мікродані else 'class="product"'
+                            рецепт = {'назва': тег, 'опис': '.desc'}
+                            if not мікродані:
+                                рецепт['блок'] = '.product'
+                            свій_опис = '<div class="desc">Опис основної сукні</div>' if є_опис else ''
+                            html = f'''<article {атрибут}><section {атрибут}>
+                                <aside class="related"><article {атрибут}>
+                                  <{тег}>Чужа спідниця</{тег}><div class="desc">Опис чужої спідниці</div>
+                                  <span class="sku">ЧУЖИЙ-1</span></article></aside>
+                                <article {атрибут}><{тег}>Інша річ</{тег}>
+                                  <div class="desc">Опис іншої речі</div><span class="sku">ЧУЖИЙ-2</span>
+                                </article><{тег}>Основна сукня</{тег}>{свій_опис}</section></article>'''
+                            факти = жниварка.факти_з_картки(html, 'https://shop.test/product/1', рецепт)
+                            картка = виконавець.картка_з_dom('https://shop.test/product/1', html, {}, факти)
+                            for запис in (факти, картка):
+                                self.assertEqual(запис['назва'], 'Основна сукня')
+                                self.assertEqual(запис['опис'] or '', 'Опис основної сукні' if є_опис else '')
+                                self.assertFalse(запис.get('артикул'))
+                            сторінка.set_content(html)
+                            dom = сторінка.evaluate(виконавець.ЗЛІПОК_DOM, рецепт)
+                            self.assertEqual(dom['h1'], 'Основна сукня')
+                            self.assertNotIn('Чуж', dom['text'])
+                            self.assertNotIn('Інша річ', dom['text'])
+                            self.assertEqual('Опис основної сукні' in dom['text'], є_опис)
+            браузер.close()
 
 
 if __name__ == "__main__":
