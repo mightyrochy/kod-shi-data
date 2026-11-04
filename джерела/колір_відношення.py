@@ -107,6 +107,7 @@ A1/A2 = V2·C2/(V1·C1)) — це відношення площ, а площі �
 вердикт кон'юнкції — кон'юнкція вердиктів умов, але сила не знижується, коли обидві умови на краю.
 """
 import math
+import face_features as _ОБ
 from statistics import NormalDist
 from colorspace import RELATIONS, у_коло_художника, тепло, to_rgb
 # структура рис для рішення (`brief`) і голоси рис за колір (`relation_coverage`, `feature_votes`) — тут, а не в
@@ -421,7 +422,7 @@ def сила(ра, рб, клас, певність=True, поріг=None):
     гучні (K-COMP-05): сила класу-кон'юнкції — найменша з сил умов (`_мінімум`); `warm_cool` — контраст
     теплого й холодного: пів різниці теплоти (`colorspace.тепло`, вісь b* практиків), на певність підтону; `achromatic` —
     1 − τa·τb: пара тримається кольором без тону."""
-    if ра is None or рб is None:
+    if ра is None or рб is None or any(р.get("свідок") == "model_hex" for р in (ра, рб)):
         return НЕВІДОМО
     τа, τб = (певність_тону(ра), певність_тону(рб)) if певність else ((1.0, 1.0), (1.0, 1.0))
     if клас in ВІКНА_ТОНУ:
@@ -660,7 +661,8 @@ def сила_відлуння_очей(р, очі):
     плавні вікна одного кодування, без нових кутів CIELAB і без читання слів.
     Нема райдужки чи тону — невідомо; відсутні осі не підміняються дефолтом.
     """
-    if р is None or очі is None or р["коло"] is None or очі["коло"] is None:
+    if (р is None or очі is None or очі.get("свідок") == "model_hex"
+            or р["коло"] is None or очі["коло"] is None):
         return НЕВІДОМО
     пів = RELATIONS["analogous"][1]
     відстань, дельта = розкид_дуг(р["коло"], очі["коло"]), _дельта_h(р, очі)   # раз: далі лише читання
@@ -717,6 +719,8 @@ def сила_відлуння_очей(р, очі):
 
 def brief(F, intent, source="uncontrolled"):
     """Структура для рішення: спектри по рисах + перегуки + напруги + ЯВНА діра."""
+    вимір = _ОБ.ознаки(F, source)
+    source = вимір["протокол"]
     return dict(
       інтент=intent,
       спектри_рис={nm:dict(тон=sp["тон"],
@@ -730,7 +734,8 @@ def brief(F, intent, source="uncontrolled"):
          for k,v in resonance(F,intent).items()},
       покриття_відношень=relation_coverage(F),
       гейт=gate_conclusions(source),
-      екстракція=extraction_sanity(F),
+      екстракція=(extraction_sanity(F) if вимір["надійність"]["value"] > 0.0
+                  else dict(ok=None, підозри=[])),
       примітка=("код віддає ДАНІ: координати рис, спектри відношень, перегуки, напруги. "
                 "Вибір відношення й рішення — шар вище (інтент + сучасна практика стилістів). "
                 "Практика не закодована навмисно: Li 2025 показав, що правило-базована "
@@ -741,20 +746,24 @@ def relation_coverage(F, step_h=2, step_L=8, rels=(0.15,0.35,0.55,0.75), min_vot
     """ДАНІ, не вердикт: яку частку gamut охоплює кожне відношення для цієї особи.
     Без ok/PASS/FAIL — рішення ухвалює шар вище. Крок дрібний: дуги бувають вужчі
     за грубу сітку (моя попередня сітка 20° давала хибний нуль на дузі 24°)."""
+    if not spectra_by_feature(F, "analogous"):
+        return {rel: None for rel in RELATIONS}
     grid=[(L, c_max(L,h)*r*math.cos(math.radians(h)), c_max(L,h)*r*math.sin(math.radians(h)))
           for L in range(15,95,step_L) for h in range(0,360,step_h) for r in rels]
     out={}
     for rel in RELATIONS:
+        спектри = spectra_by_feature(F, rel)
         n=sum(1 for lab in grid
-              if sum(1 for v in feature_votes(F,lab,rel).values() if v["тон"]=="так")>=min_votes)
+              if sum(1 for v in feature_votes(F,lab,rel,спектри=спектри).values() if v["тон"]=="так")>=min_votes)
         out[rel]=round(n/len(grid),3)
     return out
 
 
-def feature_votes(F, lab, intent):
+def feature_votes(F, lab, intent, *, спектри=None):
     """Як КОЖНА риса голосує за конкретний колір — окремо, без злиття."""
     L,C,h=lch(lab); cm=c_max(L,h); rel=C/cm if cm>1e-6 else 0
-    SP=spectra_by_feature(F,intent); out={}
+    SP=spectra_by_feature(F,intent) if спектри is None else спектри
+    out={}
     for nm,sp in SP.items():
         in_h=(any(сила_точки_в_дузі(C,h,a)>=КРАЙ_ДУГИ for a in sp["тон"]) if sp["тон"] else None)
         in_L=[k for k,(lo,hi) in sp["світлота"].items() if lo<=L<=hi]

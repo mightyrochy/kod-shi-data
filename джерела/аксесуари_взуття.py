@@ -9,6 +9,7 @@ import fit as ПС
 import trace as _СЛ
 import внутрішня_мова as _ВМ
 import колір_річ as _КР
+from colorspace import MIN_TO_EMIT
 from аксесуари_реєстр import зн as _зн
 from аксесуари_погода import покриття_ноги   # один свідок смуги den (K-HOS-01)
 
@@ -297,7 +298,9 @@ def L_шкіри(особа):
     не кличе. Джерело істини одне — `рез["особа"]["L_шкіри"]`, те саме число, з
     якого `колір_образу` будує цільові вікна.
     """
-    L = (особа or {}).get("L_шкіри")
+    if not особа or особа.get("довіра", 0.0) < MIN_TO_EMIT:
+        return None
+    L = особа.get("L_шкіри")
     return float(L) if L is not None else None
 
 
