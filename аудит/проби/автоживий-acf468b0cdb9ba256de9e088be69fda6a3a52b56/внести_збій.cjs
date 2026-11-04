@@ -5,6 +5,7 @@ module.exports = async function(стор) {
   const вихід = path.resolve(process.env.ZNIMKY, '..');
   const записи = [];
   for (const поле of ['каблук_см', 'сезон_тканини']) {
+    global.__ж7_внесення = поле;
     const код = `
 import json, feed as Ф, міст_пакет as М, profile as ПР
 if '_цілий_прогін_ж7' not in globals():
@@ -42,6 +43,7 @@ json.dumps({'поле': _поле_ж7})
     if (!дані.зміни.length || дані.успіх || !дані.статус || !дані.діагноз.some(р => /sensory_limit_unreadable|fabric_band_unreadable/.test(р)))
       throw Error('Сцена ж7: очікуваного видимого збою для ' + поле + ' не доведено; див. пошкоджені_поля.json');
   }
+  global.__ж7_внесення = null;
   const доказ = await стор.evaluate(() => приладМостуП({}, `
 _р_ж7 = {'id': 'проба-ж7-човники', 'слот': 'взуття', 'тип': 'човники', 'каблук_см': 'битий запис'}
 json.dumps({'річ': _р_ж7, 'вето': ПР.сенсорний_збіг('підбори', _р_ж7)}, ensure_ascii=False)
