@@ -2248,6 +2248,30 @@ def паспорт_з_шару(внутрішня, сценарій, вето_ч
         об["креативне"] = _креативне
     elif isinstance(досі.get("креативне"), bool):
         п["креативне"] = досі["креативне"]
+    # Лише ці три булеві входи: False є фактом, unknown не стирає попередній факт.
+    for поле, ім in (("declared_break", "заявлений_злам"),
+                     ("declared_column", "заявлена_колона"),
+                     ("matching_opaque_tights", "тон_колготи")):
+        значення = _ВМ.ключ(поле, в.get(поле))
+        if значення is not None:
+            п[ім] = значення
+            об[ім] = значення
+        elif isinstance(досі.get(ім), bool):
+            п[ім] = досі[ім]
+    for поле, ім in (("role", "роль"), ("season", "сезон"),
+                     ("life_transition", "життєвий_перехід")):
+        значення = _ВМ.ключ(поле, в.get(поле))
+        if значення is not None:
+            п[ім] = значення
+            об[ім] = значення
+        elif досі.get(ім) is not None:
+            п[ім] = досі[ім]
+    _супутник = в.get("companion_formality")
+    if isinstance(_супутник, (int, float)) and not isinstance(_супутник, bool) and 0 <= _супутник <= 10:
+        п["супутник_рівень"] = _супутник
+        об["супутник_рівень"] = _супутник
+    elif досі.get("супутник_рівень") is not None:
+        п["супутник_рівень"] = досі["супутник_рівень"]
     for поле, ім in (("activity", "активність"), ("surface", "поверхня")):
         к = _ВМ.ключ(поле, в.get(поле)) or досі.get(ім)
         if к:
@@ -3152,6 +3176,13 @@ def _тлумачення_кодів_en(поле, описи):
 
 
 _ПОЛЯ_EN = {
+    "role": _ПН.СХЕМА_ПАСПОРТА["роль"],
+    "season": _ПН.СХЕМА_ПАСПОРТА["сезон"],
+    "companion_formality": _ПН.СХЕМА_ПАСПОРТА["супутник_рівень"],
+    "life_transition": _ПН.СХЕМА_ПАСПОРТА["життєвий_перехід"],
+    "declared_break": _ПН.СХЕМА_ПАСПОРТА["заявлений_злам"],
+    "declared_column": _ПН.СХЕМА_ПАСПОРТА["заявлена_колона"],
+    "matching_opaque_tights": _ПН.СХЕМА_ПАСПОРТА["тон_колготи"],
     "host_context": "whether the event has a host or stakes: yes when her words name one, no when explicitly absent, otherwise unknown; not whether she herself is the host; do not infer from the occasion type",
     "creative_environment": "whether the event is in a creative environment: yes when named, no when explicitly denied, otherwise unknown; not her wish for a bold outfit; do not infer from the occasion type",
     "direct_sun": "direct sunlight on her: yes only when her words name direct sun, no when they name shade or no sun; otherwise unknown; do not infer from temperature, precipitation or season",
@@ -3512,9 +3543,9 @@ def _коди_розмови():
     поля = {ім: с for ім, с in _ВМ.СЦЕНАРІЙ.items() if ім not in _БЕЗ_У_РОЗМОВІ}
     # «"quote": "\"йога…\", \"value\": "everyday"» — цитата в екранованих лапках
     # ламала JSON, хід ішов шляхом main (виклик 0), і нагода губилась; промпт сам несе лапки екранованими
-    р = ["Fields with a code or a number — each is a JSON object {\"quote\": the fragment of her words "
-         "it stands on, copied letter for letter, \"value\": its value}; \"quote\" is a plain JSON string of "
-         "her letters, with no quotation marks or backslashes of its own around them:"]
+    р = ["Coded and numeric fields: {\"quote\": her exact fragment as a plain JSON string, "
+         "\"value\": its value}. Quote copies her letters, without extra quotation marks or "
+         "backslashes around them:"]
     for ім, с in поля.items():
         if _група(ім, с) == "пари":
             тип = _довідник_en(ім) if ім in _ГРУПИ_ДОВІДНИКА else _тип_en(с)

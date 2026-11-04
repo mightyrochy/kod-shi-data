@@ -122,7 +122,10 @@ _ВИПАДОК_У_ДНІ = {"місце": "place", "формат": "setting", "
                   "сонце": "direct_sun",
                   "господар": "host_context", "креативне": "creative_environment",
                   "пора": "part_of_day", "ошатність": "formality"}
-ПОЛЯ_ВИПАДКУ = {"подія": "event", "нагода": "occasion", "місце": "place", "формат": "setting",
+ПОЛЯ_ВИПАДКУ = {"роль": "role", "супутник_рівень": "companion_formality", "сезон": "occasion_season",
+                 "життєвий_перехід": "life_transition", "заявлений_злам": "declared_break",
+                 "тон_колготи": "matching_opaque_tights", "заявлена_колона": "declared_column",
+                 "подія": "event", "нагода": "occasion", "місце": "place", "формат": "setting",
                  "тривалість_год": "duration_h", "рух": "movement", "дрес_код": "dress_code",
                  "ошатність": "formality", "пора": "part_of_day", "темп_c": "temperature_c",
                  "сонце": "direct_sun",
@@ -704,6 +707,8 @@ def випадок(в, день=None):
             v = код("occasion", v)
         elif к == "місце":
             v = код("place", v)
+        elif к == "сезон":
+            v = код("season", v)
         elif к == "пора":
             v = код("part_of_day", v)
         elif к == "формат":
