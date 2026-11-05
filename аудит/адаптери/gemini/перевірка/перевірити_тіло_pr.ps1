@@ -35,4 +35,13 @@ if ($bad.Count) {
     Write-Host 'Виправ рядок за форматом: ЖИВИЙ ПІСЛЯ: <id> — <питання правки> → <режим> → <ДО звідки> → <що вважати кращим>; id — голий, перше поле аудит/проби/живі_сцени.txt; одна сцена — один рядок.'
     exit 1
 }
+# Режим питання («→ режим →») розбирає той самий Python-код, що в записати_план.py і записати_сцену.py.
+if ($items.Count) {
+    $file = Join-Path ([IO.Path]::GetTempPath()) ('live-after-' + [guid]::NewGuid().ToString('N') + '.json')
+    [IO.File]::WriteAllText($file, (ConvertTo-Json -InputObject @($items | ForEach-Object { @{id=$_.id;question=$_.question;line=$_.line} }) -Depth 4 -Compress), $utf)
+    & python (Join-Path $Root 'аудит/проби/режими_рядків_pr.py') $file
+    $code = $LASTEXITCODE
+    Remove-Item -LiteralPath $file -ErrorAction SilentlyContinue
+    if ($code -ne 0) { Write-Host 'Режим питання має бути виконуваним приладом: основа, +фото, ЗМІННА=значення (змінні стенда), руки N–M, сцени 6 і 6б; довільну інструкцію — у текст питання, не в режим.'; exit 1 }
+}
 exit 0
