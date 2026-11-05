@@ -540,7 +540,7 @@ _СЛОВА_ЇЇ = tuple(_ДМ.ПОЛЯ_ВИПАДКУ[к] for к in ("бажа�
                                             or (пер.get("день") or {}).get("place")
                                             or (пер.get("день") or {}).get("dress_code")), "occasion=none"),
     "why_weather": lambda ч, о, пер: (any((пер.get("день") or {}).get(к) is not None
-                                          for к in ("weather", "temperature_c", "season")), "day_weather=none"),
+                                          for к in ("weather", "weather_band", "season")), "day_weather=none"),
     "why_her_words": lambda ч, о, пер: (any((пер.get("випадок") or {}).get(к) for к in _СЛОВА_ЇЇ), "her_words=none"),
     "why_first_advice": _перша_порада,
 }

@@ -15,7 +15,7 @@ import feed as Ф, bridge as B, colorspace as КС, silhouette as СИЛ, outfit
 
 вх = json.load(open(_К / "стенд_вх.json", encoding="utf-8"))
 вх["каталог"] = Ф.каталог_на_диску("каталог_повний.xml"); вх["гілка"] = 0
-вх["сценарій"].update(темп_c=28, опади="ні", сонце=True)
+вх["сценарій"].update(смуга_погоди='hot', опади="ні", сонце=True)
 json.loads(B.виклик("запити", json.dumps(вх, ensure_ascii=False)))
 кат = B.каталог_останнього_пакета()
 import колір_річ as _КОЛІР
