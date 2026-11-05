@@ -24,6 +24,7 @@
 і не фасад."""
 from реєстр_правил import ТИПОВИЙ_НАМІР
 import colorspace as cs
+import колір_тон as _КТ   # визначення кола художника: належність до дуги
 import statements as _СТ
 import outfit as O
 import внутрішня_мова as _ВМ
@@ -1326,8 +1327,8 @@ def _сімей_дуги(дуга):
         перетин = (max(lo, f_lo) <= min(hi, f_hi)) if (lo <= hi and f_lo < f_hi) else None
         if перетин is None:
             # хоч одна з дуг перетинає 0° — перевіряємо через належність кінців
-            у = lambda h, a, b: (a <= h <= b) if a <= b else (h >= a or h <= b)
-            перетин = (у(f_lo, lo, hi) or у(f_hi, lo, hi) or у(lo, f_lo, f_hi) or у(hi, f_lo, f_hi))
+            перетин = (_КТ.in_arc(f_lo, (lo, hi)) or _КТ.in_arc(f_hi, (lo, hi))
+                       or _КТ.in_arc(lo, (f_lo, f_hi)) or _КТ.in_arc(hi, (f_lo, f_hi)))
         if перетин and ім not in вих:
             вих.append(ім)
     return вих
@@ -1564,7 +1565,7 @@ def _її_річ_несе(речі, за_ід, просить):
         if т is not None:
             h = cs.lch(т)[2]
             for lo, hi, ім in _КР.FAMILIES:
-                if (lo <= h < hi) if lo < hi else (h >= lo or h < hi):
+                if _КТ.in_arc(h, (lo, hi)) and h != hi:   # півзакрита: спільний край — одній сім'ї
                     сім.add(ім)
         elif _КР.сім_я_меж(повна):
             # колір зі слова — сім'я, яку дає все вікно , а не центр
