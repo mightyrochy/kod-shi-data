@@ -1,11 +1,12 @@
 """Контекст одного виконання функції у потоці ознак обличчя."""
-import ast, collections, functools
+import ast, collections, functools, os
 from ознаки_основа import (
     B, C, E, F, HEX_РЕГ, K, P, Q, R, S, V, УТРИМАННЯ, ПОХОДЖЕННЯ, _без_мапи, _без_першого, _ел, _з_префіксом, _звузити, _злити_ел,
     _злити_ключі, _корінь_імені, _пара, _перебір, _під, _рядок, _сітка, _текст, _токени, _усі, _шлях,
     _ім_виклику, _імена, БУЛЕВІ, ВИМІР, ВМІСТИЩА, ГЛИБИНА, МАПА, МАПА_М, МУТАЦІЇ, НЕВІДОМЕ, ПОЗИЦІЙНІ,
     ПОРЯДОК, СЛУЖБОВІ, ТОКЕН, ФАЙЛОВІ
 )
+from ознаки_рішення import вікно_літерал
 
 КЛАС_ЇЇ_ПОЛЯ = frozenset(("undertone", "depth_band", "підтон"))
 
@@ -1094,6 +1095,8 @@ class Стан:
             вих = E
             for x in в.elts:
                 вих |= self.e(x)
+            if S in вих and вікно_літерал(в):
+                вих = (вих - {S}) | {K}   # вікно кандидатів довкола її значення: його код будує, а не читає
             return вих
         if isinstance(в, ast.Starred):
             return self.e(в.value)
@@ -1179,6 +1182,8 @@ class Стан:
     def порівняння(self, в):
         мітки = [self.e(в.left)] + [self.e(x) for x in в.comparators]
         операнди = [в.left] + list(в.comparators)
+        if os.environ.get("OZNAKY_CHYTANNYA") and any(S in м for м in мітки):
+            self.а.читання_порівнянь.add((self.м.шлях, в.lineno, _текст(в)[:80]))
         if all(isinstance(х, (ast.Set, ast.SetComp)) or isinstance(х, ast.Name) and х.id in self.ф.множини
                or isinstance(х, ast.Call) and isinstance(х.func, ast.Name) and х.func.id in ('set', 'frozenset') for х in операнди):
             return E

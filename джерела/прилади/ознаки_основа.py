@@ -536,6 +536,124 @@ def _ім_виклику(в):
     return в.id if isinstance(в, ast.Name) else в.attr if isinstance(в, ast.Attribute) else None
 
 
+def слова_без_читачів(дерева):
+    """Гілки лише присвоюють слово змінній, яка йде у поле результату, а поля не читає жоден код (ні `x["k"]`, ні
+    `.get("k")`): поріг при ньому вибирає слова опису, а не рішення (паспорт: «поріг, що вибирає лише слова підпису»)."""
+    читані = set()
+    for д in дерева:
+        for в in ast.walk(д):
+            if isinstance(в, ast.Subscript) and _рядок(в.slice) and isinstance(в.ctx, ast.Load):
+                читані.add(в.slice.value)
+            elif isinstance(в, ast.Call) and isinstance(в.func, ast.Attribute) and в.func.attr in ("get", "pop", "setdefault") \
+                    and в.args and _рядок(в.args[0]):
+                читані.add(в.args[0].value)
+            elif isinstance(в, ast.Compare):
+                читані.update(е.value for е in [в.left, *в.comparators] if _рядок(е))
+    def присвоєння(і):
+        return isinstance(і, ast.Assign) and len(і.targets) == 1 and isinstance(і.targets[0], ast.Name) and _рядок(і.value)
+    def ланцюг(і, імена):
+        """If/elif/else, у кожній гілці лише `X = "слово"`."""
+        if not isinstance(і, ast.If):
+            return False
+        for гілка in (і.body, і.orelse):
+            for н in гілка:
+                if присвоєння(н):
+                    імена.add(н.targets[0].id)
+                elif not (isinstance(н, ast.If) and ланцюг(н, імена)):
+                    return False
+        return bool(і.body)
+    вихід = set()
+    for д in дерева:
+        for ф in ast.walk(д):
+            if not isinstance(ф, (ast.FunctionDef, ast.AsyncFunctionDef)):
+                continue
+            предки = {id(ч): в for в in ast.walk(ф) for ч in ast.iter_child_nodes(в)}
+            for і in ast.walk(ф):
+                імена = set()
+                if not ланцюг(і, імена) or len(імена) != 1:
+                    continue
+                ім = next(iter(імена))
+                поля, чисто = set(), True
+                for н in ast.walk(ф):
+                    if isinstance(н, ast.Name) and н.id == ім and isinstance(н.ctx, ast.Load):
+                        б = предки.get(id(н))
+                        if isinstance(б, ast.keyword) and б.arg:
+                            поля.add(б.arg)
+                        elif isinstance(б, ast.Assign) and б.value is н and len(б.targets) == 1 \
+                                and isinstance(б.targets[0], ast.Subscript) and _рядок(б.targets[0].slice):
+                            поля.add(б.targets[0].slice.value)
+                        elif isinstance(б, ast.Dict):
+                            к = б.keys[б.values.index(н)]
+                            if _рядок(к):
+                                поля.add(к.value)
+                            else:
+                                чисто = False
+                        else:
+                            чисто = False
+                if чисто and поля and not (поля & читані):
+                    for г in ast.walk(і):
+                        if isinstance(г, ast.If):
+                            вихід.update(id(т) for т in ast.walk(г.test) if isinstance(т, ast.Compare))
+    return вихід
+
+
+def словесні_функції(дерева):
+    """Функція повертає лише слова: або самі речення (речення не буває кодом класу), або коди, які кожен виклик у коді
+    віддає лише заяві (`заява(…)`) чи тексту; пороги в її гілках вибирають слова, а не рішення коду (рішення
+    менеджера 01.11, 05.11: «поріг, що вибирає лише слова підпису, — не п.1»)."""
+    def слова(в):
+        return _рядок(в) or isinstance(в, ast.JoinedStr) or isinstance(в, ast.IfExp) and слова(в.body) and слова(в.orelse)
+    def речення(в):
+        return прозовий(в) or isinstance(в, ast.JoinedStr) or isinstance(в, ast.IfExp) and речення(в.body) and речення(в.orelse)
+    визначення = collections.defaultdict(list)
+    батьки = {}
+    for д in дерева:
+        for в in ast.walk(д):
+            if isinstance(в, (ast.FunctionDef, ast.AsyncFunctionDef)):
+                визначення[в.name].append(в)
+            for ч in ast.iter_child_nodes(в):
+                батьки[id(ч)] = в
+    виклики = collections.defaultdict(list)
+    for д in дерева:
+        for в in ast.walk(д):
+            if isinstance(в, ast.Call):
+                ім = _ім_виклику(в.func)
+                if ім in визначення:
+                    виклики[ім].append(в)
+    def для_заяви(виклик):
+        """Виклик — аргумент `…заява(…)` або частина форматованого тексту."""
+        н = виклик
+        while (б := батьки.get(id(н))) is not None:
+            if isinstance(б, ast.Call) and б is not н and (_ім_виклику(б.func) or "").endswith("заява") \
+                    and (н in б.args or any(к.value is н for к in б.keywords)):
+                return True
+            if isinstance(б, ast.JoinedStr) or isinstance(б, ast.BinOp) and isinstance(б.op, ast.Mod) and _рядок(б.left):
+                return True
+            if isinstance(б, (ast.stmt, ast.Compare)):
+                return False
+            н = б
+        return False
+    вихід = set()
+    for ім, ф_список in визначення.items():
+        ок = True
+        for ф in ф_список:
+            повернення = [в for в in вузли_тіла(ф) if isinstance(в, ast.Return)]
+            if not повернення or any(в.value is None or not слова(в.value) for в in повернення):
+                ок = False
+                break
+            якщо_речення = all(речення(в.value) for в in повернення)
+            if not якщо_речення and not (виклики[ім] and all(для_заяви(в) for в in виклики[ім])):
+                ок = False
+                break
+        if not ок:
+            continue
+        for ф in ф_список:
+            for в in вузли_тіла(ф):
+                if isinstance(в, (ast.If, ast.IfExp)):
+                    вихід.update(id(т) for т in ast.walk(в.test) if isinstance(т, ast.Compare))
+    return вихід
+
+
 def _властивості(текст):
     """Пари `ключ: значення` об'єктних літералів JS (значення — до коми чи дужки на тому ж рівні, грубо)."""
     for м in re.finditer(r"(?<![\wа-яіїєґʼ'.])([\wа-яіїєґʼ']+)\s*:(?!:)\s*([^,{};\n]*(?:\([^()\n]*\)[^,{};\n]*)*)", текст):

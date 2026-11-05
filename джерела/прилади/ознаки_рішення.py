@@ -1,5 +1,5 @@
 """Вивід ваги шкали й арифметичний вхід пари для приладу ознак обличчя."""
-import ast
+import ast, copy
 from collections import defaultdict
 
 
@@ -516,6 +516,21 @@ def будує_вікно(ф):
         return isinstance(в, ast.Tuple) and len(в.elts) == 2 and all(
             isinstance(х, (ast.Call, ast.Constant, ast.BinOp, ast.Name)) and not (
                 isinstance(х, ast.Constant) and not isinstance(х.value, (int, float))) for х in в.elts)
+    def навколо_центру(в):
+        """`(центр − пів, центр + пів)`: інтервал симетричний довкола центру — вікно, збудоване з центру й пів-ширини."""
+        if not (isinstance(в, ast.Tuple) and len(в.elts) == 2):
+            return False
+        def норма(х):
+            х = copy.deepcopy(х)
+            for н in ast.walk(х):
+                if isinstance(н, ast.BinOp) and isinstance(н.op, ast.Sub):
+                    н.op = ast.Add()
+            return ast.dump(х)
+        ліво, право = в.elts
+        return any(isinstance(н, ast.BinOp) and isinstance(н.op, (ast.Add, ast.Sub)) for н in ast.walk(ліво)) \
+            and ast.dump(ліво) != ast.dump(право) and норма(ліво) == норма(право)
+    if all(в.value is not None and навколо_центру(в.value) for в in повернення):
+        return True
     return all(в.value is not None and пара(в.value) for в in повернення) and any(
         isinstance(н, ast.Call) and isinstance(н.func, ast.Name) and н.func.id in ("max", "min")
         for в in повернення for н in ast.walk(в.value)) and any(
@@ -523,3 +538,33 @@ def будує_вікно(ф):
         в.value is not None and isinstance(в.value, ast.Tuple) and len(в.value.elts) == 2 and all(
             isinstance(х, ast.Constant) and isinstance(х.value, (int, float)) for х in в.value.elts)
         for в in повернення)
+
+
+def вікно_літерал(в):
+    """`[max(2, round(база - 2*КРОК - 8)), max(8, round(база - КРОК))]`: пара меж, кожна — значення ± стала
+    (з обрізанням `max`/`min`): код будує вікно кандидатів довкола її значення, а не читає її значення."""
+    if not (isinstance(в, (ast.List, ast.Tuple)) and len(в.elts) == 2):
+        return False
+    def стала(х):
+        return (isinstance(х, ast.Constant) and isinstance(х.value, (int, float)) and not isinstance(х.value, bool)) \
+            or isinstance(х, ast.Name) and х.id.isupper() \
+            or isinstance(х, ast.BinOp) and стала(х.left) and стала(х.right) \
+            or isinstance(х, ast.UnaryOp) and стала(х.operand)
+    def зсув(х):
+        обрізано = False
+        while isinstance(х, ast.Call) and isinstance(х.func, ast.Name) and х.func.id in ("max", "min", "round", "int", "float"):
+            if х.func.id in ("max", "min"):
+                обрізано = True
+                решта = [а for а in х.args if not стала(а)]
+                if len(решта) != 1:
+                    return False, False
+                х = решта[0]
+            elif х.args:
+                х = х.args[0]
+            else:
+                return False, False
+        while isinstance(х, ast.BinOp) and isinstance(х.op, (ast.Add, ast.Sub)) and стала(х.right):
+            х = х.left
+        return not стала(х) and not isinstance(х, ast.BinOp), обрізано
+    рез = [зсув(х) for х in в.elts]
+    return all(р[0] for р in рез) and any(р[1] for р in рез)
