@@ -1,40 +1,44 @@
+/* Друкує лічбу пунктів, відповідей і пам’яті; не додає гейта.
+   Запуск із кореня: node аудит/проби/Е3_питання_картки.js [SHA дерева ДО]. */
 const fs = require('fs'), vm = require('vm'), cp = require('child_process');
-const path = require('path'), root = process.cwd();
-const read = file => process.argv[2] ? cp.execFileSync('git', ['show', process.argv[2] + ':' + file], {encoding: 'utf8'}) : fs.readFileSync(file, 'utf8');
-const source = read('джерела/показ/мовний_шар.js');
-const {питаньЗВідповіддю} = require(path.join(root, 'аудит/проби/записи_шару.js'));
-const message = {kind: 'card_unchecked', statements: [{code: 'outer_shoulder_not_measured', values: {item: 'жакет'}}]};
-const question = rule => ({правило: rule, повідомлення: structuredClone(message)});
-async function measure(name, questions, mode, expand = false){
-  const c = vm.createContext({МОДЕЛЬ_МОВИ_П: mode !== 'off', СТАНИ_НЕ_МОВИ_П: ['foreign_language'],
+const path = require('path'), корінь = process.cwd();
+const читати = файл => process.argv[2] ? cp.execFileSync('git', ['show', process.argv[2] + ':' + файл], {encoding: 'utf8'}) : fs.readFileSync(файл, 'utf8');
+const джерело = читати('джерела/показ/мовний_шар.js');
+const {питаньЗВідповіддю} = require(path.join(корінь, 'аудит/проби/записи_шару.js'));
+const повідомлення = {kind: 'card_unchecked', statements: [{code: 'outer_shoulder_not_measured', values: {item: 'жакет'}}]};
+const питання = правило => ({правило: правило, повідомлення: structuredClone(повідомлення)});
+async function вимір(назва, питанняКартки, режим, розгорнуто = false){
+  const контекст = vm.createContext({МОДЕЛЬ_МОВИ_П: режим !== 'off', СТАНИ_НЕ_МОВИ_П: ['foreign_language'],
     НАПИС_БЕЗ_ШАРУ_П: {card_unchecked: 'Пояснення не надійшло.'}, НАПИС_БЕЗ_ТЕКСТУ_П: 'Немає тексту.',
-    безМашинногоСліду: s => s});
-  vm.runInContext(source.slice(source.indexOf('const ПАМ_ЯТЬ_ПИТАНЬ_П ='), source.indexOf('/* Дотик розгорнув кнопку:')), c);
-  c.питатиПачкамиП = async elements => {
-    const states = new Map(), rows = [], input = {};
-    for (const [key, place, message] of elements){
-      const translated = mode !== 'foreign';
-      states.set(key, {текст: translated ? 'Плече не виміряне.' : 'Пояснення не надійшло.', стан: translated ? 'translated' : 'fallback'});
-      if (translated) vm.runInContext('ПАМ_ЯТЬ_ПИТАНЬ_П', c).set(key, 'Плече не виміряне.');
-      input[place] = message;
-      rows.push({повідомлення: place, ключ: key, текст: translated ? 'Плече не виміряне.' : 'Shoulder unknown.', стан: translated ? 'translated' : 'foreign_language'});
+    безМашинногоСліду: т => т});
+  vm.runInContext(джерело.slice(джерело.indexOf('const ПАМ_ЯТЬ_ПИТАНЬ_П ='), джерело.indexOf('/* Дотик розгорнув кнопку:')), контекст);
+  контекст.питатиПачкамиП = async елементи => {
+    const стани = new Map(), заяви = [], вхід = {};
+    for (const [ключ, місце, повідомлення] of елементи){
+      const перекладено = режим !== 'foreign';
+      стани.set(ключ, {текст: перекладено ? 'Плече не виміряне.' : 'Пояснення не надійшло.', стан: перекладено ? 'translated' : 'fallback'});
+      if (перекладено) vm.runInContext('ПАМ_ЯТЬ_ПИТАНЬ_П', контекст).set(ключ, 'Плече не виміряне.');
+      вхід[місце] = повідомлення;
+      заяви.push({повідомлення: місце, ключ: ключ, текст: перекладено ? 'Плече не виміряне.' : 'Shoulder unknown.', стан: перекладено ? 'translated' : 'foreign_language'});
     }
-    return {стани: states, записи: [{напрям: 'out_messages', де: 'hand_1.code_unknowns', вхід: input, заяви: rows}]};
+    return {стани: стани, записи: [{напрям: 'out_messages', де: 'hand_1.code_unknowns', вхід: вхід, заяви: заяви}]};
   };
-  const card = {питання: questions};
-  if (mode === 'cached') vm.runInContext('ПАМ_ЯТЬ_ПИТАНЬ_П', c).set(JSON.stringify(message), 'Плече не виміряне.');
-  await c.питаннямиП(card, 'hand_1', expand);
-  const count = card.питання.filter(q => !q.для_всіх && !!q.на_розгортання === expand).length;
-  const answers = питаньЗВідповіддю(card.мова_шару, false), cached = card.питання_з_пам_яті || 0;
-  console.log(JSON.stringify({сцена: name, пункти: count, рядки: (card.питання_жінці || []).length,
-    відповіді: answers, пам_ять: cached, розбіжність: mode === 'off' ? null : count - answers - cached,
-    правила: card.питання.filter(q => !q.для_всіх).flatMap(q => q.правила || [q.правило]),
-    складові: card.питання.flatMap(q => q.складові || []).map(q => q.правило)}));
+  const картка = {питання: питанняКартки};
+  if (режим === 'cached') vm.runInContext('ПАМ_ЯТЬ_ПИТАНЬ_П', контекст).set(JSON.stringify(повідомлення), 'Плече не виміряне.');
+  await контекст.питаннямиП(картка, 'hand_1', розгорнуто);
+  const пунктів = картка.питання.filter(п => !п.для_всіх && !!п.на_розгортання === розгорнуто).length;
+  const відповідей = питаньЗВідповіддю(картка.мова_шару, false), зПамяті = картка.питання_з_пам_яті || 0;
+  console.log(JSON.stringify({сцена: назва, пункти: пунктів, рядки: (картка.питання_жінці || []).length,
+    відкладено: картка.питання.filter(п => п.на_розгортання).length,
+    відповіді: відповідей, пам_ять: зПамяті, розбіжність: режим === 'off' ? null : пунктів - відповідей - зПамяті,
+    правила: картка.питання.filter(п => !п.для_всіх).flatMap(п => п.правила || [п.правило]),
+    складові: картка.питання.flatMap(п => п.складові || []).map(п => п.правило)}));
 }
 (async () => {
-  for (const mode of ['foreign', 'translated', 'cached', 'off'])
-    await measure(mode, [question('K-OUT-41'), question('K-OUT-42')], mode);
-  await measure('розгорнуто', [question('K-OUT-41'), question('K-OUT-42')].map(q => ({...q, на_розгортання: 1})), 'foreign', true);
-  await measure('різні речі', [question('K-OUT-41'), {правило: 'K-OUT-42', повідомлення: {...message, statements: [{code: 'outer_shoulder_not_measured', values: {item: 'пальто'}}]}}], 'foreign');
-  await measure('для всіх', [{...question('K-OUT-41'), для_всіх: 1}, question('K-OUT-42')], 'foreign');
-})().catch(e => {console.error(e); process.exitCode = 1;});
+  for (const режим of ['foreign', 'translated', 'cached', 'off'])
+    await вимір(режим, [питання('K-OUT-41'), питання('K-OUT-42')], режим);
+  await вимір('розгорнуто', [питання('K-OUT-41'), питання('K-OUT-42')].map(п => ({...п, на_розгортання: 1})), 'foreign', true);
+  await вимір('різні етапи', [питання('K-OUT-41'), {...питання('K-OUT-42'), на_розгортання: 1}], 'foreign');
+  await вимір('різні речі', [питання('K-OUT-41'), {правило: 'K-OUT-42', повідомлення: {...повідомлення, statements: [{code: 'outer_shoulder_not_measured', values: {item: 'пальто'}}]}}], 'foreign');
+  await вимір('для всіх', [{...питання('K-OUT-41'), для_всіх: 1}, питання('K-OUT-42')], 'foreign');
+})().catch(помилка => {console.error(помилка); process.exitCode = 1;});
