@@ -1288,6 +1288,7 @@ function мостПриміркиЗаглушка(w){
   {
     const {w, d, помилки} = сторінка({url: "https://mightyrochy.github.io/kod-shi-data/показ.html#міст=http://localhost:8787&т=tok-a1"});
     await чекатиСтарт(w);
+    w.eval(ЗАГЛУШКА_РУКИ);
     const $ = id => d.getElementById(id);
     тест("кнопка «Зчитати кольори з портрета» є, ручний шлях під розкривачем", !!$("кол-зчитати") && !!$("кол-копія"), null);
     $("кол-зчитати").click();
