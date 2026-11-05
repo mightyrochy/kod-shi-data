@@ -17,6 +17,7 @@ from typing import Any, Callable, Optional
 import протокол as _ПР
 import внутрішня_мова as мова
 import формальність
+import conversation_tools as _ІНСТР
 
 # Фрази формату — нижній шар реєстру (`фрази_формату`): їх читає й `протокол`, що стоїть нижче за цей модуль.
 from фрази_формату import (ФОРМА_JSON, ФОРМА_JSON_EN, ФОРМИ_EN, ВІДПОВІДЬ_ОДИН_ОБЄКТ_UK, ВІДПОВІДЬ_UK,  # noqa: F401
@@ -320,6 +321,7 @@ def скелет_мовного_шару():
         "invite_topics": ["advice topic codes, up to three"], "invite": "one soft invitation, or empty",
         "ask_code": " | ".join(форма["properties"]["ask_code"]["enum"]), "ask": "one short question, or empty",
         "header": {" | ".join(форма["properties"]["header"]["properties"]): "that value in a few Ukrainian words"},
+        "tool": _ІНСТР.скелет(),
     }
 
 
@@ -354,6 +356,8 @@ def форма_мовного_шару(визначення=True):
         # ключі шапки — з одного переліку, який читає розбір (`паспорт_нагоди.ШАПКА_ПОЛЯ`), а не другим списком тут
         "header": {"type": "object", "additionalProperties": False,
                    "properties": {к: {"type": "string"} for к, _ in _ПН_.ШАПКА_ПОЛЯ}},
+        # виклик інструмента розмови — схема з одного переліку (`conversation_tools.ІНСТРУМЕНТИ`)
+        "tool": _ІНСТР.схема_виклику(),
     }
     форма = {"type": "object", "additionalProperties": False, "required": ["update", "need", "text"],
              "properties": частини}
