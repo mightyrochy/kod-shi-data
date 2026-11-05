@@ -458,49 +458,72 @@ _ЧИСЛОВІ_ВБУДОВАНІ = frozenset(("abs", "min", "max", "sum", "flo
 
 
 def функція_формула(ф):
-    """Функція — шматок формули простору кольору: чисте числове перетворення (`de00`, `to_lab`, `норм_cdf`): без рядків,
+    """Чисте числове перетворення завдовжки від 12 кроків (див. `_чиста_функція`)."""
+    повернення = _чиста_функція(ф)
+    if повернення is None:
+        return False
+    return _кроки(ф) >= 12 and all(_число_значення(в.value) for в in повернення)
+
+
+def чиста_геометрія(ф):
+    """Коротка чиста функція простору кольору (`на_дузі(h, дуга)`, різниця двох входів): лише арифметика й порівняння
+    своїх параметрів, без рядків, таблиць і сторонніх викликів. Поріг усередині — не вхід її значення: місце — виклик
+    із її значенням (рішення менеджера 05.11)."""
+    повернення = _чиста_функція(ф)
+    if повернення is None or not (set(ф.позиційні) | set(ф.іменні)) or функція_формула(ф):
+        return False
+    return all(isinstance(в.value, (ast.Compare, ast.BoolOp, ast.BinOp, ast.IfExp, ast.UnaryOp, ast.Call, ast.Name, ast.Constant, ast.Tuple))
+               for в in повернення)
+
+
+def _кроки(ф):
+    return sum(1 for в in ф.власні if isinstance(в, (ast.BinOp, ast.Call)))
+
+
+def _число_значення(в):
+    if isinstance(в, ast.Tuple):
+        return all(_число_значення(х) for х in в.elts)
+    if isinstance(в, ast.IfExp):
+        return _число_значення(в.body) and _число_значення(в.orelse)
+    return isinstance(в, (ast.BinOp, ast.Call, ast.Name, ast.UnaryOp)) or (
+        isinstance(в, ast.Constant) and isinstance(в.value, (int, float)) and not isinstance(в.value, bool))
+
+
+def _чиста_функція(ф):
+    """Чиста функція кольору — повертає її `return`-и чи None: без рядків,
     без викликів поза `math` і числовими вбудованими, без звернень до модульних таблиць і запису поза локальними, і кожне
     повернення — число чи кортеж чисел. Арифметика всередині — не вхід її значення в число рішення: місце — виклик
     із її значенням (рішення менеджера 05.11: «лічити кожну операцію після входу — лічити читачів»)."""
     вузол = ф.вузол
     if isinstance(вузол, ast.Lambda) or not ф.власні:
-        return False
+        return None
     повернення = [в for в in ф.власні if isinstance(в, ast.Return)]
-    if not повернення:
-        return False
+    if not повернення or any(в.value is None for в in повернення):
+        return None
     параметри = set(ф.позиційні) | set(ф.іменні)
     математика = {ім for ім, мод in ф.модуль.імпорти.items() if мод == "math"} | {"math"}
     for в in ф.власні:
         if isinstance(в, (ast.Global, ast.Nonlocal, ast.Try, ast.With, ast.Yield, ast.Raise)):
-            return False
+            return None
         if isinstance(в, ast.Constant) and isinstance(в.value, str):
             # лише рядок-документація: перший вираз тіла
             if not (вузол.body and isinstance(вузол.body[0], ast.Expr) and вузол.body[0].value is в):
-                return False
+                return None
         if isinstance(в, (ast.Subscript, ast.Dict, ast.List, ast.Set, ast.ListComp, ast.DictComp, ast.SetComp, ast.JoinedStr)):
-            return False
+            return None
         if isinstance(в, ast.Call):
             f = в.func
             if isinstance(f, ast.Attribute) and isinstance(f.value, ast.Name) and f.value.id in математика:
                 continue
             if isinstance(f, ast.Name) and f.id in _ЧИСЛОВІ_ВБУДОВАНІ:
                 continue
-            return False
+            return None
         if isinstance(в, ast.Attribute) and not (isinstance(в.value, ast.Name) and в.value.id in математика):
-            return False
+            return None
         if isinstance(в, ast.Name) and isinstance(в.ctx, ast.Load) and в.id not in ф.локальні and в.id not in параметри \
                 and в.id not in математика and в.id not in ("float", "int", "abs", "min", "max", "sum", "round", "pow", "range", "len", "divmod"):
-            return False
-    def число(в):
-        if isinstance(в, ast.Tuple):
-            return all(число(х) for х in в.elts)
-        if isinstance(в, ast.IfExp):
-            return число(в.body) and число(в.orelse)
-        return isinstance(в, (ast.BinOp, ast.Call, ast.Name, ast.UnaryOp)) or (
-            isinstance(в, ast.Constant) and isinstance(в.value, (int, float)) and not isinstance(в.value, bool))
-    # формула — багатокрокове обчислення; одна різниця двох входів (`а − б`) — сам вхід пари, а не шматок формули
-    кроки = sum(1 for в in ф.власні if isinstance(в, (ast.BinOp, ast.Call)))
-    return кроки >= 12 and all(в.value is not None and число(в.value) for в in повернення)
+            return None
+    return повернення
 
 
 def будує_вікно(ф):

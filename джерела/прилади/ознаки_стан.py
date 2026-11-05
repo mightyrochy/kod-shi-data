@@ -46,6 +46,20 @@ class Стан:
         # несе лише нове); у гілці чи циклі — додає, бо інший шлях міг лишити старе
         self.верх = ф.верх
         self.зерно = ф.повне in а.функції_зерна
+        self.необов_язкові = set()
+        if isinstance(ф.вузол, (ast.FunctionDef, ast.AsyncFunctionDef)):
+            арг = ф.вузол.args
+            позиційні_арг = арг.posonlyargs + арг.args
+            for а, д in zip(позиційні_арг[len(позиційні_арг) - len(арг.defaults):], арг.defaults):
+                if isinstance(д, ast.Constant) and д.value is None:
+                    self.необов_язкові.add(а.arg)
+            for а, д in zip(арг.kwonlyargs, арг.kw_defaults):
+                if isinstance(д, ast.Constant) and д.value is None:
+                    self.необов_язкові.add(а.arg)
+        # S прийшло параметром (значенням, ключами словника чи розгорнутим `*а`), а не прочитано в цій функції
+        self.з_параметрів_S = any(S in м for м in self.env.values()) \
+            or any(S in в for к in self.ключі.values() for в in к.values()) \
+            or any(S in м for розг in self.розгорнуті.values() for м, _ in розг.values())
         self.мертва = 0          # глибина гілок, що не виконуються для model_hex (ворота довіри): місць там нема
 
     def місце(self, м, вузол, пункт, чому, вхід=False):
@@ -56,9 +70,26 @@ class Стан:
             return
         if self.ф.формула and ("арифметику пари" in чому or "нелінійну шкалу" in чому):
             return   # шматок формули простору кольору: місце — виклик із її значенням
+        if self.ф.геометрія and пункт == 1 and чому.startswith(("поріг", "рівність")):
+            return   # коротка чиста функція кольору (`на_дузі`): поріг усередині — не вхід; місце — виклик із її значенням
         self.а.місце(м, вузол, пункт, чому, вхід=вхід)
 
     # ── ворота за джерелом: гілка під довірою, якої model_hex не має ──
+    def не_передано(self, т):
+        """`if p is not None:` / `if p is None:` для необов'язкового параметра (типове `None`), якого контекст виклику з її
+        значенням не несе: у цьому виклику гілку з `p` не виконано («так»/«ні» для гілки «not None»)."""
+        if not (isinstance(т, ast.Compare) and len(т.ops) == 1 and isinstance(т.left, ast.Name)
+                and isinstance(т.comparators[0], ast.Constant) and т.comparators[0].value is None
+                and isinstance(т.ops[0], (ast.Is, ast.IsNot))):
+            return None
+        ім = т.left.id
+        вузол = self.ф.вузол
+        if isinstance(вузол, ast.Lambda) or ім not in self.необов_язкові or ім in self.env or ім in self.ключі:
+            return None
+        if not self.env:
+            return None
+        return "так" if isinstance(т.ops[0], ast.IsNot) else "ні"
+
     def ворота(self, т):
         """Тест → "так" (тіло потребує довіри ≥ MIN_TO_EMIT — для model_hex не виконується), "ні" (так само else) чи None."""
         if isinstance(т, ast.Name):
@@ -768,6 +799,7 @@ class Стан:
             self.невідоме_в_гілці(і)
             в_тілі, в_іншому = self.звуження(і.test)
             г = self.ворота(і.test)
+            г = г or self.не_передано(і.test)
             self.мертва += г == "так"
             try:
                 self.у_звуженні(в_тілі, і.body)
@@ -1551,6 +1583,9 @@ class Стан:
                     and S in _пара(*позиційні):
                 # шматок формули простору кольору: її значення входить у формулу тут, а не в її арифметику
                 self.місце(self.м, в, 1, "її значення входить у формулу кольору: %s" % _текст(в)[:70], вхід=True)
+            if ц.геометрія and any(isinstance(н, ast.Compare) for н in ц.власні) and not self.ф.геометрія and not self.ф.формула and not self.а.пара_глибина \
+                    and not self.з_параметрів_S and any(S in м for м in позиційні):
+                self.місце(self.м, в, 1, "її значення входить у перевірку кольору: %s" % _текст(в)[:70], вхід=True)
             if F in пов and any(к.arg == "джерело" and not (isinstance(к.value, ast.Constant) and к.value.value is None)
                                 for к in в.keywords):
                 пов = пов - {F}   # будівник риc із явним `джерело=`: запис несе походження, а не довіру знімку
