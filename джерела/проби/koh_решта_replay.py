@@ -27,9 +27,10 @@ if __name__ == "__main__" and len(sys.argv) > 1:
         вих.append(dict(смуга=Ф.смуга_ошатності(н), брак=[п["вхід"] for п in ч["надлишок"] if п["вхід"] in ПОЛЯ and п["стан"] == "без входу"]))
     print(json.dumps(вих, ensure_ascii=False))
 elif __name__ == "__main__":
-    модулі = ("внутрішня_мова", "мовний_шар", "паспорт_поля", "паспорт_нагоди", "перевірка_образу", "суд_огляд", "суд_чеклісти", "формальність", "оцінка_образу", "протокол", "сценарій", "дріт_моделі")
+    модулі = [ім for ім in історія("ls-tree", "--full-tree", "-z", "--name-only", БАЗА + ":джерела").split("\0") if ім.endswith(".py")]
+    assert модулі, "Git не дав жодного модуля бази"
     with tempfile.TemporaryDirectory(prefix="контекст_решта_до_") as тека:
-        for ім in модулі: Path(тека, ім + ".py").write_text(історія("show", БАЗА + ":джерела/" + ім + ".py"), encoding="utf-8")
+        for ім in модулі: Path(тека, ім).write_text(історія("show", БАЗА + ":джерела/" + ім), encoding="utf-8")
         до = json.loads(subprocess.check_output([sys.executable, "-X", "utf8", __file__, тека, "до"], cwd=ДЖ).decode("utf-8"))
         після = json.loads(subprocess.check_output([sys.executable, "-X", "utf8", __file__, str(ДЖ)], cwd=ДЖ).decode("utf-8"))
     assert [р["смуга"] for р in до] == [р["смуга"] for р in після]
