@@ -118,7 +118,7 @@ _ДЖЕРЕЛО_КРАЮ = {"слово": "word", "річ": "item_data",
 # коли день є, у випадку їх нема — ті самі факти двічі різними словами модель читала б як два.
 # Частина дня з паспорта — ключем «пора».
 _ВИПАДОК_У_ДНІ = {"місце": "place", "формат": "setting", "рух": "movement", "дрес_код": "dress_code",
-                  "тривалість_год": "duration_h", "темп_c": "temperature_c", "опади": "precipitation",
+                  "тривалість_год": "duration_h", "смуга_погоди": "weather_band", "опади": "precipitation",
                   "сонце": "direct_sun",
                   "господар": "host_context", "креативне": "creative_environment",
                   "пора": "part_of_day", "ошатність": "formality"}
@@ -127,7 +127,7 @@ _ВИПАДОК_У_ДНІ = {"місце": "place", "формат": "setting", "
                  "тон_колготи": "matching_opaque_tights", "заявлена_колона": "declared_column",
                  "подія": "event", "нагода": "occasion", "місце": "place", "формат": "setting",
                  "тривалість_год": "duration_h", "рух": "movement", "дрес_код": "dress_code",
-                 "ошатність": "formality", "пора": "part_of_day", "темп_c": "temperature_c",
+                 "ошатність": "formality", "пора": "part_of_day", "смуга_погоди": "weather_band",
                  "сонце": "direct_sun",
                  "господар": "host_context", "креативне": "creative_environment",
                  "опади": "precipitation", "намір": "intent", "мета": "goal", "мета_зони": "goal_zones", "мета_важливо": "goal_extra", "макіяж": "makeup",
@@ -312,8 +312,7 @@ def осі(зона, рч=None):
         вих["formality"] = щаблі(ф["інтервал"])
     с = з.get("сезон")
     if с and с.get("смуга"):
-        lo, hi = с["смуга"][0], с["смуга"][1]
-        вих["fabric_c"] = [_число(lo), (_число(hi) if hi is not None and hi < 900 else None)]
+        вих["fabric_bands"] = list(с["смуга"])
     if р.get("слот") == "взуття" or р.get("каблук_є") is not None or р.get("каблук") is not None or р.get("каблук_словами"):
         # Як у відсіві пакета: доведене True старше за False, бо другий свідок міг не побачити каблук.
         свідки = (р.get("каблук_є"), р.get("каблук"))
@@ -996,10 +995,10 @@ def _ошатність_заяви(код_заяви, в):
     **{к: ("K-OCC-01", ("pool:траурний_регістр.траурне_відсічення", "judge:формальність.нагода_палітра",
                         "wire:case.occasion"))
        for к in ("mourning_event", "mourning_state", "mourning_scheme_dark_only", "mourning_accent_not_asked")},
-    # погода: температура її дня — `day.temperature_c`, коли її назвала вона; типові 18 °C форми
+    # погода: температура її дня — `day.weather_band`, коли її назвала вона; типові 18 °C форми
     # (`сценарій.день_кодами`) фактом її дня не є, а ця заява їх везла б
     "weather_layers": ("K-WEA-01", ("pool:пакет_моделі.жорстке_відсічення", "pool:composer.зібрати",
-                                    "judge:суд_погода.погода", "wire:day.temperature_c")),
+                                    "judge:суд_погода.погода", "wire:day.weather_band")),
     # хибний рядок руки 2 іде туди ж, куди справний: у промпт складання — ні
     **{к: ("K-WEA-01", ("pool:суд_погода.пальта_пулу", "judge:суд_погода.пальтова_смуга", "wire:coat_required"))
        for к in ("cold_outer_layer_counts", "cold_outer_layer_optional")},
