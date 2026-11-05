@@ -51,3 +51,32 @@ print('  за постачальником (продукт):',C.Counter(пост
 print('  PR продукт:',sorted({int(x['внесено_pr']) for x in після if int(x['внесено_pr']) in прод}))
 print('  хто знайшов (продукт):',C.Counter(x['виявлено'][:12] for x in після if int(x['внесено_pr']) in прод))
 print(' до злиття, виявлено перевіркою:',sum(1 for x in d if x['клас']=='до злиття' and x['виявлено']=='перевірка'))
+# ---- злиття продукту за постачальником (пачка — частками за вкладеними гілками)
+def частки(x):
+    p=x['постачальник']
+    if not p.startswith('пачка:'): return {p:1.0}
+    пари=[(k.rsplit(' ',1)[0],int(k.rsplit(' ',1)[1])) for k in p[len('пачка: '):].split(', ')]
+    n=sum(v for _,v in пари); return {k:v/n for k,v in пари}
+зл=C.Counter()
+for x in z:
+    if int(x['продукт']):
+        for k,v in частки(x).items(): зл[k]+=v
+print('ЗЛИТТЯ ПРОДУКТУ (частками):',{k:round(v,2) for k,v in зл.items()},'разом',round(sum(зл.values()),2))
+# ---- місця коренів за відрізками
+import os
+if os.path.exists(В+'/корені_відрізки.csv'):
+    k=list(csv.DictReader(open(В+'/корені_відрізки.csv')))
+    за=C.defaultdict(list)
+    for x in k: за[x['корінь']].append(x)
+    прибр=C.Counter(); дод=C.Counter(); без=[]
+    for імя,xs in за.items():
+        for a,b in zip(xs,xs[1:]):
+            g=b['точка'].split(':',1)[-1] if ':' in b['точка'] else b['точка']
+            if a['місць']=='' or b['місць']=='': без.append((імя,b['точка'])); continue
+            d=int(a['місць'])-int(b['місць'])
+            if d>0: прибр[g]+=d
+            elif d<0: дод[g]+=-d
+        print(f"  {імя}: "+' → '.join(x['місць'] or '—' for x in xs))
+    print('МІСЦЬ ПРИБРАНО за групою відрізків:',dict(прибр),'разом',sum(прибр.values()))
+    print('МІСЦЬ ДОДАНО:',dict(дод),'разом',sum(дод.values()))
+    print('без числа:',без[:12])

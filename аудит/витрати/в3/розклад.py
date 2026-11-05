@@ -44,17 +44,7 @@ for z in злиття:
 продукт_pr=set()
 for z in злиття:
     if i(z['продукт']): продукт_pr|=set(map(int,z['prs'].split()))
-# ---------- корені за злиттями (бісекція)
-дельта=C.defaultdict(dict)
-try:
-    for імя,sha,a,b in csv.reader(open(f'{T}/корені_зміни.csv')):
-        дельта[sha][імя]=(a,b)
-except FileNotFoundError: pass
-for z in злиття:
-    d=дельта.get(z['sha'],{})
-    z['корені']='; '.join(f'{k} {a}→{b}' for k,(a,b) in sorted(d.items()))
-    z['прибрано']=sum(int(a)-int(b) for a,b in d.values() if a not in('','None') and b not in('','None'))
-w=csv.DictWriter(open(f'{О}/злиття_2905.csv','w',newline=''),fieldnames=['sha','час','pr','prs','гілка','постачальник','вкладені','файлів','продукт','прилади','обгортка','дошка','наряди','документи','корені','прибрано','claude_сесії','gemini_співавтор','тема'])
+w=csv.DictWriter(open(f'{О}/злиття_2905.csv','w',newline=''),fieldnames=['sha','час','pr','prs','гілка','постачальник','вкладені','файлів','продукт','прилади','обгортка','дошка','наряди','документи','claude_сесії','gemini_співавтор','тема'])
 w.writeheader(); [w.writerow({k:z[k] for k in w.fieldnames}) for z in злиття]
 # ---------- Claude: сесії
 сесії=[json.loads(l) for l in open(f'{T}/дані.jsonl')]
@@ -75,8 +65,7 @@ for s in сесії:
       модель=(s['model'] or '').replace('claude-',''),зусилля=s['effort'] or '',вид=вид(s['title']),
       корінь_продукту=int(про_корінь_продукту(s['title'])),cost_usd=c,cost_у_вікні=вік,
       input=s['input_tokens'],output=s['output_tokens'],cache_read=s['cache_read_tokens'],cache_write=s['cache_write_tokens'],
-      контекст=s['ctx_used'],злиттів=len(зл),злиттів_продукту=sum(1 for z in зл if i(z['продукт'])),
-      прибрано_місць=sum(z['прибрано'] for z in зл if z['постачальник']=='Claude')))
+      контекст=s['ctx_used'],злиттів=len(зл),злиттів_продукту=sum(1 for z in зл if i(z['продукт']))))
 # перевірки: PR → чи корінь продукту
 def pr_корінь(n):
     x=pr.get(n); 
@@ -116,10 +105,9 @@ for r in нр.values():
     r['відкриті_pr']=' '.join(str(p['number']) for p in інші if p['state']=='open')
     r['закриті_без_злиття']=' '.join(str(p['number']) for p in інші if p['state']=='closed' and not p['merged_at'])
     r['злиттів_продукту']=sum(1 for p in злиті if p['number'] in продукт_pr)
-    r['прибрано_місць']=sum(z['прибрано'] for z in злиття if z['гілка'] in r['гілки'] and z['постачальник'] in('Codex','agy'))
     r['гілки']=' '.join(sorted(r['гілки'])); r['коди']=' '.join(f'{k}:{v}' for k,v in r['коди'].most_common())
     r['моделі']=' '.join(f'{k}:{v}' for k,v in r['моделі'].most_common() if v)
-поля=['постачальник','наряд','вид','корінь_продукту','запусків','сесій_моделі','спроб_понад_першу','разом','без_кешу','разом_спроб2','без_кешу_збоїв','коди','моделі','гілки','злито_pr','відкриті_pr','закриті_без_злиття','злиттів_продукту','прибрано_місць']
+поля=['постачальник','наряд','вид','корінь_продукту','запусків','сесій_моделі','спроб_понад_першу','разом','без_кешу','разом_спроб2','без_кешу_збоїв','коди','моделі','гілки','злито_pr','відкриті_pr','закриті_без_злиття','злиттів_продукту']
 w=csv.DictWriter(open(f'{О}/наряди_ноутбука_2905.csv','w',newline=''),fieldnames=поля)
 w.writeheader(); w.writerows(sorted(нр.values(),key=lambda r:(r['постачальник'],-r['без_кешу'])))
 print('ok',len(злиття),len(рядки_c),len(нр))
