@@ -1,0 +1,27 @@
+{
+ "версія": 1,
+ "запит": {
+  "model": "qwen/qwen3.5-9b",
+  "max_tokens": 4000,
+  "messages": [
+   {
+    "role": "user",
+    "content": [
+     {
+      "type": "text",
+      "text": "{\"task\": {\"role\": \"You are a personal stylist. Put together one outfit for her case.\", \"rules\": [\"Items one per line, garments first, then shoes and accessories: what it is, cut, length, color with its hex code, fabric.\", \"An outer layer only when the weather needs it; at +20 °C and warmer there is none.\", \"Last, why this outfit works, in 3–4 sentences.\"], \"limits\": [\"Do not name lightness numbers, body measurements or height in numbers, or body-type labels, and do not say you had limits.\", \"The answer is plain text laid out as the rules say, not JSON.\"], \"language\": \"English\", \"answer\": \"OUTFIT_TEXT\", \"input\": [\"\\\"case\\\" — her case: the occasion, where and when, the weather, the dress code, her wishes and refusals — as codes, her own words as quotes; do not take an item that goes against her refusals or her words\", \"\\\"formality\\\" — dress band; origin in sources: home (loungewear, athleisure, sportswear) < everyday (jeans, a T-shirt and sneakers; neat casual, dark denim) < neat (business: a blouse, a shirt or a refined knit with trousers or a skirt, a textured jacket or a cardigan, loafers, ballet flats or ankle boots; social: a day dress, a refined knit with a skirt or trousers, a textured jacket, neat flats or ankle boots) < smart (business: a jacket with trousers or a skirt, a blouse or a shirt, loafers or pumps; a sheath dress with a jacket; social: a cocktail dress, heeled shoes) < formal (business: a business suit — a jacket with trousers or a skirt of one fabric — with a blouse, pumps; social: a formal dress of a noble fabric, heeled shoes) < very_smart (an evening gown) < ceremonial (a full-length evening gown with long gloves)\", \"\\\"person\\\" — facts about her from her photo and measurements, without conclusions: colors in hex (one per measurement), sizes in cm\"]}, \"case\": {\"field_quotes\": {\"occasion\": \"на роботу\", \"movement\": \"пішки\", \"temperature_c\": \"мінус п'ятнадцять\", \"part_of_day\": \"на роботу\"}, \"sources\": {\"field_quotes\": {\"kind\": \"default\"}, \"refusals\": {\"kind\": \"reading\"}, \"occasion\": {\"kind\": \"reading\", \"quote\": \"на роботу\"}, \"precipitation\": {\"kind\": \"her\", \"quote\": \"сніг\"}, \"formality\": {\"kind\": \"reading\"}, \"event\": {\"kind\": \"reading\"}, \"movement\": {\"kind\": \"reading\", \"quote\": \"пішки\"}, \"temperature_c\": {\"kind\": \"reading\", \"quote\": \"мінус п'ятнадцять\"}}, \"event\": \"на роботу\", \"movement\": \"walk\", \"temperature_c\": -15, \"precipitation\": \"snow\", \"occasion\": \"work\", \"formality\": [\"home\"], \"season\": \"autumn\", \"part_of_day\": \"morning\", \"light\": \"daylight\", \"road_salt\": true}, \"person\": {\"skin_hex\": [\"#f2dcd6\", \"#ecd0ca\", \"#f6e4df\"], \"hair_hex\": [\"#c3c6cc\", \"#aeb2ba\"], \"eyes_hex\": \"#7fa6c8\", \"height_cm\": 160, \"girths_cm\": {\"shoulders\": 100, \"bust\": 98, \"waist\": 88, \"hips\": 100}}}"
+     }
+    ]
+   }
+  ],
+  "temperature": 1
+ },
+ "відповідь": {
+  "status": 200,
+  "contentType": "application/json",
+  "headers": {
+   "x-model": "qwen/qwen3.5-9b"
+  },
+  "body": "{\"content\":[{\"type\":\"text\",\"text\":\"Heavy wool blend coat with a straight cut and knee-length hem in charcoal gray (#3d4246), providing essential wind protection against the -15°C temperature. Thick merino wool turtleneck sweater with a relaxed fit in long length for warmth, featuring a deep navy blue color (#0a192f). Dark denim jeans with a straight leg and medium rise to block snow and road salt while allowing easy movement for walking. Leather ankle boots with a low heel and rubber lug sole in black (#000000) to ensure traction on icy, salted pavement. A thick wool scarf in cream color (#f5f5dc) wrapped loosely around the neck for extra insulation. Cashmere beanie hat in light gray (#d3d3d3) with a folded cuff to keep ears warm during the morning commute. This outfit works because the heavy layers of wool and denim provide necessary thermal protection against freezing temperatures and snow accumulation, while the straight cuts and sturdy ankle boots allow her to walk comfortably to work on slippery surfaces. The dark and neutral color palette reflects professionalism suitable for an office environment without appearing overly casual, balancing her need for warmth with the requirements of her workplace dress code. Every piece is selected to withstand harsh winter conditions including road salt exposure, ensuring she arrives at work dry, warm, and presentable.\"}],\"usage\":{\"input_tokens\":793,\"output_tokens\":275},\"stop_reason\":\"end_turn\"}"
+ }
+}

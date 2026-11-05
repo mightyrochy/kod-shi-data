@@ -1,0 +1,27 @@
+{
+ "версія": 1,
+ "запит": {
+  "model": "qwen/qwen3.5-9b",
+  "max_tokens": 4000,
+  "messages": [
+   {
+    "role": "user",
+    "content": [
+     {
+      "type": "text",
+      "text": "{\"task\": {\"role\": \"You read the description of an outfit and list its items as data.\", \"rules\": [\"One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.\", \"One item carries one thing — of two alternatives list the first; a note in brackets is not an item.\", \"Slot \\\"accessory\\\" is for an item no other slot fits.\", \"\\\"is_outfit\\\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note.\"], \"limits\": [\"Rely only on the input: do not invent what it does not contain.\", \"The answer is one JSON object following \\\"answer_schema\\\", without explanations and without ```.\"], \"language\": \"English\", \"answer\": \"ITEM_LIST\", \"answer_schema\": {\"is_outfit\": \"yes|no\", \"items\": [{\"name\": \"<what the item is>\", \"details\": \"<its cut, length and fabric>\", \"slot\": \"top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory\", \"color_hex\": \"<#rrggbb or null>\", \"worn\": \"<true, or false when the description says the outfit goes without it>\"}]}, \"input\": [\"\\\"description\\\" — the outfit description\"]}, \"description\": \"Champagne silk slip dress, floor-length silhouette with a softly draped A-line cut in color #dcd0c2, luxurious liquid silk fabric.\\nBlack velvet ankle boots, pointed toe design reaching mid-calf in deep matte black hex #1a1a1a, heavy wool-blend velvet material.\\nGold vermeil drop earrings, teardrop shape with a polished finish in metallic gold hex #d4af37, lightweight metal alloy.\\n\\nThis ensemble strikes the perfect balance between garden elegance and evening sophistication for your sister's wedding in August. The champagne silk slip dress offers an ethereal, romantic look that photographs beautifully at sunset while remaining cool enough for outdoor ceremonies in warm weather. Adding black velvet boots elevates the outfit from casual summer wear to formal attire without sacrificing comfort on grass or restaurant floors. The gold earrings catch the artificial evening light and natural twilight, creating a cohesive look that honors both the rustic venue and the formal dress code you requested.\"}"
+     }
+    ]
+   }
+  ],
+  "temperature": 1
+ },
+ "відповідь": {
+  "status": 200,
+  "contentType": "application/json",
+  "headers": {
+   "x-model": "qwen/qwen3.5-9b"
+  },
+  "body": "{\"content\":[{\"type\":\"text\",\"text\":\"{\\n  \\\"is_outfit\\\": \\\"yes\\\",\\n  \\\"items\\\": [\\n    {\\n      \\\"name\\\": \\\"slip dress\\\",\\n      \\\"details\\\": \\\"floor-length silhouette with a softly draped A-line cut, luxurious liquid silk fabric\\\",\\n      \\\"slot\\\": \\\"dress\\\",\\n      \\\"color_hex\\\": \\\"#dcd0c2\\\",\\n      \\\"worn\\\": true\\n    },\\n    {\\n      \\\"name\\\": \\\"ankle boots\\\",\\n      \\\"details\\\": \\\"pointed toe design reaching mid-calf, heavy wool-blend velvet material\\\",\\n      \\\"slot\\\": \\\"shoes\\\",\\n      \\\"color_hex\\\": \\\"#1a1a1a\\\",\\n      \\\"worn\\\": true\\n    },\\n    {\\n      \\\"name\\\": \\\"drop earrings\\\",\\n      \\\"details\\\": \\\"teardrop shape with a polished finish, lightweight metal alloy\\\",\\n      \\\"slot\\\": \\\"earrings\\\",\\n      \\\"color_hex\\\": \\\"#d4af37\\\",\\n      \\\"worn\\\": true\\n    }\\n  ]\\n}\"}],\"usage\":{\"input_tokens\":549,\"output_tokens\":221},\"stop_reason\":\"end_turn\"}"
+ }
+}

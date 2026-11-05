@@ -1,0 +1,27 @@
+{
+ "версія": 1,
+ "запит": {
+  "model": "qwen/qwen3.5-9b",
+  "max_tokens": 4000,
+  "messages": [
+   {
+    "role": "user",
+    "content": [
+     {
+      "type": "text",
+      "text": "{\"task\": {\"role\": \"You read the description of an outfit and list its items as data.\", \"rules\": [\"One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.\", \"One item carries one thing — of two alternatives list the first; a note in brackets is not an item.\", \"Slot \\\"accessory\\\" is for an item no other slot fits.\", \"\\\"is_outfit\\\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note.\"], \"limits\": [\"Rely only on the input: do not invent what it does not contain.\", \"The answer is one JSON object following \\\"answer_schema\\\", without explanations and without ```.\"], \"language\": \"English\", \"answer\": \"ITEM_LIST\", \"answer_schema\": {\"is_outfit\": \"yes|no\", \"items\": [{\"name\": \"<what the item is>\", \"details\": \"<its cut, length and fabric>\", \"slot\": \"top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory\", \"color_hex\": \"<#rrggbb or null>\", \"worn\": \"<true, or false when the description says the outfit goes without it>\"}]}, \"input\": [\"\\\"description\\\" — the outfit description\"]}, \"description\": \"Tailored wool-blend suit jacket, structured single-breasted cut with notch lapels, charcoal gray #3E4A56, fine woven wool.\\nSlim-leg tapered trousers, straight fit through thigh tapering to ankle, charcoal gray #3E4A56, fine woven wool.\\nSilk-cotton blouse, relaxed collar with slight drape at neckline, soft ivory #FFFFF0, smooth poplin fabric.\\nLow block heel pumps, closed toe with almond shape, matte black #000000, polished leather.\\nMatte gold pendant necklace, delicate chain length resting at collarbone, 18k gold vermeil, solid metal.\\nStructured leather clutch, rectangular silhouette with top zip closure, deep espresso brown #3B2F2F, smooth calfskin leather.\\n\\nThis outfit works because the charcoal suit strikes the right balance between professional authority and approachability required for an analyst interview in a corporate bank setting. The silk-cotton blouse introduces a subtle softness that prevents the ensemble from feeling too rigid while maintaining a polished silhouette suitable for autumn morning daylight. Gold accessories add a touch of modern elegance without distracting from the core message of competence and attention to detail she aims to convey.\"}"
+     }
+    ]
+   }
+  ],
+  "temperature": 1
+ },
+ "відповідь": {
+  "status": 200,
+  "contentType": "application/json",
+  "headers": {
+   "x-model": "qwen/qwen3.5-9b"
+  },
+  "body": "{\"content\":[{\"type\":\"text\",\"text\":\"{\\n  \\\"is_outfit\\\": \\\"yes\\\",\\n  \\\"items\\\": [\\n    {\\n      \\\"name\\\": \\\"Suit jacket\\\",\\n      \\\"details\\\": \\\"Tailored single-breasted cut with notch lapels, fine woven wool fabric\\\",\\n      \\\"slot\\\": \\\"outerwear\\\",\\n      \\\"color_hex\\\": \\\"#3E4A56\\\",\\n      \\\"worn\\\": true\\n    },\\n    {\\n      \\\"name\\\": \\\"Trousers\\\",\\n      \\\"details\\\": \\\"Slim-leg tapered straight fit through thigh to ankle, fine woven wool fabric\\\",\\n      \\\"slot\\\": \\\"bottom\\\",\\n      \\\"color_hex\\\": \\\"#3E4A56\\\",\\n      \\\"worn\\\": true\\n    },\\n    {\\n      \\\"name\\\": \\\"Blouse\\\",\\n      \\\"details\\\": \\\"Relaxed collar with slight drape at neckline, smooth poplin fabric\\\",\\n      \\\"slot\\\": \\\"top\\\",\\n      \\\"color_hex\\\": \\\"#FFFFF0\\\",\\n      \\\"worn\\\": true\\n    },\\n    {\\n      \\\"name\\\": \\\"Pumps\\\",\\n      \\\"details\\\": \\\"Low block heel closed toe with almond shape, polished leather\\\",\\n      \\\"slot\\\": \\\"shoes\\\",\\n      \\\"color_hex\\\": \\\"#000000\\\",\\n      \\\"worn\\\": true\\n    },\\n    {\\n      \\\"name\\\": \\\"Necklace\\\",\\n      \\\"details\\\": \\\"Delicate chain length resting at collarbone, solid metal\\\",\\n      \\\"slot\\\": \\\"necklace\\\",\\n      \\\"color_hex\\\": null,\\n      \\\"worn\\\": true\\n    },\\n    {\\n      \\\"name\\\": \\\"Clutch\\\",\\n      \\\"details\\\": \\\"Rectangular silhouette with top zip closure, smooth calfskin leather\\\",\\n      \\\"slot\\\": \\\"bag\\\",\\n      \\\"color_hex\\\": \\\"#3B2F2F\\\",\\n      \\\"worn\\\": true\\n    }\\n  ]\\n}\"}],\"usage\":{\"input_tokens\":605,\"output_tokens\":403},\"stop_reason\":\"end_turn\"}"
+ }
+}

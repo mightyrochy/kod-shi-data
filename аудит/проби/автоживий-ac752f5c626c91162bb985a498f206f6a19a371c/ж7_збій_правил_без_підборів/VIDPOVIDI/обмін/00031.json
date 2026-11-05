@@ -1,0 +1,27 @@
+{
+ "версія": 1,
+ "запит": {
+  "model": "qwen/qwen3.5-9b",
+  "max_tokens": 4000,
+  "messages": [
+   {
+    "role": "user",
+    "content": [
+     {
+      "type": "text",
+      "text": "{\"task\": {\"role\": \"You read the description of an outfit and list its items as data.\", \"rules\": [\"One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.\", \"One item carries one thing — of two alternatives list the first; a note in brackets is not an item.\", \"Slot \\\"accessory\\\" is for an item no other slot fits.\", \"\\\"is_outfit\\\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note.\"], \"limits\": [\"Rely only on the input: do not invent what it does not contain.\", \"The answer is one JSON object following \\\"answer_schema\\\", without explanations and without ```.\"], \"language\": \"English\", \"answer\": \"ITEM_LIST\", \"answer_schema\": {\"is_outfit\": \"yes|no\", \"items\": [{\"name\": \"<what the item is>\", \"details\": \"<its cut, length and fabric>\", \"slot\": \"top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory\", \"color_hex\": \"<#rrggbb or null>\", \"worn\": \"<true, or false when the description says the outfit goes without it>\"}]}, \"input\": [\"\\\"description\\\" — the outfit description\"]}, \"description\": \"Wool-blend coat in a structured H-line cut reaching mid-thigh, length 70cm, color slate blue with hex code #4A5C6E, fabric heavy woven wool. Trench-style parka hood integrated, color matching the coat, hex #2F3942, water-resistant synthetic shell with fleece lining. Thick merino wool turtleneck sweater, relaxed fit, length hip-level, color charcoal grey with hex #36454F, fabric 100% merino wool for warmth without bulk. Straight-leg dark denim trousers, mid-rise waist, ankle length covering shoes completely, color indigo with hex #1C2732, fabric sturdy cotton twill with a brushed interior. Leather combat boots with rubber lug soles, lace-up front, mid-calf height, color matte black with hex #0D0D0D, fabric full-grain leather for traction on icy, salted pavement. Oversized knit beanie in ribbed texture, slouchy crown, cuffless edge, color warm cream with hex #F5F5DC, fabric soft acrylic blend to trap heat. Leather gloves with flexible fingers and insulated palm, color matching the boots, hex #1A1A1A, fabric lambskin leather with synthetic thermal lining. This outfit works because it prioritizes thermal retention against minus fifteen-degree freezing temperatures and snow while ensuring safe traction on salted sidewalks during her morning walk to work. The heavy wool layers and waterproof outer shell create a necessary barrier against the cold wind and wet conditions without restricting movement for walking. The dark neutral color palette remains professional enough for an office setting, satisfying the strict reading-based dress code while completely honoring her refusal to wear light or revealing items.\"}"
+     }
+    ]
+   }
+  ],
+  "temperature": 1
+ },
+ "відповідь": {
+  "status": 200,
+  "contentType": "application/json",
+  "headers": {
+   "x-model": "qwen/qwen3.5-9b"
+  },
+  "body": "{\"content\":[{\"type\":\"text\",\"text\":\"{\\n  \\\"is_outfit\\\": \\\"yes\\\",\\n  \\\"items\\\": [\\n    {\\n      \\\"name\\\": \\\"Wool-blend coat\\\",\\n      \\\"details\\\": \\\"structured H-line cut reaching mid-thigh, length 70cm, heavy woven wool fabric with integrated trench-style parka hood\\\",\\n      \\\"slot\\\": \\\"outerwear\\\",\\n      \\\"color_hex\\\": \\\"#4A5C6E\\\",\\n      \\\"worn\\\": true\\n    },\\n    {\\n      \\\"name\\\": \\\"Thick merino wool turtleneck sweater\\\",\\n      \\\"details\\\": \\\"relaxed fit, hip-level length, 100% merino wool fabric\\\",\\n      \\\"slot\\\": \\\"top\\\",\\n      \\\"color_hex\\\": \\\"#36454F\\\",\\n      \\\"worn\\\": true\\n    },\\n    {\\n      \\\"name\\\": \\\"Straight-leg dark denim trousers\\\",\\n      \\\"details\\\": \\\"mid-rise waist, ankle length covering shoes completely, sturdy cotton twill fabric with brushed interior\\\",\\n      \\\"slot\\\": \\\"bottom\\\",\\n      \\\"color_hex\\\": \\\"#1C2732\\\",\\n      \\\"worn\\\": true\\n    },\\n    {\\n      \\\"name\\\": \\\"Leather combat boots\\\",\\n      \\\"details\\\": \\\"lace-up front, mid-calf height, rubber lug soles, full-grain leather fabric\\\",\\n      \\\"slot\\\": \\\"shoes\\\",\\n      \\\"color_hex\\\": \\\"#0D0D0D\\\",\\n      \\\"worn\\\": true\\n    },\\n    {\\n      \\\"name\\\": \\\"Oversized knit beanie\\\",\\n      \\\"details\\\": \\\"ribbed texture, slouchy crown, cuffless edge, soft acrylic blend fabric\\\",\\n      \\\"slot\\\": \\\"headwear\\\",\\n      \\\"color_hex\\\": \\\"#F5F5DC\\\",\\n      \\\"worn\\\": true\\n    },\\n    {\\n      \\\"name\\\": \\\"Leather gloves\\\",\\n      \\\"details\\\": \\\"flexible fingers and insulated palm, lambskin leather fabric with synthetic thermal lining\\\",\\n      \\\"slot\\\": \\\"accessory\\\",\\n      \\\"color_hex\\\": \\\"#1A1A1A\\\",\\n      \\\"worn\\\": true\\n    }\\n  ]\\n}\"}],\"usage\":{\"input_tokens\":711,\"output_tokens\":465},\"stop_reason\":\"end_turn\"}"
+ }
+}

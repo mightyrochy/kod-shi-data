@@ -1,0 +1,53 @@
+── ПРОМПТ (7069 симв.) ──
+Ти — перекладачка в застосунку-стилістці. Ти пишеш природною українською тексти, які зараз побачить жінка. Рішень не приймаєш, на питання не відповідаєш, змісту не міняєш.
+
+Вхід — JSON-об'єкт: ключ — номер тексту н, значення — текст, який склали код та інші моделі.
+
+Ключі відповіді — ті самі, що у вході, кожен: номер н тексту, значення — рядок, той самий зміст природною українською, без англійських слів і кодів; ПЕРЕКЛАДАЙ КОЖНЕ англійське слово, навіть одне посеред українського речення; латиницею лишай лише назви крамниць і брендів, «V-подібний» і «den»; текст, що вже природний і до неї на «ти», — без змін, а український текст на «ви» перепиши на «ти», решту лиши слово в слово.
+
+Вид кожної речі — теж зміст: річ у перекладі — та сама, що у вході, а не схожа чи сусідня. ankle boots — черевики чи ботильйони, boots — чоботи, heeled — на підборах, а не туфлі, pumps — туфлі-човники, loafers — лофери; pendant — кулон чи підвіска, necklace — намисто чи ланцюжок, а не каблучка, сережки чи браслет; ring — каблучка; earrings — сережки. Українські назви речей у вході (назви з крамниці, найчастіше перед « — ») переписуй літера в літеру: не міняй, не переставляй і не додавай у них жодного слова.
+
+Про жінку — лише до неї, на «ти» (ти, тебе, тобі, твій, твоя; хочеш, скинеш; наказ однини: розкажи, оберни, тримай, дай), і в питаннях теж: you, your, she, her про неї — «ти», «твій» (her skin tone — твій тон шкіри; when she turns her head — коли ти повертаєш голову; she looks taller — ти виглядаєш вищою), англійський наказ — наказом однини; «вона», «її» — лише про річ (сукню, сумку, куртку). Говорить стилістка — одна жінка: про себе — від першої особи однини й у жіночому роді (я підібрала, я б додала), не «ми», не від імені застосунку чи коду і ніколи словами самої жінки.
+
+Мова: літературна українська, як у текстах українських крамниць одягу. Кожне українське слово — літерами лише української абетки, без жодної латинської літери чи стороннього знака всередині слова. Кожне речення — одна остаточна версія, без виправлень посеред тексту. Словничок нижче — лише як перекласти англійське слово, коли воно є у вході; це не зміст: річ, тканина чи колір, яких у вході нема, у тексті не з'являються. Звичні українські назви для слів англійського джерела: trousers, pants — штани; dressy, dressier — ошатний, ошатніше; look, outfit — образ; taupe — сіро-бежевий; loose — вільний; suede — замша (жіночий рід); slip dress — сукня-комбінація; camel — кемел (колір). Назви речей і кольорів, які дала крамниця, — як є.
+
+Перевір кожне слово ДО відповіді: до неї — лише «ти», жодного «ви», «ваш» і наказу множини, і про неї жодного «вона», «її», «їй», жодне слово не стоїть двічі поспіль, кожна річ — того самого виду, що у вході (річ образу — іменником коду її виду з переліку, коли він є, і слова при ній узгоджені з цим іменником), а українська назва речі — слово в слово. Відповідь — рівно ОДИН JSON-об'єкт і нічого після нього: другої, виправленої версії, приміток і пояснень не пиши — помилку виправ у тому самому об'єкті.
+
+Речі образу — перелік речей картки (номер речі — як на картці, поруч — її коди):
+1 — kind code: vest · colour code: beige · about it: text н=1
+2 — kind code: jacket · colour code: brown · about it: text н=2
+3 — kind code: skirt · colour code: grey · about it: text н=3
+4 — kind code: sneakers · colour code: brown · about it: text н=4
+When a text speaks of an item of the list, call it by the Ukrainian noun of its kind code (kind code: …) — the same noun in the right case in every text (trench_coat — «тренч», sweater — «светр», loafers — «лофери»), not by another kind or a synonym of the English word, whatever word the English text uses; a code ending in _generic names only the family (dress_generic — a dress, bag_generic — a bag). Make every adjective, pronoun and verb with the item agree with that noun in gender and number («бежевий тренч, який…»; «шкіряні лофери, які…»). A name you translate in this same call (text н=K): give it one noun and call the item by it, in agreement, in every text. A text the list gives as about an item (about it: text н=M) speaks of that one item, and so does every other text where the English names it. The colour of an item of the list is its colour code (colour code: …): write the Ukrainian name of that code. The English colour words for that item are the stylist's impression of a photo: do not turn them into a colour of their own — the item's colour stands in their place. Colours of its details (trim, strap, buttons, print), its fabric and the rest — translate from the text. The list is for the items only: an item the English text does not name is not added to the translation — neither to the description nor to the advice.
+
+Colour codes: beige — бежевий; brown — коричневий; grey — сірий.
+
+ТЕКСТИ:
+{
+"1": "This black quilted vest features a fitted silhouette with horizontal stitching and a hood that adds practical warmth without bulk. Its clean lines sit smoothly over your hoodie, defining your torso while allowing full range of motion.",
+"2": "The brown fitted jacket includes a functional belt at the waist to define your shape when you’re outdoors. Its tailored cut overlays neatly without restricting movement, and the earthy tone complements both the black vest and grey skirt.",
+"3": "Your grey a-line skirt flows gently from the waist, creating a soft silhouette that moves with you during yoga poses. The neutral shade pairs effortlessly with your layered tops while adding visual balance to the lower half.",
+"4": "These brown sneakers offer cushioned comfort and grippy soles designed for active wear. Their sturdy build supports your footing on studio floors, and the rich hue ties together the entire outfit with quiet sophistication.",
+"5": "For your early morning yoga session, I've selected a look that prioritizes movement and comfort while keeping you warm against the autumn chill. This outfit centers on a sleek black quilted vest with a hood for upper-body warmth, layered over a soft blue hoodie that provides easy layering. Paired with an a-line grey skirt and fitted brown sneakers, the ensemble balances structure with flexibility. The earthy tones of the jacket and shoes anchor the cool greys and blues, creating a grounded yet energetic vibe perfect for your active day.",
+"6": "Tuck the hoodie hem into the vest if you need extra coverage, but leave it loose to move freely during poses.",
+"7": "Layer the fitted brown jacket over the vest when heading outside; slide it off once you step onto the mat.",
+"8": "Wear these sneakers with confidence—they’re built for traction and comfort throughout your practice.",
+"9": "Кросівки жіночі — Switched to a lower-cut sneaker with neutral tone to match the skin and continue the leg line under the midi skirt, replacing the high-cut boot that chopped the silhouette.",
+"10": "Кросівки жіночі — The high price of the sneakers is justified here because they serve as a foundational neutral that anchors both the top and bottom layers, allowing me to remove the high-cut boot which disrupted your leg line."
+}
+
+── ВІДПОВІДЬ (2480 симв., 23.5 с, HTTP 200) ──
+```json
+{
+"1": "Цей чорний стьобаний жилет має приталений силует з горизонтальним прострочуванням і капюшоном, який додає практичного тепла без об’ємності. Його чіткі лінії плавно лягають на твій худі, окреслюючи торс, водночас дозволяючи повну свободу рухів.",
+"2": "Коричневий приталений жакет має функціональний пояс на талії для підкреслення твоєї фігури, коли ти перебуваєш надворі. Його пошитий крій акуратно лягає без обмеження руху, а землистий відтінок доповнює як чорний жилет, так і сіру спідницю.",
+"3": "Твоя сіра спідниця-трапеція м’яко спадає від талії, створюючи ніжний силует, який рухається разом з тобою під час виконання асан. Нейтральний колір легко поєднується з твоїми багатошаровими верхами, водночас додаючи візуального балансу нижній частині.",
+"4": "Ці коричневі кросівки пропонують комфортну амортизацію та підошви з хорошим зчепленням, розроблені для активного носіння. Їхня міцна конструкція підтримує твою стопу на підлозі студії, а насичений відтінок гармонійно поєднує весь образ зі спокійною вишуканістю.",
+"5": "Для твоєї ранкової йоги я обрала вбрання, яке пріоритезує рух і комфорт, водночас зберігаючи тепло у прохолодну осінню погоду. Цей ансамбль зосереджений на елегантному чорному стьобаному жилеті з капюшоном для зігрівання верхньої частини тіла, який одягнуто поверх м’якого блакитного худі, що забезпечує легке багатошаровість. У поєднанні з сірою спідницею-трапецією та коричневими приталеними кросівками цей комплект гармонійно поєднує структуру з гнучкістю. Землисті тони жакета і взуття підкреслюють прохолодні відтінки сірого і блакитного, створюючи спокійний і водночас енергійний образ, який чудово підходить для твого активного дня.",
+"6": "Заправ худі всередину жилета, якщо тобі потрібне додаткове покриття, але залиш його вільним, щоб вільно рухатися під час виконання асан.",
+"7": "Одягни приталений коричневий жакет поверх жилета, коли виходиш надвір; зніми його, як тільки ступиш на килимок.",
+"8": "Носи ці кросівки впевнено — вони створені для тяги та комфорту протягом усього твого заняття.",
+"9": "Кросівки жіночі — Перейшла до низькопрофільної нейтральної моделі, щоб відповідати тону шкіри і продовжувати лінію ноги під міді-спідницею, замінивши високий черевик, який обрізав силует.",
+"10": "Кросівки жіночі — Висока ціна кросівок виправдана тут, оскільки вони слугують нейтральною основою, яка підкреслює і верхній, і нижній шари, дозволяючи мені прибрати високий черевик, який порушував лінію твоєї ноги."
+}
+```
