@@ -3,6 +3,7 @@
 (quiet) слот знятої речі / без ремонту; R-CHEV-08 «собою»: слоти речей і чи лишається знахідка при зоні мети.
 Волосся — з профілю жінки (`аудит/проби/жінки/ж*.json`, L*C*h), як у живому суді. Запуск із джерела/: python3 проби/фокус3_зняття_кольору.py ../аудит/перевірки/fokus_2/ПІСЛЯ"""
 import json, gzip, glob, os, sys, collections as K
+from pathlib import Path
 sys.path.insert(0, "."); import colorspace as cs, palettes as P, палітра_схеми as ПСХ, внутрішня_мова as ВМ, суд_від_моделі as С, регістр_уваги as РУ, суд_ремесло as СР
 ЗОНА = {"ж4_робота_живіт": ["живіт"]}   # код `goal_zones`, який мовна модель ставить на «приховати живіт»
 на_мету = getattr(РУ, "на_мету", lambda *x: True)
@@ -28,7 +29,7 @@ for f in sorted(glob.glob(sys.argv[1] + "/ж*_*/вердикти.txt.gz")):
             речі = [dict(id=i["n"], слот=сл(i), hex=_КОЛІР.hex_кольору(i), назва=i["name"]) for i in yo["items"] if _КОЛІР.hex_кольору(i)]
             сх = СР.слоти_акценту_схеми(речі, сп); кв = {"схема_слоти": сх} if "схема_слоти" in С.бюджет_і_відлуння.__code__.co_varnames else {}
             вол = {"волосся_%d" % k: dict(zip("LCh", cs.lch(cs.hx(x)))) for k, x in enumerate(json.load(open(
-                "../аудит/проби/жінки/%s.json" % f.split("/")[-2].split("_")[0]))["hair"])}
+                "../аудит/проби/жінки/%s.json" % Path(f).parent.name.split("_")[0]))["hair"])}
             for z in [z for z in С.бюджет_і_відлуння(речі, вол, None,
                                                     sorted(сх) or None, **кв) if z["правило"] == "K-COL-02"] + ПСХ.обіцянка_схеми(речі, сп):
                 к, v = z["заяви"][0]["code"], z["заяви"][0]["values"]
@@ -37,5 +38,5 @@ for f in sorted(glob.glob(sys.argv[1] + "/ж*_*/вердикти.txt.gz")):
                 Л[к + " · зн.: без ремонту"] += bool(кз) and not z.get("ремонт_заяви")
             for fd in o.get("findings", []):
                 for i in (i for i in yo["items"] if str(fd.get("what", "")).startswith("річ помітна не кольором") and i["n"] in fd["items"]):
-                    Л["R-CHEV-08 собою · %s · %s" % (сл(i), "лишається" if на_мету(сл(i), None, None, ЗОНА.get(f.split("/")[-2])) else "знято зоною")] += 1
+                    Л["R-CHEV-08 собою · %s · %s" % (сл(i), "лишається" if на_мету(сл(i), None, None, ЗОНА.get(Path(f).parent.name)) else "знято зоною")] += 1
 for к, v in sorted(Л.items()): print("  %-60s %3d" % (к, v))
