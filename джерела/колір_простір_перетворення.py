@@ -203,6 +203,11 @@ def адаптувати_освітлювач(lab, від="C", до="D65", ме�
 def lch(lab):
     """(L*, C*, h°) із Lab: C* — модуль (a, b), h — кут atan2 у градусах [0, 360)."""
     L,a,b=lab; return L, math.hypot(a,b), math.degrees(math.atan2(b,a))%360
+
+def lab_з_lch(L, C, h):
+    """Lab із (L*, C*, h°) — обернене до `lch`: a = C·cos h, b = C·sin h."""
+    r = math.radians(h)
+    return (L, C * math.cos(r), C * math.sin(r))
 def hx(s):
     """Lab із «#rrggbb» (sRGB); рядок не з шести шістнадцяткових цифр — ValueError."""
     return to_lab(tuple(int(s.lstrip('#')[i:i+2],16) for i in (0,2,4)))
