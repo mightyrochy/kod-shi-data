@@ -74,10 +74,10 @@ index c4eb0b14d8..82a52b727d 100644
              if ($line -isnot [string] -and $null -ne $line) {
                  # Кінець прогону: рядок — у теку вихідних під id стану; доставка — з неї, як для рядків інших скриптів.
 diff --git a/аудит/адаптери/gemini/gemini_run.ps1 b/аудит/адаптери/gemini/gemini_run.ps1
-index 4413c10935..0cd61c27e9 100644
+index 4413c10935..2b2a0e40de 100644
 --- a/аудит/адаптери/gemini/gemini_run.ps1
 +++ b/аудит/адаптери/gemini/gemini_run.ps1
-@@ -1344,6 +1344,45 @@ function Invoke-Worker {
+@@ -1344,6 +1344,46 @@ function Invoke-Worker {
      }
  }
  
@@ -91,13 +91,14 @@ index 4413c10935..0cd61c27e9 100644
 +    if (Test-Path -LiteralPath $ready) { return $target }
 +    $locks = New-Object Collections.ArrayList
 +    try {
++        # Штатна перевірка живого слота має бачити його справжнього власника, а не наш замок перенесення.
++        Clear-OrphanClaims $RunsDir
 +        foreach ($file in @(Get-ChildItem -LiteralPath $script:SlotDir -Filter '*.lock' -File)) {
 +            $lock = Open-Lock $file.FullName
 +            if ($null -eq $lock) { Write-Log 'перенесення стану: старий процес ще тримає слот'; return '' }
 +            [void]$locks.Add($lock)
 +        }
 +        # Свіжий claim може ще не дійти до замка слота; його теж не обганяємо.
-+        Clear-OrphanClaims $RunsDir
 +        $pending = @(foreach ($claim in @(Get-ChildItem -LiteralPath $script:StateDir -Filter '*.claim' -File)) {
 +            $state = $claim.FullName -replace '\.claim$', '.txt'
 +            # STARTED без зайнятого слота відновить штатний Resume-Interrupted вже після перенесення.
@@ -123,7 +124,7 @@ index 4413c10935..0cd61c27e9 100644
  function Main {
      if ($WorkerFile) { $script:Job = Read-WorkerJob $WorkerFile }
      $script:StateDir = Join-Path $RunsDir 'state'
-@@ -1351,12 +1390,19 @@ function Main {
+@@ -1351,12 +1391,19 @@ function Main {
      foreach ($d in @($RunsDir, $script:StateDir, $script:SlotDir, $OutDir, $LaneDir)) { [void](New-Item -ItemType Directory -Force -Path $d) }
      $script:NoHooks = Join-Path ([System.IO.Path]::GetTempPath()) ('no-hooks-' + [guid]::NewGuid().ToString('N'))
      $script:HealthAlertDir = Join-Path $OutDir 'alerts'
@@ -145,7 +146,7 @@ index 4413c10935..0cd61c27e9 100644
          $first = $true; $clean = $true
          while ($true) {
 diff --git a/аудит/адаптери/gemini/m9v/хеші.psd1 b/аудит/адаптери/gemini/m9v/хеші.psd1
-index 32586a2f8b..ab689e1d0d 100644
+index 32586a2f8b..d28419c043 100644
 --- a/аудит/адаптери/gemini/m9v/хеші.psd1
 +++ b/аудит/адаптери/gemini/m9v/хеші.psd1
 @@ -3,10 +3,10 @@
@@ -157,7 +158,7 @@ index 32586a2f8b..ab689e1d0d 100644
      'wrapper_health.ps1' = 'AB85BBF974EA56281C2824C12CA11BF775013C6AD7F9C67AD4E8DC433931E817'
 -    'gemini_run.ps1'     = '561048BD8A8BC657A77EBCAFAF393F572ACE984768CD44A173CA5313BCA5DA29'
 -    'gemini_publish.ps1' = 'D3441EB57A434F29CE885BB5155490977A25769A196875D782DA75DD55A49E4F'
-+    'gemini_run.ps1'     = '9F100CD0DE180FCAB6ED783C834BC87D168FA1FEAF6DBD0048A70058CAB7B5B5'
++    'gemini_run.ps1'     = '38279910F3ECDE14BAC1589BCE78A91B6CA4796A56B56CDAB63BDC2F1D77A1A7'
 +    'gemini_publish.ps1' = 'CE38E29C0E7EC362F2ED5919311F4D89034DBD79DE39B2229ECC71802FC8CD7F'
      # Інсталятор Codex (9741) закріплено за релізом: install.ps1 — файл релізу https://releases.openai.com/codex/releases/<CodexRelease>/install.ps1
      # (незмінний URL; той самий sha256 віддає https://chatgpt.com/codex/install.ps1 — редирект на releases.openai.com — і публікує реліз
@@ -377,7 +378,7 @@ index fe6e260122..d237b7dd34 100644
              if ($null -ne $state.PSObject.Properties['reviewed']) { foreach ($entry in $state.reviewed.PSObject.Properties) { $reviewed[$entry.Name] = $entry.Value } }
              if ($null -ne $state.PSObject.Properties['live_active']) { $liveActive = $state.live_active }
 diff --git a/аудит/адаптери/gemini/НАЛАШТУВАННЯ.md b/аудит/адаптери/gemini/НАЛАШТУВАННЯ.md
-index 4d27be2eef..cc19b0356e 100644
+index 4d27be2eef..6ea56fc367 100644
 --- a/аудит/адаптери/gemini/НАЛАШТУВАННЯ.md
 +++ b/аудит/адаптери/gemini/НАЛАШТУВАННЯ.md
 @@ -450,13 +450,13 @@ $f = Join-Path "$env:USERPROFILE\gemini-outbox" $n
@@ -388,7 +389,7 @@ index 4d27be2eef..cc19b0356e 100644
 -| `gemini_run.ps1` | `561048BD8A8BC657A77EBCAFAF393F572ACE984768CD44A173CA5313BCA5DA29` |
 -| `gemini_publish.ps1` | `D3441EB57A434F29CE885BB5155490977A25769A196875D782DA75DD55A49E4F` |
 +| `wrapper_chain.ps1` | `0823C722AD4C3B1411C10663D6E82A98BD95B0E06E5E78437495C7B2271B251F` |
-+| `gemini_run.ps1` | `9F100CD0DE180FCAB6ED783C834BC87D168FA1FEAF6DBD0048A70058CAB7B5B5` |
++| `gemini_run.ps1` | `38279910F3ECDE14BAC1589BCE78A91B6CA4796A56B56CDAB63BDC2F1D77A1A7` |
 +| `gemini_publish.ps1` | `CE38E29C0E7EC362F2ED5919311F4D89034DBD79DE39B2229ECC71802FC8CD7F` |
  | `gemini_watch.ps1` | `69EFEBB07FF1AF51C382B753A95C50F3C1AC27B3008F2489992BEBE3FD0213AA` |
  | `wrapper_health.ps1` | `AB85BBF974EA56281C2824C12CA11BF775013C6AD7F9C67AD4E8DC433931E817` |
@@ -698,10 +699,10 @@ index 711487f67a..5e147d3615 100644
  chk "стан: таблиця смуг — claude 2/2 і codex 2/2 у якійсь правці" '[[ "$S" == *"| claude | 2 | 2 |"* && "$S" == *"| codex | 2 | 2 |"* ]]'
 diff --git a/аудит/адаптери/gemini/перевірка/сценарії_спільного_стану.ps1 b/аудит/адаптери/gemini/перевірка/сценарії_спільного_стану.ps1
 new file mode 100644
-index 0000000000..13ae44a52a
+index 0000000000..22f70e4514
 --- /dev/null
 +++ b/аудит/адаптери/gemini/перевірка/сценарії_спільного_стану.ps1
-@@ -0,0 +1,125 @@
+@@ -0,0 +1,131 @@
 +﻿#Requires -Version 5.1
 +param([Parameter(Mandatory=$true)][string]$SourceDir)
 +$ErrorActionPreference = 'Stop'
@@ -772,10 +773,16 @@ index 0000000000..13ae44a52a
 +        [void](New-Claim $marker '20261105-000000-123456789abc')
 +        Check 'свіжий claim до запуску процесу відкладає перехід' (-not (Initialize-SharedMarkerState))
 +        Remove-Claim $sp
++        $staleId = '20261105-000000-123456789abc'
++        [void][IO.Directory]::CreateDirectory("$RunsDir/$staleId")
++        Write-FileAtomic "$RunsDir/$staleId/worker.json" '{"slot":"codex-1"}'
++        [void](New-Claim $marker $staleId)
++        (Get-Item -LiteralPath (Get-ClaimPath $sp)).LastWriteTime = (Get-Date).AddMinutes(-11)
 +        $interrupted = Join-Path $script:StateDir (('b' * 64) + '.txt')
 +        Write-FileAtomic $interrupted 'STARTED {"id":"перерваний","slot":"codex-2"}'
 +        Write-FileAtomic (Get-ClaimPath $interrupted) '20261105-000000-123456789abc'
 +        $target = Initialize-SharedMarkerState
++        Check 'застарілий claim до STARTED очищено до захоплення власних замків' (-not (Test-Path -LiteralPath (Get-ClaimPath $sp)) -and [bool]$target)
 +        $dest = Join-Path $target (Split-Path -Leaf $sp)
 +        Check 'ПІСЛЯ: INTERACTIVE справді читає файл зі спільної теки' ([StateReader]::CanRead($dest))
 +        Check 'приватна ACL і старий файл не змінені' (-not [StateReader]::CanRead($sp) -and (Test-Path $sp))

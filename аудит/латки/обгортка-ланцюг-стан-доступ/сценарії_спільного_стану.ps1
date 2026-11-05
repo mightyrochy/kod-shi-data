@@ -68,10 +68,16 @@ public static class StateReader {
         [void](New-Claim $marker '20261105-000000-123456789abc')
         Check 'свіжий claim до запуску процесу відкладає перехід' (-not (Initialize-SharedMarkerState))
         Remove-Claim $sp
+        $staleId = '20261105-000000-123456789abc'
+        [void][IO.Directory]::CreateDirectory("$RunsDir/$staleId")
+        Write-FileAtomic "$RunsDir/$staleId/worker.json" '{"slot":"codex-1"}'
+        [void](New-Claim $marker $staleId)
+        (Get-Item -LiteralPath (Get-ClaimPath $sp)).LastWriteTime = (Get-Date).AddMinutes(-11)
         $interrupted = Join-Path $script:StateDir (('b' * 64) + '.txt')
         Write-FileAtomic $interrupted 'STARTED {"id":"перерваний","slot":"codex-2"}'
         Write-FileAtomic (Get-ClaimPath $interrupted) '20261105-000000-123456789abc'
         $target = Initialize-SharedMarkerState
+        Check 'застарілий claim до STARTED очищено до захоплення власних замків' (-not (Test-Path -LiteralPath (Get-ClaimPath $sp)) -and [bool]$target)
         $dest = Join-Path $target (Split-Path -Leaf $sp)
         Check 'ПІСЛЯ: INTERACTIVE справді читає файл зі спільної теки' ([StateReader]::CanRead($dest))
         Check 'приватна ACL і старий файл не змінені' (-not [StateReader]::CanRead($sp) -and (Test-Path $sp))

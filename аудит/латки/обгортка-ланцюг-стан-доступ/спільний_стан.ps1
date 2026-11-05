@@ -8,13 +8,14 @@
     if (Test-Path -LiteralPath $ready) { return $target }
     $locks = New-Object Collections.ArrayList
     try {
+        # Штатна перевірка живого слота має бачити його справжнього власника, а не наш замок перенесення.
+        Clear-OrphanClaims $RunsDir
         foreach ($file in @(Get-ChildItem -LiteralPath $script:SlotDir -Filter '*.lock' -File)) {
             $lock = Open-Lock $file.FullName
             if ($null -eq $lock) { Write-Log 'перенесення стану: старий процес ще тримає слот'; return '' }
             [void]$locks.Add($lock)
         }
         # Свіжий claim може ще не дійти до замка слота; його теж не обганяємо.
-        Clear-OrphanClaims $RunsDir
         $pending = @(foreach ($claim in @(Get-ChildItem -LiteralPath $script:StateDir -Filter '*.claim' -File)) {
             $state = $claim.FullName -replace '\.claim$', '.txt'
             # STARTED без зайнятого слота відновить штатний Resume-Interrupted вже після перенесення.
