@@ -1,0 +1,419 @@
+diff --git a/аудит/адаптери/gemini/gemini_publish.ps1 b/аудит/адаптери/gemini/gemini_publish.ps1
+index c4eb0b14d8..82a52b727d 100644
+--- a/аудит/адаптери/gemini/gemini_publish.ps1
++++ b/аудит/адаптери/gemini/gemini_publish.ps1
+@@ -264,10 +264,14 @@ function Get-Sha256Hex([string]$Text) {
+     -join ($bytes | ForEach-Object { $_.ToString('x2') })
+ }
+ 
+-function Get-BadLine([string]$Id, [string]$Why) {
++function Get-BadLine([string]$Id, [string]$Why, $Failure = $null) {
+     # Єдиний викликач — Get-Line. Його режим читання не споживає повідомлення STATE_INVALID.
+     $statusOnly = Get-Variable -Name StatusOnly -Scope 1 -ValueOnly -ErrorAction SilentlyContinue
+     if ($statusOnly) { return $null }
++    if ($null -eq $Failure) {
++        try { throw [IO.InvalidDataException]::new($Why) } catch { $Failure = $_ }
++    }
++    [void](Write-StateFailureDiagnostic 'STATE_INVALID' $Failure (Join-Path $OutDir ($Id + '.json')) $Why)
+     Write-WrapperLog "стан $Id $Why — не опубліковано"
+     if (Test-Seen ('bad ' + (Get-Date -Format 'yyyyMMdd'))) { return $null }
+     [pscustomobject]@{ Outbox = 'GEMINI ОБГОРТКА: ЗАБЛОКОВАНО gemini/невідомо STATE_INVALID' }
+@@ -440,9 +444,10 @@ $script:SleepEvents = @()
+ # 'RETRY' — пуш не вдався: той самий стан ще раз на наступному запуску, рядок — лише після години невдач.
+ function Get-Line([string]$Id, [switch]$StatusOnly) {
+     $path = Join-Path $OutDir ($Id + '.json')
+-    if ((Get-Item -LiteralPath $path).Length -gt 65536) { return Get-BadLine $Id 'завеликий' }
+-    try { $s = [System.IO.File]::ReadAllText($path, $script:Utf8) | ConvertFrom-Json }
+-    catch { return Get-BadLine $Id 'не читається як JSON' }
++    try {
++        if ((Get-Item -LiteralPath $path).Length -gt 65536) { return Get-BadLine $Id 'завеликий' }
++        $s = [System.IO.File]::ReadAllText($path, $script:Utf8) | ConvertFrom-Json
++    } catch { return Get-BadLine $Id 'не читається як JSON' $_ }
+     # Облік живлення використовує той самий читач формату й чинну межу Get-Line.
+     # Тут вихід до будь-якої публікації, дозволу повтору чи зміни seen.
+     if ($StatusOnly) { return $s }
+@@ -580,6 +585,7 @@ $script:SlugCore = $script:SlugPattern -replace '^\^|\\z$', ''
+ $script:OutboxTemplates = @(
+     '\AGEMINI ОБГОРТКА: СОН [0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z → [0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z, нарядів [0-9]{1,5}\z'
+     '^GEMINI ОБГОРТКА: ЛАНЦЮГ CHAIN_[A-Z_]{1,32}(?: [A-Za-z0-9]{1,40} (?:[a-z_]{1,40}\.ps1:[0-9]{1,5}|[A-Za-z][A-Za-z0-9-]{0,79}))?\z',
++    '^GEMINI ОБГОРТКА: ЛАНЦЮГ CHAIN_FAILED [A-Za-z0-9]{1,40} (?:[a-z_]{1,40}\.ps1:[0-9]{1,5}|[A-Za-z][A-Za-z0-9-]{0,79}) ШЛЯХ "(?:[A-Za-z]:\\\\|/)(?:[^"\\\x00-\x1f]|\\["\\]|\\u[0-9a-fA-F]{4}){1,4096}"\z',
+     '^GEMINI ОБГОРТКА: ОНОВЛЕНО [0-9a-f]{40} СЕКУНД [0-9]{1,12}\z',
+     '^GEMINI ОБГОРТКА: ОНОВЛЕННЯ [0-9a-f]{40} UPDATE_[A-Z_]{1,32}\z',
+     "\AGEMINI ОБГОРТКА: ГОТОВО (?:gemini|codex|claude)/$script:SlugCore [0-9a-f]{40}(?: КВОТА [A-Z0-9_]{2,40} (?:100|[1-9]?[0-9]))?(?: МОДЕЛЬ [a-z0-9][a-z0-9.-]{1,63})?\z"
+@@ -602,6 +608,10 @@ $script:QuarantineCodes = @('BAD_SIZE', 'EMPTY', 'BOM', 'BAD_UTF8', 'NOT_ONE_LIN
+ # Порожній рядок — рядок збігся з шаблоном; інакше код причини.
+ function Test-OutboxLine([string]$Line) {
+     if ($Line.Contains('..')) { return 'NO_TEMPLATE' }
++    if ($Line -cmatch ' ШЛЯХ (".*")\z') {
++        try { $path = ConvertFrom-Json $Matches[1] } catch { return 'NO_TEMPLATE' }
++        if ($path -cmatch '[\x00-\x1f\x7f]' -or -not [IO.Path]::IsPathRooted($path)) { return 'NO_TEMPLATE' }
++    }
+     foreach ($t in $script:OutboxTemplates) { if ($Line -cmatch $t) { return '' } }
+     'NO_TEMPLATE'
+ }
+@@ -987,7 +997,7 @@ function Main {
+             $statePath = Join-Path (Join-Path $WorkDir 'state') ($id + '.json')
+             if (Test-Path -LiteralPath $statePath) { continue }
+             try { $line = Get-Line $id }
+-            catch { Write-WrapperLog "стан ${id}: $($_.Exception.Message)"; $line = Get-BadLine $id 'не обробився' }
++            catch { Write-WrapperLog "стан ${id}: $($_.Exception.Message)"; $line = Get-BadLine $id 'не обробився' $_ }
+             if ($line -is [string] -and $line -eq 'RETRY') { continue }
+             if ($line -isnot [string] -and $null -ne $line) {
+                 # Кінець прогону: рядок — у теку вихідних під id стану; доставка — з неї, як для рядків інших скриптів.
+diff --git a/аудит/адаптери/gemini/m9v/хеші.psd1 b/аудит/адаптери/gemini/m9v/хеші.psd1
+index 32586a2f8b..cb71881dfe 100644
+--- a/аудит/адаптери/gemini/m9v/хеші.psd1
++++ b/аудит/адаптери/gemini/m9v/хеші.psd1
+@@ -3,10 +3,10 @@
+ @{
+     'wrapper_update.ps1' = '45F254E5CB2FB7D882BBB9CE7CA121988FDF23BACCFE65CB67A4CA3B3F426FE7'
+     'wrapper_probe.ps1'  = '85116D04C22EB64CBFF52E66BCEAE9B1091577A889EDD58A8B634093A82BDBC6'
+-    'wrapper_chain.ps1'  = '92055C37EE3773A225653EB82343505AAA8F47A40EC04E107C235EACAC903214'
++    'wrapper_chain.ps1'  = '057B5C9AB21791C63BFC93F32A90B7FC04BB479896D0611CF82CB26EF90BBDED'
+     'wrapper_health.ps1' = 'AB85BBF974EA56281C2824C12CA11BF775013C6AD7F9C67AD4E8DC433931E817'
+     'gemini_run.ps1'     = '561048BD8A8BC657A77EBCAFAF393F572ACE984768CD44A173CA5313BCA5DA29'
+-    'gemini_publish.ps1' = 'D3441EB57A434F29CE885BB5155490977A25769A196875D782DA75DD55A49E4F'
++    'gemini_publish.ps1' = 'CE38E29C0E7EC362F2ED5919311F4D89034DBD79DE39B2229ECC71802FC8CD7F'
+     # Інсталятор Codex (9741) закріплено за релізом: install.ps1 — файл релізу https://releases.openai.com/codex/releases/<CodexRelease>/install.ps1
+     # (незмінний URL; той самий sha256 віддає https://chatgpt.com/codex/install.ps1 — редирект на releases.openai.com — і публікує реліз
+     # openai/codex). 2_під_gemini.ps1 -WithCodex виконує його лише при збігу CodexInstaller і ставить саме цей реліз (-Release).
+diff --git a/аудит/адаптери/gemini/wrapper_chain.ps1 b/аудит/адаптери/gemini/wrapper_chain.ps1
+index fe6e260122..d508a1942a 100644
+--- a/аудит/адаптери/gemini/wrapper_chain.ps1
++++ b/аудит/адаптери/gemini/wrapper_chain.ps1
+@@ -74,7 +74,7 @@ function Test-ChainEndAnnounced($Pull) {
+     if (-not [bool](Get-Prop $Pull 'draft')) { return $true }
+     $line = '^GEMINI ОБГОРТКА: ГОТОВО ' + [regex]::Escape("$($Pull.head.ref) $($Pull.head.sha)") + '(?: |$)'
+     foreach ($file in @(Get-ChildItem -LiteralPath (Join-Path $WorkDir 'state') -Filter '*.json' -File -ErrorAction SilentlyContinue)) {
+-        $state = ConvertFrom-Json ([IO.File]::ReadAllText($file.FullName, $script:Utf8))
++        $state = ConvertFrom-Json ((Read-ChainStateText $file.FullName))
+         if ([string](Get-Prop $state 'line') -cmatch $line) { return $true }
+     }
+     $false
+@@ -116,7 +116,7 @@ function Complete-EngineDrafts {
+     <# Із перевірених результатів публікатора створює PR-чернетки; повтор звіряє наявний PR. #>
+     $pulls = @(Get-ChainPulls)
+     foreach ($file in @(Get-ChildItem -LiteralPath (Join-Path $WorkDir 'drafts') -Filter '*.json' -File -ErrorAction SilentlyContinue)) {
+-        $job = ConvertFrom-Json ([IO.File]::ReadAllText($file.FullName, $script:Utf8))
++        $job = ConvertFrom-Json ((Read-ChainStateText $file.FullName))
+         $branch = [string]$job.branch; $head = [string]$job.head
+         if ($branch -cnotmatch '^gemini/[\p{L}\p{Nd}][\p{L}\p{Nd}._-]{0,79}$' -or $branch.Contains('..') -or $branch.EndsWith('.lock') -or $head -cnotmatch $script:ShaPattern) { throw 'CHAIN_DRAFT' }
+         # Голова вже пройшла захист Publish-Bundle; повтор перевіряє поточний ref GitHub.
+@@ -194,7 +194,7 @@ function Add-ChainMarker([string]$Slug, [string]$Model, [string]$Main, [switch]$
+ 
+ function Read-QuotaJson([string]$Dir, [string]$Name) {
+     <# Файли квот пишуть смуги (heartbeat — недовірений): не за форматом або нема — «квоту не прочитано». #>
+-    try { ConvertFrom-Json ([IO.File]::ReadAllText((Join-Path $Dir $Name), $script:Utf8)) } catch { $null }
++    try { ConvertFrom-Json ((Read-ChainStateText (Join-Path $Dir $Name))) } catch { $null }
+ }
+ 
+ function ConvertFrom-QuotaStamp($Value) {
+@@ -281,10 +281,10 @@ function Get-ReviewModels($Pull, $Config, [datetimeoffset]$Now = [datetimeoffset
+     $file = Join-Path (Join-Path $WorkDir 'engine-models') ((Get-Sha256Hex "$branch $head") + '.txt')
+     $model = ''
+     foreach ($stateFile in @(Get-ChildItem -LiteralPath (Join-Path $WorkDir 'state') -Filter '*.json' -File -ErrorAction SilentlyContinue)) {
+-        $state = ConvertFrom-Json ([IO.File]::ReadAllText($stateFile.FullName, $script:Utf8))
++        $state = ConvertFrom-Json ((Read-ChainStateText $stateFile.FullName))
+         if ([string](Get-Prop $state 'line') -cmatch ('^GEMINI ОБГОРТКА: ГОТОВО ' + [regex]::Escape("$branch $head") + '(?: КВОТА [A-Z0-9_]+ [0-9]+)? МОДЕЛЬ ([a-z0-9.-]+)$')) { $model = $Matches[1]; break }
+     }
+-    if (Test-Path -LiteralPath $file) { $model = [IO.File]::ReadAllText($file, $script:Utf8).Trim() }
++    if (Test-Path -LiteralPath $file) { $model = (Read-ChainStateText $file).Trim() }
+     # Автор, якого обгортка не знає (рядка ГОТОВО з МОДЕЛЬ нема в теці стану цього облікового запису), не стає «agy» мовчки:
+     # так роботу GPT з гілки gemini/ перевіряв Codex. Рецензента не призначаємо — рядок хмарному Claude.
+     $known = $branch.StartsWith('claude/') -or $branch.StartsWith('codex/') -or $model -cmatch '^[a-z0-9][a-z0-9.-]{1,63}$'
+@@ -300,7 +300,7 @@ function Get-ChainTaskResults {
+     <# Назва наряду береться з позначки смуги, а рядок — лише з прийнятого стану чи результату Claude після публікації. #>
+     $accepted = @()
+     foreach ($file in @(Get-ChildItem -LiteralPath (Join-Path $WorkDir 'state') -Filter '*.json' -File -ErrorAction SilentlyContinue)) {
+-        $state = ConvertFrom-Json ([IO.File]::ReadAllText($file.FullName, $script:Utf8))
++        $state = ConvertFrom-Json ((Read-ChainStateText $file.FullName))
+         $line = [string](Get-Prop $state 'line')
+         if ($line -cnotmatch '^GEMINI ОБГОРТКА: (ГОТОВО|ЗАБЛОКОВАНО) ') { continue }
+         $kind = $Matches[1]; $slug = [string](Get-Prop $state 'slug')
+@@ -309,7 +309,7 @@ function Get-ChainTaskResults {
+         if (-not $slug -and $file.BaseName -cmatch ('^(?:o-)?(' + ($script:IdPattern -replace '^\^|\$$','') + ')$')) {
+             $path = Join-Path $OutDir ($Matches[1] + '.json')
+             if (Test-Path -LiteralPath $path) {
+-                $run = ConvertFrom-Json ([IO.File]::ReadAllText($path, $script:Utf8))
++                $run = ConvertFrom-Json ((Read-ChainStateText $path))
+                 $candidate = [string](Get-Prop $run 'slug')
+                 if ($candidate -cmatch $script:SlugPattern -and $line.StartsWith("GEMINI ОБГОРТКА: $kind gemini/$candidate ", [StringComparison]::Ordinal)) { $slug = $candidate }
+             }
+@@ -322,7 +322,7 @@ function Get-ChainTaskResults {
+     foreach ($dir in @(Get-ChildItem -LiteralPath $runs -Directory -ErrorAction SilentlyContinue)) {
+         $path = Join-Path $dir.FullName 'result.json'
+         if (-not (Test-Path -LiteralPath $path)) { continue }
+-        $run = ConvertFrom-Json ([IO.File]::ReadAllText($path, $script:Utf8))
++        $run = ConvertFrom-Json ((Read-ChainStateText $path))
+         $marker = [string](Get-Prop $run 'marker'); $code = [string](Get-Prop $run 'code')
+         if ($marker -cnotmatch '^gemini-queue/([^/]+)/[a-z0-9][a-z0-9.-]{1,63}/[1-9][0-9]*(?:/[^/]+)?$') { continue }
+         $slug = $Matches[1]
+@@ -363,10 +363,61 @@ function Test-ChainReviewDone([string]$Number, [string]$Head) {
+     [bool](Get-ChainTaskCompletion "автоперевірка-$Number-$Head" -ReadyOnly)
+ }
+ 
+-function Write-ChainFailure($Failure) {
+-    <# Пише причину збою й безпечне місце: файл:рядок або функція першого кадру створеного блоку.
++function Get-StateFailurePath($Failure) {
++    <# Бере шлях із контексту читача або цільового об'єкта помилки, не з довільного повідомлення. #>
++    if ($null -eq $Failure) { return '' }
++    for ($e = $Failure.Exception; $null -ne $e; $e = $e.InnerException) {
++        if ($e.Data.Contains('StatePath')) { return [string]$e.Data['StatePath'] }
++    }
++    $target = $Failure.TargetObject
++    if ($target -is [IO.FileSystemInfo]) { return $target.FullName }
++    if ($target -is [string] -and [IO.Path]::IsPathRooted($target)) { return $target }
++    ''
++}
+ 
+-    Повідомлення та шляхи лишаються в журналі; назовні виходять лише перевірені тип та місце. #>
++function Read-ChainStateText([string]$Path) {
++    <# Зберігає точний шлях невдалого читання, лишаючи початковий виняток і стек. #>
++    try { [IO.File]::ReadAllText($Path, $script:Utf8) }
++    catch { $_.Exception.Data['StatePath'] = [IO.Path]::GetFullPath($Path); throw }
++}
++
++function Write-StateFailureDiagnostic([string]$Code, $Failure, [string]$Path = '', [string]$Why = '') {
++    <# Дописує кожен збій окремим JSON-рядком у наявну теку обміну, доступну gemini.
++
++    Відмова читання метаданих записується окремо; вона не підміняє початковий виняток. #>
++    if (-not $Path) { $Path = Get-StateFailurePath $Failure }
++    $record = [ordered]@{
++        utc = [datetime]::UtcNow.ToString('o'); code = $Code; reason = $Why
++        path = $Path; object_type = 'unavailable'; owner = $null; acl = $null; last_write_utc = $null
++        exception = ''; script_stack = ''; position = ''; metadata_errors = @()
++    }
++    if ($null -ne $Failure) {
++        $record.exception = $Failure.Exception.ToString()
++        $record.script_stack = [string]$Failure.ScriptStackTrace
++        $record.position = [string]$Failure.InvocationInfo.PositionMessage
++    }
++    if ($Path) {
++        try {
++            $Path = [IO.Path]::GetFullPath($Path); $record.path = $Path
++            $item = Get-Item -LiteralPath $Path -Force -ErrorAction Stop
++            $record.object_type = $(if ($item.PSIsContainer) { 'directory' } else { 'file' })
++            $record.last_write_utc = $item.LastWriteTimeUtc.ToString('o')
++        } catch { $record.metadata_errors += 'item: ' + $_.Exception.ToString() }
++        try {
++            $acl = Get-Acl -LiteralPath $Path -ErrorAction Stop
++            $record.owner = $acl.Owner; $record.acl = $acl.Sddl
++        } catch { $record.metadata_errors += 'acl: ' + $_.Exception.ToString() }
++    }
++    try {
++        [void][IO.Directory]::CreateDirectory($OutDir)
++        [IO.File]::AppendAllText((Join-Path $OutDir 'state-failures.jsonl'), (($record | ConvertTo-Json -Compress -Depth 6) + "`n"), $script:Utf8)
++    } catch { Write-WrapperLog ("діагностику $Code не записано: " + $_.Exception.Message) }
++    $Path
++}
++
++
++function Write-ChainFailure($Failure) {
++    <# Пише тип, місце й JSON-шлях об’єкта в рядок; повний виняток і метадані — у журнали. #>
+     $code = [string]$Failure.Exception.Message
+     $detail = ''
+     if ($code -cnotmatch '^CHAIN_[A-Z_]+$') {
+@@ -376,8 +427,10 @@ function Write-ChainFailure($Failure) {
+         $where = $(if ($null -ne $at -and $at.ScriptName) { (Split-Path -Leaf $at.ScriptName) + ':' + $at.ScriptLineNumber } else { '' })
+         if (-not $where -and ([string]$Failure.ScriptStackTrace -split "`r?`n")[0] -cmatch '^at ([A-Za-z][A-Za-z0-9-]{0,79}),') { $where = $Matches[1] }
+         Write-WrapperLog ("ланцюг: CHAIN_FAILED {0}: {1}`n{2}" -f $Failure.Exception.GetType().FullName, $Failure.Exception.Message, $Failure.ScriptStackTrace)
++        $path = Write-StateFailureDiagnostic 'CHAIN_FAILED' $Failure
+         $code = 'CHAIN_FAILED'
+         if ($kind -cmatch '^[A-Za-z0-9]{1,40}$' -and ($where -cmatch '^[a-z_]{1,40}\.ps1:[0-9]{1,5}$' -or $where -cmatch '^[A-Za-z][A-Za-z0-9-]{0,79}$')) { $detail = " $kind $where" }
++        if ($path -and $detail) { $detail += ' ШЛЯХ ' + (ConvertTo-Json -InputObject $path -Compress) }
+     }
+     Write-WrapperLog "ланцюг: $code$detail; наступний прохід повторить незавершене"
+     if (-not (Test-Seen ("chain-failed $code$detail " + [datetime]::UtcNow.ToString('yyyyMMddHH')))) {
+@@ -403,7 +456,11 @@ function Get-ChainMarkerState([string]$Ref, [string]$Sha, [string]$Model) {
+     $dir = $(if ($Model -cmatch '^cc-') { Join-Path (Join-Path (Split-Path -Parent $WorkDir) 'claude-run') 'state' }
+              else { Join-Path $GeminiRunsDir 'state' })
+     $marker = [pscustomobject]@{ Ref = "refs/remotes/origin/$Ref"; Sha = $Sha }
+-    Get-MarkerState $marker $dir
++    try { Get-MarkerState $marker $dir }
++    catch {
++        if (-not (Get-StateFailurePath $_)) { $_.Exception.Data['StatePath'] = [IO.Path]::GetFullPath((Get-StatePath (Get-MarkerKey $marker) $dir)) }
++        throw
++    }
+ }
+ 
+ function Get-ChainMarkers([string]$Slug) {
+@@ -643,7 +700,7 @@ function Get-ChainBusySlots([string]$Dir, [string]$Pattern, [string]$Lane='не
+                 # FileShare.None worker дає ERROR_SHARING_VIOLATION (32), не довільну IOException.
+                 if (($_.Exception.HResult -band 0xffff) -ne 32) { throw }
+             }
+-            $slot = ConvertFrom-Json ([IO.File]::ReadAllText($file.FullName, $script:Utf8)) -ErrorAction Stop
++            $slot = ConvertFrom-Json ((Read-ChainStateText $file.FullName)) -ErrorAction Stop
+             $slug = [string](Get-Prop $slot 'slug'); $marker = [string](Get-Prop $slot 'marker')
+             if ($slug -cnotmatch $script:SlugPattern -or $slug.Contains('..') -or $slug.EndsWith('.lock') -or
+                 $marker -cnotmatch ('^gemini-queue/' + [regex]::Escape($slug) + '/[a-z0-9][a-z0-9.-]{1,63}/[1-9][0-9]*(?:/[^/]+)?$')) { throw 'CHAIN_LANE_STATE' }
+@@ -658,7 +715,7 @@ function Get-ChainBusySlots([string]$Dir, [string]$Pattern, [string]$Lane='не
+ 
+ function Read-ChainOptionalFile([string]$Path) {
+     <# Відсутній файл стану допускається; відмова доступу лишається помилкою слота. #>
+-    try { [IO.File]::ReadAllText($Path, $script:Utf8) }
++    try { (Read-ChainStateText $Path) }
+     catch {
+         $cause = $_.Exception.GetBaseException()
+         if ($cause -isnot [IO.FileNotFoundException] -and $cause -isnot [IO.DirectoryNotFoundException]) { throw }
+@@ -749,7 +806,7 @@ function Invoke-WrapperChain {
+         $statePath = Join-Path $WorkDir 'chain.json'
+         $reviewed = @{}; $liveActive = $null; $liveSince = ''; $last = $main; $seen = @{}; $liveStamps = @{}; $livePending = @(); $hasLiveState = $false
+         if (Test-Path -LiteralPath $statePath) {
+-            $state = ConvertFrom-Json ([IO.File]::ReadAllText($statePath, $script:Utf8))
++            $state = ConvertFrom-Json ((Read-ChainStateText $statePath))
+             $last = [string]$state.main
+             if ($null -ne $state.PSObject.Properties['reviewed']) { foreach ($entry in $state.reviewed.PSObject.Properties) { $reviewed[$entry.Name] = $entry.Value } }
+             if ($null -ne $state.PSObject.Properties['live_active']) { $liveActive = $state.live_active }
+diff --git a/аудит/адаптери/gemini/НАЛАШТУВАННЯ.md b/аудит/адаптери/gemini/НАЛАШТУВАННЯ.md
+index c3245c697e..48af0ff22b 100644
+--- a/аудит/адаптери/gemini/НАЛАШТУВАННЯ.md
++++ b/аудит/адаптери/gemini/НАЛАШТУВАННЯ.md
+@@ -450,9 +450,9 @@ $f = Join-Path "$env:USERPROFILE\gemini-outbox" $n
+ |---|---|
+ | `wrapper_probe.ps1` | `85116D04C22EB64CBFF52E66BCEAE9B1091577A889EDD58A8B634093A82BDBC6` |
+ | `wrapper_update.ps1` | `45F254E5CB2FB7D882BBB9CE7CA121988FDF23BACCFE65CB67A4CA3B3F426FE7` |
+-| `wrapper_chain.ps1` | `92055C37EE3773A225653EB82343505AAA8F47A40EC04E107C235EACAC903214` |
++| `wrapper_chain.ps1` | `057B5C9AB21791C63BFC93F32A90B7FC04BB479896D0611CF82CB26EF90BBDED` |
+ | `gemini_run.ps1` | `561048BD8A8BC657A77EBCAFAF393F572ACE984768CD44A173CA5313BCA5DA29` |
+-| `gemini_publish.ps1` | `D3441EB57A434F29CE885BB5155490977A25769A196875D782DA75DD55A49E4F` |
++| `gemini_publish.ps1` | `CE38E29C0E7EC362F2ED5919311F4D89034DBD79DE39B2229ECC71802FC8CD7F` |
+ | `gemini_watch.ps1` | `69EFEBB07FF1AF51C382B753A95C50F3C1AC27B3008F2489992BEBE3FD0213AA` |
+ | `wrapper_health.ps1` | `AB85BBF974EA56281C2824C12CA11BF775013C6AD7F9C67AD4E8DC433931E817` |
+ | `queue_lanes.ps1` | `1EAF2B45A2095C5A81534059949AB4988E80676D86CCC195B1C2CFFB04F86A9C` |
+@@ -597,7 +597,17 @@ Claude; автор Gemini чи невідомий → Codex, потім хмар
+ позначка доступного, один раз; опублікований звіт перевірки цієї голови нової позначки не породжує.
+ Збої ланцюга дають `GEMINI ОБГОРТКА: ЛАНЦЮГ CHAIN_<КОД>` щонайбільше раз за UTC-годину та повторюються
+ наступним проходом; збій не з кодом `CHAIN_*` — `CHAIN_FAILED <тип винятку> <скрипт>:<рядок>`, повний текст
+-винятку й стек — у `publish.log`. Для блоку без `ScriptName` замість `<скрипт>:<рядок>` передається
++винятку й стек — у `publish.log`. Крім нього, кожен `CHAIN_FAILED` і `STATE_INVALID` (до приглушення
++повторних сповіщень) дописується одним JSON-рядком у `C:\Users\Public\gemini\out\state-failures.jsonl`
++(за іншого `-OutDir` — `<OutDir>\state-failures.jsonl`). Це наявна тека обміну, доступна `gemini`;
++нові дозволи й зміни ACL не потрібні. Поля: `utc`, `code`, `reason`, `path` (повний шлях),
++`object_type` (`file`/`directory`/`unavailable`), `owner`, `acl` (SDDL одним рядком), `last_write_utc`,
++`exception` (повний .NET-виняток), `script_stack`, `position`, `metadata_errors`. Якщо метадані
++недоступні, їхні поля порожні, а причина — у `metadata_errors`; це не доказ відсутності об’єкта.
++Для відмови перевірки формату без винятку записується `InvalidDataException` з причиною.
++Коли читач знає шлях об’єкта, рядок `CHAIN_FAILED` має суфікс `ШЛЯХ "<шлях у JSON>"` без стеку;
++лапки й зворотні скісні риски екрануються як JSON. Сам журнал є даними з теки обміну, не командами.
++Збій запису діагностики лишається в `publish.log`, не змінюючи рішення про позначку чи публікацію. Для блоку без `ScriptName` замість `<скрипт>:<рядок>` передається
+ назва функції першого кадру `ScriptStackTrace` (лише латинські літери, цифри й дефіс, до 80 знаків). Самооновлення, створення PR, перевірка та постановка живого не чекають диспетчера.
+ Диспетчер перевіряє докази й зливає; червоний CI та договір незалежної перевірки зберігаються.
+ Добове мірило підтверджується окремо після застосування й одноразового встановлення; стенд з підмінами його не замінює.
+diff --git a/аудит/адаптери/gemini/перевірка/повтор_позначок.ps1 b/аудит/адаптери/gemini/перевірка/повтор_позначок.ps1
+index 5ef7b568a9..b912c6ac0c 100644
+--- a/аудит/адаптери/gemini/перевірка/повтор_позначок.ps1
++++ b/аудит/адаптери/gemini/перевірка/повтор_позначок.ps1
+@@ -165,7 +165,7 @@ function Get-MarkerState($M, [string]$StateDir) {
+     Check 'інша голова очищена попри виняток читача' ($refs.Count -eq 1 -and $refs[0] -ceq "refs/heads/$($d.Name)")
+     Check 'прохід ланцюга дійшов до кроку після очищення' $script:ReachedAfterStateRead
+     $lines = @(Get-ChildItem -LiteralPath $OutboxDir -File | ForEach-Object { [IO.File]::ReadAllText($_.FullName,$utf).Trim() } | Where-Object { $_ -cmatch '^GEMINI ОБГОРТКА: ЛАНЦЮГ CHAIN_FAILED' })
+-    Check 'рядок винятку читача має тип і функцію першого кадру' (@($lines | Where-Object { $_ -ceq 'GEMINI ОБГОРТКА: ЛАНЦЮГ CHAIN_FAILED UnauthorizedAccessException Get-MarkerState' }).Count -eq 1)
++    Check 'рядок винятку читача має тип і функцію першого кадру' (@($lines | Where-Object { $_ -clike 'GEMINI ОБГОРТКА: ЛАНЦЮГ CHAIN_FAILED UnauthorizedAccessException Get-MarkerState ШЛЯХ *' }).Count -eq 1)
+     $log = [IO.File]::ReadAllText((Join-Path $WorkDir 'publish.log'),$utf)
+     Check 'журнал містить позначку, причину й стек читача' ($log -cmatch 'стан gemini-queue/автоперевірка-113-' -and $log.Contains('/закритий/стан') -and $log.Contains('at Get-MarkerState, <No file>'))
+     Check 'невідомий стан не передається іншому постачальнику' (-not (Move-BlockedMarkers "автоперевірка-113-$head" 'gemini-4-argon-high' $head ([datetimeoffset]::UtcNow)))
+diff --git a/аудит/адаптери/gemini/перевірка/сценарії_діагностики_стану.ps1 b/аудит/адаптери/gemini/перевірка/сценарії_діагностики_стану.ps1
+new file mode 100644
+index 0000000000..ebaba0da08
+--- /dev/null
++++ b/аудит/адаптери/gemini/перевірка/сценарії_діагностики_стану.ps1
+@@ -0,0 +1,99 @@
++﻿#Requires -Version 5.1
++param([Parameter(Mandatory=$true)][string]$SourceDir)
++$ErrorActionPreference = 'Stop'
++[Console]::OutputEncoding = New-Object Text.UTF8Encoding($false)
++$utf = New-Object Text.UTF8Encoding($false)
++$tmp = Join-Path ([IO.Path]::GetTempPath()) ('state-diagnostic-' + [guid]::NewGuid().ToString('N'))
++[void][IO.Directory]::CreateDirectory($tmp)
++$bad = 0
++function Check([string]$Name, [bool]$Ok) {
++    <# Кожний провал визначає ненульовий код стенда. #>
++    if ($Ok) { "✓ $Name" } else { "✗ $Name"; $script:bad++ }
++}
++function Records {
++    <# Читає журнал заново, тому друга відмова має дати другий запис. #>
++    $file = Join-Path $OutDir 'state-failures.jsonl'
++    if (Test-Path -LiteralPath $file) {
++        foreach ($line in [IO.File]::ReadAllLines($file, $utf)) { ConvertFrom-Json $line }
++    }
++}
++function Check-Record([string]$Name, [string]$Path, [string]$Code, [string]$Type, [string]$Kind) {
++    <# Звіряє значення з реальною файловою системою, а не лише наявність назв полів. #>
++    $records = @(Records | Where-Object { $_.path -ceq $Path -and $_.code -ceq $Code })
++    Check "$Name — запис з точним шляхом" ($records.Count -gt 0)
++    if (-not $records.Count) { return }
++    $r = $records[-1]; $item = Get-Item -LiteralPath $Path -Force; $acl = Get-Acl -LiteralPath $Path
++    Check "$Name — тип, власник, ACL, час запису й UTC" ($r.object_type -ceq $Type -and $r.owner -ceq $acl.Owner -and $r.acl -ceq $acl.Sddl -and $r.last_write_utc -ceq $item.LastWriteTimeUtc.ToString('o') -and $r.utc -cmatch '^20[0-9]{2}-.*Z$')
++    Check "$Name — повний виняток і стек" ($r.exception.Contains($Kind) -and $r.script_stack -cmatch 'at (Get-MarkerState|Get-Line),' -and [bool]$r.position)
++    Check "$Name — метадані прочитано" (@($r.metadata_errors).Count -eq 0)
++}
++try {
++    . (Join-Path $SourceDir 'gemini_publish.ps1') -WorkDir "$tmp/pub" -OutDir "$tmp/out" -OutboxDir "$tmp/outbox" -UpdateRoot "$tmp/update"
++    $GeminiRunsDir = "$tmp/gemini-runs"
++    foreach ($dir in @($WorkDir, $OutDir, $OutboxDir, "$WorkDir/seen", "$GeminiRunsDir/state", "$tmp/claude-run/state")) { [void][IO.Directory]::CreateDirectory($dir) }
++    $sha = 'a' * 40
++    $script:MarkerLine = ''
++    function Invoke-Git { [pscustomobject]@{Code=0;Out=$script:MarkerLine} }
++    foreach ($case in @(
++        @{name='зайнятий файл Claude';model='cc-claude-sonnet-5-5-medium';dir="$tmp/claude-run/state";directory=$false},
++        @{name='зайнятий файл Gemini';model='gpt-6.1-sol-high';dir="$GeminiRunsDir/state";directory=$false},
++        @{name='тека замість файла Claude';model='cc-claude-sonnet-5-5-medium';dir="$tmp/claude-run/state";directory=$true},
++        @{name='тека замість файла Gemini';model='gpt-6.1-sol-high';dir="$GeminiRunsDir/state";directory=$true}
++    )) {
++        $ref = "gemini-queue/діагностика/$($case.model)/$(if ($case.directory) {2} else {1})"
++        $script:MarkerLine = "$sha`trefs/heads/$ref"
++        $path = Join-Path $case.dir ((Get-Sha256Hex "refs/remotes/origin/$ref $sha") + '.txt')
++        $lock = $null
++        if ($case.directory) { [void][IO.Directory]::CreateDirectory($path) }
++        else { [IO.File]::WriteAllText($path, 'DONE', $utf); $lock = [IO.File]::Open($path, 'Open', 'ReadWrite', 'None') }
++        try {
++            $markers = @(Get-ChainMarkers 'діагностика')
++            Check "$($case.name) — збирач завершився, стан UNKNOWN" ($markers.Count -eq 1 -and $markers[0].Kind -ceq 'UNKNOWN')
++            $kind = $(if ($case.directory) {'UnauthorizedAccessException'} else {'IOException'})
++            $type = $(if ($case.directory) {'directory'} else {'file'})
++            Check-Record $case.name $path 'CHAIN_FAILED' $type $kind
++            $lines = @(Get-ChildItem -LiteralPath $OutboxDir -File | ForEach-Object { [IO.File]::ReadAllText($_.FullName, $utf).Trim() })
++            $suffix = ' ШЛЯХ ' + (ConvertTo-Json -InputObject $path -Compress)
++            $matching = @($lines | Where-Object { $_.EndsWith($suffix) })
++            Check "$($case.name) — вихідний рядок містить шлях без стеку" ($matching.Count -eq 1 -and $matching[0] -notmatch '[\r\n]' -and $matching[0] -notmatch 'at Get-MarkerState')
++            if ($matching.Count) {
++                $out = @(Get-ChildItem -LiteralPath $OutboxDir -File | Where-Object { [IO.File]::ReadAllText($_.FullName, $utf).Trim() -ceq $matching[0] })[0]
++                $accepted = Read-OutboxFile $out.FullName
++                Check "$($case.name) — публікатор приймає створений файл вихідних" ($accepted[1] -ceq '')
++            }
++            $before = @(Records).Count
++            [void]@(Get-ChainMarkers 'діагностика')
++            Check "$($case.name) — приглушений повтор теж у журналі" (@(Records).Count -eq $before + 1)
++        } finally { if ($null -ne $lock) { $lock.Dispose() } }
++    }
++    $id = '20261105-000000-123456789abc'; $path = Join-Path $OutDir ($id + '.json')
++    [IO.File]::WriteAllText($path, '{}', $utf)
++    $lock = [IO.File]::Open($path, 'Open', 'ReadWrite', 'None')
++    try {
++        $line = Get-Line $id
++        Check 'STATE_INVALID — наявний рядок збережено' ($line.Outbox -ceq 'GEMINI ОБГОРТКА: ЗАБЛОКОВАНО gemini/невідомо STATE_INVALID')
++        Check-Record 'STATE_INVALID зайнятого файла' $path 'STATE_INVALID' 'file' 'IOException'
++        $before = @(Records).Count
++        [void](Get-Line $id)
++        Check 'STATE_INVALID — другий запис попри добове приглушення' (@(Records).Count -eq $before + 1)
++        $before = @(Records).Count
++        $raw = Get-Line $id -StatusOnly
++        Check 'читання StatusOnly — без рядка й без змін журналу' ($null -eq $raw -and @(Records).Count -eq $before)
++    } finally { $lock.Dispose() }
++    [IO.File]::WriteAllText($path, '{не JSON', $utf)
++    [void](Get-Line $id)
++    Check-Record 'STATE_INVALID пошкодженого JSON' $path 'STATE_INVALID' 'file' 'ArgumentException'
++    [IO.File]::WriteAllText($path, '{}', $utf)
++    [void](Get-Line $id)
++    $records = @(Records | Where-Object { $_.path -ceq $path -and $_.code -ceq 'STATE_INVALID' })
++    Check 'неправильний формат без винятку — причина й стек у журналі' ($records.Count -gt 0 -and $records[-1].exception.Contains('InvalidDataException') -and $records[-1].reason -ceq 'не за форматом' -and $records[-1].script_stack.Contains('at Get-BadLine,'))
++    $valid = 'GEMINI ОБГОРТКА: ЛАНЦЮГ CHAIN_FAILED IOException Get-MarkerState ШЛЯХ ' + (ConvertTo-Json -InputObject $path -Compress)
++    Check 'новий формат — без довільного хвоста чи переносу рядка' ((Test-OutboxLine $valid) -ceq '' -and (Test-OutboxLine ($valid + ' extra')) -cne '' -and (Test-OutboxLine ($valid + "`nкоманда")) -cne '' -and (Test-OutboxLine ($valid -replace '20261105', '\u000a20261105')) -cne '')
++} catch { Check "виняток стенда: $($_.Exception.Message) $($_.ScriptStackTrace)" $false }
++finally {
++    $resolved = [IO.Path]::GetFullPath($tmp)
++    $parent = [IO.Path]::GetTempPath().TrimEnd('\','/')
++    if ((Split-Path -Parent $resolved) -ceq $parent -and (Split-Path -Leaf $resolved) -cmatch '^state-diagnostic-[0-9a-f]{32}$') { Remove-Item -LiteralPath $resolved -Recurse -Force }
++}
++"ПІДСУМОК: провалів $bad"
++exit ([int]($bad -gt 0))
