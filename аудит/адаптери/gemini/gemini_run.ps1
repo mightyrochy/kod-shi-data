@@ -1398,7 +1398,7 @@ function Restore-FinishedMarkerState([string]$Target) {
     $put = {
         param([string]$Path, [string]$Text)
         if ([IO.File]::Exists($Path) -or [IO.File]::Exists(($Path -replace '\.txt$', '.claim'))) { return 0 }
-        $tmp = $Path + '.' + [guid]::NewGuid().ToString('N').Substring(0, 8) + '.part'
+        $tmp = $Path + '.' + [guid]::NewGuid().ToString('N') + '.part'
         [IO.File]::WriteAllText($tmp, $Text, $script:Utf8)
         try { [IO.File]::Move($tmp, $Path); 1 } catch { Remove-Item -LiteralPath $tmp -Force -ErrorAction SilentlyContinue; 0 }
     }
@@ -1410,7 +1410,7 @@ function Restore-FinishedMarkerState([string]$Target) {
         } catch { Write-Log "відновлення стану: $($file.Name): $($_.Exception.Message)" }
     }
     $results = @(Get-ChildItem -LiteralPath $OutDir -Filter '*.json' -File -ErrorAction SilentlyContinue |
-        Where-Object { $_.Name -cmatch '^[0-9]{8}-[0-9]{6}-[0-9a-f]{12}\.json$' -and $_.Length -le 65536 } | Sort-Object Name -Descending)
+        Where-Object { $_.Name -cmatch '^[0-9]{8}-[0-9]{6}-[0-9a-f]{12}\.json$' } | Sort-Object Name -Descending)
     foreach ($file in $results) {
         try {
             $r = [IO.File]::ReadAllText($file.FullName, $script:Utf8) | ConvertFrom-Json
