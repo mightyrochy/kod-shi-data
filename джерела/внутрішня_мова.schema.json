@@ -3745,6 +3745,50 @@
        "type": "string"
       }
      }
+    },
+    "tool": {
+     "type": "object",
+     "additionalProperties": false,
+     "required": [
+      "name"
+     ],
+     "description": "one call of a tool listed under Tools in codes, only when her new message asks the app to do it",
+     "oneOf": [
+      {
+       "properties": {
+        "name": {
+         "const": "save_scenario"
+        },
+        "args": {
+         "type": "object",
+         "additionalProperties": false,
+         "properties": {
+          "name": {
+           "type": "string",
+           "minLength": 1,
+           "maxLength": 80,
+           "x-her_words": true,
+           "description": "the name she gives it, copied from her words; only when she names it"
+          },
+          "as_new": {
+           "type": "boolean",
+           "description": "true — keep it as one more saved case; otherwise the open saved case is updated (a new one when none is open)"
+          }
+         }
+        }
+       }
+      }
+     ],
+     "properties": {
+      "name": {
+       "enum": [
+        "save_scenario"
+       ]
+      },
+      "args": {
+       "type": "object"
+      }
+     }
     }
    }
   },
