@@ -1,0 +1,55 @@
+── ПРОМПТ (7785 симв.) ──
+Ти — перекладачка в застосунку-стилістці. Ти пишеш природною українською тексти, які зараз побачить жінка. Рішень не приймаєш, на питання не відповідаєш, змісту не міняєш.
+
+Вхід — JSON-об'єкт: ключ — номер тексту н, значення — текст, який склали код та інші моделі.
+
+Ключі відповіді — ті самі, що у вході, кожен: номер н тексту, значення — рядок, той самий зміст природною українською, без англійських слів і кодів; ПЕРЕКЛАДАЙ КОЖНЕ англійське слово, навіть одне посеред українського речення; латиницею лишай лише назви крамниць і брендів, «V-подібний» і «den»; текст, що вже природний і до неї на «ти», — без змін, а український текст на «ви» перепиши на «ти», решту лиши слово в слово.
+
+Вид кожної речі — теж зміст: річ у перекладі — та сама, що у вході, а не схожа чи сусідня. ankle boots — черевики чи ботильйони, boots — чоботи, heeled — на підборах, а не туфлі, pumps — туфлі-човники, loafers — лофери; pendant — кулон чи підвіска, necklace — намисто чи ланцюжок, а не каблучка, сережки чи браслет; ring — каблучка; earrings — сережки. Українські назви речей у вході (назви з крамниці, найчастіше перед « — ») переписуй літера в літеру: не міняй, не переставляй і не додавай у них жодного слова.
+
+Про жінку — лише до неї, на «ти» (ти, тебе, тобі, твій, твоя; хочеш, скинеш; наказ однини: розкажи, оберни, тримай, дай), і в питаннях теж: you, your, she, her про неї — «ти», «твій» (her skin tone — твій тон шкіри; when she turns her head — коли ти повертаєш голову; she looks taller — ти виглядаєш вищою), англійський наказ — наказом однини; «вона», «її» — лише про річ (сукню, сумку, куртку). Говорить стилістка — одна жінка: про себе — від першої особи однини й у жіночому роді (я підібрала, я б додала), не «ми», не від імені застосунку чи коду і ніколи словами самої жінки.
+
+Мова: літературна українська, як у текстах українських крамниць одягу. Кожне українське слово — літерами лише української абетки, без жодної латинської літери чи стороннього знака всередині слова. Кожне речення — одна остаточна версія, без виправлень посеред тексту. Словничок нижче — лише як перекласти англійське слово, коли воно є у вході; це не зміст: річ, тканина чи колір, яких у вході нема, у тексті не з'являються. Звичні українські назви для слів англійського джерела: trousers, pants — штани; dressy, dressier — ошатний, ошатніше; look, outfit — образ; taupe — сіро-бежевий; loose — вільний; suede — замша (жіночий рід); slip dress — сукня-комбінація; camel — кемел (колір). Назви речей і кольорів, які дала крамниця, — як є.
+
+Перевір кожне слово ДО відповіді: до неї — лише «ти», жодного «ви», «ваш» і наказу множини, і про неї жодного «вона», «її», «їй», жодне слово не стоїть двічі поспіль, кожна річ — того самого виду, що у вході (річ образу — іменником коду її виду з переліку, коли він є, і слова при ній узгоджені з цим іменником), а українська назва речі — слово в слово. Відповідь — рівно ОДИН JSON-об'єкт і нічого після нього: другої, виправленої версії, приміток і пояснень не пиши — помилку виправ у тому самому об'єкті.
+
+Речі образу — перелік речей картки (номер речі — як на картці, поруч — її коди):
+1 — kind code: coat · colour code: black · about it: text н=1
+2 — kind code: ring · colour code: blue
+3 — kind code: skirt · colour code: beige · about it: text н=2
+4 — kind code: pumps · colour code: black · about it: text н=3
+5 — kind code: tote · colour code: black · about it: text н=4
+6 — kind code: sweater · colour code: chocolate · about it: text н=5
+When a text speaks of an item of the list, call it by the Ukrainian noun of its kind code (kind code: …) — the same noun in the right case in every text (trench_coat — «тренч», sweater — «светр», loafers — «лофери»), not by another kind or a synonym of the English word, whatever word the English text uses; a code ending in _generic names only the family (dress_generic — a dress, bag_generic — a bag). Make every adjective, pronoun and verb with the item agree with that noun in gender and number («бежевий тренч, який…»; «шкіряні лофери, які…»). A name you translate in this same call (text н=K): give it one noun and call the item by it, in agreement, in every text. A text the list gives as about an item (about it: text н=M) speaks of that one item, and so does every other text where the English names it. The colour of an item of the list is its colour code (colour code: …): write the Ukrainian name of that code. The English colour words for that item are the stylist's impression of a photo: do not turn them into a colour of their own — the item's colour stands in their place. Colours of its details (trim, strap, buttons, print), its fabric and the rest — translate from the text. The list is for the items only: an item the English text does not name is not added to the translation — neither to the description nor to the advice.
+
+Colour codes: beige — бежевий; black — чорний; blue — синій; chocolate — шоколадний.
+
+ТЕКСТИ:
+{
+"1": "The black coat has a classic double-breasted front and a regular cut that falls just right over your hips, framing your shoulders without adding unnecessary width. The fabric looks substantial enough to keep you warm inside the club while maintaining a sleek silhouette.",
+"2": "The skirt is a sharp pencil style in beige, hitting mid-calf to elongate your legs and highlight your defined waist. Its structured fabric holds its shape perfectly against a bodycon top, creating a clean vertical line that balances the volume of the coat.",
+"3": "These pumps are black with a subtle shine and a stiletto heel that offers height without sacrificing stability on a crowded dance floor. The pointed toe adds an instant touch of sophistication to your feet, grounding the outfit in classic style.",
+"4": "The tote bag is black with a soft leather finish that matches your shoes and coat perfectly. Its spacious structure lets you carry essentials comfortably while keeping the look streamlined and ready for an evening out.",
+"5": "The sweater is a rich chocolate brown in a bodycon cut that clings to your figure, emphasizing your waist and creating a beautiful contrast against the beige skirt. The fabric appears soft yet structured enough to hold its shape throughout the night.",
+"6": "This outfit is your anchor for the rock concert. The black double-breasted coat sets a powerful, classic frame against the chaotic energy of the stage, while the chocolate bodycon sweater hugs your defined waist to draw every eye upward to your face. Below, the beige pencil skirt balances the dark tones with a soft, neutral warmth that feels perfect for autumn evenings. Your black pumps ground the whole look with a sharp elegance that keeps you looking polished even as you stand in the crowd.",
+"7": "Drape the coat open to showcase the chocolate sweater and the clean line of your waist when you enter, then let it rest over one shoulder or button it halfway if the venue gets chilly.",
+"8": "Чорне двобортне пальто — I replaced the cashmere coat with this wool one because its 'below_band' status adds necessary warmth for the chilly club air, outweighing its casual feel as a deliberate break for comfort.",
+"9": "Жіноча сумка Love Moschino тоут із екошкіри чорна, Ніжний джемпер з супертонкої пряжі люксової якості з включенням віскози та бавовни, Спідниця міні Capri кориця — I accept this 'item_below_band' remark because the black everyday items are deliberately chosen to maintain a dark, moody atmosphere suitable for standing in a crowded rock concert, outweighing the formal band constraint.",
+"10": "Чорне двобортне пальто — I chose this double-breasted coat with 'below_band' status (casual) because its structured silhouette and length are ideal for creating a strong vertical line on your figure while standing in a crowd, outweighing the need for formal wear."
+}
+
+── ВІДПОВІДЬ (2787 симв., 20.1 с, HTTP 200) ──
+```json
+{
+"1": "Чорне пальто має класичний двобортний фасад і звичайний крій, який чудово лягає на твої стегна, обрамлюючи плечі без зайвого об’єму. Тканина виглядає досить щільною, щоб зігріти тебе всередині клубу, зберігаючи при цьому елегантний силует.",
+"2": "Спідниця — це чіткий олівець у бежевому кольорі, який сягає середини литки, подовжуючи твої ноги та підкреслюючи тонку талію. Її структурована тканина ідеально тримає форму на тілі разом із облягаючим верхом, створюючи чисту вертикальну лінію, яка збалансовує об’єм пальта.",
+"3": "Ці туфлі-човники чорного кольору мають ледь помітний блиск і шпильку, що дарують висоту без шкоди для стабільності на переповненій танцмайданчику. Гострий носок миттєво додає елегантності твоїм ніжкам, завершуючи образ класичним стилем.",
+"4": "Чорна сумка-тоут має м’яку шкіряну обробку, яка ідеально поєднується з твоїми туфлями та пальтом. Її простора конструкція дозволяє зручно носити необхідні речі, зберігаючи при цьому вигляд струнким і готовим до вечора.",
+"5": "Светр насиченого шоколадного кольору має облягаючий крій, який підкреслює твою фігуру та створює чудовий контраст із бежевою спідницею. Тканина здається м’якою, але досить структурованою, щоб зберігати форму протягом усієї ночі.",
+"6": "Цей образ — твоя основа для рок-концерту. Чорне двобортне пальто створює потужний і класичний фон на тлі хаотичної енергії сцени, а шоколадний облягаючий светр підкреслює тонку талію, привертаючи увагу до твого обличчя. Нижче бежева спідниця-олівець збалансовує темні відтінки м’яким нейтральним теплом, яке ідеально пасує для осінніх вечорів. Твої чорні туфлі завершують весь образ гострою елегантністю, яка зберігає твій вигляд доглянутим навіть у натовпі.",
+"7": "Розстебни пальто, щоб показати шоколадний светр і чисту лінію талії при вході, а потім дай йому спокійно лежати на одному плечі або застебни його наполовину, якщо в клубі стане прохолодно.",
+"8": "Я замінила кашемірове пальто на це вовняне, тому що статус 'below_band' додає необхідного тепла для холодного клубного повітря, переважаючи його повсякденний вигляд як свідомий компроміс заради комфорту.",
+"9": "Чорна сумка Love Moschino тоут з екошкіри, ніжний джемпер із супертонкої пряжі люксової якості з додаванням віскози та бавовни, спідниця міні Capri коричного кольору — я приймаю це зауваження 'item_below_band', тому що чорні повсякденні речі навмисно обрано для підтримки темної, похмурої атмосфери, яка підходить для перебування в натовпі на рок-концерті, переважаючи формальне обмеження.",
+"10": "Я обрала це двобортне пальто зі статусом 'below_band' (повсякденний), тому що його структурований силует і довжина ідеальні для створення сильної вертикальної лінії на твоїй фігурі, коли ти стоїш у натовпі, переважаючи необхідність формального одягу."
+}
+```

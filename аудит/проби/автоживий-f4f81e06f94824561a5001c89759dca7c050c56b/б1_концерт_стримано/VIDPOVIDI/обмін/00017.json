@@ -1,0 +1,27 @@
+{
+ "версія": 1,
+ "запит": {
+  "model": "qwen/qwen3.5-9b",
+  "max_tokens": 4000,
+  "messages": [
+   {
+    "role": "user",
+    "content": [
+     {
+      "type": "text",
+      "text": "{\"task\": {\"role\": \"You read the description of an outfit and list its items as data.\", \"rules\": [\"One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.\", \"One item carries one thing — of two alternatives list the first; a note in brackets is not an item.\", \"Slot \\\"accessory\\\" is for an item no other slot fits.\", \"\\\"is_outfit\\\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note.\"], \"limits\": [\"Rely only on the input: do not invent what it does not contain.\", \"The answer is one JSON object following \\\"answer_schema\\\", without explanations and without ```.\"], \"language\": \"English\", \"answer\": \"ITEM_LIST\", \"answer_schema\": {\"is_outfit\": \"yes|no\", \"items\": [{\"name\": \"<what the item is>\", \"details\": \"<its cut, length and fabric>\", \"slot\": \"top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory\", \"color_hex\": \"<#rrggbb or null>\", \"worn\": \"<true, or false when the description says the outfit goes without it>\"}]}, \"input\": [\"\\\"description\\\" — the outfit description\"]}, \"description\": \"Structured wool-blend blazer, tailored single-breasted cut with notched lapels, deep charcoal gray (#36454F), heavy woven fabric.\\nSilk-poplin blouse, relaxed collar fit with subtle pleating at the bust, crisp white (#FFFFFF), smooth fluid fabric.\\nStraight-leg high-waisted trousers, slim ankle length, matte black (#121212), durable cotton-nylon blend.\\nPointed-toe pumps with a moderate 75mm heel, sleek silhouette, polished leather in rich oxblood red (#8A0303).\\nMinimalist gold-plated hoop earrings, small gauge size, lightweight metal alloy.\\nThin leather wristwatch with a slender strap, classic round face, brushed steel finish.\\n\\nThis outfit strikes the perfect balance between rock-concert energy and her request for classic restraint, using structured tailoring to maintain an elegant silhouette amidst a chaotic crowd. The deep charcoal trousers and dark blazer create a grounded, sophisticated base that prevents overwhelming visual noise while allowing the bold oxblood shoes to serve as the sole focal point of personality. The choice of high-quality, substantial fabrics ensures she feels confident and composed standing for long periods, while the neutral top allows her favorite concert band's visuals to remain in focus without competition. Finally, the classic lines of the blazer and blouse honor her specific wish for timeless style, ensuring she looks polished rather than trendy despite the loud environment.\"}"
+     }
+    ]
+   }
+  ],
+  "temperature": 1
+ },
+ "відповідь": {
+  "status": 200,
+  "contentType": "application/json",
+  "headers": {
+   "x-model": "qwen/qwen3.5-9b"
+  },
+  "body": "{\"content\":[{\"type\":\"text\",\"text\":\"{\\n  \\\"is_outfit\\\": \\\"yes\\\",\\n  \\\"items\\\": [\\n    {\\n      \\\"name\\\": \\\"blazer\\\",\\n      \\\"details\\\": \\\"structured wool-blend tailored single-breasted cut with notched lapels\\\",\\n      \\\"slot\\\": \\\"outerwear\\\",\\n      \\\"color_hex\\\": \\\"#36454F\\\",\\n      \\\"worn\\\": true\\n    },\\n    {\\n      \\\"name\\\": \\\"blouse\\\",\\n      \\\"details\\\": \\\"relaxed collar fit with subtle pleating at the bust\\\",\\n      \\\"slot\\\": \\\"top\\\",\\n      \\\"color_hex\\\": \\\"#FFFFFF\\\",\\n      \\\"worn\\\": true\\n    },\\n    {\\n      \\\"name\\\": \\\"trousers\\\",\\n      \\\"details\\\": \\\"straight-leg high-waisted slim ankle length\\\",\\n      \\\"slot\\\": \\\"bottom\\\",\\n      \\\"color_hex\\\": \\\"#121212\\\",\\n      \\\"worn\\\": true\\n    },\\n    {\\n      \\\"name\\\": \\\"shoes\\\",\\n      \\\"details\\\": \\\"pointed-toe moderate 75mm heel sleek silhouette\\\",\\n      \\\"slot\\\": \\\"shoes\\\",\\n      \\\"color_hex\\\": \\\"#8A0303\\\",\\n      \\\"worn\\\": true\\n    },\\n    {\\n      \\\"name\\\": \\\"earrings\\\",\\n      \\\"details\\\": \\\"minimalist gold-plated hoop small gauge size lightweight metal alloy\\\",\\n      \\\"slot\\\": \\\"earrings\\\",\\n      \\\"color_hex\\\": null,\\n      \\\"worn\\\": true\\n    },\\n    {\\n      \\\"name\\\": \\\"watch\\\",\\n      \\\"details\\\": \\\"thin leather strap classic round face brushed steel finish\\\",\\n      \\\"slot\\\": \\\"watch\\\",\\n      \\\"color_hex\\\": null,\\n      \\\"worn\\\": true\\n    }\\n  ]\\n}\"}],\"usage\":{\"input_tokens\":650,\"output_tokens\":384},\"stop_reason\":\"end_turn\"}"
+ }
+}
