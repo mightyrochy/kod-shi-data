@@ -19,12 +19,20 @@ $parents = @(foreach ($path in @('C:\Users\gemini', $root, "$root\state", 'C:\Us
     $acl = Get-Acl -LiteralPath $path
     [ordered]@{path=$path; owner=$acl.Owner; acl=$acl.Sddl}
 })
+$loggedObjects = @(foreach ($path in $paths) {
+    if (Test-Path -LiteralPath $path) {
+        $item = Get-Item -LiteralPath $path
+        $acl = Get-Acl -LiteralPath $path
+        [ordered]@{path=$path; object_type=$(if ($item.PSIsContainer) {'directory'} else {'file'});
+            owner=$acl.Owner; acl=$acl.Sddl; last_write_utc=$item.LastWriteTimeUtc.ToString('o')}
+    } else { [ordered]@{path=$path; object_type='absent_at_snapshot'; owner=$null; acl=$null; last_write_utc=$null} }
+})
 $writers = @([IO.File]::ReadAllLines("$root\wrapper.log", $utf) | Where-Object { $_ -match '^2026-11-0[45] .*наряд .* -> [0-9]{8}-[0-9]{6}-[a-f0-9]+' })
 $report = [ordered]@{utc=[datetime]::UtcNow.ToString('o'); identity=[Security.Principal.WindowsIdentity]::GetCurrent().Name;
     source=$log; source_bytes=(Get-Item -LiteralPath $log).Length; events=$events.Count; first=$events[0].utc; last=$events[-1].utc;
     codes=@($events | Group-Object code | Select-Object Name,Count);
     object_types=@($events | Group-Object object_type | Select-Object Name,Count);
-    event_paths=$paths; inventory=$inventory; parents=$parents; writer_log=$writers;
+    event_paths=$paths; logged_objects=$loggedObjects; inventory=$inventory; parents=$parents; writer_log=$writers;
     event_stacks=@($events | Group-Object script_stack | ForEach-Object { @{count=$_.Count; stack=$_.Name} });
     event_exceptions=@($events | Group-Object exception | ForEach-Object { @{count=$_.Count; exception=$_.Name} });
     unavailable_metadata=@($events | Where-Object { $null -eq $_.acl }).Count;

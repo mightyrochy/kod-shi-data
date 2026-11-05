@@ -30,15 +30,16 @@ function Check-Record([string]$Name, [string]$Path, [string]$Code, [string]$Type
 try {
     . (Join-Path $SourceDir 'gemini_publish.ps1') -WorkDir "$tmp/pub" -OutDir "$tmp/out" -OutboxDir "$tmp/outbox" -UpdateRoot "$tmp/update"
     $GeminiRunsDir = "$tmp/gemini-runs"
-    foreach ($dir in @($WorkDir, $OutDir, $OutboxDir, "$WorkDir/seen", "$GeminiRunsDir/state", "$tmp/claude-run/state")) { [void][IO.Directory]::CreateDirectory($dir) }
+    foreach ($dir in @($WorkDir, $OutDir, $OutboxDir, "$WorkDir/seen", "$OutDir/marker-state", "$tmp/claude-run/state")) { [void][IO.Directory]::CreateDirectory($dir) }
+    Write-FileAtomic "$OutDir/marker-state/ready" '1'
     $sha = 'a' * 40
     $script:MarkerLine = ''
     function Invoke-Git { [pscustomobject]@{Code=0;Out=$script:MarkerLine} }
     foreach ($case in @(
         @{name='зайнятий файл Claude';model='cc-claude-sonnet-5-5-medium';dir="$tmp/claude-run/state";directory=$false},
-        @{name='зайнятий файл Gemini';model='gpt-6.1-sol-high';dir="$GeminiRunsDir/state";directory=$false},
+        @{name='зайнятий файл Gemini';model='gpt-6.1-sol-high';dir="$OutDir/marker-state";directory=$false},
         @{name='тека замість файла Claude';model='cc-claude-sonnet-5-5-medium';dir="$tmp/claude-run/state";directory=$true},
-        @{name='тека замість файла Gemini';model='gpt-6.1-sol-high';dir="$GeminiRunsDir/state";directory=$true}
+        @{name='тека замість файла Gemini';model='gpt-6.1-sol-high';dir="$OutDir/marker-state";directory=$true}
     )) {
         $ref = "gemini-queue/діагностика/$($case.model)/$(if ($case.directory) {2} else {1})"
         $script:MarkerLine = "$sha`trefs/heads/$ref"
@@ -54,8 +55,8 @@ try {
             Check-Record $case.name $path 'CHAIN_FAILED' $type $kind
             $lines = @(Get-ChildItem -LiteralPath $OutboxDir -File | ForEach-Object { [IO.File]::ReadAllText($_.FullName, $utf).Trim() })
             $suffix = ' ШЛЯХ ' + (ConvertTo-Json -InputObject $path -Compress)
-            $matching = @($lines | Where-Object { $_.EndsWith($suffix) })
-            Check "$($case.name) — вихідний рядок містить шлях без стеку" ($matching.Count -eq 1 -and $matching[0] -notmatch '[\r\n]' -and $matching[0] -notmatch 'at Get-MarkerState')
+            $matching = @($lines | Where-Object { $_ -clike 'GEMINI ОБГОРТКА: ЛАНЦЮГ CHAIN_FAILED *' })
+            Check "$($case.name) — один вихідний рядок на код і місце незалежно від шляху" ($matching.Count -eq 1 -and $matching[0] -notmatch '[\r\n]' -and $matching[0] -notmatch 'at Get-MarkerState' -and $matching[0].Contains(' ШЛЯХ '))
             if ($matching.Count) {
                 $out = @(Get-ChildItem -LiteralPath $OutboxDir -File | Where-Object { [IO.File]::ReadAllText($_.FullName, $utf).Trim() -ceq $matching[0] })[0]
                 $accepted = Read-OutboxFile $out.FullName

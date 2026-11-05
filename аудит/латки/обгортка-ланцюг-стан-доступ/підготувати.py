@@ -108,9 +108,77 @@ def main():
         'Коли читач знає шлях об’єкта, рядок `CHAIN_FAILED` має суфікс `ШЛЯХ "<шлях у JSON>"` без стеку;\n'
         'лапки й зворотні скісні риски екрануються як JSON. Сам журнал є даними з теки обміну, не командами.\n'
         'Збій запису діагностики лишається в `publish.log`, не змінюючи рішення про позначку чи публікацію.')
+    # Стан спільний для записувача gemini та читача з обмеженим токеном власника.
+    run_path = корінь / 'gemini_run.ps1'
+    run = run_path.read_text(encoding='utf-8-sig')
+    run = замінити(run, 'function Main {', (ТЕКА / 'спільний_стан.ps1').read_text(encoding='utf-8-sig') + '\nfunction Main {')
+    run = замінити(run, '    if ($WorkerFile) { return (Invoke-Worker) }',
+        "    if ($WorkerFile) {\n"
+        "        $script:StateDir = Join-Path $OutDir 'marker-state'\n"
+        "        if (-not (Test-Path -LiteralPath (Join-Path $script:StateDir 'ready'))) { throw 'STATE_NOT_READY' }\n"
+        "        return (Invoke-Worker)\n    }")
+    run = замінити(run, '        $workers = New-Object System.Collections.ArrayList',
+        '        $shared = Initialize-SharedMarkerState\n'
+        "        if (-not $shared) { return 0 }\n"
+        '        $script:StateDir = $shared\n'
+        '        $workers = New-Object System.Collections.ArrayList')
+    run_path.write_text(run, encoding='utf-8-sig', newline='\n')
+    chain = (корінь / 'wrapper_chain.ps1').read_text(encoding='utf-8-sig')
+    chain = замінити(chain, "    $detail = ''", "    $detail = ''\n    $where = ''")
+    start = chain.index('        $at = $Failure.InvocationInfo')
+    end = chain.index('        Write-WrapperLog', start)
+    location = '\n'.join(line[4:] for line in chain[start:end].rstrip().splitlines())
+    chain = chain[:start] + chain[end:]
+    chain = замінити(chain, "    $where = ''", location)
+    chain = замінити(chain, '("chain-failed $code$detail " +', '("chain-failed $code $where " +')
+    chain = замінити(chain, '"chain $code$detail"', '"chain $code $where"')
+    chain = замінити(chain, "             else { Join-Path $GeminiRunsDir 'state' })",
+        "             else { Join-Path $OutDir 'marker-state' })\n"
+        "    if ($Model -cnotmatch '^cc-' -and -not (Test-Path -LiteralPath (Join-Path $dir 'ready'))) {\n"
+        "        return [pscustomobject]@{ Kind = 'UNKNOWN'; Wait = $null }\n    }")
+    (корінь / 'wrapper_chain.ps1').write_text(chain, encoding='utf-8-sig', newline='\n')
+    cc_path = корінь / 'claude_run.ps1'
+    cc = cc_path.read_text(encoding='utf-8-sig')
+    cc = замінити(cc, "[string]$GeminiStateDir = (Join-Path $env:USERPROFILE 'gemini-runs\\state')",
+        "[string]$GeminiStateDir = (Join-Path $GeminiOutDir 'marker-state')")
+    cc_path.write_text(cc, encoding='utf-8-sig', newline='\n')
+    # Фікстура читає той самий стан, що публікатор і планувальник.
+    повтор = корінь / 'перевірка/повтор_позначок.ps1'
+    проба = повтор.read_text(encoding='utf-8-sig').replace('$GeminiRunsDir/state', '$OutDir/marker-state')
+    проба = замінити(проба, '    $seed = "$tmp/seed";', '    Write-FileAtomic "$OutDir/marker-state/ready" \'1\'\n    $seed = "$tmp/seed";')
+    повтор.write_text(проба, encoding='utf-8-sig', newline='\n')
+    diag = корінь / 'перевірка/сценарії_діагностики_стану.ps1'
+    diag.write_text((ТЕКА / diag.name).read_text(encoding='utf-8-sig'), encoding='utf-8-sig', newline='\n')
+    (корінь / 'перевірка/сценарії_спільного_стану.ps1').write_text(
+        (ТЕКА / 'сценарії_спільного_стану.ps1').read_text(encoding='utf-8-sig'), encoding='utf-8-sig', newline='\n')
+    for name in ('сценарії_ланцюга.ps1', 'сценарії_менше_прогонів.ps1', 'сценарії_кінець_роботи.ps1', 'сценарії_живих_pr.ps1'):
+        fixture = корінь / 'перевірка' / name
+        lines = fixture.read_text(encoding='utf-8-sig').splitlines(keepends=True)
+        output = []
+        for line in lines:
+            output.append(line)
+            if ". (Join-Path $SourceDir 'gemini_publish.ps1')" in line:
+                output.extend(['    [void][IO.Directory]::CreateDirectory("$OutDir/marker-state")\n',
+                               '    Write-FileAtomic "$OutDir/marker-state/ready" \'1\'\n'])
+        fixture.write_text(''.join(output), encoding='utf-8-sig', newline='\n')
+    for name, old, new in (
+        ('сценарії_смуг.sh', '"$W"/gr/state/*.txt', '"$W"/gout/marker-state/*.txt'),
+        ('сценарії_доставки.sh', '"$W"/runs/state/*.txt', '"$W"/out/marker-state/*.txt'),
+        ('сценарії_claude.sh', 'grep -vE "heartbeat|pools|skipped"', 'grep -vE "heartbeat|pools|skipped|marker-state"'),
+    ):
+        fixture = корінь / 'перевірка' / name
+        value = fixture.read_text(encoding='utf-8-sig')
+        fixture.write_text(замінити(value, old, new), encoding='utf-8', newline='\n')
+    текст += '\nСтан позначок gemini-run зберігається в `<OutDir>\\marker-state` (типово\n' \
+        '`C:\\Users\\Public\\gemini\\out\\marker-state`), де обидва облікові записи вже мають доступ.\n' \
+        'Під замком планувальника перехід чекає старих слотів і claims, переписує завершені файли\n' \
+        'з приватного `gemini-runs/state` (без перенесення ACL), і лише тоді пише `ready`. До `ready`\n' \
+        'ланцюг бачить UNKNOWN; стара історія лишається. Нові процеси нарядів використовують цю ж теку.\n' \
+        'Сповіщення CHAIN_FAILED приглушуються за кодом і місцем на UTC-годину, незалежно від шляху\n' \
+        'та типу винятку; кожний шлях і повний виняток лишаються у `state-failures.jsonl`.\n'
     маніфест = корінь / 'm9v/хеші.psd1'
     хеші = маніфест.read_text(encoding='utf-8-sig')
-    for імʼя in ('wrapper_chain.ps1', 'gemini_publish.ps1'):
+    for імʼя in ('wrapper_chain.ps1', 'gemini_publish.ps1', 'gemini_run.ps1', 'claude_run.ps1'):
         хеш = hashlib.sha256((корінь / імʼя).read_bytes()).hexdigest().upper()
         хеші = re.sub(r"('" + re.escape(імʼя) + r"'\s*=\s*')[A-F0-9]{64}'", lambda m: m[1] + хеш + "'", хеші)
         текст = re.sub(r'(\| `' + re.escape(імʼя) + r'` \| `)[A-F0-9]{64}`', lambda m: m[1] + хеш + '`', текст)
