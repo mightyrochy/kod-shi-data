@@ -1,0 +1,27 @@
+{
+ "версія": 1,
+ "запит": {
+  "model": "qwen/qwen3.5-9b",
+  "max_tokens": 4000,
+  "messages": [
+   {
+    "role": "user",
+    "content": [
+     {
+      "type": "text",
+      "text": "{\"task\": {\"role\": \"You read the description of an outfit and list its items as data.\", \"rules\": [\"One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.\", \"One item carries one thing — of two alternatives list the first; a note in brackets is not an item.\", \"Slot \\\"accessory\\\" is for an item no other slot fits.\", \"\\\"is_outfit\\\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note.\"], \"limits\": [\"Rely only on the input: do not invent what it does not contain.\", \"The answer is one JSON object following \\\"answer_schema\\\", without explanations and without ```.\"], \"language\": \"English\", \"answer\": \"ITEM_LIST\", \"answer_schema\": {\"is_outfit\": \"yes|no\", \"items\": [{\"name\": \"<what the item is>\", \"details\": \"<its cut, length and fabric>\", \"slot\": \"top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory\", \"color_hex\": \"<#rrggbb or null>\", \"worn\": \"<true, or false when the description says the outfit goes without it>\"}]}, \"input\": [\"\\\"description\\\" — the outfit description\"]}, \"description\": \"Structured wool-blend blazer in deep charcoal grey (#36454F), tailored with a single-breasted notch lapel and slightly elongated length to balance standing posture, woven for structure.  \\nCrisp cotton-poplin button-down shirt in oatmeal beige (#D2C9A0), cut with a relaxed but defined shoulder and hem falling just below the blazer line.  \\nHigh-waisted wide-leg trousers in heavy matte black denim (#151515), straight-leg silhouette that flows smoothly while standing in a crowd, mid-weight twill fabric.  \\nAnkle boots in polished black leather (#0F0F0F), pointed toe with a 2 cm stacked heel for stability on uneven club floors, smooth grain finish.  \\nSlim gold-plated hoop earrings in 18k gold vermeil, small enough to stay secure during movement without drawing excessive attention.  \\nA structured clutch bag in matte black leather with a minimalist magnetic closure, sized to hold only essentials for an evening out.  \\n\\nThis outfit honors her request for a restrained and classic look despite the rock concert setting by anchoring the energy of the environment with timeless tailoring and neutral tones. The blazer and crisp shirt provide a polished silhouette that stands well in a crowd without feeling overwhelmed by the scene, while the dark denim trousers ground the ensemble in modern practicality. Warm artificial club lighting enhances the charcoal and gold accents, creating a sophisticated contrast that feels both intentional and effortless. Finally, the modest heel ensures comfort during hours of standing, aligning her personal need for stability with the event’s lively atmosphere.\"}"
+     }
+    ]
+   }
+  ],
+  "temperature": 1
+ },
+ "відповідь": {
+  "status": 200,
+  "contentType": "application/json",
+  "headers": {
+   "x-model": "qwen/qwen3.5-9b"
+  },
+  "body": "{\"content\":[{\"type\":\"text\",\"text\":\"{\\n  \\\"is_outfit\\\": \\\"yes\\\",\\n  \\\"items\\\": [\\n    {\\n      \\\"name\\\": \\\"blazer\\\",\\n      \\\"details\\\": \\\"wool-blend tailored with single-breasted notch lapel and slightly elongated length, woven for structure\\\",\\n      \\\"slot\\\": \\\"outerwear\\\",\\n      \\\"color_hex\\\": \\\"#36454F\\\",\\n      \\\"worn\\\": true\\n    },\\n    {\\n      \\\"name\\\": \\\"button-down shirt\\\",\\n      \\\"details\\\": \\\"crisp cotton-poplin cut with relaxed but defined shoulder and hem falling just below the blazer line\\\",\\n      \\\"slot\\\": \\\"top\\\",\\n      \\\"color_hex\\\": \\\"#D2C9A0\\\",\\n      \\\"worn\\\": true\\n    },\\n    {\\n      \\\"name\\\": \\\"trousers\\\",\\n      \\\"details\\\": \\\"high-waisted wide-leg straight-leg silhouette mid-weight twill fabric\\\",\\n      \\\"slot\\\": \\\"bottom\\\",\\n      \\\"color_hex\\\": \\\"#151515\\\",\\n      \\\"worn\\\": true\\n    },\\n    {\\n      \\\"name\\\": \\\"ankle boots\\\",\\n      \\\"details\\\": \\\"pointed toe with 2 cm stacked heel smooth grain finish polished black leather\\\",\\n      \\\"slot\\\": \\\"shoes\\\",\\n      \\\"color_hex\\\": \\\"#0F0F0F\\\",\\n      \\\"worn\\\": true\\n    },\\n    {\\n      \\\"name\\\": \\\"earrings\\\",\\n      \\\"details\\\": \\\"slim gold-plated hoop small enough to stay secure during movement\\\",\\n      \\\"slot\\\": \\\"earrings\\\",\\n      \\\"color_hex\\\": null,\\n      \\\"worn\\\": true\\n    },\\n    {\\n      \\\"name\\\": \\\"clutch bag\\\",\\n      \\\"details\\\": \\\"structured minimalist magnetic closure sized to hold only essentials\\\",\\n      \\\"slot\\\": \\\"bag\\\",\\n      \\\"color_hex\\\": \\\"#151515\\\",\\n      \\\"worn\\\": true\\n    }\\n  ]\\n}\"}],\"usage\":{\"input_tokens\":689,\"output_tokens\":424},\"stop_reason\":\"end_turn\"}"
+ }
+}
