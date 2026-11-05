@@ -47,14 +47,14 @@ def змінні_режиму(id_, режим, вхід):
     return змінні
 
 
-def сцена_реєстру(id_):
-    """Єдиний рядок реєстру за id: змінні сцени за режимом і входом (не одні на всі сцени)."""
+def сцена_реєстру(id_, режим=None):
+    """Бере вхід сцени з реєстру, а режим — з явного параметра або того самого рядка."""
     рядки = [р.split("|") for р in (КОРІНЬ / "аудит/проби/живі_сцени.txt").read_text(encoding="utf-8").splitlines()
              if р.startswith(id_ + "|")]
     if len(рядки) != 1:
         raise ValueError("Нема єдиної сцени в реєстрі: " + id_)
-    id_, жінка, запит, вхід, режим = рядки[0][:5]
-    змінні = змінні_режиму(id_, режим, вхід)
+    id_, жінка, запит, вхід, режим_реєстру = рядки[0][:5]
+    змінні = змінні_режиму(id_, режим_реєстру if режим is None else режим, вхід)
     return {"назва": id_, "сід": 3, "змінні": dict(змінні, SCENA=id_, CHAT_TEXT=запит,
         ZHINKA=str(КОРІНЬ / "аудит/проби/жінки" / (жінка + ".json")),
         MODEL="qwen/qwen3.5-9b", MODEL_MOVA="mamaylm-gemma-3-12b-it-v2.0")}
@@ -77,12 +77,15 @@ def виконати():
     а.add_argument("збірка", type=Path, nargs="?")
     а.add_argument("кеш", type=Path, nargs="?")
     а.add_argument("вихід", type=Path, nargs="?")
-    а.add_argument("--лише-змінні", action="store_true", help="Надрукувати змінні сцени за режимом реєстру й вийти до старту")
+    а.add_argument("--лише-змінні", action="store_true", help="Надрукувати змінні сцени й вийти до старту")
     а.add_argument("--сцена", default="1", help="Номер архівної сцени або id з живі_сцени.txt")
+    а.add_argument("--режим", help="Режим із питання PR у синтаксисі живі_сцени.txt; без нього — режим реєстру")
     а.add_argument("--node", default="node")
     п = а.parse_args()
+    if п.режим is not None and п.сцена.isdecimal():
+        а.error("--режим потребує id сцени з живі_сцени.txt, а не номера архівної сцени")
     if п.лише_змінні:
-        print(json.dumps(сцена_реєстру(п.сцена)["змінні"], ensure_ascii=False, indent=1))
+        print(json.dumps(сцена_реєстру(п.сцена, п.режим)["змінні"], ensure_ascii=False, indent=1))
         return 0
     if not (п.збірка and п.кеш and п.вихід):
         а.error("потрібні збірка, кеш і вихід (без --лише-змінні)")
@@ -91,7 +94,7 @@ def виконати():
             env=dict(os.environ, REPLAY_ARCHIVE="1"), cwd=КОРІНЬ, text=True, encoding="utf-8"))
         сцена = перелік[int(п.сцена) - 1]
     else:
-        сцена = сцена_реєстру(п.сцена)
+        сцена = сцена_реєстру(п.сцена, п.режим)
     вихід = п.вихід.resolve()
     вихід.mkdir(parents=True, exist_ok=False)
     env = dict(os.environ)
