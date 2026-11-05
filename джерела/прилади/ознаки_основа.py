@@ -2,7 +2,7 @@
 import ast, collections, functools, os, re
 from ознаки_рішення import (шкали_ваги, пари_функції, вузли_тіла, кутові_пари,
                            множини_функції, вільні_свідки_пари, числові_цикли,
-                           форматований_текст, поля_підписів, межі_сортування)
+                           форматований_текст, поля_підписів, межі_сортування, функція_формула, чиста_геометрія, _чиста_функція, будує_вікно, прозовий)
 
 ТУТ = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 ВИКЛЮЧЕНО = re.compile(r"^(батарея_|gate_|measure_|стенд_|тест_|audit_|pair_test|run_outfit|status_перевірки)")
@@ -33,6 +33,8 @@ E = frozenset()
 НЕВІДОМЕ = re.compile(r"не стверджу|not_asserted|unknown|невідом|не визнач|н/д|^none$|не калібр|^free$|вільн|^—$|\bнема\b|не чита",
                       re.IGNORECASE)
 ВИМІР = re.compile(r"(?<!not )(?<!un)(?<!не )\b(measured|measures|measure|виміря\w*|вимір\w*)", re.IGNORECASE)
+УТРИМАННЯ = re.compile(r"утримано|утримання|withheld|не стверджується|не_стверджується", re.IGNORECASE)
+ПОХОДЖЕННЯ = frozenset(("джерело", "source", "protocol", "свідок", "походження", "джерело_кольору"))
 HEX_РЕГ = re.compile(r"\[0-9a-fA-F\]\{6\}|\[0-9A-Fa-f\]\{6\}")
 ПОРЯДОК = (ast.Lt, ast.LtE, ast.Gt, ast.GtE)
 БУЛЕВІ = frozenset(("len", "isinstance", "issubclass", "hasattr", "callable", "bool", "any", "all", "id", "type",
@@ -72,6 +74,10 @@ class Функція:
         self.предикати_формул.update(межі_сортування(self))
         self.сіткові_імена = {ц.id for в in self.власні if id(в) in self.прогресії
                             for ц in в.targets if isinstance(ц, ast.Name)}
+        self.формула = функція_формула(self)   # чисте числове перетворення: арифметика всередині — не місце
+        self.чиста = _чиста_функція(self) is not None   # лише арифметика й порівняння своїх параметрів
+        self.геометрія = чиста_геометрія(self)  # коротка чиста функція кольору: поріг усередині — не місце, місце — виклик
+        self.вікно = будує_вікно(self)         # повертає межі вікна кандидатів: результат — K, не її значення
 
     @property
     def повне(self):
@@ -152,18 +158,32 @@ def _стала_формули(в):
 def _словесні_пороги(дерево, поля=()):
     """Знаходить вибір самих слів усередині форматованого підпису."""
     def слова(в):
-        return _рядок(в) or isinstance(в, ast.JoinedStr) or isinstance(в, ast.IfExp) and слова(в.body) and слова(в.orelse)
+        return _рядок(в) or isinstance(в, ast.JoinedStr) or isinstance(в, ast.BinOp) and isinstance(в.op, ast.Mod) and _рядок(в.left) \
+            or isinstance(в, ast.IfExp) and слова(в.body) and слова(в.orelse)
+    def речення(в):
+        """Вибір між реченнями: речення не буває кодом класу, тож поріг при ньому вибирає лише слова."""
+        return прозовий(в) or isinstance(в, ast.JoinedStr) or isinstance(в, ast.IfExp) and речення(в.body) and речення(в.orelse)
     def лише_підпис(тіло):
         """Відрізняє зміну самого підпису від зміни числа чи класу поруч із ним."""
         return all(isinstance(і, ast.Pass) or isinstance(і, ast.Assign) and форматований_текст(і.value)
-                   and all(isinstance(ц, ast.Subscript) and _рядок(ц.slice) and ц.slice.value in поля for ц in і.targets)
+                   and all(isinstance(ц, ast.Subscript) and _рядок(ц.slice) and (ц.slice.value in поля or прозовий(і.value))
+                           for ц in і.targets)
                    or isinstance(і, ast.If) and лише_підпис(і.body) and лише_підпис(і.orelse) for і in тіло)
     вихід = set()
     for в in ast.walk(дерево):
+        if isinstance(в, ast.IfExp) and речення(в):
+            вихід.update(id(т) for т in ast.walk(в.test) if isinstance(т, ast.Compare))
+        if isinstance(в, ast.Call) and (_ім_виклику(в.func) or "").endswith("заява"):
+            # код причини в аргументі заяви: поріг вибирає слово заяви, а не рішення (паспорт: «поріг, що вибирає лише слова»)
+            for а in list(в.args) + [к.value for к in в.keywords]:
+                if isinstance(а, ast.IfExp) and слова(а):
+                    вихід.update(id(т) for т in ast.walk(а.test) if isinstance(т, ast.Compare))
         if isinstance(в, ast.If) and лише_підпис(в.body) and лише_підпис(в.orelse) \
                 and any(isinstance(н, ast.Assign) for і in в.body + в.orelse for н in ast.walk(і)):
             вихід.update(id(т) for т in ast.walk(в.test) if isinstance(т, ast.Compare))
-        формат = isinstance(в, ast.JoinedStr) or isinstance(в, ast.BinOp) and isinstance(в.op, ast.Mod) and _рядок(в.left)
+        формат = isinstance(в, ast.JoinedStr) or isinstance(в, ast.BinOp) and isinstance(в.op, ast.Mod) and _рядок(в.left) \
+            or isinstance(в, ast.BinOp) and isinstance(в.op, ast.Add) and any(
+                isinstance(о, ast.BinOp) and isinstance(о.op, ast.Mod) and _рядок(о.left) for о in (в.left, в.right))
         if формат:
             for г in ast.walk(в):
                 if isinstance(г, ast.IfExp) and слова(г.body) and слова(г.orelse):
@@ -253,6 +273,12 @@ def _край_таблиці(в, т):
     return False
 
 
+def _стала_або_кут(в):
+    """Права частина порівняння ширини дуги: число, `360 − стала`, ім'я сталої модуля."""
+    return _стала_формули(в) or isinstance(в, ast.Name) or isinstance(в, ast.BinOp) and isinstance(в.op, ast.Sub) \
+        and _число(в.left) and _стала_або_кут(в.right)
+
+
 def _формульні(дерево):
     """Порівняння — шматок формули, а не поріг рішення: кусково задана функція тієї самої величини
     (`f(L) if L > 8.0 else g(L)`, `x / (a+b) if (a+b) > 0 else 0.0`) чи нормування кута
@@ -260,6 +286,11 @@ def _формульні(дерево):
     вих = set()
     for в in ast.walk(дерево):
         сусідні = None
+        if isinstance(в, ast.Compare) and isinstance(в.left, ast.BinOp) and isinstance(в.left.op, ast.Mod) \
+                and isinstance(в.left.left, ast.BinOp) and isinstance(в.left.left.op, ast.Sub) \
+                and _число(в.left.right) and в.left.right.value == 360 and len(в.ops) == 1 \
+                and _стала_або_кут(в.comparators[0]):
+            вих.add(id(в))   # `(до − від) % 360 > 360 − крок`: ширина дуги кола проти повного оберту — геометрія кута
         if isinstance(в, ast.For) and isinstance(в.iter, ast.Call) and len(в.iter.args) == 2:
             сусідні = в.iter.args[1]
             if isinstance(сусідні, ast.BinOp) and isinstance(сусідні.op, ast.Add):
@@ -332,8 +363,8 @@ def _формульні(дерево):
             if not isinstance(в.body, ast.BinOp) or not ім <= _імена(в.body):
                 continue
             if ім <= _імена(в.orelse) and isinstance(в.orelse, (ast.BinOp, ast.Call, ast.Name)) \
-                    or _число(в.orelse) and в.orelse.value == 0:
-                вих.add(id(т))
+                    or _число(в.orelse) and (в.orelse.value == 0 or т.comparators[0].value == 0):
+                вих.add(id(т))   # охорона ділення чи кореня: за нулем формула дає сталу
         elif isinstance(в, ast.If) and not в.orelse and len(в.body) == 1 and isinstance(в.body[0], ast.Assign) \
                 and isinstance(т.left, ast.Name) and isinstance(в.body[0].value, ast.BinOp) \
                 and [ц.id for ц in в.body[0].targets if isinstance(ц, ast.Name)] == [т.left.id] \
@@ -508,6 +539,124 @@ def _злити_ел(а, б):
 
 def _ім_виклику(в):
     return в.id if isinstance(в, ast.Name) else в.attr if isinstance(в, ast.Attribute) else None
+
+
+def слова_без_читачів(дерева):
+    """Гілки лише присвоюють слово змінній, яка йде у поле результату, а поля не читає жоден код (ні `x["k"]`, ні
+    `.get("k")`): поріг при ньому вибирає слова опису, а не рішення (паспорт: «поріг, що вибирає лише слова підпису»)."""
+    читані = set()
+    for д in дерева:
+        for в in ast.walk(д):
+            if isinstance(в, ast.Subscript) and _рядок(в.slice) and isinstance(в.ctx, ast.Load):
+                читані.add(в.slice.value)
+            elif isinstance(в, ast.Call) and isinstance(в.func, ast.Attribute) and в.func.attr in ("get", "pop", "setdefault") \
+                    and в.args and _рядок(в.args[0]):
+                читані.add(в.args[0].value)
+            elif isinstance(в, ast.Compare):
+                читані.update(е.value for е in [в.left, *в.comparators] if _рядок(е))
+    def присвоєння(і):
+        return isinstance(і, ast.Assign) and len(і.targets) == 1 and isinstance(і.targets[0], ast.Name) and _рядок(і.value)
+    def ланцюг(і, імена):
+        """If/elif/else, у кожній гілці лише `X = "слово"`."""
+        if not isinstance(і, ast.If):
+            return False
+        for гілка in (і.body, і.orelse):
+            for н in гілка:
+                if присвоєння(н):
+                    імена.add(н.targets[0].id)
+                elif not (isinstance(н, ast.If) and ланцюг(н, імена)):
+                    return False
+        return bool(і.body)
+    вихід = set()
+    for д in дерева:
+        for ф in ast.walk(д):
+            if not isinstance(ф, (ast.FunctionDef, ast.AsyncFunctionDef)):
+                continue
+            предки = {id(ч): в for в in ast.walk(ф) for ч in ast.iter_child_nodes(в)}
+            for і in ast.walk(ф):
+                імена = set()
+                if not ланцюг(і, імена) or len(імена) != 1:
+                    continue
+                ім = next(iter(імена))
+                поля, чисто = set(), True
+                for н in ast.walk(ф):
+                    if isinstance(н, ast.Name) and н.id == ім and isinstance(н.ctx, ast.Load):
+                        б = предки.get(id(н))
+                        if isinstance(б, ast.keyword) and б.arg:
+                            поля.add(б.arg)
+                        elif isinstance(б, ast.Assign) and б.value is н and len(б.targets) == 1 \
+                                and isinstance(б.targets[0], ast.Subscript) and _рядок(б.targets[0].slice):
+                            поля.add(б.targets[0].slice.value)
+                        elif isinstance(б, ast.Dict):
+                            к = б.keys[б.values.index(н)]
+                            if _рядок(к):
+                                поля.add(к.value)
+                            else:
+                                чисто = False
+                        else:
+                            чисто = False
+                if чисто and поля and not (поля & читані):
+                    for г in ast.walk(і):
+                        if isinstance(г, ast.If):
+                            вихід.update(id(т) for т in ast.walk(г.test) if isinstance(т, ast.Compare))
+    return вихід
+
+
+def словесні_функції(дерева):
+    """Функція повертає лише слова: або самі речення (речення не буває кодом класу), або коди, які кожен виклик у коді
+    віддає лише заяві (`заява(…)`) чи тексту; пороги в її гілках вибирають слова, а не рішення коду (рішення
+    менеджера 01.11, 05.11: «поріг, що вибирає лише слова підпису, — не п.1»)."""
+    def слова(в):
+        return _рядок(в) or isinstance(в, ast.JoinedStr) or isinstance(в, ast.IfExp) and слова(в.body) and слова(в.orelse)
+    def речення(в):
+        return прозовий(в) or isinstance(в, ast.JoinedStr) or isinstance(в, ast.IfExp) and речення(в.body) and речення(в.orelse)
+    визначення = collections.defaultdict(list)
+    батьки = {}
+    for д in дерева:
+        for в in ast.walk(д):
+            if isinstance(в, (ast.FunctionDef, ast.AsyncFunctionDef)):
+                визначення[в.name].append(в)
+            for ч in ast.iter_child_nodes(в):
+                батьки[id(ч)] = в
+    виклики = collections.defaultdict(list)
+    for д in дерева:
+        for в in ast.walk(д):
+            if isinstance(в, ast.Call):
+                ім = _ім_виклику(в.func)
+                if ім in визначення:
+                    виклики[ім].append(в)
+    def для_заяви(виклик):
+        """Виклик — аргумент `…заява(…)` або частина форматованого тексту."""
+        н = виклик
+        while (б := батьки.get(id(н))) is not None:
+            if isinstance(б, ast.Call) and б is not н and (_ім_виклику(б.func) or "").endswith("заява") \
+                    and (н in б.args or any(к.value is н for к in б.keywords)):
+                return True
+            if isinstance(б, ast.JoinedStr) or isinstance(б, ast.BinOp) and isinstance(б.op, ast.Mod) and _рядок(б.left):
+                return True
+            if isinstance(б, (ast.stmt, ast.Compare)):
+                return False
+            н = б
+        return False
+    вихід = set()
+    for ім, ф_список in визначення.items():
+        ок = True
+        for ф in ф_список:
+            повернення = [в for в in вузли_тіла(ф) if isinstance(в, ast.Return)]
+            if not повернення or any(в.value is None or not слова(в.value) for в in повернення):
+                ок = False
+                break
+            якщо_речення = all(речення(в.value) for в in повернення)
+            if not якщо_речення and not (виклики[ім] and all(для_заяви(в) for в in виклики[ім])):
+                ок = False
+                break
+        if not ок:
+            continue
+        for ф in ф_список:
+            for в in вузли_тіла(ф):
+                if isinstance(в, (ast.If, ast.IfExp)):
+                    вихід.update(id(т) for т in ast.walk(в.test) if isinstance(т, ast.Compare))
+    return вихід
 
 
 def _властивості(текст):
