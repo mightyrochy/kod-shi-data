@@ -142,7 +142,7 @@ try {
     $b = Marker 113 2
     $c = Marker 114 1
     $d = Marker 114 2
-    $script:ChainStateReaders = @([scriptblock]::Create(@'
+    $script:ChainStateReaders = @($script:ChainStateReaders | Where-Object { $_.ToString() -cnotmatch '^function Get-MarkerState\(' }) + @([scriptblock]::Create(@'
 function Get-MarkerState($M, [string]$StateDir) {
     if ($M.Ref -cmatch 'автоперевірка-113-[0-9a-f]{40}/[^/]+/1/') { throw [UnauthorizedAccessException]::new('/закритий/стан') }
     [pscustomobject]@{ Kind='NEW'; Wait=$null }
@@ -165,7 +165,7 @@ function Get-MarkerState($M, [string]$StateDir) {
     Check 'інша голова очищена попри виняток читача' ($refs.Count -eq 1 -and $refs[0] -ceq "refs/heads/$($d.Name)")
     Check 'прохід ланцюга дійшов до кроку після очищення' $script:ReachedAfterStateRead
     $lines = @(Get-ChildItem -LiteralPath $OutboxDir -File | ForEach-Object { [IO.File]::ReadAllText($_.FullName,$utf).Trim() } | Where-Object { $_ -cmatch '^GEMINI ОБГОРТКА: ЛАНЦЮГ CHAIN_FAILED' })
-    Check 'рядок винятку читача має тип і функцію першого кадру' (@($lines | Where-Object { $_ -ceq 'GEMINI ОБГОРТКА: ЛАНЦЮГ CHAIN_FAILED UnauthorizedAccessException Get-MarkerState' }).Count -eq 1)
+    Check 'рядок винятку читача має тип і функцію першого кадру' (@($lines | Where-Object { $_ -clike 'GEMINI ОБГОРТКА: ЛАНЦЮГ CHAIN_FAILED UnauthorizedAccessException Get-MarkerState ШЛЯХ *' }).Count -eq 1)
     $log = [IO.File]::ReadAllText((Join-Path $WorkDir 'publish.log'),$utf)
     Check 'журнал містить позначку, причину й стек читача' ($log -cmatch 'стан gemini-queue/автоперевірка-113-' -and $log.Contains('/закритий/стан') -and $log.Contains('at Get-MarkerState, <No file>'))
     Check 'невідомий стан не передається іншому постачальнику' (-not (Move-BlockedMarkers "автоперевірка-113-$head" 'gemini-4-argon-high' $head ([datetimeoffset]::UtcNow)))
