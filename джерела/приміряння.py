@@ -78,10 +78,11 @@ def опис_речі(р):
 
 # ЧОМУ ЦІ РЯДКИ — у шапці модуля. «лише_вхід» — не додавати речей, яких в образі нема.
 _ЛИШАЄТЬСЯ = ("Change only the clothes on photo 1: her face, body, pose, hands, hair, light, background, "
-              "framing and angle stay exactly as on photo 1 — it is the same photo.")
+              "framing and angle stay exactly as on photo 1.")
 _ЛИШАЄТЬСЯ_З_МАКІЯЖЕМ = ("Change the clothes and the makeup on photo 1: her facial features, face shape, "
-                         "expression and angle stay exactly as on photo 1 — it is the same person — and so "
+                         "expression and angle stay exactly as on photo 1, and so "
                          "do her body, pose, hands, hair, light, background and framing.")
+_ЇЇ_РІЧ = "draw exactly this one"
 ПРИМІРЯННЯ = _ЗП.Оголошення(
     задача="приміряння",
     роль="Photo 1 is a woman. Dress her in the outfit below.",
@@ -95,9 +96,8 @@ _ЛИШАЄТЬСЯ_З_МАКІЯЖЕМ = ("Change the clothes and the makeup on
                  як="paint exactly this makeup on her face"),
         _ЗП.Поле("how_to_wear", "how the items are worn", як="follow it"),
         _ЗП.Поле("previous_picture", "what was wrong with the previous picture", як="draw it again"),
-        # її власна річ — «саме ця»; рядок іде лише тоді, коли така річ у списку є
-        _ЗП.Поле("item_photos[].hers", "her own item", як="draw exactly this one"),
-        _ЗП.Поле("items_without_photo[].hers", "her own item", як="draw exactly this one"),
+        _ЗП.Поле("item_photos[].hers", "her own item", як=_ЇЇ_РІЧ),
+        _ЗП.Поле("items_without_photo[].hers", "her own item", як=_ЇЇ_РІЧ),
     ),
     правила=(
         _ЛИШАЄТЬСЯ,

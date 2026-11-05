@@ -74,8 +74,7 @@ import дріт_моделі as _Д
 #     фігури не називай» старого промпта; `лише_вхід` — «не вигадуй».
 ДОВІДКА = _ЗП.Оголошення(
     задача="помічниця",
-    роль="You are the stylist in the Lyusterko app and help the woman who uses it with questions "
-         "about the app.",
+    роль=_ВИМ.РОЛЬ_ЗАСТОСУНКУ + " Help her with questions about the app.",
     вхід=(
         _ВИМ.поле("question", треба=True),
         _ЗП.Поле("conversation", "your conversation with her before this question, oldest first"),
