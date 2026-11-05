@@ -1,6 +1,11 @@
 """Вивід ваги шкали й арифметичний вхід пари для приладу ознак обличчя."""
-import ast
+import ast, copy
 from collections import defaultdict
+
+
+def прозовий(в):
+    """Речення, а не слово-клас: сталий рядок з трьох і більше слів ніколи не є значенням класу."""
+    return isinstance(в, ast.Constant) and isinstance(в.value, str) and len(в.value.split()) >= 3
 
 
 def форматований_текст(в):
@@ -10,7 +15,7 @@ def форматований_текст(в):
         """Розпізнає обидві текстові гілки всередині злиття, не називаючи сам клас форматуванням."""
         return рядок(н) or форматований_текст(н) or isinstance(н, ast.IfExp) \
             and рядковий_операнд(н.body) and рядковий_операнд(н.orelse)
-    return isinstance(в, ast.JoinedStr) or isinstance(в, ast.BinOp) and (
+    return isinstance(в, ast.JoinedStr) or прозовий(в) or isinstance(в, ast.BinOp) and (
         isinstance(в.op, ast.Mod) and рядок(в.left) or isinstance(в.op, ast.Add)
         and any(рядковий_операнд(н) for н in (в.left, в.right))) or \
         isinstance(в, ast.Call) and isinstance(в.func, ast.Attribute) and в.func.attr in ('format', 'join') \
@@ -447,3 +452,161 @@ def пари_функції(ф):
             if ліві and праві and ліві.isdisjoint(праві):
                 вихід.append((в, ліві, праві))
     return sorted(вихід, key=lambda п: (п[0].lineno, п[0].col_offset))
+
+
+_ЧИСЛОВІ_ВБУДОВАНІ = frozenset(("abs", "min", "max", "sum", "float", "int", "round", "pow", "range", "len", "divmod"))
+
+
+def функція_формула(ф):
+    """Чисте числове перетворення завдовжки від 12 кроків (див. `_чиста_функція`)."""
+    повернення = _чиста_функція(ф)
+    if повернення is None:
+        return False
+    return _кроки(ф) >= 12 and all(_число_значення(в.value) for в in повернення)
+
+
+def чиста_геометрія(ф):
+    """Коротка чиста функція простору кольору (`на_дузі(h, дуга)`, різниця двох входів): лише арифметика й порівняння
+    своїх параметрів, без рядків, таблиць і сторонніх викликів. Поріг усередині — не вхід її значення: місце — виклик
+    із її значенням (рішення менеджера 05.11)."""
+    повернення = _чиста_функція(ф)
+    if повернення is None or not (set(ф.позиційні) | set(ф.іменні)) or функція_формула(ф):
+        return False
+    def перевірка(х):
+        """Повертає істину/число з порівнянь і арифметики, а не назву класу з таблиці."""
+        if isinstance(х, ast.IfExp):
+            return перевірка(х.body) and перевірка(х.orelse)
+        if isinstance(х, ast.Tuple):
+            return all(перевірка(е) for е in х.elts)
+        return isinstance(х, (ast.Compare, ast.BoolOp, ast.BinOp, ast.UnaryOp, ast.Call)) or (
+            isinstance(х, ast.Constant) and isinstance(х.value, (int, float, bool)))
+    return all(перевірка(в.value) for в in повернення)
+
+
+def _кроки(ф):
+    return sum(1 for в in ф.власні if isinstance(в, (ast.BinOp, ast.Call)))
+
+
+def _число_значення(в):
+    if isinstance(в, ast.Tuple):
+        return all(_число_значення(х) for х in в.elts)
+    if isinstance(в, ast.IfExp):
+        return _число_значення(в.body) and _число_значення(в.orelse)
+    return isinstance(в, (ast.BinOp, ast.Call, ast.Name, ast.UnaryOp)) or (
+        isinstance(в, ast.Constant) and isinstance(в.value, (int, float)) and not isinstance(в.value, bool))
+
+
+def _числова_стала(ф, ім):
+    """Ім'я модульного рівня, що дорівнює числу чи простій арифметиці чисел (`_ЕРФ_НАСИЧЕННЯ = 6.0`)."""
+    def число(в):
+        return isinstance(в, ast.Constant) and isinstance(в.value, (int, float)) and not isinstance(в.value, bool) \
+            or isinstance(в, ast.UnaryOp) and число(в.operand) or isinstance(в, ast.BinOp) and число(в.left) and число(в.right)
+    return ім in ф.модуль.присвоєння and число(ф.модуль.присвоєння[ім])
+
+
+def _чиста_функція(ф, глибина=0):
+    """Чиста функція кольору — повертає її `return`-и чи None: без рядків,
+    без викликів поза `math` і числовими вбудованими, без звернень до модульних таблиць і запису поза локальними, і кожне
+    повернення — число чи кортеж чисел. Арифметика всередині — не вхід її значення в число рішення: місце — виклик
+    із її значенням (рішення менеджера 05.11: «лічити кожну операцію після входу — лічити читачів»)."""
+    вузол = ф.вузол
+    if isinstance(вузол, ast.Lambda) or not ф.власні:
+        return None
+    повернення = [в for в in ф.власні if isinstance(в, ast.Return)]
+    if not повернення or any(в.value is None for в in повернення):
+        return None
+    параметри = set(ф.позиційні) | set(ф.іменні)
+    математика = {ім for ім, мод in ф.модуль.імпорти.items() if мод == "math"} | {"math"}
+    for в in ф.власні:
+        if isinstance(в, (ast.Global, ast.Nonlocal, ast.Try, ast.With, ast.Yield, ast.Raise)):
+            return None
+        if isinstance(в, ast.Constant) and isinstance(в.value, str):
+            # лише рядок-документація: перший вираз тіла
+            if not (вузол.body and isinstance(вузол.body[0], ast.Expr) and вузол.body[0].value is в):
+                return None
+        if isinstance(в, (ast.Subscript, ast.Dict, ast.List, ast.Set, ast.ListComp, ast.DictComp, ast.SetComp, ast.JoinedStr)):
+            return None
+        if isinstance(в, ast.Call):
+            f = в.func
+            if isinstance(f, ast.Attribute) and isinstance(f.value, ast.Name) and f.value.id in математика:
+                continue
+            if isinstance(f, ast.Name) and f.id in _ЧИСЛОВІ_ВБУДОВАНІ:
+                continue
+            if isinstance(f, ast.Name) and глибина < 3 and f.id in ф.модуль.функції and f.id not in параметри \
+                    and f.id not in ф.локальні and ф.модуль.функції[f.id] is not ф \
+                    and _чиста_функція(ф.модуль.функції[f.id], глибина + 1) is not None:
+                continue   # виклик іншої чистої функції цього ж модуля (`_ф` у `у_вікні`)
+            return None
+        if isinstance(в, ast.Attribute) and not (isinstance(в.value, ast.Name) and в.value.id in математика):
+            return None
+        if isinstance(в, ast.Name) and isinstance(в.ctx, ast.Load) and в.id not in ф.локальні and в.id not in параметри \
+                and в.id not in математика and not _числова_стала(ф, в.id) and в.id not in ф.модуль.функції and в.id not in ("float", "int", "abs", "min", "max", "sum", "round", "pow", "range", "len", "divmod"):
+            return None
+    return повернення
+
+
+def будує_вікно(ф):
+    """Функція будує вікно кандидатів — межі інтервалу `(від, до)` з сталих і зсувів: кожне повернення — пара чисел.
+    Вікно — те, де код шукає кандидатів, а не її значення (рішення менеджера 01.11 і 05.11)."""
+    вузол = ф.вузол
+    if isinstance(вузол, ast.Lambda):
+        return False
+    повернення = [в for в in ф.власні if isinstance(в, ast.Return)]
+    if not повернення:
+        return False
+    def пара(в):
+        return isinstance(в, ast.Tuple) and len(в.elts) == 2 and all(
+            isinstance(х, (ast.Call, ast.Constant, ast.BinOp, ast.Name)) and not (
+                isinstance(х, ast.Constant) and not isinstance(х.value, (int, float))) for х in в.elts)
+    def навколо_центру(в):
+        """`(центр − пів, центр + пів)`: інтервал симетричний довкола центру — вікно, збудоване з центру й пів-ширини."""
+        if not (isinstance(в, ast.Tuple) and len(в.elts) == 2):
+            return False
+        def норма(х):
+            х = copy.deepcopy(х)
+            for н in ast.walk(х):
+                if isinstance(н, ast.BinOp) and isinstance(н.op, ast.Sub):
+                    н.op = ast.Add()
+            return ast.dump(х)
+        ліво, право = в.elts
+        return any(isinstance(н, ast.BinOp) and isinstance(н.op, (ast.Add, ast.Sub)) for н in ast.walk(ліво)) \
+            and ast.dump(ліво) != ast.dump(право) and норма(ліво) == норма(право)
+    if all(в.value is not None and навколо_центру(в.value) for в in повернення):
+        return True
+    return all(в.value is not None and пара(в.value) for в in повернення) and any(
+        isinstance(н, ast.Call) and isinstance(н.func, ast.Name) and н.func.id in ("max", "min")
+        for в in повернення for н in ast.walk(в.value)) and any(
+        isinstance(н, ast.Constant) and isinstance(н.value, float) for в in повернення for н in ast.walk(в.value)) or all(
+        в.value is not None and isinstance(в.value, ast.Tuple) and len(в.value.elts) == 2 and all(
+            isinstance(х, ast.Constant) and isinstance(х.value, (int, float)) for х in в.value.elts)
+        for в in повернення)
+
+
+def вікно_літерал(в):
+    """`[max(2, round(база - 2*КРОК - 8)), max(8, round(база - КРОК))]`: пара меж, кожна — значення ± стала
+    (з обрізанням `max`/`min`): код будує вікно кандидатів довкола її значення, а не читає її значення."""
+    if not (isinstance(в, (ast.List, ast.Tuple)) and len(в.elts) == 2):
+        return False
+    def стала(х):
+        return (isinstance(х, ast.Constant) and isinstance(х.value, (int, float)) and not isinstance(х.value, bool)) \
+            or isinstance(х, ast.Name) and х.id.isupper() \
+            or isinstance(х, ast.BinOp) and стала(х.left) and стала(х.right) \
+            or isinstance(х, ast.UnaryOp) and стала(х.operand)
+    def зсув(х):
+        обрізано = False
+        while isinstance(х, ast.Call) and isinstance(х.func, ast.Name) and х.func.id in ("max", "min", "round", "int", "float"):
+            if х.func.id in ("max", "min"):
+                обрізано = True
+                решта = [а for а in х.args if not стала(а)]
+                if len(решта) != 1:
+                    return False, False
+                х = решта[0]
+            elif х.args:
+                х = х.args[0]
+            else:
+                return False, False
+        while isinstance(х, ast.BinOp) and isinstance(х.op, (ast.Add, ast.Sub)) and стала(х.right):
+            х = х.left
+        return not стала(х) and not isinstance(х, ast.BinOp), обрізано
+    рез = [зсув(х) for х in в.elts]
+    return all(р[0] for р in рез) and any(р[1] for р in рез)
