@@ -76,7 +76,7 @@ jobs:
       - name: залежності браузера
         # 12114: apt-get без тайм-ауту кроку висів до тайм-ауту job; зелені кроки — до 400 с
         timeout-minutes: 10
-        run: python3 -m playwright install --with-deps chromium
+        run: bash .github/scripts/zalezhnosti-brauzera.sh python3 -m playwright
       - name: відновити журнал цього workflow/ref поза git
         id: restore
         env:
