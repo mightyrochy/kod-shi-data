@@ -122,7 +122,10 @@ _ВИПАДОК_У_ДНІ = {"місце": "place", "формат": "setting", "
                   "сонце": "direct_sun",
                   "господар": "host_context", "креативне": "creative_environment",
                   "пора": "part_of_day", "ошатність": "formality"}
-ПОЛЯ_ВИПАДКУ = {"подія": "event", "нагода": "occasion", "місце": "place", "формат": "setting",
+ПОЛЯ_ВИПАДКУ = {"роль": "role", "супутник_рівень": "companion_formality", "сезон": "occasion_season",
+                 "життєвий_перехід": "life_transition", "заявлений_злам": "declared_break",
+                 "тон_колготи": "matching_opaque_tights", "заявлена_колона": "declared_column",
+                 "подія": "event", "нагода": "occasion", "місце": "place", "формат": "setting",
                  "тривалість_год": "duration_h", "рух": "movement", "дрес_код": "dress_code",
                  "ошатність": "formality", "пора": "part_of_day", "смуга_погоди": "weather_band",
                  "сонце": "direct_sun",
@@ -709,6 +712,8 @@ def випадок(в, день=None):
             v = код("occasion", v)
         elif к == "місце":
             v = код("place", v)
+        elif к == "сезон":
+            v = код("season", v)
         elif к == "пора":
             v = код("part_of_day", v)
         elif к == "формат":
@@ -760,12 +765,12 @@ def випадок(в, день=None):
 
 
 # Коди фігури (`person.body.shape`, `body.shape` опису) — визначення для англійського промпта.
-# O: маршрут рівного тіла без вузької точки на талії (`fit.C["whr_без_талії"]`, K-BOD-02
+# O: маршрут рівного тіла без вузької точки на талії (FFIT Oval/Diamond, K-BOD-02
 # тема-4:946); код, що писав би «H», вів би таке тіло стратегією «створити талію».
-ФІГУРА_КОДИ_EN = ("a routing code of her figure, not a verdict: A — hips wider than shoulders; V — shoulders "
-                  "wider than hips; X — a marked waist; H — a straight contour without a marked waist; HX — "
-                  "a waist on the edge of being marked; O — the waist nearly as wide as the hips: lead the "
-                  "eye along a vertical, up to the face and down to the legs, the middle quiet")
+ФІГУРА_КОДИ_EN = ("figure route, not a verdict: A — hips wider than shoulders; V — shoulders wider than hips; "
+                  "X — a marked waist; H — straight, no marked waist; HX — waist undetermined by FFIT "
+                  "(waist_defined=null; waist_basis explains); O — FFIT Oval/Diamond, waist wider than hips: "
+                  "a vertical to the face and legs, quiet middle")
 
 
 def людина(л):
@@ -800,7 +805,7 @@ def людина(л):
             # «H/X межа» — кодом HX, як у заявах суду (`силует_суд._літери_кодом`)
             тіло["shape"] = "HX" if т["ярлик"] == "H/X межа" else т["ярлик"]
         if т.get("зони"):
-            тіло["zones"] = {{"верх_проти_низу": "top_vs_bottom", "талія_виражена": "waist_defined"}.get(к, к):
+            тіло["zones"] = {{"верх_проти_низу": "top_vs_bottom", "талія_виражена": "waist_defined", "талія_підстава": "waist_basis"}.get(к, к):
                              _число(v) for к, v in т["зони"].items()}
         вих["body"] = тіло
     return вих
@@ -1655,7 +1660,7 @@ def опис(об):
         if т.get("ярлик"):
             тіло["shape"] = "HX" if т["ярлик"] == "H/X межа" else т["ярлик"]
         if т.get("зони"):
-            тіло["zones"] = {{"верх_проти_низу": "top_vs_bottom", "талія_виражена": "waist_defined"}.get(к, к):
+            тіло["zones"] = {{"верх_проти_низу": "top_vs_bottom", "талія_виражена": "waist_defined", "талія_підстава": "waist_basis"}.get(к, к):
                              _число(v) for к, v in т["зони"].items()}
         if т.get("заяви"):
             тіло["statements"] = заяви(т["заяви"])

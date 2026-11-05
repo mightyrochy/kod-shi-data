@@ -21,18 +21,13 @@
    `вмістити_запит_П` у `модельП`; що він зменшив чи зняв — в етапі виклику (`симв_разом`,
    `вміщення`). Колір код міряє на збереженому кадрі (`пікселіРечіП`), не на копії. */
 const ОЦ_ФОТО_МАКС = 6;               // фото одного образу
-/* повтор формату — тією самою мовою, що й промпт задачі (англійський шаблон збирача) */
-const ПОВТОР_ФОРМАТУ_EN = '\n\nYour previous answer was not one JSON object following "answer_schema". '
-  + 'Return only that JSON object, without explanations and without ```.';
+/* Форма вже є в задачі від реєстру; повтор додає лише причину відмови. */
+const ПОВТОР_ФОРМАТУ_EN = '\n\n{"format_error":"not_json_object"}';
 /* Сталий напис екрана оцінки, коли збій без заяв: доти жінка читала `e.message` —
    «Не вдалося оцінити: answer_truncated_at_output_ceiling · max_tokens=4000 · judgeable=no». Код збою
    лишається в `ОЦ.етапи.помилка` (звіт власника); так само, як напис допиту «Не вдалося відповісти». */
 const НАПИС_ЗБОЮ_ОЦІНКИ_П = 'Не вдалося оцінити. Спробуй ще раз.';
-/* «речі на фото» — 13 265 симв. роздумів про пікселі рамок без JSON, у стелю 4000 т.;
-   повтор називає саме обрив: відповідь — одразу обʼєкт, рамки на око, без обчислень */
-const ПОВТОР_ОБРИВУ_EN = '\n\nYour previous answer ran out of room before the JSON object: it was reasoning, not the '
-  + 'answer. Return only the JSON object following "answer_schema", starting with {, with frames estimated by eye — '
-  + 'no reasoning and no calculations.';
+const ПОВТОР_ОБРИВУ_EN = '\n\n{"format_error":"answer_truncated_at_output_ceiling"}';
 /* поля профілю, які оцінка бере з `вхідМостаП`: колір, мірки, драпіровка, каталог. Сценарію,
    паспорта, вибору палітри й меж тут нема — оцінка судить ЇЇ образ, а не сценарій збирання */
 const ПОЛЯ_ПРОФІЛЮ_ОЦІНКИ = ['шкіра', 'волосся', 'очі', 'очі_кільце', 'зріст', 'обхвати', 'аксесуарні',

@@ -206,7 +206,7 @@ _ЛАПКИ_ДОВКОЛА = re.compile(r'^["«„“”]\s*([^"«»„“”]*?
     # `photoshoot` (Ч-4): її фотографуватимуть — порада кличе теми мети й макіяжу, як на
     # вечір (`паспорт_нагоди.порада_коду`); доти це читала регулярка «фото|зйомк» у її словах
     "activity": {"children": "діти", "rough_ground": "нерівний_ґрунт", "stroll": "прогулянка",
-                 "walking": "ходьба", "photoshoot": "фотосесія"},
+                 "walking": "ходьба", "bowling": "боулінг", "photoshoot": "фотосесія"},
     "surface": {"cobblestones": "бруківка", "asphalt": "асфальт", "parquet": "паркет",
                 "carpet": "килим", "grass": "трава", "stairs": "сходи"},
     # опади — коди зовнішнього договору → сталі ключі ядра (п.12); `сценарій.ОПАДИ_КОДИ` — цей самий словник
@@ -403,6 +403,10 @@ _ЛАПКИ_ДОВКОЛА = re.compile(r'^["«„“”]\s*([^"«»„“”]*?
     "direct_sun": {"yes": True, "no": False},
     "host_context": {"yes": True, "no": False},
     "creative_environment": {"yes": True, "no": False},
+    "declared_break": {"yes": True, "no": False},
+    "declared_column": {"yes": True, "no": False},
+    "matching_opaque_tights": {"yes": True, "no": False},
+    "life_transition": {к: к for к in ("pregnancy", "recovery", "weight_change", "new_role", "none")},
     "religious_place": {к: к for к in ("none", "temple", "written_rule_place")},
     "mourning_closeness": {к: к for к in ("none", "acquaintance", "close")},
     "look_volume": {к: к for к in ("one_look", "travel_day")},
@@ -699,7 +703,7 @@ _КОДИ_З_ОПИСОМ = lambda описи: {"oneOf": [{"const": к, "descrip
                         "без чого образ не збирається: про це спитати прямо", uniqueItems=True),
     # ЩО КОД НЕ ЗАПИСАВ: мовна модель розмови поставила поле без її слів у цитаті, сторож його
     # зняв, а її репліка казала «Я врахую». Тепер жінка чує те, що справді лягло, і що НЕ лягло — кодами полів.
-    "not_recorded": _список(_КОДИ_З_ОПИСОМ({к: в.get("description") or к for к, в in СЦЕНАРІЙ.items()}),
+    "not_recorded": _список(_КОДИ_З_ОПИСОМ({к: в.get("title") or в.get("description") or к for к, в in СЦЕНАРІЙ.items()}),
                             "що з її слів цього ходу НЕ записано в сценарій: поля сценарію кодами",
                             uniqueItems=True),
 }
@@ -1575,7 +1579,7 @@ _МІСЦЯ_ОПЦІЙ = "where it is worn"
                                       "— the shapes to lead to; shape codes: A — hips wider than shoulders, V "
                                       "— shoulders wider than hips, X — a marked waist, H — a straight "
                                       "contour without a marked waist, O — volume in the middle, I — a narrow "
-                                      "straight contour, HX — a waist on the edge of being marked; never "
+                                      "straight contour, HX — waist definition is undetermined; never "
                                       "write the letters themselves, only the description)",
     # Ф-2: було «does not aim to flatter the figure». Сенс той самий — мети `flatter`
     # на цей вихід не поставлено, — але фраза дослівно та, яку R-LNG-01 забороняє
@@ -1586,8 +1590,8 @@ _МІСЦЯ_ОПЦІЙ = "where it is worn"
     "look_shape_is": "the shape the outfit gives, with no judgement, because the goal for this outing is "
                      "not `flatter` (values: look — shape codes: A — hips wider than shoulders, V — "
                      "shoulders wider than hips, X — a marked waist, H — a straight contour without a marked "
-                     "waist, O — volume in the middle, I — a narrow straight contour, HX — a waist on the "
-                     "edge of being marked; never write the letters themselves, only the description)",
+                     "waist, O — volume in the middle, I — a narrow straight contour, HX — waist definition "
+                     "is undetermined; never write the letters themselves, only the description)",
     "vertical_balance_not_judged": "the code does not judge the ratio of the outfit's top and bottom to her "
                                    "proportions: the sources have too little evidence for it",
     "leg_proportion_template_crotch": "the code does not count torso-to-leg proportions: the crotch height "
@@ -3216,6 +3220,14 @@ if _спільні:
 # кожне правило пункту стоїть у його визначенні). Імена пунктів українською лишаються в
 # обʼєкті коду — для звіту власника (`чекліст_вердикту`).
 ПУНКТИ_ЧЕКЛІСТА = {
+    'event_role_known': 'the role she named at this event is known',
+    'companion_formality_known': 'the companion formalness level from her words is known',
+    'occasion_season_known': 'the event season she named is known',
+    'wardrobe_known': 'her available wardrobe items are known',
+    'life_transition_known': 'the life transition she volunteered is known',
+    'declared_break_known': 'whether she explicitly declared a style grammar break is known',
+    'matching_opaque_tights_known': 'whether she named opaque tights matching her shoes is known',
+    'declared_column_known': 'whether she declared a column of one colour is known',
     "direct_sun_heat": "direct sunlight is known before judging dark close-fitting garments (K-WEA-03)",
     "host_context_known": "whether the event has a host or stakes is known before applying risk asymmetry (K-KOH-07)",
     "creative_environment_known": "whether the environment is creative is known before inverting risk asymmetry (K-KOH-07)",
@@ -3291,7 +3303,7 @@ if _спільні:
 }
 # ід пункту (`суд_чеклісти.ЧЕКЛІСТ_*`, перше поле) → код. Ід унікальні через усі чотири списки;
 # «K-CLR-02» — пункт контрасту біля обличчя, який оцінка образу додає до них сама (ВМ-3б).
-ЧЕКЛІСТ_КОДИ = {22: "host_context_known", 23: "creative_environment_known", 21: "direct_sun_heat", 1: "chroma_budget", 2: "single_focus", 3: "lightness_steps", 4: "one_silhouette_letter",
+ЧЕКЛІСТ_КОДИ = {24: 'event_role_known', 25: 'companion_formality_known', 26: 'occasion_season_known', 27: 'wardrobe_known', 28: 'life_transition_known', 29: 'declared_break_known', 30: 'matching_opaque_tights_known', 31: 'declared_column_known', 22: "host_context_known", 23: "creative_environment_known", 21: "direct_sun_heat", 1: "chroma_budget", 2: "single_focus", 3: "lightness_steps", 4: "one_silhouette_letter",
     5: "formality_spread", 6: "shine_budget", 7: "print_budget", 8: "layering_depth", 9: "accent_echo",
     10: "one_sprezzatura", 11: "hem_off_widest_point", 12: "one_metal", 13: "genre_dominant",
     14: "one_trend_item", 15: "fabric_cut_formality", 16: "scale_to_person", 17: "layer_hems_apart",
