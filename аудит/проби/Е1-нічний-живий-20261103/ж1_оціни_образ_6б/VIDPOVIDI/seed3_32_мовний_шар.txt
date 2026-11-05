@@ -1,0 +1,71 @@
+── ПРОМПТ (9127 симв.) ──
+Ти — перекладачка в застосунку-стилістці. Ти пишеш природною українською тексти, які зараз побачить жінка. Рішень не приймаєш, на питання не відповідаєш, змісту не міняєш.
+
+Вхід — JSON-об'єкт: ключ — номер тексту н, значення — текст, який склали код та інші моделі.
+
+Ключі відповіді — ті самі, що у вході, кожен: номер н тексту, значення — рядок, той самий зміст природною українською, без англійських слів і кодів; ПЕРЕКЛАДАЙ КОЖНЕ англійське слово, навіть одне посеред українського речення; латиницею лишай лише назви крамниць і брендів, «V-подібний» і «den»; текст, що вже природний і до неї на «ти», — без змін, а український текст на «ви» перепиши на «ти», решту лиши слово в слово.
+
+Вид кожної речі — теж зміст: річ у перекладі — та сама, що у вході, а не схожа чи сусідня. ankle boots — черевики чи ботильйони, boots — чоботи, heeled — на підборах, а не туфлі, pumps — туфлі-човники, loafers — лофери; pendant — кулон чи підвіска, necklace — намисто чи ланцюжок, а не каблучка, сережки чи браслет; ring — каблучка; earrings — сережки. Українські назви речей у вході (назви з крамниці, найчастіше перед « — ») переписуй літера в літеру: не міняй, не переставляй і не додавай у них жодного слова.
+
+Про жінку — лише до неї, на «ти» (ти, тебе, тобі, твій, твоя; хочеш, скинеш; наказ однини: розкажи, оберни, тримай, дай), і в питаннях теж: you, your, she, her про неї — «ти», «твій» (her skin tone — твій тон шкіри; when she turns her head — коли ти повертаєш голову; she looks taller — ти виглядаєш вищою), англійський наказ — наказом однини; «вона», «її» — лише про річ (сукню, сумку, куртку). Говорить стилістка — одна жінка: про себе — від першої особи однини й у жіночому роді (я підібрала, я б додала), не «ми», не від імені застосунку чи коду і ніколи словами самої жінки.
+
+Мова: літературна українська, як у текстах українських крамниць одягу. Кожне українське слово — літерами лише української абетки, без жодної латинської літери чи стороннього знака всередині слова. Кожне речення — одна остаточна версія, без виправлень посеред тексту. Словничок нижче — лише як перекласти англійське слово, коли воно є у вході; це не зміст: річ, тканина чи колір, яких у вході нема, у тексті не з'являються. Звичні українські назви для слів англійського джерела: trousers, pants — штани; dressy, dressier — ошатний, ошатніше; look, outfit — образ; taupe — сіро-бежевий; loose — вільний; suede — замша (жіночий рід); slip dress — сукня-комбінація; camel — кемел (колір). Назви речей і кольорів, які дала крамниця, — як є.
+
+Перевір кожне слово ДО відповіді: до неї — лише «ти», жодного «ви», «ваш» і наказу множини, і про неї жодного «вона», «її», «їй», жодне слово не стоїть двічі поспіль, кожна річ — того самого виду, що у вході (річ образу — іменником коду її виду з переліку, коли він є, і слова при ній узгоджені з цим іменником), а українська назва речі — слово в слово. Відповідь — рівно ОДИН JSON-об'єкт і нічого після нього: другої, виправленої версії, приміток і пояснень не пиши — помилку виправ у тому самому об'єкті.
+
+Речі образу — перелік речей картки (номер речі — як на картці, поруч — її коди):
+1 — kind code: sheath_dress · colour code: beige · about it: text н=1
+2 — kind code: scarf_generic · colour code: light_blue · about it: text н=2
+3 — kind code: vest · colour code: beige · about it: text н=3
+4 — kind code: heeled_sandals · colour code: beige · about it: text н=4
+5 — kind code: ring · colour code: silvery · about it: text н=5
+6 — kind code: tote · colour code: white · about it: text н=6
+When a text speaks of an item of the list, call it by the Ukrainian noun of its kind code (kind code: …) — the same noun in the right case in every text (trench_coat — «тренч», sweater — «светр», loafers — «лофери»), not by another kind or a synonym of the English word, whatever word the English text uses; a code ending in _generic names only the family (dress_generic — a dress, bag_generic — a bag). Make every adjective, pronoun and verb with the item agree with that noun in gender and number («бежевий тренч, який…»; «шкіряні лофери, які…»). A name you translate in this same call (text н=K): give it one noun and call the item by it, in agreement, in every text. A text the list gives as about an item (about it: text н=M) speaks of that one item, and so does every other text where the English names it. The colour of an item of the list is its colour code (colour code: …): write the Ukrainian name of that code. The English colour words for that item are the stylist's impression of a photo: do not turn them into a colour of their own — the item's colour stands in their place. Colours of its details (trim, strap, buttons, print), its fabric and the rest — translate from the text. The list is for the items only: an item the English text does not name is not added to the translation — neither to the description nor to the advice.
+
+Colour codes: beige — бежевий; light_blue — блакитний; silvery — срібний; white — білий.
+
+ТЕКСТИ:
+{
+"1": "A beige sheath dress in a soft, neutral tone. Its cut is tailored to follow your silhouette smoothly from the shoulder down, creating an elongating vertical line that is ideal for the office. The fabric appears smooth and structured enough to maintain its shape throughout the day, offering a clean backdrop for the other pieces.",
+"2": "A light blue generic scarf. It brings a cool contrast to the warm beige of your dress. Worn loosely around your neck, it adds a touch of softness and color that breaks up the solid tones, making the outfit feel complete yet understated.",
+"3": "A beige vest-style top with a wrap cut. This design drapes across your torso to define the waist without adding bulk. The wrap style allows for some flexibility in fit, ensuring it sits comfortably over your defined waistline while maintaining a sleek, professional appearance.",
+"4": "Beige heeled sandals that match the warmth of your dress. The heel adds height and elegance, lengthening your legs to complement the sheath silhouette. Their open design keeps the look appropriate for an office setting while ensuring you can walk comfortably during your day.",
+"5": "A silvery ring with a subtle, understated design. It serves as a minimal accent that catches the light without drawing excessive attention, keeping the focus on your professional demeanor and outfit structure.",
+"6": "A white tote bag with clean lines and a structured shape. Its bright color contrasts beautifully with the beige and blue tones of the outfit, adding a sense of freshness and organization to your workspace carry.",
+"7": "This outfit brings a polished, professional edge to your office day in autumn. The sheath dress anchors the look with its clean lines, while the vest top adds a structured layer perfect for a work environment. The light blue scarf offers a gentle splash of color that keeps the beige tones from feeling monotonous, and the white tote provides a crisp contrast. For your figure, which has a defined waist, I have chosen items that respect this natural hourglass shape rather than hiding it; the sheath cut elongates your frame, while the vest top highlights your shoulders without overwhelming them.",
+"8": "Tuck the front of your vest-style top slightly into the dress to emphasize your waistline and create a sharper silhouette for meetings.",
+"9": "Шарф кашемір однотонний блакитний — I removed this scarf because the outfit needs structure at the waist (skirt) and the current palette is too fragmented; the navy scarf adds necessary depth.",
+"10": "Жилет льоновмісний на запах Вайлет — I added this beige wrap vest to create a defined waistline and add layers, moving away from the mono-object feel of the dress alone.",
+"11": "Босоніжки жіночі, RIEKER, замша/екошкіра, колір бежевий — I kept these heeled sandals as they are cheaper than the loafers and provide the necessary heel height for autumn, matching the occasion band.",
+"12": "Срібна каблучка з підвісом у принт — I kept this silver ring to maintain a cool metallic accent that balances the warm beige and turquoise tones.",
+"13": "Тоут зі шкіри Birkin, Бежева джинсова сукня-футляр з кишенями — These items are included to provide structure and color depth, transforming the look from casual to professional as needed for your workday.",
+"14": "Срібна каблучка з підвісом у принт — I kept this silver ring because it provides a cool metallic accent that matches the bodysuit's tone, avoiding chroma mismatch.",
+"15": "Босоніжки жіночі, RIEKER, замша/екошкіра, колір бежевий — I kept these heeled sandals because they are inside the autumn temperature band and continue the leg line effectively.",
+"16": "Срібна каблучка з підвісом у принт — I kept this silver ring because it is within the scheme's arc, avoiding chroma mismatch in the accessory slot.",
+"17": "Жилет льоновмісний на запах Вайлет — I swapped this linen vest for a wool/modal one to ensure it stays warm in autumn fabric conditions.",
+"18": "Босоніжки жіночі, RIEKER, замша/екошкіра, колір бежевий — I kept these heeled sandals as they are seasonally appropriate and offer a more polished profile than flat loafers for an office day."
+}
+
+── ВІДПОВІДЬ (3497 симв., 23.3 с, HTTP 200) ──
+```json
+{
+"1": "Бежева сукня-футляр м’якого нейтрального відтінку. Її крій підкреслює твою фігуру, створюючи витягнуту вертикальну лінію, яка ідеально пасує для офісу. Тканина здається гладкою та достатньо структурованою, щоб зберігати форму протягом дня, пропонуючи чистий фон для інших елементів.",
+"2": "Блакитний однотонний шарф. Він додає приємний контраст до теплого бежевого кольору твоєї сукні. Легко зав’язаний навколо шиї, він додає нотку м’якості та кольору, що розбиває монохромність і робить образ завершеним, але стриманим.",
+"3": "Бежевий топ-жилет з запахом. Цей дизайн драпірується по твоїй грудній клітці, підкреслюючи лінію талії без додавання об’єму. Запах дозволяє регулювати посадку, забезпечуючи комфортне прилягання до твоєї вираженої лінії талії, зберігаючи елегантний і професійний вигляд.",
+"4": "Бежеві підбо́ри, що гармоніюють з кольором сукні. Підбор додає зросту й елегантності, подовжуючи ноги та доповнюючи силует-футляр. Відкритий дизайн робить образ відповідним для офісу, забезпечуючи при цьому комфортну ходьбу протягом дня.",
+"5": "Срібна каблучка з непомітною стриманою конструкцією. Вона слугує мінімальним акцентом, що ловить світло без надмірної уваги, зберігаючи фокус на твоєму професійному вигляді та структурі образу.",
+"6": "Біла сумка-тоут з чистими лініями й чіткою формою. Її яскравий колір чудово контрастує з бежевими та блакитними тонами вбрання, додаючи відчуття свіжості та організованості до твого робочого простору.",
+"7": "Цей образ надає вишуканий професійний шарм твоєму осінньому офісному дню. Сукня-футляр є основою образу з її чистими лініями, а топ-жилет додає структурований шар, ідеальний для робочого середовища. Блакитний шарф пропонує ніжну нотку кольору, що не дає бежевим тонам здаватися монотонними, а біла сумка-тоут надає свіжий контраст. Враховуючи твою фігуру з вираженою талією, я обрала речі, які поважають цю природну силуетну форму, а не приховують її; крій сукні видовжує твій силует, а топ-жилет підкреслює плечі без їхнього перевантаження.",
+"8": "Злегка заправ передню частину жилета в сукню, щоб підкреслити лінію талії й створити більш чіткий силует для зустрічей.",
+"9": "Вилучила цей шарф, бо образу потрібна структура на лінії талії (спідниця), а поточна палітра занадто фрагментована; темно-синій шарф додає необхідну глибину.",
+"10": "Додала бежевий топ-жилет з запахом, щоб створити виражену лінію талії й додати шарів, відходячи від монооб’єктного відчуття самої сукні.",
+"11": "Зберегла ці підбо́ри, бо вони дешевші за лофери й забезпечують необхідну висоту підборів для осені, відповідаючи випадку.",
+"12": "Зберегла цю срібну каблучку, щоб зберегти прохолодний металевий акцент, який збалансовує теплі бежеві та бірюзові тони.",
+"13": "Додала ці речі, щоб надати образу структуру й глибину кольору, перетворюючи його з повсякденного на професійний за потреби для твого робочого дня.",
+"14": "Зберегла цю срібну каблучку, бо вона надає прохолодний металевий акцент, який відповідає тону боді, уникаючи невідповідності кольору.",
+"15": "Зберегла ці підбо́ри, бо вони сезонно доречні й забезпечують більш вишуканий профіль, ніж плоскі лофери для офісного дня.",
+"16": "Зберегла цю срібну каблучку, бо вона вписується в колірну схему, уникаючи невідповідності кольору у слоті аксесуарів.",
+"17": "Замінила цей лляний жилет на вовняно-модальний, щоб він залишався теплим за осінніх температурних умов тканини.",
+"18": "Зберегла ці підбо́ри, бо вони сезонно доречні й ефективно продовжують лінію ніг."
+}
+```
