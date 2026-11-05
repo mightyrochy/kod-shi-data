@@ -491,8 +491,12 @@ def день_кодами(сцен):
             д["wind_ms"] = число(с["вітер"])
     except (TypeError, ValueError):
         д["wind"] = {"free_text": str(с["вітер"]), "lang": "uk"}     # слово замість числа — переказ
-    if с.get("сонце"):
-        д["direct_sun"] = True
+    if isinstance(с.get("сонце"), bool):
+        д["direct_sun"] = с["сонце"]
+    if isinstance(с.get("господар"), bool):
+        д["host_context"] = с["господар"]
+    if isinstance(с.get("креативне"), bool):
+        д["creative_environment"] = с["креативне"]
     if сіль_на_дорозі(с.get("реагенти"), с.get("темп_c"), с.get("опади"))[0]:
         д["road_salt"] = True
     # ЧАСТИНА ДНЯ — ПОРА ВІД МОВНОЇ МОДЕЛІ, НЕ З ГОДИНИ (корінь Е2-частина-дня, крок 1). Доти `part_of_day` рахувала
