@@ -9,7 +9,7 @@ import hashlib
 import json
 import face_contrast as _KC
 from колір_простір_перетворення import hx
-from колір_простір_надійність import reliability, надійність_контрасту, MIN_TO_EMIT
+from колір_простір_надійність import ДЖЕРЕЛО_ФОТО_ТИПОВЕ, reliability, надійність_контрасту, MIN_TO_EMIT
 
 _КЕШ = OrderedDict()
 _МЕЖА_КЕШУ = 128  # технічна межа пам’яті: dict не підтримує слабке посилання
@@ -38,7 +38,7 @@ def джерело_виміру(F, source=None):
     """Бере збережений протокол фото; для старого профілю — явний аргумент або типове."""
     кеш = _КЕШ.get(id(F))
     попередній = кеш[1] if кеш and кеш[0] is F else None
-    return (F.get("_meta") or {}).get("protocol") or source or попередній or "uncontrolled"
+    return (F.get("_meta") or {}).get("protocol") or source or попередній or ДЖЕРЕЛО_ФОТО_ТИПОВЕ
 
 
 
