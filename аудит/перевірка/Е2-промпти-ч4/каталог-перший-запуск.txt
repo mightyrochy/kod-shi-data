@@ -1,0 +1,19 @@
+python : Traceback (most recent call last):
+At line:2 char:103
++ ... ONUTF8='1'; python аудит/проби/е2_промпти_ч4.py 414b638b9a41b053ae883 ...
++                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (Traceback (most recent call last)::String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+  File "C:\Users\gemini\gemini-runs\w\20261104-190425-ead449dc92d4\repo\аудит\проби\е2_промпти_ч4.py", line 66, in <mod
+ule>
+    головна()
+  File "C:\Users\gemini\gemini-runs\w\20261104-190425-ead449dc92d4\repo\аудит\проби\е2_промпти_ч4.py", line 35, in голо
+вна
+    типи = {Ж.тип_для_промпту(р)[0] for р in каталог}
+            ^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\gemini\gemini-runs\w\20261104-190425-ead449dc92d4\repo\джерела\жнива_збагачення.py", line 229, in тип_
+для_промпту
+    тип = (o.get("параметри") or {}).get("тип") or сл or (o.get("категорія") or "").split("/")[-1].strip()
+           ^^^^^
+AttributeError: 'list' object has no attribute 'get'

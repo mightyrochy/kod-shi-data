@@ -509,9 +509,7 @@ def індекс_гілки(розвилка, гілка, схема):
         "or hair or narrowed, the light is coloured (stage or neon), or it is so overexposed that "
         "the skin turns white. Then give only the reason in \"photo\" and no colours.",
         "Skin: three points — cheek, forehead, jaw — each free of shadow, highlight, blush and foundation.",
-        "Hair: first the tone that covers the largest area of the head, even when it is neither the "
-        "lightest nor the darkest; then every other visible tone (highlights, balayage, roots, grey) "
-        "as its own entry. Even single-tone hair is one entry. Do not merge different tones.",
+        "Hair: each visible tone (highlights, balayage, roots, grey) as its own entry, even for single-tone hair.",
         "Eyes: the body of the iris. A clearly darker ring along the edge of the iris goes to "
         "\"limbal_ring\".",
         "Take the colours from her, not from the background or her clothes.",
@@ -523,7 +521,7 @@ def індекс_гілки(розвилка, гілка, схема):
             "skin": ["<hex>"], "hair": ["<hex>"], "eyes": "<hex>", "limbal_ring": "<hex>",
             "light_cast": "none|yellow|blue", "light_correction": "none|slight|strong"},
     поля_виходу={"photo": "usable, or why it is not",
-                 "skin": "#rrggbb: cheek, forehead, jaw",
+                 "skin": "#rrggbb at each point",
                  "hair": "#rrggbb, the largest-area tone first",
                  "eyes": "#rrggbb of the iris body",
                  "limbal_ring": "#rrggbb, or null",
