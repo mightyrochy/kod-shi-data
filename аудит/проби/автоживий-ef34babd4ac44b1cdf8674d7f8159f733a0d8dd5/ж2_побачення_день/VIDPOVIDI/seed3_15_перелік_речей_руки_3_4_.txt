@@ -1,0 +1,44 @@
+── ПРОМПТ (2215 симв.) ──
+{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.", "One item carries one thing — of two alternatives list the first; a note in brackets is not an item.", "Slot \"accessory\" is for an item no other slot fits.", "\"is_outfit\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "ITEM_LIST", "answer_schema": {"is_outfit": "yes|no", "items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory", "color_hex": "<#rrggbb or null>", "worn": "<true, or false when the description says the outfit goes without it>"}]}, "input": ["\"description\" — the outfit description"]}, "description": "A refined knit top in a soft heather grey, relaxed fit with long sleeves, knee-length hem, cotton blend.\nWaxed cotton trousers in deep olive green, straight leg cut reaching the ankle, durable twill fabric.\nLeather loafers in matte cognac brown, classic penny design, smooth calfskin upper.\nGold hoop earrings and a slim leather belt matching the loafers to tie the neutral palette together.\n\nThis outfit strikes the perfect balance for an autumn afternoon date at a casual restaurant, adhering to the requested \"neat\" dress code while remaining comfortable for daytime wear. The earthy tones of olive and grey complement each other beautifully in natural daylight, creating a polished yet relaxed silhouette that avoids looking overly formal. By choosing a textured knit and durable cotton rather than stiff fabrics, the ensemble respects her wish for an effortless vibe without sacrificing style, making it ideal for dining outdoors or in a casual setting."}
+
+── ВІДПОВІДЬ (913 симв., 9.8 с, HTTP 200) ──
+{
+  "is_outfit": "yes",
+  "items": [
+    {
+      "name": "knit top",
+      "details": "relaxed fit with long sleeves and knee-length hem, made of cotton blend",
+      "slot": "top",
+      "color_hex": "#d3d0c8",
+      "worn": true
+    },
+    {
+      "name": "trousers",
+      "details": "straight leg cut reaching the ankle, durable twill fabric",
+      "slot": "bottom",
+      "color_hex": "#4b5320",
+      "worn": true
+    },
+    {
+      "name": "loafers",
+      "details": "classic penny design with smooth calfskin upper",
+      "slot": "shoes",
+      "color_hex": "#8c6a4f",
+      "worn": true
+    },
+    {
+      "name": "earrings",
+      "details": "gold hoop",
+      "slot": "jewelry",
+      "color_hex": "#ffd700",
+      "worn": true
+    },
+    {
+      "name": "belt",
+      "details": "slim leather matching the loafers",
+      "slot": "belt",
+      "color_hex": "#8c6a4f",
+      "worn": true
+    }
+  ]
+}

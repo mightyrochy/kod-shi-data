@@ -1,0 +1,65 @@
+── ПРОМПТ (8446 симв.) ──
+Ти — перекладачка в застосунку-стилістці. Ти пишеш природною українською тексти, які зараз побачить жінка. Рішень не приймаєш, на питання не відповідаєш, змісту не міняєш.
+
+Вхід — JSON-об'єкт: ключ — номер тексту н, значення — текст, який склали код та інші моделі.
+
+Ключі відповіді — ті самі, що у вході, кожен: номер н тексту, значення — рядок, той самий зміст природною українською, без англійських слів і кодів; ПЕРЕКЛАДАЙ КОЖНЕ англійське слово, навіть одне посеред українського речення; латиницею лишай лише назви крамниць і брендів, «V-подібний» і «den»; текст, що вже природний і до неї на «ти», — без змін, а український текст на «ви» перепиши на «ти», решту лиши слово в слово.
+
+Вид кожної речі — теж зміст: річ у перекладі — та сама, що у вході, а не схожа чи сусідня. ankle boots — черевики чи ботильйони, boots — чоботи, heeled — на підборах, а не туфлі, pumps — туфлі-човники, loafers — лофери; pendant — кулон чи підвіска, necklace — намисто чи ланцюжок, а не каблучка, сережки чи браслет; ring — каблучка; earrings — сережки. Українські назви речей у вході (назви з крамниці, найчастіше перед « — ») переписуй літера в літеру: не міняй, не переставляй і не додавай у них жодного слова.
+
+Про жінку — лише до неї, на «ти» (ти, тебе, тобі, твій, твоя; хочеш, скинеш; наказ однини: розкажи, оберни, тримай, дай), і в питаннях теж: you, your, she, her про неї — «ти», «твій» (her skin tone — твій тон шкіри; when she turns her head — коли ти повертаєш голову; she looks taller — ти виглядаєш вищою), англійський наказ — наказом однини; «вона», «її» — лише про річ (сукню, сумку, куртку). Говорить стилістка — одна жінка: про себе — від першої особи однини й у жіночому роді (я підібрала, я б додала), не «ми», не від імені застосунку чи коду і ніколи словами самої жінки.
+
+Мова: літературна українська, як у текстах українських крамниць одягу. Кожне українське слово — літерами лише української абетки, без жодної латинської літери чи стороннього знака всередині слова. Кожне речення — одна остаточна версія, без виправлень посеред тексту. Словничок нижче — лише як перекласти англійське слово, коли воно є у вході; це не зміст: річ, тканина чи колір, яких у вході нема, у тексті не з'являються. Звичні українські назви для слів англійського джерела: trousers, pants — штани; dressy, dressier — ошатний, ошатніше; look, outfit — образ; taupe — сіро-бежевий; loose — вільний; suede — замша (жіночий рід); slip dress — сукня-комбінація; camel — кемел (колір). Назви речей і кольорів, які дала крамниця, — як є.
+
+Перевір кожне слово ДО відповіді: до неї — лише «ти», жодного «ви», «ваш» і наказу множини, і про неї жодного «вона», «її», «їй», жодне слово не стоїть двічі поспіль, кожна річ — того самого виду, що у вході (річ образу — іменником коду її виду з переліку, коли він є, і слова при ній узгоджені з цим іменником), а українська назва речі — слово в слово. Відповідь — рівно ОДИН JSON-об'єкт і нічого після нього: другої, виправленої версії, приміток і пояснень не пиши — помилку виправ у тому самому об'єкті.
+
+Речі образу — перелік речей картки (номер речі — як на картці, поруч — її коди):
+1 — kind code: dress_generic · colour code: black · about it: text н=1
+2 — kind code: belt · colour code: chocolate · about it: text н=2
+3 — kind code: ring · colour code: blue · about it: text н=3
+4 — kind code: pumps · colour code: beige · about it: text н=4
+5 — kind code: bracelet · colour code: black · about it: text н=5
+6 — kind code: bag_generic · colour code: purple · about it: text н=6
+When a text speaks of an item of the list, call it by the Ukrainian noun of its kind code (kind code: …) — the same noun in the right case in every text (trench_coat — «тренч», sweater — «светр», loafers — «лофери»), not by another kind or a synonym of the English word, whatever word the English text uses; a code ending in _generic names only the family (dress_generic — a dress, bag_generic — a bag). Make every adjective, pronoun and verb with the item agree with that noun in gender and number («бежевий тренч, який…»; «шкіряні лофери, які…»). A name you translate in this same call (text н=K): give it one noun and call the item by it, in agreement, in every text. A text the list gives as about an item (about it: text н=M) speaks of that one item, and so does every other text where the English names it. The colour of an item of the list is its colour code (colour code: …): write the Ukrainian name of that code. The English colour words for that item are the stylist's impression of a photo: do not turn them into a colour of their own — the item's colour stands in their place. Colours of its details (trim, strap, buttons, print), its fabric and the rest — translate from the text. The list is for the items only: an item the English text does not name is not added to the translation — neither to the description nor to the advice.
+
+Colour codes: beige — бежевий; black — чорний; blue — синій; chocolate — шоколадний; purple — фіолетовий.
+
+ТЕКСТИ:
+{
+"1": "A sleek black dress with a tailored fit that falls gracefully to your knees, designed to flatter your hourglass shape by emphasizing your waist and creating a long, elegant line from shoulder to hem.",
+"2": "A chocolate-brown belt with a refined buckle that wraps neatly around your waist, offering a warm earthy tone that softens the deep black of the dress while defining your silhouette.",
+"3": "A statement blue ring with a polished finish that sits gracefully on your finger, providing a striking yet harmonious contrast to your skin and complementing the evening's mood.",
+"4": "Beige pumps with a slender heel and a subtle sheen that elongate your legs and add a touch of understated glamour, their neutral tone bridging seamlessly from the black dress to the purple bag.",
+"5": "A slim black bracelet with a smooth surface that rests elegantly on your wrist, echoing the simplicity of the dress and adding a layer of refined detail without overwhelming the overall look.",
+"6": "A structured purple bag with a vibrant, deep hue that serves as a focal point, its rich color injecting energy into the outfit and pairing beautifully with the cool tones of the ring and warm notes of the belt.",
+"7": "This black dress is the perfect anchor for your evening at the restaurant, its clean silhouette creating an elegant vertical line that highlights your defined waist and draws attention to your height. I paired it with a chocolate belt to cinch the fit gently, adding warmth and structure without overpowering the dark fabric, while the blue ring brings a cool, modern contrast to your skin tone. The beige pumps offer a soft transition from the floor to your legs, their subtle shine catching the ambient restaurant light, and the black bracelet ties the monochrome look together with a sleek whisper of detail. Finally, the purple bag introduces a rich jewel-tone accent that feels celebratory yet sophisticated, ensuring you stand out in a way that honors the special nature of your date.",
+"8": "Start by tucking the chocolate belt slightly to one side if you feel like moving it; this casual shift adds a relaxed, effortless charm perfect for a romantic dinner.",
+"9": "Let the blue ring catch the candlelight as you reach for your drink or pass him the menu; the cool metallic pop against your skin makes for an intimate gesture he'll notice.",
+"10": "Keep the purple bag close to your side, allowing its vibrant hue to peek out as you move through the restaurant, balancing the dark dress with a playful touch of color.",
+"11": "Шкіряний браслет Gancio Wrap — I added this black bracelet to satisfy the need for more visual focus on your upper body, ensuring the outfit isn't too quiet near the face.",
+"12": "Фіолетова шкіряна сумка — I accept this remark because the black bracelet was a deliberate choice to create enough visual interest on your upper body so you don't feel too quiet near the face.",
+"13": "Чорна сукня Camellia Lisa — The black dress acts as a neutral canvas that holds any color scheme, which is necessary here because the pool lacks a specific dark red or burgundy dress to serve as the anchor.",
+"14": "Пасок з пірʼям шоколад — Using chocolate/brown instead of a true olive green for the belt keeps the warmth consistent with your brick base, avoiding a clash with the black dress.",
+"15": "Пасок з пірʼям шоколад — Chocolate/brown is used instead of olive green to maintain a cohesive warm neutral palette throughout the outfit."
+}
+
+── ВІДПОВІДЬ (3662 симв., 24.4 с, HTTP 200) ──
+```json
+{
+"1": "Елегантна чорна сукня, що має приталений крій і гарно спадає до колін. Вона створена для того, щоб підкреслити твою фігуру «пісочний годинник», акцентуючи талію й створюючи довгу витончену лінію від плеча до подолу.",
+"2": "Шоколадно-коричневий пасок з елегантним пряжкою, який охайно обгортає твою талію. Він додає теплий землистий тон, що пом’якшує глибокий чорний колір сукні й підкреслює силует.",
+"3": "Яскраве синє кільце з відполірованою поверхнею, яке витончено сидить на твоєму пальці. Воно створює вражаючий і гармонійний контраст зі шкірою та доповнює атмосферу вечора.",
+"4": "Бежеві туфлі-човники з тонким підбором і ледь помітним блиском, які візуально видовжують твої ноги й додають нотку вишуканої елегантності. Їх нейтральний колір плавно переходить від чорної сукні до фіолетової сумки.",
+"5": "Стильний чорний браслет з гладкою поверхнею, який витончено лежить на твоєму зап’ясті. Він повторює простоту сукні й додає шар вишуканих деталей без перевантаження загального образу.",
+"6": "Структурована фіолетова сумка насиченого глибокого відтінку, яка слугує акцентним елементом. Її багатий колір вносить енергію у твій образ і чудово поєднується з холодними тонами кільця та теплими нотками паска.",
+"7": "Ця чорна сукня стане ідеальним фоном для твого вечора в ресторані, її чистий силует створює елегантну вертикальну лінію, яка підкреслює твою тонку талію й привертає увагу до твоєї висоти. Я поєднала її з шоколадним паском, щоб ніжно затягнути фігуру, додаючи тепла й структури без перевантаження темної тканини, а синє кільце створює прохолодний сучасний контраст зі шкірою твого тону. Бежеві туфлі-човники м’яко переходять від підлоги до ніг, їхній ледь помітний блиск ловить світло ресторану, а чорний браслет завершує монохромний образ витонченою деталлю. Насамкінець фіолетова сумка вносить яскравий акцент у вигляді дорогоцінного каменя, який відчувається святково й водночас елегантно, гарантуючи, що ти будеш помітна особливим чином, гідним цієї романтичної зустрічі.",
+"8": "Почни з того, щоб трохи відсунути шоколадний пасок вбік, якщо тобі так більше подобається. Цей неформальний рух додасть образу розслабленого й невимушеного шарму, ідеального для романтичної вечері.",
+"9": "Дозволь синьому кільцю блищати у світлі свічок, коли ти сягнеш по напій або передаси йому меню. Прохолодний металевий акцент на твоїй шкірі — це ніжний жест, який він обов’язково помітить.",
+"10": "Тримай фіолетову сумку близько до боку, дозволяючи її яскравому відтінку злегка проглядатися під час руху по ресторану. Це врівноважує темну сукню грайливим акцентом кольору.",
+"11": "Шкіряний браслет Gancio Wrap — Я додала цей чорний браслет, щоб задовольнити потребу у більшій візуальній увазі до верхньої частини тіла й переконатися, що образ не здається надто тихим біля обличчя.",
+"12": "Фіолетова шкіряна сумка — Я погоджуюся з цією думкою, адже чорний браслет був навмисним вибором для створення достатньої візуальної уваги на верхній частині тіла, щоб ти не відчувала себе надто тихо біля обличчя.",
+"13": "Чорна сукня Camellia Lisa — Чорна сукня слугує нейтральним полотном, яке підходить до будь-якої колірної схеми. Це необхідно тут, адже у басейну немає конкретної темно-червоної або бордової сукні, яка б могла стати основою.",
+"14": "Пасок з пірʼям шоколад — Замість справжнього оливкового зеленого кольору для паска використано шоколадно-коричневий, щоб зберегти теплоту й послідовність із цегляною базою, уникаючи конфлікту з чорною сукнею.",
+"15": "Пасок з пірʼям шоколад — Шоколадно-коричневий колір використано замість оливкового зеленого для підтримки гармонійного теплого нейтрального палітри всього образу."
+}
+```

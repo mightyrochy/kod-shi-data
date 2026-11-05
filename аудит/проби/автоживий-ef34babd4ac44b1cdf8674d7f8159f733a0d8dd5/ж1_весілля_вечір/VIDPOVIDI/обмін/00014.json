@@ -1,0 +1,27 @@
+{
+ "версія": 1,
+ "запит": {
+  "model": "qwen/qwen3.5-9b",
+  "max_tokens": 4000,
+  "messages": [
+   {
+    "role": "user",
+    "content": [
+     {
+      "type": "text",
+      "text": "{\"task\": {\"role\": \"You read the description of an outfit and list its items as data.\", \"rules\": [\"One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.\", \"One item carries one thing — of two alternatives list the first; a note in brackets is not an item.\", \"Slot \\\"accessory\\\" is for an item no other slot fits.\", \"\\\"is_outfit\\\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note.\"], \"limits\": [\"Rely only on the input: do not invent what it does not contain.\", \"The answer is one JSON object following \\\"answer_schema\\\", without explanations and without ```.\"], \"language\": \"English\", \"answer\": \"ITEM_LIST\", \"answer_schema\": {\"is_outfit\": \"yes|no\", \"items\": [{\"name\": \"<what the item is>\", \"details\": \"<its cut, length and fabric>\", \"slot\": \"top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory\", \"color_hex\": \"<#rrggbb or null>\", \"worn\": \"<true, or false when the description says the outfit goes without it>\"}]}, \"input\": [\"\\\"description\\\" — the outfit description\"]}, \"description\": \"Long silk evening gown, fluid column silhouette reaching the floor, deep emerald green (#043927), pure mulberry silk with a subtle sheen.\\nStrappy velvet ankle-strap heels, pointed toe design, midnight blue (#191970), soft suede finish.\\nDrop pearl earrings, teardrop shape with freshwater cultured pearls, lustrous white, gold-filled metal setting.\\n\\nThis ensemble perfectly balances the formal requirement of an upscale autumn wedding dinner with your desire to stand out without overshadowing the bride. The rich emerald green fabric catches the warm artificial restaurant lighting elegantly, while the fluid silhouette ensures comfort for standing and dancing throughout the evening. By pairing the luxurious gown with velvet heels and classic pearl jewelry, the look feels sophisticated yet grounded in seasonal appropriateness.\"}"
+     }
+    ]
+   }
+  ],
+  "temperature": 1
+ },
+ "відповідь": {
+  "status": 200,
+  "contentType": "application/json",
+  "headers": {
+   "x-model": "qwen/qwen3.5-9b"
+  },
+  "body": "{\"content\":[{\"type\":\"text\",\"text\":\"{\\n  \\\"is_outfit\\\": \\\"yes\\\",\\n  \\\"items\\\": [\\n    {\\n      \\\"name\\\": \\\"silk evening gown\\\",\\n      \\\"details\\\": \\\"fluid column silhouette reaching the floor, pure mulberry silk with a subtle sheen\\\",\\n      \\\"slot\\\": \\\"dress\\\",\\n      \\\"color_hex\\\": \\\"#043927\\\",\\n      \\\"worn\\\": true\\n    },\\n    {\\n      \\\"name\\\": \\\"strappy ankle-strap heels\\\",\\n      \\\"details\\\": \\\"pointed toe design, soft suede finish\\\",\\n      \\\"slot\\\": \\\"shoes\\\",\\n      \\\"color_hex\\\": \\\"#191970\\\",\\n      \\\"worn\\\": true\\n    },\\n    {\\n      \\\"name\\\": \\\"pearl drop earrings\\\",\\n      \\\"details\\\": \\\"teardrop shape with freshwater cultured pearls, lustrous white, gold-filled metal setting\\\",\\n      \\\"slot\\\": \\\"earrings\\\",\\n      \\\"color_hex\\\": \\\"#FFFFFF\\\",\\n      \\\"worn\\\": true\\n    }\\n  ]\\n}\"}],\"usage\":{\"input_tokens\":518,\"output_tokens\":224},\"stop_reason\":\"end_turn\"}"
+ }
+}

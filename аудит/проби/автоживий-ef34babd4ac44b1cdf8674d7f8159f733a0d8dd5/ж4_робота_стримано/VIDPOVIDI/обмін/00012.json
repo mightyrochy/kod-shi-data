@@ -1,0 +1,27 @@
+{
+ "версія": 1,
+ "запит": {
+  "model": "qwen/qwen3.5-9b",
+  "max_tokens": 4000,
+  "messages": [
+   {
+    "role": "user",
+    "content": [
+     {
+      "type": "text",
+      "text": "{\"task\": {\"role\": \"You read the description of an outfit and list its items as data.\", \"rules\": [\"One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.\", \"One item carries one thing — of two alternatives list the first; a note in brackets is not an item.\", \"Slot \\\"accessory\\\" is for an item no other slot fits.\", \"\\\"is_outfit\\\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note.\"], \"limits\": [\"Rely only on the input: do not invent what it does not contain.\", \"The answer is one JSON object following \\\"answer_schema\\\", without explanations and without ```.\"], \"language\": \"English\", \"answer\": \"ITEM_LIST\", \"answer_schema\": {\"is_outfit\": \"yes|no\", \"items\": [{\"name\": \"<what the item is>\", \"details\": \"<its cut, length and fabric>\", \"slot\": \"top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory\", \"color_hex\": \"<#rrggbb or null>\", \"worn\": \"<true, or false when the description says the outfit goes without it>\"}]}, \"input\": [\"\\\"description\\\" — the outfit description\"]}, \"description\": \"Your request contains a significant contradiction between the specified formal level and your stated goals. You have selected \\\"home\\\" (loungewear) as the formality level, yet your case details explicitly state the occasion is a \\\"working day in an office\\\" with a goal to \\\"flatter.\\\" Loungewear cannot flatter the body or suit an office environment. Therefore, I am upgrading your outfit to the minimum necessary formal level for an office setting that respects your wish for \\\"without bright\\\" colors: **Neat**. This ensures you look professional and flattering while maintaining a subdued, elegant autumn palette.\\n\\nStructured blazer, tailored cut, knee-length, charcoal grey, wool blend\\nSilk blouse, relaxed fit with a dropped shoulder, turtleneck length, soft oat cream, crepe\\nWide-leg trousers, straight leg opening, ankle length, deep forest green, heavy cotton twill\\nLeather loafers, classic cap-toe silhouette, mid-calf height, muted olive brown, calfskin leather\\nMatte finish minimalist watch, round case, brushed steel, black leather strap, genuine leather\\n\\nThis outfit works because it bridges the gap between comfort and professionalism required for a workday office environment. The structured blazer instantly elevates the look to an appropriate neat business level without being loud or bright. Choosing deeper autumn tones like charcoal, forest green, and oat cream honors your request for a non-vibrant palette while ensuring the silhouette is slimming and flattering.\"}"
+     }
+    ]
+   }
+  ],
+  "temperature": 1
+ },
+ "відповідь": {
+  "status": 200,
+  "contentType": "application/json",
+  "headers": {
+   "x-model": "qwen/qwen3.5-9b"
+  },
+  "body": "{\"content\":[{\"type\":\"text\",\"text\":\"{\\n  \\\"is_outfit\\\": \\\"yes\\\",\\n  \\\"items\\\": [\\n    {\\n      \\\"name\\\": \\\"Structured blazer\\\",\\n      \\\"details\\\": \\\"tailored cut, knee-length\\\",\\n      \\\"slot\\\": \\\"outerwear\\\",\\n      \\\"color_hex\\\": \\\"#36454F\\\",\\n      \\\"worn\\\": true\\n    },\\n    {\\n      \\\"name\\\": \\\"Silk blouse\\\",\\n      \\\"details\\\": \\\"relaxed fit with a dropped shoulder, turtleneck length\\\",\\n      \\\"slot\\\": \\\"top\\\",\\n      \\\"color_hex\\\": \\\"#EBE6DA\\\",\\n      \\\"worn\\\": true\\n    },\\n    {\\n      \\\"name\\\": \\\"Wide-leg trousers\\\",\\n      \\\"details\\\": \\\"straight leg opening, ankle length\\\",\\n      \\\"slot\\\": \\\"bottom\\\",\\n      \\\"color_hex\\\": \\\"#283037\\\",\\n      \\\"worn\\\": true\\n    },\\n    {\\n      \\\"name\\\": \\\"Leather loafers\\\",\\n      \\\"details\\\": \\\"classic cap-toe silhouette, mid-calf height\\\",\\n      \\\"slot\\\": \\\"shoes\\\",\\n      \\\"color_hex\\\": \\\"#6B684F\\\",\\n      \\\"worn\\\": true\\n    },\\n    {\\n      \\\"name\\\": \\\"Matte finish minimalist watch\\\",\\n      \\\"details\\\": \\\"round case, brushed steel, black leather strap\\\",\\n      \\\"slot\\\": \\\"watch\\\",\\n      \\\"color_hex\\\": null,\\n      \\\"worn\\\": true\\n    }\\n  ]\\n}\"}],\"usage\":{\"input_tokens\":652,\"output_tokens\":323},\"stop_reason\":\"end_turn\"}"
+ }
+}
