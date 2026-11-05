@@ -772,6 +772,9 @@ async function замінитиРічП(поз, ід, кнопка){
           || р.ід.some((і, н) => String(і) !== String(н === індекс ? нова.id : картка.речі[н].id)))
         throw new Error('replacement_unverified_outfit');
       новийСклад = await містП('показ', {...вхідМосту, речі:р.ід.map((і, н) => ({id:і, слот:картка.речі[н].слот}))});
+      if (!Array.isArray(новийСклад) || новийСклад.length !== р.ід.length
+          || новийСклад.some((річ, н) => String(річ.id) !== String(р.ід[н])))
+        throw new Error('replacement_display_outfit_mismatch');
       нова = (новийСклад || [])[індекс];
     }
     if (!чинний()) return;
