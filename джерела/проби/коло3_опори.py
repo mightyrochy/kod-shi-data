@@ -9,7 +9,7 @@ K-PAL-03 приймає); (2) комплементи медіан каталог
 import sys, pathlib, math, collections
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent.parent))
 import feed as F; F.каталог_на_диску('каталог_повний.xml')
-import фід_каталог as ФК, colorspace as cs, колір_простір_риси as КР
+import фід_каталог as ФК, colorspace as cs, колір_тон as КР
 т = collections.defaultdict(list)
 import колір_річ as _КОЛІР
 for r in ФК.прочитати_каталог('каталог_повний.xml', 0)['каталог']:
