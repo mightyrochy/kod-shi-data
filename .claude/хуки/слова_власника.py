@@ -16,6 +16,7 @@
 
 Час слова — час надсилання: запис `queue-operation`/`enqueue` з тим самим текстом (`content`); `timestamp` запису
 `user`/`queued_command` — час доставки в чат, на хвилини пізніше. Нема `enqueue` — час доставки.
+Запис `enqueue` без відповідного `remove`/`dequeue` чи доставленого слова теж зберігаємо, позначаючи його недоставленим.
 """
 import json
 import re
@@ -35,19 +36,30 @@ def текст(вміст):
     return вміст.strip() if isinstance(вміст, str) else ""
 
 
-def слова_людини(шлях):
-    """Слова людини з транскрипту сесії: [(час "РРРР-ММ-ДД ГГ:ХХ" UTC, текст)]. Спільне з `листи_менеджерові.py`."""
-    слова, бачені, надіслано = [], set(), {}
+def _слова_з_ознакою(шлях):
+    if re.search(r"[/\\]subagents[/\\](?:.+[/\\])?agent-[^/\\]+\.jsonl$", str(шлях)):
+        return []
+    слова, бачені, доставлені, надіслано, записи_черги = [], set(), set(), {}, []
     with open(шлях, encoding="utf-8") as ф:
         for рядок in ф:
             try:
                 подія = json.loads(рядок)
             except ValueError:
                 continue
-            if подія.get("type") == "queue-operation" and подія.get("operation") == "enqueue":
-                надіслано.setdefault(текст(подія.get("content")), []).append(подія.get("timestamp", ""))
-                continue
             if подія.get("isSidechain"):
+                continue
+            if подія.get("type") == "queue-operation":
+                т = текст(подія.get("content"))
+                операція = подія.get("operation")
+                if операція == "enqueue" and т:
+                    запис = {"текст": т, "час": подія.get("timestamp", ""), "очікує": True}
+                    надіслано.setdefault(т, []).append(запис)
+                    записи_черги.append(запис)
+                elif операція in ("remove", "dequeue"):
+                    for запис in надіслано.get(т, []):
+                        if запис["очікує"]:
+                            запис["очікує"] = False
+                            break
                 continue
             тип, вкладення = подія.get("type"), подія.get("attachment") or {}
             if тип == "user" and not подія.get("isMeta"):
@@ -58,13 +70,28 @@ def слова_людини(шлях):
                 continue
             if (джерело or {}).get("kind") != "human":
                 continue
+            доставлені.add(т)
             черга = надіслано.get(т)
-            коли = (черга.pop(0) if черга else подія.get("timestamp", ""))[:16].replace("T", " ")
+            запис = черга.pop(0) if черга else None
+            if запис:
+                запис["очікує"] = False
+            коли = (запис["час"] if запис else подія.get("timestamp", ""))[:16].replace("T", " ")
             ключ = (коли, т)
             if т and not МІТКА_ЛИСТА.match(т) and ключ not in бачені and ід not in бачені:
                 бачені.update({ключ, ід or ключ})
-                слова.append((коли, т))
-    return слова
+                слова.append((коли, т, False))
+    for запис in записи_черги:
+        т = запис["текст"]
+        коли = запис["час"][:16].replace("T", " ")
+        if запис["очікує"] and т not in доставлені and not МІТКА_ЛИСТА.match(т) and (коли, т) not in бачені:
+            слова.append((коли, т, True))
+            бачені.add((коли, т))
+    return sorted(слова, key=lambda слово: слово[0])
+
+
+def слова_людини(шлях):
+    """Час і текст слів, включно з недоставленими записами черги; спільне з хуком листів."""
+    return [(коли, т) for коли, т, _ in _слова_з_ознакою(шлях)]
 
 
 def початок_транскрипту(шлях):
@@ -81,7 +108,8 @@ def початок_транскрипту(шлях):
 
 
 def прочитати(шлях):
-    return [f"- {коли} UTC «{т}»" for коли, т in слова_людини(шлях)]
+    return [f"- {коли} UTC «{т}»" + (" (не дійшло до сесії — лише в черзі)" if черга else "")
+            for коли, т, черга in _слова_з_ознакою(шлях)]
 
 
 def main():
