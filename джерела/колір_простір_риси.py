@@ -44,7 +44,7 @@ from колір_простір_перетворення import lch, hx, soft
 from колір_простір_стеля import c_max
 from колір_простір_шкіра import (describe, skin_pos, hair_photo_uncertainty, ACHROMATIC_C,
     ЦЕНТР_ПІДТОНУ, РОЗКИД_ПІДТОНУ, МЕЖА_КЛАСУ_ПІДТОНУ, вісь_підтону_двостороння)
-from колір_простір_надійність import reliability, MIN_TO_EMIT, gate_conclusions, extraction_sanity
+from колір_простір_надійність import ДЖЕРЕЛО_ФОТО_ТИПОВЕ, ДЖЕРЕЛО_ПРОТОКОЛ, reliability, MIN_TO_EMIT, gate_conclusions, extraction_sanity
 import face_contrast as _KC
 import face_features as _ОБ
 
@@ -193,7 +193,7 @@ def поля_риси(lab, kind=None, lex=None):
 
 
 def features(lab_skin, lab_hair, lab_eye, lab_glasses=None,
-             from_photo=False, protocol="uncontrolled", lex=None, *, джерело=None):
+             from_photo=False, protocol=ДЖЕРЕЛО_ФОТО_ТИПОВЕ, lex=None, *, джерело=None):
     """Будує риси з походженням; невизначеність камери додає лише до піксельного виміру.
 
     `model_hex` — оцінка моделі, її розкиду не виміряно. Умови зйомки не є її довірою.
@@ -201,7 +201,7 @@ def features(lab_skin, lab_hair, lab_eye, lab_glasses=None,
     if джерело is not None:
         reliability(джерело)  # невідоме джерело — помилка викликача
         protocol = джерело
-        from_photo = джерело in ("uncontrolled", "protocolized")
+        from_photo = джерело in (ДЖЕРЕЛО_ФОТО_ТИПОВЕ, ДЖЕРЕЛО_ПРОТОКОЛ)
     # Волосся МОЖЕ бути двома кольорами (балаяж, мелірування) — це різні пасма.
     # Шкіра НЕ може: ластовиння, рум'янець, засмага — це текстура однієї шкіри,
     # а не друга шкіра. Тому дроблення на голоси дозволене лише для волосся.
@@ -460,7 +460,7 @@ def кут_розсіяння(hs_deg, ваги=None):
     return round(math.degrees((-2*math.log(max(R, 1e-9))) ** 0.5), 1)
 
 # R-COL-10 — дубль `colorspace.регіони`: колір міряється по регіонах, не середнім по кадру.
-def регіони(F, source="uncontrolled"):
+def регіони(F, source=ДЖЕРЕЛО_ФОТО_ТИПОВЕ):
     """Кожна риса (шкіра/волосся/очі) — РЕГІОН у CIELAB: центр + розкид + ФОРМА + СИЛА-як-якір,
     не точка. Плюс АНСАМБЛЬ — НЕ літеральний перетин (він порожній, бо риси в різних місцях
     простору), а ХМАРА всіх трьох: центроїд зважений ПЛОЩЕЮ + дисперсія по осях (=контраст) —

@@ -41,13 +41,35 @@ class ПеревіркаПлану(unittest.TestCase):
         self.assertEqual(результат.returncode, 0, результат.stderr)
         self.assertEqual(json.loads(результат.stdout)["DO"], "palitra")
 
-    def test_невідомий_режим_до_першої_сцени(self):
-        """Помилка другої сцени відхиляє весь план до запуску першої."""
+    def test_невідомий_режим_відмова_сцени(self):
+        """Сцена з режимом, якого прилад не виконає, — відмова з причиною; решта плану йде."""
         результат = self.запуск({"ж4_робота": [], "ж1_свято_тріада": [{"pr": 3085, "question": "питання → невідоме → ДО"}]})
-        self.assertNotEqual(результат.returncode, 0)
+        self.assertEqual(результат.returncode, 0, результат.stderr)
+        self.assertIn("ВІДМОВА СЦЕНИ ж1_свято_тріада: PR #3085", результат.stderr)
+        self.assertIn("відмов сцени: 1", результат.stderr)
+        self.assertEqual(json.loads(результат.stdout)["DO"], "palitra")
+
+    def test_змінні_режиму_з_питання(self):
+        """Змінні, які стенд читає, доходять до приладу; довільна інструкція — відмова сцени."""
+        результат = self.запуск({"ж4_робота": [{"pr": 1, "question": "п → повне +фото (OTSINKA=0 FOTO_RECHI=a.jpg; руки 1–2) → ДО"}]})
+        self.assertEqual(результат.returncode, 0, результат.stderr)
+        змінні = json.loads(результат.stdout)
+        self.assertEqual((змінні["FOTO"], змінні["OTSINKA"], змінні["FOTO_RECHI"]), ("1", "0", "a.jpg"))
+        результат = self.запуск({"ж4_робота": [{"pr": 2, "question": "п → повне, після перезбору каталогу → ДО"}]})
+        self.assertIn("довільна інструкція", результат.stderr)
         self.assertEqual(результат.stdout, "")
-        self.assertIn("PR #3085", результат.stderr)
-        self.assertIn("невідоме", результат.stderr)
+
+    def test_ci_рядок_збігається_з_планом(self):
+        """CI-розбір рядка й план дають однакову відповідь на ті самі питання."""
+        import режими_рядків_pr as ci
+        for режим, вада in (("повне, OTSINKA=0, руки 1–4", False), ("повне, після перезбору", True), ("невідоме", True)):
+            питання = {"pr": 1, "question": f"п → {режим} → ДО"}
+            try:
+                план.режим_питань("ж4_робота", [питання]); відмова = False
+            except ValueError:
+                відмова = True
+            self.assertEqual(відмова, вада)
+            self.assertEqual(bool(ci.перевірити([{"id": "ж4_робота", "question": питання["question"]}])[0][2]), вада)
 
     def test_одна_сцена_на_кілька_питань(self):
         """Один запис покриває палітру, повне з фото й оцінку різних PR."""
