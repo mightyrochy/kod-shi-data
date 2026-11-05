@@ -1,4 +1,4 @@
-"""Один завершений офлайн-прогін батареї та сімей ознак, палітри й рангу."""
+"""Один завершений прогін сім'ї ознак; --зі-спільними додає шість спільних перевірок."""
 import json
 import os
 from pathlib import Path
@@ -10,7 +10,7 @@ import time
 Д = Path(__file__).resolve().parent
 код = К / "джерела"
 оточення = dict(os.environ, PYTHONUTF8="1", PYTHONIOENCODING="utf-8", NODE_PATH=str(код / "node_modules"))
-команди = [
+спільні = [
     [sys.executable, "стенд_знімок.py", "--дим"],
     [sys.executable, "тест_живого_шляху.py"],
     [sys.executable, "тест_протоколу.py"],
@@ -18,10 +18,12 @@ import time
     [sys.executable, "audit_contracts.py"],
     ["node", "тест_показу.js"],
 ]
+команди = спільні if "--зі-спільними" in sys.argv else []
 проби = set()
-for шаблон in ("ознаки_*.py", "pal_*.py", "rang_*.py", "поділ_palette_ast.py", "поділ_pipeline_ast.py", "поділ_bridge_ast.py"):
+for шаблон in ("ознаки_*.py", "поділ_palette_ast.py", "поділ_pipeline_ast.py", "поділ_bridge_ast.py", "поділ_colorspace_ast.py",
+               "rang_нейтраль_якір.py", "pc_R-PC-10.py", "bas_ochi_foto_н1.py", "підтон_v03_009.py"):
     проби.update((код / "проби").glob(шаблон))
-проби = sorted(п for п in проби if п.name not in ("ознаки_межа_5192.py", "pal_вердикт.py", "pal_вимір.py"))
+проби = sorted(п for п in проби if п.name != "ознаки_межа_5192.py")
 команди.extend([sys.executable, str(п.relative_to(код))] for п in проби)
 підсумок = []
 for н, команда in enumerate(команди, 1):
