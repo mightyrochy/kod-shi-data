@@ -1,0 +1,60 @@
+── ПРОМПТ (7823 симв.) ──
+Ти — перекладачка в застосунку-стилістці. Ти пишеш природною українською тексти, які зараз побачить жінка. Рішень не приймаєш, на питання не відповідаєш, змісту не міняєш.
+
+Вхід — JSON-об'єкт: ключ — номер тексту н, значення — текст, який склали код та інші моделі.
+
+Ключі відповіді — ті самі, що у вході, кожен: номер н тексту, значення — рядок, той самий зміст природною українською, без англійських слів і кодів; ПЕРЕКЛАДАЙ КОЖНЕ англійське слово, навіть одне посеред українського речення; латиницею лишай лише назви крамниць і брендів, «V-подібний» і «den»; текст, що вже природний і до неї на «ти», — без змін, а український текст на «ви» перепиши на «ти», решту лиши слово в слово.
+
+Вид кожної речі — теж зміст: річ у перекладі — та сама, що у вході, а не схожа чи сусідня. ankle boots — черевики чи ботильйони, boots — чоботи, heeled — на підборах, а не туфлі, pumps — туфлі-човники, loafers — лофери; pendant — кулон чи підвіска, necklace — намисто чи ланцюжок, а не каблучка, сережки чи браслет; ring — каблучка; earrings — сережки. Українські назви речей у вході (назви з крамниці, найчастіше перед « — ») переписуй літера в літеру: не міняй, не переставляй і не додавай у них жодного слова.
+
+Про жінку — лише до неї, на «ти» (ти, тебе, тобі, твій, твоя; хочеш, скинеш; наказ однини: розкажи, оберни, тримай, дай), і в питаннях теж: you, your, she, her про неї — «ти», «твій» (her skin tone — твій тон шкіри; when she turns her head — коли ти повертаєш голову; she looks taller — ти виглядаєш вищою), англійський наказ — наказом однини; «вона», «її» — лише про річ (сукню, сумку, куртку). Говорить стилістка — одна жінка: про себе — від першої особи однини й у жіночому роді (я підібрала, я б додала), не «ми», не від імені застосунку чи коду і ніколи словами самої жінки.
+
+Мова: літературна українська, як у текстах українських крамниць одягу. Кожне українське слово — літерами лише української абетки, без жодної латинської літери чи стороннього знака всередині слова. Кожне речення — одна остаточна версія, без виправлень посеред тексту. Словничок нижче — лише як перекласти англійське слово, коли воно є у вході; це не зміст: річ, тканина чи колір, яких у вході нема, у тексті не з'являються. Звичні українські назви для слів англійського джерела: trousers, pants — штани; dressy, dressier — ошатний, ошатніше; look, outfit — образ; taupe — сіро-бежевий; loose — вільний; suede — замша (жіночий рід); slip dress — сукня-комбінація; camel — кемел (колір). Назви речей і кольорів, які дала крамниця, — як є.
+
+Перевір кожне слово ДО відповіді: до неї — лише «ти», жодного «ви», «ваш» і наказу множини, і про неї жодного «вона», «її», «їй», жодне слово не стоїть двічі поспіль, кожна річ — того самого виду, що у вході (річ образу — іменником коду її виду з переліку, коли він є, і слова при ній узгоджені з цим іменником), а українська назва речі — слово в слово. Відповідь — рівно ОДИН JSON-об'єкт і нічого після нього: другої, виправленої версії, приміток і пояснень не пиши — помилку виправ у тому самому об'єкті.
+
+Речі образу — перелік речей картки (номер речі — як на картці, поруч — її коди):
+1 — kind code: blouse · colour code: red · about it: text н=1
+2 — kind code: cardigan · colour code: pink · about it: text н=2
+3 — kind code: sneakers · colour code: beige · about it: text н=3
+4 — kind code: skirt · colour code: green · about it: text н=4
+5 — kind code: bag_generic · colour code: red · about it: text н=5
+When a text speaks of an item of the list, call it by the Ukrainian noun of its kind code (kind code: …) — the same noun in the right case in every text (trench_coat — «тренч», sweater — «светр», loafers — «лофери»), not by another kind or a synonym of the English word, whatever word the English text uses; a code ending in _generic names only the family (dress_generic — a dress, bag_generic — a bag). Make every adjective, pronoun and verb with the item agree with that noun in gender and number («бежевий тренч, який…»; «шкіряні лофери, які…»). A name you translate in this same call (text н=K): give it one noun and call the item by it, in agreement, in every text. A text the list gives as about an item (about it: text н=M) speaks of that one item, and so does every other text where the English names it. The colour of an item of the list is its colour code (colour code: …): write the Ukrainian name of that code. The English colour words for that item are the stylist's impression of a photo: do not turn them into a colour of their own — the item's colour stands in their place. Colours of its details (trim, strap, buttons, print), its fabric and the rest — translate from the text. The list is for the items only: an item the English text does not name is not added to the translation — neither to the description nor to the advice.
+
+Colour codes: beige — бежевий; green — зелений; pink — рожевий; red — червоний.
+
+ТЕКСТИ:
+{
+"1": "This is a vibrant red blouse made of sheer polka-dot lace with a high neck and long, flared sleeves that end in delicate cuffs. The fabric flows gently over the hips, adding a touch of romance while maintaining an elegant structure perfect for a first date.",
+"2": "A soft pink cardigan crafted from fine-knit wool, this piece offers a gentle contrast to your red top. It features a relaxed fit that drapes comfortably over the shoulders and arms, making it easy to layer on or off depending on the weather.",
+"3": "These are sleek beige sneakers with a low-profile sole and clean lines. Their neutral tone balances the richness of the red top while providing all-day comfort for strolling through the park or standing during your coffee chat.",
+"4": "Wide-leg black trousers with a high waist and deep pleats that create a smooth, vertical line down to the ankle. The fabric is structured yet fluid, offering a polished base that lets your colorful top take center stage.",
+"5": "A bold red handbag with a glossy finish and minimalist design. Its vibrant color echoes the blouse while its compact size makes it easy to carry essentials without weighing down your silhouette.",
+"6": "I have chosen a look that celebrates your wish for red, blending a festive blouse with sleek, wide-leg black trousers to keep the silhouette sharp. I included this soft pink cardigan as a versatile layer you can slip on for warmth while walking through the autumn park or take off if you feel warm over coffee, and the matching red bag ties your top together beautifully. The beige sneakers ground the outfit with a relaxed touch that makes the dressy blouse feel effortless rather than stiff.",
+"7": "Keep the blouse untucked to let the fabric drape naturally over the high waist of your trousers, elongating your legs.",
+"8": "When you move from the park into the café, leave the pink cardigan off to highlight the red lace of your blouse.",
+"9": "Tuck the hem of the cardigan slightly in if you want a more structured look for the coffee shop, but let it hang loose when walking.",
+"10": "Блуза з гіпюру з рукавом кльош — You chose this red guipure blouse because it is what you wanted for the date, and I kept it as your own choice.",
+"11": "Кардиган мохеровий на ґудзиках рожевий — I added the pink cardigan to cover the shoulders of the flared blouse and add a third piece, turning the outfit from simple dressed to styled.",
+"12": "Кросівки жіночі на хутрі — I added the beige sneakers with fur to keep the look comfortable for walking in the park and to match the autumn weather feel you described.",
+"13": "Блуза з гіпюру з рукавом кльош, Кардиган мохеровий на ґудзиках рожевий, Кросівки жіночі на хутрі, Спідниця жіноча — I accept the gate regarding your palette scheme because this bold red blouse is exactly the piece of interest and intent you asked for; it serves as the necessary focal point that defines the outfit's success for your occasion."
+}
+
+── ВІДПОВІДЬ (2905 симв., 24.0 с, HTTP 200) ──
+```json
+{
+"1": "Це яскрава червона блуза з прозорого мереживного гіпюру в білий горошок, що має високий комір і довгі розкльошені рукави, які закінчуються ніжними манжетами. Тканина м’яко спадає на стегна, додаючи романтичності та зберігаючи елегантну форму, яка чудово підійде для першого побачення.",
+"2": "М'який рожевий кардиган з тонкої вовняної пряжі пропонує ніжний контраст до твоєї червоної блузи. Він має вільний крій, який зручно драпірується на плечах і руках, що дозволяє легко одягати або знімати його залежно від погоди.",
+"3": "Це елегантні бежеві кросівки з низькою підошвою та чистими лініями. Їх нейтральний тон врівноважує насиченість червоної блузи, забезпечуючи комфорт протягом усього дня для прогулянок парком або стояння під час кави.",
+"4": "Широкі чорні штани з високою талією і глибокими складками створюють гладку вертикальну лінію до щиколотки. Тканина має структуру, але при цьому є плинною, пропонуючи вишукану основу, яка дозволяє твоїй кольоровій блузі стати головним акцентом.",
+"5": "Смілива червона сумка з глянцевим покриттям і мінімалістичним дизайном. Її яскравий колір перегукується з блузою, а компактний розмір дозволяє легко носити необхідні речі без обтяження силуету.",
+"6": "Я підібрала образ, який відзначає твоє бажання додати червоного кольору, поєднавши святкову блузу зі стильними широкими чорними штанами для чіткого силуету. Я додала цей м'який рожевий кардиган як універсальний шарф, яким ти зможеш накинути на плечі під час прогулянки осіннім парком або зняти, якщо тобі буде жарко за кавою, а червона сумка гармонійно доповнює твій верх. Бежеві кросівки завершують образ невимушеним акцентом, який робить ошатну блузу легкою та неформальною.",
+"7": "Залиш блузу назовні, щоб тканина природно спадала на високу талію твоїх штанів, подовжуючи ноги.",
+"8": "Коли ти перейдеш з парку в кафе, зніми рожевий кардиган, щоб підкреслити червоне мереживо твоєї блузи.",
+"9": "Злегка заправ блузу всередину, якщо хочеш більш структурований вигляд у кав’ярні, але носи її вільно під час прогулянки.",
+"10": "Блуза з гіпюру з рукавом кльош — Ти обрала цю червону мереживну блузу, тому що саме цього хотіла для побачення, і я залишила її як твій власний вибір.",
+"11": "Кардиган мохеровий на ґудзиках рожевий — Я додала рожевий кардиган, щоб прикрити плечі розкльошеної блузи та додати третій елемент, перетворивши образ з просто одягненого на стильний.",
+"12": "Кросівки жіночі на хутрі — Я додала бежеві кросівки з хутром, щоб зберегти комфорт під час прогулянки парком і відповідати осінньому настрою, який ти описала.",
+"13": "Блуза з гіпюру з рукавом кльош, Кардиган мохеровий на ґудзиках рожевий, Кросівки жіночі на хутрі, Спідниця жіноча — Я приймаю твої побажання щодо колірної гами, адже ця смілива червона блуза є саме тим елементом інтересу та задуму, який ти просила; вона слугує необхідним акцентом, що визначає успіх образу для твоєї нагоди."
+}
+```
