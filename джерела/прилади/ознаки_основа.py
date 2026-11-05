@@ -158,7 +158,8 @@ def _стала_формули(в):
 def _словесні_пороги(дерево, поля=()):
     """Знаходить вибір самих слів усередині форматованого підпису."""
     def слова(в):
-        return _рядок(в) or isinstance(в, ast.JoinedStr) or isinstance(в, ast.IfExp) and слова(в.body) and слова(в.orelse)
+        return _рядок(в) or isinstance(в, ast.JoinedStr) or isinstance(в, ast.BinOp) and isinstance(в.op, ast.Mod) and _рядок(в.left) \
+            or isinstance(в, ast.IfExp) and слова(в.body) and слова(в.orelse)
     def речення(в):
         """Вибір між реченнями: речення не буває кодом класу, тож поріг при ньому вибирає лише слова."""
         return прозовий(в) or isinstance(в, ast.JoinedStr) or isinstance(в, ast.IfExp) and речення(в.body) and речення(в.orelse)
@@ -180,7 +181,9 @@ def _словесні_пороги(дерево, поля=()):
         if isinstance(в, ast.If) and лише_підпис(в.body) and лише_підпис(в.orelse) \
                 and any(isinstance(н, ast.Assign) for і in в.body + в.orelse for н in ast.walk(і)):
             вихід.update(id(т) for т in ast.walk(в.test) if isinstance(т, ast.Compare))
-        формат = isinstance(в, ast.JoinedStr) or isinstance(в, ast.BinOp) and isinstance(в.op, ast.Mod) and _рядок(в.left)
+        формат = isinstance(в, ast.JoinedStr) or isinstance(в, ast.BinOp) and isinstance(в.op, ast.Mod) and _рядок(в.left) \
+            or isinstance(в, ast.BinOp) and isinstance(в.op, ast.Add) and any(
+                isinstance(о, ast.BinOp) and isinstance(о.op, ast.Mod) and _рядок(о.left) for о in (в.left, в.right))
         if формат:
             for г in ast.walk(в):
                 if isinstance(г, ast.IfExp) and слова(г.body) and слова(г.orelse):

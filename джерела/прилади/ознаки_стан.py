@@ -51,6 +51,7 @@ class Стан:
         # несе лише нове); у гілці чи циклі — додає, бо інший шлях міг лишити старе
         self.верх = ф.верх
         self.зерно = ф.повне in а.функції_зерна
+        self.ітеровані = {н.iter.id for н in ф.власні if isinstance(н, (ast.For, ast.comprehension)) and isinstance(н.iter, ast.Name)}
         self.відгалуження = any(п == "!відгалуження" for п, _, _ in контекст)
         self.необов_язкові = set()
         if isinstance(ф.вузол, (ast.FunctionDef, ast.AsyncFunctionDef)):
@@ -871,6 +872,8 @@ class Стан:
                 return "так" if isinstance(оп, (ast.Is, ast.Eq)) else "ні" if isinstance(оп, (ast.IsNot, ast.NotEq)) else None
             return None
         if isinstance(т, ast.UnaryOp) and isinstance(т.op, ast.Not):
+            if isinstance(т.operand, ast.Name) and т.operand.id in self.ітеровані:
+                return None   # `if not дуги`: порожній перелік, який функція далі перебирає, — «нема жодної», а не незнання
             if isinstance(т.operand, ast.Name) and т.operand.id in self.невідомо:
                 return {"так": "ні", "ні": "так"}[self.невідомо[т.operand.id]]
             if isinstance(т.operand, ast.Name) and т.operand.id in self.послідовності():
