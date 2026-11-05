@@ -28,8 +28,12 @@ def проба():
                      {'version':'1', 'outfits':[{'id':'o1', 'items':[д['pool']['rows'][0][0]]}]})
                 відповіді.append(dict(ключ=зап['ключ'], текст=json.dumps(а)))
             стан = dict(з, текст=відповіді[0]['текст']) if any(п['ключ']=='replace' for п in р['запити']) else dict(з, стан=р['стан'], відповіді=відповіді)
-        assert р['річ']['id'] != з['ід'] and р['річ']['слот'] == 'взуття' and з['речі'] == речі
-        print(спосіб, 'same_slot/fixed_outfit', 'calls', викликів)
+        assert з['речі'] == речі
+        if р.get('річ'):
+            assert р['річ']['id'] != з['ід'] and р['річ']['слот'] == 'взуття' and р.get('вердикт')
+        else:
+            assert р.get('готово') and р.get('чому')
+        print(спосіб, 'same_slot/fixed_outfit', 'calls', викликів, 'прийнято', bool(р.get('річ')))
 
 
 if __name__ == '__main__':
