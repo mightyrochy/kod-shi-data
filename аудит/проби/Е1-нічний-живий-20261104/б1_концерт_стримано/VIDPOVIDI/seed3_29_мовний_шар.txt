@@ -1,0 +1,73 @@
+── ПРОМПТ (8925 симв.) ──
+Ти — перекладачка в застосунку-стилістці. Ти пишеш природною українською тексти, які зараз побачить жінка. Рішень не приймаєш, на питання не відповідаєш, змісту не міняєш.
+
+Вхід — JSON-об'єкт: ключ — номер тексту н, значення — текст, який склали код та інші моделі.
+
+Ключі відповіді — ті самі, що у вході, кожен: номер н тексту, значення — рядок, той самий зміст природною українською, без англійських слів і кодів; ПЕРЕКЛАДАЙ КОЖНЕ англійське слово, навіть одне посеред українського речення; латиницею лишай лише назви крамниць і брендів, «V-подібний» і «den»; текст, що вже природний і до неї на «ти», — без змін, а український текст на «ви» перепиши на «ти», решту лиши слово в слово.
+
+Вид кожної речі — теж зміст: річ у перекладі — та сама, що у вході, а не схожа чи сусідня. ankle boots — черевики чи ботильйони, boots — чоботи, heeled — на підборах, а не туфлі, pumps — туфлі-човники, loafers — лофери; pendant — кулон чи підвіска, necklace — намисто чи ланцюжок, а не каблучка, сережки чи браслет; ring — каблучка; earrings — сережки. Українські назви речей у вході (назви з крамниці, найчастіше перед « — ») переписуй літера в літеру: не міняй, не переставляй і не додавай у них жодного слова.
+
+Про жінку — лише до неї, на «ти» (ти, тебе, тобі, твій, твоя; хочеш, скинеш; наказ однини: розкажи, оберни, тримай, дай), і в питаннях теж: you, your, she, her про неї — «ти», «твій» (her skin tone — твій тон шкіри; when she turns her head — коли ти повертаєш голову; she looks taller — ти виглядаєш вищою), англійський наказ — наказом однини; «вона», «її» — лише про річ (сукню, сумку, куртку). Говорить стилістка — одна жінка: про себе — від першої особи однини й у жіночому роді (я підібрала, я б додала), не «ми», не від імені застосунку чи коду і ніколи словами самої жінки.
+
+Мова: літературна українська, як у текстах українських крамниць одягу. Кожне українське слово — літерами лише української абетки, без жодної латинської літери чи стороннього знака всередині слова. Кожне речення — одна остаточна версія, без виправлень посеред тексту. Словничок нижче — лише як перекласти англійське слово, коли воно є у вході; це не зміст: річ, тканина чи колір, яких у вході нема, у тексті не з'являються. Звичні українські назви для слів англійського джерела: trousers, pants — штани; dressy, dressier — ошатний, ошатніше; look, outfit — образ; taupe — сіро-бежевий; loose — вільний; suede — замша (жіночий рід); slip dress — сукня-комбінація; camel — кемел (колір). Назви речей і кольорів, які дала крамниця, — як є.
+
+Перевір кожне слово ДО відповіді: до неї — лише «ти», жодного «ви», «ваш» і наказу множини, і про неї жодного «вона», «її», «їй», жодне слово не стоїть двічі поспіль, кожна річ — того самого виду, що у вході (річ образу — іменником коду її виду з переліку, коли він є, і слова при ній узгоджені з цим іменником), а українська назва речі — слово в слово. Відповідь — рівно ОДИН JSON-об'єкт і нічого після нього: другої, виправленої версії, приміток і пояснень не пиши — помилку виправ у тому самому об'єкті.
+
+Речі образу — перелік речей картки (номер речі — як на картці, поруч — її коди):
+1 — kind code: coat · colour code: black · about it: text н=1
+2 — kind code: skirt · colour code: beige · about it: text н=2
+3 — kind code: earrings · colour code: white · about it: text н=3
+4 — kind code: pumps · colour code: black · about it: text н=4
+5 — kind code: blouse · colour code: black · about it: text н=5
+6 — kind code: tote · colour code: black · about it: text н=6
+When a text speaks of an item of the list, call it by the Ukrainian noun of its kind code (kind code: …) — the same noun in the right case in every text (trench_coat — «тренч», sweater — «светр», loafers — «лофери»), not by another kind or a synonym of the English word, whatever word the English text uses; a code ending in _generic names only the family (dress_generic — a dress, bag_generic — a bag). Make every adjective, pronoun and verb with the item agree with that noun in gender and number («бежевий тренч, який…»; «шкіряні лофери, які…»). A name you translate in this same call (text н=K): give it one noun and call the item by it, in agreement, in every text. A text the list gives as about an item (about it: text н=M) speaks of that one item, and so does every other text where the English names it. The colour of an item of the list is its colour code (colour code: …): write the Ukrainian name of that code. The English colour words for that item are the stylist's impression of a photo: do not turn them into a colour of their own — the item's colour stands in their place. Colours of its details (trim, strap, buttons, print), its fabric and the rest — translate from the text. The list is for the items only: an item the English text does not name is not added to the translation — neither to the description nor to the advice.
+
+Colour codes: beige — бежевий; black — чорний; white — білий.
+
+ТЕКСТИ:
+{
+"1": "This outerwear is a black double-breasted coat with a fitted cut that follows your body's natural lines, offering structure against the relaxed feel of your blouse.",
+"2": "The bottom is a beige pencil skirt tailored to hug your hips and taper down to the knee, creating a smooth vertical line that elongates your legs.",
+"3": "These earrings feature a distinct shine designed to catch light, adding a subtle sparkle without competing with the dark tones of your outfit.",
+"4": "Your shoes are black pumps with a heel that elongates the leg line, providing height and confidence as you stand and move through the venue.",
+"5": "The top is a relaxed black blouse with soft fabric that drapes comfortably over your frame, contrasting nicely with the structured coat.",
+"6": "This bag is a large black tote with clean lines, offering ample space for essentials while maintaining the monochrome theme of your ensemble.",
+"7": "You asked for something restrained and classic for a rock concert, even though you'll be standing in the crowd. I chose a sleek black double-breasted coat over your relaxed blouse to anchor your figure and add that structured elegance you wanted. Your beige pencil skirt creates a clean vertical line from hip to ankle, which balances the width of your shoulders beautifully. The shine on your earrings catches the club's artificial light without overpowering the dark palette of your top, shoes, and bag.",
+"8": "Keep your coat open or loosely buttoned to let the relaxed cut of the blouse breathe while maintaining a polished silhouette.",
+"9": "Stand tall with your weight balanced between legs as you move through the crowd; the fitted coat follows your posture without adding bulk.",
+"10": "Чорне двобортне пальто з золотистими ґудзиками — You asked for classic restraint; this fitted cashmere coat follows your waistline and stops at mid-thigh, solving the volume balance and length ranking issues of the oversized options.",
+"11": "Спідниця трикотажна із бахромою, бежева — You want to stand out in a crowd; these straight loose trousers follow your figure's widest point (hips) to create a clean column, unlike the flared options.",
+"12": "Сережки Move Uno з білого золота — You want a classic look that works in a crowd; these solid white gold earrings provide high contrast near your face to sharpen your silhouette and add necessary shine.",
+"13": "Туфлі човники, ATTICO, замша, колір чорний — You want classic restraint for a concert; these suede loafers match your leg tone to continue the line, avoiding the contrast break of the red pumps.",
+"14": "Спідниця трикотажна із бахромою, бежева, Туфлі човники, ATTICO, замша, колір чорний, Темно-сіра блуза з воланами та бантом Алькала, Шкіряний тоут чорного кольору із золотистою застібкою, Чорне двобортне пальто з золотистими ґудзиками — The neat formality of these items serves you perfectly here, matching your request for a restrained classic look that translates well into artificial lighting and a crowded venue.",
+"15": "Сережки Move Uno з білого золота — You asked for classic restraint near the face; these solid white gold earrings provide high contrast to sharpen your silhouette against the dark fabric.",
+"16": "Спідниця трикотажна із бахромою, бежева — You want to stand out in a crowd but keep it classic; these straight loose trousers follow your figure's widest point (hips) to create a clean column.",
+"17": "Сережки Move Uno з білого золота — You want a classic look that works in a crowd; these solid white gold earrings provide high contrast near your face to sharpen your silhouette.",
+"18": "Туфлі човники, ATTICO, замша, колір чорний — You asked for classic restraint and comfort; these suede loafers match your leg tone to extend the line, avoiding the contrast break of the red pumps.",
+"19": "Сережки Move Uno з білого золота — You want a classic look that works in a crowd; these solid white gold earrings provide high contrast near your face to sharpen your silhouette against the dark fabric."
+}
+
+── ВІДПОВІДЬ (4201 симв., 34.5 с, HTTP 200) ──
+```json
+{
+  "1": "Ця верхня одежа — чорне двобортне пальто з приталеним кроєм, що повторює природні лінії твого тіла, додаючи структури до вільного силуету твоєї блузи.",
+  "2": "Низ — бежева олівець-спідниця, пошита так, щоб облягати стегна та звужуватися до колін, створюючи гладку вертикальну лінію, яка видовжує ноги.",
+  "3": "Ці сережки мають виразний блиск, розроблений для того, щоб ловити світло, додаючи ледь помітне сяйво без конкуренції з темними тонами твого вбрання.",
+  "4": "Твої туфлі — чорні туфлі-човники на підборах, які видовжують лінію ноги, надаючи висоти та впевненості, коли ти стоїш і рухаєшся по залу.",
+  "5": "Верх — розслаблена чорна блуза з м’якою тканиною, яка зручно драпірується на твоїй фігурі, гарно контрастуючи зі структурованим пальтом.",
+  "6": "Ця сумка — велика чорна тоут-сумка з чистими лініями, що пропонує достатньо місця для необхідних речей, зберігаючи монохромну тему твого ансамблю.",
+  "7": "Ти попросила щось стримане та класичне на рок-концерт, навіть попри те, що ти будеш стояти в натовпі. Я обрала елегантне чорне двобортне пальто поверх твоєї вільної блузи, щоб зафіксувати твою фігуру і додати ту структуровану вишуканість, яку ти хотіла. Твоя бежева олівець-спідниця створює чисту вертикальну лінію від стегна до щиколотки, яка чудово збалансовує ширину твоїх плечей. Блиск на сережках ловить штучне світло клубу без того, щоб переважати темну палітру твоєї блузи, туфель і сумки.",
+  "8": "Залиш пальто відкритим або нещільно застебнутим, щоб дати вільному крою блузи дихати, зберігаючи при цьому вишуканий силует.",
+  "9": "Тримайся прямо з рівномірно розподіленою вагою між ногами, коли ти рухаєшся крізь натовп; пальто, що облягає фігуру, повторює твою поставу без додавання зайвого об’єму.",
+  "10": "Чорне двобортне пальто з золотистими ґудзиками — Ти попросила класичного стримання; це приталене кашемірове пальто слідує за лінією твоєї талії і закінчується на середині стегна, вирішуючи питання балансу об’єму та довжини надмірних варіантів.",
+  "11": "Спідниця трикотажна із бахромою, бежева — Ти хочеш виділитися в натовпі; ці прямі широкі штани повторюють найширшу частину твоєї фігури (стегна), щоб створити чисту колону, на відміну від розкльошених варіантів.",
+  "12": "Сережки Move Uno з білого золота — Ти хочеш класичного вигляду, який працює в натовпі; ці масивні сережки з білого золота забезпечують високий контраст поблизу твого обличчя, щоб загострити силует і додати необхідного блиску.",
+  "13": "Туфлі човники, ATTICO, замша, колір чорний — Ти хочеш класичного стримання для концерту; ці лофери з замші підходять за кольором твоїм ногам, продовжуючи лінію і уникаючи контрастного розриву червоних туфель.",
+  "14": "Спідниця трикотажна із бахромою, бежева, Туфлі човники, ATTICO, замша, колір чорний, Темно-сіра блуза з воланами та бантом Алькала, Шкіряний тоут чорного кольору із золотистою застібкою, Чорне двобортне пальто з золотистими ґудзиками — Охайна формальність цих речей ідеально тобі підходить тут, відповідаючи твоєму проханню про стриманий класичний вигляд, який добре перекладається у штучному освітленні та в натовпі.",
+  "15": "Сережки Move Uno з білого золота — Ти попросила класичного стримання поблизу обличчя; ці масивні сережки з білого золота забезпечують високий контраст, щоб загострити силует на тлі темної тканини.",
+  "16": "Спідниця трикотажна із бахромою, бежева — Ти хочеш виділитися в натовпі, але зберегти класику; ці прямі широкі штани повторюють найширшу частину твоєї фігури (стегна), щоб створити чисту колону.",
+  "17": "Сережки Move Uno з білого золота — Ти хочеш класичного вигляду, який працює в натовпі; ці масивні сережки з білого золота забезпечують високий контраст поблизу твого обличчя, щоб загострити силует.",
+  "18": "Туфлі човники, ATTICO, замша, колір чорний — Ти попросила класичного стримання та комфорту; ці лофери з замші підходять за кольором твоїм ногам, продовжуючи лінію і уникаючи контрастного розриву червоних туфель.",
+  "19": "Сережки Move Uno з білого золота — Ти хочеш класичного вигляду, який працює в натовпі; ці масивні сережки з білого золота забезпечують високий контраст поблизу твого обличчя, щоб загострити силует на тлі темної тканини."
+}
+```
