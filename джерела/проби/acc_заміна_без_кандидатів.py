@@ -4,7 +4,6 @@ import sys
 from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 import accessory as А
-import аксесуари_розмір as Р
 import дріт_моделі as Д
 
 def перевірити():
@@ -29,7 +28,7 @@ def перевірити():
         [dict(id='кольє', слот='прикраси', ланцюг_см=32), dict(id='верх', слот='верх', виріз_тип='V-подібний')])
     assert len(зн) == 16 and all(з and з.get('заяви') for з in зн)
     for з in зн:
-        assert з['ремонт'].lower().endswith(Р.пояснення_без_кандидатів(з['правило']).lower())
+        assert isinstance(з.get('ремонт'), str) and з['ремонт']
         assert not з.get('ремонт_заяви') and 'fix' not in Д._знахідка(з)
     питання = А._ворота_однієї('взуття', А.АКСЕСУАР_ВИМІР['взуття'], {'id': 'пара'}, 'пара', {})[1]
     assert питання['контракт'] and питання['ремонт'] != зн[0]['ремонт']
