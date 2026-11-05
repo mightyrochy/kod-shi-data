@@ -135,15 +135,13 @@ def _до_очей(о, F):
     роль=_ВИМ.РОЛЬ_ЗАСТОСУНКУ + " She left the colour scheme and the base "
          "colour of today's outfits to you; you choose them.",
     вхід=(
-        _ЗП.Поле("person", "her colouring with source, confidence and availability; withheld means no measured fact: "
-                           "estimate_hex is the vision model's uncalibrated estimate, not a measurement; "
-                           "contrast level and light-dark gap "
-                           "(L*) of her face; undertone class and where it comes from; eyes, hair, skin "
-                           "— colour family, lightness L* 0-100, chroma C*; \"yellow_blue\" — the side of "
-                           "her eyes on that axis (none: not claimable); metal that suits her face; "
-                           "\"axes\" — her colouring on two axes: lightness (light / mid_lightness / "
-                           "deep) and clarity (soft / mid_chroma / clear), \"both_lightness_ends\": true "
-                           "when her contrast is high and her darkest and lightest ends both belong to her",
+        _ЗП.Поле("person", "her colouring: source, confidence, availability; withheld = no measured fact; "
+                           "estimate_hex = uncalibrated vision model estimate, not measurement; "
+                           "contrast level and light-dark gap L*; undertone class and source; "
+                           "eyes, hair, skin: colour family, lightness L* 0-100, chroma C*; "
+                           "yellow_blue: eye-axis side (none: not claimable); suitable metal; "
+                           "axes: lightness (light/mid_lightness/deep), clarity (soft/mid_chroma/clear); "
+                           "both_lightness_ends: true when contrast is high and both darkest and lightest ends belong to her",
                  треба=True),
         _ЗП.Поле("occasion", "today's occasion as codes, with her wishes, refusals, mood and words as "
                              "the interpreter passed them; a field she did not name is absent",
