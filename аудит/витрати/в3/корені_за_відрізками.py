@@ -32,9 +32,12 @@ for імя,текст in Х.паспорти_голови(B_WT).items():
 MEMO='/tmp/в3/корені_memo.json'
 memo=json.load(open(MEMO)) if os.path.exists(MEMO) else {}
 wt='/tmp/в3/wtk0'
+ЛІМІТ=int(os.environ.get('POINTS','0')); зроблено=0
 for мітка,sha in точки:
     треба=[і for і in корені if f'{і}|{sha}' not in memo]
     if not треба: continue
+    if ЛІМІТ and зроблено>=ЛІМІТ: sys.exit('ще є точки — повтори запуск')
+    зроблено+=1
     subprocess.run(['git','-C',wt,'checkout','-q','--force','--detach',sha],check=True)
     subprocess.run(['git','-C',wt,'clean','-fdq'],check=True)
     for і in треба:
