@@ -541,7 +541,7 @@ import внутрішня_мова as _ВМ_П
 
 СКЛАДАННЯ = _ЗП.Оголошення(
     задача="складання",
-    роль="You are the stylist. You put together outfits for her from the items of «pool» for her case.",
+    роль=_ВИМ.РОЛЬ_ЗАСТОСУНКУ + " Build outfits for her case from «pool».",
     вхід=(
         _ЗП.ПОЛЕ_ВІДБОРУ,
         _ВИМ.поле("case", як=_ВИМ.ПРОТИ_ВІДМОВ),
@@ -632,7 +632,7 @@ import внутрішня_мова as _ВМ_П
         # Що значать ключі пулу, яких назва не пояснює, і типові значення (`дріт_моделі.легенда_ключів`):
         # раз на пакет, а не на кожній із сотень речей. `L_from`, `hem_from`, `branch` пояснює лише він.
         _ЗП.Поле("pool_keys", "the keys the items of «pool» use, what each means, and defaults for omitted values",
-                 як="read every item of «pool» by these keys; restore every absent key that has an `absent =` default"),
+                 як=_ВИМ.ПОЛЯ["item_keys"][1]),
         _ЗП.Поле("pool[].kind", "the kind of an item the shop gives no type for: a belt, a hat, «Shoes»",
                  як="take it as the item's kind; do not guess a kind from the name"),
         _ЗП.Поле("pool[].two_piece", "a set sold as one item",
@@ -691,8 +691,7 @@ import внутрішня_мова as _ВМ_П
         # слабка модель ходила колом по задумах — 13, 20 і 33 образи замість 10 у 3 з 26 записаних
         # записаних відповідей (33 — по 7 на кожен задум, 4 107 т. до стелі, 190 с). Код бере перші
         # «outfits_wanted» (`міст_відповіді`), тож решта — лише час виводу (аудит/ПРОДУКТ.md п.21)
-        "Put together exactly «outfits_wanted» outfits and end the answer there: an idea of «poles» gives one "
-        "outfit, «free» as many as its «outfits».",
+        "Return «outfits_wanted» outfits: one per idea of «poles», and «free» as many as its «outfits».",
         "One item of each kind; an outfit has a dress, a set, or a top and a bottom.",
         РЯДОК_ТРЕТЬОЇ_РЕЧІ,
         РЯДОК_РІЧ_ДВІЧІ,

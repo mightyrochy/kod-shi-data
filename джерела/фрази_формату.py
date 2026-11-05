@@ -49,7 +49,9 @@ def відповідь_за_схемою_en(початок, лише=None):
 
 # Повтор після відмови формату: вказівка моделі, що надсилається ПОЛЕМ `format_error` або `instead` (англійською).
 ПОВТОР_JSON_EN = "answer again: one JSON object, every string a valid JSON string"
-ПОВТОР_ЛИШЕ_JSON_EN = "Return ONLY %s, without explanations and without ```." % ОДИН_ОБЄКТ_ЗА_СХЕМОЮ_EN
+_ОДИН_JSON_EN = "one JSON object"
+_ПОВТОР_ОБЄКТА_EN = "Return ONLY %s, without explanations and without ```."
+ПОВТОР_ЛИШЕ_JSON_EN = _ПОВТОР_ОБЄКТА_EN % ОДИН_ОБЄКТ_ЗА_СХЕМОЮ_EN
 ТОЙ_САМИЙ_ОБЄКТ_EN = "return the same JSON object"  # кінець повтору, що просить переписати відповідь
 
 
@@ -60,9 +62,8 @@ def повтор_за_схемою_en(рівно):
 
 def повтор_назвою_схеми_en(назва=None):
     """Вказівка `натомість` обʼєкта помилки формату: з назвою схеми — коли її знає код, інакше без неї."""
-    if назва:
-        return "Return ONLY one JSON object following schema «%s», without explanations and without ```." % назва
-    return "Return ONLY one JSON object, without explanations and without ```."
+    форма = _ОДИН_JSON_EN + (" following schema «%s»" % назва if назва else "")
+    return _ПОВТОР_ОБЄКТА_EN % форма
 
 
 def той_самий_обʼєкт_uk(схема):
