@@ -541,7 +541,7 @@ import внутрішня_мова as _ВМ_П
 
 СКЛАДАННЯ = _ЗП.Оголошення(
     задача="складання",
-    роль="You are the stylist. You put together outfits for her from the items of «pool» for her case.",
+    роль=_ВИМ.РОЛЬ_ЗАСТОСУНКУ + " Build outfits for her case from «pool».",
     вхід=(
         _ЗП.ПОЛЕ_ВІДБОРУ,
         _ВИМ.поле("case", як=_ВИМ.ПРОТИ_ВІДМОВ),
@@ -567,7 +567,7 @@ import внутрішня_мова as _ВМ_П
                  як="keep to it: one item from another register is a welcome quote; two or more change "
                     "the language"),
         _ВИМ.поле("day", як="check every item of every outfit against this day, not only the shoes"),
-        _ЗП.Поле("day.unknown", "what she has not told about her day: the place, the hour, the weather",
+        _ЗП.Поле("day.unknown", "facts about her day that remain unknown",
                  як="do not assume a value for it; prefer items that hold either way"),
         _ВИМ.поле("person"),
         _ЗП.Поле("person.goal", "the outfit-wide goal: flatter, conceal, express or taller; this is an "
@@ -632,7 +632,7 @@ import внутрішня_мова as _ВМ_П
         # Що значать ключі пулу, яких назва не пояснює, і типові значення (`дріт_моделі.легенда_ключів`):
         # раз на пакет, а не на кожній із сотень речей. `L_from`, `hem_from`, `branch` пояснює лише він.
         _ЗП.Поле("pool_keys", "the keys the items of «pool» use, what each means, and defaults for omitted values",
-                 як="read every item of «pool» by these keys; restore every absent key that has an `absent =` default"),
+                 як=_ВИМ.ПОЛЯ["item_keys"][1]),
         _ЗП.Поле("pool[].kind", "the kind of an item the shop gives no type for: a belt, a hat, «Shoes»",
                  як="take it as the item's kind; do not guess a kind from the name"),
         _ЗП.Поле("pool[].two_piece", "a set sold as one item",
@@ -691,8 +691,7 @@ import внутрішня_мова as _ВМ_П
         # слабка модель ходила колом по задумах — 13, 20 і 33 образи замість 10 у 3 з 26 записаних
         # записаних відповідей (33 — по 7 на кожен задум, 4 107 т. до стелі, 190 с). Код бере перші
         # «outfits_wanted» (`міст_відповіді`), тож решта — лише час виводу (аудит/ПРОДУКТ.md п.21)
-        "Put together exactly «outfits_wanted» outfits and end the answer there: an idea of «poles» gives one "
-        "outfit, «free» as many as its «outfits».",
+        "Return «outfits_wanted» outfits: one per idea of «poles», and «free» as many as its «outfits».",
         "One item of each kind; an outfit has a dress, a set, or a top and a bottom.",
         РЯДОК_ТРЕТЬОЇ_РЕЧІ,
         РЯДОК_РІЧ_ДВІЧІ,
@@ -1376,11 +1375,9 @@ def людина_для_пакета(тіло, палітри, гілка=None, 
     теж не йдуть: це наша внутрішня шкала, і промпт від самого початку забороняє
     моделі нею говорити («не називай чисел світлоти»). Контраст, натомість, слово
     має (`палітри.контраст_рівень`) — тому він і є.
-    ДЖЕРЕЛО ТЕМПЕРАТУРИ ЗВОДИТЬСЯ ДО ОДНОГО З ТРЬОХ СЛІВ, бо `palette.температура`
-    віддає його цілим реченням («елісітація (золото, впевненість 0.80) — не
-    залежить від камери»), а речення в полі, за яким модель приймає рішення, —
-    це прози в даних. Правило переносу: була елісітація → `самозвіт`; клас
-    придатний із фото → `фото`; класу нема → `утримано` і `не_стверджується`.
+    Джерело класу бере `face_features`: прийнята її відповідь → `самозвіт`,
+    придатний клас кольору → `фото`, класу нема → `утримано` і `не_стверджується`.
+    Наявність відповіді, яка не дала боку, не робить клас підтвердженим.
     АКЦЕНТИ — ЦЕ НЕЙТРАЛЬНІ КОЛЬОРИ ПАЛІТРИ НАВИВОРІТ. `палітра_практична`
     називає роль кожного кольору «нейтраль» або «колір»; хто з них буде акцентом
     у ЦЬОМУ образі, вирішує `ролі_слотів` (домінанта/секундант/акцент по слотах).
@@ -1395,8 +1392,9 @@ def людина_для_пакета(тіло, палітри, гілка=None, 
     _кл = т.get("клас") if т.get("придатно") else None
     л["температура"] = {
         "клас": _кл if _кл in _ПР.ТЕМПЕРАТУРА_КЛАСИ else "не_стверджується",
-        "джерело": ("самозвіт" if (т.get("елісітація") or {}).get("w") is not None
-                    else "фото" if _кл else "утримано"),
+        "джерело": ("утримано" if not _кл or _кл == "не_стверджується"
+                    else "самозвіт" if т.get("джерело_класу") == "її слово"
+                    else "фото"),
     }
     розвилка = (палітри or {}).get("розвилка") or []
     _г = (розвилка[гілка] if (гілка is not None and -len(розвилка) <= гілка < len(розвилка))

@@ -176,7 +176,6 @@ def _до_очей(о, F):
         "The ranks come from her colouring and intent only; the occasion, the goal, the weather, "
         "the jewellery and her words are yours to weigh. Any listed option is allowed, a rarer one too.",
         "\"saturation\" is the band of the look's colours; you choose it with a neutral base.",
-        "Give each choice its reasons.",
     ),
     вихід="PALETTE_CHOICE",
     скелет={"scheme": "<code>", "scheme_reasons": ["<code>"], "base": "<id>",
