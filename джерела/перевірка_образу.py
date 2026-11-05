@@ -60,7 +60,8 @@ def підготувати(F, слоти=("верх", "низ", "взуття", 
     _PR = PR
 
     особа = O.контраст_особи(F, source)
-    if not особа.get("доступно"):
+    import face_features as _ОБ
+    if not особа.get("доступно") and _ОБ.джерело_виміру(F, source) != "model_hex":
         return dict(готово=False, чому=особа.get("чому"),
                     що_робити="потрібні шкіра й волосся в профілі (colorspace.features)")
 

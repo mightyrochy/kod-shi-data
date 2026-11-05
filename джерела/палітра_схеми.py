@@ -414,6 +414,9 @@ def нота_схеми(схема, рівень, яскравий_макіяж=
             заяви.append(_ВМ.заява("contrast_mismatch_levels", look_level=рв_обр, own_level=рв_вл))
         return _ВМ.повідомлення("palette_scheme_note", *заяви)
     коди = ЗАЯВИ_НОТИ.get((рівень, схема)) or ЗАЯВИ_НОТИ.get(схема)
+    if not коди and рівень is None:
+        коди = next((к[:1] for пара, к in ЗАЯВИ_НОТИ.items()
+                     if isinstance(пара, tuple) and пара[1] == схема), None)
     if not коди:
         return None
     коди = list(коди)
