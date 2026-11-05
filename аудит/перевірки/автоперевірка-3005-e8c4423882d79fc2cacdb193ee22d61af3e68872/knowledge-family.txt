@@ -1,0 +1,42 @@
+s01 метал unknown; заяви ['mourning_funeral', 'mourning_only_dark']
+s02 метал unknown; заяви ['mourning_funeral', 'mourning_only_dark']
+8241: неправдиві заяви 2 → 0
+
+знання_8241.py код 0
+color measured → {'status': 'measured', 'value': (0, 0, 0), 'source': 'color_point', 'applicability': {'applicability': 'applicable', 'source': 'колір_річ.не_вимір/межі_кольору/точка_кольору'}}
+color range → {'status': 'range', 'value': (10.0, 30.0, 0.0, 5.0, None), 'source': 'color_window', 'applicability': {'applicability': 'applicable', 'source': 'колір_річ.не_вимір/межі_кольору/точка_кольору'}}
+color unknown → {'status': 'unknown', 'value': None, 'source': 'color_missing', 'applicability': {'applicability': 'applicable', 'source': 'колір_річ.не_вимір/межі_кольору/точка_кольору'}}
+матриця 99 типів; одяг/метал unknown; прикраса/склад unknown
+явна відсутність ≠ unknown ≠ not_applicable; живі читачі пройдено
+
+знання_договір.py код 0
+replacement: rejected/fixed_outfit + items/groups, 2 живі roundtrip без втрат
+
+знання_заміна.py код 0
+Traceback (most recent call last):
+  File "C:\Users\gemini\gemini-runs\w\20261105-021331-27d4e9db8add\tmp\review-3005\джерела\проби\знання_точка.py", line 35, in <module>
+    головна()
+  File "C:\Users\gemini\gemini-runs\w\20261105-021331-27d4e9db8add\tmp\review-3005\джерела\проби\знання_точка.py", line 26, in головна
+    назад = К.відновити(дріт)["items"][0]
+            ^^^^^^^^^^^^^^^^^
+  File "C:\Users\gemini\gemini-runs\w\20261105-021331-27d4e9db8add\tmp\review-3005\джерела\знання_дріт.py", line 262, in відновити
+    return {к: пройти(р, _шлях("", к)) for к, р in промпт.items() if к != "knowledge_legend"}
+               ^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\gemini\gemini-runs\w\20261105-021331-27d4e9db8add\tmp\review-3005\джерела\знання_дріт.py", line 254, in пройти
+    return [доповнити(р, к) for р, к in zip(рядки, секція["rows"])] if "rows" in секція else рядки
+            ^^^^^^^^^^^^^^^
+  File "C:\Users\gemini\gemini-runs\w\20261105-021331-27d4e9db8add\tmp\review-3005\джерела\знання_дріт.py", line 235, in доповнити
+    значення = річ[поле]
+               ~~~^^^^^^
+KeyError: 'lab'
+
+знання_точка.py код 1
+оцінка/турнір range легенда є
+оцінка/турнір replacement-only range легенда є
+Lab-only каталог → пакет → дріт: measured + value; hex не дублюється
+
+знання_читачі.py код 0
+4 стани, точна Lab, походження/applicability, повтор n та локальний конфлікт: roundtrip без втрат
+pool + codebook + join оплачуються чинним бюджетом; старі дані незмінні
+
+знання_інтернування.py код 0
