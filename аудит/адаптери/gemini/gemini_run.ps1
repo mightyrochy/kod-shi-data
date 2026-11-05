@@ -1384,6 +1384,52 @@ function Initialize-SharedMarkerState {
 }
 
 
+function Restore-FinishedMarkerState([string]$Target) {
+    <# Один раз повертає в спільну теку завершені стани, яких там нема: «ready» міг з'явитися раніше за перенесення чи без
+    нього (порожнє або інше джерело), і тоді виконані позначки ставали NEW та йшли вдруге (повтор 01–04.11 після 13:26).
+
+    Джерела: (1) завершені файли старого приватного `gemini-runs/state`; (2) результати прогонів `<OutDir>\<id>.json`
+    (slug, модель, спроба, умови, sha позначки, код) — ключ відновлюється так само, як читає смуга. Існуючий стан не
+    чіпаємо (Move без перезапису); QUOTA_ZERO чи ISOLATION — не кінець позначки. Прапор `restored` — разовість, щоб
+    свідомо знятий стан не воскресав. #>
+    $flag = Join-Path $Target 'restored'
+    if (Test-Path -LiteralPath $flag) { return }
+    $added = 0
+    $put = {
+        param([string]$Path, [string]$Text)
+        if ([IO.File]::Exists($Path) -or [IO.File]::Exists(($Path -replace '\.txt$', '.claim'))) { return 0 }
+        $tmp = $Path + '.' + [guid]::NewGuid().ToString('N') + '.part'
+        [IO.File]::WriteAllText($tmp, $Text, $script:Utf8)
+        try { [IO.File]::Move($tmp, $Path); 1 } catch { Remove-Item -LiteralPath $tmp -Force -ErrorAction SilentlyContinue; 0 }
+    }
+    $old = Join-Path $RunsDir 'state'
+    $results = @(Get-ChildItem -LiteralPath $OutDir -Filter '*.json' -File -ErrorAction SilentlyContinue |
+        Where-Object { $_.Name -cmatch '^[0-9]{8}-[0-9]{6}-[0-9a-f]{12}\.json$' } | Sort-Object Name -Descending)
+    foreach ($file in $results) {
+        try {
+            $r = [IO.File]::ReadAllText($file.FullName, $script:Utf8) | ConvertFrom-Json
+            $code = [string](Get-JsonProp $r 'code'); $slug = [string](Get-JsonProp $r 'slug'); $model = [string](Get-JsonProp $r 'model')
+            $n = [string](Get-JsonProp $r 'n'); $cond = [string](Get-JsonProp $r 'cond'); $sha = [string](Get-JsonProp $r 'marker')
+            if (-not $code -or $code -cin @('QUOTA_ZERO', 'ISOLATION') -or $sha -cnotmatch '^[0-9a-f]{40}$' -or -not $slug -or -not $model -or $n -cnotmatch '^[1-9][0-9]*$') { continue }
+            $ref = "refs/remotes/origin/gemini-queue/$slug/$model/$n" + $(if ($cond) { "/$cond" } else { '' })
+            # Завершений результат важливіший за старий WAIT, крім WAIT, записаного після нього (повтор після сну чи квоти).
+            $prev = Get-StatePath "$ref $sha" $old
+            if ([IO.File]::Exists($prev) -and [IO.File]::ReadAllText($prev, $script:Utf8).StartsWith('WAIT ') -and
+                (Get-Item -LiteralPath $prev).LastWriteTimeUtc -gt $file.LastWriteTimeUtc) { continue }
+            $added += & $put (Get-StatePath "$ref $sha" $Target) ('DONE ' + $file.BaseName + ' ' + $code)
+        } catch { Write-Log "відновлення стану: $($file.Name): $($_.Exception.Message)" }
+    }
+    foreach ($file in @(Get-ChildItem -LiteralPath $old -Filter '*.txt' -File -ErrorAction SilentlyContinue)) {
+        try {
+            $text = [IO.File]::ReadAllText($file.FullName, $script:Utf8)
+            if ($file.Extension -ceq '.txt' -and -not $text.StartsWith('STARTED ')) { $added += & $put (Join-Path $Target $file.Name) $text }
+        } catch { Write-Log "відновлення стану: $($file.Name): $($_.Exception.Message)" }
+    }
+    Write-FileAtomic $flag ([string]$added)
+    Write-Log "стан позначок: відновлено завершених $added"
+}
+
+
 function Main {
     if ($WorkerFile) { $script:Job = Read-WorkerJob $WorkerFile }
     $script:StateDir = Join-Path $RunsDir 'state'
@@ -1404,6 +1450,7 @@ function Main {
         $shared = Initialize-SharedMarkerState
         if (-not $shared) { return 0 }
         $script:StateDir = $shared
+        Restore-FinishedMarkerState $shared
         $workers = New-Object System.Collections.ArrayList
         $first = $true; $clean = $true
         while ($true) {
