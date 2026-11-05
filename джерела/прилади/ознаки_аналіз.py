@@ -246,8 +246,10 @@ class Аналіз:
     def виклик(self, ф, позиційні, іменні, зірка=E, дві_зірки=E):
         """Аргументи (мітки, ключі dict чи None) → контекст параметрів → (мітки повернення, ключі повернення)."""
         к, км = {}, {}
+        передані = set()
 
         def дати(п, значення):
+            передані.add(п)
             мітки, ключі = значення if isinstance(значення, tuple) else (значення, None)
             к[п] = к.get(п, E) | мітки
             if ключі:
@@ -275,6 +277,9 @@ class Аналіз:
         контекст = frozenset((п, frozenset(к.get(п, E)), frozenset((кл, frozenset(в)) for кл, в in км.get(п, {}).items()
                                                                   if в))
                              for п in set(к) | set(км) if к.get(п) or any(км.get(п, {}).values()))
+        # переданий аргумент без міток (число, рядок) — не «не передано»: гілку `is not None` закривати не можна
+        контекст = контекст | frozenset(("!передано:" + п, E, frozenset()) for п in передані
+                                        if п in ф.позиційні + ф.іменні and not к.get(п) and not any(км.get(п, {}).values()))
         if self.пара_глибина and any(S in м or any(S in з for _, з in кл) for _, м, кл in контекст):
             контекст = контекст | frozenset({("!пара", E, frozenset())})
         if (ф.геометрія or ф.формула) and self.поточний and any(S in м or any(S in з for _, з in кл) for _, м, кл in self.поточний[1]) \

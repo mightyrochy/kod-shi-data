@@ -24,7 +24,10 @@ class Стан:
         self.env = {}
         self.ключі = collections.defaultdict(lambda: collections.defaultdict(frozenset))
         self.розгорнуті = collections.defaultdict(dict)   # `*а`/`**к` → номер чи ім'я → (мітки, ключі)
+        self.передані = {п[len("!передано:"):] for п, _, _ in контекст if п.startswith("!передано:")}
         for п, мітки, км in контекст:
+            if п.startswith("!передано:"):
+                continue
             if "#" in п:
                 осн, _, де = п.partition("#")
                 self.розгорнуті[осн][int(де) if де.isdigit() else де] = (мітки, (dict(км) or None))
@@ -93,7 +96,7 @@ class Стан:
             return None
         ім = т.left.id
         вузол = self.ф.вузол
-        if isinstance(вузол, ast.Lambda) or ім not in self.необов_язкові or ім in self.env or ім in self.ключі:
+        if isinstance(вузол, ast.Lambda) or ім not in self.необов_язкові or ім in self.env or ім in self.ключі or ім in self.передані:
             return None
         if not (self.env or self.ключі or self.розгорнуті):
             return None
