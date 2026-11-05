@@ -716,7 +716,6 @@
   "color_from": "фід_розбір: param картки, інакше назва",
   "pattern": "verify.клас_мотиву",
   "decor": "траурний_регістр.святкова_оздоба",
-  "veto": "паспорт_нагоди.ВЕТО_СЛОВА (основи слів)",
   "fabric_kind": "фід_каталог: рід_тканини_слово",
   "texture": "фід_каталог: текстура",
   "elastane_pct": "фід_каталог: еластан_%",
@@ -1889,60 +1888,6 @@
       ]
      }
     },
-    "veto": {
-     "type": "object",
-     "additionalProperties": false,
-     "properties": {
-      "stripes": {
-       "description": "stripes on the item",
-       "enum": [
-        "yes",
-        "no",
-        "unknown"
-       ]
-      },
-      "big_print": {
-       "description": "big print on the item",
-       "enum": [
-        "yes",
-        "no",
-        "unknown"
-       ]
-      },
-      "print": {
-       "description": "any print on the item",
-       "enum": [
-        "yes",
-        "no",
-        "unknown"
-       ]
-      },
-      "shine": {
-       "description": "shine of fabric or trim",
-       "enum": [
-        "yes",
-        "no",
-        "unknown"
-       ]
-      },
-      "oversize": {
-       "description": "oversized volume",
-       "enum": [
-        "yes",
-        "no",
-        "unknown"
-       ]
-      },
-      "tight": {
-       "description": "tight fit",
-       "enum": [
-        "yes",
-        "no",
-        "unknown"
-       ]
-      }
-     }
-    },
     "features": {
      "type": "string",
      "x-стеля-слів": 30,
@@ -2000,7 +1945,6 @@
     "color_why",
     "pattern",
     "decor",
-    "veto",
     "features"
    ],
    "properties": {
@@ -3725,146 +3669,6 @@
          "none",
          "unknown"
         ]
-       }
-      }
-     }
-    },
-    "veto": {
-     "type": "object",
-     "additionalProperties": false,
-     "required": [
-      "stripes",
-      "big_print",
-      "print",
-      "shine",
-      "oversize",
-      "tight"
-     ],
-     "properties": {
-      "stripes": {
-       "type": "object",
-       "additionalProperties": false,
-       "required": [
-        "quote",
-        "value"
-       ],
-       "properties": {
-        "quote": {
-         "type": "string",
-         "maxLength": 120
-        },
-        "value": {
-         "enum": [
-          "yes",
-          "no",
-          "unknown"
-         ]
-        }
-       }
-      },
-      "big_print": {
-       "type": "object",
-       "additionalProperties": false,
-       "required": [
-        "quote",
-        "value"
-       ],
-       "properties": {
-        "quote": {
-         "type": "string",
-         "maxLength": 120
-        },
-        "value": {
-         "enum": [
-          "yes",
-          "no",
-          "unknown"
-         ]
-        }
-       }
-      },
-      "print": {
-       "type": "object",
-       "additionalProperties": false,
-       "required": [
-        "quote",
-        "value"
-       ],
-       "properties": {
-        "quote": {
-         "type": "string",
-         "maxLength": 120
-        },
-        "value": {
-         "enum": [
-          "yes",
-          "no",
-          "unknown"
-         ]
-        }
-       }
-      },
-      "shine": {
-       "type": "object",
-       "additionalProperties": false,
-       "required": [
-        "quote",
-        "value"
-       ],
-       "properties": {
-        "quote": {
-         "type": "string",
-         "maxLength": 120
-        },
-        "value": {
-         "enum": [
-          "yes",
-          "no",
-          "unknown"
-         ]
-        }
-       }
-      },
-      "oversize": {
-       "type": "object",
-       "additionalProperties": false,
-       "required": [
-        "quote",
-        "value"
-       ],
-       "properties": {
-        "quote": {
-         "type": "string",
-         "maxLength": 120
-        },
-        "value": {
-         "enum": [
-          "yes",
-          "no",
-          "unknown"
-         ]
-        }
-       }
-      },
-      "tight": {
-       "type": "object",
-       "additionalProperties": false,
-       "required": [
-        "quote",
-        "value"
-       ],
-       "properties": {
-        "quote": {
-         "type": "string",
-         "maxLength": 120
-        },
-        "value": {
-         "enum": [
-          "yes",
-          "no",
-          "unknown"
-         ]
-        }
        }
       }
      }
