@@ -1,5 +1,5 @@
 """Міжпроцедурний потік і межа шва для приладу ознак обличчя."""
-import ast, collections, functools, glob, os, re, warnings
+import ast, collections, functools, glob, os, re, sys, time, warnings
 from ознаки_основа import (
     B, E, K, P, Q, S, _ваги_знахідки, _властивості, _злити_ел, _значення_полів, _рядок, _словесні_пороги,
     _сітка, _текст, _усі, _формульні, _число, _ім_виклику, ВИКЛЮЧЕНО, Модуль, кутові_пари, пари_функції,
@@ -42,6 +42,9 @@ class Аналіз:
         self.глоб = collections.defaultdict(frozenset)                                       # (модуль, ім) → мітки
         self.середовища = collections.defaultdict(dict)                                     # функція → останнє env
         self.місця = {}
+        self.закриті_ворота = {}   # (файл, рядок) → чому: місце під воротами довіри, закритими для model_hex
+        self.утримання = {}        # (файл, рядок) → чому: гілка дає утримання, а не висновок
+        self.читання_з_походженням = {}  # (файл, рядок) → чому: читання поля відповіді в записі з походженням
         self.змінилось = False
         self.у_роботі = set()
         self.відвідано = set()
@@ -376,7 +379,8 @@ class Аналіз:
         self.знайти_зерно()
         self.таблиці_причин()
         входи = self.входи_шва()
-        for _ in range(12):
+        for прохід in range(12):
+            початок = time.monotonic()
             self.змінилось = False
             self.відвідано = set()
             if self.зерно and self.зерно.get("читач"):
@@ -387,5 +391,7 @@ class Аналіз:
                     self.межа_js(поля)
             for ф in входи:
                 self.виклик(ф, [frozenset({P, B})] * max(1, len(ф.позиційні)), {})
+            print("прохід %d: %.0f с, змінилось: %s, станів: %d" % (прохід + 1, time.monotonic() - початок, self.змінилось,
+                                                                  len(self.відвідано)), file=sys.stderr, flush=True)
             if not self.змінилось:
                 break

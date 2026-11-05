@@ -33,6 +33,8 @@ E = frozenset()
 НЕВІДОМЕ = re.compile(r"не стверджу|not_asserted|unknown|невідом|не визнач|н/д|^none$|не калібр|^free$|вільн|^—$|\bнема\b|не чита",
                       re.IGNORECASE)
 ВИМІР = re.compile(r"(?<!not )(?<!un)(?<!не )\b(measured|measures|measure|виміря\w*|вимір\w*)", re.IGNORECASE)
+УТРИМАННЯ = re.compile(r"утримано|утримання|withheld|не стверджується|не_стверджується", re.IGNORECASE)
+ПОХОДЖЕННЯ = frozenset(("джерело", "source", "protocol", "свідок", "походження", "джерело_кольору"))
 HEX_РЕГ = re.compile(r"\[0-9a-fA-F\]\{6\}|\[0-9A-Fa-f\]\{6\}")
 ПОРЯДОК = (ast.Lt, ast.LtE, ast.Gt, ast.GtE)
 БУЛЕВІ = frozenset(("len", "isinstance", "issubclass", "hasattr", "callable", "bool", "any", "all", "id", "type",

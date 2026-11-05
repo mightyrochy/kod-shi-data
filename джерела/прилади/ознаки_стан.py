@@ -1,7 +1,7 @@
 """Контекст одного виконання функції у потоці ознак обличчя."""
 import ast, collections, functools
 from ознаки_основа import (
-    B, C, E, F, HEX_РЕГ, K, P, Q, R, S, V, _без_мапи, _без_першого, _ел, _з_префіксом, _звузити, _злити_ел,
+    B, C, E, F, HEX_РЕГ, K, P, Q, R, S, V, УТРИМАННЯ, ПОХОДЖЕННЯ, _без_мапи, _без_першого, _ел, _з_префіксом, _звузити, _злити_ел,
     _злити_ключі, _корінь_імені, _пара, _перебір, _під, _рядок, _сітка, _текст, _токени, _усі, _шлях,
     _ім_виклику, _імена, БУЛЕВІ, ВИМІР, ВМІСТИЩА, ГЛИБИНА, МАПА, МАПА_М, МУТАЦІЇ, НЕВІДОМЕ, ПОЗИЦІЙНІ,
     ПОРЯДОК, СЛУЖБОВІ, ТОКЕН, ФАЙЛОВІ
@@ -42,6 +42,53 @@ class Стан:
         # несе лише нове); у гілці чи циклі — додає, бо інший шлях міг лишити старе
         self.верх = ф.верх
         self.зерно = ф.повне in а.функції_зерна
+        self.мертва = 0          # глибина гілок, що не виконуються для model_hex (ворота довіри): місць там нема
+
+    def місце(self, м, вузол, пункт, чому, вхід=False):
+        """Місце лічиться, лише коли гілка виконується для `model_hex`: ворота довіри (`R[ось] >= MIN_TO_EMIT`) для нього
+        закриті (довіра 0 за таблицею), і висновок з оцінки без виміру там не виходить (наряд Річ-ознаки-обличчя-прилад)."""
+        if self.мертва:
+            self.а.закриті_ворота.setdefault((м.шлях, вузол.lineno), чому)
+            return
+        self.а.місце(м, вузол, пункт, чому, вхід=вхід)
+
+    # ── ворота за джерелом: гілка під довірою, якої model_hex не має ──
+    def ворота(self, т):
+        """Тест → "так" (тіло потребує довіри ≥ MIN_TO_EMIT — для model_hex не виконується), "ні" (так само else) чи None."""
+        if isinstance(т, ast.Name):
+            return "так" if т.id in self.ф_ворота() else None
+        if isinstance(т, ast.UnaryOp) and isinstance(т.op, ast.Not):
+            г = self.ворота(т.operand)
+            return {"так": "ні", "ні": "так"}.get(г)
+        if isinstance(т, ast.BoolOp):
+            гг = [self.ворота(x) for x in т.values]
+            if isinstance(т.op, ast.And):
+                return "так" if "так" in гг else None
+            return "так" if all(г == "так" for г in гг) else None
+        if isinstance(т, ast.Compare) and len(т.ops) == 1:
+            ліво, оп, право = т.left, т.ops[0], т.comparators[0]
+            def мінімум(х):
+                return isinstance(х, ast.Name) and х.id == "MIN_TO_EMIT" or isinstance(х, ast.Attribute) and х.attr == "MIN_TO_EMIT"
+            if мінімум(право):
+                return "так" if isinstance(оп, (ast.Gt, ast.GtE)) else "ні" if isinstance(оп, (ast.Lt, ast.LtE)) else None
+            if мінімум(ліво):
+                return "так" if isinstance(оп, (ast.Lt, ast.LtE)) else "ні" if isinstance(оп, (ast.Gt, ast.GtE)) else None
+        return None
+
+    def ф_ворота(self):
+        """Імена функції, присвоєні з воріт довіри (`надійно = R["undertone"] >= MIN_TO_EMIT`)."""
+        if not hasattr(self.ф, "_ворота_імена"):
+            self.ф._ворота_імена = frozenset()
+            імена = set()
+            присвоєння = [(ц.id, n.value) for n in self.ф.власні if isinstance(n, ast.Assign)
+                          for ц in n.targets if isinstance(ц, ast.Name)]
+            while True:
+                self.ф._ворота_імена = frozenset(імена)
+                нові = {ім for ім, з in присвоєння if ім not in імена and self.ворота(з) == "так"}
+                if not нові:
+                    break
+                імена |= нові
+        return self.ф._ворота_імена
 
     def виконати(self):
         в = self.ф.вузол
@@ -258,8 +305,14 @@ class Стан:
             if isinstance(сам, ast.IfExp):
                 self.e(сам.test)
             вих, ключі = E, {}
-            for г in гілки:
-                м, к = self.значення(г)
+            вр = self.ворота(сам.test) if isinstance(сам, ast.IfExp) else None
+            for ін, г in enumerate(гілки):
+                закрита = вр == ("так", "ні")[ін] if вр else False
+                self.мертва += закрита
+                try:
+                    м, к = self.значення(г)
+                finally:
+                    self.мертва -= закрита
                 вих |= м
                 for кл, з in (к or {}).items():
                     ключі[кл] = ключі.get(кл, E) | з
@@ -573,7 +626,12 @@ class Стан:
             if isinstance(і, ast.If) and not і.orelse and і.body \
                     and isinstance(і.body[-1], (ast.Return, ast.Raise, ast.Continue, ast.Break)):
                 # `if код not in ТАБЛ: return` — решта тіла йде лише з кодів, що пройшли охорону
-                self.у_звуженні(self.звуження(і.test)[1], інструкції[н + 1:])
+                закрита = self.ворота(і.test) == "ні"   # `if R < MIN_TO_EMIT: return` — решта лише з довірою
+                self.мертва += закрита
+                try:
+                    self.у_звуженні(self.звуження(і.test)[1], інструкції[н + 1:])
+                finally:
+                    self.мертва -= закрита
                 return
 
     def звуження(self, т):
@@ -677,8 +735,17 @@ class Стан:
             self.e(і.test)
             self.невідоме_в_гілці(і)
             в_тілі, в_іншому = self.звуження(і.test)
-            self.у_звуженні(в_тілі, і.body)
-            self.у_звуженні(в_іншому, і.orelse)
+            г = self.ворота(і.test)
+            self.мертва += г == "так"
+            try:
+                self.у_звуженні(в_тілі, і.body)
+            finally:
+                self.мертва -= г == "так"
+            self.мертва += г == "ні"
+            try:
+                self.у_звуженні(в_іншому, і.orelse)
+            finally:
+                self.мертва -= г == "ні"
         elif isinstance(і, (ast.With, ast.AsyncWith)):
             for п in і.items:
                 м = self.e(п.context_expr)
@@ -735,10 +802,12 @@ class Стан:
             if isinstance(т.operand, ast.Name) and т.operand.id in self.невідомо:
                 return {"так": "ні", "ні": "так"}[self.невідомо[т.operand.id]]
             if isinstance(т.operand, ast.Name) and т.operand.id in self.послідовності():
-                return None   # порожній перелік, зібраний тут (знахідки, речі), — «нема жодного», а не незнання
+                return "так" if self.її_значення_переліку(т.operand.id) else None   # порожній перелік, зібраний тут (знахідки, речі), — «нема жодного», а не незнання
             return "так" if S in self.наявне(т.operand) and not isinstance(т.operand, (ast.Compare, ast.Call)) else None
         if isinstance(т, ast.Name) and т.id in self.невідомо:
             return self.невідомо[т.id]
+        if isinstance(т, ast.Name) and т.id in self.послідовності() and self.її_значення_переліку(т.id):
+            return "ні"   # `x if Ls else 0.0`: порожній перелік її значень — незнання, а число ставить код
         if isinstance(т, ast.BoolOp) and isinstance(т.op, ast.And):
             for в in т.values:
                 г = self.гілка_невідомо(в)
@@ -766,6 +835,20 @@ class Стан:
                                 and з.func.id in ("list", "sorted", "tuple", "set")))
             self.ф._послідовності = {ім for ім, в in види.items() if в == {True}}
         return self.ф._послідовності
+
+    def її_значення_переліку(self, ім):
+        """Перелік зібрано включенням, що бере її значення поля (`[f["L"] for f in …]`), а не записи знахідок: порожній
+        перелік тут — «її значень нема», і число замість нього ставить код."""
+        if not hasattr(self.ф, "_перелік_значень"):
+            види = collections.defaultdict(set)
+            for n in self.ф.власні:
+                if isinstance(n, ast.Assign):
+                    for ц in n.targets:
+                        if isinstance(ц, ast.Name):
+                            види[ц.id].add(isinstance(n.value, (ast.ListComp, ast.SetComp))
+                                           and isinstance(n.value.elt, (ast.Subscript, ast.Attribute)))
+            self.ф._перелік_значень = {ім for ім, в in види.items() if в == {True}}
+        return ім in self.ф._перелік_значень and S in self.читати_env(ім)
 
     def наявне(self, в):
         """Мітки, на які дивиться перевірка «є / нема» (`not x`, `x is None`) запису чи списку записів з ключами: як пара
@@ -815,6 +898,31 @@ class Стан:
                 return self.значення_замість(з, число)
         return False
 
+    def читач_з_походженням(self):
+        """Функція кладе в запис, який віддає, ключ походження (`джерело=`, `source`, `protocol`, `свідок`): читання поля
+        відповіді моделі в такому записі — читання з походженням, не риса без позначки оцінки."""
+        if not hasattr(self.ф, "_читач_походження"):
+            ключі = set()
+            for n in ast.walk(self.ф.вузол):
+                if isinstance(n, ast.Dict):
+                    ключі |= {к.value for к in n.keys if _рядок(к)}
+                elif isinstance(n, ast.Call):
+                    ключі |= {к.arg for к in n.keywords if к.arg}
+                elif isinstance(n, ast.Subscript) and _рядок(n.slice) and isinstance(n.ctx, ast.Store):
+                    ключі.add(n.slice.value)
+            self.ф._читач_походження = bool(ключі & ПОХОДЖЕННЯ)
+        return self.ф._читач_походження
+
+    def утримує(self, вузли, чому_вузол):
+        """Гілка (інструкції чи вираз) дає утримання — слово «утримано», «withheld», «не стверджується» у її рядку: це не
+        висновок з оцінки, а відмова від нього, тож «не місце» з причиною."""
+        for х in (вузли if isinstance(вузли, list) else [вузли]):
+            for n in ast.walk(х):
+                if _рядок(n) and УТРИМАННЯ.search(n.value):
+                    self.а.утримання.setdefault((self.м.шлях, чому_вузол.lineno), "гілка дає утримання: «%s»" % n.value[:50])
+                    return True
+        return False
+
     def невідоме_в_гілці(self, і):
         if id(і.test) in self.ф.вільні_пари:
             return
@@ -822,10 +930,12 @@ class Стан:
         if not г:
             return
         гілка = і.body if г == "так" else і.orelse
+        if self.утримує(гілка, і.test):
+            return
         for x in гілка:
             в = x.value if isinstance(x, (ast.Assign, ast.Return)) else None
             if в is not None and self.значення_замість(в):
-                self.а.місце(self.м, і.test, 2, "гілка «невідомо» (%s) ставить %s"
+                self.місце(self.м, і.test, 2, "гілка «невідомо» (%s) ставить %s"
                              % (_текст(і.test)[:60], _текст(в)[:40]))
                 return
 
@@ -890,7 +1000,7 @@ class Стан:
             if id(в) in self.пари and S in л | п and (стала_пара or self.ф.повне not in self.а.шкали
                     or л & {S, P, C, K} and п & {S, P, C, K}):
                 if not self.а.пара_глибина:
-                    self.а.місце(self.м, в, 1, "її значення входить в арифметику пари: %s" % _текст(в)[:70], вхід=True)
+                    self.місце(self.м, в, 1, "її значення входить в арифметику пари: %s" % _текст(в)[:70], вхід=True)
                     self.а.пара_глибина += 1
                     self.вхід_пари = True
                 return (м - {S}) | {Q}
@@ -911,7 +1021,7 @@ class Стан:
                     and self.значення_замість(в.values[-1], число=True) \
                     and not all(isinstance(х, ast.BinOp) or isinstance(х, ast.UnaryOp) and not isinstance(х.op, ast.Not)
                                 for х in в.values[:-1]):
-                self.а.місце(self.м, в, 2, "запасне число: %s" % _текст(в)[:70])
+                self.місце(self.м, в, 2, "запасне число: %s" % _текст(в)[:70])
             вих = E
             for м in мітки:
                 вих |= м
@@ -920,15 +1030,26 @@ class Стан:
             return self.порівняння(в)
         if isinstance(в, ast.IfExp):
             self.e(в.test)
+            вр = self.ворота(в.test)
+            self.мертва += вр == "так"
+            try:
+                мб = self.e(в.body)
+            finally:
+                self.мертва -= вр == "так"
+            self.мертва += вр == "ні"
+            try:
+                мо = self.e(в.orelse)
+            finally:
+                self.мертва -= вр == "ні"
             г = self.гілка_невідомо(в.test)
             if г:
                 гілка = в.body if г == "так" else в.orelse
                 інша = в.orelse if г == "так" else в.body
-                if self.значення_замість(гілка) and not (_рядок(інша) and НЕВІДОМЕ.search(інша.value)):
+                if self.значення_замість(гілка) and not self.утримує(гілка, в) and not (_рядок(інша) and НЕВІДОМЕ.search(інша.value)):
                     # інша гілка сама каже «невідомо» — отже ця гілка не про незнання (`не_вимір(x) is None` — «вимір»)
-                    self.а.місце(self.м, в, 2, "гілка «невідомо» (%s) ставить %s"
+                    self.місце(self.м, в, 2, "гілка «невідомо» (%s) ставить %s"
                                  % (_текст(в.test)[:50], _текст(гілка)[:40]))
-            return self.e(в.body) | self.e(в.orelse)
+            return мб | мо
         if isinstance(в, ast.Dict):
             мітки = [self.e(з) for з in в.values]
             for к in в.keys:
@@ -1001,7 +1122,11 @@ class Стан:
             вих.add(Q)
         if self.зерно and isinstance(к, str) and self.а.зерно and к in self.а.зерно["ключі"]:
             вих.add(S)
-            self.а.місце(self.м, вузол, 1, "поле відповіді моделі зору `%s` (hex) стає її рисою без позначки оцінки" % к)
+            if self.читач_з_походженням():
+                self.а.читання_з_походженням.setdefault((self.м.шлях, вузол.lineno),
+                                                        "поле відповіді `%s` читає читач, чий запис несе походження" % к)
+            else:
+                self.місце(self.м, вузол, 1, "поле відповіді моделі зору `%s` (hex) стає її рисою без позначки оцінки" % к)
         if S in база:
             if isinstance(к, str) and (СЛУЖБОВІ.match(к) or к in self.а.готові_поля):
                 pass
@@ -1016,7 +1141,7 @@ class Стан:
             мт = self.e(типове)
             вих |= мт
             if S in вих and not мт and self.значення_замість(типове, число=True):
-                self.а.місце(self.м, вузол, 2, "запасне число: %s" % _текст(вузол)[:70])
+                self.місце(self.м, вузол, 2, "запасне число: %s" % _текст(вузол)[:70])
         return frozenset(вих)
 
     def порівняння(self, в):
@@ -1036,12 +1161,12 @@ class Стан:
             if isinstance(оп, ПОРЯДОК):
                 if id(в) in self.а.формульні:
                     continue
-                self.а.місце(self.м, в, 1, "поріг на пораховане з hex моделі: %s" % _текст(в)[:70])
+                self.місце(self.м, в, 1, "поріг на пораховане з hex моделі: %s" % _текст(в)[:70])
             elif isinstance(оп, (ast.Eq, ast.NotEq)):
                 інший = операнди[i + 1] if S in л else операнди[i]
                 if isinstance(інший, ast.Constant) and isinstance(інший.value, (int, float)) \
                         and not isinstance(інший.value, bool):
-                    self.а.місце(self.м, в, 1, "рівність числу на порахованому з hex моделі: %s" % _текст(в)[:70])
+                    self.місце(self.м, в, 1, "рівність числу на порахованому з hex моделі: %s" % _текст(в)[:70])
         return E
 
     def довіра(self, вузол, мітки, прямі):
@@ -1049,9 +1174,18 @@ class Стан:
         Довіру дає пряме значення ключа (`прямі`: мітки й вираз), узяте з таблиці довіри тут: вираз читає
         `AXIS_RELIABILITY`, кличе `reliability` чи ім'я, присвоєне з них у цій функції. Запис, що лише копіюється
         (`dict(р, …)`, `{**р}`), чи число, пораховане з довіри далі, несе довіру, дану раніше, — місце там, де її дали."""
+        if self.має_походження(вузол):
+            return   # запис кладе поруч з довірою своє джерело (`джерело=`, `"source"`): довіра — його джерела, а не знімка
         if any(S in м and R not in м for м in мітки) and \
                 any(R in м and self.з_таблиці_довіри(з) for м, з in прямі):
-            self.а.місце(self.м, вузол, 1, "оцінці моделі дано довіру знімку (`AXIS_RELIABILITY`)")
+            self.місце(self.м, вузол, 1, "оцінці моделі дано довіру знімку (`AXIS_RELIABILITY`)")
+
+    @staticmethod
+    def має_походження(вузол):
+        """Словник чи `dict(…)` має ключ походження (`ПОХОДЖЕННЯ`) серед прямих ключів."""
+        if isinstance(вузол, ast.Dict):
+            return any(_рядок(к) and к.value in ПОХОДЖЕННЯ for к in вузол.keys if к is not None)
+        return isinstance(вузол, ast.Call) and any(к.arg in ПОХОДЖЕННЯ for к in вузол.keywords if к.arg)
 
     def з_таблиці_довіри(self, вираз):
         if not hasattr(self.ф, "_імена_довіри"):
@@ -1069,13 +1203,37 @@ class Стан:
     @staticmethod
     @functools.cache
     def _джерело_довіри(вираз, імена):
-        for n in ast.walk(вираз):
-            if isinstance(n, ast.Attribute) and n.attr == "AXIS_RELIABILITY":
+        """Вираз дає довіру: читає таблицю довіри чи ім'я, присвоєне з неї, прямо або через `min`/`max`/`round`/`.get`/
+        індекс/арифметику. Бал, ПОРАХОВАНИЙ з довірою (`стиснути(s, r)`, виклик чужої функції), — не сама довіра:
+        інакше запис із балом, що вже несе довіру осі, читався б як запис, якому довіру дали (12091)."""
+        if isinstance(вираз, ast.Attribute):
+            return вираз.attr == "AXIS_RELIABILITY" or Стан._джерело_довіри(вираз.value, імена)
+        if isinstance(вираз, ast.Name):
+            return вираз.id in імена
+        if isinstance(вираз, ast.Call):
+            ім = _ім_виклику(вираз.func) or ""
+            if "reliab" in ім:
                 return True
-            if isinstance(n, ast.Call) and "reliab" in (_ім_виклику(n.func) or ""):
-                return True
-            if isinstance(n, ast.Name) and n.id in імена:
-                return True
+            if ім in ("min", "max", "round", "float", "abs", "int", "dict"):
+                return any(Стан._джерело_довіри(а, імена) for а in вираз.args) or \
+                    any(Стан._джерело_довіри(к.value, імена) for к in вираз.keywords)
+            if isinstance(вираз.func, ast.Attribute) and вираз.func.attr in ("get", "copy"):
+                return Стан._джерело_довіри(вираз.func.value, імена)
+            return False
+        if isinstance(вираз, ast.Subscript):
+            return Стан._джерело_довіри(вираз.value, імена)
+        if isinstance(вираз, ast.BinOp):
+            return Стан._джерело_довіри(вираз.left, імена) or Стан._джерело_довіри(вираз.right, імена)
+        if isinstance(вираз, ast.UnaryOp):
+            return Стан._джерело_довіри(вираз.operand, імена)
+        if isinstance(вираз, ast.IfExp):
+            return Стан._джерело_довіри(вираз.body, імена) or Стан._джерело_довіри(вираз.orelse, імена)
+        if isinstance(вираз, ast.BoolOp):
+            return any(Стан._джерело_довіри(х, імена) for х in вираз.values)
+        if isinstance(вираз, ast.Dict):
+            return any(х is not None and Стан._джерело_довіри(х, імена) for х in вираз.values)
+        if isinstance(вираз, ast.Starred):
+            return Стан._джерело_довіри(вираз.value, імена)
         return False
 
     def виклик(self, в):
@@ -1268,7 +1426,7 @@ class Стан:
                 if isinstance(з, ast.Call) and з.args and _рядок(з.args[0]):
                     текст_шаблону += з.args[0].value
             if HEX_РЕГ.search(текст_шаблону) and (P in усі) and S not in усі:
-                self.а.місце(self.м, в, 1, "hex із тексту відповіді моделі зору (запасний хід) стає її рисою")
+                self.місце(self.м, в, 1, "hex із тексту відповіді моделі зору (запасний хід) стає її рисою")
                 return frozenset({S})
             if HEX_РЕГ.search(текст_шаблону) and S in усі:
                 return frozenset({S})
@@ -1285,7 +1443,7 @@ class Стан:
                     and self.м.імпорти.get(в.func.value.id) == 'math' and ім in ('erf', 'tanh'):
                 # Нелінійна обмежена шкала повертає силу/певність; її читачі не є новими входами.
                 if S in усі and not self.а.пара_глибина:
-                    self.а.місце(self.м, в, 1, "її значення входить у нелінійну шкалу рішення: %s" % _текст(в)[:70])
+                    self.місце(self.м, в, 1, "її значення входить у нелінійну шкалу рішення: %s" % _текст(в)[:70])
                 return frozenset((усі - {S, F}) | ({Q} if S in усі else set()))
             if ім in ("loads", "deepcopy", "copy", "list", "sorted", "tuple", "set", "reversed", "frozenset") \
                     and len(поз_к) == 1 and isinstance(поз_к[0], tuple):
@@ -1321,6 +1479,9 @@ class Стан:
                 # вони коду; неоднорідний перелік заяв читач звужує перевіркою коду (`звуження`)
                 поз_к = [frozenset({ТОКЕН + в.args[0].value})] + list(поз_к[1:])
             пов = self.а.виклик(ц, поз_к, імен_к, зірка, дві)
+            if F in пов and any(к.arg == "джерело" and not (isinstance(к.value, ast.Constant) and к.value.value is None)
+                                for к in в.keywords):
+                пов = пов - {F}   # будівник риc із явним `джерело=`: запис несе походження, а не довіру знімку
             for кл, з in (self.а.останні_ключі or {}).items():
                 ключі_пов[кл] = ключі_пов.get(кл, E) | з
             к = self.а.останній_кортеж
@@ -1349,7 +1510,7 @@ class Стан:
                     and isinstance(вираз.args[1], ast.Dict) and not вираз.args[1].keys:
                 запис = вираз
             if запис is not None and S in self.e(запис):
-                self.а.місце(self.м, в, 3, "причина проходить за наявністю запису, не за значенням: %s" % _текст(в)[:60])
+                self.місце(self.м, в, 3, "причина проходить за наявністю запису, не за значенням: %s" % _текст(в)[:60])
                 for м, к, код in self.а.перевірки[self.ф.повне]:
                     self.а.місця.setdefault((м.шлях, к.lineno), set()).add(
                         (3, "причина `%s` звіряється наявністю запису її ознаки, а не значенням" % код))
@@ -1361,9 +1522,9 @@ class Стан:
         if not є_оцінка:
             return
         if "from_photo" in іменні or any(к.arg == "from_photo" for к in в.keywords):
-            self.а.місце(self.м, в, 1, "hex моделі стає рисою з довірою знімку (`from_photo`): %s" % _текст(в.func))
+            self.місце(self.м, в, 1, "hex моделі стає рисою з довірою знімку (`from_photo`): %s" % _текст(в.func))
         elif F in пов and any(F in м for м in аргументи):
-            self.а.місце(self.м, в, 1, "hex моделі додано рисою в запис рис з довірою знімку: %s" % _текст(в.func))
+            self.місце(self.м, в, 1, "hex моделі додано рисою в запис рис з довірою знімку: %s" % _текст(в.func))
 
     def опис_полів(self, в):
         """п.4: поле оголошення, якому дано значення з цього джерела, а опис зве його виміром коду."""
