@@ -40,9 +40,13 @@ AXIS_RELIABILITY = {
  "protocolized": dict(value=0.9, contrast=0.9, chroma=0.7, hue=0.7, undertone=0.5),
  "uncontrolled": dict(value=0.8, contrast=0.85, chroma=0.35, hue=0.35, undertone=0.15),
 }
+# Одне визначення джерела фото (Е3-одна-величина, ч1): типове — фото без протоколу; ім'я протоколу — ключ
+# `AXIS_RELIABILITY`. Читають усі `source`/`protocol`/`джерело` з типовим значенням.
+ДЖЕРЕЛО_ФОТО_ТИПОВЕ = "uncontrolled"
+ДЖЕРЕЛО_ПРОТОКОЛ = "protocolized"
 MIN_TO_EMIT = 0.5     # T3: нижче цього вісь не несе висновків, лише повідомляється
 
-def reliability(source="uncontrolled"):
+def reliability(source=ДЖЕРЕЛО_ФОТО_ТИПОВЕ):
     """Надійність осей (value, contrast, chroma, hue, undertone) для джерела даних `source` з
     `AXIS_RELIABILITY`; невідоме джерело — KeyError (помилка викликача, не «нема даних»).
 
@@ -82,7 +86,7 @@ def похибка_контрасту(*se):
     se = [float(s) for s in se if s]
     return round(math.sqrt(sum(s * s for s in se)), 2) if se else None
 
-def надійність_контрасту(source="uncontrolled", se_L=None):
+def надійність_контрасту(source=ДЖЕРЕЛО_ФОТО_ТИПОВЕ, se_L=None):
     """Надійність осі контрасту: стеля джерела, згашена РЕГІОНАЛЬНИМ шумом `se_L`;
     ніколи не вище стелі. `se_L` — похибка центральної оцінки L* зони
     (`extract.zone_stats.se_L`), не розкид пікселів."""
@@ -99,7 +103,7 @@ def надійність_контрасту(source="uncontrolled", se_L=None):
                       f"міжособового розкиду контрасту (R-PC-10: 4 L* → 127 %); спільний зсув "
                       f"експозиції/ББ — 0 %; надійність {над} під стелею {стеля}"))
 
-def gate_conclusions(source="uncontrolled", se_L=None):
+def gate_conclusions(source=ДЖЕРЕЛО_ФОТО_ТИПОВЕ, se_L=None):
     """Що взагалі можна стверджувати за цього джерела даних.
     `F` прибрано: гейт залежить від умов зйомки, і його присутність у сигнатурі
     натякала, що профіль якось впливає — не впливає. `se_L` (R-PC-10) — виміряний
