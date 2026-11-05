@@ -1,0 +1,35 @@
+python : Exception in thread Thread-1 (_readerthread):
+At line:2 char:53
++ ... NG='utf-8'; python джерела/прилади/корінь_річ_колір_межі.py > аудит/п ...
++                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (Exception in th..._readerthread)::String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+
+Traceback (most recent call last):
+  File "C:\Users\gemini\AppData\Local\Programs\Python\Python312\Lib\threading.py", line 1075, in _bootstrap_inner
+    self.run()
+  File "C:\Users\gemini\AppData\Local\Programs\Python\Python312\Lib\threading.py", line 1012, in run
+    self._target(*self._args, **self._kwargs)
+  File "C:\Users\gemini\AppData\Local\Programs\Python\Python312\Lib\subprocess.py", line 1599, in _readerthread
+    buffer.append(fh.read())
+                  ^^^^^^^^^
+  File "<frozen codecs>", line 322, in decode
+UnicodeDecodeError: 'utf-8' codec can't decode byte 0xf7 in position 28: invalid start byte
+Traceback (most recent call last):
+  File "C:\Users\gemini\gemini-runs\w\20261103-013824-cb312b1ec0c4\repo\джерела\прилади\корінь_річ_колір_межі.py", line
+ 1322, in <module>
+    sys.exit(головна(sys.argv[1:]))
+             ^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\gemini\gemini-runs\w\20261103-013824-cb312b1ec0c4\repo\джерела\прилади\корінь_річ_колір_межі.py", line
+ 1299, in головна
+    for файл, рядок, чому in місця_г2(корінь):
+                             ^^^^^^^^^^^^^^^^
+  File "C:\Users\gemini\gemini-runs\w\20261103-013824-cb312b1ec0c4\repo\джерела\прилади\корінь_річ_колір_межі.py", line
+ 1250, in місця_г2
+    таблиця = таблиця_г2(корінь)
+              ^^^^^^^^^^^^^^^^^^
+  File "C:\Users\gemini\gemini-runs\w\20261103-013824-cb312b1ec0c4\repo\джерела\прилади\корінь_річ_колір_межі.py", line
+ 1239, in таблиця_г2
+    return json.loads(вих.stdout.strip().splitlines()[-1])
+                      ^^^^^^^^^^^^^^^^
+AttributeError: 'NoneType' object has no attribute 'strip'

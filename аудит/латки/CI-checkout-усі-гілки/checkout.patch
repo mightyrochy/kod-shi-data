@@ -1,0 +1,99 @@
+diff --git a/.github/workflows/zbirka.yml b/.github/workflows/zbirka.yml
+--- a/.github/workflows/zbirka.yml
++++ b/.github/workflows/zbirka.yml
+@@ -117,7 +117,13 @@
+       - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
+         with:
+           persist-credentials: false
+-          fetch-depth: 0
++          fetch-depth: 1
++
++      - name: історія голови й бази без чужих гілок
++        env:
++          BASE_REF: ${{ github.event.pull_request.base.sha || github.event.before }}
++          GITHUB_TOKEN: ${{ github.token }}
++        run: bash .github/scripts/checkout-history.sh
+ 
+       - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5.6.0
+         with:
+@@ -326,7 +332,13 @@
+       - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
+         with:
+           persist-credentials: false
+-          fetch-depth: 0
++          fetch-depth: 1
++
++      - name: історія голови й бази без чужих гілок
++        env:
++          BASE_REF: ${{ github.event.pull_request.base.sha || github.event.before }}
++          GITHUB_TOKEN: ${{ github.token }}
++        run: bash .github/scripts/checkout-history.sh
+       - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065
+         with:
+           python-version: '3.11'
+@@ -402,7 +414,13 @@
+       - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
+         with:
+           persist-credentials: false
+-          fetch-depth: 0
++          fetch-depth: 1
++
++      - name: історія голови й бази без чужих гілок
++        env:
++          BASE_REF: ${{ github.event.pull_request.base.sha || github.event.before }}
++          GITHUB_TOKEN: ${{ github.token }}
++        run: bash .github/scripts/checkout-history.sh
+ 
+       - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5.6.0
+         with:
+@@ -443,7 +461,13 @@
+       - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
+         with:
+           persist-credentials: false
+-          fetch-depth: 0
++          fetch-depth: 1
++
++      - name: історія голови й бази без чужих гілок
++        env:
++          BASE_REF: ${{ github.event.pull_request.base.sha || github.event.before }}
++          GITHUB_TOKEN: ${{ github.token }}
++        run: bash .github/scripts/checkout-history.sh
+ 
+       - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5.6.0
+         with:
+diff --git a/.github/scripts/checkout-history.sh b/.github/scripts/checkout-history.sh
+new file mode 100644
+--- /dev/null
++++ b/.github/scripts/checkout-history.sh
+@@ -0,0 +1,31 @@
++#!/usr/bin/env bash
++# Повна історія потрібна історичним базам проб і звіту правил.
++# Явні refspec обмежують fetch головою, базою й main навіть за широкого remote.origin.fetch.
++set -euo pipefail
++
++base_ref=${BASE_REF:-refs/heads/main}
++if [[ "$base_ref" =~ ^0+$ ]]; then
++  base_ref=refs/heads/main
++fi
++head_sha=${GITHUB_SHA:-$(git rev-parse HEAD)}
++
++# Checkout не лишає токена в .git/config; заголовок діє лише в цьому процесі.
++if [ -n "${GITHUB_TOKEN:-}" ]; then
++  auth=$(printf 'x-access-token:%s' "$GITHUB_TOKEN" | base64 | tr -d '\n')
++  export GIT_CONFIG_COUNT=1
++  export GIT_CONFIG_KEY_0="http.${GITHUB_SERVER_URL:-https://github.com}/.extraheader"
++  export GIT_CONFIG_VALUE_0="AUTHORIZATION: basic $auth"
++fi
++
++depth=()
++if [ "$(git rev-parse --is-shallow-repository)" = true ]; then
++  depth+=(--unshallow)
++fi
++git fetch --no-tags --no-recurse-submodules "${depth[@]}" origin \
++  "$head_sha" "$base_ref" +refs/heads/main:refs/remotes/origin/main
++if [ "$base_ref" = refs/heads/main ]; then
++  base_ref=refs/remotes/origin/main
++fi
++git cat-file -e "${head_sha}^{commit}"
++git cat-file -e "${base_ref}^{commit}"
++git merge-base "$head_sha" "$base_ref"
