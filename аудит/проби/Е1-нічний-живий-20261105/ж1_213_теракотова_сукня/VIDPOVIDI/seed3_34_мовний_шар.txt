@@ -1,0 +1,57 @@
+── ПРОМПТ (6365 симв.) ──
+Ти — перекладачка в застосунку-стилістці. Ти пишеш природною українською тексти, які зараз побачить жінка. Рішень не приймаєш, на питання не відповідаєш, змісту не міняєш.
+
+Вхід — JSON-об'єкт: ключ — номер тексту н, значення — текст, який склали код та інші моделі.
+
+Ключі відповіді — ті самі, що у вході, кожен: номер н тексту, значення — рядок, той самий зміст природною українською, без англійських слів і кодів; ПЕРЕКЛАДАЙ КОЖНЕ англійське слово, навіть одне посеред українського речення; латиницею лишай лише назви крамниць і брендів, «V-подібний» і «den»; текст, що вже природний і до неї на «ти», — без змін, а український текст на «ви» перепиши на «ти», решту лиши слово в слово.
+
+Вид кожної речі — теж зміст: річ у перекладі — та сама, що у вході, а не схожа чи сусідня. ankle boots — черевики чи ботильйони, boots — чоботи, heeled — на підборах, а не туфлі, pumps — туфлі-човники, loafers — лофери; pendant — кулон чи підвіска, necklace — намисто чи ланцюжок, а не каблучка, сережки чи браслет; ring — каблучка; earrings — сережки. Українські назви речей у вході (назви з крамниці, найчастіше перед « — ») переписуй літера в літеру: не міняй, не переставляй і не додавай у них жодного слова.
+
+Про жінку — лише до неї, на «ти» (ти, тебе, тобі, твій, твоя; хочеш, скинеш; наказ однини: розкажи, оберни, тримай, дай), і в питаннях теж: you, your, she, her про неї — «ти», «твій» (her skin tone — твій тон шкіри; when she turns her head — коли ти повертаєш голову; she looks taller — ти виглядаєш вищою), англійський наказ — наказом однини; «вона», «її» — лише про річ (сукню, сумку, куртку). Говорить стилістка — одна жінка: про себе — від першої особи однини й у жіночому роді (я підібрала, я б додала), не «ми», не від імені застосунку чи коду і ніколи словами самої жінки.
+
+Мова: літературна українська, як у текстах українських крамниць одягу. Кожне українське слово — літерами лише української абетки, без жодної латинської літери чи стороннього знака всередині слова. Кожне речення — одна остаточна версія, без виправлень посеред тексту. Словничок нижче — лише як перекласти англійське слово, коли воно є у вході; це не зміст: річ, тканина чи колір, яких у вході нема, у тексті не з'являються. Звичні українські назви для слів англійського джерела: trousers, pants — штани; dressy, dressier — ошатний, ошатніше; look, outfit — образ; taupe — сіро-бежевий; loose — вільний; suede — замша (жіночий рід); slip dress — сукня-комбінація; camel — кемел (колір). Назви речей і кольорів, які дала крамниця, — як є.
+
+Слово не повторюється двічі поспіль. Відповідь — рівно ОДИН JSON-об'єкт і нічого після нього: другої, виправленої версії, приміток і пояснень не пиши — помилку виправ у тому самому об'єкті.
+
+Речі образу — перелік речей картки (номер речі — як на картці, поруч — її коди):
+1 — назва в тексті н=12 · about it: text н=1
+2 — kind code: jacket · colour code: sand · about it: text н=2
+3 — kind code: backpack · colour code: beige · about it: text н=3
+4 — kind code: espadrilles · colour code: white · about it: text н=4
+When a text speaks of an item of the list, call it by the Ukrainian noun of its kind code (kind code: …) — the same noun in the right case in every text (trench_coat — «тренч», sweater — «светр», loafers — «лофери»), not by another kind or a synonym of the English word, whatever word the English text uses; a code ending in _generic names only the family (dress_generic — a dress, bag_generic — a bag). Make every adjective, pronoun and verb with the item agree with that noun in gender and number («бежевий тренч, який…»; «шкіряні лофери, які…»). A name you translate in this same call (text н=K): give it one noun and call the item by it, in agreement, in every text. A text the list gives as about an item (about it: text н=M) speaks of that one item, and so does every other text where the English names it. The colour of an item of the list is its colour code (colour code: …): write the Ukrainian name of that code. The English colour words for that item are the stylist's impression of a photo: do not turn them into a colour of their own — the item's colour stands in their place. Colours of its details (trim, strap, buttons, print), its fabric and the rest — translate from the text. The list is for the items only: an item the English text does not name is not added to the translation — neither to the description nor to the advice.
+
+Colour codes: beige — бежевий; sand — пісочний; white — білий.
+
+ТЕКСТИ:
+{
+"1": "Your own linen dress forms the quiet base of the outfit, its natural texture breathing softly with every step you take.",
+"2": "The fitted jacket adds structure without stiffness, its clean lines drawing the eye to your shoulders and torso while allowing freedom of movement.",
+"3": "This beige backpack brings a warm, earthy tone that harmonizes with the linen fabric, offering both style and convenience for your day out.",
+"4": "The white espadrilles introduce a fresh, airy contrast against the autumn ground, grounding the ensemble in comfort and ease.",
+"5": "For your walk in Amora's linen dress, I chose a fitted outerwear jacket to frame your silhouette, carrying the day from morning light into evening air. The soft beige backpack rests lightly at your side, offering practical storage without bulk, while the crisp white espadrilles bring an effortless rhythm to your steps through autumn leaves.",
+"6": "Leave the jacket open to highlight the dress's drape and keep the look breezy for a walk.",
+"7": "Tuck the jacket slightly at the hip if you want to emphasize your natural waistline while moving.",
+"8": "Keep the backpack on one shoulder to create an easy, asymmetrical balance that feels casual yet put-together.",
+"9": "Парка на кулісці з широкими рукавами — I kept this sand parka but removed the grey backpack and espadrilles; the parka needs a neutral base to show its color, not another heavy fabric or slippery shoe for autumn.",
+"10": "Рюкзак жіночий Welfare бежевий — I removed this green backpack because it breaks the tonal scheme too harshly; a neutral bag would complete the look without adding visual noise.",
+"11": "LeBERDES Еспадрильї білі — The gap between shoe hue and lightness is small; the red reads as a soft accent that deepens the look rather than creating a jarring jump in chroma.",
+"12": "лляною сукнею Амора з vilni.store, крамниця називає її теракотовою"
+}
+
+── ВІДПОВІДЬ (1958 симв., 15.8 с, HTTP 200) ──
+```json
+{
+  "1": "Твоя власна лляна сукня становить тиху основу образу, її природна текстура дихає м’яко на кожному твоєму кроці.",
+  "2": "Приталений жакет додає структуру без жорсткості, його чисті лінії привертають увагу до твоїх плечей і торсу, водночас дозволяючи свободу рухів.",
+  "3": "Цей бежевий рюкзак вносить теплий, землистий відтінок, який гармонізує з лляною тканиною, пропонуючи стиль та зручність для твого дня.",
+  "4": "Білі еспадрильї створюють свіжий, повітряний контраст на осінній землі, заземлюючи образ у комфорті й легкості.",
+  "5": "Для твоєї прогулянки в лляній сукні Амора я обрала приталений жакет для підкреслення твого силуету, продовжуючи день від ранкового світла до вечірнього повітря. М’який бежевий рюкзак легко лежить на твоєму боці, пропонуючи практичне зберігання без об’ємності, а білі еспадрильї додають невимушену ритмічність твоїм крокам по осінньому листю.",
+  "6": "Залиш жакет розстебнутим, щоб підкреслити драпірування сукні та зберегти образ легким для прогулянки.",
+  "7": "Злегка заправ жакет на стегнах, якщо хочеш підкреслити свою природну лінію талії в русі.",
+  "8": "Тримай рюкзак на одному плечі, щоб створити невимушений асиметричний баланс, який відчувається як повсякденний, але зі смаком.",
+  "9": "Парка з куліскою і широкими рукавами — Я залишила цю пісочну парку, але прибрала сірий рюкзак та еспадрильї; парці потрібна нейтральна основа для демонстрації її кольору, а не інша важка тканина чи слизьке взуття на осінь.",
+  "10": "Рюкзак жіночий Welfare бежевий — Я прибрала цей зелений рюкзак, тому що він надто різко порушує тональний ряд; нейтральна сумка завершить образ без зайвого візуального шуму.",
+  "11": "LeBERDES Еспадрильї білі — Різниця між відтінком та світлою гамою взуття невелика; червоний виглядає як м’який акцент, який поглиблює образ замість того, щоб створювати різку зміну насиченості.",
+  "12": "лляною сукнею Амора з vilni.store, крамниця називає її теракотовою"
+}
+```
