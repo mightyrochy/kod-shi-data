@@ -89,6 +89,14 @@ try {
     Check 'неправильний формат без винятку — причина й стек у журналі' ($records.Count -gt 0 -and $records[-1].exception.Contains('InvalidDataException') -and $records[-1].reason -ceq 'не за форматом' -and $records[-1].script_stack.Contains('at Get-BadLine,'))
     $valid = 'GEMINI ОБГОРТКА: ЛАНЦЮГ CHAIN_FAILED IOException Get-MarkerState ШЛЯХ ' + (ConvertTo-Json -InputObject $path -Compress)
     Check 'новий формат — без довільного хвоста чи переносу рядка' ((Test-OutboxLine $valid) -ceq '' -and (Test-OutboxLine ($valid + ' extra')) -cne '' -and (Test-OutboxLine ($valid + "`nкоманда")) -cne '' -and (Test-OutboxLine ($valid -replace '20261105', '\u000a20261105')) -cne '')
+    $before = @(Records).Count
+    try { throw 'CHAIN_REMOTE' } catch { Write-ChainFailure $_ }
+    $records = @(Records)
+    Check 'іменований код ланцюга — теж повний виняток у доступному журналі' ($records.Count -eq $before + 1 -and $records[-1].code -ceq 'CHAIN_REMOTE' -and $records[-1].exception.Contains('CHAIN_REMOTE') -and [bool]$records[-1].script_stack)
+    $missing = Join-Path $tmp 'missing-state.txt'
+    try { [void](Read-ChainStateText $missing) } catch { Write-ChainFailure $_ }
+    $records = @(Records | Where-Object { $_.path -ceq $missing })
+    Check 'недоступні метадані — явні помилки, початковий виняток збережено' ($records.Count -eq 1 -and $records[0].object_type -ceq 'unavailable' -and @($records[0].metadata_errors).Count -eq 2 -and $records[0].exception.Contains('FileNotFoundException'))
 } catch { Check "виняток стенда: $($_.Exception.Message) $($_.ScriptStackTrace)" $false }
 finally {
     $resolved = [IO.Path]::GetFullPath($tmp)

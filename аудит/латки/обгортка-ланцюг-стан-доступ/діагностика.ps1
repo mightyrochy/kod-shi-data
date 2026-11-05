@@ -6,7 +6,9 @@
     }
     $target = $Failure.TargetObject
     if ($target -is [IO.FileSystemInfo]) { return $target.FullName }
-    if ($target -is [string] -and [IO.Path]::IsPathRooted($target)) { return $target }
+    if ($target -is [string]) {
+        try { if ([IO.Path]::IsPathRooted($target)) { return $target } } catch { return '' }
+    }
     ''
 }
 
