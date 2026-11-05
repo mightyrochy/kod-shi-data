@@ -25,7 +25,7 @@ if __name__ == "__main__":
         for поле, ключ, код, значення in поля:
             оч = None if крок == "unknown" else False if isinstance(значення, bool) and крок in ("negative", "unquoted") else досі.get(ключ, значення) if крок == "omitted" else значення
             if крок == "unquoted": оч = досі.get(ключ)
-            assert с.get(ключ) == оч, (крок, ключ, с.get(ключ), оч)
+            assert с.get(ключ) == оч and (not isinstance(оч, bool) or isinstance(с.get(ключ), bool)), (крок, ключ, с.get(ключ), оч)
             assert ч[ключ]["стан"] == ("без входу" if оч is None else "пройдено"), ч[ключ]
             if оч is None: assert ч[ключ]["бракує"][0]["fields"] == [ключ]
             else:
