@@ -1,5 +1,5 @@
 """Доказ кадру Woo через адаптер і свіжі жнива → XML → фід → факти → читач; головне зображення доказом не стає."""
-import sys, tempfile
+import json, sys, tempfile
 from pathlib import Path
 КОРІНЬ = Path(__file__).resolve().parents[2]
 sys.path[:0] = [str(КОРІНЬ / "джерела"), str(КОРІНЬ / "zhnyvarka"), str(КОРІНЬ / "джерела/прилади")]
@@ -33,7 +33,8 @@ def main():
     оф, зб, факти = фід(lambda ш: ж.записати_каталог(свіжі, ш, "проба"))
     assert [о["url"] for о in оф] == [Б + "/p?attribute_pa_color=a", Б + "/p?attribute_pa_color=b"] and "%D0%B1" in оф[1]["фото"][0]
     assert [в.запис(о, зб[о["id"]], факти=факти)["варіант"] for о in оф] == ["woo:5:a", "woo:5:b"]
-    assert ж.власник_варіанта_woo(т, ж.варіанти_woo(dict(т, attributes=[dict(т["attributes"][0], terms=т["attributes"][0]["terms"][:1])]), Б, Р)[0], Б + "/p/", Р) is None
+    один = dict(т, attributes=[dict(т["attributes"][0], terms=т["attributes"][0]["terms"][:1])])
+    assert json.loads(ж.власник_варіанта_woo(один, ж.варіанти_woo(один, Б, Р)[0], Б + "/p/", Р))["джерело"] == "woo:один_колір"   # кадр_варіант_один_колір.py
     print("Woo: адаптер і свіжі жнива — по 2 докази через XML (кирилиця в кадрі); головне зображення, сестра й 2 підміни — невідомо; один колір — без параметра")
 
 if __name__ == "__main__":
