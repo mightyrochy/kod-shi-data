@@ -1,0 +1,27 @@
+{
+ "версія": 1,
+ "запит": {
+  "model": "qwen/qwen3.5-9b",
+  "max_tokens": 4000,
+  "messages": [
+   {
+    "role": "user",
+    "content": [
+     {
+      "type": "text",
+      "text": "{\"task\": {\"role\": \"You read the description of an outfit and list its items as data.\", \"rules\": [\"One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.\", \"One item carries one thing — of two alternatives list the first; a note in brackets is not an item.\", \"Slot \\\"accessory\\\" is for an item no other slot fits.\", \"\\\"is_outfit\\\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note.\"], \"limits\": [\"Rely only on the input: do not invent what it does not contain.\", \"The answer is one JSON object following \\\"answer_schema\\\", without explanations and without ```.\"], \"language\": \"English\", \"answer\": \"ITEM_LIST\", \"answer_schema\": {\"is_outfit\": \"yes|no\", \"items\": [{\"name\": \"<what the item is>\", \"details\": \"<its cut, length and fabric>\", \"slot\": \"top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory\", \"color_hex\": \"<#rrggbb or null>\", \"worn\": \"<true, or false when the description says the outfit goes without it>\"}]}, \"input\": [\"\\\"description\\\" — the outfit description\"]}, \"description\": \"A tailored wool-blend blazer in slate gray (#3e4a52), structured lapel and single-breasted cut with elbow-length sleeves, paired with a matching high-waisted pleated trouser featuring a tapered leg that falls to the ankle. Underneath, a crisp white silk-poplin blouse with a classic pointed collar and a relaxed fit at the bust, reaching mid-thigh when tucked. Finished with polished leather ankle boots in dark brown (#3c281e) with a 5cm block heel, carrying a subtle geometric embossment on the shaft. A slim silver pendant necklace in oxidized sterling silver adds a touch of understated elegance without overpowering the professional silhouette. This outfit works perfectly for an autumn office day because the tailored blazer provides warmth against the cooler season while maintaining a polished business look suitable for \\\"neat\\\" dress codes. The monochromatic gray base creates a cohesive, elongating effect that flatters her figure, while the white blouse offers a clean contrast that keeps the ensemble feeling fresh and modern. The ankle boots ensure she stays comfortable during long hours of standing or walking without sacrificing style.\"}"
+     }
+    ]
+   }
+  ],
+  "temperature": 1
+ },
+ "відповідь": {
+  "status": 200,
+  "contentType": "application/json",
+  "headers": {
+   "x-model": "qwen/qwen3.5-9b"
+  },
+  "body": "{\"content\":[{\"type\":\"text\",\"text\":\"{\\n  \\\"is_outfit\\\": \\\"yes\\\",\\n  \\\"items\\\": [\\n    {\\n      \\\"name\\\": \\\"blazer\\\",\\n      \\\"details\\\": \\\"tailored wool-blend, structured lapel, single-breasted cut with elbow-length sleeves\\\",\\n      \\\"slot\\\": \\\"outerwear\\\",\\n      \\\"color_hex\\\": \\\"#3e4a52\\\",\\n      \\\"worn\\\": true\\n    },\\n    {\\n      \\\"name\\\": \\\"trouser\\\",\\n      \\\"details\\\": \\\"high-waisted pleated, tapered leg falling to the ankle\\\",\\n      \\\"slot\\\": \\\"bottom\\\",\\n      \\\"color_hex\\\": \\\"#3e4a52\\\",\\n      \\\"worn\\\": true\\n    },\\n    {\\n      \\\"name\\\": \\\"blouse\\\",\\n      \\\"details\\\": \\\"crisp white silk-poplin, classic pointed collar, relaxed fit at the bust, reaching mid-thigh when tucked\\\",\\n      \\\"slot\\\": \\\"top\\\",\\n      \\\"color_hex\\\": \\\"#ffffff\\\",\\n      \\\"worn\\\": true\\n    },\\n    {\\n      \\\"name\\\": \\\"ankle boots\\\",\\n      \\\"details\\\": \\\"polished leather, 5cm block heel, subtle geometric embossment on the shaft\\\",\\n      \\\"slot\\\": \\\"shoes\\\",\\n      \\\"color_hex\\\": \\\"#3c281e\\\",\\n      \\\"worn\\\": true\\n    },\\n    {\\n      \\\"name\\\": \\\"necklace\\\",\\n      \\\"details\\\": \\\"slim silver pendant in oxidized sterling silver\\\",\\n      \\\"slot\\\": \\\"collar_necklace\\\",\\n      \\\"color_hex\\\": null,\\n      \\\"worn\\\": true\\n    }\\n  ]\\n}\"}],\"usage\":{\"input_tokens\":584,\"output_tokens\":355},\"stop_reason\":\"end_turn\"}"
+ }
+}
