@@ -2107,7 +2107,8 @@ def жорстке_відсічення(r, смуга_погоди=None, вет�
                     return "shoes_off_temperature"
         см = r.get("сезон_тканини")
         if см is not None:
-            if not isinstance(см, (set, frozenset)) or not см or not см <= set(_ПОГОДА.СМУГИ_ПОГОДИ):
+            if not isinstance(см, (set, frozenset, list, tuple)) or not см \
+                    or any(к not in _ПОГОДА.СМУГИ_ПОГОДИ for к in см):
                 raise ValueError("fabric_band_unreadable:%s" % r.get("id"))
             try:
                 _поза_тк = _V_тк.поза_смугою_тканини(см, смуга_погоди)
