@@ -1,0 +1,52 @@
+/* Незалежна проба двох спроб паспорта після злиття main; моделі й міст — заглушки. */
+const assert = require('node:assert/strict'), fs = require('node:fs'), vm = require('node:vm');
+const {execFileSync} = require('node:child_process');
+const корінь = process.argv[2], база = process.argv[3];
+const файл = 'джерела/показ/паспорт.js';
+const до = execFileSync('git', ['show', база + ':' + файл], {cwd:корінь, encoding:'utf8'});
+const після = fs.readFileSync(require('node:path').join(корінь, файл), 'utf8');
+const промпт = execFileSync('python', ['-c', "import sys; sys.path.insert(0, 'джерела'); import паспорт_нагоди as п; print(п.промпт_паспорта({}, 'На роботу, без декольте'))"],
+  {cwd:корінь, encoding:'utf8', env:{...process.env, PYTHONUTF8:'1'}}).trim();
+const сплющити = п => typeof п === 'string' ? п : п.filter(б => б.type === 'text').map(б => б.text).join('');
+async function прогін(текст, причина, фото, другаВідмова){
+  const запити = [], входи = [];
+  const контекст = {
+    НАЛАШТУВАННЯ_РУШІЯ_П:{}, МОДЕЛЬ_П:'заглушка',
+    живийХідП:() => () => true,
+    вхідМостаП:() => ({сценарій:{}, вимоги:'На роботу', вето:{зони:['декольте']}}),
+    реплікиСценарію:() => [{хто:'людина', текст:'На роботу'}], текстРепліки:р => р.текст,
+    новіФотоРечейП:() => фото, ПАСПОРТ_П:null, СТОРОНА_ФОТО_РЕЧІ_П:1024, ВИБІРКА_П:{},
+    фотоДляЗапитуП:async ф => ф, записатиВикликРозмовиП:() => {}, малюватиТокениП:() => {},
+    модельРукиП:async (п, ф) => {запити.push({п:сплющити(п), ф, блоки:п}); return 'recorded response';},
+    модельП:async (п, ф) => {запити.push({п:сплющити(п), ф, блоки:п}); return 'recorded response';},
+    містП:async (_, д) => {
+      входи.push(д);
+      if (д.json_моделі == null) return {промпт};
+      const відмова = входи.length === 2 || другаВідмова;
+      return {паспорт:{джерело:відмова && причина === 'json' ? 'плитки' : 'модель',
+        потрібен_повтор:відмова && причина === 'field'}, помилка_формату:причина === 'json' ? 'invalid_json(line=1,col=1)' : ''};
+    }
+  };
+  vm.createContext(контекст);
+  vm.runInContext(текст.slice(текст.indexOf('function вміститиІсторіюПромптаП'),
+    текст.indexOf('function записатиВикликРозмовиП')), контекст);
+  vm.runInContext(текст.slice(текст.indexOf('async function паспортПоРозмовіП'),
+    текст.indexOf('/* ДОВІДНИК ЖИВИМ ЕНДПОЙНТОМ')), контекст);
+  await контекст.паспортПоРозмовіП();
+  assert.equal(запити.length, 2); assert.equal(запити[0].п, промпт);
+  for (const д of входи) assert.deepEqual(д.вето.зони, ['декольте']);
+  for (const з of запити) assert.deepEqual(з.ф, фото);
+  if (фото.length) assert.equal(запити[1].блоки.filter(б => б.type === 'image').length, фото.length);
+  assert.ok(запити[1].п.startsWith(промпт));
+  return запити[1].п;
+}
+(async () => {
+  for (const причина of ['json','field']) for (const фото of [[],[{ід:'ф1', дані:'photo'}]])
+    for (const другаВідмова of [false,true]){
+      const старий = await прогін(до, причина, фото, другаВідмова);
+      const новий = await прогін(після, причина, фото, другаВідмова);
+      assert.ok(новий.length < старий.length);
+      assert.match(новий.slice(промпт.length), причина === 'json' ? /invalid_json/ : /відповідь_людині/);
+      console.log(`${причина}, фото=${фото.length}, повторна відмова=${другаВідмова}: ${старий.length} → ${новий.length}; дві спроби, фото й вето збережено`);
+    }
+})().catch(п => {console.error(п); process.exitCode=1;});
