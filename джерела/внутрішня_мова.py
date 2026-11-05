@@ -221,10 +221,7 @@ _ЛАПКИ_ДОВКОЛА = re.compile(r'^["«„“”]\s*([^"«»„“”]*?
                   "fit_band": "смуга_прилягання", "volume_anchor": "якір_обʼєму",
                   "one_line": "одна_лінія", "top_cut": "крій_верх", "bottom_cut": "крій_низ",
                   "tension_node": "вузол"},
-    # Частина доби без названої години — пора кодом. Доти тут стояла година, яку бере код
-    # (зранку 9, удень 13, увечері 20, уночі 23), і вона ставала годиною паспорта: «субота ввечері» картка
-    # показувала як «20:00», хоч години вона не називала. Тепер пора лишається порою (`паспорт.пора`), а
-    # година для правил — окремим кроком на шві нагоди (`сценарій.година_для_правил`, мітка `година_з_пори`).
+    # Частину дня передає мовна модель; код не перетворює годину.
     "part_of_day": {"morning": "ранок", "day": "день", "evening": "вечір", "night": "ніч"},
     # Пора року з дати: вхідний факт її дня для всіх рук — `сценарій.пора_року`
     "season": {"winter": "зима", "spring": "весна", "summer": "літо", "autumn": "осінь"},
@@ -403,6 +400,9 @@ _ЛАПКИ_ДОВКОЛА = re.compile(r'^["«„“”]\s*([^"«»„“”]*?
     "role": {к: к for к in ("guest", "close_family", "main_person", "host", "candidate",
                             "speaker", "worker", "mourner_close", "acquaintance")},
     "audience": {к: к for к in ("usual", "conservative")},
+    "direct_sun": {"yes": True, "no": False},
+    "host_context": {"yes": True, "no": False},
+    "creative_environment": {"yes": True, "no": False},
     "religious_place": {к: к for к in ("none", "temple", "written_rule_place")},
     "mourning_closeness": {к: к for к in ("none", "acquaintance", "close")},
     "look_volume": {к: к for к in ("one_look", "travel_day")},
@@ -425,7 +425,7 @@ _ЛАПКИ_ДОВКОЛА = re.compile(r'^["«„“”]\s*([^"«»„“”]*?
     # ЗВІДКИ ВИМІР (§1.2): сила джерела, від письмового правила до «нічого не відомо».
     # Порядок переліку і є порядком сили — його тримає `паспорт_нагоди.ЗВІДКИ_СИЛА`.
     "evidence_source": {к: к for к in ("written", "her_words", "sub", "preset", "like",
-                                       "default", "unknown")},
+                                       "derived", "default", "unknown")},
 }
 
 
@@ -2138,7 +2138,7 @@ _МІСЦЯ_ОПЦІЙ = "where it is worn"
     "shift_outfit_level": "shift the outfit's level towards the occasion's steps (values: direction — up or "
                           "down)",
     "open_zones_over_limit": "more zones of the body are open than the context asks for (values: zones — zone "
-                             "codes: neckline, back, arms, shoulders, legs, belly, neckline_back — décolleté "
+                             "codes: " + ", ".join(ТАБЛИЦЯ["zone"]) + ", neckline_back — décolleté "
                              "or back; limit — the limit, two when the event names no stricter norm; "
                              "conservative — a reserved audience or a place of worship, where the "
                              "limit is one lower)",
@@ -2978,9 +2978,9 @@ _МІСЦЯ_ОПЦІЙ = "where it is worn"
     # `вибиває` драбини (`формальність.ДРАБИНА`), щабель — свій у кожного з семи
     "level_breakers": "the level is held by fabric, finish and shoes, not by the item's name (values: level — the "
                       "step; out — what takes an outfit off this step; without out nothing is ruled out)",
-    "high_occasion_floor": "the event's level starts from this step: no item sits "
-                           "more than one step below it (canvas sneakers, trainers, denim, a knit top stay out); "
-                           "shoes at the outfit's level or above (values: from)",
+    "high_occasion_floor": "risk asymmetry (K-KOH-07): no item sits more than one step below "
+                           "the event's band; explain a deliberate lower item in deliberate, "
+                           "including a deliberate wrong shoe (K-SHO-03) (values: from)",
     "weather_layers": "the weather outside and the layers it asks for (values: weather_band"
                       "; layers — how many "
                       "layers on the torso, a half is one more light removable layer; fabrics — fabric codes "
@@ -3216,6 +3216,9 @@ if _спільні:
 # кожне правило пункту стоїть у його визначенні). Імена пунктів українською лишаються в
 # обʼєкті коду — для звіту власника (`чекліст_вердикту`).
 ПУНКТИ_ЧЕКЛІСТА = {
+    "direct_sun_heat": "direct sunlight is known before judging dark close-fitting garments (K-WEA-03)",
+    "host_context_known": "whether the event has a host or stakes is known before applying risk asymmetry (K-KOH-07)",
+    "creative_environment_known": "whether the environment is creative is known before inverting risk asymmetry (K-KOH-07)",
     # надлишок (K-SYS-08)
     "chroma_budget": "at most 1–2 loud colours in the outfit, hair and glasses frames included (K-COL-02)",
     "single_focus": "exactly one focal point (K-CRA-02, K-COL-05)",
@@ -3288,7 +3291,7 @@ if _спільні:
 }
 # ід пункту (`суд_чеклісти.ЧЕКЛІСТ_*`, перше поле) → код. Ід унікальні через усі чотири списки;
 # «K-CLR-02» — пункт контрасту біля обличчя, який оцінка образу додає до них сама (ВМ-3б).
-ЧЕКЛІСТ_КОДИ = {1: "chroma_budget", 2: "single_focus", 3: "lightness_steps", 4: "one_silhouette_letter",
+ЧЕКЛІСТ_КОДИ = {22: "host_context_known", 23: "creative_environment_known", 21: "direct_sun_heat", 1: "chroma_budget", 2: "single_focus", 3: "lightness_steps", 4: "one_silhouette_letter",
     5: "formality_spread", 6: "shine_budget", 7: "print_budget", 8: "layering_depth", 9: "accent_echo",
     10: "one_sprezzatura", 11: "hem_off_widest_point", 12: "one_metal", 13: "genre_dominant",
     14: "one_trend_item", 15: "fabric_cut_formality", 16: "scale_to_person", 17: "layer_hems_apart",
@@ -3721,7 +3724,7 @@ def схема():
 
 def записати_схему(шлях=ФАЙЛ_СХЕМИ):
     """Пише `схема()` у файл JSON Schema (той самий, що лежить у репозиторії)."""
-    with open(шлях, "w", encoding="utf-8") as ф:
+    with open(шлях, "w", encoding="utf-8", newline="\n") as ф:
         _json_.dump(схема(), ф, ensure_ascii=False, indent=1)
         ф.write("\n")
     return шлях

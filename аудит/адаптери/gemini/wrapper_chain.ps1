@@ -358,12 +358,34 @@ function Test-ChainReviewDone([string]$Number, [string]$Head) {
     [bool](Get-ChainTaskCompletion "автоперевірка-$Number-$Head" -ReadyOnly)
 }
 
+function Write-ChainFailure($Failure) {
+    <# Пише причину збою й безпечне місце: файл:рядок або функція першого кадру створеного блоку.
+
+    Повідомлення та шляхи лишаються в журналі; назовні виходять лише перевірені тип та місце. #>
+    $code = [string]$Failure.Exception.Message
+    $detail = ''
+    if ($code -cnotmatch '^CHAIN_[A-Z_]+$') {
+        # Причина збою: тип винятку й рядок скрипту — у рядку; повний текст і позиція — лише в журналі (він може нести шляхи й дані).
+        $kind = [string]$Failure.Exception.GetType().Name
+        $at = $Failure.InvocationInfo
+        $where = $(if ($null -ne $at -and $at.ScriptName) { (Split-Path -Leaf $at.ScriptName) + ':' + $at.ScriptLineNumber } else { '' })
+        if (-not $where -and ([string]$Failure.ScriptStackTrace -split "`r?`n")[0] -cmatch '^at ([A-Za-z][A-Za-z0-9-]{0,79}),') { $where = $Matches[1] }
+        Write-WrapperLog ("ланцюг: CHAIN_FAILED {0}: {1}`n{2}" -f $Failure.Exception.GetType().FullName, $Failure.Exception.Message, $Failure.ScriptStackTrace)
+        $code = 'CHAIN_FAILED'
+        if ($kind -cmatch '^[A-Za-z0-9]{1,40}$' -and ($where -cmatch '^[a-z_]{1,40}\.ps1:[0-9]{1,5}$' -or $where -cmatch '^[A-Za-z][A-Za-z0-9-]{0,79}$')) { $detail = " $kind $where" }
+    }
+    Write-WrapperLog "ланцюг: $code$detail; наступний прохід повторить незавершене"
+    if (-not (Test-Seen ("chain-failed $code$detail " + [datetime]::UtcNow.ToString('yyyyMMddHH')))) {
+        Add-OutboxLine ((Get-Date -Format 'yyyyMMdd-HHmmss') + '-' + (Get-Sha256Hex "chain $code$detail").Substring(0,12) + '.txt') "GEMINI ОБГОРТКА: ЛАНЦЮГ $code$detail"
+    }
+}
+
 $script:ChainStateReaders = @()
 
 function Get-ChainMarkerState([string]$Ref, [string]$Sha, [string]$Model) {
     <# Читає стан тим самим читачем і ключем, що смуга; бібліотеку планувальника не запускає.
 
-    Недоступний файл не стає NEW: виняток зупиняє очищення до будь-якого зняття. #>
+    Недоступний файл не стає NEW: спільний збирач позначок зберігає UNKNOWN для всієї голови. #>
     if (-not $script:ChainStateReaders.Count) {
         $errors = $null
         $ast = [Management.Automation.Language.Parser]::ParseFile((Join-Path $PSScriptRoot 'queue_lanes.ps1'), [ref]$null, [ref]$errors)
@@ -386,15 +408,23 @@ function Get-ChainMarkers([string]$Slug) {
     foreach ($line in ($r.Out -split "`n")) {
         if ($line.Trim() -cnotmatch '^([0-9a-f]{40})\trefs/heads/(gemini-queue/([^/]+)/([a-z0-9][a-z0-9.-]{1,63})/([1-9][0-9]{0,2})(?:/[^/]+)?)$') { continue }
         $sha = $Matches[1]; $ref = $Matches[2]; $task = $Matches[3]; $model = $Matches[4]; $attempt = [int]$Matches[5]
-        $state = Get-ChainMarkerState $ref $sha $model
+        try { $state = Get-ChainMarkerState $ref $sha $model }
+        catch {
+            Write-WrapperLog "ланцюг: стан $ref недоступний; позначки цієї голови збережено"
+            Write-ChainFailure $_
+            $state = [pscustomobject]@{ Kind = 'UNKNOWN' }
+        }
         [pscustomobject]@{ Sha=$sha; Ref=$ref; Slug=$task; Model=$model; Attempt=$attempt; Kind=$state.Kind }
     }
 }
 
 function Move-BlockedMarkers([string]$Slug, [string]$Model, [string]$Main, [datetimeoffset]$Now, [switch]$Gpu) {
-    <# Переносить лише NEW/WAIT із вичерпаною квотою; кінцеві не заступають нову спробу, узяті не переносить. #>
-    if (Test-ModelQuota $Model $Now) { return $false }
+    <# Переносить NEW/WAIT із вичерпаною квотою: $true — виконано, $false — не потрібно, $null — відкладено.
+
+    UNKNOWN і квота цільової моделі потребують повтору; узята чи вже доступна робота передачі не потребує. #>
+    if (Test-ModelQuota $Model $Now) { return $null }
     $all = @(Get-ChainMarkers $Slug)
+    if (@($all | Where-Object { $_.Kind -ceq 'UNKNOWN' }).Count) { return $null }
     if (@($all | Where-Object { $_.Kind -ceq 'TAKEN' }).Count) { return $false }
     $old = @($all | Where-Object { $_.Kind -cin @('NEW','WAIT') })
     if (-not $old.Count -or @($old | Where-Object { $_.Model -ceq $Model -or -not (Test-ModelQuota $_.Model $Now) }).Count) { return $false }
@@ -410,8 +440,9 @@ function Move-BlockedMarkers([string]$Slug, [string]$Model, [string]$Main, [date
 }
 
 function Test-CloudMove([string]$Slug, [datetimeoffset]$Now) {
-    <# Хмарі передається лише NEW/WAIT на квоті; кінцеві не голосують, узятий прогін лишається смузі. #>
+    <# Визначає потребу передачі NEW/WAIT у хмару: $null — читання відкладене, $false — передача не потрібна. #>
     $all = @(Get-ChainMarkers $Slug)
+    if (@($all | Where-Object { $_.Kind -ceq 'UNKNOWN' }).Count) { return $null }
     if (@($all | Where-Object { $_.Kind -ceq 'TAKEN' }).Count) { return $false }
     $pending = @($all | Where-Object { $_.Kind -cin @('NEW','WAIT') })
     $pending.Count -gt 0 -and -not @($pending | Where-Object { -not (Test-ModelQuota $_.Model $Now) }).Count
@@ -521,6 +552,7 @@ function Remove-DeadReviewMarkers($Pulls, $Seen, [datetimeoffset]$Now) {
     })
     $drop = @()
     foreach ($g in @($refs | Group-Object -CaseSensitive { "$($_.N) $($_.Head)" })) {
+        if (@($g.Group | Where-Object { $_.Kind -ceq 'UNKNOWN' }).Count) { continue }
         $first = $g.Group[0]; $pr = $live[$first.N]; $why = ''
         if ($null -eq $pr) { $why = 'PR не відкритий чи не перевіряється' }
         elseif ([string]$pr.head.sha -cne $first.Head) { $why = 'голова PR змінилась' }
@@ -560,9 +592,12 @@ function Remove-DeadReviewMarkers($Pulls, $Seen, [datetimeoffset]$Now) {
 
 function Request-CloudReview([string]$Number, [string]$Head) {
     <# Перевірку бере хмарний Claude: позначки тієї самої голови, що чекають вичерпаної квоти, знімаються, диспетчер
-    отримує рядок «ПОТРІБНА ПЕРЕВІРКА CLAUDE #PR <SHA>» один раз на голову. #>
+    отримує рядок «ПОТРІБНА ПЕРЕВІРКА CLAUDE #PR <SHA>» один раз на голову.
+
+    Результат: $true — доставлено, $false — не потрібно, $null — відкладено до читання стану. #>
     $markers = @(Get-ChainMarkers "автоперевірка-$Number-$Head")
-    if (@($markers | Where-Object { $_.Kind -ceq 'TAKEN' }).Count) { return }
+    if (@($markers | Where-Object { $_.Kind -ceq 'UNKNOWN' }).Count) { return $null }
+    if (@($markers | Where-Object { $_.Kind -ceq 'TAKEN' }).Count) { return $false }
     foreach ($m in $markers) {
         $d = Invoke-Git @('push','-q','--no-verify',"--force-with-lease=refs/heads/$($m.Ref):$($m.Sha)",'origin',":refs/heads/$($m.Ref)") -AllowFail
         if ($d.Code -ne 0) { throw 'CHAIN_PUSH' }
@@ -570,11 +605,13 @@ function Request-CloudReview([string]$Number, [string]$Head) {
     }
     # Позначка «відправлено» — після рядка: збій між ними повторить рядок, а не загубить його.
     $sent = Get-SeenPath "cloud-review $Number $Head"
-    if (-not (Test-Path -LiteralPath $sent)) {
+    $delivered = -not (Test-Path -LiteralPath $sent)
+    if ($delivered) {
         Add-OutboxLine ((Get-Date -Format 'yyyyMMdd-HHmmss') + '-' + (Get-Sha256Hex "cloud-review $Number $Head").Substring(0,12) + '.txt') "GEMINI ОБГОРТКА: ПОТРІБНА ПЕРЕВІРКА CLAUDE #$Number $Head"
         Write-FileAtomic $sent "cloud-review $Number $Head"
     }
     Write-WrapperLog "ланцюг: #$Number $Head — перевірка хмарним Claude, рядок диспетчерові"
+    $delivered
 }
 
 function Get-ChainBusySlots([string]$Dir, [string]$Pattern, [string]$Lane='невідома') {
@@ -806,29 +843,21 @@ function Invoke-WrapperChain {
                 if ($seen.ContainsKey($key)) { continue }
                 # Одна перевірка на голову: позначка будь-якого рушія вже стоїть — нової не ставимо, лише переводимо позначки, що чекають вичерпаної квоти.
                 $marked = @($seen.Keys | Where-Object { $_ -cmatch ('^' + $n + ' ' + $head + ' ') }).Count
-                if ($model -ceq $script:CloudReview) { if (-not $marked -or (Test-CloudMove "автоперевірка-$n-$head" $now)) { Request-CloudReview $n $head } }
-                elseif ($marked) { [void](Move-BlockedMarkers "автоперевірка-$n-$head" $model $main $now) }
+                $transfer = $true
+                if ($model -ceq $script:CloudReview) {
+                    $transfer = if ($marked) { Test-CloudMove "автоперевірка-$n-$head" $now } else { $true }
+                    if ($transfer) { $transfer = Request-CloudReview $n $head }
+                }
+                elseif ($marked) { $transfer = Move-BlockedMarkers "автоперевірка-$n-$head" $model $main $now }
                 else { Add-ChainMarker "автоперевірка-$n-$head" $model $main }
+                # Лише виконана або непотрібна передача завершує рішення; відкладена повториться наступного проходу.
+                if ($null -eq $transfer) { continue }
                 $seen[$key] = $true
                 $reviewed[$n] = @{head=$head;diff=$diff;pid=$patchId}
                 Write-FileAtomic $statePath (([ordered]@{ main=$main; reviewed=$reviewed; live_active=$liveActive; live_since=$liveSince; live_stamps=@($liveStamps.Keys); live_pending=@($livePending); reviews=@($seen.Keys); installed_utc=$installed.ToString('o'); heads=$heads }) | ConvertTo-Json -Compress -Depth 5)
             }
         }
     } catch {
-        $code = [string]$_.Exception.Message
-        $detail = ''
-        if ($code -cnotmatch '^CHAIN_[A-Z_]+$') {
-            # Причина збою: тип винятку й рядок скрипту — у рядку; повний текст і позиція — лише в журналі (він може нести шляхи й дані).
-            $kind = [string]$_.Exception.GetType().Name
-            $at = $_.InvocationInfo
-            $where = $(if ($null -ne $at -and $at.ScriptName) { (Split-Path -Leaf $at.ScriptName) + ':' + $at.ScriptLineNumber } else { '' })
-            Write-WrapperLog ("ланцюг: CHAIN_FAILED {0}: {1}`n{2}" -f $_.Exception.GetType().FullName, $_.Exception.Message, $_.ScriptStackTrace)
-            $code = 'CHAIN_FAILED'
-            if ($kind -cmatch '^[A-Za-z0-9]{1,40}$' -and $where -cmatch '^[a-z_]{1,40}\.ps1:[0-9]{1,5}$') { $detail = " $kind $where" }
-        }
-        Write-WrapperLog "ланцюг: $code$detail; наступний прохід повторить незавершене"
-        if (-not (Test-Seen ("chain-failed $code$detail " + [datetime]::UtcNow.ToString('yyyyMMddHH')))) {
-            Add-OutboxLine ((Get-Date -Format 'yyyyMMdd-HHmmss') + '-' + (Get-Sha256Hex "chain $code$detail").Substring(0,12) + '.txt') "GEMINI ОБГОРТКА: ЛАНЦЮГ $code$detail"
-        }
+        Write-ChainFailure $_
     }
 }

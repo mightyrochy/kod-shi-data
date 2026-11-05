@@ -32,6 +32,7 @@ import річ_з_фото as _РФ
 import brief as _БР
 from пакет_моделі import ПОЛЯ_МЕЖІ_НА_СЛОТ as _ПОЛЯ_МЕЖІ_НА_СЛОТ
 import паспорт_нагоди as _ПН
+import паспорт_поля as _ПП
 import пакет_моделі as _ПМ
 import дріт_моделі as _Д
 import сценарій as _СЦ
@@ -75,7 +76,9 @@ def головний_колір(вибір):
     if (вибір or {}).get("база_hex"):
         о["hex"] = вибір["база_hex"]
     о["chosen_by"] = ("her_item_photo" if вибір.get("база_з_речі")
-                      else "code_she_kept_it" if вибір.get("база_за_замовчуванням") else "her")
+                      else "code" if вибір.get("база_за_замовчуванням") else "her")
+    о["source"] = _ПП.походження(_ПП.ТЛУМАЧЕННЯ if вибір.get("база_з_речі")
+                                 else _ПП.ТИПОВЕ if вибір.get("база_за_замовчуванням") else _ПП.РУКА)
     return о
 
 
@@ -137,7 +140,7 @@ def її_речі(речі_паспорта):
                          "refusals — as codes, her own words as quotes", треба=True,
                  як=_ВИМ.ПРОТИ_ВІДМОВ),
         _ВИМ.поле("case.her_words", як="meet every point"),
-        _ЗП.Поле("case.formality", "the level of dress she named: " + _БР.ЩАБЛІ_EN),
+        _ЗП.Поле("case.formality", "dress band; origin in sources: " + _БР.ЩАБЛІ_EN),
         _ВИМ.поле("case.goal_zones"),
         *_ПОЛЯ_МЕЖІ_НА_СЛОТ,
         _ЗП.Поле("photo_of_her", "a photo of her is attached", як="fit the outfit to her"),
@@ -148,8 +151,8 @@ def її_речі(речі_паспорта):
                                   "(standing out), fashion_forward (a bold fashion look, at least two sources of "
                                   "interest), editorial (an editorial construction, at least one source of "
                                   "interest); count limits do not apply to fashion_forward or editorial"),
-        _ЗП.Поле("main_color", "the main color and who chose it: her (she did), code_she_kept_it (suggested "
-                               "to her, she kept it), her_item_photo (the color of her item on a photo)",
+        _ЗП.Поле("main_color", "the main color: chosen_by her, code (default), or her_item_photo (model's "
+                               "reading of an item photo); source carries its kind",
                  як="build the outfit around it"),
         _ЗП.Поле("her_items", "her own items; \"photo\": true — also on the attached photos",
                  як="they stay in the outfit as they are: build the rest around them, add nothing that "
@@ -273,6 +276,7 @@ def випадок_кодами(паспорт, рядок, сценарій=Non
     if (isinstance(ош, (list, tuple)) and len(ош) == 2
             and (паспорт.get("джерело_полів") or {}).get("ошатність") not in ("подія", _ПН.ТИПОВЕ_ПОЛЕ_ФОРМИ)):
         вих["formality"] = list(dict.fromkeys(_БР.щабель_код(float(x)) for x in ош))
+        вих.setdefault("sources", {})["formality"] = _ПП.походження_поля(паспорт, "ошатність")
     день = _СЦ.день_кодами(_ПН.з_показу(сценарій, паспорт)[0])
     for ключ in _ФАКТИ_ДНЯ:
         if ключ in день:

@@ -28,7 +28,7 @@ import збирач_промптів as _ЗП
     "case.language_model_note": ("the language model's note on her words about the event, when they are hard to "
                                  "read without context",
                                  "it explains her words and does not replace them: where they differ, her words win"),
-    "day": ("her day as facts", ""),
+    "day": ("day with source", ""),
     "person": ("her coloring, palette and body", ""),
     "she_refuses": ("what she refused", ""),
     "style_rules": ("what the code measured about her and this case, her own answers and wishes: each entry is "
@@ -37,13 +37,13 @@ import збирач_промптів as _ЗП
     "item_keys": ("what the keys in «candidates» mean, and defaults for omitted values",
                   "read every item by these keys; restore every absent key that has an `absent =` default"),
     "set": ("the check of the whole set: variety, hero, coordination", ""),
-    "register": ("her style: the leading register and the ones next to it", ""),
+    "register": ("the code's outfit registers: leading and adjacent", ""),
     "showcase": ("item numbers that can fill what is missing", ""),
     "question": ("her question, in her words", ""),
     "her_new_message": ("her new message", ""),
     "profile": ("her profile in codes: colouring, palette choice, height, what is missing", ""),
-    "passport": ("her case passport in codes after the previous turns", ""),
-    "chosen": ("what she chose with the tiles on the screen, in codes", ""),
+    "passport": ("prior case in codes, with sources and quotes", ""),
+    "chosen": ("card codes with source kind and quote", ""),
 }
 
 
