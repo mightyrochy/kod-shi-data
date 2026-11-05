@@ -264,14 +264,10 @@ function Get-Sha256Hex([string]$Text) {
     -join ($bytes | ForEach-Object { $_.ToString('x2') })
 }
 
-function Get-BadLine([string]$Id, [string]$Why, $Failure = $null) {
+function Get-BadLine([string]$Id, [string]$Why) {
     # Єдиний викликач — Get-Line. Його режим читання не споживає повідомлення STATE_INVALID.
     $statusOnly = Get-Variable -Name StatusOnly -Scope 1 -ValueOnly -ErrorAction SilentlyContinue
     if ($statusOnly) { return $null }
-    if ($null -eq $Failure) {
-        try { throw [IO.InvalidDataException]::new($Why) } catch { $Failure = $_ }
-    }
-    [void](Write-StateFailureDiagnostic 'STATE_INVALID' $Failure (Join-Path $OutDir ($Id + '.json')) $Why)
     Write-WrapperLog "стан $Id $Why — не опубліковано"
     if (Test-Seen ('bad ' + (Get-Date -Format 'yyyyMMdd'))) { return $null }
     [pscustomobject]@{ Outbox = 'GEMINI ОБГОРТКА: ЗАБЛОКОВАНО gemini/невідомо STATE_INVALID' }
@@ -444,10 +440,9 @@ $script:SleepEvents = @()
 # 'RETRY' — пуш не вдався: той самий стан ще раз на наступному запуску, рядок — лише після години невдач.
 function Get-Line([string]$Id, [switch]$StatusOnly) {
     $path = Join-Path $OutDir ($Id + '.json')
-    try {
-        if ((Get-Item -LiteralPath $path).Length -gt 65536) { return Get-BadLine $Id 'завеликий' }
-        $s = [System.IO.File]::ReadAllText($path, $script:Utf8) | ConvertFrom-Json
-    } catch { return Get-BadLine $Id 'не читається як JSON' $_ }
+    if ((Get-Item -LiteralPath $path).Length -gt 65536) { return Get-BadLine $Id 'завеликий' }
+    try { $s = [System.IO.File]::ReadAllText($path, $script:Utf8) | ConvertFrom-Json }
+    catch { return Get-BadLine $Id 'не читається як JSON' }
     # Облік живлення використовує той самий читач формату й чинну межу Get-Line.
     # Тут вихід до будь-якої публікації, дозволу повтору чи зміни seen.
     if ($StatusOnly) { return $s }
@@ -585,7 +580,6 @@ $script:SlugCore = $script:SlugPattern -replace '^\^|\\z$', ''
 $script:OutboxTemplates = @(
     '\AGEMINI ОБГОРТКА: СОН [0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z → [0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z, нарядів [0-9]{1,5}\z'
     '^GEMINI ОБГОРТКА: ЛАНЦЮГ CHAIN_[A-Z_]{1,32}(?: [A-Za-z0-9]{1,40} (?:[a-z_]{1,40}\.ps1:[0-9]{1,5}|[A-Za-z][A-Za-z0-9-]{0,79}))?\z',
-    '^GEMINI ОБГОРТКА: ЛАНЦЮГ CHAIN_FAILED [A-Za-z0-9]{1,40} (?:[a-z_]{1,40}\.ps1:[0-9]{1,5}|[A-Za-z][A-Za-z0-9-]{0,79}) ШЛЯХ "(?:[A-Za-z]:\\\\|/)(?:[^"\\\x00-\x1f]|\\["\\]|\\u[0-9a-fA-F]{4}){1,4096}"\z',
     '^GEMINI ОБГОРТКА: ОНОВЛЕНО [0-9a-f]{40} СЕКУНД [0-9]{1,12}\z',
     '^GEMINI ОБГОРТКА: ОНОВЛЕННЯ [0-9a-f]{40} UPDATE_[A-Z_]{1,32}\z',
     "\AGEMINI ОБГОРТКА: ГОТОВО (?:gemini|codex|claude)/$script:SlugCore [0-9a-f]{40}(?: КВОТА [A-Z0-9_]{2,40} (?:100|[1-9]?[0-9]))?(?: МОДЕЛЬ [a-z0-9][a-z0-9.-]{1,63})?\z"
@@ -608,10 +602,6 @@ $script:QuarantineCodes = @('BAD_SIZE', 'EMPTY', 'BOM', 'BAD_UTF8', 'NOT_ONE_LIN
 # Порожній рядок — рядок збігся з шаблоном; інакше код причини.
 function Test-OutboxLine([string]$Line) {
     if ($Line.Contains('..')) { return 'NO_TEMPLATE' }
-    if ($Line -cmatch ' ШЛЯХ (".*")\z') {
-        try { $path = ConvertFrom-Json $Matches[1] } catch { return 'NO_TEMPLATE' }
-        if ($path -cmatch '[\x00-\x1f\x7f]' -or -not [IO.Path]::IsPathRooted($path)) { return 'NO_TEMPLATE' }
-    }
     foreach ($t in $script:OutboxTemplates) { if ($Line -cmatch $t) { return '' } }
     'NO_TEMPLATE'
 }
@@ -997,7 +987,7 @@ function Main {
             $statePath = Join-Path (Join-Path $WorkDir 'state') ($id + '.json')
             if (Test-Path -LiteralPath $statePath) { continue }
             try { $line = Get-Line $id }
-            catch { Write-WrapperLog "стан ${id}: $($_.Exception.Message)"; $line = Get-BadLine $id 'не обробився' $_ }
+            catch { Write-WrapperLog "стан ${id}: $($_.Exception.Message)"; $line = Get-BadLine $id 'не обробився' }
             if ($line -is [string] -and $line -eq 'RETRY') { continue }
             if ($line -isnot [string] -and $null -ne $line) {
                 # Кінець прогону: рядок — у теку вихідних під id стану; доставка — з неї, як для рядків інших скриптів.

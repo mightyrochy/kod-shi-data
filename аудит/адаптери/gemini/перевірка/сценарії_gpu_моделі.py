@@ -23,7 +23,6 @@ $LaneDir = $TestDir
 $RunsDir = $TestDir
 $WorkDir = $TestDir
 $OutDir = $TestDir
-$script:StateDir = $TestDir
 $script:SlotDir = $TestDir
 $script:Bound = @{}
 $script:Limits = @{}
