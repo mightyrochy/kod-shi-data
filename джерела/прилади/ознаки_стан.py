@@ -86,7 +86,7 @@ class Стан:
         вузол = self.ф.вузол
         if isinstance(вузол, ast.Lambda) or ім not in self.необов_язкові or ім in self.env or ім in self.ключі:
             return None
-        if not self.env:
+        if not (self.env or self.ключі or self.розгорнуті):
             return None
         return "так" if isinstance(т.ops[0], ast.IsNot) else "ні"
 

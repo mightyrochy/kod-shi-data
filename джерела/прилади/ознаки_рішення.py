@@ -472,8 +472,15 @@ def чиста_геометрія(ф):
     повернення = _чиста_функція(ф)
     if повернення is None or not (set(ф.позиційні) | set(ф.іменні)) or функція_формула(ф):
         return False
-    return all(isinstance(в.value, (ast.Compare, ast.BoolOp, ast.BinOp, ast.IfExp, ast.UnaryOp, ast.Call, ast.Name, ast.Constant, ast.Tuple))
-               for в in повернення)
+    def перевірка(х):
+        """Повертає істину/число з порівнянь і арифметики, а не назву класу з таблиці."""
+        if isinstance(х, ast.IfExp):
+            return перевірка(х.body) and перевірка(х.orelse)
+        if isinstance(х, ast.Tuple):
+            return all(перевірка(е) for е in х.elts)
+        return isinstance(х, (ast.Compare, ast.BoolOp, ast.BinOp, ast.UnaryOp)) or (
+            isinstance(х, ast.Constant) and isinstance(х.value, (int, float, bool)))
+    return all(перевірка(в.value) for в in повернення)
 
 
 def _кроки(ф):
