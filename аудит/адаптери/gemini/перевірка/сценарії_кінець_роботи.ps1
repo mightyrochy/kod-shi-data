@@ -110,6 +110,8 @@ try {
             Tick $head "gemini/спільний-$lane"; Tick $head "gemini/спільний-$lane"
             Check "${lane}: після ГОТОВО зі старим busy — 1 перевірка" ((CountReviews 2386) -eq ($n+1))
             $blockedHead = $(if ($lane -ceq 'codex') { '2'*40 } else { '3'*40 })
+            # Автора заблокованої голови ланцюг знає з опублікованої моделі (невідомий автор перевірки не отримує).
+            Save-DraftRequest "gemini/спільний-$lane" $blockedHead 'gpt-test'
             $lock = [IO.File]::Open("$GeminiRunsDir/slots/$lane-1.lock", 'Open', 'ReadWrite', 'None')
             Tick $blockedHead "gemini/спільний-$lane"
             Check "${lane}: наступна активна голова — 0 перевірок" ((CountReviews 2386) -eq ($n+1))
