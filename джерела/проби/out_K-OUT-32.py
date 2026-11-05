@@ -16,7 +16,7 @@ import feed as Ф, bridge as B, outer as OU
 вх = json.load(open(_КОРІНЬ / "стенд_вх.json", encoding="utf-8"))
 вх["каталог"] = Ф.каталог_на_диску("каталог_повний.xml")
 вх["гілка"] = 0
-вх["сценарій"].update(темп_c=5, опади="ні")
+вх["сценарій"].update(смуга_погоди='cold', опади="ні")
 з = json.loads(B.виклик("запити", json.dumps(вх, ensure_ascii=False)))
 кат = {c["id"]: c for c in B.каталог_останнього_пакета()}
 к = з["кандидати"]
@@ -27,7 +27,7 @@ import feed as Ф, bridge as B, outer as OU
 ід = [r["id"] for r in (пальто, взяти("сукня", lambda c: True),
                         взяти("взуття", lambda c: True)) if r]
 print("верхній шар:", пальто["назва"][:56], "· тип", пальто.get("тип_верхнього"))
-print("дозволені стани:", OU.стан([dict(пальто, слот="верхній_шар")], темп_c=5).get("дозволені"))
+print("дозволені стани:", OU.стан([dict(пальто, слот="верхній_шар")], смуга_погоди='cold').get("дозволені"))
 вм = json.loads(B.виклик("від_моделі", json.dumps(dict(вх, ід=ід), ensure_ascii=False)))
 зн = ((вм.get("вердикт") or {}).get("образи") or [{}])[0].get("знахідки") or []
 р = next((z for z in зн if z.get("правило") == "K-OUT-32"), None)

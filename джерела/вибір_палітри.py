@@ -52,6 +52,7 @@ import фід_каталог as _ФК
 import композитор_придатні as _КП
 import фід_фото as _ФФ
 import реєстр_правил as _РЕЄСТР
+import face_features as _ОБ
 
 ЗОВНІШНІ_ВХОДИ = {
     "опис_стану": "вхід з оновитиПалітруП: її поточний вибір, рішення стилістки й гілки",
@@ -114,7 +115,7 @@ _ПРИЧИН_МАКС = 3
 def _до_очей(о, F):
     """Відношення основи переліку до очей: "echo" / "set_off" / None (див. коментар вище)."""
     import math as _м
-    р = F.get("очі") or {}
+    р = _ОБ.ознака_палітри(F, "очі")["значення"] or {}
     if р.get("L") is None:
         return None
     тон_очей = р.get("h") is not None and float(р.get("C") or 0) >= _ТОН_РИСИ_С_МІН
@@ -134,13 +135,13 @@ def _до_очей(о, F):
     роль=_ВИМ.РОЛЬ_ЗАСТОСУНКУ + " She left the colour scheme and the base "
          "colour of today's outfits to you; you choose them.",
     вхід=(
-        _ЗП.Поле("person", "her colouring as the code measured it: contrast level and light-dark gap "
-                           "(L*) of her face; undertone class and where it comes from; eyes, hair, skin "
-                           "— colour family, lightness L* 0-100, chroma C*; \"yellow_blue\" — the side of "
-                           "her eyes on that axis (none: not claimable); metal that suits her face; "
-                           "\"axes\" — her colouring on two axes: lightness (light / mid_lightness / "
-                           "deep) and clarity (soft / mid_chroma / clear), \"both_lightness_ends\": true "
-                           "when her contrast is high and her darkest and lightest ends both belong to her",
+        _ЗП.Поле("person", "her colouring: source, confidence, availability; withheld = no measured fact; "
+                           "estimate_hex = uncalibrated vision model estimate, not measurement; "
+                           "contrast level and light-dark gap L*; undertone class and source; "
+                           "eyes, hair, skin: colour family, lightness L* 0-100, chroma C*; "
+                           "yellow_blue: eye-axis side (none: not claimable); suitable metal; "
+                           "axes: lightness (light/mid_lightness/deep), clarity (soft/mid_chroma/clear); "
+                           "both_lightness_ends: true when contrast is high and both darkest and lightest ends belong to her",
                  треба=True),
         _ЗП.Поле("occasion", "today's occasion as codes, with her wishes, refusals, mood and words as "
                              "the interpreter passed them; a field she did not name is absent",
@@ -311,15 +312,20 @@ def _особа(F, п):
     рука 1 — `пакет_моделі.людина_для_пакета`), очі, волосся, шкіра, бік очей на осі b*, метал."""
     л = _ПМ.людина_для_пакета(None, п.get("палітри"))
     о = {"contrast": {"level": _ДМ.КОНТРАСТ.get(п["особа"].get("рівень"), _ВМ.UNKNOWN),
-                      "light_dark_gap": round(float(п["особа"].get("value_gap") or 0), 1)},
+                      "light_dark_gap": п["особа"].get("value_gap")},
          "undertone": {"class": _ДМ.ТЕМПЕРАТУРА.get(л["температура"]["клас"], л["температура"]["клас"]),
                        "from": _ДМ.ДЖЕРЕЛО_ТЕМПЕРАТУРИ.get(л["температура"]["джерело"])}}
     for риса, ключ in (("очі", "eyes"), ("волосся", "hair"), ("шкіра", "skin")):
-        р = F.get(риса) or {}
-        if р.get("L") is None:
+        оз = _ОБ.ознака_палітри(F, риса)
+        о[ключ] = _ОБ.походження_на_дріт(оз)
+        р = оз["значення"] or {}
+        if not оз["доступно"]:
             continue
-        о[ключ] = {"family": _сім_я(р.get("h"), р.get("C")), "lightness": round(float(р["L"])),
-                   "chroma": round(float(р.get("C") or 0))}
+        о[ключ].update(family=_сім_я(р.get("h"), р.get("C")), lightness=round(float(р["L"])),
+                       chroma=round(float(р["C"])))
+    о["contrast"].update(_ОБ.походження_на_дріт(_ОБ.ознака_палітри(F, "контраст")))
+    т = _ОБ.підтон_палітри(F, самозвіт=п.get("самозвіт"))
+    о["undertone"].update(_ОБ.походження_на_дріт(т))
     б = _П.бік_b_проти_людини(F)
     if "eyes" in о:
         о["eyes"]["yellow_blue"] = ("yellow" if б.get("бік", 0) > 0 else "blue" if б.get("бік", 0) < 0
@@ -333,8 +339,9 @@ def _особа(F, п):
     # рангів 1–2 «середні/насичені») ж3 і ж8 брали графіт і ставили «muted» у 3 з 3
     # прогонів. Тепер їде та сама вісь, якою код будує палітру (`palettes.осі`: волосся без
     # тону голосує лише світлотою), і ознака «обидва кінці світлоти» за високого контрасту.
-    ос = _ПЛ.осі(F)
-    о["axes"] = {"lightness": ос["коди"]["value"], "clarity": ос["коди"]["chroma"]}
+    ос = _ПЛ.осі(F, самозвіт=п.get("самозвіт"))
+    о["axes"] = dict(lightness=ос["коди"]["value"], clarity=ос["коди"]["chroma"],
+                      **_ОБ.походження_на_дріт(_ОБ.ознака_палітри(F, "шкіра")))
     if ос.get("обидва_полюси_L"):
         о["axes"]["both_lightness_ends"] = True
     return о
@@ -519,7 +526,21 @@ def _мета(код):
 
 
 def _у_особі(*к):
-    return lambda ч, о, пер: (any((пер["особа"].get(x) or {}) for x in к), "person_%s=none" % "|".join(к))
+    """Приймає причину лише за доступною ознакою з відомим значенням."""
+    def є_факт(_ч, _о, пер):
+        """Перевіряє факт; _ч і _о лишають єдину сигнатуру таблиці ЗВІРКА_ПРИЧИН."""
+        for назва in к:
+            риса = пер["особа"].get(назва) or {}
+            if риса.get("available") is not True:
+                continue
+            if назва == "contrast" and риса.get("level") in _ДМ.КОНТРАСТ.values() and риса.get("light_dark_gap") is not None:
+                return True, "person_contrast=measured"
+            if назва == "undertone" and риса.get("class") in ("warm", "cool", "neutral", "olive"):
+                return True, "person_undertone=asserted"
+            if назва == "hair" and риса.get("family") not in (None, "unknown", "withheld"):
+                return True, "person_hair=measured"
+        return False, "person_%s=none" % "|".join(к)
+    return є_факт
 
 
 # Її слова на дроті випадку — ті самі поля, що пише `дріт_моделі.випадок` (імена з його мапи, не копія списку):
@@ -540,7 +561,7 @@ _СЛОВА_ЇЇ = tuple(_ДМ.ПОЛЯ_ВИПАДКУ[к] for к in ("бажа�
                                             or (пер.get("день") or {}).get("place")
                                             or (пер.get("день") or {}).get("dress_code")), "occasion=none"),
     "why_weather": lambda ч, о, пер: (any((пер.get("день") or {}).get(к) is not None
-                                          for к in ("weather", "temperature_c", "season")), "day_weather=none"),
+                                          for к in ("weather", "weather_band", "season")), "day_weather=none"),
     "why_her_words": lambda ч, о, пер: (any((пер.get("випадок") or {}).get(к) for к in _СЛОВА_ЇЇ), "her_words=none"),
     "why_first_advice": _перша_порада,
 }
