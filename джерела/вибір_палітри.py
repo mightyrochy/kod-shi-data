@@ -303,7 +303,7 @@ def _сім_я(h, C):
     """Сім'я тону риси кодом (`palettes.сім_я_тону` → `дріт_моделі.СІМ_Я`), «neutral» — нижче межі тону."""
     if h is None or C is None or float(C) < _ТОН_РИСИ_С_МІН:
         return "neutral"
-    с = _ПЛ.сім_я_тону(float(h) % 360)
+    с = _ПЛ.сім_я_тону(float(h))
     return _ДМ.СІМ_Я.get(с[0], с[0]) if с else "unknown"
 
 

@@ -233,7 +233,7 @@ _БЕЗ_ГЕЙТІВ = {
         # ГГ-1: що стояло в о6–о10, до неї не доходило (25 з 54 опор загинули саме так). Код порядку
         # не міняє і за зауваженнями не сортує — порядок вердикта лише названо таким, що нічого не каже.
         "First choose the «outfits_wanted» outfits of «verdict» you keep. Write each once in «outfits», "
-        "with its «id» and «why» before its improved items. In «why» say what in «case» it answers — "
+        "with its «id» before its improved items. Choose for «case» — "
         "her occasion, «intent», «goal», her own words — so that their "
         "ideas differ. Read every outfit of «verdict» before you choose: «verdict» comes in an order "
         "drawn by lot, and an outfit's place in it says nothing about her. Do not choose by how many remarks "
@@ -277,7 +277,6 @@ _БЕЗ_ГЕЙТІВ = {
     вихід="ОБРАЗИ_V1",
     # «pole» — поле складання; без підпису його нема й у скелеті ремонту (`протокол.ПОЛЯ_НА_ПРОХАННЯ`)
     поля_виходу=dict({к: v for к, v in _ПОЛЯ_ОБРАЗІВ.items() if к != "образи[].полюс"}, **{
-        "образи[].чому": "what in «case» this outfit answers: one short sentence, up to 20 words",
         "образи[].речі": "«n» of each item of the improved outfit, alone: all its items, not only the ones you "
                          "changed",
         "образи[].ід": "«id» of the «your_outfit» you improved",
