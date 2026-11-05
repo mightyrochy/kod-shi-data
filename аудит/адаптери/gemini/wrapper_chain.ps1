@@ -436,7 +436,7 @@ function Write-ChainFailure($Failure) {
         if ($path -and $detail) { $detail += ' ШЛЯХ ' + (ConvertTo-Json -InputObject $path -Compress) }
     }
     Write-WrapperLog "ланцюг: $code$detail; наступний прохід повторить незавершене"
-    if (-not (Test-Seen ("chain-failed $code$detail " + [datetime]::UtcNow.ToString('yyyyMMddHH')))) {
+    if (-not (Test-Seen ("chain-failed $code$($detail -creplace ' ШЛЯХ .*$', '') " + [datetime]::UtcNow.ToString('yyyyMMddHH')))) {
         Add-OutboxLine ((Get-Date -Format 'yyyyMMdd-HHmmss') + '-' + (Get-Sha256Hex "chain $code$detail").Substring(0,12) + '.txt') "GEMINI ОБГОРТКА: ЛАНЦЮГ $code$detail"
     }
 }
