@@ -1,6 +1,6 @@
 ﻿#Requires -Version 5.1
 <# Стенд наряду «обгортка-GPU-простій» (29.10): хибне «GPU зайнята», стенд без Main (main.cpl), мовчазний запобіжник.
-Справжні функції обгортки; підмінено лише nvidia-smi, перелік позначок і замки. #>
+Справжні функції обгортки; підмінено nvidia-smi, перелік позначок, замки й порожній перелік LM Studio. #>
 param([Parameter(Mandatory = $true)][string]$SourceDir)
 $ErrorActionPreference = 'Stop'
 [Console]::OutputEncoding = New-Object Text.UTF8Encoding($false)
@@ -18,32 +18,26 @@ function Scenario([string]$Name, [scriptblock]$Body) {
 $exeDir = Split-Path -Parent $SourceDir
 $sideDir = Join-Path $SourceDir 'перевірка'
 
-# --- (а) відеокарта зайнята лише справжнім навантаженням ----------------------------------------------------------------
+# --- (а) відеокарта зайнята за нестачі VRAM ----------------------------------------------------------------
 Scenario 'а GPU' {
     . (Join-Path $SourceDir 'queue_lanes.ps1')
+    function Get-LmsInstances { <# Синтетичний порожній REST; мірило простою не звертається до LM Studio. #> }
     function Get-Command { [pscustomobject]@{ Source = 'nvidia-smi' } }
-    # Пам'ять карти й перелік compute-процесів — два окремі запити nvidia-smi.
+    function Get-GpuCounterRows { <# Запасне джерело — nvidia-smi; лічильник процесів міряє сценарії_gpu_процеси.ps1. #> $null }
     function Invoke-Native { param($Exe, $Arguments)
-        if ($Arguments -contains '--query-gpu=memory.used') { return [pscustomobject]@{ Code = $script:SmiCode; Out = $script:SmiMem } }
-        [pscustomobject]@{ Code = 0; Out = $script:SmiApps } }
+        [pscustomobject]@{ Code = $script:SmiCode; Out = "16376, $script:SmiFree, $script:SmiPercent" } }
     function Test-LockFree { $true }
     $LaneDir = $tmp
-    $script:SmiCode = 0
-    $avast = '6320, C:\Program Files\Avast Software\Avast\AvastUI.exe'
-    $script:SmiApps = $avast; $script:SmiMem = '57'
-    Check 'а єдиний процес AvastUI.exe без навантаження (57 МБ) — GPU вільна, наряд береться' ((Test-ExternalGpuFree) -and (Get-GpuBusyReason @()) -eq '')
-    $script:SmiApps = ''; $script:SmiMem = '0'
-    Check 'а порожній перелік — вільна' (Test-ExternalGpuFree)
-    $script:SmiApps = $avast + "`
-" + '4120, C:\Users\x\chrome.exe'; $script:SmiMem = '2300'
+    $script:SmiCode = 0; $script:SmiFree = 16319; $script:SmiPercent = 0
+    Check 'а AvastUI 57 MiB без обчислень — GPU вільна' ((Test-ExternalGpuFree) -and (Get-GpuBusyReason @()) -eq '')
+    $script:SmiFree = 16376
+    Check 'а порожня карта — вільна' (Test-ExternalGpuFree)
+    $script:SmiFree = 2000
     $why = Get-GpuBusyReason @()
-    Check "а процес тримає пам'ять (2300 МБ) — зайнята, назви процесів у журналі: «$why»" (-not (Test-ExternalGpuFree) -and $why -match '2300 MiB' -and $why.Contains('AvastUI.exe+chrome.exe') -and $script:GpuHoldReason -ceq 'процес AvastUI.exe+chrome.exe')
-    $script:SmiApps = '4120, C:\a b\dwm, evil;rm.exe'
-    [void](Get-GpuBusyReason @())
-    Check "а назва з комою й зайвими знаками стає безпечною: «$script:GpuHoldReason»" ($script:GpuHoldReason -cmatch '^процес [A-Za-z0-9._+-]{1,92}$')
-    $script:SmiApps = ''
-    [void](Get-GpuBusyReason @())
-    Check 'а пам''ять зайнята, а процесів у переліку нема — стійка причина без чисел' ($script:GpuHoldReason -ceq 'GPU зайнята стороннім процесом')
+    Check "а бракує памʼяті — зайнята, причина числом: «$why»" (-not (Test-ExternalGpuFree) -and $why -match 'вільно 2000 з потрібних 8925 MiB')
+    $script:SmiFree = 14000; $script:SmiPercent = 74
+    $why = Get-GpuBusyReason @()
+    Check 'а обчислення за достатньої памʼяті не блокують' ($why -eq '' -and (Test-ExternalGpuFree))
     $script:SmiCode = 9
     $why = Get-GpuBusyReason @()
     Check 'а nvidia-smi не відповів — зайнята, причина названа' ($why -match 'nvidia-smi' -and $script:GpuHoldReason -ceq 'nvidia-smi не відповів')
@@ -87,6 +81,7 @@ Scenario 'б стенди' {
 Scenario 'в сигнал' {
     $work = Join-Path $tmp 'cr'; $box = Join-Path $tmp 'box'
     . (Join-Path $SourceDir 'claude_run.ps1') -WorkDir $work -RepoDir $tmp -OutboxDir $box -PublishDir "$tmp/pub" -GeminiOutDir "$tmp/gout" -LaneDir "$tmp/lanes" -TmpDir "$tmp/ctmp" -NoStatus
+    function Get-LmsInstances { <# Синтетичний порожній REST; мірило простою не звертається до LM Studio. #> }
     foreach ($d in @($work, "$work/state", "$work/slots", $box, "$tmp/lanes")) { [void][IO.Directory]::CreateDirectory($d) }
     $script:StateDir = "$work/state"; $script:SlotDir = "$work/slots"; $script:Limits = $null
     $send = { param($l) Add-Line $l }
@@ -133,6 +128,7 @@ Scenario 'в сигнал' {
 Scenario 'в планувальник' {
     $work = Join-Path $tmp 'cp'
     . (Join-Path $SourceDir 'claude_run.ps1') -WorkDir $work -RepoDir $tmp -OutboxDir "$tmp/cpbox" -PublishDir "$tmp/pub" -GeminiOutDir "$tmp/gout" -LaneDir "$tmp/lanes" -TmpDir "$tmp/ctmp" -NoStatus
+    function Get-LmsInstances { <# Синтетичний порожній REST; мірило простою не звертається до LM Studio. #> }
     foreach ($d in @($work, "$work/state", "$work/slots", "$tmp/lanes")) { [void][IO.Directory]::CreateDirectory($d) }
     $script:StateDir = "$work/state"; $script:SlotDir = "$work/slots"
     $script:Limits = @{ slots = @{ claude = 2 }; source = 'код'; claude_laptop = @() }
@@ -146,14 +142,15 @@ Scenario 'в планувальник' {
     $script:Started = 0
     function Start-Worker { $script:Started++; [pscustomobject]@{ Slot = 'claude-1'; Slug = 'п'; Gpu = $true; Marker = 'x'; Proc = [pscustomobject]@{ HasExited = $false } } }
     function Get-Command { [pscustomobject]@{ Source = 'nvidia-smi' } }
+    function Get-GpuCounterRows { <# Запасне джерело — nvidia-smi; лічильник процесів міряє сценарії_gpu_процеси.ps1. #> $null }
     function Invoke-Native { param($Exe, $Arguments)
-        if ($Arguments -contains '--query-gpu=memory.used') { return [pscustomobject]@{ Code = 0; Out = $script:FakeMem } }
+        if ($Arguments -contains '--query-gpu=memory.total,memory.free,utilization.gpu') { return [pscustomobject]@{ Code = 0; Out = $script:FakeTelemetry } }
         [pscustomobject]@{ Code = 0; Out = $script:FakeApps } }
-    $script:FakeMem = '2300'; $script:FakeApps = '4120, C:\Users\x\chrome.exe'
+    $script:FakeTelemetry = '16376, 2000, 74'; $script:FakeApps = '4120, C:\Users\x\chrome.exe'
     $w = New-Object System.Collections.ArrayList
     $r = Start-Markers $w
-    Check 'в2 GPU зайнята процесом — воркер не запущено, позначка лишилась без узяття' ($script:Started -eq 0 -and $r[0] -eq 0 -and $script:Held['GPU'].Reason -ceq 'процес chrome.exe' -and $script:Held['GPU'].Markers.Count -eq 1)
-    $script:FakeMem = '57'; $script:FakeApps = ''
+    Check 'в2 GPU зайнята процесом — воркер не запущено, позначка лишилась без узяття' ($script:Started -eq 0 -and $r[0] -eq 0 -and $script:Held['GPU'].Reason -ceq 'вільно 2000 з потрібних 8925 MiB; навантаження 74 %' -and $script:Held['GPU'].Markers.Count -eq 1)
+    $script:FakeTelemetry = '16376, 16319, 0'; $script:FakeApps = ''
     $r = Start-Markers $w
     Check 'в2 GPU вільна — наряд узято' ($script:Started -eq 1 -and $r[0] -eq 1 -and -not $script:Held.ContainsKey('GPU'))
 }
@@ -163,6 +160,7 @@ $g3out = Join-Path $tmp 'g3out'
 Scenario 'в3 gemini-run' {
     $work = Join-Path $tmp 'g3'
     . (Join-Path $SourceDir 'gemini_run.ps1') -RepoDir $tmp -RepoUrl 'x' -RunsDir "$work/runs" -OutDir $g3out -LaneDir "$tmp/g3lanes" -AgyExe 'немає-cli' -ProfileDir $tmp
+    function Get-LmsInstances { <# Синтетичний порожній REST; мірило простою не звертається до LM Studio. #> }
     foreach ($d in @("$work/runs", "$work/state", "$work/slots", $g3out, "$tmp/g3lanes")) { [void][IO.Directory]::CreateDirectory($d) }
     $script:StateDir = "$work/state"; $script:SlotDir = "$work/slots"; $script:Limits = $null
     $script:HealthAlertDir = Join-Path $g3out 'alerts'
@@ -175,12 +173,13 @@ Scenario 'в3 gemini-run' {
     function Test-SlugBusy { $false }
     function Test-LockFree { $true }
     function Get-Command { [pscustomobject]@{ Source = 'nvidia-smi' } }
+    function Get-GpuCounterRows { <# Запасне джерело — nvidia-smi; лічильник процесів міряє сценарії_gpu_процеси.ps1. #> $null }
     function Invoke-Native { param($Exe, $Arguments)
-        if ($Arguments -contains '--query-gpu=memory.used') { return [pscustomobject]@{ Code = 0; Out = '2300' } }
+        if ($Arguments -contains '--query-gpu=memory.total,memory.free,utilization.gpu') { return [pscustomobject]@{ Code = 0; Out = '16376, 2000, 74' } }
         [pscustomobject]@{ Code = 0; Out = '4120, C:\Users\x\chrome.exe' } }
     $w = New-Object System.Collections.ArrayList
     [void](Start-Markers $w)
-    Check 'в3 GPU зайнята процесом — gemini-run не бере позначку й тримає GPU' ($script:Held['GPU'].Reason -ceq 'процес chrome.exe' -and $script:Held['GPU'].Markers.Count -eq 1)
+    Check 'в3 GPU зайнята процесом — gemini-run не бере позначку й тримає GPU' ($script:Held['GPU'].Reason -ceq 'вільно 2000 з потрібних 8925 MiB; навантаження 74 %' -and $script:Held['GPU'].Markers.Count -eq 1)
     $send = { param($l) Add-HoldLine $l }
     Update-HoldSignals $script:Held $send
     $f = "$work/state/holds.json"
@@ -190,7 +189,7 @@ Scenario 'в3 gemini-run' {
     Update-HoldSignals $script:Held $send
     Update-HoldSignals $script:Held $send
     $rows = @(Get-ChildItem -LiteralPath "$g3out/alerts" -Filter '*.txt' -File -ErrorAction SilentlyContinue | ForEach-Object { [IO.File]::ReadAllText($_.FullName, $utf).Trim() })
-    Check "в3 понад поріг — один рядок у out/alerts: $($rows -join ' | ')" ($rows.Count -eq 1 -and $rows[0] -ceq 'GEMINI ОБГОРТКА: ЗАБЛОКОВАНО GPU: процес chrome.exe, позначок 1')
+    Check "в3 понад поріг — один рядок у out/alerts: $($rows -join ' | ')" ($rows.Count -eq 1 -and $rows[0] -ceq 'GEMINI ОБГОРТКА: ЗАБЛОКОВАНО GPU: вільно 2000 з потрібних 8925 MiB; навантаження 74 %, позначок 1')
 }
 Scenario 'в3 публікатор' {
     . (Join-Path $SourceDir 'gemini_publish.ps1') -WorkDir "$tmp/g3pub" -OutDir $g3out -OutboxDir "$tmp/g3box"
@@ -198,7 +197,7 @@ Scenario 'в3 публікатор' {
     $script:HealthAlertDir = $OutboxDir   # як у Main публікатора
     Receive-HealthAlerts
     $rows = @(Get-ChildItem -LiteralPath $OutboxDir -Filter '*.txt' -File | ForEach-Object { [IO.File]::ReadAllText($_.FullName, $utf).Trim() })
-    Check "в3 публікатор перекладає рядок рушія у вихідні для диспетчера: $($rows -join ' | ')" ($rows.Count -eq 1 -and $rows[0] -ceq 'GEMINI ОБГОРТКА: ЗАБЛОКОВАНО GPU: процес chrome.exe, позначок 1' -and (Test-OutboxLine $rows[0]) -eq '')
+    Check "в3 публікатор перекладає рядок рушія у вихідні для диспетчера: $($rows -join ' | ')" ($rows.Count -eq 1 -and $rows[0] -ceq 'GEMINI ОБГОРТКА: ЗАБЛОКОВАНО GPU: вільно 2000 з потрібних 8925 MiB; навантаження 74 %, позначок 1' -and (Test-OutboxLine $rows[0]) -eq '')
     Receive-HealthAlerts
     Check 'в3 повторний імпорт — нових рядків нуль' (@(Get-ChildItem -LiteralPath $OutboxDir -Filter '*.txt' -File).Count -eq 1)
 }
@@ -207,6 +206,7 @@ Scenario 'в3 публікатор' {
 Scenario 'г банер' {
     $work = Join-Path $tmp 'cg'
     . (Join-Path $SourceDir 'claude_run.ps1') -WorkDir $work -RepoDir $tmp -OutboxDir "$tmp/cgbox" -PublishDir "$tmp/pub" -GeminiOutDir "$tmp/gout" -LaneDir "$tmp/lanes" -TmpDir "$tmp/ctmp" -NoStatus
+    function Get-LmsInstances { <# Синтетичний порожній REST; мірило простою не звертається до LM Studio. #> }
     foreach ($d in @($work, "$work/state", "$work/slots", "$tmp/gout")) { [void][IO.Directory]::CreateDirectory($d) }
     $script:StateDir = "$work/state"; $script:SlotDir = "$work/slots"; $script:Limits = $null
     function Get-TaskRows { @() }

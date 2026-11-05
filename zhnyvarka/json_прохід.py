@@ -2,9 +2,24 @@
 import json
 import hashlib
 import os
+import sys
 from pathlib import Path
 
 МЕЖА_СТОРІНОК = 120
+
+
+def прочитати_json(файл):
+    """Читає словник стану; пошкодження діагностує й лишає відновлення писачеві."""
+    try:
+        дані = json.loads(Path(файл).read_bytes())
+        if not isinstance(дані, dict):
+            raise ValueError("STATE_INVALID")
+        return дані
+    except FileNotFoundError:
+        return {}
+    except ValueError:
+        print(f"JOURNAL_CORRUPT: {файл}", file=sys.stderr)
+        return {}
 
 
 def прочитати_стан(журнал, домен):

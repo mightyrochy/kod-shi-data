@@ -696,7 +696,7 @@
      ]
     },
     "place": {
-     "description": "місце — де вона буде",
+     "description": "місце — де вона буде; office_corporate | office_creative — kinds of one place, office: one of them only when her words say which kind; her words name only the office — office",
      "enum": [
       "home",
       "park",
@@ -729,7 +729,8 @@
       "wedding",
       "funeral",
       "unknown"
-     ]
+     ],
+     "title": "місце — де вона буде"
     },
     "setting": {
      "description": "у приміщенні, просто неба чи змішано",
@@ -822,19 +823,6 @@
       }
      ],
      "description": "наскільки ошатний цей вихід — смуга одного щабля драбини за шкалою коду 1–10 (модель дає код щабля, `мовний_шар._смуга_числом`): завжди — з її слів і події"
-    },
-    "hour": {
-     "description": "година початку за 24-годинним годинником",
-     "oneOf": [
-      {
-       "type": "integer",
-       "minimum": 0,
-       "maximum": 23
-      },
-      {
-       "const": "unknown"
-      }
-     ]
     },
     "temperature_c": {
      "description": "температура повітря, °C",
@@ -1011,7 +999,7 @@
      "maxItems": 3
     },
     "part_of_day": {
-     "description": "частина доби, коли години не названо",
+     "description": "частина доби з її слів чи години",
      "enum": [
       "morning",
       "day",
@@ -1062,25 +1050,109 @@
       "unknown"
      ]
     },
+    "host_context": {
+     "description": "подія з господарем або зі ставками: yes — це названо; no — явно заперечено; unknown — не сказала; не її роль господині",
+     "enum": [
+      "yes",
+      "no",
+      "unknown"
+     ]
+    },
+    "role": {
+     "description": "її названа роль на події",
+     "enum": [
+      "guest",
+      "close_family",
+      "main_person",
+      "host",
+      "candidate",
+      "speaker",
+      "worker",
+      "mourner_close",
+      "acquaintance",
+      "unknown"
+     ]
+    },
+    "companion_formality": {
+     "description": "ошатність описаного нею одягу супутника на шкалі нагоди; не її власна",
+     "oneOf": [
+      {
+       "type": "number",
+       "minimum": 0,
+       "maximum": 10
+      },
+      {
+       "const": "unknown"
+      }
+     ]
+    },
+    "direct_sun": {
+     "description": "пряме сонце на неї: yes — назвала пряме сонце; no — назвала тінь чи відсутність сонця; unknown — не сказала; не виводити з температури, опадів чи пори року",
+     "enum": [
+      "yes",
+      "no",
+      "unknown"
+     ]
+    },
+    "season": {
+     "description": "названий нею сезон події, не дата чи температура",
+     "enum": [
+      "winter",
+      "spring",
+      "summer",
+      "autumn",
+      "unknown"
+     ]
+    },
+    "life_transition": {
+     "description": "добровільно названий життєвий перехід; не питати й не виводити з тіла",
+     "enum": [
+      "pregnancy",
+      "recovery",
+      "weight_change",
+      "new_role",
+      "none",
+      "unknown"
+     ]
+    },
+    "creative_environment": {
+     "description": "творче середовище події: yes — назвала; no — явно заперечила; unknown — не сказала; не намір сміливого образу",
+     "enum": [
+      "yes",
+      "no",
+      "unknown"
+     ]
+    },
+    "declared_break": {
+     "description": "явно заявлений злам граматики, не сміливий намір",
+     "enum": [
+      "yes",
+      "no",
+      "unknown"
+     ]
+    },
+    "matching_opaque_tights": {
+     "description": "щільні колготи в тон взуття чи їх явне заперечення; інакше невідомо",
+     "enum": [
+      "yes",
+      "no",
+      "unknown"
+     ]
+    },
+    "declared_column": {
+     "description": "явно заявлена колона одного кольору, не висновок із речей",
+     "enum": [
+      "yes",
+      "no",
+      "unknown"
+     ]
+    },
     "own_items": {
      "description": "її власні речі, які вона називає словами: усе, що вона зве своїм («моя», «у мене є», «з моєї шафи», «з фото»), — кожна річ окремо; слот, тип і тканина — завжди, кодом з її слів або \"unknown\"",
      "type": "array",
      "items": {
       "$ref": "#/$defs/own_item"
      }
-    },
-    "minute": {
-     "description": "хвилини початку, коли названо разом із годиною (19:30 — 30; пів на восьму вечора — 30)",
-     "oneOf": [
-      {
-       "type": "integer",
-       "minimum": 0,
-       "maximum": 59
-      },
-      {
-       "const": "unknown"
-      }
-     ]
     },
     "place_words": {
      "oneOf": [
@@ -1137,6 +1209,7 @@
       "rough_ground",
       "stroll",
       "walking",
+      "bowling",
       "photoshoot",
       "unknown"
      ]
@@ -2333,10 +2406,6 @@
         "description": "наскільки ошатний цей вихід — смуга одного щабля драбини за шкалою коду 1–10 (модель дає код щабля, `мовний_шар._смуга_числом`): завжди — з її слів і події"
        },
        {
-        "const": "hour",
-        "description": "година початку за 24-годинним годинником"
-       },
-       {
         "const": "temperature_c",
         "description": "температура повітря, °C"
        },
@@ -2390,7 +2459,7 @@
        },
        {
         "const": "part_of_day",
-        "description": "частина доби, коли години не названо"
+        "description": "частина доби з її слів чи години"
        },
        {
         "const": "month",
@@ -2409,12 +2478,48 @@
         "description": "колір, що на цій події належить іншій особі"
        },
        {
-        "const": "own_items",
-        "description": "її власні речі, які вона називає словами: усе, що вона зве своїм («моя», «у мене є», «з моєї шафи», «з фото»), — кожна річ окремо; слот, тип і тканина — завжди, кодом з її слів або \"unknown\""
+        "const": "host_context",
+        "description": "подія з господарем або зі ставками: yes — це названо; no — явно заперечено; unknown — не сказала; не її роль господині"
        },
        {
-        "const": "minute",
-        "description": "хвилини початку, коли названо разом із годиною (19:30 — 30; пів на восьму вечора — 30)"
+        "const": "role",
+        "description": "її названа роль на події"
+       },
+       {
+        "const": "companion_formality",
+        "description": "ошатність описаного нею одягу супутника на шкалі нагоди; не її власна"
+       },
+       {
+        "const": "direct_sun",
+        "description": "пряме сонце на неї: yes — назвала пряме сонце; no — назвала тінь чи відсутність сонця; unknown — не сказала; не виводити з температури, опадів чи пори року"
+       },
+       {
+        "const": "season",
+        "description": "названий нею сезон події, не дата чи температура"
+       },
+       {
+        "const": "life_transition",
+        "description": "добровільно названий життєвий перехід; не питати й не виводити з тіла"
+       },
+       {
+        "const": "creative_environment",
+        "description": "творче середовище події: yes — назвала; no — явно заперечила; unknown — не сказала; не намір сміливого образу"
+       },
+       {
+        "const": "declared_break",
+        "description": "явно заявлений злам граматики, не сміливий намір"
+       },
+       {
+        "const": "matching_opaque_tights",
+        "description": "щільні колготи в тон взуття чи їх явне заперечення; інакше невідомо"
+       },
+       {
+        "const": "declared_column",
+        "description": "явно заявлена колона одного кольору, не висновок із речей"
+       },
+       {
+        "const": "own_items",
+        "description": "її власні речі, які вона називає словами: усе, що вона зве своїм («моя», «у мене є», «з моєї шафи», «з фото»), — кожна річ окремо; слот, тип і тканина — завжди, кодом з її слів або \"unknown\""
        },
        {
         "const": "place_words",
@@ -2561,7 +2666,7 @@
          "minLength": 1
         },
         "value": {
-         "description": "місце — де вона буде",
+         "description": "місце — де вона буде; office_corporate | office_creative — kinds of one place, office: one of them only when her words say which kind; her words name only the office — office",
          "enum": [
           "home",
           "park",
@@ -2594,7 +2699,8 @@
           "wedding",
           "funeral",
           "unknown"
-         ]
+         ],
+         "title": "місце — де вона буде"
         }
        }
       },
@@ -2743,38 +2849,6 @@
         "ceremonial",
         "unknown"
        ]
-      },
-      "hour": {
-       "type": "object",
-       "additionalProperties": false,
-       "required": [
-        "quote",
-        "value"
-       ],
-       "properties": {
-        "quote": {
-         "type": "string",
-         "minLength": 1
-        },
-        "value": {
-         "description": "година початку за 24-годинним годинником",
-         "oneOf": [
-          {
-           "type": "integer",
-           "minimum": 0,
-           "maximum": 23
-          },
-          {
-           "const": "unknown"
-          }
-         ]
-        },
-        "named": {
-         "enum": [
-          "clock_time"
-         ]
-        }
-       }
       },
       "temperature_c": {
        "type": "object",
@@ -3091,7 +3165,7 @@
        "maxItems": 3
       },
       "part_of_day": {
-       "description": "частина доби, коли години не названо",
+       "description": "частина доби з її слів чи години",
        "enum": [
         "morning",
         "day",
@@ -3156,25 +3230,249 @@
         "unknown"
        ]
       },
+      "host_context": {
+       "type": "object",
+       "additionalProperties": false,
+       "required": [
+        "quote",
+        "value"
+       ],
+       "properties": {
+        "quote": {
+         "type": "string",
+         "minLength": 1
+        },
+        "value": {
+         "description": "подія з господарем або зі ставками: yes — це названо; no — явно заперечено; unknown — не сказала; не її роль господині",
+         "enum": [
+          "yes",
+          "no",
+          "unknown"
+         ]
+        }
+       }
+      },
+      "role": {
+       "type": "object",
+       "additionalProperties": false,
+       "required": [
+        "quote",
+        "value"
+       ],
+       "properties": {
+        "quote": {
+         "type": "string",
+         "minLength": 1
+        },
+        "value": {
+         "description": "її названа роль на події",
+         "enum": [
+          "guest",
+          "close_family",
+          "main_person",
+          "host",
+          "candidate",
+          "speaker",
+          "worker",
+          "mourner_close",
+          "acquaintance",
+          "unknown"
+         ]
+        }
+       }
+      },
+      "companion_formality": {
+       "type": "object",
+       "additionalProperties": false,
+       "required": [
+        "quote",
+        "value"
+       ],
+       "properties": {
+        "quote": {
+         "type": "string",
+         "minLength": 1
+        },
+        "value": {
+         "description": "ошатність описаного нею одягу супутника на шкалі нагоди; не її власна",
+         "oneOf": [
+          {
+           "type": "number",
+           "minimum": 0,
+           "maximum": 10
+          },
+          {
+           "const": "unknown"
+          }
+         ]
+        }
+       }
+      },
+      "direct_sun": {
+       "type": "object",
+       "additionalProperties": false,
+       "required": [
+        "quote",
+        "value"
+       ],
+       "properties": {
+        "quote": {
+         "type": "string",
+         "minLength": 1
+        },
+        "value": {
+         "description": "пряме сонце на неї: yes — назвала пряме сонце; no — назвала тінь чи відсутність сонця; unknown — не сказала; не виводити з температури, опадів чи пори року",
+         "enum": [
+          "yes",
+          "no",
+          "unknown"
+         ]
+        }
+       }
+      },
+      "season": {
+       "type": "object",
+       "additionalProperties": false,
+       "required": [
+        "quote",
+        "value"
+       ],
+       "properties": {
+        "quote": {
+         "type": "string",
+         "minLength": 1
+        },
+        "value": {
+         "description": "названий нею сезон події, не дата чи температура",
+         "enum": [
+          "winter",
+          "spring",
+          "summer",
+          "autumn",
+          "unknown"
+         ]
+        }
+       }
+      },
+      "life_transition": {
+       "type": "object",
+       "additionalProperties": false,
+       "required": [
+        "quote",
+        "value"
+       ],
+       "properties": {
+        "quote": {
+         "type": "string",
+         "minLength": 1
+        },
+        "value": {
+         "description": "добровільно названий життєвий перехід; не питати й не виводити з тіла",
+         "enum": [
+          "pregnancy",
+          "recovery",
+          "weight_change",
+          "new_role",
+          "none",
+          "unknown"
+         ]
+        }
+       }
+      },
+      "creative_environment": {
+       "type": "object",
+       "additionalProperties": false,
+       "required": [
+        "quote",
+        "value"
+       ],
+       "properties": {
+        "quote": {
+         "type": "string",
+         "minLength": 1
+        },
+        "value": {
+         "description": "творче середовище події: yes — назвала; no — явно заперечила; unknown — не сказала; не намір сміливого образу",
+         "enum": [
+          "yes",
+          "no",
+          "unknown"
+         ]
+        }
+       }
+      },
+      "declared_break": {
+       "type": "object",
+       "additionalProperties": false,
+       "required": [
+        "quote",
+        "value"
+       ],
+       "properties": {
+        "quote": {
+         "type": "string",
+         "minLength": 1
+        },
+        "value": {
+         "description": "явно заявлений злам граматики, не сміливий намір",
+         "enum": [
+          "yes",
+          "no",
+          "unknown"
+         ]
+        }
+       }
+      },
+      "matching_opaque_tights": {
+       "type": "object",
+       "additionalProperties": false,
+       "required": [
+        "quote",
+        "value"
+       ],
+       "properties": {
+        "quote": {
+         "type": "string",
+         "minLength": 1
+        },
+        "value": {
+         "description": "щільні колготи в тон взуття чи їх явне заперечення; інакше невідомо",
+         "enum": [
+          "yes",
+          "no",
+          "unknown"
+         ]
+        }
+       }
+      },
+      "declared_column": {
+       "type": "object",
+       "additionalProperties": false,
+       "required": [
+        "quote",
+        "value"
+       ],
+       "properties": {
+        "quote": {
+         "type": "string",
+         "minLength": 1
+        },
+        "value": {
+         "description": "явно заявлена колона одного кольору, не висновок із речей",
+         "enum": [
+          "yes",
+          "no",
+          "unknown"
+         ]
+        }
+       }
+      },
       "own_items": {
        "description": "її власні речі, які вона називає словами: усе, що вона зве своїм («моя», «у мене є», «з моєї шафи», «з фото»), — кожна річ окремо; слот, тип і тканина — завжди, кодом з її слів або \"unknown\"",
        "type": "array",
        "items": {
         "$ref": "#/$defs/own_item"
        }
-      },
-      "minute": {
-       "description": "хвилини початку, коли названо разом із годиною (19:30 — 30; пів на восьму вечора — 30)",
-       "oneOf": [
-        {
-         "type": "integer",
-         "minimum": 0,
-         "maximum": 59
-        },
-        {
-         "const": "unknown"
-        }
-       ]
       },
       "place_words": {
        "oneOf": [
@@ -3250,6 +3548,7 @@
           "rough_ground",
           "stroll",
           "walking",
+          "bowling",
           "photoshoot",
           "unknown"
          ]
@@ -3385,7 +3684,6 @@
           "dress_code",
           "palette",
           "formality",
-          "hour",
           "temperature_c",
           "weather_feel",
           "intent",
@@ -3404,8 +3702,17 @@
           "formality_branch",
           "open_zones",
           "reserved_colour",
+          "host_context",
+          "role",
+          "companion_formality",
+          "direct_sun",
+          "season",
+          "life_transition",
+          "creative_environment",
+          "declared_break",
+          "matching_opaque_tights",
+          "declared_column",
           "own_items",
-          "minute",
           "place_words",
           "rest",
           "stylist_note",
@@ -3459,9 +3766,6 @@
      "type": "object",
      "additionalProperties": false,
      "properties": {
-      "hour": {
-       "type": "string"
-      },
       "temperature_c": {
        "type": "string"
       },
@@ -4945,7 +5249,7 @@
          },
          {
           "const": "claim_look_shape_vs_body_shape",
-          "description": "the outfit's shape is not the one worth leading to for her figure (values: body — the figure's shape, look — the outfit's shape, target — the shapes to lead to; shape codes: A — hips wider than shoulders, V — shoulders wider than hips, X — a marked waist, H — a straight contour without a marked waist, O — volume in the middle, I — a narrow straight contour, HX — a waist on the edge of being marked; never write the letters themselves, only the description)"
+          "description": "the outfit's shape is not the one worth leading to for her figure (values: body — the figure's shape, look — the outfit's shape, target — the shapes to lead to; shape codes: A — hips wider than shoulders, V — shoulders wider than hips, X — a marked waist, H — a straight contour without a marked waist, O — volume in the middle, I — a narrow straight contour, HX — waist definition is undetermined; never write the letters themselves, only the description)"
          },
          {
           "const": "contour_direction_not_set_by_goal",
@@ -4953,7 +5257,7 @@
          },
          {
           "const": "look_shape_is",
-          "description": "the shape the outfit gives, with no judgement, because the goal for this outing is not `flatter` (values: look — shape codes: A — hips wider than shoulders, V — shoulders wider than hips, X — a marked waist, H — a straight contour without a marked waist, O — volume in the middle, I — a narrow straight contour, HX — a waist on the edge of being marked; never write the letters themselves, only the description)"
+          "description": "the shape the outfit gives, with no judgement, because the goal for this outing is not `flatter` (values: look — shape codes: A — hips wider than shoulders, V — shoulders wider than hips, X — a marked waist, H — a straight contour without a marked waist, O — volume in the middle, I — a narrow straight contour, HX — waist definition is undetermined; never write the letters themselves, only the description)"
          },
          {
           "const": "vertical_balance_not_judged",
@@ -5881,7 +6185,7 @@
          },
          {
           "const": "daytime_shine",
-          "description": "shiny sequins, lurex or rhinestones in the daytime, which is a daytime context (values: slot — slot code, hour — the starting hour)"
+          "description": "shiny sequins, lurex or rhinestones in the daytime, which is a daytime context (values: slot — slot code)"
          },
          {
           "const": "matte_item_in_slot",
@@ -7205,7 +7509,7 @@
          },
          {
           "const": "high_occasion_floor",
-          "description": "the event's level starts from this step: no item sits more than one step below it (canvas sneakers, trainers, denim, a knit top stay out); shoes at the outfit's level or above (values: from)"
+          "description": "risk asymmetry (K-KOH-07): no item sits more than one step below the event's band; explain a deliberate lower item in deliberate, including a deliberate wrong shoe (K-SHO-03) (values: from)"
          },
          {
           "const": "weather_layers",
@@ -7514,6 +7818,50 @@
          {
           "const": "type_label_mechanism",
           "description": "a typology label used as a MECHANISM rather than a vocabulary bridge. Instead: the bridge translated into axes — the label outside, the axes inside"
+         },
+         {
+          "const": "event_role_known",
+          "description": "the role she named at this event is known"
+         },
+         {
+          "const": "companion_formality_known",
+          "description": "the companion formalness level from her words is known"
+         },
+         {
+          "const": "occasion_season_known",
+          "description": "the event season she named is known"
+         },
+         {
+          "const": "wardrobe_known",
+          "description": "her available wardrobe items are known"
+         },
+         {
+          "const": "life_transition_known",
+          "description": "the life transition she volunteered is known"
+         },
+         {
+          "const": "declared_break_known",
+          "description": "whether she explicitly declared a style grammar break is known"
+         },
+         {
+          "const": "matching_opaque_tights_known",
+          "description": "whether she named opaque tights matching her shoes is known"
+         },
+         {
+          "const": "declared_column_known",
+          "description": "whether she declared a column of one colour is known"
+         },
+         {
+          "const": "direct_sun_heat",
+          "description": "direct sunlight is known before judging dark close-fitting garments (K-WEA-03)"
+         },
+         {
+          "const": "host_context_known",
+          "description": "whether the event has a host or stakes is known before applying risk asymmetry (K-KOH-07)"
+         },
+         {
+          "const": "creative_environment_known",
+          "description": "whether the environment is creative is known before inverting risk asymmetry (K-KOH-07)"
          },
          {
           "const": "chroma_budget",
@@ -8125,6 +8473,7 @@
    "rough_ground": "нерівний_ґрунт",
    "stroll": "прогулянка",
    "walking": "ходьба",
+   "bowling": "боулінг",
    "photoshoot": "фотосесія"
   },
   "surface": {
@@ -8685,6 +9034,37 @@
    "usual": "usual",
    "conservative": "conservative"
   },
+  "direct_sun": {
+   "yes": true,
+   "no": false
+  },
+  "host_context": {
+   "yes": true,
+   "no": false
+  },
+  "creative_environment": {
+   "yes": true,
+   "no": false
+  },
+  "declared_break": {
+   "yes": true,
+   "no": false
+  },
+  "declared_column": {
+   "yes": true,
+   "no": false
+  },
+  "matching_opaque_tights": {
+   "yes": true,
+   "no": false
+  },
+  "life_transition": {
+   "pregnancy": "pregnancy",
+   "recovery": "recovery",
+   "weight_change": "weight_change",
+   "new_role": "new_role",
+   "none": "none"
+  },
   "religious_place": {
    "none": "none",
    "temple": "temple",
@@ -8733,6 +9113,7 @@
    "sub": "sub",
    "preset": "preset",
    "like": "like",
+   "derived": "derived",
    "default": "default",
    "unknown": "unknown"
   }

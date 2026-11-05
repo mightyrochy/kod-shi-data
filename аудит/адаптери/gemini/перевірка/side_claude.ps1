@@ -30,5 +30,11 @@ function Get-TaskRows {
         [pscustomobject]@{ Name = $n; Last = '2026-10-26T10:00:00Z'; Result = '0x0'; State = $st }
     }
 }
+# Моделі в цьому стенді синтетичні: початковий і кінцевий переліки порожні.
+function Get-LmsInstances { }
 function Test-ExternalGpuFree { $true }
+# Планувальник читає той самий вхід напряму через Get-GpuBusyReason.
+function Get-GpuTelemetry { <# Ізольована карта синтетичного планувальника. #> [pscustomobject]@{ Error = ''; TotalMiB = 16376; FreeMiB = 16376; Percent = 0 } }
+# Лічильник відеопам'яті процесів — справжній на ноутбуці: стенд не бачить карти (його міряє сценарії_gpu_процеси.ps1).
+function Get-GpuCounterRows { $null }
 exit (Main)

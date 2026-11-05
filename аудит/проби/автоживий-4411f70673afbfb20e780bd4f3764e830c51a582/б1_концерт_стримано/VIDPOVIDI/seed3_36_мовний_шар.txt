@@ -1,0 +1,51 @@
+── ПРОМПТ (6758 симв.) ──
+Ти — перекладачка в застосунку-стилістці. Ти пишеш природною українською тексти, які зараз побачить жінка. Рішень не приймаєш, на питання не відповідаєш, змісту не міняєш.
+
+Вхід — JSON-об'єкт: ключ — номер тексту н, значення — текст, який склали код та інші моделі.
+
+Ключі відповіді — ті самі, що у вході, кожен: номер н тексту, значення — рядок, той самий зміст природною українською, без англійських слів і кодів; ПЕРЕКЛАДАЙ КОЖНЕ англійське слово, навіть одне посеред українського речення; латиницею лишай лише назви крамниць і брендів, «V-подібний» і «den»; текст, що вже природний і до неї на «ти», — без змін, а український текст на «ви» перепиши на «ти», решту лиши слово в слово.
+
+Вид кожної речі — теж зміст: річ у перекладі — та сама, що у вході, а не схожа чи сусідня. ankle boots — черевики чи ботильйони, boots — чоботи, heeled — на підборах, а не туфлі, pumps — туфлі-човники, loafers — лофери; pendant — кулон чи підвіска, necklace — намисто чи ланцюжок, а не каблучка, сережки чи браслет; ring — каблучка; earrings — сережки. Українські назви речей у вході (назви з крамниці, найчастіше перед « — ») переписуй літера в літеру: не міняй, не переставляй і не додавай у них жодного слова.
+
+Про жінку — лише до неї, на «ти» (ти, тебе, тобі, твій, твоя; хочеш, скинеш; наказ однини: розкажи, оберни, тримай, дай), і в питаннях теж: you, your, she, her про неї — «ти», «твій» (her skin tone — твій тон шкіри; when she turns her head — коли ти повертаєш голову; she looks taller — ти виглядаєш вищою), англійський наказ — наказом однини; «вона», «її» — лише про річ (сукню, сумку, куртку). Говорить стилістка — одна жінка: про себе — від першої особи однини й у жіночому роді (я підібрала, я б додала), не «ми», не від імені застосунку чи коду і ніколи словами самої жінки.
+
+Мова: літературна українська, як у текстах українських крамниць одягу. Кожне українське слово — літерами лише української абетки, без жодної латинської літери чи стороннього знака всередині слова. Кожне речення — одна остаточна версія, без виправлень посеред тексту. Словничок нижче — лише як перекласти англійське слово, коли воно є у вході; це не зміст: річ, тканина чи колір, яких у вході нема, у тексті не з'являються. Звичні українські назви для слів англійського джерела: trousers, pants — штани; dressy, dressier — ошатний, ошатніше; look, outfit — образ; taupe — сіро-бежевий; loose — вільний; suede — замша (жіночий рід); slip dress — сукня-комбінація; camel — кемел (колір). Назви речей і кольорів, які дала крамниця, — як є.
+
+Перевір кожне слово ДО відповіді: до неї — лише «ти», жодного «ви», «ваш» і наказу множини, і про неї жодного «вона», «її», «їй», жодне слово не стоїть двічі поспіль, кожна річ — того самого виду, що у вході (річ образу — іменником коду її виду з переліку, коли він є, і слова при ній узгоджені з цим іменником), а українська назва речі — слово в слово. Відповідь — рівно ОДИН JSON-об'єкт і нічого після нього: другої, виправленої версії, приміток і пояснень не пиши — помилку виправ у тому самому об'єкті.
+
+Речі образу — перелік речей картки (номер речі — як на картці, поруч — її коди):
+1 — kind code: dress_generic · colour code: black · about it: text н=1
+2 — kind code: poncho · colour code: black · about it: text н=2
+3 — kind code: sneakers · colour code: golden · about it: text н=3
+4 — kind code: tote · colour code: black · about it: text н=4
+When a text speaks of an item of the list, call it by the Ukrainian noun of its kind code (kind code: …) — the same noun in the right case in every text (trench_coat — «тренч», sweater — «светр», loafers — «лофери»), not by another kind or a synonym of the English word, whatever word the English text uses; a code ending in _generic names only the family (dress_generic — a dress, bag_generic — a bag). Make every adjective, pronoun and verb with the item agree with that noun in gender and number («бежевий тренч, який…»; «шкіряні лофери, які…»). A name you translate in this same call (text н=K): give it one noun and call the item by it, in agreement, in every text. A text the list gives as about an item (about it: text н=M) speaks of that one item, and so does every other text where the English names it. The colour of an item of the list is its colour code (colour code: …): write the Ukrainian name of that code. The English colour words for that item are the stylist's impression of a photo: do not turn them into a colour of their own — the item's colour stands in their place. Colours of its details (trim, strap, buttons, print), its fabric and the rest — translate from the text. The list is for the items only: an item the English text does not name is not added to the translation — neither to the description nor to the advice.
+
+Colour codes: black — чорний; golden — золотий.
+
+ТЕКСТИ:
+{
+"1": "A black sheath-style dress with a floral print, featuring a defined waist and an A-line cut that flows softly from the hips.",
+"2": "A black poncho with regular sleeves and vertical stripes, designed to be worn as an open outer layer for added drama and warmth.",
+"3": "Golden sneakers with a metallic finish that offer a sporty yet festive touch suitable for standing through the evening.",
+"4": "A black tote bag with structured sides, chosen to replace the previous option and provide a solid neutral base against your bright orange accent in the spare list.",
+"5": "I chose a striking black floral dress with a fitted waist and an A-line silhouette to anchor your look in the crowd at the rock concert. Over it, I selected a black striped poncho that adds a dramatic, layered texture without overwhelming your small frame. To ground the outfit, golden sneakers provide a playful contrast to the dark fabrics while keeping you comfortable as you stand on your feet all night. Finally, an orange bag serves as a bold pop of color against the monochrome dress and outerwear.",
+"6": "Wear the poncho loosely draped over the shoulders and unbuttoned at the front to maintain a relaxed, effortless vibe that fits the concert atmosphere.",
+"7": "Carry the orange bag across your body or on the shoulder so the bright color remains visible from every angle as you move through the crowd.",
+"8": "Кросівки Mjus шкіряні золоті — I kept the golden sneakers as your chosen edge; they anchor the soft silk against the rock crowd without breaking your smart-evening vibe.",
+"9": "Кросівки Mjus шкіряні золоті — The golden hue of the sneakers falls within your palette's analogous arc, serving as a deliberate high-energy accent that complements your chosen neutrals-plus-accent scheme.",
+"10": "Кросівки Mjus шкіряні золоті — I kept the golden sneakers as your chosen streetwear edge; they raise the outfit's formality to match the smart club vibe while adding a rock star touch."
+}
+
+── ВІДПОВІДЬ (2039 симв., 30.7 с, HTTP 200) ──
+{
+"1": "Чорна сукня-футляр з квітковим принтом, що має чітку талію і трапецієподібний крій, який м’яко розширюється від стегон.",
+"2": "Чорний пончо зі звичайними рукавами й вертикальними смужками, створене для носіння як відкритий верхній шар, щоб додати драматизму та тепла.",
+"3": "Золоті кросівки з металевим покриттям, які пропонують спортивний і водночас святковий акцент, підходящий для того, щоб стояти увесь вечір.",
+"4": "Чорна сумка-тоут зі структурованими боками, обрана замість попереднього варіанту та створена як надійний нейтральний фон проти твого яскраво-помаранчевого акценту в додатковому списку.",
+"5": "Я підібрала чорну сукню з квітковим принтом і приталеною талією, щоб твоя фігура виділялася на рок-концерті. Зверху я обрала чорне пончо зі смужками, яке додає драматичну багатошарову текстуру без перевантаження твого маленького зросту. Щоб завершити образ, золоті кросівки створюють грайливий контраст з темними тканинами та дарують комфорт під час тривалого перебування на ногах. Насамкінець, помаранчева сумка слугує сміливим акцентом кольору проти монохромного вбрання.",
+"6": "Одягни пончо вільно, зкинувши його через плечі та розстебнувши спереду, щоб зберегти невимушений і легкий вигляд, який відповідатиме атмосфері концерту.",
+"7": "Носи помаранчеву сумку на тілі або на одному плечі, щоб яскравий колір залишався помітним з будь-якого кута під час руху в натовпі.",
+"8": "Золоті шкіряні кросівки Mjus — Я залишила золоті кросівки як твій обраний акцент; вони гармонують з ніжною шовковою сукнею серед рок-натовпу, не втрачаючи при цьому вишуканого вечірнього настрою.",
+"9": "Золоті шкіряні кросівки Mjus — Золотий відтінок кросівок входить до аналогової гами твоєї палітри, слугуючи навмисним акцентом з високою енергією, який підкреслює твою обрану схему нейтральних кольорів плюс акцент.",
+"10": "Золоті шкіряні кросівки Mjus — Я залишила золоті кросівки як твій обраний вуличний стиль; вони підвищують формальність вбрання, щоб відповідати вишуканій клубній атмосфері та додати рок-зірковий шарм."
+}

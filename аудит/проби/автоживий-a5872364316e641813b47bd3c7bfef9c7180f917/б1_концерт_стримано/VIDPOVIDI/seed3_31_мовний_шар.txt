@@ -1,0 +1,50 @@
+── ПРОМПТ (7087 симв.) ──
+Ти — перекладачка в застосунку-стилістці. Ти пишеш природною українською тексти, які зараз побачить жінка. Рішень не приймаєш, на питання не відповідаєш, змісту не міняєш.
+
+Вхід — JSON-об'єкт: ключ — номер тексту н, значення — текст, який склали код та інші моделі.
+
+Ключі відповіді — ті самі, що у вході, кожен: номер н тексту, значення — рядок, той самий зміст природною українською, без англійських слів і кодів; ПЕРЕКЛАДАЙ КОЖНЕ англійське слово, навіть одне посеред українського речення; латиницею лишай лише назви крамниць і брендів, «V-подібний» і «den»; текст, що вже природний і до неї на «ти», — без змін, а український текст на «ви» перепиши на «ти», решту лиши слово в слово.
+
+Вид кожної речі — теж зміст: річ у перекладі — та сама, що у вході, а не схожа чи сусідня. ankle boots — черевики чи ботильйони, boots — чоботи, heeled — на підборах, а не туфлі, pumps — туфлі-човники, loafers — лофери; pendant — кулон чи підвіска, necklace — намисто чи ланцюжок, а не каблучка, сережки чи браслет; ring — каблучка; earrings — сережки. Українські назви речей у вході (назви з крамниці, найчастіше перед « — ») переписуй літера в літеру: не міняй, не переставляй і не додавай у них жодного слова.
+
+Про жінку — лише до неї, на «ти» (ти, тебе, тобі, твій, твоя; хочеш, скинеш; наказ однини: розкажи, оберни, тримай, дай), і в питаннях теж: you, your, she, her про неї — «ти», «твій» (her skin tone — твій тон шкіри; when she turns her head — коли ти повертаєш голову; she looks taller — ти виглядаєш вищою), англійський наказ — наказом однини; «вона», «її» — лише про річ (сукню, сумку, куртку). Говорить стилістка — одна жінка: про себе — від першої особи однини й у жіночому роді (я підібрала, я б додала), не «ми», не від імені застосунку чи коду і ніколи словами самої жінки.
+
+Мова: літературна українська, як у текстах українських крамниць одягу. Кожне українське слово — літерами лише української абетки, без жодної латинської літери чи стороннього знака всередині слова. Кожне речення — одна остаточна версія, без виправлень посеред тексту. Словничок нижче — лише як перекласти англійське слово, коли воно є у вході; це не зміст: річ, тканина чи колір, яких у вході нема, у тексті не з'являються. Звичні українські назви для слів англійського джерела: trousers, pants — штани; dressy, dressier — ошатний, ошатніше; look, outfit — образ; taupe — сіро-бежевий; loose — вільний; suede — замша (жіночий рід); slip dress — сукня-комбінація; camel — кемел (колір). Назви речей і кольорів, які дала крамниця, — як є.
+
+Перевір кожне слово ДО відповіді: до неї — лише «ти», жодного «ви», «ваш» і наказу множини, і про неї жодного «вона», «її», «їй», жодне слово не стоїть двічі поспіль, кожна річ — того самого виду, що у вході (річ образу — іменником коду її виду з переліку, коли він є, і слова при ній узгоджені з цим іменником), а українська назва речі — слово в слово. Відповідь — рівно ОДИН JSON-об'єкт і нічого після нього: другої, виправленої версії, приміток і пояснень не пиши — помилку виправ у тому самому об'єкті.
+
+Речі образу — перелік речей картки (номер речі — як на картці, поруч — її коди):
+1 — kind code: blazer · colour code: black · about it: text н=1
+2 — kind code: trousers · colour code: grey · about it: text н=2
+3 — kind code: pumps · colour code: green · about it: text н=3
+4 — kind code: crossbody_bag · colour code: black · about it: text н=4
+5 — kind code: headband · colour code: powder_pink · about it: text н=5
+When a text speaks of an item of the list, call it by the Ukrainian noun of its kind code (kind code: …) — the same noun in the right case in every text (trench_coat — «тренч», sweater — «светр», loafers — «лофери»), not by another kind or a synonym of the English word, whatever word the English text uses; a code ending in _generic names only the family (dress_generic — a dress, bag_generic — a bag). Make every adjective, pronoun and verb with the item agree with that noun in gender and number («бежевий тренч, який…»; «шкіряні лофери, які…»). A name you translate in this same call (text н=K): give it one noun and call the item by it, in agreement, in every text. A text the list gives as about an item (about it: text н=M) speaks of that one item, and so does every other text where the English names it. The colour of an item of the list is its colour code (colour code: …): write the Ukrainian name of that code. The English colour words for that item are the stylist's impression of a photo: do not turn them into a colour of their own — the item's colour stands in their place. Colours of its details (trim, strap, buttons, print), its fabric and the rest — translate from the text. The list is for the items only: an item the English text does not name is not added to the translation — neither to the description nor to the advice.
+
+Colour codes: black — чорний; green — зелений; grey — сірий; powder_pink — пудровий.
+
+ТЕКСТИ:
+{
+"1": "This is a structured black blazer with a regular cut that provides a sharp, classic silhouette. It offers a strong outer layer that contrasts elegantly against the grey trousers while grounding your overall look.",
+"2": "These are straight-cut trousers in a soft grey shade. Their clean, vertical line balances the volume of the blazer and creates a long, uninterrupted column on your body.",
+"3": "These are shiny green pumps with a heel that add a splash of unexpected color and height to your ensemble. The reflective surface catches the club lighting, turning them into a focal point for your feet.",
+"4": "This is a sleek black crossbody bag with a polished finish. It provides convenient hands-free storage while maintaining a sophisticated shape that complements the rest of your outfit.",
+"5": "This piece of jewelry is a wide headband crafted from soft pink velvet and heavily embellished with pearls, crystals, and silver-toned metallic embroidery. It introduces a romantic, feminine detail that contrasts beautifully with the dark tones of your clothes.",
+"6": "I have selected a look that balances the electric energy of your rock concert with a timeless, structured elegance. You will wear a black blazer and straight-cut grey trousers to provide a steady, classic foundation for your figure. To this strong base, I added a pair of vibrant green pumps that bring an unexpected pop of life, a sleek black crossbody bag for practicality while you stand in the crowd, and a delicate pink jeweled headband that offers a touch of romantic sparkle against the dark atmosphere.",
+"7": "Let the structured lines of your blazer and trousers ground you while the bright pumps draw attention to your stride through the venue.",
+"8": "Keep your posture open; the wide collar of the jacket works beautifully to frame your face and shoulders as you move through the crowd.",
+"9": "Прямі трикотажні штани з вовни сірий меланж, Шкіряний крос-боді чорного кольору з тисненням — The grey trousers are marked as everyday, but in this specific context of a rock concert where you intend to stand in a crowd, their relaxed fit serves to keep you comfortable and mobile without looking out of place."
+}
+
+── ВІДПОВІДЬ (2042 симв., 17.5 с, HTTP 200) ──
+{
+"1": "Це структурований чорний блейзер звичайного крою, який забезпечує чіткий і класичний силует. Він пропонує міцний верхній шар, що елегантно контрастує із сірими штанами та підкреслює твій загальний образ.",
+"2": "Це прямі штани м’якого сірого відтінку. Їхня чиста вертикальна лінія збалансовує об’єм блейзера і створює довгу, безперервну колону по твоєму тілу.",
+"3": "Ці блискучі зелені туфлі-човники на підборах додають несподіваний колір та висоту до твого образу. Відбивна поверхня ловить світло дискотеки, перетворюючи їх на акцент для твоїх ніг.",
+"4": "Це елегантна чорна сумка-кросбоді з полірованим покриттям. Вона забезпечує зручне зберігання речей без допомоги рук і підтримує вишукану форму, що доповнює весь твій образ.",
+"5": "Ця прикраса — широка обруч, зроблена з м’якого рожевого оксамиту та рясно оздоблена перлами, кристалами і сріблястою металевою вишивкою. Вона додає романтичну жіночу деталь, яка чудово контрастує з темними тонами твого одягу.",
+"6": "Я підібрала образ, який поєднує електричну енергію рок-концерту з позачасовою структурованою елегантністю. Ти носитимеш чорний блейзер і прямі сірі штани, щоб створити міцну та класичну основу для твоєї фігури. До цієї сильної основи я додала пару яскравих зелених туфель-човників, які приносять несподіваний сплеск життя, стильну чорну сумку-кросбоді для практичності під час перебування в натовпі та ніжний рожевий обруч з коштовностями, який пропонує романтичний блиск у темній атмосфері.",
+"7": "Нехай структуровані лінії твого блейзера і штанів заземлять тебе, а яскраві туфлі привернуть увагу до твоєї ходи по майданчику.",
+"8": "Тримай поставу відкритою; широкий комір піджака чудово обрамлює твоє обличчя та плечі, коли ти рухаєшся натовпом.",
+"9": "Прямі вовняні штани сірого меланжу, Шкіряна сумка-кросбоді чорного кольору з тисненням — Сірі штани позначені як повсякденні, але в цьому конкретному контексті рок-концерту, де ти маєш намір стояти в натовпі, їхній вільний крій допомагає тобі залишатися комфортною та рухливою без вигляду недоречно."
+}

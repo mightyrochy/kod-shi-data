@@ -51,9 +51,10 @@ $script:WorkerGpuBusy = 4
 $script:ReviewApiLimit = 30
 $script:ReviewApiWindow = 3600
 $script:ReviewApiBackoff = 120
-# Відеопам'ять (MiB), нижче якої сторонню зайнятість GPU не рахуємо: вікно AvastUI тримає 57 MiB (вимір 29.10 20:00 UTC),
-# завантажена модель — гігабайти.
-$script:GpuIdleMiB = 512
+# Вимір 30.10: найбільший із доступних знімків живих прогонів — 8925 MiB усієї карти.
+# Джерела й прогалини (пік каталогу, навантаження гри): аудит/корені/ПК-межа-без-джерела-gpu.md.
+# Це запасний бюджет за спостереженим максимумом, а не доведений пік будь-якої моделі.
+$script:GpuRunMiB = 8925
 
 # --- процеси й файли ----------------------------------------------------------------------------------------------
 
@@ -352,7 +353,7 @@ function Get-NightlyMarker([datetime]$Now = [datetime]::UtcNow) {
 
 function Get-MarkerKey($M) { "$($M.Ref) $($M.Sha)" }
 
-function Get-StatePath([string]$Key) { Join-Path $script:StateDir ((Get-Sha256Hex $Key) + '.txt') }
+function Get-StatePath([string]$Key, [string]$StateDir = $script:StateDir) { Join-Path $StateDir ((Get-Sha256Hex $Key) + '.txt') }
 
 function Get-ClaimPath([string]$StatePath) { $StatePath -replace '\.txt$', '.claim' }
 
@@ -432,9 +433,9 @@ function Enter-ReviewWait($M, [string]$Head = '') {
     Write-Log "позначка $($M.Name): REVIEW_API; спроба збережена, повтор у черзі"
 }
 
-function Get-MarkerState($M) {
+function Get-MarkerState($M, [string]$StateDir = $script:StateDir) {
     <# NEW — не бачили; TAKEN — узята (файл `.claim`); WAIT — чекає скидання квоти (Wait.until, unix); DONE — інше. #>
-    $sp = Get-StatePath (Get-MarkerKey $M)
+    $sp = Get-StatePath (Get-MarkerKey $M) $StateDir
     if (Test-Path -LiteralPath (Get-ClaimPath $sp)) { return [pscustomobject]@{ Kind = 'TAKEN'; Wait = $null } }
     if (-not (Test-Path -LiteralPath $sp)) { return [pscustomobject]@{ Kind = 'NEW'; Wait = $null } }
     $t = [System.IO.File]::ReadAllText($sp, $script:Utf8)
@@ -636,6 +637,59 @@ function Test-LockFree([string]$Path) {
 }
 
 function Get-GpuLockPath { Join-Path $LaneDir 'gpu.lock' }
+
+function Get-LmsInstances {
+    <# Читає екземпляри локального LM Studio; неповна відповідь не є порожнім сервером. #>
+    $v = Invoke-RestMethod 'http://127.0.0.1:1234/api/v1/models' -TimeoutSec 15 -ErrorAction Stop
+    if ((Get-JsonProp $v 'error') -or $v.models -isnot [array]) { throw 'LM Studio: немає переліку models' }
+    foreach ($m in $v.models) {
+        if (-not $m.key -or $m.loaded_instances -isnot [array]) { throw 'LM Studio: неповна модель' }
+        foreach ($i in $m.loaded_instances) {
+            if (-not ($i.id -is [string]) -or -not $i.id) { throw 'LM Studio: немає ID екземпляра' }
+            [pscustomobject]@{ id = $i.id; model = $m.key }
+        }
+    }
+}
+
+function Complete-GpuModels {
+    <# Під GPU-замком прибирає різницю зі збереженим знімком; збій лишає запис для повтору. #>
+    $path = Join-Path $LaneDir 'gpu-models.json'
+    if (-not [IO.File]::Exists($path)) { return }
+    $lease = [IO.File]::ReadAllText($path, $script:Utf8) | ConvertFrom-Json -ErrorAction Stop
+    if ($lease.v -ne 1 -or -not $lease.marker -or -not $lease.run -or $lease.before -isnot [array]) { throw 'GPU: неповний знімок моделей' }
+    $ids = New-Object 'System.Collections.Generic.HashSet[string]' ([StringComparer]::Ordinal)
+    foreach ($i in $lease.before) {
+        if (-not $i.id -or -not $i.model) { throw 'GPU: неповний початковий екземпляр' }
+        [void]$ids.Add([string]$i.id)
+    }
+    foreach ($i in @(Get-LmsInstances)) {
+        if ($ids.Contains($i.id)) { continue }
+        Write-Log "GPU вивантаження: модель=$($i.model); екземпляр=$($i.id); наряд=$($lease.marker); прогін=$($lease.run)" -Required
+        $body = @{ instance_id = $i.id } | ConvertTo-Json -Compress
+        $v = Invoke-RestMethod 'http://127.0.0.1:1234/api/v1/models/unload' -Method Post -ContentType 'application/json' -Body $body -TimeoutSec 120 -ErrorAction Stop
+        if (Get-JsonProp $v 'error') { throw 'LM Studio: відмова вивантаження' }
+    }
+    if (@(Get-LmsInstances | Where-Object { -not $ids.Contains($_.id) }).Count) { throw 'GPU: нові екземпляри ще завантажені' }
+    Remove-Item -LiteralPath $path -Force -ErrorAction Stop
+}
+
+function Start-GpuModels($Job) {
+    <# До агента й під його GPU-замком зберігає межу власності незалежно від життя дерева процесів. #>
+    Complete-GpuModels
+    $before = @(Get-LmsInstances)
+    $lease = [ordered]@{ v = 1; marker = [string]$Job.name; run = [string]$Job.id; before = $before }
+    Write-FileAtomic (Join-Path $LaneDir 'gpu-models.json') ($lease | ConvertTo-Json -Depth 6 -Compress)
+}
+
+function Repair-GpuModels {
+    <# Планувальник прибирає залишки вбитого дерева перед воротами GPU, навіть коли черга порожня. #>
+    $gpuLock = Open-Lock (Get-GpuLockPath)
+    if ($null -eq $gpuLock) { return $true }
+    try { Complete-GpuModels; $true }
+    catch { Write-Log "GPU прибирання відкладено: $($_.Exception.Message)"; $false }
+    finally { $gpuLock.Dispose() }
+}
+
 
 function Get-BusySlots([string]$Lane, $Workers) {
     <# Зайняті слоти смуги: свій живий процес наряду або чужий замок слота (наряд попереднього проходу ще йде). #>
@@ -876,6 +930,165 @@ function Get-AutoReviewInput([string]$Number) {
     ConvertTo-Json -InputObject @($result) -Depth 6 -Compress
 }
 
+function Get-LiveSceneRegistry([string]$Text) {
+    <# Реєстр `аудит/проби/живі_сцени.txt`: id — перше поле до «|», режим — п'яте; рядки `#` і короткі пропущено. #>
+    $registry = @{}
+    foreach ($row in ($Text -split "`n")) {
+        $row = $row.TrimEnd("`r").TrimStart([char]0xFEFF)
+        if (-not $row.Trim() -or $row.TrimStart().StartsWith('#')) { continue }
+        $fields = $row.Split('|')
+        if ($fields.Count -lt 5) { continue }
+        $registry[$fields[0].Trim()] = $fields[4].Trim()
+    }
+    $registry
+}
+
+function Get-LiveAfterLines([string]$Body, $Registry) {
+    <# Єдиний розбір рядків `ЖИВИЙ ПІСЛЯ: <id> — <питання>` для планувальника й CI на тілі PR. Рядок, що починається з
+    `ЖИВИЙ ПІСЛЯ` (після пробілів, маркера списку чи виділення), або розібрано повністю, або в ньому `error`. #>
+    $result = @()
+    $lines = @([string]$Body -split "`n")
+    for ($i = 0; $i -lt $lines.Count; $i++) {
+        $line = $lines[$i].Trim()
+        if ($line -cnotmatch '^[-*+>#_\s]*ЖИВИЙ ПІСЛЯ') { continue }
+        $first = $i
+        # Звичайне продовження того самого абзацу склеюємо. Межі Markdown, новий рядок
+        # протоколу й підпис поля не поглинаємо: вони не можуть дописати id чи питання.
+        while ($i + 1 -lt $lines.Count) {
+            $next = $lines[$i + 1].Trim()
+            if (-not $next -or $next -cmatch '^(?:ЖИВИЙ ПІСЛЯ|[-*+>#_`~]|\d+[.)]\s|\p{Lu}[^:]*:|\|)') { break }
+            $line += ' ' + $next
+            $i++
+        }
+        $item = @{line=$line;first=$first;last=$i;id='';question='';mode='';error=''}
+        if ($line -cnotmatch '^ЖИВИЙ ПІСЛЯ: (.*)$') {
+            $item.error = 'рядок має починатися з «ЖИВИЙ ПІСЛЯ: » без маркера списку, виділення чи пропущеної двокрапки'
+        } else {
+            $rest = $Matches[1]
+            $at = $rest.IndexOf(' — ', [StringComparison]::Ordinal)
+            if ($at -lt 0) {
+                $item.error = 'нема « — » після id'
+            } else {
+                $id = $rest.Substring(0, $at).Trim()
+                $question = $rest.Substring($at + 3).Trim()
+                if ($id -cnotmatch '^[\p{L}\p{Nd}_-]+$') {
+                    $item.error = 'id «' + $id + '» не голий: лише літери, цифри, _ і -, без лапок, зворотних лапок і пояснень'
+                } elseif (-not ($Registry.Keys -ccontains $id)) {
+                    $item.error = 'id «' + $id + '» нема першим полем аудит/проби/живі_сцени.txt'
+                } elseif (-not $question) {
+                    $item.error = 'порожнє питання після « — »'
+                } else {
+                    $item.id = $id; $item.question = $question; $item.mode = [string]$Registry[$id]
+                }
+            }
+        }
+        $result += @($item)
+    }
+    $result
+}
+
+function ConvertTo-LivePublicationBody([string]$Body, $Registry) {
+    <# Готує тіло тим самим читачем, зберігаючи ваду й оригінал без виконуваного префікса. #>
+    $items = @(Get-LiveAfterLines $Body $Registry)
+    $lines = New-Object 'System.Collections.Generic.List[string]'
+    foreach ($line in @($Body -split "`n")) { $lines.Add($line.TrimEnd("`r")) }
+    $bad = @($items | Where-Object { $_.error })
+    foreach ($item in @($items | Sort-Object first -Descending)) {
+        $replacement = $item.line
+        if ($item.error) { $replacement = "Вадний рядок живого прогону: $($item.error); оригінал: $($item.line)" }
+        $lines.RemoveRange($item.first, $item.last - $item.first + 1)
+        $lines.Insert($item.first, $replacement)
+    }
+    if ($bad.Count) {
+        $lines.Add('')
+        $lines.Add('ЗАБЛОКОВАНО: LIVE_AFTER_INVALID — ' + (($bad | ForEach-Object { $_.error }) -join '; '))
+    }
+    [pscustomobject]@{ Body=($lines -join "`n"); Bad=$bad }
+}
+
+function Merge-LivePublicationBody([string]$Body, [string]$ExistingBody, $Registry) {
+    <# Зберігає питання чинного PR: одна сцена має один рядок із усіма різними питаннями. #>
+    $items = @(Get-LiveAfterLines $Body $Registry)
+    $previous = @(Get-LiveAfterLines $ExistingBody $Registry)
+    $scenes = New-Object 'System.Collections.Generic.Dictionary[string,object]' ([StringComparer]::Ordinal)
+    $order = New-Object 'System.Collections.Generic.List[string]'
+    foreach ($item in @($items) + @($previous)) {
+        if ($item.error) { continue }
+        if (-not $scenes.ContainsKey($item.id)) {
+            $scenes[$item.id] = @{first=-1;questions=@()}
+            $order.Add($item.id)
+        }
+        foreach ($question in @($item.question -split ' ; ')) {
+            if ($scenes[$item.id].questions -cnotcontains $question) { $scenes[$item.id].questions += $question }
+        }
+    }
+    foreach ($item in $items) {
+        if (-not $item.error -and $scenes[$item.id].first -lt 0) { $scenes[$item.id].first = $item.first }
+    }
+    $lines = New-Object 'System.Collections.Generic.List[string]'
+    foreach ($line in @($Body -split "`n")) { $lines.Add($line.TrimEnd("`r")) }
+    foreach ($item in @($items | Sort-Object first -Descending)) {
+        if ($item.error) { continue }
+        $scene = $scenes[$item.id]
+        $lines.RemoveRange($item.first, $item.last - $item.first + 1)
+        if ($scene.first -eq $item.first) {
+            $lines.Insert($item.first, ('ЖИВИЙ ПІСЛЯ: ' + $item.id + ' — ' + ($scene.questions -join ' ; ')))
+        }
+    }
+    foreach ($id in $order) {
+        if ($scenes[$id].first -lt 0) {
+            $lines.Add('')
+            $lines.Add('ЖИВИЙ ПІСЛЯ: ' + $id + ' — ' + ($scenes[$id].questions -join ' ; '))
+        }
+    }
+    # Вада старого тіла також проходить спільне пояснення й блокер, а не зникає під час PATCH.
+    foreach ($item in @($previous | Where-Object { $_.error })) {
+        $lines.Add('')
+        $lines.Add($item.line)
+    }
+    ConvertTo-LivePublicationBody ($lines -join "`n") $Registry
+}
+
+function Get-HeadLivePublication([string]$Head, [string]$ExistingBody = '') {
+    <# Читає коміт і реєстр із довіреної бази перед прийманням звіту або записом тіла PR. #>
+    $body = (Invoke-Git @('show','-s','--format=%B',$Head)).Out
+    if (($body + "`n" + $ExistingBody) -cnotmatch '(?m)^[-*+>#_\s]*ЖИВИЙ ПІСЛЯ') {
+        return (ConvertTo-LivePublicationBody $body @{})
+    }
+    $registryText = (Invoke-Git @('show', 'refs/remotes/origin/main:аудит/проби/живі_сцени.txt')).Out
+    $registry = Get-LiveSceneRegistry $registryText
+    if (-not $registry.Count) { throw 'LIVE_AFTER_REGISTRY' }
+    # Повний рядок сцени — стільки полів, скільки в шапці реєстру «# Поля: …»; коротший рядок гілки не додаємо.
+    $header = @(($registryText -split "`n") | Where-Object { $_.TrimStart([char]0xFEFF).StartsWith('# Поля:') })
+    if (-not $header.Count) { throw 'LIVE_AFTER_REGISTRY' }
+    $width = $header[0].TrimEnd("`r").Split('|').Count
+    # Лише додані рядки від спільної бази: зміни й видалення сцен main не змінюють їхній режим.
+    $base = (Invoke-Git @('merge-base', 'refs/remotes/origin/main', $Head)).Out.Trim()
+    if (-not $base) { throw 'LIVE_AFTER_MERGE_BASE' }
+    $baseRegistry = Get-LiveSceneRegistry ((Invoke-Git @('show', ($base + ':аудит/проби/живі_сцени.txt'))).Out)
+    $diff = (Invoke-Git @('diff', '--no-ext-diff', '--unified=0', $base, $Head, '--', 'аудит/проби/живі_сцени.txt')).Out
+    foreach ($line in ($diff -split "`n")) {
+        if (-not $line.StartsWith('+') -or $line.StartsWith('+++')) { continue }
+        $row = $line.Substring(1).TrimEnd("`r").TrimStart([char]0xFEFF)
+        if (-not $row.Trim() -or $row.TrimStart().StartsWith('#')) { continue }
+        $fields = $row.Split('|')
+        if ($fields.Count -lt $width -or -not $fields[0].Trim()) { continue }
+        $added = Get-LiveSceneRegistry $row
+        foreach ($id in $added.Keys) {
+            if (-not $registry.ContainsKey($id) -and -not $baseRegistry.ContainsKey($id)) { $registry[$id] = $added[$id] }
+        }
+    }
+    Merge-LivePublicationBody $body $ExistingBody $registry
+}
+
+function Get-LiveCorrectionPrompt($Publication) {
+    <# Дає тому самому виконавцю один хід із причинами та точним форматом. #>
+    $details = ($Publication.Bad | ForEach-Object { "Вада: $($_.error)`nРядок: $($_.line)" }) -join "`n"
+    "Тіло останнього коміту не розбирається до публікації PR.`n$details`n" +
+        'Один хід на виправлення в тій самій гілці й тому самому наряді. Формат: ЖИВИЙ ПІСЛЯ: <id> — <питання правки> → <режим> → <ДО звідки> → <що вважати кращим>. ' +
+        'id — голе перше поле аудит/проби/живі_сцени.txt; одна сцена — один рядок. Закоміть виправлений звіт; останній рядок — за адаптером.'
+}
+
 function Get-AutoLivePlan([string]$BuildMain) {
     <# Один план для автоживого й Е1: сцена один раз, питання всіх злитих довірених PR. #>
     $pulls = @(Get-AutoPublicItems 'pulls?state=all&sort=updated&direction=desc' | Where-Object {
@@ -908,25 +1121,36 @@ function Get-AutoLivePlan([string]$BuildMain) {
             if ($commit.Trim()) { $covered[$commit.Trim()] = $true }
         }
     }
+    $registryText = (Invoke-Git @('cat-file','blob',"${BuildMain}:аудит/проби/живі_сцени.txt")).Out
+    $registry = Get-LiveSceneRegistry $registryText
+    if (-not $registry.Count) { throw 'AUTO_REGISTRY' }
     $scenes = [ordered]@{}
+    $cloud = [ordered]@{}
+    $bad = @()
     foreach ($pr in @($pulls | Sort-Object merged_at,number)) {
         if (-not $pr.merged_at) { continue }
         $merge = [string]$pr.merge_commit_sha
         if ($merge -cnotmatch '^[0-9a-f]{40}$') { throw 'AUTO_MERGE' }
         if (-not $history.ContainsKey($merge) -or $covered.ContainsKey($merge)) { continue }
-        foreach ($line in ([string]$pr.body -split "`n")) {
-            if ($line.Trim() -cmatch '^ЖИВИЙ ПІСЛЯ: ([\p{L}\p{Nd}_-]+) — (.+)$') {
-                $scene = $Matches[1]; $question = $Matches[2].Trim()
-                if (-not $scenes.Contains($scene)) { $scenes[$scene] = @() }
-                $scenes[$scene] = @($scenes[$scene]) + @(@{pr=$pr.number;question=$question})
-            }
+        foreach ($item in @(Get-LiveAfterLines ([string]$pr.body) $registry)) {
+            if ($item.error) { $bad += @(@{pr=$pr.number;line=$item.line;reason=$item.error}); continue }
+            # Сцена режиму «функція» — код без моделі: її ставить хмарна сесія, не ноутбук.
+            $target = if ($item.mode -cmatch '^функція') { $cloud } else { $scenes }
+            if (-not $target.Contains($item.id)) { $target[$item.id] = @() }
+            $target[$item.id] = @($target[$item.id]) + @(@{pr=$pr.number;question=$item.question})
         }
     }
-    ConvertTo-Json -InputObject @{since_sha=$checked;since=$since.ToString('o');until=$until.ToString('o');scenes=$scenes} -Depth 8 -Compress
+    ConvertTo-Json -InputObject @{since_sha=$checked;since=$since.ToString('o');until=$until.ToString('o');scenes=$scenes;cloud=$cloud;bad=$bad} -Depth 8 -Compress
 }
 
-function Add-AutoTaskContext([string]$Slug, [string]$Text, [string]$BuildMain = '') {
+function Add-AutoTaskContext([string]$Slug, [string]$Text, [string]$BuildMain = '', [string]$Model = '') {
     <# Додає перевірені числа і JSON-дані; довільний текст не стає інструкціями обгортки. #>
+    if ($Slug -cmatch '^(?:автоперевірка-[1-9][0-9]{0,8}-[0-9a-f]{40}|перевірка-[1-9][0-9]{0,8})$') {
+        if ($Model) {
+            if ($Model -cnotmatch '^[a-z0-9][a-z0-9.-]{1,63}$') { throw 'REVIEW_MODEL' }
+            $Text += "`nМодель перевірки: ``$Model```n"
+        }
+    }
     if ($Slug -cmatch '^автоперевірка-([1-9][0-9]{0,8})-([0-9a-f]{40})$') {
         $number = $Matches[1]; $head = $Matches[2]
         $inputData = Get-AutoReviewInput $number
@@ -939,6 +1163,22 @@ function Add-AutoTaskContext([string]$Slug, [string]$Text, [string]$BuildMain = 
         return $Text + "`nДАНІ ПОЗНАЧКИ: злитий коміт джерел $stamp; штамп build.txt $stamp; коміт збірки $BuildMain. Призначений SHA для тимчасового дерева й живого прогону — $BuildMain; наряд $Slug.`nПЛАН ЖИВОГО — ДАНІ (JSON):`n$plan`n"
     }
     $Text
+}
+
+function Test-AutoPlanEmpty([string]$Slug, [string]$Text) {
+    <# Автоживий за штампом без жодного `ЖИВИЙ ПІСЛЯ` у злитому з попереднього прогону: ні моделі, ні прогону, ні PR
+    (`аудит/КАРТИНА.md` §5, ПК-9). Нічний Е1 план не потребує. Не розібрано JSON — не порожній: прогін не губиться. #>
+    if ($Slug -cnotmatch '^автоживий-[0-9a-f]{40}$') { return $false }
+    $found = [regex]::Match($Text, '(?m)^ПЛАН ЖИВОГО — ДАНІ \(JSON\):\r?\n(\{.*\})\r?$')
+    if (-not $found.Success) { return $false }
+    try { $plan = ConvertFrom-Json $found.Groups[1].Value } catch { return $false }
+    $scenes = $plan.PSObject.Properties['scenes']
+    if ($null -eq $scenes -or @($scenes.Value.PSObject.Properties).Count -ne 0) { return $false }
+    # Сцени «у хмарі» й вадні рядки теж потрібно донести до звіту: з ними план не порожній.
+    $cloud = $plan.PSObject.Properties['cloud']
+    if ($null -ne $cloud -and @($cloud.Value.PSObject.Properties).Count -ne 0) { return $false }
+    $bad = $plan.PSObject.Properties['bad']
+    -not ($null -ne $bad -and @($bad.Value).Count -ne 0)
 }
 
 function Set-BrowserGpuPolicy([string]$Directory) {
@@ -997,58 +1237,116 @@ builtins.__import__ = _gpu_import
     $env:PYTHONPATH = $Directory + [IO.Path]::PathSeparator + $env:PYTHONPATH
 }
 
-function Get-ExternalGpuMiB {
-    <# Відеопам'ять, зайнята зараз (MiB, усі карти); -1 — nvidia-smi не відповів. Міряємо пам'ять, а не перелік процесів:
-    --query-compute-apps під WDDM називає й порожній AvastUI.exe (його вікно живе від старту системи) — 29.10 від 14:27 UTC
-    це лишало кожен GPU-наряд у черзі на 6+ год; з одним AvastUI зайнято 57 MiB (вимір 29.10 20:00 UTC). #>
+function Get-GpuTelemetry {
+    <# Один знімок вільної пам'яті й обчислень єдиної карти; невідомі дані не означають простій.
+    Місткості різних карт не складаємо: цей вимір і бюджет стосуються єдиної RTX 4090 ноутбука. #>
+    $errorResult = [pscustomobject]@{ Error = 'nvidia-smi не відповів'; TotalMiB = 0; FreeMiB = 0; Percent = 0 }
     $exe = Get-Command nvidia-smi -ErrorAction SilentlyContinue
-    if ($null -eq $exe) { return 0 }
-    $r = Invoke-Native $exe.Source @('--query-gpu=memory.used','--format=csv,noheader,nounits') '' 1
-    if ($r.Code -ne 0) { return -1 }
-    $sum = 0; $seen = $false
-    foreach ($line in ($r.Out -split "`n")) { $v = 0; if ([int]::TryParse($line.Trim(), [ref]$v)) { $sum += $v; $seen = $true } }
-    if ($seen) { $sum } else { -1 }
-}
-
-function Test-ExternalGpuFree {
-    <# Сторонній процес із відеопам'яттю лишає GPU-наряд у черзі, без кінцевого блокера. #>
-    $used = Get-ExternalGpuMiB
-    $used -ge 0 -and $used -le $script:GpuIdleMiB
-}
-
-function Get-GpuProcessNames {
-    <# Назви процесів з переліку compute-apps для журналу й сигналу (до трьох, лише безпечні знаки). Під WDDM пам'ять
-    процесів часто N/A, тож зайнятість міряє Get-ExternalGpuMiB, а це лише відповідь «хто». #>
-    $exe = Get-Command nvidia-smi -ErrorAction SilentlyContinue
-    if ($null -eq $exe) { return '' }
-    $r = Invoke-Native $exe.Source @('--query-compute-apps=pid,process_name', '--format=csv,noheader') '' 1
-    if ($r.Code -ne 0) { return '' }
-    $names = @()
-    foreach ($line in @($r.Out -split "`r?`n")) {
-        $f = @($line.Split(','))
-        if ($f.Count -lt 2) { continue }
-        $leaf = (($f[1..($f.Count - 1)] -join ',').Trim() -split '[\\/]')[-1]
-        $safe = ($leaf -replace '[^A-Za-z0-9._-]', '_')
-        if ($safe.Length -gt 30) { $safe = $safe.Substring(0, 30) }
-        if ($safe) { $names += $safe }
+    if ($null -eq $exe) { return $errorResult }
+    $r = Invoke-Native $exe.Source @('--query-gpu=memory.total,memory.free,utilization.gpu', '--format=csv,noheader,nounits') '' 1
+    if ($r.Code -ne 0) { return $errorResult }
+    $lines = @($r.Out -split '\r?\n' | Where-Object { $_.Trim() })
+    if ($lines.Count -gt 1) {
+        $errorResult.Error = 'кілька GPU: потрібен вимір однієї карти'
+        return $errorResult
     }
-    (@($names | Select-Object -Unique) | Select-Object -First 3) -join '+'
+    if ($lines.Count -ne 1 -or $lines[0] -notmatch '^\s*([0-9]+)\s*,\s*([0-9]+)\s*,\s*([0-9]+)\s*$') { return $errorResult }
+    $total = 0L; $free = 0L; $percent = 0
+    if (-not [long]::TryParse($Matches[1], [ref]$total) -or -not [long]::TryParse($Matches[2], [ref]$free) -or
+        -not [int]::TryParse($Matches[3], [ref]$percent) -or $total -le 0 -or $free -gt $total -or $percent -gt 100) { return $errorResult }
+    [pscustomobject]@{ Error = ''; TotalMiB = $total; FreeMiB = $free; Percent = $percent }
+}
+
+function Test-GpuModelProcess([string]$Name, [string]$Path = '') {
+    <# Чи це інструмент LM Studio: лише його виміряну пам'ять можна повторно використати в наряді.
+    Робочий стіл і браузер також займають фізичну пам'ять, але потребу наряду не зменшують. #>
+    $n = ([string]$Name -replace '(?i)\.exe$', '').Trim()
+    if (-not $n) { return $false }
+    if ($n -match '(?i)^(LM[ _]?Studio|lms|llmster)$') { return $true }
+    [string]$Path -match '(?i)[\\/](LM[ _-]?Studio|\.lmstudio)[\\/]'
+}
+
+function Get-GpuCounterRows {
+    <# Рядки лічильника (Name `pid_<PID>_luid_…_phys_<N>`, DedicatedUsage у байтах) — назви класу WMI не перекладаються, на
+    відміну від шляху Get-Counter; $null — лічильника нема (не Windows 10 1709+ чи збій WMI). Стенд підміняє. #>
+    if (-not $script:OnWindows) { return $null }
+    try { , @(Get-CimInstance -ClassName 'Win32_PerfFormattedData_GPUPerformanceCounters_GPUProcessMemory' -ErrorAction Stop) } catch { $null }
+}
+
+function Get-GpuProcessInfo([int]$ProcessId) {
+    <# Назва (як у Get-Process) і шлях процесу за PID; шляху процесу іншого
+    облікового запису не видно — ''; процес уже вийшов — без назви. #>
+    try { $p = Get-Process -Id $ProcessId -ErrorAction Stop } catch { return [pscustomobject]@{ Name = ''; Path = '' } }
+    $path = ''
+    try { $path = [string]$p.Path } catch { $path = '' }
+    [pscustomobject]@{ Name = [string]$p.ProcessName; Path = $path }
+}
+
+function Get-GpuLoad {
+    <# Єдине рішення за вільною VRAM і залишковою потребою наряду.
+    Пам'ять неактивної LM Studio вже належить інструменту прогону; без лічильника процесів її не зараховуємо.
+    Навантаження карти — показник журналу й причини нестачі памʼяті, без порога запуску. #>
+    $gpu = Get-GpuTelemetry
+    $required = [long]$script:GpuRunMiB
+    $modelBytes = 0L
+    if (-not $gpu.Error) {
+        $rows = Get-GpuCounterRows
+        $seen = @{}
+        foreach ($row in @($rows)) {
+            if ($null -eq $row -or [string]$row.Name -notmatch '^pid_([0-9]{1,10})_.*_phys_0$') { continue }
+            $processId = 0; $bytes = 0L
+            if (-not [int]::TryParse($Matches[1], [ref]$processId) -or
+                -not [long]::TryParse([string]$row.DedicatedUsage, [ref]$bytes) -or $bytes -lt 0 -or $seen.ContainsKey([string]$row.Name)) { continue }
+            $seen[[string]$row.Name] = $true
+            $p = Get-GpuProcessInfo $processId
+            if (Test-GpuModelProcess $p.Name $p.Path) {
+                # Обмеження фізично зайнятою пам'яттю захищає від переповнення й розбіжності двох знімків.
+                $modelBytes = [long][Math]::Min(($gpu.TotalMiB - $gpu.FreeMiB) * 1MB, $modelBytes + [double]$bytes)
+            }
+        }
+        $required = [long][Math]::Max(0, $required - [Math]::Floor($modelBytes / 1MB))
+    }
+    $reason = [string]$gpu.Error
+    if (-not $reason) {
+        if ($gpu.FreeMiB -lt $required) { $reason = "вільно $($gpu.FreeMiB) з потрібних $required MiB; навантаження $($gpu.Percent) %" }
+    }
+    [pscustomobject]@{ FreeMiB = $gpu.FreeMiB; RequiredMiB = $required; Percent = $gpu.Percent; Reason = $reason }
+}
+
+function Test-ExternalGpuFree([switch]$LogAcquisition) {
+    <# Те саме рішення для воркера після узяття замка: зміна стану карти повертає наряд у чергу.
+    Журнал узяття містить показники того самого знімка, за яким дозволено старт. #>
+    $load = Get-GpuLoad
+    $free = $load.Reason -eq ''
+    if ($free -and $LogAcquisition) {
+        Write-Log "GPU взято: вільно $($load.FreeMiB) з потрібних $($load.RequiredMiB) MiB; навантаження $($load.Percent) %"
+    }
+    $free
 }
 
 $script:GpuHoldReason = ''
 
-function Get-GpuBusyReason($Workers) {
+function Get-GpuBusyReason($Workers, [switch]$LockHeld) {
     <# Чому GPU не віддати наряду зараз; '' — вільна. Єдине місце для планувальників обох облікових записів.
-    GpuHoldReason — стійка причина для рядка сигналу (без чисел, що гуляють між проходами). #>
+    GpuHoldReason — причина для рядка сигналу (Update-HoldSignals порівнює її без числових показників). LockHeld — замок GPU тримає сам
+    викликач (воркер після Open-Lock): причина — сторонній процес, а не «замок тримає інший процес». #>
     $script:GpuHoldReason = ''
     if (@($Workers | Where-Object { $_.Gpu -and -not $_.Proc.HasExited }).Count -gt 0) { $script:GpuHoldReason = 'замок GPU іншого наряду'; return 'GPU: її тримає власний наряд обгортки' }
-    if (-not (Test-LockFree (Get-GpuLockPath))) { $script:GpuHoldReason = 'замок GPU іншого наряду'; return "GPU: замок $(Get-GpuLockPath) тримає інший процес" }
-    $used = Get-ExternalGpuMiB
-    if ($used -lt 0) { $script:GpuHoldReason = 'nvidia-smi не відповів'; return 'GPU: nvidia-smi не відповів' }
-    if ($used -gt $script:GpuIdleMiB) {
-        $who = Get-GpuProcessNames
-        $script:GpuHoldReason = $(if ($who) { "процес $who" } else { 'GPU зайнята стороннім процесом' })
-        return "GPU: зайнято $used MiB стороннім процесом (поріг $script:GpuIdleMiB)$(if ($who) { ': ' + $who })"
+    if (-not $LockHeld -and -not (Test-LockFree (Get-GpuLockPath))) { $script:GpuHoldReason = 'замок GPU іншого наряду'; return "GPU: замок $(Get-GpuLockPath) тримає інший процес" }
+    # Незакритий знімок моделей (прибирання попереднього GPU-наряду не вдалось) тримає лише GPU-наряди: решта смуги йде.
+    if (-not $LockHeld -and [IO.File]::Exists((Join-Path $LaneDir 'gpu-models.json'))) {
+        $script:GpuHoldReason = 'незакритий знімок моделей GPU'
+        return 'GPU: незакритий знімок моделей попереднього наряду (lanes/gpu-models.json)'
+    }
+    try { $null = @(Get-LmsInstances) }
+    catch {
+        $script:GpuHoldReason = 'LM Studio недоступний на :1234'
+        return 'GPU: LM Studio недоступний на :1234 — неможливо зберегти початкові екземпляри'
+    }
+    $load = Get-GpuLoad
+    if ($load.Reason) {
+        $script:GpuHoldReason = $load.Reason
+        return "GPU: $($load.Reason)"
     }
     ''
 }
@@ -1056,6 +1354,14 @@ function Get-GpuBusyReason($Workers) {
 # --- позначки, що стоять без старту ---------------------------------------------------------------------------------
 
 $script:PassSkips = [ordered]@{}
+
+function Read-JsonArray([string]$Path) {
+    <# Елементи JSON-масиву з файла в конвеєр (викликач бере @(Read-JsonArray …)); нема файла чи не JSON — нічого.
+    PowerShell 5.1 пише масив з ConvertFrom-Json у конвеєр одним об'єктом: @(… | ConvertFrom-Json) давав масив у масиві, і
+    таблиця «Позначки без старту» в #1856 31.10 мала по рядку з порожніми клітинками на файл. #>
+    try { $parsed = ConvertFrom-Json ([System.IO.File]::ReadAllText($Path, $script:Utf8)) } catch { return }
+    foreach ($x in @($parsed)) { if ($null -ne $x) { $x } }
+}
 
 function Add-Skip($M, [string]$Why) {
     <# Позначку цього проходу не взято з названої причини; Save-Skips у кінці проходу пише журнал і файл для #1856. #>
@@ -1066,7 +1372,7 @@ function Save-Skips([string]$Path) {
     <# Файл «що стоїть і чому» (замінюється щопроходу); рядок журналу — лише коли причина нова для позначки: попередній
     файл несе `since`, бо процес планувальника живе недовго. #>
     $old = @{}
-    try { foreach ($r in @([System.IO.File]::ReadAllText($Path, $script:Utf8) | ConvertFrom-Json)) { $old[[string]$r.marker] = $r } } catch { $null = $_ }
+    foreach ($r in @(Read-JsonArray $Path)) { $old[[string](Get-JsonProp $r 'marker')] = $r }
     $now = Get-UtcStamp (Get-Date)
     $rows = @(foreach ($n in $script:PassSkips.Keys) {
         $why = [string]$script:PassSkips[$n]; $since = $now
@@ -1080,8 +1386,7 @@ function Save-Skips([string]$Path) {
 
 function Add-Note([string]$Path, [string]$Marker, [string]$Text) {
     <# Останні 12 приміток до #1856 (причина BLOCKED без гілки): один рядок, без керівних символів, до 240 знаків. #>
-    $rows = @()
-    try { $rows = @([System.IO.File]::ReadAllText($Path, $script:Utf8) | ConvertFrom-Json) } catch { $null = $_ }
+    $rows = @(Read-JsonArray $Path)
     $clean = ([regex]::Replace($Text, '[\x00-\x1f\x7f]+', ' ')).Trim()
     if ($clean.Length -gt 240) { $clean = $clean.Substring(0, 240) }
     $rows = @($rows | Select-Object -Last 11) + @([pscustomobject]@{ utc = (Get-UtcStamp (Get-Date)); marker = $Marker; text = $clean })
@@ -1126,7 +1431,8 @@ function Update-HoldSignals([hashtable]$Held, [scriptblock]$Send) {
         $h = $Held[$res]; $old = $prev[$res]
         $since = $(if ($null -ne $old) { [long]$old.since } else { $now })
         $sent = $(if ($null -ne $old) { [string]$old.sent } else { '' })
-        if (($now - $since) -ge $after -and $sent -cne $h.Reason) {
+        # Числові показники гуляють між проходами: повтор лише при зміні причини, не MiB чи відсотка.
+        if (($now - $since) -ge $after -and ($sent -replace ' [0-9]+(?= MiB| %| з потрібних)', '') -cne ($h.Reason -replace ' [0-9]+(?= MiB| %| з потрібних)', '')) {
             if (& $Send "GEMINI ОБГОРТКА: ЗАБЛОКОВАНО ${res}: $($h.Reason), позначок $($h.Markers.Count)") { $sent = $h.Reason }
         }
         $next[$res] = [ordered]@{ since = $since; reason = $h.Reason; sent = $sent }
@@ -1135,4 +1441,45 @@ function Update-HoldSignals([hashtable]$Held, [scriptblock]$Send) {
     $text = $next | ConvertTo-Json -Compress
     $cur = $(if (Test-Path -LiteralPath $path) { [System.IO.File]::ReadAllText($path, $script:Utf8) } else { '' })
     if ($text -cne $cur) { Write-FileAtomic $path $text }
+}
+
+# --- простій увімкненого ноутбука ---------------------------------------------------------------------------------------
+# У ніч на 31.10 ноутбук за 13 год працював ~3 год 15 хв і стояв увімкненим до 2 год 20 хв поспіль, а диспетчер не знав
+# (власник 31.10 07:52: увімкнений ноутбук працює доцільно, без роботи — вимикається). Простій — ні прогону, ні позначки
+# в черзі поза нульовою квотою; початок — остання мить, коли прохід бачив роботу (≤ poll_minutes від кінця прогону чи
+# зняття позначки), після ввімкнення — перший прохід (вимкнений час не рахується). Межі в хвилинах нема: джерела для неї
+# нема (ядро, «Межа роботи»), тож рядок іде одразу, раз на простій.
+
+function Get-UtcProp($Obj, [string]$Name) {
+    <# Поле з idle.json як UTC-рядок: PowerShell 7 перетворює ISO-рядок JSON на дату, 5.1 лишає рядком. #>
+    $v = Get-JsonProp $Obj $Name
+    if ($v -is [datetime]) { return Get-UtcStamp $v }
+    [string]$v
+}
+
+function Update-Idle([bool]$Busy, [scriptblock]$Send, [bool]$Reset = $false) {
+    <# idle.json у теці стану: busy_utc — останній прохід із роботою; since — початок простою (порожній, доки є робота);
+    sent — рядок ПРОСТІЙ цього простою доставлено в теку вихідних. Новий рядок — лише після нової роботи. #>
+    $path = Join-Path $script:StateDir 'idle.json'
+    $now = Get-UtcStamp (Get-Date)
+    $prev = $null
+    if (Test-Path -LiteralPath $path) { try { $prev = [System.IO.File]::ReadAllText($path, $script:Utf8) | ConvertFrom-Json } catch { $null = $_ } }
+    if ($Busy) {
+        Write-FileAtomic $path ((@{ busy_utc = $now; since = ''; sent = $false }) | ConvertTo-Json -Compress)
+        return
+    }
+    $since = ''; $sent = $false
+    if ($null -ne $prev -and -not $Reset) {
+        $since = Get-UtcProp $prev 'since'; $sent = ((Get-JsonProp $prev 'sent') -eq $true)
+        if ($since -cnotmatch '^\d{4}-\d\d-\d\dT\d\d:\d\d:\d\dZ$') {
+            $b = Get-UtcProp $prev 'busy_utc'; $since = $(if ($b -cmatch '^\d{4}-\d\d-\d\dT\d\d:\d\d:\d\dZ$') { $b } else { $now }); $sent = $false
+        }
+    } else { $since = $now }
+    if (-not $sent) {
+        $from = [datetime]::ParseExact($since, "yyyy-MM-dd'T'HH:mm:ss'Z'", [cultureinfo]::InvariantCulture, [Globalization.DateTimeStyles]::AssumeUniversal -bor [Globalization.DateTimeStyles]::AdjustToUniversal)
+        $min = [Math]::Max(0, [int][Math]::Floor(([datetime]::UtcNow - $from).TotalMinutes))
+        if (& $Send "GEMINI ОБГОРТКА: ПРОСТІЙ $since $min") { $sent = $true }
+    }
+    $busyUtc = $(if ($null -ne $prev -and -not $Reset) { (Get-UtcProp $prev 'busy_utc') } else { '' })
+    Write-FileAtomic $path ((@{ busy_utc = $busyUtc; since = $since; sent = $sent }) | ConvertTo-Json -Compress)
 }

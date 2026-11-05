@@ -35,11 +35,8 @@ const КАРТКА = (рука, n) => ({рука, ітерацій: рука ===
     .replace(/<script src="https:\/\/cdn\.jsdelivr\.net[^"]*"><\/script>/, "<script>window.loadPyodide=null;</script>");
   const пакет = {в: "ПОКАЗ-V1", збірка: "проба-с64", каталог: "каталог_стенд.xml", профіль: "Оля", розклад: "1234",
                  пул: 208, картки: ["1", "2", "3", "4"].map(КАРТКА)};
-  const ст = new Uint8Array(await new Response(new Blob([new TextEncoder().encode(JSON.stringify(пакет))])
-    .stream().pipeThrough(new CompressionStream("gzip"))).arrayBuffer());
-  const хеш = Buffer.from(ст).toString("base64").replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
   const дом = new JSDOM(html, {runScripts: "dangerously", pretendToBeVisual: true,
-    url: "https://mightyrochy.github.io/kod-shi-data/показ.html#" + хеш,
+    url: "https://mightyrochy.github.io/kod-shi-data/показ.html",
     beforeParse(w) {
       w.indexedDB = new IDBFactory(); w.IDBKeyRange = IDBKeyRange;
       w.fetch = () => Promise.reject(new Error("мережі в пробі нема"));
@@ -48,8 +45,12 @@ const КАРТКА = (рука, n) => ({рука, ітерацій: рука ===
       w.CompressionStream = CompressionStream; w.DecompressionStream = DecompressionStream;
     }});
   const w = дом.window;
+  /* Пакет — вхід проби, а не хеш адреси (рішення 11824): `П` ставить проба тим шляхом, що й шов збирання. */
+  await чекатиНа(() => w.eval("typeof (document.getElementById('сцн-новий') || {}).onclick === 'function'"), "старт показу");
+  w.__пакет = JSON.stringify(пакет);
+  w.eval("П = JSON.parse(window.__пакет); П.прогін = новийІдПрогону(); рендер();");
   await чекатиНа(() => w.eval("typeof П !== 'undefined' && !!П && Array.isArray(П.картки) && П.картки.length === 4"),
-                 "пакет із хеша розпаковано");
+                 "пакет проби намальовано");
   /* стан збирання: те, що на прогоні лишає по собі виклик 0 і `запити` */
   w._міст = міст;
   w.eval("ЗБ = {картки:[], стадії:[], етап:[], діагноз:[], ключ:null, готово:true,"

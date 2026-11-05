@@ -1,0 +1,27 @@
+{
+ "версія": 1,
+ "запит": {
+  "model": "qwen/qwen3.5-9b",
+  "max_tokens": 4000,
+  "messages": [
+   {
+    "role": "user",
+    "content": [
+     {
+      "type": "text",
+      "text": "{\"task\": {\"role\": \"You read the description of an outfit and list its items as data.\", \"rules\": [\"One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.\", \"One item carries one thing — of two alternatives list the first; a note in brackets is not an item.\", \"Slot \\\"accessory\\\" is for an item no other slot fits.\", \"\\\"is_outfit\\\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note.\"], \"limits\": [\"Rely only on the input: do not invent what it does not contain.\", \"The answer is one JSON object following \\\"answer_schema\\\", without explanations and without ```.\"], \"language\": \"English\", \"answer\": \"ITEM_LIST\", \"answer_schema\": {\"is_outfit\": \"yes|no\", \"items\": [{\"name\": \"<what the item is>\", \"details\": \"<its cut, length and fabric>\", \"slot\": \"top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory\", \"color_hex\": \"<#rrggbb or null>\", \"worn\": \"<true, or false when the description says the outfit goes without it>\"}]}, \"input\": [\"\\\"description\\\" — the outfit description\"]}, \"description\": \"Tailored wool-blend blazer in slate grey (#3E4E56) with a structured shoulder and single-button closure\\nCrisp poplin blouse in soft champagne (#F5EBD6) featuring a relaxed collar and hidden back placket\\nPleated trousers in stone beige (#B8A999) with a high waist and ankle length for easy movement\\nLeather loafers in deep espresso (#2C1E1A) with a slight stacked heel and minimal hardware\\nGold-plated hoop earrings in 14k gold-filled material measuring approximately 1.5 cm diameter\\nA slim leather belt in matching slate grey to define the waist over the blouse\\n\\nThis outfit works perfectly for an autumn workday in the office by balancing professional polish with seasonal comfort, as the wool-blend blazer provides warmth without bulk while the pleated trousers allow ease of movement during a busy schedule. The neutral color palette of stone, slate, and champagne complements warm skin tones like #deb295 and creates a sophisticated yet approachable look suitable for client meetings or daily team interactions. By choosing a relaxed collar blouse and loafers over heels, the ensemble adheres to a \\\"smart\\\" dress code that feels polished but not restrictive, honoring her preference for practicality without sacrificing style.\"}"
+     }
+    ]
+   }
+  ],
+  "temperature": 1
+ },
+ "відповідь": {
+  "status": 200,
+  "contentType": "application/json",
+  "headers": {
+   "x-model": "qwen/qwen3.5-9b"
+  },
+  "body": "{\"content\":[{\"type\":\"text\",\"text\":\"{\\n  \\\"is_outfit\\\": \\\"yes\\\",\\n  \\\"items\\\": [\\n    {\\n      \\\"name\\\": \\\"blazer\\\",\\n      \\\"details\\\": \\\"Tailored wool-blend with structured shoulder and single-button closure\\\",\\n      \\\"slot\\\": \\\"top\\\",\\n      \\\"color_hex\\\": \\\"#3E4E56\\\",\\n      \\\"worn\\\": true\\n    },\\n    {\\n      \\\"name\\\": \\\"blouse\\\",\\n      \\\"details\\\": \\\"Crisp poplin with relaxed collar and hidden back placket\\\",\\n      \\\"slot\\\": \\\"top\\\",\\n      \\\"color_hex\\\": \\\"#F5EBD6\\\",\\n      \\\"worn\\\": false\\n    },\\n    {\\n      \\\"name\\\": \\\"trousers\\\",\\n      \\\"details\\\": \\\"Pleated high waist ankle length for easy movement\\\",\\n      \\\"slot\\\": \\\"bottom\\\",\\n      \\\"color_hex\\\": \\\"#B8A999\\\",\\n      \\\"worn\\\": true\\n    },\\n    {\\n      \\\"name\\\": \\\"loafers\\\",\\n      \\\"details\\\": \\\"Leather with slight stacked heel and minimal hardware\\\",\\n      \\\"slot\\\": \\\"shoes\\\",\\n      \\\"color_hex\\\": \\\"#2C1E1A\\\",\\n      \\\"worn\\\": true\\n    },\\n    {\\n      \\\"name\\\": \\\"earrings\\\",\\n      \\\"details\\\": \\\"Gold-plated hoop measuring approximately 1.5 cm diameter in 14k gold-filled material\\\",\\n      \\\"slot\\\": \\\"earrings\\\",\\n      \\\"color_hex\\\": \\\"#FFD700\\\",\\n      \\\"worn\\\": true\\n    },\\n    {\\n      \\\"name\\\": \\\"belt\\\",\\n      \\\"details\\\": \\\"Slim leather to define the waist over the blouse\\\",\\n      \\\"slot\\\": \\\"belt\\\",\\n      \\\"color_hex\\\": \\\"#3E4E56\\\",\\n      \\\"worn\\\": true\\n    }\\n  ]\\n}\"}],\"usage\":{\"input_tokens\":618,\"output_tokens\":405},\"stop_reason\":\"end_turn\"}"
+ }
+}

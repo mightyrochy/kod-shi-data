@@ -26,18 +26,19 @@ const КАРТКА = підпис => ({рука: "1", ітерацій: 1, ви�
     .replace(/<script [^>]*src="https:\/\/cdn\.jsdelivr\.net[^"]*"[^>]*><\/script>/, "<script>window.loadPyodide=null;</script>");
   const пакет = {в: "ПОКАЗ-V1", збірка: "проба-л7", каталог: "каталог_стенд.xml", профіль: "Оля",
                  розклад: "1234", пул: 100, картки: [КАРТКА("прогін А")]};
-  const ст = new Uint8Array(await new Response(new Blob([new TextEncoder().encode(JSON.stringify(пакет))])
-    .stream().pipeThrough(new CompressionStream("gzip"))).arrayBuffer());
-  const хеш = Buffer.from(ст).toString("base64").replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
   const w = new JSDOM(html, {runScripts: "dangerously", pretendToBeVisual: true,
-    url: "https://mightyrochy.github.io/kod-shi-data/показ.html#" + хеш,
+    url: "https://mightyrochy.github.io/kod-shi-data/показ.html",
     beforeParse(w) { w.indexedDB = new IDBFactory(); w.IDBKeyRange = IDBKeyRange;
       w.fetch = () => Promise.reject(new Error("мережі в пробі нема")); w.scrollTo = () => {};
       w.Element.prototype.scrollIntoView = () => {}; w.Blob = Blob; w.Response = Response;
       w.TextEncoder = TextEncoder; w.TextDecoder = TextDecoder;
       w.CompressionStream = CompressionStream; w.DecompressionStream = DecompressionStream; }}).window;
+  /* Пакет — вхід проби, а не хеш адреси (рішення 11824): `П` ставить проба тим шляхом, що й шов збирання. */
+  await чекатиНа(() => w.eval("typeof (document.getElementById('сцн-новий') || {}).onclick === 'function'"), "старт показу");
+  w.__пакет = JSON.stringify(пакет);
+  w.eval("П = JSON.parse(window.__пакет); П.прогін = новийІдПрогону(); рендер();");
   await чекатиНа(() => w.eval("typeof П !== 'undefined' && !!П && Array.isArray(П.картки) && П.картки.length === 1"),
-                 "пакет із хеша розпаковано");
+                 "пакет проби намальовано");
   w.eval("містП = async () => [];");
   /* ДВА ЗБОРИ, ОДНАКОВИЙ РОЗКЛАД: другий — те саме, що робить шов збирання (новий
      ід, ті самі збірка/розклад/профіль), і вердикт жінки на картці кожного. */

@@ -49,7 +49,7 @@ import colorspace as _cs
 
 ОПИС = _ЗП.Оголошення(
     задача="опис",
-    роль="You are the stylist. You describe to her the outfit you chose for her.",
+    роль=_ВИМ.РОЛЬ_ЗАСТОСУНКУ + " You describe to her the outfit you chose for her.",
     вхід=(
         # ОПИС-1: «колір» — дані крамниці для читання фото, а не те, що бачить жінка; інакше
         # модель звіряє фото з ним уголос («У назві вказано зелений…», «У коді вказано…»).
@@ -119,8 +119,8 @@ import colorspace as _cs
         # Своє рішення стилістка не віддає жінці назад.
         _ВИМ.поле("day", як="in the last part of «text» say how this outfit lives through her day; when something "
                     "you chose argues with the day (weather, hours on her feet, the place), say in one plain "
-                    "sentence why you still chose it, or what she does about it in the day itself (take the "
-                    "layer off, swap the pair); never hand that decision back to her"),
+                    "sentence why you still chose it and what that means for her day; describe the chosen "
+                    "items without proposing a different composition; never hand that decision back to her"),
         # ОПИС-1 (K-PAL-11/14/15): «найдальші» й «комбінація», якщо йдуть у КОЖЕН опис, дають
         # «маленька оливкова чи зелена деталь» навіть на похороні й поради додати річ, якої в образі
         # нема. Тож лише те, що стосується речей образу.
@@ -250,9 +250,8 @@ import colorspace as _cs
                       "with other clothes in the frame is no reason; when in doubt, leave it out",
         "заміна.річ": "«n» of the ONE item to replace; leave «swap» out entirely when there is no weighty "
                       "reason — the usual case",
-        "заміна.чому": "colour — the photo shows a clearly different colour than the code knows; kind — "
-                       "the photo shows another kind of item; occasion — the item on the photo does not "
-                       "suit her occasion",
+        "заміна.чому": "why the photo warrants replacing this item: a clearly different colour, "
+                       "another kind of item or a mismatch with her occasion",
         "заміна.на": "only with «swap_spares» in the input: «n» of the spare you choose; leave it out to "
                      "keep the item",
     },
@@ -761,17 +760,18 @@ def список(v):
 
 
 def словник_речей(кандидати=None, каталог=None):
-    """id → запис речі: спершу каталог, далі пул (слот бере з ключа пулу, якщо в записі нема)."""
-    словник = {}
-    for r in (каталог or []):
-        if r.get("id"):
-            словник[r["id"]] = r
-    for сл, пул in (кандидати or {}).items():
-        for r in пул:
-            # кандидати пакета не несуть `слот` у записі — слот є ключем пулу
-            if r.get("id"):
-                словник.setdefault(r["id"], dict(r, слот=r.get("слот") or сл))
-    return словник
+    """id → запис речі.
+
+    Є КАТАЛОГ — ЛИШЕ ЗАПИСИ КАТАЛОГУ (рядок 11879, `пакет_моделі.записи_пулу`). Рядок пулу — вид речі для моделі:
+    без `слот` (слот — ключ пулу), без `склад_комплекту`, `group_id`, `lab`. Доти рядок ішов записом для id, якого
+    каталог не мав, з латкою слоту ключем пулу, і кожен виклик будував таку латку на кожен рядок пулу (3126 копій
+    за прогін проби `аудит/проби/Е3_річ_пулу.py`), навіть коли каталог її відкидав. Id пулу поза каталогом на живому
+    шляху нема (0 з 1092 у пулах стенда); судити його нічим, і він не резолвиться, як і будь-який номер поза пулом.
+    Каталогу нема зовсім (проби й тести, що дають лише пул) — тоді пул і є каталогом виклику: рядок зі слотом ключа."""
+    if каталог:
+        return {r["id"]: r for r in каталог if r.get("id")}
+    return {r["id"]: dict(r, слот=r.get("слот") or сл)
+            for сл, пул in (кандидати or {}).items() for r in пул if r.get("id")}
 
 
 def за_номером(кандидати=None):
@@ -1592,8 +1592,8 @@ def речі_з_тексту(текст, перелік=None):
     решта сегментів розкладаються в params тими самими словниками (тканина / крій /
     довжина), колір іде з hex через кеш кольорів по СПРАВЖНІХ id після читати_yml
     (кваліфікація @магазин не вгадується — спіймано там само: кеш мимо, і «коньячна»
-    сумка випадала, бо слова у словнику нема). Впевненість 0.8: модель назвала точку,
-    не слово. Слот, тип, крій, довжина, тканина далі витягуються функціями feed.прогін
+    сумка випадала, бо слова у словнику нема). Впевненість 0.8 — типове коду; колір — hex
+    моделі, а не фото-вимір. Слот, тип, крій, довжина, тканина витягуються функціями feed.прогін
     — щоб вердикт по руках без каталогу лягав у лог зі знахідками коду.
     Рядок без hex → `без_кольору`; без слота → `без_слота`; другий рядок на той самий
     слот → `надлишок` (образ — по одній речі на слот).
@@ -1667,7 +1667,9 @@ def речі_з_тексту(текст, перелік=None):
             # і колір цієї речі далі рахується зі слова назви, як у будь-якого оффера.
             if not hex_:
                 continue
-            кеш_д[o["id"]] = dict(lab=list(_cs.hx(hex_)), впевненість=0.8, розкид=None)
+            from паспорт_поля import походження, ТИПОВЕ
+            кеш_д[o["id"]] = dict(lab=list(_cs.hx(hex_)), впевненість=0.8, розкид=None,
+                                  джерело="модель", слово=hex_, впевненість_джерело=походження(ТИПОВЕ))
             hex_за_ід[o["id"]] = hex_
         _js.dump(кеш_д, open(кеш_ш, "w", encoding="utf-8"))
         # файл одноразовий — базу справжнього фіду з кеша не витісняє (Ш-1, `фід_каталог`)

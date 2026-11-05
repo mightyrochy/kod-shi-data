@@ -1,0 +1,1459 @@
+=== сценарії_claude.sh ===
+=== К1 ГОТОВО: модель і зусилля дослівно, auto, промпт запускача, SHA з origin, стан в issue
+bash.exe : warning: in the working copy of 'аудит/СТАН.md', LF will be replaced by CRLF the next time Git touches it
+At line:2 char:411
++ ... ile -Append -Encoding utf8 $out; & $bash $f.FullName *>> $out; "rc $L ...
++                                      ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (warning: in the... Git touches it:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+warning: in the working copy of 'аудит/адаптери/gemini/смуги.json', LF will be replaced by CRLF the next time Git touch
+es it
+warning: in the working copy of 'аудит/наряди/проба-рушія-claude.md', LF will be replaced by CRLF the next time Git tou
+ches it
+  ✓ рядок ГОТОВО claude/<наряд> <SHA origin> МОДЕЛЬ cc-claude-sonnet-5-5-medium
+  ✓ argv: -p --model claude-sonnet-5-5 --effort medium --permission-mode auto stream-json
+  ✓ промпт: НОУТБУК.md, наряд дослівно, вимикає лише обгортка, без «Продовжуй»
+  ✓ issue 1856 оновлено PATCH-ем, тіло — «веде наряд» і позначка
+  ✓ події stream-json — у events.tsv
+  ✓ другий прохід ту саму позначку не бере
+=== К2 нова спроба при наявній гілці — «Продовжуй з гілки»; модель без зусилля — без --effort
+  ✓ промпт: Продовжуй з гілки claude/<наряд>
+  ✓ argv без --effort
+=== К3 коди кінця
+warning: in the working copy of 'аудит/СТАН.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'аудит/адаптери/gemini/смуги.json', LF will be replaced by CRLF the next time Git touch
+es it
+warning: in the working copy of 'аудит/наряди/проба-рушія-claude.md', LF will be replaced by CRLF the next time Git tou
+ches it
+  ✓ wrong_sha → підсумок NO_PUSH і окрема тривога за потреби (є: GEMINI ОБГОРТКА: ЗАБЛОКОВАНО claude/проба-рушія-claude NO_PUSH)
+warning: in the working copy of 'аудит/СТАН.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'аудит/адаптери/gemini/смуги.json', LF will be replaced by CRLF the next time Git touch
+es it
+warning: in the working copy of 'аудит/наряди/проба-рушія-claude.md', LF will be replaced by CRLF the next time Git tou
+ches it
+  ✓ bad_branch → підсумок BAD_BRANCH і окрема тривога за потреби (є: GEMINI ОБГОРТКА: ЗАБЛОКОВАНО claude/проба-рушія-claude BAD_BRANCH)
+warning: in the working copy of 'аудит/СТАН.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'аудит/адаптери/gemini/смуги.json', LF will be replaced by CRLF the next time Git touch
+es it
+warning: in the working copy of 'аудит/наряди/проба-рушія-claude.md', LF will be replaced by CRLF the next time Git tou
+ches it
+  ✓ blocked → підсумок BLOCKED і окрема тривога за потреби (є: GEMINI ОБГОРТКА: ЗАБЛОКОВАНО claude/проба-рушія-claude BLOCKED)
+  ✓ гілка зі звіту ЗАБЛОКОВАНО збережена для продовження
+  ✓ BLOCKED з гілкою: причини без гілки не пишемо
+warning: in the working copy of 'аудит/СТАН.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'аудит/адаптери/gemini/смуги.json', LF will be replaced by CRLF the next time Git touch
+es it
+warning: in the working copy of 'аудит/наряди/проба-рушія-claude.md', LF will be replaced by CRLF the next time Git tou
+ches it
+  ✓ blocked_nobranch → підсумок BLOCKED і окрема тривога за потреби (є: GEMINI ОБГОРТКА: ЗАБЛОКОВАНО claude/проба-рушія-claude BLOCKED)
+  ✓ BLOCKED без гілки: причина (останній рядок агента) у blocked-reasons.json для #1856
+warning: in the working copy of 'аудит/СТАН.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'аудит/адаптери/gemini/смуги.json', LF will be replaced by CRLF the next time Git touch
+es it
+warning: in the working copy of 'аудит/наряди/проба-рушія-claude.md', LF will be replaced by CRLF the next time Git tou
+ches it
+  ✓ no_report → підсумок NO_REPORT і окрема тривога за потреби (є: GEMINI ОБГОРТКА: ЗАБЛОКОВАНО claude/проба-рушія-claude NO_REPORT)
+warning: in the working copy of 'аудит/СТАН.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'аудит/адаптери/gemini/смуги.json', LF will be replaced by CRLF the next time Git touch
+es it
+warning: in the working copy of 'аудит/наряди/проба-рушія-claude.md', LF will be replaced by CRLF the next time Git tou
+ches it
+  ✓ die → підсумок EXIT і окрема тривога за потреби (є: GEMINI ОБГОРТКА: ЗАБЛОКОВАНО claude/проба-рушія-claude EXIT)
+warning: in the working copy of 'аудит/СТАН.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'аудит/адаптери/gemini/смуги.json', LF will be replaced by CRLF the next time Git touch
+es it
+warning: in the working copy of 'аудит/наряди/проба-рушія-claude.md', LF will be replaced by CRLF the next time Git tou
+ches it
+  ✓ hang → підсумок HANG і окрема тривога за потреби (є: GEMINI ОБГОРТКА: ЗАБЛОКОВАНО claude/проба-рушія-claude HANG)
+  ✓ завислий claude зупинено
+warning: in the working copy of 'аудит/СТАН.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'аудит/адаптери/gemini/смуги.json', LF will be replaced by CRLF the next time Git touch
+es it
+warning: in the working copy of 'аудит/наряди/проба-рушія-claude.md', LF will be replaced by CRLF the next time Git tou
+ches it
+  ✓ effort → підсумок EFFORT_INVALID і окрема тривога за потреби (є: GEMINI ОБГОРТКА: ЗАБЛОКОВАНО claude/проба-рушія-claude EFFORT_INVALID)
+warning: in the working copy of 'аудит/СТАН.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'аудит/адаптери/gemini/смуги.json', LF will be replaced by CRLF the next time Git touch
+es it
+warning: in the working copy of 'аудит/наряди/проба-рушія-claude.md', LF will be replaced by CRLF the next time Git tou
+ches it
+  ✓ auth → підсумок AUTH і окрема тривога за потреби (є: GEMINI ОБГОРТКА: ТРИВОГА AUTH CLAUDE
+GEMINI ОБГОРТКА: ЗАБЛОКОВАНО claude/проба-рушія-claude AUTH)
+warning: in the working copy of 'аудит/СТАН.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'аудит/адаптери/gemini/смуги.json', LF will be replaced by CRLF the next time Git touch
+es it
+warning: in the working copy of 'аудит/наряди/проба-рушія-claude.md', LF will be replaced by CRLF the next time Git tou
+ches it
+  ✓ quota → підсумок QUOTA0_CLAUDE_M10 і окрема тривога за потреби (є: GEMINI ОБГОРТКА: ЗАБЛОКОВАНО claude/проба-рушія-claude QUOTA0_CLAUDE_M10)
+  ✓ ліміт: позначка чекає скидання (WAIT), спроба не спалена
+warning: in the working copy of 'аудит/СТАН.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'аудит/адаптери/gemini/смуги.json', LF will be replaced by CRLF the next time Git touch
+es it
+warning: in the working copy of 'аудит/наряди/проба-рушія-claude.md', LF will be replaced by CRLF the next time Git tou
+ches it
+  ✓ bad_model → підсумок MODEL_INVALID і окрема тривога за потреби (є: GEMINI ОБГОРТКА: ЗАБЛОКОВАНО claude/проба-рушія-claude MODEL_INVALID)
+warning: in the working copy of 'аудит/СТАН.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'аудит/адаптери/gemini/смуги.json', LF will be replaced by CRLF the next time Git touch
+es it
+warning: in the working copy of 'аудит/наряди/проба-рушія-claude.md', LF will be replaced by CRLF the next time Git tou
+ches it
+  ✓ done → підсумок ENGINE_MISSING і окрема тривога за потреби (є: GEMINI ОБГОРТКА: ТРИВОГА ENGINE CLAUDE
+GEMINI ОБГОРТКА: ЗАБЛОКОВАНО claude/проба-рушія-claude ENGINE_MISSING)
+warning: in the working copy of 'аудит/СТАН.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'аудит/адаптери/gemini/смуги.json', LF will be replaced by CRLF the next time Git touch
+es it
+warning: in the working copy of 'аудит/наряди/проба-рушія-claude.md', LF will be replaced by CRLF the next time Git tou
+ches it
+  ✓ нема файлу наряду → NO_TASK_FILE
+=== К3н Claude на ноутбуці — лише GPU чи перелік claude_laptop (власник 26.10, 29.10)
+warning: in the working copy of 'аудит/СТАН.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'аудит/адаптери/gemini/смуги.json', LF will be replaced by CRLF the next time Git touch
+es it
+warning: in the working copy of 'аудит/наряди/проба-рушія-claude.md', LF will be replaced by CRLF the next time Git tou
+ches it
+warning: in the working copy of 'аудит/СТАН.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'аудит/адаптери/gemini/смуги.json', LF will be replaced by CRLF the next time Git touch
+es it
+warning: in the working copy of 'аудит/наряди/проба-рушія-claude.md', LF will be replaced by CRLF the next time Git tou
+ches it
+warning: in the working copy of 'аудит/наряди/код-у-хмарі.md', LF will be replaced by CRLF the next time Git touches it
+  ✓ наряд без gpu поза переліком → CLAUDE_NOT_LAPTOP, claude не кликано й копії нема
+  ✓ повтор не пише рядка вдруге
+  ✓ той самий наряд з умовою gpu — веде claude -p (ГОТОВО)
+warning: in the working copy of 'аудит/СТАН.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'аудит/адаптери/gemini/смуги.json', LF will be replaced by CRLF the next time Git touch
+es it
+warning: in the working copy of 'аудит/наряди/проба-рушія-claude.md', LF will be replaced by CRLF the next time Git tou
+ches it
+  ✓ коміт позначки не в main → NOT_ON_MAIN, claude не кликано
+warning: in the working copy of 'аудит/СТАН.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'аудит/адаптери/gemini/смуги.json', LF will be replaced by CRLF the next time Git touch
+es it
+warning: in the working copy of 'аудит/наряди/проба-рушія-claude.md', LF will be replaced by CRLF the next time Git tou
+ches it
+  ✓ стара позначка — без рядка й без claude
+=== К4 claude закінчився, а нащадок тримає stdout — не завислість
+warning: in the working copy of 'аудит/СТАН.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'аудит/адаптери/gemini/смуги.json', LF will be replaced by CRLF the next time Git touch
+es it
+warning: in the working copy of 'аудит/наряди/проба-рушія-claude.md', LF will be replaced by CRLF the next time Git tou
+ches it
+  ✓ ГОТОВО за ≤ 90 с (є: 65 с)
+=== К5 прогін, перерваний вимкненням: наступний прохід пише INTERRUPTED
+warning: in the working copy of 'аудит/СТАН.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'аудит/адаптери/gemini/смуги.json', LF will be replaced by CRLF the next time Git touch
+es it
+warning: in the working copy of 'аудит/наряди/проба-рушія-claude.md', LF will be replaced by CRLF the next time Git tou
+ches it
+  ✓ рядок INTERRUPTED, стан DONE
+=== К6 ВИМКНИ-НОУТБУК
+warning: in the working copy of 'аудит/СТАН.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'аудит/адаптери/gemini/смуги.json', LF will be replaced by CRLF the next time Git touch
+es it
+warning: in the working copy of 'аудит/наряди/проба-рушія-claude.md', LF will be replaced by CRLF the next time Git tou
+ches it
+  ✓ gemini-run виконується — без рядка й без shutdown
+  ✓ стан задачі не видно, у heartbeat узята позначка — чекає
+  ✓ issue: рядок gemini-run з позначкою й рушієм
+  ✓ рушії вільні — ВИМКНЕНО <SHA коміту>, shutdown
+  ✓ gemini-publish доставляє ВИМКНЕНО диспетчерові
+  ✓ та сама виконана позначка після нового ввімкнення — один BOOT, без shutdown
+  ✓ наступний прохід — нічого нового
+warning: in the working copy of 'аудит/СТАН.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'аудит/адаптери/gemini/смуги.json', LF will be replaced by CRLF the next time Git touch
+es it
+warning: in the working copy of 'аудит/наряди/проба-рушія-claude.md', LF will be replaced by CRLF the next time Git tou
+ches it
+  ✓ позначка до першого проходу після ввімкнення → BOOT, без shutdown
+  ✓ наступна спроба — вимикає
+=== К7 gemini-run позначок cc- не бере й узятими не позначає
+warning: in the working copy of 'аудит/СТАН.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'аудит/адаптери/gemini/смуги.json', LF will be replaced by CRLF the next time Git touch
+es it
+warning: in the working copy of 'аудит/наряди/проба-рушія-claude.md', LF will be replaced by CRLF the next time Git tou
+ches it
+  ✓ gemini-run пройшов (heartbeat, ізоляція OK) — без стану й результату
+  ✓ той самий прохід claude-run бере її
+=== К8 завислість — від останньої прийнятої події stream-json, доки процес живий
+warning: in the working copy of 'аудит/СТАН.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'аудит/адаптери/gemini/смуги.json', LF will be replaced by CRLF the next time Git touch
+es it
+warning: in the working copy of 'аудит/наряди/проба-рушія-claude.md', LF will be replaced by CRLF the next time Git tou
+ches it
+  ✓ stdout і stderr закрито, процес мовчить → HANG за ≤ 60 с (є: 7 с, GEMINI ОБГОРТКА: ЗАБЛОКОВАНО claude/проба-рушія-claude HANG)
+  ✓ процес після HANG зупинено
+warning: in the working copy of 'аудит/СТАН.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'аудит/адаптери/gemini/смуги.json', LF will be replaced by CRLF the next time Git touch
+es it
+warning: in the working copy of 'аудит/наряди/проба-рушія-claude.md', LF will be replaced by CRLF the next time Git tou
+ches it
+  ✓ не-JSON рядки таймера не скидають → HANG (є: GEMINI ОБГОРТКА: ЗАБЛОКОВАНО claude/проба-рушія-claude HANG)
+  ✓ events.tsv — лише події з типом (2), шум — у claude.jsonl
+warning: in the working copy of 'аудит/СТАН.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'аудит/адаптери/gemini/смуги.json', LF will be replaced by CRLF the next time Git touch
+es it
+warning: in the working copy of 'аудит/наряди/проба-рушія-claude.md', LF will be replaced by CRLF the next time Git tou
+ches it
+  ✓ події частіше за поріг, усього довше за нього → ГОТОВО (є: GEMINI ОБГОРТКА: ГОТОВО claude/проба-рушія-claude 518227621fd1365abf98cb06962e71dc55772569 МОДЕЛЬ cc-claude-sonnet-5-5-medium)
+=== К9 оформлений звіт у result stream-json та приклади поза протоколом
+warning: in the working copy of 'аудит/СТАН.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'аудит/адаптери/gemini/смуги.json', LF will be replaced by CRLF the next time Git touch
+es it
+warning: in the working copy of 'аудит/наряди/проба-рушія-claude.md', LF will be replaced by CRLF the next time Git tou
+ches it
+  ✓ оформлення quote, підсумок після звіту → ГОТОВО з SHA origin
+warning: in the working copy of 'аудит/СТАН.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'аудит/адаптери/gemini/смуги.json', LF will be replaced by CRLF the next time Git touch
+es it
+warning: in the working copy of 'аудит/наряди/проба-рушія-claude.md', LF will be replaced by CRLF the next time Git tou
+ches it
+  ✓ оформлення bold_period, підсумок після звіту → ГОТОВО з SHA origin
+warning: in the working copy of 'аудит/СТАН.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'аудит/адаптери/gemini/смуги.json', LF will be replaced by CRLF the next time Git touch
+es it
+warning: in the working copy of 'аудит/наряди/проба-рушія-claude.md', LF will be replaced by CRLF the next time Git tou
+ches it
+  ✓ оформлення inline, підсумок після звіту → ГОТОВО з SHA origin
+warning: in the working copy of 'аудит/СТАН.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'аудит/адаптери/gemini/смуги.json', LF will be replaced by CRLF the next time Git touch
+es it
+warning: in the working copy of 'аудит/наряди/проба-рушія-claude.md', LF will be replaced by CRLF the next time Git tou
+ches it
+  ✓ report_example → підсумок NO_REPORT і окрема тривога за потреби (є: GEMINI ОБГОРТКА: ЗАБЛОКОВАНО claude/проба-рушія-claude NO_REPORT)
+warning: in the working copy of 'аудит/СТАН.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'аудит/адаптери/gemini/смуги.json', LF will be replaced by CRLF the next time Git touch
+es it
+warning: in the working copy of 'аудит/наряди/проба-рушія-claude.md', LF will be replaced by CRLF the next time Git tou
+ches it
+  ✓ report_fence → підсумок NO_REPORT і окрема тривога за потреби (є: GEMINI ОБГОРТКА: ЗАБЛОКОВАНО claude/проба-рушія-claude NO_REPORT)
+warning: in the working copy of 'аудит/СТАН.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'аудит/адаптери/gemini/смуги.json', LF will be replaced by CRLF the next time Git touch
+es it
+warning: in the working copy of 'аудит/наряди/проба-рушія-claude.md', LF will be replaced by CRLF the next time Git tou
+ches it
+  ✓ report_blockquote → підсумок NO_REPORT і окрема тривога за потреби (є: GEMINI ОБГОРТКА: ЗАБЛОКОВАНО claude/проба-рушія-claude NO_REPORT)
+warning: in the working copy of 'аудит/СТАН.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'аудит/адаптери/gemini/смуги.json', LF will be replaced by CRLF the next time Git touch
+es it
+warning: in the working copy of 'аудит/наряди/проба-рушія-claude.md', LF will be replaced by CRLF the next time Git tou
+ches it
+  ✓ report_prompt → підсумок NO_REPORT і окрема тривога за потреби (є: GEMINI ОБГОРТКА: ЗАБЛОКОВАНО claude/проба-рушія-claude NO_REPORT)
+warning: in the working copy of 'аудит/СТАН.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'аудит/адаптери/gemini/смуги.json', LF will be replaced by CRLF the next time Git touch
+es it
+warning: in the working copy of 'аудит/наряди/проба-рушія-claude.md', LF will be replaced by CRLF the next time Git tou
+ches it
+  ✓ report_assistant_only → підсумок NO_REPORT і окрема тривога за потреби (є: GEMINI ОБГОРТКА: ЗАБЛОКОВАНО claude/проба-рушія-claude NO_REPORT)
+warning: in the working copy of 'аудит/СТАН.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'аудит/адаптери/gemini/смуги.json', LF will be replaced by CRLF the next time Git touch
+es it
+warning: in the working copy of 'аудит/наряди/проба-рушія-claude.md', LF will be replaced by CRLF the next time Git tou
+ches it
+  ✓ report_wrong_sha → підсумок NO_PUSH і окрема тривога за потреби (є: GEMINI ОБГОРТКА: ЗАБЛОКОВАНО claude/проба-рушія-claude NO_PUSH)
+warning: in the working copy of 'аудит/СТАН.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'аудит/адаптери/gemini/смуги.json', LF will be replaced by CRLF the next time Git touch
+es it
+warning: in the working copy of 'аудит/наряди/проба-рушія-claude.md', LF will be replaced by CRLF the next time Git tou
+ches it
+  ✓ report_bad_branch → підсумок BAD_BRANCH і окрема тривога за потреби (є: GEMINI ОБГОРТКА: ЗАБЛОКОВАНО claude/проба-рушія-claude BAD_BRANCH)
+=== К10 копія задачі: тека прогону, TEMP там же, після звіту — геть; незапушене лишається; давню копію слота прибрано
+warning: in the working copy of 'аудит/СТАН.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'аудит/адаптери/gemini/смуги.json', LF will be replaced by CRLF the next time Git touch
+es it
+warning: in the working copy of 'аудит/наряди/проба-рушія-claude.md', LF will be replaced by CRLF the next time Git tou
+ches it
+  ✓ давня робоча копія слота є до запуску
+  ✓ ГОТОВО, сесія — у cr/w/<прогін>/repo, TEMP і TMP — cr/w/<прогін>/tmp (ok)
+  ✓ промпт називає теку задачі
+  ✓ після звіту копії нема, давню копію слота прибрано, worktree клону — лише сам клон
+warning: in the working copy of 'аудит/СТАН.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'аудит/адаптери/gemini/смуги.json', LF will be replaced by CRLF the next time Git touch
+es it
+warning: in the working copy of 'аудит/наряди/проба-рушія-claude.md', LF will be replaced by CRLF the next time Git tou
+ches it
+  ✓ незапушений коміт: BLOCKED і COPY_KEPT, тека з kept.txt лишається
+  ✓ перший прохід нового запуску лишену копію не прибирає
+
+ВСЕ ✓
+rc 0
+=== сценарії_бандлів.sh ===
+private-start verify: код 0 C:/Users/gemini/gemini-runs/w/20261101-162815-32fb93c118d1/tmp/bundles.eSMJyp/private-start/out/20261028-000000-aaaaaaaaaaaa.bundle is okay
+  ✓ private-start -> OK
+new-main verify: код 0 C:/Users/gemini/gemini-runs/w/20261101-162815-32fb93c118d1/tmp/bundles.eSMJyp/new-main/out/20261028-000000-aaaaaaaaaaaa.bundle is okay
+  ✓ new-main -> OK
+published-start verify: код 0 C:/Users/gemini/gemini-runs/w/20261101-162815-32fb93c118d1/tmp/bundles.eSMJyp/published-start/out/20261028-000000-aaaaaaaaaaaa.bundle is okay
+  ✓ published-start -> OK
+BUNDLE_INVALID verify: код 1 error: Repository lacks these prerequisite commits:
+error: efd6c468edda91ebf0799c18667fae63b8d0fc60
+  ✓ BUNDLE_INVALID -> BUNDLE_INVALID
+REF_MISMATCH verify: код 0 C:/Users/gemini/gemini-runs/w/20261101-162815-32fb93c118d1/tmp/bundles.eSMJyp/REF_MISMATCH/out/20261028-000000-aaaaaaaaaaaa.bundle is okay
+  ✓ REF_MISMATCH -> REF_MISMATCH
+SECRET verify: код 0 C:/Users/gemini/gemini-runs/w/20261101-162815-32fb93c118d1/tmp/bundles.eSMJyp/SECRET/out/20261028-000000-aaaaaaaaaaaa.bundle is okay
+  ✓ SECRET -> SECRET
+GITHUB_DIR verify: код 0 C:/Users/gemini/gemini-runs/w/20261101-162815-32fb93c118d1/tmp/bundles.eSMJyp/GITHUB_DIR/out/20261028-000000-aaaaaaaaaaaa.bundle is okay
+  ✓ GITHUB_DIR -> GITHUB_DIR
+WRAPPER_FILES verify: код 0 C:/Users/gemini/gemini-runs/w/20261101-162815-32fb93c118d1/tmp/bundles.eSMJyp/WRAPPER_FILES/out/20261028-000000-aaaaaaaaaaaa.bundle is okay
+  ✓ WRAPPER_FILES -> WRAPPER_FILES
+rc 0
+=== сценарії_доставки.sh ===
+=== Д1 квота групи моделі 0 %: наряд не береться, 0 ходів, рядок із групою й часом скидання
+bash.exe : warning: in the working copy of 'аудит/СТАН.md', LF will be replaced by CRLF the next time Git touches it
+At line:2 char:411
++ ... ile -Append -Encoding utf8 $out; & $bash $f.FullName *>> $out; "rc $L ...
++                                      ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (warning: in the... Git touches it:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+warning: in the working copy of 'аудит/наряди/М.2-проба-обгортки.md', LF will be replaced by CRLF the next time Git tou
+ches it
+  → GEMINI ОБГОРТКА: ЗАБЛОКОВАНО gemini/М.2-проба-обгортки QUOTA0_GEMINI35FLASH_M137
+  → GEMINI ОБГОРТКА: ПУЛИ V=1.1.11 G=GEMINI35FLASH:0:137 G=GEMINI31PRO:0:137 G=CLAUDEGPT:0:137 M=gemini-3.8-flash-high,claude-opus-5-5-high
+  ✓ прогонів agy (ходів) — 0
+  ✓ гілки gemini/ нема
+  ✓ рядок ЗАБЛОКОВАНО QUOTA0_<група>_M<хв>
+  ✓ рівно один рядок
+  ✓ повторний прохід — без нового наряду й рядка
+=== Д2 нуль у групах Pro і Claude & GPT не блокує Flash; залишок квоти — у журналі
+warning: in the working copy of 'аудит/СТАН.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'аудит/наряди/М.2-проба-обгортки.md', LF will be replaced by CRLF the next time Git tou
+ches it
+  → GEMINI ОБГОРТКА: ГОТОВО gemini/М.2-проба-обгортки c7eb24e42ab89727b608fa2d982e241a64817636 КВОТА GEMINI35FLASH 34 МОДЕЛЬ gemini-3.8-flash-high
+  → GEMINI ОБГОРТКА: ПУЛИ V=1.1.11 G=GEMINI35FLASH:34:137 G=GEMINI31PRO:0:137 G=CLAUDEGPT:0:137 M=gemini-3.8-flash-high,claude-opus-5-5-high
+  ✓ наряд пройшов: ГОТОВО gemini/<наряд> <SHA40>
+  ✓ залишок 34 % у publish.log
+=== Д3 інші формати /usage (usedPercent, конверт response) розбираються; нерозпізнане й збій agy — наряд іде
+warning: in the working copy of 'аудит/СТАН.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'аудит/наряди/М.2-проба-обгортки.md', LF will be replaced by CRLF the next time Git tou
+ches it
+  ✓ used: формат розібрано (залишок 34 %), Flash не заблоковано
+warning: in the working copy of 'аудит/СТАН.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'аудит/наряди/М.2-проба-обгортки.md', LF will be replaced by CRLF the next time Git tou
+ches it
+  ✓ envelope: формат розібрано (залишок 34 %), Flash не заблоковано
+warning: in the working copy of 'аудит/СТАН.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'аудит/наряди/М.2-проба-обгортки.md', LF will be replaced by CRLF the next time Git tou
+ches it
+  ✓ all0 -> QUOTA0
+warning: in the working copy of 'аудит/СТАН.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'аудит/наряди/М.2-проба-обгортки.md', LF will be replaced by CRLF the next time Git tou
+ches it
+  ✓ garbage -> наряд пройшов (ГОТОВО)
+warning: in the working copy of 'аудит/СТАН.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'аудит/наряди/М.2-проба-обгортки.md', LF will be replaced by CRLF the next time Git tou
+ches it
+  ✓ fail -> наряд пройшов (ГОТОВО)
+  ✓ garbage: вивід /usage в wrapper.log для власника
+=== Д4 429 посеред прогону — позначка чекає скидання групи (М.9-Е), рядок QUOTA0 одним рядком
+warning: in the working copy of 'аудит/СТАН.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'аудит/наряди/М.2-проба-обгортки.md', LF will be replaced by CRLF the next time Git tou
+ches it
+  → GEMINI ОБГОРТКА: ЗАБЛОКОВАНО gemini/М.2-проба-обгортки QUOTA0_GEMINI35FLASH_M137
+  → GEMINI ОБГОРТКА: ПУЛИ V=1.1.11 G=GEMINI35FLASH:34:137 G=GEMINI31PRO:0:137 G=CLAUDEGPT:0:137 M=gemini-3.8-flash-high,claude-opus-5-5-high
+  ✓ рядок ЗАБЛОКОВАНО gemini/<наряд> QUOTA0_GEMINI35FLASH_M<хв>, один
+  ✓ позначка в чеканні (WAIT), спроба не спалена
+=== Д5 шаблони теки вихідних: лише повний збіг; решта — карантин, у рядку лише код
+warning: in the working copy of 'аудит/СТАН.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'аудит/наряди/М.2-проба-обгортки.md', LF will be replaced by CRLF the next time Git tou
+ches it
+  → GEMINI ОБГОРТКА: ГОТОВО gemini/М.9-А-доставка aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+  → GEMINI ОБГОРТКА: ГОТОВО gemini/М.9-А-доставка aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa КВОТА GEMINI35FLASH 0
+  → GEMINI ОБГОРТКА: ЗАБЛОКОВАНО claude/М.9-А-доставка QUOTA0_FLASH_M10
+  → СПОСТЕРІГАЧ КОМЕНТАР #963 4321 chatgpt-codex-connector[bot] змінено
+  → СПОСТЕРІГАЧ CI #1716 aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa timed_out
+  → СПОСТЕРІГАЧ ПЕРЕНЕСЕНО М.9-Б codex/М.9-Б aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa #1730
+  → СПОСТЕРІГАЧ НЕ ПЕРЕНЕСЕНО М.9-Б APPLY_FAILED
+  → GEMINI ОБГОРТКА: КАРАНТИН ВИХІДНИХ 20261024-120008-aaaaaaaaaa08 NO_TEMPLATE — рядок не переслано (те
+  → GEMINI ОБГОРТКА: КАРАНТИН ВИХІДНИХ 20261024-120009-aaaaaaaaaa09 NO_TEMPLATE — рядок не переслано (те
+  → GEMINI ОБГОРТКА: КАРАНТИН ВИХІДНИХ 20261024-120010-aaaaaaaaaa10 NO_TEMPLATE — рядок не переслано (те
+  ✓ переслано рівно 7 шаблонних рядків і не більше 3 повідомлень про карантин
+  ✓ у повідомленнях про карантин — лише код, ні слова з файлів
+  ✓ карантин: 16 файлів (11 не за шаблоном + 5 за форматом) лежать у quarantine/
+  ✓ незавершені й чужі імена не чіпано
+  ✓ прийняті — у done/, у теці лишились лише тимчасові
+  ✓ другий прохід нічого не надіслав повторно
+=== Д6 повтор і стан «надіслано / спроби»: збій claude -> спроби, далі доставлено один раз
+warning: in the working copy of 'аудит/СТАН.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'аудит/наряди/М.2-проба-обгортки.md', LF will be replaced by CRLF the next time Git tou
+ches it
+{"line":"СПОСТЕРІГАЧ CI #5 bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb success","sent":false,"attempts":3,"first_failure_utc":"2026-11-01T14:54:03.1380977Z","fallback_attempts":0,"channel":"","exhausted":false,"cloud_auth":false}
+  ✓ після збою: sent=false, attempts=3 (SendRetries)
+{"line":"СПОСТЕРІГАЧ CI #5 bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb success","sent":true,"attempts":4,"first_failure_utc":"2026-11-01T14:54:03.1380977Z","fallback_attempts":0,"channel":"claude","exhausted":false,"cloud_auth":false}
+  ✓ після відновлення: sent=true, attempts=4
+  ✓ доставлено рівно раз
+=== Д6б межа спроб: MaxSendAttempts=4 — тиша після чотирьох
+warning: in the working copy of 'аудит/СТАН.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'аудит/наряди/М.2-проба-обгортки.md', LF will be replaced by CRLF the next time Git tou
+ches it
+  ✓ claude викликано рівно 4 рази
+=== Д7 кінець прогону -> ok:true за ≤ 2 хв (від готового стану до claude)
+warning: in the working copy of 'аудит/СТАН.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'аудит/наряди/М.2-проба-обгортки.md', LF will be replaced by CRLF the next time Git tou
+ches it
+  ✓ доставлено за 2 с (межа 120)
+  ✓ рядок кінця пройшов теку вихідних: файл у done/
+=== Д8 стенд одного прогону: рядок кінця перед сном/вимкненням сесії — вже в теці, сесії жити не треба
+warning: in the working copy of 'аудит/СТАН.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'аудит/наряди/М.2-проба-обгортки.md', LF will be replaced by CRLF the next time Git tou
+ches it
+  ✓ повторний запуск тихий
+=== Д9 SlugPattern закінчується на \z, а не $: slug із кінцевим \n відкидається в обох файлах
+  ✓ queue_lanes: 'x\n' -> False, 'x' -> True (дістали: False True)
+  ✓ gemini_publish: 'x\n' -> False, 'x' -> True (дістали: False True)
+
+ВСЕ ✓
+rc 0
+=== сценарії_живих_pr.sh ===
+✓ ПІСЛЯ codex : давній PR із сьогоднішнім коментарем
+✓ codex : ланцюг зняв три мертві позначки, лишив живу
+ПІСЛЯ codex : запусків моделі 1/5
+✓ ПІСЛЯ codex : точне мірило
+✓ codex : публікатор прийняв три STALE, без повторних рядків
+✓ codex : три старі позначки закрито STALE
+✓ codex : повтор не запускає й не закриває вдруге
+✓ codex : збій API повертає позначку в WAIT, без моделі
+✓ codex : після відновлення API та сама позначка запускає модель
+✓ ПІСЛЯ agy : давній PR із сьогоднішнім коментарем
+✓ agy : ланцюг зняв три мертві позначки, лишив живу
+ПІСЛЯ agy : запусків моделі 1/5
+✓ ПІСЛЯ agy : точне мірило
+✓ agy : публікатор прийняв три STALE, без повторних рядків
+✓ agy : три старі позначки закрито STALE
+✓ agy : повтор не запускає й не закриває вдруге
+✓ agy : збій API повертає позначку в WAIT, без моделі
+✓ agy : після відновлення API та сама позначка запускає модель
+✓ ПІСЛЯ claude : давній PR із сьогоднішнім коментарем
+✓ claude : ланцюг зняв три мертві позначки, лишив живу
+ПІСЛЯ claude : запусків моделі 1/5
+✓ ПІСЛЯ claude : точне мірило
+✓ claude : три службові рядки STALE
+✓ claude : три старі позначки закрито STALE
+✓ claude : повтор не запускає й не закриває вдруге
+✓ claude : збій API повертає позначку в WAIT, без моделі
+✓ claude : після відновлення API та сама позначка запускає модель
+ПІСЛЯ codex : API за 60 проходів = 10
+✓ codex : усі десять живих позначок дійшли до моделі
+ПІСЛЯ agy : API за 60 проходів = 10
+✓ agy : усі десять живих позначок дійшли до моделі
+ПІСЛЯ claude : API за 60 проходів = 10
+✓ claude : усі десять живих позначок дійшли до моделі
+ПІСЛЯ разом: 30 позначок, 60 проходів, API=30, моделей=30
+✓ бюджет запитів до API
+✓ 31-й запит відкладено
+✓ спільний бюджет зберігається в новому процесі
+✓ після рухомої години свіжий PR перевіряється
+✓ codex HTTP 403 : WAIT, retakes=5, без моделі
+✓ codex : збережено голову продовження
+✓ codex HTTP 403 : та сама спроба запускається після відновлення
+✓ codex HTTP 429 : WAIT, retakes=5, без моделі
+✓ codex : збережено голову продовження
+✓ codex HTTP 429 : та сама спроба запускається після відновлення
+✓ codex мережевий збій : WAIT, retakes=5, без моделі
+✓ codex : збережено голову продовження
+✓ codex мережевий збій : та сама спроба запускається після відновлення
+✓ agy HTTP 403 : WAIT, retakes=5, без моделі
+✓ agy : збережено голову продовження
+✓ agy HTTP 403 : та сама спроба запускається після відновлення
+✓ agy HTTP 429 : WAIT, retakes=5, без моделі
+✓ agy : збережено голову продовження
+✓ agy HTTP 429 : та сама спроба запускається після відновлення
+✓ agy мережевий збій : WAIT, retakes=5, без моделі
+✓ agy : збережено голову продовження
+✓ agy мережевий збій : та сама спроба запускається після відновлення
+✓ claude HTTP 403 : WAIT, retakes=5, без моделі
+✓ claude HTTP 403 : та сама спроба запускається після відновлення
+✓ claude HTTP 429 : WAIT, retakes=5, без моделі
+✓ claude HTTP 429 : та сама спроба запускається після відновлення
+✓ claude мережевий збій : WAIT, retakes=5, без моделі
+✓ claude мережевий збій : та сама спроба запускається після відновлення
+ПІСЛЯ спалених спроб через відмови API=0
+✓ відмови API не спалюють спроби
+rc 0
+=== сценарії_звіту.sh ===
+✓ простий
+✓ жирний
+✓ inline-бектики
+✓ лапки
+✓ українські лапки
+✓ крапка
+✓ жирний з крапкою
+✓ лапки з крапкою
+✓ поля з бектиками
+✓ після підсумку
+✓ не останній рядок
+✓ CRLF
+✓ порожня відповідь
+✓ звичайна проза
+✓ префікс
+✓ пояснення
+✓ суфікс-приклад
+✓ цитата markdown
+✓ продовження цитати markdown
+✓ цитата багаторядкова
+✓ огорожа бектиками
+✓ огорожа тильдами
+✓ довша огорожа
+✓ відступ коду
+✓ табуляція коду
+✓ цитований наряд
+✓ приклад
+✓ приклад після порожнього рядка
+✓ жирна назва прикладу
+✓ приклад у розділі
+✓ цитата у розділі
+✓ HTML-коментар
+✓ два звіти
+✓ зайва крапка
+✓ короткий SHA
+✓ незбалансоване оформлення
+✓ після прикладу справжній звіт
+✓ після розділу прикладу
+✓ результат наряду
+✓ наряд усередині блока коду
+✓ блокер
+✓ codex з даних 0 → 0
+✓ agy з даних 0 → 0
+✓ claude з даних 0 → 0
+✓ codex з даних 6 → 6
+✓ agy з даних 6 → 6
+✓ claude з даних 6 → 6
+✓ codex з даних 8 → 8
+✓ agy з даних 8 → 8
+✓ claude з даних 8 → 8
+✓ codex з даних 16 → 16
+✓ agy з даних 16 → 16
+✓ claude з даних 16 → 16
+✓ codex з даних 99 → 64
+✓ agy з даних 99 → 64
+✓ claude з даних 99 → 64
+rc 0
+=== сценарії_здоровя.sh ===
+✓ auth Main завершився успішно
+✓ 401: той самий рядок і тривога CLOUD у #1690 негайно
+✓ auth Main завершився успішно
+✓ повторний запуск не дублює доставленого
+✓ auth Main завершився успішно
+✓ нова подія не дублює ту саму тривогу протягом години
+✓ delay Main завершився успішно
+✓ до 10 хв запасний канал мовчить
+✓ delay Main завершився успішно
+✓ після 10 хв gh доставляє і після вичерпання спроб claude
+✓ exhaust Main завершився успішно
+✓ exhaust Main завершився успішно
+✓ вичерпані спроби: рядок, стан, підсумок і журнал збережено
+✓ exhaust Main завершився успішно
+✓ після вичерпання спроб немає нових викликів gh
+✓ ack Main завершився успішно
+✓ рядкове ok замість булевого true не підтверджує доставку
+✓ response Main завершився успішно
+✓ 401 у відповіді з успішним ok не стає тривогою з тексту агента
+✓ JSON agy: групи успадковано, 4 вікна, 92/100/50/0 %, UTC; response ігнорується
+✓ agy без входу створює тривогу AUTH AGY без виводу CLI
+✓ окремі тривоги Codex, ізоляції й диска
+✓ повтор AUTH AGY раніше години придушено
+✓ після години повтор дозволено
+✓ довільна деталь і невідомий код відкидаються
+✓ import Main завершився успішно
+✓ тривоги Gemini проходять перевірений шаблон і резерв; джерело обміну лишається тільки для читання
+✓ import Main завершився успішно
+✓ повторне читання теки Gemini не дублює тривог
+✓ gemini-run: під час очікування CLI пише UTC, смуги й слоти
+✓ claude-run: під час очікування CLI пише UTC й публікує стан через gh PATCH
+✓ зупинене джерело: за зсуву часу на 6 хв вік >5; свіжа задача власника не освіжає його
+✓ стан ноутбука показує вичерпану доставку
+ВСЕ ✓
+rc 0
+=== сценарії_ланцюга.sh ===
+✓ готові PR автоматично отримали незалежні рушії, Gemini — один
+✓ чужий автор, форк та автозвіт не породили нарядів
+✓ повтор після перезапуску не дублює позначки
+✓ втрата локального списку не перезаписує наявні позначки
+✓ документація не займає GPU
+✓ злиття продукту без штампу чекає збірки
+✓ збірка збережена в очікуванні моделей
+✓ кілька злиттів однієї збірки отримали одну GPU-позначку за штампом
+✓ живий прогін не дублюється
+✓ нова голова PR отримала нову перевірку
+✓ автор Claude: перевіряє agy, не claude -p
+✓ автор GPT: перевіряє agy
+✓ автор Gemini: перевіряє Codex
+✓ автор Claude, agy на квоті: Codex
+✓ автор GPT, agy на квоті: рядок хмарному Claude, позначки нема
+✓ повтор не дублює рядок хмарному Claude
+✓ автор Gemini, Codex на квоті: хмарний Claude
+✓ жодної позначки cc- для перевірки
+✓ обидва на квоті: позначка чекає першого постачальника за порядком
+✓ до квоти: позначка agy
+✓ agy вичерпано: позначка перейшла до Codex, одна
+✓ повтор і відновлення agy не дублюють перевірку
+✓ до квоти: позначка Codex роботи Gemini
+✓ Codex вичерпано: позначку знято, один рядок хмарному Claude
+✓ відновлення Codex не ставить другої перевірки
+✓ випадок 1 таблиці: рецензент gpt-6.1-sol-high
+  мірило: випадок 1 — ДО gemini-3.8-flash-high → ПІСЛЯ gpt-6.1-sol-high
+✓ випадок 2 таблиці: рецензент gemini-3.8-flash-high
+  мірило: випадок 2 — ДО gemini-3.8-flash-high → ПІСЛЯ gemini-3.8-flash-high
+✓ випадок 3 таблиці: рецензент gemini-3.8-flash-high
+  мірило: випадок 3 — ДО gemini-3.8-flash-high → ПІСЛЯ gemini-3.8-flash-high
+✓ випадок 4 таблиці: рецензент gpt-6.1-sol-high
+  мірило: випадок 4 — ДО gpt-6.1-sol-high → ПІСЛЯ gpt-6.1-sol-high
+✓ випадок 5 таблиці: рецензент gemini-3.8-flash-high
+  мірило: випадок 5 — ДО gemini-3.8-flash-high → ПІСЛЯ gemini-3.8-flash-high
+✓ група: до квоти позначка agy
+✓ група GEMINIMODELS 0 %, CLAUDEANDGPTMODE 1 %: позначка перейшла до Codex, одна
+  мірило: заміна позначки у випадку 1 — ДО gemini-3.8-flash-high → ПІСЛЯ gpt-6.1-sol-high
+✓ готовий звіт: нової позначки нема
+✓ автоживий при Codex на квоті — одна позначка Claude
+✓ відновлення Codex не дублює автоживий
+✓ збій проходу: тип і рядок скрипту в рядку ЛАНЦЮГ
+✓ у рядку нема шляхів і тексту з даних
+✓ повний текст винятку — у журналі обгортки
+✓ DONE створює PR-чернетку сам, повтор POST відсутній
+✓ звіт перевірки без рядків дошки лишається гілкою без PR-чернетки
+✓ три PR — три позначки
+✓ ПІСЛЯ: по одній позначці на живу голову відкритого PR
+✓ мертві позначки знято до узяття: стара голова, злитий PR, дубль
+  мірило: позначок ДО 5 (за кодом main) → ПІСЛЯ 2
+✓ старий вибір: позначку cc- знято, рецензент — agy
+✓ зняття позначок — рядок у зведенні
+✓ рядок зняття не будить диспетчера, рядок хмарного Claude будить
+  мірило: позначок cc- автоперевірки ДО 1 → ПІСЛЯ 0
+✓ чернетка без ГОТОВО смуги: перевірки нема
+✓ чернетка з ГОТОВО смуги на цій голові: одна перевірка
+✓ PR не чернетка: одна перевірка
+bash.exe : warning: in the working copy of 'аудит/наряди/р0-проба.md', LF will be replaced by CRLF the next time Git to
+uches it
+At line:2 char:411
++ ... ile -Append -Encoding utf8 $out; & $bash $f.FullName *>> $out; "rc $L ...
++                                      ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (warning: in the... Git touches it:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+warning: in the working copy of 'аудит/наряди/р0-проба.md', LF will be replaced by CRLF the next time Git touches it
+✓ ризик Р0 у шапці наряду: перевірки нема
+warning: in the working copy of 'аудит/наряди/р2-проба.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'аудит/наряди/р2-проба.md', LF will be replaced by CRLF the next time Git touches it
+✓ ризик Р2: одна перевірка
+✓ patch-id: та сама зміна в різних комітах має один id
+✓ нова голова з тим самим patch-id після звіту: нової перевірки нема
+✓ інший patch-id: перевірка потрібна
+✓ звіти перевірки кирилицею, латинкою й новою формою виключені
+✓ відкриті PR читаються з усіх сторінок API
+✓ каталог незавантажених моделей допускає постановку без двох моделей у VRAM
+✓ однієї доступної моделі недостатньо
+✓ недоступний сервер лишає очікування
+✓ обидва планувальники можуть узяти шаблон автонаряду
+✓ автоживий на порожньому плані: ні прогону, ні PR
+✓ автоживий із рядками ЖИВИЙ ПІСЛЯ іде на прогін
+✓ нічний Е1 на порожньому плані виконує мінімальну сцену
+✓ давня голова не потрапляє у початкове вікно 24 годин
+✓ та сама давня голова не оживає від свіжих метаданих
+✓ спостережена зміна SHA оживляє PR незалежно від дати коміту
+✓ право нової голови зберігається після перезапуску й за межами вікна
+✓ PR, створений після встановлення, допускає й старий коміт
+✓ ліва межа вікна включена
+✓ секунда до лівої межі виключена
+✓ майбутня дата коміту не вважається рухом
+✓ DryRun нічого не ставить
+✓ ПІСЛЯ документний PR: позначок=0
+✓ ПІСЛЯ [НЕ ЗЛИВАТИ]: позначок=0
+✓ ПІСЛЯ код джерела/a.py: одна перевірка
+✓ ПІСЛЯ код .github/workflows/a.yml: одна перевірка
+✓ ПІСЛЯ код аудит/адаптери/gemini/a.ps1: одна перевірка
+✓ ПІСЛЯ код аудит/проби/a.py: одна перевірка
+✓ ПІСЛЯ код каталог/a.json: одна перевірка
+✓ ПІСЛЯ код a.py: одна перевірка
+✓ ПІСЛЯ код на другій сторінці отримав перевірку
+✓ ПІСЛЯ API читає обидві сторінки списку файлів
+✓ ПІСЛЯ 101 документний файл: без зайвої перевірки
+✓ ПІСЛЯ збій другої сторінки: без позначки навіть після знайденого коду
+✓ ПІСЛЯ збій API не записано як виконану перевірку
+✓ ПІСЛЯ після відновлення API той самий PR отримав рівно одну перевірку
+✓ ПІСЛЯ порожній список файлів не вважається документним успіхом
+✓ ПІСЛЯ порожній список файлів повторено після відновлення
+✓ ПІСЛЯ перенесення коду в документацію теж змінює код
+✓ ПІСЛЯ злиття без збірки: автоживих=0
+✓ ПІСЛЯ злиття → збірка: автоживих=1
+✓ ПІСЛЯ ключ — штамп джерел, ref — перший коміт готової збірки
+✓ ПІСЛЯ перезапуск процесу не дублює штамп
+✓ ПІСЛЯ два штампи згорнуто до останнього, поки попередній активний
+✓ ПІСЛЯ активний прогін не породжує наступної позначки
+✓ ПІСЛЯ після звіту лише останній штамп має позначку на коміті своєї збірки
+✓ ПІСЛЯ повтор старого штампу не ставить нового прогону
+✓ ПІСЛЯ пошкоджений штамп не створює позначки
+✓ ПІСЛЯ наряд призначає дерево збірки й окремо називає штамп джерел
+✓ 1а gpt-6.1-sol-high — рівно один інший постачальник
+✓ 1а gemini-3.8-flash-high — рівно один інший постачальник
+✓ 1а cc-claude-opus-5-5-high — рівно один інший постачальник
+✓ 1а невідома — рівно один інший постачальник
+✓ 1а фактичний GPT із ГОТОВО вибирає agy без файла моделі
+✓ 1а немає даних про модель — один Codex
+✓ 1в gemini/перевірка-12 без рекурсії
+✓ 1в claude/pachka-5 без рекурсії
+✓ 1в codex/перевірка-коду без рекурсії
+✓ 1в gemini/автоперевірка-12 без рекурсії
+✓ 1б чисте злиття main — одна позначка замість двох
+✓ 1б зміна коду — друга перевірка
+✓ 2 під час активного три штампи — одна позначка
+✓ 2 пропущений проміжний штамп має журнал
+✓ 2 після звіту рівно наступна позначка останнього штампу
+✓ 2 падіння push не губить зарезервований штамп при новій збірці
+✓ 3 ВЗЯТО gemini/крок — локально
+✓ 3 ГОТОВО gemini/крок — локально
+✓ 3 ОНОВЛЕНО код — локально
+✓ 3 ПУЛИ AGY — локально
+✓ 3 ГОТОВО gemini/перевірка-коду — дія диспетчера
+✓ 3 ГОТОВО claude/pachka-3 — дія диспетчера
+✓ 3 ГОТОВО gemini/автоживий-штамп — дія диспетчера
+✓ 3 ЗАБЛОКОВАНО gemini/крок — дія диспетчера
+✓ 3 ТРИВОГА AUTH CODEX — дія диспетчера
+✓ 3 ЛАНЦЮГ CHAIN_API — дія диспетчера
+✓ 3 Send-Line локального рядка без хмари
+✓ 3 без мережевої доставки виконавчого ГОТОВО
+✓ 3 резервний канал теж застосовує політику
+✓ 3 локальна доставка має нуль мережевих спроб і збережений стан
+✓ 4 рецензія й inline містяться в наряді як дані
+✓ 4 чужий автор і відповідь чужому відкинуті
+✓ 1в існуюча позначка для gemini/перевірка-9 не запускає модель
+✓ 1в існуюча позначка для claude/pachka-9 не запускає модель
+✓ 4 дві сторінки без авторизації не гублять 101-й елемент
+warning: in the working copy of 'аудит/проби/живі_сцени.txt', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'аудит/проби/живі_сцени.txt', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'аудит/проби/живі_сцени.txt', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'аудит/проби/живі_сцени.txt', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'аудит/проби/живі_сцени.txt', LF will be replaced by CRLF the next time Git touches it
+✓ 2 одна сцена на три питання довірених PR
+✓ 2 злитий під час прогону PR входить у наступний план
+✓ 2 попередній опублікований звіт, склад збірки й довіра обмежують план
+✓ 2 Е1 використовує той самий план
+✓ 2 нічний звіт теж задає перевірену збірку
+✓ 2 штамп у назві автоживого зберігає межу старого звіту
+✓ 2 нічний звіт без перевіреного SHA не губить питання
+✓ 2 звіт майбутньої збірки не звужує поточний план
+✓ 2 уже перевірена збірка має порожній план
+✓ 5 Node launch і persistent context мають --disable-gpu
+✓ 5 Python launch і persistent context мають --disable-gpu
+✓ 5 чужий GPU-процес означає чекання
+✓ 5 ДО: перелік compute-процесів із порожнім AvastUI не порожній (старий предикат давав «зайнята»)
+✓ 5 ПІСЛЯ: 57 MiB від AvastUI — GPU вільна
+✓ 5 ПІСЛЯ: причина зайнятості порожня
+✓ 5 завантажена модель (9000 MiB) — причина названа числом
+✓ 5 мовчазний пропуск лишає рядок журналу один раз, since не зсувається
+✓ 5 позначка, що стартувала, зникає з файла пропусків
+✓ 5 причина BLOCKED без гілки — один рядок у файлі для #1856
+✓ 5 збій git cat-file після 3 спроб — виняток, не NO_TASK_FILE
+✓ 5 git каже «нема» — вирок без повторів
+✓ 5 файл є — істина
+✓ 5 gemini_run.ps1 підключає спільну політику до Invoke-Task
+✓ 5 claude_run.ps1 підключає спільну політику до Invoke-Task
+✓ активна голова лишається придатною в heads
+✓ проміжних позначок: 0
+✓ хмарний PR без смуги: рівно 1
+✓ три голови й ГОТОВО: перевірок 1 (ДО 3 → ПІСЛЯ 1)
+✓ перевірка кінцевої SHA3
+✓ PR без смуги: ДО 1 → ПІСЛЯ 1
+✓ пропуск і хмарний шлях видимі в журналі
+✓ старий JSON слота з вільним замком не блокує
+✓ HEAD копії першої спроби повʼязує іншу гілку
+✓ HEAD worktree читається через gitdir
+✓ codex: heartbeat ізоляції не має lanes
+✓ codex: зайнятий слот повʼязує гілку без heartbeat.lanes
+✓ codex: активна голова — 0 перевірок
+✓ codex: старий busy з вільним замком не блокує
+✓ codex: після ГОТОВО зі старим busy — 1 перевірка
+✓ codex: наступна активна голова — 0 перевірок
+✓ codex: після ЗАБЛОКОВАНО — 1 перевірка
+✓ agy: heartbeat ізоляції не має lanes
+✓ agy: зайнятий слот повʼязує гілку без heartbeat.lanes
+✓ agy: активна голова — 0 перевірок
+✓ agy: старий busy з вільним замком не блокує
+✓ agy: після ГОТОВО зі старим busy — 1 перевірка
+✓ agy: наступна активна голова — 0 перевірок
+✓ agy: після ЗАБЛОКОВАНО — 1 перевірка
+ACL ДІАГНОСТИКА вихідний токен, deny ReadData C:\Users\gemini\gemini-runs\w\20261101-162815-32fb93c118d1\tmp\end-test-afde0af245074dd2828eb1b0b74ff1d0\claude-run\slots
+ACL ТОКЕН sid=S-1-5-21-1181779009-255427698-639005139-1005; impersonation=None; SeShutdownPrivilege=0x0; SeChangeNotifyPrivilege=0x3; SeUndockPrivilege=0x0; SeIncreaseWorkingSetPrivilege=0x0; SeTimeZonePrivilege=0x0; elevationType=1; elevated=0; tokenId=368896bf
+ACL ЧИТАННЯ Get-ChildItem: System.UnauthorizedAccessException, HResult=-2147024891: Access to the path 'C:\Users\gemini\gemini-runs\w\20261101-162815-32fb93c118d1\tmp\end-test-afde0af245074dd2828eb1b0b74ff1d0\claude-run\slots' is denied.
+ACL ЧИТАННЯ Directory.GetFiles: System.UnauthorizedAccessException, HResult=-2147024891: Exception calling "GetFiles" with "2" argument(s): "Access to the path 'C:\Users\gemini\gemini-runs\w\20261101-162815-32fb93c118d1\tmp\end-test-afde0af245074dd2828eb1b0b74ff1d0\claude-run\slots' is denied."
+ACL ДІАГНОСТИКА токен фікстури, deny ReadData C:\Users\gemini\gemini-runs\w\20261101-162815-32fb93c118d1\tmp\end-test-afde0af245074dd2828eb1b0b74ff1d0\claude-run\slots
+ACL ТОКЕН sid=S-1-5-21-1181779009-255427698-639005139-1005; impersonation=Impersonation; SeChangeNotifyPrivilege=0x3; elevationType=1; elevated=0; tokenId=368adfe7
+ACL ЧИТАННЯ Get-ChildItem: System.UnauthorizedAccessException, HResult=-2147024891: Access to the path 'C:\Users\gemini\gemini-runs\w\20261101-162815-32fb93c118d1\tmp\end-test-afde0af245074dd2828eb1b0b74ff1d0\claude-run\slots' is denied.
+ACL ЧИТАННЯ Directory.GetFiles: System.UnauthorizedAccessException, HResult=-2147024891: Exception calling "GetFiles" with "2" argument(s): "Access to the path 'C:\Users\gemini\gemini-runs\w\20261101-162815-32fb93c118d1\tmp\end-test-afde0af245074dd2828eb1b0b74ff1d0\claude-run\slots' is denied."
+ACL ЧИТАЧ Get-ChainBusySlots sid=S-1-5-21-1181779009-255427698-639005139-1005; impersonation=Impersonation; SeChangeNotifyPrivilege=0x3; elevationType=1; elevated=0; tokenId=368adfe7
+✓ токен фікстури: привілеїв backup/restore немає
+✓ ACL 1: читання справді заборонено
+✓ ACL 1: падінь ланцюга 0 (ДО 1 → ПІСЛЯ 0)
+✓ ACL 1: журнал називає недоступну смугу
+✓ ACL 1: голова Claude перевіряється як звичайно
+✓ ACL 1: Codex і agy далі відкладають активні голови
+✓ читачі виконані під тим самим токеном, що й передумова
+ACL ЧИТАЧ Get-ChainBusySlots sid=S-1-5-21-1181779009-255427698-639005139-1005; impersonation=Impersonation; SeChangeNotifyPrivilege=0x3; elevationType=1; elevated=0; tokenId=368afd9c
+✓ токен фікстури: привілеїв backup/restore немає
+✓ ACL 2: читання справді заборонено
+✓ ACL 2: падінь ланцюга 0 (ДО 1 → ПІСЛЯ 0)
+✓ ACL 2: журнал називає недоступну смугу
+✓ ACL 2: голова Claude перевіряється як звичайно
+✓ ACL 2: Codex і agy далі відкладають активні голови
+✓ читачі виконані під тим самим токеном, що й передумова
+ACL ЧИТАЧ Get-ChainBusySlots sid=S-1-5-21-1181779009-255427698-639005139-1005; impersonation=Impersonation; SeChangeNotifyPrivilege=0x3; elevationType=1; elevated=0; tokenId=368b0e65
+ACL ЧИТАЧ Read-ChainOptionalFile sid=S-1-5-21-1181779009-255427698-639005139-1005; impersonation=Impersonation; SeChangeNotifyPrivilege=0x3; elevationType=1; elevated=0; tokenId=368b0e65
+✓ токен фікстури: привілеїв backup/restore немає
+✓ ACL 3: читання справді заборонено
+✓ ACL 3: падінь ланцюга 0 (ДО 1 → ПІСЛЯ 0)
+✓ ACL 3: журнал називає недоступну смугу
+✓ ACL 3: голова Claude перевіряється як звичайно
+✓ ACL 3: Codex і agy далі відкладають активні голови
+✓ читачі виконані під тим самим токеном, що й передумова
+ACL ДІАГНОСТИКА вихідний токен, deny ReadData C:\Users\gemini\gemini-runs\w\20261101-162815-32fb93c118d1\tmp\end-test-afde0af245074dd2828eb1b0b74ff1d0\access-copy\repo\.git
+ACL ТОКЕН sid=S-1-5-21-1181779009-255427698-639005139-1005; impersonation=None; SeShutdownPrivilege=0x0; SeChangeNotifyPrivilege=0x3; SeUndockPrivilege=0x0; SeIncreaseWorkingSetPrivilege=0x0; SeTimeZonePrivilege=0x0; elevationType=1; elevated=0; tokenId=368896bf
+ACL ЧИТАННЯ Get-ChildItem: System.UnauthorizedAccessException, HResult=-2147024891: Access to the path 'C:\Users\gemini\gemini-runs\w\20261101-162815-32fb93c118d1\tmp\end-test-afde0af245074dd2828eb1b0b74ff1d0\access-copy\repo\.git' is denied.
+ACL ЧИТАННЯ Directory.GetFiles: System.UnauthorizedAccessException, HResult=-2147024891: Exception calling "GetFiles" with "2" argument(s): "Access to the path 'C:\Users\gemini\gemini-runs\w\20261101-162815-32fb93c118d1\tmp\end-test-afde0af245074dd2828eb1b0b74ff1d0\access-copy\repo\.git' is denied."
+ACL ДІАГНОСТИКА токен фікстури, deny ReadData C:\Users\gemini\gemini-runs\w\20261101-162815-32fb93c118d1\tmp\end-test-afde0af245074dd2828eb1b0b74ff1d0\access-copy\repo\.git
+ACL ТОКЕН sid=S-1-5-21-1181779009-255427698-639005139-1005; impersonation=Impersonation; SeChangeNotifyPrivilege=0x3; elevationType=1; elevated=0; tokenId=368b249e
+ACL ЧИТАННЯ Get-ChildItem: System.UnauthorizedAccessException, HResult=-2147024891: Access to the path 'C:\Users\gemini\gemini-runs\w\20261101-162815-32fb93c118d1\tmp\end-test-afde0af245074dd2828eb1b0b74ff1d0\access-copy\repo\.git' is denied.
+ACL ЧИТАННЯ Directory.GetFiles: System.UnauthorizedAccessException, HResult=-2147024891: Exception calling "GetFiles" with "2" argument(s): "Access to the path 'C:\Users\gemini\gemini-runs\w\20261101-162815-32fb93c118d1\tmp\end-test-afde0af245074dd2828eb1b0b74ff1d0\access-copy\repo\.git' is denied."
+ACL ЧИТАЧ Get-ChainBusySlots sid=S-1-5-21-1181779009-255427698-639005139-1005; impersonation=Impersonation; SeChangeNotifyPrivilege=0x3; elevationType=1; elevated=0; tokenId=368b249e
+ACL ЧИТАЧ Read-ChainOptionalFile sid=S-1-5-21-1181779009-255427698-639005139-1005; impersonation=Impersonation; SeChangeNotifyPrivilege=0x3; elevationType=1; elevated=0; tokenId=368b249e
+ACL ЧИТАЧ Get-ChainBranchWork sid=S-1-5-21-1181779009-255427698-639005139-1005; impersonation=Impersonation; SeChangeNotifyPrivilege=0x3; elevationType=1; elevated=0; tokenId=368b249e
+✓ токен фікстури: привілеїв backup/restore немає
+✓ ACL 4: читання справді заборонено
+✓ ACL 4: падінь ланцюга 0 (ДО 1 → ПІСЛЯ 0)
+✓ ACL 4: журнал називає недоступну смугу
+✓ ACL 4: голова Claude перевіряється як звичайно
+✓ ACL 4: Codex і agy далі відкладають активні голови
+✓ читачі виконані під тим самим токеном, що й передумова
+ACL ЧИТАЧ Get-ChainBusySlots sid=S-1-5-21-1181779009-255427698-639005139-1005; impersonation=Impersonation; SeChangeNotifyPrivilege=0x3; elevationType=1; elevated=0; tokenId=368b3ee6
+ACL ЧИТАЧ Read-ChainOptionalFile sid=S-1-5-21-1181779009-255427698-639005139-1005; impersonation=Impersonation; SeChangeNotifyPrivilege=0x3; elevationType=1; elevated=0; tokenId=368b3ee6
+ACL ЧИТАЧ Get-ChainBranchWork sid=S-1-5-21-1181779009-255427698-639005139-1005; impersonation=Impersonation; SeChangeNotifyPrivilege=0x3; elevationType=1; elevated=0; tokenId=368b3ee6
+✓ токен фікстури: привілеїв backup/restore немає
+✓ ACL 5: читання справді заборонено
+✓ ACL 5: падінь ланцюга 0 (ДО 1 → ПІСЛЯ 0)
+✓ ACL 5: журнал називає недоступну смугу
+✓ ACL 5: голова Claude перевіряється як звичайно
+✓ ACL 5: Codex і agy далі відкладають активні голови
+✓ читачі виконані під тим самим токеном, що й передумова
+ACL ДІАГНОСТИКА вихідний токен, deny ReadData C:\Users\gemini\gemini-runs\w\20261101-162815-32fb93c118d1\tmp\end-test-afde0af245074dd2828eb1b0b74ff1d0\access-copy\repo\.git
+ACL ТОКЕН sid=S-1-5-21-1181779009-255427698-639005139-1005; impersonation=None; SeShutdownPrivilege=0x0; SeChangeNotifyPrivilege=0x3; SeUndockPrivilege=0x0; SeIncreaseWorkingSetPrivilege=0x0; SeTimeZonePrivilege=0x0; elevationType=1; elevated=0; tokenId=368896bf
+ACL ЧИТАННЯ Get-ChildItem: System.UnauthorizedAccessException, HResult=-2147024891: Access to the path 'C:\Users\gemini\gemini-runs\w\20261101-162815-32fb93c118d1\tmp\end-test-afde0af245074dd2828eb1b0b74ff1d0\access-copy\repo\.git' is denied.
+ACL ЧИТАННЯ Directory.GetFiles: System.UnauthorizedAccessException, HResult=-2147024891: Exception calling "GetFiles" with "2" argument(s): "Access to the path 'C:\Users\gemini\gemini-runs\w\20261101-162815-32fb93c118d1\tmp\end-test-afde0af245074dd2828eb1b0b74ff1d0\access-copy\repo\.git' is denied."
+ACL ДІАГНОСТИКА токен фікстури, deny ReadData C:\Users\gemini\gemini-runs\w\20261101-162815-32fb93c118d1\tmp\end-test-afde0af245074dd2828eb1b0b74ff1d0\access-copy\repo\.git
+ACL ТОКЕН sid=S-1-5-21-1181779009-255427698-639005139-1005; impersonation=Impersonation; SeChangeNotifyPrivilege=0x3; elevationType=1; elevated=0; tokenId=368b5721
+ACL ЧИТАННЯ Get-ChildItem: System.UnauthorizedAccessException, HResult=-2147024891: Access to the path 'C:\Users\gemini\gemini-runs\w\20261101-162815-32fb93c118d1\tmp\end-test-afde0af245074dd2828eb1b0b74ff1d0\access-copy\repo\.git' is denied.
+ACL ЧИТАННЯ Directory.GetFiles: System.UnauthorizedAccessException, HResult=-2147024891: Exception calling "GetFiles" with "2" argument(s): "Access to the path 'C:\Users\gemini\gemini-runs\w\20261101-162815-32fb93c118d1\tmp\end-test-afde0af245074dd2828eb1b0b74ff1d0\access-copy\repo\.git' is denied."
+ACL ЧИТАЧ Get-ChainBusySlots sid=S-1-5-21-1181779009-255427698-639005139-1005; impersonation=Impersonation; SeChangeNotifyPrivilege=0x3; elevationType=1; elevated=0; tokenId=368b5721
+ACL ЧИТАЧ Read-ChainOptionalFile sid=S-1-5-21-1181779009-255427698-639005139-1005; impersonation=Impersonation; SeChangeNotifyPrivilege=0x3; elevationType=1; elevated=0; tokenId=368b5721
+ACL ЧИТАЧ Get-ChainBranchWork sid=S-1-5-21-1181779009-255427698-639005139-1005; impersonation=Impersonation; SeChangeNotifyPrivilege=0x3; elevationType=1; elevated=0; tokenId=368b5721
+✓ токен фікстури: привілеїв backup/restore немає
+✓ .git без ListDirectory: перелік справді заборонено
+✓ .git без ListDirectory: HEAD окремо читається
+✓ .git без ListDirectory: недоступна тека дає звичайну перевірку
+✓ .git без ListDirectory: причина у журналі
+✓ читачі виконані під тим самим токеном, що й передумова
+ACL ЧИТАЧ Get-ChainBusySlots sid=S-1-5-21-1181779009-255427698-639005139-1005; impersonation=Impersonation; SeChangeNotifyPrivilege=0x3; elevationType=1; elevated=0; tokenId=368b5e7d
+✓ токен фікстури: привілеїв backup/restore немає
+✓ ACL замка: відмова доступу не означає зайнятість
+✓ ACL замка: виняток записаний у журнал
+✓ читачі виконані під тим самим токеном, що й передумова
+ACL ЧИТАЧ Get-ChainBusySlots sid=S-1-5-21-1181779009-255427698-639005139-1005; impersonation=Impersonation; SeChangeNotifyPrivilege=0x3; elevationType=1; elevated=0; tokenId=368b63e2
+ACL ЧИТАЧ Read-ChainOptionalFile sid=S-1-5-21-1181779009-255427698-639005139-1005; impersonation=Impersonation; SeChangeNotifyPrivilege=0x3; elevationType=1; elevated=0; tokenId=368b63e2
+ACL ЧИТАЧ Get-ChainBranchWork sid=S-1-5-21-1181779009-255427698-639005139-1005; impersonation=Impersonation; SeChangeNotifyPrivilege=0x3; elevationType=1; elevated=0; tokenId=368b63e2
+✓ токен фікстури: привілеїв backup/restore немає
+✓ ACL .git-файла: локальна обробка (ДО виняток → ПІСЛЯ журнал)
+✓ ACL .git-файла: звичайний шлях і журнал
+✓ читачі виконані під тим самим токеном, що й передумова
+ACL ДІАГНОСТИКА вихідний токен, deny ReadData C:\Users\gemini\gemini-runs\w\20261101-162815-32fb93c118d1\tmp\end-test-afde0af245074dd2828eb1b0b74ff1d0\access-copy\meta
+ACL ТОКЕН sid=S-1-5-21-1181779009-255427698-639005139-1005; impersonation=None; SeShutdownPrivilege=0x0; SeChangeNotifyPrivilege=0x3; SeUndockPrivilege=0x0; SeIncreaseWorkingSetPrivilege=0x0; SeTimeZonePrivilege=0x0; elevationType=1; elevated=0; tokenId=368896bf
+ACL ЧИТАННЯ Get-ChildItem: System.UnauthorizedAccessException, HResult=-2147024891: Access to the path 'C:\Users\gemini\gemini-runs\w\20261101-162815-32fb93c118d1\tmp\end-test-afde0af245074dd2828eb1b0b74ff1d0\access-copy\meta' is denied.
+ACL ЧИТАННЯ Directory.GetFiles: System.UnauthorizedAccessException, HResult=-2147024891: Exception calling "GetFiles" with "2" argument(s): "Access to the path 'C:\Users\gemini\gemini-runs\w\20261101-162815-32fb93c118d1\tmp\end-test-afde0af245074dd2828eb1b0b74ff1d0\access-copy\meta' is denied."
+ACL ДІАГНОСТИКА токен фікстури, deny ReadData C:\Users\gemini\gemini-runs\w\20261101-162815-32fb93c118d1\tmp\end-test-afde0af245074dd2828eb1b0b74ff1d0\access-copy\meta
+ACL ТОКЕН sid=S-1-5-21-1181779009-255427698-639005139-1005; impersonation=Impersonation; SeChangeNotifyPrivilege=0x3; elevationType=1; elevated=0; tokenId=368b6ae7
+ACL ЧИТАННЯ Get-ChildItem: System.UnauthorizedAccessException, HResult=-2147024891: Access to the path 'C:\Users\gemini\gemini-runs\w\20261101-162815-32fb93c118d1\tmp\end-test-afde0af245074dd2828eb1b0b74ff1d0\access-copy\meta' is denied.
+ACL ЧИТАННЯ Directory.GetFiles: System.UnauthorizedAccessException, HResult=-2147024891: Exception calling "GetFiles" with "2" argument(s): "Access to the path 'C:\Users\gemini\gemini-runs\w\20261101-162815-32fb93c118d1\tmp\end-test-afde0af245074dd2828eb1b0b74ff1d0\access-copy\meta' is denied."
+ACL ЧИТАЧ Get-ChainBusySlots sid=S-1-5-21-1181779009-255427698-639005139-1005; impersonation=Impersonation; SeChangeNotifyPrivilege=0x3; elevationType=1; elevated=0; tokenId=368b6ae7
+ACL ЧИТАЧ Read-ChainOptionalFile sid=S-1-5-21-1181779009-255427698-639005139-1005; impersonation=Impersonation; SeChangeNotifyPrivilege=0x3; elevationType=1; elevated=0; tokenId=368b6ae7
+ACL ЧИТАЧ Get-ChainBranchWork sid=S-1-5-21-1181779009-255427698-639005139-1005; impersonation=Impersonation; SeChangeNotifyPrivilege=0x3; elevationType=1; elevated=0; tokenId=368b6ae7
+✓ токен фікстури: привілеїв backup/restore немає
+✓ gitdir без ListDirectory: перелік справді заборонено
+✓ gitdir без ListDirectory: HEAD окремо читається
+✓ gitdir без ListDirectory: звичайна перевірка
+✓ gitdir без ListDirectory: причина у журналі
+✓ читачі виконані під тим самим токеном, що й передумова
+ACL ЧИТАЧ Get-ChainBusySlots sid=S-1-5-21-1181779009-255427698-639005139-1005; impersonation=Impersonation; SeChangeNotifyPrivilege=0x3; elevationType=1; elevated=0; tokenId=368b72c9
+✓ токен фікстури: привілеїв backup/restore немає
+✓ ACL Codex: agy читається незалежно
+✓ ACL Codex: смуга названа в журналі
+✓ читачі виконані під тим самим токеном, що й передумова
+✓ пошкоджений JSON: звичайний шлях
+✓ пошкоджений JSON: причина у журналі
+✓ 11566а: зниклий JSON (ДО виняток → ПІСЛЯ вільний слот)
+✓ кілька JSON: збережено обидва справні слоти
+✓ кілька JSON: зіпсований слот журналюється
+✓ кілька JSON: активна гілка не йде на перевірку
+ACL ЧИТАЧ Get-ChainBusySlots sid=S-1-5-21-1181779009-255427698-639005139-1005; impersonation=Impersonation; SeChangeNotifyPrivilege=0x3; elevationType=1; elevated=0; tokenId=368b9bc3
+ACL ЧИТАЧ Read-ChainOptionalFile sid=S-1-5-21-1181779009-255427698-639005139-1005; impersonation=Impersonation; SeChangeNotifyPrivilege=0x3; elevationType=1; elevated=0; tokenId=368b9bc3
+ACL ЧИТАЧ Get-ChainBranchWork sid=S-1-5-21-1181779009-255427698-639005139-1005; impersonation=Impersonation; SeChangeNotifyPrivilege=0x3; elevationType=1; elevated=0; tokenId=368b9bc3
+✓ токен фікстури: привілеїв backup/restore немає
+✓ кілька HEAD: справний слот після недоступного збережено
+✓ кілька HEAD: виняток першого слота у журналі
+✓ читачі виконані під тим самим токеном, що й передумова
+ACL ДІАГНОСТИКА вихідний токен, deny ReadAndExecute C:\Users\gemini\gemini-runs\w\20261101-162815-32fb93c118d1\tmp\end-test-afde0af245074dd2828eb1b0b74ff1d0\multiple\claude-run
+ACL ТОКЕН sid=S-1-5-21-1181779009-255427698-639005139-1005; impersonation=None; SeShutdownPrivilege=0x0; SeChangeNotifyPrivilege=0x3; SeUndockPrivilege=0x0; SeIncreaseWorkingSetPrivilege=0x0; SeTimeZonePrivilege=0x0; elevationType=1; elevated=0; tokenId=368896bf
+ACL ЧИТАННЯ Get-ChildItem: System.UnauthorizedAccessException, HResult=-2147024891: Access to the path 'C:\Users\gemini\gemini-runs\w\20261101-162815-32fb93c118d1\tmp\end-test-afde0af245074dd2828eb1b0b74ff1d0\multiple\claude-run' is denied.
+ACL ЧИТАННЯ Directory.GetFiles: System.UnauthorizedAccessException, HResult=-2147024891: Exception calling "GetFiles" with "2" argument(s): "Access to the path 'C:\Users\gemini\gemini-runs\w\20261101-162815-32fb93c118d1\tmp\end-test-afde0af245074dd2828eb1b0b74ff1d0\multiple\claude-run' is denied."
+ACL ДІАГНОСТИКА токен фікстури, deny ReadAndExecute C:\Users\gemini\gemini-runs\w\20261101-162815-32fb93c118d1\tmp\end-test-afde0af245074dd2828eb1b0b74ff1d0\multiple\claude-run
+ACL ТОКЕН sid=S-1-5-21-1181779009-255427698-639005139-1005; impersonation=Impersonation; SeChangeNotifyPrivilege=0x3; elevationType=1; elevated=0; tokenId=368bb4d4
+ACL ЧИТАННЯ Get-ChildItem: System.UnauthorizedAccessException, HResult=-2147024891: Access to the path 'C:\Users\gemini\gemini-runs\w\20261101-162815-32fb93c118d1\tmp\end-test-afde0af245074dd2828eb1b0b74ff1d0\multiple\claude-run' is denied.
+ACL ЧИТАННЯ Directory.GetFiles: System.UnauthorizedAccessException, HResult=-2147024891: Exception calling "GetFiles" with "2" argument(s): "Access to the path 'C:\Users\gemini\gemini-runs\w\20261101-162815-32fb93c118d1\tmp\end-test-afde0af245074dd2828eb1b0b74ff1d0\multiple\claude-run' is denied."
+ACL ДІАГНОСТИКА дочірня тека, той самий токен читача C:\Users\gemini\gemini-runs\w\20261101-162815-32fb93c118d1\tmp\end-test-afde0af245074dd2828eb1b0b74ff1d0/multiple/claude-run/slots
+ACL ТОКЕН sid=S-1-5-21-1181779009-255427698-639005139-1005; impersonation=Impersonation; SeChangeNotifyPrivilege=0x3; elevationType=1; elevated=0; tokenId=368bb4d4
+ACL ЧИТАННЯ Get-ChildItem: System.ComponentModel.Win32Exception, HResult=-2147467259: Access is denied
+ACL ЧИТАННЯ Directory.GetFiles: System.UnauthorizedAccessException, HResult=-2147024891: Exception calling "GetFiles" with "2" argument(s): "Access to the path 'C:\Users\gemini\gemini-runs\w\20261101-162815-32fb93c118d1\tmp\end-test-afde0af245074dd2828eb1b0b74ff1d0\multiple\claude-run\slots' is denied."
+ACL ЧИТАЧ Get-ChainBusySlots sid=S-1-5-21-1181779009-255427698-639005139-1005; impersonation=Impersonation; SeChangeNotifyPrivilege=0x3; elevationType=1; elevated=0; tokenId=368bb4d4
+✓ токен фікстури: привілеїв backup/restore немає
+✓ батьківська тека: читання slots справді заборонено
+✓ батьківська тека: звичайна перевірка без падіння
+✓ батьківська тека: недоступність не прихована як відсутність
+✓ читачі виконані під тим самим токеном, що й передумова
+✓ IOException не 32: не означає зайнятість
+✓ IOException не 32: є причина у журналі
+✓ PathNotFound замка: зникла тека не означає зайнятість
+✓ PathNotFound замка: зникнення без журналу недоступності
+✓ 11566б: одночасний Open-Lock worker бачить зайнятий слот — гіпотезу доведено
+✓ 11566б: після проби worker знову може взяти слот
+rc 0
+=== сценарії_рушіїв.sh ===
+ok   codex-done
+ok   codex-github
+ok   codex-blocked
+ok   codex-missing
+ok   fallback-to-codex
+ok   fallback-not-needed
+ok   no-fallback-zero
+ok   codex-429
+ok   codex-auth
+ok   agy-unchanged
+ok   codex-off-label
+ok   codex-off-label-not-called
+ok   codex-off-fallback
+ok   secret-path
+ok   secret-content
+ok   cascade-code-stays
+ok   cascade-design-claude
+ok   cascade-design-codex
+ok   cascade-design-none
+ok   usage-tsv
+ok   usage-nohdr
+ok   usage-old
+ok   usage-oldnoquota
+ok   usage-old-argv
+ok   ver-date-only
+ok   ver-date-only-argv
+ok   ver-date-before
+ok   ver-date-before-argv
+ok   ver-agy-line
+ok   usage-nohdr-pools
+ok   usage-nohdr-log
+ok   pools-hook-narrow
+ok   pools-line
+ok   codex-argv
+ok   codex-max
+ok   codex-max-argv
+ok   codex-effort-rejected
+ok   codex-effort-rejected-one-call
+ok   codex-long-run
+ok   codex-long-run-events
+ok   codex-stall
+ok   role-default
+ok   role-default-prompt
+ok   role-review
+ok   role-review-prompt
+ok   role-agy
+ok   role-agy-unchanged
+ok   role-fenced-example
+ok   role-fenced-example-prompt
+ok   role-bare-eof
+ok   role-bare-eof-prompt
+ok   codex-effort-payload
+ok   codex-effort-escaped
+rc 0
+=== сценарії_смуг.sh ===
+=== А: шість позначок на одному коміті — смуги водночас, до N у смузі, за пріоритетом; Argon на 0 % чекає скидання
+bash.exe : warning: in the working copy of 'аудит/СТАН.md', LF will be replaced by CRLF the next time Git touches it
+At line:2 char:411
++ ... ile -Append -Encoding utf8 $out; & $bash $f.FullName *>> $out; "rc $L ...
++                                      ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (warning: in the... Git touches it:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+warning: in the working copy of 'аудит/адаптери/gemini/смуги.json', LF will be replaced by CRLF the next time Git touch
+es it
+warning: in the working copy of 'аудит/наряди/gpu-agy.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'аудит/наряди/gpu-claude.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'аудит/наряди/n-codex-1.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'аудит/наряди/n-codex-2.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'аудит/наряди/n-codex-3.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'аудит/наряди/n-codex-4.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'аудит/наряди/а-codex.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'аудит/наряди/б-codex.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'аудит/наряди/в-agy.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'аудит/наряди/г-agy-квота.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'аудит/наряди/д-claude.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'аудит/наряди/е-claude-gpu.md', LF will be replaced by CRLF the next time Git touches i
+t
+  перший прохід планувальників: 17 с; найбільше водночас: усього 5, codex 2, agy 1, claude 2
+  ✓ codex — 2 водночас (слотів 2)
+  ✓ claude — 2 водночас (слотів 2)
+  ✓ смуги водночас: усього ≥ 5
+  порядок узяття: gemini-queue/б-codex/gpt-6.1-sol-high/1/p1 gemini-queue/а-codex/gpt-6.1-sol-high/1/p2 gemini-queue/в-agy/gemini-3.8-flash-high/1/p3 gemini-queue/е-claude-gpu/cc-claude-sonnet-5-5-medium/1/p1-gpu gemini-queue/д-claude/cc-claude-sonnet-5-5-medium/1/p4 
+  ✓ узято за пріоритетом: б(p1) раніше за а(p2), е(p1) раніше за д(p4)
+  ✓ Argon (p0) на нулі не взято, позначка в чеканні
+  ✓ стан: таблиця смуг — claude 2/2 і codex 2/2 у якійсь правці
+  ✓ стан: квота agy з UTC — GEMINI4ARGON 0 %, скидання …Z, зчитано …Z
+  ✓ стан: квота Claude з rate_limit_event (5H, 7D)
+  ✓ стан: позначка Argon у «Чекають скидання квоти»
+  ✓ стан: GPU зайнята слотом claude
+  ✓ Argon: рядок QUOTA0_GEMINI4ARGON_M<хв> диспетчерові — один (є: 1)
+  ✓ після «скидання» Argon узято тією ж смугою без нової позначки → ГОТОВО
+  ✓ решта п'яти — ГОТОВО (є: 5)
+  кінці: ГОТОВО gemini/в-agy КВОТА GEMINIMODELS 100 МОДЕЛЬ gemini-3.8-flash-high;ГОТОВО gemini/б-codex МОДЕЛЬ gpt-6.1-sol-high;ГОТОВО gemini/а-codex МОДЕЛЬ gpt-6.1-sol-high;ЗАБЛОКОВАНО gemini/г-agy-квота QUOTA0_GEMINI4ARGON_M1;ГОТОВО claude/д-claude МОДЕЛЬ cc-claude-sonnet-5-5-medium;ГОТОВО claude/е-claude-gpu МОДЕЛЬ cc-claude-sonnet-5-5-medium;ГОТОВО gemini/г-agy-квота КВОТА GEMINI4ARGON 100 МОДЕЛЬ gemini-4-argon-high;
+=== Б: GPU — по одному на ноутбуці, замок спільний для gemini-run і claude-run
+warning: in the working copy of 'аудит/СТАН.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'аудит/адаптери/gemini/смуги.json', LF will be replaced by CRLF the next time Git touch
+es it
+warning: in the working copy of 'аудит/наряди/gpu-agy.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'аудит/наряди/gpu-claude.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'аудит/наряди/n-codex-1.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'аудит/наряди/n-codex-2.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'аудит/наряди/n-codex-3.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'аудит/наряди/n-codex-4.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'аудит/наряди/а-codex.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'аудит/наряди/б-codex.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'аудит/наряди/в-agy.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'аудит/наряди/г-agy-квота.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'аудит/наряди/д-claude.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'аудит/наряди/е-claude-gpu.md', LF will be replaced by CRLF the next time Git touches i
+t
+  найбільше водночас GPU-нарядів: 1; порядок: gpu-claude gpu-agy
+  ✓ дві GPU-позначки різних облікових записів — не водночас, обидві виконано
+=== В: N зі смуги.json на origin/main — 1, потім 2, без перевстановлення скриптів
+warning: in the working copy of 'аудит/СТАН.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'аудит/адаптери/gemini/смуги.json', LF will be replaced by CRLF the next time Git touch
+es it
+warning: in the working copy of 'аудит/наряди/gpu-agy.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'аудит/наряди/gpu-claude.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'аудит/наряди/n-codex-1.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'аудит/наряди/n-codex-2.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'аудит/наряди/n-codex-3.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'аудит/наряди/n-codex-4.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'аудит/наряди/а-codex.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'аудит/наряди/б-codex.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'аудит/наряди/в-agy.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'аудит/наряди/г-agy-квота.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'аудит/наряди/д-claude.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'аудит/наряди/е-claude-gpu.md', LF will be replaced by CRLF the next time Git touches i
+t
+warning: in the working copy of 'аудит/СТАН.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'аудит/адаптери/gemini/смуги.json', LF will be replaced by CRLF the next time Git touch
+es it
+warning: in the working copy of 'аудит/наряди/gpu-agy.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'аудит/наряди/gpu-claude.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'аудит/наряди/n-codex-1.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'аудит/наряди/n-codex-2.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'аудит/наряди/n-codex-3.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'аудит/наряди/n-codex-4.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'аудит/наряди/а-codex.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'аудит/наряди/б-codex.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'аудит/наряди/в-agy.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'аудит/наряди/г-agy-квота.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'аудит/наряди/д-claude.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'аудит/наряди/е-claude-gpu.md', LF will be replaced by CRLF the next time Git touches i
+t
+warning: in the working copy of 'аудит/адаптери/gemini/смуги.json', LF will be replaced by CRLF the next time Git touch
+es it
+warning: in the working copy of 'аудит/адаптери/gemini/смуги.json', LF will be replaced by CRLF the next time Git touch
+es it
+  codex водночас: смуги.json codex=1 → 1, codex=2 → 2; codex=99 у даних → 64 (стеля в коді)
+  ✓ N з файла даних міняє паралельність без перевстановлення (1 → 2)
+  ✓ дані не перевищують стелі коду (99 → 64)
+=== Г: смуги.json задає 6 і 8 слотів, усі наряди справді працюють водночас
+warning: in the working copy of 'аудит/СТАН.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'аудит/адаптери/gemini/смуги.json', LF will be replaced by CRLF the next time Git touch
+es it
+warning: in the working copy of 'аудит/наряди/gpu-agy.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'аудит/наряди/gpu-claude.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'аудит/наряди/n-codex-1.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'аудит/наряди/n-codex-2.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'аудит/наряди/n-codex-3.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'аудит/наряди/n-codex-4.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'аудит/наряди/а-codex.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'аудит/наряди/б-codex.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'аудит/наряди/в-agy.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'аудит/наряди/г-agy-квота.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'аудит/наряди/д-claude.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'аудит/наряди/е-claude-gpu.md', LF will be replaced by CRLF the next time Git touches i
+t
+warning: in the working copy of 'аудит/СТАН.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'аудит/адаптери/gemini/смуги.json', LF will be replaced by CRLF the next time Git touch
+es it
+warning: in the working copy of 'аудит/наряди/gpu-agy.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'аудит/наряди/gpu-claude.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'аудит/наряди/n-codex-1.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'аудит/наряди/n-codex-2.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'аудит/наряди/n-codex-3.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'аудит/наряди/n-codex-4.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'аудит/наряди/а-codex.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'аудит/наряди/б-codex.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'аудит/наряди/в-agy.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'аудит/наряди/г-agy-квота.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'аудит/наряди/д-claude.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'аудит/наряди/е-claude-gpu.md', LF will be replaced by CRLF the next time Git touches i
+t
+warning: in the working copy of 'аудит/наряди/n-codex-5.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'аудит/наряди/n-codex-6.md', LF will be replaced by CRLF the next time Git touches it
+  ✓ смуги.json codex=6 → 6 водночас (є: 6)
+  ✓ усі 6 нарядів закінчено
+  ✓ лічильник codex.turns зберіг усі 6 ходів
+  ✓ worker опублікував 6 результатів DONE (є: 6)
+warning: in the working copy of 'аудит/СТАН.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'аудит/адаптери/gemini/смуги.json', LF will be replaced by CRLF the next time Git touch
+es it
+warning: in the working copy of 'аудит/наряди/gpu-agy.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'аудит/наряди/gpu-claude.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'аудит/наряди/n-codex-1.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'аудит/наряди/n-codex-2.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'аудит/наряди/n-codex-3.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'аудит/наряди/n-codex-4.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'аудит/наряди/а-codex.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'аудит/наряди/б-codex.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'аудит/наряди/в-agy.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'аудит/наряди/г-agy-квота.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'аудит/наряди/д-claude.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'аудит/наряди/е-claude-gpu.md', LF will be replaced by CRLF the next time Git touches i
+t
+warning: in the working copy of 'аудит/СТАН.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'аудит/адаптери/gemini/смуги.json', LF will be replaced by CRLF the next time Git touch
+es it
+warning: in the working copy of 'аудит/наряди/gpu-agy.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'аудит/наряди/gpu-claude.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'аудит/наряди/n-codex-1.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'аудит/наряди/n-codex-2.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'аудит/наряди/n-codex-3.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'аудит/наряди/n-codex-4.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'аудит/наряди/а-codex.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'аудит/наряди/б-codex.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'аудит/наряди/в-agy.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'аудит/наряди/г-agy-квота.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'аудит/наряди/д-claude.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'аудит/наряди/е-claude-gpu.md', LF will be replaced by CRLF the next time Git touches i
+t
+warning: in the working copy of 'аудит/наряди/n-codex-5.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'аудит/наряди/n-codex-6.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'аудит/наряди/n-codex-7.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'аудит/наряди/n-codex-8.md', LF will be replaced by CRLF the next time Git touches it
+  ✓ смуги.json codex=8 → 8 водночас (є: 8)
+  ✓ усі 8 нарядів закінчено
+  ✓ лічильник codex.turns зберіг усі 8 ходів
+  ✓ worker опублікував 8 результатів DONE (є: 8)
+
+ВСЕ ✓
+rc 0
+=== сценарії_спостерігача.sh ===
+=== 1 базова лінія: перший прохід мовчить, другий теж
+bash.exe : warning: in the working copy of 'a.txt', LF will be replaced by CRLF the next time Git touches it
+At line:2 char:411
++ ... ile -Append -Encoding utf8 $out; & $bash $f.FullName *>> $out; "rc $L ...
++                                      ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (warning: in the... Git touches it:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+warning: in the working copy of 'аудит/адаптери/gemini/w.txt', LF will be replaced by CRLF the next time Git touches it
+  ✓ w1: прохід 1 — код 0, рядків 0 (очікувано 0)
+  ✓ w1: прохід 2 — код 0, рядків 0 (очікувано 0)
+  ✓ стан записано
+=== 2 коментарі: новий, змінено, чужі не йдуть, повтор мовчить
+warning: in the working copy of 'a.txt', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'аудит/адаптери/gemini/w.txt', LF will be replaced by CRLF the next time Git touches it
+  ✓ w2: базова лінія — код 0, рядків 0 (очікувано 0)
+  ✓ w2: нові — код 0, рядків 2 (очікувано 2)
+   СПОСТЕРІГАЧ КОМЕНТАР #1801 210 chatgpt-codex-connector[bot] новий
+   СПОСТЕРІГАЧ КОМЕНТАР #963 200 mightyrochy новий
+  ✓ w2: повтор — код 0, рядків 0 (очікувано 0)
+  ✓ w2: правка двох — код 0, рядків 2 (очікувано 2)
+   СПОСТЕРІГАЧ КОМЕНТАР #963 200 mightyrochy змінено
+   СПОСТЕРІГАЧ КОМЕНТАР #1801 210 chatgpt-codex-connector[bot] змінено
+  ✓ w2: після правки — код 0, рядків 0 (очікувано 0)
+=== 3 CI: pending мовчить, зміна стану йде, чужі PR ні, закритий зникає
+warning: in the working copy of 'a.txt', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'аудит/адаптери/gemini/w.txt', LF will be replaced by CRLF the next time Git touches it
+  ✓ w3: базова лінія — код 0, рядків 0 (очікувано 0)
+  ✓ w3: pending (рядків 0) — код 0, рядків 0 (очікувано 0)
+  ✓ w3: failure поверх success — код 0, рядків 1 (очікувано 1)
+   СПОСТЕРІГАЧ CI #1802 86f7e437faa5a7fce15d1ddcb9eaeaea377667b8 failure
+  ✓ w3: без змін — код 0, рядків 0 (очікувано 0)
+  ✓ w3: нова голова, cancelled — код 0, рядків 1 (очікувано 1)
+   СПОСТЕРІГАЧ CI #1802 3c363836cf4e16666669a25da280a1865c2d2874 cancelled
+  ✓ w3: нема перевірок -> pending — код 0, рядків 0 (очікувано 0)
+  ✓ w3: 1802 закрито — код 0, рядків 0 (очікувано 0)
+  1802 у стані: 0
+=== 4 перенос: diff лягає -> гілка codex/<наряд>, рядок, без повтору
+warning: in the working copy of 'a.txt', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'аудит/адаптери/gemini/w.txt', LF will be replaced by CRLF the next time Git touches it
+  ✓ w4: базова лінія — код 0, рядків 0 (очікувано 0)
+  ✓ w4: відповідь бота — код 0, рядків 2 (очікувано 2)
+   СПОСТЕРІГАЧ ПЕРЕНЕСЕНО М.9-проба-спостерігача codex/М.9-проба-спостерігача 940dc06b193c490667ebfea5ec50c6f1625d3138 #1801
+   СПОСТЕРІГАЧ КОМЕНТАР #1801 400 chatgpt-codex-connector[bot] новий
+  гілка: пересунута
+один|2|три|
+новий
+  коміт: Перенос diff Codex з коментаря 400 до PR #1801 (спостерігач без моделі)
+  ref refs/heads/codex/М.9-проба-спостерігача   ref refs/heads/main 
+  ✓ w4: повтор — код 0, рядків 0 (очікувано 0)
+  main недоторканий: один|два|три|
+=== 5 відмови переносу: код причини, гілка не рухається
+warning: in the working copy of 'a.txt', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'аудит/адаптери/gemini/w.txt', LF will be replaced by CRLF the next time Git touches it
+  ✓ w5: базова лінія — код 0, рядків 0 (очікувано 0)
+  ✓ w5: вісім поганих diff — код 0, рядків 16 (очікувано 16)
+   СПОСТЕРІГАЧ НЕ ПЕРЕНЕСЕНО М.9-проба-спостерігача APPLY_FAILED
+   СПОСТЕРІГАЧ КОМЕНТАР #1801 502 chatgpt-codex-connector[bot] новий
+   СПОСТЕРІГАЧ КОМЕНТАР #1801 503 chatgpt-codex-connector[bot] новий
+   СПОСТЕРІГАЧ КОМЕНТАР #1801 501 chatgpt-codex-connector[bot] новий
+   СПОСТЕРІГАЧ НЕ ПЕРЕНЕСЕНО М.9-проба-спостерігача FFFD
+   СПОСТЕРІГАЧ НЕ ПЕРЕНЕСЕНО М.9-проба-спостерігача FORBIDDEN_PATH
+   СПОСТЕРІГАЧ НЕ ПЕРЕНЕСЕНО М.9-проба-спостерігача SPECIAL_MODE
+   СПОСТЕРІГАЧ НЕ ПЕРЕНЕСЕНО М.9-проба-спостерігача BINARY
+   СПОСТЕРІГАЧ КОМЕНТАР #1801 504 chatgpt-codex-connector[bot] новий
+   СПОСТЕРІГАЧ НЕ ПЕРЕНЕСЕНО М.9-проба-спостерігача FORBIDDEN_PATH
+   СПОСТЕРІГАЧ КОМЕНТАР #1801 506 chatgpt-codex-connector[bot] новий
+   СПОСТЕРІГАЧ КОМЕНТАР #1801 507 chatgpt-codex-connector[bot] новий
+   СПОСТЕРІГАЧ КОМЕНТАР #1801 505 chatgpt-codex-connector[bot] новий
+   СПОСТЕРІГАЧ НЕ ПЕРЕНЕСЕНО М.9-проба-спостерігача APPLY_FAILED
+   СПОСТЕРІГАЧ НЕ ПЕРЕНЕСЕНО М.9-проба-спостерігача APPLY_FAILED
+   СПОСТЕРІГАЧ КОМЕНТАР #1801 508 chatgpt-codex-connector[bot] новий
+  ✓ w5: diff від не-бота: лише коментар власника — код 0, рядків 1 (очікувано 1)
+   СПОСТЕРІГАЧ КОМЕНТАР #1801 590 mightyrochy новий
+  ✓ гілка codex/М.9-проба-спостерігача не рухалась
+  ✓ w5: відповідь бота без diff: лише коментар — код 0, рядків 1 (очікувано 1)
+   СПОСТЕРІГАЧ КОМЕНТАР #1801 592 chatgpt-codex-connector[bot] новий
+  ✓ w5: правка bad -> ok: переноситься — код 0, рядків 2 (очікувано 2)
+   СПОСТЕРІГАЧ КОМЕНТАР #1801 501 chatgpt-codex-connector[bot] змінено
+   СПОСТЕРІГАЧ ПЕРЕНЕСЕНО М.9-проба-спостерігача codex/М.9-проба-спостерігача 114a06daccc3072231e6027a5cb65df4fd038de2 #1801
+  ✓ w5: TOO_BIG — код 0, рядків 2 (очікувано 2)
+   СПОСТЕРІГАЧ НЕ ПЕРЕНЕСЕНО М.9-проба-спостерігача TOO_BIG
+   СПОСТЕРІГАЧ КОМЕНТАР #1801 593 chatgpt-codex-connector[bot] новий
+=== 5б хеші: обрізаний diff при хешах повного -> HASH_MISMATCH; без блоку хешів -> NO_HASHES
+warning: in the working copy of 'a.txt', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'аудит/адаптери/gemini/w.txt', LF will be replaced by CRLF the next time Git touches it
+  ✓ w5b: базова лінія — код 0, рядків 0 (очікувано 0)
+  ✓ w5b: обрізаний і без хешів — код 0, рядків 4 (очікувано 4)
+   СПОСТЕРІГАЧ КОМЕНТАР #1801 520 chatgpt-codex-connector[bot] новий
+   СПОСТЕРІГАЧ НЕ ПЕРЕНЕСЕНО М.9-проба-спостерігача NO_HASHES
+   СПОСТЕРІГАЧ НЕ ПЕРЕНЕСЕНО М.9-проба-спостерігача HASH_MISMATCH
+   СПОСТЕРІГАЧ КОМЕНТАР #1801 521 chatgpt-codex-connector[bot] новий
+  ✓ w5b: хеш файлу інший — код 0, рядків 2 (очікувано 2)
+   СПОСТЕРІГАЧ КОМЕНТАР #1801 522 chatgpt-codex-connector[bot] новий
+   СПОСТЕРІГАЧ НЕ ПЕРЕНЕСЕНО М.9-проба-спостерігача HASH_MISMATCH
+  ✓ гілку не пересунуто
+=== 6 ворожі назви гілок і PR: нічого, крім шаблонів
+warning: in the working copy of 'a.txt', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'аудит/адаптери/gemini/w.txt', LF will be replaced by CRLF the next time Git touches it
+  ✓ w6: базова лінія — код 0, рядків 0 (очікувано 0)
+  ✓ w6: п'ять ворожих PR — код 0, рядків 4 (очікувано 4)
+   СПОСТЕРІГАЧ CI #1814 aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa success
+   СПОСТЕРІГАЧ CI #1812 54fd1711209fb1c0781092374132c66e79e2241b success
+   СПОСТЕРІГАЧ CI #1811 4a0a19218e082a343a1b17e5333409af9d98f0f5 success
+   СПОСТЕРІГАЧ CI #1810 58e6b3a414a1e090dfc6029add0f3555ccba127f success
+=== 7 збій gh: код 1, рядків нема, стан не просунувся, далі наздоганяє
+warning: in the working copy of 'a.txt', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'аудит/адаптери/gemini/w.txt', LF will be replaced by CRLF the next time Git touches it
+  ✓ w7: базова лінія — код 0, рядків 0 (очікувано 0)
+  ✓ gh не відповідає -> код виходу 1
+  рядків: 0
+  ✓ w7: gh знову працює — код 0, рядків 1 (очікувано 1)
+   СПОСТЕРІГАЧ КОМЕНТАР #963 700 mightyrochy новий
+=== 8 ліміт рядків: 5 нових коментарів при MaxRows 2 -> 3 проходи, без дублів
+warning: in the working copy of 'a.txt', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'аудит/адаптери/gemini/w.txt', LF will be replaced by CRLF the next time Git touches it
+  ✓ w8: базова лінія — код 0, рядків 0 (очікувано 0)
+  ✓ w8: прохід 1 — код 0, рядків 2 (очікувано 2)
+   СПОСТЕРІГАЧ КОМЕНТАР #963 801 mightyrochy новий
+   СПОСТЕРІГАЧ КОМЕНТАР #963 802 mightyrochy новий
+  ✓ w8: прохід 2 — код 0, рядків 2 (очікувано 2)
+   СПОСТЕРІГАЧ КОМЕНТАР #963 804 mightyrochy новий
+   СПОСТЕРІГАЧ КОМЕНТАР #963 803 mightyrochy новий
+  ✓ w8: прохід 3 — код 0, рядків 1 (очікувано 1)
+   СПОСТЕРІГАЧ КОМЕНТАР #963 805 mightyrochy новий
+  ✓ w8: прохід 4 — код 0, рядків 0 (очікувано 0)
+=== 9 формат теки вихідних для всього, що було у w2..w8
+  w2:   ✓ формат усіх 4 файлів: ім'я, UTF-8 без BOM, один рядок, шаблон
+  w3:   ✓ формат усіх 2 файлів: ім'я, UTF-8 без BOM, один рядок, шаблон
+  w4:   ✓ формат усіх 2 файлів: ім'я, UTF-8 без BOM, один рядок, шаблон
+  w5:   ✓ формат усіх 22 файлів: ім'я, UTF-8 без BOM, один рядок, шаблон
+  w5b:   ✓ формат усіх 6 файлів: ім'я, UTF-8 без BOM, один рядок, шаблон
+  w6:   ✓ формат усіх 4 файлів: ім'я, UTF-8 без BOM, один рядок, шаблон
+  w7:   ✓ формат усіх 1 файлів: ім'я, UTF-8 без BOM, один рядок, шаблон
+  w8:   ✓ формат усіх 5 файлів: ім'я, UTF-8 без BOM, один рядок, шаблон
+rc 0
+=== сценарії_черги.sh ===
+=== 1 повтор: друга пара запусків нічого не робить
+bash.exe : warning: in the working copy of 'аудит/СТАН.md', LF will be replaced by CRLF the next time Git touches it
+At line:2 char:411
++ ... ile -Append -Encoding utf8 $out; & $bash $f.FullName *>> $out; "rc $L ...
++                                      ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (warning: in the... Git touches it:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+warning: in the working copy of 'аудит/наряди/М.2-проба-обгортки.md', LF will be replaced by CRLF the next time Git tou
+ches it
+  wrapper: 1 прогонів; 
+  claude: 2 рядків
+  pub: кінець 20261101-170856-a7c7c4b9d12d — ОПУБЛІКОВАНО gemini/М.2-проба-обгортки c075de9503114553b6c9f3efef07faa0cdcddfd4; комітів 1, файлів до main 1; без .github/ і фай�
+  pub: вихідні 20261101-170856-a7c7c4b9d12d.txt: GEMINI ОБГОРТКА: ГОТОВО gemini/М.2-проба-обгортки c075de9503114553b6c9f3efef07faa0cdcddfd4 КВОТА GEMINI35FLASH 34 МОДЕЛЬ gemini-3.8-fla
+  pub: вихідні 20261101-170902-46492c06beee.txt: GEMINI ОБГОРТКА: ПУЛИ V=1.1.11 G=GEMINI35FLASH:34:137 G=GEMINI31PRO:0:137 G=CLAUDEGPT:0:137 M=gemini-3.8-flash-high,claude-opus-5-5-high
+  origin refs/heads/gemini/М.2-проба-обгортки c075de9
+=== 2 позначку знято до публікації
+warning: in the working copy of 'аудит/СТАН.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'аудит/наряди/М.2-проба-обгортки.md', LF will be replaced by CRLF the next time Git tou
+ches it
+  wrapper: 1 прогонів; 
+  claude: 2 рядків
+  pub: стан 20261101-170908-0afaf6576ce2 не відповідає жодній позначці черги на GitHub — не опубліковано
+  pub: вихідні 20261101-170908-0afaf6576ce2.txt: GEMINI ОБГОРТКА: ЗАБЛОКОВАНО gemini/невідомо STATE_INVALID
+  pub: вихідні 20261101-170913-46492c06beee.txt: GEMINI ОБГОРТКА: ПУЛИ V=1.1.11 G=GEMINI35FLASH:34:137 G=GEMINI31PRO:0:137 G=CLAUDEGPT:0:137 M=gemini-3.8-flash-high,claude-opus-5-5-high
+=== 3 не fast-forward
+warning: in the working copy of 'аудит/СТАН.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'аудит/наряди/М.2-проба-обгортки.md', LF will be replaced by CRLF the next time Git tou
+ches it
+warning: in the working copy of 'y', LF will be replaced by CRLF the next time Git touches it
+  wrapper: 1 прогонів; 
+  claude: 2 рядків
+  pub: кінець 20261101-170916-707831bf10c9 — НЕ ОПУБЛІКОВАНО gemini/М.2-проба-обгортки 6b35d81bf67e9cc4fd9a6461b737908e7083f74d — не fast-forward до опублікованої гілки; 
+  pub: вихідні 20261101-170916-707831bf10c9.txt: GEMINI ОБГОРТКА: ЗАБЛОКОВАНО gemini/М.2-проба-обгортки NOT_FF
+  pub: вихідні 20261101-170922-46492c06beee.txt: GEMINI ОБГОРТКА: ПУЛИ V=1.1.11 G=GEMINI35FLASH:34:137 G=GEMINI31PRO:0:137 G=CLAUDEGPT:0:137 M=gemini-3.8-flash-high,claude-opus-5-5-high
+  origin refs/heads/gemini/М.2-проба-обгортки ebee46a
+=== 4 claude не приймає: 2 спроби й тиша
+warning: in the working copy of 'аудит/СТАН.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'аудит/наряди/М.2-проба-обгортки.md', LF will be replaced by CRLF the next time Git tou
+ches it
+  wrapper: 1 прогонів; 
+  claude: 4 рядків
+  pub: кінець 20261101-170925-d973cd28b42d — ОПУБЛІКОВАНО gemini/М.2-проба-обгортки 1e1dba0e6e3e9bb725fde6479b48cd206e0e8cd9; комітів 1, файлів до main 1; без .github/ і фай�
+  pub: вихідні 20261101-170925-d973cd28b42d.txt: GEMINI ОБГОРТКА: ГОТОВО gemini/М.2-проба-обгортки 1e1dba0e6e3e9bb725fde6479b48cd206e0e8cd9 КВОТА GEMINI35FLASH 34 МОДЕЛЬ gemini-3.8-fla
+  pub: вихідні 20261101-170931-46492c06beee.txt: GEMINI ОБГОРТКА: ПУЛИ V=1.1.11 G=GEMINI35FLASH:34:137 G=GEMINI31PRO:0:137 G=CLAUDEGPT:0:137 M=gemini-3.8-flash-high,claude-opus-5-5-high
+  pub: claude --cloud session_01TEST -> 0: {"ok": false, "session_id": "session_01TEST"} 
+  pub: claude --cloud session_01TEST -> 0: {"ok": false, "session_id": "session_01TEST"} 
+  pub: claude --cloud session_01TEST -> 0: {"ok": false, "session_id": "session_01TEST"} 
+  pub: claude --cloud session_01TEST -> 0: {"ok": false, "session_id": "session_01TEST"} 
+  origin refs/heads/gemini/М.2-проба-обгортки 1e1dba0
+=== 5 доробка: старт від опублікованої gemini/<наряд>, спроба 2
+warning: in the working copy of 'аудит/СТАН.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'аудит/наряди/М.2-проба-обгортки.md', LF will be replaced by CRLF the next time Git tou
+ches it
+  wrapper: 2 прогонів; 
+  claude: 3 рядків
+  pub: кінець 20261101-170937-c784fc5c9833 — ОПУБЛІКОВАНО gemini/М.2-проба-обгортки 07a67d603c7ef8a5a5382dbf96bd73ad95c940cb; комітів 1, файлів до main 1; без .github/ і фай�
+  pub: вихідні 20261101-170937-c784fc5c9833.txt: GEMINI ОБГОРТКА: ГОТОВО gemini/М.2-проба-обгортки 07a67d603c7ef8a5a5382dbf96bd73ad95c940cb КВОТА GEMINI35FLASH 34 МОДЕЛЬ gemini-3.8-fla
+  pub: вихідні 20261101-170944-46492c06beee.txt: GEMINI ОБГОРТКА: ПУЛИ V=1.1.11 G=GEMINI35FLASH:34:137 G=GEMINI31PRO:0:137 G=CLAUDEGPT:0:137 M=gemini-3.8-flash-high,claude-opus-5-5-high
+  pub: кінець 20261101-170946-ccf03a01edb0 — ОПУБЛІКОВАНО gemini/М.2-проба-обгортки 95eec733f028e5ee10b2074c67c3fcbbdaddad4c; комітів 1, файлів до main 1; без .github/ і фай�
+  pub: вихідні 20261101-170946-ccf03a01edb0.txt: GEMINI ОБГОРТКА: ГОТОВО gemini/М.2-проба-обгортки 95eec733f028e5ee10b2074c67c3fcbbdaddad4c КВОТА GEMINI35FLASH 34 МОДЕЛЬ gemini-3.8-fla
+  origin refs/heads/gemini/М.2-проба-обгортки 95eec73
+/tmp/gemini-obhortka/r5/out/20261101-170937-c784fc5c9833.json:"start":"52afe5bb0874e4fca673bf27a4a4dc838ac38c4
+/tmp/gemini-obhortka/r5/out/20261101-170946-ccf03a01edb0.json:"start":"07a67d603c7ef8a5a5382dbf96bd73ad95c940c
+=== 6 ізоляція ENV: підсумок і окрема тривога, прогону нема
+warning: in the working copy of 'аудит/СТАН.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'аудит/наряди/М.2-проба-обгортки.md', LF will be replaced by CRLF the next time Git tou
+ches it
+  wrapper: 0 прогонів; ізоляція: ENV — нових прогонів нема|ізоляція: ENV — нових прогонів нема|
+  claude: 2 рядків
+  pub: ізоляція не пройшла перевірку (ENV — у змінних середовища gemini є KEY/TOKEN/SECRET/PASSWORD); прогони Gemini стоять, потрібна дія власника
+  pub: вихідні 20261101-150956-8ba9f56a09c4.txt: GEMINI ОБГОРТКА: ТРИВОГА ISOLATION ENV
+  pub: вихідні 20261101-170954-7931dce0ca06.txt: GEMINI ОБГОРТКА: ЗАБЛОКОВАНО gemini/невідомо ISOLATION_FAILED
+  ✓ ізоляція — закритий підсумок і тривога, без вільного тексту
+=== 7 стара позначка, крива назва, не з main, нема файлу наряду
+warning: in the working copy of 'аудит/СТАН.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'аудит/наряди/М.2-проба-обгортки.md', LF will be replaced by CRLF the next time Git tou
+ches it
+  wrapper: 2 прогонів; позначка gemini-queue/крива/назва: назва не за форматом gemini-queue/<наряд>/<модель>/<спроба>[/<умови>] — пропущено|позначка gemini-queue/М.2-проба-обгортки/gemini-3.8-flash-high/1: коміт старший за 7 діб — пропущено|
+  claude: 4 рядків
+  pub: кінець 20261101-171002-6b4891f3869a — НЕ ЗАВЕРШЕНО gemini/М.2-проба-обгортки — коміт позначки не з main; ходів 0, хв 0; черга gemini-queue/М.2-проба-об�
+  pub: кінець 20261101-171002-f493a68cd8ea — НЕ ЗАВЕРШЕНО gemini/Інший-наряд — нема файлу наряду на коміті позначки; ходів 0, хв 0; черга gemini-queue/Ін�
+  pub: вихідні 20261101-151009-34eb7e37a2da.txt: GEMINI ОБГОРТКА: ЗАБЛОКОВАНО gemini-queue/крива/назва FORMAT
+  pub: вихідні 20261101-171002-6b4891f3869a.txt: GEMINI ОБГОРТКА: ЗАБЛОКОВАНО gemini/М.2-проба-обгортки NOT_ON_MAIN
+  pub: вихідні 20261101-171002-f493a68cd8ea.txt: GEMINI ОБГОРТКА: ЗАБЛОКОВАНО gemini/Інший-наряд NO_TASK_FILE
+  pub: вихідні 20261101-171009-46492c06beee.txt: GEMINI ОБГОРТКА: ПУЛИ V=1.1.11 G=GEMINI35FLASH:34:137 G=GEMINI31PRO:0:137 G=CLAUDEGPT:0:137 M=gemini-3.8-flash-high,claude-opus-5-5-high
+      1 "code":"NOT_ON_MAIN"
+      1 "code":"NO_TASK_FILE"
+=== 8 перерваний прогін: стан STARTED із JSON -> INTERRUPTED із бандлом
+warning: in the working copy of 'аудит/СТАН.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'аудит/наряди/М.2-проба-обгортки.md', LF will be replaced by CRLF the next time Git tou
+ches it
+C:\Users\gemini\gemini-runs\w\20261101-162815-32fb93c118d1\tmp\manifest-work\аудит\адаптери\gemini\перевірка\сценарії_ч
+ерги.sh: line 36:   616 Killed                     timeout -s KILL 5 "$PW" -NoProfile -File "$(wp "$H/side.ps1")" -Scri
+pt "$(wp "$SRC/gemini_run.ps1")" -ArgsJson "{\"RepoDir\":\"$WW/clone\",\"RunsDir\":\"$WW/runs\",\"OutDir\":\"$WW/out\",
+\"RepoUrl\":\"$WW/origin.git\",\"AgyExe\":\"$(stub fake_agy)\",\"TurnMinutes\":5,\"TotalMinutes\":10,\"MaxNudges\":3}"
+  wrapper: 1 прогонів; 
+  claude: 2 рядків
+  pub: кінець 20261101-171013-6c9aeb2d0a9a — ОПУБЛІКОВАНО gemini/М.2-проба-обгортки 2a17055ea857daa890aba17f6eec21b8f9dbda91; комітів 1, файлів до main 1; без .github/ і фай�
+  pub: вихідні 20261101-171013-6c9aeb2d0a9a.txt: GEMINI ОБГОРТКА: ЗАБЛОКОВАНО gemini/М.2-проба-обгортки INTERRUPTED_PUBLISHED
+  pub: вихідні 20261101-171021-46492c06beee.txt: GEMINI ОБГОРТКА: ПУЛИ V=1.1.11 G=GEMINI35FLASH:34:137 G=GEMINI31PRO:0:137 G=CLAUDEGPT:0:137 M=gemini-3.8-flash-high,claude-opus-5-5-high
+  origin refs/heads/gemini/М.2-проба-обгортки 2a17055
+      1 "code":"INTERRUPTED"
+=== 9 спам: копії стану з іншими id на ту саму позначку й купа кривих
+warning: in the working copy of 'аудит/СТАН.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'аудит/наряди/М.2-проба-обгортки.md', LF will be replaced by CRLF the next time Git tou
+ches it
+  wrapper: 1 прогонів; 
+  claude: 3 рядків
+  pub: кінець 20261101-171025-9496bf270948 — ОПУБЛІКОВАНО gemini/М.2-проба-обгортки 5f6faffd2e8cbe92ab6fe89884fea3a6fab9abb3; комітів 1, файлів до main 1; без .github/ і фай�
+  pub: стан 20991231-000001-aaaaaaaaaaa1 — повтор, рядка нема
+  pub: стан 20991231-000002-aaaaaaaaaaa2 — повтор, рядка нема
+  pub: стан 20991231-000003-aaaaaaaaaaa3 — повтор, рядка нема
+  pub: стан 20991231-000101-bbbbbbbbbbb1 не за форматом — не опубліковано
+  pub: стан 20991231-000102-bbbbbbbbbbb2 не за форматом — не опубліковано
+  pub: стан 20991231-000102-bbbbbbbbbbb2 — повтор, рядка нема
+  pub: стан 20991231-000103-bbbbbbbbbbb3 не за форматом — не опубліковано
+  pub: стан 20991231-000103-bbbbbbbbbbb3 — повтор, рядка нема
+  pub: вихідні 20261101-171025-9496bf270948.txt: GEMINI ОБГОРТКА: ГОТОВО gemini/М.2-проба-обгортки 5f6faffd2e8cbe92ab6fe89884fea3a6fab9abb3 КВОТА GEMINI35FLASH 34 МОДЕЛЬ gemini-3.8-fla
+  pub: вихідні 20261101-171031-46492c06beee.txt: GEMINI ОБГОРТКА: ПУЛИ V=1.1.11 G=GEMINI35FLASH:34:137 G=GEMINI31PRO:0:137 G=CLAUDEGPT:0:137 M=gemini-3.8-flash-high,claude-opus-5-5-high
+  pub: вихідні 20991231-000101-bbbbbbbbbbb1.txt: GEMINI ОБГОРТКА: ЗАБЛОКОВАНО gemini/невідомо STATE_INVALID
+  origin refs/heads/gemini/М.2-проба-обгортки 5f6faff
+  ✓ криві стани — один закритий рядок STATE_INVALID на добу
+=== 10 пуш відхилено: 2 тихі повтори, рядок, -Retry після виправлення
+warning: in the working copy of 'аудит/СТАН.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'аудит/наряди/М.2-проба-обгортки.md', LF will be replaced by CRLF the next time Git tou
+ches it
+  claude після 4 проходів: 2
+  wrapper: 1 прогонів; 
+  claude: 2 рядків
+  pub: пуш refs/heads/gemini/М.2-проба-обгортки -> 1: To C:/Users/gemini/gemini-runs/w/20261101-162815-32fb93c118d1/tmp/gemini-obhortka/r10/origin.git
+ ! [remote rejected] d156b4458ba08e11d066d1287fb37b9e39c9d564 -> gemini/М.2-проба-обгортки (pre-receive hook declined)
+error: failed to push some refs to 'C:/Users/gemini/gemini-runs/w/20261101-162815-32fb93c118d1/tmp/gemini-obhortka/r10/origin.git'
+  pub: вихідні 20261101-171042-46492c06beee.txt: GEMINI ОБГОРТКА: ПУЛИ V=1.1.11 G=GEMINI35FLASH:34:137 G=GEMINI31PRO:0:137 G=CLAUDEGPT:0:137 M=gemini-3.8-flash-high,claude-opus-5-5-high
+  pub: пуш refs/heads/gemini/М.2-проба-обгортки -> 1: To C:/Users/gemini/gemini-runs/w/20261101-162815-32fb93c118d1/tmp/gemini-obhortka/r10/origin.git
+ ! [remote rejected] d156b4458ba08e11d066d1287fb37b9e39c9d564 -> gemini/М.2-проба-обгортки (pre-receive hook declined)
+error: failed to push some refs to 'C:/Users/gemini/gemini-runs/w/20261101-162815-32fb93c118d1/tmp/gemini-obhortka/r10/origin.git'
+  pub: пуш refs/heads/gemini/М.2-проба-обгортки -> 1: To C:/Users/gemini/gemini-runs/w/20261101-162815-32fb93c118d1/tmp/gemini-obhortka/r10/origin.git
+ ! [remote rejected] d156b4458ba08e11d066d1287fb37b9e39c9d564 -> gemini/М.2-проба-обгортки (pre-receive hook declined)
+error: failed to push some refs to 'C:/Users/gemini/gemini-runs/w/20261101-162815-32fb93c118d1/tmp/gemini-obhortka/r10/origin.git'
+  pub: кінець 20261101-171036-f7ce92c8e9cd — НЕ ОПУБЛІКОВАНО gemini/М.2-проба-обгортки d156b4458ba08e11d066d1287fb37b9e39c9d564 — пуш не вдавався годину (журнал publis
+  pub: вихідні 20261101-171036-f7ce92c8e9cd.txt: GEMINI ОБГОРТКА: ЗАБЛОКОВАНО gemini/М.2-проба-обгортки PUSH_FAILED
+  pub: стан 20261101-171036-f7ce92c8e9cd забуто рукою власника — повтор
+  pub: кінець 20261101-171036-f7ce92c8e9cd — ОПУБЛІКОВАНО gemini/М.2-проба-обгортки d156b4458ba08e11d066d1287fb37b9e39c9d564; комітів 1, файлів до main 1; без .github/ і фай�
+  origin refs/heads/gemini/М.2-проба-обгортки d156b44
+=== 11 підроблений стан (8940): ранній id на ту саму позначку, models і числа з текстом
+warning: in the working copy of 'аудит/СТАН.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'аудит/наряди/М.2-проба-обгортки.md', LF will be replaced by CRLF the next time Git tou
+ches it
+  wrapper: 1 прогонів; 
+  claude: 4 рядків
+  pub: кінець 20000101-000000-aaaaaaaaaaaa — НЕ ЗАВЕРШЕНО gemini/М.2-проба-обгортки — agy не знає моделі з позначки; ходів 0, хв 0; черга gemini-queue/М.2-про
+  pub: кінець 20000101-000001-aaaaaaaaaaaa — НЕ ЗАВЕРШЕНО gemini/М.2-проба-обгортки — агент без звіту після всіх догонок; ходів 0, хв 0; черга gemini-queu
+  pub: кінець 20261101-171051-ed74012d55cf — ОПУБЛІКОВАНО gemini/М.2-проба-обгортки f1deb42c290e9acca19531a07ecbbf8c4c1c53dc; комітів 1, файлів до main 1; без .github/ і фай�
+  pub: вихідні 20000101-000000-aaaaaaaaaaaa.txt: GEMINI ОБГОРТКА: ЗАБЛОКОВАНО gemini/М.2-проба-обгортки MODEL_INVALID
+  pub: вихідні 20000101-000001-aaaaaaaaaaaa.txt: GEMINI ОБГОРТКА: ЗАБЛОКОВАНО gemini/М.2-проба-обгортки NO_REPORT
+  pub: вихідні 20261101-171051-ed74012d55cf.txt: GEMINI ОБГОРТКА: ГОТОВО gemini/М.2-проба-обгортки f1deb42c290e9acca19531a07ecbbf8c4c1c53dc КВОТА GEMINI35FLASH 34 МОДЕЛЬ gemini-3.8-fla
+  pub: вихідні 20261101-171057-46492c06beee.txt: GEMINI ОБГОРТКА: ПУЛИ V=1.1.11 G=GEMINI35FLASH:34:137 G=GEMINI31PRO:0:137 G=CLAUDEGPT:0:137 M=gemini-3.8-flash-high,claude-opus-5-5-high
+  origin refs/heads/gemini/М.2-проба-обгортки f1deb42
+  ✓ у рядках нема жодного слова зі стану
+  ✓ справжній результат опубліковано
+ВСЕ ✓
+rc 0
