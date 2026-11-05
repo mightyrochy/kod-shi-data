@@ -88,10 +88,12 @@ def _b64(im, сторона=512, якість=85):
 def _майже_біле(im):
     """Заглушка-логотип на білому: майже всі пікселі світлі й безбарвні."""
     import cv2, numpy as np
+    from колір_простір_перетворення import lch
     a = np.asarray(im.resize((64, 64)))[:, :, ::-1]
     lab = cv2.cvtColor(a, cv2.COLOR_BGR2LAB).astype("float32")
     L = lab[:, :, 0] * 100.0 / 255.0
-    Ch = np.hypot(lab[:, :, 1] - 128.0, lab[:, :, 2] - 128.0)
+    Ch = np.array([[lch((0.0, float(x) - 128.0, float(y) - 128.0))[1] for x, y in рядок]
+                   for рядок in lab[:, :, 1:]])
     return float(((L > 92) & (Ch < 6)).mean()) > 0.97
 
 
