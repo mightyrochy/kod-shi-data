@@ -1,0 +1,452 @@
+{
+  "основні": [
+    {
+      "назва": "трасування-base",
+      "команда": [
+        "C:\\Users\\gemini\\AppData\\Local\\Programs\\Python\\Python312\\python.exe",
+        "-c",
+        "import sys, types, subprocess, runpy\nfrom pathlib import Path\nroot = Path.cwd()\nsys.path.insert(0, str(root / \"джерела\"))\nif sys.argv[1] == \"base\":\n    source = subprocess.check_output([\"git\", \"show\", \"ee22ba1723a2762b2053709c7570ca11b13c6186:джерела/мовний_шар.py\"]).decode(\"utf-8\")\n    module = types.ModuleType(\"мовний_шар\")\n    module.__file__ = str(root / \"джерела/мовний_шар.py\")\n    sys.modules[module.__name__] = module\n    exec(compile(source, module.__file__, \"exec\"), module.__dict__)\ntarget = sys.argv[2]\nsys.argv = [target]\nif \"проби/\" in target and target.startswith(\"джерела/\"):\n    import os\n    os.chdir(root / \"джерела\")\nrunpy.run_path(str(root / target), run_name=\"__main__\")\n",
+        "base",
+        "аудит/проби/6.1-Б-трасування.py"
+      ],
+      "тека": "C:\\Users\\gemini\\gemini-runs\\review-1920-b69c780e",
+      "код": 0
+    },
+    {
+      "назва": "мова_опис_події-base",
+      "команда": [
+        "C:\\Users\\gemini\\AppData\\Local\\Programs\\Python\\Python312\\python.exe",
+        "-c",
+        "import sys, types, subprocess, runpy\nfrom pathlib import Path\nroot = Path.cwd()\nsys.path.insert(0, str(root / \"джерела\"))\nif sys.argv[1] == \"base\":\n    source = subprocess.check_output([\"git\", \"show\", \"ee22ba1723a2762b2053709c7570ca11b13c6186:джерела/мовний_шар.py\"]).decode(\"utf-8\")\n    module = types.ModuleType(\"мовний_шар\")\n    module.__file__ = str(root / \"джерела/мовний_шар.py\")\n    sys.modules[module.__name__] = module\n    exec(compile(source, module.__file__, \"exec\"), module.__dict__)\ntarget = sys.argv[2]\nsys.argv = [target]\nif \"проби/\" in target and target.startswith(\"джерела/\"):\n    import os\n    os.chdir(root / \"джерела\")\nrunpy.run_path(str(root / target), run_name=\"__main__\")\n",
+        "base",
+        "джерела/проби/мова_опис_події.py"
+      ],
+      "тека": "C:\\Users\\gemini\\gemini-runs\\review-1920-b69c780e",
+      "код": 1
+    },
+    {
+      "назва": "паспорт_один_опис_8740-base",
+      "команда": [
+        "C:\\Users\\gemini\\AppData\\Local\\Programs\\Python\\Python312\\python.exe",
+        "-c",
+        "import sys, types, subprocess, runpy\nfrom pathlib import Path\nroot = Path.cwd()\nsys.path.insert(0, str(root / \"джерела\"))\nif sys.argv[1] == \"base\":\n    source = subprocess.check_output([\"git\", \"show\", \"ee22ba1723a2762b2053709c7570ca11b13c6186:джерела/мовний_шар.py\"]).decode(\"utf-8\")\n    module = types.ModuleType(\"мовний_шар\")\n    module.__file__ = str(root / \"джерела/мовний_шар.py\")\n    sys.modules[module.__name__] = module\n    exec(compile(source, module.__file__, \"exec\"), module.__dict__)\ntarget = sys.argv[2]\nsys.argv = [target]\nif \"проби/\" in target and target.startswith(\"джерела/\"):\n    import os\n    os.chdir(root / \"джерела\")\nrunpy.run_path(str(root / target), run_name=\"__main__\")\n",
+        "base",
+        "джерела/проби/паспорт_один_опис_8740.py"
+      ],
+      "тека": "C:\\Users\\gemini\\gemini-runs\\review-1920-b69c780e",
+      "код": 1
+    },
+    {
+      "назва": "мова_після_розбору-base",
+      "команда": [
+        "C:\\Users\\gemini\\AppData\\Local\\Programs\\Python\\Python312\\python.exe",
+        "-c",
+        "import sys, types, subprocess, runpy\nfrom pathlib import Path\nroot = Path.cwd()\nsys.path.insert(0, str(root / \"джерела\"))\nif sys.argv[1] == \"base\":\n    source = subprocess.check_output([\"git\", \"show\", \"ee22ba1723a2762b2053709c7570ca11b13c6186:джерела/мовний_шар.py\"]).decode(\"utf-8\")\n    module = types.ModuleType(\"мовний_шар\")\n    module.__file__ = str(root / \"джерела/мовний_шар.py\")\n    sys.modules[module.__name__] = module\n    exec(compile(source, module.__file__, \"exec\"), module.__dict__)\ntarget = sys.argv[2]\nsys.argv = [target]\nif \"проби/\" in target and target.startswith(\"джерела/\"):\n    import os\n    os.chdir(root / \"джерела\")\nrunpy.run_path(str(root / target), run_name=\"__main__\")\n",
+        "base",
+        "джерела/проби/мова_після_розбору.py"
+      ],
+      "тека": "C:\\Users\\gemini\\gemini-runs\\review-1920-b69c780e",
+      "код": 1
+    },
+    {
+      "назва": "картка_події-base",
+      "команда": [
+        "C:\\Users\\gemini\\AppData\\Local\\Programs\\Python\\Python312\\python.exe",
+        "-c",
+        "import sys, types, subprocess, runpy\nfrom pathlib import Path\nroot = Path.cwd()\nsys.path.insert(0, str(root / \"джерела\"))\nif sys.argv[1] == \"base\":\n    source = subprocess.check_output([\"git\", \"show\", \"ee22ba1723a2762b2053709c7570ca11b13c6186:джерела/мовний_шар.py\"]).decode(\"utf-8\")\n    module = types.ModuleType(\"мовний_шар\")\n    module.__file__ = str(root / \"джерела/мовний_шар.py\")\n    sys.modules[module.__name__] = module\n    exec(compile(source, module.__file__, \"exec\"), module.__dict__)\ntarget = sys.argv[2]\nsys.argv = [target]\nif \"проби/\" in target and target.startswith(\"джерела/\"):\n    import os\n    os.chdir(root / \"джерела\")\nrunpy.run_path(str(root / target), run_name=\"__main__\")\n",
+        "base",
+        "джерела/проби/картка_події.py"
+      ],
+      "тека": "C:\\Users\\gemini\\gemini-runs\\review-1920-b69c780e",
+      "код": 0
+    },
+    {
+      "назва": "трасування-head",
+      "команда": [
+        "C:\\Users\\gemini\\AppData\\Local\\Programs\\Python\\Python312\\python.exe",
+        "-c",
+        "import sys, types, subprocess, runpy\nfrom pathlib import Path\nroot = Path.cwd()\nsys.path.insert(0, str(root / \"джерела\"))\nif sys.argv[1] == \"base\":\n    source = subprocess.check_output([\"git\", \"show\", \"ee22ba1723a2762b2053709c7570ca11b13c6186:джерела/мовний_шар.py\"]).decode(\"utf-8\")\n    module = types.ModuleType(\"мовний_шар\")\n    module.__file__ = str(root / \"джерела/мовний_шар.py\")\n    sys.modules[module.__name__] = module\n    exec(compile(source, module.__file__, \"exec\"), module.__dict__)\ntarget = sys.argv[2]\nsys.argv = [target]\nif \"проби/\" in target and target.startswith(\"джерела/\"):\n    import os\n    os.chdir(root / \"джерела\")\nrunpy.run_path(str(root / target), run_name=\"__main__\")\n",
+        "head",
+        "аудит/проби/6.1-Б-трасування.py"
+      ],
+      "тека": "C:\\Users\\gemini\\gemini-runs\\review-1920-b69c780e",
+      "код": 0
+    },
+    {
+      "назва": "мова_опис_події-head",
+      "команда": [
+        "C:\\Users\\gemini\\AppData\\Local\\Programs\\Python\\Python312\\python.exe",
+        "-c",
+        "import sys, types, subprocess, runpy\nfrom pathlib import Path\nroot = Path.cwd()\nsys.path.insert(0, str(root / \"джерела\"))\nif sys.argv[1] == \"base\":\n    source = subprocess.check_output([\"git\", \"show\", \"ee22ba1723a2762b2053709c7570ca11b13c6186:джерела/мовний_шар.py\"]).decode(\"utf-8\")\n    module = types.ModuleType(\"мовний_шар\")\n    module.__file__ = str(root / \"джерела/мовний_шар.py\")\n    sys.modules[module.__name__] = module\n    exec(compile(source, module.__file__, \"exec\"), module.__dict__)\ntarget = sys.argv[2]\nsys.argv = [target]\nif \"проби/\" in target and target.startswith(\"джерела/\"):\n    import os\n    os.chdir(root / \"джерела\")\nrunpy.run_path(str(root / target), run_name=\"__main__\")\n",
+        "head",
+        "джерела/проби/мова_опис_події.py"
+      ],
+      "тека": "C:\\Users\\gemini\\gemini-runs\\review-1920-b69c780e",
+      "код": 0
+    },
+    {
+      "назва": "паспорт_один_опис_8740-head",
+      "команда": [
+        "C:\\Users\\gemini\\AppData\\Local\\Programs\\Python\\Python312\\python.exe",
+        "-c",
+        "import sys, types, subprocess, runpy\nfrom pathlib import Path\nroot = Path.cwd()\nsys.path.insert(0, str(root / \"джерела\"))\nif sys.argv[1] == \"base\":\n    source = subprocess.check_output([\"git\", \"show\", \"ee22ba1723a2762b2053709c7570ca11b13c6186:джерела/мовний_шар.py\"]).decode(\"utf-8\")\n    module = types.ModuleType(\"мовний_шар\")\n    module.__file__ = str(root / \"джерела/мовний_шар.py\")\n    sys.modules[module.__name__] = module\n    exec(compile(source, module.__file__, \"exec\"), module.__dict__)\ntarget = sys.argv[2]\nsys.argv = [target]\nif \"проби/\" in target and target.startswith(\"джерела/\"):\n    import os\n    os.chdir(root / \"джерела\")\nrunpy.run_path(str(root / target), run_name=\"__main__\")\n",
+        "head",
+        "джерела/проби/паспорт_один_опис_8740.py"
+      ],
+      "тека": "C:\\Users\\gemini\\gemini-runs\\review-1920-b69c780e",
+      "код": 1
+    },
+    {
+      "назва": "мова_після_розбору-head",
+      "команда": [
+        "C:\\Users\\gemini\\AppData\\Local\\Programs\\Python\\Python312\\python.exe",
+        "-c",
+        "import sys, types, subprocess, runpy\nfrom pathlib import Path\nroot = Path.cwd()\nsys.path.insert(0, str(root / \"джерела\"))\nif sys.argv[1] == \"base\":\n    source = subprocess.check_output([\"git\", \"show\", \"ee22ba1723a2762b2053709c7570ca11b13c6186:джерела/мовний_шар.py\"]).decode(\"utf-8\")\n    module = types.ModuleType(\"мовний_шар\")\n    module.__file__ = str(root / \"джерела/мовний_шар.py\")\n    sys.modules[module.__name__] = module\n    exec(compile(source, module.__file__, \"exec\"), module.__dict__)\ntarget = sys.argv[2]\nsys.argv = [target]\nif \"проби/\" in target and target.startswith(\"джерела/\"):\n    import os\n    os.chdir(root / \"джерела\")\nrunpy.run_path(str(root / target), run_name=\"__main__\")\n",
+        "head",
+        "джерела/проби/мова_після_розбору.py"
+      ],
+      "тека": "C:\\Users\\gemini\\gemini-runs\\review-1920-b69c780e",
+      "код": 1
+    },
+    {
+      "назва": "картка_події-head",
+      "команда": [
+        "C:\\Users\\gemini\\AppData\\Local\\Programs\\Python\\Python312\\python.exe",
+        "-c",
+        "import sys, types, subprocess, runpy\nfrom pathlib import Path\nroot = Path.cwd()\nsys.path.insert(0, str(root / \"джерела\"))\nif sys.argv[1] == \"base\":\n    source = subprocess.check_output([\"git\", \"show\", \"ee22ba1723a2762b2053709c7570ca11b13c6186:джерела/мовний_шар.py\"]).decode(\"utf-8\")\n    module = types.ModuleType(\"мовний_шар\")\n    module.__file__ = str(root / \"джерела/мовний_шар.py\")\n    sys.modules[module.__name__] = module\n    exec(compile(source, module.__file__, \"exec\"), module.__dict__)\ntarget = sys.argv[2]\nsys.argv = [target]\nif \"проби/\" in target and target.startswith(\"джерела/\"):\n    import os\n    os.chdir(root / \"джерела\")\nrunpy.run_path(str(root / target), run_name=\"__main__\")\n",
+        "head",
+        "джерела/проби/картка_події.py"
+      ],
+      "тека": "C:\\Users\\gemini\\gemini-runs\\review-1920-b69c780e",
+      "код": 0
+    },
+    {
+      "назва": "батарея-стенд_знімок",
+      "команда": [
+        "C:\\Users\\gemini\\AppData\\Local\\Programs\\Python\\Python312\\python.exe",
+        "стенд_знімок.py",
+        "--дим"
+      ],
+      "тека": "C:\\Users\\gemini\\gemini-runs\\review-1920-b69c780e\\джерела",
+      "код": 0
+    },
+    {
+      "назва": "батарея-тест_живого_шляху",
+      "команда": [
+        "C:\\Users\\gemini\\AppData\\Local\\Programs\\Python\\Python312\\python.exe",
+        "тест_живого_шляху.py"
+      ],
+      "тека": "C:\\Users\\gemini\\gemini-runs\\review-1920-b69c780e\\джерела",
+      "код": 0
+    },
+    {
+      "назва": "батарея-тест_протоколу",
+      "команда": [
+        "C:\\Users\\gemini\\AppData\\Local\\Programs\\Python\\Python312\\python.exe",
+        "тест_протоколу.py"
+      ],
+      "тека": "C:\\Users\\gemini\\gemini-runs\\review-1920-b69c780e\\джерела",
+      "код": 0
+    },
+    {
+      "назва": "батарея-розділи_гейтів",
+      "команда": [
+        "C:\\Users\\gemini\\AppData\\Local\\Programs\\Python\\Python312\\python.exe",
+        "прилади/розділи_гейтів.py"
+      ],
+      "тека": "C:\\Users\\gemini\\gemini-runs\\review-1920-b69c780e\\джерела",
+      "код": 0
+    },
+    {
+      "назва": "батарея-audit_contracts",
+      "команда": [
+        "C:\\Users\\gemini\\AppData\\Local\\Programs\\Python\\Python312\\python.exe",
+        "audit_contracts.py"
+      ],
+      "тека": "C:\\Users\\gemini\\gemini-runs\\review-1920-b69c780e\\джерела",
+      "код": 0
+    },
+    {
+      "назва": "батарея-тест_показу",
+      "команда": [
+        "node",
+        "тест_показу.js"
+      ],
+      "тека": "C:\\Users\\gemini\\gemini-runs\\review-1920-b69c780e\\джерела",
+      "код": 0
+    }
+  ],
+  "мовна_сімя": [
+    {
+      "проба": "мова_046.py",
+      "команда": [
+        "C:\\Users\\gemini\\AppData\\Local\\Programs\\Python\\Python312\\python.exe",
+        "C:\\Users\\gemini\\gemini-runs\\review-1920-b69c780e\\джерела\\проби\\мова_046.py"
+      ],
+      "код": 0
+    },
+    {
+      "проба": "мова_12б_2.py",
+      "команда": [
+        "C:\\Users\\gemini\\AppData\\Local\\Programs\\Python\\Python312\\python.exe",
+        "C:\\Users\\gemini\\gemini-runs\\review-1920-b69c780e\\джерела\\проби\\мова_12б_2.py"
+      ],
+      "код": 0
+    },
+    {
+      "проба": "мова_2_пара_пора.py",
+      "команда": [
+        "C:\\Users\\gemini\\AppData\\Local\\Programs\\Python\\Python312\\python.exe",
+        "C:\\Users\\gemini\\gemini-runs\\review-1920-b69c780e\\джерела\\проби\\мова_2_пара_пора.py"
+      ],
+      "код": 0
+    },
+    {
+      "проба": "мова_брама_каталог.py",
+      "команда": [
+        "C:\\Users\\gemini\\AppData\\Local\\Programs\\Python\\Python312\\python.exe",
+        "C:\\Users\\gemini\\gemini-runs\\review-1920-b69c780e\\джерела\\проби\\мова_брама_каталог.py"
+      ],
+      "код": 0
+    },
+    {
+      "проба": "мова_вето_будь_який_слот.py",
+      "команда": [
+        "C:\\Users\\gemini\\AppData\\Local\\Programs\\Python\\Python312\\python.exe",
+        "C:\\Users\\gemini\\gemini-runs\\review-1920-b69c780e\\джерела\\проби\\мова_вето_будь_який_слот.py"
+      ],
+      "код": 0
+    },
+    {
+      "проба": "мова_вето_цитата_6751.py",
+      "команда": [
+        "C:\\Users\\gemini\\AppData\\Local\\Programs\\Python\\Python312\\python.exe",
+        "C:\\Users\\gemini\\gemini-runs\\review-1920-b69c780e\\джерела\\проби\\мова_вето_цитата_6751.py",
+        "C:\\Users\\gemini\\gemini-runs\\review-1920-b69c780e\\аудит\\проби\\б1\\ДО-2610"
+      ],
+      "код": 0
+    },
+    {
+      "проба": "мова_ви_6570.py",
+      "команда": [
+        "C:\\Users\\gemini\\AppData\\Local\\Programs\\Python\\Python312\\python.exe",
+        "C:\\Users\\gemini\\gemini-runs\\review-1920-b69c780e\\джерела\\проби\\мова_ви_6570.py"
+      ],
+      "код": 0
+    },
+    {
+      "проба": "мова_вкладено_5301.py",
+      "команда": [
+        "C:\\Users\\gemini\\AppData\\Local\\Programs\\Python\\Python312\\python.exe",
+        "C:\\Users\\gemini\\gemini-runs\\review-1920-b69c780e\\джерела\\проби\\мова_вкладено_5301.py",
+        "C:\\Users\\gemini\\gemini-runs\\review-1920-evidence\\записи_13"
+      ],
+      "код": 0
+    },
+    {
+      "проба": "мова_входу_вимір.py",
+      "команда": [
+        "C:\\Users\\gemini\\AppData\\Local\\Programs\\Python\\Python312\\python.exe",
+        "C:\\Users\\gemini\\gemini-runs\\review-1920-b69c780e\\джерела\\проби\\мова_входу_вимір.py"
+      ],
+      "код": 0
+    },
+    {
+      "проба": "мова_градуси_2990.py",
+      "команда": [
+        "C:\\Users\\gemini\\AppData\\Local\\Programs\\Python\\Python312\\python.exe",
+        "C:\\Users\\gemini\\gemini-runs\\review-1920-b69c780e\\джерела\\проби\\мова_градуси_2990.py"
+      ],
+      "код": 0
+    },
+    {
+      "проба": "мова_ж12_2.py",
+      "команда": [
+        "C:\\Users\\gemini\\AppData\\Local\\Programs\\Python\\Python312\\python.exe",
+        "C:\\Users\\gemini\\gemini-runs\\review-1920-b69c780e\\джерела\\проби\\мова_ж12_2.py"
+      ],
+      "код": 0
+    },
+    {
+      "проба": "мова_ж12_промпт.py",
+      "команда": [
+        "C:\\Users\\gemini\\AppData\\Local\\Programs\\Python\\Python312\\python.exe",
+        "C:\\Users\\gemini\\gemini-runs\\review-1920-b69c780e\\джерела\\проби\\мова_ж12_промпт.py"
+      ],
+      "код": 0
+    },
+    {
+      "проба": "мова_к7_одна_цитата.py",
+      "команда": [
+        "C:\\Users\\gemini\\AppData\\Local\\Programs\\Python\\Python312\\python.exe",
+        "C:\\Users\\gemini\\gemini-runs\\review-1920-b69c780e\\джерела\\проби\\мова_к7_одна_цитата.py"
+      ],
+      "код": 0
+    },
+    {
+      "проба": "мова_картки_рук34.py",
+      "команда": [
+        "C:\\Users\\gemini\\AppData\\Local\\Programs\\Python\\Python312\\python.exe",
+        "C:\\Users\\gemini\\gemini-runs\\review-1920-b69c780e\\джерела\\проби\\мова_картки_рук34.py"
+      ],
+      "код": 0
+    },
+    {
+      "проба": "мова_коди_8.py",
+      "команда": [
+        "C:\\Users\\gemini\\AppData\\Local\\Programs\\Python\\Python312\\python.exe",
+        "C:\\Users\\gemini\\gemini-runs\\review-1920-b69c780e\\джерела\\проби\\мова_коди_8.py"
+      ],
+      "код": 0
+    },
+    {
+      "проба": "мова_мірило.py",
+      "команда": [
+        "C:\\Users\\gemini\\AppData\\Local\\Programs\\Python\\Python312\\python.exe",
+        "C:\\Users\\gemini\\gemini-runs\\review-1920-b69c780e\\джерела\\проби\\мова_мірило.py",
+        "C:\\Users\\gemini\\gemini-runs\\review-1920-b69c780e\\аудит\\перевірки\\ofis_1\\ДО"
+      ],
+      "код": 0
+    },
+    {
+      "проба": "мова_невідомо.py",
+      "команда": [
+        "C:\\Users\\gemini\\AppData\\Local\\Programs\\Python\\Python312\\python.exe",
+        "C:\\Users\\gemini\\gemini-runs\\review-1920-b69c780e\\джерела\\проби\\мова_невідомо.py"
+      ],
+      "код": 0
+    },
+    {
+      "проба": "мова_опади_репліка.py",
+      "команда": [
+        "C:\\Users\\gemini\\AppData\\Local\\Programs\\Python\\Python312\\python.exe",
+        "C:\\Users\\gemini\\gemini-runs\\review-1920-b69c780e\\джерела\\проби\\мова_опади_репліка.py"
+      ],
+      "код": 0
+    },
+    {
+      "проба": "мова_перший_хід.py",
+      "команда": [
+        "C:\\Users\\gemini\\AppData\\Local\\Programs\\Python\\Python312\\python.exe",
+        "C:\\Users\\gemini\\gemini-runs\\review-1920-b69c780e\\джерела\\проби\\мова_перший_хід.py"
+      ],
+      "код": 0
+    },
+    {
+      "проба": "мова_порада_репліка_6615.py",
+      "команда": [
+        "C:\\Users\\gemini\\AppData\\Local\\Programs\\Python\\Python312\\python.exe",
+        "C:\\Users\\gemini\\gemini-runs\\review-1920-b69c780e\\джерела\\проби\\мова_порада_репліка_6615.py"
+      ],
+      "код": 0
+    },
+    {
+      "проба": "мова_промптів_виклики.py",
+      "команда": [
+        "C:\\Users\\gemini\\AppData\\Local\\Programs\\Python\\Python312\\python.exe",
+        "C:\\Users\\gemini\\gemini-runs\\review-1920-b69c780e\\джерела\\проби\\мова_промптів_виклики.py"
+      ],
+      "код": 0
+    },
+    {
+      "проба": "мова_рід_5302.py",
+      "команда": [
+        "C:\\Users\\gemini\\AppData\\Local\\Programs\\Python\\Python312\\python.exe",
+        "C:\\Users\\gemini\\gemini-runs\\review-1920-b69c780e\\джерела\\проби\\мова_рід_5302.py",
+        "C:\\Users\\gemini\\gemini-runs\\review-1920-b69c780e\\аудит\\проби\\б1\\ДО-2610"
+      ],
+      "код": 0
+    },
+    {
+      "проба": "мова_річ_ціла.py",
+      "команда": [
+        "C:\\Users\\gemini\\AppData\\Local\\Programs\\Python\\Python312\\python.exe",
+        "C:\\Users\\gemini\\gemini-runs\\review-1920-b69c780e\\джерела\\проби\\мова_річ_ціла.py"
+      ],
+      "код": 0
+    },
+    {
+      "проба": "мова_свою_річ_3490.py",
+      "команда": [
+        "C:\\Users\\gemini\\AppData\\Local\\Programs\\Python\\Python312\\python.exe",
+        "C:\\Users\\gemini\\gemini-runs\\review-1920-b69c780e\\джерела\\проби\\мова_свою_річ_3490.py",
+        "C:\\Users\\gemini\\gemini-runs\\review-1920-evidence\\записи_13\\seed3_01_мовний_шар_хід_розмови.txt"
+      ],
+      "код": 0
+    },
+    {
+      "проба": "мова_сезон_свята.py",
+      "команда": [
+        "C:\\Users\\gemini\\AppData\\Local\\Programs\\Python\\Python312\\python.exe",
+        "C:\\Users\\gemini\\gemini-runs\\review-1920-b69c780e\\джерела\\проби\\мова_сезон_свята.py"
+      ],
+      "код": 0
+    },
+    {
+      "проба": "мова_суд_ж12.py",
+      "команда": [
+        "C:\\Users\\gemini\\AppData\\Local\\Programs\\Python\\Python312\\python.exe",
+        "C:\\Users\\gemini\\gemini-runs\\review-1920-b69c780e\\джерела\\проби\\мова_суд_ж12.py"
+      ],
+      "код": 0
+    },
+    {
+      "проба": "мова_ти_5983.py",
+      "команда": [
+        "C:\\Users\\gemini\\AppData\\Local\\Programs\\Python\\Python312\\python.exe",
+        "C:\\Users\\gemini\\gemini-runs\\review-1920-b69c780e\\джерела\\проби\\мова_ти_5983.py",
+        "C:\\Users\\gemini\\gemini-runs\\review-1920-evidence\\записи_13"
+      ],
+      "код": 0
+    },
+    {
+      "проба": "мова_форма.py",
+      "команда": [
+        "C:\\Users\\gemini\\AppData\\Local\\Programs\\Python\\Python312\\python.exe",
+        "C:\\Users\\gemini\\gemini-runs\\review-1920-b69c780e\\джерела\\проби\\мова_форма.py"
+      ],
+      "код": 0
+    },
+    {
+      "проба": "мова_форма_мапою_6752.py",
+      "команда": [
+        "C:\\Users\\gemini\\AppData\\Local\\Programs\\Python\\Python312\\python.exe",
+        "C:\\Users\\gemini\\gemini-runs\\review-1920-b69c780e\\джерела\\проби\\мова_форма_мапою_6752.py",
+        "C:\\Users\\gemini\\gemini-runs\\review-1920-evidence\\записи_13"
+      ],
+      "код": 0
+    },
+    {
+      "проба": "мова_хід_6753.py",
+      "команда": [
+        "C:\\Users\\gemini\\AppData\\Local\\Programs\\Python\\Python312\\python.exe",
+        "C:\\Users\\gemini\\gemini-runs\\review-1920-b69c780e\\джерела\\проби\\мова_хід_6753.py"
+      ],
+      "код": 0
+    },
+    {
+      "проба": "мова_хід_поля.py",
+      "команда": [
+        "C:\\Users\\gemini\\AppData\\Local\\Programs\\Python\\Python312\\python.exe",
+        "C:\\Users\\gemini\\gemini-runs\\review-1920-b69c780e\\джерела\\проби\\мова_хід_поля.py"
+      ],
+      "код": 0
+    },
+    {
+      "проба": "мова_хід_тонше.py",
+      "команда": [
+        "C:\\Users\\gemini\\AppData\\Local\\Programs\\Python\\Python312\\python.exe",
+        "C:\\Users\\gemini\\gemini-runs\\review-1920-b69c780e\\джерела\\проби\\мова_хід_тонше.py"
+      ],
+      "код": 0
+    },
+    {
+      "проба": "мова_шару_вимір.py",
+      "команда": [
+        "C:\\Users\\gemini\\AppData\\Local\\Programs\\Python\\Python312\\python.exe",
+        "C:\\Users\\gemini\\gemini-runs\\review-1920-b69c780e\\джерела\\проби\\мова_шару_вимір.py"
+      ],
+      "код": 0
+    }
+  ]
+}
