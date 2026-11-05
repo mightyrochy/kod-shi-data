@@ -11,6 +11,8 @@ function Check([string]$Name, [bool]$Ok) {
 }
 try {
     . (Join-Path $SourceDir 'gemini_publish.ps1') -WorkDir "$tmp/pub" -OutboxDir "$tmp/out"
+    [void][IO.Directory]::CreateDirectory("$OutDir/marker-state")
+    Write-FileAtomic "$OutDir/marker-state/ready" '1'
     $OutDir = "$tmp/gem-out"
     $GeminiRunsDir = "$tmp/gemini-runs"
     foreach ($dir in @($WorkDir, "$WorkDir/seen", "$WorkDir/state", $OutboxDir, $OutDir, "$tmp/claude-run/slots", "$tmp/claude-run/state")) {
