@@ -719,7 +719,17 @@ async function дописатиРозгорнутіП(к, пит){
   if (!к || !чекаютьРозгортанняП(к) || ПИШУТЬСЯ_РОЗГОРНУТІ_П.has(к)) return;
   ПИШУТЬСЯ_РОЗГОРНУТІ_П.add(к);
   try { await питаннямиП(к, 'hand_' + к.рука, true); }
-  catch (е){ збійЖінціП(пит.querySelector('.задум'), 'text_failed', е); return; }
+  catch (е){
+    /* Уже показані питання лишаються: збій дописується окремим рядком, а не замість переліку. */
+    const сп_ = пит.querySelector('.задум');
+    if (сп_){
+      const рядок = ел('div', 'задум-збій');
+      збійЖінціП(рядок, 'text_failed', е);
+      сп_.querySelectorAll('.задум-збій').forEach(е_ => е_.remove());
+      сп_.appendChild(рядок);
+    }
+    return;
+  }
   finally { ПИШУТЬСЯ_РОЗГОРНУТІ_П.delete(к); }
   const сп = пит.querySelector('.задум'), підпис = пит.querySelector('summary');
   if (!сп || !підпис) return;
