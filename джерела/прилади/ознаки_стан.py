@@ -7,6 +7,9 @@ from ознаки_основа import (
     ПОРЯДОК, СЛУЖБОВІ, ТОКЕН, ФАЙЛОВІ
 )
 
+КЛАС_ЇЇ_ПОЛЯ = frozenset(("undertone", "depth_band", "підтон"))
+
+
 class Стан:
     """Один аналіз функції в контексті: env імен → мітки, без порядку інструкцій (до нерухомої точки)."""
 
@@ -732,7 +735,12 @@ class Стан:
         elif isinstance(і, ast.While):
             self.e(і.test); self.тіло(і.body); self.тіло(і.orelse)
         elif isinstance(і, ast.If):
-            self.e(і.test)
+            закрита_умова = self.ворота(і.test) == "так"   # `надійно and x == "клас"`: сама умова — лише з довірою
+            self.мертва += закрита_умова
+            try:
+                self.e(і.test)
+            finally:
+                self.мертва -= закрита_умова
             self.невідоме_в_гілці(і)
             в_тілі, в_іншому = self.звуження(і.test)
             г = self.ворота(і.test)
@@ -1162,12 +1170,43 @@ class Стан:
                 if id(в) in self.а.формульні:
                     continue
                 self.місце(self.м, в, 1, "поріг на пораховане з hex моделі: %s" % _текст(в)[:70])
+            elif isinstance(оп, (ast.Eq, ast.NotEq, ast.In, ast.NotIn)) and self.клас_її_поля(в, i, л):
+                self.місце(self.м, в, 1, "клас її поля порівняно з рядком у рішенні: %s" % _текст(в)[:70])
             elif isinstance(оп, (ast.Eq, ast.NotEq)):
                 інший = операнди[i + 1] if S in л else операнди[i]
                 if isinstance(інший, ast.Constant) and isinstance(інший.value, (int, float)) \
                         and not isinstance(інший.value, bool):
                     self.місце(self.м, в, 1, "рівність числу на порахованому з hex моделі: %s" % _текст(в)[:70])
         return E
+
+    def клас_її_поля(self, в, i, л):
+        """Порівняння `поле == "клас"` / `поле in ("клас", …)`: з одного боку — читання поля її ознаки (`x.get("k")`,
+        `x["k"]`, ключ не службовий), з другого — сталі рядки. Код протоколу й слово незнання — не клас."""
+        ліве, праве = (в.left if i == 0 else в.comparators[i - 1]), в.comparators[i]
+        сторона, інше = (ліве, праве) if S in л else (праве, ліве)
+        if isinstance(інше, ast.Name) and інше.id not in self.локальні:   # стала модуля `_СМУГА = "very light"`
+            з = self.м.присвоєння.get(інше.id)
+            if з is not None and _рядок(з):
+                інше = з
+        if isinstance(інше, (ast.Tuple, ast.List, ast.Set)):
+            рядки = [х for х in інше.elts if _рядок(х)]
+            if not рядки or len(рядки) != len(інше.elts):
+                return False
+        elif _рядок(інше):
+            рядки = [інше]
+        else:
+            return False
+        if any(НЕВІДОМЕ.search(х.value) or СЛУЖБОВІ.match(х.value) or х.value in ("", "none", "None") for х in рядки):
+            return False
+        ключ = None
+        if isinstance(сторона, ast.Call) and isinstance(сторона.func, ast.Attribute) and сторона.func.attr == "get" \
+                and сторона.args and _рядок(сторона.args[0]):
+            ключ = сторона.args[0].value
+        elif isinstance(сторона, ast.Subscript) and _рядок(сторона.slice):
+            ключ = сторона.slice.value
+        # поля класу її колориту, які пише код ознак (`колір_простір_шкіра`, `face_features`); решта ключів — записи
+        # знахідок, пунктів і речей, куди мітка S доходить широко і де `== "рядок"` — код правила, не її клас
+        return ключ in КЛАС_ЇЇ_ПОЛЯ
 
     def довіра(self, вузол, мітки, прямі):
         """п.1: запис поєднує оцінку моделі (S без R) і довіру знімку (R) — оцінка дістає довіру виміру камери.
