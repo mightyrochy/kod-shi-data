@@ -9,6 +9,7 @@
 import math, statistics
 from collections import defaultdict
 from colorspace import lch, de00, c_max
+from колір_тон import in_arc as _in_arc
 from колір_образу import нейтраль
 import колір_відношення as _КВ
 import колір_річ as _КР
@@ -226,8 +227,7 @@ def відстань_до_вікна(lab, q):
     dh = 0.0
     if q.get("h_from") is not None:
         a, b = q["h_from"], q["h_to"]
-        усередині = (a <= h <= b) if a <= b else (h >= a or h <= b)
-        if not усередині:
+        if not _in_arc(h, (a, b)):
             dh = min(min(abs(h-a), 360-abs(h-a)), min(abs(h-b), 360-abs(h-b)))
     return dict(разом=round(dL + dC + dh*0.5, 1), dL=round(dL,1), dC=round(dC,1), dh=round(dh,1))
 
