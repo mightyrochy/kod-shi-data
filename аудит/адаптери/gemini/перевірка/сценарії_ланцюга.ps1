@@ -21,6 +21,8 @@ try {
     & git -C $seed add -A; & git -C $seed commit -q -m 'початкова'; & git -C $seed push -q origin main
     $bare = Join-Path $tmpRoot 'repo.git'; & git clone -q --bare $remote $bare
     . (Join-Path $SourceDir 'gemini_publish.ps1') -WorkDir "$tmpRoot/pub" -OutDir "$tmpRoot/gem-out" -OutboxDir "$tmpRoot/out" -UpdateRoot "$tmpRoot/update"
+    [void][IO.Directory]::CreateDirectory("$OutDir/marker-state")
+    Write-FileAtomic "$OutDir/marker-state/ready" '1'
     $GeminiRunsDir = "$tmpRoot/gemini-runs"
     foreach ($d in @($WorkDir, (Join-Path $WorkDir 'seen'), $OutboxDir)) { [void][IO.Directory]::CreateDirectory($d) }
     $script:Repo = $bare; $script:NoHooks = Join-Path $tmpRoot 'no-hooks'
