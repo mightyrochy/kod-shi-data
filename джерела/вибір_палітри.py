@@ -143,8 +143,10 @@ def _до_очей(о, F):
                            "axes: lightness (light/mid_lightness/deep), clarity (soft/mid_chroma/clear); "
                            "both_lightness_ends: true when contrast is high and both darkest and lightest ends belong to her",
                  треба=True),
-        _ЗП.Поле("occasion", "today's occasion as codes, with her wishes, refusals, mood and words as "
-                             "the interpreter passed them; a field she did not name is absent",
+        # Ключ «case», як у рук 3–4 і в ремонті й виборі (`міст_відповіді._випадок_кодами`): той самий випадок
+        # `дріт_моделі.випадок`, а «occasion» на дроті — лише код нагоди всередині нього (`оцінка_образу`).
+        _ЗП.Поле("case", "today's occasion as codes, with her wishes, refusals, mood and words as "
+                         "the interpreter passed them; a field she did not name is absent",
                  без="The occasion is not known yet."),
         # Погода й пора дня — у `day`, як у рук 1–2; доти запит палітри їх не мав зовсім
         _ЗП.Поле("day", "her day as facts: the season, the part of the day, the weather and precipitation, the "
@@ -452,7 +454,7 @@ def що_лишила(пер):
 def _назване(о):
     """Нагода чи день на дріт → лише назване: без полів зі значенням `unknown` і без списку `unknown` дня.
 
-    Опис полів «occasion» і «day» каже «a field she did not name is absent», а дріт ніс
+    Опис полів «case» і «day» каже «a field she did not name is absent», а дріт ніс
     `movement`, `precipitation`, `goal`, `jewelry`, `setting` зі значенням `unknown` і `day.unknown` —
     114 симв. на виклик, які суперечили опису. Суддя нагоди не читає, тож вибір від цього не міняється."""
     if not isinstance(о, dict):
@@ -481,7 +483,7 @@ def дані_промпта(пер):
             if б.get("база_за_замовчуванням") or б.get("база_з_речі"):
                 fixed["sources"]["base"] = походження(ТИПОВЕ if б.get("база_за_замовчуванням") else ТЛУМАЧЕННЯ)
     день = _назване(пер.get("день"))
-    return dict(person=пер["особа"], occasion=_назване(пер["випадок"]), **({"day": день} if день else {}),
+    return dict(person=пер["особа"], case=_назване(пер["випадок"]), **({"day": день} if день else {}),
                 schemes=[dict({"rank": с["ранг"], "scheme": с["код"], "weight": с["вага"],
                                "advised": с["радить"]},
                               **({"reliability": с["надійність"]} if с["надійність"] else {}),
@@ -759,11 +761,15 @@ def стан_для_показу(вхід):
     гілки = вхід.get("гілки") or []
     кольори = її.get("вибір_кольору") or {}
     автори = {к: _СТ.автор(v) for к, v in (виб.get("обрала") or {}).items()}
+    # Схема — ключ ядра (ним гілки й обрана плитка звіряються), а в заяву йде код таблиці `palette_scheme`, як у
+    # заявах пакета (`міст_пакет`): одне значення `scheme` на дроті, не слово схеми тут і код там.
+    схема_її = (str(її.get("схема") or "").strip() or
+                next((г["схема"] for г in гілки if г.get("і") == її.get("гілка")), None))
+    схема_стилістки = виб.get("схема")
     свої = dict(base=кольори.get("база"), saturation=кольори.get("насиченість"),
-                scheme=(str(її.get("схема") or "").strip() or
-                        next((г["схема"] for г in гілки if г.get("і") == її.get("гілка")), None)))
-    стилеві = dict(base=(виб.get("вибір_кольору") or {}).get("база"),
-                  saturation=виб.get("гама"), scheme=виб.get("схема"))
+                scheme=_ВМ.код_або_невідомо("palette_scheme", схема_її) if схема_її else None)
+    стилеві = dict(base=(виб.get("вибір_кольору") or {}).get("база"), saturation=виб.get("гама"),
+                  scheme=_ВМ.код_або_невідомо("palette_scheme", схема_стилістки) if схема_стилістки else None)
     стан = []
     for частина in ("base", "scheme", "saturation"):
         хто = "her" if свої[частина] else автори.get(частина, "pending")
@@ -789,8 +795,8 @@ def стан_для_показу(вхід):
             "palette_default_scheme", _ВМ.заява("stylist_will_choose"),
             _ВМ.заява("schemes_advised_count", count=радить),
             _ВМ.заява("rarer_schemes_count", count=рідших) if рідших else _ВМ.заява("choose_another_if_wants"))
-    обрана = свої["scheme"] or стилеві["scheme"]
-    хто_схеми = "her" if свої["scheme"] else автори.get("scheme", "pending")
+    обрана = схема_її or схема_стилістки
+    хто_схеми = "her" if схема_її else автори.get("scheme", "pending")
     for г in гілки:
         повідом = г.get("нота_кодами")
         if not повідом:

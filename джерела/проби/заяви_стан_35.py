@@ -17,10 +17,10 @@ assert після['рідша.1']['statements'][0]['choice'] == 'unselected'
 assert not після['рідша.0']['statements'][0]['rank']['rare']
 її = П.стан_для_показу(dict(її={'гілка': 1}, стилістка=стил, гілки=гілки))
 assert її['рідша.1']['statements'][0]['choice'] == 'her'
-assert її['пал-стан']['statements'][1]['values']['value'] == 'аналогова'
+assert її['пал-стан']['statements'][1]['values']['value'] == 'analogous'   # код `palette_scheme`, як у пакеті
 її_за_іменем = П.стан_для_показу(dict(її={'схема': 'аналогова', 'гілка': None},
                                              стилістка=стил, гілки=гілки))
-assert її_за_іменем['пал-стан']['statements'][1]['values']['value'] == 'аналогова'
+assert її_за_іменем['пал-стан']['statements'][1]['values']['value'] == 'analogous'
 assert її_за_іменем['пал-стан']['statements'][1]['choice'] == 'her'
 assert С.автор('рука') == С.автор('she_chose') == С.автор(True) == 'her'
 assert С.автор('вона обрала сама') == 'her'
