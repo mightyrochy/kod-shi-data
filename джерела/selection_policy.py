@@ -3,6 +3,7 @@ from реєстр_правил import ТИПОВИЙ_НАМІР
 import реєстр_намір as _РН
 import json as _json
 import random as _random
+import паспорт_поля as _ПП
 
 
 def склад_ремонту(образ):
@@ -75,7 +76,8 @@ def опис(намір=ТИПОВИЙ_НАМІР, мета_важливо=None)
     """Описати незалежні обмеження й цілі через чинний реєстр намірів."""
     н = _РН.канон_намір(намір)
     return dict(constraints=dict(gates="required", veto="required", doses="independent"),
-                goals=dict(intent=н, intent_rules=_РН.намір(н, мета_важливо),
+                goals=dict(intent=н, intent_source=_ПП.походження(_ПП.ВИВЕДЕНЕ),
+                           intent_rules=_РН.намір(н, мета_важливо),
                            edge="inside_palette", pole="preserve", band="occasion"),
                 order="identity")
 

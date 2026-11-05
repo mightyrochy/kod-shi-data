@@ -23,6 +23,7 @@ def main():
         assert [ф["available"] for ф in факти] == [True, False]
         assert [ф["артикул"] for ф in факти] == ["A-S", "B-M"] and т == копія
         assert [ф["url"] for ф in факти] == ["https://shop.test/products/dress?variant=11", "https://shop.test/products/dress?variant=12"]
+        assert all(ф["власник_кадру"] == ш.власник_варіанта(т, в, ф["url"]) for в, ф in zip(варіанти, факти))
     старий = dict(схема="v1", ід="ж-00001", адреса="https://shop.test/products/dress", назва="Сукня",
                   параметри=[["магазин", "shop.test", "с"]], вихід={}, категорія="1", валюта="UAH", опис=None,
                   кадри=["https://shop.test/stale.jpg"])

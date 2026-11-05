@@ -50,6 +50,7 @@ import порядок_запиту as _ПЗ
 import суд_погода as _ПОГ
 import trace as _СЛ_полюси
 import паспорт_нагоди as _ПН_сл
+import паспорт_поля as _ПП
 import аксесуари_погода as _АП_в
 import знання_дріт as _ЗД
 import fit as _ПС
@@ -540,7 +541,7 @@ import внутрішня_мова as _ВМ_П
 
 СКЛАДАННЯ = _ЗП.Оголошення(
     задача="складання",
-    роль="You are the stylist. You put together outfits for her from the items of «pool» for her case.",
+    роль=_ВИМ.РОЛЬ_ЗАСТОСУНКУ + " Build outfits for her case from «pool».",
     вхід=(
         _ЗП.ПОЛЕ_ВІДБОРУ,
         _ВИМ.поле("case", як=_ВИМ.ПРОТИ_ВІДМОВ),
@@ -557,16 +558,16 @@ import внутрішня_мова as _ВМ_П
                                          "pale yellow, pale blue) belong to the bride, and she is a guest; it "
                                          "reads as bridal on a large surface and next to her face, while small "
                                          "jewellery, shoes or a bag barely register"),
-        _ЗП.Поле("case.shoe_request", "what she asked for about heels: heel or no_heel",
-                 як="her own request: take no shoes against it"),
-        _ЗП.Поле("case.beliefs", "her own words about what she holds does not suit her",
+        _ЗП.Поле("case.shoe_request", "the code's heel constraint: heel or no_heel",
+                 як="take no shoes against it"),
+        _ЗП.Поле("case.beliefs", "the model's reading of what she thinks does not suit her",
                  як="a boundary of hers, not a mistake: do not argue with it, offer no item under it, "
                     "and do not raise the subject in the explanation"),
         _ЗП.Поле("case.her_registers", "the style language she dresses in",
                  як="keep to it: one item from another register is a welcome quote; two or more change "
                     "the language"),
         _ВИМ.поле("day", як="check every item of every outfit against this day, not only the shoes"),
-        _ЗП.Поле("day.unknown", "what she has not told about her day: the place, the hour, the weather",
+        _ЗП.Поле("day.unknown", "facts about her day that remain unknown",
                  як="do not assume a value for it; prefer items that hold either way"),
         _ВИМ.поле("person"),
         _ЗП.Поле("person.goal", "the outfit-wide goal: flatter, conceal, express or taller; this is an "
@@ -631,7 +632,7 @@ import внутрішня_мова as _ВМ_П
         # Що значать ключі пулу, яких назва не пояснює, і типові значення (`дріт_моделі.легенда_ключів`):
         # раз на пакет, а не на кожній із сотень речей. `L_from`, `hem_from`, `branch` пояснює лише він.
         _ЗП.Поле("pool_keys", "the keys the items of «pool» use, what each means, and defaults for omitted values",
-                 як="read every item of «pool» by these keys; restore every absent key that has an `absent =` default"),
+                 як=_ВИМ.ПОЛЯ["item_keys"][1]),
         _ЗП.Поле("pool[].kind", "the kind of an item the shop gives no type for: a belt, a hat, «Shoes»",
                  як="take it as the item's kind; do not guess a kind from the name"),
         _ЗП.Поле("pool[].two_piece", "a set sold as one item",
@@ -690,8 +691,7 @@ import внутрішня_мова as _ВМ_П
         # слабка модель ходила колом по задумах — 13, 20 і 33 образи замість 10 у 3 з 26 записаних
         # записаних відповідей (33 — по 7 на кожен задум, 4 107 т. до стелі, 190 с). Код бере перші
         # «outfits_wanted» (`міст_відповіді`), тож решта — лише час виводу (аудит/ПРОДУКТ.md п.21)
-        "Put together exactly «outfits_wanted» outfits and end the answer there: an idea of «poles» gives one "
-        "outfit, «free» as many as its «outfits».",
+        "Return «outfits_wanted» outfits: one per idea of «poles», and «free» as many as its «outfits».",
         "One item of each kind; an outfit has a dress, a set, or a top and a bottom.",
         РЯДОК_ТРЕТЬОЇ_РЕЧІ,
         РЯДОК_РІЧ_ДВІЧІ,
@@ -1033,7 +1033,8 @@ def річ_пулу(r, ном, слот=None):
     # крок 3) звіряється з ЦИМ САМИМ списком кандидатів — тобто з тим самим словом,
     # яке модель і бачила.
     річ = {"н": ("#%d·%s" % _н) if _н else str(r.get("id") or ""),
-           "назва": _ФС.назва_для_людини(r)}
+           "назва": _ФС.назва_для_людини(r),
+           "гілка_типова": r.get("гілка_типова", not bool(r.get("гілка")))}
     for ключ, значення in (
             # Ціна 0 — це «магазин не сказав», а не «безкоштовно»: у прозі така
             # річ ішла без ціни, і поле тут так само не з'являється.
@@ -1105,7 +1106,7 @@ def річ_пулу(r, ном, слот=None):
     if r.get("осі"):
         річ["осі"] = dict(r["осі"])
     for ключ in ("колір_тип", "колір_вимір", "колір_слово", "власна", "чия", "закріплена", "джерело_кольору", "колір_не_вимір",
-                 "колір_стилістки", "формальність_фото", "вердикт_рівень", "пом_якшення", "lab"):
+                 "колір_стилістки", "формальність_фото", "вердикт_рівень", "пом_якшення", "lab", "впевненість_джерело"):
         if r.get(ключ) not in (None, "", [], ()):
             річ[ключ] = list(r[ключ]) if ключ == "lab" else r[ключ]
     # Чиє бажання ця річ виконує і чи стояла вона вже в її образах цього
@@ -1340,6 +1341,11 @@ def випадок_для_пакета(паспорт, рядок, сценар�
     _мв = [к for к in ((паспорт or {}).get("мета_важливо") or []) if к in _ВМ_П.ТАБЛИЦЯ["goal_extra"].values()]
     if _мв:
         в["мета_важливо"] = _мв
+    в["джерела_полів"] = {к: _ПП.походження_поля(паспорт, к) for к in sorted(в) if к != "джерела_полів"}
+    if в.get("прохання_взуття"):
+        в["джерела_полів"]["прохання_взуття"] = _ПП.походження(_ПП.ВИВЕДЕНЕ)
+    if в.get("переконання"):
+        в["джерела_полів"]["переконання"] = _ПП.походження(_ПП.ТЛУМАЧЕННЯ)
     return в
 
 
@@ -1357,11 +1363,9 @@ def людина_для_пакета(тіло, палітри, гілка=None, 
     теж не йдуть: це наша внутрішня шкала, і промпт від самого початку забороняє
     моделі нею говорити («не називай чисел світлоти»). Контраст, натомість, слово
     має (`палітри.контраст_рівень`) — тому він і є.
-    ДЖЕРЕЛО ТЕМПЕРАТУРИ ЗВОДИТЬСЯ ДО ОДНОГО З ТРЬОХ СЛІВ, бо `palette.температура`
-    віддає його цілим реченням («елісітація (золото, впевненість 0.80) — не
-    залежить від камери»), а речення в полі, за яким модель приймає рішення, —
-    це прози в даних. Правило переносу: була елісітація → `самозвіт`; клас
-    придатний із фото → `фото`; класу нема → `утримано` і `не_стверджується`.
+    Джерело класу бере `face_features`: прийнята її відповідь → `самозвіт`,
+    придатний клас кольору → `фото`, класу нема → `утримано` і `не_стверджується`.
+    Наявність відповіді, яка не дала боку, не робить клас підтвердженим.
     АКЦЕНТИ — ЦЕ НЕЙТРАЛЬНІ КОЛЬОРИ ПАЛІТРИ НАВИВОРІТ. `палітра_практична`
     називає роль кожного кольору «нейтраль» або «колір»; хто з них буде акцентом
     у ЦЬОМУ образі, вирішує `ролі_слотів` (домінанта/секундант/акцент по слотах).
@@ -1376,8 +1380,9 @@ def людина_для_пакета(тіло, палітри, гілка=None, 
     _кл = т.get("клас") if т.get("придатно") else None
     л["температура"] = {
         "клас": _кл if _кл in _ПР.ТЕМПЕРАТУРА_КЛАСИ else "не_стверджується",
-        "джерело": ("самозвіт" if (т.get("елісітація") or {}).get("w") is not None
-                    else "фото" if _кл else "утримано"),
+        "джерело": ("утримано" if not _кл or _кл == "не_стверджується"
+                    else "самозвіт" if т.get("джерело_класу") == "її слово"
+                    else "фото"),
     }
     розвилка = (палітри or {}).get("розвилка") or []
     _г = (розвилка[гілка] if (гілка is not None and -len(розвилка) <= гілка < len(розвилка))
@@ -1592,6 +1597,7 @@ def _рядки_кандидатів_кроками(тіло, вікна, K, р�
                               # визначено», а не «річ поза реєстрами».
                               реєстр=(РЕ_кандидата(r) or None),
                               гілка=r.get("_гілка") or "ядро", схема=r.get("_схема"),
+                              гілка_типова=not bool(r.get("_гілка")),
                               # ПРАПОРЕЦЬ УТРИМАННЯ ПЕРЕЖИВАЄ ПЕРЕКЛАДАННЯ В РЯДОК
                               # Рядок кандидата будується тут з нуля, і
                               # мітка, поставлена на ЗАПИСІ пулу (`bridge._пакет_у_бюджет`
@@ -2087,17 +2093,20 @@ def жорстке_відсічення(r, темп_c=None, вето=None, ош�
                 if своя is not None and _A.відстань_смуг(своя, float(темп_c)) > ДОПУСК_ВЗУТТЯ_C:
                     return "shoes_off_temperature"
         см = r.get("сезон_тканини")
-        if см and len(см) == 2:
+        if см is not None:
+            if not isinstance(см, (list, tuple)) or len(см) != 2:
+                raise ValueError("fabric_band_unreadable:%s" % r.get("id"))
             try:
                 _поза_тк = _V_тк.поза_смугою_тканини(см, темп_c)
-                _причина = "fabric_off_temperature" if _поза_тк > ДОПУСК_ТКАНИНИ_C else None
-                if _причина:
-                    _ПОЛ.свідок("K-MAT-03", "pool", слот=сл, прогін_руки=прогін_руки)
-                _причина = _ПОЛ.злам("K-MAT-03", "пул", _причина, поза=_поза_тк, допуск=ДОПУСК_ТКАНИНИ_C, слот=сл, прогін_руки=прогін_руки)
-                if _причина:
-                    return _причина
-            except (TypeError, ValueError, IndexError):
-                pass
+            except (TypeError, ValueError, IndexError) as збій:
+                # Не вдаємо, що K-MAT-03 пройдено: міст віддасть помилка + код.
+                raise ValueError("fabric_band_unreadable:%s" % r.get("id")) from збій
+            _причина = "fabric_off_temperature" if _поза_тк > ДОПУСК_ТКАНИНИ_C else None
+            if _причина:
+                _ПОЛ.свідок("K-MAT-03", "pool", слот=сл, прогін_руки=прогін_руки)
+            _причина = _ПОЛ.злам("K-MAT-03", "пул", _причина, поза=_поза_тк, допуск=ДОПУСК_ТКАНИНИ_C, слот=сл, прогін_руки=прогін_руки)
+            if _причина:
+                return _причина
     if вето:
         # `колір_назва_фото` — слово з фото поруч зі словом крамниці в `колір_назва`
         # Вето кольору — слово лексикону, і «без білого» мусить
