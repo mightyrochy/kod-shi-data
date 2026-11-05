@@ -97,7 +97,7 @@ chk "claude — 2 водночас (слотів 2)" '[ "$(tl claude)" = 2 ]'
 chk "смуги водночас: усього ≥ 5" '[ "$(tl total)" -ge 5 ]'
 C=$(claims); echo "  порядок узяття: $C"
 chk "узято за пріоритетом: б(p1) раніше за а(p2), е(p1) раніше за д(p4)" '[[ "$C" == *"б-codex"*"а-codex"* && "$C" == *"е-claude-gpu"*"д-claude"* ]]'
-chk "Argon (p0) на нулі не взято, позначка в чеканні" '! grep -q "г-agy-квота.*-> " "$W/gr/wrapper.log" && grep -l "^WAIT " "$W"/gr/state/*.txt >/dev/null'
+chk "Argon (p0) на нулі не взято, позначка в чеканні" '! grep -q "г-agy-квота.*-> " "$W/gr/wrapper.log" && grep -l "^WAIT " "$W"/gout/marker-state/*.txt >/dev/null'
 S=$(cat "$W"/gh/patch_*.json | $PY -c "import sys,json
 for l in sys.stdin.read().replace('}{','}\n{').splitlines(): print(json.loads(l)['body'])")
 chk "стан: таблиця смуг — claude 2/2 і codex 2/2 у якійсь правці" '[[ "$S" == *"| claude | 2 | 2 |"* && "$S" == *"| codex | 2 | 2 |"* ]]'

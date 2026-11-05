@@ -10,8 +10,10 @@ function Check([string]$Name, [bool]$Ok) {
     if ($Ok) { "✓ $Name" } else { "✗ $Name"; $script:bad++ }
 }
 try {
-    . (Join-Path $SourceDir 'gemini_publish.ps1') -WorkDir "$tmp/pub" -OutboxDir "$tmp/out"
+    . (Join-Path $SourceDir 'gemini_publish.ps1') -WorkDir "$tmp/pub" -OutDir "$tmp/gem-out" -OutboxDir "$tmp/out"
     $OutDir = "$tmp/gem-out"
+    [void][IO.Directory]::CreateDirectory("$OutDir/marker-state")
+    Write-FileAtomic "$OutDir/marker-state/ready" '1'
     $GeminiRunsDir = "$tmp/gemini-runs"
     foreach ($dir in @($WorkDir, "$WorkDir/seen", "$WorkDir/state", $OutboxDir, $OutDir, "$tmp/claude-run/slots", "$tmp/claude-run/state")) {
         [void][IO.Directory]::CreateDirectory($dir)

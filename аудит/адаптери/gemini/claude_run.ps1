@@ -37,7 +37,7 @@ param(
     [string]$OutboxDir = (Join-Path $env:USERPROFILE 'gemini-outbox'),
     [string]$PublishDir = (Join-Path $env:USERPROFILE 'gemini-publish'),
     [string]$GeminiOutDir = 'C:\Users\Public\gemini\out',
-    [string]$GeminiStateDir = (Join-Path $env:USERPROFILE 'gemini-runs\state'),
+    [string]$GeminiStateDir = (Join-Path $GeminiOutDir 'marker-state'),
     [string]$LaneDir = 'C:\Users\Public\gemini\lanes',
     [string]$RepoUrl = 'https://github.com/mightyrochy/kod-shi-data',
     [string]$Repo = 'mightyrochy/kod-shi-data',
