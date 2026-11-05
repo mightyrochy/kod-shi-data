@@ -824,19 +824,6 @@
      ],
      "description": "наскільки ошатний цей вихід — смуга одного щабля драбини за шкалою коду 1–10 (модель дає код щабля, `мовний_шар._смуга_числом`): завжди — з її слів і події"
     },
-    "hour": {
-     "description": "година початку за 24-годинним годинником",
-     "oneOf": [
-      {
-       "type": "integer",
-       "minimum": 0,
-       "maximum": 23
-      },
-      {
-       "const": "unknown"
-      }
-     ]
-    },
     "temperature_c": {
      "description": "температура повітря, °C",
      "oneOf": [
@@ -1063,25 +1050,36 @@
       "unknown"
      ]
     },
+    "host_context": {
+     "description": "подія з господарем або зі ставками: yes — це названо; no — явно заперечено; unknown — не сказала; не її роль господині",
+     "enum": [
+      "yes",
+      "no",
+      "unknown"
+     ]
+    },
+    "direct_sun": {
+     "description": "пряме сонце на неї: yes — назвала пряме сонце; no — назвала тінь чи відсутність сонця; unknown — не сказала; не виводити з температури, опадів чи пори року",
+     "enum": [
+      "yes",
+      "no",
+      "unknown"
+     ]
+    },
+    "creative_environment": {
+     "description": "творче середовище події: yes — назвала; no — явно заперечила; unknown — не сказала; не намір сміливого образу",
+     "enum": [
+      "yes",
+      "no",
+      "unknown"
+     ]
+    },
     "own_items": {
      "description": "її власні речі, які вона називає словами: усе, що вона зве своїм («моя», «у мене є», «з моєї шафи», «з фото»), — кожна річ окремо; слот, тип і тканина — завжди, кодом з її слів або \"unknown\"",
      "type": "array",
      "items": {
       "$ref": "#/$defs/own_item"
      }
-    },
-    "minute": {
-     "description": "хвилини початку, коли названо разом із годиною (19:30 — 30; пів на восьму вечора — 30)",
-     "oneOf": [
-      {
-       "type": "integer",
-       "minimum": 0,
-       "maximum": 59
-      },
-      {
-       "const": "unknown"
-      }
-     ]
     },
     "place_words": {
      "oneOf": [
@@ -2334,10 +2332,6 @@
         "description": "наскільки ошатний цей вихід — смуга одного щабля драбини за шкалою коду 1–10 (модель дає код щабля, `мовний_шар._смуга_числом`): завжди — з її слів і події"
        },
        {
-        "const": "hour",
-        "description": "година початку за 24-годинним годинником"
-       },
-       {
         "const": "temperature_c",
         "description": "температура повітря, °C"
        },
@@ -2410,12 +2404,20 @@
         "description": "колір, що на цій події належить іншій особі"
        },
        {
-        "const": "own_items",
-        "description": "її власні речі, які вона називає словами: усе, що вона зве своїм («моя», «у мене є», «з моєї шафи», «з фото»), — кожна річ окремо; слот, тип і тканина — завжди, кодом з її слів або \"unknown\""
+        "const": "host_context",
+        "description": "подія з господарем або зі ставками: yes — це названо; no — явно заперечено; unknown — не сказала; не її роль господині"
        },
        {
-        "const": "minute",
-        "description": "хвилини початку, коли названо разом із годиною (19:30 — 30; пів на восьму вечора — 30)"
+        "const": "direct_sun",
+        "description": "пряме сонце на неї: yes — назвала пряме сонце; no — назвала тінь чи відсутність сонця; unknown — не сказала; не виводити з температури, опадів чи пори року"
+       },
+       {
+        "const": "creative_environment",
+        "description": "творче середовище події: yes — назвала; no — явно заперечила; unknown — не сказала; не намір сміливого образу"
+       },
+       {
+        "const": "own_items",
+        "description": "її власні речі, які вона називає словами: усе, що вона зве своїм («моя», «у мене є», «з моєї шафи», «з фото»), — кожна річ окремо; слот, тип і тканина — завжди, кодом з її слів або \"unknown\""
        },
        {
         "const": "place_words",
@@ -2745,38 +2747,6 @@
         "ceremonial",
         "unknown"
        ]
-      },
-      "hour": {
-       "type": "object",
-       "additionalProperties": false,
-       "required": [
-        "quote",
-        "value"
-       ],
-       "properties": {
-        "quote": {
-         "type": "string",
-         "minLength": 1
-        },
-        "value": {
-         "description": "година початку за 24-годинним годинником",
-         "oneOf": [
-          {
-           "type": "integer",
-           "minimum": 0,
-           "maximum": 23
-          },
-          {
-           "const": "unknown"
-          }
-         ]
-        },
-        "named": {
-         "enum": [
-          "clock_time"
-         ]
-        }
-       }
       },
       "temperature_c": {
        "type": "object",
@@ -3158,25 +3128,78 @@
         "unknown"
        ]
       },
+      "host_context": {
+       "type": "object",
+       "additionalProperties": false,
+       "required": [
+        "quote",
+        "value"
+       ],
+       "properties": {
+        "quote": {
+         "type": "string",
+         "minLength": 1
+        },
+        "value": {
+         "description": "подія з господарем або зі ставками: yes — це названо; no — явно заперечено; unknown — не сказала; не її роль господині",
+         "enum": [
+          "yes",
+          "no",
+          "unknown"
+         ]
+        }
+       }
+      },
+      "direct_sun": {
+       "type": "object",
+       "additionalProperties": false,
+       "required": [
+        "quote",
+        "value"
+       ],
+       "properties": {
+        "quote": {
+         "type": "string",
+         "minLength": 1
+        },
+        "value": {
+         "description": "пряме сонце на неї: yes — назвала пряме сонце; no — назвала тінь чи відсутність сонця; unknown — не сказала; не виводити з температури, опадів чи пори року",
+         "enum": [
+          "yes",
+          "no",
+          "unknown"
+         ]
+        }
+       }
+      },
+      "creative_environment": {
+       "type": "object",
+       "additionalProperties": false,
+       "required": [
+        "quote",
+        "value"
+       ],
+       "properties": {
+        "quote": {
+         "type": "string",
+         "minLength": 1
+        },
+        "value": {
+         "description": "творче середовище події: yes — назвала; no — явно заперечила; unknown — не сказала; не намір сміливого образу",
+         "enum": [
+          "yes",
+          "no",
+          "unknown"
+         ]
+        }
+       }
+      },
       "own_items": {
        "description": "її власні речі, які вона називає словами: усе, що вона зве своїм («моя», «у мене є», «з моєї шафи», «з фото»), — кожна річ окремо; слот, тип і тканина — завжди, кодом з її слів або \"unknown\"",
        "type": "array",
        "items": {
         "$ref": "#/$defs/own_item"
        }
-      },
-      "minute": {
-       "description": "хвилини початку, коли названо разом із годиною (19:30 — 30; пів на восьму вечора — 30)",
-       "oneOf": [
-        {
-         "type": "integer",
-         "minimum": 0,
-         "maximum": 59
-        },
-        {
-         "const": "unknown"
-        }
-       ]
       },
       "place_words": {
        "oneOf": [
@@ -3387,7 +3410,6 @@
           "dress_code",
           "palette",
           "formality",
-          "hour",
           "temperature_c",
           "weather_feel",
           "intent",
@@ -3406,8 +3428,10 @@
           "formality_branch",
           "open_zones",
           "reserved_colour",
+          "host_context",
+          "direct_sun",
+          "creative_environment",
           "own_items",
-          "minute",
           "place_words",
           "rest",
           "stylist_note",
@@ -7515,6 +7539,18 @@
           "description": "a typology label used as a MECHANISM rather than a vocabulary bridge. Instead: the bridge translated into axes — the label outside, the axes inside"
          },
          {
+          "const": "direct_sun_heat",
+          "description": "direct sunlight is known before judging dark close-fitting garments (K-WEA-03)"
+         },
+         {
+          "const": "host_context_known",
+          "description": "whether the event has a host or stakes is known before applying risk asymmetry (K-KOH-07)"
+         },
+         {
+          "const": "creative_environment_known",
+          "description": "whether the environment is creative is known before inverting risk asymmetry (K-KOH-07)"
+         },
+         {
           "const": "chroma_budget",
           "description": "at most 1–2 loud colours in the outfit, hair and glasses frames included (K-COL-02)"
          },
@@ -8683,6 +8719,18 @@
   "audience": {
    "usual": "usual",
    "conservative": "conservative"
+  },
+  "direct_sun": {
+   "yes": true,
+   "no": false
+  },
+  "host_context": {
+   "yes": true,
+   "no": false
+  },
+  "creative_environment": {
+   "yes": true,
+   "no": false
   },
   "religious_place": {
    "none": "none",
