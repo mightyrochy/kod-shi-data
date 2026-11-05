@@ -27,11 +27,12 @@ if __name__ == "__main__" and len(sys.argv) > 1:
         вих.append(dict(запис=ф, смуга=Ф.смуга_ошатності(н), брак=any(п["вхід"] == "сонце" and п["стан"] == "без входу" for п in ч["надлишок"])))
     print(json.dumps(вих, ensure_ascii=False))
 elif __name__ == "__main__":
-    знімок = ["внутрішня_мова", "мовний_шар", "паспорт_нагоди", "паспорт_поля", "перевірка_образу", "суд_огляд", "суд_погода", "суд_чеклісти", "сценарій", "дріт_моделі", "оцінка_образу", "протокол"]
+    # Історичні модулі й дані мають бути однієї версії: залежність із голови спотворює ДО.
+    знімок = [ф for ф in історія("ls-tree", "-r", "--name-only", "--full-tree", БАЗА, "--", ".").splitlines() if Path(ф).parent.as_posix() == "джерела" and Path(ф).suffix in (".py", ".json", ".md")]
     with tempfile.TemporaryDirectory(prefix="сонце_до_") as тека:
         assert Path(тека).resolve().parent == Path(tempfile.gettempdir()).resolve()
-        for ім in знімок:
-            Path(тека, ім + ".py").write_text(історія("show", БАЗА + ":джерела/" + ім + ".py"), encoding="utf-8")
+        for ф in знімок:
+            Path(тека, Path(ф).name).write_text(історія("show", БАЗА + ":" + ф), encoding="utf-8")
         до = json.loads(subprocess.check_output([sys.executable, "-X", "utf8", __file__, тека, "до"], cwd=ДЖ).decode("utf-8"))
         після = json.loads(subprocess.check_output([sys.executable, "-X", "utf8", __file__, str(ДЖ)], cwd=ДЖ).decode("utf-8"))
     assert [р["смуга"] for р in до] == [р["смуга"] for р in після]

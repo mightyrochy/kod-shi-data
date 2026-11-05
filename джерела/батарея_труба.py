@@ -61,7 +61,7 @@ def прогін_зібраного():
             for i, r in ((x["id"], x) for x in сирі)]
     for нагода, темп in (("робота", 5.0), ("побачення", 19.0)):
         try:
-            _в = pipeline.перевірити_образ(F, речі, нагода=нагода, темп_c=темп, тіло=тіло)
+            _в = pipeline.перевірити_образ(F, речі, нагода=нагода, смуга_погоди=темп, тіло=тіло)
         except Exception as _e:
             import os as _os, traceback as _tb   # п.14: не мовчати (форма bridge)
             if _os.environ.get("ЛЮСТЕРКО_ТРАСА"): _tb.print_exc()
@@ -303,7 +303,7 @@ def _навмисні_від_моделі(F, тіло, H, зн, спільні, 
                         lab=_КОЛІР.точка_кольору(r))
                    for r in речі]
             _в = pipeline.перевірити_від_моделі([r["id"] for r in речі], F, кат, тіло,
-                                                сценарій=dict(нагода="свято", темп_c=22.0))
+                                                сценарій=dict(нагода="свято", смуга_погоди='warm'))
         except Exception as _e:
             import os as _os, traceback as _tb   # п.14: не мовчати (форма bridge)
             if _os.environ.get("ЛЮСТЕРКО_ТРАСА"): _tb.print_exc()

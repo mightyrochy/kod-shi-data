@@ -2228,16 +2228,9 @@ def паспорт_з_шару(внутрішня, сценарій, вето_ч
     # ЗОНИ МЕТИ — ОКРЕМА ПЛИТКА: доти мета, названа ходом без
     # зон, скидала давні зони — бо «приховати» з зоною означало лише зону. Тепер зона
     # «відвести погляд від…» стоїть поруч із будь-якою увагою, тож нова увага давньої зони не знімає.
-    об["темп_c"] = в.get("temperature_c")
-    об["погода_відчуття"] = в.get("weather_feel")
     об["тривалість_год"] = в.get("duration_h")
     об["ноги_вище_см"] = в.get("legs_above_cm")
-    # ПОГОДА: градуси й відчуття — ДВА подання одного; хід, що дав котре-небудь, скидає давнє інше
-    # (виправлення «20 °C» на «насправді холодно» не лишає 20 °C керувати фільтрами).
-    _нова_погода = в.get("temperature_c") is not None or в.get("weather_feel") is not None
-    for ім in ("темп_c", "погода_відчуття", "тривалість_год", "ноги_вище_см"):
-        if _нова_погода and ім in ("темп_c", "погода_відчуття"):
-            continue
+    for ім in ("тривалість_год", "ноги_вище_см"):
         if об[ім] is None and є(досі.get(ім)) and джерела_досі.get(ім) != _ПН.ТИПОВЕ_ПОЛЕ_ФОРМИ:
             об[ім] = досі[ім]
     # ── ОШАТНІСТЬ — ЧИСЛО МОВНОЇ МОДЕЛІ ЗАВЖДИ (НП-в крок 2, принцип власника 01.10) ──────
@@ -2642,10 +2635,6 @@ def _заяви_словником(вжиті):
 # Число, hex і слово крамниці кодами не є (у таблиці їх нема) і лишаються як є.
 # ОДИН КОД У КІЛЬКОХ ПОЛЯХ (`knee` — і довжина, і рівень тіла) віддає обидва слова через
 # «/»: контекст заяви в моделі є, а мовчазно вибрати за неї одне поле код не може.
-# КОД, ЧИЄ ЯДРО — ЧИСЛО, СЛОВАМИ НЕ ВИЗНАЧАЄТЬСЯ: `weather_feel` у таблиці — код → градуси
-# для правил (мороз — −10 °C). Заява тепер несе відчуття замість вигаданого числа, і «−10» з таблиці
-# в промпт не їде (доти `w.replace` падав на float — шар картки лишався без рядка); код стоїть як є,
-# а що він — погода її словами — каже визначення заяви.
 def _коди_значень(значення, знайдені):
     """Рекурсивно: усі рядки в `значення`, які є кодами `ВМ.ТАБЛИЦЯ`, → {код: слова}."""
     if isinstance(значення, dict):
@@ -2728,8 +2717,8 @@ def записано_для_репліки(в, п):
         група = {"нагода": "нагоди", "місце": "місця", "дрес_код": "коди"}.get(ім)
         if група:
             мітка = next((р["підпис"] for р in _ПН.довідник()[група] if р["ключ"] == значення), None)
-        elif ім == "темп_c" and isinstance(значення, (int, float)):
-            мітка = "%+g °C" % значення
+        elif ім == "смуга_погоди" and значення in _ВМ.ТАБЛИЦЯ["weather_band"]:
+            мітка = _СЦ.смуга_словами(значення)
         elif ім == "ошатність":
             мітка = _ошатність_плиткою({"formality": значення})
         elif ім == "пора":
@@ -3351,23 +3340,14 @@ _ПОЛЯ_EN = {
     "month": "the month of the event, only when her words name it: a date or a month, or a holiday that falls in "
              "one month — that month, with that word as quote; a weekday, «today», «tomorrow» or an event of any "
              "month — absent",
-    # ДОЩ-1: градуси — лише названі; сезон свята без числа — `weather_feel` (код → число бере
-    # `внутрішня_мова.ТАБЛИЦЯ`, не модель), і його опора — слово свята в її репліці (сторож `тримається`).
-    # ГРАДУСИ-1: «на вулиці мінус п'ятнадцять і сніг» MamayLM записала
-    # `weather_feel: cold` без числа (ДО того ж сценарію — `temperature_c: -15`): таблиця коду дала +2 °C, картка
-    # писала «+2 °C», і рука 1 взяла розстебнуте пальто на −15. Опис казав «лише коли називає градуси», але не
-    # казав, що градуси словами — теж градуси і що тоді число іде САМЕ сюди, а не у відчуття; `frost` не мав межі.
-    # МОВА-ГРАДУСИ: з тим описом MamayLM на «мінус п'ятнадцять і сніг» двічі писала
-    # лише `weather_feel: frost` з цитатою числа. Межа `frost` у градусах («about -10 °C and colder») сама вела
-    # число у відчуття: −15 холодніше за −10 — отже frost. Тепер у відчутті жодного числа нема, а обидва описи
-    # несуть ту саму пару-шаблон «мінус N → -N» у формі відповіді; конкретного числа в шаблоні нема.
-    "temperature_c": "air temperature, °C, as a number, whenever she names the degrees — in digits or in words: "
-                     "«мінус N» → {\"quote\": \"мінус N\", \"value\": -N}, and «N градусів морозу» is -N too; "
-                     "«плюс N» → {\"quote\": \"плюс N\", \"value\": N}, and «N градусів тепла» is N too; "
-                     "named degrees always go here, and weather_feel then stays absent",
-    "weather_feel": "how the weather feels, from her words or from the season, month, holiday or place she "
-                    "names (summer or a seaside place suggest heat; winter suggests cold), with that word as "
-                    "quote; hard frost differs from ordinary cold",
+    "weather_band": "the weather band, from the degrees she names (digits or words) or her feeling of "
+                    "the weather; return only its code, never degrees. K-WEA-01 with the P-5 split: "
+                    "deep_frost: below -8 C; frost: -8 to below 2 C; cold: 2 to below 10 C; "
+                    "cool: 10 to below 18 C; mild: 18 to below 22 C; warm: 22 to below 26 C; "
+                    "hot: 26 C and above. Read her whole phrase, including the sign and a number "
+                    "written in words; when she gives no degrees, choose a band from her weather "
+                    "words, or the usual weather of the season, month, holiday or place she names, "
+                    "with that word as quote. No weather evidence — absent",
     # ОПАДИ-1: «увесь день дощ» лишало `опади: невідомо` і в паспорті, і в `day` — опис мовчав про
     # те, що опади тягнуться з ЇЇ слів про день (як `weather_feel`), і без цитати сторож `тримається` поле знімає.
     # 6188: «градуси й сніг чи дощ разом» (R2, сцени зими) — тут родом: опади й у фразі з градусами; «серпень,
@@ -4172,12 +4152,10 @@ def плитки_кодами(сценарій, паспорт=None):
     вих = {}
     # час нагоди на картці — частина дня (корінь Е2-частина-дня, крок 2): годин картка моделі не несе
     for ключ, поле in (("нагода", "occasion"), ("місце", "place"), ("дрес_код", "dress_code"),
-                       ("прикраси", "jewelry"), ("пора", "part_of_day")):
+                       ("прикраси", "jewelry"), ("пора", "part_of_day"), ("смуга_погоди", "weather_band")):
         к = _ВМ.код(поле, с.get(ключ)) if _є(с.get(ключ)) else None
         if к:
             вих[поле] = к
-    if _є(с.get("темп_c")) and isinstance(с.get("темп_c"), (int, float)):
-        вих["temperature_c"] = с["темп_c"]
     мк = _ПН.макіяж_канон(с.get("макіяж"))
     if isinstance(мк, dict) and _ВМ.код("makeup_level", мк.get("рівень")):
         вих["makeup"] = {"level": _ВМ.код("makeup_level", мк.get("рівень"))}
@@ -4262,7 +4240,7 @@ def теми_відкриті(паспорт, сценарій=None):
     # поле вже знає паспорт — теми нема на жодному стані (умова кожної теми вимагає «не знає»)
     ст = _ПН.стан_для_поради(сценарій or {}, п, "")
     знає = {"goal": ст["мета_відома"], "makeup": ст["макіяж"], "movement": ст["рух"] or ст["тривалість"],
-            "temperature": ст["темп_c"] not in (None, ""), "jewelry": ст["прикраси"], "register": ст["реєстр"],
+            "temperature": ст["смуга_погоди"] not in (None, "", "невідомо"), "jewelry": ст["прикраси"], "register": ст["реєстр"],
             "occasion": ст["нагода"] or ст["місце"] or ст["подія"]}
     return [к for к in _ВМ.ТЕМИ_ПОРАДИ if _ВМ.ключ("advice_topic", к) not in дані and not знає.get(к)]
 
@@ -4441,7 +4419,7 @@ def _шапка(об, незнайомі, внутрішня):
 # «Траур» — збирання не стартувало (проба `проби/зависання_ж5_нагода.py`). Спільні коди обох переліків (theatre,
 # sport…) лишаються нагодою; власний код `place` — сильніший.
 _СУСІДИ_КОДІВ = (("goal", "intent", True), ("intent", "goal", True),
-                 ("weather_feel", "precipitation", False), ("precipitation", "weather_feel", False),
+                 ("weather_band", "precipitation", False), ("precipitation", "weather_band", False),
                  ("goal_zones", "open_zones", False), ("place_words", "place", False),
                  ("occasion", "place", False), ("goal", "goal_extra", False), ("goal_extra", "goal", False),
                  ("intent", "goal_extra", False))
