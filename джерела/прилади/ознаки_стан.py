@@ -8,6 +8,11 @@ from ознаки_основа import (
 )
 from ознаки_рішення import вікно_літерал
 
+
+def _у_модулях(модуль, імена):
+    return bool(модуль) and модуль.split(".")[-1] in імена
+
+
 КЛАС_ЇЇ_ПОЛЯ = frozenset(("undertone", "depth_band", "підтон"))
 
 
@@ -1211,6 +1216,19 @@ class Стан:
                 self.місце(self.м, вузол, 2, "запасне число: %s" % _текст(вузол)[:70])
         return frozenset(вих)
 
+    def межа_лексикону(self, вузли):
+        """Один з операндів — стала модуля, що тримає `ЛЕКСИКОН` назв кольору (рішення менеджера 05.11: «межа лексикону для
+        назви кольору — не місце»)."""
+        лекс = {ім for ім, м in self.а.модулі.items() if "ЛЕКСИКОН" in м.присвоєння}
+        for х in вузли:
+            if isinstance(х, ast.Attribute) and isinstance(х.value, ast.Name):
+                модуль = self.м.імпорти.get(х.value.id)
+                if _у_модулях(модуль, лекс):
+                    return True
+            if isinstance(х, ast.Name) and х.id in self.м.з_імпортів and _у_модулях(self.м.з_імпортів[х.id][0], лекс):
+                return True
+        return False
+
     def порівняння(self, в):
         мітки = [self.e(в.left)] + [self.e(x) for x in в.comparators]
         операнди = [в.left] + list(в.comparators)
@@ -1230,6 +1248,8 @@ class Стан:
             if isinstance(оп, ПОРЯДОК):
                 if id(в) in self.а.формульні:
                     continue
+                if self.межа_лексикону(операнди[i:i + 2]):
+                    continue   # межа словника назв кольору (`V.ДРІЖ_AB`): її задає лексикон, а не рішення про неї
                 self.місце(self.м, в, 1, "поріг на пораховане з hex моделі: %s" % _текст(в)[:70])
             elif isinstance(оп, (ast.Eq, ast.NotEq, ast.In, ast.NotIn)) and self.клас_її_поля(в, i, л):
                 self.місце(self.м, в, 1, "клас її поля порівняно з рядком у рішенні: %s" % _текст(в)[:70])
