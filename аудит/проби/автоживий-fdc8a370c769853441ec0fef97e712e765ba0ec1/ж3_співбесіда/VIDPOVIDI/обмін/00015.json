@@ -1,0 +1,27 @@
+{
+ "версія": 1,
+ "запит": {
+  "model": "qwen/qwen3.5-9b",
+  "max_tokens": 4000,
+  "messages": [
+   {
+    "role": "user",
+    "content": [
+     {
+      "type": "text",
+      "text": "{\"task\": {\"role\": \"You read the description of an outfit and list its items as data.\", \"rules\": [\"One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.\", \"One item carries one thing — of two alternatives list the first; a note in brackets is not an item.\", \"Slot \\\"accessory\\\" is for an item no other slot fits.\", \"\\\"is_outfit\\\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note.\"], \"limits\": [\"Rely only on the input: do not invent what it does not contain.\", \"The answer is one JSON object following \\\"answer_schema\\\", without explanations and without ```.\"], \"language\": \"English\", \"answer\": \"ITEM_LIST\", \"answer_schema\": {\"is_outfit\": \"yes|no\", \"items\": [{\"name\": \"<what the item is>\", \"details\": \"<its cut, length and fabric>\", \"slot\": \"top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory\", \"color_hex\": \"<#rrggbb or null>\", \"worn\": \"<true, or false when the description says the outfit goes without it>\"}]}, \"input\": [\"\\\"description\\\" — the outfit description\"]}, \"description\": \"Tailored blazer in charcoal gray, structured single-breasted cut, knee-length hem, wool blend with subtle herringbone weave.  \\nCrisp white silk blouse, classic point collar and French cuffs, cropped length to sit at the waist, smooth satein finish.  \\nHigh-waisted navy wool trousers, tapered leg with a gentle pleat at the front, mid-calf length, heavy-weight gabardine fabric.  \\nClassic black leather loafers, almond-shaped toe with a low stacked heel, polished calfskin upper.  \\nMinimalist gold stud earrings and a delicate gold chain necklace to add a touch of refined elegance without distraction.  \\n\\nThis outfit strikes the perfect balance for an analyst interview in autumn, projecting both professional authority and approachable sophistication. The charcoal blazer and navy trousers adhere strictly to formal business standards while the white silk blouse softens the look just enough to reflect thoughtful attention to detail. By choosing natural wool and silk fabrics appropriate for the season, you demonstrate respect for the environment and quality, key traits for an analytical role. Finally, the understated gold accents provide a hint of personal style without compromising the serious tone required in a banking setting.\"}"
+     }
+    ]
+   }
+  ],
+  "temperature": 1
+ },
+ "відповідь": {
+  "status": 200,
+  "contentType": "application/json",
+  "headers": {
+   "x-model": "qwen/qwen3.5-9b"
+  },
+  "body": "{\"content\":[{\"type\":\"text\",\"text\":\"{\\\"is_outfit\\\": \\\"yes\\\", \\\"items\\\": [{\\\"name\\\": \\\"blazer\\\", \\\"details\\\": \\\"structured single-breasted cut, knee-length hem, wool blend with subtle herringbone weave\\\", \\\"slot\\\": \\\"outerwear\\\", \\\"color_hex\\\": \\\"#36454F\\\", \\\"worn\\\": true}, {\\\"name\\\": \\\"blouse\\\", \\\"details\\\": \\\"classic point collar and French cuffs, cropped length to sit at the waist, smooth satein finish\\\", \\\"slot\\\": \\\"top\\\", \\\"color_hex\\\": \\\"#FFFFFF\\\", \\\"worn\\\": true}, {\\\"name\\\": \\\"trousers\\\", \\\"details\\\": \\\"high-waisted with a gentle pleat at the front, tapered leg, mid-calf length, heavy-weight gabardine fabric\\\", \\\"slot\\\": \\\"bottom\\\", \\\"color_hex\\\": \\\"#000080\\\", \\\"worn\\\": true}, {\\\"name\\\": \\\"loafers\\\", \\\"details\\\": \\\"almond-shaped toe with a low stacked heel, polished calfskin upper\\\", \\\"slot\\\": \\\"shoes\\\", \\\"color_hex\\\": \\\"#000000\\\", \\\"worn\\\": true}, {\\\"name\\\": \\\"earrings\\\", \\\"details\\\": \\\"minimalist gold stud\\\", \\\"slot\\\": \\\"earrings\\\", \\\"color_hex\\\": null, \\\"worn\\\": true}, {\\\"name\\\": \\\"necklace\\\", \\\"details\\\": \\\"delicate gold chain\\\", \\\"slot\\\": \\\"necklace\\\", \\\"color_hex\\\": null, \\\"worn\\\": true}]}\"}],\"usage\":{\"input_tokens\":600,\"output_tokens\":308},\"stop_reason\":\"end_turn\"}"
+ }
+}
