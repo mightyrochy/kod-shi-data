@@ -779,6 +779,8 @@ def людина(л):
     if not isinstance(л, dict):
         return л
     вих = {}
+    if isinstance(л.get("ознаки_колориту"), dict):
+        вих["colouring"] = л["ознаки_колориту"]
     if "мета" in л:
         вих["goal"] = _ВМ.код_або_невідомо("goal", л["мета"])
     if isinstance(л.get("чому_мети"), dict):

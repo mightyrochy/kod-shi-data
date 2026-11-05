@@ -344,7 +344,9 @@ def дозволений_контраст(контраст, макіяж=None, L
     if L_шкіри is None:
         L_шкіри = контраст.get("L_шкіри")
     g = контраст.get("value_gap")
-    g = 0.0 if g is None else abs(float(g))
+    if g is None:
+        return None, False
+    g = abs(float(g))
     if рівень_макіяжу(макіяж) is None:      # нема / нюд — важеля нема
         return g, False
     д, джерело = важіль_макіяжу(макіяж, L_шкіри)

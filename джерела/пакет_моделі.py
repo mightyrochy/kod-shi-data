@@ -601,14 +601,14 @@ import внутрішня_мова as _ВМ_П
         _ЗП.Поле("person.palette.base", "the base: the colour the outfits are built around, and who chose it "
                                         "(«chosen_by»: her, stylist, code_rank); items of its "
                                         "family are in «pool»"),
-        _ЗП.Поле("person.palette.kind_colours", "the colour the scheme gives each kind of item, measured by the "
-                                                "code from her palette and the base — the centre of the window "
-                                                "the pool of that kind was cut by: «hex»; «area» — its share of "
+        _ЗП.Поле("person.palette.kind_colours", "the scheme's colour constraints for each kind of item: "
+                                                "«hex» is a sample only for a fixed hue; "
+                                                "a free hue has lightness_range and chroma_range, without a hex; «area» — its share of "
                                                 "the outfit's area, %; «echo» — it only echoes one of the large "
                                                 "items; «hue»: free — the scheme sets only its lightness and "
                                                 "mutedness there; «shares_role_with» — kinds in the same role, "
                                                 "where the same colour is a deliberate echo",
-                 як="a measured fact, not an order: an item close to its kind's colour carries the scheme; "
+                 як="a scheme constraint: an item within its kind's window carries the scheme; "
                     "which item, and how close, is yours"),
         _ЗП.Поле("person.palette.colour_kinds", "the kinds of item that carry the scheme's colour",
                  як="an outfit in which none of them carries colour does not keep the scheme: it reads as "
@@ -1385,8 +1385,13 @@ def людина_для_пакета(тіло, палітри, гілка=None, 
     акценту, а не призначений акцент.
     """
     л = {}
+    import face_features as _ОБ
+    вимір = (палітри or {}).get("ознаки_обличчя")
+    if вимір:
+        л["ознаки_колориту"] = _ОБ.для_моделі(вимір)
     рівень = (палітри or {}).get("контраст_рівень")
-    if рівень in (_ПР.ЛЮДИНА["поля"]["контраст"].get("значення") or ()):
+    if (вимір and вимір["контраст"].get("доступно") and
+            рівень in (_ПР.ЛЮДИНА["поля"]["контраст"].get("значення") or ())):
         л["контраст"] = рівень
     т = (палітри or {}).get("температура") or {}
     _кл = т.get("клас") if т.get("придатно") else None
