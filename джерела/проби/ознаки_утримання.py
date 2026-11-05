@@ -6,6 +6,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 import face_features as Ф
 import colorspace as С
 import вибір_палітри as В
+import palette as П
 
 
 def main():
@@ -16,6 +17,12 @@ def main():
             о = Ф.ознака_палітри(F, назва)
             assert not о["доступно"] and о["значення"] is None and о["джерело"] == "оцінка моделі"
         assert Ф.ознаки(F)["контраст"]["value_gap"] is None
+    слова = {"метал": "срібло"}
+    пер = dict(особа=Ф.ознаки(F)["контраст"], самозвіт=слова,
+               палітри=dict(температура=П.температура(F, самозвіт=слова)))
+    о = В._особа(F, пер)
+    assert о["undertone"]["available"] and о["undertone"]["source"] == "self_report"
+    assert not о["contrast"]["available"] and not о["eyes"]["available"]
     F["_meta"]["protocol"] = "spectro"
     к = Ф.ознака_палітри(F, "контраст")
     assert к["доступно"] and к["значення"] == 0 and к["рівень"] == "низький"
@@ -24,7 +31,7 @@ def main():
         риса = dict(available=доступно, level=рівень, light_dark_gap=gap)
         assert В.ЗВІРКА_ПРИЧИН["why_her_contrast"]("scheme", None, {"особа": {"contrast": риса}})[0] == очікування
     assert Ф.підтон_палітри(F, самозвіт={"метал": "срібло"})["доступно"]
-    print("утримання перед порогами, зміна джерела, нульовий вимір і причина: пройдено")
+    print("утримання перед порогами, самозвіт, зміна джерела, нульовий вимір і причина: пройдено")
 
 
 if __name__ == "__main__":
