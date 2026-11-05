@@ -53,6 +53,19 @@ try {
     Remove-Item -LiteralPath (Get-StatePath (Get-MarkerKey $done) $target) -Force
     Restore-FinishedMarkerState $target
     Check 'прапор restored: знятий стан не воскресає' (Takes $done)
+    # Старий WAIT не заступає завершений результат; WAIT, записаний після результату (повтор), — заступає.
+    $w1 = Mk 'wait-старий/gpt-6.1-sol-high/1/p0'; $w2 = Mk 'wait-новий/gpt-6.1-sol-high/1/p0'
+    foreach ($w in @($w1, $w2)) { Write-FileAtomic (Get-StatePath (Get-MarkerKey $w) $old) 'WAIT {"until":9999999999,"group":"TEST"}' }
+    (Get-Item -LiteralPath (Get-StatePath (Get-MarkerKey $w1) $old)).LastWriteTimeUtc = [datetime]::UtcNow.AddHours(-3)
+    foreach ($w in @(@('wait-старий','20261105-120000-eeeeeeeeeeee'), @('wait-новий','20261105-120000-ffffffffffff'))) {
+        $f = "$OutDir/$($w[1]).json"
+        Write-FileAtomic $f (@{ v=1; id=$w[1]; slug=$w[0]; model='gpt-6.1-sol-high'; n=1; marker=$script:sha; cond='p0'; code='BLOCKED' } | ConvertTo-Json -Compress)
+        (Get-Item -LiteralPath $f).LastWriteTimeUtc = [datetime]::UtcNow.AddHours(-1)
+    }
+    Remove-Item -LiteralPath "$target/restored"
+    Restore-FinishedMarkerState $target
+    Check 'старий WAIT не заступає пізніший завершений результат' ([IO.File]::ReadAllText((Get-StatePath (Get-MarkerKey $w1) $target)).StartsWith('DONE '))
+    Check 'WAIT, записаний після результату, лишається WAIT' ([IO.File]::ReadAllText((Get-StatePath (Get-MarkerKey $w2) $target)).StartsWith('WAIT '))
     # Стан після перенесення в свіжій теці: Initialize + Restore разом.
     Remove-Item -LiteralPath $target -Recurse -Force
     $script:StateDir = $old

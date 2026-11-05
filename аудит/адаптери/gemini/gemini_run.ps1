@@ -1403,12 +1403,6 @@ function Restore-FinishedMarkerState([string]$Target) {
         try { [IO.File]::Move($tmp, $Path); 1 } catch { Remove-Item -LiteralPath $tmp -Force -ErrorAction SilentlyContinue; 0 }
     }
     $old = Join-Path $RunsDir 'state'
-    foreach ($file in @(Get-ChildItem -LiteralPath $old -Filter '*.txt' -File -ErrorAction SilentlyContinue)) {
-        try {
-            $text = [IO.File]::ReadAllText($file.FullName, $script:Utf8)
-            if ($file.Extension -ceq '.txt' -and -not $text.StartsWith('STARTED ')) { $added += & $put (Join-Path $Target $file.Name) $text }
-        } catch { Write-Log "відновлення стану: $($file.Name): $($_.Exception.Message)" }
-    }
     $results = @(Get-ChildItem -LiteralPath $OutDir -Filter '*.json' -File -ErrorAction SilentlyContinue |
         Where-Object { $_.Name -cmatch '^[0-9]{8}-[0-9]{6}-[0-9a-f]{12}\.json$' } | Sort-Object Name -Descending)
     foreach ($file in $results) {
@@ -1418,7 +1412,17 @@ function Restore-FinishedMarkerState([string]$Target) {
             $n = [string](Get-JsonProp $r 'n'); $cond = [string](Get-JsonProp $r 'cond'); $sha = [string](Get-JsonProp $r 'marker')
             if (-not $code -or $code -cin @('QUOTA_ZERO', 'ISOLATION') -or $sha -cnotmatch '^[0-9a-f]{40}$' -or -not $slug -or -not $model -or $n -cnotmatch '^[1-9][0-9]*$') { continue }
             $ref = "refs/remotes/origin/gemini-queue/$slug/$model/$n" + $(if ($cond) { "/$cond" } else { '' })
+            # Завершений результат важливіший за старий WAIT, крім WAIT, записаного після нього (повтор після сну чи квоти).
+            $prev = Get-StatePath "$ref $sha" $old
+            if ([IO.File]::Exists($prev) -and [IO.File]::ReadAllText($prev, $script:Utf8).StartsWith('WAIT ') -and
+                (Get-Item -LiteralPath $prev).LastWriteTimeUtc -gt $file.LastWriteTimeUtc) { continue }
             $added += & $put (Get-StatePath "$ref $sha" $Target) ('DONE ' + $file.BaseName + ' ' + $code)
+        } catch { Write-Log "відновлення стану: $($file.Name): $($_.Exception.Message)" }
+    }
+    foreach ($file in @(Get-ChildItem -LiteralPath $old -Filter '*.txt' -File -ErrorAction SilentlyContinue)) {
+        try {
+            $text = [IO.File]::ReadAllText($file.FullName, $script:Utf8)
+            if ($file.Extension -ceq '.txt' -and -not $text.StartsWith('STARTED ')) { $added += & $put (Join-Path $Target $file.Name) $text }
         } catch { Write-Log "відновлення стану: $($file.Name): $($_.Exception.Message)" }
     }
     Write-FileAtomic $flag ([string]$added)
