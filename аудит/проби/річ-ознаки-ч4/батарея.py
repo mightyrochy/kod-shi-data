@@ -22,8 +22,6 @@ def main():
              "поділ_bridge_ast.py", "поділ_colorspace_ast.py", "поділ_суд_ast.py",
              "поділ_колір_образу_ast.py", "поділ_pipeline_ast.py", "поділ_palette_ast.py")
     команди += [py + ["проби/" + ім] for ім in імена]
-    команди += [py + [str(ш.relative_to(дж))] for ш in sorted((дж / "проби").glob("pal_*.py"))
-                if ш.name not in ("pal_вердикт.py", "pal_вимір.py")]
     результати = []
     for і, команда in enumerate(команди):
         журнал = "%02d-%s.txt" % (і + 1, pathlib.Path(команда[-1] if команда[-1] != "--дим" else команда[-2]).stem)

@@ -32,6 +32,8 @@ async function main() {
       малюватиСходинкуПомадП();
     }, дані);
     await page.screenshot({ path: path.join(__dirname, 'помада-390x844.png'), animations: 'disabled' });
+    await page.locator('#сц-губи-ряд [role="button"]').last().scrollIntoViewIfNeeded();
+    await page.screenshot({ path: path.join(__dirname, 'помада-низ-390x844.png'), animations: 'disabled' });
     const факт = await page.evaluate(() => ({ текст: document.getElementById('сц-губи-стан').textContent,
       відтінків: document.querySelectorAll('#сц-губи-ряд [role="button"]').length,
       переповнення: document.documentElement.scrollWidth > innerWidth }));
