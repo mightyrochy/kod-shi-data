@@ -42,15 +42,17 @@ def commit(path):
     git('add', path)
     git('-c', 'user.name=g', '-c', 'user.email=g@x', 'commit', '-q', '-m', 'крок: ' + path)
 
-from fake_timeline import тримати as hold
+from fake_timeline import тримати as hold, замкнути
 
 prompt_arg = args[-1]
 path = re.search(r'файл (\S+) ', prompt_arg).group(1)
 content = open(path, encoding='utf-8').read()
 open(os.path.join(STATE, KIND + '.prompts.log'), 'a').write(content + '\n=====\n')
 p = os.path.join(STATE, KIND + '.turns')
-n = int(open(p).read()) + 1 if os.path.exists(p) else 1
-open(p, 'w').write(str(n))
+with замкнути(p):
+    n = int(open(p).read()) + 1 if os.path.exists(p) else 1
+    with open(p, 'w') as counter:
+        counter.write(str(n))
 m = re.search(r'ГОТОВО gemini/(\S+) <', content)
 slug = m.group(1) if m else '?'
 def done():

@@ -10,6 +10,7 @@ sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent.parent))
 import bridge as B, реєстри as РЕ
 
 вх = json.load(open("стенд_вх.json", encoding="utf-8")); вх["гілка"] = 0
+вх["сценарій"]["заявлений_злам"] = False  # Проба незаявленого зламу, а не браку входу.
 r = json.loads(B.виклик("запити", json.dumps(вх, ensure_ascii=False)))
 пул = r["пакети"]["1"]["пул"]
 за_реєстром = {}

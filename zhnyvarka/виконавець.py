@@ -31,9 +31,9 @@ import argparse, asyncio, csv, datetime, hashlib, json, os, re, sys, time, threa
 from urllib.parse import urlparse, urljoin
 from pathlib import Path
 from журнал_проходу import ЖурналПроходу, відбиток_рецепта
-from json_прохід import позначити, відновити, сторінка, МЕЖА_СТОРІНОК
+from json_прохід import позначити, відновити, сторінка, МЕЖА_СТОРІНОК, прочитати_json, записати as записати_json
 from журнал_карток import прочитати
-from журнал_таблиці import дописати
+from журнал_таблиці import дописати, створити
 from журнал_проходу import ЗАВЕРШЕНІ
 
 ВЕРСІЯ = "виконавець v1 · 2026-09-07"
@@ -120,13 +120,52 @@ _РОЗДІЛ_ТАК = re.compile(r"sukn|platt|plat[iy]|dress|bluz|blous|sorochk
   return {href: a.href, text: (a.innerText || '').trim().slice(0, 80), img: !!a.querySelector('img'), near: near.slice(0, 300)};
 })"""
 
-ЗЛІПОК_DOM = """() => {
+ЗЛІПОК_DOM = """(рецепт) => {
+  const селектор = typeof рецепт === 'string' ? рецепт : рецепт && рецепт.блок;
+  const назва = typeof рецепт === 'object' && рецепт ? рецепт.назва || 'h1' : 'h1';
+  let h1 = document.querySelector('h1');
+  let кандидати = [];
+  try {
+    кандидати = селектор ? [...document.querySelectorAll(селектор)] : [...document.querySelectorAll('[itemtype$="/Product"], [itemtype$="/Product/"]')];
+  } catch (e) { кандидати = []; }
+  кандидати = кандидати.filter(e => e.tagName !== 'BODY' && e.tagName !== 'HTML');
+  const зНазвою = кандидати.filter(e => e.querySelector(назва));
+  if (зНазвою.length) кандидати = зНазвою;
+  else if (h1 || (рецепт && рецепт.назва)) кандидати = [];
+  const містить = (обгортка, елемент) => {
+    let предок = елемент;
+    while (предок) { if (предок === обгортка) return true; предок = предок.parentElement; }
+    return false;
+  };
+  const обгортка = кандидати[0];
+  const однозначно = обгортка && кандидати.every(e => містить(обгортка, e));
+  const власники = [];
+  (однозначно ? обгортка.querySelectorAll(назва) : []).forEach(заголовок => {
+    const предки = кандидати.filter(e => містить(e, заголовок));
+    const власник = предки[предки.length - 1];
+    if (!власники.includes(власник)) власники.push(власник);
+  });
+  const основні = власники.filter(e => !власники.some(інший => інший !== e && містить(інший, e)));
+  const вузол = основні.length === 1 ? основні[0] : кандидати[кандидати.length - 1];
+  const підтверджено = основні.length === 1 || (!основні.length && кандидати.every(e => містить(e, вузол)));
+  const блок = однозначно && підтверджено ? вузол.cloneNode(true) : null;
+  if (блок && рецепт && рецепт.виключити) блок.querySelectorAll(рецепт.виключити).forEach(e => e.remove());
+  if (блок) {
+    const вкладені = [...блок.querySelectorAll(селектор || '[itemtype$="/Product"], [itemtype$="/Product/"]')];
+    h1 = [...блок.querySelectorAll(назва)].find(e => !вкладені.some(інший => містить(інший, e))) || null;
+    if (h1) вкладені.forEach(e => {
+      if (!містить(e, h1) && e.querySelector(назва)) e.remove();
+    });
+    блок.querySelectorAll('script, style, noscript, [class*="related"], [class*="similar"], [class*="recommend"], [class*="upsell"], [class*="viewed"]').forEach(e => e.remove());
+    блок.querySelectorAll('header, footer, nav').forEach(e => { if (!e.querySelector(назва)) e.remove(); });
+  }
+  h1 = блок ? блок.querySelector(назва) : null;
   const T = e => (e && (e.innerText || e.textContent) || '').replace(/\\s+/g, ' ').trim();
   const rows = [];
-  document.querySelectorAll('tr').forEach(tr => { const c = tr.querySelectorAll('td,th'); if (c.length === 2) rows.push([T(c[0]), T(c[1])]); });
-  document.querySelectorAll('dl').forEach(dl => { const dt = dl.querySelectorAll('dt'), dd = dl.querySelectorAll('dd');
+  (блок ? блок.querySelectorAll('tr') : []).forEach(tr => { const c = tr.querySelectorAll('td,th'); if (c.length === 2) rows.push([T(c[0]), T(c[1])]); });
+  (блок ? блок.querySelectorAll('dl') : []).forEach(dl => { const dt = dl.querySelectorAll('dt'), dd = dl.querySelectorAll('dd');
     for (let i = 0; i < Math.min(dt.length, dd.length); i++) rows.push([T(dt[i]), T(dd[i])]); });
-  document.querySelectorAll('li, p, div, span').forEach(el => { if (el.children.length <= 3) { const t = T(el);
+  (блок ? блок.querySelectorAll('li, p, div, span') : []).forEach(el => { if (el.children.length <= 3) { const t = T(el);
     if (t.length > 4 && t.length < 160) { const m = t.match(/^([^:]{2,40}):\\s*(.{1,120})$/); if (m) rows.push([m[1].trim(), m[2].trim()]); } } });
   // ── ЧИЙ ЦЕ ЗНІМОК (рядок 126 дошки, 21.09.2026) ────────────────────────────
   // Доти `imgs` брався з УСІХ `img, source` сторінки. На brenda.ua це означало
@@ -164,19 +203,16 @@ _РОЗДІЛ_ТАК = re.compile(r"sukn|platt|plat[iy]|dress|bluz|blous|sorochk
   });
   const imgs = сире
     .filter(Boolean).flatMap(s => String(s).split(',').map(x => x.trim().split(' ')[0])).filter(s => /\\.(jpe?g|webp|png)/i.test(s) && !/logo|icon|sprite|payment|visa|master|flag|banner|placeholder|pixel|1x1|sizes?\\.(jpe?g|png|webp)|size[-_]?(chart|table|guide)/i.test(s));
-  let main0 = document.body, best = 0;
-  document.querySelectorAll('main, [role=main], #content, .product-page, .product, .card-product, #product, .product-detail, .product__info, [itemtype*=Product]').forEach(e => {
-    const n = (e.textContent || '').length; if (n > best) { best = n; main0 = e; } });
-  if (best < 500) main0 = document.body;
-  const main = main0.cloneNode(true); main.querySelectorAll('script, style, noscript, header, footer, nav').forEach(e => e.remove());
+  const main = блок ? блок.cloneNode(true) : null;
+  if (main) main.querySelectorAll('script, style, noscript, header, footer, nav').forEach(e => e.remove());
   const sizeRe = /^(XXS|XS|S|M|L|XL|XXL|XXXL|3XL|4XL|5XL|\\d{2}([-\\/]\\d{2})?|ONE ?SIZE|UNI|універсальн\\w*|один розмір)$/i;
   const sizes = [];
-  document.querySelectorAll('select option, button, label, a, span, li, div').forEach(e => { if (e.children.length <= 1) { const t = T(e);
+  (блок ? блок.querySelectorAll('select option, button, label, a, span, li, div') : []).forEach(e => { if (e.children.length <= 1) { const t = T(e);
     if (sizeRe.test(t)) sizes.push({р: t.toUpperCase(), нема: !!(e.disabled || /disabled|out-of-stock|outofstock|sold|nostock|unavailable|not-available|нема|немає/i.test(e.className + ' ' + (e.title || '')))}); } });
   const crumbs = [...document.querySelectorAll('[class*=breadcrumb] a, [class*=breadcrumb] span, nav[aria-label*=read] a, [itemtype*=BreadcrumbList] [itemprop=name]')].map(T).filter(Boolean);
   const opts = [...document.querySelectorAll('[class*=color] [title], [class*=colour] [title], [data-color], [class*=color] option')].map(e => e.title || e.dataset.color || T(e)).filter(Boolean);
-  return {h1: T(document.querySelector('h1')), title: document.title, rows, imgs: [...new Set(imgs)], text: (main.textContent || '').replace(/\\s+/g, ' ').trim().slice(0, 30000),
-          sizes, crumbs, opts: [...new Set(opts)].slice(0, 30), has_table: !!document.querySelector('table, dl, [class*=characteristic], [class*=attribute], [class*=params], [class*=specif]')};
+  return {h1: T(блок ? h1 : null), title: document.title, rows, imgs: [...new Set(imgs)], text: (main ? main.textContent : '').replace(/\\s+/g, ' ').trim().slice(0, 30000),
+          sizes, crumbs, opts: [...new Set(opts)].slice(0, 30), has_table: !!(блок && блок.querySelector('table, dl, [class*=characteristic], [class*=attribute], [class*=params], [class*=specif]'))};
 }"""
 
 
@@ -272,8 +308,11 @@ def _колір_зі_slug(url):
     return знайдені[0] if знайдені else ""
 
 
-def картка_з_dom(url, html, dom):
-    """Г1: повний зліпок картки з DOM браузера + HTML."""
+def картка_з_dom(url, html, dom, факти=None):
+    """Складає браузерну картку зі спільного читача товару й зліпка його блоку."""
+    import жниварка as ж
+    if факти is None:
+        факти = ж.факти_з_картки(html, url)
     ld = ld_product(html) or {}
     o = ог(html)
     рядки = [(м, з) for м, з in dom.get("rows") or [] if м and з and len(м) < 60 and not _ШУМ_РЯДКА.search(м) and not re.search(r"\d{1,2}:\d{2}", з)]
@@ -283,12 +322,9 @@ def картка_з_dom(url, html, dom):
         к = (м.lower(), з.lower())
         if к not in бач:
             бач.add(к); рядки2.append((м, з))
-    назва = dom.get("h1") or ld.get("name") or o.get("og:title") or ""
+    назва = факти.get("назва") or ""
     текст = dom.get("text") or ""
-    опис = ld.get("description") or o.get("og:description") or ""
-    м = re.search(r"(?:опис|описание|description)\s*(.{200,3000}?)(?:характеристик|склад|доставк|оплат|$)", текст, re.I | re.S)
-    if м and len(м.group(1)) > len(опис):
-        опис = м.group(1).strip()
+    опис = факти.get("опис") or ""
     фото = [urljoin(url, x) for x in dom.get("imgs") or []]
     if ld.get("image"):
         for x in (ld["image"] if isinstance(ld["image"], list) else [ld["image"]]):
@@ -297,9 +333,9 @@ def картка_з_dom(url, html, dom):
     if o.get("og:image") and o["og:image"] not in фото:
         фото.insert(0, urljoin(url, o["og:image"]))
     розміри = sorted({(s["р"] + (" нема" if s.get("нема") else "")) for s in dom.get("sizes") or []})
-    склад = sorted({x.strip() for x in _СКЛАД.findall(текст)})[:12]
-    ціна = (_ЦІНА.search(текст) or [None])
-    ціна = ціна.group(0) if hasattr(ціна, "group") else ""
+    склад_блоку = (факти.get("характеристики") or {}).get("склад")
+    склад = [склад_блоку] if склад_блоку else []
+    ціна = f"{факти['ціна']} {факти.get('валюта') or ''}".strip() if факти.get("ціна") is not None else ""
     склад = [x for x in склад if not re.search(r"від вартості|від ціни|від суми|знижк", x, re.I)]
     for м, з in рядки2:                               # взуття/сумки: «Матеріал верху: шкіра» — це склад без відсотків
         if re.search(r"матеріал|склад|тканин|верх|підкладк|підошв|устілк", м, re.I) and _ТКАНИНА.search(з) and len(з) < 80:
@@ -315,11 +351,11 @@ def картка_з_dom(url, html, dom):
         of0 = ld["offers"] if isinstance(ld["offers"], dict) else (ld["offers"] or [{}])[0]
         if isinstance(of0, dict) and of0.get("price"):
             ціна = f"{of0['price']} {of0.get('priceCurrency', '')}".strip()
-    к = {"url": url, "назва": назва[:200], "слот_шлях": " > ".join(dict.fromkeys(dom.get("crumbs") or []))[:200] or (ld.get("category") or "")[:200],
+    к = {"url": url, "назва": назва[:200], "слот_шлях": " > ".join(dict.fromkeys(dom.get("crumbs") or факти.get("крихти") or []))[:200],
          "колір": колір, "колір_hex": колір_hex, "колір_джерело": колір_джерело, "склад": склад, "розміри": розміри, "наявність": None,
          "ціна": ціна, "опис": опис[:4000], "характеристики": рядки2[:120], "фото": фото[:24],
-         "артикул": (ld.get("sku") or ld.get("mpn") or next((з for м, з in рядки2 if re.search(r"артикул|код товару|sku|модель", м, re.I)), ""))[:60],
-         "бренд": (ld.get("brand", {}) or {}).get("name", "") if isinstance(ld.get("brand"), dict) else str(ld.get("brand") or "")[:60],
+         "артикул": (факти.get("артикул") or next((з for м, з in рядки2 if re.search(r"артикул|код товару|sku|модель", м, re.I)), ""))[:60],
+         "бренд": факти.get("бренд") or "",
          "ld": ld, "og": o, "текст": текст[:12000], "опції_кольору": dom.get("opts") or [], "має_таблицю": bool(dom.get("has_table")),
          "назва_російська": bool(_РОСІЙСЬКА.search(назва))}
     if ld.get("offers"):
@@ -413,8 +449,7 @@ class Виконавець:
         self.проходи = {}
         self.замок = threading.Lock()
         self.зведення = self.корінь / "зведення_жнив.tsv"
-        if not self.зведення.exists() or not self.зведення.stat().st_size:
-            open(self.зведення, "w", encoding="utf-8").write("\t".join(ШАПКА_ЗВЕДЕННЯ) + "\n")
+        створити(self.зведення, ШАПКА_ЗВЕДЕННЯ)
 
     # ── журнал ──
     def _журнал(self, домен):
@@ -428,15 +463,7 @@ class Виконавець:
     def _стан(self, домен):
         """Читає курсор пошуку; обірваний JSON діагностує й повторює пошук від початку."""
         ш = str(self.корінь / "сирі" / f"{домен}.стан.json")
-        if os.path.exists(ш):
-            try:
-                стан = json.loads(Path(ш).read_bytes())
-                if not isinstance(стан, dict):
-                    raise ValueError("STATE_INVALID")
-                return ш, стан
-            except ValueError:
-                лог(f"JOURNAL_CORRUPT: {ш}")
-        return ш, {"розділи": {}, "sitemap": [], "помилки": []}
+        return ш, прочитати_json(ш) or {"розділи": {}, "sitemap": [], "помилки": []}
 
     def _пиши(self, ш, зап):
         """Дописує цілий запис окремим рядком, навіть після обірваного хвоста."""
@@ -591,7 +618,8 @@ class Виконавець:
 
     async def _json_сімейство(self, контекст, р, л, ш, взято, корінь):
         """Продовжує збережені JSON-сторінки; кінець доводить порожня порція з HTTP 200."""
-        підпис = hashlib.sha256(json.dumps(р, sort_keys=True).encode()).hexdigest()
+        підпис = відбиток_рецепта(р)
+        взято = {з["url"]: з.get("стан") for з in прочитати(ш)[0] if з.get("рецепт") == підпис}
         збережений = відновити(self.корінь, р["домен"], підпис, getattr(self.a, "оновити_перелік", False))
         n = збережений.get("сторінка", 1)
         шаблон = р["пошук"].replace("per_page=100", "per_page=50")
@@ -638,8 +666,13 @@ class Виконавець:
                 л["відкрито"] += 1
                 стан = завершити(к)
                 л[стан] = л.get(стан, 0) + 1; л["бали"].append(к["бал"])
+                import жниварка as ж
+                факти = (ж.факти_shopify(p, корінь) if р["сімейство"] == "shopify" else
+                         ж.факти_woo(p, корінь, ж.woo_рецепт(р["домен"])))
+                записи = [ж.канонічний_запис(ф, {"домен": р["домен"]}, р["сімейство"]) for ф in факти]
                 self._пиши(ш, {"url": к["url"], "хеш": hashlib.md5(json.dumps(p, sort_keys=True).encode()).hexdigest()[:12],
-                               "дата": datetime.date.today().isoformat(), "стан": стан, "бал": к["бал"], "поля_є": к["поля_є"], "картка": к})
+                               "дата": datetime.date.today().isoformat(), "стан": стан, "бал": к["бал"], "поля_є": к["поля_є"], "картка": к,
+                               "рецепт": підпис, "записи": записи})
                 if л["відкрито"] >= self.a.стеля:
                     позначити(self.корінь, р["домен"], False, n, префікси[0], підпис)
                     л["нотатка"] += f"стеля {self.a.стеля}; "; return
@@ -662,7 +695,7 @@ class Виконавець:
             л["нотатка"] += "sitemap: " + str(e)[:80] + "; "
         рх = re.compile(р["річ_regex"]) if р.get("річ_regex") else None
         адреси = [a for a in dict.fromkeys(адреси) if not _СЛУЖБОВЕ.search(a) and (not рх or рх.search(urlparse(a).path))]
-        json.dump(стан, open(str(self.корінь / "сирі" / f"{р['домен']}.стан.json"), "w", encoding="utf-8"), ensure_ascii=False, indent=1)
+        записати_json(self.корінь / "сирі" / f"{р['домен']}.стан.json", стан)
         return адреси
 
     async def _sitemap_адреси(self, контекст, р, л, корінь):
@@ -765,7 +798,7 @@ class Виконавець:
         finally:
             await сторінка.close()
             стан["розділи_знайдено"] = розділи
-            json.dump(стан, open(ш_стан, "w", encoding="utf-8"), ensure_ascii=False, indent=1)
+            записати_json(Path(ш_стан), стан)
         return list(dict.fromkeys(адреси))
 
     async def _картка(self, сторінка, р, л, ш, url):
@@ -791,14 +824,25 @@ class Виконавець:
             if (r and r.status >= 400) or len(html) < 1500:
                 зап["стан"], зап["код"] = "збій", (r.status if r else None); л["збій"] += 1
                 self._пиши(ш, зап); return
-            dom = await сторінка.evaluate(ЗЛІПОК_DOM)
-            к = картка_з_dom(сторінка.url, html, dom)
+            import жниварка as ж
+            селектори = ж.рецепт_селекторів(р["домен"])
+            селектори.update({к: р[кол] for к, кол in (("опис", "селектор_опису"), ("склад", "селектор_складу"),
+                               ("характеристик", "селектор_характеристик"), ("блок", "селектор_блоку"),
+                               ("назва", "селектор_назви"), ("виключити", "селектор_виключень")) if р.get(кол)})
+            dom = await сторінка.evaluate(ЗЛІПОК_DOM, селектори)
+            ф = ж.факти_з_картки(html, сторінка.url, селектори)
+            к = картка_з_dom(сторінка.url, html, dom, ф)
+            ф["url"] = сторінка.url
+            if ф.get("dom_помилка"):
+                raise ValueError("PRODUCT_DOM_INVALID")
             # це взагалі картка? назва + (ціна або ld Product або og product)
-            if not (к["назва"] and (к["ціна"] or к["ld"] or (к["og"].get("og:type") or "").startswith("product"))):
+            if not ф.get("є_товар"):
                 зап["стан"] = "не_картка"; л["не_картка"] += 1; self._пиши(ш, зап); return
             стан = завершити(к)
             л[стан] = л.get(стан, 0) + 1; л["бали"].append(к["бал"])
-            зап.update({"хеш": hashlib.md5(html.encode("utf-8", "replace")).hexdigest()[:12], "стан": стан, "бал": к["бал"], "поля_є": к["поля_є"], "картка": к})
+            з = ж.канонічний_запис(ф, {"домен": р["домен"]}, "картка")
+            зап.update({"хеш": hashlib.md5(html.encode("utf-8", "replace")).hexdigest()[:12], "стан": стан, "бал": к["бал"], "поля_є": к["поля_є"], "картка": к,
+                        "записи": [з], "рецепт": відбиток_рецепта(р)})
             self._пиши(ш, зап)
         except Exception as e:  # noqa
             зап["стан"], зап["помилка"] = "збій", str(e).splitlines()[0][:160]; л["збій"] += 1
@@ -843,9 +887,12 @@ class Виконавець:
 
 
 def читати_рецепти(шлях):
+    """Читає рецепти з тими самими стартами для виконавця й рішення про повтор обходу."""
+    from розвідка import МАГАЗИНИ
+    старти = dict(МАГАЗИНИ)
     з = list(csv.DictReader(open(шлях, encoding="utf-8"), delimiter="\t"))
     for р in з:
-        р["старт"] = р.get("старт") or ""
+        р["старт"] = р.get("старт") or старти.get(р["домен"], "https://" + р["домен"] + "/")
     return з
 
 

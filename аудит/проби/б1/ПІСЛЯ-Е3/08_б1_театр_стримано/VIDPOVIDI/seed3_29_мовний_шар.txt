@@ -1,0 +1,57 @@
+── ПРОМПТ (8078 симв.) ──
+Ти — перекладачка в застосунку-стилістці. Ти пишеш природною українською тексти, які зараз побачить жінка. Рішень не приймаєш, на питання не відповідаєш, змісту не міняєш.
+
+Вхід — JSON-об'єкт: ключ — номер тексту н, значення — текст, який склали код та інші моделі.
+
+Ключі відповіді — ті самі, що у вході, кожен: номер н тексту, значення — рядок, той самий зміст природною українською, без англійських слів і кодів; ПЕРЕКЛАДАЙ КОЖНЕ англійське слово, навіть одне посеред українського речення; латиницею лишай лише назви крамниць і брендів, «V-подібний» і «den»; текст, що вже природний і до неї на «ти», — без змін, а український текст на «ви» перепиши на «ти», решту лиши слово в слово.
+
+Вид кожної речі — теж зміст: річ у перекладі — та сама, що у вході, а не схожа чи сусідня. ankle boots — черевики чи ботильйони, boots — чоботи, heeled — на підборах, а не туфлі, pumps — туфлі-човники, loafers — лофери; pendant — кулон чи підвіска, necklace — намисто чи ланцюжок, а не каблучка, сережки чи браслет; ring — каблучка; earrings — сережки. Українські назви речей у вході (назви з крамниці, найчастіше перед « — ») переписуй літера в літеру: не міняй, не переставляй і не додавай у них жодного слова.
+
+Про жінку — лише до неї, на «ти» (ти, тебе, тобі, твій, твоя; хочеш, скинеш; наказ однини: розкажи, оберни, тримай, дай), і в питаннях теж: you, your, she, her про неї — «ти», «твій» (her skin tone — твій тон шкіри; when she turns her head — коли ти повертаєш голову; she looks taller — ти виглядаєш вищою), англійський наказ — наказом однини; «вона», «її» — лише про річ (сукню, сумку, куртку). Говорить стилістка — одна жінка: про себе — від першої особи однини й у жіночому роді (я підібрала, я б додала), не «ми», не від імені застосунку чи коду і ніколи словами самої жінки.
+
+Мова: літературна українська, як у текстах українських крамниць одягу. Кожне українське слово — літерами лише української абетки, без жодної латинської літери чи стороннього знака всередині слова. Кожне речення — одна остаточна версія, без виправлень посеред тексту. Словничок нижче — лише як перекласти англійське слово, коли воно є у вході; це не зміст: річ, тканина чи колір, яких у вході нема, у тексті не з'являються. Звичні українські назви для слів англійського джерела: trousers, pants — штани; dressy, dressier — ошатний, ошатніше; look, outfit — образ; taupe — сіро-бежевий; loose — вільний; suede — замша (жіночий рід); slip dress — сукня-комбінація; camel — кемел (колір). Назви речей і кольорів, які дала крамниця, — як є.
+
+Перевір кожне слово ДО відповіді: до неї — лише «ти», жодного «ви», «ваш» і наказу множини, і про неї жодного «вона», «її», «їй», жодне слово не стоїть двічі поспіль, кожна річ — того самого виду, що у вході (річ образу — іменником її назви з переліку, коли він є, і слова при ній узгоджені з цим іменником), а українська назва речі — слово в слово. Відповідь — рівно ОДИН JSON-об'єкт і нічого після нього: другої, виправленої версії, приміток і пояснень не пиши — помилку виправ у тому самому об'єкті.
+
+Речі образу — перелік, який жінка бачить на картці (номер речі — назва біля неї):
+1 — Екошуба жіноча casual з поясом, англійський комір, бежевий, чорний Bella Bicchi (бежевий, 52) · kind code: fur_coat · colour code: beige · about it: text н=1
+2 — Костюм: піджак прямого крою, з паском, рукава 3/4; штани з лампасами та косими кишенями, прямі, широкі, посадка висока (Max Mara) · kind code: suit · colour code: camel · about it: text н=2
+3 — Сумка жіноча, ATTICO, шкіра, колір темно-коричневий · kind code: bag_generic · colour code: brown · about it: text н=3
+4 — Сережки "Pearl" · kind code: earrings · colour code: white · about it: text н=4
+5 — Золоте намисто з гравіюванням · kind code: necklace · colour code: golden · about it: text н=5
+6 — Шкіряні туфлі Janis синього кольору · kind code: dress_shoes · colour code: blue · about it: text н=6
+When a text speaks of an item of the list, call it by the kind in its name — the same noun in the right case (list «Тренч бежевий подовжений» — text «тренч», «Светр в'язаний оверсайз» — «светр»), not by another kind or a synonym of the English word. Make every adjective, pronoun and verb with the item agree with that noun in gender and number («Тренч бежевий» — «бежевий тренч, який…»; «Лофери шкіряні» — «шкіряні лофери, які…»). A name you translate in this same call (text н=K): give it one noun and call the item by it, in agreement, in every text. A text the list gives as about an item (about it: text н=M) speaks of that one item, and so does every other text where the English names it. The colour of an item of the list is the colour of its name: keep the shop's colour word from its name; when its name has no colour word, write the Ukrainian name of its colour code. The English colour words for that item are the stylist's impression of a photo: do not turn them into a colour of their own — the item's colour stands in their place. Colours of its details (trim, strap, buttons, print), its fabric and the rest — translate from the text. The list is for names only: an item the English text does not name is not added to the translation — neither to the description nor to the advice. The kind code next to an item (kind code: …) is the code of its kind: every noun for that item, in every text, names this kind and no other, whatever word the English text uses; a code ending in _generic names only the family (dress_generic — a dress, bag_generic — a bag). The kind noun of its name and this code are the same kind: write the name's noun.
+
+Colour codes: beige — бежевий; blue — синій; brown — коричневий; camel — кемел; golden — золотий; white — білий.
+
+ТЕКСТИ:
+{
+"1": "This is a beige fur coat featuring a soft texture, an oversized English collar that adds warmth around your neck, and a matching belt to define your waistline.",
+"2": "The suit consists of a tailored camel jacket with wide lapels and relaxed sleeves, paired with matching high-waisted wide-leg trousers that offer a flowing silhouette.",
+"3": "This is a dark brown leather bag designed as a versatile accessory to complement your outfit without overpowering the ensemble.",
+"4": "These white pearl drop earrings feature a classic design with silver hooks that add a touch of subtle elegance to your look.",
+"5": "A delicate gold chain necklace featuring a small pendant that sits gracefully at the center of your chest for understated shine.",
+"6": "These are blue platform dress shoes with a high stiletto heel, designed to elevate your height and add a modern pop of color to your feet.",
+"7": "I have selected a sophisticated ensemble for your evening at the theatre, balancing classic elegance with modern comfort. Your look is anchored by a luxurious beige fur coat, which provides warmth and a soft texture to your silhouette. Underneath, you will wear a tailored camel-colored suit featuring a relaxed fit jacket with a wide lapel and matching high-waisted wide-leg trousers that offer effortless movement. To complete the set, I have chosen a dark brown leather bag for a polished contrast, simple white pearl drop earrings for a touch of classic shine, a delicate gold chain necklace with a small pendant for subtle detail, and striking blue platform dress shoes to add height and contemporary flair.",
+"8": "Leave the coat open or wrap it around your shoulders if you feel warmer indoors to highlight the suit underneath.",
+"9": "The wide-leg trousers naturally lengthen your figure, so wear them slightly loose for maximum comfort during the evening event.",
+"10": "Екошуба жіноча casual з поясом, англійський комір, бежевий, чорний Bella Bicchi (бежевий, 52) — The fur coat is kept because it carries the belt detail which defines the waist without a separate belt item, solving the waistline definition issue gently.",
+"11": "Екошуба жіноча casual з поясом, англійський комір, бежевий, чорний Bella Bicchi (бежевий, 52) — The belt detail on the fur coat naturally defines your waist without needing a separate accessory, solving the fit issue gently while keeping the outerwear's core aesthetic intact."
+}
+
+── ВІДПОВІДЬ (2231 симв., 19.6 с, HTTP 200) ──
+```json
+{
+"1": "Це бежева екошуба з м’якою текстурою, об’ємним англійським коміром, який зігріває шию, та поясом у тон для підкреслення лінії талії.",
+"2": "Костюм складається з приталеного кемелового жакета з широкими лацканами й вільними рукавами, поєднаного з високою посадкою штанів вільного крою, що створюють плавний силует.",
+"3": "Це темно-коричнева шкіряна сумка, розроблена як універсальний аксесуар для доповнення твого образу без зайвої помітності.",
+"4": "Ці білі сережки з перлинами мають класичний дизайн із срібними гачками, які додають твоєму вигляду нотку витонченої елегантності.",
+"5": "Делікатний золотий ланцюжок-намисто з маленьким кулоном на грудях для ледь помітного блиску.",
+"6": "Це сині туфлі на платформі та високому шпильці, які візуально збільшують ріст і додають сучасної яскравості твоєму образу.",
+"7": "Я підібрала витончений ансамбль для твого вечора в театрі, поєднавши класичну елегантність із сучасним комфортом. Твій образ базується на розкішній бежевій екошубі, яка зігріває й додає м’якості силуету. Під нею ти одягнеш приталений кемеловий костюм: жакет вільного крою з широким лацканом і штани високої посадки вільного крою для легкої свободи рухів. Довершують образ темно-коричнева шкіряна сумка, прості білі сережки з перлинами для класичного сяйва, делікатний золотий ланцюжок із кулоном і сині туфлі на платформі та шпильці, щоб додати висоти й сучасного акценту.",
+"8": "Залиш екошубу відкритою або обгорни її навколо плечей, якщо тобі буде жарко в приміщенні, щоб підкреслити костюм знизу.",
+"9": "Штани вільного крою природно видовжують твою фігуру, тому носи їх трохи просторо для максимального комфорту протягом вечора.",
+"10": "Екошуба жіноча casual з поясом, англійський комір, бежевий, чорний Bella Bicchi (бежевий, 52) — Екошубу я обрала тому, що вона має пояс, який підкреслює талію без потреби в окремому аксесуарі, м’яко вирішуючи питання з посадкою й зберігаючи основну естетику верхнього одягу.",
+"11": "Екошуба жіноча casual з поясом, англійський комір, бежевий, чорний Bella Bicchi (бежевий, 52) — Пояс на екошубі природно підкреслює твою талію без потреби в окремому аксесуарі, м’яко вирішуючи питання з посадкою й зберігаючи основну естетику верхнього одягу."
+}
+```

@@ -9,6 +9,7 @@
 """
 import glob
 import os
+import runpy
 import sys
 
 КОРІНЬ = os.path.normpath(os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", ".."))
@@ -16,50 +17,50 @@ import sys
 
 # адреса рядка переліку → (файли, маркер, що доводить). Рядок — «тримає механізм».
 МЕХАНІЗМ = [
-    ("AGENTS.md:30–31", ["аудит/адаптери/gemini/gemini_run.ps1", "аудит/адаптери/gemini/queue_lanes.ps1"], "gemini-queue", "позначка черги читається обгорткою"),
-    ("AGENTS.md:40–41", [".claude/хуки/листи_менеджерові.py"], "СЛОВО ВЛАСНИКА", "хук знає початок «СЛОВО ВЛАСНИКА» і час"),
-    ("AGENTS.md:42–43", [".claude/settings.json"], "\"compact\"", "SessionStart на compact"),
-    ("AGENTS.md:72–74", [".github/workflows/khrapovyk.yml"], "храповик_кореня", "CI запускає храповик кореня"),
-    ("AGENTS.md:79–80", [".github/workflows/zbirka.yml"], "згорнути_дошку", "CI згортає дошку"),
-    ("CLAUDE.md:15–16", [".claude/settings.json"], "\"Bash\"", "PreToolUse на Bash"),
-    ("CLAUDE_КЕРУВАННЯ.md:29–31", [".claude/settings.json"], "subscribe_pr_activity", "інструмент у permissions.deny"),
-    ("ДИСПЕТЧЕР.md:35–38", ["аудит/адаптери/gemini/смуги.json"], "claude_laptop", "смуга claude_laptop у смуги.json"),
-    ("ДИСПЕТЧЕР.md:60", [".claude/settings.json"], "ScheduleWakeup", "інструмент у permissions.deny"),
-    ("ДИСПЕТЧЕР.md:83–84", [".github/workflows/obhortka.yml"], "windows-latest", "CI стенд Windows"),
-    ("ДИСПЕТЧЕР.md:101–104", [".claude/settings.json"], "send_message", "PreToolUse на send_message"),
-    ("ДИСПЕТЧЕР.md:105–107", [".claude/хуки/листи_менеджерові.py"], "ЗВЕДЕННЯ", "хук знає «ЗВЕДЕННЯ»"),
-    ("МЕНЕДЖЕР.md:61–63", [".claude/settings.json"], "subscribe_pr_activity", "інструмент у permissions.deny"),
-    ("МЕНЕДЖЕР.md:93–96", [".github/workflows/zbirka.yml"], "журнал_і_розмір_правил", "CI показує розмір правил"),
-    ("ВИКОНАВЕЦЬ.md:42–44", [".claude/settings.json"], "\"Workflow\"", "інструмент у permissions.deny"),
+("AGENTS.md ‹| диспетчер →› … ‹журналі обгортки |› #0e2541", ["аудит/адаптери/gemini/gemini_run.ps1", "аудит/адаптери/gemini/queue_lanes.ps1"], "gemini-queue", "позначка черги читається обгорткою"),
+("AGENTS.md ‹воно змінює; почуте› … ‹з обома джерелами.› #f313b5", [".claude/хуки/листи_менеджерові.py"], "СЛОВО ВЛАСНИКА", "хук знає початок «СЛОВО ВЛАСНИКА» і час"),
+("AGENTS.md ‹- Після стиснення› … ‹(коміт, PR, `аудит/СТАН.md`):› #cea4b3", [".claude/settings.json"], "\"compact\"", "SessionStart на compact"),
+("AGENTS.md ‹«ЗНАХІДКА» з доказом› … ‹(весь диск —› #7d828a", [".github/workflows/khrapovyk.yml"], "храповик_кореня", "CI запускає храповик кореня"),
+("AGENTS.md ‹- Дошка (п.13)› … ‹Кінець знахідки —› #0bfc97", [".github/workflows/zbirka.yml"], "згорнути_дошку", "CI згортає дошку"),
+("CLAUDE.md ‹чіпати. Фонове завдання› … ‹— одним повідомленням.› #bcf583", [".claude/settings.json"], "\"Bash\"", "PreToolUse на Bash"),
+("CLAUDE_КЕРУВАННЯ.md ‹- Нагляд PR› … ‹`archive_session` / `unarchive_session`.› #0ad6d9", [".claude/settings.json"], "subscribe_pr_activity", "інструмент у permissions.deny"),
+("ДИСПЕТЧЕР.md ‹- Обгортка —› … ‹сесії (власник 26.10):› #f585df", ["аудит/адаптери/gemini/смуги.json"], "claude_laptop", "смуга claude_laptop у смуги.json"),
+("ДИСПЕТЧЕР.md ‹- Щогодинний тригер› … ‹Реєстр порожній, CI› #bdae43", [".claude/settings.json"], "ScheduleWakeup", "інструмент у permissions.deny"),
+("ДИСПЕТЧЕР.md ‹- PR обгортки› … ‹й оновлення копій.› #820b8c", [".github/workflows/obhortka.yml"], "windows-latest", "CI стенд Windows"),
+("ДИСПЕТЧЕР.md ‹- Менеджерові —› … ‹постійно з'являються нові› #a1b7d9", [".claude/settings.json"], "send_message", "PreToolUse на send_message"),
+("ДИСПЕТЧЕР.md ‹данні і ти› … ‹продукт і правила.› #cfd939", [".claude/хуки/листи_менеджерові.py"], "ЗВЕДЕННЯ", "хук знає «ЗВЕДЕННЯ»"),
+("МЕНЕДЖЕР.md ‹дев'ять листів диспетчера,› … ‹контекст Opus max.› #62919f", [".claude/settings.json"], "subscribe_pr_activity", "інструмент у permissions.deny"),
+("МЕНЕДЖЕР.md ‹- Межі, тис.› … ‹телеграфними (ревізія 26.10).› #e65ce6", [".github/workflows/zbirka.yml"], "журнал_і_розмір_правил", "CI показує розмір правил"),
+("ВИКОНАВЕЦЬ.md ‹- Субагенти, воркфлоу› … ‹% до нуля).› #ff64f1", [".claude/settings.json"], "\"Workflow\"", "інструмент у permissions.deny"),
     ("ПЕРЕВІРКА.md:23–24", [".github/workflows/zbirka.yml"], "згорнути_дошку", "CI звіряє поля рядка дошки"),
-    ("GEMINI.md:6–10", ["аудит/адаптери/gemini/gemini_publish.ps1"], "ISOLATION_FAILED", "обгортка відмовляє без ізоляції"),
-    ("GEMINI.md:11–15", ["аудит/адаптери/gemini/gemini_publish.ps1"], "gemini/", "публікатор пушить лише gemini/*"),
-    ("ЧЕРГА.md:23–31", ["аудит/адаптери/gemini/claude_run.ps1"], "CLAUDE_NOT_LAPTOP", "обгортка відмовляє Claude без claude_laptop"),
-    ("ЧЕРГА.md:65–68", ["аудит/адаптери/gemini/queue_lanes.ps1", "аудит/адаптери/gemini/gemini_run.ps1"], "gpu", "замок GPU (проби нема)"),
+("GEMINI.md ‹- Команда —› … ‹Ізоляцію налаштовує власник.› #1e7da3", ["аудит/адаптери/gemini/gemini_publish.ps1"], "ISOLATION_FAILED", "обгортка відмовляє без ізоляції"),
+("GEMINI.md ‹- Запуск, гілка› … ‹Іншої публікації нема.› #d9d32c", ["аудит/адаптери/gemini/gemini_publish.ps1"], "gemini/", "публікатор пушить лише gemini/*"),
+("ЧЕРГА.md ‹- **Claude:** позначка› … ‹продовжить наявну гілку.› #94d6cc", ["аудит/адаптери/gemini/claude_run.ps1"], "CLAUDE_NOT_LAPTOP", "обгортка відмовляє Claude без claude_laptop"),
+("ЧЕРГА.md ‹- Одна відеокарта:› … ‹на наступному запуску.› #25ffab", ["аудит/адаптери/gemini/queue_lanes.ps1", "аудит/адаптери/gemini/gemini_run.ps1"], "gpu", "замок GPU (проби нема)"),
 ]
 
 # адреса рядка переліку → (слова-маркери, що мали б ловити правило). Рядок — «тримає пам'ять».
 ПАМ_ЯТЬ = [
-    ("AGENTS.md:24–25", ["через третю", "ПЕРЕСИЛАННЯ"]),
-    ("AGENTS.md:59", ["git push", "незапушен"]),
-    ("AGENTS.md:86", ["merge_pull_request"]),
-    ("AGENTS.md:95", ["actions_run_trigger", "enable_pr_auto_merge"]),
-    ("AGENTS.md:96–98", ["@codex"]),
-    ("AGENTS.md:88–91", ["\"Stop\""]),
-    ("CLAUDE.md:16", ["\"Agent\""]),
-    ("CLAUDE.md:31–33", ["create_trigger", "fire_trigger"]),
-    ("CLAUDE_КЕРУВАННЯ.md:8–10", ["create_session"]),
-    ("CLAUDE_КЕРУВАННЯ.md:25–26", ["list_events", "list_sessions"]),
-    ("ДИСПЕТЧЕР.md:69–72", ["expectedHeadSha"]),
-    ("ДИСПЕТЧЕР.md:116–118", ["archive_session"]),
-    ("МЕНЕДЖЕР.md:3–5", ["Opus"]),
-    ("МЕНЕДЖЕР.md:47–48", ["ЗЛИТИ"]),
-    ("ВИКОНАВЕЦЬ.md:3–4", ["draft"]),
-    ("ВИКОНАВЕЦЬ.md:31–33", ["ГОТОВО"]),
+("AGENTS.md ‹Канал — один› … ‹сесію губило листи.› #d86087", ["через третю", "ПЕРЕСИЛАННЯ"]),
+("AGENTS.md ‹- Пуш після› … ‹разом із сесією.› #e4e66a", ["git push", "незапушен"]),
+("AGENTS.md ‹коли злито: доти› … ‹зливає лише диспетчер.› #324827", ["merge_pull_request"]),
+("AGENTS.md ‹- Нікому: пушити› … ‹чи прохання про› #77a3df", ["actions_run_trigger", "enable_pr_auto_merge"]),
+("AGENTS.md ‹них. Згадка @codex› … ‹не слово власника.› #bbb3c3", ["@codex"]),
+("AGENTS.md ‹власникові напряму —› … ‹(власник 29.10, 30.10).› #9d05b7", ["\"Stop\""]),
+("CLAUDE.md ‹хід (батарея), одним› … ‹— одним повідомленням.› #c36ca1", ["\"Agent\""]),
+("CLAUDE.md ‹Іншій хмарній сесії› … ‹в `get_trigger` `last_run`› #e6fcf9", ["create_trigger", "fire_trigger"]),
+("CLAUDE_КЕРУВАННЯ.md ‹- Хмара: `create_session(source_url=\"https://github.com/mightyrochy/kod-shi-data\", model=<модель>, title=<назва>, prompt=\"/effort <рівень>\", append_system_prompt=<роль, файл наряду й адресати>)`,› … ‹системному нової сесії:› #29fa1e", ["create_session"]),
+("CLAUDE_КЕРУВАННЯ.md ‹- Стан сесії:› … ‹список у контекст.› #18c2fc", ["list_events", "list_sessions"]),
+("ДИСПЕТЧЕР.md ‹- Зливаєш на› … ‹питаєш (власник 08.10).› #c183d3", ["expectedHeadSha"]),
+("ДИСПЕТЧЕР.md ‹- Архів (п.18)› … ‹і не міняєш.› #c2c322", ["archive_session"]),
+("МЕНЕДЖЕР.md ‹Opus 5.5, max› … ‹(власник 18.10: «Твоя› #ab7d63", ["Opus"]),
+("МЕНЕДЖЕР.md ‹- Файл `аудит/наряди/<крок>-<назва>.md`› … ‹губився при стисненні.› #36c840", ["ЗЛИТИ"]),
+("ВИКОНАВЕЦЬ.md ‹Один призначений наряд› … ‹договору не змінюють.› #d38df1", ["draft"]),
+("ВИКОНАВЕЦЬ.md ‹- «ГОТОВО #PR› … ‹без питання нема.› #5ad4ea", ["ГОТОВО"]),
     ("ПЕРЕВІРКА.md:12–14", ["pachka"]),
     ("ПЕРЕВІРКА.md:78–80", ["ПЕРЕВІРЕНО"]),
-    ("НОУТБУК.md:22–23", ["no-thin"]),
-    ("AGENTS.md:107–108", ["AGENTS.md", "МЕНЕДЖЕР.md"]),
+("НОУТБУК.md ‹- Пуш із› … ‹комітів не переписувати.› #090aa8", ["no-thin"]),
+("AGENTS.md ‹Правила веде менеджер› … ‹передач не переписують.› #c21e23", ["AGENTS.md", "МЕНЕДЖЕР.md"]),
 ]
 МЕХАНІЗМИ_ФАЙЛИ = [".claude/settings.json", ".claude/хуки/*", ".github/workflows/*", "аудит/адаптери/gemini/*.ps1"]
 
@@ -72,12 +73,9 @@ def читати(шлях):
 
 
 def рядки_переліку():
-    результат = {}
-    for рядок in open(ПЕРЕЛІК, encoding="utf-8"):
-        к = [х.strip() for х in рядок.strip().strip("|").split("|")]
-        if len(к) == 7 and ":" in к[0]:
-            результат[к[0]] = к
-    return результат
+    """Адреса → клітинки рядка «Правила»; таблицю розбирає прилад (адреса з «\\|» — одна клітинка)."""
+    прилад = runpy.run_path(os.path.join(КОРІНЬ, "джерела/прилади/корінь_пк_дотримання.py"))
+    return {к[0]: к for к in прилад["таблиці_переліку"](ПЕРЕЛІК)[0]}
 
 
 def головна():

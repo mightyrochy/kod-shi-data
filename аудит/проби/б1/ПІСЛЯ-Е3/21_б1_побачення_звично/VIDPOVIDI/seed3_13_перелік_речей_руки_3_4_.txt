@@ -1,0 +1,51 @@
+── ПРОМПТ (2451 симв.) ──
+{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.", "One item carries one thing — of two alternatives list the first; a note in brackets is not an item.", "Slot \"accessory\" is for an item no other slot fits.", "\"is_outfit\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "ITEM_LIST", "answer_schema": {"is_outfit": "yes|no", "items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory", "color_hex": "<#rrggbb or null>", "worn": "<true, or false when the description says the outfit goes without it>"}]}, "input": ["\"description\" — the outfit description"]}, "description": "Silk blouse with a relaxed collar, draped neckline, flowing length reaching the hips, ivory white, pure silk chiffon.\nWide-leg trousers with a gentle drape, ankle-length hem, charcoal grey, high-twist wool blend.\nStructured blazer in a soft lapel, cropped at the waist to highlight the silhouette, midnight blue, lightweight gabardine.\nPointed-toe pumps with a moderate heel, sleek profile, oxblood red, calfskin leather.\nDelicate gold chain necklace resting just below the collarbone and slim black leather clutch.\n\nThis outfit strikes the perfect balance for an evening date by elevating casual wear into smart-casual territory suitable for a restaurant setting at 19:30 during autumn. The silk blouse adds necessary elegance against the cool seasonal air, while the structured blazer provides sophistication without appearing too stiff for a romantic occasion. Choosing warm charcoal and deep oxblood tones creates an intimate atmosphere appropriate for dinner, avoiding any heavy outerwear since the temperature is likely mild enough after 7 PM. Every element works together to convey thoughtful style that respects both the venue's ambiance and her desire to feel polished yet approachable."}
+
+── ВІДПОВІДЬ (1197 симв., 6.6 с, HTTP 200) ──
+{
+  "is_outfit": "yes",
+  "items": [
+    {
+      "name": "blouse",
+      "details": "relaxed collar, draped neckline, flowing length reaching the hips, pure silk chiffon",
+      "slot": "top",
+      "color_hex": "#FFFFF0",
+      "worn": true
+    },
+    {
+      "name": "trousers",
+      "details": "wide-leg with gentle drape, ankle-length hem, high-twist wool blend",
+      "slot": "bottom",
+      "color_hex": "#36454F",
+      "worn": true
+    },
+    {
+      "name": "blazer",
+      "details": "soft lapel, cropped at the waist to highlight the silhouette, lightweight gabardine",
+      "slot": "outerwear",
+      "color_hex": "#191970",
+      "worn": true
+    },
+    {
+      "name": "pumps",
+      "details": "pointed-toe with moderate heel, sleek profile, calfskin leather",
+      "slot": "shoes",
+      "color_hex": "#9C0006",
+      "worn": true
+    },
+    {
+      "name": "necklace",
+      "details": "delicate gold chain resting just below the collarbone",
+      "slot": "jewelry",
+      "color_hex": null,
+      "worn": true
+    },
+    {
+      "name": "clutch",
+      "details": "slim black leather clutch",
+      "slot": "bag",
+      "color_hex": "#000000",
+      "worn": true
+    }
+  ]
+}

@@ -1,0 +1,27 @@
+{
+ "версія": 1,
+ "запит": {
+  "model": "qwen/qwen3.5-9b",
+  "max_tokens": 4000,
+  "messages": [
+   {
+    "role": "user",
+    "content": [
+     {
+      "type": "text",
+      "text": "{\"task\": {\"role\": \"You are a personal stylist. Put together one outfit for her case.\", \"rules\": [\"Items one per line, garments first, then shoes and accessories: what it is, cut, length, color with its hex code, fabric.\", \"An outer layer only when the weather needs it; at +20 °C and warmer there is none.\", \"Last, why this outfit works, in 3–4 sentences.\"], \"limits\": [\"Do not name lightness numbers, body measurements or height in numbers, or body-type labels, and do not say you had limits.\", \"The answer is plain text laid out as the rules say, not JSON.\"], \"language\": \"English\", \"answer\": \"OUTFIT_TEXT\", \"input\": [\"\\\"case\\\" — her case: the occasion, where and when, the weather, the dress code, her wishes and refusals — as codes, her own words as quotes; do not take an item that goes against her refusals or her words\", \"\\\"formality\\\" — the level of dress she named: home (loungewear, athleisure, sportswear) < everyday (jeans, a T-shirt and sneakers; neat casual, dark denim) < neat (business: a blouse, a shirt or a refined knit with trousers or a skirt, a textured jacket or a cardigan, loafers, ballet flats or ankle boots; social: a day dress, a refined knit with a skirt or trousers, a textured jacket, neat flats or ankle boots) < smart (business: a jacket with trousers or a skirt, a blouse or a shirt, loafers or pumps; a sheath dress with a jacket; social: a cocktail dress, heeled shoes) < formal (business: a business suit — a jacket with trousers or a skirt of one fabric — with a blouse, pumps; social: a formal dress of a noble fabric, heeled shoes) < very_smart (an evening gown) < ceremonial (a full-length evening gown with long gloves)\", \"\\\"person\\\" — facts about her from her photo and measurements, without conclusions: colors in hex (one per measurement), sizes in cm\", \"\\\"intent\\\" — what matters most to her: comfort_first (comfort and freedom of movement), context_optimal (fitting the place and the event), statement (standing out), fashion_forward (a bold fashion look, at least two sources of interest), editorial (an editorial construction, at least one source of interest); count limits do not apply to fashion_forward or editorial\"]}, \"case\": {\"field_quotes\": {\"event\": \"рок-концерт у клубі\", \"place\": \"у клубі\", \"movement\": \"стоятиму в натовпі\", \"part_of_day\": \"ввечері\"}, \"formality_reason\": \"norm\", \"event\": \"рок-концерт у клубі\", \"movement\": \"walk_a_lot\", \"goal\": \"express\", \"place\": \"club\", \"goal_quote\": \"рок-концерт у клубі, п'ятниця ввечері, стоятиму в натовпі\", \"intent_quote\": \"рок-концерт у клубі, п'ятниця ввечері, стоятиму в натовпі\", \"formality\": [\"everyday\"], \"season\": \"autumn\", \"part_of_day\": \"evening\", \"light\": \"artificial\"}, \"person\": {\"skin_hex\": [\"#e3c3a2\", \"#dcb995\", \"#e9ccae\"], \"hair_hex\": [\"#14120f\", \"#211d19\"], \"eyes_hex\": \"#4a2f1f\", \"height_cm\": 154, \"girths_cm\": {\"shoulders\": 90, \"bust\": 84, \"waist\": 64, \"hips\": 88}, \"intent\": \"statement\"}}"
+     }
+    ]
+   }
+  ],
+  "temperature": 1
+ },
+ "відповідь": {
+  "status": 200,
+  "contentType": "application/json",
+  "headers": {
+   "x-model": "qwen/qwen3.5-9b"
+  },
+  "body": "{\"content\":[{\"type\":\"text\",\"text\":\"A cropped asymmetrical leather jacket in deep crimson (#8a0303) cut from a durable matte lambskin with razor-sharp tailored shoulders and a mid-thigh hem that allows for unrestricted movement.\\nHigh-waisted wide-leg distressed denim trousers in an acid wash yellow (#f4d03f), featuring a relaxed straight fit through the thigh, a sharp taper at the ankle, and heavy-duty stitching in matching thread.\\nChunky platform combat boots in polished black leather (#0b0c10) with a substantial stacked heel for height, aggressive lug soles, and reinforced toe caps.\\nSilver layered choker necklace with geometric spikes, oversized rectangular sunglasses with amber lenses, and multiple silver ring stacks on the fingers.\\nThis outfit works because the bold acid yellow trousers against the dark club setting immediately grab attention while fulfilling your goal of making a statement without blending in. The leather jacket provides an edgy rock aesthetic perfect for Friday night energy while its cropped length ensures freedom of movement as you stand in the crowd. The chunky platforms add height and stability, allowing you to navigate tight spaces with confidence and style.\"}],\"usage\":{\"input_tokens\":832,\"output_tokens\":232},\"stop_reason\":\"end_turn\"}"
+ }
+}

@@ -206,7 +206,7 @@ _ЛАПКИ_ДОВКОЛА = re.compile(r'^["«„“”]\s*([^"«»„“”]*?
     # `photoshoot` (Ч-4): її фотографуватимуть — порада кличе теми мети й макіяжу, як на
     # вечір (`паспорт_нагоди.порада_коду`); доти це читала регулярка «фото|зйомк» у її словах
     "activity": {"children": "діти", "rough_ground": "нерівний_ґрунт", "stroll": "прогулянка",
-                 "walking": "ходьба", "photoshoot": "фотосесія"},
+                 "walking": "ходьба", "bowling": "боулінг", "photoshoot": "фотосесія"},
     "surface": {"cobblestones": "бруківка", "asphalt": "асфальт", "parquet": "паркет",
                 "carpet": "килим", "grass": "трава", "stairs": "сходи"},
     # опади — коди зовнішнього договору → сталі ключі ядра (п.12); `сценарій.ОПАДИ_КОДИ` — цей самий словник
@@ -221,10 +221,7 @@ _ЛАПКИ_ДОВКОЛА = re.compile(r'^["«„“”]\s*([^"«»„“”]*?
                   "fit_band": "смуга_прилягання", "volume_anchor": "якір_обʼєму",
                   "one_line": "одна_лінія", "top_cut": "крій_верх", "bottom_cut": "крій_низ",
                   "tension_node": "вузол"},
-    # Частина доби без названої години — пора кодом. Доти тут стояла година, яку бере код
-    # (зранку 9, удень 13, увечері 20, уночі 23), і вона ставала годиною паспорта: «субота ввечері» картка
-    # показувала як «20:00», хоч години вона не називала. Тепер пора лишається порою (`паспорт.пора`), а
-    # година для правил — окремим кроком на шві нагоди (`сценарій.година_для_правил`, мітка `година_з_пори`).
+    # Частину дня передає мовна модель; код не перетворює годину.
     "part_of_day": {"morning": "ранок", "day": "день", "evening": "вечір", "night": "ніч"},
     # Пора року з дати: вхідний факт її дня для всіх рук — `сценарій.пора_року`
     "season": {"winter": "зима", "spring": "весна", "summer": "літо", "autumn": "осінь"},
@@ -233,15 +230,8 @@ _ЛАПКИ_ДОВКОЛА = re.compile(r'^["«„“”]\s*([^"«»„“”]*?
     "month": {"january": "січень", "february": "лютий", "march": "березень", "april": "квітень",
               "may": "травень", "june": "червень", "july": "липень", "august": "серпень",
               "september": "вересень", "october": "жовтень", "november": "листопад", "december": "грудень"},
-    # Погода без числа → число, яке бере код (температура — вхід теплової функції й воріт
-    # тканини, і доти це число вгадувала модель виклику 0).
-    # МОРОЗ — ВСЕРЕДИНІ СМУГИ «НИЖЧЕ −8 °C», НЕ НА ЇЇ КРАЮ. Тут стояло −8,0 — нижня
-    # межа смуги «−8…+2» (`outfit.ТЕМП_МАПА`), тоді як усі правила морозу питають «< −8»
-    # (`суд_погода.ГЛИБОКИЙ_ХОЛОД_C`: гейт нетеплого верхнього шару, шапка й шарф; опора
-    # стилістці `brief` «frost_layers_and_cold_accessories»). Тож «мороз» без градусів судився як
-    # +1 °C: (−15 °C, сніг; число загублене) — сукня + бомбер без шапки лише двома
-    # репліками. −10 — середина звичного «морозу» (−5…−15); градусів вона й далі не читає.
-    "weather_feel": {"frost": -10.0, "cold": 2.0, "cool": 10.0, "warm": 20.0, "hot": 28.0},
+    # Порядок — від найхолоднішої смуги до найтеплішої; градуси тлумачить лише модель.
+    "weather_band": {к: к for к in ("deep_frost", "frost", "cold", "cool", "mild", "warm", "hot")},
     "intent": {к: к for к in _НАМІРИ},
     # ── МЕТА — ДВІ ОСІ ─────────────────────
     # `goal` — лише вісь УВАГИ: тихо (conceal) / звично (flatter) / помітно (express), один вибір.
@@ -410,6 +400,13 @@ _ЛАПКИ_ДОВКОЛА = re.compile(r'^["«„“”]\s*([^"«»„“”]*?
     "role": {к: к for к in ("guest", "close_family", "main_person", "host", "candidate",
                             "speaker", "worker", "mourner_close", "acquaintance")},
     "audience": {к: к for к in ("usual", "conservative")},
+    "direct_sun": {"yes": True, "no": False},
+    "host_context": {"yes": True, "no": False},
+    "creative_environment": {"yes": True, "no": False},
+    "declared_break": {"yes": True, "no": False},
+    "declared_column": {"yes": True, "no": False},
+    "matching_opaque_tights": {"yes": True, "no": False},
+    "life_transition": {к: к for к in ("pregnancy", "recovery", "weight_change", "new_role", "none")},
     "religious_place": {к: к for к in ("none", "temple", "written_rule_place")},
     "mourning_closeness": {к: к for к in ("none", "acquaintance", "close")},
     "look_volume": {к: к for к in ("one_look", "travel_day")},
@@ -432,7 +429,7 @@ _ЛАПКИ_ДОВКОЛА = re.compile(r'^["«„“”]\s*([^"«»„“”]*?
     # ЗВІДКИ ВИМІР (§1.2): сила джерела, від письмового правила до «нічого не відомо».
     # Порядок переліку і є порядком сили — його тримає `паспорт_нагоди.ЗВІДКИ_СИЛА`.
     "evidence_source": {к: к for к in ("written", "her_words", "sub", "preset", "like",
-                                       "default", "unknown")},
+                                       "derived", "default", "unknown")},
 }
 
 
@@ -480,16 +477,10 @@ def тип_на_голові(тип):
     return СЛОТ_ТИПУ.get(код("item_type", тип)) == "headwear"
 
 
-def градуси_заяви(темп_c, відчуття=None, поле="temperature_c"):
-    """Погода дня в значеннях заяви суду: `{поле: темп_c}` — її градуси як є; `{"weather_feel": код}` —
-    коли градусів вона не казала: тоді `темп_c` — число коду з `ТАБЛИЦЯ["weather_feel"]`, воно
-    лишається порогам суду, а заява не дає картці сказати «при −10 °C» на її «мороз». Код поза таблицею — "unknown"."""
-    if відчуття not in (None, ""):
-        return {"weather_feel": відчуття if ключ("weather_feel", відчуття) is not None else UNKNOWN}
-    return {поле: темп_c}
+def погода_заяви(смуга_погоди):
+    """Смуга погоди в заяві: незнайомий код не перетворюється на факт."""
+    return {"weather_band": смуга_погоди} if смуга_погоди in ТАБЛИЦЯ["weather_band"] else {}
 
-
-# Поля бажання кодами (`мовний_шар._ключі_речі`) → таблиця коду, у порядку фрази `_фраза`
 _БАЖАННЯ_ПОЛЯ = (("тип", "item_type"), ("слот", "slot"), ("колір", "color_name"), ("клас_кольору", "color_class"),
                  ("тканина", "fabric"), ("візерунок", "pattern"), ("довжина", "length"), ("ознака", "feature"))
 
@@ -712,7 +703,7 @@ _КОДИ_З_ОПИСОМ = lambda описи: {"oneOf": [{"const": к, "descrip
                         "без чого образ не збирається: про це спитати прямо", uniqueItems=True),
     # ЩО КОД НЕ ЗАПИСАВ: мовна модель розмови поставила поле без її слів у цитаті, сторож його
     # зняв, а її репліка казала «Я врахую». Тепер жінка чує те, що справді лягло, і що НЕ лягло — кодами полів.
-    "not_recorded": _список(_КОДИ_З_ОПИСОМ({к: в.get("description") or к for к, в in СЦЕНАРІЙ.items()}),
+    "not_recorded": _список(_КОДИ_З_ОПИСОМ({к: в.get("title") or в.get("description") or к for к, в in СЦЕНАРІЙ.items()}),
                             "що з її слів цього ходу НЕ записано в сценарій: поля сценарію кодами",
                             uniqueItems=True),
 }
@@ -1137,9 +1128,8 @@ _МІСЦЯ_ОПЦІЙ = "where it is worn"
     "no_other_combination_take_another_top": "the selection has no other combination today: take another top "
                                              "or remove the outer layer",
     "needs_coat_none_in_pool": "this weather needs a coat or a warm jacket, and the selection for this "
-                               "occasion has none today: she takes her own (values: temperature_c — the degrees she named; "
-                               "weather_feel — instead of temperature_c when she named no degrees, the "
-                               "weather as she put it; precipitation — code of wet precipitation, "
+                               "occasion has none today: she takes her own (values: weather_band — the weather band code; "
+                               "precipitation — code of wet precipitation, "
                                "when there is any)",
     "catalogue_has_none_for_case": "the catalogue has no needed item for this case, so the outfit stays "
                                    "incomplete; a gap in the catalogue, not in the display (values: missing — "
@@ -1150,8 +1140,7 @@ _МІСЦЯ_ОПЦІЙ = "where it is worn"
                                     "filled them with items from the catalogue; the outfit is not ready "
                                     "without them (values: slots — slot codes)",
     "weather_needs_outerwear": "this weather cannot be met without a coat or a warm jacket (values: "
-                               "temperature_c — the degrees she named; weather_feel — instead of temperature_c when "
-                               "she named no degrees, the weather as she put it; precipitation — the code of wet precipitation when there is any)",
+                               "weather_band — the weather band code; precipitation — the code of wet precipitation when there is any)",
     # ── КАРТКА ОБРАЗУ: ЧОМУ БІЛЯ РЕЧІ НЕМА ЗНІМКА ────────────────────────────
     "item_added_by_selection": "this item was picked by the selection, not by the stylist",
     "no_photo_feed_gave_none": "the shop gave no photo of this item in the feed",
@@ -1590,7 +1579,7 @@ _МІСЦЯ_ОПЦІЙ = "where it is worn"
                                       "— the shapes to lead to; shape codes: A — hips wider than shoulders, V "
                                       "— shoulders wider than hips, X — a marked waist, H — a straight "
                                       "contour without a marked waist, O — volume in the middle, I — a narrow "
-                                      "straight contour, HX — a waist on the edge of being marked; never "
+                                      "straight contour, HX — waist definition is undetermined; never "
                                       "write the letters themselves, only the description)",
     # Ф-2: було «does not aim to flatter the figure». Сенс той самий — мети `flatter`
     # на цей вихід не поставлено, — але фраза дослівно та, яку R-LNG-01 забороняє
@@ -1601,8 +1590,8 @@ _МІСЦЯ_ОПЦІЙ = "where it is worn"
     "look_shape_is": "the shape the outfit gives, with no judgement, because the goal for this outing is "
                      "not `flatter` (values: look — shape codes: A — hips wider than shoulders, V — "
                      "shoulders wider than hips, X — a marked waist, H — a straight contour without a marked "
-                     "waist, O — volume in the middle, I — a narrow straight contour, HX — a waist on the "
-                     "edge of being marked; never write the letters themselves, only the description)",
+                     "waist, O — volume in the middle, I — a narrow straight contour, HX — waist definition "
+                     "is undetermined; never write the letters themselves, only the description)",
     "vertical_balance_not_judged": "the code does not judge the ratio of the outfit's top and bottom to her "
                                    "proportions: the sources have too little evidence for it",
     "leg_proportion_template_crotch": "the code does not count torso-to-leg proportions: the crotch height "
@@ -1983,17 +1972,17 @@ _МІСЦЯ_ОПЦІЙ = "where it is worn"
     "size_by_insole_measure": "take the number by the insole measurement from the card, not by the usual "
                               "size; a pair that cannot be tried on is not raised in rank for size",
     "smooth_sole_on_ice": "a fully smooth sole at black-ice temperatures is a plain no for winter (values: "
-                          "temperature_c — the day's temperature"
-                          "; weather_feel — instead of temperature_c when she named no degrees, the weather as she put it)",
+                          "weather_band — the day's weather band code"
+                          ")",
     "deep_multidirectional_tread": "a sole with a deep multidirectional tread",
     "summer_accessory_no_warmth": "the accessory's summer material gives no warmth in the cold: it can be "
                                   "worn, it just does not warm (values: material — material code, "
-                                  "temperature_c — the day's temperature"
-                                  "; weather_feel — instead of temperature_c when she named no degrees, the weather as she put it)",
+                                  "weather_band — the day's weather band code"
+                                  ")",
     "winter_form_of_slot": "the winter form of this slot: felt, wool, cashmere, lined leather",
     "winter_accessory_too_hot": "the accessory's winter material is not worn in the heat (values: material — "
-                                "material code, temperature_c — the day's temperature"
-                                "; weather_feel — instead of temperature_c when she named no degrees, the weather as she put it)",
+                                "material code, weather_band — the day's weather band code"
+                                ")",
     "summer_form_of_slot": "the summer form of this slot",
     "necklace_on_neckline_edge": "the necklace sits on the edge of the neckline: there it competes with the "
                                  "fabric instead of framing the face (values: gap_cm — the gap between the "
@@ -2153,7 +2142,7 @@ _МІСЦЯ_ОПЦІЙ = "where it is worn"
     "shift_outfit_level": "shift the outfit's level towards the occasion's steps (values: direction — up or "
                           "down)",
     "open_zones_over_limit": "more zones of the body are open than the context asks for (values: zones — zone "
-                             "codes: neckline, back, arms, shoulders, legs, belly, neckline_back — décolleté "
+                             "codes: " + ", ".join(ТАБЛИЦЯ["zone"]) + ", neckline_back — décolleté "
                              "or back; limit — the limit, two when the event names no stricter norm; "
                              "conservative — a reserved audience or a place of worship, where the "
                              "limit is one lower)",
@@ -2203,7 +2192,7 @@ _МІСЦЯ_ОПЦІЙ = "where it is worn"
     "different_prints_mixed": "different prints are mixed in the outfit (values: prints — pattern codes)",
     "tie_prints_by_colour_or_one_dominates": "tie the prints by a shared colour, or let one dominate by area",
     "daytime_shine": "shiny sequins, lurex or rhinestones in the daytime, which is a daytime context (values: "
-                     "slot — slot code, hour — the starting hour)",
+                     "slot — slot code)",
     "matte_item_in_slot": "a matte item in this slot (values: slot — slot code)",
     "bag_type_below_event_level": "the bag's type (a backpack, a tote, a belt bag) is below the level of the "
                                   "event (values: event_level — the event's level)",
@@ -2211,43 +2200,43 @@ _МІСЦЯ_ОПЦІЙ = "where it is worn"
     # ── ПОГОДА, КОНТРАСТ БІЛЯ ОБЛИЧЧЯ, ІНТЕНСИВНІСТЬ, ПОСАДКА, ДОВЖИНА, ПРИНТИ, НЕЙТРАЛІ (П-6) ──
     "layers_off_temperature_map": "there are too few or too many layers on the torso for the day's "
                                   "temperature by the layer map (values: direction — too_few or too_many, "
-                                  "temperature_c — the temperature, layers — how much warmth the layers give, "
+                                  "weather_band — the temperature, layers — how much warmth the layers give, "
                                   "needed — how much the map asks for; partial_warmth_items — how many layers "
                                   "warm only partly, like a trench"
-                                  "; weather_feel — instead of temperature_c when she named no degrees, the weather as she put it)",
+                                  ")",
     "layers_to_temperature_map": "bring the layers to the day's map, in the band's fabrics",
     "outer_layer_only_partly_warm_for_frost": "in this band the warmth is carried by the coat itself, and "
                                               "this outer layer is only partly warm by its type — a jacket, "
                                               "a bomber, a vest, a cardigan or a poncho (values: "
-                                              "temperature_c — the temperature, outer_type — its type code, "
+                                              "weather_band — the temperature, outer_type — its type code, "
                                               "warmth_share — how much of a layer it counts as"
-                                              "; weather_feel — instead of temperature_c when she named no degrees, the weather as she put it)",
+                                              ")",
     "warmer_coat_not_a_fourth_item": "a warmer coat — insulated, or wool — instead of this one, rather than a "
                                      "fourth item under it; a scarf, a hat and mittens close the rest",
     "cold_accessories_carry_no_colour": "in hard frost mostly the outer layer and the accessories are "
                                         "visible, and the hat, the scarf and the mittens are quiet here: all "
-                                        "the colour stayed under the coat (values: temperature_c — the "
+                                        "the colour stayed under the coat (values: weather_band — the "
                                         "temperature"
-                                        "; weather_feel — instead of temperature_c when she named no degrees, the weather as she put it)",
+                                        ")",
     "move_colour_to_hat_scarf_gloves": "move the colour into the hat, scarf or gloves",
     # рукавиць у пулі нема — ті самі заяви без них
     "cold_hat_scarf_carry_no_colour": "in hard frost mostly the outer layer and the accessories are "
                                       "visible, and the hat and the scarf are quiet here: all the colour "
-                                      "stayed under the coat (values: temperature_c — the temperature"
-                                      "; weather_feel — instead of temperature_c when she named no degrees, the weather as she put it)",
+                                      "stayed under the coat (values: weather_band — the temperature"
+                                      ")",
     "move_colour_to_hat_scarf": "move the colour into the hat or the scarf",
     # K-WEA-01 — нижче −8 °C у образі нема ні шапки, ні шарфа
     "frost_head_neck_uncovered": "in hard frost the outfit has neither a hat nor a scarf: head and neck stay "
-                                 "open, and no outer layer covers them (values: temperature_c — the "
+                                 "open, and no outer layer covers them (values: weather_band — the "
                                  "temperature"
-                                 "; weather_feel — instead of temperature_c when she named no degrees, the weather as she put it)",
+                                 ")",
     "add_warm_hat_and_scarf": "add a warm hat and a scarf (wool, cashmere, knit); they also carry the colour",
     # опора стилістці в мороз — шари на торсі й тепло голови та шиї
     "frost_layers_and_cold_accessories": "hard frost: the layer map asks for this many layers on the torso — "
                                          "a warm layer under the coat counts — and a warm hat and scarf are "
                                          "part of the warmth and the main carriers of colour (values: "
-                                         "temperature_c — the temperature, layers — layers the map asks for"
-                                         "; weather_feel — instead of temperature_c when she named no degrees, the weather as she put it)",
+                                         "weather_band — the temperature, layers — layers the map asks for"
+                                         ")",
     # ДОЩ-1: K-WEA-01 — дощовий день, а верхнього шару від дощу в образі нема
     "no_rain_layer_on_rainy_day": "the day is rainy, and no outer layer of the look keeps the rain off — a "
                                   "trench, a raincoat, a parka, a puffer or a coat; an umbrella is not "
@@ -2399,7 +2388,7 @@ _МІСЦЯ_ОПЦІЙ = "where it is worn"
     "open_neckline_on_top_or_one_high_neck": "an item with an open neckline on top (a cardigan, a jacket, a "
                                              "V-neck), or keep only one high neckline",
     "outer_length_state_chosen_for_warmth": "length and state chosen for warmth, not proportion (values: "
-                                           "temperature_c — the degrees; share — from 0 to 1, how much of "
+                                           "weather_band — the weather band code; share — from 0 to 1, how much of "
                                            "the voice of the proportion rules the heat takes away, 1 is all of "
                                            "it; suppressed_rules — ids of the proportion rules that lost "
                                            "their voice in this outfit, empty when none of them applied)",
@@ -2541,10 +2530,10 @@ _МІСЦЯ_ОПЦІЙ = "where it is worn"
     "change_outfit_composition": "change the outfit's composition, not one item",
     # ── ТКАНИНА НЕ ПО СЕЗОНУ (П-6: K-MAT-03) ──
     "fabric_out_of_season": "the item's fabric reads out of season: the day is warmer or colder than its "
-                            "band, which is semantics rather than a thermometer (values: temperature_c — the "
+                            "band, which is semantics rather than a thermometer (values: weather_band — the "
                             "day's temperature, band — the fabric's band from and to, direction — warmer or "
                             "colder, fabrics — fabric codes"
-                            "; weather_feel — instead of temperature_c when she named no degrees, the weather as she put it"
+                            ""
                             "; season — instead of both when she named no weather: the season of her day, and band "
                             "is then absent)",
     "same_item_in_day_band_fabric": "the same item in a fabric of the day's band, or the same colour and cut "
@@ -2590,8 +2579,8 @@ _МІСЦЯ_ОПЦІЙ = "where it is worn"
                                 "easier",
     "long_day_items_unbearable": "over a long day (hours) items in these slots become unbearable in their own "
                                  "way: they demand attention while worn",
-    "shoe_type_outside_temp_band": "shoe type outside the day's temperature band (temp_c"
-                                   "; weather_feel — instead of temp_c when she named no degrees, the weather as she put it"
+    "shoe_type_outside_temp_band": "shoe type outside the day's weather band code band (weather_band"
+                                   ""
                                    "; season — instead of both when she named no weather: the season of her day)",
     # пора року без градусів — руки чи плечі голі, і над ними нічого
     "bare_arms_in_cold_season": "arms or shoulders stay bare and nothing of the look goes over them, while the "
@@ -2739,12 +2728,12 @@ _МІСЦЯ_ОПЦІЙ = "where it is worn"
                                        "(values: models — how many distinct models)",
     # ── верхній шар: температурні ворота двобічні (`композитор_збирання`) ─────────────
     "outer_layer_kept_despite_warmth": "the outer layer stays although the temperature band alone would not "
-                                      "ask for it (values: temperature_c — °C she named; weather_feel — instead of temperature_c when she named no degrees, the weather as she put it; held_by — "
+                                      "ask for it (values: weather_band — the weather band code; held_by — "
                                       "dress_code when the dressiness band or the dress code holds it, "
                                       "weather_or_outdoors when rain, wind or the street below +22 °C does)",
     "outer_layer_removed_by_temperature": "the outer layer was removed by the temperature band: it asks for "
                                          "one layer on the torso, so the empty kind is not a gap in the "
-                                         "catalogue (values: temperature_c — °C she named; weather_feel — instead of temperature_c when she named no degrees, the weather as she put it)",
+                                         "catalogue (values: weather_band — the weather band code)",
     # ── прикраси з цим образом (`композитор_збирання`, `композитор_слоти`) ───────────
     "jewellery_kind_dropped_by_her_word": "this jewellery kind was dropped from the outfit because she asked "
                                           "for no jewellery: her decision about today, neither a gap in the "
@@ -2968,11 +2957,10 @@ _МІСЦЯ_ОПЦІЙ = "where it is worn"
                       "the nearer the end of the period, the softer this limit",
     "cold_outer_layer_counts": "in this cold the outer layer is part of the outfit, not an addition: its colour "
                                "and formality are judged with the rest; open shoes, thin tights and bare ankles "
-                               "are a mistake here, not a style (values: temperature_c"
-                               "; weather_feel — instead of temperature_c when she named no degrees, the weather as she put it)",
+                               "are a mistake here, not a style (values: weather_band"
+                               ")",
     "cold_outer_layer_optional": "in this cold the outer layer is optional: the outfit stands without it; open "
-                                 "shoes and bare ankles are fine here (values: temperature_c; weather_feel — "
-                                 "instead of temperature_c when she named no degrees, the weather as she put it)",
+                                 "shoes and bare ankles are fine here (values: weather_band)",
     "precipitation_shoes_materials": "precipitation: closed shoes, no fabric soles, no suede or nubuck; "
                                      "materials afraid of water stay out of the outfit",
     "precipitation_water_shy_materials_with_condition": "precipitation: closed shoes, no fabric soles; suede, "
@@ -2994,11 +2982,11 @@ _МІСЦЯ_ОПЦІЙ = "where it is worn"
     # `вибиває` драбини (`формальність.ДРАБИНА`), щабель — свій у кожного з семи
     "level_breakers": "the level is held by fabric, finish and shoes, not by the item's name (values: level — the "
                       "step; out — what takes an outfit off this step; without out nothing is ruled out)",
-    "high_occasion_floor": "the event's level starts from this step: no item sits "
-                           "more than one step below it (canvas sneakers, trainers, denim, a knit top stay out); "
-                           "shoes at the outfit's level or above (values: from)",
-    "weather_layers": "the weather outside and the layers it asks for (values: temperature_c"
-                      "; weather_feel — instead of temperature_c when she named no degrees, the weather as she put it; layers — how many "
+    "high_occasion_floor": "risk asymmetry (K-KOH-07): no item sits more than one step below "
+                           "the event's band; explain a deliberate lower item in deliberate, "
+                           "including a deliberate wrong shoe (K-SHO-03) (values: from)",
+    "weather_layers": "the weather outside and the layers it asks for (values: weather_band"
+                      "; layers — how many "
                       "layers on the torso, a half is one more light removable layer; fabrics — fabric codes "
                       "for this temperature; outer_at_formality — true when the outer layer is held to the "
                       "outfit's formality too)",
@@ -3232,6 +3220,17 @@ if _спільні:
 # кожне правило пункту стоїть у його визначенні). Імена пунктів українською лишаються в
 # обʼєкті коду — для звіту власника (`чекліст_вердикту`).
 ПУНКТИ_ЧЕКЛІСТА = {
+    'event_role_known': 'the role she named at this event is known',
+    'companion_formality_known': 'the companion formalness level from her words is known',
+    'occasion_season_known': 'the event season she named is known',
+    'wardrobe_known': 'her available wardrobe items are known',
+    'life_transition_known': 'the life transition she volunteered is known',
+    'declared_break_known': 'whether she explicitly declared a style grammar break is known',
+    'matching_opaque_tights_known': 'whether she named opaque tights matching her shoes is known',
+    'declared_column_known': 'whether she declared a column of one colour is known',
+    "direct_sun_heat": "direct sunlight is known before judging dark close-fitting garments (K-WEA-03)",
+    "host_context_known": "whether the event has a host or stakes is known before applying risk asymmetry (K-KOH-07)",
+    "creative_environment_known": "whether the environment is creative is known before inverting risk asymmetry (K-KOH-07)",
     # надлишок (K-SYS-08)
     "chroma_budget": "at most 1–2 loud colours in the outfit, hair and glasses frames included (K-COL-02)",
     "single_focus": "exactly one focal point (K-CRA-02, K-COL-05)",
@@ -3304,7 +3303,7 @@ if _спільні:
 }
 # ід пункту (`суд_чеклісти.ЧЕКЛІСТ_*`, перше поле) → код. Ід унікальні через усі чотири списки;
 # «K-CLR-02» — пункт контрасту біля обличчя, який оцінка образу додає до них сама (ВМ-3б).
-ЧЕКЛІСТ_КОДИ = {1: "chroma_budget", 2: "single_focus", 3: "lightness_steps", 4: "one_silhouette_letter",
+ЧЕКЛІСТ_КОДИ = {24: 'event_role_known', 25: 'companion_formality_known', 26: 'occasion_season_known', 27: 'wardrobe_known', 28: 'life_transition_known', 29: 'declared_break_known', 30: 'matching_opaque_tights_known', 31: 'declared_column_known', 22: "host_context_known", 23: "creative_environment_known", 21: "direct_sun_heat", 1: "chroma_budget", 2: "single_focus", 3: "lightness_steps", 4: "one_silhouette_letter",
     5: "formality_spread", 6: "shine_budget", 7: "print_budget", 8: "layering_depth", 9: "accent_echo",
     10: "one_sprezzatura", 11: "hem_off_widest_point", 12: "one_metal", 13: "genre_dominant",
     14: "one_trend_item", 15: "fabric_cut_formality", 16: "scale_to_person", 17: "layer_hems_apart",
@@ -3433,6 +3432,8 @@ def визначення_заяв(коди):
  'edge_closeness_penalty': 'a penalty for the closeness of edges',
  'edge_contrast_draws_line': 'the edge contrast draws a line across the leg',
  'edge_contrast_reduced': 'the edge contrast is reduced',
+ 'evening_admits_second_zone': 'in the evening a second open zone of the body is admitted',
+ 'evening_lift_by_tier': 'the evening raises the step of dress by the level of the event',
  'exact_edge_match_dispute': 'an exact match of edges: the rules dispute it',
  'exactly_one_formality_outlier_x06': 'exactly one formality outlier: x0.6',
  'fabric_off_season': 'the fabric is not for the season',
@@ -3735,7 +3736,7 @@ def схема():
 
 def записати_схему(шлях=ФАЙЛ_СХЕМИ):
     """Пише `схема()` у файл JSON Schema (той самий, що лежить у репозиторії)."""
-    with open(шлях, "w", encoding="utf-8") as ф:
+    with open(шлях, "w", encoding="utf-8", newline="\n") as ф:
         _json_.dump(схема(), ф, ensure_ascii=False, indent=1)
         ф.write("\n")
     return шлях

@@ -1,0 +1,37 @@
+── ПРОМПТ (2355 симв.) ──
+{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.", "One item carries one thing — of two alternatives list the first; a note in brackets is not an item.", "Slot \"accessory\" is for an item no other slot fits.", "\"is_outfit\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "ITEM_LIST", "answer_schema": {"is_outfit": "yes|no", "items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory", "color_hex": "<#rrggbb or null>", "worn": "<true, or false when the description says the outfit goes without it>"}]}, "input": ["\"description\" — the outfit description"]}, "description": "Merino wool blend blazer, structured boxy cut with wide lapels, charcoal grey #2F4F4F, heavy mid-weight fabric designed for wind and light snow resistance.\nHigh-waisted straight-leg trousers, tailored fit through the thigh, deep navy blue #000080, durable stretch twill that repels moisture from salted sidewalks.\nAnkle boots with a low block heel, sleek silhouette, glossy black leather #000000, waterproof finish to keep feet dry during the walk.\nThick cashmere scarf, loose drape, silver-grey heather #C0C0C0, soft brushed texture to warm the neck without bulk.\nThis outfit works because the structured wool blazer and heavy twill trousers provide essential protection against the -10°C temperature and road salt while maintaining a sharp professional silhouette for the office. The dark navy and charcoal palette creates a sophisticated, cohesive monochrome look that ensures you stand out as requested without appearing overly casual. Finally, the practical ankle boots and warm scarf address the snowy walk to work, balancing your bold style intent with the functional needs of winter commuting."}
+
+── ВІДПОВІДЬ (914 симв., 5.0 с, HTTP 200) ──
+{
+  "is_outfit": "yes",
+  "items": [
+    {
+      "name": "blazer",
+      "details": "structured boxy cut with wide lapels, heavy mid-weight fabric designed for wind and light snow resistance",
+      "slot": "outerwear",
+      "color_hex": "#2F4F4F",
+      "worn": true
+    },
+    {
+      "name": "trousers",
+      "details": "high-waisted straight-leg tailored fit through the thigh, durable stretch twill that repels moisture",
+      "slot": "bottom",
+      "color_hex": "#000080",
+      "worn": true
+    },
+    {
+      "name": "boots",
+      "details": "ankle boots with low block heel sleek silhouette waterproof finish",
+      "slot": "shoes",
+      "color_hex": "#000000",
+      "worn": true
+    },
+    {
+      "name": "scarf",
+      "details": "thick cashmere loose drape soft brushed texture to warm the neck without bulk",
+      "slot": "scarf",
+      "color_hex": "#C0C0C0",
+      "worn": true
+    }
+  ]
+}

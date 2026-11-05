@@ -1,7 +1,7 @@
-diff --git a/аудит/адаптери/gemini/claude_run.ps1 b/аудит/адаптери/gemini/claude_run.ps1
-index 4493920..b157284 100644
---- a/аудит/адаптери/gemini/claude_run.ps1
-+++ b/аудит/адаптери/gemini/claude_run.ps1
+diff --git "a/\320\260\321\203\320\264\320\270\321\202/\320\260\320\264\320\260\320\277\321\202\320\265\321\200\320\270/gemini/claude_run.ps1" "b/\320\260\321\203\320\264\320\270\321\202/\320\260\320\264\320\260\320\277\321\202\320\265\321\200\320\270/gemini/claude_run.ps1"
+index 44939208..d71b6a13 100644
+--- "a/\320\260\321\203\320\264\320\270\321\202/\320\260\320\264\320\260\320\277\321\202\320\265\321\200\320\270/gemini/claude_run.ps1"
++++ "b/\320\260\321\203\320\264\320\270\321\202/\320\260\320\264\320\260\320\277\321\202\320\265\321\200\320\270/gemini/claude_run.ps1"
 @@ -427,6 +427,7 @@ function Get-StatusBody {
          $lines += @('', '### Чекають скидання квоти', '', '| позначка | до (UTC) | група |', '|---|---|---|')
          foreach ($w in $wait) { $lines += "| $($w.Marker) | $($w.Until) | $($w.Group) |" }
@@ -19,7 +19,7 @@ index 4493920..b157284 100644
  
      Позиція в кінці та markdown не визначають результат роботи. Цитований наряд і приклади не можуть його
      підтвердити; неоднозначні відповіді відхиляються. Гілку й SHA перевіряє виклик через origin. #>
-@@ -571,13 +572,19 @@ function Get-Report([string]$Text) {
+@@ -571,11 +572,17 @@ function Get-Report([string]$Text) {
              if ($line.StartsWith($pair[0]) -and -not $line.TrimEnd('.').EndsWith($pair[1])) { $quote = $pair[1]; break }
          }
          if ($quote) { continue }
@@ -36,12 +36,9 @@ index 4493920..b157284 100644
 -            if ($sha -cnotmatch '^[0-9a-fA-F]{40}$') { return $null }
 +            if ($sha -cnotmatch '^[0-9a-fA-F]{7,40}$') { return $null }
              $reports += [pscustomobject]@{ Kind = 'DONE'; Branch = $branch; Sha = $sha.ToLowerInvariant() }
--        } elseif ($line -cmatch '^НОУТБУК ЗАБЛОКОВАНО\b') {
-+        } elseif ($line -cmatch '^(?:НОУТБУК )?ЗАБЛОКОВАНО\b') {
+         } elseif ($line -cmatch '^НОУТБУК ЗАБЛОКОВАНО\b') {
              $branch = ''
-             if ($line -cmatch "(claude/$script:SlugCore)") { $branch = $Matches[1].TrimEnd('.') }
-             $reports += [pscustomobject]@{ Kind = 'BLOCKED'; Branch = $branch; Sha = '' }
-@@ -588,6 +595,92 @@ function Get-Report([string]$Text) {
+@@ -588,6 +595,95 @@ function Get-Report([string]$Text) {
  }
  
  
@@ -89,7 +86,10 @@ index 4493920..b157284 100644
 +        ('ey' + 'J[A-Za-z0-9_-]{10,}'), ('s' + 'k-[A-Za-z0-9_-]{16,}'),
 +        ('g' + 'h[pousr]_[A-Za-z0-9]{20,}'), ('github' + '_pat_[A-Za-z0-9_]{20,}'),
 +        ('(?is)BE' + 'GIN [A-Z ]*PRIVATE KEY.*?(?:END [A-Z ]*PRIVATE KEY|\z)'),
-+        '(?im)\b(?:access[_-]?token|api[_-]?key|password|authorization)\b\s*[:=]\s*[^\r\n]+',
++        # Значення секретного поля в будь-якій формі: JSON у лапках (закривальні лапки імені перед `:`), YAML, `ключ=значення`,
++        # заголовок `Authorization: …`; ім'я — будь-яке, що містить слово секрету. Значення в лапках — до закривальних, інакше до кінця рядка.
++        ('(?im)[A-Za-z0-9_.-]*(?:to' + 'ken|sec' + 'ret|pass' + 'w(?:or)?d|pwd|api[_-]?key|authori[sz]ation|credential|cookie|private[_-]?key)[A-Za-z0-9_.-]*[''"]?\s*[:=]\s*(?:"(?:[^"\\\r\n]|\\.)*"?|''[^''\r\n]*''?|[^\r\n]*)'),
++        '(?i)\bBearer\s+[A-Za-z0-9._~+/=-]{8,}',
 +        ('(?im)re' + 'fresh_token[^\r\n]*')
 +    )
 +    foreach ($pattern in $patterns) { $Text = [regex]::Replace($Text, $pattern, '<токен>') }
@@ -134,7 +134,7 @@ index 4493920..b157284 100644
  function Get-ErrorCode([string]$Text) {
      if ($Text -match 'issue with the selected model|unrecognized_model|model_not_found|not_found_error.{0,80}model') { return 'MODEL_INVALID' }
      if ($Text -match 'Not logged in|/login|authentication_error|Invalid API key|OAuth token|\b401\b') { return 'AUTH' }
-@@ -639,7 +732,7 @@ function Invoke-Claude([string]$Exe, [string[]]$ArgList, [string]$Prompt, [strin
+@@ -639,7 +735,7 @@ function Invoke-Claude([string]$Exe, [string[]]$ArgList, [string]$Prompt, [strin
      $w.Write($Prompt)
      $w.Close()
      $log = Join-Path $RunDir 'claude.jsonl'; $ev = Join-Path $RunDir 'events.tsv'; $errLog = Join-Path $RunDir 'claude.stderr.txt'
@@ -143,7 +143,7 @@ index 4493920..b157284 100644
      $err = New-Object System.Text.StringBuilder
      $last = Get-Date
      $outTask = $null; $errTask = $null; $outDone = $false; $errDone = $false
-@@ -675,14 +768,17 @@ function Invoke-Claude([string]$Exe, [string[]]$ArgList, [string]$Prompt, [strin
+@@ -675,14 +771,17 @@ function Invoke-Claude([string]$Exe, [string[]]$ArgList, [string]$Prompt, [strin
          [System.IO.File]::AppendAllText($log, $line + "`n", $script:Utf8)
          if ($line -match 'Unknown --effort value') { $res.Kind = 'EFFORT_INVALID'; break }
          $type = ''; $obj = $null
@@ -165,7 +165,7 @@ index 4493920..b157284 100644
          if ($type -eq 'rate_limit_event') {
              $info = Get-JsonProp $obj 'rate_limit_info'
              if ($null -ne $info) { $res.Limit = $info; Save-ClaudeQuota $info }
-@@ -783,18 +879,19 @@ function Invoke-ClaudeTask($M, $Job, [string]$Exe, [string]$TaskText, [string]$C
+@@ -783,18 +882,19 @@ function Invoke-ClaudeTask($M, $Job, [string]$Exe, [string]$TaskText, [string]$C
          return (Complete-Task $M $statePath $id 'CRASH')
      }
      if ($r.Kind) { return (Complete-Task $M $statePath $id $r.Kind) }
@@ -189,7 +189,7 @@ index 4493920..b157284 100644
          return (Complete-Task $M $statePath $id 'DONE' $rep.Branch $rep.Sha)
      }
      if ($null -ne $rep) { return (Complete-Task $M $statePath $id 'BLOCKED') }
-@@ -803,6 +900,7 @@ function Invoke-ClaudeTask($M, $Job, [string]$Exe, [string]$TaskText, [string]$C
+@@ -803,6 +903,7 @@ function Invoke-ClaudeTask($M, $Job, [string]$Exe, [string]$TaskText, [string]$C
          if ($code -eq 'QUOTA' -and (Enter-ClaudeQuotaWait $M $statePath $id $r ($text + "`n" + $r.Err))) { return }
          return (Complete-Task $M $statePath $id $code)
      }
@@ -197,34 +197,34 @@ index 4493920..b157284 100644
      Complete-Task $M $statePath $id 'NO_REPORT'
  }
  
-diff --git a/аудит/адаптери/gemini/m9v/хеші.psd1 b/аудит/адаптери/gemini/m9v/хеші.psd1
-index 2e1af9e..0877f38 100644
---- a/аудит/адаптери/gemini/m9v/хеші.psd1
-+++ b/аудит/адаптери/gemini/m9v/хеші.psd1
+diff --git "a/\320\260\321\203\320\264\320\270\321\202/\320\260\320\264\320\260\320\277\321\202\320\265\321\200\320\270/gemini/m9v/\321\205\320\265\321\210\321\226.psd1" "b/\320\260\321\203\320\264\320\270\321\202/\320\260\320\264\320\260\320\277\321\202\320\265\321\200\320\270/gemini/m9v/\321\205\320\265\321\210\321\226.psd1"
+index f805981a..2bfa397b 100644
+--- "a/\320\260\321\203\320\264\320\270\321\202/\320\260\320\264\320\260\320\277\321\202\320\265\321\200\320\270/gemini/m9v/\321\205\320\265\321\210\321\226.psd1"
++++ "b/\320\260\321\203\320\264\320\270\321\202/\320\260\320\264\320\260\320\277\321\202\320\265\321\200\320\270/gemini/m9v/\321\205\320\265\321\210\321\226.psd1"
 @@ -15,5 +15,5 @@
      CodexInstaller       = 'A59CB66350098C33B021FF470D586AE8FE3B7CAF189CA7137B4FE3AF5D4DCE74'
      'gemini_watch.ps1'   = '69EFEBB07FF1AF51C382B753A95C50F3C1AC27B3008F2489992BEBE3FD0213AA'
      'queue_lanes.ps1'    = '02868BB9FFE5320952634BA7A3E3D7B2F34D0F4D11699844F7429DFFDC66B909'
 -    'claude_run.ps1'     = '9C9C96D9A065B8EA510C5B9023495806BA03D385ED2613067068842DFFD636C3'
-+    'claude_run.ps1'     = '84C1FD02E7569F428ABC7C377B15E020A298B36682B6F726A9791196F68B7E6F'
++    'claude_run.ps1'     = 'C2E5B91E13B5B2DAC132716FF02769B691D55635BE913A31FD8A4A5B1D5575FE'
  }
-diff --git a/аудит/адаптери/gemini/НАЛАШТУВАННЯ.md b/аудит/адаптери/gemini/НАЛАШТУВАННЯ.md
-index 696c175..8cd3ea2 100644
---- a/аудит/адаптери/gemini/НАЛАШТУВАННЯ.md
-+++ b/аудит/адаптери/gemini/НАЛАШТУВАННЯ.md
+diff --git "a/\320\260\321\203\320\264\320\270\321\202/\320\260\320\264\320\260\320\277\321\202\320\265\321\200\320\270/gemini/\320\235\320\220\320\233\320\220\320\250\320\242\320\243\320\222\320\220\320\235\320\235\320\257.md" "b/\320\260\321\203\320\264\320\270\321\202/\320\260\320\264\320\260\320\277\321\202\320\265\321\200\320\270/gemini/\320\235\320\220\320\233\320\220\320\250\320\242\320\243\320\222\320\220\320\235\320\235\320\257.md"
+index 6fd129c4..ae468be4 100644
+--- "a/\320\260\321\203\320\264\320\270\321\202/\320\260\320\264\320\260\320\277\321\202\320\265\321\200\320\270/gemini/\320\235\320\220\320\233\320\220\320\250\320\242\320\243\320\222\320\220\320\235\320\235\320\257.md"
++++ "b/\320\260\321\203\320\264\320\270\321\202/\320\260\320\264\320\260\320\277\321\202\320\265\321\200\320\270/gemini/\320\235\320\220\320\233\320\220\320\250\320\242\320\243\320\222\320\220\320\235\320\235\320\257.md"
 @@ -437,7 +437,7 @@ $f = Join-Path "$env:USERPROFILE\gemini-outbox" $n
  | `gemini_watch.ps1` | `69EFEBB07FF1AF51C382B753A95C50F3C1AC27B3008F2489992BEBE3FD0213AA` |
  | `wrapper_health.ps1` | `B3E2C44C4F342A915B814854A7D7619EDE2E019B48DC4A50CF4C9DB304C2E531` |
  | `queue_lanes.ps1` | `02868BB9FFE5320952634BA7A3E3D7B2F34D0F4D11699844F7429DFFDC66B909` |
 -| `claude_run.ps1` | `9C9C96D9A065B8EA510C5B9023495806BA03D385ED2613067068842DFFD636C3` |
-+| `claude_run.ps1` | `84C1FD02E7569F428ABC7C377B15E020A298B36682B6F726A9791196F68B7E6F` |
++| `claude_run.ps1` | `C2E5B91E13B5B2DAC132716FF02769B691D55635BE913A31FD8A4A5B1D5575FE` |
  | `CodexInstaller` (`install.ps1` релізу Codex `CodexRelease`) | `A59CB66350098C33B021FF470D586AE8FE3B7CAF189CA7137B4FE3AF5D4DCE74` |
  
  Той самий список читають скрипти `m9v/` з `m9v/хеші.psd1` — міняти їх разом із таблицею. Підготовка одним проходом — `m9v/ЩО_НАТИСНУТИ.md`.
-@@ -630,3 +630,14 @@ CI й ноутбук запускають один повний перелік 
- `GEMINI ОБГОРТКА: ЗАБЛОКОВАНО GPU|SLOTS: <причина>, позначок N` (причина GPU стійка: замок, `процес <назва з compute-apps>`
- або зайнята пам'ять) — один на причину (повтор лише при зміні причини, стан `holds.json`); пульс диспетчера — лише
- запас. Той самий код у `gemini-run`: рядок іде в `out/alerts`, публікатор перевіряє його заново (`HoldLineTemplate`, `wrapper_health.ps1`) і кладе у вихідні. Тіло #1856 не стверджує «Оновлено понад 5 хв тому»: підказка умовна.
+@@ -664,3 +664,14 @@ Deny ставиться явно на кожний об'єкт власної ф
+ Читач .git перевіряє ListDirectory перед HEAD: читання файла окремо
+ може бути дозволене при забороненому переліку теки. Недоступна тека
+ журналюється, як і решта недоступного стану; доступні смуги незалежні.
 +
 +## Діагностика Claude без звіту
 +
@@ -236,43 +236,12 @@ index 696c175..8cd3ea2 100644
 +у claude-run/no-report/<id>.json і claude-run.log. Останні три записи публікуються в стані ноутбука #1856
 +у розділі «Claude NO_REPORT» як екрановані дані. Нових рядків транспорту, входів і дозволів немає.
 +Після застосування латки потрібен запуск Claude з рядком звіту: стенд не є живим прийманням.
-diff --git a/аудит/адаптери/gemini/перевірка/side.ps1 b/аудит/адаптери/gemini/перевірка/side.ps1
-index 1eec938..330e99f 100644
---- a/аудит/адаптери/gemini/перевірка/side.ps1
-+++ b/аудит/адаптери/gemini/перевірка/side.ps1
-@@ -4,6 +4,10 @@ param([string]$Script, [string]$ArgsJson)
- if ($env:OS -eq 'Windows_NT') { [Console]::InputEncoding = [Text.Encoding]::UTF8 }
- $p = @{}
- (ConvertFrom-Json $ArgsJson).PSObject.Properties | ForEach-Object { $p[$_.Name] = $_.Value }
-+# Розмір профілю в синтетичному прогоні береться лише з теки стенда.
-+if ((Get-Command $Script).Parameters.ContainsKey('ProfileDir') -and -not $p.ContainsKey('ProfileDir')) {
-+    $p['ProfileDir'] = Join-Path ([System.IO.Path]::GetTempPath()) ('profile-' + [guid]::NewGuid().ToString('N'))
-+}
- # Стенд не чіпає справжньої спільної теки ноутбука (C:\Users\Public\gemini\lanes): без LaneDir — тимчасова тека.
- if ((Get-Command $Script).Parameters.ContainsKey('LaneDir') -and -not $p.ContainsKey('LaneDir')) {
-     $p['LaneDir'] = Join-Path ([System.IO.Path]::GetTempPath()) ('lanes-' + [guid]::NewGuid().ToString('N').Substring(0, 8))
-@@ -32,4 +36,5 @@ if ((Split-Path -Leaf $Script) -eq 'gemini_publish.ps1') {
-     function Test-DispatcherAction([string]$Line) { $true }
- }
- function Test-ExternalGpuFree { $true }
-+function Get-ExternalGpuMiB { <# Дає вільну GPU синтетичному планувальнику. #> 0 }
- exit (Main)
-diff --git a/аудит/адаптери/gemini/перевірка/side_claude.ps1 b/аудит/адаптери/gemini/перевірка/side_claude.ps1
-index 6ec9b02..66984ba 100644
---- a/аудит/адаптери/gemini/перевірка/side_claude.ps1
-+++ b/аудит/адаптери/gemini/перевірка/side_claude.ps1
-@@ -31,4 +31,5 @@ function Get-TaskRows {
-     }
- }
- function Test-ExternalGpuFree { $true }
-+function Get-ExternalGpuMiB { <# Дає вільну GPU синтетичному планувальнику. #> 0 }
- exit (Main)
-diff --git a/аудит/адаптери/gemini/перевірка/сценарії_no_report.ps1 b/аудит/адаптери/gemini/перевірка/сценарії_no_report.ps1
+diff --git "a/\320\260\321\203\320\264\320\270\321\202/\320\260\320\264\320\260\320\277\321\202\320\265\321\200\320\270/gemini/\320\277\320\265\321\200\320\265\320\262\321\226\321\200\320\272\320\260/\321\201\321\206\320\265\320\275\320\260\321\200\321\226\321\227_no_report.ps1" "b/\320\260\321\203\320\264\320\270\321\202/\320\260\320\264\320\260\320\277\321\202\320\265\321\200\320\270/gemini/\320\277\320\265\321\200\320\265\320\262\321\226\321\200\320\272\320\260/\321\201\321\206\320\265\320\275\320\260\321\200\321\226\321\227_no_report.ps1"
 new file mode 100644
-index 0000000..e5e68c7
+index 00000000..d465c872
 --- /dev/null
-+++ b/аудит/адаптери/gemini/перевірка/сценарії_no_report.ps1
-@@ -0,0 +1,127 @@
++++ "b/\320\260\321\203\320\264\320\270\321\202/\320\260\320\264\320\260\320\277\321\202\320\265\321\200\320\270/gemini/\320\277\320\265\321\200\320\265\320\262\321\226\321\200\320\272\320\260/\321\201\321\206\320\265\320\275\320\260\321\200\321\226\321\227_no_report.ps1"
+@@ -0,0 +1,144 @@
 +﻿#Requires -Version 5.1
 +param([string]$SourceDir = (Split-Path -Parent $PSScriptRoot), [switch]$Before, [string]$EvidenceDir = '')
 +Set-StrictMode -Version Latest
@@ -343,7 +312,7 @@ index 0000000..e5e68c7
 +    @('хибний-короткий-SHA', "НОУТБУК ГОТОВО $branch bbbbbbbb", '', 'NO_PUSH'),
 +    @('SHA-надто-короткий', "НОУТБУК ГОТОВО $branch aaa", '', 'NO_REPORT'),
 +    @('блокер', 'НОУТБУК ЗАБЛОКОВАНО: причина', '', 'BLOCKED'),
-+    @('блокер-без-префікса', 'ЗАБЛОКОВАНО: причина', '', 'BLOCKED'),
++    @('блокер-без-префікса', 'ЗАБЛОКОВАНО: причина', '', 'NO_REPORT'),
 +    @('exit', '', '', 'EXIT')
 +)
 +if ($EvidenceDir) { [void][IO.Directory]::CreateDirectory($EvidenceDir) }
@@ -383,6 +352,23 @@ index 0000000..e5e68c7
 +        ('-----BE' + 'GIN RSA PRIVATE KEY-----' + "`n" + ('приховано' + "`n") * 50 + '-----END RSA PRIVATE KEY-----'),
 +        'api_key=значення', 'Authorization: Bearer значення', 'password=значення'
 +    )
++    # Значення секретних полів у всіх формах запису: у файлі, журналі й публічному стані їх бути не може.
++    $values = @('значення-а', 'значення-б', 'значення-в', 'значення-г', 'значення-д', 'значення-е', 'значення-є', 'значення-ж')
++    $forms = @(
++        '{"password":"значення-а"}', '{"Authorization":"Bearer значення-б"}', '{"api_key":"значення-в","ok":1}',
++        '  "client_secret" : "значення-г",', 'password: значення-д', "api-key: 'значення-е'",
++        'curl -H "Authorization: Bearer значення-є"', 'access_token=значення-ж'
++    )
++    $script:capturedLog = ''
++    function Write-Log { param($Text) $script:capturedLog += "$Text`n" }
++    $r = [pscustomobject]@{ Code = 0; Result = [pscustomobject]@{ result = ($forms -join "`n") + "`n<b>хвіст</b>" }; AssistantText = ''; Err = '' }
++    Save-ClaudeNoReport $m "$($job.id)-форми" $r
++    $rawForms = [IO.File]::ReadAllText((Join-Path $WorkDir "no-report/$($job.id)-форми.json"), $script:Utf8)
++    $publicForms = @(Get-ClaudeNoReportLines) -join "`n"
++    foreach ($place in @(@('файл', $rawForms), @('журнал', $script:capturedLog), @('публічний стан', $publicForms))) {
++        Check "значення секретних полів вилучено: $($place[0])" (@($values | Where-Object { $place[1].Contains($_) }).Count -eq 0)
++    }
++    Remove-Item -LiteralPath (Join-Path $WorkDir "no-report/$($job.id)-форми.json")
 +    $r = [pscustomobject]@{ Code = 0; Result = [pscustomobject]@{ result = ($secrets -join "`n") + "`n<b>хвіст</b>" }; AssistantText = ''; Err = '' }
 +    Save-ClaudeNoReport $m $job.id $r
 +    $raw = [IO.File]::ReadAllText((Join-Path $WorkDir "no-report/$($job.id).json"), $script:Utf8)
@@ -400,10 +386,10 @@ index 0000000..e5e68c7
 +    Check 'квота збережена' ((Get-ErrorCode 'rate_limit_error 429') -eq 'QUOTA')
 +}
 +exit [int]($script:bad -gt 0)
-diff --git a/аудит/адаптери/gemini/перевірка/сценарії_звіту.ps1 b/аудит/адаптери/gemini/перевірка/сценарії_звіту.ps1
-index e8c5541..f7df89e 100644
---- a/аудит/адаптери/gemini/перевірка/сценарії_звіту.ps1
-+++ b/аудит/адаптери/gemini/перевірка/сценарії_звіту.ps1
+diff --git "a/\320\260\321\203\320\264\320\270\321\202/\320\260\320\264\320\260\320\277\321\202\320\265\321\200\320\270/gemini/\320\277\320\265\321\200\320\265\320\262\321\226\321\200\320\272\320\260/\321\201\321\206\320\265\320\275\320\260\321\200\321\226\321\227_\320\267\320\262\321\226\321\202\321\203.ps1" "b/\320\260\321\203\320\264\320\270\321\202/\320\260\320\264\320\260\320\277\321\202\320\265\321\200\320\270/gemini/\320\277\320\265\321\200\320\265\320\262\321\226\321\200\320\272\320\260/\321\201\321\206\320\265\320\275\320\260\321\200\321\226\321\227_\320\267\320\262\321\226\321\202\321\203.ps1"
+index e8c55412..f7df89e3 100644
+--- "a/\320\260\321\203\320\264\320\270\321\202/\320\260\320\264\320\260\320\277\321\202\320\265\321\200\320\270/gemini/\320\277\320\265\321\200\320\265\320\262\321\226\321\200\320\272\320\260/\321\201\321\206\320\265\320\275\320\260\321\200\321\226\321\227_\320\267\320\262\321\226\321\202\321\203.ps1"
++++ "b/\320\260\321\203\320\264\320\270\321\202/\320\260\320\264\320\260\320\277\321\202\320\265\321\200\320\270/gemini/\320\277\320\265\321\200\320\265\320\262\321\226\321\200\320\272\320\260/\321\201\321\206\320\265\320\275\320\260\321\200\321\226\321\227_\320\267\320\262\321\226\321\202\321\203.ps1"
 @@ -32,7 +32,8 @@ $cases = @(
      @('порожня відповідь', '', ''),
      @('звичайна проза', 'Зроблено, усе гаразд.', ''),
@@ -414,80 +400,10 @@ index e8c5541..f7df89e 100644
      @('цитата markdown', "> $line", ''),
      @('продовження цитати markdown', "> У наряді написано:`n$line", ''),
      @('цитата багаторядкова', "«У наряді написано:`n$line`nце цитата»", ''),
-diff --git a/аудит/адаптери/gemini/перевірка/сценарії_здоровя.ps1 b/аудит/адаптери/gemini/перевірка/сценарії_здоровя.ps1
-index af8674e..12b119e 100644
---- a/аудит/адаптери/gemini/перевірка/сценарії_здоровя.ps1
-+++ b/аудит/адаптери/gemini/перевірка/сценарії_здоровя.ps1
-@@ -53,7 +53,7 @@ try {
-     Publish 'auth'
-     if ($Before) {
-         Check 'ДО: 401 — коментарів #1690 немає, рядок не доставлено' (@(Comments).Count -eq 0 -and -not (States 'auth').sent)
--        . (Join-Path $SourceDir 'gemini_run.ps1') -RunsDir "$tmpRoot/gem/runs" -OutDir "$tmpRoot/gem/out" -RepoDir $tmpRoot -LaneDir "$tmpRoot/lanes"
-+        . (Join-Path $SourceDir 'gemini_run.ps1') -RunsDir "$tmpRoot/gem/runs" -OutDir "$tmpRoot/gem/out" -RepoDir $tmpRoot -LaneDir "$tmpRoot/lanes" -ProfileDir "$tmpRoot/profile"
-         foreach ($dir in @($RunsDir, $OutDir, $LaneDir)) { [void][System.IO.Directory]::CreateDirectory($dir) }
-         $script:Limits = $null
-         $env:FAKE_HEALTH_MODE = 'agy_auth'
-@@ -111,7 +111,7 @@ try {
-     Publish 'response'
-     Check '401 у відповіді з успішним ok не стає тривогою з тексту агента' ((States 'response').sent -and @(States 'response').Count -eq 1)
- 
--    . (Join-Path $SourceDir 'gemini_run.ps1') -RunsDir "$tmpRoot/gem/runs" -OutDir "$tmpRoot/gem/out" -RepoDir $tmpRoot -AgyExe "$tmpRoot/agy.cmd" -LaneDir "$tmpRoot/lanes"
-+    . (Join-Path $SourceDir 'gemini_run.ps1') -RunsDir "$tmpRoot/gem/runs" -OutDir "$tmpRoot/gem/out" -RepoDir $tmpRoot -AgyExe "$tmpRoot/agy.cmd" -LaneDir "$tmpRoot/lanes" -ProfileDir "$tmpRoot/profile"
-     foreach ($dir in @($RunsDir, $OutDir, $LaneDir)) { [void][System.IO.Directory]::CreateDirectory($dir) }
-     $script:StateDir = Join-Path $RunsDir 'state'; [void][System.IO.Directory]::CreateDirectory($script:StateDir)
-     $script:SlotDir = Join-Path $RunsDir 'slots'; [void][System.IO.Directory]::CreateDirectory($script:SlotDir)
-diff --git a/аудит/адаптери/gemini/перевірка/сценарії_коду_збірки.ps1 b/аудит/адаптери/gemini/перевірка/сценарії_коду_збірки.ps1
-index 3f09e39..612d4f5 100644
---- a/аудит/адаптери/gemini/перевірка/сценарії_коду_збірки.ps1
-+++ b/аудит/адаптери/gemini/перевірка/сценарії_коду_збірки.ps1
-@@ -21,7 +21,7 @@ try {
-     [IO.File]::WriteAllText("$seed/джерела/a.py", '1', $utf)
-     & git -C $seed add -A; & git -C $seed commit -q -m 'початкова'; & git -C $seed push -q origin main
-     & git clone -q --bare $remote $bare
--    . (Join-Path $SourceDir 'gemini_publish.ps1') -WorkDir "$tmp/pub" -OutboxDir "$tmp/out" -UpdateRoot "$tmp/update"
-+    . (Join-Path $SourceDir 'gemini_publish.ps1') -WorkDir "$tmp/pub" -OutDir "$tmp/gem-out" -OutboxDir "$tmp/out" -UpdateRoot "$tmp/update"
-     foreach ($dir in @($WorkDir, "$WorkDir/seen", $OutboxDir)) { [void][IO.Directory]::CreateDirectory($dir) }
-     $script:Repo = $bare; $script:NoHooks = Join-Path $tmp 'no-hooks'
-     [void](Invoke-Git @('fetch','-q','origin','+refs/heads/main:refs/remotes/origin/main'))
-@@ -108,7 +108,7 @@ try {
-     $child = Join-Path $tmp 'restart.ps1'
-     $childText = @"
- `$ErrorActionPreference = 'Stop'
--. '$((Join-Path $SourceDir 'gemini_publish.ps1').Replace("'","''"))' -WorkDir '$($WorkDir.Replace("'","''"))' -OutboxDir '$($OutboxDir.Replace("'","''"))'
-+. '$((Join-Path $SourceDir 'gemini_publish.ps1').Replace("'","''"))' -WorkDir '$($WorkDir.Replace("'","''"))' -OutDir '$($OutDir.Replace("'","''"))' -OutboxDir '$($OutboxDir.Replace("'","''"))'
- `$script:Repo = '$($bare.Replace("'","''"))'
- `$script:NoHooks = '$($script:NoHooks.Replace("'","''"))'
- function Get-ChainPulls { @() }
-diff --git a/аудит/адаптери/gemini/перевірка/сценарії_ланцюга.ps1 b/аудит/адаптери/gemini/перевірка/сценарії_ланцюга.ps1
-index 9a73e1d..a4fc1c2 100644
---- a/аудит/адаптери/gemini/перевірка/сценарії_ланцюга.ps1
-+++ b/аудит/адаптери/gemini/перевірка/сценарії_ланцюга.ps1
-@@ -20,7 +20,7 @@ try {
-     [IO.File]::WriteAllText("$seed/джерела/a.py", '1', $utf)
-     & git -C $seed add -A; & git -C $seed commit -q -m 'початкова'; & git -C $seed push -q origin main
-     $bare = Join-Path $tmpRoot 'repo.git'; & git clone -q --bare $remote $bare
--    . (Join-Path $SourceDir 'gemini_publish.ps1') -WorkDir "$tmpRoot/pub" -OutboxDir "$tmpRoot/out" -UpdateRoot "$tmpRoot/update"
-+    . (Join-Path $SourceDir 'gemini_publish.ps1') -WorkDir "$tmpRoot/pub" -OutDir "$tmpRoot/gem-out" -OutboxDir "$tmpRoot/out" -UpdateRoot "$tmpRoot/update"
-     foreach ($d in @($WorkDir, (Join-Path $WorkDir 'seen'), $OutboxDir)) { [void][IO.Directory]::CreateDirectory($d) }
-     $script:Repo = $bare; $script:NoHooks = Join-Path $tmpRoot 'no-hooks'
-     [void](Invoke-Git @('fetch','-q','origin','+refs/heads/main:refs/remotes/origin/main'))
-diff --git a/аудит/адаптери/gemini/перевірка/сценарії_менше_прогонів.ps1 b/аудит/адаптери/gemini/перевірка/сценарії_менше_прогонів.ps1
-index 0970ac4..fdb8b07 100644
---- a/аудит/адаптери/gemini/перевірка/сценарії_менше_прогонів.ps1
-+++ b/аудит/адаптери/gemini/перевірка/сценарії_менше_прогонів.ps1
-@@ -15,7 +15,7 @@ function Scenario([string]$Name, [scriptblock]$Body) {
-     try { & $Body } catch { Check "$Name — $($_.Exception.Message) $($_.ScriptStackTrace)" $false }
- }
- try {
--    . (Join-Path $SourceDir 'gemini_publish.ps1') -WorkDir "$tmp/pub" -OutboxDir "$tmp/out"
-+    . (Join-Path $SourceDir 'gemini_publish.ps1') -WorkDir "$tmp/pub" -OutDir "$tmp/gem-out" -OutboxDir "$tmp/out"
-     foreach ($dir in @($WorkDir,"$WorkDir/state","$WorkDir/seen",$OutboxDir)) { [void][IO.Directory]::CreateDirectory($dir) }
-     . (Join-Path $SourceDir 'queue_lanes.ps1')
-     $config = [pscustomobject]@{codex='gpt-review';agy='gemini-review';claude='cc-claude-review'}
-diff --git a/аудит/адаптери/gemini/перевірка/сценарії_тихі_пробудження.ps1 b/аудит/адаптери/gemini/перевірка/сценарії_тихі_пробудження.ps1
-index bdb9f58..e56578e 100644
---- a/аудит/адаптери/gemini/перевірка/сценарії_тихі_пробудження.ps1
-+++ b/аудит/адаптери/gemini/перевірка/сценарії_тихі_пробудження.ps1
+diff --git "a/\320\260\321\203\320\264\320\270\321\202/\320\260\320\264\320\260\320\277\321\202\320\265\321\200\320\270/gemini/\320\277\320\265\321\200\320\265\320\262\321\226\321\200\320\272\320\260/\321\201\321\206\320\265\320\275\320\260\321\200\321\226\321\227_\321\202\320\270\321\205\321\226_\320\277\321\200\320\276\320\261\321\203\320\264\320\266\320\265\320\275\320\275\321\217.ps1" "b/\320\260\321\203\320\264\320\270\321\202/\320\260\320\264\320\260\320\277\321\202\320\265\321\200\320\270/gemini/\320\277\320\265\321\200\320\265\320\262\321\226\321\200\320\272\320\260/\321\201\321\206\320\265\320\275\320\260\321\200\321\226\321\227_\321\202\320\270\321\205\321\226_\320\277\321\200\320\276\320\261\321\203\320\264\320\266\320\265\320\275\320\275\321\217.ps1"
+index bdb9f58c..e56578e5 100644
+--- "a/\320\260\321\203\320\264\320\270\321\202/\320\260\320\264\320\260\320\277\321\202\320\265\321\200\320\270/gemini/\320\277\320\265\321\200\320\265\320\262\321\226\321\200\320\272\320\260/\321\201\321\206\320\265\320\275\320\260\321\200\321\226\321\227_\321\202\320\270\321\205\321\226_\320\277\321\200\320\276\320\261\321\203\320\264\320\266\320\265\320\275\320\275\321\217.ps1"
++++ "b/\320\260\321\203\320\264\320\270\321\202/\320\260\320\264\320\260\320\277\321\202\320\265\321\200\320\270/gemini/\320\277\320\265\321\200\320\265\320\262\321\226\321\200\320\272\320\260/\321\201\321\206\320\265\320\275\320\260\321\200\321\226\321\227_\321\202\320\270\321\205\321\226_\320\277\321\200\320\276\320\261\321\203\320\264\320\266\320\265\320\275\320\275\321\217.ps1"
 @@ -13,7 +13,7 @@ function Scenario([string]$Name, [scriptblock]$Body) {
      try { & $Body } catch { Check "$Name — $($_.Exception.Message) $($_.ScriptStackTrace)" $false }
  }

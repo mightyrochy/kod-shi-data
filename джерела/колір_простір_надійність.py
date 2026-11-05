@@ -33,6 +33,9 @@ from колір_простір_перетворення import de00
 # R-COL-06, R-COL-09 і K-COND-03 — дубль K-PC-05: надійність осі за умовами зйомки —
 # колір каталожного фото не абсолют, освітлювач некерований, світло сцени судить кадр.
 AXIS_RELIABILITY = {
+ # Нуль позначає відсутність каліброваної довіри до hex моделі;
+ # це не ймовірність правильності відповіді й не надійність камери.
+ "model_hex":    dict(value=0.0, contrast=0.0, chroma=0.0, hue=0.0, undertone=0.0),
  "spectro":      dict(value=1.0, contrast=1.0, chroma=1.0, hue=1.0, undertone=1.0),
  "protocolized": dict(value=0.9, contrast=0.9, chroma=0.7, hue=0.7, undertone=0.5),
  "uncontrolled": dict(value=0.8, contrast=0.85, chroma=0.35, hue=0.35, undertone=0.15),
@@ -102,6 +105,10 @@ def gate_conclusions(source="uncontrolled", se_L=None):
     натякала, що профіль якось впливає — не впливає. `se_L` (R-PC-10) — виміряний
     регіональний шум профілю з фото; без нього вісь контрасту стоїть на стелі джерела."""
     R=dict(reliability(source))
+    if source == "model_hex":
+        return dict(джерело=source, надійність=R, можна_стверджувати=[], утримано=list(R),
+                    примітки=["hex портрета є оцінкою моделі, її числова точність не відкалібрована; "
+                              "пороги колориту утримано, метали й білі — з її відповіді"])
     К=надійність_контрасту(source, se_L)
     R["contrast"]=К["надійність"]
     ok=[k for k,v in R.items() if v>=MIN_TO_EMIT]

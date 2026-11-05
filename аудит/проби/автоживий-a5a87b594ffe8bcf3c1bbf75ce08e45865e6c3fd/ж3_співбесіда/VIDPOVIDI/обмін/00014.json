@@ -1,0 +1,27 @@
+{
+ "версія": 1,
+ "запит": {
+  "model": "qwen/qwen3.5-9b",
+  "max_tokens": 4000,
+  "messages": [
+   {
+    "role": "user",
+    "content": [
+     {
+      "type": "text",
+      "text": "{\"task\": {\"role\": \"You read the description of an outfit and list its items as data.\", \"rules\": [\"One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.\", \"One item carries one thing — of two alternatives list the first; a note in brackets is not an item.\", \"Slot \\\"accessory\\\" is for an item no other slot fits.\", \"\\\"is_outfit\\\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note.\"], \"limits\": [\"Rely only on the input: do not invent what it does not contain.\", \"The answer is one JSON object following \\\"answer_schema\\\", without explanations and without ```.\"], \"language\": \"English\", \"answer\": \"ITEM_LIST\", \"answer_schema\": {\"is_outfit\": \"yes|no\", \"items\": [{\"name\": \"<what the item is>\", \"details\": \"<its cut, length and fabric>\", \"slot\": \"top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory\", \"color_hex\": \"<#rrggbb or null>\", \"worn\": \"<true, or false when the description says the outfit goes without it>\"}]}, \"input\": [\"\\\"description\\\" — the outfit description\"]}, \"description\": \"Tailored wool-blend blazer in deep charcoal #3a3f45 with a relaxed but structured cut at the waist, falling to high hip length.\\nSilk-cotton blend blouse in soft cream #fdfbf7 with a classic Peter Pan collar and a slightly boxy silhouette.\\nPleated midi skirt in matching charcoal #383d41 made from stretch wool with a slight A-line shape ending just below the knee.\\nLeather loafers in polished taupe #c2b2a6 with a low block heel for comfort during walking.\\nMinimalist gold stud earrings and a delicate chain necklace in yellow gold #ffd700 to add subtle elegance without overpowering the professional look.\\n\\nThis outfit works perfectly for an early morning job interview at a bank because the dark, neutral tones convey seriousness and reliability expected in finance, while the cream blouse softens the overall appearance to remain approachable. The structured blazer and pleated skirt define a polished silhouette that aligns with the \\\"smart\\\" dress code, projecting competence and attention to detail as an analyst candidate. Choosing natural fabrics like wool and silk ensures comfort during the morning hours, allowing her to move confidently between sitting and standing throughout the interview process.\"}"
+     }
+    ]
+   }
+  ],
+  "temperature": 1
+ },
+ "відповідь": {
+  "status": 200,
+  "contentType": "application/json",
+  "headers": {
+   "x-model": "qwen/qwen3.5-9b"
+  },
+  "body": "{\"content\":[{\"type\":\"text\",\"text\":\"{\\n  \\\"is_outfit\\\": \\\"yes\\\",\\n  \\\"items\\\": [\\n    {\\n      \\\"name\\\": \\\"Tailored wool-blend blazer\\\",\\n      \\\"details\\\": \\\"relaxed but structured cut at the waist, falling to high hip length\\\",\\n      \\\"slot\\\": \\\"outerwear\\\",\\n      \\\"color_hex\\\": \\\"#3a3f45\\\",\\n      \\\"worn\\\": true\\n    },\\n    {\\n      \\\"name\\\": \\\"Silk-cotton blend blouse\\\",\\n      \\\"details\\\": \\\"classic Peter Pan collar and a slightly boxy silhouette\\\",\\n      \\\"slot\\\": \\\"top\\\",\\n      \\\"color_hex\\\": \\\"#fdfbf7\\\",\\n      \\\"worn\\\": true\\n    },\\n    {\\n      \\\"name\\\": \\\"Pleated midi skirt\\\",\\n      \\\"details\\\": \\\"stretch wool with a slight A-line shape ending just below the knee\\\",\\n      \\\"slot\\\": \\\"bottom\\\",\\n      \\\"color_hex\\\": \\\"#383d41\\\",\\n      \\\"worn\\\": true\\n    },\\n    {\\n      \\\"name\\\": \\\"Leather loafers\\\",\\n      \\\"details\\\": \\\"low block heel for comfort during walking\\\",\\n      \\\"slot\\\": \\\"shoes\\\",\\n      \\\"color_hex\\\": \\\"#c2b2a6\\\",\\n      \\\"worn\\\": true\\n    },\\n    {\\n      \\\"name\\\": \\\"Gold stud earrings\\\",\\n      \\\"details\\\": \\\"minimalist design\\\",\\n      \\\"slot\\\": \\\"earrings\\\",\\n      \\\"color_hex\\\": \\\"#ffd700\\\",\\n      \\\"worn\\\": true\\n    },\\n    {\\n      \\\"name\\\": \\\"Chain necklace\\\",\\n      \\\"details\\\": \\\"delicate chain\\\",\\n      \\\"slot\\\": \\\"necklace\\\",\\n      \\\"color_hex\\\": \\\"#ffd700\\\",\\n      \\\"worn\\\": true\\n    }\\n  ]\\n}\"}],\"usage\":{\"input_tokens\":604,\"output_tokens\":392},\"stop_reason\":\"end_turn\"}"
+ }
+}

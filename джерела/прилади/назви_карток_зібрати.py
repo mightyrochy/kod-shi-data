@@ -25,6 +25,8 @@ import xml.etree.ElementTree as ET
 
 _тут = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, _тут)
+sys.path.insert(0, os.path.join(_тут, "..", "zhnyvarka"))
+from журнал_карток import прочитати
 os.chdir(_тут)
 import feed
 import назва_речі as НР
@@ -34,15 +36,13 @@ def назви_із_жнив(тека):
     """{url: назва} з усіх `*.jsonl.gz` теки сирих жнив."""
     зібрано = {}
     for імя in sorted(os.listdir(тека)):
-        if not імя.endswith(".jsonl.gz"):
+        if not імя.endswith((".jsonl.gz", ".jsonl")):
             continue
-        with gzip.open(os.path.join(тека, імя), "rt", encoding="utf-8") as f:
-            for рядок in f:
-                запис = json.loads(рядок)
-                url = str(запис.get("url") or "").strip()
-                назва = str((запис.get("картка") or {}).get("назва") or "").strip()
-                if url and назва:
-                    зібрано[url] = назва
+        for запис in прочитати(os.path.join(тека, імя))[0]:
+            url = str(запис.get("url") or "").strip()
+            назва = str((запис.get("картка") or {}).get("назва") or "").strip()
+            if url and назва:
+                зібрано[url] = назва
     return зібрано
 
 

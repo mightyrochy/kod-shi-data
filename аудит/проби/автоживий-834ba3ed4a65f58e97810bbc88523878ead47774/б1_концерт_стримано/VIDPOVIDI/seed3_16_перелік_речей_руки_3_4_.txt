@@ -1,0 +1,51 @@
+── ПРОМПТ (2185 симв.) ──
+{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.", "One item carries one thing — of two alternatives list the first; a note in brackets is not an item.", "Slot \"accessory\" is for an item no other slot fits.", "\"is_outfit\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "ITEM_LIST", "answer_schema": {"is_outfit": "yes|no", "items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory", "color_hex": "<#rrggbb or null>", "worn": "<true, or false when the description says the outfit goes without it>"}]}, "input": ["\"description\" — the outfit description"]}, "description": "A structured wool-blend blazer in charcoal gray (#3a4045), tailored with a sharp shoulder and notch lapels.  \nHigh-waisted wide-leg trousers in matte black (#1a1a1a), cut from heavy crepe for structure and flow.  \nA fitted silk blouse in cream (#f5f0e6), featuring a modest collar and button-front closure.  \nClassic leather ankle boots in oxidized black (#0b0c0c) with a low stacked heel.  \nMinimalist gold hoop earrings and a delicate chain necklace.  \n\nThis outfit works because it balances the energetic atmosphere of a rock concert with her request for restrained and classic aesthetics through monochromatic tones and clean lines. The wide-leg trousers and structured blazer provide elegance while allowing ease of movement as she navigates the crowd. The dark palette ensures visibility in artificial club lighting without sacrificing sophistication, perfectly bridging smart dress code requirements with an evening event."}
+
+── ВІДПОВІДЬ (894 симв., 7.9 с, HTTP 200) ──
+{
+"is_outfit": "yes",
+"items": [
+{
+"name": "Blazer",
+"details": "Structured wool-blend fabric, sharp shoulder construction, and notch lapels.",
+"slot": "outerwear",
+"color_hex": "#3a4045",
+"worn": true
+},
+{
+"name": "Trousers",
+"details": "High-waisted wide-leg cut from heavy crepe fabric for structure and flow.",
+"slot": "bottom",
+"color_hex": "#1a1a1a",
+"worn": true
+},
+{
+"name": "Blouse",
+"details": "Fitted silk fabric with a modest collar and button-front closure.",
+"slot": "top",
+"color_hex": "#f5f0e6",
+"worn": true
+},
+{
+"name": "Boots",
+"details": "Classic leather ankle boots with a low stacked heel.",
+"slot": "shoes",
+"color_hex": "#0b0c0c",
+"worn": true
+},
+{
+"name": "Earrings",
+"details": "Minimalist gold hoops.",
+"slot": "earrings",
+"color_hex": null,
+"worn": true
+},
+{
+"name": "Necklace",
+"details": "Delicate chain.",
+"slot": "necklace",
+"color_hex": null,
+"worn": true
+}
+]
+}

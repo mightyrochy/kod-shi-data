@@ -25,8 +25,9 @@ setup() { W="${TMPDIR:-/tmp}/claude-run/$1"; rm -rf "$W"; mkdir -p "$W"/{cr,out,
 mark() { git -C "$W/seed" push -q origin "${2:-main}:refs/heads/gemini-queue/$1" 2>/dev/null; }
 cr() { A=$($PY -c "import json,sys;print(json.dumps({**dict(WorkDir='$(wp "$W/cr")',RepoDir='$(wp "$W/clone")',OutboxDir='$(wp "$W/out")',PublishDir='$(wp "$W/pub")',GeminiOutDir='$(wp "$W/gem")',RepoUrl='$(wp "$W/origin.git")',ClaudeExe='$(stub fake_cc)',GhExe='$(stub fake_gh)',HangMinutes=0.05,OffWaitMinutes=0.05),**json.loads(sys.argv[1])}, ensure_ascii=False))" "${1:-{\}}")
   "$PW" -NoProfile -File "$(wp "$H/side_claude.ps1")" -Script "$(wp "$SRC/claude_run.ps1")" -ArgsJson "$A" >/dev/null 2>&1; }
-lines() { cat "$W"/out/*.txt 2>/dev/null; }
-nlines() { ls "$W/out" | grep -c '\.txt$'; }
+# Рядок ПРОСТІЙ (простій без роботи після кожного кінця прогону) не належить наряду: сценарії рахують решту.
+lines() { cat "$W"/out/*.txt 2>/dev/null | grep -v '^GEMINI ОБГОРТКА: ПРОСТІЙ ' ; true; }
+nlines() { lines | grep -c .; }
 argv() { $PY -c "import json
 for l in open('$(wp "$W/cc.log")', encoding='utf-8'): print(' '.join(json.loads(l)['argv']))" 2>/dev/null | tail -1; }
 prompt() { $PY -c "import json
@@ -62,6 +63,9 @@ code k3a wrong_sha "$M" NO_PUSH
 code k3b bad_branch "$M" BAD_BRANCH
 code k3c blocked "$M" BLOCKED
 chk "гілка зі звіту ЗАБЛОКОВАНО збережена для продовження" '[ "$(cat "$W"/cr/state/branch-*.txt)" = "claude/$SLUG" ]'
+chk "BLOCKED з гілкою: причини без гілки не пишемо" '! [ -e "$W/gem/blocked-reasons.json" ]'
+code k3c2 blocked_nobranch "$M" BLOCKED
+chk "BLOCKED без гілки: причина (останній рядок агента) у blocked-reasons.json для #1856" 'grep -q "claude/$SLUG" "$W/gem/blocked-reasons.json" && grep -q "LM Studio не відповідає, гілки нема" "$W/gem/blocked-reasons.json"'
 code k3d no_report "$M" NO_REPORT
 code k3e die "$M" EXIT
 code k3f hang "$M" HANG
@@ -109,7 +113,7 @@ mark "ВИМКНИ-НОУТБУК/cc-off/2"; cr; chk "наступна спро�
 echo "=== К7 gemini-run позначок cc- не бере й узятими не позначає"
 setup k7; mark "$SLUG/$M/1"
 "$PW" -NoProfile -File "$(wp "$H/side.ps1")" -Script "$(wp "$SRC/gemini_run.ps1")" -ArgsJson "{\"RepoDir\":\"$(wp "$W/clone")\",\"RunsDir\":\"$(wp "$W/runs")\",\"OutDir\":\"$(wp "$W/gem")\",\"RepoUrl\":\"$(wp "$W/origin.git")\",\"AgyExe\":\"$(stub fake_agy)\",\"TurnMinutes\":0.05,\"TotalMinutes\":0.5,\"MaxNudges\":3}" >/dev/null 2>&1
-chk "gemini-run пройшов (heartbeat, ізоляція OK) — без стану й результату" 'grep -q "\"isolation\":\"OK\"" "$W/gem/heartbeat.json" && [ -z "$(ls "$W/runs/state" 2>/dev/null)" ] && [ -z "$(ls "$W/gem" | grep -vE "heartbeat|pools|skipped")" ]'
+chk "gemini-run пройшов (heartbeat, ізоляція OK) — без стану й результату" 'grep -q "\"isolation\":\"OK\"" "$W/gem/heartbeat.json" && [ -z "$(ls "$W/runs/state" 2>/dev/null)" ] && [ -z "$(ls "$W/gem" | grep -vE "heartbeat|pools|skipped|marker-state")" ]'
 cr; chk "той самий прохід claude-run бере її" '[[ "$(lines)" == "GEMINI ОБГОРТКА: ГОТОВО claude/$SLUG "* ]]'
 echo "=== К8 завислість — від останньої прийнятої події stream-json, доки процес живий"
 setup k8a; mark "$SLUG/$M/1"; T0=$(date +%s); FAKE_CC_SCENARIO=closed cr; T1=$(date +%s)

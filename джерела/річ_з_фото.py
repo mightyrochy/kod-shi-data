@@ -32,6 +32,7 @@
   6. річ як запис каталогу для пулу, суду й картки (`запис_каталогу`) і закріплення в
      образі, яке тримає КОД, а не слухняність моделі (`закріпити_в_образі`).
 """
+from реєстр_правил import ТИПОВИЙ_НАМІР
 import base64 as _b64
 import re as _re
 import math as _math
@@ -106,7 +107,9 @@ import аксесуари_погода as _АП
     "фото": "id from \"фото_речей\" of the photo with the item",
     "назва": "short, as a shop would name the item",
     "слот": "one of \"списки_речі\".слоти",
-    "вид": "the exact kind of the item as a code from the item_type list (sandals, heeled_sandals, ankle_boots…) or null",
+    # перелік — у «списки_речі».види, тим самим, що приймає `_канон`: доти скелет посилався на список
+    # `item_type`, якого промпт паспорта не ніс (11731), і модель бачила лише три приклади з 99 кодів
+    "вид": "one code from \"списки_речі\".види — the exact kind of the item — or null",
     "колір": "one word from \"списки_речі\".кольори — the main colour of the item itself",
     "матеріал": "from \"списки_речі\".матеріали — only when the texture is visible on the photo, otherwise null",
     "крій": "from \"списки_речі\".крої or null",
@@ -187,9 +190,9 @@ def звіт_словами(словами, речі=None):
 
 
 def списки():
-    """Дозволені значення полів речі для промпта: слоти, кольори, матеріали, крої, принти."""
-    return dict(слоти=list(СЛОТИ_РЕЧІ), кольори=list(КОЛЬОРИ), матеріали=list(МАТЕРІАЛИ),
-                крої=list(КРОЇ), принти=list(ПРИНТИ))
+    """Дозволені значення полів речі для промпта: слоти, види, кольори, матеріали, крої, принти."""
+    return dict(слоти=list(СЛОТИ_РЕЧІ), види=list(_ВМ.ТАБЛИЦЯ["item_type"]), кольори=list(КОЛЬОРИ),
+                матеріали=list(МАТЕРІАЛИ), крої=list(КРОЇ), принти=list(ПРИНТИ))
 
 
 # ── КОДИ ПОЛІВ РЕЧІ ДЛЯ АНГЛІЙСЬКИХ ПРОМПТІВ (П-1) ────────────────────
@@ -482,7 +485,13 @@ def фото_речей():
     річ», «фото самого взуття без верху й низу») не лишаються лише в оцінці: інакше в розмові повторювались би ті самі вади —
     слот поза кодами (`top_garment`), та сама пара взуття двома записами, спідниця ф1 записана на ф2.
     Правила й скелет спільні, а що відрізняє виклики, стоїть полем входу: оцінка шле «outfit» (тоді «in_outfit»
-    має сенс), розмова — «her_items_in_words» (тоді «owner» — з її слів); рядок «як» поля йде лише з полем."""
+    має сенс), розмова — «her_items_in_words» (тоді «owner» — з її слів); рядок «як» поля йде лише з полем.
+    Поле відповіді, якого читач виклику не бере, тим самим полем входу знято зі скелета (`Поле.вихід`): «in_outfit»
+    читає лише оцінка (`оцінка_образу._в_образі`), «owner» — лише розмова (оцінка ставить «невідомо»).
+    Що значення — коди з «codes», каже листок скелета кожного поля, а чужий код відсіює читач (`ключ_поля`,
+    `оцінка_образу._ключ`); загальне «лише коди» суперечило полям photo, name, frame, in_outfit і знято.
+    Вид — точніший код за слот: слот читачі беруть з виду (`внутрішня_мова.СЛОТ_ТИПУ`), тож «kind within its
+    slot» знято — вид з тієї самої форми, що й слот, слот — першим (шапка `оцінка_образу`, розділ 2)."""
     global ФОТО_РЕЧЕЙ
     if ФОТО_РЕЧЕЙ is None:
         ФОТО_РЕЧЕЙ = _ЗП.Оголошення(
@@ -494,6 +503,7 @@ def фото_речей():
                                    "«" + _ЗП.ПІДПИС_КАДРУ_EN % "<id>" + ":»", треба=True),
                 # «Оціни мій образ»: вона може показати поруч річ, яку думає вдягти НАТОМІСТЬ (`оцінка_образу._в_образі`)
                 _ЗП.Поле("outfit", "true: the photos show one outfit she has put together herself",
+                         вихід=("items[].in_outfit",), вихід_без=("items[].owner",),
                          як="\"in_outfit\" is true for items worn together in the outfit; false for an item shown as "
                             "an alternative to one of them; \"unknown\" when the photo does not show which of them she "
                             "wears (two pairs side by side, nothing on her)"),
@@ -515,33 +525,32 @@ def фото_речей():
                 "object per item. A garment under an open jacket is its own item, and so is each pair of shoes.",
                 "Each photo is a separate picture: \"photo\" is the id from the label right before the image where the "
                 "item itself is drawn. An item seen on several photos is listed once, with the photo where it is seen best.",
-                "\"slot\" follows the item's own shape, not where it lies on the photo: footwear has a sole and a "
+                "\"slot\" and \"kind\" follow the item's own shape, not where it lies on the photo: footwear has a sole and a "
                 "toe, boots also a shaft rising from them; a top has a neckline, shoulders and sleeves or straps; "
                 "a jacket, blazer or coat worn open over another garment is \"outerwear\", the garment under it "
                 "\"top\"; trousers have two legs; a skirt hangs from the waist in one piece.",
                 "A photo of shoes alone has no top or bottom: boot shafts are not trouser legs.",
-                "\"kind\" is the item's exact kind from \"codes.item_type\" within its \"slot\", read from the same shape.",
                 "\"frame\" is the item's box on its photo in thousandths of width and height (0–1000), tight "
                 "around the item itself, without background, skin or other items; " + РАМКА_НА_ОКО + ".",
-                "Field values are only codes from \"codes\"; what the photo does not show is null.",
+                "What the photo does not show is null.",
             ),
             вихід="PHOTO_ITEMS",
             скелет={"items": [{
                 "photo": "<photo id>",
                 "name": "<short English name, as a shop would call the item>",
                 "slot": "<code from codes.slot>",
-                "kind": "<code from codes.item_type: the exact kind of the item within its slot, or null>",
+                "kind": "<code from codes.item_type: exact kind read from the item's shape, or null>",
                 "color": "<code from codes.color: the main color of the item itself>",
                 "fabric": "<code from codes.fabric when the texture is visible, else null>",
                 "cut": "<code from codes.cut or null>",
                 "length": "<code from codes.length or null>",
                 "pattern": "<code from codes.pattern>",
                 "formality": "<code from codes.formality: the occasion step the item suits — " + _БР.ЩАБЛІ_EN + ">",
-                "in_outfit": "<true | false | unknown; null without \"outfit\">",
+                "in_outfit": "<true | false | unknown>",
                 "owner": "<code from codes.owner>",
                 "frame": {"left": "<0–1000>", "top": "<0–1000>", "right": "<0–1000>", "bottom": "<0–1000>"},
             }]},
-            межі=("лише_вхід", "невідомо"),
+            межі=("лише_вхід",),
             мова_промпту="en",
         )
     return ФОТО_РЕЧЕЙ
@@ -1574,7 +1583,7 @@ def _шкала_нагоди(сцен):
                                 else "смуга сценарію")
 
 
-def вердикт(річ, F, T, сцен=None, source="uncontrolled", intent="conventional", типова_нагода=False,
+def вердикт(річ, F, T, сцен=None, source="uncontrolled", intent=ТИПОВИЙ_НАМІР, типова_нагода=False,
             типові_поля=()):
     """«Чи підійде» — вердикт КОДУ над річчю з фото: знахідки, чекліст «без входу», ПОВІДОМЛЕННЯ
     жінці (Ч-1, аудит/ПРОДУКТ.md п.12: заяви кодами, речення складає мовна модель).
@@ -1709,7 +1718,7 @@ def вердикт(річ, F, T, сцен=None, source="uncontrolled", intent="c
         без_входу.append("нагода: не названа — річ оцінено на звичайний день")
     # ── 5. K-WEA-01: погода для верхнього шару й тканини ──────────────────────
     мат = (річ.get("матеріал") or "").lower()
-    опади = _СЦ.канон_опади(сцен.get("опади"), сцен.get("темп_c"))
+    опади = _СЦ.канон_опади(сцен.get("опади"), сцен.get("смуга_погоди"))
     if мат and any(v in мат for v in _ПОГ.ВОЛОГІ_ВЕТО):
         if опади in _СЦ.МОКРІ_ОПАДИ:
             # ПОГ-1: її власна замша в дощ — УМОВА, не «краще інша». Корпус
@@ -1734,20 +1743,14 @@ def вердикт(річ, F, T, сцен=None, source="uncontrolled", intent="c
             пройдено += 1
     if слот == "верхній_шар":
         # замовчування форми читається як «не названо» (В-2): див. `типові_поля` в докстрінгу
-        т = None if "темп_c" in set(типові_поля or ()) else сцен.get("темп_c")
+        т = None if "смуга_погоди" in set(типові_поля or ()) else сцен.get("смуга_погоди")
         if т in (None, ""):
             без_входу.append("температура: не названа — верхній шар проти погоди не судиться")
-        # ── МЕЖА БЕРЕТЬСЯ З МАПИ, А НЕ З ЛІТЕРАЛА (П-5) ──────────
-        # Тут стояло `float(т) >= 18` і рядок «від 18 °C — один шар». Відколи
-        # `ТЕМП_МАПА` розділила 18–26 на 18–22 («1 + знімний», шарів 1,5) і
-        # 22–26 («1 шар»), літерал казав ЖІНЦІ протилежне до того, що просить
-        # мапа: на +19 °C код радив легкий знімний шар у пулі й тим самим
-        # диханням звав її власний жакет зайвим. Умова тепер одна для обох —
-        # «мапа цієї смуги просить не більше одного шару на торсі».
-        elif (_смуга_т := next((d for lo, hi, d in ТЕМП_МАПА if lo <= float(т) < hi), None)) \
+        # Потребу в шарах задає мапа; назву погоди для підказки — спільний словник смуг.
+        elif (_смуга_т := ТЕМП_МАПА.get(т)) \
                 and _смуга_т["шари"] <= 1:
-            знахідки.append(_РП.зн("K-WEA-01", "hint", "«%s»: за %+.0f °C верхній шар зайвий — хіба що накинути"
-                                % (_назва(річ), float(т)), [річ.get("ід") or "річ"],
+            знахідки.append(_РП.зн("K-WEA-01", "hint", "«%s»: надворі %s, верхній шар зайвий — хіба що накинути"
+                                % (_назва(річ), _СЦ.смуга_словами(т)), [річ.get("ід") or "річ"],
                                 "температурна мапа корпусу: ця смуга просить один шар на торсі "
                                 "(`outfit.ТЕМП_МАПА`)",
                                 ремонт=["носити в прохолодніший день або накинути на плечі"]))
@@ -1786,7 +1789,7 @@ def вердикт(річ, F, T, сцен=None, source="uncontrolled", intent="c
                              без_входу=без_входу))
 
 
-def суд_у_виклику(річ, F, T, сцен, паспорт, source="uncontrolled", intent="conventional"):
+def суд_у_виклику(річ, F, T, сцен, паспорт, source="uncontrolled", intent=ТИПОВИЙ_НАМІР):
     """`вердикт` тими самими входами в кожному виклику, що його потребує (ендпойнт
     `річ_з_фото`, пакет рук 1–2, картка): нагода, яку підставив код, береться з паспорта."""
     типова = _ПО.нагода_типова_речі(паспорт)
@@ -1926,7 +1929,7 @@ def запис_каталогу(річ):
 ОСНОВНІ_СЛОТИ = ("сукня", "комплект", "верхній_шар", "верх", "низ")   # річ, що несе площу образу
 
 
-def основа_з_речі(речі, вибір, риси, source="uncontrolled", intent="conventional"):
+def основа_з_речі(речі, вибір, риси, source="uncontrolled", intent=ТИПОВИЙ_НАМІР):
     """Закріплена річ з фото стає ОСНОВОЮ образу, коли основи жінка не обирала сама.
 
     «Якір першим» (K-COMP-02) для її речі: `вибір_кольору.база_hex` → `якір_тон` дуг схеми і

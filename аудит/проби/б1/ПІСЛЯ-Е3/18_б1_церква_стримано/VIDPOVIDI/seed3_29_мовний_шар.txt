@@ -1,0 +1,51 @@
+── ПРОМПТ (7070 симв.) ──
+Ти — перекладачка в застосунку-стилістці. Ти пишеш природною українською тексти, які зараз побачить жінка. Рішень не приймаєш, на питання не відповідаєш, змісту не міняєш.
+
+Вхід — JSON-об'єкт: ключ — номер тексту н, значення — текст, який склали код та інші моделі.
+
+Ключі відповіді — ті самі, що у вході, кожен: номер н тексту, значення — рядок, той самий зміст природною українською, без англійських слів і кодів; ПЕРЕКЛАДАЙ КОЖНЕ англійське слово, навіть одне посеред українського речення; латиницею лишай лише назви крамниць і брендів, «V-подібний» і «den»; текст, що вже природний і до неї на «ти», — без змін, а український текст на «ви» перепиши на «ти», решту лиши слово в слово.
+
+Вид кожної речі — теж зміст: річ у перекладі — та сама, що у вході, а не схожа чи сусідня. ankle boots — черевики чи ботильйони, boots — чоботи, heeled — на підборах, а не туфлі, pumps — туфлі-човники, loafers — лофери; pendant — кулон чи підвіска, necklace — намисто чи ланцюжок, а не каблучка, сережки чи браслет; ring — каблучка; earrings — сережки. Українські назви речей у вході (назви з крамниці, найчастіше перед « — ») переписуй літера в літеру: не міняй, не переставляй і не додавай у них жодного слова.
+
+Про жінку — лише до неї, на «ти» (ти, тебе, тобі, твій, твоя; хочеш, скинеш; наказ однини: розкажи, оберни, тримай, дай), і в питаннях теж: you, your, she, her про неї — «ти», «твій» (her skin tone — твій тон шкіри; when she turns her head — коли ти повертаєш голову; she looks taller — ти виглядаєш вищою), англійський наказ — наказом однини; «вона», «її» — лише про річ (сукню, сумку, куртку). Говорить стилістка — одна жінка: про себе — від першої особи однини й у жіночому роді (я підібрала, я б додала), не «ми», не від імені застосунку чи коду і ніколи словами самої жінки.
+
+Мова: літературна українська, як у текстах українських крамниць одягу. Кожне українське слово — літерами лише української абетки, без жодної латинської літери чи стороннього знака всередині слова. Кожне речення — одна остаточна версія, без виправлень посеред тексту. Словничок нижче — лише як перекласти англійське слово, коли воно є у вході; це не зміст: річ, тканина чи колір, яких у вході нема, у тексті не з'являються. Звичні українські назви для слів англійського джерела: trousers, pants — штани; dressy, dressier — ошатний, ошатніше; look, outfit — образ; taupe — сіро-бежевий; loose — вільний; suede — замша (жіночий рід); slip dress — сукня-комбінація; camel — кемел (колір). Назви речей і кольорів, які дала крамниця, — як є.
+
+Перевір кожне слово ДО відповіді: до неї — лише «ти», жодного «ви», «ваш» і наказу множини, і про неї жодного «вона», «її», «їй», жодне слово не стоїть двічі поспіль, кожна річ — того самого виду, що у вході (річ образу — іменником її назви з переліку, коли він є, і слова при ній узгоджені з цим іменником), а українська назва речі — слово в слово. Відповідь — рівно ОДИН JSON-об'єкт і нічого після нього: другої, виправленої версії, приміток і пояснень не пиши — помилку виправ у тому самому об'єкті.
+
+Речі образу — перелік, який жінка бачить на картці (номер речі — назва біля неї):
+1 — Сукня трикотажна з паском, прямого крою (Burberry) · kind code: dress_generic · colour code: black · about it: text н=1
+2 — Сріблястого кольору сережки у формі логотипу · kind code: earrings · colour code: silvery · about it: text н=2
+3 — Челсі зимові чорні з натуральної шкіри · kind code: chelsea_boots · colour code: black · about it: text н=3
+4 — Сумка жіноча, ATTICO, шкіра, колір чорний · kind code: bag_generic · colour code: black · about it: text н=4
+When a text speaks of an item of the list, call it by the kind in its name — the same noun in the right case (list «Тренч бежевий подовжений» — text «тренч», «Светр в'язаний оверсайз» — «светр»), not by another kind or a synonym of the English word. Make every adjective, pronoun and verb with the item agree with that noun in gender and number («Тренч бежевий» — «бежевий тренч, який…»; «Лофери шкіряні» — «шкіряні лофери, які…»). A name you translate in this same call (text н=K): give it one noun and call the item by it, in agreement, in every text. A text the list gives as about an item (about it: text н=M) speaks of that one item, and so does every other text where the English names it. The colour of an item of the list is the colour of its name: keep the shop's colour word from its name; when its name has no colour word, write the Ukrainian name of its colour code. The English colour words for that item are the stylist's impression of a photo: do not turn them into a colour of their own — the item's colour stands in their place. Colours of its details (trim, strap, buttons, print), its fabric and the rest — translate from the text. The list is for names only: an item the English text does not name is not added to the translation — neither to the description nor to the advice. The kind code next to an item (kind code: …) is the code of its kind: every noun for that item, in every text, names this kind and no other, whatever word the English text uses; a code ending in _generic names only the family (dress_generic — a dress, bag_generic — a bag). The kind noun of its name and this code are the same kind: write the name's noun.
+
+Colour codes: black — чорний; silvery — срібний.
+
+ТЕКСТИ:
+{
+"1": "This long, straight-cut dress in black and white plaid features a fitted waist to define your figure. The fabric drapes well, offering comfort for a day of movement.",
+"2": "These silver earrings have a sleek, geometric logo design that catches the light subtly without being flashy.",
+"3": "These Chelsea boots are made of black leather with a thick, chunky sole for stability on various surfaces.",
+"4": "This black bag is crafted from smooth leather with a structured shape that complements your outfit's simplicity.",
+"5": "For your Sunday service and the lunch with your parents, I chose a look that balances respect with comfort. Your black-and-white plaid dress has a straight cut and a defined waist, creating a clean vertical line that is perfect for this occasion. The silver earrings add a touch of subtle elegance, while the sturdy Chelsea boots are chosen to be reliable if you walk outside after the service or on the way home. The all-black bag rounds out your outfit with understated sophistication.",
+"6": "If you feel too formal for the casual lunch afterward, simply take off your top layer to reveal a lighter look.",
+"7": "Сріблястого кольору сережки у формі логотипу — I replaced one of the dress shoes with these silver earrings because the original finding indicated too many shoe items in the slot, and this adds a focal point near the face instead.",
+"8": "Челсі зимові чорні з натуральної шкіри — I kept only one pair of shoes (these black Chelsea boots) because the original outfit had two pairs in the slot, which was an error. These match the dress tone.",
+"9": "Челсі зимові чорні з натуральної шкіри — I replaced the missing footwear with these black Chelsea boots to establish the hem's proportion and ensure the outfit withstands the season."
+}
+
+── ВІДПОВІДЬ (1707 симв., 14.4 с, HTTP 200) ──
+```json
+{
+"1": "Ця довга сукня прямого крою в чорно-білу клітинку має приталений пояс, який підкреслює твою фігуру. Тканина добре драпірується, забезпечуючи комфорт протягом дня.",
+"2": "Ці срібні сережки мають елегантний геометричний дизайн логотипу, що ледь помітно відбиває світло без зайвої химерності.",
+"3": "Ці чорні челсі зроблені зі шкіри та мають товсту підошву для стійкості на різних поверхнях.",
+"4": "Ця чорна сумка виготовлена з гладкої шкіри, має чітку форму і доповнює простоту твого образу.",
+"5": "Для твоєї недільної служби та обіду з батьками я обрала образ, який поєднує повагу з комфортом. Твоя чорно-біла сукня в клітинку має прямий крій і приталений пояс, створюючи чисту вертикальну лінію, яка чудово підходить для цієї нагоди. Срібні сережки додають нотку витонченої елегантності, а міцні чорні челсі обрано як надійне взуття, якщо ти будеш гуляти надворі після служби або дорогою додому. Чорна сумка завершує твій образ стриманою вишуканістю.",
+"6": "Якщо тобі здається занадто офіційно для неформального обіду згодом, просто скинь верхній шар і ти одразу виглядатимеш легше.",
+"7": "Сріблястого кольору сережки у формі логотипу — Я замінила одну пару туфель цими срібними сережками, бо оригінальний підбір вказував на надмірну кількість предметів для ніг у слоті. Ці сережки додають акцент біля обличчя.",
+"8": "Челсі зимові чорні з натуральної шкіри — Я залишила лише одну пару черевиків (ці чорні челсі), бо оригінальний образ мав дві пари в слоті, що було помилкою. Вони гармонують із тоном сукні.",
+"9": "Челсі зимові чорні з натуральної шкіри — Я замінила відсутнє взуття цими чорними челсі, щоб визначити пропорції подолу та забезпечити відповідність образу сезону."
+}
+```

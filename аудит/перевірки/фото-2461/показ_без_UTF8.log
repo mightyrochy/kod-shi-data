@@ -1,0 +1,95 @@
+1. СТАРТ БЕЗ ХЕША: повна збірка
+(node:34444) Warning: Accessing non-existent property 'chromium' of module exports inside circular dependency
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:34444) Warning: Accessing non-existent property 'chromium' of module exports inside circular dependency
+(node:34444) Warning: Accessing non-existent property 'chromium' of module exports inside circular dependency
+(node:34444) Warning: Accessing non-existent property 'chromium' of module exports inside circular dependency
+(node:34444) Warning: Accessing non-existent property 'chromium' of module exports inside circular dependency
+(node:34444) Warning: Accessing non-existent property 'chromium' of module exports inside circular dependency
+(node:34444) Warning: Accessing non-existent property 'chromium' of module exports inside circular dependency
+(node:34444) Warning: Accessing non-existent property 'chromium' of module exports inside circular dependency
+(node:34444) Warning: Accessing non-existent property 'chromium' of module exports inside circular dependency
+(node:34444) Warning: Accessing non-existent property 'chromium' of module exports inside circular dependency
+(node:34444) Warning: Accessing non-existent property 'chromium' of module exports inside circular dependency
+(node:34444) Warning: Accessing non-existent property 'chromium' of module exports inside circular dependency
+(node:34444) Warning: Accessing non-existent property 'chromium' of module exports inside circular dependency
+(node:34444) Warning: Accessing non-existent property 'chromium' of module exports inside circular dependency
+(node:34444) Warning: Accessing non-existent property 'chromium' of module exports inside circular dependency
+(node:34444) Warning: Accessing non-existent property 'chromium' of module exports inside circular dependency
+(node:34444) Warning: Accessing non-existent property 'chromium' of module exports inside circular dependency
+(node:34444) Warning: Accessing non-existent property 'chromium' of module exports inside circular dependency
+(node:34444) Warning: Accessing non-existent property 'chromium' of module exports inside circular dependency
+(node:34444) Warning: Accessing non-existent property 'chromium' of module exports inside circular dependency
+(node:34444) Warning: Accessing non-existent property 'chromium' of module exports inside circular dependency
+(node:34444) Warning: Accessing non-existent property 'chromium' of module exports inside circular dependency
+(node:34444) Warning: Accessing non-existent property 'chromium' of module exports inside circular dependency
+(node:34444) Warning: Accessing non-existent property 'chromium' of module exports inside circular dependency
+(node:34444) Warning: Accessing non-existent property 'chromium' of module exports inside circular dependency
+(node:34444) Warning: Accessing non-existent property 'chromium' of module exports inside circular dependency
+(node:34444) Warning: Accessing non-existent property 'chromium' of module exports inside circular dependency
+(node:34444) Warning: Accessing non-existent property 'chromium' of module exports inside circular dependency
+(node:34444) Warning: Accessing non-existent property 'chromium' of module exports inside circular dependency
+  ✓ скрипт піднявся без винятків
+  ✓ без профілю — екран знайомства видно, панель із діями на місці
+  ✓ ЄДИНА_СТОРІНКА: картка «Зібрати образи» видно, картка «окрема сторінка» схована
+  ✓ у міст іде ім'я фіду від збирача, не літерал
+  ✓ П.каталог для людини й вердикта — підпис збирача
+  ✓ на сценарії кнопка «Зібрати образи» стоїть в екрані під карткою, а не в панелі
+  ✓ без кольорів/обхватів/нагоди збирання НЕ стартує і каже, чого бракує (нема виклику моделі)
+  ✓ старий шлях не зачепило: статус переходу порожній
+  ✓ кнопка «Зібрати чотири образи» не заблокована після відмови
+1б. НЕОБОВʼЯЗКОВІ ОБХВАТИ НОГИ НА ЕКРАНІ (Н-P36)
+  ✓ три поля ноги є на екрані фігури — у розширених вимірах, не серед основних (v4)
+  ✓ порожнє поле не шлеться зовсім: «не міряла» і «нуль» — різні твердження
+  ✓ заповнені поля їдуть у міст під іменами рівнів профілю — приймальний рядок наряду Н-P36
+  ✓ ті самі ключі їдуть і розвилкою палітр: обидва шляхи будують тіло тим самим `fit.тіло`
+  ✓ поля НЕОБОВʼЯЗКОВІ: без них профіль лишається повним і збирання не блокується
+  ✓ обміри ноги переживають перечитування профілю: їх пише `писатиАктивний` і читає `читатиАктивний`
+  ✓ без винятків
+1в. ВИСОКЕ СТЕГНО: ПʼЯТИЙ ОБХВАТ, НЕОБОВʼЯЗКОВИЙ (Н-V13-028)
+  ✓ поле високого стегна є на екрані фігури — у розширених налаштуваннях (v4)
+  ✓ порожнє поле не шлеться: «не міряла» лишається «не міряла», а не 0.92×стегна
+  ✓ заповнене їде в міст ключем `високе_стегно` — тим самим іменем рівня, яке подає стенд і знає `areas.РІВНІ`
+  ✓ необовʼязкове: профіль без нього лишається повним, збирання не блокується
+  ✓ і воно переживає перечитування профілю тим самим реєстром, що й решта обхватів
+  ✓ без винятків
+1г. АКСЕСУАРНІ ВИМІРИ: СТОПА Й ГОЛОВА (Н-V13-025)
+  ✓ обидва поля є на екрані обмірів і стоять у блоці обмірів, а не в чужому екрані
+  ✓ вони НЕ у витинанці: фронтальний контур не має ні стопи збоку, ні обхвату черепа, і підпис «як міряти» стоїть при кожному
+  ✓ порожні поля не шлються ЗОВСІМ: ключа `аксесуарні` у виводі немає, щоб журнал відрізняв «не міряла» від «виміряла»
+  ✓ заповнені поля їдуть у міст словником рівно з двома ключами — приймальний рядок наряду Н-V13-025
+  ✓ ті самі два ключі стоять і в пакеті ВХІД-V1 під `мірки.аксесуарні`: один збір на обидва шляхи, не два розбіжні списки полів
+  ✓ поля НЕОБОВʼЯЗКОВІ: без лінійки профіль лишається повним і збирання не блокується
+  ✓ виміри переживають перечитування профілю: їх пише `писатиАктивний` і читає `читатиАктивний`
+  ✓ очищені поля знову знімають ключ повністю, а не лишають порожній словник
+  ✓ без винятків
+1д. МОВНИЙ ШАР: ОДНА ТОЧКА НА ВИХОДІ; БЕЗ МОДЕЛІ ШАРУ — ЯК ДОТИ; ЗБІЙ НЕ КИДАЄ (25.09.2026)
+  ✓ #модель_мови=нема — шару нема: текст як є, жодного виклику, жодного запису
+  ✓ без шару: англійська проза не доходить до екрана — жінці сталий шаблон, а не текст (10716)
+  ✓ без шару: українська проза, число з одиницею й порожнє необовʼязкове місце проходять як є
+  ✓ службовий код і код розпізнавання мовлення — шаблон, а не слово на екрані
+  ✓ назва з даних: латинка бренду законна, службовий код ні; її власні слова не чіпає ніхто
+  ✓ розмітка: видимий текст крізь сторожа, svg без літер і порожнє — як є
+  ✓ `ел(тег, клас, текст)` і `елЖінціП` ідуть тим самим виходом: чужий текст — шаблон
+  ✓ поле placeholder/title/aria-label — теж крізь точку
+  ✓ «свої» шару й екрана — одне джерело: пояснення заміни з назвою знятої речі проходить екран, а не стає шаблоном
+  ✓ проза: латинка вхідного тексту, яку шар прийняв, теж «своя» на екрані
+  ✓ свої_шару їдуть з карткою: відновлена з пакета картка знає слова без сесійного набору; закріпити лише додає потрібне
+  ✓ без винятків
+  ✓ типово модель шару — та сама, що складає образи
+  ✓ збій моста не кидає: жінка бачить вхідний текст, у записі виклику — причина
+  ✓ два кроки моста й один виклик моделі шару між ними — як у `паспорт`
+  ✓ картка малює написане шаром; запис виклику несе де, модель, час, вхід і вихід повністю
+  ✓ рядок діагнозу — кодами й у руки (починається з hand_1): модель, мс, changed=1 (рядок 168)
+  ✓ без винятків
+  ✗ без моделі кожна заява має ключ, явний брак тексту й причину в журналі  →  {"тексти":{"рядок":"Нагода — без пояснення словами"},"записи":[{"напрям":"out_messages","де":"palette","модель":null,"коли":"2026-10-30T15:39:27.004Z","вхід":{"рядок":{"kind":"card_occasion","statements":[{"code":"mourning_colour_word_only","item_ids":["а"],"choice":"her","recipient":"woman","source":"catalogue","rank":{"position":1,"rare":false},"values":{"item":{"free_text":"Сукня","lang":"uk"}}}]}},"причина":"no_language_model","чужою":[],"заяви":[],"без_відповіді":[],"мс":203,"вихід":{"рядок":"Нагода — без пояснення словами"},"показ":[]}],"заяви":[],"виклики_договору":[],"чужою":[],"без_відповіді":[]}
+  ✓ рядок без жодного тексту — сталий напис місця, який картка згортає (рядок 2812), а не речення
+  ✓ без винятків
+  ✗ однойменні речі й переставлена відповідь: кожен текст при своєму ID  →  {"тексти":{"перша":"Нагода — без пояснення словами","друга":"Нагода — без пояснення словами"},"записи":[{"напрям":"out_messages","де":"hand_1","модель":"gemini-3.8-flash","коли":"2026-10-30T15:39:28.116Z","вхід":{"перша":{"kind":"card_occasion","statements":[{"code":"mourning_colour_word_only","item_ids":["а"],"choice":"her","recipient":"woman","source":"catalogue","rank":{"position":1,"rare":false},"values":{"item":{"free_text":"Сукня","lang":"uk"}}}]},"друга":{"kind":"card_occasion","statements":[{"code":"mourning_colour_word_only","item_ids":["б"],"choice":"her","recipient":"woman","source":"catalogue","rank":{"position":1,"rare":false},"values":{"item":{"free_text":"Сукня","lang":"uk"}}}]}},"чужою":[],"заяви":[],"без_відповіді":[],"мс":195,"вихід":{"перша":"Нагода — без пояснення словами","друга":"Нагода — без пояснення словами"},"показ":[]}],"заяви":[],"виклики_договору":[],"чужою":[],"без_відповіді":[]}
+  ✗ два одночасні однакові набори: один виклик, обидва споживачі мають заяви  →  0
+тест не запустився: SyntaxError: "undefined" is not valid JSON
+    at JSON.parse (<anonymous>)
+    at заявиПромпту (C:\Users\gemini\gemini-runs\w\20261030-171636-d6d9cddb4d4b\tmp\review-2461\джерела\тест_показу.js:552:36)
+    at C:\Users\gemini\gemini-runs\w\20261030-171636-d6d9cddb4d4b\tmp\review-2461\джерела\тест_показу.js:583:9
+  ✗ БАТАРЕЯ ОБІРВАЛАСЬ, не дійшовши до кінця: виконано 54 звірок, останній розділ — 1д. МОВНИЙ ШАР: ОДНА ТОЧКА НА ВИХОДІ; БЕЗ МОДЕЛІ ШАРУ — ЯК ДОТИ; ЗБІЙ НЕ КИДАЄ (25.09.2026) (у ньому 23)
+ВПАЛО 4 (з них 1 — сам обрив)

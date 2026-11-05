@@ -97,7 +97,7 @@ chk "claude — 2 водночас (слотів 2)" '[ "$(tl claude)" = 2 ]'
 chk "смуги водночас: усього ≥ 5" '[ "$(tl total)" -ge 5 ]'
 C=$(claims); echo "  порядок узяття: $C"
 chk "узято за пріоритетом: б(p1) раніше за а(p2), е(p1) раніше за д(p4)" '[[ "$C" == *"б-codex"*"а-codex"* && "$C" == *"е-claude-gpu"*"д-claude"* ]]'
-chk "Argon (p0) на нулі не взято, позначка в чеканні" '! grep -q "г-agy-квота.*-> " "$W/gr/wrapper.log" && grep -l "^WAIT " "$W"/gr/state/*.txt >/dev/null'
+chk "Argon (p0) на нулі не взято, позначка в чеканні" '! grep -q "г-agy-квота.*-> " "$W/gr/wrapper.log" && grep -l "^WAIT " "$W"/gout/marker-state/*.txt >/dev/null'
 S=$(cat "$W"/gh/patch_*.json | $PY -c "import sys,json
 for l in sys.stdin.read().replace('}{','}\n{').splitlines(): print(json.loads(l)['body'])")
 chk "стан: таблиця смуг — claude 2/2 і codex 2/2 у якійсь правці" '[[ "$S" == *"| claude | 2 | 2 |"* && "$S" == *"| codex | 2 | 2 |"* ]]'
@@ -149,6 +149,16 @@ for N in 6 8; do
   ACTUAL=$(tl codex)
   chk "смуги.json codex=$N → $N водночас (є: $ACTUAL)" '[ "$ACTUAL" = "$N" ]'
   chk "усі $N нарядів закінчено" '[ "$(grep -c "^end " "$W/timeline.txt")" = "$N" ]'
+  chk "лічильник codex.turns зберіг усі $N ходів" '[ "$(cat "$W/fake/codex.turns")" = "$N" ]'
+  DONE=$($PY - "$(wp "$W/gout")" <<'P'
+import json, pathlib, re, sys
+print(sum(json.loads(p.read_text(encoding='utf-8-sig')).get('code') == 'DONE'
+          for p in pathlib.Path(sys.argv[1]).glob('*.json')
+          if re.fullmatch(r'[0-9]{8}-[0-9]{6}-[0-9a-f]{12}\.json', p.name)))
+P
+)
+  chk "worker опублікував $N результатів DONE (є: $DONE)" '[ "$DONE" = "$N" ]'
+
 done
 
 echo; [ $BAD = 0 ] && echo "ВСЕ ✓" || echo "ЗБІЙ ✗"; exit $BAD

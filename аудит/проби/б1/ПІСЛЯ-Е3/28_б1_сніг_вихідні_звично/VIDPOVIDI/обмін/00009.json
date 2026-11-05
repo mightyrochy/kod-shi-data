@@ -1,0 +1,27 @@
+{
+ "версія": 1,
+ "запит": {
+  "model": "qwen/qwen3.5-9b",
+  "max_tokens": 4000,
+  "messages": [
+   {
+    "role": "user",
+    "content": [
+     {
+      "type": "text",
+      "text": "{\"task\": {\"role\": \"You are a personal stylist. Put together one outfit for her case.\", \"rules\": [\"Items one per line, garments first, then shoes and accessories: what it is, cut, length, color with its hex code, fabric.\", \"An outer layer only when the weather needs it; at +20 °C and warmer there is none.\", \"Last, why this outfit works, in 3–4 sentences.\"], \"limits\": [\"Do not name lightness numbers, body measurements or height in numbers, or body-type labels, and do not say you had limits.\", \"The answer is plain text laid out as the rules say, not JSON.\"], \"language\": \"English\", \"answer\": \"OUTFIT_TEXT\", \"input\": [\"\\\"case\\\" — her case: the occasion, where and when, the weather, the dress code, her wishes and refusals — as codes, her own words as quotes; do not take an item that goes against her refusals or her words\", \"\\\"formality\\\" — the level of dress she named: home (loungewear, athleisure, sportswear) < everyday (jeans, a T-shirt and sneakers; neat casual, dark denim) < neat (business: a blouse, a shirt or a refined knit with trousers or a skirt, a textured jacket or a cardigan, loafers, ballet flats or ankle boots; social: a day dress, a refined knit with a skirt or trousers, a textured jacket, neat flats or ankle boots) < smart (business: a jacket with trousers or a skirt, a blouse or a shirt, loafers or pumps; a sheath dress with a jacket; social: a cocktail dress, heeled shoes) < formal (business: a business suit — a jacket with trousers or a skirt of one fabric — with a blouse, pumps; social: a formal dress of a noble fabric, heeled shoes) < very_smart (an evening gown) < ceremonial (a full-length evening gown with long gloves)\", \"\\\"person\\\" — facts about her from her photo and measurements, without conclusions: colors in hex (one per measurement), sizes in cm\", \"\\\"intent\\\" — what matters most to her: comfort_first (comfort and freedom of movement), context_optimal (fitting the place and the event), statement (standing out), fashion_forward (a bold fashion look, at least two sources of interest), editorial (an editorial construction, at least one source of interest); count limits do not apply to fashion_forward or editorial\"]}, \"case\": {\"field_quotes\": {\"occasion\": \"гуляємо з подругою центром до вечора, заходимо в кав’ярні\", \"movement\": \"гуляємо\", \"temperature_c\": \"мінус три\", \"intent\": \"гуляємо з подругою центром до вечора, заходимо в кав’ярні\", \"part_of_day\": \"до вечора\", \"place_words\": \"центром\"}, \"formality_reason\": \"norm\", \"event\": \"гуляємо з подругою центром до вечора, заходимо в кав’ярні\", \"movement\": \"walk\", \"temperature_c\": -3, \"precipitation\": \"snow\", \"goal\": \"flatter\", \"occasion\": \"walk\", \"goal_quote\": \"субота, сніг, мінус три, гуляємо з подругою центром до вечора, заходимо в кав'ярні\", \"intent_quote\": \"гуляємо з подругою центром до вечора, заходимо в кав’ярні\", \"formality\": [\"home\"], \"season\": \"autumn\", \"part_of_day\": \"evening\", \"light\": \"artificial\", \"road_salt\": true}, \"person\": {\"skin_hex\": [\"#f1d7c4\", \"#ecc9b2\", \"#f6e0d0\"], \"hair_hex\": [\"#b4552a\", \"#c4683a\"], \"eyes_hex\": \"#5f8a5a\", \"height_cm\": 172, \"girths_cm\": {\"shoulders\": 108, \"bust\": 96, \"waist\": 76, \"hips\": 92}, \"intent\": \"context_optimal\"}}"
+     }
+    ]
+   }
+  ],
+  "temperature": 1
+ },
+ "відповідь": {
+  "status": 200,
+  "contentType": "application/json",
+  "headers": {
+   "x-model": "qwen/qwen3.5-9b"
+  },
+  "body": "{\"content\":[{\"type\":\"text\",\"text\":\"Wool-blend coat in a structured A-line cut to the mid-calf, color #3a4e58 (dark slate blue), heavy gabardine fabric with water-resistant finish; oversized chunky knit sweater with a relaxed fit and dropped shoulders, color #d4b996 (warm camel), fine-gauge merino wool blend; straight-leg trousers with a slight taper at the ankle, color #2c2825 (charcoal black), stretch twill fabric for mobility; knee-length winter boots with a block heel and shearling-lined collar, color #3a4e58 (dark slate blue), nubuck leather with a rubber lug sole; gold-toned hoop earrings and a simple chain necklace in 14k gold vermeil. This outfit works because the dark slate coat anchors the look while staying fully waterproof against the -3 °C snow, ensuring you stay dry during your walk through the city center. The warm camel sweater adds a soft contrast that flatters your complexion without compromising the comfort needed for strolling with a friend. Finally, the practical yet polished combination allows you to feel confident and put-together when stepping into any café or casual evening setting.\"}],\"usage\":{\"input_tokens\":927,\"output_tokens\":246},\"stop_reason\":\"end_turn\"}"
+ }
+}

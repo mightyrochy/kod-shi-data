@@ -1,0 +1,27 @@
+{
+ "версія": 1,
+ "запит": {
+  "model": "qwen/qwen3.5-9b",
+  "max_tokens": 4000,
+  "messages": [
+   {
+    "role": "user",
+    "content": [
+     {
+      "type": "text",
+      "text": "{\"task\": {\"role\": \"You read the description of an outfit and list its items as data.\", \"rules\": [\"One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.\", \"One item carries one thing — of two alternatives list the first; a note in brackets is not an item.\", \"Slot \\\"accessory\\\" is for an item no other slot fits.\", \"\\\"is_outfit\\\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note.\"], \"limits\": [\"Rely only on the input: do not invent what it does not contain.\", \"The answer is one JSON object following \\\"answer_schema\\\", without explanations and without ```.\"], \"language\": \"English\", \"answer\": \"ITEM_LIST\", \"answer_schema\": {\"is_outfit\": \"yes|no\", \"items\": [{\"name\": \"<what the item is>\", \"details\": \"<its cut, length and fabric>\", \"slot\": \"top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory\", \"color_hex\": \"<#rrggbb or null>\", \"worn\": \"<true, or false when the description says the outfit goes without it>\"}]}, \"input\": [\"\\\"description\\\" — the outfit description\"]}, \"description\": \"OUTFIT TEXT\\n\\nA textured wool-blend cardigan, oversized relaxed fit, knee-length hemline, deep forest green color (#1A3C28), heavy gauge knit fabric.\\nDark indigo wide-leg trousers, straight cut through the thigh and slim ankle opening, full length reaching the shoe, mid-weight denim fabric with a subtle matte finish.\\nBlack leather ankle boots, low block heel, round toe, shaft height ending just above the malleolus.\\n\\nThis outfit works because it balances the practical need for warmth against the rain and wind while maintaining a chic, date-appropriate silhouette. The oversized cardigan provides essential insulation in the +9 °C chill without looking bulky when paired with sleek, dark denim that elevates the casual feel into neat smart-casual territory. The ankle boots offer necessary grip on wet pavement and extend the leg line to elongate the frame under evening lighting.\"}"
+     }
+    ]
+   }
+  ],
+  "temperature": 1
+ },
+ "відповідь": {
+  "status": 200,
+  "contentType": "application/json",
+  "headers": {
+   "x-model": "qwen/qwen3.5-9b"
+  },
+  "body": "{\"content\":[{\"type\":\"text\",\"text\":\"{\\n  \\\"is_outfit\\\": \\\"yes\\\",\\n  \\\"items\\\": [\\n    {\\n      \\\"name\\\": \\\"cardigan\\\",\\n      \\\"details\\\": \\\"textured wool-blend, oversized relaxed fit, knee-length hemline\\\",\\n      \\\"slot\\\": \\\"outerwear\\\",\\n      \\\"color_hex\\\": \\\"#1A3C28\\\",\\n      \\\"worn\\\": true\\n    },\\n    {\\n      \\\"name\\\": \\\"trousers\\\",\\n      \\\"details\\\": \\\"wide-leg straight cut through the thigh and slim ankle opening, full length reaching the shoe, mid-weight denim fabric with a subtle matte finish\\\",\\n      \\\"slot\\\": \\\"bottom\\\",\\n      \\\"color_hex\\\": null,\\n      \\\"worn\\\": true\\n    },\\n    {\\n      \\\"name\\\": \\\"boots\\\",\\n      \\\"details\\\": \\\"leather ankle boots, low block heel, round toe, shaft height ending just above the malleolus\\\",\\n      \\\"slot\\\": \\\"shoes\\\",\\n      \\\"color_hex\\\": \\\"#000000\\\",\\n      \\\"worn\\\": true\\n    }\\n  ]\\n}\"}],\"usage\":{\"input_tokens\":538,\"output_tokens\":236},\"stop_reason\":\"end_turn\"}"
+ }
+}

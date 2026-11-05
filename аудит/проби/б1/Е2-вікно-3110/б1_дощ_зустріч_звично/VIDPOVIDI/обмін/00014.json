@@ -1,0 +1,27 @@
+{
+ "версія": 1,
+ "запит": {
+  "model": "qwen/qwen3.5-9b",
+  "max_tokens": 4000,
+  "messages": [
+   {
+    "role": "user",
+    "content": [
+     {
+      "type": "text",
+      "text": "{\"task\": {\"role\": \"You read the description of an outfit and list its items as data.\", \"rules\": [\"One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.\", \"One item carries one thing — of two alternatives list the first; a note in brackets is not an item.\", \"Slot \\\"accessory\\\" is for an item no other slot fits.\", \"\\\"is_outfit\\\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note.\"], \"limits\": [\"Rely only on the input: do not invent what it does not contain.\", \"The answer is one JSON object following \\\"answer_schema\\\", without explanations and without ```.\"], \"language\": \"English\", \"answer\": \"ITEM_LIST\", \"answer_schema\": {\"is_outfit\": \"yes|no\", \"items\": [{\"name\": \"<what the item is>\", \"details\": \"<its cut, length and fabric>\", \"slot\": \"top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory\", \"color_hex\": \"<#rrggbb or null>\", \"worn\": \"<true, or false when the description says the outfit goes without it>\"}]}, \"input\": [\"\\\"description\\\" — the outfit description\"]}, \"description\": \"A tailored wool-blend blazer in slate grey, sharp lapel cut, knee-length, hex #607d8b, heavy woven fabric.  \\nAn oversized crewneck sweater in cream, relaxed drape cut, hip-length hem, hex #f5f5dc, fine-gauge cashmere knit.  \\nHigh-waisted straight-leg dark denim trousers, classic five-pocket cut, full-length ankle, hex #2c3e50, rigid cotton twill.  \\nChunky white leather sneakers, thick platform sole and rounded toe, low-top silhouette, hex #ffffff, smooth nubuck leather.  \\nA structured leather tote bag in tan, boxy geometric shape with top handles, medium crossbody drop, hex #d2b48c, full-grain calf skin.  \\nA wool-blend scarf in forest green, rectangular loose drape cut, standard fringe edges, hex #2e5a3f, textured bouclé fabric.  \\n\\nThis outfit works by balancing professionalism with comfort for an entire day of autumn rain without breaking the client dress code. The blazer provides a polished silhouette while the oversized sweater and sturdy sneakers ensure warmth and ease during prolonged exposure to wet conditions. Neutral tones ground the look against the grey weather, while subtle accents like the green scarf add interest without appearing too casual for a business meeting.\"}"
+     }
+    ]
+   }
+  ],
+  "temperature": 1
+ },
+ "відповідь": {
+  "status": 200,
+  "contentType": "application/json",
+  "headers": {
+   "x-model": "qwen/qwen3.5-9b"
+  },
+  "body": "{\"content\":[{\"type\":\"text\",\"text\":\"{\\n  \\\"is_outfit\\\": \\\"yes\\\",\\n  \\\"items\\\": [\\n    {\\n      \\\"name\\\": \\\"blazer\\\",\\n      \\\"details\\\": \\\"tailored wool-blend fabric with sharp lapel cut and knee-length length\\\",\\n      \\\"slot\\\": \\\"outerwear\\\",\\n      \\\"color_hex\\\": \\\"#607d8b\\\",\\n      \\\"worn\\\": true\\n    },\\n    {\\n      \\\"name\\\": \\\"sweater\\\",\\n      \\\"details\\\": \\\"oversized crewneck with relaxed drape cut and hip-length hem\\\",\\n      \\\"slot\\\": \\\"top\\\",\\n      \\\"color_hex\\\": \\\"#f5f5dc\\\",\\n      \\\"worn\\\": true\\n    },\\n    {\\n      \\\"name\\\": \\\"trousers\\\",\\n      \\\"details\\\": \\\"high-waisted straight-leg classic five-pocket cut with full-length ankle\\\",\\n      \\\"slot\\\": \\\"bottom\\\",\\n      \\\"color_hex\\\": \\\"#2c3e50\\\",\\n      \\\"worn\\\": true\\n    },\\n    {\\n      \\\"name\\\": \\\"sneakers\\\",\\n      \\\"details\\\": \\\"chunky white low-top silhouette with thick platform sole and rounded toe\\\",\\n      \\\"slot\\\": \\\"shoes\\\",\\n      \\\"color_hex\\\": \\\"#ffffff\\\",\\n      \\\"worn\\\": true\\n    },\\n    {\\n      \\\"name\\\": \\\"tote bag\\\",\\n      \\\"details\\\": \\\"structured boxy geometric shape with top handles and medium crossbody drop\\\",\\n      \\\"slot\\\": \\\"bag\\\",\\n      \\\"color_hex\\\": \\\"#d2b48c\\\",\\n      \\\"worn\\\": true\\n    },\\n    {\\n      \\\"name\\\": \\\"scarf\\\",\\n      \\\"details\\\": \\\"rectangular loose drape cut with standard fringe edges\\\",\\n      \\\"slot\\\": \\\"scarf\\\",\\n      \\\"color_hex\\\": \\\"#2e5a3f\\\",\\n      \\\"worn\\\": true\\n    }\\n  ]\\n}\"}],\"usage\":{\"input_tokens\":639,\"output_tokens\":408},\"stop_reason\":\"end_turn\"}"
+ }
+}

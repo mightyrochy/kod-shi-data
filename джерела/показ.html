@@ -16,8 +16,8 @@
   (≥ 900 px) — рейка розділів ліворуч, поле під розмовою, картка праворуч
   (`розмістити_розкладку`, ті самі вузли); чотири образи через міст → вердикти
   в IndexedDB (пакет ВЕРДИКТИ-ПОКАЗ-V3).
-  Приймає пакет ПОКАЗ-V1 у фрагменті адреси (лише base64url); параметри мосту
-  й моделі — тим самим фрагментом (#міст=…&т=…&модель=…). Службові дані
+  Фрагмент адреси несе лише параметри мосту й моделі (#міст=…&т=…&модель=…);
+  пакет образів у ньому не читається (рішення 11824). Службові дані
   (збірка, каталог, токени, діагноз) видно лише під #службове=1.
 -->
 <html lang="uk">
@@ -49,7 +49,7 @@
   <symbol id="і-сонце" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M4.9 4.9l2.1 2.1M17 17l2.1 2.1M4.9 19.1L7 17M17 7l2.1-2.1"/></symbol>
   <symbol id="і-дощ" viewBox="0 0 24 24"><path d="M7 15a4 4 0 0 1-.5-8A6 6 0 0 1 18 8a3.5 3.5 0 0 1 0 7H7z"/><path d="M8 18l-1 3M12 18l-1 3M16 18l-1 3"/></symbol>
   <symbol id="і-сніг" viewBox="0 0 24 24"><path d="M12 3v18M4.2 7.5l15.6 9M4.2 16.5l15.6-9M12 3l-2 2M12 3l2 2M12 21l-2-2M12 21l2-2"/></symbol>
-  <symbol id="і-година" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></symbol>
+  <symbol id="і-пора" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></symbol>
   <symbol id="і-темп" viewBox="0 0 24 24"><path d="M10 4a2 2 0 0 1 4 0v9.5a4 4 0 1 1-4 0z"/><path d="M12 9v5"/></symbol>
   <symbol id="і-вітер" viewBox="0 0 24 24"><path d="M3 8h10a2.5 2.5 0 1 0-2.5-2.5M3 13h14a2.5 2.5 0 1 1-2.5 2.5M3 18h7a2 2 0 1 1-2 2"/></symbol>
   <symbol id="і-місце" viewBox="0 0 24 24"><path d="M12 21s-6.5-5.6-6.5-11a6.5 6.5 0 0 1 13 0c0 5.4-6.5 11-6.5 11z"/><circle cx="12" cy="10" r="2.2"/></symbol>
@@ -92,6 +92,7 @@
     <button type="button" class="тема" id="тема-кнопка" aria-label="Темна тема"><svg class="і"><use href="#і-тема"/></svg><span class="тихо-слово" id="тема-текст">Ніч</span></button>
   </div>
 </header>
+<div id="збій-панель"><div class="статус" id="збій-стан" role="alert"></div><button type="button" class="текст" id="збій-прибрати">Зрозуміло</button></div>
 
 <!-- НИТКА ПОСТУПУ — лише для першого знайомства (режим «старт»): три кроки, після
      яких профіль створено. Далі профіль правиться на вкладці «Профіль». -->
@@ -125,7 +126,7 @@
     <p class="підказка">Шкіра, волосся й очі з портрета — від них рахується палітра.</p>
     <div id="кол-свотчі"></div>
     <div class="статус" id="кол-стан"></div>
-    <div class="ряд"><button id="кол-зчитати" class="тихо" type="button">Зчитати кольори з портрета</button></div>
+    <div class="ряд"><button id="кол-зчитати" class="тихо" type="button">Зчитати кольори з портрета</button> <button id="кол-повтор" class="тихо" type="button" hidden>Повторити читання кольорів</button></div>
     <details class="розкривач">
       <summary>Інший шлях — через будь-який чат-помічник</summary>
       <p class="підказка">Скопіюй запит, надішли його з фото обличчя в чат — і поверни відповідь сюди цілком.</p>
@@ -302,11 +303,10 @@
     <button type="button" class="ряд-паспорта" data-редактор="ред-коли" data-назва="Коли й погода"><span>Коли й погода</span><b id="зн-коли">—</b></button>
     <div class="редактор" id="ред-коли" hidden>
       <div class="умови">
-        <div class="пілюля"><svg class="і"><use href="#і-година"/></svg><label for="сц-година">Година</label>
-          <input type="number" id="сц-година" value="11" min="0" max="23" inputmode="numeric">
-          <input type="hidden" id="сц-хвилини" value="0"></div>
-        <div class="пілюля"><svg class="і"><use href="#і-темп"/></svg><label for="сц-темп">Надворі</label>
-          <input type="number" id="сц-темп" value="18" inputmode="numeric"><b>°C</b></div>
+        <div class="пілюля"><svg class="і"><use href="#і-пора"/></svg><label for="сц-пора">Коли</label>
+          <select id="сц-пора"></select></div>
+        <div class="пілюля"><svg class="і"><use href="#і-темп"/></svg><label for="сц-смуга">Надворі</label>
+          <select id="сц-смуга"><option value="">Не знаю</option><option value="deep_frost">Сильний мороз</option><option value="frost">Мороз</option><option value="cold">Холодно</option><option value="cool">Прохолодно</option><option value="mild">Помірно тепло</option><option value="warm">Тепло</option><option value="hot">Спека</option></select></div>
       </div>
       <input type="hidden" id="сц-відчуття">
       <div class="плитки" id="сц-відчуття-плитки"></div>
@@ -468,8 +468,8 @@
     <div class="поле-назва">Нагода й погода <small class="оц-необов">необов'язково</small></div>
     <label class="поле" for="оц-нагода"><span>Нагода</span><select id="оц-нагода"></select></label>
     <div class="умови">
-      <div class="пілюля"><svg class="і"><use href="#і-темп"/></svg><label for="оц-темп">Надворі</label>
-        <input type="number" id="оц-темп" inputmode="numeric" placeholder="—"><b>°C</b></div>
+      <div class="пілюля"><svg class="і"><use href="#і-темп"/></svg><label for="оц-смуга">Надворі</label>
+        <select id="оц-смуга"><option value="">Не знаю</option><option value="deep_frost">Сильний мороз</option><option value="frost">Мороз</option><option value="cold">Холодно</option><option value="cool">Прохолодно</option><option value="mild">Помірно тепло</option><option value="warm">Тепло</option><option value="hot">Спека</option></select></div>
     </div>
     <div class="ряд оц-опади" id="оц-опади"></div>
   </div>
@@ -668,11 +668,13 @@
         /* `прогін` стоїть ПОЛЕМ запису, а не лише ключем: по ньому бібліотека в'яже
            вердикти, а читати його з ключа означало б вгадувати, що цей ключ — ід, а
            не давній `збірка·розклад·профіль`. */
+        /* Рядок випадку — лише `випадок_рядок`, який пише шов збирання: поле `випадок` ніс пакет стенда з хеша адреси,
+           а його показ більше не читає (рішення 11824). */
         const запис = {ключ: ключ(П), прогін: (П.прогін || null), час: new Date().toISOString(),
-                       випадок: П.випадок_рядок || П.випадок || '', П: JSON.parse(JSON.stringify(П))};
+                       випадок: П.випадок_рядок || '', П: JSON.parse(JSON.stringify(П))};
         await tx(d, 'образи', 'readwrite', s => s.put(запис, запис.ключ));
         if (window.завершитиДіюЯдра) window.завершитиДіюЯдра('зберегтиОбраз', запис.ключ);
-      }catch(e){ console.warn('образи не збереглись', e); }
+      }catch(e){ збійЖінціП($('збій-стан'), 'not_saved', e); }
     })();
     return ЗАПИС_ОБРАЗУ_П;
   };
@@ -688,15 +690,21 @@
     сп.innerHTML = ''; ст.textContent = '';
     let образи = [], вердикти = [];
     try{ await ЗАПИС_ОБРАЗУ_П; }catch(e){}
-    try{ образи = await усіОбрази(); }catch(e){}
-    try{ вердикти = await усіВердикти(); }catch(e){}
+    try{ образи = await усіОбрази(); }
+    catch(e){ збійЖінціП(ст, 'library_unreadable', e); return; }
+    try{ вердикти = await усіВердикти(); }
+    catch(e){ збійЖінціП(ст, 'journal_unreadable', e); return; }
     if (!образи.length){ ст.textContent = "Ще порожньо. Образи з'являться тут після першого збирання."; if (window.оновитиЖурнал) оновитиЖурнал(); return; }
     образи.sort((a, b) => String(b.час).localeCompare(String(a.час)));
     const групи = new Map();
     образи.forEach(о => { const н = String(о.випадок || 'Без випадку').split(' \u00b7 ')[0] || 'Без випадку'; if (!групи.has(н)) групи.set(н, []); групи.get(н).push(о); });
     for (const [нагода, список] of групи){
       const г = document.createElement('div'); г.className = 'біб-група';
-      const з = document.createElement('h2'); назваЖінціП(з, нагода); г.appendChild(з);
+      /* ЗАГОЛОВОК ГРУПИ — ПЕРШИЙ ШМАТОК РЯДКА ВИПАДКУ, а не назва з даних: той самий текст над
+         картками йде крізь сторожа прози (`малюватиРядокВипадку`). Шматок складає код — підпис
+         довідника, обрізок її слів чи рядок мосту, а в записі з пакета стенда — його поле `випадок`,
+         чийого писача показ не знає; у вході назви сторожа мови й кодів нема (корінь Е2-текст-жінці). */
+      const з = document.createElement('h2'); текстЖінціП(з, нагода, undefined, своїЕкрануП()); г.appendChild(з);
       for (const о of список){
         const П_ = о.П || {};
         (П_.картки || []).forEach((карт, i) => {
@@ -790,7 +798,7 @@
       спостерігач.takeRecords(); показати(i);
       /* ОЦІН-1: вердикти цього прогону лежать у сховищі, а `В` після відкриття порожнє — тож лічильник «оцінено N з M»
          і дописування того самого запису мусять їх підхопити */
-      відновитиВердиктиПрогону().catch(e => console.warn('вердикти прогону не відновились', e));
+      відновитиВердиктиПрогону().catch(e => збійЖінціП($('збій-стан'), 'journal_unreadable', e));
     }catch(e){ const ст = $('біб-стан'); if (ст) збійЖінціП(ст, 'library_unreadable', e); }
   }
   async function відновитиВердиктиПрогону(){

@@ -1,0 +1,55 @@
+── ПРОМПТ (6687 симв.) ──
+Ти — перекладачка в застосунку-стилістці. Ти пишеш природною українською тексти, які зараз побачить жінка. Рішень не приймаєш, на питання не відповідаєш, змісту не міняєш.
+
+Вхід — JSON-об'єкт: ключ — номер тексту н, значення — текст, який склали код та інші моделі.
+
+Ключі відповіді — ті самі, що у вході, кожен: номер н тексту, значення — рядок, той самий зміст природною українською, без англійських слів і кодів; ПЕРЕКЛАДАЙ КОЖНЕ англійське слово, навіть одне посеред українського речення; латиницею лишай лише назви крамниць і брендів, «V-подібний» і «den»; текст, що вже природний і до неї на «ти», — без змін, а український текст на «ви» перепиши на «ти», решту лиши слово в слово.
+
+Вид кожної речі — теж зміст: річ у перекладі — та сама, що у вході, а не схожа чи сусідня. ankle boots — черевики чи ботильйони, boots — чоботи, heeled — на підборах, а не туфлі, pumps — туфлі-човники, loafers — лофери; pendant — кулон чи підвіска, necklace — намисто чи ланцюжок, а не каблучка, сережки чи браслет; ring — каблучка; earrings — сережки. Українські назви речей у вході (назви з крамниці, найчастіше перед « — ») переписуй літера в літеру: не міняй, не переставляй і не додавай у них жодного слова.
+
+Про жінку — лише до неї, на «ти» (ти, тебе, тобі, твій, твоя; хочеш, скинеш; наказ однини: розкажи, оберни, тримай, дай), і в питаннях теж: you, your, she, her про неї — «ти», «твій» (her skin tone — твій тон шкіри; when she turns her head — коли ти повертаєш голову; she looks taller — ти виглядаєш вищою), англійський наказ — наказом однини; «вона», «її» — лише про річ (сукню, сумку, куртку). Говорить стилістка — одна жінка: про себе — від першої особи однини й у жіночому роді (я підібрала, я б додала), не «ми», не від імені застосунку чи коду і ніколи словами самої жінки.
+
+Мова: літературна українська, як у текстах українських крамниць одягу. Кожне українське слово — літерами лише української абетки, без жодної латинської літери чи стороннього знака всередині слова. Кожне речення — одна остаточна версія, без виправлень посеред тексту. Словничок нижче — лише як перекласти англійське слово, коли воно є у вході; це не зміст: річ, тканина чи колір, яких у вході нема, у тексті не з'являються. Звичні українські назви для слів англійського джерела: trousers, pants — штани; dressy, dressier — ошатний, ошатніше; look, outfit — образ; taupe — сіро-бежевий; loose — вільний; suede — замша (жіночий рід); slip dress — сукня-комбінація; camel — кемел (колір). Назви речей і кольорів, які дала крамниця, — як є.
+
+Перевір кожне слово ДО відповіді: до неї — лише «ти», жодного «ви», «ваш» і наказу множини, і про неї жодного «вона», «її», «їй», жодне слово не стоїть двічі поспіль, кожна річ — того самого виду, що у вході (річ образу — іменником коду її виду з переліку, коли він є, і слова при ній узгоджені з цим іменником), а українська назва речі — слово в слово. Відповідь — рівно ОДИН JSON-об'єкт і нічого після нього: другої, виправленої версії, приміток і пояснень не пиши — помилку виправ у тому самому об'єкті.
+
+Речі образу — перелік речей картки (номер речі — як на картці, поруч — її коди):
+1 — kind code: blazer · colour code: black · about it: text н=1
+2 — kind code: dress_generic · colour code: chocolate · about it: text н=2
+3 — kind code: earrings · colour code: black · about it: text н=3
+4 — kind code: belt · colour code: chocolate · about it: text н=4
+5 — kind code: bag_generic · colour code: red · about it: text н=5
+6 — kind code: dress_shoes · colour code: burgundy · about it: text н=6
+When a text speaks of an item of the list, call it by the Ukrainian noun of its kind code (kind code: …) — the same noun in the right case in every text (trench_coat — «тренч», sweater — «светр», loafers — «лофери»), not by another kind or a synonym of the English word, whatever word the English text uses; a code ending in _generic names only the family (dress_generic — a dress, bag_generic — a bag). Make every adjective, pronoun and verb with the item agree with that noun in gender and number («бежевий тренч, який…»; «шкіряні лофери, які…»). A name you translate in this same call (text н=K): give it one noun and call the item by it, in agreement, in every text. A text the list gives as about an item (about it: text н=M) speaks of that one item, and so does every other text where the English names it. The colour of an item of the list is its colour code (colour code: …): write the Ukrainian name of that code. The English colour words for that item are the stylist's impression of a photo: do not turn them into a colour of their own — the item's colour stands in their place. Colours of its details (trim, strap, buttons, print), its fabric and the rest — translate from the text. The list is for the items only: an item the English text does not name is not added to the translation — neither to the description nor to the advice.
+
+Colour codes: black — чорний; burgundy — бордовий; chocolate — шоколадний; red — червоний.
+
+ТЕКСТИ:
+{
+"1": "This is a fitted black double-breasted blazer that adds structure and sophistication to your look while keeping it sharp enough for the rock-concert setting.",
+"2": "The chocolate-colored mini dress provides a soft contrast to the structured blazer and flares gently from the waist, highlighting your figure beautifully.",
+"3": "These black earrings add a subtle touch of edge without overpowering your classic vibe, balancing the rock attitude with elegance.",
+"4": "The chocolate-colored belt cinches at your waist to define your silhouette and tie in perfectly with the dress while adding a sleek finish.",
+"5": "The red bag brings an energetic pop of color that matches your bold personality, its shine catching the club lights as you move through the crowd.",
+"6": "The burgundy dress shoes with heels elongate your legs and add a dramatic flair, making sure you command attention every step of the way.",
+"7": "I have chosen a look that balances rock attitude with classic elegance for your Friday evening at the concert. You will wear a fitted black double-breasted blazer over a chocolate-colored mini dress to create a structured yet feminine silhouette. To ground the outfit and add warmth, I paired it with a matching chocolate belt defining your waist, tall burgundy heels to elongate your legs, and red bag as a bold accent that complements your dark palette perfectly.",
+"8": "Keep the blazer buttoned or open depending on how much you want to show off the dress underneath",
+"9": "Stand confidently in the crowd with your hands on your hips or letting the bag swing slightly for a dynamic vibe",
+"10": "The burgundy shoes and red bag will catch the club lights, making you stand out from others"
+}
+
+── ВІДПОВІДЬ (1709 симв., 33.2 с, HTTP 200) ──
+```json
+{
+  "1": "Це приталений чорний двобортний блейзер, який додає структури та вишуканості твоєму образу, залишаючись достатньо зухвалим для рок-концерту.",
+  "2": "Шоколадна мінісукня створює м’який контраст із структурованим блейзером і ніжно розширюється від талії, підкреслюючи твою фігуру чудово.",
+  "3": "Ці чорні сережки додають ледь помітний зухвалий акцент без перевантаження класичного настрою, збалансовуючи рок-атмосферу елегантністю.",
+  "4": "Шоколадний пояс підкреслює твою талію, ідеально поєднуючись із сукнею та додаючи вишуканого завершення.",
+  "5": "Червона сумка привносить енергійний колірний акцент, що відповідає твоєї сміливій особистості, її блиск ловить світло клубу, коли ти рухаєшся натовпом.",
+  "6": "Бордові туфлі-човники на підборах видовжують твої ноги та додають драматичного шарму, гарантуючи, що ти привертатимеш увагу з кожним кроком.",
+  "7": "Я обрала образ, який поєднує рок-атмосферу з класичною елегантністю для твоєї п’ятничної вечірки на концерті. Ти носитимеш приталений чорний двобортний блейзер поверх шоколадної мінісукні, щоб створити структурований і водночас жіночний силует. Щоб завершити образ та додати тепла, я підібрала відповідний шоколадний пояс, який підкреслює твою талію, високі бордові туфлі-човники на підборах для видовження ніг і червону сумку як сміливий акцент, що чудово доповнює темну палітру.",
+  "8": "Застібай блейзер або носи його розстебнутим залежно від того, як ти хочеш продемонструвати сукню під ним",
+  "9": "Впевнено стій у натовпі з руками на стегнах або дозволь сумці трохи гойдатися для динамічного настрою.",
+  "10": "Бордові туфлі та червона сумка будуть ловити світло клубу, роблячи тебе помітною серед інших."
+}
+```
