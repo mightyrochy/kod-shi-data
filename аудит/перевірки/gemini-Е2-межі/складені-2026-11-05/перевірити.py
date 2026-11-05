@@ -39,14 +39,22 @@ for ім in ("картка_події", "картка_replay", "картка_з�
 ПЕРЕВІРКИ += [("межі-після", [sys.executable, "джерела/прилади/корінь_е2_межі.py"], КОРІНЬ),
                ("промпти-після", [sys.executable, "-W", "ignore", "джерела/прилади/корінь_е2_промпти.py",
                 "--база", "аудит/корені/Е2-промпти-довжини.json", "--деталі"], КОРІНЬ)]
+префікс = ""
+if "--остаточно" in sys.argv:
+    префікс = "остаточно-"
+    ПЕРЕВІРКИ = ПЕРЕВІРКИ[:4] + [
+        ("переходи", [sys.executable, str(ТЕКА / "переходи.py")], КОРІНЬ),
+        ("прив'язка", [sys.executable, "проби/межі_коментар_номери.py"], КОД),
+        ("компіляція", [sys.executable, "-m", "py_compile", "мовний_шар.py", "картка_запиту.py", "паспорт_поля.py"], КОД),
+    ]
 підсумок = []
 for назва, команда, тека in ПЕРЕВІРКИ:
     print("ПОЧАТО", назва, flush=True)
     початок = time.monotonic()
-    with (ТЕКА / (назва + ".txt")).open("w", encoding="utf-8", newline="\n") as журнал:
+    with (ТЕКА / (префікс + назва + ".txt")).open("w", encoding="utf-8", newline="\n") as журнал:
         р = subprocess.run(команда, cwd=тека, stdout=журнал, stderr=subprocess.STDOUT)
     підсумок.append(dict(назва=назва, команда=команда, код=р.returncode,
                          секунд=round(time.monotonic() - початок, 2)))
-    (ТЕКА / "підсумок.json").write_text(json.dumps(підсумок, ensure_ascii=False, indent=1) + "\n", encoding="utf-8")
+    (ТЕКА / (префікс + "підсумок.json")).write_text(json.dumps(підсумок, ensure_ascii=False, indent=1) + "\n", encoding="utf-8")
     print("ЗАВЕРШЕНО", назва, р.returncode, flush=True)
 sys.exit(int(any(п["код"] for п in підсумок if п["назва"] != "складені-до")))
