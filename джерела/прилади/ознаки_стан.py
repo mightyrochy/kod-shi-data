@@ -53,6 +53,8 @@ class Стан:
         if self.мертва:
             self.а.закриті_ворота.setdefault((м.шлях, вузол.lineno), чому)
             return
+        if self.ф.формула and ("арифметику пари" in чому or "нелінійну шкалу" in чому):
+            return   # шматок формули простору кольору: місце — виклик із її значенням
         self.а.місце(м, вузол, пункт, чому, вхід=вхід)
 
     # ── ворота за джерелом: гілка під довірою, якої model_hex не має ──
@@ -480,6 +482,20 @@ class Стан:
             if ключі is not None:
                 self.ключі[ім].update(ключі)
 
+    def таблиця_коду(self, ітер):
+        """`таблиця.items()` / `.values()` / `.keys()` чи сама `таблиця`, де таблиця — словник, який код оголосив сам
+        (стала модуля чи імпортованого модуля, без жодної мітки): рядки такої таблиці — кандидати."""
+        в = ітер.func.value if isinstance(ітер, ast.Call) and isinstance(ітер.func, ast.Attribute) \
+            and ітер.func.attr in ("items", "values", "keys") and not ітер.args else ітер
+        з = None
+        if isinstance(в, ast.Name) and в.id not in self.локальні:
+            з = self.м.присвоєння.get(в.id)
+        elif isinstance(в, ast.Attribute) and isinstance(в.value, ast.Name) and в.value.id not in self.локальні:
+            мод = self.а.модулі.get(self.м.імпорти.get(в.value.id, "").split(".")[0]) \
+                or (self.а.модулі.get(self.м.з_імпортів.get(в.value.id, ("", ""))[0]) if в.value.id in self.м.з_імпортів else None)
+            з = мод.присвоєння.get(в.attr) if мод is not None else None
+        return isinstance(з, (ast.Dict, ast.DictComp)) and not self.e(в)
+
     def ітерація(self, ціль, ітер):
         """`for ціль in ітер`: номер `enumerate` і ключ `.items()` — позиція й ім'я, не значення про колорит.
         Ім'я циклу щоразу прив'язане заново (сильне оновлення): два цикли з тим самим ім'ям не зливають елементів."""
@@ -510,6 +526,13 @@ class Стан:
                     self.елемент(ц, (м | кл.get(п, E)) - {F}, _під(кл, п) or None)
                 return
         мітки = self.e(ітер) - {F}
+        if self.таблиця_коду(ітер):
+            # кандидати: код перебирає власну таблицю (лексикон, таблиця дуг), а не її значення (рішення менеджера 01.11, 05.11)
+            self.e(ітер)
+            for n in ast.walk(ціль):
+                if isinstance(n, ast.Name):
+                    self.присвоїти(n, frozenset({K}))
+            return
         if isinstance(ціль, ast.Tuple) and len(ціль.elts) == 2 and isinstance(ітер, ast.Call) and \
                 isinstance(ітер.func, ast.Attribute) and ітер.func.attr == "items" and not ітер.args:
             if all(isinstance(ц, ast.Name) for ц in ціль.elts):
@@ -1026,7 +1049,7 @@ class Стан:
             finally:
                 self.відновити(збережено)
             if isinstance(в.op, ast.Or) and len(в.values) >= 2 and any(S in м for м in мітки[:-1]) \
-                    and self.значення_замість(в.values[-1], число=True) \
+                    and self.значення_замість(в.values[-1], число=True) and id(в) not in self.а.слова_вузли and id(в) not in self.а.тотожні \
                     and not all(isinstance(х, ast.BinOp) or isinstance(х, ast.UnaryOp) and not isinstance(х.op, ast.Not)
                                 for х in в.values[:-1]):
                 self.місце(self.м, в, 2, "запасне число: %s" % _текст(в)[:70])
@@ -1116,13 +1139,14 @@ class Стан:
         return E
 
     def індекс(self, база, ключ, вузол, типове=None):
+        ключові = E
         if isinstance(ключ, ast.Constant):
             к = ключ.value
         else:
-            self.e(ключ)
+            ключові = self.e(ключ)
             к = None
         вих = set()
-        if K in база:
+        if K in база or K in ключові and S not in ключові:
             вих.add(K)
         if R in база:
             вих.add(R)
@@ -1148,7 +1172,7 @@ class Стан:
         if типове is not None:
             мт = self.e(типове)
             вих |= мт
-            if S in вих and not мт and self.значення_замість(типове, число=True):
+            if S in вих and not мт and self.значення_замість(типове, число=True) and id(вузол) not in self.а.слова_вузли and id(вузол) not in self.а.тотожні:
                 self.місце(self.м, вузол, 2, "запасне число: %s" % _текст(вузол)[:70])
         return frozenset(вих)
 
@@ -1518,6 +1542,10 @@ class Стан:
                 # вони коду; неоднорідний перелік заяв читач звужує перевіркою коду (`звуження`)
                 поз_к = [frozenset({ТОКЕН + в.args[0].value})] + list(поз_к[1:])
             пов = self.а.виклик(ц, поз_к, імен_к, зірка, дві)
+            if ц.формула and not self.ф.формула and not self.а.пара_глибина and len(позиційні) >= 2 \
+                    and S in _пара(*позиційні):
+                # шматок формули простору кольору: її значення входить у формулу тут, а не в її арифметику
+                self.місце(self.м, в, 1, "її значення входить у формулу кольору: %s" % _текст(в)[:70], вхід=True)
             if F in пов and any(к.arg == "джерело" and not (isinstance(к.value, ast.Constant) and к.value.value is None)
                                 for к in в.keywords):
                 пов = пов - {F}   # будівник риc із явним `джерело=`: запис несе походження, а не довіру знімку

@@ -2,7 +2,7 @@
 import ast, collections, functools, os, re
 from ознаки_рішення import (шкали_ваги, пари_функції, вузли_тіла, кутові_пари,
                            множини_функції, вільні_свідки_пари, числові_цикли,
-                           форматований_текст, поля_підписів, межі_сортування)
+                           форматований_текст, поля_підписів, межі_сортування, функція_формула, будує_вікно, прозовий)
 
 ТУТ = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 ВИКЛЮЧЕНО = re.compile(r"^(батарея_|gate_|measure_|стенд_|тест_|audit_|pair_test|run_outfit|status_перевірки)")
@@ -74,6 +74,8 @@ class Функція:
         self.предикати_формул.update(межі_сортування(self))
         self.сіткові_імена = {ц.id for в in self.власні if id(в) in self.прогресії
                             for ц in в.targets if isinstance(ц, ast.Name)}
+        self.формула = функція_формула(self)   # чисте числове перетворення: арифметика всередині — не місце
+        self.вікно = будує_вікно(self)         # повертає межі вікна кандидатів: результат — K, не її значення
 
     @property
     def повне(self):
@@ -155,13 +157,24 @@ def _словесні_пороги(дерево, поля=()):
     """Знаходить вибір самих слів усередині форматованого підпису."""
     def слова(в):
         return _рядок(в) or isinstance(в, ast.JoinedStr) or isinstance(в, ast.IfExp) and слова(в.body) and слова(в.orelse)
+    def речення(в):
+        """Вибір між реченнями: речення не буває кодом класу, тож поріг при ньому вибирає лише слова."""
+        return прозовий(в) or isinstance(в, ast.JoinedStr) or isinstance(в, ast.IfExp) and речення(в.body) and речення(в.orelse)
     def лише_підпис(тіло):
         """Відрізняє зміну самого підпису від зміни числа чи класу поруч із ним."""
         return all(isinstance(і, ast.Pass) or isinstance(і, ast.Assign) and форматований_текст(і.value)
-                   and all(isinstance(ц, ast.Subscript) and _рядок(ц.slice) and ц.slice.value in поля for ц in і.targets)
+                   and all(isinstance(ц, ast.Subscript) and _рядок(ц.slice) and (ц.slice.value in поля or прозовий(і.value))
+                           for ц in і.targets)
                    or isinstance(і, ast.If) and лише_підпис(і.body) and лише_підпис(і.orelse) for і in тіло)
     вихід = set()
     for в in ast.walk(дерево):
+        if isinstance(в, ast.IfExp) and речення(в):
+            вихід.update(id(т) for т in ast.walk(в.test) if isinstance(т, ast.Compare))
+        if isinstance(в, ast.Call) and (_ім_виклику(в.func) or "").endswith("заява"):
+            # код причини в аргументі заяви: поріг вибирає слово заяви, а не рішення (паспорт: «поріг, що вибирає лише слова»)
+            for а in list(в.args) + [к.value for к in в.keywords]:
+                if isinstance(а, ast.IfExp) and слова(а):
+                    вихід.update(id(т) for т in ast.walk(а.test) if isinstance(т, ast.Compare))
         if isinstance(в, ast.If) and лише_підпис(в.body) and лише_підпис(в.orelse) \
                 and any(isinstance(н, ast.Assign) for і in в.body + в.orelse for н in ast.walk(і)):
             вихід.update(id(т) for т in ast.walk(в.test) if isinstance(т, ast.Compare))
@@ -255,6 +268,12 @@ def _край_таблиці(в, т):
     return False
 
 
+def _стала_або_кут(в):
+    """Права частина порівняння ширини дуги: число, `360 − стала`, ім'я сталої модуля."""
+    return _стала_формули(в) or isinstance(в, ast.Name) or isinstance(в, ast.BinOp) and isinstance(в.op, ast.Sub) \
+        and _число(в.left) and _стала_або_кут(в.right)
+
+
 def _формульні(дерево):
     """Порівняння — шматок формули, а не поріг рішення: кусково задана функція тієї самої величини
     (`f(L) if L > 8.0 else g(L)`, `x / (a+b) if (a+b) > 0 else 0.0`) чи нормування кута
@@ -262,6 +281,11 @@ def _формульні(дерево):
     вих = set()
     for в in ast.walk(дерево):
         сусідні = None
+        if isinstance(в, ast.Compare) and isinstance(в.left, ast.BinOp) and isinstance(в.left.op, ast.Mod) \
+                and isinstance(в.left.left, ast.BinOp) and isinstance(в.left.left.op, ast.Sub) \
+                and _число(в.left.right) and в.left.right.value == 360 and len(в.ops) == 1 \
+                and _стала_або_кут(в.comparators[0]):
+            вих.add(id(в))   # `(до − від) % 360 > 360 − крок`: ширина дуги кола проти повного оберту — геометрія кута
         if isinstance(в, ast.For) and isinstance(в.iter, ast.Call) and len(в.iter.args) == 2:
             сусідні = в.iter.args[1]
             if isinstance(сусідні, ast.BinOp) and isinstance(сусідні.op, ast.Add):
@@ -334,8 +358,8 @@ def _формульні(дерево):
             if not isinstance(в.body, ast.BinOp) or not ім <= _імена(в.body):
                 continue
             if ім <= _імена(в.orelse) and isinstance(в.orelse, (ast.BinOp, ast.Call, ast.Name)) \
-                    or _число(в.orelse) and в.orelse.value == 0:
-                вих.add(id(т))
+                    or _число(в.orelse) and (в.orelse.value == 0 or т.comparators[0].value == 0):
+                вих.add(id(т))   # охорона ділення чи кореня: за нулем формула дає сталу
         elif isinstance(в, ast.If) and not в.orelse and len(в.body) == 1 and isinstance(в.body[0], ast.Assign) \
                 and isinstance(т.left, ast.Name) and isinstance(в.body[0].value, ast.BinOp) \
                 and [ц.id for ц in в.body[0].targets if isinstance(ц, ast.Name)] == [т.left.id] \

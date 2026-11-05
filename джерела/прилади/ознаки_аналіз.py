@@ -37,6 +37,27 @@ class Аналіз:
         підписи = поля_підписів([м.дерево for м in self.модулі.values()])
         for м in self.модулі.values():
             self.словесні |= _словесні_пороги(м.дерево, підписи)
+        # `x or 1.0` / `.get(k, 1)` як множник: нейтральний елемент дії (немає множника — немає зміни), а не незнання,
+        # що стало числом
+        self.тотожні = set()
+        for м in self.модулі.values():
+            for b in ast.walk(м.дерево):
+                if isinstance(b, ast.BinOp) and isinstance(b.op, (ast.Mult, ast.Div)):
+                    for о in (b.left, b.right):
+                        while isinstance(о, ast.Call) and isinstance(о.func, ast.Name) and о.func.id in ("float", "int") \
+                                and len(о.args) == 1:
+                            о = о.args[0]
+                        if isinstance(о, ast.BoolOp) and isinstance(о.op, ast.Or) and len(о.values) == 2 \
+                                and isinstance(о.values[1], ast.Constant) and о.values[1].value == 1 \
+                                and not isinstance(о.values[1].value, bool):
+                            self.тотожні.add(id(о))
+                        elif isinstance(о, ast.Call) and isinstance(о.func, ast.Attribute) and о.func.attr == "get" \
+                                and len(о.args) == 2 and isinstance(о.args[1], ast.Constant) \
+                                and о.args[1].value == 1 and not isinstance(о.args[1].value, bool):
+                            self.тотожні.add(id(о))
+        # вирази всередині порівняння, що вибирає лише слова: запасне число там — теж лише про слова
+        self.слова_вузли = {id(n) for м in self.модулі.values() for c in ast.walk(м.дерево)
+                            if isinstance(c, ast.Compare) and id(c) in self.словесні for n in ast.walk(c)}
         self.пам = {}             # (функція, контекст) → мітки повернення
         self.ключі_пов = collections.defaultdict(lambda: collections.defaultdict(frozenset))  # функція → ключ → мітки
         self.глоб = collections.defaultdict(frozenset)                                       # (модуль, ім) → мітки
@@ -185,7 +206,7 @@ class Аналіз:
             if с.кортеж:
                 с.кортеж = [(вага(м), frozenset((к, вага(v)) for к, v in кл)) if ціла or і in слоти else (м, кл)
                              for і, (м, кл) in enumerate(с.кортеж)]
-        if self.будує_сітку(ф):
+        if self.будує_сітку(ф) or ф.вікно:
             # функція будує сітку кандидатів у вікні з її значень: повертає кандидатів, а не її значення; вхід її
             # значень у вікно лічиться там, де вікно рахується (рішення менеджера 01.11, кандидат палітри)
             пов = (пов - {S}) | {K}
