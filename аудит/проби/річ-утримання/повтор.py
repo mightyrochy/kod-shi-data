@@ -1,10 +1,12 @@
 """Повтор ж1–ж9: ознаки, дріт палітри, причини та порядок порад без моделі."""
 import json
+import os
 from pathlib import Path
 import sys
 
 К = Path(__file__).resolve().parents[3]
 sys.path.insert(0, str(К / "джерела"))
+if os.environ.get("ОЗНАКИ_КОД"): sys.path.insert(0, os.environ["ОЗНАКИ_КОД"])
 import міст_вхід as М
 import міст_основи as О
 import face_features as Ф
@@ -14,6 +16,7 @@ import outfit as У
 import brief as Б
 import пакет_моделі as ПМ
 import дріт_моделі as Д
+import pipeline as КОНВЕЄР
 
 
 def повтор():
@@ -46,6 +49,7 @@ def повтор():
             if дж != "model_hex":
                 continue
             перевірки = dict(
+                ворота=not КОНВЕЄР.підготувати(F, форма_повна=False)["особа"]["гейт_джерела"]["можна_стверджувати"],
                 контраст=особа.get("contrast", {}).get("light_dark_gap") is None
                     and особа.get("contrast", {}).get("level") in (None, "unknown", "withheld"),
                 походження=all((особа.get(к) or {}).get("source") == "model_hex"
