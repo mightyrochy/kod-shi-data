@@ -119,8 +119,8 @@ import colorspace as _cs
         # Своє рішення стилістка не віддає жінці назад.
         _ВИМ.поле("day", як="in the last part of «text» say how this outfit lives through her day; when something "
                     "you chose argues with the day (weather, hours on her feet, the place), say in one plain "
-                    "sentence why you still chose it, or what she does about it in the day itself (take the "
-                    "layer off, swap the pair); never hand that decision back to her"),
+                    "sentence why you still chose it and what that means for her day; describe the chosen "
+                    "items without proposing a different composition; never hand that decision back to her"),
         # ОПИС-1 (K-PAL-11/14/15): «найдальші» й «комбінація», якщо йдуть у КОЖЕН опис, дають
         # «маленька оливкова чи зелена деталь» навіть на похороні й поради додати річ, якої в образі
         # нема. Тож лише те, що стосується речей образу.

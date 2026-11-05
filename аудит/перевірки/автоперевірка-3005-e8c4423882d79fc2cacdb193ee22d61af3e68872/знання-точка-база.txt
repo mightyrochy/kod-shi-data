@@ -1,0 +1,17 @@
+код 1
+Traceback (most recent call last):
+  File "C:\Users\gemini\gemini-runs\w\20261105-021331-27d4e9db8add\repo\джерела\проби\знання_точка.py", line 35, in <module>
+    головна()
+  File "C:\Users\gemini\gemini-runs\w\20261105-021331-27d4e9db8add\repo\джерела\проби\знання_точка.py", line 26, in головна
+    назад = К.відновити(дріт)["items"][0]
+            ^^^^^^^^^^^^^^^^^
+  File "C:\Users\gemini\gemini-runs\w\20261105-021331-27d4e9db8add\repo\джерела\знання_дріт.py", line 262, in відновити
+    return {к: пройти(р, _шлях("", к)) for к, р in промпт.items() if к != "knowledge_legend"}
+               ^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\gemini\gemini-runs\w\20261105-021331-27d4e9db8add\repo\джерела\знання_дріт.py", line 254, in пройти
+    return [доповнити(р, к) for р, к in zip(рядки, секція["rows"])] if "rows" in секція else рядки
+            ^^^^^^^^^^^^^^^
+  File "C:\Users\gemini\gemini-runs\w\20261105-021331-27d4e9db8add\repo\джерела\знання_дріт.py", line 235, in доповнити
+    значення = річ[поле]
+               ~~~^^^^^^
+KeyError: 'lab'
