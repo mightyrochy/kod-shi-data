@@ -1,0 +1,61 @@
+[
+  {
+    "назва": "знеособлення-до",
+    "команда": [
+      "powershell.exe",
+      "-NoProfile",
+      "-ExecutionPolicy",
+      "Bypass",
+      "-Command",
+      "[Console]::OutputEncoding = [Text.UTF8Encoding]::new($false); & 'C:\\Users\\gemini\\gemini-runs\\w\\20261105-174918-b33e92513db9\\repo\\аудит\\латки\\обгортка-claude-no-report\\проба_знеособлення.ps1' -SourceDir 'C:\\Users\\gemini\\gemini-runs\\w\\20261105-174918-b33e92513db9\\tmp\\no-report-repeat\\review\\аудит\\адаптери\\gemini' ; exit $LASTEXITCODE"
+    ],
+    "код": 0
+  },
+  {
+    "назва": "знеособлення-після",
+    "команда": [
+      "powershell.exe",
+      "-NoProfile",
+      "-ExecutionPolicy",
+      "Bypass",
+      "-Command",
+      "[Console]::OutputEncoding = [Text.UTF8Encoding]::new($false); & 'C:\\Users\\gemini\\gemini-runs\\w\\20261105-174918-b33e92513db9\\repo\\аудит\\латки\\обгортка-claude-no-report\\проба_знеособлення.ps1' -SourceDir 'C:\\Users\\gemini\\gemini-runs\\w\\20261105-174918-b33e92513db9\\tmp\\no-report-repeat\\current\\аудит\\адаптери\\gemini' ; exit $LASTEXITCODE"
+    ],
+    "код": 0
+  },
+  {
+    "назва": "розбір-до",
+    "команда": [
+      "powershell.exe",
+      "-NoProfile",
+      "-ExecutionPolicy",
+      "Bypass",
+      "-Command",
+      "[Console]::OutputEncoding = [Text.UTF8Encoding]::new($false); & 'C:\\Users\\gemini\\gemini-runs\\w\\20261105-174918-b33e92513db9\\tmp\\no-report-repeat\\current\\аудит\\адаптери\\gemini\\перевірка\\сценарії_no_report.ps1' -SourceDir 'C:\\Users\\gemini\\gemini-runs\\w\\20261105-174918-b33e92513db9\\tmp\\no-report-repeat\\before\\аудит\\адаптери\\gemini' -Before; exit $LASTEXITCODE"
+    ],
+    "код": 0
+  },
+  {
+    "назва": "розбір-після",
+    "команда": [
+      "powershell.exe",
+      "-NoProfile",
+      "-ExecutionPolicy",
+      "Bypass",
+      "-Command",
+      "[Console]::OutputEncoding = [Text.UTF8Encoding]::new($false); & 'C:\\Users\\gemini\\gemini-runs\\w\\20261105-174918-b33e92513db9\\tmp\\no-report-repeat\\current\\аудит\\адаптери\\gemini\\перевірка\\сценарії_no_report.ps1' -SourceDir 'C:\\Users\\gemini\\gemini-runs\\w\\20261105-174918-b33e92513db9\\tmp\\no-report-repeat\\current\\аудит\\адаптери\\gemini' ; exit $LASTEXITCODE"
+    ],
+    "код": 0
+  },
+  {
+    "назва": "хеші",
+    "команда": [
+      "python",
+      "-X",
+      "utf8",
+      "C:\\Users\\gemini\\gemini-runs\\w\\20261105-174918-b33e92513db9\\tmp\\no-report-repeat\\current\\аудит\\адаптери\\gemini\\перевірка\\перевірити_хеші.py",
+      "--диск"
+    ],
+    "код": 0
+  }
+]
