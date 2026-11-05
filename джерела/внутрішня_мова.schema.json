@@ -696,7 +696,7 @@
      ]
     },
     "place": {
-     "description": "місце — де вона буде",
+     "description": "місце — де вона буде; office_corporate | office_creative — kinds of one place, office: one of them only when her words say which kind; her words name only the office — office",
      "enum": [
       "home",
       "park",
@@ -729,7 +729,8 @@
       "wedding",
       "funeral",
       "unknown"
-     ]
+     ],
+     "title": "місце — де вона буде"
     },
     "setting": {
      "description": "у приміщенні, просто неба чи змішано",
@@ -823,23 +824,14 @@
      ],
      "description": "наскільки ошатний цей вихід — смуга одного щабля драбини за шкалою коду 1–10 (модель дає код щабля, `мовний_шар._смуга_числом`): завжди — з її слів і події"
     },
-    "temperature_c": {
-     "description": "температура повітря, °C",
-     "oneOf": [
-      {
-       "type": "number"
-      },
-      {
-       "const": "unknown"
-      }
-     ]
-    },
-    "weather_feel": {
-     "description": "погода без числа градусів",
+    "weather_band": {
+     "description": "смуга погоди за її словами",
      "enum": [
+      "deep_frost",
       "frost",
       "cold",
       "cool",
+      "mild",
       "warm",
       "hot",
       "unknown"
@@ -1049,6 +1041,103 @@
       "unknown"
      ]
     },
+    "host_context": {
+     "description": "подія з господарем або зі ставками: yes — це названо; no — явно заперечено; unknown — не сказала; не її роль господині",
+     "enum": [
+      "yes",
+      "no",
+      "unknown"
+     ]
+    },
+    "role": {
+     "description": "її названа роль на події",
+     "enum": [
+      "guest",
+      "close_family",
+      "main_person",
+      "host",
+      "candidate",
+      "speaker",
+      "worker",
+      "mourner_close",
+      "acquaintance",
+      "unknown"
+     ]
+    },
+    "companion_formality": {
+     "description": "ошатність описаного нею одягу супутника на шкалі нагоди; не її власна",
+     "oneOf": [
+      {
+       "type": "number",
+       "minimum": 0,
+       "maximum": 10
+      },
+      {
+       "const": "unknown"
+      }
+     ]
+    },
+    "direct_sun": {
+     "description": "пряме сонце на неї: yes — назвала пряме сонце; no — назвала тінь чи відсутність сонця; unknown — не сказала; не виводити з температури, опадів чи пори року",
+     "enum": [
+      "yes",
+      "no",
+      "unknown"
+     ]
+    },
+    "season": {
+     "description": "названий нею сезон події, не дата чи температура",
+     "enum": [
+      "winter",
+      "spring",
+      "summer",
+      "autumn",
+      "unknown"
+     ]
+    },
+    "life_transition": {
+     "description": "добровільно названий життєвий перехід; не питати й не виводити з тіла",
+     "enum": [
+      "pregnancy",
+      "recovery",
+      "weight_change",
+      "new_role",
+      "none",
+      "unknown"
+     ]
+    },
+    "creative_environment": {
+     "description": "творче середовище події: yes — назвала; no — явно заперечила; unknown — не сказала; не намір сміливого образу",
+     "enum": [
+      "yes",
+      "no",
+      "unknown"
+     ]
+    },
+    "declared_break": {
+     "description": "явно заявлений злам граматики, не сміливий намір",
+     "enum": [
+      "yes",
+      "no",
+      "unknown"
+     ]
+    },
+    "matching_opaque_tights": {
+     "description": "щільні колготи в тон взуття чи їх явне заперечення; інакше невідомо",
+     "enum": [
+      "yes",
+      "no",
+      "unknown"
+     ]
+    },
+    "declared_column": {
+     "description": "явно заявлена колона одного кольору, не висновок із речей",
+     "enum": [
+      "yes",
+      "no",
+      "unknown"
+     ]
+    },
     "own_items": {
      "description": "її власні речі, які вона називає словами: усе, що вона зве своїм («моя», «у мене є», «з моєї шафи», «з фото»), — кожна річ окремо; слот, тип і тканина — завжди, кодом з її слів або \"unknown\"",
      "type": "array",
@@ -1111,6 +1200,7 @@
       "rough_ground",
       "stroll",
       "walking",
+      "bowling",
       "photoshoot",
       "unknown"
      ]
@@ -2307,12 +2397,8 @@
         "description": "наскільки ошатний цей вихід — смуга одного щабля драбини за шкалою коду 1–10 (модель дає код щабля, `мовний_шар._смуга_числом`): завжди — з її слів і події"
        },
        {
-        "const": "temperature_c",
-        "description": "температура повітря, °C"
-       },
-       {
-        "const": "weather_feel",
-        "description": "погода без числа градусів"
+        "const": "weather_band",
+        "description": "смуга погоди за її словами"
        },
        {
         "const": "intent",
@@ -2377,6 +2463,46 @@
        {
         "const": "reserved_colour",
         "description": "колір, що на цій події належить іншій особі"
+       },
+       {
+        "const": "host_context",
+        "description": "подія з господарем або зі ставками: yes — це названо; no — явно заперечено; unknown — не сказала; не її роль господині"
+       },
+       {
+        "const": "role",
+        "description": "її названа роль на події"
+       },
+       {
+        "const": "companion_formality",
+        "description": "ошатність описаного нею одягу супутника на шкалі нагоди; не її власна"
+       },
+       {
+        "const": "direct_sun",
+        "description": "пряме сонце на неї: yes — назвала пряме сонце; no — назвала тінь чи відсутність сонця; unknown — не сказала; не виводити з температури, опадів чи пори року"
+       },
+       {
+        "const": "season",
+        "description": "названий нею сезон події, не дата чи температура"
+       },
+       {
+        "const": "life_transition",
+        "description": "добровільно названий життєвий перехід; не питати й не виводити з тіла"
+       },
+       {
+        "const": "creative_environment",
+        "description": "творче середовище події: yes — назвала; no — явно заперечила; unknown — не сказала; не намір сміливого образу"
+       },
+       {
+        "const": "declared_break",
+        "description": "явно заявлений злам граматики, не сміливий намір"
+       },
+       {
+        "const": "matching_opaque_tights",
+        "description": "щільні колготи в тон взуття чи їх явне заперечення; інакше невідомо"
+       },
+       {
+        "const": "declared_column",
+        "description": "явно заявлена колона одного кольору, не висновок із речей"
        },
        {
         "const": "own_items",
@@ -2527,7 +2653,7 @@
          "minLength": 1
         },
         "value": {
-         "description": "місце — де вона буде",
+         "description": "місце — де вона буде; office_corporate | office_creative — kinds of one place, office: one of them only when her words say which kind; her words name only the office — office",
          "enum": [
           "home",
           "park",
@@ -2560,7 +2686,8 @@
           "wedding",
           "funeral",
           "unknown"
-         ]
+         ],
+         "title": "місце — де вона буде"
         }
        }
       },
@@ -2710,7 +2837,7 @@
         "unknown"
        ]
       },
-      "temperature_c": {
+      "weather_band": {
        "type": "object",
        "additionalProperties": false,
        "required": [
@@ -2723,36 +2850,13 @@
          "minLength": 1
         },
         "value": {
-         "description": "температура повітря, °C",
-         "oneOf": [
-          {
-           "type": "number"
-          },
-          {
-           "const": "unknown"
-          }
-         ]
-        }
-       }
-      },
-      "weather_feel": {
-       "type": "object",
-       "additionalProperties": false,
-       "required": [
-        "quote",
-        "value"
-       ],
-       "properties": {
-        "quote": {
-         "type": "string",
-         "minLength": 1
-        },
-        "value": {
-         "description": "погода без числа градусів",
+         "description": "смуга погоди за її словами",
          "enum": [
+          "deep_frost",
           "frost",
           "cold",
           "cool",
+          "mild",
           "warm",
           "hot",
           "unknown"
@@ -3090,6 +3194,243 @@
         "unknown"
        ]
       },
+      "host_context": {
+       "type": "object",
+       "additionalProperties": false,
+       "required": [
+        "quote",
+        "value"
+       ],
+       "properties": {
+        "quote": {
+         "type": "string",
+         "minLength": 1
+        },
+        "value": {
+         "description": "подія з господарем або зі ставками: yes — це названо; no — явно заперечено; unknown — не сказала; не її роль господині",
+         "enum": [
+          "yes",
+          "no",
+          "unknown"
+         ]
+        }
+       }
+      },
+      "role": {
+       "type": "object",
+       "additionalProperties": false,
+       "required": [
+        "quote",
+        "value"
+       ],
+       "properties": {
+        "quote": {
+         "type": "string",
+         "minLength": 1
+        },
+        "value": {
+         "description": "її названа роль на події",
+         "enum": [
+          "guest",
+          "close_family",
+          "main_person",
+          "host",
+          "candidate",
+          "speaker",
+          "worker",
+          "mourner_close",
+          "acquaintance",
+          "unknown"
+         ]
+        }
+       }
+      },
+      "companion_formality": {
+       "type": "object",
+       "additionalProperties": false,
+       "required": [
+        "quote",
+        "value"
+       ],
+       "properties": {
+        "quote": {
+         "type": "string",
+         "minLength": 1
+        },
+        "value": {
+         "description": "ошатність описаного нею одягу супутника на шкалі нагоди; не її власна",
+         "oneOf": [
+          {
+           "type": "number",
+           "minimum": 0,
+           "maximum": 10
+          },
+          {
+           "const": "unknown"
+          }
+         ]
+        }
+       }
+      },
+      "direct_sun": {
+       "type": "object",
+       "additionalProperties": false,
+       "required": [
+        "quote",
+        "value"
+       ],
+       "properties": {
+        "quote": {
+         "type": "string",
+         "minLength": 1
+        },
+        "value": {
+         "description": "пряме сонце на неї: yes — назвала пряме сонце; no — назвала тінь чи відсутність сонця; unknown — не сказала; не виводити з температури, опадів чи пори року",
+         "enum": [
+          "yes",
+          "no",
+          "unknown"
+         ]
+        }
+       }
+      },
+      "season": {
+       "type": "object",
+       "additionalProperties": false,
+       "required": [
+        "quote",
+        "value"
+       ],
+       "properties": {
+        "quote": {
+         "type": "string",
+         "minLength": 1
+        },
+        "value": {
+         "description": "названий нею сезон події, не дата чи температура",
+         "enum": [
+          "winter",
+          "spring",
+          "summer",
+          "autumn",
+          "unknown"
+         ]
+        }
+       }
+      },
+      "life_transition": {
+       "type": "object",
+       "additionalProperties": false,
+       "required": [
+        "quote",
+        "value"
+       ],
+       "properties": {
+        "quote": {
+         "type": "string",
+         "minLength": 1
+        },
+        "value": {
+         "description": "добровільно названий життєвий перехід; не питати й не виводити з тіла",
+         "enum": [
+          "pregnancy",
+          "recovery",
+          "weight_change",
+          "new_role",
+          "none",
+          "unknown"
+         ]
+        }
+       }
+      },
+      "creative_environment": {
+       "type": "object",
+       "additionalProperties": false,
+       "required": [
+        "quote",
+        "value"
+       ],
+       "properties": {
+        "quote": {
+         "type": "string",
+         "minLength": 1
+        },
+        "value": {
+         "description": "творче середовище події: yes — назвала; no — явно заперечила; unknown — не сказала; не намір сміливого образу",
+         "enum": [
+          "yes",
+          "no",
+          "unknown"
+         ]
+        }
+       }
+      },
+      "declared_break": {
+       "type": "object",
+       "additionalProperties": false,
+       "required": [
+        "quote",
+        "value"
+       ],
+       "properties": {
+        "quote": {
+         "type": "string",
+         "minLength": 1
+        },
+        "value": {
+         "description": "явно заявлений злам граматики, не сміливий намір",
+         "enum": [
+          "yes",
+          "no",
+          "unknown"
+         ]
+        }
+       }
+      },
+      "matching_opaque_tights": {
+       "type": "object",
+       "additionalProperties": false,
+       "required": [
+        "quote",
+        "value"
+       ],
+       "properties": {
+        "quote": {
+         "type": "string",
+         "minLength": 1
+        },
+        "value": {
+         "description": "щільні колготи в тон взуття чи їх явне заперечення; інакше невідомо",
+         "enum": [
+          "yes",
+          "no",
+          "unknown"
+         ]
+        }
+       }
+      },
+      "declared_column": {
+       "type": "object",
+       "additionalProperties": false,
+       "required": [
+        "quote",
+        "value"
+       ],
+       "properties": {
+        "quote": {
+         "type": "string",
+         "minLength": 1
+        },
+        "value": {
+         "description": "явно заявлена колона одного кольору, не висновок із речей",
+         "enum": [
+          "yes",
+          "no",
+          "unknown"
+         ]
+        }
+       }
+      },
       "own_items": {
        "description": "її власні речі, які вона називає словами: усе, що вона зве своїм («моя», «у мене є», «з моєї шафи», «з фото»), — кожна річ окремо; слот, тип і тканина — завжди, кодом з її слів або \"unknown\"",
        "type": "array",
@@ -3171,6 +3512,7 @@
           "rough_ground",
           "stroll",
           "walking",
+          "bowling",
           "photoshoot",
           "unknown"
          ]
@@ -3306,8 +3648,7 @@
           "dress_code",
           "palette",
           "formality",
-          "temperature_c",
-          "weather_feel",
+          "weather_band",
           "intent",
           "goal",
           "goal_extra",
@@ -3324,6 +3665,16 @@
           "formality_branch",
           "open_zones",
           "reserved_colour",
+          "host_context",
+          "role",
+          "companion_formality",
+          "direct_sun",
+          "season",
+          "life_transition",
+          "creative_environment",
+          "declared_break",
+          "matching_opaque_tights",
+          "declared_column",
           "own_items",
           "place_words",
           "rest",
@@ -3378,7 +3729,7 @@
      "type": "object",
      "additionalProperties": false,
      "properties": {
-      "temperature_c": {
+      "weather_band": {
        "type": "string"
       },
       "precipitation": {
@@ -4109,7 +4460,7 @@
          },
          {
           "const": "needs_coat_none_in_pool",
-          "description": "this weather needs a coat or a warm jacket, and the selection for this occasion has none today: she takes her own (values: temperature_c — the degrees she named; weather_feel — instead of temperature_c when she named no degrees, the weather as she put it; precipitation — code of wet precipitation, when there is any)"
+          "description": "this weather needs a coat or a warm jacket, and the selection for this occasion has none today: she takes her own (values: weather_band — the weather band code; precipitation — code of wet precipitation, when there is any)"
          },
          {
           "const": "catalogue_has_none_for_case",
@@ -4121,7 +4472,7 @@
          },
          {
           "const": "weather_needs_outerwear",
-          "description": "this weather cannot be met without a coat or a warm jacket (values: temperature_c — the degrees she named; weather_feel — instead of temperature_c when she named no degrees, the weather as she put it; precipitation — the code of wet precipitation when there is any)"
+          "description": "this weather cannot be met without a coat or a warm jacket (values: weather_band — the weather band code; precipitation — the code of wet precipitation when there is any)"
          },
          {
           "const": "item_added_by_selection",
@@ -4861,7 +5212,7 @@
          },
          {
           "const": "claim_look_shape_vs_body_shape",
-          "description": "the outfit's shape is not the one worth leading to for her figure (values: body — the figure's shape, look — the outfit's shape, target — the shapes to lead to; shape codes: A — hips wider than shoulders, V — shoulders wider than hips, X — a marked waist, H — a straight contour without a marked waist, O — volume in the middle, I — a narrow straight contour, HX — a waist on the edge of being marked; never write the letters themselves, only the description)"
+          "description": "the outfit's shape is not the one worth leading to for her figure (values: body — the figure's shape, look — the outfit's shape, target — the shapes to lead to; shape codes: A — hips wider than shoulders, V — shoulders wider than hips, X — a marked waist, H — a straight contour without a marked waist, O — volume in the middle, I — a narrow straight contour, HX — waist definition is undetermined; never write the letters themselves, only the description)"
          },
          {
           "const": "contour_direction_not_set_by_goal",
@@ -4869,7 +5220,7 @@
          },
          {
           "const": "look_shape_is",
-          "description": "the shape the outfit gives, with no judgement, because the goal for this outing is not `flatter` (values: look — shape codes: A — hips wider than shoulders, V — shoulders wider than hips, X — a marked waist, H — a straight contour without a marked waist, O — volume in the middle, I — a narrow straight contour, HX — a waist on the edge of being marked; never write the letters themselves, only the description)"
+          "description": "the shape the outfit gives, with no judgement, because the goal for this outing is not `flatter` (values: look — shape codes: A — hips wider than shoulders, V — shoulders wider than hips, X — a marked waist, H — a straight contour without a marked waist, O — volume in the middle, I — a narrow straight contour, HX — waist definition is undetermined; never write the letters themselves, only the description)"
          },
          {
           "const": "vertical_balance_not_judged",
@@ -5453,7 +5804,7 @@
          },
          {
           "const": "smooth_sole_on_ice",
-          "description": "a fully smooth sole at black-ice temperatures is a plain no for winter (values: temperature_c — the day's temperature; weather_feel — instead of temperature_c when she named no degrees, the weather as she put it)"
+          "description": "a fully smooth sole at black-ice temperatures is a plain no for winter (values: weather_band — the day's weather band code)"
          },
          {
           "const": "deep_multidirectional_tread",
@@ -5461,7 +5812,7 @@
          },
          {
           "const": "summer_accessory_no_warmth",
-          "description": "the accessory's summer material gives no warmth in the cold: it can be worn, it just does not warm (values: material — material code, temperature_c — the day's temperature; weather_feel — instead of temperature_c when she named no degrees, the weather as she put it)"
+          "description": "the accessory's summer material gives no warmth in the cold: it can be worn, it just does not warm (values: material — material code, weather_band — the day's weather band code)"
          },
          {
           "const": "winter_form_of_slot",
@@ -5469,7 +5820,7 @@
          },
          {
           "const": "winter_accessory_too_hot",
-          "description": "the accessory's winter material is not worn in the heat (values: material — material code, temperature_c — the day's temperature; weather_feel — instead of temperature_c when she named no degrees, the weather as she put it)"
+          "description": "the accessory's winter material is not worn in the heat (values: material — material code, weather_band — the day's weather band code)"
          },
          {
           "const": "summer_form_of_slot",
@@ -5813,7 +6164,7 @@
          },
          {
           "const": "layers_off_temperature_map",
-          "description": "there are too few or too many layers on the torso for the day's temperature by the layer map (values: direction — too_few or too_many, temperature_c — the temperature, layers — how much warmth the layers give, needed — how much the map asks for; partial_warmth_items — how many layers warm only partly, like a trench; weather_feel — instead of temperature_c when she named no degrees, the weather as she put it)"
+          "description": "there are too few or too many layers on the torso for the day's temperature by the layer map (values: direction — too_few or too_many, weather_band — the temperature, layers — how much warmth the layers give, needed — how much the map asks for; partial_warmth_items — how many layers warm only partly, like a trench)"
          },
          {
           "const": "layers_to_temperature_map",
@@ -5821,7 +6172,7 @@
          },
          {
           "const": "outer_layer_only_partly_warm_for_frost",
-          "description": "in this band the warmth is carried by the coat itself, and this outer layer is only partly warm by its type — a jacket, a bomber, a vest, a cardigan or a poncho (values: temperature_c — the temperature, outer_type — its type code, warmth_share — how much of a layer it counts as; weather_feel — instead of temperature_c when she named no degrees, the weather as she put it)"
+          "description": "in this band the warmth is carried by the coat itself, and this outer layer is only partly warm by its type — a jacket, a bomber, a vest, a cardigan or a poncho (values: weather_band — the temperature, outer_type — its type code, warmth_share — how much of a layer it counts as)"
          },
          {
           "const": "warmer_coat_not_a_fourth_item",
@@ -5829,7 +6180,7 @@
          },
          {
           "const": "cold_accessories_carry_no_colour",
-          "description": "in hard frost mostly the outer layer and the accessories are visible, and the hat, the scarf and the mittens are quiet here: all the colour stayed under the coat (values: temperature_c — the temperature; weather_feel — instead of temperature_c when she named no degrees, the weather as she put it)"
+          "description": "in hard frost mostly the outer layer and the accessories are visible, and the hat, the scarf and the mittens are quiet here: all the colour stayed under the coat (values: weather_band — the temperature)"
          },
          {
           "const": "move_colour_to_hat_scarf_gloves",
@@ -5837,7 +6188,7 @@
          },
          {
           "const": "cold_hat_scarf_carry_no_colour",
-          "description": "in hard frost mostly the outer layer and the accessories are visible, and the hat and the scarf are quiet here: all the colour stayed under the coat (values: temperature_c — the temperature; weather_feel — instead of temperature_c when she named no degrees, the weather as she put it)"
+          "description": "in hard frost mostly the outer layer and the accessories are visible, and the hat and the scarf are quiet here: all the colour stayed under the coat (values: weather_band — the temperature)"
          },
          {
           "const": "move_colour_to_hat_scarf",
@@ -5845,7 +6196,7 @@
          },
          {
           "const": "frost_head_neck_uncovered",
-          "description": "in hard frost the outfit has neither a hat nor a scarf: head and neck stay open, and no outer layer covers them (values: temperature_c — the temperature; weather_feel — instead of temperature_c when she named no degrees, the weather as she put it)"
+          "description": "in hard frost the outfit has neither a hat nor a scarf: head and neck stay open, and no outer layer covers them (values: weather_band — the temperature)"
          },
          {
           "const": "add_warm_hat_and_scarf",
@@ -5853,7 +6204,7 @@
          },
          {
           "const": "frost_layers_and_cold_accessories",
-          "description": "hard frost: the layer map asks for this many layers on the torso — a warm layer under the coat counts — and a warm hat and scarf are part of the warmth and the main carriers of colour (values: temperature_c — the temperature, layers — layers the map asks for; weather_feel — instead of temperature_c when she named no degrees, the weather as she put it)"
+          "description": "hard frost: the layer map asks for this many layers on the torso — a warm layer under the coat counts — and a warm hat and scarf are part of the warmth and the main carriers of colour (values: weather_band — the temperature, layers — layers the map asks for)"
          },
          {
           "const": "no_rain_layer_on_rainy_day",
@@ -6117,7 +6468,7 @@
          },
          {
           "const": "outer_length_state_chosen_for_warmth",
-          "description": "length and state chosen for warmth, not proportion (values: temperature_c — the degrees; share — from 0 to 1, how much of the voice of the proportion rules the heat takes away, 1 is all of it; suppressed_rules — ids of the proportion rules that lost their voice in this outfit, empty when none of them applied)"
+          "description": "length and state chosen for warmth, not proportion (values: weather_band — the weather band code; share — from 0 to 1, how much of the voice of the proportion rules the heat takes away, 1 is all of it; suppressed_rules — ids of the proportion rules that lost their voice in this outfit, empty when none of them applied)"
          },
          {
           "const": "fill_power_without_fill_weight",
@@ -6393,7 +6744,7 @@
          },
          {
           "const": "fabric_out_of_season",
-          "description": "the item's fabric reads out of season: the day is warmer or colder than its band, which is semantics rather than a thermometer (values: temperature_c — the day's temperature, band — the fabric's band from and to, direction — warmer or colder, fabrics — fabric codes; weather_feel — instead of temperature_c when she named no degrees, the weather as she put it; season — instead of both when she named no weather: the season of her day, and band is then absent)"
+          "description": "the item's fabric reads out of season: the day is warmer or colder than its band, which is semantics rather than a thermometer (values: weather_band — the day's temperature, band — the fabric's band from and to, direction — warmer or colder, fabrics — fabric codes; season — instead of both when she named no weather: the season of her day, and band is then absent)"
          },
          {
           "const": "same_item_in_day_band_fabric",
@@ -6485,7 +6836,7 @@
          },
          {
           "const": "shoe_type_outside_temp_band",
-          "description": "shoe type outside the day's temperature band (temp_c; weather_feel — instead of temp_c when she named no degrees, the weather as she put it; season — instead of both when she named no weather: the season of her day)"
+          "description": "shoe type outside the day's weather band code band (weather_band; season — instead of both when she named no weather: the season of her day)"
          },
          {
           "const": "bare_arms_in_cold_season",
@@ -6833,11 +7184,11 @@
          },
          {
           "const": "outer_layer_kept_despite_warmth",
-          "description": "the outer layer stays although the temperature band alone would not ask for it (values: temperature_c — °C she named; weather_feel — instead of temperature_c when she named no degrees, the weather as she put it; held_by — dress_code when the dressiness band or the dress code holds it, weather_or_outdoors when rain, wind or the street below +22 °C does)"
+          "description": "the outer layer stays although the temperature band alone would not ask for it (values: weather_band — the weather band code; held_by — dress_code when the dressiness band or the dress code holds it, weather_or_outdoors when rain, wind or the street below +22 °C does)"
          },
          {
           "const": "outer_layer_removed_by_temperature",
-          "description": "the outer layer was removed by the temperature band: it asks for one layer on the torso, so the empty kind is not a gap in the catalogue (values: temperature_c — °C she named; weather_feel — instead of temperature_c when she named no degrees, the weather as she put it)"
+          "description": "the outer layer was removed by the temperature band: it asks for one layer on the torso, so the empty kind is not a gap in the catalogue (values: weather_band — the weather band code)"
          },
          {
           "const": "jewellery_kind_dropped_by_her_word",
@@ -7093,11 +7444,11 @@
          },
          {
           "const": "cold_outer_layer_counts",
-          "description": "in this cold the outer layer is part of the outfit, not an addition: its colour and formality are judged with the rest; open shoes, thin tights and bare ankles are a mistake here, not a style (values: temperature_c; weather_feel — instead of temperature_c when she named no degrees, the weather as she put it)"
+          "description": "in this cold the outer layer is part of the outfit, not an addition: its colour and formality are judged with the rest; open shoes, thin tights and bare ankles are a mistake here, not a style (values: weather_band)"
          },
          {
           "const": "cold_outer_layer_optional",
-          "description": "in this cold the outer layer is optional: the outfit stands without it; open shoes and bare ankles are fine here (values: temperature_c; weather_feel — instead of temperature_c when she named no degrees, the weather as she put it)"
+          "description": "in this cold the outer layer is optional: the outfit stands without it; open shoes and bare ankles are fine here (values: weather_band)"
          },
          {
           "const": "precipitation_shoes_materials",
@@ -7125,7 +7476,7 @@
          },
          {
           "const": "weather_layers",
-          "description": "the weather outside and the layers it asks for (values: temperature_c; weather_feel — instead of temperature_c when she named no degrees, the weather as she put it; layers — how many layers on the torso, a half is one more light removable layer; fabrics — fabric codes for this temperature; outer_at_formality — true when the outer layer is held to the outfit's formality too)"
+          "description": "the weather outside and the layers it asks for (values: weather_band; layers — how many layers on the torso, a half is one more light removable layer; fabrics — fabric codes for this temperature; outer_at_formality — true when the outer layer is held to the outfit's formality too)"
          },
          {
           "const": "scheme_colours_by_kind",
@@ -7430,6 +7781,50 @@
          {
           "const": "type_label_mechanism",
           "description": "a typology label used as a MECHANISM rather than a vocabulary bridge. Instead: the bridge translated into axes — the label outside, the axes inside"
+         },
+         {
+          "const": "event_role_known",
+          "description": "the role she named at this event is known"
+         },
+         {
+          "const": "companion_formality_known",
+          "description": "the companion formalness level from her words is known"
+         },
+         {
+          "const": "occasion_season_known",
+          "description": "the event season she named is known"
+         },
+         {
+          "const": "wardrobe_known",
+          "description": "her available wardrobe items are known"
+         },
+         {
+          "const": "life_transition_known",
+          "description": "the life transition she volunteered is known"
+         },
+         {
+          "const": "declared_break_known",
+          "description": "whether she explicitly declared a style grammar break is known"
+         },
+         {
+          "const": "matching_opaque_tights_known",
+          "description": "whether she named opaque tights matching her shoes is known"
+         },
+         {
+          "const": "declared_column_known",
+          "description": "whether she declared a column of one colour is known"
+         },
+         {
+          "const": "direct_sun_heat",
+          "description": "direct sunlight is known before judging dark close-fitting garments (K-WEA-03)"
+         },
+         {
+          "const": "host_context_known",
+          "description": "whether the event has a host or stakes is known before applying risk asymmetry (K-KOH-07)"
+         },
+         {
+          "const": "creative_environment_known",
+          "description": "whether the environment is creative is known before inverting risk asymmetry (K-KOH-07)"
          },
          {
           "const": "chroma_budget",
@@ -8041,6 +8436,7 @@
    "rough_ground": "нерівний_ґрунт",
    "stroll": "прогулянка",
    "walking": "ходьба",
+   "bowling": "боулінг",
    "photoshoot": "фотосесія"
   },
   "surface": {
@@ -8095,12 +8491,14 @@
    "november": "листопад",
    "december": "грудень"
   },
-  "weather_feel": {
-   "frost": -10.0,
-   "cold": 2.0,
-   "cool": 10.0,
-   "warm": 20.0,
-   "hot": 28.0
+  "weather_band": {
+   "deep_frost": "deep_frost",
+   "frost": "frost",
+   "cold": "cold",
+   "cool": "cool",
+   "mild": "mild",
+   "warm": "warm",
+   "hot": "hot"
   },
   "intent": {
    "conventional": "conventional",
@@ -8600,6 +8998,37 @@
   "audience": {
    "usual": "usual",
    "conservative": "conservative"
+  },
+  "direct_sun": {
+   "yes": true,
+   "no": false
+  },
+  "host_context": {
+   "yes": true,
+   "no": false
+  },
+  "creative_environment": {
+   "yes": true,
+   "no": false
+  },
+  "declared_break": {
+   "yes": true,
+   "no": false
+  },
+  "declared_column": {
+   "yes": true,
+   "no": false
+  },
+  "matching_opaque_tights": {
+   "yes": true,
+   "no": false
+  },
+  "life_transition": {
+   "pregnancy": "pregnancy",
+   "recovery": "recovery",
+   "weight_change": "weight_change",
+   "new_role": "new_role",
+   "none": "none"
   },
   "religious_place": {
    "none": "none",

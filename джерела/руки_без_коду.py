@@ -235,7 +235,7 @@ _НЕ_В_РЯДКУ = ("language_model_note", "reserved_colour", "unknown", "int
 # у `case`. Пора дня з її слів і факти, які день виводить із години (світло, «до ночі»),
 # мають дійти до рук 3–4 у `case`,
 # як до рук 1–2 у `day`
-_ФАКТИ_ДНЯ = ("season", "part_of_day", "light", "until_night", "temperature_c", "weather_feel", "precipitation",
+_ФАКТИ_ДНЯ = ("season", "part_of_day", "light", "until_night", "weather_band", "precipitation",
               "wind_ms", "wind", "direct_sun", "road_salt")
 
 

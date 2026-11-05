@@ -1,7 +1,7 @@
 """Міжпроцедурний потік і межа шва для приладу ознак обличчя."""
-import ast, collections, functools, glob, os, re, warnings
+import ast, collections, functools, glob, os, re, sys, time, warnings
 from ознаки_основа import (
-    B, E, K, P, Q, S, _ваги_знахідки, _властивості, _злити_ел, _значення_полів, _рядок, _словесні_пороги,
+    B, E, K, P, Q, S, _ваги_знахідки, _властивості, _злити_ел, _значення_полів, _рядок, _словесні_пороги, словесні_функції, слова_без_читачів,
     _сітка, _текст, _усі, _формульні, _число, _ім_виклику, ВИКЛЮЧЕНО, Модуль, кутові_пари, пари_функції,
     шкали_ваги, поля_підписів
 )
@@ -14,7 +14,7 @@ class Аналіз:
         self.синтетичні, self.тримати = {}, []   # `map(f, xs)` → виклик f(xs[і]); вузли тримаються, щоб id не мінявся
         self.формульні = set()
         self.ваги = _ваги_знахідки(корінь)
-        self.готові_поля = self.ваги | _ваги_знахідки(корінь, супровід=True) | {'довіра', 'надійність'}
+        self.готові_поля = self.ваги | _ваги_знахідки(корінь, супровід=True) | {'довіра', 'надійність', 'впевненість'}
         self.словесні = set()
         self.сіткові = {}
         self.значення_полів = {}   # модуль → поле → рядки, які літерали словників модуля кладуть у це поле
@@ -37,11 +37,38 @@ class Аналіз:
         підписи = поля_підписів([м.дерево for м in self.модулі.values()])
         for м in self.модулі.values():
             self.словесні |= _словесні_пороги(м.дерево, підписи)
+        self.словесні |= словесні_функції([м.дерево for м in self.модулі.values()])
+        self.словесні |= слова_без_читачів([м.дерево for м in self.модулі.values()])
+        # `x or 1.0` / `.get(k, 1)` як множник: нейтральний елемент дії (немає множника — немає зміни), а не незнання,
+        # що стало числом
+        self.тотожні = set()
+        for м in self.модулі.values():
+            for b in ast.walk(м.дерево):
+                if isinstance(b, ast.BinOp) and isinstance(b.op, (ast.Mult, ast.Div)):
+                    for о in (b.left, b.right):
+                        while isinstance(о, ast.Call) and isinstance(о.func, ast.Name) and о.func.id in ("float", "int") \
+                                and len(о.args) == 1:
+                            о = о.args[0]
+                        if isinstance(о, ast.BoolOp) and isinstance(о.op, ast.Or) and len(о.values) == 2 \
+                                and isinstance(о.values[1], ast.Constant) and о.values[1].value == 1 \
+                                and not isinstance(о.values[1].value, bool):
+                            self.тотожні.add(id(о))
+                        elif isinstance(о, ast.Call) and isinstance(о.func, ast.Attribute) and о.func.attr == "get" \
+                                and len(о.args) == 2 and isinstance(о.args[1], ast.Constant) \
+                                and о.args[1].value == 1 and not isinstance(о.args[1].value, bool):
+                            self.тотожні.add(id(о))
+        # вирази всередині порівняння, що вибирає лише слова: запасне число там — теж лише про слова
+        self.слова_вузли = {id(n) for м in self.модулі.values() for c in ast.walk(м.дерево)
+                            if isinstance(c, ast.Compare) and id(c) in self.словесні for n in ast.walk(c)}
         self.пам = {}             # (функція, контекст) → мітки повернення
         self.ключі_пов = collections.defaultdict(lambda: collections.defaultdict(frozenset))  # функція → ключ → мітки
         self.глоб = collections.defaultdict(frozenset)                                       # (модуль, ім) → мітки
         self.середовища = collections.defaultdict(dict)                                     # функція → останнє env
         self.місця = {}
+        self.читання_порівнянь = set()   # налагодження: порівняння з S (OZNAKY_CHYTANNYA=файл)
+        self.закриті_ворота = {}   # (файл, рядок) → чому: місце під воротами довіри, закритими для model_hex
+        self.утримання = {}        # (файл, рядок) → чому: гілка дає утримання, а не висновок
+        self.читання_з_походженням = {}  # (файл, рядок) → чому: читання поля відповіді в записі з походженням
         self.змінилось = False
         self.у_роботі = set()
         self.відвідано = set()
@@ -182,7 +209,7 @@ class Аналіз:
             if с.кортеж:
                 с.кортеж = [(вага(м), frozenset((к, вага(v)) for к, v in кл)) if ціла or і in слоти else (м, кл)
                              for і, (м, кл) in enumerate(с.кортеж)]
-        if self.будує_сітку(ф):
+        if self.будує_сітку(ф) or ф.вікно:
             # функція будує сітку кандидатів у вікні з її значень: повертає кандидатів, а не її значення; вхід її
             # значень у вікно лічиться там, де вікно рахується (рішення менеджера 01.11, кандидат палітри)
             пов = (пов - {S}) | {K}
@@ -219,8 +246,10 @@ class Аналіз:
     def виклик(self, ф, позиційні, іменні, зірка=E, дві_зірки=E):
         """Аргументи (мітки, ключі dict чи None) → контекст параметрів → (мітки повернення, ключі повернення)."""
         к, км = {}, {}
+        передані = set()
 
         def дати(п, значення):
+            передані.add(п)
             мітки, ключі = значення if isinstance(значення, tuple) else (значення, None)
             к[п] = к.get(п, E) | мітки
             if ключі:
@@ -248,8 +277,15 @@ class Аналіз:
         контекст = frozenset((п, frozenset(к.get(п, E)), frozenset((кл, frozenset(в)) for кл, в in км.get(п, {}).items()
                                                                   if в))
                              for п in set(к) | set(км) if к.get(п) or any(км.get(п, {}).values()))
+        # переданий аргумент без міток (число, рядок) — не «не передано»: гілку `is not None` закривати не можна
+        контекст = контекст | frozenset(("!передано:" + п, E, frozenset()) for п in передані
+                                        if п in ф.позиційні + ф.іменні and not к.get(п) and not any(км.get(п, {}).values()))
         if self.пара_глибина and any(S in м or any(S in з for _, з in кл) for _, м, кл in контекст):
             контекст = контекст | frozenset({("!пара", E, frozenset())})
+        if (ф.геометрія or ф.формула) and self.поточний and any(S in м or any(S in з for _, з in кл) for _, м, кл in self.поточний[1]) \
+                and any(S in м or any(S in з for _, з in кл) for _, м, кл in контекст):
+            # чиста функція кольору, куди її значення дійшло з іншої функції, що саму його не читала: поширення, не вхід
+            контекст = контекст | frozenset({("!відгалуження", E, frozenset())})
         if контекст and (ф.повне, контекст) not in self.звідки:
             self.звідки[(ф.повне, контекст)] = self.поточний
         пов = self.аналізувати(ф, контекст)
@@ -376,7 +412,8 @@ class Аналіз:
         self.знайти_зерно()
         self.таблиці_причин()
         входи = self.входи_шва()
-        for _ in range(12):
+        for прохід in range(12):
+            початок = time.monotonic()
             self.змінилось = False
             self.відвідано = set()
             if self.зерно and self.зерно.get("читач"):
@@ -387,5 +424,7 @@ class Аналіз:
                     self.межа_js(поля)
             for ф in входи:
                 self.виклик(ф, [frozenset({P, B})] * max(1, len(ф.позиційні)), {})
+            print("прохід %d: %.0f с, змінилось: %s, станів: %d" % (прохід + 1, time.monotonic() - початок, self.змінилось,
+                                                                  len(self.відвідано)), file=sys.stderr, flush=True)
             if not self.змінилось:
                 break

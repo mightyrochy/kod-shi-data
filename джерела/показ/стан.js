@@ -89,8 +89,13 @@ function почитиДіюП(ключ, назва){
     if (дія.стан !== 'іде') return false;
     дія.стан = 'скасовано'; зняти();
     try { дія.аборт.abort(); } catch(_){}
-    for (const ф of відкати.splice(0).reverse()){ try { ф(); } catch(e){ console.error(e); } }
-    return true;
+    let збій = false;
+    for (const ф of відкати.splice(0).reverse()){
+      try { ф(); }
+      catch(e){ збій = true; збійЖінціП($('збій-стан'), 'cancel_failed', e); }
+    }
+    if (збій) дія.стан = 'збій_скасування';
+    return !збій;
   };
   дія.завершити = деталі => {
     if (дія.стан !== 'іде') return false;

@@ -118,11 +118,18 @@ _ДЖЕРЕЛО_КРАЮ = {"слово": "word", "річ": "item_data",
 # коли день є, у випадку їх нема — ті самі факти двічі різними словами модель читала б як два.
 # Частина дня з паспорта — ключем «пора».
 _ВИПАДОК_У_ДНІ = {"місце": "place", "формат": "setting", "рух": "movement", "дрес_код": "dress_code",
-                  "тривалість_год": "duration_h", "темп_c": "temperature_c", "опади": "precipitation",
+                  "тривалість_год": "duration_h", "смуга_погоди": "weather_band", "опади": "precipitation",
+                  "сонце": "direct_sun",
+                  "господар": "host_context", "креативне": "creative_environment",
                   "пора": "part_of_day", "ошатність": "formality"}
-ПОЛЯ_ВИПАДКУ = {"подія": "event", "нагода": "occasion", "місце": "place", "формат": "setting",
+ПОЛЯ_ВИПАДКУ = {"роль": "role", "супутник_рівень": "companion_formality", "сезон": "occasion_season",
+                 "життєвий_перехід": "life_transition", "заявлений_злам": "declared_break",
+                 "тон_колготи": "matching_opaque_tights", "заявлена_колона": "declared_column",
+                 "подія": "event", "нагода": "occasion", "місце": "place", "формат": "setting",
                  "тривалість_год": "duration_h", "рух": "movement", "дрес_код": "dress_code",
-                 "ошатність": "formality", "пора": "part_of_day", "темп_c": "temperature_c",
+                 "ошатність": "formality", "пора": "part_of_day", "смуга_погоди": "weather_band",
+                 "сонце": "direct_sun",
+                 "господар": "host_context", "креативне": "creative_environment",
                  "опади": "precipitation", "намір": "intent", "мета": "goal", "мета_зони": "goal_zones", "мета_важливо": "goal_extra", "макіяж": "makeup",
                  "прикраси": "jewelry", "реєстр_людини": "her_registers", "бажання": "wishes",
                  "вето": "refusals", "ноги_вище_см": "legs_shown_above_cm", "настрій": "mood",
@@ -216,6 +223,12 @@ def слово_межі(w):
     return w
 
 
+def межі_на_дріт(межі):
+    """Повертає непорожні відмови кодами без повторів, зберігаючи порядок і невідомі слова."""
+    слова = (str(межа).strip() for межа in (межі or []) if межа is not None)
+    return list(dict.fromkeys(слово_межі(слово) for слово in слова if слово))
+
+
 def _тканина(v):
     """«кашемір · трикотаж» → ["cashmere", "jersey"]; «невідомо» → unknown."""
     if v is None:
@@ -299,8 +312,7 @@ def осі(зона, рч=None):
         вих["formality"] = щаблі(ф["інтервал"])
     с = з.get("сезон")
     if с and с.get("смуга"):
-        lo, hi = с["смуга"][0], с["смуга"][1]
-        вих["fabric_c"] = [_число(lo), (_число(hi) if hi is not None and hi < 900 else None)]
+        вих["fabric_bands"] = list(с["смуга"])
     if р.get("слот") == "взуття" or р.get("каблук_є") is not None or р.get("каблук") is not None or р.get("каблук_словами"):
         # Як у відсіві пакета: доведене True старше за False, бо другий свідок міг не побачити каблук.
         свідки = (р.get("каблук_є"), р.get("каблук"))
@@ -700,6 +712,8 @@ def випадок(в, день=None):
             v = код("occasion", v)
         elif к == "місце":
             v = код("place", v)
+        elif к == "сезон":
+            v = код("season", v)
         elif к == "пора":
             v = код("part_of_day", v)
         elif к == "формат":
@@ -751,12 +765,12 @@ def випадок(в, день=None):
 
 
 # Коди фігури (`person.body.shape`, `body.shape` опису) — визначення для англійського промпта.
-# O: маршрут рівного тіла без вузької точки на талії (`fit.C["whr_без_талії"]`, K-BOD-02
+# O: маршрут рівного тіла без вузької точки на талії (FFIT Oval/Diamond, K-BOD-02
 # тема-4:946); код, що писав би «H», вів би таке тіло стратегією «створити талію».
-ФІГУРА_КОДИ_EN = ("a routing code of her figure, not a verdict: A — hips wider than shoulders; V — shoulders "
-                  "wider than hips; X — a marked waist; H — a straight contour without a marked waist; HX — "
-                  "a waist on the edge of being marked; O — the waist nearly as wide as the hips: lead the "
-                  "eye along a vertical, up to the face and down to the legs, the middle quiet")
+ФІГУРА_КОДИ_EN = ("figure route, not a verdict: A — hips wider than shoulders; V — shoulders wider than hips; "
+                  "X — a marked waist; H — straight, no marked waist; HX — waist undetermined by FFIT "
+                  "(waist_defined=null; waist_basis explains); O — FFIT Oval/Diamond, waist wider than hips: "
+                  "a vertical to the face and legs, quiet middle")
 
 
 def людина(л):
@@ -765,6 +779,8 @@ def людина(л):
     if not isinstance(л, dict):
         return л
     вих = {}
+    if isinstance(л.get("ознаки_колориту"), dict):
+        вих["colouring"] = л["ознаки_колориту"]
     if "мета" in л:
         вих["goal"] = _ВМ.код_або_невідомо("goal", л["мета"])
     if isinstance(л.get("чому_мети"), dict):
@@ -791,7 +807,7 @@ def людина(л):
             # «H/X межа» — кодом HX, як у заявах суду (`силует_суд._літери_кодом`)
             тіло["shape"] = "HX" if т["ярлик"] == "H/X межа" else т["ярлик"]
         if т.get("зони"):
-            тіло["zones"] = {{"верх_проти_низу": "top_vs_bottom", "талія_виражена": "waist_defined"}.get(к, к):
+            тіло["zones"] = {{"верх_проти_низу": "top_vs_bottom", "талія_виражена": "waist_defined", "талія_підстава": "waist_basis"}.get(к, к):
                              _число(v) for к, v in т["зони"].items()}
         вих["body"] = тіло
     return вих
@@ -863,8 +879,9 @@ def обмеження(о):
     вих = {}
     if о.get("обов'язкові_слоти"):
         вих["required_kinds"] = [код("slot", с) for с in о["обов'язкові_слоти"]]
-    if о.get("жорстке_ні"):
-        вих["she_refuses"] = list(dict.fromkeys(слово_межі(w) for w in о["жорстке_ні"]))
+    межі = межі_на_дріт(о.get("жорстке_ні"))
+    if межі:
+        вих["she_refuses"] = межі
     if о.get("не_ця"):
         вих["she_rejected_items"] = list(о["не_ця"])
     if о.get("вето_зони"):
@@ -980,10 +997,10 @@ def _ошатність_заяви(код_заяви, в):
     **{к: ("K-OCC-01", ("pool:траурний_регістр.траурне_відсічення", "judge:формальність.нагода_палітра",
                         "wire:case.occasion"))
        for к in ("mourning_event", "mourning_state", "mourning_scheme_dark_only", "mourning_accent_not_asked")},
-    # погода: температура її дня — `day.temperature_c`, коли її назвала вона; типові 18 °C форми
+    # погода: температура її дня — `day.weather_band`, коли її назвала вона; типові 18 °C форми
     # (`сценарій.день_кодами`) фактом її дня не є, а ця заява їх везла б
     "weather_layers": ("K-WEA-01", ("pool:пакет_моделі.жорстке_відсічення", "pool:composer.зібрати",
-                                    "judge:суд_погода.погода", "wire:day.temperature_c")),
+                                    "judge:суд_погода.погода", "wire:day.weather_band")),
     # хибний рядок руки 2 іде туди ж, куди справний: у промпт складання — ні
     **{к: ("K-WEA-01", ("pool:суд_погода.пальта_пулу", "judge:суд_погода.пальтова_смуга", "wire:coat_required"))
        for к in ("cold_outer_layer_counts", "cold_outer_layer_optional")},
@@ -1303,7 +1320,7 @@ def кандидати_вердикту(дріт):
 def вердикт(в, ремонти=True, межі=None, вибір=False):
     """Вердикт на дроті (`протокол.вердикт_на_дріт` без кодів правил) → англійський дріт.
     `ремонти=False` — знахідки без тексту ремонту (вибір не ремонтує); `межі` — її межі
-    словами (`she_refuses`), коли задача їх читає.
+    кодами спільного визначення (`she_refuses`), коли задача їх читає.
 
     `вибір=True` (ВИБ-1, аудит/ПРОДУКТ.md п.17): зауваження коду — інформація
     при образі, а не лічильник. Знахідки їдуть без «weight», чекліст — лише назвами непройдених
@@ -1491,7 +1508,7 @@ def вердикт(в, ремонти=True, межі=None, вибір=False):
     з = в.get("завдання")
     if isinstance(з, dict) and з.get("образів"):
         вих["outfits_wanted"] = з["образів"]
-    _м = [str(x).strip() for x in (межі or []) if str(x or "").strip()]
+    _м = межі_на_дріт(межі)
     if _м:
         вих["she_refuses"] = _м
     if в.get("бракує"):
@@ -1605,7 +1622,7 @@ def опис(об):
     # підпис (`задум`) і речення про день (`день_образу`) моделі не їдуть: писані до ремонту й
     # заміни, вони називали б речі поза складом («Softened by Scarf» без шарфа), а код прози не читає (п.12)
     for к, ключ in (("день", "day"), ("свідомі", "your_declared"),
-                    ("межі", "she_refuses"), ("неповний", "missing"), ("макіяж", "makeup")):
+                    ("неповний", "missing"), ("макіяж", "makeup")):
         if об.get(к):
             вих[ключ] = день_на_дріт(об[к]) if к == "день" else об[к]
     # оголошений хід — номер речі й заяви знахідки, проти якої він стоїть
@@ -1621,10 +1638,9 @@ def опис(об):
     # («невідомо» тут не їде: опис не судить, а «unknown» у пʼяти полях моделі нічого не каже)
     if isinstance(об.get("випадок_коди"), dict):
         вих["case"] = {к: v for к, v in випадок(об["випадок_коди"], об.get("день")).items() if v != _ВМ.UNKNOWN}
-    # її межі — кодами тієї самої осі, що в пакеті складання (ВМ-1): «підбори» → heels
-    if isinstance(вих.get("she_refuses"), list):
-        вих["she_refuses"] = list(dict.fromkeys(слово_межі(w) if isinstance(w, str) else w
-                                                for w in вих["she_refuses"]))
+    межі = межі_на_дріт(об.get("межі"))
+    if межі:
+        вих["she_refuses"] = межі
     # способи носіння — заявами (ВМ-3б): місце й наслідок кодом, визначення — у
     # словнику виклику (`task.statement_codes`); опція без заяв (старий обʼєкт) — фразою
     if об.get("укладка"):
@@ -1646,7 +1662,7 @@ def опис(об):
         if т.get("ярлик"):
             тіло["shape"] = "HX" if т["ярлик"] == "H/X межа" else т["ярлик"]
         if т.get("зони"):
-            тіло["zones"] = {{"верх_проти_низу": "top_vs_bottom", "талія_виражена": "waist_defined"}.get(к, к):
+            тіло["zones"] = {{"верх_проти_низу": "top_vs_bottom", "талія_виражена": "waist_defined", "талія_підстава": "waist_basis"}.get(к, к):
                              _число(v) for к, v in т["зони"].items()}
         if т.get("заяви"):
             тіло["statements"] = заяви(т["заяви"])

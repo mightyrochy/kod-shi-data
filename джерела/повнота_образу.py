@@ -390,7 +390,7 @@ def _коротко_жінці(блокери, сценарій=None):
     if пальто and not any(з.get("code") == "weather_needs_outerwear" for з in коди):
         частини.append(_ВМ.заява("weather_needs_outerwear",
                                  **(_ПОГ.погода_нагоди(сценарій)
-                                    if (сценарій or {}).get("темп_c") not in (None, "") else {})))
+                                    if (сценарій or {}).get("смуга_погоди") not in (None, "") else {})))
     частини += коди
     частини += [_ВМ.заява("blocker_reason", reason={"free_text": т, "lang": "uk"}) for т in решта]
     більше = len(частини) - _БЛОКЕРІВ_НА_КАРТЦІ
@@ -485,7 +485,7 @@ def _рядки_режиму_фото(без_фото):
 def промпт_вибору(образи, випадок=None, без_фото=True):
     """Третій виклик СТЕНДА: один образ і опис для людини одним викликом.
 
-    Лишається як було — його читає шаблон стенда, якого ця правка не торкалась.
+    Формат опису читає шаблон стенда.
     Показ ходить не ним: з Т-06 виклик 3 — це `ВЕРДИКТ_V1` із `завдання.відповідь=
     "ВИБІР_V1"` (`вердикт_вибору`), виклик 4 — `ОПИС_V1` (`опис_v1`).
 
@@ -496,8 +496,8 @@ def промпт_вибору(образи, випадок=None, без_фото
     р = [роль] + шапка_вибору(образи, випадок)
     р += [
         "",
-        "Обери ОДИН образ — той, за який ти ручаєшся перед цією жінкою. Не той, до "
-        "якого менше зауважень: той, який ти вважаєш найкращим для неї й цього випадку.",
+        "Обери ОДИН образ, за який ручаєшся перед нею: найкращий для цього випадку, "
+        "а не з найменшою кількістю зауважень.",
         "Далі опиши його для неї:",
     ]
     р += рамка
@@ -570,9 +570,11 @@ def промпт_вибору(образи, випадок=None, без_фото
 #     інший, тож такий вибір марний;
 #   · «remove» — єдина правка складу, яку вибір має право зробити (§1 Т-01);
 #   · «chosen» — ід образу, а не склад: копія складу була новою нагодою втратити річ.
+ВАГА_ВТРАЧЕНОЇ_ОПОРИ = "information, not a score: weigh what was lost against what was gained"
+
 ВИБІР = _ЗП.Оголошення(
     задача="вибір",
-    роль="You are the stylist. From the outfits you put together, you choose one for her.",
+    роль=_ВИМ.РОЛЬ_ЗАСТОСУНКУ + " Choose one of your outfits for her.",
     вхід=(
         _ЗП.ПОЛЕ_ВІДБОРУ,
         _ВИМ.поле("case", як="this is what she wants; the choice answers it"),
@@ -600,7 +602,7 @@ def промпт_вибору(образи, випадок=None, без_фото
                                             "a column, an echo of the accent, companions that held a colour in "
                                             "her palette: «statements» (codes defined in \"statement_codes\") "
                                             "and the «items» that carried it",
-                 як="information, not a score: weigh what the outfit lost against what it gained"),
+                 як=ВАГА_ВТРАЧЕНОЇ_ОПОРИ),
         _ЗП.Поле("remarks_by_code", "the code's remarks on the outfits, by remark code (each code is defined in "
                                     "\"statement_codes\"): for each code, every outfit it stands on — «outfit», "
                                     "«id» of the remark, «items», «values»; «register» «gate» — a gate",
@@ -610,7 +612,7 @@ def промпт_вибору(образи, випадок=None, без_фото
         _ЗП.Поле("set.lost_supports", "what an outfit you dropped or replaced whole in your repair stood on: "
                                       "«outfit» — its id before the repair, «statements» (codes defined in "
                                       "\"statement_codes\") and the «items» that carried it",
-                 як="information, not a score: weigh what the set lost against what it gained"),
+                 як=ВАГА_ВТРАЧЕНОЇ_ОПОРИ),
         _ВИМ.поле("register"),
         _ВИМ.поле("she_refuses", як="do not choose an outfit that breaks it while there is one that does not"),
     ),
@@ -1216,7 +1218,7 @@ def _рядок_дібраних(дібрані, сценарій):
     # П-5 (п.12): умова їде ЗНАЧЕННЯМИ (`погода_значеннями`: число й код
     # опадів), а не фразою коду в обгортці вільного тексту («при +5 °C і дощі»).
     if (any(d["слот"] == "верхній_шар" for d in дібрані)
-            and _ПОГ.пальтова_смуга((сценарій or {}).get("темп_c"))):
+            and _ПОГ.пальтова_смуга((сценарій or {}).get("смуга_погоди"))):
         заяви.append(_ВМ.заява("weather_needs_outerwear", **_ПОГ.погода_нагоди(сценарій)))
     return _ВМ.повідомлення("card_added_by_selection", *заяви)
 
@@ -1454,7 +1456,7 @@ def повнота_набору(вердикт, кандидати=None, кат�
     # потрібне, чому його нема і що зробити. Поле те саме, що й про брак каталогу
     # вище, і показ малює його й над образом, який код прийняв.
     _сц = dict(сценарій or {})
-    if (кандидати is not None and _ПОГ.пальтова_смуга(_сц.get("темп_c"))
+    if (кандидати is not None and _ПОГ.пальтова_смуга(_сц.get("смуга_погоди"))
             and not _СВМ.спорт_чи_дім(_сц) and not _ПОГ.пальта_пулу(кандидати)
             and not any((словник.get(і) or {}).get("слот") == "верхній_шар" for і in с["ід"])):
         _своє = _ПОГ.заява_без_пальта(_сц)
@@ -1532,8 +1534,6 @@ _ПРАВИЛА_ХОДІВ = (
     "item; for a missing top and bottom, a dress, or a top and a bottom.",
     "A blocker with «items»: put in «keep» the one item that suits the outfit best; the code removes "
     "the others.",
-    "You only add and keep: the other items, the caption and the day of the outfit stay as they are, "
-    "and the code keeps them.",
 )
 _ВИХІД_ХОДІВ = {
     "fixes[].blocker": "«id» of the blocker, as in «structure.blockers»",
@@ -1554,7 +1554,7 @@ _ВИХІД_ХОДІВ = {
 # (`доповнити_обраний`). Модель обирає образ тим, на чиї блокери відповідає; «один образ» лишається.
 ПОВНОТА = _ЗП.Оголошення(
     задача="повнота",
-    роль=("You are the stylist. The code checked the outfits you put together for her, and none of them "
+    роль=(_ВИМ.РОЛЬ_ЗАСТОСУНКУ + " The code checked the outfits you put together for her, and none of them "
           "can be shown yet: each has a blocker in «structure». You finish one of them."),
     вхід=(
         *ВИПАДОК_ПОВНОТИ,
@@ -1595,7 +1595,7 @@ _ВИХІД_ХОДІВ = {
 # (`доповнити`, `злити_з_неторканими`): неінвазивність — кодом, не побажанням моделі.
 ПОВНОТА_ВСІ = _ЗП.Оголошення(
     задача="повнота",
-    роль=("You are the stylist. The code checked the outfits you put together for her, and some of them "
+    роль=(_ВИМ.РОЛЬ_ЗАСТОСУНКУ + " The code checked the outfits you put together for her, and some of them "
           "cannot be shown yet: each such outfit has a blocker in «structure». You finish every one of them "
           "before she chooses."),
     вхід=(

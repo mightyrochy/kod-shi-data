@@ -38,8 +38,9 @@ import bridge as B, colorspace as cs, feed as Ф, pipeline as PL, palettes as PA
 
 
 def пул_стенда(гілка=0, **зміни):
-    """(кандидати, каталог за id, спец, запити) — рівно те, чим ходив продукт."""
+    """Фізична синтетична фікстура → кандидати, каталог, специфікація й запити продукту."""
     вх = json.load(open(_КОРІНЬ / "стенд_вх.json", encoding="utf-8"))
+    вх.setdefault("source", "uncontrolled")
     вх["гілка"] = гілка
     вх.update(зміни)
     r = json.loads(B.виклик("запити", json.dumps(вх, ensure_ascii=False)))

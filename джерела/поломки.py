@@ -91,9 +91,9 @@ def вхід(запис, d, п=None):
     if ід == "K-OUT-33":
         # «накинуто» є в переліку станів лише без холодного придушення K-OUT-01 (при −8 °C і нижче
         # застібається все), і лише коли температура відома — так само мовчить `верхнє_погода.придушення`
-        пр = _ВП.придушення(сцен.get("темп_c"))
+        пр = _ВП.придушення(сцен.get("смуга_погоди"))
         return (True, None) if пр and not пр["частка"] \
-            else (False, "сценарій.темп_c: none_or_cold_suppresses_draped")
+            else (False, "сценарій.смуга_погоди: none_or_cold_suppresses_draped")
     if ід in ("K-SIL-03", "K-FIT-03"):
         # тіло T будується лише з трьох обхватів і більше (`міст_вхід.збірка`); без нього
         # ні обгортки силуету, ні зон краю нема
@@ -114,7 +114,7 @@ def вхід(запис, d, п=None):
         return (True, None) if _Б.порада_з_випадку(((п or {}).get("особа") or {}).get("рівень"), сцен) \
             else (False, "сценарій.макіяж: no_makeup_advice_applies")
     if ід == "K-MAT-03":
-        return (True, None) if сцен.get("темп_c") is not None else (False, "сценарій.темп_c: none")
+        return (True, None) if сцен.get("смуга_погоди") is not None else (False, "сценарій.смуга_погоди: none")
     if ід == "K-COL-06-M":
         о = (п or {}).get("особа") or {}
         є = (d.get("самозвіт") or {}).get("метал") or сцен.get("прикраси") \
@@ -763,10 +763,9 @@ def _тканина_пулу(_, поза, допуск, слот, *, прогі�
     return None
 
 
-def _тканина_навпаки(хибні, e, темп_c, *, прогін_руки=None):
-    смуги = sorted({tuple(с) for с in _V.СЕЗОН_ТКАНИНИ.values()})
-    lo, hi = max(смуги) if темп_c < (_СП.ЛІТНЄ_ВІД_C + _СП.ХОЛОДНЕ_ДО_C) / 2 else min(смуги, key=lambda с: с[1])
-    смуга = [round(lo), round(min(hi, 45.0))]
+def _тканина_навпаки(хибні, e, смуга_погоди, *, прогін_руки=None):
+    смуга = (["warm", "hot"] if смуга_погоди in ("deep_frost", "frost", "cold", "cool")
+             else ["deep_frost", "frost", "cold"])
     з = _хибна_знахідка("K-MAT-03", [e], "fabric_in_day_band", dict(band=смуга), "opposite_season_fabric",
                         _ВМ.заява("same_item_in_opposite_season_fabric", band=смуга), прогін_руки=прогін_руки)
     з["сила_нп"] = _СП.РЕЄСТР_ПОРИ["сила_чужої_пори"]["val"]

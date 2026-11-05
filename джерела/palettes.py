@@ -290,6 +290,8 @@ def осі(F, source="uncontrolled", самозвіт=None):
                 # друга виглядає як вимір.
                 hue=("withheld" if джерело_hue.startswith("утримано")
                      else _бік(p_hue, "cool", "neutral", "warm")))
+    if not д:
+        коди.update(value="withheld", chroma="withheld")
     # ── ВИСОКИЙ КОНТРАСТ НОСИТЬ ОБИДВА ПОЛЮСИ СВІТЛОТИ ──
     # `p_value` — середня світлота рис; якби вона одна задавала вікно, темне волосся робило б «глибокою»
     # навіть порцелянову шкіру: ж3 (шкіра L*88, волосся L*11, контраст 75) діставала б вікно L
@@ -1965,6 +1967,11 @@ def для_пакета(П, поєднань=3):
     if вк.get("L") and вк.get("C"):
         вих["window"] = {"lightness": [round(x) for x in вк["L"]],
                          "chroma": [round(x) for x in вк["C"]]}
+    if (П.get("ознаки_обличчя") or {}).get("протокол") == "model_hex":
+        вих["axes"] = dict(sides=dict(ос.get("коди") or {}), positions=None, source_hue=ос.get("джерело_код"),
+                           source="model_hex", available=False, status="withheld")
+        вих.pop("window", None)
+        вих.pop("найдальші", None)
     сім, сез, нт = {}, {"autumn_winter": [], "spring_summer": []}, []
     for c in (П.get("кольори") or []):
         # назви кольорів лишаються словами лексикону: їх жінка бачить у підписі на
