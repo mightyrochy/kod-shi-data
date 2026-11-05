@@ -1590,7 +1590,7 @@ _МІСЦЯ_ОПЦІЙ = "where it is worn"
                                       "— the shapes to lead to; shape codes: A — hips wider than shoulders, V "
                                       "— shoulders wider than hips, X — a marked waist, H — a straight "
                                       "contour without a marked waist, O — volume in the middle, I — a narrow "
-                                      "straight contour, HX — a waist on the edge of being marked; never "
+                                      "straight contour, HX — waist definition is undetermined; never "
                                       "write the letters themselves, only the description)",
     # Ф-2: було «does not aim to flatter the figure». Сенс той самий — мети `flatter`
     # на цей вихід не поставлено, — але фраза дослівно та, яку R-LNG-01 забороняє
@@ -1601,8 +1601,8 @@ _МІСЦЯ_ОПЦІЙ = "where it is worn"
     "look_shape_is": "the shape the outfit gives, with no judgement, because the goal for this outing is "
                      "not `flatter` (values: look — shape codes: A — hips wider than shoulders, V — "
                      "shoulders wider than hips, X — a marked waist, H — a straight contour without a marked "
-                     "waist, O — volume in the middle, I — a narrow straight contour, HX — a waist on the "
-                     "edge of being marked; never write the letters themselves, only the description)",
+                     "waist, O — volume in the middle, I — a narrow straight contour, HX — waist definition "
+                     "is undetermined; never write the letters themselves, only the description)",
     "vertical_balance_not_judged": "the code does not judge the ratio of the outfit's top and bottom to her "
                                    "proportions: the sources have too little evidence for it",
     "leg_proportion_template_crotch": "the code does not count torso-to-leg proportions: the crotch height "
