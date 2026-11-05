@@ -9,9 +9,13 @@ goal» про ті самі зони) і росли кожна своїм абз
 
 Опис поля — англійською дротом (аудит/ПРОДУКТ.md п.12); «що» — що це, «як» за замовчуванням — що з ним робити всюди."""
 import збирач_промптів as _ЗП
+import внутрішня_мова as _ВМ
 
 # значення `goal_extra` — слова кодів, одні для довідника кодів (мовний_шар) і поля входу `case.goal_extra`
-КОДИ_GOAL_EXTRA = "taller — a longer line, to look taller; comfort — moving comfortably all day; strict — strictly by the occasion"
+_ОПИСИ_GOAL_EXTRA = {"вище": "a longer line, to look taller", "комфорт": "moving comfortably all day",
+                    "строго": "strictly by the occasion"}
+КОДИ_GOAL_EXTRA = "; ".join(код + " — " + _ОПИСИ_GOAL_EXTRA[значення]
+                          for код, значення in _ВМ.ТАБЛИЦЯ["goal_extra"].items())
 ПРОТИ_ВІДМОВ = "do not take an item that goes against her refusals or her words"  # як до `case` складання й руки
 ЦИТАТА_ГОВОРИТЬ_БІЛЬШЕ = "they say more than the code: the outfit answers them"  # як до цитат наміру й мети
 РОЛЬ_ЗАСТОСУНКУ = "You are the stylist of the Lyusterko styling app."  # початок ролі помічниці, питання й вибору палітри
@@ -28,7 +32,7 @@ import збирач_промптів as _ЗП
     "case.language_model_note": ("the language model's note on her words about the event, when they are hard to "
                                  "read without context",
                                  "it explains her words and does not replace them: where they differ, her words win"),
-    "day": ("her day as facts", ""),
+    "day": ("day with source", ""),
     "person": ("her coloring, palette and body", ""),
     "she_refuses": ("what she refused", ""),
     "style_rules": ("what the code measured about her and this case, her own answers and wishes: each entry is "
@@ -37,13 +41,13 @@ import збирач_промптів as _ЗП
     "item_keys": ("what the keys in «candidates» mean, and defaults for omitted values",
                   "read every item by these keys; restore every absent key that has an `absent =` default"),
     "set": ("the check of the whole set: variety, hero, coordination", ""),
-    "register": ("her style: the leading register and the ones next to it", ""),
+    "register": ("the code's outfit registers: leading and adjacent", ""),
     "showcase": ("item numbers that can fill what is missing", ""),
     "question": ("her question, in her words", ""),
     "her_new_message": ("her new message", ""),
     "profile": ("her profile in codes: colouring, palette choice, height, what is missing", ""),
-    "passport": ("her case passport in codes after the previous turns", ""),
-    "chosen": ("what she chose with the tiles on the screen, in codes", ""),
+    "passport": ("prior case in codes, with sources and quotes", ""),
+    "chosen": ("card codes with source kind and quote", ""),
 }
 
 

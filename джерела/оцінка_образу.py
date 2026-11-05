@@ -66,6 +66,7 @@ import фід_розбір as _ФР
 import міст_основи as _МО
 import palette as _P
 import суд_образу as _СЧ
+import пропозиція_заміни as _ПЗ
 import colorspace as _cs
 import verify as _V
 import palettes as _ПЛ
@@ -744,7 +745,7 @@ def _без_входу(о, сцен, речі):
     Пункт чекліста — лише «немає входу» (стан «без входу»); «не стосується» сюди не
     йде: його перелік із причиною — у звіті власника (`суд.checklist.….не_стосується_чому`)."""
     вих = []
-    if not any(сцен.get(к) for к in ("нагода", "місце", "дрес_код", "ошатність")):
+    if not _сцена_для_моделі({"сцена": сцен})[0]:
         вих.append(dict(input="occasion"))
     if сцен.get("темп_c") in (None, ""):
         вих.append(dict(input="temperature"))
@@ -920,11 +921,53 @@ def _крамниця_кроками(d, F, T, сцен, слоти):
             пак.get("чому") or "пулу нема", False, пак)
 
 
+def _контрастні_зміни_кроками(F, T, сцен, речі, образ, запасні, о0, зауваження, драп):
+    """Добирає одну або спільну зміну контрасту серед її речей з повним судом.
+
+    У цій фазі крамниця не входить у межі запиту. Закріплені нею речі й обрана
+    схема з мисматчем лишаються її вибором; зауваження тоді є поясненням.
+    """
+    за_ід = {р["ід"]: р for р in речі}
+    записи = {і: _РФ.запис_каталогу(dict(за_ід[і], закріплена=True)) for і in образ + запасні}
+    склад = [записи[і] for і in образ]
+    межі = {р["id"]: р for р in записи.values()}
+    пули = {записи[і]["id"]: [записи[з] for з in запасні
+                              if за_ід[з].get("слот") == за_ід[і].get("слот")]
+            for і in образ}
+    явний = [записи[і]["id"] for і in образ if за_ід[і].get("закріплена")]
+    if any(з.get("свідомий") for з in зауваження):
+        явний = [р["id"] for р in склад]
+
+    def суддя(новий):
+        """Судить цілий склад у тому самому сценарії й з тією самою політикою фото."""
+        return _СЧ.відсутнє_на_фото(_ваги_образу([з["id"] for з in новий], новий, F, T, сцен, драп), [],
+                                   {з.get("слот") for з in новий})[0]
+
+    результат = yield from _ПЗ.перевірити_кроками(
+        склад, зауваження, _ПЗ.варіанти(склад, пули), межі, явний, суддя, о0)
+    звіт = dict(цілі=[і for і in образ if пули.get(записи[і]["id"])], сума_до=о0.get("сума_сил"),
+                 спроби=результат["спроби"], крамниця=None, пояснення=результат["пояснення"])
+    if not результат["заміни"]:
+        return [], звіт
+    фото_ід = {з["id"]: і for і, з in записи.items()}
+    складові = [dict(ціль=фото_ід[з["було"]], нова=фото_ід[з["стало"]]) for з in результат["заміни"]]
+    зміна = dict(ід="з1", ціль=складові[0]["ціль"], нова=складові[0]["нова"],
+                 складові=складові, звідки="own", знято=sorted({з["правило"] for з in зауваження}),
+                 додано=[], вердикт=результат["вердикт"], образ=[фото_ід[р["id"]] for р in результат["образ"]])
+    return [зміна], звіт
+
+
 def зміни_кроками(d, F, T, сцен, речі, образ, запасні, о0, палітра, драп=None, крамниця=True):
-    """Перевірені зміни: її запасна річ, потім річ крамниці на місце цілі; образ переважується
-    тим самим судом, лишаються ті, що зменшують `сума_сил`. Повертає (зміни, звіт).
+    """Зміни K-CLR-02 через спільний контракт або старий добір решти сімей.
+
+    K-CLR-02 перевіряється без сум, лише серед її речей. Решта сімей ще
+    добирають запасну чи крамничну річ за зменшенням `сума_сил`. Вихід — (зміни, звіт).
 
     Генератор: `yield` після кожної спроби переважування й після пошуку в каталозі (див. `_ганяти`)."""
+    контраст = [з for з in о0.get("знахідки") or [] if з.get("правило") == "K-CLR-02"
+                and (з.get("сила_нп") or 0) > 0]
+    if контраст:
+        return (yield from _контрастні_зміни_кроками(F, T, сцен, речі, образ, запасні, о0, контраст, драп))
     за_ід = {р["ід"]: р for р in речі}
     записи = {р["ід"]: _РФ.запис_каталогу(dict(р, закріплена=True)) for р in речі}
     зн0, _ = _знахідки(о0, за_ід)
@@ -1347,7 +1390,8 @@ def речі_для_шару(суд_, змінити=None):
 # `weight_before`/`weight_after` — суму сил знахідок до й після, — а поле `changes` казало «lowers the total
 # weight of findings»; жінка читала «помітно зменшить кількість зауважень», «зате з'явиться невелике нове
 # зауваження» (≥14 прогонів розбору 02.10). Сума лишається там, де вона робота коду, — у відборі змін
-# (`зміни`) і в звіті власника; моделі — лише ЯКІ знахідки зміна знімає й додає, тобто що в образі зміниться.
+# (ще не переведені на спільний контракт сім'ї в `зміни`) і в звіті власника;
+# моделі — лише ЯКІ знахідки зміна знімає й додає, тобто що в образі зміниться.
 # РІЧ КРАМНИЦІ — КОДАМИ, БЕЗ НАЗВИ. Назва крамниці їхала моделі українською (`free_text`, uk), а
 # правило каже її не називати: qwen3.5-9b: модель називала річ сама й навмання («на чорні
 # замшеві чоботи» над «Бежеві казаки із замші», Ж:11), а кирилиця назв поруч із її питанням тягла всю відповідь в
@@ -1359,6 +1403,12 @@ def зміни_для_моделі(суд_):
     вих = []
     for с in суд_.get("зміни") or []:
         з = {"id": с["ід"], "replace": [с["ціль"]], "removes": с.get("знято") or [], "adds": с.get("додано") or []}
+        if с.get("складові"):
+            з["replace"] = [ч["ціль"] for ч in с["складові"]]
+            з["replacements"] = [{"replace": ч["ціль"], "with_own": ч["нова"]} for ч in с["складові"]]
+            з["together"] = True
+            вих.append(з)
+            continue
         if с["звідки"] == "own":
             з["with_own"] = с["нова"]
         else:
@@ -1375,7 +1425,8 @@ def _сцена_для_моделі(суд_):
     с = суд_.get("сцена") or {}
     нагода = {к: v for к, v in {"occasion": _ВМ.код("occasion", с.get("нагода")),
                                 "place": _ВМ.код("place", с.get("місце")),
-                                "dress_code": _ВМ.код("dress_code", с.get("дрес_код"))}.items() if v}
+                                "dress_code": _ВМ.код("dress_code", с.get("дрес_код")),
+                                "formality": _ДМ.ошатність_словом(с.get("ошатність"))}.items() if v}
     # Градуси, яких вона не казала (`темп_з_відчуття`), моделі не їдуть: число з відчуття — для правил, а
     # модель бачить відчуття кодом (як `день_кодами` і заяви суду, `внутрішня_мова.градуси_заяви`).
     градуси = (_ВМ.градуси_заяви(с.get("темп_c"), с.get("погода_відчуття") if с.get("темп_з_відчуття") else None)
@@ -1430,9 +1481,9 @@ _СПІЛЬНІ_ПРАВИЛА_ОЦІНКИ = (
          "You see her photos and the code's check of the outfit as a whole. Her photos show what she chose to "
          "show, often not the whole outfit.",
     вхід=(
-        _ЗП.Поле("question", "her question in her words, in her language (lang); you answer in \"language\"",
+        _ЗП.Поле("question", "her words or translated question; lang_source marks a default; answer in \"language\"",
                  без="She asked no question."),
-        _ЗП.Поле("occasion", "where she is going, as she named it",
+        _ЗП.Поле("occasion", "where she is going or the formality she named",
                  без="She did not name the occasion: do not judge formality or fitness for an event."),
         _ЗП.Поле("weather", "the weather she named",
                  без="She did not name the weather: do not judge warmth or weather."),
@@ -1461,7 +1512,9 @@ _СПІЛЬНІ_ПРАВИЛА_ОЦІНКИ = (
                               "outfit items the check supports it for"),
         _ЗП.Поле("worn_unknown", "her items for which the photo does not show whether she wears them or "
                                  "shows them as an alternative: the code put the first of them in the outfit"),
-        _ЗП.Поле("changes", "changes the code has verified: each replaces one outfit item (\"replace\") with her "
+        _ЗП.Поле("changes", "changes the code has verified: together=true means all replacements form one "
+                            "indivisible change; describe every pair, never suggest just one part. "
+                            "Otherwise each replaces one outfit item (\"replace\") with her "
                             "alternative or a shop item (its kind and color as codes); removes and adds — the "
                             "findings it takes away and brings"),
         _ЗП.Поле("unknown", "inputs the code has no value for, so nothing that needs them was judged: "
@@ -1641,7 +1694,9 @@ _ДОПИТ_ПРАВИЛО = ("Her new question about the same outfit: answer it
 
 def _питання_дроту(питання):
     """Її питання → «question» дроту: внутрішня мова перекладача як є, рядок — вільним текстом із мовою."""
-    return питання if isinstance(питання, dict) else {"free_text": str(питання), "lang": "uk"}
+    from паспорт_поля import походження, ТИПОВЕ
+    return питання if isinstance(питання, dict) else {"free_text": str(питання), "lang": "uk",
+                                                    "lang_source": походження(ТИПОВЕ)}
 
 
 def хвіст_допиту(питання, попередня):
@@ -1702,7 +1757,8 @@ _ВХІД_КОД = {"lab": "item_colour", "візерунок": "item_pattern", 
              "вікна": "her_palette", "волосся": "her_hair_colour", "бік_температури": "her_undertone_side",
              "очі": "her_eye_colour", "шкіра_волосся": "her_skin_hair_colour", "den": "tights_den",
              "ланцюг_см": "chain_length", "ремінь_см": "bag_strap_length", "ремонтопридатна": "shoe_sole_construction",
-             "темп_c": "temperature", "частка_металу": "item_metal_share",
+             "темп_c": "temperature", "сонце": "direct_sun", "частка_металу": "item_metal_share",
+             "господар": "host_context", "креативне": "creative_environment",
              "довжина_виробу_см": "item_length_cm"}      # річ каталогу без числа крамниці
 # Похідне від входу сцени (клас E дослідження 5280): без нагоди нема й дистанції огляду, без погоди — погоди дня.
 _ПОХІДНЕ_ВІД = {"viewing_distance": "occasion", "temperature": "temperature"}
@@ -2050,10 +2106,11 @@ def сторож_оцінки_об(об, суд_, причина=None, нота�
         # ні, кажуть лише ід. Ціль перевіреної зміни код знає сам: на живих 1016-1 із 6 знятих так
         # записів 4 мали текст про ту саму річ, тож «items» ставить код — ціль зміни, — а запис лишається; про що
         # текст, судить живий прогін, сторож лише записує поставлене
-        if ід in зміни and зміни[ід]["ціль"] not in названі:
+        цілі_зміни = ([ч["ціль"] for ч in зміни[ід].get("складові") or [зміни[ід]]] if ід in зміни else [])
+        if цілі_зміни and not set(цілі_зміни) <= set(названі):
             сторож.append(dict(де="change[%d]" % н, чому="items_not_target", що=названі, ід=ід,
                                ціль=зміни[ід]["ціль"], текст=_текст(з.get("text"))))
-            названі = [зміни[ід]["ціль"]]
+            названі = цілі_зміни
         if len(змінити) >= 2 or any(с["ід"] == ід for с in змінити):
             сторож.append(dict(де="change[%d]" % н, чому="over_two_or_repeat", що=ід))
             continue

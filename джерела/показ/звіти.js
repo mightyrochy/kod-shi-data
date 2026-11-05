@@ -355,7 +355,7 @@ function звітВердиктів(вс, коли){
       + 'а `person_veto:<слово>` і `person_hard_no:<слово>` несуть після двокрапки ЇЇ слово); '
       + '`choice_rejected · why=` — `choice_not_taken · outfit= · structural_blocker=` або '
       + '`gates_not_repaired=<правила> · of=N` (речення правила стоїть у самій знахідці суду); '
-      + '`scenario_shifted=` і `поломка.що_змінено` — `temperature=`, `hour=`, `occasion=`, '
+      + '`scenario_shifted=` і `поломка.що_змінено` — `temperature=`, `part_of_day=`, `occasion=`, '
       + '`formality=`, `person=donor`; `palette · choice` — `her`|`stylist`|`code_rank` на кожну '
       + 'частину (`scheme`, `base`, `saturation`). Подія руки '
       + 'називає крок і вирок: `not_schema`/`repair_not_schema`/`choice_not_schema`/'
