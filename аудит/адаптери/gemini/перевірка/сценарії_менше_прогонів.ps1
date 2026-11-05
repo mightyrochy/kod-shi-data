@@ -28,7 +28,8 @@ try {
             Remove-Item -LiteralPath "$WorkDir/engine-models" -Recurse -Force -ErrorAction SilentlyContinue
             Save-DraftRequest $pull.head.ref $sha $model
             $models = @(Get-ReviewModels $pull $config)
-            $expected = if ($model -like 'gpt-*' -or $model -like 'cc-*') { $config.agy } else { $config.codex }
+            # Модель, що не розпізнана як назва (автор не доведений), — хмарний Claude, не agy і не Codex.
+            $expected = if ($model -like 'gpt-*' -or $model -like 'cc-*') { $config.agy } elseif ($model -ceq 'невідома') { 'claude-cloud' } else { $config.codex }
             Check "1а $model — рівно один інший постачальник" ($models.Count -eq 1 -and $models[0] -ceq $expected)
         }
     }
@@ -37,7 +38,7 @@ try {
         $models = @(Get-ReviewModels ([pscustomobject]@{head=@{ref='gemini/стан';sha=$sha}}) $config)
         Check '1а фактичний GPT із ГОТОВО вибирає agy без файла моделі' ($models.Count -eq 1 -and $models[0] -ceq $config.agy)
         $models = @(Get-ReviewModels ([pscustomobject]@{head=@{ref='gemini/невідома';sha=$sha}}) $config)
-        Check '1а немає даних про модель — один Codex' ($models.Count -eq 1 -and $models[0] -ceq $config.codex)
+        Check '1а немає даних про модель — лише рядок хмарному Claude, без Codex' ($models.Count -eq 1 -and $models[0] -ceq 'claude-cloud')
     }
     Scenario '1в вердикти' {
         foreach ($branch in @('gemini/перевірка-12','claude/pachka-5','codex/перевірка-коду','gemini/автоперевірка-12')) {
@@ -255,6 +256,7 @@ try {
         Check '2 уже перевірена збірка має порожній план' (@($samePlan.scenes.PSObject.Properties).Count -eq 0)
     }
     Scenario '5 браузер без GPU' {
+        function Get-LmsInstances { <# Синтетичний порожній REST; мірило браузера не звертається до LM Studio. #> }
         if (Get-Command Set-BrowserGpuPolicy -ErrorAction SilentlyContinue) { Set-BrowserGpuPolicy "$tmp/browser policy" }
         $nodeModule = @'
 module.exports = {chromium: {

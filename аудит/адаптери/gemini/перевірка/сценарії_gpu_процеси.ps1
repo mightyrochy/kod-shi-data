@@ -2,7 +2,7 @@
 <# Стенд наряду «обгортка-вивантаження-моделі» (31.10, редакція без вивантаження): GPU-позначки стояли через робочий стіл
 Windows (абсолютний поріг пам'яті процесу), а модель LM Studio — інструмент прогонів, не сторонній процес (власник
 31.10 ~21:33 UTC); «Позначки без старту» в #1856 — порожні клітинки; позначка не за форматом стояла мовчки. Справжні функції
-обгортки; підмінено лише лічильник відеопам'яті процесів, nvidia-smi, Get-Process, перелік позначок і замки. Кожен виклик
+обгортки; підмінено порожній перелік LM Studio, лічильник відеопам'яті процесів, nvidia-smi, Get-Process, перелік позначок і замки. Кожен виклик
 Invoke-Native записано: обгортка не викликає `lms` (моделей не вивантажує). #>
 param([Parameter(Mandatory = $true)][string]$SourceDir)
 $ErrorActionPreference = 'Stop'
@@ -30,6 +30,7 @@ $script:ModelProcs = @(@{ Pid = 7000; MiB = 120 }, @{ Pid = 7100; MiB = 9000 })
 $script:IdleProcs = @(@{ Pid = 3300; MiB = 57 })
 $script:NoCounter = $false  # claude_run.ps1 вмикає Set-StrictMode: неініціалізована змінна — виняток
 $fakes = {
+    function Get-LmsInstances { <# REST поза мірилом процесів; синтетичних моделей немає. #> }
     function Get-GpuCounterRows {
         if ($script:NoCounter) { return $null }
         , @(foreach ($p in @($script:Procs)) {

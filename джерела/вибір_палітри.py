@@ -30,6 +30,7 @@
 `обрала="code_rank"` і причиною; суддя образу ставить пункт P8 чекліста палітри «без входу» з названим
 полем (`суд_чеклісти`), а не мовчазне «перше» під виглядом вибору.
 """
+from реєстр_правил import ТИПОВИЙ_НАМІР
 import statements as _СТ
 import json as _json
 
@@ -165,8 +166,8 @@ def _до_очей(о, F):
                           "lightness band, \"clothing_maybe\" — how many more only may (the shop's "
                           "colour word); 0 — only accessories can carry this base; absent — not "
                           "counted (a neutral base)", треба=True),
-        _ЗП.Поле("fixed", "what she chose herself", "keep it and build around it",
-                 без="She chose none of it herself."),
+        _ЗП.Поле("fixed", "palette constraints; sources",
+                 "keep; build around them", без="No fixed constraints."),
         _ЗП.Поле("reason_codes", "the only codes you may give as reasons, with their meaning",
                  треба=True),
     ),
@@ -175,7 +176,6 @@ def _до_очей(о, F):
         "The ranks come from her colouring and intent only; the occasion, the goal, the weather, "
         "the jewellery and her words are yours to weigh. Any listed option is allowed, a rarer one too.",
         "\"saturation\" is the band of the look's colours; you choose it with a neutral base.",
-        "Give each choice its reasons.",
     ),
     вихід="PALETTE_CHOICE",
     скелет={"scheme": "<code>", "scheme_reasons": ["<code>"], "base": "<id>",
@@ -243,7 +243,7 @@ def перелік(вхід):
     к = _ключ(d, (вхід or {}).get("вимоги"))
     if к in _ПАМ_ЯТЬ:
         return _ПАМ_ЯТЬ[к]
-    намір = d.get("намір") or "conventional"
+    намір = d.get("намір") or ТИПОВИЙ_НАМІР
     F, T, зріст, kw = _МВ.збірка(d, лише_палітра=True)
     п = _МО.пакет(F, T, зріст, kw, _МВ.якір(d), намір, _МВ.самозвіт(d), d.get("вибір_кольору"),
                    d.get("драп"), явні=_П.ПОЗА_ЩОДЕННИМ)
@@ -465,6 +465,14 @@ def дані_промпта(пер):
         fixed["base"] = її_основа_дротом(її["база"])
     if її["гама"]:
         fixed["saturation"] = ГАМА_КОД.get(її["гама"], її["гама"])
+    if fixed:
+        from паспорт_поля import походження, походження_автора, ТИПОВЕ, ТЛУМАЧЕННЯ
+        автори = (її.get("вк") or {}).get("обрала") or {}
+        fixed["sources"] = {к: походження_автора(_СТ.автор(автори.get(к, "her"))) for к in fixed}
+        if "base" in fixed:
+            б = її["база"]
+            if б.get("база_за_замовчуванням") or б.get("база_з_речі"):
+                fixed["sources"]["base"] = походження(ТИПОВЕ if б.get("база_за_замовчуванням") else ТЛУМАЧЕННЯ)
     день = _назване(пер.get("день"))
     return dict(person=пер["особа"], occasion=_назване(пер["випадок"]), **({"day": день} if день else {}),
                 schemes=[dict({"rank": с["ранг"], "scheme": с["код"], "weight": с["вага"],
