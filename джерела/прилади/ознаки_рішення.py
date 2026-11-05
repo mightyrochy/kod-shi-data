@@ -478,7 +478,7 @@ def чиста_геометрія(ф):
             return перевірка(х.body) and перевірка(х.orelse)
         if isinstance(х, ast.Tuple):
             return all(перевірка(е) for е in х.elts)
-        return isinstance(х, (ast.Compare, ast.BoolOp, ast.BinOp, ast.UnaryOp)) or (
+        return isinstance(х, (ast.Compare, ast.BoolOp, ast.BinOp, ast.UnaryOp, ast.Call)) or (
             isinstance(х, ast.Constant) and isinstance(х.value, (int, float, bool)))
     return all(перевірка(в.value) for в in повернення)
 
@@ -496,7 +496,15 @@ def _число_значення(в):
         isinstance(в, ast.Constant) and isinstance(в.value, (int, float)) and not isinstance(в.value, bool))
 
 
-def _чиста_функція(ф):
+def _числова_стала(ф, ім):
+    """Ім'я модульного рівня, що дорівнює числу чи простій арифметиці чисел (`_ЕРФ_НАСИЧЕННЯ = 6.0`)."""
+    def число(в):
+        return isinstance(в, ast.Constant) and isinstance(в.value, (int, float)) and not isinstance(в.value, bool) \
+            or isinstance(в, ast.UnaryOp) and число(в.operand) or isinstance(в, ast.BinOp) and число(в.left) and число(в.right)
+    return ім in ф.модуль.присвоєння and число(ф.модуль.присвоєння[ім])
+
+
+def _чиста_функція(ф, глибина=0):
     """Чиста функція кольору — повертає її `return`-и чи None: без рядків,
     без викликів поза `math` і числовими вбудованими, без звернень до модульних таблиць і запису поза локальними, і кожне
     повернення — число чи кортеж чисел. Арифметика всередині — не вхід її значення в число рішення: місце — виклик
@@ -524,11 +532,15 @@ def _чиста_функція(ф):
                 continue
             if isinstance(f, ast.Name) and f.id in _ЧИСЛОВІ_ВБУДОВАНІ:
                 continue
+            if isinstance(f, ast.Name) and глибина < 3 and f.id in ф.модуль.функції and f.id not in параметри \
+                    and f.id not in ф.локальні and ф.модуль.функції[f.id] is not ф \
+                    and _чиста_функція(ф.модуль.функції[f.id], глибина + 1) is not None:
+                continue   # виклик іншої чистої функції цього ж модуля (`_ф` у `у_вікні`)
             return None
         if isinstance(в, ast.Attribute) and not (isinstance(в.value, ast.Name) and в.value.id in математика):
             return None
         if isinstance(в, ast.Name) and isinstance(в.ctx, ast.Load) and в.id not in ф.локальні and в.id not in параметри \
-                and в.id not in математика and в.id not in ("float", "int", "abs", "min", "max", "sum", "round", "pow", "range", "len", "divmod"):
+                and в.id not in математика and not _числова_стала(ф, в.id) and в.id not in ф.модуль.функції and в.id not in ("float", "int", "abs", "min", "max", "sum", "round", "pow", "range", "len", "divmod"):
             return None
     return повернення
 

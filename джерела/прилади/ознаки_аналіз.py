@@ -277,7 +277,7 @@ class Аналіз:
                              for п in set(к) | set(км) if к.get(п) or any(км.get(п, {}).values()))
         if self.пара_глибина and any(S in м or any(S in з for _, з in кл) for _, м, кл in контекст):
             контекст = контекст | frozenset({("!пара", E, frozenset())})
-        if ф.чиста and self.поточний and any(S in м or any(S in з for _, з in кл) for _, м, кл in self.поточний[1]) \
+        if (ф.геометрія or ф.формула) and self.поточний and any(S in м or any(S in з for _, з in кл) for _, м, кл in self.поточний[1]) \
                 and any(S in м or any(S in з for _, з in кл) for _, м, кл in контекст):
             # чиста функція кольору, куди її значення дійшло з іншої функції, що саму його не читала: поширення, не вхід
             контекст = контекст | frozenset({("!відгалуження", E, frozenset())})
