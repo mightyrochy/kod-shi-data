@@ -285,6 +285,60 @@ class Прилад(unittest.TestCase):
         """Операція через HTML-контракт не рахується вдруге в його тілі."""
         self.перевірити({'а.js': "function розміткаЖінціП(el,html){el.innerHTML=html;}\nрозміткаЖінціП(document.body,'<img src=\"'+generate_image()+'\">');"}, 1)
 
+    def декодування(self, ім='класи'):
+        """Текст декодера кадру: окремий декодер на джерело, бо граф не розрізняє виклики однієї функції."""
+        return self._ДЕКОДУВАННЯ.replace('класи(', ім + '(')
+
+    _ДЕКОДУВАННЯ = (
+        "async function класи(дані){\n"
+        "  const бін = atob(дані), байти = new Uint8Array(бін.length);\n"
+        "  for (let і = 0; і < бін.length; і++) байти[і] = бін.charCodeAt(і);\n"
+        "  const бм = await createImageBitmap(new Blob([байти], {type: 'image/png'}));\n"
+        "  const п = document.createElement('canvas');\n"
+        "  const кт = п.getContext('2d');\n"
+        "  кт.drawImage(бм, 0, 0);\n"
+        "  return {пікс: кт.getImageData(0, 0, п.width, п.height).data, ш: п.width};\n"
+        "}\n"
+        "function кадрУPNG(пікс, ш, в){\n"
+        "  const пол = document.createElement('canvas');\n"
+        "  пол.getContext('2d').putImageData(new ImageData(пікс, ш, в), 0, 0);\n"
+        "  return пол.toDataURL('image/png');\n"
+        "}\n"
+        "const img = document.createElement('img'); document.body.appendChild(img);\n")
+
+    def test_слід_крізь_декодування(self):
+        """base64 → байти → Blob → bitmap → canvas → PNG переносить походження кадру."""
+        з = self.декодування()
+        gen = "const блоки = модельП_блоки('x'); const дж = блоки.find(b => b.type === 'image').source;\n"
+        self.перевірити({'а.js': з + gen + "async function f(){ const г = await класи(дж.data); img.src = кадрУPNG(г.пікс, г.ш, 1); }"}, 1)
+        self.перевірити({'а.js': з + gen + "img.src = 'data:' + дж.data;"}, 1)
+
+    def test_декодування_оригіналу_не_місце(self):
+        """Те саме перетворення фото, що не з генератора, місцем не стає."""
+        з = self.декодування()
+        self.перевірити({'а.js': з + "async function f(ф){ const г = await класи(ф.data); img.src = кадрУPNG(г.пікс, г.ш, 1); }"}, 0)
+
+    def test_повернення_оригіналу_крізь_декодування(self):
+        """Функція повернення, що віддає пікселі фото, знімає місце навіть крізь декодування."""
+        з = self.декодування() + self.декодування('класиФото').split('function кадрУPNG')[0]
+        gen = "const блоки = модельП_блоки('x'); const дж = блоки.find(b => b.type === 'image').source;\n"
+        self.перевірити({'а.js': з + gen + "async function f(ф){ const її = await класиФото(ф.data); const г = await класи(дж.data); "
+                         "img.src = кадрУPNG(її.пікс, її.ш, 1); }"}, 0)
+
+    def test_змішані_пікселі_лишаються_місцем(self):
+        """Пікселі генератора, скопійовані в результат, — місце, поки нема верифікованого контракту."""
+        з = self.декодування()
+        gen = "const блоки = модельП_блоки('x'); const дж = блоки.find(b => b.type === 'image').source;\n"
+        self.перевірити({'а.js': з + gen + "async function f(ф){ const її = await класи(ф.data); const г = await класи(дж.data); "
+                         "const м = {пікс: г.пікс}; if (її.ш) м.пікс = її.пікс; img.src = кадрУPNG(м.пікс, 1, 1); }"}, 1)
+
+    def test_спільний_декодер_консервативно(self):
+        """Граф не розрізняє виклики однієї функції: спільний декодер для фото й генерації — місце (відома межа)."""
+        з = self.декодування()
+        gen = "const блоки = модельП_блоки('x'); const дж = блоки.find(b => b.type === 'image').source;\n"
+        self.перевірити({'а.js': з + gen + "async function f(ф){ const г = await класи(дж.data); const її = await класи(ф.data);"
+                         " img.src = кадрУPNG(її.пікс, 1, 1); }"}, 1)
+
 
 if __name__ == '__main__':
     unittest.main()
