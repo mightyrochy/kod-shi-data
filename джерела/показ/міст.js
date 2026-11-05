@@ -472,6 +472,7 @@ function скоротитиПулРукиП(повідомлення, ключ, 
     }
     if (індекс < 0) break;
     кандидати.splice(індекс, 1); знято++;
+    знятиРядокЛегендиП(дані, '/' + (дані.pool ? 'pool' : 'candidates'), індекс);
     if (Array.isArray(дані.showcase)){
       const номери = new Set(кандидати.map(р => поле(р, 'n', номер)));
       дані.showcase = дані.showcase.filter(н => номери.has(н));

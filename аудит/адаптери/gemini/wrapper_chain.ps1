@@ -274,7 +274,8 @@ function Select-ReviewModel([string[]]$Candidates, [datetimeoffset]$Now) {
 function Get-ReviewModels($Pull, $Config, [datetimeoffset]$Now = [datetimeoffset]::UtcNow) {
     <# Один рецензент іншого постачальника, ніж автор, що не на квоті: робота GPT і Claude — agy, Gemini — Codex; запасний —
     Codex для Claude, хмарний Claude для GPT і Gemini (рядок диспетчерові, не claude -p на ноутбуці). Обидва для роботи
-    Claude на квоті — перший: позначка чекає скидання. Фактичний автор прив'язаний до опублікованого SHA. #>
+    Claude на квоті — перший: позначка чекає скидання. Фактичний автор прив'язаний до опублікованого SHA; невідомий
+    автор — хмарний Claude, Codex рецензентом ніколи не стає для роботи, чий автор не доведений. #>
     $branch = [string]$Pull.head.ref; $head = [string]$Pull.head.sha
     if (Test-ReviewBranch $branch) { return @() }
     $file = Join-Path (Join-Path $WorkDir 'engine-models') ((Get-Sha256Hex "$branch $head") + '.txt')
@@ -284,6 +285,10 @@ function Get-ReviewModels($Pull, $Config, [datetimeoffset]$Now = [datetimeoffset
         if ([string](Get-Prop $state 'line') -cmatch ('^GEMINI ОБГОРТКА: ГОТОВО ' + [regex]::Escape("$branch $head") + '(?: КВОТА [A-Z0-9_]+ [0-9]+)? МОДЕЛЬ ([a-z0-9.-]+)$')) { $model = $Matches[1]; break }
     }
     if (Test-Path -LiteralPath $file) { $model = [IO.File]::ReadAllText($file, $script:Utf8).Trim() }
+    # Автор, якого обгортка не знає (рядка ГОТОВО з МОДЕЛЬ нема в теці стану цього облікового запису), не стає «agy» мовчки:
+    # так роботу GPT з гілки gemini/ перевіряв Codex. Рецензента не призначаємо — рядок хмарному Claude.
+    $known = $branch.StartsWith('claude/') -or $branch.StartsWith('codex/') -or $model -cmatch '^[a-z0-9][a-z0-9.-]{1,63}$'
+    if (-not $known) { return @($script:CloudReview) }
     $author = $(if ($branch.StartsWith('claude/')) { 'claude' } elseif ($branch.StartsWith('codex/')) { 'codex' } else { Get-ModelProvider $model })
     $pick = $(if ($author -ceq 'claude') { Select-ReviewModel @([string]$Config.agy, [string]$Config.codex) $Now }
               elseif ($author -ceq 'codex') { Select-ReviewModel @([string]$Config.agy, $script:CloudReview) $Now }

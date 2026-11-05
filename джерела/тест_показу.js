@@ -1288,6 +1288,7 @@ function мостПриміркиЗаглушка(w){
   {
     const {w, d, помилки} = сторінка({url: "https://mightyrochy.github.io/kod-shi-data/показ.html#міст=http://localhost:8787&т=tok-a1"});
     await чекатиСтарт(w);
+    w.eval(ЗАГЛУШКА_РУКИ);
     const $ = id => d.getElementById(id);
     тест("кнопка «Зчитати кольори з портрета» є, ручний шлях під розкривачем", !!$("кол-зчитати") && !!$("кол-копія"), null);
     $("кол-зчитати").click();
@@ -1618,6 +1619,30 @@ function мостПриміркиЗаглушка(w){
             JSON.stringify(до.verdict.map(в => в.your_outfit)) === JSON.stringify(після.verdict.map(в => в.your_outfit))
             && після.verdict.every(в => в.your_outfit.items.every(н => номери.has(н))), після.verdict.length);
         }
+      }
+      /* Клас 12969: скорочення кандидатів (заміна й рука) забирає з легенди знань рядок за тим самим індексом. */
+      {
+        const річ = (н, тип) => ({n:н, type:тип, text:'x'.repeat(400)});
+        const легенда = к => ({sections: Object.fromEntries(к.map(([ш, довж]) => [ш, {rows: Array.from({length: довж}, (_, і) => [і, 0, 0])}]))});
+        const разом = (д, шляхи) => шляхи.every(([ш, н]) => ((д.knowledge_legend.sections[ш] || {}).rows || []).length === н);
+        w._заміна = JSON.stringify({items:{верх:[річ(1, 'blouse'), річ(2, 'blouse'), річ(3, 'tshirt')]},
+          knowledge_legend: легенда([['/items/верх', 3]])});
+        w._рядки = JSON.stringify({pool:{cols:['n', 'type'], rows:[['#1', 'a'], ['#2', 'a'], ['#3', 'a'], ['#4', 'b']]},
+          knowledge_legend: легенда([['/pool', 4]])});
+        const вікноДо = w.eval('НАЛАШТУВАННЯ_РУШІЯ_П[МОДЕЛЬ_П].loaded_context_length');
+        w.eval(`НАЛАШТУВАННЯ_РУШІЯ_П[МОДЕЛЬ_П] = {loaded_context_length: 1};
+          window._запитЗаміни = {текст:window._заміна, скорочено:[]}; вміститиКандидатівЗаміниП(window._запитЗаміни);
+          window._повідомленняРуки = [{role:'user', content:[{type:'text', text:window._рядки}]}];
+          скоротитиПулРукиП(window._повідомленняРуки, МОДЕЛЬ_П + '|', 1, МАКС_ТОКЕНІВ_П);
+          НАЛАШТУВАННЯ_РУШІЯ_П[МОДЕЛЬ_П] = {loaded_context_length: ${вікноДо}};`);
+        const замінаПісля = JSON.parse(w.eval('window._запитЗаміни.текст'));
+        const рукаПісля = JSON.parse(w.eval('window._повідомленняРуки[0].content[0].text'));
+        тест('скорочення кандидатів заміни: легенда знань і кандидати — однакова кількість',
+          замінаПісля.items.верх.length < 3 && разом(замінаПісля, [['/items/верх', замінаПісля.items.верх.length]]),
+          [замінаПісля.items.верх.length, замінаПісля.knowledge_legend.sections]);
+        тест('скорочення пулу руки: легенда знань і кандидати — однакова кількість',
+          рукаПісля.pool.rows.length < 4 && разом(рукаПісля, [['/pool', рукаПісля.pool.rows.length]]),
+          [рукаПісля.pool.rows.length, рукаПісля.knowledge_legend.sections]);
       }
       const нормальна = w.eval('бюджетПулуП()');
       w.eval('НАЛАШТУВАННЯ_РУШІЯ_П[МОДЕЛЬ_П].loaded_context_length -= 10000');
@@ -2742,7 +2767,7 @@ function мостПриміркиЗаглушка(w){
     await чекатиСтарт(w);
     const $ = id => d.getElementById(id);
     w.eval("КОЛІР = {шкіра:'#deb295', волосся:'#f1dbaa', очі:'#759087', кільце:null, точки:null}");
-    let бік = "withheld", джерело = "утримано: підтон із фото не стверджується → нейтральна";
+    let бік = "withheld", джерело = "утримано: підтон не стверджується";
     w._заглушкаМоста = async (ім) => (ім !== "палітри") ? {помилка: "не цей ендпойнт"} : {
       основи: {нейтралі: [], кольори: [], інші: []}, гілки: [], вибір_кольору: {},
       гейт: {утримано: ["chroma", "hue", "undertone"], можна_стверджувати: ["value", "contrast"]},

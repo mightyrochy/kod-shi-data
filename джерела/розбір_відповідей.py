@@ -49,7 +49,7 @@ import colorspace as _cs
 
 ОПИС = _ЗП.Оголошення(
     задача="опис",
-    роль="You are the stylist. You describe to her the outfit you chose for her.",
+    роль=_ВИМ.РОЛЬ_ЗАСТОСУНКУ + " You describe to her the outfit you chose for her.",
     вхід=(
         # ОПИС-1: «колір» — дані крамниці для читання фото, а не те, що бачить жінка; інакше
         # модель звіряє фото з ним уголос («У назві вказано зелений…», «У коді вказано…»).
@@ -119,8 +119,8 @@ import colorspace as _cs
         # Своє рішення стилістка не віддає жінці назад.
         _ВИМ.поле("day", як="in the last part of «text» say how this outfit lives through her day; when something "
                     "you chose argues with the day (weather, hours on her feet, the place), say in one plain "
-                    "sentence why you still chose it, or what she does about it in the day itself (take the "
-                    "layer off, swap the pair); never hand that decision back to her"),
+                    "sentence why you still chose it and what that means for her day; describe the chosen "
+                    "items without proposing a different composition; never hand that decision back to her"),
         # ОПИС-1 (K-PAL-11/14/15): «найдальші» й «комбінація», якщо йдуть у КОЖЕН опис, дають
         # «маленька оливкова чи зелена деталь» навіть на похороні й поради додати річ, якої в образі
         # нема. Тож лише те, що стосується речей образу.
@@ -250,9 +250,8 @@ import colorspace as _cs
                       "with other clothes in the frame is no reason; when in doubt, leave it out",
         "заміна.річ": "«n» of the ONE item to replace; leave «swap» out entirely when there is no weighty "
                       "reason — the usual case",
-        "заміна.чому": "colour — the photo shows a clearly different colour than the code knows; kind — "
-                       "the photo shows another kind of item; occasion — the item on the photo does not "
-                       "suit her occasion",
+        "заміна.чому": "why the photo warrants replacing this item: a clearly different colour, "
+                       "another kind of item or a mismatch with her occasion",
         "заміна.на": "only with «swap_spares» in the input: «n» of the spare you choose; leave it out to "
                      "keep the item",
     },

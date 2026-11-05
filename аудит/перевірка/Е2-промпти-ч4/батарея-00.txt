@@ -1,0 +1,27 @@
+Traceback (most recent call last):
+  File "C:\Users\gemini\gemini-runs\w\20261104-190425-ead449dc92d4\repo\джерела\стенд_знімок.py", line 33, in <module>
+    КАТАЛОГ = _Ф.каталог_на_диску("каталог_повний.xml")
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\gemini\gemini-runs\w\20261104-190425-ead449dc92d4\repo\джерела\фід_каталог.py", line 125, in каталог_на_диску
+    return _чистий_або_фікстура(ш, архів)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\gemini\gemini-runs\w\20261104-190425-ead449dc92d4\repo\джерела\фід_каталог.py", line 97, in _чистий_або_фікстура
+    __import__("чистка_каталогу").забезпечити_чистим(_шлях=ш, _архів=архів)
+  File "C:\Users\gemini\gemini-runs\w\20261104-190425-ead449dc92d4\repo\джерела\чистка_каталогу.py", line 676, in забезпечити_чистим
+    екранувань, двійників, лежалих = _брудність(шлях)
+                                     ^^^^^^^^^^^^^^^^
+  File "C:\Users\gemini\gemini-runs\w\20261104-190425-ead449dc92d4\repo\джерела\чистка_каталогу.py", line 623, in _брудність
+    дерево, корінь, _, _ = класифікувати(шлях)
+                           ^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\gemini\gemini-runs\w\20261104-190425-ead449dc92d4\repo\джерела\чистка_каталогу.py", line 493, in класифікувати
+    дерево, корінь, кат, ід_кат = розібрати(шлях)
+                                  ^^^^^^^^^^^^^^^
+  File "C:\Users\gemini\gemini-runs\w\20261104-190425-ead449dc92d4\repo\джерела\чистка_каталогу.py", line 347, in розібрати
+    дерево = ET.parse(шлях)
+             ^^^^^^^^^^^^^^
+  File "C:\Users\gemini\AppData\Local\Programs\Python\Python312\Lib\xml\etree\ElementTree.py", line 1204, in parse
+    tree.parse(source, parser)
+  File "C:\Users\gemini\AppData\Local\Programs\Python\Python312\Lib\xml\etree\ElementTree.py", line 569, in parse
+    self._root = parser._parse_whole(source)
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+xml.etree.ElementTree.ParseError: unclosed token: line 51, column 51322114
