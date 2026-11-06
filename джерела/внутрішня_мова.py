@@ -1698,13 +1698,15 @@ _МІСЦЯ_ОПЦІЙ = "where it is worn"
                                   "code, level — the length word, length_cm — the measured length or null, point — "
                                   "the body point it is measured from, error_cm — its error)",
     "outer_edges_gap_measured": "the gap between the edge of the outer layer and the edge of the item under it, "
-                                "from two lengths measured from the same point; within its error the code gives no "
+                                "from two measured lengths (from the same point, or through her body levels with "
+                                "their recorded error); within its error the code gives no "
                                 "verdict (values: gap_cm — the gap, error_cm — the error of both lengths, the "
                                 "garment manufacturing tolerance; direction — outer_longer, outer_shorter, or "
                                 "unknown when the gap is within the error; items)",
     "outer_length_vs_knee_not_judged": "the code does not know whether the outer layer ends below her knee: the "
                                        "length is measured, but her knee and the point it is measured from are "
-                                       "body-template levels without a known error (values: length_cm — the "
+                                       "body-template levels without a known error, or the difference is within "
+                                       "the error (values: length_cm — the "
                                        "length, point — the body point it is measured from, error_cm — its error, "
                                        "height_cm — her height)",
     "cascade_declared_no_penalty": "the edges of the layers stand in even steps: the code counts such a "

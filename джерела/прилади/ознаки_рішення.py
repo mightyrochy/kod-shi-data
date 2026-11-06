@@ -478,6 +478,8 @@ def чиста_геометрія(ф):
             return перевірка(х.body) and перевірка(х.orelse)
         if isinstance(х, ast.Tuple):
             return all(перевірка(е) for е in х.elts)
+        if isinstance(х, ast.Name) and (х.id in ф.локальні or х.id in ф.позиційні or х.id in ф.іменні):
+            return True   # число з власної арифметики (`return 0.0 if к >= 360.0 else к`): у чистій функції рядків нема
         return isinstance(х, (ast.Compare, ast.BoolOp, ast.BinOp, ast.UnaryOp, ast.Call)) or (
             isinstance(х, ast.Constant) and isinstance(х.value, (int, float, bool)))
     return all(перевірка(в.value) for в in повернення)
@@ -524,6 +526,10 @@ def _чиста_функція(ф, глибина=0):
             # лише рядок-документація: перший вираз тіла
             if not (вузол.body and isinstance(вузол.body[0], ast.Expr) and вузол.body[0].value is в):
                 return None
+        if isinstance(в, ast.Subscript) and isinstance(в.value, ast.Name) and isinstance(в.ctx, ast.Load) \
+                and (в.value.id in параметри or в.value.id in ф.локальні) and isinstance(в.slice, ast.Constant) \
+                and type(в.slice.value) is int:
+            continue   # позиція кортежу-параметра (`дуга[0]`): та сама арифметика, що й над двома параметрами (13757)
         if isinstance(в, (ast.Subscript, ast.Dict, ast.List, ast.Set, ast.ListComp, ast.DictComp, ast.SetComp, ast.JoinedStr)):
             return None
         if isinstance(в, ast.Call):
@@ -610,3 +616,34 @@ def вікно_літерал(в):
         return not стала(х) and not isinstance(х, ast.BinOp), обрізано
     рез = [зсув(х) for х in в.elts]
     return all(р[0] for р in рез) and any(р[1] for р in рез)
+
+
+def мітки_оцінки(дерева):
+    """Рядки, що означають джерело оцінки моделі: код протоколу `model_hex` і сталий рядок, який функція повертає лише
+    в гілці, відкритій перевіркою на таку мітку (`if протокол == "model_hex": return "оцінка моделі"`), і ніде більше в
+    ній. Перевірка джерела на мітку — варта для `model_hex` (`Стан.ворота`): гілка, якої оцінка не проходить, не
+    виконується (рядок дошки 13568)."""
+    from collections import Counter
+    from ознаки_основа import НЕВІДОМЕ   # тут, а не нагорі: ознаки_основа імпортує цей модуль
+    мітки = {"model_hex"}
+
+    def на_мітку(т):
+        return isinstance(т, ast.Compare) and len(т.ops) == 1 and isinstance(т.ops[0], (ast.Eq, ast.Is)) and any(
+            isinstance(х, ast.Constant) and isinstance(х.value, str) and х.value in мітки for х in (т.left, т.comparators[0]))
+
+    функції = [n for д in дерева for n in ast.walk(д) if isinstance(n, (ast.FunctionDef, ast.AsyncFunctionDef))]
+    while True:
+        нові = set()
+        for ф in функції:
+            рядки = Counter(n.value.value for n in ast.walk(ф) if isinstance(n, ast.Return)
+                                        and isinstance(n.value, ast.Constant) and isinstance(n.value.value, str))
+            for n in ast.walk(ф):
+                if isinstance(n, ast.If) and на_мітку(n.test):
+                    for і in n.body:
+                        if isinstance(і, ast.Return) and isinstance(і.value, ast.Constant) \
+                                and isinstance(і.value.value, str) and рядки[і.value.value] == 1 \
+                                and not НЕВІДОМЕ.search(і.value.value):
+                            нові.add(і.value.value)
+        if нові <= мітки:
+            return frozenset(мітки)
+        мітки |= нові
