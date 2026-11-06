@@ -29,7 +29,8 @@ import statistics as _statistics   # `random` більше не імпортує
 from колір_простір_реєстр import REGISTRY, CONST, WIDTHS, tier
 from колір_простір_перетворення import lch, soft, hex_з_lab
 from колір_простір_стеля import c_max
-from колір_простір_надійність import ДЖЕРЕЛО_ФОТО_ТИПОВЕ, ДЖЕРЕЛО_ПРОТОКОЛ
+from колір_простір_надійність import (ДЖЕРЕЛО_ФОТО_ТИПОВЕ, ДЖЕРЕЛО_ПРОТОКОЛ, MIN_TO_EMIT,
+    ДОВІРА_ЯВНОГО_ВХОДУ, УТРИМАНО_ДОВІРОЮ)
 
 # ─────────────────────────── Вимір із фото (єдиний шлях) ───────────────────
 # D4, УТОЧНЕНО ДОСЛІДЖЕННЯМ (Kang 2025, Benčević 2025, огляди ITA): для КЛАСИФІКАЦІЇ
@@ -224,12 +225,15 @@ def achromatic(lab):
     L,C,h = lch(lab)
     return C < ACHROMATIC_C, C
 
-def hair_cast(lab):
+def hair_cast(lab, довіра=None):
     """Каст волосся проти типового коричневого: відхилення (a, b) від `HAIR_NEUTRAL_AB` і слово —
     типове, попелясте, рудувате, золотисте; ахроматичне волосся температури не несе (K-TIME-01).
+    Довіра тону джерела нижче MIN_TO_EMIT (hex моделі) — каст утримано, без відхилення.
 
     Чому так: нуль-точка волосся коричнева, не сіра (Lee 2024, T3-якір); пороги
     4/−3/6/6 — T3, не калібровані. Це опис, а не підстава прибирати тоновий голос."""
+    if (довіра or ДОВІРА_ЯВНОГО_ВХОДУ)["hue"] < MIN_TO_EMIT:
+        return {"відхилення": None, "каст": УТРИМАНО_ДОВІРОЮ}
     # K-TIME-01: ахроматичне (сиве/біле) волосся температури НЕ несе —
     # якір нейтралі коричневий (Lee 2024) стосується лише пігментованого волосся.
     if lch(lab)[1] < ACHROMATIC_C:
@@ -245,8 +249,12 @@ def hair_cast(lab):
     else: caste="близьке до типового"
     return dict(відхилення=round(d,1), каст=caste)
 # R-MUN-01 — дубль `colorspace.describe`: hue/value/chroma людським шаром над Lab.
-def describe(lab, kind=None, lex=None):
-    """Чисті координати. Тон None, якщо колір ахроматичний."""
+def describe(lab, kind=None, lex=None, довіра=None):
+    """Чисті координати. Тон None, якщо колір ахроматичний.
+
+    Класи з координат — каст волосся (вісь `hue`) і смуга ITA шкіри (вісь `value`) — лише з довірою осі
+    джерела (`довіра` — рядок `AXIS_RELIABILITY`; без нього — ручний вхід): з hex моделі не ставляться."""
+    д = довіра or ДОВІРА_ЯВНОГО_ВХОДУ
     L,C,h=lch(lab); cm=c_max(L,h); rel=C/cm if cm>1e-6 else 0
     is_ach, d_neutral = achromatic(lab); hue_defined = not is_ach
     # hex СТАВИТЬСЯ ТУТ, БО ЧИТАЄТЬСЯ СКРІЗЬ (P29). Раніше `hex` мав лише
@@ -259,9 +267,13 @@ def describe(lab, kind=None, lex=None):
            відстань_до_нейтралі=round(d_neutral,1), hex=hex_з_lab(lab))
     if lex: d["назва"]=lex.describe(L,rel,h) if hue_defined else "нейтральний (без тону)"
     if kind=="волосся":
-        d["HT"]=ht_from_L(L); d.update(hair_cast(lab))
+        d["HT"]=ht_from_L(L); d.update(hair_cast(lab, довіра=д))
     if kind=="шкіра":
-        it=ita(L,lab[2])
-        d["ITA"]=None if it!=it else round(it,1)
-        d["ITA_смуга"]=ita_band(it)
+        if д["value"] >= MIN_TO_EMIT:
+            it=ita(L,lab[2])
+            d["ITA"]=None if it!=it else round(it,1)
+            d["ITA_смуга"]=ita_band(it)
+        else:
+            d["ITA"]=None
+            d["ITA_смуга"]=УТРИМАНО_ДОВІРОЮ
     return d

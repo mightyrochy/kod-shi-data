@@ -44,7 +44,8 @@ from колір_простір_перетворення import lch, hx, soft
 from колір_простір_стеля import c_max
 from колір_простір_шкіра import (describe, skin_pos, hair_photo_uncertainty, ACHROMATIC_C,
     ЦЕНТР_ПІДТОНУ, РОЗКИД_ПІДТОНУ, МЕЖА_КЛАСУ_ПІДТОНУ, вісь_підтону_двостороння)
-from колір_простір_надійність import ДЖЕРЕЛО_ФОТО_ТИПОВЕ, ДЖЕРЕЛО_ПРОТОКОЛ, reliability, MIN_TO_EMIT, gate_conclusions, extraction_sanity
+from колір_простір_надійність import (ДЖЕРЕЛО_ФОТО_ТИПОВЕ, ДЖЕРЕЛО_ПРОТОКОЛ, reliability, MIN_TO_EMIT,
+    gate_conclusions, extraction_sanity, довіра_рис, ДОВІРА_ЯВНОГО_ВХОДУ, УТРИМАНО_ДОВІРОЮ)
 import face_contrast as _KC
 import face_features as _ОБ
 
@@ -128,8 +129,9 @@ def density(samples, bins=None, smooth=2, min_weight=0.10, axis=None):
                 вісь="Lab"[axis] if axis<3 else "?", вісь_індекс=axis,
                 розкид=round(q(0.9)-q(0.1),1))          # робастно, не max-min
 
-def підтон_риси(a, b, h):
-    """Словесний підтон ОДНІЄЇ риси з (a*, b*, h).
+def підтон_риси(a, b, h, довіра=None):
+    """Словесний підтон ОДНІЄЇ риси з (a*, b*, h); з довірою підтону джерела нижче MIN_TO_EMIT
+    (hex моделі) — `УТРИМАНО_ДОВІРОЮ`, а не слово з порогів на оцінці.
 
     ВИНЕСЕНО В ОДНЕ ТІЛО ПІСЛЯ ПАДІННЯ НА РЕАЛЬНОМУ ВХОДІ. Цей вираз стояв
     голим усередині `features`, а `перерахувати_рису` — друга точка, що будує
@@ -147,12 +149,14 @@ def підтон_риси(a, b, h):
     Задача-42 §5 стверджувала протилежне: «механічно це вже можливо —
     `перерахувати_рису` додає рису, і `spectra_by_feature` підхопить її сама».
     Перевірено прогоном: не підхоплює, а падає. Тепер підхоплює."""
+    if (довіра or ДОВІРА_ЯВНОГО_ВХОДУ)["undertone"] < MIN_TO_EMIT:
+        return УТРИМАНО_ДОВІРОЮ
     return ("оливковий" if (a < 6 and b > 2.2 * max(a, 1e-6)) else
             "рожевий/холодний" if h < 35 else
             "жовтий/теплий" if h < 70 else "нейтральний")
 
 
-def поля_риси(lab, kind=None, lex=None):
+def поля_риси(lab, kind=None, lex=None, довіра=None):
     """ВСІ похідні поля однієї риси з (L,a,b). ОДНЕ тіло на всі точки, що рису будують.
 
     ЧОМУ ЦЕ ОКРЕМА ФУНКЦІЯ (клас дефекту, третій екземпляр).
@@ -179,17 +183,38 @@ def поля_риси(lab, kind=None, lex=None):
     `warmth` для риси без тону — None, а не число: теплота (`тепло`) на ахроматичній рисі
     рахує кут, який сам модуль оголосив шумом округлення (ACHROMATIC_C). Нуль там
     був би твердженням «рівно нейтральна», якого ніхто не міряв.
+
+    КЛАСИ — ЛИШЕ З ДОВІРОЮ ДЖЕРЕЛА (Річ-ознаки-обличчя). `довіра` — рядок `AXIS_RELIABILITY`
+    джерела (`довіра_рис`; без нього — ручний Lab-вхід). Підтон риси (вісь `undertone`),
+    теплота (`hue`), каст волосся і смуга ITA (`describe`) з осі, нижчої за MIN_TO_EMIT, не
+    ставляться: для hex моделі риса несе координати оцінки й слово «утримано», а не клас із
+    порогу, точнішого за оцінку. Так само, як ахроматична гілка `температура_шкіри`.
     """
+    д = довіра or ДОВІРА_ЯВНОГО_ВХОДУ
     L, C, h = lch(lab)
     a, b = lab[1], lab[2]
-    поля = dict(describe(lab, kind, lex))
+    поля = dict(describe(lab, kind, lex, довіра=д))
     тон_є = поля.get("h") is not None
     поля.update(a=a, b=b, a_star=a,
-                undertone=(None if kind == "шкіра" else підтон_риси(a, b, h)),
-                warmth=(тепло(h) if тон_є else None))
+                undertone=(None if kind == "шкіра" else підтон_риси(a, b, h, довіра=д)),
+                warmth=(тепло(h) if тон_є and д["hue"] >= MIN_TO_EMIT else None))
     if kind == "шкіра":
-        поля.update(температура_шкіри(lab))
+        поля.update(температура_шкіри(lab, довіра=д))
     return поля
+
+
+def позиція_шкіри(lab, довіра=None, protocol=None):
+    """Смуга ITA, її маси й олива шкіри (`skin_pos`) — лише з довірою світлоти джерела.
+
+    Для hex моделі (довіра 0) — None без числа: смуга з порогів ITA точніша, ніж несе оцінка.
+    Одне тіло для `features` і `перерахувати_рису`."""
+    д = довіра or ДОВІРА_ЯВНОГО_ВХОДУ
+    if д["value"] < MIN_TO_EMIT:
+        return dict(ITA=None, depth_band=None, band_p=None, p_olive=None,
+                    photo_note=None, смуга_утримана=УТРИМАНО_ДОВІРОЮ)
+    sp = skin_pos(lab, protocol=protocol)
+    return dict(ITA=sp["ITA"], depth_band=list(sp["band_p"])[0], band_p=sp["band_p"],
+                p_olive=sp["p_olive"], photo_note=sp.get("photo_note"))
 
 
 def features(lab_skin, lab_hair, lab_eye, lab_glasses=None,
@@ -247,19 +272,18 @@ def features(lab_skin, lab_hair, lab_eye, lab_glasses=None,
     # Волосся з фото більше не зсувається; несе невизначеність за протоколом.
     hair_unc = hair_photo_uncertainty(protocol) if from_photo else None
     hair_parts=parts
+    # Класи рис — з довірою джерела: для hex моделі утримано (`поля_риси`, `позиція_шкіри`).
+    д = довіра_рис(джерело or (protocol if from_photo else None))
     F={}
     for nm,lab in hair_parts.items():
         if lab is None: continue
         kind = ("волосся" if nm.startswith("волосся")
                 else "очі" if nm.startswith("очі") else nm)
-        F[nm] = поля_риси(lab, kind, lex)
+        F[nm] = поля_риси(lab, kind, lex, довіра=д)
     # ШКІРА: ITA підключено до рекомендацій
     if "шкіра" in F:
-        sp = skin_pos(hair_parts.get("шкіра", lab_skin),
-                      protocol=protocol if from_photo else None)   # розв'язана трійка, не сирий вхід
-        F["шкіра"].update(ITA=sp["ITA"], depth_band=list(sp["band_p"])[0],
-                          band_p=sp["band_p"], p_olive=sp["p_olive"],
-                          photo_note=sp.get("photo_note"))
+        F["шкіра"].update(позиція_шкіри(hair_parts.get("шкіра", lab_skin), д,   # розв'язана трійка, не сирий вхід
+                                        protocol=protocol if from_photo else None))
     if hair_unc:
         for k in F:
             if k.startswith("волосся"): F[k]["L_невизначеність"] = hair_unc
@@ -278,11 +302,25 @@ def features(lab_skin, lab_hair, lab_eye, lab_glasses=None,
                     tier=tier("hair_nat_L","olive"))
     return F
 
-def температура_шкіри(lab):
+def температура_шкіри(lab, довіра=None):
     """ЄДИНЕ місце, де рахується warm-cool/олива/clarity шкіри. Винесено з features(),
     щоб profile.py міг ПЕРЕРАХУВАТИ похідні поля після правки (засмага, фарбування):
     доти L/a/b мінялись, а ITA, тепло_сила й undertone лишались від старого кольору,
-    і palette.температура судила шкіру, якої вже нема."""
+    і palette.температура судила шкіру, якої вже нема.
+
+    Довіра підтону джерела нижче MIN_TO_EMIT (hex моделі) — утримання тим самим набором полів,
+    що й ахроматична гілка: сили, оливи й класу нема, причина названа."""
+    д = довіра or ДОВІРА_ЯВНОГО_ВХОДУ
+    if д["undertone"] < MIN_TO_EMIT:
+        return dict(
+            тепло_сила=None, тепло_клас=УТРИМАНО_ДОВІРОЮ,
+            тепло_центр=ЦЕНТР_ПІДТОНУ, тепло_розкид=РОЗКИД_ПІДТОНУ,
+            хрома_шкіри=None, олива_член=None,
+            undertone=УТРИМАНО_ДОВІРОЮ,
+            олива_основа="не рахувалась: довіри підтону нема",
+            причина_без_температури=(
+                "довіра підтону джерела %.2f < MIN_TO_EMIT %.2f: знак, сила й олива з оцінки "
+                "не стверджуються" % (д["undertone"], MIN_TO_EMIT)))
     L, C, h = lch(lab)
     _a, _b = lab[1], lab[2]
     _C = (_a*_a + _b*_b) ** 0.5
@@ -405,12 +443,14 @@ def перерахувати_рису(F, риса, lab, kind=None, lex=None):
     F = dict(F)
     старий = dict(F.get(риса) or {})
     kind = kind or ("волосся" if риса.startswith("волосся") else риса)
+    # Джерело профілю — і для перерахованої риси (пасмо, кільце, засмага); макіяж — обраний колір, не оцінка.
+    д = довіра_рис(None if kind == "макіяж" else (F.get("_meta") or {}).get("protocol"))
     нове = dict(старий)
-    нове.update(поля_риси(lab, kind, lex))
+    нове.update(поля_риси(lab, kind, lex, довіра=д))
     if kind == "шкіра":
-        sp = skin_pos(lab)
-        нове.update(ITA=sp["ITA"], depth_band=list(sp["band_p"])[0],
-                    band_p=sp["band_p"], p_olive=sp["p_olive"])
+        позиція = позиція_шкіри(lab, д)
+        позиція.pop("photo_note")   # протоколу зйомки перерахунок не знає: примітку лишає побудова
+        нове.update(позиція)
     F[риса] = нове
     return F
 
@@ -577,26 +617,36 @@ def resonance(F, intent):
     `без_температури` з причиною, бо «не порівнювали» і «порівняли й однаково» —
     різні відповіді."""
     SP=spectra_by_feature(F,intent); names=list(SP)
+    # Напруги — пороги на різниці рис: лише з довірою осі джерела обох рис (hex моделі — нема).
+    # Макіяж — обраний колір, не оцінка портрета: довіра його ручна.
+    дж=(F.get("_meta") or {}).get("protocol")
+    д={nm: довіра_рис(None if nm.startswith(ПРЕФІКС_МАКІЯЖУ) else дж) for nm in names}
     echoes=[]; tensions=[]; без_т=[]
     for i in range(len(names)):
         for k in range(i+1,len(names)):
             n1,n2=names[i],names[k]
+            тон_пари = min(д[n1]["hue"], д[n2]["hue"]) >= MIN_TO_EMIT
+            хрома_пари = min(д[n1]["chroma"], д[n2]["chroma"]) >= MIN_TO_EMIT
             ov=[o for a in SP[n1]["тон"] for b in SP[n2]["тон"] if (o:=arc_overlap(a,b))]
             t1, t2 = SP[n1]["температура"], SP[n2]["температура"]
             dT = None if (t1 is None or t2 is None) else abs(t1-t2)
             if dT is None:
                 без_т.append(dict(риси=(n1,n2),
-                                  чому="одна з рис ахроматична: тону нема, отже нема й "
-                                       "температури. Вісь не порівнюється — це не «однакові»"))
+                                  чому=("одна з рис ахроматична: тону нема, отже нема й "
+                                        "температури. Вісь не порівнюється — це не «однакові»"
+                                        if тон_пари else
+                                        "температуру рис утримано: довіра тону джерела нижче "
+                                        "MIN_TO_EMIT (hex моделі — оцінка). Вісь не порівнюється")))
             if ov: echoes.append(dict(риси=(n1,n2), спільні_дуги=ov,
                                       Δтемпература=(round(dT,2) if dT is not None else None)))
-            if dT is not None and dT>0.6:
+            if тон_пари and dT is not None and dT>0.6:
                 tensions.append(dict(риси=(n1,n2), Δтемпература=round(dT,2),
                                      суть="різні температури — не усереднювати",
                                      вісь="undertone"))
-            dC=abs(SP[n1]["хрома"][0]-SP[n2]["хрома"][0])
-            if dC>0.25: tensions.append(dict(риси=(n1,n2), Δхрома=round(dC,2),
-                                           суть="різні рівні чистоти"))
+            if хрома_пари:
+                dC=abs(SP[n1]["хрома"][0]-SP[n2]["хрома"][0])
+                if dC>0.25: tensions.append(dict(риси=(n1,n2), Δхрома=round(dC,2),
+                                               суть="різні рівні чистоти"))
     # зони, де сходяться ≥3 риси (не бал, а перелік учасників)
     conf={}
     for h in range(0,360,5):
