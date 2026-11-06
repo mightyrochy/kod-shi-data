@@ -1992,10 +1992,11 @@ _МІСЦЯ_ОПЦІЙ = "where it is worn"
                                  "edge of the necklace and the neckline, clearance_cm — the gap needed)",
     "necklace_clearly_above_or_below": "a shorter chain above the neckline, or a longer one clearly below",
     "necklace_neckline_gap_not_judged": "the code does not judge whether the necklace sits clear of the neckline: "
-                                        "no recognised source gives the gap in centimetres (values: gap_cm — the "
-                                        "distance between the necklace's lowest point and the neckline edge, cm; "
-                                        "side — above or below the neckline; items — necklace, garment; the "
-                                        "neckline depth is a convention of its type, not a measurement of the item)",
+                                        "no recognised source gives the gap in centimetres (values: drop_cm — how "
+                                        "far the necklace's lowest point falls below the base of her neck, cm, half "
+                                        "the chain; gap_cm and side — only when the garment's neckline is measured: "
+                                        "the distance between the necklace's lowest point and the neckline edge, cm, "
+                                        "and whether the necklace is above or below it; items — necklace, garment)",
     # ── РЕМЕСЛО, БЛИСК І МЕТАЛИ (П-6: K-CRA-01/02/03/06/07/10, K-MAT-04, K-COL-06-M) ──
     "no_third_piece_dressed_not_styled": "base only, no layer or accessory: «dressed»; «styled» starts with a third "
                                          "piece",
@@ -3130,13 +3131,11 @@ _МІСЦЯ_ОПЦІЙ = "where it is worn"
                              "«keep_at_most» of them and replace it with another item of the same kind in the "
                              "rest; the kind of this item stays (values: outfits — outfit ids; item — «n»; "
                              "kind — kind code; keep_at_most)",
-    "variety_all_different": "all outfits differ: no pair shares an item, or the scheme together with the most "
-                             "striking item (values: outfits — how many)",
+    "variety_all_different": "all outfits differ: no pair shares any item (values: outfits — how many)",
     "variety_kind_repeat_not_checked": "a repeat of one item within a kind was not checked: the outfit records "
                                        "carry no kinds of items",
-    "variety_shared_items": "these two outfits share «shared» of «total» items; the code does not judge how many "
-                            "shared items make two outfits one idea (values: outfits — outfit ids; shared; total; "
-                            "items — the shared item numbers)",
+    "variety_shared_item": "this item stands in several outfits of the set; the code does not judge how many shared "
+                           "items make outfits one idea (values: item — item number; outfits — outfit ids)",
     "variety_letter_without_length": "the silhouette letter was counted without these items: they have no "
                                      "length (values: items)",
     "done_finding_gone": "the finding of this rule over these items is gone in the new check (values: rule)",
