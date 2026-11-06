@@ -44,12 +44,9 @@ def вибірка(offers, на_слот=6, сід=ТИПОВИЙ_СІД, крі
             continue
         if not (o.get("фото") or o.get("фото_сирі")):
             continue
-        try:
-            с = F.слоти(o).get("слот")
-        except Exception as _e:
-            import os as _os, traceback as _tb   # п.14: не мовчати (форма bridge)
-            if _os.environ.get("ЛЮСТЕРКО_ТРАСА"): _tb.print_exc()
-            с = None
+        # БЕЗ `try` — як `жнива_збагачення.тип_для_промпту`: на даних `F.слоти` не кидає (вимір там); виняток — вада
+        # коду, і річ не випадає з вибірки мовчки, а прогін спиняється на ній
+        с = F.слоти(o).get("слот")
         if not с:
             continue
         за_слотом[група_слота(с)].append(o)

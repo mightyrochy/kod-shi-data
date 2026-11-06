@@ -3770,12 +3770,82 @@
          }
         }
        }
+      },
+      {
+       "properties": {
+        "name": {
+         "const": "list_scenarios"
+        },
+        "args": {
+         "type": "object",
+         "additionalProperties": false,
+         "properties": {}
+        }
+       }
+      },
+      {
+       "properties": {
+        "name": {
+         "const": "open_scenario"
+        },
+        "args": {
+         "type": "object",
+         "additionalProperties": false,
+         "required": [
+          "id"
+         ],
+         "properties": {
+          "id": {
+           "type": "string",
+           "minLength": 1,
+           "description": "the \"id\" of one of saved_cases"
+          }
+         }
+        }
+       }
+      },
+      {
+       "properties": {
+        "name": {
+         "const": "delete_scenario"
+        },
+        "args": {
+         "type": "object",
+         "additionalProperties": false,
+         "required": [
+          "id"
+         ],
+         "properties": {
+          "id": {
+           "type": "string",
+           "minLength": 1,
+           "description": "the \"id\" of one of saved_cases"
+          }
+         }
+        }
+       }
+      },
+      {
+       "properties": {
+        "name": {
+         "const": "new_scenario"
+        },
+        "args": {
+         "type": "object",
+         "additionalProperties": false,
+         "properties": {}
+        }
+       }
       }
      ],
      "properties": {
       "name": {
        "enum": [
-        "save_scenario"
+        "save_scenario",
+        "list_scenarios",
+        "open_scenario",
+        "delete_scenario",
+        "new_scenario"
        ]
       },
       "args": {
@@ -8536,6 +8606,11 @@
    "mild": "mild",
    "warm": "warm",
    "hot": "hot"
+  },
+  "wind_band": {
+   "calm": "calm",
+   "moderate": "moderate",
+   "strong": "strong"
   },
   "intent": {
    "conventional": "conventional",
