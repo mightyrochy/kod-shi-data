@@ -812,17 +812,6 @@ function байтиВБ64урл(м){
   for (let i=0;i<м.length;i+=шм) б += String.fromCharCode.apply(null, м.subarray(i,i+шм));
   return btoa(б).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'');
 }
-async function запакувати(об){
-  const байти = new TextEncoder().encode(JSON.stringify(об));
-  if (typeof CompressionStream === 'function'){
-    try{
-      const ст = new Uint8Array(await new Response(
-        new Blob([байти]).stream().pipeThrough(new CompressionStream('gzip'))).arrayBuffer());
-      return байтиВБ64урл(ст);
-    }catch(e){}
-  }
-  return байтиВБ64урл(байти);
-}
 function копіювати(текст){
   try{
     const т=document.createElement('textarea'); т.value=текст; т.setAttribute('readonly','');
