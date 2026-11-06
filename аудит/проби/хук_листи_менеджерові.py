@@ -27,6 +27,7 @@ def запуск(кому, текст, коли, стан_файл, я=ДИСП�
         вхід = {"tool_name": "mcp__claude-code-remote__send_message",
                 "tool_input": {"session_id": кому, "message": текст}}
         env = dict(os.environ, CLAUDE_PROJECT_DIR=т, ЛИСТИ_СТАН_ФАЙЛ=стан_файл, ЛИСТИ_ЗАРАЗ=коли,
+                   ЛИСТИ_ПОВТОР_ФАЙЛ=стан_файл + ".повтор",
                    CLAUDE_CODE_REMOTE_SDK_URL=f"https://x/sessions/cse_{я[len('session_'):]}")
         р = subprocess.run([sys.executable, ХУК], input=json.dumps(вхід), capture_output=True, text=True, env=env)
     return ("відмова" if "deny" in р.stdout else "пропущено") + (" +stderr" if р.stderr.strip() else "")
