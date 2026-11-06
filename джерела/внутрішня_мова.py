@@ -2009,11 +2009,10 @@ _МІСЦЯ_ОПЦІЙ = "where it is worn"
                                  "edge of the necklace and the neckline, clearance_cm — the gap needed)",
     "necklace_clearly_above_or_below": "a shorter chain above the neckline, or a longer one clearly below",
     "necklace_neckline_gap_not_judged": "the code does not judge whether the necklace sits clear of the neckline: "
-                                        "no recognised source gives the gap in centimetres (values: drop_cm — how "
-                                        "far the necklace's lowest point falls below the base of her neck, cm, half "
-                                        "the chain; gap_cm and side — only when the garment's neckline is measured: "
-                                        "the distance between the necklace's lowest point and the neckline edge, cm, "
-                                        "and whether the necklace is above or below it; items — necklace, garment)",
+                                        "no recognised source gives the gap in centimetres, and the code knows "
+                                        "neither where the necklace falls nor the neckline edge without error, so "
+                                        "it names no gap and no side (values: chain_cm — the necklace's chain "
+                                        "length, cm; items — necklace, garment)",
     # ── РЕМЕСЛО, БЛИСК І МЕТАЛИ (П-6: K-CRA-01/02/03/06/07/10, K-MAT-04, K-COL-06-M) ──
     "no_third_piece_dressed_not_styled": "base only, no layer or accessory: «dressed»; «styled» starts with a third "
                                          "piece",
@@ -2602,6 +2601,11 @@ _МІСЦЯ_ОПЦІЙ = "where it is worn"
                                    "— the leg as a percentage of her height; pair — nude or contrast; "
                                    "far_from_middle — the proportion is already past the middle, so a nude "
                                    "drives it further away and a contrast pulls it back)",
+    "leg_proportion_pair_tone_not_judged": "the code does not judge which way the pair moves her torso-to-leg "
+                                           "proportion: no recognised source gives the middle of the proportion, "
+                                           "and the error of her measured crotch height is unknown (values: "
+                                           "leg_pct — her measured crotch height as a percentage of her height; "
+                                           "pair — nude or contrast; items — the pair)",
     "contrast_pair_to_middle": "a contrasting pair: shifts torso:leg toward the middle",
     "nude_or_tights_to_middle": "nude pair or tights tone: shifts the proportion toward the middle",
     "heel_wear_cost": "heel heel_cm cm for hours h: wear cost named",
@@ -2704,6 +2708,12 @@ _МІСЦЯ_ОПЦІЙ = "where it is worn"
                                          "same cut",
     "item_opens_vetoed_zone": "item exposes a zone she keeps covered (zones): her personal limit",
     "hem_above_her_limit": "hem at hem_cm cm from floor, above her limit limit_cm cm",
+    "hem_vs_her_leg_limit_not_judged": "the code does not judge whether the hem is above her leg limit: the hem "
+                                       "height is a body-template level minus the garment length, and the error "
+                                       "of that level is unknown, so it names no side (values: hem_cm — the hem, "
+                                       "cm from floor; limit_cm — her own limit, cm from floor; knee_cm — the "
+                                       "template knee, cm from floor, when she keeps her legs covered; items — "
+                                       "the garment)",
     "other_item_within_her_coverage": "another item within her coverage",
     "large_item_repeats_makeup_colour": "a large item repeats the colour of her make-up (zone) at de00 ΔE00: "
                                         "tone-on-tone with the lips, a slip unless it is the intent",
@@ -2716,6 +2726,11 @@ _МІСЦЯ_ОПЦІЙ = "where it is worn"
     "add_third_piece_to_mono": "add a third piece: shoes in the hem tone, an open layer or a structural "
                                "accessory",
     "motif_scale_off_person": "print motif off the person's scale (item_motif: larger|smaller)",
+    "motif_scale_and_person_not_judged": "the code does not judge whether the print motif suits her scale: the "
+                                         "motif's share of its photo frame and her frame are different quantities, "
+                                         "and no recognised source links them (values: motif_frame_share — the "
+                                         "motif's run as a share of its photo frame; wrist_cm — her wrist girth, "
+                                         "cm, when given; height_cm — her height, cm, when given; items — the item)",
     "take_motif_scale": "take a motif need (smaller|larger)",
     "interest_sources_below_floor": "the look has count interest sources at floor floor",
     "texture_near_face": "a pronounced texture in the slot nearest the face: interest without a second colour "
