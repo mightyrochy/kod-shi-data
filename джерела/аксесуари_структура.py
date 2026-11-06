@@ -970,7 +970,7 @@ def роди_елемента(e):
     від положення біля обличчя, а його не названо (`приобличчевість` → None)."""
     біля = приобличчевість(e)
     варіанти = (True, False) if біля is None else (біля,)
-    return tuple(dict.fromkeys(_рід_елемента(e, б) for б in варіанти))
+    return tuple(dict.fromkeys(_рід_за_положенням(e, б) for б in варіанти))
 
 
 def рід_код(e):
@@ -979,12 +979,12 @@ def рід_код(e):
     положення біля обличчя, — unknown."""
     біля = приобличчевість(e)
     if біля is None:
-        коди = {_рід_код(e, б) for б in (True, False)}
+        коди = {_код_за_положенням(e, б) for б in (True, False)}
         return коди.pop() if len(коди) == 1 else "unknown"
-    return _рід_код(e, біля)
+    return _код_за_положенням(e, біля)
 
 
-def _рід_код(e, біля):
+def _код_за_положенням(e, біля):
     if (e.get("метал") or ""):
         return "metal_near_face" if біля else "metal"
     if e.get("візерунок"):
@@ -1015,7 +1015,7 @@ def рід_елемента(e):
     return р[0] if len(р) == 1 else "невідомо"
 
 
-def _рід_елемента(e, біля):
+def _рід_за_положенням(e, біля):
     м = (e.get("метал") or "").lower()
     if м:
         return "метал «%s» біля обличчя" % м if біля else "метал «%s»" % м
