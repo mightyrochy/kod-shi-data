@@ -39,6 +39,13 @@ if not ЛИШЕ_ОЧІ:
  лаб = lambda c: КР.точка_кольору(c)
  print("K-COL-06 нейтраль:", dict(collections.Counter(КР.нейтраль(лаб(c)) for c in виміри)))
  print("R-COL-16 бік_b_речі:", dict(collections.Counter(ПН.бік_b_речі(лаб(c)) for c in виміри)))
+ print("K-COL-06 рід_нейтралі речі (виміри):", dict(collections.Counter(КР.рід_нейтралі(c) for c in виміри)))
+ мт, мх = C["b_нейтралі"]
+ def _бік(c):
+     т = КР.відношення(c, КР.опора_b(мт), "warmer"); х = КР.відношення(КР.опора_b(мх), c, "warmer")
+     return 1 if т == "так" else -1 if х == "так" else 0 if (т, х) == ("ні", "ні") else "невідомо"
+ print("R-COL-16 бік речі (`warmer` щодо опор b_нейтралі, як колір_нейтралі):",
+       dict(collections.Counter(_бік(c) for c in виміри)))
  print("K-KOH-08 майже_біла_річ:", dict(collections.Counter(ФМ.майже_біла_річ(c) for c in кат)))
 
  random.seed(12)
