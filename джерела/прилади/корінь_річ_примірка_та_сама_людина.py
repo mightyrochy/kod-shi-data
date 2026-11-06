@@ -55,6 +55,14 @@ import обсяг_приладу as ОБСЯГ
            'b64decode', 'b64encode', 'decode', 'encode', 'createObjectURL', 'createImageBitmap',
            'fetch', 'blob', 'arrayBuffer', 'stringify', 'parse', 'loads', 'dumps',
            'replace', 'replaceAll', 'slice', 'substring', 'trim', 'split', 'join', 'toString'}
+# Декодування й кодування зображення: base64, байти, Blob, ImageData. Пікселі
+# проходять крізь них, тож походження переноситься (чи байти — масив, масив
+# масивів, чи значення напряму); ці місця самі нічого не знімають.
+БАЙТИ_ТИПИ = {'Uint8Array', 'Uint8ClampedArray', 'Int8Array', 'Uint16Array', 'Int16Array', 'Uint32Array',
+              'Int32Array', 'Float32Array', 'Float64Array', 'ArrayBuffer', 'DataView'}
+КОНТЕЙНЕРИ = БАЙТИ_ТИПИ | {'Blob', 'File', 'ImageData'}
+СКАЛЯРИ_З_АРГУМЕНТІВ = {'atob', 'btoa', 'fromCharCode', 'fromCodePoint', 'urlsafe_b64decode', 'urlsafe_b64encode'}
+СКАЛЯРИ_З_ОДЕРЖУВАЧА = {'charCodeAt', 'codePointAt', 'getvalue'}
 СУД = re.compile(r'суд|оцін|контраст|шкір|фігур|силует|облич|judge|assess|skin|figure|face|contrast', re.I)
 НЕ_СУД = {'розмір_картинки', 'малюватиФотоОцінкиП', 'кінецьОцінкиП', 'збійОцінкиП',
           'оцінкаЗРозмовиП', 'оновитиРядокП', 'викликОцінкиП'}
@@ -470,7 +478,7 @@ class Граф:
             функ = self.вираз(в['callee'], с)
             арг = tuple(self.вираз(а, с) for а in в.get('arguments', []))
             р = self.нове(ім in {'ел', 'createElement', '$', 'querySelector', 'querySelectorAll', 'getElementById',
-                                  'Image', 'Promise', 'Map', 'Set', 'map', 'flatMap', 'getAll', 'get', 'json', 'містП', 'модельП_блоки'})
+                                  'Image', 'Promise', 'Map', 'Set', 'map', 'flatMap', 'getAll', 'get', 'json', 'містП', 'модельП_блоки'} | БАЙТИ_ТИПИ)
             if ім in {'find', 'filter'} and в.get('arguments'):
                 край = [в['arguments'][0]]
                 while край:
@@ -662,6 +670,21 @@ class Граф:
                     self.скалярні.add((б, р))
                 elif арг:
                     self.скалярні.add((арг[0], р))
+            elif ім in КОНТЕЙНЕРИ and арг:
+                # Байти — масив, масив масивів чи значення напряму (`[байти]`, `new Blob(частини)`).
+                перший = арг[0]
+                шар = self.поле(перший, '*')
+                self.звʼязати(перший, р)
+                self.звʼязати(шар, р)
+                self.звʼязати(self.поле(шар, '*'), р)
+                if ім in БАЙТИ_ТИПИ:
+                    self.запис(р, '*', перший)
+                    self.запис(р, '*', шар)
+            elif ім in СКАЛЯРИ_З_АРГУМЕНТІВ:
+                for а in арг:
+                    self.звʼязати(а, р)
+            elif ім in СКАЛЯРИ_З_ОДЕРЖУВАЧА and б:
+                self.звʼязати(б, р)
             elif ім in прозорі:
                 for з in ((б,) if б and ім in {'replace', 'replaceAll', 'slice', 'substring', 'trim', 'split', 'join', 'toString', 'blob', 'arrayBuffer', 'decode', 'encode'} else арг[:1]):
                     self.звʼязати(з, р)
