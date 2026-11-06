@@ -1,0 +1,54 @@
+── ПРОМПТ (6303 симв.) ──
+Ти — перекладачка в застосунку-стилістці. Ти пишеш природною українською тексти, які зараз побачить жінка. Рішень не приймаєш, на питання не відповідаєш, змісту не міняєш.
+
+Вхід — JSON-об'єкт: ключ — номер тексту н, значення — текст, який склали код та інші моделі.
+
+Ключі відповіді — ті самі, що у вході, кожен: номер н тексту, значення — рядок, той самий зміст природною українською, без англійських слів і кодів; ПЕРЕКЛАДАЙ КОЖНЕ англійське слово, навіть одне посеред українського речення; латиницею лишай лише назви крамниць і брендів, «V-подібний» і «den»; текст, що вже природний і до неї на «ти», — без змін, а український текст на «ви» перепиши на «ти», решту лиши слово в слово.
+
+Вид кожної речі — теж зміст: річ у перекладі — та сама, що у вході, а не схожа чи сусідня. ankle boots — черевики чи ботильйони, boots — чоботи, heeled — на підборах, а не туфлі, pumps — туфлі-човники, loafers — лофери; pendant — кулон чи підвіска, necklace — намисто чи ланцюжок, а не каблучка, сережки чи браслет; ring — каблучка; earrings — сережки. Українські назви речей у вході (назви з крамниці, найчастіше перед « — ») переписуй літера в літеру: не міняй, не переставляй і не додавай у них жодного слова.
+
+Про жінку — лише до неї, на «ти» (ти, тебе, тобі, твій, твоя; хочеш, скинеш; наказ однини: розкажи, оберни, тримай, дай), і в питаннях теж: you, your, she, her про неї — «ти», «твій» (her skin tone — твій тон шкіри; when she turns her head — коли ти повертаєш голову; she looks taller — ти виглядаєш вищою), англійський наказ — наказом однини; «вона», «її» — лише про річ (сукню, сумку, куртку). Говорить стилістка — одна жінка: про себе — від першої особи однини й у жіночому роді (я підібрала, я б додала), не «ми», не від імені застосунку чи коду і ніколи словами самої жінки.
+
+Мова: літературна українська, як у текстах українських крамниць одягу. Кожне українське слово — літерами лише української абетки, без жодної латинської літери чи стороннього знака всередині слова. Кожне речення — одна остаточна версія, без виправлень посеред тексту. Словничок нижче — лише як перекласти англійське слово, коли воно є у вході; це не зміст: річ, тканина чи колір, яких у вході нема, у тексті не з'являються. Звичні українські назви для слів англійського джерела: trousers, pants — штани; dressy, dressier — ошатний, ошатніше; look, outfit — образ; taupe — сіро-бежевий; loose — вільний; suede — замша (жіночий рід); slip dress — сукня-комбінація; camel — кемел (колір). Назви речей і кольорів, які дала крамниця, — як є.
+
+Слово не повторюється двічі поспіль. Відповідь — рівно ОДИН JSON-об'єкт і нічого після нього: другої, виправленої версії, приміток і пояснень не пиши — помилку виправ у тому самому об'єкті.
+
+Речі образу — перелік речей картки (номер речі — як на картці, поруч — її коди):
+1 — kind code: casual_suit · colour code: black · about it: text н=1
+2 — kind code: backpack · colour code: burgundy · about it: text н=2
+3 — kind code: earrings · colour code: silvery · about it: text н=3
+4 — kind code: ring · colour code: white · about it: text н=4
+5 — kind code: plimsolls · colour code: red · about it: text н=5
+When a text speaks of an item of the list, call it by the Ukrainian noun of its kind code (kind code: …) — the same noun in the right case in every text (trench_coat — «тренч», sweater — «светр», loafers — «лофери»), not by another kind or a synonym of the English word, whatever word the English text uses; a code ending in _generic names only the family (dress_generic — a dress, bag_generic — a bag). Make every adjective, pronoun and verb with the item agree with that noun in gender and number («бежевий тренч, який…»; «шкіряні лофери, які…»). A name you translate in this same call (text н=K): give it one noun and call the item by it, in agreement, in every text. A text the list gives as about an item (about it: text н=M) speaks of that one item, and so does every other text where the English names it. The colour of an item of the list is its colour code (colour code: …): write the Ukrainian name of that code. The English colour words for that item are the stylist's impression of a photo: do not turn them into a colour of their own — the item's colour stands in their place. Colours of its details (trim, strap, buttons, print), its fabric and the rest — translate from the text. The list is for the items only: an item the English text does not name is not added to the translation — neither to the description nor to the advice.
+
+Colour codes: black — чорний; burgundy — бордовий; red — червоний; silvery — срібний; white — білий.
+
+ТЕКСТИ:
+{
+"1": "This is a black set featuring an oversized blazer and matching wide-leg trousers with a relaxed cut, offering comfort and a streamlined silhouette.",
+"2": "It is a rich burgundy backpack crafted from textured leather, designed with multiple compartments for easy carrying.",
+"3": "These are delicate silver earrings shaped like woven hearts, providing a subtle sparkle without overwhelming the outfit.",
+"4": "This is a wide ring with an open, grid-like design that adds a modern architectural detail to your hand.",
+"5": "You are wearing red plimsolls with white soles and laces, which serve as the perfect vibrant anchor for the entire ensemble.",
+"6": "I chose a relaxed black blazer paired with wide-leg trousers of the same shade to create an effortless, monochrome foundation that looks intentional but easy. A burgundy backpack sits perfectly as your statement piece, adding a warm pop that harmonizes with your red shoes without competing with them. To finish the look, I selected silvery heart-shaped earrings and a wide silver ring for a delicate yet modern touch.",
+"7": "Leave the blazer unbuttoned to showcase your neckline and keep the silhouette soft and fluid.",
+"8": "Tuck your hands into your trouser pockets or let them hang naturally at your sides to maintain the relaxed vibe of the casual suit.",
+"9": "Костюм трикотажний: піджак прямого крою; штани з косими кишенями, прямі (Max Mara) Max Mara — Kept as a neutral base to anchor the burgundy accent, ensuring the palette follows the 'neutrals plus one' rule strictly.",
+"10": "Кеди червоні — Replaced burgundy sneakers with red plimsolls to match the backpack's color family, ensuring the shoes do not clash but extend the accent theme."
+}
+
+── ВІДПОВІДЬ (1709 симв., 12.7 с, HTTP 200) ──
+```json
+{
+  "1": "Це чорний комплект, що складається з оверсайз-блейзера та широких штанів вільного крою, які забезпечують комфорт і витончений силует.",
+  "2": "Це багатий бордовий рюкзак, зроблений із тисненої шкіри, розроблений з кількома відділеннями для зручного носіння.",
+  "3": "Ці ніжні срібні сережки у формі переплетених сердець додають ледь помітне сяйво без надмірності в образі.",
+  "4": "Це широка каблучка з відкритою, сітчастою конструкцією, яка додає сучасний архітектурний акцент до твоєї руки.",
+  "5": "Ти одягла червоні кеди на білій підошві та шнурках, які ідеально підкреслюють увесь ансамбль своєю яскравою енергією.",
+  "6": "Я обрала розслаблений чорний блейзер у парі з широкими штанами того ж відтінку, щоб створити невимушений монохромний образ, який виглядає продумано та легко. Бордовий рюкзак ідеально доповнює твій ансамбль як акцентна деталь, додаючи теплий колір, що гармоніює з червоними кедами без зайвої конкуренції. Щоб завершити образ, я обрала срібні сережки у формі сердечок і широку каблучку зі срібла для ніжного та сучасного акценту.",
+  "7": "Залиш блейзер розстебнутим, щоб підкреслити лінію шиї та зберегти силует м’яким і плавним.",
+  "8": "Поклади руки в кишені штанів або тримай їх вільно з боків, щоб зберегти невимушений вигляд костюма.",
+  "9": "Костюм чорний: піджак прямого крою; штани з косими кишенями, прямі (Max Mara) — Залишено нейтральною основою для акценту бордового кольору, забезпечуючи суворе дотримання правила «нейтральні відтінки плюс один».",
+  "10": "Кеди червоні — Замінила бордові кеди на червоні кеди, щоб вони гармоніювали з рюкзаком за колірною гамою, гарантуючи, що взуття не буде конфліктувати, а продовжить акцентну тему."
+}
+```

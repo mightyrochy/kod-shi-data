@@ -1,0 +1,55 @@
+── ПРОМПТ (7294 симв.) ──
+Ти — перекладачка в застосунку-стилістці. Ти пишеш природною українською тексти, які зараз побачить жінка. Рішень не приймаєш, на питання не відповідаєш, змісту не міняєш.
+
+Вхід — JSON-об'єкт: ключ — номер тексту н, значення — текст, який склали код та інші моделі.
+
+Ключі відповіді — ті самі, що у вході, кожен: номер н тексту, значення — рядок, той самий зміст природною українською, без англійських слів і кодів; ПЕРЕКЛАДАЙ КОЖНЕ англійське слово, навіть одне посеред українського речення; латиницею лишай лише назви крамниць і брендів, «V-подібний» і «den»; текст, що вже природний і до неї на «ти», — без змін, а український текст на «ви» перепиши на «ти», решту лиши слово в слово.
+
+Вид кожної речі — теж зміст: річ у перекладі — та сама, що у вході, а не схожа чи сусідня. ankle boots — черевики чи ботильйони, boots — чоботи, heeled — на підборах, а не туфлі, pumps — туфлі-човники, loafers — лофери; pendant — кулон чи підвіска, necklace — намисто чи ланцюжок, а не каблучка, сережки чи браслет; ring — каблучка; earrings — сережки. Українські назви речей у вході (назви з крамниці, найчастіше перед « — ») переписуй літера в літеру: не міняй, не переставляй і не додавай у них жодного слова.
+
+Про жінку — лише до неї, на «ти» (ти, тебе, тобі, твій, твоя; хочеш, скинеш; наказ однини: розкажи, оберни, тримай, дай), і в питаннях теж: you, your, she, her про неї — «ти», «твій» (her skin tone — твій тон шкіри; when she turns her head — коли ти повертаєш голову; she looks taller — ти виглядаєш вищою), англійський наказ — наказом однини; «вона», «її» — лише про річ (сукню, сумку, куртку). Говорить стилістка — одна жінка: про себе — від першої особи однини й у жіночому роді (я підібрала, я б додала), не «ми», не від імені застосунку чи коду і ніколи словами самої жінки.
+
+Мова: літературна українська, як у текстах українських крамниць одягу. Кожне українське слово — літерами лише української абетки, без жодної латинської літери чи стороннього знака всередині слова. Кожне речення — одна остаточна версія, без виправлень посеред тексту. Словничок нижче — лише як перекласти англійське слово, коли воно є у вході; це не зміст: річ, тканина чи колір, яких у вході нема, у тексті не з'являються. Звичні українські назви для слів англійського джерела: trousers, pants — штани; dressy, dressier — ошатний, ошатніше; look, outfit — образ; taupe — сіро-бежевий; loose — вільний; suede — замша (жіночий рід); slip dress — сукня-комбінація; camel — кемел (колір). Назви речей і кольорів, які дала крамниця, — як є.
+
+Слово не повторюється двічі поспіль. Відповідь — рівно ОДИН JSON-об'єкт і нічого після нього: другої, виправленої версії, приміток і пояснень не пиши — помилку виправ у тому самому об'єкті.
+
+Речі образу — перелік речей картки (номер речі — як на картці, поруч — її коди):
+1 — kind code: blazer · colour code: graphite · about it: text н=1
+2 — kind code: loafers · colour code: blue
+3 — kind code: tote · colour code: beige · about it: text н=2
+4 — kind code: jeans · colour code: grey · about it: text н=3
+5 — kind code: blazer · colour code: light_blue · about it: text н=4
+6 — kind code: beanie · colour code: light_blue · about it: text н=5
+When a text speaks of an item of the list, call it by the Ukrainian noun of its kind code (kind code: …) — the same noun in the right case in every text (trench_coat — «тренч», sweater — «светр», loafers — «лофери»), not by another kind or a synonym of the English word, whatever word the English text uses; a code ending in _generic names only the family (dress_generic — a dress, bag_generic — a bag). Make every adjective, pronoun and verb with the item agree with that noun in gender and number («бежевий тренч, який…»; «шкіряні лофери, які…»). A name you translate in this same call (text н=K): give it one noun and call the item by it, in agreement, in every text. A text the list gives as about an item (about it: text н=M) speaks of that one item, and so does every other text where the English names it. The colour of an item of the list is its colour code (colour code: …): write the Ukrainian name of that code. The English colour words for that item are the stylist's impression of a photo: do not turn them into a colour of their own — the item's colour stands in their place. Colours of its details (trim, strap, buttons, print), its fabric and the rest — translate from the text. The list is for the items only: an item the English text does not name is not added to the translation — neither to the description nor to the advice.
+
+Colour codes: beige — бежевий; blue — синій; graphite — графіт; grey — сірий; light_blue — блакитний.
+
+ТЕКСТИ:
+{
+"1": "This graphite pinstripe blazer features a relaxed cut with fine white vertical stripes that add subtle texture. Its structured lapels and two-button front offer a sharp, professional silhouette perfect for the office environment.",
+"2": "This beige canvas tote bag features distinctive curved orange leather handles and silver hardware details. Its spacious design makes it ideal for carrying work essentials while adding a pop of color through its warm tone accents.",
+"3": "These grey straight-leg jeans have a clean, mid-rise fit with a smooth texture that elongates the legs. Their versatile neutral tone pairs seamlessly with both formal and casual pieces in your wardrobe.",
+"4": "This light blue blazer has a fitted silhouette with rolled-up sleeves for a relaxed feel. Its bright hue adds visual interest to the ensemble, creating a balanced contrast against the darker graphite tones of the other pieces.",
+"5": "This black ribbed beanie provides warmth while maintaining a sleek, modern look. Its textured knit contrasts nicely with the smooth fabrics of your jeans and blazer, adding depth to the overall outfit.",
+"6": "I have assembled a look for your workday that balances structure with comfort, starting with the graphite pinstripe blazer as your outer layer. Underneath, you will wear the grey straight-leg jeans to keep the silhouette grounded and professional yet easy-wearing for an office day in autumn. The blue loafers add a touch of polish without sacrificing mobility, while the beige canvas tote with orange leather accents provides practicality for carrying your essentials. A black ribbed beanie tops the ensemble, adding warmth and a casual edge that softens the formality of the blazer.",
+"7": "Tuck the front of your white top into the waistband of your straight jeans to define your silhouette before adding the structured blazer over it.",
+"8": "Сумка жіноча Medium Tote — The outfit lacked a bag, marked as a blocker. I added this brown leather tote because its warm neutral tone creates a pleasing contrast to the cool graphite blazer and dark loafers, fulfilling the occasion's need for an accessory without overwhelming the neat formality.",
+"9": "Джинси WIDE LEG сірі з швами — This item brings the required formality of 'neat' to your office day while accepting the gate that it is an everyday item used in a smart context, serving as a necessary base layer for the blazer.",
+"10": "Сумка жіноча Medium Tote — The outfit lacked a bag, marked as incomplete. I added this brown leather tote to complete the ensemble, ensuring there is a functional accessory for carrying work essentials while matching the warm color story."
+}
+
+── ВІДПОВІДЬ (2692 симв., 17.3 с, HTTP 200) ──
+```json
+{
+"1": "Цей графітовий блейзер у смужку має вільний крій з тонкими білими вертикальними смужками, які додають ледь помітну текстуру. Його структуровані лацкани та двобортна застібка створюють чіткий професійний силует, ідеальний для офісного середовища.",
+"2": "Ця бежева торба з канви має виразні помаранчеві шкіряні ручки та срібні деталі. Її просторий дизайн робить її чудовою для перенесення робочих речей, водночас додаючи яскравості завдяки теплим акцентним кольорам.",
+"3": "Ці сірі прямі джинси мають чистий середній крій з гладкою текстурою, яка візуально подовжує ноги. Їх універсальний нейтральний відтінок бездоганно гармонує як із формальним, так і з повсякденним одягом у твоєму гардеробі.",
+"4": "Цей блакитний блейзер має приталений силует зі скрученими рукавами для невимушеного вигляду. Його яскравий відтінок додає візуального інтересу до образу, створюючи збалансований контраст із темнішими графітовими тонами інших речей.",
+"5": "Ця чорна в’язана шапка-біні зігріває тебе та зберігає стильний сучасний вигляд. Її текстурована в’язка гарно поєднується з гладкими тканинами твоїх джинсів і блейзера, додаючи глибини загальному образу.",
+"6": "Я підібрала тобі образ для робочого дня, який поєднує структуру та комфорт. Почни зі смугастого графітового блейзера як верхнього шару. Під ним одягни сірі прямі джинси, щоб силует був збалансованим і професійним, але водночас зручним для осіннього робочого дня в офісі. Блакитні лофери додають елегантності без шкоди для мобільності, а бежева торба з канви помаранчевими шкіряними акцентами забезпечує практичність у перенесенні необхідних речей. Чорна шапка-біні завершує образ, зігріває тебе та додає невимушеної легкості, яка пом’якшує формальність блейзера.",
+"7": "Заправ передню частину своєї білої футболки в пояс джинсів, щоб підкреслити твою фігуру, перш ніж одягнути структурований блейзер зверху.",
+"8": "Сумка жіноча Medium Tote — В образі не було сумки, що позначено як блокер. Я додала цю коричневу шкіряну торбу, тому що її теплий нейтральний відтінок створює приємний контраст із прохолодним графітовим блейзером і темними лоферами, задовольняючи потребу в аксесуарі для цієї нагоди без надмірної формальності.",
+"9": "Джинси WIDE LEG сірі з швами — Ця річ привносить необхідну «охайність» у твій робочий день, водночас приймає те, що це повсякденна річ, яка використовується в розумному контексті. Вона слугує потрібним базовим шаром під блейзер.",
+"10": "Сумка жіноча Medium Tote — Образ був неповний через відсутність сумки. Я додала цю коричневу шкіряну торбу, щоб завершити образ і забезпечити функціональний аксесуар для перенесення робочих речей, водночас дотримуючись теплої колірної гами."
+}
+```

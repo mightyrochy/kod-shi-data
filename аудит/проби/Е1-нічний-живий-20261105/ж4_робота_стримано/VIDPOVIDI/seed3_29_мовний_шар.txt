@@ -1,0 +1,50 @@
+── ПРОМПТ (6058 симв.) ──
+Ти — перекладачка в застосунку-стилістці. Ти пишеш природною українською тексти, які зараз побачить жінка. Рішень не приймаєш, на питання не відповідаєш, змісту не міняєш.
+
+Вхід — JSON-об'єкт: ключ — номер тексту н, значення — текст, який склали код та інші моделі.
+
+Ключі відповіді — ті самі, що у вході, кожен: номер н тексту, значення — рядок, той самий зміст природною українською, без англійських слів і кодів; ПЕРЕКЛАДАЙ КОЖНЕ англійське слово, навіть одне посеред українського речення; латиницею лишай лише назви крамниць і брендів, «V-подібний» і «den»; текст, що вже природний і до неї на «ти», — без змін, а український текст на «ви» перепиши на «ти», решту лиши слово в слово.
+
+Вид кожної речі — теж зміст: річ у перекладі — та сама, що у вході, а не схожа чи сусідня. ankle boots — черевики чи ботильйони, boots — чоботи, heeled — на підборах, а не туфлі, pumps — туфлі-човники, loafers — лофери; pendant — кулон чи підвіска, necklace — намисто чи ланцюжок, а не каблучка, сережки чи браслет; ring — каблучка; earrings — сережки. Українські назви речей у вході (назви з крамниці, найчастіше перед « — ») переписуй літера в літеру: не міняй, не переставляй і не додавай у них жодного слова.
+
+Про жінку — лише до неї, на «ти» (ти, тебе, тобі, твій, твоя; хочеш, скинеш; наказ однини: розкажи, оберни, тримай, дай), і в питаннях теж: you, your, she, her про неї — «ти», «твій» (her skin tone — твій тон шкіри; when she turns her head — коли ти повертаєш голову; she looks taller — ти виглядаєш вищою), англійський наказ — наказом однини; «вона», «її» — лише про річ (сукню, сумку, куртку). Говорить стилістка — одна жінка: про себе — від першої особи однини й у жіночому роді (я підібрала, я б додала), не «ми», не від імені застосунку чи коду і ніколи словами самої жінки.
+
+Мова: літературна українська, як у текстах українських крамниць одягу. Кожне українське слово — літерами лише української абетки, без жодної латинської літери чи стороннього знака всередині слова. Кожне речення — одна остаточна версія, без виправлень посеред тексту. Словничок нижче — лише як перекласти англійське слово, коли воно є у вході; це не зміст: річ, тканина чи колір, яких у вході нема, у тексті не з'являються. Звичні українські назви для слів англійського джерела: trousers, pants — штани; dressy, dressier — ошатний, ошатніше; look, outfit — образ; taupe — сіро-бежевий; loose — вільний; suede — замша (жіночий рід); slip dress — сукня-комбінація; camel — кемел (колір). Назви речей і кольорів, які дала крамниця, — як є.
+
+Слово не повторюється двічі поспіль. Відповідь — рівно ОДИН JSON-об'єкт і нічого після нього: другої, виправленої версії, приміток і пояснень не пиши — помилку виправ у тому самому об'єкті.
+
+Речі образу — перелік речей картки (номер речі — як на картці, поруч — її коди):
+1 — kind code: sweater · colour code: grey · about it: text н=1
+2 — kind code: skirt · colour code: green · about it: text н=2
+3 — kind code: loafers · colour code: burgundy · about it: text н=3
+4 — kind code: backpack · colour code: beige · about it: text н=4
+5 — kind code: jacket · colour code: chocolate · about it: text н=5
+When a text speaks of an item of the list, call it by the Ukrainian noun of its kind code (kind code: …) — the same noun in the right case in every text (trench_coat — «тренч», sweater — «светр», loafers — «лофери»), not by another kind or a synonym of the English word, whatever word the English text uses; a code ending in _generic names only the family (dress_generic — a dress, bag_generic — a bag). Make every adjective, pronoun and verb with the item agree with that noun in gender and number («бежевий тренч, який…»; «шкіряні лофери, які…»). A name you translate in this same call (text н=K): give it one noun and call the item by it, in agreement, in every text. A text the list gives as about an item (about it: text н=M) speaks of that one item, and so does every other text where the English names it. The colour of an item of the list is its colour code (colour code: …): write the Ukrainian name of that code. The English colour words for that item are the stylist's impression of a photo: do not turn them into a colour of their own — the item's colour stands in their place. Colours of its details (trim, strap, buttons, print), its fabric and the rest — translate from the text. The list is for the items only: an item the English text does not name is not added to the translation — neither to the description nor to the advice.
+
+Colour codes: beige — бежевий; burgundy — бордовий; chocolate — шоколадний; green — зелений; grey — сірий.
+
+ТЕКСТИ:
+{
+"1": "This is a grey fitted sweater with a ribbed neckline and hem, crafted in a soft knit that drapes gently over your frame.",
+"2": "The green straight skirt features vertical pleats that add texture and movement to your outfit, ending at a flattering length.",
+"3": "These burgundy loafers are made of suede with a low heel, combining classic style with the practicality you need for an office day.",
+"4": "Your beige backpack has a clean, structured shape with brown piping details and a subtle pebbled texture that pairs well with your neutral tones.",
+"5": "This chocolate-colored outerwear jacket features a distinctive quilted diamond pattern and includes a functional belt to cinch the waist.",
+"6": "You have a neat grey fitted sweater, which provides a perfect neutral base for your workday. Paired with this is a straight green skirt that adds a fresh, vibrant pop of color suitable for an office setting. To complete the look, you chose burgundy loafers, offering a sophisticated and comfortable alternative to heels for long days at the office.",
+"7": "The relaxed cut of your jacket allows you to wear it comfortably over your sweater without feeling restricted.",
+"8": "Сірий кашеміровий светр, Спідниця-плісе A-силуету жіноча демісезонна, LeBERDES Лофери бордові, Рюкзак жіночий Welfare бежевий, Куртка стьожка подовжена з паском — The neat level of this outfit elevates the everyday comfort of your casual items to meet the office stream requirement."
+}
+
+── ВІДПОВІДЬ (1493 симв., 14.5 с, HTTP 200) ──
+```json
+{
+"1": "Це сірий приталений светр із ребристою горловиною та подолом, виготовлений у м’якому трикотажі, який ніжно драпірується по твоїй фігурі.",
+"2": "Зелена пряма спідниця має вертикальні складки, які додають текстури й руху твоєму образу, закінчуючись на лестощівій довжині.",
+"3": "Ці бордові лофери виготовлені із замші з невисоким підбором, поєднуючи класичний стиль із практичністю, яка потрібна тобі для робочого дня.",
+"4": "Твій бежевий рюкзак має чисту, структуровану форму з коричневими деталями канта та ледь помітною тисненою текстурою, що добре гармоніює з твоїми нейтральними тонами.",
+"5": "Ця шоколадна куртка-пальто вирізняється характерним стьобаним ромбоподібним візерунком і має функціональний пояс для підкреслення талії.",
+"6": "У тебе є охайний сірий приталений светр, який забезпечує чудову нейтральну основу для твого робочого дня. До нього ти доповнила зелену пряму спідницю, яка додає свіжий і яскравий колір, що підходить для офісу. Щоб завершити образ, ти обрала бордові лофери, які пропонують вишукану та зручну альтернативу підборам для довгих робочих днів.",
+"7": "Вільний крій твоєї куртки дозволяє тобі носити її з комфортом поверх светра без відчуття обмеження.",
+"8": "Сірий кашеміровий светр, Спідниця-плісе A-силуету жіноча демісезонна, LeBERDES Лофери бордові, Рюкзак жіночий Welfare бежевий, Куртка стьожка подовжена з паском — Цей охайний рівень образу підносить повсякденний комфорт твоїх неформальних речей до вимог офісного потоку."
+}
+```

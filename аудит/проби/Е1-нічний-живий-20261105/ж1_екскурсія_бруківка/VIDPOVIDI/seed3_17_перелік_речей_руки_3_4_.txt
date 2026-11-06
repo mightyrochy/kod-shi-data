@@ -1,0 +1,30 @@
+── ПРОМПТ (2020 симв.) ──
+{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.", "One item carries one thing — of two alternatives list the first; a note in brackets is not an item.", "Slot \"accessory\" is for an item no other slot fits.", "\"is_outfit\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "ITEM_LIST", "answer_schema": {"is_outfit": "yes|no", "items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory", "color_hex": "<#rrggbb or null>", "worn": "<true, or false when the description says the outfit goes without it>"}]}, "input": ["\"description\" — the outfit description"]}, "description": "Wool-blend tailored trousers, straight-leg cut, mid-calf length, forest green #2E513A, soft wool felt; silk-blend blouse, relaxed fit with a subtle collar, hip-length hem, cream #F5F5DC, smooth sateen; suede ankle boots, square toe with a modest block heel, mid-calf shaft, chestnut brown #8B4513.\n\nThis outfit works because the wool trousers provide structure and warmth against the cool 12°C autumn weather without looking too heavy for an active day. The cream blouse offers a comfortable, breathable layer that moves easily as she walks extensively on uneven cobblestones. The chestnut suede boots strike the perfect balance between style and stability, offering grip on historic streets while maintaining a polished neat appearance suitable for her evening plans."}
+
+── ВІДПОВІДЬ (632 симв., 3.7 с, HTTP 200) ──
+{
+  "is_outfit": "yes",
+  "items": [
+    {
+      "name": "tailored trousers",
+      "details": "Wool-blend straight-leg cut mid-calf length soft wool felt",
+      "slot": "bottom",
+      "color_hex": "#2E513A",
+      "worn": true
+    },
+    {
+      "name": "silk-blend blouse",
+      "details": "Relaxed fit with a subtle collar hip-length hem smooth sateen",
+      "slot": "top",
+      "color_hex": "#F5F5DC",
+      "worn": true
+    },
+    {
+      "name": "suede ankle boots",
+      "details": "Square toe with a modest block heel mid-calf shaft",
+      "slot": "shoes",
+      "color_hex": "#8B4513",
+      "worn": true
+    }
+  ]
+}

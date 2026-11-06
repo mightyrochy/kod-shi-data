@@ -1,0 +1,58 @@
+── ПРОМПТ (2700 симв.) ──
+{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.", "One item carries one thing — of two alternatives list the first; a note in brackets is not an item.", "Slot \"accessory\" is for an item no other slot fits.", "\"is_outfit\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "ITEM_LIST", "answer_schema": {"is_outfit": "yes|no", "items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory", "color_hex": "<#rrggbb or null>", "worn": "<true, or false when the description says the outfit goes without it>"}]}, "input": ["\"description\" — the outfit description"]}, "description": "Cream silk blouse with a subtle sheen, relaxed fit, hip length, ivory (#FFFFF0), fine crepe.\nCharcoal wool trousers with a wide leg, tailored cut, ankle length, deep grey (#36454F), heavy worsted wool.\nStructured tweed blazer with notch lapels, single-breasted, hip length, dark brown (#4E342E), woven boucle.\nNude leather pumps with a 7cm block heel, pointed toe, calf length, soft suede.\nGold-plated hoop earrings, medium size, round shape, polished metal, gold (#FFD700).\nDelicate pearl choker necklace, thin strand, oval shape, fresh water pearls, white (#FFFFFF).\nSmall structured leather clutch, rigid boxy shape, wrist strap, tan (#D2B48C), grained calfskin.\n\nThis outfit strikes a perfect balance between the evening setting of the theatre and her requested \"neat\" dress code by choosing refined fabrics and a structured silhouette that feels elegant yet wearable for autumn. The warm cream blouse contrasts beautifully with the dark charcoal trousers, creating a sophisticated monochromatic base that is anchored by the earthy tone of the tweed blazer. Accessories are kept minimal and classic—the gold hoops and pearl choker add a touch of subtle glamour suitable for a performance, while the nude pumps elongate the leg without overwhelming the understated look. Finally, the clutch provides a practical yet stylish finishing touch that complements the entire ensemble without violating any of her preferences or the time of day."}
+
+── ВІДПОВІДЬ (1312 симв., 6.4 с, HTTP 200) ──
+{
+  "is_outfit": "yes",
+  "items": [
+    {
+      "name": "Blouse",
+      "details": "relaxed fit, hip length, subtle sheen, fine crepe",
+      "slot": "top",
+      "color_hex": "#FFFFF0",
+      "worn": true
+    },
+    {
+      "name": "Trousers",
+      "details": "wide leg, tailored cut, ankle length, heavy worsted wool",
+      "slot": "bottom",
+      "color_hex": "#36454F",
+      "worn": true
+    },
+    {
+      "name": "Blazer",
+      "details": "notch lapels, single-breasted, hip length, woven boucle",
+      "slot": "outerwear",
+      "color_hex": "#4E342E",
+      "worn": true
+    },
+    {
+      "name": "Pumps",
+      "details": "7cm block heel, pointed toe, calf length, soft suede",
+      "slot": "shoes",
+      "color_hex": "#D2B48C",
+      "worn": true
+    },
+    {
+      "name": "Earrings",
+      "details": "medium size, round shape, polished metal",
+      "slot": "earrings",
+      "color_hex": "#FFD700",
+      "worn": true
+    },
+    {
+      "name": "Necklace",
+      "details": "thin strand, oval shape, fresh water pearls",
+      "slot": "collar_necklace",
+      "color_hex": "#FFFFFF",
+      "worn": true
+    },
+    {
+      "name": "Clutch",
+      "details": "rigid boxy shape, wrist strap, grained calfskin",
+      "slot": "bag",
+      "color_hex": "#D2B48C",
+      "worn": true
+    }
+  ]
+}

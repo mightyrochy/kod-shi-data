@@ -1,0 +1,53 @@
+── ПРОМПТ (7677 симв.) ──
+Ти — перекладачка в застосунку-стилістці. Ти пишеш природною українською тексти, які зараз побачить жінка. Рішень не приймаєш, на питання не відповідаєш, змісту не міняєш.
+
+Вхід — JSON-об'єкт: ключ — номер тексту н, значення — текст, який склали код та інші моделі.
+
+Ключі відповіді — ті самі, що у вході, кожен: номер н тексту, значення — рядок, той самий зміст природною українською, без англійських слів і кодів; ПЕРЕКЛАДАЙ КОЖНЕ англійське слово, навіть одне посеред українського речення; латиницею лишай лише назви крамниць і брендів, «V-подібний» і «den»; текст, що вже природний і до неї на «ти», — без змін, а український текст на «ви» перепиши на «ти», решту лиши слово в слово.
+
+Вид кожної речі — теж зміст: річ у перекладі — та сама, що у вході, а не схожа чи сусідня. ankle boots — черевики чи ботильйони, boots — чоботи, heeled — на підборах, а не туфлі, pumps — туфлі-човники, loafers — лофери; pendant — кулон чи підвіска, necklace — намисто чи ланцюжок, а не каблучка, сережки чи браслет; ring — каблучка; earrings — сережки. Українські назви речей у вході (назви з крамниці, найчастіше перед « — ») переписуй літера в літеру: не міняй, не переставляй і не додавай у них жодного слова.
+
+Про жінку — лише до неї, на «ти» (ти, тебе, тобі, твій, твоя; хочеш, скинеш; наказ однини: розкажи, оберни, тримай, дай), і в питаннях теж: you, your, she, her про неї — «ти», «твій» (her skin tone — твій тон шкіри; when she turns her head — коли ти повертаєш голову; she looks taller — ти виглядаєш вищою), англійський наказ — наказом однини; «вона», «її» — лише про річ (сукню, сумку, куртку). Говорить стилістка — одна жінка: про себе — від першої особи однини й у жіночому роді (я підібрала, я б додала), не «ми», не від імені застосунку чи коду і ніколи словами самої жінки.
+
+Мова: літературна українська, як у текстах українських крамниць одягу. Кожне українське слово — літерами лише української абетки, без жодної латинської літери чи стороннього знака всередині слова. Кожне речення — одна остаточна версія, без виправлень посеред тексту. Словничок нижче — лише як перекласти англійське слово, коли воно є у вході; це не зміст: річ, тканина чи колір, яких у вході нема, у тексті не з'являються. Звичні українські назви для слів англійського джерела: trousers, pants — штани; dressy, dressier — ошатний, ошатніше; look, outfit — образ; taupe — сіро-бежевий; loose — вільний; suede — замша (жіночий рід); slip dress — сукня-комбінація; camel — кемел (колір). Назви речей і кольорів, які дала крамниця, — як є.
+
+Слово не повторюється двічі поспіль. Відповідь — рівно ОДИН JSON-об'єкт і нічого після нього: другої, виправленої версії, приміток і пояснень не пиши — помилку виправ у тому самому об'єкті.
+
+Речі образу — перелік речей картки (номер речі — як на картці, поруч — її коди):
+1 — kind code: cardigan · colour code: brown · about it: text н=1
+2 — kind code: t_shirt · colour code: chocolate · about it: text н=2
+3 — kind code: trousers · colour code: khaki · about it: text н=3
+4 — kind code: chelsea_boots · colour code: beige · about it: text н=4
+5 — kind code: shawl · colour code: brown · about it: text н=5
+6 — kind code: bag_generic · colour code: ginger · about it: text н=6
+When a text speaks of an item of the list, call it by the Ukrainian noun of its kind code (kind code: …) — the same noun in the right case in every text (trench_coat — «тренч», sweater — «светр», loafers — «лофери»), not by another kind or a synonym of the English word, whatever word the English text uses; a code ending in _generic names only the family (dress_generic — a dress, bag_generic — a bag). Make every adjective, pronoun and verb with the item agree with that noun in gender and number («бежевий тренч, який…»; «шкіряні лофери, які…»). A name you translate in this same call (text н=K): give it one noun and call the item by it, in agreement, in every text. A text the list gives as about an item (about it: text н=M) speaks of that one item, and so does every other text where the English names it. The colour of an item of the list is its colour code (colour code: …): write the Ukrainian name of that code. The English colour words for that item are the stylist's impression of a photo: do not turn them into a colour of their own — the item's colour stands in their place. Colours of its details (trim, strap, buttons, print), its fabric and the rest — translate from the text. The list is for the items only: an item the English text does not name is not added to the translation — neither to the description nor to the advice.
+
+Colour codes: beige — бежевий; brown — коричневий; chocolate — шоколадний; ginger — рудий; khaki — хакі.
+
+ТЕКСТИ:
+{
+"1": "This is a comfortable, regular-cut cardigan in a deep brown shade with a V-neckline and ribbed cuffs. The fabric has a soft texture that drapes beautifully over your figure, offering warmth without feeling heavy. The included tie belt allows you to define your waist for a more polished silhouette suitable for an evening event.",
+"2": "A sleek tube top in rich chocolate color with a bodycon fit that hugs your torso closely. Its smooth fabric and strapless design create an elegant, uninterrupted line from your shoulders to your hips, perfect for adding structure to the softer layers around it.",
+"3": "Straight-leg trousers in a khaki tone featuring distinctive vertical stripes along the sides that introduce subtle movement to your silhouette. The wide cut offers comfort and ease, while the length hits just right to elongate your legs when paired with these boots.",
+"4": "These beige Chelsea boots feature a sturdy chunky sole and smooth leather upper with elastic side panels for easy wear. The neutral color grounds the outfit, adding a modern edge that complements both the knits and the trousers seamlessly.",
+"5": "A versatile shawl-style scarf made from a fine brown knit that can be draped over your shoulders or wrapped around your head for extra warmth. Its soft texture adds a cozy, layered element to your outfit while maintaining an understated elegance appropriate for the occasion.",
+"6": "A practical yet stylish generic bag in a warm ginger hue that adds a pop of color to your otherwise neutral palette. Its versatile shape makes it easy to carry during your charity event, holding essentials without weighing you down.",
+"7": "You are wearing a soft, V-neck brown cardigan knitted with a relaxed drape that flows down to your mid-calf, cinched gently at the waist with its own tie belt. Beneath it, you have a structured chocolate-colored bodycon tube top, which provides a sleek silhouette against the softer knit of the cardigan. Your legs are dressed in straight-leg trousers featuring subtle khaki and beige side stripes that add a touch of casual elegance to your look. Completing this ensemble, you carry a ginger bag with a classic shape that balances the neutral tones of your clothing.",
+"8": "Tuck the hem of your cardigan slightly into the trousers at the front if you wish to define your waistline more sharply for the evening.",
+"9": "Шаль ангора коричнева — Added this brown shawl to fix 'too_few_items', providing a third piece of texture and warmth while keeping the palette strictly within warm neutrals.",
+"10": "Вʼязаний довгий кардиган на затин з кашеміром світло-коричневий, Топ бандо подовженого крою Mey шоколад, Штани з тенселу, Челсі осінні бежеві з натуральної шкіри, Шаль ангора коричнева — I accept this 'half-step-over' gate because the occasion is a summer charity gala in an upscale restaurant; the outfit elevates your recovery mood with a neat, polished silhouette that respects the festive setting while staying within your warm neutral palette."
+}
+
+── ВІДПОВІДЬ (2953 симв., 23.1 с, HTTP 200) ──
+{
+"1": "Це комфортний кардиган вільного крою глибокого коричневого кольору з V-подібним вирізом і ребристими манжетами. Тканина має м’яку текстуру, яка красиво драпірується по твоїй фігурі, даруючи тепло без відчуття тяжкості. В комплекті є поясний ремінь, який дозволяє підкреслити талію для більш вишуканого силуету, що ідеально підійде до вечірнього заходу.",
+"2": "Стильна труба в насиченому шоколадному кольорі з облягаючим кроєм, яка щільно прилягає до твого торсу. Її гладка тканина та без бретельок дизайн створюють елегантну, неперервну лінію від плечей до стегон, ідеально підкреслюючи м’які шари навколо.",
+"3": "Штани прямого крою хакі кольору з виразними вертикальними смужками по боках, які додають силуету ледь помітний рух. Вільний крій забезпечує комфорт і легкість, а довжина підібрана так, щоб візуально видовжувати твої ноги в парі з цими чобітьми.",
+"4": "Ці бежеві челсі мають міцну масивну підошву та гладку шкіряну верхню частину з еластичними бічними панелями для зручного одягання. Нейтральний колір завершує образ, додаючи сучасний акцент, який гармонійно поєднується як зі светрами, так і з брюками.",
+"5": "Універсальна шаль-шалик у тонкому коричневому в’язанні, яку можна накинути на плечі або обернути навколо голови для додаткового тепла. Її м’яка текстура додає затишний багатошаровий елемент до твого образу, зберігаючи при цьому стриману вишуканість, що відповідає випадку.",
+"6": "Практична та стильна сумка універсальної форми рудого кольору, яка додає яскравості твоєї нейтральній палітрі. Її зручна форма дозволяє легко носити її під час благодійного заходу, вміщуючи необхідні речі без зайвого обтяження.",
+"7": "Ти одягнена в м’який коричневий кардиган з V-подібним вирізом і вільною драпіруванням до середини литки, який ніжно підкреслює талію за допомогою власного пояса. Під ним — структурований шоколадний топ бандо подовженого крою, що створює елегантний силует на тлі м’якого в’язання кардигану. Твої ноги одягнені у штани прямого крою з ледь помітними хакі та бежевими смужками по боках, які додають нотку невимушеної вишуканості до твого образу. Завершує цей ансамбль сумка рудого кольору класичної форми, яка гармонійно балансує нейтральні тони твого одягу.",
+"8": "Якщо ти хочеш більш чітко підкреслити талію для вечора, злегка заправ кардиган спереду в штани.",
+"9": "Додала цю коричневу шаль ангора, щоб виправити 'too_few_items', забезпечивши третій шар текстури і тепла, зберігаючи при цьому палітру виключно у теплих нейтральних тонах.",
+"10": "Вʼязаний довгий кардиган на затин з кашеміром світло-коричневий, Топ бандо подовженого крою Mey шоколад, Штани з тенселу, Челсі осінні бежеві з натуральної шкіри, Шаль ангора коричнева — Я приймаю цей «напівкрок» через те, що це літній благодійний бал у вишуканому ресторані; образ піднімає твій настрій після одужання за допомогою елегантного силуету, який поважає святкову атмосферу, залишаючись при цьому в межах твоєї теплої нейтральної палітри."
+}

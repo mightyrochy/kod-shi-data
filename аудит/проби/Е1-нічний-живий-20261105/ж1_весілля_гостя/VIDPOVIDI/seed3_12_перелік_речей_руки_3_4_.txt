@@ -1,0 +1,44 @@
+── ПРОМПТ (2220 симв.) ──
+{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.", "One item carries one thing — of two alternatives list the first; a note in brackets is not an item.", "Slot \"accessory\" is for an item no other slot fits.", "\"is_outfit\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "ITEM_LIST", "answer_schema": {"is_outfit": "yes|no", "items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory", "color_hex": "<#rrggbb or null>", "worn": "<true, or false when the description says the outfit goes without it>"}]}, "input": ["\"description\" — the outfit description"]}, "description": "Sheer silk blouse, relaxed collar cut, mid-thigh length, color #deb295, lightweight woven fabric.\nTailored wool-blend skirt, knee-length A-line cut, color #f1dbaa, structured heavy weave.\nNude patent leather pumps, pointed toe with 7 cm heel, sleek silhouette.\nGold-dipped drop-earring hoops and a delicate pearl-and-gold bracelet.\n\nThis outfit perfectly balances the formal requirements of an upscale summer evening wedding while respecting the heat of late August in September. The breathable silk blouse provides necessary comfort against the temperature without sacrificing elegance, allowing her to move freely during the celebration. The structured wool-blend skirt adds the required formality and visual weight appropriate for a restaurant setting, grounding the look in sophistication. Completing the ensemble with nude pumps that elongate the leg and subtle gold jewelry ties the warm skin tones together, creating a cohesive and polished guest appearance."}
+
+── ВІДПОВІДЬ (897 симв., 4.5 с, HTTP 200) ──
+{
+  "is_outfit": "yes",
+  "items": [
+    {
+      "name": "Blouse",
+      "details": "relaxed collar cut, mid-thigh length, lightweight woven fabric",
+      "slot": "top",
+      "color_hex": "#deb295",
+      "worn": true
+    },
+    {
+      "name": "Skirt",
+      "details": "knee-length A-line cut, structured heavy weave",
+      "slot": "bottom",
+      "color_hex": "#f1dbaa",
+      "worn": true
+    },
+    {
+      "name": "Pumps",
+      "details": "pointed toe with 7 cm heel, sleek silhouette",
+      "slot": "shoes",
+      "color_hex": null,
+      "worn": true
+    },
+    {
+      "name": "Earrings",
+      "details": "gold-dipped drop-earring hoops",
+      "slot": "earrings",
+      "color_hex": null,
+      "worn": true
+    },
+    {
+      "name": "Bracelet",
+      "details": "delicate pearl-and-gold bracelet",
+      "slot": "bracelet",
+      "color_hex": null,
+      "worn": true
+    }
+  ]
+}

@@ -1,0 +1,52 @@
+── ПРОМПТ (6914 симв.) ──
+Ти — перекладачка в застосунку-стилістці. Ти пишеш природною українською тексти, які зараз побачить жінка. Рішень не приймаєш, на питання не відповідаєш, змісту не міняєш.
+
+Вхід — JSON-об'єкт: ключ — номер тексту н, значення — текст, який склали код та інші моделі.
+
+Ключі відповіді — ті самі, що у вході, кожен: номер н тексту, значення — рядок, той самий зміст природною українською, без англійських слів і кодів; ПЕРЕКЛАДАЙ КОЖНЕ англійське слово, навіть одне посеред українського речення; латиницею лишай лише назви крамниць і брендів, «V-подібний» і «den»; текст, що вже природний і до неї на «ти», — без змін, а український текст на «ви» перепиши на «ти», решту лиши слово в слово.
+
+Вид кожної речі — теж зміст: річ у перекладі — та сама, що у вході, а не схожа чи сусідня. ankle boots — черевики чи ботильйони, boots — чоботи, heeled — на підборах, а не туфлі, pumps — туфлі-човники, loafers — лофери; pendant — кулон чи підвіска, necklace — намисто чи ланцюжок, а не каблучка, сережки чи браслет; ring — каблучка; earrings — сережки. Українські назви речей у вході (назви з крамниці, найчастіше перед « — ») переписуй літера в літеру: не міняй, не переставляй і не додавай у них жодного слова.
+
+Про жінку — лише до неї, на «ти» (ти, тебе, тобі, твій, твоя; хочеш, скинеш; наказ однини: розкажи, оберни, тримай, дай), і в питаннях теж: you, your, she, her про неї — «ти», «твій» (her skin tone — твій тон шкіри; when she turns her head — коли ти повертаєш голову; she looks taller — ти виглядаєш вищою), англійський наказ — наказом однини; «вона», «її» — лише про річ (сукню, сумку, куртку). Говорить стилістка — одна жінка: про себе — від першої особи однини й у жіночому роді (я підібрала, я б додала), не «ми», не від імені застосунку чи коду і ніколи словами самої жінки.
+
+Мова: літературна українська, як у текстах українських крамниць одягу. Кожне українське слово — літерами лише української абетки, без жодної латинської літери чи стороннього знака всередині слова. Кожне речення — одна остаточна версія, без виправлень посеред тексту. Словничок нижче — лише як перекласти англійське слово, коли воно є у вході; це не зміст: річ, тканина чи колір, яких у вході нема, у тексті не з'являються. Звичні українські назви для слів англійського джерела: trousers, pants — штани; dressy, dressier — ошатний, ошатніше; look, outfit — образ; taupe — сіро-бежевий; loose — вільний; suede — замша (жіночий рід); slip dress — сукня-комбінація; camel — кемел (колір). Назви речей і кольорів, які дала крамниця, — як є.
+
+Слово не повторюється двічі поспіль. Відповідь — рівно ОДИН JSON-об'єкт і нічого після нього: другої, виправленої версії, приміток і пояснень не пиши — помилку виправ у тому самому об'єкті.
+
+Речі образу — перелік речей картки (номер речі — як на картці, поруч — її коди):
+1 — kind code: shirt · colour code: navy · about it: text н=1
+2 — kind code: casual_suit · colour code: silvery · about it: text н=2
+3 — kind code: ankle_boots · colour code: brown · about it: text н=3
+4 — kind code: tote · colour code: brown · about it: text н=4
+5 — kind code: belt · colour code: powder · about it: text н=5
+When a text speaks of an item of the list, call it by the Ukrainian noun of its kind code (kind code: …) — the same noun in the right case in every text (trench_coat — «тренч», sweater — «светр», loafers — «лофери»), not by another kind or a synonym of the English word, whatever word the English text uses; a code ending in _generic names only the family (dress_generic — a dress, bag_generic — a bag). Make every adjective, pronoun and verb with the item agree with that noun in gender and number («бежевий тренч, який…»; «шкіряні лофери, які…»). A name you translate in this same call (text н=K): give it one noun and call the item by it, in agreement, in every text. A text the list gives as about an item (about it: text н=M) speaks of that one item, and so does every other text where the English names it. The colour of an item of the list is its colour code (colour code: …): write the Ukrainian name of that code. The English colour words for that item are the stylist's impression of a photo: do not turn them into a colour of their own — the item's colour stands in their place. Colours of its details (trim, strap, buttons, print), its fabric and the rest — translate from the text. The list is for the items only: an item the English text does not name is not added to the translation — neither to the description nor to the advice.
+
+Colour codes: brown — коричневий; navy — темно-синій; powder — пудра; silvery — срібний.
+
+ТЕКСТИ:
+{
+"1": "This is a relaxed-fit shirt in a deep teal hue, featuring distinctive red panels along the sides and hemline that add a modern pop of color to your silhouette.",
+"2": "You are wearing this fitted casual suit set in a silvery beige tone, consisting of a sleeveless cropped vest top paired with high-waisted pleated shorts that mimic the line of a skirt.",
+"3": "These are ankle boots crafted from soft brown nubuck leather, offering a sturdy yet comfortable base for your day at the office.",
+"4": "A roomy tote bag in rich brown leather with a wide shoulder strap and a metallic buckle detail at the top to secure your belongings securely.",
+"5": "A delicate powder pink belt featuring a soft satin finish and an elegant fringe of feathers around the center, adding a subtle touch of femininity.",
+"6": "I have chosen a polished and comfortable look for your workday in the office, keeping you warm in autumn while respecting your wish to wear skirt-like bottoms. The teal shirt with red side panels is the anchor, followed by the matching shorts suit which gives the silhouette of a skirt without being one, creating the right balance between your request for a skirt and the practicality of working in an office. The brown nubuck ankle boots add a touch of warmth and structure to keep you grounded through the season, while the large leather tote offers easy access to everything you need at work.",
+"7": "Tuck the front corners of your relaxed shirt into the waistband of the shorts to define your waist and keep the lines clean when sitting.",
+"8": "Wear the fitted shorts suit over the teal shirt so that the red piping on the hem matches perfectly with the red panels on the top.",
+"9": "Сапфірова сорочка з лампасами в кежуал стилі Елейн, Лляний костюм лате жилетка приталена і шорти, Черевики жіночі, ATTICO, нубук, колір коричневий, Жіноча сумка тоут шкіряна коричнева — The preppy register of the jacket and shirt is not a blocker but an invitation; it elevates the 'everyday' tone to a polished 'neat' level perfectly suited for your work in the office, transforming the outfit into a sophisticated uniform that honors your professional intent.",
+"10": "Жіноча сумка тоут шкіряна коричнева — A brown leather tote is chosen over the default bag requirement to match the warm neutral palette of the outfit and the autumn season."
+}
+
+── ВІДПОВІДЬ (2312 симв., 15.5 с, HTTP 200) ──
+{
+"1": "Це вільна сорочка глибокого блакитного кольору, з виразними червоними панелями по боках і подолу, які додають сучасному образу яскравий акцент.",
+"2": "Ти одягнена у цей приталений комплект повсякденного костюма сріблясто-бежевого відтінку, що складається з топу без рукавів кроп-топу та шортів із завищеною талією і складками, які повторюють лінію спідниці.",
+"3": "Це черевики до щиколотки виготовлені з м'якої коричневої замші, що забезпечують стійку й комфортну основу для твого робочого дня в офісі.",
+"4": "Містка сумка-тоут із якісної коричневої шкіри зі широким плечовим ременем і металевою пряжкою нагорі, щоб безпечно зберігати всі необхідні речі.",
+"5": "Ніжний рожевий пояс кольору пудри з м’яким атласним покриттям та елегантною бахромою з пір’я по центру, що додає образу ледь помітну жіночність.",
+"6": "Я підібрала вишуканий і комфортний образ для твого робочого дня в офісі, який зігріває тебе восени та відповідає твоєму бажанню носити спідницю-шорти. Блакитна сорочка з червоними бічними панелями є головним елементом, за яким слідує відповідний костюм із шортами, що створює силует спідниці без того, щоб бути нею, забезпечуючи правильний баланс між твоїм проханням носити спідницю та практичністю роботи в офісі. Коричневі замшеві черевики до щиколотки додають тепла й структури, щоб ти почувалася стійко протягом сезону, а велика шкіряна сумка-тоут дає легкий доступ до всіх необхідних речей на роботі.",
+"7": "Заправ передні кути сорочки у пояс шортів, щоб підкреслити талію й зберегти лінії чистими при сидінні.",
+"8": "Одягни комплект із шортами поверх блакитної сорочки так, щоб червона окантовка на подолі ідеально збігалася з червоними панелями зверху.",
+"9": "Сапфірова сорочка з лампасами в кежуал стилі Елейн, Лляний костюм лате жилетка приталена і шорти, Черевики жіночі, ATTICO, нубук, колір коричневий, Жіноча сумка тоут шкіряна коричнева — Преппі-стиль піджака та сорочки не є перешкодою, а запрошенням; він підвищує повсякденний тон до вишуканого рівня «охайно», що ідеально підходить для твоєї роботи в офісі, перетворюючи образ на елегантну уніформу, яка шанує твій професійний намір.",
+"10": "Жіноча сумка тоут шкіряна коричнева — Коричнева шкіряна сумка-тоут обрана замість звичайної сумки, щоб відповідати теплій нейтральній палітрі образу та осінньому сезону."
+}

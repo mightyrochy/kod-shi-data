@@ -1,0 +1,30 @@
+── ПРОМПТ (2130 симв.) ──
+{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.", "One item carries one thing — of two alternatives list the first; a note in brackets is not an item.", "Slot \"accessory\" is for an item no other slot fits.", "\"is_outfit\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "ITEM_LIST", "answer_schema": {"is_outfit": "yes|no", "items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory", "color_hex": "<#rrggbb or null>", "worn": "<true, or false when the description says the outfit goes without it>"}]}, "input": ["\"description\" — the outfit description"]}, "description": "Everyday loungewear crop top in a soft heather gray (#E0E0E0), relaxed crew-neck cut with drop shoulders, hitting mid-bicep length, made from breathable cotton-jersey knit.\nHigh-rise wide-leg jogger pants in deep charcoal slate (#36454F), tapered leg cut ending just above the ankle, crafted from stretchy ponte knit for mobility and shape retention.\nMinimalist low-profile trainers in cream leather with white rubber soles (#F5F5DC).\nThis outfit works perfectly for a morning yoga session followed by coffee because it prioritizes unrestricted movement while maintaining a polished, neat casual aesthetic. The neutral color palette transitions seamlessly from the active studio to a relaxed café setting without needing a change of clothes. Every element is chosen for comfort and functionality, respecting her preference for reading-focused ease during autumn daylight hours."}
+
+── ВІДПОВІДЬ (733 симв., 3.7 с, HTTP 200) ──
+{
+  "is_outfit": "yes",
+  "items": [
+    {
+      "name": "crop top",
+      "details": "relaxed crew-neck cut with drop shoulders, hitting mid-bicep length, made from breathable cotton-jersey knit",
+      "slot": "top",
+      "color_hex": "#E0E0E0",
+      "worn": true
+    },
+    {
+      "name": "wide-leg jogger pants",
+      "details": "high-rise cut, tapered leg ending just above the ankle, crafted from stretchy ponte knit for mobility and shape retention",
+      "slot": "bottom",
+      "color_hex": "#36454F",
+      "worn": true
+    },
+    {
+      "name": "low-profile trainers",
+      "details": "cream leather upper with white rubber soles",
+      "slot": "shoes",
+      "color_hex": "#F5F5DC",
+      "worn": true
+    }
+  ]
+}

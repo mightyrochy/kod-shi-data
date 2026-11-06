@@ -1,0 +1,81 @@
+── ПРОМПТ (9075 симв.) ──
+Ти — перекладачка в застосунку-стилістці. Ти пишеш природною українською тексти, які зараз побачить жінка. Рішень не приймаєш, на питання не відповідаєш, змісту не міняєш.
+
+Вхід — JSON-об'єкт: ключ — номер тексту н, значення — текст, який склали код та інші моделі.
+
+Ключі відповіді — ті самі, що у вході, кожен: номер н тексту, значення — рядок, той самий зміст природною українською, без англійських слів і кодів; ПЕРЕКЛАДАЙ КОЖНЕ англійське слово, навіть одне посеред українського речення; латиницею лишай лише назви крамниць і брендів, «V-подібний» і «den»; текст, що вже природний і до неї на «ти», — без змін, а український текст на «ви» перепиши на «ти», решту лиши слово в слово.
+
+Вид кожної речі — теж зміст: річ у перекладі — та сама, що у вході, а не схожа чи сусідня. ankle boots — черевики чи ботильйони, boots — чоботи, heeled — на підборах, а не туфлі, pumps — туфлі-човники, loafers — лофери; pendant — кулон чи підвіска, necklace — намисто чи ланцюжок, а не каблучка, сережки чи браслет; ring — каблучка; earrings — сережки. Українські назви речей у вході (назви з крамниці, найчастіше перед « — ») переписуй літера в літеру: не міняй, не переставляй і не додавай у них жодного слова.
+
+Про жінку — лише до неї, на «ти» (ти, тебе, тобі, твій, твоя; хочеш, скинеш; наказ однини: розкажи, оберни, тримай, дай), і в питаннях теж: you, your, she, her про неї — «ти», «твій» (her skin tone — твій тон шкіри; when she turns her head — коли ти повертаєш голову; she looks taller — ти виглядаєш вищою), англійський наказ — наказом однини; «вона», «її» — лише про річ (сукню, сумку, куртку). Говорить стилістка — одна жінка: про себе — від першої особи однини й у жіночому роді (я підібрала, я б додала), не «ми», не від імені застосунку чи коду і ніколи словами самої жінки.
+
+Мова: літературна українська, як у текстах українських крамниць одягу. Кожне українське слово — літерами лише української абетки, без жодної латинської літери чи стороннього знака всередині слова. Кожне речення — одна остаточна версія, без виправлень посеред тексту. Словничок нижче — лише як перекласти англійське слово, коли воно є у вході; це не зміст: річ, тканина чи колір, яких у вході нема, у тексті не з'являються. Звичні українські назви для слів англійського джерела: trousers, pants — штани; dressy, dressier — ошатний, ошатніше; look, outfit — образ; taupe — сіро-бежевий; loose — вільний; suede — замша (жіночий рід); slip dress — сукня-комбінація; camel — кемел (колір). Назви речей і кольорів, які дала крамниця, — як є.
+
+Слово не повторюється двічі поспіль. Відповідь — рівно ОДИН JSON-об'єкт і нічого після нього: другої, виправленої версії, приміток і пояснень не пиши — помилку виправ у тому самому об'єкті.
+
+Речі образу — перелік речей картки (номер речі — як на картці, поруч — її коди):
+1 — kind code: shirt · colour code: powder_pink · about it: text н=1
+2 — kind code: trench_coat · colour code: beige · about it: text н=2
+3 — kind code: trousers · colour code: olive · about it: text н=3
+4 — kind code: belt · colour code: brown · about it: text н=4
+5 — kind code: loafers · colour code: beige · about it: text н=5
+6 — kind code: saddle_bag · colour code: white · about it: text н=6
+When a text speaks of an item of the list, call it by the Ukrainian noun of its kind code (kind code: …) — the same noun in the right case in every text (trench_coat — «тренч», sweater — «светр», loafers — «лофери»), not by another kind or a synonym of the English word, whatever word the English text uses; a code ending in _generic names only the family (dress_generic — a dress, bag_generic — a bag). Make every adjective, pronoun and verb with the item agree with that noun in gender and number («бежевий тренч, який…»; «шкіряні лофери, які…»). A name you translate in this same call (text н=K): give it one noun and call the item by it, in agreement, in every text. A text the list gives as about an item (about it: text н=M) speaks of that one item, and so does every other text where the English names it. The colour of an item of the list is its colour code (colour code: …): write the Ukrainian name of that code. The English colour words for that item are the stylist's impression of a photo: do not turn them into a colour of their own — the item's colour stands in their place. Colours of its details (trim, strap, buttons, print), its fabric and the rest — translate from the text. The list is for the items only: an item the English text does not name is not added to the translation — neither to the description nor to the advice.
+
+Colour codes: beige — бежевий; brown — коричневий; olive — оливковий; powder_pink — пудровий; white — білий.
+
+ТЕКСТИ:
+{
+"1": "This powder pink linen shirt features a fitted silhouette with soft puff sleeves that add gentle volume to the shoulders and arms, creating an elegant contrast to your frame.",
+"2": "The beige trench coat has a structured, regular cut with a high collar that can be raised or left open, offering warmth and a polished finish while maintaining comfort for long hours of walking.",
+"3": "These olive tapered trousers follow a sleek line from hip to ankle, providing a clean, elongated silhouette that works beautifully with the softer top and keeps movement fluid on cobblestone streets.",
+"4": "The brown leather belt has a classic rectangular buckle and smooth stitching, designed to cinch at your natural waist and add a touch of sophistication without breaking the relaxed feel of your outfit.",
+"5": "Your beige loafers are understated yet sturdy, with a rounded toe and minimal detailing that make them ideal for extended wear on uneven surfaces while complementing both the coat and trousers.",
+"6": "The Dior saddle bag features the iconic monogram print in cream and black tones, with a structured shape, gold chain strap, and leather trim that elevates your ensemble while staying practical for carrying essentials during your outing.",
+"7": "You have a complete look for a long walk across cobblestones on the old town, where comfort meets style. The dusty pink linen shirt with its soft puff sleeves adds a romantic touch, while the beige trench coat gives you warmth and structure against the evening air. The olive tapered trousers are chosen to keep your silhouette elegant as you move, and the brown leather belt defines your waist for a polished finish. Your beige loafers offer steady footing on uneven surfaces, and the classic Dior saddle bag provides practical storage in its signature print.",
+"8": "Wrap the trench coat around your shoulders when you stop to rest or enjoy a view, letting the belt hang loose for a relaxed vibe.",
+"9": "Сорочка «Court» пудрова — A pink fitted shirt replaces the light blue skirt (which was missing a top); this pairing works within the tonal scheme's arc.",
+"10": "Тренч з високою горловиною утеплений — The beige trench coat provides the essential outer layer for cool weather and protects against the wind on cobblestones.",
+"11": "Оливкові розкльошені штани з віскозою MH STUDIO — This scarf adds a warm layer to the torso, solving the 'too_few' layers issue.",
+"12": "Лофери жіночі, ATTICO, замша, колір бежевий — Suede loafers replace the red dress shoes; they are practical for walking and match the neutral scheme tone better than the red accent which would be an orphan here.",
+"13": "Ремінь жіночий Welfare коричневий — A brown leather belt grounds the outfit and is durable enough for 9 hours of wear.",
+"14": "Сумка Saddle у фірмовий принт — The bag's 'below_band' status is a deliberate stylistic choice that elevates the neutral scheme by introducing an edge element, which I accept because it provides the essential texture needed to break up the tonal simplicity of your walk.",
+"15": "Тренч з високою горловиною утеплений — Beige trench is classic but quiet; chosen here for its ability to layer over any outfit without adding bulk.",
+"16": "Лофери жіночі, ATTICO, замша, колір бежевий — Suede is flexible and comfortable for long walks on uneven stone, replacing the delicate leather shoes.",
+"17": "Оливкові розкльошені штани з віскозою MH STUDIO — This scarf is a light layer that adds warmth to the torso, addressing the 'too_few' layers issue on the temperature map.",
+"18": "Оливкові розкльошені штани з віскозою MH STUDIO — A beige scarf adds necessary warmth to the torso layer count.",
+"19": "Ремінь жіночий Welfare коричневий — This leather belt anchors the look and provides a tactile element suitable for long wear.",
+"20": "Сорочка «Court» пудрова — A pink fitted shirt replaces the chocolate knit t-shirt, which was too casual and out of season for this formal occasion.",
+"21": "Тренч з високою горловиною утеплений — The beige trench coat is the essential outer layer for cool weather, providing warmth without overheating on cobblestones.",
+"22": "Оливкові розкльошені штани з віскозою MH STUDIO — This scarf adds a necessary warm layer to the torso count.",
+"23": "Лофери жіночі, ATTICO, замша, колір бежевий — Suede loafers replace the burgundy pumps; they are practical for walking and match the neutral scheme tone."
+}
+
+── ВІДПОВІДЬ (4500 симв., 29.5 с, HTTP 200) ──
+```json
+{
+  "1": "Ця пудрова сорочка з льону має приталений силует із м’якими рукавами-ліхтариками, які додають ніжного об’єму плечам і рукам, створюючи елегантний контраст до твоєї фігури.",
+  "2": "Бежевий тренч має структурований, звичайний крій із високим коміром, який можна підняти або залишити відкритим, пропонуючи тепло та вишукану обробку, зберігаючи при цьому комфорт протягом довгих годин ходьби.",
+  "3": "Ці оливкові завужені штани мають елегантний силует від стегна до щиколотки, забезпечуючи чистий і видовжений образ, який чудово поєднується з м’яким верхом і зберігає рухливість на бруківці.",
+  "4": "Коричневий шкіряний ремінь має класичну прямокутну пряжку та гладку строчку, розроблений для підкреслення твоєї природної лінії талії та додавання нотки вишуканості без порушення невимушеного відчуття твого образу.",
+  "5": "Твої бежеві лофери стримані, але міцні, з округлим миском і мінімальною обробкою, що робить їх ідеальними для тривалого носіння на нерівних поверхнях, доповнюючи тренч та штани.",
+  "6": "Сумка Dior Saddle має культову монограму в кремових і чорних тонах із структурованою формою, ланцюжком-ремінцем золотистого кольору та шкіряною обробкою, що підкреслює твій ансамбль, залишаючись практичною для носіння необхідного під час прогулянки.",
+  "7": "У тебе повний образ для довгої прогулянки по бруківці в старому місті, де комфорт зустрічається зі стилем. Пінкова сорочка з м’якими рукавами-ліхтариками додає романтичного штриху, а бежевий тренч дарує тобі тепло та структуру проти вечірнього повітря. Оливкові завужені штани обрані для збереження елегантності твого силуету під час руху, а коричневий шкіряний ремінь визначає лінію твоєї талії для вишуканої обробки. Твої бежеві лофери забезпечують стійку опору на нерівних поверхнях, а класична сумка Dior Saddle надає практичне місце для зберігання в її фірмовому принті.",
+  "8": "Оберни тренч навколо плечей, коли ти зупиняєшся відпочити або помилуватися краєвидом, дозволяючи ременю звисати вільно для невимушеного настрою.",
+  "9": "Сорочка «Court» пудрова — Рожева приталена сорочка замінює світло-блакитну спідницю (якій не вистачало верху); це поєднання працює в межах тональної схеми.",
+  "10": "Тренч з високою горловиною утеплений — Бежевий тренч є необхідним верхнім шаром для прохолодної погоди та захищає від вітру на бруківці.",
+  "11": "Оливкові розкльошені штани з віскозою MH STUDIO — Цей шарф додає теплий шар до торсу, вирішуючи проблему «занадто мало» шарів.",
+  "12": "Лофери жіночі, ATTICO, замша, колір бежевий — Замшеві лофери замінюють червоні туфлі; вони практичні для ходьби та краще поєднуються з нейтральним тоном схеми, ніж червоний акцент, який був би тут зайвим.",
+  "13": "Ремінь жіночий Welfare коричневий — Коричневий шкіряний ремінь підкреслює образ і є досить міцним для 9 годин носіння.",
+  "14": "Сумка Saddle у фірмовий принт — Статус сумки «нижче пояса» є навмисним стилістичним вибором, який підносить нейтральну схему, вводячи елемент з родзинкою, що я приймаю, оскільки він забезпечує необхідну текстуру для розбиття тональної простоти твоєї прогулянки.",
+  "15": "Тренч з високою горловиною утеплений — Бежевий тренч класичний, але стриманий; обраний тут за його здатність одягатися поверх будь-якого образу без додавання об’єму.",
+  "16": "Лофери жіночі, ATTICO, замша, колір бежевий — Замша гнучка та комфортна для тривалих прогулянок на нерівній кам’янистій поверхні, замінюючи делікатне шкіряне взуття.",
+  "17": "Оливкові розкльошені штани з віскозою MH STUDIO — Цей шарф додає необхідний теплий шар до торсу за кількістю шарів.",
+  "18": "Оливкові розкльошені штани з віскозою MH STUDIO — Бежевий шарф додає необхідне тепло до кількості шарів на торсі.",
+  "19": "Ремінь жіночий Welfare коричневий — Цей шкіряний ремінь підкреслює образ і забезпечує тактильний елемент, придатний для тривалого носіння.",
+  "20": "Сорочка «Court» пудрова — Рожева приталена сорочка замінює шоколадну в’язану футболку, яка була занадто повсякденною та не відповідала сезону на цю формальну подію.",
+  "21": "Тренч з високою горловиною утеплений — Бежевий тренч є необхідним верхнім шаром для прохолодної погоди, забезпечуючи тепло без перегріву на бруківці.",
+  "22": "Оливкові розкльошені штани з віскозою MH STUDIO — Цей шарф додає необхідний теплий шар до торсу за кількістю шарів.",
+  "23": "Лофери жіночі, ATTICO, замша, колір бежевий — Замшеві лофери замінюють бордові туфлі-човники; вони практичні для ходьби та краще поєднуються з нейтральним тоном схеми."
+}
+```

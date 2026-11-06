@@ -1,0 +1,27 @@
+{
+ "версія": 1,
+ "запит": {
+  "model": "qwen/qwen3.5-9b",
+  "max_tokens": 4000,
+  "messages": [
+   {
+    "role": "user",
+    "content": [
+     {
+      "type": "text",
+      "text": "{\"task\": {\"role\": \"You read the description of an outfit and list its items as data.\", \"rules\": [\"One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.\", \"One item carries one thing — of two alternatives list the first; a note in brackets is not an item.\", \"Slot \\\"accessory\\\" is for an item no other slot fits.\", \"\\\"is_outfit\\\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note.\"], \"limits\": [\"Rely only on the input: do not invent what it does not contain.\", \"The answer is one JSON object following \\\"answer_schema\\\", without explanations and without ```.\"], \"language\": \"English\", \"answer\": \"ITEM_LIST\", \"answer_schema\": {\"is_outfit\": \"yes|no\", \"items\": [{\"name\": \"<what the item is>\", \"details\": \"<its cut, length and fabric>\", \"slot\": \"top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory\", \"color_hex\": \"<#rrggbb or null>\", \"worn\": \"<true, or false when the description says the outfit goes without it>\"}]}, \"input\": [\"\\\"description\\\" — the outfit description\"]}, \"description\": \"Structured wool-blend blazer, sharp shoulder cut, mid-thigh length, charcoal grey (#36454F), virgin wool.\\nTailored cotton-poplin blouse, relaxed collar, hip length, ivory white (#FFFFF0), poplin.\\nSlim-fit dark denim trousers, straight leg, full-length, navy blue (#000080), heavy twill.\\nPolished leather ankle boots, block heel, mid-calf height, black (#000000), calfskin.\\nStructured leather belt, thin buckle, waist length, brown chocolate (#3E2723), smooth leather.\\n\\nThis outfit works perfectly for an autumn workday at the office by balancing professional polish with practical comfort suitable for cool weather. The structured blazer and tailored trousers establish a neat, business-appropriate silhouette while the dark denim adds a modern, understated edge. Ivory blouse and polished brown accents provide visual warmth against the charcoal and navy tones, creating a cohesive look that transitions effortlessly from morning meetings to late afternoon tasks.\"}"
+     }
+    ]
+   }
+  ],
+  "temperature": 1
+ },
+ "відповідь": {
+  "status": 200,
+  "contentType": "application/json",
+  "headers": {
+   "x-model": "qwen/qwen3.5-9b"
+  },
+  "body": "{\"content\":[{\"type\":\"text\",\"text\":\"{\\n\\\"is_outfit\\\": \\\"yes\\\",\\n\\\"items\\\": [\\n{\\n\\\"name\\\": \\\"blazer\\\",\\n\\\"details\\\": \\\"structured cut with sharp shoulders, mid-thigh length\\\",\\n\\\"slot\\\": \\\"outerwear\\\",\\n\\\"color_hex\\\": \\\"#36454F\\\",\\n\\\"worn\\\": true\\n},\\n{\\n\\\"name\\\": \\\"blouse\\\",\\n\\\"details\\\": \\\"relaxed collar, hip length\\\",\\n\\\"slot\\\": \\\"top\\\",\\n\\\"color_hex\\\": \\\"#FFFFF0\\\",\\n\\\"worn\\\": true\\n},\\n{\\n\\\"name\\\": \\\"trousers\\\",\\n\\\"details\\\": \\\"slim-fit straight leg full-length\\\",\\n\\\"slot\\\": \\\"bottom\\\",\\n\\\"color_hex\\\": \\\"#000080\\\",\\n\\\"worn\\\": true\\n},\\n{\\n\\\"name\\\": \\\"boots\\\",\\n\\\"details\\\": \\\"block heel mid-calf height polished leather ankle boots\\\",\\n\\\"slot\\\": \\\"shoes\\\",\\n\\\"color_hex\\\": \\\"#000000\\\",\\n\\\"worn\\\": true\\n},\\n{\\n\\\"name\\\": \\\"belt\\\",\\n\\\"details\\\": \\\"thin buckle structured\\\",\\n\\\"slot\\\": \\\"belt\\\",\\n\\\"color_hex\\\": \\\"#3E2723\\\",\\n\\\"worn\\\": true\\n}\\n]\\n}\"}],\"usage\":{\"input_tokens\":568,\"output_tokens\":264},\"stop_reason\":\"end_turn\"}"
+ }
+}

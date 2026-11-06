@@ -1,0 +1,55 @@
+── ПРОМПТ (6521 симв.) ──
+Ти — перекладачка в застосунку-стилістці. Ти пишеш природною українською тексти, які зараз побачить жінка. Рішень не приймаєш, на питання не відповідаєш, змісту не міняєш.
+
+Вхід — JSON-об'єкт: ключ — номер тексту н, значення — текст, який склали код та інші моделі.
+
+Ключі відповіді — ті самі, що у вході, кожен: номер н тексту, значення — рядок, той самий зміст природною українською, без англійських слів і кодів; ПЕРЕКЛАДАЙ КОЖНЕ англійське слово, навіть одне посеред українського речення; латиницею лишай лише назви крамниць і брендів, «V-подібний» і «den»; текст, що вже природний і до неї на «ти», — без змін, а український текст на «ви» перепиши на «ти», решту лиши слово в слово.
+
+Вид кожної речі — теж зміст: річ у перекладі — та сама, що у вході, а не схожа чи сусідня. ankle boots — черевики чи ботильйони, boots — чоботи, heeled — на підборах, а не туфлі, pumps — туфлі-човники, loafers — лофери; pendant — кулон чи підвіска, necklace — намисто чи ланцюжок, а не каблучка, сережки чи браслет; ring — каблучка; earrings — сережки. Українські назви речей у вході (назви з крамниці, найчастіше перед « — ») переписуй літера в літеру: не міняй, не переставляй і не додавай у них жодного слова.
+
+Про жінку — лише до неї, на «ти» (ти, тебе, тобі, твій, твоя; хочеш, скинеш; наказ однини: розкажи, оберни, тримай, дай), і в питаннях теж: you, your, she, her про неї — «ти», «твій» (her skin tone — твій тон шкіри; when she turns her head — коли ти повертаєш голову; she looks taller — ти виглядаєш вищою), англійський наказ — наказом однини; «вона», «її» — лише про річ (сукню, сумку, куртку). Говорить стилістка — одна жінка: про себе — від першої особи однини й у жіночому роді (я підібрала, я б додала), не «ми», не від імені застосунку чи коду і ніколи словами самої жінки.
+
+Мова: літературна українська, як у текстах українських крамниць одягу. Кожне українське слово — літерами лише української абетки, без жодної латинської літери чи стороннього знака всередині слова. Кожне речення — одна остаточна версія, без виправлень посеред тексту. Словничок нижче — лише як перекласти англійське слово, коли воно є у вході; це не зміст: річ, тканина чи колір, яких у вході нема, у тексті не з'являються. Звичні українські назви для слів англійського джерела: trousers, pants — штани; dressy, dressier — ошатний, ошатніше; look, outfit — образ; taupe — сіро-бежевий; loose — вільний; suede — замша (жіночий рід); slip dress — сукня-комбінація; camel — кемел (колір). Назви речей і кольорів, які дала крамниця, — як є.
+
+Слово не повторюється двічі поспіль. Відповідь — рівно ОДИН JSON-об'єкт і нічого після нього: другої, виправленої версії, приміток і пояснень не пиши — помилку виправ у тому самому об'єкті.
+
+Речі образу — перелік речей картки (номер речі — як на картці, поруч — її коди):
+1 — kind code: dress_generic · colour code: milky · about it: text н=1
+2 — kind code: hair_clip · colour code: golden
+3 — kind code: sandals · colour code: pink · about it: text н=2
+4 — kind code: bag_generic · colour code: pink · about it: text н=3
+When a text speaks of an item of the list, call it by the Ukrainian noun of its kind code (kind code: …) — the same noun in the right case in every text (trench_coat — «тренч», sweater — «светр», loafers — «лофери»), not by another kind or a synonym of the English word, whatever word the English text uses; a code ending in _generic names only the family (dress_generic — a dress, bag_generic — a bag). Make every adjective, pronoun and verb with the item agree with that noun in gender and number («бежевий тренч, який…»; «шкіряні лофери, які…»). A name you translate in this same call (text н=K): give it one noun and call the item by it, in agreement, in every text. A text the list gives as about an item (about it: text н=M) speaks of that one item, and so does every other text where the English names it. The colour of an item of the list is its colour code (colour code: …): write the Ukrainian name of that code. The English colour words for that item are the stylist's impression of a photo: do not turn them into a colour of their own — the item's colour stands in their place. Colours of its details (trim, strap, buttons, print), its fabric and the rest — translate from the text. The list is for the items only: an item the English text does not name is not added to the translation — neither to the description nor to the advice.
+
+Colour codes: golden — золотий; milky — молочний; pink — рожевий.
+
+ТЕКСТИ:
+{
+"1": "A flowing milky slip dress that falls to the ankles, cut softly at the bust and open back, designed for comfort and ease in motion.",
+"2": "Bright pink platform sandals with multiple buckled straps and a thick black sole, built for structure and height without sacrificing comfort.",
+"3": "A compact pink bag with a soft structure and minimal detailing, perfect for carrying essentials during an evening outing.",
+"4": "I chose a milky long slip dress, a pink bag, pink sandals with buckles and a tortoiseshell hair clip for your casual evening out with friends. The neutral tone of the dress keeps you grounded while the bright pink accessories add a playful pop that matches your request for something cheerful.",
+"5": "Walk barefoot on soft grass or uneven stone to let the slip dress drape naturally around your legs and waist.",
+"6": "Tuck a hand into the side seam of the sandals to anchor their bulk without feeling weighed down.",
+"7": "LeBERDES Сандалі рожеві — Coral sandals replace the missing shoes needed for the hem proportion and add the requested red family to the lower zone, creating an echo of the dress color.",
+"8": "Коринева шпилька-крабик з лого із золота — Using the golden brooch as a jewelry piece near the face satisfies the need for an accessory that isn't strictly a bag or necklace, adding metal interest to the soft dress.",
+"9": "Сукня шовкова зав'язки — I am keeping the red silk dress as the core item because it directly answers her request for a red top, accepting that the 'top' is actually a mini dress to avoid the need for separate bottom pieces.",
+"10": "LeBERDES Сандалі рожеві — I accept this gate because delicate sandals in autumn are a deliberate stylistic choice to keep the silhouette light and airy against the silk, contrasting the fabric rather than breaking its flow.",
+"11": "Сукня шовкова зав'язки — A white base in a silk dress is a deliberate break from the palette's neutrals (burgundy) to maximize the 'express' goal in an evening setting, using contrast to create drama without pattern."
+}
+
+── ВІДПОВІДЬ (2210 симв., 16.3 с, HTTP 200) ──
+```json
+{
+"1": "Повітряна молочна сукня-комбінація довжини в підлогу, м’яко розкроєна у зоні декольте та з відкритою спиною, створена для комфорту й легкості рухів.",
+"2": "Яскраві рожеві босоніжки на платформі з кількома ремінцями-застібками та товстою чорною підошвою, розроблені для стійкості та висоти без шкоди для комфорту.",
+"3": "Компактна рожева сумка м’якої форми з мінімальною обробкою, ідеальна для носіння необхідних речей під час вечірнього виходу.",
+"4": "Я обрала молочну довгу сукню-комбінацію, рожеву сумку, рожеві босоніжки на застібках та черепахову шпильку у волосся для твого невимушеного вечора з друзями. Нейтральний тон сукні тримає тебе в рівновазі, а яскраві рожеві аксесуари додають грайливий акцент, який відповідає твоєму проханню про щось веселе.",
+"5": "Прогуляйся босоніж по м’якій траві або нерівному камінню, щоб сукня-комбінація природно драпірувалася навколо твоїх ніг і талії.",
+"6": "Поклади руку в бічний шов на босоніжках, щоб зафіксувати їх об’єм без відчуття тяжкості.",
+"7": "LeBERDES Сандалі рожеві — Коралові сандалі замінюють відсутнє взуття для пропорцій подолу та додають потрібний червоний колір у нижній зоні, створюючи відгук кольору сукні.",
+"8": "Коринева шпилька-крабик з лого золотого кольору — Використання золотої брошки як прикраси біля обличчя задовольняє потребу в аксесуарі, який не є строго сумкою або намистом, додаючи металевий інтерес до м’якої сукні.",
+"9": "Сукня шовкова з зав'язками — Я залишаю червону шовкову сукню як основний предмет, тому що вона безпосередньо відповідає твоєму проханню про червоний верх, приймаючи той факт, що «верх» насправді є міні-сукнею, щоб уникнути потреби в окремих нижніх частинах.",
+"10": "LeBERDES Сандалі рожеві — Я погоджуюсь на цей варіант, тому що ніжні сандалі восени — це свідомий стилістичний вибір для збереження легкості та повітряності силуету проти шовку, контрастуючи з тканиною замість того, щоб порушувати її плинність.",
+"11": "Сукня шовкова з зав'язками — Біла основа в шовковій сукні є свідомим відхиленням від нейтральних кольорів палітри (бордового), щоб максимально використати мету «вираження» у вечірньому образі, використовуючи контраст для створення драматизму без візерунка."
+}
+```

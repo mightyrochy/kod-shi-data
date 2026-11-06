@@ -1,0 +1,27 @@
+{
+ "версія": 1,
+ "запит": {
+  "model": "qwen/qwen3.5-9b",
+  "max_tokens": 4000,
+  "messages": [
+   {
+    "role": "user",
+    "content": [
+     {
+      "type": "text",
+      "text": "{\"task\": {\"role\": \"You read the description of an outfit and list its items as data.\", \"rules\": [\"One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.\", \"One item carries one thing — of two alternatives list the first; a note in brackets is not an item.\", \"Slot \\\"accessory\\\" is for an item no other slot fits.\", \"\\\"is_outfit\\\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note.\"], \"limits\": [\"Rely only on the input: do not invent what it does not contain.\", \"The answer is one JSON object following \\\"answer_schema\\\", without explanations and without ```.\"], \"language\": \"English\", \"answer\": \"ITEM_LIST\", \"answer_schema\": {\"is_outfit\": \"yes|no\", \"items\": [{\"name\": \"<what the item is>\", \"details\": \"<its cut, length and fabric>\", \"slot\": \"top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory\", \"color_hex\": \"<#rrggbb or null>\", \"worn\": \"<true, or false when the description says the outfit goes without it>\"}]}, \"input\": [\"\\\"description\\\" — the outfit description\"]}, \"description\": \"Sleek sheath dress in a deep emerald green (#0f3d3e), knee-length cut with a subtle V-neckline and a fitted silhouette that skims the hips, crafted from a rich wool crepe blend that drapes elegantly. Pair it with pointed-toe pumps in polished black leather (#000000) featuring a moderate 7cm heel for comfort during an evening walk. Finish the look with classic gold hoop earrings (#ffd700) and a structured small clutch in matching emerald suede (#0f3d3e) to hold essentials. This outfit works perfectly for your dinner date at 19:30, hitting the smart dress code requirement while offering sophisticated elegance under artificial restaurant lighting; the dark green hue flatters your complexion beautifully against the evening ambiance, and the fitted yet fluid cut enhances your figure without feeling restrictive, ensuring you feel confident and comfortable throughout the night.\"}"
+     }
+    ]
+   }
+  ],
+  "temperature": 1
+ },
+ "відповідь": {
+  "status": 200,
+  "contentType": "application/json",
+  "headers": {
+   "x-model": "qwen/qwen3.5-9b"
+  },
+  "body": "{\"content\":[{\"type\":\"text\",\"text\":\"{\\n  \\\"is_outfit\\\": \\\"yes\\\",\\n  \\\"items\\\": [\\n    {\\n      \\\"name\\\": \\\"sheath dress\\\",\\n      \\\"details\\\": \\\"knee-length cut with a subtle V-neckline and a fitted silhouette that skims the hips, crafted from a rich wool crepe blend that drapes elegantly\\\",\\n      \\\"slot\\\": \\\"dress\\\",\\n      \\\"color_hex\\\": \\\"#0f3d3e\\\",\\n      \\\"worn\\\": true\\n    },\\n    {\\n      \\\"name\\\": \\\"pointed-toe pumps\\\",\\n      \\\"details\\\": \\\"polished leather featuring a moderate 7cm heel for comfort during an evening walk\\\",\\n      \\\"slot\\\": \\\"shoes\\\",\\n      \\\"color_hex\\\": \\\"#000000\\\",\\n      \\\"worn\\\": true\\n    },\\n    {\\n      \\\"name\\\": \\\"hoop earrings\\\",\\n      \\\"details\\\": \\\"classic gold hoops\\\",\\n      \\\"slot\\\": \\\"earrings\\\",\\n      \\\"color_hex\\\": \\\"#ffd700\\\",\\n      \\\"worn\\\": true\\n    },\\n    {\\n      \\\"name\\\": \\\"clutch\\\",\\n      \\\"details\\\": \\\"structured small clutch in emerald suede to hold essentials\\\",\\n      \\\"slot\\\": \\\"bag\\\",\\n      \\\"color_hex\\\": \\\"#0f3d3e\\\",\\n      \\\"worn\\\": true\\n    }\\n  ]\\n}\"}],\"usage\":{\"input_tokens\":542,\"output_tokens\":295},\"stop_reason\":\"end_turn\"}"
+ }
+}

@@ -1,0 +1,27 @@
+{
+ "версія": 1,
+ "запит": {
+  "model": "qwen/qwen3.5-9b",
+  "max_tokens": 4000,
+  "messages": [
+   {
+    "role": "user",
+    "content": [
+     {
+      "type": "text",
+      "text": "{\"task\": {\"role\": \"You read the description of an outfit and list its items as data.\", \"rules\": [\"One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.\", \"One item carries one thing — of two alternatives list the first; a note in brackets is not an item.\", \"Slot \\\"accessory\\\" is for an item no other slot fits.\", \"\\\"is_outfit\\\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note.\"], \"limits\": [\"Rely only on the input: do not invent what it does not contain.\", \"The answer is one JSON object following \\\"answer_schema\\\", without explanations and without ```.\"], \"language\": \"English\", \"answer\": \"ITEM_LIST\", \"answer_schema\": {\"is_outfit\": \"yes|no\", \"items\": [{\"name\": \"<what the item is>\", \"details\": \"<its cut, length and fabric>\", \"slot\": \"top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory\", \"color_hex\": \"<#rrggbb or null>\", \"worn\": \"<true, or false when the description says the outfit goes without it>\"}]}, \"input\": [\"\\\"description\\\" — the outfit description\"]}, \"description\": \"Cream silk blouse with a relaxed collar and flowing sleeves, ivory heathered weight.  \\nTailored wide-leg trousers in navy wool crepe, straight leg through the calf, dark slate color (#2F3640).  \\nHeeled pumps in polished black leather, medium-height stiletto, classic pointed toe, soft supple nappa finish.  \\nA structured charcoal bouclé jacket, boxy fit with notched lapels and two front flap pockets, deep charcoal gray (#36454F).  \\n\\nThis ensemble balances the celebratory energy of a friend's birthday party with the refined elegance required for an evening smart dress code. The textured bouclé jacket adds warmth and visual interest suitable for autumn while keeping the silhouette modern and relaxed. Navy trousers ground the outfit in sophistication without appearing overly stiff, allowing her to move freely through dancing and conversation. Completing the look with classic black heels ensures a seamless transition from late afternoon gatherings into the evening under artificial lighting.\"}"
+     }
+    ]
+   }
+  ],
+  "temperature": 1
+ },
+ "відповідь": {
+  "status": 200,
+  "contentType": "application/json",
+  "headers": {
+   "x-model": "qwen/qwen3.5-9b"
+  },
+  "body": "{\"content\":[{\"type\":\"text\",\"text\":\"{\\\"is_outfit\\\": \\\"yes\\\", \\\"items\\\": [{\\\"name\\\": \\\"Blouse\\\", \\\"details\\\": \\\"Relaxed collar, flowing sleeves\\\", \\\"slot\\\": \\\"top\\\", \\\"color_hex\\\": \\\"#FFFFF0\\\", \\\"worn\\\": true}, {\\\"name\\\": \\\"Trousers\\\", \\\"details\\\": \\\"Tailored wide-leg, straight through calf\\\", \\\"slot\\\": \\\"bottom\\\", \\\"color_hex\\\": \\\"#2F3640\\\", \\\"worn\\\": true}, {\\\"name\\\": \\\"Pumps\\\", \\\"details\\\": \\\"Medium-height stiletto heel, pointed toe, nappa finish\\\", \\\"slot\\\": \\\"shoes\\\", \\\"color_hex\\\": \\\"#000000\\\", \\\"worn\\\": true}, {\\\"name\\\": \\\"Jacket\\\", \\\"details\\\": \\\"Structured bouclé fabric, boxy fit, notched lapels, flap pockets\\\", \\\"slot\\\": \\\"outerwear\\\", \\\"color_hex\\\": \\\"#36454F\\\", \\\"worn\\\": true}]}\"}],\"usage\":{\"input_tokens\":560,\"output_tokens\":201},\"stop_reason\":\"end_turn\"}"
+ }
+}

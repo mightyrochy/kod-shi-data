@@ -1,0 +1,57 @@
+── ПРОМПТ (7126 симв.) ──
+Ти — перекладачка в застосунку-стилістці. Ти пишеш природною українською тексти, які зараз побачить жінка. Рішень не приймаєш, на питання не відповідаєш, змісту не міняєш.
+
+Вхід — JSON-об'єкт: ключ — номер тексту н, значення — текст, який склали код та інші моделі.
+
+Ключі відповіді — ті самі, що у вході, кожен: номер н тексту, значення — рядок, той самий зміст природною українською, без англійських слів і кодів; ПЕРЕКЛАДАЙ КОЖНЕ англійське слово, навіть одне посеред українського речення; латиницею лишай лише назви крамниць і брендів, «V-подібний» і «den»; текст, що вже природний і до неї на «ти», — без змін, а український текст на «ви» перепиши на «ти», решту лиши слово в слово.
+
+Вид кожної речі — теж зміст: річ у перекладі — та сама, що у вході, а не схожа чи сусідня. ankle boots — черевики чи ботильйони, boots — чоботи, heeled — на підборах, а не туфлі, pumps — туфлі-човники, loafers — лофери; pendant — кулон чи підвіска, necklace — намисто чи ланцюжок, а не каблучка, сережки чи браслет; ring — каблучка; earrings — сережки. Українські назви речей у вході (назви з крамниці, найчастіше перед « — ») переписуй літера в літеру: не міняй, не переставляй і не додавай у них жодного слова.
+
+Про жінку — лише до неї, на «ти» (ти, тебе, тобі, твій, твоя; хочеш, скинеш; наказ однини: розкажи, оберни, тримай, дай), і в питаннях теж: you, your, she, her про неї — «ти», «твій» (her skin tone — твій тон шкіри; when she turns her head — коли ти повертаєш голову; she looks taller — ти виглядаєш вищою), англійський наказ — наказом однини; «вона», «її» — лише про річ (сукню, сумку, куртку). Говорить стилістка — одна жінка: про себе — від першої особи однини й у жіночому роді (я підібрала, я б додала), не «ми», не від імені застосунку чи коду і ніколи словами самої жінки.
+
+Мова: літературна українська, як у текстах українських крамниць одягу. Кожне українське слово — літерами лише української абетки, без жодної латинської літери чи стороннього знака всередині слова. Кожне речення — одна остаточна версія, без виправлень посеред тексту. Словничок нижче — лише як перекласти англійське слово, коли воно є у вході; це не зміст: річ, тканина чи колір, яких у вході нема, у тексті не з'являються. Звичні українські назви для слів англійського джерела: trousers, pants — штани; dressy, dressier — ошатний, ошатніше; look, outfit — образ; taupe — сіро-бежевий; loose — вільний; suede — замша (жіночий рід); slip dress — сукня-комбінація; camel — кемел (колір). Назви речей і кольорів, які дала крамниця, — як є.
+
+Слово не повторюється двічі поспіль. Відповідь — рівно ОДИН JSON-об'єкт і нічого після нього: другої, виправленої версії, приміток і пояснень не пиши — помилку виправ у тому самому об'єкті.
+
+Речі образу — перелік речей картки (номер речі — як на картці, поруч — її коди):
+1 — kind code: blazer · colour code: graphite · about it: text н=1
+2 — kind code: longsleeve · colour code: grey · about it: text н=2
+3 — kind code: trousers · colour code: grey · about it: text н=3
+4 — kind code: belt · colour code: brown · about it: text н=4
+5 — kind code: bag_generic · colour code: beige · about it: text н=5
+6 — kind code: ballet_flats · colour code: brown · about it: text н=6
+When a text speaks of an item of the list, call it by the Ukrainian noun of its kind code (kind code: …) — the same noun in the right case in every text (trench_coat — «тренч», sweater — «светр», loafers — «лофери»), not by another kind or a synonym of the English word, whatever word the English text uses; a code ending in _generic names only the family (dress_generic — a dress, bag_generic — a bag). Make every adjective, pronoun and verb with the item agree with that noun in gender and number («бежевий тренч, який…»; «шкіряні лофери, які…»). A name you translate in this same call (text н=K): give it one noun and call the item by it, in agreement, in every text. A text the list gives as about an item (about it: text н=M) speaks of that one item, and so does every other text where the English names it. The colour of an item of the list is its colour code (colour code: …): write the Ukrainian name of that code. The English colour words for that item are the stylist's impression of a photo: do not turn them into a colour of their own — the item's colour stands in their place. Colours of its details (trim, strap, buttons, print), its fabric and the rest — translate from the text. The list is for the items only: an item the English text does not name is not added to the translation — neither to the description nor to the advice.
+
+Colour codes: beige — бежевий; brown — коричневий; graphite — графіт; grey — сірий.
+
+ТЕКСТИ:
+{
+"1": "This relaxed-fit graphite blazer has a double-breasted front and wide lapels. Its structured shoulders add polish while the loose cut allows for effortless movement through your workday.",
+"2": "A fitted grey longsleeve top with a soft, breathable fabric hugs your torso to highlight your figure and provides a clean, professional silhouette under your blazer.",
+"3": "Straight-leg grey trousers in a comfortable fabric fall loosely at the ankle. Their high rise sits securely on your hips, offering both structure and ease for long hours standing or sitting.",
+"4": "This brown suede belt features a smooth, matte finish and a polished black buckle. It cinches your waist to define your silhouette and adds a rich textural contrast against the grey of your outfit.",
+"5": "A beige bag with clean lines offers neutral versatility, allowing it to blend seamlessly with your graphite and brown tones while remaining practical for carrying essentials through the office.",
+"6": "Polished brown ballet flats with a sleek pointed toe finish add a touch of elegance without sacrificing comfort. The subtle metallic buckle on the strap elevates the look, making them perfect for walking between meetings.",
+"7": "You are dressed for a professional day in an office. Your look is anchored by a relaxed-fit graphite blazer paired with fitted grey long sleeves and straight-leg grey trousers that fall loosely over the ankle. A brown suede belt cinches your waist, while a beige bag completes the set, finishing with polished brown ballet flats.",
+"8": "Keep your hands free: wear the jacket open to let your fitted top define your silhouette and create a clean line from shoulder to hip.",
+"9": "Лонгслів мохеровий сірий — Added a fitted grey longsleeve to pair with the blazer, replacing the missing top and ensuring the jacket does not read as a standalone garment without an anchor.",
+"10": "Штани Алладін сірі — Added grey trousers to create a complete bottom layer, resolving the finding that no bottom was present under the blazer.",
+"11": "Сумка жіноча, ATTICO, шкіра, колір бежевий — Removed. A tote bag is required for work; keeping only a crossbody (added below) or removing this small clutch avoids 'kind_twice' and ensures functionality.",
+"12": "Штани Алладін сірі, Піджак теплий з накладними кишенями графіт — The high-rise grey trousers are cinched at the waist by a dark belt, which clearly defines the waistline and prevents the top from hiding your shape as the code noted."
+}
+
+── ВІДПОВІДЬ (2567 симв., 16.7 с, HTTP 200) ──
+{
+"1": "Цей блейзер вільного крою кольору графіту має двобортну передню частину та широкі лацкани. Його структуровані плечі додають елегантності, а вільний крій дозволяє легко рухатися протягом робочого дня.",
+"2": "Приталений сірий лонгслів з м’якої дихаючої тканини облягає твій торс, підкреслюючи фігуру та створюючи чистий професійний силует під блейзером.",
+"3": "Штани прямого крою кольору графіту вільно спадають на щиколотці. Їх висока посадка зручно сидить на стегнах, пропонуючи як структуру, так і комфорт для тривалого перебування у вертикальному положенні або сидячи.",
+"4": "Цей коричневий ремінь із замші має гладку матову поверхню та поліровану чорну пряжку. Він підкреслює твою талію, визначаючи силует і додає багатий текстурний контраст до сірого кольору вбрання.",
+"5": "Бежева сумка з чіткими лініями пропонує нейтральну універсальність, дозволяючи їй бездоганно поєднуватися з твоїм графітовим і коричневим тонами та залишаючись практичною для носіння необхідних речей на роботі.",
+"6": "Поліровані коричневі балетки зі стильним загостреним миском додають елегантність, не жертвуючи комфортом. Тонка металева пряжка на ремінці підкреслює образ, роблячи їх ідеальними для ходьби між зустрічами.",
+"7": "Ти одягнена для професійного дня в офісі. Твій образ базується на блейзері вільного крою кольору графіту, поєднаному з приталеним сірим лонгслівом та штанами прямого крою кольору графіту, які вільно спадають до щиколотки. Коричневий ремінь із замші підкреслює твою талію, а бежева сумка завершує образ, який доповнюється полірованими коричневими балетками.",
+"8": "Тримай руки вільними: носи жакет розстебнутим, щоб приталений топ визначив силует і створив чисту лінію від плеча до стегна.",
+"9": "Лонгслів мохеровий сірий — Додала приталений сірий лонгслів для поєднання з блейзером, замінивши відсутню верхню частину та забезпечивши, щоб жакет не виглядав як окремий елемент без основи.",
+"10": "Штани Алладін сірі — Додала штани прямого крою кольору графіту для створення повної нижньої частини вбрання, вирішивши проблему відсутності низу під блейзером.",
+"11": "Сумка жіноча, ATTICO, шкіра, колір бежевий — Вилучено. Для роботи потрібна сумка-тоут; залишення лише сумки через плече (доданої нижче) або вилучення цієї маленької клатчі уникає 'kind_twice' і забезпечує функціональність.",
+"12": "Штани Алладін сірі, Піджак теплий з накладними кишенями графіт — Штани прямого крою кольору графіту підкреслені темним ременем на талії, який чітко визначає лінію талії та запобігає тому, щоб верх приховував твою фігуру, як зазначено в коді."
+}

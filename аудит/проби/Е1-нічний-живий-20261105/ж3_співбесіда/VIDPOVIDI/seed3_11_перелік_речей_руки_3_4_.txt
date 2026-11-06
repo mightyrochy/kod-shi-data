@@ -1,0 +1,51 @@
+── ПРОМПТ (2192 симв.) ──
+{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.", "One item carries one thing — of two alternatives list the first; a note in brackets is not an item.", "Slot \"accessory\" is for an item no other slot fits.", "\"is_outfit\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "ITEM_LIST", "answer_schema": {"is_outfit": "yes|no", "items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory", "color_hex": "<#rrggbb or null>", "worn": "<true, or false when the description says the outfit goes without it>"}]}, "input": ["\"description\" — the outfit description"]}, "description": "A structured blazer in charcoal grey wool with a slightly tapered waist and notched lapels, paired with high-waisted trousers in matching dark denim featuring a relaxed but clean straight leg cut. The ensemble is grounded by black leather ankle boots with a low block heel for stability during the walk from transport to the office entrance. Minimalist gold stud earrings, a simple silver pendant necklace, and a structured beige tote bag complete the look without overpowering the professional silhouette. This outfit works because it bridges the gap between everyday comfort and the polished neatness required for a job interview in an office setting, while the dark autumnal tones suit the season's daylight. The tailored blazer adds necessary authority as a candidate, and the denim trousers keep the formality grounded at the everyday level without slipping into full business attire that might feel too stiff for a morning presentation."}
+
+── ВІДПОВІДЬ (1043 симв., 5.3 с, HTTP 200) ──
+{
+  "is_outfit": "yes",
+  "items": [
+    {
+      "name": "blazer",
+      "details": "structured with slightly tapered waist and notched lapels",
+      "slot": "outerwear",
+      "color_hex": "#36454F",
+      "worn": true
+    },
+    {
+      "name": "trousers",
+      "details": "high-waisted with relaxed but clean straight leg cut",
+      "slot": "bottom",
+      "color_hex": "#1C2331",
+      "worn": true
+    },
+    {
+      "name": "ankle boots",
+      "details": "black leather with low block heel",
+      "slot": "shoes",
+      "color_hex": "#000000",
+      "worn": true
+    },
+    {
+      "name": "earrings",
+      "details": "minimalist gold studs",
+      "slot": "earrings",
+      "color_hex": "#FFD700",
+      "worn": true
+    },
+    {
+      "name": "necklace",
+      "details": "simple silver pendant",
+      "slot": "necklace",
+      "color_hex": "#C0C0C0",
+      "worn": true
+    },
+    {
+      "name": "tote bag",
+      "details": "structured beige",
+      "slot": "bag",
+      "color_hex": "#F5F5DC",
+      "worn": true
+    }
+  ]
+}

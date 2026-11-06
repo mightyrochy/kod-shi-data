@@ -1,0 +1,63 @@
+── ПРОМПТ (7758 симв.) ──
+Ти — перекладачка в застосунку-стилістці. Ти пишеш природною українською тексти, які зараз побачить жінка. Рішень не приймаєш, на питання не відповідаєш, змісту не міняєш.
+
+Вхід — JSON-об'єкт: ключ — номер тексту н, значення — текст, який склали код та інші моделі.
+
+Ключі відповіді — ті самі, що у вході, кожен: номер н тексту, значення — рядок, той самий зміст природною українською, без англійських слів і кодів; ПЕРЕКЛАДАЙ КОЖНЕ англійське слово, навіть одне посеред українського речення; латиницею лишай лише назви крамниць і брендів, «V-подібний» і «den»; текст, що вже природний і до неї на «ти», — без змін, а український текст на «ви» перепиши на «ти», решту лиши слово в слово.
+
+Вид кожної речі — теж зміст: річ у перекладі — та сама, що у вході, а не схожа чи сусідня. ankle boots — черевики чи ботильйони, boots — чоботи, heeled — на підборах, а не туфлі, pumps — туфлі-човники, loafers — лофери; pendant — кулон чи підвіска, necklace — намисто чи ланцюжок, а не каблучка, сережки чи браслет; ring — каблучка; earrings — сережки. Українські назви речей у вході (назви з крамниці, найчастіше перед « — ») переписуй літера в літеру: не міняй, не переставляй і не додавай у них жодного слова.
+
+Про жінку — лише до неї, на «ти» (ти, тебе, тобі, твій, твоя; хочеш, скинеш; наказ однини: розкажи, оберни, тримай, дай), і в питаннях теж: you, your, she, her про неї — «ти», «твій» (her skin tone — твій тон шкіри; when she turns her head — коли ти повертаєш голову; she looks taller — ти виглядаєш вищою), англійський наказ — наказом однини; «вона», «її» — лише про річ (сукню, сумку, куртку). Говорить стилістка — одна жінка: про себе — від першої особи однини й у жіночому роді (я підібрала, я б додала), не «ми», не від імені застосунку чи коду і ніколи словами самої жінки.
+
+Мова: літературна українська, як у текстах українських крамниць одягу. Кожне українське слово — літерами лише української абетки, без жодної латинської літери чи стороннього знака всередині слова. Кожне речення — одна остаточна версія, без виправлень посеред тексту. Словничок нижче — лише як перекласти англійське слово, коли воно є у вході; це не зміст: річ, тканина чи колір, яких у вході нема, у тексті не з'являються. Звичні українські назви для слів англійського джерела: trousers, pants — штани; dressy, dressier — ошатний, ошатніше; look, outfit — образ; taupe — сіро-бежевий; loose — вільний; suede — замша (жіночий рід); slip dress — сукня-комбінація; camel — кемел (колір). Назви речей і кольорів, які дала крамниця, — як є.
+
+Слово не повторюється двічі поспіль. Відповідь — рівно ОДИН JSON-об'єкт і нічого після нього: другої, виправленої версії, приміток і пояснень не пиши — помилку виправ у тому самому об'єкті.
+
+Речі образу — перелік речей картки (номер речі — як на картці, поруч — її коди):
+1 — kind code: suit · colour code: white · about it: text н=1
+2 — kind code: dress_shoes · colour code: red · about it: text н=2
+3 — kind code: belt · colour code: burgundy · about it: text н=3
+4 — kind code: collar_necklace · colour code: silvery · about it: text н=4
+5 — kind code: ring · colour code: silvery · about it: text н=5
+6 — kind code: tote · colour code: brown · about it: text н=6
+When a text speaks of an item of the list, call it by the Ukrainian noun of its kind code (kind code: …) — the same noun in the right case in every text (trench_coat — «тренч», sweater — «светр», loafers — «лофери»), not by another kind or a synonym of the English word, whatever word the English text uses; a code ending in _generic names only the family (dress_generic — a dress, bag_generic — a bag). Make every adjective, pronoun and verb with the item agree with that noun in gender and number («бежевий тренч, який…»; «шкіряні лофери, які…»). A name you translate in this same call (text н=K): give it one noun and call the item by it, in agreement, in every text. A text the list gives as about an item (about it: text н=M) speaks of that one item, and so does every other text where the English names it. The colour of an item of the list is its colour code (colour code: …): write the Ukrainian name of that code. The English colour words for that item are the stylist's impression of a photo: do not turn them into a colour of their own — the item's colour stands in their place. Colours of its details (trim, strap, buttons, print), its fabric and the rest — translate from the text. The list is for the items only: an item the English text does not name is not added to the translation — neither to the description nor to the advice.
+
+Colour codes: brown — коричневий; burgundy — бордовий; red — червоний; silvery — срібний; white — білий.
+
+ТЕКСТИ:
+{
+"1": "This cream-colored wide-leg suit set features a relaxed, open jacket and matching trousers that create a fluid, elegant silhouette perfect for your evening. It is layered over a coordinating vest to add subtle structure under the soft fabric.",
+"2": "These red pointed-toe dress shoes bring a bold pop of colour and sharp lines that will catch the eye in any theatre lighting, grounding your look with confident posture.",
+"3": "This burgundy belt offers a sophisticated accent that matches the depth of your shoes while cinching the wide silhouette to define your waistline without breaking the outfit's flow.",
+"4": "A fine, silvery chain collar necklace rests gently against your skin, adding a touch of metallic shine that complements the evening atmosphere without overpowering the suit's clean lines.",
+"5": "This silvery ring features a large central stone surrounded by a halo of smaller stones, making it a natural statement piece that will shine under the theatre lights and balance your other jewellery.",
+"6": "A spacious brown pebbled leather tote bag with a silver buckle detail provides both style and practicality, carrying everything you need for the evening in a warm tone that anchors the brighter upper half of your outfit.",
+"7": "I have selected a striking combination for your evening at the theatre. You are wearing a sophisticated cream-colored suit set with wide-leg trousers and an open jacket revealing a matching vest underneath, paired with elegant red pointed-toe heels and a rich burgundy belt to cinch your waist. The ensemble is finished with silvery jewellery, including a delicate collar necklace and a large statement ring, plus a substantial brown tote bag.",
+"8": "Keep the jacket unbuttoned to let the vest show a hint of skin at the neckline, balancing the formality of the suit for an evening event.",
+"9": "Трійка піджак однобортний + жилетка + палаццо пломбір — Keep the suit as the hero piece. The 'fabric_stretches_ease_below_woven_min' finding is addressed by noting the garment is likely tailored to fit her specific proportions, making the ease adequate.",
+"10": "Туфлі Doves червоні — Add burgundy leather shoes. They fix the 'shoes_cut_leg_line' and 'outfit_level_off_occasion' by bringing the formality down to a smart/neat level and matching the leg tone.",
+"11": "Сріблястий ланцюжок-джгут — Add this silver collar necklace to echo the suit's metallic accents and add a jewelry element.",
+"12": "Срібляста каблучка з великим кристалом — Add this silver ring to complete the jewelry look, ensuring 'accent_role_lost' in rings is fixed with high enough chroma or simply adding to the count.",
+"13": "Жіноча сумка тоут шкіряна коричнева — I accept this bag because its large format suits the evening occasion as a statement piece that complements the rich burgundy tones of the outfit, balancing the formal wear with a touch of modern utility.",
+"14": "Сріблястий ланцюжок-джгут — Add this silver collar necklace to echo the metallic shine of the brooch and add jewelry interest without being a surface metal, fixing 'accent_role_lost' in jewelry."
+}
+
+── ВІДПОВІДЬ (3271 симв., 22.2 с, HTTP 200) ──
+```json
+{
+  "1": "Цей кремовий костюм з широкими штанинами складається зі зручного жакета вільного крою та відповідних штанів, які створюють плавний і елегантний силует, що чудово підійде для твого вечора. Він надітий поверх гармонійної жилетки, щоб додати ледь помітну структуру під м’яку тканину.",
+  "2": "Ці червоні туфлі-човники з загостреним носком додають сміливий колірний акцент і чіткі лінії, які привернуть увагу в будь-якому театральному світлі та підкреслять твою поставу.",
+  "3": "Цей бордовий ремінь пропонує вишуканий акцент, який гармоніює з глибиною кольору твого взуття, водночас затягуючи силует широких штанів і підкреслюючи талію без порушення цілісності образу.",
+  "4": "Тонкий сріблястий ланцюжок-підвіска ніжно прилягає до твоєї шкіри, додаючи металевий блиск, який гармонійно поєднується з атмосферою вечора без перевантаження чітких ліній костюма.",
+  "5": "Ця срібляста каблучка має великий центральний камінь, оточений обідком менших каменів, що робить її природним акцентним елементом, який сяятиме під театральним світлом і збалансує твої інші прикраси.",
+  "6": "Містка коричнева шкіряна сумка-тоут із срібною пряжкою поєднує стиль та практичність, вміщуючи все необхідне для вечора в теплому тоні, який підкреслює яскравішу верхню частину твого образу.",
+  "7": "Я обрала вражаючий комплект на твій вечір у театрі. Ти одягнена в елегантний кремовий костюм з широкими штанинами та жакетом вільного крою, який відкриває відповідну жилетку знизу, доповнений витонченими червоними туфлями-човниками на підборах і насиченим бордовим ременем для підкреслення лінії талії. Образ завершують сріблясті прикраси: ніжний ланцюжок-підвіска на шиї та велика акцентна каблучка, а також містка коричнева сумка-тоут.",
+  "8": "Залиш жакет розстебнутим, щоб жилетка ледь відкривала шкіру в зоні декольте, збалансувавши формальність костюма для вечірнього заходу.",
+  "9": "Трійка піджак однобортний + жилетка + палаццо пломбір — Залиш костюм головним елементом. Проблема «тканина тягнеться і не тримає форму» вирішується тим, що одяг ймовірно пошитий за твоїми індивідуальними мірками, тому посадка достатня.",
+  "10": "Туфлі Doves червоні — Додай бордові шкіряні туфлі. Вони виправляють «взуття обрізає лінію ноги» та «образ не відповідає рівню заходу», оскільки знижують формальність до розумного/охайного рівня і гармонують з тоном ніг.",
+  "11": "Сріблястий ланцюжок-джгут — Додай цей срібний намисто, щоб підкреслити металеві акценти костюма та додати прикрасу на шию.",
+  "12": "Срібляста каблучка з великим кристалом — Доповни образ цією сріблястою каблучкою, забезпечивши, що «акцентна роль втрачена» у випадку з каблучками буде виправлена за рахунок достатньої насиченості кольору або просто додавання ще однієї прикраси.",
+  "13": "Жіноча сумка тоут шкіряна коричнева — Я приймаю цю сумку, оскільки її великий формат підходить для вечірнього заходу як акцентний елемент, що гармонує з насиченими бордовими відтінками образу та врівноважує формальний одяг ноткою сучасної практичності.",
+  "14": "Сріблястий ланцюжок-джгут — Додай цей срібний намисто, щоб підкреслити металевий блиск брошки та додати інтерес у вигляді прикраси на шиї без надмірної кількості поверхневого металу, виправляючи «акцентна роль втрачена» в ювелірних виробах."
+}
+```

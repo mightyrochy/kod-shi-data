@@ -1,0 +1,27 @@
+{
+ "версія": 1,
+ "запит": {
+  "model": "qwen/qwen3.5-9b",
+  "max_tokens": 4000,
+  "messages": [
+   {
+    "role": "user",
+    "content": [
+     {
+      "type": "text",
+      "text": "{\"task\": {\"role\": \"You read the description of an outfit and list its items as data.\", \"rules\": [\"One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.\", \"One item carries one thing — of two alternatives list the first; a note in brackets is not an item.\", \"Slot \\\"accessory\\\" is for an item no other slot fits.\", \"\\\"is_outfit\\\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note.\"], \"limits\": [\"Rely only on the input: do not invent what it does not contain.\", \"The answer is one JSON object following \\\"answer_schema\\\", without explanations and without ```.\"], \"language\": \"English\", \"answer\": \"ITEM_LIST\", \"answer_schema\": {\"is_outfit\": \"yes|no\", \"items\": [{\"name\": \"<what the item is>\", \"details\": \"<its cut, length and fabric>\", \"slot\": \"top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory\", \"color_hex\": \"<#rrggbb or null>\", \"worn\": \"<true, or false when the description says the outfit goes without it>\"}]}, \"input\": [\"\\\"description\\\" — the outfit description\"]}, \"description\": \"A refined dark wool blend coat, structured mid-length cut, charcoal grey with hex code #36454F, heavy weight fabric.\\nA crisp fine-gauge merino knit sweater, relaxed drape silhouette, cream white with hex code #FFFDD0, soft textured wool.\\nHigh-waisted dark denim jeans, straight-leg cut, indigo blue with hex code #192533, rigid stretch denim.\\nLeather ankle boots, sleek pointed toe design, black leather with hex code #0D0D0D, smooth calfskin finish.\\nThis outfit balances the cool autumn weather with a stylish outer coat while maintaining an everyday casual elegance perfect for a city walk. The neutral tones of cream and charcoal create a sophisticated palette that elevates simple denim without being too formal. You have all your freedom to explore the streets comfortably, yet you remain polished and ready for any spontaneous stop during the daylight hours.\"}"
+     }
+    ]
+   }
+  ],
+  "temperature": 1
+ },
+ "відповідь": {
+  "status": 200,
+  "contentType": "application/json",
+  "headers": {
+   "x-model": "qwen/qwen3.5-9b"
+  },
+  "body": "{\"content\":[{\"type\":\"text\",\"text\":\"{\\\"is_outfit\\\":\\\"yes\\\",\\\"items\\\":[{\\\"name\\\":\\\"Coat\\\",\\\"details\\\":\\\"structured mid-length cut, dark wool blend fabric, heavy weight\\\",\\\"slot\\\":\\\"outerwear\\\",\\\"color_hex\\\":\\\"#36454F\\\",\\\"worn\\\":true},{\\\"name\\\":\\\"Sweater\\\",\\\"details\\\":\\\"relaxed drape silhouette, fine-gauge merino knit, soft textured wool\\\",\\\"slot\\\":\\\"top\\\",\\\"color_hex\\\":\\\"#FFFDD0\\\",\\\"worn\\\":true},{\\\"name\\\":\\\"Jeans\\\",\\\"details\\\":\\\"straight-leg cut, high-waisted, rigid stretch denim\\\",\\\"slot\\\":\\\"bottom\\\",\\\"color_hex\\\":\\\"#192533\\\",\\\"worn\\\":true},{\\\"name\\\":\\\"Boots\\\",\\\"details\\\":\\\"sleek pointed toe design, ankle height, smooth calfskin finish\\\",\\\"slot\\\":\\\"shoes\\\",\\\"color_hex\\\":\\\"#0D0D0D\\\",\\\"worn\\\":true}]}\"}],\"usage\":{\"input_tokens\":544,\"output_tokens\":178},\"stop_reason\":\"end_turn\"}"
+ }
+}

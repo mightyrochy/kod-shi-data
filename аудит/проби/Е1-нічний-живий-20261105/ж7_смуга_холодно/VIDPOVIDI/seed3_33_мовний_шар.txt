@@ -1,0 +1,54 @@
+── ПРОМПТ (7066 симв.) ──
+Ти — перекладачка в застосунку-стилістці. Ти пишеш природною українською тексти, які зараз побачить жінка. Рішень не приймаєш, на питання не відповідаєш, змісту не міняєш.
+
+Вхід — JSON-об'єкт: ключ — номер тексту н, значення — текст, який склали код та інші моделі.
+
+Ключі відповіді — ті самі, що у вході, кожен: номер н тексту, значення — рядок, той самий зміст природною українською, без англійських слів і кодів; ПЕРЕКЛАДАЙ КОЖНЕ англійське слово, навіть одне посеред українського речення; латиницею лишай лише назви крамниць і брендів, «V-подібний» і «den»; текст, що вже природний і до неї на «ти», — без змін, а український текст на «ви» перепиши на «ти», решту лиши слово в слово.
+
+Вид кожної речі — теж зміст: річ у перекладі — та сама, що у вході, а не схожа чи сусідня. ankle boots — черевики чи ботильйони, boots — чоботи, heeled — на підборах, а не туфлі, pumps — туфлі-човники, loafers — лофери; pendant — кулон чи підвіска, necklace — намисто чи ланцюжок, а не каблучка, сережки чи браслет; ring — каблучка; earrings — сережки. Українські назви речей у вході (назви з крамниці, найчастіше перед « — ») переписуй літера в літеру: не міняй, не переставляй і не додавай у них жодного слова.
+
+Про жінку — лише до неї, на «ти» (ти, тебе, тобі, твій, твоя; хочеш, скинеш; наказ однини: розкажи, оберни, тримай, дай), і в питаннях теж: you, your, she, her про неї — «ти», «твій» (her skin tone — твій тон шкіри; when she turns her head — коли ти повертаєш голову; she looks taller — ти виглядаєш вищою), англійський наказ — наказом однини; «вона», «її» — лише про річ (сукню, сумку, куртку). Говорить стилістка — одна жінка: про себе — від першої особи однини й у жіночому роді (я підібрала, я б додала), не «ми», не від імені застосунку чи коду і ніколи словами самої жінки.
+
+Мова: літературна українська, як у текстах українських крамниць одягу. Кожне українське слово — літерами лише української абетки, без жодної латинської літери чи стороннього знака всередині слова. Кожне речення — одна остаточна версія, без виправлень посеред тексту. Словничок нижче — лише як перекласти англійське слово, коли воно є у вході; це не зміст: річ, тканина чи колір, яких у вході нема, у тексті не з'являються. Звичні українські назви для слів англійського джерела: trousers, pants — штани; dressy, dressier — ошатний, ошатніше; look, outfit — образ; taupe — сіро-бежевий; loose — вільний; suede — замша (жіночий рід); slip dress — сукня-комбінація; camel — кемел (колір). Назви речей і кольорів, які дала крамниця, — як є.
+
+Слово не повторюється двічі поспіль. Відповідь — рівно ОДИН JSON-об'єкт і нічого після нього: другої, виправленої версії, приміток і пояснень не пиши — помилку виправ у тому самому об'єкті.
+
+Речі образу — перелік речей картки (номер речі — як на картці, поруч — її коди):
+1 — kind code: blazer · colour code: light_blue · about it: text н=1
+2 — kind code: shirt · colour code: powder_pink · about it: text н=2
+3 — kind code: jeans · colour code: light_blue · about it: text н=3
+4 — kind code: dress_shoes · colour code: burgundy · about it: text н=4
+5 — kind code: belt_bag · colour code: chocolate · about it: text н=5
+When a text speaks of an item of the list, call it by the Ukrainian noun of its kind code (kind code: …) — the same noun in the right case in every text (trench_coat — «тренч», sweater — «светр», loafers — «лофери»), not by another kind or a synonym of the English word, whatever word the English text uses; a code ending in _generic names only the family (dress_generic — a dress, bag_generic — a bag). Make every adjective, pronoun and verb with the item agree with that noun in gender and number («бежевий тренч, який…»; «шкіряні лофери, які…»). A name you translate in this same call (text н=K): give it one noun and call the item by it, in agreement, in every text. A text the list gives as about an item (about it: text н=M) speaks of that one item, and so does every other text where the English names it. The colour of an item of the list is its colour code (colour code: …): write the Ukrainian name of that code. The English colour words for that item are the stylist's impression of a photo: do not turn them into a colour of their own — the item's colour stands in their place. Colours of its details (trim, strap, buttons, print), its fabric and the rest — translate from the text. The list is for the items only: an item the English text does not name is not added to the translation — neither to the description nor to the advice.
+
+Colour codes: burgundy — бордовий; chocolate — шоколадний; light_blue — блакитний; powder_pink — пудровий.
+
+ТЕКСТИ:
+{
+"1": "A light blue knit blazer with a soft, draped fit and subtle button detailing along the front — it’s paired here with a matching long skirt of the same fabric to create a fluid, monochromatic silhouette.",
+"2": "A powder pink silk shirt with a relaxed collar, black buttons down the front, and voluminous sleeves — worn tucked or untucked for easy versatility under the blazer.",
+"3": "Light blue straight-cut jeans with a mid-rise waist, frayed hems, and subtle distressing — providing a casual base that contrasts beautifully with the refined knitwear above.",
+"4": "Burgundy pointed-toe heels in smooth leather with a sleek stiletto heel — offering height and polish while remaining practical for walking on city streets during autumn days.",
+"5": "A chocolate-colored faux fur belt bag with a black leather trim and zipper closure — designed to wrap snugly around the waist for hands-free convenience and plush texture.",
+"6": "Your outfit is a thoughtful mix of textures and tones, perfect for a chilly city walk. The soft light blue knit blazer drapes elegantly over the matching long skirt, creating a sleek silhouette that balances comfort with style. Underneath, the powder pink silk shirt adds a touch of subtle warmth and sophistication, its delicate sheen catching the daylight beautifully. Grounded by light blue straight-cut jeans, this look feels effortless yet put together, while the deep burgundy pointed-toe heels give you height without sacrificing comfort — ideal for strolling across cobblestones or café steps. A chocolate-colored faux fur belt bag wraps around your waist like a cozy accent, adding both practicality and texture to complete the ensemble.",
+"7": "Tuck the shirt slightly into the jeans at the front for definition, or leave it loose depending on how much you want to emphasize your natural waistline.",
+"8": "Layer the blazer over the shirt as intended — it’s designed to drape softly without structure, so don’t worry about it being too fitted; let it flow naturally.",
+"9": "Wear the heels with confidence — they elongate your legs and add elegance even when walking on uneven city sidewalks.",
+"10": "Бананка гіркий шоколад MOA, LeBERDES Туфлі бордові, Базовий жакет з вовни ягнят темно-блакитний — This formal register of classic separates elevates your walk perfectly; it gives you the polished look you want while staying warm against the cold, transforming your casual day into a confident city adventure."
+}
+
+── ВІДПОВІДЬ (2572 симв., 17.2 с, HTTP 200) ──
+```json
+{
+"1": "Легкий блакитний в’язаний блейзер з м’яким драпіруванням і ледь помітною деталізацією ґудзиків спереду — його поєднано тут із довгою спідницею такого ж матеріалу, щоб створити плавний монохромний силует.",
+"2": "Пудрово-рожева шовкова сорочка з розслабленим комірцем, чорними ґудзиками спереду та пишними рукавами — носи її заправленою або не заправленою для легкої універсальності під блейзером.",
+"3": "Блакитні прямі джинси із середньою посадкою на талії, необробленими краями й ледь помітним потертостями — вони створюють невимушений образ, який чудово контрастує з вишуканим трикотажем зверху.",
+"4": "Бордові туфлі-човники із загостреним носком зі шкіри з елегантною шпилькою — дарують висоту та довершеність, залишаючись практичними для прогулянок міськими вулицями восени.",
+"5": "Поясна сумка гіркого шоколаду з штучного хутра з чорною шкіряною окантовкою та застібкою-блискавкою — розроблена так, щоб щільно обхоплювала талію для зручності без рук і пухкої текстури.",
+"6": "Твій образ — це продумане поєднання фактур і тонів, ідеальне для холодної міської прогулянки. М’який блакитний в’язаний блейзер елегантно драпірується на довгій спідниці, створюючи витончений силует, який гармонійно поєднує комфорт зі стилем. Під ним пудрово-рожева шовкова сорочка додає ледь помітного тепла та вишуканості, її ніжний блиск чудово ловить денне світло. Завершений блакитними прямими джинсами, цей образ здається без зусиль зібраним і водночас досконалим, а глибокі бордові туфлі-човники додають тобі висоти, не жертвуючи комфортом — ідеально для прогулянок по бруківці чи сходинках кав’ярні. Шоколадна поясна сумка з штучного хутра обхоплює твою талію як затишний акцент, додаючи практичності й текстури до завершення ансамблю.",
+"7": "Злегка заправ сорочку спереду для визначення лінії талії або носи її вільно залежно від того, наскільки ти хочеш підкреслити свою природну лінію талії.",
+"8": "Одягни блейзер поверх сорочки так, як задумано — він розроблений, щоб м’яко драпіруватися без структури, тому не хвилюйся про те, що він буде занадто облягаючим; дай йому вільно спадати.",
+"9": "Носи туфлі з упевненістю — вони видовжують твої ноги та додають елегантності навіть під час ходьби по нерівних міських тротуарах.",
+"10": "Бананка гіркий шоколад MOA, LeBERDES Туфлі бордові, Базовий жакет з вовни ягнят темно-блакитний — Цей формальний набір класичних речей ідеально підкреслює твою прогулянку; він дарує тобі вишуканий образ, який ти хочеш, залишаючись теплим у холодну погоду та перетворюючи твій звичайний день на впевнену міську пригоду."
+}
+```

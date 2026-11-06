@@ -1,0 +1,27 @@
+{
+ "версія": 1,
+ "запит": {
+  "model": "qwen/qwen3.5-9b",
+  "max_tokens": 4000,
+  "messages": [
+   {
+    "role": "user",
+    "content": [
+     {
+      "type": "text",
+      "text": "{\"task\": {\"role\": \"You read the description of an outfit and list its items as data.\", \"rules\": [\"One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.\", \"One item carries one thing — of two alternatives list the first; a note in brackets is not an item.\", \"Slot \\\"accessory\\\" is for an item no other slot fits.\", \"\\\"is_outfit\\\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note.\"], \"limits\": [\"Rely only on the input: do not invent what it does not contain.\", \"The answer is one JSON object following \\\"answer_schema\\\", without explanations and without ```.\"], \"language\": \"English\", \"answer\": \"ITEM_LIST\", \"answer_schema\": {\"is_outfit\": \"yes|no\", \"items\": [{\"name\": \"<what the item is>\", \"details\": \"<its cut, length and fabric>\", \"slot\": \"top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory\", \"color_hex\": \"<#rrggbb or null>\", \"worn\": \"<true, or false when the description says the outfit goes without it>\"}]}, \"input\": [\"\\\"description\\\" — the outfit description\"]}, \"description\": \"A structured knit midi skirt in a fluid drape cut to the knee, deep emerald green, wool blend.\\nA tailored sheath top with a high neckline and subtle pleating at the bust, charcoal grey, fine merino wool.\\nA lightweight textured blazer worn over the top for added polish without bulk, black, velvet-cotton mix.\\nAnkle boots with a moderate heel in a sleek silhouette, oxblood red, soft leather.\\nThis outfit works by projecting quiet confidence that defuses any potential scrutiny or commentary before it can start. The dark, rich color palette feels elegant and composed for an upscale restaurant setting while the structured layers provide a professional edge suitable for celebrating with elders. By choosing classic cuts and luxurious fabrics, the look speaks for itself through understated sophistication rather than bold trends that might invite unwanted analysis.\"}"
+     }
+    ]
+   }
+  ],
+  "temperature": 1
+ },
+ "відповідь": {
+  "status": 200,
+  "contentType": "application/json",
+  "headers": {
+   "x-model": "qwen/qwen3.5-9b"
+  },
+  "body": "{\"content\":[{\"type\":\"text\",\"text\":\"{\\\"is_outfit\\\": \\\"yes\\\", \\\"items\\\": [{\\\"name\\\": \\\"structured knit midi skirt\\\", \\\"details\\\": \\\"fluid drape cut to the knee in wool blend\\\", \\\"slot\\\": \\\"bottom\\\", \\\"color_hex\\\": \\\"#004d28\\\", \\\"worn\\\": true}, {\\\"name\\\": \\\"tailored sheath top\\\", \\\"details\\\": \\\"high neckline with subtle pleating at the bust made of fine merino wool\\\", \\\"slot\\\": \\\"top\\\", \\\"color_hex\\\": \\\"#36454f\\\", \\\"worn\\\": true}, {\\\"name\\\": \\\"textured blazer\\\", \\\"details\\\": \\\"lightweight velvet-cotton mix worn over the top\\\", \\\"slot\\\": \\\"outerwear\\\", \\\"color_hex\\\": \\\"#000000\\\", \\\"worn\\\": true}, {\\\"name\\\": \\\"ankle boots\\\", \\\"details\\\": \\\"moderate heel in a sleek silhouette made of soft leather\\\", \\\"slot\\\": \\\"shoes\\\", \\\"color_hex\\\": \\\"#6a0408\\\", \\\"worn\\\": true}]}\"}],\"usage\":{\"input_tokens\":522,\"output_tokens\":213},\"stop_reason\":\"end_turn\"}"
+ }
+}

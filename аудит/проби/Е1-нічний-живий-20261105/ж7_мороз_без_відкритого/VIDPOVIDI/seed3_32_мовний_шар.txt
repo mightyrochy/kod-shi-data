@@ -1,0 +1,62 @@
+── ПРОМПТ (7069 симв.) ──
+Ти — перекладачка в застосунку-стилістці. Ти пишеш природною українською тексти, які зараз побачить жінка. Рішень не приймаєш, на питання не відповідаєш, змісту не міняєш.
+
+Вхід — JSON-об'єкт: ключ — номер тексту н, значення — текст, який склали код та інші моделі.
+
+Ключі відповіді — ті самі, що у вході, кожен: номер н тексту, значення — рядок, той самий зміст природною українською, без англійських слів і кодів; ПЕРЕКЛАДАЙ КОЖНЕ англійське слово, навіть одне посеред українського речення; латиницею лишай лише назви крамниць і брендів, «V-подібний» і «den»; текст, що вже природний і до неї на «ти», — без змін, а український текст на «ви» перепиши на «ти», решту лиши слово в слово.
+
+Вид кожної речі — теж зміст: річ у перекладі — та сама, що у вході, а не схожа чи сусідня. ankle boots — черевики чи ботильйони, boots — чоботи, heeled — на підборах, а не туфлі, pumps — туфлі-човники, loafers — лофери; pendant — кулон чи підвіска, necklace — намисто чи ланцюжок, а не каблучка, сережки чи браслет; ring — каблучка; earrings — сережки. Українські назви речей у вході (назви з крамниці, найчастіше перед « — ») переписуй літера в літеру: не міняй, не переставляй і не додавай у них жодного слова.
+
+Про жінку — лише до неї, на «ти» (ти, тебе, тобі, твій, твоя; хочеш, скинеш; наказ однини: розкажи, оберни, тримай, дай), і в питаннях теж: you, your, she, her про неї — «ти», «твій» (her skin tone — твій тон шкіри; when she turns her head — коли ти повертаєш голову; she looks taller — ти виглядаєш вищою), англійський наказ — наказом однини; «вона», «її» — лише про річ (сукню, сумку, куртку). Говорить стилістка — одна жінка: про себе — від першої особи однини й у жіночому роді (я підібрала, я б додала), не «ми», не від імені застосунку чи коду і ніколи словами самої жінки.
+
+Мова: літературна українська, як у текстах українських крамниць одягу. Кожне українське слово — літерами лише української абетки, без жодної латинської літери чи стороннього знака всередині слова. Кожне речення — одна остаточна версія, без виправлень посеред тексту. Словничок нижче — лише як перекласти англійське слово, коли воно є у вході; це не зміст: річ, тканина чи колір, яких у вході нема, у тексті не з'являються. Звичні українські назви для слів англійського джерела: trousers, pants — штани; dressy, dressier — ошатний, ошатніше; look, outfit — образ; taupe — сіро-бежевий; loose — вільний; suede — замша (жіночий рід); slip dress — сукня-комбінація; camel — кемел (колір). Назви речей і кольорів, які дала крамниця, — як є.
+
+Слово не повторюється двічі поспіль. Відповідь — рівно ОДИН JSON-об'єкт і нічого після нього: другої, виправленої версії, приміток і пояснень не пиши — помилку виправ у тому самому об'єкті.
+
+Речі образу — перелік речей картки (номер речі — як на картці, поруч — її коди):
+1 — kind code: sweater · colour code: taupe · about it: text н=1
+2 — kind code: coat · colour code: blue · about it: text н=2
+3 — kind code: headband · colour code: black · about it: text н=3
+4 — kind code: ankle_boots · colour code: black · about it: text н=4
+5 — kind code: collar_necklace · colour code: silvery · about it: text н=5
+6 — kind code: jeans · colour code: light_blue · about it: text н=6
+7 — kind code: belt_bag · colour code: red · about it: text н=7
+When a text speaks of an item of the list, call it by the Ukrainian noun of its kind code (kind code: …) — the same noun in the right case in every text (trench_coat — «тренч», sweater — «светр», loafers — «лофери»), not by another kind or a synonym of the English word, whatever word the English text uses; a code ending in _generic names only the family (dress_generic — a dress, bag_generic — a bag). Make every adjective, pronoun and verb with the item agree with that noun in gender and number («бежевий тренч, який…»; «шкіряні лофери, які…»). A name you translate in this same call (text н=K): give it one noun and call the item by it, in agreement, in every text. A text the list gives as about an item (about it: text н=M) speaks of that one item, and so does every other text where the English names it. The colour of an item of the list is its colour code (colour code: …): write the Ukrainian name of that code. The English colour words for that item are the stylist's impression of a photo: do not turn them into a colour of their own — the item's colour stands in their place. Colours of its details (trim, strap, buttons, print), its fabric and the rest — translate from the text. The list is for the items only: an item the English text does not name is not added to the translation — neither to the description nor to the advice.
+
+Colour codes: black — чорний; blue — синій; light_blue — блакитний; red — червоний; silvery — срібний; taupe — тауп.
+
+ТЕКСТИ:
+{
+"1": "A soft taupe sweater with a relaxed, flowing cut and long sleeves, featuring a delicate metallic belt tied at the waist to highlight your natural shape.",
+"2": "A structured grey coat with a regular fit, designed with a quilted pattern for durability and warmth, including functional hood details.",
+"3": "A simple black headband with a smooth, wide band that sits comfortably on the hairline to keep strands in place.",
+"4": "Sleek black ankle boots with a low block heel and elastic side panels for easy wear, finished with square toes.",
+"5": "A thin, silvery collar necklace made of flexible chain that rests gently against the neck without adding bulk.",
+"6": "Light blue jeans with a classic straight-leg silhouette and a high waistband for a flattering fit through the hips and thighs.",
+"7": "A compact red belt bag featuring a distinctive logo front and a long adjustable strap for easy wear around the waist.",
+"8": "I have chosen a taupe knit sweater with a relaxed fit and a decorative belt at the waist to define your silhouette against the snow. Over it, I included a long grey quilted coat that provides essential warmth for your walk to work in freezing temperatures. You are wearing black ankle boots to handle the slippery cobblestones safely, a simple silvery collar necklace for understated detail, and light blue straight-leg jeans that offer comfort without restricting your movement. A sleek black headband keeps hair neatly placed, while a red belt bag offers a practical touch for carrying essentials on your commute.",
+"9": "Wear the taupe sweater untucked over the straight-leg jeans to create a soft line that flows from your waist down.",
+"10": "Let the grey coat hang open in front so it frames your upper body and shows off the knit texture beneath.",
+"11": "Черевики шкіряні чорні — Added black boots to complete the look for cobblestone safety and define the lower hem proportion, addressing the no_shoes blocker.",
+"12": "Жіноче осіннє синтепонове пальто на запах без застібки, сіре або чорне Clasna — Swapped the grey cardigan for a wool coat to handle deep frost and precipitation safely, replacing the insufficient knit layer.",
+"13": "Базовий обруч чорний — Removed the black beanie as it competes with the belt for attention in a 'neutral_plus_accent' scheme; keeping one focus is key."
+}
+
+── ВІДПОВІДЬ (2278 симв., 15.8 с, HTTP 200) ──
+```json
+{
+  "1": "М’який бежевий светр з вільним, розслабленим кроєм і довгими рукавами, прикрашений делікатною металевою стрічкою на талії для підкреслення твоєї природної фігури.",
+  "2": "Структуроване сіре пальто з класичним силуетом, розроблене з стьобаним візерунком для міцності й тепла, включаючи функціональні деталі капюшона.",
+  "3": "Простий чорний обруч із гладкою широкою стрічкою, яка зручно сидить на лінії росту волосся та тримає пасма на місці.",
+  "4": "Стильні чорні черевики з низьким квадратним підбором і еластичними бічними панелями для легкості взування, завершені квадратними носками.",
+  "5": "Тонкий срібний кулон-нашийник із гнучкого ланцюжка, який ніжно лежить на шиї без зайвого об’єму.",
+  "6": "Блакитні джинси з класичним прямим силуетом і високою талією для привабливої посадки в стегнах і ногах.",
+  "7": "Компактна червона сумка на поясі, що вирізняється характерним логотипом спереду й довгим регульованим ремінцем для зручного носіння на талії.",
+  "8": "Я обрала бежевий в’язаний светр з вільним кроєм і декоративною стрічкою на талії, щоб підкреслити твій силует на фоні снігу. Зверху я доповнила його довгим сірим стьобаним пальтом, яке забезпечує необхідне тепло для твоєї прогулянки на роботу в морозну погоду. Ти одягла чорні черевики, щоб безпечно ходити слизькою бруківкою, простий срібний кулон-нашийник для стриманої деталі та блакитні прямі джинси, які забезпечують комфорт без обмеження рухів. Стильний чорний обруч тримає волосся охайно на місці, а червона сумка на поясі пропонує практичний спосіб носити з собою необхідні речі під час поїздки.",
+  "9": "Одягни бежевий светр не заправленим у джинси, щоб створити м’яку лінію від талії донизу.",
+  "10": "Дай сірому пальту вільно висіти спереду, щоб воно обрамлювало твою верхню частину тіла й демонструвало в’язану текстуру знизу.",
+  "11": "Додала чорні шкіряні черевики до образу для безпечної ходьби по бруківці та визначення пропорції нижнього краю, вирішивши проблему відсутності взуття.",
+  "12": "Замінила сірий кардиган на вовняне пальто, щоб захиститися від сильних морозів і опадів, замінивши недостатній шар з трикотажу.",
+  "13": "Вилучила чорну шапку-біні, бо вона конкурує зі стрічкою за увагу в схемі «нейтральний плюс акцент»; важливо мати один фокус."
+}
+```

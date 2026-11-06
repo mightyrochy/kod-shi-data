@@ -1,0 +1,27 @@
+{
+ "версія": 1,
+ "запит": {
+  "model": "qwen/qwen3.5-9b",
+  "max_tokens": 4000,
+  "messages": [
+   {
+    "role": "user",
+    "content": [
+     {
+      "type": "text",
+      "text": "{\"task\": {\"role\": \"You are the stylist of the Lyusterko styling app. She has asked you a question about her look; you answer it.\", \"rules\": [\"Answer exactly what she asked about her look: whether the item suits her and this occasion, and what to wear it with.\", \"When she has shown or described no item, speak of no particular item.\", \"Name no shops, brands, prices or links: you do not see the catalogue.\", \"Two to four sentences.\"], \"limits\": [\"Rely only on the input: do not invent what it does not contain.\", \"Text for her. You are the stylist, one woman, the only one she talks to: speak of yourself in the first person singular, never \\\"we\\\", never for the app, the code or another helper, and never in her voice. Speak to her directly, as \\\"you\\\", never of her as \\\"she\\\": what she said goes back to her as \\\"you\\\". Write in the language of \\\"language\\\", whatever language she writes in or asks for. Plain human words, without item numbers, ids, hex codes or markdown.\", \"Do not name lightness numbers, body measurements or height in numbers, or body-type labels, and do not say you had limits.\", \"Scale numbers in the input (formality 1–10 and its band, scores, ranks) are internal, for you only: never tell her a number or the name of a scale and never say \\\"on the scale\\\"; say it in words of the occasion (an everyday outing, an office day, an evening in town, a ceremony), and do not mention any code or system behind them.\", \"The answer is plain text laid out as the rules say, not JSON.\"], \"language\": \"English\", \"answer\": \"LOOK_ANSWER\", \"input\": [\"\\\"question\\\" — her question, in her words\", \"She has not shown or described any item yet.\", \"No image is attached: judge only by the item descriptions.\", \"\\\"case\\\" — her case: the occasion, her words, wishes, mood and refusals\"]}, \"question\": \"Ось фото моєї спідниці, збери з нею образ на роботу в офіс\", \"case\": {\"field_quotes\": {\"occasion\": \"на роботу в офіс\", \"place\": \"в офіс\", \"wants\": \"спідниці\"}, \"wish_quotes\": [\"спідниці\"], \"formality_reason\": \"norm\", \"sources\": {\"field_quotes\": {\"kind\": \"default\"}, \"formality_reason\": {\"kind\": \"default\"}, \"wish_quotes\": {\"kind\": \"default\"}, \"wishes\": {\"kind\": \"reading\", \"quote\": \"спідниці\", \"parts\": [{\"kind\": \"reading\", \"quote\": \"спідниці\"}]}, \"refusals\": {\"kind\": \"reading\"}, \"place\": {\"kind\": \"her\", \"quote\": \"в офіс\"}, \"occasion\": {\"kind\": \"reading\", \"quote\": \"на роботу в офіс\"}, \"precipitation\": {\"kind\": \"reading\"}, \"formality\": {\"kind\": \"reading\"}, \"event\": {\"kind\": \"reading\"}}, \"event\": \"на роботу в офіс\", \"formality\": [1, 2], \"wishes\": [\"skirt\"], \"occasion\": \"work\", \"place\": \"office\"}}"
+     }
+    ]
+   }
+  ],
+  "temperature": 1
+ },
+ "відповідь": {
+  "status": 200,
+  "contentType": "application/json",
+  "headers": {
+   "x-model": "qwen/qwen3.5-9b"
+  },
+  "body": "{\"content\":[{\"type\":\"text\",\"text\":\"You asked for an office look with your skirt, but you haven't uploaded the photo or described it yet, so I cannot tell you exactly what to pair with it at this moment. Please describe the fabric, cut, and length of the skirt, along with any colors you prefer, and I will immediately suggest a perfect matching outfit for your workday. Once you share these details, I will give you specific advice on tops, layers, and shoes that suit your professional style without mentioning brands or prices.\"}],\"usage\":{\"input_tokens\":718,\"output_tokens\":102},\"stop_reason\":\"end_turn\"}"
+ }
+}

@@ -1,0 +1,54 @@
+── ПРОМПТ (7215 симв.) ──
+Ти — перекладачка в застосунку-стилістці. Ти пишеш природною українською тексти, які зараз побачить жінка. Рішень не приймаєш, на питання не відповідаєш, змісту не міняєш.
+
+Вхід — JSON-об'єкт: ключ — номер тексту н, значення — текст, який склали код та інші моделі.
+
+Ключі відповіді — ті самі, що у вході, кожен: номер н тексту, значення — рядок, той самий зміст природною українською, без англійських слів і кодів; ПЕРЕКЛАДАЙ КОЖНЕ англійське слово, навіть одне посеред українського речення; латиницею лишай лише назви крамниць і брендів, «V-подібний» і «den»; текст, що вже природний і до неї на «ти», — без змін, а український текст на «ви» перепиши на «ти», решту лиши слово в слово.
+
+Вид кожної речі — теж зміст: річ у перекладі — та сама, що у вході, а не схожа чи сусідня. ankle boots — черевики чи ботильйони, boots — чоботи, heeled — на підборах, а не туфлі, pumps — туфлі-човники, loafers — лофери; pendant — кулон чи підвіска, necklace — намисто чи ланцюжок, а не каблучка, сережки чи браслет; ring — каблучка; earrings — сережки. Українські назви речей у вході (назви з крамниці, найчастіше перед « — ») переписуй літера в літеру: не міняй, не переставляй і не додавай у них жодного слова.
+
+Про жінку — лише до неї, на «ти» (ти, тебе, тобі, твій, твоя; хочеш, скинеш; наказ однини: розкажи, оберни, тримай, дай), і в питаннях теж: you, your, she, her про неї — «ти», «твій» (her skin tone — твій тон шкіри; when she turns her head — коли ти повертаєш голову; she looks taller — ти виглядаєш вищою), англійський наказ — наказом однини; «вона», «її» — лише про річ (сукню, сумку, куртку). Говорить стилістка — одна жінка: про себе — від першої особи однини й у жіночому роді (я підібрала, я б додала), не «ми», не від імені застосунку чи коду і ніколи словами самої жінки.
+
+Мова: літературна українська, як у текстах українських крамниць одягу. Кожне українське слово — літерами лише української абетки, без жодної латинської літери чи стороннього знака всередині слова. Кожне речення — одна остаточна версія, без виправлень посеред тексту. Словничок нижче — лише як перекласти англійське слово, коли воно є у вході; це не зміст: річ, тканина чи колір, яких у вході нема, у тексті не з'являються. Звичні українські назви для слів англійського джерела: trousers, pants — штани; dressy, dressier — ошатний, ошатніше; look, outfit — образ; taupe — сіро-бежевий; loose — вільний; suede — замша (жіночий рід); slip dress — сукня-комбінація; camel — кемел (колір). Назви речей і кольорів, які дала крамниця, — як є.
+
+Слово не повторюється двічі поспіль. Відповідь — рівно ОДИН JSON-об'єкт і нічого після нього: другої, виправленої версії, приміток і пояснень не пиши — помилку виправ у тому самому об'єкті.
+
+Речі образу — перелік речей картки (номер речі — як на картці, поруч — її коди):
+1 — kind code: sweater · colour code: green · about it: text н=1
+2 — kind code: jeans · colour code: brown · about it: text н=2
+3 — kind code: bag_generic · colour code: ginger · about it: text н=3
+4 — kind code: ankle_boots · colour code: brown · about it: text н=4
+5 — kind code: jacket · colour code: beige · about it: text н=5
+When a text speaks of an item of the list, call it by the Ukrainian noun of its kind code (kind code: …) — the same noun in the right case in every text (trench_coat — «тренч», sweater — «светр», loafers — «лофери»), not by another kind or a synonym of the English word, whatever word the English text uses; a code ending in _generic names only the family (dress_generic — a dress, bag_generic — a bag). Make every adjective, pronoun and verb with the item agree with that noun in gender and number («бежевий тренч, який…»; «шкіряні лофери, які…»). A name you translate in this same call (text н=K): give it one noun and call the item by it, in agreement, in every text. A text the list gives as about an item (about it: text н=M) speaks of that one item, and so does every other text where the English names it. The colour of an item of the list is its colour code (colour code: …): write the Ukrainian name of that code. The English colour words for that item are the stylist's impression of a photo: do not turn them into a colour of their own — the item's colour stands in their place. Colours of its details (trim, strap, buttons, print), its fabric and the rest — translate from the text. The list is for the items only: an item the English text does not name is not added to the translation — neither to the description nor to the advice.
+
+Colour codes: beige — бежевий; brown — коричневий; ginger — рудий; green — зелений.
+
+ТЕКСТИ:
+{
+"1": "This relaxed olive green sweater features a high cowl neck and wide, flowing sleeves that create effortless movement. The textured waffle-weave fabric adds subtle depth to the color, making it feel rich yet understated—a perfect canvas for your casual city outing.",
+"2": "These straight-leg brown jeans offer a modern, slightly wide fit with clean lines and a neutral tone that complements the sweater. The sturdy denim holds its shape beautifully without adding bulk, letting your figure shine through with ease.",
+"3": "The ginger leather tote carries a soft sheen and structured silhouette, accented by a gold-tone clasp and smooth handles. Its warm hue bridges the gap between the earthy sweater and pants, while its generous size ensures you stay practical during your walk.",
+"4": "These ankle boots in rich brown leather provide both stability and elegance. Their sleek design anchors the outfit with a modern edge, while the platform sole adds height without compromising comfort as you move through the city.",
+"5": "This relaxed beige puffer jacket features a quilted front, subtle zippers for extra pockets, and a cozy hood that doubles as a stylish layer. Though lightweight, it adds just enough warmth for crisp autumn days while keeping your look fresh and contemporary.",
+"6": "You're heading out for a city walk with a touch of warmth and style. The relaxed olive sweater offers a cozy, laid-back vibe, while the straight-leg brown jeans add structure to your lower half. Finished with sleek black ankle boots, this look balances comfort and polish—perfect for strolling in the crisp autumn air.",
+"7": "Keep the sweater untucked to let it drape naturally over your hips for a soft silhouette.",
+"8": "Напівчеревики жіночі, ATTICO, замша, колір коричневий — Replacing the black boots with burgundy suede shoes matches your rose palette and warms the lower body for frosty weather.",
+"9": "Зимова коротка куртка з капюшоном бежевого кольору Нікола, Светр лляний Аделаїда — The jacket's outer layer is not fully sufficient for deep frost alone, but as the anchor of this everyday outing, it defines the correct silhouette and texture contrast; accepting its presence allows us to rely on its specific design intent rather than discarding it, especially given the absence of a stronger alternative that fits your palette scheme.",
+"10": "Светр лляний Аделаїда, Джинси WIDE LEG коричневі — The green sweater offers a vibrant focal point that balances the neutrality of the grey trousers and bag; removing the jeans would create a 'suit' look, whereas keeping them maintains the casual, comfortable vibe requested for your walk."
+}
+
+── ВІДПОВІДЬ (2662 симв., 17.3 с, HTTP 200) ──
+```json
+{
+"1": "Цей вільний оливково-зелений светр має високий комір-стійку та широкі рукави, що вільно спадають і створюють відчуття невимушеного руху. Текстурована тканина з вафельним плетінням додає непомітної глибини кольору, роблячи його насиченим, але стриманим — ідеальною основою для твоєї повсякденної прогулянки містом.",
+"2": "Ці прямі джинси коричневого кольору мають сучасний, трохи вільний крій з чистими лініями та нейтральним тоном, який доповнює светр. Міцна денім-тканина чудово тримає форму, не додаючи зайвого об’єму, дозволяючи твоїй фігурі виглядати легко й невимушено.",
+"3": "Руда шкіряна сумка має м’який блиск і чіткі лінії, прикрашена золотистою застібкою та зручними ручками. Її теплий відтінок поєднує в собі природність светра й штанів, а її місткість забезпечує практичність під час прогулянки.",
+"4": "Ці напівчеревики коричневої шкіри дарують стабільність і елегантність. Їхній витончений дизайн завершує образ з сучасним акцентом, а платформа додає зросту без шкоди для комфорту під час руху містом.",
+"5": "Ця вільна бежева куртка-пуховик має простьобаний перед і непомітні блискавки на додаткові кишені. Зручний капюшон слугує стильним шаром, що додає тепла у холодні осінні дні, зберігаючи твій образ свіжим і сучасним.",
+"6": "Ти збираєшся на прогулянку містом з ноткою затишку та стилю. Вільний оливковий светр дарує комфортну й невимушену атмосферу, а прямі коричневі штани додають структури твоїй нижній частині тіла. Завершений елегантними чорними напівчеревиками, цей образ поєднує в собі зручність і вишуканість — ідеально для прогулянки у свіжому осінньому повітрі.",
+"7": "Залиш светр не заправленим, щоб він вільно спадав на стегна та створював м’який силует.",
+"8": "Напівчеревики жіночі, ATTICO, замша, колір коричневий — Заміна чорних черевиків на бордові замшеві туфлі підкреслить твою рожеву палітру та зігріє нижню частину тіла у морозну погоду.",
+"9": "Зимова коротка куртка з капюшоном бежевого кольору Нікола, Светр лляний Аделаїда — Верхній шар куртки не повністю достатній для глибокого морозу сам по собі, але як основа повсякденного образу він визначає правильний силует і контраст фактур; прийняття його присутності дозволяє нам спиратися на конкретне дизайнерське рішення, а не відмовлятися від нього, особливо враховуючи відсутність сильнішої альтернативи, що відповідає твоїй палітрі.",
+"10": "Светр лляний Аделаїда, Джинси WIDE LEG коричневі — Зелений светр створює яскравий акцент, який збалансовує нейтральність сірих штанів і сумки; видалення джинсів створило б «костюмний» вигляд, тоді як їхнє збереження підтримує невимушену та комфортну атмосферу, яку ти просила для своєї прогулянки."
+}
+```

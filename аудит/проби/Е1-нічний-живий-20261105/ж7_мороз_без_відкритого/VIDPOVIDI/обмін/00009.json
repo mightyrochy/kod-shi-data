@@ -1,0 +1,27 @@
+{
+ "версія": 1,
+ "запит": {
+  "model": "qwen/qwen3.5-9b",
+  "max_tokens": 4000,
+  "messages": [
+   {
+    "role": "user",
+    "content": [
+     {
+      "type": "text",
+      "text": "{\"task\": {\"role\": \"You are a personal stylist. Put together one outfit for her case.\", \"rules\": [\"Items one per line, garments first, then shoes and accessories: what it is, cut, length, color with its hex code, fabric.\", \"An outer layer only when the weather needs it; at +20 °C and warmer there is none.\", \"Last, why this outfit works, in 3–4 sentences.\"], \"limits\": [\"Do not name lightness numbers, body measurements or height in numbers, or body-type labels, and do not say you had limits.\", \"The answer is plain text laid out as the rules say, not JSON.\"], \"language\": \"English\", \"answer\": \"OUTFIT_TEXT\", \"input\": [\"\\\"case\\\" — her case: the occasion, where and when, the weather, the dress code, her wishes and refusals — as codes, her own words as quotes; do not take an item that goes against her refusals or her words\", \"\\\"formality\\\" — dress band; origin in sources: home (loungewear, athleisure, sportswear) < everyday (jeans, a T-shirt and sneakers; neat casual, dark denim) < neat (business: a blouse, a shirt or a refined knit with trousers or a skirt, a textured jacket or a cardigan, loafers, ballet flats or ankle boots; social: a day dress, a refined knit with a skirt or trousers, a textured jacket, neat flats or ankle boots) < smart (business: a jacket with trousers or a skirt, a blouse or a shirt, loafers or pumps; a sheath dress with a jacket; social: a cocktail dress, heeled shoes) < formal (business: a business suit — a jacket with trousers or a skirt of one fabric — with a blouse, pumps; social: a formal dress of a noble fabric, heeled shoes) < very_smart (an evening gown) < ceremonial (a full-length evening gown with long gloves)\", \"\\\"person\\\" — facts about her from her photo and measurements, without conclusions: colors in hex (one per measurement), sizes in cm\"]}, \"case\": {\"field_quotes\": {\"occasion\": \"на роботу пішки\", \"movement\": \"на роботу пішки\", \"weather_band\": \"мінус п'ятнадцять і сніг\", \"open_zones\": \"відкритого не хочу\"}, \"formality_reason\": \"norm\", \"sources\": {\"field_quotes\": {\"kind\": \"default\"}, \"formality_reason\": {\"kind\": \"default\"}, \"refusals\": {\"kind\": \"reading\"}, \"place\": {\"kind\": \"reading\"}, \"occasion\": {\"kind\": \"reading\", \"quote\": \"на роботу пішки\"}, \"mood\": {\"kind\": \"reading\"}, \"precipitation\": {\"kind\": \"her\", \"quote\": \"сніг\"}, \"formality\": {\"kind\": \"reading\"}, \"event\": {\"kind\": \"reading\"}, \"movement\": {\"kind\": \"reading\", \"quote\": \"на роботу пішки\"}, \"occasion_season\": {\"kind\": \"reading\"}, \"weather_band\": {\"kind\": \"reading\", \"quote\": \"мінус п'ятнадцять і сніг\"}, \"direct_sun\": {\"kind\": \"reading\"}, \"setting\": {\"kind\": \"reading\"}}, \"event\": \"на роботу пішки\", \"movement\": \"walk\", \"weather_band\": \"frost\", \"precipitation\": \"snow\", \"mood\": [\"спокійний\"], \"occasion\": \"work\", \"place\": \"office\", \"direct_sun\": false, \"occasion_season\": \"winter\", \"formality\": [\"everyday\"], \"season\": \"winter\", \"road_salt\": true, \"activity\": \"walking\", \"surface\": \"cobblestones\"}, \"person\": {\"skin_hex\": [\"#f2dcd6\", \"#ecd0ca\", \"#f6e4df\"], \"hair_hex\": [\"#c3c6cc\", \"#aeb2ba\"], \"eyes_hex\": \"#7fa6c8\", \"height_cm\": 160, \"girths_cm\": {\"shoulders\": 100, \"bust\": 98, \"waist\": 88, \"hips\": 100}}}"
+     }
+    ]
+   }
+  ],
+  "temperature": 1
+ },
+ "відповідь": {
+  "status": 200,
+  "contentType": "application/json",
+  "headers": {
+   "x-model": "qwen/qwen3.5-9b"
+  },
+  "body": "{\"content\":[{\"type\":\"text\",\"text\":\"A wool-blend coat in charcoal grey (#3a4548), a relaxed straight fit falling to mid-calf length, heavy enough for deep frost.\\nDark denim trousers with a tapered leg in indigo (#2f3b49), straight cut with reinforced stitching for durability against cobblestones.\\nA chunky knit scarf in cream white (#fdfdfd) wrapped loosely around the neck to block wind.\\nLeather ankle boots in black (#1c1c1c), lace-up style with a 3cm heel and thick rubber soles for grip on snowy, salted surfaces.\\nThis outfit works because the wool-blend coat provides essential warmth against the -15°C frost while protecting her from snow, satisfying her request to avoid open zones. The dark denim offers practical durability and comfort for walking to work on slippery cobblestones without sacrificing style. Finally, the black leather boots ensure stability and traction in icy conditions, completing a look that is both functional and respectful of her casual dress code.\"}],\"usage\":{\"input_tokens\":908,\"output_tokens\":209},\"stop_reason\":\"end_turn\"}"
+ }
+}

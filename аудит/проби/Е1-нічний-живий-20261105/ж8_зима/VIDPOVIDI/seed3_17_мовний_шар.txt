@@ -1,0 +1,42 @@
+── ПРОМПТ (5523 симв.) ──
+Ти — перекладачка в застосунку-стилістці. Ти пишеш природною українською тексти, які зараз побачить жінка. Рішень не приймаєш, на питання не відповідаєш, змісту не міняєш.
+
+Вхід — JSON-об'єкт: ключ — номер тексту н, значення — текст, який склали код та інші моделі.
+
+Ключі відповіді — ті самі, що у вході, кожен: номер н тексту, значення — рядок, той самий зміст природною українською, без англійських слів і кодів; ПЕРЕКЛАДАЙ КОЖНЕ англійське слово, навіть одне посеред українського речення; латиницею лишай лише назви крамниць і брендів, «V-подібний» і «den»; текст, що вже природний і до неї на «ти», — без змін, а український текст на «ви» перепиши на «ти», решту лиши слово в слово.
+
+Вид кожної речі — теж зміст: річ у перекладі — та сама, що у вході, а не схожа чи сусідня. ankle boots — черевики чи ботильйони, boots — чоботи, heeled — на підборах, а не туфлі, pumps — туфлі-човники, loafers — лофери; pendant — кулон чи підвіска, necklace — намисто чи ланцюжок, а не каблучка, сережки чи браслет; ring — каблучка; earrings — сережки. Українські назви речей у вході (назви з крамниці, найчастіше перед « — ») переписуй літера в літеру: не міняй, не переставляй і не додавай у них жодного слова.
+
+Про жінку — лише до неї, на «ти» (ти, тебе, тобі, твій, твоя; хочеш, скинеш; наказ однини: розкажи, оберни, тримай, дай), і в питаннях теж: you, your, she, her про неї — «ти», «твій» (her skin tone — твій тон шкіри; when she turns her head — коли ти повертаєш голову; she looks taller — ти виглядаєш вищою), англійський наказ — наказом однини; «вона», «її» — лише про річ (сукню, сумку, куртку). Говорить стилістка — одна жінка: про себе — від першої особи однини й у жіночому роді (я підібрала, я б додала), не «ми», не від імені застосунку чи коду і ніколи словами самої жінки.
+
+Мова: літературна українська, як у текстах українських крамниць одягу. Кожне українське слово — літерами лише української абетки, без жодної латинської літери чи стороннього знака всередині слова. Кожне речення — одна остаточна версія, без виправлень посеред тексту. Словничок нижче — лише як перекласти англійське слово, коли воно є у вході; це не зміст: річ, тканина чи колір, яких у вході нема, у тексті не з'являються. Звичні українські назви для слів англійського джерела: trousers, pants — штани; dressy, dressier — ошатний, ошатніше; look, outfit — образ; taupe — сіро-бежевий; loose — вільний; suede — замша (жіночий рід); slip dress — сукня-комбінація; camel — кемел (колір). Назви речей і кольорів, які дала крамниця, — як є.
+
+Слово не повторюється двічі поспіль. Відповідь — рівно ОДИН JSON-об'єкт і нічого після нього: другої, виправленої версії, приміток і пояснень не пиши — помилку виправ у тому самому об'єкті.
+
+Речі образу — перелік речей картки (номер речі — як на картці, поруч — її коди):
+1 — назва в тексті н=2
+2 — назва в тексті н=3
+3 — назва в тексті н=4
+4 — назва в тексті н=5
+5 — назва в тексті н=6
+When a text speaks of an item of the list, call it by the Ukrainian noun of its kind code (kind code: …) — the same noun in the right case in every text (trench_coat — «тренч», sweater — «светр», loafers — «лофери»), not by another kind or a synonym of the English word, whatever word the English text uses; a code ending in _generic names only the family (dress_generic — a dress, bag_generic — a bag). Make every adjective, pronoun and verb with the item agree with that noun in gender and number («бежевий тренч, який…»; «шкіряні лофери, які…»). A name you translate in this same call (text н=K): give it one noun and call the item by it, in agreement, in every text. A text the list gives as about an item (about it: text н=M) speaks of that one item, and so does every other text where the English names it. The colour of an item of the list is its colour code (colour code: …): write the Ukrainian name of that code. The English colour words for that item are the stylist's impression of a photo: do not turn them into a colour of their own — the item's colour stands in their place. Colours of its details (trim, strap, buttons, print), its fabric and the rest — translate from the text. The list is for the items only: an item the English text does not name is not added to the translation — neither to the description nor to the advice.
+
+ТЕКСТИ:
+{
+"1": "A refined wool blend knit in charcoal gray, tailored to a relaxed but structured silhouette with long sleeves and a mock neck, falling just below the hip in length, .\nWorn over slim-fit dark denim trousers in a deep indigo wash with a straight leg cut that sits comfortably at the waist.\nLeather ankle boots in black oxblood featuring a low block heel for stability on salted winter roads, crafted from durable smooth calfskin .\nA cashmere scarf in cream to add warmth against the frost and snow without adding bulk, finished with simple silver-toned stud earrings.\n\nThis outfit perfectly balances professional neatness with essential warmth for a frosty, snowy morning commute at work. The dark denim trousers ground the sophisticated charcoal knit while offering practical durability needed on salted roads during the walk to the office. The ankle boots provide the necessary traction and insulation against the cold weather without violating the request to avoid high heels. The cream scarf introduces a soft textural contrast that keeps the look polished and seasonally appropriate for autumn daylight.",
+"2": "wool blend knit",
+"3": "dark denim trousers",
+"4": "leather ankle boots",
+"5": "cashmere scarf",
+"6": "silver-toned stud earrings"
+}
+
+── ВІДПОВІДЬ (1379 симв., 9.5 с, HTTP 200) ──
+{
+"1": "Вишуканий вовняний трикотаж сірого кольору, пошитий у вільний, але структурований силует з довгими рукавами та коміром-стійкою, що закінчується трохи нижче стегон.\nОдягнений поверх вузьких джинсів темно-синього кольору глибокого індигового відтінку зі звуженими штанинами, які зручно сидять на талії.\nШкіряні черевики до щиколотки чорно-бордового кольору з низьким стійким каблуком для безпеки на посипаних сіллю зимових дорогах, виготовлені зі шкіри теляти гладкої текстури.\nКашеміровий шарф кремового відтінку, щоб додати тепла проти морозу та снігу без зайвої об’ємності, завершений простими сережками-гвоздиками з сріблястим покриттям.\n\nЦей образ ідеально поєднує професійну охайність з необхідним теплом для морозного, засніженого ранкового шляху на роботу. Темно-сині джинси підкреслюють вишуканий сірий трикотаж, водночас пропонуючи практичну міцність, потрібну на посипаних дорогах під час прогулянки до офісу. Черевики до щиколотки забезпечують необхідне зчеплення та ізоляцію від холоду без порушення вимоги уникати високих каблуків. Кремовий шарф вносить м’який текстурний контраст, який зберігає вигляд елегантним і сезонно відповідним для осіннього світлового дня.",
+"2": "вовняний трикотаж",
+"3": "джинси з темно-синьої джинсової тканини",
+"4": "шкіряні черевики до щиколотки",
+"5": "кашеміровий шарф",
+"6": "сережки-гвоздики зі сріблястим покриттям"
+}

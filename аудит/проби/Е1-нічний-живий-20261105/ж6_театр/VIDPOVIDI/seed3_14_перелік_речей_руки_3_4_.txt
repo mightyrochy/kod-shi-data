@@ -1,0 +1,44 @@
+── ПРОМПТ (1954 симв.) ──
+{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.", "One item carries one thing — of two alternatives list the first; a note in brackets is not an item.", "Slot \"accessory\" is for an item no other slot fits.", "\"is_outfit\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "ITEM_LIST", "answer_schema": {"is_outfit": "yes|no", "items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory", "color_hex": "<#rrggbb or null>", "worn": "<true, or false when the description says the outfit goes without it>"}]}, "input": ["\"description\" — the outfit description"]}, "description": "Black sheath dress, midi length, #000000, silk.\nCharcoal wool-blend tailored jacket, knee-length, #36454F, fine gauge merino wool knit.\nBlack ankle boots, pointed toe, #111111, leather.\nGold drop earrings and a simple pearl necklace.\nThis outfit works because the black sheath dress provides an elegant silhouette perfect for the theatre environment while adhering to her request for a neat look. The charcoal wool jacket adds necessary warmth for the autumn evening without being too heavy, striking a balance between comfort and sophistication. The gold accents on her skin tones complement the artificial lighting of the venue, ensuring she feels confident and polished throughout the performance."}
+
+── ВІДПОВІДЬ (847 симв., 3.8 с, HTTP 200) ──
+{
+  "is_outfit": "yes",
+  "items": [
+    {
+      "name": "Black sheath dress",
+      "details": "midi length, silk",
+      "slot": "dress",
+      "color_hex": "#000000",
+      "worn": true
+    },
+    {
+      "name": "Charcoal wool-blend tailored jacket",
+      "details": "knee-length, fine gauge merino wool knit",
+      "slot": "outerwear",
+      "color_hex": "#36454F",
+      "worn": true
+    },
+    {
+      "name": "Black ankle boots",
+      "details": "pointed toe, leather",
+      "slot": "shoes",
+      "color_hex": "#111111",
+      "worn": true
+    },
+    {
+      "name": "Gold drop earrings",
+      "details": "",
+      "slot": "earrings",
+      "color_hex": null,
+      "worn": true
+    },
+    {
+      "name": "Simple pearl necklace",
+      "details": "",
+      "slot": "necklace",
+      "color_hex": null,
+      "worn": true
+    }
+  ]
+}

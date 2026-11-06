@@ -1,0 +1,37 @@
+── ПРОМПТ (2209 симв.) ──
+{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.", "One item carries one thing — of two alternatives list the first; a note in brackets is not an item.", "Slot \"accessory\" is for an item no other slot fits.", "\"is_outfit\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "ITEM_LIST", "answer_schema": {"is_outfit": "yes|no", "items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory", "color_hex": "<#rrggbb or null>", "worn": "<true, or false when the description says the outfit goes without it>"}]}, "input": ["\"description\" — the outfit description"]}, "description": "A wool-blend coat with a relaxed H-line silhouette, knee-length in color #2F4F4F, offering full coverage and warmth against the snow.\nA chunky ribbed knit sweater crew-neck in color #5D4037 to provide core insulation without bulk.\nDark denim jeans of a medium wash in color #1C1C1C with a straight-leg cut that resists moisture from road salt.\nFlat leather ankle boots with a rubber lug sole in color #8B0000 for secure traction on cobblestones and slush.\nThis ensemble works because the coat's generous coverage satisfies her desire to avoid open zones while the thick knit sweater ensures comfort during the frosty walk. The dark denim and sturdy boots are practical choices for navigating snowy, salted cobblestone streets without risking damage to more delicate fabrics. The warm brown tones of the sweater complement the red accents in the boots, creating a cohesive look that feels both stylish and appropriately dressed for a daily commute to work."}
+
+── ВІДПОВІДЬ (819 симв., 3.6 с, HTTP 200) ──
+{
+  "is_outfit": "yes",
+  "items": [
+    {
+      "name": "Wool-blend coat",
+      "details": "Relaxed H-line silhouette, knee-length with full coverage",
+      "slot": "outerwear",
+      "color_hex": "#2F4F4F",
+      "worn": true
+    },
+    {
+      "name": "Chunky ribbed knit sweater",
+      "details": "Crew-neck cut designed for core insulation without bulk",
+      "slot": "top",
+      "color_hex": "#5D4037",
+      "worn": true
+    },
+    {
+      "name": "Dark denim jeans",
+      "details": "Medium wash, straight-leg cut that resists moisture",
+      "slot": "bottom",
+      "color_hex": "#1C1C1C",
+      "worn": true
+    },
+    {
+      "name": "Flat leather ankle boots",
+      "details": "Rubber lug sole for secure traction",
+      "slot": "shoes",
+      "color_hex": "#8B0000",
+      "worn": true
+    }
+  ]
+}

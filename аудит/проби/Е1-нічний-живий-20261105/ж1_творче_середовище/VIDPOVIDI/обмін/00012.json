@@ -1,0 +1,27 @@
+{
+ "версія": 1,
+ "запит": {
+  "model": "qwen/qwen3.5-9b",
+  "max_tokens": 4000,
+  "messages": [
+   {
+    "role": "user",
+    "content": [
+     {
+      "type": "text",
+      "text": "{\"task\": {\"role\": \"You read the description of an outfit and list its items as data.\", \"rules\": [\"One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.\", \"One item carries one thing — of two alternatives list the first; a note in brackets is not an item.\", \"Slot \\\"accessory\\\" is for an item no other slot fits.\", \"\\\"is_outfit\\\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note.\"], \"limits\": [\"Rely only on the input: do not invent what it does not contain.\", \"The answer is one JSON object following \\\"answer_schema\\\", without explanations and without ```.\"], \"language\": \"English\", \"answer\": \"ITEM_LIST\", \"answer_schema\": {\"is_outfit\": \"yes|no\", \"items\": [{\"name\": \"<what the item is>\", \"details\": \"<its cut, length and fabric>\", \"slot\": \"top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory\", \"color_hex\": \"<#rrggbb or null>\", \"worn\": \"<true, or false when the description says the outfit goes without it>\"}]}, \"input\": [\"\\\"description\\\" — the outfit description\"]}, \"description\": \"A structured wool-blend blazer in charcoal grey, cut with a slightly relaxed shoulder and tapered waist, falling to the hip line in a classic box silhouette.\\nPair it with high-rise trousers made from soft, stretch-rich crepe in a deep forest green, featuring a straight leg that skims the ankle without touching the shoe.\\nFootwear consists of sleek black leather loafers with a low block heel for comfort during long hours of standing and walking.\\nAccessories include minimal gold hoop earrings, a thin velvet hair tie, and a structured leather tote in cognac brown to hold presentation materials.\\nThis outfit works because the neutral blazer anchors the creative atmosphere while the rich forest green trousers add an artistic pop of color that reflects her studio's vibe. The chosen fabrics balance professional polish with the essential comfort she requested for interacting with colleagues throughout the day. The loafers ensure ease of movement without sacrificing a neat appearance, perfectly fitting the \\\"everyday\\\" dress code within a creative setting.\"}"
+     }
+    ]
+   }
+  ],
+  "temperature": 1
+ },
+ "відповідь": {
+  "status": 200,
+  "contentType": "application/json",
+  "headers": {
+   "x-model": "qwen/qwen3.5-9b"
+  },
+  "body": "{\"content\":[{\"type\":\"text\",\"text\":\"{\\n  \\\"is_outfit\\\": \\\"yes\\\",\\n  \\\"items\\\": [\\n    {\\n      \\\"name\\\": \\\"blazer\\\",\\n      \\\"details\\\": \\\"wool-blend fabric, slightly relaxed shoulder, tapered waist, classic box silhouette cut falling to the hip line\\\",\\n      \\\"slot\\\": \\\"outerwear\\\",\\n      \\\"color_hex\\\": \\\"#36454F\\\",\\n      \\\"worn\\\": true\\n    },\\n    {\\n      \\\"name\\\": \\\"trousers\\\",\\n      \\\"details\\\": \\\"soft stretch-rich crepe fabric, high-rise waist, straight leg cut skimming the ankle without touching the shoe\\\",\\n      \\\"slot\\\": \\\"bottom\\\",\\n      \\\"color_hex\\\": \\\"#22543D\\\",\\n      \\\"worn\\\": true\\n    },\\n    {\\n      \\\"name\\\": \\\"loafers\\\",\\n      \\\"details\\\": \\\"sleek leather construction, low block heel designed for comfort during standing and walking\\\",\\n      \\\"slot\\\": \\\"shoes\\\",\\n      \\\"color_hex\\\": \\\"#000000\\\",\\n      \\\"worn\\\": true\\n    },\\n    {\\n      \\\"name\\\": \\\"earrings\\\",\\n      \\\"details\\\": \\\"minimal gold hoops\\\",\\n      \\\"slot\\\": \\\"earrings\\\",\\n      \\\"color_hex\\\": null,\\n      \\\"worn\\\": true\\n    },\\n    {\\n      \\\"name\\\": \\\"hair tie\\\",\\n      \\\"details\\\": \\\"thin velvet material\\\",\\n      \\\"slot\\\": \\\"accessory\\\",\\n      \\\"color_hex\\\": null,\\n      \\\"worn\\\": true\\n    },\\n    {\\n      \\\"name\\\": \\\"tote bag\\\",\\n      \\\"details\\\": \\\"structured leather construction in cognac brown, designed to hold presentation materials\\\",\\n      \\\"slot\\\": \\\"bag\\\",\\n      \\\"color_hex\\\": \\\"#8B4513\\\",\\n      \\\"worn\\\": true\\n    }\\n  ]\\n}\"}],\"usage\":{\"input_tokens\":552,\"output_tokens\":405},\"stop_reason\":\"end_turn\"}"
+ }
+}

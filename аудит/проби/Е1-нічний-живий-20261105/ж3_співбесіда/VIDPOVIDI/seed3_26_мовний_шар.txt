@@ -1,0 +1,81 @@
+── ПРОМПТ (9398 симв.) ──
+Ти — перекладачка в застосунку-стилістці. Ти пишеш природною українською тексти, які зараз побачить жінка. Рішень не приймаєш, на питання не відповідаєш, змісту не міняєш.
+
+Вхід — JSON-об'єкт: ключ — номер тексту н, значення — текст, який склали код та інші моделі.
+
+Ключі відповіді — ті самі, що у вході, кожен: номер н тексту, значення — рядок, той самий зміст природною українською, без англійських слів і кодів; ПЕРЕКЛАДАЙ КОЖНЕ англійське слово, навіть одне посеред українського речення; латиницею лишай лише назви крамниць і брендів, «V-подібний» і «den»; текст, що вже природний і до неї на «ти», — без змін, а український текст на «ви» перепиши на «ти», решту лиши слово в слово.
+
+Вид кожної речі — теж зміст: річ у перекладі — та сама, що у вході, а не схожа чи сусідня. ankle boots — черевики чи ботильйони, boots — чоботи, heeled — на підборах, а не туфлі, pumps — туфлі-човники, loafers — лофери; pendant — кулон чи підвіска, necklace — намисто чи ланцюжок, а не каблучка, сережки чи браслет; ring — каблучка; earrings — сережки. Українські назви речей у вході (назви з крамниці, найчастіше перед « — ») переписуй літера в літеру: не міняй, не переставляй і не додавай у них жодного слова.
+
+Про жінку — лише до неї, на «ти» (ти, тебе, тобі, твій, твоя; хочеш, скинеш; наказ однини: розкажи, оберни, тримай, дай), і в питаннях теж: you, your, she, her про неї — «ти», «твій» (her skin tone — твій тон шкіри; when she turns her head — коли ти повертаєш голову; she looks taller — ти виглядаєш вищою), англійський наказ — наказом однини; «вона», «її» — лише про річ (сукню, сумку, куртку). Говорить стилістка — одна жінка: про себе — від першої особи однини й у жіночому роді (я підібрала, я б додала), не «ми», не від імені застосунку чи коду і ніколи словами самої жінки.
+
+Мова: літературна українська, як у текстах українських крамниць одягу. Кожне українське слово — літерами лише української абетки, без жодної латинської літери чи стороннього знака всередині слова. Кожне речення — одна остаточна версія, без виправлень посеред тексту. Словничок нижче — лише як перекласти англійське слово, коли воно є у вході; це не зміст: річ, тканина чи колір, яких у вході нема, у тексті не з'являються. Звичні українські назви для слів англійського джерела: trousers, pants — штани; dressy, dressier — ошатний, ошатніше; look, outfit — образ; taupe — сіро-бежевий; loose — вільний; suede — замша (жіночий рід); slip dress — сукня-комбінація; camel — кемел (колір). Назви речей і кольорів, які дала крамниця, — як є.
+
+Слово не повторюється двічі поспіль. Відповідь — рівно ОДИН JSON-об'єкт і нічого після нього: другої, виправленої версії, приміток і пояснень не пиши — помилку виправ у тому самому об'єкті.
+
+Речі образу — перелік речей картки (номер речі — як на картці, поруч — її коди):
+1 — kind code: blouse · colour code: blue · about it: text н=1
+2 — kind code: skirt · colour code: light_blue · about it: text н=2
+3 — kind code: loafers · colour code: burgundy · about it: text н=3
+4 — kind code: belt_bag · colour code: red · about it: text н=4
+5 — kind code: brooch · colour code: golden · about it: text н=5
+6 — kind code: cardigan · colour code: beige · about it: text н=6
+When a text speaks of an item of the list, call it by the Ukrainian noun of its kind code (kind code: …) — the same noun in the right case in every text (trench_coat — «тренч», sweater — «светр», loafers — «лофери»), not by another kind or a synonym of the English word, whatever word the English text uses; a code ending in _generic names only the family (dress_generic — a dress, bag_generic — a bag). Make every adjective, pronoun and verb with the item agree with that noun in gender and number («бежевий тренч, який…»; «шкіряні лофери, які…»). A name you translate in this same call (text н=K): give it one noun and call the item by it, in agreement, in every text. A text the list gives as about an item (about it: text н=M) speaks of that one item, and so does every other text where the English names it. The colour of an item of the list is its colour code (colour code: …): write the Ukrainian name of that code. The English colour words for that item are the stylist's impression of a photo: do not turn them into a colour of their own — the item's colour stands in their place. Colours of its details (trim, strap, buttons, print), its fabric and the rest — translate from the text. The list is for the items only: an item the English text does not name is not added to the translation — neither to the description nor to the advice.
+
+Colour codes: beige — бежевий; blue — синій; burgundy — бордовий; golden — золотий; light_blue — блакитний; red — червоний.
+
+ТЕКСТИ:
+{
+"1": "This is a classic blue linen blouse with a relaxed, unstructured fit and a simple button front that falls loosely over the hips. Its soft drape and three-quarter sleeves give it an effortless yet polished look ideal for professional settings.",
+"2": "A straight-cut denim skirt in a light wash, featuring an elegant floral embroidery detail at the hip that adds subtle visual interest without overwhelming the silhouette.",
+"3": "These are burgundy suede loafers with a low block heel and a classic penny loafer strap — sturdy, comfortable for walking through an office or event, and stylishly formal.",
+"4": "A vibrant red Gucci belt bag with the iconic logo hardware and signature stripe on the strap — bold enough to serve as your statement piece while remaining practical for carrying essentials discreetly at your side.",
+"5": "This golden brooch features the twisted YSL monogram, rendered in a rope-like texture that catches the light subtly — it’s luxurious yet understated, perfect for adding a touch of heritage and elegance to your neckline.",
+"6": "An oversized beige knit cardigan with slouchy sleeves and openwork detailing along the front — soft and cozy without being bulky, it layers beautifully over your blouse and adds texture contrast to your denim skirt.",
+"7": "This look is perfect for your morning job interview, balancing the relaxed feel of linen denim with a sharp silhouette that commands respect. The straight skirt and flowing blouse create a modern, confident line from your shoulders to your hips, while the burgundy loafers and red belt bag add just enough richness and color to make a memorable impression without feeling loud.",
+"8": "Keep the blouse untucked to let the relaxed cut of the skirt define your waist naturally as you move through the day.",
+"9": "Tuck your cardigan loosely at one side if you need extra warmth, letting the open weave frame your face and keep the neckline fresh for photo moments.",
+"10": "Спідниця Magda Butrym джинсова — Kept the denim midi skirt as the base layer; the linen blouse is the primary top, creating a tonal column of blue and neutral that works for the occasion.",
+"11": "LeBERDES Лофери бордові — Added burgundy loafers to complete the hem proportion and add warmth, addressing the 'midi_proportion_decided_by_shoes' finding.",
+"12": "Поясна сумка з червоної шкіри з лого — Added a red belt bag to serve as the functional third piece and add a pop of color matching the shoes, fixing the 'no_bag' blocker.",
+"13": "Кардиган Ромби бежевий — Layered a beige cardigan to break up the cool blue tones and add volume, creating a balanced look for autumn and addressing the 'mono_object_silhouette' finding.",
+"14": "Золотиста брошка у вигляді лого з биркою — Included a gold brooch to ensure enough interest sources near the face and satisfy the 'neutrals_plus_accent' scheme requirement for an accent.",
+"15": "Блуза лляна Мілвокі, Поясна сумка з червоної шкіри з лого — The red belt bag matches your shoes and adds a functional third piece that elevates the outfit from casual to styled.",
+"16": "Кардиган Ромби бежевий — The relaxed fit of the beige cardigan adds volume to the shoulders, balancing the straight lines of the outfit.",
+"17": "Блуза лляна Мілвокі — The bright blue blouse brings energy to the outfit, contrasting nicely with the neutral beige background of the day.",
+"18": "LeBERDES Лофери бордові — Swapped the implied sneakers for burgundy loafers to elevate the formality to 'neat' as required by an interview, satisfying the 'no_shoes' blocker while adding a rich color.",
+"19": "Поясна сумка з червоної шкіри з лого — Added a red leather belt bag to fulfill the missing bag requirement and introduce a third piece, creating a styled look rather than just dressed.",
+"20": "Золотиста брошка у вигляді лого з биркою — Included a gold brooch to act as the single loud accent required by the 'neutrals_plus_accent' scheme, preventing the outfit from reading as bland.",
+"21": "Поясна сумка з червоної шкіри з лого — Included a red leather belt bag to satisfy the missing bag requirement and create a strong color link with the shoes and blouse accent.",
+"22": "Золотиста брошка у вигляді лого з биркою — Added a gold brooch to introduce texture and visual interest near the face, moving beyond a flat neutral look.",
+"23": "LeBERDES Лофери бордові — Swapped the implied heels or neutral shoes for burgundy loafers to ground the outfit and make it suitable for walking through an office environment, solving the 'no_shoes' issue.",
+"24": "Золотиста брошка у вигляді лого з биркою — Added a gold brooch to provide texture and interest near the face, ensuring the outfit has enough visual weight beyond just the black fabric."
+}
+
+── ВІДПОВІДЬ (4815 симв., 31.2 с, HTTP 200) ──
+{
+"1": "Це класична блакитна лляна блуза вільного крою з простим ґудзиком спереду, що спадає недбало на стегна. М'який драпірування та три чверті рукавів надають їй невимушеного, але водночас вишуканого вигляду, ідеального для професійних ситуацій.",
+"2": "Пряма джинсова спідниця світлого відмиву з елегантним квітковим вишиванням на стегні, яке додає ледь помітної візуальної цікавості без перевантаження силуету.",
+"3": "Це бордові замшеві лофери з невисоким блочним каблуком і класичною шльовкою для пенні — міцні, зручні для ходіння по офісу чи на заході та стильно формальні.",
+"4": "Яскраво-червона поясна сумка Gucci з культовим логотипом і фірмовою смужкою на ремінці — досить помітна, щоб стати вашою акцентною річчю, але водночас практична для зручного носіння необхідних дрібниць біля боку.",
+"5": "Ця золота брошка має перекручений логотип YSL у вигляді мотузкової текстури, яка ледь помітно відбиває світло — розкішна, але стримана, ідеальна для додавання нотки спадщини та елегантності до твоєї лінії декольте.",
+"6": "Оверсайз бежевий в'язаний кардиган з мішкуватими рукавами та ажурною обробкою спереду — м'який і затишний, але не громіздкий. Він чудово надівається поверх блузи та додає текстурного контрасту до твоєї джинсової спідниці.",
+"7": "Цей образ ідеальний для твого ранкового співбесіди, поєднуючи невимушений вигляд льону з денімом із гострим силуетом, який викликає повагу. Пряма спідниця та блуза вільного крою створюють сучасну впевнену лінію від плечей до стегон, а бордові лофери та червона поясна сумка додають достатньо багатства й кольору, щоб справити незабутнє враження без надмірної гучності.",
+"8": "Залиш блузу не заправленою, щоб вільний крій спідниці природно підкреслював твою талію під час руху протягом дня.",
+"9": "Якщо тобі потрібне додаткове тепло, вільно накинь кардиган з одного боку, дозволяючи ажурну обробку обрамляти твоє обличчя й зберігати лінію декольте свіжою для фотосесій.",
+"10": "Спідниця Magda Butrym джинсова — Залишила джинсову спідницю міді як базовий шар; лляна блуза є основним верхом, створюючи тональну колону з блакитного та нейтрального кольору, яка підходить для цієї нагоди.",
+"11": "LeBERDES Лофери бордові — Додала бордові лофери, щоб завершити пропорції низу й додати тепла, вирішуючи проблему 'midi_proportion_decided_by_shoes'.",
+"12": "Поясна сумка з червоної шкіри з лого — Додала червону поясну сумку як функціональний третій елемент і щоб додати акцент кольору, що поєднується з взуттям, вирішуючи проблему 'no_bag'.",
+"13": "Кардиган Ромби бежевий — Накинула бежевий кардиган, щоб розбавити холодні блакитні тони та додати об’єму, створюючи збалансований вигляд для осені й вирішуючи проблему 'mono_object_silhouette'.",
+"14": "Золотиста брошка у вигляді лого з биркою — Включила золоту брошку, щоб забезпечити достатньо цікавих елементів поблизу обличчя та задовольнити вимогу схеми 'neutrals_plus_accent' щодо акценту.",
+"15": "Блуза лляна Мілвокі, Поясна сумка з червоної шкіри з лого — Червона поясна сумка підходить до твого взуття й додає функціональний третій елемент, який перетворює образ із повсякденного на стилізований.",
+"16": "Кардиган Ромби бежевий — Вільний крій бежевого кардигану додає об’єм плечам, збалансовуючи прямі лінії образу.",
+"17": "Блуза лляна Мілвокі — Яскрава блакитна блуза привносить енергію в образ, гарно контрастуючи з нейтральним бежевим фоном дня.",
+"18": "LeBERDES Лофери бордові — Замінила уявні кросівки чи нейтральне взуття на бордові лофери, щоб підвищити формальність до 'охайного' рівня, як того вимагає співбесіда, вирішуючи проблему 'no_shoes', водночас додавши насичений колір.",
+"19": "Поясна сумка з червоної шкіри з лого — Додала червону шкіряну поясну сумку, щоб задовольнити відсутність сумки та створити сильний зв'язок кольору з взуттям і акцентом блузи.",
+"20": "Золотиста брошка у вигляді лого з биркою — Додала золоту брошку, щоб додати текстуру й візуальну цікавість поблизу обличчя, забезпечивши, що образ матиме достатньо ваги за межами просто чорної тканини.",
+"21": "Поясна сумка з червоної шкіри з лого — Включила червону шкіряну поясну сумку, щоб виконати вимогу відсутньої сумки та створити сильний зв'язок кольору з взуттям і блузою-акцентом.",
+"22": "Золотиста брошка у вигляді лого з биркою — Додала золоту брошку, щоб додати текстуру й візуальну цікавість поблизу обличчя, забезпечивши, що образ не виглядатиме плоским і нейтральним.",
+"23": "LeBERDES Лофери бордові — Замінила уявні підбори чи нейтральне взуття на бордові лофери, щоб заземлити образ і зробити його придатним для ходіння по офісному середовищу, вирішуючи проблему 'no_shoes'.",
+"24": "Золотиста брошка у вигляді лого з биркою — Додала золоту брошку, щоб забезпечити текстуру й інтерес поблизу обличчя, гарантуючи, що образ матиме достатньо візуальної ваги за межами просто чорної тканини."
+}

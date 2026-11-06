@@ -1,0 +1,27 @@
+{
+ "версія": 1,
+ "запит": {
+  "model": "qwen/qwen3.5-9b",
+  "max_tokens": 4000,
+  "messages": [
+   {
+    "role": "user",
+    "content": [
+     {
+      "type": "text",
+      "text": "{\"task\": {\"role\": \"You are a personal stylist. Put together one outfit for her case.\", \"rules\": [\"Items one per line, garments first, then shoes and accessories: what it is, cut, length, color with its hex code, fabric.\", \"An outer layer only when the weather needs it; at +20 °C and warmer there is none.\", \"Last, why this outfit works, in 3–4 sentences.\"], \"limits\": [\"Do not name lightness numbers, body measurements or height in numbers, or body-type labels, and do not say you had limits.\", \"The answer is plain text laid out as the rules say, not JSON.\"], \"language\": \"English\", \"answer\": \"OUTFIT_TEXT\", \"input\": [\"\\\"case\\\" — her case: the occasion, where and when, the weather, the dress code, her wishes and refusals — as codes, her own words as quotes; do not take an item that goes against her refusals or her words\", \"\\\"formality\\\" — dress band; origin in sources: home (loungewear, athleisure, sportswear) < everyday (jeans, a T-shirt and sneakers; neat casual, dark denim) < neat (business: a blouse, a shirt or a refined knit with trousers or a skirt, a textured jacket or a cardigan, loafers, ballet flats or ankle boots; social: a day dress, a refined knit with a skirt or trousers, a textured jacket, neat flats or ankle boots) < smart (business: a jacket with trousers or a skirt, a blouse or a shirt, loafers or pumps; a sheath dress with a jacket; social: a cocktail dress, heeled shoes) < formal (business: a business suit — a jacket with trousers or a skirt of one fabric — with a blouse, pumps; social: a formal dress of a noble fabric, heeled shoes) < very_smart (an evening gown) < ceremonial (a full-length evening gown with long gloves)\"]}, \"case\": {\"field_quotes\": {\"occasion\": \"екскурсія старим містом цілий день\", \"duration_h\": \"9 год на ногах\", \"movement\": \"на ногах по бруківці\", \"weather_band\": \"+12 °C, без дощу\"}, \"sources\": {\"field_quotes\": {\"kind\": \"default\"}, \"refusals\": {\"kind\": \"reading\"}, \"occasion\": {\"kind\": \"reading\", \"quote\": \"екскурсія старим містом цілий день\"}, \"precipitation\": {\"kind\": \"reading\", \"quote\": \"без дощу\"}, \"formality\": {\"kind\": \"reading\"}, \"event\": {\"kind\": \"reading\"}, \"part_of_day\": {\"kind\": \"reading\"}, \"movement\": {\"kind\": \"reading\", \"quote\": \"на ногах по бруківці\"}, \"weather_band\": {\"kind\": \"reading\", \"quote\": \"+12 °C, без дощу\"}, \"duration_h\": {\"kind\": \"her\", \"quote\": \"9 год на ногах\"}}, \"event\": \"екскурсія старим містом цілий день\", \"duration_h\": 9, \"movement\": \"walk_a_lot\", \"part_of_day\": \"evening\", \"weather_band\": \"cool\", \"precipitation\": \"none\", \"occasion\": \"walk\", \"formality\": [\"neat\"], \"season\": \"autumn\", \"light\": \"artificial\", \"surface\": \"cobblestones\"}}"
+     }
+    ]
+   }
+  ],
+  "temperature": 1
+ },
+ "відповідь": {
+  "status": 200,
+  "contentType": "application/json",
+  "headers": {
+   "x-model": "qwen/qwen3.5-9b"
+  },
+  "body": "{\"content\":[{\"type\":\"text\",\"text\":\"A relaxed-fit knit top in a deep forest green (#2F4F4F), made of soft merino wool blend for warmth without bulk, layered over a lightweight cotton slip dress with a subtle herringbone texture. High-waisted dark indigo denim trousers with a straight leg and durable twill fabric, chosen to withstand walking on uneven cobblestones while maintaining a neat silhouette. Leather ankle boots in a rich cognac brown (#A0522D) featuring a low block heel for stability, crafted from full-grain leather to offer all-day comfort during long hours on foot. A structured wool-blend blazer with elbow patches and brass buttons adds a polished touch suitable for the evening setting without restricting movement. This outfit works because it balances the need for significant warmth at 12 °C with the flexibility required for navigating cobblestone streets for nine consecutive hours. The neat dress code is met through the structured outer layers and dark, refined colors that appear elegant under artificial street lighting. Every piece is selected to prioritize endurance and practicality while ensuring she feels confident and comfortable throughout her entire evening walk.\"}],\"usage\":{\"input_tokens\":741,\"output_tokens\":227},\"stop_reason\":\"end_turn\"}"
+ }
+}

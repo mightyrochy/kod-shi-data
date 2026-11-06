@@ -1,0 +1,27 @@
+{
+ "версія": 1,
+ "запит": {
+  "model": "qwen/qwen3.5-9b",
+  "max_tokens": 4000,
+  "messages": [
+   {
+    "role": "user",
+    "content": [
+     {
+      "type": "text",
+      "text": "{\"task\": {\"role\": \"You are a personal stylist. Put together one outfit for her case.\", \"rules\": [\"Items one per line, garments first, then shoes and accessories: what it is, cut, length, color with its hex code, fabric.\", \"An outer layer only when the weather needs it; at +20 °C and warmer there is none.\", \"Last, why this outfit works, in 3–4 sentences.\"], \"limits\": [\"Do not name lightness numbers, body measurements or height in numbers, or body-type labels, and do not say you had limits.\", \"The answer is plain text laid out as the rules say, not JSON.\"], \"language\": \"English\", \"answer\": \"OUTFIT_TEXT\", \"input\": [\"\\\"case\\\" — her case: the occasion, where and when, the weather, the dress code, her wishes and refusals — as codes, her own words as quotes; do not take an item that goes against her refusals or her words\", \"\\\"formality\\\" — dress band; origin in sources: home (loungewear, athleisure, sportswear) < everyday (jeans, a T-shirt and sneakers; neat casual, dark denim) < neat (business: a blouse, a shirt or a refined knit with trousers or a skirt, a textured jacket or a cardigan, loafers, ballet flats or ankle boots; social: a day dress, a refined knit with a skirt or trousers, a textured jacket, neat flats or ankle boots) < smart (business: a jacket with trousers or a skirt, a blouse or a shirt, loafers or pumps; a sheath dress with a jacket; social: a cocktail dress, heeled shoes) < formal (business: a business suit — a jacket with trousers or a skirt of one fabric — with a blouse, pumps; social: a formal dress of a noble fabric, heeled shoes) < very_smart (an evening gown) < ceremonial (a full-length evening gown with long gloves)\", \"\\\"person\\\" — facts about her from her photo and measurements, without conclusions: colors in hex (one per measurement), sizes in cm\"]}, \"case\": {\"field_quotes\": {\"occasion\": \"стриманий робочий день в офісі, без яскравого\"}, \"formality_reason\": \"norm\", \"sources\": {\"field_quotes\": {\"kind\": \"default\"}, \"formality_reason\": {\"kind\": \"default\"}, \"refusals\": {\"kind\": \"reading\"}, \"occasion\": {\"kind\": \"reading\", \"quote\": \"стриманий робочий день в офісі, без яскравого\"}, \"precipitation\": {\"kind\": \"reading\"}, \"formality\": {\"kind\": \"reading\"}, \"event\": {\"kind\": \"reading\"}}, \"event\": \"стриманий робочий день в офісі, без яскравого\", \"occasion\": \"work\", \"formality\": [\"everyday\"], \"season\": \"autumn\"}, \"person\": {\"skin_hex\": [\"#5a3a2a\", \"#4e3022\", \"#664332\"], \"hair_hex\": [\"#16110e\", \"#241a15\"], \"eyes_hex\": \"#3b2417\", \"height_cm\": 165, \"girths_cm\": {\"shoulders\": 112, \"bust\": 114, \"waist\": 104, \"hips\": 114}}}"
+     }
+    ]
+   }
+  ],
+  "temperature": 1
+ },
+ "відповідь": {
+  "status": 200,
+  "contentType": "application/json",
+  "headers": {
+   "x-model": "qwen/qwen3.5-9b"
+  },
+  "body": "{\"content\":[{\"type\":\"text\",\"text\":\"Structured blazer, tailored fit, knee length, #3c3a3e, wool blend.\\nRelaxed-fit trousers, straight cut, ankle length, #6b5b4f, heavy cotton twill.\\nOxford button-down shirt, classic collar, hip length, #8c7b70, crisp poplin.\\nLow-block heel pumps, rounded toe, 9 cm height, #2e2a28, leather.\\nMinimalist gold stud earrings, small gauge, #d4af37, polished brass.\\nLeather structured tote bag, rectangular silhouette, medium hold, #1f1c1a, full-grain calfskin.\\n\\nThis ensemble perfectly balances the request for a restrained office day with the autumn weather by layering a tailored blazer over a refined shirt and trousers. The neutral, earthy tones like warm taupe and charcoal grey create a professional atmosphere without any vibrant pops of color that would break the \\\"no bright\\\" rule. By choosing sturdy fabrics such as wool blend and heavy twill, the outfit provides necessary warmth for the season while maintaining a polished, neat business aesthetic suitable for a workday stream.\"}],\"usage\":{\"input_tokens\":748,\"output_tokens\":243},\"stop_reason\":\"end_turn\"}"
+ }
+}

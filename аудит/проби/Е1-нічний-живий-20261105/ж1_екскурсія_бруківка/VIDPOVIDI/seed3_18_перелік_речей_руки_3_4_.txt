@@ -1,0 +1,44 @@
+── ПРОМПТ (2414 симв.) ──
+{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.", "One item carries one thing — of two alternatives list the first; a note in brackets is not an item.", "Slot \"accessory\" is for an item no other slot fits.", "\"is_outfit\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "ITEM_LIST", "answer_schema": {"is_outfit": "yes|no", "items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory", "color_hex": "<#rrggbb or null>", "worn": "<true, or false when the description says the outfit goes without it>"}]}, "input": ["\"description\" — the outfit description"]}, "description": "A relaxed-fit knit top in a deep forest green (#2F4F4F), made of soft merino wool blend for warmth without bulk, layered over a lightweight cotton slip dress with a subtle herringbone texture. High-waisted dark indigo denim trousers with a straight leg and durable twill fabric, chosen to withstand walking on uneven cobblestones while maintaining a neat silhouette. Leather ankle boots in a rich cognac brown (#A0522D) featuring a low block heel for stability, crafted from full-grain leather to offer all-day comfort during long hours on foot. A structured wool-blend blazer with elbow patches and brass buttons adds a polished touch suitable for the evening setting without restricting movement. This outfit works because it balances the need for significant warmth at 12 °C with the flexibility required for navigating cobblestone streets for nine consecutive hours. The neat dress code is met through the structured outer layers and dark, refined colors that appear elegant under artificial street lighting. Every piece is selected to prioritize endurance and practicality while ensuring she feels confident and comfortable throughout her entire evening walk."}
+
+── ВІДПОВІДЬ (956 симв., 4.3 с, HTTP 200) ──
+{
+  "is_outfit": "yes",
+  "items": [
+    {
+      "name": "knit top",
+      "details": "relaxed-fit, soft merino wool blend",
+      "slot": "top",
+      "color_hex": "#2F4F4F",
+      "worn": true
+    },
+    {
+      "name": "cotton slip dress",
+      "details": "lightweight with subtle herringbone texture",
+      "slot": "dress",
+      "color_hex": null,
+      "worn": true
+    },
+    {
+      "name": "denim trousers",
+      "details": "high-waisted straight leg durable twill fabric",
+      "slot": "bottom",
+      "color_hex": null,
+      "worn": true
+    },
+    {
+      "name": "leather ankle boots",
+      "details": "full-grain leather low block heel crafted for all-day comfort",
+      "slot": "shoes",
+      "color_hex": "#A0522D",
+      "worn": true
+    },
+    {
+      "name": "wool-blend blazer",
+      "details": "structured with elbow patches and brass buttons",
+      "slot": "outerwear",
+      "color_hex": null,
+      "worn": true
+    }
+  ]
+}

@@ -1,0 +1,44 @@
+── ПРОМПТ (2429 симв.) ──
+{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.", "One item carries one thing — of two alternatives list the first; a note in brackets is not an item.", "Slot \"accessory\" is for an item no other slot fits.", "\"is_outfit\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "ITEM_LIST", "answer_schema": {"is_outfit": "yes|no", "items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory", "color_hex": "<#rrggbb or null>", "worn": "<true, or false when the description says the outfit goes without it>"}]}, "input": ["\"description\" — the outfit description"]}, "description": "A refined wool-blend blazer in a structured lapel cut, knee-length, charcoal grey with hex code #36454F, heavy woven fabric.\nA crisp cotton-poplin button-down shirt in a classic collar style, hip-length hem, oatmeal beige with hex code #EFEBE9, smooth poplin weave.\nStraight-leg dark denim trousers with a mid-rise waist and clean front pockets, ankle length, deep indigo blue with hex code #1C2B48, sturdy cotton twill.\nMinimalist leather ballet flats in a round toe shape, ankle-high shaft coverage not required, soft brown with hex code #5D4037, genuine calfskin leather.\nSmall silver hoop earrings with polished metal finish, simple circular cut, white rhodium color with hex code #E6E6FA, sterling silver metal.\n\nThis outfit balances professional polish with understated comfort, perfectly matching her request for a restrained workday look without anything bright or flashy. The dark denim and structured blazer provide a neat casual aesthetic that fits the everyday formality level while maintaining office-appropriate standards. Soft neutral tones like oatmeal and charcoal ensure the ensemble feels grounded and serious yet approachable for a long day at the desk."}
+
+── ВІДПОВІДЬ (1029 симв., 4.6 с, HTTP 200) ──
+{
+  "is_outfit": "yes",
+  "items": [
+    {
+      "name": "blazer",
+      "details": "structured lapel cut, knee-length, heavy woven fabric",
+      "slot": "outerwear",
+      "color_hex": "#36454F",
+      "worn": true
+    },
+    {
+      "name": "shirt",
+      "details": "classic collar style, hip-length hem, smooth poplin weave",
+      "slot": "top",
+      "color_hex": "#EFEBE9",
+      "worn": true
+    },
+    {
+      "name": "trousers",
+      "details": "straight-leg, mid-rise waist, clean front pockets, ankle length, sturdy cotton twill",
+      "slot": "bottom",
+      "color_hex": "#1C2B48",
+      "worn": true
+    },
+    {
+      "name": "shoes",
+      "details": "minimalist leather ballet flats, round toe shape, soft brown leather",
+      "slot": "shoes",
+      "color_hex": "#5D4037",
+      "worn": true
+    },
+    {
+      "name": "earrings",
+      "details": "small silver hoop with polished metal finish and simple circular cut",
+      "slot": "earrings",
+      "color_hex": "#E6E6FA",
+      "worn": true
+    }
+  ]
+}
