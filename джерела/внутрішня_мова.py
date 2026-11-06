@@ -1991,6 +1991,11 @@ _МІСЦЯ_ОПЦІЙ = "where it is worn"
                                  "fabric instead of framing the face (values: gap_cm — the gap between the "
                                  "edge of the necklace and the neckline, clearance_cm — the gap needed)",
     "necklace_clearly_above_or_below": "a shorter chain above the neckline, or a longer one clearly below",
+    "necklace_neckline_gap_not_judged": "the code does not judge whether the necklace sits clear of the neckline: "
+                                        "no recognised source gives the gap in centimetres (values: gap_cm — the "
+                                        "distance between the necklace's lowest point and the neckline edge, cm; "
+                                        "side — above or below the neckline; items — necklace, garment; the "
+                                        "neckline depth is a convention of its type, not a measurement of the item)",
     # ── РЕМЕСЛО, БЛИСК І МЕТАЛИ (П-6: K-CRA-01/02/03/06/07/10, K-MAT-04, K-COL-06-M) ──
     "no_third_piece_dressed_not_styled": "base only, no layer or accessory: «dressed»; «styled» starts with a third "
                                          "piece",
@@ -2311,6 +2316,10 @@ _МІСЦЯ_ОПЦІЙ = "where it is worn"
     "print_mix_no_shared_colour": "a mix of prints with no shared colour falls apart into two separate items "
                                   "(values: scale_spread — how far the scales are spread, from 0 to 1, when "
                                   "measured)",
+    "print_scale_ratio_not_judged": "the code does not judge whether two prints differ enough in scale: no "
+                                    "recognised source gives the ratio (values: scale_ratio — how many times the "
+                                    "larger motif exceeds the smaller one, each measured relative to its own photo "
+                                    "frame; items)",
     "print_with_other_colour_or_linking_item": "one print in a version with the other's colour, or a linking "
                                                "item in a shared colour",
     "two_prints_close_scale": "two prints of a close scale compete for attention (values: scale_spread — the "
@@ -2599,6 +2608,9 @@ _МІСЦЯ_ОПЦІЙ = "where it is worn"
     "frame_bigger_eye_or_wider_bridge": "a frame with a bigger eye size or wider bridge",
     "watch_lugs_over_wrist": "watch lug-to-lug (lug_mm) wider than the flat of her wrist (ceiling_mm)",
     "watch_shorter_lugs": "a case with shorter lugs, not necessarily a smaller diameter",
+    "watch_lugs_and_wrist_not_judged": "the code does not judge whether the watch suits her wrist: no recognised "
+                                       "source gives the share of the wrist the lugs may span (values: lug_mm — "
+                                       "the watch's lug-to-lug, mm; wrist_cm — her wrist girth, cm)",
     "glove_bl_origin_unknown": "glove length in BL without its origin: from thumb seam or full length is "
                                "unknown",
     "take_bl_origin_from_card": "take the glove length origin from the card",
@@ -3118,10 +3130,13 @@ _МІСЦЯ_ОПЦІЙ = "where it is worn"
                              "«keep_at_most» of them and replace it with another item of the same kind in the "
                              "rest; the kind of this item stays (values: outfits — outfit ids; item — «n»; "
                              "kind — kind code; keep_at_most)",
-    "variety_all_different": "all outfits differ: no pair matched in items, or in scheme together with hero "
-                             "(values: outfits — how many)",
+    "variety_all_different": "all outfits differ: no pair shares an item, or the scheme together with the most "
+                             "striking item (values: outfits — how many)",
     "variety_kind_repeat_not_checked": "a repeat of one item within a kind was not checked: the outfit records "
                                        "carry no kinds of items",
+    "variety_shared_items": "these two outfits share «shared» of «total» items; the code does not judge how many "
+                            "shared items make two outfits one idea (values: outfits — outfit ids; shared; total; "
+                            "items — the shared item numbers)",
     "variety_letter_without_length": "the silhouette letter was counted without these items: they have no "
                                      "length (values: items)",
     "done_finding_gone": "the finding of this rule over these items is gone in the new check (values: rule)",
