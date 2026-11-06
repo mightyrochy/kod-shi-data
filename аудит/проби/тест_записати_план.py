@@ -8,6 +8,7 @@ import unittest
 from unittest.mock import patch
 
 import записати_план as план
+import записати_сцену as сцена
 
 
 class ПеревіркаПлану(unittest.TestCase):
@@ -41,23 +42,57 @@ class ПеревіркаПлану(unittest.TestCase):
         self.assertEqual(результат.returncode, 0, результат.stderr)
         self.assertEqual(json.loads(результат.stdout)["DO"], "palitra")
 
-    def test_невідомий_режим_відмова_сцени(self):
-        """Сцена з режимом, якого прилад не виконає, — відмова з причиною; решта плану йде."""
-        результат = self.запуск({"ж4_робота": [], "ж1_свято_тріада": [{"pr": 3085, "question": "питання → невідоме → ДО"}]})
+    def test_невідомий_режим_відмова_питання(self):
+        """Питання з режимом, якого прилад не виконає, — відмова питання з PR і причиною; сцену пише решта її питань,
+        а без них — режим реєстру (нічний 05.11: 11 таких питань забрали запис шести сцен)."""
+        погане = {"pr": 3085, "question": "питання → невідоме → ДО"}
+        результат = self.запуск({"ж4_робота": [погане, {"pr": 3086, "question": "п → повне → ДО"}], "ж1_свято_тріада": [погане]})
         self.assertEqual(результат.returncode, 0, результат.stderr)
-        self.assertIn("ВІДМОВА СЦЕНИ ж1_свято_тріада: PR #3085", результат.stderr)
-        self.assertIn("відмов сцени: 1", результат.stderr)
-        self.assertEqual(json.loads(результат.stdout)["DO"], "palitra")
+        for id_ in ("ж4_робота", "ж1_свято_тріада"):
+            self.assertIn(f"ВІДМОВА ПИТАННЯ {id_}: PR #3085", результат.stderr)
+        self.assertIn("відмов сцени: 0 · відмов питання: 2", результат.stderr)
+        декодер, текст = json.JSONDecoder(), результат.stdout
+        перша, кінець = декодер.raw_decode(текст)
+        друга, _ = декодер.raw_decode(текст, кінець + 1)
+        self.assertEqual((перша["SCENA"], перша["OTSINKA"]), ("ж4_робота", "0"))
+        self.assertNotIn("DO", перша)
+        self.assertEqual((друга["SCENA"], друга["DO"]), ("ж1_свято_тріада", "palitra"))
 
     def test_змінні_режиму_з_питання(self):
         """Змінні, які стенд читає, доходять до приладу; довільна інструкція — відмова сцени."""
-        результат = self.запуск({"ж4_робота": [{"pr": 1, "question": "п → повне +фото (OTSINKA=0 FOTO_RECHI=a.jpg; руки 1–2) → ДО"}]})
+        фото = "аудит/проби/знімки/f142_ohliad_bella_pislia.jpg"
+        результат = self.запуск({"ж4_робота": [{"pr": 1, "question": f"п → повне +фото (OTSINKA=0 FOTO_RECHI={фото}; руки 1–2) → ДО"}]})
         self.assertEqual(результат.returncode, 0, результат.stderr)
         змінні = json.loads(результат.stdout)
-        self.assertEqual((змінні["FOTO"], змінні["OTSINKA"], змінні["FOTO_RECHI"]), ("1", "0", "a.jpg"))
+        self.assertEqual((змінні["FOTO"], змінні["OTSINKA"], змінні["FOTO_RECHI"]), ("1", "0", str(сцена.КОРІНЬ / фото)))
         результат = self.запуск({"ж4_робота": [{"pr": 2, "question": "п → повне, після перезбору каталогу → ДО"}]})
-        self.assertIn("довільна інструкція", результат.stderr)
+        self.assertIn("ВІДМОВА ПИТАННЯ ж4_робота: PR #2: Сцена ж4_робота: «після перезбору каталогу» — довільна інструкція",
+                      результат.stderr)
+        self.assertEqual(json.loads(результат.stdout)["DO"], "palitra")
+
+    def test_файли_сцени(self):
+        """Файл сцени — шлях від кореня репозиторію, стенду — абсолютний; ім'я без теки чи файлу нема — відмова сцени
+        до старту, а не ENOENT стенда (нічний 05.11: ROZMOVA=R_*.json трьох сцен)."""
+        результат = self.запуск({"ж4_робота_живіт": []})
+        self.assertEqual(результат.returncode, 0, результат.stderr)
+        self.assertEqual(json.loads(результат.stdout)["ROZMOVA"], str(сцена.КОРІНЬ / "аудит/перевірки/rozbir_0210/R_zhyvit.json"))
+        результат = self.запуск({"ж4_робота": [{"pr": 3, "question": "п → повне, ROZMOVA=R_zhyvit.json → ДО"}]})
+        self.assertIn("ВІДМОВА СЦЕНИ ж4_робота: Сцена ж4_робота: ROZMOVA=R_zhyvit.json — файлу нема", результат.stderr)
         self.assertEqual(результат.stdout, "")
+
+    def test_реєстр_файли_є(self):
+        """Кожна файлова змінна реєстру веде до файлу в репозиторії; фото її речей, яких у репозиторії нема, — відомий
+        виняток (дошка 13576), а не мовчазний ENOENT."""
+        нема = []
+        for рядок in (сцена.КОРІНЬ / "аудит/проби/живі_сцени.txt").read_text(encoding="utf-8").splitlines():
+            if рядок.startswith("#") or "|" not in рядок:
+                continue
+            id_ = рядок.split("|")[0]
+            try:
+                сцена.файли_сцени(id_, dict(о.partition("=")[::2] for о in рядок.split("|")[3].split() if "=" in о))
+            except ValueError as причина:
+                нема.append(id_)
+        self.assertEqual(нема, ["ж1_робота_блуза_фото", "ж3_свято_др_взуття_фото"])
 
     def test_ci_рядок_збігається_з_планом(self):
         """CI-розбір рядка й план дають однакову відповідь на ті самі питання."""
@@ -98,6 +133,43 @@ class ПеревіркаПлану(unittest.TestCase):
             self.assertNotIn("--режим", запуск.call_args_list[1].args[0])
             записи = [json.loads(рядок) for рядок in (вихід / "done.txt").read_text(encoding="utf-8").splitlines()]
             self.assertEqual([запис["rc"] for запис in записи], [1, 0])
+
+
+class ПеревіркаДереваСтенда(unittest.TestCase):
+    """Стенд іде з живого шляху штампа сторінки: дерево новіше за штамп — живий шлях штампа з git у тимчасову теку."""
+
+    def test_дерево_штампа(self):
+        with tempfile.TemporaryDirectory() as тека:
+            корінь = Path(тека) / "репо"
+
+            def git(*а):
+                return subprocess.run(["git", *а], cwd=корінь, check=True, capture_output=True, text=True).stdout.strip()
+
+            def писати(шлях, текст):
+                (корінь / шлях).parent.mkdir(parents=True, exist_ok=True)
+                (корінь / шлях).write_text(текст, encoding="utf-8")
+
+            корінь.mkdir()
+            git("init", "-q", "-b", "main")
+            git("config", "user.email", "проба@local"); git("config", "user.name", "проба")
+            писати("джерела/код.py", "А = 1\n")
+            писати("аудит/проби/рв6_стенд.js", "require('./модуль.js');\n")
+            писати("аудит/проби/модуль.js", "// 1\n")
+            писати("аудит/проби/жінки/ж1.json", "{}\n")
+            писати("аудит/проби/архів/великий.txt", "не живий шлях\n")
+            git("add", "-A"); git("commit", "-qm", "штамп")
+            штамп = git("rev-parse", "HEAD")
+            with patch.object(сцена, "КОРІНЬ", корінь):
+                self.assertEqual(сцена.корінь_стенда(штамп, "node", Path(тека) / "с0"), (корінь, []), "дерево = штамп")
+                писати("джерела/код.py", "А = 2\n")
+                git("commit", "-qam", "продукт після штампа")
+                писати("аудит/проби/модуль.js", "// 2, не закомічено\n")
+                стенд, зміни = сцена.корінь_стенда(штамп, "node", Path(тека) / "с1")
+                self.assertEqual(зміни, ["аудит/проби/модуль.js", "джерела/код.py"])
+                self.assertEqual(стенд, Path(тека) / "с1")
+                for шлях in ("джерела/код.py", "аудит/проби/модуль.js", "аудит/проби/рв6_стенд.js", "аудит/проби/жінки/ж1.json"):
+                    self.assertEqual((стенд / шлях).read_text(encoding="utf-8"), git("show", f"{штамп}:{шлях}") + "\n", шлях)
+                self.assertFalse((стенд / "аудит/проби/архів").exists(), "теки-архіви проб не викладаються")
 
 
 if __name__ == "__main__":
