@@ -262,9 +262,9 @@ def розклад_пари(lab1, lab2):
     """
     L1, a1, b1 = cs.to_oklab(lab1)
     L2, a2, b2 = cs.to_oklab(lab2)
-    C1, C2 = math.hypot(a1, b1), math.hypot(a2, b2)
+    C1, C2 = cs.lch((L1, a1, b1))[1], cs.lch((L2, a2, b2))[1]
     dL, dC = L2 - L1, C2 - C1
-    dab = math.hypot(a2 - a1, b2 - b1)
+    dab = cs.lch((0.0, a2 - a1, b2 - b1))[1]
     тон = math.sqrt(max(0.0, dab * dab - dC * dC))
     # різниця тонів для тексту K-COMP-04 — на колі художника (2.14-А, п.18), не кутом OKLab
     dh = abs(cs.у_коло_художника(cs.lch(lab2)[2]) - cs.у_коло_художника(cs.lch(lab1)[2]))
@@ -292,8 +292,7 @@ def _хрома_ok_межі(e):
     кешується за вікном (`_КЕШ_ХРОМИ_ВІКНА`)."""
     м, т = _КОЛІР.межі_кольору(e), _КОЛІР.точка_кольору(e)
     if т is not None:
-        L, a, b = cs.to_oklab(т)
-        c = math.hypot(a, b)
+        c = cs.lch(cs.to_oklab(т))[1]
         return (c, c)
     if м is None:
         return None          # слово без вікна: меж нема, і центр їх не замінює
@@ -312,8 +311,7 @@ def _хрома_ok_межі(e):
     for L in Ls:
         for Cc in Cs:
             for h in hs:
-                _, a, b = cs.to_oklab((L, Cc * math.cos(math.radians(h)), Cc * math.sin(math.radians(h))))
-                хроми.append(math.hypot(a, b))
+                хроми.append(cs.lch(cs.to_oklab((L, Cc * math.cos(math.radians(h)), Cc * math.sin(math.radians(h)))))[1])
     v = (min(хроми), max(хроми))
     if len(_КЕШ_ХРОМИ_ВІКНА) < 200000:
         _КЕШ_ХРОМИ_ВІКНА[м] = v
