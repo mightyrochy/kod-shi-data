@@ -3391,6 +3391,12 @@ if _спільні:
     "replacement_item_not_found": "no replacement of the same kind was found for the item she marked; the item stays in the outfit, the other outfits are unchanged",
     "replacement_can_try_again": "she can press the replace button on the item again",
 })
+# Е3-одна-величина ч12 (п.2, 06.11): порогу «точного збігу» кольору (K-ACC-10) нема — пара ближча за шум фото
+ЗАЯВИ.update({
+    "photo_colour_pair_within_noise": "two colours measured from photos are closer than the photo noise (value: "
+                                      "noise — colour difference between two photos of one item; a number for the "
+                                      "code, not for her), so whether they match exactly is unknown",
+})
 ЗАЯВИ.update({
     "passport_tiles_only": "There is no passport from conversation; the scenario only came from tiles.",
     "passport_call_zero": "Call zero filled the passport without a language-model conversation turn; the model was absent or its turn fell back to main.",
