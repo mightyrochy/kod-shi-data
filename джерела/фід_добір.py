@@ -6,10 +6,12 @@
 нею. `feed.py` лишається фасадом і реекспортує кожне ім'я звідси; цей модуль
 `feed` не імпортує.
 """
-import math, statistics
+import statistics
 from collections import defaultdict
 from colorspace import lch, de00, c_max
 from колір_тон import in_arc as _in_arc
+import колір_тон as _КТ
+from колір_простір_перетворення import lab_з_lch
 from колір_образу import нейтраль
 import колір_відношення as _КВ
 import колір_річ as _КР
@@ -101,15 +103,17 @@ def частка_вікна(вікно, q, сітка=ЧАСТКА_СІТКА):
     if дуга is None:
         hs = [360.0*k/nh for k in range(nh)]
     else:
-        a, b = дуга; span = (b - a) % 360 or 360
-        hs = [(a + span*(k+0.5)/nh) % 360 for k in range(nh)]
+        # середини nh рівних шматків дуги; ширина й нормування — `колір_тон`. Не `точка_дуги(дуга, (k+0.5)/nh)`:
+        # та множить частку (k+0.5)/nh на ширину, і на цілих дугах ціла точка зсувається на останній біт (ширина
+        # 108, k 3: 63.0 → 63.00000000000001) — вузол на цілому краї дуги запиту переходить на другий бік `підходить`
+        span = _КТ.ширина_дуги(дуга)
+        hs = [_КТ.нормувати(дуга[0] + span*(k+0.5)/nh) for k in range(nh)]
     ok = n = 0
     for L in Ls:
         for C in Cs:
             for h in hs:
-                r = math.radians(h)
                 n += 1
-                if підходить((L, C*math.cos(r), C*math.sin(r)), q): ok += 1
+                if підходить(lab_з_lch(L, C, h), q): ok += 1
     val = round(ok / n, 3) if n else 0.0
     ЧАСТКА_КЕШ[key] = val
     return val
@@ -203,9 +207,8 @@ def відстань_до_центру(lab, q):
         if a is None:
             h_ц = lch(lab)[2]                    # тону не просили — він не штрафується
         else:
-            дуга = (b - a) % 360 or 360
-            h_ц = (a + дуга / 2.0) % 360
-        мішень = (L_ц, C_ц*math.cos(math.radians(h_ц)), C_ц*math.sin(math.radians(h_ц)))
+            h_ц = _КТ.середина_дуги((a, b))
+        мішень = lab_з_lch(L_ц, C_ц, h_ц)
     return round(de00(tuple(lab), мішень), 2)
 
 def відстань_до_вікна(lab, q):
@@ -233,7 +236,7 @@ def відстань_до_вікна(lab, q):
     if q.get("h_from") is not None:
         a, b = q["h_from"], q["h_to"]
         if not _in_arc(h, (a, b)):
-            dh = min(min(abs(h-a), 360-abs(h-a)), min(abs(h-b), 360-abs(h-b)))
+            dh = min(_КТ.відстань_тонів(h, a), _КТ.відстань_тонів(h, b))
     return dict(разом=round(dL + dC + dh*0.5, 1), dL=round(dL,1), dC=round(dC,1), dh=round(dh,1))
 
 def хвилі(запити):
@@ -447,7 +450,7 @@ class Словник:
             return None
         cm = c_max(L, h)
         C = (rel or 0.0) * cm
-        lab = (L, C * math.cos(math.radians(h)), C * math.sin(math.radians(h)))
+        lab = lab_з_lch(L, C, h)
         н, d = min(((н, de00(lab, tuple(_КР.точка_кольору(д)))) for н, д in self.назви),
                    key=lambda x: x[1])
         return н if d <= self.стеля else None

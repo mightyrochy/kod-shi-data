@@ -6,9 +6,11 @@
 нею. `feed.py` лишається фасадом і реекспортує кожне ім'я звідси; цей модуль
 `feed` не імпортує.
 """
-import os, re, json, math
+import os, re, json
 from colorspace import to_lab, lch, de00
 import verify as V
+import колір_тон as _КТ
+from колір_простір_перетворення import lab_з_lch
 from фід_розбір import (СЕП_КОЛЬОРУ as _СЕП_КОЛЬОРУ)
 from фід_слот import (вид_речі)
 import palettes as _ПЛ
@@ -233,9 +235,9 @@ def до_вікна(lab, ім):
     Lmin, Lmax, Cmin, Cmax, дуга = V.вікно_вжитку(ім)
     L, C, h = lch(lab)
     if дуга and not V.у_дузі(h, дуга):
-        h = min(дуга, key=lambda край: min(abs(h - край), 360 - abs(h - край)))
+        h = min(дуга, key=lambda край: _КТ.відстань_тонів(h, край))
     L, C = min(max(L, Lmin), Lmax), min(max(C, Cmin), Cmax)
-    return de00(tuple(lab), (L, C * math.cos(math.radians(h)), C * math.sin(math.radians(h))))
+    return de00(tuple(lab), lab_з_lch(L, C, h))
 
 
 def вимір_впевнений(зб, o, кр):
@@ -387,9 +389,9 @@ def центр_вікна(в):
     """Центр вікна (L, a, b) з меж (L_min, L_max, C_min, C_max, дуга тону);
     дуга через 0° береться серединою короткого шляху."""
     д = в[4]
-    h = 0.0 if д is None else ((д[0] + ((д[1] - д[0]) if д[0] <= д[1] else (д[1] + 360 - д[0])) / 2) % 360)
+    h = 0.0 if д is None else _КТ.середина_дуги(д)
     L, C = (в[0] + в[1]) / 2, (в[2] + в[3]) / 2
-    return (L, C * math.cos(math.radians(h)), C * math.sin(math.radians(h)))
+    return lab_з_lch(L, C, h)
 
 
 def не_вимір_кольору(вікно, слово, свідок, звідки=""):
