@@ -138,7 +138,7 @@ def _до_очей(о, F):
     роль=_ВИМ.РОЛЬ_ЗАСТОСУНКУ + " She left the colour scheme and the base "
          "colour of today's outfits to you; you choose them.",
     вхід=(
-        _ЗП.Поле("person", "her colouring: source, confidence, availability; withheld = no measured fact; "
+        _ЗП.Поле("person", "her colouring: source, confidence, availability; withheld = not measured; "
                            "estimate_hex = uncalibrated vision model estimate, not measurement; "
                            "contrast level and light-dark gap L*; undertone class and source; "
                            "eyes, hair, skin: colour family, lightness L* 0-100, chroma C*; "
