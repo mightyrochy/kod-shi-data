@@ -247,6 +247,186 @@ def ім_виклику(вузол):
     return ф.attr if isinstance(ф, ast.Attribute) else ф.id if isinstance(ф, ast.Name) else ''
 
 
+ОБХОДИ_МОДУЛЯ = frozenset({'walk', 'listdir', 'scandir', 'glob', 'iglob'})
+ОБХОДИ_ШЛЯХУ = frozenset({'rglob', 'glob', 'iterdir'})
+МОДУЛІ_ОБХОДУ = frozenset({'os', 'glob'})
+ПОХІДНІ_ШЛЯХУ = frozenset({'abspath', 'realpath', 'normpath', 'expanduser', 'Path', 'PurePath', 'str', 'fspath',
+                           'resolve', 'absolute'})
+
+
+def обхід_від_кореня(дерево, докстрінги):
+    """Чи є в коді обхід (`walk`/`listdir`/`scandir`/`glob`/`rglob`/`iterdir`/`git ls-files`), чий корінь не звужено сталою.
+
+    Корінь — перший аргумент виклику модуля (`os.walk(x)`, `glob.glob(x)`) чи приймач методу шляху (`x.rglob(..)`).
+    Він звужений, якщо в його виразі (з розкриттям імен: присвоєння, цикли, виклики функції, що його передала) є стала
+    з реальним сегментом шляху (`join(кор, "джерела")`), чи вираз іде від `__file__` не вище, ніж на теку над теками
+    приладу. Голе `кор`, `.`, `os.getcwd()`, `sys.argv[1]` і `__file__` тричі вгору — корінь репозиторію: обсяг
+    не визначено. Нерозкрите (параметр без виклику, атрибут) — теж широке: консервативно.
+    """
+    присвоєння, функції, виклики, область_вузла = {}, {}, {}, {}
+
+    def обійти(вузол, область):
+        """Збирає присвоєння за областями (функція чи None — модуль), функції й виклики; пам'ятає область кожного вузла."""
+        область_вузла[id(вузол)] = область
+        нова = область
+        if isinstance(вузол, (ast.FunctionDef, ast.AsyncFunctionDef, ast.Lambda)):
+            if not isinstance(вузол, ast.Lambda):
+                функції[вузол.name] = вузол
+            нова = вузол
+        значення, цілі = None, []
+        if isinstance(вузол, ast.Assign):
+            значення, цілі = вузол.value, вузол.targets
+        elif isinstance(вузол, (ast.AnnAssign, ast.NamedExpr)) and вузол.value is not None:
+            значення, цілі = вузол.value, [вузол.target]
+        elif isinstance(вузол, (ast.For, ast.AsyncFor, ast.comprehension)):
+            значення, цілі = вузол.iter, [вузол.target]
+        for ціль in цілі:
+            for ім in ast.walk(ціль):
+                if isinstance(ім, ast.Name):
+                    присвоєння.setdefault((область, ім.id), []).append(значення)
+        if isinstance(вузол, ast.Call):
+            виклики.setdefault(ім_виклику(вузол), []).append(вузол)
+        for дитина in ast.iter_child_nodes(вузол):
+            обійти(дитина, нова)
+
+    обійти(дерево, None)
+
+    def значення_імені(ім, область):
+        """Присвоєння імені: у своїй функції, інакше на рівні модуля; None — нема."""
+        return присвоєння.get((область, ім)) or присвоєння.get((None, ім))
+
+    def рівні_file(вузол, видимі=frozenset(), область=None):
+        """Скільки тек вгору від `__file__`, якщо вираз із нього; інакше None."""
+        if isinstance(вузол, ast.Name):
+            if вузол.id == '__file__':
+                return 0
+            if вузол.id in видимі:
+                return None
+            значення = значення_імені(вузол.id, область) or []
+            рівні = {рівні_file(з, видимі | {вузол.id}, область_вузла.get(id(з))) for з in значення}
+            return рівні.pop() if len(рівні) == 1 and None not in рівні else None
+        if isinstance(вузол, ast.Call):
+            ім = ім_виклику(вузол)
+            if ім == 'dirname' and вузол.args:
+                р = рівні_file(вузол.args[0], видимі, область)
+                return None if р is None else р + 1
+            if ім in ПОХІДНІ_ШЛЯХУ:
+                перший = вузол.args[0] if вузол.args else (вузол.func.value if isinstance(вузол.func, ast.Attribute) else None)
+                return рівні_file(перший, видимі, область) if перший is not None else None
+            if ім == 'join' and вузол.args:
+                р = рівні_file(вузол.args[0], видимі, область)
+                if р is None:
+                    return None
+                return р + sum(1 for а in вузол.args[1:] if isinstance(а, ast.Constant) and а.value == '..')
+        if isinstance(вузол, ast.Attribute) and вузол.attr == 'parent':
+            р = рівні_file(вузол.value, видимі, область)
+            return None if р is None else р + 1
+        if isinstance(вузол, ast.Subscript) and isinstance(вузол.value, ast.Attribute) and вузол.value.attr == 'parents' \
+                and isinstance(вузол.slice, ast.Constant) and isinstance(вузол.slice.value, int):
+            р = рівні_file(вузол.value.value, видимі, область)
+            return None if р is None else р + вузол.slice.value + 1
+        if isinstance(вузол, ast.BinOp) and isinstance(вузол.op, ast.Div):
+            р = рівні_file(вузол.left, видимі, область)
+            if р is not None and isinstance(вузол.right, ast.Constant) and вузол.right.value == '..':
+                return р + 1
+        return None
+
+    def вузько(вузол, видимі=frozenset(), глибина=0, область=...):
+        """Чи звужено корінь виразу сталою теки (або `__file__` не вище теки над теками приладу)."""
+        if глибина > 10:
+            return False
+        if область is ...:
+            область = область_вузла.get(id(вузол))
+        р = рівні_file(вузол, frozenset(), область)
+        if р is not None:
+            return 1 <= р <= 2
+        if isinstance(вузол, ast.Constant):
+            з = вузол.value
+            return (isinstance(з, str) and not з.startswith(('-', '**')) and not докстрінг_стала(вузол)
+                    and токен_зі_слова(з) is not None)
+        if isinstance(вузол, ast.Name):
+            ключ = (id(область), вузол.id)
+            if ключ in видимі:
+                return False
+            нове = видимі | {ключ}
+            значення = значення_імені(вузол.id, область)
+            if значення:
+                return all(вузько(з, нове, глибина + 1, область_вузла.get(id(з))) for з in значення)
+            # Параметр функції: звужений, якщо кожен виклик передав звужене значення (виклику нема — широке).
+            for ф in ([область] if isinstance(область, (ast.FunctionDef, ast.AsyncFunctionDef)) else []):
+                аргументи = [а.arg for а in ф.args.posonlyargs + ф.args.args + ф.args.kwonlyargs]
+                if вузол.id in аргументи and вузол.id not in {(а.arg) for а in (ф.args.vararg, ф.args.kwarg) if а}:
+                    місця = виклики.get(ф.name, [])
+                    індекс = аргументи.index(вузол.id)
+                    значення_викликів = []
+                    for в in місця:
+                        знайдено = next((к.value for к in в.keywords if к.arg == вузол.id), None)
+                        if знайдено is None and індекс < len(в.args) and not any(isinstance(а, ast.Starred) for а in в.args):
+                            знайдено = в.args[індекс]
+                        значення_викликів.append(знайдено)
+                    типове = ф.args.defaults and индекс_типового(ф, вузол.id)
+                    if not значення_викликів:
+                        return False
+                    return all(з is not None and вузько(з, нове, глибина + 1, область_вузла.get(id(з)))
+                               for з in значення_викликів) and (
+                        not типове or вузько(типове, нове, глибина + 1, область_вузла.get(id(типове))))
+            return False
+        if isinstance(вузол, ast.JoinedStr):
+            return any(вузько(ч, видимі, глибина + 1) for ч in вузол.values)
+        if isinstance(вузол, ast.FormattedValue):
+            return вузько(вузол.value, видимі, глибина + 1)
+        if isinstance(вузол, (ast.BoolOp, ast.IfExp)):
+            діти = вузол.values if isinstance(вузол, ast.BoolOp) else [вузол.body, вузол.orelse]
+            return all(вузько(д, видимі, глибина + 1) for д in діти)
+        if isinstance(вузол, ast.Call):
+            ім = ім_виклику(вузол)
+            аргументи = list(вузол.args) + [к.value for к in вузол.keywords]
+            if isinstance(вузол.func, ast.Attribute):
+                аргументи.append(вузол.func.value)
+            if ім == 'getcwd':
+                return False
+            return any(вузько(а, видимі, глибина + 1) for а in аргументи)
+        діти = [д for д in ast.iter_child_nodes(вузол) if isinstance(д, ast.expr)]
+        return any(вузько(д, видимі, глибина + 1) for д in діти)
+
+    def докстрінг_стала(вузол):
+        return id(вузол) in докстрінги
+
+    def индекс_типового(ф, ім):
+        """Типове значення параметра `ім` функції `ф` чи None."""
+        позиційні = ф.args.posonlyargs + ф.args.args
+        для_типових = позиційні[len(позиційні) - len(ф.args.defaults):]
+        for а, д in zip(для_типових, ф.args.defaults):
+            if а.arg == ім:
+                return д
+        for а, д in zip(ф.args.kwonlyargs, ф.args.kw_defaults):
+            if а.arg == ім and д is not None:
+                return д
+        return None
+
+    for в in ast.walk(дерево):
+        if not isinstance(в, ast.Call):
+            continue
+        ім = ім_виклику(в)
+        if isinstance(в.func, ast.Constant) or id(в) in докстрінги:
+            continue
+        з_модуля = isinstance(в.func, ast.Attribute) and isinstance(в.func.value, ast.Name) and в.func.value.id in МОДУЛІ_ОБХОДУ
+        if з_модуля and ім in ОБХОДИ_МОДУЛЯ or (ім in ('walk', 'listdir', 'scandir') and isinstance(в.func, ast.Name)):
+            корінь = в.args[0] if в.args else next((к.value for к in в.keywords if к.arg in ('top', 'path', 'pathname')), None)
+        elif isinstance(в.func, ast.Attribute) and ім in ОБХОДИ_ШЛЯХУ and not з_модуля:
+            корінь = в.func.value
+            if ім == 'glob' and вузько(в.args[0]) if в.args else False:
+                continue
+        else:
+            continue
+        if корінь is None or not вузько(корінь):
+            return True
+    for в in ast.walk(дерево):
+        if isinstance(в, ast.Constant) and в.value == 'ls-files' and id(в) not in докстрінги:
+            return True
+    return False
+
+
 def токени_джерела(текст):
     """Токени шляхів з коду `.py`: → (набір кортежів сегментів, чи згадано `__file__`, чи є обхід від кореня) або None, якщо не розібрано.
 
@@ -319,8 +499,9 @@ def токени_джерела(текст):
             if id(вузол) in у_ланцюгах and len(вузол.value) < 120:
                 continue
             токени.update(токени_сталої(вузол.value, лише_шляхи=id(вузол) in у_фільтрі))
-    ширина = any(isinstance(в, ast.Constant) and isinstance(в.value, str) and id(в) not in докстрінги
-                 and в.value.startswith('**/') for в in ast.walk(дерево))
+    ширина = обхід_від_кореня(дерево, докстрінги) or any(
+        isinstance(в, ast.Constant) and isinstance(в.value, str) and id(в) not in докстрінги
+        and в.value.startswith('**/') for в in ast.walk(дерево))
     є_file = any(isinstance(в, ast.Name) and в.id == '__file__' for в in ast.walk(дерево))
     return (токени, є_file, ширина)
 
