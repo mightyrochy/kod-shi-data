@@ -68,6 +68,8 @@ import внутрішня_мова as _ВМ
 import math
 import statistics
 import colorspace as cs
+import колір_тон as _КТ   # лічба кола — визначення в `колір_тон`
+from колір_простір_перетворення import lab_з_lch as _lab_з_lch   # LCh → Lab — визначення в модулі перетворення
 import колір_образу as _КОЛІР, реєстр_правил as _РЕЄСТР   # Н-02-01, сесія 4
 
 # ─────────────────────────── ПРОВЕНАНС КОНСТАНТ ───────────────────────────
@@ -267,12 +269,12 @@ def розклад_пари(lab1, lab2):
     dab = cs.lch((0.0, a2 - a1, b2 - b1))[1]
     тон = math.sqrt(max(0.0, dab * dab - dC * dC))
     # різниця тонів для тексту K-COMP-04 — на колі художника (2.14-А, п.18), не кутом OKLab
-    dh = abs(cs.у_коло_художника(cs.lch(lab2)[2]) - cs.у_коло_художника(cs.lch(lab1)[2]))
+    dh = _КТ.відстань_тонів(cs.у_коло_художника(cs.lch(lab2)[2]), cs.у_коло_художника(cs.lch(lab1)[2]))
     return dict(d_ok=round(math.hypot(dL, dab), 4),
                 інтенсивність=round(math.hypot(dL, dC), 4),
                 тон=round(тон, 4),
                 dL=round(dL, 4), dC=round(dC, 4),
-                dh_град=round(min(dh, 360 - dh), 1),
+                dh_град=round(dh, 1),
                 C1=round(C1, 4), C2=round(C2, 4))
 
 
@@ -305,13 +307,12 @@ def _хрома_ok_межі(e):
     if д is None:
         hs = (0.0, 90.0, 180.0, 270.0)
     else:
-        сер = (д[0] + (((д[1] - д[0]) % 360.0) / 2.0)) % 360.0
-        hs = (д[0], сер, д[1])
+        hs = (д[0], _КТ.середина_дуги(д), д[1])
     хроми = []
     for L in Ls:
         for Cc in Cs:
             for h in hs:
-                хроми.append(cs.lch(cs.to_oklab((L, Cc * math.cos(math.radians(h)), Cc * math.sin(math.radians(h)))))[1])
+                хроми.append(cs.lch(cs.to_oklab(_lab_з_lch(L, Cc, h)))[1])
     v = (min(хроми), max(хроми))
     if len(_КЕШ_ХРОМИ_ВІКНА) < 200000:
         _КЕШ_ХРОМИ_ВІКНА[м] = v
