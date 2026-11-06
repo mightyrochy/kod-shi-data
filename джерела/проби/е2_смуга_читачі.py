@@ -34,5 +34,5 @@ if __name__ == '__main__':
     assert not С.сіль_на_дорозі(None, 'cold', 'сніг')[0]
     assert W.відстань_смуг(W.смуга_типу('сандалі'), 'frost') > 1
     assert not W.пальтова_смуга(None) and W.пальтова_смуга('cold')
-    assert W.смуга_ніг('invented') is None and С.канон_опади('так', 'frost') is None
+    assert W.смуга_ніг('invented') is None and С.канон_опади('так') is None
     print('читачі смуги: 7/7; суд, пул, тканини, оцінка, сіль, повнота й дріт — пройдено')
