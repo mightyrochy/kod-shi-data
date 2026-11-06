@@ -236,7 +236,7 @@ _НЕ_В_РЯДКУ = ("language_model_note", "reserved_colour", "unknown", "int
 # мають дійти до рук 3–4 у `case`,
 # як до рук 1–2 у `day`
 _ФАКТИ_ДНЯ = ("season", "part_of_day", "light", "until_night", "weather_band", "precipitation",
-              "wind_ms", "wind", "direct_sun", "road_salt")
+              "wind_band", "direct_sun", "road_salt")
 
 
 def випадок_кодами(паспорт, рядок, сценарій=None, вимоги=""):
