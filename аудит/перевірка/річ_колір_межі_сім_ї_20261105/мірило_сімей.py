@@ -272,15 +272,57 @@ def свотчі(записи, n=40):
             break
     return [{"пара": list(пара), "id": з["id"], "слово": з["слово"], "назва": з["назва"], "lab": з["lab"],
              "hex": hex_з_lab(з["lab"]), "до": з["до"], "після": з["після"],
+             "блок": з["точне"].get("блок"),
+             "munsell": [round(з["точне"][к], 2) if з["точне"].get(к) is not None else None for к in ("H", "V", "C")],
              "сили": {к: round(с, 3) for к, с in list(з["сили"].items())[:3]},
              "температура": None if з["температура"] is None else round(з["температура"], 2)}
             for пара, з in вибрані[:n]]
+
+
+# Назви практиків кольору й одягу в блоці ISCC–NBS — дослівно з «Dictionary of Color Names» (Kelly–Judd 1976,
+# NBS SP 440, archive.org/details/coloruniversalla00kell; M&P — Maerz & Paul 1930, TKG — Taylor–Knoche–Granville 1950,
+# TCCA — Textile Color Card Association, AATCC — Dye Colors). Свотч судять за джерелом (рішення менеджера 06.11):
+# аркуш показує назви блоку точки й сусіднього блоку межі. Таблиця сімей — `джерела/колір_сім_ї_вікна.md`.
+ДЖЕРЕЛА_БЛОКІВ = {
+    8: "grayish pink — TKG «Cloud Pink», «Rose Mist»; AATCC «Pink»",
+    11: "vivid red — TCCA «Scarlet», «Apple Red», «Geranium», «Old Glory Red»; TKG «Scarlet», «Cherry Red»",
+    17: "very dark red — M&P «Port», «Oporto», «Vineyard», «Catawba»; TKG «Claret Wine», «Dark Wine», «Maroon», «Wine»",
+    18: "light grayish red — M&P «Colonial Rose», «Corinthian Pink», «Grecian Rose», «Rosebloom»; Plochere «Rose "
+        "Mist», «Rose Smoke»; TKG «Ashes of Rose», «Dusty Coral», «Rose Gray»; AATCC «Pink»",
+    19: "grayish red — M&P «Dry Rose», «Faded Rose», «Old Rose», «Cambridge Red», «Pompeian Red», «Cameo Brown»; "
+        "TCCA «Bois de Rose»",
+    32: "grayish yellowish pink — M&P «Rose Nude», «Opera Pink»; TKG «Light Rose Beige», «Powder Rose», «Dusty "
+        "Peach»; AATCC «Yellowish Pink»",
+    34: "vivid reddish orange — TKG «Tomato Red», «Poppy Red», «Lobster Red», «Vermilion»; M&P «Fiery Red», «Flame "
+        "[Scarlet]», «Flame Orange»; TCCA «Orange», «Indian Orange», «Golden Poppy»",
+    44: "dark reddish brown — M&P «Old Burgundy», «Maroon», «Wine Dregs»; TKG «Burgundy», «Dark Wine», «Deep Maroon», "
+        "«Cordovan», «Dark Rose Brown», «Deep Red Mahogany»; AATCC «Dull Reddish Brown»",
+    73: "pale orange yellow — TCCA «Champagne», «Sunset»",
+    89: "pale yellow — M&P «Cream», «Ivory [Yellow]», «Ecru», «Beige», «Vanilla»; TCCA «Eggshell», «Leghorn»",
+    92: "yellowish white — TCCA «Cream», «Ivory», «White»",
+    188: "blackish blue — TCCA «Midnight», «Graphite Blue»; TKG «Dark Navy», «Midnight Blue»; AATCC «Navy»",
+    230: "blackish purple — TCCA «Eggplant»; M&P «Aubergine», «Navy 2», «Oxford Blue»; TKG «Dark Navy», «Midnight Blue»",
+    261: "light grayish purplish red — M&P «Laelia Pink»; Plochere «Mauve Orchid»; AATCC «Pink», «Bluish Pink»",
+}
+СУСІД_МЕЖІ = {17: 44, 44: 17, 11: 34, 34: 11, 73: 92, 89: 92, 92: 89, 18: 19, 19: 18, 188: 230, 230: 188,
+              32: 8, 8: 18, 261: 18}
 
 
 НАЗВИ = {"red": "червона", "pink": "рожева", "orange": "помаранчева", "yellow": "жовта",
          "yellow_green": "жовто-зелена", "green": "зелена", "blue_green": "синьо-зелена", "blue": "синя",
          "violet": "фіолетова", "brown": "бура", "olive": "оливкова", "achromatic": "ахроматична",
          НЕВІДОМО: "невідомо"}
+
+
+def мансел(з):
+    H, V, C = з.get("munsell") or (None, None, None)
+    return "" if H is None else f"<br>Munsell H {H} V {V} C {C} · блок {з.get('блок')}"
+
+
+def джерело_свотча(з):
+    """Назви практиків у блоці точки й у сусідньому блоці межі (дослівно, Kelly–Judd 1976)."""
+    блоки = [б for б in (з.get("блок"), СУСІД_МЕЖІ.get(з.get("блок"))) if б in ДЖЕРЕЛА_БЛОКІВ]
+    return "".join(f'<br><span class="д">{б}. {html.escape(ДЖЕРЕЛА_БЛОКІВ[б])}</span>' for б in блоки)
 
 
 def аркуш(вибрані):
@@ -293,15 +335,17 @@ def аркуш(вибрані):
             f'<div class="к"><div class="п" style="background:{з["hex"]}"></div><div class="т">'
             f'<b>{н}. {html.escape(вердикт)}</b><br>{html.escape(сили)}<br>'
             f'слово: {html.escape(з["слово"] or "—")}<br>ДО: {html.escape(з["до"])}<br>'
-            f'<span class="д">L*a*b* {з["lab"][0]:.1f} {з["lab"][1]:.1f} {з["lab"][2]:.1f} · {з["hex"]}</span>'
+            f'<span class="д">L*a*b* {з["lab"][0]:.1f} {з["lab"][1]:.1f} {з["lab"][2]:.1f} · {з["hex"]}'
+            f'{мансел(з)}</span>{джерело_свотча(з)}'
             f'</div></div>')
     return ("<!doctype html><meta charset='utf-8'><style>body{font:13px sans-serif;margin:12px;background:#fff}"
             ".с{display:grid;grid-template-columns:repeat(5,1fr);gap:10px}.к{border:1px solid #ccc;padding:6px}"
             ".п{height:90px;border:1px solid #888}.т{margin-top:4px;line-height:1.35}.д{color:#666;font-size:11px}"
-            "</style><h3>Граничні свотчі сімей кольору (третя доробка 06.11, модуль колір_тон)</h3>"
+            "</style><h3>Граничні свотчі сімей кольору (06.11: блоки 18 і 261 — за джерелом практиків, модуль колір_тон)</h3>"
             "<p>Вердикт — сім'я чи пара (колір на межі належить обом). Свотч пройдено, коли вердикт містить сім'ю, "
             "яку бачить око, і не містить тієї, якої око не бачить; «невідомо» — хибна відмова, якщо сім'я "
-            "очевидна.</p>"
+            "очевидна. Під свотчем — блок ISCC–NBS точки й назви практиків кольору й одягу в ньому та в сусідньому блоці "
+            "межі (Kelly–Judd 1976, Dictionary of Color Names): свотч судять за джерелом (рішення менеджера 06.11).</p>"
             "<div class='с'>" + "".join(клітинки) + "</div>")
 
 
