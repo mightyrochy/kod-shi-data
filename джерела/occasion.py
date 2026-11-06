@@ -83,7 +83,7 @@ def потреба_події(сценарій=None, паспорт=None, *, т�
 def виміри_на_дріт(потреба):
     """Проєкція того самого опису кодами для моделі, без текстів і нових порогів."""
     п = потреба
-    return dict(profile=п["код"] or "unknown", light=п["світло"], mourning=п["траур"],
+    return dict(profile=п["код"] or _ВМ.UNKNOWN, light=п["світло"], mourning=п["траур"],
                 lightness_range=п["L_вікно"], lightness_max=п["L_макс"],
                 chroma_max=п["стеля_хроми"], loudness_max=п["стеля_гучності"],
                 loudness_source=п["джерело_гучності"], near_white_veto=п["вето_майже_біле"],
