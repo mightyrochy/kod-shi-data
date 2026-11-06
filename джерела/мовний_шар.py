@@ -3354,8 +3354,10 @@ _ПОЛЯ_EN = {
     # модель і заповнює; тут — лише чого місяцем не буває.
     "month": "the month of the event, only when her words date it (the event rule); a weekday, «today», «tomorrow» "
              "or an event of any month — absent",
+    # «return only its code, never degrees» — R5 («Values are only the codes»); «K-WEA-01 with the P-5 split» —
+    # мітки бази знань, не вимога; знято (Е2-промпти, п.1)
     "weather_band": "the weather band, from the degrees she names (digits or words) or her feeling of "
-                    "the weather; return only its code, never degrees. K-WEA-01 with the P-5 split: "
+                    "the weather: "
                     "deep_frost: below -8 C; frost: -8 to below 2 C; cold: 2 to below 10 C; "
                     "cool: 10 to below 18 C; mild: 18 to below 22 C; warm: 22 to below 26 C; "
                     "hot: 26 C and above. Read her whole phrase, including the sign and a number "
@@ -3372,13 +3374,14 @@ _ПОЛЯ_EN = {
     # Щабель моделі — норма без вечірнього підйому; його за ярусом рахує код з part_of_day.
     "formality": "base step without evening; code lifts once by tier from part_of_day",
     # Гілку ставить та сама норма, що щабель, — модель, а не назва події в коді
-    "formality_reason": "why the ladder puts her on this step: " + _тлумачення_кодів_en("formality_reason", {
-        "written": "a named written dress code", "norm": "the usual standard of the place or people",
-        "evaluated": "+1 because she is evaluated", "representing": "+1 because she represents others",
-        "her_words": "her explicit wish"}) + ". Give it with formality",
-    "formality_branch": "the branch of that step, given by the same standard that puts the outing on it: business — "
-                        "her workplace, a job interview, a business meeting; social — a reception, a celebration, "
-                        "her leisure; only for a step of the ladder that has both",
+    # Підстави щабля словами — R8 (1)–(4) (`_ПРАВИЛО_ОШАТНОСТІ`, спільне з ходом плиток); тут — лише номер підстави
+    # (Е2-промпти, п.1)
+    "formality_reason": "which point of the \"formality\" rule gives the step: " + _тлумачення_кодів_en(
+        "formality_reason", {"written": "(1)", "norm": "(2)", "evaluated": "(3), she is evaluated",
+                             "representing": "(3), she represents others", "her_words": "(4)"}) + ". Give it with formality",
+    # Приклади гілок (робота, співбесіда; прийом, свято, дозвілля) — у драбині («codes»), «лише щабель з обома
+    # гілками» — R8; тут знято (Е2-промпти, п.1)
+    "formality_branch": "the branch of that step, given by the same standard that puts the outing on it",
     # РОЗБІР-0210 А1 В-3: «я не хочу щоб вона знов щось сказала» (свекруха, ювілей) мовна модель
     # клала лише в `stylist_note`, `intent` лишався типовим conventional, і пул діставав дозу «на межі»
     # (40 речей `branch: edge`, ж1 і ж7). Прикладу неявного наміру — через чужий суд, який вона хоче
@@ -3452,9 +3455,10 @@ _ПОЛЯ_EN = {
     "legs_above_cm": "cm from the floor above which her legs stay covered",
     "mood": "the mood of the look, her words",
     # «образ із моєю блузою з фото» MamayLM не клала в own_items — опис казав лише «described
-    # in words», і блуза до коду не дійшла: промпт П-1 ніс лише фото
+    # in words», і блуза до коду не дійшла: промпт П-1 ніс лише фото. «also when she sent a photo» — те саме, що
+    # «the item in her photo» у дужках, знято (Е2-промпти, п.1)
     "own_items": "her own items she names: everything she calls hers («моя», «у мене є», «з моєї шафи», "
-                 "the item in her photo) — each item separately, also when she sent a photo",
+                 "the item in her photo) — each item separately",
     "question": "her question, her words",
     "rest": "whatever else her new message says that fits no field above, verbatim",
     "stylist_note": "only when her words about the event are hard to read without context (a local custom, "
@@ -3526,13 +3530,16 @@ def _умови_тем():
     """{тема: (про що запросити, коли тема доречна)} — сталі рядки словника кодів ходу; сцени — `_сцени_умов`."""
     коди = _коди_полем
     вечір, надворі = "an evening scene", "outdoors"
+    # Поріг ошатності поради макіяжу — щаблем драбини, як модель бачить `formality` (код щабля, `паспорт_кодами`),
+    # а не числом шкали 1–10, якого вона не бачить і якого межа `без_шкал` не дає казати (Е2-промпти, п.4)
     умови = {
         "occasion": "she sent a photo of her item and the required occasion question remains",
         "goal": вечір,
         "makeup": ("%s; or profile colouring.contrast is low and the occasion is dressy: occasion %s, place %s, "
-                   "dress_code %s, or formality from %g up" % (
+                   "dress_code %s, or formality from %s up" % (
                        вечір, коди("occasion", _ПН.НАГОДИ_ДІЛОВІ), коди("place", _ПН.МІСЦЯ_ДІЛОВІ),
-                       коди("dress_code", _ФОРМ_.ДРЕС_КОДИ_ДІЛОВІ), _KC.ОШАТНІСТЬ_ДЛЯ_ПОРАДИ_МАКІЯЖУ)),
+                       коди("dress_code", _ФОРМ_.ДРЕС_КОДИ_ДІЛОВІ),
+                       _ФОРМ_.щабель_смуги(_KC.ОШАТНІСТЬ_ДЛЯ_ПОРАДИ_МАКІЯЖУ))),
         "movement": "%s, or occasion %s" % (надворі, коди("occasion", _ПН.ХОДИТИ_НАГОДИ)),
         "temperature": надворі,
         "jewelry": "the occasion is not sport",
@@ -3540,7 +3547,8 @@ def _умови_тем():
     }
 
     плитки = _ПН.довідник()["плитки_поради"]
-    мітки = {к: [dict(label=р[1], note=р[2]) for р in рядки] for к, рядки in плитки.items()}
+    # Плитка без ноти — лише підпис: `"note": null` моделі нічого не каже (Е2-промпти, п.5)
+    мітки = {к: [dict(label=р[1], note=р[2]) if р[2] else р[1] for р in рядки] for к, рядки in плитки.items()}
     мітки["goal"] += мітки.pop("goal_extra")
     мітки.update(occasion=[р["підпис"] for р in _ПН.довідник()["нагоди"] if р["плитка"]],
                   movement=list(_ВМ.ТАБЛИЦЯ["movement"].values()),
@@ -3562,7 +3570,8 @@ assert set(_ОБОВʼЯЗКОВЕ_EN) == set(_ВМ.ОБОВʼЯЗКОВЕ)
 _ПОТРЕБИ_EN = {
     # «general style knowledge» модель читала як дозвіл радити — «замша не
     # боїться води» на «замшеві чоботи, увесь день дощ»; що пасує погоді й нагоді, знає перевірка коду
-    "none": "you answer her yourself: she told about her outing, or asked what you know for sure "
+    # «she told about her outing» — хвіст опису `look` («Telling about her outing … asks nothing: that is none»)
+    "none": "you answer her yourself: she asked what you know for sure "
             "without her items, looks and photos — what a word or a style term means",
     "app": "a question about this app — its screens, buttons, her saved data, what to do next: you "
            "answer it in your next message, from what the app shows",
@@ -3663,9 +3672,10 @@ def _коди_розмови():
         if _група(ім, с) == "вільні":
             р.append("- %s — %s%s" % (ім, _ПОЛЯ_EN[ім], "; " + _тип_en(с) if с.get("type") == "array" else ""))
     р += _коди_норми()
-    р.append("Advice topics — code: what to invite her to tell · when the topic applies (after your "
-             "update, and only while the passport does not know it; for \"advice_topics\" the code has "
-             "already checked it):")
+    # «only while the passport does not know it» — R15 («never a topic your update fills or the passport knows»);
+    # «for advice_topics the code has already checked it» — опис входу `advice_topics` («whose condition already
+    # holds»); тут знято (Е2-промпти, п.1)
+    р.append("Advice topics — code: what to invite her to tell · when the topic applies (after your update):")
     р += ["  · %s — %s" % (сцена, коли) for сцена, коли in _сцени_умов().items()]
     р += ["- %s: %s · %s" % (к, _json_.dumps(про, ensure_ascii=False), коли) for к, (про, коли) in _умови_тем().items()]
     р.append("Required questions — code: what to ask · when it applies (after your update):")
@@ -3688,10 +3698,11 @@ _ПРАВИЛО_ФОРМИ = (
     "\"text\", \"invite\" and \"ask\" are natural literary Ukrainian: every Ukrainian word in Ukrainian "
     "Cyrillic letters only, each the letter itself (never a Unicode escape code), with no Latin letter inside "
     "it; brand and shop names as she wrote them. They speak to her as " + _ЗВЕРТАННЯ_ТИ + ".")
+# «About jewellery — only which jewellery she wants with this look» — опис `jewelry` («jewellery she wants with this
+# look») і останнє речення («only about THIS outing and THIS look»); «that is her profile» — раз (Е2-промпти, п.1).
 _ПРАВИЛО_ПРОФІЛЮ = (
-    "Never ask her what suits her face (metal, white, neutrals): that is her profile. About jewellery — "
-    "only which jewellery she wants with this look. Never ask how she usually dresses, her habits, her "
-    "wardrobe or her taste in general: that is her profile too. An invitation is only about THIS outing and "
+    "Never ask her what suits her face (metal, white, neutrals), how she usually dresses, her habits, her "
+    "wardrobe or her taste in general: that is her profile. An invitation is only about THIS outing and "
     "THIS look, and the \"register\" topic asks which style she wants for this look.")
 
 
@@ -3859,10 +3870,11 @@ _ПРАВИЛО_ПЛИТОК = (
     # «You are the stylist» поруч із «only the code with the stylist answers» —
     # 25 з 39 ходів `need=look` передавали її «стилістові» третьою особою; жінка ж чує одну стилістку.
     # МОВА-ХІД-ТОНШЕ: «відповідай сама лише певне без її речей» — дослівно опис `none` у «codes».
-    "When \"need\" (see \"codes\") is not \"none\", \"text\" neither "
-    "answers nor "
-    "judges her question — you have not seen the check yet — and only says what you recorded. Whether an "
-    "item, a material, a colour or a cut suits the weather, the event or her is never sure without that "
+    # «(see "codes")» і «you have not seen the check yet» — описи `app` і `look` («you answer it in your next
+    # message, after the app has checked»), знято (Е2-промпти, п.1).
+    "When \"need\" is not \"none\", \"text\" neither answers nor judges her question and only says what you "
+    "recorded. Whether an "
+    "item, a material, a colour or a cut suits the weather, the event or her is never sure without the app's "
     "check: never advise or judge it in \"text\" yourself.",
     # Е2-усе-з-розмови (рішення 05.11): функцію продукту з розмови робить код за викликом моделі; що зроблено, каже
     # картка результату під реплікою, а не слова моделі, яка результату ще не бачила.
@@ -3927,11 +3939,12 @@ _ПРАВИЛО_ПЛИТОК = (
     # лишилось те, без чого модель не знає, звідки брати теми, коли питати замість поради й що порада
     # обовʼязкова, коли теми лишились.
     # «to her as «ти»» тут, у `header` і в скелеті — четверта-шоста копія правила форми (R14) і межі
-    # `для_неї`; лишились ці дві.
+    # `для_неї`; лишились ці дві. «"required" is what was required before her new message» — опис входу `required`
+    # («required question codes before her new message»), знято (Е2-промпти, п.1).
     "\"invite\" is advice, not your question. Its codes come only from \"advice_topics\", or from "
     "\"advice_topics_if\" when her new message makes that condition hold — never a topic your \"update\" fills "
-    "or the passport knows, never a code from \"required\". \"required\" is what was required before her new "
-    "message: a code your \"update\" fills no longer remains. While one remains, \"ask\" is one short direct "
+    "or the passport knows, never a code from \"required\". A \"required\" code your \"update\" fills no "
+    "longer remains. While one remains, \"ask\" is one short direct "
     "question about it, \"ask_code\" is that code, and \"invite\" is empty; otherwise, whenever such advice "
     "codes are left, \"invite\" is one soft sentence about up to three of them, saying she may "
     "skip it and the looks will be put together anyway; \"invite_topics\" are exactly its codes. Nothing else "
@@ -3964,10 +3977,10 @@ import схема_відповіді as _СВ_М
 
 РОЗМОВА = _ЗП_Р.Оголошення(
     задача="розмова",
+    # «де правила кажуть — спершу перевірка застосунку, відповідь наступним ходом» — дослівно описи `app` і `look`
+    # у «codes» і R10; тут знято (Е2-промпти, п.1)
     роль=РОЛЬ_ЧАТУ + " You understand what she wants "
-         "across the whole conversation, write it into her case passport in the app's codes and answer "
-         "her; where the rules say so, the app first checks her items and looks, and you answer from "
-         "that check in your next message.",
+         "across the whole conversation, write it into her case passport in the app's codes and answer her.",
     вхід=(
         # Профіль кодами — БЕЗ драпіровки (п.9): метал, білий, нейтралі в розмові не питають і не
         # показують; сталий на всю розмову, тому першим серед даних (кеш).
@@ -3978,11 +3991,11 @@ import схема_відповіді as _СВ_М
                    як="background only: do not quote them as her exact words"),
         _ЗП_Р.Поле("conversation", "the last turns before her new message: \"She:\" — her, \"You:\" — you"),
         # Е2-усе-з-розмови: збережені сценарії — ід для інструментів сценаріїв (`conversation_tools.ПЕРЕЛІКИ`); назва —
-        # її ввід, як є; поля нема, коли збережених нема; код причини — коли не прочитались.
+        # її ввід, як є; поля нема, коли збережених нема; код причини — коли не прочитались. «ід звідси — аргумент
+        # інструмента» каже опис аргументу `id` кожного інструмента (`conversation_tools`), тут знято (Е2-промпти, п.1).
         _ЗП_Р.Поле("saved_cases", "her saved cases: \"id\", \"name\" — the name she gave it, \"case\" — what it is "
                                   "about, \"date\", \"open\" — the case open now; a reason code instead of the list "
-                                  "when they could not be read",
-                   як="use an \"id\" from here as the argument of a tool that takes one"),
+                                  "when they could not be read"),
         # Т-08: розмова оновлює той самий паспорт — модель бачить його кодами.
         _ВИМ.поле("passport"),
         # K-IO-02: плитки — друге джерело полів; її слово сильніше (п.9).
@@ -3991,9 +4004,9 @@ import схема_відповіді as _СВ_М
         _ЗП_Р.Поле("advice_topics", "advice topic codes not yet offered whose condition already holds"),
         _ЗП_Р.Поле("advice_topics_if", "advice topic codes not yet offered whose condition does not hold yet"),
         _ЗП_Р.Поле("required", "required question codes before her new message"),
-        # П-1: речі на фото описує модель із зором окремою задачею, вердикт — код.
-        _ЗП_Р.Поле("photos", "ids of photos she attached to her new message",
-                   як="another model looks at them and the code judges the items: do not describe or judge them"),
+        # П-1: речі на фото описує модель із зором окремою задачею, вердикт — код. «another model looks at them» —
+        # опис `own_items` у «codes» («the photo is looked at by another model»), тут знято (Е2-промпти, п.1).
+        _ЗП_Р.Поле("photos", "ids of photos she attached to her new message", як="do not describe or judge them"),
         # Битий JSON ходу одразу йшов шляхом виклику 0, і подія губилась. Тепер —
         # ОДИН повтор тим самим промптом із причиною кодом (як виклик 0 і фото — `format_error`); поле є лише
         # на повторі, тож сталий початок промпта (кеш) той самий.
