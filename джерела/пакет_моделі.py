@@ -906,11 +906,10 @@ def нейтральний_тон(h, C, L=None):
     """
     if C is None:
         return True
-    import math as _м
+    from колір_простір_перетворення import lab_з_lch
     if L is None:
         L = 50.0                               # світлота не названа — середина шкали
-    r = _м.radians(float(h or 0.0))
-    lab = (float(L), float(C) * _м.cos(r), float(C) * _м.sin(r))
+    lab = lab_з_lch(float(L), float(C), float(h or 0.0))
     return _КО.нейтраль(lab) is not None
 
 

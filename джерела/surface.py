@@ -9,6 +9,7 @@ import random
 from operator import itemgetter
 from collections import Counter
 import colorspace as CS
+import колір_тон as _КТ
 import verify as V
 
 # Одне визначення типових величин вимірювання поверхні (Е3-одна-величина, ч7): читають surface, річ_з_фото і жнива_*.
@@ -92,7 +93,7 @@ def слово_з_lab(lab):
         d = (max(0, Lmin - L) + max(0, L - Lmax)) / 10.0 + (max(0, Cmin - C_) + max(0, C_ - Cmax)) / 10.0
         if дуга and C_ >= 10 and not V.у_дузі(h, дуга):
             a, b = дуга
-            d += min(min(abs(h - a), 360 - abs(h - a)), min(abs(h - b), 360 - abs(h - b))) / 30.0
+            d += min(_КТ.відстань_тонів(h, a), _КТ.відстань_тонів(h, b)) / 30.0
         поруч.append((d, тісно, сл))
     if вміщають:
         return min(вміщають)[1], True
@@ -601,7 +602,7 @@ def _одне_світло(а, б):
     (L1, C1, h1), (L2, C2, h2) = CS.lch(а), CS.lch(б)
     if min(C1, C2) < БЕЗБАРВНА_C or abs(L1 - L2) >= РОЗРИВ_СВІТЛОТИ:
         return False
-    if min(abs(h1 - h2), 360 - abs(h1 - h2)) >= ТОН_ТІНІ:
+    if _КТ.відстань_тонів(h1, h2) >= ТОН_ТІНІ:
         return False
     (Cсв, Cтем) = (C1, C2) if L1 >= L2 else (C2, C1)
     return Cтем <= 2 * Cсв + 5
