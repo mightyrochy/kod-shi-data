@@ -1,5 +1,5 @@
 """Контекст одного виконання функції у потоці ознак обличчя."""
-import ast, collections, functools, os
+import ast, collections, contextlib, functools, os
 from ознаки_основа import (
     B, C, E, F, HEX_РЕГ, K, P, Q, R, S, V, УТРИМАННЯ, ПОХОДЖЕННЯ, _без_мапи, _без_першого, _ел, _з_префіксом, _звузити, _злити_ел,
     _злити_ключі, _корінь_імені, _пара, _перебір, _під, _рядок, _сітка, _текст, _токени, _усі, _шлях,
@@ -86,6 +86,50 @@ class Стан:
             return   # коротка чиста функція кольору (`на_дузі`): поріг усередині — не вхід; місце — виклик із її значенням
         self.а.місце(м, вузол, пункт, чому, вхід=вхід)
 
+    @contextlib.contextmanager
+    def мертве(self, умова=True, тест=None, зріз=True):
+        """Гілка, що для `model_hex` не виконується (ворота довіри, перевірка джерела, рання варта): місць там нема, і
+        її значення (S) далі не йде — ні в імена, ні в повернення, ні у виклики. S приходить лише з оцінки моделі, тож
+        у гілці, якої оцінка не проходить, його нема (наряд Річ-ознаки-обличчя-прилад 06.11, рядок дошки 13568).
+        Записане в гілці додається до незміненого, як у `у_звуженні`. Ворота, за якими її значення було й не пішло, —
+        у «не місцях» виводу з причиною (`закриті_ворота`). Без `зріз` (самі ворота довіри `MIN_TO_EMIT` чи непереданий
+        параметр, як до 06.11) — лише місць у гілці нема, а значення йде далі."""
+        if not умова:
+            yield
+            return
+        if not зріз:
+            self.мертва += 1
+            try:
+                yield
+            finally:
+                self.мертва -= 1
+            return
+        до_env, до_ключі, до_розг = self.env, self.ключі, self.розгорнуті
+        if тест is not None and (any(S in м for м in до_env.values())
+                                 or any(S in в for к in до_ключі.values() for в in к.values())
+                                 or any(S in м for р in до_розг.values() for м, _ in р.values())):
+            self.а.закриті_ворота.setdefault((self.м.шлях, тест.lineno),
+                                             "гілка для model_hex не виконується, її значення туди не йде: %s" % _текст(тест)[:70])
+        self.env = {ім: м - {S} for ім, м in до_env.items()}
+        self.ключі = collections.defaultdict(lambda: collections.defaultdict(frozenset),
+                                             {ім: collections.defaultdict(frozenset, {к: м - {S} for к, м in км.items()})
+                                              for ім, км in до_ключі.items()})
+        self.розгорнуті = collections.defaultdict(dict, {
+            п: {к: (м - {S}, {кл: в - {S} for кл, в in кл_.items()} if кл_ else кл_) for к, (м, кл_) in р.items()}
+            for п, р in до_розг.items()})
+        self.мертва += 1
+        try:
+            yield
+        finally:
+            self.мертва -= 1
+            нові_env, нові_ключі = self.env, self.ключі
+            self.env, self.ключі, self.розгорнуті = dict(до_env), до_ключі, до_розг
+            for ім, м in нові_env.items():
+                self.env[ім] = self.env.get(ім, E) | м
+            for ім, км in нові_ключі.items():
+                for к, м in км.items():
+                    self.ключі[ім][к] = self.ключі[ім][к] | м
+
     # ── ворота за джерелом: гілка під довірою, якої model_hex не має ──
     def не_передано(self, т):
         """`if p is not None:` / `if p is None:` для необов'язкового параметра (типове `None`), якого контекст виклику з її
@@ -102,20 +146,36 @@ class Стан:
             return None
         return "так" if isinstance(т.ops[0], ast.IsNot) else "ні"
 
-    def ворота(self, т):
-        """Тест → "так" (тіло потребує довіри ≥ MIN_TO_EMIT — для model_hex не виконується), "ні" (так само else) чи None."""
+    def ворота(self, т, нові=True):
+        """Тест → "так" (для model_hex хибний: тіло потребує довіри ≥ MIN_TO_EMIT чи іншого джерела — не виконується),
+        "ні" (для model_hex істинний: не виконується else) чи None. Що відомо про model_hex: довіра осі нижче
+        MIN_TO_EMIT (ворота довіри); з `нові` ще — довіра 0 (ім'я лише з `AXIS_RELIABILITY`, мітка R) і джерело —
+        рядок-мітка оцінки (`Аналіз.мітки_оцінки`: `== "model_hex"`, `== "оцінка моделі"`) — варти джерела, рядок
+        дошки 13568. `нові=False` — лише ворота довіри (`ф_ворота` і рішення, чи зрізати її значення в гілці)."""
         if isinstance(т, ast.Name):
-            return "так" if т.id in self.ф_ворота() else None
+            if т.id in self.ф_ворота():
+                return "так"
+            # нульова довіра: ім'я несе лише довіру з `AXIS_RELIABILITY` (R) — для model_hex вона 0, тест хибний
+            if нові and self.нульова_довіра(т):
+                return "так"
+            return None
         if isinstance(т, ast.UnaryOp) and isinstance(т.op, ast.Not):
-            г = self.ворота(т.operand)
+            г = self.ворота(т.operand, нові)
             return {"так": "ні", "ні": "так"}.get(г)
         if isinstance(т, ast.BoolOp):
-            гг = [self.ворота(x) for x in т.values]
+            гг = [self.ворота(x, нові) for x in т.values]
             if isinstance(т.op, ast.And):
-                return "так" if "так" in гг else None
+                return "так" if "так" in гг else "ні" if нові and all(г == "ні" for г in гг) else None
+            if нові and "ні" in гг:
+                return "ні"     # `not о["доступно"] or …`: одна істинна для оцінки частина — уся умова істинна
             return "так" if all(г == "так" for г in гг) else None
         if isinstance(т, ast.Compare) and len(т.ops) == 1:
             ліво, оп, право = т.left, т.ops[0], т.comparators[0]
+            мітка = нові and (self.мітка_оцінки(ліво) or self.мітка_оцінки(право))
+            if мітка and isinstance(оп, (ast.Eq, ast.Is)):
+                return "ні"     # `протокол == "model_hex"`: для оцінки тест істинний
+            if мітка and isinstance(оп, (ast.NotEq, ast.IsNot)):
+                return "так"
             def мінімум(х):
                 return isinstance(х, ast.Name) and х.id == "MIN_TO_EMIT" or isinstance(х, ast.Attribute) and х.attr == "MIN_TO_EMIT"
             if мінімум(право):
@@ -123,6 +183,17 @@ class Стан:
             if мінімум(ліво):
                 return "так" if isinstance(оп, (ast.Lt, ast.LtE)) else "ні" if isinstance(оп, (ast.Gt, ast.GtE)) else None
         return None
+
+    def мітка_оцінки(self, в):
+        """Сталий рядок, що означає джерело model_hex (`"model_hex"`, `"оцінка моделі"`)."""
+        return _рядок(в) and в.value in self.а.мітки_оцінки
+
+    def нульова_довіра(self, в):
+        """Ім'я несе лише довіру осі з `AXIS_RELIABILITY` (мітки — саме R: число довіри, не запис із нею): для
+        model_hex це 0 (`if not надійність_хроми: return`)."""
+        if not isinstance(в, ast.Name) or в.id not in self.env or в.id in self.ключі:
+            return False
+        return self.env[в.id] == frozenset({R})
 
     def ф_ворота(self):
         """Імена функції, присвоєні з воріт довіри (`надійно = R["undertone"] >= MIN_TO_EMIT`)."""
@@ -133,7 +204,7 @@ class Стан:
                           for ц in n.targets if isinstance(ц, ast.Name)]
             while True:
                 self.ф._ворота_імена = frozenset(імена)
-                нові = {ім for ім, з in присвоєння if ім not in імена and self.ворота(з) == "так"}
+                нові = {ім for ім, з in присвоєння if ім not in імена and self.ворота(з, нові=False) == "так"}
                 if not нові:
                     break
                 імена |= нові
@@ -355,13 +426,11 @@ class Стан:
                 self.e(сам.test)
             вих, ключі = E, {}
             вр = self.ворота(сам.test) if isinstance(сам, ast.IfExp) else None
+            вр_д = self.ворота(сам.test, нові=False) if isinstance(сам, ast.IfExp) else None
             for ін, г in enumerate(гілки):
                 закрита = вр == ("так", "ні")[ін] if вр else False
-                self.мертва += закрита
-                try:
+                with self.мертве(закрита, сам.test if isinstance(сам, ast.IfExp) else None, вр != вр_д):
                     м, к = self.значення(г)
-                finally:
-                    self.мертва -= закрита
                 вих |= м
                 for кл, з in (к or {}).items():
                     ключі[кл] = ключі.get(кл, E) | з
@@ -697,11 +766,9 @@ class Стан:
                     and isinstance(і.body[-1], (ast.Return, ast.Raise, ast.Continue, ast.Break)):
                 # `if код not in ТАБЛ: return` — решта тіла йде лише з кодів, що пройшли охорону
                 закрита = self.ворота(і.test) == "ні"   # `if R < MIN_TO_EMIT: return` — решта лише з довірою
-                self.мертва += закрита
-                try:
+                # `if source == "model_hex": return` — рання варта джерела: решта тіла для оцінки не виконується
+                with self.мертве(закрита, і.test, self.ворота(і.test, нові=False) != "ні"):
                     self.у_звуженні(self.звуження(і.test)[1], інструкції[н + 1:])
-                finally:
-                    self.мертва -= закрита
                 return
 
     def звуження(self, т):
@@ -803,25 +870,17 @@ class Стан:
             self.e(і.test); self.тіло(і.body); self.тіло(і.orelse)
         elif isinstance(і, ast.If):
             закрита_умова = self.ворота(і.test) == "так"   # `надійно and x == "клас"`: сама умова — лише з довірою
-            self.мертва += закрита_умова
-            try:
+            with self.мертве(закрита_умова, і.test, self.ворота(і.test, нові=False) != "так"):
                 self.e(і.test)
-            finally:
-                self.мертва -= закрита_умова
             self.невідоме_в_гілці(і)
             в_тілі, в_іншому = self.звуження(і.test)
             г = self.ворота(і.test)
             г = г or self.не_передано(і.test)
-            self.мертва += г == "так"
-            try:
+            г_д = self.ворота(і.test, нові=False) or self.не_передано(і.test)
+            with self.мертве(г == "так", і.test, г != г_д):
                 self.у_звуженні(в_тілі, і.body)
-            finally:
-                self.мертва -= г == "так"
-            self.мертва += г == "ні"
-            try:
+            with self.мертве(г == "ні", і.test, г != г_д):
                 self.у_звуженні(в_іншому, і.orelse)
-            finally:
-                self.мертва -= г == "ні"
         elif isinstance(і, (ast.With, ast.AsyncWith)):
             for п in і.items:
                 м = self.e(п.context_expr)
@@ -1084,6 +1143,10 @@ class Стан:
                 return (м - {S}) | {Q}
             return (м - {S}) | {Q} if self.а.пара_глибина and S in м else м
         if isinstance(в, ast.UnaryOp):
+            if isinstance(в.op, ast.Not):
+                # `not x` — наявність (як `bool(x)` із `БУЛЕВІ`): прапорець «нема / невідомо», а не її значення
+                # (рядок дошки 13712: прапорець «колір невідомий» у лічбі стелі)
+                return self.e(в.operand) - {F, S}
             return self.e(в.operand) - {F}
         if isinstance(в, ast.BoolOp):
             мітки, збережено = [], {}
@@ -1109,16 +1172,11 @@ class Стан:
         if isinstance(в, ast.IfExp):
             self.e(в.test)
             вр = self.ворота(в.test)
-            self.мертва += вр == "так"
-            try:
+            вр_д = self.ворота(в.test, нові=False)
+            with self.мертве(вр == "так", в.test, вр != вр_д):
                 мб = self.e(в.body)
-            finally:
-                self.мертва -= вр == "так"
-            self.мертва += вр == "ні"
-            try:
+            with self.мертве(вр == "ні", в.test, вр != вр_д):
                 мо = self.e(в.orelse)
-            finally:
-                self.мертва -= вр == "ні"
             г = self.гілка_невідомо(в.test)
             if г:
                 гілка = в.body if г == "так" else в.orelse

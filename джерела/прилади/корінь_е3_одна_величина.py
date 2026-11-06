@@ -9,6 +9,10 @@
      порівнюється й з константою, й з літералом); (б) пороги однієї величини в одному напрямку — константами ≥ 2
      реєстрів (модулів визначення): кожне вживання й кожен запис реєстру такого порога; (в) межа вмикання правила:
      пороги, що стережуть заяву того самого ід, — різні числа в одному напрямку;
+     (г) та сама величина (однаковий вираз з тих самих полів після підстановки одноразових локальних присвоєнь) у
+     двох функціях: одна зве її бік порівнянням з ненульовою межею, друга в інструкції з цією величиною пише
+     «невідомо»/«unknown» — місце кожне таке порівняння й кожен такий рядок; функції, що кличуть першу (читачі її
+     відповіді), — не місця;
   2  межу правила стилю поставлено числом сесії: (а) запис реєстру з тіром T3, чий опис — слово сесії («моє», «не
      калібровано», «середина між», «фольклорн…», «оцінка … не калібр…») без посилання на визнане джерело (автор і рік),
      і кожне порівняння з ним; (б) голий літерал у порозі, що стереже заяву правила стилю;
@@ -21,6 +25,19 @@
      реєстру `прав=`) і поріг, що стереже заяву;
   5  типове значення однієї величини записано в читанні чи підписі функції в ≥ 2 місцях: `x or <літерал>`,
      `.get(ключ, <літерал>)`, параметр `p=<літерал>` (JS: `||`, `??`, параметр з типовим).
+  6  порівняння двох боків (річ і тіло, два виміри) без похибки обох боків чи вимір мінус оцінка іншої величини.
+     Боки — значенням: тіло — поля запису, який повертає функція, що ділить на π чи кличе таку (`fit.тіло`):
+     `профіль` (рядки; позиція 2 — ширина як обхват/π), контейнери (`обхвати`, `висоти`) і скаляри; річ — ключ з
+     одиницею (`_см`, `_мм`) не з реєстру; похибка — мітка, чиє імʼя каже «розкид/похибка/допуск/шум». Мітки йдуть
+     потоком через присвоєння, параметри (обʼєднання з усіх викликів), повернення (позиційно для кортежів) і ключі
+     з одиницею; різниця чи частка двох різних вимірів дістає мітку «два боки», добуток частки на вимір — ні
+     (інтерполяція профілю — вимір у точці). (а) порівняння `< <= > >=`, де операнди несуть різні виміри чи один —
+     різницю двох, а похибки обох боків нема; (б) віднімання, де один бік — вимір речі, а другий — оцінка тіла через
+     π; (в) заява правила з силою вироку, яку стереже лише наявність обох боків (`if річ is None or тіло is None`
+     з виходом чи з `else`). Не місця (окремий розділ виводу з причиною): похибку обох боків враховано; гілка
+     лише кидає виняток (межа області визначення даних); порівняння вибирає силу правила (корінь
+     `Е3-сила-правила`) чи належить іншому кореню за текстом. Лише Python: JS і HTML `джерела/` вимірів см не
+     порівнюють (06.11).
 
 ВІД ЗНАЧЕННЯ, НЕ ВІД ІМЕН. Величину прилад виводить потоком значення: присвоєння (і розпакування), ключ словника й
 `dict(...)`, іменований аргумент, позиційний аргумент функції продукту (за її підписом), обгортки `float/int/round`,
@@ -36,10 +53,12 @@ hint`), тривалість і дата; переклад слова ядра �
 Кількість цих поза класом друкується окремим рядком.
 
 Вивід детермінований: перелік `файл:рядок · п.N[,M] · доказ`, підсумки за пунктами й файлами, останній рядок
-`місць: <N>` (N — різних `файл:рядок`), код 0. Запуск з кореня репозиторію (чи `--корінь <шлях>`):
+`місць: <N>` (N — різних `файл:рядок`), код 0; перед ним — розбивка «за файлами й пунктами» (для частин
+без спільних файлів) і не місця п.1(г) і п.6 з причиною. Запуск з кореня репозиторію (чи `--корінь <шлях>`):
     python3 джерела/прилади/корінь_е3_одна_величина.py [--тихо] [--величини] [--самоперевірка]
 """
 import ast
+import math
 import os
 import re
 import shutil
@@ -1262,6 +1281,508 @@ def типові_js(л):
     return вих
 
 
+# ── п.6 і п.1(г): два боки однієї величини ────────────────────────────────────────────────────────────────────
+ПОХИБКА = re.compile(r"розкид|похибк|допуск|toleran|spread|шум|noise", re.I)
+ОДИНИЦЯ = re.compile(r"_(см|мм|cm|mm)$")
+НЕВІДОМО = re.compile(r"unknown|невідом", re.I)
+Ø = frozenset()
+ВБУДОВАНІ = {"float", "int", "round", "abs", "min", "max", "sum", "next", "sorted", "list", "tuple", "fsum",
+             "reversed", "iter"}
+РЯДОК_ДОВЖИНА = 3
+
+
+def на_пі(в):
+    if not (isinstance(в, ast.BinOp) and isinstance(в.op, ast.Div)):
+        return False
+    п = в.right
+    return (isinstance(п, ast.Attribute) and п.attr == "pi") or (isinstance(п, ast.Name) and п.id in ("pi", "π")) \
+        or (isinstance(п, ast.Constant) and isinstance(п.value, float) and abs(п.value - math.pi) < 0.01)
+
+
+def ключ_рядка(в):
+    if isinstance(в, ast.Constant) and isinstance(в.value, str):
+        return в.value
+    return None
+
+
+def сторони(мітки):
+    """Виміри без похибок: {'Т': {ід}, 'Р': {ід}}; похибки: {'Т'|'Р'}."""
+    вим, пох = {"Т": set(), "Р": set()}, set()
+    for м in мітки:
+        if м[:2] in ("Т:", "Р:"):
+            if ПОХИБКА.search(м):
+                пох.add(м[0])
+            else:
+                вим[м[0]].add(м[2:])
+    return вим, пох
+
+
+def виміри(мітки):
+    return {м for м in мітки if м[:2] in ("Т:", "Р:") and not ПОХИБКА.search(м)}
+
+
+def різні(а, б):
+    """Два операнди несуть різні виміри: обидва непорожні й без спільного (`X.?` — будь-який рівень X)."""
+    ва, вб = виміри(а), виміри(б)
+    if not ва or not вб or ва & вб:
+        return False
+    дикі = {в[:-2] for в in ва | вб if в.endswith(".?")}
+    return not any(в.startswith(д + ".") for д in дикі for в in (ва if any(x == д + ".?" for x in вб) else вб))
+
+
+class Боки:
+    def __init__(self, л, назва_виклику, визначення_в):
+        self.л, self.нв, self.вв = л, назва_виклику, визначення_в
+        self.функції = []            # (м, ф|None)
+        for м in л.модулі:
+            self.функції.append((м, None))
+            for в in ast.walk(м.дерево):
+                if isinstance(в, (ast.FunctionDef, ast.AsyncFunctionDef)):
+                    self.функції.append((м, в))
+        self.вузли = {}              # id(ф або м) → [вузли цієї функції без вкладених]
+        for м, ф in self.функції:
+            корінь = ф if ф is not None else м.дерево
+            стек, вих = list(ast.iter_child_nodes(корінь)), []
+            while стек:
+                в = стек.pop()
+                вих.append(в)
+                if isinstance(в, (ast.FunctionDef, ast.AsyncFunctionDef, ast.Lambda, ast.ClassDef)):
+                    continue
+                стек.extend(ast.iter_child_nodes(в))
+            self.вузли[id(корінь)] = вих
+        self.лок, self.пар, self.пов, self.кл = {}, {}, {}, {}
+        self.ціль = {}
+        self.тіло_ключі = {}
+        self.сталі = {к for м in л.модулі for р in м.реєстри.values() for к in р}
+        self._ключі_тіла()
+
+    # ── виклик → визначення ──
+    def ціль_виклику(self, м, в):
+        к = id(в)
+        if к in self.ціль:
+            return self.ціль[к]
+        ім = self.нв(в)
+        вих = None
+        if ім in self.л.визначення:
+            if isinstance(в.func, ast.Name):
+                мод = м.імпорт_імен.get(ім, м.ім)
+            elif isinstance(в.func, ast.Attribute) and isinstance(в.func.value, ast.Name):
+                мод = м.псевдо.get(в.func.value.id)
+            else:
+                мод = None
+            цілі = self.вв(self.л, мод, ім)
+            if len(цілі) == 1:
+                вих = цілі[0]
+        self.ціль[к] = вих
+        return вих
+
+    # ── тіло: ключі запису, що несе профіль (обхват через π) ──
+    def _ключі_тіла(self):
+        пі = {id(ф) for м, ф in self.функції if ф is not None and any(на_пі(в) for в in self.вузли[id(ф)])}
+        self.пі_функції = пі
+        for м, ф in self.функції:
+            if ф is None:
+                continue
+            кличе_пі = id(ф) in пі or any(isinstance(в, ast.Call) and (lambda ц: ц is not None and id(ц[1]) in пі)(
+                self.ціль_виклику(м, в)) for в in self.вузли[id(ф)])
+            if not кличе_пі:
+                continue
+            for в in self.вузли[id(ф)]:
+                if isinstance(в, ast.Return) and isinstance(в.value, ast.Call) and self.нв(в.value) == "dict":
+                    for кл in в.value.keywords:
+                        if кл.arg:
+                            з = кл.value
+                            вид = "контейнер" if isinstance(з, (ast.Dict, ast.DictComp)) or (
+                                isinstance(з, ast.Call) and self.нв(з) == "dict") else "скаляр"
+                            self.тіло_ключі.setdefault(кл.arg, вид)
+                            if isinstance(з, ast.Name):
+                                self.тіло_ключі[кл.arg] = ("ім", id(ф), з.id, вид)
+
+    def вид_ключа(self, к):
+        в = self.тіло_ключі.get(к)
+        if isinstance(в, tuple):
+            _, іф, ім, вид = в
+            мітки = self.лок.get(іф, {}).get(ім, Ø)
+            if "ряд" in мітки:
+                return "ряд", мітки
+            return вид, мітки
+        return в, Ø
+
+    # ── мітки виразу ──
+    def читання(self, об, ключ, індекс):
+        if ключ is not None:
+            вид, мітки = self.вид_ключа(ключ)
+            if вид == "ряд":
+                return frozenset({"ряд", "Т~:" + ключ} | {м for м in мітки if м.startswith("π@")})
+            if вид == "контейнер":
+                return frozenset({"Т*:" + ключ})
+            if вид:
+                return frozenset({"Т:" + ключ})
+            конт = [м for м in об if м.startswith("Т*:")]
+            if конт:
+                return frozenset("Т:%s.%s" % (к[3:], ключ) for к in конт)
+            if not ОДИНИЦЯ.search(ключ) or ключ in self.сталі:
+                return Ø
+            return frozenset({м for м in self.кл.get(ключ, Ø) if м.startswith("⊕")} | {"Р:" + ключ})
+        if "ряд" in об:
+            return frozenset((об - {"ряд"}) | {"рядок"})
+        if "рядок" in об and isinstance(індекс, int):
+            return self.елемент(об, індекс)
+        конт = [м for м in об if м.startswith("Т*:")]
+        if конт:
+            return frozenset("Т:%s.?" % к[3:] for к in конт)
+        return об
+
+    def елемент(self, рядок, і):
+        і = і % РЯДОК_ДОВЖИНА
+        баз = [м[3:] for м in рядок if м.startswith("Т~:")]
+        вих = {"Т:%s[%d]" % (б, і) for б in баз}
+        if "π@%d" % і in рядок:
+            вих.add("π")
+        return frozenset(вих)
+
+    def т(self, м, в, env, гл=0):
+        if в is None or гл > 30:
+            return Ø
+        т = lambda x: self.т(м, x, env, гл + 1)
+        if isinstance(в, ast.Name):
+            return env.get(в.id, Ø)
+        if isinstance(в, ast.BinOp):
+            л, п = т(в.left), т(в.right)
+            вих = л | п
+            if isinstance(в.op, (ast.Sub, ast.Div)) and різні(л, п):
+                вих = вих | {"⊕" + "".join(sorted({в_[0] for в_ in виміри(л) | виміри(п)}))}
+            elif isinstance(в.op, ast.Mult) and виміри(л) and виміри(п):
+                # частка, помножена на вимір, — вимір у точці (інтерполяція профілю), не різниця двох боків
+                вих = frozenset(м_ for м_ in вих if not м_.startswith("⊕"))
+            return вих | {"π"} if на_пі(в) else вих
+        if isinstance(в, ast.UnaryOp):
+            return т(в.operand)
+        if isinstance(в, ast.BoolOp):
+            return frozenset().union(*(т(x) for x in в.values))
+        if isinstance(в, ast.IfExp):
+            return т(в.body) | т(в.orelse)
+        if isinstance(в, ast.Subscript):
+            с = в.slice
+            і = с.value if isinstance(с, ast.Constant) and isinstance(с.value, int) else \
+                (-с.operand.value if isinstance(с, ast.UnaryOp) and isinstance(с.op, ast.USub)
+                 and isinstance(с.operand, ast.Constant) and isinstance(с.operand.value, int) else None)
+            return self.читання(т(в.value), ключ_рядка(с), і)
+        if isinstance(в, ast.Call):
+            ім = self.нв(в)
+            if ім == "get" and isinstance(в.func, ast.Attribute) and в.args:
+                вих = self.читання(т(в.func.value), ключ_рядка(в.args[0]), None)
+                return вих | (т(в.args[1]) if len(в.args) > 1 else Ø)
+            if isinstance(в.func, ast.Name) and ім in ВБУДОВАНІ:
+                return frozenset().union(Ø, *(т(x) for x in в.args))
+            ц = self.ціль_виклику(м, в)
+            if ц is not None:
+                п = self.пов.get(id(ц[1]), Ø)
+                return frozenset().union(*п) if isinstance(п, tuple) else п
+            return Ø
+        if isinstance(в, (ast.ListComp, ast.GeneratorExp, ast.SetComp, ast.DictComp)):
+            env2 = dict(env)
+            for г in в.generators:
+                self.звʼязати(м, г.target, т2 := self.т(м, г.iter, env2, гл + 1), env2, ітерація=True)
+            if isinstance(в, ast.DictComp):
+                return self.т(м, в.value, env2, гл + 1)
+            if isinstance(в.elt, ast.Tuple) and not isinstance(в, ast.GeneratorExp):
+                елт = [self.т(м, е, env2, гл + 1) for е in в.elt.elts]
+                return frozenset({"ряд"} | {"π@%d" % і for і, е in enumerate(елт) if "π" in е}
+                                 | {мм for е in елт for мм in е if мм != "π"})
+            return self.т(м, в.elt, env2, гл + 1)
+        if isinstance(в, ast.Dict):
+            return frozenset().union(Ø, *(т(x) for x in в.values))
+        if isinstance(в, (ast.Tuple, ast.List, ast.Set)):
+            return frozenset().union(Ø, *(т(x) for x in в.elts))
+        if isinstance(в, ast.Starred):
+            return т(в.value)
+        return Ø
+
+    def звʼязати(self, м, ціль, мітки, env, ітерація=False, значення=None, мітки_поз=None):
+        if isinstance(ціль, ast.Name):
+            if ітерація and "ряд" in мітки:
+                мітки = frozenset((мітки - {"ряд"}) | {"рядок"})
+            env[ціль.id] = env.get(ціль.id, Ø) | мітки
+        elif isinstance(ціль, (ast.Tuple, ast.List)):
+            for і, е in enumerate(ціль.elts):
+                if мітки_поз is not None and і < len(мітки_поз):
+                    мм = мітки_поз[і]
+                elif ітерація and "ряд" in мітки:
+                    мм = self.елемент(мітки, і)
+                elif "рядок" in мітки:
+                    мм = self.елемент(мітки, і)
+                else:
+                    мм = мітки
+                self.звʼязати(м, е, мм, env)
+        elif isinstance(ціль, ast.Starred):
+            self.звʼязати(м, ціль.value, мітки, env)
+
+    # ── прохід функції ──
+    def прохід(self, м, ф):
+        корінь = ф if ф is not None else м.дерево
+        env = dict(self.пар.get(id(корінь), {}))
+        вузли = self.вузли[id(корінь)]
+        for _ in range(3):
+            for в in вузли:
+                if isinstance(в, (ast.Assign, ast.AnnAssign, ast.AugAssign)) and в.value is not None:
+                    цілі = в.targets if isinstance(в, ast.Assign) else [в.target]
+                    for ц in цілі:
+                        if isinstance(ц, (ast.Tuple, ast.List)) and isinstance(в.value, (ast.Tuple, ast.List)) \
+                                and len(ц.elts) == len(в.value.elts):
+                            for е, з in zip(ц.elts, в.value.elts):
+                                self.звʼязати(м, е, self.т(м, з, env), env)
+                        elif isinstance(ц, (ast.Tuple, ast.List)) and isinstance(в.value, ast.Call) \
+                                and isinstance(self.пов.get(id((self.ціль_виклику(м, в.value) or (0, None))[1]), Ø), tuple):
+                            self.звʼязати(м, ц, Ø, env,
+                                          мітки_поз=self.пов[id(self.ціль_виклику(м, в.value)[1])])
+                        else:
+                            self.звʼязати(м, ц, self.т(м, в.value, env), env)
+                elif isinstance(в, (ast.For, ast.AsyncFor)):
+                    self.звʼязати(м, в.target, self.т(м, в.iter, env), env, ітерація=True)
+                elif isinstance(в, ast.NamedExpr):
+                    self.звʼязати(м, в.target, self.т(м, в.value, env), env)
+        self.лок[id(корінь)] = env
+        # повернення
+        if ф is not None:
+            пов = [в.value for в in вузли if isinstance(в, ast.Return) and в.value is not None]
+            if пов and all(isinstance(п, ast.Tuple) for п in пов) and len({len(п.elts) for п in пов}) == 1:
+                self.пов[id(ф)] = tuple(frozenset().union(*(self.т(м, п.elts[і], env) for п in пов))
+                                        for і in range(len(пов[0].elts)))
+            else:
+                self.пов[id(ф)] = frozenset().union(Ø, *(self.т(м, п, env) for п in пов))
+        # ключі й параметри
+        for в in вузли:
+            if isinstance(в, ast.Assign):
+                for ц in в.targets:
+                    к = ключ_рядка(ц.slice) if isinstance(ц, ast.Subscript) else None
+                    if к and ОДИНИЦЯ.search(к):
+                        self.кл[к] = self.кл.get(к, Ø) | self.т(м, в.value, env)
+            elif isinstance(в, ast.Dict):
+                for к, з in zip(в.keys, в.values):
+                    к = ключ_рядка(к)
+                    if к and ОДИНИЦЯ.search(к):
+                        self.кл[к] = self.кл.get(к, Ø) | self.т(м, з, env)
+            elif isinstance(в, ast.Call):
+                if self.нв(в) == "dict":
+                    for кл in в.keywords:
+                        if кл.arg and ОДИНИЦЯ.search(кл.arg):
+                            self.кл[кл.arg] = self.кл.get(кл.arg, Ø) | self.т(м, кл.value, env)
+                ц = self.ціль_виклику(м, в)
+                if ц is None:
+                    continue
+                д = ц[1]
+                поз = [а.arg for а in д.args.posonlyargs + д.args.args]
+                п = self.пар.setdefault(id(д), {})
+                for і, а in enumerate(в.args):
+                    if isinstance(а, ast.Starred) or і >= len(поз):
+                        continue
+                    мм = self.т(м, а, env)
+                    if мм:
+                        п[поз[і]] = п.get(поз[і], Ø) | мм
+                for кл in в.keywords:
+                    if кл.arg:
+                        мм = self.т(м, кл.value, env)
+                        if мм:
+                            п[кл.arg] = п.get(кл.arg, Ø) | мм
+
+    def обчислити(self, проходів=8):
+        for н in range(проходів):
+            знімок = (sum(len(v) for e in self.лок.values() for v in e.values()), sum(len(v) for v in self.кл.values()),
+                      sum(len(v) for e in self.пар.values() for v in e.values()))
+            for м, ф in self.функції:
+                self.прохід(м, ф)
+            нов = (sum(len(v) for e in self.лок.values() for v in e.values()), sum(len(v) for v in self.кл.values()),
+                   sum(len(v) for e in self.пар.values() for v in e.values()))
+            if нов == знімок and н:
+                return н
+        return проходів
+
+
+ПОРІВНЯННЯ = (ast.Lt, ast.LtE, ast.Gt, ast.GtE)
+
+
+def опис(вим, пох):
+    return "річ {%s}, тіло {%s}; похибка: %s" % (", ".join(sorted(вим["Р"]))[:80], ", ".join(sorted(вим["Т"]))[:80],
+                                                   "/".join("річ" if п == "Р" else "тіло" for п in sorted(пох)) or "нема")
+
+
+def стереже_виняток(м, в):
+    """Порівняння — умова `if`, чия гілка лише кидає виняток: межа області визначення даних, не відповідь."""
+    б, п = м.батько.get(в), в
+    while isinstance(б, (ast.BoolOp, ast.UnaryOp)):
+        б, п = м.батько.get(б), б
+    return isinstance(б, ast.If) and б.test is п and all(isinstance(с, ast.Raise) for с in б.body)
+
+
+СИЛА_Т = re.compile(r"^сила|сила_|strength", re.I)
+
+
+def сила_від(м, в):
+    """Порівняння вибирає силу правила: `"strong" if … else …` чи гілка, що лише пише `сила_*`."""
+    б, п = м.батько.get(в), в
+    while isinstance(б, (ast.BoolOp, ast.UnaryOp)):
+        б, п = м.батько.get(б), б
+    if isinstance(б, ast.IfExp) and б.test is п:
+        return any(isinstance(x, ast.Constant) and x.value in ("hard", "strong", "soft", "hint", "default")
+                   for x in (б.body, б.orelse))
+    if isinstance(б, ast.If) and б.test is п and б.body:
+        цілі = [ц for с in б.body if isinstance(с, (ast.Assign, ast.AugAssign))
+                for ц in (с.targets if isinstance(с, ast.Assign) else [с.target])]
+        return len(цілі) == len(б.body) and all(
+            СИЛА_Т.search(ast.unparse(ц.slice) if isinstance(ц, ast.Subscript) else ast.unparse(ц)) for ц in цілі)
+    return False
+
+
+def заява_сили(в):
+    """Виклик заяви правила з силою вироку другим аргументом: (ід, сила) чи None."""
+    if isinstance(в, ast.Call) and len(в.args) >= 2 and all(isinstance(а, ast.Constant) and isinstance(а.value, str)
+                                                          for а in в.args[:2]) \
+            and re.match(r"^[KR]-[A-Z]+-\d+", в.args[0].value) and в.args[1].value in ("hard", "strong", "soft", "hint"):
+        return в.args[0].value, в.args[1].value
+    return None
+
+
+def п6_місця(б, іншого_кореня=lambda т: None):
+    """→ місця [(файл, рядок, підпункт, текст, доказ)], не місця [(файл, рядок, текст, причина)]."""
+    місця, не = [], []
+    for м, ф in б.функції:
+        корінь = ф if ф is not None else м.дерево
+        env = б.лок.get(id(корінь), {})
+        for в in б.вузли[id(корінь)]:
+            if isinstance(в, ast.Compare) and any(isinstance(о, ПОРІВНЯННЯ) for о in в.ops):
+                оп = [б.т(м, x, env) for x in [в.left] + в.comparators]
+                мітки = frozenset().union(*оп)
+                вим, пох = сторони(мітки)
+                два = any(мм.startswith("⊕") for мм in мітки) or any(
+                    різні(оп[і], оп[j]) for і in range(len(оп)) for j in range(і + 1, len(оп)))
+                if not два:
+                    continue
+                текст = ast.unparse(в)[:70]
+                інший = іншого_кореня(текст) or (сила_від(м, в) and "Е3-сила-правила")
+                обидві = ("Р" in пох and "Т" in пох) if (вим["Р"] and вим["Т"]) else len(пох) >= 2
+                if інший:
+                    не.append((м.шлях, в.lineno, текст, "інший корінь: " + інший))
+                elif стереже_виняток(м, в):
+                    не.append((м.шлях, в.lineno, текст, "межа області визначення: гілка лише кидає виняток "
+                                                        "даних, відповіді про величину нема"))
+                elif обидві:
+                    не.append((м.шлях, в.lineno, текст, "похибку обох боків враховано"))
+                else:
+                    місця.append((м.шлях, в.lineno, "а", текст, опис(вим, пох)))
+            elif isinstance(в, ast.BinOp) and isinstance(в.op, ast.Sub):
+                л, п = б.т(м, в.left, env), б.т(м, в.right, env)
+                вл, _ = сторони(л)
+                вп, _ = сторони(п)
+                for а, ва, бб, вб in ((л, вл, п, вп), (п, вп, л, вл)):
+                    if ва["Р"] and not ва["Т"] and "π" not in а and вб["Т"] and not вб["Р"] and "π" in бб:
+                        місця.append((м.шлях, в.lineno, "б", ast.unparse(в)[:70],
+                                      "вимір речі {%s} мінус оцінка тіла через π {%s}" % (
+                                          ", ".join(sorted(ва["Р"])), ", ".join(sorted(вб["Т"])))))
+            elif isinstance(в, ast.If):
+                # (в) вирок, умова якого — лише наявність обох боків: `if річ is None or тіло is None` з виходом
+                # чи з `else`; сила вироку стоїть на різниці, похибки якої код не знає
+                нема = [б.т(м, к.left, env) for к in ast.walk(в.test) if isinstance(к, ast.Compare)
+                        and len(к.ops) == 1 and isinstance(к.ops[0], ast.Is)
+                        and isinstance(к.comparators[0], ast.Constant) and к.comparators[0].value is None]
+                if not any(різні(нема[і], нема[j]) for і in range(len(нема)) for j in range(і + 1, len(нема))):
+                    continue
+                вим, _ = сторони(frozenset().union(*нема))
+                гілки = list(в.orelse)
+                if в.body and isinstance(в.body[-1], ast.Return):
+                    бат = м.батько.get(в)
+                    for поле in ("body", "orelse"):
+                        с = getattr(бат, поле, None)
+                        if isinstance(с, list) and в in с:
+                            гілки += с[с.index(в) + 1:]
+                for с in гілки:
+                    for к in ast.walk(с):
+                        зс = заява_сили(к)
+                        if зс:
+                            місця.append((м.шлях, к.lineno, "в", "%s %s" % зс,
+                                          "вирок «%s» стоїть лише на наявності обох боків (річ {%s}, тіло {%s}): "
+                                          "умова — різниця без похибки обох" % (
+                                              зс[1], ", ".join(sorted(вим["Р"])), ", ".join(sorted(вим["Т"])))))
+    return місця, не
+
+
+НЕВІДОМО_Т = re.compile(r"unknown|невідом", re.I)
+
+
+def канон(в, присв, гл=0):
+    """Вираз з підставленими одноразовими локальними присвоєннями — та сама величина в різних функціях."""
+    class Підст(ast.NodeTransformer):
+        def visit_Name(self, н):
+            if н.id in присв and гл < 4:
+                return канон(присв[н.id], присв, гл + 1)
+            return н
+    return Підст().visit(ast.parse(ast.unparse(в), mode="eval").body)
+
+
+def п1г_місця(л, назва_виклику):
+    """п.1(г): та сама величина (однаковий вираз з тих самих полів) — одна функція зве її бік за межею, друга —
+    «невідомо». → місця [(файл, рядок, текст, доказ)], не місця [(файл, рядок, текст, причина)]."""
+    групи = {}
+    for м in л.модулі:
+        for ф in ast.walk(м.дерево):
+            if not isinstance(ф, (ast.FunctionDef, ast.AsyncFunctionDef)):
+                continue
+            присв, лік = {}, {}
+            for в in ast.walk(ф):
+                if isinstance(в, ast.Assign):
+                    for ц in в.targets:
+                        пари = zip(ц.elts, в.value.elts) if isinstance(ц, ast.Tuple) and isinstance(
+                            в.value, ast.Tuple) and len(ц.elts) == len(в.value.elts) else [(ц, в.value)]
+                        for ц1, з1 in пари:
+                            if isinstance(ц1, ast.Name):
+                                присв[ц1.id] = з1
+                                лік[ц1.id] = лік.get(ц1.id, 0) + 1
+            присв = {к: з for к, з in присв.items() if лік[к] == 1}
+            for ім, з in присв.items():
+                if not any(isinstance(к, ast.BinOp) and isinstance(к.op, (ast.Sub, ast.Div)) for к in ast.walk(з)):
+                    continue
+                к = канон(з, {і: зз for і, зз in присв.items() if і != ім})
+                if sum(isinstance(x, ast.Subscript) for x in ast.walk(к)) < 2:
+                    continue
+                групи.setdefault(ast.dump(к), []).append((м, ф, ім))
+    місця, не = [], []
+    for ключ, сайти in групи.items():
+        if len({id(ф) for _, ф, _ in сайти}) < 2:
+            continue
+        зве, невід = [], []
+        for м, ф, ім in сайти:
+            for в in ast.walk(ф):
+                if isinstance(в, ast.Compare) and any(isinstance(о, ПОРІВНЯННЯ) for о in в.ops) and any(
+                        isinstance(x, ast.Name) and x.id == ім for x in [в.left] + в.comparators) and not any(
+                        isinstance(x, ast.Constant) and x.value == 0 for x in [в.left] + в.comparators):
+                    зве.append((м, ф, в.lineno, ast.unparse(в)[:60]))
+            for с in ast.walk(ф):
+                if isinstance(с, ast.stmt) and not isinstance(с, (ast.FunctionDef, ast.If, ast.For, ast.While, ast.With,
+                                                                    ast.Try)) \
+                        and any(isinstance(x, ast.Name) and x.id == ім for x in ast.walk(с)):
+                    for x in ast.walk(с):
+                        if isinstance(x, ast.Constant) and isinstance(x.value, str) and НЕВІДОМО_Т.search(x.value):
+                            невід.append((м, ф, x.lineno, x.value[:60]))
+        if not зве or not невід or {id(ф) for _, ф, *_ in зве} == {id(ф) for _, ф, *_ in невід}:
+            continue
+        імена_зве = {ф.name for _, ф, *_ in зве}
+        for м, ф, р, т in зве:
+            if id(ф) in {id(ф2) for _, ф2, *_ in невід}:
+                continue
+            місця.append((м.шлях, р, т, "бік величини за межею тут, а %s — «невідомо» для тієї самої величини" % (
+                ", ".join(sorted({"%s:%d" % (м2.шлях.split("/")[-1], р2) for м2, _, р2, _ in невід})))))
+        for м, ф, р, т in невід:
+            місця.append((м.шлях, р, т, "бік тієї самої величини — «невідомо», а %s зве його за межею" % (
+                ", ".join(sorted({"%s:%d" % (м2.шлях.split("/")[-1], р2) for м2, _, р2, _ in зве})))))
+        # читачі відповіді, що зве бік, — не місця: самі величини не визначають
+        for м in л.модулі:
+            for в in ast.walk(м.дерево):
+                if isinstance(в, ast.Call) and назва_виклику(в) in імена_зве:
+                    не.append((м.шлях, в.lineno, ast.unparse(в)[:60], "читає відповідь «%s», величини сам не "
+                                                                      "визначає" % назва_виклику(в)))
+    return місця, не
+
+
 def лічити(корінь):
     л = Лічба(корінь)
     л.зібрати()
@@ -1493,6 +2014,20 @@ def лічити(корінь):
                 л.додати(м1.шлях, рядок, 3, "модель читає відсутність «%s» (ознака з :%d) як «не названо», а %s:%d "
                                             "рахує ознаку й з {%s}" % (в.args[0].value, р1, ім2, р2, різниця))
 
+    # ── п.6: порівняння двох боків; п.1(г): одна функція зве бік величини за межею, друга — «невідомо» ──
+    б = Боки(л, назва_виклику, визначення_в)
+    б.обчислити()
+    місця6, не6 = п6_місця(б, іншого_кореня)
+    for файл, рядок, під, текст, доказ in місця6:
+        л.додати(файл, рядок, 6, "(%s) %s — %s" % (під, текст, доказ))
+    місця1г, не1г = п1г_місця(л, назва_виклику)
+    for файл, рядок, текст, доказ in місця1г:
+        л.додати(файл, рядок, 1, "(г) %s — %s" % (текст, доказ))
+    for _, _, _, причина in не6:
+        if причина.startswith("інший корінь: "):
+            л.відкинути(причина[len("інший корінь: "):])
+    л.не_місця = sorted(set(не6 + не1г))
+
     звіт["кодувальників"] = len(л.кодувальники)
     return л, звіт
 
@@ -1514,6 +2049,20 @@ def друк(л, звіт, тихо=False, величини=False):
                                           for ф, н in sorted(за_ф.items(), key=lambda x: (-x[1], x[0]))))
     вих.append("поза класом (інший корінь, не лічено): " + (", ".join("%s — %d" % (к, н) for к, н in sorted(л.поза.items()))
                                                              or "нема"))
+    # розбивка для частин без спільних файлів: файл → пункти
+    вих.append("за файлами й пунктами:")
+    за_фп = {}
+    for (ф, р), з in л.місця.items():
+        for п in з["пункти"]:
+            за_фп.setdefault(ф, {}).setdefault(п, set()).add(р)
+    for ф, пп in sorted(за_фп.items(), key=lambda x: (-len({р for рр in x[1].values() for р in рр}), x[0])):
+        вих.append("  %s — %d: %s" % (ф, len({р for рр in пп.values() for р in рр}), ", ".join(
+            "п.%d — %d" % (п, len(рр)) for п, рр in sorted(пп.items()))))
+    не = getattr(л, "не_місця", [])
+    вих.append("не місця п.1(г) і п.6 (два боки знайдено, місцем не лічено): %d" % len(не))
+    if not тихо:
+        for ф, р, текст, причина in не:
+            вих.append("  %s:%d · %s · %s" % (ф, р, текст, причина))
     for к, з in звіт.items():
         вих.append("%s: %s" % (к, з))
     вих.append("місць: %d" % len(л.місця))
@@ -1759,6 +2308,87 @@ def склейка(а, к):
 function а(в) { return в.підпис || "безіменна"; }  // МІСЦЕ:5
 function б(в) { return в.підпис || "безіменна"; }  // МІСЦЕ:5
 ''',
+    "джерела/тіло_штучне.py": '''
+import math
+
+
+def тіло(о, зріст):
+    профіль = [(nm, зріст * 0.8, о[nm] / math.pi) for nm in о]
+    return dict(профіль=профіль, обхвати=dict(о), зріст=зріст, похибка_см=0.5)
+
+
+def плече(р, т):
+    ш = р.get("ширина_плеча_см")
+    w = next(w for nm, _, w in т["профіль"] if nm == "плечі")
+    δ = float(ш) - w  # МІСЦЕ:6
+    return δ
+
+
+def довжина(р, т):
+    надлишок = р.get("довжина_см") - т["зріст"] * 0.5
+    if надлишок > р.get("розкид_см"):  # МІСЦЕ:6
+        return 1
+    return 0
+
+
+def довжина_з_похибкою(р, т):
+    надлишок = р.get("довжина_см") - т["зріст"] * 0.5
+    if надлишок > р.get("розкид_см") + т["похибка_см"]:  # НЕ
+        return 1
+    return 0
+
+
+def межа(р, т):
+    if not (0 <= р.get("низ_см") <= т["зріст"]):  # НЕ
+        raise ValueError("поза тілом")
+    return 0
+
+
+def сила(р, т):
+    δ = р.get("довжина_см") - т["зріст"]
+    return "strong" if δ > 3 else "hint"  # НЕ
+
+
+def вирок(р, т):
+    ш = р.get("ширина_плеча_см")
+    w = next(w for nm, _, w in т["профіль"] if nm == "плечі")
+    if ш is None or w is None:
+        return [_зн("K-TST-07", "питання")]  # НЕ
+    return [_зн("K-TST-07", "strong")]  # МІСЦЕ:6
+
+
+def одна_річ(р):
+    return р.get("довжина_см") > 100  # НЕ
+
+
+def образ(о, зріст, р):
+    т = тіло(о, зріст)
+    return плече(р, т), довжина(р, т), довжина_з_похибкою(р, т), межа(р, т), сила(р, т), вирок(р, т), одна_річ(р)
+''',
+    "джерела/пара_штучна.py": '''
+C = {"перекос": 0.05}
+
+
+def ролі(о):
+    δ = (о["стегна"] - о["груди"]) / о["груди"]
+    if δ >= C["перекос"]:  # МІСЦЕ:1
+        return "низ"
+    return "нейтраль"
+
+
+def баланс(о):
+    δ = (о["стегна"] - о["груди"]) / о["груди"]
+    return dict(рядок=f"різниця {δ:.2f}", бік="невідомо")  # МІСЦЕ:1
+
+
+def операції(о):
+    return ролі(о)  # НЕ
+
+
+def інша(о):
+    д = (о["талія"] - о["груди"]) / о["груди"]
+    return "невідомо" if д is None else д  # НЕ
+''',
     "джерела/тест_штучний.py": '''
 def тест(intent="conventional"):  # НЕ
     return intent
@@ -1767,7 +2397,10 @@ def тест(intent="conventional"):  # НЕ
 
 
 def самоперевірка():
-    """Штучні випадки кожного пункту (1–5) і не-місць: переклад слова ядра, година, тривалість, те саме число різних
+    """Штучні випадки кожного пункту (1–6) і не-місць: п.6 — вимір речі мінус обхват тіла через π, надлишок проти
+    похибки лише речі, вирок на самій наявності обох боків; не місця п.6 — похибка обох боків, межа області
+    визначення (виняток), вибір сили правила, один вимір проти числа; п.1(г) — бік за межею проти «невідомо» тієї
+    самої величини, читач відповіді — не місце; ще не-місця: переклад слова ядра, година, тривалість, те саме число різних
     одиниць, сила правила, межі 0 і 1, прапор, нейтраль, заповнювач, межа з посиланням, таблиця ваг, тест."""
     import tempfile
     вих = []
