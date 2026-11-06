@@ -3389,6 +3389,15 @@ if _спільні:
     "passport_call_zero": "Call zero filled the passport without a language-model conversation turn; the model was absent or its turn fell back to main.",
     "passport_without_talk": "The seam filled the passport without a language-model conversation turn: tiles or translation without a talk.",
 })
+# Е3-одна-величина ч10 (п.2, вид 1): допуску плеча (`fit.плече_допуск` 1.5 см, «моє») джерело не дало —
+# код більше не судить, чи плече сходиться; виміряне розходження йде моделі фактом (K-FIT-01, K-OUT-41/42).
+ЗАЯВИ.update({
+    "shoulder_width_vs_body": "the item's shoulder width against her shoulder width, measured in centimetres; the "
+                              "code sets no tolerance, so judge yourself whether the difference shows and matters "
+                              "(values: item_cm — item shoulder width from the shop's size chart; body_cm — her "
+                              "shoulder width estimated from her shoulder girth; delta_cm — item minus body, "
+                              "positive = item wider)",
+})
 
 
 
