@@ -301,6 +301,7 @@ def _кандидати(т):
 # локалізації. Споживачі — повторний виклик (`помилка_формату`, англійським дротом код розкладають
 # `_ПОМИЛКИ_EN`), `прийняти_розмову.причина` і звіт власника; слова для людини дає мовна модель.
 #   empty_answer · no_json_object[(prose)] · invalid_json(line=L,col=C) · json_not_object(<тип>)
+ПРИЧИНА_НЕМАЄ_JSON = "no_json_object"   # відповідь без об'єкта JSON: одне визначення причини
 КОД_ТИПУ = {str: "string", bool: "boolean", int: "integer", float: "number",
              list: "list", tuple: "list", type(None): "null"}
 
@@ -327,7 +328,7 @@ def розбір(текст):
     # ПРОЗА ЗАМІСТЬ JSON — найчастіший провал, і він має зватись своїм кодом, а не
     # «Expecting value: line 1 column 1» від розбирача.
     if "{" not in т and not т.startswith("["):
-        return None, "no_json_object(prose)"
+        return None, ПРИЧИНА_НЕМАЄ_JSON + "(prose)"
     причина = None
     for сир in _кандидати(т):
         # ЛОВИМО ValueError, А НЕ Exception. `json.JSONDecodeError` — підклас
@@ -344,7 +345,7 @@ def розбір(текст):
         if isinstance(об, dict):
             return об, None
         return None, "json_not_object(%s)" % КОД_ТИПУ.get(type(об), type(об).__name__)
-    return None, причина or "no_json_object"
+    return None, причина or ПРИЧИНА_НЕМАЄ_JSON
 
 
 def розібрати_json(текст):

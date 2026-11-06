@@ -35,6 +35,7 @@ import statements as _СТ
 import json as _json
 
 import схема_відповіді as _СВ
+import протокол as _ПР
 import збирач_промптів as _ЗП
 import спільні_вимоги as _ВИМ
 import внутрішня_мова as _ВМ
@@ -49,6 +50,8 @@ import міст_основи as _МО
 import пакет_моделі as _ПМ
 import сценарій as _СЦ
 import фід_каталог as _ФК
+
+ПРИЧИНА_НЕМАЄ_МОДЕЛІ = "no_model"   # чому стилістка не обрала: моделі не було (одне визначення причини)
 import композитор_придатні as _КП
 import фід_фото as _ФФ
 import реєстр_правил as _РЕЄСТР
@@ -611,7 +614,7 @@ def прийняти(вхід, відповідь=None, без_моделі=None
         if not isinstance(об, dict) and промпт:
             return dict(промпт_повтору=схема.промпт_повтору(промпт, чому_не), причина=чому_не)
         if not isinstance(об, dict):
-            без_моделі, чому_код = ("unreadable(%s)" % (чому_не or "no_json_object"),
+            без_моделі, чому_код = ("unreadable(%s)" % (чому_не or _ПР.ПРИЧИНА_НЕМАЄ_JSON),
                                     "unreadable")
     об = об if isinstance(об, dict) else {}
     обрала, причини = {}, {}
@@ -696,7 +699,7 @@ def повідомлення(г, о, гама, обрала, причини, л�
             заяви += [_ВМ.заява("stylist_chose_scheme", scheme=назва, part="scheme", rank=dict(position=г["ранг"], rare=not г["радить"]))] + \
                      [_ВМ.заява(к, part="scheme", choice="stylist", source="model", rank=dict(position=г["ранг"], rare=not г["радить"])) for к in причини.get("scheme") or []]
         else:
-            заяви += [_ВМ.заява("stylist_did_not_choose", part="scheme", why=(чому_код or "no_model")), _ВМ.заява("first_scheme_of_advice", scheme=назва, part="scheme", rank=dict(position=г["ранг"], rare=not г["радить"]))]
+            заяви += [_ВМ.заява("stylist_did_not_choose", part="scheme", why=(чому_код or ПРИЧИНА_НЕМАЄ_МОДЕЛІ)), _ВМ.заява("first_scheme_of_advice", scheme=назва, part="scheme", rank=dict(position=г["ранг"], rare=not г["радить"]))]
     if "base" in лишила:
         if обрала.get("base") == ХТО_СТИЛІСТКА and о is not None:
             з = dict(base=о["назва"])
@@ -705,7 +708,7 @@ def повідомлення(г, о, гама, обрала, причини, л�
             заяви += [_ВМ.заява("stylist_chose_base", part="base", **з)] + \
                      [_ВМ.заява(к, part="base", choice="stylist", source="model") for к in причини.get("base") or []]
         else:
-            заяви += [_ВМ.заява("stylist_did_not_choose", part="base", why=(чому_код or "no_model"))] + [_ВМ.заява("base_from_her_features", part="base")]
+            заяви += [_ВМ.заява("stylist_did_not_choose", part="base", why=(чому_код or ПРИЧИНА_НЕМАЄ_МОДЕЛІ))] + [_ВМ.заява("base_from_her_features", part="base")]
     if "saturation" in лишила and обрала.get("saturation") == ХТО_СТИЛІСТКА and (о is None or о["ахром"]):
         заяви.append(_ВМ.заява("stylist_chose_saturation", part="saturation", saturation=ГАМА_КОД.get(гама, гама)))
     if not заяви:
