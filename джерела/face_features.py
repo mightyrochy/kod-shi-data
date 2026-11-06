@@ -63,7 +63,8 @@ def ознаки(F, source=None):
         if риса.get("hex") and any(k not in риса for k in ("L", "a", "b", "C", "h")):
             import colorspace
             try:
-                поля = colorspace.поля_риси(hx(риса["hex"]), "очі" if імʼя.startswith("очі") else імʼя)
+                поля = colorspace.поля_риси(hx(риса["hex"]), "очі" if імʼя.startswith("очі") else імʼя,
+                                            довіра=colorspace.довіра_рис((F.get("_meta") or {}).get("protocol")))
             except ValueError:
                 риса["помилка_кольору"] = "hex риси не читається як #rrggbb"
             else:
