@@ -298,7 +298,7 @@ def аркуш(вибрані):
     return ("<!doctype html><meta charset='utf-8'><style>body{font:13px sans-serif;margin:12px;background:#fff}"
             ".с{display:grid;grid-template-columns:repeat(5,1fr);gap:10px}.к{border:1px solid #ccc;padding:6px}"
             ".п{height:90px;border:1px solid #888}.т{margin-top:4px;line-height:1.35}.д{color:#666;font-size:11px}"
-            "</style><h3>Граничні свотчі сімей кольору (крок 05.11, модуль колір_тон)</h3>"
+            "</style><h3>Граничні свотчі сімей кольору (третя доробка 06.11, модуль колір_тон)</h3>"
             "<p>Вердикт — сім'я чи пара (колір на межі належить обом). Свотч пройдено, коли вердикт містить сім'ю, "
             "яку бачить око, і не містить тієї, якої око не бачить; «невідомо» — хибна відмова, якщо сім'я "
             "очевидна.</p>"
