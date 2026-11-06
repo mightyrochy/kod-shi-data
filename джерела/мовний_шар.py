@@ -2492,6 +2492,9 @@ def паспорт_з_шару(внутрішня, сценарій, вето_ч
             відкинуто.append(dict(частина="invite", чому="no_invite", теми=[], дозволені=list(дозволені)))
         # знята за формою порада — на повторний запит (`ремонт_поради`)
         ремонт = ремонт_поради(відкинуто, обовʼязкове, дозволені, частини)
+        if ремонт:
+            # запасний хід, коли повтор не дасть поради: показ бере його й тоді, коли міст чи модель зламались
+            ремонт["запасна"] = запасна_порада(дозволені, п["поради_дані"])
         # ЩО КОД НЕ ЗАПИСАВ: поле ходу, яке сторож зняв (`вигадки`), — кодом поля. Репліка моделі
         # про нього («Я врахую») розходиться з паспортом, тож показ тоді кличе перекладача репліки з тим,
         # що код справді записав, і цим переліком (`not_recorded`), а не показує її текст.
@@ -2744,6 +2747,15 @@ def _репліка_без_шкали(репліка):
     return dict(репліка, recorded=з)
 
 
+def _назва_поля(опис):
+    """Опис поля сценарію → лише що це за поле, без правил заповнення: «формат: правила; приклади (…)» → «формат».
+
+    Перекладачці `not_recorded` треба сказати, ЩО не записано; правила заповнення поля («yes — це названо», «не
+    виводити з температури», «шкала коду 1–10») — вимоги до мовної моделі розмови, яка поле заповнює: тут вони лише
+    повторювали її промпт і сперечались із «без чисел, рівнів і шкал» цього ж промпту (Е2-промпти, п.1, п.4)."""
+    return re.split(r":|;| — ", re.sub(r" ?\([^()]*\)", "", опис), maxsplit=1)[0].rstrip(" ,.")
+
+
 def промпт_репліки(репліка):
     """Промпт вихідного перекладача репліки: роль, рядки лише тих полів, що є в `репліка`, межа, одне поле `text`.
 
@@ -2791,7 +2803,7 @@ def промпт_репліки(репліка):
         ("not_recorded", "- not_recorded — %s: коротко й прямо скажи, що цього ти не записала, і що вона може "
          "написати це ще раз своїми словами; не кажи, що врахуєш, і не питай. Коди: %s." % (
              р["not_recorded"]["description"],
-             "; ".join("%s — %s" % (о["const"], о["description"]) for о in р["not_recorded"]["items"]["oneOf"]
+             "; ".join("%s — %s" % (о["const"], _назва_поля(о["description"])) for о in р["not_recorded"]["items"]["oneOf"]
                        if о["const"] in (вх.get("not_recorded") or ()))))]
     return "\n".join([
         ПРОМПТ_РЕПЛІКИ, "",
@@ -3338,9 +3350,10 @@ _ПОЛЯ_EN = {
     # Пора року рукам — з дати показу, бо місяця події паспорт не ніс: новорічний корпоратив, про
     # який вона пише 10.10, руки бачили осінню подією. Місяць — розуміння її слів моделлю (п.14), код слів не читає
     # Свята-приклади (новорічна вечірка й корпоратив — свята сцен) — тепер родом випадку
-    "month": "the month of the event, only when her words name it: a date or a month, or a holiday that falls in "
-             "one month — that month, with that word as quote; a weekday, «today», «tomorrow» or an event of any "
-             "month — absent",
+    # Що дає місяць (дата, місяць, свято одного місяця — з цим словом цитатою), каже правило події (R6): там його
+    # модель і заповнює; тут — лише чого місяцем не буває.
+    "month": "the month of the event, only when her words date it (the event rule); a weekday, «today», «tomorrow» "
+             "or an event of any month — absent",
     "weather_band": "the weather band, from the degrees she names (digits or words) or her feeling of "
                     "the weather; return only its code, never degrees. K-WEA-01 with the P-5 split: "
                     "deep_frost: below -8 C; frost: -8 to below 2 C; cold: 2 to below 10 C; "
@@ -3379,7 +3392,9 @@ _ПОЛЯ_EN = {
     # goal» модель читала як «goal не пиши»; тепер опис statement сам велить писати й goal express
     # 6188: «intent, не лише formality» (R2) — тепер тут; переклади фраз сцен (без питань до
     # неї, старші схвалять, яскрава) зняті — лишився рід: чужий суд, який вона хоче пройти; вразити, вирізнитись
-    "intent": "what matters most to her (goal is a separate field with its own codes); her words about it are "
+    # «goal is a separate field with its own codes» знято: це вже каже опис `goal` («only its own codes, never an intent
+    # code»), Е2-промпти п.1
+    "intent": "what matters most to her; her words about it are "
               "intent, also when they say how dressy the outing is (formality is then set besides): "
               + _тлумачення_кодів_en("intent", {
                   "comfort_first": "comfort and freedom of movement",
@@ -3400,9 +3415,11 @@ _ПОЛЯ_EN = {
     # «йога зранку, потім кава з подругою» — `goal: flatter` з уривком «потім кава з
     # подругою». Уривок дослівно її, тож сторож (`тримається`, підрядок) поле тримає: чи мовить уривок про увагу,
     # код не судить (п.12). Мета — лише з її слів про увагу до образу; типове «звично» показ ставить сам
+    # «statement дає й goal express» — раз, в описі коду statement (intent), де модель його й виявила (5/5 → треба
+    # express); тут повтор знято (Е2-промпти, п.1)
     "goal": "how much attention she wants for this look — only its own codes, never an intent code: conceal — "
             "quiet, no attention to her look; flatter — usual, to suit her; express — noticeable, attention to "
-            "her look: the words that give intent statement give goal express too. A body zone she wants to hide "
+            "her look. A body zone she wants to hide "
             "is goal_zones, not conceal. Passing the judgement of others is not conceal: it is intent "
             "context_optimal. Only on her words about attention to her look, never on her words about the "
             "outing itself and never as a default",
@@ -3553,8 +3570,7 @@ _ПОТРЕБИ_EN = {
     # need=look у 2 з 2 сідів; стилістка відповідала на непитання й вигадувала «куртку» і «Мінськ»
     "look": "her new message itself asks to judge her items or her look (how they look, whether they go "
             "together or suit her) or asks why a particular item or look was chosen: you answer it in your "
-            "next message, after the app has checked her items and looks — only that check makes the answer "
-            "sure. Telling about her outing, its weather and her wishes or limits for the look asks nothing: "
+            "next message, after the app has checked her items and looks. Telling about her outing, its weather and her wishes or limits for the look asks nothing: "
             "that is none",
     "build": "she asks to put the looks together now: the app does it",
 }
@@ -3589,10 +3605,10 @@ def _коди_розмови():
     формою значення, ознаки речі, теми поради з умовою, обовʼязкові питання, коди `need`."""
     поля = {ім: с for ім, с in _ВМ.СЦЕНАРІЙ.items() if ім not in _БЕЗ_У_РОЗМОВІ}
     # «"quote": "\"йога…\", \"value\": "everyday"» — цитата в екранованих лапках
-    # ламала JSON, хід ішов шляхом main (виклик 0), і нагода губилась; промпт сам несе лапки екранованими
+    # ламала JSON, хід ішов шляхом main (виклик 0), і нагода губилась; промпт сам несе лапки екранованими.
+    # «Quote copies her letters» — раз, у правилі цитати (R4); «only that check makes the answer sure» — раз, у R10.
     р = ["Coded and numeric fields: {\"quote\": her exact fragment as a plain JSON string, "
-         "\"value\": its value}. Quote copies her letters, without extra quotation marks or "
-         "backslashes around them:"]
+         "\"value\": its value}, without extra quotation marks or backslashes around the quote:"]
     for ім, с in поля.items():
         if _група(ім, с) == "пари":
             тип = _довідник_en(ім) if ім in _ГРУПИ_ДОВІДНИКА else _тип_en(с)
@@ -3615,20 +3631,19 @@ def _коди_розмови():
             # «Весілля подруги в суботу» → celebration, і правила гості весілля
             # (`case.reserved_colour`) не мали звідки взятись; рід «свято» про весілля мовчав
             # «never celebration» — тепер в описі самої нагоди, куди модель дивиться
-            р.append("  · wedding_guest — someone else's wedding, she is a guest, at any time of day")
+            # «someone else's wedding» — раз, в описі нагоди (вище); тут лише що до нього додає цей код
+            р.append("  · wedding_guest — she is a guest, at any time of day")
             # Спорт рухом і спорт нагодою — незалежні канали.
             # Модель називає рід обраної частини через occasion_part; код судить цю пару.
             # «спорт деінде в дні — movement sport» — дослівно опис `movement`; тут лише нагода
             р.append("  · sport — only when this outfit is for doing the sport (occasion_part sport); otherwise "
                      "occasion is the kind of the selected part, never sport")
     р.append("Items — lists of objects; every item she names goes into one of them, none is left out; each "
-             "object has \"quote\" — the fragment of her words about this item, copied letter for letter — and "
+             "object has \"quote\" — the fragment of her words about this item — and "
              "only the attributes she named:")
     for ім in _РЕЧІ_З_ЦИТАТОЮ:
         if ім != "own_items":
             р.append("- %s — %s" % (ім, _ПОЛЯ_EN[ім]))
-            if ім == "vetoes":
-                р.append("  · limit axes — " + ", ".join(_ДМ._ОСІ_СЛОВА_МЕЖІ))
     р += _ознаки_речі_en()
     # «одягну своє взуття з фото» — 3 з 3 сідів поле `shoes{…}` поза переліком із
     # вигаданими `ankle_boots, black` (на фото — біла сандаля): поле її речей одне, ознаки речі з фото — лише її слова
@@ -3699,9 +3714,7 @@ _ПРАВИЛО_ОШАТНОСТІ = (
     "one step of the ladder in \"codes\", and \"formality_branch\" with it when the step has a business and a "
     "social branch, found by one rule for every outing, in this order. (1) A written "
     "requirement — a dress code on the invitation, a written rule of the place — gives the step whose clothes "
-    "it asks for, and nothing below moves it. (2) Otherwise, the step whose standard holds at this outing: "
-    "only her own, the street's, the usual one of the place or the people she joins, the hosts' who mark an "
-    "occasion with a reception, a strict one the place keeps. (3) One step up when her look there is judged "
+    "it asks for, and nothing below moves it. (2) Otherwise, the step whose standard in the ladder holds at this outing. (3) One step up when her look there is judged "
     "on behalf of more than herself: she is evaluated (a job interview, an exam), or she represents others or "
     "the occasion (she presents, gives a speech or a toast, leads the talks, is the hostess, the one "
     "celebrated or the closest family of the one celebrated) — never above formal. (4) One step up or down "
@@ -3718,7 +3731,7 @@ _ПРАВИЛО_ОШАТНОСТІ = (
 # «її межа сильніша за норму» — тепер в описі `open_zones`.
 _ПРАВИЛО_НОРМИ = (
     "\"reserved_colour\" and \"open_zones\" are, like formality, your understanding of the event's "
-    "norm; no such norm — leave them absent: the looks are put together anyway.")
+    "norm; no such norm — leave them absent.")
 
 _ПРАВИЛО_ПЛИТОК = (
     "A tile-only turn takes its event norms from \"chosen\" and the passport.")
@@ -3735,11 +3748,11 @@ _ПРАВИЛО_ПЛИТОК = (
     "\"conversation\", \"earlier_conversation\" and \"passport\" and write the result into \"update\".",
     # МОВА-1 (рішення власника 02.10): «люди не завжди розписують нагоду дуже зрозуміло, особливо коли
     # надиктовують голосом» — модель тлумачить; цитата лишається дослівною (сторож `тримається`).
-    # «пора дня без годинника — part_of_day» — дослівно описи `hour` і `part_of_day`; тут знято.
+    # «пора дня без годинника — part_of_day» — дослівно описи `hour` і `part_of_day`; тут знято; «a named time gives the
+    # part of the day» — те саме, що опис `part_of_day` («part of the day she names or of her time»), знято теж.
     "Her message may be dictated by voice or written loosely: no punctuation, fillers, slang, dialect or "
     "surzhyk, irony, times and numbers in words, a correction in mid-sentence. Read what she means: what she "
-    "corrects herself to replaces what she corrected, irony is not a wish, a named time gives the part of the day. "
-    "\"quote\" still copies her letters exactly as written.",
+    "corrects herself to replaces what she corrected, irony is not a wish.",
     # Шов доливає дельту поверх паспорта досі (`паспорт_з_шару`); `retract` знімає бажання й межі.
     # МОВА-ХІД-ПОЛЯ: перший хід MamayLM клав на фразу одне поле — «мінус
     # п'ятнадцять і сніг» лише `weather_feel: frost` (0 з 4 сідів з `temperature_c` і `precipitation`),
@@ -3769,12 +3782,12 @@ _ПРАВИЛО_ПЛИТОК = (
     # «Новорічна вечірка в ресторані» з п'ятьма копіями «місце в назві події» лишився без `place`. Модель дивиться на
     # опис, коли заповнює поле, тож думка — раз, там (`_ПОЛЯ_EN`: occasion, place, movement, precipitation, intent, wants,
     # open_zones, goal_zones); тут — лише як іти листом. «лише поля з її слів» сперечалось з «formality
-    # завжди» і нормами події (R8, R9) — тепер виняток названо тут же.
+    # завжди» і нормами події (R8, R9) — тепер виняток названо тут же; що вони — її розуміння події, кажуть самі R8 і R9.
     "\"update\" holds every field her new message fills or changes, and only those, except formality, "
-    "reserved_colour and open_zones — your understanding of the event, without quote (their own rules). Go "
+    "reserved_colour and open_zones, without quote (their own rules). Go "
     "through her message part by part: one phrase often fills several fields, and the same fragment of her words "
     "may be the quote of each of them. A new value replaces the old one; a wish or a limit from before that she "
-    "takes back goes into \"retract\". Do not repeat fields that do not change, except formality.",
+    "takes back goes into \"retract\".",
     # НП-в5: плитка без розмови — хід без її листа; паспорт тоді потребує числа моделі.
     "When her new message is unknown: " + _ПРАВИЛО_ПЛИТОК + " \"need\" is none and \"text\" is one short word.",
     # Сторож М-1 (`тримається`): поле без дослівного уривка її слів код не бере — тепер уривок
@@ -3802,9 +3815,10 @@ _ПРАВИЛО_ПЛИТОК = (
     # ніг» (ДО — 0 з 5), а сід 4 ще й `open_zones: one` («Залишимо одну відкриту зону»). Загальне речення назад не йде (воно
     # сперечалось з formality й нормами; «Do not infer one field from another» лишилось лише в промпті
     # перекладачок входу, `_ОПОРА_EN`) — R5 каже саме цю межу: зона мети — лише названа нею (п.9: «відвести погляд від
-    # зони» — лише її вибір), а межа без зони — кількість відкритих зон.
-    "Values are only the codes and forms from \"codes\". goal_zones holds only a body zone her words name; her "
-    "limit on showing her body that names no zone is open_zones none, never a zone of goal_zones.",
+    # зони» — лише її вибір), а межа без зони — кількість відкритих зон. Цю межу тепер кажуть описи полів, які модель
+    # читає, коли їх заповнює (`goal_zones`: «Never for how much skin she shows: that is open_zones»; `open_zones`: «Her
+    # own limit on what she shows … sets it too»), тож другий раз тут її знято (Е2-промпти, п.1).
+    "Values are only the codes and forms from \"codes\".",
     # М-1 В-1 і Ч-5: назва події — опора і для `event`, і для коду нагоди чи місця; МОВА-1 (02.10): подія
     # без свого підпису — код із тими самими правилами, суть — у `stylist_note`.
     # «Різдвяна вечеря», «новорічний корпоратив», «Новорічна
@@ -3845,7 +3859,7 @@ _ПРАВИЛО_ПЛИТОК = (
     # «You are the stylist» поруч із «only the code with the stylist answers» —
     # 25 з 39 ходів `need=look` передавали її «стилістові» третьою особою; жінка ж чує одну стилістку.
     # МОВА-ХІД-ТОНШЕ: «відповідай сама лише певне без її речей» — дослівно опис `none` у «codes».
-    "\"need\" says who answers her this turn (see \"codes\"). When \"need\" is not \"none\", \"text\" neither "
+    "When \"need\" (see \"codes\") is not \"none\", \"text\" neither "
     "answers nor "
     "judges her question — you have not seen the check yet — and only says what you recorded. Whether an "
     "item, a material, a colour or a cut suits the weather, the event or her is never sure without that "
@@ -3853,7 +3867,7 @@ _ПРАВИЛО_ПЛИТОК = (
     # Е2-усе-з-розмови (рішення 05.11): функцію продукту з розмови робить код за викликом моделі; що зроблено, каже
     # картка результату під реплікою, а не слова моделі, яка результату ще не бачила.
     "\"tool\" is a call of one tool from \"codes\" and only when her new message asks the app to do it; else "
-    "leave it absent. \"text\" never says it is done: the app does it and shows the result under your reply.",
+    "leave it absent. \"text\" never says it is done.",
     # Т-18 і п.9: питання до неї — лише через `ask` і `invite`, які судить код (`суд_частин`).
     # «your answer» модель додавала й тоді, коли вона нічого не питала, — порадою від себе.
     # «invites her to tell nothing» поруч із «тему поради вона не бачить» MamayLM читала як
@@ -3868,8 +3882,8 @@ _ПРАВИЛО_ПЛИТОК = (
     # «Whatever you want her to tell goes into invite» робило з `invite` канал того, що хоче знати
     # модель (`invite_topics: [occasion, …]` 3 з 3 у К7), а не поради зі списку тем.
     # МОВА-ХІД-ТОНШЕ: форму речення {about, says} каже `answer_schema` (`СКЕЛЕТ_РОЗМОВИ`) — тут лише те,
-    # що з нею робить код.
-    "The advice topics are offered in \"invite\", never in \"text\".",
+    # що з нею робить код. «The advice topics are offered in "invite", never in "text"» знято (Е2-промпти): що несе
+    # `text`, R12 перелічує вичерпно, а теми поради — лише `invite` (R16).
     # НГ-4, живий стенд 01.10: «записала це в твій паспорт» (слово системи, не її) і «врахую, що образ
     # має бути стриманим перед керівництвом» — аудиторію й частини дня код ще не читає (НГ-9, НГ-12),
     # тож обіцянка була б неправдою; що код зробить із почутим, вирішує код, а не модель розмови.
@@ -3963,6 +3977,12 @@ import схема_відповіді as _СВ_М
                                            "last messages among them, cut short",
                    як="background only: do not quote them as her exact words"),
         _ЗП_Р.Поле("conversation", "the last turns before her new message: \"She:\" — her, \"You:\" — you"),
+        # Е2-усе-з-розмови: збережені сценарії — ід для інструментів сценаріїв (`conversation_tools.ПЕРЕЛІКИ`); назва —
+        # її ввід, як є; поля нема, коли збережених нема; код причини — коли не прочитались.
+        _ЗП_Р.Поле("saved_cases", "her saved cases: \"id\", \"name\" — the name she gave it, \"case\" — what it is "
+                                  "about, \"date\", \"open\" — the case open now; a reason code instead of the list "
+                                  "when they could not be read",
+                   як="use an \"id\" from here as the argument of a tool that takes one"),
         # Т-08: розмова оновлює той самий паспорт — модель бачить його кодами.
         _ВИМ.поле("passport"),
         # K-IO-02: плитки — друге джерело полів; її слово сильніше (п.9).
@@ -4331,6 +4351,7 @@ def промпт_розмови(d):
     раніше = {"turns": раніше["ходів"], "her_messages": раніше["її_слова"]} if раніше else None
     дані = {"profile": профіль_кодами(d.get("профіль") or {}),
             "earlier_conversation": раніше, "conversation": репліки,
+            "saved_cases": _ІНСТР.переліки_промпту(d).get("saved_cases"),
             "passport": паспорт_кодами(паспорт), "chosen": плитки_кодами(d.get("сценарій"), паспорт),
             # Тема поради `occasion` стояла в `advice_topics_if` поруч із
             # `required: [occasion]` — те саме питання двома каналами, і модель ставила його в `invite`. Код
@@ -5105,7 +5126,7 @@ def суд_частин(частини, дозволені, обовʼязков
 # (п.12): запрошення або йде цілим, або не йде, — тож знята порада губилась на цьому ході.
 # ЩО СТАЛО. Коли вада — у самій формі поради, а обовʼязкового нема й дозволені теми є, показ кличе мовну модель
 # ще раз малою задачею (`ПОРАДА`): дозволені теми з описом, вада кодом і знята порада. Відповідь судить той
-# самий `суд_частин`; не пройшла — поради на цьому ході нема, як доти (повтору повтору нема).
+# самий `суд_частин`; не пройшла — запасна порада коду за шаблоном (`запасна_порада`), повтору повтору нема.
 # `required_this_turn` не ремонтується: поруч з обовʼязковим питанням порада — неправда в одній репліці (Ч-5).
 ВАДИ_ПОРАДИ_EN = {
     "too_many_topics": "it was about more than three topics",
@@ -5125,6 +5146,25 @@ def ремонт_поради(відкинуто, обовʼязкове, доз
     if обовʼязкове or not дозволені or not р or р.get("чому") not in ВАДИ_ПОРАДИ_EN:
         return None
     return dict(вада=р["чому"], дозволені=list(дозволені), запрошення=str((частини or {}).get("invite") or ""))
+
+
+# ── ЗАПАСНА ПОРАДА: ЗАЯВА КОДУ ЗА ШАБЛОНОМ ПІСЛЯ НЕВДАЛОГО ПОВТОРУ ────────────────────────
+# ЩО БУЛО. Повтор поради (`ремонт_поради` → `порадоюП`) не пройшов суд п.9 чи не відбувся (збій моста, моделі),
+# і поради на ході не було: лише рядок `ремонт_поради` у записі ходу. Теми ж рахує код (`теми_дозволені`):
+# живі 01.11 (рядки 9860, 10082) — `поради_дані=[]` після ремонту з двома реченнями, жінка поради п.9 не бачила.
+# ЩО СТАЛО (Е2-межі п.3 класу, рішення менеджера 30.10). Що код знає, жінка отримує заявою коду за шаблоном:
+# до `ПОРАД_ЗА_ХІД_МАКС` дозволених тем порядком пріоритету `порада_коду`, ще не запропонованих, — кодами
+# `advice_topic`; речення складає показ сталим написом (`показ/мовний_шар.js: порадаШаблономП`, п.12), а теми
+# лягають у `поради_дані`, як тоді, коли пораду показала модель (повтору після ігнорування нема). Код слів не пише й
+# не читає; тем, яких код не дозволяє, шаблон не додає.
+def запасна_порада(дозволені, дані=()):
+    """Запасний хід поради: dict(теми=[коди advice_topic], поради_дані=[ключі ядра]) або None — тем нема."""
+    дані = list(дані or ())
+    теми = [т for т in dict.fromkeys(дозволені or ()) if _ВМ.ключ("advice_topic", т)
+            and _ВМ.ключ("advice_topic", т) not in дані][:_ПН.ПОРАД_ЗА_ХІД_МАКС]
+    if not теми:
+        return None
+    return dict(теми=теми, поради_дані=дані + [_ВМ.ключ("advice_topic", т) for т in теми])
 
 
 ПОРАДА = _ЗП_Р.Оголошення(
@@ -5181,7 +5221,8 @@ def прийняти_пораду(відповідь, ремонт, паспор
     """Відповідь повторного запиту → dict(текст, теми_поради, запрошення, запрошення_питанням, відкинуто, паспорт).
 
     Суд — той самий `суд_частин` (дозволені — з `ремонт`, обовʼязкового нема); `текст` — бульбашка ходу після
-    суду, порада стає за нею окремим реченням. Показані теми лягають у `поради_дані` паспорта, як на ході."""
+    суду, порада стає за нею окремим реченням. Показані теми лягають у `поради_дані` паспорта, як на ході.
+    Повтор не дав поради — `порада_шаблоном`: теми запасного ходу коду (`запасна_порада`), речення — показу."""
     р = ремонт if isinstance(ремонт, dict) else {}
     п = dict(паспорт) if isinstance(паспорт, dict) else {}
     об, _ = _обʼєкт(відповідь)
@@ -5198,9 +5239,14 @@ def прийняти_пораду(відповідь, ремонт, паспор
         відкинуто.append(dict(частина="invite", чому="no_invite_text", теми=[]))
     п["поради_дані"] = дані + [к for к in dict.fromkeys(_ВМ.ключ("advice_topic", т) for т in показані)
                                if к and к not in дані]
+    # повтор не дав поради — запасний хід коду: теми шаблоном показу, а не втрата з рядком звіту
+    запасна = None if показані else запасна_порада(р.get("дозволені"), дані)
+    if запасна:
+        п["поради_дані"] = запасна["поради_дані"]
     return dict(текст=_бульбашка([т for т in (текст, запрошення) if т]) if показані else (текст or ""),
-                теми_поради=показані, запрошення=запрошення if показані else "", запрошення_питанням=питанням,
-                відкинуто=відкинуто, паспорт=п)
+                теми_поради=показані or (запасна or {}).get("теми", []), запрошення=запрошення if показані else "",
+                запрошення_питанням=питанням, відкинуто=відкинуто, паспорт=п,
+                **({"порада_шаблоном": запасна["теми"]} if запасна else {}))
 
 
 # ══ ЕНДПОЙНТ ════════════════════════════════════════════════════════════════════
@@ -5247,6 +5293,8 @@ def мова(вхід):
             плитки = хід_плиток(d)
             читати = прийняти_хід_плиток if плитки else прийняти_розмову
             р = читати(d["відповідь_моделі"])
+            # ід запису в аргументі інструмента — з переліку, з яким модель бачила хід (`conversation_tools`)
+            р = _ІНСТР.звірити_переліки(р, d)
             сирий, _ = _обʼєкт(d["відповідь_моделі"])
             оновлення = сирий.get("update") if isinstance(сирий, dict) else {}
             оновлення = оновлення if isinstance(оновлення, dict) else {}

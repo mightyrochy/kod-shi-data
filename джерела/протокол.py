@@ -1521,7 +1521,7 @@ _КОДИ_ВМ = lambda поле: слово(*_ВМ.ТАБЛИЦЯ[поле])
                "duration_h": ЧИСЛО,
                "season": _КОДИ_ВМ("season"), "season_source": ПОХОДЖЕННЯ_ПОЛЯ,
                "weather_band": _КОДИ_ВМ("weather_band"), "precipitation": _КОДИ_ВМ("precipitation"),
-               "wind_ms": ЧИСЛО, "wind": обʼєкт({"free_text": РЯДОК, "lang": РЯДОК}),
+               "wind_band": _КОДИ_ВМ("wind_band"),
                "direct_sun": ЛОГІЧНЕ, "road_salt": ЛОГІЧНЕ,
                "host_context": ЛОГІЧНЕ, "creative_environment": ЛОГІЧНЕ,
                # години день не несе — лише частину дня від мовної моделі (корінь Е2-частина-дня, крок 2)
