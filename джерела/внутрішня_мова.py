@@ -1553,6 +1553,23 @@ _МІСЦЯ_ОПЦІЙ = "where it is worn"
                                             "there is no waist and the contour leads nowhere",
     "claim_contour_several_flares": "the contour leaves the body in several places, so no single line is "
                                     "visible (values: count — in how many places)",
+    # ── Е3-одна-величина ч9 (п.2, 06.11): межі силуету без джерела знято — виміряне число йде фактом ──
+    # Код не судить: межі «талія створена», «колона», «окремий відліт», «бік перекосу» джерела не дають
+    # (або похибку виміру не пораховано); стилістка судить сама з цих чисел (власник 01.10).
+    "measured_waist_ease_and_contour": "measured, not judged: the outfit has less ease at the waist than at the bust "
+                                       "and hips by waist_intake (share of body width; negative — more ease at the "
+                                       "waist), and its contour width over the dressed levels spreads by "
+                                       "contour_spread ((max − min) / mean); whether this makes a waist, a column or "
+                                       "neither, judge yourself (values: waist_intake, contour_spread)",
+    "measured_contour_widths": "measured, not judged: the outfit contour from the shoulders down — at each body "
+                               "level the outfit width next to her own body width, in cm; how many separate "
+                               "flares it reads as, judge yourself (values: contour — [level, outfit_cm, body_cm])",
+    "measured_body_profile_spread": "measured, not judged: her own body width below the shoulders (bust, waist, "
+                                    "hips) spreads by spread ((max − min) / mean); whether a second flare is lost "
+                                    "in it, judge yourself (values: spread)",
+    "pair_side_unknown": "her top and hip girths are measured once each, so the error of their difference is "
+                         "unknown and the code does not say which half is wider; the girths are facts (values: "
+                         "top_cm, hips_cm, difference_pct)",
     "claim_zone_clinged": "the item clings tightly to this part of the body where it would be better for it "
                           "to skim (values: level — body level code)",
     # «10 а»: колона в один тон при меті `taller` — механізм, а не пласкість.
