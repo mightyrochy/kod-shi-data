@@ -77,8 +77,34 @@ class ПеревіркаПлану(unittest.TestCase):
         self.assertEqual(результат.returncode, 0, результат.stderr)
         self.assertEqual(json.loads(результат.stdout)["ROZMOVA"], str(сцена.КОРІНЬ / "аудит/перевірки/rozbir_0210/R_zhyvit.json"))
         результат = self.запуск({"ж4_робота": [{"pr": 3, "question": "п → повне, ROZMOVA=R_zhyvit.json → ДО"}]})
-        self.assertIn("ВІДМОВА СЦЕНИ ж4_робота: Сцена ж4_робота: ROZMOVA=R_zhyvit.json — файлу нема", результат.stderr)
+        self.assertIn("ВІДМОВА СЦЕНИ ж4_робота: Сцена ж4_робота: ROZMOVA=R_zhyvit.json — нема файлу", результат.stderr)
         self.assertEqual(результат.stdout, "")
+
+    def test_присвоєння_змінних_у_режимі(self):
+        """Присвоєння змінних у формах, яких розбір раніше не брав, — не довільний текст: «+ FOTO=1», змінна словами
+        («приміряння», «сід 3») і «ЗМІННА=значення і ЗМІННА з реєстру»; решта тексту поряд лишається відмовою."""
+        вхід = сцена.вхід_реєстру("ж1_оціни_образ_6б")
+        змінні = сцена.змінні_режиму("ж1_оціни_образ_6б", "повне +фото, FOTO=1, OTSINKA=1; сцени стенда 6 і 6б, оцінка та приміряння", вхід)
+        self.assertEqual((змінні["PRYMIRKA"], змінні["FOTO"], "OTSINKA" in змінні), ("1", "1", False))
+        self.assertEqual(сцена.змінні_режиму("ж4_робота", "повне + FOTO=1", "")["FOTO"], "1")
+        self.assertEqual(сцена.змінні_режиму("ж4_робота", "повне, OTSINKA=0, сід 3", "")["SEED"], "3")
+        вхід = сцена.вхід_реєстру("ж1_робота_блуза_фото")
+        сцена.змінні_режиму("ж1_робота_блуза_фото", "повне +фото, FOTO_RECHI=bluza.jpg і PASPORT із реєстру", вхід)
+        for режим in ("повне +фото, FOTO_RECHI=bluza.jpg і PASPORT із реєстру; після карток виконати заміну речі", "повне, кілька фото і приміряння"):
+            with self.assertRaisesRegex(ValueError, "довільна інструкція"):
+                сцена.змінні_режиму("ж1_робота_блуза_фото", режим, вхід)
+
+    def test_фото_сцени_з_теки_ноутбука(self):
+        """Файл, якого нема в репозиторії: відмова «нема файлу» до старту; є в теці `TEKA_FOTO_SCENY` — старт."""
+        змінні = lambda: {"FOTO_RECHI": "тест_лише_на_ноутбуці.jpg"}
+        with patch.dict("os.environ", {"TEKA_FOTO_SCENY": ""}), self.assertRaisesRegex(ValueError, "нема файлу.*TEKA_FOTO_SCENY"):
+            сцена.файли_сцени("ж1_робота_блуза_фото", змінні())
+        with tempfile.TemporaryDirectory() as тека:
+            (Path(тека) / "тест_лише_на_ноутбуці.jpg").write_bytes(b"x")
+            with patch.dict("os.environ", {"TEKA_FOTO_SCENY": тека}):
+                self.assertEqual(сцена.файли_сцени("ж1_робота_блуза_фото", змінні())["FOTO_RECHI"], str(Path(тека) / "тест_лише_на_ноутбуці.jpg"))
+            with patch.dict("os.environ", {"TEKA_FOTO_SCENY": тека}), self.assertRaisesRegex(ValueError, "нема файлу"):
+                сцена.файли_сцени("ж1_робота_блуза_фото", {"FOTO_RECHI": "іншого_нема.jpg"})
 
     def test_реєстр_файли_є(self):
         """Кожна файлова змінна реєстру веде до файлу в репозиторії; фото її речей, яких у репозиторії нема, — відомий
