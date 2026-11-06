@@ -78,7 +78,7 @@ import міст_помічниця as _МП  # запобіжник обіцян
         # Без жодної її речі відповідь хвалила «цю куртку» й «Мінськ»,
         # «без пальта» — ні речі, ні міста, ні пальта в її словах і в `case` не було.
         "When she has shown or described no item, speak of no particular item.",
-        "Name no shops, brands, prices or links: you do not see the catalogue.",
+        _ВИМ.БЕЗ_КАТАЛОГУ,
         "Two to four sentences.",
         # На українське питання 4 з 11 відповідей — українською, одна на «ви».
         # З правилом «Write in the language…» — українською 3 з 3: межа «для_неї» вимагала від
