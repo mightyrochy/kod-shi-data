@@ -58,8 +58,8 @@ import дріт_моделі as _Д
 #     пілюлі згорнутої панелі (`#ші-пілюля-текст`), де довгий текст не вміщається;
 #   · «чого нема в довідці чи стані — так і сказати» — до межі `лише_вхід` додає, ЩО робити, коли
 #     відповіді нема: одне чесне речення замість здогаду;
-#   · «не називати речей, брендів, крамниць, посилань» — каталогу в цьому виклику нема, тож будь-яка
-#     названа річ вигадана;
+#   · «не називати речей каталогу, крамниць, брендів, цін, посилань» (`_ВИМ.БЕЗ_КАТАЛОГУ`, спільне з питанням
+#     образу) — каталогу в цьому виклику нема, тож будь-яка названа річ вигадана;
 #   · «ти нічого не міняєш — скажи, що натиснути, назвавши напис» — доступу до форми модель не має,
 #     а напис — у довідці, тими словами, що на її екрані;
 #   · «не обіцяти врахувати чи запам'ятати»: сказане поза сценарієм у збирання не йде;
@@ -90,7 +90,7 @@ import дріт_моделі as _Д
         "to do next, what is still missing to build outfits.",
         "One to four sentences, without headings or lists unless she asks for a list.",
         "If the answer is in neither \"app\" nor \"state\", say so in one sentence.",
-        "Name no items, brands, shops or links: you do not see the catalogue.",
+        _ВИМ.БЕЗ_КАТАЛОГУ,
         "You cannot change anything in the app: tell her what to tap or type, quoting its label "
         "from \"app\".",
         "Do not promise to remember or take into account anything she writes here, or to add it to "
