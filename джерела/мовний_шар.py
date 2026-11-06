@@ -3963,6 +3963,12 @@ import схема_відповіді as _СВ_М
                                            "last messages among them, cut short",
                    як="background only: do not quote them as her exact words"),
         _ЗП_Р.Поле("conversation", "the last turns before her new message: \"She:\" — her, \"You:\" — you"),
+        # Е2-усе-з-розмови: збережені сценарії — ід для інструментів сценаріїв (`conversation_tools.ПЕРЕЛІКИ`); назва —
+        # її ввід, як є; поля нема, коли збережених нема; код причини — коли не прочитались.
+        _ЗП_Р.Поле("saved_cases", "her saved cases: \"id\", \"name\" — the name she gave it, \"case\" — what it is "
+                                  "about, \"date\", \"open\" — the case open now; a reason code instead of the list "
+                                  "when they could not be read",
+                   як="use an \"id\" from here as the argument of a tool that takes one"),
         # Т-08: розмова оновлює той самий паспорт — модель бачить його кодами.
         _ВИМ.поле("passport"),
         # K-IO-02: плитки — друге джерело полів; її слово сильніше (п.9).
@@ -4331,6 +4337,7 @@ def промпт_розмови(d):
     раніше = {"turns": раніше["ходів"], "her_messages": раніше["її_слова"]} if раніше else None
     дані = {"profile": профіль_кодами(d.get("профіль") or {}),
             "earlier_conversation": раніше, "conversation": репліки,
+            "saved_cases": _ІНСТР.переліки_промпту(d).get("saved_cases"),
             "passport": паспорт_кодами(паспорт), "chosen": плитки_кодами(d.get("сценарій"), паспорт),
             # Тема поради `occasion` стояла в `advice_topics_if` поруч із
             # `required: [occasion]` — те саме питання двома каналами, і модель ставила його в `invite`. Код
@@ -5247,6 +5254,8 @@ def мова(вхід):
             плитки = хід_плиток(d)
             читати = прийняти_хід_плиток if плитки else прийняти_розмову
             р = читати(d["відповідь_моделі"])
+            # ід запису в аргументі інструмента — з переліку, з яким модель бачила хід (`conversation_tools`)
+            р = _ІНСТР.звірити_переліки(р, d)
             сирий, _ = _обʼєкт(d["відповідь_моделі"])
             оновлення = сирий.get("update") if isinstance(сирий, dict) else {}
             оновлення = оновлення if isinstance(оновлення, dict) else {}
