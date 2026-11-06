@@ -24,6 +24,9 @@ import tempfile
                                                 "origin": {"kind": "human"}}}
 НАГАДУВАННЯ = {"type": "attachment", "attachment": {"type": "silent_turn_reminder",
                                                     "text": "The user hasn't heard from you in a while"}}
+# локальна команда (`/effort`) перед листом: відповіді не має, хід почав лист (свій транскрипт виконавця 06.11)
+КОМАНДА = {"type": "user", "isMeta": True, "origin": {"kind": "task-notification"},
+           "message": {"role": "user", "content": "<local-command-caveat>The command below was run directly</local-command-caveat>"}}
 БЕЗ_ДЖЕРЕЛА = {"type": "user", "message": {"role": "user", "content": "Глянь, будь ласка, журнал."}}
 ДІЯ = {"type": "assistant", "message": {"role": "assistant", "content": [
     {"type": "tool_use", "id": "t1", "name": "Bash", "input": {"command": "git status"}}]}}
@@ -44,6 +47,7 @@ def т(текст, кінець=False):
     ("лист → рядок наприкінці", [ЛИСТ, ДІЯ, РЕЗУЛЬТАТ, т("Злив #12, CI зелений.", True)], {}, "К1"),
     ("лист → нагадування CLI → рядок", [ЛИСТ, ДІЯ, РЕЗУЛЬТАТ, НАГАДУВАННЯ, т("Працюю над нарядом."), ДІЯ, РЕЗУЛЬТАТ,
                                         т("—", True)], {}, "К1+CLAUDE.md"),
+    ("команда → лист → рядок: початок — лист", [КОМАНДА, ЛИСТ, ДІЯ, РЕЗУЛЬТАТ, т("Дивлюсь сторінки.", True)], {}, "К1"),
     ("рядок обгортки → рядок", [ОБГОРТКА, т("Позначку прийнято.", True)], {}, "К1"),
     ("лист → лише «—»", [ЛИСТ, ДІЯ, РЕЗУЛЬТАТ, т("—", True)], {}, "пропуск"),
     ("лист → «ЗАБЛОКОВАНО: …»", [ЛИСТ, ДІЯ, РЕЗУЛЬТАТ,
@@ -70,6 +74,8 @@ def запуск(записи, додатково, т_):
                        text=True, encoding="utf-8")
     причина = json.loads(р.stdout).get("reason", "") if р.stdout.strip() else ""
     факт = "К1" if "Текст у чаті читає власник" in причина else ("інше" if причина else "пропуск")
+    if "local-command-caveat" in причина:
+        факт += " з початком-командою"
     if факт == "К1" and "The user hasn't heard from you" in причина:
         факт += "+CLAUDE.md"
     return факт + (" +stderr" if р.stderr.strip() else "")
