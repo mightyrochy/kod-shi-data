@@ -3964,9 +3964,10 @@ import схема_відповіді as _СВ_М
                    як="background only: do not quote them as her exact words"),
         _ЗП_Р.Поле("conversation", "the last turns before her new message: \"She:\" — her, \"You:\" — you"),
         # Е2-усе-з-розмови: збережені сценарії — ід для інструментів сценаріїв (`conversation_tools.ПЕРЕЛІКИ`); назва —
-        # її ввід, як є; поля нема, коли збережених нема.
+        # її ввід, як є; поля нема, коли збережених нема; код причини — коли не прочитались.
         _ЗП_Р.Поле("saved_cases", "her saved cases: \"id\", \"name\" — the name she gave it, \"case\" — what it is "
-                                  "about, \"date\", \"open\" — the case open now",
+                                  "about, \"date\", \"open\" — the case open now; a reason code instead of the list "
+                                  "when they could not be read",
                    як="use an \"id\" from here as the argument of a tool that takes one"),
         # Т-08: розмова оновлює той самий паспорт — модель бачить його кодами.
         _ВИМ.поле("passport"),
