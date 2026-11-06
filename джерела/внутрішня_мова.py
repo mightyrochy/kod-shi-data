@@ -1689,9 +1689,24 @@ _МІСЦЯ_ОПЦІЙ = "where it is worn"
     "outer_edges_gap_no_length": "the code does not know the distance between the edge of the outer layer and "
                                  "the edge of the item under it: the cards carry no lengths (values: items — "
                                  "items: item_id, kind — kind code, color — colour code)",
-    "outer_edges_coincide_sources_disagree": "the edges of the outer layer and the item under it coincide "
-                                             "exactly, and the sources disagree about that; the code takes no "
-                                             "side (values: items — items: item_id, kind — kind code, color — colour code)",
+    "outer_edges_gap_not_judged": "the code does not know the distance between the edge of the outer layer and "
+                                  "the edge of the item under it: the edges are not lengths measured from the same "
+                                  "point of the body, and her body levels are a template without a known error "
+                                  "(values: reason — edge_not_measured: an edge comes from a length word or the "
+                                  "body template, measured_from_different_points: e.g. a coat from the shoulder and "
+                                  "a skirt from the waist; items — items: item_id, kind — kind code, color — colour "
+                                  "code, level — the length word, length_cm — the measured length or null, point — "
+                                  "the body point it is measured from, error_cm — its error)",
+    "outer_edges_gap_measured": "the gap between the edge of the outer layer and the edge of the item under it, "
+                                "from two lengths measured from the same point; within its error the code gives no "
+                                "verdict (values: gap_cm — the gap, error_cm — the error of both lengths, the "
+                                "garment manufacturing tolerance; direction — outer_longer, outer_shorter, or "
+                                "unknown when the gap is within the error; items)",
+    "outer_length_vs_knee_not_judged": "the code does not know whether the outer layer ends below her knee: the "
+                                       "length is measured, but her knee and the point it is measured from are "
+                                       "body-template levels without a known error (values: length_cm — the "
+                                       "length, point — the body point it is measured from, error_cm — its error, "
+                                       "height_cm — her height)",
     "cascade_declared_no_penalty": "the edges of the layers stand in even steps: the code counts such a "
                                    "cascade as intended and does not penalise close edges (values: items — "
                                    "items: item_id, kind — kind code, color — colour code)",
@@ -3477,7 +3492,6 @@ def визначення_заяв(коди):
  'edge_contrast_reduced': 'the edge contrast is reduced',
  'evening_admits_second_zone': 'in the evening a second open zone of the body is admitted',
  'evening_lift_by_tier': 'the evening raises the step of dress by the level of the event',
- 'exact_edge_match_dispute': 'an exact match of edges: the rules dispute it',
  'exactly_one_formality_outlier_x06': 'exactly one formality outlier: x0.6',
  'fabric_off_season': 'the fabric is not for the season',
  'face_field_carrier_frees_top': 'a carrier in the face field frees the top',

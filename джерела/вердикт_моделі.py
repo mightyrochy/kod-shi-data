@@ -68,7 +68,10 @@ _НІЧОГО_НЕ_КАЖЕ = frozenset({"shoe_cut_irrelevant_leg_covered", "cut
 # `питання_або_нуль` їх відсіював, і на дріт вердикту вимір не доїжджав (лише в картку й звіт).
 # Ознака — код заяви, як у `_НІЧОГО_НЕ_КАЖЕ`, не слова `суть`.
 _ФАКТ_МОДЕЛІ = frozenset({"necklace_neckline_gap_not_judged", "watch_lugs_and_wrist_not_judged",
-                          "print_scale_ratio_not_judged"})
+                          "print_scale_ratio_not_judged",
+                          # довжина верхнього (ч15): розрив країв і поділ проти коліна без похибки
+                          "outer_edges_gap_not_judged", "outer_edges_gap_measured",
+                          "outer_length_vs_knee_not_judged"})
 
 
 def факт_моделі(z):
