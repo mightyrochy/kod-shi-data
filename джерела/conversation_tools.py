@@ -11,8 +11,14 @@
 моделі словами на один повтор тим самим каналом, що й решта ходу (`language_contract.розбіжності`); після повтору —
 запасний хід коду без зупинки: виконується прийнята частина (ім'я з переліку й аргументи, що пройшли схему), решта —
 у записі ходу. Рідного виклику інструментів рушія договір не потребує: співрозмовницею може бути будь-яка модель.
+
+Посилання на дані продукту (`переліки` запису): аргумент — ід запису з переліку цього ходу, який код дає моделі в
+промпті (`переліки_промпту`: збережені сценарії — `saved_cases`). Стала схема лишається одна (рядок); допустимі значення
+— ід переліку, з яким модель бачила хід, і звіряє їх той самий договір (`звірити_переліки`): ід поза переліком —
+розбіжність на один повтор, як і решта вад виклику.
 """
 import copy
+import re
 
 ІНСТРУМЕНТИ = {
     "save_scenario": {
@@ -32,7 +38,61 @@ import copy
         "показ": "картка під реплікою: збережено чи ні й під якою назвою — тим самим підписом, що в кнопки «Зберегти»",
         "функція": "зберегтиСценарій",
     },
+    "list_scenarios": {
+        "робить": "показати її збережені сценарії переліком у розмові: назва, про що, дата; відкрити — дотиком",
+        "для_моделі": "shows the list of her saved cases under your reply",
+        "коли": "her new message asks to see or choose among her saved cases",
+        "вхід": {"type": "object", "additionalProperties": False, "properties": {}},
+        "вихід": {"type": "object", "additionalProperties": False, "required": ["done"], "properties": {
+            "done": {"type": "boolean", "description": "чи прочитано збережені"},
+            "scenarios": {"type": "array", "description": "збережені: ід, назва — її ввід, про що, час, чи відкритий"}}},
+        "показ": "картка під реплікою: перелік збережених тими самими рядками, що в «Збережених», дотик відкриває",
+        "функція": "оновитиСценарії",
+    },
+    "open_scenario": {
+        "робить": "відкрити збережений сценарій: його паспорт і розмову замість поточних",
+        "для_моделі": "opens one of her saved cases instead of the current one (what is not saved is lost)",
+        "коли": "her new message asks to open or go back to one of her saved cases",
+        "вхід": {"type": "object", "additionalProperties": False, "required": ["id"], "properties": {
+            "id": {"type": "string", "minLength": 1, "description": "the \"id\" of one of saved_cases"}}},
+        "переліки": {"id": "saved_cases"},
+        "вихід": {"type": "object", "additionalProperties": False, "required": ["done"], "properties": {
+            "done": {"type": "boolean", "description": "чи відкрито"},
+            "name": {"type": "string", "description": "назва відкритого — її ввід; без назви — порожньо"}}},
+        "показ": "картка в розмові відкритого сценарію: який відкрито — її назвою чи підписом без назви",
+        "функція": "відкритиСценарій",
+        "заміна_сценарію": True,
+    },
+    "delete_scenario": {
+        "робить": "видалити збережений сценарій",
+        "для_моделі": "deletes one of her saved cases for good",
+        "коли": "her new message asks to delete or remove one of her saved cases",
+        "вхід": {"type": "object", "additionalProperties": False, "required": ["id"], "properties": {
+            "id": {"type": "string", "minLength": 1, "description": "the \"id\" of one of saved_cases"}}},
+        "переліки": {"id": "saved_cases"},
+        "вихід": {"type": "object", "additionalProperties": False, "required": ["done"], "properties": {
+            "done": {"type": "boolean", "description": "чи видалено"},
+            "name": {"type": "string", "description": "назва видаленого — її ввід; без назви — порожньо"}}},
+        "показ": "картка під реплікою: який сценарій видалено — її назвою чи підписом без назви",
+        "функція": "видалитиСценарій",
+    },
+    "new_scenario": {
+        "робить": "почати новий сценарій: порожній паспорт і нова розмова",
+        "для_моделі": "starts a new empty case with a new conversation (what is not saved is lost)",
+        "коли": "her new message asks to start a new case from scratch",
+        "вхід": {"type": "object", "additionalProperties": False, "properties": {}},
+        "вихід": {"type": "object", "additionalProperties": False, "required": ["done"], "properties": {
+            "done": {"type": "boolean", "description": "чи почато"}}},
+        "показ": "картка в розмові нового сценарію: почато новий",
+        "функція": "новийСценарій",
+        "заміна_сценарію": True,
+    },
 }
+
+# Переліки цього ходу: ім'я в промпті → ключ входу ендпойнта `мова`, який дає показ (`ходомРозмовиП`), і поля запису.
+ПЕРЕЛІКИ = {"saved_cases": {"вхід": "збережені", "поля": {"id": "ід", "name": "назва", "case": "випадок",
+                                                         "date": "час", "open": "відкрито"}}}
+ПЕРЕЛІК_МАКС = 30
 
 
 def схема_виклику():
@@ -54,7 +114,7 @@ def коди_для_промпту():
     р = ["Tools (\"tool\": {\"name\", \"args\"}; the app does it and shows the result under your reply):"]
     for ім, о in ІНСТРУМЕНТИ.items():
         аргументи = "; ".join("%s (%s) — %s" % (к, с["type"], с["description"])
-                              for к, с in о["вхід"]["properties"].items())
+                              for к, с in о["вхід"]["properties"].items()) or "none"
         р.append("- %s: %s; when %s. args: %s" % (ім, о["для_моделі"], о["коли"], аргументи))
     return tuple(р)
 
@@ -110,3 +170,48 @@ def прийняти_виклик(виклик):
     бракує = [к for к in вхід.get("required", ()) if к not in прийняті]
     вади += ["tool.args.%s: required value is missing" % к for к in бракує]
     return (None if бракує else {"name": ім, "args": прийняті}), вади
+
+
+def _перелік(d, ім):
+    """Записи переліку `ім` зі входу ендпойнта: лише словники з непорожнім ід, не більше `ПЕРЕЛІК_МАКС`."""
+    о = ПЕРЕЛІКИ[ім]
+    сирі = (d or {}).get(о["вхід"]) if isinstance(d, dict) else None
+    return [з for з in (сирі if isinstance(сирі, list) else ())
+            if isinstance(з, dict) and isinstance(з.get(о["поля"]["id"]), str) and з[о["поля"]["id"]]][:ПЕРЕЛІК_МАКС]
+
+
+def переліки_промпту(d):
+    """Переліки цього ходу для промпту: {ім'я: [{id, name, …}]} — лише непорожні; назва — її ввід як є.
+
+    Перелік, що не прочитався, вхід несе кодом причини (рядок, напр. `saved_cases_unreadable`): він іде в промпт як є,
+    щоб модель не сказала «збережених нема»."""
+    вих = {}
+    for ім, о in ПЕРЕЛІКИ.items():
+        сирі = (d or {}).get(о["вхід"]) if isinstance(d, dict) else None
+        if isinstance(сирі, str) and re.fullmatch(r"[a-z][a-z0-9_]{2,60}", сирі):
+            вих[ім] = сирі
+            continue
+        записи = [{к: з[п] for к, п in о["поля"].items() if з.get(п) not in (None, "")} for з in _перелік(d, ім)]
+        if записи:
+            вих[ім] = записи
+    return вих
+
+
+def звірити_переліки(результат, d):
+    """Розбір ходу → той самий, де виклик з ід поза переліком цього ходу знято, а вада — у `незнайомі` (повтор).
+
+    Прийнятий виклик (`частини.tool`) уже пройшов сталу схему; тут — лише посилання на дані продукту."""
+    виклик = ((результат or {}).get("частини") or {}).get("tool")
+    if not isinstance(виклик, dict) or not ІНСТРУМЕНТИ.get(виклик.get("name"), {}).get("переліки"):
+        return результат
+    вади = []
+    for арг, ім in ІНСТРУМЕНТИ[виклик["name"]]["переліки"].items():
+        ід = (виклик.get("args") or {}).get(арг)
+        є = [з[ПЕРЕЛІКИ[ім]["поля"]["id"]] for з in _перелік(d, ім)]
+        if ід is not None and ід not in є:
+            вади.append("tool.args.%s: %s is not an id of %s; ids: %s" % (арг, ід, ім, ", ".join(є) or "none"))
+    if not вади:
+        return результат
+    р = dict(результат, частини={к: в for к, в in результат["частини"].items() if к != "tool"})
+    р["незнайомі"] = list(результат.get("незнайомі") or []) + вади
+    return р
