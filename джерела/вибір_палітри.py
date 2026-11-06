@@ -35,6 +35,7 @@ import statements as _СТ
 import json as _json
 
 import схема_відповіді as _СВ
+import протокол as _ПР
 import збирач_промптів as _ЗП
 import спільні_вимоги as _ВИМ
 import внутрішня_мова as _ВМ
@@ -49,6 +50,8 @@ import міст_основи as _МО
 import пакет_моделі as _ПМ
 import сценарій as _СЦ
 import фід_каталог as _ФК
+
+ПРИЧИНА_НЕМАЄ_МОДЕЛІ = "no_model"   # чому стилістка не обрала: моделі не було (одне визначення причини)
 import композитор_придатні as _КП
 import фід_фото as _ФФ
 import реєстр_правил as _РЕЄСТР
@@ -143,8 +146,10 @@ def _до_очей(о, F):
                            "axes: lightness (light/mid_lightness/deep), clarity (soft/mid_chroma/clear); "
                            "both_lightness_ends: true when contrast is high and both darkest and lightest ends belong to her",
                  треба=True),
-        _ЗП.Поле("occasion", "today's occasion as codes, with her wishes, refusals, mood and words as "
-                             "the interpreter passed them; a field she did not name is absent",
+        # Ключ «case», як у рук 3–4 і в ремонті й виборі (`міст_відповіді._випадок_кодами`): той самий випадок
+        # `дріт_моделі.випадок`, а «occasion» на дроті — лише код нагоди всередині нього (`оцінка_образу`).
+        _ЗП.Поле("case", "today's occasion as codes, with her wishes, refusals, mood and words as "
+                         "the interpreter passed them; a field she did not name is absent",
                  без="The occasion is not known yet."),
         # Погода й пора дня — у `day`, як у рук 1–2; доти запит палітри їх не мав зовсім
         _ЗП.Поле("day", "her day as facts: the season, the part of the day, the weather and precipitation, the "
@@ -452,7 +457,7 @@ def що_лишила(пер):
 def _назване(о):
     """Нагода чи день на дріт → лише назване: без полів зі значенням `unknown` і без списку `unknown` дня.
 
-    Опис полів «occasion» і «day» каже «a field she did not name is absent», а дріт ніс
+    Опис полів «case» і «day» каже «a field she did not name is absent», а дріт ніс
     `movement`, `precipitation`, `goal`, `jewelry`, `setting` зі значенням `unknown` і `day.unknown` —
     114 симв. на виклик, які суперечили опису. Суддя нагоди не читає, тож вибір від цього не міняється."""
     if not isinstance(о, dict):
@@ -481,7 +486,7 @@ def дані_промпта(пер):
             if б.get("база_за_замовчуванням") or б.get("база_з_речі"):
                 fixed["sources"]["base"] = походження(ТИПОВЕ if б.get("база_за_замовчуванням") else ТЛУМАЧЕННЯ)
     день = _назване(пер.get("день"))
-    return dict(person=пер["особа"], occasion=_назване(пер["випадок"]), **({"day": день} if день else {}),
+    return dict(person=пер["особа"], case=_назване(пер["випадок"]), **({"day": день} if день else {}),
                 schemes=[dict({"rank": с["ранг"], "scheme": с["код"], "weight": с["вага"],
                                "advised": с["радить"]},
                               **({"reliability": с["надійність"]} if с["надійність"] else {}),
@@ -609,7 +614,7 @@ def прийняти(вхід, відповідь=None, без_моделі=None
         if not isinstance(об, dict) and промпт:
             return dict(промпт_повтору=схема.промпт_повтору(промпт, чому_не), причина=чому_не)
         if not isinstance(об, dict):
-            без_моделі, чому_код = ("unreadable(%s)" % (чому_не or "no_json_object"),
+            без_моделі, чому_код = ("unreadable(%s)" % (чому_не or _ПР.ПРИЧИНА_НЕМАЄ_JSON),
                                     "unreadable")
     об = об if isinstance(об, dict) else {}
     обрала, причини = {}, {}
@@ -694,7 +699,7 @@ def повідомлення(г, о, гама, обрала, причини, л�
             заяви += [_ВМ.заява("stylist_chose_scheme", scheme=назва, part="scheme", rank=dict(position=г["ранг"], rare=not г["радить"]))] + \
                      [_ВМ.заява(к, part="scheme", choice="stylist", source="model", rank=dict(position=г["ранг"], rare=not г["радить"])) for к in причини.get("scheme") or []]
         else:
-            заяви += [_ВМ.заява("stylist_did_not_choose", part="scheme", why=(чому_код or "no_model")), _ВМ.заява("first_scheme_of_advice", scheme=назва, part="scheme", rank=dict(position=г["ранг"], rare=not г["радить"]))]
+            заяви += [_ВМ.заява("stylist_did_not_choose", part="scheme", why=(чому_код or ПРИЧИНА_НЕМАЄ_МОДЕЛІ)), _ВМ.заява("first_scheme_of_advice", scheme=назва, part="scheme", rank=dict(position=г["ранг"], rare=not г["радить"]))]
     if "base" in лишила:
         if обрала.get("base") == ХТО_СТИЛІСТКА and о is not None:
             з = dict(base=о["назва"])
@@ -703,7 +708,7 @@ def повідомлення(г, о, гама, обрала, причини, л�
             заяви += [_ВМ.заява("stylist_chose_base", part="base", **з)] + \
                      [_ВМ.заява(к, part="base", choice="stylist", source="model") for к in причини.get("base") or []]
         else:
-            заяви += [_ВМ.заява("stylist_did_not_choose", part="base", why=(чому_код or "no_model"))] + [_ВМ.заява("base_from_her_features", part="base")]
+            заяви += [_ВМ.заява("stylist_did_not_choose", part="base", why=(чому_код or ПРИЧИНА_НЕМАЄ_МОДЕЛІ))] + [_ВМ.заява("base_from_her_features", part="base")]
     if "saturation" in лишила and обрала.get("saturation") == ХТО_СТИЛІСТКА and (о is None or о["ахром"]):
         заяви.append(_ВМ.заява("stylist_chose_saturation", part="saturation", saturation=ГАМА_КОД.get(гама, гама)))
     if not заяви:
@@ -751,6 +756,13 @@ def лише_її(вибір_кольору, вибір_стилістки=None)
     return вк or None
 
 
+def _код_схеми(схема):
+    """Ключ ядра схеми → код `palette_scheme` (`внутрішня_мова.код_або_невідомо`, як у `міст_пакет`); нема — None.
+
+    Схема поза таблицею («контраст-мисматч») — `unknown`, як і в пакеті (дошка 13371)."""
+    return _ВМ.код_або_невідомо("palette_scheme", схема) if схема else None
+
+
 def стан_для_показу(вхід):
     """Один автор стану палітри: поточний її вибір і прийняте рішення стилістки."""
     її = вхід.get("її") or {}
@@ -759,11 +771,13 @@ def стан_для_показу(вхід):
     гілки = вхід.get("гілки") or []
     кольори = її.get("вибір_кольору") or {}
     автори = {к: _СТ.автор(v) for к, v in (виб.get("обрала") or {}).items()}
+    # Схема — кодом таблиці `palette_scheme`, як у заявах пакета (`міст_пакет`): одне значення `scheme` на дроті,
+    # не слово схеми тут і код там; плитки гілок звіряються тим самим кодом.
     свої = dict(base=кольори.get("база"), saturation=кольори.get("насиченість"),
-                scheme=(str(її.get("схема") or "").strip() or
-                        next((г["схема"] for г in гілки if г.get("і") == її.get("гілка")), None)))
+                scheme=_код_схеми(str(її.get("схема") or "").strip() or
+                                  next((г["схема"] for г in гілки if г.get("і") == її.get("гілка")), None)))
     стилеві = dict(base=(виб.get("вибір_кольору") or {}).get("база"),
-                  saturation=виб.get("гама"), scheme=виб.get("схема"))
+                  saturation=виб.get("гама"), scheme=_код_схеми(виб.get("схема")))
     стан = []
     for частина in ("base", "scheme", "saturation"):
         хто = "her" if свої[частина] else автори.get(частина, "pending")
@@ -795,7 +809,7 @@ def стан_для_показу(вхід):
         повідом = г.get("нота_кодами")
         if not повідом:
             continue
-        хто = хто_схеми if г["схема"] == обрана else "unselected"
+        хто = хто_схеми if _код_схеми(г["схема"]) == обрана else "unselected"
         ранг = dict(position=г.get("і", 0) + 1, rare=bool(г.get("рідший")),
                     weight={"ядро": "core", "звичайна": "usual", "на_межі": "edge", "statement": "statement"}.get(г.get("вага")))
         заяви = [_СТ.уточнити(з, choice=хто, rank=ранг, part="scheme")

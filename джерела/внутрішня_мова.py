@@ -27,7 +27,7 @@ import словник_кольору as _СК
 import re
 from реєстр_правил import INTENT as _НАМІРИ
 
-UNKNOWN = "unknown"
+UNKNOWN = _ЗАЯВИ.НЕВІДОМО
 ВЕРСІЯ = "lyusterko-internal-v1"
 
 # «НЕВІДОМО» ОДНЕ, ФОРМ У НЬОГО КІЛЬКА (кілька форм відповіді моделі): модель дає те
@@ -3566,8 +3566,8 @@ def заява(код, *, recipient=None, source=None, choice=None, rank=None,
     if _вільні:
         raise ValueError("річ заяви %s вільним текстом (%s): річ — `річ_заяви`, без назви" % (код, ", ".join(_вільні)))
     м = МЕТАДАНІ_ЗАЯВ.get(код, {})
-    return _ЗАЯВИ.створити(код, значення, recipient=recipient or м.get("recipient", "woman"),
-                           source=source or м.get("source", "unknown"), choice=choice or м.get("choice", "unknown"),
+    return _ЗАЯВИ.створити(код, значення, recipient=recipient or м.get("recipient", _ЗАЯВИ.АДРЕСАТ_ТИПОВИЙ),
+                           source=source or м.get("source", UNKNOWN), choice=choice or м.get("choice", UNKNOWN),
                            rank=rank, item_ids=item_ids, part=part)
 
 

@@ -11,6 +11,7 @@ import фід_добір as _ФД
 import colorspace as _КС
 import колір_річ as _КР
 import verify as _V
+import словник_кольору as _СК
 import знання_речі as _ЗН
 import внутрішня_мова as _ВМ
 
@@ -372,7 +373,7 @@ def _прикраса_кольором(r):
     """Ювелірна річ поза слотом «прикраси» без названого металу, чий колір — не метал."""
     if r.get("слот") not in _ФА.МЕТАЛ_СЛОТИ or r.get("слот") == "прикраси" or r.get("метал"):
         return False
-    return not any(r.get(k) in _V.МЕТАЛИ for k in ("колір_назва", "колір_ім", "колір_назва_фото"))
+    return not any(r.get(k) in _V.МЕТАЛИ for k in _СК.ПОЛЯ_СЛОВА_КОЛЬОРУ)
 
 
 def регістрова_річ(r):

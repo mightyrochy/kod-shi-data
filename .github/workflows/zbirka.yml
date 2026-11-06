@@ -268,7 +268,7 @@ jobs:
           LYUSTERKO_PYC_PYTHON: ${{ steps.pyc_python.outputs.python-path }}
         run: |
           set -o pipefail
-          ( cd джерела && ./node_modules/.bin/playwright install --with-deps chromium )
+          bash .github/scripts/zalezhnosti-brauzera.sh ./джерела/node_modules/.bin/playwright
           sh аудит/проби/стенд_pyodide_кеш.sh "${RUNNER_TEMP}/pyodide"
           mkdir -p "${RUNNER_TEMP}/стенд"
           cp index.html "${RUNNER_TEMP}/стенд/index.html"
@@ -353,11 +353,12 @@ jobs:
           node-version: '22'
       - name: залежності браузера
         working-directory: джерела
-        # 12114: apt-get завис 31.10 (#2654) до тайм-ауту job; зелені 570 кроків — медіана 21 с, макс 400 с
+        # 12114: apt-get завис 31.10 (#2654) до тайм-ауту job; 04–05.11 причина — шрифтові deb-пакети з дзеркала
+        # (до 10 хв), без них залежності ставить `.github/scripts/zalezhnosti-brauzera.sh` (13310–13314)
         timeout-minutes: 10
         run: |
           npm ci --ignore-scripts --no-audit --no-fund
-          ./node_modules/.bin/playwright install --with-deps chromium
+          bash ../.github/scripts/zalezhnosti-brauzera.sh ./node_modules/.bin/playwright
       - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093
         with:
           name: pokaz-povnyi-${{ github.sha }}

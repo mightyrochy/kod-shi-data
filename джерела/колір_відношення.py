@@ -113,6 +113,7 @@ from colorspace import RELATIONS, у_коло_художника, тепло, to
 # `колір_простір_риси` (3.3, К-4): тон судиться силою в дузі цього модуля, а він вищий за риси
 from colorspace import lch, c_max, spectra_by_feature, resonance, reliability, MIN_TO_EMIT, gate_conclusions, extraction_sanity
 from реєстр_правил import C
+from колір_тон import in_arc as на_дузі   # належність тону до дуги з переходом через 0° — визначення в `колір_тон`
 
 # ── СТАЛІ КОДУВАННЯ (провенанс — шапка модуля) ───────────────────────────────────────
 СІГМА_МЕЖІ = 5.0        # розмиття межі категорії тону, градуси кола художника
@@ -172,12 +173,6 @@ _тр, _рз, _кп = RELATIONS["triadic"], RELATIONS["split"], RELATIONS["compl
 ВАГА_ТОНУ_ХРОМИ = 0.015 # k S_H = 1 + k·C* (CIE94); 0 — вікна ΔH* без ваги хроми
 КЛАСИ = tuple(ВІКНА_ТОНУ) + ("value_step", "tonal", "echo", "warm_cool", "achromatic")
 НЕВІДОМО = (0.0, 1.0)
-
-
-def на_дузі(h, дуга):
-    """Чи тон h лежить на дузі (lo, hi); дуга з переходом через 0° (lo > hi) — теж."""
-    lo, hi = дуга
-    return (lo <= h <= hi) if lo <= hi else (h >= lo or h <= hi)
 
 
 def кут(a, b):

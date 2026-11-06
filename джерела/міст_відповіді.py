@@ -144,7 +144,7 @@ def _колір_речі(заява, і):
     код = заява["code"]
     if код in ("colour_word_shop", "colour_word_shop_photo_other"):
         код = "colour_word_shop_photo_other" if речі[0].get("photo") else "colour_word_shop"
-    return _ВМ_в.заява(код, items=речі[:1], item_ids=[і], source=заява.get("source", "unknown"))
+    return _ВМ_в.заява(код, items=речі[:1], item_ids=[і], source=заява.get("source", _ВМ_в.UNKNOWN))
 
 
 def _пункти_картки(питання):
