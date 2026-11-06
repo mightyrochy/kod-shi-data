@@ -8,6 +8,7 @@ from pathlib import Path
 import re
 import socket
 import subprocess
+import tarfile
 import tempfile
 import time
 import urllib.request
@@ -31,6 +32,9 @@ import urllib.request
 ЗМІННА_ОЗНАКА = re.compile(r"([A-Z][A-Z0-9_]*)=(\S+)")
 ЗАДАНІ_ПРИЛАДОМ = ("CHAT_TEXT", "ZHINKA", "SCENA", "MODEL", "MODEL_MOVA", "LMS_MODE", "PORT", "CTX", "MODEL_URL", "VIDPOVIDI",
                    "ZNIMKY", "ZVIT_OUT")
+# Змінні, значення яких стенд читає як файл (`fs.readFileSync`; FOTO_RECHI — список через кому). Шлях — від кореня
+# репозиторію: стенд читає відносно своєї cwd, тож ім'я без теки давало ENOENT (нічний 05.11: три сцени з ROZMOVA=R_*.json).
+ФАЙЛОВІ = ("ROZMOVA", "PORTRET", "FOTO_RECHI")
 
 
 def змінні_стенда():
@@ -120,6 +124,21 @@ def змінні_режиму(id_, режим, вхід):
     return змінні
 
 
+def файли_сцени(id_, змінні):
+    """Файлові змінні — абсолютні шляхи від кореня репозиторію; файлу нема — ValueError до старту, а не ENOENT стенда."""
+    for ключ in ФАЙЛОВІ:
+        if ключ not in змінні:
+            continue
+        шляхи = []
+        for значення in (ч.strip() for ч in змінні[ключ].split(",")):
+            шлях = Path(значення) if Path(значення).is_absolute() else КОРІНЬ / значення
+            if not шлях.is_file():
+                raise ValueError(f"Сцена {id_}: {ключ}={значення} — файлу нема ({шлях}); шлях — від кореня репозиторію")
+            шляхи.append(str(шлях))
+        змінні[ключ] = ",".join(шляхи)
+    return змінні
+
+
 def вхід_реєстру(id_):
     """Поле «вхід» єдиного рядка реєстру; нема сцени — ValueError."""
     рядки = [р.split("|") for р in (КОРІНЬ / "аудит/проби/живі_сцени.txt").read_text(encoding="utf-8").splitlines()
@@ -136,10 +155,42 @@ def сцена_реєстру(id_, режим=None):
     if len(рядки) != 1:
         raise ValueError("Нема єдиної сцени в реєстрі: " + id_)
     id_, жінка, запит, вхід, режим_реєстру = рядки[0][:5]
-    змінні = змінні_режиму(id_, режим_реєстру if режим is None else режим, вхід)
+    змінні = файли_сцени(id_, змінні_режиму(id_, режим_реєстру if режим is None else режим, вхід))
     return {"назва": id_, "сід": 3, "змінні": dict(змінні, SCENA=id_, CHAT_TEXT=запит,
         ZHINKA=str(КОРІНЬ / "аудит/проби/жінки" / (жінка + ".json")),
         MODEL="qwen/qwen3.5-9b", MODEL_MOVA="mamaylm-gemma-3-12b-it-v2.0")}
+
+
+def git(*аргументи):
+    """Вивід git у корені репозиторію (UTF-8, імена без лапок)."""
+    return subprocess.run(["git", "-c", "core.quotepath=false", *аргументи], cwd=КОРІНЬ, capture_output=True, check=True,
+                          text=True, encoding="utf-8").stdout
+
+
+def живий_шлях(node):
+    """Живий шлях стенда — одне визначення з `нова_база.js`: джерела, жінки, стенд і його місцеві модулі транзитивно."""
+    return json.loads(subprocess.check_output([node, str(Path(__file__).with_name("нова_база.js")), "--живий-шлях", str(КОРІНЬ)],
+                                              cwd=КОРІНЬ, text=True, encoding="utf-8"))
+
+
+def корінь_стенда(sha, node, тека):
+    """Корінь, з якого йде стенд: його живий шлях — рівно той, з якого зібрано сторінку (штамп `sha`). Коміт «збірка:» CI
+    публікує сторінку на новішій голові main (`zbirka.yml`), тож дерево буває новіше за штамп: 05.11 стенд 684fe590 і
+    сторінка 5cf722fb, а запис не став базою. Збіг (з незакоміченим) — поточний корінь; ні — живий шлях штампа з git
+    у `тека`. Повертає (корінь, змінені файли дерева)."""
+    зміни = git("diff", "--name-only", sha, "--", *живий_шлях(node)).splitlines()
+    if not зміни:
+        return КОРІНЬ, []
+    частини = ["джерела", "аудит/проби/жінки", ":(glob)аудит/проби/*"]
+    if git("ls-tree", sha, "open-source-stylist/system/workflows"):
+        частини.append("open-source-stylist/system/workflows")   # приміряння ComfyUI (COMFY) читає звідти шаблон
+    тека.mkdir(parents=True)
+    архів = subprocess.Popen(["git", "archive", "--format=tar", sha, "--", *частини], cwd=КОРІНЬ, stdout=subprocess.PIPE)
+    with tarfile.open(fileobj=архів.stdout, mode="r|") as tar:
+        tar.extractall(тека, **({"filter": "data"} if hasattr(tarfile, "data_filter") else {}))
+    if архів.wait():
+        raise RuntimeError(f"git archive {sha}: код {архів.returncode}")
+    return тека, зміни
 
 
 def api(шлях="", тіло=None):
@@ -195,17 +246,24 @@ def виконати():
     html = (п.збірка / "index.html").read_text(encoding="utf-8")
     sha = re.search(r'const ЗБІРКА_ПОКАЗУ = "([0-9a-f]{40})"', html)[1]
     (вихід / "код.txt").write_text(f'{sha} {сцена["назва"]} ПІСЛЯ {env["MODEL"]}+{env["MODEL_MOVA"]}\n', encoding="utf-8")
-    команда = [п.node, str(КОРІНЬ / "аудит/проби/рв6_стенд.js"), "http://127.0.0.1:8765",
-               str(п.збірка.resolve()), str(п.кеш.resolve()), str(сцена["сід"])]
     код_проксі = (КОРІНЬ / "аудит/ноутбук_стенд_2/проксі_почергове.js").read_bytes()
-    результат = {"початок": datetime.now(timezone.utc).isoformat(), "sha": sha, "сцена": сцена["назва"],
-        "проксі_sha256": hashlib.sha256(код_проксі).hexdigest(), "команда": команда, "змінні": {к: env[к] for к in
-        (*сцена["змінні"], "LMS_MODE", "PORT", "CTX", "MODEL_URL", "ODNOCHASNO")}}
+    результат = {"початок": datetime.now(timezone.utc).isoformat(), "sha": sha, "дерево": git("rev-parse", "HEAD").strip(),
+        "сцена": сцена["назва"], "проксі_sha256": hashlib.sha256(код_проксі).hexdigest()}
     проксі = стенд = None
     початок = time.monotonic()
     with tempfile.TemporaryDirectory(prefix="Е1-проксі-") as тека:
         файл = Path(тека) / "проксі.js"
         файл.write_bytes(код_проксі)
+        корінь, зміни = корінь_стенда(sha, п.node, Path(тека) / "стенд")
+        if зміни:   # жінка з реєстру — з живого шляху штампа, як і стенд
+            if Path(env.get("ZHINKA", "")).is_relative_to(КОРІНЬ / "аудит/проби/жінки"):
+                env["ZHINKA"] = str(корінь / Path(env["ZHINKA"]).relative_to(КОРІНЬ))
+            print(f"Стенд — з дерева штампа {sha}: живий шлях дерева {результат['дерево']} інший у {len(зміни)} файлах",
+                  flush=True)
+        команда = [п.node, str(корінь / "аудит/проби/рв6_стенд.js"), "http://127.0.0.1:8765",
+                   str(п.збірка.resolve()), str(п.кеш.resolve()), str(сцена["сід"])]
+        результат.update(дерево_стенда=sha, стенд_з_архіву=bool(зміни), змінено_в_дереві=зміни[:20], команда=команда,
+                         змінні={к: env[к] for к in (*сцена["змінні"], "LMS_MODE", "PORT", "CTX", "MODEL_URL", "ODNOCHASNO")})
         try:
             with (вихід / "проксі.txt").open("w", encoding="utf-8") as лог:
                 проксі = subprocess.Popen([п.node, str(файл)], cwd=КОРІНЬ, env=env, stdout=лог, stderr=subprocess.STDOUT,
