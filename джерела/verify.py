@@ -1707,7 +1707,7 @@ def форма_з_вжитку(точки, вікно):
         return None
     Lа, Lб, _ = _огорта_осі([т[0] for т in у])
     Cа, Cб, _ = _огорта_осі([т[1] for т in у])
-    return sorted({(round(т[0]), round(т[1]), round(т[2]) % 360) for т in у
+    return sorted({(round(т[0]), round(т[1]), int(_нормувати(round(т[2])))) for т in у
                    if Lа <= т[0] <= Lб and Cа <= т[1] <= Cб})
 
 
