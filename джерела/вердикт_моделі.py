@@ -69,7 +69,8 @@ _НІЧОГО_НЕ_КАЖЕ = frozenset({"shoe_cut_irrelevant_leg_covered", "cut
 # Ознака — код заяви, як у `_НІЧОГО_НЕ_КАЖЕ`, не слова `суть`.
 _ФАКТ_МОДЕЛІ = frozenset({"necklace_neckline_gap_not_judged", "item_edge_off_body_profile_not_judged", "watch_lugs_and_wrist_not_judged",
                           "print_scale_ratio_not_judged", "leg_proportion_pair_tone_not_judged",
-                          "motif_scale_and_person_not_judged"})
+                          "motif_scale_and_person_not_judged",
+                          "edge_not_judged_error_unknown", "volume_anchor_not_judged_error_unknown"})
 
 
 def факт_моделі(z):
