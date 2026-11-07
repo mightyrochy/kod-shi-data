@@ -1632,6 +1632,9 @@ _МІСЦЯ_ОПЦІЙ = "where it is worn"
                                       "score from its photo (values: items — the dresses)",
     "areas_not_measured": "the code did not measure how much room each item takes in the outfit, so rules "
                           "that depend on area give no conclusion",
+    "area_share_error_unknown": "the code computed how much room these items take in the outfit from her body "
+                                "measurements and the garment sizes, but it does not know the error of either, so "
+                                "rules that depend on area give no conclusion for them",
     "several_colour_fixes_one_item": "several colour fixes fell on one item; the code merged them into one "
                                      "(values: slot — slot code)",
     "one_weighty_surface": "the outfit has only one large surface, so there is no structure of light and dark "
@@ -3592,7 +3595,7 @@ def визначення_заяв(коди):
         "wear_cost_no_duration_surface", "leg_proportion_template_crotch",
         "vertical_balance_not_judged", "calf_girth_not_measured", "her_register_unknown",
         "print_motif_scale_unknown",
-        "chroma_clash_skipped_no_area", "unmeasured_accents_not_grouped")},
+        "chroma_clash_skipped_no_area", "unmeasured_accents_not_grouped", "area_share_error_unknown")},
     **{к: dict(choice="her") for к in ("scheme_chosen_by_her", "her_own_choice_kept_as_is")},
     **{к: dict(choice="stylist", source="model") for к in ("scheme_chosen_by_stylist",
         "stylist_chose_scheme", "stylist_chose_base", "stylist_chose_saturation", "stylist_declared_on_purpose")},
