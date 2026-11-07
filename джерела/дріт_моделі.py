@@ -532,7 +532,7 @@ def річ(r, короткий=False, пул=False, слот=None):
     його з назви («Пасок з пірʼям червоний» у ремонті став би сукнею)."""
     if not isinstance(r, dict):
         return r
-    о = {"n": r.get("н"), "name": r.get("назва")}
+    о = {"n": r.get("н")}
     if r.get("впевненість_джерело"):
         о["confidence_source"] = r["впевненість_джерело"]
     if _КР_ТИП.явний_тип_кольору(r):
@@ -1133,10 +1133,7 @@ def _учасники(рч, склад, назви):
     вих = []
     for y in рч:
         x = _номер(y)
-        if isinstance(x, str) and x.startswith("#"):
-            if склад is not None and x not in склад:
-                x = dict(n=x, name=y.get("назва")) if isinstance(y, dict) else x
-        elif isinstance(x, str) and not _ІД_ОБРАЗУ.fullmatch(x):
+        if isinstance(x, str) and not x.startswith("#") and not _ІД_ОБРАЗУ.fullmatch(x):
             x = _н_за_назвою(x, назви)
         if x not in (None, "") and x not in вих:
             вих.append(x)
@@ -1421,10 +1418,9 @@ def вердикт(в, ремонти=True, межі=None, вибір=False):
             _ремарки_за_кодом(о, ремарки)
             вих["verdict"].append(о)
             continue
-        if isinstance(с.get("вузол"), dict):
+        if isinstance(с.get("вузол"), dict) and с["вузол"].get("заяви"):
             # П-6: вузол із заявами їде кодами (що вузько, з чим зв'язано, що міняти)
-            о["knot"] = ({"statements": заяви(с["вузол"]["заяви"])} if с["вузол"].get("заяви") else
-                         {"name": с["вузол"].get("назва"), "why": с["вузол"].get("чому")})
+            о["knot"] = {"statements": заяви(с["вузол"]["заяви"])}
         if с.get("виконання"):
             # ВМ-2: дія — кодом відповіді (`fixed`/`declined`/`partly`), «чому» — заявами, коли вони є
             о["done_check"] = [{к2: v for к2, v in (("finding", x.get("знахідка")),
