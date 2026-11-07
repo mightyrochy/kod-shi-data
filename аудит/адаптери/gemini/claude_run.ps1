@@ -858,7 +858,7 @@ function Invoke-Task($M, $Job) {
     $exe = Find-Exe $ClaudeExe
     if (-not $exe) { return (Complete-Task $M $statePath $id 'ENGINE_MISSING') }
     try { $taskText = Add-AutoTaskContext $M.Slug ((Invoke-Git @('cat-file', 'blob', "$($M.Sha):$taskPath")).Out) $M.Sha $M.Model }
-    catch { Enter-ReviewWait $M; Remove-Claim $statePath; return }
+    catch { Write-Log "позначка $($M.Name): план наряду не зібрано: $($_.Exception.Message)"; Enter-ReviewWait $M; Remove-Claim $statePath; return }
     if (Test-AutoPlanEmpty $M.Slug $taskText) { return (Complete-Task $M $statePath $id 'EMPTY_PLAN') }
     $cont = Get-ContinueBranch $M.Slug
     $runDir = Join-Path (Join-Path $WorkDir 'runs') $id
