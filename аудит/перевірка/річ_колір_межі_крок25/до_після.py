@@ -38,7 +38,7 @@ print(f"   сітка LCh ({len(сітка)} вузлів): змінилось {
 
 # 2. Метал кольору
 for ім in ("ЗОЛОТО", "СРІБЛО", "РОЖЕВЕ_ЗОЛОТО"):
-    print(f"\n2. {ім}: {getattr(Д, ім)} → {getattr(П, ім)}")
+    print(f"\n2. {ім}: {getattr(Д, ім, None)} → {getattr(П, ім, None)}")
 мп, мпр = collections.Counter(), collections.defaultdict(list)
 юв = collections.Counter()
 for р in виміри:
