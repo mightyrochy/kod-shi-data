@@ -1507,10 +1507,10 @@ _МІСЦЯ_ОПЦІЙ = "where it is worn"
         "takes decides whether it lands there: the shop gives one length per size and her size is not "
         "known (values: slot — slot code; level — code of the body level in question)",
     "edge_not_judged_error_unknown":
-        "the code does not judge whether the hem sits on the widest place of the body: the answer depends on "
-        "a measurement whose error is not known (values: slot — slot code; edge_error_cm — error of the "
-        "hem's height, cm, absent when unknown; levels — codes of the body levels whose width error is "
-        "unknown)",
+        "the code does not judge whether the edge (a hem, a boot shaft's top, a bag strap's lower end) sits on "
+        "the widest place of the body: the answer depends on a measurement whose error is not known "
+        "(values: slot — slot code; edge_error_cm — error of the edge's height, cm, absent when unknown; "
+        "levels — codes of the body levels whose width error is unknown)",
     "volume_anchor_not_judged_error_unknown":
         "the code does not judge whether the volume has an anchor: the ease at the levels named is within "
         "the error of the measurements it rests on, or that error is not known (values: levels — codes of "
