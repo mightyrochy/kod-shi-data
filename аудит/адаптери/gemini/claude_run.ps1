@@ -790,6 +790,7 @@ function Invoke-Claude([string]$Exe, [string[]]$ArgList, [string]$Prompt, [strin
         }
         if (-not $type) { continue }
         $last = Get-Date
+        $tick = $last  # сон до цієї події вже скинуто, вдруге його не додавати
         [System.IO.File]::AppendAllText($ev, $last.ToString('s') + "`t" + $type + "`n", $script:Utf8)
         Read-ClaudeEvent $res $obj
         if ($type -eq 'rate_limit_event') {
