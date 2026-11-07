@@ -34,7 +34,12 @@
      (інтерполяція профілю — вимір у точці). (а) порівняння `< <= > >=`, де операнди несуть різні виміри чи один —
      різницю двох, а похибки обох боків нема; (б) віднімання, де один бік — вимір речі, а другий — оцінка тіла через
      π; (в) заява правила з силою вироку, яку стереже лише наявність обох боків (`if річ is None or тіло is None`
-     з виходом чи з `else`). Не місця (окремий розділ виводу з причиною): похибку обох боків враховано; гілка
+     з виходом чи з `else`); (г) читач «невідомо» з порівняння (рішення менеджера 07.11): від кожного порівняння
+     п.6 з похибкою (місця й виправлені) відповідь іде потоком (повернення, кортеж, поле словника, перелік,
+     відфільтрований нею) до умови `if`/`elif`/`while`/виразу-вибору; місце — читач, що на «невідомо» виходить з правила
+     без «утримано» й заяви (`continue`, `break`, `return`, `pass`), дає вирок чи мовчить умовою на істинність (вирок
+     лише на «так», далі нема «утримано»), — одне на читача; де потік не розрізняє — таблиця вердиктів у приладі, читач
+     поза нею — «п.?». Не місця (окремий розділ виводу з причиною): похибку обох боків враховано; гілка
      лише кидає виняток (межа області визначення даних); порівняння вибирає силу правила (корінь
      `Е3-сила-правила`) чи належить іншому кореню за текстом. Лише Python: JS і HTML `джерела/` вимірів см не
      порівнюють (06.11).
@@ -1916,9 +1921,12 @@ def заява_сили(в):
     return None
 
 
-def п6_місця(б, іншого_кореня=lambda т: None):
-    """→ місця [(файл, рядок, підпункт, текст, доказ)], не місця [(файл, рядок, текст, причина)]."""
+def п6_місця(б, іншого_кореня=lambda т: None, виробники=None):
+    """→ місця [(файл, рядок, підпункт, текст, доказ)], не місця [(файл, рядок, текст, причина)]. `виробники` —
+    перелік, куди дописати порівняння п.6(а) з похибкою хоч одного боку, місця й виправлені (м, функція, вузол,
+    чи один операнд — сама похибка): у межах похибки їхня відповідь — «невідомо» (п.6(г))."""
     місця, не = [], []
+    виробники = [] if виробники is None else виробники
     for м, ф in б.функції:
         корінь = ф if ф is not None else м.дерево
         env = б.лок.get(id(корінь), {})
@@ -1956,7 +1964,10 @@ def п6_місця(б, іншого_кореня=lambda т: None):
                                                         "відповіді не дає"))
                 elif обидві:
                     не.append((м.шлях, в.lineno, текст, "похибку обох боків враховано"))
+                    виробники.append((м, ф, в, any(сторони(о)[1] and not виміри(о) for о in оп)))
                 else:
+                    if пох:
+                        виробники.append((м, ф, в, any(сторони(о)[1] and not виміри(о) for о in оп)))
                     місця.append((м.шлях, в.lineno, "а", текст, опис(вим, пох) + (
                         "; крізь крок %s" % ", ".join(кроки) if кроки else "")))
             elif isinstance(в, ast.BinOp) and isinstance(в.op, ast.Sub):
@@ -1992,6 +2003,415 @@ def п6_місця(б, іншого_кореня=lambda т: None):
                                           "вирок «%s» стоїть лише на наявності обох боків (річ {%s}, тіло {%s}): "
                                           "умова — різниця без похибки обох" % (
                                               зс[1], ", ".join(sorted(вим["Р"])), ", ".join(sorted(вим["Т"])))))
+    return місця, не
+
+
+# ── п.6(г): читач «невідомо» з порівняння (рішення менеджера 07.11, 13933, 13962) ───────────────────────────────────
+# Виробник — порівняння п.6 з похибкою хоч одного боку (місце й виправлене): у межах похибки воно дає «невідомо» (None
+# чи False «не доведено»). Відповідь іде потоком значення — повернення, кортеж (позиція), поле словника (ключ),
+# перелік, параметр — до читача: умови `if`/`elif`/`while`/`… if … else …`, що бере її на істинність. Мітка — (виробник,
+# шлях): шлях — позиції й ключі, які ще треба прочитати; `∅` — перелік, відфільтрований відповіддю (його порожнеча —
+# та сама відповідь).
+ПОРОЖНЯ = "∅"
+ПРОЗОРІ = {"list", "tuple", "set", "frozenset", "sorted", "reversed", "iter", "next", "bool", "any", "all", "filter"}
+СИЛА_ВИРОКУ = {"hard", "strong", "soft", "hint"}
+ОБЛІК = {"утримано", "питання"}
+ДОПИСУВАННЯ = ("append", "extend", "add", "insert")
+# Читачі, яких потік не розрізняє (умова не зводиться до «невідомо» → гілка: порівняння з числом, `while`, вираз-вибір
+# не з None): вердикт сесії лічби з рядком читача, як `ВЕРДИКТИ` приладу Е2-збій-без-сліду. Ключ — файл, функція,
+# номер такого читача в ній (рядки зсуваються). Читач без вердикту — місце «п.?»: новий читач не проходить мовчки.
+# файл | функція#номер | М (місце) чи Н (не місце) | чому
+_ТАБЛИЦЯ_Г = """
+"""
+
+
+def _вердикти_г(таблиця):
+    вих = {}
+    for р in таблиця.strip().splitlines():
+        ф, фн, в, чому = [ч.strip() for ч in р.split(" | ", 3)]
+        функція, номер = фн.rsplit("#", 1)
+        вих[("джерела/" + ф, функція, int(номер))] = (в, чому)
+    return вих
+
+
+ВЕРДИКТИ_Г = _вердикти_г(_ТАБЛИЦЯ_Г)
+
+
+def _вибрати(мітки, крок):
+    """Мітки після читання позиції (int) чи ключа (str): шлях, що починається цим кроком, коротшає; інший крок того
+    самого роду — інше значення; перелік (шлях без кроку чи з ключем під позицією) — елемент того самого."""
+    вих = set()
+    for о, ш in мітки:
+        if ш and ш[0] == крок:
+            вих.add((о, ш[1:]))
+        elif ш and isinstance(крок, int) and isinstance(ш[0], str) and ш[0] != ПОРОЖНЯ:
+            вих.add((о, ш))
+    return frozenset(вих)
+
+
+def _з_кроком(мітки, крок):
+    return frozenset((о, (крок,) + ш) for о, ш in мітки)
+
+
+def _відповідь(мітки):
+    """Мітки, що несуть саму відповідь (шлях вичерпано) чи порожнечу відфільтрованого нею переліку."""
+    return frozenset(о for о, ш in мітки if not ш or ш == (ПОРОЖНЯ,))
+
+
+class Відповіді:
+    """Потік відповіді виробника п.6 до читача: та сама нерухома точка, що в `Боки`, з мітками (виробник, шлях)."""
+
+    def __init__(self, б, виробники):
+        self.б = б
+        self.лок, self.пар, self.пов = {}, {}, {}
+        self.насіння = {}            # id(Compare) → виробник «файл:рядок»: відповідь — саме порівняння
+        self.виробники = set()       # id(Compare) усіх виробників: вони не читачі
+        self.імена = {}              # id(функції) → {імʼя: мітки} — імена, присвоєні в гілках виробника
+        self.повертає = {}           # id(функції) → мітки, які несе кожне її повернення (гілка виробника повертає)
+        for м, ф, в, пряма in виробники:
+            о = "%s:%d" % (м.шлях, в.lineno)
+            self.виробники.add(id(в))
+            корінь = ф if ф is not None else м.дерево
+            вузли = self.б.вузли[id(корінь)]
+            # «невідомо» є там, де функція його має: імʼя, якому присвоєно й None (`на = важіль = None`), повернення
+            # None; порівняння, чий операнд — сама похибка (`різниця > похибка`), — хиба «не доведено» й у межах похибки
+            ніщо = {ц.id for x in вузли if isinstance(x, ast.Assign) and isinstance(x.value, ast.Constant)
+                    and x.value.value is None for ц in x.targets if isinstance(ц, ast.Name)}
+            поверне_ніщо = any(isinstance(x, ast.Return) and (x.value is None or (
+                isinstance(x.value, ast.Constant) and x.value.value is None)) for x in вузли)
+            if пряма:
+                self.насіння[id(в)] = о
+            б_, п = м.батько.get(в), в
+            while isinstance(б_, ast.BoolOp) or (isinstance(б_, ast.UnaryOp) and isinstance(б_.op, ast.Not)):
+                б_, п = м.батько.get(б_), б_
+            if isinstance(б_, ast.If) and б_.test is п:
+                for с in б_.body + б_.orelse:
+                    for x in ast.walk(с):
+                        if isinstance(x, (ast.Assign, ast.AugAssign, ast.AnnAssign)):
+                            for ц in (x.targets if isinstance(x, ast.Assign) else [x.target]):
+                                if isinstance(ц, ast.Name) and ц.id in ніщо:
+                                    self.імена.setdefault(id(корінь), {}).setdefault(ц.id, set()).add((о, ()))
+                        elif isinstance(x, ast.Return) and ф is not None and поверне_ніщо:
+                            self.повертає.setdefault(id(ф), set()).add((о, ()))
+
+    def т(self, м, в, env, гл=0):
+        if в is None or гл > 30:
+            return Ø
+        т = lambda x: self.т(м, x, env, гл + 1)
+        if isinstance(в, ast.Name):
+            return env.get(в.id, Ø)
+        if isinstance(в, ast.Compare):
+            о = self.насіння.get(id(в))
+            return frozenset({(о, ())}) if о else Ø
+        if isinstance(в, ast.BoolOp):
+            return frozenset().union(*(т(x) for x in в.values))
+        if isinstance(в, ast.UnaryOp) and isinstance(в.op, ast.Not):
+            return т(в.operand)
+        if isinstance(в, ast.IfExp):
+            return т(в.body) | т(в.orelse) | (т(в.test) if isinstance(в.test, ast.Compare) else Ø)
+        if isinstance(в, ast.NamedExpr):
+            return т(в.value)
+        if isinstance(в, ast.Starred):
+            return т(в.value)
+        if isinstance(в, ast.Subscript):
+            с = в.slice
+            if isinstance(с, ast.Constant) and isinstance(с.value, (int, str)) and not isinstance(с.value, bool):
+                return _вибрати(т(в.value), с.value)
+            return Ø
+        if isinstance(в, ast.Tuple):
+            return frozenset().union(Ø, *(_з_кроком(т(x), і) for і, x in enumerate(в.elts)))
+        if isinstance(в, (ast.List, ast.Set)):
+            return frozenset().union(Ø, *(т(x) for x in в.elts))
+        if isinstance(в, ast.Dict):
+            вих = set()
+            for к, з in zip(в.keys, в.values):
+                if к is None:
+                    вих |= т(з)
+                elif isinstance(к, ast.Constant) and isinstance(к.value, str):
+                    вих |= _з_кроком(т(з), к.value)
+            return frozenset(вих)
+        if isinstance(в, (ast.ListComp, ast.GeneratorExp, ast.SetComp, ast.DictComp)):
+            env2 = dict(env)
+            фільтр = set()
+            for г in в.generators:
+                self.звʼязати(г.target, frozenset(x for x in self.т(м, г.iter, env2, гл + 1)
+                                                   if x[1] != (ПОРОЖНЯ,)), env2)
+                for у in г.ifs:
+                    фільтр |= {(о, (ПОРОЖНЯ,)) for о in _відповідь(self.т(м, у, env2, гл + 1))}
+            вих = self.т(м, в.value if isinstance(в, ast.DictComp) else в.elt, env2, гл + 1)
+            return вих | frozenset(фільтр)
+        if isinstance(в, ast.Call):
+            ім = назва_виклику(в)
+            if isinstance(в.func, ast.Name) and ім == "dict":
+                return frozenset().union(Ø, *(т(а) for а in в.args), *(
+                    _з_кроком(т(к.value), к.arg) if к.arg else т(к.value) for к in в.keywords))
+            if isinstance(в.func, ast.Name) and ім in ПРОЗОРІ:
+                return frozenset().union(Ø, *(т(а) for а in в.args))
+            ц = self.б.ціль_виклику(м, в)
+            if ц is not None:
+                return self.пов.get(id(ц[1]), Ø)
+            if isinstance(в.func, ast.Attribute):
+                if ім == "get" and в.args and isinstance(в.args[0], ast.Constant) and isinstance(в.args[0].value, str):
+                    return _вибрати(т(в.func.value), в.args[0].value) | (т(в.args[1]) if len(в.args) > 1 else Ø)
+                if ім in ("pop", "copy", "values", "items"):
+                    return т(в.func.value)
+            return Ø
+        return Ø
+
+    def звʼязати(self, ціль, мітки, env):
+        if isinstance(ціль, ast.Name):
+            env[ціль.id] = env.get(ціль.id, Ø) | мітки
+        elif isinstance(ціль, (ast.Tuple, ast.List)):
+            for і, е in enumerate(ціль.elts):
+                self.звʼязати(е, _вибрати(мітки, і), env)
+        elif isinstance(ціль, ast.Starred):
+            self.звʼязати(ціль.value, мітки, env)
+        elif isinstance(ціль, ast.Subscript) and isinstance(ціль.value, ast.Name) \
+                and isinstance(ціль.slice, ast.Constant) and isinstance(ціль.slice.value, str) and мітки:
+            env[ціль.value.id] = env.get(ціль.value.id, Ø) | _з_кроком(мітки, ціль.slice.value)
+
+    def прохід(self, м, ф):
+        корінь = ф if ф is not None else м.дерево
+        env = dict(self.пар.get(id(корінь), {}))
+        for ім, мм in self.імена.get(id(корінь), {}).items():
+            env[ім] = env.get(ім, Ø) | frozenset(мм)
+        вузли = self.б.вузли[id(корінь)]
+        for _ in range(ЛОКАЛЬНИХ_ПРОХОДІВ):
+            знімок = sum(len(v) for v in env.values())
+            for в in вузли:
+                if isinstance(в, (ast.Assign, ast.AnnAssign, ast.AugAssign)) and в.value is not None:
+                    for ц in (в.targets if isinstance(в, ast.Assign) else [в.target]):
+                        if isinstance(ц, (ast.Tuple, ast.List)) and isinstance(в.value, (ast.Tuple, ast.List)) \
+                                and len(ц.elts) == len(в.value.elts):
+                            for е, з in zip(ц.elts, в.value.elts):
+                                self.звʼязати(е, self.т(м, з, env), env)
+                        else:
+                            self.звʼязати(ц, self.т(м, в.value, env), env)
+                elif isinstance(в, (ast.For, ast.AsyncFor)):
+                    self.звʼязати(в.target, frozenset(x for x in self.т(м, в.iter, env) if x[1] != (ПОРОЖНЯ,)), env)
+                elif isinstance(в, ast.NamedExpr):
+                    self.звʼязати(в.target, self.т(м, в.value, env), env)
+                elif isinstance(в, ast.Call) and isinstance(в.func, ast.Attribute) and в.args \
+                        and в.func.attr in ДОПИСУВАННЯ and isinstance(в.func.value, ast.Name):
+                    мм = self.т(м, в.args[-1], env)
+                    if мм:
+                        env[в.func.value.id] = env.get(в.func.value.id, Ø) | мм
+            if sum(len(v) for v in env.values()) == знімок:
+                break
+        self.лок[id(корінь)] = env
+        if ф is not None:
+            пов = frozenset().union(Ø, *(self.т(м, в.value, env) for в in вузли
+                                         if isinstance(в, ast.Return) and в.value is not None))
+            if id(ф) in self.повертає:
+                пов = пов | frozenset(self.повертає[id(ф)])
+            self.пов[id(ф)] = пов
+        for в in вузли:
+            if not isinstance(в, ast.Call):
+                continue
+            ц = self.б.ціль_виклику(м, в)
+            if ц is None:
+                continue
+            д = ц[1]
+            поз = [а.arg for а in д.args.posonlyargs + д.args.args]
+            п = self.пар.setdefault(id(д), {})
+            for і, а in enumerate(в.args):
+                if isinstance(а, ast.Starred) or і >= len(поз):
+                    continue
+                мм = self.т(м, а, env)
+                if мм:
+                    п[поз[і]] = п.get(поз[і], Ø) | мм
+            for кл in в.keywords:
+                if кл.arg:
+                    мм = self.т(м, кл.value, env)
+                    if мм:
+                        п[кл.arg] = п.get(кл.arg, Ø) | мм
+
+    def обчислити(self, проходів=10):
+        def розмір():
+            return (sum(len(v) for e in self.лок.values() for v in e.values()),
+                    sum(len(v) for v in self.пов.values()),
+                    sum(len(v) for e in self.пар.values() for v in e.values()))
+        for н in range(проходів):
+            знімок = розмір()
+            for м, ф in self.б.функції:
+                self.прохід(м, ф)
+            if розмір() == знімок and н:
+                break
+
+
+def _літерал(x):
+    """Літерал умови: `1`, `None`, `-1` (мінус перед числом)."""
+    return isinstance(x, ast.Constant) or (isinstance(x, ast.UnaryOp) and isinstance(x.op, ast.USub)
+                                           and isinstance(x.operand, ast.Constant))
+
+
+def _кандидати(т):
+    """Операнди рішення умови: крізь `and`/`or`/`not`; порівняння з одним літералом — його другий бік (з оператором і
+    літералом); решта — сам вираз."""
+    if isinstance(т, ast.BoolOp):
+        return [к for x in т.values for к in _кандидати(x)]
+    if isinstance(т, ast.UnaryOp) and isinstance(т.op, ast.Not):
+        return _кандидати(т.operand)
+    if isinstance(т, ast.Compare) and len(т.ops) == 1:
+        л, п = т.left, т.comparators[0]
+        if _літерал(п) and not _літерал(л):
+            return [(л, т)]
+        if _літерал(л) and not _літерал(п):
+            return [(п, т)]
+    return [(т, None)]
+
+
+def _при_невідомому(т, невідомі):
+    """Значення умови, коли кожен операнд з `невідомі` — «невідомо» (None, порожній перелік), а решта не вирішує
+    (`and` — істина, `or` — хиба): True, False чи None — потік не розрізняє."""
+    if id(т) in невідомі:
+        return False
+    if isinstance(т, ast.BoolOp):
+        зн = [_при_невідомому(x, невідомі) if any(id(у) in невідомі for у in ast.walk(x))
+              else isinstance(т.op, ast.And) for x in т.values]
+        if isinstance(т.op, ast.And):
+            return False if False in зн else (None if None in зн else True)
+        return True if True in зн else (None if None in зн else False)
+    if isinstance(т, ast.UnaryOp) and isinstance(т.op, ast.Not):
+        з = _при_невідомому(т.operand, невідомі)
+        return None if з is None else not з
+    if isinstance(т, ast.Compare) and len(т.ops) == 1 and any(id(x) in невідомі for x in [т.left] + т.comparators):
+        оп, л = т.ops[0], next(x for x in [т.left] + т.comparators if id(x) not in невідомі)
+        if not _літерал(л):
+            return None
+        л = л if isinstance(л, ast.Constant) else ast.Constant(-л.operand.value)
+        if isinstance(оп, (ast.In, ast.NotIn)):        # `None in відповіді`: «невідомо» серед відповідей
+            return (л.value is None) == isinstance(оп, ast.In)
+        if isinstance(оп, (ast.Is, ast.Eq)):           # «невідомо» — None: дорівнює лише None
+            return л.value is None
+        if isinstance(оп, (ast.IsNot, ast.NotEq)):
+            return л.value is not None
+    return None
+
+
+def _вирок(в):
+    """Виклик вироку правила: ід правила й сила вироку першими двома аргументами (`_зн("K-FIT-03", "soft", …)`)."""
+    return isinstance(в, ast.Call) and len(в.args) >= 2 and all(
+        isinstance(а, ast.Constant) and isinstance(а.value, str) for а in в.args[:2]) \
+        and bool(ІД_ВИРОКУ.match(в.args[0].value)) and в.args[1].value in СИЛА_ВИРОКУ
+
+
+def _облік(в):
+    """Знахідка «утримано» чи «питання» або заява (`заява(…)`): правило каже, що не судить."""
+    return (isinstance(в, ast.Constant) and в.value in ОБЛІК) or (
+        isinstance(в, ast.Call) and назва_виклику(в) == "заява")
+
+
+def _гілка(б, м, вузли, гл=0):
+    """→ ('облік'|'вирок'|None) для коду гілки: вирок правила чи облік «невідомо» в ній чи у функціях продукту, які
+    вона кличе (до двох кроків)."""
+    вирок = облік = False
+    for с in вузли:
+        for x in ast.walk(с):
+            if _вирок(x):
+                вирок = True
+            elif _облік(x):
+                облік = True
+            elif isinstance(x, ast.Call) and гл < 2:
+                ц = б.ціль_виклику(м, x) if м is not None else None
+                if ц is not None:
+                    р = _гілка(б, ц[0], ц[1].body, гл + 1)
+                    вирок, облік = вирок or р == "вирок", облік or р == "облік"
+    return "вирок" if вирок else ("облік" if облік else None)
+
+
+def _вихід(вузли):
+    """Гілка виходить з правила: кінчається `continue`/`break`/`return` чи лише `pass`."""
+    return bool(вузли) and (isinstance(вузли[-1], (ast.Continue, ast.Break, ast.Return))
+                            or all(isinstance(с, ast.Pass) for с in вузли))
+
+
+def _далі(м, с):
+    """Інструкції після `с` до кінця тіла циклу чи функції, у яких вона стоїть (вкладені блоки — їхній хвіст)."""
+    вих = []
+    while с is not None and not isinstance(с, (ast.FunctionDef, ast.AsyncFunctionDef, ast.Module)):
+        бат = м.батько.get(с)
+        for поле in ("body", "orelse", "finalbody"):
+            блок = getattr(бат, поле, None)
+            if isinstance(блок, list) and с in блок:
+                вих += блок[блок.index(с) + 1:]
+                break
+        if isinstance(бат, (ast.For, ast.AsyncFor, ast.While)):
+            break
+        с = бат
+    return вих
+
+
+def п6г_місця(б, виробники, вердикти=None):
+    """→ місця [(файл, рядок, текст, доказ)], не місця [(файл, рядок, текст, причина)] читачів «невідомо»."""
+    вердикти = ВЕРДИКТИ_Г if вердикти is None else вердикти
+    в_ = Відповіді(б, виробники)
+    в_.обчислити()
+    місця, не = [], []
+    for м, ф in б.функції:
+        корінь = ф if ф is not None else м.дерево
+        env = в_.лок.get(id(корінь), {})
+        ім = ф.name if ф is not None else "<модуль>"
+        номер = 0
+        читачі = []                  # (рядок, текст, виробники, вид, «умова на істинність»)
+        for в in sorted(б.вузли[id(корінь)], key=lambda x: (getattr(x, "lineno", 0), getattr(x, "col_offset", 0))):
+            if not isinstance(в, (ast.If, ast.While, ast.IfExp)) or _під_main(м, в):
+                continue
+            # умова самого виробника (`if а - б > похибка: return 1`) — не читач: вона і є відповідь
+            несуть = [(к, порівн) for к, порівн in _кандидати(в.test)
+                      if id(к) not in в_.виробники and _відповідь(в_.т(м, к, env))]
+            if not несуть:
+                continue
+            виробн = {о for к, _ in несуть for о in _відповідь(в_.т(м, к, env))}
+            зн = _при_невідомому(в.test, {id(к) for к, _ in несуть})
+            вид, мовчить = None, False
+            if isinstance(в, ast.IfExp):
+                гілка = в.body if зн else в.orelse
+                if зн is not None and isinstance(гілка, ast.Constant) and гілка.value is None:
+                    вид = ("Н", "на «невідомо» вираз дає None — «невідомо» йде далі")
+                elif зн is not None and isinstance(гілка, ast.Constant) and гілка.value in СИЛА_ВИРОКУ:
+                    вид = ("М", "на «невідомо» вираз дає силу вироку «%s»" % гілка.value)
+                elif зн is not None and isinstance(гілка, ast.IfExp):
+                    вид = ("Н", "на «невідомо» вирішує наступна умова виразу")
+            elif isinstance(в, ast.If) and зн is not None:
+                гілка, інша = (в.body, в.orelse) if зн else (в.orelse, в.body)
+                if len(гілка) == 1 and isinstance(гілка[0], ast.If) and any(
+                        id(к) not in в_.виробники and _відповідь(в_.т(м, к, env)) for к, _ in _кандидати(гілка[0].test)):
+                    вид = ("Н", "на «невідомо» вирішує наступна умова (`elif`), сама читач")
+                elif гілка:
+                    р = _гілка(б, м, гілка)
+                    if р == "вирок":
+                        вид = ("М", "на «невідомо» гілка дає вирок правила")
+                    elif р == "облік":
+                        вид = ("Н", "на «невідомо» — «утримано», «питання» чи заява")
+                    elif _вихід(гілка):
+                        вид = ("М", "на «невідомо» гілка виходить з правила (`%s`) без «утримано» й заяви"
+                               % type(гілка[-1]).__name__.lower())
+                    else:
+                        вид = ("Н", "на «невідомо» гілка не виходить і вироку не дає")
+                elif _гілка(б, м, інша) == "вирок" and _гілка(б, м, _далі(м, в)) != "облік":
+                    вид, мовчить = ("М", "умова на істинність: вирок правила лише на «так», на «невідомо» — "
+                                         "мовчання без «утримано» й заяви"), True
+                else:
+                    вид = ("Н", "на «невідомо» гілка не виходить")
+            if вид is None:
+                номер += 1
+                вер = вердикти.get((м.шлях, ім, номер))
+                вид = ((вер[0], "за таблицею (%s#%d): %s" % (ім, номер, вер[1])) if вер
+                       else ("М", "п.? — вердикту нема (%s#%d): потік не розрізняє, куди йде «невідомо»" % (ім, номер)))
+            читачі.append((в.test.lineno, ast.unparse(в.test)[:70], виробн, вид, мовчить))
+        # «невідомо» тієї самої відповіді вже обліковано іншим читачем у функції (`if б is None: утримано`, далі
+        # `if б == 1: вирок`) — умова на істинність після нього не мовчить
+        облік = [(р, вв) for р, _, вв, вид, _ in читачі if вид[0] == "Н" and "утримано" in вид[1]]
+        for рядок, текст, виробн, вид, мовчить in читачі:
+            інший = next((р for р, вв in облік if вв & виробн and р != рядок), None) if мовчить else None
+            if інший:
+                вид = ("Н", "«невідомо» тієї самої відповіді обліковує читач рядка %d" % інший)
+            звідки = "відповідь %s" % ", ".join(sorted(виробн)[:3]) + (" …" if len(виробн) > 3 else "")
+            if вид[0] == "М":
+                місця.append((м.шлях, рядок, текст, "%s — %s" % (вид[1], звідки)))
+            else:
+                не.append((м.шлях, рядок, текст, "читач «невідомо»: %s — %s" % (вид[1], звідки)))
     return місця, не
 
 
@@ -2867,7 +3287,7 @@ def п7_місця(л):
     return місця, не
 
 
-def лічити(корінь):
+def лічити(корінь, вердикти_г=None):
     л = Лічба(корінь)
     л.зібрати()
     л.потік()
@@ -3103,9 +3523,15 @@ def лічити(корінь):
     б.обчислити()
     while б.кроки():                 # функції з кроком вибору — мітка «⊗» на їхніх поверненнях, і потік наново
         б.обчислити()
-    місця6, не6 = п6_місця(б, іншого_кореня)
+    виробники = []
+    місця6, не6 = п6_місця(б, іншого_кореня, виробники)
     for файл, рядок, під, текст, доказ in місця6:
         л.додати(файл, рядок, 6, "(%s) %s — %s" % (під, текст, доказ))
+    # п.6(г): читач, що бере «невідомо» з порівняння п.6 за «ні», «рівно» чи «пройдено» (рішення 07.11)
+    місця6г, не6г = п6г_місця(б, виробники, вердикти_г)
+    for файл, рядок, текст, доказ in місця6г:
+        л.додати(файл, рядок, 6, "(г) %s — %s" % (текст, доказ))
+    не6 = не6 + не6г
     місця1г, не1г = п1г_місця(л, назва_виклику)
     for файл, рядок, текст, доказ in місця1г:
         л.додати(файл, рядок, 1, "(г) %s — %s" % (текст, доказ))
@@ -3459,6 +3885,111 @@ def образ(о, зріст, р):
     т = тіло(о, зріст)
     return плече(р, т), довжина(р, т), довжина_з_похибкою(р, т), межа(р, т), сила(р, т), вирок(р, т), одна_річ(р)
 ''',
+    # п.6(г) рішення 07.11: читач «невідомо» з порівняння з похибкою — місце, коли на «невідомо» виходить з правила
+    # без «утримано» й заяви (`continue`, `return`), дає вирок чи мовчить умовою на істинність; облік «утримано», вираз
+    # з None, умова, що «невідомо» пропускає далі, — не місця; читач без вердикту в таблиці — «п.?»
+    "джерела/читач_штучний.py": '''
+import math
+
+
+def тіло(о, зріст):
+    профіль = [(nm, зріст * 0.8, о[nm] / math.pi) for nm in о]
+    return dict(профіль=профіль, обхвати=dict(о), зріст=зріст, похибка_см=0.5)
+
+
+def _зн(ід, сила, текст):
+    return dict(ід=ід, сила=сила, текст=текст)
+
+
+def бік(а, похибка_а, б, похибка_б):
+    if а is None or б is None or похибка_а is None or похибка_б is None:
+        return None
+    if а - б > похибка_а + похибка_б:  # НЕ
+        return 1
+    if б - а > похибка_а + похибка_б:  # НЕ
+        return -1
+    return None
+
+
+def низ(р, т):
+    return бік(р.get("низ_см"), р.get("розкид_см"), т["зріст"], т["похибка_см"])
+
+
+def міра(р, т):
+    на = None
+    if р.get("низ_см") - т["зріст"] > р.get("розкид_см") + т["похибка_см"]:  # НЕ
+        на = True
+    return dict(на_максимумі=на, важіль_є=р.get("розкид_см") is not None)
+
+
+def правило_вихід(р, т):
+    if низ(р, т) != 1:  # МІСЦЕ:6
+        return []
+    return [_зн("K-TST-11", "soft", "нижче")]
+
+
+def правило_вирок(р, т):
+    if низ(р, т) != -1:  # МІСЦЕ:6
+        return [_зн("K-TST-12", "soft", "не вище")]
+    return []
+
+
+def правило_мовчить(р, т):
+    if низ(р, т) == 1:  # МІСЦЕ:6
+        return [_зн("K-TST-13", "soft", "нижче")]
+    return []
+
+
+def правило_утримано(р, т):
+    б_ = низ(р, т)
+    if б_ is None:  # НЕ
+        return [dict(ід="K-TST-14", стан="утримано")]
+    if б_ == 1:  # НЕ
+        return [_зн("K-TST-14", "soft", "нижче")]
+    return []
+
+
+def мітка(р, т):
+    б_ = низ(р, т)
+    return "нижче" if б_ == 1 else ("вище" if б_ == -1 else None)  # НЕ
+
+
+def правило_поля(р, т):
+    вих = []
+    for м in [міра(р, т)]:
+        if not (м["на_максимумі"] and м["важіль_є"]):  # МІСЦЕ:6
+            continue
+        вих.append(_зн("K-TST-15", "soft", "на максимумі"))
+    return вих
+
+
+def правило_переліку(р, т):
+    _на = [м for м in [міра(р, т)] if м["на_максимумі"]]
+    if not _на:  # МІСЦЕ:6
+        return []
+    return [_зн("K-TST-16", "soft", "на максимумі")]
+
+
+def правило_get(речі):
+    вих = []
+    for x in речі:
+        if not x.get("низ_см"):  # НЕ
+            continue
+        вих.append(x)
+    return вих
+
+
+def правило_без_вердикту(р, т):
+    if низ(р, т) > 0:  # МІСЦЕ:6
+        return [_зн("K-TST-17", "soft", "нижче")]
+    return []
+
+
+def образ(о, зріст, р, речі):
+    т = тіло(о, зріст)
+    return (правило_вихід(р, т), правило_вирок(р, т), правило_мовчить(р, т), правило_утримано(р, т), мітка(р, т),
+            правило_поля(р, т), правило_переліку(р, т), правило_get(речі), правило_без_вердикту(р, т))
+''',
     "джерела/пара_штучна.py": '''
 C = {"перекос": 0.05}
 
@@ -3773,7 +4304,9 @@ def самоперевірка():
     похибки лише речі, вирок на самій наявності обох боків; не місця п.6 — похибка обох боків, межа області
     визначення (виняток), вибір сили правила, один вимір проти числа; п.6(а) рішення 06.11 — крок вибору відрізка чи
     вікна не місце, а відповідь, яку він живить, — місце (повернення, поле словника), вартовий ділення — ні, `continue`
-    перед вироком — не крок; п.6(б) — два виміри тіла (FFIT, частка талії й зросту, бік пари голим числом); п.1(г) —
+    перед вироком — не крок; п.6(г) рішення 07.11 — читач «невідомо» з порівняння з похибкою: вихід
+    без «утримано», вирок, умова на істинність, поле словника, перелік, відфільтрований відповіддю, читач без вердикту
+    («п.?»); не місця — облік «утримано» (і умова на істинність після нього), вираз з None, `.get` → `continue`; п.6(б) — два виміри тіла (FFIT, частка талії й зросту, бік пари голим числом); п.1(г) —
     бік за межею проти «невідомо» тієї самої величини (і з вартовим ділення), читач відповіді — не місце; ще не-місця:
     переклад слова ядра, година, тривалість, те саме число різних одиниць, сила правила, межі 0 і 1, прапор, нейтраль,
     заповнювач, межа з посиланням, таблиця ваг, тест."""
@@ -3803,6 +4336,12 @@ def самоперевірка():
         подвійні = getattr(л, "п7_подвійні", {})
         вих.append(("п.7 литка — дві точки бази під одним іменем (найширша й найвужча)", "литка" in подвійні
                     and "найширше" in л.п7_база["литка"][0] and any("найвужче" in о[0] for о in подвійні["литка"])))
+        к92 = next(і for і, р in enumerate(ШТУЧНІ["джерела/читач_штучний.py"].lstrip("\n").split("\n"), 1)
+                   if "низ(р, т) > 0" in р)
+        лв, _ = лічити(тека, {("джерела/читач_штучний.py", "правило_без_вердикту", 1): ("Н", "штучний вердикт")})
+        вих.append(("п.6(г) читач з вердиктом таблиці — не місце, без вердикту — «п.?»",
+                    ("джерела/читач_штучний.py", к92) not in лв.місця and "п.?" in str(л.місця.get(
+                        ("джерела/читач_штучний.py", к92)))))
         вих.append(("місць без позначки нема%s" % (" (є: %s)" % ", ".join(чужі) if чужі else ""), not чужі))
     return вих
 
