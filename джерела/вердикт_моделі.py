@@ -67,8 +67,9 @@ _НІЧОГО_НЕ_КАЖЕ = frozenset({"shoe_cut_irrelevant_leg_covered", "cut
 # одиницею йде моделі-стилістці — судить вона. Такі знахідки мають силу «утримано» (ваги нема), тож
 # `питання_або_нуль` їх відсіював, і на дріт вердикту вимір не доїжджав (лише в картку й звіт).
 # Ознака — код заяви, як у `_НІЧОГО_НЕ_КАЖЕ`, не слова `суть`.
-_ФАКТ_МОДЕЛІ = frozenset({"necklace_neckline_gap_not_judged", "watch_lugs_and_wrist_not_judged",
-                          "print_scale_ratio_not_judged"})
+_ФАКТ_МОДЕЛІ = frozenset({"necklace_neckline_gap_not_judged", "item_edge_off_body_profile_not_judged", "watch_lugs_and_wrist_not_judged",
+                          "print_scale_ratio_not_judged", "leg_proportion_pair_tone_not_judged",
+                          "motif_scale_and_person_not_judged"})
 
 
 def факт_моделі(z):
@@ -436,8 +437,11 @@ def знахідки_вердикту(знахідки, образ, ном=None)
     вето = [dict(код="вето", речі=[номер_речі(r, ном) for r in (z.get("речі") or []) if r not in (None, "")],
                  суть="вето людини: %s" % _номери_в_тексті(str(z.get("суть") or ""), ном)[:80],
                  **({"заяви": list(z["заяви"])} if z.get("заяви") else {}))
-            for z in рядки if z.get("правило") == "K-PC-08"]
-    рядки = [z for z in рядки if z.get("правило") != "K-PC-08" and (not питання_або_нуль(z) or факт_моделі(z))]
+            for z in рядки if z.get("правило") == "K-PC-08" and z.get("сила") != "питання"]
+    # K-PC-08 «питання» (поділ проти її межі ніг без похибки рівня тіла, `суд_річ.вето_покриття`) — не
+    # межа, а запит: вето його не бере, і далі він іде, як усі питання (Е3-одна-величина, 06.11).
+    рядки = [z for z in рядки if (z.get("правило") != "K-PC-08" or z.get("сила") == "питання")
+             and (not питання_або_нуль(z) or факт_моделі(z))]
     злиті, порядок = {}, []
     for z in рядки:
         # Знахідка про річ жінки з фото, з якої знято гейт (`без_замків`),
