@@ -2733,6 +2733,11 @@ _МІСЦЯ_ОПЦІЙ = "where it is worn"
     "add_third_piece_to_mono": "add a third piece: shoes in the hem tone, an open layer or a structural "
                                "accessory",
     "motif_scale_off_person": "print motif off the person's scale (item_motif: larger|smaller)",
+    "item_edge_off_body_profile_not_judged": "the code does not judge whether this item's edge sits on a widest "
+                                             "place of her body: the edge it computes from the item's data does "
+                                             "not land within her body profile, so the item's length or strap is "
+                                             "most likely misread (values: edge_cm — the computed edge, cm from "
+                                             "floor; items — the item)",
     "motif_scale_and_person_not_judged": "the code does not judge whether the print motif suits her scale: the "
                                          "motif's share of its photo frame and her frame are different quantities, "
                                          "and no recognised source links them (values: motif_frame_share — the "

@@ -67,7 +67,7 @@ _НІЧОГО_НЕ_КАЖЕ = frozenset({"shoe_cut_irrelevant_leg_covered", "cut
 # одиницею йде моделі-стилістці — судить вона. Такі знахідки мають силу «утримано» (ваги нема), тож
 # `питання_або_нуль` їх відсіював, і на дріт вердикту вимір не доїжджав (лише в картку й звіт).
 # Ознака — код заяви, як у `_НІЧОГО_НЕ_КАЖЕ`, не слова `суть`.
-_ФАКТ_МОДЕЛІ = frozenset({"necklace_neckline_gap_not_judged", "watch_lugs_and_wrist_not_judged",
+_ФАКТ_МОДЕЛІ = frozenset({"necklace_neckline_gap_not_judged", "item_edge_off_body_profile_not_judged", "watch_lugs_and_wrist_not_judged",
                           "print_scale_ratio_not_judged", "leg_proportion_pair_tone_not_judged",
                           "motif_scale_and_person_not_judged"})
 
