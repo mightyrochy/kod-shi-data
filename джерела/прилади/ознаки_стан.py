@@ -116,14 +116,19 @@ class Стан:
         for n in ast.walk(вузол):
             if isinstance(n, ast.Name) and isinstance(n.ctx, ast.Load) and S in self.читати(n.id):
                 б = бат.get(id(n))
-                if isinstance(б, (ast.Subscript, ast.Attribute)) and б.value is n \
+                # елемент кортежу за сталим індексом (`ма[0]`, `ма[2]` з `ма = межі_кольору(a)`) — те саме ім'я, а не
+                # читання запису: `_найближчі(ма[0], …)` і `_найближчі(ма[2], …)` — один вхід (рядок дошки 13957)
+                кортежу = isinstance(б, ast.Subscript) and isinstance(б.slice, ast.Constant) and type(б.slice.value) is int
+                if isinstance(б, (ast.Subscript, ast.Attribute)) and б.value is n and not кортежу \
                         or any(not str(к).startswith("#") for к in self.ключі.get(n.id, {})):
                     return None
                 імена.add(n.id)
         if not імена:
             return None
         пох = self.а.походження(ф)
-        return (id(ф), frozenset().union(*(пох.get(і) or {("ззовні", і)} for і in імена)))
+        входи = frozenset().union(*(пох.get(і) or {("ззовні", і)} for і in імена))
+        # параметр без її значення — не її вхід: пара `(x, y)` з `да` і `дб` несе її значення лише з `да` (13957)
+        return (id(ф), frozenset(в for в in входи if в[0] != "параметр" or S in self.читати(в[1])) or входи)
 
     @contextlib.contextmanager
     def мертве(self, умова=True, тест=None):
@@ -227,9 +232,15 @@ class Стан:
         `ознака_палітри(F, nm)["доступно"]` у `PP.дані(F)`): елемент для неї не утворюється (рядок дошки 13922)."""
         return next((у for г in в.generators for у in г.ifs if self.ворота(у) == "так"), None)
 
-    def закритий_ключ(self, т):
+    def порожній_ключ(self, т):
+        """`f(...)["k"]` / `f(...).get("k")` (чи через ім'я), де `f` для оцінки моделі віддає під `k` сталий `None`
+        (`Аналіз.порожні_ключі`: `ознака_палітри(F, nm)["значення"]`): її значення читання не несе (рядок дошки 13983)."""
+        return self.закритий_ключ(т, self.а.порожні_ключі)
+
+    def закритий_ключ(self, т, закриті=None):
         """`f(...)["k"]` / `f(...).get("k")` чи те саме через ім'я, присвоєне лише з таких викликів, де `f` для оцінки
         моделі віддає під `k` сталий `False` (`Аналіз.закриті_ключі`: `ознака_палітри(F, nm)["доступно"]`)."""
+        закриті = self.а.закриті_ключі if закриті is None else закриті
         if isinstance(т, ast.Subscript) and _рядок(т.slice):
             база, ключ = т.value, т.slice.value
         elif isinstance(т, ast.Call) and isinstance(т.func, ast.Attribute) and т.func.attr == "get" and т.args \
@@ -242,7 +253,7 @@ class Стан:
             if not isinstance(в, ast.Call):
                 return False
             ім = в.func.id if isinstance(в.func, ast.Name) else в.func.attr if isinstance(в.func, ast.Attribute) else None
-            return ключ in self.а.закриті_ключі.get(ім, ())
+            return ключ in закриті.get(ім, ())
         if закриває(база):
             return True
         if isinstance(база, ast.Name) and база.id in self.локальні:
@@ -529,6 +540,9 @@ class Стан:
     def значення(self, в):
         """Вираз → (мітки поза сталими ключами, ключі dict чи None): ключі dict ідуть у виклик і з повернення окремо."""
         сам = в.value if isinstance(в, (ast.Await, ast.YieldFrom)) else в
+        if isinstance(сам, (ast.Subscript, ast.Call)) and self.порожній_ключ(сам):
+            self.e(сам)
+            return E, None
         if isinstance(сам, ast.Subscript) and isinstance(сам.slice, ast.Constant) and type(сам.slice.value) is int:
             self.e(сам.value)
             кортеж = self.кортежі_викликів.get(id(сам.value))
@@ -1219,6 +1233,12 @@ class Стан:
                 мод = self.м.імпорти[в.value.id].split(".")[-1]
                 return self.а.глоб.get((мод, в.attr), E)
             return self.e(в.value)
+        if isinstance(в, (ast.Subscript, ast.Call)) and self.порожній_ключ(в):
+            # `ознака_палітри(F, nm)["значення"]`: для оцінки моделі None — її значення тут нема (рядок дошки 13983)
+            self.e(в.value if isinstance(в, ast.Subscript) else в.func.value)
+            for а_ in (в.args if isinstance(в, ast.Call) else ()):
+                self.e(а_)
+            return E
         if isinstance(в, ast.Subscript):
             if isinstance(в.value, ast.Name) and _рядок(в.slice):
                 return self.ключ_імені(в.value.id, в.slice.value, в)
@@ -1269,6 +1289,15 @@ class Стан:
             стала_пара = id(в) in self.а.кутові.get(self.ф.повне, ()) and (not л or not п)
             if id(в) in self.пари and S in л | п and (стала_пара or self.ф.повне not in self.а.шкали
                     or л & {S, P, C, K} and п & {S, P, C, K}):
+                if not self.а.пара_глибина:
+                    self.місце(self.м, в, 1, "її значення входить в арифметику пари: %s" % _текст(в)[:70], вхід=True)
+                    self.а.пара_глибина += 1
+                    self.вхід_пари = True
+                return (м - {S}) | {Q}
+            if isinstance(в.op, ast.Mult) and not self.ф.формула and not self.ф.геометрія and (
+                    S in л and S not in п and п & {P, C} or S in п and S not in л and л & {P, C}):
+                # добуток її значення й речі зі входу чи файлу (`√(C1·C2)` різниці тону ΔH*, `_дельта_h`) — арифметика
+                # пари, вхід з боку її значення; число далі — про пару (рішення 07.11, 13954; рядок дошки 13957)
                 if not self.а.пара_глибина:
                     self.місце(self.м, в, 1, "її значення входить в арифметику пари: %s" % _текст(в)[:70], вхід=True)
                     self.а.пара_глибина += 1
@@ -1585,6 +1614,20 @@ class Стан:
             return Стан._джерело_довіри(вираз.value, імена)
         return False
 
+    def локальна_лямбда(self, func):
+        """Лямбда, присвоєна імені `func` у цій функції один раз і без інших присвоєнь, з позиційними параметрами."""
+        if not isinstance(func, ast.Name) or isinstance(self.ф.вузол, ast.Lambda):
+            return None
+        зв = [n.value for n in self.ф.власні if isinstance(n, (ast.Assign, ast.AnnAssign, ast.AugAssign))
+              and any(isinstance(ц, ast.Name) and ц.id == func.id
+                      for ц in (n.targets if isinstance(n, ast.Assign) else [n.target]))]
+        if len(зв) != 1 or not isinstance(зв[0], ast.Lambda):
+            return None
+        а = зв[0].args
+        if а.vararg or а.kwarg or а.kwonlyargs or а.posonlyargs or а.defaults:
+            return None
+        return зв[0]
+
     def виклик(self, в):
         ім = _ім_виклику(в.func)
         if ім == "map" and isinstance(в.func, ast.Name) and len(в.args) == 2 and not в.keywords \
@@ -1657,6 +1700,22 @@ class Стан:
             усі |= м
         for м in іменні.values():
             усі |= м
+        лок = self.локальна_лямбда(в.func)
+        if лок is not None:
+            # виклик лямбди, присвоєної в цій функції (`s = lambda c1, c2, д: …; s(ра["C"][0], рб["C"][0], р[0])` у
+            # `колір_відношення._дельта_h`): її тіло з мітками аргументів, а не злиття всіх аргументів (рядок дошки 13957)
+            параметри = [а.arg for а in лок.args.args]
+            було = {ім_: self.env.get(ім_) for ім_ in параметри}
+            for ім_, м in zip(параметри, позиційні):
+                self.env[ім_] = м
+            try:
+                return self.e(лок.body)
+            finally:
+                for ім_, м in було.items():
+                    if м is None:
+                        self.env.pop(ім_, None)
+                    else:
+                        self.env[ім_] = м
         елемент = None
         if ім in ("sorted", "sort", "min", "max", "filter", "map", "nsmallest", "nlargest", "groupby"):
             джерело = в.func.value if ім == "sort" and isinstance(в.func, ast.Attribute) else \
@@ -1846,6 +1905,10 @@ class Стан:
                     self.місце(self.м, в, 1, "%s (у `%s`): %s" % (погл, ц.ім, _текст(в)[:60]), вхід=True)
                     if not self.мертва:
                         self.поглинутий_вхід = True
+                if not self.а.прозора(self.ф) and S in пов:
+                    # число з поглиненого входу пари — про пару (Q), а не її колорит: місце — сам вхід (рішення 07.11,
+                    # 13954; рядок дошки 13957: `кут(да[0], дб[0])` у `розкид_дуг` — далі `у_вікні` лише споживач)
+                    пов = (пов - {S}) | {Q}
             if ц.формула and not self.ф.формула and not self.а.пара_глибина and len(позиційні) >= 2 \
                     and S in _пара(*позиційні):
                 # шматок формули простору кольору: її значення входить у формулу тут, а не в її арифметику

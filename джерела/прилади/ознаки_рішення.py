@@ -678,6 +678,7 @@ def походження_імен(ф):
                 if x is not None:
                     параметри.add(x.arg)
     звʼязки = defaultdict(list)
+    ключові = set()
 
     def цілі(ц, значення):
         for n in ast.walk(ц):
@@ -693,11 +694,17 @@ def походження_імен(ф):
             цілі(n.target, n.iter)
         elif isinstance(n, ast.withitem) and n.optional_vars is not None:
             цілі(n.optional_vars, n.context_expr)
+        elif isinstance(n, ast.Call) and isinstance(n.func, ast.Name) and n.func.id in ("min", "max", "sorted") and n.args:
+            # `min(пари, key=lambda п: _кут(*п))`: параметр ключа — елемент послідовності, а не новий вхід (13957)
+            for к in n.keywords:
+                if к.arg == "key" and isinstance(к.value, ast.Lambda) and len(к.value.args.args) == 1:
+                    ключові.add(к.value.args.args[0].arg)
+                    цілі(ast.Name(id=к.value.args.args[0].arg), n.args[0])
 
     def читання(в):
         return any(isinstance(x, ast.Subscript) or isinstance(x, ast.Call) and isinstance(x.func, ast.Attribute)
                    and x.func.attr == "get" for x in ast.walk(в))
-    пох = {ім: {("параметр", ім)} for ім in параметри}
+    пох = {ім: {("параметр", ім)} for ім in параметри - ключові}
     for ім, вирази in звʼязки.items():
         пох.setdefault(ім, set()).update(("читання", id(в)) for в in вирази if читання(в))
     while True:
@@ -706,7 +713,7 @@ def походження_імен(ф):
             for в in вирази:
                 for x in ast.walk(в):
                     if isinstance(x, ast.Name) and isinstance(x.ctx, ast.Load) and x.id != ім:
-                        нові = пох.get(x.id) or {("ззовні", x.id)}
+                        нові = пох[x.id] if x.id in пох else {("ззовні", x.id)}   # зв'язане ще порожнє — не ззовні
                         if not нові <= пох[ім]:
                             пох[ім] |= нові
                             змінилось = True
@@ -714,22 +721,23 @@ def походження_імен(ф):
             return {ім: frozenset(в) for ім, в in пох.items()}
 
 
-def ключі_закриті_оцінкою(дерева, мітки):
+def ключі_закриті_оцінкою(дерева, мітки, стала=False):
     """Функції, що для оцінки моделі віддають запис зі сталим `False` під ключем: ім'я функції → такі ключі. У гілці,
     відкритій перевіркою на мітку оцінки (`if протокол == "model_hex":`), вона повертає `dict(..., доступно=False)` чи
     `{"доступно": False}`, або виклик іншої такої функції (`ознака_палітри` → `_ознака_запису`). Перевірка такого ключа
     (`ознака_палітри(F, nm)["доступно"]`) для `model_hex` хибна: що за нею, для оцінки не виконується (рядок дошки
-    13922: фільтр включення `PP.дані(F)`)."""
+    13922: фільтр включення `PP.дані(F)`). `стала=None` — ключі зі сталим `None` (`значення=None`): читання такого ключа
+    її значення для оцінки не несе (`_до_очей`: `ознака_палітри(F, "очі")["значення"] or {}`, рядок дошки 13983)."""
     def на_мітку(т):
         return isinstance(т, ast.Compare) and len(т.ops) == 1 and isinstance(т.ops[0], (ast.Eq, ast.Is)) and any(
             isinstance(х, ast.Constant) and isinstance(х.value, str) and х.value in мітки for х in (т.left, т.comparators[0]))
 
     def хибні(в):
         if isinstance(в, ast.Call) and isinstance(в.func, ast.Name) and в.func.id == "dict":
-            return {к.arg for к in в.keywords if к.arg and isinstance(к.value, ast.Constant) and к.value.value is False}
+            return {к.arg for к in в.keywords if к.arg and isinstance(к.value, ast.Constant) and к.value.value is стала}
         if isinstance(в, ast.Dict):
             return {к.value for к, з in zip(в.keys, в.values) if isinstance(к, ast.Constant) and isinstance(к.value, str)
-                    and isinstance(з, ast.Constant) and з.value is False}
+                    and isinstance(з, ast.Constant) and з.value is стала}
         return set()
 
     def ім_виклику(в):
