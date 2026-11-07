@@ -864,7 +864,12 @@ function Invoke-Task($M, $Job) {
     $exe = Find-Exe $ClaudeExe
     if (-not $exe) { return (Complete-Task $M $statePath $id 'ENGINE_MISSING') }
     try { $taskText = Add-AutoTaskContext $M.Slug ((Invoke-Git @('cat-file', 'blob', "$($M.Sha):$taskPath")).Out) $M.Sha $M.Model }
-    catch { Write-Log "позначка $($M.Name): план наряду не зібрано: $($_.Exception.Message)"; Enter-ReviewWait $M; Remove-Claim $statePath; return }
+    catch {
+        # Збій контексту (план живого, вхід автоперевірки): чекання з лічильником; на межі — PLAN_FAILED, що будить диспетчера.
+        if (Enter-PlanWait $M $_.Exception.Message) { Remove-Claim $statePath; return }
+        try { Add-Note (Join-Path $GeminiOutDir 'blocked-reasons.json') "claude/$($M.Slug)" ('PLAN_FAILED: ' + (Get-PlanFailReason $_.Exception.Message)) } catch { Write-Log "причина PLAN_FAILED не записана: $($_.Exception.Message)" }
+        return (Complete-Task $M $statePath $id 'PLAN_FAILED')
+    }
     if (Test-AutoPlanEmpty $M.Slug $taskText) { return (Complete-Task $M $statePath $id 'EMPTY_PLAN') }
     $cont = Get-ContinueBranch $M.Slug
     $runDir = Join-Path (Join-Path $WorkDir 'runs') $id
@@ -1141,7 +1146,8 @@ function Start-Markers($Workers) {
             $job = @{ id = $id; dir = $dir; slot = $slot; lane = 'claude'; ref = $m.Ref; sha = $m.Sha; time = $m.Time; name = $m.Name
                 slug = $m.Slug; model = $m.Model; n = $m.N; cond = $m.Cond; prio = $m.Prio; deadline = $m.Deadline; gpu = $m.Gpu
                 claude = $m.Claude; effort = $m.Effort; limits = $script:Limits }
-            [void]$Workers.Add((Start-Worker $job $dir))
+            $worker = Start-Worker $job $dir
+            [void]$Workers.Add($worker)
         } catch {
             Write-Log "позначка $($m.Name): процес наряду не запущено — $($_.Exception.Message)"
             Close-FailedStart $m $id (Get-StatePath (Get-MarkerKey $m))
@@ -1149,7 +1155,13 @@ function Start-Markers($Workers) {
         }
         Write-Log "позначка $($m.Name): слот $slot, пріоритет $($m.Prio)$(if ($m.Deadline) { ", строк $($m.Deadline)" })$(if ($m.Gpu) { ', GPU' }) -> $id"
         $started++
-        if ($m.Gpu) { $gpuWhy = 'GPU: її щойно взяв наряд цього проходу' }
+        if ($m.Gpu) {
+            $gpuWhy = 'GPU: її щойно взяв наряд цього проходу'
+            # Наряд, що пішов у чекання (REVIEW_API, PLAN_WAIT) за секунди, GPU не тримає: наступна GPU-позначка проходу її бере.
+            if (Test-LaterGpuMarker $ordered $m) {
+                if ((Wait-GpuWorkerOutcome $worker (Get-StatePath (Get-MarkerKey $m))) -eq 'EXITED') { $gpuWhy = $null }
+            }
+        }
     }
     Save-Skips $skipFile
     @($started, $null)
