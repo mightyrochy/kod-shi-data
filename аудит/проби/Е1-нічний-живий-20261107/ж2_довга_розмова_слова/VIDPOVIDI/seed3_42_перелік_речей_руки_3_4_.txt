@@ -1,0 +1,44 @@
+── ПРОМПТ (2618 симв.) ──
+{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.", "One item carries one thing — of two alternatives list the first; a note in brackets is not an item.", "Slot \"accessory\" is for an item no other slot fits.", "\"is_outfit\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "ITEM_LIST", "answer_schema": {"is_outfit": "yes|no", "items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory", "color_hex": "<#rrggbb or null>", "worn": "<true, or false when the description says the outfit goes without it>"}]}, "input": ["\"description\" — the outfit description"]}, "description": "Merino wool midi skirt, A-line silhouette with a subtle pleated front for flow during queuing, forest green, brushed wool blend with fine cashmere fibers.\nOxford button-down blouse, relaxed but tailored fit to allow comfort while standing in lines, ivory cream, heavy cotton oxford weave.\nCashmere blend structured blazer, cropped length at the hip to balance the skirt's volume, moss green, soft yet substantial wool knit with a matte finish.\nLoafers with a low heel, round toe for a softer silhouette suitable for an old library setting, dark brown, smooth calfskin leather.\nPearl stud earrings, small disc shape that catches light without overwhelming the smart dress code, lustrous white freshwater pearls set in sterling silver.\nWhy this outfit works: This ensemble perfectly balances the need for warmth against the library's chill with three layers of wool and a substantial blazer, ensuring she stays cozy during her long wait and photo session. The classic ivory and forest green palette feels timeless and appropriate for a book launch celebration within an antique setting, while the A-line skirt and relaxed blouse offer the comfort she explicitly requested after standing in line. Finally, the smart dress code is honored through the tailored blazer and refined loafers without sacrificing the cozy, literary atmosphere of her gathering with friends."}
+
+── ВІДПОВІДЬ (1229 симв., 5.2 с, HTTP 200) ──
+{
+  "is_outfit": "yes",
+  "items": [
+    {
+      "name": "skirt",
+      "details": "A-line silhouette with a subtle pleated front for flow during queuing, midi length",
+      "slot": "bottom",
+      "color_hex": "#225533",
+      "worn": true
+    },
+    {
+      "name": "blouse",
+      "details": "Relaxed but tailored fit to allow comfort while standing in lines, heavy cotton oxford weave",
+      "slot": "top",
+      "color_hex": "#FFFFF0",
+      "worn": true
+    },
+    {
+      "name": "blazer",
+      "details": "Structured cropped length at the hip to balance the skirt's volume, soft yet substantial wool knit with a matte finish",
+      "slot": "outerwear",
+      "color_hex": "#5E7062",
+      "worn": true
+    },
+    {
+      "name": "loafers",
+      "details": "Low heel, round toe for a softer silhouette suitable for an old library setting, smooth calfskin leather",
+      "slot": "shoes",
+      "color_hex": "#3B2F2F",
+      "worn": true
+    },
+    {
+      "name": "earrings",
+      "details": "Small disc shape that catches light without overwhelming the smart dress code, lustrous white freshwater pearls set in sterling silver",
+      "slot": "earrings",
+      "color_hex": "#FFFFFF",
+      "worn": true
+    }
+  ]
+}
