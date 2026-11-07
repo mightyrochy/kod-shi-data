@@ -17,7 +17,8 @@ import areas, похибка_вимірів_тіла as П  # noqa: E402
     "пах": (2, "crotchheight", "stature"), "коліно": (2, "kneeheightmidpatella", "stature"),
     "литка": (1, "CALF_HT", "STATURE"),
 }
-НИЖНІ_МЕЖІ = {"щиколотка": (2, "lateralmalleolusheight", "stature")}  # рівень → поле `нижня_межа` запису
+НИЖНІ_МЕЖІ = {"щиколотка": (2, "lateralmalleolusheight", "stature"),
+              "підборіддя": (2, "cervicaleheight", "stature")}  # рівень → поле `нижня_межа` запису
 ІНШІ = [(2, "талія (пупок)", "waistheightomphalion", "stature"),
         (2, "коліно (epicondyle)", "lateralfemoralepicondyleheight", "stature")]
 

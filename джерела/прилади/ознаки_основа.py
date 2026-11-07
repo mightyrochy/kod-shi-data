@@ -483,6 +483,15 @@ def _хвіст_ключа(ключ, префікс):
     return ключ[len(префікс):] if isinstance(ключ, str) and ключ.startswith(префікс) else None
 
 
+def _або_порожнє(вузол):
+    """`(q or {})` / `(q or [])` / `(q or None)`: запис або порожнє значення — ключі ті самі, що в `q`."""
+    if not (isinstance(вузол, ast.BoolOp) and isinstance(вузол.op, ast.Or) and len(вузол.values) == 2):
+        return False
+    п, д = вузол.values
+    return isinstance(п, ast.Name) and (isinstance(д, (ast.Dict, ast.List, ast.Tuple)) and not (
+        getattr(д, "keys", None) or getattr(д, "elts", None)) or (isinstance(д, ast.Constant) and д.value is None))
+
+
 def _під(ключі, ключ):
     """Ключі значення під `ключ` (шлях «ключ/під»)."""
     п = "%s/" % ключ
@@ -506,11 +515,14 @@ def _з_префіксом(ключ, ключі):
     return вих
 
 
+_ПОЗИЦІЯ_КОРТЕЖА = re.compile(r"#\d+/")
+
+
 def _без_першого(ключі):
     """Ключі елемента за змінним ключем: і ключі самого запису, і під будь-яким його ключем."""
     вих = {к: в for к, в in (ключі or {}).items() if к != МАПА}
     for к, в in (ключі or {}).items():
-        if isinstance(к, str) and "/" in к:
+        if isinstance(к, str) and "/" in к and not _ПОЗИЦІЯ_КОРТЕЖА.match(к):   # `#1/поле` — позиція кортежу, не ключ мапи
             р = к.split("/", 1)[1]
             if р != МАПА:
                 вих[р] = вих.get(р, E) | в
