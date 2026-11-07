@@ -187,6 +187,8 @@
     "знання_речі",
     "знання_дріт",
     "accessory", "areas", "bases", "body_shape", "bridge", "brief",
+    # Записи похибки вимірів тіла: рівні шаблону `areas.РІВНІ` — їхні середні (рішення 06.11 «орієнтири тіла»).
+    "похибка_вимірів_тіла",
     "colorspace", "composer", "coordination", "extract", "face_contrast", "face_features",
     "feed", "fit", "graph", "hypergraph", "language_gate",
     "outer", "outfit", "palette", "palettes", "personal_palette",

@@ -17,9 +17,9 @@ import areas, похибка_вимірів_тіла as П  # noqa: E402
     "пах": (2, "crotchheight", "stature"), "коліно": (2, "kneeheightmidpatella", "stature"),
     "литка": (1, "CALF_HT", "STATURE"),
 }
+НИЖНІ_МЕЖІ = {"щиколотка": (2, "lateralmalleolusheight", "stature")}  # рівень → поле `нижня_межа` запису
 ІНШІ = [(2, "талія (пупок)", "waistheightomphalion", "stature"),
-        (2, "коліно (epicondyle)", "lateralfemoralepicondyleheight", "stature"),
-        (2, "щиколотка (кісточка)", "lateralmalleolusheight", "stature")]
+        (2, "коліно (epicondyle)", "lateralfemoralepicondyleheight", "stature")]
 
 
 def відношення(рядки, висота, зріст):
@@ -42,6 +42,13 @@ def main(шлях2, шлях1):
         збої += not згода
         print("| %s | %.3f | %.4f ± %.4f (%d) | %.2f%s | %s |" % (рів, шаблон[рів], м, s, n, abs(шаблон[рів] - м) / s,
               " — ПОНАД РОЗКИД" if abs(шаблон[рів] - м) > s else "", "збігається" if згода else "РОЗХОДИТЬСЯ"))
+    for рів, (к, в, з) in НИЖНІ_МЕЖІ.items():
+        n, м, s = відношення(файли[к], в, з)
+        межа = П.запис("рівень", рів)["нижня_межа"]
+        згода = round(м, 4) == межа["середнє"] and round(s, 4) == межа["val"]
+        збої += not згода
+        print("| %s: нижня межа, %s | %.3f | %.4f ± %.4f (%d) | — | %s |" % (рів, в, шаблон[рів], м, s, n,
+              "збігається" if згода else "РОЗХОДИТЬСЯ"))
     print("\nінші орієнтири (не записи):")
     for к, назва, в, з in ІНШІ:
         n, м, s = відношення(файли[к], в, з)

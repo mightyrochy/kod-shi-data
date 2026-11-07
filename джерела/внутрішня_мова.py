@@ -1523,6 +1523,10 @@ _МІСЦЯ_ОПЦІЙ = "where it is worn"
         "middle of the field from shoulders to floor, and which size she takes decides whether it splits "
         "that field in half: the shop gives one length per size and her size is not known "
         "(values: slot — slot code)",
+    "dividing_line_within_error":
+        "the hem of the outfit's top item lies near the middle of the field from shoulders to floor, and "
+        "within the error of both the hem and her shoulder level it may split that field in half or not "
+        "(values: slot — slot code)",
     "dividing_line_item_length_unknown": "the outfit's dividing line is the hem of its top item, and the cards do "
                                          "not carry the length of the named top items, so the line was not "
                                          "judged (values: slots — slot codes)",
@@ -1628,6 +1632,9 @@ _МІСЦЯ_ОПЦІЙ = "where it is worn"
                                       "score from its photo (values: items — the dresses)",
     "areas_not_measured": "the code did not measure how much room each item takes in the outfit, so rules "
                           "that depend on area give no conclusion",
+    "area_share_error_unknown": "the code computed how much room these items take in the outfit from her body "
+                                "measurements and the garment sizes, but it does not know the error of either, so "
+                                "rules that depend on area give no conclusion for them",
     "several_colour_fixes_one_item": "several colour fixes fell on one item; the code merged them into one "
                                      "(values: slot — slot code)",
     "one_weighty_surface": "the outfit has only one large surface, so there is no structure of light and dark "
@@ -2009,11 +2016,10 @@ _МІСЦЯ_ОПЦІЙ = "where it is worn"
                                  "edge of the necklace and the neckline, clearance_cm — the gap needed)",
     "necklace_clearly_above_or_below": "a shorter chain above the neckline, or a longer one clearly below",
     "necklace_neckline_gap_not_judged": "the code does not judge whether the necklace sits clear of the neckline: "
-                                        "no recognised source gives the gap in centimetres (values: drop_cm — how "
-                                        "far the necklace's lowest point falls below the base of her neck, cm, half "
-                                        "the chain; gap_cm and side — only when the garment's neckline is measured: "
-                                        "the distance between the necklace's lowest point and the neckline edge, cm, "
-                                        "and whether the necklace is above or below it; items — necklace, garment)",
+                                        "no recognised source gives the gap in centimetres, and the code knows "
+                                        "neither where the necklace falls nor the neckline edge without error, so "
+                                        "it names no gap and no side (values: chain_cm — the necklace's chain "
+                                        "length, cm; items — necklace, garment)",
     # ── РЕМЕСЛО, БЛИСК І МЕТАЛИ (П-6: K-CRA-01/02/03/06/07/10, K-MAT-04, K-COL-06-M) ──
     "no_third_piece_dressed_not_styled": "base only, no layer or accessory: «dressed»; «styled» starts with a third "
                                          "piece",
@@ -2572,15 +2578,18 @@ _МІСЦЯ_ОПЦІЙ = "where it is worn"
     "look_split_in_half": "the item's line splits the look in half (ratio = top:bottom)",
     "move_dividing_line_cm": "move the dividing line to ~cm from the floor: tuck in, shorter top or another "
                              "waist rise",
-    "skin_band_boot_hem": "skin band (cm) between shaft and hem at a wide part of the leg: the shoe edge cuts "
-                          "the leg line",
-    "close_skin_band": "close the band: dense tights in the shoe tone, knee boots with a midi, hem below "
-                       "hem_to_cm or shaft above shaft_to_cm (cm from floor)",
+    "skin_band_between_shaft_and_hem": "a band of bare leg is left between the boot shaft and the hem, measured "
+                                       "beyond the error of both edges; the code sets no limit on its width or "
+                                       "place, so judge yourself whether it cuts the leg line (values: shaft_cm, "
+                                       "hem_cm — edges in cm from the floor; band_cm — hem minus shaft; error_cm "
+                                       "— the error of both edges together; matching_opaque_tights — dense "
+                                       "tights in the shoe tone close the band in colour)",
     "edge_on_widest_point": "the edge ends on a bulge of the body (values: level — body level; edge — shaft, "
                             "hem or accessory: the edge of a boot shaft, a hemline or an accessory; direction "
                             "— where to lead it: shorten, lengthen, higher_shaft, lower_shaft, no_lever — "
                             "there is no lever, not_flattering_intent — the intention is not to flatter; "
-                            "length_from_word — the length was taken from a word of the name)",
+                            "length_from_word — the length was taken from a word of the name; direction_unknown — the edge and the "
+                            "neighbouring narrower levels lie within the error of both, so no side is named)",
     "move_edge_to_cm": "move the edge into ranges (cm from floor), where the body is narrower",
     "edge_move_needs_other_model": "within this model the edge cannot move: another model is needed, or no "
                                    "narrower point nearby",
@@ -2602,6 +2611,11 @@ _МІСЦЯ_ОПЦІЙ = "where it is worn"
                                    "— the leg as a percentage of her height; pair — nude or contrast; "
                                    "far_from_middle — the proportion is already past the middle, so a nude "
                                    "drives it further away and a contrast pulls it back)",
+    "leg_proportion_pair_tone_not_judged": "the code does not judge which way the pair moves her torso-to-leg "
+                                           "proportion: no recognised source gives the middle of the proportion, "
+                                           "and the error of her measured crotch height is unknown (values: "
+                                           "leg_pct — her measured crotch height as a percentage of her height; "
+                                           "pair — nude or contrast; items — the pair)",
     "contrast_pair_to_middle": "a contrasting pair: shifts torso:leg toward the middle",
     "nude_or_tights_to_middle": "nude pair or tights tone: shifts the proportion toward the middle",
     "heel_wear_cost": "heel heel_cm cm for hours h: wear cost named",
@@ -2704,6 +2718,12 @@ _МІСЦЯ_ОПЦІЙ = "where it is worn"
                                          "same cut",
     "item_opens_vetoed_zone": "item exposes a zone she keeps covered (zones): her personal limit",
     "hem_above_her_limit": "hem at hem_cm cm from floor, above her limit limit_cm cm",
+    "hem_vs_her_leg_limit_not_judged": "the code does not judge whether the hem is above her leg limit: the hem "
+                                       "height is a body-template level minus the garment length, and the error "
+                                       "of that level is unknown, so it names no side (values: hem_cm — the hem, "
+                                       "cm from floor; limit_cm — her own limit, cm from floor; knee_cm — the "
+                                       "template knee, cm from floor, when she keeps her legs covered; items — "
+                                       "the garment)",
     "other_item_within_her_coverage": "another item within her coverage",
     "large_item_repeats_makeup_colour": "a large item repeats the colour of her make-up (zone) at de00 ΔE00: "
                                         "tone-on-tone with the lips, a slip unless it is the intent",
@@ -2716,6 +2736,16 @@ _МІСЦЯ_ОПЦІЙ = "where it is worn"
     "add_third_piece_to_mono": "add a third piece: shoes in the hem tone, an open layer or a structural "
                                "accessory",
     "motif_scale_off_person": "print motif off the person's scale (item_motif: larger|smaller)",
+    "item_edge_off_body_profile_not_judged": "the code does not judge whether this item's edge sits on a widest "
+                                             "place of her body: the edge it computes from the item's data does "
+                                             "not land within her body profile, so the item's length or strap is "
+                                             "most likely misread (values: edge_cm — the computed edge, cm from "
+                                             "floor; items — the item)",
+    "motif_scale_and_person_not_judged": "the code does not judge whether the print motif suits her scale: the "
+                                         "motif's share of its photo frame and her frame are different quantities, "
+                                         "and no recognised source links them (values: motif_frame_share — the "
+                                         "motif's run as a share of its photo frame; wrist_cm — her wrist girth, "
+                                         "cm, when given; height_cm — her height, cm, when given; items — the item)",
     "take_motif_scale": "take a motif need (smaller|larger)",
     "interest_sources_below_floor": "the look has count interest sources at floor floor",
     "texture_near_face": "a pronounced texture in the slot nearest the face: interest without a second colour "
@@ -3395,16 +3425,15 @@ if _спільні:
     "passport_call_zero": "Call zero filled the passport without a language-model conversation turn; the model was absent or its turn fell back to main.",
     "passport_without_talk": "The seam filled the passport without a language-model conversation turn: tiles or translation without a talk.",
 })
-# Е3-одна-величина ч10 (п.2, вид 1): допуску плеча (`fit.плече_допуск` 1.5 см, «моє») джерело не дало —
-# код більше не судить, чи плече сходиться; виміряне розходження йде моделі фактом (K-FIT-01, K-OUT-41/42).
+# Е3-одна-величина ч14 (рішення 06.11 п.3): ширина плеча виробу «шов–шов по спинці» й обхват плечей тіла через π —
+# різні величини; різниці код не рахує (K-FIT-01, K-OUT-41/42 — питання), моделі — лише виміряне число речі.
 ЗАЯВИ.update({
-    "shoulder_width_vs_body": "the item's shoulder width against her shoulder width, measured in centimetres; the "
-                              "code sets no tolerance, so judge yourself whether the difference shows and matters "
-                              "(values: item_cm — item shoulder width from the shop's size chart; body_cm — her "
-                              "shoulder width estimated from her shoulder girth; delta_cm — item minus body, "
-                              "positive = item wider)",
+    "her_shoulder_width_not_measured": "the item's shoulder width is measured seam to seam across the back, and "
+                                       "her shoulder width in that same sense is not known: the shoulder girth "
+                                       "divided by pi is another quantity, so the code does not compare them "
+                                       "(values: item_cm — item shoulder width from the shop's size chart; "
+                                       "body_girth_cm — her shoulder girth, not a width)",
 })
-
 
 
 def код_пункту(ід):
@@ -3586,7 +3615,7 @@ def визначення_заяв(коди):
         "wear_cost_no_duration_surface", "leg_proportion_template_crotch",
         "vertical_balance_not_judged", "calf_girth_not_measured", "her_register_unknown",
         "print_motif_scale_unknown",
-        "chroma_clash_skipped_no_area", "unmeasured_accents_not_grouped")},
+        "chroma_clash_skipped_no_area", "unmeasured_accents_not_grouped", "area_share_error_unknown")},
     **{к: dict(choice="her") for к in ("scheme_chosen_by_her", "her_own_choice_kept_as_is")},
     **{к: dict(choice="stylist", source="model") for к in ("scheme_chosen_by_stylist",
         "stylist_chose_scheme", "stylist_chose_base", "stylist_chose_saturation", "stylist_declared_on_purpose")},
