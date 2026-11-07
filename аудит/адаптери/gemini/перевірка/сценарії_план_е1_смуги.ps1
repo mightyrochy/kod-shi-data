@@ -133,7 +133,8 @@ try {
         $skipFile = Join-Path $(if ($lane -eq 'claude') { $WorkDir } else { $OutDir }) 'skipped.json'
         function Read-PassSkips {
             $rows = @{}
-            foreach ($r in @(ConvertFrom-Json ([IO.File]::ReadAllText($skipFile)))) { if ($null -ne $r) { $rows[[string]$r.marker] = [string]$r.why } }
+            # Windows PowerShell 5.1 не розгортає масив JSON сам: конвеєр розгортає
+            foreach ($r in @(ConvertFrom-Json ([IO.File]::ReadAllText($skipFile)) | ForEach-Object { $_ })) { if ($null -ne $r) { $rows[[string]$r.marker] = [string]$r.why } }
             $rows
         }
         $gpuCount = @($script:Markers).Count
