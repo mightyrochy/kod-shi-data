@@ -1730,11 +1730,9 @@ def форма_вікна(вікно):
     """Точки (L, C, h) форми вікна слова (`ФОРМА_ВЖИТКУ`) у межах `вікно`, або None — вікно не слова
     `ЛЕКСИКОН` з формою (інтервал часткового виміру, вікно вжитку) чи в його межах точок форми нема:
     тоді вікно питають сіткою (`колір_річ.точки_вікна`)."""
-    try:
-        L0, L1, C0, C1, д = (float(вікно[0]), float(вікно[1]), float(вікно[2]), float(вікно[3]),
-                             None if вікно[4] is None else (float(вікно[4][0]), float(вікно[4][1])))
-    except (TypeError, IndexError, ValueError):
-        return None
+    L0, L1, C0, C1, д = вікно
+    L0, L1, C0, C1 = float(L0), float(L1), float(C0), float(C1)
+    д = None if д is None else (float(д[0]), float(д[1]))
     сл = _ВІКНА_ФОРМ.get((L0, L1, C0, C1, д))
     if сл is None:
         return None
