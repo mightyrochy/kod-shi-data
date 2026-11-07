@@ -24,7 +24,6 @@ import math
 import zlib
 
 from колір_простір_перетворення import lch
-from реєстр_константи import C as _C   # верх смуги приглушених (K-COL-06) — край дуги тону
 
 
 RELATIONS = {"analogous":(0,30), "complementary":(180,30), "split":(150,22),
@@ -50,6 +49,11 @@ _КОЛО = ((25.0, 0.0), (54.0, 30.0), (61.5, 60.0), (69.0, 90.0), (157.0, 180.
     "полюси_температури": {"t": "T3", "val": (120.0, 240.0), "прав": ["K-PAL-01"],
                             "джерело": "жовтий і синій 12-кольорового кола (R 0, Y 120, B 240; коло3_опори); "
                                        "тепліша версія — жовтіша, холодніша — синіша (Lamport, таблиця сімей)"},
+    "хрома_приглушених": {"t": "T3", "val": 34.0, "прав": ["K-PAL-03"],
+                           "джерело": "верх смуги приглушених — масштаб згасання дуги тону (`ΔH_КРАЮ`). Число — стеля "
+                                      "теплого коридору нейтралі `warm_neutral`, звідки його читали до кроку 26; коридори "
+                                      "знято (нейтраль — роль K-COL-06 за сім'ями модуля, рішення менеджера 07.11, 13891), "
+                                      "а згасання дуги — інша величина, і власного джерела в неї нема (дошка 14004)"},
 }
 
 def _лінійно(x, вузли):
@@ -336,7 +340,7 @@ _кп = RELATIONS["complementary"]
 # Дуга тону — вікно з силою, що згасає до країв (шапка розділу «ДУГА ТОНУ» `колір_відношення`).
 КРАЙ_ДУГИ = 0.5         # сила на самому краю дуги: від неї річ «у дузі» (несе тон, зарахована носієм)
 КІНЕЦЬ_ЗГАСАННЯ = 0.05  # сила, нижче якої тон поза вікном без сумніву
-ХРОМА_ПРИГЛУШЕНИХ = _C["warm_neutral"][2]   # C* 34: верх смуги приглушених (K-COL-06, `палітра_схеми.ПРИГЛУШЕНО`)
+ХРОМА_ПРИГЛУШЕНИХ = РЕЄСТР["хрома_приглушених"]["val"]   # C* 34: верх смуги приглушених (`palettes.ПРИГЛУШЕНО`)
 ЗАПАС_ПРИГЛУШЕНИХ = 10.0   # кінець згасання приглушених, градуси CIELAB: запас суду K-PAL-03 (очима — межа)
 ΔH_КРАЮ = 2.0 * ХРОМА_ПРИГЛУШЕНИХ * math.sin(math.radians(ЗАПАС_ПРИГЛУШЕНИХ) / 2.0)   # ΔH* ≈ 5.9 від краю дуги
 # Межі категорій тону насичених (C* > 34), h* CIELAB — зі статистики назв крамниць (п.9: вікно — вжиток крамниць), раз:
@@ -383,6 +387,17 @@ def _решітка():
     return _ДАНІ_СІМЕЙ["мітки"]
 
 
+def _решітка_ролей():
+    """Розпаковує ролі нейтралі вузлів (байт на вузол тієї самої коробки: 0 — нема, 1… — номер ролі
+    `_РЕШІТКА_СІМЕЙ["ролі"]` + 1) і звіряє їхній SHA-256."""
+    if "ролі" not in _ДАНІ_СІМЕЙ:
+        сирі = zlib.decompress(base64.b85decode("".join(_РЕШІТКА_РОЛЕЙ)))
+        if hashlib.sha256(сирі).hexdigest() != _РЕШІТКА_СІМЕЙ["sha256_ролей"]:
+            raise ValueError("решітка ролей нейтралі не збігається з породженою")
+        _ДАНІ_СІМЕЙ["ролі"] = сирі
+    return _ДАНІ_СІМЕЙ["ролі"]
+
+
 def _ядро(σ):
     """Зсуви вузлів у кулі радіуса охоплення·σ навколо цілої точки (кеш за σ з точністю 0.01)."""
     ключ = round(σ, 2)
@@ -393,19 +408,17 @@ def _ядро(σ):
     return _ДАНІ_СІМЕЙ[ключ]
 
 
-def сили_сімей(lab, похибка=0.0):
-    """Сили сімей точки Lab: {код: частка}, разом з «невідомо» — 1; порожній вхід — {«невідомо»: 1}.
-
-    `похибка` — стандартна похибка виміру кольору в ΔE*ab (розкид значення); σ ядра — її сума
-    з порогом помітності, тож сила згасає до межі сім'ї на ширині, якої око й вимір не розрізняють.
-    Кінець шкали світлоти — не межа з сусідньою сім'єю: вузли ядра світліші за біле чи темніші за чорне
-    (поза L коробки — уся шкала 0–100 — і мітка «поза_шкалою») не лічимо, і сила — частка лише тієї частини
-    ядра, що серед можливих кольорів (рішення менеджера 05.11, паспорт `Річ-колір-межі`)."""
+def _ваги(lab, похибка, ролі=False):
+    """Ваги ядра точки Lab: [сім'ї…, «невідомо»] і з `ролі` — ваги ролей нейтралі в барвних сім'ях
+    [—, нейві, кремовий] (частка тону вузла з роллю); None — вхід не точка. Одне ядро для `сили_сімей` і
+    `сили_нейтралі`."""
     if lab is None or not all(isinstance(x, (int, float)) and math.isfinite(x) for x in lab):
-        return {НЕВІДОМО: 1.0}
+        return None
     σ = math.hypot(РЕЄСТР["поріг_помітності"]["val"], float(похибка or 0.0))
     межа = РЕЄСТР["охоплення_ядра"]["val"] * σ
     мітки, сім_ї, поза = _решітка(), _РЕШІТКА_СІМЕЙ["сім_ї"], _РЕШІТКА_СІМЕЙ["поза_шкалою"]
+    роль = _решітка_ролей() if ролі else None
+    ваги_ролей = [0.0] * (len(_РЕШІТКА_СІМЕЙ["ролі"]) + 1)
     (L0, L1), (a0, a1), (b0, b1) = _РЕШІТКА_СІМЕЙ["коробка"]
     na, nb = a1 - a0 + 1, b1 - b0 + 1
     L, a, b = (float(x) for x in lab)
@@ -420,7 +433,8 @@ def сили_сімей(lab, похибка=0.0):
             continue
         if not L0 <= вL <= L1:
             continue
-        мітка = мітки[((вL - L0) * na + (вa - a0)) * nb + (вb - b0)] if a0 <= вa <= a1 and b0 <= вb <= b1 else None
+        і = ((вL - L0) * na + (вa - a0)) * nb + (вb - b0) if a0 <= вa <= a1 and b0 <= вb <= b1 else None
+        мітка = мітки[і] if і is not None else None
         if мітка == поза:
             continue
         w = math.exp(-d2 / (2 * σ * σ))
@@ -432,7 +446,24 @@ def сили_сімей(lab, похибка=0.0):
             частка /= рівні - 1
             ваги[ахр] += w * (1.0 - частка)
             w *= частка
+            if роль is not None and роль[і]:
+                ваги_ролей[роль[і]] += w
         ваги[сім] += w
+    return ваги, ваги_ролей
+
+
+def сили_сімей(lab, похибка=0.0):
+    """Сили сімей точки Lab: {код: частка}, разом з «невідомо» — 1; порожній вхід — {«невідомо»: 1}.
+
+    `похибка` — стандартна похибка виміру кольору в ΔE*ab (розкид значення); σ ядра — її сума
+    з порогом помітності, тож сила згасає до межі сім'ї на ширині, якої око й вимір не розрізняють.
+    Кінець шкали світлоти — не межа з сусідньою сім'єю: вузли ядра світліші за біле чи темніші за чорне
+    (поза L коробки — уся шкала 0–100 — і мітка «поза_шкалою») не лічимо, і сила — частка лише тієї частини
+    ядра, що серед можливих кольорів (рішення менеджера 05.11, паспорт `Річ-колір-межі`)."""
+    вихід = _ваги(lab, похибка)
+    if вихід is None:
+        return {НЕВІДОМО: 1.0}
+    ваги, сім_ї = вихід[0], _РЕШІТКА_СІМЕЙ["сім_ї"]
     разом = sum(ваги)
     if разом <= 0:
         return {НЕВІДОМО: 1.0}
@@ -516,6 +547,64 @@ def температура_сім_ї(lab, похибка=0.0):
     return код, т - _тепло_на_колі(_РЕШІТКА_СІМЕЙ["центри_θ"][код])
 
 
+# ═══ НЕЙТРАЛЬ K-COL-06: РОЛЬ ЗА СІМ'ЯМИ МОДУЛЯ ═══
+# Нейтраль — роль, а не відсутність тону (рішення менеджера 06.11, 07.11, 13891). K-COL-06 зве нейтраллю чорний,
+# білий, сірі й нейві, кемел, беж, буре, кремовий, оливу й хакі. Назва, що є сім'єю модуля, — уся сім'я (ахроматична,
+# бура з бежем, кемелом і хакі, олива: `сім_ї_нейтралі` генератора); назва, що в ISCC-NBS лише частина сім'ї, — її
+# блоки (нейві — темні блоки синьої, кремовий — 89 pale yellow: `ролі_нейтралі` генератора). Сила нейтралі в точці —
+# частка того самого ядра `сили_сімей` на вузлах ролі, тож межа «нейтраль ↔ колір» — межа сімей і блоків джерела, а не
+# коридори тону й хроми (T3 без джерела, зняті кроком 26). Тепла чи холодна — лише апріорі в поясненні (K-COL-06,
+# BREAKS): фільтр нею — «ЗНАХІДКА».
+ВИД_РОЛІ = {"achromatic": "ахроматична", "brown": "тепла", "olive": "тепла", "нейві": "холодна", "кремовий": "тепла"}
+КОЛІР = "колір"
+
+
+def сили_нейтралі(lab, похибка=0.0):
+    """Сили ролі в точці Lab тим самим ядром, що `сили_сімей`: {«ахроматична», «тепла», «холодна» — нейтраль
+    K-COL-06 за видом, «колір» — решта барвних сімей, «невідомо» — вузли без даних}, разом — 1."""
+    вихід = _ваги(lab, похибка, ролі=True)
+    if вихід is None:
+        return {НЕВІДОМО: 1.0}
+    ваги, ваги_ролей = вихід
+    сім_ї = _РЕШІТКА_СІМЕЙ["сім_ї"]
+    разом = sum(ваги)
+    if разом <= 0:
+        return {НЕВІДОМО: 1.0}
+    сили = dict.fromkeys(("ахроматична", "тепла", "холодна", КОЛІР, НЕВІДОМО), 0.0)
+    for і, к in enumerate(сім_ї):
+        сили[ВИД_РОЛІ.get(к, КОЛІР)] += ваги[і] / разом
+    for і, роль in enumerate(_РЕШІТКА_СІМЕЙ["ролі"]):
+        сили[ВИД_РОЛІ[роль]] += ваги_ролей[і + 1] / разом
+        сили[КОЛІР] -= ваги_ролей[і + 1] / разом
+    сили[НЕВІДОМО] = ваги[-1] / разом
+    return сили
+
+
+def нейтраль_за_силами(сили):
+    """Вид нейтралі за `сили_нейтралі`: вид із найбільшою силою, коли нейтраль сильніша за колір; `КОЛІР` — колір
+    сильніший (на самій межі, при рівних силах, — колір: нейтраль має переважити); `НЕВІДОМО` — сила вузлів без
+    даних більша за кожну з двох."""
+    нейтраль = сили.get("ахроматична", 0.0) + сили.get("тепла", 0.0) + сили.get("холодна", 0.0)
+    колір, невідомо = сили.get(КОЛІР, 0.0), сили.get(НЕВІДОМО, 0.0)
+    if невідомо > нейтраль and невідомо > колір:
+        return НЕВІДОМО
+    if нейтраль <= колір:
+        return КОЛІР
+    return max(("ахроматична", "тепла", "холодна"), key=lambda к: сили.get(к, 0.0))
+
+
+def нейтраль_кольору(lab, похибка=0.0):
+    """Вид нейтралі K-COL-06 точки Lab («ахроматична», «тепла», «холодна»), `КОЛІР` чи `НЕВІДОМО`
+    (`нейтраль_за_силами` над `сили_нейтралі`)."""
+    return нейтраль_за_силами(сили_нейтралі(lab, похибка))
+
+
+def стеля_нейтралей():
+    """Найбільша C* вузла решітки, більша частина якого — нейтраль K-COL-06 (породжує генератор): обвідна, яка лише
+    окреслює вікно нейтральної ролі; членство судить `нейтраль_кольору`."""
+    return float(_РЕШІТКА_СІМЕЙ["стеля_нейтралі"])
+
+
 # ── ПОЧАТОК ЗГЕНЕРОВАНОГО: лабораторія/колір_сім_ї_решітка.py, руками не правити ──
 _РЕШІТКА_СІМЕЙ = {
     "сім_ї": ('red', 'pink', 'orange', 'yellow', 'yellow_green', 'green', 'blue_green', 'blue', 'violet', 'brown', 'olive', 'achromatic'),
@@ -524,6 +613,10 @@ _РЕШІТКА_СІМЕЙ = {
     "поза_шкалою": 254,
     "рівні_воріт": 21,
     "центри_θ": {'red': 346.5, 'pink': 346.8, 'orange': 33.7, 'yellow': 112.7, 'yellow_green': 140.9, 'green': 166.0, 'blue_green': 213.8, 'blue': 277.5, 'violet': 303.4, 'brown': 55.7, 'olive': 129.5},
+    "сім_ї_нейтралі": ('achromatic', 'brown', 'olive'),
+    "ролі": ('нейві', 'кремовий'),
+    "стеля_нейтралі": 84.4,
+    "sha256_ролей": "43aed9d245ef7853897cf6128a589d1161a126de23a2f599aa1268da33f322d1",
 }
 _РЕШІТКА_ДАНІ = (
     "c-rjU=W-jzo`&&qSRdQ6Ws#VxJeI6LiV4I;uuEB@NHJi_%$XoDWr?Dg6Hr#p3~1fO%=QdG5@901(EmQ~Q?)Cd^I@%Dy**=zBDO6HA%qY@2qA<JLI@#*5JCtcgb+dqA%qY@2qA<JLI@#*5JJ>5MQW<lbD5@!F4I)dWfrHVN*R}Fs^~IJ6<wyOq{~#&WtvL5OeI~WsiezP(q)=Tx=b})rkXBONtbCV=`z)HnQFRBC0(Yeq{~#(Wvb~i)pVI^x_lJh2)le(w+Qd$!@B)9U6&8*&H&lx%kK?wZ|HBTE<e_TdxKQphd!#VM-PVwh`M}OPr5qC2Z{ds%ZJt5(>*mZK-1;J>hJA&GBHH+_Zxn!{=VLsu|bk9A67Ei-#0fkO!D`K-YPvQT=TQzLlj*;EM36T^V6dge?RZbvR$c(5rQs%maeDgXT}Kr`74M;^v{)MZNWu~Wh%-t6=j)<vP?x;rlKrUQI@GF%T$zQD$0TjE*V&+qAXKUmZ>NUE?O*8QI@F=OPxPSTJrb5_bn%szo$^m@7A@{{6=_HKV;(iSv&PUmu4xGlBgn>g%CmrA%qY@2qA<JLI@#*5JCtcgb+dqA%qY@2qA<JLI@#*5JCtcgb+dqA%qY@2qA<JLI@#*5JCtcgb+dqA>@^smmR5jiIdVdZmH!`^V&C4$?NPCyGqeZWtwWLRB)L}y41X?RM9I~)x0j(Qu7*MQ_bs*O*LI=-mtCc&EYEE@g9z4D#|hyWtnQK$hj(h{q6DA=9@Qe+@S3$|J5gxeLXjCT)%ehI%!wgubp)WR@cM(e_gq9g|e&kSFY=NvcI?c(fzx3{`~VLVOJ$f%=P%;y*syWefyWLt6b%{o^(DCuD}2JhpelTC61xv8XOpS`jo26g_U=W4i60uK6^&fWxBC!*UaSD$nemQ3kxJ&?kw?q&CO1YkByG}w75vo<*pL0^n7Y&a(ry;=cOfrE-#jDr03^mXQn16eqC9m=kj71hLIMq)a=Z~-`6+DxqMg-Y<_O;(xt5}YA)|XSbzyxef`c3F;@V~(6m@O7K>#vv|L`QLzZxfgp1anE5orwv|OQC8mX@X1hRbQG6}LO=894Jx{ar*VlJ1r1_@UH%XKc3F3Wc=lNzghE?Qp~4P?>$datKSHz<D{+k<6Bi3rP#8UdDBO|rAhDwCUKnu@qeSf;6-tJdHm#WEFTnToPZMOkpsVwsAvOm$fDe;r<-?}1W`6OCn2OU>`rwbcAZcvU}S;`&)T^*)zoDU*_@BAA5`LI@#*5JCtcgb+dqA%qY@2qA<JLI@#*5JCtcgb+dqA%qY@2qA<JLI@#*5JCtcgb+dqA%qY@2qA<JLI@$`m713wsd<T$(l>6Y<x=z7H&e;$>=e67(Mx5TYN}LlnM%6UysA{uD_GUMF4t1?8emh+>y1q{U25L2t?13+D&Fy4#$t?hv^$Y^m8uR|<Xt5w*4`d3MB7!W>JX~7*4CDm*0wg%t`ZeXCj0wZo11PnHr{OBrR*wYbqH2ZcjJxg*REZ^@rkgj@N3rf!d(4*y-yxLy#LpgD_7pWqw6|U6%wbg_es~I`*-jB`RB`5Z^*jJSbAZudv|W%`u6Y3*Hm2<Ea&O!d>~wZ|MSn&1){DpRl(IIT!RAxPoF*`>Z)KJx<-eG1_z%#TX;^<WmdBCuIY)fk>Q~q7Z#o`5_Gw-Y}efE^yK*1=*Ulti!YYwxm;O#GCe<+nwb)?v7eWgmRHER+*x|scFhXd#Kf;Ft7~i2T<$ExNEcw!)4%<;zP_<R%;m~5?1W3eQnRxcFK%vbZqagivz)=^=Y;IirLFDlZBi~DRskkxb#*%;N-kfP0~56R`ud$rCPT;-z%q=O4U5HM8B(r5mZoVjr%WbG=j&`?ScS4#IxaVsVUTy3E-o(?Jy$puAy<@BNXQk9MaC78Ma31&BI!B-mPv%=>!R`ZdZAgg{=PDhWrm6r%M2fZ-#s}lGh!6xGOI{-msw>}v&`y~_vtcgN<x+cGfib&=1B$@DVC`y%T$LY^H-k~kW}xo=%gGdB+DY1n%@Yo>W55RKWnGn=h7@?QW8}Jvk*cEA%qY@2qA<JLI@#*5JCtcgb+dqA%qY@2qA<JLI@#*5JCtcgb+dqA%qY@2qA<JLI@#*5JCtcgb+dqA%whA^Rgo~FL6@(#x1p6YF_(hDtVoqVpl18sZ3K%l?pCXNtc>el`47#tD4v4T54VcT<S<95^A{0Rb?;*Sd1}cTqUYQ7<pH@N)cCuD(`A1?kZJvv=>U`XuHZ)@qF#=2b5i<Coq|e$J<(4TUuJ%+79*!yGoy{WU{}nwYll0sCjp9m#(Xn)gf3t-Hi>`uU)%-<I|TfWL^1RvTo<h)!*0q<nhD%e_gq9<?XwVAE~;IRZij*_V#o=x_|f1pMSo5_2%6NqOLNQa5;0`yL0>2w|`&0rs}F>*-uyJgL`)d{{H8mrweasy2@0?uHnIffu~QOEi5imbXBklu8Facp~1mt&la9jbeWYb$2B`WIW{spG_)XCODp7DZY<%NpG(b5O^l6>{It0EVrgZKn#+}?r_;7;dUAYh?B}JW<(0J!VlH=<Azbrwv(r<PlM}zLtgfzYY|?Uhu!PGVY<6aPdg{0J^^J|qZBi~*mSN`%mP*aeUc9)uxw*ByL&@dMat5296S7N}wzjsncQS-rKCA*v(CX@TL>WRZ)5T>Rmrgsh`g&WH$&zseunZ$+!(y>mCPT^P#wu}Xnig{sC=n4?Aj@{;%Vz1gBCsgAf?4G*la4DSi;yc4i;gSs4Nub*kwwL2MmvR6Tp?H#UC~)2Twz!QUDdF(3YJNN6~ZO?_oYN*(fNLxP%JY<(to+Sgk^?~%v@%)D6q^blAUE%nbhw>v-+fUnYASw%RCX4L@x7WQ->w-pCna~RPVCrq#P(D%OaVAB!8DhIya7bpG&ipNl8=@%t8nugb+dqA%qY@2qA<JLI@#*5JCtcgb+dqA%qY@2qA<JLI@#*5JCtcgb+dqA%qY@2qA<JLI@#*5JCtcgb?yd&C8C|yu?ZA8@JSQsd??2spNHbie07Xr7}%5RVuhlC0%M>Ra(kQsNyO?i4<{_sT6S)AsAD~Rjg9TRg6-|RjN|ORjw+yIB{2nN)1;jtD~bmUxL$im8t|N?$q9%%Mo^!9>HX?Ki<~b+S1b6)^<SIRl(}(ZE3nGYTDh~KOpOJe#yFicnAfnr~7fk^=sFz-}v-pcb}>&uR6+J>&fGX_y4+b<;vT4A3uL3>MCd1b9Fs>aQDuif4+S6=G{l4t}>QzIdk2+bNkk}e_y_S_wfr!S0&4Sx;lkx;O~F_dAjiS14&motKfS4aCmTF;OWz63yaHZ1YH%Zf@^YYWN2{k*|UY`6kTQ|%W<V<CdWsIhlUmeYiWg?%Z(*m^K+@0sfn@Ck)IY9UkKJZF_$Y#Pp9YSQ?t{P6XRn)FD)$#)+Q~NJIhE5m>6t&YI5S&mDSa?jm<4mE)Q10H9IpsJ@woA`i5X_Q*ybo3_JTE&ZSbbvw!@txhYiJJA_=`EN8I!xw*O2rAu43Y9~X-<->AdLN-5FU$-O5WazkjS$UX{)z>>JI<5egVZ<C+EEcm>*(?#48_Ot3)3lhAt)k)z#VVA|l5v?XE`z=+5{sHE<S8WN3TBaXMPyNNg<w&11^)ZEoJGSGhDFd-1&e~KdY06#P%L^bGt8^7oF%`@tZJ^x$IDdV6cTX-vdUfZf1jSmm(<)?rhnvEX1EBk%qY=#XPA+b|D9o0mE0_|>LfmeW-Uqj8x7JYuYy&8k(Ri-6yZc;S=3Tb6wI>drlQGm|E!&QpG&ipNl8=@%t8nugb+dqA%qY@2qA<JLI@#*5JCtcgb+dqA%qY@2qA<JLI@#*5JCtcgb+dqA%qY@2qA<JLI@#*5JCtcgb?yd&C8C|yu?ZA8@JSQsd??2spNHbie07Xr7}%5RVuiOFo}dRt`e0xt`d|ot|J9YsN_0QF_m0JDwSNtsv{RC?<!Fpx;S}PsY(@BxvJpe#9bAt4kcVAtd5TM!#HhMDXYCbp0B+<mm};dJ%h<)f4r@=wWX!Cwe27$qUx$(_4T$i-4r$L?(H9tb=kjSJ)eCD"
@@ -562,5 +655,10 @@ _РЕШІТКА_ДАНІ = (
     "s%5W&Y;4S+DOy*++Q|B<XS#qkrZb3&+_kA(YFb*gr1NQ`qqVS1$RcuW7hD?~>zcK+xVW&W(zGW}s$rRo1uWmSU1WXI!&+FFS1l;p(&NVkm?=~y<3{J&+VWiMpVpR_7L{stPNifIAC<#0Msg!{ZTYT`tBVVBv$HcZGqbaE_a8j)U^T809cos|<t@Xtk00L6%}jgE+`Z?+f`NIitHZ;?BdxKbeMY6+rIz99`?oXGQ<IaEQ&T_R(Xf*1(&Z~xuD0Up$fGx&YpdW=<64=ToKQ{Px~*XMgN1nh!o^FMn|F2ak)kTs`?qf<p6YJix^>$d*rPLN&z-;EyRJ6w>hzOR)vlG-uYOV8xN%btY;bVsjOV&|sqtlq;sLM<*V^j4mDexF$H%W<SFTg1PHWfMbLSdfhIk%ptDM*B`;}M9b?w@~$&-q8dT?mSA6Em*5Z7~hHS6%z%RdJO6zgPRT#YP4d=DO0y4Jq@@!PM5REH1y<2q9|t~xH9k5ZPqetiG-*U!HnIjlNz<XCr4unH@#u1Xi)r$dXb-QAs?AK$)y`P_9>*VT2bw=bSZ`YeAHR*ehw1FymN8@XIg!PLOM_V#oi({*?E#NvrWGL=qWsvQ^lXRh@L<?}h;rC{It`+AT2_4f5Alc|(~rPCEGTb_^4m%-w(Sih>TuTT9q7K^7mSf=zXuO*u_l({@uA|6*XKXsT$B)oZfwBZqZHVO$`1z1u+;>FY-k}4mTwr*3GqARzn8HrN*kNzcQ+s;A-mk(2fWL5eCvv3<Iw+PGot_oVJRweDI%$3ilYO{KSwSp_1rh%$*`M15jRnoF*T|UnCjV8-nWi0!51>MU<VGq}mix8^ZRilzt=N4e3RK>^4^R!fZZVDhNL{nAcl9HfHQi`Uk=#uoJsp2?}<2a7vIF92uj^j9v<2a7vIF92uj^j9v<2a7vIF92uj^j9v<2a7vIF92uj^jA4-4WcogyIG|e+N5Lk#M;#z5UVfy*r?-D0^Klp0{yCh_cb;HW*2iecMozbGa@-m)m?aRrq0UtI<@UcDXJ=mm4ygDx5IarRZ{9f-cusG*y^fu1nG7x)fcm`Dm&TxLlW{%O&Y@U5YN(rRZuS3Of8E+%|}UI^=2}sFN<EAP4rU6E0IAKiE6hK9y4z01B57ra%X<B83Ujn#-vZ01B57&BC000~9VHns7M>2M2}A<uurVtcV8YiUVLyQ-K98;WQgGR5V|;#2&EVf3$}M5zkAMiCS_2QddoFQAOo)&A0$?!3?>;B3GMK_PBtg3xK2xu)5q(E+FXwu+P;t7Iqf^ZkOAd3rM;ENV<Tg3#@Rt(Xt|ewcr9E=?aU=WHK0Cp+G^A{c}U(uCOGeuF#}TyG*Du^+M({K|<&<Lh6JoyRXZTDSB77=*niZFZ`NNWg0J1m%?NVzrQHe7%S6MQM$5$tAKi5E;DF~*yXXZo8GLR7Yk%2O`ULUZt7t@f4&?P(8k6Lnxb_Dtc|Q5*77qyU#3`lz%pTq*0rfzYFf+7&zAf=+34tK4J;EbH!_!I{Y9}h);-qZ!otGh;-Z#4c~S+-gf5bQU@o~l)+e<F6>DClX-khDYuH#3mNCGJ(6zPYxz<0eEo;@>-0bY!-2B3WhmT6I@XIgC&x{saTfXb#>f(Yz&8TMQ?%!9i#|2oqYedzGD7ufr7G2&lT>JRp-Q3Ld^wiY!^vvCR%Jr~pVCoF74i68H__ZMFkV`GY)%R~_rl%$+C#R-<zT?4)u1lA%T)A3uwIYh}lgpJZHLjJZ$qCiut=k&rUty!?FI>EIxnUQEPh?lQ-oJhG`l;^bty{PCz#cw2bN1Z%#$8xGXkP7FdHw1a)r}iB^}q%Pht6o%g^Ql+>b@>ipP#RAt*yRWdHr&HeEj-#<vMlxw052KT$lF0ywE)rP&u#F_bacI>)N$}lP6CVT#B{tGDP{9L(MvT_43bw0mag;(lQLjRpUbY+(y-X{>vY~{d!1s*dJHGsxvP9PY(I6AK$<I_4DsX4y%qFIo91XI5bqa8P<%;j)(G;Yj<~N=g0T2Up{vo)pd0p>+OptlBs}IF)nK!4Bg7*atfvf_VsvA_c2v>cXv-Lu3_nP*(w~~2PHA(pHj|uDcJYEzTV?KJw3;dAMfq!PbQNo1xu$3tI)FN<MTyWEEenU@AK;KkHzAtl!j%zZ+UInq@lv4U~yHfkUCBzym_V5mTeRgxICDWB@>B6yqNk!LNCR%t(&?8uH3FtB+5%_mW?|L6<j_nl}h>*Ov$9B+dvgvo=o2*3bZ;ZX-8$Qd_Gl5-QQF8Z?G1)(q*s|h28K1mW~2yFV|jQtE7FEx$3B-mANGtl~Gl>$c(Do<+?R0X>|nm5Z=cnB|(>@5KUE$OG<(+NhzADqD#_?ri$Y@j^j9v<2a7vIF92uj^j9v<2a7vIF92uj^j9v<2a7vIF92uj^j9v<2a7vIF94Ec1LjU5{et>{2lB}MZ!gK(>K>8xJMuM?e>kEY;~c0DMu72OLsOV=5m{grpgkR+k7-t_+f6V(Nv*!xh_GM8#0<IoG{m==yF|xF4tHzRhV3^OVQ=J6kV?QXsQsnT$iNFCFycqiZ0is=yKZ|QI<;*)ft!Tl61KwU9L;e<wjU^Dj@_xmk`moz$-GBE7}c%@(8$K&mw}kflIX8W3S6`ppo2&Ztx;3%qawTTrz~qsS0d&IeP^S7qLsU2x^uU)dkjw%Q+~(=h_$MG!!&fM_ocVjRtnO3V&=DD{@y=ZBj)83+n=sE&%&n?PEpca$9r(kaPh_7XV2Y&~$+nE;nKpQWpS8S4dMvh0zsG6cp9p%s1`|O~UC4PwKGCgep@vTrMM|NL_9tE;FPKxUyxg7cW|2Wg09}SGM5Fs$Tdt!OApIlrF6aR4>YFNR?@>2whp<<*S~1m1HJO(Yid=UpC8BWi+FvNL?N)ySbV5RLenuY;0`Ipee%d4+Gcc=0^5~Ry_;yX=7u1z%n6nqjha6ml~H+EiElBE~&I^bab>DmI;>|txK~u*7dZO78g{D%J%HplP6Dnm<d&cpWrBWDb^=Ft;L0TouWN@^!V|U(K1*#Q1q@X&$a$(ZTXo}&CSlv&dtrwKX@3xd{=l;^sX&`Tpw2#7v|<>bhC5!?kkvb6=0>a9Z|JJitK|#m9DjqAKoj~^wiY!^vqrDQm`jw1G_prJUrsp3aK+LwG3C^znz(ynp92weCKXqV4myJ<ttaNmRv27qWj!emFvU1m8r=I)#R<)8Wy<DU$}VbU>By(vsJo2zJL4X^;6x=o40Q3feoEGbN1YM?Yg|L3){!^s$DCuU;U!GaYMO&K0P?-yDnVZ&xP^RhZU~1)pskeUyhHDU%#$gr%rpWv!1K&GDP}W(UNP!pVuqpx^`{g<jGUoH8kXntIje+{3-03b@=M#p92GmrCp_Ec&XN9#p4Zu>)V$<e*5*1>Zf2_XZ9YKHBSy{*Updc-~Rgf_alc@M~)mj))TD4($(d=Y<ehfYioCRN5Q^+`P_9>*VT2bx352uOr5X18Cv#WXfBsiFg38R$9uYusk*zndydEA3YJc%3oMJCxvp?2*!RA^-s3$zJ;#q9@9phNCX=a@mSwJ7wetD+Tmcq~#rpenY8Cd!V)0bqvTc)w3YUV#<MEi6LdDb{5{YCwZQ({C!TIHLzATwY#JytPe-nyj_ogm6AEqv-gjd}EEotk{LT<&tQmLe$XR;Pm?#kyqSE@)$TD@minJe$Jd>fSw*0d|1F0knAhUc+#byU)_YFtD%nsiIBIx1;pWdK4dnj5(8?~+zWQ&rC;B|(>@5KUE$OG<(+NhzADqD#_?ri$Y@j^j9v<2a7vIF92uj^j9v<2a7vIF92uj^j9v<2a7vIF92uj^j9v<2a7vIF94Ec1LjU5{et>{2lB}MZ!gK)3?8~?G){Gxwh=NZxm&t3+>xRqCi=>4K*#7>k@Ri%|}y(ALh0iO%-aF>k@RiA)~3n33FYFF4raKa*ah(g~{c*6kV=M(dC+trV4?}bxFEhk}lV!=yF|(F1NiAWw|6#opHG?Nta8~<+=o2ZiLZPMdxx|k}j8BHo;uNE+GUpmrK-Dn3tgHYC8;qsJNiI=q@nP"
     "4j9zSP8S?p#4gchj#Vy41x*&UOEl^6gXVMbxt!|20+(n8)Ury2!R71|SmF|mf<mb}=JJo*$BF{xR>I0^p9--HXu7~&S36laT>!SY+-6+iL>VuHuCOGeuCOAcE(4~{x(ui?^^5H9dmD0@F+~Gw!exjQy(?Q(WwS4IO|vqM7NskjEvf=nInA6YN|)<v0@aK18d7C4xL8G3HtV~5)pNh1%%rIUuFcJoYI(UN8#8HAxzV}Yz@=5ox@Y=7zHDr4%$zA2R=I0)b92LIJqz+>V`F>3S|vsGFGaO3rCM5ATwGjQTGFy7qodWZ)<JFuTuQaEzOJUFR0}GP_U!SKYFH>ywEqxWa(&X%T3nc)o1dRov`3E~7h%n#I{pvLzDu*#mY-?W?Ck8EqCI$625Sn1;~&m-{<uD_E-uW?&gf?6?%nrbrGXVsdqmX|Df-WE1g;MYb2HOZQ&ZE^Gj{{m<1*LPVb#b;Jr}~yr6`wLhO6)2&P+{Bs-}Lv<HHKBOP4QSxq7w88fnQC+2@F=Tp!-8OifPcZrxU}qU*xNOP4NRDR;GG>Xhr_hqrHDKh@p5dF!?w*wC3XXV0BGzmE&~$G-f_>;1~>SHGxk+)%EcPY(`yuJad^>+&8h3qF0QUFz~$dHr&HeEj<L8#hm#I_<g6YS+b!{<z9rc6?T}Ft1n2b?w@~$&;RIXh@H1k7bDcQ`lA4m!8+30|SbsUBzX1v2q#O^mv2k`u63I-+n!$`l)<erK?N1Y<qHOb93j%_iumw{QHr^sv}3cj`j3<tl(y-zj$4>@S(ij-5mw{`sH)i(IZEW9#yX1zWziqb-uI;t$Z*vr(kMeUyt{6AJcVr_Z*MK6)c@jYnEltTvxa>tgo-PM|E7)+m}ctQz<30`1$yp4~xZO{e40G{js=WS-D9=g-gNW@pw$9OsaT1VdKUVl`btyBoc8iZHmY3G}X9ryUAoSk??VegsrApS1OhCvl~_J%I7^-AhR1)?$WSSknN}{S3bS3O4?M}dFR!47HJYF+2Hd;(!NNd8gNNT&?W7SBx)a*loVZ35_Cxl(NxvAq$KE)l%lCBx+J}5syL40IF92uj^j9v<2a7vIF92uj^j9v<2a7vIF92uj^j9v<2a7vIF92uj^j9v<2a6McLet?p}2w0-@(pQBwQ3XefvAxPSIW$$(>3`ZY%5B^WF#ZC`-4YrsTr=8lMPJcDUS@B8jr*l@O#{u1nD6hK!~PC(Lyzx?Go_%QY5F6(*PKQgpd4MVD(nnkob?*Cpw4NxEE@qRVwDy4?0gl;x5{b;jkoBwa2^m+KOAxe-QF6`jj<NxEEi*#vXhWs}S0d9my7)WsJVyXv_FO_vaYsw)Z@=%Rr|;eyH{c8NA~I_47X<&?o}azW!o?Go+fL<(!w1!0QXbui2c0xB-2A_!U3E^&az5UZ0er*5HDkjX^t62(8XiIwq-+*QmtD^ngiS9nsCF1Jya0TM!&5mIMe;aHi2!sIe#irkegpt9NQ3$JEbnMRB3@1s0TQ5CStW#&u~yEMmVy{N1aRVIUrRdi*uzROcRFI0e;G^yN(U7MSlr98`CMcJ4+Q&fM`=9a^hOS2T|nW`uo8ygF6iuf-O%UqkAn;Sms*|VjkC7-5XV`H_jRz)3f{Y9}hG)t=%7Z*L+^750>(P~&2QsgdIv)0%3w3ZeZbei_~@sny;I8yZgo}ygq>z_1hVSavYeturb9z80-8b{&!cOpHmPixE178mB{W>t#z;9(^!JgHNzkE@GHH8VXuGc!AP@4g4y%QZ4G(wZsye~0y!;l~dPb2HOZs_B`#ckczRCq>uQtHZ;?BVH|;I^+7Zw)+0<%=Dyg>gPLmy@9EP=*{cW<;z#D?&U)HIif1phj%MelM_!TCMIs(R<NS$!o`c1E?>D)#u{k})gjl%4{zU0K7IPj)2BCY-ny*@HaK+V%-M72&R@8Asmj%osS_Xj@@^aNS6;vRMRom#a-BXs=)2Bq*X2r=HJ?6IE_HdWynZ=8K7L)fPMz{yXV2<!U97mgZ2GKdFt1n2b?w@~$&;RIXs9r*(lWH-Q`lA4m!8+30|SbsU4>;Bj7z)hd%QurzJ2-Qw_gwabm-7edydP>Cx<q7e*F0M*U!HnIjlR{b*!h?V-?0_)5B}!uHBuTAK$-z`P_B%$dRK*k9PI+_Vp){NuOmCsoJ%xT;IMP@993~)!lPE7EdHo>2%sIQmsqF`udLdcpX39+o$H0vd>iM%6YI@EY{!G*W25t>hF)mY&2E6)W8%h9*=qTH-?f}b1Me6n@A+$I!&|IRPD;;c9Y43SKMY(tt*xEvm90FQm~Zj0F|_(igVU13Mff**EmUZi@!!)(!NNd8gNNT&?W7SBx)a*loVZ35_Cxl(NxvAq$KE)l%lCBx+J}5syL40IF92uj^j9v<2a7vIF92uj^j9v<2a7vIF92uj^j9v<2a7vIF92uj^j9v<2a6McLet?p}2w0-@(pQBwQ3XefvAxPSIW$$(>3`ZY%qDy|XdZZKy4B+47Q@wxaBCVSn#ZgeZ$%2|>u^x&&Qr$Y`o?!d#c4%XJC5Tw~ExVRE@HMVISRbh+lEsY2j#U6L-Bq|0?Fx?Go{%WZE&SuRObXI!pJ(&dtLxh_GM8(}n6(Yaigq|0TOO)!^THo07$7rXvWU3`JDi(TwO31b(#*hS3cM&}YjMBo8k)GpCpPASV>P`Bt@LYRU<14Zo;ZPk>@xX4}5Y#G0(U7}5#GLm1U_l*N#j^l(UA#ypz43MIMRl7tTPz$Qees#ztoINr`>WnL>bylX4qP)Jc*}#-lz3^+2m1(q2xQeI>nK@IGU%y;$NZAtW`SS{yNmLZ9($8Ok%TqlsRFD}oWupE0%X9tz?cLi_8c7_-@yCb>t_UdPH9Q~i2vzZvL=z8CrGT6wig|~{i^Q13B%)VaTf3=jvf1nd<t@7R-!q5^gs^}!(|>>8yIfJ9`uA9*r>nWRP%QEsm|e;uoiN$+|4QZhm0XHNqJ63?i$o&rnC#sLP}90NH&|rK<#HujKED;Ig|#ZO!KGN|CM&l`8MK3g&8@9!SQ{c6_H7iaSfoWrtY<1k+t}EwhP6ksejl4$#o`%_YwuY$lgVVWBwJrMVP#jlBs*L*uCosZG^|WoMYJbRufsZEvf;gh;d)1`R4SQFrPAruHG<W5g+ig$Og6lSRm<@GDY25fR5JDG@#>ly*k%bvuGzV{`T6;fQA;L!Tr{q?nbd9~o=7BiA1YVHz@}$rW~*J!Jx5gKI(>6OtXM1_UtS@Ya*dA@D>yZ!TyqsJXP=L%{6w`3U%yJkVmq<e($ew@4Qym|Y;1gDV$yI`j7zIyU*vjwa{O|KT3964@bHM~nk3isl}oqNhedk4PL5w}Z*MOwEDjD0nXYki1%p$UkC%pLMU8pAB-eun1B0e(bo6Q&(&MGiDeT&H_~QG(0I`(o`nYsCE?>v><<p<P|JHS<tLsk1xXh<Z8&R$6>(?)Tef;CzU6rf5$L%SvLaj(Ou7AG%{rS_!Zr8ngE|;s@?eY5jfx!Jq-AMIZUq1J`dwwzMar^rE{Q><*wJrtod3xPOy}cf<o~CNoH-h!~d_J$o<MDdDUR_N!E`s&<_w^~8&!?}c+C?zG-`}s&+EnBE_gf%9GQZ}g8ke{qp!7${7S0h#Jz|NHOmB^oOt1KB)+P0eC8`ORlnh-`-&mp=xTNIhl9HiIa)_s@#w8^~m*f;rRoNx^#Z!e4LI@#*5JCtcgb+dqA%qY@2qA<JLI@#*5JCtcgb+dqA%qY@2qA<Jy6G6+UBdAKom+4-6$=-~OW$tUb&C4BSl(31@><zjeX}vwYp6AHvAhdiqaVMyS(Wo)`uzNoB`Qa|H2M863sH`BiT2~Ea`^8Uv2lrx#Z%=Zmk=CXLU446&c{>b0GALfU4o@c2#zixIJ(5m#*`&kqU>=A!O|sIx`bfp5*Ef&Wt~e1mM#I8PA~zNPA-9Y!F5Yrc);L-3ob{(;DQS-W-b92TyVkVJecL8FlDLh=;%g0(Qrl9x^4y*jb0;}S?4-B>Le_BS-5_}TGvsBG>u5MxQ^P^{FLN$SG0cNrn2(+DioT5MH>}v"
     "HtStKfIW}?tnmNH!oTwc6|o9cpu@xGR3}kkYrjXCu0r9^{Ab?i(CB$bOg4Q#B-X`6ffV`tL8(hwB+{12-tWDNrCbJUpDM`|t1hf1k@fokigj+X_V;tST#1&?Z$)Zht%_`LDb~5k%I&EP+UDlwRyC|0k{zz|^WtG%sh$}r*~Ug0)|ASD``F|v7SHkr#L8wenQWG1>+4mpc1d>Z&(pZhJ`gLLNvnwV<f#d}balXFm+ReLHl0c)lc`iXy}CxQtASOzLZMJ=CL7+vs%7~8lvul}Wa`o5)ipJ+O4r=n{QP{#s3nsv@0ZoM-eyv}iFiDb*nOy6rGY8e^z_W^Y=z6&=ZLO-<k^SQHz&LCSS%KgFRu`cTw~+o<O&9-re`W#jz1rD{WIU6zJ3*t?d-&2OH0cuG_a9Ta!pK32B!>{!P4^B*U2%lc6JsP$u&GYa^)&5Lv2qV9>3V$-d<Q(92^=dyCzF6UC!v$-4`X-gMooT(=|%2(lXQp^yB^B?*odZT$ket2K50o+Q;tdx>Fk0m@zJ`M2+_6@7{HF_qaXAD%6hD@V$ep+wJlC`~eL~jo+vI(&P5&N&3lqqF!xH9eV#Ioft<`n=a|(IGS2@NeyC&l3Xt$V|r_xWO~J4vo5J$EKyCkq-5xl`o<E~z$GO|my`@$l0!UIH7+R`x+JG~s>&|OFP<ud5JCtcgb+dqA%qY@2qA<JLI@#*5JCtcgb+dqA%qY@2qA<JLI|NB^&itoof7"
+)
+_РЕШІТКА_РОЛЕЙ = (
+    "c-rjP+fp057C_Op{Qn<)5(wZ+liDQVP(2yr1zSALlH4t61^@s6000000000000000000000QiSCnzbwIOj#>S)>l`_I#t%nk_7+&00000000000000000000000000000000000000000001=Z-3Bro~CZrHmhP?`K*;C>#M6|S%b1H!ta^2vSi8n{H$$O$+8GNG;9k$R5sHK8vp<R0000000000000000000000000000000000000000fCu|SwQEZ`S6Q2yq&Ly5m35-3NY^&IzD-th5soa+cbkk)=$dBNG`ptRHO;PRc1^OYd6QARqbXlKMY|>`ngsv=00000000000000000000000000000000000000000B~$Kn$-;3RM>0Hmb&&%G;5<-+pMZ)t=aO^@*tG;y|Y?-!d})yv!+>f-8H(-)HThnX?D#d!=~9a&8|s`W@Wno0000000000000000000000000000000000000000004l$w7b!)P}p0_hQjuqtTSb8G;5<-E6XDE$nb!d70gO)+<RFQ&AJVnX4fRUiYNZyZALU}qFJ@8r`xV+c1=<=E87JC0000000000000000000000000000000000000000008`@-Hm2-!ggPCHWaq^npM@Tjb?2$Yh_u49vL3+vTUBt($zYU^s*+JbrUwtu4#5nvuh?9HqEYSc1^QulA>AJE&u=k0000000000000000000000000000000000000000`2X3BW^J)$w-dH6UO%_8uKQ%2CTpWv8_il-7NJLmEblGTb(*fy;iQ-~(X44!U3ZPHlb!yHVbkoIWY-i$vnHAa00000000000000000000000000000000000000000002|wcTh|CTy=-b~9o7rqs2MqFF2JOj#SvT3HsMEKkC3^*)|x)<m<WS#{qv&8|sy<qrJ8tZdgrvnHA~(X5GPWp8!?0000000000000000000000000000000000000000004l$x6!QKXx4^OUSh64C$erdtEyQm>r7c2&Dv<zT7<GZ3T-p~Yu6;ZN(Yi))<m-=nl;g^tFYirMlfrlSrg5gXjb+HbfQ@R0000000000000000000000000000000000000000006+>+i2Eqr(}=6oIdNVW-DQPK-QVER@RBC&fm4oE?I#tkHQmmrM88!tZ7y~bWO9XbucbwO*CtoRrlxrT-P+aW|Cpk?3$!#761SM0000000000000000000000000000000000000000z_H!Ugj}WEemi^CTTP{FkH|Vx)<&~d)|s+4nzdG;NBkFeHM2td-Cou-tM0p|*)`3sNp|HfGKyIf&6;Rd=<4a9YbF^s&8`6e0000000000000000000000000000000000000000008(#b~h7p)pGOY{8_I#k*+-?>r7c2&01M!%F<;Odc=QD*Ce|_+udB&G^-xErrFgx7zeAayQbMS&8}&7O|ol(qFEEo0ssI20000000000000000000000000000000000000000sN1`*yN#@8H(xthuQ`#fJtXTyRj2RzW?37}(&g9X5&t<|lk6((cWYVGta|90WLN2!+{~J2)<m-&E;eFa)9jjN*Gw{Onq30`0000000000000000000000000000000000000000002<7yTAQ@-mE7#-#b~aIgPG8ChJUDE9*>I8_m+?*Y)LHv7JUIYnoLDU7hnuF>9h()2zDfnr7D|yL$IE#jKaGX?9JsYbF^s&8`6e0000000000000000000000000000000000000000001c4-QRvcZ`PBW@0qH%wnW#yL)MwHR@Rxabm{Ui{G_bdPNPzF+%?Ir%<-g{b+nZac1^Qul3lrbjbheBvnHBVxp_M5nxtqJ00000000000000000000000000000000000000000000$+x~PnP|3P(d+0oQ)=N*KYv0kVs%EV$UAlCAqle)%tKR8KZ46Uc)2uq^N*%m%Rd-#}?3!d(@M5EvHPNhTR{aW_X4fP|vj6}900000000000000000000000000000000000000000G@3$>&e|nCF{EFq4VTfFFl2>eUGd&Wo<NTO_wfD4Ot)PD(#>`RmWYE>?$2la#{CbwG(A7YnoNpUDNDJ-q-}MqoP?8&6;Rd_No^E0000000000000000000000000000000000000000007|GZZzvjtaPtjkA<>c+8*cc{8<lkC+iGZx-3IopVl?au4Yzh3)QJQ?ker%V^t4bwUbvZYnoLzUDNDJ-fZNqZK7Gf!lv0ZMa?Pz0000000000000000000000000000000000000000004lt-F+NOWIeeZ%Vb@*?Vdht@4b$tsvf3JmM&eozIRvc<<-cVX4P?5WG5f2I^G-xyGkd@V%9XPZn~z~)w{9@RuxYCzv-GOhD}m53jhEB0000000000000000000000000000000000000000plpANX5F`)KXh+g4VJQgwe9Jb=Ke;sOO`HOx<1sEdMQ_`-s_rVS8LB(sygVJWLNO))jC@?tKK^-hq|Jd8_`RfnPS*XvTK@M0{{R30000000000000000000000000000000000000000(6!O5C(Wvdwhd)nrJa2O_rS|=t?OV_mb#|dHM(@^`lPH$PFHFZ70Q}s)lpY)H(xreM6;$@b<@>6Ek|zwT-uzdYbMz>Nzp6-0000000000000000000000000000000000000000004ln-Hm2#Fm10~4~Md@(#}4Cd*Efb*0q6O+(yHqU8XD36?@D#Hde<|bpAb6W!=5oRo(RJa`yV_u;yXeJqQ2*00000000000000000000000000000000000000000001|v_C|%f@yp0X1J5}mbSUB=b+QC%>9jO*G99}bm{u?uGnL~@KV0-dL0ezqN2OQ(WUFlyPAi}=3&`I2mk;80000000000000000000000000000000000000000005`7KQybJMYC?x&fdBAB5QLGyo}bm0zbIjX4tpv8eJ#q3ckM1zxg<xqVsR5qPxS1X6ZU-m$UMDx|(+z0{{R300000000000000000000000000000000000000000KkilX8jb+I%wNU)@|C^=Wy@64Y#_UiuUY3y8WGM*Xptkb$wD-@AVbfSRKw#V7nMucJFtMt}}HtPhZVbW%CkX0000000000000000000000000000000000000000000000BGCYXx0YP_RZZtGF>-qXP?4-@H!mp`dM`P-`xIAwQJ3nE?uA0)q2b)US4-yZ-b%jVRPGC-OlSeQ&;n}+`I)C000000000000000000000000000000000000000000000fPZ15S-ZuE-Sda-FAqbJuB((Sgzc^Cky6*=?A5wt>H7Mv(WOh5uK&`N*&H5hni5q9+xcxADJ#FH@70yO$w=POZ1m;{000000000000000000000000000000000000000000000_`lm|)^4F;4~907b=UDQaO$qNl3dqw%)tzvzw2@KYF)B)eSO#H(xpq+f89nkvK}{0iK@4*tAWZ1awAjpeY)IaoTqC5000000000000000000000000000000000000000000000{)ufS?4Cbt_o3oo=$u)%9S;Mi?s_fRT-S5VCc^ez)9jjN*O)HTrAycM?wVlN)xc!Bt_KPS$oqAdsH$w<-|d=Y*G#c%ikejb00000000000000000000000000000000000000000002M7uZcEY@+L-;$Y~cT{j&M182^9OW9u6Q_UvA_FdELnr7GNlBG-6_wJft*VVvOx^4y%2grx6$iX<W@Q%AC*)>z_8UO$Q0000000000000000000000000000000000000000007>#8%WsyG<L$S"
+    "`;5nt({^2l>=wfI%FRG0>$zqVVf(IWc1^Qube*Ydbm`Ld?_bNku6MV=iCu4^>aZ(vFs?iR54(yt8NsNZT>}6B00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000008h+E<e0}c>NNHx~EH)uFuM{49^u;e2oROe#P0Q0000000000000000000000000000000000000000000000002+w=R*4A6`GaehEa~(<MvSXJuK2=Zed{jhk7my#@dP0000000000000000000000000000000000000000000000AJ`5$@t;r@8#u7A?lv4Q)OLDmo8bKRo8nRH?vZE4FCWD000000000000000000000000000000000000000000000zRu-R>3A-=yoyBK8(q3&>H1Js<SGA97knQ#y8r+H000000000000000000000000000000000000000000000;9t00Djm-ymsgRf2hpz4Wf__-)Agac;tRRi1poj5000000000000000000000000000000000000000000000fA4a+WI`^#{`?Y&dJydzU6!HgGF>0aOTLklT>t<8000000000000000000000000000000000000000000000@b@m4OD5#<>(4Kds0X@E)n&R&m+AVnyyPpnm<0d;0000000000000000000000000000000000000000000000DtK6_UVU6({st?O(g1pu2XfHE?u%dtuOd?Ze{@h0000000000000000000000000000000000000000000000Kgx*ynXtik#u=ZxxDFQ-HK*iOqc1>Wf^`fulRayW&r>I000000000000000000000000000000000000000000000z@NFiet42ddM>$K>15rCX6cfp%TwcneZ|*vGYbF!0000000000000000000000000000000000000000000000RGJ7^}~}y(sRk>S|;oA9kO&;hNer`2m6xm=V%uI000000000000000000000000000000000000000000000008`f%jNCUPmQLhlFPMB*5x~7>Cz?3W8;H;%@=gD3jhEB0000000000000000000000000000000002~*KQr-HVni-6b<J7hYqA7l-6l%z<_uBUPYE4Hn;)+000000001ZK{C^!qv<TkRZZ4HmM&ego(n5`!YZ>ac|KDB000000000000000000000000000000000000000000000007{W%yj5zI!kg@leLhgOP8$Y(%Rmz&aS^YpD6$U0000000000000000000000000000000000000000000000B}k&(=59;9VNM{$y(@=rR!Z;"
+    "73c7uw!TNKvI_tJ0000000000000000000000000000000000000000000000Jupq(=59;9VNM{$y(@=rR!Z;73c6FuJIA;ivj=u00000000000000000000000000000000000000000000009Hw6%51wwtvai8$@+w@%B-#{U)KZx000000000000000000000000000000000000000000000004ZOBr|2U-J>3KR>iNiPgc#v=!;si8qa)R6aWAK000000000000000000000000000000000000000000000@LiJ3l-YKVT2)rn`~~}>maMLe(HAvYo&*2@0000000000000000000000000000000000000000000000DzB_WTsiRkGlCOtg8A8_C;N~`YuLa)a?=i00000000000000000000000000KDKA)9ph2"
 )
 # ── КІНЕЦЬ ЗГЕНЕРОВАНОГО ──
