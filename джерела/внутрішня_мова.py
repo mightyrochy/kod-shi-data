@@ -1506,6 +1506,15 @@ _МІСЦЯ_ОПЦІЙ = "where it is worn"
         "the declared length puts the hem close to the widest place of the body, and which size she "
         "takes decides whether it lands there: the shop gives one length per size and her size is not "
         "known (values: slot — slot code; level — code of the body level in question)",
+    "edge_not_judged_error_unknown":
+        "the code does not judge whether the hem sits on the widest place of the body: the answer depends on "
+        "a measurement whose error is not known (values: slot — slot code; edge_error_cm — error of the "
+        "hem's height, cm, absent when unknown; levels — codes of the body levels whose width error is "
+        "unknown)",
+    "volume_anchor_not_judged_error_unknown":
+        "the code does not judge whether the volume has an anchor: the ease at the levels named is within "
+        "the error of the measurements it rests on, or that error is not known (values: levels — codes of "
+        "the body levels)",
     "item_longer_than_her_body": "on her height the item is longer than her body from the shop's measuring point: the "
                                  "hem pools on the floor (values: excess_cm)",
     "declared_length_outside_body":
