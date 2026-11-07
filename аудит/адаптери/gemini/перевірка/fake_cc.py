@@ -74,6 +74,8 @@ if sc == 'no_report':
     result('Зроблено, усе гаразд.')
 if sc == 'die':
     sys.exit(3)
+if sc == 'network':
+    result("API Error: Can't reach the API server — check your internet or DNS (ENOTFOUND)", True, 1)
 if sc == 'hang':
     time.sleep(600)
 if sc == 'effort':

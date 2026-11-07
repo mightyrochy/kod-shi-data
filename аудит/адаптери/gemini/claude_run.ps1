@@ -693,6 +693,7 @@ function Get-ErrorCode([string]$Text) {
     if ($Text -match 'issue with the selected model|unrecognized_model|model_not_found|not_found_error.{0,80}model') { return 'MODEL_INVALID' }
     if ($Text -match 'Not logged in|/login|authentication_error|Invalid API key|OAuth token|\b401\b') { return 'AUTH' }
     if ($Text -match 'usage limit|hit your limit|limit reached|rate.?limit|rate_limit_error|\b429\b|quota|overloaded_error') { return 'QUOTA' }
+    if ($Text -match "ENOTFOUND|EAI_AGAIN|ECONNREFUSED|ECONNRESET|ETIMEDOUT|Can't reach the API server") { return 'NETWORK' }
     'EXIT'
 }
 
@@ -743,11 +744,15 @@ function Invoke-Claude([string]$Exe, [string[]]$ArgList, [string]$Prompt, [strin
     $res = [pscustomobject]@{ Code = 0; Kind = ''; Result = $null; AssistantText = ''; Err = ''; Limit = $null }
     $err = New-Object System.Text.StringBuilder
     $last = Get-Date
+    $tick = $last
     $outTask = $null; $errTask = $null; $outDone = $false; $errDone = $false
     while ($true) {
         if (-not $outDone -and $null -eq $outTask) { $outTask = $p.StandardOutput.ReadLineAsync() }
         if (-not $errDone -and $null -eq $errTask) { $errTask = $p.StandardError.ReadLineAsync() }
-        $left = ($last.AddMinutes($hang) - (Get-Date)).TotalMilliseconds
+        $now = Get-Date
+        $last = $last + (Get-SleepGap $tick $now)
+        $tick = $now
+        $left = ($last.AddMinutes($hang) - $now).TotalMilliseconds
         if ($left -le 0) { $res.Kind = 'HANG'; break }
         $ms = [int][Math]::Min($left, 60000)
         $wait = [System.Threading.Tasks.Task[]]@(@($outTask, $errTask) | Where-Object { $null -ne $_ })
@@ -919,10 +924,23 @@ function Invoke-ClaudeTask($M, $Job, [string]$Exe, [string]$TaskText, [string]$C
     if ($isError -or $r.Code -ne 0) {
         $code = Get-ErrorCode ($text + "`n" + $r.Err)
         if ($code -eq 'QUOTA' -and (Enter-ClaudeQuotaWait $M $statePath $id $r ($text + "`n" + $r.Err))) { return }
+        if ($code -eq 'NETWORK' -and (Enter-ClaudeNetworkWait $M $id)) { return }
         return (Complete-Task $M $statePath $id $code)
     }
     Save-ClaudeNoReport $M $id $r
     Complete-Task $M $statePath $id 'NO_REPORT'
+}
+
+# Обрив мережі (світло зникло разом із роутером): спроба не спалена, та сама позначка почнеться знову з гілки наряду.
+# Без мережі прохід обривається на git fetch, тож під час відключення повторів нема. Понад MaxRetakes — кінець NETWORK.
+function Enter-ClaudeNetworkWait($M, [string]$Id) {
+    $n = Set-MarkerWait $M ([DateTimeOffset]::UtcNow.ToUnixTimeSeconds() + 300) @{ retake = $true; group = 'NETWORK' }
+    if ($null -eq $n) { return $false }
+    [void](Add-Line "GEMINI ОБГОРТКА: ЗАБЛОКОВАНО claude/$($M.Slug) NETWORK_WAIT")
+    $runDir = Join-Path (Join-Path $WorkDir 'runs') $Id
+    Write-FileAtomic (Join-Path $runDir 'result.json') (([ordered]@{ marker = $M.Name; sha = $M.Sha; code = 'NETWORK_WAIT'; retake = $n; end = (Get-Date).ToString('s') }) | ConvertTo-Json -Compress)
+    Write-Log "позначка $($M.Name): обрив мережі, повтор у черзі (повернення $n)"
+    $true
 }
 
 # Відмова до STARTED: лічильник повернень і межа ті самі, що в квоти; на межі — кінцевий стан CRASH і рядок диспетчерові.

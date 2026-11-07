@@ -119,11 +119,15 @@ function Invoke-NativeUntilStall([string]$Exe, [string[]]$Arguments, [string]$Wo
     $err = $p.StandardError.ReadToEndAsync()
     $out = New-Object System.Text.StringBuilder
     $last = Get-Date
+    $tick = $last
     $stalled = $false
     $pending = $null
     while ($true) {
         if ($null -eq $pending) { $pending = $p.StandardOutput.ReadLineAsync() }
-        $left = ($last.AddMinutes($StallMinutes) - (Get-Date)).TotalMilliseconds
+        $now = Get-Date
+        $last = $last + (Get-SleepGap $tick $now)
+        $tick = $now
+        $left = ($last.AddMinutes($StallMinutes) - $now).TotalMilliseconds
         if ($left -le 0) { $stalled = $true; break }
         if (-not $pending.Wait([int][Math]::Min($left, 60000))) {
             # stdout міг лишитись відкритим у нащадка завершеного процесу: це не завислість.
