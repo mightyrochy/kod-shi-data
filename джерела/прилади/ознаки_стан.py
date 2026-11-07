@@ -1615,13 +1615,16 @@ class Стан:
         return False
 
     def локальна_лямбда(self, func):
-        """Лямбда, присвоєна імені `func` у цій функції один раз і без інших присвоєнь, з позиційними параметрами."""
+        """Лямбда-вираз (не обгортка одного виклику), присвоєна імені `func` у цій функції один раз і без інших
+        присвоєнь, з позиційними параметрами."""
         if not isinstance(func, ast.Name) or isinstance(self.ф.вузол, ast.Lambda):
             return None
         зв = [n.value for n in self.ф.власні if isinstance(n, (ast.Assign, ast.AnnAssign, ast.AugAssign))
               and any(isinstance(ц, ast.Name) and ц.id == func.id
                       for ц in (n.targets if isinstance(n, ast.Assign) else [n.target]))]
-        if len(зв) != 1 or not isinstance(зв[0], ast.Lambda):
+        if len(зв) != 1 or not isinstance(зв[0], ast.Lambda) or isinstance(зв[0].body, ast.Call):
+            # обгортка одного виклику (`дамп = lambda x: json.dumps(x, …)` у `мовний_шар.мова`) — як виклик і досі:
+            # розкриття дало б її значення текстові відповіді й хибне місце на позиціях у ньому (`:3007`)
             return None
         а = зв[0].args
         if а.vararg or а.kwarg or а.kwonlyargs or а.posonlyargs or а.defaults:
