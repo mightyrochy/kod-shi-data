@@ -119,11 +119,15 @@ function Invoke-NativeUntilStall([string]$Exe, [string[]]$Arguments, [string]$Wo
     $err = $p.StandardError.ReadToEndAsync()
     $out = New-Object System.Text.StringBuilder
     $last = Get-Date
+    $tick = $last
     $stalled = $false
     $pending = $null
     while ($true) {
         if ($null -eq $pending) { $pending = $p.StandardOutput.ReadLineAsync() }
-        $left = ($last.AddMinutes($StallMinutes) - (Get-Date)).TotalMilliseconds
+        $now = Get-Date
+        $last = $last + (Get-SleepGap $tick $now)
+        $tick = $now
+        $left = ($last.AddMinutes($StallMinutes) - $now).TotalMilliseconds
         if ($left -le 0) { $stalled = $true; break }
         if (-not $pending.Wait([int][Math]::Min($left, 60000))) {
             # stdout міг лишитись відкритим у нащадка завершеного процесу: це не завислість.
@@ -134,6 +138,7 @@ function Invoke-NativeUntilStall([string]$Exe, [string[]]$Arguments, [string]$Wo
         $pending = $null
         if ($null -eq $line) { break }
         $last = Get-Date
+        $tick = $last  # сон до цієї події вже скинуто, вдруге його не додавати
         [void]$out.Append($line).Append("`n")
         [System.IO.File]::AppendAllText($LogFile, $line + "`n", $script:Utf8)
         $type = ''

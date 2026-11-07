@@ -706,6 +706,12 @@ function Open-Lock([string]$Path) {
     try { [System.IO.File]::Open($Path, 'OpenOrCreate', 'ReadWrite', 'None') } catch { $null }
 }
 
+function Get-SleepGap([datetime]$Tick, [datetime]$Now) {
+    <# Цикл наряду обертається щонайменше раз на хвилину: довша пауза — сон ноутбука, а не завислість наряду. #>
+    $gap = $Now - $Tick
+    if ($gap.TotalMinutes -gt 5) { $gap } else { [timespan]::Zero }
+}
+
 function Test-LockFree([string]$Path) {
     <# Замок вільний зараз (відкрито й одразу закрито). #>
     $l = Open-Lock $Path
