@@ -257,10 +257,29 @@ class Стан:
         if закриває(база):
             return True
         if isinstance(база, ast.Name) and база.id in self.локальні:
-            значення = [n.value for n in self.ф.власні if isinstance(n, ast.Assign)
-                        and any(isinstance(ц, ast.Name) and ц.id == база.id for ц in n.targets)]
+            значення = self.присвоєння_імені(база.id, лише_присвоєння=True)
             return bool(значення) and all(закриває(в) for в in значення)
         return False
+
+    def присвоєння_імені(self, ім, лише_присвоєння=False):
+        """Значення, присвоєні імені `ім` у тілі функції (без вкладених), у порядку тіла: `ast.Assign`, а без
+        `лише_присвоєння` — ще `AnnAssign` і `AugAssign`. Таблиця — одна на функцію: обхід тіла на кожен вузол робив
+        кожен стан удвічі дорожчим, і прилад не вкладався в межу храповика (рядок дошки 13986)."""
+        атр = "_присвоєння_ast" if лише_присвоєння else "_присвоєння_всі"
+        таблиця = getattr(self.ф, атр, None)
+        if таблиця is None:
+            таблиця = {}
+            for n in self.ф.власні:
+                if isinstance(n, ast.Assign):
+                    цілі = n.targets
+                elif not лише_присвоєння and isinstance(n, (ast.AnnAssign, ast.AugAssign)):
+                    цілі = [n.target]
+                else:
+                    continue
+                for ім_ in dict.fromkeys(ц.id for ц in цілі if isinstance(ц, ast.Name)):
+                    таблиця.setdefault(ім_, []).append(n.value)
+            setattr(self.ф, атр, таблиця)
+        return таблиця.get(ім, ())
 
     def мітка_оцінки(self, в):
         """Сталий рядок, що означає джерело model_hex (`"model_hex"`, `"оцінка моделі"`)."""
@@ -1619,9 +1638,7 @@ class Стан:
         присвоєнь, з позиційними параметрами."""
         if not isinstance(func, ast.Name) or isinstance(self.ф.вузол, ast.Lambda):
             return None
-        зв = [n.value for n in self.ф.власні if isinstance(n, (ast.Assign, ast.AnnAssign, ast.AugAssign))
-              and any(isinstance(ц, ast.Name) and ц.id == func.id
-                      for ц in (n.targets if isinstance(n, ast.Assign) else [n.target]))]
+        зв = self.присвоєння_імені(func.id)
         if len(зв) != 1 or not isinstance(зв[0], ast.Lambda) or isinstance(зв[0].body, ast.Call):
             # обгортка одного виклику (`дамп = lambda x: json.dumps(x, …)` у `мовний_шар.мова`) — як виклик і досі:
             # розкриття дало б її значення текстові відповіді й хибне місце на позиціях у ньому (`:3007`)
