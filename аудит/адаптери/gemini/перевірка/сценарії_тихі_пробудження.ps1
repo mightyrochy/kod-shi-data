@@ -55,6 +55,7 @@ try {
             $want = $code -notin $quiet
             Check "1 $code — $(if ($want) { 'будить' } else { 'зведення' })" ((Test-DispatcherAction "GEMINI ОБГОРТКА: ЗАБЛОКОВАНО gemini/крок $code") -eq $want)
         }
+        Check '1 NETWORK_WAIT — зведення' (-not (Test-DispatcherAction 'GEMINI ОБГОРТКА: ЗАБЛОКОВАНО claude/крок NETWORK_WAIT'))
         foreach ($code in @('BLOCKED', 'DONE_PUBLISHED', 'BLOCKED_PUBLISHED', 'NO_HEAD_PUBLISHED', 'STATE_INVALID', 'ISOLATION_FAILED', 'BOOT', 'НЕВІДОМИЙ')) {
             Check "1 $code — будить" (Test-DispatcherAction "GEMINI ОБГОРТКА: ЗАБЛОКОВАНО gemini/крок $code")
         }

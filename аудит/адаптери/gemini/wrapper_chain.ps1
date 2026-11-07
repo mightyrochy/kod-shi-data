@@ -327,6 +327,7 @@ function Get-ChainTaskResults {
         if ($marker -cnotmatch '^gemini-queue/([^/]+)/[a-z0-9][a-z0-9.-]{1,63}/[1-9][0-9]*(?:/[^/]+)?$') { continue }
         $slug = $Matches[1]
         if ($slug -cnotmatch $script:SlugPattern -or $code -cnotmatch '^[A-Z][A-Z0-9_]{1,39}$' -or $code -ceq 'LINE_REJECTED') { continue }
+        if ($code -ceq 'NETWORK_WAIT') { continue }  # наряд повернувся в чергу, кінця ще нема
         if ($code -ceq 'QUOTA_WAIT') {
             # Саме чекання не є кінцем; прийнятий ЗАБЛОКОВАНО за його позначкою — є.
             foreach ($notice in $accepted) {
