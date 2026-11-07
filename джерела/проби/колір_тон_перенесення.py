@@ -16,8 +16,8 @@ def головна():
     старі, нові = вузли(до), вузли(після)
     перенесені = [і for і in нові if і in старі]
     assert len(перенесені) == 12, перенесені
-    for ім in перенесені:
-        assert ast.dump(старі[ім]) == ast.dump(нові[ім]), ім
+    for ім in перенесені:   # тепло змінено свідомо: вісь кола художника замість b*/C* (крок 23 Річ-колір-межі)
+        assert (ім == "тепло") != (ast.dump(старі[ім]) == ast.dump(нові[ім])), ім
         assert getattr(РИСИ, ім) is getattr(ТОН, ім), ім
         if not ім.startswith("_"):
             assert getattr(КП, "_in_arc" if ім == "in_arc" else ім) is getattr(ТОН, ім), ім
