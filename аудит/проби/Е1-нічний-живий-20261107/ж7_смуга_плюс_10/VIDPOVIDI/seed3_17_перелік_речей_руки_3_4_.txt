@@ -1,0 +1,44 @@
+── ПРОМПТ (2230 симв.) ──
+{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.", "One item carries one thing — of two alternatives list the first; a note in brackets is not an item.", "Slot \"accessory\" is for an item no other slot fits.", "\"is_outfit\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "ITEM_LIST", "answer_schema": {"is_outfit": "yes|no", "items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory", "color_hex": "<#rrggbb or null>", "worn": "<true, or false when the description says the outfit goes without it>"}]}, "input": ["\"description\" — the outfit description"]}, "description": "A structured wool-blend blazer in a soft heather grey (#d3d3d4), tailored with a slightly oversized fit for comfort and length hitting just above the hip. Underneath, a flowing midi skirt in cream silk-cotton blend (#fdfdf5), cut with an A-line silhouette that falls to mid-calf to provide warmth against the cool autumn air. On her feet, leather ankle boots in warm brown (#8b6f47) with a low block heel and a rounded toe for easy walking. A large wool felt fedora in camel (#c19a6b) adds structure and elegance while offering sun protection during daylight hours, paired with a minimalist gold pendant necklace on a delicate chain (#ffd700). This outfit works perfectly because the layering of the blazer and skirt addresses the +10 °C weather without looking bulky, while the neutral palette harmonizes beautifully with her warm skin tone and grey hair. The mix of structured tailoring and soft fabrics balances style with the casual yet polished vibe needed for a city stroll."}
+
+── ВІДПОВІДЬ (991 симв., 5.2 с, HTTP 200) ──
+{
+  "is_outfit": "yes",
+  "items": [
+    {
+      "name": "wool-blend blazer",
+      "details": "tailored with a slightly oversized fit, length hitting just above the hip",
+      "slot": "outerwear",
+      "color_hex": "#d3d3d4",
+      "worn": true
+    },
+    {
+      "name": "flowing midi skirt",
+      "details": "A-line silhouette cut, length falling to mid-calf",
+      "slot": "bottom",
+      "color_hex": "#fdfdf5",
+      "worn": true
+    },
+    {
+      "name": "leather ankle boots",
+      "details": "low block heel with a rounded toe, designed for easy walking",
+      "slot": "shoes",
+      "color_hex": "#8b6f47",
+      "worn": true
+    },
+    {
+      "name": "wool felt fedora",
+      "details": "adds structure and elegance",
+      "slot": "headwear",
+      "color_hex": "#c19a6b",
+      "worn": true
+    },
+    {
+      "name": "gold pendant necklace",
+      "details": "on a delicate chain",
+      "slot": "necklace",
+      "color_hex": "#ffd700",
+      "worn": true
+    }
+  ]
+}
