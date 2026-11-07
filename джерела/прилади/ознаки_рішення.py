@@ -664,12 +664,14 @@ def мітки_оцінки(дерева):
         мітки |= нові
 
 
-def походження_імен(ф):
-    """Ім'я функції → її входи, з яких воно пораховане: параметр (`("параметр", ім)`) чи читання запису в присвоєнні
-    (`("читання", id(значення))` — значення з `x[k]` чи `x.get(k)`), до нерухомої точки за присвоєннями, циклами й
-    `:=`; ім'я, не пов'язане у функції, — `("ззовні", ім)`. Вкладені функції й лямбди — частина тієї самої функції
-    (замикання). Так `L, C, h = lch(lab)` — один вхід `lab`, а два читання `F["шкіра"]["L"]` — два (рішення менеджера
-    07.11, рядок дошки 13923: «місце одне на вхід — перший вхід у функцію»)."""
+def походження_імен(ф, риси=frozenset()):
+    """Ім'я функції → її входи, з яких воно пораховане: параметр (`("параметр", ім)`), риса запису (`("риса", вхід,
+    назва)` — читання `x["шкіра"]…` чи `x.get("очі")`, де ключ — назва риси з `риси`) чи читання, чия основа не ім'я
+    (`("читання", id(значення))`: `f(x)["k"]`, `self.x["k"]`), до нерухомої точки за присвоєннями, циклами й `:=`; ім'я,
+    не пов'язане у функції, — `("ззовні", ім)`. Вкладені функції й лямбди — частина тієї самої функції (замикання).
+    Вхід — одна оцінка: колір однієї риси з усіма осями, хоч би як узято — ключем, розпакуванням, цілим записом
+    (рішення менеджера 07.11, питання #3262, `колір_відношення.py:207`). Так `L, C, h = lch(lab)` — один вхід `lab`,
+    `рб["дуга"]` і `рб["C"]` — один вхід `рб`, а `F["шкіра"]["L"]` і `F["очі"]["h"]` — два (інша риса)."""
     параметри = set()
     for n in ast.walk(ф):
         if isinstance(n, (ast.FunctionDef, ast.AsyncFunctionDef, ast.Lambda)):
@@ -701,24 +703,63 @@ def походження_імен(ф):
                     ключові.add(к.value.args.args[0].arg)
                     цілі(ast.Name(id=к.value.args.args[0].arg), n.args[0])
 
-    def читання(в):
-        return any(isinstance(x, ast.Subscript) or isinstance(x, ast.Call) and isinstance(x.func, ast.Attribute)
-                   and x.func.attr == "get" for x in ast.walk(в))
     пох = {ім: {("параметр", ім)} for ім in параметри - ключові}
+    читання_рис = {}   # id(значення) → [(ім'я основи, назва риси)]
     for ім, вирази in звʼязки.items():
-        пох.setdefault(ім, set()).update(("читання", id(в)) for в in вирази if читання(в))
+        for в in вирази:
+            непрямі, рисні = ланцюги_читання(в, риси)
+            if непрямі:
+                пох.setdefault(ім, set()).add(("читання", id(в)))
+            читання_рис[id(в)] = рисні
+            пох.setdefault(ім, set())
     while True:
         змінилось = False
         for ім, вирази in звʼязки.items():
             for в in вирази:
+                нові = set()
                 for x in ast.walk(в):
                     if isinstance(x, ast.Name) and isinstance(x.ctx, ast.Load) and x.id != ім:
-                        нові = пох[x.id] if x.id in пох else {("ззовні", x.id)}   # зв'язане ще порожнє — не ззовні
-                        if not нові <= пох[ім]:
-                            пох[ім] |= нові
-                            змінилось = True
+                        нові |= пох[x.id] if x.id in пох else {("ззовні", x.id)}   # зв'язане ще порожнє — не ззовні
+                for основа, риса in читання_рис[id(в)]:
+                    нові |= {("риса", о, риса) for о in (пох.get(основа) or {("ззовні", основа)}) if о[0] != "риса"}
+                if not нові <= пох[ім]:
+                    пох[ім] |= нові
+                    змінилось = True
         if not змінилось:
             return {ім: frozenset(в) for ім, в in пох.items()}
+
+
+def ланцюги_читання(в, риси):
+    """Читання записів у виразі: (чи є читання, чия основа не ім'я; [(ім'я основи, перша назва риси в ланцюгу)]).
+    Ланцюг — `x["k"]…[i]…`, `x.get("k")…`; ключ поза `риси` (вісь кольору: `"C"`, `"дуга"`, `"lab"`) — той самий
+    вхід, що й `x`."""
+    непрямі, рисні = False, []
+    вкладені = set()
+    for n in ast.walk(в):
+        if id(n) in вкладені or not (isinstance(n, ast.Subscript) or isinstance(n, ast.Call)
+                                     and isinstance(n.func, ast.Attribute) and n.func.attr == "get"):
+            continue
+        ключі, x = [], n
+        while True:
+            if isinstance(x, ast.Subscript):
+                if isinstance(x.slice, ast.Constant) and isinstance(x.slice.value, str):
+                    ключі.append(x.slice.value)
+                вкладені.add(id(x))
+                x = x.value
+            elif isinstance(x, ast.Call) and isinstance(x.func, ast.Attribute) and x.func.attr == "get":
+                if x.args and isinstance(x.args[0], ast.Constant) and isinstance(x.args[0].value, str):
+                    ключі.append(x.args[0].value)
+                вкладені.add(id(x))
+                x = x.func.value
+            else:
+                break
+        if not isinstance(x, ast.Name):
+            непрямі = True
+            continue
+        риса = next((к for к in reversed(ключі) if к in риси), None)   # ключі зібрано від зовнішнього
+        if риса is not None:
+            рисні.append((x.id, риса))
+    return непрямі, рисні
 
 
 def ключі_закриті_оцінкою(дерева, мітки, стала=False):
