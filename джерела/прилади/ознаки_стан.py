@@ -102,7 +102,28 @@ class Стан:
             return   # чиста функція кольору, куди значення дійшло з іншої функції: поширення, а не вхід
         if self.ф.геометрія and пункт == 1 and чому.startswith(("поріг", "рівність")):
             return   # коротка чиста функція кольору (`на_дузі`): поріг усередині — не вхід; місце — виклик із її значенням
-        self.а.місце(м, вузол, пункт, чому, вхід=вхід)
+        self.а.місце(м, вузол, пункт, чому, вхід=вхід, входи=self.входи_місця(вузол) if пункт == 1 else False)
+
+    def входи_місця(self, вузол):
+        """(функція, входи) для місця п.1, чиє її значення прийшло лише іменами функції (`походження_імен`); None —
+        пряме читання запису в самому місці (`F["шкіра"]["L"]`, `x.get("L")`, запис із ключами цілим у виклик —
+        `повернути_псевдонім(F)[1]`) чи значення не з імені: власний вхід."""
+        ф = self.а.верхня_функція(self.м, вузол)
+        if ф is None:
+            return None
+        бат = self.а.батьки(self.м)
+        імена = set()
+        for n in ast.walk(вузол):
+            if isinstance(n, ast.Name) and isinstance(n.ctx, ast.Load) and S in self.читати(n.id):
+                б = бат.get(id(n))
+                if isinstance(б, (ast.Subscript, ast.Attribute)) and б.value is n \
+                        or any(not str(к).startswith("#") for к in self.ключі.get(n.id, {})):
+                    return None
+                імена.add(n.id)
+        if not імена:
+            return None
+        пох = self.а.походження(ф)
+        return (id(ф), frozenset().union(*(пох.get(і) or {("ззовні", і)} for і in імена)))
 
     @contextlib.contextmanager
     def мертве(self, умова=True, тест=None):
@@ -174,6 +195,8 @@ class Стан:
             if нові and self.нульова_довіра(т):
                 return "так"
             return None
+        if нові and self.закритий_ключ(т):
+            return "так"    # `ознака_палітри(F, nm)["доступно"]`: для оцінки моделі сталий False (рядок дошки 13922)
         if isinstance(т, ast.UnaryOp) and isinstance(т.op, ast.Not):
             г = self.ворота(т.operand, нові)
             return {"так": "ні", "ні": "так"}.get(г)
@@ -198,6 +221,35 @@ class Стан:
             if мінімум(ліво):
                 return "так" if isinstance(оп, (ast.Lt, ast.LtE)) else "ні" if isinstance(оп, (ast.Gt, ast.GtE)) else None
         return None
+
+    def закритий_фільтр(self, в):
+        """Фільтр включення, хибний для оцінки моделі (ворота довіри, варта джерела, закритий ключ
+        `ознака_палітри(F, nm)["доступно"]` у `PP.дані(F)`): елемент для неї не утворюється (рядок дошки 13922)."""
+        return next((у for г in в.generators for у in г.ifs if self.ворота(у) == "так"), None)
+
+    def закритий_ключ(self, т):
+        """`f(...)["k"]` / `f(...).get("k")` чи те саме через ім'я, присвоєне лише з таких викликів, де `f` для оцінки
+        моделі віддає під `k` сталий `False` (`Аналіз.закриті_ключі`: `ознака_палітри(F, nm)["доступно"]`)."""
+        if isinstance(т, ast.Subscript) and _рядок(т.slice):
+            база, ключ = т.value, т.slice.value
+        elif isinstance(т, ast.Call) and isinstance(т.func, ast.Attribute) and т.func.attr == "get" and т.args \
+                and _рядок(т.args[0]):
+            база, ключ = т.func.value, т.args[0].value
+        else:
+            return False
+
+        def закриває(в):
+            if not isinstance(в, ast.Call):
+                return False
+            ім = в.func.id if isinstance(в.func, ast.Name) else в.func.attr if isinstance(в.func, ast.Attribute) else None
+            return ключ in self.а.закриті_ключі.get(ім, ())
+        if закриває(база):
+            return True
+        if isinstance(база, ast.Name) and база.id in self.локальні:
+            значення = [n.value for n in self.ф.власні if isinstance(n, ast.Assign)
+                        and any(isinstance(ц, ast.Name) and ц.id == база.id for ц in n.targets)]
+            return bool(значення) and all(закриває(в) for в in значення)
+        return False
 
     def мітка_оцінки(self, в):
         """Сталий рядок, що означає джерело model_hex (`"model_hex"`, `"оцінка моделі"`)."""
@@ -551,7 +603,9 @@ class Стан:
             self.e(сам)
             збережено = self.область(сам)
             try:
-                м, к = self.значення(сам.elt)
+                закритий = self.закритий_фільтр(сам)
+                with self.мертве(закритий is not None, закритий):
+                    м, к = self.значення(сам.elt)
             finally:
                 self.відновити(збережено)
             return ((м - {F, S}) | {K} if _сітка(сам) else м - {F}), к
@@ -613,8 +667,10 @@ class Стан:
             self.e(сам)
             збережено = self.область(сам)
             try:
-                мв, кв = self.значення(сам.value)
-                мк = self.значення(сам.key)[0]
+                закритий = self.закритий_фільтр(сам)
+                with self.мертве(закритий is not None, закритий):
+                    мв, кв = self.значення(сам.value)
+                    мк = self.значення(сам.key)[0]
             finally:
                 self.відновити(збережено)
             if кв:
@@ -667,7 +723,8 @@ class Стан:
 
     def таблиця_коду(self, ітер):
         """`таблиця.items()` / `.values()` / `.keys()` чи сама `таблиця`, де таблиця — словник, який код оголосив сам
-        (стала модуля чи імпортованого модуля, без жодної мітки): рядки такої таблиці — кандидати."""
+        (стала модуля чи імпортованого модуля, без жодної мітки): рядки такої таблиці — правило коду, як стала, без
+        мітки кандидата (рішення менеджера 07.11, рядок дошки 13923)."""
         в = ітер.func.value if isinstance(ітер, ast.Call) and isinstance(ітер.func, ast.Attribute) \
             and ітер.func.attr in ("items", "values", "keys") and not ітер.args else ітер
         з = None
@@ -710,11 +767,13 @@ class Стан:
                 return
         мітки = self.e(ітер) - {F}
         if self.таблиця_коду(ітер):
-            # кандидати: код перебирає власну таблицю (лексикон, таблиця дуг), а не її значення (рішення менеджера 01.11, 05.11)
+            # рядок власної таблиці коду (вікно й дуга лексикону, таблиця дуг, межі смуг) — правило, як стала: без мітки
+            # кандидата K. Її значення проти рядка — місце з її боку, кандидат проти рядка — ні (рішення менеджера 07.11,
+            # рядок дошки 13923; до того рядок ніс K, і `_пара` знімала її значення проти нього)
             self.e(ітер)
             for n in ast.walk(ціль):
                 if isinstance(n, ast.Name):
-                    self.присвоїти(n, frozenset({K}))
+                    self.присвоїти(n, E)
             return
         if isinstance(ціль, ast.Tuple) and len(ціль.elts) == 2 and isinstance(ітер, ast.Call) and \
                 isinstance(ітер.func, ast.Attribute) and ітер.func.attr == "items" and not ітер.args:
@@ -1281,11 +1340,13 @@ class Стан:
         if isinstance(в, (ast.ListComp, ast.SetComp, ast.GeneratorExp, ast.DictComp)):
             збережено = self.область(в)
             try:
-                if isinstance(в, ast.DictComp):
-                    self.e(в.key)
-                    return self.e(в.value) - {F}
-                м = self.e(в.elt)
-                return (м - {F, S}) | {K} if _сітка(в) else м - {F}
+                закритий = self.закритий_фільтр(в)
+                with self.мертве(закритий is not None, закритий):
+                    if isinstance(в, ast.DictComp):
+                        self.e(в.key)
+                        return self.e(в.value) - {F}
+                    м = self.e(в.elt)
+                    return (м - {F, S}) | {K} if _сітка(в) else м - {F}
             finally:
                 self.відновити(збережено)
         if isinstance(в, ast.JoinedStr):
@@ -1399,7 +1460,9 @@ class Стан:
             л, п = мітки[i], мітки[i + 1]
             if S not in л and S not in п:
                 continue
-            if S not in _пара(л, п):   # її ознака проти запису з файлу — порівняння про річ
+            if S not in _пара(л, п):   # її ознака проти запису з файлу чи входу — порівняння про річ
+                if os.environ.get("OZNAKY_CHYTANNYA"):
+                    self.а.читання_порівнянь.add((self.м.шлях, в.lineno, "[пара з P/C] " + _текст(в)[:66]))
                 continue
             if isinstance(оп, ПОРЯДОК):
                 if id(в) in self.а.формульні:
@@ -1801,6 +1864,11 @@ class Стан:
                 # перевірка тих самих дуг — споживач пари, місце там одне (рішення 01.11)
                 self.місце(self.м, в, 1, "її значення входить у поріг чистої функції кольору (`%s`): %s" % (ц.ім, _текст(в)[:60]),
                            вхід=True)
+            elif os.environ.get("OZNAKY_CHYTANNYA") and self.а.перевірка(ц) and not self.ф.геометрія \
+                    and not self.ф.формула and not self.а.пара_глибина and not self.мертва \
+                    and any(S in м for м in позиційні + list(іменні.values())) \
+                    and any(S not in м and (P in м or C in м) for м in позиційні + list(іменні.values())):
+                self.а.читання_порівнянь.add((self.м.шлях, в.lineno, "[виклик з P/C] " + _текст(в)[:66]))
             if F in пов and any(к.arg == "джерело" and not (isinstance(к.value, ast.Constant) and к.value.value is None)
                                 for к in в.keywords):
                 пов = пов - {F}   # будівник риc із явним `джерело=`: запис несе походження, а не довіру знімку
