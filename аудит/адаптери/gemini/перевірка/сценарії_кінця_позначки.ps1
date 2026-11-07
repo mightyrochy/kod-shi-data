@@ -85,6 +85,10 @@ try {
     Write-FileAtomic "$run/result.json" ((@{marker="gemini-queue/автоживий-$removed/cc-claude-test/1/p2-gpu";code='QUOTA_WAIT'}) | ConvertTo-Json)
     # Віддалену позначку вже прибрано: окремо перевіряємо, що QUOTA_WAIT не є результатом.
     Check 'очікування квоти не є кінцем смуги' (-not (Get-ChainTaskCompletion "автоживий-$removed"))
+    $netRun = "$tmp/claude-run/runs/мережа"
+    [void][IO.Directory]::CreateDirectory($netRun)
+    Write-FileAtomic "$netRun/result.json" ((@{marker="gemini-queue/автоживий-$removed/cc-claude-test/1/p2-gpu";code='NETWORK_WAIT'}) | ConvertTo-Json)
+    Check 'обрив мережі не є кінцем смуги' (-not (Get-ChainTaskCompletion "автоживий-$removed"))
     Write-FileAtomic "$WorkDir/state/quota.json" ((@{line="GEMINI ОБГОРТКА: ЗАБЛОКОВАНО claude/автоживий-$removed QUOTA0_CLAUDE_M60"}) | ConvertTo-Json)
     Check 'прийнятий ЗАБЛОКОВАНО за позначкою очікування квоти — кінець' ([bool](Get-ChainTaskCompletion "автоживий-$removed"))
     Remove-Item -LiteralPath "$WorkDir/state/quota.json"
