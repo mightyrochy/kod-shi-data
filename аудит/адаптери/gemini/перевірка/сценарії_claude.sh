@@ -68,6 +68,7 @@ code k3c2 blocked_nobranch "$M" BLOCKED
 chk "BLOCKED без гілки: причина (останній рядок агента) у blocked-reasons.json для #1856" 'grep -q "claude/$SLUG" "$W/gem/blocked-reasons.json" && grep -q "LM Studio не відповідає, гілки нема" "$W/gem/blocked-reasons.json"'
 code k3d no_report "$M" NO_REPORT
 code k3e die "$M" EXIT
+code k3e2 network "$M" NETWORK_WAIT
 code k3f hang "$M" HANG
 chk "завислий claude зупинено" '[ -e "$W/cc.log.pid" ] && ! alive "$W/cc.log.pid"'
 code k3g effort cc-claude-sonnet-5-5-ultra EFFORT_INVALID

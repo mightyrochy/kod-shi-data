@@ -1517,6 +1517,17 @@ _МІСЦЯ_ОПЦІЙ = "where it is worn"
         "the body levels)",
     "item_longer_than_her_body": "on her height the item is longer than her body from the shop's measuring point: the "
                                  "hem pools on the floor (values: excess_cm)",
+    "item_longer_than_her_body_not_judged":
+        "the code does not judge whether on her height the item is longer than her body from the shop's measuring "
+        "point: the excess is within the error of the item's edge and of that point on her body, or that error is "
+        "not known (values: slot — slot code; excess_cm — the excess by the centres; error_cm — the error, absent "
+        "when unknown)",
+    "hem_class_vs_shop_word_not_judged":
+        "the code does not judge whether on her height the hem lies at a different place than the shop's length "
+        "word suggests: the hem is within the error of the word's zone and of the shop's length, or that error is "
+        "not known (values: slot — slot code; measured — code of the body level the hem reaches by its centre; "
+        "word — the shop's length word; hem_cm — height of the hem above the floor, in centimetres; error_cm — the "
+        "error of the hem and of the word's zone together, absent when unknown)",
     "declared_length_outside_body":
         "the shop declares a length in centimetres that would put the hem outside the body on her "
         "height, so the number was not used as a measurement (values: slot — slot code)",
@@ -2338,6 +2349,10 @@ _МІСЦЯ_ОПЦІЙ = "where it is worn"
     "waistline_hidden_by_top": "the bottom's rise does nothing: the waistband is hidden by the top, so the "
                                "eye sees the edge of the top and not the waistband (values: rise — the rise: "
                                "high, mid, low; hidden_cm — by how many cm it is hidden)",
+    "waistline_hidden_by_top_not_judged":
+        "the code does not judge whether the top hides the bottom's waistband: the waistband's place on her body is "
+        "taken from the rise word, and the base does not say where a high, mid or low rise sits, so the error of its "
+        "height is not known, or the edge of the top lies within that error (values: rise — the rise: high, mid, low)",
     "tuck_top_or_shorter_top": "tuck the top in so the waistband becomes visible, or take a shorter top that "
                                "ends above the waistband",
     # мета `taller` перемикає лінію талії (П8, K-FIT-04/K-BOD-04
@@ -2347,6 +2362,11 @@ _МІСЦЯ_ОПЦІЙ = "where it is worn"
                                         "low; below_waist_cm — how far below her waist it sits)",
     "take_high_rise_or_empire": "a high rise or an empire / raised waistline moves the start of the legs up "
                                 "and lengthens the line",
+    "rise_below_waist_not_judged":
+        "she asked for a longer line, and the code does not judge whether this bottom's waistband sits below her "
+        "waist: the waistband's place on her body is taken from the rise word, and the base does not say where a "
+        "high, mid or low rise sits, so the error of its height is not known (values: rise — the rise: high, mid, "
+        "low)",
     "rise_not_declared_for_taller_goal": "she asked for a longer line, but the card does not name this bottom's "
                                          "rise, so the code cannot tell where the waistband sits",
     "maxi_without_lift_or_volume": "a maxi with no lift and no volume of its own: of the three supports of a "
@@ -2608,6 +2628,11 @@ _МІСЦЯ_ОПЦІЙ = "where it is worn"
                                        "hem_cm — edges in cm from the floor; band_cm — hem minus shaft; error_cm "
                                        "— the error of both edges together; matching_opaque_tights — dense "
                                        "tights in the shoe tone close the band in colour)",
+    "skin_band_not_judged": "the code does not judge whether a band of bare leg is left between the boot shaft and "
+                            "the hem: the hem does not lie above the shaft by more than the error of both edges "
+                            "together, or the error of one of the edges is not known (values: shaft_cm, hem_cm — "
+                            "edges in cm from the floor; error_cm — the error of both edges together, absent when "
+                            "unknown)",
     "edge_on_widest_point": "the edge ends on a bulge of the body (values: level — body level; edge — shaft, "
                             "hem or accessory: the edge of a boot shaft, a hemline or an accessory; direction "
                             "— where to lead it: shorten, lengthen, higher_shaft, lower_shaft, no_lever — "
@@ -2987,7 +3012,7 @@ _МІСЦЯ_ОПЦІЙ = "where it is worn"
     # (`brief.бриф`, ребра `hypergraph`, рядки схеми `міст_пакет`): ~3 200 кириличних літер. Тепер
     # кожен рядок брифа несе поруч `заява` — код звідси зі значеннями (числа, коди, hex), а
     # український `рядок` лишається для людини й старих читачів. Орієнтири тіла — коди: ankle,
-    # mid_calf, knee, mid_thigh, widest_hip, upper_thigh, waist, under_bust, bust.
+    # widest_calf, knee, mid_thigh, widest_hip, high_hip, waist, bust (`brief.ОРІЄНТИР_КОД`).
     "lightness_spread_close": "keep the items close in lightness: neighbouring steps only, no very light item "
                               "next to a very dark one",
     "lightness_spread_moderate": "a moderate step of lightness between the items fits: light next to "

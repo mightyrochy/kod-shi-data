@@ -119,11 +119,15 @@ function Invoke-NativeUntilStall([string]$Exe, [string[]]$Arguments, [string]$Wo
     $err = $p.StandardError.ReadToEndAsync()
     $out = New-Object System.Text.StringBuilder
     $last = Get-Date
+    $tick = $last
     $stalled = $false
     $pending = $null
     while ($true) {
         if ($null -eq $pending) { $pending = $p.StandardOutput.ReadLineAsync() }
-        $left = ($last.AddMinutes($StallMinutes) - (Get-Date)).TotalMilliseconds
+        $now = Get-Date
+        $last = $last + (Get-SleepGap $tick $now)
+        $tick = $now
+        $left = ($last.AddMinutes($StallMinutes) - $now).TotalMilliseconds
         if ($left -le 0) { $stalled = $true; break }
         if (-not $pending.Wait([int][Math]::Min($left, 60000))) {
             # stdout міг лишитись відкритим у нащадка завершеного процесу: це не завислість.
@@ -134,6 +138,7 @@ function Invoke-NativeUntilStall([string]$Exe, [string[]]$Arguments, [string]$Wo
         $pending = $null
         if ($null -eq $line) { break }
         $last = Get-Date
+        $tick = $last  # сон до цієї події вже скинуто, вдруге його не додавати
         [void]$out.Append($line).Append("`n")
         [System.IO.File]::AppendAllText($LogFile, $line + "`n", $script:Utf8)
         $type = ''
@@ -1057,7 +1062,15 @@ function Invoke-Task($M, $Job) {
         }
         if ($review -ne 'LIVE') { $status.code = $review; return }
         try { $taskText = Add-AutoTaskContext $M.Slug $taskText $M.Sha $M.Model }
-        catch { Enter-ReviewWait $M; $waiting = $true; return }
+        catch {
+            # Збій контексту (план живого, вхід автоперевірки): чекання з лічильником; на межі — PLAN_FAILED, що будить диспетчера.
+            if (Enter-PlanWait $M $_.Exception.Message ([string]$Job.head)) { $waiting = $true }
+            else {
+                $status.code = 'PLAN_FAILED'
+                try { Add-Note (Join-Path $OutDir 'blocked-reasons.json') "gemini/$($M.Slug)" ('PLAN_FAILED: ' + (Get-PlanFailReason $_.Exception.Message)) } catch { Write-Log "причина PLAN_FAILED не записана: $($_.Exception.Message)" }
+            }
+            return
+        }
         if (Test-AutoPlanEmpty $M.Slug $taskText) { $status.code = 'EMPTY_PLAN'; return }
         $taskDir = Join-Path (Join-Path $RunsDir 'w') $id
         try { [void](New-TaskCopy $taskDir $start $taskText) } catch { $copyFailed = $true; throw }
@@ -1184,7 +1197,8 @@ function Start-Markers($Workers) {
     $script:Held = @{}
     if ($mine.Count -eq 0) { Save-Skips $skipFile; return 0 }
     $gpuWhy = $null
-    foreach ($m in (Get-OrderedMarkers $mine)) {
+    $ordered = @(Get-OrderedMarkers $mine)
+    foreach ($m in $ordered) {
         $st = Get-MarkerState $m
         if (-not (Test-MarkerReady $st)) { continue }
         if (($now - $m.Time) -gt $MarkerMaxAgeDays * 86400) {
@@ -1216,7 +1230,8 @@ function Start-Markers($Workers) {
                 sel = @{ engine = $sel.Engine.Name; emodel = $sel.Engine.Model; effort = $sel.Engine.Effort; model = $sel.Model
                     qknown = $sel.Quota.Known; qleft = $sel.Quota.Left; qgroup = $sel.Quota.Group }
                 limits = $script:Limits }
-            [void]$Workers.Add((Start-Worker $job $dir))
+            $worker = Start-Worker $job $dir
+            [void]$Workers.Add($worker)
         } catch {
             Write-Log "позначка $($m.Name): процес наряду не запущено — $($_.Exception.Message)"
             Close-FailedStart $m $id (Get-StatePath (Get-MarkerKey $m))
@@ -1224,7 +1239,13 @@ function Start-Markers($Workers) {
         }
         Write-Log "позначка $($m.Name): слот $slot, пріоритет $($m.Prio)$(if ($m.Deadline) { ", строк $($m.Deadline)" })$(if ($m.Gpu) { ', GPU' }) -> $id"
         $started++
-        if ($m.Gpu) { $gpuWhy = 'GPU: її щойно взяв наряд цього проходу' }
+        if ($m.Gpu) {
+            $gpuWhy = 'GPU: її щойно взяв наряд цього проходу'
+            # Наряд, що пішов у чекання (REVIEW_API, PLAN_WAIT) за секунди, GPU не тримає: наступна GPU-позначка проходу її бере.
+            if (Test-LaterGpuMarker $ordered $m) {
+                if ((Wait-GpuWorkerOutcome $worker (Get-StatePath (Get-MarkerKey $m))) -eq 'EXITED') { $gpuWhy = $null }
+            }
+        }
     }
     Save-Skips $skipFile
     $started

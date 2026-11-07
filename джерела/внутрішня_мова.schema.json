@@ -5238,6 +5238,14 @@
           "description": "on her height the item is longer than her body from the shop's measuring point: the hem pools on the floor (values: excess_cm)"
          },
          {
+          "const": "item_longer_than_her_body_not_judged",
+          "description": "the code does not judge whether on her height the item is longer than her body from the shop's measuring point: the excess is within the error of the item's edge and of that point on her body, or that error is not known (values: slot — slot code; excess_cm — the excess by the centres; error_cm — the error, absent when unknown)"
+         },
+         {
+          "const": "hem_class_vs_shop_word_not_judged",
+          "description": "the code does not judge whether on her height the hem lies at a different place than the shop's length word suggests: the hem is within the error of the word's zone and of the shop's length, or that error is not known (values: slot — slot code; measured — code of the body level the hem reaches by its centre; word — the shop's length word; hem_cm — height of the hem above the floor, in centimetres; error_cm — the error of the hem and of the word's zone together, absent when unknown)"
+         },
+         {
           "const": "declared_length_outside_body",
           "description": "the shop declares a length in centimetres that would put the hem outside the body on her height, so the number was not used as a measurement (values: slot — slot code)"
          },
@@ -6418,6 +6426,10 @@
           "description": "the bottom's rise does nothing: the waistband is hidden by the top, so the eye sees the edge of the top and not the waistband (values: rise — the rise: high, mid, low; hidden_cm — by how many cm it is hidden)"
          },
          {
+          "const": "waistline_hidden_by_top_not_judged",
+          "description": "the code does not judge whether the top hides the bottom's waistband: the waistband's place on her body is taken from the rise word, and the base does not say where a high, mid or low rise sits, so the error of its height is not known, or the edge of the top lies within that error (values: rise — the rise: high, mid, low)"
+         },
+         {
           "const": "tuck_top_or_shorter_top",
           "description": "tuck the top in so the waistband becomes visible, or take a shorter top that ends above the waistband"
          },
@@ -6428,6 +6440,10 @@
          {
           "const": "take_high_rise_or_empire",
           "description": "a high rise or an empire / raised waistline moves the start of the legs up and lengthens the line"
+         },
+         {
+          "const": "rise_below_waist_not_judged",
+          "description": "she asked for a longer line, and the code does not judge whether this bottom's waistband sits below her waist: the waistband's place on her body is taken from the rise word, and the base does not say where a high, mid or low rise sits, so the error of its height is not known (values: rise — the rise: high, mid, low)"
          },
          {
           "const": "rise_not_declared_for_taller_goal",
@@ -6916,6 +6932,10 @@
          {
           "const": "skin_band_between_shaft_and_hem",
           "description": "a band of bare leg is left between the boot shaft and the hem, measured beyond the error of both edges; the code sets no limit on its width or place, so judge yourself whether it cuts the leg line (values: shaft_cm, hem_cm — edges in cm from the floor; band_cm — hem minus shaft; error_cm — the error of both edges together; matching_opaque_tights — dense tights in the shoe tone close the band in colour)"
+         },
+         {
+          "const": "skin_band_not_judged",
+          "description": "the code does not judge whether a band of bare leg is left between the boot shaft and the hem: the hem does not lie above the shaft by more than the error of both edges together, or the error of one of the edges is not known (values: shaft_cm, hem_cm — edges in cm from the floor; error_cm — the error of both edges together, absent when unknown)"
          },
          {
           "const": "edge_on_widest_point",
