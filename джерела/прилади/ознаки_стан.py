@@ -1,7 +1,7 @@
 """Контекст одного виконання функції у потоці ознак обличчя."""
 import ast, collections, contextlib, functools, os
 from ознаки_основа import (
-    B, C, E, F, HEX_РЕГ, K, P, Q, R, S, V, УТРИМАННЯ, ПОХОДЖЕННЯ, _без_мапи, _без_першого, _ел, _з_префіксом, _звузити, _злити_ел,
+    B, C, E, F, HEX_РЕГ, K, P, Q, R, S, V, УТРИМАННЯ, ПОХОДЖЕННЯ, _без_мапи, _без_першого, _або_порожнє, _ел, _з_префіксом, _звузити, _злити_ел,
     _злити_ключі, _корінь_імені, _пара, _перебір, _під, _рядок, _сітка, _текст, _токени, _усі, _шлях,
     _ім_виклику, _імена, БУЛЕВІ, ВИМІР, ВМІСТИЩА, ГЛИБИНА, МАПА, МАПА_М, МУТАЦІЇ, НЕВІДОМЕ, ПОЗИЦІЙНІ,
     ПОРЯДОК, СЛУЖБОВІ, ТОКЕН, ФАЙЛОВІ
@@ -223,6 +223,22 @@ class Стан:
         if not (self.env or self.ключі or self.розгорнуті):
             return None
         return "так" if isinstance(т.ops[0], ast.IsNot) else "ні"
+
+    def за_типом(self, т):
+        """`isinstance(x, dict)` над іменем, що в цьому контексті несе ключі запису (словник): гілка «не словник»
+        не виконується — «так» для `not isinstance(...)` (тіло мертве), «ні» для `isinstance(...)` (мертва друга
+        гілка). Запис з її hex у такій гілці лишався б усією сумою своїх ключів (`tuple(lab)` плющить словник), а
+        це не його дані (рядок дошки 14048, `палітра_схеми.сім_я_схеми`)."""
+        інв = isinstance(т, ast.UnaryOp) and isinstance(т.op, ast.Not)
+        в = т.operand if інв else т
+        if not (isinstance(в, ast.Call) and isinstance(в.func, ast.Name) and в.func.id == "isinstance"
+                and len(в.args) == 2 and isinstance(в.args[0], ast.Name) and isinstance(в.args[1], ast.Name)
+                and в.args[1].id == "dict" and not в.keywords):
+            return None
+        км = self.ключі.get(в.args[0].id)
+        if not км or not any(not к.startswith("#") for к in км):
+            return None
+        return "так" if інв else "ні"
 
     def ворота(self, т, нові=True):
         """Тест → "так" (для model_hex хибний: тіло потребує довіри ≥ MIN_TO_EMIT чи іншого джерела — не виконується),
@@ -715,7 +731,7 @@ class Стан:
                 and not self.а.викликані(self.м, сам.func, self.ф):
             мз, кз = self.значення(сам.func.value)
             к = сам.args[0].value
-            if кз and (к in кз or _під(кз, к) or isinstance(сам.func.value, (ast.BoolOp, ast.IfExp))):
+            if кз and (к in кз or _під(кз, к) or _або_порожнє(сам.func.value)):
                 # `(q or {}).get("к")`: запис із відомими ключами, як `q.get("к")`; ключа нема серед них — походження
                 # запису, а не сума всіх його ключів (рядок дошки 14048: `(q or {}).get("спроба")`)
                 self.e(сам)
@@ -1102,9 +1118,12 @@ class Стан:
             в_тілі, в_іншому = self.звуження(і.test)
             г = self.ворота(і.test)
             г = г or self.не_передано(і.test)
-            with self.мертве(г == "так", і.test):
+            тип = None if г else self.за_типом(і.test)
+            г = г or тип
+            з_тесту = None if тип else і.test
+            with self.мертве(г == "так", з_тесту):
                 self.у_звуженні(в_тілі, і.body)
-            with self.мертве(г == "ні", і.test):
+            with self.мертве(г == "ні", з_тесту):
                 self.у_звуженні(в_іншому, і.orelse)
         elif isinstance(і, (ast.With, ast.AsyncWith)):
             for п in і.items:
@@ -1915,7 +1934,7 @@ class Стан:
                 if not isinstance(в.func.value, ast.Name) and _рядок(в.args[0]):
                     мз, кз = self.значення(в.func.value)
                     к = в.args[0].value
-                    if кз and (к in кз or _під(кз, к) or isinstance(в.func.value, (ast.BoolOp, ast.IfExp))):
+                    if кз and (к in кз or _під(кз, к) or _або_порожнє(в.func.value)):
                         # `(q or {}).get("к")` — запис із відомими ключами, як `q.get("к")` (рядок дошки 14048)
                         м = self.джерело_поля(мз, кз, к, в, в.args[1] if len(в.args) > 1 else None)
                         return self.готове_поле(к, м | _усі(_під(кз, к)))

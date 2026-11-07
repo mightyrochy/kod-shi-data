@@ -483,6 +483,15 @@ def _хвіст_ключа(ключ, префікс):
     return ключ[len(префікс):] if isinstance(ключ, str) and ключ.startswith(префікс) else None
 
 
+def _або_порожнє(вузол):
+    """`(q or {})` / `(q or [])` / `(q or None)`: запис або порожнє значення — ключі ті самі, що в `q`."""
+    if not (isinstance(вузол, ast.BoolOp) and isinstance(вузол.op, ast.Or) and len(вузол.values) == 2):
+        return False
+    п, д = вузол.values
+    return isinstance(п, ast.Name) and (isinstance(д, (ast.Dict, ast.List, ast.Tuple)) and not (
+        getattr(д, "keys", None) or getattr(д, "elts", None)) or (isinstance(д, ast.Constant) and д.value is None))
+
+
 def _під(ключі, ключ):
     """Ключі значення під `ключ` (шлях «ключ/під»)."""
     п = "%s/" % ключ
