@@ -51,6 +51,20 @@ $script:WorkerGpuBusy = 4
 $script:ReviewApiLimit = 30
 $script:ReviewApiWindow = 3600
 $script:ReviewApiBackoff = 120
+# План живого (Get-AutoLivePlan, автоживий й Е1-нічний-живий). Вимір 07.11: `pulls?state=all` — 33 сторінки по 100 PR,
+# сторінка до 2,36 млн знаків (3273 PR); повне читання на спробу — 33 запити з 60/год без входу. Тепер сторінки по 50,
+# читання стоїть, щойно сторінка старіша за збірку останнього звіту (запити — з бюджету review-api.json, як у
+# Get-AutoReviewState), а більше AutoPlanMaxPages сторінок на спробу — AUTO_PAGES, не мовчазне повторення.
+$script:AutoPlanPerPage = 50
+$script:AutoPlanMaxPages = 20
+# Запас на розбіжність годинників: звіт не може згадати збірку, що старша за його оновлення; злиття — старше за збірку.
+$script:AutoPlanMarginHours = 6
+$script:AutoApiCalls = 0
+# Збій побудови плану (Add-AutoTaskContext) — окреме чекання з лічильником retakes; на межі MaxRetakes — PLAN_FAILED.
+$script:PlanBackoff = 300
+# Скільки секунд прохід чекає на перший результат GPU-наряду, запущеного ним, перш ніж віддати GPU наступній позначці.
+$script:GpuStartWaitSeconds = 120
+$script:GpuStartPollMs = 500
 # Вимір 30.10: найбільший із доступних знімків живих прогонів — 8925 MiB усієї карти.
 # Джерела й прогалини (пік каталогу, навантаження гри): аудит/корені/ПК-межа-без-джерела-gpu.md.
 # Це запасний бюджет за спостереженим максимумом, а не доведений пік будь-якої моделі.
@@ -387,6 +401,48 @@ function Get-ReviewTime {
 # Спільна політика потрібна й при самостійному завантаженні бібліотеки черги.
 if (-not (Get-Command Test-ReviewBranch -ErrorAction SilentlyContinue)) { . (Join-Path $PSScriptRoot 'wrapper_health.ps1') }
 
+function Read-AutoApiBudget([string]$Path, [long]$Now) {
+    <# Спільний бюджет публічного REST (`review-api.json`): запити за рухоме вікно й спільна пауза. Файла нема — порожній
+    бюджет; пошкоджений — $null (непорахованих запитів не дозволяємо). Викликач тримає замок `review-api.lock`. #>
+    if (-not (Test-Path -LiteralPath $Path)) { return [pscustomobject]@{ Calls = @(); Until = 0L } }
+    $saved = [IO.File]::ReadAllText($Path, $script:Utf8) | ConvertFrom-Json
+    if ($null -eq $saved.calls -or $null -eq $saved.until) { return $null }
+    [pscustomobject]@{ Calls = @($saved.calls | Where-Object { [long]$_ -gt ($Now - $script:ReviewApiWindow) }); Until = [long]$saved.until }
+}
+
+function Use-AutoApiBudget {
+    <# Один запит публічного REST зі спільного бюджету (ті самі файл, замок і межа, що в Get-AutoReviewState): запит
+    резервується до мережі, тож збій і перезапуск не обнуляють витраченого. $false — замка нема, бюджет пошкоджений, діє
+    спільна пауза чи вичерпано межу: викликач у мережу не йде. #>
+    $lock = $null
+    try {
+        $lock = Open-Lock (Join-Path $LaneDir 'review-api.lock')
+        if ($null -eq $lock) { return $false }
+        $path = Join-Path $LaneDir 'review-api.json'
+        $now = Get-ReviewTime
+        $saved = Read-AutoApiBudget $path $now
+        if ($null -eq $saved -or $now -lt $saved.Until -or $saved.Calls.Count -ge $script:ReviewApiLimit) { return $false }
+        Write-FileAtomic $path ([ordered]@{calls=@($saved.Calls) + @($now);until=$saved.Until} | ConvertTo-Json -Compress)
+        $true
+    } catch { $false }
+    finally { if ($null -ne $lock) { $lock.Dispose() } }
+}
+
+function Set-AutoApiPause {
+    <# Мережева відмова публічного запиту ставить спільну паузу ReviewApiBackoff с, як у Get-AutoReviewState. #>
+    $lock = $null
+    try {
+        $lock = Open-Lock (Join-Path $LaneDir 'review-api.lock')
+        if ($null -eq $lock) { return }
+        $path = Join-Path $LaneDir 'review-api.json'
+        $now = Get-ReviewTime
+        $saved = Read-AutoApiBudget $path $now
+        if ($null -eq $saved) { return }
+        Write-FileAtomic $path ([ordered]@{calls=@($saved.Calls);until=($now + $script:ReviewApiBackoff)} | ConvertTo-Json -Compress)
+    } catch { $null = $_ }
+    finally { if ($null -ne $lock) { $lock.Dispose() } }
+}
+
 function Get-AutoReviewState([string]$Slug) {
     <# Звіряє PR один раз безпосередньо перед моделлю, лише у вже вільному слоті.
 
@@ -400,14 +456,10 @@ function Get-AutoReviewState([string]$Slug) {
         if ($null -eq $lock) { return 'REVIEW_API' }
         $path = Join-Path $LaneDir 'review-api.json'
         $now = Get-ReviewTime
-        $calls = @(); $until = 0L
-        if (Test-Path -LiteralPath $path) {
-            $saved = [IO.File]::ReadAllText($path, $script:Utf8) | ConvertFrom-Json
-            # Пошкоджений бюджет не дозволяє непорахованих запитів.
-            if ($null -eq $saved.calls -or $null -eq $saved.until) { return 'REVIEW_API' }
-            $calls = @($saved.calls | Where-Object { [long]$_ -gt ($now - $script:ReviewApiWindow) })
-            $until = [long]$saved.until
-        }
+        $saved = Read-AutoApiBudget $path $now
+        # Пошкоджений бюджет не дозволяє непорахованих запитів.
+        if ($null -eq $saved) { return 'REVIEW_API' }
+        $calls = $saved.Calls; $until = $saved.Until
         if ($now -lt $until -or $calls.Count -ge $script:ReviewApiLimit) { return 'REVIEW_API' }
         # Резервуємо запит до мережі: 403/429, тайм-аут і падіння процесу також входять у бюджет.
         $budget = [ordered]@{calls=@($calls) + @($now);until=0L}
@@ -431,6 +483,28 @@ function Enter-ReviewWait($M, [string]$Head = '') {
     <# Повертає позначку після відмови REST чи вичерпання бюджету без збільшення retakes і кінцевого звіту. #>
     [void](Set-MarkerWait $M ((Get-ReviewTime) + $script:ReviewApiBackoff) @{group='REVIEW_API';head=$Head})
     Write-Log "позначка $($M.Name): REVIEW_API; спроба збережена, повтор у черзі"
+}
+
+function Get-PlanFailReason([string]$Message) {
+    <# Коротка причина збою плану для стану позначки й примітки в #1856: код обгортки (AUTO_*, REVIEW_*), статус HTTP чи
+    PLAN_ERROR; текст відповіді сервера в стан не йде. #>
+    if ($Message -cmatch '^(?:AUTO|REVIEW)_[A-Z_]{1,30}$') { return $Message }
+    if ($Message -cmatch '\(([45][0-9]{2})\)|status code does not indicate success: ([45][0-9]{2})') { return 'HTTP_' + $(if ($Matches[1]) { $Matches[1] } else { $Matches[2] }) }
+    'PLAN_ERROR'
+}
+
+function Enter-PlanWait($M, [string]$Reason, [string]$Head = '') {
+    <# Збій побудови плану живого (Add-AutoTaskContext для автоживого й Е1-нічного). Бюджет запитів вичерпано (AUTO_BUDGET) — це не
+    вада, а чекання вікна: як REVIEW_API, без лічильника. Решта — окреме чекання PlanBackoff с з лічильником retakes
+    (спільна межа MaxRetakes): повертає $false, коли межу вичерпано і чекання не записано, — викликач кінчає наряд
+    кодом PLAN_FAILED, який будить диспетчера (не тихий REVIEW_API без кінця). #>
+    # Автоперевірка PR (не план): її збій API лишається REVIEW_API — повтор у черзі під бюджетом, як і було.
+    if ($M.Slug -cnotmatch '^(?:автоживий-[0-9a-f]{40}|Е1-нічний-живий-[0-9]{8})$' -or $Reason -ceq 'AUTO_BUDGET') { Enter-ReviewWait $M $Head; return $true }
+    $why = Get-PlanFailReason $Reason
+    $n = Set-MarkerWait $M ((Get-ReviewTime) + $script:PlanBackoff) @{group='PLAN_WAIT';reason=$why;head=$Head;retake=$true}
+    if ($null -eq $n) { Write-Log "позначка $($M.Name): план не збудовано (${why}: $(([regex]::Replace($Reason, '[\x00-\x1f\x7f]+', ' ')).Trim())) понад $($script:MaxRetakes) разів — PLAN_FAILED"; return $false }
+    Write-Log "позначка $($M.Name): план не збудовано ($why); повтор $n із $($script:MaxRetakes) за $($script:PlanBackoff) с"
+    $true
 }
 
 function Get-MarkerState($M, [string]$StateDir = $script:StateDir) {
@@ -761,6 +835,42 @@ function Wait-Workers($Workers, [double]$Minutes) {
     }
 }
 
+function Test-RunStarted([string]$StatePath) {
+    <# Наряд дійшов до моделі: стан STARTED із початком прогону (gemini: `start` — SHA, claude: `start` — час процесу).
+    До цього він міг лише звіритися й піти в чекання (REVIEW_API, PLAN_WAIT), не торкнувшись GPU. #>
+    try {
+        if (-not [IO.File]::Exists($StatePath)) { return $false }
+        $t = [IO.File]::ReadAllText($StatePath, $script:Utf8)
+        $t.StartsWith('STARTED ') -and $t -cnotmatch '"start":\s*""'
+    } catch { $false }
+}
+
+function Test-LaterGpuMarker($Ordered, $Current) {
+    <# Після позначки в порядку проходу стоїть інша готова GPU-позначка (нова чи з минулим часом чекання). #>
+    $seen = $false
+    foreach ($x in @($Ordered)) {
+        if (-not $seen) { if ($x.Name -ceq $Current.Name) { $seen = $true }; continue }
+        if (-not $x.Gpu -or ($null -ne $x.PSObject.Properties['Off'] -and $x.Off)) { continue }
+        if (Test-MarkerReady (Get-MarkerState $x)) { return $true }
+    }
+    $false
+}
+
+function Wait-GpuWorkerOutcome($Worker, [string]$StatePath) {
+    <# Прохід віддав GPU процесові наряду, а інші GPU-позначки стоять за ним. Чекаємо його перший результат: EXITED —
+    процес скінчився (звірка пішла в WAIT, замок зайнятий: GPU вільна, наступна позначка проходу може її брати);
+    RUNNING — модель стартувала (GPU тримає наряд); TIMEOUT — досі готується (залишаємо GPU за ним, як і раніше).
+    Вимір 07.11: p1 щопроходу йшла в чекання за секунди, а решта GPU-позначок проходу стояла «її щойно взяв наряд». #>
+    $until = (Get-Date).AddSeconds($script:GpuStartWaitSeconds)
+    while ($true) {
+        if ($Worker.Proc.HasExited) { return 'EXITED' }
+        if (Test-RunStarted $StatePath) { return 'RUNNING' }
+        if ((Get-Date) -ge $until) { return 'TIMEOUT' }
+        Invoke-HealthBeat
+        Start-Sleep -Milliseconds $script:GpuStartPollMs
+    }
+}
+
 # Теки `аудит/` від третього рівня з відстежуваними файлами від 8 МіБ — архіви прогонів, проб і перевірок: копія задачі
 # їх не викладає (main 29.10: 29 тек, у копії 247 МБ із 1353). Тека, названа в наряді, лишається; іншу сесія додає
 # сама — `git sparse-checkout add '/<тека>/'`.
@@ -897,14 +1007,28 @@ function Get-AutoTaskPath([string]$Slug) {
     $script:TaskDir + $Slug + '.md'
 }
 
-function Get-AutoPublicItems([string]$Path) {
-    <# Пагінує публічний GET; збій не стає порожнім успішним входом. #>
-    for ($page = 1; $page -le 100; $page++) {
+function Get-AutoPublicItems([string]$Path, [int]$PerPage = 100, [int]$MaxPages = 100, [scriptblock]$StopAfterPage = $null, [switch]$Budgeted) {
+    <# Пагінує публічний GET; збій не стає порожнім успішним входом. StopAfterPage отримує елементи щойно прочитаної
+    сторінки й повертає $true, коли далі читати не треба (порядок сторінок і доказ зупинки — на викликачі). Budgeted —
+    кожен запит бере один із спільного бюджету review-api.json (нема — AUTO_BUDGET, у мережу не йдемо). Усі спроби
+    запиту лічить $script:AutoApiCalls. #>
+    for ($page = 1; $page -le $MaxPages; $page++) {
+        if ($Budgeted -and -not (Use-AutoApiBudget)) { throw 'AUTO_BUDGET' }
+        $script:AutoApiCalls++
         $separator = if ($Path.Contains('?')) { '&' } else { '?' }
-        $data = Invoke-RestMethod -Uri ("https://api.github.com/repos/mightyrochy/kod-shi-data/$Path" + $separator + "per_page=100&page=$page") -Method Get -TimeoutSec 20 -MaximumRedirection 0 -Headers @{Accept='application/vnd.github+json'; 'User-Agent'='kod-shi-wrapper'}
+        try {
+            $data = Invoke-RestMethod -Uri ("https://api.github.com/repos/mightyrochy/kod-shi-data/$Path" + $separator + "per_page=$PerPage&page=$page") -Method Get -TimeoutSec 20 -MaximumRedirection 0 -Headers @{Accept='application/vnd.github+json'; 'User-Agent'='kod-shi-wrapper'}
+        } catch {
+            if ($Budgeted) { Set-AutoApiPause }
+            throw
+        }
         $items = @($data)
         foreach ($item in $items) { $item }
-        if ($items.Count -lt 100) { return }
+        if ($items.Count -lt $PerPage) { return }
+        if ($null -ne $StopAfterPage) {
+            $stop = @(& $StopAfterPage $items)
+            if ($stop.Count -gt 0 -and $stop[-1]) { return }
+        }
     }
     throw 'AUTO_PAGES'
 }
@@ -1089,12 +1213,46 @@ function Get-LiveCorrectionPrompt($Publication) {
         'id — голе перше поле аудит/проби/живі_сцени.txt; одна сцена — один рядок. Закоміть виправлений звіт; останній рядок — за адаптером.'
 }
 
+function Test-AutoTrustedPull($Pull) {
+    <# PR довіреного автора з цього репозиторію в main: лише такі читає план живого. #>
+    $Pull.user.login -ceq 'mightyrochy' -and $null -ne $Pull.head.repo -and $Pull.head.repo.full_name -ceq 'mightyrochy/kod-shi-data' -and
+        $Pull.base.repo.full_name -ceq 'mightyrochy/kod-shi-data' -and $Pull.base.ref -ceq 'main'
+}
+
+function ConvertTo-AutoTime($Value) {
+    <# Час із відповіді GitHub: PowerShell 5.1 дає рядок, 7 — DateTime; обидва в UTC-момент. #>
+    if ($Value -is [datetimeoffset]) { return $Value }
+    if ($Value -is [datetime]) {
+        $utc = $(if ($Value.Kind -eq [DateTimeKind]::Unspecified) { [datetime]::SpecifyKind($Value, [DateTimeKind]::Utc) } else { $Value.ToUniversalTime() })
+        return [datetimeoffset]::new($utc)
+    }
+    [datetimeoffset]::Parse([string]$Value, [Globalization.CultureInfo]::InvariantCulture, [Globalization.DateTimeStyles]::AssumeUniversal)
+}
+
+function Get-AutoCheckedBuild($Pulls, $History) {
+    <# Збірка, яку перевірив найновіший звіт (`автоживий-<штамп>` чи `Е1-нічний-живий-<дата>`): найближча до голови в історії.
+    Звіт з кількома `ПЕРЕВІРЕНО ЗБІРКУ` не береться; старий нічний звіт без SHA нічого не відсікає. #>
+    $checked = ''
+    foreach ($report in $Pulls) {
+        if ([string]$report.head.ref -cnotmatch '^(?:gemini|claude|codex)/(?:автоживий-([0-9a-f]{40})|Е1-нічний-живий-[0-9]{8})$') { continue }
+        $stamp = [string]$Matches[1]
+        $declared = [regex]::Matches([string]$report.body, '(?m)^ПЕРЕВІРЕНО ЗБІРКУ: ([0-9a-f]{40})\r?$')
+        if ($declared.Count -gt 1) { continue }
+        $candidate = if ($declared.Count -eq 1) { $declared[0].Groups[1].Value } else { $stamp }
+        # Старий нічний звіт без SHA не може відсікти неперевірений код.
+        if ($candidate -and $History.ContainsKey($candidate) -and
+            (-not $checked -or $History[$candidate] -lt $History[$checked])) { $checked = $candidate }
+    }
+    $checked
+}
+
 function Get-AutoLivePlan([string]$BuildMain) {
-    <# Один план для автоживого й Е1: сцена один раз, питання всіх злитих довірених PR. #>
-    $pulls = @(Get-AutoPublicItems 'pulls?state=all&sort=updated&direction=desc' | Where-Object {
-        $_.user.login -ceq 'mightyrochy' -and $null -ne $_.head.repo -and $_.head.repo.full_name -ceq 'mightyrochy/kod-shi-data' -and
-        $_.base.repo.full_name -ceq 'mightyrochy/kod-shi-data' -and $_.base.ref -ceq 'main'
-    })
+    <# Один план для автоживого й Е1: сцена один раз, питання всіх злитих довірених PR.
+    Список `pulls` іде за оновленням від найновішого й читається лише до доведеної межі: звіт не може згадати збірку,
+    що старша за його оновлення, а злиття, якого збірка звіту ще не містить, не старше за неї — тож, коли остання
+    прочитана сторінка старіша за збірку найновішого звіту (мінус запас), решта PR плану не змінить. Те саме, що читати
+    всі сторінки, але ~7 запитів замість 33. Не дійшли до межі за AutoPlanMaxPages сторінок — AUTO_PAGES, плану нема. #>
+    $calls0 = $script:AutoApiCalls
     $until = [datetimeoffset]::Parse((Invoke-Git @('show','-s','--format=%cI',$BuildMain)).Out.Trim())
     # Час звіту не визначає склад прогону: PR міг злитися, поки модель ще працювала.
     $history = @{}
@@ -1102,17 +1260,22 @@ function Get-AutoLivePlan([string]$BuildMain) {
     foreach ($commit in ((Invoke-Git @('rev-list','--topo-order',$BuildMain,'--')).Out -split "`n")) {
         if ($commit.Trim()) { $history[$commit.Trim()] = $rank; $rank++ }
     }
-    $checked = ''
-    foreach ($report in $pulls) {
-        if ([string]$report.head.ref -cnotmatch '^(?:gemini|claude|codex)/(?:автоживий-([0-9a-f]{40})|Е1-нічний-живий-[0-9]{8})$') { continue }
-        $stamp = [string]$Matches[1]
-        $declared = [regex]::Matches([string]$report.body, '(?m)^ПЕРЕВІРЕНО ЗБІРКУ: ([0-9a-f]{40})\r?$')
-        if ($declared.Count -gt 1) { continue }
-        $candidate = if ($declared.Count -eq 1) { $declared[0].Groups[1].Value } else { $stamp }
-        # Старий нічний звіт без SHA не може відсікти неперевірений код.
-        if ($candidate -and $history.ContainsKey($candidate) -and
-            (-not $checked -or $history[$candidate] -lt $history[$checked])) { $checked = $candidate }
+    $planScan = @{ Seen = (New-Object System.Collections.ArrayList); Dates = @{}; Pages = 0 }
+    $planStop = {
+        param($pagePulls)
+        $planScan.Pages++
+        foreach ($one in @($pagePulls)) { if (Test-AutoTrustedPull $one) { [void]$planScan.Seen.Add($one) } }
+        $reportBuild = Get-AutoCheckedBuild $planScan.Seen $history
+        if (-not $reportBuild) { return $false }
+        if (-not $planScan.Dates.ContainsKey($reportBuild)) {
+            $planScan.Dates[$reportBuild] = [datetimeoffset]::Parse((Invoke-Git @('show','-s','--format=%cI',$reportBuild)).Out.Trim())
+        }
+        $lastUpdate = @($pagePulls)[-1].PSObject.Properties['updated_at']
+        if ($null -eq $lastUpdate -or $null -eq $lastUpdate.Value) { return $false }
+        (ConvertTo-AutoTime $lastUpdate.Value) -lt $planScan.Dates[$reportBuild].AddHours(-$script:AutoPlanMarginHours)
     }
+    $pulls = @(Get-AutoPublicItems 'pulls?state=all&sort=updated&direction=desc' -PerPage $script:AutoPlanPerPage -MaxPages $script:AutoPlanMaxPages -StopAfterPage $planStop -Budgeted | Where-Object { Test-AutoTrustedPull $_ })
+    $checked = Get-AutoCheckedBuild $pulls $history
     $since = [datetimeoffset]::MinValue
     $covered = @{}
     if ($checked) {
