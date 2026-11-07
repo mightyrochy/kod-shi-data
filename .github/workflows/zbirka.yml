@@ -112,7 +112,8 @@ jobs:
     name: перевірка джерел
     needs: zminy
     if: needs.zminy.outputs.produkt == 'true'
-    runs-on: ubuntu-latest
+    # 3.12.1 (байткод Pyodide) є в versions-manifest лише для 24.04; на 26.04 setup-python падає (прогін 42342674729)
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
         with:
@@ -320,7 +321,8 @@ jobs:
       pull-requests: read
     needs: [zminy, perevirka]
     if: needs.zminy.outputs.produkt == 'true'
-    runs-on: ubuntu-latest
+    # 3.12.1 (байткод Pyodide) є в versions-manifest лише для 24.04; на 26.04 setup-python падає (прогін 42342674729)
+    runs-on: ubuntu-24.04
     timeout-minutes: 40
     env:
       NODE_PATH: джерела/node_modules
