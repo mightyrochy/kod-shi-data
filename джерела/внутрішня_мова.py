@@ -1523,6 +1523,10 @@ _МІСЦЯ_ОПЦІЙ = "where it is worn"
         "middle of the field from shoulders to floor, and which size she takes decides whether it splits "
         "that field in half: the shop gives one length per size and her size is not known "
         "(values: slot — slot code)",
+    "dividing_line_within_error":
+        "the hem of the outfit's top item lies near the middle of the field from shoulders to floor, and "
+        "within the error of both the hem and her shoulder level it may split that field in half or not "
+        "(values: slot — slot code)",
     "dividing_line_item_length_unknown": "the outfit's dividing line is the hem of its top item, and the cards do "
                                          "not carry the length of the named top items, so the line was not "
                                          "judged (values: slots — slot codes)",
@@ -2575,15 +2579,18 @@ _МІСЦЯ_ОПЦІЙ = "where it is worn"
     "look_split_in_half": "the item's line splits the look in half (ratio = top:bottom)",
     "move_dividing_line_cm": "move the dividing line to ~cm from the floor: tuck in, shorter top or another "
                              "waist rise",
-    "skin_band_boot_hem": "skin band (cm) between shaft and hem at a wide part of the leg: the shoe edge cuts "
-                          "the leg line",
-    "close_skin_band": "close the band: dense tights in the shoe tone, knee boots with a midi, hem below "
-                       "hem_to_cm or shaft above shaft_to_cm (cm from floor)",
+    "skin_band_between_shaft_and_hem": "a band of bare leg is left between the boot shaft and the hem, measured "
+                                       "beyond the error of both edges; the code sets no limit on its width or "
+                                       "place, so judge yourself whether it cuts the leg line (values: shaft_cm, "
+                                       "hem_cm — edges in cm from the floor; band_cm — hem minus shaft; error_cm "
+                                       "— the error of both edges together; matching_opaque_tights — dense "
+                                       "tights in the shoe tone close the band in colour)",
     "edge_on_widest_point": "the edge ends on a bulge of the body (values: level — body level; edge — shaft, "
                             "hem or accessory: the edge of a boot shaft, a hemline or an accessory; direction "
                             "— where to lead it: shorten, lengthen, higher_shaft, lower_shaft, no_lever — "
                             "there is no lever, not_flattering_intent — the intention is not to flatter; "
-                            "length_from_word — the length was taken from a word of the name)",
+                            "length_from_word — the length was taken from a word of the name; direction_unknown — the edge and the "
+                            "neighbouring narrower levels lie within the error of both, so no side is named)",
     "move_edge_to_cm": "move the edge into ranges (cm from floor), where the body is narrower",
     "edge_move_needs_other_model": "within this model the edge cannot move: another model is needed, or no "
                                    "narrower point nearby",
@@ -3398,16 +3405,15 @@ if _спільні:
     "passport_call_zero": "Call zero filled the passport without a language-model conversation turn; the model was absent or its turn fell back to main.",
     "passport_without_talk": "The seam filled the passport without a language-model conversation turn: tiles or translation without a talk.",
 })
-# Е3-одна-величина ч10 (п.2, вид 1): допуску плеча (`fit.плече_допуск` 1.5 см, «моє») джерело не дало —
-# код більше не судить, чи плече сходиться; виміряне розходження йде моделі фактом (K-FIT-01, K-OUT-41/42).
+# Е3-одна-величина ч14 (рішення 06.11 п.3): ширина плеча виробу «шов–шов по спинці» й обхват плечей тіла через π —
+# різні величини; різниці код не рахує (K-FIT-01, K-OUT-41/42 — питання), моделі — лише виміряне число речі.
 ЗАЯВИ.update({
-    "shoulder_width_vs_body": "the item's shoulder width against her shoulder width, measured in centimetres; the "
-                              "code sets no tolerance, so judge yourself whether the difference shows and matters "
-                              "(values: item_cm — item shoulder width from the shop's size chart; body_cm — her "
-                              "shoulder width estimated from her shoulder girth; delta_cm — item minus body, "
-                              "positive = item wider)",
+    "her_shoulder_width_not_measured": "the item's shoulder width is measured seam to seam across the back, and "
+                                       "her shoulder width in that same sense is not known: the shoulder girth "
+                                       "divided by pi is another quantity, so the code does not compare them "
+                                       "(values: item_cm — item shoulder width from the shop's size chart; "
+                                       "body_girth_cm — her shoulder girth, not a width)",
 })
-
 
 
 def код_пункту(ід):
