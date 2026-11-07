@@ -3012,7 +3012,7 @@ _МІСЦЯ_ОПЦІЙ = "where it is worn"
     # (`brief.бриф`, ребра `hypergraph`, рядки схеми `міст_пакет`): ~3 200 кириличних літер. Тепер
     # кожен рядок брифа несе поруч `заява` — код звідси зі значеннями (числа, коди, hex), а
     # український `рядок` лишається для людини й старих читачів. Орієнтири тіла — коди: ankle,
-    # mid_calf, knee, mid_thigh, widest_hip, upper_thigh, waist, under_bust, bust.
+    # widest_calf, knee, mid_thigh, widest_hip, high_hip, waist, bust (`brief.ОРІЄНТИР_КОД`).
     "lightness_spread_close": "keep the items close in lightness: neighbouring steps only, no very light item "
                               "next to a very dark one",
     "lightness_spread_moderate": "a moderate step of lightness between the items fits: light next to "
