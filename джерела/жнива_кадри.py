@@ -241,7 +241,8 @@ def читати_чергу_woo(шлях=ЧЕРГА_WOO):
     if not os.path.exists(шлях):
         return set()
     with open(шлях, encoding="utf-8") as f:
-        return {р.split("\t")[0] for р in list(f)[1:] if р.strip()}
+        # ід у каталозі — «ж-NNNNN@магазин», а в черзі ід і магазин окремими колонками
+        return {"%s@%s" % tuple(x.split("\t")[:2]) for x in list(f)[1:] if x.strip()}
 
 
 def писати_чергу(черга, шлях):
@@ -422,6 +423,8 @@ def main():
     ap.add_argument("--черга-вихід", default="", metavar="TSV",
                     help="з --галереї: лише записати чергу (ід, крамниця, кадрів, причини) і вийти, "
                          "нічого не качаючи й не міряючи")
+    ap.add_argument("--лише-чергу", action="store_true",
+                    help="з `--галереї`: лише речі черги ноутбука (`zhnyvarka/черга_ноутбука_5697.tsv`)")
     ap.add_argument("--кожні", type=int, default=20, help="записувати вихід кожні N речей")
     ap.add_argument("--частка", default="", metavar="N/M",
                     help="узяти лише кожну M-ту річ зі зсувом N (0-based): паралельні "
@@ -483,6 +486,9 @@ def main():
         вся = черга_галерей(offers, зб, база, сп, _хости_крамниць(offers),
                             {o["id"] for o, _ in сп_цілі}, читати_чергу_woo())
         вся = [т for т in вся if not крамниці or т[0].get("магазин") in крамниці]
+        if а.лише_чергу:
+            ч = читати_чергу_woo()
+            вся = [т for т in вся if т[0]["id"] in ч]
         if а.частка:
             зсув, скільки = (int(ч) for ч in а.частка.split("/"))
             вся = [т for н, т in enumerate(вся) if н % скільки == зсув]
