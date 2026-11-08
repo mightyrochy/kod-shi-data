@@ -492,7 +492,7 @@ def колір_збіг(слово, р):
     клас = _КР.клас_кольору(w)
     if клас:
         return _КР.річ_у_класі(р, клас) is True
-    if w not in _V.ЛЕКСИКОН:
+    if w not in _V.СЛОВА:
         return None
     текст = " ".join(str(р.get(k) or "") for k in _ТЕКСТ_ВЕТО_КОЛЬОРУ).lower()
     return _ПО.форма_в_тексті(w, текст)

@@ -59,7 +59,7 @@ def main():
         колір = (o.get("колір_назва") or o.get("назва") or "").strip()
         ім, як = розвязати(колір)
         sku.append(dict(id=o["id"], назва=o["назва"], колір=колір, ім=ім, як=як,
-                        lab=(центр_вікна(V.ЛЕКСИКОН[ім]) if ім else None)))
+                        lab=(центр_вікна(V.вікно_вжитку(ім)) if ім and V.вікно_вжитку(ім) else None)))
     статус = Counter(s["як"] for s in sku)
     одно = [s for s in sku if s["lab"]]
     print("SKU %d · розв'язка кольору %s · з Lab-точкою %d (%.0f%%)" %
