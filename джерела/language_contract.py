@@ -15,9 +15,14 @@ def пояснити_повтор(промпт, причина, маркер="")
         об = json.loads(промпт)
         об["format_error"] = "Correct the previous answer: " + str(причина)
         return json.dumps(об, ensure_ascii=False)
+    код, _, слова = str(причина).partition(": ")
     чому = {"no_text_field": "немає непорожнього рядка text",
-             "only_questions": "текст не передає прийнятих фактів або ставить недозволені питання"}.get(
-                 str(причина), str(причина))
+             "only_questions": "текст не передає прийнятих фактів або ставить недозволені питання",
+             "no_card_confirmation": "у text є слова, яких нема в recorded (%s); "
+                                     "підтверджуй лише словами з label чи quote" % слова,
+             "unrecorded_number": "у text є число, якого нема в recorded",
+             "code_in_text": "у text є код замість слів",
+             "no_confirmation_text": "text не підтверджує recorded"}.get(код, str(причина))
     return промпт.replace(маркер, "Розбіжність попередньої відповіді: " + чому + ".\n\n" + маркер, 1)
 
 
