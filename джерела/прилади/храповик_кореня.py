@@ -62,7 +62,8 @@ import tempfile
 ДАНІ_ПРОДУКТУ = frozenset({'каталог_повний.xml.gz'})
 ПРИЛАД = re.compile(r'^прилад:\s*(.*?)\s*$')
 БАЗА = re.compile(r'^база:\s*(.*?)\s*$')
-СХОЖИЙ = re.compile(r'^[\s>*_`#-]*(прилад|база)[*_`]*\s*:', re.IGNORECASE)
+СХОЖИЙ = re.compile(r'^[\s>*_`#-]*(прилад|база)[*_`]*\s*:[\s*_`]*'
+                    r'(?:python\b|[^\s`]*\/[^\s`]*|[^\s`]*\.py(?=$|[\s`,]))', re.IGNORECASE)
 МІСЦЬ = re.compile(r'^місць:\s*(\d+)\s*$')
 ЧАС_ПРИЛАДУ = 900
 
