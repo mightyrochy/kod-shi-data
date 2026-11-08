@@ -735,9 +735,11 @@ import річ_з_фото as _РФ1
 import brief as _БР
 _ф = [{"ід": "ф1", "ширина": 700, "висота": 1500}]
 _пф = json.loads(_РФ1.промпт_фото(_ф))
-звірка("речі з фото: своя задача англійською, коди полів — у «codes», скелет — усі поля старої схеми",
-       _з(_пф, "завдання", "відповідь") == "PHOTO_ITEMS" and not _кир(_пф) and set(_пф["codes"]) >= {"slot", "color", "owner"}
-       and "format_error" not in _пф, str(_з(_пф, "завдання", "відповідь")))
+звірка("речі з фото: своя задача англійською, коди полів — у «codes», схема — останньою, без мітки «answer» у «task» "
+       "(Е2-межі п.4: від мітки модель загортала відповідь)",
+       "answer" not in _пф["task"] and list(_пф)[-1] == "answer_schema" and "items" in _пф["answer_schema"]
+       and not _кир(_пф) and set(_пф["codes"]) >= {"slot", "color", "owner"}
+       and "format_error" not in _пф, str(list(_пф)))
 _вф = _РФ1.речі_з_відповіді_фото(json.dumps({"items": [
     {"photo": "ф1", "name": "skirt", "slot": "bottom", "color": "khaki", "fabric": "faux_leather", "cut": "a-line",
      "length": "mini", "pattern": "solid", "formality": "neat", "owner": "mine", "frame": {"left": 100, "top": 200, "right": 800, "bottom": 900}},
@@ -1163,9 +1165,13 @@ print("── СКЛАДАННЯ-ЧИТАННЯ (рядки 4024, 4203): зап�
 _о24 = lambda і, кінець="": '{"id":"o%d","caption":"c","pole":"free","items":["#%d·01"],"day":"d"%s}' % (і, і, кінець)
 _р24а = P.розбір_за_схемою('{"OUTFITS_V1": {"version": "1", "outfits": [%s], "needed": []}}'
                             % ",".join(_о24(і) for і in range(1, 11)), "ОБРАЗИ_V1")
-звірка("4024: вся відповідь під іменем схеми {OUTFITS_V1: {version, outfits:[10]}} — 10 образів, не один",
-       len(_р24а[0]["образи"]) == 10 and _р24а[0]["версія"] == "1"
-       and _р24а[2]["нормалізовано"] == ["outfits_from_schema_name_keys: 10"], json.dumps(_р24а[2], ensure_ascii=False))
+# Е2-межі п.4: ремонту імені схеми нема — розбіжність словами на один повтор (`unexpected_key` поруч з обовʼязковим)
+_пом24а = P.перевірити(P.СХЕМИ["ОБРАЗИ_V1"], _р24а[0])
+звірка("4024 (Е2-межі п.4): вся відповідь під іменем схеми {OUTFITS_V1: {…}} — не латається, повтор називає чужий ключ",
+       "образи" not in _р24а[0] and not _р24а[2]["нормалізовано"]
+       and dict(де="OUTFITS_V1", що="unexpected_key") in _пом24а
+       and "not inside another key" in P.помилка_формату(_пом24а, відповідь="ОБРАЗИ_V1"),
+       json.dumps([_р24а[2], _пом24а], ensure_ascii=False)[:400])
 _д24 = ',"deliberate":[{"item":"#1·01","finding":"f-1","why":"w"}],"done":[{"finding":"f-1","action":"fixed"}]}'
 _р24б = P.розбір_за_схемою('{"version":"1","answer":[%s]\n```' % ",".join(_о24(і, _д24) for і in range(1, 6)),
                            "ОБРАЗИ_V1")
@@ -1208,24 +1214,30 @@ _р90 = P.розбір_за_схемою('{"version":"1","chosen":[{"id":"o1"}],
 звірка("4490: образ без «{» після «}» чи після «]» — наступний образ, а не ключі попереднього: 4 з 4",
        [о["ід"] for о in _р90[0]["образи"]] == ["о1", "о2", "о3", "о4"]        # кирилична «о» — нормалізація ід
        and "missing_opening_brace_added: 3" in _р90[2]["нормалізовано"], json.dumps(_р90[2], ensure_ascii=False))
-# Мітка задачі промпту ключем під обгорткою «answer»
+# Мітка задачі промпту ключем під обгорткою «answer» (6451) — Е2-межі п.4: не латається; форма реєстру читає схемою,
+# і розбіжність іде словами на один повтор
+import схема_відповіді as _СВ51
 _річ51 = {"photo": "ф1", "name": "skirt", "slot": "bottom", "color": "black"}
-_р51 = [P.розбір_останній(json.dumps(о), п) for о, п in (
-    ({"answer": {"PHOTO_ITEMS": [_річ51]}}, ("items",)), ({"answer": {"PHOTO_ITEMS": {"items": [_річ51]}}}, ("items",)),
-    ({"PHOTO_ITEMS": [_річ51]}, ("items",)), ({"answer": {"photo_items": [_річ51]}}, ("items",)),
-    ({"answer": {"PHOTO_ITEMS": ["skirt"]}}, ("items",)), ({"answer": {"OUTFITS_V1": [_річ51]}}, ("answer",)),
-    ({"answer": {"PHOTO_ITEMS": [_річ51], "note": "x"}}, ("items",)), ({"answer": {"OUTFITS_V1": [_річ51]}}, ("items",)),
-    ({"answer": {"PALETTE_CHOICE": {"scheme": "tonal"}}}, ("scheme",)))]
-звірка("6451: {answer: {PHOTO_ITEMS: [...]}}, {PHOTO_ITEMS: {items}}, {PALETTE_CHOICE: {scheme}} — з кодом зняття; "
-       "мітка малими, список рядків, поле «answer», мітка поруч з іншим ключем, OUTFITS_V1 під «items» — як доти",
-       [р[0].get("items") for р in _р51[:3]] == [[_річ51]] * 3
-       and _р51[0][2] == ["answer_envelope_unwrapped", "task_label_unwrapped: PHOTO_ITEMS"]
-       and _р51[2][2] == ["task_label_unwrapped: PHOTO_ITEMS"]
-       and [р[0] for р in _р51[3:8]] == [{"photo_items": [_річ51]}, {"PHOTO_ITEMS": ["skirt"]},
-                                          {"answer": {"OUTFITS_V1": [_річ51]}}, {"PHOTO_ITEMS": [_річ51], "note": "x"},
-                                          {"OUTFITS_V1": [_річ51]}]
-       and not any("task_label" in "".join(р[2]) for р in _р51[3:8])
-       and _р51[8][0] == {"scheme": "tonal"}, json.dumps(_р51, ensure_ascii=False)[:600])
+_ф51 = _СВ51.СХЕМИ_ВІДПОВІДІ["РЕЧІ_З_ФОТО"]
+_р51 = [_ф51.прочитати(json.dumps(о)) for о in (
+    {"answer": {"PHOTO_ITEMS": [_річ51]}}, {"PHOTO_ITEMS": [_річ51]}, {"items": [_річ51]}, {"items": "skirt"})]
+_п51 = _СВ51.СХЕМИ_ВІДПОВІДІ["ВИБІР_ПАЛІТРИ"]
+_пр51 = [_п51.прочитати(json.dumps(о), треба=("scheme",)) for о in (
+    {"answer": {"PALETTE_CHOICE": {"scheme": "tonal"}}}, {"scheme": "tonal"})]
+звірка("6451 (Е2-межі п.4): {answer: {PHOTO_ITEMS}}, {PHOTO_ITEMS}, {answer: {PALETTE_CHOICE}} — не латаються: "
+       "schema_mismatch з чужим ключем для повтору; {items: [...]} і {scheme} — прочитано без нотаток, рядок замість речі — розбіжність",
+       [р[0] for р in _р51[:2]] == [None, None]
+       and _р51[0][1] == "schema_mismatch: items required_missing; answer unexpected_key"
+       and _р51[1][1] == "schema_mismatch: items required_missing; PHOTO_ITEMS unexpected_key"
+       and _р51[2] == ({"items": [_річ51]}, None, []) and _р51[3][0] is None and "wrong_type" in _р51[3][1]
+       and _пр51[0][0] is None and "answer unexpected_key" in _пр51[0][1]
+       and _пр51[1] == ({"scheme": "tonal"}, None, [])
+       and "not inside another key" in _ф51.повтор(_р51[0][1])
+       # повтор форм поза пакетом — англійським дротом, без мітки «answer» і внутрішнього імені схеми (14418)
+       and set(json.loads(_ф51.повтор(_р51[0][1]))) == {"version", "error", "errors", "instead"}
+       and "РЕЧІ_З_ФОТО" not in _ф51.повтор(_р51[0][1]) and "answer_schema" in _ф51.повтор("no_json_object")
+       and P.розбір_останній(json.dumps({"answer": {"PHOTO_ITEMS": [_річ51]}}), ("items",))[0]
+       == {"answer": {"PHOTO_ITEMS": [_річ51]}}, json.dumps([_р51, _пр51], ensure_ascii=False)[:600])
 
 print("── Е2-межі-показу: відповідь моделі, яку читає показ, — через реєстр (кольори, обіцянка, проза рук 3–4)")
 import bridge as _МЕ2, міст_помічниця as _МП2, руки_без_коду as _РБК2, схеми_розбору as _СР2, схема_відповіді as _СВ2

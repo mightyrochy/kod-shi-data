@@ -18,6 +18,10 @@ const відповідьЗадачі = об => {
      з хвостом «now» (ті самі дані: «outfit», «check») — обидва вертаються до OUTFIT_REVIEW_V1, як доти */
   if (!в && об && об.task && об.answer_schema && об.outfit && об.check
       && ('verdict' in об.answer_schema || об.now)) return 'OUTFIT_REVIEW_V1';
+  /* Е2-межі п.4: речі з фото й вибір палітри — теж скелет наприкінці, без мітки «answer» у «task» (від неї модель
+     загортала відповідь): речі на фото має схема з «items» і дані «photos», палітру — схема з «scheme» */
+  if (!в && об && об.task && об.answer_schema && 'items' in об.answer_schema && об.photos) return 'PHOTO_ITEMS';
+  if (!в && об && об.task && об.answer_schema && 'scheme' in об.answer_schema) return 'PALETTE_CHOICE';
   return НАЗВИ_EN[в] || в;
 };
 /* Допит під карткою оцінки — той самий промпт суду зі схемою лише «answer» і хвостом «now»; картка має схему з «verdict».

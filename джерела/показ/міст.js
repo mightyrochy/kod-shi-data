@@ -342,20 +342,23 @@ function _причинаПовторуП(з, відп, помилка, сигн�
 }
 function стадіяВикликуП(повідомлення, модель){
   const ост = ((повідомлення || [])[(повідомлення || []).length - 1] || {}).content;
-  const т = Array.isArray(ост) ? ост.filter(б => б && б.type === 'text').map(б => б.text || '').join('\n')
-                               : String(ост == null ? '' : ост);
+  const тексти = Array.isArray(ост) ? ост.filter(б => б && б.type === 'text').map(б => б.text || '')
+                                    : [String(ост == null ? '' : ост)];
+  const т = тексти.join('\n');
   const м = /"(?:answer|відповідь)"\s*:\s*"([\p{Lu}\p{N}_]{3,40})"/u.exec(т);
   let задача = м ? м[1] : null;
-  /* скелет наприкінці: складання, ремонт, вибір і оцінка імені в «task» не мають — їх називає
+  /* скелет наприкінці: складання, ремонт, вибір, оцінка, речі з фото й палітра імені в «task» не мають — їх називає
      перший ключ змісту останньої «answer_schema» (так само впізнає їх стенд, `аудит/проби/види_речей.js`) */
-  const сх = задача ? -1 : т.lastIndexOf('"answer_schema"');
-  if (сх >= 0){
-    /* від ключа до кінця — члени останнього обʼєкта повідомлення («answer_schema», за нею хіба «now»); ключі схеми —
-       за пріоритетом стенда: ремонт має й «chosen», і «outfits», а він — складання/ремонт */
+  const блок = задача ? null : [...тексти].reverse().find(х => х.includes('"answer_schema"'));
+  if (блок){
+    /* від ключа до кінця блоку — члени останнього обʼєкта промпту («answer_schema», за нею хіба «now»): блок, а не
+       весь текст — за промптом речей з фото йдуть підписи кадрів; ключі схеми — за пріоритетом стенда: ремонт має й
+       «chosen», і «outfits», а він — складання/ремонт */
     let с = null;
-    try{ с = (JSON.parse('{' + т.slice(сх)) || {}).answer_schema; }catch(_){}
+    try{ с = (JSON.parse('{' + блок.slice(блок.lastIndexOf('"answer_schema"'))) || {}).answer_schema; }catch(_){}
     const є = к => !!(с && typeof с === 'object' && к in с);
     задача = є('outfits') ? 'OUTFITS_V1' : є('chosen') ? 'CHOICE_V1' : є('verdict') ? 'OUTFIT_REVIEW_V1'
+           : є('items') ? 'PHOTO_ITEMS' : є('scheme') ? 'PALETTE_CHOICE'
            : 'answer_schema' + (с && typeof с === 'object' ? ' · ' + Object.keys(с).slice(0, 2).join(',') : '');
   }
   if ((модель && модель === МОДЕЛЬ_МОВИ_П) || /^Ти — перекладачка/.test(т)) return 'мова' + (задача ? ' · ' + задача : '');

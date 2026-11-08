@@ -155,7 +155,7 @@ function зіпсувати(відповісти, в, промпт) {
             текст: JSON.stringify({update: Object.assign({}, update, частини)})};
   }
   if (УВІМКНЕНІ.has('obgortka') && об && об.task
-      && ['PHOTO_ITEMS', 'ITEM_LIST', 'PALETTE_CHOICE'].includes(об.task.answer)) {
+      && ['PHOTO_ITEMS', 'ITEM_LIST', 'PALETTE_CHOICE'].includes(відповідьЗадачі(об))) {
     let х = null;
     try { х = JSON.parse(String(в.текст || '').replace(/^\s*```(?:json)?\s*|\s*```\s*$/g, '')); } catch (_) {}
     if (!х || typeof х !== 'object' || Array.isArray(х)) return в;
