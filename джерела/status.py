@@ -191,7 +191,7 @@
     "похибка_вимірів_тіла",
     "colorspace", "composer", "coordination", "extract", "face_contrast", "face_features",
     "feed", "fit", "graph", "hypergraph", "language_gate",
-    "outer", "outfit", "palette", "palettes", "personal_palette",
+    "outer", "outfit", "місце_речі", "palette", "palettes", "personal_palette",
     "pipeline", "profile", "silhouette", "status",
     "statements", "trace", "verify", "знахідка", "каблук", "реєстри",
     "семплер", "сценарій", "selection_policy",
