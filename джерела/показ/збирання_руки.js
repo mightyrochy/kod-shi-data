@@ -33,9 +33,11 @@ function шаблонОписуП(в, рука, звідки){
    (`ШАБЛОНИ_ЗБОЮ_П`, сталі написи показу — п.12) і що код знає кодами; картка (`рендерКартку`) ставить шаблон
    виду, журнал — вид поруч з `рука_впала`. Голого `збій = true` у стадіях руки з каталогом нема: кожен збій несе свій
    вид, а прилад кореня ловить новий голий збій. */
-const ВИДИ_ЗБОЮ_РУКИ_П = ['hand_off_schema', 'hand_no_outfit', 'hand_not_accepted', 'hand_step_failed'];
+/* сталий перелік видів: вид → ключ шаблону `ШАБЛОНИ_ЗБОЮ_П` (картка бере шаблон лише звідси) */
+const ВИДИ_ЗБОЮ_РУКИ_П = {hand_off_schema: 'hand_off_schema', hand_no_outfit: 'hand_no_outfit',
+  hand_not_accepted: 'hand_not_accepted', hand_step_failed: 'hand_step_failed'};
 function збійРукиП(вид, відоме){
-  if (!ВИДИ_ЗБОЮ_РУКИ_П.includes(вид)) throw new Error('hand_fallback_unknown_kind: ' + вид);
+  if (ВИДИ_ЗБОЮ_РУКИ_П[вид] !== вид) throw new Error('hand_fallback_unknown_kind: ' + вид);
   return Object.assign({вид}, відоме || {});
 }
 
