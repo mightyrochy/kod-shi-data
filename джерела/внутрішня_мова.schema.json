@@ -2568,12 +2568,37 @@
   },
   "reply_text": {
    "type": "object",
-   "description": "вихід перекладача репліки: один текст",
+   "description": "вихід перекладача репліки: речення з опорою",
    "additionalProperties": false,
    "properties": {
     "text": {
-     "type": "string",
-     "description": "текст для неї її мовою"
+     "type": "array",
+     "description": "речення для неї її мовою",
+     "items": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+       "about",
+       "says"
+      ],
+      "properties": {
+       "about": {
+        "type": "array",
+        "items": {
+         "type": "string"
+        }
+       },
+       "her_words": {
+        "type": "array",
+        "items": {
+         "type": "string"
+        }
+       },
+       "says": {
+        "type": "string"
+       }
+      }
+     }
     }
    },
    "required": [
@@ -3690,6 +3715,12 @@
           "formality_reason",
           "her_question"
          ]
+        }
+       },
+       "her_words": {
+        "type": "array",
+        "items": {
+         "type": "string"
         }
        },
        "says": {

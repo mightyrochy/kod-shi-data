@@ -317,6 +317,7 @@ def скелет_мовного_шару():
         },
         "need": " | ".join(форма["properties"]["need"]["enum"]),
         "text": [{"about": ["update field codes (" + ", ".join(поля) + ") or her_question"],
+                  "her_words": ["exact words from her quote or the label that this sentence restates"],
                   "says": "one sentence of your reply, never a lone word"}],
         "invite_topics": ["advice topic codes, up to three"], "invite": "one soft invitation, or empty",
         "ask_code": " | ".join(форма["properties"]["ask_code"]["enum"]), "ask": "one short question, or empty",
@@ -349,6 +350,8 @@ def форма_мовного_шару(визначення=True):
         "text": {"type": "array", "items": {"type": "object", "additionalProperties": False,
             "required": ["about", "says"], "properties": {
                 "about": {"type": "array", "items": {"enum": list(поля) + ["her_question"]}},
+                # опора речення — дослівні шматки (`мовний_шар.суд_підтвердження`, рішення 14177)
+                "her_words": {"type": "array", "items": {"type": "string"}},
                 "says": {"type": "string"}}}},
         "invite_topics": {"type": "array", "items": {"enum": list(мова.ТЕМИ_ПОРАДИ)}},
         "invite": {"type": "string"}, "ask_code": {"enum": list(мова.ОБОВʼЯЗКОВЕ) + [""]},

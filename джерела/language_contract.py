@@ -18,8 +18,9 @@ def пояснити_повтор(промпт, причина, маркер="")
     код, _, слова = str(причина).partition(": ")
     чому = {"no_text_field": "немає непорожнього рядка text",
              "only_questions": "текст не передає прийнятих фактів або ставить недозволені питання",
-             "no_card_confirmation": "у text є слова, яких нема в recorded (%s); "
-                                     "підтверджуй лише словами з label чи quote" % слова,
+             "no_card_confirmation": "her_words речення не стоять дослівно в label чи quote його полів about, "
+                                     "або поле about без свого шматка (%s)" % слова,
+             "not_about_recorded": "about речення називає поле, якого нема у вході (%s)" % слова,
              "unrecorded_number": "у text є число, якого нема в recorded",
              "code_in_text": "у text є код замість слів",
              "no_confirmation_text": "text не підтверджує recorded"}.get(код, str(причина))
