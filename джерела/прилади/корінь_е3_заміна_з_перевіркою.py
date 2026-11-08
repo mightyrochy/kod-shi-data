@@ -139,7 +139,7 @@ warnings.simplefilter('ignore', SyntaxWarning)
     r'put the arms|\bdrape|\bgesture|жест', re.I)
 # Пояснення, чому образ лишається як є: не замінює, не додає і не прибирає річ («шарф не потрібен — слот звільнено»).
 ПОЯСНЕННЯ = re.compile(r'\bне (?:потріб\w*|треба)\b|слот звільнен|нічого (?:міняти|додавати)|лишити (?:як є|образ)|'
-                       r'тримає день|\bnot needed\b|\bno need\b|nothing to (?:add|change)', re.I)
+                       r'тримає день|\bkeep the look\b|\bsay why\b|\bholds this day\b|оголосит|тоді це інший випадок|\bdeclare\b|\bnot needed\b|\bno need\b|nothing to (?:add|change)', re.I)
 СИЛЬНА_ЗАМІНА = re.compile(r'замін|замість|додати|додай|докуп|прибрат|прибери|\binstead of\b|'
                            r'\b(?:replac\w*|swap\w*|remove\w*|add)\b', re.I)
 # Іменна альтернатива англійською без дієслова: «a matte item in this slot», «shoes of the named level».

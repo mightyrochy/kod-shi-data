@@ -523,6 +523,36 @@ def заміна(кандидат, образ, межі, явний_вибір):
         self.assertIn('взяти іншу пару', самі[0])
         self.assertNotIn('поділ', самі[0])
 
+    def test_коди_заяв_заміна_й_порада_в_одному_коді(self):
+        """Коди `суд_погода` (ЗНАХІДКА Ч-А): ремонт лічиться за складовою-заміною, поради без заміни кандидат не називає."""
+        зразки = [
+            ('не в цю погоду БЕЗ обробки — просочити водовідштовхувальним засобом тричі АБО гладка шкіра / текстиль на цей день '
+             'impregnate_or_smooth_or_textile the choice is hers: waterproof it beforehand, or take smooth leather or a textile',
+             'просочити', 'гладка шкіра'),
+            ('не в цю погоду БЕЗ обробки — просочити засобом тричі АБО гладка захищена шкіра чи гума на цей день '
+             'smooth_protected_leather_or_rubber_or_treat replace it with smooth protected leather or rubber, or treat it with '
+             'a water repellent and accept the risk', 'просочити', 'гладка захищена шкіра'),
+            ('утеплений шар під тренч або замість нього АБО оголосити вовняну версію — тоді це інший випадок '
+             'warm_layer_under_or_instead_of_trench an insulated layer under the trench or instead of it, or declare the wool version',
+             'оголосити', 'утеплений шар'),
+            ('будувати образ ВІД ПАЛЬТА досередини, а не навпаки АБО винести колір у шарф/шапку/сумку — те, що видно поверх пальта '
+             'build_from_coat_or_colour_on_top build the look from the coat inward, or move colour to scarf, hat or bag',
+             'ВІД ПАЛЬТА', 'винести колір'),
+            ('дощ лише ймовірний — шар від дощу з собою верхній шар від дощу — тренч, плащ, дощовик або парка — поверх образу '
+             'АБО лишити образ і сказати, чому він тримає цей день rain_outer_layer_over_look an outer layer that keeps off '
+             'rain — a trench, a raincoat or a parka — over this look, or keep the look and say why it holds this day',
+             'лишити образ', 'верхній шар від дощу'),
+        ]
+        for текст, порада, заміна in зразки:
+            with self.subTest(заміна=заміна):
+                так, _, складові = ПРИЛАД.складові_заміни(текст)
+                разом = ' | '.join(складові)
+                self.assertTrue(так)
+                self.assertIn(заміна, разом)
+                self.assertNotIn(порада, разом)
+                self.assertNotIn('keep the look', разом)
+                self.assertNotIn('declare', разом)
+
     # ── Рішення 08.11 (14209): охорона спільного джерела в будь-якій формі ───────────────────────────────
 
     def _крок_джерела(self, охорона, виклик='_ПЗ.перевірити_ід(склад, нові, словник, межі, явний, суддя)'):
