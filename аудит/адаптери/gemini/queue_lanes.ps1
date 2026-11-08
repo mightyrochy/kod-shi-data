@@ -28,6 +28,7 @@ $script:CondPattern = '^(?:p[0-9]|d20[0-9]{10}|gpu)(?:-(?:p[0-9]|d20[0-9]{10}|gp
 $script:LanesPath = 'аудит/адаптери/gemini/смуги.json'
 $script:Utf8 = New-Object System.Text.UTF8Encoding($false)
 $script:OnWindows = ($PSVersionTable.PSEdition -ne 'Core') -or [bool](Get-Variable IsWindows -ValueOnly -ErrorAction SilentlyContinue)
+$script:TreeJobs = @{}  # pid процесу Start-Tree → його задача Windows
 # Тека версії цього процесу: після самооновлення — `<корінь>\versions\<SHA40>`, поряд із коренем — `active.txt`.
 $script:VersionDir = $PSScriptRoot
 
@@ -148,8 +149,95 @@ function New-StartInfo([string]$Exe, [string[]]$Arguments, [string]$Dir, [switch
     $psi
 }
 
+function Add-TreeJobType {
+    if ('GeminiWrapper.TreeJob' -as [type]) { return }
+    Add-Type -TypeDefinition @'
+using System;
+using System.ComponentModel;
+using System.Runtime.InteropServices;
+namespace GeminiWrapper {
+    public static class TreeJob {
+        [StructLayout(LayoutKind.Sequential)]
+        struct BasicLimit { public long PerProcessTime; public long PerJobTime; public uint Flags; public UIntPtr MinWs; public UIntPtr MaxWs; public uint ActiveLimit; public UIntPtr Affinity; public uint Priority; public uint Scheduling; }
+        [StructLayout(LayoutKind.Sequential)]
+        struct ExtendedLimit { public BasicLimit Basic; public ulong R1, R2, R3, R4, R5, R6; public UIntPtr ProcessMem, JobMem, PeakProcessMem, PeakJobMem; }
+        [DllImport("kernel32.dll", SetLastError = true, CharSet = CharSet.Unicode)] static extern IntPtr CreateJobObject(IntPtr attributes, string name);
+        [DllImport("kernel32.dll", SetLastError = true)] static extern bool SetInformationJobObject(IntPtr job, int infoClass, ref ExtendedLimit info, int size);
+        [DllImport("kernel32.dll", SetLastError = true)] static extern bool AssignProcessToJobObject(IntPtr job, IntPtr process);
+        [DllImport("kernel32.dll", SetLastError = true)] static extern bool QueryInformationJobObject(IntPtr job, int infoClass, IntPtr info, int size, IntPtr returned);
+        [DllImport("kernel32.dll", SetLastError = true)] static extern IntPtr OpenProcess(uint access, bool inherit, int id);
+        [DllImport("kernel32.dll", SetLastError = true)] static extern bool IsProcessInJob(IntPtr process, IntPtr job, out bool result);
+        [DllImport("kernel32.dll", SetLastError = true)] static extern bool TerminateProcess(IntPtr process, uint code);
+        [DllImport("kernel32.dll", SetLastError = true)] static extern bool CloseHandle(IntPtr handle);
+
+        public static IntPtr Create(IntPtr process) {
+            IntPtr job = CreateJobObject(IntPtr.Zero, null);
+            if (job == IntPtr.Zero) throw new Win32Exception();
+            var info = new ExtendedLimit();
+            info.Basic.Flags = 0x800;  // BREAKAWAY_OK: явний вихід із задачі (CREATE_BREAKAWAY_FROM_JOB) не ламає старту нащадка
+            if (!SetInformationJobObject(job, 9, ref info, Marshal.SizeOf(typeof(ExtendedLimit))) || !AssignProcessToJobObject(job, process)) {
+                var e = new Win32Exception(); CloseHandle(job); throw e;
+            }
+            return job;
+        }
+
+        public static int[] Members(IntPtr job) {
+            const int max = 4096; int size = 8 + IntPtr.Size * max;
+            IntPtr buf = Marshal.AllocHGlobal(size);
+            try {
+                if (!QueryInformationJobObject(job, 3, buf, size, IntPtr.Zero)) throw new Win32Exception();
+                var ids = new int[Marshal.ReadInt32(buf, 4)];
+                for (int i = 0; i < ids.Length; i++) ids[i] = (int)Marshal.ReadIntPtr(buf, 8 + i * IntPtr.Size).ToInt64();
+                return ids;
+            } finally { Marshal.FreeHGlobal(buf); }
+        }
+
+        public static bool Kill(IntPtr job, int id) {
+            IntPtr p = OpenProcess(0x1001, false, id);  // TERMINATE | QUERY_LIMITED_INFORMATION
+            if (p == IntPtr.Zero) return false;
+            try { bool inJob; return IsProcessInJob(p, job, out inJob) && inJob && TerminateProcess(p, 1); }
+            finally { CloseHandle(p); }
+        }
+
+        public static void Close(IntPtr job) { CloseHandle(job); }
+    }
+}
+'@
+}
+
+function Start-Tree($Psi) {
+    <# Старт процесу в задачі Windows: нащадки, відірвані від батька (nohup, start), лишаються в ній, і Stop-Tree зупиняє
+    їх разом із деревом. 08.11 вимір, запущений сесією через nohup, після кінця наряду тримав 12 ГБ відеокарти й копію задачі. #>
+    # Тип збирається до старту: збірка триває секунди, а нащадки, народжені до прив'язки, у задачу не потрапляють.
+    $typed = $false
+    if ($script:OnWindows) { try { Add-TreeJobType; $typed = $true } catch { Write-Log "задача процесів: $($_.Exception.Message)" } }
+    $p = [System.Diagnostics.Process]::Start($Psi)
+    if ($typed) {
+        try { $script:TreeJobs[$p.Id] = [GeminiWrapper.TreeJob]::Create($p.Handle) }
+        catch { Write-Log "задача процесів $($p.Id): $($_.Exception.Message) — лишки зупиняє лише дерево" }
+    }
+    $p
+}
+
+function Stop-TreeJob([int]$Id) {
+    <# Зупиняє решту задачі Windows процесу; інструменти LM Studio лишає — це спільний сервер, а моделі наряду прибирає
+    Complete-GpuModels. #>
+    if (-not $script:TreeJobs.ContainsKey($Id)) { return }
+    $job = $script:TreeJobs[$Id]; $script:TreeJobs.Remove($Id)
+    try {
+        $gone = @(foreach ($i in [GeminiWrapper.TreeJob]::Members($job)) {
+                $g = $null
+                try { $g = Get-Process -Id $i -ErrorAction Stop } catch { continue }
+                if (Test-GpuModelProcess $g.ProcessName ([string]$g.Path)) { continue }
+                if ([GeminiWrapper.TreeJob]::Kill($job, $i)) { "$($g.ProcessName) $i" }
+            })
+        if ($gone.Count) { Write-Log "лишки дерева $Id зупинено: $($gone -join ', ')" }
+    } catch { Write-Log "лишки дерева ${Id}: $($_.Exception.Message)" }
+    finally { [GeminiWrapper.TreeJob]::Close($job) }
+}
+
 function Stop-Tree($Proc) {
-    <# Зупинка процесу з усім деревом нащадків. #>
+    <# Зупинка процесу з усім деревом нащадків і рештою його задачі Windows (Start-Tree), також після його виходу. #>
     if ($null -eq $Proc) { return }
     try {
         if (-not $Proc.HasExited) {
@@ -158,6 +246,7 @@ function Stop-Tree($Proc) {
         }
         [void]$Proc.WaitForExit(15000)
     } catch { Write-Log "зупинка процесу: $($_.Exception.Message)" }
+    Stop-TreeJob $Proc.Id
 }
 
 function Invoke-Native([string]$Exe, [string[]]$Arguments, [string]$Dir = '', [double]$TimeoutMinutes = 10, [string]$StdIn = $null) {
@@ -168,7 +257,7 @@ function Invoke-Native([string]$Exe, [string[]]$Arguments, [string]$Dir = '', [d
     $stdinEncoding = [Console]::InputEncoding
     try {
         [Console]::InputEncoding = $script:Utf8
-        $p = [System.Diagnostics.Process]::Start($psi)
+        $p = Start-Tree $psi
     } finally { [Console]::InputEncoding = $stdinEncoding }
     $out = $p.StandardOutput.ReadToEndAsync()
     $err = $p.StandardError.ReadToEndAsync()
@@ -180,7 +269,8 @@ function Invoke-Native([string]$Exe, [string[]]$Arguments, [string]$Dir = '', [d
     $until = [datetime]::UtcNow.AddMinutes($TimeoutMinutes)
     while (-not $p.WaitForExit(1000) -and [datetime]::UtcNow -lt $until) { Invoke-HealthBeat }
     $timedOut = -not $p.HasExited
-    if ($timedOut) { Stop-Tree $p } else { $p.WaitForExit() }
+    if (-not $timedOut) { $p.WaitForExit() }
+    Stop-Tree $p
     [pscustomobject]@{ Code = $(if ($timedOut) { -1 } else { $p.ExitCode }); TimedOut = $timedOut; Out = $out.Result; Err = $err.Result }
 }
 

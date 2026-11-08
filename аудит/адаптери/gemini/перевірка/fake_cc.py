@@ -94,6 +94,13 @@ if sc == 'child_holds_stdout':
                          stderr=subprocess.DEVNULL, start_new_session=True)
     open(os.environ['FAKE_CC_LOG'] + '.child', 'w').write(str(c.pid))
     result('НОУТБУК ГОТОВО %s %s' % (branch, push()))
+if sc == 'child_detached':
+    # Вимір, запущений сесією через nohup (08.11): відірваний від сесії, без її stdout, живе після її кінця.
+    c = subprocess.Popen([sys.executable, '-c', 'import time; time.sleep(600)'], stdin=subprocess.DEVNULL,
+                         stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, start_new_session=True,
+                         creationflags=0x8 if os.name == 'nt' else 0)
+    open(os.environ['FAKE_CC_LOG'] + '.child', 'w').write(str(c.pid))
+    result('НОУТБУК ГОТОВО %s %s' % (branch, push()))
 if sc == 'closed':
     # Закрив stdout і stderr, а процес живий і мовчить: завислість, хоч потоків уже нема.
     os.close(1); os.close(2); time.sleep(600)
