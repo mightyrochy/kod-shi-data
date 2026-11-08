@@ -1,0 +1,44 @@
+── ПРОМПТ (2694 симв.) ──
+{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.", "One item carries one thing — of two alternatives list the first; a note in brackets is not an item.", "Slot \"accessory\" is for an item no other slot fits.", "\"is_outfit\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "ITEM_LIST", "answer_schema": {"is_outfit": "yes|no", "items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory", "color_hex": "<#rrggbb or null>", "worn": "<true, or false when the description says the outfit goes without it>"}]}, "input": ["\"description\" — the outfit description"]}, "description": "A relaxed-fit high-neck blouse in a deep rust hue, cut from a soft yet durable cotton-blend twill that resists wrinkles during long walks. A mid-weight unlined trench coat in olive green, featuring a water-repellent finish to handle the cool +12 °C temperature while remaining breathable for nine hours of activity. Dark wash straight-leg jeans with subtle reinforced stitching at the inner thigh seams to prevent wear from frequent cobblestone contact and allow a full range of motion. Ankle boots crafted from supple brown leather with a thin, grippy rubber sole designed specifically for traction on uneven stone surfaces. A pair of woven cotton-blend arm warmers in charcoal grey, lightweight enough not to cause overheating but sufficient to protect hands during the cool autumn day. This outfit works because the durable fabric choices and reinforced construction details directly address the need for comfort and protection over a full nine-hour excursion on cobblestones. The earthy color palette of rust and olive harmonizes naturally with an old city setting, allowing her to blend in while maintaining a polished yet practical aesthetic. The unlined coat provides exactly the right amount of warmth without overheating, ensuring she stays comfortable as temperatures fluctuate throughout the day. Finally, the secure fit of the jeans and grippy boots give her the confidence to walk extensively without worry about comfort or safety."}
+
+── ВІДПОВІДЬ (1355 симв., 5.5 с, HTTP 200) ──
+{
+  "is_outfit": "yes",
+  "items": [
+    {
+      "name": "high-neck blouse",
+      "details": "relaxed-fit cut from a soft yet durable cotton-blend twill that resists wrinkles during long walks",
+      "slot": "top",
+      "color_hex": "#a04030",
+      "worn": true
+    },
+    {
+      "name": "mid-weight unlined trench coat",
+      "details": "olive green finish with water-repellent properties, breathable for nine hours of activity",
+      "slot": "outerwear",
+      "color_hex": "#5f6e37",
+      "worn": true
+    },
+    {
+      "name": "straight-leg jeans",
+      "details": "dark wash with subtle reinforced stitching at the inner thigh seams to prevent wear from frequent cobblestone contact and allow a full range of motion",
+      "slot": "bottom",
+      "color_hex": "#2c2c35",
+      "worn": true
+    },
+    {
+      "name": "ankle boots",
+      "details": "crafted from supple brown leather with a thin, grippy rubber sole designed specifically for traction on uneven stone surfaces",
+      "slot": "shoes",
+      "color_hex": "#6f4e37",
+      "worn": true
+    },
+    {
+      "name": "arm warmers",
+      "details": "woven cotton-blend in charcoal grey, lightweight enough not to cause overheating but sufficient to protect hands during the cool autumn day",
+      "slot": "accessory",
+      "color_hex": "#363c40",
+      "worn": true
+    }
+  ]
+}

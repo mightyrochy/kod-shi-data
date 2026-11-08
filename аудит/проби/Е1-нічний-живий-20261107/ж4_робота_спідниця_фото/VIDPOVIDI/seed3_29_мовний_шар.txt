@@ -1,0 +1,54 @@
+── ПРОМПТ (6816 симв.) ──
+Ти — перекладачка в застосунку-стилістці. Ти пишеш природною українською тексти, які зараз побачить жінка. Рішень не приймаєш, на питання не відповідаєш, змісту не міняєш.
+
+Вхід — JSON-об'єкт: ключ — номер тексту н, значення — текст, який склали код та інші моделі.
+
+Ключі відповіді — ті самі, що у вході, кожен: номер н тексту, значення — рядок, той самий зміст природною українською, без англійських слів і кодів; ПЕРЕКЛАДАЙ КОЖНЕ англійське слово, навіть одне посеред українського речення; латиницею лишай лише назви крамниць і брендів, «V-подібний» і «den»; текст, що вже природний і до неї на «ти», — без змін, а український текст на «ви» перепиши на «ти», решту лиши слово в слово.
+
+Вид кожної речі — теж зміст: річ у перекладі — та сама, що у вході, а не схожа чи сусідня. ankle boots — черевики чи ботильйони, boots — чоботи, heeled — на підборах, а не туфлі, pumps — туфлі-човники, loafers — лофери; pendant — кулон чи підвіска, necklace — намисто чи ланцюжок, а не каблучка, сережки чи браслет; ring — каблучка; earrings — сережки. Українські назви речей у вході (назви з крамниці, найчастіше перед « — ») переписуй літера в літеру: не міняй, не переставляй і не додавай у них жодного слова.
+
+Про жінку — лише до неї, на «ти» (ти, тебе, тобі, твій, твоя; хочеш, скинеш; наказ однини: розкажи, оберни, тримай, дай), і в питаннях теж: you, your, she, her про неї — «ти», «твій» (her skin tone — твій тон шкіри; when she turns her head — коли ти повертаєш голову; she looks taller — ти виглядаєш вищою), англійський наказ — наказом однини; «вона», «її» — лише про річ (сукню, сумку, куртку). Говорить стилістка — одна жінка: про себе — від першої особи однини й у жіночому роді (я підібрала, я б додала), не «ми», не від імені застосунку чи коду і ніколи словами самої жінки.
+
+Мова: літературна українська, як у текстах українських крамниць одягу. Кожне українське слово — літерами лише української абетки, без жодної латинської літери чи стороннього знака всередині слова. Кожне речення — одна остаточна версія, без виправлень посеред тексту. Словничок нижче — лише як перекласти англійське слово, коли воно є у вході; це не зміст: річ, тканина чи колір, яких у вході нема, у тексті не з'являються. Звичні українські назви для слів англійського джерела: trousers, pants — штани; dressy, dressier — ошатний, ошатніше; look, outfit — образ; taupe — сіро-бежевий; loose — вільний; suede — замша (жіночий рід); slip dress — сукня-комбінація; camel — кемел (колір). Назви речей і кольорів, які дала крамниця, — як є.
+
+Слово не повторюється двічі поспіль. Відповідь — рівно ОДИН JSON-об'єкт і нічого після нього: другої, виправленої версії, приміток і пояснень не пиши — помилку виправ у тому самому об'єкті.
+
+Речі образу — перелік речей картки (номер речі — як на картці, поруч — її коди):
+1 — назва в тексті н=11 · about it: text н=1
+2 — kind code: sweater · colour code: brown · about it: text н=2
+3 — kind code: dress_shoes · colour code: burgundy · about it: text н=3
+4 — kind code: belt · colour code: red
+5 — kind code: backpack · colour code: green · about it: text н=4
+When a text speaks of an item of the list, call it by the Ukrainian noun of its kind code (kind code: …) — the same noun in the right case in every text (trench_coat — «тренч», sweater — «светр», loafers — «лофери»), not by another kind or a synonym of the English word, whatever word the English text uses; a code ending in _generic names only the family (dress_generic — a dress, bag_generic — a bag). Make every adjective, pronoun and verb with the item agree with that noun in gender and number («бежевий тренч, який…»; «шкіряні лофери, які…»). A name you translate in this same call (text н=K): give it one noun and call the item by it, in agreement, in every text. A text the list gives as about an item (about it: text н=M) speaks of that one item, and so does every other text where the English names it. The colour of an item of the list is its colour code (colour code: …): write the Ukrainian name of that code. The English colour words for that item are the stylist's impression of a photo: do not turn them into a colour of their own — the item's colour stands in their place. Colours of its details (trim, strap, buttons, print), its fabric and the rest — translate from the text. The list is for the items only: an item the English text does not name is not added to the translation — neither to the description nor to the advice.
+
+Colour codes: brown — коричневий; burgundy — бордовий; green — зелений; red — червоний.
+
+ТЕКСТИ:
+{
+"1": "This is your own skirt that you have chosen as the base of your outfit.",
+"2": "The sweater is crafted in a soft, relaxed fit with a ribbed crew neck and hem. It features long sleeves with snug ribbed cuffs that provide structure at the wrists, and a comfortable length that sits just at the hip, draping gracefully over your skirt.",
+"3": "These burgundy dress shoes are styled with a sleek pointed toe and a low, sturdy heel. The smooth leather finish adds a touch of elegance to your feet, while the classic pump shape ensures you stay comfortable from morning meetings to late afternoon work.",
+"4": "This olive green backpack combines durable fabric with black leather handles and trim. It has a spacious main compartment secured by a zipper and a convenient front pocket for quick access to essentials, making it an ideal companion for your office days.",
+"5": "I have built this ensemble around your wish to keep your skirt, pairing it with a relaxed brown sweater that offers the comfort of casual wear while maintaining a polished silhouette. I chose burgundy dress shoes and a braided red belt to introduce a vibrant splash of color that anchors the neutral top and bottom. To complete the look for your office day, I selected an olive green backpack, which balances the formality of the occasion with practical utility.",
+"6": "Start by wearing the braided red belt to cinch the waist of your skirt, which defines your silhouette before adding the sweater.",
+"7": "Layer the relaxed brown sweater over your top as a soft outer layer to add warmth without bulk.",
+"8": "Carry the olive backpack on your shoulder or across your body for ease of movement throughout your workday.",
+"9": "Tuck the front of the sweater slightly into the skirt at the waist to keep the layers connected and avoid looking bulky.",
+"10": "моєї спідниці, Светр з круглою горловиною та підплічниками, LeBERDES Туфлі бордові, Ремінь жіночий Welfare червоний, Рюкзак жіночий Welfare зелений — Although this outfit registers as 'classic' (a higher formality than your everyday occasion), I accept it because the blazer successfully anchors the look and meets your intent for a professional work environment, making the formality gap an intentional strength rather than a flaw.",
+"11": "моєї спідниці"
+}
+
+── ВІДПОВІДЬ (2269 симв., 17.7 с, HTTP 200) ──
+{
+"1": "Це твоя власна спідниця, яку ти обрала як основу свого образу.",
+"2": "Светр виготовлений з м’якої тканини вільного крою з ребристою горловиною та подолом. Він має довгі рукави зі щільними манжетами на зап’ястях, які надають форму рукам, і зручну довжину, що елегантно спадає на стегна над твоєю спідницею.",
+"3": "Ці бордові туфлі-човники мають витончений загострений носок та невисокий стійкий каблук. Гладка шкіряна обробка додає твоїм ніжкам елегантності, а класична форма забезпечує комфорт від ранкових зустрічей до пізнього робочого дня.",
+"4": "Цей оливково-зелений рюкзак поєднує в собі міцну тканину з чорними шкіряними ручками та обробкою. Він має просторе основне відділення, що закривається на блискавку, і зручну передню кишеню для швидкого доступу до необхідних речей, роблячи його чудовим супутником у твої робочі дні.",
+"5": "Я створила цей ансамбль навколо твоєї бажання зберегти свою спідницю, поєднавши її з вільним коричневим светром, який пропонує комфорт повсякденного одягу, зберігаючи при цьому вишуканий силует. Я обрала бордові туфлі-човники та червоний плетені ремінь, щоб додати яскравий сплеск кольору, що підкреслює нейтральний верх і низ. Щоб завершити образ для твого робочого дня, я вибрала оливково-зелений рюкзак, який поєднує формальність нагоди з практичною функціональністю.",
+"6": "Спочатку одягни плетені червоний ремінь, щоб підкреслити талію твоєї спідниці, що визначить твій силует перед тим, як додати светр.",
+"7": "Одягни вільний коричневий светр поверх своєї блузки м’яким зовнішнім шаром для додаткового тепла без об’єму.",
+"8": "Носи оливковий рюкзак на плечі або через тіло, щоб було зручно рухатися протягом робочого дня.",
+"9": "Злегка заправ передню частину светра в спідницю на талії, щоб шари були пов’язані між собою і не виглядали громіздкими.",
+"10": "моєї спідниці, Светр з круглою горловиною та підплічниками, LeBERDES Туфлі бордові, Ремінь жіночий Welfare червоний, Рюкзак жіночий Welfare зелений — Хоча цей образ можна назвати «класичним» (більш формальним, ніж твоя повсякденна подія), я приймаю його, оскільки піджак успішно закріплює вигляд і відповідає твоїй меті створити професійне робоче середовище, роблячи розрив у формальності свідомою перевагою, а не недоліком.",
+"11": "моєї спідниці"
+}

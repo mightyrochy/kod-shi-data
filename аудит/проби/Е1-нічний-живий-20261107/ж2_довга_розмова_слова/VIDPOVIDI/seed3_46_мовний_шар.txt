@@ -1,0 +1,42 @@
+── ПРОМПТ (5719 симв.) ──
+Ти — перекладачка в застосунку-стилістці. Ти пишеш природною українською тексти, які зараз побачить жінка. Рішень не приймаєш, на питання не відповідаєш, змісту не міняєш.
+
+Вхід — JSON-об'єкт: ключ — номер тексту н, значення — текст, який склали код та інші моделі.
+
+Ключі відповіді — ті самі, що у вході, кожен: номер н тексту, значення — рядок, той самий зміст природною українською, без англійських слів і кодів; ПЕРЕКЛАДАЙ КОЖНЕ англійське слово, навіть одне посеред українського речення; латиницею лишай лише назви крамниць і брендів, «V-подібний» і «den»; текст, що вже природний і до неї на «ти», — без змін, а український текст на «ви» перепиши на «ти», решту лиши слово в слово.
+
+Вид кожної речі — теж зміст: річ у перекладі — та сама, що у вході, а не схожа чи сусідня. ankle boots — черевики чи ботильйони, boots — чоботи, heeled — на підборах, а не туфлі, pumps — туфлі-човники, loafers — лофери; pendant — кулон чи підвіска, necklace — намисто чи ланцюжок, а не каблучка, сережки чи браслет; ring — каблучка; earrings — сережки. Українські назви речей у вході (назви з крамниці, найчастіше перед « — ») переписуй літера в літеру: не міняй, не переставляй і не додавай у них жодного слова.
+
+Про жінку — лише до неї, на «ти» (ти, тебе, тобі, твій, твоя; хочеш, скинеш; наказ однини: розкажи, оберни, тримай, дай), і в питаннях теж: you, your, she, her про неї — «ти», «твій» (her skin tone — твій тон шкіри; when she turns her head — коли ти повертаєш голову; she looks taller — ти виглядаєш вищою), англійський наказ — наказом однини; «вона», «її» — лише про річ (сукню, сумку, куртку). Говорить стилістка — одна жінка: про себе — від першої особи однини й у жіночому роді (я підібрала, я б додала), не «ми», не від імені застосунку чи коду і ніколи словами самої жінки.
+
+Мова: літературна українська, як у текстах українських крамниць одягу. Кожне українське слово — літерами лише української абетки, без жодної латинської літери чи стороннього знака всередині слова. Кожне речення — одна остаточна версія, без виправлень посеред тексту. Словничок нижче — лише як перекласти англійське слово, коли воно є у вході; це не зміст: річ, тканина чи колір, яких у вході нема, у тексті не з'являються. Звичні українські назви для слів англійського джерела: trousers, pants — штани; dressy, dressier — ошатний, ошатніше; look, outfit — образ; taupe — сіро-бежевий; loose — вільний; suede — замша (жіночий рід); slip dress — сукня-комбінація; camel — кемел (колір). Назви речей і кольорів, які дала крамниця, — як є.
+
+Слово не повторюється двічі поспіль. Відповідь — рівно ОДИН JSON-об'єкт і нічого після нього: другої, виправленої версії, приміток і пояснень не пиши — помилку виправ у тому самому об'єкті.
+
+Речі образу — перелік речей картки (номер речі — як на картці, поруч — її коди):
+1 — назва в тексті н=2
+2 — назва в тексті н=3
+3 — назва в тексті н=4
+4 — назва в тексті н=5
+5 — назва в тексті н=6
+When a text speaks of an item of the list, call it by the Ukrainian noun of its kind code (kind code: …) — the same noun in the right case in every text (trench_coat — «тренч», sweater — «светр», loafers — «лофери»), not by another kind or a synonym of the English word, whatever word the English text uses; a code ending in _generic names only the family (dress_generic — a dress, bag_generic — a bag). Make every adjective, pronoun and verb with the item agree with that noun in gender and number («бежевий тренч, який…»; «шкіряні лофери, які…»). A name you translate in this same call (text н=K): give it one noun and call the item by it, in agreement, in every text. A text the list gives as about an item (about it: text н=M) speaks of that one item, and so does every other text where the English names it. The colour of an item of the list is its colour code (colour code: …): write the Ukrainian name of that code. The English colour words for that item are the stylist's impression of a photo: do not turn them into a colour of their own — the item's colour stands in their place. Colours of its details (trim, strap, buttons, print), its fabric and the rest — translate from the text. The list is for the items only: an item the English text does not name is not added to the translation — neither to the description nor to the advice.
+
+ТЕКСТИ:
+{
+"1": "Merino wool midi skirt, A-line silhouette with a subtle pleated front for flow during queuing, forest green, brushed wool blend with fine cashmere fibers.\nOxford button-down blouse, relaxed but tailored fit to allow comfort while standing in lines, ivory cream, heavy cotton oxford weave.\nCashmere blend structured blazer, cropped length at the hip to balance the skirt's volume, moss green, soft yet substantial wool knit with a matte finish.\nLoafers with a low heel, round toe for a softer silhouette suitable for an old library setting, dark brown, smooth calfskin leather.\nPearl stud earrings, small disc shape that catches light without overwhelming the smart dress code, lustrous white freshwater pearls set in sterling silver.\nWhy this outfit works: This ensemble perfectly balances the need for warmth against the library's chill with three layers of wool and a substantial blazer, ensuring she stays cozy during her long wait and photo session. The classic ivory and forest green palette feels timeless and appropriate for a book launch celebration within an antique setting, while the A-line skirt and relaxed blouse offer the comfort she explicitly requested after standing in line. Finally, the smart dress code is honored through the tailored blazer and refined loafers without sacrificing the cozy, literary atmosphere of her gathering with friends.",
+"2": "skirt",
+"3": "blouse",
+"4": "blazer",
+"5": "loafers",
+"6": "earrings"
+}
+
+── ВІДПОВІДЬ (1593 симв., 11.6 с, HTTP 200) ──
+{
+"1": "Вовняна спідниця-міді з мериносової вовни, силует трапеції з ледь помітним плісе спереду для легкості під час очікування в черзі, темно-зелений колір лісу, суміш шерсті та кашеміру. Сорочка оксфорд із бавовни вільного крою, але добре пошита, щоб забезпечити комфорт у положенні стоячи, кремово-білий колір, щільний тканинний плетіння з оксфорду. Структурований піджак зі змішаної вовни та кашеміру, короткий до лінії стегон, щоб врівноважити об’єм спідниці, мохово-зелений колір, м’яка, але щільна шерстяна тканина з матовим покриттям. Лофери на низькому підборі, округлий носок для більш м’якого силуету, що відповідає атмосфері старої бібліотеки, темно-коричневий колір, гладка шкіра теляти. Перлинні сережки-цвяшки, маленькі дископодібні прикраси, які ловлять світло без надмірності в рамках ділового дрес-коду, перламутрові прісноводні перли у срібній оправі. Чому цей образ працює: Цей ансамбль ідеально поєднує потребу в теплі проти холоду бібліотеки з трьома шарами вовни та щільним піджаком, забезпечуючи тобі затишок протягом довгого очікування та фотосесії. Класична комбінація кремового кольору та темно-зеленого відчувається поза часом і доречно для святкування виходу книги в старовинному місці, а спідниця трапеції та сорочка вільного крою пропонують тобі комфорт, який ти конкретно попросила після тривалого стояння в черзі. Насамкінець, діловий дрес-код дотримано завдяки добре пошитому піджаку та вишуканим лоферам без шкоди для затишної літературної атмосфери твоєї зустрічі з друзями.",
+"2": "спідниця",
+"3": "сорочка",
+"4": "піджак",
+"5": "лофери",
+"6": "сережки"
+}

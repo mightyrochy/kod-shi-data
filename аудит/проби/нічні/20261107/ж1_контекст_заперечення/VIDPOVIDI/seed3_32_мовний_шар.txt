@@ -1,0 +1,57 @@
+── ПРОМПТ (7470 симв.) ──
+Ти — перекладачка в застосунку-стилістці. Ти пишеш природною українською тексти, які зараз побачить жінка. Рішень не приймаєш, на питання не відповідаєш, змісту не міняєш.
+
+Вхід — JSON-об'єкт: ключ — номер тексту н, значення — текст, який склали код та інші моделі.
+
+Ключі відповіді — ті самі, що у вході, кожен: номер н тексту, значення — рядок, той самий зміст природною українською, без англійських слів і кодів; ПЕРЕКЛАДАЙ КОЖНЕ англійське слово, навіть одне посеред українського речення; латиницею лишай лише назви крамниць і брендів, «V-подібний» і «den»; текст, що вже природний і до неї на «ти», — без змін, а український текст на «ви» перепиши на «ти», решту лиши слово в слово.
+
+Вид кожної речі — теж зміст: річ у перекладі — та сама, що у вході, а не схожа чи сусідня. ankle boots — черевики чи ботильйони, boots — чоботи, heeled — на підборах, а не туфлі, pumps — туфлі-човники, loafers — лофери; pendant — кулон чи підвіска, necklace — намисто чи ланцюжок, а не каблучка, сережки чи браслет; ring — каблучка; earrings — сережки. Українські назви речей у вході (назви з крамниці, найчастіше перед « — ») переписуй літера в літеру: не міняй, не переставляй і не додавай у них жодного слова.
+
+Про жінку — лише до неї, на «ти» (ти, тебе, тобі, твій, твоя; хочеш, скинеш; наказ однини: розкажи, оберни, тримай, дай), і в питаннях теж: you, your, she, her про неї — «ти», «твій» (her skin tone — твій тон шкіри; when she turns her head — коли ти повертаєш голову; she looks taller — ти виглядаєш вищою), англійський наказ — наказом однини; «вона», «її» — лише про річ (сукню, сумку, куртку). Говорить стилістка — одна жінка: про себе — від першої особи однини й у жіночому роді (я підібрала, я б додала), не «ми», не від імені застосунку чи коду і ніколи словами самої жінки.
+
+Мова: літературна українська, як у текстах українських крамниць одягу. Кожне українське слово — літерами лише української абетки, без жодної латинської літери чи стороннього знака всередині слова. Кожне речення — одна остаточна версія, без виправлень посеред тексту. Словничок нижче — лише як перекласти англійське слово, коли воно є у вході; це не зміст: річ, тканина чи колір, яких у вході нема, у тексті не з'являються. Звичні українські назви для слів англійського джерела: trousers, pants — штани; dressy, dressier — ошатний, ошатніше; look, outfit — образ; taupe — сіро-бежевий; loose — вільний; suede — замша (жіночий рід); slip dress — сукня-комбінація; camel — кемел (колір). Назви речей і кольорів, які дала крамниця, — як є.
+
+Слово не повторюється двічі поспіль. Відповідь — рівно ОДИН JSON-об'єкт і нічого після нього: другої, виправленої версії, приміток і пояснень не пиши — помилку виправ у тому самому об'єкті.
+
+Речі образу — перелік речей картки (номер речі — як на картці, поруч — її коди):
+1 — kind code: brooch · colour code: silvery · about it: text н=1
+2 — kind code: blouse · colour code: silvery · about it: text н=2
+3 — kind code: skirt · colour code: grey · about it: text н=3
+4 — kind code: bag_generic · colour code: pink · about it: text н=4
+5 — kind code: headband · colour code: chocolate · about it: text н=5
+6 — kind code: shoes · colour code: beige · about it: text н=6
+When a text speaks of an item of the list, call it by the Ukrainian noun of its kind code (kind code: …) — the same noun in the right case in every text (trench_coat — «тренч», sweater — «светр», loafers — «лофери»), not by another kind or a synonym of the English word, whatever word the English text uses; a code ending in _generic names only the family (dress_generic — a dress, bag_generic — a bag). Make every adjective, pronoun and verb with the item agree with that noun in gender and number («бежевий тренч, який…»; «шкіряні лофери, які…»). A name you translate in this same call (text н=K): give it one noun and call the item by it, in agreement, in every text. A text the list gives as about an item (about it: text н=M) speaks of that one item, and so does every other text where the English names it. The colour of an item of the list is its colour code (colour code: …): write the Ukrainian name of that code. The English colour words for that item are the stylist's impression of a photo: do not turn them into a colour of their own — the item's colour stands in their place. Colours of its details (trim, strap, buttons, print), its fabric and the rest — translate from the text. The list is for the items only: an item the English text does not name is not added to the translation — neither to the description nor to the advice.
+
+Colour codes: beige — бежевий; chocolate — шоколадний; grey — сірий; pink — рожевий; silvery — срібний.
+
+ТЕКСТИ:
+{
+"1": "This is a sculptural silver brooch shaped like an elephant, featuring smooth curves and a polished metallic finish that catches the light. It sits beautifully at your collarbone to add a touch of playful elegance without being too flashy.",
+"2": "A delicate white blouse with a subtle floral print and a crisp white collar, offering a soft and refined look that balances well with more structured pieces. It features long sleeves and a tailored fit suitable for both casual and formal occasions.",
+"3": "A sleek grey straight pencil skirt crafted from a smooth, high-quality fabric that drapes elegantly over your legs. Its clean lines create a sophisticated silhouette that elongates your figure while maintaining comfort and ease of movement.",
+"4": "A minimalist pink leather crossbody bag with a simple rectangular shape and a long adjustable strap. The soft pink hue brings warmth and femininity to the outfit, complementing your skin tone and adding a pop of color to your ensemble.",
+"5": "A wide chocolate brown satin headband that adds a touch of sophistication and keeps your hair neatly in place. Its smooth texture contrasts beautifully with the softer fabrics of the blouse and skirt, creating an elegant finishing touch.",
+"6": "Cozy beige suede loafers featuring plush white shearling lining and a sturdy platform sole. These shoes offer both style and comfort, making them perfect for standing throughout the evening while keeping your feet warm and supported.",
+"7": "I have curated a look that honors your recovery while fitting perfectly for this summer charity gala. You are wearing the elegant grey pencil skirt, paired with a delicate silvery blouse that adds a touch of lightness without overpowering you. A soft pink bag complements the warm tones of your skin, and I included a chocolate brown headband to keep your hair sleek and polished for the evening. The silvery elephant brooch offers a whimsical yet sophisticated detail at your neckline, perfect for a charitable event where you want to shine. Completing the look are beige ankle boots that provide comfort for standing while maintaining an chic silhouette.",
+"8": "Let the loose fit of the blouse contrast gently with the structured grey skirt to define your waist without adding bulk.",
+"9": "Tuck the blouse in slightly if you prefer, or leave it untucked for a softer, more relaxed line that suits your recovery journey.",
+"10": "Взуття — The shoes are required by the occasion, completing the outfit structure.",
+"11": "Срібна фігурна брошка, Тендітна блуза з кониками Елейн, Спідниця сіра асиметрична, Жіноча сумка Welfare рожева, Базовий обруч шоколадний, Взуття — This outfit is fully aligned with your palette scheme; accepting this finding confirms that your tonal choice is intentional and correct for this occasion."
+}
+
+── ВІДПОВІДЬ (2741 симв., 19.6 с, HTTP 200) ──
+```json
+{
+"1": "Це скульптурна срібна брошка у формі слоника з плавними лініями та відполірованою металевою поверхнею, що ловить світло. Вона чудово виглядає на ключиці, додаючи нотку грайливої елегантності без зайвого блиску.",
+"2": "Ніжна біла блуза з ледь помітним квітковим принтом та акуратним білим комірцем, що дарує м’який і вишуканий образ. Вона має довгі рукави та приталений крій, який підійде як для повсякденних, так і для урочистих випадків.",
+"3": "Стильна сіра пряма спідниця-олівець з гладкої високоякісної тканини, що елегантно драпірується по ногах. Її чіткі лінії створюють вишуканий силует, який видовжує фігуру та забезпечує комфорт і свободу рухів.",
+"4": "Мінімалістична рожева шкіряна сумка-кросбоді з простою прямокутною формою та довгим регульованим ремінцем. М’який рожевий відтінок додає тепла й жіночності вбранню, підкреслюючи твій тон шкіри та створюючи яскравий акцент.",
+"5": "Широкий шоколадний атласний обруч для волосся, який додає нотку вишуканості та акуратно фіксує твоє волосся. Його гладка текстура гарно контрастує з м’якими тканинами блузи й спідниці, створюючи елегантну завершальну деталь.",
+"6": "Затишні бежеві замшеві лофери з пухнастою білою овечою підкладкою та міцною платформою. Ці черевички поєднують стиль і комфорт, роблячи їх чудовим вибором для тривалого перебування на ногах протягом вечора.",
+"7": "Я створила образ, який шанує твоє одужання й водночас підходить для цього літнього благодійного балу. Ти одягнена в елегантну сіру спідницю-олівець у поєднанні з ніжною срібною блузою, яка додає легкості без зайвого перевантаження. М’яка рожева сумка доповнює теплі тони твоєї шкіри, а шоколадний обруч для волосся допоможе тобі зберегти зачіску акуратною та вишуканою протягом вечора. Срібна брошка у формі слоника пропонує грайливу й водночас витончену деталь на твоїй лінії декольте, що ідеально підходить для благодійної події, де ти хочеш сяяти. Завершують образ бежеві ботильйони, які забезпечують комфорт при тривалому перебуванні на ногах та зберігають витончений силует.",
+"8": "Нехай вільний крій блузи ніжно контрастує з структурованою сірою спідницею, щоб підкреслити твою талію без зайвого об’єму.",
+"9": "Якщо ти віддаєш перевагу, трохи заправ блузу всередину або носи її назовні для м’якшої й більш розслабленої лінії, що відповідає твоєму шляху одужання.",
+"10": "Взуття — Черевички необхідні згідно з вимогами заходу та завершують структуру вбрання.",
+"11": "Срібна фігурна брошка, Ніжна блуза з кониками Елейн, Спідниця сіра асиметрична, Жіноча сумка Welfare рожева, Базовий обруч шоколадний, Взуття — Цей образ повністю відповідає твоїй палітрі кольорів; підтвердження цього висновку означає, що ти свідомо обрала правильний тоновий варіант для цієї події."
+}
+```

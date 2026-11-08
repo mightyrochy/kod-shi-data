@@ -1,0 +1,27 @@
+{
+ "версія": 1,
+ "запит": {
+  "model": "qwen/qwen3.5-9b",
+  "max_tokens": 4000,
+  "messages": [
+   {
+    "role": "user",
+    "content": [
+     {
+      "type": "text",
+      "text": "{\"task\": {\"role\": \"You read the description of an outfit and list its items as data.\", \"rules\": [\"One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.\", \"One item carries one thing — of two alternatives list the first; a note in brackets is not an item.\", \"Slot \\\"accessory\\\" is for an item no other slot fits.\", \"\\\"is_outfit\\\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note.\"], \"limits\": [\"Rely only on the input: do not invent what it does not contain.\", \"The answer is one JSON object following \\\"answer_schema\\\", without explanations and without ```.\"], \"language\": \"English\", \"answer\": \"ITEM_LIST\", \"answer_schema\": {\"is_outfit\": \"yes|no\", \"items\": [{\"name\": \"<what the item is>\", \"details\": \"<its cut, length and fabric>\", \"slot\": \"top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory\", \"color_hex\": \"<#rrggbb or null>\", \"worn\": \"<true, or false when the description says the outfit goes without it>\"}]}, \"input\": [\"\\\"description\\\" — the outfit description\"]}, \"description\": \"Navy silk crepe sheath dress with a subtle cowl neck and knee-length hemline in a rich #1a237e hue that flatters warm skin tones, flowing softly over the bust without clinging to the waist or hips.\\n\\nCharcoal suede ankle boots with a 6 cm block heel and a closed round toe in a deep #37474f shade, providing stability for standing at a restaurant while elongating the leg.\\n\\nPearl-drop drop earrings in white freshwater pearls set in sterling silver (#c0c0c0 metal finish) to add quiet elegance without drawing attention to facial features, paired with a structured black leather clutch (#000000) to hold essentials securely.\\n\\nThis ensemble works because the sleek, high-neck silhouette and flowing fabric create a smooth line that visually minimizes any concern about specific body areas, directly addressing the desire not to invite unsolicited comments. The dark, sophisticated color palette feels appropriately elevated for an upscale restaurant celebration while maintaining a composed, non-distracting appearance. Finally, the combination of structured tailoring in the dress and solid heels projects confidence and poise, ensuring she feels secure and undisturbed throughout the event.\"}"
+     }
+    ]
+   }
+  ],
+  "temperature": 1
+ },
+ "відповідь": {
+  "status": 200,
+  "contentType": "application/json",
+  "headers": {
+   "x-model": "qwen/qwen3.5-9b"
+  },
+  "body": "{\"content\":[{\"type\":\"text\",\"text\":\"{\\n  \\\"is_outfit\\\": \\\"yes\\\",\\n  \\\"items\\\": [\\n    {\\n      \\\"name\\\": \\\"sheath dress\\\",\\n      \\\"details\\\": \\\"Navy silk crepe with a subtle cowl neck and knee-length hemline, flowing softly over the bust without clinging to the waist or hips\\\",\\n      \\\"slot\\\": \\\"dress\\\",\\n      \\\"color_hex\\\": \\\"#1a237e\\\",\\n      \\\"worn\\\": true\\n    },\\n    {\\n      \\\"name\\\": \\\"ankle boots\\\",\\n      \\\"details\\\": \\\"Charcoal suede with a 6 cm block heel and a closed round toe, providing stability while elongating the leg\\\",\\n      \\\"slot\\\": \\\"shoes\\\",\\n      \\\"color_hex\\\": \\\"#37474f\\\",\\n      \\\"worn\\\": true\\n    },\\n    {\\n      \\\"name\\\": \\\"earrings\\\",\\n      \\\"details\\\": \\\"Pearl-drop with white freshwater pearls set in sterling silver metal finish, adding quiet elegance without drawing attention\\\",\\n      \\\"slot\\\": \\\"earrings\\\",\\n      \\\"color_hex\\\": \\\"#c0c0c0\\\",\\n      \\\"worn\\\": true\\n    },\\n    {\\n      \\\"name\\\": \\\"clutch\\\",\\n      \\\"details\\\": \\\"Structured black leather to hold essentials securely\\\",\\n      \\\"slot\\\": \\\"bag\\\",\\n      \\\"color_hex\\\": \\\"#000000\\\",\\n      \\\"worn\\\": true\\n    }\\n  ]\\n}\"}],\"usage\":{\"input_tokens\":600,\"output_tokens\":312},\"stop_reason\":\"end_turn\"}"
+ }
+}
