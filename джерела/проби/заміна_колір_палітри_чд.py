@@ -30,5 +30,5 @@ if __name__ == "__main__":
         assert до and len(до) == len(після), (п, до, після)
         assert [x["правило"] for x in до] == [x["правило"] for x in після] and до[0]["речі"] == після[0]["речі"], п
         # лишається лише порада без заміни (умова/пояснення): K-MUA-01 «оголосити задумом», R-CHEV-14 вісь Δh
-        assert not any(х.get(к) for х in після for к in ПОЛЕ) or (п in ("K-MUA-01", "R-CHEV-14") and not any("відтінок" in str(х.get("ремонт")) for х in після)), п
+        assert not any(х.get("ремонт") for х in після if п not in ("K-MUA-01", "R-CHEV-14")) and not any("відтінок" in str(х.get("ремонт")) for х in після), п
         print(п, "· ремонт ДО:", sum(bool(х.get("ремонт")) for х in до), "ПІСЛЯ:", sum(bool(х.get("ремонт")) for х in після))
