@@ -80,12 +80,25 @@ def головна():
                         дані="claude/Річ-колір-вимір 43dd34adee5bf462c70cbdc9f01719da7250719e",
                         команда=sys.argv, почато_utc=time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())),
                записи={}, звірка={})
-    with Pool(а.процесів) as пул:
-        for н, (ід, новий, з) in enumerate(пул.imap_unordered(один, завдання, chunksize=4), 1):
-            вих["записи"].setdefault(ід, []).append(новий)
-            вих["звірка"]["%s|%s" % (ід, новий["файл"])] = з
+    # Частини — по рядку на кадр: вбитий за пам'яттю процес (16 ГБ хмари, ATR росте) губить лише свій кадр,
+    # а повторний запуск з тим самим виходом бере зроблене й доміряє решту.
+    частини = Path(а.вихід + ".частини.jsonl")
+    зроблено = {}
+    if частини.exists():
+        for р in частини.read_text(encoding="utf-8").splitlines():
+            ід, новий, з = json.loads(р)
+            зроблено["%s|%s" % (ід, новий["файл"])] = (ід, новий, з)
+    решта = [з for з in завдання if "%s|%s" % (з[0], з[2]["файл"]) not in зроблено]
+    print("зроблено раніше: %d, решта: %d" % (len(зроблено), len(решта)), flush=True)
+    with Pool(а.процесів, maxtasksperchild=8) as пул, частини.open("a", encoding="utf-8") as ф:
+        for н, (ід, новий, з) in enumerate(пул.imap_unordered(один, решта, chunksize=1), 1):
+            ф.write(json.dumps([ід, новий, з], ensure_ascii=False) + "\n"); ф.flush()
+            зроблено["%s|%s" % (ід, новий["файл"])] = (ід, новий, з)
             if н % 50 == 0:
-                print("%d/%d" % (н, len(завдання)), flush=True)
+                print("%d/%d" % (н, len(решта)), flush=True)
+    for ключ, (ід, новий, з) in sorted(зроблено.items()):
+        вих["записи"].setdefault(ід, []).append(новий)
+        вих["звірка"][ключ] = з
     вих["мета"]["скінчено_utc"] = time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())
     with gzip.open(а.вихід, "wt", encoding="utf-8") as ф:
         json.dump(вих, ф, ensure_ascii=False)
