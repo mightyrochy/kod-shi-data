@@ -3845,11 +3845,14 @@ def схема():
             "catalog_item": об(РІЧ_КАТАЛОГУ, "річ каталогу", required=["id", "name"]),
             "stylist_reply": об(РЕПЛІКА, "що стилістка каже їй цього ходу, внутрішньою мовою"),
             # опора — полями на кожне речення (рішення 14177, корінь Е2-межі): `мовний_шар.суд_підтвердження`
-            "reply_text": об({"text": {"type": "array", "description": "речення для неї її мовою", "items": {
-                "type": "object", "additionalProperties": False, "required": ["about", "says"], "properties": {
-                    "about": {"type": "array", "items": {"type": "string"}},
-                    "her_words": {"type": "array", "items": {"type": "string"}},
-                    "says": {"type": "string"}}}}},
+            # рядок — речення без полів: опори не має, тож проходить лише там, де судити нема чого
+            "reply_text": об({"text": {"description": "речення для неї її мовою", "oneOf": [
+                {"type": "array", "items": {
+                    "type": "object", "additionalProperties": False, "required": ["about", "says"], "properties": {
+                        "about": {"type": "array", "items": {"type": "string"}},
+                        "her_words": {"type": "array", "items": {"type": "string"}},
+                        "says": {"type": "string"}}}},
+                {"type": "string"}]}},
                              "вихід перекладача репліки: речення з опорою", required=["text"]),
             # М-5 (п.14): хід розмови — оновлення паспорта, хто відповідає, частини відповіді
             "conversation_turn": _форма_мовного_шару(визначення=False),

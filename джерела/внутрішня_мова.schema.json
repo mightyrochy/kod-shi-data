@@ -2572,33 +2572,40 @@
    "additionalProperties": false,
    "properties": {
     "text": {
-     "type": "array",
      "description": "речення для неї її мовою",
-     "items": {
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-       "about",
-       "says"
-      ],
-      "properties": {
-       "about": {
-        "type": "array",
-        "items": {
-         "type": "string"
+     "oneOf": [
+      {
+       "type": "array",
+       "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+         "about",
+         "says"
+        ],
+        "properties": {
+         "about": {
+          "type": "array",
+          "items": {
+           "type": "string"
+          }
+         },
+         "her_words": {
+          "type": "array",
+          "items": {
+           "type": "string"
+          }
+         },
+         "says": {
+          "type": "string"
+         }
         }
-       },
-       "her_words": {
-        "type": "array",
-        "items": {
-         "type": "string"
-        }
-       },
-       "says": {
-        "type": "string"
        }
+      },
+      {
+       "type": "string"
       }
-     }
+     ]
     }
    },
    "required": [
