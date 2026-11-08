@@ -115,7 +115,7 @@ function ConvertTo-JsonString([string]$Text) {
 # $StallMinutes. Кожен рядок одразу йде в $LogFile, а мітка часу й тип події — в $EventsFile (щоб поріг вивіряти за прогонами).
 function Invoke-NativeUntilStall([string]$Exe, [string[]]$Arguments, [string]$WorkDir, [double]$StallMinutes, [string]$LogFile, [string]$EventsFile) {
     $psi = New-StartInfo $Exe $Arguments $WorkDir
-    $p = [System.Diagnostics.Process]::Start($psi)
+    $p = Start-Tree $psi
     $err = $p.StandardError.ReadToEndAsync()
     $out = New-Object System.Text.StringBuilder
     $last = Get-Date
@@ -146,7 +146,8 @@ function Invoke-NativeUntilStall([string]$Exe, [string[]]$Arguments, [string]$Wo
         [System.IO.File]::AppendAllText($EventsFile, $last.ToString('s') + "`t" + $type + "`n", $script:Utf8)
     }
     if (-not $stalled -and -not $p.WaitForExit([int][Math]::Min([double][int]::MaxValue, $StallMinutes * 60000))) { $stalled = $true }
-    if ($stalled) { Stop-Tree $p } else { $p.WaitForExit() }
+    if (-not $stalled) { $p.WaitForExit() }
+    Stop-Tree $p
     $errText = ''
     if ($err.Wait(15000)) { $errText = $err.Result }
     [pscustomobject]@{ Code = $(if ($stalled) { -1 } else { $p.ExitCode }); Stalled = $stalled; Out = $out.ToString(); Err = $errText }
@@ -672,7 +673,7 @@ function Start-StreamRun($M, $Run) {
     $stdinEncoding = [Console]::InputEncoding
     try {
         [Console]::InputEncoding = $script:Utf8
-        $Run.Proc = [System.Diagnostics.Process]::Start($psi)
+        $Run.Proc = Start-Tree $psi
     } finally { [Console]::InputEncoding = $stdinEncoding }
     $Run.Stdin = New-Object System.IO.StreamWriter($Run.Proc.StandardInput.BaseStream, $script:Utf8)
     $Run.Stderr = $Run.Proc.StandardError.ReadToEndAsync()
