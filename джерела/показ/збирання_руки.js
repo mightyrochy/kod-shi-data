@@ -35,7 +35,7 @@ function шаблонОписуП(в, рука, звідки){
    вид, а прилад кореня ловить новий голий збій. */
 /* сталий перелік видів: вид → ключ шаблону `ШАБЛОНИ_ЗБОЮ_П` (картка бере шаблон лише звідси) */
 const ВИДИ_ЗБОЮ_РУКИ_П = {hand_off_schema: 'hand_off_schema', hand_no_outfit: 'hand_no_outfit',
-  hand_not_accepted: 'hand_not_accepted', hand_step_failed: 'hand_step_failed'};
+  hand_not_accepted: 'hand_not_accepted', hand_step_failed: 'hand_step_failed', card_failed: 'card_failed'};
 function збійРукиП(вид, відоме){
   if (ВИДИ_ЗБОЮ_РУКИ_П[вид] !== вид) throw new Error('hand_fallback_unknown_kind: ' + вид);
   return Object.assign({вид}, відоме || {});
@@ -1269,9 +1269,11 @@ const збиранняКарткиРуки = async (к, стан) => {
     речі = (речі || []).map(p => (дібраніКодом[p.id]
       ? {...p, додав_код: true, чому_додав: дібраніКодом[p.id].напис} : p));
   }catch(e){
-    збій = стан.збій = 'card_items_failed: ' + String((e && e.message) || e);
-    речі = []; ЗБ.діагноз.push('hand_' + к.рука + ' · ' + збій);
-    збійЖінціП($('збій-стан'), 'card_failed', e);
+    /* речі картки не завантажились — теж збій руки видом шаблону (`збійРукиП`), а не рядком: рядок без виду
+       картка показувала сталим «Цей образ не вимальовувався» (14375) */
+    const чому = 'card_items_failed: ' + String((e && e.message) || e);
+    збій = стан.збій = збійРукиП('card_failed', {чому: чому.slice(0, 300)});
+    речі = []; ЗБ.діагноз.push('hand_' + к.рука + ' · ' + чому);
   }
   /* K-IO-02: чого код НЕ знає про ці речі (крій, довжина…) — не мовчить, а називає;
      йде людині в діагноз і в журнал вердикту (05.09)
