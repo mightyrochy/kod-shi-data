@@ -406,6 +406,12 @@ def метал_біля_обличчя(r, запис=None):
                                 "swimwear", "underwear")
 
 
+def не_несе_металу_прикраси(річ):
+    """Чи ВІДОМО, що річ не несе металу прикраси: тип відомий і з категорій, де його нема (одяг, взуття, сумка).
+    Одне знання для воріт пулу й для стану металу; тип поза ним (убір, шарф, прикраса, невідомий) — False."""
+    return _ВМ.СЛОТ_ТИПУ.get(_ЗН.тип_кодом(річ)) in КАТЕГОРІЇ_БЕЗ_МЕТАЛУ_ПРИКРАС
+
+
 def стан_металу_біля_обличчя(річ, запис=None):
     """Відомо / невідомо, чи річ несе металеву прикрасу біля обличчя.
 
@@ -421,7 +427,7 @@ def стан_металу_біля_обличчя(річ, запис=None):
         if метал["status"] in ("measured", "range"):
             return _ЗН.факт("measured", "present", метал["source"])
         return метал
-    if біля is None and _ВМ.СЛОТ_ТИПУ.get(тип) in КАТЕГОРІЇ_БЕЗ_МЕТАЛУ_ПРИКРАС:
+    if біля is None and не_несе_металу_прикраси(річ):
         return _ЗН.факт("measured", "absent", "mourning_item_type")
     if біля is None:
         return _ЗН.факт("unknown", None, "jewelry_position_unknown" if тип or слот else "item_type_missing")
@@ -504,19 +510,20 @@ def траурне_відсічення(r, тр):
     # порушила б правило біля обличчя, з місцем «невідомо» (None) в пул не йде — окремою причиною
     # `mourning_place_unknown:<правило>`; з відомим «не біля обличчя» (False) — допущена.
     біля = біля_обличчя(r)
+    невідоме = None    # перша причина «місце невідоме»: стоїть після ВСІХ певних причин, ніколи не підміняє їх
     if r.get("візерунок") in ГУЧНІ_ВІЗЕРУНКИ_ТРАУРУ:
         if r.get("слот") in ВЕЛИКІ_ПОВЕРХНІ_ТРАУРУ:
             return "mourning_loud_pattern_large_surface:%s" % r["візерунок"]
         if біля:
             return "mourning_loud_pattern_near_face:%s" % r["візерунок"]
         if біля is None:
-            return "mourning_place_unknown:loud_pattern"
+            невідоме = невідоме or "mourning_place_unknown:loud_pattern"
     бл = r.get("блиск")
     if isinstance(бл, (int, float)) and бл >= БЛИСК_ГЛЯНЕЦЬ:
         if біля:
             return "mourning_sheen_near_face"
         if біля is None:
-            return "mourning_place_unknown:sheen"
+            невідоме = невідоме or "mourning_place_unknown:sheen"
     if регістрова_річ(r):
         рг = траурний_регістр_речі(r)
         if рг["стан"] == "ні":
@@ -529,15 +536,18 @@ def траурне_відсічення(r, тр):
     if біля is not False:
         св = свідки_блиску(r)
         if (св["клас"] or 0) >= БЛИСК_ГЛЯНЕЦЬ:
-            return ("mourning_sheen_near_face_by_shop:shine_class_%d" % св["клас"] if біля
-                    else "mourning_place_unknown:sheen_by_shop")
+            if біля:
+                return "mourning_sheen_near_face_by_shop:shine_class_%d" % св["клас"]
+            невідоме = невідоме or "mourning_place_unknown:sheen_by_shop"
     # метал біля обличчя, якого вона не обирала (`ПРИКРАСИ_МЕТАЛ_ОБРАНО`) —
     # останньою причиною, як і свідок блиску: лічба `відсічено` показує лише нове. Її явний вибір металу
-    # сильніший за ворота.
+    # сильніший за ворота. Чи може річ нести метал прикраси — те саме одне знання, що в `стан_металу_біля_обличчя`.
     if (тр.get("прикраси") or "") not in ПРИКРАСИ_МЕТАЛ_ОБРАНО:
         метал_тут = метал_біля_обличчя(r)
         if метал_тут:
             return "mourning_metal_near_face_not_chosen"
-        if метал_тут is None and r.get("слот") in _ФА.МЕТАЛ_СЛОТИ:
-            return "mourning_place_unknown:metal"
+        if метал_тут is None and r.get("метал") and не_несе_металу_прикраси(r) is False:
+            невідоме = невідоме or "mourning_place_unknown:metal"
+    if невідоме:
+        return невідоме
     return None
