@@ -13,8 +13,78 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  # Правка назви чи тіла (подія edited) ганяла Windows-джоб на кожну правку — 2027 запусків на 730 PR (дошка 14380).
+  # Тепер edited ганяє його, лише коли змінився сам рядок: абзаци тіла з «ЖИВИЙ ПІСЛЯ» (розбір склеює продовження
+  # рядка лише в межах абзацу, тож абзац — надмножина того, що читає розбір) до й після правки різні. Пропуск — ще й
+  # лише тоді, коли попередній запуск цього workflow на тій самій голові завершено успіхом і жоден не йде: пропущений
+  # джоб не ховає червоного чи скасованого запуску. Невідома відповідь API — повна перевірка.
+  zmina_ryadka:
+    name: чи змінився рядок ЖИВИЙ ПІСЛЯ
+    if: github.event.action == 'edited'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      actions: read
+    outputs:
+      hanyaty: ${{ steps.porivniannia.outputs.hanyaty }}
+    steps:
+      # Тіло PR — чужий текст: лише змінні середовища, у команду воно не підставляється.
+      - name: абзаци ЖИВИЙ ПІСЛЯ до й після правки, попередній запуск на голові
+        id: porivniannia
+        env:
+          TILO: ${{ github.event.pull_request.body }}
+          TILO_DO: ${{ github.event.changes.body.from }}
+          TILO_ZMINENO: ${{ github.event.changes.body != null }}
+          HOLOVA: ${{ github.event.pull_request.head.sha }}
+          NOMER_ZAPUSKU: ${{ github.run_number }}
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          python3 -I - <<'PY' >> "$GITHUB_OUTPUT"
+          import json, os, sys, urllib.request
+
+          def abzatsy(tilo):
+              """Абзаци (межа — порожній рядок) з «ЖИВИЙ ПІСЛЯ», рядки без пробілів по краях — як читає розбір."""
+              vyh, potochnyi = [], []
+              for ryadok in (tilo or "").split("\n") + [""]:
+                  ryadok = ryadok.strip()
+                  if ryadok:
+                      potochnyi.append(ryadok)
+                      continue
+                  if any("ЖИВИЙ ПІСЛЯ" in r for r in potochnyi):
+                      vyh.append(potochnyi)
+                  potochnyi = []
+              return vyh
+
+          def poperednii_uspikh():
+              repo = os.environ["GITHUB_REPOSITORY"]
+              url = (f"https://api.github.com/repos/{repo}/actions/workflows/zhyvyi-ryadok.yml/runs"
+                     f"?event=pull_request&per_page=100&head_sha={os.environ['HOLOVA']}")
+              zapyt = urllib.request.Request(url, headers={"Authorization": "Bearer " + os.environ["GH_TOKEN"],
+                                                          "Accept": "application/vnd.github+json"})
+              with urllib.request.urlopen(zapyt, timeout=30) as v:
+                  zapusky = json.load(v)["workflow_runs"]
+              ranishi = [z for z in zapusky if z["run_number"] < int(os.environ["NOMER_ZAPUSKU"])]
+              if not ranishi or any(z["status"] != "completed" for z in ranishi):
+                  return False
+              return max(ranishi, key=lambda z: z["run_number"])["conclusion"] == "success"
+
+          hanyaty = "так"
+          try:
+              if os.environ["TILO_ZMINENO"] != "true" or abzatsy(os.environ["TILO_DO"]) == abzatsy(os.environ["TILO"]):
+                  if poperednii_uspikh():
+                      hanyaty = "ні"
+          except Exception as e:  # невідома відповідь — повна перевірка
+              print(f"порівняння не вдалося: {e!r}", file=sys.stderr)
+          print(f"hanyaty={hanyaty}")
+          with open(os.environ["GITHUB_STEP_SUMMARY"], "a", encoding="utf-8") as f:
+              f.write(("Рядок ЖИВИЙ ПІСЛЯ не змінено, попередній запуск на голові зелений — розбір пропущено.\n"
+                       if hanyaty == "ні" else "Розбір рядка ЖИВИЙ ПІСЛЯ потрібен.\n"))
+          PY
+
   zhyvyi_ryadok:
     name: рядок ЖИВИЙ ПІСЛЯ розбирається
+    needs: zmina_ryadka
+    if: ${{ !cancelled() && needs.zmina_ryadka.outputs.hanyaty != 'ні' }}
     runs-on: windows-latest
     timeout-minutes: 10
     steps:
