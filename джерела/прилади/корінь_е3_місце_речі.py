@@ -946,8 +946,8 @@ class Прилад:
 
     def несе_місце(self, м, вираз, T, прямо=False):
         """Значення виразу — факт місця (потік значення: читач, ім'я з T, `or`/`and`, умовний вираз, арифметика,
-        обгортки значення). Словник, збірка, виклик іншої функції — ні. `прямо` — без арифметики й порівнянь: саме
-        значення місця, не величина, до якої воно входить множником."""
+        обгортки значення). Словник, збірка, виклик іншої функції — ні. `прямо=True` — без арифметики й порівнянь: саме
+        значення місця; `прямо="T"` — без арифметики (величина, до якої воно входить множником, — не значення місця)."""
         if вираз is None:
             return False
         if self._читач(м, вираз) or (isinstance(вираз, ast.Name) and вираз.id in T):
@@ -966,9 +966,9 @@ class Прилад:
             return self.несе_місце(м, вираз.value, T, прямо)
         if isinstance(вираз, ast.Subscript):
             return self.несе_місце(м, вираз.value, T, прямо)
-        if isinstance(вираз, ast.Tuple) and not прямо:
+        if isinstance(вираз, ast.Tuple) and прямо is not True:
             return any(self.несе_місце(м, ч, T, прямо) for ч in вираз.elts)
-        if isinstance(вираз, ast.Compare) and not прямо:
+        if isinstance(вираз, ast.Compare) and прямо is not True:
             if all(isinstance(о, (ast.Is, ast.IsNot)) for о in вираз.ops):
                 return False                      # `Х is None` — перевірка «невідомо», не значення місця
             return any(self.несе_місце(м, ч, T, прямо) for ч in [вираз.left] + вираз.comparators)
@@ -985,7 +985,7 @@ class Прилад:
                     continue
                 if isinstance(в.value, (ast.Dict, ast.ListComp, ast.DictComp, ast.SetComp, ast.GeneratorExp)):
                     continue
-                if self.несе_місце(м, в.value, T):
+                if self.несе_місце(м, в.value, T, "T"):
                     цілі = в.targets if isinstance(в, ast.Assign) else [в.target]
                     нові |= {ц.id for ц in цілі if isinstance(ц, ast.Name)}
             if нові == T:
@@ -1003,7 +1003,7 @@ class Прилад:
                     if (м.імя, ф.name) in self.читачі:
                         continue
                     T = self._T(м, ф)
-                    if any(isinstance(в, ast.Return) and м.функція.get(id(в)) is ф and self.несе_місце(м, в.value, T)
+                    if any(isinstance(в, ast.Return) and м.функція.get(id(в)) is ф and self.несе_місце(м, в.value, T, "T")
                            for в in ast.walk(ф)):
                         self.читачі[(м.імя, ф.name)] = ф.lineno
                         змінено = True
