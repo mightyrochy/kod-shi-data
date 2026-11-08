@@ -67,12 +67,53 @@ def контраст(F):
     return abs(Lh - шк["L"])                                          # місце: волосся проти шкіри
 def хрома(F):
     C = [v["C"] for k, v in F.items() if k.startswith("волосся")]
-    return sum(C) / len(C)                                            # не місце: хрома — межа
+    return sum(C) / len(C)                                            # місце: згортка хроми голосів
+def сивина(F):
+    return any(v["C"] < 5 for k, v in F.items() if k.startswith("волосся"))   # місце: «хоч один голос»
+def по_голосу(F):
+    return {k: v["L"] for k, v in F.items() if k.startswith("волосся")}       # не місце: кожен голос окремо
+def чи_є_волосся(F):
+    return any(k.startswith("волосся") for k in F)                    # не місце: є голос чи нема
 def за_записом(F, образ):
     if образ.get("місце_джерело") is None:
         return None
     вол = [v["L"] for k, v in F.items() if k.startswith("волосся")]
     return sum(вол) / len(вол)                                        # не місце: читач запису
+''',
+    "шари.py": '''
+def елементи(речі, стан):
+    пальто = next((r for r in речі if r["слот"] == "верхній_шар"), None)      # місце: шар узято за слотом
+    out = []
+    for r in речі:
+        s = r["слот"]
+        if пальто and s in ("верх", "сукня"):                         # місце: що під шаром
+            if not bool(пальто.get("розстібнуте")):                   # місце: «невідомо» стає «застебнуто»
+                continue
+        out.append(dict(r, near=r.get("near")))                       # не місце: копія в словник
+    return out
+def повна(речі):
+    return [р for р in речі if р["слот"] in ("верх", "низ")]          # не місце: без шару й не про місце
+''',
+    "потік.py": '''
+import приймач as П
+def суд(e):
+    return П.якір(1, near=e.get("near"), сила=e["near"] * 2)          # місце: передано далі
+def ознака(р):
+    return dict(біля=bool(р.get("біля_обличчя")))                     # місце: копія через bool
+def зразок(r):
+    return dict(r, near=0.3)                                          # місце: поле записано сталою
+''',
+    "приймач.py": '''
+def якір(x, near=None, сила=0.0):
+    вага = 0.2 if near is None else near                              # місце: споживач near
+    return вага * x + сила
+def поріг(сила):
+    return сила < 0.05                                                # не місце: загальний помічник
+''',
+    "силует_пропорції.py": '''
+ЗОНИ_ПАРИ = dict(верх=("плечі", "груди"), низ=("стегна",))
+def ролі(t):
+    return {z: 1 for п, зз in ЗОНИ_ПАРИ.items() for z in зз}
 ''',
     "стенд_щось.py": '''
 from колір_річ import SLOT_NEAR_FALLBACK
@@ -125,7 +166,20 @@ class Місця(unittest.TestCase):
     def test_власний_літерал(self):
         self.assertEqual(self.пункт("правила.py", '("сережки", "шарф")'), 3)
 
+    def test_шар_над_шаром(self):
+        self.assertEqual(self.пункт("шари.py", "пальто = next("), 5)
+        self.assertEqual(self.пункт("шари.py", 'if пальто and s in'), 5)
+        self.assertEqual(self.пункт("шари.py", 'bool(пальто.get("розстібнуте"))'), 2)
+
+    def test_потік_поля(self):
+        self.assertEqual(self.пункт("потік.py", 'near=e.get("near")'), 2)
+        self.assertEqual(self.пункт("приймач.py", "вага = 0.2 if near is None"), 2)
+        self.assertEqual(self.пункт("потік.py", 'bool(р.get("біля_обличчя"))'), 2)
+        self.assertEqual(self.пункт("потік.py", "near=0.3"), 2)
+
     def test_волосся(self):
+        self.assertEqual(self.пункт("обличчя.py", "return sum(C)"), 4)
+        self.assertEqual(self.пункт("обличчя.py", 'any(v["C"] < 5'), 4)
         self.assertEqual(self.пункт("обличчя.py", "0.5 * sum(вол)"), 4)
         self.assertEqual(self.пункт("обличчя.py", "Lh = sum"), 4)
         self.assertEqual(self.пункт("обличчя.py", "abs(Lh -"), 4)
@@ -135,7 +189,10 @@ class НеМісця(unittest.TestCase):
     def test_запис_і_копія(self):
         for файл, мітка in (("правила.py", 'e["near_виміряний"]'), ("правила.py", 'р.get("місце")'),
                             ("правила.py", 'near=m["near"]'), ("правила.py", 'р.get("слот") == "верх"'),
-                            ("обличчя.py", "return sum(C)"), ("обличчя.py", "return sum(вол) / len(вол)")):
+                            ("обличчя.py", "return sum(вол) / len(вол)"), ("обличчя.py", 'return {k: v["L"]'),
+                            ("обличчя.py", "return any(k.startswith"), ("шари.py", 'near=r.get("near")'),
+                            ("шари.py", 'in ("верх", "низ")'), ("приймач.py", "return сила < 0.05"),
+                            ("силует_пропорції.py", "for п, зз in ЗОНИ_ПАРИ")):
             with self.subTest(мітка=мітка):
                 self.assertNotIn((файл, рядок(файл, мітка)), МІСЦЯ)
 
