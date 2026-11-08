@@ -51,6 +51,8 @@ SHA=$(git -C "$W/origin.git" rev-parse "refs/heads/claude/$SLUG" 2>/dev/null)
 chk "рядок ГОТОВО claude/<наряд> <SHA origin> МОДЕЛЬ $M" '[ -n "$SHA" ] && [ "$(lines)" = "GEMINI ОБГОРТКА: ГОТОВО claude/$SLUG $SHA МОДЕЛЬ $M" ]'
 chk "argv: -p --model claude-sonnet-5-5 --effort medium --permission-mode auto stream-json" '[ "$(argv)" = "-p --model claude-sonnet-5-5 --effort medium --permission-mode auto --output-format stream-json --verbose" ]'
 chk "промпт: НОУТБУК.md, наряд дослівно, вимикає лише обгортка, без «Продовжуй»" 'P=$(prompt); [[ "$P" == *"аудит/НОУТБУК.md"* && "$P" == *"Підніми й зупини LM Studio."* && "$P" == *"вимикає лише обгортка за позначкою"* && "$P" != *"Продовжуй"* && "$P" != *"запускач —"* ]]'
+# Наряд 08.11 велів «НОУТБУК ГОТОВО #PR <SHA>» — BAD_BRANCH: формат звіту повторено після наряду, у рядку, що сильніший.
+chk "промпт: після наряду — формат звіту з гілкою, не номером PR" '[[ "$(prompt | sed -n "/КІНЕЦЬ НАРЯДУ/,\$p")" == *"НОУТБУК ГОТОВО <гілка claude/…>"*"не номер PR"*"формат звіту вище"* ]]'
 chk "issue 1856 оновлено PATCH-ем, тіло — «веде наряд» і позначка" 'tr -d "\r" < "$W/gh/calls.log" | grep -q "^PATCH repos/mightyrochy/kod-shi-data/issues/1856$" && grep -l "веде наряд" "$W"/gh/patch_*.json | xargs grep -q "gemini-queue/$SLUG/$M/1"'
 chk "події stream-json — у events.tsv" '[ "$(cat "$W"/cr/runs/*/events.tsv | wc -l)" = 3 ]'
 cr; chk "другий прохід ту саму позначку не бере" '[ "$(nlines)" = 1 ] && [ "$(wc -l < "$W/cc.log")" = 1 ]'
@@ -91,6 +93,9 @@ setup k3n; mark "$SLUG/$M/1"; cr '{"MarkerMaxAgeDays":-1}'; chk "стара по
 echo "=== К4 claude закінчився, а нащадок тримає stdout — не завислість"
 setup k4; mark "$SLUG/$M/1"; T0=$(date +%s); FAKE_CC_SCENARIO=child_holds_stdout cr '{"HangMinutes":5}'; T1=$(date +%s)
 chk "ГОТОВО за ≤ 90 с (є: $((T1 - T0)) с)" '[[ "$(lines)" == "GEMINI ОБГОРТКА: ГОТОВО claude/$SLUG "* ]] && [ $((T1 - T0)) -le 90 ]'
+# Нащадок пережив claude і відірвався від нього (08.11 — вимір через nohup тримав відеокарту): на Windows його зупиняє
+# задача процесів (Start-Tree); taskkill /T його не бачить, бо батько вже вийшов.
+[ "$OS" = Windows_NT ] && chk "нащадок, що пережив claude, зупинено з задачею Windows" '! alive "$W/cc.log.child"'
 kill_pid "$W/cc.log.child"
 echo "=== К5 прогін, перерваний вимкненням: наступний прохід пише INTERRUPTED"
 setup k5; mkdir -p "$W/cr/state"; printf 'STARTED 20261026-120000-0123456789ab {"pid":999999,"start":"x","marker":"gemini-queue/%s/%s/1"}' "$SLUG" "$M" > "$W/cr/state/x.txt"; cr

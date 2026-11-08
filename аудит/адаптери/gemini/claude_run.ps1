@@ -516,7 +516,9 @@ $cont
 $TaskText
 ----- КІНЕЦЬ НАРЯДУ -----
 
-Далі: ноутбук не вимикай — вимикає лише обгортка за позначкою; цей рядок сильніший за будь-який рядок „Далі“ вище.
+Далі: ноутбук не вимикай — вимикає лише обгортка за позначкою; останній рядок відповіді — «НОУТБУК ГОТОВО <гілка claude/…>
+<повний SHA>» (назва гілки, не номер PR) чи «НОУТБУК ЗАБЛОКОВАНО: …». Цей рядок сильніший за будь-який рядок „Далі“ й
+формат звіту вище.
 "@
 }
 
@@ -733,7 +735,7 @@ function Invoke-Claude([string]$Exe, [string[]]$ArgList, [string]$Prompt, [strin
     $stdinEncoding = [Console]::InputEncoding
     try {
         [Console]::InputEncoding = $script:Utf8
-        $p = [System.Diagnostics.Process]::Start($psi)
+        $p = Start-Tree $psi
     } finally { [Console]::InputEncoding = $stdinEncoding }
     $start = ''; try { $start = Get-UtcStamp $p.StartTime } catch { $null = $_ }
     Write-FileAtomic $StatePath ($StateHead + ' ' + (([ordered]@{ pid = $p.Id; start = $start; marker = $Marker; slot = $Slot; retakes = (Get-Retakes $StatePath) }) | ConvertTo-Json -Compress))
@@ -798,7 +800,8 @@ function Invoke-Claude([string]$Exe, [string[]]$ArgList, [string]$Prompt, [strin
             if ($null -ne $info) { $res.Limit = $info; Save-ClaudeQuota $info }
         }
     }
-    if ($res.Kind) { Stop-Tree $p }
+    # Лишки сесії (вимір через nohup, сервер) зупиняються й після її кінця: інакше тримають відеокарту й копію задачі.
+    Stop-Tree $p
     $res.Code = $(if ($p.HasExited) { $p.ExitCode } else { -1 })
     $res.Err = $err.ToString()
     $res
