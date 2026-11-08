@@ -400,9 +400,10 @@ def метал_біля_обличчя(r, запис=None):
     return біля_обличчя(r, запис)
 
 
-# Категорії типів (`внутрішня_мова.СЛОТ_ТИПУ`), що можуть нести метал як прикраса: їхнє місце — із запису,
-# а не «ні» за замовчуванням. Решта категорій (одяг, взуття, сумка) прикрасою не є — металу прикраси в них нема.
-КАТЕГОРІЇ_ПРИКРАС = ("earrings", "necklace", "collar_necklace", "jewelry", "bracelet", "brooch", "ring", "watch")
+# Категорії типів (`внутрішня_мова.СЛОТ_ТИПУ`), про які ВІДОМО, що вони не несуть металу прикраси: одяг, взуття, сумка
+# (межа K-OCC-01 — прикраси, не фурнітура одягу). Тип поза цим знанням (убір, шарф, прикраса, невідомий) — «невідомо».
+КАТЕГОРІЇ_БЕЗ_МЕТАЛУ_ПРИКРАС = ("top", "bottom", "dress", "set", "outerwear", "shoes", "bag", "socks", "tights",
+                                "swimwear", "underwear")
 
 
 def стан_металу_біля_обличчя(річ, запис=None):
@@ -420,11 +421,10 @@ def стан_металу_біля_обличчя(річ, запис=None):
         if метал["status"] in ("measured", "range"):
             return _ЗН.факт("measured", "present", метал["source"])
         return метал
-    категорія = _ВМ.СЛОТ_ТИПУ.get(тип)
-    if біля is None and (слот in _ФА.МЕТАЛ_СЛОТИ or категорія in КАТЕГОРІЇ_ПРИКРАС):
-        return _ЗН.факт("unknown", None, "jewelry_position_unknown")
-    if біля is None and not слот and not категорія:
-        return _ЗН.факт("unknown", None, "item_type_missing")
+    if біля is None and _ВМ.СЛОТ_ТИПУ.get(тип) in КАТЕГОРІЇ_БЕЗ_МЕТАЛУ_ПРИКРАС:
+        return _ЗН.факт("measured", "absent", "mourning_jewelry_position")
+    if біля is None:
+        return _ЗН.факт("unknown", None, "jewelry_position_unknown" if тип or слот else "item_type_missing")
     return _ЗН.факт("measured", "absent", "mourning_jewelry_position")
 
 
