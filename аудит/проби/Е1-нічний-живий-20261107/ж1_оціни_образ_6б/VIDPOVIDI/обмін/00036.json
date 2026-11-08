@@ -1,0 +1,32 @@
+{
+ "версія": 1,
+ "запит": {
+  "model": "gemini-nano-banana-2.1",
+  "max_tokens": 4000,
+  "messages": [
+   {
+    "role": "user",
+    "content": [
+     {
+      "type": "image",
+      "source": {
+       "type": "base64",
+       "media_type": "image/jpeg",
+       "data": "/9j/2Q=="
+      }
+     },
+     {
+      "type": "text",
+      "text": "{\"task\": {\"role\": \"Photo 1 is a woman. Dress her in the outfit below.\", \"rules\": [\"Change only the clothes on photo 1: her face, body, pose, hands, hair, light, background, framing and angle stay exactly as on photo 1.\", \"One image with one frame: the same single woman filling the frame, in the proportions of photo 1.\"], \"limits\": [\"Rely only on the input: do not invent what it does not contain.\", \"The answer is one image and no text.\"], \"answer\": \"TRY_ON_IMAGE\", \"input\": [\"\\\"items_without_photo\\\" — the outfit items that have no photo, with all that is known about them; she wears them too: draw them from this description\"]}, \"items_without_photo\": [{\"slot\": \"top\", \"name\": \"блузка\", \"color\": \"unknown\", \"color_hex\": \"#deb295\", \"details\": \"relaxed fit, elbow-length sleeves, soft matte weave\"}, {\"slot\": \"bottom\", \"name\": \"штани\", \"color\": \"unknown\", \"color_hex\": \"#3f4860\", \"details\": \"straight leg, full length, rigid cotton twill\"}, {\"slot\": \"shoes\", \"name\": \"черевики\", \"color\": \"unknown\", \"color_hex\": \"#c1a87e\", \"details\": \"ankle height, block heel, rounded toe, supple leather with a slight nap\"}]}"
+     }
+    ]
+   }
+  ],
+  "temperature": 1
+ },
+ "відповідь": {
+  "status": 501,
+  "contentType": "application/json",
+  "body": "{\"error\":{\"message\":\"приміряння не перевіряється: локальна текстова модель картинок не малює\"}}"
+ }
+}

@@ -159,6 +159,9 @@ try {
         $startedNow = $(if ($lane -eq 'claude') { [int]$result[0] } else { [int]$result[-1] })
         Check "$lane (3): живий GPU-наряд тримає GPU — запущено один, решта стоїть, чекання не довше за STARTED" ($startedNow -eq 1 -and ((Get-Date) - $t0).TotalSeconds -lt 2)
         Check "$lane (3): решта GPU-позначок названа «щойно взяв наряд цього проходу»" (@((Read-PassSkips).Values | Where-Object { $_ -cmatch 'щойно взяв наряд цього проходу' }).Count -eq ($gpuCount - 1))
+        # Сигнал диспетчерові бере причину з GpuHoldReason: 08.11 вона лишалась порожньою, і рядок «ЗАБЛОКОВАНО GPU: , позначок N»
+        # відкидав шаблон — диспетчер не знав, що позначки чекають GPU.
+        Check "$lane (3): причина утримання GPU для сигналу — «замок GPU іншого наряду», не порожня [$($script:Held['GPU'].Reason)]" ($script:Held['GPU'].Reason -ceq 'замок GPU іншого наряду')
     }
 } catch { "✗ виняток стенда: $($_.Exception.Message) $($_.ScriptStackTrace)"; $failures++ }
 finally {

@@ -1,0 +1,67 @@
+{
+ "версія": 1,
+ "запит": {
+  "model": "gemini-nano-banana-2.1",
+  "max_tokens": 4000,
+  "messages": [
+   {
+    "role": "user",
+    "content": [
+     {
+      "type": "image",
+      "source": {
+       "type": "base64",
+       "media_type": "image/jpeg",
+       "data": "/9j/2Q=="
+      }
+     },
+     {
+      "type": "image",
+      "source": {
+       "type": "url",
+       "url": "https://feelyou.com.ua/wp-content/uploads/2025/02/bezymiannyj-kadr3333-scaled.jpg"
+      }
+     },
+     {
+      "type": "image",
+      "source": {
+       "type": "url",
+       "url": "https://sarahberlin.com/image/cache/catalog/products/1079/img_7584-2-1000x1500.jpg"
+      }
+     },
+     {
+      "type": "image",
+      "source": {
+       "type": "url",
+       "url": "https://favoriteshoes.com.ua/upload/catalog/24000/23984/s_img_0003.jpg"
+      }
+     },
+     {
+      "type": "image",
+      "source": {
+       "type": "url",
+       "url": "https://images.theoriginals.com.ua/cache/catalog/product_photo/84014/serezhka-iz-zolota-juste-un-clou-3-700x500.jpg"
+      }
+     },
+     {
+      "type": "image",
+      "source": {
+       "type": "url",
+       "url": "https://images.theoriginals.com.ua/cache/catalog/product_photo/85023/poyasnaya-sumka-iz-krasnoi-kozhi-s-logo-1-700x500.jpg"
+      }
+     },
+     {
+      "type": "text",
+      "text": "{\"task\": {\"role\": \"Photo 1 is a woman. Dress her in the outfit below.\", \"rules\": [\"Change only the clothes on photo 1: her face, body, pose, hands, hair, light, background, framing and angle stay exactly as on photo 1.\", \"One image with one frame: the same single woman filling the frame, in the proportions of photo 1.\"], \"limits\": [\"Rely only on the input: do not invent what it does not contain.\", \"The answer is one image and no text.\"], \"answer\": \"TRY_ON_IMAGE\", \"input\": [\"\\\"item_photos\\\" — the items on the attached photos after photo 1, with their photo numbers; take from each photo only the item named for it: the photo may show a whole outfit on a model; draw its color, cut, length and texture as on the photo\", \"\\\"how_to_wear\\\" — how the items are worn; follow it\"]}, \"item_photos\": [{\"photo\": 2, \"slot\": \"top\", \"name\": \"Жилетка приталена беж\", \"color\": \"beige\", \"color_hex\": \"#9b7f6b\"}, {\"photo\": 3, \"slot\": \"bottom\", \"name\": \"Широкі штани зі стрілками, з фігурним поясом, з італійської костюмної тканини.\", \"color\": \"beige\", \"color_hex\": \"#8c7063\"}, {\"photo\": 4, \"slot\": \"shoes\", \"name\": \"LeBERDES Лофери бордові\", \"color\": \"burgundy\", \"color_hex\": \"#4d1513\"}, {\"photo\": 5, \"slot\": \"earrings\", \"name\": \"Сережка із золота Juste un Clou\"}, {\"photo\": 6, \"slot\": \"bag\", \"name\": \"Поясна сумка з червоної шкіри з лого\", \"color\": \"red\", \"color_hex\": \"#b1373d\"}], \"how_to_wear\": [\"Tuck the floral blouse under the vest to define the waist and create a clean, streamlined line for your office attire.\", \"Wear the burgundy loafers with confidence; their rich hue grounds the neutral tones of the suit while remaining practical for daily wear.\", \"Carry the red belt bag on the side to keep your hands free for work essentials while adding a bold accent that draws the eye down.\"]}"
+     }
+    ]
+   }
+  ],
+  "temperature": 1
+ },
+ "відповідь": {
+  "status": 501,
+  "contentType": "application/json",
+  "body": "{\"error\":{\"message\":\"приміряння не перевіряється: локальна текстова модель картинок не малює\"}}"
+ }
+}

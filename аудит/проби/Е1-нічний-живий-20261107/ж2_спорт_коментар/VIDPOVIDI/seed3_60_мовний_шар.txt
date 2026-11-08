@@ -1,0 +1,51 @@
+── ПРОМПТ (6752 симв.) ──
+Ти — перекладачка в застосунку-стилістці. Ти пишеш природною українською тексти, які зараз побачить жінка. Рішень не приймаєш, на питання не відповідаєш, змісту не міняєш.
+
+Вхід — JSON-об'єкт: ключ — номер тексту н, значення — текст, який склали код та інші моделі.
+
+Ключі відповіді — ті самі, що у вході, кожен: номер н тексту, значення — рядок, той самий зміст природною українською, без англійських слів і кодів; ПЕРЕКЛАДАЙ КОЖНЕ англійське слово, навіть одне посеред українського речення; латиницею лишай лише назви крамниць і брендів, «V-подібний» і «den»; текст, що вже природний і до неї на «ти», — без змін, а український текст на «ви» перепиши на «ти», решту лиши слово в слово.
+
+Вид кожної речі — теж зміст: річ у перекладі — та сама, що у вході, а не схожа чи сусідня. ankle boots — черевики чи ботильйони, boots — чоботи, heeled — на підборах, а не туфлі, pumps — туфлі-човники, loafers — лофери; pendant — кулон чи підвіска, necklace — намисто чи ланцюжок, а не каблучка, сережки чи браслет; ring — каблучка; earrings — сережки. Українські назви речей у вході (назви з крамниці, найчастіше перед « — ») переписуй літера в літеру: не міняй, не переставляй і не додавай у них жодного слова.
+
+Про жінку — лише до неї, на «ти» (ти, тебе, тобі, твій, твоя; хочеш, скинеш; наказ однини: розкажи, оберни, тримай, дай), і в питаннях теж: you, your, she, her про неї — «ти», «твій» (her skin tone — твій тон шкіри; when she turns her head — коли ти повертаєш голову; she looks taller — ти виглядаєш вищою), англійський наказ — наказом однини; «вона», «її» — лише про річ (сукню, сумку, куртку). Говорить стилістка — одна жінка: про себе — від першої особи однини й у жіночому роді (я підібрала, я б додала), не «ми», не від імені застосунку чи коду і ніколи словами самої жінки.
+
+Мова: літературна українська, як у текстах українських крамниць одягу. Кожне українське слово — літерами лише української абетки, без жодної латинської літери чи стороннього знака всередині слова. Кожне речення — одна остаточна версія, без виправлень посеред тексту. Словничок нижче — лише як перекласти англійське слово, коли воно є у вході; це не зміст: річ, тканина чи колір, яких у вході нема, у тексті не з'являються. Звичні українські назви для слів англійського джерела: trousers, pants — штани; dressy, dressier — ошатний, ошатніше; look, outfit — образ; taupe — сіро-бежевий; loose — вільний; suede — замша (жіночий рід); slip dress — сукня-комбінація; camel — кемел (колір). Назви речей і кольорів, які дала крамниця, — як є.
+
+Слово не повторюється двічі поспіль. Відповідь — рівно ОДИН JSON-об'єкт і нічого після нього: другої, виправленої версії, приміток і пояснень не пиши — помилку виправ у тому самому об'єкті.
+
+Речі образу — перелік речей картки (номер речі — як на картці, поруч — її коди):
+1 — kind code: ballet_flats · colour code: brown · about it: text н=1
+2 — kind code: trousers · colour code: beige · about it: text н=2
+3 — kind code: scarf_generic · colour code: brown · about it: text н=3
+4 — kind code: t_shirt · colour code: grey · about it: text н=4
+When a text speaks of an item of the list, call it by the Ukrainian noun of its kind code (kind code: …) — the same noun in the right case in every text (trench_coat — «тренч», sweater — «светр», loafers — «лофери»), not by another kind or a synonym of the English word, whatever word the English text uses; a code ending in _generic names only the family (dress_generic — a dress, bag_generic — a bag). Make every adjective, pronoun and verb with the item agree with that noun in gender and number («бежевий тренч, який…»; «шкіряні лофери, які…»). A name you translate in this same call (text н=K): give it one noun and call the item by it, in agreement, in every text. A text the list gives as about an item (about it: text н=M) speaks of that one item, and so does every other text where the English names it. The colour of an item of the list is its colour code (colour code: …): write the Ukrainian name of that code. The English colour words for that item are the stylist's impression of a photo: do not turn them into a colour of their own — the item's colour stands in their place. Colours of its details (trim, strap, buttons, print), its fabric and the rest — translate from the text. The list is for the items only: an item the English text does not name is not added to the translation — neither to the description nor to the advice.
+
+Colour codes: beige — бежевий; brown — коричневий; grey — сірий.
+
+ТЕКСТИ:
+{
+"1": "These ballet flats in a soft brown shade provide a comfortable finish to your ensemble. Their low-profile design keeps the silhouette grounded and unobtrusive, making them perfect for both yoga poses and walking casually to your coffee meeting.",
+"2": "These beige trousers feature a straight-to-wide leg cut that flows effortlessly over the feet. The relaxed fit offers great freedom of motion for your exercise routine, and the neutral tone matches seamlessly with your scarf and shoes to create a unified, calming aesthetic.",
+"3": "This brown scarf is made of a soft knit material that adds necessary warmth for an autumn morning. Its rich, earthy color brings depth to the outfit without overwhelming it, and its generous length allows you to wear it as an accessory or layer it over your shoulders depending on how warm you feel.",
+"4": "This white t-shirt has a clean, fitted cut that provides a simple base for your day. Its soft fabric ensures comfort during yoga, while its minimal design keeps the focus on your movement and the layered look you create with the trousers.",
+"5": "I chose a soft white t-shirt to ground your look, paired with beige trousers that offer a relaxed, wide-leg silhouette. To balance the lightness of your morning yoga session in autumn air, I added a brown knit scarf and ballet flats, creating an analogous palette that feels cozy yet effortless. This outfit is versatile enough to transition smoothly from your active practice to coffee with friends without needing any adjustments.",
+"6": "Wrap the scarf loosely around your neck to keep warm while moving, or drape it over your shoulders if you decide to skip it at the cafe.",
+"7": "Штани лляні Сейлем — Though linen is light for autumn, the relaxed cut of these trousers balances the weight of the velvet shoes and keeps the silhouette fluid for movement.",
+"8": "Топ трикутники Etna сірий — Though your day is active, this specific top's fitted knit acts as a gentle anchor for the loose linen tunic, ensuring you don't look overly shapeless while allowing full range of motion.",
+"9": "Топ трикутники Etna сірий — The fitted knit top with long sleeves fully covers your arms, satisfying the need for warmth in the cool autumn morning during yoga and outdoors."
+}
+
+── ВІДПОВІДЬ (2119 симв., 14.9 с, HTTP 200) ──
+```json
+{
+  "1": "Ці балетні туфлі в м’якому коричневому відтінку завершують твій образ з комфортом. Їхній низький профіль тримає силует приземленим і ненав’язливим, що робить їх ідеальними як для йоги, так і для прогулянки на каву.",
+  "2": "Ці бежеві штани мають прямий крій до широких ніг, які легко спадають. Вільний фасон дарує свободу рухів під час тренування, а нейтральний колір гармонійно поєднується з твоїм шарфом і взуттям, створюючи спокійний образ.",
+  "3": "Цей коричневий шарф виготовлений із м’якого трикотажного матеріалу, який додає необхідне тепло для осіннього ранку. Його насичений землистий колір підкреслює твій наряд без надмірності, а довжина дозволяє носити його як аксесуар або драпірувати на плечі залежно від того, чи відчуваєш ти себе в теплі.",
+  "4": "Ця біла футболка має простий і приталений крій, який слугує базою для твого дня. М’яка тканина забезпечує комфорт під час йоги, а мінімальний дизайн дозволяє зосередитися на рухах та шаруватому образі з брюками.",
+  "5": "Я обрала м’яку білу футболку як основу для твого образу, доповнивши її бежевими штанами вільного крою. Щоб врівноважити легкість ранкової йоги восени, я додала коричневий трикотажний шарф і балетні туфлі, створивши аналогічну палітру, яка виглядає затишно та невимушено. Цей образ досить універсальний, щоб плавно перейти від активної практики до кави з друзями без потреби у змінах.",
+  "6": "Недбало обгорни шарф навколо шиї, щоб зігрітися під час руху, або драпіруй його на плечі, якщо вирішиш не носити в кафе.",
+  "7": "Лляні штани Сейлем — Хоча льон легкий для осені, розслаблений крій цих брюк збалансовує вагу оксамитових туфель і зберігає силует плавним під час руху.",
+  "8": "Сірий топ трикутники Etna — Незважаючи на те, що твій день активний, приталений в’язаний верх цього топу служить ніжним центром для вільного лляного туніки, забезпечуючи тобі не надто безформний вигляд і повну свободу рухів.",
+  "9": "Сірий топ трикутники Etna — Приталений в’язаний топ з довгими рукавами повністю закриває твої руки, задовольняючи потребу у теплі прохолодним осіннім ранком під час йоги та на вулиці."
+}
+```
