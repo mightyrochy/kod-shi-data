@@ -1118,7 +1118,7 @@ def суд_кроками(d):
                                                                   d.get("пікселі_фото") or {}, шкіра))))
     for р in речі:
         lab = _КР_ТИП.точка_кольору(р.get("вимір") or {})
-        р["біля_обличчя"] = _РФ.біля_обличчя(р.get("слот"))
+        р["біля_обличчя"] = _РФ.біля_обличчя(р)
         if lab:
             р["палітра"] = _РФ.членство_в_палітрі(р["вимір"], палітра)
     за_ід = {р["ід"]: р for р in речі}
@@ -1207,7 +1207,7 @@ def речі_для_моделі(суд_):
              # слово стилістки, з яким вимір розійшовся, — інформація суду, не мовчання
              "color_named": (_код("color_name", р.get("колір")) if спір else None),
              "palette": _ПАЛІТРА_КОД.get(п.get("стан"), "unknown"),
-             "palette_strength": п.get("сила"), "near_face": bool(р.get("біля_обличчя")),
+             "palette_strength": п.get("сила"), "near_face": р.get("біля_обличчя"),
              "fabric": _код("fabric", р.get("матеріал")), "cut": р.get("крій"),
              "length": довжина_код.get(р.get("довжина"), р.get("довжина")),
              "pattern": ("solid" if р.get("принт") == "однотонний" else _код("pattern", р.get("принт"))),
@@ -1356,7 +1356,7 @@ _СПІЛЬНІ_ПРАВИЛА_ОЦІНКИ = (
                           "when color_measured is true; color_named, when present, is the color the item "
                           "list named and the measurement disagreed with: look at the photo before you speak "
                           "about that color; palette is the color's membership in her palette (in, edge, "
-                          "out) and near_face says whether the item is close to her face; confirmed is true for an "
+                          "out) and near_face says whether the item is close to her face (null when the place of the item on her is unknown); confirmed is true for an "
                           "item she checked or corrected on the list and source is her for an item she added "
                           "herself, without a photo: take what the list says about such an item over your own "
                           "reading of the photos", треба=True),
@@ -1829,7 +1829,7 @@ def екземпляри(суд_):
                           слот=р.get("слот"), в_образі=р["ід"] in образ,
                           виміряно=bool(_КР_ТИП.точка_кольору(р.get("вимір") or {})),
                           у_палітрі=((р.get("палітра") or {}).get("стан") == "у палітрі"),
-                          біля_обличчя=bool(р.get("біля_обличчя")))
+                          біля_обличчя=р.get("біля_обличчя"))
             for р in суд_.get("речі") or [] if isinstance(р, dict) and р.get("ід")}
 
 
