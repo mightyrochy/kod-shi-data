@@ -540,4 +540,5 @@ def _сирота_відлуння(es, nm, слот, площа, фокус, int
         заяви=[_ВМ.заява("accent_orphan", colour=_колір_код(nm), slot=_сл_код(слот),
                          **({"hue": round(es[0]["h"])} if es[0].get("h") is not None else {}),
                          **({"on_windows": True} if вікна else {}))],
+        ремонт_заяви=None if свідомий else [_ВМ.заява("echo_accent_or_declare_focus")],
         поріг=C["focus_area"], вимір=площа), intent)
