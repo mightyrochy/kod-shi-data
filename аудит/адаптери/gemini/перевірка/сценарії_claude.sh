@@ -6,9 +6,10 @@
 H=$(cd "$(dirname "$0")" && pwd); . "$H/середовище.sh"; PW="${PWSH:-pwsh}"; SRC=$(cd "$H/.." && pwd)
 SLUG='проба-рушія-claude'; M=cc-claude-sonnet-5-5-medium; BAD=0
 export GIT_AUTHOR_NAME=t GIT_AUTHOR_EMAIL=t@x GIT_COMMITTER_NAME=t GIT_COMMITTER_EMAIL=t@x
+# errors='replace': локалізований рядок tasklist про живий процес — не UTF-8; без нього помічник падав і казав «мертвий».
 alive() { $PY -c "import os, subprocess, sys
 pid = int(open(sys.argv[1]).read())
-if os.name == 'nt': sys.exit(0 if (' %d ' % pid) in subprocess.run(['tasklist', '/FI', 'PID eq %d' % pid, '/NH'], capture_output=True, text=True).stdout else 1)
+if os.name == 'nt': sys.exit(0 if (' %d ' % pid) in subprocess.run(['tasklist', '/FI', 'PID eq %d' % pid, '/NH'], capture_output=True, text=True, errors='replace').stdout else 1)
 try: os.kill(pid, 0)
 except OSError: sys.exit(1)" "$(wp "$1")"; }
 kill_pid() { [ -e "$1" ] && $PY -c "import os, signal, sys; os.kill(int(open(sys.argv[1]).read()), signal.SIGTERM)" "$(wp "$1")" 2>/dev/null; }
@@ -93,9 +94,12 @@ setup k3n; mark "$SLUG/$M/1"; cr '{"MarkerMaxAgeDays":-1}'; chk "стара по
 echo "=== К4 claude закінчився, а нащадок тримає stdout — не завислість"
 setup k4; mark "$SLUG/$M/1"; T0=$(date +%s); FAKE_CC_SCENARIO=child_holds_stdout cr '{"HangMinutes":5}'; T1=$(date +%s)
 chk "ГОТОВО за ≤ 90 с (є: $((T1 - T0)) с)" '[[ "$(lines)" == "GEMINI ОБГОРТКА: ГОТОВО claude/$SLUG "* ]] && [ $((T1 - T0)) -le 90 ]'
-# Нащадок пережив claude і відірвався від нього (08.11 — вимір через nohup тримав відеокарту): на Windows його зупиняє
-# задача процесів (Start-Tree); taskkill /T його не бачить, бо батько вже вийшов.
-[ "$OS" = Windows_NT ] && chk "нащадок, що пережив claude, зупинено з задачею Windows" '! alive "$W/cc.log.child"'
+kill_pid "$W/cc.log.child"
+echo "=== К4б сесія лишила відірваного нащадка (08.11 — вимір через nohup тримав відеокарту)"
+# На Windows його зупиняє задача процесів (Start-Tree); taskkill /T його не бачить, бо claude уже вийшов.
+setup k4b; mark "$SLUG/$M/1"; FAKE_CC_SCENARIO=child_detached cr
+chk "ГОТОВО" '[[ "$(lines)" == "GEMINI ОБГОРТКА: ГОТОВО claude/$SLUG "* ]]'
+[ "$OS" = Windows_NT ] && chk "відірваний нащадок сесії зупинено після її кінця" '[ -s "$W/cc.log.child" ] && ! alive "$W/cc.log.child"'
 kill_pid "$W/cc.log.child"
 echo "=== К5 прогін, перерваний вимкненням: наступний прохід пише INTERRUPTED"
 setup k5; mkdir -p "$W/cr/state"; printf 'STARTED 20261026-120000-0123456789ab {"pid":999999,"start":"x","marker":"gemini-queue/%s/%s/1"}' "$SLUG" "$M" > "$W/cr/state/x.txt"; cr
