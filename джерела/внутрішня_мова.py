@@ -3850,6 +3850,7 @@ def схема():
                 {"type": "array", "items": {
                     "type": "object", "additionalProperties": False, "required": ["about", "says"], "properties": {
                         "about": {"type": "array", "items": {"type": "string"}},
+                        "recorded": {"type": "array", "items": {"type": "string"}},
                         "her_words": {"type": "array", "items": {"type": "string"}},
                         "says": {"type": "string"}}}},
                 {"type": "string"}]}},
