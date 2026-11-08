@@ -712,6 +712,14 @@ _КОДИ_З_ОПИСОМ = lambda описи: {"oneOf": [{"const": к, "descrip
     "not_recorded": _список(_КОДИ_З_ОПИСОМ({к: в.get("title") or в.get("description") or к for к, в in СЦЕНАРІЙ.items()}),
                             "що з її слів цього ходу НЕ записано в сценарій: поля сценарію кодами",
                             uniqueItems=True),
+    # ЗАПИСАНО ЛИШЕ ЧАСТИНУ ПОЛЯ (Е2-межі п.3, 14369): вона назвала кілька значень поля одного значення, код узяв одне
+    # (воно в `recorded`), а решту не записав. `not_recorded` тут суперечив би `recorded`, тож — окреме поле.
+    "partly_recorded": _список({"type": "object", "additionalProperties": False, "required": ["field"], "properties": {
+        "field": _КОДИ_З_ОПИСОМ({к: в.get("title") or в.get("description") or к for к, в in СЦЕНАРІЙ.items()}),
+        "taken": {"type": "string", "description": "код значення поля, яке записано"},
+        "not_taken": {"type": "array", "items": {"type": "string"},
+                      "description": "коди значень поля, які вона назвала, а НЕ записано"}}},
+        "поля сценарію, де вона назвала кілька значень, а записано лише одне; коди значень — коли поле має перелік"),
 }
 
 # ══ ХІД РОЗМОВИ: МОВНА МОДЕЛЬ ВЕДЕ РОЗМОВУ (М-5, п.14) ══
