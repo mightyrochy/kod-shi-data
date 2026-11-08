@@ -422,10 +422,10 @@ def стан_металу_біля_обличчя(річ, запис=None):
             return _ЗН.факт("measured", "present", метал["source"])
         return метал
     if біля is None and _ВМ.СЛОТ_ТИПУ.get(тип) in КАТЕГОРІЇ_БЕЗ_МЕТАЛУ_ПРИКРАС:
-        return _ЗН.факт("measured", "absent", "mourning_jewelry_position")
+        return _ЗН.факт("measured", "absent", "mourning_item_type")
     if біля is None:
         return _ЗН.факт("unknown", None, "jewelry_position_unknown" if тип or слот else "item_type_missing")
-    return _ЗН.факт("measured", "absent", "mourning_jewelry_position")
+    return _ЗН.факт("measured", "absent", "mourning_place_record")
 
 
 def без_металу_біля_обличчя(речі):
@@ -487,7 +487,8 @@ def траурне_відсічення(r, тр):
     `mourning_festive_trim`, `mourning_loud_pattern_large_surface`,
     `mourning_loud_pattern_near_face`, `mourning_sheen_near_face`,
     `mourning_colour_off_register_by_word` / `…_by_measure`,
-    `mourning_sheen_near_face_by_shop`, `mourning_metal_near_face_not_chosen`.
+    `mourning_sheen_near_face_by_shop`, `mourning_metal_near_face_not_chosen`, а коли місце речі невідоме —
+    `mourning_place_unknown:<правило>` (loud_pattern, sheen, sheen_by_shop, metal).
     Після «:» — ЗНАЧЕННЯ факту (слово оздоби, код візерунка, крамниця), не фраза.
 
     Одна функція на всіх, хто кладе речі в пул рук 1–2: абсолютні фільтри
@@ -499,14 +500,23 @@ def траурне_відсічення(r, тр):
     оз = святкова_оздоба(r)
     if оз:
         return "mourning_festive_trim:%s" % оз
+    # ВОРОТА ПУЛУ, ЯКИМ ПОТРІБНЕ МІСЦЕ (Е3-місце-речі): допускає лише те, що правило допускає певно. Річ, що
+    # порушила б правило біля обличчя, з місцем «невідомо» (None) в пул не йде — окремою причиною
+    # `mourning_place_unknown:<правило>`; з відомим «не біля обличчя» (False) — допущена.
+    біля = біля_обличчя(r)
     if r.get("візерунок") in ГУЧНІ_ВІЗЕРУНКИ_ТРАУРУ:
         if r.get("слот") in ВЕЛИКІ_ПОВЕРХНІ_ТРАУРУ:
             return "mourning_loud_pattern_large_surface:%s" % r["візерунок"]
-        if біля_обличчя(r):
+        if біля:
             return "mourning_loud_pattern_near_face:%s" % r["візерунок"]
+        if біля is None:
+            return "mourning_place_unknown:loud_pattern"
     бл = r.get("блиск")
-    if isinstance(бл, (int, float)) and бл >= БЛИСК_ГЛЯНЕЦЬ and біля_обличчя(r):
-        return "mourning_sheen_near_face"
+    if isinstance(бл, (int, float)) and бл >= БЛИСК_ГЛЯНЕЦЬ:
+        if біля:
+            return "mourning_sheen_near_face"
+        if біля is None:
+            return "mourning_place_unknown:sheen"
     if регістрова_річ(r):
         рг = траурний_регістр_речі(r)
         if рг["стан"] == "ні":
@@ -516,12 +526,18 @@ def траурне_відсічення(r, тр):
     # хай яке число дало фото (атласу фото ставить 1 у 613 із 728 — поріг по числу фото його не бачив).
     # Причина — останньою, як дощ у композиторі: лічба `відсічено` показує лише те, що зняв
     # цей свідок. Слів назви й `волокна` код не читає: свідок — лише код `свідки_блиску`.
-    if біля_обличчя(r):
+    if біля is not False:
         св = свідки_блиску(r)
         if (св["клас"] or 0) >= БЛИСК_ГЛЯНЕЦЬ:
-            return "mourning_sheen_near_face_by_shop:shine_class_%d" % св["клас"]
+            return ("mourning_sheen_near_face_by_shop:shine_class_%d" % св["клас"] if біля
+                    else "mourning_place_unknown:sheen_by_shop")
     # метал біля обличчя, якого вона не обирала (`ПРИКРАСИ_МЕТАЛ_ОБРАНО`) —
-    # останньою причиною, як і свідок блиску: лічба `відсічено` показує лише нове
-    if метал_біля_обличчя(r) and (тр.get("прикраси") or "") not in ПРИКРАСИ_МЕТАЛ_ОБРАНО:
-        return "mourning_metal_near_face_not_chosen"
+    # останньою причиною, як і свідок блиску: лічба `відсічено` показує лише нове. Її явний вибір металу
+    # сильніший за ворота.
+    if (тр.get("прикраси") or "") not in ПРИКРАСИ_МЕТАЛ_ОБРАНО:
+        метал_тут = метал_біля_обличчя(r)
+        if метал_тут:
+            return "mourning_metal_near_face_not_chosen"
+        if метал_тут is None and r.get("слот") in _ФА.МЕТАЛ_СЛОТИ:
+            return "mourning_place_unknown:metal"
     return None
