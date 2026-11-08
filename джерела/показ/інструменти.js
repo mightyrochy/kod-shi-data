@@ -37,6 +37,16 @@ async function інструментомП(виклик, запис){
       const ок = новийСценарій();
       return {tool: ім, done: ок === true, заміна: ок === true};
     }
+    /* Паспорт нагоди й погода — ті самі функції, що кнопка «так» під «Усе правильно?» (`випадок.js`) і плитка відчуття
+       «Коли й погода»; плитка за дотиком перемикає, тож обране вже відчуття лишається (дотик не знімає його). */
+    if (ім === 'confirm_case'){
+      const ок = підтвердитиРозумінняП();
+      return {tool: ім, done: ок === true};
+    }
+    if (ім === 'set_weather_feel'){
+      const обрано = ключВідчуттяП() === а.feel ? а.feel : обратиВідчуттяП(а.feel);
+      return {tool: ім, done: обрано === а.feel, feel: обрано};
+    }
     if (запис) запис.інструмент_збій = 'unknown_tool: ' + ім;
   }catch(e){
     if (запис) запис.інструмент_збій = ім + ': ' + текстВинятку(e);
@@ -54,7 +64,8 @@ function кінецьХодуЗаміниП(){
 }
 /* Збій інструмента — сталим написом свого виду; «не знайшла» — ід, якого вже нема серед збережених. */
 const ЗБІЙ_ІНСТРУМЕНТА_П = {save_scenario: 'not_saved', list_scenarios: 'scenarios_unreadable',
-                            open_scenario: 'library_unreadable', delete_scenario: 'not_deleted', new_scenario: 'not_written'};
+                            open_scenario: 'library_unreadable', delete_scenario: 'not_deleted', new_scenario: 'not_written',
+                            confirm_case: 'not_written', set_weather_feel: 'not_written'};
 /* Картка результату під реплікою: підпис — той самий, що показує кнопка вікна; назва — її ввід (`назва`), без
    назви — підпис без назви з датою (`підписБезНазвиП`), як у «Збережених». */
 function карткаІнструментаП(р){
@@ -84,6 +95,10 @@ function карткаІнструментаП(р){
     текстЖінціП(к, підписЗНазвоюП(['Сценарій «', назва, '» видалено.']));
   else if (р.tool === 'new_scenario' && р.done)
     текстЖінціП(к, 'Почато новий сценарій.');
+  else if (р.tool === 'confirm_case' && р.done)
+    текстЖінціП(к, 'Розуміння нагоди підтверджено.');
+  else if (р.tool === 'set_weather_feel' && р.done)
+    текстЖінціП(к, 'Погода: ' + (ВІДЧУТТЯ_П[р.feel] || р.feel) + '.');
   else if (р.знайдено === false) збійЖінціП(к, 'scenario_not_found', 'tool_failed: ' + р.tool);
   else збійЖінціП(к, ЗБІЙ_ІНСТРУМЕНТА_П[р.tool] || 'not_written', 'tool_failed: ' + р.tool);
   return к;

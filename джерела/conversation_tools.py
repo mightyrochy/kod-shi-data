@@ -87,6 +87,30 @@ import re
         "функція": "новийСценарій",
         "заміна_сценарію": True,
     },
+    "confirm_case": {
+        "робить": "підтвердити, що паспорт нагоди зрозуміто правильно: зняти питання «Усе правильно?»",
+        "для_моделі": "marks the passport of this case as confirmed by her",
+        "коли": "her new message says the passport you read from her is right (\"yes\", \"that is right\")",
+        "вхід": {"type": "object", "additionalProperties": False, "properties": {}},
+        "вихід": {"type": "object", "additionalProperties": False, "required": ["done"], "properties": {
+            "done": {"type": "boolean", "description": "чи підтверджено"}}},
+        "показ": "картка під реплікою: розуміння підтверджено — тим самим підписом, що в кнопки «так»",
+        "функція": "підтвердитиРозумінняП",
+    },
+    "set_weather_feel": {
+        "робить": "обрати відчуття погоди плиткою «Коли й погода» без градусів; уже обране лишається",
+        "для_моделі": "sets how the weather feels for this case, without degrees (the same as her tapping the tile)",
+        "коли": "her new message says how the weather feels by a word, not by a number, and asks to set it",
+        # Коди відчуттів — ті самі, що `ВІДЧУТТЯ_П` у показі (`внутрішня_мова`: weather_feel).
+        "вхід": {"type": "object", "additionalProperties": False, "required": ["feel"], "properties": {
+            "feel": {"type": "string", "enum": ["deep_frost", "frost", "cold", "cool", "mild", "warm", "hot"],
+                     "description": "how the weather feels, from the coldest to the hottest"}}},
+        "вихід": {"type": "object", "additionalProperties": False, "required": ["done"], "properties": {
+            "done": {"type": "boolean", "description": "чи обрано"},
+            "feel": {"type": "string", "description": "обране відчуття; порожньо, коли вибір знято"}}},
+        "показ": "картка під реплікою: яке відчуття погоди обрано — тим самим підписом, що на плитці",
+        "функція": "обратиВідчуттяП",
+    },
 }
 
 # Переліки цього ходу: ім'я в промпті → ключ входу ендпойнта `мова`, який дає показ (`ходомРозмовиП`), і поля запису.
