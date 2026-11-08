@@ -46,6 +46,20 @@
        слотом), стоїть у тесті разом зі слотом іншої речі — правило саме вирішує, що під шаром і скільки видно
        (`outfit.елементи`: верх під розстебнутим ×0,35, низ ×0,5). Місце — і це порівняння, і рядок, де шар узято.
 
+  п.6  «невідомо» читача місця стає відомим «ні» (рішення 08.11, КОЛО #3358, рядок дошки 14321): читач місця речі
+       — вираз, що дає факт місця (поле `near`/`біля_обличчя`/`розстібнуте`, ключі запису `місце_речі`:
+       `біля_обличчя`/`видно`/`під_шаром`, виклик читача запису (`місце_речі.біля_обличчя_відоме`, `бік_межі`), його
+       обгортка — функція, що вертає такий вираз, — або таблиця п.1), а «невідомо» (None чи двозначне False
+       таблиці) стає в ньому «ні». Форми: (а) дефолт над значенням місця — `Х or 0`, `Х.get("near", 0)`, `А if Х is not
+       None else 0.0`, параметр `near=0.0`; (б) значення місця крізь `bool(Х)`/`not Х`, або булів вираз над ним у
+       позиції значення (`return Х is not None and Х >= М`), що за «невідомо» вирішений; (в) ШЛЯХ: функція з іменем,
+       якому присвоєно значення місця, має шлях, на якому місце «невідоме» (Х = None, а для двозначного читача —
+       False) проходить через рішення над Х і закінчується `return` відомого «ні» — `False`/`0`/`"absent"`/факт
+       `…"absent"…`; зокрема коли «невідомо» розв'язано лише для підмножини (`Х is None and <умова>`), решта потрапляє
+       у «ні». Розв'язання «невідомо» поверненням `None`/«unknown»/`raise` шлях зупиняє; тиша (порожній список)
+       — не «ні». Оператор `if` з перевіркою `Х is None` у функції звільняє від (а)–(б) форми над іменем Х (її шлях лічить (в)); вираз
+       `Х is not None and …` невідоме не розв'язує, а поглинає — він лічиться.
+
 ЗАПИС (не місце; негативний бік проб). Функція, що читає запис місця з походженням — ключ `місце…` (`місце`,
 `місце_джерело`, `місця`, `місце_речі`, …), — читач запису: її п.2–п.5 не лічаться (п.1 лічиться й там: підставити
 сталу класу запис не дозволяє). Походження `near` (`near_виміряний`, `near_джерело`, `near_походження`) не лише в
@@ -93,6 +107,10 @@ JS_ПОКАЗУ = ("показ.html", "показ_шаблон.js", "worker_дж
                      "tuple", "list", "sorted", "len", "str"}
 ЗГОРТКИ = {"sum", "max", "min", "mean", "median", "fmean", "any", "all"}
 ПОЛЯ_МІСЦЯ = ("near", "біля_обличчя", "розстібнуте")   # поля речі, що несуть її розклад без походження
+КЛЮЧІ_ЗАПИСУ = ("біля_обличчя", "видно", "під_шаром")   # ключі запису `місце_речі` (п.6; читач — через запис)
+ЧИТАЧІ_ЗАПИСУ = (("місце_речі", "біля_обличчя_відоме"), ("місце_речі", "бік_межі"),   # відомі читачі місця речі (п.6):
+                 ("outfit", "зони_речі"))                                             # запис і зони, що вона відкриває
+ВІДОМО_НІ_РЯДКИ = ("absent", "ні", "no", "false")      # значення рядка, що є відомим «ні» (п.6)
 ВЕРХНІЙ = "верхній_шар"
 # Той самий ключ, що не є полем речі (файл, поле) → причина; без причини — лічиться.
 НЕ_ПОЛЕ = {
@@ -144,6 +162,10 @@ JS_ПОКАЗУ = ("показ.html", "показ_шаблон.js", "worker_дж
     ("п.2", "колір_нейтралі.py", None, r'near=e\.get\("near"\)'),
     ("п.2", "колір_нейтралі.py", None, r'z\["near"\] = round\(float\(near\)'),
     ("п.2", "суд_блиск.py", None, r'near=ведучий\.get\("near"\)'),
+    # рішення 08.11 (КОЛО #3358, рядок 14321): «невідомо» читача місця стає відомим «ні» (п.6)
+    ("п.6", "траурний_регістр.py", "стан_металу_біля_обличчя", r'return _ЗН\.факт\("measured", "absent"'),
+    ("п.6", "регістр_уваги.py", "на_мету", r"return bool\(зони & set\(_O\.зони_речі"),
+    ("п.6", "регістр_уваги.py", "на_мету", r"^\s*return False\s*$"),
 )
 НЕ_МІСЦЯ = (
     ("запис: обране місце аксесуара", "аксесуари_структура.py", "_займає", r'р\.get\("місце"\)'),
@@ -152,7 +174,52 @@ JS_ПОКАЗУ = ("показ.html", "показ_шаблон.js", "worker_дж
     ("копія виміру з масок", "pipeline.py", None, r'near=m\[i\]\["near"\]'),
     ("писач виміру з масок", "areas.py", None, r"near=near_share\("),
     ("зони фігури без речі", "силует_пропорції.py", "ролі_зон", r"for пара, зони_ in ЗОНИ_ПАРИ"),
+    # п.6: невідомо розв'язано окремо, вердикт «ні» не береться з нього
+    ("невідоме місце поверхні розв'язано «без входу» (п.6 не лічить)", "формальність.py", "нагода_палітра",
+     r"пл_п = min\(1\.0, float\(біля\)\)"),
+    ("бік межі: None — не певний чи невідомий (єдина точка читачів запису)", "місце_речі.py", "бік_межі",
+     r"return None if біля is None"),
+    ("ранг 0 за метою — порядок не рухається, а не «ні» місцю", "регістр_уваги.py", "ранг_уваги", r"^\s*return 0\s*$"),
 )
+
+# Контроль п.6 (самоперевірка приладу): навмисні місця мають лічитись, чисті читачі — ні. Прилад, що перестав бачити
+# навмисне місце, сліпий: код 1. Модуль-контроль лічиться окремо від дерева (його місця в `місць:` не входять).
+КОНТРОЛЬ_П6 = '''
+import місце_речі as _МР
+def дефолт(e):
+    return (e.get("місце_речі") or {}).get("біля_обличчя") or 0.0                  # місце: дефолт «ні»
+def копія(e):
+    return bool(_МР.біля_обличчя_відоме(e))                                        # місце: bool
+def шлях_частково(e):
+    біля = _МР.бік_межі(e)
+    if біля:
+        return "present"
+    if біля is None and e.get("слот") == "намисто":
+        return None
+    return "absent"                                                                # місце: решта «невідомо» → absent
+def без_шляху(e):
+    біля = _МР.бік_межі(e)
+    if not біля:
+        return False                                                               # місце: None і False разом у «ні»
+    return True
+def усе_розв_язано(e):
+    біля = _МР.бік_межі(e)
+    if біля is None:
+        return None
+    if біля:
+        return "present"
+    return "absent"                                                                # не місце: None розв'язано вище
+def тиша(e):
+    біля = _МР.бік_межі(e)
+    if not біля:
+        return []                                                                  # не місце: тиша, не «ні»
+    return ["знахідка"]
+def не_про_місце(r):
+    if not r.get("метал"):
+        return False                                                               # не місце: умова не про місце
+    return True
+'''
+
 
 
 # ── обсяг і словники ──────────────────────────────────────────────────────────────────────────────────────────
@@ -260,6 +327,7 @@ class Прилад:
         self.не_таблиці = {}       # (файл, ім'я) → причина (знайдені на дереві)
         self.обгортки = {}         # (мод, ім'я функції) → рядок
         self.слова = set()
+        self.п6_усі = {}           # (файл, рядок) → (чому, функція): усі місця п.6, навіть вже лічені в п.1–п.5
 
     # обсяг
     def завантажити(self):
@@ -829,6 +897,279 @@ class Прилад:
                 return False
         return False
 
+    # п.6: «невідомо» читача місця стає відомим «ні»
+    def _запис_ключ(self, в):
+        """Ключ запису місця (`КЛЮЧІ_ЗАПИСУ`), який читає вузол крізь запис (`…місце_речі…`), чи None."""
+        ключ, приймач = None, None
+        if isinstance(в, ast.Subscript) and isinstance(в.ctx, ast.Load) and isinstance(в.slice, ast.Constant):
+            ключ, приймач = в.slice.value, в.value
+        elif isinstance(в, ast.Call) and isinstance(в.func, ast.Attribute) and в.func.attr == "get" and в.args \
+                and isinstance(в.args[0], ast.Constant):
+            ключ, приймач = в.args[0].value, в.func.value
+        if ключ in КЛЮЧІ_ЗАПИСУ and приймач is not None and "місце" in ast.unparse(приймач):
+            return ключ
+        return None
+
+    def _читач(self, м, вираз):
+        """Вираз сам читає факт місця: поле, ключ запису, виклик читача чи обгортки читача, таблиця п.1."""
+        if self.поле(вираз) is not None and (м.файл, self.поле(вираз)) not in НЕ_ПОЛЕ:
+            return True
+        if self._запис_ключ(вираз) is not None:
+            return True
+        if isinstance(вираз, ast.Call):
+            к = self.на_що(м, вираз.func)
+            if к in self.читачі or к in ЧИТАЧІ_ЗАПИСУ:
+                return True
+        return self._читач_таблиці(м, вираз)
+
+    _СЛОТ_ТЕКСТ = re.compile(r"слот|тип|\bсл\b|\bs\b|\bс\b")
+
+    def _таблиця_в(self, м, вузол):
+        """Вузол містить таблицю п.1 (її ім'я чи обгортку-виклик)."""
+        return any(isinstance(д, (ast.Name, ast.Attribute)) and self.на_що(м, д) in self.таблиці for д in ast.walk(вузол))
+
+    def _читач_таблиці(self, м, в):
+        """Читання таблиці п.1 за слотом чи типом САМОЇ РЕЧІ (`ТАБЛИЦЯ.get(слот)`, `ТАБЛИЦЯ[слот]`, `слот in ТАБЛИЦЯ`,
+        виклик обгортки зі слотом): це факт місця речі, зведений до двох значень. Таблиця поза слотом речі
+        (`set(ТАБЛИЦЯ)` — чи знає таблиця зону мети) — не читач."""
+        слот = lambda вузол: bool(self._СЛОТ_ТЕКСТ.search(ast.unparse(вузол)))
+        if isinstance(в, ast.Subscript):
+            return self._таблиця_в(м, в.value) and слот(в.slice)
+        if isinstance(в, ast.Call):
+            if self.на_що(м, в.func) in self.обгортки:
+                return any(слот(а) for а in в.args)
+            return isinstance(в.func, ast.Attribute) and в.func.attr == "get" and bool(в.args) \
+                and self._таблиця_в(м, в.func.value) and слот(в.args[0])
+        if isinstance(в, ast.Compare) and any(isinstance(о, (ast.In, ast.NotIn)) for о in в.ops):
+            return слот(в.left) and any(self._таблиця_в(м, ч) for ч in в.comparators)
+        return False
+
+    def несе_місце(self, м, вираз, T, прямо=False):
+        """Значення виразу — факт місця (потік значення: читач, ім'я з T, `or`/`and`, умовний вираз, арифметика,
+        обгортки значення). Словник, збірка, виклик іншої функції — ні. `прямо` — без арифметики й порівнянь: саме
+        значення місця, не величина, до якої воно входить множником."""
+        if вираз is None:
+            return False
+        if self._читач(м, вираз) or (isinstance(вираз, ast.Name) and вираз.id in T):
+            return True
+        if isinstance(вираз, ast.Call) and isinstance(вираз.func, ast.Name) and вираз.func.id in ОБГОРТКИ_ЗНАЧЕННЯ:
+            return any(self.несе_місце(м, а, T, прямо) for а in вираз.args)
+        if isinstance(вираз, ast.BoolOp):
+            return any(self.несе_місце(м, ч, T, прямо) for ч in вираз.values)
+        if isinstance(вираз, ast.IfExp):
+            return self.несе_місце(м, вираз.body, T, прямо) or self.несе_місце(м, вираз.orelse, T, прямо)
+        if isinstance(вираз, ast.BinOp) and not прямо:
+            return self.несе_місце(м, вираз.left, T, прямо) or self.несе_місце(м, вираз.right, T, прямо)
+        if isinstance(вираз, ast.UnaryOp):
+            return self.несе_місце(м, вираз.operand, T, прямо)
+        if isinstance(вираз, ast.NamedExpr):
+            return self.несе_місце(м, вираз.value, T, прямо)
+        if isinstance(вираз, ast.Subscript):
+            return self.несе_місце(м, вираз.value, T, прямо)
+        if isinstance(вираз, ast.Tuple) and not прямо:
+            return any(self.несе_місце(м, ч, T, прямо) for ч in вираз.elts)
+        if isinstance(вираз, ast.Compare) and not прямо:
+            if all(isinstance(о, (ast.Is, ast.IsNot)) for о in вираз.ops):
+                return False                      # `Х is None` — перевірка «невідомо», не значення місця
+            return any(self.несе_місце(м, ч, T, прямо) for ч in [вираз.left] + вираз.comparators)
+        return False
+
+    def _T(self, м, ф):
+        """Імена функції, яким присвоєно значення місця (до нерухомої точки)."""
+        T = set()
+        while True:
+            нові = set(T)
+            for в in ast.walk(ф):
+                if м.функція.get(id(в)) is not ф or not isinstance(в, (ast.Assign, ast.AnnAssign, ast.NamedExpr)) \
+                        or в.value is None:
+                    continue
+                if isinstance(в.value, (ast.Dict, ast.ListComp, ast.DictComp, ast.SetComp, ast.GeneratorExp)):
+                    continue
+                if self.несе_місце(м, в.value, T):
+                    цілі = в.targets if isinstance(в, ast.Assign) else [в.target]
+                    нові |= {ц.id for ц in цілі if isinstance(ц, ast.Name)}
+            if нові == T:
+                return T
+            T = нові
+
+    def знайти_читачі(self):
+        """Функції, що вертають значення місця (обгортки читачів запису й поля): до нерухомої точки."""
+        self.читачі = {}
+        змінено = True
+        while змінено:
+            змінено = False
+            for м in self.модулі.values():
+                for ф in [в for в in ast.walk(м.дерево) if isinstance(в, (ast.FunctionDef, ast.AsyncFunctionDef))]:
+                    if (м.імя, ф.name) in self.читачі:
+                        continue
+                    T = self._T(м, ф)
+                    if any(isinstance(в, ast.Return) and м.функція.get(id(в)) is ф and self.несе_місце(м, в.value, T)
+                           for в in ast.walk(ф)):
+                        self.читачі[(м.імя, ф.name)] = ф.lineno
+                        змінено = True
+
+    @staticmethod
+    def _ні(в):
+        """Вираз — відоме «ні»: `False`/`0`/`0.0`, рядок «absent»/«ні»/…, виклик із таким рядком в аргументі."""
+        if isinstance(в, ast.Constant):
+            if isinstance(в.value, bool):
+                return в.value is False
+            if isinstance(в.value, (int, float)):
+                return в.value == 0
+            return isinstance(в.value, str) and в.value.lower() in ВІДОМО_НІ_РЯДКИ
+        if isinstance(в, ast.Call):
+            return any(isinstance(а, ast.Constant) and isinstance(а.value, str) and а.value.lower() in ВІДОМО_НІ_РЯДКИ
+                       for а in list(в.args) + [к.value for к in в.keywords])
+        return False
+
+    def _оцінка(self, м, вираз, T):
+        """(значення, залежить) умови в світі «місце невідоме» (Х = None, двозначний читач — False): True/False або
+        None — не визначено. Залежить — чи умова питає про значення місця."""
+        if isinstance(вираз, ast.Constant):
+            return bool(вираз.value), False
+        if isinstance(вираз, ast.UnaryOp) and isinstance(вираз.op, ast.Not):
+            з, д = self._оцінка(м, вираз.operand, T)
+            return (None if з is None else not з), д
+        if isinstance(вираз, ast.BoolOp):
+            оц = [self._оцінка(м, ч, T) for ч in вираз.values]
+            д = any(х[1] for х in оц)
+            if isinstance(вираз.op, ast.And):
+                return (False if any(х[0] is False for х in оц) else True if all(х[0] is True for х in оц) else None), д
+            return (True if any(х[0] is True for х in оц) else False if all(х[0] is False for х in оц) else None), д
+        if isinstance(вираз, ast.Compare) and len(вираз.ops) == 1 and isinstance(вираз.comparators[0], ast.Constant) \
+                and вираз.comparators[0].value is None and self.несе_місце(м, вираз.left, T):
+            if isinstance(вираз.ops[0], (ast.Is, ast.Eq, ast.IsNot, ast.NotEq)):
+                return isinstance(вираз.ops[0], (ast.Is, ast.Eq)), True
+        if self.несе_місце(м, вираз, T) and not isinstance(вираз, ast.Compare):
+            return False, True
+        залежить = any(self._читач(м, д) or (isinstance(д, ast.Name) and д.id in T) for д in ast.walk(вираз))
+        return None, залежить
+
+    def _ходи(self, м, ф, T, тіло, стани, знахідки, цикли):
+        """Шляхи тіла у світі «місце невідоме». `стани` — можливі ознаки «шлях пройшов рішення над значенням місця»;
+        вертає ознаки шляхів, що доходять до кінця тіла. Відоме «ні» на шляху з ознакою — знахідка."""
+        for в in тіло:
+            if not стани:
+                break
+            if isinstance(в, ast.Return):
+                if True in стани and в.value is not None and self._ні(в.value):
+                    знахідки.append(в)
+                стани = set()
+            elif isinstance(в, ast.Raise):
+                стани = set()
+            elif isinstance(в, (ast.Continue, ast.Break)):
+                if цикли:
+                    цикли[-1] |= стани
+                стани = set()
+            elif isinstance(в, ast.If):
+                значення, залежить = self._оцінка(м, в.test, T)
+                нові = set()
+                for с in стани:
+                    с2 = с or залежить
+                    if значення is not False:
+                        нові |= self._ходи(м, ф, T, в.body, {с2}, знахідки, цикли)
+                    if значення is not True:
+                        нові |= self._ходи(м, ф, T, в.orelse, {с2}, знахідки, цикли) if в.orelse else {с2}
+                стани = нові
+            elif isinstance(в, (ast.For, ast.AsyncFor, ast.While)):
+                виходи = set()
+                цикли.append(виходи)
+                після = self._ходи(м, ф, T, в.body, set(стани), знахідки, цикли)
+                цикли.pop()
+                стани = set(стани) | після | виходи
+            elif isinstance(в, (ast.With, ast.AsyncWith)):
+                стани = self._ходи(м, ф, T, в.body, стани, знахідки, цикли)
+            elif isinstance(в, ast.Try):
+                після = self._ходи(м, ф, T, в.body, set(стани), знахідки, цикли)
+                for обр in в.handlers:
+                    після |= self._ходи(м, ф, T, обр.body, set(стани), знахідки, цикли)
+                стани = self._ходи(м, ф, T, в.orelse, після, знахідки, цикли) if в.orelse else після
+                if в.finalbody:
+                    стани = self._ходи(м, ф, T, в.finalbody, стани, знахідки, цикли)
+        return стани
+
+    def _у_значенні(self, м, в):
+        """Вираз стоїть у позиції значення (не умови): піднімаємось крізь логічні вузли до першого предка."""
+        п = м.батько.get(id(в))
+        while isinstance(п, (ast.BoolOp, ast.UnaryOp, ast.Compare)):
+            в, п = п, м.батько.get(id(п))
+        if isinstance(п, (ast.If, ast.While, ast.IfExp)) and п.test is в:
+            return False
+        if isinstance(п, (ast.comprehension, ast.Assert)):
+            return False
+        return True
+
+    def _п6(self, м, рядок, чому, вузол):
+        """Місце п.6 (усі форми); у `п6_усі` — і ті, що вже лічить п.1–п.5 (вирок поіменно в паспорті)."""
+        ф = м.функція.get(id(вузол))
+        self.п6_усі[(м.файл, рядок)] = (чому, ф.name if ф is not None else "<модуль>")
+        self.додати(м, рядок, 6, чому, вузол)
+
+    def п6(self, м):
+        for ф in [в for в in ast.walk(м.дерево) if isinstance(в, (ast.FunctionDef, ast.AsyncFunctionDef))]:
+            T = self._T(м, ф)
+            # імена, чиє «невідомо» функція розв'язує оператором `if` (а не лише поглинає виразом `Х is not None and …`)
+            перевірено = {д.left.id for о in ast.walk(ф) if isinstance(о, ast.If) and м.функція.get(id(о)) is ф
+                          for д in ast.walk(о.test) if isinstance(д, ast.Compare) and isinstance(д.left, ast.Name)
+                          and д.left.id in T and any(isinstance(ч, ast.Constant) and ч.value is None
+                                                    for ч in д.comparators)}
+            # (в) шлях
+            знахідки = []
+            if T or any(self._читач(м, д) for д in ast.walk(ф) if м.функція.get(id(д)) is ф):
+                self._ходи(м, ф, T, ф.body, {False}, знахідки, [])
+            for в in знахідки:
+                self._п6(м, в.lineno, "шлях: місце невідоме, а відповідь — відоме «ні»", в)
+            # (а) параметр місця з дефолтом «ні»
+            арг = ф.args
+            пари = list(zip(арг.args[len(арг.args) - len(арг.defaults):], арг.defaults)) + \
+                [(а, д) for а, д in zip(арг.kwonlyargs, арг.kw_defaults) if д is not None]
+            for а, д in пари:
+                if (re.match(r"^_?(near|біля)", а.arg) or а.arg in ПОЛЯ_МІСЦЯ) and self._ні(д):
+                    self._п6(м, д.lineno, "параметр місця «%s» без значення = відоме «ні»" % а.arg, д)
+            # (а, б) вирази функції
+            for в in ast.walk(ф):
+                if м.функція.get(id(в)) is ф:
+                    self._вираз6(м, в, T, перевірено)
+
+    def _вираз6(self, м, в, T, перевірено):
+        def тільки_ім(вираз):
+            # форма над іменем, яке функція сама перевіряє на `is None`, — шлях лічить (в)
+            return isinstance(вираз, ast.Name) and вираз.id in перевірено
+        if isinstance(в, ast.BoolOp) and isinstance(в.op, ast.Or) and len(в.values) >= 2 and self._ні(в.values[-1]) \
+                and any(self.несе_місце(м, ч, T) and not тільки_ім(ч) for ч in в.values[:-1]):
+            self._п6(м, в.lineno, "дефолт «ні» над значенням місця: «невідомо» стає «ні»", в)
+        elif isinstance(в, ast.Call) and isinstance(в.func, ast.Attribute) and в.func.attr == "get" \
+                and len(в.args) == 2 and self._ні(в.args[1]):
+            без_дефолту = ast.Call(func=в.func, args=в.args[:1], keywords=[])
+            if self.поле(без_дефолту) is not None or self._запис_ключ(без_дефолту) is not None:
+                self._п6(м, в.lineno, "дефолт «ні» у читанні поля місця: «невідомо» стає «ні»", в)
+        elif isinstance(в, ast.IfExp):
+            значення, залежить = self._оцінка(м, в.test, T)
+            гілка_ні = (self._ні(в.body) and self.несе_місце(м, в.orelse, T, True)) or \
+                (self._ні(в.orelse) and self.несе_місце(м, в.body, T, True))
+            if (гілка_ні or (залежить and значення is not None and self._ні(в.body if значення else в.orelse))) \
+                    and not any(тільки_ім(д) for д in ast.walk(в) if isinstance(д, ast.Name)):
+                self._п6(м, в.lineno, "умовний вираз: читач місця проти відомого «ні» (невідомо → «ні»)", в)
+        elif isinstance(в, ast.Call) and isinstance(в.func, ast.Name) and в.func.id == "bool" and len(в.args) == 1 \
+                and self.несе_місце(м, в.args[0], T) and not тільки_ім(в.args[0]):
+            self._п6(м, в.lineno, "bool над значенням місця: «невідомо» стає «ні»", в)
+        elif isinstance(в, (ast.BoolOp, ast.Compare, ast.UnaryOp)) and self._у_значенні(м, в) \
+                and not (isinstance(в, ast.UnaryOp) and not isinstance(в.op, ast.Not)):
+            значення, залежить = self._оцінка(м, в, T)
+            if залежить and значення is not None and not self._лише_перевірка_none(м, в, T) \
+                    and not any(тільки_ім(д) for д in ast.walk(в) if isinstance(д, ast.Name)):
+                self._п6(м, в.lineno, "булів вираз над значенням місця: за «невідомо» вирішено", в)
+
+    def _лише_перевірка_none(self, м, в, T):
+        """`Х is None` / `Х is not None` без іншого вжитку Х — явна перевірка «невідомо», не його розв'язання."""
+        if isinstance(в, ast.Compare) and len(в.ops) == 1 and isinstance(в.ops[0], (ast.Is, ast.IsNot)):
+            return isinstance(в.comparators[0], ast.Constant) and в.comparators[0].value is None
+        if isinstance(в, ast.UnaryOp):
+            return self._лише_перевірка_none(м, в.operand, T)
+        if isinstance(в, ast.BoolOp):
+            return all(self._лише_перевірка_none(м, ч, T) or not self.несе_місце(м, ч, T) for ч in в.values)
+        return False
+
     def js(self):
         файли = [os.path.join("показ", ф) for ф in sorted(os.listdir(os.path.join(self.дж, "показ")))
                  if ф.endswith(".js")] if os.path.isdir(os.path.join(self.дж, "показ")) else []
@@ -849,10 +1190,29 @@ class Прилад:
                 elif поле.search(код):
                     self.місця.setdefault((ф, н), (2, "поле near у показі без походження", "JS"))
 
+    def контроль_п6(self):
+        """Самоперевірка п.6 на модулі-контролі: (знайдено, чекано, хибних, текст рядків-промахів). Місця модуля в
+        лічбу дерева не входять (його стан відновлено)."""
+        збережено = (dict(self.місця), dict(self.п6_усі))
+        self.місця.clear()
+        self.п6_усі.clear()
+        м = Модуль("контроль_п6", "контроль_п6.py", ast.parse(КОНТРОЛЬ_П6), КОНТРОЛЬ_П6)
+        self.п6(м)
+        знайдено = {н for (_, н), (п, _, _) in self.місця.items() if п == 6}
+        чекано = {н for н, р in enumerate(КОНТРОЛЬ_П6.splitlines(), 1) if "# місце:" in р}
+        хибних = знайдено - чекано
+        промахи = чекано - знайдено
+        self.місця.clear()
+        self.місця.update(збережено[0])
+        self.п6_усі.clear()
+        self.п6_усі.update(збережено[1])
+        return len(знайдено & чекано), len(чекано), len(хибних), sorted(промахи | хибних)
+
     def лічити(self):
         self.завантажити()
         self.знайти_таблиці()
         self.знайти_обгортки()
+        self.знайти_читачі()
         for м in self.модулі.values():
             self.п1(м)
         for м in self.модулі.values():
@@ -861,6 +1221,7 @@ class Прилад:
             self.п3(м)
             self.п4(м)
             self.п5(м)
+            self.п6(м)
         self.потік()
         self.js()
         return self.місця
@@ -907,9 +1268,19 @@ def main(argv=None):
     за_пунктом = {}
     for пункт, _, _ in місця.values():
         за_пунктом[пункт] = за_пунктом.get(пункт, 0) + 1
-    print("за пунктами: " + ", ".join("п.%d — %d" % (к, за_пунктом.get(к, 0)) for к in (1, 2, 3, 4, 5)))
+    print("за пунктами: " + ", ".join("п.%d — %d" % (к, за_пунктом.get(к, 0)) for к in (1, 2, 3, 4, 5, 6)))
+    print("п.6 усього %d (нових для лічби %d; решта вже в п.1–п.5 — вирок поіменно в паспорті):"
+          % (len(п.п6_усі), за_пунктом.get(6, 0)))
+    for (ф, н), (чому, фн) in sorted(п.п6_усі.items()):
+        print("  %s:%d · %s · %s%s" % (ф, н, чому, фн, "" if місця[(ф, н)][0] == 6 else " (лічить п.%d)" % місця[(ф, н)][0]))
+    print("читачів місця (функції, що вертають значення місця): %d" % len(п.читачі))
     print("модулів Python: %d" % len(п.модулі))
     рядки, хиба = п.самоперевірка()
+    знайдено, чекано, хибних, промахи = п.контроль_п6()
+    сліпий = знайдено != чекано or хибних
+    print("контроль п.6 (навмисні місця в модулі-контролі): знайдено %d з %d, хибних %d%s"
+          % (знайдено, чекано, хибних, " — ПРИЛАД СЛІПИЙ чи хибний, рядки контролю %s" % промахи if сліпий else ""))
+    хиба = хиба or bool(сліпий)
     print("самоперевірка (вибірка паспорта):")
     print("\n".join(рядки))
     print("місць: %d" % len(місця))

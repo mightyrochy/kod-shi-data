@@ -115,6 +115,62 @@ def поріг(сила):
 def ролі(t):
     return {z: 1 for п, зз in ЗОНИ_ПАРИ.items() for z in зз}
 ''',
+    "читач_невідомо.py": '''
+import місце_речі as _МР
+from колір_річ import SLOT_NEAR_FALLBACK
+def дефолт(e):
+    return (e.get("місце_речі") or {}).get("біля_обличчя") or 0.0                  # п6: дефолт «ні»
+def дефолт_get(e):
+    return (e.get("місце_речі") or {}).get("біля_обличчя", 0.0)                    # п6: дефолт у get
+def копія(e):
+    return bool(_МР.біля_обличчя_відоме(e))                                        # п6: bool
+def розв_язано_if(e):
+    біля = _МР.біля_обличчя_відоме(e)
+    if біля is None and e.get("слот") == "намисто":
+        return None
+    вага = біля if біля is not None else 0.0                                       # не п6: None розв'язано оператором if
+    return вага
+def параметр(e, near=0.0):                                                         # п6: параметр місця з дефолтом «ні»
+    return near
+def шлях_частково(e):
+    біля = _МР.бік_межі(e)
+    if біля:
+        return "present"
+    if біля is None and e.get("слот") == "намисто":
+        return None
+    return "absent"                                                                # п6: решта «невідомо» → absent
+def двозначний(e):
+    біля = SLOT_NEAR_FALLBACK.get(e.get("слот"), 0) >= 0.5
+    if біля:
+        return "present"
+    return "absent"                                                                # п6: таблиця не відрізняє «невідомо»
+def булів(e):
+    біля = _МР.біля_обличчя_відоме(e)
+    return біля is not None and біля >= 0.5                                        # п6: булів вираз за «невідомо» вирішено
+def усе_розв_язано(e):
+    біля = _МР.бік_межі(e)
+    if біля is None:
+        return None
+    if біля:
+        return "present"
+    return "absent"                                                                # не п6: None розв'язано вище
+def тиша(e):
+    біля = _МР.бік_межі(e)
+    if not біля:
+        return []                                                                  # не п6: тиша, не «ні»
+    return ["знахідка"]
+def не_про_місце(r):
+    if not r.get("метал"):
+        return False                                                               # не п6: умова не про місце
+    return True
+def перевірений(e):
+    біля = _МР.біля_обличчя_відоме(e)
+    if біля is None:
+        return None
+    return bool(біля)                                                              # не п6: None розв'язано вище
+def задана_зона(зони, слот):
+    return {з for з in зони} & set(SLOT_NEAR_FALLBACK)                             # не п6: таблиця поза слотом речі
+''',
     "стенд_щось.py": '''
 from колір_річ import SLOT_NEAR_FALLBACK
 X = SLOT_NEAR_FALLBACK["шарф"]                                         # поза обсягом продукту
@@ -136,6 +192,16 @@ def setUpModule():
 def tearDownModule():
     ТЕКА.cleanup()
     ОБСЯГ.скинути()
+
+
+def дерево_з(базове, додано):
+    """Місця малого дерева `базове` з додатковими файлами `додано` (окрема тека; лічба заново)."""
+    with tempfile.TemporaryDirectory() as тека:
+        os.makedirs(os.path.join(тека, "джерела"))
+        for ім, текст in list(базове.items()) + list(додано.items()):
+            with open(os.path.join(тека, "джерела", ім), "w", encoding="utf-8") as ф:
+                ф.write(текст)
+        return П.Прилад(тека).лічити()
 
 
 def рядок(файл, мітка):
@@ -183,6 +249,41 @@ class Місця(unittest.TestCase):
         self.assertEqual(self.пункт("обличчя.py", "0.5 * sum(вол)"), 4)
         self.assertEqual(self.пункт("обличчя.py", "Lh = sum"), 4)
         self.assertEqual(self.пункт("обличчя.py", "abs(Lh -"), 4)
+
+
+class Невідомо(unittest.TestCase):
+    """П.6: «невідомо» читача місця стає відомим «ні» (рішення 08.11, рядок 14321)."""
+
+    def п6(self, мітка):
+        return (МІСЦЯ.get(("читач_невідомо.py", рядок("читач_невідомо.py", мітка))) or (None,))[0]
+
+    def test_лічить(self):
+        for мітка in ("# п6: дефолт «ні»", "# п6: дефолт у get", "# п6: bool", "# п6: параметр місця",
+                      "# п6: решта «невідомо» → absent", "# п6: таблиця не відрізняє", "# п6: булів вираз"):
+            with self.subTest(мітка=мітка):
+                self.assertEqual(self.п6(мітка), 6)
+
+    def test_не_лічить(self):
+        for мітка in ("# не п6: None розв'язано вище", "# не п6: тиша", "# не п6: умова не про місце",
+                      "# не п6: таблиця поза слотом речі", "# не п6: None розв'язано оператором if"):
+            with self.subTest(мітка=мітка):
+                self.assertNotEqual(self.п6(мітка), 6)
+
+    def test_контроль_приладу(self):
+        знайдено, чекано, хибних, _ = ПРИЛАД.контроль_п6()
+        self.assertEqual((знайдено, хибних), (чекано, 0))
+
+    def test_число_росте_від_навмисного_місця(self):
+        """Контроль: дерево без навмисного місця й з ним — число росте рівно на нього."""
+        з_місцем = дерево_з(ДЕРЕВО, {"нове.py": '''
+import місце_речі as _МР
+def нове(e):
+    біля = _МР.бік_межі(e)
+    if біля:
+        return "present"
+    return "absent"
+'''})
+        self.assertEqual(len(з_місцем) - len(МІСЦЯ), 1)
 
 
 class НеМісця(unittest.TestCase):
