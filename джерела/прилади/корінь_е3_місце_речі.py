@@ -58,7 +58,15 @@
        `…"absent"…`; зокрема коли «невідомо» розв'язано лише для підмножини (`Х is None and <умова>`), решта потрапляє
        у «ні». Розв'язання «невідомо» поверненням `None`/«unknown»/`raise` шлях зупиняє; тиша (порожній список)
        — не «ні». Оператор `if` з перевіркою `Х is None` у функції звільняє від (а)–(б) форми над іменем Х (її шлях лічить (в)); вираз
-       `Х is not None and …` невідоме не розв'язує, а поглинає — він лічиться.
+       `Х is not None and …` невідоме не розв'язує, а поглинає — він лічиться. «Absent» під умовою «тип/категорія речі
+       у названій сталій» (`СЛОТ_ТИПУ.get(тип) in КАТЕГОРІЇ_БЕЗ_МЕТАЛУ_ПРИКРАС`) — відомий факт типу, не лічиться
+       (рішення #3377); літерал у дужках чи сама наявність типу й слота — не факт, лічиться.
+       (г) ВОРОТА (рішення диспетчера 08.11 за перевіркою 0811-10, рядок 14328): те саме «невідомо → ні» з іншого боку —
+       умова про місце (`if біля_обличчя(r): return <причина>`) за «невідомо» хибна, і шлях доходить до `return None`
+       (чи кінця функції без `return`) — для воріт це «причини нема», тобто допуск. Лічиться `return None`/кінець, до
+       якого «невідоме» дійшло повз тіло умови, що відмовляє (вертає причину); тіло умови з `Х is None` читає «невідомо»
+       свідомо — його `return None` це «невідомо», не допуск; але `Х is None and <умова>` — розв'язання лише
+       підмножини, решта потрапляє в допуск і лічиться.
 
 ЗАПИС (не місце; негативний бік проб). Функція, що читає запис місця з походженням — ключ `місце…` (`місце`,
 `місце_джерело`, `місця`, `місце_речі`, …), — читач запису: її п.2–п.5 не лічаться (п.1 лічиться й там: підставити
@@ -110,6 +118,7 @@ JS_ПОКАЗУ = ("показ.html", "показ_шаблон.js", "worker_дж
 КЛЮЧІ_ЗАПИСУ = ("біля_обличчя", "видно", "під_шаром")   # ключі запису `місце_речі` (п.6; читач — через запис)
 ЧИТАЧІ_ЗАПИСУ = (("місце_речі", "біля_обличчя_відоме"), ("місце_речі", "бік_межі"),   # відомі читачі місця речі (п.6):
                  ("outfit", "зони_речі"))                                             # запис і зони, що вона відкриває
+ВОРОТА = "ворота: невідоме місце проходить умову як хибне й веде до допуску (`return None`)"
 ВІДОМО_НІ_РЯДКИ = ("absent", "ні", "no", "false")      # значення рядка, що є відомим «ні» (п.6)
 ВЕРХНІЙ = "верхній_шар"
 # Той самий ключ, що не є полем речі (файл, поле) → причина; без причини — лічиться.
@@ -166,6 +175,7 @@ JS_ПОКАЗУ = ("показ.html", "показ_шаблон.js", "worker_дж
     ("п.6", "траурний_регістр.py", "стан_металу_біля_обличчя", r'return _ЗН\.факт\("measured", "absent"'),
     ("п.6", "регістр_уваги.py", "на_мету", r"return bool\(зони & set\(_O\.зони_речі"),
     ("п.6", "регістр_уваги.py", "на_мету", r"^\s*return False\s*$"),
+    ("п.6", "траурний_регістр.py", "траурне_відсічення", r"^\s*return None\s*$"),
 )
 НЕ_МІСЦЯ = (
     ("запис: обране місце аксесуара", "аксесуари_структура.py", "_займає", r'р\.get\("місце"\)'),
@@ -218,6 +228,38 @@ def не_про_місце(r):
     if not r.get("метал"):
         return False                                                               # не місце: умова не про місце
     return True
+КАТЕГОРІЇ_БЕЗ_МЕТАЛУ = ("top", "bottom")
+ТИПИ = {"сукня": "top"}
+def ворота_допуск(r):
+    біля = _МР.біля_обличчя_відоме(r)
+    if біля:
+        return "причина"
+    return None                                                                    # місце: невідоме веде до допуску
+def ворота_частково(r):
+    біля = _МР.біля_обличчя_відоме(r)
+    if біля:
+        return "причина"
+    if біля is None and r.get("слот") == "намисто":
+        return "mourning_place_unknown"
+    return None                                                                    # місце: решта невідомого — допуск
+def ворота_кінець(r):
+    біля = _МР.біля_обличчя_відоме(r)
+    if біля:                                                                       # місце: функція кінчається без return
+        return "причина"
+def ворота_розв_язано(r):
+    біля = _МР.біля_обличчя_відоме(r)
+    if біля:
+        return "причина"
+    if біля is None:
+        return "mourning_place_unknown"
+    return None                                                                    # не місце: невідоме розв'язано вище
+def відомий_тип(r):
+    біля = _МР.біля_обличчя_відоме(r)
+    if біля:
+        return "present"
+    if біля is None and ТИПИ.get(r.get("тип")) in КАТЕГОРІЇ_БЕЗ_МЕТАЛУ:
+        return "absent"                                                            # не місце: відомий факт типу
+    return "unknown"
 '''
 
 
@@ -1040,6 +1082,10 @@ class Прилад:
                 and вираз.comparators[0].value is None and self.несе_місце(м, вираз.left, T):
             if isinstance(вираз.ops[0], (ast.Is, ast.Eq, ast.IsNot, ast.NotEq)):
                 return isinstance(вираз.ops[0], (ast.Is, ast.Eq)), True
+        if isinstance(вираз, ast.Compare) and len(вираз.ops) == 1 and isinstance(вираз.comparators[0], ast.Constant) \
+                and isinstance(вираз.comparators[0].value, bool) and self.несе_місце(м, вираз.left, T) \
+                and isinstance(вираз.ops[0], (ast.Is, ast.Eq, ast.IsNot, ast.NotEq)):
+            return isinstance(вираз.ops[0], (ast.IsNot, ast.NotEq)), True    # `None is False` — ні, `is not False` — так
         if self.несе_місце(м, вираз, T) and not isinstance(вираз, ast.Compare):
             return False, True
         залежить = any(self._читач(м, д) or (isinstance(д, ast.Name) and д.id in T) for д in ast.walk(вираз))
@@ -1052,8 +1098,11 @@ class Прилад:
             if not стани:
                 break
             if isinstance(в, ast.Return):
-                if True in стани and в.value is not None and self._ні(в.value):
-                    знахідки.append(в)
+                if в.value is not None and self._ні(в.value) and any(с & 1 and not с & 4 for с in стани):
+                    знахідки.append((в, "шлях: місце невідоме, а відповідь — відоме «ні»"))
+                elif (в.value is None or (isinstance(в.value, ast.Constant) and в.value.value is None)) \
+                        and any(с & 2 for с in стани):
+                    знахідки.append((в, ВОРОТА))
                 стани = set()
             elif isinstance(в, ast.Raise):
                 стани = set()
@@ -1063,13 +1112,20 @@ class Прилад:
                 стани = set()
             elif isinstance(в, ast.If):
                 значення, залежить = self._оцінка(м, в.test, T)
+                тип_відомий = self._факт_типу(в.test)
+                # тіло умови з `Х is None` читає «невідомо» свідомо: його `return None` — «невідомо», не допуск
+                свідомо = any(isinstance(д, ast.Compare) and len(д.ops) == 1 and isinstance(д.ops[0], (ast.Is, ast.Eq))
+                              and isinstance(д.comparators[0], ast.Constant) and д.comparators[0].value is None
+                              and self.несе_місце(м, д.left, T) for д in ast.walk(в.test))
+                відмова = залежить and self._відмова(в.body)
                 нові = set()
                 for с in стани:
-                    с2 = с or залежить
+                    с2 = с | (1 if залежить else 0)
                     if значення is not False:
-                        нові |= self._ходи(м, ф, T, в.body, {с2}, знахідки, цикли)
+                        нові |= self._ходи(м, ф, T, в.body, {(с2 & ~2 if свідомо else с2) | (4 if тип_відомий else 0)}, знахідки, цикли)
                     if значення is not True:
-                        нові |= self._ходи(м, ф, T, в.orelse, {с2}, знахідки, цикли) if в.orelse else {с2}
+                        с3 = с2 | (2 if відмова else 0)    # умова про місце хибна за «невідомо», її тіло відмовляє
+                        нові |= self._ходи(м, ф, T, в.orelse, {с3}, знахідки, цикли) if в.orelse else {с3}
                 стани = нові
             elif isinstance(в, (ast.For, ast.AsyncFor, ast.While)):
                 виходи = set()
@@ -1087,6 +1143,32 @@ class Прилад:
                 if в.finalbody:
                     стани = self._ходи(м, ф, T, в.finalbody, стани, знахідки, цикли)
         return стани
+
+    @staticmethod
+    def _відмова(тіло):
+        """Тіло вертає значення-відмову (не `None` і не відоме «ні»): причину, `True` — ворота зупиняють річ."""
+        for в in тіло:
+            for н in ast.walk(в):
+                if isinstance(н, ast.Return) and н.value is not None \
+                        and not (isinstance(н.value, ast.Constant) and н.value.value is None) \
+                        and not Прилад._ні(н.value):
+                    return True
+        return False
+
+    @staticmethod
+    def _факт_типу(тест):
+        """Умова — членство типу/категорії речі у названій сталій модуля (`СЛОТ_ТИПУ.get(тип) in КАТЕГОРІЇ_…`): факт про
+        тип речі, не про місце, тож «absent» під нею — відомий факт (рішення менеджера 08.11). Літерал у дужках чи
+        сама наявність типу й слота — не факт: назви сталої немає."""
+        for н in ast.walk(тест):
+            if isinstance(н, ast.Compare) and any(isinstance(о, ast.In) for о in н.ops) \
+                    and all(isinstance(ч, (ast.Name, ast.Attribute)) and re.match(
+                        r"^_?[A-ZА-ЯІЇЄҐ][A-ZА-ЯІЇЄҐ0-9_]+$", ч.id if isinstance(ч, ast.Name) else ч.attr)
+                        for ч in н.comparators):
+                лівий = ast.dump(н.left)
+                if re.search(r"СЛОТ_ТИПУ|тип|категор", лівий, re.IGNORECASE):
+                    return True
+        return False
 
     def _у_значенні(self, м, в):
         """Вираз стоїть у позиції значення (не умови): піднімаємось крізь логічні вузли до першого предка."""
@@ -1116,9 +1198,11 @@ class Прилад:
             # (в) шлях
             знахідки = []
             if T or any(self._читач(м, д) for д in ast.walk(ф) if м.функція.get(id(д)) is ф):
-                self._ходи(м, ф, T, ф.body, {False}, знахідки, [])
-            for в in знахідки:
-                self._п6(м, в.lineno, "шлях: місце невідоме, а відповідь — відоме «ні»", в)
+                кінець = self._ходи(м, ф, T, ф.body, {0}, знахідки, [])
+                if any(с & 2 for с in кінець) and ф.body:       # функція доходить до кінця без `return` — теж `None`
+                    знахідки.append((ф.body[-1], ВОРОТА))
+            for в, чому in знахідки:
+                self._п6(м, в.lineno, чому, в)
             # (а) параметр місця з дефолтом «ні»
             арг = ф.args
             пари = list(zip(арг.args[len(арг.args) - len(арг.defaults):], арг.defaults)) + \
