@@ -16,7 +16,7 @@ from pathlib import Path
 for шлях in sys.argv[2:]:                      # хмара (ATR) і ноутбук (SAM) — ті самі ключі, пізніший файл переважає
     ч = json.load(gzip.open(шлях, "rt", encoding="utf-8"))
     for ід, кк in ч["записи"].items():
-        перевимір["записи"][ід] = {в["файл"]: в for в in перевимір["записи"].get(ід, []) + кк}.values()
+        перевимір["записи"][ід] = {в["файл"]: в for в in list(перевимір["записи"].get(ід, [])) + кк}.values()
     перевимір["звірка"].update(ч["звірка"])
 дельта = json.load(gzip.open(тека / "дельта.json.gz", "rt", encoding="utf-8"))
 до = json.load(gzip.open(тека / "кадри_ДО.json.gz", "rt", encoding="utf-8"))["записи"]
