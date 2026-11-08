@@ -1480,6 +1480,19 @@ function іншаНазва(е, т){ const копія = т; назваЖінці
         ('поле-число', "$('чис').value = fetch('/m');", 0),
         ('поле-число-текст-поряд', "$('чис').value = fetch('/m'); $('текст').value = fetch('/m');", 1),
         ('каталог-python-кандидат', "async function ф(){const д=await (await fetch('каталог.json')).json(); назваЖінціП(document.body, д.name);}", 1),
+        # 11837: журнал вердиктів. Ключ запису `С[к] = …` зі скінченного набору літералів поля читача не торкається;
+        # запис без поля (інший писач ключа сховища, `Object.assign` без поля) тексту не дає. Чужий текст у полі — місце.
+        ('індекс-закритий-інше', "const С = {}; function чип(к){ С[к] = fetch('/m'); } чип('верд'); чип('річ'); С.коментар = $('ввід').value; їїСловаП(document.body, С.коментар);", 0),
+        ('індекс-закритий-те-саме', "const С = {}; function чип(к){ С[к] = fetch('/m'); } чип('верд'); чип('коментар'); С.коментар = $('ввід').value; їїСловаП(document.body, С.коментар);", 1),
+        ('індекс-складений', "const С = {}; function чип(к){ С[к + '_код'] = fetch('/m'); } чип('верд'); С.коментар = $('ввід').value; їїСловаП(document.body, С.коментар);", 0),
+        ('індекс-складений-те-саме', "const С = {}; function чип(к){ С[к + '_код'] = fetch('/m'); } чип('коментар'); С.коментар = $('ввід').value; їїСловаП(document.body, С.коментар);", 0),
+        ('індекс-невідомий', "const С = {}; function чип(к){ С[к] = fetch('/m'); } чип(інше()); С.коментар = $('ввід').value; їїСловаП(document.body, С.коментар);", 1),
+        ('індекс-без-викликів', "const С = {}; function чип(к){ С[к] = fetch('/m'); } С.коментар = $('ввід').value; їїСловаП(document.body, С.коментар);", 1),
+        ('assign-без-поля', "const з = {коментар: $('ввід').value}; const кеш = {поля: {дія: fetch('/m')}}; Object.assign(з, кеш.поля); їїСловаП(document.body, з.коментар);", 0),
+        ('assign-з-полем', "const з = {коментар: $('ввід').value}; const кеш = {поля: {коментар: fetch('/m')}}; Object.assign(з, кеш.поля); їїСловаП(document.body, з.коментар);", 1),
+        ('сховище-запис-без-поля', "localStorage.setItem('к', JSON.stringify({коментар: $('ввід').value})); localStorage.setItem('к', JSON.stringify({збій: 1})); їїСловаП(document.body, JSON.parse(localStorage.getItem('к')).коментар || '');", 0),
+        ('сховище-запис-без-поля-чужий', "localStorage.setItem('к', JSON.stringify({коментар: $('ввід').value})); localStorage.setItem('к', JSON.stringify({збій: 1})); localStorage.setItem('к', JSON.stringify({коментар: fetch('/m')})); їїСловаП(document.body, JSON.parse(localStorage.getItem('к')).коментар || '');", 1),
+        ('сховище-ніхто-не-задав', "localStorage.setItem('к', JSON.stringify({збій: 1})); їїСловаП(document.body, JSON.parse(localStorage.getItem('к')).коментар || '');", 1),
     ]
     хиб = 0
     with tempfile.TemporaryDirectory() as тека:

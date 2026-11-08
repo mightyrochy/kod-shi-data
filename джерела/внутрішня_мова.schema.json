@@ -3765,7 +3765,7 @@
          "properties": {
           "as_new": {
            "type": "boolean",
-           "description": "true — keep it as one more saved case; otherwise the open saved case is updated (a new one when none is open)"
+           "description": "true — as one more saved case; else the open one is updated"
           }
          }
         }
@@ -3836,6 +3836,47 @@
          "properties": {}
         }
        }
+      },
+      {
+       "properties": {
+        "name": {
+         "const": "confirm_case"
+        },
+        "args": {
+         "type": "object",
+         "additionalProperties": false,
+         "properties": {}
+        }
+       }
+      },
+      {
+       "properties": {
+        "name": {
+         "const": "set_weather_feel"
+        },
+        "args": {
+         "type": "object",
+         "additionalProperties": false,
+         "required": [
+          "feel"
+         ],
+         "properties": {
+          "feel": {
+           "type": "string",
+           "enum": [
+            "deep_frost",
+            "frost",
+            "cold",
+            "cool",
+            "mild",
+            "warm",
+            "hot"
+           ],
+           "description": "weather feel"
+          }
+         }
+        }
+       }
       }
      ],
      "properties": {
@@ -3845,7 +3886,9 @@
         "list_scenarios",
         "open_scenario",
         "delete_scenario",
-        "new_scenario"
+        "new_scenario",
+        "confirm_case",
+        "set_weather_feel"
        ]
       },
       "args": {

@@ -33,7 +33,7 @@ sys.path.insert(0, ТУТ)
 import feed as F
 import verify as V
 import silhouette as S
-from композитор_річ import КЛАС_ТОЧКА
+from похибка_вимірів_тіла import КЛАС_ТОЧКА
 from фрази_формату import ЛИШЕ_JSON_КЛЮЧІ_UK
 from жнива_промпти import _ЗАГ_ВІЗЕРУНОК, _КРІЙ_ОДЯГУ, ПОВТОРІВ_ТИПОВО
 from жнива_фото import ТИПОВА_СТОРОНА
