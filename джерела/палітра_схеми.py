@@ -932,6 +932,8 @@ def слово_накриває(слово, lab):
     ск = V.слово_крамниці(слово)
     if not ск or not lab:
         return None
+    if V.вікно_вжитку(ск["ім"]) is None:
+        return None                       # вікна слова код не знає (довірених дизайнів нема, 14314)
     L, C, h = cs.lch(lab)
     Lmin, Lmax, Cmin, Cmax, дуга = V.вікно_вжитку(ск["ім"])
     return bool(Lmin <= L <= Lmax and Cmin <= C <= Cmax and (дуга is None or V.у_дузі(h, дуга)))
