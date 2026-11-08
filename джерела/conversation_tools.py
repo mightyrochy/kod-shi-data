@@ -23,14 +23,13 @@ import re
 ІНСТРУМЕНТИ = {
     "save_scenario": {
         "робить": "зберегти сценарій цієї розмови в збережені сценарії: новим або оновити відкритий",
-        "для_моделі": "saves this case (the passport and this conversation) to her saved cases",
-        "коли": "her new message asks to save or keep this case for later",
+        "для_моделі": "saves this case to her saved cases",
+        "коли": "she asks to save it",
         # Назви аргументом нема: назва сценарію — її ввід у полі форми, а слова з відповіді моделі на екрані — не її
         # доведені слова (корінь Е2-текст-жінці); без назви оновлення лишає назву відкритого сценарію.
         "вхід": {"type": "object", "additionalProperties": False, "properties": {
             "as_new": {"type": "boolean",
-                       "description": "true — keep it as one more saved case; otherwise the open saved case is "
-                                      "updated (a new one when none is open)"}}},
+                       "description": "true — as one more saved case; else the open one is updated"}}},
         "вихід": {"type": "object", "additionalProperties": False, "required": ["done"], "properties": {
             "done": {"type": "boolean", "description": "чи збережено"},
             "as_new": {"type": "boolean", "description": "збережено новим, а не оновлено відкритий"},
@@ -40,8 +39,8 @@ import re
     },
     "list_scenarios": {
         "робить": "показати її збережені сценарії переліком у розмові: назва, про що, дата; відкрити — дотиком",
-        "для_моделі": "shows the list of her saved cases under your reply",
-        "коли": "her new message asks to see or choose among her saved cases",
+        "для_моделі": "lists her saved cases under your reply",
+        "коли": "she asks to see them",
         "вхід": {"type": "object", "additionalProperties": False, "properties": {}},
         "вихід": {"type": "object", "additionalProperties": False, "required": ["done"], "properties": {
             "done": {"type": "boolean", "description": "чи прочитано збережені"},
@@ -51,8 +50,8 @@ import re
     },
     "open_scenario": {
         "робить": "відкрити збережений сценарій: його паспорт і розмову замість поточних",
-        "для_моделі": "opens one of her saved cases instead of the current one (what is not saved is lost)",
-        "коли": "her new message asks to open or go back to one of her saved cases",
+        "для_моделі": "opens one of her saved cases (unsaved is lost)",
+        "коли": "she asks to open one",
         "вхід": {"type": "object", "additionalProperties": False, "required": ["id"], "properties": {
             "id": {"type": "string", "minLength": 1, "description": "the \"id\" of one of saved_cases"}}},
         "переліки": {"id": "saved_cases"},
@@ -65,8 +64,8 @@ import re
     },
     "delete_scenario": {
         "робить": "видалити збережений сценарій",
-        "для_моделі": "deletes one of her saved cases for good",
-        "коли": "her new message asks to delete or remove one of her saved cases",
+        "для_моделі": "deletes a saved case for good",
+        "коли": "she asks to delete one",
         "вхід": {"type": "object", "additionalProperties": False, "required": ["id"], "properties": {
             "id": {"type": "string", "minLength": 1, "description": "the \"id\" of one of saved_cases"}}},
         "переліки": {"id": "saved_cases"},
@@ -78,14 +77,38 @@ import re
     },
     "new_scenario": {
         "робить": "почати новий сценарій: порожній паспорт і нова розмова",
-        "для_моделі": "starts a new empty case with a new conversation (what is not saved is lost)",
-        "коли": "her new message asks to start a new case from scratch",
+        "для_моделі": "starts a new empty case (unsaved is lost)",
+        "коли": "she asks for a new case",
         "вхід": {"type": "object", "additionalProperties": False, "properties": {}},
         "вихід": {"type": "object", "additionalProperties": False, "required": ["done"], "properties": {
             "done": {"type": "boolean", "description": "чи почато"}}},
         "показ": "картка в розмові нового сценарію: почато новий",
         "функція": "новийСценарій",
         "заміна_сценарію": True,
+    },
+    "confirm_case": {
+        "робить": "підтвердити, що паспорт нагоди зрозуміто правильно: зняти питання «Усе правильно?»",
+        "для_моделі": "marks her passport confirmed",
+        "коли": "she says it is right",
+        "вхід": {"type": "object", "additionalProperties": False, "properties": {}},
+        "вихід": {"type": "object", "additionalProperties": False, "required": ["done"], "properties": {
+            "done": {"type": "boolean", "description": "чи підтверджено"}}},
+        "показ": "картка під реплікою: розуміння підтверджено — тим самим підписом, що в кнопки «так»",
+        "функція": "підтвердитиРозумінняП",
+    },
+    "set_weather_feel": {
+        "робить": "обрати відчуття погоди плиткою «Коли й погода» без градусів; уже обране лишається",
+        "для_моделі": "sets the weather feel, no degrees",
+        "коли": "she names the weather by a word",
+        # Коди відчуттів — ті самі, що `ВІДЧУТТЯ_П` у показі (`внутрішня_мова`: weather_feel).
+        "вхід": {"type": "object", "additionalProperties": False, "required": ["feel"], "properties": {
+            "feel": {"type": "string", "enum": ["deep_frost", "frost", "cold", "cool", "mild", "warm", "hot"],
+                     "description": "weather feel"}}},
+        "вихід": {"type": "object", "additionalProperties": False, "required": ["done"], "properties": {
+            "done": {"type": "boolean", "description": "чи обрано"},
+            "feel": {"type": "string", "description": "обране відчуття; порожньо, коли вибір знято"}}},
+        "показ": "картка під реплікою: яке відчуття погоди обрано — тим самим підписом, що на плитці",
+        "функція": "обратиВідчуттяП",
     },
 }
 
