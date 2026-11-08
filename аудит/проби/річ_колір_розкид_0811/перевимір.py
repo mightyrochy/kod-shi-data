@@ -7,7 +7,7 @@
 вимір — `жнива_колір.поверхня_фото`, запис — `жнива_кадри.записати_вимір`. Звірка: головний сегмент
 нового виміру має той самий hex, що записав ноутбук, і та сама маска — інакше кадр «не відтворено».
 
-    python3 -I перевимір.py <тека даних з фото/ і дельта.json.gz> <вихід.json.gz> [--процесів 3]
+    python3 -I перевимір.py <тека даних з фото/ і дельта.json.gz> <вихід.json.gz> [--процесів 3] [--маска SAM]
 """
 import argparse, gzip, json, os, re, subprocess, sys, time
 from multiprocessing import Pool
@@ -63,6 +63,7 @@ def головна():
     ар = argparse.ArgumentParser()
     ар.add_argument("тека"); ар.add_argument("вихід"); ар.add_argument("--процесів", type=int, default=3)
     ар.add_argument("--ліміт", type=int, default=None)
+    ар.add_argument("--маска", default=None, help="лише кадри з цією записаною маскою (SAM — на ноутбуці)")
     а = ар.parse_args()
     тека = Path(а.тека)
     дельта = json.load(gzip.open(тека / "дельта.json.gz", "rt", encoding="utf-8"))
@@ -71,7 +72,8 @@ def головна():
     офери = {о["id"]: о for о in Ф.читати_yml(Ф.каталог_на_диску())[0]}
     завдання = [(ід, ЖП.тип_речі(офери[ід])[1], в, фото[(ід, в["файл"])])
                 for ід, кадри in sorted(дельта["записи"].items()) for в in кадри
-                if в.get("колір_тип") == "вимір" and в.get("придатна") and (ід, в["файл"]) in фото][:а.ліміт]
+                if в.get("колір_тип") == "вимір" and в.get("придатна") and (ід, в["файл"]) in фото
+                and а.маска in (None, в.get("маска"))][:а.ліміт]
     print("придатних вимірів: %d, з них уражених %d" % (len(завдання), sum(уражений(з[2]) for з in завдання)),
           flush=True)
     вих = dict(мета=dict(код=subprocess.check_output(["git", "rev-parse", "HEAD"], text=True).strip(),
