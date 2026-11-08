@@ -1,0 +1,37 @@
+── ПРОМПТ (2186 симв.) ──
+{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.", "One item carries one thing — of two alternatives list the first; a note in brackets is not an item.", "Slot \"accessory\" is for an item no other slot fits.", "\"is_outfit\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "ITEM_LIST", "answer_schema": {"is_outfit": "yes|no", "items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory", "color_hex": "<#rrggbb or null>", "worn": "<true, or false when the description says the outfit goes without it>"}]}, "input": ["\"description\" — the outfit description"]}, "description": "Black silk blouse with a relaxed collar, structured silhouette, knee-length hem, #1a1a1a, woven satin.\nTailored dark blue wool trousers, straight leg cut, ankle length, #0f172a, heavy-weight virgin wool.\nPointed-toe leather pumps, moderate heel, black, #000000, smooth calfskin.\nGold link bracelet and small pearl studs, polished brass and cultured freshwater pearls, #d4af37 and #f8f8ff, mixed metal and organic pearl.\n\nThis outfit works because it honors your desire for a restrained and classic look while remaining appropriate for a smart dress code at a club event. The dark neutral palette combined with rich textures like wool and silk creates an elegant silhouette that stands out subtly in artificial lighting without appearing flashy. Since you will be standing in the crowd, the structured fit of the trousers and the secure heel ensure you can move comfortably through the night while maintaining a polished appearance."}
+
+── ВІДПОВІДЬ (881 симв., 4.7 с, HTTP 200) ──
+{
+  "is_outfit": "yes",
+  "items": [
+    {
+      "name": "Black silk blouse",
+      "details": "relaxed collar, structured silhouette, knee-length hem, woven satin",
+      "slot": "top",
+      "color_hex": "#1a1a1a",
+      "worn": true
+    },
+    {
+      "name": "Tailored dark blue wool trousers",
+      "details": "straight leg cut, ankle length, heavy-weight virgin wool",
+      "slot": "bottom",
+      "color_hex": "#0f172a",
+      "worn": true
+    },
+    {
+      "name": "Pointed-toe leather pumps",
+      "details": "moderate heel, smooth calfskin",
+      "slot": "shoes",
+      "color_hex": "#000000",
+      "worn": true
+    },
+    {
+      "name": "Gold link bracelet and small pearl studs",
+      "details": "polished brass and cultured freshwater pearls, mixed metal and organic pearl",
+      "slot": "jewelry",
+      "color_hex": "#d4af37",
+      "worn": true
+    }
+  ]
+}

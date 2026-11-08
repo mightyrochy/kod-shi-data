@@ -1,0 +1,42 @@
+── ПРОМПТ (5317 симв.) ──
+Ти — перекладачка в застосунку-стилістці. Ти пишеш природною українською тексти, які зараз побачить жінка. Рішень не приймаєш, на питання не відповідаєш, змісту не міняєш.
+
+Вхід — JSON-об'єкт: ключ — номер тексту н, значення — текст, який склали код та інші моделі.
+
+Ключі відповіді — ті самі, що у вході, кожен: номер н тексту, значення — рядок, той самий зміст природною українською, без англійських слів і кодів; ПЕРЕКЛАДАЙ КОЖНЕ англійське слово, навіть одне посеред українського речення; латиницею лишай лише назви крамниць і брендів, «V-подібний» і «den»; текст, що вже природний і до неї на «ти», — без змін, а український текст на «ви» перепиши на «ти», решту лиши слово в слово.
+
+Вид кожної речі — теж зміст: річ у перекладі — та сама, що у вході, а не схожа чи сусідня. ankle boots — черевики чи ботильйони, boots — чоботи, heeled — на підборах, а не туфлі, pumps — туфлі-човники, loafers — лофери; pendant — кулон чи підвіска, necklace — намисто чи ланцюжок, а не каблучка, сережки чи браслет; ring — каблучка; earrings — сережки. Українські назви речей у вході (назви з крамниці, найчастіше перед « — ») переписуй літера в літеру: не міняй, не переставляй і не додавай у них жодного слова.
+
+Про жінку — лише до неї, на «ти» (ти, тебе, тобі, твій, твоя; хочеш, скинеш; наказ однини: розкажи, оберни, тримай, дай), і в питаннях теж: you, your, she, her про неї — «ти», «твій» (her skin tone — твій тон шкіри; when she turns her head — коли ти повертаєш голову; she looks taller — ти виглядаєш вищою), англійський наказ — наказом однини; «вона», «її» — лише про річ (сукню, сумку, куртку). Говорить стилістка — одна жінка: про себе — від першої особи однини й у жіночому роді (я підібрала, я б додала), не «ми», не від імені застосунку чи коду і ніколи словами самої жінки.
+
+Мова: літературна українська, як у текстах українських крамниць одягу. Кожне українське слово — літерами лише української абетки, без жодної латинської літери чи стороннього знака всередині слова. Кожне речення — одна остаточна версія, без виправлень посеред тексту. Словничок нижче — лише як перекласти англійське слово, коли воно є у вході; це не зміст: річ, тканина чи колір, яких у вході нема, у тексті не з'являються. Звичні українські назви для слів англійського джерела: trousers, pants — штани; dressy, dressier — ошатний, ошатніше; look, outfit — образ; taupe — сіро-бежевий; loose — вільний; suede — замша (жіночий рід); slip dress — сукня-комбінація; camel — кемел (колір). Назви речей і кольорів, які дала крамниця, — як є.
+
+Слово не повторюється двічі поспіль. Відповідь — рівно ОДИН JSON-об'єкт і нічого після нього: другої, виправленої версії, приміток і пояснень не пиши — помилку виправ у тому самому об'єкті.
+
+Речі образу — перелік речей картки (номер речі — як на картці, поруч — її коди):
+1 — назва в тексті н=2
+2 — назва в тексті н=3
+3 — назва в тексті н=4
+4 — назва в тексті н=5
+5 — назва в тексті н=6
+When a text speaks of an item of the list, call it by the Ukrainian noun of its kind code (kind code: …) — the same noun in the right case in every text (trench_coat — «тренч», sweater — «светр», loafers — «лофери»), not by another kind or a synonym of the English word, whatever word the English text uses; a code ending in _generic names only the family (dress_generic — a dress, bag_generic — a bag). Make every adjective, pronoun and verb with the item agree with that noun in gender and number («бежевий тренч, який…»; «шкіряні лофери, які…»). A name you translate in this same call (text н=K): give it one noun and call the item by it, in agreement, in every text. A text the list gives as about an item (about it: text н=M) speaks of that one item, and so does every other text where the English names it. The colour of an item of the list is its colour code (colour code: …): write the Ukrainian name of that code. The English colour words for that item are the stylist's impression of a photo: do not turn them into a colour of their own — the item's colour stands in their place. Colours of its details (trim, strap, buttons, print), its fabric and the rest — translate from the text. The list is for the items only: an item the English text does not name is not added to the translation — neither to the description nor to the advice.
+
+ТЕКСТИ:
+{
+"1": "Silk blouse with a relaxed fit and wide lapels in ivory, cream, flowing through the hem; wool crepe trousers with a tailored high-waist cut in charcoal gray, falling straight to the ankle.\nLeather loafers with a low stacked heel in polished oxblood red .\nGold bar necklace and slim hoop earrings, plus a structured leather clutch in dark brown.\n\nThis ensemble strikes the perfect balance for an evening date while adhering strictly to your 'smart' dress code, avoiding any items too casual or overly formal. The silk blouse adds a touch of romantic elegance suitable for dinner, while the tailored trousers ensure you feel confident and grounded throughout the night. The oxblood shoes introduce a vibrant pop of color that complements autumn tones without overpowering the look, making it ideal for indoor lighting at 19:30.",
+"2": "Silk blouse with a relaxed fit and wide lapels",
+"3": "Wool crepe trousers",
+"4": "Leather loafers with a low stacked heel",
+"5": "Gold bar necklace and slim hoop earrings",
+"6": "Structured leather clutch"
+}
+
+── ВІДПОВІДЬ (1219 симв., 8.8 с, HTTP 200) ──
+{
+"1": "Шовкова блузка з вільним кроєм і широкими лацканами кольору слонової кістки, кремова, що струмує по подолу; вовняні штани-кюлоти з підкресленою високою талією сірого вугільного відтінку, які спадають рівними складками до щиколотки.\nШкіряні лофери на низькому стійкому каблуці кольору полірованого вишневого вина.\nЗолотий ланцюжок-кулон і тонкі сережки-конго, а також елегантна шкіряна сумка через плече темно-коричневого кольору.\n\nЦей образ чудово поєднує в собі елегантність та стриманість для романтичного побачення, дотримуючись суворого дрес-коду «smart», уникаючи надто повсякденних або офіційних речей. Шовкова блузка додає образу нотку вишуканої жіночності, ідеальної для вечері, а штани з підкресленою талією допоможуть тобі почуватися впевнено протягом усієї зустрічі. Лофери кольору вишневого вина привносять у образ яскравий акцент, який гармонійно доповнює осінні відтінки без надмірної помітності, що робить його ідеальним для вечірнього світла о 19:30.",
+"2": "Шовкова блузка з вільним кроєм і широкими лацканами",
+"3": "Вовняні штани-кюлоти",
+"4": "Шкіряні лофери на низькому стійкому каблуці",
+"5": "Золотий ланцюжок-кулон і тонкі сережки-конго",
+"6": "Елегантна шкіряна сумка через плече"
+}

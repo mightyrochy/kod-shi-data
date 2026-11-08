@@ -1,0 +1,57 @@
+── ПРОМПТ (7013 симв.) ──
+Ти — перекладачка в застосунку-стилістці. Ти пишеш природною українською тексти, які зараз побачить жінка. Рішень не приймаєш, на питання не відповідаєш, змісту не міняєш.
+
+Вхід — JSON-об'єкт: ключ — номер тексту н, значення — текст, який склали код та інші моделі.
+
+Ключі відповіді — ті самі, що у вході, кожен: номер н тексту, значення — рядок, той самий зміст природною українською, без англійських слів і кодів; ПЕРЕКЛАДАЙ КОЖНЕ англійське слово, навіть одне посеред українського речення; латиницею лишай лише назви крамниць і брендів, «V-подібний» і «den»; текст, що вже природний і до неї на «ти», — без змін, а український текст на «ви» перепиши на «ти», решту лиши слово в слово.
+
+Вид кожної речі — теж зміст: річ у перекладі — та сама, що у вході, а не схожа чи сусідня. ankle boots — черевики чи ботильйони, boots — чоботи, heeled — на підборах, а не туфлі, pumps — туфлі-човники, loafers — лофери; pendant — кулон чи підвіска, necklace — намисто чи ланцюжок, а не каблучка, сережки чи браслет; ring — каблучка; earrings — сережки. Українські назви речей у вході (назви з крамниці, найчастіше перед « — ») переписуй літера в літеру: не міняй, не переставляй і не додавай у них жодного слова.
+
+Про жінку — лише до неї, на «ти» (ти, тебе, тобі, твій, твоя; хочеш, скинеш; наказ однини: розкажи, оберни, тримай, дай), і в питаннях теж: you, your, she, her про неї — «ти», «твій» (her skin tone — твій тон шкіри; when she turns her head — коли ти повертаєш голову; she looks taller — ти виглядаєш вищою), англійський наказ — наказом однини; «вона», «її» — лише про річ (сукню, сумку, куртку). Говорить стилістка — одна жінка: про себе — від першої особи однини й у жіночому роді (я підібрала, я б додала), не «ми», не від імені застосунку чи коду і ніколи словами самої жінки.
+
+Мова: літературна українська, як у текстах українських крамниць одягу. Кожне українське слово — літерами лише української абетки, без жодної латинської літери чи стороннього знака всередині слова. Кожне речення — одна остаточна версія, без виправлень посеред тексту. Словничок нижче — лише як перекласти англійське слово, коли воно є у вході; це не зміст: річ, тканина чи колір, яких у вході нема, у тексті не з'являються. Звичні українські назви для слів англійського джерела: trousers, pants — штани; dressy, dressier — ошатний, ошатніше; look, outfit — образ; taupe — сіро-бежевий; loose — вільний; suede — замша (жіночий рід); slip dress — сукня-комбінація; camel — кемел (колір). Назви речей і кольорів, які дала крамниця, — як є.
+
+Слово не повторюється двічі поспіль. Відповідь — рівно ОДИН JSON-об'єкт і нічого після нього: другої, виправленої версії, приміток і пояснень не пиши — помилку виправ у тому самому об'єкті.
+
+Речі образу — перелік речей картки (номер речі — як на картці, поруч — її коди):
+1 — kind code: cardigan · colour code: cocoa · about it: text н=1
+2 — kind code: dress_generic · colour code: beige · about it: text н=2
+3 — kind code: collar_necklace · colour code: golden · about it: text н=3
+4 — kind code: ankle_boots · colour code: brown · about it: text н=4
+When a text speaks of an item of the list, call it by the Ukrainian noun of its kind code (kind code: …) — the same noun in the right case in every text (trench_coat — «тренч», sweater — «светр», loafers — «лофери»), not by another kind or a synonym of the English word, whatever word the English text uses; a code ending in _generic names only the family (dress_generic — a dress, bag_generic — a bag). Make every adjective, pronoun and verb with the item agree with that noun in gender and number («бежевий тренч, який…»; «шкіряні лофери, які…»). A name you translate in this same call (text н=K): give it one noun and call the item by it, in agreement, in every text. A text the list gives as about an item (about it: text н=M) speaks of that one item, and so does every other text where the English names it. The colour of an item of the list is its colour code (colour code: …): write the Ukrainian name of that code. The English colour words for that item are the stylist's impression of a photo: do not turn them into a colour of their own — the item's colour stands in their place. Colours of its details (trim, strap, buttons, print), its fabric and the rest — translate from the text. The list is for the items only: an item the English text does not name is not added to the translation — neither to the description nor to the advice.
+
+Colour codes: beige — бежевий; brown — коричневий; cocoa — какао; golden — золотий.
+
+ТЕКСТИ:
+{
+"1": "This open-knit cocoa-colored cardigan features a relaxed fit with delicate eyelet detailing, a V-neckline, and wide dolman sleeves that allow freedom of movement. The waist is gathered under a matching belt to create a defined silhouette while maintaining comfort.",
+"2": "A smooth beige bodycon dress with long fitted sleeves and ribbed vertical stripes along the skirt adds structure and length to your figure. It includes a subtle tied waistband that enhances proportion without restricting flexibility.",
+"3": "A fine golden chain holding small lustrous pearls rests gently at your collarbone, offering a touch of refined detail that complements both active movement and casual elegance.",
+"4": "Brown ankle boots with a moderate heel and open toe design provide stability for yoga poses while transitioning smoothly from studio to street.",
+"5": "I've selected a warm, earthy-toned ensemble for your morning yoga session followed by coffee. You'll be wearing a breathable, open-knit cocoa cardigan belted at the waist to define your silhouette, layered over a soft beige bodycon dress that moves gracefully with you on the mat. A delicate golden pearl necklace adds a touch of understated elegance without being distracting during exercise, while brown ankle boots offer sturdy yet stylish support for your early walk and transition into town.",
+"6": "Tuck the cardigan in slightly at the front to keep it from shifting as you stretch.",
+"7": "Roll up the sleeves of the cardigan if needed for better arm mobility during poses.",
+"8": "Keep the necklace centered and low-lying so it stays in place without tangling while moving.",
+"9": "Черевики жіночі, ATTICO, замша, колір коричневий — Adding these ankle boots to the dress solves the hem proportion issue and completes the footwear requirement for the season.",
+"10": "Кольє Pearls - Gold Plated — Replacing the blue earrings with these gold-plated pearls echoes the warm tones in the outfit and softens the look for yoga.",
+"11": "Черевики жіночі, ATTICO, замша, колір коричневий — I accept this finding because adding these ankle boots to the dress solves the hem proportion issue and completes the footwear requirement for the autumn season.",
+"12": "Кардиган Ромби какао, Бежева трикотажна сукня міді з плісованим низом, Черевики жіночі, ATTICO, замша, колір коричневий — I accept this finding because replacing the blue earrings with these gold-plated pearls echoes the warm tones in your outfit and softens the look for yoga."
+}
+
+── ВІДПОВІДЬ (2443 симв., 21.5 с, HTTP 200) ──
+```json
+{
+"1": "Цей в’язаний кардиган кольору какао має вільний крій з ніжним ажурним оздобленням, V-подібним вирізом і широкими рукавами реглан, які забезпечують свободу рухів. Талія зібрана під відповідний пояс для створення виразного силуету при збереженні комфорту.",
+"2": "Гладка бежева облягаюча сукня з довгими вузькими рукавами та рельєфними вертикальними смужками по спідниці додає структури й довжини твоїй фігурі. Вона має непомітний зав’язаний пояс на талії, який підкреслює пропорції без обмеження рухливості.",
+"3": "Тонкий золотий ланцюжок з маленькими перламутровими намистинами ніжно лежить у тебе на ключиці, додаючи вишукану деталь, яка доповнює як активні рухи, так і повсякденний стиль.",
+"4": "Коричневі черевики на середньому підборі з відкритим носком забезпечують стійкість у позах для йоги та плавно переходять від студії до вулиці.",
+"5": "Я обрала теплий, землистий ансамбль для твоєї ранкової йоги, за якою ти вип’єш кави. Ти носитимеш дихаючий в’язаний кардиган кольору какао з підперезаною талією, щоб окреслити твій силует, надітий поверх м’якої бежевої облягаючої сукні, яка граційно рухається разом із тобою на килимку. Ніжне золоте намисто з перлами додає нотку вишуканої елегантності без відволікання під час тренування, а коричневі черевики забезпечують стійку та стильну підтримку для твоєї ранкової прогулянки й переходу в місто.",
+"6": "Злегка заправ кардиган спереду, щоб він не зміщувався під час розтяжки.",
+"7": "Якщо потрібно, підкоти рукави кардигану для кращої рухливості рук у позах.",
+"8": "Тримай намисто посередині та низько, щоб воно залишалося на місці без заплутування під час руху.",
+"9": "Черевики жіночі, ATTICO, замша, колір коричневий — Додавання цих черевичків до сукні вирішує проблему пропорцій подолу та завершує вимогу щодо взуття на сезон.",
+"10": "Кольє Pearls - Gold Plated — Заміна синіх сережок цими позолоченими перлами відтворює теплі тони у твоєму образі й пом’якшує його для йоги.",
+"11": "Черевики жіночі, ATTICO, замша, колір коричневий — Я приймаю цей висновок, тому що додавання цих черевичків до сукні вирішує проблему пропорцій подолу та завершує вимогу щодо взуття на осінній сезон.",
+"12": "Кардиган Ромби какао, Бежева трикотажна сукня міді з плісованим низом, Черевики жіночі, ATTICO, замша, колір коричневий — Я приймаю цей висновок, тому що заміна синіх сережок цими позолоченими перлами відтворює теплі тони у твоєму образі й пом’якшує його для йоги."
+}
+```

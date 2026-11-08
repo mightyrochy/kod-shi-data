@@ -14,6 +14,7 @@ import importlib
 import json
 from pathlib import Path
 import re
+import signal
 import subprocess
 import sys
 import types
@@ -140,7 +141,11 @@ class Прогін:
         вих = subprocess.run(['node', str(ТЕКА / 'річ_запис_dom.cjs')], input=json.dumps(вхід, ensure_ascii=False),
                              capture_output=True, text=True, encoding='utf-8', timeout=30)
         if вих.returncode:
-            raise RuntimeError(вих.stderr)
+            # Порожній stderr нічого не казав про причину (CI 07.11: код 1 без stderr): код, сигнал і хвіст stdout.
+            сигнал = f', сигнал {signal.Signals(-вих.returncode).name}' if вих.returncode < 0 else ''
+            raise RuntimeError(f'node: код {вих.returncode}{сигнал}; вхід {len(json.dumps(вхід))} байт; '
+                               f'stderr: {вих.stderr.strip()[-500:] or "порожній"}; '
+                               f'хвіст stdout ({len(вих.stdout)} симв.): {вих.stdout[-300:]!r}')
         return json.loads(вих.stdout)
 
     def dom(self, тіло, url, селектори):

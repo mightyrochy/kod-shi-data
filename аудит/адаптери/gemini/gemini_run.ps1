@@ -1241,6 +1241,7 @@ function Start-Markers($Workers) {
         $started++
         if ($m.Gpu) {
             $gpuWhy = 'GPU: її щойно взяв наряд цього проходу'
+            $script:GpuHoldReason = 'замок GPU іншого наряду'  # як у Get-GpuBusyReason: без неї сигнал утримання — «GPU: , позначок N»
             # Наряд, що пішов у чекання (REVIEW_API, PLAN_WAIT) за секунди, GPU не тримає: наступна GPU-позначка проходу її бере.
             if (Test-LaterGpuMarker $ordered $m) {
                 if ((Wait-GpuWorkerOutcome $worker (Get-StatePath (Get-MarkerKey $m))) -eq 'EXITED') { $gpuWhy = $null }

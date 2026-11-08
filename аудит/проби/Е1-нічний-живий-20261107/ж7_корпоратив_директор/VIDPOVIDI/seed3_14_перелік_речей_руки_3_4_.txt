@@ -1,0 +1,58 @@
+── ПРОМПТ (2663 симв.) ──
+{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.", "One item carries one thing — of two alternatives list the first; a note in brackets is not an item.", "Slot \"accessory\" is for an item no other slot fits.", "\"is_outfit\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "ITEM_LIST", "answer_schema": {"is_outfit": "yes|no", "items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory", "color_hex": "<#rrggbb or null>", "worn": "<true, or false when the description says the outfit goes without it>"}]}, "input": ["\"description\" — the outfit description"]}, "description": "Emerald green silk blouse with a structured collar, tailored fit, mid-thigh length, deep forest green (#1a4d3e), fluid silk.\nCharcoal grey wool-blend wide-leg trousers, straight leg cut, ankle length, dark charcoal (#2c302f), fine merino wool.\nTailored blazer in matching charcoal wool-blend, single-breasted with notch lapels, hip length, deep charcoal (#2c302f), structured wool blend.\nPointed-toe pumps in polished black leather, classic stiletto heel, mid-calf height, glossy black (#000000), smooth calfskin leather.\nSmall rectangular clutch in matte black patent leather, minimal hardware, compact size, deep black (#050505), synthetic patent material.\nGold-toned hoop earrings and a delicate gold chain necklace, polished finish, medium circumference, metallic gold (#D4AF37), 14k gold vermeil.\n\nThis outfit works perfectly for a corporate party where you might meet the director, as it bridges professional authority with celebratory elegance. The structured blazer and tailored trousers convey competence and seriousness, ensuring no one questions your status while still feeling festive enough for an event. The rich emerald color adds a touch of luxury without being overly flashy, striking the right balance between respect for the setting and personal style. Finally, the polished black accessories ground the look, creating a cohesive silhouette that commands attention with quiet confidence."}
+
+── ВІДПОВІДЬ (1446 симв., 6.4 с, HTTP 200) ──
+{
+  "is_outfit": "yes",
+  "items": [
+    {
+      "name": "blouse",
+      "details": "structured collar, tailored fit, mid-thigh length, fluid silk fabric",
+      "slot": "top",
+      "color_hex": "#1a4d3e",
+      "worn": true
+    },
+    {
+      "name": "trousers",
+      "details": "wide-leg cut, straight leg, ankle length, fine merino wool fabric",
+      "slot": "bottom",
+      "color_hex": "#2c302f",
+      "worn": true
+    },
+    {
+      "name": "blazer",
+      "details": "single-breasted with notch lapels, hip length, structured wool blend fabric",
+      "slot": "outerwear",
+      "color_hex": "#2c302f",
+      "worn": true
+    },
+    {
+      "name": "shoes",
+      "details": "pointed-toe, classic stiletto heel, mid-calf height, smooth calfskin leather",
+      "slot": "shoes",
+      "color_hex": "#000000",
+      "worn": true
+    },
+    {
+      "name": "bag",
+      "details": "small rectangular clutch, minimal hardware, compact size, synthetic patent material",
+      "slot": "bag",
+      "color_hex": "#050505",
+      "worn": true
+    },
+    {
+      "name": "earrings",
+      "details": "gold-toned hoops, polished finish, medium circumference, 14k gold vermeil",
+      "slot": "earrings",
+      "color_hex": "#D4AF37",
+      "worn": true
+    },
+    {
+      "name": "necklace",
+      "details": "delicate chain, polished finish, metallic gold",
+      "slot": "necklace",
+      "color_hex": "#D4AF37",
+      "worn": true
+    }
+  ]
+}

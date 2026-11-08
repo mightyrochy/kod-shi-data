@@ -1,0 +1,27 @@
+{
+ "версія": 1,
+ "запит": {
+  "model": "qwen/qwen3.5-9b",
+  "max_tokens": 4000,
+  "messages": [
+   {
+    "role": "user",
+    "content": [
+     {
+      "type": "text",
+      "text": "{\"task\": {\"role\": \"You are a personal stylist. Put together one outfit for her case.\", \"rules\": [\"Items one per line, garments first, then shoes and accessories: what it is, cut, length, color with its hex code, fabric.\", \"An outer layer only when the weather needs it; at +20 °C and warmer there is none.\", \"Last, why this outfit works, in 3–4 sentences.\"], \"limits\": [\"Do not name lightness numbers, body measurements or height in numbers, or body-type labels, and do not say you had limits.\", \"The answer is plain text laid out as the rules say, not JSON.\"], \"language\": \"English\", \"answer\": \"OUTFIT_TEXT\", \"input\": [\"\\\"case\\\" — her case: the occasion, where and when, the weather, the dress code, her wishes and refusals — as codes, her own words as quotes; do not take an item that goes against her refusals or her words\", \"\\\"formality\\\" — dress band; origin in sources: home (loungewear, athleisure, sportswear) < everyday (jeans, a T-shirt and sneakers; neat casual, dark denim) < neat (business: a blouse, a shirt or a refined knit with trousers or a skirt, a textured jacket or a cardigan, loafers, ballet flats or ankle boots; social: a day dress, a refined knit with a skirt or trousers, a textured jacket, neat flats or ankle boots) < smart (business: a jacket with trousers or a skirt, a blouse or a shirt, loafers or pumps; a sheath dress with a jacket; social: a cocktail dress, heeled shoes) < formal (business: a business suit — a jacket with trousers or a skirt of one fabric — with a blouse, pumps; social: a formal dress of a noble fabric, heeled shoes) < very_smart (an evening gown) < ceremonial (a full-length evening gown with long gloves)\", \"\\\"person\\\" — facts about her from her photo and measurements, without conclusions: colors in hex (one per measurement), sizes in cm\"]}, \"case\": {\"field_quotes\": {\"occasion\": \"завтра співбесіда в банку на посаду аналітика, о десятій ранку\", \"place\": \"банку\", \"part_of_day\": \"о десятій ранку\", \"vetoes\": \"і без підборів\"}, \"formality_reason\": \"norm\", \"sources\": {\"field_quotes\": {\"kind\": \"default\"}, \"formality_reason\": {\"kind\": \"default\"}, \"refusals\": {\"kind\": \"reading\", \"quote\": \"і без підборів\", \"parts\": [{\"kind\": \"reading\", \"quote\": \"і без підборів\"}]}, \"place\": {\"kind\": \"reading\", \"quote\": \"банку\"}, \"occasion\": {\"kind\": \"her\", \"quote\": \"завтра співбесіда в банку на посаду аналітика, о десятій ранку\"}, \"precipitation\": {\"kind\": \"reading\"}, \"formality\": {\"kind\": \"reading\"}, \"event\": {\"kind\": \"reading\"}, \"part_of_day\": {\"kind\": \"reading\", \"quote\": \"о десятій ранку\"}, \"shoe_request\": {\"kind\": \"derived\"}}, \"event\": \"завтра співбесіда в банку на посаду аналітика, о десятій ранку\", \"part_of_day\": \"morning\", \"refusals\": {\"types\": [\"heeled_sandals\", \"heels\"]}, \"occasion\": \"job_interview\", \"place\": \"office\", \"shoe_request\": \"no_heel\", \"formality\": [\"everyday\"], \"season\": \"autumn\", \"light\": \"daylight\"}, \"person\": {\"skin_hex\": [\"#c8a27a\", \"#bd9669\", \"#d1ad87\"], \"hair_hex\": [\"#3a2a20\", \"#4a362a\"], \"eyes_hex\": \"#7a5a36\", \"height_cm\": 163, \"girths_cm\": {\"shoulders\": 94, \"bust\": 86, \"waist\": 70, \"hips\": 106}}}"
+     }
+    ]
+   }
+  ],
+  "temperature": 1
+ },
+ "відповідь": {
+  "status": 200,
+  "contentType": "application/json",
+  "headers": {
+   "x-model": "qwen/qwen3.5-9b"
+  },
+  "body": "{\"content\":[{\"type\":\"text\",\"text\":\"Chinos in a neutral taupe shade (#d1ad87), tailored to a straight-leg cut with a knee-length hem, crafted from a crisp cotton-elastic blend for all-day comfort;\\nA structured navy blazer featuring a notch lapel and single-breasted closure, falling to the hip in a classic fit, made of lightweight worsted wool suitable for autumn mornings;\\nLeather loafers in a soft cognac tone (#c8a27a), designed with a slip-on fit and no heel elevation, constructed from durable full-grain leather;\\nA simple pearl pendant necklace on a 45cm chain to add a subtle touch of polish without distraction;\\nThis outfit works because it balances professional readiness with the relaxed atmosphere of a morning bank interview in autumn, respecting her refusal of heels by choosing elegant slip-ons. The combination of chinos and a blazer hits the \\\"everyday\\\" formality band perfectly while remaining comfortable for a full day of walking and sitting during the interview process.\"}],\"usage\":{\"input_tokens\":922,\"output_tokens\":206},\"stop_reason\":\"end_turn\"}"
+ }
+}

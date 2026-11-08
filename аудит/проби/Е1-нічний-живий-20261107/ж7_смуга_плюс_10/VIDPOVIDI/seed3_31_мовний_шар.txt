@@ -1,0 +1,64 @@
+── ПРОМПТ (7390 симв.) ──
+Ти — перекладачка в застосунку-стилістці. Ти пишеш природною українською тексти, які зараз побачить жінка. Рішень не приймаєш, на питання не відповідаєш, змісту не міняєш.
+
+Вхід — JSON-об'єкт: ключ — номер тексту н, значення — текст, який склали код та інші моделі.
+
+Ключі відповіді — ті самі, що у вході, кожен: номер н тексту, значення — рядок, той самий зміст природною українською, без англійських слів і кодів; ПЕРЕКЛАДАЙ КОЖНЕ англійське слово, навіть одне посеред українського речення; латиницею лишай лише назви крамниць і брендів, «V-подібний» і «den»; текст, що вже природний і до неї на «ти», — без змін, а український текст на «ви» перепиши на «ти», решту лиши слово в слово.
+
+Вид кожної речі — теж зміст: річ у перекладі — та сама, що у вході, а не схожа чи сусідня. ankle boots — черевики чи ботильйони, boots — чоботи, heeled — на підборах, а не туфлі, pumps — туфлі-човники, loafers — лофери; pendant — кулон чи підвіска, necklace — намисто чи ланцюжок, а не каблучка, сережки чи браслет; ring — каблучка; earrings — сережки. Українські назви речей у вході (назви з крамниці, найчастіше перед « — ») переписуй літера в літеру: не міняй, не переставляй і не додавай у них жодного слова.
+
+Про жінку — лише до неї, на «ти» (ти, тебе, тобі, твій, твоя; хочеш, скинеш; наказ однини: розкажи, оберни, тримай, дай), і в питаннях теж: you, your, she, her про неї — «ти», «твій» (her skin tone — твій тон шкіри; when she turns her head — коли ти повертаєш голову; she looks taller — ти виглядаєш вищою), англійський наказ — наказом однини; «вона», «її» — лише про річ (сукню, сумку, куртку). Говорить стилістка — одна жінка: про себе — від першої особи однини й у жіночому роді (я підібрала, я б додала), не «ми», не від імені застосунку чи коду і ніколи словами самої жінки.
+
+Мова: літературна українська, як у текстах українських крамниць одягу. Кожне українське слово — літерами лише української абетки, без жодної латинської літери чи стороннього знака всередині слова. Кожне речення — одна остаточна версія, без виправлень посеред тексту. Словничок нижче — лише як перекласти англійське слово, коли воно є у вході; це не зміст: річ, тканина чи колір, яких у вході нема, у тексті не з'являються. Звичні українські назви для слів англійського джерела: trousers, pants — штани; dressy, dressier — ошатний, ошатніше; look, outfit — образ; taupe — сіро-бежевий; loose — вільний; suede — замша (жіночий рід); slip dress — сукня-комбінація; camel — кемел (колір). Назви речей і кольорів, які дала крамниця, — як є.
+
+Слово не повторюється двічі поспіль. Відповідь — рівно ОДИН JSON-об'єкт і нічого після нього: другої, виправленої версії, приміток і пояснень не пиши — помилку виправ у тому самому об'єкті.
+
+Речі образу — перелік речей картки (номер речі — як на картці, поруч — її коди):
+1 — kind code: dress_generic · colour code: black · about it: text н=1
+2 — kind code: fur_coat · colour code: beige · about it: text н=2
+3 — kind code: ballet_flats · colour code: brown · about it: text н=3
+4 — kind code: scarf_generic · colour code: red · about it: text н=4
+5 — kind code: belt_bag · colour code: red · about it: text н=5
+When a text speaks of an item of the list, call it by the Ukrainian noun of its kind code (kind code: …) — the same noun in the right case in every text (trench_coat — «тренч», sweater — «светр», loafers — «лофери»), not by another kind or a synonym of the English word, whatever word the English text uses; a code ending in _generic names only the family (dress_generic — a dress, bag_generic — a bag). Make every adjective, pronoun and verb with the item agree with that noun in gender and number («бежевий тренч, який…»; «шкіряні лофери, які…»). A name you translate in this same call (text н=K): give it one noun and call the item by it, in agreement, in every text. A text the list gives as about an item (about it: text н=M) speaks of that one item, and so does every other text where the English names it. The colour of an item of the list is its colour code (colour code: …): write the Ukrainian name of that code. The English colour words for that item are the stylist's impression of a photo: do not turn them into a colour of their own — the item's colour stands in their place. Colours of its details (trim, strap, buttons, print), its fabric and the rest — translate from the text. The list is for the items only: an item the English text does not name is not added to the translation — neither to the description nor to the advice.
+
+Colour codes: beige — бежевий; black — чорний; brown — коричневий; red — червоний.
+
+ТЕКСТИ:
+{
+"1": "A black bodycon dress featuring a high neck and long sleeves, accented with delicate light blue piping that traces the collar and flows down the sides to tie at your hips.",
+"2": "A relaxed-fit beige fur coat with a plush, curly texture and a wide collar, designed to be worn open or closed for added structure.",
+"3": "Elegant brown ballet flats with a clean silhouette and square toes, offering all-day comfort for your walk.",
+"4": "A vibrant striped scarf featuring bold blocks of blue, red, and green, finished with long fringes that add movement to your look.",
+"5": "A sleek red belt bag adorned with the signature Gucci logo, featuring a detachable strap and gold hardware for secure carrying.",
+"6": "I have put together a chic and cozy look for your autumn city walk. This outfit is anchored by a striking black bodycon dress with light blue accents, which you layer under a soft, relaxed beige fur coat that adds warmth and texture. You complete the ensemble with comfortable brown ballet flats, a bold red Gucci belt bag to keep your hands free, and a colorful striped scarf that brings a pop of pattern to the mix.",
+"7": "Wrap the collar of the beige coat around your neck for added warmth against the cool breeze.",
+"8": "Tuck the ends of your scarf casually around your neck to frame your face without feeling restricted.",
+"9": "Екошуба жіноча з англійським коміром і штучним хутром casual Bella Bicchi — A beige faux-fur coat provides the necessary warmth for +10 °C without feeling too heavy for a walk.",
+"10": "Балетки з натуральної шкіри, коричневі — Brown ballet flats are chosen to match the hem length and avoid cutting the leg line.",
+"11": "М'який шарф з бахромою синьо-червоний — Blue-red striped earrings replace the pearl ones to add a touch of loud colour that acts as a deliberate accent, solving 'accent_role_lost'.",
+"12": "Поясна сумка з червоної шкіри з лого, М'який шарф з бахромою синьо-червоний — I accept this remark because removing the red textile belt bag simplifies the outfit to one main accent color (rose), ensuring you don't have too many competing loud elements while keeping the necessary 'below band' layer for warmth.",
+"13": "Сукня Greta, Балетки з натуральної шкіри, коричневі, Поясна сумка з червоної шкіри з лого — I accept this remark as a reminder that the coat's relaxed length is perfectly fine for your everyday walk; it serves its purpose of keeping you warm without looking out of place in the city setting.",
+"14": "Балетки з натуральної шкіри, коричневі — Adding brown ballet flats matches the belt's tone to ground the hem and continues the leg line, addressing the 'shoes_cut_leg_line' concern.",
+"15": "Балетки з натуральної шкіри, коричневі — Brown ballet flats are added to complete the outfit, grounding the hem and avoiding 'no_shoes'."
+}
+
+── ВІДПОВІДЬ (2928 симв., 20.8 с, HTTP 200) ──
+```json
+{
+"1": "Чорна обтисла сукня з високим коміром і довгими рукавами, прикрашена ніжним блакитним кантом, який окреслює комір і спускається по боках до талії, де зав’язується.",
+"2": "Бежеве хутряне пальто вільного крою з пухнастою кучерявою текстурою й широким коміром, яке можна носити розстебнутим або застебнутим для додаткової структури.",
+"3": "Елегантні коричневі балетки з чистим силуетом і квадратним носком, які забезпечують комфорт протягом усього дня під час прогулянки.",
+"4": "Яскравий смугастий шарф із великими блоками синього, червоного й зеленого кольорів, прикрашений довгими китицями, що додають руху твоєму образу.",
+"5": "Стильна червона сумка на поясі з фірмовим логотипом Gucci, оснащена знімним ремінцем і золотистим фурнітуром для безпечного носіння.",
+"6": "Я підібрала тобі елегантний і затишний образ для твоєї осінньої міської прогулянки. Цей комплект базується на ефектній чорній обтислій сукні з блакитними акцентами, яку ти одягаєш під м’яке бежеве хутряне пальто, що додає тепла й текстури. Ти завершуєш образ зручними коричневими балетками, червоною сумкою Gucci на поясі, щоб руки були вільні, і барвистим смугастим шарфом, який привносить у твій вигляд яскравий акцент.",
+"7": "Оберни комір бежевого пальта навколо шиї для додаткового тепла проти прохолодного вітру.",
+"8": "Недбало загорни кінці шарфа навколо шиї, щоб обрамити обличчя без відчуття обмеження.",
+"9": "Екошуба жіноча з англійським коміром і штучним хутром casual Bella Bicchi — Бежеве екопальто забезпечує необхідне тепло при +10 °C, не будучи надмірно важким для прогулянки.",
+"10": "Балетки зі шкіри коричневого кольору — Коричневі балетки підібрані так, щоб збігалися за довжиною подолу й уникали розрізання лінії ноги.",
+"11": "М’який шарф із китицями синьо-червоний — Синьо-червоні смугасті сережки замінюють перлові, щоб додати яскравого кольору як навмисний акцент і вирішити проблему 'accent_role_lost'.",
+"12": "Поясна сумка з червоної шкіри з лого, М’який шарф із китицями синьо-червоний — Я погоджуюся з цим зауваженням, оскільки видалення червоної текстильної сумки на поясі спрощує образ до одного основного акцентного кольору (рожевого), забезпечуючи відсутність надмірних конкуруючих яскравих елементів і зберігаючи необхідний нижній шар для тепла.",
+"13": "Сукня Greta, Балетки зі шкіри коричневого кольору, Поясна сумка з червоної шкіри з лого — Я погоджуюся з цим зауваженням як нагадування про те, що вільна довжина пальта цілком підходить для твоєї повсякденної прогулянки; воно виконує свою функцію зігрівання без вигляду недоречності у міському середовищі.",
+"14": "Балетки зі шкіри коричневого кольору — Додані коричневі балетки поєднуються з тоном сумки на поясі, щоб заземлити поділ і продовжити лінію ноги, вирішуючи проблему 'shoes_cut_leg_line'.",
+"15": "Балетки зі шкіри коричневого кольору — Додані коричневі балетки завершують образ, заземлюючи поділ і усуваючи проблему 'no_shoes'."
+}
+```

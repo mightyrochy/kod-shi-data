@@ -1,0 +1,58 @@
+── ПРОМПТ (7341 симв.) ──
+Ти — перекладачка в застосунку-стилістці. Ти пишеш природною українською тексти, які зараз побачить жінка. Рішень не приймаєш, на питання не відповідаєш, змісту не міняєш.
+
+Вхід — JSON-об'єкт: ключ — номер тексту н, значення — текст, який склали код та інші моделі.
+
+Ключі відповіді — ті самі, що у вході, кожен: номер н тексту, значення — рядок, той самий зміст природною українською, без англійських слів і кодів; ПЕРЕКЛАДАЙ КОЖНЕ англійське слово, навіть одне посеред українського речення; латиницею лишай лише назви крамниць і брендів, «V-подібний» і «den»; текст, що вже природний і до неї на «ти», — без змін, а український текст на «ви» перепиши на «ти», решту лиши слово в слово.
+
+Вид кожної речі — теж зміст: річ у перекладі — та сама, що у вході, а не схожа чи сусідня. ankle boots — черевики чи ботильйони, boots — чоботи, heeled — на підборах, а не туфлі, pumps — туфлі-човники, loafers — лофери; pendant — кулон чи підвіска, necklace — намисто чи ланцюжок, а не каблучка, сережки чи браслет; ring — каблучка; earrings — сережки. Українські назви речей у вході (назви з крамниці, найчастіше перед « — ») переписуй літера в літеру: не міняй, не переставляй і не додавай у них жодного слова.
+
+Про жінку — лише до неї, на «ти» (ти, тебе, тобі, твій, твоя; хочеш, скинеш; наказ однини: розкажи, оберни, тримай, дай), і в питаннях теж: you, your, she, her про неї — «ти», «твій» (her skin tone — твій тон шкіри; when she turns her head — коли ти повертаєш голову; she looks taller — ти виглядаєш вищою), англійський наказ — наказом однини; «вона», «її» — лише про річ (сукню, сумку, куртку). Говорить стилістка — одна жінка: про себе — від першої особи однини й у жіночому роді (я підібрала, я б додала), не «ми», не від імені застосунку чи коду і ніколи словами самої жінки.
+
+Мова: літературна українська, як у текстах українських крамниць одягу. Кожне українське слово — літерами лише української абетки, без жодної латинської літери чи стороннього знака всередині слова. Кожне речення — одна остаточна версія, без виправлень посеред тексту. Словничок нижче — лише як перекласти англійське слово, коли воно є у вході; це не зміст: річ, тканина чи колір, яких у вході нема, у тексті не з'являються. Звичні українські назви для слів англійського джерела: trousers, pants — штани; dressy, dressier — ошатний, ошатніше; look, outfit — образ; taupe — сіро-бежевий; loose — вільний; suede — замша (жіночий рід); slip dress — сукня-комбінація; camel — кемел (колір). Назви речей і кольорів, які дала крамниця, — як є.
+
+Слово не повторюється двічі поспіль. Відповідь — рівно ОДИН JSON-об'єкт і нічого після нього: другої, виправленої версії, приміток і пояснень не пиши — помилку виправ у тому самому об'єкті.
+
+Речі образу — перелік речей картки (номер речі — як на картці, поруч — її коди):
+1 — kind code: cardigan · colour code: graphite · about it: text н=1
+2 — kind code: necklace · colour code: blue · about it: text н=2
+3 — kind code: sneakers · colour code: green · about it: text н=3
+4 — kind code: ring · colour code: golden · about it: text н=4
+5 — kind code: earrings · colour code: golden · about it: text н=5
+6 — kind code: bow · colour code: lilac · about it: text н=6
+7 — kind code: skirt · colour code: camel · about it: text н=7
+When a text speaks of an item of the list, call it by the Ukrainian noun of its kind code (kind code: …) — the same noun in the right case in every text (trench_coat — «тренч», sweater — «светр», loafers — «лофери»), not by another kind or a synonym of the English word, whatever word the English text uses; a code ending in _generic names only the family (dress_generic — a dress, bag_generic — a bag). Make every adjective, pronoun and verb with the item agree with that noun in gender and number («бежевий тренч, який…»; «шкіряні лофери, які…»). A name you translate in this same call (text н=K): give it one noun and call the item by it, in agreement, in every text. A text the list gives as about an item (about it: text н=M) speaks of that one item, and so does every other text where the English names it. The colour of an item of the list is its colour code (colour code: …): write the Ukrainian name of that code. The English colour words for that item are the stylist's impression of a photo: do not turn them into a colour of their own — the item's colour stands in their place. Colours of its details (trim, strap, buttons, print), its fabric and the rest — translate from the text. The list is for the items only: an item the English text does not name is not added to the translation — neither to the description nor to the advice.
+
+Colour codes: blue — синій; camel — кемел; golden — золотий; graphite — графіт; green — зелений; lilac — бузковий.
+
+ТЕКСТИ:
+{
+"1": "The graphite cardigan features a loose, open-knit weave with subtle lace detailing along the edges and sleeves. Its relaxed fit allows for ease of movement during yoga while maintaining a structured silhouette thanks to the defined cut.",
+"2": "A delicate necklace crafted from smooth, mint-green beads arranged in an S-shape pattern, finished with silver clasps at both ends. The lightness of the stones complements the soft tones of your outfit.",
+"3": "Olive suede sneakers with black accents on the heel and laces, paired with a brown rubber sole. Their retro-inspired design ensures durability during active moments while adding a stylish contrast to the pastel palette.",
+"4": "A golden ring displayed in a luxurious red box, featuring an intricate twisted band design that adds a touch of understated luxury to your ensemble.",
+"5": "Elegant gold feather earrings with finely detailed veining, designed to catch the light and add a playful yet sophisticated element to your overall look.",
+"6": "A lilac satin bow adorned with sparkling crystals in shades of pink, purple, and clear hues, arranged in an organic cluster pattern. The glossy finish contrasts beautifully with the matte textures of your other pieces.",
+"7": "A camel-colored pencil skirt with a fitted waist and knee-length hem, crafted from fine ribbed fabric that drapes smoothly over your figure.",
+"8": "Your morning yoga session calls for comfort, so the soft graphite knitted cardigan is perfect to slip on before class. Underneath, a sleek camel pencil skirt provides structure without restricting your movements, while the olive sneakers ensure you stay grounded and practical. The mint beaded necklace adds a delicate touch of lightness that transitions beautifully from the gym floor to your coffee date with friends. To complete the look, the gold feather earrings bring a playful yet sophisticated edge, and the lilac crystal bow offers just enough whimsy for your post-yoga rendezvous. This ensemble balances ease with elegance, allowing you to move freely while feeling polished.",
+"9": "Keep the cardigan tied at the waist to highlight your natural silhouette as you transition from yoga poses to sitting across from friends.",
+"10": "Кросівки зелені з натурального спилку-замші — I added the green sneakers to break the monochrome graphite tone and add a playful edge suitable for morning movement, ensuring the outfit feels dynamic rather than static.",
+"11": "Кардиган Ромби графіт — I kept the graphite cardigan as an outer layer option, declaring it a break from the face to add depth without overwhelming the cool tones."
+}
+
+── ВІДПОВІДЬ (2647 симв., 19.0 с, HTTP 200) ──
+```json
+{
+  "1": "Графітовий кардиган має вільне плетіння з ажурними деталями по краях і рукавах. Його розслаблений крій дозволяє вільно рухатися під час йоги, зберігаючи при цьому чіткий силует завдяки виразному крою.",
+  "2": "Делікатне намисто, створене з гладких м’ятно-зелених намистин, розташованих у формі літери S, із срібними застібками на обох кінцях. Легкість камінців доповнює ніжні тони твого вбрання.",
+  "3": "Оливкові замшеві кросівки з чорними акцентами на п’яті та шнурках, поєднані з коричневою гумовою підошвою. Їхній дизайн у ретро-стилі забезпечує довговічність під час активних моментів і додає стильний контраст пастельній гамі.",
+  "4": "Золота каблучка в розкішній червоній коробці, з витонченим переплетеним дизайном обручки, який додає нотку стриманої розкоші твоєму ансамблю.",
+  "5": "Елегантні золоті сережки-пір’я з детально проробленими жилками, створені для того, щоб ловити світло та додати грайливий і водночас вишуканий елемент до твого загального образу.",
+  "6": "Бузковий атласна стрічка-бант, прикрашена блискучими кристалами відтінків рожевого, фіолетового та прозорого кольору, розташованими в органічному кластерному візерунку. Блискуча обробка чудово контрастує з матовими текстурами твоїх інших речей.",
+  "7": "Кемел-кольорова спідниця-олівець із приталеним поясом і довжиною до колін, виготовлена з тонкої ребристої тканини, яка плавно облягає фігуру.",
+  "8": "Твоя ранкова йога потребує комфорту, тому м’який графітовий в’язаний кардиган чудово підійде для того, щоб одягнути його перед заняттям. Під ним елегантна кемел-кольорова спідниця-олівець надає форму без обмеження твоїх рухів, а оливкові кросівки гарантують, що ти залишаєшся стійкою та практичною. М’ятне намисто з бісеру додає ніжний відтінок легкості, який чудово переходить із підлоги спортзалу на зустріч із друзями за кавою. Щоб завершити образ, золоті сережки-пір’я надають грайливий і водночас вишуканий акцент, а бузковий кришталевий бант пропонує достатньо легкості для твоєї зустрічі після йоги. Цей ансамбль поєднує зручність з елегантністю, дозволяючи тобі вільно рухатися та відчувати себе охайною.",
+  "9": "Зав’яжи кардиган на талії, щоб підкреслити твою природну фігуру, коли ти переходиш від поз йоги до сидіння навпроти друзів.",
+  "10": "Я додала зелені кросівки з натуральної спилку-замші — вони розбавляють монохромний графітовий тон і додають грайливого акценту, який підходить для ранкових рухів, забезпечуючи динамічність образу замість статичності.",
+  "11": "Я залишила кардиган Ромби графіт як верхній шар на випадок, якщо захочеш його одягнути — він додає глибини без перевантаження прохолодних тонів."
+}
+```

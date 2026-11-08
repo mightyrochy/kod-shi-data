@@ -1,0 +1,27 @@
+{
+ "версія": 1,
+ "запит": {
+  "model": "qwen/qwen3.5-9b",
+  "max_tokens": 4000,
+  "messages": [
+   {
+    "role": "user",
+    "content": [
+     {
+      "type": "text",
+      "text": "{\"task\": {\"role\": \"You are a personal stylist. Put together one outfit for her case.\", \"rules\": [\"Items one per line, garments first, then shoes and accessories: what it is, cut, length, color with its hex code, fabric.\", \"An outer layer only when the weather needs it; at +20 °C and warmer there is none.\", \"Last, why this outfit works, in 3–4 sentences.\"], \"limits\": [\"Do not name lightness numbers, body measurements or height in numbers, or body-type labels, and do not say you had limits.\", \"The answer is plain text laid out as the rules say, not JSON.\"], \"language\": \"English\", \"answer\": \"OUTFIT_TEXT\", \"input\": [\"\\\"case\\\" — her case: the occasion, where and when, the weather, the dress code, her wishes and refusals — as codes, her own words as quotes; do not take an item that goes against her refusals or her words\", \"\\\"formality\\\" — dress band; origin in sources: home (loungewear, athleisure, sportswear) < everyday (jeans, a T-shirt and sneakers; neat casual, dark denim) < neat (business: a blouse, a shirt or a refined knit with trousers or a skirt, a textured jacket or a cardigan, loafers, ballet flats or ankle boots; social: a day dress, a refined knit with a skirt or trousers, a textured jacket, neat flats or ankle boots) < smart (business: a jacket with trousers or a skirt, a blouse or a shirt, loafers or pumps; a sheath dress with a jacket; social: a cocktail dress, heeled shoes) < formal (business: a business suit — a jacket with trousers or a skirt of one fabric — with a blouse, pumps; social: a formal dress of a noble fabric, heeled shoes) < very_smart (an evening gown) < ceremonial (a full-length evening gown with long gloves)\", \"\\\"person\\\" — facts about her from her photo and measurements, without conclusions: colors in hex (one per measurement), sizes in cm\", \"\\\"her_items\\\" — her own items; \\\"photo\\\": true — also on the attached photos; they stay in the outfit as they are: build the rest around them, add nothing that takes the place of one of them, give each its own line with its \\\"color_hex\\\" or, when it has none, with no hex\"]}, \"case\": {\"field_quotes\": {\"occasion\": \"просто погуляти з дітьми в парку і заскочити в супермаркет\", \"place_words\": \"в парку і заскочити в супермаркет\", \"wants\": \"у мене є білі кеди, хочу піти в них\"}, \"wish_quotes\": [\"у мене є білі кеди, хочу піти в них\"], \"sources\": {\"field_quotes\": {\"kind\": \"default\"}, \"wish_quotes\": {\"kind\": \"default\"}, \"wishes\": {\"kind\": \"reading\", \"quote\": \"у мене є білі кеди, хочу піти в них\", \"parts\": [{\"kind\": \"reading\", \"quote\": \"у мене є білі кеди, хочу піти в них\"}]}, \"refusals\": {\"kind\": \"reading\"}, \"occasion\": {\"kind\": \"reading\", \"quote\": \"просто погуляти з дітьми в парку і заскочити в супермаркет\"}, \"precipitation\": {\"kind\": \"reading\"}, \"formality\": {\"kind\": \"reading\"}, \"event\": {\"kind\": \"reading\"}, \"part_of_day\": {\"kind\": \"reading\"}, \"shoe_request\": {\"kind\": \"derived\"}}, \"event\": \"просто погуляти з дітьми в парку і заскочити в супермаркет\", \"part_of_day\": \"day\", \"wishes\": [\"sneakers, white\"], \"occasion\": \"everyday\", \"shoe_request\": \"no_heel\", \"formality\": [\"everyday\"], \"season\": \"autumn\", \"light\": \"daylight\", \"activity\": \"children\", \"surface\": \"grass\"}, \"person\": {\"skin_hex\": [\"#f2dcd6\", \"#ecd0ca\", \"#f6e4df\"], \"hair_hex\": [\"#c3c6cc\", \"#aeb2ba\"], \"eyes_hex\": \"#7fa6c8\", \"height_cm\": 160, \"girths_cm\": {\"shoulders\": 100, \"bust\": 98, \"waist\": 88, \"hips\": 100}}, \"her_items\": [{\"id\": \"її-с1\", \"name\": \"у мене є білі кеди, хочу піти в них\", \"photo\": false}]}"
+     }
+    ]
+   }
+  ],
+  "temperature": 1
+ },
+ "відповідь": {
+  "status": 200,
+  "contentType": "application/json",
+  "headers": {
+   "x-model": "qwen/qwen3.5-9b"
+  },
+  "body": "{\"content\":[{\"type\":\"text\",\"text\":\"White sneakers, rounded toe, low-top length, #FFFFFF color, canvas fabric.\\nRelaxed fit linen-blend top, crew neck, knee-length hem, soft beige tone #f5f0e6, woven cotton-linen blend.\\nWashed dark blue denim jeans, straight-leg cut, ankle length, deep indigo hex #2c3e50, sturdy cotton twill.\\n\\nThis outfit works because the white sneakers fulfill her specific wish to walk in them while offering comfort for playing with children on grass and navigating supermarket floors. The relaxed linen top provides breathable warmth for an autumn day without being bulky or restrictive during active play. The dark blue jeans create a classic contrast that looks neat enough for quick errands yet casual enough for a park outing, completing the everyday dress code perfectly.\"}],\"usage\":{\"input_tokens\":1039,\"output_tokens\":164},\"stop_reason\":\"end_turn\"}"
+ }
+}

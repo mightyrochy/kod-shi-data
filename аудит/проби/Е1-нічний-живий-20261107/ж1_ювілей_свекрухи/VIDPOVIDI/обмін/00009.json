@@ -1,0 +1,27 @@
+{
+ "версія": 1,
+ "запит": {
+  "model": "qwen/qwen3.5-9b",
+  "max_tokens": 4000,
+  "messages": [
+   {
+    "role": "user",
+    "content": [
+     {
+      "type": "text",
+      "text": "{\"task\": {\"role\": \"You are a personal stylist. Put together one outfit for her case.\", \"rules\": [\"Items one per line, garments first, then shoes and accessories: what it is, cut, length, color with its hex code, fabric.\", \"An outer layer only when the weather needs it; at +20 °C and warmer there is none.\", \"Last, why this outfit works, in 3–4 sentences.\"], \"limits\": [\"Do not name lightness numbers, body measurements or height in numbers, or body-type labels, and do not say you had limits.\", \"The answer is plain text laid out as the rules say, not JSON.\"], \"language\": \"English\", \"answer\": \"OUTFIT_TEXT\", \"input\": [\"\\\"case\\\" — her case: the occasion, where and when, the weather, the dress code, her wishes and refusals — as codes, her own words as quotes; do not take an item that goes against her refusals or her words\", \"\\\"formality\\\" — dress band; origin in sources: home (loungewear, athleisure, sportswear) < everyday (jeans, a T-shirt and sneakers; neat casual, dark denim) < neat (business: a blouse, a shirt or a refined knit with trousers or a skirt, a textured jacket or a cardigan, loafers, ballet flats or ankle boots; social: a day dress, a refined knit with a skirt or trousers, a textured jacket, neat flats or ankle boots) < smart (business: a jacket with trousers or a skirt, a blouse or a shirt, loafers or pumps; a sheath dress with a jacket; social: a cocktail dress, heeled shoes) < formal (business: a business suit — a jacket with trousers or a skirt of one fabric — with a blouse, pumps; social: a formal dress of a noble fabric, heeled shoes) < very_smart (an evening gown) < ceremonial (a full-length evening gown with long gloves)\", \"\\\"person\\\" — facts about her from her photo and measurements, without conclusions: colors in hex (one per measurement), sizes in cm\"]}, \"case\": {\"field_quotes\": {\"occasion\": \"ми йдемо до свекрухи на ювілей там буде ресторан і вся родина\", \"place\": \"ресторан\", \"goal\": \"не хочу щоб вона знов щось сказала\"}, \"formality_reason\": \"norm\", \"sources\": {\"field_quotes\": {\"kind\": \"default\"}, \"formality_reason\": {\"kind\": \"default\"}, \"refusals\": {\"kind\": \"reading\"}, \"goal\": {\"kind\": \"reading\", \"quote\": \"не хочу щоб вона знов щось сказала\"}, \"goal_quote\": {\"kind\": \"default\"}, \"place\": {\"kind\": \"reading\", \"quote\": \"ресторан\"}, \"occasion\": {\"kind\": \"reading\", \"quote\": \"ми йдемо до свекрухи на ювілей там буде ресторан і вся родина\"}, \"precipitation\": {\"kind\": \"reading\"}, \"formality\": {\"kind\": \"reading\"}, \"event\": {\"kind\": \"reading\"}}, \"event\": \"ми йдемо до свекрухи на ювілей там буде ресторан і вся родина\", \"goal\": \"conceal\", \"occasion\": \"celebration\", \"place\": \"restaurant_upscale\", \"goal_quote\": \"не хочу щоб вона знов щось сказала\", \"formality\": [\"formal\"], \"season\": \"autumn\"}, \"person\": {\"skin_hex\": [\"#deb295\", \"#d8a98c\", \"#e2ba9f\"], \"hair_hex\": [\"#f1dbaa\", \"#d9bf88\"], \"eyes_hex\": \"#759087\", \"height_cm\": 168, \"girths_cm\": {\"shoulders\": 98, \"bust\": 92, \"waist\": 74, \"hips\": 99}}}"
+     }
+    ]
+   }
+  ],
+  "temperature": 1
+ },
+ "відповідь": {
+  "status": 200,
+  "contentType": "application/json",
+  "headers": {
+   "x-model": "qwen/qwen3.5-9b"
+  },
+  "body": "{\"content\":[{\"type\":\"text\",\"text\":\"Navy silk crepe sheath dress with a subtle cowl neck and knee-length hemline in a rich #1a237e hue that flatters warm skin tones, flowing softly over the bust without clinging to the waist or hips.\\n\\nCharcoal suede ankle boots with a 6 cm block heel and a closed round toe in a deep #37474f shade, providing stability for standing at a restaurant while elongating the leg.\\n\\nPearl-drop drop earrings in white freshwater pearls set in sterling silver (#c0c0c0 metal finish) to add quiet elegance without drawing attention to facial features, paired with a structured black leather clutch (#000000) to hold essentials securely.\\n\\nThis ensemble works because the sleek, high-neck silhouette and flowing fabric create a smooth line that visually minimizes any concern about specific body areas, directly addressing the desire not to invite unsolicited comments. The dark, sophisticated color palette feels appropriately elevated for an upscale restaurant celebration while maintaining a composed, non-distracting appearance. Finally, the combination of structured tailoring in the dress and solid heels projects confidence and poise, ensuring she feels secure and undisturbed throughout the event.\"}],\"usage\":{\"input_tokens\":857,\"output_tokens\":246},\"stop_reason\":\"end_turn\"}"
+ }
+}
