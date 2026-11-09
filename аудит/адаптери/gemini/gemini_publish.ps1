@@ -79,6 +79,7 @@ $script:RunCodes = @{
     EMPTY_PLAN = 'у злитому з попереднього прогону нема рядків ЖИВИЙ ПІСЛЯ: прогону й PR нема'
     PLAN_FAILED = 'план живого не збудовано після всіх повторів (GitHub без входу, сторінки PR): потрібна людина'
     INTERRUPTED = 'прогін перервано (вимкнення чи сон ноутбука)'
+    CANCELLED = 'позначку знято комітом ЗНЯТО (причина — у результаті прогону)'
 }
 $script:IsolationChecks = @{
     WHOAMI = 'задача працює не під gemini'; NET_SESSION = 'gemini має права адміністратора'
@@ -509,6 +510,7 @@ function Get-Line([string]$Id, [switch]$StatusOnly) {
     }
     if (-not (Get-Prop $s 'bundle')) {
         if (Request-SleepRetry $s $queue $marker '') { return $null }
+        Add-PublishedMarker $queue $marker
         if (Test-Seen "$queue $marker $code") { return $null }
         $tail = $(if (Test-Path -LiteralPath (Join-Path $OutDir ($Id + '.tail.txt'))) { "; кінець виводу агента — $OutDir\$Id.tail.txt" } else { '' })
         Write-WrapperLog "кінець $Id — НЕ ЗАВЕРШЕНО $branch — $run; комітів нема$tail"
@@ -531,6 +533,7 @@ function Get-Line([string]$Id, [switch]$StatusOnly) {
         $what = $(if ($DryRun) { 'ПЕРЕВІРЕНО (без пушу)' } else { 'ОПУБЛІКОВАНО' })
         Write-WrapperLog "кінець $Id — $what $branch $head; комітів $ahead, файлів до main $files; без .github/ і файлів обгортки; $run"
         if (Request-SleepRetry $s $queue $marker $head) { return $null }
+        Add-PublishedMarker $queue $marker
         if ($head) { Save-DraftRequest $branch $head ([string](Get-Prop $s 'actual')) }
         if ($publication.Bad.Count) {
             Write-WrapperLog ('вада тіла PR: ' + (($publication.Bad | ForEach-Object { $_.error }) -join '; '))
@@ -548,9 +551,42 @@ function Get-Line([string]$Id, [switch]$StatusOnly) {
         }
         return [pscustomobject]@{ Slug = $slug; Outbox = "GEMINI ОБГОРТКА: ЗАБЛОКОВАНО $branch $(if ($code -eq 'DONE') { 'NO_HEAD' } else { $code })_PUBLISHED" }
     }
+    # Відмову пушу власник повторює рукою (-Retry): її позначка лишається, бо Get-Line публікує лише за наявною.
+    if ($pc -cne 'PUSH_FAILED') { Add-PublishedMarker $queue $marker }
     if (Test-Seen "$queue $marker refused $pc") { return $null }
     Write-WrapperLog "кінець $Id — НЕ ОПУБЛІКОВАНО $branch $head — $($script:PublishCodes[$pc]); $run; бандл $OutDir\$Id.bundle"
     [pscustomobject]@{ Slug = $slug; Outbox = "GEMINI ОБГОРТКА: ЗАБЛОКОВАНО $branch $pc" }
+}
+
+# Кінець позначки опубліковано (без DryRun — там пушу нема): запис на зняття з черги.
+function Add-PublishedMarker([string]$Queue, [string]$Marker) {
+    if (-not $DryRun) { Add-FinishedMarker (Join-Path $WorkDir 'finished') $Queue $Marker }
+}
+
+# Черга — єдина правда про роботу: позначка з кінцевим станом і опублікованим рядком (записи Add-FinishedMarker) знімається
+# з origin, тож втрата локального стану смуги (перенесення, переустановка, новий обліковий запис) не воскрешає виконаного.
+# Лише під lease на SHA кінця: перепушена позначка — нова робота, її запис знімається без пушу; невдалий пуш — повтор
+# наступним проходом. Запис, новіший за fetch цього проходу ($Since), чекає наступного: його позначки ще може не бути в
+# отриманих посиланнях. Записи — свої (смуги gemini) і claude-run (тека поруч, як у Get-ChainTaskResults).
+function Remove-FinishedMarkers([datetime]$Since) {
+    if ($DryRun) { return }
+    $dirs = @((Join-Path $WorkDir 'finished'), (Join-Path (Join-Path (Split-Path -Parent $WorkDir) 'claude-run') 'finished'))
+    foreach ($f in @(Get-ChildItem -LiteralPath $dirs -Filter '*.txt' -File -ErrorAction SilentlyContinue)) {
+        if ($f.LastWriteTimeUtc -ge $Since) { continue }
+        $p = @(([IO.File]::ReadAllText($f.FullName, $script:Utf8)).Trim() -split ' ')
+        if ($p.Count -ne 2 -or $p[0] -cnotmatch '^gemini-queue/\S+$' -or $p[0].Contains('..') -or $p[1] -cnotmatch $script:ShaPattern) {
+            Remove-Item -LiteralPath $f.FullName -Force; continue
+        }
+        $ref = 'refs/heads/' + $p[0]
+        if ((Get-RefSha "refs/remotes/origin/$($p[0])") -cne $p[1]) {
+            Write-WrapperLog "черга: $($p[0]) уже знято чи перепушено — не чіпаю"
+            Remove-Item -LiteralPath $f.FullName -Force; continue
+        }
+        $d = Invoke-Git @('push', '-q', '--no-verify', "--force-with-lease=${ref}:$($p[1])", 'origin', ":$ref") -AllowFail
+        if ($d.Code -ne 0) { Write-WrapperLog "черга: $($p[0]) не знято ($($d.Err.Trim())) — повтор наступним проходом"; continue }
+        Remove-Item -LiteralPath $f.FullName -Force
+        Write-WrapperLog "черга: $($p[0]) знято — кінцевий стан опубліковано"
+    }
 }
 
 # Шлях до виконуваного: .NET із UseShellExecute=false дописує лише .exe, а CLI з npm — це .cmd.
@@ -725,7 +761,7 @@ function Get-DispatcherId {
 
 # Коди ЗАБЛОКОВАНО, після яких диспетчерові нічого робити: позначка вже даремна чи повтор іде в черзі.
 # Кожен інший код (зокрема невідомий) будить — безпечне за замовчуванням. Доказ — у тілі коміту «тихі пробудження».
-$script:QuietBlockedCodes = '^(?:STALE|REVIEW_API|EMPTY_PLAN|NETWORK_WAIT)$'
+$script:QuietBlockedCodes = '^(?:STALE|REVIEW_API|EMPTY_PLAN|NETWORK_WAIT|CANCELLED)$'
 $script:LocalLinesCap = 64
 # QUOTA0_<ГРУПА> будить раз на вікно квоти: нульова квота вимагає від диспетчера перенаправити наряд (слово власника 30.10).
 # Вікно — до скидання (хвилини з _M<хв>; нема — стеля), стан у теці стану обгортки переживає перезапуск процесу.
@@ -983,6 +1019,7 @@ function Main {
             [void](Invoke-Native $GitExe @('init', '-q', '--bare', $script:Repo) $WorkDir)
             [void](Invoke-Git @('config', 'remote.origin.url', $RepoUrl))
         }
+        $fetched = [datetime]::UtcNow
         [void](Invoke-Git @('fetch', '-q', '--prune', '--no-tags', 'origin',
                 '+refs/heads/main:refs/remotes/origin/main',
                 '+refs/heads/gemini/*:refs/remotes/origin/gemini/*',
@@ -1014,6 +1051,7 @@ function Main {
             Write-WrapperLog $line
             Write-FileAtomic $statePath (([ordered]@{ line = $line; sent = $false; attempts = 0 }) | ConvertTo-Json -Compress)
         }
+        Remove-FinishedMarkers $fetched
         Add-PoolsLine
         Receive-HealthAlerts
         Receive-Outbox

@@ -25,6 +25,8 @@ $script:SlugPattern = '^[\p{L}\p{Nd}][\p{L}\p{Nd}._-]{0,79}\z'
 $script:SlugCore = $script:SlugPattern -replace '^\^|\\z$', ''
 $script:ModelPattern = '^[a-z0-9][a-z0-9.-]{1,63}$'
 $script:CondPattern = '^(?:p[0-9]|d20[0-9]{10}|gpu)(?:-(?:p[0-9]|d20[0-9]{10}|gpu)){0,2}$'
+# Тема коміту-голови, що знімає позначку (ConvertTo-Marker): диспетчер пушить її поверх позначки, видаляти не може.
+$script:CancelPrefix = 'ЗНЯТО'
 $script:LanesPath = 'аудит/адаптери/gemini/смуги.json'
 $script:Utf8 = New-Object System.Text.UTF8Encoding($false)
 $script:OnWindows = ($PSVersionTable.PSEdition -ne 'Core') -or [bool](Get-Variable IsWindows -ValueOnly -ErrorAction SilentlyContinue)
@@ -386,12 +388,18 @@ function Get-Lane([string]$Model) {
 }
 
 function ConvertTo-Marker([string]$Line) {
-    <# Рядок for-each-ref (посилання, SHA, час коміту) -> позначка; Valid=$false — назва не за форматом. #>
-    $f = $Line -split "`t"
+    <# Рядок for-each-ref (посилання, SHA, час коміту, тема коміту) -> позначка; Valid=$false — назва не за форматом.
+
+    Cancel — голова позначки є комітом «ЗНЯТО…» диспетчера: він може пушити в гілку позначки, але не видаляти її, тож
+    зняття — новий коміт поверх; Reason — решта теми. #>
+    $f = $Line -split "`t", 4
     $rest = $f[0].Substring($script:QueuePrefix.Length)
     $parts = @($rest -split '/')
+    $subject = $(if ($f.Count -eq 4) { $f[3] } else { '' })
+    $cancel = $subject.StartsWith($script:CancelPrefix, [StringComparison]::Ordinal)
     $m = [pscustomobject]@{ Ref = $f[0]; Name = 'gemini-queue/' + $rest; Sha = $f[1]; Time = [long]$f[2]
-        Slug = ''; Model = ''; N = ''; Cond = ''; Prio = 5; Deadline = ''; Gpu = $false; Lane = ''; Seen = [long]0; Valid = $false }
+        Slug = ''; Model = ''; N = ''; Cond = ''; Prio = 5; Deadline = ''; Gpu = $false; Lane = ''; Seen = [long]0; Valid = $false
+        Cancel = $cancel; Reason = $(if ($cancel) { $subject.Substring($script:CancelPrefix.Length).Trim(" `t:—-".ToCharArray()) } else { '' }) }
     if ($parts.Count -lt 3 -or $parts.Count -gt 4) { return $m }
     if ($parts[0] -notmatch $script:SlugPattern -or $parts[0].Contains('..') -or $parts[0].EndsWith('.lock')) { return $m }
     if ($parts[1] -notmatch $script:ModelPattern -or $parts[2] -notmatch '^[1-9][0-9]{0,2}$') { return $m }
@@ -416,9 +424,15 @@ function ConvertTo-Marker([string]$Line) {
     $m
 }
 
+function Test-MarkerCancelled($M) {
+    <# Позначку знято комітом «ЗНЯТО…» (поле Cancel з ConvertTo-Marker); об'єкт позначки без цього поля — не знятий. #>
+    $p = $M.PSObject.Properties['Cancel']
+    $null -ne $p -and [bool]$p.Value
+}
+
 function Get-Markers {
     <# Усі позначки черги з origin (після fetch), і криві — з Valid=$false. #>
-    $fmt = '%(refname)%09%(objectname)%09%(committerdate:unix)'
+    $fmt = '%(refname)%09%(objectname)%09%(committerdate:unix)%09%(contents:subject)'
     $r = Invoke-Git @('for-each-ref', "--format=$fmt", $script:QueuePrefix)
     @(foreach ($line in ($r.Out -split "`n")) { if ($line.Trim()) { ConvertTo-Marker $line.Trim() } })
 }
@@ -541,9 +555,11 @@ function Get-AutoReviewState([string]$Slug) {
     <# Звіряє PR один раз безпосередньо перед моделлю, лише у вже вільному слоті.
 
     Спільний файл під замком обох облікових записів обмежує всі три смуги 30 запитами за рухому годину.
-    Успішний LIVE не кешується: кожен справжній запуск отримує свіжий стан PR. #>
-    if ($Slug -cnotmatch '^автоперевірка-([1-9][0-9]{0,8})-([0-9a-f]{40})$') { return 'LIVE' }
-    $number = $Matches[1]; $head = $Matches[2]
+    Успішний LIVE не кешується: кожен справжній запуск отримує свіжий стан PR. `перевірка-<PR>` несе лише номер PR:
+    злитий чи закритий PR — STALE до моделі (позначки перевірок давно злитих PR інакше доїдали квоту). #>
+    if ($Slug -cmatch '^автоперевірка-([1-9][0-9]{0,8})-([0-9a-f]{40})$') { $number = $Matches[1]; $head = $Matches[2] }
+    elseif ($Slug -cmatch '^перевірка-([1-9][0-9]{0,8})$') { $number = $Matches[1]; $head = '' }
+    else { return 'LIVE' }
     $lock = $null
     try {
         $lock = Open-Lock (Join-Path $LaneDir 'review-api.lock')
@@ -561,7 +577,9 @@ function Get-AutoReviewState([string]$Slug) {
         try {
             $pr = Invoke-RestMethod -Uri "https://api.github.com/repos/mightyrochy/kod-shi-data/pulls/$number" -Method Get -TimeoutSec 20 -MaximumRedirection 0 -Headers @{Accept='application/vnd.github+json'; 'User-Agent'='kod-shi-wrapper'}
             if ([string]$pr.number -cne $number -or $pr.state -cnotin @('open','closed') -or [string]$pr.head.sha -cnotmatch '^[0-9a-f]{40}$') { throw 'REVIEW_RESPONSE' }
-            if ($pr.state -cne 'open' -or $pr.head.sha -cne $head) { return 'STALE' }
+            if ($pr.state -cne 'open') { return 'STALE' }
+            if (-not $head) { return 'LIVE' }
+            if ($pr.head.sha -cne $head) { return 'STALE' }
             if ($pr.user.login -cne 'mightyrochy' -or $null -eq $pr.head.repo -or $pr.head.repo.full_name -cne 'mightyrochy/kod-shi-data' -or $pr.base.repo.full_name -cne 'mightyrochy/kod-shi-data' -or $pr.base.ref -cne 'main' -or (Test-ReviewBranch ([string]$pr.head.ref))) { return 'STALE' }
             'LIVE'
         } catch {
@@ -896,6 +914,37 @@ function Test-SlugBusy([string]$Slug, [string[]]$Lanes) {
     <# Той самий наряд уже йде в одному зі слотів: дві спроби одного наряду водночас не беремо (одна гілка). #>
     foreach ($ln in $Lanes) { foreach ($s in @(Read-SlotInfo $ln)) { if ([string]$s.slug -ceq $Slug) { return $true } } }
     $false
+}
+
+function Stop-CancelledRuns($M, $Workers) {
+    <# Знята позначка (голова «ЗНЯТО…»), прогін якої вже йде під попереднім SHA у слоті цього планувальника: процес наряду
+    зупиняється деревом (той самий обліковий запис, що запустив, — прав адміністратора не треба), його STARTED
+    закривається кінцем CANCELLED без результату — публікувати нема чого, кінець несе результат самої знятої позначки.
+
+    Свій процес — з $Workers; процес попереднього планувальника — за pid з `<слот>.json`, поки замок слота зайнятий. #>
+    $slots = New-Object System.Collections.ArrayList
+    foreach ($w in @($Workers | Where-Object { $_.Marker -ceq $M.Name -and -not $_.Proc.HasExited })) { Stop-Tree $w.Proc; [void]$slots.Add([string]$w.Slot) }
+    foreach ($ln in $script:Lanes) {
+        foreach ($s in @(Read-SlotInfo $ln)) {
+            if ([string]$s.marker -cne $M.Name -or $slots -ccontains [string]$s.slot) { continue }
+            try { Stop-Tree (Get-Process -Id ([int]$s.pid) -ErrorAction Stop) } catch { Write-Log "зняття $($M.Name): процес $($s.pid) не знайдено — $($_.Exception.Message)" }
+            [void]$slots.Add([string]$s.slot)
+        }
+    }
+    if ($slots.Count -eq 0) { return }
+    foreach ($f in @(Get-ChildItem -LiteralPath $script:StateDir -Filter '*.txt' -File -ErrorAction SilentlyContinue)) {
+        $t = [IO.File]::ReadAllText($f.FullName, $script:Utf8)
+        # gemini: `STARTED {json з id}`; claude: `STARTED <id> {json}`.
+        if ($t -cnotmatch '^STARTED (?:([0-9]{8}-[0-9]{6}-[0-9a-f]{12}) )?(\{.*\})\s*$') { continue }
+        $id = $Matches[1]
+        try { $j = $Matches[2] | ConvertFrom-Json } catch { continue }
+        $slot = [string](Get-JsonProp $j 'slot')
+        if ($slots -cnotcontains $slot -or -not (Test-LockFree (Join-Path $script:SlotDir "$slot.lock"))) { continue }
+        if (-not $id) { $id = [string](Get-JsonProp $j 'id') }
+        Write-FileAtomic $f.FullName "DONE $id CANCELLED"
+        Remove-Claim $f.FullName
+        Write-Log "зняття $($M.Name): прогін $id у слоті $slot зупинено — CANCELLED"
+    }
 }
 
 function Get-WorkerCommand([string]$File) {
@@ -1647,11 +1696,18 @@ function Save-Skips([string]$Path) {
     Write-FileAtomic $Path (ConvertTo-Json -InputObject $rows -Compress)
 }
 
-function Add-Note([string]$Path, [string]$Marker, [string]$Text) {
-    <# Останні 12 приміток до #1856 (причина BLOCKED без гілки): один рядок, без керівних символів, до 240 знаків. #>
-    $rows = @(Read-JsonArray $Path)
+function ConvertTo-NoteText([string]$Text) {
+    <# Вільний текст причини (рядок агента, тема коміту ЗНЯТО) для приміток і результату: один рядок, без керівних
+    символів, до 240 знаків. #>
     $clean = ([regex]::Replace($Text, '[\x00-\x1f\x7f]+', ' ')).Trim()
     if ($clean.Length -gt 240) { $clean = $clean.Substring(0, 240) }
+    $clean
+}
+
+function Add-Note([string]$Path, [string]$Marker, [string]$Text) {
+    <# Останні 12 приміток до #1856 (причина BLOCKED без гілки), текст — ConvertTo-NoteText. #>
+    $rows = @(Read-JsonArray $Path)
+    $clean = ConvertTo-NoteText $Text
     $rows = @($rows | Select-Object -Last 11) + @([pscustomobject]@{ utc = (Get-UtcStamp (Get-Date)); marker = $Marker; text = $clean })
     Write-FileAtomic $Path (ConvertTo-Json -InputObject $rows -Compress)
 }

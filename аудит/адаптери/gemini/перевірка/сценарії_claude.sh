@@ -159,4 +159,20 @@ setup k10b; mark "$SLUG/$M/1"; FAKE_CC_SCENARIO=unpushed cr
 chk "незапушений коміт: BLOCKED і COPY_KEPT, тека з kept.txt лишається" '[ "$(lines | LC_ALL=C sort)" = "$(printf "%s\n" "GEMINI ОБГОРТКА: ЗАБЛОКОВАНО claude/$SLUG BLOCKED" "GEMINI ОБГОРТКА: ЗАБЛОКОВАНО claude/$SLUG COPY_KEPT" | LC_ALL=C sort)" ] && ls "$W"/cr/w/*/kept.txt >/dev/null 2>&1'
 cr; chk "перший прохід нового запуску лишену копію не прибирає" 'ls "$W"/cr/w/*/kept.txt >/dev/null 2>&1 && [ "$(git -C "$W/clone" worktree list | wc -l)" = 2 ]'
 
+echo "=== К11 ЗНЯТО (коміт поверх позначки): CANCELLED з причиною; прогін, що йде, зупинено; публікатор знімає позначку"
+has() { git -C "$W/origin.git" rev-parse -q --verify "refs/heads/gemini-queue/$1" 2>/dev/null; }
+zn() { O=$(has "$1"); C=$(git -C "$W/seed" commit-tree "$O^{tree}" -p "$O" -m "ЗНЯТО: $2"); git -C "$W/seed" push -q origin "$C:refs/heads/gemini-queue/$1" 2>/dev/null; }
+# claude-run поруч із теки публікатора (як на ноутбуці): публікатор читає її записи на зняття.
+CRW() { mkdir -p "$W/claude-run"; cp "$W/cr/boot.txt" "$W/claude-run/"; printf '{"WorkDir":"%s"%s}' "$(wp "$W/claude-run")" "$1"; }
+pub() { "$PW" -NoProfile -File "$(wp "$H/side.ps1")" -Script "$(wp "$SRC/gemini_publish.ps1")" -ArgsJson "{\"WorkDir\":\"$(wp "$W/pub")\",\"OutDir\":\"$(wp "$W/gem")\",\"OutboxDir\":\"$(wp "$W/out")\",\"RepoUrl\":\"$(wp "$W/origin.git")\",\"ClaudeExe\":\"$(stub fake_claude)\",\"SendRetryDelaySeconds\":0}" >/dev/null 2>&1; }
+setup k11; mark "$SLUG/$M/1"; zn "$SLUG/$M/1" 'інша смуга'; cr "$(CRW '')"
+chk "до узяття: рядок CANCELLED, claude не кликано, причина в результаті" '[ "$(lines)" = "GEMINI ОБГОРТКА: ЗАБЛОКОВАНО claude/$SLUG CANCELLED" ] && [ ! -e "$W/cc.log" ] && grep -q "\"reason\":\"інша смуга\"" "$W"/claude-run/runs/*/result.json'
+chk "запис на зняття з черги — у claude-run/finished" '[ "$(cat "$W"/claude-run/finished/*.txt)" = "gemini-queue/$SLUG/$M/1 $(has "$SLUG/$M/1")" ]'
+pub; pub; chk "публікатор зняв позначку з origin" '[ -z "$(has "$SLUG/$M/1")" ] && [ -z "$(ls "$W/claude-run/finished")" ]'
+setup k11b; mark "$SLUG/$M/1"; T0=$(date +%s); FAKE_CC_SCENARIO=hang cr "$(CRW ',"PollMinutes":0.05,"HangMinutes":5')" & CP=$!
+for i in $(seq 60); do grep -qs '^STARTED [0-9]' "$W"/claude-run/state/*.txt && break; sleep 1; done
+zn "$SLUG/$M/1" 'інша смуга'; wait "$CP"; T1=$(date +%s)
+chk "під час прогону: claude зупинено за $((T1 - T0)) с (HANG — за 5 хв), один рядок CANCELLED" '[ $((T1 - T0)) -lt 90 ] && [ "$(lines)" = "GEMINI ОБГОРТКА: ЗАБЛОКОВАНО claude/$SLUG CANCELLED" ] && [ -e "$W/cc.log.pid" ] && ! alive "$W/cc.log.pid"'
+chk "стан узятого прогону й знятої позначки — DONE … CANCELLED" '[ "$(grep -l "^DONE .* CANCELLED$" "$W"/claude-run/state/*.txt | wc -l)" = 2 ]'
+
 echo; [ $BAD = 0 ] && echo "ВСЕ ✓" || echo "ЗБІЙ ✗"; exit $BAD
