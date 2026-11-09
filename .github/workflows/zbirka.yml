@@ -34,7 +34,6 @@ jobs:
     outputs:
       produkt: ${{ steps.zmina.outputs.produkt }}
       pravyla: ${{ steps.zmina.outputs.pravyla }}
-      zvit_pravyl: ${{ steps.zmina.outputs.zvit_pravyl }}
     steps:
       - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
         with:
@@ -69,7 +68,7 @@ jobs:
                 джерела/*|аудит/проби/*|каталог_повний.xml.gz|index.html|build.txt|.github/workflows/zbirka.yml) produkt=true ;;
               esac
               case "${shliakh}" in
-                *.md|джерела/правила.py|джерела/прилади/журнал_і_розмір_правил.py|.github/workflows/zbirka.yml) pravyla=true ;;
+                *.md|джерела/прилади/журнал_і_розмір_правил.py|.github/workflows/zbirka.yml) pravyla=true ;;
               esac
               # Що читає журнал власника й розмір правил: .md у корені, на верхньому рівні `аудит/` і в адаптерах.
               case "${shliakh}" in
@@ -78,13 +77,10 @@ jobs:
               esac
             done < /tmp/zminy
           fi
-          # Документний PR (джерел не змінено, наряд CI-час-злиття-2): повна історія правил (правила.py) лічить корпус
-          # і код `джерела/`, яких PR не міняє, і впирається в межу 180 с на кожному запуску (дошка 14405) — її нема;
-          # журнал власника й розмір правил — лише коли PR міняє те, що вони читають. Push і кодовий PR — як було.
-          zvit_pravyl=${pravyla}
+          # Документний PR (джерел не змінено): журнал власника й розмір правил — лише коли PR міняє те, що вони
+          # читають. Push і кодовий PR — за будь-яким `.md`, як було.
           if [ "${GITHUB_EVENT_NAME}" = pull_request ] && [ "${produkt}" = false ]; then
             pravyla=${pravyla_dok}
-            zvit_pravyl=false
           fi
           # Мірило новизни — опублікований штамп build.txt, а не сусідній push. Concurrency тримає одну очікувану
           # збірку й витісняє її новішою; витіснив push лише дошки — його легкий шлях index.html не збирає, і
@@ -110,8 +106,7 @@ jobs:
           fi
           echo "produkt=${produkt}" >> "$GITHUB_OUTPUT"
           echo "pravyla=${pravyla}" >> "$GITHUB_OUTPUT"
-          echo "zvit_pravyl=${zvit_pravyl}" >> "$GITHUB_OUTPUT"
-          echo "продукт: ${produkt}; правила й документи: ${pravyla}; повна історія правил: ${zvit_pravyl}" >> "$GITHUB_STEP_SUMMARY"
+          echo "продукт: ${produkt}; правила й документи: ${pravyla}" >> "$GITHUB_STEP_SUMMARY"
 
       - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5.6.0
         if: steps.zmina.outputs.produkt == 'false'
@@ -543,39 +538,17 @@ jobs:
     timeout-minutes: 10
     runs-on: ubuntu-latest
     steps:
-      # Без повної історії правил журналу власника досить бази PR — першого батька коміту злиття (глибина 2).
+      # Повна історія правил (`правила.py`) — поза CI (дошка 14405): у межу 180 с не вклався жоден із 324 запусків
+      # 07–08.11, а повний прогін на `main` — понад 10 хв (вимір 09.11, `аудит/перевірка/ci_час_0811/КРОК_2.md`).
+      # Журналу власника досить бази — першого батька голови (глибина 2).
       - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
         with:
           persist-credentials: false
-          fetch-depth: ${{ needs.zminy.outputs.zvit_pravyl == 'true' && 1 || 2 }}
-
-      - name: історія голови й бази без чужих гілок
-        if: needs.zminy.outputs.zvit_pravyl == 'true'
-        env:
-          BASE_REF: ${{ github.event.pull_request.base.sha || github.event.before }}
-          GITHUB_TOKEN: ${{ github.token }}
-        run: bash .github/scripts/checkout-history.sh
+          fetch-depth: 2
 
       - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5.6.0
         with:
           python-version: '3.11'
-
-      - name: повна історія правил (межа 180 с)
-        id: pravyla
-        if: needs.zminy.outputs.zvit_pravyl == 'true'
-        continue-on-error: true
-        working-directory: джерела
-        run: |
-          set +e
-          set -o pipefail
-          timeout --signal=TERM --kill-after=5s 180s python3 -u правила.py --md "${RUNNER_TEMP}/правила.md" 2>&1 | tee "${RUNNER_TEMP}/правила.log"
-          STATUS=("${PIPESTATUS[@]}")
-          echo "kod=${STATUS[0]}" >> "$GITHUB_OUTPUT"
-          echo "log_kod=${STATUS[1]}" >> "$GITHUB_OUTPUT"
-          if [ "${STATUS[0]}" -ne 0 ]; then
-            exit "${STATUS[0]}"
-          fi
-          exit "${STATUS[1]}"
 
       - name: журнал власника ↔ файли правил і розмір правил (показ)
         if: always()
@@ -584,37 +557,12 @@ jobs:
           python3 -I джерела/прилади/журнал_і_розмір_правил.py --самоперевірка
           python3 -I джерела/прилади/журнал_і_розмір_правил.py --md "${RUNNER_TEMP}/журнал_розмір.md" | tee -a "$GITHUB_STEP_SUMMARY"
 
-      - name: стан звіту правил у підсумок
-        if: always()
-        env:
-          REPORT_RC: ${{ steps.pravyla.outputs.kod }}
-          LOG_RC: ${{ steps.pravyla.outputs.log_kod }}
-          REPORT_OUTCOME: ${{ steps.pravyla.outcome }}
-          ZVIT: ${{ needs.zminy.outputs.zvit_pravyl }}
-        run: |
-          if [ "${ZVIT}" != true ]; then
-            echo "### Правила — документний PR: повна історія правил не запускалась (джерел не змінено)" >> "$GITHUB_STEP_SUMMARY"
-            exit 0
-          fi
-          {
-            echo "### Правила — звіт, не гейт"
-            echo "- Стан кроку: ${REPORT_OUTCOME:-НЕ ВИКОНАНО}; код процесу: ${REPORT_RC:-НЕ ВИМІРЯНО}; код запису логу: ${LOG_RC:-НЕ ВИМІРЯНО}."
-            case "${REPORT_RC}" in
-              124|137) echo "- Часову межу 180 с вичерпано або процес примусово завершено; повний звіт НЕ ОТРИМАНО." ;;
-              0) echo "- Процес завершився. Код 0 не є оцінкою правил; числа й відсутність входу читаються в логу." ;;
-              "") echo "- Код процесу відсутній: звіт не завершився або крок не запускався; успіх не встановлено." ;;
-              *) echo "- Процес відмовив; частковий вивід не є повним звітом." ;;
-            esac
-          } >> "$GITHUB_STEP_SUMMARY"
-
-      - name: лог і отриманий довідник правил
+      - name: звіт журналу й розміру правил
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
           name: pravyla-zvit
           path: |
-            ${{ runner.temp }}/правила.log
-            ${{ runner.temp }}/правила.md
             ${{ runner.temp }}/журнал_розмір.md
           if-no-files-found: warn
           retention-days: 7
