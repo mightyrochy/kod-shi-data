@@ -687,7 +687,6 @@ def опис_відповідь_з_json(текст, кандидати=None, к�
         р["повторний_виклик"] = _json_ід.dumps(dict(
             version=_ПР.ВЕРСІЯ, error="named_not_in_outfit" if _поза else "items_not_described",
             **({"named": _поза[:8]} if _поза else {}), **({"not_described": _не[:8]} if _не else {}),
-            answer=_ПР.НАЗВИ_ВІДПОВІДІ_EN["ОПИС_ВІДПОВІДЬ_V1"],
             instead=" ".join(([ПОВТОР_НАЗВАНОГО_EN % ", ".join("«%s»" % w for w in _поза[:8])] if _поза else [])
                              + ([ПОВТОР_НЕ_ОПИСАНО_EN % ", ".join("«%s»" % w for w in _не[:8])] if _не else []))),
             ensure_ascii=False)

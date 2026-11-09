@@ -147,7 +147,7 @@ function образиСлабко(об, промпт, пул) {
 function зіпсувати(відповісти, в, промпт) {
   if (!УВІМКНЕНІ.size) return в;
   const об = першийОбʼєкт(промпт || ''), тип = типВиклику(об);
-  if (УВІМКНЕНІ.has('vkladeno') && об && об.task && об.task.answer === 'ХІД_РОЗМОВИ') {
+  if (УВІМКНЕНІ.has('vkladeno') && об && об.task && відповідьЗадачі(об) === 'ХІД_РОЗМОВИ') {
     const х = JSON.parse(в.текст || '{}');
     if (х.need !== 'look') return в;
     const {update, ...частини} = х;
@@ -161,7 +161,7 @@ function зіпсувати(відповісти, в, промпт) {
     if (!х || typeof х !== 'object' || Array.isArray(х)) return в;
     return {тип: в.тип + ' · слабка: obgortka', стоп: 'end_turn', текст: JSON.stringify({answer: х}, null, 2)};
   }
-  if (УВІМКНЕНІ.has('mitka') && об && об.task && об.task.answer === 'OUTFIT_TEXT')
+  if (УВІМКНЕНІ.has('mitka') && об && об.task && відповідьЗадачі(об) === 'OUTFIT_TEXT')
     return {тип: в.тип + ' · слабка: mitka', стоп: 'end_turn', текст: 'OUTFIT_TEXT\n' + String(в.текст || '')};
   if (!тип) return в;
   const пул = (тип === 'пакет') ? пулЗаВидами(об) : null;
