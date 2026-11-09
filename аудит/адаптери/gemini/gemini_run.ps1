@@ -1207,6 +1207,7 @@ function Start-Markers($Workers) {
             Write-FileAtomic (Get-StatePath (Get-MarkerKey $m)) 'STALE'
             continue
         }
+        if (Test-OldChainMarker $m) { Add-Skip $m 'давня позначка ланцюга: перевірки ставить диспетчер, умова не p2'; continue }
         if ((@($Workers | Where-Object { $_.Slug -ceq $m.Slug -and -not $_.Proc.HasExited }).Count -gt 0) -or (Test-SlugBusy $m.Slug $script:Lanes)) { Add-Skip $m 'той самий наряд уже йде в слоті'; continue }
         if ($m.Gpu) {
             if ($null -eq $gpuWhy) { $gpuWhy = Get-GpuBusyReason $Workers }

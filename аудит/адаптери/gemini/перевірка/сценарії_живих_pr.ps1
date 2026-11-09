@@ -40,8 +40,8 @@ try {
             '3'=(Pull 3 'claude/давній' $other); '4'=(Pull 4 'gemini/автоперевірка-звіт' $head)
             '5'=(Pull 5 'claude/живий' $head)
         }
-        # Три давні позначки мертвих голів (PR закрито, голова змінилась, звіт перевірки): ланцюг знімає їх до узяття.
-        foreach ($n in @(1,2,4)) { Add-ChainMarker "автоперевірка-$n-$head" $script:CaseModel $head }
+        # Позначки ставить диспетчер (умова p1): три мертві (PR закрито, голова змінилась, звіт перевірки) ланцюг знімає до узяття, жива — лишається.
+        foreach ($n in @(1,2,4,5)) { Add-ChainMarker "автоперевірка-$n-$head" $script:CaseModel $head -Cond 'p1' }
         function Get-ChainPulls { @($script:Cases['3'],$script:Cases['4'],$script:Cases['5']) }
         function Complete-EngineDrafts { }
         function Get-ReviewModels($Pull,$Config) { $script:CaseModel }
@@ -57,7 +57,7 @@ try {
         if ($MeasurePhase -eq 'ПІСЛЯ') {
             Check "$lane : ланцюг зняв три мертві позначки, лишив живу" (@($refs | Where-Object { $_ -match 'автоперевірка-[124]-' }).Count -eq 0 -and @($refs | Where-Object { $_ -match 'автоперевірка-5-' }).Count -eq 1)
             # Голова, що змінилась між проходами ланцюга: смуга звіряє її сама й моделі не запускає.
-            foreach ($n in @(1,2,4)) { Add-ChainMarker "автоперевірка-$n-$head" $script:CaseModel $head }
+            foreach ($n in @(1,2,4)) { Add-ChainMarker "автоперевірка-$n-$head" $script:CaseModel $head -Cond 'p1' }
         }
         $pubWork = $WorkDir
         if ($lane -eq 'claude') {
