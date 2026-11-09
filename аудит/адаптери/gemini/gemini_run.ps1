@@ -123,9 +123,10 @@ function Invoke-NativeUntilStall([string]$Exe, [string[]]$Arguments, [string]$Wo
     $pending = $null
     while ($true) {
         if ($null -eq $pending) { $pending = $p.StandardOutput.ReadLineAsync() }
+        Wait-PowerPause
         $left = ($last + [timespan]::FromMinutes($StallMinutes) - (Get-AwakeTime)).TotalMilliseconds
         if ($left -le 0) { $stalled = $true; break }
-        if (-not $pending.Wait([int][Math]::Min($left, 60000))) {
+        if (-not $pending.Wait([int][Math]::Min($left, 10000))) {
             # stdout міг лишитись відкритим у нащадка завершеного процесу: це не завислість.
             if ($p.HasExited) { break }
             continue
@@ -642,9 +643,10 @@ function Get-AgyArgs($M, [string]$Conversation, [string[]]$Head) {
 function Wait-StreamResult($Run, [timespan]$Deadline) {
     while ($true) {
         if ($null -eq $Run.Pending) { $Run.Pending = $Run.Proc.StandardOutput.ReadLineAsync() }
+        Wait-PowerPause
         $left = ($Deadline - (Get-AwakeTime)).TotalMilliseconds
         if ($left -le 0) { return [pscustomobject]@{ Kind = 'timeout'; Result = $null } }
-        if (-not $Run.Pending.Wait([int][Math]::Min($left, 60000))) { continue }
+        if (-not $Run.Pending.Wait([int][Math]::Min($left, 10000))) { continue }
         $line = $Run.Pending.Result
         $Run.Pending = $null
         if ($null -eq $line) { return [pscustomobject]@{ Kind = 'eof'; Result = $null } }
@@ -1503,6 +1505,7 @@ function Main {
                 Clear-OrphanClaims $RunsDir
                 $script:Agy = Find-EngineExe $AgyExe
                 if ($script:Agy) { [void](Read-Usage) }
+                Wait-PowerPause  # без світла нові позначки не стартують
                 $started = Start-Markers $workers
                 Update-HoldSignals $script:Held { param($l) Add-HoldLine $l }
             } catch { Add-HealthException $_.Exception; Write-Log "прохід: $($_.Exception.Message)" }

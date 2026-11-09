@@ -750,9 +750,10 @@ function Invoke-Claude([string]$Exe, [string[]]$ArgList, [string]$Prompt, [strin
     while ($true) {
         if (-not $outDone -and $null -eq $outTask) { $outTask = $p.StandardOutput.ReadLineAsync() }
         if (-not $errDone -and $null -eq $errTask) { $errTask = $p.StandardError.ReadLineAsync() }
+        Wait-PowerPause
         $left = ($last + [timespan]::FromMinutes($hang) - (Get-AwakeTime)).TotalMilliseconds
         if ($left -le 0) { $res.Kind = 'HANG'; break }
-        $ms = [int][Math]::Min($left, 60000)
+        $ms = [int][Math]::Min($left, 10000)
         $wait = [System.Threading.Tasks.Task[]]@(@($outTask, $errTask) | Where-Object { $null -ne $_ })
         if ($wait.Count -eq 0) {
             # Обидва потоки закрито, процес ще живий: той самий поріг завислості, без окремої межі.
@@ -1243,6 +1244,7 @@ function Main {
         $script:Workers = New-Object System.Collections.ArrayList
         $script:Held = @{}
         $first = $true; $clean = $true; $ver = ''
+        $script:PauseMachine = $true  # лише планувальник: LM Studio й ComfyUI — того самого користувача, що й claude-run
         while ($true) {
             $ver = Get-VersionSwitch
             if ($ver) { Write-VersionSwitch $ver; break }
@@ -1257,6 +1259,7 @@ function Main {
                 # fetch, прибирання не знімає.
                 if ($clean) { Clear-TaskCopies (Join-Path $WorkDir 'w') @('--remotes'); $clean = $false }
                 Clear-OrphanClaims (Join-Path $WorkDir 'runs')
+                Wait-PowerPause  # без світла нові позначки не стартують
                 $r = Start-Markers $script:Workers
                 $started = $r[0]; $off = $r[1]
                 Update-HoldSignals $script:Held { param($l) Add-Line $l }

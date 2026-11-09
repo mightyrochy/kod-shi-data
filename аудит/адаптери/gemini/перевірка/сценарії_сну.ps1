@@ -270,6 +270,33 @@ try {
         Export-ModuleMember -Function Run
     }
     foreach ($check in @(& $limits {Run})) {Check $check.Name $check.Ok}
+    $pause = New-Module -ArgumentList $SourceDir,$tmp -ScriptBlock {
+        param($src,$tmp)
+        . (Join-Path $src 'gemini_run.ps1') -RunsDir "$tmp/runs-p" -OutDir "$tmp/out-p" -LaneDir "$tmp/lanes-p" -UpdateRoot "$tmp/trusted-p"
+        # Батарея на вході й на двох обертах циклу, далі мережа; кожен Start-Sleep — 2 год неспання.
+        $script:Battery = @($true, $true, $true, $false); $script:Clock = [timespan]::FromHours(100)
+        $script:Calls = New-Object Collections.ArrayList
+        function Test-OnBattery { $b = $script:Battery[0]; if ($script:Battery.Count -gt 1) { $script:Battery = $script:Battery[1..($script:Battery.Count - 1)] }; $b }
+        function Get-UnbiasedTime { $script:Clock }
+        function Start-Sleep { $script:Clock += [timespan]::FromHours(2) }
+        function Get-PauseTargets { @(11, 12) }
+        function Set-ProcessPause([int]$Id, [bool]$On) { [void]$script:Calls.Add("$Id $On"); $true }
+        function Write-Log([string]$Text) { }
+        # Серцебиття всередині паузи доходить до Invoke-Native — друга пауза не має нічого робити.
+        function Invoke-HealthBeat { Wait-PowerPause }
+        function Run {
+            <# Без світла процеси нарядів стоять, після — відновлені; 4 год паузи не йдуть ні в межі, ні в завислість. #>
+            $before = Get-AwakeTime
+            Wait-PowerPause
+            [pscustomobject]@{Name='пауза: кожен процес призупинено й відновлено рівно раз, у такому порядку';Ok=(($script:Calls -join ',') -ceq '11 True,12 True,11 False,12 False')}
+            [pscustomobject]@{Name='4 год паузи не додали робочого часу (Get-AwakeTime)';Ok=((Get-AwakeTime) -eq $before -and $script:PausedTotal -eq [timespan]::FromHours(4))}
+            $script:Calls.Clear(); $script:Battery = @($false)
+            Wait-PowerPause
+            [pscustomobject]@{Name='від мережі пауза нічого не чіпає';Ok=($script:Calls.Count -eq 0)}
+        }
+        Export-ModuleMember -Function Run
+    }
+    foreach ($check in @(& $pause {Run})) {Check $check.Name $check.Ok}
 } catch { "✗ виняток стенда: $($_.Exception.Message) $($_.ScriptStackTrace)"; $bad++ }
 # Артефакти лишаються в TEMP стенда; він не торкається робочих обгорток і станів ноутбука.
 "провалів: $bad"
