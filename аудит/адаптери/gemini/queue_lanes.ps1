@@ -209,12 +209,14 @@ function Start-Tree($Psi) {
     <# Старт процесу в задачі Windows: нащадки, відірвані від батька (nohup, start), лишаються в ній, і Stop-Tree зупиняє
     їх разом із деревом. 08.11 вимір, запущений сесією через nohup, після кінця наряду тримав 12 ГБ відеокарти й копію задачі. #>
     # Тип збирається до старту: збірка триває секунди, а нащадки, народжені до прив'язки, у задачу не потрапляють.
+    # Нема задачі (збірка типу чи прив'язка не вдалися: «Access is denied» для процесу, що вже завершився) — це журнал, а не
+    # збій запуску: Write-Log належить викликачеві, і його відсутність чи помилка не мають кидати виняток після старту.
     $typed = $false
-    if ($script:OnWindows) { try { Add-TreeJobType; $typed = $true } catch { Write-Log "задача процесів: $($_.Exception.Message)" } }
+    if ($script:OnWindows) { try { Add-TreeJobType; $typed = $true } catch { try { Write-Log "задача процесів: $($_.Exception.Message)" } catch { } } }
     $p = [System.Diagnostics.Process]::Start($Psi)
     if ($typed) {
         try { $script:TreeJobs[$p.Id] = [GeminiWrapper.TreeJob]::Create($p.Handle) }
-        catch { Write-Log "задача процесів $($p.Id): $($_.Exception.Message) — лишки зупиняє лише дерево" }
+        catch { $why = $_.Exception.Message; try { Write-Log "задача процесів $($p.Id): $why — лишки зупиняє лише дерево" } catch { } }
     }
     $p
 }
