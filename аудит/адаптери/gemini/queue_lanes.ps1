@@ -30,7 +30,7 @@ $script:Utf8 = New-Object System.Text.UTF8Encoding($false)
 $script:OnWindows = ($PSVersionTable.PSEdition -ne 'Core') -or [bool](Get-Variable IsWindows -ValueOnly -ErrorAction SilentlyContinue)
 $script:TreeJobs = @{}  # pid процесу Start-Tree → його задача Windows
 $script:PausedTotal = [timespan]::Zero  # пауз живлення цього процесу (Wait-PowerPause)
-$script:PowerChecked = [datetime]::MinValue; $script:OnBattery = $false; $script:Pausing = $false
+$script:Pausing = $false
 $script:PauseMachine = $false  # планувальник claude-run ставить на паузу й LM Studio та ComfyUI
 # Тека версії цього процесу: після самооновлення — `<корінь>\versions\<SHA40>`, поряд із коренем — `active.txt`.
 $script:VersionDir = $PSScriptRoot
@@ -849,12 +849,9 @@ function Get-AwakeTime {
 }
 
 function Test-OnBattery {
-    <# Світла нема — ноутбук живиться від батареї. Стан перечитується щонайбільше раз на 5 с; без Windows — ні. #>
+    <# Світла нема — ноутбук живиться від батареї (GetSystemPowerStatus, дешевий виклик); без Windows — ні. #>
     if (-not $script:OnWindows) { return $false }
-    if (([datetime]::UtcNow - $script:PowerChecked).TotalSeconds -lt 5) { return $script:OnBattery }
-    $script:PowerChecked = [datetime]::UtcNow
-    try { Add-PowerType; $script:OnBattery = [GeminiWrapper.Power]::OnBattery() } catch { $script:OnBattery = $false }
-    $script:OnBattery
+    try { Add-PowerType; [GeminiWrapper.Power]::OnBattery() } catch { $false }
 }
 
 function Get-PauseTargets {
@@ -890,7 +887,9 @@ function Wait-PowerPause {
     $paused = @(foreach ($i in Get-PauseTargets) { if (Set-ProcessPause $i $true) { $i } })
     Write-Log "пауза: світла нема (живлення від батареї), призупинено процесів $($paused.Count)"
     try {
-        while (Test-OnBattery) { Start-Sleep -Seconds 5; Invoke-HealthBeat }
+        # Світло перевіряється раз на інтервал опитування черги: у паузі нема роботи, яку треба будити частіше.
+        $poll = [timespan]::FromMinutes((Get-Limit $script:Limits 'PollMinutes' 'poll_minutes'))
+        while (Test-OnBattery) { Start-Sleep -Milliseconds $poll.TotalMilliseconds; Invoke-HealthBeat }
     } finally {
         foreach ($i in $paused) { [void](Set-ProcessPause $i $false) }
         $span = (Get-UnbiasedTime) - $from

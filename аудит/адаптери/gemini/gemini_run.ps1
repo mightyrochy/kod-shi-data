@@ -126,7 +126,7 @@ function Invoke-NativeUntilStall([string]$Exe, [string[]]$Arguments, [string]$Wo
         Wait-PowerPause
         $left = ($last + [timespan]::FromMinutes($StallMinutes) - (Get-AwakeTime)).TotalMilliseconds
         if ($left -le 0) { $stalled = $true; break }
-        if (-not $pending.Wait([int][Math]::Min($left, 10000))) {
+        if (-not $pending.Wait([int][Math]::Min($left, 60000))) {
             # stdout міг лишитись відкритим у нащадка завершеного процесу: це не завислість.
             if ($p.HasExited) { break }
             continue
@@ -646,7 +646,7 @@ function Wait-StreamResult($Run, [timespan]$Deadline) {
         Wait-PowerPause
         $left = ($Deadline - (Get-AwakeTime)).TotalMilliseconds
         if ($left -le 0) { return [pscustomobject]@{ Kind = 'timeout'; Result = $null } }
-        if (-not $Run.Pending.Wait([int][Math]::Min($left, 10000))) { continue }
+        if (-not $Run.Pending.Wait([int][Math]::Min($left, 60000))) { continue }
         $line = $Run.Pending.Result
         $Run.Pending = $null
         if ($null -eq $line) { return [pscustomobject]@{ Kind = 'eof'; Result = $null } }

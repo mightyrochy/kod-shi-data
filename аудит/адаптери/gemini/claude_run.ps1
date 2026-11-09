@@ -753,7 +753,7 @@ function Invoke-Claude([string]$Exe, [string[]]$ArgList, [string]$Prompt, [strin
         Wait-PowerPause
         $left = ($last + [timespan]::FromMinutes($hang) - (Get-AwakeTime)).TotalMilliseconds
         if ($left -le 0) { $res.Kind = 'HANG'; break }
-        $ms = [int][Math]::Min($left, 10000)
+        $ms = [int][Math]::Min($left, 60000)
         $wait = [System.Threading.Tasks.Task[]]@(@($outTask, $errTask) | Where-Object { $null -ne $_ })
         if ($wait.Count -eq 0) {
             # Обидва потоки закрито, процес ще живий: той самий поріг завислості, без окремої межі.
