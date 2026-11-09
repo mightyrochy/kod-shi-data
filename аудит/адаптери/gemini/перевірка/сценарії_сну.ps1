@@ -232,6 +232,44 @@ try {
         Export-ModuleMember -Function Run
     }
     foreach ($check in @(& $worker {Run})) {Check $check.Name $check.Ok}
+    $limits = New-Module -ArgumentList $SourceDir,$tmp -ScriptBlock {
+        param($src,$tmp)
+        . (Join-Path $src 'gemini_run.ps1') -RunsDir "$tmp/runs-l" -OutDir "$tmp/out-l" -LaneDir "$tmp/lanes-l" -UpdateRoot "$tmp/trusted-l"
+        $script:TotalMinutes = 10; $script:TurnMinutes = 5; $script:MaxNudges = 2
+        $script:Head = 'c'*40
+        # Годинник на стіні й годинник неспання підмінено: сон — це стрибок першого без руху другого.
+        $script:Wall = [datetime]'2026-11-08T09:21:00'; $script:Awake = [timespan]::FromHours(100)
+        function Get-Date { $script:Wall }
+        function Get-AwakeTime { $script:Awake }
+        function Write-Log([string]$Text) { }
+        function Close-StreamRun($Run) { }
+        function Get-Facts { [pscustomobject]@{Head=$script:Head;OnBranch=$true;Dirty=0;Ahead=1} }
+        function Get-HeadLivePublication { [pscustomobject]@{Bad=@()} }
+        function Get-Nudge { 'догонка' }
+        function Invoke-Turn($M, $Run, [string]$Text, $Deadline) {
+            $script:Turns++
+            if ($script:Turns -eq 1) {
+                # agy губить з'єднання за сон; розмова лишається, тож можлива догонка.
+                $Run.Conversation = 'розмова-1'
+                $script:Wall = $script:Wall + $script:WallStep; $script:Awake = $script:Awake + $script:AwakeStep
+                return [pscustomobject]@{Kind='eof';Result=$null}
+            }
+            [pscustomobject]@{Kind='result';Result=[pscustomobject]@{status='OK';response="НОУТБУК ГОТОВО gemini/сон $script:Head"}}
+        }
+        function Run {
+            <# Межа agy (`agy_total_minutes`): 7 год сну — не TIMEOUT, 11 хв неспання — TIMEOUT. #>
+            $m = [pscustomobject]@{Slug='сон'}
+            $sel = [pscustomobject]@{Engine=[pscustomobject]@{Name='agy';Effort='high'};Exe='не запускати'}
+            $script:Turns = 0; $script:WallStep = [timespan]::FromMinutes(433); $script:AwakeStep = [timespan]::FromMinutes(1)
+            $res = Invoke-Agent $m $script:Head 'наряд' $tmp $sel
+            [pscustomobject]@{Name='сон 7 год посеред ходу agy: догонка й DONE, не TIMEOUT';Ok=($res.Code -ceq 'DONE' -and $res.Turns -eq 2)}
+            $script:Turns = 0; $script:WallStep = [timespan]::FromMinutes(11); $script:AwakeStep = [timespan]::FromMinutes(11)
+            $res = Invoke-Agent $m $script:Head 'наряд' $tmp $sel
+            [pscustomobject]@{Name='11 хв неспання за межі 10 хв: TIMEOUT, як і було';Ok=($res.Code -ceq 'TIMEOUT' -and $res.Turns -eq 1)}
+        }
+        Export-ModuleMember -Function Run
+    }
+    foreach ($check in @(& $limits {Run})) {Check $check.Name $check.Ok}
 } catch { "✗ виняток стенда: $($_.Exception.Message) $($_.ScriptStackTrace)"; $bad++ }
 # Артефакти лишаються в TEMP стенда; він не торкається робочих обгорток і станів ноутбука.
 "провалів: $bad"

@@ -250,7 +250,7 @@ function Stop-Tree($Proc) {
 }
 
 function Invoke-Native([string]$Exe, [string[]]$Arguments, [string]$Dir = '', [double]$TimeoutMinutes = 10, [string]$StdIn = $null) {
-    <# Запуск із межею часу (по межі — зупинка дерева) і необов'язковим stdin; повертає код, ознаку межі й обидва потоки. #>
+    <# Запуск із межею часу неспання (по межі — зупинка дерева) і необов'язковим stdin; повертає код, ознаку межі й обидва потоки. #>
     $psi = New-StartInfo $Exe $Arguments $Dir
     $psi.RedirectStandardInput = ($null -ne $StdIn)
     # .NET Framework створює StandardInput з AutoFlush: BOM пишеться вже під час Start.
@@ -266,8 +266,8 @@ function Invoke-Native([string]$Exe, [string[]]$Arguments, [string]$Dir = '', [d
         $w.Write($StdIn)
         $w.Close()
     }
-    $until = [datetime]::UtcNow.AddMinutes($TimeoutMinutes)
-    while (-not $p.WaitForExit(1000) -and [datetime]::UtcNow -lt $until) { Invoke-HealthBeat }
+    $until = (Get-AwakeTime) + [timespan]::FromMinutes($TimeoutMinutes)
+    while (-not $p.WaitForExit(1000) -and (Get-AwakeTime) -lt $until) { Invoke-HealthBeat }
     $timedOut = -not $p.HasExited
     if (-not $timedOut) { $p.WaitForExit() }
     Stop-Tree $p
@@ -796,10 +796,25 @@ function Open-Lock([string]$Path) {
     try { [System.IO.File]::Open($Path, 'OpenOrCreate', 'ReadWrite', 'None') } catch { $null }
 }
 
-function Get-SleepGap([datetime]$Tick, [datetime]$Now) {
-    <# Цикл наряду обертається щонайменше раз на хвилину: довша пауза — сон ноутбука, а не завислість наряду. #>
-    $gap = $Now - $Tick
-    if ($gap.TotalMinutes -gt 5) { $gap } else { [timespan]::Zero }
+function Get-AwakeTime {
+    <# Монотонний час неспання системи ([timespan]): межі часу й завислості лічать лише його — сон ноутбука не робота
+    й не завислість наряду. Windows — QueryUnbiasedInterruptTime (без сну й гібернації); інші ОС — Stopwatch
+    (CLOCK_MONOTONIC, без призупинення). 08.11: 7 год сну дали автоперевірці #3342 «TIMEOUT, 434 хв». #>
+    if (-not $script:OnWindows) {
+        return [timespan]::FromTicks([long]([System.Diagnostics.Stopwatch]::GetTimestamp() * (1e7 / [System.Diagnostics.Stopwatch]::Frequency)))
+    }
+    if (-not ('GeminiWrapper.AwakeClock' -as [type])) {
+        Add-Type -TypeDefinition @'
+using System.Runtime.InteropServices;
+namespace GeminiWrapper {
+    public static class AwakeClock {
+        [DllImport("kernel32.dll")] static extern bool QueryUnbiasedInterruptTime(out ulong time);
+        public static long Ticks() { ulong t; QueryUnbiasedInterruptTime(out t); return (long)t; }
+    }
+}
+'@
+    }
+    [timespan]::FromTicks([GeminiWrapper.AwakeClock]::Ticks())
 }
 
 function Test-LockFree([string]$Path) {
