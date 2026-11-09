@@ -25,8 +25,6 @@ $script:SlugPattern = '^[\p{L}\p{Nd}][\p{L}\p{Nd}._-]{0,79}\z'
 $script:SlugCore = $script:SlugPattern -replace '^\^|\\z$', ''
 $script:ModelPattern = '^[a-z0-9][a-z0-9.-]{1,63}$'
 $script:CondPattern = '^(?:p[0-9]|d20[0-9]{10}|gpu)(?:-(?:p[0-9]|d20[0-9]{10}|gpu)){0,2}$'
-# Тема коміту-голови, що знімає позначку (ConvertTo-Marker): диспетчер пушить її поверх позначки, видаляти не може.
-$script:CancelPrefix = 'ЗНЯТО'
 $script:LanesPath = 'аудит/адаптери/gemini/смуги.json'
 $script:Utf8 = New-Object System.Text.UTF8Encoding($false)
 $script:OnWindows = ($PSVersionTable.PSEdition -ne 'Core') -or [bool](Get-Variable IsWindows -ValueOnly -ErrorAction SilentlyContinue)
@@ -396,10 +394,12 @@ function ConvertTo-Marker([string]$Line) {
     $rest = $f[0].Substring($script:QueuePrefix.Length)
     $parts = @($rest -split '/')
     $subject = $(if ($f.Count -eq 4) { $f[3] } else { '' })
-    $cancel = $subject.StartsWith($script:CancelPrefix, [StringComparison]::Ordinal)
+    # Тема без сталої скрипта: стенди імпортують ConvertTo-Marker окремо від решти файла.
+    $cancel = $subject -cmatch '^ЗНЯТО(.*)$'
+    $reason = $(if ($cancel) { $Matches[1].Trim(" `t:—-".ToCharArray()) } else { '' })
     $m = [pscustomobject]@{ Ref = $f[0]; Name = 'gemini-queue/' + $rest; Sha = $f[1]; Time = [long]$f[2]
         Slug = ''; Model = ''; N = ''; Cond = ''; Prio = 5; Deadline = ''; Gpu = $false; Lane = ''; Seen = [long]0; Valid = $false
-        Cancel = $cancel; Reason = $(if ($cancel) { $subject.Substring($script:CancelPrefix.Length).Trim(" `t:—-".ToCharArray()) } else { '' }) }
+        Cancel = $cancel; Reason = $reason }
     if ($parts.Count -lt 3 -or $parts.Count -gt 4) { return $m }
     if ($parts[0] -notmatch $script:SlugPattern -or $parts[0].Contains('..') -or $parts[0].EndsWith('.lock')) { return $m }
     if ($parts[1] -notmatch $script:ModelPattern -or $parts[2] -notmatch '^[1-9][0-9]{0,2}$') { return $m }
