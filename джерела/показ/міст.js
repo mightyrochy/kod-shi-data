@@ -309,8 +309,8 @@ function уЧергу(робота){
    за стадіями й за всю дію: стінний час — від першої постановки в чергу до останньої відповіді.
    Обрив пишеться ДО повтору: повтор його не ховає, а лічба обривів не залежить від того, чи
    допоміг повтор. Промптів і вибірки планувальник не міняє — вхід моделі той самий.
-   СТАДІЯ — З САМОГО ПРОМПТА, А НЕ ВІД ВИКЛИКАЧА: кожна задача збирача несе `"answer": "<ім'я
-   задачі>"` (`протокол.ОБГОРТКА_ВІДПОВІДІ`), складання — ще й пул; виклик моделі шару — `мова`.
+   СТАДІЯ — З САМОГО ПРОМПТА, А НЕ ВІД ВИКЛИКАЧА: задачу збирача називає її схема чи роль (`задачаПромптаП`),
+   складання — ще й пул; виклик моделі шару — `мова`.
    Тож новий виклик стадію має одразу, і п'ятнадцять місць виклику не правляться. */
 const ЖУРНАЛ_ВИКЛИКІВ_П = [];
 const ЖУРНАЛ_ВИКЛИКІВ_МАКС_П = 3000;   // повний прогін — 40–60 спроб; сторінка, відкрита днями, не росте без меж
@@ -340,27 +340,53 @@ function _причинаПовторуП(з, відп, помилка, сигн�
   return {причина: 'http_' + відп.status,
           мс: (відп.status === 503 ? ЗАТРИМКИ_ПОВТОРУ_П[к] / 2 : ЗАТРИМКИ_ПОВТОРУ_П[к]) + Math.random()*4000};
 }
+/* ЗАДАЧА — ЗА ФОРМОЮ ПРОМПТА (Е2-межі п.4): мітки «answer» з ім'ям задачі в «task» нема (від неї модель загортала
+   відповідь), її несуть лише руки 3–4. Задачу називає перший ключ «answer_schema» з цього переліку (ключі — за
+   пріоритетом стенда, `аудит/проби/види_речей.js`: ремонт має й «chosen», і «outfits»), де схеми нема — роль. */
+const ЗАДАЧІ_ЗА_СХЕМОЮ_П = [['outfits', 'OUTFITS_V1'], ['chosen', 'CHOICE_V1'], ['verdict', 'OUTFIT_REVIEW_V1'],
+  ['ratings', 'ITEM_RATINGS_V1'], ['winners', 'TOURNAMENT_V1'], ['fixes', 'COMPLETION_V1'],
+  ['how_to_wear', 'DESCRIPTION_V1'], ['need', 'ХІД_РОЗМОВИ'], ['invite_topics', 'ПОРАДА_ХОДУ'],
+  ['skin', 'PORTRAIT_COLOURS'], ['item_type', 'CATALOG_PARSE_V3'], ['подія', 'ПАСПОРТ'], ['scheme', 'PALETTE_CHOICE'],
+  ['is_outfit', 'ITEM_LIST'], ['items', 'PHOTO_ITEMS']];
+const ЗАДАЧІ_ЗА_РОЛЛЮ_П = [[/^Photo 1 is a woman/, 'TRY_ON_IMAGE'], [/ Help her with /, 'APP_ANSWER'],
+  [/ She has asked you /, 'LOOK_ANSWER'], [/^You are a personal stylist/, 'OUTFIT_TEXT']];
+/* перший цілий JSON-обʼєкт тексту: за промптом може йти повтор формату чи підпис кадру */
+function першийОбʼєктП(т){
+  const п = т.indexOf('{');
+  if (п < 0) return null;
+  let г = 0, рядок = false, екран = false;
+  for (let і = п; і < т.length; і++){
+    const з = т[і];
+    if (рядок){ if (екран) екран = false; else if (з === '\\') екран = true; else if (з === '"') рядок = false; continue; }
+    if (з === '"') рядок = true;
+    else if (з === '{') г++;
+    else if (з === '}' && --г === 0){ try{ return JSON.parse(т.slice(п, і + 1)); }catch(_){ return null; } }
+  }
+  return null;
+}
+function задачаПромптаП(о){
+  if (!о || typeof о !== 'object' || !о.task || typeof о.task !== 'object') return null;
+  const м = о.task.answer || о.task.відповідь;
+  if (typeof м === 'string' && /^[\p{Lu}\p{N}_]{3,40}$/u.test(м)) return м;
+  const с = о.answer_schema || о.task.answer_schema;
+  if (с && typeof с === 'object' && !Array.isArray(с)){
+    const к = Object.keys(с);
+    if (к.length === 1 && к[0] === 'update') return 'ХІД_ПЛИТОК';
+    const з = ЗАДАЧІ_ЗА_СХЕМОЮ_П.find(([ключ]) => ключ in с);
+    if (з) return з[1];
+  }
+  const р = ЗАДАЧІ_ЗА_РОЛЛЮ_П.find(([в]) => в.test(String(о.task.role || '')));
+  const к = о.answer_schema;
+  return р ? р[1] : (к && typeof к === 'object' ? 'answer_schema · ' + Object.keys(к).slice(0, 2).join(',') : null);
+}
 function стадіяВикликуП(повідомлення, модель){
   const ост = ((повідомлення || [])[(повідомлення || []).length - 1] || {}).content;
   const тексти = Array.isArray(ост) ? ост.filter(б => б && б.type === 'text').map(б => б.text || '')
                                     : [String(ост == null ? '' : ост)];
   const т = тексти.join('\n');
-  const м = /"(?:answer|відповідь)"\s*:\s*"([\p{Lu}\p{N}_]{3,40})"/u.exec(т);
-  let задача = м ? м[1] : null;
-  /* скелет наприкінці: складання, ремонт, вибір, оцінка, речі з фото й палітра імені в «task» не мають — їх називає
-     перший ключ змісту останньої «answer_schema» (так само впізнає їх стенд, `аудит/проби/види_речей.js`) */
-  const блок = задача ? null : [...тексти].reverse().find(х => х.includes('"answer_schema"'));
-  if (блок){
-    /* від ключа до кінця блоку — члени останнього обʼєкта промпту («answer_schema», за нею хіба «now»): блок, а не
-       весь текст — за промптом речей з фото йдуть підписи кадрів; ключі схеми — за пріоритетом стенда: ремонт має й
-       «chosen», і «outfits», а він — складання/ремонт */
-    let с = null;
-    try{ с = (JSON.parse('{' + блок.slice(блок.lastIndexOf('"answer_schema"'))) || {}).answer_schema; }catch(_){}
-    const є = к => !!(с && typeof с === 'object' && к in с);
-    задача = є('outfits') ? 'OUTFITS_V1' : є('chosen') ? 'CHOICE_V1' : є('verdict') ? 'OUTFIT_REVIEW_V1'
-           : є('items') ? 'PHOTO_ITEMS' : є('scheme') ? 'PALETTE_CHOICE'
-           : 'answer_schema' + (с && typeof с === 'object' ? ' · ' + Object.keys(с).slice(0, 2).join(',') : '');
-  }
+  /* блок промпта — той, що несе «task» (за промптом речей з фото йдуть підписи кадрів окремими блоками) */
+  const блок = тексти.find(х => х.includes('"task"'));
+  const задача = блок ? задачаПромптаП(першийОбʼєктП(блок)) : null;
   if ((модель && модель === МОДЕЛЬ_МОВИ_П) || /^Ти — перекладачка/.test(т)) return 'мова' + (задача ? ' · ' + задача : '');
   return задача ? задача + (/"(?:pool|пул)"\s*:/.test(т) ? ' · пул' : '') : 'інше';
 }

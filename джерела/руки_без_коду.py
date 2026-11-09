@@ -170,6 +170,7 @@ def її_речі(речі_паспорта):
         "Last, why this outfit works, in 3–4 sentences.",
     ),
     вихід="OUTFIT_TEXT",
+    мітка_задачі=True,  # руки 3–4 — як є (власник 16.10, рядок 6201)
     межі=("без_чисел_тіла",),
     мова_промпту="en",
     відповідь_як="текст",
@@ -362,6 +363,7 @@ def промпт_руки(рука, випадок, вимоги="", вибір=
         "refusal, a question or a note.",
     ),
     вихід="ITEM_LIST",
+    мітка_задачі=True,  # руки 3–4 — як є (власник 16.10, рядок 6201)
     скелет={"is_outfit": "yes|no",
             "items": [{"name": "<what the item is>",
                        "details": "<its cut, length and fabric>",

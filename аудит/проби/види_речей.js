@@ -7,22 +7,35 @@
    стенд маршрутизує за ім'ям схеми коду — тож латинське ім'я вертається до нього тут, в одному місці */
 const НАЗВИ_EN = {OUTFITS_V1: 'ОБРАЗИ_V1', CHOICE_V1: 'ВИБІР_V1', DESCRIPTION_V1: 'ОПИС_ВІДПОВІДЬ_V1',
                   ITEM_RATINGS_V1: 'ОЦІНКИ_V1', TOURNAMENT_V1: 'ТУРНІР_V1', COMPLETION_V1: 'ДОПОВНЕННЯ_V1'};
+/* Е2-межі п.4: мітки «answer» з ім'ям задачі в «task» нема (від неї модель загортала відповідь) — її несуть лише руки
+   3–4. Задачу називають ключі схеми «answer_schema» (останнім ключем чи в «task»), дані чи роль; порядок — пріоритет
+   (ремонт має й «chosen», і «outfits», а він — складання/ремонт). Той самий перелік — `показ/міст.js`, `задачаПромптаП`. */
+const ЗА_СХЕМОЮ = [['outfits', 'ОБРАЗИ_V1'], ['chosen', 'ВИБІР_V1'], ['ratings', 'ОЦІНКИ_V1'], ['winners', 'ТУРНІР_V1'],
+  ['fixes', 'ДОПОВНЕННЯ_V1'], ['how_to_wear', 'ОПИС_ВІДПОВІДЬ_V1'], ['need', 'ХІД_РОЗМОВИ'],
+  ['invite_topics', 'ПОРАДА_ХОДУ'], ['actions', 'review_items_fix'], ['skin', 'PORTRAIT_COLOURS'],
+  ['item_type', 'CATALOG_PARSE_V3'], ['подія', 'ПАСПОРТ'], ['scheme', 'PALETTE_CHOICE'], ['is_outfit', 'ITEM_LIST']];
+const ЗА_ДАНИМИ = [['her_comment', 'verdict_comment'], ['her_question', 'question']];
+const ЗА_РОЛЛЮ = [[/^Photo 1 is a woman/, 'TRY_ON_IMAGE'], [/ Help her with /, 'APP_ANSWER'],
+  [/ She has asked you /, 'LOOK_ANSWER'], [/^You are a personal stylist/, 'OUTFIT_TEXT']];
 const відповідьЗадачі = об => {
-  const в = об && ((об.завдання || об.task || {}).відповідь || (об.завдання || об.task || {}).answer);
-  /* Рядок 5935: складання й ремонт (скелет наприкінці) імені схеми в «task» не мають — схема «answer_schema»
-     останнім ключем, і її «outfits» кажуть ОБРАЗИ_V1 */
-  if (!в && об && об.task && об.answer_schema && 'outfits' in об.answer_schema) return 'ОБРАЗИ_V1';
-  /* Рядок 6651: вибір без імені схеми в «task» (скелет наприкінці) — схема має «chosen» */
-  if (!в && об && об.task && об.answer_schema && 'chosen' in об.answer_schema) return 'ВИБІР_V1';
-  /* Рядок 6450: оцінка образу — теж скелет наприкінці; її схема має «verdict», а допит на її місці — лише «answer»
+  const з = об && (об.завдання || об.task) || {};
+  const в = з.відповідь || з.answer;
+  if (в) return НАЗВИ_EN[в] || в;
+  if (!об || !об.task) return в;
+  const с = об.answer_schema || об.task.answer_schema;
+  const є = к => !!(с && typeof с === 'object' && !Array.isArray(с) && к in с);
+  /* Рядок 6450: оцінка образу — скелет наприкінці; її схема має «verdict», а допит на її місці — лише «answer»
      з хвостом «now» (ті самі дані: «outfit», «check») — обидва вертаються до OUTFIT_REVIEW_V1, як доти */
-  if (!в && об && об.task && об.answer_schema && об.outfit && об.check
-      && ('verdict' in об.answer_schema || об.now)) return 'OUTFIT_REVIEW_V1';
-  /* Е2-межі п.4: речі з фото й вибір палітри — теж скелет наприкінці, без мітки «answer» у «task» (від неї модель
-     загортала відповідь): речі на фото має схема з «items» і дані «photos», палітру — схема з «scheme» */
-  if (!в && об && об.task && об.answer_schema && 'items' in об.answer_schema && об.photos) return 'PHOTO_ITEMS';
-  if (!в && об && об.task && об.answer_schema && 'scheme' in об.answer_schema) return 'PALETTE_CHOICE';
-  return НАЗВИ_EN[в] || в;
+  if (об.answer_schema && об.outfit && об.check && (є('verdict') || об.now)) return 'OUTFIT_REVIEW_V1';
+  /* речі на фото має схема з «items» і дані «photos» */
+  if (є('items') && об.photos) return 'PHOTO_ITEMS';
+  if (с && typeof с === 'object' && Object.keys(с).join() === 'update') return 'ХІД_ПЛИТОК';
+  const зс = ЗА_СХЕМОЮ.find(([к]) => є(к));
+  if (зс) return зс[1];
+  const зд = ЗА_ДАНИМИ.find(([к]) => к in об);
+  if (зд) return зд[1];
+  const зр = ЗА_РОЛЛЮ.find(([р]) => р.test(String(об.task.role || '')));
+  return зр ? зр[1] : undefined;
 };
 /* Допит під карткою оцінки — той самий промпт суду зі схемою лише «answer» і хвостом «now»; картка має схему з «verdict».
    Сам хвіст «now» допиту не доводить: з #2401 його несе й промпт картки (рядок 12158). */
