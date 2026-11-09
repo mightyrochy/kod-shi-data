@@ -21,6 +21,7 @@ try {
     $GeminiRunsDir = "$tmp/gemini-runs"
     foreach ($dir in @($WorkDir,"$WorkDir/state","$WorkDir/seen",$OutboxDir)) { [void][IO.Directory]::CreateDirectory($dir) }
     . (Join-Path $SourceDir 'queue_lanes.ps1')
+    function Write-Log([string]$Text, [switch]$Required) { Write-Host "ДІАГ Write-Log: $Text" }
     $config = [pscustomobject]@{codex='gpt-review';agy='gemini-review';claude='cc-claude-review'}
     $sha = 'a' * 40
     Scenario '1а фактична модель' {
