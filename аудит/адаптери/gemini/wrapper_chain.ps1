@@ -510,6 +510,31 @@ function Move-BlockedMarkers([string]$Slug, [string]$Model, [string]$Main, [date
     $true
 }
 
+function Test-NightlyOpen([datetime]$Utc) {
+    <# Вікно нічного Е1 — одне, у Get-NightlyMarker (queue_lanes.ps1): беремо саму функцію з довіреної копії й питаємо лише вікно. #>
+    $errors = $null
+    $ast = [Management.Automation.Language.Parser]::ParseFile((Join-Path $PSScriptRoot 'queue_lanes.ps1'), [ref]$null, [ref]$errors)
+    if ($errors.Count) { throw 'NIGHTLY_PARSER' }
+    $function = @($ast.FindAll({ param($n) $n -is [Management.Automation.Language.FunctionDefinitionAst] -and $n.Name -ceq 'Get-NightlyMarker' }, $true))
+    if ($function.Count -ne 1) { throw 'NIGHTLY_PARSER' }
+    . ([scriptblock]::Create($function[0].Extent.Text))
+    [bool](Get-NightlyMarker $Utc -OpenOnly)
+}
+
+function Move-NightlyMarker($Config, [datetimeoffset]$Now) {
+    <# Дозвіл нічного Е1 (`Е1-нічний-живий-<дата UTC>`, читає Get-NightlyMarker) стоїть на моделі зі своєї назви, а квота її
+    постачальника може бути вичерпана (codex 0 % — QUOTA0 до ранку): тоді дозвіл переходить на модель із квотою. Порядок і
+    перенесення — ті, що в автоживого: Select-ReviewModel над `codex`, `claude` з ланцюг.json і Move-BlockedMarkers; коміт
+    і умови (`gpu-p8`) лишаються, узяту чи кінцеву позначку перенесення не чіпає. Не раніше, ніж відкриється нічний (вікно
+    Test-NightlyOpen): раніше позначка Claude стартувала б до дозволеної години. #>
+    if (-not (Test-NightlyOpen $Now.UtcDateTime)) { return }
+    $slug = 'Е1-нічний-живий-' + $Now.UtcDateTime.ToString('yyyyMMdd')
+    $waiting = @(Get-ChainMarkers $slug | Where-Object { $_.Kind -cin @('NEW','WAIT') })
+    if (-not $waiting.Count) { return }
+    $model = Select-ReviewModel @([string]$Config.codex, [string]$Config.claude) $Now
+    [void](Move-BlockedMarkers $slug $model $waiting[0].Sha $Now -Gpu -Cond $waiting[0].Cond)
+}
+
 function Test-CloudMove([string]$Slug, [datetimeoffset]$Now) {
     <# Визначає потребу передачі NEW/WAIT у хмару: $null — читання відкладене, $false — передача не потрібна. #>
     $all = @(Get-ChainMarkers $Slug)
@@ -877,6 +902,7 @@ function Invoke-WrapperChain {
             # Позначка, що чекає вичерпаної квоти, переходить до доступного рушія.
             [void](Move-BlockedMarkers "автоживий-$($liveActive.stamp)" (Select-ReviewModel @([string]$config.codex, [string]$config.claude) $now) ([string]$liveActive.main) $now -Gpu)
         }
+        Move-NightlyMarker $config $now
         Complete-EngineDrafts
         $pulls = @(Get-ChainPulls)
         Remove-DeadReviewMarkers $pulls $seen $now

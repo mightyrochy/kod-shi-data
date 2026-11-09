@@ -428,10 +428,12 @@ function Get-TaskSource($M) {
     Get-AutoTaskPath $M.Slug
 }
 
-function Get-NightlyMarker([datetime]$Now = [datetime]::UtcNow) {
-    <# Після 02:00 UTC читає лише датований дозвіл із GitHub; локальний стан не дає прав. #>
+function Get-NightlyMarker([datetime]$Now = [datetime]::UtcNow, [switch]$OpenOnly) {
+    <# Після 02:00 UTC читає лише датований дозвіл із GitHub; локальний стан не дає прав. -OpenOnly — лише вікно: $true, коли
+    нічний відкрито (так ланцюг, що переносить дозвіл, не тримає другої години: Test-NightlyOpen у wrapper_chain.ps1). #>
     $utc = $Now.ToUniversalTime()
     if ($utc.Hour -lt 2) { return }
+    if ($OpenOnly) { return $true }
     $date = $utc.ToString('yyyyMMdd')
     $ref = $script:QueuePrefix + 'Е1-нічний-живий-' + $date + '/gpt-6.1-sol-high/1/gpu-p8'
     $sha = Get-RefSha $ref

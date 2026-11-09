@@ -150,6 +150,25 @@ try {
     Check 'автоживий при Codex на квоті — одна позначка Claude' (@(SlugMarkers "автоживий-$newer").Count -eq 1 -and @(SlugMarkers "автоживий-$newer")[0] -match '/cc-claude-sonnet-5-5-medium/1/p2-gpu$')
     SetCodex $false; Invoke-WrapperChain
     Check 'відновлення Codex не дублює автоживий' (@(SlugMarkers "автоживий-$newer").Count -eq 1)
+    # Нічний Е1: дозвіл стоїть на codex, квота codex вичерпана — дозвіл переходить на модель із квотою (та сама квота й порядок, що в автоживого).
+    Check 'нічний Е1 відкривається з 02:00 UTC' (-not (Test-NightlyOpen ([datetime]::new(2026, 11, 9, 1, 59, 0, [DateTimeKind]::Utc))) -and (Test-NightlyOpen ([datetime]::new(2026, 11, 9, 2, 0, 0, [DateTimeKind]::Utc))))
+    function Test-NightlyOpen([datetime]$Utc) { $true }
+    $night = 'Е1-нічний-живий-' + [datetimeoffset]::UtcNow.UtcDateTime.ToString('yyyyMMdd')
+    & git -C $seed push -q origin "${newer}:refs/heads/gemini-queue/$night/gpt-6.1-sol-high/1/gpu-p8"
+    SetCodex $true; SetClaude $false; Invoke-WrapperChain
+    $nm = @(SlugMarkers $night)
+    Check 'нічний, codex 0 %: дозвіл перейшов на Claude з квотою — одна позначка, умови gpu-p8 і коміт ті самі' ($nm.Count -eq 1 -and $nm[0] -match '/cc-claude-sonnet-5-5-medium/1/gpu-p8$' -and (& git -C $remote rev-parse $nm[0]).Trim() -ceq $newer)
+    "  мірило: нічний при codex 0 % — було gpt-6.1-sol-high/1, стало $(($nm[0] -split '/')[-3])/$(($nm[0] -split '/')[-2])"
+    SetCodex $false; Invoke-WrapperChain
+    Check 'відновлення codex не повертає й не дублює нічний дозвіл' (@(SlugMarkers $night).Count -eq 1 -and @(SlugMarkers $night)[0] -match '/cc-claude-sonnet-5-5-medium/1/gpu-p8$')
+    & git -C $seed push -q origin ":$($nm[0])"
+    & git -C $seed push -q origin "${newer}:refs/heads/gemini-queue/$night/gpt-6.1-sol-high/1/gpu-p8"
+    Invoke-WrapperChain
+    Check 'нічний, codex з квотою: дозвіл лишається на codex' (@(SlugMarkers $night).Count -eq 1 -and @(SlugMarkers $night)[0] -match '/gpt-6\.1-sol-high/1/gpu-p8$')
+    SetCodex $true; SetClaude $true; Invoke-WrapperChain
+    Check 'нічний, обидва на квоті: дозвіл чекає на codex, не переходить' (@(SlugMarkers $night).Count -eq 1 -and @(SlugMarkers $night)[0] -match '/gpt-6\.1-sol-high/1/gpu-p8$')
+    & git -C $seed push -q origin ":$(@(SlugMarkers $night)[0])"
+    SetCodex $false; SetClaude $false
     # Збій не з кодом CHAIN_*: у рядку тип і рядок скрипту, без шляхів і тексту.
     Get-ChildItem -LiteralPath $OutboxDir -File | Remove-Item
     [IO.File]::WriteAllText($file, 'не json /секрет/шлях', $utf)
