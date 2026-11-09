@@ -15,7 +15,7 @@ for N in ("15", "16", "17", "18", "19"):
     for ф in файли:
         т = git("show", "%s:%s" % (Г, ф))
         відп = т.split("── ВІДПОВІДЬ", 1)[1].split("\n", 1)[1] if "── ВІДПОВІДЬ" in т else т
-        об, _, _ = О._ПР.розбір_останній(відп, ("items",))
+        об, _ = О._ПР.розбір(відп)
         it = [о for о in (об or {}).get("items", []) if isinstance(о, dict)] if isinstance(об, dict) and isinstance(об.get("items"), list) else []
         без = sum(not str(о.get("photo") or "").strip() for о in it)
         змішане = 0 < без < len(it)

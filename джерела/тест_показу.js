@@ -2794,9 +2794,14 @@ function поверненняЗаглушка(w){
     тест("JSON за скелетом: 3 шкіри, 3 волосся, око, кільце, освітлення кодами", a.шкіра.length === 3 && a.волосся.length === 3
          && a.очі === "#7f8c82" && a.кільце === "#5f6259" && !a.відмова
          && a.освітлення && a.освітлення.cast === "yellow" && a.освітлення.correction === "slight", a);
-    const a2 = р('Ось:\n```json\n{"photo": "usable", "skin": ["f2d6c4"], "hair": ["#4a4644"], "eyes": "#6b8cae", "limbal_ring": null}\n```');
-    тест("JSON в обгортці ``` зі словами навколо; hex без ґратки; кільця нема", a2.шкіра[0] === "#f2d6c4"
+    const a2 = р('```json\n{"photo": "usable", "skin": ["f2d6c4"], "hair": ["#4a4644"], "eyes": "#6b8cae", "limbal_ring": null}\n```');
+    тест("JSON в обгортці ``` на весь текст; hex без ґратки; кільця нема", a2.шкіра[0] === "#f2d6c4"
          && a2.волосся[0] === "#4a4644" && a2.кільце === null && a2.освітлення === null, a2);
+    /* Е2-межі п.4: слова навколо огорожі — не та форма; код JSON із прози не вирізає, повтор називає місце вади */
+    const a3 = р('Ось:\n```json\n{"photo": "usable", "skin": ["#f2d6c4"], "hair": ["#4a4644"], "eyes": "#6b8cae"}\n```');
+    тест("JSON в обгортці ``` зі словами навколо — розбіжність text_outside_json і повтор, кольорів нема",
+         a3.стан === "брак_точок" && a3.шкіра.length === 0 && !!a3.повтор
+         && a3.помилки.some(п => /^text_outside_json/.test(п.що)), a3);
     const e = р('{"photo": "portrait_face_small", "skin": ["#f2d6c4"]}');
     тест("відмова — код причини; кольорів із відмови не беремо", e.відмова === "portrait_face_small" && e.шкіра.length === 0, e);
     const e2 = р('{"photo": "portrait_eyes_hidden — usable, or why it is not"}'), e3 = р('{"photo": true, "skin": ["#f2d6c4"], "hair": ["#4a4644"], "eyes": "#6b8cae"}');
