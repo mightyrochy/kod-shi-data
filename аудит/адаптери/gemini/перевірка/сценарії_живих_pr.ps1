@@ -41,7 +41,8 @@ try {
             '5'=(Pull 5 'claude/живий' $head)
         }
         # Позначки ставить диспетчер (умова p1): три мертві (PR закрито, голова змінилась, звіт перевірки) ланцюг знімає до узяття, жива — лишається.
-        foreach ($n in @(1,2,4,5)) { Add-ChainMarker "автоперевірка-$n-$head" $script:CaseModel $head -Cond 'p1' }
+        # Позначку `cc-…` ланцюг знімає (Claude на ноутбуці не перевіряє), тож для смуги claude живу ставимо після проходу ланцюга.
+        foreach ($n in @(1,2,4,5)) { if ($lane -cne 'claude' -or $n -ne 5) { Add-ChainMarker "автоперевірка-$n-$head" $script:CaseModel $head -Cond 'p1' } }
         function Get-ChainPulls { @($script:Cases['3'],$script:Cases['4'],$script:Cases['5']) }
         function Complete-EngineDrafts { }
         function Get-ReviewModels($Pull,$Config) { $script:CaseModel }
@@ -52,6 +53,7 @@ try {
             [pscustomobject]@{sha=$sha;commit=@{committer=@{date=$date.ToString('o')}}}
         }
         Invoke-WrapperChain
+        if ($lane -ceq 'claude') { Add-ChainMarker "автоперевірка-5-$head" $script:CaseModel $head -Cond 'p1' }
         $refs = @(& git -C $remote for-each-ref '--format=%(refname)' refs/heads/gemini-queue/)
         Check "$MeasurePhase $lane : давній PR із сьогоднішнім коментарем" ((@($refs | Where-Object { $_ -match 'автоперевірка-3-' }).Count -eq 0) -eq ($MeasurePhase -eq 'ПІСЛЯ'))
         if ($MeasurePhase -eq 'ПІСЛЯ') {
