@@ -104,7 +104,8 @@ chk "стан: таблиця смуг — claude 2/2 і codex 2/2 у якійс
 chk "стан: квота agy з UTC — GEMINI4ARGON 0 %, скидання …Z, зчитано …Z" 'echo "$S" | grep -qE "^\| agy · GEMINI4ARGON \| WEEK \| 0 % \| 20[0-9-]+T[0-9:]+Z \| 20[0-9-]+T[0-9:]+Z \|$"'
 chk "стан: квота Claude з rate_limit_event (5H, 7D)" 'echo "$S" | grep -qE "^\| claude \| 5H \| 68 % \|" && echo "$S" | grep -qE "^\| claude \| 7D \| 18 % \|"'
 chk "стан: позначка Argon у «Чекають скидання квоти»" 'echo "$S" | grep -qE "^\| gemini-queue/г-agy-квота/$AQ/1/p0 \| 20[0-9-]+T[0-9:]+Z \| GEMINI4ARGON \|$"'
-chk "стан: GPU зайнята слотом claude" '[[ "$S" == *"GPU: зайнята — claude-"* ]]'
+chk "стан: замок GPU обгортки зайнятий слотом claude (окреме поле, не вимір карти)" '[[ "$S" == *"замок GPU обгортки (запис слотів нарядів, не вимір карти): зайнятий — claude-"* ]]'
+chk "стан: вимір карти з часом UTC (nvidia-smi чи явна помилка виміру)" 'echo "$S" | grep -qE "^- вимір карти \((nvidia-smi, )?UTC 20[0-9-]+T[0-9:]+Z\): "'
 echo "$S" | awk '/### Смуги/{f=1} /### Чекають/{f=2} f' | head -30 | sed 's/^/    /' > "$W/status_snapshot.txt"
 pub; L=$(lines)
 NQ=$(echo "$L" | grep -c "ЗАБЛОКОВАНО gemini/г-agy-квота QUOTA0_GEMINI4ARGON_M")

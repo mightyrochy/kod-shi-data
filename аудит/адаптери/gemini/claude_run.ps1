@@ -28,7 +28,7 @@
      доставки й `shutdown`. Позначка, що вже була до першого проходу після ввімкнення, — ЗАБЛОКОВАНО … BOOT.
   7. Стан — тіло issue -StatusIssue (`gh api -X PATCH`), щопроходу не частіше за -StatusMinutes: задачі планувальника,
      смуги й слоти (свої й gemini-run з heartbeat), квота груп моделей і Claude з часом скидання в UTC, позначки в
-     чеканні квоти, GPU, межі без джерела, здоров'я машини (місце, теки, позначки за рушієм, видом і віком), аварії однієї
+     чеканні квоти, GPU (вимір карти nvidia-smi з часом UTC і замок обгортки окремими рядками), межі без джерела, здоров'я машини (місце, теки, позначки за рушієм, видом і віком), аварії однієї
      причини — лише обчислене.
 #>
 [CmdletBinding()]
@@ -370,6 +370,37 @@ function Get-HealthLines($G, $Cq) {
     $lines
 }
 
+# Вимір відеокарти для стану: відповіді про GPU брали запис замка, а не карту. Той самий вимір, що в Get-GpuLoad (nvidia-smi,
+# лічильник процесів Windows), без порога й без впливу на допуск; замок — окремий рядок.
+function Get-GpuStateLines($LockedBy) {
+    $gpu = Get-GpuTelemetry
+    $at = Get-UtcStamp (Get-Date)
+    $lines = @('', '### GPU')
+    if ($gpu.Error) { $lines += "- вимір карти (UTC $at): $($gpu.Error) — завантаження, пам'ять і процеси невідомі; замок нижче карти не відображає" }
+    else {
+        $used = $gpu.TotalMiB - $gpu.FreeMiB
+        $lines += "- вимір карти (nvidia-smi, UTC $at): завантаження $($gpu.Percent) % · пам'ять зайнято $used з $($gpu.TotalMiB) MiB (вільно $($gpu.FreeMiB))"
+        $rows = Get-GpuCounterRows
+        if ($null -eq $rows) { $lines += "- процеси-власники пам'яті: лічильник Windows недоступний (UTC $at)" }
+        else {
+            $seen = @{}; $owners = @()
+            foreach ($row in @($rows)) {
+                if ($null -eq $row -or [string]$row.Name -notmatch '^pid_([0-9]{1,10})_.*_phys_0$' -or $seen.ContainsKey([string]$row.Name)) { continue }
+                $seen[[string]$row.Name] = $true
+                $processId = 0; $bytes = 0L
+                if (-not [int]::TryParse($Matches[1], [ref]$processId) -or -not [long]::TryParse([string]$row.DedicatedUsage, [ref]$bytes) -or $bytes -lt 0) { continue }
+                $p = Get-GpuProcessInfo $processId
+                $mib = [long][Math]::Floor($bytes / 1MB)
+                if ($mib -ge 1) { $owners += [pscustomobject]@{ Pid = $processId; Name = $(if ($p.Name) { $p.Name } else { '?' }); MiB = $mib } }
+            }
+            $owners = @($owners | Sort-Object -Property @{ Expression = 'MiB'; Descending = $true }, Pid)
+            $lines += "- процеси-власники пам'яті (лічильник Windows, PID ім'я MiB): $(if ($owners.Count) { ($owners | ForEach-Object { "$($_.Pid) $($_.Name) $($_.MiB)" }) -join ' · ' } else { 'жоден не тримає понад 1 MiB' })"
+        }
+    }
+    $lines += "- замок GPU обгортки (запис слотів нарядів, не вимір карти): $(if ($LockedBy.Count) { 'зайнятий — ' + ($LockedBy -join ', ') } else { 'вільний' })"
+    $lines
+}
+
 function Get-StatusBody {
     $host_ = $(if ($env:COMPUTERNAME -match '^[A-Za-z0-9-]{1,15}$') { $env:COMPUTERNAME } else { '?' })
     $g = Read-GeminiBeat
@@ -387,7 +418,7 @@ function Get-StatusBody {
         '|---|---|---|---|'
     )
     foreach ($r in $rows) { $lines += "| $($r.Name) | $($r.Last) | $($r.Result) | $($r.State) |" }
-    $lines += @('', '### Смуги', '', '| смуга | слотів | зайнято | позначка | модель | хв | GPU |', '|---|---|---|---|---|---|---|')
+    $lines += @('', '### Смуги', '', '| смуга | слотів | зайнято | позначка | модель | хв | замок GPU |', '|---|---|---|---|---|---|---|')
     $gpuBy = @()
     $own = @(Read-SlotInfo 'claude')
     # Щойно запущений наряд ще не записав файла слота: показати його з пам'яті планувальника.
@@ -418,7 +449,8 @@ function Get-StatusBody {
         }
     }
     $lines += @(Get-IdleLines)
-    $lines += @('', "GPU: $(if ($gpuBy.Count) { 'зайнята — ' + ($gpuBy -join ', ') } else { 'вільна' }) · межі: claude-run — $(if ($null -ne $lim) { $lim.source } else { '?' }), gemini-run — $(if ($g.Limits) { $g.Limits } else { '?' })")
+    $lines += @(Get-GpuStateLines $gpuBy)
+    $lines += @('', "межі: claude-run — $(if ($null -ne $lim) { $lim.source } else { '?' }), gemini-run — $(if ($g.Limits) { $g.Limits } else { '?' })")
     $lines += @('', "heartbeat gemini-run (UTC): $($g.Time) · вік: $(Get-Minutes $g.Time) хв · isolation: $($g.Isolation) · понад 5 хв — джерело застаріле")
     # Межа без джерела (10970) діє з попереднього прийнятого значення; рядок — щоб її було видно, а не щоб зупинити.
     $unsrc = @(Get-Unsourced $lim)
