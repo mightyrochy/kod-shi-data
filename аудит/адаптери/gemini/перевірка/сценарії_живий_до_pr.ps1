@@ -151,7 +151,8 @@ try {
             Check 'PR іншої бази не отримує PATCH' ($script:Calls.Count -eq 1 -and $script:Calls[0].Args[2] -ceq 'POST')
             $script:Existing=@(); $script:ApiFail=$true
             Save-DraftRequest 'gemini/проба' $script:Head
-            try { Complete-EngineDrafts; Check 'збій API не приймається' $false } catch { Check 'збій API лишає запит для повтору' (@(Get-ChildItem "$WorkDir/drafts/*.json").Count -eq 1) }
+            Complete-EngineDrafts
+            Check 'збій API лишає запит для повтору' (@(Get-ChildItem "$WorkDir/drafts/*.json").Count -eq 1)
             $script:ApiFail=$false; Complete-EngineDrafts
             Import-Functions 'queue_lanes.ps1' @('Add-AutoTaskContext','ConvertTo-Marker','Get-Lane')
             $script:QueuePrefix = 'refs/remotes/origin/gemini-queue/'
@@ -252,13 +253,12 @@ try {
             Check 'вада чинного PR також лишає оригінал і блокер без вадного префікса' ($merged.Bad.Count -eq 1 -and $merged.Body.Contains('оригінал: ЖИВИЙ ПІСЛЯ') -and $merged.Body.Contains('ЗАБЛОКОВАНО:') -and @(Get-LiveAfterLines $merged.Body $registry | Where-Object { $_.error }).Count -eq 0)
             $script:Calls=@(); $script:ReadFail=$true
             Save-DraftRequest 'gemini/перевірка-91' $script:Head
-            try { Complete-EngineDrafts; Check 'збій читання не приймається' $false } catch {
-                Check 'збій GET не стирає сцени: PATCH нема, запит лишається' ($script:Calls.Count -eq 0 -and @(Get-ChildItem "$WorkDir/drafts/*.json").Count -eq 1)
-            }
+            # Збій одного завдання не рве проходу (ланцюг-порожній-pr): він іде в журнал, запит лишається на повтор.
+            Complete-EngineDrafts
+            Check 'збій GET не стирає сцени: PATCH нема, запит лишається' ($script:Calls.Count -eq 0 -and @(Get-ChildItem "$WorkDir/drafts/*.json").Count -eq 1)
             $script:ReadFail=$false; $script:ApiFail=$true
-            try { Complete-EngineDrafts; Check 'збій PATCH не приймається' $false } catch {
-                Check 'збій PATCH лишає запит для повтору' (@(Get-ChildItem "$WorkDir/drafts/*.json").Count -eq 1)
-            }
+            Complete-EngineDrafts
+            Check 'збій PATCH лишає запит для повтору' (@(Get-ChildItem "$WorkDir/drafts/*.json").Count -eq 1)
             $script:ApiFail=$false; $script:Calls=@(); $script:CurrentBody="$valid`n`n$other"
             Complete-EngineDrafts
             Check 'повтор після відмови API знову зберігає чинні сцени' (@(Get-LiveAfterLines $script:Calls[0].Payload.body $registry).Count -eq 2 -and @(Get-ChildItem "$WorkDir/drafts/*.json").Count -eq 0)
