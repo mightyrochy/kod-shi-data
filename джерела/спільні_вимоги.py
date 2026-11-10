@@ -19,6 +19,8 @@ _ОПИСИ_GOAL_EXTRA = {"вище": "a longer line, to look taller", "комф
 ПРОТИ_ВІДМОВ = "do not take an item that goes against her refusals or her words"  # як до `case` складання й руки
 ЦИТАТА_ГОВОРИТЬ_БІЛЬШЕ = "they say more than the code: the outfit answers them"  # як до цитат наміру й мети
 РОЛЬ_ЗАСТОСУНКУ = "You are the stylist of the Lyusterko styling app."  # початок ролі помічниці, питання й вибору палітри
+# правило помічниці й питання образу: каталогу в їхньому виклику нема, тож названа річ, крамниця чи ціна — вигадані
+БЕЗ_КАТАЛОГУ = "Name no catalogue items, shops, brands, prices or links: you see no catalogue."
 
 # шлях → (що, як за замовчуванням). `як` задачі замінює типове; «» вимикає його.
 ПОЛЯ = {

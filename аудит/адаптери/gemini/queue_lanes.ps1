@@ -8,8 +8,8 @@
 .DESCRIPTION
 Підвантажується крапкою (`. queue_lanes.ps1`) після блоку параметрів скрипта; власних параметрів нема. Читає змінні
 скрипта: $RepoDir, $GitExe, $LaneDir, $script:NoHooks, $script:StateDir, $script:SlotDir, $script:SelfPath, $script:Bound,
-і функцію журналу Write-Log. Два облікові записи розведено жорстко, тож планувальників два; спільні між ними лише замок
-GPU та бюджет перевірок PR (тека $LaneDir — `C:\Users\Public\gemini\lanes`, де пишуть і INTERACTIVE, і BATCH) і рядок стану ноутбука.
+і функцію журналу Write-Log. Два облікові записи розведено жорстко, тож планувальників два; спільні між ними лише ворота й
+сесія GPU та бюджет перевірок PR (тека $LaneDir — `C:\Users\Public\gemini\lanes`, де пишуть і INTERACTIVE, і BATCH) і рядок стану ноутбука.
 
 Позначка: `gemini-queue/<наряд>/<модель>/<спроба>[/<умови>]`; умови — до трьох лексем через `-` у будь-якому порядку:
 `p<0-9>` — пріоритет (0 — найвищий; без лексеми — 5), `d<РРРРММДДГГхх>` — строк у UTC, `gpu` — наряд займає відеокарту.
@@ -28,6 +28,8 @@ $script:CondPattern = '^(?:p[0-9]|d20[0-9]{10}|gpu)(?:-(?:p[0-9]|d20[0-9]{10}|gp
 $script:LanesPath = 'аудит/адаптери/gemini/смуги.json'
 $script:Utf8 = New-Object System.Text.UTF8Encoding($false)
 $script:OnWindows = ($PSVersionTable.PSEdition -ne 'Core') -or [bool](Get-Variable IsWindows -ValueOnly -ErrorAction SilentlyContinue)
+$script:TreeJobs = @{}  # pid процесу Start-Tree → його задача Windows
+$script:GpuLease = $null  # замок GPU-оренди процесу наряду (Start-GpuModels → Exit-GpuLease)
 # Тека версії цього процесу: після самооновлення — `<корінь>\versions\<SHA40>`, поряд із коренем — `active.txt`.
 $script:VersionDir = $PSScriptRoot
 
@@ -51,6 +53,24 @@ $script:WorkerGpuBusy = 4
 $script:ReviewApiLimit = 30
 $script:ReviewApiWindow = 3600
 $script:ReviewApiBackoff = 120
+# План живого (Get-AutoLivePlan, автоживий й Е1-нічний-живий). Вимір 07.11: `pulls?state=all` — 33 сторінки по 100 PR,
+# сторінка до 2,36 млн знаків (3273 PR); повне читання на спробу — 33 запити з 60/год без входу. Тепер сторінки по 50,
+# читання стоїть, щойно сторінка старіша за збірку останнього звіту (запити — з бюджету review-api.json, як у
+# Get-AutoReviewState), а більше AutoPlanMaxPages сторінок на спробу — AUTO_PAGES, не мовчазне повторення.
+$script:AutoPlanPerPage = 50
+$script:AutoPlanMaxPages = 20
+# Запас на розбіжність годинників: звіт не може згадати збірку, що старша за його оновлення; злиття — старше за збірку.
+$script:AutoPlanMarginHours = 6
+$script:AutoApiCalls = 0
+# Збій побудови плану (Add-AutoTaskContext) — окреме чекання з лічильником retakes; на межі MaxRetakes — PLAN_FAILED.
+# Вимір 07.11 (ноутбучна сесія): три відмови плану о 17:54–17:59, о 18:10 той самий план зібрався за 29 с, тобто збій минав за
+# 11–16 хв; MaxRetakes × PlanBackoff = 5 × 300 с = 25 хв покриває його з запасом.
+$script:PlanBackoff = 300
+# Скільки секунд прохід чекає на перший результат GPU-наряду, запущеного ним, перш ніж віддати GPU наступній позначці.
+# Вимір 07.11 (#1856): воркер p1 щопроходу виходив у WAIT за секунди; 120 с — стеля того очікування (числа запасу виміром
+# не перевірено: часу від запуску до STARTED успішного прогону журнал не дає).
+$script:GpuStartWaitSeconds = 120
+$script:GpuStartPollMs = 500
 # Вимір 30.10: найбільший із доступних знімків живих прогонів — 8925 MiB усієї карти.
 # Джерела й прогалини (пік каталогу, навантаження гри): аудит/корені/ПК-межа-без-джерела-gpu.md.
 # Це запасний бюджет за спостереженим максимумом, а не доведений пік будь-якої моделі.
@@ -130,8 +150,95 @@ function New-StartInfo([string]$Exe, [string[]]$Arguments, [string]$Dir, [switch
     $psi
 }
 
+function Add-TreeJobType {
+    if ('GeminiWrapper.TreeJob' -as [type]) { return }
+    Add-Type -TypeDefinition @'
+using System;
+using System.ComponentModel;
+using System.Runtime.InteropServices;
+namespace GeminiWrapper {
+    public static class TreeJob {
+        [StructLayout(LayoutKind.Sequential)]
+        struct BasicLimit { public long PerProcessTime; public long PerJobTime; public uint Flags; public UIntPtr MinWs; public UIntPtr MaxWs; public uint ActiveLimit; public UIntPtr Affinity; public uint Priority; public uint Scheduling; }
+        [StructLayout(LayoutKind.Sequential)]
+        struct ExtendedLimit { public BasicLimit Basic; public ulong R1, R2, R3, R4, R5, R6; public UIntPtr ProcessMem, JobMem, PeakProcessMem, PeakJobMem; }
+        [DllImport("kernel32.dll", SetLastError = true, CharSet = CharSet.Unicode)] static extern IntPtr CreateJobObject(IntPtr attributes, string name);
+        [DllImport("kernel32.dll", SetLastError = true)] static extern bool SetInformationJobObject(IntPtr job, int infoClass, ref ExtendedLimit info, int size);
+        [DllImport("kernel32.dll", SetLastError = true)] static extern bool AssignProcessToJobObject(IntPtr job, IntPtr process);
+        [DllImport("kernel32.dll", SetLastError = true)] static extern bool QueryInformationJobObject(IntPtr job, int infoClass, IntPtr info, int size, IntPtr returned);
+        [DllImport("kernel32.dll", SetLastError = true)] static extern IntPtr OpenProcess(uint access, bool inherit, int id);
+        [DllImport("kernel32.dll", SetLastError = true)] static extern bool IsProcessInJob(IntPtr process, IntPtr job, out bool result);
+        [DllImport("kernel32.dll", SetLastError = true)] static extern bool TerminateProcess(IntPtr process, uint code);
+        [DllImport("kernel32.dll", SetLastError = true)] static extern bool CloseHandle(IntPtr handle);
+
+        public static IntPtr Create(IntPtr process) {
+            IntPtr job = CreateJobObject(IntPtr.Zero, null);
+            if (job == IntPtr.Zero) throw new Win32Exception();
+            var info = new ExtendedLimit();
+            info.Basic.Flags = 0x800;  // BREAKAWAY_OK: явний вихід із задачі (CREATE_BREAKAWAY_FROM_JOB) не ламає старту нащадка
+            if (!SetInformationJobObject(job, 9, ref info, Marshal.SizeOf(typeof(ExtendedLimit))) || !AssignProcessToJobObject(job, process)) {
+                var e = new Win32Exception(); CloseHandle(job); throw e;
+            }
+            return job;
+        }
+
+        public static int[] Members(IntPtr job) {
+            const int max = 4096; int size = 8 + IntPtr.Size * max;
+            IntPtr buf = Marshal.AllocHGlobal(size);
+            try {
+                if (!QueryInformationJobObject(job, 3, buf, size, IntPtr.Zero)) throw new Win32Exception();
+                var ids = new int[Marshal.ReadInt32(buf, 4)];
+                for (int i = 0; i < ids.Length; i++) ids[i] = (int)Marshal.ReadIntPtr(buf, 8 + i * IntPtr.Size).ToInt64();
+                return ids;
+            } finally { Marshal.FreeHGlobal(buf); }
+        }
+
+        public static bool Kill(IntPtr job, int id) {
+            IntPtr p = OpenProcess(0x1001, false, id);  // TERMINATE | QUERY_LIMITED_INFORMATION
+            if (p == IntPtr.Zero) return false;
+            try { bool inJob; return IsProcessInJob(p, job, out inJob) && inJob && TerminateProcess(p, 1); }
+            finally { CloseHandle(p); }
+        }
+
+        public static void Close(IntPtr job) { CloseHandle(job); }
+    }
+}
+'@
+}
+
+function Start-Tree($Psi) {
+    <# Старт процесу в задачі Windows: нащадки, відірвані від батька (nohup, start), лишаються в ній, і Stop-Tree зупиняє
+    їх разом із деревом. 08.11 вимір, запущений сесією через nohup, після кінця наряду тримав 12 ГБ відеокарти й копію задачі. #>
+    # Тип збирається до старту: збірка триває секунди, а нащадки, народжені до прив'язки, у задачу не потрапляють.
+    $typed = $false
+    if ($script:OnWindows) { try { Add-TreeJobType; $typed = $true } catch { Write-Log "задача процесів: $($_.Exception.Message)" } }
+    $p = [System.Diagnostics.Process]::Start($Psi)
+    if ($typed) {
+        try { $script:TreeJobs[$p.Id] = [GeminiWrapper.TreeJob]::Create($p.Handle) }
+        catch { Write-Log "задача процесів $($p.Id): $($_.Exception.Message) — лишки зупиняє лише дерево" }
+    }
+    $p
+}
+
+function Stop-TreeJob([int]$Id) {
+    <# Зупиняє решту задачі Windows процесу; інструменти LM Studio лишає — це спільний сервер, а моделі наряду прибирає
+    Complete-GpuModels. #>
+    if (-not $script:TreeJobs.ContainsKey($Id)) { return }
+    $job = $script:TreeJobs[$Id]; $script:TreeJobs.Remove($Id)
+    try {
+        $gone = @(foreach ($i in [GeminiWrapper.TreeJob]::Members($job)) {
+                $g = $null
+                try { $g = Get-Process -Id $i -ErrorAction Stop } catch { continue }
+                if (Test-GpuModelProcess $g.ProcessName ([string]$g.Path)) { continue }
+                if ([GeminiWrapper.TreeJob]::Kill($job, $i)) { "$($g.ProcessName) $i" }
+            })
+        if ($gone.Count) { Write-Log "лишки дерева $Id зупинено: $($gone -join ', ')" }
+    } catch { Write-Log "лишки дерева ${Id}: $($_.Exception.Message)" }
+    finally { [GeminiWrapper.TreeJob]::Close($job) }
+}
+
 function Stop-Tree($Proc) {
-    <# Зупинка процесу з усім деревом нащадків. #>
+    <# Зупинка процесу з усім деревом нащадків і рештою його задачі Windows (Start-Tree), також після його виходу. #>
     if ($null -eq $Proc) { return }
     try {
         if (-not $Proc.HasExited) {
@@ -140,6 +247,7 @@ function Stop-Tree($Proc) {
         }
         [void]$Proc.WaitForExit(15000)
     } catch { Write-Log "зупинка процесу: $($_.Exception.Message)" }
+    Stop-TreeJob $Proc.Id
 }
 
 function Invoke-Native([string]$Exe, [string[]]$Arguments, [string]$Dir = '', [double]$TimeoutMinutes = 10, [string]$StdIn = $null) {
@@ -150,7 +258,7 @@ function Invoke-Native([string]$Exe, [string[]]$Arguments, [string]$Dir = '', [d
     $stdinEncoding = [Console]::InputEncoding
     try {
         [Console]::InputEncoding = $script:Utf8
-        $p = [System.Diagnostics.Process]::Start($psi)
+        $p = Start-Tree $psi
     } finally { [Console]::InputEncoding = $stdinEncoding }
     $out = $p.StandardOutput.ReadToEndAsync()
     $err = $p.StandardError.ReadToEndAsync()
@@ -162,7 +270,8 @@ function Invoke-Native([string]$Exe, [string[]]$Arguments, [string]$Dir = '', [d
     $until = [datetime]::UtcNow.AddMinutes($TimeoutMinutes)
     while (-not $p.WaitForExit(1000) -and [datetime]::UtcNow -lt $until) { Invoke-HealthBeat }
     $timedOut = -not $p.HasExited
-    if ($timedOut) { Stop-Tree $p } else { $p.WaitForExit() }
+    if (-not $timedOut) { $p.WaitForExit() }
+    Stop-Tree $p
     [pscustomobject]@{ Code = $(if ($timedOut) { -1 } else { $p.ExitCode }); TimedOut = $timedOut; Out = $out.Result; Err = $err.Result }
 }
 
@@ -387,6 +496,48 @@ function Get-ReviewTime {
 # Спільна політика потрібна й при самостійному завантаженні бібліотеки черги.
 if (-not (Get-Command Test-ReviewBranch -ErrorAction SilentlyContinue)) { . (Join-Path $PSScriptRoot 'wrapper_health.ps1') }
 
+function Read-AutoApiBudget([string]$Path, [long]$Now) {
+    <# Спільний бюджет публічного REST (`review-api.json`): запити за рухоме вікно й спільна пауза. Файла нема — порожній
+    бюджет; пошкоджений — $null (непорахованих запитів не дозволяємо). Викликач тримає замок `review-api.lock`. #>
+    if (-not (Test-Path -LiteralPath $Path)) { return [pscustomobject]@{ Calls = @(); Until = 0L } }
+    $saved = [IO.File]::ReadAllText($Path, $script:Utf8) | ConvertFrom-Json
+    if ($null -eq $saved.calls -or $null -eq $saved.until) { return $null }
+    [pscustomobject]@{ Calls = @($saved.calls | Where-Object { [long]$_ -gt ($Now - $script:ReviewApiWindow) }); Until = [long]$saved.until }
+}
+
+function Use-AutoApiBudget {
+    <# Один запит публічного REST зі спільного бюджету (ті самі файл, замок і межа, що в Get-AutoReviewState): запит
+    резервується до мережі, тож збій і перезапуск не обнуляють витраченого. $false — замка нема, бюджет пошкоджений, діє
+    спільна пауза чи вичерпано межу: викликач у мережу не йде. #>
+    $lock = $null
+    try {
+        $lock = Open-Lock (Join-Path $LaneDir 'review-api.lock')
+        if ($null -eq $lock) { return $false }
+        $path = Join-Path $LaneDir 'review-api.json'
+        $now = Get-ReviewTime
+        $saved = Read-AutoApiBudget $path $now
+        if ($null -eq $saved -or $now -lt $saved.Until -or $saved.Calls.Count -ge $script:ReviewApiLimit) { return $false }
+        Write-FileAtomic $path ([ordered]@{calls=@($saved.Calls) + @($now);until=$saved.Until} | ConvertTo-Json -Compress)
+        $true
+    } catch { $false }
+    finally { if ($null -ne $lock) { $lock.Dispose() } }
+}
+
+function Set-AutoApiPause {
+    <# Мережева відмова публічного запиту ставить спільну паузу ReviewApiBackoff с, як у Get-AutoReviewState. #>
+    $lock = $null
+    try {
+        $lock = Open-Lock (Join-Path $LaneDir 'review-api.lock')
+        if ($null -eq $lock) { return }
+        $path = Join-Path $LaneDir 'review-api.json'
+        $now = Get-ReviewTime
+        $saved = Read-AutoApiBudget $path $now
+        if ($null -eq $saved) { return }
+        Write-FileAtomic $path ([ordered]@{calls=@($saved.Calls);until=($now + $script:ReviewApiBackoff)} | ConvertTo-Json -Compress)
+    } catch { $null = $_ }
+    finally { if ($null -ne $lock) { $lock.Dispose() } }
+}
+
 function Get-AutoReviewState([string]$Slug) {
     <# Звіряє PR один раз безпосередньо перед моделлю, лише у вже вільному слоті.
 
@@ -400,14 +551,10 @@ function Get-AutoReviewState([string]$Slug) {
         if ($null -eq $lock) { return 'REVIEW_API' }
         $path = Join-Path $LaneDir 'review-api.json'
         $now = Get-ReviewTime
-        $calls = @(); $until = 0L
-        if (Test-Path -LiteralPath $path) {
-            $saved = [IO.File]::ReadAllText($path, $script:Utf8) | ConvertFrom-Json
-            # Пошкоджений бюджет не дозволяє непорахованих запитів.
-            if ($null -eq $saved.calls -or $null -eq $saved.until) { return 'REVIEW_API' }
-            $calls = @($saved.calls | Where-Object { [long]$_ -gt ($now - $script:ReviewApiWindow) })
-            $until = [long]$saved.until
-        }
+        $saved = Read-AutoApiBudget $path $now
+        # Пошкоджений бюджет не дозволяє непорахованих запитів.
+        if ($null -eq $saved) { return 'REVIEW_API' }
+        $calls = $saved.Calls; $until = $saved.Until
         if ($now -lt $until -or $calls.Count -ge $script:ReviewApiLimit) { return 'REVIEW_API' }
         # Резервуємо запит до мережі: 403/429, тайм-аут і падіння процесу також входять у бюджет.
         $budget = [ordered]@{calls=@($calls) + @($now);until=0L}
@@ -431,6 +578,28 @@ function Enter-ReviewWait($M, [string]$Head = '') {
     <# Повертає позначку після відмови REST чи вичерпання бюджету без збільшення retakes і кінцевого звіту. #>
     [void](Set-MarkerWait $M ((Get-ReviewTime) + $script:ReviewApiBackoff) @{group='REVIEW_API';head=$Head})
     Write-Log "позначка $($M.Name): REVIEW_API; спроба збережена, повтор у черзі"
+}
+
+function Get-PlanFailReason([string]$Message) {
+    <# Коротка причина збою плану для стану позначки й примітки в #1856: код обгортки (AUTO_*, REVIEW_*), статус HTTP чи
+    PLAN_ERROR; текст відповіді сервера в стан не йде. #>
+    if ($Message -cmatch '^(?:AUTO|REVIEW)_[A-Z_]{1,30}$') { return $Message }
+    if ($Message -cmatch '\(([45][0-9]{2})\)|status code does not indicate success: ([45][0-9]{2})') { return 'HTTP_' + $(if ($Matches[1]) { $Matches[1] } else { $Matches[2] }) }
+    'PLAN_ERROR'
+}
+
+function Enter-PlanWait($M, [string]$Reason, [string]$Head = '') {
+    <# Збій побудови плану живого (Add-AutoTaskContext для автоживого й Е1-нічного). Бюджет запитів вичерпано (AUTO_BUDGET) — це не
+    вада, а чекання вікна: як REVIEW_API, без лічильника. Решта — окреме чекання PlanBackoff с з лічильником retakes
+    (спільна межа MaxRetakes): повертає $false, коли межу вичерпано і чекання не записано, — викликач кінчає наряд
+    кодом PLAN_FAILED, який будить диспетчера (не тихий REVIEW_API без кінця). #>
+    # Автоперевірка PR (не план): її збій API лишається REVIEW_API — повтор у черзі під бюджетом, як і було.
+    if ($M.Slug -cnotmatch '^(?:автоживий-[0-9a-f]{40}|Е1-нічний-живий-[0-9]{8})$' -or $Reason -ceq 'AUTO_BUDGET') { Enter-ReviewWait $M $Head; return $true }
+    $why = Get-PlanFailReason $Reason
+    $n = Set-MarkerWait $M ((Get-ReviewTime) + $script:PlanBackoff) @{group='PLAN_WAIT';reason=$why;head=$Head;retake=$true}
+    if ($null -eq $n) { Write-Log "позначка $($M.Name): план не збудовано (${why}: $(([regex]::Replace($Reason, '[\x00-\x1f\x7f]+', ' ')).Trim())) понад $($script:MaxRetakes) разів — PLAN_FAILED"; return $false }
+    Write-Log "позначка $($M.Name): план не збудовано ($why); повтор $n із $($script:MaxRetakes) за $($script:PlanBackoff) с"
+    $true
 }
 
 function Get-MarkerState($M, [string]$StateDir = $script:StateDir) {
@@ -628,6 +797,12 @@ function Open-Lock([string]$Path) {
     try { [System.IO.File]::Open($Path, 'OpenOrCreate', 'ReadWrite', 'None') } catch { $null }
 }
 
+function Get-SleepGap([datetime]$Tick, [datetime]$Now) {
+    <# Цикл наряду обертається щонайменше раз на хвилину: довша пауза — сон ноутбука, а не завислість наряду. #>
+    $gap = $Now - $Tick
+    if ($gap.TotalMinutes -gt 5) { $gap } else { [timespan]::Zero }
+}
+
 function Test-LockFree([string]$Path) {
     <# Замок вільний зараз (відкрито й одразу закрито). #>
     $l = Open-Lock $Path
@@ -651,38 +826,149 @@ function Get-LmsInstances {
     }
 }
 
-function Complete-GpuModels {
-    <# Під GPU-замком прибирає різницю зі збереженим знімком; збій лишає запис для повтору. #>
+function Get-GpuLeaseLockPath([string]$Run) {
+    <# Замок життя GPU-оренди прогону: його тримає процес наряду від допуску до кінця. #>
+    Join-Path $LaneDir ('gpu-lease-' + (Get-Sha256Hex $Run) + '.lock')
+}
+
+function Test-LeaseLive([string]$Path) {
+    <# Чи тримає замок оренди живий процес; нема файла — оренда мертва.
+    Будь-яка відмова відкрити — жива: мертву прибере наступний прохід, а в живої не можна забрати моделей. #>
+    if (-not [IO.File]::Exists($Path)) { return $false }
+    try { ([IO.File]::Open($Path, 'Open', 'ReadWrite', 'None')).Dispose(); $false } catch { $true }
+}
+
+function Read-GpuSession {
+    <# Спільний запис GPU-сесії (`lanes/gpu-models.json`) або $null; неповний — виняток: межі власності не вгадуємо.
+
+    Сесія триває від допуску першої GPU-оренди до кінця останньої з тих, що перекривались. Before — екземпляри LM Studio
+    до неї (власника: не вивантажуються); join оренди — екземпляри в мить її допуску: те, що вже було, вона не вантажила.
+    Запис v1 (одна оренда старої версії обгортки) — сесія з уже закінченою орендою: прибирання те саме, що було. #>
     $path = Join-Path $LaneDir 'gpu-models.json'
-    if (-not [IO.File]::Exists($path)) { return }
-    $lease = [IO.File]::ReadAllText($path, $script:Utf8) | ConvertFrom-Json -ErrorAction Stop
-    if ($lease.v -ne 1 -or -not $lease.marker -or -not $lease.run -or $lease.before -isnot [array]) { throw 'GPU: неповний знімок моделей' }
-    $ids = New-Object 'System.Collections.Generic.HashSet[string]' ([StringComparer]::Ordinal)
-    foreach ($i in $lease.before) {
-        if (-not $i.id -or -not $i.model) { throw 'GPU: неповний початковий екземпляр' }
-        [void]$ids.Add([string]$i.id)
+    if (-not [IO.File]::Exists($path)) { return $null }
+    $s = [IO.File]::ReadAllText($path, $script:Utf8) | ConvertFrom-Json -ErrorAction Stop
+    $field = { param($Name) $p = $s.PSObject.Properties[$Name]; if ($null -ne $p) { , $p.Value } }
+    $before = & $field 'before'
+    if ($before -isnot [array]) { throw 'GPU: неповний знімок моделей' }
+    foreach ($i in $before) { if (-not (Get-JsonProp $i 'id') -or -not (Get-JsonProp $i 'model')) { throw 'GPU: неповний початковий екземпляр' } }
+    $leases = New-Object System.Collections.ArrayList
+    $v = Get-JsonProp $s 'v'; $all = & $field 'leases'
+    if ($v -eq 1 -and (Get-JsonProp $s 'marker') -and (Get-JsonProp $s 'run')) {
+        [void]$leases.Add([pscustomobject]@{ run = [string]$s.run; marker = [string]$s.marker; join = @($before | ForEach-Object { [string]$_.id }); done = $true })
+    } elseif ($v -eq 2 -and $all -is [array]) {
+        foreach ($l in $all) {
+            $join = $null; $p = $l.PSObject.Properties['join']; if ($null -ne $p) { $join = $p.Value }
+            if (-not (Get-JsonProp $l 'run') -or -not (Get-JsonProp $l 'marker') -or $join -isnot [array]) { throw 'GPU: неповна оренда' }
+            [void]$leases.Add([pscustomobject]@{ run = [string]$l.run; marker = [string]$l.marker; join = @($join | ForEach-Object { [string]$_ }); done = ((Get-JsonProp $l 'done') -eq $true) })
+        }
+    } else { throw 'GPU: неповний знімок моделей' }
+    [pscustomobject]@{ Before = @($before); Leases = $leases; Dirty = ((Get-JsonProp $s 'dirty') -eq $true) }
+}
+
+function Save-GpuSession($Session) {
+    <# Пише сесію під воротами GPU; dirty — є закінчена оренда, чиї моделі ще не перевірено. #>
+    $leases = @(foreach ($l in $Session.Leases) { [ordered]@{ run = $l.run; marker = $l.marker; join = @($l.join); done = [bool]$l.done } })
+    $o = [ordered]@{ v = 2; before = @($Session.Before); leases = $leases; dirty = [bool]$Session.Dirty }
+    Write-FileAtomic (Join-Path $LaneDir 'gpu-models.json') (ConvertTo-Json -InputObject $o -Depth 6 -Compress)
+}
+
+function Get-LiveGpuLeases($Session) {
+    <# Незакінчені оренди сесії, чий процес наряду ще тримає замок оренди. #>
+    @($Session.Leases | Where-Object { -not $_.done -and (Test-LeaseLive (Get-GpuLeaseLockPath $_.run)) })
+}
+
+function Complete-GpuModels([string]$Run = '') {
+    <# Під воротами GPU закінчує оренду $Run (і мертві) й вивантажує екземпляри, яких жодна жива оренда завантажити не
+    могла: їх нема в before, і кожна інша жива оренда прийшла, коли вони вже були. Решту лишає останній живій оренді:
+    з двох одночасних нарядів жоден не вивантажує моделі сусіда, а моделі власника (before) — ніхто. Останній видаляє
+    запис. Збій лишає запис для повтору. #>
+    $s = Read-GpuSession
+    if ($null -eq $s) { return }
+    $ended = $false
+    foreach ($l in $s.Leases) {
+        if ($l.done) { continue }
+        $lockPath = Get-GpuLeaseLockPath $l.run
+        if ($Run -and $l.run -ceq $Run) { $l.done = $true; $ended = $true }
+        elseif (-not (Test-LeaseLive $lockPath)) {
+            $l.done = $true; $ended = $true
+            Remove-Item -LiteralPath $lockPath -Force -ErrorAction SilentlyContinue
+        }
     }
+    $live = @($s.Leases | Where-Object { -not $_.done })
+    if ($live.Count -and -not $ended -and -not $s.Dirty) { return }
+    # Закінчення оренди записано до REST: збій LM Studio не повертає мертву оренду в живі.
+    if ($ended) { $s.Dirty = $true; Save-GpuSession $s }
+    $keep = New-Object 'System.Collections.Generic.HashSet[string]' ([StringComparer]::Ordinal)
+    foreach ($i in $s.Before) { [void]$keep.Add([string]$i.id) }
     foreach ($i in @(Get-LmsInstances)) {
-        if ($ids.Contains($i.id)) { continue }
-        Write-Log "GPU вивантаження: модель=$($i.model); екземпляр=$($i.id); наряд=$($lease.marker); прогін=$($lease.run)" -Required
+        if ($keep.Contains($i.id) -or @($live | Where-Object { $_.join -cnotcontains $i.id }).Count) { continue }
+        $by = @($s.Leases | Where-Object { $_.join -cnotcontains $i.id })
+        Write-Log "GPU вивантаження: модель=$($i.model); екземпляр=$($i.id); наряд=$(@($by | ForEach-Object { $_.marker }) -join ','); прогін=$(@($by | ForEach-Object { $_.run }) -join ',')" -Required
         $body = @{ instance_id = $i.id } | ConvertTo-Json -Compress
         $v = Invoke-RestMethod 'http://127.0.0.1:1234/api/v1/models/unload' -Method Post -ContentType 'application/json' -Body $body -TimeoutSec 120 -ErrorAction Stop
         if (Get-JsonProp $v 'error') { throw 'LM Studio: відмова вивантаження' }
     }
-    if (@(Get-LmsInstances | Where-Object { -not $ids.Contains($_.id) }).Count) { throw 'GPU: нові екземпляри ще завантажені' }
-    Remove-Item -LiteralPath $path -Force -ErrorAction Stop
+    if ($live.Count) { $s.Dirty = $false; Save-GpuSession $s; return }
+    if (@(Get-LmsInstances | Where-Object { -not $keep.Contains($_.id) }).Count) { throw 'GPU: нові екземпляри ще завантажені' }
+    Remove-Item -LiteralPath (Join-Path $LaneDir 'gpu-models.json') -Force -ErrorAction Stop
 }
 
 function Start-GpuModels($Job) {
-    <# До агента й під його GPU-замком зберігає межу власності незалежно від життя дерева процесів. #>
-    Complete-GpuModels
-    $before = @(Get-LmsInstances)
-    $lease = [ordered]@{ v = 1; marker = [string]$Job.name; run = [string]$Job.id; before = $before }
-    Write-FileAtomic (Join-Path $LaneDir 'gpu-models.json') ($lease | ConvertTo-Json -Depth 6 -Compress)
+    <# Під воротами GPU, до агента: приєднує прогін до сесії з переліком екземплярів цієї миті. Замок оренди процес наряду
+    тримає до кінця: його смерть видно обом планувальникам, і прибирання не чекає на finally. #>
+    $lockPath = Get-GpuLeaseLockPath ([string]$Job.id)
+    $lease = Open-Lock $lockPath
+    if ($null -eq $lease) { throw 'GPU: замок оренди зайнятий' }
+    try {
+        $now = @(Get-LmsInstances)
+        $s = Read-GpuSession
+        if ($null -eq $s) { $s = [pscustomobject]@{ Before = $now; Leases = (New-Object System.Collections.ArrayList); Dirty = $false } }
+        [void]$s.Leases.Add([pscustomobject]@{ run = [string]$Job.id; marker = [string]$Job.name; join = @($now | ForEach-Object { [string]$_.id }); done = $false })
+        Save-GpuSession $s
+    } catch {
+        $lease.Dispose()
+        Remove-Item -LiteralPath $lockPath -Force -ErrorAction SilentlyContinue
+        throw
+    }
+    $script:GpuLease = $lease
+}
+
+function Enter-GpuLease($Job) {
+    <# Допуск GPU-наряду в процесі наряду; '' — допущено, інакше причина, і позначка лишається в черзі.
+
+    Ворота `gpu.lock` тримаються лише на час рішення, а не весь прогін: наряд, що готується, качає чи думає хмарною
+    моделлю, карти не займає й інших GPU-нарядів не тримає. Під воротами — прибирання мертвих оренд, карта без моделей
+    живих GPU-нарядів (Get-GpuSessionReason), вільна пам'ять (Test-ExternalGpuFree), приєднання до сесії. #>
+    $gate = Open-Lock (Get-GpuLockPath)
+    if ($null -eq $gate) { return 'замок GPU' }
+    try {
+        try { Complete-GpuModels } catch { return "знімок моделей недоступний: $($_.Exception.Message)" }
+        $why = Get-GpuSessionReason
+        if (-not $why -and -not (Test-ExternalGpuFree -LogAcquisition)) { $why = Get-GpuBusyReason -LockHeld }
+        if ($why) { return $why }
+        try { Start-GpuModels $Job } catch { return "знімок моделей недоступний: $($_.Exception.Message)" }
+        ''
+    } finally { $gate.Dispose() }
+}
+
+function Exit-GpuLease($Job) {
+    <# Кінець GPU-наряду на кожному шляху виходу: під воротами закінчує оренду й прибирає те, що вже нічиє, тоді відпускає
+    замок оренди. Ворота зайняті чи збій — оренда стає мертвою, і її прибирає наступний прохід (Repair-GpuModels). #>
+    $gate = Open-Lock (Get-GpuLockPath)
+    try {
+        if ($null -eq $gate) { Write-Log 'GPU прибирання відкладено: ворота GPU зайняті' }
+        else { try { Complete-GpuModels ([string]$Job.id) } catch { Write-Log "GPU прибирання відкладено: $($_.Exception.Message)" } }
+    } finally {
+        if ($null -ne $gate) { $gate.Dispose() }
+        if ($null -ne $script:GpuLease) {
+            $script:GpuLease.Dispose(); $script:GpuLease = $null
+            Remove-Item -LiteralPath (Get-GpuLeaseLockPath ([string]$Job.id)) -Force -ErrorAction SilentlyContinue
+        }
+    }
 }
 
 function Repair-GpuModels {
-    <# Планувальник прибирає залишки вбитого дерева перед воротами GPU, навіть коли черга порожня. #>
+    <# Планувальник прибирає залишки мертвих оренд перед воротами GPU, навіть коли черга порожня. #>
     $gpuLock = Open-Lock (Get-GpuLockPath)
     if ($null -eq $gpuLock) { return $true }
     try { Complete-GpuModels; $true }
@@ -761,6 +1047,42 @@ function Wait-Workers($Workers, [double]$Minutes) {
     }
 }
 
+function Test-RunStarted([string]$StatePath) {
+    <# Наряд дійшов до моделі: стан STARTED із початком прогону (gemini: `start` — SHA, claude: `start` — час процесу).
+    До цього він міг лише звіритися й піти в чекання (REVIEW_API, PLAN_WAIT), не торкнувшись GPU. #>
+    try {
+        if (-not [IO.File]::Exists($StatePath)) { return $false }
+        $t = [IO.File]::ReadAllText($StatePath, $script:Utf8)
+        $t.StartsWith('STARTED ') -and $t -cnotmatch '"start":\s*""'
+    } catch { $false }
+}
+
+function Test-LaterGpuMarker($Ordered, $Current) {
+    <# Після позначки в порядку проходу стоїть інша готова GPU-позначка (нова чи з минулим часом чекання). #>
+    $seen = $false
+    foreach ($x in @($Ordered)) {
+        if (-not $seen) { if ($x.Name -ceq $Current.Name) { $seen = $true }; continue }
+        if (-not $x.Gpu -or ($null -ne $x.PSObject.Properties['Off'] -and $x.Off)) { continue }
+        if (Test-MarkerReady (Get-MarkerState $x)) { return $true }
+    }
+    $false
+}
+
+function Wait-GpuWorkerOutcome($Worker, [string]$StatePath) {
+    <# Прохід віддав GPU процесові наряду, а інші GPU-позначки стоять за ним. Чекаємо його перший результат: EXITED —
+    процес скінчився (звірка пішла в WAIT, замок зайнятий: GPU вільна, наступна позначка проходу може її брати);
+    RUNNING — модель стартувала (GPU тримає наряд); TIMEOUT — досі готується (залишаємо GPU за ним, як і раніше).
+    Вимір 07.11: p1 щопроходу йшла в чекання за секунди, а решта GPU-позначок проходу стояла «її щойно взяв наряд». #>
+    $until = (Get-Date).AddSeconds($script:GpuStartWaitSeconds)
+    while ($true) {
+        if ($Worker.Proc.HasExited) { return 'EXITED' }
+        if (Test-RunStarted $StatePath) { return 'RUNNING' }
+        if ((Get-Date) -ge $until) { return 'TIMEOUT' }
+        Invoke-HealthBeat
+        Start-Sleep -Milliseconds $script:GpuStartPollMs
+    }
+}
+
 # Теки `аудит/` від третього рівня з відстежуваними файлами від 8 МіБ — архіви прогонів, проб і перевірок: копія задачі
 # їх не викладає (main 29.10: 29 тек, у копії 247 МБ із 1353). Тека, названа в наряді, лишається; іншу сесія додає
 # сама — `git sparse-checkout add '/<тека>/'`.
@@ -825,6 +1147,40 @@ function New-TaskCopy([string]$Dir, [string]$Commit, [string]$TaskText) {
     $env:TEMP = $tmp; $env:TMP = $tmp
     Write-Log "копія задачі $repo ($Commit): тек-архівів не викладено — $($skip.Count)"
     $repo
+}
+
+function Get-AttemptStart([string]$BranchSha, [string]$Main) {
+    <# Старт нової спроби наряду: що береться за основу, коли гілка попередньої спроби вже є на origin. Нема гілки чи
+    її голова — предок main (усе злито, пуш нової голови лишається швидким вперед) — основа main, `NEW`/`MERGED`; голова
+    вже містить main — гілка як є, `CURRENT`; інакше гілка, куди перед агентом вливається main, `BEHIND`. Спільне для
+    смуг: gemini_run.ps1 (Invoke-Job) і claude_run.ps1 (Invoke-Task). #>
+    if (-not $BranchSha) { return [pscustomobject]@{ Start = $Main; Mode = 'NEW' } }
+    $r = Invoke-Git @('merge-base', '--is-ancestor', $BranchSha, $Main) -AllowFail
+    if ($r.Code -gt 1) { throw "git merge-base --is-ancestor $BranchSha $Main -> $($r.Code): $($r.Err.Trim())" }
+    if ($r.Code -eq 0) { return [pscustomobject]@{ Start = $Main; Mode = 'MERGED' } }
+    $r = Invoke-Git @('merge-base', '--is-ancestor', $Main, $BranchSha) -AllowFail
+    if ($r.Code -gt 1) { throw "git merge-base --is-ancestor $Main $BranchSha -> $($r.Code): $($r.Err.Trim())" }
+    [pscustomobject]@{ Start = $BranchSha; Mode = $(if ($r.Code -eq 0) { 'CURRENT' } else { 'BEHIND' }) }
+}
+
+function Merge-MainIntoCopy([string]$Main, [string]$Branch) {
+    <# У копії задачі ($RepoDir, на гілці) вливає $Main комітом злиття. Повертає голову після злиття; конфлікт чи інший
+    збій — `merge --abort`, копія лишається на голові гілки, повертається ''. #>
+    $before = Get-RefSha 'HEAD'
+    $msg = "Обгортка: влито origin/main у $Branch перед спробою наряду (гілка відстала від main)"
+    $r = Invoke-Git @('-c', 'user.name=Обгортка Люстерка', '-c', 'user.email=wrapper@users.noreply.github.com', '-c', 'commit.gpgsign=false',
+        'merge', '--no-ff', '-q', '-m', $msg, $Main) -AllowFail
+    if ($r.Code -eq 0) { return (Get-RefSha 'HEAD') }
+    Write-Log "злиття main у $Branch не вдалося — $(($r.Out + $r.Err).Trim() -replace '\s+', ' ')"
+    [void](Invoke-Git @('merge', '--abort') -AllowFail)
+    if ((Get-RefSha 'HEAD') -cne $before) { [void](Invoke-Git @('reset', '-q', '--hard', $before)) }
+    ''
+}
+
+function Get-MergeStepText([string]$Branch) {
+    <# Крок промпту, коли обгортка не влила main сама (конфлікт) чи гілку веде агент: він вливає main першим кроком. #>
+    "Перший крок: влий свіжий ``origin/main`` у ``$Branch`` (``git merge origin/main``), конфлікти розв'язуй за змістом ``main``: гілка " +
+    "відстала від ``main``, тож код, який у ``main`` уже змінено чи прибрано, не лагодь і не відновлюй. Далі — наряд."
 }
 
 function Get-TaskDirText([string]$TaskDir) {
@@ -897,14 +1253,28 @@ function Get-AutoTaskPath([string]$Slug) {
     $script:TaskDir + $Slug + '.md'
 }
 
-function Get-AutoPublicItems([string]$Path) {
-    <# Пагінує публічний GET; збій не стає порожнім успішним входом. #>
-    for ($page = 1; $page -le 100; $page++) {
+function Get-AutoPublicItems([string]$Path, [int]$PerPage = 100, [int]$MaxPages = 100, [scriptblock]$StopAfterPage = $null, [switch]$Budgeted) {
+    <# Пагінує публічний GET; збій не стає порожнім успішним входом. StopAfterPage отримує елементи щойно прочитаної
+    сторінки й повертає $true, коли далі читати не треба (порядок сторінок і доказ зупинки — на викликачі). Budgeted —
+    кожен запит бере один із спільного бюджету review-api.json (нема — AUTO_BUDGET, у мережу не йдемо). Усі спроби
+    запиту лічить $script:AutoApiCalls. #>
+    for ($page = 1; $page -le $MaxPages; $page++) {
+        if ($Budgeted -and -not (Use-AutoApiBudget)) { throw 'AUTO_BUDGET' }
+        $script:AutoApiCalls++
         $separator = if ($Path.Contains('?')) { '&' } else { '?' }
-        $data = Invoke-RestMethod -Uri ("https://api.github.com/repos/mightyrochy/kod-shi-data/$Path" + $separator + "per_page=100&page=$page") -Method Get -TimeoutSec 20 -MaximumRedirection 0 -Headers @{Accept='application/vnd.github+json'; 'User-Agent'='kod-shi-wrapper'}
+        try {
+            $data = Invoke-RestMethod -Uri ("https://api.github.com/repos/mightyrochy/kod-shi-data/$Path" + $separator + "per_page=$PerPage&page=$page") -Method Get -TimeoutSec 20 -MaximumRedirection 0 -Headers @{Accept='application/vnd.github+json'; 'User-Agent'='kod-shi-wrapper'}
+        } catch {
+            if ($Budgeted) { Set-AutoApiPause }
+            throw
+        }
         $items = @($data)
         foreach ($item in $items) { $item }
-        if ($items.Count -lt 100) { return }
+        if ($items.Count -lt $PerPage) { return }
+        if ($null -ne $StopAfterPage) {
+            $stop = @(& $StopAfterPage $items)
+            if ($stop.Count -gt 0 -and $stop[-1]) { return }
+        }
     }
     throw 'AUTO_PAGES'
 }
@@ -1089,12 +1459,46 @@ function Get-LiveCorrectionPrompt($Publication) {
         'id — голе перше поле аудит/проби/живі_сцени.txt; одна сцена — один рядок. Закоміть виправлений звіт; останній рядок — за адаптером.'
 }
 
+function Test-AutoTrustedPull($Pull) {
+    <# PR довіреного автора з цього репозиторію в main: лише такі читає план живого. #>
+    $Pull.user.login -ceq 'mightyrochy' -and $null -ne $Pull.head.repo -and $Pull.head.repo.full_name -ceq 'mightyrochy/kod-shi-data' -and
+        $Pull.base.repo.full_name -ceq 'mightyrochy/kod-shi-data' -and $Pull.base.ref -ceq 'main'
+}
+
+function ConvertTo-AutoTime($Value) {
+    <# Час із відповіді GitHub: PowerShell 5.1 дає рядок, 7 — DateTime; обидва в UTC-момент. #>
+    if ($Value -is [datetimeoffset]) { return $Value }
+    if ($Value -is [datetime]) {
+        $utc = $(if ($Value.Kind -eq [DateTimeKind]::Unspecified) { [datetime]::SpecifyKind($Value, [DateTimeKind]::Utc) } else { $Value.ToUniversalTime() })
+        return [datetimeoffset]::new($utc)
+    }
+    [datetimeoffset]::Parse([string]$Value, [Globalization.CultureInfo]::InvariantCulture, [Globalization.DateTimeStyles]::AssumeUniversal)
+}
+
+function Get-AutoCheckedBuild($Pulls, $History) {
+    <# Збірка, яку перевірив найновіший звіт (`автоживий-<штамп>` чи `Е1-нічний-живий-<дата>`): найближча до голови в історії.
+    Звіт з кількома `ПЕРЕВІРЕНО ЗБІРКУ` не береться; старий нічний звіт без SHA нічого не відсікає. #>
+    $checked = ''
+    foreach ($report in $Pulls) {
+        if ([string]$report.head.ref -cnotmatch '^(?:gemini|claude|codex)/(?:автоживий-([0-9a-f]{40})|Е1-нічний-живий-[0-9]{8})$') { continue }
+        $stamp = [string]$Matches[1]
+        $declared = [regex]::Matches([string]$report.body, '(?m)^ПЕРЕВІРЕНО ЗБІРКУ: ([0-9a-f]{40})\r?$')
+        if ($declared.Count -gt 1) { continue }
+        $candidate = if ($declared.Count -eq 1) { $declared[0].Groups[1].Value } else { $stamp }
+        # Старий нічний звіт без SHA не може відсікти неперевірений код.
+        if ($candidate -and $History.ContainsKey($candidate) -and
+            (-not $checked -or $History[$candidate] -lt $History[$checked])) { $checked = $candidate }
+    }
+    $checked
+}
+
 function Get-AutoLivePlan([string]$BuildMain) {
-    <# Один план для автоживого й Е1: сцена один раз, питання всіх злитих довірених PR. #>
-    $pulls = @(Get-AutoPublicItems 'pulls?state=all&sort=updated&direction=desc' | Where-Object {
-        $_.user.login -ceq 'mightyrochy' -and $null -ne $_.head.repo -and $_.head.repo.full_name -ceq 'mightyrochy/kod-shi-data' -and
-        $_.base.repo.full_name -ceq 'mightyrochy/kod-shi-data' -and $_.base.ref -ceq 'main'
-    })
+    <# Один план для автоживого й Е1: сцена один раз, питання всіх злитих довірених PR.
+    Список `pulls` іде за оновленням від найновішого й читається лише до доведеної межі: звіт не може згадати збірку,
+    що старша за його оновлення, а злиття, якого збірка звіту ще не містить, не старше за неї — тож, коли остання
+    прочитана сторінка старіша за збірку найновішого звіту (мінус запас), решта PR плану не змінить. Те саме, що читати
+    всі сторінки, але ~7 запитів замість 33. Не дійшли до межі за AutoPlanMaxPages сторінок — AUTO_PAGES, плану нема. #>
+    $calls0 = $script:AutoApiCalls
     $until = [datetimeoffset]::Parse((Invoke-Git @('show','-s','--format=%cI',$BuildMain)).Out.Trim())
     # Час звіту не визначає склад прогону: PR міг злитися, поки модель ще працювала.
     $history = @{}
@@ -1102,17 +1506,22 @@ function Get-AutoLivePlan([string]$BuildMain) {
     foreach ($commit in ((Invoke-Git @('rev-list','--topo-order',$BuildMain,'--')).Out -split "`n")) {
         if ($commit.Trim()) { $history[$commit.Trim()] = $rank; $rank++ }
     }
-    $checked = ''
-    foreach ($report in $pulls) {
-        if ([string]$report.head.ref -cnotmatch '^(?:gemini|claude|codex)/(?:автоживий-([0-9a-f]{40})|Е1-нічний-живий-[0-9]{8})$') { continue }
-        $stamp = [string]$Matches[1]
-        $declared = [regex]::Matches([string]$report.body, '(?m)^ПЕРЕВІРЕНО ЗБІРКУ: ([0-9a-f]{40})\r?$')
-        if ($declared.Count -gt 1) { continue }
-        $candidate = if ($declared.Count -eq 1) { $declared[0].Groups[1].Value } else { $stamp }
-        # Старий нічний звіт без SHA не може відсікти неперевірений код.
-        if ($candidate -and $history.ContainsKey($candidate) -and
-            (-not $checked -or $history[$candidate] -lt $history[$checked])) { $checked = $candidate }
+    $planScan = @{ Seen = (New-Object System.Collections.ArrayList); Dates = @{}; Pages = 0 }
+    $planStop = {
+        param($pagePulls)
+        $planScan.Pages++
+        foreach ($one in @($pagePulls)) { if (Test-AutoTrustedPull $one) { [void]$planScan.Seen.Add($one) } }
+        $reportBuild = Get-AutoCheckedBuild $planScan.Seen $history
+        if (-not $reportBuild) { return $false }
+        if (-not $planScan.Dates.ContainsKey($reportBuild)) {
+            $planScan.Dates[$reportBuild] = [datetimeoffset]::Parse((Invoke-Git @('show','-s','--format=%cI',$reportBuild)).Out.Trim())
+        }
+        $lastUpdate = @($pagePulls)[-1].PSObject.Properties['updated_at']
+        if ($null -eq $lastUpdate -or $null -eq $lastUpdate.Value) { return $false }
+        (ConvertTo-AutoTime $lastUpdate.Value) -lt $planScan.Dates[$reportBuild].AddHours(-$script:AutoPlanMarginHours)
     }
+    $pulls = @(Get-AutoPublicItems 'pulls?state=all&sort=updated&direction=desc' -PerPage $script:AutoPlanPerPage -MaxPages $script:AutoPlanMaxPages -StopAfterPage $planStop -Budgeted | Where-Object { Test-AutoTrustedPull $_ })
+    $checked = Get-AutoCheckedBuild $pulls $history
     $since = [datetimeoffset]::MinValue
     $covered = @{}
     if ($checked) {
@@ -1324,20 +1733,40 @@ function Test-ExternalGpuFree([switch]$LogAcquisition) {
     $free
 }
 
-$script:GpuHoldReason = ''
-
-function Get-GpuBusyReason($Workers, [switch]$LockHeld) {
-    <# Чому GPU не віддати наряду зараз; '' — вільна. Єдине місце для планувальників обох облікових записів.
-    GpuHoldReason — причина для рядка сигналу (Update-HoldSignals порівнює її без числових показників). LockHeld — замок GPU тримає сам
-    викликач (воркер після Open-Lock): причина — сторонній процес, а не «замок тримає інший процес». #>
-    $script:GpuHoldReason = ''
-    if (@($Workers | Where-Object { $_.Gpu -and -not $_.Proc.HasExited }).Count -gt 0) { $script:GpuHoldReason = 'замок GPU іншого наряду'; return 'GPU: її тримає власний наряд обгортки' }
-    if (-not $LockHeld -and -not (Test-LockFree (Get-GpuLockPath))) { $script:GpuHoldReason = 'замок GPU іншого наряду'; return "GPU: замок $(Get-GpuLockPath) тримає інший процес" }
-    # Незакритий знімок моделей (прибирання попереднього GPU-наряду не вдалось) тримає лише GPU-наряди: решта смуги йде.
-    if (-not $LockHeld -and [IO.File]::Exists((Join-Path $LaneDir 'gpu-models.json'))) {
+function Get-GpuSessionReason {
+    <# Чи тримають карту GPU-наряди: живий наряд обох облікових записів має на ній модель, завантажену після початку сесії
+    (екземпляр LM Studio поза before), — зайнята; запис без живих оренд чи пошкоджений — прибирання ще не відбулось.
+    Оренда без моделі карти не тримає: така карта ділиться за пам'яттю (Get-GpuLoad). '' — сесія не заважає. #>
+    try { $s = Read-GpuSession } catch { $s = $false }
+    if ($null -eq $s) { return '' }
+    if ($false -eq $s -or @(Get-LiveGpuLeases $s).Count -eq 0) {
         $script:GpuHoldReason = 'незакритий знімок моделей GPU'
         return 'GPU: незакритий знімок моделей попереднього наряду (lanes/gpu-models.json)'
     }
+    $before = @($s.Before | ForEach-Object { [string]$_.id })
+    try { $new = @(Get-LmsInstances | Where-Object { $before -cnotcontains $_.id }) }
+    catch {
+        $script:GpuHoldReason = 'LM Studio недоступний на :1234'
+        return 'GPU: LM Studio недоступний на :1234 — неможливо перевірити моделі живих GPU-нарядів'
+    }
+    if ($new.Count) {
+        $script:GpuHoldReason = 'модель GPU-наряду на карті'
+        return "GPU: модель GPU-наряду на карті ($(@($new | ForEach-Object { $_.model }) -join ', '))"
+    }
+    ''
+}
+
+$script:GpuHoldReason = ''
+
+function Get-GpuBusyReason([switch]$LockHeld) {
+    <# Чому GPU не віддати наряду зараз; '' — вільна. Єдине місце для планувальників обох облікових записів.
+    GpuHoldReason — причина для рядка сигналу (Update-HoldSignals порівнює її без числових показників). LockHeld — ворота GPU
+    тримає сам викликач (процес наряду в Enter-GpuLease): причина — сторонній процес, а не «замок тримає інший процес».
+    Свій живий GPU-наряд сам по собі карти не тримає — лише його модель на карті (Get-GpuSessionReason) чи пам'ять. #>
+    $script:GpuHoldReason = ''
+    if (-not $LockHeld -and -not (Test-LockFree (Get-GpuLockPath))) { $script:GpuHoldReason = 'замок GPU іншого наряду'; return "GPU: замок $(Get-GpuLockPath) тримає інший процес" }
+    $why = Get-GpuSessionReason
+    if ($why) { return $why }
     try { $null = @(Get-LmsInstances) }
     catch {
         $script:GpuHoldReason = 'LM Studio недоступний на :1234'

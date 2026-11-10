@@ -3,6 +3,10 @@ import os, sys, json
 from pathlib import Path
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 import fit as ПС, silhouette as С, hypergraph as Г, дріт_моделі as Д, accessory as А
+import body_shape, functools
+# Е3 ч20: стан талії — лише понад похибку обхватів; запису похибки ще нема, тож проба звіряє ланцюг станів на
+# точних входах (`похибка` 0), а не «невідомо» всюди.
+body_shape.визначення = functools.partial(body_shape.визначення, похибка=lambda в: 0)
 
 
 if __name__ == '__main__':

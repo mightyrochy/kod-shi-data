@@ -133,12 +133,11 @@ def _коди(група, на=False):
 КОЛІР_ЧОМУ = ["one_color", "two_colors", "print_colors", "trim", "hardware", "lining",
               "variants", UNKNOWN]
 КОЛІР_ЗВІДКИ = ["param", "name", "description", "several", "not_stated", UNKNOWN]
-ВЕТО_КЛЮЧІ = ("stripes", "big_print", "print", "shine", "oversize", "tight")
 
 # ── ПОЛЯ, ЯКІ #1028 ЗНІМАЄ З КОДУ БЕЗ ЗАМІНИ (рядки 6425–6428) ───────────────
 # Кожне має читача на main, і перелік кодів — рівно значення, які пише фід і порівнює читач
-# (у дужках — ключ запису й читач). Оверсайз уже стоїть окремо від крою (`veto.oversize`), матеріал
-# верху — `material`, стійка й сорочковий комір — `neckline`; нових полів для них нема.
+# (у дужках — ключ запису й читач). Матеріал верху — `material`, стійка й сорочковий комір —
+# `neckline`; нових полів для них нема.
 ТРИ_НА = ["yes", "no", НЕ_СТОСУЄТЬСЯ, UNKNOWN]
 РІД_ТКАНИНИ = _коди("fabric_kind", на=True)
 # текстура · суд_річ, формальність, суд_інтерес, композитор_річ, колір_нейтралі, колір_річ
@@ -231,9 +230,7 @@ class Мірка(tuple):
     ("color_from", КОЛІР_ЗВІДКИ, "where the text names the colour"),
     ("pattern", _коди("pattern"), "pattern"),
     ("decor[]", ОЗДОБА, "decoration"),
-) + tuple(("veto.%s" % к, ТРИ, о) for к, о in zip(ВЕТО_КЛЮЧІ, (
-    "stripes on the item", "big print on the item", "any print on the item",
-    "shine of fabric or trim", "oversized volume", "tight fit")))
+)
 # ПОЛЯ, ЯКИХ МОДЕЛЬ НЕ ПИШЕ: їх виводить код ТАБЛИЦЕЮ з іншого коду чи з місця цитати, а не зі
 # слів (`_вивести`). `color_from` модель угадувала («де в тексті колір») — тепер це місце, де
 # сторож знайшов цитату `color_main`, тобто факт, а не відповідь.
@@ -356,7 +353,7 @@ assert all(к in ВМ.ТАБЛИЦЯ["slot"] or к in ВМ.ТАБЛИЦЯ["item_
     "metal_where": "коду нема", "color_main": "verify.назва_кольору (ЛЕКСИКОН, ФОРМИ)",
     "color_extra": "фід_розбір.СЕП_КОЛЬОРУ (решта слів поля)", "color_why": "коду нема",
     "color_from": "фід_розбір: param картки, інакше назва", "pattern": "verify.клас_мотиву",
-    "decor": "траурний_регістр.святкова_оздоба", "veto": "паспорт_нагоди.ВЕТО_СЛОВА (основи слів)",
+    "decor": "траурний_регістр.святкова_оздоба",
     # рядки 6425–6428: ключ запису фіда, який #1028 знімає без заміни
     "fabric_kind": "фід_каталог: рід_тканини_слово", "texture": "фід_каталог: текстура",
     "elastane_pct": "фід_каталог: еластан_%", "wool_pct": "фід_верхнє: вовна_частка (частка 0..1)",
@@ -571,8 +568,6 @@ _ПРАВИЛА = (
     "\"color_main\": the colour of this item, not of other colour variants on sale; other colours "
     "the text names for this item go to \"color_extra\".",
     "\"metal_where\": the metal is the body of the item or only its hardware.",
-    "\"veto\": about this item; \"yes\" when the feature is there, \"no\" when the text says it "
-    "is not.",
     "\"features\": the nuances the codes do not carry, one fragment each: shade as the shop names "
     "it, texture and weave, fibre content and weight, fit, construction, fastenings, hardware, trim, "
     "heel and sole. Each fragment: \"quote\" as above, \"value\" the same in plain English, 2-6 "
@@ -770,7 +765,7 @@ def _звести(знач, шлях):
     шматки = [_вид(ш) for ш in _РОЗДІЛЬНИК.split(т)]
     # Ціле значення йде першим (щоб «a-line», «3/4», «no_print», «two_piece_set» не розпалися на
     # шматки), але слово відсутності в ньому читається лише тоді, коли роздільника нема: інакше
-    # «no|unknown» на veto читалось би як «того нема» замість коду «no», який стоїть у переліку.
+    # «no|unknown» читалось би як «того нема» замість коду «no», який стоїть у переліку.
     варіанти = [(_вид(т), len(шматки) == 1)] + [(ш, True) for ш in шматки]
     if "yes" in [в for в, _ in варіанти] and "no" in [в for в, _ in варіанти]:
         return UNKNOWN
@@ -1125,7 +1120,7 @@ def з_відповіді(текст, дані=None):
                 if частини is not None and кроки[1][0] == "slot":
                     continue                           # слот частини — з її типу, нижче
                 готова[кроки[1][0]] = _код(ч.get(кроки[1][0]), коди, шлях, причини, частини)
-        else:                                          # heel.<поле>, veto.<поле>
+        else:                                          # heel.<поле>
             гілка = об.get(ім) if isinstance(об.get(ім), dict) else {}
             вих.setdefault(ім, {})[кроки[1][0]] = _код(гілка.get(кроки[1][0]), коди,
                                                        "%s" % шлях, причини, частини, цитати)
@@ -1226,7 +1221,6 @@ def що_каже_код(offer):
     import фід_атрибути as ФА
     import фід_взуття as ФВ
     import фід_слот as ФС
-    import паспорт_нагоди as ПН
     import траурний_регістр as ТР
     from фід_розбір import побудувати_запис_речі
     запис = offer.get("запис_речі") or побудувати_запис_речі(offer)
@@ -1282,11 +1276,6 @@ def що_каже_код(offer):
     взяти("pattern", lambda: _В_КОД["pattern"].get((V.клас_мотиву(текст) or {}).get("клас")))
     взяти("decor", lambda: [_ОЗДОБА_В_КОД[о] for о in [ТР.святкова_оздоба(offer)]
                             if о in _ОЗДОБА_В_КОД] or None)
-    низ = текст.lower()
-    for ключ, слово in zip(ВЕТО_КЛЮЧІ, ("смужка", "великий принт", "принт", "блиск", "оверсайз",
-                                        "обтисле")):
-        взяти("veto.%s" % ключ,
-              lambda с=слово: "yes" if any(о in низ for о in ПН.слова_вето(с)) else None)
     return поля, збої
 
 
@@ -1297,7 +1286,7 @@ def незгода(код, модель):
     for шлях, _, _ in ПОЛЯ:
         кроки = _кроки(шлях)
         м = (модель or {}).get(кроки[0][0])
-        if len(кроки) == 2 and not кроки[0][1]:          # heel.<поле>, veto.<поле>
+        if len(кроки) == 2 and not кроки[0][1]:          # heel.<поле>
             м = (м or {}).get(кроки[1][0])
         elif len(кроки) == 2:                            # set_parts[].<поле> — листок кожної частини
             м = [ч.get(кроки[1][0]) for ч in (м or []) if ч.get(кроки[1][0], UNKNOWN) != UNKNOWN]

@@ -1,0 +1,59 @@
+── ПРОМПТ (6964 симв.) ──
+Ти — перекладачка в застосунку-стилістці. Ти пишеш природною українською тексти, які зараз побачить жінка. Рішень не приймаєш, на питання не відповідаєш, змісту не міняєш.
+
+Вхід — JSON-об'єкт: ключ — номер тексту н, значення — текст, який склали код та інші моделі.
+
+Ключі відповіді — ті самі, що у вході, кожен: номер н тексту, значення — рядок, той самий зміст природною українською, без англійських слів і кодів; ПЕРЕКЛАДАЙ КОЖНЕ англійське слово, навіть одне посеред українського речення; латиницею лишай лише назви крамниць і брендів, «V-подібний» і «den»; текст, що вже природний і до неї на «ти», — без змін, а український текст на «ви» перепиши на «ти», решту лиши слово в слово.
+
+Вид кожної речі — теж зміст: річ у перекладі — та сама, що у вході, а не схожа чи сусідня. ankle boots — черевики чи ботильйони, boots — чоботи, heeled — на підборах, а не туфлі, pumps — туфлі-човники, loafers — лофери; pendant — кулон чи підвіска, necklace — намисто чи ланцюжок, а не каблучка, сережки чи браслет; ring — каблучка; earrings — сережки. Українські назви речей у вході (назви з крамниці, найчастіше перед « — ») переписуй літера в літеру: не міняй, не переставляй і не додавай у них жодного слова.
+
+Про жінку — лише до неї, на «ти» (ти, тебе, тобі, твій, твоя; хочеш, скинеш; наказ однини: розкажи, оберни, тримай, дай), і в питаннях теж: you, your, she, her про неї — «ти», «твій» (her skin tone — твій тон шкіри; when she turns her head — коли ти повертаєш голову; she looks taller — ти виглядаєш вищою), англійський наказ — наказом однини; «вона», «її» — лише про річ (сукню, сумку, куртку). Говорить стилістка — одна жінка: про себе — від першої особи однини й у жіночому роді (я підібрала, я б додала), не «ми», не від імені застосунку чи коду і ніколи словами самої жінки.
+
+Мова: літературна українська, як у текстах українських крамниць одягу. Кожне українське слово — літерами лише української абетки, без жодної латинської літери чи стороннього знака всередині слова. Кожне речення — одна остаточна версія, без виправлень посеред тексту. Словничок нижче — лише як перекласти англійське слово, коли воно є у вході; це не зміст: річ, тканина чи колір, яких у вході нема, у тексті не з'являються. Звичні українські назви для слів англійського джерела: trousers, pants — штани; dressy, dressier — ошатний, ошатніше; look, outfit — образ; taupe — сіро-бежевий; loose — вільний; suede — замша (жіночий рід); slip dress — сукня-комбінація; camel — кемел (колір). Назви речей і кольорів, які дала крамниця, — як є.
+
+Слово не повторюється двічі поспіль. Відповідь — рівно ОДИН JSON-об'єкт і нічого після нього: другої, виправленої версії, приміток і пояснень не пиши — помилку виправ у тому самому об'єкті.
+
+Речі образу — перелік речей картки (номер речі — як на картці, поруч — її коди):
+1 — назва в тексті н=13 · about it: text н=1
+2 — kind code: earrings · colour code: milky · about it: text н=2
+3 — kind code: trench_coat · colour code: beige · about it: text н=3
+4 — kind code: poncho · colour code: grey · about it: text н=4
+5 — kind code: trousers · colour code: creamy · about it: text н=5
+6 — kind code: tote · colour code: beige · about it: text н=6
+When a text speaks of an item of the list, call it by the Ukrainian noun of its kind code (kind code: …) — the same noun in the right case in every text (trench_coat — «тренч», sweater — «светр», loafers — «лофери»), not by another kind or a synonym of the English word, whatever word the English text uses; a code ending in _generic names only the family (dress_generic — a dress, bag_generic — a bag). Make every adjective, pronoun and verb with the item agree with that noun in gender and number («бежевий тренч, який…»; «шкіряні лофери, які…»). A name you translate in this same call (text н=K): give it one noun and call the item by it, in agreement, in every text. A text the list gives as about an item (about it: text н=M) speaks of that one item, and so does every other text where the English names it. The colour of an item of the list is its colour code (colour code: …): write the Ukrainian name of that code. The English colour words for that item are the stylist's impression of a photo: do not turn them into a colour of their own — the item's colour stands in their place. Colours of its details (trim, strap, buttons, print), its fabric and the rest — translate from the text. The list is for the items only: an item the English text does not name is not added to the translation — neither to the description nor to the advice.
+
+Colour codes: beige — бежевий; creamy — кремовий; grey — сірий; milky — молочний.
+
+ТЕКСТИ:
+{
+"1": "Your white leather sandals feature a sleek, low block heel and a minimalist strap across the toe with an adjustable ankle buckle for a secure fit.",
+"2": "The milky pearl earrings are gathered into a dense, spherical cluster of varying sizes that catch the light softly.",
+"3": "The beige trench coat is double-breasted with large buttons and belted sleeves, offering a tailored silhouette that drapes smoothly over the shoulders.",
+"4": "The grey poncho has a relaxed, oversized cut with wide, open sleeves and an asymmetrical front line that falls effortlessly to mid-calf.",
+"5": "The creamy trousers have a high waist and flowing wide legs that create long, elegant lines as they drape from the hips.",
+"6": "The beige tote bag is crafted from smooth leather with structured sides, gold-tone hardware details, and a detachable shoulder strap for versatile carrying options.",
+"7": "I have gathered your white leather sandals, which you asked for, to form the base of this look. Over them, I paired a structured beige trench coat and a relaxed grey poncho worn together for an interesting textural layering. The creamy wide-leg trousers provide a soft contrast to the sharp lines of the outerwear, while the milky pearl earrings and a dusty beige tote complete the ensemble with gentle touches of elegance.",
+"8": "Wrap the trench coat belt loosely to define your waist without feeling restricted.",
+"9": "Двобортний бежевий шкіряний тренч — This fitted trench coat elevates the formality of the casual poncho underneath, creating a smart layered look without compromising comfort.",
+"10": "Oversize-пончо з вовни ягнят сіре — A thin fitted top worn under the bulky poncho prevents it from looking like a shapeless blob and adds necessary definition to the silhouette.",
+"11": "Двобортний бежевий шкіряний тренч, Oversize-пончо з вовни ягнят сіре — The poncho and trench are intentionally different lengths; this asymmetry adds movement to the evening look, so I kept t",
+"12": "Oversize-пончо з вовни ягнят сіре, Двобортний бежевий шкіряний тренч — This outer-layer conflict is resolved by unbuttoning the trench coat, allowing the bulky poncho underneath to sit comfortably against your body while maintaining the necessary length difference that adds elegant movement to your silhouette.",
+"13": "White leather sandals with black sole and strap"
+}
+
+── ВІДПОВІДЬ (2301 симв., 15.6 с, HTTP 200) ──
+{
+"1": "Твої білі шкіряні сандалії мають елегантний, невисокий стійкий каблук і мінімалістичний ремінець на носку з регульованою пряжкою на щиколотці для надійної фіксації.",
+"2": "Молочні перлинні сережки зібрані у щільний сферичний кластер різного розміру, який м’яко відбиває світло.",
+"3": "Бежевий тренч має двобортну застібку з великими ґудзиками та поясом на рукавах, що створює елегантний силует і плавно спадає по плечах."
+"4": "Сіре пончо має вільний, оверсайз крій із широкими відкритими рукавами та асиметричною передньою лінією, яка легко доходить до середини литки.",
+"5": "Кремові штани мають високу талію та розкльошені широкі штанини, які створюють довгі елегантні лінії, коли вони спадають від стегон."
+"6": "Бежева сумка-тоут виготовлена з гладкої шкіри зі структурованими боками, золотистими деталями та знімним плечовим ремінцем для універсальних варіантів носіння.",
+"7": "Я підібрала твої білі шкіряні сандалії, які ти просила, щоб створити основу цього образу. Зверху я поєднала їх із структурованим бежевим тренчем і розслабленим сірим пончо, одягненими разом для цікавого текстурного багатошаровості. Кремові широкі штани створюють м’який контраст до чітких ліній верхнього одягу, а молочні перлинні сережки та пильно-бежева сумка завершують ансамбль ніжними штрихами елегантності."
+"8": "Нещільним чином обгорни пояс тренча навколо себе, щоб підкреслити твою талію без відчуття обмеження.",
+"9": "Двобортний бежевий шкіряний тренч — Цей приталений тренч підвищує формальність повсякденного пончо знизу, створюючи розумний багатошаровий образ, не жертвуючи комфортом."
+"10": "Оверсайз-пончо з вовни ягнят сіре — Тонка приталена кофтинка під пончо запобігає тому, щоб він виглядав як безформна грудка і додає необхідну чіткість силуету."
+"11": "Двобортний бежевий шкіряний тренч, Оверсайз-пончо з вовни ягнят сіре — Пончо та тренч навмисно мають різну довжину; ця асиметрія додає руху вечірньому образу, тому я зберегла т",
+"12": "Оверсайз-пончо з вовни ягнят сіре, Двобортний бежевий шкіряний тренч — Цей конфлікт верхнього одягу вирішується розстібанням тренча, дозволяючи об’ємному пончо під ним зручно прилягати до твого тіла, зберігаючи необхідну різницю в довжині, яка додає елегантного руху твоєму силуету."
+"13": "Білі шкіряні сандалії з чорною підошвою та ремінцем"
+}

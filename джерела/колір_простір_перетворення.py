@@ -24,6 +24,7 @@ import math
 from колір_простір_реєстр import REGISTRY
 
 # ─────────────────────────── Lab ↔ RGB (робочий простір) ───────────────────
+ТИПОВИЙ_ПРОСТІР = "sRGB"   # одне визначення типового робочого простору (Е3-одна-величина, ч1)
 SPACES = {"sRGB":((.4124,.3576,.1805,.2126,.7152,.0722,.0193,.1192,.9505),),
           "P3":  ((.4866,.2657,.1982,.2290,.6917,.0793,.0000,.0451,1.0439),)}
 def f(t):
@@ -32,7 +33,7 @@ def f(t):
 def fi(t):
     """Обернена до `_f`."""
     return t**3 if t**3 > 216/24389 else (t-4/29)*108/841
-def to_lab(rgb, space="sRGB"):
+def to_lab(rgb, space=ТИПОВИЙ_ПРОСТІР):
     """Lab (D65) із RGB 0–255 простору `space`: зняття гамми sRGB (поріг 0.04045), матриця простору →
     XYZ, нормування на білий D65 (0.95047, 1, 1.08883)."""
     m=SPACES[space][0]; r,g,b=[c/255 for c in rgb]
@@ -46,14 +47,14 @@ def inv(space):
     return [[(e*i-f*h)/det,(c*h-b*i)/det,(b*f-c*e)/det],
             [(f*g-d*i)/det,(a*i-c*g)/det,(c*d-a*f)/det],
             [(d*h-e*g)/det,(b*g-a*h)/det,(a*e-b*d)/det]]
-def to_rgb(L,a,b,space="sRGB"):
+def to_rgb(L,a,b,space=ТИПОВИЙ_ПРОСТІР):
     """RGB 0–1 із Lab: XYZ → лінійний RGB (`_inv`) → гамма sRGB (поріг 0.0031308); поза гамутом канали
     виходять за [0, 1] — обрізає викликач, а `c_max` цим і міряє стелю."""
     fy=(L+16)/116; X,Y,Z=.95047*fi(fy+a/500), fi(fy), 1.08883*fi(fy-b/200)
     M=inv(space); lin=[M[i][0]*X+M[i][1]*Y+M[i][2]*Z for i in range(3)]
     return [1.055*c**(1/2.4)-.055 if c>.0031308 else 12.92*c for c in lin]
 
-def hex_з_lab(lab, space="sRGB"):
+def hex_з_lab(lab, space=ТИПОВИЙ_ПРОСТІР):
     """`#rrggbb` з Lab — ОДНА точка перетворення для рис, смуг і дуг.
 
     Поза гамутом простору канал обрізається до [0,1]: це ЗОБРАЖЕННЯ кольору для
@@ -203,6 +204,11 @@ def адаптувати_освітлювач(lab, від="C", до="D65", ме�
 def lch(lab):
     """(L*, C*, h°) із Lab: C* — модуль (a, b), h — кут atan2 у градусах [0, 360)."""
     L,a,b=lab; return L, math.hypot(a,b), math.degrees(math.atan2(b,a))%360
+
+def lab_з_lch(L, C, h):
+    """Lab із (L*, C*, h°) — обернене до `lch`: a = C·cos h, b = C·sin h."""
+    r = math.radians(h)
+    return (L, C * math.cos(r), C * math.sin(r))
 def hx(s):
     """Lab із «#rrggbb» (sRGB); рядок не з шести шістнадцяткових цифр — ValueError."""
     return to_lab(tuple(int(s.lstrip('#')[i:i+2],16) for i in (0,2,4)))

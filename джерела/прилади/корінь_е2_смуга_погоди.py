@@ -909,6 +909,46 @@ class АналізПі:
         return знайдено
 
     # ── місця ──
+    def перелік_відкидання(self, м, в):
+        """Рядок-ключ — елемент переліку, який лише відкидають: кожне вживання імені переліку — `for к in ПЕРЕЛІК`, а
+        кожне вживання `к` у тілі циклу — перший аргумент `.pop(к, None)` чи індекс `del ...[к]`. Клас паспорта
+        (рішення 05.11): таке місце не читає, не пише й не передає градуси, а знімає давній ключ на вході збережених
+        даних — тримає інваріант, а не ламає його; за іменем функції чи файлу тут нічого не вирішується."""
+        вміст = м.батько.get(id(в))
+        власник = м.батько.get(id(вміст))
+        if not isinstance(вміст, (ast.Tuple, ast.List, ast.Set)) or not isinstance(власник, ast.Assign) \
+                or len(власник.targets) != 1 or not isinstance(власник.targets[0], ast.Name) \
+                or not isinstance(м.батько.get(id(власник)), ast.Module):
+            return False
+        ім = власник.targets[0].id
+        вжито = False
+        for ін in self.модулі:
+            for н in ін.вузли:
+                if isinstance(н, ast.Attribute) and н.attr == ім:
+                    return False
+                if isinstance(н, ast.alias) and н.name == ім:
+                    return False
+                if not (isinstance(н, ast.Name) and н.id == ім) or н is власник.targets[0]:
+                    continue
+                цикл = ін.батько.get(id(н))
+                if not (isinstance(цикл, ast.For) and цикл.iter is н and isinstance(цикл.target, ast.Name)):
+                    return False
+                зм = цикл.target.id
+                for т in цикл.body:
+                    for у in ast.walk(т):
+                        if not (isinstance(у, ast.Name) and у.id == зм):
+                            continue
+                        б = ін.батько.get(id(у))
+                        знято = (isinstance(б, ast.Call) and isinstance(б.func, ast.Attribute)
+                                 and б.func.attr == "pop" and б.args and б.args[0] is у and len(б.args) == 2
+                                 and isinstance(б.args[1], ast.Constant) and б.args[1].value is None)
+                        видалено = isinstance(б, ast.Subscript) and б.slice is у \
+                            and isinstance(ін.батько.get(id(б)), ast.Delete)
+                        if not (знято or видалено):
+                            return False
+                вжито = True
+        return вжито
+
     def місця(self, м, додати, рішення):
         с = self.с
         позначені = set()
@@ -926,6 +966,8 @@ class АналізПі:
                     місце(в, 4, "поле градусів панелі «%s»" % р)
                     continue
                 if р in с.К:
+                    if self.перелік_відкидання(м, в):
+                        continue        # давній ключ знімають на вході — не читання градусів (рішення 05.11)
                     б = м.батько.get(id(в))
                     if isinstance(б, ast.Dict):
                         for к, з in zip(б.keys, б.values):
@@ -1928,6 +1970,26 @@ function рядокП(){
 """,
 }
 ШТУЧНІ.update({
+    "джерела/відкидання.py": '''\
+ЗНЯТІ = ("темп_c",)  # М:відкидання_знімають
+ЧИТАНІ = ("темп_c",)  # М:відкидання_читають
+НЕПЕРЕЛІК = ["темп_c"]  # М:відкидання_без_циклу
+
+
+def зняти(запис):
+    for к in ЗНЯТІ:
+        запис.pop(к, None)
+        запис.get("картка", {}).pop(к, None)
+    return запис
+
+
+def прочитати(запис):
+    for к in ЧИТАНІ:
+        if запис.get(к) is not None:
+            return запис[к]
+''',
+})
+ШТУЧНІ.update({
     "джерела/глибоко/вітер.py": '''\
 ОПИС = dict(порив=dict(значення="м/с", джерело="прогноз"))  # М:вітер_опис
 ОБГОРТКА = {"контейнер": {"порив": dict(unit="m/s")}}
@@ -2018,6 +2080,9 @@ function смугаП(){
         "вітер_поріг_6", "вітер_поріг_10", "вітер_жниварка", "вітер_js_ввід", "вітер_js_ключ", "вітер_js_поріг",
         "вітер_js_показ", "вітер_html_мітка", "вітер_html_інше_імя",
     )
+})
+ОЧІКУВАНІ.update({
+    "відкидання_знімають": set(), "відкидання_читають": {2}, "відкидання_без_циклу": {2},
 })
 ОЧІКУВАНІ.update({ім: set() for ім in (
     "вітер_слово_параметр", "вітер_бал", "вітер_смуга", "вітер_смуга_порівняння", "вітер_js_бал", "вітер_js_смуга",

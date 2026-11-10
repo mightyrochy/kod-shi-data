@@ -23,7 +23,7 @@ import feed as Ф, bridge as B, outfit as ОФ, outer as OU
 вх = json.load(open(_КОРІНЬ / "стенд_вх.json", encoding="utf-8"))
 вх["каталог"] = Ф.каталог_на_диску("каталог_повний.xml")
 вх["гілка"] = 0
-вх["сценарій"].update(темп_c=5, опади="ні")
+вх["сценарій"].update(смуга_погоди='cold', опади="ні")
 json.loads(B.виклик("запити", json.dumps(вх, ensure_ascii=False)))
 кат = B.каталог_останнього_пакета()
 верх = next(c for c in кат if c.get("слот") == "верхній_шар" and c.get("оверсайз"))
