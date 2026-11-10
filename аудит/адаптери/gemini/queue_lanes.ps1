@@ -385,6 +385,26 @@ function Get-Lane([string]$Model) {
     'agy'
 }
 
+# Клас моделі за назвою: код — flash, проєктування — pro; інше — без каскаду.
+function Get-ModelClass([string]$Model) {
+    $t = @(Get-NameTokens $Model)
+    if ($t -contains 'flash') { return 'code' }
+    if ($t -contains 'pro') { return 'design' }
+    ''
+}
+
+# Каскад моделей «проєктування» (pro): наступна за пулом після самої моделі позначки; далі лише Codex (-CodexFallbackModel).
+$script:ClaudeCascadeModel = 'claude-opus-5-5-high'
+
+# Кандидати каскаду за порядком: модель позначки → [claude-opus-5-5-high для проєктування] → Codex (CodexModel, якщо задано).
+# Єдиний порядок: gemini_run.ps1 (Get-Cascade, Select-Engine) вибирає за ним рушій, claude_run.ps1 (Get-CascadeZero) — чи є що брати.
+function Get-CascadePlan([string]$Model, [string]$CodexModel = '') {
+    $c = @($Model)
+    if ((Get-ModelClass $Model) -eq 'design') { $c += $script:ClaudeCascadeModel }
+    if ($CodexModel) { $c += $CodexModel }
+    $c
+}
+
 function ConvertTo-Marker([string]$Line) {
     <# Рядок for-each-ref (посилання, SHA, час коміту) -> позначка; Valid=$false — назва не за форматом. #>
     $f = $Line -split "`t"

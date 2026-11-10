@@ -213,7 +213,7 @@ function Read-NoteRows([string]$Path, [string[]]$Names) {
 # heartbeat.json обгортки Gemini (пише gemini — недовірений файл): лише поля за форматом, решта — «?» чи пропущено.
 function Read-GeminiBeat {
     $b = [ordered]@{ Time = '?'; Isolation = '?'; Marker = ''; Engine = ''; Model = ''; Minutes = ''; Lanes = @(); Quota = $null; Codex = $null; Wait = @(); Limits = ''
-        Unsourced = @(); Profile = $null; Zero = '' }
+        Unsourced = @(); Profile = $null; Zero = ''; CodexFallback = $true }
     $path = Join-Path $GeminiOutDir 'heartbeat.json'
     try { $j = [System.IO.File]::ReadAllText($path, $script:Utf8) | ConvertFrom-Json } catch { return [pscustomobject]$b }
     $get = { param($o, $n) $p = $(if ($null -eq $o -or $o -is [string] -or $o -is [ValueType]) { $null } else { $o.PSObject.Properties[$n] }); if ($null -eq $p -or $null -eq $p.Value) { '' } elseif ($p.Value -is [datetime]) { $p.Value.ToString('s') } else { [string]$p.Value } }
@@ -264,6 +264,8 @@ function Read-GeminiBeat {
         })
         $b.Quota = [pscustomobject]@{ Read = (& $utc (& $get $q 'read')); Windows = $win }
     }
+    $cf = & $get $j 'codex_fallback'
+    if ($cf -in @('True', 'False')) { $b.CodexFallback = ($cf -eq 'True') }
     $c = Get-JsonProp $j 'codex'
     if ($null -ne $c) { $b.Codex = [pscustomobject]@{ Refused = (& $utc (& $get $c 'refused')); Reset = (& $utc (& $get $c 'reset')) } }
     $b.Wait = @(foreach ($w in @(Get-JsonProp $j 'wait' | Select-Object -First 12)) {
@@ -1028,6 +1030,44 @@ function Get-GroupZeroReset($G, [string]$Group) {
     ''
 }
 
+# Групи agy з pools.json (gemini-run): назва (для Get-ModelGroups) і код (як у вікнах heartbeat).
+# $null — файлу нема чи він зіпсований: група моделі невідома, а невідома квота не блокує кандидата (як у Select-Engine).
+function Read-Pools {
+    try { $j = [System.IO.File]::ReadAllText((Join-Path $GeminiOutDir 'pools.json'), $script:Utf8) | ConvertFrom-Json } catch { return $null }
+    $groups = @(foreach ($g in @(Get-JsonProp $j 'groups')) {
+        $code = [string](Get-JsonProp $g 'g'); $name = [string](Get-JsonProp $g 'n')
+        if ($code -cmatch '^[A-Z0-9]{1,16}$' -and $name -cmatch '^[a-z0-9 .-]+$') { [pscustomobject]@{ Name = $name; Code = $code } }
+    })
+    [pscustomobject]@{ Groups = $groups }
+}
+
+# Позначка agy «брати нічого»: кожен кандидат її каскаду (Get-CascadePlan — той самий порядок, що в Select-Engine
+# gemini_run.ps1) недоступний. Кандидат agy недоступний, коли всі його групи за heartbeat на нулі зі скиданням у майбутньому;
+# група не розпізнана — квота невідома, кандидат доступний (перелік `agy models` у pools.json урізаний, тож кандидатів,
+# яких Select-Engine міг би пропустити, не відсіюємо: зайвий лише відкладає простій, відсіяний дав би хибний). Codex-ланка
+# каскаду є, якщо heartbeat не каже `codex_fallback: false` (старий heartbeat поля не має — вважаємо, що є); недоступна
+# лише з відомим скиданням відмови Codex. $null — є що брати; інакше { Groups; Reset } (найраніше скидання, UTC).
+function Get-CascadeZero($G, [string]$Model, [string]$CodexReset) {
+    $pools = Read-Pools
+    if ($null -eq $pools) { return $null }
+    $groups = @(); $resets = @()
+    foreach ($cand in @(Get-CascadePlan $Model '')) {
+        $hit = @(Get-ModelGroups $cand @($pools.Groups))
+        if ($hit.Count -eq 0) { return $null }
+        foreach ($h in $hit) {
+            $r = Get-GroupZeroReset $G $h.Code
+            if ($r -eq '') { return $null }
+            $groups += $h.Code; $resets += $r
+        }
+    }
+    if ($null -eq $G.PSObject.Properties['CodexFallback'] -or $G.CodexFallback) {
+        if ($CodexReset -eq '') { return $null }
+        $groups += 'CODEX'; $resets += $CodexReset
+    }
+    if ($groups.Count -eq 0) { return $null }
+    [pscustomobject]@{ Groups = @($groups); Reset = @($resets | Sort-Object)[0] }
+}
+
 function Get-MarkerStateIn($M, [string]$Dir) {
     $keep = $script:StateDir; $script:StateDir = $Dir
     try { Get-MarkerState $M } finally { $script:StateDir = $keep }
@@ -1053,19 +1093,23 @@ function Test-IdleBusy($G) {
         $grp = $(if ($st.Kind -eq 'WAIT') { [string](Get-JsonProp $st.Wait 'group') } else { '' })
         if (-not (Test-MarkerReady $st)) {
             if ($grp -cmatch '^[A-Z0-9]{1,16}$' -and $grp -cnotin @('NETWORK', 'SLEEP', 'REVIEW_API', 'PLAN_WAIT', 'START')) {
-                $zero += [pscustomobject]@{ Group = $grp; Reset = (Get-UtcStamp ([DateTimeOffset]::FromUnixTimeSeconds([long]$st.Wait.until).UtcDateTime)) }
+                $zero += [pscustomobject]@{ Groups = @($grp); Reset = (Get-UtcStamp ([DateTimeOffset]::FromUnixTimeSeconds([long]$st.Wait.until).UtcDateTime)) }
             }
             continue
         }
-        $gr = $(if ($m.Lane -eq 'claude') { $claudeReset } elseif ($m.Lane -eq 'codex') { $codexReset } else { '' })
-        $name = $(if ($m.Lane -eq 'claude') { 'CLAUDE' } elseif ($m.Lane -eq 'codex') { 'CODEX' } else { $grp })
-        if ($gr -eq '' -and $grp -cmatch '^[A-Z0-9]{1,16}$') { $gr = Get-GroupZeroReset $G $grp }
+        if ($m.Lane -eq 'agy') {
+            $cz = Get-CascadeZero $G $m.Model $codexReset
+            if ($null -eq $cz) { return $true }
+            $zero += [pscustomobject]@{ Groups = @($cz.Groups); Reset = $cz.Reset }
+            continue
+        }
+        $gr = $(if ($m.Lane -eq 'claude') { $claudeReset } else { $codexReset })
         if ($gr -eq '') { return $true }
-        $zero += [pscustomobject]@{ Group = $(if ($name -cmatch '^[A-Z0-9]{1,16}$') { $name } else { $grp }); Reset = $gr }
+        $zero += [pscustomobject]@{ Groups = @($(if ($m.Lane -eq 'claude') { 'CLAUDE' } else { 'CODEX' })); Reset = $gr }
     }
     if ($zero.Count -gt 0) {
         $until = @($zero | ForEach-Object { $_.Reset } | Sort-Object)[0]
-        $script:IdleWhy = " QUOTA0 $($zero.Count) $((@($zero | ForEach-Object { $_.Group } | Sort-Object -Unique)) -join ',') $until"
+        $script:IdleWhy = " QUOTA0 $($zero.Count) $((@($zero | ForEach-Object { $_.Groups } | Sort-Object -Unique)) -join ',') $until"
     }
     $false
 }

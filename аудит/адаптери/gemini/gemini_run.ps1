@@ -76,8 +76,6 @@ $script:Lanes = @('codex', 'agy')
 $script:PoolModelPattern = '^(gemini|claude|gpt)-[a-z0-9.-]{1,36}$'
 # `agy -p "/usage"` без ходу моделі й без витрати квоти — з v1.1.11 (changelog agy, 7.08.2026): перелік у НАЛАШТУВАННЯ.md.
 $script:UsageMinVersion = [version]'1.1.11'
-# Каскад моделей «проєктування» (pro): наступна за пулом після самої моделі позначки; далі лише Codex (-CodexFallbackModel).
-$script:ClaudeCascadeModel = 'claude-opus-5-5-high'
 # Суфікс-зусилля позначки gpt-*: що `codex exec` не приймає, то відмова (EFFORT_INVALID), а не тиха підміна.
 $script:CodexEfforts = 'none|minimal|low|medium|high|xhigh|max|ultra'
 $script:AgyVersionDone = $false; $script:AgyVersion = $null; $script:AgyModels = $null
@@ -449,21 +447,11 @@ function Get-Quota([string]$Model, [switch]$Fresh, [long]$After = 0) {
         ResetAt = $(if ($null -ne $ref.Reset) { $ref.Reset.ToUnixTimeSeconds() } else { 0L }); Left = $ref.Left }
 }
 
-# Клас моделі за назвою: код — flash, проєктування — pro; інше — без каскаду.
-function Get-ModelClass([string]$Model) {
-    $t = @(Get-NameTokens $Model)
-    if ($t -contains 'flash') { return 'code' }
-    if ($t -contains 'pro') { return 'design' }
-    ''
-}
+# Codex у каскаді: лише з -EnableCodex і gpt-моделлю в -CodexFallbackModel (heartbeat `codex_fallback` — для claude_run.ps1).
+function Test-CodexFallback { [bool]($EnableCodex -and $CodexFallbackModel -and (Get-Engine $CodexFallbackModel).Name -eq 'codex') }
 
-# Кандидати за порядком: модель позначки → [claude-opus-5-5-high для проєктування] → Codex (лише з -CodexFallbackModel).
-function Get-Cascade([string]$Model) {
-    $c = @($Model)
-    if ((Get-ModelClass $Model) -eq 'design') { $c += $script:ClaudeCascadeModel }
-    if ($EnableCodex -and $CodexFallbackModel -and (Get-Engine $CodexFallbackModel).Name -eq 'codex') { $c += $CodexFallbackModel }
-    $c
-}
+# Кандидати за порядком (Get-CascadePlan, queue_lanes.ps1 — той самий порядок читає claude_run.ps1 для простою).
+function Get-Cascade([string]$Model) { @(Get-CascadePlan $Model $(if (Test-CodexFallback) { $CodexFallbackModel } else { '' })) }
 
 # Рушій наряду за позначкою й квотою пулів. Model — фактична модель (каскад); Quota — пулу першого кандидата, якщо всі
 # на 0 % (Blocked); Exe $null — рушія нема на ноутбуці. -After — позначка чекала скидання до цього часу (unix): квоту
@@ -1310,6 +1298,7 @@ function Write-Heartbeat([string]$Iso) {
                 }) }
         } catch { $null = $_ }
         try { $hb.codex = [System.IO.File]::ReadAllText((Join-Path $RunsDir 'quota-codex.json'), $script:Utf8) | ConvertFrom-Json } catch { $null = $_ }
+        $hb.codex_fallback = (Test-CodexFallback)
         $hb.wait = @(foreach ($w in @(Get-WaitingMarkers | Select-Object -First 12)) { [ordered]@{ marker = $w.Marker; until = $w.Until; g = $w.Group } })
         try { $hb.health = Get-GeminiHealth } catch { Write-Log "здоров'я: $($_.Exception.Message)" }
     }

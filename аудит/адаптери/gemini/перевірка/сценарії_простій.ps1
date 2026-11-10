@@ -70,7 +70,7 @@ Scenario 'а простій' {
     function Read-ClaudeQuota { $script:Zero }
     $g = [pscustomobject]@{ Codex = $null; Quota = $null }
     $now = [DateTimeOffset]::UtcNow.ToUnixTimeSeconds()
-    $mk = { param($lane, $n) [pscustomobject]@{ Valid = $true; Lane = $lane; Slug = "н$n"; Ref = "gemini-queue/н$n/m/1"; Name = "gemini-queue/н$n/m/1"; Sha = ('{0:x}' -f $n).PadLeft(40, 'a'); Time = $now } }
+    $mk = { param($lane, $n) [pscustomobject]@{ Valid = $true; Lane = $lane; Model = 'gemini-3-flash'; Slug = "н$n"; Ref = "gemini-queue/н$n/m/1"; Name = "gemini-queue/н$n/m/1"; Sha = ('{0:x}' -f $n).PadLeft(40, 'a'); Time = $now } }
     $put = { param($m, [string]$dir, [string]$text) Write-FileAtomic (Join-Path $dir ((Get-Sha256Hex (Get-MarkerKey $m)) + '.txt')) $text }
     Check 'а черга порожня, прогонів нема — простій' (-not (Test-IdleBusy $g))
     $script:Busy.Gemini = $true
@@ -122,8 +122,12 @@ Scenario 'а простій' {
     $script:Marks = @($nc)
     Check 'а нічний прохід учорашнього дня на смузі Claude (її правило дати інше) — робота' (Test-IdleBusy $g)
 
+    # Групи agy, як їх пише gemini-run у pools.json (назва малими буквами); каскад моделі — за Get-CascadePlan.
+    [void][IO.Directory]::CreateDirectory("$tmp/gout")
+    Write-FileAtomic "$tmp/gout/pools.json" '{"v":1,"groups":[{"g":"GEMINIMODELS","left":0,"reset":300,"n":"gemini models"},{"g":"GEMINI4ARGON","left":50,"reset":300,"n":"gemini 4 argon"},{"g":"CLAUDEANDGPTMODE","left":40,"reset":300,"n":"claude and gpt models"}],"models":["gemini-3-pro-low","gemini-3-flash"]}'
+    $gw = { param([object[]]$wins, $codex, [bool]$fb) [pscustomobject]@{ Codex = $codex; CodexFallback = $fb; Quota = [pscustomobject]@{ Read = ''; Windows = @($wins | ForEach-Object { [pscustomobject]@{ G = $_[0]; W = 'WEEK'; Left = $_[1]; Reset = (Get-UtcStamp ((Get-Date).AddHours($_[2]))) } }) } } }
     $a1 = & $mk 'agy' 14; $a2 = & $mk 'agy' 15; $a3 = & $mk 'codex' 16
-    $gq = { param([string]$grp, [int]$left, [int]$h) [pscustomobject]@{ Codex = $null; Quota = [pscustomobject]@{ Read = ''; Windows = @([pscustomobject]@{ G = $grp; W = 'WEEK'; Left = $left; Reset = (Get-UtcStamp ((Get-Date).AddHours($h))) }) } } }
+    $gq = { param([string]$grp, [int]$left, [int]$h) [pscustomobject]@{ Codex = $null; CodexFallback = $false; Quota = [pscustomobject]@{ Read = ''; Windows = @([pscustomobject]@{ G = $grp; W = 'WEEK'; Left = $left; Reset = (Get-UtcStamp ((Get-Date).AddHours($h))) }) } } }
     $script:Marks = @($a1, $a2); & $putG $a1 'GEMINIMODELS' $past; & $putG $a2 'GEMINIMODELS' $past
     Check 'а скінчене чекання, а група agy досі на нулі за heartbeat — не робота' (-not (Test-IdleBusy (& $gq 'GEMINIMODELS' 0 5)))
     Check 'а причина простою: усі позначки на нульовій квоті' ($script:IdleWhy -cmatch '^ QUOTA0 2 GEMINIMODELS 20\d\d-\d\d-\d\dT\d\d:\d\d:\d\dZ$')
@@ -135,6 +139,21 @@ Scenario 'а простій' {
     Check 'а чекання квоти agy й Codex на нулі — не робота, причина з обох груп' (-not (Test-IdleBusy $gz) -and $script:IdleWhy -cmatch '^ QUOTA0 2 CODEX,GEMINIMODELS 20\d\d-')
     $a4 = & $mk 'agy' 17; $script:Marks = @($a1, $a3, $a4)
     Check 'а одна нова позначка (черга не вся на нулі, хай чекає GPU) — робота, рядка простою нема' (Test-IdleBusy $gz)
+    # --- каскад (рецензія Codex P2): позначку «брати нічого» лише коли кожен рушій її каскаду недоступний ---------------
+    $script:Marks = @($a1); $a1.Model = 'gemini-3-pro-low'; & $putG $a1 'GEMINIMODELS' $past
+    Check 'а каскад: pro, agy на нулі, а Claude-група має квоту — робота' (Test-IdleBusy (& $gw @(@('GEMINIMODELS', 0, 5), @('CLAUDEANDGPTMODE', 40, 5)) $null $false))
+    Check 'а каскад: pro, agy і Claude-група на нулі, Codex нема — простій, причина з обох груп' (-not (Test-IdleBusy (& $gw @(@('GEMINIMODELS', 0, 5), @('CLAUDEANDGPTMODE', 0, 3)) $null $false)) -and $script:IdleWhy -cmatch '^ QUOTA0 1 CLAUDEANDGPTMODE,GEMINIMODELS 20\d\d-')
+    Check 'а каскад: pro, обидві на нулі, Codex-запасний є, а його скидання невідоме — робота' (Test-IdleBusy (& $gw @(@('GEMINIMODELS', 0, 5), @('CLAUDEANDGPTMODE', 0, 3)) $null $true))
+    $cx = [pscustomobject]@{ Refused = (Get-UtcStamp (Get-Date)); Reset = (Get-UtcStamp ((Get-Date).AddHours(2))) }
+    Check 'а каскад: pro, обидві на нулі, Codex-запасний відмовив зі скиданням — простій, у причині й CODEX' (-not (Test-IdleBusy (& $gw @(@('GEMINIMODELS', 0, 5), @('CLAUDEANDGPTMODE', 0, 3)) $cx $true)) -and $script:IdleWhy -cmatch '^ QUOTA0 1 CLAUDEANDGPTMODE,CODEX,GEMINIMODELS 20\d\d-')
+    Check 'а каскад: heartbeat старий, без codex_fallback, Codex невідомий — робота' (Test-IdleBusy ([pscustomobject]@{ Codex = $null; Quota = (& $gw @(@('GEMINIMODELS', 0, 5), @('CLAUDEANDGPTMODE', 0, 3)) $null $false).Quota }))
+    $a1.Model = 'gemini-3-flash'; $script:Marks = @($a1)
+    Check 'а каскад: flash не має Claude-ланки — група agy на нулі, простій' (-not (Test-IdleBusy (& $gw @(@('GEMINIMODELS', 0, 5), @('CLAUDEANDGPTMODE', 40, 5)) $null $false)))
+    $nw = & $mk 'agy' 18; $script:Marks = @($nw)
+    Check 'а каскад: нова позначка flash, її група на нулі — простій без попереднього чекання' (-not (Test-IdleBusy (& $gq 'GEMINIMODELS' 0 5)) -and $script:IdleWhy -cmatch '^ QUOTA0 1 GEMINIMODELS ')
+    Remove-Item "$tmp/gout/pools.json" -Force
+    Check 'а каскад: pools.json нема — група невідома, робота' (Test-IdleBusy (& $gq 'GEMINIMODELS' 0 5))
+    Write-FileAtomic "$tmp/gout/pools.json" '{"v":1,"groups":[{"g":"GEMINIMODELS","left":0,"reset":300,"n":"gemini models"},{"g":"GEMINI4ARGON","left":50,"reset":300,"n":"gemini 4 argon"},{"g":"CLAUDEANDGPTMODE","left":40,"reset":300,"n":"claude and gpt models"}],"models":[]}'
     $script:Marks = @($a1); & $putG $a1 'NETWORK' $futS
     Check 'а чекання мережі — не робота, але й не квота: причини нема' (-not (Test-IdleBusy $g) -and $script:IdleWhy -ceq '')
     $script:Marks = @(); Check 'а порожня черга — простій без причини' (-not (Test-IdleBusy $g) -and $script:IdleWhy -ceq '')
