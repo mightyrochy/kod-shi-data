@@ -563,18 +563,21 @@ function Get-Line([string]$Id, [switch]$StatusOnly) {
 # Кінець позначки підтверджує лише стан, який пише сама смуга (gemini_run.ps1): marker-state/<хеш ключа>.txt =
 # «DONE <id> <код>» з id і кодом цього результату. Файл у теці виходу пише gemini, тож сам нічого не підтверджує:
 # підроблений JSON (id, якого стан позначки не знає) позначки не знімає, а справжній результат ще може прийти.
-function Test-MarkerEndConfirmed([string]$Queue, [string]$Marker, [string]$Id, [string]$Code) {
+# Стан читається раз (Get-MarkerStateText), а підтвердження й невідповідність визначають з одного значення: смуга дописує DONE
+# будь-коли, і друге читання бачило б інше, ніж перше.
+function Get-MarkerStateText([string]$Queue, [string]$Marker) {
     $path = Join-Path (Join-Path $OutDir 'marker-state') ((Get-Sha256Hex "refs/remotes/origin/$Queue $Marker") + '.txt')
-    if (-not (Test-Path -LiteralPath $path)) { return $false }
-    try { ([IO.File]::ReadAllText($path, $script:Utf8)).Trim() -ceq "DONE $Id $Code" } catch { $false }
+    if (-not (Test-Path -LiteralPath $path)) { return '' }
+    try { ([IO.File]::ReadAllText($path, $script:Utf8)).Trim() } catch { '' }
 }
+function Test-MarkerEndConfirmed([string]$State, [string]$Id, [string]$Code) { $State -ceq "DONE $Id $Code" }
 
 # Кінець позначки опубліковано (без DryRun — там пушу нема): запис на зняття з черги — лише за підтвердженим станом.
 # Результат обробляється раз (стан публікатора), а JSON з'являється раніше за DONE у marker-state: непідтверджений кінець
 # не губиться, а відкладається в finish-pending і пробується наступними проходами (Confirm-PendingMarkers).
 function Add-PublishedMarker([string]$Queue, [string]$Marker, [string]$Id, [string]$Code) {
     if ($DryRun) { return }
-    if (Test-MarkerEndConfirmed $Queue $Marker $Id $Code) {
+    if (Test-MarkerEndConfirmed (Get-MarkerStateText $Queue $Marker) $Id $Code) {
         Add-FinishedMarker (Join-Path $WorkDir 'finished') $Queue $Marker
         return
     }
@@ -596,14 +599,13 @@ function Confirm-PendingMarkers {
             Remove-Item -LiteralPath $f.FullName -Force; continue
         }
         if ((Get-RefSha "refs/remotes/origin/$($p[0])") -cne $p[1]) { Remove-Item -LiteralPath $f.FullName -Force; continue }
-        if (Test-MarkerEndConfirmed $p[0] $p[1] $p[2] $p[3]) {
+        $t = Get-MarkerStateText $p[0] $p[1]
+        if (Test-MarkerEndConfirmed $t $p[2] $p[3]) {
             Add-FinishedMarker (Join-Path $WorkDir 'finished') $p[0] $p[1]
             Remove-Item -LiteralPath $f.FullName -Force
             Write-WrapperLog "черга: $($p[0]) — кінець $($p[2]) підтверджено станом позначки"
             continue
         }
-        $sp = Join-Path (Join-Path $OutDir 'marker-state') ((Get-Sha256Hex "refs/remotes/origin/$($p[0]) $($p[1])") + '.txt')
-        $t = ''; if (Test-Path -LiteralPath $sp) { try { $t = ([IO.File]::ReadAllText($sp, $script:Utf8)).Trim() } catch { $t = '' } }
         if ($t.StartsWith('DONE ')) {
             Write-WrapperLog "черга: $($p[0]) — результат $($p[2]) не збігся з кінцем у стані позначки; не знімаю"
             Remove-Item -LiteralPath $f.FullName -Force
