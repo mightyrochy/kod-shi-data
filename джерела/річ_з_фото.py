@@ -2200,9 +2200,9 @@ def її_речі_шару(речі):
         коди = lambda к: р.get(к) if isinstance(р.get(к), list) else [р.get(к)]
         слоти = [x for x in (_ВМ.ключ("slot", к) for к in коди("slot")) if x] or \
             [_ВМ.ключ("slot", _ВМ.СЛОТ_ТИПУ.get(str(к or ""))) for к in коди("item_type")]
-        # назва — її уривок про річ, а без нього — назва від моделі (`name.value` модель пише своїм
-        # переказом, «my shoes from the photo» при уривку «своє взуття з фото»)
-        назва = _ВМ.текст(р.get("quote")) or _ВМ.текст(р.get("name"))
+        # Назва — поле name моделі: канонічний free_text або значення сирої пари з цитатою.
+        назва_моделі = р.get("name")
+        назва = _ВМ.текст(назва_моделі.get("value", назва_моделі) if isinstance(назва_моделі, dict) else назва_моделі)
         типи = [str(к) for к in коди("item_type") if к]
         матеріал = _ВМ.ключ("fabric", р.get("fabric")) if isinstance(р.get("fabric"), str) else None
         for слот in dict.fromkeys(слоти):

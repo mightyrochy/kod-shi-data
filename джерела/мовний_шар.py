@@ -1163,6 +1163,10 @@ def _норм(с, v, шлях, незнайомі):
         # код звірено з переліком), а клаузу на кожен код ставить `_її_речі`.
         списки = {}
         if _ref(с) == "own_item" and isinstance(v, dict):
+            назва = v.get("name")
+            if isinstance(назва, dict) and not any(к in назва for к in ("value", "code", "free_text")):
+                # Цитата без поля назви не стає назвою її речі через загальний читач вільного тексту.
+                v = dict(v, name=None)
             for к in ("slot", "item_type"):
                 if isinstance(v.get(к), list):
                     коди = [x for і, y in enumerate(v[к])
@@ -4613,7 +4617,7 @@ _СУСІДИ_КОДІВ = (("goal", "intent", True), ("intent", "goal", True),
 # `own_item_without_status` → `not_recorded: own_items`, і репліка казала разом «твої сандалі пасують» (вердикт речі з
 # фото) і «я не записала твої речі»; у другому `shoes` мовчки йшло в `незнайомі`. Шов розгортає форму, не слова
 # (п.12): пара {quote, value: {…}} — запис зі значення й уривком; `status`/`quote` усередині `name` — на рівень речі
-# (назва — уривок, коли іншого в ній нема); стан кодом поля `own_items` — `has`: модель назвала річ її річчю, а
+# (назва — лише поле назви, без підстановки уривка); стан кодом поля `own_items` — `has`: модель назвала річ її річчю, а
 # стану «не певна» чи «не хоче» не дала. Кроки — у `перенесено` (`own_items.form`).
 def _її_річ_формою(x):
     """(запис її речі з розгорнутою формою, чи щось розгорнуто)."""
@@ -4627,7 +4631,7 @@ def _її_річ_формою(x):
     if isinstance(н, dict) and "status" in н and "status" not in x:
         лишок = {к: v for к, v in н.items() if к not in ("status", "quote")}
         x = dict(x, status=н["status"], **({"quote": н["quote"]} if н.get("quote") and not x.get("quote") else {}))
-        x["name"] = лишок or x.get("quote")
+        x["name"] = лишок or None
     if _код(_пара("status", {}, x.get("status"))[0]) == "own_items":
         x = dict(x, status="has")
     return x, x is not було
