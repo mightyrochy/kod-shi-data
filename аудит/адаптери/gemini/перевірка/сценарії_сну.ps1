@@ -140,6 +140,9 @@ try {
             Write-FileAtomic (Join-Path $WorkDir 'sleep-events.json') ('{"read_utc":"2026-11-02T05:00:00Z","events":[]}')
             Update-SleepEvents
             [pscustomobject]@{Name='коротке вимкнення дає рядок навіть за паузи менше 5 хвилин';Ok=($script:SleepEvents.Count -eq 1 -and $script:SleepEvents[0].to -ceq '2026-11-02T05:01:00.0000000Z')}
+            $bootLines = @(Get-ChildItem -LiteralPath $OutboxDir -Filter '*.txt' | ForEach-Object { [IO.File]::ReadAllText($_.FullName,$script:Utf8).Trim() } | Where-Object { $_ -cmatch 'ВИМКНЕНО-СТАРТ' })
+            [pscustomobject]@{Name='нове завантаження — рядок ВИМКНЕНО-СТАРТ, а не СОН';Ok=($bootLines.Count -eq 1 -and $bootLines[0] -cmatch '\AGEMINI ОБГОРТКА: ВИМКНЕНО-СТАРТ 2026-11-02T05:00:00Z → 2026-11-02T05:01:00Z, нарядів [0-9]+\z' -and -not (Test-OutboxLine $bootLines[0]))}
+            [pscustomobject]@{Name='сон за Power-Troubleshooter лишається рядком СОН, лише одним';Ok=(@(Get-ChildItem -LiteralPath $OutboxDir -Filter '*.txt' | ForEach-Object { [IO.File]::ReadAllText($_.FullName,$script:Utf8) } | Where-Object { $_ -cmatch 'ОБГОРТКА: СОН ' }).Count -eq 2)}
             $duringGap=Status '20261102-050030-000000000008' 'STALL'
             $duringGap.started_utc='2026-11-02T05:00:30Z';$duringGap.ended_utc='2026-11-02T05:01:30Z'
             [pscustomobject]@{Name='наряд між heartbeat і вимкненням також належить попередньому завантаженню';Ok=($null -ne (Get-RunSleep $duringGap))}

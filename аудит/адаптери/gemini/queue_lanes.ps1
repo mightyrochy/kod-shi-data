@@ -8,8 +8,8 @@
 .DESCRIPTION
 Підвантажується крапкою (`. queue_lanes.ps1`) після блоку параметрів скрипта; власних параметрів нема. Читає змінні
 скрипта: $RepoDir, $GitExe, $LaneDir, $script:NoHooks, $script:StateDir, $script:SlotDir, $script:SelfPath, $script:Bound,
-і функцію журналу Write-Log. Два облікові записи розведено жорстко, тож планувальників два; спільні між ними лише замок
-GPU та бюджет перевірок PR (тека $LaneDir — `C:\Users\Public\gemini\lanes`, де пишуть і INTERACTIVE, і BATCH) і рядок стану ноутбука.
+і функцію журналу Write-Log. Два облікові записи розведено жорстко, тож планувальників два; спільні між ними лише ворота й
+сесія GPU та бюджет перевірок PR (тека $LaneDir — `C:\Users\Public\gemini\lanes`, де пишуть і INTERACTIVE, і BATCH) і рядок стану ноутбука.
 
 Позначка: `gemini-queue/<наряд>/<модель>/<спроба>[/<умови>]`; умови — до трьох лексем через `-` у будь-якому порядку:
 `p<0-9>` — пріоритет (0 — найвищий; без лексеми — 5), `d<РРРРММДДГГхх>` — строк у UTC, `gpu` — наряд займає відеокарту.
@@ -32,6 +32,7 @@ $script:TreeJobs = @{}  # pid процесу Start-Tree → його задач�
 $script:PausedTotal = [timespan]::Zero  # пауз живлення цього процесу (Wait-PowerPause)
 $script:Pausing = $false
 $script:PauseMachine = $false  # планувальник claude-run ставить на паузу й LM Studio та ComfyUI
+$script:GpuLease = $null  # замок GPU-оренди процесу наряду (Start-GpuModels → Exit-GpuLease)
 # Тека версії цього процесу: після самооновлення — `<корінь>\versions\<SHA40>`, поряд із коренем — `active.txt`.
 $script:VersionDir = $PSScriptRoot
 
@@ -928,38 +929,149 @@ function Get-LmsInstances {
     }
 }
 
-function Complete-GpuModels {
-    <# Під GPU-замком прибирає різницю зі збереженим знімком; збій лишає запис для повтору. #>
+function Get-GpuLeaseLockPath([string]$Run) {
+    <# Замок життя GPU-оренди прогону: його тримає процес наряду від допуску до кінця. #>
+    Join-Path $LaneDir ('gpu-lease-' + (Get-Sha256Hex $Run) + '.lock')
+}
+
+function Test-LeaseLive([string]$Path) {
+    <# Чи тримає замок оренди живий процес; нема файла — оренда мертва.
+    Будь-яка відмова відкрити — жива: мертву прибере наступний прохід, а в живої не можна забрати моделей. #>
+    if (-not [IO.File]::Exists($Path)) { return $false }
+    try { ([IO.File]::Open($Path, 'Open', 'ReadWrite', 'None')).Dispose(); $false } catch { $true }
+}
+
+function Read-GpuSession {
+    <# Спільний запис GPU-сесії (`lanes/gpu-models.json`) або $null; неповний — виняток: межі власності не вгадуємо.
+
+    Сесія триває від допуску першої GPU-оренди до кінця останньої з тих, що перекривались. Before — екземпляри LM Studio
+    до неї (власника: не вивантажуються); join оренди — екземпляри в мить її допуску: те, що вже було, вона не вантажила.
+    Запис v1 (одна оренда старої версії обгортки) — сесія з уже закінченою орендою: прибирання те саме, що було. #>
     $path = Join-Path $LaneDir 'gpu-models.json'
-    if (-not [IO.File]::Exists($path)) { return }
-    $lease = [IO.File]::ReadAllText($path, $script:Utf8) | ConvertFrom-Json -ErrorAction Stop
-    if ($lease.v -ne 1 -or -not $lease.marker -or -not $lease.run -or $lease.before -isnot [array]) { throw 'GPU: неповний знімок моделей' }
-    $ids = New-Object 'System.Collections.Generic.HashSet[string]' ([StringComparer]::Ordinal)
-    foreach ($i in $lease.before) {
-        if (-not $i.id -or -not $i.model) { throw 'GPU: неповний початковий екземпляр' }
-        [void]$ids.Add([string]$i.id)
+    if (-not [IO.File]::Exists($path)) { return $null }
+    $s = [IO.File]::ReadAllText($path, $script:Utf8) | ConvertFrom-Json -ErrorAction Stop
+    $field = { param($Name) $p = $s.PSObject.Properties[$Name]; if ($null -ne $p) { , $p.Value } }
+    $before = & $field 'before'
+    if ($before -isnot [array]) { throw 'GPU: неповний знімок моделей' }
+    foreach ($i in $before) { if (-not (Get-JsonProp $i 'id') -or -not (Get-JsonProp $i 'model')) { throw 'GPU: неповний початковий екземпляр' } }
+    $leases = New-Object System.Collections.ArrayList
+    $v = Get-JsonProp $s 'v'; $all = & $field 'leases'
+    if ($v -eq 1 -and (Get-JsonProp $s 'marker') -and (Get-JsonProp $s 'run')) {
+        [void]$leases.Add([pscustomobject]@{ run = [string]$s.run; marker = [string]$s.marker; join = @($before | ForEach-Object { [string]$_.id }); done = $true })
+    } elseif ($v -eq 2 -and $all -is [array]) {
+        foreach ($l in $all) {
+            $join = $null; $p = $l.PSObject.Properties['join']; if ($null -ne $p) { $join = $p.Value }
+            if (-not (Get-JsonProp $l 'run') -or -not (Get-JsonProp $l 'marker') -or $join -isnot [array]) { throw 'GPU: неповна оренда' }
+            [void]$leases.Add([pscustomobject]@{ run = [string]$l.run; marker = [string]$l.marker; join = @($join | ForEach-Object { [string]$_ }); done = ((Get-JsonProp $l 'done') -eq $true) })
+        }
+    } else { throw 'GPU: неповний знімок моделей' }
+    [pscustomobject]@{ Before = @($before); Leases = $leases; Dirty = ((Get-JsonProp $s 'dirty') -eq $true) }
+}
+
+function Save-GpuSession($Session) {
+    <# Пише сесію під воротами GPU; dirty — є закінчена оренда, чиї моделі ще не перевірено. #>
+    $leases = @(foreach ($l in $Session.Leases) { [ordered]@{ run = $l.run; marker = $l.marker; join = @($l.join); done = [bool]$l.done } })
+    $o = [ordered]@{ v = 2; before = @($Session.Before); leases = $leases; dirty = [bool]$Session.Dirty }
+    Write-FileAtomic (Join-Path $LaneDir 'gpu-models.json') (ConvertTo-Json -InputObject $o -Depth 6 -Compress)
+}
+
+function Get-LiveGpuLeases($Session) {
+    <# Незакінчені оренди сесії, чий процес наряду ще тримає замок оренди. #>
+    @($Session.Leases | Where-Object { -not $_.done -and (Test-LeaseLive (Get-GpuLeaseLockPath $_.run)) })
+}
+
+function Complete-GpuModels([string]$Run = '') {
+    <# Під воротами GPU закінчує оренду $Run (і мертві) й вивантажує екземпляри, яких жодна жива оренда завантажити не
+    могла: їх нема в before, і кожна інша жива оренда прийшла, коли вони вже були. Решту лишає останній живій оренді:
+    з двох одночасних нарядів жоден не вивантажує моделі сусіда, а моделі власника (before) — ніхто. Останній видаляє
+    запис. Збій лишає запис для повтору. #>
+    $s = Read-GpuSession
+    if ($null -eq $s) { return }
+    $ended = $false
+    foreach ($l in $s.Leases) {
+        if ($l.done) { continue }
+        $lockPath = Get-GpuLeaseLockPath $l.run
+        if ($Run -and $l.run -ceq $Run) { $l.done = $true; $ended = $true }
+        elseif (-not (Test-LeaseLive $lockPath)) {
+            $l.done = $true; $ended = $true
+            Remove-Item -LiteralPath $lockPath -Force -ErrorAction SilentlyContinue
+        }
     }
+    $live = @($s.Leases | Where-Object { -not $_.done })
+    if ($live.Count -and -not $ended -and -not $s.Dirty) { return }
+    # Закінчення оренди записано до REST: збій LM Studio не повертає мертву оренду в живі.
+    if ($ended) { $s.Dirty = $true; Save-GpuSession $s }
+    $keep = New-Object 'System.Collections.Generic.HashSet[string]' ([StringComparer]::Ordinal)
+    foreach ($i in $s.Before) { [void]$keep.Add([string]$i.id) }
     foreach ($i in @(Get-LmsInstances)) {
-        if ($ids.Contains($i.id)) { continue }
-        Write-Log "GPU вивантаження: модель=$($i.model); екземпляр=$($i.id); наряд=$($lease.marker); прогін=$($lease.run)" -Required
+        if ($keep.Contains($i.id) -or @($live | Where-Object { $_.join -cnotcontains $i.id }).Count) { continue }
+        $by = @($s.Leases | Where-Object { $_.join -cnotcontains $i.id })
+        Write-Log "GPU вивантаження: модель=$($i.model); екземпляр=$($i.id); наряд=$(@($by | ForEach-Object { $_.marker }) -join ','); прогін=$(@($by | ForEach-Object { $_.run }) -join ',')" -Required
         $body = @{ instance_id = $i.id } | ConvertTo-Json -Compress
         $v = Invoke-RestMethod 'http://127.0.0.1:1234/api/v1/models/unload' -Method Post -ContentType 'application/json' -Body $body -TimeoutSec 120 -ErrorAction Stop
         if (Get-JsonProp $v 'error') { throw 'LM Studio: відмова вивантаження' }
     }
-    if (@(Get-LmsInstances | Where-Object { -not $ids.Contains($_.id) }).Count) { throw 'GPU: нові екземпляри ще завантажені' }
-    Remove-Item -LiteralPath $path -Force -ErrorAction Stop
+    if ($live.Count) { $s.Dirty = $false; Save-GpuSession $s; return }
+    if (@(Get-LmsInstances | Where-Object { -not $keep.Contains($_.id) }).Count) { throw 'GPU: нові екземпляри ще завантажені' }
+    Remove-Item -LiteralPath (Join-Path $LaneDir 'gpu-models.json') -Force -ErrorAction Stop
 }
 
 function Start-GpuModels($Job) {
-    <# До агента й під його GPU-замком зберігає межу власності незалежно від життя дерева процесів. #>
-    Complete-GpuModels
-    $before = @(Get-LmsInstances)
-    $lease = [ordered]@{ v = 1; marker = [string]$Job.name; run = [string]$Job.id; before = $before }
-    Write-FileAtomic (Join-Path $LaneDir 'gpu-models.json') ($lease | ConvertTo-Json -Depth 6 -Compress)
+    <# Під воротами GPU, до агента: приєднує прогін до сесії з переліком екземплярів цієї миті. Замок оренди процес наряду
+    тримає до кінця: його смерть видно обом планувальникам, і прибирання не чекає на finally. #>
+    $lockPath = Get-GpuLeaseLockPath ([string]$Job.id)
+    $lease = Open-Lock $lockPath
+    if ($null -eq $lease) { throw 'GPU: замок оренди зайнятий' }
+    try {
+        $now = @(Get-LmsInstances)
+        $s = Read-GpuSession
+        if ($null -eq $s) { $s = [pscustomobject]@{ Before = $now; Leases = (New-Object System.Collections.ArrayList); Dirty = $false } }
+        [void]$s.Leases.Add([pscustomobject]@{ run = [string]$Job.id; marker = [string]$Job.name; join = @($now | ForEach-Object { [string]$_.id }); done = $false })
+        Save-GpuSession $s
+    } catch {
+        $lease.Dispose()
+        Remove-Item -LiteralPath $lockPath -Force -ErrorAction SilentlyContinue
+        throw
+    }
+    $script:GpuLease = $lease
+}
+
+function Enter-GpuLease($Job) {
+    <# Допуск GPU-наряду в процесі наряду; '' — допущено, інакше причина, і позначка лишається в черзі.
+
+    Ворота `gpu.lock` тримаються лише на час рішення, а не весь прогін: наряд, що готується, качає чи думає хмарною
+    моделлю, карти не займає й інших GPU-нарядів не тримає. Під воротами — прибирання мертвих оренд, карта без моделей
+    живих GPU-нарядів (Get-GpuSessionReason), вільна пам'ять (Test-ExternalGpuFree), приєднання до сесії. #>
+    $gate = Open-Lock (Get-GpuLockPath)
+    if ($null -eq $gate) { return 'замок GPU' }
+    try {
+        try { Complete-GpuModels } catch { return "знімок моделей недоступний: $($_.Exception.Message)" }
+        $why = Get-GpuSessionReason
+        if (-not $why -and -not (Test-ExternalGpuFree -LogAcquisition)) { $why = Get-GpuBusyReason -LockHeld }
+        if ($why) { return $why }
+        try { Start-GpuModels $Job } catch { return "знімок моделей недоступний: $($_.Exception.Message)" }
+        ''
+    } finally { $gate.Dispose() }
+}
+
+function Exit-GpuLease($Job) {
+    <# Кінець GPU-наряду на кожному шляху виходу: під воротами закінчує оренду й прибирає те, що вже нічиє, тоді відпускає
+    замок оренди. Ворота зайняті чи збій — оренда стає мертвою, і її прибирає наступний прохід (Repair-GpuModels). #>
+    $gate = Open-Lock (Get-GpuLockPath)
+    try {
+        if ($null -eq $gate) { Write-Log 'GPU прибирання відкладено: ворота GPU зайняті' }
+        else { try { Complete-GpuModels ([string]$Job.id) } catch { Write-Log "GPU прибирання відкладено: $($_.Exception.Message)" } }
+    } finally {
+        if ($null -ne $gate) { $gate.Dispose() }
+        if ($null -ne $script:GpuLease) {
+            $script:GpuLease.Dispose(); $script:GpuLease = $null
+            Remove-Item -LiteralPath (Get-GpuLeaseLockPath ([string]$Job.id)) -Force -ErrorAction SilentlyContinue
+        }
+    }
 }
 
 function Repair-GpuModels {
-    <# Планувальник прибирає залишки вбитого дерева перед воротами GPU, навіть коли черга порожня. #>
+    <# Планувальник прибирає залишки мертвих оренд перед воротами GPU, навіть коли черга порожня. #>
     $gpuLock = Open-Lock (Get-GpuLockPath)
     if ($null -eq $gpuLock) { return $true }
     try { Complete-GpuModels; $true }
@@ -1139,6 +1251,40 @@ function New-TaskCopy([string]$Dir, [string]$Commit, [string]$TaskText) {
     $env:TEMP = $tmp; $env:TMP = $tmp
     Write-Log "копія задачі $repo ($Commit): тек-архівів не викладено — $($skip.Count)"
     $repo
+}
+
+function Get-AttemptStart([string]$BranchSha, [string]$Main) {
+    <# Старт нової спроби наряду: що береться за основу, коли гілка попередньої спроби вже є на origin. Нема гілки чи
+    її голова — предок main (усе злито, пуш нової голови лишається швидким вперед) — основа main, `NEW`/`MERGED`; голова
+    вже містить main — гілка як є, `CURRENT`; інакше гілка, куди перед агентом вливається main, `BEHIND`. Спільне для
+    смуг: gemini_run.ps1 (Invoke-Job) і claude_run.ps1 (Invoke-Task). #>
+    if (-not $BranchSha) { return [pscustomobject]@{ Start = $Main; Mode = 'NEW' } }
+    $r = Invoke-Git @('merge-base', '--is-ancestor', $BranchSha, $Main) -AllowFail
+    if ($r.Code -gt 1) { throw "git merge-base --is-ancestor $BranchSha $Main -> $($r.Code): $($r.Err.Trim())" }
+    if ($r.Code -eq 0) { return [pscustomobject]@{ Start = $Main; Mode = 'MERGED' } }
+    $r = Invoke-Git @('merge-base', '--is-ancestor', $Main, $BranchSha) -AllowFail
+    if ($r.Code -gt 1) { throw "git merge-base --is-ancestor $Main $BranchSha -> $($r.Code): $($r.Err.Trim())" }
+    [pscustomobject]@{ Start = $BranchSha; Mode = $(if ($r.Code -eq 0) { 'CURRENT' } else { 'BEHIND' }) }
+}
+
+function Merge-MainIntoCopy([string]$Main, [string]$Branch) {
+    <# У копії задачі ($RepoDir, на гілці) вливає $Main комітом злиття. Повертає голову після злиття; конфлікт чи інший
+    збій — `merge --abort`, копія лишається на голові гілки, повертається ''. #>
+    $before = Get-RefSha 'HEAD'
+    $msg = "Обгортка: влито origin/main у $Branch перед спробою наряду (гілка відстала від main)"
+    $r = Invoke-Git @('-c', 'user.name=Обгортка Люстерка', '-c', 'user.email=wrapper@users.noreply.github.com', '-c', 'commit.gpgsign=false',
+        'merge', '--no-ff', '-q', '-m', $msg, $Main) -AllowFail
+    if ($r.Code -eq 0) { return (Get-RefSha 'HEAD') }
+    Write-Log "злиття main у $Branch не вдалося — $(($r.Out + $r.Err).Trim() -replace '\s+', ' ')"
+    [void](Invoke-Git @('merge', '--abort') -AllowFail)
+    if ((Get-RefSha 'HEAD') -cne $before) { [void](Invoke-Git @('reset', '-q', '--hard', $before)) }
+    ''
+}
+
+function Get-MergeStepText([string]$Branch) {
+    <# Крок промпту, коли обгортка не влила main сама (конфлікт) чи гілку веде агент: він вливає main першим кроком. #>
+    "Перший крок: влий свіжий ``origin/main`` у ``$Branch`` (``git merge origin/main``), конфлікти розв'язуй за змістом ``main``: гілка " +
+    "відстала від ``main``, тож код, який у ``main`` уже змінено чи прибрано, не лагодь і не відновлюй. Далі — наряд."
 }
 
 function Get-TaskDirText([string]$TaskDir) {
@@ -1691,20 +1837,40 @@ function Test-ExternalGpuFree([switch]$LogAcquisition) {
     $free
 }
 
-$script:GpuHoldReason = ''
-
-function Get-GpuBusyReason($Workers, [switch]$LockHeld) {
-    <# Чому GPU не віддати наряду зараз; '' — вільна. Єдине місце для планувальників обох облікових записів.
-    GpuHoldReason — причина для рядка сигналу (Update-HoldSignals порівнює її без числових показників). LockHeld — замок GPU тримає сам
-    викликач (воркер після Open-Lock): причина — сторонній процес, а не «замок тримає інший процес». #>
-    $script:GpuHoldReason = ''
-    if (@($Workers | Where-Object { $_.Gpu -and -not $_.Proc.HasExited }).Count -gt 0) { $script:GpuHoldReason = 'замок GPU іншого наряду'; return 'GPU: її тримає власний наряд обгортки' }
-    if (-not $LockHeld -and -not (Test-LockFree (Get-GpuLockPath))) { $script:GpuHoldReason = 'замок GPU іншого наряду'; return "GPU: замок $(Get-GpuLockPath) тримає інший процес" }
-    # Незакритий знімок моделей (прибирання попереднього GPU-наряду не вдалось) тримає лише GPU-наряди: решта смуги йде.
-    if (-not $LockHeld -and [IO.File]::Exists((Join-Path $LaneDir 'gpu-models.json'))) {
+function Get-GpuSessionReason {
+    <# Чи тримають карту GPU-наряди: живий наряд обох облікових записів має на ній модель, завантажену після початку сесії
+    (екземпляр LM Studio поза before), — зайнята; запис без живих оренд чи пошкоджений — прибирання ще не відбулось.
+    Оренда без моделі карти не тримає: така карта ділиться за пам'яттю (Get-GpuLoad). '' — сесія не заважає. #>
+    try { $s = Read-GpuSession } catch { $s = $false }
+    if ($null -eq $s) { return '' }
+    if ($false -eq $s -or @(Get-LiveGpuLeases $s).Count -eq 0) {
         $script:GpuHoldReason = 'незакритий знімок моделей GPU'
         return 'GPU: незакритий знімок моделей попереднього наряду (lanes/gpu-models.json)'
     }
+    $before = @($s.Before | ForEach-Object { [string]$_.id })
+    try { $new = @(Get-LmsInstances | Where-Object { $before -cnotcontains $_.id }) }
+    catch {
+        $script:GpuHoldReason = 'LM Studio недоступний на :1234'
+        return 'GPU: LM Studio недоступний на :1234 — неможливо перевірити моделі живих GPU-нарядів'
+    }
+    if ($new.Count) {
+        $script:GpuHoldReason = 'модель GPU-наряду на карті'
+        return "GPU: модель GPU-наряду на карті ($(@($new | ForEach-Object { $_.model }) -join ', '))"
+    }
+    ''
+}
+
+$script:GpuHoldReason = ''
+
+function Get-GpuBusyReason([switch]$LockHeld) {
+    <# Чому GPU не віддати наряду зараз; '' — вільна. Єдине місце для планувальників обох облікових записів.
+    GpuHoldReason — причина для рядка сигналу (Update-HoldSignals порівнює її без числових показників). LockHeld — ворота GPU
+    тримає сам викликач (процес наряду в Enter-GpuLease): причина — сторонній процес, а не «замок тримає інший процес».
+    Свій живий GPU-наряд сам по собі карти не тримає — лише його модель на карті (Get-GpuSessionReason) чи пам'ять. #>
+    $script:GpuHoldReason = ''
+    if (-not $LockHeld -and -not (Test-LockFree (Get-GpuLockPath))) { $script:GpuHoldReason = 'замок GPU іншого наряду'; return "GPU: замок $(Get-GpuLockPath) тримає інший процес" }
+    $why = Get-GpuSessionReason
+    if ($why) { return $why }
     try { $null = @(Get-LmsInstances) }
     catch {
         $script:GpuHoldReason = 'LM Studio недоступний на :1234'
