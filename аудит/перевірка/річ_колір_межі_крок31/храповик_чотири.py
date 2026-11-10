@@ -12,6 +12,8 @@ from pathlib import Path
 
 def головна():
     """Запустити незмінений храповик із меншим одночасним навантаженням."""
+    кількість = int(sys.argv[sys.argv.index("--потоків") + 1]) if "--потоків" in sys.argv else 4
+    if кількість < 1: raise ValueError("кількість одночасних приладів має бути додатною")
     пул = concurrent.futures.ThreadPoolExecutor
 
     class ЧотириПрилади(пул):
@@ -19,7 +21,7 @@ def головна():
 
         def __init__(self, max_workers=None, *args, **kwargs):
             """Обмежити лише кількість одночасних процесів приладів."""
-            super().__init__(min(max_workers or 4, 4), *args, **kwargs)
+            super().__init__(min(max_workers or кількість, кількість), *args, **kwargs)
 
     concurrent.futures.ThreadPoolExecutor = ЧотириПрилади
     скрипт = Path(__file__).resolve().parents[3] / "джерела/прилади/храповик_кореня.py"
