@@ -3,6 +3,7 @@
    Сирі кадри й відповіді залишаються поза git; вихід містить лише час і результати. */
 const fs = require('fs'), path = require('path');
 const [кеш, вхід, вихід, старий] = process.argv.slice(2);
+require('../_замок_важких.js').взяти('поверхня_показ_212');  // Pyodide у процесі node — важкий крок
 (async () => {
   const {loadPyodide} = require(path.resolve(кеш, 'pyodide.js'));
   const п = await loadPyodide({indexURL: path.resolve(кеш) + '/'});

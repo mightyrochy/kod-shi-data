@@ -147,6 +147,9 @@ function New-StartInfo([string]$Exe, [string[]]$Arguments, [string]$Dir, [switch
     if ($Dir) { $psi.WorkingDirectory = $Dir }
     $psi.EnvironmentVariables['GIT_TERMINAL_PROMPT'] = '0'
     $psi.EnvironmentVariables['GCM_INTERACTIVE'] = 'never'
+    # Спільний замок важких кроків батареї (`джерела/_замок_важких.py`): тека — спільна тека смуг, N — `важкі.json`.
+    $lanes = Get-Variable LaneDir -ValueOnly -ErrorAction SilentlyContinue
+    if ($lanes) { $psi.EnvironmentVariables['KODSHI_HEAVY_DIR'] = [string]$lanes }
     $psi
 }
 

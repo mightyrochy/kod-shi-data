@@ -2,6 +2,7 @@
    node прилади/replay_картки_pyodide.js <кеш Pyodide> <архів від replay_картки.py --архів> */
 const fs = require('fs'), path = require('path');
 const [кеш, архів] = process.argv.slice(2);
+require('../_замок_важких.js').взяти('replay_картки_pyodide');  // Pyodide у процесі node — важкий крок
 (async () => {
   const {loadPyodide} = require(path.resolve(кеш, 'pyodide.js'));
   const пд = await loadPyodide({indexURL: path.resolve(кеш) + '/'});

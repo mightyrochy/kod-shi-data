@@ -1,6 +1,7 @@
 /* Парний вимір трьох оригінальних версій у справжньому Pyodide, без пакетів. */
 const fs = require('fs'), path = require('path');
 const [кеш, вхід, вихід, стара, ядроДо, річДо] = process.argv.slice(2);
+require('../_замок_важких.js').взяти('швидкість_поверхні_1993');  // Pyodide у процесі node — важкий крок
 (async () => {
   const {loadPyodide} = require(path.resolve(кеш, 'pyodide.js'));
   const п = await loadPyodide({indexURL: path.resolve(кеш) + '/'});

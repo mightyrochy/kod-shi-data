@@ -6,6 +6,7 @@
 const fs = require('fs'), path = require('path'), zlib = require('zlib');
 const [СТОРІНКА, ТЕКА_PYODIDE, ВХОДИ, ВИХІД, ЛИШЕ, ПОРТАТИВНА] = process.argv.slice(2);
 
+require('../_замок_важких.js').взяти('знімок_мосту_pyodide');  // Pyodide у процесі node — важкий крок
 (async () => {
   const { loadPyodide } = require(path.resolve(ТЕКА_PYODIDE, 'pyodide.js'));
   const html = fs.readFileSync(СТОРІНКА, 'utf8');
