@@ -895,7 +895,7 @@ function Invoke-Task($M, $Job) {
     $mergeMain = $false
     if ($cont) {
         # Гілка попередньої спроби: злита в main — агент іде від main, не з неї; відстала — перший крок влити main (Get-AttemptStart).
-        [void](Invoke-Git @('fetch', '-q', '--no-tags', 'origin', "+refs/heads/${cont}:refs/remotes/origin/$cont") -AllowFail -TimeoutMinutes 5)
+        [void](Invoke-Git @('fetch', '-q', '--no-tags', 'origin', "+refs/heads/${cont}:refs/remotes/origin/$cont") -AllowFail)
         $att = Get-AttemptStart (Get-RefSha "refs/remotes/origin/$cont") $main
         if ($att.Mode -eq 'MERGED') { Write-Log "позначка $($M.Name): $cont злита в main — старт від main"; $cont = '' }
         elseif ($att.Mode -eq 'BEHIND') { Write-Log "позначка $($M.Name): $cont відстала від main — перший крок влити main"; $mergeMain = $true }
