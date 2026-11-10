@@ -88,8 +88,8 @@ import re
     },
     "switch_profile": {
         "робить": "перемкнути активний профіль і відкрити його розмову",
-        "для_моделі": "opens one of her profiles and its conversation",
-        "коли": "she asks to switch to a profile",
+        "для_моделі": "opens a profile and its conversation",
+        "коли": "she asks to switch profiles",
         "вхід": {"type": "object", "additionalProperties": False, "required": ["id"], "properties": {
             "id": {"type": "string", "minLength": 1, "description": "the \"id\" of one of profiles"}}},
         "переліки": {"id": "profiles"},
@@ -129,11 +129,9 @@ import re
 # Переліки цього ходу: ім'я в промпті → ключ входу ендпойнта `мова`, який дає показ (`ходомРозмовиП`), і поля запису.
 ПЕРЕЛІКИ = {"saved_cases": {"вхід": "збережені", "поля": {"id": "ід", "name": "назва", "case": "випадок",
                                                          "date": "час", "open": "відкрито"},
-                          "опис": 'her saved cases: "id", "name" — the name she gave it, "case" — what it is '
-                                  'about, "date", "open" — the case open now; a reason code instead of the list '
-                                  'when they could not be read'},
+                          "опис": 'saved cases: id, name (her title), case (topic), date, open (current); reason code if unreadable'},
             "profiles": {"вхід": "профілі", "поля": {"id": "ід", "name": "назва", "open": "відкрито"},
-                         "опис": 'her profiles: "id", "name" — the name she gave it, "open" — the active profile'}}
+                         "опис": 'her profiles: id, name (her input), open (active)'}}
 ПЕРЕЛІК_МАКС = 30
 
 
@@ -153,7 +151,7 @@ def скелет():
 
 def коди_для_промпту():
     """Рядки переліку для сталого словника кодів ходу: ім'я, що робить, коли кликати, аргументи з їхніх описів."""
-    р = ["Tools (\"tool\": {\"name\", \"args\"}; the app does it and shows the result under your reply):"]
+    р = ["Tools (results below your reply):"]
     for ім, о in ІНСТРУМЕНТИ.items():
         аргументи = "; ".join("%s (%s) — %s" % (к, с["type"], с["description"])
                               for к, с in о["вхід"]["properties"].items()) or "none"
