@@ -1,0 +1,27 @@
+{
+ "версія": 1,
+ "запит": {
+  "model": "qwen/qwen3.5-9b",
+  "max_tokens": 4000,
+  "messages": [
+   {
+    "role": "user",
+    "content": [
+     {
+      "type": "text",
+      "text": "{\"task\": {\"role\": \"You read the description of an outfit and list its items as data.\", \"rules\": [\"One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.\", \"One item carries one thing — of two alternatives list the first; a note in brackets is not an item.\", \"Slot \\\"accessory\\\" is for an item no other slot fits.\", \"\\\"is_outfit\\\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note.\"], \"limits\": [\"Rely only on the input: do not invent what it does not contain.\", \"The answer is one JSON object following \\\"answer_schema\\\", without explanations and without ```.\"], \"language\": \"English\", \"answer\": \"ITEM_LIST\", \"answer_schema\": {\"is_outfit\": \"yes|no\", \"items\": [{\"name\": \"<what the item is>\", \"details\": \"<its cut, length and fabric>\", \"slot\": \"top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory\", \"color_hex\": \"<#rrggbb or null>\", \"worn\": \"<true, or false when the description says the outfit goes without it>\"}]}, \"input\": [\"\\\"description\\\" — the outfit description\"]}, \"description\": \"Structured wool-blend blazer with a relaxed lapel cut and mid-thigh length in deep emerald green (#03564c), soft-touch knit trousers with a tapered leg at ankle length in charcoal grey (#36454f).\\n\\nPolished leather pumps with a 7cm heel and a pointed toe in black leather (#1a1a1a), finished with a subtle gold-tone zipper detail.\\n\\nRound-frame acetate eyeglasses with tortoiseshell patterns in warm amber tones (#c08b56), a structured silk scarf tied loosely around the neck in rust red (#bc4b37), and a small leather clutch in cognac brown (#985e39).\\n\\nThis ensemble works because the tailored blazer provides an immediate lift of sophistication suitable for an evening date, while the dark trousers ground the look with modern elegance. The warm autumn tones of the accessories harmonize with her skin and hair, creating a cohesive glow under restaurant lighting without appearing overly flashy. Finally, the combination of structured outerwear and comfortable ankle-length pants ensures she looks polished yet feels confident walking into the dinner.\"}"
+     }
+    ]
+   }
+  ],
+  "temperature": 1
+ },
+ "відповідь": {
+  "status": 200,
+  "contentType": "application/json",
+  "headers": {
+   "x-model": "qwen/qwen3.5-9b"
+  },
+  "body": "{\"content\":[{\"type\":\"text\",\"text\":\"{\\\"is_outfit\\\":\\\"yes\\\",\\\"items\\\":[{\\\"name\\\":\\\"blazer\\\",\\\"details\\\":\\\"relaxed lapel cut, mid-thigh length\\\",\\\"slot\\\":\\\"outerwear\\\",\\\"color_hex\\\":\\\"#03564c\\\",\\\"worn\\\":true},{\\\"name\\\":\\\"trousers\\\",\\\"details\\\":\\\"soft-touch knit, tapered leg at ankle length\\\",\\\"slot\\\":\\\"bottom\\\",\\\"color_hex\\\":\\\"#36454f\\\",\\\"worn\\\":true},{\\\"name\\\":\\\"pumps\\\",\\\"details\\\":\\\"7cm heel, pointed toe, subtle gold-tone zipper detail\\\",\\\"slot\\\":\\\"shoes\\\",\\\"color_hex\\\":\\\"#1a1a1a\\\",\\\"worn\\\":true},{\\\"name\\\":\\\"eyeglasses\\\",\\\"details\\\":\\\"round-frame acetate with tortoiseshell patterns\\\",\\\"slot\\\":\\\"glasses\\\",\\\"color_hex\\\":\\\"#c08b56\\\",\\\"worn\\\":true},{\\\"name\\\":\\\"scarf\\\",\\\"details\\\":\\\"structured silk tied loosely around the neck\\\",\\\"slot\\\":\\\"scarf\\\",\\\"color_hex\\\":\\\"#bc4b37\\\",\\\"worn\\\":true},{\\\"name\\\":\\\"clutch\\\",\\\"details\\\":\\\"small leather clutch\\\",\\\"slot\\\":\\\"bag\\\",\\\"color_hex\\\":\\\"#985e39\\\",\\\"worn\\\":true}]}\"}],\"usage\":{\"input_tokens\":588,\"output_tokens\":235},\"stop_reason\":\"end_turn\"}"
+ }
+}

@@ -1,0 +1,50 @@
+── ПРОМПТ (7125 симв.) ──
+Ти — перекладачка в застосунку-стилістці. Ти пишеш природною українською тексти, які зараз побачить жінка. Рішень не приймаєш, на питання не відповідаєш, змісту не міняєш.
+
+Вхід — JSON-об'єкт: ключ — номер тексту н, значення — текст, який склали код та інші моделі.
+
+Ключі відповіді — ті самі, що у вході, кожен: номер н тексту, значення — рядок, той самий зміст природною українською, без англійських слів і кодів; ПЕРЕКЛАДАЙ КОЖНЕ англійське слово, навіть одне посеред українського речення; латиницею лишай лише назви крамниць і брендів, «V-подібний» і «den»; текст, що вже природний і до неї на «ти», — без змін, а український текст на «ви» перепиши на «ти», решту лиши слово в слово.
+
+Вид кожної речі — теж зміст: річ у перекладі — та сама, що у вході, а не схожа чи сусідня. ankle boots — черевики чи ботильйони, boots — чоботи, heeled — на підборах, а не туфлі, pumps — туфлі-човники, loafers — лофери; pendant — кулон чи підвіска, necklace — намисто чи ланцюжок, а не каблучка, сережки чи браслет; ring — каблучка; earrings — сережки. Українські назви речей у вході (назви з крамниці, найчастіше перед « — ») переписуй літера в літеру: не міняй, не переставляй і не додавай у них жодного слова.
+
+Про жінку — лише до неї, на «ти» (ти, тебе, тобі, твій, твоя; хочеш, скинеш; наказ однини: розкажи, оберни, тримай, дай), і в питаннях теж: you, your, she, her про неї — «ти», «твій» (her skin tone — твій тон шкіри; when she turns her head — коли ти повертаєш голову; she looks taller — ти виглядаєш вищою), англійський наказ — наказом однини; «вона», «її» — лише про річ (сукню, сумку, куртку). Говорить стилістка — одна жінка: про себе — від першої особи однини й у жіночому роді (я підібрала, я б додала), не «ми», не від імені застосунку чи коду і ніколи словами самої жінки.
+
+Мова: літературна українська, як у текстах українських крамниць одягу. Кожне українське слово — літерами лише української абетки, без жодної латинської літери чи стороннього знака всередині слова. Кожне речення — одна остаточна версія, без виправлень посеред тексту. Словничок нижче — лише як перекласти англійське слово, коли воно є у вході; це не зміст: річ, тканина чи колір, яких у вході нема, у тексті не з'являються. Звичні українські назви для слів англійського джерела: trousers, pants — штани; dressy, dressier — ошатний, ошатніше; look, outfit — образ; taupe — сіро-бежевий; loose — вільний; suede — замша (жіночий рід); slip dress — сукня-комбінація; camel — кемел (колір). Назви речей і кольорів, які дала крамниця, — як є.
+
+Слово не повторюється двічі поспіль. Відповідь — рівно ОДИН JSON-об'єкт і нічого після нього: другої, виправленої версії, приміток і пояснень не пиши — помилку виправ у тому самому об'єкті.
+
+Речі образу — перелік речей картки (номер речі — як на картці, поруч — її коди):
+1 — kind code: sweater · colour code: powder · about it: text н=1
+2 — kind code: skirt · colour code: grey · about it: text н=2
+3 — kind code: loafers · colour code: turquoise · about it: text н=3
+4 — kind code: backpack · colour code: white · about it: text н=4
+5 — kind code: coat · colour code: sand · about it: text н=5
+When a text speaks of an item of the list, call it by the Ukrainian noun of its kind code (kind code: …) — the same noun in the right case in every text (trench_coat — «тренч», sweater — «светр», loafers — «лофери»), not by another kind or a synonym of the English word, whatever word the English text uses; a code ending in _generic names only the family (dress_generic — a dress, bag_generic — a bag). Make every adjective, pronoun and verb with the item agree with that noun in gender and number («бежевий тренч, який…»; «шкіряні лофери, які…»). A name you translate in this same call (text н=K): give it one noun and call the item by it, in agreement, in every text. A text the list gives as about an item (about it: text н=M) speaks of that one item, and so does every other text where the English names it. The colour of an item of the list is its colour code (colour code: …): write the Ukrainian name of that code. The English colour words for that item are the stylist's impression of a photo: do not turn them into a colour of their own — the item's colour stands in their place. Colours of its details (trim, strap, buttons, print), its fabric and the rest — translate from the text. The list is for the items only: an item the English text does not name is not added to the translation — neither to the description nor to the advice.
+
+Colour codes: grey — сірий; powder — пудра; sand — пісочний; turquoise — бірюзовий; white — білий.
+
+ТЕКСТИ:
+{
+"1": "This fitted powder sweater features a delicate mesh panel across the chest and long sheer sleeves that soften your upper body. The knit texture adds warmth without bulk, while the subtle sheen catches daylight as you move through historic streets.",
+"2": "The grey straight skirt falls to mid-calf with a clean silhouette that flows comfortably over cobblestones. Its neutral tone anchors the softer pastel hues above, while the smooth fabric resists wrinkling during a full day of walking.",
+"3": "These turquoise suede loafers offer slip-on ease with a low-profile sole for all-day comfort. The rich color brings a fresh pop to your palette without overpowering the softer tones around it, making them ideal for stepping from stone pavement into cafés or museums.",
+"4": "A lightweight mint-green drawstring backpack keeps essentials secure while leaving your hands free. Its compact shape fits easily under one arm or worn across the back, blending sporty utility with your outfit’s polished vibe.",
+"5": "This sand-colored double-breasted coat wraps comfortably around your frame with a built-in belt to cinch at the waist. Its classic collar and structured lapels provide warmth without adding heaviness, perfect for shielding against cool autumn breezes while keeping you looking refined.",
+"6": "You are all set for a long day exploring the old city. This fitted powder sweater with its sheer neckline sits gently against your frame, while the sleek grey straight skirt keeps you grounded as you walk over cobblestones. The turquoise loafers add a playful, comfortable touch to your feet, and the light backpack keeps your hands free for tickets or souvenirs without weighing you down. I chose this layered look because it blends effortless style with practical ease, perfect for nine hours on your feet in cool autumn weather while maintaining a polished appearance.",
+"7": "Keep the coat buttoned at the waist to define your silhouette and protect against the breeze, letting the belt do its work.",
+"8": "Leave the sweater slightly untucked or loosely tucked into the skirt to maintain a relaxed yet intentional feel throughout your walk.",
+"9": "Спортивний рюкзак-мішок унісекс Nike, Жіноче вовняне пальто з синтепоном, класичний стиль, осінь-весна Kent (пісочний, 44), Лофери жіночі бірюзові — I accept the code's note on formality spread because you asked for an everyday look, not a high-low mix; this outfit naturally lives in the 'neat' band with your shoes and vest, which is exactly what serves your casual city tour intent."
+}
+
+── ВІДПОВІДЬ (2656 симв., 18.4 с, HTTP 200) ──
+{
+"1": "Цей приталений пудровий светр має ніжний сітчастий вкладиш на грудях і довгі прозорі рукави, які пом’якшують твою верхню частину тіла. В’язана текстура додає тепла без об’ємності, а ледь помітне сяйво привертає увагу сонячного світла під час руху старовинними вулицями.",
+"2": "Сіра пряма спідниця спадає до середини литки з чітким силуетом, який зручно струмує по бруківці. Її нейтральний тон гармонійно поєднується з м’якими пастельними відтінками зверху, а гладка тканина не мнеться протягом усього дня ходьби.",
+"3": "Ці бірюзові замшеві лофери пропонують зручність взування без шнурків і плоску підошву для комфорту на весь день. Багатий колір додає свіжий акцент до твоєї палітри, не перебиваючи м’які тони навколо нього, що робить їх ідеальними для прогулянок кам’яною бруківкою в кафе чи музеї.",
+"4": "Легкий салатовий рюкзак на шнурку зберігає необхідні речі під рукою, залишаючи твої руки вільними. Його компактна форма легко поміщається під одне плече або носиться через спину, поєднуючи спортивну практичність з вишуканим стилем твоєї сукні.",
+"5": "Цей пісочний двобортний тренч зручно облягає твою фігуру з вбудованим поясом для підкреслення талії. Його класичний комір і структуровані лацкани забезпечують тепло без зайвої ваги, що чудово захищає від прохолодного осіннього вітру, зберігаючи при цьому вишуканий вигляд.",
+"6": "Ти готова до довгого дня дослідження старого міста. Цей приталений пудровий светр з прозорим вирізом ніжно облягає твою фігуру, а елегантна сіра пряма спідниця тримає тебе впевнено на ногах під час ходьби по бруківці. Бірюзові лофери додають грайливий і комфортний акцент до твоїх ніг, а легкий рюкзак залишає руки вільними для квитків чи сувенірів без зайвого навантаження. Я обрала цей багатошаровий образ, тому що він поєднує безтурботний стиль з практичною зручністю, ідеально підходить для дев’яти годин на ногах у прохолодну осінню погоду, зберігаючи при цьому вишуканий вигляд.",
+"7": "Застебни тренч на талії, щоб окреслити свою фігуру й захиститися від вітру, дозволяючи поясу зробити свою роботу.",
+"8": "Злегка вийми светр з-під спідниці або недбало заправ його всередину, щоб зберегти розслаблений і водночас продуманий вигляд протягом усієї прогулянки.",
+"9": "Спортивний рюкзак-мішок унісекс Nike, Жіноче вовняне пальто з синтепоном, класичний стиль, осінь-весна Kent (пісочний, 44), Лофери жіночі бірюзові — Я приймаю зауваження коду щодо поширення формальності, тому що ти попросила повсякденний образ, а не мікс високого та низького стилів; цей наряд природно належить до «охайного» діапазону з твоїми туфлями й жилетом, що саме відповідає твоєму задуму невимушеної міської екскурсії."
+}

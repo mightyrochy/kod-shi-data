@@ -1,0 +1,27 @@
+{
+ "версія": 1,
+ "запит": {
+  "model": "qwen/qwen3.5-9b",
+  "max_tokens": 4000,
+  "messages": [
+   {
+    "role": "user",
+    "content": [
+     {
+      "type": "text",
+      "text": "{\"task\": {\"role\": \"You read the description of an outfit and list its items as data.\", \"rules\": [\"One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.\", \"One item carries one thing — of two alternatives list the first; a note in brackets is not an item.\", \"Slot \\\"accessory\\\" is for an item no other slot fits.\", \"\\\"is_outfit\\\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note.\"], \"limits\": [\"Rely only on the input: do not invent what it does not contain.\", \"The answer is one JSON object following \\\"answer_schema\\\", without explanations and without ```.\"], \"language\": \"English\", \"answer\": \"ITEM_LIST\", \"answer_schema\": {\"is_outfit\": \"yes|no\", \"items\": [{\"name\": \"<what the item is>\", \"details\": \"<its cut, length and fabric>\", \"slot\": \"top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory\", \"color_hex\": \"<#rrggbb or null>\", \"worn\": \"<true, or false when the description says the outfit goes without it>\"}]}, \"input\": [\"\\\"description\\\" — the outfit description\"]}, \"description\": \"Charcoal wool-blend blazer, tailored single-breasted cut with notched lapels, slate blue hex #2F4F4F, woven fabric.\\nHigh-waisted wide-leg trousers, straight leg with a slight drape from hip to hem, navy midnight hex #0A1929, heavy twill wool.\\nSilk camisole top, relaxed V-neck silhouette with gathered waist, pearl white hex #E8E4E6, fluid silk charmeuse.\\nLoafers, square-toed classic pump style in soft calf leather, dark grey hex #3D3D3D, smooth leather with a low block heel.\\nPearl drop earrings, circular studs measuring two centimeters in diameter, white pearl hex #FFFAF0, freshwater cultured pearls with gold vermeil posts.\\nMatte black clutch bag, rectangular structured shape with a top flap closure, pure black hex #1C1C1C, saffiano leather texture.\\n\\nThis outfit works because the charcoal blazer and navy trousers create a sophisticated, monochromatic base that feels appropriate for an evening theatre setting without being overly formal. The pearl white camisole adds a touch of elegant femininity that balances the structured outer layers while keeping the look wearable for an autumn night. Loafers provide comfort for standing or walking through the venue, while the pearls and clutch complete the ensemble with refined accessories suitable for the artificial lighting of a theatre hall.\"}"
+     }
+    ]
+   }
+  ],
+  "temperature": 1
+ },
+ "відповідь": {
+  "status": 200,
+  "contentType": "application/json",
+  "headers": {
+   "x-model": "qwen/qwen3.5-9b"
+  },
+  "body": "{\"content\":[{\"type\":\"text\",\"text\":\"{\\n  \\\"is_outfit\\\": \\\"yes\\\",\\n  \\\"items\\\": [\\n    {\\n      \\\"name\\\": \\\"blazer\\\",\\n      \\\"details\\\": \\\"single-breasted tailored cut with notched lapels, charcoal wool-blend woven fabric\\\",\\n      \\\"slot\\\": \\\"outerwear\\\",\\n      \\\"color_hex\\\": \\\"#2F4F4F\\\",\\n      \\\"worn\\\": true\\n    },\\n    {\\n      \\\"name\\\": \\\"trousers\\\",\\n      \\\"details\\\": \\\"high-waisted wide-leg straight leg with slight drape from hip to hem, heavy twill wool fabric\\\",\\n      \\\"slot\\\": \\\"bottom\\\",\\n      \\\"color_hex\\\": \\\"#0A1929\\\",\\n      \\\"worn\\\": true\\n    },\\n    {\\n      \\\"name\\\": \\\"camisole top\\\",\\n      \\\"details\\\": \\\"relaxed V-neck silhouette with gathered waist, fluid silk charmeuse fabric\\\",\\n      \\\"slot\\\": \\\"top\\\",\\n      \\\"color_hex\\\": \\\"#E8E4E6\\\",\\n      \\\"worn\\\": true\\n    },\\n    {\\n      \\\"name\\\": \\\"loafers\\\",\\n      \\\"details\\\": \\\"square-toed classic pump style with low block heel, smooth soft calf leather\\\",\\n      \\\"slot\\\": \\\"shoes\\\",\\n      \\\"color_hex\\\": \\\"#3D3D3D\\\",\\n      \\\"worn\\\": true\\n    },\\n    {\\n      \\\"name\\\": \\\"earrings\\\",\\n      \\\"details\\\": \\\"circular studs measuring two centimeters in diameter with gold vermeil posts and freshwater cultured pearls\\\",\\n      \\\"slot\\\": \\\"earrings\\\",\\n      \\\"color_hex\\\": \\\"#FFFAF0\\\",\\n      \\\"worn\\\": true\\n    },\\n    {\\n      \\\"name\\\": \\\"clutch bag\\\",\\n      \\\"details\\\": \\\"rectangular structured shape with top flap closure, saffiano leather texture\\\",\\n      \\\"slot\\\": \\\"bag\\\",\\n      \\\"color_hex\\\": \\\"#1C1C1C\\\",\\n      \\\"worn\\\": true\\n    }\\n  ]\\n}\"}],\"usage\":{\"input_tokens\":650,\"output_tokens\":437},\"stop_reason\":\"end_turn\"}"
+ }
+}

@@ -1,0 +1,62 @@
+── ПРОМПТ (7452 симв.) ──
+Ти — перекладачка в застосунку-стилістці. Ти пишеш природною українською тексти, які зараз побачить жінка. Рішень не приймаєш, на питання не відповідаєш, змісту не міняєш.
+
+Вхід — JSON-об'єкт: ключ — номер тексту н, значення — текст, який склали код та інші моделі.
+
+Ключі відповіді — ті самі, що у вході, кожен: номер н тексту, значення — рядок, той самий зміст природною українською, без англійських слів і кодів; ПЕРЕКЛАДАЙ КОЖНЕ англійське слово, навіть одне посеред українського речення; латиницею лишай лише назви крамниць і брендів, «V-подібний» і «den»; текст, що вже природний і до неї на «ти», — без змін, а український текст на «ви» перепиши на «ти», решту лиши слово в слово.
+
+Вид кожної речі — теж зміст: річ у перекладі — та сама, що у вході, а не схожа чи сусідня. ankle boots — черевики чи ботильйони, boots — чоботи, heeled — на підборах, а не туфлі, pumps — туфлі-човники, loafers — лофери; pendant — кулон чи підвіска, necklace — намисто чи ланцюжок, а не каблучка, сережки чи браслет; ring — каблучка; earrings — сережки. Українські назви речей у вході (назви з крамниці, найчастіше перед « — ») переписуй літера в літеру: не міняй, не переставляй і не додавай у них жодного слова.
+
+Про жінку — лише до неї, на «ти» (ти, тебе, тобі, твій, твоя; хочеш, скинеш; наказ однини: розкажи, оберни, тримай, дай), і в питаннях теж: you, your, she, her про неї — «ти», «твій» (her skin tone — твій тон шкіри; when she turns her head — коли ти повертаєш голову; she looks taller — ти виглядаєш вищою), англійський наказ — наказом однини; «вона», «її» — лише про річ (сукню, сумку, куртку). Говорить стилістка — одна жінка: про себе — від першої особи однини й у жіночому роді (я підібрала, я б додала), не «ми», не від імені застосунку чи коду і ніколи словами самої жінки.
+
+Мова: літературна українська, як у текстах українських крамниць одягу. Кожне українське слово — літерами лише української абетки, без жодної латинської літери чи стороннього знака всередині слова. Кожне речення — одна остаточна версія, без виправлень посеред тексту. Словничок нижче — лише як перекласти англійське слово, коли воно є у вході; це не зміст: річ, тканина чи колір, яких у вході нема, у тексті не з'являються. Звичні українські назви для слів англійського джерела: trousers, pants — штани; dressy, dressier — ошатний, ошатніше; look, outfit — образ; taupe — сіро-бежевий; loose — вільний; suede — замша (жіночий рід); slip dress — сукня-комбінація; camel — кемел (колір). Назви речей і кольорів, які дала крамниця, — як є.
+
+Слово не повторюється двічі поспіль. Відповідь — рівно ОДИН JSON-об'єкт і нічого після нього: другої, виправленої версії, приміток і пояснень не пиши — помилку виправ у тому самому об'єкті.
+
+Речі образу — перелік речей картки (номер речі — як на картці, поруч — її коди):
+1 — kind code: sweater · colour code: graphite · about it: text н=1
+2 — kind code: skirt · colour code: graphite · about it: text н=2
+3 — kind code: coat · colour code: graphite · about it: text н=3
+4 — kind code: ankle_boots · colour code: camel · about it: text н=4
+5 — kind code: tote · colour code: beige · about it: text н=5
+When a text speaks of an item of the list, call it by the Ukrainian noun of its kind code (kind code: …) — the same noun in the right case in every text (trench_coat — «тренч», sweater — «светр», loafers — «лофери»), not by another kind or a synonym of the English word, whatever word the English text uses; a code ending in _generic names only the family (dress_generic — a dress, bag_generic — a bag). Make every adjective, pronoun and verb with the item agree with that noun in gender and number («бежевий тренч, який…»; «шкіряні лофери, які…»). A name you translate in this same call (text н=K): give it one noun and call the item by it, in agreement, in every text. A text the list gives as about an item (about it: text н=M) speaks of that one item, and so does every other text where the English names it. The colour of an item of the list is its colour code (colour code: …): write the Ukrainian name of that code. The English colour words for that item are the stylist's impression of a photo: do not turn them into a colour of their own — the item's colour stands in their place. Colours of its details (trim, strap, buttons, print), its fabric and the rest — translate from the text. The list is for the items only: an item the English text does not name is not added to the translation — neither to the description nor to the advice.
+
+Colour codes: beige — бежевий; camel — кемел; graphite — графіт.
+
+ТЕКСТИ:
+{
+"1": "A fitted graphite sweater with ribbed texture and a stand collar featuring dark buttons down the placket. It sits close to the body, offering a sleek silhouette that stays in place while you move.",
+"2": "An a-line full skirt in charcoal check fabric with blue lines woven into the pattern. The waistband is defined and the skirt falls loosely from the hips, creating soft movement as you walk.",
+"3": "A relaxed double-breasted coat in graphite wool blend, structured with wide lapels and functional pockets. It drapes generously over your frame, providing substantial warmth for cold mornings.",
+"4": "Camel-colored ankle boots with a pointed toe and a slim kitten heel. The material appears to be soft calf hair or suede, offering both traction and elegance for winter streets.",
+"5": "A beige open-weave crochet tote bag with structured brown leather handles and a prominent gold Medusa emblem at the front. The airy fabric keeps it lightweight while maintaining its shape.",
+"6": "I chose a sleek and practical outfit for your morning commute in the frost. You are wearing a fitted graphite knit sweater with button detailing, tucked into a flowing charcoal plaid skirt that sways as you walk. I added an oversized double-breasted coat to keep you warm against the snow and cold air, paired with camel ankle boots that offer grip on slippery surfaces without sacrificing style. The beige woven tote is light enough to carry easily all day while adding a touch of texture. This look feels polished yet relaxed, perfect for a walk to work.",
+"7": "Keep the coat open as you move to let your silhouette breathe and avoid overheating in the brisk air.",
+"8": "Tuck the sweater hem slightly into the skirt waistband if it shifts while walking, ensuring a clean line all the way down.",
+"9": "Wear the boots heel-first on snowy patches before stepping onto regular ground for safety.",
+"10": "Пальто-піджак вовна в кольорі графіт — Select this graphite wool coat to fix 'all_colour_under_coat', ensuring visible texture contrast between the top, bottom and outer layer.",
+"11": "Пальто-піджак вовна в кольорі графіт — Retain for 'layers_off_temperature_map', providing the necessary warmth and texture contrast to the knit layers.",
+"12": "Ботильйони кемел поні CODY на шкірі — I accept this orange hue on the boots because it acts as a deliberate, contained accent that grounds the outfit against the white snow and grey palette, adding a vital touch of warmth without breaking your professional intent.",
+"13": "Пальто-піджак вовна в кольорі графіт — Select this graphite wool coat to provide the necessary frost protection and anchor the lightness of the set, replacing any lighter outerwear that would lose warmth.",
+"14": "Пальто-піджак вовна в кольорі графіт — Retain this graphite coat for 'layers_off_temperature_map', providing the necessary warmth and texture contrast to the knit layers."
+}
+
+── ВІДПОВІДЬ (3158 симв., 22.7 с, HTTP 200) ──
+```json
+{
+"1": "В'язаний светр сірого кольору з рельєфною текстурою та стоячим коміром, прикрашеним темними ґудзиками на планці. Він щільно облягає тіло, створюючи елегантний силует, який залишається на місці під час руху.",
+"2": "Спідниця-трапеція з тканини в сіру смужку з блакитними лініями, переплетеними у візерунок. Пояс чітко окреслено, а спідниця вільно спадає від стегон, створюючи м'який рух під час ходьби.",
+"3": "Вільне двобортне пальто сірого кольору з вовняної суміші, структуроване широкими лацканами та функціональними кишенями. Воно вільно драпірується по твоїй фігурі, забезпечуючи значний захист від холоду вранці.",
+"4": "Черевики кольору кемел з загостреним носком і тонким підбором-кішкою. Матеріал здається м'якою замшею або шкірою поні, що пропонує як зчеплення, так і елегантність для зимових вулиць.",
+"5": "Бежева сумка-тоут ручної в’язки з відкритим плетінням та міцними коричневими шкіряними ручками. На передній частині сумки виділяється золотий медальйон Медузи. Повітряна тканина робить її легкою, зберігаючи при цьому форму.",
+"6": "Я підібрала елегантний і практичний образ для твоєї ранкової поїздки в морозну погоду. Ти одягнена у щільний сірий светр з ґудзиками на планці, заправлений у розкішну спідницю в чорно-сіру клітинку, яка колишеться під час ходьби. Я додала об'ємне двобортне пальто, щоб ти не мерзла від снігу та холодного повітря, поєднавши його з черевиками кольору кемел на невисокому каблуці, які забезпечують стійкість на слизькій поверхні без втрати стилю. Бежева сумка-тоут ручної в’язки досить легка для щоденного носіння та додає текстури до образу. Цей образ виглядає охайно і невимушено — саме те, що потрібно для прогулянки на роботу.",
+"7": "Тримай пальто розстебнутим під час руху, щоб твій силует був більш вільним і ти не перегрівалася у прохолодному повітрі.",
+"8": "Злегка заправ спідницю всередину пояса светра, якщо вона зміщується під час ходьби, забезпечуючи рівний контур по всій довжині.",
+"9": "Одягай черевики на п'яту спочатку на снігові ділянки перед тим, як ступити на звичайну поверхню — так буде безпечніше.",
+"10": "Пальто-піджак вовна в кольорі графіт — Обери це пальто сірого кольору, щоб вирішити проблему 'all_colour_under_coat', забезпечивши видимий контраст текстур між верхом, низом і верхнім шаром.",
+"11": "Пальто-піджак вовна в кольорі графіт — Залиш це пальто для 'layers_off_temperature_map', щоб забезпечити необхідний захист від холоду та створити контраст текстур з трикотажними речами.",
+"12": "Ботильйони кемел поні CODY на шкірі — Я приймаю цей оранжевий колір на черевиках, тому що він діє як навмисний і стриманий акцент, який підкреслює образ проти білого снігу та сірої палітри, додаючи важливу нотку тепла без втрати професійного вигляду.",
+"13": "Пальто-піджак вовна в кольорі графіт — Обери це пальто сірого кольору для захисту від морозу та щоб підкреслити легкість образу, замінивши будь-який інший верхній одяг, який не забезпечує достатньо тепла.",
+"14": "Пальто-піджак вовна в кольорі графіт — Залиш це пальто для 'layers_off_temperature_map', щоб забезпечити необхідний захист від холоду та створити контраст текстур з трикотажними речами."
+}
+```

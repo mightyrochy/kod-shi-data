@@ -824,23 +824,14 @@
      ],
      "description": "наскільки ошатний цей вихід — смуга одного щабля драбини за шкалою коду 1–10 (модель дає код щабля, `мовний_шар._смуга_числом`): завжди — з її слів і події"
     },
-    "temperature_c": {
-     "description": "температура повітря, °C",
-     "oneOf": [
-      {
-       "type": "number"
-      },
-      {
-       "const": "unknown"
-      }
-     ]
-    },
-    "weather_feel": {
-     "description": "погода без числа градусів",
+    "weather_band": {
+     "description": "смуга погоди за її словами",
      "enum": [
+      "deep_frost",
       "frost",
       "cold",
       "cool",
+      "mild",
       "warm",
       "hot",
       "unknown"
@@ -2406,12 +2397,8 @@
         "description": "наскільки ошатний цей вихід — смуга одного щабля драбини за шкалою коду 1–10 (модель дає код щабля, `мовний_шар._смуга_числом`): завжди — з її слів і події"
        },
        {
-        "const": "temperature_c",
-        "description": "температура повітря, °C"
-       },
-       {
-        "const": "weather_feel",
-        "description": "погода без числа градусів"
+        "const": "weather_band",
+        "description": "смуга погоди за її словами"
        },
        {
         "const": "intent",
@@ -2576,17 +2563,283 @@
       ]
      },
      "uniqueItems": true
+    },
+    "partly_recorded": {
+     "description": "поля сценарію, де вона назвала кілька значень, а записано лише одне; коди значень — коли поле має перелік",
+     "type": "array",
+     "items": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+       "field"
+      ],
+      "properties": {
+       "field": {
+        "oneOf": [
+         {
+          "const": "event",
+          "description": "подія коротко, її мовою"
+         },
+         {
+          "const": "occasion",
+          "description": "нагода — що це за подія"
+         },
+         {
+          "const": "place",
+          "description": "місце — де вона буде"
+         },
+         {
+          "const": "setting",
+          "description": "у приміщенні, просто неба чи змішано"
+         },
+         {
+          "const": "duration_h",
+          "description": "скільки годин триває подія"
+         },
+         {
+          "const": "movement",
+          "description": "сидітиме, стоятиме, ходитиме, багато ходитиме, танцюватиме, ставатиме на коліна чи займатиметься спортом"
+         },
+         {
+          "const": "dress_code",
+          "description": "дрес-код, коли його названо"
+         },
+         {
+          "const": "palette",
+          "description": "схема палітри, яку вона обрала"
+         },
+         {
+          "const": "formality",
+          "description": "наскільки ошатний цей вихід — смуга одного щабля драбини за шкалою коду 1–10 (модель дає код щабля, `мовний_шар._смуга_числом`): завжди — з її слів і події"
+         },
+         {
+          "const": "weather_band",
+          "description": "смуга погоди за її словами"
+         },
+         {
+          "const": "intent",
+          "description": "намір: comfort_first — зручність і свобода руху понад усе; context_optimal — доречність і рівень події понад усе; statement — хоче вразити, заявити про себе; conventional — нічого з цього"
+         },
+         {
+          "const": "goal",
+          "description": "скільки уваги на цьому виході: conceal — тихо, не привертати уваги до образу; flatter — звично, щоб личило; express — помітно, щоб на неї дивились"
+         },
+         {
+          "const": "goal_extra",
+          "description": "що ще їй важливо в цьому образі, кілька разом: taller — довша лінія, здаватись вищою; comfort — зручно рухатись цілий день; strict — строго за нагодою"
+         },
+         {
+          "const": "goal_zones",
+          "description": "зони тіла, від яких вона хоче відвести погляд (сховати чи стрункішою зробити зону → її код), з будь-якою увагою (goal): ці зони тихі, решта образу — за goal"
+         },
+         {
+          "const": "makeup",
+          "description": "макіяж на цей вихід"
+         },
+         {
+          "const": "jewelry",
+          "description": "прикраси, які вона хоче з цим образом; ethnic — дерево, кістка, бісер; other — без металу"
+         },
+         {
+          "const": "registers",
+          "description": "реєстри стилю, якими вона сама себе описала"
+         },
+         {
+          "const": "wants",
+          "description": "чого вона хоче в образі — лише те, що вона просить; річ у питанні («а якщо…», «чи піде…») — не бажання, а question"
+         },
+         {
+          "const": "vetoes",
+          "description": "чого вона не хоче: межі"
+         },
+         {
+          "const": "legs_above_cm",
+          "description": "вище скількох см від підлоги не відкривати ноги"
+         },
+         {
+          "const": "mood",
+          "description": "настрій образу її словами"
+         },
+         {
+          "const": "part_of_day",
+          "description": "частина доби з її слів чи години"
+         },
+         {
+          "const": "month",
+          "description": "місяць події, коли її слова його називають: дата, місяць чи свято одного місяця"
+         },
+         {
+          "const": "formality_branch",
+          "description": "гілка щабля: ділова чи світська форма того самого щабля"
+         },
+         {
+          "const": "open_zones",
+          "description": "скільки зон тіла (декольте чи спина, ноги, плечі) доречно відкрити на цій події"
+         },
+         {
+          "const": "reserved_colour",
+          "description": "колір, що на цій події належить іншій особі"
+         },
+         {
+          "const": "host_context",
+          "description": "подія з господарем або зі ставками: yes — це названо; no — явно заперечено; unknown — не сказала; не її роль господині"
+         },
+         {
+          "const": "role",
+          "description": "її названа роль на події"
+         },
+         {
+          "const": "companion_formality",
+          "description": "ошатність описаного нею одягу супутника на шкалі нагоди; не її власна"
+         },
+         {
+          "const": "direct_sun",
+          "description": "пряме сонце на неї: yes — назвала пряме сонце; no — назвала тінь чи відсутність сонця; unknown — не сказала; не виводити з температури, опадів чи пори року"
+         },
+         {
+          "const": "season",
+          "description": "названий нею сезон події, не дата чи температура"
+         },
+         {
+          "const": "life_transition",
+          "description": "добровільно названий життєвий перехід; не питати й не виводити з тіла"
+         },
+         {
+          "const": "creative_environment",
+          "description": "творче середовище події: yes — назвала; no — явно заперечила; unknown — не сказала; не намір сміливого образу"
+         },
+         {
+          "const": "declared_break",
+          "description": "явно заявлений злам граматики, не сміливий намір"
+         },
+         {
+          "const": "matching_opaque_tights",
+          "description": "щільні колготи в тон взуття чи їх явне заперечення; інакше невідомо"
+         },
+         {
+          "const": "declared_column",
+          "description": "явно заявлена колона одного кольору, не висновок із речей"
+         },
+         {
+          "const": "own_items",
+          "description": "її власні речі, які вона називає словами: усе, що вона зве своїм («моя», «у мене є», «з моєї шафи», «з фото»), — кожна річ окремо; слот, тип і тканина — завжди, кодом з її слів або \"unknown\""
+         },
+         {
+          "const": "place_words",
+          "description": "де вона буде, кількома словами для картки"
+         },
+         {
+          "const": "rest",
+          "description": "решта її слів цього ходу, що не лягла в жодне поле вище, — дослівно, її мовою"
+         },
+         {
+          "const": "stylist_note",
+          "description": "лише коли її слова про подію важко витлумачити без контексту (місцевий звичай, сленг, іронія, незвична подія): коротке пояснення для стилістки англійською, що вона має на увазі; інакше — невідомо"
+         },
+         {
+          "const": "quotes",
+          "description": "для кожного поля з кодом чи числом — дослівний уривок її слів, на якому воно стоїть: {\"<поле>\": \"<уривок>\"}"
+         },
+         {
+          "const": "occasion_part",
+          "description": "намір мовної моделі цього ходу: образ для спортивної чи іншої частини дня"
+         },
+         {
+          "const": "activity",
+          "description": "що робитиме: з дітьми, по нерівному ґрунту, прогулянка, багато пішки, фотосесія чи зйомка"
+         },
+         {
+          "const": "surface",
+          "description": "що під ногами"
+         },
+         {
+          "const": "precipitation",
+          "description": "опади"
+         },
+         {
+          "const": "retract",
+          "description": "межі чи бажання, від яких вона в цих словах відмовилась"
+         },
+         {
+          "const": "beliefs",
+          "description": "її переконання: що, на її думку, їй не личить чи псує фігуру; з ним не сперечаються"
+         },
+         {
+          "const": "question",
+          "description": "питання, яке вона ставить стилістці"
+         },
+         {
+          "const": "question_about",
+          "description": "про що її питання: app — про застосунок (екрани, кнопки, кроки, що робити далі); look — про її образ, речі, фото, стиль чи кольори"
+         },
+         {
+          "const": "formality_reason",
+          "description": "причина щабля драбини"
+         }
+        ]
+       },
+       "taken": {
+        "type": "string",
+        "description": "код значення поля, яке записано"
+       },
+       "not_taken": {
+        "type": "array",
+        "items": {
+         "type": "string"
+        },
+        "description": "коди значень поля, які вона назвала, а НЕ записано"
+       }
+      }
+     }
     }
    }
   },
   "reply_text": {
    "type": "object",
-   "description": "вихід перекладача репліки: один текст",
+   "description": "вихід перекладача репліки: речення з опорою",
    "additionalProperties": false,
    "properties": {
     "text": {
-     "type": "string",
-     "description": "текст для неї її мовою"
+     "description": "речення для неї її мовою",
+     "oneOf": [
+      {
+       "type": "array",
+       "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+         "about",
+         "says"
+        ],
+        "properties": {
+         "about": {
+          "type": "array",
+          "items": {
+           "type": "string"
+          }
+         },
+         "recorded": {
+          "type": "array",
+          "items": {
+           "type": "string"
+          }
+         },
+         "her_words": {
+          "type": "array",
+          "items": {
+           "type": "string"
+          }
+         },
+         "says": {
+          "type": "string"
+         }
+        }
+       }
+      },
+      {
+       "type": "string"
+      }
+     ]
     }
    },
    "required": [
@@ -2850,7 +3103,7 @@
         "unknown"
        ]
       },
-      "temperature_c": {
+      "weather_band": {
        "type": "object",
        "additionalProperties": false,
        "required": [
@@ -2863,36 +3116,13 @@
          "minLength": 1
         },
         "value": {
-         "description": "температура повітря, °C",
-         "oneOf": [
-          {
-           "type": "number"
-          },
-          {
-           "const": "unknown"
-          }
-         ]
-        }
-       }
-      },
-      "weather_feel": {
-       "type": "object",
-       "additionalProperties": false,
-       "required": [
-        "quote",
-        "value"
-       ],
-       "properties": {
-        "quote": {
-         "type": "string",
-         "minLength": 1
-        },
-        "value": {
-         "description": "погода без числа градусів",
+         "description": "смуга погоди за її словами",
          "enum": [
+          "deep_frost",
           "frost",
           "cold",
           "cool",
+          "mild",
           "warm",
           "hot",
           "unknown"
@@ -3684,8 +3914,7 @@
           "dress_code",
           "palette",
           "formality",
-          "temperature_c",
-          "weather_feel",
+          "weather_band",
           "intent",
           "goal",
           "goal_extra",
@@ -3729,6 +3958,68 @@
          ]
         }
        },
+       "recorded": {
+        "type": "array",
+        "items": {
+         "enum": [
+          "event",
+          "occasion",
+          "place",
+          "setting",
+          "duration_h",
+          "movement",
+          "dress_code",
+          "palette",
+          "formality",
+          "weather_band",
+          "intent",
+          "goal",
+          "goal_extra",
+          "goal_zones",
+          "makeup",
+          "jewelry",
+          "registers",
+          "wants",
+          "vetoes",
+          "legs_above_cm",
+          "mood",
+          "part_of_day",
+          "month",
+          "formality_branch",
+          "open_zones",
+          "reserved_colour",
+          "host_context",
+          "role",
+          "companion_formality",
+          "direct_sun",
+          "season",
+          "life_transition",
+          "creative_environment",
+          "declared_break",
+          "matching_opaque_tights",
+          "declared_column",
+          "own_items",
+          "place_words",
+          "rest",
+          "stylist_note",
+          "occasion_part",
+          "activity",
+          "surface",
+          "precipitation",
+          "retract",
+          "beliefs",
+          "question",
+          "question_about",
+          "formality_reason"
+         ]
+        }
+       },
+       "her_words": {
+        "type": "array",
+        "items": {
+         "type": "string"
+        }
+       },
        "says": {
         "type": "string"
        }
@@ -3766,7 +4057,7 @@
      "type": "object",
      "additionalProperties": false,
      "properties": {
-      "temperature_c": {
+      "weather_band": {
        "type": "string"
       },
       "precipitation": {
@@ -3780,6 +4071,156 @@
       },
       "mood": {
        "type": "string"
+      }
+     }
+    },
+    "tool": {
+     "type": "object",
+     "additionalProperties": false,
+     "required": [
+      "name"
+     ],
+     "description": "one call of a tool listed under Tools in codes, only when her new message asks the app to do it",
+     "oneOf": [
+      {
+       "properties": {
+        "name": {
+         "const": "save_scenario"
+        },
+        "args": {
+         "type": "object",
+         "additionalProperties": false,
+         "properties": {
+          "as_new": {
+           "type": "boolean",
+           "description": "true — as one more saved case; else the open one is updated"
+          }
+         }
+        }
+       }
+      },
+      {
+       "properties": {
+        "name": {
+         "const": "list_scenarios"
+        },
+        "args": {
+         "type": "object",
+         "additionalProperties": false,
+         "properties": {}
+        }
+       }
+      },
+      {
+       "properties": {
+        "name": {
+         "const": "open_scenario"
+        },
+        "args": {
+         "type": "object",
+         "additionalProperties": false,
+         "required": [
+          "id"
+         ],
+         "properties": {
+          "id": {
+           "type": "string",
+           "minLength": 1,
+           "description": "the \"id\" of one of saved_cases"
+          }
+         }
+        }
+       }
+      },
+      {
+       "properties": {
+        "name": {
+         "const": "delete_scenario"
+        },
+        "args": {
+         "type": "object",
+         "additionalProperties": false,
+         "required": [
+          "id"
+         ],
+         "properties": {
+          "id": {
+           "type": "string",
+           "minLength": 1,
+           "description": "the \"id\" of one of saved_cases"
+          }
+         }
+        }
+       }
+      },
+      {
+       "properties": {
+        "name": {
+         "const": "new_scenario"
+        },
+        "args": {
+         "type": "object",
+         "additionalProperties": false,
+         "properties": {}
+        }
+       }
+      },
+      {
+       "properties": {
+        "name": {
+         "const": "confirm_case"
+        },
+        "args": {
+         "type": "object",
+         "additionalProperties": false,
+         "properties": {}
+        }
+       }
+      },
+      {
+       "properties": {
+        "name": {
+         "const": "set_weather_feel"
+        },
+        "args": {
+         "type": "object",
+         "additionalProperties": false,
+         "required": [
+          "feel"
+         ],
+         "properties": {
+          "feel": {
+           "type": "string",
+           "enum": [
+            "deep_frost",
+            "frost",
+            "cold",
+            "cool",
+            "mild",
+            "warm",
+            "hot"
+           ],
+           "description": "weather feel"
+          }
+         }
+        }
+       }
+      }
+     ],
+     "properties": {
+      "name": {
+       "enum": [
+        "save_scenario",
+        "list_scenarios",
+        "open_scenario",
+        "delete_scenario",
+        "new_scenario",
+        "confirm_case",
+        "set_weather_feel"
+       ]
+      },
+      "args": {
+       "type": "object"
       }
      }
     }
@@ -4497,7 +4938,7 @@
          },
          {
           "const": "needs_coat_none_in_pool",
-          "description": "this weather needs a coat or a warm jacket, and the selection for this occasion has none today: she takes her own (values: temperature_c — the degrees she named; weather_feel — instead of temperature_c when she named no degrees, the weather as she put it; precipitation — code of wet precipitation, when there is any)"
+          "description": "this weather needs a coat or a warm jacket, and the selection for this occasion has none today: she takes her own (values: weather_band — the weather band code; precipitation — code of wet precipitation, when there is any)"
          },
          {
           "const": "catalogue_has_none_for_case",
@@ -4509,7 +4950,7 @@
          },
          {
           "const": "weather_needs_outerwear",
-          "description": "this weather cannot be met without a coat or a warm jacket (values: temperature_c — the degrees she named; weather_feel — instead of temperature_c when she named no degrees, the weather as she put it; precipitation — the code of wet precipitation when there is any)"
+          "description": "this weather cannot be met without a coat or a warm jacket (values: weather_band — the weather band code; precipitation — the code of wet precipitation when there is any)"
          },
          {
           "const": "item_added_by_selection",
@@ -5156,8 +5597,24 @@
           "description": "the declared length puts the hem close to the widest place of the body, and which size she takes decides whether it lands there: the shop gives one length per size and her size is not known (values: slot — slot code; level — code of the body level in question)"
          },
          {
+          "const": "edge_not_judged_error_unknown",
+          "description": "the code does not judge whether the edge (a hem, a boot shaft's top, a bag strap's lower end) sits on the widest place of the body: the answer depends on a measurement whose error is not known (values: slot — slot code; edge_error_cm — error of the edge's height, cm, absent when unknown; levels — codes of the body levels whose width error is unknown)"
+         },
+         {
+          "const": "volume_anchor_not_judged_error_unknown",
+          "description": "the code does not judge whether the volume has an anchor: the ease at the levels named is within the error of the measurements it rests on, or that error is not known (values: levels — codes of the body levels)"
+         },
+         {
           "const": "item_longer_than_her_body",
           "description": "on her height the item is longer than her body from the shop's measuring point: the hem pools on the floor (values: excess_cm)"
+         },
+         {
+          "const": "item_longer_than_her_body_not_judged",
+          "description": "the code does not judge whether on her height the item is longer than her body from the shop's measuring point: the excess is within the error of the item's edge and of that point on her body, or that error is not known (values: slot — slot code; excess_cm — the excess by the centres; error_cm — the error, absent when unknown)"
+         },
+         {
+          "const": "hem_class_vs_shop_word_not_judged",
+          "description": "the code does not judge whether on her height the hem lies at a different place than the shop's length word suggests: the hem is within the error of the word's zone and of the shop's length, or that error is not known (values: slot — slot code; measured — code of the body level the hem reaches by its centre; word — the shop's length word; hem_cm — height of the hem above the floor, in centimetres; error_cm — the error of the hem and of the word's zone together, absent when unknown)"
          },
          {
           "const": "declared_length_outside_body",
@@ -5174,6 +5631,10 @@
          {
           "const": "measured_dividing_line_depends_on_size",
           "description": "the shop's declared length puts the outfit's dividing line, the hem of its top item, near the middle of the field from shoulders to floor, and which size she takes decides whether it splits that field in half: the shop gives one length per size and her size is not known (values: slot — slot code)"
+         },
+         {
+          "const": "dividing_line_within_error",
+          "description": "the hem of the outfit's top item lies near the middle of the field from shoulders to floor, and within the error of both the hem and her shoulder level it may split that field in half or not (values: slot — slot code)"
          },
          {
           "const": "dividing_line_item_length_unknown",
@@ -5218,6 +5679,22 @@
          {
           "const": "claim_contour_several_flares",
           "description": "the contour leaves the body in several places, so no single line is visible (values: count — in how many places)"
+         },
+         {
+          "const": "measured_waist_ease_and_contour",
+          "description": "measured, not judged: the outfit has less ease at the waist than at the bust and hips by waist_intake (share of body width; negative — more ease at the waist), and its contour width over the dressed levels spreads by contour_spread ((max − min) / mean); whether this makes a waist, a column or neither, judge yourself (values: waist_intake, contour_spread)"
+         },
+         {
+          "const": "measured_contour_widths",
+          "description": "measured, not judged: the outfit contour from the shoulders down — at each body level the outfit width next to her own body width, in cm; how many separate flares it reads as, judge yourself (values: contour — [level, outfit_cm, body_cm])"
+         },
+         {
+          "const": "measured_body_profile_spread",
+          "description": "measured, not judged: her own body width below the shoulders (bust, waist, hips) spreads by spread ((max − min) / mean); whether a second flare is lost in it, judge yourself (values: spread)"
+         },
+         {
+          "const": "pair_side_unknown",
+          "description": "her top and hip girths are measured once each, so the error of their difference is unknown and the code does not say which half is wider; the girths are facts (values: top_cm, hips_cm, difference_pct)"
          },
          {
           "const": "claim_zone_clinged",
@@ -5286,6 +5763,10 @@
          {
           "const": "areas_not_measured",
           "description": "the code did not measure how much room each item takes in the outfit, so rules that depend on area give no conclusion"
+         },
+         {
+          "const": "area_share_error_unknown",
+          "description": "the code computed how much room these items take in the outfit from her body measurements and the garment sizes, but it does not know the error of either, so rules that depend on area give no conclusion for them"
          },
          {
           "const": "several_colour_fixes_one_item",
@@ -5400,8 +5881,16 @@
           "description": "the code does not know the distance between the edge of the outer layer and the edge of the item under it: the cards carry no lengths (values: items — items: item_id, kind — kind code, color — colour code)"
          },
          {
-          "const": "outer_edges_coincide_sources_disagree",
-          "description": "the edges of the outer layer and the item under it coincide exactly, and the sources disagree about that; the code takes no side (values: items — items: item_id, kind — kind code, color — colour code)"
+          "const": "outer_edges_gap_not_judged",
+          "description": "the code does not know the distance between the edge of the outer layer and the edge of the item under it: the edges are not lengths measured from the same point of the body, and her body levels are a template without a known error (values: reason — edge_not_measured: an edge comes from a length word or the body template, measured_from_different_points: e.g. a coat from the shoulder and a skirt from the waist; items — items: item_id, kind — kind code, color — colour code, level — the length word, length_cm — the measured length or null, point — the body point it is measured from, error_cm — its error)"
+         },
+         {
+          "const": "outer_edges_gap_measured",
+          "description": "the gap between the edge of the outer layer and the edge of the item under it, from two lengths measured from the same point; within its error the code gives no verdict (values: gap_cm — the gap, error_cm — the error of both lengths, the garment manufacturing tolerance; direction — outer_longer, outer_shorter, or unknown when the gap is within the error; items)"
+         },
+         {
+          "const": "outer_length_vs_knee_not_judged",
+          "description": "the code does not know whether the outer layer ends below her knee: the length is measured, but her knee and the point it is measured from are body-template levels without a known error (values: length_cm — the length, point — the body point it is measured from, error_cm — its error, height_cm — her height)"
          },
          {
           "const": "cascade_declared_no_penalty",
@@ -5841,7 +6330,7 @@
          },
          {
           "const": "smooth_sole_on_ice",
-          "description": "a fully smooth sole at black-ice temperatures is a plain no for winter (values: temperature_c — the day's temperature; weather_feel — instead of temperature_c when she named no degrees, the weather as she put it)"
+          "description": "a fully smooth sole at black-ice temperatures is a plain no for winter (values: weather_band — the day's weather band code)"
          },
          {
           "const": "deep_multidirectional_tread",
@@ -5849,7 +6338,7 @@
          },
          {
           "const": "summer_accessory_no_warmth",
-          "description": "the accessory's summer material gives no warmth in the cold: it can be worn, it just does not warm (values: material — material code, temperature_c — the day's temperature; weather_feel — instead of temperature_c when she named no degrees, the weather as she put it)"
+          "description": "the accessory's summer material gives no warmth in the cold: it can be worn, it just does not warm (values: material — material code, weather_band — the day's weather band code)"
          },
          {
           "const": "winter_form_of_slot",
@@ -5857,7 +6346,7 @@
          },
          {
           "const": "winter_accessory_too_hot",
-          "description": "the accessory's winter material is not worn in the heat (values: material — material code, temperature_c — the day's temperature; weather_feel — instead of temperature_c when she named no degrees, the weather as she put it)"
+          "description": "the accessory's winter material is not worn in the heat (values: material — material code, weather_band — the day's weather band code)"
          },
          {
           "const": "summer_form_of_slot",
@@ -5870,6 +6359,10 @@
          {
           "const": "necklace_clearly_above_or_below",
           "description": "a shorter chain above the neckline, or a longer one clearly below"
+         },
+         {
+          "const": "necklace_neckline_gap_not_judged",
+          "description": "the code does not judge whether the necklace sits clear of the neckline: no recognised source gives the gap in centimetres, and the code knows neither where the necklace falls nor the neckline edge without error, so it names no gap and no side (values: chain_cm — the necklace's chain length, cm; items — necklace, garment)"
          },
          {
           "const": "no_third_piece_dressed_not_styled",
@@ -6201,7 +6694,7 @@
          },
          {
           "const": "layers_off_temperature_map",
-          "description": "there are too few or too many layers on the torso for the day's temperature by the layer map (values: direction — too_few or too_many, temperature_c — the temperature, layers — how much warmth the layers give, needed — how much the map asks for; partial_warmth_items — how many layers warm only partly, like a trench; weather_feel — instead of temperature_c when she named no degrees, the weather as she put it)"
+          "description": "there are too few or too many layers on the torso for the day's temperature by the layer map (values: direction — too_few or too_many, weather_band — the temperature, layers — how much warmth the layers give, needed — how much the map asks for; partial_warmth_items — how many layers warm only partly, like a trench)"
          },
          {
           "const": "layers_to_temperature_map",
@@ -6209,7 +6702,7 @@
          },
          {
           "const": "outer_layer_only_partly_warm_for_frost",
-          "description": "in this band the warmth is carried by the coat itself, and this outer layer is only partly warm by its type — a jacket, a bomber, a vest, a cardigan or a poncho (values: temperature_c — the temperature, outer_type — its type code, warmth_share — how much of a layer it counts as; weather_feel — instead of temperature_c when she named no degrees, the weather as she put it)"
+          "description": "in this band the warmth is carried by the coat itself, and this outer layer is only partly warm by its type — a jacket, a bomber, a vest, a cardigan or a poncho (values: weather_band — the temperature, outer_type — its type code, warmth_share — how much of a layer it counts as)"
          },
          {
           "const": "warmer_coat_not_a_fourth_item",
@@ -6217,7 +6710,7 @@
          },
          {
           "const": "cold_accessories_carry_no_colour",
-          "description": "in hard frost mostly the outer layer and the accessories are visible, and the hat, the scarf and the mittens are quiet here: all the colour stayed under the coat (values: temperature_c — the temperature; weather_feel — instead of temperature_c when she named no degrees, the weather as she put it)"
+          "description": "in hard frost mostly the outer layer and the accessories are visible, and the hat, the scarf and the mittens are quiet here: all the colour stayed under the coat (values: weather_band — the temperature)"
          },
          {
           "const": "move_colour_to_hat_scarf_gloves",
@@ -6225,7 +6718,7 @@
          },
          {
           "const": "cold_hat_scarf_carry_no_colour",
-          "description": "in hard frost mostly the outer layer and the accessories are visible, and the hat and the scarf are quiet here: all the colour stayed under the coat (values: temperature_c — the temperature; weather_feel — instead of temperature_c when she named no degrees, the weather as she put it)"
+          "description": "in hard frost mostly the outer layer and the accessories are visible, and the hat and the scarf are quiet here: all the colour stayed under the coat (values: weather_band — the temperature)"
          },
          {
           "const": "move_colour_to_hat_scarf",
@@ -6233,7 +6726,7 @@
          },
          {
           "const": "frost_head_neck_uncovered",
-          "description": "in hard frost the outfit has neither a hat nor a scarf: head and neck stay open, and no outer layer covers them (values: temperature_c — the temperature; weather_feel — instead of temperature_c when she named no degrees, the weather as she put it)"
+          "description": "in hard frost the outfit has neither a hat nor a scarf: head and neck stay open, and no outer layer covers them (values: weather_band — the temperature)"
          },
          {
           "const": "add_warm_hat_and_scarf",
@@ -6241,7 +6734,7 @@
          },
          {
           "const": "frost_layers_and_cold_accessories",
-          "description": "hard frost: the layer map asks for this many layers on the torso — a warm layer under the coat counts — and a warm hat and scarf are part of the warmth and the main carriers of colour (values: temperature_c — the temperature, layers — layers the map asks for; weather_feel — instead of temperature_c when she named no degrees, the weather as she put it)"
+          "description": "hard frost: the layer map asks for this many layers on the torso — a warm layer under the coat counts — and a warm hat and scarf are part of the warmth and the main carriers of colour (values: weather_band — the temperature, layers — layers the map asks for)"
          },
          {
           "const": "no_rain_layer_on_rainy_day",
@@ -6304,6 +6797,10 @@
           "description": "the bottom's rise does nothing: the waistband is hidden by the top, so the eye sees the edge of the top and not the waistband (values: rise — the rise: high, mid, low; hidden_cm — by how many cm it is hidden)"
          },
          {
+          "const": "waistline_hidden_by_top_not_judged",
+          "description": "the code does not judge whether the top hides the bottom's waistband: the waistband's place on her body is taken from the rise word, and the base does not say where a high, mid or low rise sits, so the error of its height is not known, or the edge of the top lies within that error (values: rise — the rise: high, mid, low)"
+         },
+         {
           "const": "tuck_top_or_shorter_top",
           "description": "tuck the top in so the waistband becomes visible, or take a shorter top that ends above the waistband"
          },
@@ -6314,6 +6811,10 @@
          {
           "const": "take_high_rise_or_empire",
           "description": "a high rise or an empire / raised waistline moves the start of the legs up and lengthens the line"
+         },
+         {
+          "const": "rise_below_waist_not_judged",
+          "description": "she asked for a longer line, and the code does not judge whether this bottom's waistband sits below her waist: the waistband's place on her body is taken from the rise word, and the base does not say where a high, mid or low rise sits, so the error of its height is not known (values: rise — the rise: high, mid, low)"
          },
          {
           "const": "rise_not_declared_for_taller_goal",
@@ -6342,6 +6843,10 @@
          {
           "const": "print_mix_no_shared_colour",
           "description": "a mix of prints with no shared colour falls apart into two separate items (values: scale_spread — how far the scales are spread, from 0 to 1, when measured)"
+         },
+         {
+          "const": "print_scale_ratio_not_judged",
+          "description": "the code does not judge whether two prints differ enough in scale: no recognised source gives the ratio (values: scale_ratio — how many times the larger motif exceeds the smaller one, each measured relative to its own photo frame; items)"
          },
          {
           "const": "print_with_other_colour_or_linking_item",
@@ -6505,7 +7010,7 @@
          },
          {
           "const": "outer_length_state_chosen_for_warmth",
-          "description": "length and state chosen for warmth, not proportion (values: temperature_c — the degrees; share — from 0 to 1, how much of the voice of the proportion rules the heat takes away, 1 is all of it; suppressed_rules — ids of the proportion rules that lost their voice in this outfit, empty when none of them applied)"
+          "description": "length and state chosen for warmth, not proportion (values: weather_band — the weather band code; share — from 0 to 1, how much of the voice of the proportion rules the heat takes away, 1 is all of it; suppressed_rules — ids of the proportion rules that lost their voice in this outfit, empty when none of them applied)"
          },
          {
           "const": "fill_power_without_fill_weight",
@@ -6781,7 +7286,7 @@
          },
          {
           "const": "fabric_out_of_season",
-          "description": "the item's fabric reads out of season: the day is warmer or colder than its band, which is semantics rather than a thermometer (values: temperature_c — the day's temperature, band — the fabric's band from and to, direction — warmer or colder, fabrics — fabric codes; weather_feel — instead of temperature_c when she named no degrees, the weather as she put it; season — instead of both when she named no weather: the season of her day, and band is then absent)"
+          "description": "the item's fabric reads out of season: the day is warmer or colder than its band, which is semantics rather than a thermometer (values: weather_band — the day's temperature, band — the fabric's band from and to, direction — warmer or colder, fabrics — fabric codes; season — instead of both when she named no weather: the season of her day, and band is then absent)"
          },
          {
           "const": "same_item_in_day_band_fabric",
@@ -6796,16 +7301,16 @@
           "description": "move the dividing line to ~cm from the floor: tuck in, shorter top or another waist rise"
          },
          {
-          "const": "skin_band_boot_hem",
-          "description": "skin band (cm) between shaft and hem at a wide part of the leg: the shoe edge cuts the leg line"
+          "const": "skin_band_between_shaft_and_hem",
+          "description": "a band of bare leg is left between the boot shaft and the hem, measured beyond the error of both edges; the code sets no limit on its width or place, so judge yourself whether it cuts the leg line (values: shaft_cm, hem_cm — edges in cm from the floor; band_cm — hem minus shaft; error_cm — the error of both edges together; matching_opaque_tights — dense tights in the shoe tone close the band in colour)"
          },
          {
-          "const": "close_skin_band",
-          "description": "close the band: dense tights in the shoe tone, knee boots with a midi, hem below hem_to_cm or shaft above shaft_to_cm (cm from floor)"
+          "const": "skin_band_not_judged",
+          "description": "the code does not judge whether a band of bare leg is left between the boot shaft and the hem: the hem does not lie above the shaft by more than the error of both edges together, or the error of one of the edges is not known (values: shaft_cm, hem_cm — edges in cm from the floor; error_cm — the error of both edges together, absent when unknown)"
          },
          {
           "const": "edge_on_widest_point",
-          "description": "the edge ends on a bulge of the body (values: level — body level; edge — shaft, hem or accessory: the edge of a boot shaft, a hemline or an accessory; direction — where to lead it: shorten, lengthen, higher_shaft, lower_shaft, no_lever — there is no lever, not_flattering_intent — the intention is not to flatter; length_from_word — the length was taken from a word of the name)"
+          "description": "the edge ends on a bulge of the body (values: level — body level; edge — shaft, hem or accessory: the edge of a boot shaft, a hemline or an accessory; direction — where to lead it: shorten, lengthen, higher_shaft, lower_shaft, no_lever — there is no lever, not_flattering_intent — the intention is not to flatter; length_from_word — the length was taken from a word of the name; direction_unknown — the edge and the neighbouring narrower levels lie within the error of both, so no side is named)"
          },
          {
           "const": "move_edge_to_cm",
@@ -6852,6 +7357,10 @@
           "description": "the tone of the pair against the torso-to-leg proportion (values: leg_pct — the leg as a percentage of her height; pair — nude or contrast; far_from_middle — the proportion is already past the middle, so a nude drives it further away and a contrast pulls it back)"
          },
          {
+          "const": "leg_proportion_pair_tone_not_judged",
+          "description": "the code does not judge which way the pair moves her torso-to-leg proportion: no recognised source gives the middle of the proportion, and the error of her measured crotch height is unknown (values: leg_pct — her measured crotch height as a percentage of her height; pair — nude or contrast; items — the pair)"
+         },
+         {
           "const": "contrast_pair_to_middle",
           "description": "a contrasting pair: shifts torso:leg toward the middle"
          },
@@ -6873,7 +7382,7 @@
          },
          {
           "const": "shoe_type_outside_temp_band",
-          "description": "shoe type outside the day's temperature band (temp_c; weather_feel — instead of temp_c when she named no degrees, the weather as she put it; season — instead of both when she named no weather: the season of her day)"
+          "description": "shoe type outside the day's weather band code band (weather_band; season — instead of both when she named no weather: the season of her day)"
          },
          {
           "const": "bare_arms_in_cold_season",
@@ -6910,6 +7419,10 @@
          {
           "const": "watch_shorter_lugs",
           "description": "a case with shorter lugs, not necessarily a smaller diameter"
+         },
+         {
+          "const": "watch_lugs_and_wrist_not_judged",
+          "description": "the code does not judge whether the watch suits her wrist: no recognised source gives the share of the wrist the lugs may span (values: lug_mm — the watch's lug-to-lug, mm; wrist_cm — her wrist girth, cm)"
          },
          {
           "const": "glove_bl_origin_unknown",
@@ -7096,6 +7609,10 @@
           "description": "hem at hem_cm cm from floor, above her limit limit_cm cm"
          },
          {
+          "const": "hem_vs_her_leg_limit_not_judged",
+          "description": "the code does not judge whether the hem is above her leg limit: the hem height is a body-template level minus the garment length, and the error of that level is unknown, so it names no side (values: hem_cm — the hem, cm from floor; limit_cm — her own limit, cm from floor; knee_cm — the template knee, cm from floor, when she keeps her legs covered; items — the garment)"
+         },
+         {
           "const": "other_item_within_her_coverage",
           "description": "another item within her coverage"
          },
@@ -7126,6 +7643,14 @@
          {
           "const": "motif_scale_off_person",
           "description": "print motif off the person's scale (item_motif: larger|smaller)"
+         },
+         {
+          "const": "item_edge_off_body_profile_not_judged",
+          "description": "the code does not judge whether this item's edge sits on a widest place of her body: the edge it computes from the item's data does not land within her body profile, so the item's length or strap is most likely misread (values: edge_cm — the computed edge, cm from floor; items — the item)"
+         },
+         {
+          "const": "motif_scale_and_person_not_judged",
+          "description": "the code does not judge whether the print motif suits her scale: the motif's share of its photo frame and her frame are different quantities, and no recognised source links them (values: motif_frame_share — the motif's run as a share of its photo frame; wrist_cm — her wrist girth, cm, when given; height_cm — her height, cm, when given; items — the item)"
          },
          {
           "const": "take_motif_scale",
@@ -7221,11 +7746,11 @@
          },
          {
           "const": "outer_layer_kept_despite_warmth",
-          "description": "the outer layer stays although the temperature band alone would not ask for it (values: temperature_c — °C she named; weather_feel — instead of temperature_c when she named no degrees, the weather as she put it; held_by — dress_code when the dressiness band or the dress code holds it, weather_or_outdoors when rain, wind or the street below +22 °C does)"
+          "description": "the outer layer stays although the temperature band alone would not ask for it (values: weather_band — the weather band code; held_by — dress_code when the dressiness band or the dress code holds it, weather_or_outdoors when rain, wind or the street below +22 °C does)"
          },
          {
           "const": "outer_layer_removed_by_temperature",
-          "description": "the outer layer was removed by the temperature band: it asks for one layer on the torso, so the empty kind is not a gap in the catalogue (values: temperature_c — °C she named; weather_feel — instead of temperature_c when she named no degrees, the weather as she put it)"
+          "description": "the outer layer was removed by the temperature band: it asks for one layer on the torso, so the empty kind is not a gap in the catalogue (values: weather_band — the weather band code)"
          },
          {
           "const": "jewellery_kind_dropped_by_her_word",
@@ -7481,11 +8006,11 @@
          },
          {
           "const": "cold_outer_layer_counts",
-          "description": "in this cold the outer layer is part of the outfit, not an addition: its colour and formality are judged with the rest; open shoes, thin tights and bare ankles are a mistake here, not a style (values: temperature_c; weather_feel — instead of temperature_c when she named no degrees, the weather as she put it)"
+          "description": "in this cold the outer layer is part of the outfit, not an addition: its colour and formality are judged with the rest; open shoes, thin tights and bare ankles are a mistake here, not a style (values: weather_band)"
          },
          {
           "const": "cold_outer_layer_optional",
-          "description": "in this cold the outer layer is optional: the outfit stands without it; open shoes and bare ankles are fine here (values: temperature_c; weather_feel — instead of temperature_c when she named no degrees, the weather as she put it)"
+          "description": "in this cold the outer layer is optional: the outfit stands without it; open shoes and bare ankles are fine here (values: weather_band)"
          },
          {
           "const": "precipitation_shoes_materials",
@@ -7513,7 +8038,7 @@
          },
          {
           "const": "weather_layers",
-          "description": "the weather outside and the layers it asks for (values: temperature_c; weather_feel — instead of temperature_c when she named no degrees, the weather as she put it; layers — how many layers on the torso, a half is one more light removable layer; fabrics — fabric codes for this temperature; outer_at_formality — true when the outer layer is held to the outfit's formality too)"
+          "description": "the weather outside and the layers it asks for (values: weather_band; layers — how many layers on the torso, a half is one more light removable layer; fabrics — fabric codes for this temperature; outer_at_formality — true when the outer layer is held to the outfit's formality too)"
          },
          {
           "const": "scheme_colours_by_kind",
@@ -7693,11 +8218,15 @@
          },
          {
           "const": "variety_all_different",
-          "description": "all outfits differ: no pair matched in items, or in scheme together with hero (values: outfits — how many)"
+          "description": "all outfits differ: no pair shares any item (values: outfits — how many)"
          },
          {
           "const": "variety_kind_repeat_not_checked",
           "description": "a repeat of one item within a kind was not checked: the outfit records carry no kinds of items"
+         },
+         {
+          "const": "variety_shared_item",
+          "description": "this item stands in several outfits of the set; the code does not judge how many shared items make outfits one idea (values: item — item number; outfits — outfit ids)"
          },
          {
           "const": "variety_letter_without_length",
@@ -8160,6 +8689,10 @@
           "description": "she can press the replace button on the item again"
          },
          {
+          "const": "photo_colour_pair_within_noise",
+          "description": "two colours measured from photos are closer than the photo noise (value: noise — colour difference between two photos of one item; a number for the code, not for her), so whether they match exactly is unknown"
+         },
+         {
           "const": "passport_tiles_only",
           "description": "There is no passport from conversation; the scenario only came from tiles."
          },
@@ -8170,6 +8703,10 @@
          {
           "const": "passport_without_talk",
           "description": "The seam filled the passport without a language-model conversation turn: tiles or translation without a talk."
+         },
+         {
+          "const": "her_shoulder_width_not_measured",
+          "description": "the item's shoulder width is measured seam to seam across the back, and her shoulder width in that same sense is not known: the shoulder girth divided by pi is another quantity, so the code does not compare them (values: item_cm — item shoulder width from the shop's size chart; body_girth_cm — her shoulder girth, not a width)"
          }
         ]
        },
@@ -8528,12 +9065,19 @@
    "november": "листопад",
    "december": "грудень"
   },
-  "weather_feel": {
-   "frost": -10.0,
-   "cold": 2.0,
-   "cool": 10.0,
-   "warm": 20.0,
-   "hot": 28.0
+  "weather_band": {
+   "deep_frost": "deep_frost",
+   "frost": "frost",
+   "cold": "cold",
+   "cool": "cool",
+   "mild": "mild",
+   "warm": "warm",
+   "hot": "hot"
+  },
+  "wind_band": {
+   "calm": "calm",
+   "moderate": "moderate",
+   "strong": "strong"
   },
   "intent": {
    "conventional": "conventional",

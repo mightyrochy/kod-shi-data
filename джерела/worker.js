@@ -46,6 +46,10 @@ function дозволені(env) {
   return (env.ALLOWED_ORIGINS || "").split(",").map(s => s.trim()).filter(Boolean);
 }
 
+/* Типові значення відповіді провайдера — одне визначення, читання посилаються на нього (Е3, п.5). */
+const ТИПОВИЙ_MIME_КАРТИНКИ = "image/png";     // картинка у відповіді без mime-типу
+const ТИПОВА_ПРИЧИНА_ЗУПИНКИ = "end_turn";     // відповідь без причини зупинки
+const ПІДПИС_БЕЗ_СТАТУСУ = "(нема)";           // відповідь Interactions API без статусу
 const СТЕЛЯ_ВИХОДУ     = 4000;
 const СТЕЛЯ_ВХОДУ_СИМВ = 400000;   // виміряно: рука з пулом ≈ 130 000 симв
 const ПРОГОНІВ_НА_ДОБУ = 40;
@@ -367,7 +371,7 @@ const ПРОВАЙДЕРИ = [
         .filter(ч => ч.inlineData || ч.inline_data)
         .map(ч => { const д2 = ч.inlineData || ч.inline_data;
           return {type:"image", source:{type:"base64",
-                  media_type: д2.mimeType || д2.mime_type || "image/png",
+                  media_type: д2.mimeType || д2.mime_type || ТИПОВИЙ_MIME_КАРТИНКИ,
                   data: д2.data}}; });
       const u = д.usageMetadata || {};
       return {
@@ -376,7 +380,7 @@ const ПРОВАЙДЕРИ = [
         // інакше сторінка не помітить обрізаного хвоста й тестувальниця
         // судитиме стелю виводу замість образу.
         stop_reason: (к.finishReason === "MAX_TOKENS") ? "max_tokens"
-                   : (к.finishReason || "end_turn").toLowerCase(),
+                   : (к.finishReason || ТИПОВА_ПРИЧИНА_ЗУПИНКИ).toLowerCase(),
         /* ── КЕШОВАНІ ТОКЕНИ — ОДНИМ ІМЕНЕМ НА ОБОХ ПРОВАЙДЕРАХ (К-4) ──────────
            Сторінка читає формат Anthropic, де `input_tokens` — це вхід БЕЗ кешу, а
            прочитане з кешу стоїть окремо в `cache_read_input_tokens`. Google рахує
@@ -451,13 +455,13 @@ function відповідь_interactions(д) {
     .flatMap(к => Array.isArray(к.content) ? к.content : []);
   const текст = вихід.filter(б => б.type === "text" && б.text).map(б => б.text).join("\n");
   const картинки = вихід.filter(б => б.type === "image" && б.data)
-    .map(б => ({type:"image", source:{type:"base64", media_type: б.mime_type || "image/png", data: б.data}}));
+    .map(б => ({type:"image", source:{type:"base64", media_type: б.mime_type || ТИПОВИЙ_MIME_КАРТИНКИ, data: б.data}}));
   const помилки = ((д && д.errors) || []).map(е => ((е && е.code) ? String(е.code).slice(0, 120) + ": " : "") + ((е && е.message) || ""));
   const збій = ["failed", "cancelled"].includes(статус) || (помилки.length && !текст && !картинки.length)
     || (статус && !["completed", "incomplete"].includes(статус))
     || (!текст && !картинки.length);
   if (збій)
-    return {_помилка: "Interactions API: status=" + (статус || "(нема)")
+    return {_помилка: "Interactions API: status=" + (статус || ПІДПИС_БЕЗ_СТАТУСУ)
                       + (помилки.length ? " · " + помилки.join(" | ").slice(0, 400) : "")
                       + (!помилки.length && !текст && !картинки.length ? " · у відповіді нема ні тексту, ні картинки" : "")};
   const u = (д && д.usage) || {};

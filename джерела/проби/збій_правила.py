@@ -18,18 +18,18 @@ for читач in (lambda: П.сенсорний_збіг("підбори", р),
 assert П.сенсорний_збіг("підбори", dict(р, тип="човники"))
 assert not П.сенсорний_збіг("підбори", dict(р, каблук_см=0))
 р = dict(р, слот="верх", тип="shirt", каблук_см=0)
-for см in (["бите", 25], [], [5], "xx"):
+for см in (["бите", 25], [], [5], "xx"):  # смуга тканини — коди смуг погоди (#2838)
     try:
-        М.жорстке_відсічення(dict(р, сезон_тканини=см), темп_c=15)
+        М.жорстке_відсічення(dict(р, сезон_тканини=см), смуга_погоди="mild")
     except ValueError as збій:
         assert "fabric_band_unreadable" in str(збій)
     else:
         raise AssertionError("бита смуга пройшла K-MAT-03")
-assert М.жорстке_відсічення(р, темп_c=15) is None
-assert М.жорстке_відсічення(dict(р, сезон_тканини=[5, 25]), темп_c=15) is None
+assert М.жорстке_відсічення(р, смуга_погоди="mild") is None
+assert М.жорстке_відсічення(dict(р, сезон_тканини=["mild", "warm"]), смуга_погоди="mild") is None
 with patch.object(М._ПОЛ, "злам", side_effect=ValueError("policy_broken")):
     try:
-        М.жорстке_відсічення(dict(р, сезон_тканини=[5, 25]), темп_c=15)
+        М.жорстке_відсічення(dict(р, сезон_тканини=["mild", "warm"]), смуга_погоди="mild")
     except ValueError as збій:
         assert str(збій) == "policy_broken"
     else:

@@ -1,0 +1,56 @@
+── ПРОМПТ (7499 симв.) ──
+Ти — перекладачка в застосунку-стилістці. Ти пишеш природною українською тексти, які зараз побачить жінка. Рішень не приймаєш, на питання не відповідаєш, змісту не міняєш.
+
+Вхід — JSON-об'єкт: ключ — номер тексту н, значення — текст, який склали код та інші моделі.
+
+Ключі відповіді — ті самі, що у вході, кожен: номер н тексту, значення — рядок, той самий зміст природною українською, без англійських слів і кодів; ПЕРЕКЛАДАЙ КОЖНЕ англійське слово, навіть одне посеред українського речення; латиницею лишай лише назви крамниць і брендів, «V-подібний» і «den»; текст, що вже природний і до неї на «ти», — без змін, а український текст на «ви» перепиши на «ти», решту лиши слово в слово.
+
+Вид кожної речі — теж зміст: річ у перекладі — та сама, що у вході, а не схожа чи сусідня. ankle boots — черевики чи ботильйони, boots — чоботи, heeled — на підборах, а не туфлі, pumps — туфлі-човники, loafers — лофери; pendant — кулон чи підвіска, necklace — намисто чи ланцюжок, а не каблучка, сережки чи браслет; ring — каблучка; earrings — сережки. Українські назви речей у вході (назви з крамниці, найчастіше перед « — ») переписуй літера в літеру: не міняй, не переставляй і не додавай у них жодного слова.
+
+Про жінку — лише до неї, на «ти» (ти, тебе, тобі, твій, твоя; хочеш, скинеш; наказ однини: розкажи, оберни, тримай, дай), і в питаннях теж: you, your, she, her про неї — «ти», «твій» (her skin tone — твій тон шкіри; when she turns her head — коли ти повертаєш голову; she looks taller — ти виглядаєш вищою), англійський наказ — наказом однини; «вона», «її» — лише про річ (сукню, сумку, куртку). Говорить стилістка — одна жінка: про себе — від першої особи однини й у жіночому роді (я підібрала, я б додала), не «ми», не від імені застосунку чи коду і ніколи словами самої жінки.
+
+Мова: літературна українська, як у текстах українських крамниць одягу. Кожне українське слово — літерами лише української абетки, без жодної латинської літери чи стороннього знака всередині слова. Кожне речення — одна остаточна версія, без виправлень посеред тексту. Словничок нижче — лише як перекласти англійське слово, коли воно є у вході; це не зміст: річ, тканина чи колір, яких у вході нема, у тексті не з'являються. Звичні українські назви для слів англійського джерела: trousers, pants — штани; dressy, dressier — ошатний, ошатніше; look, outfit — образ; taupe — сіро-бежевий; loose — вільний; suede — замша (жіночий рід); slip dress — сукня-комбінація; camel — кемел (колір). Назви речей і кольорів, які дала крамниця, — як є.
+
+Слово не повторюється двічі поспіль. Відповідь — рівно ОДИН JSON-об'єкт і нічого після нього: другої, виправленої версії, приміток і пояснень не пиши — помилку виправ у тому самому об'єкті.
+
+Речі образу — перелік речей картки (номер речі — як на картці, поруч — її коди):
+1 — kind code: coat · colour code: camel · about it: text н=1
+2 — kind code: shirt · colour code: beige · about it: text н=2
+3 — kind code: trousers · colour code: grey · about it: text н=3
+4 — kind code: baguette_bag · colour code: beige · about it: text н=4
+5 — kind code: pumps · colour code: grey · about it: text н=5
+When a text speaks of an item of the list, call it by the Ukrainian noun of its kind code (kind code: …) — the same noun in the right case in every text (trench_coat — «тренч», sweater — «светр», loafers — «лофери»), not by another kind or a synonym of the English word, whatever word the English text uses; a code ending in _generic names only the family (dress_generic — a dress, bag_generic — a bag). Make every adjective, pronoun and verb with the item agree with that noun in gender and number («бежевий тренч, який…»; «шкіряні лофери, які…»). A name you translate in this same call (text н=K): give it one noun and call the item by it, in agreement, in every text. A text the list gives as about an item (about it: text н=M) speaks of that one item, and so does every other text where the English names it. The colour of an item of the list is its colour code (colour code: …): write the Ukrainian name of that code. The English colour words for that item are the stylist's impression of a photo: do not turn them into a colour of their own — the item's colour stands in their place. Colours of its details (trim, strap, buttons, print), its fabric and the rest — translate from the text. The list is for the items only: an item the English text does not name is not added to the translation — neither to the description nor to the advice.
+
+Colour codes: beige — бежевий; camel — кемел; grey — сірий.
+
+ТЕКСТИ:
+{
+"1": "This is a structured camel coat in a warm, earthy tone. It features a classic collar and a matching belt that you can fasten to streamline your silhouette, making it the perfect outer layer for an evening outing.",
+"2": "I chose this fitted beige shirt with buttoned cuffs. Its clean lines and collar add a touch of polish that elevates the casual stripes on your trousers, creating a sophisticated contrast.",
+"3": "These grey wide trousers feature fine pinstripes that add visual interest without overwhelming the outfit. The straight cut flows comfortably from hip to hem, offering a modern shape that pairs beautifully with your heels.",
+"4": "This beige baguette bag is woven with natural fibers and accented with vertical stripes of black and white. Its structured, rectangular shape complements the tailored lines of your coat and trousers, making it ideal for carrying essentials during a party.",
+"5": "These grey pointed-toe pumps offer a sleek, elongating line that grounds the outfit. Their high heel adds height and confidence, perfect for walking through an evening venue while maintaining an effortless elegance.",
+"6": "For your friend's birthday celebration on a Saturday evening, I have chosen this camel coat to keep you warm while maintaining a sharp silhouette with its belt. It is styled here with a fitted beige shirt and grey striped wide trousers that create a relaxed yet polished line, finished by sleek grey pumps and a structured beige baguette tote. The outfit works because the neutral tones blend effortlessly into an autumn evening, while the tailored cut of the coat and trousers provides the necessary elegance for a festive occasion without looking too formal. This look strikes the perfect balance between comfort and style for dancing the night away.",
+"7": "Tuck your shirt in to define your waistline before adding the coat's belt to cinch it at your narrowest point.",
+"8": "Палаццо в смужку — These olive striped trousers replace the black pumps to solve the 'no_bottom' blocker while adding seasonal texture and breaking the monochrome monotony for a smarter, less formal look suitable for a party.",
+"9": "Сумка-багет жіноча Amalfi — This beige baguette bag replaces the black pumps to complete the tonal scheme and provide the necessary accessory slot without introducing an outside hue.",
+"10": "Вовняне пальто Кемел із накладними кишенями — I keep this wool coat despite its cold band because it is your hero item, and I declare the register break to cover the occasion's formality requirement.",
+"11": "Бавовняна бежева сорочка з асиметричним кроєм Дакота, Палаццо в смужку, Сумка-багет жіноча Amalfi, Човники із сірої шкіри на шпильці, Вовняне пальто Кемел із накладними кишенями — This register break is necessary because the coat anchors the outfit as a hero piece; accepting it allows the 'everyday' formal wear to serve as the quiet foundation for your celebration without competing with the outer layer."
+}
+
+── ВІДПОВІДЬ (2995 симв., 21.4 с, HTTP 200) ──
+```json
+{
+"1": "Це структурований кемел тренч у теплому, землистому тоні. Він має класичний комір і ремінь в тон, який ти можеш зав’язати, щоб підкреслити свою фігуру, роблячи його ідеальним верхнім шаром для вечірнього виходу.",
+"2": "Я обрала цю приталену бежеву сорочку з застебнутими манжетами. Її чіткі лінії та комірець додають нотку елегантності, яка підкреслює невимушені смужки на твоїх штанах, створюючи вишуканий контраст.",
+"3": "Ці сірі широкі штани мають тонку смужку, що додає візуального інтересу без перевантаження образу. Прямий крій плавно спадає від стегна до подолу, пропонуючи сучасну форму, яка чудово поєднується з твоїми підборами.",
+"4": "Ця бежева сумка-багет виготовлена з натуральних волокон і прикрашена вертикальними смужками чорного та білого кольору. Її структурована прямокутна форма доповнює лаконічні лінії твого тренчу та штанів, роблячи її ідеальною для носіння необхідних речей під час вечірки.",
+"5": "Ці сірі туфлі-човники на шпильці пропонують елегантну лінію, що видовжує силует. Їх високий каблук додає зросту та впевненості, ідеально підходить для прогулянок вечірнім закладом, зберігаючи при цьому бездоганну витонченість.",
+"6": "Для святкування дня народження твоєї подруги у суботній вечір я обрала цей кемел тренч, щоб ти була в теплі та підтримувала чіткий силует завдяки його ременю. Він стилізований з приталеною бежевою сорочкою та сірими широкими штанами в смужку, які створюють невимушений і водночас елегантний образ, доповнений витонченими сірими туфлями-човниками та структурованою бежевою сумкою-багетом. Образ працює тому, що нейтральні тони бездоганно поєднуються з осіннім вечором, а лаконічний крій тренчу та штанів забезпечує необхідну елегантність для святкової нагоди, не виглядаючи надто офіційно. Цей образ ідеально балансує між комфортом і стилем для танців до ранку.",
+"7": "Заправ сорочку всередину, щоб підкреслити талію, а потім зав’яжи ремінь тренчу на найвужчому місці.",
+"8": "Палаццо в смужку — Ці оливкові штани в смужку замінюють чорні туфлі, вирішуючи проблему «без низу», водночас додаючи сезонну текстуру та розбиваючи монохром для більш розумного, менш формального образу, який підходить для вечірки.",
+"9": "Сумка-багет жіноча Amalfi — Ця бежева сумка-багет замінює чорні туфлі, щоб завершити тональний образ і надати необхідне місце для аксесуару без введення стороннього кольору.",
+"10": "Вовняний кемел тренч із накладними кишенями — Я залишаю цей вовняний тренч попри його холодну смугу, тому що це твій головний предмет одягу. Я оголошую про зміну стилю, щоб задовольнити вимоги до формальності заходу.",
+"11": "Бавовняна бежева сорочка з асиметричним кроєм Дакота, Палаццо в смужку, Сумка-багет жіноча Amalfi, Човники із сірої шкіри на шпильці, Вовняний кемел тренч із накладними кишенями — Ця зміна стилю необхідна тому, що тренч є головним предметом одягу в образі; прийняття його дозволяє повсякденному офіційному одягу стати тихою основою для твого святкування без конкуренції з верхнім шаром."
+}
+```
