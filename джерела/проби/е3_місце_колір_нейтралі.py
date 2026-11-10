@@ -2,7 +2,7 @@
 import sys
 from unittest.mock import patch
 sys.path.insert(0, ".")
-import outfit as О, колір_нейтралі as К, colorspace as Ц
+import outfit as О, колір_нейтралі as К, colorspace as Ц, палітра_запити as П
 
 def головна():
     """Зіставляє два суди на «так / ні / невідомо» із суперечливим старим near."""
@@ -26,6 +26,13 @@ def головна():
                 assert not якір.call_count or якір.call_args.kwargs["near"] == 1
             else:
                 assert слово != "так" or any(x["сила"] != "питання" for x in з)
+
+    спец = dict(слоти={с: dict(L=[10, 90], C=[20, 30]) for с in ("верх", "шарф", "сережки", "взуття")},
+                бік_b=dict(вхід=True, бік=1, довіра=1, b_очей=10))
+    запити = П.запит_у_фід(спец)
+    боки = {р["слот"] for р in запити if "b_бік" in р}
+    print("рядки з боком b*:", sorted(боки))
+    assert боки == {"сережки"}
 
 if __name__ == "__main__":
     головна()
