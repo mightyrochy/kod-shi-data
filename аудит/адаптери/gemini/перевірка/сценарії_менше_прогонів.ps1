@@ -300,9 +300,9 @@ console.log('GPU_OFF');
         Check '5 ПІСЛЯ: 57 MiB від AvastUI — GPU вільна' (Test-ExternalGpuFree)
         $script:Logged = @(); $LaneDir = $tmp
         function Write-Log([string]$Text) { $script:Logged += $Text }
-        Check '5 ПІСЛЯ: причина зайнятості порожня' ((Get-GpuBusyReason @()) -eq '')
+        Check '5 ПІСЛЯ: причина зайнятості порожня' ((Get-GpuBusyReason) -eq '')
         function Invoke-Native { param($Exe, $Arguments) [pscustomobject]@{Code=0;Out='16376, 7376, 0'} }
-        Check '5 чужа модель (9000 MiB) — причина називає залишок і потребу' ((Get-GpuBusyReason @()) -match 'вільно 7376 з потрібних 8925 MiB')
+        Check '5 чужа модель (9000 MiB) — причина називає залишок і потребу' ((Get-GpuBusyReason) -match 'вільно 7376 з потрібних 8925 MiB')
         $m = [pscustomobject]@{Name='gemini-queue/Е3-наживо/gpt-6.1-sol-high/1/p1-gpu'}
         $skip = Join-Path $tmp 'skipped.json'
         Add-Skip $m 'GPU: тест'; Save-Skips $skip
@@ -327,7 +327,7 @@ console.log('GPU_OFF');
         Check '5 файл є — істина' (Test-TaskFile ('a'*40) 'x')
         foreach ($name in @('gemini_run.ps1','claude_run.ps1')) {
             $source = [IO.File]::ReadAllText((Join-Path $SourceDir $name))
-            Check "5 $name підключає спільну політику до Invoke-Task" ($source -match 'Set-BrowserGpuPolicy[^\r\n]+\r?\n\s+Invoke-Task \$M \$job' -and $source.Contains('Test-ExternalGpuFree'))
+            Check "5 $name підключає спільну політику до Invoke-Task" ($source -match 'Set-BrowserGpuPolicy[^\r\n]+\r?\n\s+Invoke-Task \$M \$job' -and $source.Contains('Enter-GpuLease'))
         }
     }
 } finally {

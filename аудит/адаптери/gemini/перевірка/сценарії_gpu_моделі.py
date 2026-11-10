@@ -99,7 +99,7 @@ if ($TestMode -eq 'schedule') {
 }
 if ($TestMode -eq 'recover') { Start-Markers @() | Out-Null; if ($null -eq $script:Held) { throw 'Не ініціалізовано стан утримань' }; exit 0 }
 if ($TestMode -eq 'offline') { exit (Main) }
-if ($TestMode -eq 'busy') { [Console]::Out.Write((Get-GpuBusyReason @())); exit 0 }
+if ($TestMode -eq 'busy') { [Console]::Out.Write((Get-GpuBusyReason)); exit 0 }
 if ($TestMode -eq 'take') { $lock_ = Open-Lock (Get-GpuLockPath); try { Start-GpuModels $script:Job } finally { $lock_.Dispose() }; exit 0 }
 if ($TestMode -eq 'locked') {
     $lock_ = Open-Lock (Get-GpuLockPath)
@@ -241,6 +241,13 @@ def main():
                             if not (d / 'ready').exists():
                                 raise RuntimeError((d / 'process.log').read_text(encoding='utf-8', errors='replace'))
                             check(lane + ': до вбивства завантажено 3 екземпляри', len(Studio.loaded) == 3)
+                            if not opts.before:
+                                # Живий наряд одного облікового запису з моделями на карті тримає GPU-позначки іншого.
+                                other = args.copy()
+                                other[other.index('-Lane') + 1] = 'claude' if lane == 'gemini' else 'gemini'
+                                busy = subprocess.run(other + ['-TestMode', 'busy'], capture_output=True, timeout=45)
+                                check(lane + ': живий наряд з моделлю на карті тримає ворота іншої смуги',
+                                      'модель GPU-наряду на карті' in busy.stdout.decode('utf-8', errors='replace'))
                             child = int((d / 'ready').read_text())
                             killed = subprocess.run(['taskkill', '/PID', str(p.pid), '/T', '/F'], capture_output=True)
                             gone = subprocess.run(['tasklist', '/FI', 'PID eq ' + str(child), '/NH', '/FO', 'CSV'], capture_output=True)
