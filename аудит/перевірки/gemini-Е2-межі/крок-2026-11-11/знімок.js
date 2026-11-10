@@ -1,4 +1,5 @@
 /* Дим показу з поточних джерел: каталог і фото локальні, викликів моделей немає. */
+process.env.FOTO = '1';
 const fs = require('fs'), path = require('path'), Module = require('module');
 const root = path.resolve(__dirname, '../../../..'), source = path.join(root, 'джерела');
 const file = path.join(source, 'тест_показу.js'), code = fs.readFileSync(file, 'utf8');
@@ -24,7 +25,7 @@ const html = дом.serialize(); w.close();
     await page.setContent(html);
     await page.locator('#к-0').scrollIntoViewIfNeeded();
     await page.screenshot({path:path.join(__dirname, '390x844.png'),animations:'disabled'});
-    console.log(JSON.stringify({ширина:await page.evaluate(()=>document.documentElement.scrollWidth),viewport:390,
+    console.log(JSON.stringify({ширина:await page.evaluate(()=>document.documentElement.scrollWidth),viewport:390,FOTO:process.env.FOTO,
       текст:await page.locator('#к-0').innerText()}));
   } finally { await browser.close(); }
 })().catch(error => { console.error(error);process.exitCode=1; });
