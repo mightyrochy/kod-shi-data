@@ -1,7 +1,7 @@
 /* Вимір єдиного повтору вхідних перекладів і прямих перекладів тексту. */
 const fs=require('fs'), path=require('path'), vm=require('vm'), {spawnSync}=require('child_process');
 const src=process.env.E2_SOURCES || path.resolve(__dirname,'..');
-const c=vm.createContext({console, Date, МОДЕЛЬ_МОВИ_П:'запис', ПАСПОРТ_П:null});
+const c=vm.createContext({console, Date, МОДЕЛЬ_МОВИ_П:'запис', ПАСПОРТ_П:null, ЧАТ_П:[]});
 c.містП=async (_,d)=>{
   const r=spawnSync(process.env.PYTHON || 'python',['-X','utf8','-c',
     'import sys;sys.path.insert(0,sys.argv[1]);import мовний_шар as М;print(М.мова(sys.stdin.read()))',src],

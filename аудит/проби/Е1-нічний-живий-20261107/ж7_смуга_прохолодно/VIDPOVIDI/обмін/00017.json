@@ -1,0 +1,27 @@
+{
+ "версія": 1,
+ "запит": {
+  "model": "qwen/qwen3.5-9b",
+  "max_tokens": 4000,
+  "messages": [
+   {
+    "role": "user",
+    "content": [
+     {
+      "type": "text",
+      "text": "{\"task\": {\"role\": \"You read the description of an outfit and list its items as data.\", \"rules\": [\"One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.\", \"One item carries one thing — of two alternatives list the first; a note in brackets is not an item.\", \"Slot \\\"accessory\\\" is for an item no other slot fits.\", \"\\\"is_outfit\\\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note.\"], \"limits\": [\"Rely only on the input: do not invent what it does not contain.\", \"The answer is one JSON object following \\\"answer_schema\\\", without explanations and without ```.\"], \"language\": \"English\", \"answer\": \"ITEM_LIST\", \"answer_schema\": {\"is_outfit\": \"yes|no\", \"items\": [{\"name\": \"<what the item is>\", \"details\": \"<its cut, length and fabric>\", \"slot\": \"top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory\", \"color_hex\": \"<#rrggbb or null>\", \"worn\": \"<true, or false when the description says the outfit goes without it>\"}]}, \"input\": [\"\\\"description\\\" — the outfit description\"]}, \"description\": \"Wool-blend tailored coat in forest green (#2d4f3e), midi length reaching mid-calf, structured fit with notched lapel, heavy textured wool.\\nSilk-trimmed cotton shirt dress in terracotta (#e2725b), A-line silhouette with a relaxed waist, knee-length hem, soft woven cotton with subtle silk piping at the collar.\\nLeather ankle boots in charcoal gray (#36454f), low block heel, rounded toe, mid-calf shaft, smooth full-grain leather.\\nThis outfit works because it balances the need for warmth during cool autumn weather with a polished yet relaxed aesthetic perfect for a city walk. The structured outer layer provides essential protection while the fluid dress underneath ensures comfort and movement throughout the day. Earthy tones like forest green and terracotta harmonize beautifully with natural daylight, creating a cohesive look that respects her desire to avoid any restrictive or overly formal pieces.\"}"
+     }
+    ]
+   }
+  ],
+  "temperature": 1
+ },
+ "відповідь": {
+  "status": 200,
+  "contentType": "application/json",
+  "headers": {
+   "x-model": "qwen/qwen3.5-9b"
+  },
+  "body": "{\"content\":[{\"type\":\"text\",\"text\":\"{\\n  \\\"is_outfit\\\": \\\"yes\\\",\\n  \\\"items\\\": [\\n    {\\n      \\\"name\\\": \\\"coat\\\",\\n      \\\"details\\\": \\\"Wool-blend tailored structured fit with notched lapel heavy textured wool midi length reaching mid-calf\\\",\\n      \\\"slot\\\": \\\"outerwear\\\",\\n      \\\"color_hex\\\": \\\"#2d4f3e\\\",\\n      \\\"worn\\\": true\\n    },\\n    {\\n      \\\"name\\\": \\\"shirt dress\\\",\\n      \\\"details\\\": \\\"Cotton with subtle silk piping at the collar A-line silhouette with a relaxed waist soft woven cotton knee-length hem\\\",\\n      \\\"slot\\\": \\\"dress\\\",\\n      \\\"color_hex\\\": \\\"#e2725b\\\",\\n      \\\"worn\\\": true\\n    },\\n    {\\n      \\\"name\\\": \\\"ankle boots\\\",\\n      \\\"details\\\": \\\"Leather low block heel rounded toe mid-calf shaft smooth full-grain leather\\\",\\n      \\\"slot\\\": \\\"shoes\\\",\\n      \\\"color_hex\\\": \\\"#36454f\\\",\\n      \\\"worn\\\": true\\n    }\\n  ]\\n}\"}],\"usage\":{\"input_tokens\":547,\"output_tokens\":237},\"stop_reason\":\"end_turn\"}"
+ }
+}

@@ -1,0 +1,44 @@
+── ПРОМПТ (2549 симв.) ──
+{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.", "One item carries one thing — of two alternatives list the first; a note in brackets is not an item.", "Slot \"accessory\" is for an item no other slot fits.", "\"is_outfit\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "ITEM_LIST", "answer_schema": {"is_outfit": "yes|no", "items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory", "color_hex": "<#rrggbb or null>", "worn": "<true, or false when the description says the outfit goes without it>"}]}, "input": ["\"description\" — the outfit description"]}, "description": "Monochrome sheath dress, knee-length cut, deep forest green color with hex code #1A4D3A, structured wool-blend fabric\nOpaque tights in matching opaque texture, full length down to ankle, deep forest green color with hex code #1A4D3A, fine knit fabric\nPointed-toe pumps, medium heel height, sleek silhouette, deep forest green color with hex code #1A4D3A, smooth leather fabric\nSmall geometric gold clutch bag, compact rectangular shape, metallic gold color with hex code #D4AF37, structured satin fabric\nDelicate gold link bracelet, slender chain cut, metallic gold color with hex code #D4AF37, polished metal alloy material\n\nThis outfit perfectly honors the request for a column of a single color by extending the deep forest green from the dress through opaque tights and shoes, creating an unbroken vertical line that visually elongates the figure. The sophisticated wool-blend fabric and tailored sheath silhouette provide the necessary gravitas for a formal charity gala in an upscale restaurant while accommodating the need to recover after illness with comfortable yet elegant pieces. The subtle metallic gold accessories add just enough sparkle to fit the celebratory occasion without breaking the strict monochromatic rule, truly breaking the grammar of style through bold simplicity."}
+
+── ВІДПОВІДЬ (1009 симв., 4.6 с, HTTP 200) ──
+{
+  "is_outfit": "yes",
+  "items": [
+    {
+      "name": "sheath dress",
+      "details": "knee-length cut, structured wool-blend fabric",
+      "slot": "dress",
+      "color_hex": "#1A4D3A",
+      "worn": true
+    },
+    {
+      "name": "tights",
+      "details": "opaque texture, full length down to ankle, fine knit fabric",
+      "slot": "tights",
+      "color_hex": "#1A4D3A",
+      "worn": true
+    },
+    {
+      "name": "pumps",
+      "details": "pointed-toe, medium heel height, sleek silhouette, smooth leather fabric",
+      "slot": "shoes",
+      "color_hex": "#1A4D3A",
+      "worn": true
+    },
+    {
+      "name": "clutch bag",
+      "details": "small geometric rectangular shape, compact, structured satin fabric",
+      "slot": "bag",
+      "color_hex": "#D4AF37",
+      "worn": true
+    },
+    {
+      "name": "link bracelet",
+      "details": "delicate slender chain cut, polished metal alloy material",
+      "slot": "bracelet",
+      "color_hex": "#D4AF37",
+      "worn": true
+    }
+  ]
+}

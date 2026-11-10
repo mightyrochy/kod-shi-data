@@ -1,0 +1,269 @@
+#!/usr/bin/env python3
+"""Хук диспетчера: чотири правила, які 09.11 тримала лише пам'ять, перевіряються в мить дії (корінь
+ПК-дотримання-правил, крок 09.11; слово власника 09.11 22:42 і 23:02 — `аудит/РІШЕННЯ_ВЛАСНИКА.md`).
+
+Лише в сесії диспетчера (її адреса — з `CLAUDE_CODE_REMOTE_SDK_URL`, диспетчерська — рядок «диспетчер» `аудит/СТАН.md`;
+адреса невідома — пропуск); субагентів (`agent_id`) і помилки не чіпає: будь-яка помилка — пропуск дії з попередженням
+у stderr. Кожна перевірка повертає раз із дослівною цитатою правила; повтор тієї самої дії відходить (відбиток —
+файл `повернені` в теці стану: `~/.claude/дотримання_диспетчера`, для стенда — `ДОТРИМАННЯ_ТЕКА`; час — `ДОТРИМАННЯ_ЗАРАЗ`).
+
+PreToolUse `send_message`: адреса не з рядків «менеджер» і «диспетчер» `аудит/СТАН.md` — лист іншій сесії іде
+`create_trigger`+`fire_trigger` (`CLAUDE.md`, «Лист»).
+PreToolUse `send_later` і `create_trigger` з розкладом (`cron_expression`, `run_once_at`), крім пульсу («ПУЛЬС» на початку
+prompt): попереднє нагадування ще не настало — `аудит/ДИСПЕТЧЕР.md`, «Розподіл» (одне на всю пачку).
+Stop: (1) сесії понад 24 год, листа «ДИСПЕТЧЕР ПЕРЕДАЧА» в ній нема — «Контекст і передача»; вік — перший запис
+транскрипту, а це нижня межа: транскрипт — файл контейнера, і після перезапуску він починається пізніше (слова_власника);
+(2) хід почав власник, слово дослівно не переслано менеджерові й воно не звернене до диспетчера (`AGENTS.md`, «Пам'ять»;
+ознака звертання — `листи_менеджерові.ознаки_звертання`: ділянка відправника, а не форма речення); слова коротші за 25
+символів (відповіді «так», «ок») не лічаться.
+"""
+import hashlib
+import json
+import os
+import re
+import sys
+from datetime import datetime, timedelta, timezone
+
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import листи_менеджерові as лм  # noqa: E402
+import слова_власника  # noqa: E402
+from обіцянка_без_дії import власник  # noqa: E402
+
+ВІК_ПЕРЕДАЧІ = timedelta(hours=24)
+МІНІМУМ_СЛОВА = 25
+ІМ_ЛИСТ = "mcp__claude-code-remote__send_message"
+ІМ_ПІЗНІШЕ = "mcp__claude-code-remote__send_later"
+ІМ_ТРИГЕР = "mcp__claude-code-remote__create_trigger"
+СЛУЖБОВЕ = re.compile(r"^(<[A-Za-z]|/[A-Za-z])")
+
+
+def попередження(т):
+    print(f"хук дотримання_диспетчера: {т}; дію пропущено", file=sys.stderr)
+
+
+def зараз():
+    т = os.environ.get("ДОТРИМАННЯ_ЗАРАЗ")
+    return datetime.fromisoformat(т.replace("Z", "+00:00")) if т else datetime.now(timezone.utc)
+
+
+def тека_стану():
+    return os.environ.get("ДОТРИМАННЯ_ТЕКА") or os.path.expanduser("~/.claude/дотримання_диспетчера")
+
+
+def повернути_раз(*частини):
+    """True — відбитка ще не було (повернути й запам'ятати); False — повтор чи відбиток не записано (пропустити)."""
+    відбиток = hashlib.sha256("\n".join(частини).encode("utf-8")).hexdigest()[:16]
+    файл = os.path.join(тека_стану(), "повернені")
+    try:
+        with open(файл, encoding="utf-8") as ф:
+            if відбиток in ф.read().split():
+                return False
+    except OSError:
+        pass
+    try:
+        os.makedirs(тека_стану(), exist_ok=True)
+        with open(файл, "a", encoding="utf-8") as ф:
+            ф.write(відбиток + "\n")
+    except OSError as п:
+        попередження(f"відбиток не записано ({п})")
+        return False
+    return True
+
+
+def розібрати_час(т):
+    """RFC3339 чи «РРРР-ММ-ДДTГГ:ХХ[IANA]» → aware UTC."""
+    збіг = re.fullmatch(r"(.+?)\[([^\]]+)\]", т.strip())
+    if збіг:
+        from zoneinfo import ZoneInfo
+        д = datetime.fromisoformat(збіг[1]).replace(tzinfo=ZoneInfo(збіг[2]))
+    else:
+        д = datetime.fromisoformat(т.strip().replace("Z", "+00:00"))
+    return (д if д.tzinfo else д.replace(tzinfo=timezone.utc)).astimezone(timezone.utc)
+
+
+def відмова(причина):
+    print(json.dumps({"hookSpecificOutput": {"hookEventName": "PreToolUse", "permissionDecision": "deny",
+                                             "permissionDecisionReason": причина}}, ensure_ascii=False))
+
+
+def повернення(причина):
+    print(json.dumps({"decision": "block", "reason": причина}, ensure_ascii=False))
+
+
+def лист_іншій_сесії(вхід, стан):
+    кому = str(вхід.get("session_id") or "")
+    дозволені = {лм.адреса_ролі(стан, "менеджер"), лм.адреса_ролі(стан, "диспетчер"), "@parent"}
+    if not кому or кому in дозволені:
+        return
+    if not повернути_раз("лист", кому, str(вхід.get("message", ""))):
+        return
+    відмова(
+        f"Лист на {кому}: цієї адреси нема в рядках «менеджер» і «диспетчер» `аудит/СТАН.md`. `CLAUDE.md`, «Лист»: "
+        "«Іншій хмарній сесії — `create_trigger(persistent_session_id=<адресат>, prompt=<повний текст>)` без розкладу "
+        "(`cron`, `run_once_at`), потім `fire_trigger` без `text`: лист `send_message` Sonnet не виконує (урок 08.10); "
+        "ніколи `create_new_session_on_fire`: з `text` платформа створює нову сесію й лист губиться.» Навмисний повтор — "
+        "той самий виклик ще раз.")
+
+
+def нагадування(вхід, ім):
+    тепер = зараз()
+    if ім == ІМ_ТРИГЕР:
+        if not (вхід.get("cron_expression") or вхід.get("run_once_at")):
+            return  # лист без розкладу — не нагадування
+        if "ПУЛЬС" in str(вхід.get("prompt") or "")[:20]:
+            return
+        коли = розібрати_час(вхід["run_once_at"]) if вхід.get("run_once_at") else тепер + timedelta(hours=1)
+    elif вхід.get("at"):
+        коли = розібрати_час(вхід["at"])
+    else:
+        коли = тепер + timedelta(minutes=int(вхід.get("delay_minutes") or 1))
+    файл = os.path.join(тека_стану(), "нагадування")
+    try:
+        with open(файл, encoding="utf-8") as ф:
+            попереднє = datetime.fromisoformat(ф.read().strip())
+    except (OSError, ValueError):
+        попереднє = None
+    if попереднє and попереднє > тепер and повернути_раз("нагадування", ім, json.dumps(вхід, sort_keys=True)):
+        відмова(
+            f"Попереднє нагадування настане о {попереднє:%Y-%m-%d %H:%M} UTC, а це — ще одне. `аудит/ДИСПЕТЧЕР.md`, "
+            "«Розподіл»: «CI ще йде — рядок реєстру «чекаю CI #PR до <час>» і одне нагадування `send_later` на цей час "
+            "на всю пачку, коли пульс пізніше; під сповільненням від власника — лише пульс». Додай PR до реєстру "
+            "й чекай того нагадування чи такту; навмисний повтор — той самий виклик ще раз.")
+        return
+    try:
+        os.makedirs(тека_стану(), exist_ok=True)
+        with open(файл, "w", encoding="utf-8") as ф:
+            ф.write(max(коли, попереднє or коли).isoformat())
+    except OSError as п:
+        попередження(f"стан нагадувань не записано ({п})")
+
+
+def виклики_листів(шлях):
+    """[(session_id, message)] усіх `send_message` основної сесії."""
+    результат = []
+    with open(шлях, encoding="utf-8") as ф:
+        for рядок in ф:
+            try:
+                запис = json.loads(рядок)
+            except ValueError:
+                continue
+            вміст = (запис.get("message") or {}).get("content")
+            if запис.get("type") != "assistant" or запис.get("isSidechain") or not isinstance(вміст, list):
+                continue
+            for б in вміст:
+                if isinstance(б, dict) and б.get("type") == "tool_use" and б.get("name") == ІМ_ЛИСТ:
+                    вх = б.get("input") or {}
+                    результат.append((вх.get("session_id"), str(вх.get("message", ""))))
+    return результат
+
+
+def останній_хід_слова_й_листи(шлях, менеджер):
+    """(слова власника останнього ходу, чи є їхній дослівний лист менеджерові). Хід — від попереднього `end_turn`."""
+    слова, листи, мав_відповідь = [], [], False
+    попередні = None
+    with open(шлях, encoding="utf-8") as ф:
+        for рядок in ф:
+            try:
+                запис = json.loads(рядок)
+            except ValueError:
+                continue
+            if запис.get("isSidechain"):
+                continue
+            чий = власник(запис)
+            if чий:
+                т = _текст(запис)
+                if т and not СЛУЖБОВЕ.match(т) and len(т) >= МІНІМУМ_СЛОВА:
+                    слова.append(т)
+            if запис.get("type") == "assistant":
+                мав_відповідь = True
+                for б in ((запис.get("message") or {}).get("content") or []):
+                    if isinstance(б, dict) and б.get("type") == "tool_use" and б.get("name") == ІМ_ЛИСТ \
+                            and (б.get("input") or {}).get("session_id") == менеджер:
+                        листи.append(str((б.get("input") or {}).get("message", "")))
+                if (запис.get("message") or {}).get("stop_reason") == "end_turn":
+                    попередні = (слова, листи)
+                    слова, листи, мав_відповідь = [], [], False
+    if мав_відповідь or слова or листи:
+        return слова, листи
+    return попередні or ([], [])
+
+
+def _текст(запис):
+    вкладення = запис.get("attachment") or {}
+    вміст = вкладення.get("prompt") if запис.get("type") == "attachment" else (запис.get("message") or {}).get("content")
+    return слова_власника.текст(вміст)
+
+
+def передача(шлях, тепер):
+    початок = слова_власника.початок_транскрипту(шлях)
+    if not початок:
+        return None
+    вік = тепер - datetime.fromisoformat(початок.replace(" ", "T") + ":00+00:00")
+    if вік <= ВІК_ПЕРЕДАЧІ:
+        return None
+    if any(т.lstrip().startswith("ДИСПЕТЧЕР ПЕРЕДАЧА") for _, т in виклики_листів(шлях)):
+        return None
+    if not повернути_раз("передача", початок):
+        return None
+    return (
+        f"Сесії понад добу (перший запис транскрипту {початок} UTC, {int(вік.total_seconds() // 3600)} год), а листа "
+        "«ДИСПЕТЧЕР ПЕРЕДАЧА» менеджерові в ній нема. `аудит/ДИСПЕТЧЕР.md`, «Контекст і передача»: «Передача — щойно "
+        "сесії понад добу чи за листом менеджера, злиття в дорозі — у стан PR передачі (…): чекання такту без злиття "
+        "відкладало передачу, бо злиття йдуть безперервно. PR «Передача диспетчера» — зі станом (рядок «диспетчер» — "
+        "«передає: <id>») без конфлікту з `main`, менеджерові — «ДИСПЕТЧЕР ПЕРЕДАЧА #PR <гілка>»; наступника створює "
+        "він.» Зроби це цього такту. Вік за транскриптом — нижня межа (після перезапуску контейнера транскрипт "
+        "починається пізніше): точний — `get_session` без id, `created_at`.")
+
+
+def слово_менеджерові(шлях, менеджер):
+    слова, листи = останній_хід_слова_й_листи(шлях, менеджер)
+    непереслані = []
+    for с in слова:
+        if any(лм.слова_в_листі(л, [("", с)]) for л in листи):
+            continue
+        if лм.ознаки_звертання(с):
+            continue
+        непереслані.append(с)
+    if not непереслані or not повернути_раз("слово", *непереслані):
+        return None
+    час = {т: коли for коли, т in слова_власника.слова_людини(шлях)}
+    перелік = "; ".join(f"{час.get(т, '')[11:] or '??:??'} UTC «{лм.стиснути(т)[:80]}»" for т in непереслані[:3])
+    return (
+        f"Хід почав власник, його слово не переслано менеджерові дослівно, і воно не звернене до тебе: {перелік}. "
+        "`AGENTS.md`, «Пам'ять — у файлах»: «почуте в своєму чаті інша сесія шле менеджерові дослівно, крім питання до "
+        "неї самої — на нього відповідає вона, а менеджер переслане лише вносить і вдруге не відповідає». Надішли "
+        f"менеджерові ({менеджер}) «СЛОВО ВЛАСНИКА ГГ:ХХ UTC: <слово дослівно>» у цьому ході; слово до тебе виконуєш ти.")
+
+
+def main():
+    дані = json.load(sys.stdin)
+    if дані.get("agent_id"):
+        return
+    корінь = os.environ.get("CLAUDE_PROJECT_DIR") or дані.get("cwd") or "."
+    with open(os.path.join(корінь, "аудит", "СТАН.md"), encoding="utf-8") as ф:
+        стан = ф.read()
+    я, диспетчер = лм.своя_адреса(), лм.адреса_ролі(стан, "диспетчер")
+    if not я or я != диспетчер:
+        return
+    if "tool_name" in дані:
+        ім, вхід = дані["tool_name"], дані.get("tool_input") or {}
+        if ім == ІМ_ЛИСТ:
+            лист_іншій_сесії(вхід, стан)
+        elif ім in (ІМ_ПІЗНІШЕ, ІМ_ТРИГЕР):
+            нагадування(вхід, ім)
+        return
+    if дані.get("stop_hook_active"):
+        return
+    шлях = дані.get("transcript_path") or ""
+    менеджер = лм.адреса_ролі(стан, "менеджер")
+    причини = [передача(шлях, зараз()), слово_менеджерові(шлях, менеджер) if менеджер else None]
+    причини = [п for п in причини if п]
+    if причини:
+        повернення(" ".join(причини))
+
+
+if __name__ == "__main__":
+    try:
+        main()
+    except Exception as п:  # хук не падає сесію
+        попередження(f"{type(п).__name__}: {п}")

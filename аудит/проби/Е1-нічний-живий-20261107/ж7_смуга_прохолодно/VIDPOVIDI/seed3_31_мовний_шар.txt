@@ -1,0 +1,65 @@
+── ПРОМПТ (7095 симв.) ──
+Ти — перекладачка в застосунку-стилістці. Ти пишеш природною українською тексти, які зараз побачить жінка. Рішень не приймаєш, на питання не відповідаєш, змісту не міняєш.
+
+Вхід — JSON-об'єкт: ключ — номер тексту н, значення — текст, який склали код та інші моделі.
+
+Ключі відповіді — ті самі, що у вході, кожен: номер н тексту, значення — рядок, той самий зміст природною українською, без англійських слів і кодів; ПЕРЕКЛАДАЙ КОЖНЕ англійське слово, навіть одне посеред українського речення; латиницею лишай лише назви крамниць і брендів, «V-подібний» і «den»; текст, що вже природний і до неї на «ти», — без змін, а український текст на «ви» перепиши на «ти», решту лиши слово в слово.
+
+Вид кожної речі — теж зміст: річ у перекладі — та сама, що у вході, а не схожа чи сусідня. ankle boots — черевики чи ботильйони, boots — чоботи, heeled — на підборах, а не туфлі, pumps — туфлі-човники, loafers — лофери; pendant — кулон чи підвіска, necklace — намисто чи ланцюжок, а не каблучка, сережки чи браслет; ring — каблучка; earrings — сережки. Українські назви речей у вході (назви з крамниці, найчастіше перед « — ») переписуй літера в літеру: не міняй, не переставляй і не додавай у них жодного слова.
+
+Про жінку — лише до неї, на «ти» (ти, тебе, тобі, твій, твоя; хочеш, скинеш; наказ однини: розкажи, оберни, тримай, дай), і в питаннях теж: you, your, she, her про неї — «ти», «твій» (her skin tone — твій тон шкіри; when she turns her head — коли ти повертаєш голову; she looks taller — ти виглядаєш вищою), англійський наказ — наказом однини; «вона», «її» — лише про річ (сукню, сумку, куртку). Говорить стилістка — одна жінка: про себе — від першої особи однини й у жіночому роді (я підібрала, я б додала), не «ми», не від імені застосунку чи коду і ніколи словами самої жінки.
+
+Мова: літературна українська, як у текстах українських крамниць одягу. Кожне українське слово — літерами лише української абетки, без жодної латинської літери чи стороннього знака всередині слова. Кожне речення — одна остаточна версія, без виправлень посеред тексту. Словничок нижче — лише як перекласти англійське слово, коли воно є у вході; це не зміст: річ, тканина чи колір, яких у вході нема, у тексті не з'являються. Звичні українські назви для слів англійського джерела: trousers, pants — штани; dressy, dressier — ошатний, ошатніше; look, outfit — образ; taupe — сіро-бежевий; loose — вільний; suede — замша (жіночий рід); slip dress — сукня-комбінація; camel — кемел (колір). Назви речей і кольорів, які дала крамниця, — як є.
+
+Слово не повторюється двічі поспіль. Відповідь — рівно ОДИН JSON-об'єкт і нічого після нього: другої, виправленої версії, приміток і пояснень не пиши — помилку виправ у тому самому об'єкті.
+
+Речі образу — перелік речей картки (номер речі — як на картці, поруч — її коди):
+1 — kind code: trench_coat · colour code: beige · about it: text н=1
+2 — kind code: jeans · colour code: light_blue · about it: text н=2
+3 — kind code: ankle_boots · colour code: brown · about it: text н=3
+4 — kind code: belt · colour code: beige · about it: text н=4
+5 — kind code: longsleeve · colour code: rose · about it: text н=5
+6 — kind code: backpack · colour code: creamy · about it: text н=6
+When a text speaks of an item of the list, call it by the Ukrainian noun of its kind code (kind code: …) — the same noun in the right case in every text (trench_coat — «тренч», sweater — «светр», loafers — «лофери»), not by another kind or a synonym of the English word, whatever word the English text uses; a code ending in _generic names only the family (dress_generic — a dress, bag_generic — a bag). Make every adjective, pronoun and verb with the item agree with that noun in gender and number («бежевий тренч, який…»; «шкіряні лофери, які…»). A name you translate in this same call (text н=K): give it one noun and call the item by it, in agreement, in every text. A text the list gives as about an item (about it: text н=M) speaks of that one item, and so does every other text where the English names it. The colour of an item of the list is its colour code (colour code: …): write the Ukrainian name of that code. The English colour words for that item are the stylist's impression of a photo: do not turn them into a colour of their own — the item's colour stands in their place. Colours of its details (trim, strap, buttons, print), its fabric and the rest — translate from the text. The list is for the items only: an item the English text does not name is not added to the translation — neither to the description nor to the advice.
+
+Colour codes: beige — бежевий; brown — коричневий; creamy — кремовий; light_blue — блакитний; rose — трояндовий.
+
+ТЕКСТИ:
+{
+"1": "The beige trench coat is the perfect outer layer for your city walk, crafted in a regular cut with double-breasted buttons that add structure. It features functional belt loops and a classic collar that you can raise against the cool weather.",
+"2": "The light blue straight jeans provide a relaxed yet polished base for your ensemble, offering comfort and ease as you move through the city.",
+"3": "These brown velvet ankle boots add warmth and texture to your look, with a sturdy sole suitable for walking on urban streets.",
+"4": "This beige belt adds definition to your waist when worn under the trench coat, tying in perfectly with the coat's color for a cohesive, tonal effect.",
+"5": "This rose-colored long-sleeve top brings a soft, feminine touch to the outfit, with a simple neckline that complements the structured trench coat beneath it.",
+"6": "The creamy backpack serves as both a practical accessory and a stylish element, its neutral tone blending seamlessly with the beige coat.",
+"7": "I have put together a complete look for your city walk. It features the beige trench coat with double-breasted buttons over a rose-colored long sleeve top, paired with light blue straight jeans. I've also included the brown velvet ankle boots, a creamy backpack, and a beige belt to cinch the waist of the trench.",
+"8": "Tie the trench coat belt at your natural waistline to define your silhouette while keeping the classic outerwear look.",
+"9": "Wear the rose long-sleeve top tucked neatly into the jeans for a clean transition between the layers.",
+"10": "Keep the backpack worn comfortably on your back or over one shoulder, letting the strap adjust as you navigate the city.",
+"11": "Raise the trench coat collar slightly when stepping out into the cool air to keep you warm.",
+"12": "Leave the belt untied at home if you prefer a more relaxed drape while walking",
+"13": "Джинси жіночі МОМ — I kept the light-blue jeans because they are a classic neutral that fits inside your cool-toned palette windows, grounding the warm beige of the trench.",
+"14": "Пасок Базовий бежевий — I added this light belt to define your waist and add a neutral accent that matches the coolness of the day without competing for attention.",
+"15": "Тренч Класичний тренч – вічна класика — The buttoned front of the trench is a deliberate gesture that sharpens your silhouette for the city walk, adding structure to your casual day."
+}
+
+── ВІДПОВІДЬ (2361 симв., 17.3 с, HTTP 200) ──
+```json
+{
+  "1": "Бежевий тренч стане ідеальним верхнім шаром для твоєї прогулянки містом. Він пошитий у вільному крої з двобічними ґудзиками, які додають структури. Має функціональні петлі для ременя та класичний комір, який ти можеш підняти проти прохолодної погоди.",
+  "2": "Блакитні прямі джинси створять розслаблений і водночас елегантний образ, забезпечуючи комфорт у русі містом.",
+  "3": "Ці коричневі оксамитові черевички додадуть тепла та текстури твоєму образу. Мають надійну підошву для прогулянок по вулицях міста.",
+  "4": "Бежевий пасок підкреслить твою талію, коли ти одягнеш його під тренч. Він ідеально гармоніюватиме з кольором пальто, створюючи цілісний тональний ефект.",
+  "5": "Цей рожевий светр із довгими рукавами додасть образу ніжності та жіночності. Має простий виріз горловини, який гармонійно доповнюватиме тренч під ним.",
+  "6": "Кремовий рюкзак стане практичним аксесуаром і стильним елементом твого образу. Його нейтральний тон бездоганно поєднується з бежевим пальтом.",
+  "7": "Я склала для тебе повний образ на прогулянку містом, який включає бежевий тренч із двобічними ґудзиками поверх рожевого светра з довгими рукавами. Доповнила його блакитними прямими джинсами, коричневими оксамитовими черевичками, кремовим рюкзаком і бежевим паском для підкреслення талії тренча.",
+  "8": "Зав'яжи пояс від тренча на лінії твоєї природної талії, щоб окреслити силует, зберігаючи при цьому класичний вигляд верхнього одягу.",
+  "9": "Одягни рожевий светр із довгими рукавами акуратно заправленим у джинси для чистого переходу між шарами.",
+  "10": "Носи рюкзак зручно на спині або через одне плече, регулюючи ремінь під час прогулянки містом.",
+  "11": "Злегка підніми комір тренча, коли виходиш у прохолодне повітря, щоб зігрітися.",
+  "12": "Залишай пасок розв'язаним вдома, якщо ти віддаєш перевагу більш вільному драпіруванню під час прогулянки",
+  "13": "Я залишила блакитні джинси МОМ, адже вони є класичним нейтральним кольором, який гармонійно поєднується з твоїми холодними тонами та врівноважує теплий беж тренча.",
+  "14": "Я додала цей світлий пасок, щоб підкреслити твою талію і додати нейтральний акцент, який відповідає прохолодній атмосфері дня без зайвої уваги.",
+  "15": "Застебнутий спереду тренч — це свідомий жест, що загострює силует для прогулянки містом, додаючи структури твоєму повсякденному образу."
+}
+```

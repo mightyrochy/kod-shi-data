@@ -1,6 +1,11 @@
 """Вивід ваги шкали й арифметичний вхід пари для приладу ознак обличчя."""
-import ast
+import ast, copy
 from collections import defaultdict
+
+
+def прозовий(в):
+    """Речення, а не слово-клас: сталий рядок з трьох і більше слів ніколи не є значенням класу."""
+    return isinstance(в, ast.Constant) and isinstance(в.value, str) and len(в.value.split()) >= 3
 
 
 def форматований_текст(в):
@@ -10,7 +15,7 @@ def форматований_текст(в):
         """Розпізнає обидві текстові гілки всередині злиття, не називаючи сам клас форматуванням."""
         return рядок(н) or форматований_текст(н) or isinstance(н, ast.IfExp) \
             and рядковий_операнд(н.body) and рядковий_операнд(н.orelse)
-    return isinstance(в, ast.JoinedStr) or isinstance(в, ast.BinOp) and (
+    return isinstance(в, ast.JoinedStr) or прозовий(в) or isinstance(в, ast.BinOp) and (
         isinstance(в.op, ast.Mod) and рядок(в.left) or isinstance(в.op, ast.Add)
         and any(рядковий_операнд(н) for н in (в.left, в.right))) or \
         isinstance(в, ast.Call) and isinstance(в.func, ast.Attribute) and в.func.attr in ('format', 'join') \
@@ -447,3 +452,355 @@ def пари_функції(ф):
             if ліві and праві and ліві.isdisjoint(праві):
                 вихід.append((в, ліві, праві))
     return sorted(вихід, key=lambda п: (п[0].lineno, п[0].col_offset))
+
+
+_ЧИСЛОВІ_ВБУДОВАНІ = frozenset(("abs", "min", "max", "sum", "float", "int", "round", "pow", "range", "len", "divmod"))
+
+
+def функція_формула(ф, чистий_виклик=None):
+    """Чисте числове перетворення завдовжки від 12 кроків (див. `_чиста_функція`; `чистий_виклик` — як там)."""
+    повернення = _чиста_функція(ф, 0, чистий_виклик)
+    if повернення is None:
+        return False
+    return _кроки(ф) >= 12 and all(_число_значення(в.value) for в in повернення)
+
+
+def прозора_обгортка(ф, чистий_виклик):
+    """Функція, чистa за `_чиста_функція`, крім викликів чистих функцій інших модулів чи поза глибиною 3
+    (`колір_відношення.кут` → `колір_тон.відстань_тонів`, `колір_тон.середина_дуги` → `точка_дуги`): вхід пари, що
+    поглинула чиста функція кольору, вона передає далі своєму викликачеві (рядок дошки 13815)."""
+    повернення = _чиста_функція(ф, 0, чистий_виклик)
+    return повернення is not None and bool(set(ф.позиційні) | set(ф.іменні)) and all(
+        _число_значення(в.value) or isinstance(в.value, (ast.Compare, ast.BoolOp)) for в in повернення)
+
+
+def чиста_геометрія(ф, чистий_виклик=None):
+    """Коротка чиста функція простору кольору (`на_дузі(h, дуга)`, різниця двох входів): лише арифметика й порівняння
+    своїх параметрів, без рядків, таблиць і сторонніх викликів (крім чистих функцій за `чистий_виклик`, будь-якого
+    модуля й глибини). Поріг усередині — не вхід її значення: місце — виклик із її значенням (рішення менеджера 05.11)."""
+    повернення = _чиста_функція(ф, 0, чистий_виклик)
+    if повернення is None or not (set(ф.позиційні) | set(ф.іменні)) or функція_формула(ф, чистий_виклик):
+        return False
+    def перевірка(х):
+        """Повертає істину/число з порівнянь і арифметики, а не назву класу з таблиці."""
+        if isinstance(х, ast.IfExp):
+            return перевірка(х.body) and перевірка(х.orelse)
+        if isinstance(х, ast.Tuple):
+            return all(перевірка(е) for е in х.elts)
+        if isinstance(х, ast.Name) and (х.id in ф.локальні or х.id in ф.позиційні or х.id in ф.іменні):
+            return True   # число з власної арифметики (`return 0.0 if к >= 360.0 else к`): у чистій функції рядків нема
+        return isinstance(х, (ast.Compare, ast.BoolOp, ast.BinOp, ast.UnaryOp, ast.Call)) or (
+            isinstance(х, ast.Constant) and isinstance(х.value, (int, float, bool)))
+    return all(перевірка(в.value) for в in повернення)
+
+
+def _кроки(ф):
+    return sum(1 for в in ф.власні if isinstance(в, (ast.BinOp, ast.Call)))
+
+
+def _число_значення(в):
+    if isinstance(в, ast.Tuple):
+        return all(_число_значення(х) for х in в.elts)
+    if isinstance(в, ast.IfExp):
+        return _число_значення(в.body) and _число_значення(в.orelse)
+    return isinstance(в, (ast.BinOp, ast.Call, ast.Name, ast.UnaryOp)) or (
+        isinstance(в, ast.Constant) and isinstance(в.value, (int, float)) and not isinstance(в.value, bool))
+
+
+def _числова_стала(ф, ім):
+    """Ім'я модульного рівня, що дорівнює числу чи простій арифметиці чисел (`_ЕРФ_НАСИЧЕННЯ = 6.0`)."""
+    def число(в):
+        return isinstance(в, ast.Constant) and isinstance(в.value, (int, float)) and not isinstance(в.value, bool) \
+            or isinstance(в, ast.UnaryOp) and число(в.operand) or isinstance(в, ast.BinOp) and число(в.left) and число(в.right)
+    return ім in ф.модуль.присвоєння and число(ф.модуль.присвоєння[ім])
+
+
+def _чиста_функція(ф, глибина=0, чистий_виклик=None):
+    """Чиста функція кольору — повертає її `return`-и чи None: без рядків,
+    без викликів поза `math` і числовими вбудованими, без звернень до модульних таблиць і запису поза локальними, і кожне
+    повернення — число чи кортеж чисел. Арифметика всередині — не вхід її значення в число рішення: місце — виклик
+    із її значенням (рішення менеджера 05.11: «лічити кожну операцію після входу — лічити читачів»)."""
+    вузол = ф.вузол
+    if isinstance(вузол, ast.Lambda) or not ф.власні:
+        return None
+    повернення = [в for в in ф.власні if isinstance(в, ast.Return)]
+    if not повернення or any(в.value is None for в in повернення):
+        return None
+    параметри = set(ф.позиційні) | set(ф.іменні)
+    математика = {ім for ім, мод in ф.модуль.імпорти.items() if мод == "math"} | {"math"}
+    прийняті = set()   # вузли імені викликаної чистої функції іншого модуля (`_КТ.відстань_тонів`)
+    for в in ф.власні:
+        if id(в) in прийняті:
+            continue
+        if isinstance(в, (ast.Global, ast.Nonlocal, ast.Try, ast.With, ast.Yield, ast.Raise)):
+            return None
+        if isinstance(в, ast.Constant) and isinstance(в.value, str):
+            # лише рядок-документація: перший вираз тіла
+            if not (вузол.body and isinstance(вузол.body[0], ast.Expr) and вузол.body[0].value is в):
+                return None
+        if isinstance(в, ast.Subscript) and isinstance(в.value, ast.Name) and isinstance(в.ctx, ast.Load) \
+                and (в.value.id in параметри or в.value.id in ф.локальні) and isinstance(в.slice, ast.Constant) \
+                and type(в.slice.value) is int:
+            continue   # позиція кортежу-параметра (`дуга[0]`): та сама арифметика, що й над двома параметрами (13757)
+        if isinstance(в, (ast.Subscript, ast.Dict, ast.List, ast.Set, ast.ListComp, ast.DictComp, ast.SetComp, ast.JoinedStr)):
+            return None
+        if isinstance(в, ast.Call):
+            f = в.func
+            if isinstance(f, ast.Attribute) and isinstance(f.value, ast.Name) and f.value.id in математика:
+                continue
+            if isinstance(f, ast.Name) and f.id in _ЧИСЛОВІ_ВБУДОВАНІ:
+                continue
+            if isinstance(f, ast.Name) and глибина < 3 and f.id in ф.модуль.функції and f.id not in параметри \
+                    and f.id not in ф.локальні and ф.модуль.функції[f.id] is not ф \
+                    and _чиста_функція(ф.модуль.функції[f.id], глибина + 1) is not None:
+                continue   # виклик іншої чистої функції цього ж модуля (`_ф` у `у_вікні`)
+            if чистий_виклик is not None and чистий_виклик(в):
+                прийняті.update(id(н) for н in ast.walk(в.func))
+                continue   # чиста функція іншого модуля (`_КТ.відстань_тонів`) — лише для поглинання входу пари
+            return None
+        if isinstance(в, ast.Attribute) and not (isinstance(в.value, ast.Name) and в.value.id in математика):
+            return None
+        if isinstance(в, ast.Name) and isinstance(в.ctx, ast.Load) and в.id not in ф.локальні and в.id not in параметри \
+                and в.id not in математика and not _числова_стала(ф, в.id) and в.id not in ф.модуль.функції and в.id not in ("float", "int", "abs", "min", "max", "sum", "round", "pow", "range", "len", "divmod"):
+            return None
+    return повернення
+
+
+def будує_вікно(ф):
+    """Функція будує вікно кандидатів — межі інтервалу `(від, до)` з сталих і зсувів: кожне повернення — пара чисел.
+    Вікно — те, де код шукає кандидатів, а не її значення (рішення менеджера 01.11 і 05.11)."""
+    вузол = ф.вузол
+    if isinstance(вузол, ast.Lambda):
+        return False
+    повернення = [в for в in ф.власні if isinstance(в, ast.Return)]
+    if not повернення:
+        return False
+    def пара(в):
+        return isinstance(в, ast.Tuple) and len(в.elts) == 2 and all(
+            isinstance(х, (ast.Call, ast.Constant, ast.BinOp, ast.Name)) and not (
+                isinstance(х, ast.Constant) and not isinstance(х.value, (int, float))) for х in в.elts)
+    def навколо_центру(в):
+        """`(центр − пів, центр + пів)`: інтервал симетричний довкола центру — вікно, збудоване з центру й пів-ширини."""
+        if not (isinstance(в, ast.Tuple) and len(в.elts) == 2):
+            return False
+        def норма(х):
+            х = copy.deepcopy(х)
+            for н in ast.walk(х):
+                if isinstance(н, ast.BinOp) and isinstance(н.op, ast.Sub):
+                    н.op = ast.Add()
+            return ast.dump(х)
+        ліво, право = в.elts
+        return any(isinstance(н, ast.BinOp) and isinstance(н.op, (ast.Add, ast.Sub)) for н in ast.walk(ліво)) \
+            and ast.dump(ліво) != ast.dump(право) and норма(ліво) == норма(право)
+    if all(в.value is not None and навколо_центру(в.value) for в in повернення):
+        return True
+    return all(в.value is not None and пара(в.value) for в in повернення) and any(
+        isinstance(н, ast.Call) and isinstance(н.func, ast.Name) and н.func.id in ("max", "min")
+        for в in повернення for н in ast.walk(в.value)) and any(
+        isinstance(н, ast.Constant) and isinstance(н.value, float) for в in повернення for н in ast.walk(в.value)) or all(
+        в.value is not None and isinstance(в.value, ast.Tuple) and len(в.value.elts) == 2 and all(
+            isinstance(х, ast.Constant) and isinstance(х.value, (int, float)) for х in в.value.elts)
+        for в in повернення)
+
+
+def вікно_літерал(в):
+    """`[max(2, round(база - 2*КРОК - 8)), max(8, round(база - КРОК))]`: пара меж, кожна — значення ± стала
+    (з обрізанням `max`/`min`): код будує вікно кандидатів довкола її значення, а не читає її значення."""
+    if not (isinstance(в, (ast.List, ast.Tuple)) and len(в.elts) == 2):
+        return False
+    def стала(х):
+        return (isinstance(х, ast.Constant) and isinstance(х.value, (int, float)) and not isinstance(х.value, bool)) \
+            or isinstance(х, ast.Name) and х.id.isupper() \
+            or isinstance(х, ast.BinOp) and стала(х.left) and стала(х.right) \
+            or isinstance(х, ast.UnaryOp) and стала(х.operand)
+    def зсув(х):
+        обрізано = False
+        while isinstance(х, ast.Call) and isinstance(х.func, ast.Name) and х.func.id in ("max", "min", "round", "int", "float"):
+            if х.func.id in ("max", "min"):
+                обрізано = True
+                решта = [а for а in х.args if not стала(а)]
+                if len(решта) != 1:
+                    return False, False
+                х = решта[0]
+            elif х.args:
+                х = х.args[0]
+            else:
+                return False, False
+        while isinstance(х, ast.BinOp) and isinstance(х.op, (ast.Add, ast.Sub)) and стала(х.right):
+            х = х.left
+        return not стала(х) and not isinstance(х, ast.BinOp), обрізано
+    рез = [зсув(х) for х in в.elts]
+    return all(р[0] for р in рез) and any(р[1] for р in рез)
+
+
+def мітки_оцінки(дерева):
+    """Рядки, що означають джерело оцінки моделі: код протоколу `model_hex` і сталий рядок, який функція повертає лише
+    в гілці, відкритій перевіркою на таку мітку (`if протокол == "model_hex": return "оцінка моделі"`), і ніде більше в
+    ній. Перевірка джерела на мітку — варта для `model_hex` (`Стан.ворота`): гілка, якої оцінка не проходить, не
+    виконується (рядок дошки 13568)."""
+    from collections import Counter
+    from ознаки_основа import НЕВІДОМЕ   # тут, а не нагорі: ознаки_основа імпортує цей модуль
+    мітки = {"model_hex"}
+
+    def на_мітку(т):
+        return isinstance(т, ast.Compare) and len(т.ops) == 1 and isinstance(т.ops[0], (ast.Eq, ast.Is)) and any(
+            isinstance(х, ast.Constant) and isinstance(х.value, str) and х.value in мітки for х in (т.left, т.comparators[0]))
+
+    функції = [n for д in дерева for n in ast.walk(д) if isinstance(n, (ast.FunctionDef, ast.AsyncFunctionDef))]
+    while True:
+        нові = set()
+        for ф in функції:
+            рядки = Counter(n.value.value for n in ast.walk(ф) if isinstance(n, ast.Return)
+                                        and isinstance(n.value, ast.Constant) and isinstance(n.value.value, str))
+            for n in ast.walk(ф):
+                if isinstance(n, ast.If) and на_мітку(n.test):
+                    for і in n.body:
+                        if isinstance(і, ast.Return) and isinstance(і.value, ast.Constant) \
+                                and isinstance(і.value.value, str) and рядки[і.value.value] == 1 \
+                                and not НЕВІДОМЕ.search(і.value.value):
+                            нові.add(і.value.value)
+        if нові <= мітки:
+            return frozenset(мітки)
+        мітки |= нові
+
+
+def походження_імен(ф, риси=frozenset()):
+    """Ім'я функції → її входи, з яких воно пораховане: параметр (`("параметр", ім)`), риса запису (`("риса", вхід,
+    назва)` — читання `x["шкіра"]…` чи `x.get("очі")`, де ключ — назва риси з `риси`) чи читання, чия основа не ім'я
+    (`("читання", id(значення))`: `f(x)["k"]`, `self.x["k"]`), до нерухомої точки за присвоєннями, циклами й `:=`; ім'я,
+    не пов'язане у функції, — `("ззовні", ім)`. Вкладені функції й лямбди — частина тієї самої функції (замикання).
+    Вхід — одна оцінка: колір однієї риси з усіма осями, хоч би як узято — ключем, розпакуванням, цілим записом
+    (рішення менеджера 07.11, питання #3262, `колір_відношення.py:207`). Так `L, C, h = lch(lab)` — один вхід `lab`,
+    `рб["дуга"]` і `рб["C"]` — один вхід `рб`, а `F["шкіра"]["L"]` і `F["очі"]["h"]` — два (інша риса)."""
+    параметри = set()
+    for n in ast.walk(ф):
+        if isinstance(n, (ast.FunctionDef, ast.AsyncFunctionDef, ast.Lambda)):
+            а = n.args
+            for x in а.posonlyargs + а.args + а.kwonlyargs + [а.vararg, а.kwarg]:
+                if x is not None:
+                    параметри.add(x.arg)
+    звʼязки = defaultdict(list)
+    ключові = set()
+
+    def цілі(ц, значення):
+        for n in ast.walk(ц):
+            if isinstance(n, ast.Name):
+                звʼязки[n.id].append(значення)
+    for n in ast.walk(ф):
+        if isinstance(n, ast.Assign):
+            for ц in n.targets:
+                цілі(ц, n.value)
+        elif isinstance(n, (ast.AnnAssign, ast.AugAssign, ast.NamedExpr)) and n.value is not None:
+            цілі(n.target, n.value)
+        elif isinstance(n, (ast.For, ast.AsyncFor, ast.comprehension)):
+            цілі(n.target, n.iter)
+        elif isinstance(n, ast.withitem) and n.optional_vars is not None:
+            цілі(n.optional_vars, n.context_expr)
+        elif isinstance(n, ast.Call) and isinstance(n.func, ast.Name) and n.func.id in ("min", "max", "sorted") and n.args:
+            # `min(пари, key=lambda п: _кут(*п))`: параметр ключа — елемент послідовності, а не новий вхід (13957)
+            for к in n.keywords:
+                if к.arg == "key" and isinstance(к.value, ast.Lambda) and len(к.value.args.args) == 1:
+                    ключові.add(к.value.args.args[0].arg)
+                    цілі(ast.Name(id=к.value.args.args[0].arg), n.args[0])
+
+    пох = {ім: {("параметр", ім)} for ім in параметри - ключові}
+    читання_рис = {}   # id(значення) → [(ім'я основи, назва риси)]
+    for ім, вирази in звʼязки.items():
+        for в in вирази:
+            непрямі, рисні = ланцюги_читання(в, риси)
+            if непрямі:
+                пох.setdefault(ім, set()).add(("читання", id(в)))
+            читання_рис[id(в)] = рисні
+            пох.setdefault(ім, set())
+    while True:
+        змінилось = False
+        for ім, вирази in звʼязки.items():
+            for в in вирази:
+                нові = set()
+                for x in ast.walk(в):
+                    if isinstance(x, ast.Name) and isinstance(x.ctx, ast.Load) and x.id != ім:
+                        нові |= пох[x.id] if x.id in пох else {("ззовні", x.id)}   # зв'язане ще порожнє — не ззовні
+                for основа, риса in читання_рис[id(в)]:
+                    нові |= {("риса", о, риса) for о in (пох.get(основа) or {("ззовні", основа)}) if о[0] != "риса"}
+                if not нові <= пох[ім]:
+                    пох[ім] |= нові
+                    змінилось = True
+        if not змінилось:
+            return {ім: frozenset(в) for ім, в in пох.items()}
+
+
+def ланцюги_читання(в, риси):
+    """Читання записів у виразі: (чи є читання, чия основа не ім'я; [(ім'я основи, перша назва риси в ланцюгу)]).
+    Ланцюг — `x["k"]…[i]…`, `x.get("k")…`; ключ поза `риси` (вісь кольору: `"C"`, `"дуга"`, `"lab"`) — той самий
+    вхід, що й `x`."""
+    непрямі, рисні = False, []
+    вкладені = set()
+    for n in ast.walk(в):
+        if id(n) in вкладені or not (isinstance(n, ast.Subscript) or isinstance(n, ast.Call)
+                                     and isinstance(n.func, ast.Attribute) and n.func.attr == "get"):
+            continue
+        ключі, x = [], n
+        while True:
+            if isinstance(x, ast.Subscript):
+                if isinstance(x.slice, ast.Constant) and isinstance(x.slice.value, str):
+                    ключі.append(x.slice.value)
+                вкладені.add(id(x))
+                x = x.value
+            elif isinstance(x, ast.Call) and isinstance(x.func, ast.Attribute) and x.func.attr == "get":
+                if x.args and isinstance(x.args[0], ast.Constant) and isinstance(x.args[0].value, str):
+                    ключі.append(x.args[0].value)
+                вкладені.add(id(x))
+                x = x.func.value
+            else:
+                break
+        if not isinstance(x, ast.Name):
+            непрямі = True
+            continue
+        риса = next((к for к in reversed(ключі) if к in риси), None)   # ключі зібрано від зовнішнього
+        if риса is not None:
+            рисні.append((x.id, риса))
+    return непрямі, рисні
+
+
+def ключі_закриті_оцінкою(дерева, мітки, стала=False):
+    """Функції, що для оцінки моделі віддають запис зі сталим `False` під ключем: ім'я функції → такі ключі. У гілці,
+    відкритій перевіркою на мітку оцінки (`if протокол == "model_hex":`), вона повертає `dict(..., доступно=False)` чи
+    `{"доступно": False}`, або виклик іншої такої функції (`ознака_палітри` → `_ознака_запису`). Перевірка такого ключа
+    (`ознака_палітри(F, nm)["доступно"]`) для `model_hex` хибна: що за нею, для оцінки не виконується (рядок дошки
+    13922: фільтр включення `PP.дані(F)`). `стала=None` — ключі зі сталим `None` (`значення=None`): читання такого ключа
+    її значення для оцінки не несе (`_до_очей`: `ознака_палітри(F, "очі")["значення"] or {}`, рядок дошки 13983)."""
+    def на_мітку(т):
+        return isinstance(т, ast.Compare) and len(т.ops) == 1 and isinstance(т.ops[0], (ast.Eq, ast.Is)) and any(
+            isinstance(х, ast.Constant) and isinstance(х.value, str) and х.value in мітки for х in (т.left, т.comparators[0]))
+
+    def хибні(в):
+        if isinstance(в, ast.Call) and isinstance(в.func, ast.Name) and в.func.id == "dict":
+            return {к.arg for к in в.keywords if к.arg and isinstance(к.value, ast.Constant) and к.value.value is стала}
+        if isinstance(в, ast.Dict):
+            return {к.value for к, з in zip(в.keys, в.values) if isinstance(к, ast.Constant) and isinstance(к.value, str)
+                    and isinstance(з, ast.Constant) and з.value is стала}
+        return set()
+
+    def ім_виклику(в):
+        if isinstance(в, ast.Call):
+            return в.func.id if isinstance(в.func, ast.Name) else в.func.attr if isinstance(в.func, ast.Attribute) else None
+        return None
+    гілки = defaultdict(list)   # ім'я функції → значення `return` у гілках на мітку
+    for д in дерева:
+        for ф in ast.walk(д):
+            if isinstance(ф, (ast.FunctionDef, ast.AsyncFunctionDef)):
+                for n in ast.walk(ф):
+                    if isinstance(n, ast.If) and на_мітку(n.test):
+                        гілки[ф.name] += [і.value for і in n.body if isinstance(і, ast.Return) and і.value is not None]
+    закриті = {}
+    while True:
+        нові = {}
+        for ім, значення in гілки.items():
+            к = set()
+            for в in значення:
+                к |= хибні(в) | закриті.get(ім_виклику(в), set())
+            if к:
+                нові[ім] = frozenset(к)
+        if нові == закриті:
+            return закриті
+        закриті = нові

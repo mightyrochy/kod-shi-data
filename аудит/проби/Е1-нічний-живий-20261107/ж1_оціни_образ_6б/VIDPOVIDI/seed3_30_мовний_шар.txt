@@ -1,0 +1,56 @@
+── ПРОМПТ (7701 симв.) ──
+Ти — перекладачка в застосунку-стилістці. Ти пишеш природною українською тексти, які зараз побачить жінка. Рішень не приймаєш, на питання не відповідаєш, змісту не міняєш.
+
+Вхід — JSON-об'єкт: ключ — номер тексту н, значення — текст, який склали код та інші моделі.
+
+Ключі відповіді — ті самі, що у вході, кожен: номер н тексту, значення — рядок, той самий зміст природною українською, без англійських слів і кодів; ПЕРЕКЛАДАЙ КОЖНЕ англійське слово, навіть одне посеред українського речення; латиницею лишай лише назви крамниць і брендів, «V-подібний» і «den»; текст, що вже природний і до неї на «ти», — без змін, а український текст на «ви» перепиши на «ти», решту лиши слово в слово.
+
+Вид кожної речі — теж зміст: річ у перекладі — та сама, що у вході, а не схожа чи сусідня. ankle boots — черевики чи ботильйони, boots — чоботи, heeled — на підборах, а не туфлі, pumps — туфлі-човники, loafers — лофери; pendant — кулон чи підвіска, necklace — намисто чи ланцюжок, а не каблучка, сережки чи браслет; ring — каблучка; earrings — сережки. Українські назви речей у вході (назви з крамниці, найчастіше перед « — ») переписуй літера в літеру: не міняй, не переставляй і не додавай у них жодного слова.
+
+Про жінку — лише до неї, на «ти» (ти, тебе, тобі, твій, твоя; хочеш, скинеш; наказ однини: розкажи, оберни, тримай, дай), і в питаннях теж: you, your, she, her про неї — «ти», «твій» (her skin tone — твій тон шкіри; when she turns her head — коли ти повертаєш голову; she looks taller — ти виглядаєш вищою), англійський наказ — наказом однини; «вона», «її» — лише про річ (сукню, сумку, куртку). Говорить стилістка — одна жінка: про себе — від першої особи однини й у жіночому роді (я підібрала, я б додала), не «ми», не від імені застосунку чи коду і ніколи словами самої жінки.
+
+Мова: літературна українська, як у текстах українських крамниць одягу. Кожне українське слово — літерами лише української абетки, без жодної латинської літери чи стороннього знака всередині слова. Кожне речення — одна остаточна версія, без виправлень посеред тексту. Словничок нижче — лише як перекласти англійське слово, коли воно є у вході; це не зміст: річ, тканина чи колір, яких у вході нема, у тексті не з'являються. Звичні українські назви для слів англійського джерела: trousers, pants — штани; dressy, dressier — ошатний, ошатніше; look, outfit — образ; taupe — сіро-бежевий; loose — вільний; suede — замша (жіночий рід); slip dress — сукня-комбінація; camel — кемел (колір). Назви речей і кольорів, які дала крамниця, — як є.
+
+Слово не повторюється двічі поспіль. Відповідь — рівно ОДИН JSON-об'єкт і нічого після нього: другої, виправленої версії, приміток і пояснень не пиши — помилку виправ у тому самому об'єкті.
+
+Речі образу — перелік речей картки (номер речі — як на картці, поруч — її коди):
+1 — kind code: vest · colour code: beige · about it: text н=1
+2 — kind code: trousers · colour code: beige · about it: text н=2
+3 — kind code: loafers · colour code: burgundy · about it: text н=3
+4 — kind code: earrings · colour code: golden · about it: text н=4
+5 — kind code: belt_bag · colour code: red · about it: text н=5
+When a text speaks of an item of the list, call it by the Ukrainian noun of its kind code (kind code: …) — the same noun in the right case in every text (trench_coat — «тренч», sweater — «светр», loafers — «лофери»), not by another kind or a synonym of the English word, whatever word the English text uses; a code ending in _generic names only the family (dress_generic — a dress, bag_generic — a bag). Make every adjective, pronoun and verb with the item agree with that noun in gender and number («бежевий тренч, який…»; «шкіряні лофери, які…»). A name you translate in this same call (text н=K): give it one noun and call the item by it, in agreement, in every text. A text the list gives as about an item (about it: text н=M) speaks of that one item, and so does every other text where the English names it. The colour of an item of the list is its colour code (colour code: …): write the Ukrainian name of that code. The English colour words for that item are the stylist's impression of a photo: do not turn them into a colour of their own — the item's colour stands in their place. Colours of its details (trim, strap, buttons, print), its fabric and the rest — translate from the text. The list is for the items only: an item the English text does not name is not added to the translation — neither to the description nor to the advice.
+
+Colour codes: beige — бежевий; burgundy — бордовий; golden — золотий; red — червоний.
+
+ТЕКСТИ:
+{
+"1": "This fitted beige vest offers a tailored silhouette that defines your waist and shoulders, perfect for an office setting. Its clean lines and neutral tone provide a sophisticated foundation for your look, while the subtle sheen adds depth without being overpowering.",
+"2": "The tapered trousers in beige feature a sleek cut that elongates your legs and maintains a polished appearance. The fabric drapes beautifully, offering both comfort and structure for your day at work, while the floral pattern adds a unique touch of personality to your ensemble.",
+"3": "These burgundy loafers bring a rich, warm hue to your outfit that contrasts elegantly with the neutral tones of your suit. Their classic design ensures comfort throughout the day, while the slight heel provides additional support for standing or walking during meetings.",
+"4": "The gold-and-silver earrings add a delicate sparkle to your neckline, catching the light subtly throughout your workday. Their dual metal tones complement both the warmth of your skin and the cool undertones of the office environment, providing just the right amount of elegance.",
+"5": "This red belt bag serves as a striking focal point that adds vibrancy to your otherwise neutral palette. Its bold color stands out beautifully against the beige suit, while its functional design keeps you organized and ready for any work-related needs.",
+"6": "I have chosen a sophisticated ensemble for your office day that balances professional polish with understated elegance. The core is your fitted beige vest paired with matching tapered trousers, creating a seamless, structured silhouette perfect for the workplace. To soften this tailored look and add a touch of creative flair, I included the floral blouse underneath the vest to introduce texture and warmth to your autumn palette. Grounding the outfit are burgundy loafers that offer a rich pop of color while maintaining comfort for long hours at your desk. The gold-and-silver jewelry and the red belt bag complete the look, providing just enough detail to keep the outfit dynamic without overwhelming its professional character.",
+"7": "Tuck the floral blouse under the vest to define the waist and create a clean, streamlined line for your office attire.",
+"8": "Wear the burgundy loafers with confidence; their rich hue grounds the neutral tones of the suit while remaining practical for daily wear.",
+"9": "Carry the red belt bag on the side to keep your hands free for work essentials while adding a bold accent that draws the eye down.",
+"10": "Широкі штани зі стрілками, з фігурним поясом, з італійської костюмної тканини. — Replaced neutral item in slot to keep outfit warm and cohesive for autumn office day.",
+"11": "Поясна сумка з червоної шкіри з лого, Жилетка приталена беж — The formal spread gate is accepted because the tweed blazer and burgundy loafers create a high-low mix that serves your autumn office day better than a quieter neutral base, adding texture and richness while staying within the occasion's bounds.",
+"12": "LeBERDES Лофери бордові — Added shoes to complete the outfit and judge the hem proportion."
+}
+
+── ВІДПОВІДЬ (3147 симв., 21.4 с, HTTP 200) ──
+{
+"1": "Цей приталений бежевий жилет пропонує витончений силует, який підкреслює твою талію і плечі, ідеально пасуючий для офісного середовища. Його чіткі лінії й нейтральний тон створюють солідну основу для твого образу, а ледь помітний блиск додає глибини без надмірності.",
+"2": "Завужені штани бежевого кольору мають елегантний крій, який видовжує ноги і зберігає охайний вигляд. Тканина красиво драпірується, забезпечуючи комфорт та структуру протягом твого робочого дня, а квітковий візерунок додає унікального штриха до твого ансамблю.",
+"3": "Ці бордові лофери привносять насичений теплий відтінок у твій образ, який елегантно контрастує з нейтральними тонами костюма. Їхній класичний дизайн гарантує комфорт протягом дня, а невеликий каблук забезпечує додаткову підтримку під час стояння чи ходьби на зустрічах.",
+"4": "Золотисті та сріблясті сережки додають ніжний блиск до твоєї зони декольте, ледь помітно переливаючись протягом робочого дня. Їхні двоколірні тони гармонійно поєднуються як з теплом твоєї шкіри, так і з прохолодними відтінками офісного середовища, надаючи саме ту кількість елегантності.",
+"5": "Ця червона поясна сумка слугує яскравим акцентом, який додає жвавості до твого нейтрального палітри. Її сміливий колір чудово виділяється на бежевому костюмі, а функціональний дизайн дозволяє тобі залишатися організованою і готовою до будь-яких робочих потреб.",
+"6": "Я підібрала для тебе солідний ансамбль для офісного дня, який поєднує професійну елегантність з ненав’язливою витонченістю. В основі — приталений бежевий жилет у парі із завуженими штанами, створюючи бездоганний структурований силует, ідеальний для робочого місця. Щоб пом’якшити цей елегантний образ та додати творчий штрих, я додала квітчасту блузку під жилет, щоб ввести текстуру й тепло у твою осінню палітру. Образ завершують бордові лофери, які пропонують насичений колір, зберігаючи при цьому комфорт протягом довгих годин за робочим столом. Золотисті та сріблясті прикраси і червона поясна сумка доповнюють образ, надаючи достатньо деталей для динамічності без надмірної професійності.",
+"7": "Заправ квітчасту блузку під жилет, щоб визначити лінію талії й створити чистий, стрункий силует для твого офісного вбрання.",
+"8": "Носи бордові лофери з упевненістю; їхній насичений відтінок гармонійно поєднується з нейтральними тонами костюма, залишаючись практичним для щоденного носіння.",
+"9": "Тримай червону поясну сумку на боці, щоб звільнити руки для робочих речей і додати сміливий акцент, який привертає увагу.",
+"10": "Широкі штани зі стрілками, з фігурним поясом, з італійської костюмної тканини. — Замінила нейтральний елемент у слоті, щоб зберегти образ теплим та гармонійним для осіннього офісного дня.",
+"11": "Поясна сумка з червоної шкіри з логотипом, Приталений бежевий жилет — Формальний розстібнутий комір прийнятний, оскільки твідовий піджак і бордові лофери створюють поєднання високого й низького стилів, яке краще слугує твоєму осінньому офісному дню, додаючи текстуру та багатство, залишаючись у межах відповідного випадку.",
+"12": "LeBERDES Лофери бордові — Додала взуття, щоб завершити образ і оцінити пропорції подолу."
+}

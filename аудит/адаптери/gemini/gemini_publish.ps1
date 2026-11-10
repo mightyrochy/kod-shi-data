@@ -77,6 +77,7 @@ $script:RunCodes = @{
     TASK_TOO_LONG = 'наряд довший за 30 тис. знаків'; ENGINE_MISSING = 'рушія моделі нема на ноутбуці'; CRASH = 'збій обгортки gemini'
     STALE = 'PR закритий, голова змінилася або це автозвіт'; REVIEW_API = 'не вдалося звірити PR через API'
     EMPTY_PLAN = 'у злитому з попереднього прогону нема рядків ЖИВИЙ ПІСЛЯ: прогону й PR нема'
+    PLAN_FAILED = 'план живого не збудовано після всіх повторів (GitHub без входу, сторінки PR): потрібна людина'
     INTERRUPTED = 'прогін перервано (вимкнення чи сон ноутбука)'
 }
 $script:IsolationChecks = @{
@@ -264,10 +265,14 @@ function Get-Sha256Hex([string]$Text) {
     -join ($bytes | ForEach-Object { $_.ToString('x2') })
 }
 
-function Get-BadLine([string]$Id, [string]$Why) {
+function Get-BadLine([string]$Id, [string]$Why, $Failure = $null) {
     # Єдиний викликач — Get-Line. Його режим читання не споживає повідомлення STATE_INVALID.
     $statusOnly = Get-Variable -Name StatusOnly -Scope 1 -ValueOnly -ErrorAction SilentlyContinue
     if ($statusOnly) { return $null }
+    if ($null -eq $Failure) {
+        try { throw [IO.InvalidDataException]::new($Why) } catch { $Failure = $_ }
+    }
+    [void](Write-StateFailureDiagnostic 'STATE_INVALID' $Failure (Join-Path $OutDir ($Id + '.json')) $Why)
     Write-WrapperLog "стан $Id $Why — не опубліковано"
     if (Test-Seen ('bad ' + (Get-Date -Format 'yyyyMMdd'))) { return $null }
     [pscustomobject]@{ Outbox = 'GEMINI ОБГОРТКА: ЗАБЛОКОВАНО gemini/невідомо STATE_INVALID' }
@@ -386,7 +391,9 @@ function Update-SleepEvents {
         if ($event.announced) { continue }
         $from = Get-SleepTime $event.from; $to = Get-SleepTime $event.to
         $n = Get-SleepTaskCount $event
-        $line = "GEMINI ОБГОРТКА: СОН $($from.ToString('yyyy-MM-ddTHH:mm:ssZ')) → $($to.ToString('yyyy-MM-ddTHH:mm:ssZ')), нарядів $n"
+        # Нове завантаження — ноутбук був вимкнений (чи втратив живлення), а не спав: інша назва, той самий дозвіл повтору.
+        $kind = $(if ([string](Get-Prop $event 'source') -ceq 'heartbeat/boot') { 'ВИМКНЕНО-СТАРТ' } else { 'СОН' })
+        $line = "GEMINI ОБГОРТКА: $kind $($from.ToString('yyyy-MM-ddTHH:mm:ssZ')) → $($to.ToString('yyyy-MM-ddTHH:mm:ssZ')), нарядів $n"
         # Стале ім'я витримує збій між записом вихідних і збереженням announced.
         Add-OutboxLine ($to.ToString('yyyyMMdd-HHmmss') + '-' + ([regex]::Match($event.key, '^[0-9a-f]{12}').Value) + '.txt') $line # Суфікс — формат чинного OutboxNamePattern.
         $event.announced = $true
@@ -440,9 +447,10 @@ $script:SleepEvents = @()
 # 'RETRY' — пуш не вдався: той самий стан ще раз на наступному запуску, рядок — лише після години невдач.
 function Get-Line([string]$Id, [switch]$StatusOnly) {
     $path = Join-Path $OutDir ($Id + '.json')
-    if ((Get-Item -LiteralPath $path).Length -gt 65536) { return Get-BadLine $Id 'завеликий' }
-    try { $s = [System.IO.File]::ReadAllText($path, $script:Utf8) | ConvertFrom-Json }
-    catch { return Get-BadLine $Id 'не читається як JSON' }
+    try {
+        if ((Get-Item -LiteralPath $path).Length -gt 65536) { return Get-BadLine $Id 'завеликий' }
+        $s = [System.IO.File]::ReadAllText($path, $script:Utf8) | ConvertFrom-Json
+    } catch { return Get-BadLine $Id 'не читається як JSON' $_ }
     # Облік живлення використовує той самий читач формату й чинну межу Get-Line.
     # Тут вихід до будь-якої публікації, дозволу повтору чи зміни seen.
     if ($StatusOnly) { return $s }
@@ -578,8 +586,9 @@ function Reset-State([string]$Id) {
 $script:OutboxNamePattern = '^[0-9]{8}-[0-9]{6}-[0-9a-f]{12}\.txt$'
 $script:SlugCore = $script:SlugPattern -replace '^\^|\\z$', ''
 $script:OutboxTemplates = @(
-    '\AGEMINI ОБГОРТКА: СОН [0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z → [0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z, нарядів [0-9]{1,5}\z'
+    '\AGEMINI ОБГОРТКА: (?:СОН|ВИМКНЕНО-СТАРТ) [0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z → [0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z, нарядів [0-9]{1,5}\z'
     '^GEMINI ОБГОРТКА: ЛАНЦЮГ CHAIN_[A-Z_]{1,32}(?: [A-Za-z0-9]{1,40} (?:[a-z_]{1,40}\.ps1:[0-9]{1,5}|[A-Za-z][A-Za-z0-9-]{0,79}))?\z',
+    '^GEMINI ОБГОРТКА: ЛАНЦЮГ CHAIN_FAILED [A-Za-z0-9]{1,40} (?:[a-z_]{1,40}\.ps1:[0-9]{1,5}|[A-Za-z][A-Za-z0-9-]{0,79}) ШЛЯХ "(?:[A-Za-z]:\\\\|/)(?:[^"\\\x00-\x1f]|\\["\\]|\\u[0-9a-fA-F]{4}){1,4096}"\z',
     '^GEMINI ОБГОРТКА: ОНОВЛЕНО [0-9a-f]{40} СЕКУНД [0-9]{1,12}\z',
     '^GEMINI ОБГОРТКА: ОНОВЛЕННЯ [0-9a-f]{40} UPDATE_[A-Z_]{1,32}\z',
     "\AGEMINI ОБГОРТКА: ГОТОВО (?:gemini|codex|claude)/$script:SlugCore [0-9a-f]{40}(?: КВОТА [A-Z0-9_]{2,40} (?:100|[1-9]?[0-9]))?(?: МОДЕЛЬ [a-z0-9][a-z0-9.-]{1,63})?\z"
@@ -602,6 +611,10 @@ $script:QuarantineCodes = @('BAD_SIZE', 'EMPTY', 'BOM', 'BAD_UTF8', 'NOT_ONE_LIN
 # Порожній рядок — рядок збігся з шаблоном; інакше код причини.
 function Test-OutboxLine([string]$Line) {
     if ($Line.Contains('..')) { return 'NO_TEMPLATE' }
+    if ($Line -cmatch ' ШЛЯХ (".*")\z') {
+        try { $path = ConvertFrom-Json $Matches[1] } catch { return 'NO_TEMPLATE' }
+        if ($path -cmatch '[\x00-\x1f\x7f]' -or -not [IO.Path]::IsPathRooted($path)) { return 'NO_TEMPLATE' }
+    }
     foreach ($t in $script:OutboxTemplates) { if ($Line -cmatch $t) { return '' } }
     'NO_TEMPLATE'
 }
@@ -714,7 +727,7 @@ function Get-DispatcherId {
 
 # Коди ЗАБЛОКОВАНО, після яких диспетчерові нічого робити: позначка вже даремна чи повтор іде в черзі.
 # Кожен інший код (зокрема невідомий) будить — безпечне за замовчуванням. Доказ — у тілі коміту «тихі пробудження».
-$script:QuietBlockedCodes = '^(?:STALE|REVIEW_API|EMPTY_PLAN)$'
+$script:QuietBlockedCodes = '^(?:STALE|REVIEW_API|EMPTY_PLAN|NETWORK_WAIT)$'
 $script:LocalLinesCap = 64
 # QUOTA0_<ГРУПА> будить раз на вікно квоти: нульова квота вимагає від диспетчера перенаправити наряд (слово власника 30.10).
 # Вікно — до скидання (хвилини з _M<хв>; нема — стеля), стан у теці стану обгортки переживає перезапуск процесу.
@@ -987,7 +1000,7 @@ function Main {
             $statePath = Join-Path (Join-Path $WorkDir 'state') ($id + '.json')
             if (Test-Path -LiteralPath $statePath) { continue }
             try { $line = Get-Line $id }
-            catch { Write-WrapperLog "стан ${id}: $($_.Exception.Message)"; $line = Get-BadLine $id 'не обробився' }
+            catch { Write-WrapperLog "стан ${id}: $($_.Exception.Message)"; $line = Get-BadLine $id 'не обробився' $_ }
             if ($line -is [string] -and $line -eq 'RETRY') { continue }
             if ($line -isnot [string] -and $null -ne $line) {
                 # Кінець прогону: рядок — у теку вихідних під id стану; доставка — з неї, як для рядків інших скриптів.

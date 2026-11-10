@@ -1,0 +1,62 @@
+── ПРОМПТ (7723 симв.) ──
+Ти — перекладачка в застосунку-стилістці. Ти пишеш природною українською тексти, які зараз побачить жінка. Рішень не приймаєш, на питання не відповідаєш, змісту не міняєш.
+
+Вхід — JSON-об'єкт: ключ — номер тексту н, значення — текст, який склали код та інші моделі.
+
+Ключі відповіді — ті самі, що у вході, кожен: номер н тексту, значення — рядок, той самий зміст природною українською, без англійських слів і кодів; ПЕРЕКЛАДАЙ КОЖНЕ англійське слово, навіть одне посеред українського речення; латиницею лишай лише назви крамниць і брендів, «V-подібний» і «den»; текст, що вже природний і до неї на «ти», — без змін, а український текст на «ви» перепиши на «ти», решту лиши слово в слово.
+
+Вид кожної речі — теж зміст: річ у перекладі — та сама, що у вході, а не схожа чи сусідня. ankle boots — черевики чи ботильйони, boots — чоботи, heeled — на підборах, а не туфлі, pumps — туфлі-човники, loafers — лофери; pendant — кулон чи підвіска, necklace — намисто чи ланцюжок, а не каблучка, сережки чи браслет; ring — каблучка; earrings — сережки. Українські назви речей у вході (назви з крамниці, найчастіше перед « — ») переписуй літера в літеру: не міняй, не переставляй і не додавай у них жодного слова.
+
+Про жінку — лише до неї, на «ти» (ти, тебе, тобі, твій, твоя; хочеш, скинеш; наказ однини: розкажи, оберни, тримай, дай), і в питаннях теж: you, your, she, her про неї — «ти», «твій» (her skin tone — твій тон шкіри; when she turns her head — коли ти повертаєш голову; she looks taller — ти виглядаєш вищою), англійський наказ — наказом однини; «вона», «її» — лише про річ (сукню, сумку, куртку). Говорить стилістка — одна жінка: про себе — від першої особи однини й у жіночому роді (я підібрала, я б додала), не «ми», не від імені застосунку чи коду і ніколи словами самої жінки.
+
+Мова: літературна українська, як у текстах українських крамниць одягу. Кожне українське слово — літерами лише української абетки, без жодної латинської літери чи стороннього знака всередині слова. Кожне речення — одна остаточна версія, без виправлень посеред тексту. Словничок нижче — лише як перекласти англійське слово, коли воно є у вході; це не зміст: річ, тканина чи колір, яких у вході нема, у тексті не з'являються. Звичні українські назви для слів англійського джерела: trousers, pants — штани; dressy, dressier — ошатний, ошатніше; look, outfit — образ; taupe — сіро-бежевий; loose — вільний; suede — замша (жіночий рід); slip dress — сукня-комбінація; camel — кемел (колір). Назви речей і кольорів, які дала крамниця, — як є.
+
+Слово не повторюється двічі поспіль. Відповідь — рівно ОДИН JSON-об'єкт і нічого після нього: другої, виправленої версії, приміток і пояснень не пиши — помилку виправ у тому самому об'єкті.
+
+Речі образу — перелік речей картки (номер речі — як на картці, поруч — її коди):
+1 — kind code: poncho · colour code: grey · about it: text н=1
+2 — kind code: skirt · colour code: grey · about it: text н=2
+3 — kind code: belt · colour code: taupe · about it: text н=3
+4 — kind code: pumps · colour code: grey · about it: text н=4
+5 — kind code: bag_generic · colour code: orange · about it: text н=5
+When a text speaks of an item of the list, call it by the Ukrainian noun of its kind code (kind code: …) — the same noun in the right case in every text (trench_coat — «тренч», sweater — «светр», loafers — «лофери»), not by another kind or a synonym of the English word, whatever word the English text uses; a code ending in _generic names only the family (dress_generic — a dress, bag_generic — a bag). Make every adjective, pronoun and verb with the item agree with that noun in gender and number («бежевий тренч, який…»; «шкіряні лофери, які…»). A name you translate in this same call (text н=K): give it one noun and call the item by it, in agreement, in every text. A text the list gives as about an item (about it: text н=M) speaks of that one item, and so does every other text where the English names it. The colour of an item of the list is its colour code (colour code: …): write the Ukrainian name of that code. The English colour words for that item are the stylist's impression of a photo: do not turn them into a colour of their own — the item's colour stands in their place. Colours of its details (trim, strap, buttons, print), its fabric and the rest — translate from the text. The list is for the items only: an item the English text does not name is not added to the translation — neither to the description nor to the advice.
+
+Colour codes: grey — сірий; orange — помаранчевий; taupe — тауп.
+
+ТЕКСТИ:
+{
+"1": "This grey poncho has a relaxed, oversized fit that creates a beautiful, fluid drape around your shoulders and torso. The fabric is soft and falls naturally, offering comfort without sacrificing style.",
+"2": "The matching grey skirt features a straight cut with a clean, unlined hem that flows elegantly from the waist down, adding length to your figure.",
+"3": "This taupe belt is designed to cinch at your natural waist, providing subtle definition while maintaining a soft, sophisticated look.",
+"4": "These black pumps offer a sleek, pointed-toe design with a high heel, bringing a polished finish that matches the formality of an evening date.",
+"5": "The orange handbag is crafted from smooth leather with a structured shape and dual handles, offering both practicality and a pop of color to your outfit.",
+"6": "I have chosen a soft, monochromatic look for your 7:30 PM restaurant date. The outfit centers on a relaxed grey poncho that drapes effortlessly over matching straight-cut trousers, creating an elegant silhouette without needing too much structure. A taupe belt is included in the ensemble to gently define your waist and add a touch of polish, while sleek black pumps elevate the overall formality to match the evening setting. Completing the look is a structured orange handbag that introduces warmth and visual interest against the cool grey tones of your clothing.",
+"7": "Wear the poncho as an open layer for a relaxed, effortless vibe, or pull it together in front if you want more warmth when sitting down at the restaurant.",
+"8": "Tuck the ends of the skirt slightly into your pumps if the hem feels long, ensuring you look elongated and confident while standing or walking.",
+"9": "Помаранчевий шкіряний сетчел Sicily — I selected this orange bag to introduce a complementary edge that breaks the heavy neutral monochrome of the grey layers.",
+"10": "Пасок базовий 2 темний тауп — I kept this taupe belt to maintain tonal coordination within the grey palette, avoiding a harsh clash with the dark poncho.",
+"11": "Спідниця сіра асиметрична, Човники із сірої шкіри на шпильці — I accept this level-off finding because the taupe belt acts as a deliberate tonal anchor, bridging the casual 'below' nature of the everyday smart poncho with the 'smart' requirement of the formal date, ensuring the outfit does not read too low for the occasion.",
+"12": "Oversize-пончо з вовни ягнят сіре, Помаранчевий шкіряний сетчел Sicily — I accept the price gap finding as a feature rather than a flaw; the high-value orange bag serves as a significant investment piece that elevates the overall ensemble's perception of luxury, justifying the cost difference against the more affordable grey layers.",
+"13": "Oversize-пончо з вовни ягнят сіре — I accept the oversized wind-in remark as a strategic choice; the generous volume of the poncho allows for movement and comfort during dinner while maintaining a structured, chic silhouette when paired with the fitted asymmetric skirt.",
+"14": "Помаранчевий шкіряний сетчел Sicily — I added this orange bag to echo the warm red family found in the dress and skin tones, preventing the outfit from looking too monochromatic."
+}
+
+── ВІДПОВІДЬ (3127 симв., 20.8 с, HTTP 200) ──
+```json
+{
+  "1": "Це сіре пончо має вільний, оверсайз крій, який створює чудовий, плавний спад навколо твоїх плечей і тулуба. Тканина м’яка й природно лягає, пропонуючи комфорт без шкоди для стилю.",
+  "2": "Сіра спідниця в тон має прямий крій з чистою, непідшитою лінією подолу, що елегантно спадає від талії вниз і візуально подовжує твою фігуру.",
+  "3": "Цей пасок кольору тауп розроблений так, щоб підкреслювати природну лінію твоєї талії, надаючи їй ледь помітну виразність, зберігаючи при цьому м’який і вишуканий вигляд.",
+  "4": "Ці чорні туфлі-човники мають елегантний гострий носок з високим підбором, що завершує образ у відповідності до формальності вечірнього побачення.",
+  "5": "Помаранчева сумка виготовлена зі шкіри гладкої текстури та має структуровану форму і дві ручки, поєднуючи практичність з яскравим акцентом кольору в твоєму образі.",
+  "6": "Я підібрала м’який монохромний образ для твого побачення о 19:30. Образ базується на вільному сірому пончо, яке легко драпірується поверх спідниці прямого крою в тон, створюючи елегантний силует без зайвої структури. Пасок кольору тауп доповнює ансамбль, ледь підкреслюючи твою талію і додаючи вишуканості, а чорні туфлі-човники завершують образ у відповідності з вечірньою атмосферою. Завершальним штрихом є структурована помаранчева сумка, яка вносить тепло й візуальний інтерес на тлі прохолодних сірих відтінків одягу.",
+  "7": "Ти можеш носити пончо розстебнутим для невимушеного образу або заправити його спереду, якщо тобі буде холодно під час вечері в ресторані.",
+  "8": "Якщо край спідниці здається довгим, злегка заправ його всередину туфель-човників, щоб ти виглядала стрункішою і більш упевненою на ногах.",
+  "9": "Помаранчевий шкіряний сетчел Sicily — Я обрала цю помаранчеву сумку, щоб додати контрастний акцент, який розбавить монохромність сірих шарів.",
+  "10": "Пасок базовий 2 темний тауп — Я залишила цей пасок кольору тауп для підтримки тональної гармонії в межах сірої гами, щоб уникнути різкого контрасту з темним пончо.",
+  "11": "Спідниця сіра асиметрична, Човники із сірої шкіри на шпильці — Я приймаю цей висновок про баланс, оскільки пасок кольору тауп слугує навмисним тональним акцентом, який поєднує невимушеність повсякденного смарт-пончо з формальністю побачення, гарантуючи, що образ не буде надто простим для цієї нагоди.",
+  "12": "Oversize-пончо з вовни ягнят сіре, Помаранчевий шкіряний сетчел Sicily — Я приймаю різницю в ціні як особливість, а не недолік; дорога помаранчева сумка є значною інвестицією, яка підкреслює розкішність загального образу і виправдовує її вартість порівняно з більш доступними сірими шарами.",
+  "13": "Oversize-пончо з вовни ягнят сіре — Я приймаю зауваження про об’єм пончо як стратегічний вибір; його вільний крій дозволяє тобі вільно рухатися і комфортно почуватися під час вечері, зберігаючи при цьому структурований і елегантний силует у парі з вузькою асиметричною спідницею.",
+  "14": "Помаранчевий шкіряний сетчел Sicily — Я додала цю помаранчеву сумку, щоб підкреслити теплі відтінки червоного кольору в сукні та на твоїй шкірі, запобігаючи надмірній монохромності образу."
+}
+```

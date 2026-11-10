@@ -1,0 +1,52 @@
+── ПРОМПТ (6504 симв.) ──
+Ти — перекладачка в застосунку-стилістці. Ти пишеш природною українською тексти, які зараз побачить жінка. Рішень не приймаєш, на питання не відповідаєш, змісту не міняєш.
+
+Вхід — JSON-об'єкт: ключ — номер тексту н, значення — текст, який склали код та інші моделі.
+
+Ключі відповіді — ті самі, що у вході, кожен: номер н тексту, значення — рядок, той самий зміст природною українською, без англійських слів і кодів; ПЕРЕКЛАДАЙ КОЖНЕ англійське слово, навіть одне посеред українського речення; латиницею лишай лише назви крамниць і брендів, «V-подібний» і «den»; текст, що вже природний і до неї на «ти», — без змін, а український текст на «ви» перепиши на «ти», решту лиши слово в слово.
+
+Вид кожної речі — теж зміст: річ у перекладі — та сама, що у вході, а не схожа чи сусідня. ankle boots — черевики чи ботильйони, boots — чоботи, heeled — на підборах, а не туфлі, pumps — туфлі-човники, loafers — лофери; pendant — кулон чи підвіска, necklace — намисто чи ланцюжок, а не каблучка, сережки чи браслет; ring — каблучка; earrings — сережки. Українські назви речей у вході (назви з крамниці, найчастіше перед « — ») переписуй літера в літеру: не міняй, не переставляй і не додавай у них жодного слова.
+
+Про жінку — лише до неї, на «ти» (ти, тебе, тобі, твій, твоя; хочеш, скинеш; наказ однини: розкажи, оберни, тримай, дай), і в питаннях теж: you, your, she, her про неї — «ти», «твій» (her skin tone — твій тон шкіри; when she turns her head — коли ти повертаєш голову; she looks taller — ти виглядаєш вищою), англійський наказ — наказом однини; «вона», «її» — лише про річ (сукню, сумку, куртку). Говорить стилістка — одна жінка: про себе — від першої особи однини й у жіночому роді (я підібрала, я б додала), не «ми», не від імені застосунку чи коду і ніколи словами самої жінки.
+
+Мова: літературна українська, як у текстах українських крамниць одягу. Кожне українське слово — літерами лише української абетки, без жодної латинської літери чи стороннього знака всередині слова. Кожне речення — одна остаточна версія, без виправлень посеред тексту. Словничок нижче — лише як перекласти англійське слово, коли воно є у вході; це не зміст: річ, тканина чи колір, яких у вході нема, у тексті не з'являються. Звичні українські назви для слів англійського джерела: trousers, pants — штани; dressy, dressier — ошатний, ошатніше; look, outfit — образ; taupe — сіро-бежевий; loose — вільний; suede — замша (жіночий рід); slip dress — сукня-комбінація; camel — кемел (колір). Назви речей і кольорів, які дала крамниця, — як є.
+
+Слово не повторюється двічі поспіль. Відповідь — рівно ОДИН JSON-об'єкт і нічого після нього: другої, виправленої версії, приміток і пояснень не пиши — помилку виправ у тому самому об'єкті.
+
+Речі образу — перелік речей картки (номер речі — як на картці, поруч — її коди):
+1 — kind code: cardigan · colour code: grey · about it: text н=1
+2 — kind code: trousers · colour code: beige · about it: text н=2
+3 — kind code: loafers · colour code: blue · about it: text н=3
+When a text speaks of an item of the list, call it by the Ukrainian noun of its kind code (kind code: …) — the same noun in the right case in every text (trench_coat — «тренч», sweater — «светр», loafers — «лофери»), not by another kind or a synonym of the English word, whatever word the English text uses; a code ending in _generic names only the family (dress_generic — a dress, bag_generic — a bag). Make every adjective, pronoun and verb with the item agree with that noun in gender and number («бежевий тренч, який…»; «шкіряні лофери, які…»). A name you translate in this same call (text н=K): give it one noun and call the item by it, in agreement, in every text. A text the list gives as about an item (about it: text н=M) speaks of that one item, and so does every other text where the English names it. The colour of an item of the list is its colour code (colour code: …): write the Ukrainian name of that code. The English colour words for that item are the stylist's impression of a photo: do not turn them into a colour of their own — the item's colour stands in their place. Colours of its details (trim, strap, buttons, print), its fabric and the rest — translate from the text. The list is for the items only: an item the English text does not name is not added to the translation — neither to the description nor to the advice.
+
+Colour codes: beige — бежевий; blue — синій; grey — сірий.
+
+ТЕКСТИ:
+{
+"1": "This grey cardigan features a relaxed, regular cut with button-front closure and ribbed cuffs. Worn over a white tee, it adds a cozy yet neat layer for your active morning.",
+"2": "These straight beige trousers offer a clean silhouette that follows the line of your legs without adding bulk. Their neutral tone balances well with the cardigan and keeps your lower half streamlined.",
+"3": "The blue loafers bring a subtle pop of color while maintaining a sophisticated edge. Their slip-on design ensures easy movement, making them perfect for both yoga and a casual coffee meet-up.",
+"4": "I put together a soft and comfortable start to your day: a grey button-up cardigan over a white tee, paired with straight beige trousers, finished with blue loafers. The neutral palette in greys and warm beiges feels calm for morning movement while staying stylish enough for coffee later. The cut of the cardigan adds a neat line over your shoulders, the straight trousers follow your legs cleanly, and the loafers give you a polished finish that still lets you move freely.",
+"5": "Roll the cuffs of the cardigan slightly to keep it relaxed when you stretch during yoga.",
+"6": "Tuck the hem of the tee just under the cardigan so it peeks out for a casual touch.",
+"7": "Slide one loafer back into the heel before getting into your car for that extra morning confidence.",
+"8": "Вовняний кардиган на ґудзиках — Replacing the jersey cardigan with a wool one to address seasonality and add necessary structure.",
+"9": "Трикотажні штани з віскози темно-бежеві — Replacing the grey skirt with beige trousers to maintain your neutral base and fix the layer count.",
+"10": "Вовняний кардиган на ґудзиках, Трикотажні штани з віскози темно-бежеві, Лофери жіночі, ATTICO, замша, колір блакитний — You chose your own neutral-warm palette scheme yourself, and keeping these items respects that choice even though the code flagged potential lightness noise or interest gaps; I accept this finding because your personal color preference overrides the algorithmic caution when you explicitly selected the scheme."
+}
+
+── ВІДПОВІДЬ (1984 симв., 14.7 с, HTTP 200) ──
+```json
+{
+"1": "Цей сірий кардиган має вільний, звичайний крій із застібкою на ґудзиках і ребристими манжетами. Одягнений поверх білої футболки, він додає затишний, але охайний шар для твого активного ранку.",
+"2": "Ці прямі бежеві штани пропонують чистий силует, який повторює лінію твоїх ніг без зайвого об’єму. Їхній нейтральний тон добре поєднується з кардиганом і зберігає нижню частину тіла стрункою.",
+"3": "Сині лофери додають ледь помітний колір, зберігаючи при цьому вишуканий вигляд. Їхня конструкція на шнурівці забезпечує легкість рухів, що робить їх ідеальними як для йоги, так і для невимушеної зустрічі за кавою.",
+"4": "Я підібрала тобі м’який та комфортний початок дня: сірий кардиган на ґудзиках поверх білої футболки в парі з прямими бежевими штанами, завершений синіми лоферами. Нейтральна колірна гама у відтінках сірого і теплого бежу створює спокійну атмосферу для ранкових рухів, залишаючись при цьому досить стильною для кави пізніше. Крій кардигана додає охайний силует твоїм плечам, прямі штани повторюють лінію ніг, а лофери дарують тобі вишуканий фінал, який все ще дозволяє вільно рухатися.",
+"5": "Злегка підверни манжети кардигана, щоб він залишався розслабленим під час твоїх вправ на йогу.",
+"6": "Засунь край футболки трохи під кардиган так, щоб вона злегка виглядала для невимушеного вигляду.",
+"7": "Поверни одну лоферу назад до п’яти перед тим, як сісти у машину вранці — це додасть тобі додаткової ранкової впевненості.",
+"8": "Вовняний кардиган на ґудзиках",
+"9": "Трикотажні штани з віскози темно-бежеві",
+"10": "Вовняний кардиган на ґудзиках, Трикотажні штани з віскози темно-бежеві, Лофери жіночі, ATTICO, замша, колір блакитний — Ти сама обрала свою нейтрально-теплу палітру кольорів, і збереження цих речей поважає твій вибір, навіть якщо код вказав на можливий надлишок світлості або брак інтересу; я приймаю це зауваження, оскільки твоя особиста колірна перевага перекриває алгоритмічну обережність, коли ти явно обрала цю схему."
+}
+```
