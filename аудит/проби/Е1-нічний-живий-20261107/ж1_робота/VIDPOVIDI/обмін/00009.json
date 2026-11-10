@@ -1,0 +1,27 @@
+{
+ "версія": 1,
+ "запит": {
+  "model": "qwen/qwen3.5-9b",
+  "max_tokens": 4000,
+  "messages": [
+   {
+    "role": "user",
+    "content": [
+     {
+      "type": "text",
+      "text": "{\"task\": {\"role\": \"You are a personal stylist. Put together one outfit for her case.\", \"rules\": [\"Items one per line, garments first, then shoes and accessories: what it is, cut, length, color with its hex code, fabric.\", \"An outer layer only when the weather needs it; at +20 °C and warmer there is none.\", \"Last, why this outfit works, in 3–4 sentences.\"], \"limits\": [\"Do not name lightness numbers, body measurements or height in numbers, or body-type labels, and do not say you had limits.\", \"The answer is plain text laid out as the rules say, not JSON.\"], \"language\": \"English\", \"answer\": \"OUTFIT_TEXT\", \"input\": [\"\\\"case\\\" — her case: the occasion, where and when, the weather, the dress code, her wishes and refusals — as codes, her own words as quotes; do not take an item that goes against her refusals or her words\", \"\\\"formality\\\" — dress band; origin in sources: home (loungewear, athleisure, sportswear) < everyday (jeans, a T-shirt and sneakers; neat casual, dark denim) < neat (business: a blouse, a shirt or a refined knit with trousers or a skirt, a textured jacket or a cardigan, loafers, ballet flats or ankle boots; social: a day dress, a refined knit with a skirt or trousers, a textured jacket, neat flats or ankle boots) < smart (business: a jacket with trousers or a skirt, a blouse or a shirt, loafers or pumps; a sheath dress with a jacket; social: a cocktail dress, heeled shoes) < formal (business: a business suit — a jacket with trousers or a skirt of one fabric — with a blouse, pumps; social: a formal dress of a noble fabric, heeled shoes) < very_smart (an evening gown) < ceremonial (a full-length evening gown with long gloves)\"]}, \"case\": {\"field_quotes\": {\"occasion\": \"робочий день в офісі\", \"place\": \"в офісі\"}, \"formality_reason\": \"norm\", \"sources\": {\"field_quotes\": {\"kind\": \"default\"}, \"formality_reason\": {\"kind\": \"default\"}, \"refusals\": {\"kind\": \"reading\"}, \"place\": {\"kind\": \"her\", \"quote\": \"в офісі\"}, \"occasion\": {\"kind\": \"reading\", \"quote\": \"робочий день в офісі\"}, \"precipitation\": {\"kind\": \"reading\"}, \"formality\": {\"kind\": \"reading\"}, \"event\": {\"kind\": \"reading\"}}, \"event\": \"робочий день в офісі\", \"occasion\": \"work\", \"place\": \"office\", \"formality\": [\"everyday\"], \"season\": \"autumn\"}}"
+     }
+    ]
+   }
+  ],
+  "temperature": 1
+ },
+ "відповідь": {
+  "status": 200,
+  "contentType": "application/json",
+  "headers": {
+   "x-model": "qwen/qwen3.5-9b"
+  },
+  "body": "{\"content\":[{\"type\":\"text\",\"text\":\"A navy blue cotton-poplin button-front shirt, tailored with a slightly relaxed fit and a crisp collar, soft white in hex #FAFAFA.\\nSlim-fit dark denim trousers in indigo wash, hex #2F4F4F, featuring a straight leg and mid-rise waist.\\nMinimalist silver pendant necklace on a delicate chain, hex #C0C0C0.\\nLeather ankle boots in brown, hex #8B4513, with a low block heel for comfort during the long day.\\n\\nThis outfit works because it perfectly balances professionalism with comfort for a standard office day in autumn, adhering to the everyday dress code you requested. The dark denim and cotton shirt provide a neat yet approachable look that fits seamlessly into an office environment without feeling stiff. The earthy tones of the brown boots complement the cool blue of the denim and shirt while keeping the silhouette grounded and practical for cooler weather. By avoiding overly formal fabrics or accessories, this ensemble respects your preference for a natural, unforced style suitable for daily work tasks.\"}],\"usage\":{\"input_tokens\":610,\"output_tokens\":216},\"stop_reason\":\"end_turn\"}"
+ }
+}

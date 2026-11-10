@@ -1,0 +1,749 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="color-scheme" content="light only">
+<meta name="robots" content="noindex">
+<title>Огляд кольору речей</title>
+<style>
+:root{color-scheme:light only;--сіре:#8a8a8a;--світле:#f1f1f1;--текст:#1b1b1b;--дрібний:#555;--межа:#c9c9c9;--акцент:#1f3a5f;--готово:#2e6b3a;--увага:#9a3b00}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--світле);color:var(--текст);font:16px/1.4 -apple-system,system-ui,"Segoe UI",Roboto,sans-serif;
+  padding:env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left)}
+body.заблоковано{position:fixed;inset:0;width:100%;overflow:hidden}
+main{max-width:480px;margin:0 auto;padding:10px 12px 28px}
+h1{font-size:20px;margin:6px 0 8px}
+h2{font-size:16px;margin:14px 0 6px}
+p{margin:6px 0}
+button{font:inherit;color:inherit;min-height:44px;padding:8px 12px;border:1px solid var(--межа);border-radius:10px;background:#fff;touch-action:manipulation}
+button:disabled{opacity:.45}
+button.головна{background:var(--акцент);border-color:var(--акцент);color:#fff;font-weight:600}
+input[type=text]{font:inherit;width:100%;min-height:44px;padding:8px 10px;border:1px solid var(--межа);border-radius:10px;background:#fff}
+.дрібно{font-size:13px;color:var(--дрібний)}
+.помилка{color:var(--увага);font-size:14px;min-height:18px}
+.панель{background:#fff;border:1px solid var(--межа);border-radius:12px;padding:10px 12px;margin:8px 0}
+.правила{margin:6px 0 0;padding-left:20px;font-size:14px}
+.правила li{margin:3px 0}
+.верх{display:flex;align-items:center;gap:6px;position:sticky;top:0;background:var(--світле);padding:6px 0;z-index:5}
+.верх .лічба{flex:1;text-align:center;font-weight:600}
+.верх button{min-width:44px;padding:8px}
+.позначка{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--дрібний)}
+.позначка button{min-height:32px;padding:2px 8px;font-size:13px}
+.фото{background:var(--сіре);border-radius:12px;padding:6px 0;text-align:center;position:relative}
+.стрічка{display:flex;overflow-x:auto;overflow-y:hidden;scroll-snap-type:x mandatory;-webkit-overflow-scrolling:touch;scrollbar-width:none;overscroll-behavior-x:contain}
+.стрічка::-webkit-scrollbar{display:none}
+.кадр{flex:0 0 100%;scroll-snap-align:center;scroll-snap-stop:always;display:flex;align-items:center;justify-content:center;min-height:30vh;padding:0 6px}
+.кадр img{display:block;max-width:100%;max-height:48vh;object-fit:contain;border-radius:6px;cursor:zoom-in}
+.фото .підказка{position:absolute;right:12px;bottom:12px;background:rgba(0,0,0,.55);color:#fff;font-size:12px;padding:2px 8px;border-radius:10px;pointer-events:none}
+.фото .номер-кадру{position:absolute;left:12px;bottom:12px;background:rgba(0,0,0,.55);color:#fff;font-size:13px;padding:2px 8px;border-radius:10px;pointer-events:none}
+.гортати{display:flex;align-items:center;gap:8px;margin:6px 0 0}
+.гортати .крапки{flex:1;display:flex;justify-content:center;gap:5px;flex-wrap:wrap}
+.гортати .крапки i{width:7px;height:7px;border-radius:50%;background:#bdbdbd}
+.гортати .крапки i.тут{background:var(--акцент)}
+.гортати button{min-width:44px;padding:4px 10px}
+.невдалі{margin-top:8px;width:100%;text-align:left}
+.невдалі.обрано{background:#f6dcd0;border-color:var(--увага);font-weight:600}
+.без-відповідей{color:var(--дрібний);font-size:14px}
+.сітка .невдалі-річ{background:#e4e4e4;border-color:#777;text-decoration:line-through}
+.сітка .запасна{border-style:dashed}
+.тип{font-size:17px;font-weight:600;margin:8px 0 2px}
+.свотчі{display:grid;grid-template-columns:1fr 1fr;gap:8px;background:var(--сіре);border-radius:12px;padding:8px}
+.свотч{background:var(--світле);border-radius:10px;padding:6px}
+.свотч .латка{height:84px;border-radius:8px;border:1px solid rgba(0,0,0,.15)}
+.свотч h3,.слово h3{font-size:14px;margin:6px 0 4px}
+.вибір{display:grid;gap:5px}
+.вибір button{min-height:40px;padding:4px 6px;font-size:14px;text-align:center}
+.вибір button.обрано.п{background:#dcefdc;border-color:var(--готово);font-weight:600}
+.вибір button.обрано.н{background:#f6dcd0;border-color:var(--увага);font-weight:600}
+.вибір button.обрано.з{background:#e4e4e4;border-color:#777;font-weight:600}
+.слово{margin-top:10px}
+.слово .цитата{font-size:17px}
+.слово .вибір{grid-template-columns:1fr 1fr 1fr}
+.колір-речі{margin-top:10px}
+.підібрані{display:flex;gap:8px;margin:6px 0}
+.підібрані .латка{width:64px;height:44px;border-radius:8px;border:1px solid rgba(0,0,0,.2)}
+.вимога{font-size:14px;color:var(--увага)}
+.низ{display:flex;gap:8px;margin-top:14px}
+.низ button{flex:1}
+.сітка{display:grid;grid-template-columns:repeat(8,1fr);gap:5px}
+.сітка button{min-height:40px;padding:0;font-size:14px}
+.сітка .готово{background:#dcefdc;border-color:var(--готово)}
+.сітка .частково{background:#fff3d6;border-color:#b9892b}
+.сітка .тут{outline:3px solid var(--акцент)}
+textarea{width:100%;min-height:150px;font:12px/1.35 ui-monospace,Menlo,Consolas,monospace;border:1px solid var(--межа);border-radius:10px;padding:8px;background:#fff}
+.рядок{display:flex;gap:8px;flex-wrap:wrap;margin:8px 0}
+.рядок button{flex:1;min-width:140px}
+.перелік button{display:inline-block;min-height:32px;padding:2px 8px;margin:2px 3px 2px 0;font-size:14px}
+/* покривало: збільшення фото та кольоровий простір — на весь екран, без Fullscreen API (його нема на iPhone) */
+.покривало{position:fixed;inset:0;z-index:50;background:var(--сіре);display:flex;flex-direction:column;height:100vh;height:100dvh;
+  padding:env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);overscroll-behavior:none;touch-action:none}
+.покривало[hidden]{display:none}
+.покривало .шапка{display:flex;align-items:center;gap:8px;padding:6px 10px;color:#fff;background:rgba(0,0,0,.35)}
+.покривало .шапка b{flex:1;font-size:15px}
+.покривало .шапка button{min-height:40px;color:var(--текст)}
+.покривало .шапка .кадри{display:flex;align-items:center;gap:4px;color:#fff;font-size:14px}
+.покривало .шапка .кадри button{min-width:40px;padding:4px 8px}
+.збільшення{position:relative;overflow:hidden;touch-action:none;flex:1 1 0;min-height:120px;background:var(--сіре);user-select:none;-webkit-user-select:none}
+.збільшення img{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;transform-origin:50% 50%;will-change:transform;
+  -webkit-user-drag:none;pointer-events:none}
+.простір{display:flex;flex-direction:column;flex:1;min-height:0}
+.простір .верх-фото{display:flex;flex:1 1 0;min-height:130px;gap:6px;padding:6px}
+.простір .верх-фото .збільшення{border-radius:8px}
+.колонка-латок{width:76px;display:flex;flex-direction:column;gap:6px}
+.колонка-латок .латка{flex:1;border-radius:8px;border:2px solid transparent;display:flex;align-items:flex-end;justify-content:center;font-size:11px;color:#fff;text-shadow:0 0 3px #000;padding-bottom:3px;touch-action:manipulation}
+.колонка-латок .латка.активний{border-color:#fff;box-shadow:0 0 0 2px #000}
+.колонка-латок .порожня{flex:1;border-radius:8px;border:2px dashed #fff;color:#fff;background:transparent;font-size:12px;min-height:0;padding:2px}
+.поле{padding:0 8px}
+.поле canvas{display:block;width:100%;touch-action:none;border-radius:8px;background:#7c7c7c;cursor:crosshair}
+.смуга{padding:8px 8px 4px}
+.смуга canvas{display:block;width:100%;height:40px;touch-action:none;border-radius:8px}
+.рядок-чисел{padding:2px 10px;font-size:12px;color:#fff;text-shadow:0 0 2px #000;display:flex;justify-content:space-between}
+.дії{display:flex;gap:8px;padding:6px 8px 10px}
+.дії button{flex:1}
+@media (orientation:landscape) and (max-height:520px){
+  .простір{flex-direction:row;flex-wrap:wrap}
+  .простір .верх-фото{flex:1 1 45%;height:calc(100% - 52px)}
+  .простір .права{flex:1 1 50%;display:flex;flex-direction:column}
+}
+</style>
+</head>
+<body>
+<main id="корінь"></main>
+
+<div class="покривало" id="збільшення" hidden>
+  <div class="шапка"><b id="збільшення-підпис">Фото</b><span class="кадри" id="збільшення-кадри"></span><button type="button" id="збільшення-закрити">Закрити</button></div>
+  <div class="збільшення" id="збільшення-поле"><img id="збільшення-фото" alt="Фото речі"></div>
+</div>
+
+<div class="покривало" id="простір" hidden>
+  <div class="шапка"><b>Кольоровий простір</b><span class="кадри" id="простір-кадри"></span><button type="button" id="простір-скасувати">Скасувати</button></div>
+  <div class="простір">
+    <div class="верх-фото">
+      <div class="збільшення" id="простір-збільшення"><img id="простір-фото" alt="Фото речі"></div>
+      <div class="колонка-латок" id="колонка-латок"></div>
+    </div>
+    <div class="права">
+      <div class="рядок-чисел"><span id="простір-текст">Колір речі: проведіть пальцем по полю</span><span id="простір-hex"></span></div>
+      <div class="поле"><canvas id="поле"></canvas></div>
+      <div class="смуга"><canvas id="смуга"></canvas></div>
+      <div class="дії">
+        <button type="button" id="простір-другий">Додати другий колір</button>
+        <button type="button" class="головна" id="простір-готово">Готово</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+"use strict";
+/* Огляд кольору речей: сторінка для людей (не продукт). Набір — sets/<id>.json; відповіді — у пам'яті браузера. */
+const ВЕРСІЯ_ФОРМАТУ = "огляд-кольору/2";
+const КЛЮЧ_НАБОРУ_ЗА_ЗАМОВЧАННЯМ = "sproba1";
+const ВІДПОВІДІ = {п: "правильно", н: "неправильно", з: "не можу сказати"};
+const МАКС_ХРОМА = 0.33;
+
+/* ---------- колір: OKLab / OKLCH (простір сприйняття), sRGB hex ---------- */
+const вЛінійний = (с) => (с <= 0.04045 ? с / 12.92 : Math.pow((с + 0.055) / 1.055, 2.4));
+const зЛінійного = (с) => (с <= 0.0031308 ? 12.92 * с : 1.055 * Math.pow(с, 1 / 2.4) - 0.055);
+function окЛабЗГекса(hex) {
+  const р = числаГекса(hex).map(вЛінійний);
+  const l = Math.cbrt(0.4122214708 * р[0] + 0.5363325363 * р[1] + 0.0514459929 * р[2]);
+  const m = Math.cbrt(0.2119034982 * р[0] + 0.6806995451 * р[1] + 0.1073969566 * р[2]);
+  const s = Math.cbrt(0.0883024619 * р[0] + 0.2817188376 * р[1] + 0.6299787005 * р[2]);
+  return [0.2104542553 * l + 0.793617785 * m - 0.0040720468 * s,
+    1.9779984951 * l - 2.428592205 * m + 0.4505937099 * s,
+    0.0259040371 * l + 0.7827717662 * m - 0.808675766 * s];
+}
+function числаГекса(hex) { return [1, 3, 5].map((і) => parseInt(hex.slice(і, і + 2), 16) / 255); }
+function лінійнийЗОкЛЧ(L, C, h) {
+  const a = C * Math.cos(h), b = C * Math.sin(h);
+  const l = Math.pow(L + 0.3963377774 * a + 0.2158037573 * b, 3);
+  const m = Math.pow(L - 0.1055613458 * a - 0.0638541728 * b, 3);
+  const s = Math.pow(L - 0.0894841775 * a - 1.291485548 * b, 3);
+  return [4.0767416621 * l - 3.3077115913 * m + 0.2309699292 * s,
+    -1.2684380046 * l + 2.6097574011 * m - 0.3413193965 * s,
+    -0.0041960863 * l - 0.7034186147 * m + 1.707614701 * s];
+}
+const вМежах = (р) => р.every((с) => с >= -0.0005 && с <= 1.0005);
+function гексЗОкЛЧ(L, C, h) {
+  const р = лінійнийЗОкЛЧ(L, C, h).map((с) => Math.round(255 * зЛінійного(Math.min(1, Math.max(0, с)))));
+  return "#" + р.map((с) => с.toString(16).padStart(2, "0")).join("");
+}
+function окЛЧЗГекса(hex) {
+  const [L, a, b] = окЛабЗГекса(hex);
+  return {L, C: Math.hypot(a, b), h: Math.atan2(b, a)};
+}
+/* найбільша хрома, яку sRGB вміщає за світлоти L і тону h */
+function максХрома(L, h) {
+  if (L <= 0 || L >= 1) return 0;
+  if (вМежах(лінійнийЗОкЛЧ(L, МАКС_ХРОМА, h))) return МАКС_ХРОМА;
+  let низ = 0, верх = МАКС_ХРОМА;
+  for (let к = 0; к < 18; к++) {
+    const сер = (низ + верх) / 2;
+    if (вМежах(лінійнийЗОкЛЧ(L, сер, h))) низ = сер; else верх = сер;
+  }
+  return низ;
+}
+
+/* ---------- сховище ---------- */
+let набір = null;
+let стан = null;
+let ключСховища = "";
+
+function новийСтан() { return {позначка: "", відповіді: {}, поточна: 0, екран: "початок", кадр: {}}; }
+function зберегти() {
+  try { localStorage.setItem(ключСховища, JSON.stringify(стан)); } catch (_) { /* приватний режим: лише поки сторінка відкрита */ }
+}
+function прочитатиСховище(ключ) {
+  try {
+    const т = localStorage.getItem(ключ);
+    if (т) { const с = JSON.parse(т); if (с && с.відповіді) return Object.assign(новийСтан(), с); }
+  } catch (_) { /* зіпсований запис — починаємо знову */ }
+  return null;
+}
+function завантажити() {
+  const с = прочитатиСховище(ключСховища);
+  if (с) return с;
+  /* відповіді давньої версії набору (до галерей і назв відтінку): свотчі, принт і підібрані кольори ті самі —
+     переносимо; слово родини судили замість назви відтінку — його не переносимо, назву судять наново */
+  for (const давній of набір.відбитки_давні || []) {
+    const д = прочитатиСховище("ohliad-koloru:" + набір.id + ":" + давній);
+    if (!д) continue;
+    const н = новийСтан();
+    н.позначка = д.позначка || "";
+    for (const [номер, в] of Object.entries(д.відповіді)) {
+      н.відповіді[номер] = {св: Object.assign({}, в.св), підібрано: (в.підібрано || []).slice()};
+      if (в.принт) н.відповіді[номер].принт = в.принт;
+    }
+    н.перенесено = давній;
+    return н;
+  }
+  return новийСтан();
+}
+const відповідь = (н) => (стан.відповіді[н] = стан.відповіді[н] || {св: {}, підібрано: []});
+const невдала = (річ) => Boolean(стан.відповіді[річ.номер] && стан.відповіді[річ.номер].невдалі);
+const запасна = (річ) => (набір.запасні || []).includes(річ);
+/* черга людини: 40 речей і стільки запасних (по порядку зерна), скільки речей у черзі позначено «фото невдалі» */
+function черга() {
+  const осн = набір.речі, зап = набір.запасні || [];
+  let к = 0;
+  for (;;) {
+    const ч = осн.concat(зап.slice(0, к));
+    if (к < зап.length && ч.filter(невдала).length > к) к++;
+    else return ч;
+  }
+}
+const галерея = (річ) => річ.галерея.map((ф) => (/^https?:/.test(ф) ? ф : набір.основа + ф));
+const кадрРечі = (річ) => Math.min(стан.кадр[річ.номер] || 0, річ.галерея.length - 1);
+
+/* ---------- стан речі ---------- */
+function потрібенВибір(річ, в) {
+  const А = в.св[річ.свотчі[0].мітка], Б = в.св[річ.свотчі[1].мітка];
+  if (А === "п" || Б === "п") return false;
+  return !(А === "з" && Б === "з");
+}
+function станРечі(річ) {
+  const в = стан.відповіді[річ.номер];
+  if (!в) return "порожньо";
+  if (в.невдалі) return "готово";
+  const відповідено = річ.свотчі.every((с) => в.св[с.мітка]) && в.назва && (!річ.модель.принт.length || в.принт);
+  const колірОк = !потрібенВибір(річ, в) || (в.підібрано && в.підібрано.length > 0);
+  const щоськаз = річ.свотчі.some((с) => в.св[с.мітка]) || в.назва || в.принт || (в.підібрано && в.підібрано.length);
+  if (відповідено && колірОк) return "готово";
+  return щоськаз ? "частково" : "порожньо";
+}
+const готових = () => черга().filter((р) => станРечі(р) === "готово").length;
+
+/* ---------- позначка людини ---------- */
+function перевіритиПозначку(т) {
+  const п = (т || "").trim();
+  if (!п) return "Введіть позначку.";
+  if (п.length > 24) return "Позначка — до 24 знаків.";
+  if (/[@\/\\]|https?:|www\./i.test(п)) return "Без пошти, посилань і адрес: лише коротка позначка.";
+  if ((п.match(/\d/g) || []).length > 4) return "Без телефонів: не більше чотирьох цифр.";
+  if (/\S+\s+\S+\s+\S+/.test(п)) return "Позначка — одне-два слова, не повне ім'я.";
+  return "";
+}
+
+/* ---------- відтворення екранів ---------- */
+const корінь = document.getElementById("корінь");
+function елемент(тег, атр, ...діти) {
+  const е = document.createElement(тег);
+  for (const [к, з] of Object.entries(атр || {})) {
+    if (к === "клас") е.className = з; else if (к.startsWith("on")) е.addEventListener(к.slice(2), з);
+    else if (з !== false && з != null) е.setAttribute(к, з === true ? "" : з);
+  }
+  for (const д of діти.flat()) { if (д == null || д === false) continue; е.append(д instanceof Node ? д : document.createTextNode(д)); }
+  return е;
+}
+const ПРАВИЛА = [
+  "Судіть саму річ на фото: не тло, підошву, ґудзики, обличчя чи тінь.",
+  "Яскравість екрана — на найвищу; нічний режим, «захист очей», True Tone і темну тему вимкніть.",
+  "У речі кілька фото — гортайте вбік. Торкніться фото, щоб збільшити; там — двома пальцями чи двічі торкнувшись.",
+  "Жодне фото не показує річ як слід (невдалий ракурс, здалеку, у тіні) — «Фото невдалі»: інших відповідей на неї не треба.",
+  "Не певні — «Не можу сказати». Вгадувати не треба.",
+];
+function правилаБлок() { return елемент("ol", {клас: "правила"}, ПРАВИЛА.map((т) => елемент("li", null, т))); }
+
+function показати(екран, поточна) {
+  if (екран) стан.екран = екран;
+  if (поточна != null) стан.поточна = поточна;
+  стан.поточна = Math.max(0, Math.min(стан.поточна, черга().length - 1));
+  зберегти();
+  корінь.replaceChildren(
+    стан.екран === "початок" ? екранПочаток() : стан.екран === "сітка" ? екранСітка()
+      : стан.екран === "підсумок" ? екранПідсумок() : екранРечі());
+  window.scrollTo(0, 0);
+}
+
+function екранПочаток() {
+  const поле = елемент("input", {type: "text", id: "позначка", maxlength: "24", autocomplete: "off", autocapitalize: "off",
+    placeholder: "напр. Оля-1", value: стан.позначка});
+  const помилка = елемент("div", {клас: "помилка", id: "помилка-позначки", role: "alert"});
+  const далі = елемент("button", {клас: "головна", id: "почати", type: "button", onclick: () => {
+    const п = перевіритиПозначку(поле.value);
+    помилка.textContent = п;
+    if (п) return;
+    стан.позначка = поле.value.trim();
+    показати("річ", Math.min(стан.поточна, черга().length - 1));
+  }}, готових() || Object.keys(стан.відповіді).length ? "Продовжити" : "Почати");
+  return елемент("div", null,
+    елемент("h1", null, "Огляд кольору речей"),
+    елемент("p", {клас: "дрібно", id: "назва-набору"}, "Набір: " + набір.назва),
+    елемент("p", null, "Ви допомагаєте з'ясувати, який колір має кожна з " + набір.речі.length + " речей. Це триває близько 20 хвилин; можна закрити сторінку — відповіді збережуться на цьому телефоні."),
+    (набір.запасні || []).length ? елемент("p", {клас: "дрібно", id: "про-запасні"}, "Коли фото речі невдалі й ви так її позначите, наприкінці додасться запасна річ (їх " + набір.запасні.length + ").") : null,
+    стан.перенесено ? елемент("p", {клас: "вимога", id: "перенесено"}, "Ваші відповіді на кольори А і Б перенесено з попередньої версії набору. Тепер під річчю всі її фото й назва відтінку від моделі — назву судіть наново.") : null,
+    елемент("div", {клас: "панель"}, елемент("b", null, "Як судити"), правилаБлок()),
+    елемент("div", {клас: "панель"},
+      елемент("label", {for: "позначка"}, елемент("b", null, "Ваша позначка")),
+      елемент("p", {клас: "дрібно"}, "Коротка, не повне ім'я: результати потраплять у відкритий репозиторій. Без пошти, телефона й посилань."),
+      поле, помилка),
+    далі);
+}
+
+function блокГалереї(річ) {
+  const адреси = галерея(річ);
+  let і = 0;
+  const лічильник = елемент("span", {клас: "номер-кадру", id: "номер-кадру"});
+  const крапки = елемент("div", {клас: "крапки", id: "крапки"});
+  const стрічка = елемент("div", {клас: "стрічка", id: "стрічка"});
+  const живі = () => [...стрічка.children];
+  function оновити() {
+    const к = живі().length;
+    лічильник.textContent = к > 1 ? "фото " + (і + 1) + " з " + к : "фото 1 з 1";
+    крапки.replaceChildren(...живі().map((_, н) => елемент("i", {клас: н === і ? "тут" : ""})));
+    назад.disabled = і === 0; вперед.disabled = і >= к - 1;
+  }
+  const зберегтиКадр = () => { const к = живі()[і]; if (к) { стан.кадр[річ.номер] = +к.dataset.кадр; зберегти(); } };
+  function до(н, плавно) {
+    і = Math.max(0, Math.min(н, живі().length - 1));
+    зберегтиКадр();
+    стрічка.scrollTo({left: і * стрічка.clientWidth, behavior: плавно ? "smooth" : "auto"});
+    оновити();
+  }
+  адреси.forEach((адреса, н) => {
+    const фото = елемент("img", {src: адреса, alt: "Фото " + (н + 1) + ": " + річ.тип, decoding: "async",
+      loading: н === 0 ? "eager" : "lazy", "data-кадр": н, referrerpolicy: "no-referrer"});
+    фото.addEventListener("click", () => відкритиЗбільшення(річ, н));
+    /* посилання крамниці, що не відкрилось на цьому телефоні, — кадр ховаємо */
+    фото.addEventListener("error", () => { if (живі().length > 1) { фото.parentElement.remove(); до(Math.min(і, живі().length - 1)); } });
+    стрічка.append(елемент("div", {клас: "кадр", "data-кадр": н}, фото));
+  });
+  let таймер = 0;
+  стрічка.addEventListener("scroll", () => {
+    clearTimeout(таймер);
+    таймер = setTimeout(() => {
+      const н = Math.round(стрічка.scrollLeft / Math.max(1, стрічка.clientWidth));
+      if (н !== і) { і = н; зберегтиКадр(); оновити(); }
+    }, 80);
+  }, {passive: true});
+  const назад = елемент("button", {type: "button", id: "кадр-назад", "aria-label": "Попереднє фото", onclick: () => до(і - 1, true)}, "‹");
+  const вперед = елемент("button", {type: "button", id: "кадр-вперед", "aria-label": "Наступне фото", onclick: () => до(і + 1, true)}, "›");
+  const збережений = кадрРечі(річ);
+  requestAnimationFrame(() => до(Math.max(0, живі().findIndex((к) => +к.dataset.кадр >= збережений)), false));
+  оновити();
+  return [елемент("div", {клас: "фото", id: "галерея"}, стрічка, лічильник, елемент("span", {клас: "підказка"}, "торкніться — збільшити")),
+    адреси.length > 1 ? елемент("div", {клас: "гортати"}, назад, крапки, вперед) : null];
+}
+
+function екранРечі() {
+  const ч = черга();
+  const н = стан.поточна;
+  const річ = ч[н];
+  const в = відповідь(річ.номер);
+  const перемалювати = () => { зберегти(); показати(); };
+  const кнопки = (значення, встановити) => елемент("div", {клас: "вибір"},
+    ["п", "н", "з"].map((к) => елемент("button", {type: "button", "data-в": к, клас: к + (значення === к ? " обрано" : ""),
+      onclick: () => { встановити(к); перемалювати(); }}, ВІДПОВІДІ[к][0].toUpperCase() + ВІДПОВІДІ[к].slice(1))));
+  const невдалі = елемент("button", {type: "button", id: "фото-невдалі", клас: "невдалі" + (в.невдалі ? " обрано" : ""),
+    "aria-pressed": в.невдалі ? "true" : "false", onclick: () => { в.невдалі = !в.невдалі; перемалювати(); }},
+    в.невдалі ? "✓ Фото невдалі — торкніться, щоб скасувати" : "Фото невдалі: жодне не показує річ як слід");
+  let тіло;
+  if (в.невдалі) {
+    const зап = набір.запасні || [];
+    const доданих = ч.filter(запасна).length;
+    тіло = [елемент("div", {клас: "панель без-відповідей", id: "без-відповідей"},
+      елемент("p", null, "Річ позначено «фото невдалі» — інших відповідей на неї не треба."),
+      зап.length ? елемент("p", null, ч.filter(невдала).length > доданих
+        ? "Запасні речі скінчились." : "Замість неї наприкінці додано запасну річ.") : null)];
+  } else {
+    const латки = елемент("div", {клас: "свотчі"}, річ.свотчі.map((с) => елемент("div", {клас: "свотч", "data-мітка": с.мітка},
+      елемент("div", {клас: "латка", style: "background:" + с.hex}),
+      елемент("h3", null, "Колір " + с.мітка),
+      кнопки(в.св[с.мітка], (к) => { в.св[с.мітка] = к; }))));
+    const назва = елемент("div", {клас: "панель слово", id: "назва"},
+      елемент("h3", null, "Мовна модель називає відтінок цієї речі"),
+      елемент("div", {клас: "цитата"}, "«" + річ.модель.назва + "»"),
+      кнопки(в.назва, (к) => { в.назва = к; }));
+    const принт = річ.модель.принт.length ? елемент("div", {клас: "панель слово", id: "принт"},
+      елемент("h3", null, "Мовна модель бачить на речі ще кольори (принт, візерунок)"),
+      елемент("div", {клас: "цитата"}, "«" + річ.модель.принт.join("», «") + "»"),
+      кнопки(в.принт, (к) => { в.принт = к; })) : null;
+    const потрібен = потрібенВибір(річ, в);
+    const вибір = елемент("div", {клас: "панель колір-речі", id: "колір-речі"},
+      елемент("h3", null, "Колір речі у кольоровому просторі"),
+      елемент("p", {клас: "дрібно"}, "Підберіть пальцем колір речі на весь екран. У речі з двох кольорів чи з принтом — до двох кольорів."),
+      в.підібрано && в.підібрано.length ? елемент("div", {клас: "підібрані"}, в.підібрано.map((h) => елемент("div", {клас: "латка", style: "background:" + h, "data-hex": h}))) : null,
+      потрібен && !(в.підібрано && в.підібрано.length) ? елемент("div", {клас: "вимога"}, "Жоден із кольорів не визнано правильним — підберіть колір обов'язково (навіть якщо назва моделі вірна).") : null,
+      елемент("button", {type: "button", id: "відкрити-простір", onclick: () => відкритиПростір(річ)}, в.підібрано && в.підібрано.length ? "Змінити колір" : "Підібрати колір"));
+    тіло = [латки, назва, принт, вибір];
+  }
+  const остання = н === ч.length - 1;
+  return елемент("div", null,
+    елемент("div", {клас: "верх"},
+      елемент("button", {type: "button", id: "назад", disabled: н === 0, onclick: () => показати("річ", н - 1), "aria-label": "Попередня річ"}, "←"),
+      елемент("div", {клас: "лічба", id: "лічба"}, запасна(річ) ? "Запасна річ " + річ.номер + " · " + (н + 1) + " з " + ч.length : "Річ " + річ.номер + " з " + ч.length),
+      елемент("button", {type: "button", id: "до-сітки", onclick: () => показати("сітка"), "aria-label": "Усі речі"}, "☰")),
+    елемент("div", {клас: "позначка"}, "Позначка: ", елемент("b", null, стан.позначка),
+      елемент("button", {type: "button", onclick: () => показати("початок")}, "Змінити / правила")),
+    блокГалереї(річ),
+    елемент("div", {клас: "тип"}, "Що судимо: " + річ.тип),
+    невдалі,
+    тіло,
+    елемент("div", {клас: "низ"},
+      елемент("button", {type: "button", onclick: () => показати("сітка")}, "Усі речі"),
+      елемент("button", {type: "button", клас: "головна", id: "далі", onclick: () => {
+        const ч2 = черга();
+        показати(н >= ч2.length - 1 ? "підсумок" : "річ", н >= ч2.length - 1 ? null : н + 1);
+      }}, остання ? "До результату" : "Далі →")));
+}
+
+function екранСітка() {
+  const ч = черга();
+  return елемент("div", null,
+    елемент("div", {клас: "верх"}, елемент("div", {клас: "лічба"}, "Готово " + готових() + " з " + ч.length)),
+    елемент("div", {клас: "панель"}, елемент("div", {клас: "сітка", id: "сітка"}, ч.map((р, і) => {
+      const с = станРечі(р);
+      return елемент("button", {type: "button", клас: (невдала(р) ? "невдалі-річ" : с === "готово" ? "готово" : с === "частково" ? "частково" : "")
+        + (запасна(р) ? " запасна" : "") + (і === стан.поточна ? " тут" : ""),
+        "data-н": р.номер, onclick: () => показати("річ", і)}, String(р.номер));
+    })), елемент("p", {клас: "дрібно"}, "Зелені — готово, жовті — не все відповіли, сірі закреслені — фото невдалі" +
+      ((набір.запасні || []).length ? ", з пунктиром — запасні." : "."))),
+    елемент("div", {клас: "низ"},
+      елемент("button", {type: "button", onclick: () => показати("річ")}, "До речі " + ч[стан.поточна].номер),
+      елемент("button", {type: "button", клас: "головна", id: "до-підсумку", onclick: () => показати("підсумок")}, "Результат")));
+}
+
+/* ---------- результат: файл і текст ---------- */
+function сформуватиТекст() {
+  const пробний = /^пробн/i.test(стан.позначка);
+  const ч = черга();
+  const рядки = ч.map((р) => {
+    const в = стан.відповіді[р.номер];
+    if (в.невдалі) return "  " + JSON.stringify({"річ": р.номер, "фото_невдалі": true});
+    const о = {"річ": р.номер, "фото_невдалі": false, "свотчі": {}, "назва": ВІДПОВІДІ[в.назва]};
+    for (const с of р.свотчі) о.свотчі[с.мітка] = ВІДПОВІДІ[в.св[с.мітка]];
+    if (р.модель.принт.length) о["принт"] = ВІДПОВІДІ[в.принт];
+    о["підібрано"] = (в.підібрано || []).slice();
+    return "  " + JSON.stringify(о);
+  });
+  const шапка = {"формат": ВЕРСІЯ_ФОРМАТУ, "набір": набір.id, "відбиток": набір.відбиток, "позначка": стан.позначка,
+    "пробний": пробний, "час_utc": new Date().toISOString().replace(/\.\d+Z$/, "Z"), "речей": ч.length,
+    "запасних": ч.filter(запасна).length};
+  return JSON.stringify(шапка).slice(0, -1) + ',"відповіді":[\n' + рядки.join(",\n") + "\n]}\n";
+}
+function назваФайлу() {
+  const п = (стан.позначка || "").normalize("NFKD").replace(/[^A-Za-z0-9_-]+/g, "") || "людина";
+  return "ohliad-koloru-" + набір.id + "-" + п + ".txt";
+}
+function екранПідсумок() {
+  const ч = черга();
+  const не = ч.filter((р) => станРечі(р) !== "готово");
+  const помилкаПозн = перевіритиПозначку(стан.позначка);
+  const повно = не.length === 0 && !помилкаПозн;
+  const текст = повно ? сформуватиТекст() : "";
+  const повідомлення = елемент("div", {клас: "помилка", id: "повідомлення", role: "status"});
+  const ділитись = елемент("button", {type: "button", клас: "головна", id: "поділитися", disabled: !повно, onclick: async () => {
+    const файл = new File([текст], назваФайлу(), {type: "text/plain"});
+    try {
+      if (navigator.canShare && navigator.canShare({files: [файл]})) {
+        await navigator.share({files: [файл], title: "Огляд кольору: відповіді"});
+        повідомлення.textContent = "Надіслано.";
+        return;
+      }
+    } catch (е) { if (е && е.name === "AbortError") return; }
+    завантажитиФайл(текст);
+    повідомлення.textContent = "Файл збережено на телефон — надішліть його у месенджері чи поштою, або скопіюйте текст нижче.";
+  }}, "Поділитися файлом");
+  const поле = елемент("textarea", {readonly: true, id: "текст-результату", "aria-label": "Текст результату"});
+  поле.value = текст;
+  поле.addEventListener("focus", () => поле.select());
+  const копіювати = елемент("button", {type: "button", id: "копіювати", disabled: !повно, onclick: async () => {
+    try { await navigator.clipboard.writeText(текст); } catch (_) { поле.focus(); поле.select(); document.execCommand("copy"); }
+    повідомлення.textContent = "Текст скопійовано — вставте його в повідомлення.";
+  }}, "Копіювати текст");
+  return елемент("div", null,
+    елемент("div", {клас: "верх"}, елемент("button", {type: "button", onclick: () => показати("річ")}, "←"),
+      елемент("div", {клас: "лічба"}, "Результат")),
+    елемент("div", {клас: "панель"},
+      елемент("b", null, "Готово " + готових() + " з " + ч.length),
+      не.length ? елемент("div", {клас: "перелік"}, елемент("p", {клас: "вимога"}, "Ще не всі відповіді:"),
+        не.map((р) => елемент("button", {type: "button", "data-н": р.номер, onclick: () => показати("річ", ч.indexOf(р))}, String(р.номер)))) : null,
+      помилкаПозн ? елемент("p", {клас: "вимога"}, "Позначка: " + помилкаПозн + " ",
+        елемент("button", {type: "button", onclick: () => показати("початок")}, "Виправити")) : null),
+    елемент("div", {клас: "рядок"}, ділитись, копіювати),
+    повідомлення,
+    елемент("p", {клас: "дрібно"}, "Файл і текст однакові: надішліть одне з двох тому, хто просив про огляд."),
+    поле,
+    елемент("div", {клас: "низ"}, елемент("button", {type: "button", id: "очистити", onclick: () => {
+      if (confirm("Стерти всі відповіді на цьому телефоні?")) { стан = новийСтан(); показати("початок"); }
+    }}, "Почати наново")));
+}
+function завантажитиФайл(текст) {
+  const адреса = URL.createObjectURL(new Blob([текст], {type: "text/plain"}));
+  const а = елемент("a", {href: адреса, download: назваФайлу()});
+  document.body.append(а); а.click(); а.remove();
+  setTimeout(() => URL.revokeObjectURL(адреса), 4000);
+}
+
+/* ---------- збільшення фото пальцями ---------- */
+function зробитиЗбільшення(поле, зображення) {
+  let масштаб = 1, зсувІкс = 0, зсувІгрек = 0;
+  const вказівники = new Map();
+  let стартВідстань = 0, стартМасштаб = 1, останнійДотик = {t: 0, x: 0, y: 0};
+  const застосувати = () => { зображення.style.transform = "translate(" + зсувІкс + "px," + зсувІгрек + "px) scale(" + масштаб + ")"; };
+  function обмежити() {
+    const р = поле.getBoundingClientRect();
+    const межаІкс = (масштаб - 1) * р.width / 2, межаІгрек = (масштаб - 1) * р.height / 2;
+    зсувІкс = Math.max(-межаІкс, Math.min(межаІкс, зсувІкс)); зсувІгрек = Math.max(-межаІгрек, Math.min(межаІгрек, зсувІгрек));
+  }
+  function зумДо(новий, x, y) {
+    const р = поле.getBoundingClientRect();
+    const різнІкс = x - (р.left + р.width / 2), різнІгрек = y - (р.top + р.height / 2);
+    новий = Math.max(1, Math.min(8, новий));
+    const к = новий / масштаб;
+    зсувІкс = різнІкс - (різнІкс - зсувІкс) * к; зсувІгрек = різнІгрек - (різнІгрек - зсувІгрек) * к;
+    масштаб = новий;
+    if (масштаб === 1) { зсувІкс = 0; зсувІгрек = 0; }
+    обмежити(); застосувати();
+  }
+  const відстань = () => { const [а, б] = [...вказівники.values()]; return Math.hypot(а.x - б.x, а.y - б.y); };
+  const середина = () => { const [а, б] = [...вказівники.values()]; return {x: (а.x + б.x) / 2, y: (а.y + б.y) / 2}; };
+  поле.addEventListener("pointerdown", (е) => {
+    поле.setPointerCapture(е.pointerId);
+    вказівники.set(е.pointerId, {x: е.clientX, y: е.clientY});
+    if (вказівники.size === 2) { стартВідстань = відстань(); стартМасштаб = масштаб; }
+    if (вказівники.size === 1) {
+      const t = Date.now();
+      if (t - останнійДотик.t < 320 && Math.hypot(е.clientX - останнійДотик.x, е.clientY - останнійДотик.y) < 30) {
+        зумДо(масштаб > 1.2 ? 1 : 3, е.clientX, е.clientY); останнійДотик.t = 0;
+      } else останнійДотик = {t, x: е.clientX, y: е.clientY};
+    }
+  });
+  поле.addEventListener("pointermove", (е) => {
+    const був = вказівники.get(е.pointerId);
+    if (!був) return;
+    const новий = {x: е.clientX, y: е.clientY};
+    if (вказівники.size === 2) {
+      вказівники.set(е.pointerId, новий);
+      const с = середина();
+      зумДо(стартМасштаб * відстань() / (стартВідстань || 1), с.x, с.y);
+    } else if (масштаб > 1) {
+      зсувІкс += новий.x - був.x; зсувІгрек += новий.y - був.y; вказівники.set(е.pointerId, новий); обмежити(); застосувати();
+    } else вказівники.set(е.pointerId, новий);
+  });
+  const кінець = (е) => { вказівники.delete(е.pointerId); if (вказівники.size === 1) { const [п] = вказівники.values(); п && (останнійДотик.t = 0); } };
+  поле.addEventListener("pointerup", кінець); поле.addEventListener("pointercancel", кінець);
+  поле.addEventListener("wheel", (е) => { е.preventDefault(); зумДо(масштаб * (е.deltaY < 0 ? 1.2 : 1 / 1.2), е.clientX, е.clientY); }, {passive: false});
+  return {скинути() { масштаб = 1; зсувІкс = 0; зсувІгрек = 0; застосувати(); }, масштаб: () => масштаб};
+}
+
+/* ---------- покривала на весь екран ---------- */
+const покривалоЗбільшення = document.getElementById("збільшення");
+const збільшенняФото = document.getElementById("збільшення-фото");
+const зумПокривала = зробитиЗбільшення(document.getElementById("збільшення-поле"), збільшенняФото);
+function закритиВсеПокривало() { document.body.classList.remove("заблоковано"); }
+/* кнопки «‹ N/M ›» у шапці покривала: те саме фото, що в галереї під річчю; посилання, що не відкрилось, — пропускаємо */
+function кнопкиКадрів(місце, річ, зображення, зум, напрям) {
+  const адреси = галерея(річ);
+  let і = кадрРечі(річ);
+  const підпис = елемент("span", {клас: "підпис-кадру"});
+  let спроб = 0;
+  const показатиКадр = (н, крок) => {
+    і = (н + адреси.length) % адреси.length;
+    стан.кадр[річ.номер] = і; зберегти();
+    зображення.onload = () => { спроб = 0; };
+    зображення.onerror = () => { if (крок && ++спроб < адреси.length) показатиКадр(і + крок, крок); };
+    зображення.src = адреси[і]; зум.скинути();
+    підпис.textContent = (і + 1) + "/" + адреси.length;
+  };
+  місце.replaceChildren(...(адреси.length > 1 ? [
+    елемент("button", {type: "button", "aria-label": "Попереднє фото", "data-кадр": "назад", onclick: () => показатиКадр(і - 1, -1)}, "‹"), підпис,
+    елемент("button", {type: "button", "aria-label": "Наступне фото", "data-кадр": "вперед", onclick: () => показатиКадр(і + 1, 1)}, "›")] : []));
+  показатиКадр(і, напрям || 1);
+}
+function відкритиЗбільшення(річ, і) {
+  if (і >= 0) стан.кадр[річ.номер] = і;
+  document.getElementById("збільшення-підпис").textContent = "Річ " + річ.номер + " · " + річ.тип;
+  кнопкиКадрів(document.getElementById("збільшення-кадри"), річ, збільшенняФото, зумПокривала);
+  покривалоЗбільшення.hidden = false;
+  document.body.classList.add("заблоковано");
+}
+document.getElementById("збільшення-закрити").addEventListener("click", () => {
+  покривалоЗбільшення.hidden = true; закритиВсеПокривало(); показати();
+});
+
+/* ---------- кольоровий простір (OKLCH): поле світлота × хрома і смуга тону ---------- */
+const покривалоПростір = document.getElementById("простір");
+const полеМалюнок = document.getElementById("поле"), смугаМалюнок = document.getElementById("смуга");
+const зумПростору = зробитиЗбільшення(document.getElementById("простір-збільшення"), document.getElementById("простір-фото"));
+let просторРіч = null;
+let слоти = [], активний = 0;
+let малюється = false;
+
+function початковийКолір(річ) {
+  const в = відповідь(річ.номер);
+  if (в.підібрано && в.підібрано.length) return в.підібрано.slice();
+  const правильний = річ.свотчі.find((с) => в.св[с.мітка] === "п");
+  return [(правильний || річ.свотчі[0]).hex];
+}
+function відкритиПростір(річ) {
+  просторРіч = річ;
+  слоти = початковийКолір(річ).map(окЛЧЗГекса);
+  активний = 0;
+  кнопкиКадрів(document.getElementById("простір-кадри"), річ, document.getElementById("простір-фото"), зумПростору);
+  покривалоПростір.hidden = false;
+  document.body.classList.add("заблоковано");
+  try { const е = document.documentElement; if (е.requestFullscreen && matchMedia("(pointer:coarse)").matches) е.requestFullscreen().catch(() => {}); } catch (_) { /* iPhone: Fullscreen API нема */ }
+  підігнатиПолотна();
+}
+function закритиПростір(зберегтиВибір) {
+  if (зберегтиВибір) {
+    відповідь(просторРіч.номер).підібрано = слоти.map((с) => гексЗОкЛЧ(с.L, с.C, с.h));
+    зберегти();
+  }
+  покривалоПростір.hidden = true; закритиВсеПокривало();
+  try { if (document.fullscreenElement) document.exitFullscreen(); } catch (_) { /* без повного екрана */ }
+  показати();
+}
+function підігнатиПолотна() {
+  const dpr = Math.min(window.devicePixelRatio || 1, 2);
+  const ширина = Math.max(120, Math.round(полеМалюнок.parentElement.clientWidth - 16));
+  const висота = Math.max(100, Math.min(Math.round(ширина * 0.62), Math.round(window.innerHeight * 0.3)));
+  for (const [малюнок, h] of [[полеМалюнок, висота], [смугаМалюнок, 40]]) {
+    малюнок.width = Math.round(ширина * dpr); малюнок.height = Math.round(h * dpr);
+    малюнок.style.height = h + "px";
+  }
+  намалювати();
+}
+function намалювати() {
+  if (малюється) return;
+  малюється = true;
+  requestAnimationFrame(() => { малюється = false; малюватиПоле(); малюватиСмугу(); малюватиЛатки(); });
+}
+function малюватиПоле() {
+  const с = слоти[активний]; if (!с) return;
+  const ctx = полеМалюнок.getContext("2d"), W = полеМалюнок.width, H = полеМалюнок.height;
+  const дані = ctx.createImageData(W, H);
+  for (let y = 0; y < H; y++) {
+    const L = 1 - (y + 0.5) / H;
+    for (let x = 0; x < W; x++) {
+      const C = (x + 0.5) / W * МАКС_ХРОМА, і = 4 * (y * W + x);
+      const р = лінійнийЗОкЛЧ(L, C, с.h);
+      if (вМежах(р)) {
+        дані.data[і] = Math.round(255 * зЛінійного(Math.min(1, Math.max(0, р[0]))));
+        дані.data[і + 1] = Math.round(255 * зЛінійного(Math.min(1, Math.max(0, р[1]))));
+        дані.data[і + 2] = Math.round(255 * зЛінійного(Math.min(1, Math.max(0, р[2]))));
+        дані.data[і + 3] = 255;
+      } else { дані.data[і] = дані.data[і + 1] = дані.data[і + 2] = 124; дані.data[і + 3] = 255; }
+    }
+  }
+  ctx.putImageData(дані, 0, 0);
+  const mx = Math.min(1, с.C / МАКС_ХРОМА) * W, my = (1 - с.L) * H, r = Math.max(8, W * 0.025);
+  ctx.lineWidth = 3; ctx.strokeStyle = "#000"; ctx.beginPath(); ctx.arc(mx, my, r, 0, 7); ctx.stroke();
+  ctx.lineWidth = 1.5; ctx.strokeStyle = "#fff"; ctx.beginPath(); ctx.arc(mx, my, r, 0, 7); ctx.stroke();
+}
+function малюватиСмугу() {
+  const с = слоти[активний]; if (!с) return;
+  const ctx = смугаМалюнок.getContext("2d"), W = смугаМалюнок.width, H = смугаМалюнок.height;
+  const дані = ctx.createImageData(W, 1);
+  for (let x = 0; x < W; x++) {
+    const h = x / W * 2 * Math.PI, L = 0.72, C = Math.min(0.12, максХрома(L, h));
+    const р = лінійнийЗОкЛЧ(L, C, h).map((v) => Math.round(255 * зЛінійного(Math.min(1, Math.max(0, v)))));
+    дані.data.set([р[0], р[1], р[2], 255], 4 * x);
+  }
+  for (let y = 0; y < H; y++) ctx.putImageData(дані, 0, y);
+  let h = с.h; while (h < 0) h += 2 * Math.PI; h %= 2 * Math.PI;
+  const mx = h / (2 * Math.PI) * W;
+  ctx.lineWidth = 3; ctx.strokeStyle = "#000"; ctx.strokeRect(mx - 5, 1, 10, H - 2);
+  ctx.lineWidth = 1.5; ctx.strokeStyle = "#fff"; ctx.strokeRect(mx - 5, 1, 10, H - 2);
+}
+function малюватиЛатки() {
+  const кол = document.getElementById("колонка-латок");
+  кол.replaceChildren();
+  слоти.forEach((с, і) => {
+    const hex = гексЗОкЛЧ(с.L, с.C, с.h);
+    кол.append(елемент("button", {type: "button", клас: "латка" + (і === активний ? " активний" : ""), style: "background:" + hex, "data-слот": і,
+      "aria-label": "Колір " + (і + 1), onclick: () => { активний = і; намалювати(); }}, "Колір " + (і + 1)));
+  });
+  document.getElementById("простір-hex").textContent = слоти[активний] ? гексЗОкЛЧ(слоти[активний].L, слоти[активний].C, слоти[активний].h) : "";
+  document.getElementById("простір-текст").textContent = слоти.length > 1 ? "Колір " + (активний + 1) + " із 2" : "Колір речі: проведіть пальцем по полю";
+  const другий = document.getElementById("простір-другий");
+  другий.textContent = слоти.length > 1 ? "Прибрати другий колір" : "Додати другий колір";
+}
+function відлікуПоля(е, малюнок) { const р = малюнок.getBoundingClientRect(); return {x: Math.min(1, Math.max(0, (е.clientX - р.left) / р.width)), y: Math.min(1, Math.max(0, (е.clientY - р.top) / р.height))}; }
+function веститиПоле(е) {
+  const с = слоти[активний]; const {x, y} = відлікуПоля(е, полеМалюнок);
+  с.L = 1 - y; с.C = Math.min(x * МАКС_ХРОМА, максХрома(с.L, с.h)); намалювати();
+}
+function веститиСмугу(е) {
+  const с = слоти[активний]; const {x} = відлікуПоля(е, смугаМалюнок);
+  с.h = x * 2 * Math.PI; с.C = Math.min(с.C, максХрома(с.L, с.h)); намалювати();
+}
+function прив(малюнок, дія) {
+  let веде = false;
+  малюнок.addEventListener("pointerdown", (е) => { веде = true; малюнок.setPointerCapture(е.pointerId); дія(е); е.preventDefault(); });
+  малюнок.addEventListener("pointermove", (е) => { if (веде) дія(е); });
+  const кінець = () => { веде = false; };
+  малюнок.addEventListener("pointerup", кінець); малюнок.addEventListener("pointercancel", кінець);
+}
+прив(полеМалюнок, веститиПоле); прив(смугаМалюнок, веститиСмугу);
+document.getElementById("простір-другий").addEventListener("click", () => {
+  if (слоти.length > 1) { слоти.pop(); активний = 0; } else { слоти.push(Object.assign({}, слоти[0])); активний = 1; }
+  намалювати();
+});
+document.getElementById("простір-готово").addEventListener("click", () => закритиПростір(true));
+document.getElementById("простір-скасувати").addEventListener("click", () => закритиПростір(false));
+window.addEventListener("resize", () => { if (!покривалоПростір.hidden) підігнатиПолотна(); });
+
+/* ---------- старт ---------- */
+(async function () {
+  const параметри = new URLSearchParams(location.search);
+  const ід = параметри.get("набір") || параметри.get("set") || КЛЮЧ_НАБОРУ_ЗА_ЗАМОВЧАННЯМ;
+  try {
+    const відповідьМережі = await fetch("sets/" + encodeURIComponent(ід) + ".json", {cache: "no-cache"});
+    if (!відповідьМережі.ok) throw new Error(відповідьМережі.status);
+    набір = await відповідьМережі.json();
+  } catch (_) {
+    корінь.replaceChildren(елемент("h1", null, "Набір не знайдено"), елемент("p", null, "Перевірте посилання."));
+    return;
+  }
+  ключСховища = "ohliad-koloru:" + набір.id + ":" + набір.відбиток;
+  стан = завантажити();
+  показати(стан.екран === "початок" || !стан.позначка ? "початок" : стан.екран);
+})();
+</script>
+</body>
+</html>

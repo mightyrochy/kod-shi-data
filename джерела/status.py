@@ -187,9 +187,11 @@
     "знання_речі",
     "знання_дріт",
     "accessory", "areas", "bases", "body_shape", "bridge", "brief",
+    # Записи похибки вимірів тіла: рівні шаблону `areas.РІВНІ` — їхні середні (рішення 06.11 «орієнтири тіла»).
+    "похибка_вимірів_тіла",
     "colorspace", "composer", "coordination", "extract", "face_contrast", "face_features",
     "feed", "fit", "graph", "hypergraph", "language_gate",
-    "outer", "outfit", "palette", "palettes", "personal_palette",
+    "outer", "outfit", "місце_речі", "palette", "palettes", "personal_palette",
     "pipeline", "profile", "silhouette", "status",
     "statements", "trace", "verify", "знахідка", "каблук", "реєстри",
     "семплер", "сценарій", "selection_policy",
@@ -356,6 +358,7 @@
     # входить через фасад `bridge`, який його імпортує.
     "мовний_шар",
     "language_contract",
+    "conversation_tools",
     # `міст_стилістка` — ендпойнт `bridge.виклик("стилістка")`:
     # відповідь на її питання про образ моделлю з її речами й фото. Входить через фасад `bridge`.
     "міст_стилістка",

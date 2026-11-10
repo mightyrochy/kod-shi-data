@@ -1,0 +1,44 @@
+── ПРОМПТ (2204 симв.) ──
+{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.", "One item carries one thing — of two alternatives list the first; a note in brackets is not an item.", "Slot \"accessory\" is for an item no other slot fits.", "\"is_outfit\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "ITEM_LIST", "answer_schema": {"is_outfit": "yes|no", "items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory", "color_hex": "<#rrggbb or null>", "worn": "<true, or false when the description says the outfit goes without it>"}]}, "input": ["\"description\" — the outfit description"]}, "description": "A heavy wool blend skirt in deep charcoal, midi length with a straight cut, matte finish in #2F4F4F. A high-necked silk blouse in stark white, tailored fit to the torso, crisp texture in #FFFFFF. Black leather ankle boots with a low block heel, rounded toe, smooth grain in #000000. Simple sterling silver stud earrings, small and geometric, polished metal in #C0C0C0. A delicate silver chain necklace, minimal link design, cool metallic tone in #C0C0C0.\n\nThis outfit works by honoring the somber occasion of a grandfather's funeral with respectful dark tones while strictly adhering to your wish for silver jewelry. The classic silhouette of the skirt and blouse provides a dignified, neat appearance suitable for mourning, avoiding any frivolous elements. The ankle boots offer practical comfort for an early morning event in autumn weather without compromising on formality, keeping the focus entirely on the meaningful silver accents you requested."}
+
+── ВІДПОВІДЬ (1009 симв., 4.3 с, HTTP 200) ──
+{
+  "is_outfit": "yes",
+  "items": [
+    {
+      "name": "skirt",
+      "details": "heavy wool blend midi length with a straight cut matte finish",
+      "slot": "bottom",
+      "color_hex": "#2F4F4F",
+      "worn": true
+    },
+    {
+      "name": "blouse",
+      "details": "high-necked silk tailored fit to the torso crisp texture",
+      "slot": "top",
+      "color_hex": "#FFFFFF",
+      "worn": true
+    },
+    {
+      "name": "boots",
+      "details": "black leather ankle boots with a low block heel rounded toe smooth grain",
+      "slot": "shoes",
+      "color_hex": "#000000",
+      "worn": true
+    },
+    {
+      "name": "earrings",
+      "details": "simple sterling silver stud small and geometric polished metal",
+      "slot": "earrings",
+      "color_hex": "#C0C0C0",
+      "worn": true
+    },
+    {
+      "name": "necklace",
+      "details": "delicate silver chain minimal link design cool metallic tone",
+      "slot": "necklace",
+      "color_hex": "#C0C0C0",
+      "worn": true
+    }
+  ]
+}

@@ -1,5 +1,6 @@
 /* Записані хід і репліка обох сцен через справжній ендпойнт і функції показу. */
 const fs = require('fs'), path = require('path'), vm = require('vm'), {spawnSync} = require('child_process');
+const {прочитатиДовідникJSON} = require(path.resolve(__dirname, '..', 'показ_шаблон.js'));
 const root = path.resolve(__dirname, '../..'), src = process.env.E2_SOURCES || path.join(root, 'джерела');
 const scenes = JSON.parse(fs.readFileSync(path.join(root, 'аудит/проби/Е2-ремонт-шар/записи.json'), 'utf8'));
 async function main(){
@@ -14,7 +15,7 @@ async function main(){
       if (r.status) throw Error(r.stderr);
       return JSON.parse(r.stdout);
     };
-    const c = vm.createContext({console, Date, МОДЕЛЬ_МОВИ_П:'запис', ПАСПОРТ_П:null, ЧАТ_П:[],
+    const c = vm.createContext({console, Date, МОДЕЛЬ_МОВИ_П:'запис', ПАСПОРТ_П:null, ЧАТ_П:[], ДОВІДНИК: JSON.parse(прочитатиДовідникJSON(src)),
       містП:bridge, вхідМостаП:()=>({сценарій:{}}), текстРепліки:р=>р.текст});
     vm.runInContext(fs.readFileSync(path.join(src,'показ/мовний_шар.js'),'utf8'), c);
     let answer = Object.entries(scene.відповіді).find(([k])=>k.includes('seed3_01_'))[1].відповідь;

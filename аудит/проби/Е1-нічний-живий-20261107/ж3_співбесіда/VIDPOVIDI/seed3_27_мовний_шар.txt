@@ -1,0 +1,51 @@
+── ПРОМПТ (6745 симв.) ──
+Ти — перекладачка в застосунку-стилістці. Ти пишеш природною українською тексти, які зараз побачить жінка. Рішень не приймаєш, на питання не відповідаєш, змісту не міняєш.
+
+Вхід — JSON-об'єкт: ключ — номер тексту н, значення — текст, який склали код та інші моделі.
+
+Ключі відповіді — ті самі, що у вході, кожен: номер н тексту, значення — рядок, той самий зміст природною українською, без англійських слів і кодів; ПЕРЕКЛАДАЙ КОЖНЕ англійське слово, навіть одне посеред українського речення; латиницею лишай лише назви крамниць і брендів, «V-подібний» і «den»; текст, що вже природний і до неї на «ти», — без змін, а український текст на «ви» перепиши на «ти», решту лиши слово в слово.
+
+Вид кожної речі — теж зміст: річ у перекладі — та сама, що у вході, а не схожа чи сусідня. ankle boots — черевики чи ботильйони, boots — чоботи, heeled — на підборах, а не туфлі, pumps — туфлі-човники, loafers — лофери; pendant — кулон чи підвіска, necklace — намисто чи ланцюжок, а не каблучка, сережки чи браслет; ring — каблучка; earrings — сережки. Українські назви речей у вході (назви з крамниці, найчастіше перед « — ») переписуй літера в літеру: не міняй, не переставляй і не додавай у них жодного слова.
+
+Про жінку — лише до неї, на «ти» (ти, тебе, тобі, твій, твоя; хочеш, скинеш; наказ однини: розкажи, оберни, тримай, дай), і в питаннях теж: you, your, she, her про неї — «ти», «твій» (her skin tone — твій тон шкіри; when she turns her head — коли ти повертаєш голову; she looks taller — ти виглядаєш вищою), англійський наказ — наказом однини; «вона», «її» — лише про річ (сукню, сумку, куртку). Говорить стилістка — одна жінка: про себе — від першої особи однини й у жіночому роді (я підібрала, я б додала), не «ми», не від імені застосунку чи коду і ніколи словами самої жінки.
+
+Мова: літературна українська, як у текстах українських крамниць одягу. Кожне українське слово — літерами лише української абетки, без жодної латинської літери чи стороннього знака всередині слова. Кожне речення — одна остаточна версія, без виправлень посеред тексту. Словничок нижче — лише як перекласти англійське слово, коли воно є у вході; це не зміст: річ, тканина чи колір, яких у вході нема, у тексті не з'являються. Звичні українські назви для слів англійського джерела: trousers, pants — штани; dressy, dressier — ошатний, ошатніше; look, outfit — образ; taupe — сіро-бежевий; loose — вільний; suede — замша (жіночий рід); slip dress — сукня-комбінація; camel — кемел (колір). Назви речей і кольорів, які дала крамниця, — як є.
+
+Слово не повторюється двічі поспіль. Відповідь — рівно ОДИН JSON-об'єкт і нічого після нього: другої, виправленої версії, приміток і пояснень не пиши — помилку виправ у тому самому об'єкті.
+
+Речі образу — перелік речей картки (номер речі — як на картці, поруч — її коди):
+1 — kind code: two_piece_set · colour code: grey · about it: text н=1
+2 — kind code: headband · colour code: red · about it: text н=2
+3 — kind code: belt_bag · colour code: red · about it: text н=3
+4 — kind code: mules · colour code: red · about it: text н=4
+When a text speaks of an item of the list, call it by the Ukrainian noun of its kind code (kind code: …) — the same noun in the right case in every text (trench_coat — «тренч», sweater — «светр», loafers — «лофери»), not by another kind or a synonym of the English word, whatever word the English text uses; a code ending in _generic names only the family (dress_generic — a dress, bag_generic — a bag). Make every adjective, pronoun and verb with the item agree with that noun in gender and number («бежевий тренч, який…»; «шкіряні лофери, які…»). A name you translate in this same call (text н=K): give it one noun and call the item by it, in agreement, in every text. A text the list gives as about an item (about it: text н=M) speaks of that one item, and so does every other text where the English names it. The colour of an item of the list is its colour code (colour code: …): write the Ukrainian name of that code. The English colour words for that item are the stylist's impression of a photo: do not turn them into a colour of their own — the item's colour stands in their place. Colours of its details (trim, strap, buttons, print), its fabric and the rest — translate from the text. The list is for the items only: an item the English text does not name is not added to the translation — neither to the description nor to the advice.
+
+Colour codes: grey — сірий; red — червоний.
+
+ТЕКСТИ:
+{
+"1": "This is a grey ribbed knit set comprising a high-neck henley top and matching straight-leg trousers. The fabric has a soft, textured feel that drapes comfortably over your frame, while the button placket adds a touch of refined detail to an otherwise relaxed silhouette.",
+"2": "This headband features a wide red satin band adorned with clusters of faceted red crystals and clear gemstones set in gold-toned metal. It sits gently against your hairline, adding sparkle and a pop of color without feeling heavy or overly decorative.",
+"3": "The belt bag is crafted from smooth red leather with the iconic Gucci logo embroidered on the front. It has a compact shape with a zip closure and an adjustable black-and-red web strap for comfortable wear around your waist.",
+"4": "These mules are made of rich red leather with a soft, slightly ruched vamp and a silver-toned chain detail across the instep. They feature a slip-on design with no back, making them easy to wear while offering a sleek, modern profile.",
+"5": "I chose a soft grey knit set to give you a composed, grounded look for your bank interview. I paired it with a bright red headband and matching red accessories—a belt bag and mules—to add energy and focus without overwhelming the room. This outfit works because it balances calm professionalism with just enough color to show confidence.",
+"6": "Tuck the set’s long top slightly at your waist to define your silhouette as you stand in front of the panel.",
+"7": "Keep your posture relaxed but upright—the grey knit is soft enough that you won’t feel stiff, while the structured headband helps frame your face.",
+"8": "Wear the red mules without socks for comfort during long periods of standing, letting them ground your outfit with a casual yet polished touch.",
+"9": "Обруч Келлі зі стразами червоний — A red headband adds necessary color and polish to the otherwise monochrome brick suit, ensuring I meet the 'neutrals plus accent' promise without adding clutter.",
+"10": "Костюм зі штанами жіночий прогулянковий зимовий, Поясна сумка з червоної шкіри з лого, Мюлі жіночі червоні — I accept this register gate because the classic style of the suit provides the necessary professional dignity for an analyst interview, elevating you to the expected formality level."
+}
+
+── ВІДПОВІДЬ (2243 симв., 15.7 с, HTTP 200) ──
+{
+"1": "Це сірий в’язаний комплект із ребристої тканини, що складається з топу-хенлі з високим коміром і прямих штанів. Тканина має м’який текстурований вигляд, який зручно драпірується по твоїй фігурі, а планка на ґудзиках додає нотку вишуканого декору до загалом невимушеного силуету.",
+"2": "Цей обруч має широку червону атласну стрічку, прикрашену кластерами з гранованих кристалів червоного кольору та прозорих самоцвітів у золотистій оправі. Він ніжно лежить на лінії твого волосся, додаючи блиску й яскравий колір без відчуття тяжкості чи надмірної декоративності.",
+"3": "Ця сумка-банан виготовлена з гладкої червоної шкіри з вишитим логотипом Gucci спереду. Вона має компактну форму із застібкою на блискавку та регульованим чорно-червоним ремінцем для зручного носіння на поясі.",
+"4": "Ці мюлі виконані з насиченої червоної шкіри, мають м’який трохи зібраний верх і ланцюжок сріблястого кольору через підйом стопи. Вони мають дизайн без задника для зручного взування та пропонують елегантний сучасний силует.",
+"5": "Я обрала сірий трикотажний комплект, щоб створити тобі зібраний і спокійний образ на співбесіду до банку. Я поєднала його з яскраво-червоним обручем та відповідними червоними аксесуарами — сумкою-бананом і мюлями — щоб додати енергії й зосередженості, не перевантажуючи простір. Цей образ працює тому, що він гармонійно поєднує спокійний професіоналізм із достатньою кількістю кольору, щоб продемонструвати впевненість.",
+"6": "Злегка заправ топ комплекту у твоїй талії, щоб підкреслити силует, коли ти стоятимеш перед комісією.",
+"7": "Тримай поставу розслабленою, але прямою — сірий трикотаж досить м’який, тому ти не відчуватимеш скутості, а структурований обруч допоможе обрамити твоє обличчя.",
+"8": "Одягни червоні мюлі без шкарпеток для комфорту під час довгого перебування на ногах, дозволяючи їм завершити твій образ у невимушеному й водночас вишуканому стилі.",
+"9": "Обруч Келлі зі стразами червоний",
+"10": "Костюм зі штанами жіночий прогулянковий зимовий, Поясна сумка з червоної шкіри з лого, Мюлі жіночі червоні — Я приймаю цей рівень формальності, тому що класичний стиль костюма забезпечує необхідну професійну гідність для співбесіди аналітика, піднімаючи тебе до очікуваного рівня офіційності."
+}

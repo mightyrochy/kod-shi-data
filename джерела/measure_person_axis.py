@@ -13,11 +13,13 @@
 Колір речі — з param «Цвет» через лексикон (вікно LCh, T3), центр вікна як точка.
 Дві умови зйомки: protocolized (тон дозволений) і uncontrolled (тон загейтовано K-PC-05).
 """
-import sys, os, math
+import sys, os
 from collections import Counter, defaultdict
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)) or ".")
 import verify as V, palette as P, colorspace as cs, feed as F, trace as TR
 import колір_образу as _КОЛІР   # Н-02-01, сесія 4
+import колір_тон as _КТ   # середина дуги — визначення в `колір_тон`
+from колір_простір_перетворення import lab_з_lch as _lab   # LCh → Lab — визначення в модулі перетворення
 
 import feed as _Ф0
 СЛОТИ = ("верх", "низ", "сукня", "верхній_шар", "взуття", "сумка")
@@ -41,13 +43,10 @@ def розвязати(значення):
     if ц: return ц, "ціле"
     if len(зн) == 1: return next(iter(зн)), "частина"
     return None, "мовчить"
-def _lab(L, C, h):
-    r = math.radians(h); return (L, C*math.cos(r), C*math.sin(r))
 def центр_вікна(в):
     Llo, Lhi, Clo, Chi, д = в
     if д is None: return _lab((Llo+Lhi)/2, (Clo+Chi)/2, 0.0)
-    a, b = д; h = (a + ((b - a) % 360)/2) % 360
-    return _lab((Llo+Lhi)/2, (Clo+Chi)/2, h)
+    return _lab((Llo+Lhi)/2, (Clo+Chi)/2, _КТ.середина_дуги(д))
 
 
 def main():
@@ -60,7 +59,7 @@ def main():
         колір = (o.get("колір_назва") or o.get("назва") or "").strip()
         ім, як = розвязати(колір)
         sku.append(dict(id=o["id"], назва=o["назва"], колір=колір, ім=ім, як=як,
-                        lab=(центр_вікна(V.ЛЕКСИКОН[ім]) if ім else None)))
+                        lab=(центр_вікна(V.вікно_вжитку(ім)) if ім and V.вікно_вжитку(ім) else None)))
     статус = Counter(s["як"] for s in sku)
     одно = [s for s in sku if s["lab"]]
     print("SKU %d · розв'язка кольору %s · з Lab-точкою %d (%.0f%%)" %

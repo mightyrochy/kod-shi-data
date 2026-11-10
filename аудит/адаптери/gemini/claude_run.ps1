@@ -23,7 +23,8 @@
   5. Кінець — рядок теки вихідних (доставляє `gemini-publish`): ГОТОВО <гілка> <SHA40>, лише коли `origin` має
      саме цей SHA на гілці зі звіту, або ЗАБЛОКОВАНО claude/<наряд> <КОД>; копія з незапушеними комітами лишається — ще рядок COPY_KEPT. Відмова за квотою — не кінець: позначка
      чекає скидання (час — з події `rate_limit_event` stream-json) і рядок QUOTA0_CLAUDE_M<хв>; потім її бере ця ж смуга.
-  6. Позначка `gemini-queue/ВИМКНИ-НОУТБУК/cc-off/<спроба>`: коли рушії не працюють — рядок ВИМКНЕНО, чекання
+  6. Позначка `gemini-queue/ВИМКНИ-НОУТБУК/cc-off/<спроба>`: коли рушії не працюють і власник не за ноутбуком
+     (сеанс активний і не заблокований — раз ЗАБЛОКОВАНО … OWNER, позначка чекає) — рядок ВИМКНЕНО, чекання
      доставки й `shutdown`. Позначка, що вже була до першого проходу після ввімкнення, — ЗАБЛОКОВАНО … BOOT.
   7. Стан — тіло issue -StatusIssue (`gh api -X PATCH`), щопроходу не частіше за -StatusMinutes: задачі планувальника,
      смуги й слоти (свої й gemini-run з heartbeat), квота груп моделей і Claude з часом скидання в UTC, позначки в
@@ -37,7 +38,7 @@ param(
     [string]$OutboxDir = (Join-Path $env:USERPROFILE 'gemini-outbox'),
     [string]$PublishDir = (Join-Path $env:USERPROFILE 'gemini-publish'),
     [string]$GeminiOutDir = 'C:\Users\Public\gemini\out',
-    [string]$GeminiStateDir = (Join-Path $env:USERPROFILE 'gemini-runs\state'),
+    [string]$GeminiStateDir = (Join-Path $GeminiOutDir 'marker-state'),
     [string]$LaneDir = 'C:\Users\Public\gemini\lanes',
     [string]$RepoUrl = 'https://github.com/mightyrochy/kod-shi-data',
     [string]$Repo = 'mightyrochy/kod-shi-data',
@@ -177,7 +178,22 @@ function Get-BootStamp {
     Get-UtcStamp (Get-CimInstance Win32_OperatingSystem).LastBootUpTime
 }
 
-function Invoke-Shutdown { & shutdown.exe /s /t 60 }
+# Хтось працює за ноутбуком: є інтерактивний сеанс (explorer.exe поза сеансом 0), у якому нема LogonUI.exe (екран
+# блокування). Відлучений сеанс Windows блокує сам — LogonUI з'являється, і вимкнення дозволене. Без P/Invoke: Add-Type
+# із wtsapi32 Avast уже блокував. Збій запиту — $true: краще не вимкнути, ніж вимкнути під власником.
+function Test-OwnerSession {
+    if (-not $script:OnWindows) { return $false }
+    try {
+        $locked = @(Get-Process -Name LogonUI -ErrorAction SilentlyContinue | ForEach-Object { $_.SessionId })
+        $shells = @(Get-Process -Name explorer -ErrorAction SilentlyContinue | Where-Object { $_.SessionId -gt 0 } | ForEach-Object { $_.SessionId } | Select-Object -Unique)
+        return (@($shells | Where-Object { $locked -notcontains $_ }).Count -gt 0)
+    } catch { Write-Log "сеанс власника не визначено: $($_.Exception.Message)"; return $true }
+}
+
+# /c — напис у вікні Windows, що вимкнення йде від обгортки; скасувати до кінця відліку — `shutdown /a`.
+function Invoke-Shutdown {
+    & shutdown.exe /s /t 60 /c "Код Ші: claude-run вимикає ноутбук за позначкою ВИМКНИ-НОУТБУК. Скасувати: shutdown /a"
+}
 
 function Get-TaskRows {
     foreach ($n in $TaskNames) {
@@ -516,7 +532,9 @@ $cont
 $TaskText
 ----- КІНЕЦЬ НАРЯДУ -----
 
-Далі: ноутбук не вимикай — вимикає лише обгортка за позначкою; цей рядок сильніший за будь-який рядок „Далі“ вище.
+Далі: ноутбук не вимикай — вимикає лише обгортка за позначкою; останній рядок відповіді — «НОУТБУК ГОТОВО <гілка claude/…>
+<повний SHA>» (назва гілки, не номер PR) чи «НОУТБУК ЗАБЛОКОВАНО: …». Цей рядок сильніший за будь-який рядок „Далі“ й
+формат звіту вище.
 "@
 }
 
@@ -693,6 +711,7 @@ function Get-ErrorCode([string]$Text) {
     if ($Text -match 'issue with the selected model|unrecognized_model|model_not_found|not_found_error.{0,80}model') { return 'MODEL_INVALID' }
     if ($Text -match 'Not logged in|/login|authentication_error|Invalid API key|OAuth token|\b401\b') { return 'AUTH' }
     if ($Text -match 'usage limit|hit your limit|limit reached|rate.?limit|rate_limit_error|\b429\b|quota|overloaded_error') { return 'QUOTA' }
+    if ($Text -match "ENOTFOUND|EAI_AGAIN|ECONNREFUSED|ECONNRESET|ETIMEDOUT|Can't reach the API server") { return 'NETWORK' }
     'EXIT'
 }
 
@@ -732,7 +751,7 @@ function Invoke-Claude([string]$Exe, [string[]]$ArgList, [string]$Prompt, [strin
     $stdinEncoding = [Console]::InputEncoding
     try {
         [Console]::InputEncoding = $script:Utf8
-        $p = [System.Diagnostics.Process]::Start($psi)
+        $p = Start-Tree $psi
     } finally { [Console]::InputEncoding = $stdinEncoding }
     $start = ''; try { $start = Get-UtcStamp $p.StartTime } catch { $null = $_ }
     Write-FileAtomic $StatePath ($StateHead + ' ' + (([ordered]@{ pid = $p.Id; start = $start; marker = $Marker; slot = $Slot; retakes = (Get-Retakes $StatePath) }) | ConvertTo-Json -Compress))
@@ -743,11 +762,15 @@ function Invoke-Claude([string]$Exe, [string[]]$ArgList, [string]$Prompt, [strin
     $res = [pscustomobject]@{ Code = 0; Kind = ''; Result = $null; AssistantText = ''; Err = ''; Limit = $null }
     $err = New-Object System.Text.StringBuilder
     $last = Get-Date
+    $tick = $last
     $outTask = $null; $errTask = $null; $outDone = $false; $errDone = $false
     while ($true) {
         if (-not $outDone -and $null -eq $outTask) { $outTask = $p.StandardOutput.ReadLineAsync() }
         if (-not $errDone -and $null -eq $errTask) { $errTask = $p.StandardError.ReadLineAsync() }
-        $left = ($last.AddMinutes($hang) - (Get-Date)).TotalMilliseconds
+        $now = Get-Date
+        $last = $last + (Get-SleepGap $tick $now)
+        $tick = $now
+        $left = ($last.AddMinutes($hang) - $now).TotalMilliseconds
         if ($left -le 0) { $res.Kind = 'HANG'; break }
         $ms = [int][Math]::Min($left, 60000)
         $wait = [System.Threading.Tasks.Task[]]@(@($outTask, $errTask) | Where-Object { $null -ne $_ })
@@ -785,6 +808,7 @@ function Invoke-Claude([string]$Exe, [string[]]$ArgList, [string]$Prompt, [strin
         }
         if (-not $type) { continue }
         $last = Get-Date
+        $tick = $last  # сон до цієї події вже скинуто, вдруге його не додавати
         [System.IO.File]::AppendAllText($ev, $last.ToString('s') + "`t" + $type + "`n", $script:Utf8)
         Read-ClaudeEvent $res $obj
         if ($type -eq 'rate_limit_event') {
@@ -792,7 +816,8 @@ function Invoke-Claude([string]$Exe, [string[]]$ArgList, [string]$Prompt, [strin
             if ($null -ne $info) { $res.Limit = $info; Save-ClaudeQuota $info }
         }
     }
-    if ($res.Kind) { Stop-Tree $p }
+    # Лишки сесії (вимір через nohup, сервер) зупиняються й після її кінця: інакше тримають відеокарту й копію задачі.
+    Stop-Tree $p
     $res.Code = $(if ($p.HasExited) { $p.ExitCode } else { -1 })
     $res.Err = $err.ToString()
     $res
@@ -858,7 +883,12 @@ function Invoke-Task($M, $Job) {
     $exe = Find-Exe $ClaudeExe
     if (-not $exe) { return (Complete-Task $M $statePath $id 'ENGINE_MISSING') }
     try { $taskText = Add-AutoTaskContext $M.Slug ((Invoke-Git @('cat-file', 'blob', "$($M.Sha):$taskPath")).Out) $M.Sha $M.Model }
-    catch { Enter-ReviewWait $M; Remove-Claim $statePath; return }
+    catch {
+        # Збій контексту (план живого, вхід автоперевірки): чекання з лічильником; на межі — PLAN_FAILED, що будить диспетчера.
+        if (Enter-PlanWait $M $_.Exception.Message) { Remove-Claim $statePath; return }
+        try { Add-Note (Join-Path $GeminiOutDir 'blocked-reasons.json') "claude/$($M.Slug)" ('PLAN_FAILED: ' + (Get-PlanFailReason $_.Exception.Message)) } catch { Write-Log "причина PLAN_FAILED не записана: $($_.Exception.Message)" }
+        return (Complete-Task $M $statePath $id 'PLAN_FAILED')
+    }
     if (Test-AutoPlanEmpty $M.Slug $taskText) { return (Complete-Task $M $statePath $id 'EMPTY_PLAN') }
     $cont = Get-ContinueBranch $M.Slug
     $runDir = Join-Path (Join-Path $WorkDir 'runs') $id
@@ -919,10 +949,23 @@ function Invoke-ClaudeTask($M, $Job, [string]$Exe, [string]$TaskText, [string]$C
     if ($isError -or $r.Code -ne 0) {
         $code = Get-ErrorCode ($text + "`n" + $r.Err)
         if ($code -eq 'QUOTA' -and (Enter-ClaudeQuotaWait $M $statePath $id $r ($text + "`n" + $r.Err))) { return }
+        if ($code -eq 'NETWORK' -and (Enter-ClaudeNetworkWait $M $id)) { return }
         return (Complete-Task $M $statePath $id $code)
     }
     Save-ClaudeNoReport $M $id $r
     Complete-Task $M $statePath $id 'NO_REPORT'
+}
+
+# Обрив мережі (світло зникло разом із роутером): спроба не спалена, та сама позначка почнеться знову з гілки наряду.
+# Без мережі прохід обривається на git fetch, тож під час відключення повторів нема. Понад MaxRetakes — кінець NETWORK.
+function Enter-ClaudeNetworkWait($M, [string]$Id) {
+    $n = Set-MarkerWait $M ([DateTimeOffset]::UtcNow.ToUnixTimeSeconds() + 300) @{ retake = $true; group = 'NETWORK' }
+    if ($null -eq $n) { return $false }
+    [void](Add-Line "GEMINI ОБГОРТКА: ЗАБЛОКОВАНО claude/$($M.Slug) NETWORK_WAIT")
+    $runDir = Join-Path (Join-Path $WorkDir 'runs') $Id
+    Write-FileAtomic (Join-Path $runDir 'result.json') (([ordered]@{ marker = $M.Name; sha = $M.Sha; code = 'NETWORK_WAIT'; retake = $n; end = (Get-Date).ToString('s') }) | ConvertTo-Json -Compress)
+    Write-Log "позначка $($M.Name): обрив мережі, повтор у черзі (повернення $n)"
+    $true
 }
 
 # Відмова до STARTED: лічильник повернень і межа ті самі, що в квоти; на межі — кінцевий стан CRASH і рядок диспетчерові.
@@ -1040,6 +1083,17 @@ function Invoke-Off($M) {
         Write-Log "позначка $($M.Name): рушії зайняті — вимкнення чекає"
         return
     }
+    if (Test-OwnerSession) {
+        # Власник за ноутбуком (10.11 його вимкнули під ним): стану не закриваємо — вимкнення, коли сеанс заблоковано чи
+        # нема. Рядок раз на позначку, як BOOT; запис — окремий файл, щоб не закрити позначку.
+        $script:Phase = 'вимкнення чекає: власник за ноутбуком'
+        $seen = $statePath -replace '\.txt$', '.owner'
+        if (-not (Test-Path -LiteralPath $seen)) {
+            [void](Add-Line "GEMINI ОБГОРТКА: ЗАБЛОКОВАНО claude/$($M.Slug) OWNER"); Write-FileAtomic $seen 'OWNER'
+        }
+        Write-Log "позначка $($M.Name): сеанс власника активний і не заблокований — вимкнення чекає"
+        return
+    }
     $id = Add-Line "GEMINI ОБГОРТКА: ВИМКНЕНО $($M.Sha)"
     Write-FileAtomic $statePath "OFF $id"
     $script:Phase = 'вимикаю'
@@ -1050,6 +1104,16 @@ function Invoke-Off($M) {
     while ($id -and (Get-Date) -lt $until) {
         try { if (([System.IO.File]::ReadAllText($sent, $script:Utf8) | ConvertFrom-Json).sent) { break } } catch { $null = $_ }
         Start-Sleep -Seconds 10
+    }
+    # Власник міг сісти за ноутбук, поки чекали доставку (10.11 — 5 хв між ВИМКНЕНО і shutdown): питаємо ще раз. ВИМКНЕНО
+    # вже доставлено, тож рядок OWNER пишемо завжди; стан OFF знімаємо — наступний прохід почне позначку з початку.
+    if (Test-OwnerSession) {
+        $script:Phase = 'вимкнення чекає: власник за ноутбуком'
+        [void](Add-Line "GEMINI ОБГОРТКА: ЗАБЛОКОВАНО claude/$($M.Slug) OWNER")
+        Write-FileAtomic ($statePath -replace '\.txt$', '.owner') 'OWNER'
+        Remove-Item -LiteralPath $statePath -Force -ErrorAction SilentlyContinue
+        Write-Log "позначка $($M.Name): власник сів за ноутбук після ВИМКНЕНО — не вимикаю"
+        return
     }
     Write-Log "позначка $($M.Name): вимикаю"
     Invoke-Shutdown
@@ -1122,7 +1186,8 @@ function Start-Markers($Workers) {
             $job = @{ id = $id; dir = $dir; slot = $slot; lane = 'claude'; ref = $m.Ref; sha = $m.Sha; time = $m.Time; name = $m.Name
                 slug = $m.Slug; model = $m.Model; n = $m.N; cond = $m.Cond; prio = $m.Prio; deadline = $m.Deadline; gpu = $m.Gpu
                 claude = $m.Claude; effort = $m.Effort; limits = $script:Limits }
-            [void]$Workers.Add((Start-Worker $job $dir))
+            $worker = Start-Worker $job $dir
+            [void]$Workers.Add($worker)
         } catch {
             Write-Log "позначка $($m.Name): процес наряду не запущено — $($_.Exception.Message)"
             Close-FailedStart $m $id (Get-StatePath (Get-MarkerKey $m))
@@ -1130,7 +1195,14 @@ function Start-Markers($Workers) {
         }
         Write-Log "позначка $($m.Name): слот $slot, пріоритет $($m.Prio)$(if ($m.Deadline) { ", строк $($m.Deadline)" })$(if ($m.Gpu) { ', GPU' }) -> $id"
         $started++
-        if ($m.Gpu) { $gpuWhy = 'GPU: її щойно взяв наряд цього проходу' }
+        if ($m.Gpu) {
+            $gpuWhy = 'GPU: її щойно взяв наряд цього проходу'
+            $script:GpuHoldReason = 'замок GPU іншого наряду'  # як у Get-GpuBusyReason: без неї сигнал утримання — «GPU: , позначок N»
+            # Наряд, що пішов у чекання (REVIEW_API, PLAN_WAIT) за секунди, GPU не тримає: наступна GPU-позначка проходу її бере.
+            if (Test-LaterGpuMarker $ordered $m) {
+                if ((Wait-GpuWorkerOutcome $worker (Get-StatePath (Get-MarkerKey $m))) -eq 'EXITED') { $gpuWhy = $null }
+            }
+        }
     }
     Save-Skips $skipFile
     @($started, $null)

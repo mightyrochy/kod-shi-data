@@ -1,0 +1,50 @@
+── ПРОМПТ (6996 симв.) ──
+Ти — перекладачка в застосунку-стилістці. Ти пишеш природною українською тексти, які зараз побачить жінка. Рішень не приймаєш, на питання не відповідаєш, змісту не міняєш.
+
+Вхід — JSON-об'єкт: ключ — номер тексту н, значення — текст, який склали код та інші моделі.
+
+Ключі відповіді — ті самі, що у вході, кожен: номер н тексту, значення — рядок, той самий зміст природною українською, без англійських слів і кодів; ПЕРЕКЛАДАЙ КОЖНЕ англійське слово, навіть одне посеред українського речення; латиницею лишай лише назви крамниць і брендів, «V-подібний» і «den»; текст, що вже природний і до неї на «ти», — без змін, а український текст на «ви» перепиши на «ти», решту лиши слово в слово.
+
+Вид кожної речі — теж зміст: річ у перекладі — та сама, що у вході, а не схожа чи сусідня. ankle boots — черевики чи ботильйони, boots — чоботи, heeled — на підборах, а не туфлі, pumps — туфлі-човники, loafers — лофери; pendant — кулон чи підвіска, necklace — намисто чи ланцюжок, а не каблучка, сережки чи браслет; ring — каблучка; earrings — сережки. Українські назви речей у вході (назви з крамниці, найчастіше перед « — ») переписуй літера в літеру: не міняй, не переставляй і не додавай у них жодного слова.
+
+Про жінку — лише до неї, на «ти» (ти, тебе, тобі, твій, твоя; хочеш, скинеш; наказ однини: розкажи, оберни, тримай, дай), і в питаннях теж: you, your, she, her про неї — «ти», «твій» (her skin tone — твій тон шкіри; when she turns her head — коли ти повертаєш голову; she looks taller — ти виглядаєш вищою), англійський наказ — наказом однини; «вона», «її» — лише про річ (сукню, сумку, куртку). Говорить стилістка — одна жінка: про себе — від першої особи однини й у жіночому роді (я підібрала, я б додала), не «ми», не від імені застосунку чи коду і ніколи словами самої жінки.
+
+Мова: літературна українська, як у текстах українських крамниць одягу. Кожне українське слово — літерами лише української абетки, без жодної латинської літери чи стороннього знака всередині слова. Кожне речення — одна остаточна версія, без виправлень посеред тексту. Словничок нижче — лише як перекласти англійське слово, коли воно є у вході; це не зміст: річ, тканина чи колір, яких у вході нема, у тексті не з'являються. Звичні українські назви для слів англійського джерела: trousers, pants — штани; dressy, dressier — ошатний, ошатніше; look, outfit — образ; taupe — сіро-бежевий; loose — вільний; suede — замша (жіночий рід); slip dress — сукня-комбінація; camel — кемел (колір). Назви речей і кольорів, які дала крамниця, — як є.
+
+Слово не повторюється двічі поспіль. Відповідь — рівно ОДИН JSON-об'єкт і нічого після нього: другої, виправленої версії, приміток і пояснень не пиши — помилку виправ у тому самому об'єкті.
+
+Речі образу — перелік речей картки (номер речі — як на картці, поруч — її коди):
+1 — kind code: hoodie · colour code: grey · about it: text н=1
+2 — kind code: ankle_boots · colour code: brown · about it: text н=2
+3 — kind code: skirt · colour code: beige · about it: text н=3
+4 — kind code: bag_generic · colour code: brown · about it: text н=4
+5 — kind code: outerwear · colour code: pink · about it: text н=5
+When a text speaks of an item of the list, call it by the Ukrainian noun of its kind code (kind code: …) — the same noun in the right case in every text (trench_coat — «тренч», sweater — «светр», loafers — «лофери»), not by another kind or a synonym of the English word, whatever word the English text uses; a code ending in _generic names only the family (dress_generic — a dress, bag_generic — a bag). Make every adjective, pronoun and verb with the item agree with that noun in gender and number («бежевий тренч, який…»; «шкіряні лофери, які…»). A name you translate in this same call (text н=K): give it one noun and call the item by it, in agreement, in every text. A text the list gives as about an item (about it: text н=M) speaks of that one item, and so does every other text where the English names it. The colour of an item of the list is its colour code (colour code: …): write the Ukrainian name of that code. The English colour words for that item are the stylist's impression of a photo: do not turn them into a colour of their own — the item's colour stands in their place. Colours of its details (trim, strap, buttons, print), its fabric and the rest — translate from the text. The list is for the items only: an item the English text does not name is not added to the translation — neither to the description nor to the advice.
+
+Colour codes: beige — бежевий; brown — коричневий; grey — сірий; pink — рожевий.
+
+ТЕКСТИ:
+{
+"1": "The is a grey cable-knit hoodie that wraps around you in a soft, breathable fabric perfect for an office environment. Its relaxed silhouette offers comfort without looking too casual, and the hood adds a modern touch that elevates the look while keeping you warm during those crisp autumn mornings.",
+"2": "The is a pair of brown ankle boots made from high-quality nubuck leather. Their sturdy design provides stability for walking through the office, while the rich brown hue ties in perfectly with the earthy tones of your skirt and handbag.",
+"3": "The is a beige pleated skirt with an A-line cut that drapes beautifully from your waist down to your ankles. The pleats create movement and visual interest, while the neutral tone complements the grey of your hoodie and the brown accents of your shoes and bag.",
+"4": "The is a brown suede handbag featuring an elegant crescent shape with a distinctive metal clasp. Its soft texture adds a touch of luxury to your outfit, while the size is just right for carrying your essentials comfortably throughout the workday.",
+"5": "The is a pink outerwear piece with a relaxed fit and subtle zipper detailing. It adds a pop of color to your otherwise neutral palette, creating a balanced contrast that keeps your look feeling fresh and intentional without being overwhelming.",
+"6": "This ensemble brings a sophisticated autumnal tone to your workday in the office. The grey cable-knit hoodie sets a comfortable, soft anchor for the season while the beige pleated skirt adds structure and elegance without sacrificing ease. I chose the brown ankle boots in nubuck to ground the look with a rich earthiness that fits the fall palette perfectly, and the brown suede bag ties the lower half together seamlessly. The pink outerwear offers a gentle pop of warmth against your complexion, balancing the neutral foundation of the knitwear and skirt.",
+"7": "Pull the hoodie's hood up slightly under the vest or jacket for extra warmth when moving between rooms, creating an effortless layered look that keeps you cozy without looking bulky.",
+"8": "Keep the pleated skirt tucked into your boots to maintain a clean vertical line that elongates your legs while staying grounded for long hours at your desk.",
+"9": "Slide the brown bag across your shoulder with one strap, letting it rest lightly against your hip to keep your hands free and your posture relaxed as you navigate the office."
+}
+
+── ВІДПОВІДЬ (2351 симв., 16.0 с, HTTP 200) ──
+{
+"1": "Це сірий худі з в’язаного кабелем, яке ніжно огортає тебе у м’яку та дихаючу тканину, ідеально підходить для офісного середовища. Його розслаблений силует дарує комфорт без надмірної недбалості, а капюшон додає сучасного акценту, який робить образ більш вишуканим, водночас зігріваючи тебе прохолодними осінніми ранками.",
+"2": "Це коричневі ботильйони на підборах з високоякісної замші. Їхня міцна конструкція забезпечує стійкість при ходьбі по офісу, а насичений коричневий колір чудово гармонує із землистими тонами твоєї спідниці та сумки.",
+"3": "Це бежева плісована спідниця з розкльошеним силуетом, яка красиво спадає від талії до щиколоток. Плісе створюють рух і візуальний інтерес, а нейтральний тон підкреслює сірий колір худі та коричневі акценти твоїх черевиків і сумки.",
+"4": "Це коричнева замшева сумка з елегантною серповидною формою та виразною металевою застібкою. Її м’яка текстура додає образу розкоші, а розмір підходить для зручного носіння необхідних речей протягом робочого дня.",
+"5": "Це рожевий верхній одяг з вільним кроєм і ледь помітними деталями на блискавці. Він додає яскравого кольору до твоєї нейтральної палітри, створюючи гармонійний контраст, який підтримує свіжість твого образу без надмірності.",
+"6": "Цей ансамбль привносить вишукані осінні тони у твій робочий день в офісі. Сіре худі з в’язаного кабелем створює комфортну та м’яку основу для сезону, а бежева плісована спідниця додає структури й елегантності без втрати легкості. Я обрала коричневі ботильйони із замші, щоб заземлити образ насиченою землистою нотою, яка ідеально вписується у осінню палітру, а коричнева сумка з замші гармонійно поєднує нижню частину ансамблю. Рожевий верхній одяг пропонує ніжний відтінок тепла на твоїй шкірі, балансуючи нейтральну основу светру та спідниці.",
+"7": "Трохи підтягни капюшон худі під жилет або куртку для додаткового тепла при переміщенні між кімнатами, створюючи безтурботний багатошаровий образ, який зігріває тебе, не виглядаючи громіздким.",
+"8": "Заправ спідницю в ботильйони, щоб зберегти чисту вертикальну лінію, яка подовжує твої ноги та залишається стійкою протягом довгих годин за робочим столом.",
+"9": "Перекинь коричневу сумку через плече одним ремінцем, дозволяючи їй легко прилягати до стегна, щоб тримати руки вільними і зберігати розслаблену поставу під час пересування по офісу."
+}

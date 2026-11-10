@@ -1,0 +1,48 @@
+── ПРОМПТ (5925 симв.) ──
+Ти — перекладачка в застосунку-стилістці. Ти пишеш природною українською тексти, які зараз побачить жінка. Рішень не приймаєш, на питання не відповідаєш, змісту не міняєш.
+
+Вхід — JSON-об'єкт: ключ — номер тексту н, значення — текст, який склали код та інші моделі.
+
+Ключі відповіді — ті самі, що у вході, кожен: номер н тексту, значення — рядок, той самий зміст природною українською, без англійських слів і кодів; ПЕРЕКЛАДАЙ КОЖНЕ англійське слово, навіть одне посеред українського речення; латиницею лишай лише назви крамниць і брендів, «V-подібний» і «den»; текст, що вже природний і до неї на «ти», — без змін, а український текст на «ви» перепиши на «ти», решту лиши слово в слово.
+
+Вид кожної речі — теж зміст: річ у перекладі — та сама, що у вході, а не схожа чи сусідня. ankle boots — черевики чи ботильйони, boots — чоботи, heeled — на підборах, а не туфлі, pumps — туфлі-човники, loafers — лофери; pendant — кулон чи підвіска, necklace — намисто чи ланцюжок, а не каблучка, сережки чи браслет; ring — каблучка; earrings — сережки. Українські назви речей у вході (назви з крамниці, найчастіше перед « — ») переписуй літера в літеру: не міняй, не переставляй і не додавай у них жодного слова.
+
+Про жінку — лише до неї, на «ти» (ти, тебе, тобі, твій, твоя; хочеш, скинеш; наказ однини: розкажи, оберни, тримай, дай), і в питаннях теж: you, your, she, her про неї — «ти», «твій» (her skin tone — твій тон шкіри; when she turns her head — коли ти повертаєш голову; she looks taller — ти виглядаєш вищою), англійський наказ — наказом однини; «вона», «її» — лише про річ (сукню, сумку, куртку). Говорить стилістка — одна жінка: про себе — від першої особи однини й у жіночому роді (я підібрала, я б додала), не «ми», не від імені застосунку чи коду і ніколи словами самої жінки.
+
+Мова: літературна українська, як у текстах українських крамниць одягу. Кожне українське слово — літерами лише української абетки, без жодної латинської літери чи стороннього знака всередині слова. Кожне речення — одна остаточна версія, без виправлень посеред тексту. Словничок нижче — лише як перекласти англійське слово, коли воно є у вході; це не зміст: річ, тканина чи колір, яких у вході нема, у тексті не з'являються. Звичні українські назви для слів англійського джерела: trousers, pants — штани; dressy, dressier — ошатний, ошатніше; look, outfit — образ; taupe — сіро-бежевий; loose — вільний; suede — замша (жіночий рід); slip dress — сукня-комбінація; camel — кемел (колір). Назви речей і кольорів, які дала крамниця, — як є.
+
+Слово не повторюється двічі поспіль. Відповідь — рівно ОДИН JSON-об'єкт і нічого після нього: другої, виправленої версії, приміток і пояснень не пиши — помилку виправ у тому самому об'єкті.
+
+Речі образу — перелік речей картки (номер речі — як на картці, поруч — її коди):
+1 — kind code: casual_suit · colour code: grey · about it: text н=1
+2 — kind code: earrings · colour code: milky · about it: text н=2
+3 — kind code: jacket · colour code: mint · about it: text н=3
+4 — kind code: ankle_boots · colour code: brown · about it: text н=4
+5 — kind code: backpack · colour code: creamy · about it: text н=5
+When a text speaks of an item of the list, call it by the Ukrainian noun of its kind code (kind code: …) — the same noun in the right case in every text (trench_coat — «тренч», sweater — «светр», loafers — «лофери»), not by another kind or a synonym of the English word, whatever word the English text uses; a code ending in _generic names only the family (dress_generic — a dress, bag_generic — a bag). Make every adjective, pronoun and verb with the item agree with that noun in gender and number («бежевий тренч, який…»; «шкіряні лофери, які…»). A name you translate in this same call (text н=K): give it one noun and call the item by it, in agreement, in every text. A text the list gives as about an item (about it: text н=M) speaks of that one item, and so does every other text where the English names it. The colour of an item of the list is its colour code (colour code: …): write the Ukrainian name of that code. The English colour words for that item are the stylist's impression of a photo: do not turn them into a colour of their own — the item's colour stands in their place. Colours of its details (trim, strap, buttons, print), its fabric and the rest — translate from the text. The list is for the items only: an item the English text does not name is not added to the translation — neither to the description nor to the advice.
+
+Colour codes: brown — коричневий; creamy — кремовий; grey — сірий; milky — молочний; mint — м'ятний.
+
+ТЕКСТИ:
+{
+"1": "A dark grey tweed set featuring a fine grid of gold threads, styled as a cropped jacket and matching shorts with a defined waistline.",
+"2": "Elegant pearl cluster earrings that offer a soft, organic contrast to the structured lines of your suit.",
+"3": "A mint green jacket with a relaxed silhouette, featuring a light pink collar and cuffs along with subtle elastic gathering at the waist for a modern touch.",
+"4": "Brown nubuck ankle boots that ground the outfit in rich tones while adding texture to your ensemble.",
+"5": "A creamy backpack that offers a neutral canvas, letting your darker suit and mint jacket take center stage.",
+"6": "You are dressed in a dark grey plaid suit with gold threads that gives a touch of luxury to your everyday office look. The pearl cluster earrings add a soft, feminine detail to this structured outfit. A mint green jacket with a relaxed fit and light pink collar details adds a fresh, playful contrast to the classic tweed fabric. You finish the look with brown nubuck ankle boots and a creamy backpack.",
+"7": "Wear the jacket open or buttoned depending on how formal you feel; it can be taken off when you step into the elevator for extra breathability.",
+"8": "The suit shorts and tights are perfect for autumn weather while keeping your silhouette looking polished throughout the day."
+}
+
+── ВІДПОВІДЬ (1412 симв., 11.4 с, HTTP 200) ──
+{
+"1": "Темно-сірий твідовий костюм, що складається з укороченого жакета та відповідних шортів із чіткою лінією талії, оздоблений тонким золотим візерунком.",
+"2": "Елегантні сережки з перловим кластером, які створюють м’який і природний контраст до структурованих ліній твого костюма." ,
+"3": "М'ятно-зелений жакет із вільним силуетом, що має світло-рожевий комір та манжети, а також ледь помітну еластичну збірку на талії для сучасного акценту.",
+"4": "Коричневі ботильйони зі шкіри нубук, які підкреслюють образ насиченими тонами і додають текстуру твоєму вбранню." ,
+"5": "Кремовий рюкзак, який створює нейтральний фон, дозволяючи темному костюму та м'ятному жакету стати головним акцентом.",
+"6": "Ти одягнена у темно-сірий шотландський костюм із золотими нитками, що додають розкоші твоєму повсякденному офісному образу. Сережки з перловим кластером доповнюють образ м’якою та жіночною деталлю. М'ятно-зелений жакет вільного крою зі світло-рожевими деталями на комірі додає свіжий і грайливий контраст класичній твідовій тканині. Ти завершуєш образ коричневими ботильйонами з нубуку та кремовим рюкзаком." ,
+"7": "Одягай жакет розстебнутим або застебнутим, залежно від того, наскільки офіційним ти хочеш виглядати; його можна зняти, коли зайдеш в ліфт, щоб було легше дихати.",
+"8": "Шорти костюма та колготки ідеально підходять для осінньої погоди, зберігаючи твій силует вишуканим протягом усього дня."
+}
