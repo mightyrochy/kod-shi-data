@@ -103,12 +103,15 @@ function карткаІнструментаП(р){
   else if (р.tool === 'new_scenario' && р.done)
     текстЖінціП(к, 'Почато новий сценарій.');
   else if (р.tool === 'switch_profile' && р.done)
-    текстЖінціП(к, підписЗНазвоюП(['Відкрито профіль «', {назва: р.name || підписПрофілюП(р.номер)}, '».']));
+    текстЖінціП(к, підписЗНазвоюП(['Відкрито профіль «', {назва: р.name || підписПрофілюП(р.номер)}, '».']), 'profile_unreadable');
   else if (р.tool === 'confirm_case' && р.done)
     текстЖінціП(к, 'Розуміння нагоди підтверджено.');
   else if (р.tool === 'set_weather_feel' && р.done)
     текстЖінціП(к, 'Погода: ' + (ВІДЧУТТЯ_П[р.feel] || р.feel) + '.');
-  else if (р.tool === 'switch_profile' && р.збій) збійЖінціП(к, р.збій, 'tool_failed: ' + р.tool);
+  else if (р.tool === 'switch_profile' && р.збій === 'profile_not_found')
+    збійЖінціП(к, 'profile_not_found', 'tool_failed: ' + р.tool);
+  else if (р.tool === 'switch_profile' && р.збій === 'profile_switch_blocked')
+    збійЖінціП(к, 'profile_switch_blocked', 'tool_failed: ' + р.tool);
   else if (р.знайдено === false) збійЖінціП(к, 'scenario_not_found', 'tool_failed: ' + р.tool);
   else збійЖінціП(к, ЗБІЙ_ІНСТРУМЕНТА_П[р.tool] || 'not_written', 'tool_failed: ' + р.tool);
   return к;
