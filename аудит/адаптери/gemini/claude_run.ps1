@@ -23,7 +23,8 @@
   5. Кінець — рядок теки вихідних (доставляє `gemini-publish`): ГОТОВО <гілка> <SHA40>, лише коли `origin` має
      саме цей SHA на гілці зі звіту, або ЗАБЛОКОВАНО claude/<наряд> <КОД>; копія з незапушеними комітами лишається — ще рядок COPY_KEPT. Відмова за квотою — не кінець: позначка
      чекає скидання (час — з події `rate_limit_event` stream-json) і рядок QUOTA0_CLAUDE_M<хв>; потім її бере ця ж смуга.
-  6. Позначка `gemini-queue/ВИМКНИ-НОУТБУК/cc-off/<спроба>`: коли рушії не працюють — рядок ВИМКНЕНО, чекання
+  6. Позначка `gemini-queue/ВИМКНИ-НОУТБУК/cc-off/<спроба>`: коли рушії не працюють і власник не за ноутбуком
+     (сеанс активний і не заблокований — раз ЗАБЛОКОВАНО … OWNER, позначка чекає) — рядок ВИМКНЕНО, чекання
      доставки й `shutdown`. Позначка, що вже була до першого проходу після ввімкнення, — ЗАБЛОКОВАНО … BOOT.
   7. Стан — тіло issue -StatusIssue (`gh api -X PATCH`), щопроходу не частіше за -StatusMinutes: задачі планувальника,
      смуги й слоти (свої й gemini-run з heartbeat), квота груп моделей і Claude з часом скидання в UTC, позначки в
@@ -177,7 +178,22 @@ function Get-BootStamp {
     Get-UtcStamp (Get-CimInstance Win32_OperatingSystem).LastBootUpTime
 }
 
-function Invoke-Shutdown { & shutdown.exe /s /t 60 }
+# Хтось працює за ноутбуком: є інтерактивний сеанс (explorer.exe поза сеансом 0), у якому нема LogonUI.exe (екран
+# блокування). Відлучений сеанс Windows блокує сам — LogonUI з'являється, і вимкнення дозволене. Без P/Invoke: Add-Type
+# із wtsapi32 Avast уже блокував. Збій запиту — $true: краще не вимкнути, ніж вимкнути під власником.
+function Test-OwnerSession {
+    if (-not $script:OnWindows) { return $false }
+    try {
+        $locked = @(Get-Process -Name LogonUI -ErrorAction SilentlyContinue | ForEach-Object { $_.SessionId })
+        $shells = @(Get-Process -Name explorer -ErrorAction SilentlyContinue | Where-Object { $_.SessionId -gt 0 } | ForEach-Object { $_.SessionId } | Select-Object -Unique)
+        return (@($shells | Where-Object { $locked -notcontains $_ }).Count -gt 0)
+    } catch { Write-Log "сеанс власника не визначено: $($_.Exception.Message)"; return $true }
+}
+
+# /c — напис у вікні Windows, що вимкнення йде від обгортки; скасувати до кінця відліку — `shutdown /a`.
+function Invoke-Shutdown {
+    & shutdown.exe /s /t 60 /c "Код Ші: claude-run вимикає ноутбук за позначкою ВИМКНИ-НОУТБУК. Скасувати: shutdown /a"
+}
 
 function Get-TaskRows {
     foreach ($n in $TaskNames) {
@@ -1065,6 +1081,17 @@ function Invoke-Off($M) {
         # Стану не пишемо: наступний прохід спробує знову.
         $script:Phase = 'вимкнення чекає рушіїв'
         Write-Log "позначка $($M.Name): рушії зайняті — вимкнення чекає"
+        return
+    }
+    if (Test-OwnerSession) {
+        # Власник за ноутбуком (10.11 його вимкнули під ним): стану не закриваємо — вимкнення, коли сеанс заблоковано чи
+        # нема. Рядок раз на позначку, як BOOT; запис — окремий файл, щоб не закрити позначку.
+        $script:Phase = 'вимкнення чекає: власник за ноутбуком'
+        $seen = $statePath -replace '\.txt$', '.owner'
+        if (-not (Test-Path -LiteralPath $seen)) {
+            [void](Add-Line "GEMINI ОБГОРТКА: ЗАБЛОКОВАНО claude/$($M.Slug) OWNER"); Write-FileAtomic $seen 'OWNER'
+        }
+        Write-Log "позначка $($M.Name): сеанс власника активний і не заблокований — вимкнення чекає"
         return
     }
     $id = Add-Line "GEMINI ОБГОРТКА: ВИМКНЕНО $($M.Sha)"

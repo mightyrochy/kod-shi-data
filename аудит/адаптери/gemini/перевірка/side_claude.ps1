@@ -23,6 +23,8 @@ function Get-WorkerCommand([string]$File) {
 }
 function Test-OwnerUser { $true }
 function Get-BootStamp { [string]$env:FAKE_BOOT }
+# Сеанс власника: FAKE_OWNER=1 — активний і не заблокований (на ноутбуці його міряє справжня функція без підміни).
+function Test-OwnerSession { $env:FAKE_OWNER -ceq '1' }
 function Invoke-Shutdown { [System.IO.File]::WriteAllText((Join-Path $WorkDir 'shutdown.txt'), (Get-Date).ToString('s')) }
 function Get-TaskRows {
     foreach ($n in $TaskNames) {
