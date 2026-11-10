@@ -510,7 +510,7 @@ function Get-Line([string]$Id, [switch]$StatusOnly) {
     }
     if (-not (Get-Prop $s 'bundle')) {
         if (Request-SleepRetry $s $queue $marker '') { return $null }
-        Add-PublishedMarker $queue $marker
+        Add-PublishedMarker $queue $marker $Id $code
         if (Test-Seen "$queue $marker $code") { return $null }
         $tail = $(if (Test-Path -LiteralPath (Join-Path $OutDir ($Id + '.tail.txt'))) { "; кінець виводу агента — $OutDir\$Id.tail.txt" } else { '' })
         Write-WrapperLog "кінець $Id — НЕ ЗАВЕРШЕНО $branch — $run; комітів нема$tail"
@@ -533,7 +533,7 @@ function Get-Line([string]$Id, [switch]$StatusOnly) {
         $what = $(if ($DryRun) { 'ПЕРЕВІРЕНО (без пушу)' } else { 'ОПУБЛІКОВАНО' })
         Write-WrapperLog "кінець $Id — $what $branch $head; комітів $ahead, файлів до main $files; без .github/ і файлів обгортки; $run"
         if (Request-SleepRetry $s $queue $marker $head) { return $null }
-        Add-PublishedMarker $queue $marker
+        Add-PublishedMarker $queue $marker $Id $code
         if ($head) { Save-DraftRequest $branch $head ([string](Get-Prop $s 'actual')) }
         if ($publication.Bad.Count) {
             Write-WrapperLog ('вада тіла PR: ' + (($publication.Bad | ForEach-Object { $_.error }) -join '; '))
@@ -552,15 +552,29 @@ function Get-Line([string]$Id, [switch]$StatusOnly) {
         return [pscustomobject]@{ Slug = $slug; Outbox = "GEMINI ОБГОРТКА: ЗАБЛОКОВАНО $branch $(if ($code -eq 'DONE') { 'NO_HEAD' } else { $code })_PUBLISHED" }
     }
     # Відмову пушу власник повторює рукою (-Retry): її позначка лишається, бо Get-Line публікує лише за наявною.
-    if ($pc -cne 'PUSH_FAILED') { Add-PublishedMarker $queue $marker }
+    if ($pc -cne 'PUSH_FAILED') { Add-PublishedMarker $queue $marker $Id $code }
     if (Test-Seen "$queue $marker refused $pc") { return $null }
     Write-WrapperLog "кінець $Id — НЕ ОПУБЛІКОВАНО $branch $head — $($script:PublishCodes[$pc]); $run; бандл $OutDir\$Id.bundle"
     [pscustomobject]@{ Slug = $slug; Outbox = "GEMINI ОБГОРТКА: ЗАБЛОКОВАНО $branch $pc" }
 }
 
-# Кінець позначки опубліковано (без DryRun — там пушу нема): запис на зняття з черги.
-function Add-PublishedMarker([string]$Queue, [string]$Marker) {
-    if (-not $DryRun) { Add-FinishedMarker (Join-Path $WorkDir 'finished') $Queue $Marker }
+# Кінець позначки підтверджує лише стан, який пише сама смуга (gemini_run.ps1): marker-state/<хеш ключа>.txt =
+# «DONE <id> <код>» з id і кодом цього результату. Файл у теці виходу пише gemini, тож сам нічого не підтверджує:
+# підроблений JSON (id, якого стан позначки не знає) позначки не знімає, а справжній результат ще може прийти.
+function Test-MarkerEndConfirmed([string]$Queue, [string]$Marker, [string]$Id, [string]$Code) {
+    $path = Join-Path (Join-Path $OutDir 'marker-state') ((Get-Sha256Hex "refs/remotes/origin/$Queue $Marker") + '.txt')
+    if (-not (Test-Path -LiteralPath $path)) { return $false }
+    try { ([IO.File]::ReadAllText($path, $script:Utf8)).Trim() -ceq "DONE $Id $Code" } catch { $false }
+}
+
+# Кінець позначки опубліковано (без DryRun — там пушу нема): запис на зняття з черги — лише за підтвердженим станом.
+function Add-PublishedMarker([string]$Queue, [string]$Marker, [string]$Id, [string]$Code) {
+    if ($DryRun) { return }
+    if (-not (Test-MarkerEndConfirmed $Queue $Marker $Id $Code)) {
+        Write-WrapperLog "черга: $Queue не знімаю — стан позначки не підтверджує кінця $Id ($Code)"
+        return
+    }
+    Add-FinishedMarker (Join-Path $WorkDir 'finished') $Queue $Marker
 }
 
 # Черга — єдина правда про роботу: позначка з кінцевим станом і опублікованим рядком (записи Add-FinishedMarker) знімається

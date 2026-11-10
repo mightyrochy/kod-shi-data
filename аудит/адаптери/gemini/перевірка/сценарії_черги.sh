@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
-# Стенд обгортки М.2, 14 сценаріїв черги й публікації: повтор, позначка зникла, не ff, збій claude, доробка, ізоляція,
-# стара й крива позначка, перерваний прогін, засипання станами, відхилений пуш, підроблений стан (8940), черга — правда: зняття виконаної, ЗНЯТО до й під час прогону. pwsh — PWSH.
+# Стенд обгортки М.2, 15 сценаріїв черги й публікації: повтор, позначка зникла, не ff, збій claude, доробка, ізоляція,
+# стара й крива позначка, перерваний прогін, засипання станами, відхилений пуш, підроблений стан (8940), черга — правда: зняття виконаної, ЗНЯТО до й під час прогону, підроблений кінець не знімає позначки. pwsh — PWSH.
 H=$(cd "$(dirname "$0")" && pwd); . "$H/середовище.sh"; PW="${PWSH:-pwsh}"; SRC=$(cd "$H/.." && pwd)
 SLUG='М.2-проба-обгортки'; M=gemini-3.8-flash-high; BAD=0
 export GIT_AUTHOR_NAME=t GIT_AUTHOR_EMAIL=t@x GIT_COMMITTER_NAME=t GIT_COMMITTER_EMAIL=t@x
@@ -87,5 +87,14 @@ zn "$SLUG/$M/1" 'інший рушій'; wait "$GP"; T1=$(date +%s); pkill -f 'f
 ok "прохід зупинив прогін за $((T1 - T0)) с (agy спав би 60 с)" '[ $((T1 - T0)) -lt 50 ] && grep -q "зупинено — CANCELLED" "$W/runs/wrapper.log"'
 ok "стан узятого прогону й знятої позначки — DONE … CANCELLED" '[ "$(grep -l "^DONE .* CANCELLED$" "$W"/out/marker-state/*.txt | wc -l)" = 2 ] && [ "$(grep -l "\"code\":\"CANCELLED\"" "$W"/out/2*.json | wc -l)" = 1 ]'
 unset FAKE_SCENARIO
+
+echo "=== 15 підроблений кінець не знімає позначки: справжній результат після двох проходів публікується, тоді позначку знято"
+setup r15; mark "$SLUG/$M/1"; gem; mkdir -p "$W/held"; J=$(ls "$W"/out/2*.json | head -1); mv "$J" "$W/held/"; MK=$(has "$SLUG/$M/1")
+printf '{"v":1,"id":"20000101-000000-aaaaaaaaaaaa","slug":"%s","model":"%s","n":1,"marker":"%s","start":"","head":"","code":"NO_REPORT","report":"NONE","ahead":0,"turns":1,"minutes":0,"bundle":""}' "$SLUG" "$M" "$MK" > "$W/out/20000101-000000-aaaaaaaaaaaa.json"
+pub; pub; pub
+ok "три проходи з підробленим JSON: позначка на origin, відмова в журналі" '[ -n "$(has "$SLUG/$M/1")" ] && grep -q "не знімаю — стан позначки не підтверджує" "$W/pub/publish.log" && ! grep -q "знято — кінцевий стан" "$W/pub/publish.log"'
+mv "$W/held/$(basename "$J")" "$W/out/"; pub
+ok "справжній результат опубліковано після підробленого" 'git -C "$W/origin.git" rev-parse -q --verify "refs/heads/gemini/$SLUG" >/dev/null'
+pub; ok "справжній кінцевий стан підтверджено станом позначки — гілку знято" '[ -z "$(has "$SLUG/$M/1")" ] && grep -q "знято — кінцевий стан опубліковано" "$W/pub/publish.log"'
 
 [ "$BAD" = 0 ] && echo "ВСЕ ✓" || echo "ЗБІЙ ✗"; exit "$BAD"
