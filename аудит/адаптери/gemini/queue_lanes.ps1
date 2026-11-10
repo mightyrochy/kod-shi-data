@@ -1720,9 +1720,10 @@ function Get-UtcProp($Obj, [string]$Name) {
     [string]$v
 }
 
-function Update-Idle([bool]$Busy, [scriptblock]$Send, [bool]$Reset = $false) {
+function Update-Idle([bool]$Busy, [scriptblock]$Send, [bool]$Reset = $false, [string]$Why = '') {
     <# idle.json у теці стану: busy_utc — останній прохід із роботою; since — початок простою (порожній, доки є робота);
-    sent — рядок ПРОСТІЙ цього простою доставлено в теку вихідних. Новий рядок — лише після нової роботи. #>
+    sent — рядок ПРОСТІЙ цього простою доставлено в теку вихідних. Новий рядок — лише після нової роботи. $Why — причина
+    (` QUOTA0 <N> <ГРУПИ> <скидання UTC|->`): усі позначки черги чекають рушіїв з нульовою квотою; порожній — черга порожня. #>
     $path = Join-Path $script:StateDir 'idle.json'
     $now = Get-UtcStamp (Get-Date)
     $prev = $null
@@ -1741,7 +1742,7 @@ function Update-Idle([bool]$Busy, [scriptblock]$Send, [bool]$Reset = $false) {
     if (-not $sent) {
         $from = [datetime]::ParseExact($since, "yyyy-MM-dd'T'HH:mm:ss'Z'", [cultureinfo]::InvariantCulture, [Globalization.DateTimeStyles]::AssumeUniversal -bor [Globalization.DateTimeStyles]::AdjustToUniversal)
         $min = [Math]::Max(0, [int][Math]::Floor(([datetime]::UtcNow - $from).TotalMinutes))
-        if (& $Send "GEMINI ОБГОРТКА: ПРОСТІЙ $since $min") { $sent = $true }
+        if (& $Send "GEMINI ОБГОРТКА: ПРОСТІЙ $since $min$Why") { $sent = $true }
     }
     $busyUtc = $(if ($null -ne $prev -and -not $Reset) { (Get-UtcProp $prev 'busy_utc') } else { '' })
     Write-FileAtomic $path ((@{ busy_utc = $busyUtc; since = $since; sent = $sent }) | ConvertTo-Json -Compress)

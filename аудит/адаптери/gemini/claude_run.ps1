@@ -89,7 +89,7 @@ $script:LineTemplates = @(
     "\AGEMINI ОБГОРТКА: ГОТОВО claude/$script:SlugCore [0-9a-f]{40} МОДЕЛЬ [a-z0-9][a-z0-9.-]{1,63}\z",
     "\AGEMINI ОБГОРТКА: ЗАБЛОКОВАНО claude/$script:SlugCore [A-Z0-9_]{2,40}\z",
     '\AGEMINI ОБГОРТКА: ВИМКНЕНО [0-9a-f]{40}\z',
-    '\AGEMINI ОБГОРТКА: ПРОСТІЙ 20[0-9]{2}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z [0-9]{1,6}\z',
+    '\AGEMINI ОБГОРТКА: ПРОСТІЙ 20[0-9]{2}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z [0-9]{1,6}(?: QUOTA0 [1-9][0-9]* [A-Z0-9_]+(?:,[A-Z0-9_]+)* (?:20[0-9]{2}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z|-))?\z',
     $script:HoldLineTemplate
 )
 
@@ -1012,11 +1012,20 @@ function Test-FutureUtc([string]$Utc) {
     $Utc -cmatch $script:UtcRx -and [datetime]::ParseExact($Utc, "yyyy-MM-dd'T'HH:mm:ss'Z'", [cultureinfo]::InvariantCulture, [Globalization.DateTimeStyles]::AssumeUniversal -bor [Globalization.DateTimeStyles]::AdjustToUniversal) -gt [datetime]::UtcNow
 }
 
-function Test-ClaudeQuotaZero {
+# Квота Claude на нулі: UTC скидання (майбутнє) першого нульового вікна чи свіжої відмови; '' — квота не нульова.
+function Get-ClaudeZeroReset {
     $cq = Read-ClaudeQuota
-    if ($null -eq $cq) { return $false }
-    foreach ($w in @(Get-JsonProp $cq 'windows')) { if ($null -ne $w -and [string]$w.left -eq '0' -and (Test-FutureUtc ([string]$w.reset))) { return $true } }
-    ([string](Get-JsonProp $cq 'refused')) -ne '' -and (Test-FutureUtc ([string](Get-JsonProp $cq 'reset')))
+    if ($null -eq $cq) { return '' }
+    foreach ($w in @(Get-JsonProp $cq 'windows')) { if ($null -ne $w -and [string]$w.left -eq '0' -and (Test-FutureUtc ([string]$w.reset))) { return [string]$w.reset } }
+    if (([string](Get-JsonProp $cq 'refused')) -ne '' -and (Test-FutureUtc ([string](Get-JsonProp $cq 'reset')))) { return [string](Get-JsonProp $cq 'reset') }
+    ''
+}
+
+# Група квоти agy на нулі за heartbeat (вікно left 0, скидання в майбутньому): UTC скидання; '' — не нульова чи невідома.
+function Get-GroupZeroReset($G, [string]$Group) {
+    if ($null -eq $G.Quota) { return '' }
+    foreach ($w in @($G.Quota.Windows)) { if ($w.G -ceq $Group -and $w.Left -eq 0 -and (Test-FutureUtc ([string]$w.Reset))) { return [string]$w.Reset } }
+    ''
 }
 
 function Get-MarkerStateIn($M, [string]$Dir) {
@@ -1024,18 +1033,39 @@ function Get-MarkerStateIn($M, [string]$Dir) {
     try { Get-MarkerState $M } finally { $script:StateDir = $keep }
 }
 
+# Простій — не «позначок нема», а «брати нічого»: зайнятою вважається лише позначка, яку смуга справді візьме. Не візьме:
+# нічний прохід минулого дня (gemini-run бере лише сьогоднішній, Start-Markers) і позначка на рушії з нульовою квотою —
+# Claude, Codex (скидання в майбутньому), група agy з нульовим вікном heartbeat: смуга лише поверне її в чекання. Такі
+# позначки (і ті, що вже чекають квоту) $script:IdleWhy описує для рядка: ` QUOTA0 <N> <ГРУПИ> <найраніше скидання UTC|->`.
 function Test-IdleBusy($G) {
+    $script:IdleWhy = ''
     if (Test-ClaudeBusy) { return $true }
     if (Test-GeminiBusy) { return $true }
-    $claudeZero = Test-ClaudeQuotaZero
-    $codexZero = $null -ne $G.Codex -and (Test-FutureUtc ([string]$G.Codex.Reset))
+    $claudeReset = Get-ClaudeZeroReset
+    $codexReset = $(if ($null -ne $G.Codex -and (Test-FutureUtc ([string]$G.Codex.Reset))) { [string]$G.Codex.Reset } else { '' })
     $now = [DateTimeOffset]::UtcNow.ToUnixTimeSeconds()
+    $today = [datetime]::UtcNow.ToString('yyyyMMdd')
+    $zero = @()
     foreach ($m in @(Get-Markers | Where-Object { $_.Valid })) {
         if (($now - $m.Time) -gt $MarkerMaxAgeDays * 86400) { continue }
+        if ($m.Lane -ne 'claude' -and $m.Slug -cmatch '^Е1-нічний-живий-([0-9]{8})$' -and $Matches[1] -cne $today) { continue }
         $st = $(if ($m.Lane -eq 'claude') { Get-MarkerState $m } else { Get-MarkerStateIn $m $GeminiStateDir })
-        if (-not (Test-MarkerReady $st)) { continue }
-        if (($m.Lane -eq 'claude' -and $claudeZero) -or ($m.Lane -eq 'codex' -and $codexZero)) { continue }
-        return $true
+        $grp = $(if ($st.Kind -eq 'WAIT') { [string](Get-JsonProp $st.Wait 'group') } else { '' })
+        if (-not (Test-MarkerReady $st)) {
+            if ($grp -cmatch '^[A-Z0-9]{1,16}$' -and $grp -cnotin @('NETWORK', 'SLEEP', 'REVIEW_API', 'PLAN_WAIT', 'START')) {
+                $zero += [pscustomobject]@{ Group = $grp; Reset = (Get-UtcStamp ([DateTimeOffset]::FromUnixTimeSeconds([long]$st.Wait.until).UtcDateTime)) }
+            }
+            continue
+        }
+        $gr = $(if ($m.Lane -eq 'claude') { $claudeReset } elseif ($m.Lane -eq 'codex') { $codexReset } else { '' })
+        $name = $(if ($m.Lane -eq 'claude') { 'CLAUDE' } elseif ($m.Lane -eq 'codex') { 'CODEX' } else { $grp })
+        if ($gr -eq '' -and $grp -cmatch '^[A-Z0-9]{1,16}$') { $gr = Get-GroupZeroReset $G $grp }
+        if ($gr -eq '') { return $true }
+        $zero += [pscustomobject]@{ Group = $(if ($name -cmatch '^[A-Z0-9]{1,16}$') { $name } else { $grp }); Reset = $gr }
+    }
+    if ($zero.Count -gt 0) {
+        $until = @($zero | ForEach-Object { $_.Reset } | Sort-Object)[0]
+        $script:IdleWhy = " QUOTA0 $($zero.Count) $((@($zero | ForEach-Object { $_.Group } | Sort-Object -Unique)) -join ',') $until"
     }
     $false
 }
@@ -1267,7 +1297,7 @@ function Main {
                 Update-HoldSignals $script:Held { param($l) Add-Line $l }
                 $busy = ($started -gt 0) -or ($null -ne $off) -or ($script:Workers.Count -gt 0)
                 if (-not $busy) { $busy = [bool](Test-IdleBusy (Read-GeminiBeat)) }
-                Update-Idle $busy { param($l) [bool](Add-Line $l) } $script:FreshBoot
+                Update-Idle $busy { param($l) [bool](Add-Line $l) } $script:FreshBoot $(if ($busy) { '' } else { [string]$script:IdleWhy })
             } catch { Add-HealthException $_.Exception; Write-Log "прохід: $($_.Exception.Message)" }
             if ($first) { Write-FileAtomic $bootFile $boot; $script:FreshBoot = $false; $first = $false }
             foreach ($w in @($script:Workers | Where-Object { $_.Proc.HasExited })) { $script:Workers.Remove($w) }
