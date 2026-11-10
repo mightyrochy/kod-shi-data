@@ -4,6 +4,7 @@
 """
 import json
 import os
+import pickle
 import sys
 import tempfile
 from pathlib import Path
@@ -55,6 +56,13 @@ def головна():
             assert вхід, "живий шлях не дійшов до композитора"
             слоти = dict.fromkeys(q["слот"] for q in вхід["вікна"] if q.get("метал") and q.get("слот"))
             assert len(слоти) == 7, list(слоти)
+            кеш = Path(tempfile.gettempdir()) / "входи_композитора_31"
+            кеш.mkdir(exist_ok=True)
+            try:
+                with (кеш / f"{код.parent.name}_{метал or 'нема'}_{гілка}.pickle").open("wb") as файл:
+                    pickle.dump(вхід, файл)
+            except (OSError, TypeError, pickle.PickleError) as помилка:
+                print("Кеш входу не записано:", помилка, file=sys.stderr, flush=True)
             композитор = {}
             for слот in слоти:
                 пул, _, _ = С.кандидати_на_слот(вхід["речі"], вхід["вікна"], слот, вхід["сід"], **вхід["параметри"])
