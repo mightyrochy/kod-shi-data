@@ -86,6 +86,20 @@ import re
         "функція": "новийСценарій",
         "заміна_сценарію": True,
     },
+    "switch_profile": {
+        "робить": "перемкнути активний профіль і відкрити його розмову",
+        "для_моделі": "opens one of her profiles and its conversation",
+        "коли": "she asks to switch to a profile",
+        "вхід": {"type": "object", "additionalProperties": False, "required": ["id"], "properties": {
+            "id": {"type": "string", "minLength": 1, "description": "the \"id\" of one of profiles"}}},
+        "переліки": {"id": "profiles"},
+        "вихід": {"type": "object", "additionalProperties": False, "required": ["done"], "properties": {
+            "done": {"type": "boolean", "description": "чи перемкнуто"},
+            "name": {"type": "string", "description": "назва відкритого профілю — її ввід; без назви — порожньо"}}},
+        "показ": "картка в розмові відкритого профілю: який відкрито; під час оцінки — картка збою",
+        "функція": "перемкнути",
+        "заміна_сценарію": True,
+    },
     "confirm_case": {
         "робить": "підтвердити, що паспорт нагоди зрозуміто правильно: зняти питання «Усе правильно?»",
         "для_моделі": "marks her passport confirmed",
@@ -114,7 +128,12 @@ import re
 
 # Переліки цього ходу: ім'я в промпті → ключ входу ендпойнта `мова`, який дає показ (`ходомРозмовиП`), і поля запису.
 ПЕРЕЛІКИ = {"saved_cases": {"вхід": "збережені", "поля": {"id": "ід", "name": "назва", "case": "випадок",
-                                                         "date": "час", "open": "відкрито"}}}
+                                                         "date": "час", "open": "відкрито"},
+                          "опис": 'her saved cases: "id", "name" — the name she gave it, "case" — what it is '
+                                  'about, "date", "open" — the case open now; a reason code instead of the list '
+                                  'when they could not be read'},
+            "profiles": {"вхід": "профілі", "поля": {"id": "ід", "name": "назва", "open": "відкрито"},
+                         "опис": 'her profiles: "id", "name" — the name she gave it, "open" — the active profile'}}
 ПЕРЕЛІК_МАКС = 30
 
 
