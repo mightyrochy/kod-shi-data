@@ -551,8 +551,9 @@ function Get-ContinueBranch([string]$Slug) {
     ''
 }
 
-function Get-Prompt($M, [string]$TaskText, [string]$Continue, [string]$TaskDir) {
+function Get-Prompt($M, [string]$TaskText, [string]$Continue, [string]$TaskDir, [bool]$MergeMain = $false) {
     $cont = $(if ($Continue) { "Продовжуй з гілки ``$Continue``: попередня спроба цього наряду вже запушила її.`n" } else { '' })
+    if ($MergeMain) { $cont += (Get-MergeStepText $Continue) + "`n" }
 @"
 Середовище й кроки ноутбука — ``аудит/НОУТБУК.md``: прочитай; канал результату — останній рядок твоєї відповіді
 («НОУТБУК ГОТОВО <гілка> <повний SHA>» чи «НОУТБУК ЗАБЛОКОВАНО: …»): його читає обгортка claude-run і сама пише
@@ -938,13 +939,21 @@ function Invoke-Task($M, $Job) {
     }
     if (Test-AutoPlanEmpty $M.Slug $taskText) { return (Complete-Task $M $statePath $id 'EMPTY_PLAN') }
     $cont = Get-ContinueBranch $M.Slug
+    $mergeMain = $false
+    if ($cont) {
+        # Гілка попередньої спроби: злита в main — агент іде від main, не з неї; відстала — перший крок влити main (Get-AttemptStart).
+        [void](Invoke-Git @('fetch', '-q', '--no-tags', 'origin', "+refs/heads/${cont}:refs/remotes/origin/$cont") -AllowFail)
+        $att = Get-AttemptStart (Get-RefSha "refs/remotes/origin/$cont") $main
+        if ($att.Mode -eq 'MERGED') { Write-Log "позначка $($M.Name): $cont злита в main — старт від main"; $cont = '' }
+        elseif ($att.Mode -eq 'BEHIND') { Write-Log "позначка $($M.Name): $cont відстала від main — перший крок влити main"; $mergeMain = $true }
+    }
     $runDir = Join-Path (Join-Path $WorkDir 'runs') $id
     [void](New-Item -ItemType Directory -Force -Path $runDir)
     # Копія задачі — лише після звірки голови: мертва позначка її не отримує; після звіту — геть.
     try {
         $taskDir = Get-TaskCopyDir $id
         [void](New-TaskCopy $taskDir 'refs/remotes/origin/main' $taskText)
-        Invoke-ClaudeTask $M $Job $exe $taskText $cont $runDir $statePath $taskDir
+        Invoke-ClaudeTask $M $Job $exe $taskText $cont $runDir $statePath $taskDir $mergeMain
     } finally {
         if (Close-TaskCopy @('--remotes')) { [void](Add-Line "GEMINI ОБГОРТКА: ЗАБЛОКОВАНО claude/$($M.Slug) COPY_KEPT") }
     }
@@ -954,9 +963,9 @@ function Invoke-Task($M, $Job) {
 function Get-TaskCopyDir([string]$Id) { Join-Path (Join-Path $WorkDir 'w') $Id }
 
 # Прогін claude у копії задачі ($RepoDir) і кінець за звітом.
-function Invoke-ClaudeTask($M, $Job, [string]$Exe, [string]$TaskText, [string]$Cont, [string]$RunDir, [string]$StatePath, [string]$TaskDir) {
+function Invoke-ClaudeTask($M, $Job, [string]$Exe, [string]$TaskText, [string]$Cont, [string]$RunDir, [string]$StatePath, [string]$TaskDir, [bool]$MergeMain = $false) {
     $id = [string]$Job.id
-    $prompt = Get-Prompt $M $TaskText $Cont $TaskDir
+    $prompt = Get-Prompt $M $TaskText $Cont $TaskDir $MergeMain
     [System.IO.File]::WriteAllText((Join-Path $runDir 'prompt.txt'), $prompt, $script:Utf8)
     $a = @('-p', '--model', $M.Claude)
     if ($M.Effort) { $a += @('--effort', $M.Effort) }

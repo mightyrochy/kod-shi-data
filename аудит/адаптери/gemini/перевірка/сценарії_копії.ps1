@@ -94,6 +94,94 @@ try {
         Clear-TaskCopies $root @('--remotes')
         Check 'звільнений слот: копію прибрано наступним проходом' (-not (Test-Path -LiteralPath $busy) -and (Test-Path -LiteralPath $dir))
     }
+    function Put([string]$Dir, [string]$Name, [string]$Text, [string]$Msg) {
+        [IO.File]::WriteAllText((Join-Path $Dir $Name), $Text, $utf)
+        & git -C $Dir add -A; & git -C $Dir commit -q -m $Msg
+    }
+    function Rev([string]$Dir, [string]$Ref) { (& git -C $Dir rev-parse $Ref).Trim() }
+    function Get-FnText([string]$File, [string]$Name) {
+        <# Справжня функція з джерела (AST) — для промптів обох смуг без запуску самих планувальників. #>
+        $tokens = $null; $errors = $null
+        $ast = [Management.Automation.Language.Parser]::ParseFile((Join-Path $SourceDir $File), [ref]$tokens, [ref]$errors)
+        $ast.Find({ param($node) $node -is [Management.Automation.Language.FunctionDefinitionAst] -and $node.Name -eq $Name }, $false).Extent.Text
+    }
+
+    Scenario 'старт нової спроби: від свіжого main, коли гілка злита чи відстала' {
+        $origin = Join-Path $tmp 'o3.git'; $clone = Join-Path $tmp 'c3'
+        & git init -q --bare $origin; & git init -q -b main $clone
+        & git -C $clone config user.name 'стенд'; & git -C $clone config user.email 'stend@example.invalid'; & git -C $clone config core.autocrlf false
+        & git -C $clone remote add origin $origin
+        Put $clone 'a.txt' "1`n" 'початкова'
+        & git -C $clone push -q origin main
+        $script:RepoDir = $clone; $root = Join-Path $tmp 'w3'
+        $base = Rev $clone 'HEAD'
+        # Гілки попередніх спроб: злита в main; відстала без конфлікту; відстала з конфліктом; вже з main.
+        foreach ($b in @('zlyta', 'vidstala', 'konflikt')) {
+            & git -C $clone checkout -q -b "gemini/$b" $base
+            Put $clone $(if ($b -eq 'konflikt') { 'a.txt' } else { "$b.txt" }) "гілка`n" "робота $b"
+            & git -C $clone push -q origin "gemini/$b"
+        }
+        & git -C $clone checkout -q main
+        & git -C $clone merge -q --no-ff -m 'злито zlyta' 'gemini/zlyta'
+        Put $clone 'a.txt' "main`n" 'main правит a.txt'
+        Put $clone 'g.txt' "g`n" 'свіжий main'
+        & git -C $clone push -q origin main
+        & git -C $clone checkout -q -b 'gemini/z-main' main
+        Put $clone 'z.txt' "z`n" 'гілка вже з main'
+        & git -C $clone push -q origin 'gemini/z-main'
+        & git -C $clone checkout -q main
+        & git -C $clone fetch -q origin '+refs/heads/*:refs/remotes/origin/*'
+        $main = Rev $clone 'refs/remotes/origin/main'
+        $tip = @{}; foreach ($b in @('zlyta', 'vidstala', 'konflikt', 'z-main')) { $tip[$b] = Rev $clone "refs/remotes/origin/gemini/$b" }
+
+        $n = Get-AttemptStart '' $main
+        Check 'гілки нема — від main' ($n.Mode -ceq 'NEW' -and $n.Start -ceq $main)
+        $z = Get-AttemptStart $tip['zlyta'] $main
+        Check 'гілка злита — від main, а не від її голови' ($z.Mode -ceq 'MERGED' -and $z.Start -ceq $main -and $z.Start -cne $tip['zlyta'])
+        $c = Get-AttemptStart $tip['z-main'] $main
+        Check 'гілка вже містить main — гілка як є, злиття не треба' ($c.Mode -ceq 'CURRENT' -and $c.Start -ceq $tip['z-main'])
+        $v = Get-AttemptStart $tip['vidstala'] $main
+        Check 'гілка не злита й відстала — від гілки, main буде влито' ($v.Mode -ceq 'BEHIND' -and $v.Start -ceq $tip['vidstala'])
+
+        # Злита: нова спроба від main, пуш звичайний (без force) проходить, бо нова голова — нащадок старої.
+        $repo = New-TaskCopy (Join-Path $root 'zlyta') $z.Start ''
+        [void](Invoke-Git @('checkout', '-q', '-f', '--ignore-other-worktrees', '-B', 'gemini/zlyta', $z.Start))
+        Put $repo 'nova.txt' "нова`n" 'нова спроба'
+        & git -C $repo push -q --no-thin origin 'HEAD:refs/heads/gemini/zlyta'
+        Check 'злита гілка: пуш нової спроби без force проходить, голова на origin — нова' ($LASTEXITCODE -eq 0 -and (Rev $origin 'refs/heads/gemini/zlyta') -ceq (Rev $repo 'HEAD') -and (Test-Path -LiteralPath (Join-Path $repo 'g.txt')))
+        [void](Close-TaskCopy @('--branches', '--remotes'))
+
+        # Відстала без конфлікту: гілка + злиття main до агента; роботу агента рахують від злиття.
+        $repo = New-TaskCopy (Join-Path $root 'vidstala') $v.Start ''
+        [void](Invoke-Git @('checkout', '-q', '-f', '--ignore-other-worktrees', '-B', 'gemini/vidstala', $v.Start))
+        $h = Merge-MainIntoCopy $main 'gemini/vidstala'
+        $parents = @((& git -C $repo log -1 --format=%P $h).Trim() -split ' ')
+        Check 'відстала без конфлікту: копія — голова гілки з влитим main (злиття двома батьками)' ($h -and $h -cne $v.Start -and $parents.Count -eq 2 -and $parents -ccontains $v.Start -and $parents -ccontains $main -and (Test-Path -LiteralPath (Join-Path $repo 'g.txt')) -and (Test-Path -LiteralPath (Join-Path $repo 'vidstala.txt')))
+        Check 'коміт злиття — з повідомленням обгортки, дерево чисте' ((& git -C $repo log -1 --format=%s $h) -cmatch '^Обгортка: влито origin/main у gemini/vidstala' -and (Invoke-Git @('status', '--porcelain')).Out.Trim() -eq '')
+        Put $repo 'agent.txt' "агент`n" 'робота агента'
+        Check 'роботу агента рахують від злиття (1 коміт), а не від старої голови' ((Invoke-Git @('rev-list', '--count', "$h..HEAD")).Out.Trim() -eq '1')
+        & git -C $repo push -q --no-thin origin 'HEAD:refs/heads/gemini/vidstala'
+        Check 'відстала гілка: пуш після злиття — без force, швидкий вперед' ($LASTEXITCODE -eq 0 -and (Rev $origin 'refs/heads/gemini/vidstala') -ceq (Rev $repo 'HEAD'))
+        [void](Close-TaskCopy @('--branches', '--remotes'))
+
+        # Відстала з конфліктом: копія — голова гілки без напівзлиття, агентові першим кроком «влий main».
+        $k = Get-AttemptStart $tip['konflikt'] $main
+        $repo = New-TaskCopy (Join-Path $root 'konflikt') $k.Start ''
+        [void](Invoke-Git @('checkout', '-q', '-f', '--ignore-other-worktrees', '-B', 'gemini/konflikt', $k.Start))
+        $h = Merge-MainIntoCopy $main 'gemini/konflikt'
+        $mid = (& git -C $repo rev-parse -q --verify MERGE_HEAD 2>$null)
+        Check 'конфлікт: злиття скасовано, копія — голова гілки, дерево чисте' ($k.Mode -ceq 'BEHIND' -and $h -ceq '' -and (Rev $repo 'HEAD') -ceq $tip['konflikt'] -and -not $mid -and (Invoke-Git @('status', '--porcelain')).Out.Trim() -eq '')
+        $step = Get-MergeStepText 'gemini/konflikt'
+        . ([scriptblock]::Create((Get-FnText 'gemini_run.ps1' 'Get-TaskRole'))); function Get-TaskSource { 'аудит/наряди/стенд.md' }
+        $gem = & ([scriptblock]::Create((Get-FnText 'gemini_run.ps1' 'Get-Prompt') + "`nGet-Prompt @args")) ([pscustomobject]@{ Slug = 'konflikt'; Sha = 'a' * 40 }) 'НАРЯД' 'codex' '' $step
+        $gemPlain = & ([scriptblock]::Create((Get-FnText 'gemini_run.ps1' 'Get-Prompt') + "`nGet-Prompt @args")) ([pscustomobject]@{ Slug = 'konflikt'; Sha = 'a' * 40 }) 'НАРЯД' 'codex' '' ''
+        Check 'gemini: turn1 несе крок «влий origin/main, за змістом main» лише при конфлікті' ($step -cmatch 'origin/main' -and $step -cmatch 'за змістом' -and $gem.Contains($step) -and -not $gemPlain.Contains('Перший крок'))
+        $cl = & ([scriptblock]::Create((Get-FnText 'claude_run.ps1' 'Get-Prompt') + "`nGet-Prompt @args")) ([pscustomobject]@{ Slug = 'konflikt'; Sha = 'a' * 40 }) 'НАРЯД' 'claude/konflikt' '' $true
+        $clPlain = & ([scriptblock]::Create((Get-FnText 'claude_run.ps1' 'Get-Prompt') + "`nGet-Prompt @args")) ([pscustomobject]@{ Slug = 'konflikt'; Sha = 'a' * 40 }) 'НАРЯД' 'claude/konflikt' '' $false
+        Check 'claude: відстала гілка — у промпті крок влити main; без цього — як було' ($cl.Contains((Get-MergeStepText 'claude/konflikt')) -and $cl.Contains('Продовжуй з гілки') -and -not $clPlain.Contains('Перший крок'))
+        [void](Close-TaskCopy @('--branches', '--remotes'))
+        Check 'обидві смуги обирають старт спільним Get-AttemptStart, без власної копії правила' ((Get-FnText 'gemini_run.ps1' 'Invoke-Task').Contains('Get-AttemptStart') -and (Get-FnText 'claude_run.ps1' 'Invoke-Task').Contains('Get-AttemptStart') -and (Get-FnText 'gemini_run.ps1' 'Invoke-Task').Contains('Merge-MainIntoCopy'))
+    }
 } catch { "✗ виняток стенда: $($_.Exception.Message) $($_.ScriptStackTrace)"; $bad++ }
 finally {
     if ((Split-Path -Parent $tmp) -eq [IO.Path]::GetTempPath().TrimEnd('\','/') -and (Split-Path -Leaf $tmp) -cmatch '^kopiia-test-[0-9a-f]{32}$') {
