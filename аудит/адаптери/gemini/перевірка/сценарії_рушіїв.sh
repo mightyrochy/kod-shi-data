@@ -87,4 +87,9 @@ grep -q 'Ти — перевірка за `AGENTS.md`' "${TMPDIR:-/tmp}/gemini-o
 case_ codex-effort-payload "FAKE_CODEX_EFFORTS=low,medium,high,xhigh FAKE_EFFORT_STYLE=payload" abandon_then_done gpt-6.1-sol-max 'ЗАБЛОКОВАНО gemini/М.2-проба-обгортки EFFORT_INVALID'
 # те саме з екрануванням JSON Windows PowerShell 5.1 (апостроф як \u0027): клас відмови шукається в розкодованому тексті
 case_ codex-effort-escaped "FAKE_CODEX_EFFORTS=low,medium,high,xhigh FAKE_EFFORT_STYLE=escaped" abandon_then_done gpt-6.1-sol-max 'ЗАБЛОКОВАНО gemini/М.2-проба-обгортки EFFORT_INVALID'
+# відмова Codex з часом скидання («try again at <місцевий час>» у події error stdout): позначка чекає до нього, а не quota_wait_minutes
+case_ codex-429-reset "X=1" quota_reset_at gpt-6.1-sol 'QUOTA0_CODEX_M2'
+R="${TMPDIR:-/tmp}/gemini-obhortka/m9v-codex-429-reset"
+grep -q '"reset":"20' "$R/runs/quota-codex.json" 2>/dev/null && echo "ok   codex-429-reset-heartbeat" || { echo "FAIL codex-429-reset-heartbeat: $(cat "$R/runs/quota-codex.json" 2>/dev/null)"; bad=1; }
+grep -qE '^WAIT .*"retakes":1' "$R"/out/marker-state/*.txt 2>/dev/null && echo "ok   codex-429-reset-wait" || { echo "FAIL codex-429-reset-wait"; bad=1; }
 exit $bad

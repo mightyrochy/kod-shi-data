@@ -500,7 +500,9 @@ function Select-Engine($M, [long]$After = 0) {
 }
 
 # Скидання квоти Codex з тексту відмови (unix) або 0 — CLI його не дав. Розпізнає «try again in 2 days 3 hours 5 minutes»,
-# «resets_in_seconds: N» і «resets_at: <unix>»; «try again at 3:42 PM» (місцевий час без дати) — ні, бо неоднозначно.
+# «resets_in_seconds: N», «resets_at: <unix>» і те, що друкує сам CLI (0.167): «try again at 3:42 PM» (сьогодні) чи
+# «try again at Nov 12th, 2026 3:42 PM» — місцевий час тієї ж машини, CLI форматує його за системним поясом, як і ця
+# обгортка; час, що вже минув, — невідомий (0).
 function Get-CodexReset([string]$Text) {
     $now = [DateTimeOffset]::UtcNow.ToUnixTimeSeconds()
     $t = Expand-JsonEscapes $Text
@@ -512,6 +514,17 @@ function Get-CodexReset([string]$Text) {
             $sec += [long]$p.Groups[1].Value * @{ d = 86400; h = 3600; m = 60; s = 1 }[$p.Groups[2].Value.ToLowerInvariant()]
         }
         if ($sec -gt 0) { return $now + $sec }
+    }
+    if ($t -match '(?i)try again at ((?:[A-Za-z]{3} [0-9]{1,2}(?:st|nd|rd|th), [0-9]{4} )?[0-9]{1,2}:[0-9]{2} [AP]M)') {
+        $local = [regex]::Replace($Matches[1], '(?<=[0-9])(?:st|nd|rd|th)', '')
+        $ci = [System.Globalization.CultureInfo]::InvariantCulture
+        $dt = [datetime]::MinValue
+        # Час без дати CLI друкує лише для сьогоднішнього скидання — TryParseExact бере сьогоднішню дату.
+        if ([datetime]::TryParseExact($local, 'MMM d, yyyy h:mm tt', $ci, 'None', [ref]$dt) -or
+            [datetime]::TryParseExact($local, 'h:mm tt', $ci, 'None', [ref]$dt)) {
+            $at = ([DateTimeOffset]$dt).ToUnixTimeSeconds()
+            if ($at -gt $now) { return $at }
+        }
     }
     0
 }
@@ -1122,7 +1135,13 @@ function Enter-RunQuotaWait($M, $Sel, $Status, $Res, [string]$Dir) {
     } else {
         $err = ''
         try { $err = [System.IO.File]::ReadAllText((Join-Path $Dir 'agy.stderr.txt'), $script:Utf8) } catch { $null = $_ }
-        $until = Get-CodexReset ($Res.Tail + "`n" + $err)
+        # `codex exec --json` друкує відмову подією `error` у stdout (agy.jsonl), не в stderr: остання подія про ліміт чи скидання.
+        $ev = ''
+        try {
+            $ev = (@([System.IO.File]::ReadAllLines((Join-Path $Dir 'agy.jsonl'), $script:Utf8) |
+                Where-Object { $_ -match '(?i)usage[ _]limit|try again|resets?_(?:at|in_seconds)' } | Select-Object -Last 1) -join '')
+        } catch { $null = $_ }
+        $until = Get-CodexReset ($Res.Tail + "`n" + $err + "`n" + $ev)
         $cq = [ordered]@{ refused = (Get-UtcStamp (Get-Date)); reset = $(if ($until -gt 0) { Get-UtcStamp ([DateTimeOffset]::FromUnixTimeSeconds($until).UtcDateTime) } else { '' }) }
         try { Write-FileAtomic (Join-Path $RunsDir 'quota-codex.json') ($cq | ConvertTo-Json -Compress) } catch { $null = $_ }
     }
