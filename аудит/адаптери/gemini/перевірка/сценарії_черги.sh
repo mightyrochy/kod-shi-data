@@ -92,7 +92,7 @@ echo "=== 15 підроблений кінець не знімає познач�
 setup r15; mark "$SLUG/$M/1"; gem; mkdir -p "$W/held"; J=$(ls "$W"/out/2*.json | head -1); mv "$J" "$W/held/"; MK=$(has "$SLUG/$M/1")
 printf '{"v":1,"id":"20000101-000000-aaaaaaaaaaaa","slug":"%s","model":"%s","n":1,"marker":"%s","start":"","head":"","code":"NO_REPORT","report":"NONE","ahead":0,"turns":1,"minutes":0,"bundle":""}' "$SLUG" "$M" "$MK" > "$W/out/20000101-000000-aaaaaaaaaaaa.json"
 pub; pub; pub
-ok "три проходи з підробленим JSON: позначка на origin, відмова в журналі" '[ -n "$(has "$SLUG/$M/1")" ] && grep -q "не знімаю — стан позначки не підтверджує" "$W/pub/publish.log" && ! grep -q "знято — кінцевий стан" "$W/pub/publish.log"'
+ok "три проходи з підробленим JSON: позначка на origin, відмова в журналі" '[ -n "$(has "$SLUG/$M/1")" ] && grep -q "не знімаю — стан позначки ще не підтверджує" "$W/pub/publish.log" && ! grep -q "знято — кінцевий стан" "$W/pub/publish.log"'
 mv "$W/held/$(basename "$J")" "$W/out/"; pub
 ok "справжній результат опубліковано після підробленого" 'git -C "$W/origin.git" rev-parse -q --verify "refs/heads/gemini/$SLUG" >/dev/null'
 pub; ok "справжній кінцевий стан підтверджено станом позначки — гілку знято" '[ -z "$(has "$SLUG/$M/1")" ] && grep -q "знято — кінцевий стан опубліковано" "$W/pub/publish.log"'
