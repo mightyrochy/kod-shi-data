@@ -23,6 +23,7 @@
 PIL і gzip — ліниво всередині функцій, як і було; фасад не імпортує."""
 import hashlib, json, os, time
 import feed as F
+from statements import НЕВІДОМО
 from звірка_збагачення import слова_крамниці
 from жнива_реєстр import ТУТ, група_слота
 from жнива_фото import аркуш, _b64, _зберегти_показ, _фото_1024
@@ -41,7 +42,7 @@ def походження_кадру(o, фото, клас=None, частка=Non
     """
     з = dict(схема=1, id=o.get("id"), url=фото.get("url_великий") or фото.get("url"),
              url_вхід=фото.get("url"), адреса_речі=o.get("url"),
-             джерело=фото.get("джерело") or "unknown", байти="measurement_cache",
+             джерело=фото.get("джерело") or НЕВІДОМО, байти="measurement_cache",
              sha256=None, розмір=None, байтів=None,
              клас=клас if клас and клас != "єдина" else "unknown",
              частка_маски=частка, маска=маска or "unknown")

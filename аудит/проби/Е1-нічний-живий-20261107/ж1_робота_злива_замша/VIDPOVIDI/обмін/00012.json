@@ -1,0 +1,27 @@
+{
+ "версія": 1,
+ "запит": {
+  "model": "qwen/qwen3.5-9b",
+  "max_tokens": 4000,
+  "messages": [
+   {
+    "role": "user",
+    "content": [
+     {
+      "type": "text",
+      "text": "{\"task\": {\"role\": \"You read the description of an outfit and list its items as data.\", \"rules\": [\"One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.\", \"One item carries one thing — of two alternatives list the first; a note in brackets is not an item.\", \"Slot \\\"accessory\\\" is for an item no other slot fits.\", \"\\\"is_outfit\\\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note.\"], \"limits\": [\"Rely only on the input: do not invent what it does not contain.\", \"The answer is one JSON object following \\\"answer_schema\\\", without explanations and without ```.\"], \"language\": \"English\", \"answer\": \"ITEM_LIST\", \"answer_schema\": {\"is_outfit\": \"yes|no\", \"items\": [{\"name\": \"<what the item is>\", \"details\": \"<its cut, length and fabric>\", \"slot\": \"top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory\", \"color_hex\": \"<#rrggbb or null>\", \"worn\": \"<true, or false when the description says the outfit goes without it>\"}]}, \"input\": [\"\\\"description\\\" — the outfit description\"]}, \"description\": \"Knitted sweater with long sleeves in heather grey (#e0dcd6), crewneck cut, relaxed fit through the body and slightly tapered at the hem, medium weight wool blend fabric.\\nStraight-leg trousers in dark charcoal heather (#3a3f42), knee-length rise, clean straight silhouette from hip to ankle, soft stretch cotton twill fabric.\\nSuede ankle boots in warm camel (#c19d7e), rounded toe, low stacked heel, side zipper closure, smooth nubuck leather with rubber outsole.\\n\\nThis outfit works for a rainy autumn commute because the heather grey knit provides comfortable warmth without bulk, while the dark trousers keep the look polished and professional for the office environment. The suede ankle boots in warm camel add a soft texture that complements the cozy sweater and offer practical protection against damp weather conditions. Overall, the combination creates a cohesive yet relaxed ensemble that meets her specific wish for suede footwear while remaining appropriate for walking to work.\"}"
+     }
+    ]
+   }
+  ],
+  "temperature": 1
+ },
+ "відповідь": {
+  "status": 200,
+  "contentType": "application/json",
+  "headers": {
+   "x-model": "qwen/qwen3.5-9b"
+  },
+  "body": "{\"content\":[{\"type\":\"text\",\"text\":\"{\\\"is_outfit\\\":\\\"yes\\\",\\\"items\\\":[{\\\"name\\\":\\\"Knitted sweater\\\",\\\"details\\\":\\\"long sleeves, crewneck cut, relaxed fit through body and slightly tapered at hem, medium weight wool blend fabric\\\",\\\"slot\\\":\\\"top\\\",\\\"color_hex\\\":\\\"#e0dcd6\\\",\\\"worn\\\":true},{\\\"name\\\":\\\"Straight-leg trousers\\\",\\\"details\\\":\\\"knee-length rise, clean straight silhouette from hip to ankle, soft stretch cotton twill fabric\\\",\\\"slot\\\":\\\"bottom\\\",\\\"color_hex\\\":\\\"#3a3f42\\\",\\\"worn\\\":true},{\\\"name\\\":\\\"Suede ankle boots\\\",\\\"details\\\":\\\"rounded toe, low stacked heel, side zipper closure, smooth nubuck leather with rubber outsole\\\",\\\"slot\\\":\\\"shoes\\\",\\\"color_hex\\\":\\\"#c19d7e\\\",\\\"worn\\\":true}]}\"}],\"usage\":{\"input_tokens\":552,\"output_tokens\":159},\"stop_reason\":\"end_turn\"}"
+ }
+}

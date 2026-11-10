@@ -13,7 +13,8 @@ function Check([string]$Name, [bool]$Ok) {
 try {
     . (Join-Path $SourceDir 'gemini_publish.ps1') -WorkDir "$tmp/pub" -OutDir "$tmp/out" -OutboxDir "$tmp/outbox" -UpdateRoot "$tmp/update"
     $GeminiRunsDir = "$tmp/gemini-runs"
-    foreach ($dir in @($WorkDir,$OutboxDir,"$WorkDir/seen","$GeminiRunsDir/state")) { [void][IO.Directory]::CreateDirectory($dir) }
+    foreach ($dir in @($WorkDir,$OutboxDir,"$WorkDir/seen","$OutDir/marker-state")) { [void][IO.Directory]::CreateDirectory($dir) }
+    Write-FileAtomic "$OutDir/marker-state/ready" '1'
     $seed = "$tmp/seed"; $remote = "$tmp/origin.git"
     & git init -q --bare $remote
     & git init -q -b main $seed
@@ -37,7 +38,7 @@ try {
         $name = "gemini-queue/автоперевірка-$Pr-$head/$Model/$Attempt/$Cond"
         & git -C $seed push -q origin "${head}:refs/heads/$name"
         $key = "refs/remotes/origin/$name $head"
-        $sp = Join-Path "$GeminiRunsDir/state" ((Get-Sha256Hex $key) + '.txt')
+        $sp = Join-Path "$OutDir/marker-state" ((Get-Sha256Hex $key) + '.txt')
         if ($State) { Write-FileAtomic $sp $State }
         [pscustomobject]@{Name=$name;Path=$sp}
     }
@@ -58,7 +59,7 @@ try {
         $f = $ast.Find({param($n) $n -is [Management.Automation.Language.FunctionDefinitionAst] -and $n.Name -ceq 'Start-Markers'}, $false)
         . ([scriptblock]::Create($f.Extent.Text))
         $LaneDir = "$tmp/lane"; [void][IO.Directory]::CreateDirectory($LaneDir)
-        $script:StateDir = "$GeminiRunsDir/state"
+        $script:StateDir = "$OutDir/marker-state"
         $script:Lanes = @('codex','agy'); $script:Limits = @{slots=@{codex=8;agy=8}}
         $script:StartedNames = @(); $RunsDir = $GeminiRunsDir; $RepoDir = $seed; $MarkerMaxAgeDays = 7
         function Save-Skips { }
@@ -142,7 +143,7 @@ try {
     $b = Marker 113 2
     $c = Marker 114 1
     $d = Marker 114 2
-    $script:ChainStateReaders = @([scriptblock]::Create(@'
+    $script:ChainStateReaders = @($script:ChainStateReaders | Where-Object { $_.ToString() -cnotmatch '^function Get-MarkerState\(' }) + @([scriptblock]::Create(@'
 function Get-MarkerState($M, [string]$StateDir) {
     if ($M.Ref -cmatch 'автоперевірка-113-[0-9a-f]{40}/[^/]+/1/') { throw [UnauthorizedAccessException]::new('/закритий/стан') }
     [pscustomobject]@{ Kind='NEW'; Wait=$null }
@@ -165,7 +166,7 @@ function Get-MarkerState($M, [string]$StateDir) {
     Check 'інша голова очищена попри виняток читача' ($refs.Count -eq 1 -and $refs[0] -ceq "refs/heads/$($d.Name)")
     Check 'прохід ланцюга дійшов до кроку після очищення' $script:ReachedAfterStateRead
     $lines = @(Get-ChildItem -LiteralPath $OutboxDir -File | ForEach-Object { [IO.File]::ReadAllText($_.FullName,$utf).Trim() } | Where-Object { $_ -cmatch '^GEMINI ОБГОРТКА: ЛАНЦЮГ CHAIN_FAILED' })
-    Check 'рядок винятку читача має тип і функцію першого кадру' (@($lines | Where-Object { $_ -ceq 'GEMINI ОБГОРТКА: ЛАНЦЮГ CHAIN_FAILED UnauthorizedAccessException Get-MarkerState' }).Count -eq 1)
+    Check 'рядок винятку читача має тип і функцію першого кадру' (@($lines | Where-Object { $_ -clike 'GEMINI ОБГОРТКА: ЛАНЦЮГ CHAIN_FAILED UnauthorizedAccessException Get-MarkerState ШЛЯХ *' }).Count -eq 1)
     $log = [IO.File]::ReadAllText((Join-Path $WorkDir 'publish.log'),$utf)
     Check 'журнал містить позначку, причину й стек читача' ($log -cmatch 'стан gemini-queue/автоперевірка-113-' -and $log.Contains('/закритий/стан') -and $log.Contains('at Get-MarkerState, <No file>'))
     Check 'невідомий стан не передається іншому постачальнику' (-not (Move-BlockedMarkers "автоперевірка-113-$head" 'gemini-4-argon-high' $head ([datetimeoffset]::UtcNow)))

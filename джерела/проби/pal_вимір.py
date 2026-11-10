@@ -93,8 +93,8 @@ def частка_у_вікнах(кандидати, кат, спец, запи�
             if not lab: continue
             L, C, h = cs.lch(lab)
             if PL._нейтральний_тон(h, C, L): continue
-            м = PAL.метал_речі(lab, слот)
-            if м and метал in (м, "обидва"): continue   # K-PAL-11 судить фурнітуру металом
+            м = PAL.метал_речі(dict(п, слот=слот))
+            if м and метал in (м, "обидва"): continue   # K-PAL-11 судить фурнітуру металом (код матеріалу)
             n += 1
             взяв = next((q for q in рядки if бере_рядок(п, lab, q)), None)
             if взяв is None: continue

@@ -115,15 +115,19 @@ function ConvertTo-JsonString([string]$Text) {
 # $StallMinutes. Кожен рядок одразу йде в $LogFile, а мітка часу й тип події — в $EventsFile (щоб поріг вивіряти за прогонами).
 function Invoke-NativeUntilStall([string]$Exe, [string[]]$Arguments, [string]$WorkDir, [double]$StallMinutes, [string]$LogFile, [string]$EventsFile) {
     $psi = New-StartInfo $Exe $Arguments $WorkDir
-    $p = [System.Diagnostics.Process]::Start($psi)
+    $p = Start-Tree $psi
     $err = $p.StandardError.ReadToEndAsync()
     $out = New-Object System.Text.StringBuilder
     $last = Get-Date
+    $tick = $last
     $stalled = $false
     $pending = $null
     while ($true) {
         if ($null -eq $pending) { $pending = $p.StandardOutput.ReadLineAsync() }
-        $left = ($last.AddMinutes($StallMinutes) - (Get-Date)).TotalMilliseconds
+        $now = Get-Date
+        $last = $last + (Get-SleepGap $tick $now)
+        $tick = $now
+        $left = ($last.AddMinutes($StallMinutes) - $now).TotalMilliseconds
         if ($left -le 0) { $stalled = $true; break }
         if (-not $pending.Wait([int][Math]::Min($left, 60000))) {
             # stdout міг лишитись відкритим у нащадка завершеного процесу: це не завислість.
@@ -134,6 +138,7 @@ function Invoke-NativeUntilStall([string]$Exe, [string[]]$Arguments, [string]$Wo
         $pending = $null
         if ($null -eq $line) { break }
         $last = Get-Date
+        $tick = $last  # сон до цієї події вже скинуто, вдруге його не додавати
         [void]$out.Append($line).Append("`n")
         [System.IO.File]::AppendAllText($LogFile, $line + "`n", $script:Utf8)
         $type = ''
@@ -141,7 +146,8 @@ function Invoke-NativeUntilStall([string]$Exe, [string[]]$Arguments, [string]$Wo
         [System.IO.File]::AppendAllText($EventsFile, $last.ToString('s') + "`t" + $type + "`n", $script:Utf8)
     }
     if (-not $stalled -and -not $p.WaitForExit([int][Math]::Min([double][int]::MaxValue, $StallMinutes * 60000))) { $stalled = $true }
-    if ($stalled) { Stop-Tree $p } else { $p.WaitForExit() }
+    if (-not $stalled) { $p.WaitForExit() }
+    Stop-Tree $p
     $errText = ''
     if ($err.Wait(15000)) { $errText = $err.Result }
     [pscustomobject]@{ Code = $(if ($stalled) { -1 } else { $p.ExitCode }); Stalled = $stalled; Out = $out.ToString(); Err = $errText }
@@ -667,7 +673,7 @@ function Start-StreamRun($M, $Run) {
     $stdinEncoding = [Console]::InputEncoding
     try {
         [Console]::InputEncoding = $script:Utf8
-        $Run.Proc = [System.Diagnostics.Process]::Start($psi)
+        $Run.Proc = Start-Tree $psi
     } finally { [Console]::InputEncoding = $stdinEncoding }
     $Run.Stdin = New-Object System.IO.StreamWriter($Run.Proc.StandardInput.BaseStream, $script:Utf8)
     $Run.Stderr = $Run.Proc.StandardError.ReadToEndAsync()
@@ -1057,7 +1063,15 @@ function Invoke-Task($M, $Job) {
         }
         if ($review -ne 'LIVE') { $status.code = $review; return }
         try { $taskText = Add-AutoTaskContext $M.Slug $taskText $M.Sha $M.Model }
-        catch { Enter-ReviewWait $M; $waiting = $true; return }
+        catch {
+            # Збій контексту (план живого, вхід автоперевірки): чекання з лічильником; на межі — PLAN_FAILED, що будить диспетчера.
+            if (Enter-PlanWait $M $_.Exception.Message ([string]$Job.head)) { $waiting = $true }
+            else {
+                $status.code = 'PLAN_FAILED'
+                try { Add-Note (Join-Path $OutDir 'blocked-reasons.json') "gemini/$($M.Slug)" ('PLAN_FAILED: ' + (Get-PlanFailReason $_.Exception.Message)) } catch { Write-Log "причина PLAN_FAILED не записана: $($_.Exception.Message)" }
+            }
+            return
+        }
         if (Test-AutoPlanEmpty $M.Slug $taskText) { $status.code = 'EMPTY_PLAN'; return }
         $taskDir = Join-Path (Join-Path $RunsDir 'w') $id
         try { [void](New-TaskCopy $taskDir $start $taskText) } catch { $copyFailed = $true; throw }
@@ -1184,7 +1198,8 @@ function Start-Markers($Workers) {
     $script:Held = @{}
     if ($mine.Count -eq 0) { Save-Skips $skipFile; return 0 }
     $gpuWhy = $null
-    foreach ($m in (Get-OrderedMarkers $mine)) {
+    $ordered = @(Get-OrderedMarkers $mine)
+    foreach ($m in $ordered) {
         $st = Get-MarkerState $m
         if (-not (Test-MarkerReady $st)) { continue }
         if (($now - $m.Time) -gt $MarkerMaxAgeDays * 86400) {
@@ -1216,7 +1231,8 @@ function Start-Markers($Workers) {
                 sel = @{ engine = $sel.Engine.Name; emodel = $sel.Engine.Model; effort = $sel.Engine.Effort; model = $sel.Model
                     qknown = $sel.Quota.Known; qleft = $sel.Quota.Left; qgroup = $sel.Quota.Group }
                 limits = $script:Limits }
-            [void]$Workers.Add((Start-Worker $job $dir))
+            $worker = Start-Worker $job $dir
+            [void]$Workers.Add($worker)
         } catch {
             Write-Log "позначка $($m.Name): процес наряду не запущено — $($_.Exception.Message)"
             Close-FailedStart $m $id (Get-StatePath (Get-MarkerKey $m))
@@ -1224,7 +1240,14 @@ function Start-Markers($Workers) {
         }
         Write-Log "позначка $($m.Name): слот $slot, пріоритет $($m.Prio)$(if ($m.Deadline) { ", строк $($m.Deadline)" })$(if ($m.Gpu) { ', GPU' }) -> $id"
         $started++
-        if ($m.Gpu) { $gpuWhy = 'GPU: її щойно взяв наряд цього проходу' }
+        if ($m.Gpu) {
+            $gpuWhy = 'GPU: її щойно взяв наряд цього проходу'
+            $script:GpuHoldReason = 'замок GPU іншого наряду'  # як у Get-GpuBusyReason: без неї сигнал утримання — «GPU: , позначок N»
+            # Наряд, що пішов у чекання (REVIEW_API, PLAN_WAIT) за секунди, GPU не тримає: наступна GPU-позначка проходу її бере.
+            if (Test-LaterGpuMarker $ordered $m) {
+                if ((Wait-GpuWorkerOutcome $worker (Get-StatePath (Get-MarkerKey $m))) -eq 'EXITED') { $gpuWhy = $null }
+            }
+        }
     }
     Save-Skips $skipFile
     $started
@@ -1344,6 +1367,92 @@ function Invoke-Worker {
     }
 }
 
+function Initialize-SharedMarkerState {
+    <# Переносить стан у наявну теку обміну під замком планувальника, дочекавшись старих процесів.
+
+    Переписування байтів створює файли з ACL теки обміну; Copy/Move перенесли б приватну ACL.
+    До ready читач не має права трактувати відсутність стану як NEW. Стару історію лишаємо на місці. #>
+    $target = Join-Path $OutDir 'marker-state'
+    $ready = Join-Path $target 'ready'
+    if (Test-Path -LiteralPath $ready) { return $target }
+    $locks = New-Object Collections.ArrayList
+    try {
+        # Штатна перевірка живого слота має бачити його справжнього власника, а не наш замок перенесення.
+        Clear-OrphanClaims $RunsDir
+        foreach ($file in @(Get-ChildItem -LiteralPath $script:SlotDir -Filter '*.lock' -File)) {
+            $lock = Open-Lock $file.FullName
+            if ($null -eq $lock) { Write-Log 'перенесення стану: старий процес ще тримає слот'; return '' }
+            [void]$locks.Add($lock)
+        }
+        # Свіжий claim може ще не дійти до замка слота; його теж не обганяємо.
+        $pending = @(foreach ($claim in @(Get-ChildItem -LiteralPath $script:StateDir -Filter '*.claim' -File)) {
+            $state = $claim.FullName -replace '\.claim$', '.txt'
+            # STARTED без зайнятого слота відновить штатний Resume-Interrupted вже після перенесення.
+            if (-not (Test-Path -LiteralPath $state) -or -not ([IO.File]::ReadAllText($state, $script:Utf8)).StartsWith('STARTED ')) { $claim }
+        })
+        if ($pending.Count) {
+            Write-Log 'перенесення стану: чекаю завершення старих узятих позначок'
+            return ''
+        }
+        [void][IO.Directory]::CreateDirectory($target)
+        foreach ($file in @(Get-ChildItem -LiteralPath $script:StateDir -File)) {
+            # part не є завершеним записом; усі кінцеві стани й бічні файли зберігаємо.
+            if ($file.Extension -ceq '.part') { continue }
+            Write-FileAtomic (Join-Path $target $file.Name) ([IO.File]::ReadAllText($file.FullName, $script:Utf8))
+        }
+        Write-FileAtomic $ready '1'
+        Write-Log "стан позначок: $target"
+        return $target
+    } finally { foreach ($lock in $locks) { $lock.Dispose() } }
+}
+
+
+function Restore-FinishedMarkerState([string]$Target) {
+    <# Один раз повертає в спільну теку завершені стани, яких там нема: «ready» міг з'явитися раніше за перенесення чи без
+    нього (порожнє або інше джерело), і тоді виконані позначки ставали NEW та йшли вдруге (повтор 01–04.11 після 13:26).
+
+    Джерела: (1) завершені файли старого приватного `gemini-runs/state`; (2) результати прогонів `<OutDir>\<id>.json`
+    (slug, модель, спроба, умови, sha позначки, код) — ключ відновлюється так само, як читає смуга. Існуючий стан не
+    чіпаємо (Move без перезапису); QUOTA_ZERO чи ISOLATION — не кінець позначки. Прапор `restored` — разовість, щоб
+    свідомо знятий стан не воскресав. #>
+    $flag = Join-Path $Target 'restored'
+    if (Test-Path -LiteralPath $flag) { return }
+    $added = 0
+    $put = {
+        param([string]$Path, [string]$Text)
+        if ([IO.File]::Exists($Path) -or [IO.File]::Exists(($Path -replace '\.txt$', '.claim'))) { return 0 }
+        $tmp = $Path + '.' + [guid]::NewGuid().ToString('N') + '.part'
+        [IO.File]::WriteAllText($tmp, $Text, $script:Utf8)
+        try { [IO.File]::Move($tmp, $Path); 1 } catch { Remove-Item -LiteralPath $tmp -Force -ErrorAction SilentlyContinue; 0 }
+    }
+    $old = Join-Path $RunsDir 'state'
+    $results = @(Get-ChildItem -LiteralPath $OutDir -Filter '*.json' -File -ErrorAction SilentlyContinue |
+        Where-Object { $_.Name -cmatch '^[0-9]{8}-[0-9]{6}-[0-9a-f]{12}\.json$' } | Sort-Object Name -Descending)
+    foreach ($file in $results) {
+        try {
+            $r = [IO.File]::ReadAllText($file.FullName, $script:Utf8) | ConvertFrom-Json
+            $code = [string](Get-JsonProp $r 'code'); $slug = [string](Get-JsonProp $r 'slug'); $model = [string](Get-JsonProp $r 'model')
+            $n = [string](Get-JsonProp $r 'n'); $cond = [string](Get-JsonProp $r 'cond'); $sha = [string](Get-JsonProp $r 'marker')
+            if (-not $code -or $code -cin @('QUOTA_ZERO', 'ISOLATION') -or $sha -cnotmatch '^[0-9a-f]{40}$' -or -not $slug -or -not $model -or $n -cnotmatch '^[1-9][0-9]*$') { continue }
+            $ref = "refs/remotes/origin/gemini-queue/$slug/$model/$n" + $(if ($cond) { "/$cond" } else { '' })
+            # Завершений результат важливіший за старий WAIT, крім WAIT, записаного після нього (повтор після сну чи квоти).
+            $prev = Get-StatePath "$ref $sha" $old
+            if ([IO.File]::Exists($prev) -and [IO.File]::ReadAllText($prev, $script:Utf8).StartsWith('WAIT ') -and
+                (Get-Item -LiteralPath $prev).LastWriteTimeUtc -gt $file.LastWriteTimeUtc) { continue }
+            $added += & $put (Get-StatePath "$ref $sha" $Target) ('DONE ' + $file.BaseName + ' ' + $code)
+        } catch { Write-Log "відновлення стану: $($file.Name): $($_.Exception.Message)" }
+    }
+    foreach ($file in @(Get-ChildItem -LiteralPath $old -Filter '*.txt' -File -ErrorAction SilentlyContinue)) {
+        try {
+            $text = [IO.File]::ReadAllText($file.FullName, $script:Utf8)
+            if ($file.Extension -ceq '.txt' -and -not $text.StartsWith('STARTED ')) { $added += & $put (Join-Path $Target $file.Name) $text }
+        } catch { Write-Log "відновлення стану: $($file.Name): $($_.Exception.Message)" }
+    }
+    Write-FileAtomic $flag ([string]$added)
+    Write-Log "стан позначок: відновлено завершених $added"
+}
+
+
 function Main {
     if ($WorkerFile) { $script:Job = Read-WorkerJob $WorkerFile }
     $script:StateDir = Join-Path $RunsDir 'state'
@@ -1351,12 +1460,20 @@ function Main {
     foreach ($d in @($RunsDir, $script:StateDir, $script:SlotDir, $OutDir, $LaneDir)) { [void](New-Item -ItemType Directory -Force -Path $d) }
     $script:NoHooks = Join-Path ([System.IO.Path]::GetTempPath()) ('no-hooks-' + [guid]::NewGuid().ToString('N'))
     $script:HealthAlertDir = Join-Path $OutDir 'alerts'
-    if ($WorkerFile) { return (Invoke-Worker) }
+    if ($WorkerFile) {
+        $script:StateDir = Join-Path $OutDir 'marker-state'
+        if (-not (Test-Path -LiteralPath (Join-Path $script:StateDir 'ready'))) { throw 'STATE_NOT_READY' }
+        return (Invoke-Worker)
+    }
     $script:CurrentIsolation = ''
     $script:HeartbeatAction = { Write-Heartbeat $script:CurrentIsolation }
     $lockFile = Open-Lock (Join-Path $RunsDir 'lock')
     if ($null -eq $lockFile) { return 0 }
     try {
+        $shared = Initialize-SharedMarkerState
+        if (-not $shared) { return 0 }
+        $script:StateDir = $shared
+        Restore-FinishedMarkerState $shared
         $workers = New-Object System.Collections.ArrayList
         $first = $true; $clean = $true
         while ($true) {

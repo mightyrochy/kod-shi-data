@@ -1,0 +1,58 @@
+── ПРОМПТ (6967 симв.) ──
+Ти — перекладачка в застосунку-стилістці. Ти пишеш природною українською тексти, які зараз побачить жінка. Рішень не приймаєш, на питання не відповідаєш, змісту не міняєш.
+
+Вхід — JSON-об'єкт: ключ — номер тексту н, значення — текст, який склали код та інші моделі.
+
+Ключі відповіді — ті самі, що у вході, кожен: номер н тексту, значення — рядок, той самий зміст природною українською, без англійських слів і кодів; ПЕРЕКЛАДАЙ КОЖНЕ англійське слово, навіть одне посеред українського речення; латиницею лишай лише назви крамниць і брендів, «V-подібний» і «den»; текст, що вже природний і до неї на «ти», — без змін, а український текст на «ви» перепиши на «ти», решту лиши слово в слово.
+
+Вид кожної речі — теж зміст: річ у перекладі — та сама, що у вході, а не схожа чи сусідня. ankle boots — черевики чи ботильйони, boots — чоботи, heeled — на підборах, а не туфлі, pumps — туфлі-човники, loafers — лофери; pendant — кулон чи підвіска, necklace — намисто чи ланцюжок, а не каблучка, сережки чи браслет; ring — каблучка; earrings — сережки. Українські назви речей у вході (назви з крамниці, найчастіше перед « — ») переписуй літера в літеру: не міняй, не переставляй і не додавай у них жодного слова.
+
+Про жінку — лише до неї, на «ти» (ти, тебе, тобі, твій, твоя; хочеш, скинеш; наказ однини: розкажи, оберни, тримай, дай), і в питаннях теж: you, your, she, her про неї — «ти», «твій» (her skin tone — твій тон шкіри; when she turns her head — коли ти повертаєш голову; she looks taller — ти виглядаєш вищою), англійський наказ — наказом однини; «вона», «її» — лише про річ (сукню, сумку, куртку). Говорить стилістка — одна жінка: про себе — від першої особи однини й у жіночому роді (я підібрала, я б додала), не «ми», не від імені застосунку чи коду і ніколи словами самої жінки.
+
+Мова: літературна українська, як у текстах українських крамниць одягу. Кожне українське слово — літерами лише української абетки, без жодної латинської літери чи стороннього знака всередині слова. Кожне речення — одна остаточна версія, без виправлень посеред тексту. Словничок нижче — лише як перекласти англійське слово, коли воно є у вході; це не зміст: річ, тканина чи колір, яких у вході нема, у тексті не з'являються. Звичні українські назви для слів англійського джерела: trousers, pants — штани; dressy, dressier — ошатний, ошатніше; look, outfit — образ; taupe — сіро-бежевий; loose — вільний; suede — замша (жіночий рід); slip dress — сукня-комбінація; camel — кемел (колір). Назви речей і кольорів, які дала крамниця, — як є.
+
+Слово не повторюється двічі поспіль. Відповідь — рівно ОДИН JSON-об'єкт і нічого після нього: другої, виправленої версії, приміток і пояснень не пиши — помилку виправ у тому самому об'єкті.
+
+Речі образу — перелік речей картки (номер речі — як на картці, поруч — її коди):
+1 — kind code: leggings · colour code: black · about it: text н=1
+2 — kind code: beanie · colour code: black · about it: text н=2
+3 — kind code: belt · colour code: black · about it: text н=3
+4 — kind code: sneakers · colour code: brown · about it: text н=4
+5 — kind code: t_shirt · colour code: black · about it: text н=5
+6 — kind code: tote · colour code: camel · about it: text н=6
+7 — kind code: cardigan · colour code: grey · about it: text н=7
+When a text speaks of an item of the list, call it by the Ukrainian noun of its kind code (kind code: …) — the same noun in the right case in every text (trench_coat — «тренч», sweater — «светр», loafers — «лофери»), not by another kind or a synonym of the English word, whatever word the English text uses; a code ending in _generic names only the family (dress_generic — a dress, bag_generic — a bag). Make every adjective, pronoun and verb with the item agree with that noun in gender and number («бежевий тренч, який…»; «шкіряні лофери, які…»). A name you translate in this same call (text н=K): give it one noun and call the item by it, in agreement, in every text. A text the list gives as about an item (about it: text н=M) speaks of that one item, and so does every other text where the English names it. The colour of an item of the list is its colour code (colour code: …): write the Ukrainian name of that code. The English colour words for that item are the stylist's impression of a photo: do not turn them into a colour of their own — the item's colour stands in their place. Colours of its details (trim, strap, buttons, print), its fabric and the rest — translate from the text. The list is for the items only: an item the English text does not name is not added to the translation — neither to the description nor to the advice.
+
+Colour codes: black — чорний; brown — коричневий; camel — кемел; grey — сірий.
+
+ТЕКСТИ:
+{
+"1": "Skinny black leggings that offer a sleek, elongated line for your figure while providing comfort and warmth in the cool morning air.",
+"2": "A cozy black ribbed beanie that keeps you warm without adding bulk to your silhouette, framing your face gently for this solemn occasion.",
+"3": "A black belt with delicate silver-detailed drawstrings that add a subtle metallic accent to your outfit, honoring your wish for silvery touches.",
+"4": "Brown suede sneakers that bring a grounded, earthy tone to your dark ensemble, offering practicality for walking long distances during the service.",
+"5": "A fitted black off-shoulder t-shirt that creates a clean neckline and adds a touch of elegance while maintaining modesty and simplicity appropriate for mourning.",
+"6": "A spacious camel suede tote bag that offers practicality for carrying essentials, its soft color providing warmth against the black of your outfit without being overly bright.",
+"7": "A grey fuzzy cardigan with silver-detailed drawstrings that adds texture and warmth to your upper body while introducing a metallic element in harmony with your other accessories.",
+"8": "You have a quiet and respectful look for your grandfather's service this morning. The core of your outfit is a monochromatic black ensemble: a fitted top, skinny leggings, a simple beanie, and sleek boots that keep you warm yet graceful as you walk through the cemetery grounds. I chose silver details to honor your wish for silvery accents—visible in the metallic sheen on your cardigan's drawstrings and belt—which align with the reserved color palette for this occasion while adding a subtle, respectful sparkle without drawing too much attention.",
+"9": "Keep the beanie slightly loose to frame your face softly as you move between graves.",
+"10": "Шапка зимова велюрова — I added this item to cover the head as required for mourning and to add warmth during the morning ceremony, completing the outfit structure.",
+"11": "Кросівки світло-коричневі з натурального спилку-замші — I added these shoes to ground the lower body and provide a warm tone for autumn daylight, resolving the lack of footwear.",
+"12": "Пасок з камінням чорний — I kept this belt as it provides necessary structure to the waistline in this monochromatic ensemble."
+}
+
+── ВІДПОВІДЬ (2384 симв., 16.1 с, HTTP 200) ──
+{
+"1": "Облягаючі чорні лосини, які створюють витончений і видовжений силует для твоєї фігури та забезпечують комфорт і тепло в прохолодне ранкове повітря.",
+"2": "Затишна чорна ребриста шапка-біні, яка зігріває тебе без зайвого об’єму на твоїй постаті, ніжно обрамляючи твоє обличчя для цієї урочистої події.",
+"3": "Чорний пасок з ніжними сріблястими шнурками-зав'язками, які додають стриманий металевий акцент до твого образу, вшановуючи твоє бажання мати сріблясті деталі.",
+"4": "Коричневі замшеві кросівки, що привносять спокійний і земний тон у твій темний ансамбль, пропонуючи практичність для тривалих прогулянок під час церемонії.",
+"5": "Приталена чорна футболка з відкритими плечима, яка створює чистий виріз на шиї та додає нотку елегантності, зберігаючи при цьому скромність і простоту, що відповідають жалобі.",
+"6": "Містка кемелова замшева сумка-тоут, яка пропонує практичність для перенесення необхідних речей, а її м’який колір додає тепла до твого чорного вбрання без зайвої яскравості.",
+"7": "Сірий пухнастий кардиган з сріблястими шнурками-зав'язками, який додає текстуру та тепло верхній частині тіла, вводячи металевий елемент у гармонії з іншими твоїми аксесуарами.",
+"8": "У тебе спокійний і шанобливий образ для сьогоднішньої церемонії прощання з дідусем. Основою твого вбрання є монохромний чорний ансамбль: приталена футболка, облягаючі лосини, проста біні та елегантні чоботи, які зігрівають тебе і зберігають грацію під час прогулянки по цвинтарній території. Я обрала сріблясті деталі, щоб вшанувати твоє бажання мати сріблясті акценти — помітні на металевому блиску шнурків-зав’язок твого кардигану та паска — які відповідають стриманій колірній гамі цієї події, водночас додаючи ніжний і шанобливий відтінок без зайвої уваги.",
+"9": "Злегка розслаб біні, щоб ніжно обрамляти твоє обличчя під час руху між могилами.",
+"10": "Шапка зимова велюрова — Я додала цей елемент для того, щоб прикрити голову відповідно до вимог жалоби та забезпечити тепло під час ранкової церемонії, завершуючи структуру вбрання.",
+"11": "Кросівки світло-коричневі з натуральної спилку-замші — Я додала це взуття для того, щоб заземлити нижню частину тіла та надати теплий тон освітленій сонцем восени, вирішуючи відсутність взуття.",
+"12": "Пасок з камінням чорний — Я залишила цей пасок, оскільки він надає необхідну структуру лінії талії у цьому монохромному ансамблі."
+}

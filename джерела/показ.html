@@ -134,7 +134,7 @@
       <textarea id="кол-запит" rows="3" readonly></textarea>
       <div class="ряд"><button class="тихо" id="кол-копія" type="button">Скопіювати запит</button></div>
       <label class="поле" for="кол-відповідь"><span>Відповідь чату</span></label>
-      <textarea id="кол-відповідь" class="коробка" rows="3" placeholder="шкіра 1 #f2d6c4 шкіра 2 #efd0bc …"></textarea>
+      <textarea id="кол-відповідь" class="коробка" rows="3" placeholder="Встав відповідь чату цілком, як є"></textarea>
       <div class="ряд"><button class="тихо" id="кол-читати" type="button">Застосувати кольори</button></div>
     </details>
   </div>
@@ -168,11 +168,17 @@
      Обхвати живлять зони K-BOD-02 (роль зони з перекосу пари, не літера)
      і довжини (K-FIT-03, K-SIL-02, K-SIL-10). Ярлик A/V/X/H у `fit.зони` лишається
      ЛИШЕ маршрутизацією й окремим полем (R-TYP-05: «ярлик як механізм — заборонено»).
+     МІСЦЕ КОЖНОГО ОБХВАТУ — той самий орієнтир, що й рівень шаблону `areas.РІВНІ` і правила
+     (рішення 06.11 «орієнтири тіла»): талія — найменший обхват на природній талії, груди й
+     стегна — найповніше місце (тема-1 §2.1); високе стегно — 18 см під природною талією
+     (§2.1, `areas.ВИСОКЕ_СТЕГНО_ПИТАННЯ`); коліно — середина наколінка (тема-12); литка —
+     найширше (K-SHO-05); щиколотка — найвужче над кісточкою (тема-4). Плечам орієнтира
+     база не дає — «по найширшому місцю» лишається без джерела.
      ──────────────────────────────────────────────────────────────────────────── -->
 <section id="е-мірки" class="екран">
   <div class="вступ">
     <h1>Твоя фігура.</h1>
-    <p>Чотири обхвати і зріст — з них стилістка підбирає довжини й пропорції. У сантиметрах, по найширшому місцю, поверх білизни.</p>
+    <p>Чотири обхвати і зріст — з них стилістка підбирає довжини й пропорції. У сантиметрах, поверх білизни; кожен — у своєму місці: груди — по найповнішому місцю; талія — найвужче місце тулуба, на природній талії; стегна — по найширшому місцю сідниць; плечі — по найширшому місцю.</p>
   </div>
   <div class="крокі" id="мір-блок">
     <svg id="вирізка" viewBox="0 0 360 380" aria-hidden="true"></svg>
@@ -189,10 +195,14 @@
     <summary>Розширені виміри</summary>
     <p class="підказка">Необов'язково. Що більше виміряно, то точніше стилістка судить посадку; чого нема — так і скаже: «не міряла».</p>
     <div class="розширені">
-      <label><span>Високе стегно</span><input type="number" id="мр-високе-стегно" inputmode="numeric" placeholder="88"><b>см</b></label>
-      <label><span>Коліно</span><input type="number" id="мр-коліно" inputmode="numeric" placeholder="37"><b>см</b></label>
-      <label><span>Литка</span><input type="number" id="мр-литка" inputmode="numeric" placeholder="36"><b>см</b></label>
-      <label><span>Щиколотка</span><input type="number" id="мр-щиколотка" inputmode="numeric" placeholder="22"><b>см</b></label>
+      <label><span>Високе стегно</span><input type="number" id="мр-високе-стегно" inputmode="numeric" placeholder="88"><b>см</b>
+        <i>18 см нижче природної талії, по кістці тазу</i></label>
+      <label><span>Коліно</span><input type="number" id="мр-коліно" inputmode="numeric" placeholder="37"><b>см</b>
+        <i>через середину наколінка</i></label>
+      <label><span>Литка</span><input type="number" id="мр-литка" inputmode="numeric" placeholder="36"><b>см</b>
+        <i>по найширшому місцю литки</i></label>
+      <label><span>Щиколотка</span><input type="number" id="мр-щиколотка" inputmode="numeric" placeholder="22"><b>см</b>
+        <i>найвужче місце ноги над кісточкою</i></label>
       <label><span>Довжина стопи</span><input type="number" id="мр-стопа" inputmode="numeric" placeholder="245"><b>мм</b>
         <i>стоячи, від пʼятки до найдовшого пальця</i></label>
       <label><span>Обхват голови</span><input type="number" id="мр-голова" inputmode="numeric" placeholder="56"><b>см</b>
@@ -412,14 +422,6 @@
     <div class="статус" id="сц-збер-стан"></div>
   </div>
 
-  <div class="розділ" id="перехід">
-    <h2>Збирання</h2>
-    <p class="підказка">Образи складаються на окремій сторінці — вона відкриється сама.</p>
-    <label class="поле" for="п-адреса"><span>Адреса сторінки збирання</span></label>
-    <input type="text" id="п-адреса" placeholder="claude.ai/public/artifacts/…">
-    <div id="п-стан" class="статус"></div>
-    <textarea id="п-пакет" rows="2" style="display:none;margin-top:10px"></textarea>
-  </div>
 </section>
 
 <!-- ── ПАЛІТРА — окремий екран: кольорова математика підіймається лише тут. ── -->
@@ -735,8 +737,9 @@
              вкладки, а бібліотека читається саме після нього — мертве посилання дало
              б порожню рамку там, де є справне фото речі. Data URI й адреса
              переживають (їх зберігає той самий `зберегтиОбраз`). */
-          const кадр = (карт.картинка && !/^blob:/i.test(String(карт.картинка)))
-            ? String(карт.картинка) : null;
+          /* кадр генератора — лише повернений (`кадрПоказуП`): збережений до повернення не показується */
+          const кадрКартки = кадрПоказуП(карт);
+          const кадр = (кадрКартки && !/^blob:/i.test(кадрКартки)) ? кадрКартки : null;
           const ф = (карт.речі || []).find(x => x.фото && !(карт.фото_не_ті || []).includes(x.id));
           const джерело = кадр || (ф ? ф.фото : null);
           /* Клас — ЛИШЕ на приміряному кадрі: фото речі лишається таким самим
@@ -962,14 +965,17 @@
 <script src="показ/журнал.js"></script>
 <script src="показ/звіти.js"></script>
 <script src="показ/бібліотека.js"></script>
+<script src="показ/інструменти.js"></script>
 <script src="показ/профілі.js"></script>
 <script src="показ/кольори.js"></script>
 <script src="показ/випадок.js"></script>
 <script src="показ/паспорт.js"></script>
 <script src="показ/голос_помада.js"></script>
 <script src="показ/фото_профіль.js"></script>
+<script src="показ/задача_промпта.js"></script>
 <script src="показ/міст.js"></script>
 <script src="показ/мовний_шар.js"></script>
+<script src="показ/повернення.js"></script>
 <script src="показ/приміряння.js"></script>
 <script src="показ/воркер_міст.js"></script>
 <script src="показ/стадії_збирання.js"></script>

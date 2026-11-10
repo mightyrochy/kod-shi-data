@@ -6,9 +6,10 @@
 H=$(cd "$(dirname "$0")" && pwd); . "$H/середовище.sh"; PW="${PWSH:-pwsh}"; SRC=$(cd "$H/.." && pwd)
 SLUG='проба-рушія-claude'; M=cc-claude-sonnet-5-5-medium; BAD=0
 export GIT_AUTHOR_NAME=t GIT_AUTHOR_EMAIL=t@x GIT_COMMITTER_NAME=t GIT_COMMITTER_EMAIL=t@x
+# errors='replace': локалізований рядок tasklist про живий процес — не UTF-8; без нього помічник падав і казав «мертвий».
 alive() { $PY -c "import os, subprocess, sys
 pid = int(open(sys.argv[1]).read())
-if os.name == 'nt': sys.exit(0 if (' %d ' % pid) in subprocess.run(['tasklist', '/FI', 'PID eq %d' % pid, '/NH'], capture_output=True, text=True).stdout else 1)
+if os.name == 'nt': sys.exit(0 if (' %d ' % pid) in subprocess.run(['tasklist', '/FI', 'PID eq %d' % pid, '/NH'], capture_output=True, text=True, errors='replace').stdout else 1)
 try: os.kill(pid, 0)
 except OSError: sys.exit(1)" "$(wp "$1")"; }
 kill_pid() { [ -e "$1" ] && $PY -c "import os, signal, sys; os.kill(int(open(sys.argv[1]).read()), signal.SIGTERM)" "$(wp "$1")" 2>/dev/null; }
@@ -51,6 +52,8 @@ SHA=$(git -C "$W/origin.git" rev-parse "refs/heads/claude/$SLUG" 2>/dev/null)
 chk "рядок ГОТОВО claude/<наряд> <SHA origin> МОДЕЛЬ $M" '[ -n "$SHA" ] && [ "$(lines)" = "GEMINI ОБГОРТКА: ГОТОВО claude/$SLUG $SHA МОДЕЛЬ $M" ]'
 chk "argv: -p --model claude-sonnet-5-5 --effort medium --permission-mode auto stream-json" '[ "$(argv)" = "-p --model claude-sonnet-5-5 --effort medium --permission-mode auto --output-format stream-json --verbose" ]'
 chk "промпт: НОУТБУК.md, наряд дослівно, вимикає лише обгортка, без «Продовжуй»" 'P=$(prompt); [[ "$P" == *"аудит/НОУТБУК.md"* && "$P" == *"Підніми й зупини LM Studio."* && "$P" == *"вимикає лише обгортка за позначкою"* && "$P" != *"Продовжуй"* && "$P" != *"запускач —"* ]]'
+# Наряд 08.11 велів «НОУТБУК ГОТОВО #PR <SHA>» — BAD_BRANCH: формат звіту повторено після наряду, у рядку, що сильніший.
+chk "промпт: після наряду — формат звіту з гілкою, не номером PR" '[[ "$(prompt | sed -n "/КІНЕЦЬ НАРЯДУ/,\$p")" == *"НОУТБУК ГОТОВО <гілка claude/…>"*"не номер PR"*"формат звіту вище"* ]]'
 chk "issue 1856 оновлено PATCH-ем, тіло — «веде наряд» і позначка" 'tr -d "\r" < "$W/gh/calls.log" | grep -q "^PATCH repos/mightyrochy/kod-shi-data/issues/1856$" && grep -l "веде наряд" "$W"/gh/patch_*.json | xargs grep -q "gemini-queue/$SLUG/$M/1"'
 chk "події stream-json — у events.tsv" '[ "$(cat "$W"/cr/runs/*/events.tsv | wc -l)" = 3 ]'
 cr; chk "другий прохід ту саму позначку не бере" '[ "$(nlines)" = 1 ] && [ "$(wc -l < "$W/cc.log")" = 1 ]'
@@ -68,6 +71,7 @@ code k3c2 blocked_nobranch "$M" BLOCKED
 chk "BLOCKED без гілки: причина (останній рядок агента) у blocked-reasons.json для #1856" 'grep -q "claude/$SLUG" "$W/gem/blocked-reasons.json" && grep -q "LM Studio не відповідає, гілки нема" "$W/gem/blocked-reasons.json"'
 code k3d no_report "$M" NO_REPORT
 code k3e die "$M" EXIT
+code k3e2 network "$M" NETWORK_WAIT
 code k3f hang "$M" HANG
 chk "завислий claude зупинено" '[ -e "$W/cc.log.pid" ] && ! alive "$W/cc.log.pid"'
 code k3g effort cc-claude-sonnet-5-5-ultra EFFORT_INVALID
@@ -91,6 +95,12 @@ echo "=== К4 claude закінчився, а нащадок тримає stdout
 setup k4; mark "$SLUG/$M/1"; T0=$(date +%s); FAKE_CC_SCENARIO=child_holds_stdout cr '{"HangMinutes":5}'; T1=$(date +%s)
 chk "ГОТОВО за ≤ 90 с (є: $((T1 - T0)) с)" '[[ "$(lines)" == "GEMINI ОБГОРТКА: ГОТОВО claude/$SLUG "* ]] && [ $((T1 - T0)) -le 90 ]'
 kill_pid "$W/cc.log.child"
+echo "=== К4б сесія лишила відірваного нащадка (08.11 — вимір через nohup тримав відеокарту)"
+# На Windows його зупиняє задача процесів (Start-Tree); taskkill /T його не бачить, бо claude уже вийшов.
+setup k4b; mark "$SLUG/$M/1"; FAKE_CC_SCENARIO=child_detached cr
+chk "ГОТОВО" '[[ "$(lines)" == "GEMINI ОБГОРТКА: ГОТОВО claude/$SLUG "* ]]'
+[ "$OS" = Windows_NT ] && chk "відірваний нащадок сесії зупинено після її кінця" '[ -s "$W/cc.log.child" ] && ! alive "$W/cc.log.child"'
+kill_pid "$W/cc.log.child"
 echo "=== К5 прогін, перерваний вимкненням: наступний прохід пише INTERRUPTED"
 setup k5; mkdir -p "$W/cr/state"; printf 'STARTED 20261026-120000-0123456789ab {"pid":999999,"start":"x","marker":"gemini-queue/%s/%s/1"}' "$SLUG" "$M" > "$W/cr/state/x.txt"; cr
 chk "рядок INTERRUPTED, стан DONE" '[ "$(lines)" = "GEMINI ОБГОРТКА: ЗАБЛОКОВАНО claude/$SLUG INTERRUPTED" ] && grep -q "^DONE 20261026-120000-0123456789ab INTERRUPTED" "$W/cr/state/x.txt"'
@@ -110,10 +120,19 @@ FAKE_BOOT=b2 cr; chk "наступний прохід — нічого ново�
 setup k6b; rm "$W/cr/boot.txt"; mark "ВИМКНИ-НОУТБУК/cc-off/1"; cr
 chk "позначка до першого проходу після ввімкнення → BOOT, без shutdown" '[ "$(lines)" = "GEMINI ОБГОРТКА: ЗАБЛОКОВАНО claude/ВИМКНИ-НОУТБУК BOOT" ] && [ ! -e "$W/cr/shutdown.txt" ]'
 mark "ВИМКНИ-НОУТБУК/cc-off/2"; cr; chk "наступна спроба — вимикає" '[ -e "$W/cr/shutdown.txt" ]'
+echo "=== К6в вимкнення не під власником (10.11 ноутбук вимкнувся під ним)"
+setup k6c; mark "ВИМКНИ-НОУТБУК/cc-off/1"; MS=$(git -C "$W/seed" rev-parse main); FAKE_OWNER=1 cr
+chk "сеанс активний і не заблокований — рядок OWNER, без ВИМКНЕНО й shutdown" '[ "$(lines)" = "GEMINI ОБГОРТКА: ЗАБЛОКОВАНО claude/ВИМКНИ-НОУТБУК OWNER" ] && [ ! -e "$W/cr/shutdown.txt" ]'
+FAKE_OWNER=1 cr; chk "наступний прохід — позначка не закрита, рядка вдруге нема" '[ "$(nlines)" = 1 ] && [ ! -e "$W/cr/shutdown.txt" ] && ! grep -rqs "^OFF " "$W/cr/state"'
+cr; chk "сеанс заблоковано чи нема — ВИМКНЕНО <SHA> і shutdown, OWNER не повторено" '[ "$(nlines)" = 2 ] && [ -e "$W/cr/shutdown.txt" ] && [ "$(lines | grep -c "ВИМКНЕНО $MS")" = 1 ]'
+setup k6d; mark "ВИМКНИ-НОУТБУК/cc-off/1"; FAKE_OWNER=late cr
+chk "власник з'явився після ВИМКНЕНО — shutdown нема, є рядок OWNER, стан не OFF" '[ "$(nlines)" = 2 ] && [ "$(lines | tail -n1)" = "GEMINI ОБГОРТКА: ЗАБЛОКОВАНО claude/ВИМКНИ-НОУТБУК OWNER" ] && [ ! -e "$W/cr/shutdown.txt" ] && ! grep -rqs "^OFF " "$W/cr/state"'
+FAKE_OWNER=1 cr; chk "позначку не з'їдено: власник ще є — нічого нового, shutdown нема" '[ "$(nlines)" = 2 ] && [ ! -e "$W/cr/shutdown.txt" ] && ! grep -rqs "^DONE BOOT" "$W/cr/state"'
+cr; chk "власник пішов — позначка пройшла знову: ВИМКНЕНО і shutdown" '[ -e "$W/cr/shutdown.txt" ] && [ "$(lines | grep -c "ВИМКНЕНО [0-9a-f]\{40\}")" = 2 ]'
 echo "=== К7 gemini-run позначок cc- не бере й узятими не позначає"
 setup k7; mark "$SLUG/$M/1"
 "$PW" -NoProfile -File "$(wp "$H/side.ps1")" -Script "$(wp "$SRC/gemini_run.ps1")" -ArgsJson "{\"RepoDir\":\"$(wp "$W/clone")\",\"RunsDir\":\"$(wp "$W/runs")\",\"OutDir\":\"$(wp "$W/gem")\",\"RepoUrl\":\"$(wp "$W/origin.git")\",\"AgyExe\":\"$(stub fake_agy)\",\"TurnMinutes\":0.05,\"TotalMinutes\":0.5,\"MaxNudges\":3}" >/dev/null 2>&1
-chk "gemini-run пройшов (heartbeat, ізоляція OK) — без стану й результату" 'grep -q "\"isolation\":\"OK\"" "$W/gem/heartbeat.json" && [ -z "$(ls "$W/runs/state" 2>/dev/null)" ] && [ -z "$(ls "$W/gem" | grep -vE "heartbeat|pools|skipped")" ]'
+chk "gemini-run пройшов (heartbeat, ізоляція OK) — без стану й результату" 'grep -q "\"isolation\":\"OK\"" "$W/gem/heartbeat.json" && [ -z "$(ls "$W/runs/state" 2>/dev/null)" ] && [ -z "$(ls "$W/gem" | grep -vE "heartbeat|pools|skipped|marker-state")" ]'
 cr; chk "той самий прохід claude-run бере її" '[[ "$(lines)" == "GEMINI ОБГОРТКА: ГОТОВО claude/$SLUG "* ]]'
 echo "=== К8 завислість — від останньої прийнятої події stream-json, доки процес живий"
 setup k8a; mark "$SLUG/$M/1"; T0=$(date +%s); FAKE_CC_SCENARIO=closed cr; T1=$(date +%s)

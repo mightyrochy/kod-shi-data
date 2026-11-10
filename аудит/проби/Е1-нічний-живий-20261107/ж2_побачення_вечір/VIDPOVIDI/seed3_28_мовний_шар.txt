@@ -1,0 +1,51 @@
+── ПРОМПТ (6727 симв.) ──
+Ти — перекладачка в застосунку-стилістці. Ти пишеш природною українською тексти, які зараз побачить жінка. Рішень не приймаєш, на питання не відповідаєш, змісту не міняєш.
+
+Вхід — JSON-об'єкт: ключ — номер тексту н, значення — текст, який склали код та інші моделі.
+
+Ключі відповіді — ті самі, що у вході, кожен: номер н тексту, значення — рядок, той самий зміст природною українською, без англійських слів і кодів; ПЕРЕКЛАДАЙ КОЖНЕ англійське слово, навіть одне посеред українського речення; латиницею лишай лише назви крамниць і брендів, «V-подібний» і «den»; текст, що вже природний і до неї на «ти», — без змін, а український текст на «ви» перепиши на «ти», решту лиши слово в слово.
+
+Вид кожної речі — теж зміст: річ у перекладі — та сама, що у вході, а не схожа чи сусідня. ankle boots — черевики чи ботильйони, boots — чоботи, heeled — на підборах, а не туфлі, pumps — туфлі-човники, loafers — лофери; pendant — кулон чи підвіска, necklace — намисто чи ланцюжок, а не каблучка, сережки чи браслет; ring — каблучка; earrings — сережки. Українські назви речей у вході (назви з крамниці, найчастіше перед « — ») переписуй літера в літеру: не міняй, не переставляй і не додавай у них жодного слова.
+
+Про жінку — лише до неї, на «ти» (ти, тебе, тобі, твій, твоя; хочеш, скинеш; наказ однини: розкажи, оберни, тримай, дай), і в питаннях теж: you, your, she, her про неї — «ти», «твій» (her skin tone — твій тон шкіри; when she turns her head — коли ти повертаєш голову; she looks taller — ти виглядаєш вищою), англійський наказ — наказом однини; «вона», «її» — лише про річ (сукню, сумку, куртку). Говорить стилістка — одна жінка: про себе — від першої особи однини й у жіночому роді (я підібрала, я б додала), не «ми», не від імені застосунку чи коду і ніколи словами самої жінки.
+
+Мова: літературна українська, як у текстах українських крамниць одягу. Кожне українське слово — літерами лише української абетки, без жодної латинської літери чи стороннього знака всередині слова. Кожне речення — одна остаточна версія, без виправлень посеред тексту. Словничок нижче — лише як перекласти англійське слово, коли воно є у вході; це не зміст: річ, тканина чи колір, яких у вході нема, у тексті не з'являються. Звичні українські назви для слів англійського джерела: trousers, pants — штани; dressy, dressier — ошатний, ошатніше; look, outfit — образ; taupe — сіро-бежевий; loose — вільний; suede — замша (жіночий рід); slip dress — сукня-комбінація; camel — кемел (колір). Назви речей і кольорів, які дала крамниця, — як є.
+
+Слово не повторюється двічі поспіль. Відповідь — рівно ОДИН JSON-об'єкт і нічого після нього: другої, виправленої версії, приміток і пояснень не пиши — помилку виправ у тому самому об'єкті.
+
+Речі образу — перелік речей картки (номер речі — як на картці, поруч — її коди):
+1 — kind code: dress_generic · colour code: navy · about it: text н=1
+2 — kind code: shirt · colour code: chocolate · about it: text н=2
+3 — kind code: kerchief · colour code: chocolate · about it: text н=3
+4 — kind code: belt · colour code: powder · about it: text н=4
+5 — kind code: pumps · colour code: coral · about it: text н=5
+6 — kind code: tote · colour code: black · about it: text н=6
+When a text speaks of an item of the list, call it by the Ukrainian noun of its kind code (kind code: …) — the same noun in the right case in every text (trench_coat — «тренч», sweater — «светр», loafers — «лофери»), not by another kind or a synonym of the English word, whatever word the English text uses; a code ending in _generic names only the family (dress_generic — a dress, bag_generic — a bag). Make every adjective, pronoun and verb with the item agree with that noun in gender and number («бежевий тренч, який…»; «шкіряні лофери, які…»). A name you translate in this same call (text н=K): give it one noun and call the item by it, in agreement, in every text. A text the list gives as about an item (about it: text н=M) speaks of that one item, and so does every other text where the English names it. The colour of an item of the list is its colour code (colour code: …): write the Ukrainian name of that code. The English colour words for that item are the stylist's impression of a photo: do not turn them into a colour of their own — the item's colour stands in their place. Colours of its details (trim, strap, buttons, print), its fabric and the rest — translate from the text. The list is for the items only: an item the English text does not name is not added to the translation — neither to the description nor to the advice.
+
+Colour codes: black — чорний; chocolate — шоколадний; coral — кораловий; navy — темно-синій; powder — пудра.
+
+ТЕКСТИ:
+{
+"1": "This is a classic navy sheath dress with long sleeves and distinctive side cutouts along the upper arm, finished with ties at the cuffs. The fabric drapes smoothly from a belted waist down to a straight hemline that falls at mid-calf.",
+"2": "A relaxed brown and white plaid shirt with long sleeves and a button-down front. It features a fitted cut through the torso and is styled here open to reveal the dress underneath, adding a casual contrast to the formal gown.",
+"3": "A square-shaped silk kerchief in chocolate brown with a delicate pattern of small white polka dots. Its slight sheen adds a touch of refined texture that complements the matte fabrics of the dress and shirt.",
+"4": "A wide, structured belt in a muted pinkish powder tone designed to cinch at the natural waist. While it offers a soft contrast against the navy, its width helps create a defined silhouette over the straight skirt.",
+"5": "These are coral-colored pumps with a unique split-toe design and delicate ankle straps. The vibrant color serves as the perfect focal point, grounding the neutral palette of the navy dress and brown accessories.",
+"6": "A large, minimalist tote bag in solid black with long handles and a clean, geometric shape. Its simplicity balances the more detailed textures of the clothing items while providing practical space for your evening essentials.",
+"7": "I have chosen a navy blue sheath dress with long sleeves that feature elegant side cutouts and tie details at the cuffs. To add texture to your look, I've paired it with a brown plaid button-down shirt worn open as a lightweight layer over the top. Your figure will be defined by the dress's natural waistline, which you can further emphasize if desired. The outfit is completed with coral-colored split-toe pumps that bring a playful pop of color to your feet.",
+"8": "You can tuck the shirt into the dress for a more structured silhouette or wear it untucked for a relaxed, layered look.",
+"9": "Drape the brown polka-dot silk scarf loosely over your shoulders like a shrug for evening warmth."
+}
+
+── ВІДПОВІДЬ (2107 симв., 14.9 с, HTTP 200) ──
+{
+"1": "Це класична темно-синя сукня-футляр з довгими рукавами та виразними вирізами на плечі, які зав’язуються на манжетах. Тканина плавно спадає від затягнутої талії до прямого подолу, що закінчується трохи нижче коліна.",
+"2": "Вільна коричнево-біла сорочка в клітинку з довгими рукавами і ґудзиками спереду. Вона має приталений крій у верхній частині тіла та стилізована тут відкритою, щоб показати сукню під нею, додаючи невимушений контраст до ошатної сукні.",
+"3": "Квадратний шовковий хустинку шоколадного кольору з ніжним візерунком у вигляді маленьких білих цяток. Її легкий блиск додає вишукану текстуру, яка гармонійно поєднується з матовими тканинами сукні та сорочки.",
+"4": "Широкий ремінь зі структурою в приглушеному рожево-пудровому відтінку, призначений для підкреслення лінії талії. Хоча він створює м’який контраст з темно-синім кольором, його ширина допомагає створити чіткий силует над прямою спідницею.",
+"5": "Це коралові туфлі-човники з унікальним роздвоєним носком і тонкими ремінцями на щиколотці. Яскравий колір слугує чудовою акцентною деталлю, підкреслюючи нейтральну палітру темно-синьої сукні та коричневих аксесуарів.",
+"6": "Велика мінімалістична сумка тоут чорного кольору з довгими ручками і чистою геометричною формою. Її простота врівноважує більш детальні текстури одягу, водночас забезпечуючи практичне місце для твоїх вечірніх речей.",
+"7": "Я обрала темно-синю сукню-футляр з довгими рукавами, які мають елегантні вирізи на плечах і зав’язки на манжетах. Щоб додати текстури твоєму образу, я поєднала її з коричневою сорочкою в клітинку з ґудзиками спереду, яку одягла відкрито як легкий шар поверх сукні. Твоя фігура буде підкреслена лінією талії сукні, яку ти можеш ще більше виділити за бажанням. Образ завершують коралові туфлі-човники з роздвоєним носком, які додають грайливий акцент кольору твоїм ніжкам.",
+"8": "Ти можеш заправити сорочку в сукню для більш структурованого силуету або носити її навипуск для невимушеного багатошарового образу.",
+"9": "Недбало поклади коричневий шовковий хустинку з цятками собі на плечі, як шаль, щоб зігрітися ввечері."
+}
