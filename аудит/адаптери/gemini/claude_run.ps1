@@ -23,7 +23,8 @@
   5. Кінець — рядок теки вихідних (доставляє `gemini-publish`): ГОТОВО <гілка> <SHA40>, лише коли `origin` має
      саме цей SHA на гілці зі звіту, або ЗАБЛОКОВАНО claude/<наряд> <КОД>; копія з незапушеними комітами лишається — ще рядок COPY_KEPT. Відмова за квотою — не кінець: позначка
      чекає скидання (час — з події `rate_limit_event` stream-json) і рядок QUOTA0_CLAUDE_M<хв>; потім її бере ця ж смуга.
-  6. Позначка `gemini-queue/ВИМКНИ-НОУТБУК/cc-off/<спроба>`: коли рушії не працюють — рядок ВИМКНЕНО, чекання
+  6. Позначка `gemini-queue/ВИМКНИ-НОУТБУК/cc-off/<спроба>`: коли рушії не працюють і власник не за ноутбуком
+     (сеанс активний і не заблокований — раз ЗАБЛОКОВАНО … OWNER, позначка чекає) — рядок ВИМКНЕНО, чекання
      доставки й `shutdown`. Позначка, що вже була до першого проходу після ввімкнення, — ЗАБЛОКОВАНО … BOOT.
   7. Стан — тіло issue -StatusIssue (`gh api -X PATCH`), щопроходу не частіше за -StatusMinutes: задачі планувальника,
      смуги й слоти (свої й gemini-run з heartbeat), квота груп моделей і Claude з часом скидання в UTC, позначки в
@@ -177,7 +178,22 @@ function Get-BootStamp {
     Get-UtcStamp (Get-CimInstance Win32_OperatingSystem).LastBootUpTime
 }
 
-function Invoke-Shutdown { & shutdown.exe /s /t 60 }
+# Хтось працює за ноутбуком: є інтерактивний сеанс (explorer.exe поза сеансом 0), у якому нема LogonUI.exe (екран
+# блокування). Відлучений сеанс Windows блокує сам — LogonUI з'являється, і вимкнення дозволене. Без P/Invoke: Add-Type
+# із wtsapi32 Avast уже блокував. Збій запиту — $true: краще не вимкнути, ніж вимкнути під власником.
+function Test-OwnerSession {
+    if (-not $script:OnWindows) { return $false }
+    try {
+        $locked = @(Get-Process -Name LogonUI -ErrorAction SilentlyContinue | ForEach-Object { $_.SessionId })
+        $shells = @(Get-Process -Name explorer -ErrorAction SilentlyContinue | Where-Object { $_.SessionId -gt 0 } | ForEach-Object { $_.SessionId } | Select-Object -Unique)
+        return (@($shells | Where-Object { $locked -notcontains $_ }).Count -gt 0)
+    } catch { Write-Log "сеанс власника не визначено: $($_.Exception.Message)"; return $true }
+}
+
+# /c — напис у вікні Windows, що вимкнення йде від обгортки; скасувати до кінця відліку — `shutdown /a`.
+function Invoke-Shutdown {
+    & shutdown.exe /s /t 60 /c "Код Ші: claude-run вимикає ноутбук за позначкою ВИМКНИ-НОУТБУК. Скасувати: shutdown /a"
+}
 
 function Get-TaskRows {
     foreach ($n in $TaskNames) {
@@ -1099,6 +1115,17 @@ function Invoke-Off($M) {
         Write-Log "позначка $($M.Name): рушії зайняті — вимкнення чекає"
         return
     }
+    if (Test-OwnerSession) {
+        # Власник за ноутбуком (10.11 його вимкнули під ним): стану не закриваємо — вимкнення, коли сеанс заблоковано чи
+        # нема. Рядок раз на позначку, як BOOT; запис — окремий файл, щоб не закрити позначку.
+        $script:Phase = 'вимкнення чекає: власник за ноутбуком'
+        $seen = $statePath -replace '\.txt$', '.owner'
+        if (-not (Test-Path -LiteralPath $seen)) {
+            [void](Add-Line "GEMINI ОБГОРТКА: ЗАБЛОКОВАНО claude/$($M.Slug) OWNER"); Write-FileAtomic $seen 'OWNER'
+        }
+        Write-Log "позначка $($M.Name): сеанс власника активний і не заблокований — вимкнення чекає"
+        return
+    }
     $id = Add-Line "GEMINI ОБГОРТКА: ВИМКНЕНО $($M.Sha)"
     Write-FileAtomic $statePath "OFF $id"
     $script:Phase = 'вимикаю'
@@ -1109,6 +1136,16 @@ function Invoke-Off($M) {
     while ($id -and (Get-Date) -lt $until) {
         try { if (([System.IO.File]::ReadAllText($sent, $script:Utf8) | ConvertFrom-Json).sent) { break } } catch { $null = $_ }
         Start-Sleep -Seconds 10
+    }
+    # Власник міг сісти за ноутбук, поки чекали доставку (10.11 — 5 хв між ВИМКНЕНО і shutdown): питаємо ще раз. ВИМКНЕНО
+    # вже доставлено, тож рядок OWNER пишемо завжди; стан OFF знімаємо — наступний прохід почне позначку з початку.
+    if (Test-OwnerSession) {
+        $script:Phase = 'вимкнення чекає: власник за ноутбуком'
+        [void](Add-Line "GEMINI ОБГОРТКА: ЗАБЛОКОВАНО claude/$($M.Slug) OWNER")
+        Write-FileAtomic ($statePath -replace '\.txt$', '.owner') 'OWNER'
+        Remove-Item -LiteralPath $statePath -Force -ErrorAction SilentlyContinue
+        Write-Log "позначка $($M.Name): власник сів за ноутбук після ВИМКНЕНО — не вимикаю"
+        return
     }
     Write-Log "позначка $($M.Name): вимикаю"
     Invoke-Shutdown
@@ -1169,7 +1206,7 @@ function Start-Markers($Workers) {
         if (-not $slot) { Add-Skip $m 'нема вільного слота смуги claude'; Add-Hold $script:Held 'SLOTS' 'слоти зайняті' $m.Name; continue }
         if ((@($Workers | Where-Object { $_.Slug -ceq $m.Slug -and -not $_.Proc.HasExited }).Count -gt 0) -or (Test-SlugBusy $m.Slug @('claude'))) { Add-Skip $m 'той самий наряд уже йде в слоті'; continue }
         if ($m.Gpu) {
-            if ($null -eq $gpuWhy) { $gpuWhy = Get-GpuBusyReason $Workers }
+            if ($null -eq $gpuWhy) { $gpuWhy = Get-GpuBusyReason }
             if ($gpuWhy) { Add-Skip $m $gpuWhy; Add-Hold $script:Held 'GPU' $script:GpuHoldReason $m.Name; continue }
         }
         $id = New-Id
@@ -1203,7 +1240,7 @@ function Start-Markers($Workers) {
     @($started, $null)
 }
 
-# Процес наряду: слот (замок на весь прогін), GPU (замок, спільний з gemini-run), прогін (копію задачі дає Invoke-Task).
+# Процес наряду: слот (замок на весь прогін), GPU (оренда, ворота спільні з gemini-run), прогін (копію задачі дає Invoke-Task).
 function Invoke-Worker {
     $job = $script:Job
     $lim = @{}
@@ -1212,19 +1249,13 @@ function Invoke-Worker {
     $statePath = Get-StatePath "$($job.ref) $($job.sha)"
     $slotLock = Open-Lock (Join-Path $script:SlotDir "$($job.slot).lock")
     if ($null -eq $slotLock) { Remove-Claim $statePath; Write-Log "слот $($job.slot) зайнятий — позначку не взято"; return $script:WorkerSlotBusy }
-    $gpu = $null
+    $gpu = $false
     $info = Join-Path $script:SlotDir "$($job.slot).json"
     try {
         if ($job.gpu) {
-            $gpu = Open-Lock (Get-GpuLockPath)
-            $why = $(if ($null -eq $gpu) { 'замок GPU' } elseif (Test-ExternalGpuFree -LogAcquisition) { '' } else { Get-GpuBusyReason @() -LockHeld })
+            $why = Enter-GpuLease $job
             if ($why) { Remove-Claim $statePath; Write-Log "GPU зайнята ($why) — $($job.name) лишається в черзі"; return $script:WorkerGpuBusy }
-            try { Start-GpuModels $job }
-            catch {
-                Remove-Claim $statePath
-                Write-Log "GPU знімок недоступний ($($_.Exception.Message)) — $($job.name) лишається в черзі"
-                return $script:WorkerGpuBusy
-            }
+            $gpu = $true
         }
         Write-FileAtomic $info (([ordered]@{ slot = $job.slot; lane = 'claude'; marker = $job.name; slug = $job.slug
                     model = "$($job.claude)$(if ($job.effort) { ' ' + $job.effort })"; since = (Get-UtcStamp (Get-Date)); gpu = [bool]$job.gpu; prio = $job.prio; pid = $PID
@@ -1238,11 +1269,7 @@ function Invoke-Worker {
         Write-Log "процес наряду $($job.name): $($_.Exception.Message)"
         1
     } finally {
-        if ($null -ne $gpu) {
-            try { Complete-GpuModels }
-            catch { Write-Log "GPU прибирання відкладено: $($_.Exception.Message)" }
-            finally { $gpu.Dispose() }
-        }
+        if ($gpu) { Exit-GpuLease $job }
         Remove-Item -LiteralPath $info -Force -ErrorAction SilentlyContinue
         # Помилка до STARTED (робоча копія тощо) не лишає claim: позначка повертається в чергу (10162).
         Close-FailedStart ([pscustomobject]@{ Ref = $job.ref; Name = $job.name; Sha = $job.sha; Slug = $job.slug; Model = $job.model }) ([string]$job.id) $statePath
