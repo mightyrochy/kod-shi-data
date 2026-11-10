@@ -168,6 +168,12 @@ try {
     SetCodex $true; SetClaude $true; Invoke-WrapperChain
     Check 'нічний, обидва на квоті: дозвіл чекає на codex, не переходить' (@(SlugMarkers $night).Count -eq 1 -and @(SlugMarkers $night)[0] -match '/gpt-6\.1-sol-high/1/gpu-p8$')
     & git -C $seed push -q origin ":$(@(SlugMarkers $night)[0])"
+    # Дозвіл на збірці, для якої автоживий уже є ($built несе build.txt = $newer, автоживий-$newer стоїть): Get-NightlyMarker
+    # такого дозволу не віддає, тож і перенесення до Claude його не обходить.
+    & git -C $seed push -q origin "${built}:refs/heads/gemini-queue/$night/gpt-6.1-sol-high/1/gpu-p8"
+    SetCodex $true; SetClaude $false; Invoke-WrapperChain
+    Check 'нічний, codex 0 %, але автоживий цієї збірки вже є: дозвіл не переходить до Claude' (@(SlugMarkers $night).Count -eq 1 -and @(SlugMarkers $night)[0] -match '/gpt-6\.1-sol-high/1/gpu-p8$')
+    & git -C $seed push -q origin ":$(@(SlugMarkers $night)[0])"
     SetCodex $false; SetClaude $false
     # Збій не з кодом CHAIN_*: у рядку тип і рядок скрипту, без шляхів і тексту.
     Get-ChildItem -LiteralPath $OutboxDir -File | Remove-Item

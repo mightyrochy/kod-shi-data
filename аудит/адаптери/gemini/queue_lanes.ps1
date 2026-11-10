@@ -430,6 +430,13 @@ function Get-TaskSource($M) {
     Get-AutoTaskPath $M.Slug
 }
 
+function Get-NightlyBuild([string]$Sha) {
+    <# Збірка, на якій стоїть нічний дозвіл: штамп build.txt його коміту; '' — штампа нема чи він хибний. Одне місце для
+    Get-NightlyMarker і для ланцюга, що переносить дозвіл (Move-NightlyMarker у wrapper_chain.ps1). #>
+    $build = (Invoke-Git @('cat-file','blob',"${Sha}:build.txt") -AllowFail).Out.Trim()
+    if ($build -cmatch '^[0-9a-f]{40}$') { $build } else { '' }
+}
+
 function Get-NightlyMarker([datetime]$Now = [datetime]::UtcNow, [switch]$OpenOnly) {
     <# Після 02:00 UTC читає лише датований дозвіл із GitHub; локальний стан не дає прав. -OpenOnly — лише вікно: $true, коли
     нічний відкрито (так ланцюг, що переносить дозвіл, не тримає другої години: Test-NightlyOpen у wrapper_chain.ps1). #>
@@ -444,8 +451,8 @@ function Get-NightlyMarker([datetime]$Now = [datetime]::UtcNow, [switch]$OpenOnl
     if ($main -cnotmatch '^[0-9a-f]{40}$' -or
         (Invoke-Git @('merge-base', '--is-ancestor', $sha, $main) -AllowFail).Code -ne 0) { return }
     $template = 'аудит/наряди/автоживий.md'
-    $build = (Invoke-Git @('cat-file','blob',"${sha}:build.txt") -AllowFail).Out.Trim()
-    if ($build -cmatch '^[0-9a-f]{40}$' -and (Invoke-Git @('for-each-ref','--format=%(refname)',($script:QueuePrefix + "автоживий-$build/"))).Out.Trim()) { return }
+    $build = Get-NightlyBuild $sha
+    if ($build -and (Invoke-Git @('for-each-ref','--format=%(refname)',($script:QueuePrefix + "автоживий-$build/"))).Out.Trim()) { return }
     if ((Invoke-Git @('cat-file', '-e', "${sha}:$template") -AllowFail).Code -ne 0) { return }
     $dir = Join-Path $RunsDir 'nightly'
     [void](New-Item -ItemType Directory -Force -Path $dir)
