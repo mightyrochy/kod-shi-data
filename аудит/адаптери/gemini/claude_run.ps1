@@ -1105,6 +1105,16 @@ function Invoke-Off($M) {
         try { if (([System.IO.File]::ReadAllText($sent, $script:Utf8) | ConvertFrom-Json).sent) { break } } catch { $null = $_ }
         Start-Sleep -Seconds 10
     }
+    # Власник міг сісти за ноутбук, поки чекали доставку (10.11 — 5 хв між ВИМКНЕНО і shutdown): питаємо ще раз. ВИМКНЕНО
+    # вже доставлено, тож рядок OWNER пишемо завжди; стан OFF знімаємо — наступний прохід почне позначку з початку.
+    if (Test-OwnerSession) {
+        $script:Phase = 'вимкнення чекає: власник за ноутбуком'
+        [void](Add-Line "GEMINI ОБГОРТКА: ЗАБЛОКОВАНО claude/$($M.Slug) OWNER")
+        Write-FileAtomic ($statePath -replace '\.txt$', '.owner') 'OWNER'
+        Remove-Item -LiteralPath $statePath -Force -ErrorAction SilentlyContinue
+        Write-Log "позначка $($M.Name): власник сів за ноутбук після ВИМКНЕНО — не вимикаю"
+        return
+    }
     Write-Log "позначка $($M.Name): вимикаю"
     Invoke-Shutdown
 }
