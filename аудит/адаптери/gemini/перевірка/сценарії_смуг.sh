@@ -5,7 +5,7 @@
 #   ДО:    LANES_MODE=do SRC=<тека зі старими gemini_run.ps1 і claude_run.ps1> — позначки без умов (старі скрипти умов не
 #          знають), проходи, як задачі планувальника: gemini-run і claude-run водночас, кожен по позначці за прохід.
 #   ПІСЛЯ: ці скрипти — планувальники gemini-run і claude-run водночас; прохід після «скидання» квоти без нової позначки;
-#          дві GPU-позначки різних облікових записів; слоти з смуги.json на origin/main — 1, потім 2, без перевстановлення.
+#          дві GPU-позначки різних облікових записів без моделі на карті; слоти з смуги.json на origin/main — 1, потім 2, без перевстановлення.
 # PowerShell — PWSH (на ноутбуці Git Bash + обгортка `powershell -ExecutionPolicy Bypass`); Python 3. Код 1, якщо хоч один ✗.
 H=$(cd "$(dirname "$0")" && pwd); . "$H/середовище.sh"; PW="${PWSH:-pwsh}"; SRC="${SRC:-$(cd "$H/.." && pwd)}"
 MODE="${LANES_MODE:-pislia}"; HOLD="${FAKE_HOLD:-8}"; BAD=0
@@ -104,7 +104,8 @@ chk "стан: таблиця смуг — claude 2/2 і codex 2/2 у якійс
 chk "стан: квота agy з UTC — GEMINI4ARGON 0 %, скидання …Z, зчитано …Z" 'echo "$S" | grep -qE "^\| agy · GEMINI4ARGON \| WEEK \| 0 % \| 20[0-9-]+T[0-9:]+Z \| 20[0-9-]+T[0-9:]+Z \|$"'
 chk "стан: квота Claude з rate_limit_event (5H, 7D)" 'echo "$S" | grep -qE "^\| claude \| 5H \| 68 % \|" && echo "$S" | grep -qE "^\| claude \| 7D \| 18 % \|"'
 chk "стан: позначка Argon у «Чекають скидання квоти»" 'echo "$S" | grep -qE "^\| gemini-queue/г-agy-квота/$AQ/1/p0 \| 20[0-9-]+T[0-9:]+Z \| GEMINI4ARGON \|$"'
-chk "стан: GPU зайнята слотом claude" '[[ "$S" == *"GPU: зайнята — claude-"* ]]'
+chk "стан: замок GPU обгортки зайнятий слотом claude (окреме поле, не вимір карти)" '[[ "$S" == *"замок GPU обгортки (запис слотів нарядів, не вимір карти): зайнятий — claude-"* ]]'
+chk "стан: вимір карти з часом UTC (nvidia-smi чи явна помилка виміру)" 'echo "$S" | grep -qE "^- вимір карти \((nvidia-smi, )?UTC 20[0-9-]+T[0-9:]+Z\): "'
 echo "$S" | awk '/### Смуги/{f=1} /### Чекають/{f=2} f' | head -30 | sed 's/^/    /' > "$W/status_snapshot.txt"
 pub; L=$(lines)
 NQ=$(echo "$L" | grep -c "ЗАБЛОКОВАНО gemini/г-agy-квота QUOTA0_GEMINI4ARGON_M")
@@ -116,11 +117,11 @@ N5=$(echo "$L" | grep -cE "ГОТОВО (gemini|claude)/(а-codex|б-codex|в-ag
 chk "решта п'яти — ГОТОВО (є: $N5)" '[ "$N5" = 5 ]'
 echo "  кінці: $(echo "$L" | grep -v ПУЛИ | sed 's/GEMINI ОБГОРТКА: //' | sed -E 's/ [0-9a-f]{40}//' | tr '\n' ';')"
 
-echo "=== Б: GPU — по одному на ноутбуці, замок спільний для gemini-run і claude-run"
+echo "=== Б: GPU — наряди обох облікових записів без моделі на карті не тримають один одного (модель на карті — сценарії_gpu_процеси.ps1, сценарії_gpu_моделі.py)"
 setup b; export FAKE_ZERO_UNTIL=0; mark "gpu-agy/$AG/1/gpu"; mark "gpu-claude/$CC/1/gpu"
 gem & cr & wait; gem & cr & wait
 echo "  найбільше водночас GPU-нарядів: $(tl gpu); порядок: $(tl order)"
-chk "дві GPU-позначки різних облікових записів — не водночас, обидві виконано" '[ "$(tl gpu)" = 1 ] && [ "$(grep -c "^start gpu" "$W/timeline.txt")" = 2 ]'
+chk "дві GPU-позначки різних облікових записів без моделі на карті — водночас, обидві виконано" '[ "$(tl gpu)" = 2 ] && [ "$(grep -c "^start gpu" "$W/timeline.txt")" = 2 ]'
 
 echo "=== В: N зі смуги.json на origin/main — 1, потім 2, без перевстановлення скриптів"
 setup c; export FAKE_ZERO_UNTIL=0
