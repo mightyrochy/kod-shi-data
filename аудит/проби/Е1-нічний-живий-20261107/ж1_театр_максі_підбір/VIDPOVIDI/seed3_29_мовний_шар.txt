@@ -1,0 +1,60 @@
+── ПРОМПТ (6982 симв.) ──
+Ти — перекладачка в застосунку-стилістці. Ти пишеш природною українською тексти, які зараз побачить жінка. Рішень не приймаєш, на питання не відповідаєш, змісту не міняєш.
+
+Вхід — JSON-об'єкт: ключ — номер тексту н, значення — текст, який склали код та інші моделі.
+
+Ключі відповіді — ті самі, що у вході, кожен: номер н тексту, значення — рядок, той самий зміст природною українською, без англійських слів і кодів; ПЕРЕКЛАДАЙ КОЖНЕ англійське слово, навіть одне посеред українського речення; латиницею лишай лише назви крамниць і брендів, «V-подібний» і «den»; текст, що вже природний і до неї на «ти», — без змін, а український текст на «ви» перепиши на «ти», решту лиши слово в слово.
+
+Вид кожної речі — теж зміст: річ у перекладі — та сама, що у вході, а не схожа чи сусідня. ankle boots — черевики чи ботильйони, boots — чоботи, heeled — на підборах, а не туфлі, pumps — туфлі-човники, loafers — лофери; pendant — кулон чи підвіска, necklace — намисто чи ланцюжок, а не каблучка, сережки чи браслет; ring — каблучка; earrings — сережки. Українські назви речей у вході (назви з крамниці, найчастіше перед « — ») переписуй літера в літеру: не міняй, не переставляй і не додавай у них жодного слова.
+
+Про жінку — лише до неї, на «ти» (ти, тебе, тобі, твій, твоя; хочеш, скинеш; наказ однини: розкажи, оберни, тримай, дай), і в питаннях теж: you, your, she, her про неї — «ти», «твій» (her skin tone — твій тон шкіри; when she turns her head — коли ти повертаєш голову; she looks taller — ти виглядаєш вищою), англійський наказ — наказом однини; «вона», «її» — лише про річ (сукню, сумку, куртку). Говорить стилістка — одна жінка: про себе — від першої особи однини й у жіночому роді (я підібрала, я б додала), не «ми», не від імені застосунку чи коду і ніколи словами самої жінки.
+
+Мова: літературна українська, як у текстах українських крамниць одягу. Кожне українське слово — літерами лише української абетки, без жодної латинської літери чи стороннього знака всередині слова. Кожне речення — одна остаточна версія, без виправлень посеред тексту. Словничок нижче — лише як перекласти англійське слово, коли воно є у вході; це не зміст: річ, тканина чи колір, яких у вході нема, у тексті не з'являються. Звичні українські назви для слів англійського джерела: trousers, pants — штани; dressy, dressier — ошатний, ошатніше; look, outfit — образ; taupe — сіро-бежевий; loose — вільний; suede — замша (жіночий рід); slip dress — сукня-комбінація; camel — кемел (колір). Назви речей і кольорів, які дала крамниця, — як є.
+
+Слово не повторюється двічі поспіль. Відповідь — рівно ОДИН JSON-об'єкт і нічого після нього: другої, виправленої версії, приміток і пояснень не пиши — помилку виправ у тому самому об'єкті.
+
+Речі образу — перелік речей картки (номер речі — як на картці, поруч — її коди):
+1 — kind code: shirt · colour code: mocha · about it: text н=1
+2 — kind code: coat · colour code: black · about it: text н=2
+3 — kind code: belt · colour code: powder · about it: text н=3
+4 — kind code: ring · colour code: silvery · about it: text н=4
+5 — kind code: skirt · colour code: beige · about it: text н=5
+6 — kind code: pumps · colour code: green · about it: text н=6
+7 — kind code: crossbody_bag · colour code: brown · about it: text н=7
+When a text speaks of an item of the list, call it by the Ukrainian noun of its kind code (kind code: …) — the same noun in the right case in every text (trench_coat — «тренч», sweater — «светр», loafers — «лофери»), not by another kind or a synonym of the English word, whatever word the English text uses; a code ending in _generic names only the family (dress_generic — a dress, bag_generic — a bag). Make every adjective, pronoun and verb with the item agree with that noun in gender and number («бежевий тренч, який…»; «шкіряні лофери, які…»). A name you translate in this same call (text н=K): give it one noun and call the item by it, in agreement, in every text. A text the list gives as about an item (about it: text н=M) speaks of that one item, and so does every other text where the English names it. The colour of an item of the list is its colour code (colour code: …): write the Ukrainian name of that code. The English colour words for that item are the stylist's impression of a photo: do not turn them into a colour of their own — the item's colour stands in their place. Colours of its details (trim, strap, buttons, print), its fabric and the rest — translate from the text. The list is for the items only: an item the English text does not name is not added to the translation — neither to the description nor to the advice.
+
+Colour codes: beige — бежевий; black — чорний; brown — коричневий; green — зелений; mocha — мокко; powder — пудра; silvery — срібний.
+
+ТЕКСТИ:
+{
+"1": "This mocha shirt features a classic collar and silver buttons, cut to offer a clean, fitted silhouette that sits perfectly against the body.",
+"2": "The black coat is a timeless double-breasted design with structured shoulders and a long, flowing line that adds instant elegance.",
+"3": "This belt in powder pink adds a delicate, soft touch to the waist, introducing a subtle splash of color without overpowering the neutral palette.",
+"4": "The silvery ring with its shimmering band offers a modern sparkle that catches the light beautifully, just enough for an evening event.",
+"5": "This beige skirt is cut in an A-line shape to flow gracefully from the hips down, providing a comfortable yet polished foundation for your outfit.",
+"6": "These green pumps feature a high stiletto heel and a glossy finish that will add height and sophistication under the theatre lights.",
+"7": "The brown crossbody bag with its gold clasp offers a practical yet stylish way to carry your essentials, complementing the warm tones of the shirt and skirt.",
+"8": "I have curated a sophisticated ensemble for your evening at the theatre that balances classic structure with a touch of modern warmth. The dark, double-breasted coat provides a strong architectural frame, while the mocha shirt beneath offers a soft, muted tone that is gentle on the eyes. I have chosen this look to meet your desire for a maxi skirt and elegant heels; the neutral tones of the shirt and skirt create a seamless, elongating line from neck to toe, which feels both effortless and refined for the stage lights.",
+"9": "Wear the coat open to reveal the mocha shirt first, letting it set your silhouette before you step outside.",
+"10": "Tuck the shirt in loosely if you want to emphasize your waist, or wear it straight for a sleeker profile.",
+"11": "Let the long hem of the skirt flow naturally over your heels to maintain that continuous vertical line.",
+"12": "Сорочка вільного крою з льону мокко мус, Коричнева шкіряна сумка через плече — Although the code notes some items are 'everyday' style, the black coat and formal shoes establish the occasion-appropriate formality, allowing these lighter items to serve as comfortable layers or accents for your day at the theatre."
+}
+
+── ВІДПОВІДЬ (2207 симв., 15.1 с, HTTP 200) ──
+```json
+{
+"1": "Ця сорочка мокко має класичний комір і срібні ґудзики та пошита так, щоб створити чилий силует, який чудово облягає тіло.",
+"2": "Чорний тренч — це позачасовий дизайн з двобортною застібкою, структурованими плечима і довгим, струмливим кроєм, що миттєво додає елегантності.",
+"3": "Цей пояс пудрового кольору ніжно підкреслює талію, вносячи ледь помітний колір без перевантаження нейтральної палітри.",
+"4": "Срібна каблучка з блискучим обідком пропонує сучасне сяйво, яке чудово відбиває світло — саме те, що потрібно для вечірнього заходу.",
+"5": "Ця бежева спідниця має трапецієподібний крій і елегантно струмує від стегон донизу, створюючи комфортну та водночас вишукану основу твого образу.",
+"6": "Зелені туфлі-човники мають високий шпильку і глянцеве покриття, яке додасть тобі зросту й елегантності під театральним світлом.",
+"7": "Коричнева сумка через плече з золотою застібкою пропонує практичний та стильний спосіб носити необхідні речі, доповнюючи теплі тони сорочки і спідниці.",
+"8": "Я підібрала вишуканий ансамбль для твого вечора в театрі, який поєднує класичну структуру з ноткою сучасної теплоти. Чорний двобортний тренч створює міцний архітектурний каркас, а сорочка мокко під ним пропонує м’який і приглушений тон, який легко сприймається очима. Я обрала цей образ на твій запит щодо максі-спідниці та елегантних підборів; нейтральні тони сорочки й спідниці створюють безшовну лінію від шиї до кінчиків пальців ніг, що виглядає як невимушено, так і вишукано для сцени.",
+"9": "Одягни тренч розстебнутим, щоб спочатку показати сорочку мокко та створити силует перед тим, як вийти на вулицю.",
+"10": "Заправ сорочку вільніше всередину спідниці, якщо хочеш підкреслити свою талію, або носи її прямо для більш стрункого профілю.",
+"11": "Дозволь довгій поділці спідниці природно спадати на твої туфлі, щоб зберегти цю безперервну вертикальну лінію.",
+"12": "Сорочка вільного крою з льону мокко мус, Коричнева шкіряна сумка через плече — Хоча код вказує, що деякі речі мають повсякденний стиль, чорний тренч і формальне взуття встановлюють відповідну для заходу урочистість, дозволяючи цим легшим предметам служити зручними шарами або акцентами на твій день у театрі."
+}
+```

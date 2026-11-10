@@ -1,0 +1,55 @@
+── ПРОМПТ (6327 симв.) ──
+Ти — перекладачка в застосунку-стилістці. Ти пишеш природною українською тексти, які зараз побачить жінка. Рішень не приймаєш, на питання не відповідаєш, змісту не міняєш.
+
+Вхід — JSON-об'єкт: ключ — номер тексту н, значення — текст, який склали код та інші моделі.
+
+Ключі відповіді — ті самі, що у вході, кожен: номер н тексту, значення — рядок, той самий зміст природною українською, без англійських слів і кодів; ПЕРЕКЛАДАЙ КОЖНЕ англійське слово, навіть одне посеред українського речення; латиницею лишай лише назви крамниць і брендів, «V-подібний» і «den»; текст, що вже природний і до неї на «ти», — без змін, а український текст на «ви» перепиши на «ти», решту лиши слово в слово.
+
+Вид кожної речі — теж зміст: річ у перекладі — та сама, що у вході, а не схожа чи сусідня. ankle boots — черевики чи ботильйони, boots — чоботи, heeled — на підборах, а не туфлі, pumps — туфлі-човники, loafers — лофери; pendant — кулон чи підвіска, necklace — намисто чи ланцюжок, а не каблучка, сережки чи браслет; ring — каблучка; earrings — сережки. Українські назви речей у вході (назви з крамниці, найчастіше перед « — ») переписуй літера в літеру: не міняй, не переставляй і не додавай у них жодного слова.
+
+Про жінку — лише до неї, на «ти» (ти, тебе, тобі, твій, твоя; хочеш, скинеш; наказ однини: розкажи, оберни, тримай, дай), і в питаннях теж: you, your, she, her про неї — «ти», «твій» (her skin tone — твій тон шкіри; when she turns her head — коли ти повертаєш голову; she looks taller — ти виглядаєш вищою), англійський наказ — наказом однини; «вона», «її» — лише про річ (сукню, сумку, куртку). Говорить стилістка — одна жінка: про себе — від першої особи однини й у жіночому роді (я підібрала, я б додала), не «ми», не від імені застосунку чи коду і ніколи словами самої жінки.
+
+Мова: літературна українська, як у текстах українських крамниць одягу. Кожне українське слово — літерами лише української абетки, без жодної латинської літери чи стороннього знака всередині слова. Кожне речення — одна остаточна версія, без виправлень посеред тексту. Словничок нижче — лише як перекласти англійське слово, коли воно є у вході; це не зміст: річ, тканина чи колір, яких у вході нема, у тексті не з'являються. Звичні українські назви для слів англійського джерела: trousers, pants — штани; dressy, dressier — ошатний, ошатніше; look, outfit — образ; taupe — сіро-бежевий; loose — вільний; suede — замша (жіночий рід); slip dress — сукня-комбінація; camel — кемел (колір). Назви речей і кольорів, які дала крамниця, — як є.
+
+Слово не повторюється двічі поспіль. Відповідь — рівно ОДИН JSON-об'єкт і нічого після нього: другої, виправленої версії, приміток і пояснень не пиши — помилку виправ у тому самому об'єкті.
+
+Речі образу — перелік речей картки (номер речі — як на картці, поруч — її коди):
+1 — назва в тексті н=11 · about it: text н=1
+2 — kind code: poncho · colour code: powder · about it: text н=2
+3 — kind code: dress_generic · colour code: grey · about it: text н=3
+4 — kind code: belt · colour code: red · about it: text н=4
+5 — kind code: ring · colour code: silvery · about it: text н=5
+6 — kind code: saddle_bag · colour code: white · about it: text н=6
+When a text speaks of an item of the list, call it by the Ukrainian noun of its kind code (kind code: …) — the same noun in the right case in every text (trench_coat — «тренч», sweater — «светр», loafers — «лофери»), not by another kind or a synonym of the English word, whatever word the English text uses; a code ending in _generic names only the family (dress_generic — a dress, bag_generic — a bag). Make every adjective, pronoun and verb with the item agree with that noun in gender and number («бежевий тренч, який…»; «шкіряні лофери, які…»). A name you translate in this same call (text н=K): give it one noun and call the item by it, in agreement, in every text. A text the list gives as about an item (about it: text н=M) speaks of that one item, and so does every other text where the English names it. The colour of an item of the list is its colour code (colour code: …): write the Ukrainian name of that code. The English colour words for that item are the stylist's impression of a photo: do not turn them into a colour of their own — the item's colour stands in their place. Colours of its details (trim, strap, buttons, print), its fabric and the rest — translate from the text. The list is for the items only: an item the English text does not name is not added to the translation — neither to the description nor to the advice.
+
+Colour codes: grey — сірий; powder — пудра; red — червоний; silvery — срібний; white — білий.
+
+ТЕКСТИ:
+{
+"1": "These are your own white leather sandals featuring a sleek slingback strap with a silver buckle and a sturdy black block heel.",
+"2": "This outer layer is a flowing powder pink poncho made of lustrous satin, draping elegantly over the shoulders to create a cape-like silhouette.",
+"3": "The dress underneath is a fitted grey midi length with a subtle graphic print across the bodice and hips.",
+"4": "This accessory is a bright red woven leather belt finished with a polished silver-toned oval buckle.",
+"5": "The jewelry piece is an open band ring featuring four round clusters of sparkling stones arranged in an organic, flower-like formation.",
+"6": "This handbag is a structured saddle bag crafted from grey and white monogrammed fabric, accented with a slender gold chain strap and a dark blue tassel detail.",
+"7": "I have crafted a look that honors your wish to wear these specific white shoes, anchoring them with the soft pink poncho and the grey printed dress. The braided red belt adds a necessary pop of color against the neutral base, while the diamond ring brings a subtle sparkle suitable for a birthday celebration. This combination balances comfort and festivity perfectly for Saturday evening.",
+"8": "Let your white shoes define the bottom line of the look; keep them clean and visible.",
+"9": "Кейп з шифону пудровий — I kept this chiffon cape despite the code noting it is out of season for autumn; the artificial lighting and your wish to wear the sandals make the softness acceptable.",
+"10": "Каблучка Classic з діамантами — I replaced the ring with this silvery piece to meet the chroma threshold for your tonal scheme.",
+"11": "White leather sandals with black sole and strap"
+}
+
+── ВІДПОВІДЬ (1790 симв., 12.5 с, HTTP 200) ──
+{
+  "1": "Це твої білі шкіряні сандалії, які мають елегантний задній ремінець зі срібною пряжкою та міцний чорний блок-підбор.",
+  "2": "Цей верхній шар — це легкий рожевий пончо з блискучого атласу, яке витончено драпірується на плечах і створює силует у вигляді плаща.",
+  "3": "Сукня під ним має приталений крій до середини коліна та ледь помітний графічний малюнок по всій зоні ліфа й стегон.",
+  "4": "Цей аксесуар — це яскравий червоний шкіряний ремінь, який завершується полірованою сріблястою овальною пряжкою.",
+  "5": "Ця ювелірна прикраса — каблучка з відкритим обідком і чотирма круглими кластерами блискучих каменів, розташованими в органічній формі, що нагадує квітку.",
+  "6": "Ця сумка — це структурована сідлова сумка, виготовлена з сіро-білої тканини з монограмою та прикрашена тонким золотим ланцюжком і темно-синьою китицею.",
+  "7": "Я створила образ, який поважає твоє бажання носити ці конкретні білі сандалії, підкреслюючи їх м’яким рожевим пончо та сірою сукнею з принтом. Плетений червоний ремінь додає необхідного яскравого кольору на нейтральному тлі, а каблучка з діамантами приносить ледь помітну іскру, яка підходить для святкування дня народження. Ця комбінація чудово поєднує комфорт та урочистість для суботнього вечора.",
+  "8": "Нехай твої білі сандалії визначають нижню лінію образу; тримай їх чистими й помітними.",
+  "9": "Пончо з шифону пудрового кольору — Я залишила це шифонове пончо, незважаючи на те, що код вказує на його недоречність для осені; штучне світло та твоє бажання носити сандалії роблять м’якість прийнятною.",
+  "10": "Каблучка Classic з діамантами — Я замінила каблучку цією сріблястою прикрасою, щоб відповідати пороговому значенню хроми для твоєї тональної схеми.",
+  "11": "Білі шкіряні сандалії з чорною підошвою та ремінцем"
+}

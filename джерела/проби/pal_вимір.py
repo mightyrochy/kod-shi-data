@@ -38,8 +38,9 @@ import bridge as B, colorspace as cs, feed as Ф, pipeline as PL, palettes as PA
 
 
 def пул_стенда(гілка=0, **зміни):
-    """(кандидати, каталог за id, спец, запити) — рівно те, чим ходив продукт."""
+    """Фізична синтетична фікстура → кандидати, каталог, специфікація й запити продукту."""
     вх = json.load(open(_КОРІНЬ / "стенд_вх.json", encoding="utf-8"))
+    вх.setdefault("source", "uncontrolled")
     вх["гілка"] = гілка
     вх.update(зміни)
     r = json.loads(B.виклик("запити", json.dumps(вх, ensure_ascii=False)))
@@ -92,8 +93,8 @@ def частка_у_вікнах(кандидати, кат, спец, запи�
             if not lab: continue
             L, C, h = cs.lch(lab)
             if PL._нейтральний_тон(h, C, L): continue
-            м = PAL.метал_речі(lab, слот)
-            if м and метал in (м, "обидва"): continue   # K-PAL-11 судить фурнітуру металом
+            м = PAL.метал_речі(dict(п, слот=слот))
+            if м and метал in (м, "обидва"): continue   # K-PAL-11 судить фурнітуру металом (код матеріалу)
             n += 1
             взяв = next((q for q in рядки if бере_рядок(п, lab, q)), None)
             if взяв is None: continue

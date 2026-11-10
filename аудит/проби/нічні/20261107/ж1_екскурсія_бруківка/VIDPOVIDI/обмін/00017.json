@@ -1,0 +1,27 @@
+{
+ "версія": 1,
+ "запит": {
+  "model": "qwen/qwen3.5-9b",
+  "max_tokens": 4000,
+  "messages": [
+   {
+    "role": "user",
+    "content": [
+     {
+      "type": "text",
+      "text": "{\"task\": {\"role\": \"You read the description of an outfit and list its items as data.\", \"rules\": [\"One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.\", \"One item carries one thing — of two alternatives list the first; a note in brackets is not an item.\", \"Slot \\\"accessory\\\" is for an item no other slot fits.\", \"\\\"is_outfit\\\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note.\"], \"limits\": [\"Rely only on the input: do not invent what it does not contain.\", \"The answer is one JSON object following \\\"answer_schema\\\", without explanations and without ```.\"], \"language\": \"English\", \"answer\": \"ITEM_LIST\", \"answer_schema\": {\"is_outfit\": \"yes|no\", \"items\": [{\"name\": \"<what the item is>\", \"details\": \"<its cut, length and fabric>\", \"slot\": \"top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory\", \"color_hex\": \"<#rrggbb or null>\", \"worn\": \"<true, or false when the description says the outfit goes without it>\"}]}, \"input\": [\"\\\"description\\\" — the outfit description\"]}, \"description\": \"Lightweight trench coat, relaxed fit, mid-calf length, stone gray (#d1d3d4), cotton gabardine\\nLoose high-waisted trousers, wide-leg cut, ankle length, olive green (#6b705c), lightweight wool blend\\nWhite button-down shirt, tailored but unstructured silhouette, hip length, crisp white (#ffffff), poplin\\nWhite leather sneakers, classic low-top style, mid-calf height, pristine white (#f8f9fa), canvas and smooth leather\\nThin silk scarf, rectangular cut with fringed edges, mustard yellow (#d4a017), 100% silk\\n\\nThis outfit perfectly balances the need for warmth and comfort during a full day of walking at +12 °C in an autumn setting while respecting her refusal to wear reading glasses or anything cumbersome. The stone coat and olive trousers provide practical coverage against the cool air on cobblestones without restricting movement, ensuring she can walk for nine hours with ease. Soft neutral tones harmonize beautifully with her skin tones and hair color, creating a cohesive look suitable for exploring an old town all day.\"}"
+     }
+    ]
+   }
+  ],
+  "temperature": 1
+ },
+ "відповідь": {
+  "status": 200,
+  "contentType": "application/json",
+  "headers": {
+   "x-model": "qwen/qwen3.5-9b"
+  },
+  "body": "{\"content\":[{\"type\":\"text\",\"text\":\"{\\\"is_outfit\\\":\\\"yes\\\",\\\"items\\\":[{\\\"name\\\":\\\"Trench coat\\\",\\\"details\\\":\\\"Lightweight relaxed fit mid-calf length cotton gabardine\\\",\\\"slot\\\":\\\"outerwear\\\",\\\"color_hex\\\":\\\"#d1d3d4\\\",\\\"worn\\\":true},{\\\"name\\\":\\\"Trousers\\\",\\\"details\\\":\\\"Loose high-waisted wide-leg ankle length lightweight wool blend\\\",\\\"slot\\\":\\\"bottom\\\",\\\"color_hex\\\":\\\"#6b705c\\\",\\\"worn\\\":true},{\\\"name\\\":\\\"Shirt\\\",\\\"details\\\":\\\"White tailored unstructured hip length poplin button-down\\\",\\\"slot\\\":\\\"top\\\",\\\"color_hex\\\":\\\"#ffffff\\\",\\\"worn\\\":true},{\\\"name\\\":\\\"Sneakers\\\",\\\"details\\\":\\\"Classic low-top mid-calf height canvas and smooth leather\\\",\\\"slot\\\":\\\"shoes\\\",\\\"color_hex\\\":\\\"#f8f9fa\\\",\\\"worn\\\":true},{\\\"name\\\":\\\"Scarf\\\",\\\"details\\\":\\\"Thin rectangular with fringed edges 100% silk\\\",\\\"slot\\\":\\\"scarf\\\",\\\"color_hex\\\":\\\"#d4a017\\\",\\\"worn\\\":true}]}\"}],\"usage\":{\"input_tokens\":584,\"output_tokens\":208},\"stop_reason\":\"end_turn\"}"
+ }
+}

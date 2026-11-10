@@ -2,17 +2,20 @@
 import hashlib
 import json
 
+НЕВІДОМО = "unknown"           # «невідомо»: джерело, автор, код профілю — одне слово на всю заяву й мову
+АДРЕСАТ_ТИПОВИЙ = "woman"      # кому адресована заява, коли виклик не назвав
+
 # Автор поля паспорта й автор вибору палітри — один перелік. Старі записи
 # читаються лише цим адаптером; нові писачі передають канонічні коди.
 АВТОРИ = frozenset(("her", "conversation", "stylist", "code_rank", "form_default",
-                    "item_default", "pending", "unselected", "unknown", "occasion_part_conflict"))
+                    "item_default", "pending", "unselected", НЕВІДОМО, "occasion_part_conflict"))
 СТАРІ_АВТОРИ = {"рука": "her", "розмова": "conversation", "стилістка": "stylist",
                 "типове_форми": "form_default", "типово для речі з фото": "item_default",
                 "вона обрала сама": "her", "стилістка обрала під цей вихід": "stylist",
                 "код запропонував, вона не міняла": "code_rank",
                 "she_chose": "her", "stylist_chose": "stylist", "code_default": "code_rank"}
-АДРЕСАТИ = frozenset(("woman", "stylist", "journal"))
-ДЖЕРЕЛА = frozenset(("catalogue", "photo", "model", "default", "unknown"))
+АДРЕСАТИ = frozenset((АДРЕСАТ_ТИПОВИЙ, "stylist", "journal"))
+ДЖЕРЕЛА = frozenset(("catalogue", "photo", "model", "default", НЕВІДОМО))
 
 
 def автор(значення):
@@ -20,8 +23,8 @@ def автор(значення):
     if isinstance(значення, bool):
         return "her" if значення else "code_rank"
     if not isinstance(значення, str):
-        return "unknown"
-    return значення if значення in АВТОРИ else СТАРІ_АВТОРИ.get(значення, "unknown")
+        return НЕВІДОМО
+    return значення if значення in АВТОРИ else СТАРІ_АВТОРИ.get(значення, НЕВІДОМО)
 
 
 def ідентифікатори(значення):
@@ -57,7 +60,7 @@ def номерами(значення, номер):
     return значення
 
 
-def створити(код, значення=None, *, recipient="woman", source="unknown", choice="unknown",
+def створити(код, значення=None, *, recipient=АДРЕСАТ_ТИПОВИЙ, source=НЕВІДОМО, choice=НЕВІДОМО,
              rank=None, item_ids=(), part=None):
     """Повна заява зі стабільним ключем змісту; назва не підмінює ідентифікатор."""
     if recipient not in АДРЕСАТИ or source not in ДЖЕРЕЛА or choice not in АВТОРИ:

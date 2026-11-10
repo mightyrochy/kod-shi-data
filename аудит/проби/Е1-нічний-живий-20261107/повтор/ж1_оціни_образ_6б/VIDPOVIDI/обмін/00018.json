@@ -1,0 +1,32 @@
+{
+ "версія": 1,
+ "запит": {
+  "model": "gemini-nano-banana-2.1",
+  "max_tokens": 4000,
+  "messages": [
+   {
+    "role": "user",
+    "content": [
+     {
+      "type": "image",
+      "source": {
+       "type": "base64",
+       "media_type": "image/jpeg",
+       "data": "/9j/2Q=="
+      }
+     },
+     {
+      "type": "text",
+      "text": "{\"task\": {\"role\": \"Photo 1 is a woman. Dress her in the outfit below.\", \"rules\": [\"Change only the clothes on photo 1: her face, body, pose, hands, hair, light, background, framing and angle stay exactly as on photo 1.\", \"One image with one frame: the same single woman filling the frame, in the proportions of photo 1.\"], \"limits\": [\"Rely only on the input: do not invent what it does not contain.\", \"The answer is one image and no text.\"], \"answer\": \"TRY_ON_IMAGE\", \"input\": [\"\\\"items_without_photo\\\" — the outfit items that have no photo, with all that is known about them; she wears them too: draw them from this description\"]}, \"items_without_photo\": [{\"slot\": \"outerwear\", \"name\": \"блейзер\", \"color\": \"unknown\", \"color_hex\": \"#000080\", \"details\": \"tailored fit with structured shoulders and notch lapels, mid-thigh length\"}, {\"slot\": \"bottom\", \"name\": \"штани\", \"color\": \"unknown\", \"color_hex\": \"#36454f\", \"details\": \"straight-leg cut with a clean drape from hip to ankle\"}, {\"slot\": \"top\", \"name\": \"блузка\", \"color\": \"unknown\", \"color_hex\": \"#ffffff\", \"details\": \"relaxed fit with a button-down front and rounded neckline, hitting just below the waist\"}, {\"slot\": \"shoes\", \"name\": \"черевички\", \"color\": \"unknown\", \"color_hex\": \"#000000\", \"details\": \"almond toe with a low block heel, reaching mid-calf for comfort during the day\"}]}"
+     }
+    ]
+   }
+  ],
+  "temperature": 1
+ },
+ "відповідь": {
+  "status": 501,
+  "contentType": "application/json",
+  "body": "{\"error\":{\"message\":\"приміряння не перевіряється: локальна текстова модель картинок не малює\"}}"
+ }
+}

@@ -1,0 +1,57 @@
+── ПРОМПТ (7005 симв.) ──
+Ти — перекладачка в застосунку-стилістці. Ти пишеш природною українською тексти, які зараз побачить жінка. Рішень не приймаєш, на питання не відповідаєш, змісту не міняєш.
+
+Вхід — JSON-об'єкт: ключ — номер тексту н, значення — текст, який склали код та інші моделі.
+
+Ключі відповіді — ті самі, що у вході, кожен: номер н тексту, значення — рядок, той самий зміст природною українською, без англійських слів і кодів; ПЕРЕКЛАДАЙ КОЖНЕ англійське слово, навіть одне посеред українського речення; латиницею лишай лише назви крамниць і брендів, «V-подібний» і «den»; текст, що вже природний і до неї на «ти», — без змін, а український текст на «ви» перепиши на «ти», решту лиши слово в слово.
+
+Вид кожної речі — теж зміст: річ у перекладі — та сама, що у вході, а не схожа чи сусідня. ankle boots — черевики чи ботильйони, boots — чоботи, heeled — на підборах, а не туфлі, pumps — туфлі-човники, loafers — лофери; pendant — кулон чи підвіска, necklace — намисто чи ланцюжок, а не каблучка, сережки чи браслет; ring — каблучка; earrings — сережки. Українські назви речей у вході (назви з крамниці, найчастіше перед « — ») переписуй літера в літеру: не міняй, не переставляй і не додавай у них жодного слова.
+
+Про жінку — лише до неї, на «ти» (ти, тебе, тобі, твій, твоя; хочеш, скинеш; наказ однини: розкажи, оберни, тримай, дай), і в питаннях теж: you, your, she, her про неї — «ти», «твій» (her skin tone — твій тон шкіри; when she turns her head — коли ти повертаєш голову; she looks taller — ти виглядаєш вищою), англійський наказ — наказом однини; «вона», «її» — лише про річ (сукню, сумку, куртку). Говорить стилістка — одна жінка: про себе — від першої особи однини й у жіночому роді (я підібрала, я б додала), не «ми», не від імені застосунку чи коду і ніколи словами самої жінки.
+
+Мова: літературна українська, як у текстах українських крамниць одягу. Кожне українське слово — літерами лише української абетки, без жодної латинської літери чи стороннього знака всередині слова. Кожне речення — одна остаточна версія, без виправлень посеред тексту. Словничок нижче — лише як перекласти англійське слово, коли воно є у вході; це не зміст: річ, тканина чи колір, яких у вході нема, у тексті не з'являються. Звичні українські назви для слів англійського джерела: trousers, pants — штани; dressy, dressier — ошатний, ошатніше; look, outfit — образ; taupe — сіро-бежевий; loose — вільний; suede — замша (жіночий рід); slip dress — сукня-комбінація; camel — кемел (колір). Назви речей і кольорів, які дала крамниця, — як є.
+
+Слово не повторюється двічі поспіль. Відповідь — рівно ОДИН JSON-об'єкт і нічого після нього: другої, виправленої версії, приміток і пояснень не пиши — помилку виправ у тому самому об'єкті.
+
+Речі образу — перелік речей картки (номер речі — як на картці, поруч — її коди):
+1 — kind code: shirt · colour code: navy · about it: text н=1
+2 — kind code: trousers · colour code: chocolate · about it: text н=2
+3 — kind code: ring · colour code: silvery · about it: text н=3
+4 — kind code: dress_shoes · colour code: burgundy · about it: text н=4
+5 — kind code: tote · colour code: beige · about it: text н=5
+6 — kind code: belt · colour code: brown · about it: text н=6
+When a text speaks of an item of the list, call it by the Ukrainian noun of its kind code (kind code: …) — the same noun in the right case in every text (trench_coat — «тренч», sweater — «светр», loafers — «лофери»), not by another kind or a synonym of the English word, whatever word the English text uses; a code ending in _generic names only the family (dress_generic — a dress, bag_generic — a bag). Make every adjective, pronoun and verb with the item agree with that noun in gender and number («бежевий тренч, який…»; «шкіряні лофери, які…»). A name you translate in this same call (text н=K): give it one noun and call the item by it, in agreement, in every text. A text the list gives as about an item (about it: text н=M) speaks of that one item, and so does every other text where the English names it. The colour of an item of the list is its colour code (colour code: …): write the Ukrainian name of that code. The English colour words for that item are the stylist's impression of a photo: do not turn them into a colour of their own — the item's colour stands in their place. Colours of its details (trim, strap, buttons, print), its fabric and the rest — translate from the text. The list is for the items only: an item the English text does not name is not added to the translation — neither to the description nor to the advice.
+
+Colour codes: beige — бежевий; brown — коричневий; burgundy — бордовий; chocolate — шоколадний; navy — темно-синій; silvery — срібний.
+
+ТЕКСТИ:
+{
+"1": "This is a relaxed-fit navy shirt featuring a crisp collar and distinctive red piping along the bottom hem. Its fluid drape offers comfort for dancing while maintaining a polished silhouette.",
+"2": "These are wide-legged trousers in a rich chocolate shade, cut with an easy fall that elegantly elongates your legs and balances the volume of the shirt above.",
+"3": "This is a delicate silvery band set with round diamonds, adding a touch of quiet elegance without overwhelming the occasion's joyful tone.",
+"4": "A single burgundy pump with a glossy patent finish and a slim stiletto heel provides height and sophistication suitable for an evening reception, while the pointed toe adds a modern edge.",
+"5": "This beige tote features structured handles and a clean geometric shape, offering ample space for essentials in a neutral tone that bridges the deeper colors of your outfit.",
+"6": "A classic brown leather belt with a polished silver buckle defines the waist subtly, grounding the outfit and providing a sturdy anchor for the relaxed top and loose trousers.",
+"7": "I chose a relaxed navy shirt with a striking red trim at the hem, paired with flowing chocolate trousers. To complete the ensemble, you have a silvery diamond ring, burgundy patent leather pumps, a beige tote bag, and a brown belt. The deep tones of the navy and chocolate ground your look for the evening reception, while the vibrant red detail on the shirt adds a festive spark appropriate for an outdoor wedding in August.",
+"8": "Tuck the shirt loosely into the trousers at the waist to define your silhouette without restricting movement, letting the red hem peek through slightly as you move.",
+"9": "Штани жіночі з вмістом із вмістом льону та віскози літні — Keeps the skirt kind to satisfy the requirement of having both top and bottom, rather than removing the top.",
+"10": "Штани жіночі з вмістом із вмістом льону та віскози літні — Remains to provide the necessary bottom piece to complete the outfit structure.",
+"11": "Бежевий шкіряний тоут Galleria, Штани жіночі з вмістом із вмістом льону та віскози літні — I accept the 'everyday' tone of the beige tote because its natural, organic texture softens the formality of the occasion, adding warmth to the cool palette without breaking the rule against bold patterns near your face."
+}
+
+── ВІДПОВІДЬ (2252 симв., 15.6 с, HTTP 200) ──
+```json
+{
+"1": "Це вільна темно-синя сорочка з акуратним коміром і виразною червоною облямівкою по нижньому краю. Її м’який спад забезпечує комфорт для танців, зберігаючи при цьому елегантний силует.",
+"2": "Це широкі штани шоколадного кольору вільного крою, які гарно видовжують ноги та збалансовують об’єм сорочки зверху.",
+"3": "Це витончений срібний перстень із круглими діамантами, який додає нотку тихої елегантності без перевантаження святкової атмосфери.",
+"4": "Одною бордова туфля з глянцевою лакованою обробкою та тонким шпильковим підбором надасть висоти й вишуканості для вечірнього прийому, а загострений носок додає сучасного акценту.",
+"5": "Ця бежева сумка-тоут має структуровані ручки та чисту геометричну форму, пропонуючи достатньо місця для необхідних речей у нейтральному тоні, який поєднує глибші кольори твого вбрання.",
+"6": "Класичний коричневий шкіряний пояс із полірованою срібною пряжкою ледь помітно підкреслює талію, заземлюючи образ і забезпечуючи надійну основу для вільної блузи та широких штанів.",
+"7": "Я обрала вільну темно-синю сорочку з яскравою червоною облямівкою по низу, яку доповнила розкльошеними шоколадними брюками. Щоб завершити ансамбль, у тебе є срібний перстень із діамантами, бордові лаковані туфлі на підборах, бежева сумка-тоут і коричневий пояс. Глибокі тони темно-синього та шоколадного заземлюють твій образ для вечірнього прийому, а яскраво-червона деталь на сорочці додає святкового блиску, який доречний для літнього весілля просто неба.",
+"8": "Недбало заправ сорочку в штани по лінії талії, щоб підкреслити силует без обмеження рухів і дай червоній облямівці злегка виглядати при рухах.",
+"9": "Літні жіночі брюки зі вмістом льону та віскози — Зберігаю спідницю, щоб задовольнити вимогу наявності як верху, так і низу замість того, щоб забрати верх.",
+"10": "Літні жіночі брюки зі вмістом льону та віскози — Залишаю їх, щоб забезпечити необхідну нижню частину для завершення структури вбрання.",
+"11": "Бежевий шкіряний тоут Galleria, літні жіночі брюки зі вмістом льону та віскози — Я приймаю «повсякденний» тон бежевої сумки, оскільки її природна текстура пом’якшує формальність події, додаючи тепла до прохолодної палітри без порушення правила щодо сміливих принтів біля обличчя."
+}
+```

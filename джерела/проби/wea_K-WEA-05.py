@@ -15,7 +15,7 @@ import feed as Ф, bridge as B, accessory as АК
 
 вх = json.load(open(_К / "стенд_вх.json", encoding="utf-8"))
 вх["каталог"] = Ф.каталог_на_диску("каталог_повний.xml"); вх["гілка"] = 0
-вх["сценарій"].update(темп_c=-3, опади="мокрий_сніг", вітер=5)
+вх["сценарій"].update(смуга_погоди='frost', опади="мокрий_сніг", смуга_вітру="moderate")
 json.loads(B.виклик("запити", json.dumps(вх, ensure_ascii=False)))
 кат = B.каталог_останнього_пакета()
 мат = lambda c: (c.get("матеріал_верху") or c.get("волокно") or c.get("матеріал") or "").lower()
