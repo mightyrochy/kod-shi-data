@@ -166,7 +166,20 @@ Invoke-WrapperChain
         Check 'повтор старого штампу не ставить нового прогону' (@(Markers 'автоживий-').Count -eq 2)
         $bad = Merge 'build.txt' 'пошкоджено'; Invoke-WrapperChain
         Check 'пошкоджений штамп не створює позначки' (@(Markers 'автоживий-').Count -eq 2)
+        # Консоль задачі планувальника розірвана (10.11 23:04: «No process is on the other end of the pipe»): сетер
+        # Console.InputEncoding кидає, але запуск процесу й stdin без BOM не залежать від нього — прохід не рветься.
+        $keyFile = Join-Path $tmp 'key.txt'; [IO.File]::WriteAllText($keyFile, 'ключ', $utf)
+        $keyHash = (& git hash-object --no-filters $keyFile).Trim()
+        # Консоль CI — кодова сторінка без BOM; локально (chcp 65001) її кодування саме додає BOM, тож приймаємо обидва вигляди.
+        [IO.File]::WriteAllText($keyFile, 'ключ', (New-Object Text.UTF8Encoding($true)))
+        $keyHashBom = (& git hash-object --no-filters $keyFile).Trim()
+        function Set-ConsoleInputEncoding($Encoding) { throw 'No process is on the other end of the pipe.' }
+        $viaPublish = Invoke-Native 'git' @('hash-object', '--stdin') $tmp 1 'ключ'
+        Check 'Invoke-Native публікації: сетер кодування кидає — процес запущено, stdin доставлено' ($viaPublish.Code -eq 0 -and $viaPublish.Out.Trim() -cin @($keyHash, $keyHashBom))
         . (Join-Path $SourceDir 'queue_lanes.ps1')
+        function Set-ConsoleInputEncoding($Encoding) { throw 'No process is on the other end of the pipe.' }
+        $viaLanes = Invoke-Native 'git' @('hash-object', '--stdin') $tmp 1 'ключ'
+        Check 'Invoke-Native черги: сетер кодування кидає — процес запущено, stdin доставлено' ($viaLanes.Code -eq 0 -and $viaLanes.Out.Trim() -cin @($keyHash, $keyHashBom))
         function Get-AutoLivePlan { '{}' }
         $context = Add-AutoTaskContext "автоживий-$product" 'Наряд' $built
         Check 'наряд призначає дерево збірки й окремо називає штамп джерел' ($context.Contains("коміт збірки $built") -and $context.Contains("штамп build.txt $product"))

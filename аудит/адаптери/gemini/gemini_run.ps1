@@ -683,11 +683,7 @@ function Start-StreamRun($M, $Run) {
     $psi = New-StartInfo $script:Agy (Get-AgyArgs $M $Run.Conversation @()) $RepoDir
     $psi.RedirectStandardInput = $true
     # .NET Framework створює StandardInput з AutoFlush: BOM пишеться вже під час Start.
-    $stdinEncoding = [Console]::InputEncoding
-    try {
-        [Console]::InputEncoding = $script:Utf8
-        $Run.Proc = Start-Tree $psi
-    } finally { [Console]::InputEncoding = $stdinEncoding }
+    $Run.Proc = Invoke-WithStdinUtf8 { Start-Tree $psi }
     $Run.Stdin = New-Object System.IO.StreamWriter($Run.Proc.StandardInput.BaseStream, $script:Utf8)
     $Run.Stderr = $Run.Proc.StandardError.ReadToEndAsync()
     $Run.Pending = $null

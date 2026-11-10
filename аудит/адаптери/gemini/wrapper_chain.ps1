@@ -117,7 +117,8 @@ function Save-DraftRequest([string]$Branch, [string]$Head, [string]$Model = '') 
 function Test-ChainHeadEmpty([string]$Head) {
     <# Голова без власних змін відносно main: diff від merge-base порожній. Недоведено (нема об'єкта, нема бази) — $false. #>
     if ((Invoke-Git @('cat-file','-e',"$Head^{commit}") -AllowFail).Code -ne 0) { [void](Invoke-Git @('fetch','-q','origin',$Head) -AllowFail) }
-    (Invoke-Git @('diff','--quiet',"refs/remotes/origin/main...$Head") -AllowFail).Code -eq 0
+    $diff = Invoke-Git @('diff','--name-only',"refs/remotes/origin/main...$Head") -AllowFail
+    $diff.Code -eq 0 -and -not $diff.Out.Trim()
 }
 
 function Complete-EngineDrafts {
@@ -468,8 +469,10 @@ function Write-ChainFailure($Failure) {
 
 function Write-ChainPullFailure($Failure, [string]$Number, [string]$Head) {
     <# Збій одного PR не зупиняє проходу: рядок журналу з номером і кодом, диспетчерові — раз на PR і голову;
-    наступний прохід повторить лише цей PR. #>
+    наступний прохід повторить лише цей PR. Збій віддаленого репозиторію (читання чи push позначок) — спільний для всіх PR:
+    його, як і раніше, обробляє прохід цілком (Write-ChainFailure). #>
     $code = [string]$Failure.Exception.Message
+    if ($code -cin @('CHAIN_REMOTE','CHAIN_PUSH')) { throw $Failure }
     $diagnosticCode = $(if ($code -cmatch '^CHAIN_[A-Z_]+$') { $code } else { 'CHAIN_FAILED' })
     [void](Write-StateFailureDiagnostic $diagnosticCode $Failure)
     if ($code -cnotmatch '^CHAIN_[A-Z_]+$') {
