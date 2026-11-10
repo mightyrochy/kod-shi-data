@@ -570,13 +570,45 @@ function Test-MarkerEndConfirmed([string]$Queue, [string]$Marker, [string]$Id, [
 }
 
 # Кінець позначки опубліковано (без DryRun — там пушу нема): запис на зняття з черги — лише за підтвердженим станом.
+# Результат обробляється раз (стан публікатора), а JSON з'являється раніше за DONE у marker-state: непідтверджений кінець
+# не губиться, а відкладається в finish-pending і пробується наступними проходами (Confirm-PendingMarkers).
 function Add-PublishedMarker([string]$Queue, [string]$Marker, [string]$Id, [string]$Code) {
     if ($DryRun) { return }
-    if (-not (Test-MarkerEndConfirmed $Queue $Marker $Id $Code)) {
-        Write-WrapperLog "черга: $Queue не знімаю — стан позначки не підтверджує кінця $Id ($Code)"
+    if (Test-MarkerEndConfirmed $Queue $Marker $Id $Code) {
+        Add-FinishedMarker (Join-Path $WorkDir 'finished') $Queue $Marker
         return
     }
-    Add-FinishedMarker (Join-Path $WorkDir 'finished') $Queue $Marker
+    $dir = Join-Path $WorkDir 'finish-pending'; [void][IO.Directory]::CreateDirectory($dir)
+    Write-FileAtomic (Join-Path $dir ((Get-Sha256Hex "$Queue $Marker $Id") + '.txt')) "$Queue $Marker $Id $Code"
+    Write-WrapperLog "черга: $Queue не знімаю — стан позначки ще не підтверджує кінця $Id ($Code); перевірю наступним проходом"
+}
+
+# Відкладений кінець: підтверджено станом позначки — запис на зняття; стан позначки показує інший кінцевий результат
+# (DONE з іншим id — цей JSON не справжній) чи позначки на origin уже нема (знято, перепушено) — запис забуто;
+# узята чи чекає (STARTED, WAIT, нема файла) — лишається до наступного проходу.
+function Confirm-PendingMarkers {
+    if ($DryRun) { return }
+    $dir = Join-Path $WorkDir 'finish-pending'
+    foreach ($f in @(Get-ChildItem -LiteralPath $dir -Filter '*.txt' -File -ErrorAction SilentlyContinue)) {
+        $p = @(([IO.File]::ReadAllText($f.FullName, $script:Utf8)).Trim() -split ' ')
+        if ($p.Count -ne 4 -or $p[0] -cnotmatch '^gemini-queue/\S+$' -or $p[0].Contains('..') -or $p[1] -cnotmatch $script:ShaPattern -or
+            $p[2] -cnotmatch $script:IdPattern -or $p[3] -cnotmatch '^[A-Z0-9_]{2,40}$') {
+            Remove-Item -LiteralPath $f.FullName -Force; continue
+        }
+        if ((Get-RefSha "refs/remotes/origin/$($p[0])") -cne $p[1]) { Remove-Item -LiteralPath $f.FullName -Force; continue }
+        if (Test-MarkerEndConfirmed $p[0] $p[1] $p[2] $p[3]) {
+            Add-FinishedMarker (Join-Path $WorkDir 'finished') $p[0] $p[1]
+            Remove-Item -LiteralPath $f.FullName -Force
+            Write-WrapperLog "черга: $($p[0]) — кінець $($p[2]) підтверджено станом позначки"
+            continue
+        }
+        $sp = Join-Path (Join-Path $OutDir 'marker-state') ((Get-Sha256Hex "refs/remotes/origin/$($p[0]) $($p[1])") + '.txt')
+        $t = ''; if (Test-Path -LiteralPath $sp) { try { $t = ([IO.File]::ReadAllText($sp, $script:Utf8)).Trim() } catch { $t = '' } }
+        if ($t.StartsWith('DONE ')) {
+            Write-WrapperLog "черга: $($p[0]) — результат $($p[2]) не збігся з кінцем у стані позначки; не знімаю"
+            Remove-Item -LiteralPath $f.FullName -Force
+        }
+    }
 }
 
 # Черга — єдина правда про роботу: позначка з кінцевим станом і опублікованим рядком (записи Add-FinishedMarker) знімається
@@ -1067,6 +1099,7 @@ function Main {
             Write-WrapperLog $line
             Write-FileAtomic $statePath (([ordered]@{ line = $line; sent = $false; attempts = 0 }) | ConvertTo-Json -Compress)
         }
+        Confirm-PendingMarkers
         Remove-FinishedMarkers $fetched
         Add-PoolsLine
         Receive-HealthAlerts

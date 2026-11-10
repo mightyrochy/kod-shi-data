@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
-# Стенд обгортки М.2, 15 сценаріїв черги й публікації: повтор, позначка зникла, не ff, збій claude, доробка, ізоляція,
-# стара й крива позначка, перерваний прогін, засипання станами, відхилений пуш, підроблений стан (8940), черга — правда: зняття виконаної, ЗНЯТО до й під час прогону, підроблений кінець не знімає позначки. pwsh — PWSH.
+# Стенд обгортки М.2, 16 сценаріїв черги й публікації: повтор, позначка зникла, не ff, збій claude, доробка, ізоляція,
+# стара й крива позначка, перерваний прогін, засипання станами, відхилений пуш, підроблений стан (8940), черга — правда: зняття виконаної, ЗНЯТО до й під час прогону, підроблений кінець не знімає позначки, JSON раніше за DONE — зняття відкладено. pwsh — PWSH.
 H=$(cd "$(dirname "$0")" && pwd); . "$H/середовище.sh"; PW="${PWSH:-pwsh}"; SRC=$(cd "$H/.." && pwd)
 SLUG='М.2-проба-обгортки'; M=gemini-3.8-flash-high; BAD=0
 export GIT_AUTHOR_NAME=t GIT_AUTHOR_EMAIL=t@x GIT_COMMITTER_NAME=t GIT_COMMITTER_EMAIL=t@x
@@ -96,5 +96,13 @@ ok "три проходи з підробленим JSON: позначка на 
 mv "$W/held/$(basename "$J")" "$W/out/"; pub
 ok "справжній результат опубліковано після підробленого" 'git -C "$W/origin.git" rev-parse -q --verify "refs/heads/gemini/$SLUG" >/dev/null'
 pub; ok "справжній кінцевий стан підтверджено станом позначки — гілку знято" '[ -z "$(has "$SLUG/$M/1")" ] && grep -q "знято — кінцевий стан опубліковано" "$W/pub/publish.log"'
+ok "відкладених кінців не лишилось (підроблений id забуто, справжній знято)" '[ -z "$(ls "$W"/pub/finish-pending/*.txt 2>/dev/null)" ]'
+
+echo "=== 16 JSON раніше за DONE у marker-state: перший прохід не знімає, коли DONE з'явився — зняття не губиться"
+setup r16; mark "$SLUG/$M/1"; gem; S=$(grep -l '^DONE ' "$W"/out/marker-state/*.txt | head -1); mkdir -p "$W/held"; mv "$S" "$W/held/state.txt"
+pub; ok "без DONE у стані: публікація є, позначка на origin, зняття відкладено" 'git -C "$W/origin.git" rev-parse -q --verify "refs/heads/gemini/$SLUG" >/dev/null && [ -n "$(has "$SLUG/$M/1")" ] && [ -n "$(ls "$W"/pub/finish-pending/*.txt 2>/dev/null)" ]'
+pub; ok "другий прохід без DONE: позначка досі на origin" '[ -n "$(has "$SLUG/$M/1")" ]'
+mv "$W/held/state.txt" "$S"; pub; pub
+ok "після появи DONE зняття доведено: позначки нема, відкладеного нема" '[ -z "$(has "$SLUG/$M/1")" ] && [ -z "$(ls "$W"/pub/finish-pending/*.txt 2>/dev/null)" ] && grep -q "підтверджено станом позначки" "$W/pub/publish.log"'
 
 [ "$BAD" = 0 ] && echo "ВСЕ ✓" || echo "ЗБІЙ ✗"; exit "$BAD"
