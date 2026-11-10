@@ -70,6 +70,12 @@ elif SC == 'github':
     commit('.github/workflows/evil.yml'); resp = done()
 elif SC == 'quota429':
     resp, err = '', '429 RESOURCE_EXHAUSTED: quota exceeded'
+elif SC == 'quota_reset_at':
+    # відмова Codex 0.167 з часом скидання: місцевий час тієї ж машини, дата — з порядковим суфіксом дня
+    t = time.localtime(time.time() + 2 * 86400)
+    suf = 'th' if t.tm_mday in (11, 12, 13) else {1: 'st', 2: 'nd', 3: 'rd'}.get(t.tm_mday % 10, 'th')
+    when = '%s %d%s, %d %d:%02d %s' % (time.strftime('%b', t), t.tm_mday, suf, t.tm_year, t.tm_hour % 12 or 12, t.tm_min, 'AM' if t.tm_hour < 12 else 'PM')
+    resp, err = '', "You've hit your usage limit. Upgrade to Pro (https://chatgpt.com/explore/pro), visit https://chatgpt.com/settings/usage to purchase more credits or try again at %s." % when
 elif SC == 'auth':
     resp, err = '', 'Not logged in. Please log in'
 elif SC == 'blocked':
