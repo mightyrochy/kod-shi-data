@@ -1174,7 +1174,7 @@ function Start-Markers($Workers) {
         if (-not $slot) { Add-Skip $m 'нема вільного слота смуги claude'; Add-Hold $script:Held 'SLOTS' 'слоти зайняті' $m.Name; continue }
         if ((@($Workers | Where-Object { $_.Slug -ceq $m.Slug -and -not $_.Proc.HasExited }).Count -gt 0) -or (Test-SlugBusy $m.Slug @('claude'))) { Add-Skip $m 'той самий наряд уже йде в слоті'; continue }
         if ($m.Gpu) {
-            if ($null -eq $gpuWhy) { $gpuWhy = Get-GpuBusyReason $Workers }
+            if ($null -eq $gpuWhy) { $gpuWhy = Get-GpuBusyReason }
             if ($gpuWhy) { Add-Skip $m $gpuWhy; Add-Hold $script:Held 'GPU' $script:GpuHoldReason $m.Name; continue }
         }
         $id = New-Id
@@ -1208,7 +1208,7 @@ function Start-Markers($Workers) {
     @($started, $null)
 }
 
-# Процес наряду: слот (замок на весь прогін), GPU (замок, спільний з gemini-run), прогін (копію задачі дає Invoke-Task).
+# Процес наряду: слот (замок на весь прогін), GPU (оренда, ворота спільні з gemini-run), прогін (копію задачі дає Invoke-Task).
 function Invoke-Worker {
     $job = $script:Job
     $lim = @{}
@@ -1217,19 +1217,13 @@ function Invoke-Worker {
     $statePath = Get-StatePath "$($job.ref) $($job.sha)"
     $slotLock = Open-Lock (Join-Path $script:SlotDir "$($job.slot).lock")
     if ($null -eq $slotLock) { Remove-Claim $statePath; Write-Log "слот $($job.slot) зайнятий — позначку не взято"; return $script:WorkerSlotBusy }
-    $gpu = $null
+    $gpu = $false
     $info = Join-Path $script:SlotDir "$($job.slot).json"
     try {
         if ($job.gpu) {
-            $gpu = Open-Lock (Get-GpuLockPath)
-            $why = $(if ($null -eq $gpu) { 'замок GPU' } elseif (Test-ExternalGpuFree -LogAcquisition) { '' } else { Get-GpuBusyReason @() -LockHeld })
+            $why = Enter-GpuLease $job
             if ($why) { Remove-Claim $statePath; Write-Log "GPU зайнята ($why) — $($job.name) лишається в черзі"; return $script:WorkerGpuBusy }
-            try { Start-GpuModels $job }
-            catch {
-                Remove-Claim $statePath
-                Write-Log "GPU знімок недоступний ($($_.Exception.Message)) — $($job.name) лишається в черзі"
-                return $script:WorkerGpuBusy
-            }
+            $gpu = $true
         }
         Write-FileAtomic $info (([ordered]@{ slot = $job.slot; lane = 'claude'; marker = $job.name; slug = $job.slug
                     model = "$($job.claude)$(if ($job.effort) { ' ' + $job.effort })"; since = (Get-UtcStamp (Get-Date)); gpu = [bool]$job.gpu; prio = $job.prio; pid = $PID
@@ -1243,11 +1237,7 @@ function Invoke-Worker {
         Write-Log "процес наряду $($job.name): $($_.Exception.Message)"
         1
     } finally {
-        if ($null -ne $gpu) {
-            try { Complete-GpuModels }
-            catch { Write-Log "GPU прибирання відкладено: $($_.Exception.Message)" }
-            finally { $gpu.Dispose() }
-        }
+        if ($gpu) { Exit-GpuLease $job }
         Remove-Item -LiteralPath $info -Force -ErrorAction SilentlyContinue
         # Помилка до STARTED (робоча копія тощо) не лишає claim: позначка повертається в чергу (10162).
         Close-FailedStart ([pscustomobject]@{ Ref = $job.ref; Name = $job.name; Sha = $job.sha; Slug = $job.slug; Model = $job.model }) ([string]$job.id) $statePath
