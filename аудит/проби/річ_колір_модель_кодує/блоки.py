@@ -70,16 +70,113 @@ def свотч_у_munsell(hex):
     lms = простір._множ(простір._BRADFORD, xyz)
     xyz = простір._множ(простір._BRADFORD_ОБЕРНЕНА,
                        tuple(lms[i] * до[i] / від[i] for i in range(3)))
-    специфікація = colour.notation.munsell.xyY_to_munsell_specification(colour.XYZ_to_xyY(xyz))
-    тон, V, C, сектор = map(float, специфікація)
-    if math.isnan(C):
-        H, C = 30., 0.
+    xyY = colour.XYZ_to_xyY(xyz)
+    V = float(colour.notation.munsell.munsell_value_ASTMD1535(float(xyY[2]) * 100))
+    if V < 1:
+        H, V, C = низький_свотч(tuple(map(float, xyY)), V)
     else:
-        H = float(colour.notation.munsell.hue_to_ASTM_hue([тон, сектор]))
+        try:
+            специфікація = colour.notation.munsell.xyY_to_munsell_specification(xyY)
+            тон, _, C, сектор = map(float, специфікація)
+            if math.isnan(C):
+                H, C = 30., 0.
+            else:
+                H = float(colour.notation.munsell.hue_to_ASTM_hue([тон, сектор]))
+        except RuntimeError:
+            if V <= 9:
+                raise
+            H, V, C = низький_свотч(tuple(map(float, xyY)), V)
+        H, C = уточнити_обернення(H, V, C, простір.hx(hex))
     точка = ((H - 1) % 100 + 1, V, C)
     if not all(math.isfinite(x) for x in точка) or not коди_точки(точка):
         raise ValueError(f"Свотч {hex}: немає визначеного блоку для {точка}")
     return точка
+
+
+def уточнити_обернення(H, V, C, lab):
+    """Обертає саме прямий метод модуля, не округлюючи V до цілого.
+
+    Штатний обертач Colour округлює майже цілі V й може не збігатися біля
+    білого. Числове розв'язання H/C прибирає цю похибку; допуск залишку
+    перевіряє обернення, ніколи не розширює вікно ISCC–NBS.
+    """
+    from scipy.optimize import least_squares
+    пряме = ПЕРЕНОС.зробити_перетворення(бібліотека())
+
+    def залишок(координати):
+        """Повертає похибку прямого Lab для числового обернення."""
+        тон, хрома = map(float, координати)
+        результат, _ = пряме((тон - 1) % 100 + 1, V, хрома)
+        return [a - b for a, b in zip(результат, lab)]
+
+    розв_язок = least_squares(залишок, [H, max(C, 1e-8)],
+        bounds=([-100, 1e-8], [200, 50]), xtol=1e-12, ftol=1e-12, gtol=1e-12)
+    if not розв_язок.success or math.sqrt(sum(x * x for x in розв_язок.fun)) > 1e-5:
+        raise ValueError(f"Обернення не підтверджено прямим методом: {розв_язок.fun}")
+    return (float(розв_язок.x[0]) - 1) % 100 + 1, float(розв_язок.x[1])
+
+
+@lru_cache(maxsize=1)
+def нижні_вузли():
+    """Читає 559 вузлів C=2, V=.2…10 з повної renotation Colour.
+
+    Основний метод модуля викликає овоїд V=0 і відмовляє при V<1.
+    Нижні табличні вузли вже є у тому самому джерелі; тут не вводиться
+    екстраполяція до чорного чи затискання світлоти свотча до V=1.
+    """
+    munsell = бібліотека().notation.munsell
+    вузли = {}
+    for (тон, V, C), xyY in munsell.MUNSELL_COLOURS_ALL:
+        if C != 2:
+            continue
+        h, _, _, сектор = munsell.munsell_colour_to_munsell_specification(f"{тон} {V}/2")
+        H = float(munsell.hue_to_ASTM_hue([h, сектор])) % 100
+        вузли[V, H] = tuple(map(float, xyY[:2]))
+    if len(вузли) != 559:
+        raise ValueError("Неповний нижній овоїд renotation")
+    return вузли
+
+
+def нижній_овоід(V):
+    """Інтерполює C=2 по ASTM-люмінансі між двома табличними рівнями V."""
+    munsell = бібліотека().notation.munsell
+    рівні = (.2, .4, .6, .8, *map(float, range(1, 11)))
+    if not .2 <= V <= 10:
+        raise ValueError(f"Таблична renotation не визначена для V={V}")
+    низ, верх = next((a, b) for a, b in zip(рівні, рівні[1:]) if a <= V <= b)
+    Y = lambda v: float(munsell.luminance_ASTMD1535(v))
+    вага = (Y(V) - Y(низ)) / (Y(верх) - Y(низ))
+    вузли = нижні_вузли()
+    return [(H, tuple((1 - вага) * a + вага * b for a, b in
+                     zip(вузли[низ, H], вузли[верх, H]))
+             if (низ, H) in вузли and (верх, H) in вузли else None)
+            for H in (i * 2.5 for i in range(40))]
+
+
+def низький_свотч(xyY, V):
+    """Обертає трикутну табличну інтерполяцію всередині C=2.
+
+    Трикутники: біла точка C та сусідні вузли овоїда C=2. Це явне
+    лабораторне доповнення для V<1 й незбіжних білих V>9, а не прихована
+    можливість основного модуля.
+    Числова похибка координат не стає допуском меж блоків.
+    """
+    x, y, _ = xyY
+    білий = tuple(map(float, бібліотека().notation.munsell.CCS_ILLUMINANT_MUNSELL))
+    px, py = x - білий[0], y - білий[1]
+    овоїд = нижній_овоід(V)
+    for i, (H, a) in enumerate(овоїд):
+        b = овоїд[(i + 1) % len(овоїд)][1]
+        if a is None or b is None:
+            continue
+        ax, ay = a[0] - білий[0], a[1] - білий[1]
+        bx, by = b[0] - білий[0], b[1] - білий[1]
+        det = ax * by - ay * bx
+        u, v = (px * by - py * bx) / det, (ax * py - ay * px) / det
+        if u >= 0 and v >= 0 and u + v <= 1:
+            C = 2 * (u + v)
+            return (H + 2.5 * v / (u + v)) % 100 if C else 30., V, C
+    raise ValueError(f"Свотч поза нижнім овоїдом C=2: {xyY}")
 
 
 def спільна_грань(ліва, права):
