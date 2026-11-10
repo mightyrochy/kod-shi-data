@@ -856,14 +856,20 @@ function Test-OnBattery {
 
 function Get-PauseTargets {
     <# Що ставить на паузу цей процес: усе в задачах Windows його нарядів (Start-Tree, разом із відірваними нащадками),
-    а планувальник claude-run ($script:PauseMachine) — ще й LM Studio та ComfyUI: спільні сервери моделей того самого
-    користувача. Gemini працює під іншим користувачем — свої процеси ставить на паузу його обгортка. #>
+    а планувальник claude-run ($script:PauseMachine) — ще й LM Studio (усі її процеси за Test-GpuModelProcess) та
+    ComfyUI: спільні сервери моделей того самого користувача. Gemini працює під іншим користувачем — свої процеси ставить на паузу його обгортка. #>
     $ids = New-Object System.Collections.Generic.List[int]
     foreach ($job in @($script:TreeJobs.Values)) {
         try { foreach ($i in [GeminiWrapper.TreeJob]::Members($job)) { $ids.Add($i) } } catch { $null = $_ }
     }
     if ($script:PauseMachine) {
-        foreach ($p in @(Get-Process -Name 'LM Studio', 'lms', 'ComfyUI' -ErrorAction SilentlyContinue)) { $ids.Add($p.Id) }
+        # LM Studio — за визначенням Test-GpuModelProcess: інтерфейс, lms, окремий сервер llmster і будь-який процес із її
+        # теки (.lmstudio); призупинений лише інтерфейс лишив би сервер рахувати на батареї.
+        foreach ($p in @(Get-Process -ErrorAction SilentlyContinue)) {
+            $path = ''
+            try { $path = [string]$p.Path } catch { $path = '' }
+            if ((Test-GpuModelProcess $p.ProcessName $path) -or $p.ProcessName -ceq 'ComfyUI') { $ids.Add($p.Id) }
+        }
         $comfy = "Name='python.exe' AND CommandLine LIKE '%ComfyUI%'"
         foreach ($p in @(Get-CimInstance Win32_Process -Filter $comfy -ErrorAction SilentlyContinue)) { $ids.Add([int]$p.ProcessId) }
     }

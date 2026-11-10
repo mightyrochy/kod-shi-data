@@ -297,6 +297,27 @@ try {
         Export-ModuleMember -Function Run
     }
     foreach ($check in @(& $pause {Run})) {Check $check.Name $check.Ok}
+    $targets = New-Module -ArgumentList $SourceDir,$tmp -ScriptBlock {
+        param($src,$tmp)
+        . (Join-Path $src 'gemini_run.ps1') -RunsDir "$tmp/runs-t" -OutDir "$tmp/out-t" -LaneDir "$tmp/lanes-t" -UpdateRoot "$tmp/trusted-t"
+        function Get-Process {
+            <# Перелік процесів машини: інтерфейс, lms, окремий llmster, процес із теки .lmstudio, ComfyUI і сторонні. #>
+            foreach ($row in @(@('LM Studio',21,''),@('lms',22,''),@('llmster',23,''),@('node',24,'C:\Users\u\.lmstudio\bin\server.exe'),@('ComfyUI',25,''),@('chrome',26,'C:\Chrome\chrome.exe'),@('notepad',27,''))) {
+                [pscustomobject]@{ ProcessName = $row[0]; Id = $row[1]; Path = $row[2] }
+            }
+        }
+        function Get-CimInstance { }
+        function Run {
+            <# Планувальник ставить на паузу всі процеси LM Studio за визначенням Test-GpuModelProcess, сторонніх не чіпає. #>
+            $script:PauseMachine = $true
+            $ids = @(Get-PauseTargets)
+            [pscustomobject]@{Name='пауза машини: LM Studio, lms, окремий llmster і процес із .lmstudio, ComfyUI — але не chrome і notepad';Ok=(($ids -join ',') -ceq '21,22,23,24,25')}
+            $script:PauseMachine = $false
+            [pscustomobject]@{Name='без планувальника процесів машини в цілях паузи нема';Ok=(@(Get-PauseTargets).Count -eq 0)}
+        }
+        Export-ModuleMember -Function Run
+    }
+    foreach ($check in @(& $targets {Run})) {Check $check.Name $check.Ok}
 } catch { "✗ виняток стенда: $($_.Exception.Message) $($_.ScriptStackTrace)"; $bad++ }
 # Артефакти лишаються в TEMP стенда; він не торкається робочих обгорток і станів ноутбука.
 "провалів: $bad"
