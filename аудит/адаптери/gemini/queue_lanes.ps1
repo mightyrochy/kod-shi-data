@@ -1157,6 +1157,40 @@ function New-TaskCopy([string]$Dir, [string]$Commit, [string]$TaskText) {
     $repo
 }
 
+function Get-AttemptStart([string]$BranchSha, [string]$Main) {
+    <# Старт нової спроби наряду: що береться за основу, коли гілка попередньої спроби вже є на origin. Нема гілки чи
+    її голова — предок main (усе злито, пуш нової голови лишається швидким вперед) — основа main, `NEW`/`MERGED`; голова
+    вже містить main — гілка як є, `CURRENT`; інакше гілка, куди перед агентом вливається main, `BEHIND`. Спільне для
+    смуг: gemini_run.ps1 (Invoke-Job) і claude_run.ps1 (Invoke-Task). #>
+    if (-not $BranchSha) { return [pscustomobject]@{ Start = $Main; Mode = 'NEW' } }
+    $r = Invoke-Git @('merge-base', '--is-ancestor', $BranchSha, $Main) -AllowFail
+    if ($r.Code -gt 1) { throw "git merge-base --is-ancestor $BranchSha $Main -> $($r.Code): $($r.Err.Trim())" }
+    if ($r.Code -eq 0) { return [pscustomobject]@{ Start = $Main; Mode = 'MERGED' } }
+    $r = Invoke-Git @('merge-base', '--is-ancestor', $Main, $BranchSha) -AllowFail
+    if ($r.Code -gt 1) { throw "git merge-base --is-ancestor $Main $BranchSha -> $($r.Code): $($r.Err.Trim())" }
+    [pscustomobject]@{ Start = $BranchSha; Mode = $(if ($r.Code -eq 0) { 'CURRENT' } else { 'BEHIND' }) }
+}
+
+function Merge-MainIntoCopy([string]$Main, [string]$Branch) {
+    <# У копії задачі ($RepoDir, на гілці) вливає $Main комітом злиття. Повертає голову після злиття; конфлікт чи інший
+    збій — `merge --abort`, копія лишається на голові гілки, повертається ''. #>
+    $before = Get-RefSha 'HEAD'
+    $msg = "Обгортка: влито origin/main у $Branch перед спробою наряду (гілка відстала від main)"
+    $r = Invoke-Git @('-c', 'user.name=Обгортка Люстерка', '-c', 'user.email=wrapper@users.noreply.github.com', '-c', 'commit.gpgsign=false',
+        'merge', '--no-ff', '-q', '-m', $msg, $Main) -AllowFail
+    if ($r.Code -eq 0) { return (Get-RefSha 'HEAD') }
+    Write-Log "злиття main у $Branch не вдалося — $(($r.Out + $r.Err).Trim() -replace '\s+', ' ')"
+    [void](Invoke-Git @('merge', '--abort') -AllowFail)
+    if ((Get-RefSha 'HEAD') -cne $before) { [void](Invoke-Git @('reset', '-q', '--hard', $before)) }
+    ''
+}
+
+function Get-MergeStepText([string]$Branch) {
+    <# Крок промпту, коли обгортка не влила main сама (конфлікт) чи гілку веде агент: він вливає main першим кроком. #>
+    "Перший крок: влий свіжий ``origin/main`` у ``$Branch`` (``git merge origin/main``), конфлікти розв'язуй за змістом ``main``: гілка " +
+    "відстала від ``main``, тож код, який у ``main`` уже змінено чи прибрано, не лагодь і не відновлюй. Далі — наряд."
+}
+
 function Get-TaskDirText([string]$TaskDir) {
     <# Рядок промпту про теку задачі (без теки — ''). #>
     if (-not $TaskDir) { return '' }

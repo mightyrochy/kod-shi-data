@@ -540,7 +540,7 @@ function Get-TaskRole([string]$TaskText) {
     'ВИКОНАВЕЦЬ'
 }
 
-function Get-Prompt($M, [string]$TaskText, [string]$EngineName = 'agy', [string]$TaskDir = '') {
+function Get-Prompt($M, [string]$TaskText, [string]$EngineName = 'agy', [string]$TaskDir = '', [string]$MergeStep = '') {
     $taskSource = Get-TaskSource $M
     $branch = "gemini/$($M.Slug)"
     $adapter = $(if ($EngineName -eq 'codex') { 'адаптер — лише цей текст' } else { 'адаптер середовища — `GEMINI.md`' })
@@ -559,7 +559,7 @@ function Get-Prompt($M, [string]$TaskText, [string]$EngineName = 'agy', [string]
 - Наряд — ``$taskSource`` з ``main`` на коміті $($M.Sha); повний текст — нижче між рисками.
 - Гілку ``$branch`` уже вибрано: працюй і коміть лише в ній. Не пуш і не створюй бандла — це робить обгортка.
 $(if ($TaskDir) { '- ' + ((Get-TaskDirText $TaskDir) -replace "`n", "`n  ") })
-  Файлів ``.github/`` і ``аудит/адаптери/gemini/`` не змінюй: таку гілку не опублікують.
+  Файлів ``.github/`` і ``аудит/адаптери/gemini/`` не змінюй: таку гілку не опублікують.$(if ($MergeStep) { "`n- " + $MergeStep })
 - Кожну команду виконуй на передньому плані й чекай її завершення: фонове завдання зупиняється разом із ходом, а
   звіт без результату — кинутий прогін.
 - Коміть після кожного завершеного кроку; $commitRule
@@ -1061,8 +1061,14 @@ function Invoke-Task($M, $Job) {
         $start = Get-RefSha "refs/remotes/origin/gemini/$($M.Slug)"
         # Повтор після відмови за квотою: від голови того прогону, якщо опублікована гілка — її предок (інакше NOT_FF).
         $wh = [string]$Job.head
+        $att = $null
         if ($wh -match '^[0-9a-f]{40}$' -and (Get-RefSha $wh) -and (-not $start -or (Invoke-Git @('merge-base', '--is-ancestor', $start, $wh) -AllowFail).Code -eq 0)) { $start = $wh }
-        if (-not $start) { $start = $main }
+        else {
+            # Нова спроба, не повтор: гілка попередньої — лише коли не злита; злита чи відсутня — від свіжого main (Get-AttemptStart).
+            $att = Get-AttemptStart $start $main
+            $start = $att.Start
+            if ($att.Mode -in @('MERGED', 'BEHIND')) { Write-Log "старт нової спроби $($M.Name): гілка $(if ($att.Mode -eq 'MERGED') { 'злита — від main' } else { 'відстала — main буде влито' })" }
+        }
         # Звірка голови — до копії задачі: мертва позначка копії не отримує.
         $review = Get-AutoReviewState $M.Slug
         if ($review -eq 'REVIEW_API') {
@@ -1085,10 +1091,16 @@ function Invoke-Task($M, $Job) {
         $taskDir = Join-Path (Join-Path $RunsDir 'w') $id
         try { [void](New-TaskCopy $taskDir $start $taskText) } catch { $copyFailed = $true; throw }
         [void](Invoke-Git @('checkout', '-q', '-f', '--ignore-other-worktrees', '-B', "gemini/$($M.Slug)", $start))
+        $mergeStep = ''
+        if ($att -and $att.Mode -eq 'BEHIND') {
+            # Старт — після злиття: його коміт не рахується за роботу агента (Get-Facts: $start..голова).
+            $merged = Merge-MainIntoCopy $main "gemini/$($M.Slug)"
+            if ($merged) { $start = $merged } else { $mergeStep = Get-MergeStepText "gemini/$($M.Slug)" }
+        }
         $status.start = $start
         # Стан із початком гілки: перерваний прогін наступний запуск закриє й забандлить (Resume-Interrupted).
         Write-FileAtomic $statePath ('STARTED ' + ($status | ConvertTo-Json -Compress))
-        $prompt = Get-Prompt $MA $taskText $sel.Engine.Name $taskDir
+        $prompt = Get-Prompt $MA $taskText $sel.Engine.Name $taskDir $mergeStep
         [IO.File]::WriteAllText((Join-Path $dir 'prompt.md'), $prompt, $script:Utf8)
         $res = Invoke-Agent $MA $start $prompt $dir $sel
         $tail = $res.Tail
