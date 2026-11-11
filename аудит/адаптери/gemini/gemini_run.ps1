@@ -1263,7 +1263,7 @@ function Start-Markers($Workers) {
     $started
 }
 
-# Здоров'я для стану ноутбука (10971; лише показ): розмір профілю gemini (-ProfileDir; нема теки — порожньо) — не
+# Здоров'я для стану ноутбука (10971; лише показ): розмір профілю gemini з розбивкою (-ProfileDir; нема теки — порожньо) — не
 # частіше за usage_minutes (кеш health.json), і скільки позначок agy стоїть на групі квоти з 0 % (усі групи моделі — 0 %,
 # як Get-Quota).
 function Get-GeminiHealth {
@@ -1271,9 +1271,15 @@ function Get-GeminiHealth {
     $c = $null
     if (Test-Path -LiteralPath $path) { try { $c = [System.IO.File]::ReadAllText($path, $script:Utf8) | ConvertFrom-Json } catch { $null = $_ } }
     $now = [DateTimeOffset]::UtcNow.ToUnixTimeSeconds()
-    if ($null -eq $c -or $now - [long]$c.time -ge 60 * (Get-Limit $script:Limits 'UsageMinutes' 'usage_minutes')) {
-        $r = Measure-DirBytes $ProfileDir
-        $c = [pscustomobject]@{ time = $now; read = (Get-UtcStamp (Get-Date)); profile = $(if ($null -ne $r) { [string]$r.Bytes } else { '' }); skipped = $(if ($null -ne $r) { [string]$r.Skipped } else { '' }) }
+    if ($null -eq $c -or $null -eq $c.PSObject.Properties['copies'] -or $now - [long]$c.time -ge 60 * (Get-Limit $script:Limits 'UsageMinutes' 'usage_minutes')) {
+        # Куди йде місце: найбільші теки першого рівня профілю й найбільші копії задач (діти `w`) — тим самим обходом;
+        # `w` поза профілем міряється окремо.
+        $copies = Join-Path $RunsDir 'w'
+        $r = Measure-DirBytes $ProfileDir 6 $copies
+        $cp = @($(if ($null -ne $r) { $r.Under }))
+        if ($cp.Count -eq 0) { $w = Measure-DirBytes $copies 6; if ($null -ne $w) { $cp = @($w.Top) } }
+        $c = [pscustomobject]@{ time = $now; read = (Get-UtcStamp (Get-Date)); profile = $(if ($null -ne $r) { [string]$r.Bytes } else { '' }); skipped = $(if ($null -ne $r) { [string]$r.Skipped } else { '' })
+            top = $(if ($null -ne $r) { ConvertTo-SizeList $r.Top } else { '' }); copies = (ConvertTo-SizeList $cp) }
         Write-FileAtomic $path ($c | ConvertTo-Json -Compress)
     }
     # Кеш /usage, як у квоті heartbeat: сам вимір agy не запускає; нема кешу — «?» у стані.
@@ -1287,7 +1293,7 @@ function Get-GeminiHealth {
                     $hit = @(Get-ModelGroups $_.Model $groups); $hit.Count -gt 0 -and @($hit | Where-Object { $_.Left -eq 0 }).Count -eq $hit.Count }).Count
         }
     } catch { $null = $_ }
-    [ordered]@{ profile = [string]$c.profile; skipped = [string]$c.skipped; read = [string]$c.read; zero = $zero }
+    [ordered]@{ profile = [string]$c.profile; skipped = [string]$c.skipped; read = [string]$c.read; zero = $zero; top = [string]$c.top; copies = [string]$c.copies }
 }
 
 # heartbeat.json для стану ноутбука (claude_run.ps1 читає, перевіряючи кожне поле): смуги й слоти, квота груп моделей

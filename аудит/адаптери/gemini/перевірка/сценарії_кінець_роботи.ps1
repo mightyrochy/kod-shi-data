@@ -2,6 +2,17 @@
 param([Parameter(Mandatory=$true)][string]$SourceDir, [switch]$Before, [switch]$AccessBefore)
 $ErrorActionPreference = 'Stop'
 [Console]::OutputEncoding = New-Object Text.UTF8Encoding($false)
+function Reset-FixtureTree([string]$Path) {
+    <# Скидає ACL власної фікстури до успадкованих: убитий стенд лишає deny на читання теки (With-DeniedRead не дійшов до
+    finally), і без скидання її не прибрати навіть власнику. #>
+    if ($env:OS -eq 'Windows_NT') { & icacls.exe $Path /reset /T /C /L /Q | Out-Null } else { & chmod -R u+rwX -- $Path }
+}
+# Давні end-test-* убитих прогонів прибираються на старті з тим самим скиданням; молодші за годину — чужого живого стенда.
+foreach ($old in @(Get-ChildItem -LiteralPath ([IO.Path]::GetTempPath()) -Directory -Filter 'end-test-*' -ErrorAction SilentlyContinue)) {
+    if ($old.Name -cnotmatch '^end-test-[0-9a-f]{32}$' -or $old.LastWriteTimeUtc -gt [DateTime]::UtcNow.AddHours(-1)) { continue }
+    Reset-FixtureTree $old.FullName
+    Remove-Item -LiteralPath $old.FullName -Recurse -Force -ErrorAction SilentlyContinue
+}
 $tmp = Join-Path ([IO.Path]::GetTempPath()) ('end-test-' + [guid]::NewGuid().ToString('N'))
 [void][IO.Directory]::CreateDirectory($tmp)
 $bad = 0; $lock = $null
@@ -497,7 +508,7 @@ public sealed class ChainFixtureToken {
 } finally {
     if ($null -ne $lock) { $lock.Dispose() }
     if (-not ([IO.Path]::GetFullPath($tmp)).StartsWith([IO.Path]::GetFullPath([IO.Path]::GetTempPath()), [StringComparison]::OrdinalIgnoreCase)) { throw 'Тека стенда поза TEMP' }
-    Remove-Item -LiteralPath $tmp -Recurse -Force
+    try { Remove-Item -LiteralPath $tmp -Recurse -Force -ErrorAction Stop } catch { Reset-FixtureTree $tmp; Remove-Item -LiteralPath $tmp -Recurse -Force }
 }
 if ($bad) { "ПІДСУМОК: ✗ $bad"; exit 1 }
 exit 0

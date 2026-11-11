@@ -182,12 +182,76 @@ try {
         [void](Close-TaskCopy @('--branches', '--remotes'))
         Check 'обидві смуги обирають старт спільним Get-AttemptStart, без власної копії правила' ((Get-FnText 'gemini_run.ps1' 'Invoke-Task').Contains('Get-AttemptStart') -and (Get-FnText 'claude_run.ps1' 'Invoke-Task').Contains('Get-AttemptStart') -and (Get-FnText 'gemini_run.ps1' 'Invoke-Task').Contains('Merge-MainIntoCopy'))
     }
+
+    function New-DeniedCopy([string]$Dir) {
+        <# Копія з вкладеною `.git`, вміст якої власнику заборонено читати, — як лишає її обірваний стенд кінця роботи
+        (With-DeniedRead): tmp\end-test-x\access-copy\repo\.git. Повертає суму байтів файлів копії. #>
+        $git = Join-Path $Dir 'tmp/end-test-x/access-copy/repo/.git'
+        [void][IO.Directory]::CreateDirectory((Join-Path $git 'objects')); [void][IO.Directory]::CreateDirectory((Join-Path $Dir 'repo'))
+        [IO.File]::WriteAllBytes((Join-Path $git 'objects/pack.bin'), (New-Object byte[] 1048576))
+        [IO.File]::WriteAllText((Join-Path $git 'HEAD'), 'ref: refs/heads/x', $utf)
+        [IO.File]::WriteAllText((Join-Path $Dir 'repo/a.txt'), 'абв', $utf)
+        if ($env:OS -eq 'Windows_NT') {
+            $acl = Get-Acl -LiteralPath $git
+            $acl.AddAccessRule((New-Object Security.AccessControl.FileSystemAccessRule([Security.Principal.WindowsIdentity]::GetCurrent().User, 'ListDirectory,ReadData', 'ContainerInherit,ObjectInherit', 'None', 'Deny')))
+            Set-Acl -LiteralPath $git -AclObject $acl
+        } else { & chmod 000 -- $git }
+        1048576L + 17 + $utf.GetByteCount('абв')
+    }
+
+    Scenario 'копія із забороною читання вкладеної .git: прибирається, а не лишається назавжди' {
+        $root = Join-Path $tmp 'w4'
+        # ДО: Remove-Item лишав таку копію щоразу (у журналі обгортки — «не прибрана … .git … is denied»).
+        $before = Join-Path $root 'run-before'; [void](New-DeniedCopy $before)
+        $msg = ''
+        try { Remove-Item -LiteralPath $before -Recurse -Force -ErrorAction Stop } catch { $msg = $_.Exception.Message }
+        Check "ДО: Remove-Item не прибирає копію, лишається в журналі «не прибрана»: $msg" ((Test-Path -LiteralPath $before) -and $msg -match 'denied|Permission|доступ')
+        [void](Reset-TreeAcl $before); Remove-Item -LiteralPath $before -Recurse -Force
+        # ПІСЛЯ: Remove-TaskCopy скидає ACL і прибирає; журнал каже, скільки звільнено.
+        $dir = Join-Path $root 'run-after'; $size = New-DeniedCopy $dir
+        $script:Log.Clear()
+        $kept = Remove-TaskCopy $dir @('--remotes')
+        Check "ПІСЛЯ: копію прибрано ($($dir)), не лишилась" ($kept -eq '' -and -not (Test-Path -LiteralPath $dir))
+        $line = @($script:Log | Where-Object { $_ -like "копія задачі $dir *" })
+        Check "журнал: звільнено $size байт, ACL скинуто, «не прибрана» нема" ($line.Count -eq 1 -and $line[0] -ceq "копія задачі $dir прибрана: звільнено $size байт (ACL скинуто)")
+        # Те саме через накопичене: давня копія слота з забороною.
+        $old = Join-Path $root 'run-old'; [void](New-DeniedCopy $old)
+        Clear-TaskCopies $root @('--remotes')
+        Check 'накопичене: давня копія з забороною прибирається першим проходом' (-not (Test-Path -LiteralPath $old))
+        if ($env:OS -eq 'Windows_NT') {
+            # Зайнятий іншим процесом файл — тимчасовий стан: копія лишається до наступного прибирання.
+            $busy = Join-Path $root 'run-busy'; [void][IO.Directory]::CreateDirectory("$busy/repo")
+            $h = [IO.File]::Open((Join-Path $busy 'repo/open.bin'), 'Create', 'ReadWrite', 'None')
+            try {
+                $kept = Remove-TaskCopy $busy @('--remotes')
+                Check 'зайнятий файл: копія лишається до наступного прибирання, журнал каже «не прибрана»' ($kept -eq '' -and (Test-Path -LiteralPath $busy) -and @($script:Log | Where-Object { $_ -like "копія задачі $busy не прибрана*" }).Count -eq 1)
+            } finally { $h.Dispose() }
+            [void](Remove-TaskCopy $busy @('--remotes'))
+            Check 'зайнятий файл звільнено: наступне прибирання знімає копію' (-not (Test-Path -LiteralPath $busy))
+        }
+    }
+
+    Scenario 'розбивка розміру: діти першого рівня й діти теки копій — тим самим обходом' {
+        $p = Join-Path $tmp 'prof'
+        foreach ($f in @(@('a/x.bin', 3000), @('b/x.bin', 500), @('runs/w/c1/x.bin', 7000), @('runs/w/c1/sub/y.bin', 100), @('runs/w/c2/x.bin', 200), @('root.bin', 10))) {
+            $full = Join-Path $p $f[0]; [void][IO.Directory]::CreateDirectory((Split-Path -Parent $full))
+            [IO.File]::WriteAllBytes($full, (New-Object byte[] $f[1]))
+        }
+        $r = Measure-DirBytes $p 3 (Join-Path $p 'runs/w')
+        Check "сума профілю $($r.Bytes) (10810), недоступних 0" ($r.Bytes -eq 10810 -and $r.Skipped -eq 0)
+        Check "першого рівня за спаданням: $(ConvertTo-SizeList $r.Top)" ((ConvertTo-SizeList $r.Top) -ceq 'runs=7300;a=3000;b=500')
+        Check "копії за спаданням: $(ConvertTo-SizeList $r.Under)" ((ConvertTo-SizeList $r.Under) -ceq 'c1=7100;c2=200')
+        Check 'без -Top обхід не збирає розбивки (Bytes/Skipped, як було)' ((Measure-DirBytes $p).Bytes -eq 10810 -and @((Measure-DirBytes $p).Top).Count -eq 0)
+        $back = @(ConvertFrom-SizeList (ConvertTo-SizeList @([pscustomobject]@{ Name = 'a|b`<c>'; Bytes = 5 }, [pscustomobject]@{ Name = 'Дані'; Bytes = 7 })))
+        Check 'назви без службових знаків, кирилиця лишається; чужий рядок відкидається' ($back.Count -eq 2 -and $back[0].Name -ceq 'a_b__c_' -and $back[1].Name -ceq 'Дані' -and @(ConvertFrom-SizeList 'x|y=1;ok=2;bad=-1;z=').Count -eq 1)
+    }
 } catch { "✗ виняток стенда: $($_.Exception.Message) $($_.ScriptStackTrace)"; $bad++ }
 finally {
     if ((Split-Path -Parent $tmp) -eq [IO.Path]::GetTempPath().TrimEnd('\','/') -and (Split-Path -Leaf $tmp) -cmatch '^kopiia-test-[0-9a-f]{32}$') {
         $w = Join-Path $tmp 'w/run-1/repo'
         if ($realRepo -and (Test-Path -LiteralPath $w)) { try { [void](Invoke-Native $GitExe @('-C', $realRepo, 'worktree', 'remove', '-f', '-f', $w) '' 2) } catch { $null = $_ } }
         Remove-Item -LiteralPath $tmp -Recurse -Force -ErrorAction SilentlyContinue
+        if (Test-Path -LiteralPath $tmp) { [void](Reset-TreeAcl $tmp); Remove-Item -LiteralPath $tmp -Recurse -Force -ErrorAction SilentlyContinue }
     }
 }
 exit [int]($bad -gt 0)
