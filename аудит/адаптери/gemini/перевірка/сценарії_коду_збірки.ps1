@@ -58,69 +58,16 @@ try {
     }
     Invoke-WrapperChain
     $after = $Phase -eq 'ПІСЛЯ'; $skip = if ($after) { 0 } else { 1 }
-    $script:Files['1/1'] = @([pscustomobject]@{filename='аудит/наряди/крок.md'})
-    $script:Pulls = @((Pull 1)); Invoke-WrapperChain
-    Check "документний PR: позначок=$(@(Markers 'автоперевірка-1-').Count)" (@(Markers 'автоперевірка-1-').Count -eq $skip)
-    $script:Files['2/1'] = @([pscustomobject]@{filename='джерела/a.py'})
-    $script:Pulls = @((Pull 2 '[НЕ ЗЛИВАТИ] Код')); Invoke-WrapperChain
-    Check "[НЕ ЗЛИВАТИ]: позначок=$(@(Markers 'автоперевірка-2-').Count)" (@(Markers 'автоперевірка-2-').Count -eq $skip)
-    $n = 3
-    foreach ($path in @('джерела/a.py','.github/workflows/a.yml','аудит/адаптери/gemini/a.ps1','аудит/проби/a.py','каталог/a.json','a.py')) {
-        $script:Files["$n/1"] = @([pscustomobject]@{filename=$path}); $script:Pulls = @((Pull $n)); Invoke-WrapperChain
-        Check "код ${path}: одна перевірка" (@(Markers "автоперевірка-$n-").Count -eq 1)
-        $n++
-    }
-    $docs = @(1..100 | ForEach-Object { [pscustomobject]@{filename="аудит/наряди/$_.md"} })
-    $script:Files['20/1'] = $docs; $script:Files['20/2'] = @([pscustomobject]@{filename='джерела/останній.py'})
-    $script:Pulls = @((Pull 20)); Invoke-WrapperChain
-    Check 'код на другій сторінці отримав перевірку' (@(Markers 'автоперевірка-20-').Count -eq 1)
-    Check 'API читає обидві сторінки списку файлів' ((@($script:Requests | Where-Object { $_ -match '/pulls/20/files' }).Count -eq 2) -eq $after)
-    $script:Files['21/1'] = $docs; $script:Files['21/2'] = @([pscustomobject]@{filename='аудит/наряди/останній.md'})
-    $script:Pulls = @((Pull 21)); Invoke-WrapperChain
-    Check '101 документний файл: без зайвої перевірки' (@(Markers 'автоперевірка-21-').Count -eq $skip)
-    $script:Files['22/1'] = @([pscustomobject]@{filename='джерела/a.py'}) + $docs[0..98]
-    $script:Files['22/2'] = @([pscustomobject]@{filename='аудит/наряди/останній.md'})
-    $script:FailPage = '22/2'; $script:Pulls = @((Pull 22)); Invoke-WrapperChain
-    Check 'збій другої сторінки: без позначки навіть після знайденого коду' (@(Markers 'автоперевірка-22-').Count -eq $skip)
-    if ($after) {
-        $state = ConvertFrom-Json ([IO.File]::ReadAllText((Join-Path $WorkDir 'chain.json')))
-        Check 'збій API не записано як виконану перевірку' (@($state.reviews | Where-Object { $_ -match '^22 ' }).Count -eq 0)
-    }
-    $script:FailPage = ''; Invoke-WrapperChain
-    Check 'після відновлення API той самий PR отримав рівно одну перевірку' (@(Markers 'автоперевірка-22-').Count -eq 1)
-    $script:Files['23/1'] = @(); $script:Pulls = @((Pull 23)); Invoke-WrapperChain
-    Check 'порожній список файлів: PR без коду, позначки нема' (@(Markers 'автоперевірка-23-').Count -eq $skip)
-    $script:Files['23/1'] = @([pscustomobject]@{filename='джерела/a.py'}); Invoke-WrapperChain
-    Check 'порожня відповідь не кешується: після появи файлів голову перевірено' (@(Markers 'автоперевірка-23-').Count -eq 1)
-    # Наряд ланцюг-порожній-pr: порожній PR (10.11 — #3114 і #3478) переривав увесь прохід, тож PR після нього не діставалися.
-    $script:Files['25/1'] = @(); $script:Files['26/1'] = @([pscustomobject]@{filename='джерела/a.py'})
-    Get-ChildItem -LiteralPath $OutboxDir -File | Remove-Item
-    $script:Pulls = @((Pull 25), (Pull 26)); Invoke-WrapperChain; Invoke-WrapperChain
-    Check "порожній PR не зупиняє проходу: наступний PR отримав позначку ($(@(Markers 'автоперевірка-26-').Count))" ((@(Markers 'автоперевірка-26-').Count -eq 1) -eq $after)
-    Check 'порожній PR: позначки нема' (@(Markers 'автоперевірка-25-').Count -eq 0)
-    $log = [IO.File]::ReadAllText((Join-Path $WorkDir 'publish.log'), $utf)
-    if ($after) {
-        Check 'порожній PR: рядок журналу раз на голову за два проходи' (([regex]::Matches($log, '#25 [0-9a-f]{40} — API віддав порожній список файлів')).Count -eq 1)
-        Check 'порожній PR не дав рядка ЛАНЦЮГ диспетчерові' (@(Get-ChildItem -LiteralPath $OutboxDir -File | Where-Object { [IO.File]::ReadAllText($_.FullName, $utf) -match 'ЛАНЦЮГ' }).Count -eq 0)
-    }
-    # Виняток одного PR (збій сторінки, елемент без filename) іде в журнал і рядок раз на PR і голову; решта PR обробляються.
-    $script:Files['27/1'] = @([pscustomobject]@{filename=''}); $script:Files['28/1'] = @([pscustomobject]@{filename='джерела/a.py'})
-    $script:FailPage = '29/1'; $script:Files['29/1'] = @([pscustomobject]@{filename='джерела/a.py'}); $script:Files['30/1'] = @([pscustomobject]@{filename='джерела/a.py'})
-    Get-ChildItem -LiteralPath $OutboxDir -File | Remove-Item
-    $script:Pulls = @((Pull 27), (Pull 29), (Pull 28), (Pull 30)); Invoke-WrapperChain; Invoke-WrapperChain
-    Check "PR із винятком не зупиняє решти: позначки 28=$(@(Markers 'автоперевірка-28-').Count), 30=$(@(Markers 'автоперевірка-30-').Count)" ((@(Markers 'автоперевірка-28-').Count -eq 1 -and @(Markers 'автоперевірка-30-').Count -eq 1) -eq $after)
-    Check 'PR із винятком: позначки нема' (@(Markers 'автоперевірка-27-').Count -eq 0 -and @(Markers 'автоперевірка-29-').Count -eq 0)
-    if ($after) {
-        $log = [IO.File]::ReadAllText((Join-Path $WorkDir 'publish.log'), $utf)
-        $lines = @(Get-ChildItem -LiteralPath $OutboxDir -File | ForEach-Object { [IO.File]::ReadAllText($_.FullName, $utf).Trim() } | Where-Object { $_ -match 'ЛАНЦЮГ' })
-        Check 'виняток PR: у журналі номер і код, прохід повторить лише його' ($log -match '#27 [0-9a-f]{40} — CHAIN_FILES; PR пропущено' -and $log -match '#29 [0-9a-f]{40} — CHAIN_API; PR пропущено')
-        Check 'виняток PR: по одному рядку диспетчерові на PR і голову за два проходи, за шаблоном публікатора' ($lines.Count -eq 2 -and @($lines | Where-Object { (Test-OutboxLine $_) -ceq '' }).Count -eq 2 -and @($lines | Where-Object { $_ -cmatch "^GEMINI ОБГОРТКА: ЛАНЦЮГ CHAIN_(FILES PR 27|API PR 29) $head$" }).Count -eq 2)
-    }
-    $script:FailPage = ''; $script:Files['27/1'] = @([pscustomobject]@{filename='джерела/a.py'}); Invoke-WrapperChain
-    Check 'після відновлення збійний PR отримав рівно одну перевірку' (@(Markers 'автоперевірка-27-').Count -eq 1 -and @(Markers 'автоперевірка-29-').Count -eq 1)
-    $script:Files['24/1'] = @([pscustomobject]@{filename='аудит/опис.md';status='renamed';previous_filename='джерела/a.py'})
-    $script:Pulls = @((Pull 24)); Invoke-WrapperChain
-    Check 'перенесення коду в документацію теж змінює код' (@(Markers 'автоперевірка-24-').Count -eq 1)
+    # Позначки автоперевірок ставить диспетчер: за будь-якого складу файлів PR ланцюг їх не ставить і список файлів не читає.
+    $paths = @('аудит/наряди/крок.md','джерела/a.py','.github/workflows/a.yml','аудит/адаптери/gemini/a.ps1','аудит/проби/a.py','каталог/a.json','a.py')
+    $n = 1
+    foreach ($path in $paths) { $script:Files["$n/1"] = @([pscustomobject]@{filename=$path}); $n++ }
+    $script:Files['20/1'] = @(1..100 | ForEach-Object { [pscustomobject]@{filename="аудит/наряди/$_.md"} }); $script:Files['20/2'] = @([pscustomobject]@{filename='джерела/останній.py'})
+    $script:FailPage = '20/2'
+    $script:Pulls = @(@(1..$paths.Count | ForEach-Object { Pull $_ }) + (Pull 19 '[НЕ ЗЛИВАТИ] Код') + (Pull 20)); Invoke-WrapperChain
+    Check "PR коду й документів, [НЕ ЗЛИВАТИ], дві сторінки файлів, збій сторінки: позначок автоперевірки=$(@(Markers 'автоперевірка-').Count)" (@(Markers 'автоперевірка-').Count -eq 0)
+    Check 'список файлів PR ланцюг не читає' (@($script:Requests | Where-Object { $_ -match '/files\?' }).Count -eq 0)
+    $script:FailPage = ''
     $script:Pulls = @()
     $product = Merge 'джерела/a.py' '2'; Invoke-WrapperChain
     Check "злиття без збірки: автоживих=$(@(Markers 'автоживий-').Count)" (@(Markers 'автоживий-').Count -eq $skip)

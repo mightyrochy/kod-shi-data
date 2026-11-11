@@ -200,10 +200,12 @@ function Test-LiveModels($Config) {
     $false
 }
 
-function Add-ChainMarker([string]$Slug, [string]$Model, [string]$Main, [switch]$Gpu, [ValidateRange(1,999)][int]$Attempt = 1) {
-    <# Створює сталу позначку один раз; порівняння lease не дозволяє затерти чужу/вже взяту спробу. #>
+function Add-ChainMarker([string]$Slug, [string]$Model, [string]$Main, [switch]$Gpu, [ValidateRange(1,999)][int]$Attempt = 1, [string]$Cond = '') {
+    <# Створює сталу позначку один раз; порівняння lease не дозволяє затерти чужу/вже взяту спробу. `$Cond` — умови наявної
+    позначки, що переноситься на іншу модель (строк і пріоритет лишаються); без нього — `p2` чи `p2-gpu`. #>
     if ($Slug -cnotmatch $script:SlugPattern -or $Model -cnotmatch $script:ModelPattern -or $Main -cnotmatch $script:ShaPattern) { throw 'CHAIN_FORMAT' }
-    $ref = "refs/heads/gemini-queue/$Slug/$Model/$Attempt" + $(if ($Gpu) { '/p2-gpu' } else { '/p2' })
+    if ($Cond -and $Cond -cnotmatch '^(?:p[0-9]|d20[0-9]{10}|gpu)(?:-(?:p[0-9]|d20[0-9]{10}|gpu)){0,2}$') { throw 'CHAIN_FORMAT' }
+    $ref = "refs/heads/gemini-queue/$Slug/$Model/$Attempt" + $(if ($Cond) { "/$Cond" } elseif ($Gpu) { '/p2-gpu' } else { '/p2' })
     $r = Invoke-Git @('ls-remote','--heads','origin',$ref) -AllowFail
     if ($r.Code -ne 0) { throw 'CHAIN_REMOTE' }
     if ($r.Out.Trim()) { return }
@@ -518,19 +520,19 @@ function Get-ChainMarkers([string]$Slug) {
     $r = Invoke-Git @('ls-remote','--heads','origin',"refs/heads/gemini-queue/$Slug/*") -AllowFail
     if ($r.Code -ne 0) { throw 'CHAIN_REMOTE' }
     foreach ($line in ($r.Out -split "`n")) {
-        if ($line.Trim() -cnotmatch '^([0-9a-f]{40})\trefs/heads/(gemini-queue/([^/]+)/([a-z0-9][a-z0-9.-]{1,63})/([1-9][0-9]{0,2})(?:/[^/]+)?)$') { continue }
-        $sha = $Matches[1]; $ref = $Matches[2]; $task = $Matches[3]; $model = $Matches[4]; $attempt = [int]$Matches[5]
+        if ($line.Trim() -cnotmatch '^([0-9a-f]{40})\trefs/heads/(gemini-queue/([^/]+)/([a-z0-9][a-z0-9.-]{1,63})/([1-9][0-9]{0,2})(?:/([^/]+))?)$') { continue }
+        $sha = $Matches[1]; $ref = $Matches[2]; $task = $Matches[3]; $model = $Matches[4]; $attempt = [int]$Matches[5]; $cond = [string]$Matches[6]
         try { $state = Get-ChainMarkerState $ref $sha $model }
         catch {
             Write-WrapperLog "ланцюг: стан $ref недоступний; позначки цієї голови збережено"
             Write-ChainFailure $_
             $state = [pscustomobject]@{ Kind = 'UNKNOWN' }
         }
-        [pscustomobject]@{ Sha=$sha; Ref=$ref; Slug=$task; Model=$model; Attempt=$attempt; Kind=$state.Kind }
+        [pscustomobject]@{ Sha=$sha; Ref=$ref; Slug=$task; Model=$model; Attempt=$attempt; Cond=$cond; Kind=$state.Kind }
     }
 }
 
-function Move-BlockedMarkers([string]$Slug, [string]$Model, [string]$Main, [datetimeoffset]$Now, [switch]$Gpu) {
+function Move-BlockedMarkers([string]$Slug, [string]$Model, [string]$Main, [datetimeoffset]$Now, [switch]$Gpu, [string]$Cond = '') {
     <# Переносить NEW/WAIT із вичерпаною квотою: $true — виконано, $false — не потрібно, $null — відкладено.
 
     UNKNOWN і квота цільової моделі потребують повтору; узята чи вже доступна робота передачі не потребує. #>
@@ -542,13 +544,51 @@ function Move-BlockedMarkers([string]$Slug, [string]$Model, [string]$Main, [date
     if (-not $old.Count -or @($old | Where-Object { $_.Model -ceq $Model -or -not (Test-ModelQuota $_.Model $Now) }).Count) { return $false }
     $attempt = 1
     foreach ($m in @($all | Where-Object { $_.Model -ceq $Model })) { $attempt = [Math]::Max($attempt, $m.Attempt + 1) }
-    Add-ChainMarker $Slug $Model $Main -Gpu:$Gpu -Attempt $attempt
+    Add-ChainMarker $Slug $Model $Main -Gpu:$Gpu -Attempt $attempt -Cond $Cond
     foreach ($m in $old) {
         $d = Invoke-Git @('push','-q','--no-verify',"--force-with-lease=refs/heads/$($m.Ref):$($m.Sha)",'origin',":refs/heads/$($m.Ref)") -AllowFail
         if ($d.Code -ne 0) { throw 'CHAIN_PUSH' }
         Write-WrapperLog "ланцюг: $($m.Ref) знято — квота постачальника вичерпана, роботу бере $Model"
     }
     $true
+}
+
+function Get-NightlyReaders {
+    <# Функції нічного Е1 з довіреної копії queue_lanes.ps1 (Get-NightlyMarker — вікно, Get-NightlyBuild — збірка дозволу):
+    правила одні, ланцюг їх не копіює; викликач підключає блоки крапкою у своєму просторі. #>
+    $errors = $null
+    $ast = [Management.Automation.Language.Parser]::ParseFile((Join-Path $PSScriptRoot 'queue_lanes.ps1'), [ref]$null, [ref]$errors)
+    if ($errors.Count) { throw 'NIGHTLY_PARSER' }
+    $names = @('Get-NightlyMarker','Get-NightlyBuild')
+    $functions = @($ast.FindAll({ param($n) $n -is [Management.Automation.Language.FunctionDefinitionAst] -and $names -ccontains $n.Name }, $true))
+    if ($functions.Count -ne $names.Count) { throw 'NIGHTLY_PARSER' }
+    @($functions | ForEach-Object { [scriptblock]::Create($_.Extent.Text) })
+}
+
+function Test-NightlyOpen([datetime]$Utc) {
+    <# Вікно нічного Е1 — одне, у Get-NightlyMarker (queue_lanes.ps1): беремо саму функцію з довіреної копії й питаємо лише вікно. #>
+    foreach ($reader in @(Get-NightlyReaders)) { . $reader }
+    [bool](Get-NightlyMarker $Utc -OpenOnly)
+}
+
+function Move-NightlyMarker($Config, [datetimeoffset]$Now) {
+    <# Дозвіл нічного Е1 (`Е1-нічний-живий-<дата UTC>`, читає Get-NightlyMarker) стоїть на моделі зі своєї назви, а квота її
+    постачальника може бути вичерпана (codex 0 % — QUOTA0 до ранку): тоді дозвіл переходить на модель із квотою. Порядок і
+    перенесення — ті, що в автоживого: Select-ReviewModel над `codex`, `claude` з ланцюг.json і Move-BlockedMarkers; коміт
+    і умови (`gpu-p8`) лишаються, узяту чи кінцеву позначку перенесення не чіпає. Не раніше, ніж відкриється нічний (вікно
+    Test-NightlyOpen): раніше позначка Claude стартувала б до дозволеної години. Не переносить, коли для збірки дозволу вже
+    є автоживий (`автоживий-<збірка>`): Get-NightlyMarker такого дозволу не віддає, а позначка Claude його б обійшла. #>
+    if (-not (Test-NightlyOpen $Now.UtcDateTime)) { return }
+    $slug = 'Е1-нічний-живий-' + $Now.UtcDateTime.ToString('yyyyMMdd')
+    $waiting = @(Get-ChainMarkers $slug | Where-Object { $_.Kind -cin @('NEW','WAIT') })
+    if (-not $waiting.Count) { return }
+    foreach ($reader in @(Get-NightlyReaders)) { . $reader }
+    $permit = [string]$waiting[0].Sha
+    if ((Invoke-Git @('cat-file','-e',"$permit^{commit}") -AllowFail).Code -ne 0) { [void](Invoke-Git @('fetch','-q','origin',$permit)) }
+    $build = Get-NightlyBuild $permit
+    if ($build -and @(Get-ChainMarkers "автоживий-$build").Count) { return }
+    $model = Select-ReviewModel @([string]$Config.codex, [string]$Config.claude) $Now
+    [void](Move-BlockedMarkers $slug $model $waiting[0].Sha $Now -Gpu -Cond $waiting[0].Cond)
 }
 
 function Test-CloudMove([string]$Slug, [datetimeoffset]$Now) {
@@ -649,9 +689,9 @@ function Test-ChainReviewPull($Pull) {
 
 function Remove-DeadReviewMarkers($Pulls, $Seen, [datetimeoffset]$Now) {
     <# Позначки автоперевірки, яких смуги не мають брати, знімаються до узяття: голова — не поточна голова відкритого PR
-    (злито, закрито, новий пуш), PR без коду чи вже не перевіряється, позначка Claude на ноутбуці (`cc-`: перевіряє
-    хмарний Claude чи інший постачальник — ключ знято з $Seen, тож голова отримає рецензента наново), друга позначка
-    тієї самої голови (узята, інакше NEW/WAIT; доступний постачальник, найбільша числова спроба). Кожна знята — рядок журналу, а кількість за прохід —
+    (злито, закрито, новий пуш), PR вже не перевіряється, позначка Claude на ноутбуці (`cc-`: перевіряє хмарний Claude чи
+    інший постачальник), друга позначка тієї самої голови (узята, інакше NEW/WAIT; позначка диспетчера раніше за давню
+    позначку ланцюга, `Test-OldChainMarker`; доступний постачальник, найбільша числова спроба). Кожна знята — рядок журналу, а кількість за прохід —
     рядок у зведенні обгортки; невдале зняття повторить наступний прохід. #>
     $live = @{}
     foreach ($pr in @($Pulls)) { if (Test-ChainReviewPull $pr) { $live[[string]$pr.number] = $pr } }
@@ -670,11 +710,11 @@ function Remove-DeadReviewMarkers($Pulls, $Seen, [datetimeoffset]$Now) {
         try {
         if ($null -eq $pr) { $why = 'PR не відкритий чи не перевіряється' }
         elseif ([string]$pr.head.sha -cne $first.Head) { $why = 'голова PR змінилась' }
-        elseif (-not @($Seen.Keys | Where-Object { $_ -cmatch ('^' + $first.N + ' ' + $first.Head + ' ') }).Count -and -not (Test-ChainCodePull $pr)) { $why = 'PR без коду' }
         $keep = ''
         if (-not $why) {
             $sorted = @($g.Group | Where-Object { $_.Model -cnotmatch '^cc-' } | Sort-Object `
                 @{ Expression = { if ($_.Kind -ceq 'TAKEN') { 0 } elseif ($_.Kind -cin @('NEW','WAIT')) { 1 } else { 2 } } }, `
+                @{ Expression = { [int](Test-OldChainMarker $_) } }, `
                 @{ Expression = { [int](Test-ModelQuota $_.Model $Now) } }, `
                 @{ Expression = { $_.Attempt }; Descending = $true }, Ref)
             $keep = $(if ($sorted.Count) { $sorted[0].Ref } else { '' })
@@ -921,60 +961,12 @@ function Invoke-WrapperChain {
             # Позначка, що чекає вичерпаної квоти, переходить до доступного рушія.
             [void](Move-BlockedMarkers "автоживий-$($liveActive.stamp)" (Select-ReviewModel @([string]$config.codex, [string]$config.claude) $now) ([string]$liveActive.main) $now -Gpu)
         }
+        Move-NightlyMarker $config $now
         Complete-EngineDrafts
         $pulls = @(Get-ChainPulls)
         Remove-DeadReviewMarkers $pulls $seen $now
-        foreach ($pr in $pulls) {
-            if (-not (Test-ChainReviewPull $pr)) { continue }
-            $head = [string]$pr.head.sha; $n = [string]$pr.number
-            # Кожен PR — окремо: його збій іде в журнал і не зупиняє PR після нього.
-            try {
-            $eligible = Test-RecentReviewHead $pr $heads $installed $now $hours
-            Write-FileAtomic $statePath (([ordered]@{ main=$main; reviewed=$reviewed; live_active=$liveActive; live_since=$liveSince; live_stamps=@($liveStamps.Keys); live_pending=@($livePending); reviews=@($seen.Keys); installed_utc=$installed.ToString('o'); heads=$heads }) | ConvertTo-Json -Compress -Depth 5)
-            if (-not $eligible) { continue }
-            $work = Get-ChainBranchWork ([string]$pr.head.ref)
-            if ($work) { Write-WrapperLog "ланцюг: #$n $head — смуга ще пише ($work), перевірка після кінця"; continue }
-            Write-WrapperLog "ланцюг: #$n $head — активної смуги нема, звичайна перевірка голови"
-            if (-not $reviewed.ContainsKey($n)) {
-                foreach ($key in @($seen.Keys | Where-Object { $_ -cmatch ('^' + $n + ' [0-9a-f]{40} ') })) {
-                    $oldHead = ($key -split ' ')[1]
-                    if ((Invoke-Git @('cat-file','-e',"$oldHead^{commit}") -AllowFail).Code -eq 0 -and
-                        (Invoke-Git @('merge-base','--is-ancestor',$oldHead,$head) -AllowFail).Code -eq 0) {
-                        $reviewed[$n] = @{head=$oldHead;diff=(Get-ReviewDiff $oldHead $main);pid=(Get-ReviewPatchId $oldHead $main)}
-                        if (Test-ReviewedMerge $pr $reviewed $main) { break }
-                    }
-                }
-            }
-            if (Test-ReviewedMerge $pr $reviewed $main) { Write-WrapperLog "ланцюг: #$n $head — незмінний diff після злиття main"; continue }
-            $models = @(Get-ReviewModels $pr $config $now)
-            if (-not @($models | Where-Object { -not $seen.ContainsKey("$n $head $_") }).Count) { continue }
-            if (-not (Test-ChainCodePull $pr)) { continue }
-            # Перевірка лише на голову, наряд якої оголосив кінець, і лише для ризику Р1–Р3: проміжна голова й Р0 — без позначки.
-            if (-not (Test-ChainEndAnnounced $pr)) { Write-WrapperLog "ланцюг: #$n $head — кінець роботи не оголошено (чернетка без ГОТОВО), перевірки нема"; continue }
-            if ((Get-ChainPullRisk $pr $main) -eq 0) { Write-WrapperLog "ланцюг: #$n $head — ризик Р0, перевірки нема"; continue }
-            # Перевірку, що вже дала звіт, інший рушій не повторює.
-            if (Test-ChainReviewDone $n $head) { continue }
-            $diff = Get-ReviewDiff $head $main; $patchId = Get-ReviewPatchId $head $main
-            foreach ($model in $models) {
-                $key = "$n $head $model"
-                if ($seen.ContainsKey($key)) { continue }
-                # Одна перевірка на голову: позначка будь-якого рушія вже стоїть — нової не ставимо, лише переводимо позначки, що чекають вичерпаної квоти.
-                $marked = @($seen.Keys | Where-Object { $_ -cmatch ('^' + $n + ' ' + $head + ' ') }).Count
-                $transfer = $true
-                if ($model -ceq $script:CloudReview) {
-                    $transfer = if ($marked) { Test-CloudMove "автоперевірка-$n-$head" $now } else { $true }
-                    if ($transfer) { $transfer = Request-CloudReview $n $head }
-                }
-                elseif ($marked) { $transfer = Move-BlockedMarkers "автоперевірка-$n-$head" $model $main $now }
-                else { Add-ChainMarker "автоперевірка-$n-$head" $model $main }
-                # Лише виконана або непотрібна передача завершує рішення; відкладена повториться наступного проходу.
-                if ($null -eq $transfer) { continue }
-                $seen[$key] = $true
-                $reviewed[$n] = @{head=$head;diff=$diff;pid=$patchId}
-                Write-FileAtomic $statePath (([ordered]@{ main=$main; reviewed=$reviewed; live_active=$liveActive; live_since=$liveSince; live_stamps=@($liveStamps.Keys); live_pending=@($livePending); reviews=@($seen.Keys); installed_utc=$installed.ToString('o'); heads=$heads }) | ConvertTo-Json -Compress -Depth 5)
-            }
-            } catch { Write-ChainPullFailure $_ $n $head }
-        }
+        # Позначки автоперевірок ланцюг більше не ставить: пачку й позначки перевірок ставить диспетчер (слово власника 08.11
+        # 15:47, `аудит/ПЕРЕВІРКА.md`, «Під обгорткою ноутбука»); тут лишилося лише зняття мертвих голів його позначок.
     } catch {
         Write-ChainFailure $_
     }
