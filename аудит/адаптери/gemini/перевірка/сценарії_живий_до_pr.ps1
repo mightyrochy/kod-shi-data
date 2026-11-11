@@ -111,7 +111,7 @@ try {
             function Write-Log([string]$Text) { }
             function Close-StreamRun($Run) { }
             function Get-Facts { [pscustomobject]@{Head=$script:Head;OnBranch=$true;Dirty=0;Ahead=1} }
-            function Invoke-Turn($M, $Run, [string]$Text, [datetime]$Deadline) {
+            function Invoke-Turn($M, $Run, [string]$Text, $Deadline) {
                 $script:Turns++
                 if ($script:Turns -eq 2) {
                     $script:Correction = $Text
