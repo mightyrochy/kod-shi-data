@@ -1,0 +1,54 @@
+── ПРОМПТ (7303 симв.) ──
+Ти — перекладачка в застосунку-стилістці. Ти пишеш природною українською тексти, які зараз побачить жінка. Рішень не приймаєш, на питання не відповідаєш, змісту не міняєш.
+
+Вхід — JSON-об'єкт: ключ — номер тексту н, значення — текст, який склали код та інші моделі.
+
+Ключі відповіді — ті самі, що у вході, кожен: номер н тексту, значення — рядок, той самий зміст природною українською, без англійських слів і кодів; ПЕРЕКЛАДАЙ КОЖНЕ англійське слово, навіть одне посеред українського речення; латиницею лишай лише назви крамниць і брендів, «V-подібний» і «den»; текст, що вже природний і до неї на «ти», — без змін, а український текст на «ви» перепиши на «ти», решту лиши слово в слово.
+
+Вид кожної речі — теж зміст: річ у перекладі — та сама, що у вході, а не схожа чи сусідня. ankle boots — черевики чи ботильйони, boots — чоботи, heeled — на підборах, а не туфлі, pumps — туфлі-човники, loafers — лофери; pendant — кулон чи підвіска, necklace — намисто чи ланцюжок, а не каблучка, сережки чи браслет; ring — каблучка; earrings — сережки. Українські назви речей у вході (назви з крамниці, найчастіше перед « — ») переписуй літера в літеру: не міняй, не переставляй і не додавай у них жодного слова.
+
+Про жінку — лише до неї, на «ти» (ти, тебе, тобі, твій, твоя; хочеш, скинеш; наказ однини: розкажи, оберни, тримай, дай), і в питаннях теж: you, your, she, her про неї — «ти», «твій» (her skin tone — твій тон шкіри; when she turns her head — коли ти повертаєш голову; she looks taller — ти виглядаєш вищою), англійський наказ — наказом однини; «вона», «її» — лише про річ (сукню, сумку, куртку). Говорить стилістка — одна жінка: про себе — від першої особи однини й у жіночому роді (я підібрала, я б додала), не «ми», не від імені застосунку чи коду і ніколи словами самої жінки.
+
+Мова: літературна українська, як у текстах українських крамниць одягу. Кожне українське слово — літерами лише української абетки, без жодної латинської літери чи стороннього знака всередині слова. Кожне речення — одна остаточна версія, без виправлень посеред тексту. Словничок нижче — лише як перекласти англійське слово, коли воно є у вході; це не зміст: річ, тканина чи колір, яких у вході нема, у тексті не з'являються. Звичні українські назви для слів англійського джерела: trousers, pants — штани; dressy, dressier — ошатний, ошатніше; look, outfit — образ; taupe — сіро-бежевий; loose — вільний; suede — замша (жіночий рід); slip dress — сукня-комбінація; camel — кемел (колір). Назви речей і кольорів, які дала крамниця, — як є.
+
+Слово не повторюється двічі поспіль. Відповідь — рівно ОДИН JSON-об'єкт і нічого після нього: другої, виправленої версії, приміток і пояснень не пиши — помилку виправ у тому самому об'єкті.
+
+Речі образу — перелік речей картки (номер речі — як на картці, поруч — її коди):
+1 — kind code: cocktail_dress · colour code: chocolate · about it: text н=1
+2 — kind code: coat · colour code: black · about it: text н=2
+3 — kind code: dress_shoes · colour code: burgundy · about it: text н=3
+4 — kind code: earrings · colour code: red · about it: text н=4
+5 — kind code: bag_generic · colour code: red · about it: text н=5
+When a text speaks of an item of the list, call it by the Ukrainian noun of its kind code (kind code: …) — the same noun in the right case in every text (trench_coat — «тренч», sweater — «светр», loafers — «лофери»), not by another kind or a synonym of the English word, whatever word the English text uses; a code ending in _generic names only the family (dress_generic — a dress, bag_generic — a bag). Make every adjective, pronoun and verb with the item agree with that noun in gender and number («бежевий тренч, який…»; «шкіряні лофери, які…»). A name you translate in this same call (text н=K): give it one noun and call the item by it, in agreement, in every text. A text the list gives as about an item (about it: text н=M) speaks of that one item, and so does every other text where the English names it. The colour of an item of the list is its colour code (colour code: …): write the Ukrainian name of that code. The English colour words for that item are the stylist's impression of a photo: do not turn them into a colour of their own — the item's colour stands in their place. Colours of its details (trim, strap, buttons, print), its fabric and the rest — translate from the text. The list is for the items only: an item the English text does not name is not added to the translation — neither to the description nor to the advice.
+
+Colour codes: black — чорний; burgundy — бордовий; chocolate — шоколадний; red — червоний.
+
+ТЕКСТИ:
+{
+"1": "This is a chocolate-colored bodycon cocktail dress with a sleek, form-fitting cut that hugs your figure. Its deep brown hue provides a sophisticated foundation for the evening, while the smooth fabric and close fit emphasize your natural waistline and create a long, vertical line that is perfect for moving through a crowd.",
+"2": "This black coat features a tailored silhouette and a matte finish that feels serious and timeless. The dark color acts as a perfect neutral frame for your outfit, adding an outer layer of structure without introducing any distracting patterns or colors, which keeps the overall look strictly classic.",
+"3": "These burgundy dress shoes feature a high-shine finish that catches the light subtly. The rich, deep red tone matches perfectly with your bag and earrings, creating a deliberate color connection at your feet while adding necessary height to elongate your silhouette.",
+"4": "These red earrings offer a polished, metallic accent that complements the warm tones of your dress. Their bold color echoes the burgundy of your shoes and bag, tying the accessories together into a single, intentional statement rather than scattering attention across different elements.",
+"5": "This red bag features a high-shine surface that reflects the club's lighting beautifully. Its vibrant hue serves as the focal point of the color story, picking up the shades from your shoes and earrings to unify the entire ensemble into one cohesive, classic look.",
+"6": "This look is anchored by your chocolate bodycon cocktail dress, which offers a sleek silhouette perfect for moving through a crowded club. The black coat adds a sharp, structured layer that keeps the outfit feeling strictly classic and restrained, just as you asked for. Your burgundy dress shoes and red bag provide a rich pop of color at your feet, while the red earrings tie the entire look together with a cohesive, deliberate touch. It works because it honors your wish for something controlled and elegant without sacrificing the energy of a rock concert venue.",
+"7": "Start by slipping the coat fully over your shoulders to create one long, uninterrupted line from neck to ankle that reads as a single, statuesque silhouette.",
+"8": "Tuck your hands deep into your pockets or let them hang loosely at your sides to maintain that still, composed posture even while standing in the crowd.",
+"9": "Lean slightly forward with your weight on your front foot when dancing or moving, which naturally accentuates the clean line of your bodycon dress and the height of your heels.",
+"10": "Keep your arms relaxed but close to your torso, allowing the coat to drape naturally without adding unnecessary width around your waist."
+}
+
+── ВІДПОВІДЬ (2364 симв., 31.1 с, HTTP 200) ──
+```json
+{
+  "1": "Це шоколадна обтисла коктейльна сукня з гладким силуетом, що підкреслює твою фігуру. Її глибокий коричневий колір створює вишуканий фон для вечора, а м’яка тканина та приталений крій акцентують природну лінію твоєї талії й візуально подовжують силует.",
+  "2": "Цей чорний тренч має елегантний силует і матове покриття, що виглядає серйозно й позачасово. Темний колір слугує нейтральним обрамленням для твого вбрання, додаючи структурований шар без зайвих візерунків чи кольорів, щоб зберегти загальний образ суворо класичним.",
+  "3": "Ці бордові туфлі-човники мають блискучу поверхню, що ледь помітно відбиває світло. Багатий глибокий червоний колір ідеально поєднується з твоєю сумкою та сережками, створюючи навмисний кольоровий акцент біля ніг і додаючи необхідної висоти для видовження силуету.",
+  "4": "Ці червоні сережки пропонують вишуканий металевий акцент, який доповнює теплі тони твоєї сукні. Їхній сміливий колір перегукується з бордовим кольором твоїх туфель і сумки, об’єднуючи аксесуари в єдину навмисну заяву замість того, щоб розпорошувати увагу на різні елементи.",
+  "5": "Ця червона сумка має блискучу поверхню, яка чудово відбиває світло клубу. Її яскравий колір слугує центральним пунктом кольорової історії, підхоплюючи відтінки твоїх туфель і сережок, щоб об’єднати весь ансамбль в один цільний класичний образ.",
+  "6": "Цей образ базується на твоїй шоколадній обтислій коктейльній сукні, яка пропонує гладкий силует для пересування у велелюдному клубі. Чорний тренч додає гострий структурований шар, який зберігає вбрання строго класичним і стриманим, як ти й просила. Твої бордові туфлі-човники та червона сумка створюють насичений кольоровий акцент біля ніг, а червоні сережки об’єднують весь образ у цільний навмисний вигляд.",
+  "7": "Спочатку одягни тренч повністю на плечі, щоб створити одну довгу безперервну лінію від шиї до щиколотки, яка виглядатиме як єдиний стрункий силует.",
+  "8": "Поклади руки в кишені або тримай їх вільно з боків тіла, щоб підтримувати спокійну поставу навіть у натовпі.",
+  "9": "Злегка нахилися вперед, перенісши вагу на передню ногу, коли танцюєш чи рухаєшся. Це природно підкреслить чітку лінію твоєї обтислої сукні та висоту твоїх підборів.",
+  "10": "Тримай руки розслабленими біля тулуба, дозволяючи тренчу вільно звисати без зайвого збільшення ширини в області талії."
+}
+```
