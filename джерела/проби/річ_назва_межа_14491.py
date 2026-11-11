@@ -5,6 +5,7 @@ import sys
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 import мовний_шар as М
+import річ_з_фото as РФ
 
 
 def main():
@@ -26,8 +27,11 @@ def main():
         р = М.прийняти_розмову(json.dumps({"update": {"own_items": [річ]}, "need": "look"}))
         п = М.паспорт_з_шару(р.get("внутрішня") or {}, {}, слова_ходу=уривок)["паспорт"]
         фактичні = [р["назва"] for р in п.get("речі_з_фото") or []]
-        print(json.dumps(dict(назва=назва, фактичні=фактичні, очікувані=очікувані), ensure_ascii=False))
-        збоїв += фактичні != очікувані
+        фото = РФ.речі_з_відповіді_фото(json.dumps({"items": [dict(photo="ф1", name="skirt", slot="bottom", owner="mine")]}),
+            [dict(ід="ф1", ширина=1000, висота=1600)], власні=(р.get("внутрішня") or {}).get("own_items"))
+        чия = [р["чия"] for р in фото["речі_з_фото"]]
+        print(json.dumps(dict(назва=назва, фактичні=фактичні, очікувані=очікувані, чия=чия), ensure_ascii=False))
+        збоїв += фактичні != очікувані or чия != ["моя"]
     print(f"випадків: {len(випадки)}; збоїв: {збоїв}")
     return int(bool(збоїв))
 
