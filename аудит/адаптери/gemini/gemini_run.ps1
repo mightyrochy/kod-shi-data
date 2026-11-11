@@ -1286,8 +1286,8 @@ function Get-GeminiHealth {
     $c = $null
     if (Test-Path -LiteralPath $path) { try { $c = [System.IO.File]::ReadAllText($path, $script:Utf8) | ConvertFrom-Json } catch { $null = $_ } }
     $now = [DateTimeOffset]::UtcNow.ToUnixTimeSeconds()
-    if (($null -eq $c -or $now - [long]$c.time -ge 60 * (Get-Limit $script:Limits 'UsageMinutes' 'usage_minutes')) -and (Test-LockFree (Join-Path $RunsDir 'health.lock'))) {
-        $script:ProfileMeasure = [System.Diagnostics.Process]::Start((New-StartInfo (Get-Process -Id $PID).Path @('-NoProfile', '-NonInteractive', '-ExecutionPolicy', 'Bypass', '-File', $script:SelfPath, '-MeasureProfile', '-RunsDir', $RunsDir, '-ProfileDir', $ProfileDir) '' -NoRedirect))
+    if ($null -eq $c -or $now - [long]$c.time -ge 60 * (Get-Limit $script:Limits 'UsageMinutes' 'usage_minutes')) {
+        if (Test-LockFree (Join-Path $RunsDir 'health.lock')) { $script:ProfileMeasure =[System.Diagnostics.Process]::Start((New-StartInfo (Get-Process -Id $PID).Path @('-NoProfile', '-NonInteractive', '-ExecutionPolicy', 'Bypass', '-File', $script:SelfPath, '-MeasureProfile', '-RunsDir', $RunsDir, '-ProfileDir', $ProfileDir) '' -NoRedirect)) }
     }
     if ($null -eq $c) { $c = [pscustomobject]@{ profile = ''; skipped = ''; read = '' } }
     # Кеш /usage, як у квоті heartbeat: сам вимір agy не запускає; нема кешу — «?» у стані.

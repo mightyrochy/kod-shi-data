@@ -5,7 +5,7 @@
     'wrapper_probe.ps1'  = '85116D04C22EB64CBFF52E66BCEAE9B1091577A889EDD58A8B634093A82BDBC6'
     'wrapper_chain.ps1'  = '83BD346D207CDA9D053A33F6FDD2844A2AA0CDB9B2EC0C877995FE5B9B7600F4'
     'wrapper_health.ps1' = '4C3CF324647C66517B9A4018EEF3B0256C81822197C3EF015230DED8CF12D9E6'
-    'gemini_run.ps1'     = '8630A2DE21598A73DEB6AA9096816C438667BE14AC895C7BD47B3793344FCA0C'
+    'gemini_run.ps1'     = 'B3662BFD96F14BFF4BEA60905C9C5546EAD4D6CFC43997202EB364B600C7BCF6'
     'gemini_publish.ps1' = 'AABCA50535699147DC8E4DA139177AED74C20BB47BD61141D9B726B79DFFF695'
     # Інсталятор Codex (9741) закріплено за релізом: install.ps1 — файл релізу https://releases.openai.com/codex/releases/<CodexRelease>/install.ps1
     # (незмінний URL; той самий sha256 віддає https://chatgpt.com/codex/install.ps1 — редирект на releases.openai.com — і публікує реліз
