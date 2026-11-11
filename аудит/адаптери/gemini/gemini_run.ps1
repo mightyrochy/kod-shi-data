@@ -118,16 +118,13 @@ function Invoke-NativeUntilStall([string]$Exe, [string[]]$Arguments, [string]$Wo
     $p = Start-Tree $psi
     $err = $p.StandardError.ReadToEndAsync()
     $out = New-Object System.Text.StringBuilder
-    $last = Get-Date
-    $tick = $last
+    $last = Get-AwakeTime
     $stalled = $false
     $pending = $null
     while ($true) {
         if ($null -eq $pending) { $pending = $p.StandardOutput.ReadLineAsync() }
-        $now = Get-Date
-        $last = $last + (Get-SleepGap $tick $now)
-        $tick = $now
-        $left = ($last.AddMinutes($StallMinutes) - $now).TotalMilliseconds
+        Wait-PowerPause
+        $left = ($last + [timespan]::FromMinutes($StallMinutes) - (Get-AwakeTime)).TotalMilliseconds
         if ($left -le 0) { $stalled = $true; break }
         if (-not $pending.Wait([int][Math]::Min($left, 60000))) {
             # stdout міг лишитись відкритим у нащадка завершеного процесу: це не завислість.
@@ -137,13 +134,12 @@ function Invoke-NativeUntilStall([string]$Exe, [string[]]$Arguments, [string]$Wo
         $line = $pending.Result
         $pending = $null
         if ($null -eq $line) { break }
-        $last = Get-Date
-        $tick = $last  # сон до цієї події вже скинуто, вдруге його не додавати
+        $last = Get-AwakeTime
         [void]$out.Append($line).Append("`n")
         [System.IO.File]::AppendAllText($LogFile, $line + "`n", $script:Utf8)
         $type = ''
         if ($line -match '"type"\s*:\s*"([^"]{1,60})"') { $type = $Matches[1] }
-        [System.IO.File]::AppendAllText($EventsFile, $last.ToString('s') + "`t" + $type + "`n", $script:Utf8)
+        [System.IO.File]::AppendAllText($EventsFile, (Get-Date).ToString('s') + "`t" + $type + "`n", $script:Utf8)
     }
     if (-not $stalled -and -not $p.WaitForExit([int][Math]::Min([double][int]::MaxValue, $StallMinutes * 60000))) { $stalled = $true }
     if (-not $stalled) { $p.WaitForExit() }
@@ -657,10 +653,11 @@ function Get-AgyArgs($M, [string]$Conversation, [string[]]$Head) {
 }
 
 # Один хід у режимі stream: подія result, eof (процес закінчився) або timeout.
-function Wait-StreamResult($Run, [datetime]$Deadline) {
+function Wait-StreamResult($Run, [timespan]$Deadline) {
     while ($true) {
         if ($null -eq $Run.Pending) { $Run.Pending = $Run.Proc.StandardOutput.ReadLineAsync() }
-        $left = ($Deadline - (Get-Date)).TotalMilliseconds
+        Wait-PowerPause
+        $left = ($Deadline - (Get-AwakeTime)).TotalMilliseconds
         if ($left -le 0) { return [pscustomobject]@{ Kind = 'timeout'; Result = $null } }
         if (-not $Run.Pending.Wait([int][Math]::Min($left, 60000))) { continue }
         $line = $Run.Pending.Result
@@ -731,7 +728,7 @@ function Invoke-OneShotTurn($M, $Run, [string]$Text) {
     [pscustomobject]@{ Kind = 'result'; Result = $res }
 }
 
-function Invoke-Turn($M, $Run, [string]$Text, [datetime]$Deadline) {
+function Invoke-Turn($M, $Run, [string]$Text, [timespan]$Deadline) {
     if ($Run.Engine.Name -ne 'agy') { return Invoke-OneShotTurn $M $Run $Text }
     if ($Mode -eq 'stream') {
         if ($null -eq $Run.Proc) { Start-StreamRun $M $Run }
@@ -748,7 +745,7 @@ function Invoke-Turn($M, $Run, [string]$Text, [datetime]$Deadline) {
     $file = Join-Path $Run.Dir ('turn{0}.md' -f $Run.Turn)
     [System.IO.File]::WriteAllText($file, $Text, $script:Utf8)
     $short = "Прочитай файл $file і виконай його повністю"
-    $minutes = ($Deadline - (Get-Date)).TotalMinutes
+    $minutes = ($Deadline - (Get-AwakeTime)).TotalMinutes
     if ($minutes -le 0) { return [pscustomobject]@{ Kind = 'timeout'; Result = $null } }
     # Запас 2 хв: agy має встигнути сам віддати конверт із conversation_id по своїй --print-timeout.
     $r = Invoke-Native $script:Agy (Get-AgyArgs $M $Run.Conversation @('-p', $short)) $RepoDir ($minutes + 2)
@@ -770,7 +767,8 @@ function Invoke-Agent($M, [string]$Start, [string]$Prompt, [string]$Dir, $Sel) {
         Responses = New-Object System.Collections.Generic.List[string] }
     # Codex без межі часу всього й ходу (власник 26.10): його зупиняє лише завислість; `agy` — як було.
     $unlimited = ($Sel.Engine.Name -eq 'codex')
-    $deadline = $(if ($unlimited) { [datetime]::MaxValue } else { (Get-Date).AddMinutes($TotalMinutes) })
+    # Межі — за часом неспання (Get-AwakeTime): сон ноутбука посеред ходу не закриває наряд як TIMEOUT.
+    $deadline = $(if ($unlimited) { [timespan]::MaxValue } else { (Get-AwakeTime) + [timespan]::FromMinutes($TotalMinutes) })
     $text = $Prompt
     $turns = 0
     $nudges = 0
@@ -781,7 +779,7 @@ function Invoke-Agent($M, [string]$Start, [string]$Prompt, [string]$Dir, $Sel) {
         while ($true) {
             $turnDeadline = $deadline
             if (-not $unlimited) {
-                $turnDeadline = (Get-Date).AddMinutes($TurnMinutes)
+                $turnDeadline = (Get-AwakeTime) + [timespan]::FromMinutes($TurnMinutes)
                 if ($turnDeadline -gt $deadline) { $turnDeadline = $deadline }
             }
             $turns++
@@ -830,7 +828,7 @@ function Invoke-Agent($M, [string]$Start, [string]$Prompt, [string]$Dir, $Sel) {
                 Write-Log "agy: $($r.Kind) без id розмови — догонки нема"
                 break
             }
-            if ((Get-Date) -ge $deadline) { $code = 'TIMEOUT'; break }
+            if ((Get-AwakeTime) -ge $deadline) { $code = 'TIMEOUT'; break }
             if ($nudges -ge $MaxNudges) { $code = 'NO_REPORT'; break }
             $nudges++
             $text = Get-Nudge $M (Test-Report $M $Start '') $why
@@ -1524,6 +1522,7 @@ function Main {
                 Clear-OrphanClaims $RunsDir
                 $script:Agy = Find-EngineExe $AgyExe
                 if ($script:Agy) { [void](Read-Usage) }
+                Wait-PowerPause  # без світла нові позначки не стартують
                 $started = Start-Markers $workers
                 Update-HoldSignals $script:Held { param($l) Add-HoldLine $l }
             } catch { Add-HealthException $_.Exception; Write-Log "прохід: $($_.Exception.Message)" }

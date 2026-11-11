@@ -794,16 +794,13 @@ function Invoke-Claude([string]$Exe, [string[]]$ArgList, [string]$Prompt, [strin
     $log = Join-Path $RunDir 'claude.jsonl'; $ev = Join-Path $RunDir 'events.tsv'; $errLog = Join-Path $RunDir 'claude.stderr.txt'
     $res = [pscustomobject]@{ Code = 0; Kind = ''; Result = $null; AssistantText = ''; Err = ''; Limit = $null }
     $err = New-Object System.Text.StringBuilder
-    $last = Get-Date
-    $tick = $last
+    $last = Get-AwakeTime
     $outTask = $null; $errTask = $null; $outDone = $false; $errDone = $false
     while ($true) {
         if (-not $outDone -and $null -eq $outTask) { $outTask = $p.StandardOutput.ReadLineAsync() }
         if (-not $errDone -and $null -eq $errTask) { $errTask = $p.StandardError.ReadLineAsync() }
-        $now = Get-Date
-        $last = $last + (Get-SleepGap $tick $now)
-        $tick = $now
-        $left = ($last.AddMinutes($hang) - $now).TotalMilliseconds
+        Wait-PowerPause
+        $left = ($last + [timespan]::FromMinutes($hang) - (Get-AwakeTime)).TotalMilliseconds
         if ($left -le 0) { $res.Kind = 'HANG'; break }
         $ms = [int][Math]::Min($left, 60000)
         $wait = [System.Threading.Tasks.Task[]]@(@($outTask, $errTask) | Where-Object { $null -ne $_ })
@@ -840,9 +837,8 @@ function Invoke-Claude([string]$Exe, [string[]]$ArgList, [string]$Prompt, [strin
             } catch { $null = $_ }
         }
         if (-not $type) { continue }
-        $last = Get-Date
-        $tick = $last  # сон до цієї події вже скинуто, вдруге його не додавати
-        [System.IO.File]::AppendAllText($ev, $last.ToString('s') + "`t" + $type + "`n", $script:Utf8)
+        $last = Get-AwakeTime
+        [System.IO.File]::AppendAllText($ev, (Get-Date).ToString('s') + "`t" + $type + "`n", $script:Utf8)
         Read-ClaudeEvent $res $obj
         if ($type -eq 'rate_limit_event') {
             $info = Get-JsonProp $obj 'rate_limit_info'
@@ -1316,6 +1312,7 @@ function Main {
         $script:Workers = New-Object System.Collections.ArrayList
         $script:Held = @{}
         $first = $true; $clean = $true; $ver = ''
+        $script:PauseMachine = $true  # лише планувальник: LM Studio й ComfyUI — того самого користувача, що й claude-run
         while ($true) {
             $ver = Get-VersionSwitch
             if ($ver) { Write-VersionSwitch $ver; break }
@@ -1330,6 +1327,7 @@ function Main {
                 # fetch, прибирання не знімає.
                 if ($clean) { Clear-TaskCopies (Join-Path $WorkDir 'w') @('--remotes'); $clean = $false }
                 Clear-OrphanClaims (Join-Path $WorkDir 'runs')
+                Wait-PowerPause  # без світла нові позначки не стартують
                 $r = Start-Markers $script:Workers
                 $started = $r[0]; $off = $r[1]
                 Update-HoldSignals $script:Held { param($l) Add-Line $l }

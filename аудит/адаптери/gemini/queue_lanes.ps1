@@ -29,6 +29,9 @@ $script:LanesPath = 'аудит/адаптери/gemini/смуги.json'
 $script:Utf8 = New-Object System.Text.UTF8Encoding($false)
 $script:OnWindows = ($PSVersionTable.PSEdition -ne 'Core') -or [bool](Get-Variable IsWindows -ValueOnly -ErrorAction SilentlyContinue)
 $script:TreeJobs = @{}  # pid процесу Start-Tree → його задача Windows
+$script:PausedTotal = [timespan]::Zero  # пауз живлення цього процесу (Wait-PowerPause)
+$script:Pausing = $false
+$script:PauseMachine = $false  # планувальник claude-run ставить на паузу й LM Studio та ComfyUI
 $script:GpuLease = $null  # замок GPU-оренди процесу наряду (Start-GpuModels → Exit-GpuLease)
 # Тека версії цього процесу: після самооновлення — `<корінь>\versions\<SHA40>`, поряд із коренем — `active.txt`.
 $script:VersionDir = $PSScriptRoot
@@ -251,7 +254,7 @@ function Stop-Tree($Proc) {
 }
 
 function Invoke-Native([string]$Exe, [string[]]$Arguments, [string]$Dir = '', [double]$TimeoutMinutes = 10, [string]$StdIn = $null) {
-    <# Запуск із межею часу (по межі — зупинка дерева) і необов'язковим stdin; повертає код, ознаку межі й обидва потоки. #>
+    <# Запуск із межею часу неспання (по межі — зупинка дерева) і необов'язковим stdin; повертає код, ознаку межі й обидва потоки. #>
     $psi = New-StartInfo $Exe $Arguments $Dir
     $psi.RedirectStandardInput = ($null -ne $StdIn)
     # .NET Framework створює StandardInput з AutoFlush: BOM пишеться вже під час Start.
@@ -267,8 +270,8 @@ function Invoke-Native([string]$Exe, [string[]]$Arguments, [string]$Dir = '', [d
         $w.Write($StdIn)
         $w.Close()
     }
-    $until = [datetime]::UtcNow.AddMinutes($TimeoutMinutes)
-    while (-not $p.WaitForExit(1000) -and [datetime]::UtcNow -lt $until) { Invoke-HealthBeat }
+    $until = (Get-AwakeTime) + [timespan]::FromMinutes($TimeoutMinutes)
+    while (-not $p.WaitForExit(1000) -and (Get-AwakeTime) -lt $until) { Wait-PowerPause; Invoke-HealthBeat }
     $timedOut = -not $p.HasExited
     if (-not $timedOut) { $p.WaitForExit() }
     Stop-Tree $p
@@ -797,10 +800,110 @@ function Open-Lock([string]$Path) {
     try { [System.IO.File]::Open($Path, 'OpenOrCreate', 'ReadWrite', 'None') } catch { $null }
 }
 
-function Get-SleepGap([datetime]$Tick, [datetime]$Now) {
-    <# Цикл наряду обертається щонайменше раз на хвилину: довша пауза — сон ноутбука, а не завислість наряду. #>
-    $gap = $Now - $Tick
-    if ($gap.TotalMinutes -gt 5) { $gap } else { [timespan]::Zero }
+function Add-PowerType {
+    if ('GeminiWrapper.Power' -as [type]) { return }
+    Add-Type -TypeDefinition @'
+using System;
+using System.Runtime.InteropServices;
+namespace GeminiWrapper {
+    public static class Power {
+        [StructLayout(LayoutKind.Sequential)]
+        struct Status { public byte AcLine, BatteryFlag, BatteryPercent, SaverStatus; public int LifeTime, FullLifeTime; }
+        [DllImport("kernel32.dll")] static extern bool QueryUnbiasedInterruptTime(out ulong time);
+        [DllImport("kernel32.dll")] static extern bool GetSystemPowerStatus(out Status status);
+        [DllImport("kernel32.dll", SetLastError = true)] static extern IntPtr OpenProcess(uint access, bool inherit, int id);
+        [DllImport("kernel32.dll")] static extern bool CloseHandle(IntPtr handle);
+        [DllImport("ntdll.dll")] static extern int NtSuspendProcess(IntPtr process);
+        [DllImport("ntdll.dll")] static extern int NtResumeProcess(IntPtr process);
+
+        public static long Ticks() { ulong t; QueryUnbiasedInterruptTime(out t); return (long)t; }
+
+        // AcLine: 0 — від батареї, 1 — від мережі, 255 — невідомо (тоді не пауза).
+        public static bool OnBattery() { Status s; return GetSystemPowerStatus(out s) && s.AcLine == 0; }
+
+        public static bool Pause(int id, bool on) {
+            IntPtr p = OpenProcess(0x0800, false, id);  // SUSPEND_RESUME
+            if (p == IntPtr.Zero) return false;
+            try { return (on ? NtSuspendProcess(p) : NtResumeProcess(p)) == 0; }
+            finally { CloseHandle(p); }
+        }
+    }
+}
+'@
+}
+
+function Get-UnbiasedTime {
+    <# Монотонний час неспання системи: Windows — QueryUnbiasedInterruptTime (без сну й гібернації); інші ОС —
+    Stopwatch (CLOCK_MONOTONIC, без призупинення). Stopwatch на Windows сон рахує. #>
+    if (-not $script:OnWindows) {
+        return [timespan]::FromTicks([long]([System.Diagnostics.Stopwatch]::GetTimestamp() * (1e7 / [System.Diagnostics.Stopwatch]::Frequency)))
+    }
+    Add-PowerType
+    [timespan]::FromTicks([GeminiWrapper.Power]::Ticks())
+}
+
+function Get-AwakeTime {
+    <# Робочий час процесу ([timespan]): неспання без пауз живлення (Wait-PowerPause). Межі часу й завислості лічать
+    лише його — сон ноутбука й пауза без світла не робота й не завислість наряду. 08.11: 7 год сну дали автоперевірці
+    #3342 «TIMEOUT, 434 хв». #>
+    (Get-UnbiasedTime) - $script:PausedTotal
+}
+
+function Test-OnBattery {
+    <# Світла нема — ноутбук живиться від батареї (GetSystemPowerStatus, дешевий виклик); без Windows — ні. #>
+    if (-not $script:OnWindows) { return $false }
+    try { Add-PowerType; [GeminiWrapper.Power]::OnBattery() } catch { $false }
+}
+
+function Get-PauseTargets {
+    <# Що ставить на паузу цей процес: усе в задачах Windows його нарядів (Start-Tree, разом із відірваними нащадками),
+    а планувальник claude-run ($script:PauseMachine) — ще й LM Studio (усі її процеси за Test-GpuModelProcess) та
+    ComfyUI: спільні сервери моделей того самого користувача. Gemini працює під іншим користувачем — свої процеси ставить на паузу його обгортка. #>
+    $ids = New-Object System.Collections.Generic.List[int]
+    foreach ($job in @($script:TreeJobs.Values)) {
+        try { foreach ($i in [GeminiWrapper.TreeJob]::Members($job)) { $ids.Add($i) } } catch { $null = $_ }
+    }
+    if ($script:PauseMachine) {
+        # LM Studio — за визначенням Test-GpuModelProcess: інтерфейс, lms, окремий сервер llmster і будь-який процес із її
+        # теки (.lmstudio); призупинений лише інтерфейс лишив би сервер рахувати на батареї.
+        foreach ($p in @(Get-Process -ErrorAction SilentlyContinue)) {
+            $path = ''
+            try { $path = [string]$p.Path } catch { $path = '' }
+            if ((Test-GpuModelProcess $p.ProcessName $path) -or $p.ProcessName -ceq 'ComfyUI') { $ids.Add($p.Id) }
+        }
+        $comfy = "Name='python.exe' AND CommandLine LIKE '%ComfyUI%'"
+        foreach ($p in @(Get-CimInstance Win32_Process -Filter $comfy -ErrorAction SilentlyContinue)) { $ids.Add([int]$p.ProcessId) }
+    }
+    @($ids | Where-Object { $_ -ne $PID } | Sort-Object -Unique)
+}
+
+function Set-ProcessPause([int]$Id, [bool]$On) {
+    <# Призупинити чи відновити процес (NtSuspendProcess/NtResumeProcess); $false — процесу нема чи прав нема. #>
+    [GeminiWrapper.Power]::Pause($Id, $On)
+}
+
+function Wait-PowerPause {
+    <# Світла нема — робота стоїть (власник 09.11): процеси Get-PauseTargets призупинено, а цикл, що кличе паузу, далі
+    не йде (нові позначки не стартують), доки не повернеться мережа; тоді процеси продовжують з того самого місця.
+    Без роботи ноутбук на батареї спить у Modern Standby й сам бачить, що світло повернулось: будильник із гібернації
+    08.11 кожним пробудженням відновлював роботу на відеокарті й коштував 2–3 % батареї. Час паузи не йде в межі. #>
+    # Серцебиття всередині паузи може дійти до Invoke-Native — друга пауза всередині першої нічого не робить.
+    if ($script:Pausing -or -not (Test-OnBattery)) { return }
+    $script:Pausing = $true
+    $from = Get-UnbiasedTime
+    $paused = @(foreach ($i in Get-PauseTargets) { if (Set-ProcessPause $i $true) { $i } })
+    Write-Log "пауза: світла нема (живлення від батареї), призупинено процесів $($paused.Count)"
+    try {
+        # Світло перевіряється раз на інтервал опитування черги: у паузі нема роботи, яку треба будити частіше.
+        $poll = [timespan]::FromMinutes((Get-Limit $script:Limits 'PollMinutes' 'poll_minutes'))
+        while (Test-OnBattery) { Start-Sleep -Milliseconds $poll.TotalMilliseconds; Invoke-HealthBeat }
+    } finally {
+        foreach ($i in $paused) { [void](Set-ProcessPause $i $false) }
+        $span = (Get-UnbiasedTime) - $from
+        $script:PausedTotal += $span
+        $script:Pausing = $false
+        Write-Log ("пауза знята: світло є через {0:N1} хв, відновлено процесів {1}" -f $span.TotalMinutes, $paused.Count)
+    }
 }
 
 function Test-LockFree([string]$Path) {
@@ -1042,6 +1145,7 @@ function Wait-Workers($Workers, [double]$Minutes) {
     $until = (Get-Date).AddMinutes($Minutes)
     while ((Get-Date) -lt $until) {
         if (@($Workers | Where-Object { -not $_.Proc.HasExited }).Count -lt $alive) { return }
+        Wait-PowerPause
         Invoke-HealthBeat
         Start-Sleep -Milliseconds 500
     }
