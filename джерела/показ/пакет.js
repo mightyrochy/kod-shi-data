@@ -50,8 +50,11 @@ function tx(d, ім, режим, дія){
     }
     const r = дія(s);
     t.oncomplete = ()=>{ if (журнал) скинутиКешЖурналуП(); рез(r && r.result); };
-    t.onerror = ()=>від(t.error);
-    if (журнал) t.onabort = ()=>{ скинутиКешЖурналуП(); від(t.error || new Error('journal_write_aborted')); };
+    t.onerror = е=>від(t.error || (е.target && е.target.error) || new Error('storage_transaction_failed'));
+    t.onabort = ()=>{
+      if (журнал) скинутиКешЖурналуП();
+      від(t.error || new Error('storage_transaction_aborted'));
+    };
   });
 }
 async function пристрій_Id(){

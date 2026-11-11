@@ -16,6 +16,8 @@ function Scenario([string]$Name, [scriptblock]$Body) {
 }
 try {
     . (Join-Path $SourceDir 'gemini_publish.ps1') -WorkDir "$tmp/pub" -OutDir "$tmp/gem-out" -OutboxDir "$tmp/out"
+    [void][IO.Directory]::CreateDirectory("$OutDir/marker-state")
+    Write-FileAtomic "$OutDir/marker-state/ready" '1'
     $GeminiRunsDir = "$tmp/gemini-runs"
     foreach ($dir in @($WorkDir,"$WorkDir/state","$WorkDir/seen",$OutboxDir)) { [void][IO.Directory]::CreateDirectory($dir) }
     . (Join-Path $SourceDir 'queue_lanes.ps1')
@@ -28,7 +30,8 @@ try {
             Remove-Item -LiteralPath "$WorkDir/engine-models" -Recurse -Force -ErrorAction SilentlyContinue
             Save-DraftRequest $pull.head.ref $sha $model
             $models = @(Get-ReviewModels $pull $config)
-            $expected = if ($model -like 'gpt-*' -or $model -like 'cc-*') { $config.agy } else { $config.codex }
+            # Модель, що не розпізнана як назва (автор не доведений), — хмарний Claude, не agy і не Codex.
+            $expected = if ($model -like 'gpt-*' -or $model -like 'cc-*') { $config.agy } elseif ($model -ceq 'невідома') { 'claude-cloud' } else { $config.codex }
             Check "1а $model — рівно один інший постачальник" ($models.Count -eq 1 -and $models[0] -ceq $expected)
         }
     }
@@ -37,7 +40,7 @@ try {
         $models = @(Get-ReviewModels ([pscustomobject]@{head=@{ref='gemini/стан';sha=$sha}}) $config)
         Check '1а фактичний GPT із ГОТОВО вибирає agy без файла моделі' ($models.Count -eq 1 -and $models[0] -ceq $config.agy)
         $models = @(Get-ReviewModels ([pscustomobject]@{head=@{ref='gemini/невідома';sha=$sha}}) $config)
-        Check '1а немає даних про модель — один Codex' ($models.Count -eq 1 -and $models[0] -ceq $config.codex)
+        Check '1а немає даних про модель — лише рядок хмарному Claude, без Codex' ($models.Count -eq 1 -and $models[0] -ceq 'claude-cloud')
     }
     Scenario '1в вердикти' {
         foreach ($branch in @('gemini/перевірка-12','claude/pachka-5','codex/перевірка-коду','gemini/автоперевірка-12')) {
@@ -297,9 +300,9 @@ console.log('GPU_OFF');
         Check '5 ПІСЛЯ: 57 MiB від AvastUI — GPU вільна' (Test-ExternalGpuFree)
         $script:Logged = @(); $LaneDir = $tmp
         function Write-Log([string]$Text) { $script:Logged += $Text }
-        Check '5 ПІСЛЯ: причина зайнятості порожня' ((Get-GpuBusyReason @()) -eq '')
+        Check '5 ПІСЛЯ: причина зайнятості порожня' ((Get-GpuBusyReason) -eq '')
         function Invoke-Native { param($Exe, $Arguments) [pscustomobject]@{Code=0;Out='16376, 7376, 0'} }
-        Check '5 чужа модель (9000 MiB) — причина називає залишок і потребу' ((Get-GpuBusyReason @()) -match 'вільно 7376 з потрібних 8925 MiB')
+        Check '5 чужа модель (9000 MiB) — причина називає залишок і потребу' ((Get-GpuBusyReason) -match 'вільно 7376 з потрібних 8925 MiB')
         $m = [pscustomobject]@{Name='gemini-queue/Е3-наживо/gpt-6.1-sol-high/1/p1-gpu'}
         $skip = Join-Path $tmp 'skipped.json'
         Add-Skip $m 'GPU: тест'; Save-Skips $skip
@@ -324,7 +327,7 @@ console.log('GPU_OFF');
         Check '5 файл є — істина' (Test-TaskFile ('a'*40) 'x')
         foreach ($name in @('gemini_run.ps1','claude_run.ps1')) {
             $source = [IO.File]::ReadAllText((Join-Path $SourceDir $name))
-            Check "5 $name підключає спільну політику до Invoke-Task" ($source -match 'Set-BrowserGpuPolicy[^\r\n]+\r?\n\s+Invoke-Task \$M \$job' -and $source.Contains('Test-ExternalGpuFree'))
+            Check "5 $name підключає спільну політику до Invoke-Task" ($source -match 'Set-BrowserGpuPolicy[^\r\n]+\r?\n\s+Invoke-Task \$M \$job' -and $source.Contains('Enter-GpuLease'))
         }
     }
 } finally {

@@ -1,0 +1,59 @@
+── ПРОМПТ (7314 симв.) ──
+Ти — перекладачка в застосунку-стилістці. Ти пишеш природною українською тексти, які зараз побачить жінка. Рішень не приймаєш, на питання не відповідаєш, змісту не міняєш.
+
+Вхід — JSON-об'єкт: ключ — номер тексту н, значення — текст, який склали код та інші моделі.
+
+Ключі відповіді — ті самі, що у вході, кожен: номер н тексту, значення — рядок, той самий зміст природною українською, без англійських слів і кодів; ПЕРЕКЛАДАЙ КОЖНЕ англійське слово, навіть одне посеред українського речення; латиницею лишай лише назви крамниць і брендів, «V-подібний» і «den»; текст, що вже природний і до неї на «ти», — без змін, а український текст на «ви» перепиши на «ти», решту лиши слово в слово.
+
+Вид кожної речі — теж зміст: річ у перекладі — та сама, що у вході, а не схожа чи сусідня. ankle boots — черевики чи ботильйони, boots — чоботи, heeled — на підборах, а не туфлі, pumps — туфлі-човники, loafers — лофери; pendant — кулон чи підвіска, necklace — намисто чи ланцюжок, а не каблучка, сережки чи браслет; ring — каблучка; earrings — сережки. Українські назви речей у вході (назви з крамниці, найчастіше перед « — ») переписуй літера в літеру: не міняй, не переставляй і не додавай у них жодного слова.
+
+Про жінку — лише до неї, на «ти» (ти, тебе, тобі, твій, твоя; хочеш, скинеш; наказ однини: розкажи, оберни, тримай, дай), і в питаннях теж: you, your, she, her про неї — «ти», «твій» (her skin tone — твій тон шкіри; when she turns her head — коли ти повертаєш голову; she looks taller — ти виглядаєш вищою), англійський наказ — наказом однини; «вона», «її» — лише про річ (сукню, сумку, куртку). Говорить стилістка — одна жінка: про себе — від першої особи однини й у жіночому роді (я підібрала, я б додала), не «ми», не від імені застосунку чи коду і ніколи словами самої жінки.
+
+Мова: літературна українська, як у текстах українських крамниць одягу. Кожне українське слово — літерами лише української абетки, без жодної латинської літери чи стороннього знака всередині слова. Кожне речення — одна остаточна версія, без виправлень посеред тексту. Словничок нижче — лише як перекласти англійське слово, коли воно є у вході; це не зміст: річ, тканина чи колір, яких у вході нема, у тексті не з'являються. Звичні українські назви для слів англійського джерела: trousers, pants — штани; dressy, dressier — ошатний, ошатніше; look, outfit — образ; taupe — сіро-бежевий; loose — вільний; suede — замша (жіночий рід); slip dress — сукня-комбінація; camel — кемел (колір). Назви речей і кольорів, які дала крамниця, — як є.
+
+Слово не повторюється двічі поспіль. Відповідь — рівно ОДИН JSON-об'єкт і нічого після нього: другої, виправленої версії, приміток і пояснень не пиши — помилку виправ у тому самому об'єкті.
+
+Речі образу — перелік речей картки (номер речі — як на картці, поруч — її коди):
+1 — kind code: coat · colour code: white · about it: text н=1
+2 — kind code: bow · colour code: blue · about it: text н=2
+3 — kind code: t_shirt · colour code: white · about it: text н=3
+4 — kind code: dress_shoes · colour code: green
+5 — kind code: shorts · colour code: blue · about it: text н=4
+6 — kind code: tote · colour code: khaki · about it: text н=5
+When a text speaks of an item of the list, call it by the Ukrainian noun of its kind code (kind code: …) — the same noun in the right case in every text (trench_coat — «тренч», sweater — «светр», loafers — «лофери»), not by another kind or a synonym of the English word, whatever word the English text uses; a code ending in _generic names only the family (dress_generic — a dress, bag_generic — a bag). Make every adjective, pronoun and verb with the item agree with that noun in gender and number («бежевий тренч, який…»; «шкіряні лофери, які…»). A name you translate in this same call (text н=K): give it one noun and call the item by it, in agreement, in every text. A text the list gives as about an item (about it: text н=M) speaks of that one item, and so does every other text where the English names it. The colour of an item of the list is its colour code (colour code: …): write the Ukrainian name of that code. The English colour words for that item are the stylist's impression of a photo: do not turn them into a colour of their own — the item's colour stands in their place. Colours of its details (trim, strap, buttons, print), its fabric and the rest — translate from the text. The list is for the items only: an item the English text does not name is not added to the translation — neither to the description nor to the advice.
+
+Colour codes: blue — синій; green — зелений; khaki — хакі; white — білий.
+
+ТЕКСТИ:
+{
+"1": "This long ivory coat features a structured collar, silver-tone buttons down the front, and distinctive buckle details on both the sleeves and waist. Its clean lines and slightly relaxed fit provide warmth and a polished silhouette.",
+"2": "A large royal blue satin bow is secured at the back of your ponytail, embellished with sparkling crystal clusters shaped like leaves that add a touch of elegance to your hairstyle.",
+"3": "This fitted white top has a high collar and a central zipper closure. Its tailored cut offers a sleek foundation for the outfit, sitting smoothly against your figure.",
+"4": "Simple blue denim shorts feature a straight leg cut, a standard waistband with silver hardware, and classic stitching. Their casual texture softens the formality of the other pieces.",
+"5": "A spacious khaki tote bag made from smooth fabric hangs freely with long handles. Its neutral tone complements the earthy greens in your shoes and adds practical capacity for your day out.",
+"6": "I have chosen an ivory wool coat with a collar and buckle details, paired with a fitted white top. A deep blue satin bow with crystal accents sits at the back of your hair, while classic dark green leather dress shoes complete the look. To balance the formality of the footwear and occasion, I've added simple straight-cut denim shorts and a practical khaki tote bag.",
+"7": "You can tuck the hem of your top into your shorts to define your waistline under the open coat.",
+"8": "Treat the bow as a statement piece that anchors your look without needing additional jewelry.",
+"9": "Топ приталений бавовняний, білий — Replacing the vest with a simple white cotton t-shirt creates the necessary 'no_top_bottom_or_dress' foundation without adding bulk, allowing the coat to be the true hero while solving the formality balance.",
+"10": "Топ приталений бавовняний, білий, Туфлі Gen шкіряні зелені, Шорти жіночі, Шопер “EASY BIG” хакі, Класичне жіноче вовняне пальто з поясом і англійським коміром Bella Bicchi — While this remark notes the tonal shift between everyday items and the smart occasion band, I accept it because the deliberate choice of a high-lightness white coat serves your specific 'near_white' goal and festive intent, validating the outfit's structure despite the band difference.",
+"11": "Топ приталений бавовняний, білий — Replacing the separate trousers with this white t-shirt creates a clean 'bodysuit' silhouette that works with the vest as a layered top, solving the 'set_with_separate_part' and 'kind_twice' blockers.",
+"12": "Туфлі Gen шкіряні зелені — Adding this green bow to the headwear slot provides a necessary 'edge' accent and breaks the monochrome look, addressing the 'accent_role_lost' finding."
+}
+
+── ВІДПОВІДЬ (2475 симв., 17.9 с, HTTP 200) ──
+```json
+{
+  "1": "Цей довгий кремовий тренч має структурований комір, сріблясті ґудзики по всій передній частині та виразні деталі з пряжками на рукавах і в області талії. Його чіткі лінії й трохи розслаблений крій дарують тепло та елегантний силует.",
+  "2": "Велика синя атласна стрічка закріплена позаду твого кінського хвоста, прикрашена блискучими кришталевими кластерами у формі листя, які додають вишуканості до твоєї зачіски.",
+  "3": "Ця біла обтисла футболка має високий комір і центральну змійку. Її елегантний крій створює гладку основу для образу, щільно прилягаючи до фігури.",
+  "4": "Прості сині джинсові шорти мають прямий крій штанин, стандартну талію з срібною фурнітурою й класичні рядки. Їхня невимушена текстура пом’якшує офіційність інших речей.",
+  "5": "Містка хакі сумка-тоут виготовлена зі шкіри та вільно звисає на довгих ручках. Її нейтральний тон доповнює землянисті зелені відтінки у твоїх туфлях і додає практичного простору для прогулянок.",
+  "6": "Я обрала кремовий вовняний тренч з коміром і пряжками, поєднавши його з обтислою білою футболкою. Глибока синя атласна стрічка з кришталевими акцентами закріплена позаду твого волосся, а класичні темно-зелені шкіряні туфлі завершують образ. Щоб врівноважити офіційність взуття та події, я додала прості шорти прямого крою й практичну хакі сумку.",
+  "7": "Ти можеш заправити низ футболки у шорти, щоб підкреслити лінію талії під розстебнутим тренчем.",
+  "8": "Розглянь стрічку як акцентний елемент, який завершує твій образ без потреби в додаткових прикрасах.",
+  "9": "Замінивши жилет на просту білу бавовняну футболку, ти створиш необхідну основу «без верху чи низу або сукні», не додаючи зайвого об’єму. Це дозволить тренчу стати головним елементом і вирішить проблему балансу офіційності.",
+  "10": "Поки це зауваження відзначає зміну тональності між повсякденними речами та розумною подією, я погоджуюся з ним, адже свідомий вибір світлого кремового тренчу слугує твоїй конкретній меті «майже білий» і святковому настрою. Це підтверджує структуру образу, незважаючи на різницю у тональності.",
+  "11": "Замінивши окремі штани цією білою футболкою, ти створиш чистий силует «боді», який добре поєднується з жилетом як багатошаровим верхом. Це вирішить проблему «комплект із окремою частиною» та повторення виду.",
+  "12": "Додавши цю зелену стрічку до аксесуарів для волосся, ти забезпечиш необхідний акцент і розіб’єш монохромний вигляд. Це вирішить проблему втрати ролі акценту."
+}
+```

@@ -47,7 +47,7 @@ chk "garbage: вивід /usage в wrapper.log для власника" 'true'
 echo "=== Д4 429 посеред прогону — позначка чекає скидання групи (М.9-Е), рядок QUOTA0 одним рядком"
 setup d4; mark "$SLUG/$M/1"; export FAKE_SCENARIO=quota429; gem; pub; lines
 chk "рядок ЗАБЛОКОВАНО gemini/<наряд> QUOTA0_GEMINI35FLASH_M<хв>, один" '[ "$(grep -c "ЗАБЛОКОВАНО gemini/М.2-проба-обгортки QUOTA0_GEMINI35FLASH_M13[67]\"" "$W/claude.log")" = 1 ]'
-chk "позначка в чеканні (WAIT), спроба не спалена" 'grep -q "^WAIT " "$W"/runs/state/*.txt'
+chk "позначка в чеканні (WAIT), спроба не спалена" 'grep -q "^WAIT " "$W"/out/marker-state/*.txt'
 
 echo "=== Д5 шаблони теки вихідних: лише повний збіг; решта — карантин, у рядку лише код"
 setup d5; mkdir -p "$OB"; SHA=$(printf 'a%.0s' $(seq 40)); n=0

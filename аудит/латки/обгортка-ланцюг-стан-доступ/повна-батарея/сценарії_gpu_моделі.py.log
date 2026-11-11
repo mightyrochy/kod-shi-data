@@ -1,0 +1,62 @@
+✓ gemini/done: код завершення worker
+✓ gemini/done: стан до замка відновлено
+✓ gemini/done: початкова модель збережена
+✓ gemini/done: запис прибрано після підтвердження
+✓ gemini/done: кожне вивантаження має модель, ID і наряд у журналі
+✓ gemini/blocked: код завершення worker
+✓ gemini/blocked: стан до замка відновлено
+✓ gemini/blocked: початкова модель збережена
+✓ gemini/blocked: запис прибрано після підтвердження
+✓ gemini/blocked: кожне вивантаження має модель, ID і наряд у журналі
+✓ gemini/timeout: код завершення worker
+✓ gemini/timeout: стан до замка відновлено
+✓ gemini/timeout: початкова модель збережена
+✓ gemini/timeout: запис прибрано після підтвердження
+✓ gemini/timeout: кожне вивантаження має модель, ID і наряд у журналі
+✓ gemini/agent-crash: код завершення worker
+✓ gemini/agent-crash: стан до замка відновлено
+✓ gemini/agent-crash: початкова модель збережена
+✓ gemini/agent-crash: запис прибрано після підтвердження
+✓ gemini/agent-crash: кожне вивантаження має модель, ID і наряд у журналі
+✓ gemini: до вбивства завантажено 3 екземпляри
+✓ gemini: taskkill знищив worker і дочірній агент
+✓ gemini/kill-tree: стан до замка відновлено
+✓ gemini/kill-tree: початкова модель збережена
+✓ gemini/kill-tree: запис прибрано після підтвердження
+✓ gemini/kill-tree: кожне вивантаження має модель, ID і наряд у журналі
+✓ gemini/cpu: код завершення worker
+✓ gemini/cpu: стан до замка відновлено
+✓ gemini/cpu: початкова модель збережена
+✓ gemini/cpu: запис прибрано після підтвердження
+✓ gemini/cpu: кожне вивантаження має модель, ID і наряд у журналі
+✓ gemini: CPU-наряд не читає і не змінює LM Studio
+✓ gemini/unload: збій лишає знімок і власний екземпляр
+✓ gemini/unload: незакритий знімок тримає ворота GPU
+✓ gemini/unload: повтор відновлює тільки початкову модель
+✓ gemini/get: збій лишає знімок і власний екземпляр
+✓ gemini/get: незакритий знімок тримає ворота GPU
+✓ gemini/get: повтор відновлює тільки початкову модель
+✓ gemini/schema: збій лишає знімок і власний екземпляр
+✓ gemini/schema: незакритий знімок тримає ворота GPU
+✓ gemini/schema: повтор відновлює тільки початкову модель
+✓ gemini: без початкового REST-знімка агент не вантажить моделей
+✓ gemini: порожня початкова множина відновлюється
+ The variable '$script:StateDir' cannot be retrieved because it has not been set.
+At C:\Users\gemini\gemini-runs\w\20261105-080724-c19ab2a28524\tmp\diagnostic-tree\аудит\адаптери\gemini\queue_lanes.ps1
+:436 char:50
++ function Get-MarkerState($M, [string]$StateDir = $script:StateDir) {
++                                                  ~~~~~~~~~~~~~~~~
+    + CategoryInfo          : InvalidOperation: (script:StateDir:String) [], ParentContainsErrorRecordException
+    + FullyQualifiedErrorId : VariableIsUndefined
+ 
+
+Traceback (most recent call last):
+  File "C:\Users\gemini\gemini-runs\w\20261105-080724-c19ab2a28524\tmp\diagnostic-tree\аудит\адаптери\gemini\перевірка\сценарії_gpu_моделі.py", line 354, in <module>
+    raise SystemExit(main())
+                     ^^^^^^
+  File "C:\Users\gemini\gemini-runs\w\20261105-080724-c19ab2a28524\tmp\diagnostic-tree\аудит\адаптери\gemini\перевірка\сценарії_gpu_моделі.py", line 301, in main
+    scheduled = json.loads(run('schedule').stdout.decode('utf-8-sig'))
+                           ^^^^^^^^^^^^^^^
+  File "C:\Users\gemini\gemini-runs\w\20261105-080724-c19ab2a28524\tmp\diagnostic-tree\аудит\адаптери\gemini\перевірка\сценарії_gpu_моделі.py", line 230, in run
+    raise RuntimeError('Збій процесу стенда: ' + mode_)
+RuntimeError: Збій процесу стенда: schedule

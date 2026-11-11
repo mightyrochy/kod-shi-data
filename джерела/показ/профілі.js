@@ -3,6 +3,7 @@
    ключем профілю в IndexedDB; профілів може бути кілька. Фото прив'язані до
    профілю: інакше друга людина на тому самому пристрої судила б драпіровку
    по чужому обличчю. */
+const КЛЮЧ_БЕЗ_ПРОФІЛЮ_П = 'без';   // ключ чернетки й фото, коли профілю не обрано
 let ПРОФІЛІ = [];
 let АКТИВНИЙ = null;
 
@@ -48,9 +49,12 @@ function зібратиАксесуарні(){
 }
 
 function новийІд(){ return 'пф-' + Math.random().toString(36).slice(2, 8); }
-function ключФото(вид){ return 'фото-' + вид + ':' + (АКТИВНИЙ || 'без'); }
+function ключФото(вид){ return 'фото-' + вид + ':' + (АКТИВНИЙ || КЛЮЧ_БЕЗ_ПРОФІЛЮ_П); }
 
-async function читатиКв_(к){ try{ return await читатиКв(к); }catch(e){ return null; } }
+async function читатиКв_(к){
+  try{ return await читатиКв(к); }
+  catch(e){ збійЖінціП($('збій-стан'), 'profile_unreadable', e); throw e; }
+}
 async function писатиКв(к, з){
   const d = await дб(); await tx(d, 'кв', 'readwrite', s=>s.put(з, к));
 }
@@ -360,8 +364,10 @@ function розмістити_розкладку(){
 /* Список збережених у рейці — ті самі записи, що на екрані «Збережені». */
 async function малюватиБічніСценарії(){
   const к = $('бік-сценарії'); if (!к) return;
-  let список = []; try{ список = await усіСценарії(); }catch(e){}
   к.innerHTML = '';
+  let список;
+  try{ список = await усіСценарії(); }
+  catch(e){ збійЖінціП(к, 'scenarios_unreadable', e); розмістити_розкладку(); return; }
   список.slice(0, 10).forEach(с=>{
     const б = ел('button', 'бік-сцн' + (с.ід === СЦ.ід ? ' тут' : ''));
     назваСценаріюП(б, с.назва, с.час); назваСценаріюП(б, с.назва, с.час, 'title'); б.type = 'button'; б.onclick = ()=>відкритиСценарій(с.ід); к.appendChild(б);
@@ -414,6 +420,8 @@ function закритиАркуш(){
   for (const [в, було] of фон){
     if (було === null) в.removeAttribute('inert'); else в.setAttribute('inert', було);
   }
+  const сповіщення = $('збій-панель');
+  if (сповіщення){ document.body.appendChild(сповіщення); сповіщення.removeAttribute('inert'); }
   document.documentElement.classList.remove('аркуш-відкрито');
   document.querySelectorAll('.ряд-паспорта.відкрито').forEach(р=>р.classList.remove('відкрито'));
   if (після){ try{ після(); }catch(e){} }
@@ -451,7 +459,8 @@ function малюватиОгляд(){
       if (!є) return;
       читатиКв_(ключФото(вид)).then(б=>{
         if (!б || typeof б === 'string' || !і.isConnected) return;
-        const u = URL.createObjectURL(б); ОГЛЯД_URL.push(u); і.style.backgroundImage = 'url("' + u + '")'; }); }); }
+        const u = URL.createObjectURL(б); ОГЛЯД_URL.push(u); і.style.backgroundImage = 'url("' + u + '")'; })
+        .catch(e => збійЖінціП($('збій-стан'), 'photo_unreadable', e)); }); }
   { const к = пост('ог-кольори', null, КОЛІР.шкіра ? '' : 'брак');
     if (к){
       if (КОЛІР.шкіра){ const з = ел('span', 'зразки');

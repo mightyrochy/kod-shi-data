@@ -1,0 +1,56 @@
+── ПРОМПТ (6441 симв.) ──
+Ти — перекладачка в застосунку-стилістці. Ти пишеш природною українською тексти, які зараз побачить жінка. Рішень не приймаєш, на питання не відповідаєш, змісту не міняєш.
+
+Вхід — JSON-об'єкт: ключ — номер тексту н, значення — текст, який склали код та інші моделі.
+
+Ключі відповіді — ті самі, що у вході, кожен: номер н тексту, значення — рядок, той самий зміст природною українською, без англійських слів і кодів; ПЕРЕКЛАДАЙ КОЖНЕ англійське слово, навіть одне посеред українського речення; латиницею лишай лише назви крамниць і брендів, «V-подібний» і «den»; текст, що вже природний і до неї на «ти», — без змін, а український текст на «ви» перепиши на «ти», решту лиши слово в слово.
+
+Вид кожної речі — теж зміст: річ у перекладі — та сама, що у вході, а не схожа чи сусідня. ankle boots — черевики чи ботильйони, boots — чоботи, heeled — на підборах, а не туфлі, pumps — туфлі-човники, loafers — лофери; pendant — кулон чи підвіска, necklace — намисто чи ланцюжок, а не каблучка, сережки чи браслет; ring — каблучка; earrings — сережки. Українські назви речей у вході (назви з крамниці, найчастіше перед « — ») переписуй літера в літеру: не міняй, не переставляй і не додавай у них жодного слова.
+
+Про жінку — лише до неї, на «ти» (ти, тебе, тобі, твій, твоя; хочеш, скинеш; наказ однини: розкажи, оберни, тримай, дай), і в питаннях теж: you, your, she, her про неї — «ти», «твій» (her skin tone — твій тон шкіри; when she turns her head — коли ти повертаєш голову; she looks taller — ти виглядаєш вищою), англійський наказ — наказом однини; «вона», «її» — лише про річ (сукню, сумку, куртку). Говорить стилістка — одна жінка: про себе — від першої особи однини й у жіночому роді (я підібрала, я б додала), не «ми», не від імені застосунку чи коду і ніколи словами самої жінки.
+
+Мова: літературна українська, як у текстах українських крамниць одягу. Кожне українське слово — літерами лише української абетки, без жодної латинської літери чи стороннього знака всередині слова. Кожне речення — одна остаточна версія, без виправлень посеред тексту. Словничок нижче — лише як перекласти англійське слово, коли воно є у вході; це не зміст: річ, тканина чи колір, яких у вході нема, у тексті не з'являються. Звичні українські назви для слів англійського джерела: trousers, pants — штани; dressy, dressier — ошатний, ошатніше; look, outfit — образ; taupe — сіро-бежевий; loose — вільний; suede — замша (жіночий рід); slip dress — сукня-комбінація; camel — кемел (колір). Назви речей і кольорів, які дала крамниця, — як є.
+
+Слово не повторюється двічі поспіль. Відповідь — рівно ОДИН JSON-об'єкт і нічого після нього: другої, виправленої версії, приміток і пояснень не пиши — помилку виправ у тому самому об'єкті.
+
+Речі образу — перелік речей картки (номер речі — як на картці, поруч — її коди):
+1 — kind code: t_shirt · colour code: rose · about it: text н=1
+2 — kind code: coat · colour code: grey · about it: text н=2
+3 — kind code: sneakers · colour code: pink · about it: text н=3
+4 — kind code: trousers · colour code: milky · about it: text н=4
+5 — kind code: backpack · colour code: brown · about it: text н=5
+When a text speaks of an item of the list, call it by the Ukrainian noun of its kind code (kind code: …) — the same noun in the right case in every text (trench_coat — «тренч», sweater — «светр», loafers — «лофери»), not by another kind or a synonym of the English word, whatever word the English text uses; a code ending in _generic names only the family (dress_generic — a dress, bag_generic — a bag). Make every adjective, pronoun and verb with the item agree with that noun in gender and number («бежевий тренч, який…»; «шкіряні лофери, які…»). A name you translate in this same call (text н=K): give it one noun and call the item by it, in agreement, in every text. A text the list gives as about an item (about it: text н=M) speaks of that one item, and so does every other text where the English names it. The colour of an item of the list is its colour code (colour code: …): write the Ukrainian name of that code. The English colour words for that item are the stylist's impression of a photo: do not turn them into a colour of their own — the item's colour stands in their place. Colours of its details (trim, strap, buttons, print), its fabric and the rest — translate from the text. The list is for the items only: an item the English text does not name is not added to the translation — neither to the description nor to the advice.
+
+Colour codes: brown — коричневий; grey — сірий; milky — молочний; pink — рожевий; rose — трояндовий.
+
+ТЕКСТИ:
+{
+"1": "The top features a delicate floral print in rose tones, with long sleeves that add coverage and warmth for your walk in the cool autumn weather.",
+"2": "This grey relaxed coat offers structure and style with its double-breasted design and belt detail. The cut provides comfort while maintaining a polished look suitable for an urban setting.",
+"3": "The pink sneakers with a star accent bring a playful yet sophisticated touch, combining ease with a stylish edge that complements the softness of your top and trousers.",
+"4": "Milky straight trousers balance the outfit's flow with their clean lines, providing both comfort and versatility for an active day out in the city.",
+"5": "The brown backpack adds practicality to your ensemble, making it perfect for carrying essentials while keeping your hands free during your walk.",
+"6": "For your walk through the city in the cold autumn air, I've chosen a rose-colored top with a floral print to add warmth and a soft touch to your look. A grey relaxed double-breasted coat brings structure and style, while milky straight trousers balance the outfit's flow. Pink sneakers with a star accent and a brown backpack round off the ensemble, offering both comfort and practicality for an outing on the go.",
+"7": "Wear the coat buttoned to create a defined silhouette and add warmth against the cold weather.",
+"8": "Layer the floral top under the grey coat to keep your arms covered while showcasing the delicate print.",
+"9": "Топ Miami DR — The neutral beige cardigan replaces the colored rose top to keep the palette balanced, with the red shoes as the sole accent.",
+"10": "Коротке сіре пальто з поясом — The coat is buttoned to create a clean line and add warmth for the cold weather.",
+"11": "Кросівки жіночі — The red ballet flats are replaced with brown suede sneakers for a more neutral base and comfort."
+}
+
+── ВІДПОВІДЬ (1900 симв., 12.6 с, HTTP 200) ──
+```json
+{
+  "1": "Цей топ має ніжний квітковий принт у рожевих тонах, з довгими рукавами, які додають покриття та тепла для твоєї прогулянки в прохолодну осінню погоду.",
+  "2": "Це сіре пальто вільного крою дарує структуру й стиль завдяки своєму двобортному дизайну та деталі з поясом. Крій забезпечує комфорт, зберігаючи при цьому вишуканий вигляд, який підходить для міського середовища.",
+  "3": "Рожеві кеди із зірковим акцентом додають грайливого й водночас елегантного штриха, поєднуючи легкість з модним акцентом, що доповнює ніжність твого топа та штанів.",
+  "4": "Молочні прямі штани врівноважують образ завдяки своїм чистим лініям, забезпечуючи комфорт і універсальність для активного дня у місті.",
+  "5": "Коричневий рюкзак додає практичності твоєму ансамблю, роблячи його ідеальним для перенесення необхідних речей під час прогулянки та залишаючи твої руки вільними.",
+  "6": "Для твоєї прогулянки містом у холодну осінню пору я обрала топ кольору троянди з квітковим принтом, щоб додати тепла й ніжності до твого образу. Сіре пальто вільного крою двобортного типу дарує структуру та стиль, а молочні прямі штани врівноважують образ. Рожеві кеди із зірковим акцентом і коричневий рюкзак завершують ансамбль, пропонуючи комфорт і практичність для прогулянки на ходу.",
+  "7": "Застебни пальто, щоб створити чіткий силует і додати тепла в холодну погоду.",
+  "8": "Одягни квітковий топ під сіре пальто, щоб прикрити руки та продемонструвати ніжний принт.",
+  "9": "Топ Miami DR — Нейтральний бежевий кардиган замінює кольоровий рожевий топ, щоб зберегти збалансовану палітру, а червоні туфлі стають єдиним акцентом.",
+  "10": "Коротке сіре пальто з поясом — Пальто застебнуте для створення чистої лінії та додавання тепла в холодну погоду.",
+  "11": "Кросівки жіночі — Червоні балетки замінені на коричневі замшеві кеди, щоб створити більш нейтральну основу й забезпечити комфорт."
+}
+```

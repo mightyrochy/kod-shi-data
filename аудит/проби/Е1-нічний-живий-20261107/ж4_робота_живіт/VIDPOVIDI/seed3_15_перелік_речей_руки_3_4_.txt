@@ -1,0 +1,30 @@
+── ПРОМПТ (2143 симв.) ──
+{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.", "One item carries one thing — of two alternatives list the first; a note in brackets is not an item.", "Slot \"accessory\" is for an item no other slot fits.", "\"is_outfit\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "ITEM_LIST", "answer_schema": {"is_outfit": "yes|no", "items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory", "color_hex": "<#rrggbb or null>", "worn": "<true, or false when the description says the outfit goes without it>"}]}, "input": ["\"description\" — the outfit description"]}, "description": "A structured knit top in charcoal gray (#3d3d3d) with a straight cut and elbow-length sleeves to provide coverage without clinging tightly to the midsection.\nDark wash denim trousers with a relaxed fit through the hip and thigh, falling straight to the ankle in color #1f2830 and woven cotton twill fabric.\nA pair of sleek leather loafers in deep espresso (#2c1e1a) with a low block heel for comfortable office walking.\nThis outfit works because the dark, matte tones recede visually while the structured knit fabric creates a smooth silhouette that effectively conceals the belly as requested. The relaxed fit of the trousers balances the top without adding bulk, ensuring a streamlined look appropriate for a professional office setting. The earthy color palette aligns with her skin tones while maintaining a polished yet comfortable appearance suitable for daily wear in autumn weather."}
+
+── ВІДПОВІДЬ (717 симв., 4.2 с, HTTP 200) ──
+{
+  "is_outfit": true,
+  "items": [
+    {
+      "name": "structured knit top",
+      "details": "straight cut and elbow-length sleeves to provide coverage without clinging tightly to the midsection",
+      "slot": "top",
+      "color_hex": "#3d3d3d",
+      "worn": true
+    },
+    {
+      "name": "Dark wash denim trousers",
+      "details": "relaxed fit through the hip and thigh, falling straight to the ankle in woven cotton twill fabric",
+      "slot": "bottom",
+      "color_hex": "#1f2830",
+      "worn": true
+    },
+    {
+      "name": "sleek leather loafers",
+      "details": "low block heel for comfortable office walking",
+      "slot": "shoes",
+      "color_hex": "#2c1e1a",
+      "worn": true
+    }
+  ]
+}

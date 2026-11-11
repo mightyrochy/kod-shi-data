@@ -35,11 +35,37 @@ jobs:
         with:
           python-version: '3.11'
 
+      # Документний PR (наряд CI-час-злиття-2): усі змінені файли — у теках `аудит/<тека>/`, крім `корені`, `проби` й
+      # `адаптери`, — храповик не лічить: жоден прилад кореня не читає наряди, дошку, перевірки, передачі (обсяг —
+      # шляхи в коді приладів і помічників; `корінь_е2_промпти.py` обходить корінь репозиторію, крім `аудит`, `.github`,
+      # `.claude`, і ще `аудит/проби`; ПК-прилади — файли правил у корені й верхньому рівні `аудит/`). Тоді — зелений
+      # пропуск тим самим джобом. Невідомий дифф (не коміт злиття) і push у `main` — лічба, як була.
+      - name: чи зачіпає PR лічене храповиком
+        id: obsiah
+        if: github.event_name == 'pull_request'
+        run: |
+          lichyty=true
+          if git rev-parse -q --verify HEAD^2 >/dev/null; then
+            lichyty=false
+            while IFS= read -r -d '' shliakh; do
+              case "${shliakh}" in
+                аудит/корені/*|аудит/проби/*|аудит/адаптери/*) lichyty=true ;;
+                аудит/*/*) ;;
+                *) lichyty=true ;;
+              esac
+            done < <(git -c core.quotepath=off diff --name-only --no-renames -z HEAD^1 HEAD)
+          fi
+          echo "lichyty=${lichyty}" >> "$GITHUB_OUTPUT"
+          if [ "${lichyty}" = false ]; then
+            echo "Храповик кореня: PR міняє лише записи \`аудит/\` поза коренями, пробами й адаптерами — пропуск, місць не лічено." >> "$GITHUB_STEP_SUMMARY"
+          fi
+
       # PR — коміт злиття проти свого першого батька (той `main`, з яким злито; глибини 2 досить): `base.sha` давній,
       # якщо PR влив свіжий `main`, і дав би чужі файли (дошка 11353). Не злиття — `base.sha`. Push — проти
       # `event.before`. Ручний запуск бази не має: прилад друкує пропуск (дошка 10720).
       - name: храповик кореня
         id: khrapovyk
+        if: steps.obsiah.outputs.lichyty != 'false'
         env:
           BASE: ${{ github.event_name == 'pull_request' && github.event.pull_request.base.sha || github.event.before }}
         run: |
@@ -53,7 +79,7 @@ jobs:
           python3 джерела/прилади/храповик_кореня.py --база "${BASE}" --ознака-стенда "$GITHUB_OUTPUT"
 
       - name: стенд храповика (випадки мірила)
-        if: ${{ !cancelled() && steps.khrapovyk.outputs['стенд'] != 'false' }}
+        if: ${{ !cancelled() && steps.obsiah.outputs.lichyty != 'false' && steps.khrapovyk.outputs['стенд'] != 'false' }}
         run: |
           set -o pipefail
           python3 джерела/прилади/стенд_храповика_кореня.py | tee -a "$GITHUB_STEP_SUMMARY"

@@ -1,7 +1,8 @@
 ﻿#Requires -Version 5.1
 <# Стенд наряду «обгортка-вивантаження-моделі» (31.10, редакція без вивантаження): GPU-позначки стояли через робочий стіл
 Windows (абсолютний поріг пам'яті процесу), а модель LM Studio — інструмент прогонів, не сторонній процес (власник
-31.10 ~21:33 UTC); «Позначки без старту» в #1856 — порожні клітинки; позначка не за форматом стояла мовчки. Справжні функції
+31.10 ~21:33 UTC); «Позначки без старту» в #1856 — порожні клітинки; позначка не за форматом стояла мовчки; GPU-наряд без
+моделі на карті тримав інші GPU-наряди весь прогін (сценарій «в»). Справжні функції
 обгортки; підмінено порожній перелік LM Studio, лічильник відеопам'яті процесів, nvidia-smi, Get-Process, перелік позначок і замки. Кожен виклик
 Invoke-Native записано: обгортка не викликає `lms` (моделей не вивантажує). #>
 param([Parameter(Mandatory = $true)][string]$SourceDir)
@@ -63,7 +64,7 @@ Scenario 'а робочий стіл' {
     function Test-LockFree { $true }
     $LaneDir = $tmp
     $script:Procs = $script:DesktopProcs + $script:IdleProcs; $script:Apps = '5100, C:\Windows\ShellHost.exe' + "`n" + '5200, C:\x\CrossDeviceResume.exe' + "`n" + '5300, C:\x\NVIDIA Overlay.exe'
-    $why = Get-GpuBusyReason @()
+    $why = Get-GpuBusyReason
     Check "а робочий стіл (4 процеси, разом 1390 MiB, оверлей 640) без навантаження — карту віддано: «$why»" ($why -eq '' -and (Test-ExternalGpuFree))
 }
 
@@ -96,19 +97,73 @@ Scenario 'б модель LM Studio' {
     Check 'б друга GPU-позначка (Е2-вікно-переповнення) за тієї самої карти — теж взято' ($script:Started -eq 1 -and $r[0] -eq 1)
 }
 
-# --- (в) живий власний GPU-наряд чи замок: карта зайнята -----------------------------------------------------------------
-Scenario 'в власний наряд' {
+# --- (в) GPU-сесія: наряд без моделі на карті не тримає інших; модель на карті — тримає; вивантаження лише нічийого ----------
+# Два процеси нарядів відтворено в одному: оренда — справжній замок-файл у теці смуг, LM Studio — перелік екземплярів у
+# пам'яті з вивантаженням за ID; ворота gpu.lock справжні.
+Scenario 'в сесія GPU' {
     . (Join-Path $SourceDir 'queue_lanes.ps1')
     . $fakes
-    $LaneDir = $tmp
-    $script:Procs = $script:ModelProcs + $script:IdleProcs; $script:Apps = ''
+    $LaneDir = Join-Path $tmp 'vlanes'; [void][IO.Directory]::CreateDirectory($LaneDir)
+    $script:Procs = $script:DesktopProcs + $script:IdleProcs; $script:Apps = ''
+    $script:Lms = New-Object System.Collections.ArrayList
+    [void]$script:Lms.Add([pscustomobject]@{ id = 'owner-id'; model = 'owner-model' })
+    $script:Unloaded = New-Object System.Collections.ArrayList
+    function Get-LmsInstances { @($script:Lms) }
+    function Invoke-RestMethod { param([string]$Uri, [string]$Method, [string]$ContentType, $Body, [int]$TimeoutSec, $ErrorAction)
+        $id = ($Body | ConvertFrom-Json).instance_id
+        [void]$script:Unloaded.Add($id)
+        foreach ($x in @($script:Lms | Where-Object { $_.id -ceq $id })) { $script:Lms.Remove($x) }
+        [pscustomobject]@{ status = 'unloaded' } }
+    function Write-Log([string]$Text, [switch]$Required) { [void]$script:Logged.Add($Text) }
     function Test-LockFree { $true }
-    $own = @([pscustomobject]@{ Slot = 'claude-1'; Slug = 'п'; Gpu = $true; Marker = 'x'; Proc = [pscustomobject]@{ HasExited = $false } })
-    $why = Get-GpuBusyReason $own
-    Check "в живий власний GPU-наряд — другий не стартує: «$why»" ($why -ne '' -and @(Get-LmsCalls).Count -eq 0)
+    $job = { param($id, $slug) [pscustomobject]@{ id = $id; name = "gemini-queue/$slug/cc-claude-sonnet-5-5-medium/1/gpu" } }
+    $a = & $job 'v-a' 'проба-локальних-моделей'; $b = & $job 'v-b' 'Е1-нічний-живий'; $c = & $job 'v-c' 'автоживий'
+    $session = Join-Path $LaneDir 'gpu-models.json'
+    $leases = { @((Read-GpuSession).Leases | Where-Object { -not $_.done } | ForEach-Object { $_.run }) -join ',' }
+
+    $whyA = Enter-GpuLease $a; $leaseA = $script:GpuLease
+    $why = Get-GpuBusyReason
+    $whyB = Enter-GpuLease $b; $leaseB = $script:GpuLease
+    Check "в наряд з позначкою gpu без моделі на карті не тримає другий: планувальник «$why», допуск A «$whyA», B «$whyB», оренди $(& $leases)" ($whyA -eq '' -and $why -eq '' -and $whyB -eq '' -and (& $leases) -ceq 'v-a,v-b')
+
+    [void]$script:Lms.Add([pscustomobject]@{ id = 'qwen3-vl-8b'; model = 'qwen3-vl-8b' })
+    $script:Procs = $script:DesktopProcs + $script:ModelProcs
+    $why = Get-GpuBusyReason
+    $whyC = Enter-GpuLease $c
+    $line = "GEMINI ОБГОРТКА: ЗАБЛОКОВАНО GPU: $($script:GpuHoldReason), позначок 1"
+    Check "в модель наряду на карті тримає третій: планувальник «$why», допуск C «$whyC», оренди $(& $leases)" ($why -match 'модель GPU-наряду на карті \(qwen3-vl-8b\)' -and $whyC -match 'модель GPU-наряду на карті' -and (& $leases) -ceq 'v-a,v-b' -and -not (Test-Path -LiteralPath (Get-GpuLeaseLockPath 'v-c')))
+    Check "в причина «модель на карті» проходить транспорт диспетчерові: $line" (Test-HoldLine $line)
+
+    $script:GpuLease = $leaseA; Exit-GpuLease $a
+    Check "в кінець A при живому B не вивантажує ні модель, яку міг завантажити B, ні модель власника: вивантажено [$($script:Unloaded -join ',')], оренди $(& $leases)" ($script:Unloaded.Count -eq 0 -and (& $leases) -ceq 'v-b' -and @($script:Lms).Count -eq 2 -and -not (Test-Path -LiteralPath (Get-GpuLeaseLockPath 'v-a')))
+
+    # B гине разом із деревом (замок оренди відпускає ОС), а не проходить finally: прибирає наступний прохід планувальника.
+    $script:GpuLease = $null; $leaseB.Dispose()
+    $ok = Repair-GpuModels
+    Check "в мертва остання оренда: прохід вивантажує лише модель сесії, модель власника лишається, запис прибрано: [$($script:Unloaded -join ',')]" ($ok -and ($script:Unloaded -join ',') -ceq 'qwen3-vl-8b' -and (@($script:Lms | ForEach-Object { $_.id }) -join ',') -ceq 'owner-id' -and -not (Test-Path -LiteralPath $session))
+    $log = @($script:Logged | Where-Object { $_ -like 'GPU вивантаження:*' })
+    Check "в рядок вивантаження називає обидва наряди, які могли її завантажити: $($log -join ' | ')" ($log.Count -eq 1 -and $log[0] -match 'наряд=gemini-queue/проба-локальних-моделей/[^,;]+,gemini-queue/Е1-нічний-живий/' -and $log[0] -match 'прогін=v-a,v-b')
+
+    # Наряд A прийшов першим і завантажив модель сам: його кінець вивантажує її (оренди B на той час нема).
+    $script:Unloaded.Clear()
+    [void](Enter-GpuLease $a); [void]$script:Lms.Add([pscustomobject]@{ id = 'gemma-a'; model = 'gemma' })
+    Exit-GpuLease $a
+    Check "в один наряд: кінець вивантажує свою модель, модель власника лишається: [$($script:Unloaded -join ',')]" (($script:Unloaded -join ',') -ceq 'gemma-a' -and -not (Test-Path -LiteralPath $session))
+
+    # Нестача пам'яті: A живий без моделі, а сторонній процес забрав карту — C не допущено, оренди C нема, A не зачеплено.
+    [void](Enter-GpuLease $a); $leaseA = $script:GpuLease
+    $script:Procs = @(@{ Pid = 4120; MiB = 12000 }) + $script:DesktopProcs
+    $whyC = Enter-GpuLease $c
+    Check "в нестача пам'яті при живому A без моделі — C повертається з причиною: «$whyC», оренди $(& $leases)" ($whyC -match 'вільно [0-9]+ з потрібних 8925 MiB' -and (& $leases) -ceq 'v-a' -and -not (Test-Path -LiteralPath (Get-GpuLeaseLockPath 'v-c')))
+    $script:GpuLease = $leaseA; Exit-GpuLease $a
+
+    # Інший обліковий запис тримає ворота (чи стара версія обгортки — весь прогін): GPU-позначка чекає.
+    $gate = Open-Lock (Get-GpuLockPath)
     function Test-LockFree { $false }
-    $why = Get-GpuBusyReason @()
-    Check "в замок GPU тримає наряд іншого облікового запису — не стартує: «$why»" ($why -ne '' -and @(Get-LmsCalls).Count -eq 0)
+    $why = Get-GpuBusyReason; $whyC = Enter-GpuLease $c
+    $gate.Dispose()
+    Check "в ворота GPU тримає інший процес — не стартує: «$why» / «$whyC»" ($why -match 'замок' -and $whyC -ceq 'замок GPU')
+    Check "в обгортка не викликала lms: $((Get-LmsCalls) -join ' | ')" (@(Get-LmsCalls).Count -eq 0)
 }
 
 # --- (г) GPU-наряд за завантаженої моделі: воркер стартує, після кінця lms не викликано -----------------------------------
@@ -129,13 +184,19 @@ Scenario 'г воркер' {
     $script:Job = [pscustomobject]@{ id = 'g-1'; slot = 'claude-1'; ref = 'gemini-queue/г/cc-claude-sonnet-5-5-medium/1/gpu'; name = 'gemini-queue/г/cc-claude-sonnet-5-5-medium/1/gpu'
         sha = 'b' * 40; time = 0; slug = 'г'; model = 'cc-claude-sonnet-5-5-medium'; n = '1'; cond = 'gpu'; claude = 'claude-sonnet-5-5'; effort = 'medium'
         gpu = $true; prio = 5; limits = $limits }
+    # Інший GPU-наряд (інший процес чи обліковий запис) живий, але моделі на карту не клав: воркер його не чекає.
+    $other = [pscustomobject]@{ id = 'g-0'; name = 'gemini-queue/проба-локальних-моделей/cc-claude-sonnet-5-5-medium/1/gpu' }
+    $otherWhy = Enter-GpuLease $other; $otherLease = $script:GpuLease
     $code = Invoke-Worker
-    Check "г GPU-наряд за моделі LM Studio на карті — воркер пройшов перевірку GPU (код $code) і наряд виконано; lms не викликано: $((Get-LmsCalls) -join ' | '); журнал: $($script:Logged -join ' | ')" ($script:Ran -eq 1 -and $code -ne $script:WorkerGpuBusy -and @(Get-LmsCalls).Count -eq 0)
+    $left = @((Read-GpuSession).Leases | Where-Object { -not $_.done } | ForEach-Object { $_.run }) -join ','
+    Check "г GPU-наряд за моделі LM Studio і живої оренди іншого наряду без моделі — воркер пройшов перевірку GPU (код $code), наряд виконано, лишилась оренда «$left»; lms не викликано: $((Get-LmsCalls) -join ' | '); журнал: $($script:Logged -join ' | ')" ($otherWhy -eq '' -and $script:Ran -eq 1 -and $code -ne $script:WorkerGpuBusy -and $left -ceq 'g-0' -and @(Get-LmsCalls).Count -eq 0)
     # Сторонній процес з'явився між планувальником і воркером: воркер тримає замок сам — причина в журналі з назвою й MiB.
     $script:Procs = @(@{ Pid = 4120; MiB = 12000 }) + $script:DesktopProcs; $script:Logged.Clear(); $script:Ran = 0; $script:Percent = 74
     $code = Invoke-Worker
     $gl = @($script:Logged | Where-Object { $_ -like 'GPU зайнята*' })
     Check "г воркер за стороннього процесу — лишає наряд у черзі з причиною нестачі VRAM і навантаженням, а не «замок»: $($gl -join ' | ')" ($code -eq $script:WorkerGpuBusy -and $script:Ran -eq 0 -and $gl.Count -eq 1 -and $gl[0] -match 'навантаження 74 %' -and $gl[0] -notmatch 'замок')
+    $script:GpuLease = $otherLease; Exit-GpuLease $other
+    Check 'г кінець останньої оренди прибирає запис сесії' (-not (Test-Path -LiteralPath (Join-Path "$tmp/cglanes" 'gpu-models.json')))
 }
 
 # --- (д) сторонній процес: позначка стоїть, причина з назвою й MiB -----------------------------------------------------
@@ -146,7 +207,7 @@ Scenario 'д сторонній процес' {
     $LaneDir = $tmp; $script:StateDir = Join-Path $tmp 'd-state'; [void][IO.Directory]::CreateDirectory($script:StateDir)
     $script:Procs = @(@{ Pid = 4120; MiB = 12000 }) + $script:DesktopProcs + $script:IdleProcs; $script:Apps = '4120, C:\Users\x\chrome.exe'
     $script:Percent = 74
-    $why = Get-GpuBusyReason @()
+    $why = Get-GpuBusyReason
     Check "д сторонній процес 12000 MiB поряд з робочим столом — карту не віддано, причина за нестачею VRAM: «$why» / «$($script:GpuHoldReason)»" ($why -match 'вільно .* з потрібних 8925 MiB; навантаження 74 %' -and $script:GpuHoldReason -match '^вільно .*; навантаження 74 %$' -and -not (Test-ExternalGpuFree))
     $line = "GEMINI ОБГОРТКА: ЗАБЛОКОВАНО GPU: $($script:GpuHoldReason), позначок 1"
     Check "д рядок диспетчерові проходить шаблон: $line" (Test-HoldLine $line)
@@ -175,10 +236,10 @@ Scenario 'е без лічильника' {
     function Test-LockFree { $true }
     $LaneDir = $tmp; $script:NoCounter = $true
     $script:Procs = $script:DesktopProcs; $script:Apps = '7000, C:\Users\x\AppData\Local\Programs\LM Studio\LM Studio.exe' + "`n" + '5100, C:\Windows\ShellHost.exe'
-    $why = Get-GpuBusyReason @()
+    $why = Get-GpuBusyReason
     Check "е без лічильника: робочий стіл не віднімає бюджет наряду двічі — карту віддано: «$why»" ($why -eq '')
     $script:Procs += @(@{ Pid = 4120; MiB = 14376 }); $script:Apps += "`n" + '4120, C:\Users\x\chrome.exe'
-    $why = Get-GpuBusyReason @()
+    $why = Get-GpuBusyReason
     Check "е без лічильника: сторонній chrome.exe — карту не віддано, причина з назвою: «$why» / «$($script:GpuHoldReason)»" ($why -ne '' -and $script:GpuHoldReason -match 'вільно 610 з потрібних 8925 MiB')
     $script:NoCounter = $false
 }

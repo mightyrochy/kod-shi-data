@@ -75,12 +75,10 @@ import міст_помічниця as _МП  # запобіжник обіцян
     правила=(
         "Answer exactly what she asked about her look: whether the item suits her and this "
         "occasion, and what to wear it with.",
-        "Rely on the attached images and the item descriptions.",
         # Без жодної її речі відповідь хвалила «цю куртку» й «Мінськ»,
         # «без пальта» — ні речі, ні міста, ні пальта в її словах і в `case` не було.
-        "Name no item, place, city, weather or plan that neither her question nor \"case\" names; when "
-        "she has shown or described no item, speak of no particular item.",
-        "Name no shops, brands, prices or links: you do not see the catalogue.",
+        "When she has shown or described no item, speak of no particular item.",
+        _ВИМ.БЕЗ_КАТАЛОГУ,
         "Two to four sentences.",
         # На українське питання 4 з 11 відповідей — українською, одна на «ви».
         # З правилом «Write in the language…» — українською 3 з 3: межа «для_неї» вимагала від
@@ -152,16 +150,14 @@ def прийняти(відповідь, промпт=None):
     Проза з дужками чи огорожею ``` — не відповідь: це уривок JSON, і жінці він не йде. `обіцянка` — запобіжник
     `міст_помічниця`. Не прочиталась, і є `промпт` — `промпт_повтору` для ОДНОГО повтору словами розбіжності."""
     сира = str(відповідь or "").strip()
-    if сира and "{" not in сира and "```" not in сира:
-        return dict(відповідь=сира, причина=None, обіцянка=_МП.обіцяє(сира))
     схема = _СВ.СХЕМИ_ВІДПОВІДІ["ВІДПОВІДЬ_СТИЛІСТКИ"]
-    об, чому_не, _ = схема.прочитати(сира)
+    об, чому_не, _ = схема.прочитати(сира)          # проза — теж відповідь: правило прози тримає реєстр
     т = об.get("answer") if isinstance(об, dict) else None
     if isinstance(т, str) and т.strip():
         return dict(відповідь=т.strip(), причина=None, обіцянка=_МП.обіцяє(т))
     # ПРИЧИНА — КОДОМ: вона їде в запис виклику й діагноз звіту власника, не жінці
     причина = ("empty" if not сира else "no_answer_field" if isinstance(об, dict)
-               else "not_json_object: %s" % чому_не)
+               else чому_не if str(чому_не).startswith("schema_mismatch") else "not_json_object: %s" % чому_не)
     return dict(відповідь="", причина=причина, обіцянка=False,
                 **({"промпт_повтору": схема.промпт_повтору(промпт, причина)} if промпт else {}))
 

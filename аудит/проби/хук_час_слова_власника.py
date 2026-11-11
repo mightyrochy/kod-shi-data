@@ -8,6 +8,7 @@
 «~09:35» на слово о 09:26 пропущено. Мірило: «~09:35» — відмова з «09:26»; «09:26» — пропущено; слова нема в
 транскрипті — відмова; транскрипта нема — пропущено з попередженням.
 """
+import hashlib
 import json
 import os
 import subprocess
@@ -46,7 +47,11 @@ def запуск(лист, транскрипт=True, слова=ЗВИЧАЙН�
                     ф.write(json.dumps(подія(i, т_, коли_, ЛЮДИНА), ensure_ascii=False) + "\n")
         вхід = {"tool_name": "mcp__claude-code-remote__send_message", "transcript_path": шлях,
                 "tool_input": {"session_id": МЕНЕДЖЕР, "message": лист}}
+        # Проба часу: слова, звернені до відправника, вже «повертались» — їх перевіряє `хук_слово_до_відправника.py`.
+        with open(os.path.join(т, "повтор"), "w", encoding="utf-8") as ф:
+            ф.write("".join(hashlib.sha256(" ".join(т_.split()).encode()).hexdigest()[:16] + "\n" for т_, _ in слова))
         env = dict(os.environ, CLAUDE_PROJECT_DIR=т, ЛИСТИ_СТАН_ФАЙЛ=os.path.join(т, "з"),
+                   ЛИСТИ_ПОВТОР_ФАЙЛ=os.path.join(т, "повтор"),
                    CLAUDE_CODE_REMOTE_SDK_URL=f"https://x/sessions/cse_{ДИСПЕТЧЕР[len('session_'):]}")
         р = subprocess.run([sys.executable, ХУК], input=json.dumps(вхід), capture_output=True, text=True, env=env)
     рішення = "відмова" if "deny" in р.stdout else "пропущено"

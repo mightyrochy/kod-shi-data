@@ -21,6 +21,8 @@ try {
     & git -C $seed add -A; & git -C $seed commit -q -m 'початкова'; & git -C $seed push -q origin main
     $bare = Join-Path $tmpRoot 'repo.git'; & git clone -q --bare $remote $bare
     . (Join-Path $SourceDir 'gemini_publish.ps1') -WorkDir "$tmpRoot/pub" -OutDir "$tmpRoot/gem-out" -OutboxDir "$tmpRoot/out" -UpdateRoot "$tmpRoot/update"
+    [void][IO.Directory]::CreateDirectory("$OutDir/marker-state")
+    Write-FileAtomic "$OutDir/marker-state/ready" '1'
     $GeminiRunsDir = "$tmpRoot/gemini-runs"
     foreach ($d in @($WorkDir, (Join-Path $WorkDir 'seen'), $OutboxDir)) { [void][IO.Directory]::CreateDirectory($d) }
     $script:Repo = $bare; $script:NoHooks = Join-Path $tmpRoot 'no-hooks'
@@ -40,6 +42,12 @@ try {
         <# Дані API; довільного тексту в позначки не передаємо. #>
         [pscustomobject]@{ created_at=[datetimeoffset]::UtcNow.ToString('o'); number=$Number;title='Код'; user=@{login=$Owner}; head=@{ref=$Branch;sha=$Sha;repo=@{full_name=$Repository}}; base=@{ref='main';repo=@{full_name='mightyrochy/kod-shi-data'}} }
     }
+    function Author([string]$Branch, [string]$Sha, [string]$Model, [string]$Dir = "$WorkDir/state") {
+        <# Рядок ГОТОВО з МОДЕЛЛЮ автора у теці стану, яку ланцюг читає (за $Dir іншого облікового запису — не читає). #>
+        [void][IO.Directory]::CreateDirectory($Dir)
+        [IO.File]::WriteAllText("$Dir/автор-$([guid]::NewGuid().ToString('N')).json", ((@{line="GEMINI ОБГОРТКА: ГОТОВО $Branch $Sha МОДЕЛЬ $Model"}) | ConvertTo-Json), $utf)
+    }
+    Author 'gemini/наряд' $first 'gemini-4-argon-high'
     $script:Pulls = @((Pull 12 'claude/наряд' $first), (Pull 13 'codex/наряд' $first), (Pull 14 'gemini/наряд' $first), (Pull 15 'claude/чужий' $first 'чужий'), (Pull 16 'claude/форк' $first 'mightyrochy' 'чужий/форк'), (Pull 17 "gemini/автоперевірка-12-$first" $first))
     Invoke-WrapperChain
     function Markers { @(& git -C $remote for-each-ref '--format=%(refname)' refs/heads/gemini-queue/) }
@@ -97,6 +105,7 @@ try {
     Check 'автор Claude, Gemini Models 0 %, Argon вільний: перевіряє Argon' (@(SlugMarkers "автоперевірка-31-$head").Count -eq 1 -and @(SlugMarkers "автоперевірка-31-$head")[0] -match '/gemini-4-argon-high/1/p2$')
     $script:Pulls = @((Pull 39 'codex/квота-i' $head)); Invoke-WrapperChain
     Check 'автор GPT, Gemini Models 0 %, Argon вільний: перевіряє Argon' (@(SlugMarkers "автоперевірка-39-$head").Count -eq 1 -and @(SlugMarkers "автоперевірка-39-$head")[0] -match '/gemini-4-argon-high/1/p2$')
+    Author 'gemini/квота-j' $head 'gemini-4-argon-high'
     $script:Pulls = @((Pull 40 'gemini/квота-j' $head)); Invoke-WrapperChain
     Check 'автор Gemini: перевіряє Codex' (@(SlugMarkers "автоперевірка-40-$head").Count -eq 1 -and @(SlugMarkers "автоперевірка-40-$head")[0] -match '/gpt-6\.1-sol-high/1/p2$')
     SetAgy $true
@@ -108,6 +117,7 @@ try {
     Invoke-WrapperChain
     Check 'повтор не дублює рядок хмарному Claude' (@(CloudLines 33).Count -eq 1)
     SetCodex $true
+    Author 'gemini/квота-d' $head 'gemini-4-argon-high'
     $script:Pulls = @((Pull 34 'gemini/квота-d' $head)); Invoke-WrapperChain
     Check 'автор Gemini, Codex на квоті: хмарний Claude' (@(SlugMarkers "автоперевірка-34-$head").Count -eq 0 -and @(CloudLines 34).Count -eq 1)
     Check 'жодної позначки cc- для перевірки' (@(Markers | Where-Object { $_ -match 'автоперевірка-.*/cc-' }).Count -eq 0)
@@ -127,6 +137,7 @@ try {
     # Позначка Codex роботи Gemini, Codex вичерпано: позначку знято, перевірку бере хмарний Claude.
     SetCodex $false
     $head = Merge 'квота-4б.txt' '4б'
+    Author 'gemini/квота-h' $head 'gemini-4-argon-high'
     $script:Pulls = @((Pull 38 'gemini/квота-h' $head)); Invoke-WrapperChain
     Check 'до квоти: позначка Codex роботи Gemini' (@(SlugMarkers "автоперевірка-38-$head").Count -eq 1 -and @(CloudLines 38).Count -eq 0)
     SetCodex $true; Invoke-WrapperChain; Invoke-WrapperChain
@@ -181,6 +192,22 @@ try {
     Check 'GEMINI4ARGON 0 %, стороння група 1 %: позначка перейшла до Codex, одна' ($got.Count -eq 1 -and $got[0] -match '/gpt-6\.1-sol-high/1/p2$')
     "  мірило: заміна позначки — без назв $(@($was | ForEach-Object { ($_ -split '/')[-3] }) -join ',') → з назвами $(@($got | ForEach-Object { ($_ -split '/')[-3] }) -join ',')"
     SetCodex $false
+    # 13027: автор GPT на гілці gemini/, стан якого лежить у теці іншого облікового запису (ланцюг її не читає):
+    # автор невідомий — позначки gpt-… нема, є рядок хмарному Claude; Codex не перевіряє те, чого автор не доведений.
+    SetCodex $false; SetAgy $false
+    $head = Merge 'автор-gpt.txt' '1'
+    Author 'gemini/автор-gpt' $head 'gpt-6.1-sol-high' "$tmpRoot/gemini-account/state"
+    $script:Pulls = @((Pull 60 'gemini/автор-gpt' $head)); Invoke-WrapperChain
+    Check 'автор GPT зі станом поза ланцюгом: позначки gpt-… нема' (@(SlugMarkers "автоперевірка-60-$head" | Where-Object { $_ -match '/gpt-' }).Count -eq 0)
+    Check 'автор GPT зі станом поза ланцюгом: рядок хмарному Claude, позначок нема' (@(SlugMarkers "автоперевірка-60-$head").Count -eq 0 -and @(CloudLines 60).Count -eq 1 -and @(CloudLines 60)[0].EndsWith($head))
+    Invoke-WrapperChain
+    Check 'автор GPT: повтор не дублює рядок' (@(CloudLines 60).Count -eq 1)
+    "  мірило: позначок Codex для невідомого автора на PR 60 — $(@(SlugMarkers "автоперевірка-60-$head" | Where-Object { $_ -match '/gpt-' }).Count), рядків хмарному Claude — $(@(CloudLines 60).Count)"
+    # Автор GPT відомий ланцюгові (стан у його теці): рецензент agy, як і було.
+    $head = Merge 'автор-gpt-2.txt' '2'
+    Author 'gemini/автор-gpt-2' $head 'gpt-6.1-sol-high'
+    $script:Pulls = @((Pull 61 'gemini/автор-gpt-2' $head)); Invoke-WrapperChain
+    Check 'автор GPT відомий: рецензент agy' (@(SlugMarkers "автоперевірка-61-$head").Count -eq 1 -and @(SlugMarkers "автоперевірка-61-$head")[0] -match '/gemini-4-argon-high/1/p2$')
     # Звіт, що вже опубліковано, інший рушій не повторює.
     SetAgy $false
     [void][IO.Directory]::CreateDirectory("$WorkDir/state")

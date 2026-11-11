@@ -59,7 +59,7 @@ try {
         Check '1 кривий файл — попередні значення' ((Get-Limits).slots['agy'] -eq 3)
         $script:LanesText = [IO.File]::ReadAllText((Join-Path $SourceDir 'смуги.json'), $utf)
         $script:Limits = Get-Limits
-        Check "1 смуги.json main: слоти з виміру $($script:Limits.slots['claude'])/$($script:Limits.slots['codex'])/$($script:Limits.slots['agy']), без джерела $(@($script:Limits.unsourced).Count)" ($script:Limits.slots['claude'] -eq 54 -and $script:Limits.slots['codex'] -eq 54 -and @($script:Limits.unsourced).Count -eq 7 -and @($script:Limits.unsourced) -cnotcontains 'slots.claude')
+        Check "1 смуги.json main: слоти з виміру $($script:Limits.slots['claude'])/$($script:Limits.slots['codex'])/$($script:Limits.slots['agy']), без джерела $(@($script:Limits.unsourced).Count)" ($script:Limits.slots['claude'] -eq 54 -and $script:Limits.slots['codex'] -eq 10 -and @($script:Limits.unsourced).Count -eq 7 -and @($script:Limits.unsourced) -cnotcontains 'slots.claude')
         $script:LanesText = Lanes '{"n": 40, "джерело": ""}'
         $script:Limits = Get-Limits
 
@@ -145,6 +145,36 @@ try {
         function Get-Markers { @() }
         $body = Get-StatusBody
         Check '4 #1856: розділ «Аварії однієї причини» з лічбою 12 і всіма гілками' ($body.Contains('### Аварії однієї причини') -and $body -cmatch '\| CRASH \| 12 \| claude/наряд-1, .*claude/наряд-12 \|')
+    }
+
+    Scenario '4б стан несе вимір відеокарти, а не лише замок' {
+        . (Join-Path $SourceDir 'claude_run.ps1') -WorkDir "$tmp/cr" -RepoDir $tmp -OutboxDir "$tmp/cbox" -PublishDir "$tmp/pub" -GeminiOutDir "$tmp/gout" -LaneDir "$tmp/lanes" -TmpDir "$tmp/ctmp" -NoStatus
+        $script:StateDir = "$tmp/cr/state"; $script:SlotDir = "$tmp/cr/slots"; $script:Limits = $null
+        function Get-TaskRows { @() }
+        function Get-Markers { @() }
+        $script:Tel = [pscustomobject]@{ Error = ''; TotalMiB = 16376; FreeMiB = 2376; Percent = 83 }
+        $script:Rows = @(
+            [pscustomobject]@{ Name = 'pid_111_luid_0x0_0x1_phys_0'; DedicatedUsage = [string](10240 * 1MB) },
+            [pscustomobject]@{ Name = 'pid_222_luid_0x0_0x1_phys_0'; DedicatedUsage = [string](512 * 1MB) },
+            [pscustomobject]@{ Name = 'pid_333_luid_0x0_0x1_phys_0'; DedicatedUsage = '4096' },
+            [pscustomobject]@{ Name = 'pid_444_luid_0x0_0x1_phys_1'; DedicatedUsage = [string](900 * 1MB) })
+        function Get-GpuTelemetry { $script:Tel }
+        function Get-GpuCounterRows { $script:Rows }
+        function Get-GpuProcessInfo([int]$ProcessId) { [pscustomobject]@{ Name = @{ 111 = 'ollama'; 222 = 'dwm' }[$ProcessId]; Path = '' } }
+        # Замок вільний (ніхто з наряду GPU не тримає), а карта зайнята на 83 %: ДО стан казав «GPU: вільна», ПІСЛЯ — вимір.
+        $body = Get-StatusBody
+        Check '4б вимір карти: UTC, завантаження 83 %, зайнято 14000 з 16376 MiB' ($body -cmatch '(?m)^- вимір карти \(nvidia-smi, UTC 20[0-9]{2}-[0-9]{2}-[0-9]{2}T[0-9:]{8}Z\): завантаження 83 % · пам.ять зайнято 14000 з 16376 MiB \(вільно 2376\)$')
+        Check '4б процеси-власники: PID, ім''я, MiB за спаданням; <1 MiB і чужа карта (phys_1) не входять' ($body.Contains('(лічильник Windows, PID ім''я MiB): 111 ollama 10240 · 222 dwm 512') -and -not $body.Contains(' 333 ') -and -not $body.Contains(' 444 '))
+        Check '4б замок — окреме поле з назвою замка, вільний при зайнятій карті' ($body.Contains('- замок GPU обгортки (запис слотів нарядів, не вимір карти): вільний'))
+        Check '4б старого рядка «GPU: вільна/зайнята» нема, межі — окремим рядком' (-not ($body -cmatch '(?m)^GPU: ') -and $body -cmatch '(?m)^межі: claude-run — ')
+        $script:Tel = [pscustomobject]@{ Error = 'nvidia-smi не відповів'; TotalMiB = 0; FreeMiB = 0; Percent = 0 }
+        $body = Get-StatusBody
+        Check '4б помилка виміру названа з часом UTC, чисел карти й процесів нема' ($body -cmatch '(?m)^- вимір карти \(UTC 20[0-9]{2}-[0-9]{2}-[0-9]{2}T[0-9:]{8}Z\): nvidia-smi не відповів' -and -not $body.Contains('процеси-власники'))
+        $script:Tel = [pscustomobject]@{ Error = ''; TotalMiB = 16376; FreeMiB = 16376; Percent = 0 }
+        $script:Rows = $null
+        $body = Get-StatusBody
+        Check '4б лічильник процесів недоступний — названо, пам''ять карти лишається' ($body.Contains('завантаження 0 % · пам''ять зайнято 0 з 16376 MiB') -and $body -cmatch '(?m)^- процеси-власники пам.яті: лічильник Windows недоступний \(UTC ')
+        Check '4б вимір не гейтить узяття: Start-Markers і Get-FreeSlot без Get-GpuStateLines' (-not ((Get-Command Start-Markers).Definition -match 'Get-GpuStateLines') -and -not ((Get-Command Get-FreeSlot).Definition -match 'Get-GpuStateLines'))
     }
 
     # --- 5–6: головний цикл claude-run (Main) зі справжнім Get-VersionSwitch і прибиранням; підмінено git, позначки, ---
