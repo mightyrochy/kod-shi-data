@@ -213,12 +213,14 @@ function Start-Tree($Psi) {
     <# Старт процесу в задачі Windows: нащадки, відірвані від батька (nohup, start), лишаються в ній, і Stop-Tree зупиняє
     їх разом із деревом. 08.11 вимір, запущений сесією через nohup, після кінця наряду тримав 12 ГБ відеокарти й копію задачі. #>
     # Тип збирається до старту: збірка триває секунди, а нащадки, народжені до прив'язки, у задачу не потрапляють.
+    # Нема задачі (збірка типу чи прив'язка не вдалися: «Access is denied» для процесу, що вже завершився) — це журнал, а не
+    # збій запуску: Write-Log належить викликачеві, і його відсутність чи помилка не мають кидати виняток після старту.
     $typed = $false
-    if ($script:OnWindows) { try { Add-TreeJobType; $typed = $true } catch { Write-Log "задача процесів: $($_.Exception.Message)" } }
+    if ($script:OnWindows) { try { Add-TreeJobType; $typed = $true } catch { try { Write-Log "задача процесів: $($_.Exception.Message)" } catch { } } }
     $p = [System.Diagnostics.Process]::Start($Psi)
     if ($typed) {
         try { $script:TreeJobs[$p.Id] = [GeminiWrapper.TreeJob]::Create($p.Handle) }
-        catch { Write-Log "задача процесів $($p.Id): $($_.Exception.Message) — лишки зупиняє лише дерево" }
+        catch { $why = $_.Exception.Message; try { Write-Log "задача процесів $($p.Id): $why — лишки зупиняє лише дерево" } catch { } }
     }
     $p
 }
@@ -460,24 +462,42 @@ function Get-TaskSource($M) {
     Get-AutoTaskPath $M.Slug
 }
 
-function Get-NightlyMarker([datetime]$Now = [datetime]::UtcNow) {
-    <# Після 02:00 UTC читає лише датований дозвіл із GitHub; локальний стан не дає прав. #>
+function Get-NightlyBuild([string]$Sha) {
+    <# Збірка, на якій стоїть нічний дозвіл: штамп build.txt його коміту; '' — штампа нема чи він хибний. Одне місце для
+    Get-NightlyMarker і для ланцюга, що переносить дозвіл (Move-NightlyMarker у wrapper_chain.ps1). #>
+    $build = (Invoke-Git @('cat-file','blob',"${Sha}:build.txt") -AllowFail).Out.Trim()
+    if ($build -cmatch '^[0-9a-f]{40}$') { $build } else { '' }
+}
+
+function Get-NightlyMarker([datetime]$Now = [datetime]::UtcNow, [switch]$OpenOnly) {
+    <# Після 02:00 UTC читає лише датований дозвіл із GitHub; локальний стан не дає прав. Дозвіл дати — найбільша спроба /N
+    з комітом на main: кінець /1 (CRASH від сну) його не з'їдає, а повтор — лише нова спроба /N від диспетчера. Дві спроби
+    водночас не йдуть: slug у всіх спроб один, його тримає Test-SlugBusy. -OpenOnly — лише вікно: $true, коли нічний
+    відкрито (так ланцюг, що переносить дозвіл, не тримає другої години: Test-NightlyOpen у wrapper_chain.ps1). #>
     $utc = $Now.ToUniversalTime()
     if ($utc.Hour -lt 2) { return }
+    if ($OpenOnly) { return $true }
     $date = $utc.ToString('yyyyMMdd')
-    $ref = $script:QueuePrefix + 'Е1-нічний-живий-' + $date + '/gpt-6.1-sol-high/1/gpu-p8'
-    $sha = Get-RefSha $ref
-    if ($sha -cnotmatch '^[0-9a-f]{40}$') { return }
+    $head = $script:QueuePrefix + 'Е1-нічний-живий-' + $date + '/gpt-6.1-sol-high/'
     $main = Get-RefSha 'refs/remotes/origin/main'
-    if ($main -cnotmatch '^[0-9a-f]{40}$' -or
-        (Invoke-Git @('merge-base', '--is-ancestor', $sha, $main) -AllowFail).Code -ne 0) { return }
+    if ($main -cnotmatch '^[0-9a-f]{40}$') { return }
+    $tries = @(foreach ($name in ((Invoke-Git @('for-each-ref', '--format=%(refname)', $head)).Out -split "`n")) {
+        if ($name.Trim() -cmatch ('^' + [regex]::Escape($head) + '([1-9][0-9]{0,2})/gpu-p8$')) { [pscustomobject]@{ N = [int]$Matches[1]; Ref = $name.Trim() } }
+    })
+    $n = 0; $ref = ''; $sha = ''
+    foreach ($t in @($tries | Sort-Object N -Descending)) {
+        $s = Get-RefSha $t.Ref
+        if ($s -cmatch '^[0-9a-f]{40}$' -and (Invoke-Git @('merge-base', '--is-ancestor', $s, $main) -AllowFail).Code -eq 0) { $n = $t.N; $ref = $t.Ref; $sha = $s; break }
+    }
+    if (-not $ref) { return }
     $template = 'аудит/наряди/автоживий.md'
-    $build = (Invoke-Git @('cat-file','blob',"${sha}:build.txt") -AllowFail).Out.Trim()
-    if ($build -cmatch '^[0-9a-f]{40}$' -and (Invoke-Git @('for-each-ref','--format=%(refname)',($script:QueuePrefix + "автоживий-$build/"))).Out.Trim()) { return }
+    $build = Get-NightlyBuild $sha
+    if ($build -and (Invoke-Git @('for-each-ref','--format=%(refname)',($script:QueuePrefix + "автоживий-$build/"))).Out.Trim()) { return }
     if ((Invoke-Git @('cat-file', '-e', "${sha}:$template") -AllowFail).Code -ne 0) { return }
     $dir = Join-Path $RunsDir 'nightly'
     [void](New-Item -ItemType Directory -Force -Path $dir)
-    $file = Join-Path $dir ($date + '.json')
+    # Стан — на спробу: /1 лишає `<дата>.json` (старий формат читається так само), /N>1 — `<дата>-<N>.json`; стан /1 нової спроби не блокує.
+    $file = Join-Path $dir ($date + $(if ($n -gt 1) { "-$n" } else { '' }) + '.json')
     if (Test-Path -LiteralPath $file) {
         $saved = [System.IO.File]::ReadAllText($file, $script:Utf8) | ConvertFrom-Json
         if ($saved.date -cne $date -or $saved.sha -cnotmatch '^[0-9a-f]{40}$' -or
