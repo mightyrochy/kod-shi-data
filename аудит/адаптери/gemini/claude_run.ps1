@@ -57,6 +57,7 @@ param(
     [string]$HealthDrive = 'C:\',
     [string]$TmpDir = 'C:\tmp',
     [switch]$NoStatus,
+    [switch]$MeasureHealth,
     [string]$WorkerFile = ''
 )
 
@@ -72,6 +73,7 @@ foreach ($k in $PSBoundParameters.Keys) {
 }
 $script:SelfPath = $PSCommandPath
 . (Join-Path $PSScriptRoot 'queue_lanes.ps1')
+Set-RemoteRoot 'refs/claude-run'
 
 $script:Lanes = @('claude')
 $script:EffortPattern = '^(.+)-(none|minimal|low|medium|high|xhigh|max|ultra)$'
@@ -306,26 +308,43 @@ function Read-ClaudeQuota {
 
 # Здоров'я машини (10971): вільне місце диска й зміна за добу, розміри названих тек, позначки черги за рушієм, видом і
 # віком голови, позначки на рушії з нульовою квотою. Лише показ — узяття не гейтить; вимір — не частіше за usage_minutes,
-# без обходу всього диска; профіль gemini міряє gemini-run (heartbeat).
+# без обходу всього диска; профіль gemini міряє gemini-run (heartbeat), а теки — окремий процес цього скрипта
+# (-MeasureHealth): обхід `claude-run` з копіями задач (~8 ГБ) іде хвилини й не стоїть у проході стану.
 function Get-FreeBytes { (New-Object System.IO.DriveInfo $HealthDrive).AvailableFreeSpace }
 
 function Format-Gb([double]$Bytes) { ($Bytes / 1GB).ToString('0.0', [cultureinfo]::InvariantCulture) + ' ГБ' }
+
+# Розміри названих тек з кешу dirs.json (Get-MeasureCache); нема кешу — порожньо, розмір з'явиться після обходу.
+function Get-HealthDirs {
+    $c = Get-MeasureCache $WorkDir 'dirs' @('-MeasureHealth', '-WorkDir', $WorkDir, '-TmpDir', $TmpDir) (Get-Limit $script:Limits 'UsageMinutes' 'usage_minutes')
+    if ($null -eq $c) { return @() }
+    @($c.dirs)
+}
+
+# Тіло процесу -MeasureHealth: обхід названих тек і кеш dirs.json (Save-MeasureCache).
+function Invoke-HealthMeasure {
+    Save-MeasureCache $WorkDir 'dirs' {
+        [ordered]@{ dirs = @(foreach ($d in @(@('C:\tmp', $TmpDir), @('claude-run', $WorkDir))) {
+            $r = Measure-DirBytes $d[1]
+            [pscustomobject]@{ name = $d[0]; bytes = $(if ($null -ne $r) { $r.Bytes } else { -1 }); skipped = $(if ($null -ne $r) { $r.Skipped } else { 0 }) }
+        }) }
+    }
+}
 
 function Update-Health {
     $path = Join-Path $WorkDir 'health.json'
     $h = $null
     if (Test-Path -LiteralPath $path) { try { $h = [System.IO.File]::ReadAllText($path, $script:Utf8) | ConvertFrom-Json } catch { $null = $_ } }
+    $dirs = @(Get-HealthDirs)
     $now = [DateTimeOffset]::UtcNow.ToUnixTimeSeconds()
-    if ($null -ne $h -and $now - [long]$h.time -lt 60 * (Get-Limit $script:Limits 'UsageMinutes' 'usage_minutes')) { return $h }
+    if ($null -ne $h -and $now - [long]$h.time -lt 60 * (Get-Limit $script:Limits 'UsageMinutes' 'usage_minutes')) {
+        $h | Add-Member -NotePropertyName dirs -NotePropertyValue $dirs -Force
+        return $h
+    }
     $samples = @(@(Get-JsonProp $h 'samples') | Where-Object { $null -ne $_ -and $now - [long]$_.t -le 2 * 86400 })
     try { $samples += [pscustomobject]@{ t = $now; free = [long](Get-FreeBytes) } } catch { Write-Log "здоров'я: місце не виміряно" }
-    $dirs = @(foreach ($d in @(@('C:\tmp', $TmpDir), @('claude-run', $WorkDir))) {
-        $r = Measure-DirBytes $d[1]
-        [pscustomobject]@{ name = $d[0]; bytes = $(if ($null -ne $r) { $r.Bytes } else { -1 }); skipped = $(if ($null -ne $r) { $r.Skipped } else { 0 }) }
-    })
-    $h = [pscustomobject]@{ time = $now; samples = $samples; dirs = $dirs }
-    Write-FileAtomic $path ($h | ConvertTo-Json -Compress -Depth 4)
-    $h
+    Write-FileAtomic $path ([pscustomobject]@{ time = $now; samples = $samples } | ConvertTo-Json -Compress -Depth 4)
+    [pscustomobject]@{ time = $now; samples = $samples; dirs = $dirs }
 }
 
 function Get-HealthLines($G, $Cq) {
@@ -899,7 +918,7 @@ function Enter-ClaudeQuotaWait($M, [string]$StatePath, [string]$Id, $R, [string]
 function Invoke-Task($M, $Job) {
     $statePath = Get-StatePath (Get-MarkerKey $M)
     $id = [string]$Job.id
-    $main = Get-RefSha 'refs/remotes/origin/main'
+    $main = Get-RefSha "$script:RemoteRoot/main"
     $taskPath = Get-AutoTaskPath $M.Slug
     if (-not $main -or (Invoke-Git @('merge-base', '--is-ancestor', $M.Sha, $main) -AllowFail).Code -ne 0) { return (Complete-Task $M $statePath $id 'NOT_ON_MAIN') }
     if (-not (Test-TaskFile $M.Sha $taskPath)) { return (Complete-Task $M $statePath $id 'NO_TASK_FILE') }
@@ -921,8 +940,8 @@ function Invoke-Task($M, $Job) {
     $mergeMain = $false
     if ($cont) {
         # Гілка попередньої спроби: злита в main — агент іде від main, не з неї; відстала — перший крок влити main (Get-AttemptStart).
-        [void](Invoke-Git @('fetch', '-q', '--no-tags', 'origin', "+refs/heads/${cont}:refs/remotes/origin/$cont") -AllowFail)
-        $att = Get-AttemptStart (Get-RefSha "refs/remotes/origin/$cont") $main
+        [void](Invoke-Git @('fetch', '-q', '--no-tags', '--refmap=', 'origin', "+refs/heads/${cont}:$script:RemoteRoot/$cont") -AllowFail)
+        $att = Get-AttemptStart (Get-RefSha "$script:RemoteRoot/$cont") $main
         if ($att.Mode -eq 'MERGED') { Write-Log "позначка $($M.Name): $cont злита в main — старт від main"; $cont = '' }
         elseif ($att.Mode -eq 'BEHIND') { Write-Log "позначка $($M.Name): $cont відстала від main — перший крок влити main"; $mergeMain = $true }
     }
@@ -931,10 +950,10 @@ function Invoke-Task($M, $Job) {
     # Копія задачі — лише після звірки голови: мертва позначка її не отримує; після звіту — геть.
     try {
         $taskDir = Get-TaskCopyDir $id
-        [void](New-TaskCopy $taskDir 'refs/remotes/origin/main' $taskText)
+        [void](New-TaskCopy $taskDir "$script:RemoteRoot/main" $taskText)
         Invoke-ClaudeTask $M $Job $exe $taskText $cont $runDir $statePath $taskDir $mergeMain
     } finally {
-        if (Close-TaskCopy @('--remotes')) { [void](Add-Line "GEMINI ОБГОРТКА: ЗАБЛОКОВАНО claude/$($M.Slug) COPY_KEPT") }
+        if (Close-TaskCopy @('--remotes', "--glob=$script:RemoteRoot/*")) { [void](Add-Line "GEMINI ОБГОРТКА: ЗАБЛОКОВАНО claude/$($M.Slug) COPY_KEPT") }
     }
 }
 
@@ -1186,7 +1205,7 @@ function Get-IdleLines {
 
 function Invoke-Off($M) {
     $statePath = Get-StatePath (Get-MarkerKey $M)
-    $main = Get-RefSha 'refs/remotes/origin/main'
+    $main = Get-RefSha "$script:RemoteRoot/main"
     if (-not $main -or (Invoke-Git @('merge-base', '--is-ancestor', $M.Sha, $main) -AllowFail).Code -ne 0) {
         [void](Add-Line "GEMINI ОБГОРТКА: ЗАБЛОКОВАНО claude/$($M.Slug) NOT_ON_MAIN")
         Write-FileAtomic $statePath 'DONE NOT_ON_MAIN'
@@ -1361,6 +1380,7 @@ function Invoke-Worker {
 }
 
 function Main {
+    if ($MeasureHealth) { return (Invoke-HealthMeasure) }
     if ($WorkerFile) { $script:Job = Read-WorkerJob $WorkerFile }
     $script:StateDir = Join-Path $WorkDir 'state'
     $script:SlotDir = Join-Path $WorkDir 'slots'
@@ -1397,13 +1417,13 @@ function Main {
             $started = 0; $off = $null
             try {
                 [void](Repair-GpuModels)
-                [void](Invoke-Git @('fetch', '-q', '--prune', '--no-tags', 'origin',
-                        '+refs/heads/main:refs/remotes/origin/main',
-                        '+refs/heads/gemini-queue/*:refs/remotes/origin/gemini-queue/*') -TimeoutMinutes 15)
+                [void](Invoke-Git @('fetch', '-q', '--prune', '--no-tags', '--refmap=', 'origin',
+                        "+refs/heads/main:$script:RemoteRoot/main",
+                        "+refs/heads/gemini-queue/*:$($script:QueuePrefix)*") -TimeoutMinutes 15)
                 $script:Limits = Get-Limits
                 # Накопичене — після першого успішного fetch (до нього origin/* застарілі): прохід, що впав на
                 # fetch, прибирання не знімає.
-                if ($clean) { Clear-TaskCopies (Join-Path $WorkDir 'w') @('--remotes'); $clean = $false }
+                if ($clean) { Clear-TaskCopies (Join-Path $WorkDir 'w') @('--remotes', "--glob=$script:RemoteRoot/*"); $clean = $false }
                 Clear-OrphanClaims (Join-Path $WorkDir 'runs')
                 Wait-PowerPause  # без світла нові позначки не стартують
                 $r = Start-Markers $script:Workers

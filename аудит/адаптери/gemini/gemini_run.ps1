@@ -1264,31 +1264,20 @@ function Start-Markers($Workers) {
     $started
 }
 
-# Розмір профілю gemini (-ProfileDir) міряє окремий процес цього скрипта (-MeasureProfile): обхід ~245 ГБ ішов ~15 хв
-# (вимір 11.11), і всередині heartbeat тримав головний цикл. Замок health.lock — один обхід водночас; час кешу
-# health.json — кінець обходу, тож наступний обхід не раніше ніж за usage_minutes після нього.
+# Розмір профілю gemini (-ProfileDir) міряє окремий процес цього скрипта (-MeasureProfile): обхід ~245 ГБ ішов ~15 хв,
+# і всередині heartbeat тримав головний цикл. Кеш health.json, замок health.lock й запуск — Get-MeasureCache.
 function Invoke-ProfileMeasure {
-    $lock = Open-Lock (Join-Path $RunsDir 'health.lock')
-    if ($null -eq $lock) { return 0 }
-    try {
+    Save-MeasureCache $RunsDir 'health' {
         $r = Measure-DirBytes $ProfileDir
-        $c = [ordered]@{ time = [DateTimeOffset]::UtcNow.ToUnixTimeSeconds(); read = (Get-UtcStamp (Get-Date)); profile = $(if ($null -ne $r) { [string]$r.Bytes } else { '' }); skipped = $(if ($null -ne $r) { [string]$r.Skipped } else { '' }) }
-        Write-FileAtomic (Join-Path $RunsDir 'health.json') ($c | ConvertTo-Json -Compress)
-    } finally { $lock.Dispose() }
-    0
+        [ordered]@{ profile = $(if ($null -ne $r) { [string]$r.Bytes } else { '' }); skipped = $(if ($null -ne $r) { [string]$r.Skipped } else { '' }) }
+    }
 }
 
 # Здоров'я для стану ноутбука (10971; лише показ): розмір профілю gemini з кешу health.json (застарів за usage_minutes —
 # запускає Invoke-ProfileMeasure окремим процесом і не чекає його), і скільки позначок agy стоїть на групі квоти з 0 %
 # (усі групи моделі — 0 %, як Get-Quota).
 function Get-GeminiHealth {
-    $path = Join-Path $RunsDir 'health.json'
-    $c = $null
-    if (Test-Path -LiteralPath $path) { try { $c = [System.IO.File]::ReadAllText($path, $script:Utf8) | ConvertFrom-Json } catch { $null = $_ } }
-    $now = [DateTimeOffset]::UtcNow.ToUnixTimeSeconds()
-    if ($null -eq $c -or $now - [long]$c.time -ge 60 * (Get-Limit $script:Limits 'UsageMinutes' 'usage_minutes')) {
-        if (Test-LockFree (Join-Path $RunsDir 'health.lock')) { $script:ProfileMeasure =[System.Diagnostics.Process]::Start((New-StartInfo (Get-Process -Id $PID).Path @('-NoProfile', '-NonInteractive', '-ExecutionPolicy', 'Bypass', '-File', $script:SelfPath, '-MeasureProfile', '-RunsDir', $RunsDir, '-ProfileDir', $ProfileDir) '' -NoRedirect)) }
-    }
+    $c = Get-MeasureCache $RunsDir 'health' @('-MeasureProfile', '-RunsDir', $RunsDir, '-ProfileDir', $ProfileDir) (Get-Limit $script:Limits 'UsageMinutes' 'usage_minutes')
     if ($null -eq $c) { $c = [pscustomobject]@{ profile = ''; skipped = ''; read = '' } }
     # Кеш /usage, як у квоті heartbeat: сам вимір agy не запускає; нема кешу — «?» у стані.
     $zero = ''

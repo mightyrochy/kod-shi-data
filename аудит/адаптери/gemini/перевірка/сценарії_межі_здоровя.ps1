@@ -81,6 +81,10 @@ try {
         [IO.File]::WriteAllText("$tmp/gout/heartbeat.json", (@{ read_utc = (& $stamp 0); time = (Get-Date).ToString('s'); isolation = 'OK'; limits = 'origin/main'
                     unsourced = @('poll_minutes', 'slots.claude', 'вигадане'); health = @{ profile = [string](3 * $gb); skipped = '2'; read = (& $stamp -30); zero = '4' } } | ConvertTo-Json -Compress -Depth 4), $utf)
         $body = Get-StatusBody
+        # 14593: обхід тек — окремий процес; перший прохід розмірів ще не має, наступний бере їх з кешу dirs.json.
+        $mp = Get-Variable -Scope Script -Name MeasureProc -ValueOnly -ErrorAction SilentlyContinue
+        Check '2 обхід тек пішов окремим процесом і завершився' ($null -ne $mp -and $mp.WaitForExit(120000) -and $mp.ExitCode -eq 0)
+        $body = Get-StatusBody
         [IO.File]::WriteAllText("$tmp/status.md", $body, $utf)
         Check '2 межа без джерела: slots.claude (claude-run, gemini-run)' ($body.Contains('- межа без джерела: slots.claude (claude-run, gemini-run)'))
         Check '2 чужого поля з heartbeat у межах нема' (-not $body.Contains('вигадане'))
