@@ -391,7 +391,9 @@ function Update-SleepEvents {
         if ($event.announced) { continue }
         $from = Get-SleepTime $event.from; $to = Get-SleepTime $event.to
         $n = Get-SleepTaskCount $event
-        $line = "GEMINI ОБГОРТКА: СОН $($from.ToString('yyyy-MM-ddTHH:mm:ssZ')) → $($to.ToString('yyyy-MM-ddTHH:mm:ssZ')), нарядів $n"
+        # Нове завантаження — ноутбук був вимкнений (чи втратив живлення), а не спав: інша назва, той самий дозвіл повтору.
+        $kind = $(if ([string](Get-Prop $event 'source') -ceq 'heartbeat/boot') { 'ВИМКНЕНО-СТАРТ' } else { 'СОН' })
+        $line = "GEMINI ОБГОРТКА: $kind $($from.ToString('yyyy-MM-ddTHH:mm:ssZ')) → $($to.ToString('yyyy-MM-ddTHH:mm:ssZ')), нарядів $n"
         # Стале ім'я витримує збій між записом вихідних і збереженням announced.
         Add-OutboxLine ($to.ToString('yyyyMMdd-HHmmss') + '-' + ([regex]::Match($event.key, '^[0-9a-f]{12}').Value) + '.txt') $line # Суфікс — формат чинного OutboxNamePattern.
         $event.announced = $true
@@ -584,7 +586,7 @@ function Reset-State([string]$Id) {
 $script:OutboxNamePattern = '^[0-9]{8}-[0-9]{6}-[0-9a-f]{12}\.txt$'
 $script:SlugCore = $script:SlugPattern -replace '^\^|\\z$', ''
 $script:OutboxTemplates = @(
-    '\AGEMINI ОБГОРТКА: СОН [0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z → [0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z, нарядів [0-9]{1,5}\z'
+    '\AGEMINI ОБГОРТКА: (?:СОН|ВИМКНЕНО-СТАРТ) [0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z → [0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z, нарядів [0-9]{1,5}\z'
     '^GEMINI ОБГОРТКА: ЛАНЦЮГ CHAIN_[A-Z_]{1,32}(?: [A-Za-z0-9]{1,40} (?:[a-z_]{1,40}\.ps1:[0-9]{1,5}|[A-Za-z][A-Za-z0-9-]{0,79}))?\z',
     '^GEMINI ОБГОРТКА: ЛАНЦЮГ CHAIN_FAILED [A-Za-z0-9]{1,40} (?:[a-z_]{1,40}\.ps1:[0-9]{1,5}|[A-Za-z][A-Za-z0-9-]{0,79}) ШЛЯХ "(?:[A-Za-z]:\\\\|/)(?:[^"\\\x00-\x1f]|\\["\\]|\\u[0-9a-fA-F]{4}){1,4096}"\z',
     '^GEMINI ОБГОРТКА: ОНОВЛЕНО [0-9a-f]{40} СЕКУНД [0-9]{1,12}\z',

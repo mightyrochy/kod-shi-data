@@ -29,17 +29,17 @@ Scenario 'а GPU' {
     function Test-LockFree { $true }
     $LaneDir = $tmp
     $script:SmiCode = 0; $script:SmiFree = 16319; $script:SmiPercent = 0
-    Check 'а AvastUI 57 MiB без обчислень — GPU вільна' ((Test-ExternalGpuFree) -and (Get-GpuBusyReason @()) -eq '')
+    Check 'а AvastUI 57 MiB без обчислень — GPU вільна' ((Test-ExternalGpuFree) -and (Get-GpuBusyReason) -eq '')
     $script:SmiFree = 16376
     Check 'а порожня карта — вільна' (Test-ExternalGpuFree)
     $script:SmiFree = 2000
-    $why = Get-GpuBusyReason @()
+    $why = Get-GpuBusyReason
     Check "а бракує памʼяті — зайнята, причина числом: «$why»" (-not (Test-ExternalGpuFree) -and $why -match 'вільно 2000 з потрібних 8925 MiB')
     $script:SmiFree = 14000; $script:SmiPercent = 74
-    $why = Get-GpuBusyReason @()
+    $why = Get-GpuBusyReason
     Check 'а обчислення за достатньої памʼяті не блокують' ($why -eq '' -and (Test-ExternalGpuFree))
     $script:SmiCode = 9
-    $why = Get-GpuBusyReason @()
+    $why = Get-GpuBusyReason
     Check 'а nvidia-smi не відповів — зайнята, причина названа' ($why -match 'nvidia-smi' -and $script:GpuHoldReason -ceq 'nvidia-smi не відповів')
 }
 
