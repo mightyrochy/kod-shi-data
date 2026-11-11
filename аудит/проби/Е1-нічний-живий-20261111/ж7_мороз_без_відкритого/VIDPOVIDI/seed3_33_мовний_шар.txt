@@ -1,0 +1,50 @@
+── ПРОМПТ (6503 симв.) ──
+Ти — перекладачка в застосунку-стилістці. Ти пишеш природною українською тексти, які зараз побачить жінка. Рішень не приймаєш, на питання не відповідаєш, змісту не міняєш.
+
+Вхід — JSON-об'єкт: ключ — номер тексту н, значення — текст, який склали код та інші моделі.
+
+Ключі відповіді — ті самі, що у вході, кожен: номер н тексту, значення — рядок, той самий зміст природною українською, без англійських слів і кодів; ПЕРЕКЛАДАЙ КОЖНЕ англійське слово, навіть одне посеред українського речення; латиницею лишай лише назви крамниць і брендів, «V-подібний» і «den»; текст, що вже природний і до неї на «ти», — без змін, а український текст на «ви» перепиши на «ти», решту лиши слово в слово.
+
+Вид кожної речі — теж зміст: річ у перекладі — та сама, що у вході, а не схожа чи сусідня. ankle boots — черевики чи ботильйони, boots — чоботи, heeled — на підборах, а не туфлі, pumps — туфлі-човники, loafers — лофери; pendant — кулон чи підвіска, necklace — намисто чи ланцюжок, а не каблучка, сережки чи браслет; ring — каблучка; earrings — сережки. Українські назви речей у вході (назви з крамниці, найчастіше перед « — ») переписуй літера в літеру: не міняй, не переставляй і не додавай у них жодного слова.
+
+Про жінку — лише до неї, на «ти» (ти, тебе, тобі, твій, твоя; хочеш, скинеш; наказ однини: розкажи, оберни, тримай, дай), і в питаннях теж: you, your, she, her про неї — «ти», «твій» (her skin tone — твій тон шкіри; when she turns her head — коли ти повертаєш голову; she looks taller — ти виглядаєш вищою), англійський наказ — наказом однини; «вона», «її» — лише про річ (сукню, сумку, куртку). Говорить стилістка — одна жінка: про себе — від першої особи однини й у жіночому роді (я підібрала, я б додала), не «ми», не від імені застосунку чи коду і ніколи словами самої жінки.
+
+Мова: літературна українська, як у текстах українських крамниць одягу. Кожне українське слово — літерами лише української абетки, без жодної латинської літери чи стороннього знака всередині слова. Кожне речення — одна остаточна версія, без виправлень посеред тексту. Словничок нижче — лише як перекласти англійське слово, коли воно є у вході; це не зміст: річ, тканина чи колір, яких у вході нема, у тексті не з'являються. Звичні українські назви для слів англійського джерела: trousers, pants — штани; dressy, dressier — ошатний, ошатніше; look, outfit — образ; taupe — сіро-бежевий; loose — вільний; suede — замша (жіночий рід); slip dress — сукня-комбінація; camel — кемел (колір). Назви речей і кольорів, які дала крамниця, — як є.
+
+Слово не повторюється двічі поспіль. Відповідь — рівно ОДИН JSON-об'єкт і нічого після нього: другої, виправленої версії, приміток і пояснень не пиши — помилку виправ у тому самому об'єкті.
+
+Речі образу — перелік речей картки (номер речі — як на картці, поруч — її коди):
+1 — kind code: coat · colour code: beige · about it: text н=1
+2 — kind code: cardigan · colour code: beige · about it: text н=2
+3 — kind code: two_piece_set · colour code: white · about it: text н=3
+4 — kind code: ankle_boots · colour code: chocolate · about it: text н=4
+5 — kind code: crossbody_bag · colour code: beige · about it: text н=5
+When a text speaks of an item of the list, call it by the Ukrainian noun of its kind code (kind code: …) — the same noun in the right case in every text (trench_coat — «тренч», sweater — «светр», loafers — «лофери»), not by another kind or a synonym of the English word, whatever word the English text uses; a code ending in _generic names only the family (dress_generic — a dress, bag_generic — a bag). Make every adjective, pronoun and verb with the item agree with that noun in gender and number («бежевий тренч, який…»; «шкіряні лофери, які…»). A name you translate in this same call (text н=K): give it one noun and call the item by it, in agreement, in every text. A text the list gives as about an item (about it: text н=M) speaks of that one item, and so does every other text where the English names it. The colour of an item of the list is its colour code (colour code: …): write the Ukrainian name of that code. The English colour words for that item are the stylist's impression of a photo: do not turn them into a colour of their own — the item's colour stands in their place. Colours of its details (trim, strap, buttons, print), its fabric and the rest — translate from the text. The list is for the items only: an item the English text does not name is not added to the translation — neither to the description nor to the advice.
+
+Colour codes: beige — бежевий; chocolate — шоколадний; white — білий.
+
+ТЕКСТИ:
+{
+"1": "This is a beige coat with an attached hood and a matching belt. Its soft, sandy hue blends seamlessly with the cardigan beneath, while the belt allows you to cinch the waist for a defined shape as you walk through the snow.",
+"2": "A beige cardigan serves as your cozy outer layer for the commute. Its relaxed knit texture adds comfort without bulk, and the neutral tone bridges the gap between your skin and the structured coat above.",
+"3": "This white two-piece set forms the crisp base of your ensemble. The bright fabric reflects the winter light, keeping you feeling fresh despite the frosty conditions, while the clean lines offer a sleek contrast to the softer outer layers.",
+"4": "These chocolate ankle boots provide warmth and stability on slippery, salted roads. Their deep brown shade grounds the lighter upper half of your outfit, adding richness that balances the brightness of the snow around you.",
+"5": "A beige crossbody bag completes the look with practical ease for your daily commute. Its size fits your essentials perfectly, and its neutral color ties the entire composition together without distracting from your professional yet relaxed vibe.",
+"6": "This outfit is built for your walk to work on a snowy, frosty day, keeping you warm while looking polished. The beige coat and cardigan create a soft, analogous palette that harmonizes beautifully with your white two-piece set, grounding the look in warmth. The chocolate ankle boots add necessary depth and length to your legs against the snow, while the gold-and-silver details offer a subtle, sophisticated shine without overpowering the neutral tones.",
+"7": "Leave the coat buttoned to streamline your silhouette from shoulder to hip, creating a clean vertical line that elongates your figure in the cold.",
+"8": "Шовковий костюм декорований пір'ям — Adding this two-piece set creates a proper bottom layer, fixing the missing base for the occasion."
+}
+
+── ВІДПОВІДЬ (1941 симв., 16.6 с, HTTP 200) ──
+```json
+{
+  "1": "Це бежевий тренч з пришитим капюшоном і ремінцем в тон. Його м’який пісочний відтінок бездоганно поєднується зі светром під ним, а ремінець дозволяє затягнути талію для чіткої форми, коли ти йдеш снігом.",
+  "2": "Бежевий кардиган слугує тобі теплим верхнім шаром на дорогу. Його вільна трикотажна текстура додає комфорту без об’ємності, а нейтральний тон згладжує перехід між твоєю шкірою та структурованим тренчем зверху.",
+  "3": "Цей білий комплект складається з двох частин і формує основу твого образу. Яскрава тканина відбиває зимове світло, зберігаючи відчуття свіжості попри морозну погоду, а чисті лінії створюють елегантний контраст із м’якшими верхніми шарами.",
+  "4": "Ці шоколадні черевики захищають твої ноги від холоду та забезпечують стабільність на слизькій, посипаній сіллю дорозі. Їх глибокий коричневий колір підкреслює верхню частину твоєї сукні, додаючи насиченості, яка збалансовує яскравість снігу навколо тебе.",
+  "5": "Бежева сумка через плече завершує образ практичною зручністю для щоденної дороги. Її розмір ідеально підходить для твоїх необхідних речей, а нейтральний колір гармонійно поєднує весь ансамбль без зайвої уваги до твоєї професійної та невимушеної атмосфери.",
+  "6": "Цей образ створений для твоєї прогулянки на роботу в сніжний морозний день, зберігаючи тепло й вишуканість. Бежевий тренч і кардиган створюють м’яку аналогічну палітру, яка чудово гармонує з твоїм білим комплектом, додаючи образу тепла. Шоколадні черевики візуально подовжують ноги на фоні снігу, а золотисто-срібні деталі пропонують ледь помітний вишуканий блиск без перевантаження нейтральних тонів.",
+  "7": "Застебни тренч, щоб підкреслити твою фігуру від плечей до стегон і створити чисту вертикальну лінію, яка візуально подовжує силует у холодну погоду.",
+  "8": "Додавання цього шовкового костюма з пір’ям створює відповідний нижній шар, який вирішує проблему відсутності основи для цієї події."
+}
+```

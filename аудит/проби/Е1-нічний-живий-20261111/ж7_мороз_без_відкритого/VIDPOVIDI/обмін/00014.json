@@ -1,0 +1,27 @@
+{
+ "версія": 1,
+ "запит": {
+  "model": "qwen/qwen3.5-9b",
+  "max_tokens": 4000,
+  "messages": [
+   {
+    "role": "user",
+    "content": [
+     {
+      "type": "text",
+      "text": "{\"task\": {\"role\": \"You read the description of an outfit and list its items as data.\", \"rules\": [\"One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.\", \"One item carries one thing — of two alternatives list the first; a note in brackets is not an item.\", \"Slot \\\"accessory\\\" is for an item no other slot fits.\", \"\\\"is_outfit\\\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note.\"], \"limits\": [\"Rely only on the input: do not invent what it does not contain.\", \"The answer is one JSON object following \\\"answer_schema\\\", without explanations and without ```.\"], \"language\": \"English\", \"answer\": \"ITEM_LIST\", \"answer_schema\": {\"is_outfit\": \"yes|no\", \"items\": [{\"name\": \"<what the item is>\", \"details\": \"<its cut, length and fabric>\", \"slot\": \"top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory\", \"color_hex\": \"<#rrggbb or null>\", \"worn\": \"<true, or false when the description says the outfit goes without it>\"}]}, \"input\": [\"\\\"description\\\" — the outfit description\"]}, \"description\": \"Heavy wool blend coat, straight cut, mid-thigh length, charcoal gray (#36454F), thick melton fabric.\\nMerino wool turtleneck sweater, relaxed fit, hip length, heather navy (#000080), fine knit fabric.\\nHigh-rise structured trousers, tapered leg, ankle length, black (#000000), dense gabardine fabric.\\nChunky leather snow boots, block heel, mid-calf height, glossy black (#000000), waterproof leather and rubber fabric.\\nWool blend scarf, rectangular shape, shoulder width, cream white (#FFFDD0), soft cashmere-blend fabric.\\nLeather gloves with faux fur lining, wrist length, classic fit, warm brown (#8B4513), durable lambskin and shearling fabric.\\n\\nThis outfit works because the heavy wool coat and waterproof boots provide essential protection against the -15°C frost and snow while keeping her dry on the salty walk to work. The thick merino turtleneck ensures core warmth without bulk, perfectly respecting her wish to avoid open zones in this severe weather. The dark, neutral color palette creates a polished \\\"neat\\\" business look that transitions from the snowy commute to the office entrance seamlessly.\"}"
+     }
+    ]
+   }
+  ],
+  "temperature": 1
+ },
+ "відповідь": {
+  "status": 200,
+  "contentType": "application/json",
+  "headers": {
+   "x-model": "qwen/qwen3.5-9b"
+  },
+  "body": "{\"content\":[{\"type\":\"text\",\"text\":\"{\\\"is_outfit\\\": \\\"yes\\\", \\\"items\\\": [{\\\"name\\\": \\\"coat\\\", \\\"details\\\": \\\"heavy wool blend, straight cut, mid-thigh length\\\", \\\"slot\\\": \\\"outerwear\\\", \\\"color_hex\\\": \\\"#36454F\\\", \\\"worn\\\": true}, {\\\"name\\\": \\\"sweater\\\", \\\"details\\\": \\\"merino wool turtleneck, relaxed fit, hip length\\\", \\\"slot\\\": \\\"top\\\", \\\"color_hex\\\": \\\"#000080\\\", \\\"worn\\\": true}, {\\\"name\\\": \\\"trousers\\\", \\\"details\\\": \\\"high-rise structured, tapered leg, ankle length\\\", \\\"slot\\\": \\\"bottom\\\", \\\"color_hex\\\": \\\"#000000\\\", \\\"worn\\\": true}, {\\\"name\\\": \\\"boots\\\", \\\"details\\\": \\\"chunky leather snow boots, block heel, mid-calf height\\\", \\\"slot\\\": \\\"shoes\\\", \\\"color_hex\\\": \\\"#000000\\\", \\\"worn\\\": true}, {\\\"name\\\": \\\"scarf\\\", \\\"details\\\": \\\"wool blend, rectangular shape, shoulder width\\\", \\\"slot\\\": \\\"scarf\\\", \\\"color_hex\\\": \\\"#FFFDD0\\\", \\\"worn\\\": true}, {\\\"name\\\": \\\"gloves\\\", \\\"details\\\": \\\"leather with faux fur lining, wrist length, classic fit\\\", \\\"slot\\\": \\\"gloves\\\", \\\"color_hex\\\": \\\"#8B4513\\\", \\\"worn\\\": true}]}\"}],\"usage\":{\"input_tokens\":617,\"output_tokens\":299},\"stop_reason\":\"end_turn\"}"
+ }
+}
