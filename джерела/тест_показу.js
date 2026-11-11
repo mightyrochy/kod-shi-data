@@ -2799,13 +2799,15 @@ function поверненняЗаглушка(w){
        крізь сторожа, як у списку картки, а не входом назви: її пише код каталогу чи модель */
     const альти = [...$("к-0").querySelectorAll(".колаж img")].map(і => і.alt);
     тест("колаж: назва крамниці — підписом фото, неперекладена назва вигаданої речі — ні",
-         альти.length === 2 && альти[0] === "Чорна сукня" && альти[1] === "", альти);
+         альти.length === 2 && альти[0] === "Чорна сукня"
+         && альти[1] === w.eval("ШАБЛОНИ_ЗБОЮ_П.card_item_name_failed"), альти);
     const пара = w.eval(`рядокЗмінноїПари({id: "ж-00500@gepur.com", назва: "Лофери Gepur шкіряні", урл: "https://gepur.com/y",
                                            фото: "https://img.example/3.jpg"})`);
     const параКод = w.eval(`рядокЗмінноїПари({id: "ж-00501@gepur.com", назва: "loafers_low_heel", фото: "https://img.example/4.jpg"})`);
     тест("змінна пара: назва крамниці з латинкою бренду — як є; службовий код — шаблоном, не сирим",
          пара.querySelector(".змп-річ a").textContent === "Лофери Gepur шкіряні"
-         && !/loafers_low_heel/.test(параКод.textContent) && параКод.querySelector(".змп-річ .назва").textContent === "— без тексту",
+         && !/loafers_low_heel/.test(параКод.textContent)
+         && параКод.querySelector(".змп-річ .назва").textContent === w.eval("ШАБЛОНИ_ЗБОЮ_П.card_item_name_failed"),
          [пара.textContent, параКод.textContent]);
     const вузол = d.createElement("span");
     w.eval("window._прозаВузол = null"); w._прозаВузол = вузол;
