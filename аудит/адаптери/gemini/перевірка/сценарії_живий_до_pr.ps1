@@ -33,6 +33,7 @@ try {
     if ($Phase -ne 'ДО') { $parserNames += @('ConvertTo-LivePublicationBody','Get-HeadLivePublication','Get-LiveCorrectionPrompt') }
     if ($Phase -eq 'ПІСЛЯ') { $parserNames += @('Merge-LivePublicationBody') }
     Import-Functions 'queue_lanes.ps1' $parserNames
+    $script:RemoteRoot = 'refs/remotes/origin'
     $script:RegistryText = [IO.File]::ReadAllText((Join-Path $SourceDir '../../проби/живі_сцени.txt'), $utf)
     $registry = Get-LiveSceneRegistry $script:RegistryText
     $script:Head = 'a' * 40
