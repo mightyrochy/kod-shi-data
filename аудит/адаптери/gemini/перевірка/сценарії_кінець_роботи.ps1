@@ -7,14 +7,19 @@ function Reset-FixtureTree([string]$Path) {
     finally), і без скидання її не прибрати навіть власнику. #>
     if ($env:OS -eq 'Windows_NT') { & icacls.exe $Path /reset /T /C /L /Q | Out-Null } else { & chmod -R u+rwX -- $Path }
 }
-# Давні end-test-* убитих прогонів прибираються на старті з тим самим скиданням; молодші за годину — чужого живого стенда.
+# Фікстури убитих прогонів прибираються на старті з тим самим скиданням ACL. Живий чужий стенд відрізняє PID у файлі `pid`
+# теки end-test-*: процес живий — не чіпаємо; PID нема чи процес мертвий — фікстура осиротіла.
 foreach ($old in @(Get-ChildItem -LiteralPath ([IO.Path]::GetTempPath()) -Directory -Filter 'end-test-*' -ErrorAction SilentlyContinue)) {
-    if ($old.Name -cnotmatch '^end-test-[0-9a-f]{32}$' -or $old.LastWriteTimeUtc -gt [DateTime]::UtcNow.AddHours(-1)) { continue }
+    if ($old.Name -cnotmatch '^end-test-[0-9a-f]{32}$') { continue }
+    $owner = $null
+    try { $owner = [int](Get-Content -LiteralPath (Join-Path $old.FullName 'pid') -Raw -ErrorAction Stop) } catch { $owner = $null }
+    if ($null -ne $owner -and $null -ne (Get-Process -Id $owner -ErrorAction SilentlyContinue)) { continue }
     Reset-FixtureTree $old.FullName
     Remove-Item -LiteralPath $old.FullName -Recurse -Force -ErrorAction SilentlyContinue
 }
 $tmp = Join-Path ([IO.Path]::GetTempPath()) ('end-test-' + [guid]::NewGuid().ToString('N'))
 [void][IO.Directory]::CreateDirectory($tmp)
+[IO.File]::WriteAllText((Join-Path $tmp 'pid'), [string]$PID)
 $bad = 0; $lock = $null
 function Check([string]$Name, [bool]$Ok) {
     <# Провал мірила визначає код завершення стенда. #>

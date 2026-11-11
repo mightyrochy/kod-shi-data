@@ -240,11 +240,11 @@ try {
             $full = Join-Path $p $f[0]; [void][IO.Directory]::CreateDirectory((Split-Path -Parent $full))
             [IO.File]::WriteAllBytes($full, (New-Object byte[] $f[1]))
         }
-        $r = Measure-DirBytes $p 3 (Join-Path $p 'runs/w')
+        $r = Measure-DirBytes $p (Join-Path $p 'runs/w') -Breakdown
         Check "сума профілю $($r.Bytes) (10810), недоступних 0" ($r.Bytes -eq 10810 -and $r.Skipped -eq 0)
-        Check "першого рівня за спаданням: $(ConvertTo-SizeList $r.Top)" ((ConvertTo-SizeList $r.Top) -ceq 'runs=7300;a=3000;b=500')
+        Check "першого рівня за спаданням, усе з вагою (файли в корені — _файли_): $(ConvertTo-SizeList $r.Top)" ((ConvertTo-SizeList $r.Top) -ceq 'runs=7300;a=3000;b=500;_файли_=10')
         Check "копії за спаданням: $(ConvertTo-SizeList $r.Under)" ((ConvertTo-SizeList $r.Under) -ceq 'c1=7100;c2=200')
-        Check 'без -Top обхід не збирає розбивки (Bytes/Skipped, як було)' ((Measure-DirBytes $p).Bytes -eq 10810 -and @((Measure-DirBytes $p).Top).Count -eq 0)
+        Check 'без -Breakdown обхід не збирає розбивки (Bytes/Skipped, як було)' ((Measure-DirBytes $p).Bytes -eq 10810 -and @((Measure-DirBytes $p).Top).Count -eq 0)
         $back = @(ConvertFrom-SizeList (ConvertTo-SizeList @([pscustomobject]@{ Name = 'a|b`<c>'; Bytes = 5 }, [pscustomobject]@{ Name = 'Дані'; Bytes = 7 })))
         Check 'назви без службових знаків, кирилиця лишається; чужий рядок відкидається' ($back.Count -eq 2 -and $back[0].Name -ceq 'a_b__c_' -and $back[1].Name -ceq 'Дані' -and @(ConvertFrom-SizeList 'x|y=1;ok=2;bad=-1;z=').Count -eq 1)
     }

@@ -765,10 +765,10 @@ function Get-WaitingMarkers {
 
 # --- здоров'я машини (лише показ, узяття не гейтить) ----------------------------------------------------------------
 
-function Measure-DirBytes([string]$Path, [int]$Top = 0, [string]$Under = '') {
+function Measure-DirBytes([string]$Path, [string]$Under = '', [switch]$Breakdown) {
     <# Розмір названої теки без переходу за точками з'єднання (профіль має петлі); недоступні теки — лічбою Skipped.
-    $Top > 0 у тому самому обході додає суми за дітьми першого рівня (Top) і за дітьми теки $Under, що лежить усередині
-    $Path (Under): найбільші $Top пар Name/Bytes за спаданням; файли просто в корені — під іменем «(файли)». #>
+    -Breakdown у тому самому обході додає суми за дітьми першого рівня (Top) і за дітьми теки $Under, що лежить усередині
+    $Path (Under): усі пари Name/Bytes з вагою понад нуль за спаданням; файли просто в корені — під іменем «(файли)». #>
     if (-not $Path -or -not (Test-Path -LiteralPath $Path -PathType Container)) { return $null }
     $bytes = 0L; $skipped = 0
     $kids = @{}; $sub = @{}
@@ -781,13 +781,13 @@ function Measure-DirBytes([string]$Path, [int]$Top = 0, [string]$Under = '') {
             foreach ($e in $d.EnumerateFileSystemInfos()) {
                 if ($e.Attributes -band [System.IO.FileAttributes]::ReparsePoint) { continue }
                 $tk = $it[1]; $uk = $it[2]
-                if ($Top -gt 0 -and $e -is [System.IO.DirectoryInfo]) {
+                if ($Breakdown -and $e -is [System.IO.DirectoryInfo]) {
                     if ($tk -eq '') { $tk = $e.Name }
                     if ($underFull -and $d.FullName.TrimEnd('\', '/') -ieq $underFull) { $uk = $e.Name }
                 }
                 if ($e -is [System.IO.DirectoryInfo]) { $stack.Push(@($e, $tk, $uk)); continue }
                 $bytes += $e.Length
-                if ($Top -gt 0) {
+                if ($Breakdown) {
                     $k = $(if ($tk -eq '') { '(файли)' } else { $tk })
                     $kids[$k] = [long]$kids[$k] + $e.Length
                     if ($uk) { $sub[$uk] = [long]$sub[$uk] + $e.Length }
@@ -795,7 +795,7 @@ function Measure-DirBytes([string]$Path, [int]$Top = 0, [string]$Under = '') {
             }
         } catch { $skipped++ }
     }
-    $largest = { param($h) @($h.GetEnumerator() | Sort-Object Value -Descending | Select-Object -First $Top | ForEach-Object { [pscustomobject]@{ Name = [string]$_.Key; Bytes = [long]$_.Value } }) }
+    $largest = { param($h) @($h.GetEnumerator() | Where-Object { $_.Value -gt 0 } | Sort-Object Value -Descending | ForEach-Object { [pscustomobject]@{ Name = [string]$_.Key; Bytes = [long]$_.Value } }) }
     [pscustomobject]@{ Bytes = $bytes; Skipped = $skipped; Top = @(& $largest $kids); Under = @(& $largest $sub) }
 }
 
@@ -803,13 +803,13 @@ function ConvertTo-SizeList($Rows) {
     <# Пари Name/Bytes — рядок «назва=байти;…» для heartbeat; назви без службових знаків: рядок читає розбір недовіреного файла. #>
     @(foreach ($r in @($Rows)) {
         $n = [regex]::Replace([string]$r.Name, '[^\p{L}\p{N}._ -]', '_')
-        "$($n.Substring(0, [Math]::Min(40, $n.Length)))=$([long]$r.Bytes)"
+        "$n=$([long]$r.Bytes)"
     }) -join ';'
 }
 
 function ConvertFrom-SizeList([string]$Text) {
-    <# Обернене до ConvertTo-SizeList: до 8 пар Name/Bytes лише за форматом, решта відкидається. #>
-    @(($Text -split ';') | Where-Object { $_ -cmatch '^[\p{L}\p{N}._ -]{1,40}=[0-9]{1,15}$' } | Select-Object -First 8 | ForEach-Object {
+    <# Обернене до ConvertTo-SizeList: пари Name/Bytes лише за форматом, решта відкидається. #>
+    @(($Text -split ';') | Where-Object { $_ -cmatch '^[\p{L}\p{N}._ -]+=[0-9]{1,15}$' } | ForEach-Object {
         $i = $_.LastIndexOf('='); [pscustomobject]@{ Name = $_.Substring(0, $i); Bytes = [long]$_.Substring($i + 1) } })
 }
 
@@ -1390,8 +1390,8 @@ function Reset-TreeAcl([string]$Dir) {
     вистачає неявних READ_CONTROL і WRITE_DAC, прав адміністратора не треба); поза Windows — `chmod -R u+rwX`.
     Повертає, чи команда відпрацювала. #>
     try {
-        $r = $(if ($env:OS -eq 'Windows_NT') { Invoke-Native 'icacls.exe' @($Dir, '/reset', '/T', '/C', '/L', '/Q') '' 5 }
-               else { Invoke-Native 'chmod' @('-R', 'u+rwX', '--', $Dir) '' 5 })
+        $r = $(if ($env:OS -eq 'Windows_NT') { Invoke-Native 'icacls.exe' @($Dir, '/reset', '/T', '/C', '/L', '/Q') }
+               else { Invoke-Native 'chmod' @('-R', 'u+rwX', '--', $Dir) })
         $r.Code -eq 0
     } catch { $false }
 }

@@ -1274,9 +1274,9 @@ function Invoke-ProfileMeasure {
         # Куди йде місце: найбільші теки першого рівня профілю й найбільші копії задач (діти `w`) — тим самим обходом;
         # `w` поза профілем міряється окремо.
         $copies = Join-Path $RunsDir 'w'
-        $r = Measure-DirBytes $ProfileDir 6 $copies
+        $r = Measure-DirBytes $ProfileDir $copies -Breakdown
         $cp = @($(if ($null -ne $r) { $r.Under }))
-        if ($cp.Count -eq 0) { $w = Measure-DirBytes $copies 6; if ($null -ne $w) { $cp = @($w.Top) } }
+        if ($cp.Count -eq 0) { $w = Measure-DirBytes $copies -Breakdown; if ($null -ne $w) { $cp = @($w.Top) } }
         $c = [ordered]@{ time = [DateTimeOffset]::UtcNow.ToUnixTimeSeconds(); read = (Get-UtcStamp (Get-Date)); profile = $(if ($null -ne $r) { [string]$r.Bytes } else { '' }); skipped = $(if ($null -ne $r) { [string]$r.Skipped } else { '' })
             top = $(if ($null -ne $r) { ConvertTo-SizeList $r.Top } else { '' }); copies = (ConvertTo-SizeList $cp) }
         Write-FileAtomic (Join-Path $RunsDir 'health.json') ($c | ConvertTo-Json -Compress)
