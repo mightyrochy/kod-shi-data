@@ -233,28 +233,61 @@ try {
     Remove-Item -LiteralPath $file
     # Справжня постановка PR-завдання та POST із підміною лише gh.
     $draftBranch = 'gemini/готовий'
-    [void](Invoke-Git @('push','-q','origin',"${newer}:refs/heads/$draftBranch"))
+    function Own-Branch([string]$Name, [string]$File) {
+        <# Гілка з однією власною зміною поверх чинного main: голова, що має що показати у PR. #>
+        & git -C $seed checkout -q -b "own-$File" main
+        [IO.File]::WriteAllText((Join-Path $seed "$File.txt"), '1', $utf)
+        & git -C $seed add -A; & git -C $seed commit -q -m "власна зміна $File"
+        $sha = (& git -C $seed rev-parse HEAD).Trim()
+        & git -C $seed push -q origin "${sha}:refs/heads/$Name"
+        & git -C $seed checkout -q main
+        [void](Invoke-Git @('fetch','-q','origin',$sha))
+        $sha
+    }
+    $own = Own-Branch $draftBranch 'готовий'
     $script:NativeOriginal = (Get-Command Invoke-Native).ScriptBlock
     $script:DraftPosts = 0; $script:GhExe = 'fake-gh'
     function Resolve-Exe([string]$Name) { $Name }
     function Invoke-Native([string]$Exe, [string[]]$Arguments, [string]$WorkDirectory = '', [double]$TimeoutMinutes = 10, [string]$StdIn = $null) {
         if ($Exe -eq 'fake-gh') {
             $body = ConvertFrom-Json $StdIn
-            if ($body.draft -ne $true -or $body.base -ne 'main' -or $body.head -ne 'gemini/готовий') { throw 'невірне тіло PR' }
+            if ($body.draft -ne $true -or $body.base -ne 'main' -or $body.head -cnotin @('gemini/готовий','gemini/другий')) { throw 'невірне тіло PR' }
             $script:DraftPosts++
             return [pscustomobject]@{Code=0;Out='{"number":101}';Err=''}
         }
         & $script:NativeOriginal $Exe $Arguments $WorkDirectory $TimeoutMinutes $StdIn
     }
-    Save-DraftRequest $draftBranch $newer
+    Save-DraftRequest $draftBranch $own
     Complete-EngineDrafts
     Complete-EngineDrafts
     Check 'DONE створює PR-чернетку сам, повтор POST відсутній' ($script:DraftPosts -eq 1 -and @(Get-ChildItem "$WorkDir/drafts/*.json").Count -eq 0)
+    # Наряд ланцюг-порожній-pr: сесія лише злила main у гілку (10.11, #3478) — власних змін нема, PR-чернетка порожня.
+    $emptyBranch = 'gemini/порожній'
+    & git -C $seed checkout -q -b g-порожній $first
+    & git -C $seed merge -q --no-ff -m 'злив main' main
+    $emptyHead = (& git -C $seed rev-parse HEAD).Trim()
+    & git -C $seed push -q origin "${emptyHead}:refs/heads/$emptyBranch"
+    & git -C $seed checkout -q main
+    [void](Invoke-Git @('fetch','-q','origin',$emptyHead))
+    Get-ChildItem -LiteralPath $OutboxDir -File | Remove-Item
+    Save-DraftRequest $emptyBranch $emptyHead
+    Complete-EngineDrafts
+    Complete-EngineDrafts
+    Check 'гілка без власних змін (лише злито main): PR-чернетку не відкрито, завдання знято' ($script:DraftPosts -eq 1 -and @(Get-ChildItem "$WorkDir/drafts/*.json" -ErrorAction SilentlyContinue).Count -eq 0)
+    $emptyLines = @(Get-ChildItem -LiteralPath $OutboxDir -File | ForEach-Object { [IO.File]::ReadAllText($_.FullName, $utf).Trim() })
+    Check 'замість PR — рядок ЗАБЛОКОВАНО <гілка> EMPTY, раз, за шаблоном публікатора' ($emptyLines.Count -eq 1 -and $emptyLines[0] -ceq "GEMINI ОБГОРТКА: ЗАБЛОКОВАНО $emptyBranch EMPTY" -and (Test-OutboxLine $emptyLines[0]) -ceq '')
+    # Збій однієї гілки не зупиняє решти: хибне завдання (назва гілки не за форматом) іде першим за іменем.
+    $second = Own-Branch 'gemini/другий' 'другий'
+    Save-DraftRequest 'gemini/другий' $second
+    [IO.File]::WriteAllText("$WorkDir/drafts/00-збій.json", '{"branch":"gemini/..хибна","head":"не-sha"}', $utf)
+    Complete-EngineDrafts
+    Check 'хибне завдання не зупиняє наступного: друга чернетка відкрита, хибне лишилось на повтор' ($script:DraftPosts -eq 2 -and @(Get-ChildItem "$WorkDir/drafts/*.json").Count -eq 1 -and (Test-Path "$WorkDir/drafts/00-збій.json"))
+    Remove-Item -LiteralPath "$WorkDir/drafts/00-збій.json"
     $reportBranch = 'gemini/перевірка-3110-2'
     [void](Invoke-Git @('push','-q','origin',"${newer}:refs/heads/$reportBranch"))
     Save-DraftRequest $reportBranch $newer
     Complete-EngineDrafts
-    Check 'звіт перевірки без рядків дошки лишається гілкою без PR-чернетки' ($script:DraftPosts -eq 1 -and @(Get-ChildItem "$WorkDir/drafts/*.json" -ErrorAction SilentlyContinue).Count -eq 0)
+    Check 'звіт перевірки без рядків дошки лишається гілкою без PR-чернетки' ($script:DraftPosts -eq 2 -and @(Get-ChildItem "$WorkDir/drafts/*.json" -ErrorAction SilentlyContinue).Count -eq 0)
     # Мірило наряду обгортка-ресурс-слотів: 3 відкриті PR, у одного голова змінилась, один злито. ДО (за кодом до зміни)
     # лишалось 5 позначок: по одній на кожну побачену голову й ніякого зняття; ПІСЛЯ — одна на живу голову.
     $h1 = Merge 'три-pr.txt' '1'

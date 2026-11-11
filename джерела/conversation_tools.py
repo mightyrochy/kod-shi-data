@@ -86,6 +86,20 @@ import re
         "функція": "новийСценарій",
         "заміна_сценарію": True,
     },
+    "switch_profile": {
+        "робить": "перемкнути активний профіль і відкрити його розмову",
+        "для_моделі": "opens a profile and its conversation",
+        "коли": "she asks to switch profiles",
+        "вхід": {"type": "object", "additionalProperties": False, "required": ["id"], "properties": {
+            "id": {"type": "string", "minLength": 1, "description": "the \"id\" of one of profiles"}}},
+        "переліки": {"id": "profiles"},
+        "вихід": {"type": "object", "additionalProperties": False, "required": ["done"], "properties": {
+            "done": {"type": "boolean", "description": "чи перемкнуто"},
+            "name": {"type": "string", "description": "назва відкритого профілю — її ввід; без назви — порожньо"}}},
+        "показ": "картка в розмові відкритого профілю: який відкрито; під час оцінки — картка збою",
+        "функція": "перемкнути",
+        "заміна_сценарію": True,
+    },
     "confirm_case": {
         "робить": "підтвердити, що паспорт нагоди зрозуміто правильно: зняти питання «Усе правильно?»",
         "для_моделі": "marks her passport confirmed",
@@ -114,7 +128,10 @@ import re
 
 # Переліки цього ходу: ім'я в промпті → ключ входу ендпойнта `мова`, який дає показ (`ходомРозмовиП`), і поля запису.
 ПЕРЕЛІКИ = {"saved_cases": {"вхід": "збережені", "поля": {"id": "ід", "name": "назва", "case": "випадок",
-                                                         "date": "час", "open": "відкрито"}}}
+                                                         "date": "час", "open": "відкрито"},
+                          "опис": 'saved cases: id, name (her title), case (topic), date, open (current); reason code if unreadable'},
+            "profiles": {"вхід": "профілі", "поля": {"id": "ід", "name": "назва", "open": "відкрито"},
+                         "опис": 'her profiles: id, name (her input), open (active)'}}
 ПЕРЕЛІК_МАКС = 30
 
 
@@ -134,7 +151,7 @@ def скелет():
 
 def коди_для_промпту():
     """Рядки переліку для сталого словника кодів ходу: ім'я, що робить, коли кликати, аргументи з їхніх описів."""
-    р = ["Tools (\"tool\": {\"name\", \"args\"}; the app does it and shows the result under your reply):"]
+    р = ["Tools (results below your reply):"]
     for ім, о in ІНСТРУМЕНТИ.items():
         аргументи = "; ".join("%s (%s) — %s" % (к, с["type"], с["description"])
                               for к, с in о["вхід"]["properties"].items()) or "none"
