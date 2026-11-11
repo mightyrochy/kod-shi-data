@@ -1163,6 +1163,10 @@ def _норм(с, v, шлях, незнайомі):
         # код звірено з переліком), а клаузу на кожен код ставить `_її_речі`.
         списки = {}
         if _ref(с) == "own_item" and isinstance(v, dict):
+            назва = v.get("name")
+            if isinstance(назва, dict) and not any(к in назва for к in ("value", "code", "free_text")):
+                # Цитата без поля назви не стає назвою її речі через загальний читач вільного тексту.
+                v = dict(v, name=None)
             for к in ("slot", "item_type"):
                 if isinstance(v.get(к), list):
                     коди = [x for і, y in enumerate(v[к])
@@ -4128,9 +4132,7 @@ import схема_відповіді as _СВ_М
         # Е2-усе-з-розмови: збережені сценарії — ід для інструментів сценаріїв (`conversation_tools.ПЕРЕЛІКИ`); назва —
         # її ввід, як є; поля нема, коли збережених нема; код причини — коли не прочитались. «ід звідси — аргумент
         # інструмента» каже опис аргументу `id` кожного інструмента (`conversation_tools`), тут знято (Е2-промпти, п.1).
-        _ЗП_Р.Поле("saved_cases", "her saved cases: \"id\", \"name\" — the name she gave it, \"case\" — what it is "
-                                  "about, \"date\", \"open\" — the case open now; a reason code instead of the list "
-                                  "when they could not be read"),
+        *(_ЗП_Р.Поле(ім, опис["опис"]) for ім, опис in _ІНСТР.ПЕРЕЛІКИ.items()),
         # Т-08: розмова оновлює той самий паспорт — модель бачить його кодами.
         _ВИМ.поле("passport"),
         # K-IO-02: плитки — друге джерело полів; її слово сильніше (п.9).
@@ -4499,7 +4501,7 @@ def промпт_розмови(d):
     раніше = {"turns": раніше["ходів"], "her_messages": раніше["її_слова"]} if раніше else None
     дані = {"profile": профіль_кодами(d.get("профіль") or {}),
             "earlier_conversation": раніше, "conversation": репліки,
-            "saved_cases": _ІНСТР.переліки_промпту(d).get("saved_cases"),
+            **_ІНСТР.переліки_промпту(d),
             "passport": паспорт_кодами(паспорт), "chosen": плитки_кодами(d.get("сценарій"), паспорт),
             # Тема поради `occasion` стояла в `advice_topics_if` поруч із
             # `required: [occasion]` — те саме питання двома каналами, і модель ставила його в `invite`. Код
@@ -4613,7 +4615,7 @@ _СУСІДИ_КОДІВ = (("goal", "intent", True), ("intent", "goal", True),
 # `own_item_without_status` → `not_recorded: own_items`, і репліка казала разом «твої сандалі пасують» (вердикт речі з
 # фото) і «я не записала твої речі»; у другому `shoes` мовчки йшло в `незнайомі`. Шов розгортає форму, не слова
 # (п.12): пара {quote, value: {…}} — запис зі значення й уривком; `status`/`quote` усередині `name` — на рівень речі
-# (назва — уривок, коли іншого в ній нема); стан кодом поля `own_items` — `has`: модель назвала річ її річчю, а
+# (назва — лише поле назви, без підстановки уривка); стан кодом поля `own_items` — `has`: модель назвала річ її річчю, а
 # стану «не певна» чи «не хоче» не дала. Кроки — у `перенесено` (`own_items.form`).
 def _її_річ_формою(x):
     """(запис її речі з розгорнутою формою, чи щось розгорнуто)."""
@@ -4627,7 +4629,7 @@ def _її_річ_формою(x):
     if isinstance(н, dict) and "status" in н and "status" not in x:
         лишок = {к: v for к, v in н.items() if к not in ("status", "quote")}
         x = dict(x, status=н["status"], **({"quote": н["quote"]} if н.get("quote") and not x.get("quote") else {}))
-        x["name"] = лишок or x.get("quote")
+        x["name"] = лишок or None
     if _код(_пара("status", {}, x.get("status"))[0]) == "own_items":
         x = dict(x, status="has")
     return x, x is not було

@@ -119,6 +119,18 @@ function ConvertTo-ArgString([string[]]$Items) {
     $parts -join ' '
 }
 
+function Set-ConsoleInputEncoding($Encoding) { [Console]::InputEncoding = $Encoding }
+
+function Invoke-WithStdinUtf8([scriptblock]$Start) {
+    <# Запуск процесу з UTF-8 без BOM у кодуванні stdin консолі: .NET Framework пише BOM у StandardInput під час Start.
+    Консоль задачі планувальника буває розірваною — тоді сетер кидає (SetValueInvocationException) і валив би увесь
+    прохід. Це не помилка: stdin кодує власний StreamWriter UTF-8 без BOM поверх BaseStream, а кодування консолі
+    відновлюється лише коли його вдалося змінити. #>
+    $saved = $null
+    try { $saved = [Console]::InputEncoding; Set-ConsoleInputEncoding $script:Utf8 } catch { $saved = $null; $null = $_ }
+    try { & $Start } finally { if ($null -ne $saved) { try { Set-ConsoleInputEncoding $saved } catch { $null = $_ } } }
+}
+
 function Invoke-Native([string]$Exe, [string[]]$Arguments, [string]$WorkDirectory = '', [double]$TimeoutMinutes = 10, [string]$StdIn = $null) {
     $psi = New-Object System.Diagnostics.ProcessStartInfo
     $psi.FileName = $Exe
@@ -134,11 +146,7 @@ function Invoke-Native([string]$Exe, [string[]]$Arguments, [string]$WorkDirector
     $psi.EnvironmentVariables['GCM_INTERACTIVE'] = 'never'
     $psi.RedirectStandardInput = ($null -ne $StdIn)
     # .NET Framework створює StandardInput з AutoFlush: BOM пишеться вже під час Start.
-    $stdinEncoding = [Console]::InputEncoding
-    try {
-        [Console]::InputEncoding = $script:Utf8
-        $p = [System.Diagnostics.Process]::Start($psi)
-    } finally { [Console]::InputEncoding = $stdinEncoding }
+    $p = Invoke-WithStdinUtf8 { [System.Diagnostics.Process]::Start($psi) }
     $out = $p.StandardOutput.ReadToEndAsync()
     $err = $p.StandardError.ReadToEndAsync()
     if ($null -ne $StdIn) {
@@ -672,6 +680,7 @@ $script:SlugCore = $script:SlugPattern -replace '^\^|\\z$', ''
 $script:OutboxTemplates = @(
     '\AGEMINI ОБГОРТКА: (?:СОН|ВИМКНЕНО-СТАРТ) [0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z → [0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z, нарядів [0-9]{1,5}\z'
     '^GEMINI ОБГОРТКА: ЛАНЦЮГ CHAIN_[A-Z_]{1,32}(?: [A-Za-z0-9]{1,40} (?:[a-z_]{1,40}\.ps1:[0-9]{1,5}|[A-Za-z][A-Za-z0-9-]{0,79}))?\z',
+    '^GEMINI ОБГОРТКА: ЛАНЦЮГ CHAIN_[A-Z_]{1,32} PR [1-9][0-9]{0,8} [0-9a-f]{40}\z',
     '^GEMINI ОБГОРТКА: ЛАНЦЮГ CHAIN_FAILED [A-Za-z0-9]{1,40} (?:[a-z_]{1,40}\.ps1:[0-9]{1,5}|[A-Za-z][A-Za-z0-9-]{0,79}) ШЛЯХ "(?:[A-Za-z]:\\\\|/)(?:[^"\\\x00-\x1f]|\\["\\]|\\u[0-9a-fA-F]{4}){1,4096}"\z',
     '^GEMINI ОБГОРТКА: ОНОВЛЕНО [0-9a-f]{40} СЕКУНД [0-9]{1,12}\z',
     '^GEMINI ОБГОРТКА: ОНОВЛЕННЯ [0-9a-f]{40} UPDATE_[A-Z_]{1,32}\z',
