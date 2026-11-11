@@ -255,16 +255,24 @@ function Stop-Tree($Proc) {
     Stop-TreeJob $Proc.Id
 }
 
+function Set-ConsoleInputEncoding($Encoding) { [Console]::InputEncoding = $Encoding }
+
+function Invoke-WithStdinUtf8([scriptblock]$Start) {
+    <# Запуск процесу з UTF-8 без BOM у кодуванні stdin консолі: .NET Framework пише BOM у StandardInput під час Start.
+    Консоль задачі планувальника буває розірваною — тоді сетер кидає (SetValueInvocationException) і валив би увесь
+    прохід. Це не помилка: stdin кодує власний StreamWriter UTF-8 без BOM поверх BaseStream, а кодування консолі
+    відновлюється лише коли його вдалося змінити. #>
+    $saved = $null
+    try { $saved = [Console]::InputEncoding; Set-ConsoleInputEncoding $script:Utf8 } catch { $saved = $null; $null = $_ }
+    try { & $Start } finally { if ($null -ne $saved) { try { Set-ConsoleInputEncoding $saved } catch { $null = $_ } } }
+}
+
 function Invoke-Native([string]$Exe, [string[]]$Arguments, [string]$Dir = '', [double]$TimeoutMinutes = 10, [string]$StdIn = $null) {
     <# Запуск із межею часу неспання (по межі — зупинка дерева) і необов'язковим stdin; повертає код, ознаку межі й обидва потоки. #>
     $psi = New-StartInfo $Exe $Arguments $Dir
     $psi.RedirectStandardInput = ($null -ne $StdIn)
     # .NET Framework створює StandardInput з AutoFlush: BOM пишеться вже під час Start.
-    $stdinEncoding = [Console]::InputEncoding
-    try {
-        [Console]::InputEncoding = $script:Utf8
-        $p = Start-Tree $psi
-    } finally { [Console]::InputEncoding = $stdinEncoding }
+    $p = Invoke-WithStdinUtf8 { Start-Tree $psi }
     $out = $p.StandardOutput.ReadToEndAsync()
     $err = $p.StandardError.ReadToEndAsync()
     if ($null -ne $StdIn) {
