@@ -1,0 +1,27 @@
+{
+ "версія": 1,
+ "запит": {
+  "model": "qwen/qwen3.5-9b",
+  "max_tokens": 4000,
+  "messages": [
+   {
+    "role": "user",
+    "content": [
+     {
+      "type": "text",
+      "text": "{\"task\": {\"role\": \"You read the description of an outfit and list its items as data.\", \"rules\": [\"One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.\", \"One item carries one thing — of two alternatives list the first; a note in brackets is not an item.\", \"Slot \\\"accessory\\\" is for an item no other slot fits.\", \"\\\"is_outfit\\\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note.\"], \"limits\": [\"Rely only on the input: do not invent what it does not contain.\", \"The answer is one JSON object following \\\"answer_schema\\\", without explanations and without ```.\"], \"language\": \"English\", \"answer\": \"ITEM_LIST\", \"answer_schema\": {\"is_outfit\": \"yes|no\", \"items\": [{\"name\": \"<what the item is>\", \"details\": \"<its cut, length and fabric>\", \"slot\": \"top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory\", \"color_hex\": \"<#rrggbb or null>\", \"worn\": \"<true, or false when the description says the outfit goes without it>\"}]}, \"input\": [\"\\\"description\\\" — the outfit description\"]}, \"description\": \"A tailored wool-blend blazer in a deep charcoal tone (#3a3e45), structured with slightly padded shoulders for a polished silhouette.\\nHigh-waisted wide-leg trousers in matching dark denim wash (#2b2f38), cut to drape elegantly without clinging.\\nCream silk blouse with a relaxed fit and delicate collar, featuring subtle gathering at the waist.\\nGold-tone minimalist pendant necklace layered over the blouse neckline.\\nRectangular-frame glasses with tortoiseshell acetate frames (#4a3c30) to complement her warm undertones.\\nRound-arch ankle boots in polished brown leather (#8b6950) for comfort during the long queue and public transport commute.\\n\\nThis outfit works because it balances the \\\"smart\\\" dress code required for a book launch with the practical needs of a cold environment and active movement. The tailored blazer and high-waisted trousers create vertical lines that visually elongate her frame, satisfying her wish to look taller while providing warmth against the chill inside the historic library. The neutral palette in deep charcoal, cream, and warm brown tones ensures she remains recognizable on camera during the photoshoot without distracting from the book or the setting.\"}"
+     }
+    ]
+   }
+  ],
+  "temperature": 1
+ },
+ "відповідь": {
+  "status": 200,
+  "contentType": "application/json",
+  "headers": {
+   "x-model": "qwen/qwen3.5-9b"
+  },
+  "body": "{\"content\":[{\"type\":\"text\",\"text\":\"{\\n  \\\"is_outfit\\\": \\\"yes\\\",\\n  \\\"items\\\": [\\n    {\\n      \\\"name\\\": \\\"blazer\\\",\\n      \\\"details\\\": \\\"tailored wool-blend with slightly padded shoulders for a polished silhouette\\\",\\n      \\\"slot\\\": \\\"outerwear\\\",\\n      \\\"color_hex\\\": \\\"#3a3e45\\\",\\n      \\\"worn\\\": true\\n    },\\n    {\\n      \\\"name\\\": \\\"trousers\\\",\\n      \\\"details\\\": \\\"high-waisted wide-leg cut to drape elegantly without clinging\\\",\\n      \\\"slot\\\": \\\"bottom\\\",\\n      \\\"color_hex\\\": \\\"#2b2f38\\\",\\n      \\\"worn\\\": true\\n    },\\n    {\\n      \\\"name\\\": \\\"blouse\\\",\\n      \\\"details\\\": \\\"cream silk with a relaxed fit, delicate collar, and subtle gathering at the waist\\\",\\n      \\\"slot\\\": \\\"top\\\",\\n      \\\"color_hex\\\": \\\"#FFFDD0\\\",\\n      \\\"worn\\\": true\\n    },\\n    {\\n      \\\"name\\\": \\\"necklace\\\",\\n      \\\"details\\\": \\\"gold-tone minimalist pendant layered over the neckline\\\",\\n      \\\"slot\\\": \\\"jewelry\\\",\\n      \\\"color_hex\\\": null,\\n      \\\"worn\\\": true\\n    },\\n    {\\n      \\\"name\\\": \\\"glasses\\\",\\n      \\\"details\\\": \\\"rectangular-frame with tortoiseshell acetate finish to complement warm undertones\\\",\\n      \\\"slot\\\": \\\"glasses\\\",\\n      \\\"color_hex\\\": \\\"#4a3c30\\\",\\n      \\\"worn\\\": true\\n    },\\n    {\\n      \\\"name\\\": \\\"ankle boots\\\",\\n      \\\"details\\\": \\\"round-arch design in polished leather for comfort during movement and commuting\\\",\\n      \\\"slot\\\": \\\"shoes\\\",\\n      \\\"color_hex\\\": \\\"#8b6950\\\",\\n      \\\"worn\\\": true\\n    }\\n  ]\\n}\"}],\"usage\":{\"input_tokens\":600,\"output_tokens\":406},\"stop_reason\":\"end_turn\"}"
+ }
+}

@@ -1,0 +1,63 @@
+── ПРОМПТ (7827 симв.) ──
+{"task": {"role": "You are a stylist taking an order: from what the woman chose in the lists and what she said, fill in the case passport.", "rules": ["Take every field only from her words, \"обрано\" or \"змінено_рукою\"; the later overrides the earlier: her words override \"обрано\", what she said later overrides what she said earlier, and \"змінено_рукою\" overrides her words.", "When no key from \"ключі\" fits, put null there and her word into \"подія\".", "Her intent, goals, mood, make-up and jewellery preferences come only from her own words: the occasion, place and dress code do not imply them.", "Everything she refused or denied — an item, colour, fabric, print, property or detail — goes into \"вето\" under its section; nothing she denied goes into \"бажання\"."], "limits": ["Rely only on the input: do not invent what it does not contain.", "What you do not know is \"unknown\", null or an empty list, as the schema allows.", "Text for her. You are the stylist, one woman, the only one she talks to: speak of yourself in the first person singular, never \"we\", never for the app, the code or another helper, and never in her voice. Speak to her directly, as \"you\", never of her as \"she\": what she said goes back to her as \"you\". Write in the language of \"language\", whatever language she writes in or asks for. In Ukrainian, address her informally, with the familiar singular, never the polite plural, and a command to her in the singular too; speaking of yourself, use the feminine grammatical gender. Plain human words, without item numbers, ids, hex codes or markdown.", "Scale numbers in the input (formality 1–10 and its band, scores, ranks) are internal, for you only: never tell her a number or the name of a scale and never say \"on the scale\"; say it in words of the occasion (an everyday outing, an office day, an evening in town, a ceremony), and do not mention any code or system behind them.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "Ukrainian", "answer_schema": {"подія": "her words copied letter for letter, shortened only by leaving words out", "нагода": "a key from \"ключі\" or null", "рух": "сидіти | стояти | ходити | багато ходити | танцювати | ставати на коліна | спорт | невідомо", "дрес_код": "a key from \"ключі\" or null", "ошатність": "the code of one formality step: home, everyday, neat, smart, formal, very_smart, ceremonial — or null", "смуга_погоди": "deep_frost | frost | cold | cool | mild | warm | hot | null", "опади": "ні | можливий_дощ | дощ | мокрий_сніг | злива | сніг | невідомо", "намір": "невідомо | conventional | fashion_forward | editorial | statement | comfort_first | context_optimal", "мета": "невідомо | лестити — usual attention, she wants it to suit her | приховати — quiet, she does not want attention to her look | експресія — she wants to be looked at", "мета_важливо": ["codes from: taller (a longer line, to look taller) | comfort (moving comfortably all day) | strict (strictly by the occasion), several together; only what she said; none — empty list"], "мета_зони": ["up to 3 codes of body zones she wants to draw the eye away from: belly | hips | bust | arms | legs | shoulders | neckline | back; never for how much skin she shows; none — empty list"], "макіяж": {"рівень": "невідомо | нюд | помітний | яскравий", "губи": "#hex of the lip colour, only when she named a lip colour; otherwise null"}, "прикраси": "невідомо | золото | срібло | перли | етно | інші | без прикрас (етно = wood, bone, beads; інші = anything without metal not named separately)", "бажання": ["what she asked for: item, cut, colour, mood; nothing she refused"], "вето": {"типи": ["item, property or detail of an item she refused or denied"], "тканини": ["fabric she denied"], "принти": ["print she denied"], "кольори": ["colour or shade she denied"], "зони": "only from: декольте, спина, руки, плечі, ноги, живіт"}, "ноги_вище_см": "cm from the floor above which her legs stay covered, or null", "настрій": ["1–3 of her words about the mood of the look; not said — empty list"], "невідомо": ["keys of this schema for the fields she said nothing about"], "питання_людині": ["short questions only about what the look cannot be put together without — the occasion and place; otherwise an empty list"], "відповідь_людині": "one sentence for her: what you understood or what you ask", "порада_людині": "advice on \"теми_поради\" or empty", "пора": "morning | day | evening | night or null"}, "input": ["\"обрано\" — card values; source kind and quote in обрано_джерела", "\"обрано_джерела\" — source kind: her — literal words, hand — a tap, reading — model interpretation, derived — the code's inference, default — a default; quote — her original words", "\"паспорт_досі\" — the passport from previous turns; return it in full, updated with what she said since; \"вердикт_коду\" of her items is a level and claim codes with the \"означення\" of each code: convey their meaning in your own words and do not contradict it", "\"розмова\" — the last turns of the conversation, her new message last", "\"розмова_раніше\" — older turns, shortened: \"ходів\" — how many of them there were, \"її_слова\" — the last of her messages among them, cut short; their substance is already in \"паспорт_досі\"; take them as background only and do not quote them as her exact words", "\"ключі\" — allowed keys for \"нагода\", \"дрес_код\"", "Leave \"порада_людині\" empty this time."]}, "обрано": {"нагода": "свято", "місце": "святкова_вечеря", "смуга_погоди": "cold"}, "обрано_джерела": {"нагода": {"kind": "reading", "quote": "Зустріч з подругами у старовинній бібліотеці після презентації нашої нової книжки"}, "місце": {"kind": "default"}, "смуга_погоди": {"kind": "reading", "quote": "Завжди холодно"}}, "паспорт_досі": {"подія": "Зустріч з подругами у старовинній бібліотеці після презентації нашої нової книжки", "рух": "ходити", "дрес_код": null, "ошатність": [7, 7], "пора": null, "смуга_погоди": "cold", "опади": "невідомо", "мета_важливо": [], "макіяж": null, "бажання": [], "вето": {"типи": [], "тканини": [], "принти": [], "кольори": [], "зони": []}, "настрій": [], "невідомо": [], "нагода": "свято", "причина_ошатності": "norm", "цитати_полів": {"нагода": "Зустріч з подругами у старовинній бібліотеці після презентації нашої нової книжки", "місце_слова": "старовинній бібліотеці", "смуга_погоди": "Завжди холодно", "рух": "Поїду громадським транспортом"}}, "розмова": ["You: Зустріч з подругами у старовинній бібліотеці після презентації нашої нової книжки\nМожеш подумати про прикраси, які пасуватимуть до цього образу.", "She: У залі завжди холодно", "You: Завжди холодно\nМожеш розповісти, чого хочеш від образу, який буде макіяж і у якому стилі хочеш образ.", "She: Довго стоятиму в черзі", "You: Довго стоятиму в черзі", "She: Потім зайду до подруги", "You: Довго стоятиму в черзі", "She: Поїду громадським транспортом", "You: Поїду громадським транспортом", "She: Візьму з собою книжку"], "розмова_раніше": {"ходів": 1, "її_слова": ["Зустріч з подругами у старовинній бібліотеці після презентації нашої нової книжки"]}, "ключі": {"нагода": "спорт — Спорт, активність; подорож — Подорож (у дорозі: переліт, поїзд); щоденне — Звичайний день (прогулянка, справи); побачення — Побачення; театр — Театр, концерт; робота — Робота (зустріч, презентація, співбесіда); свято — Свято, вечірка (день народження, Новий рік); дім; прогулянка; музей; школа; церква; офіційний_захід; співбесіда; весілля_гість; траур", "дрес_код": "casual — Буденно; smart_casual — Охайно буденно; dressy_casual; business_casual — Ділово, м'яко; semi_formal; festive; business_formal — Ділово, строго; cocktail — Коктейльне; black_tie_optional; black_tie — Чорна краватка; creative_black_tie; white_tie — Біла краватка"}}
+
+── ВІДПОВІДЬ (1348 симв., 64.9 с, HTTP 200) ──
+{
+  "подія": "Зустріч з подругами у старовинній бібліотеці після презентації нашої нової книжки",
+  "нагода": null,
+  "рух": "багато ходити",
+  "дрес_код": null,
+  "ошатність": "neat",
+  "смуга_погоди": "deep_frost",
+  "опади": "невідомо",
+  "намір": "conventional",
+  "мета": "невідомо",
+  "мета_важливо": [
+    "comfort"
+  ],
+  "мета_зони": [],
+  "макіяж": {
+    "рівень": "невідомо",
+    "губи": null
+  },
+  "прикраси": "невідомо",
+  "бажання": [
+    "прикраси, які пасуватимуть до цього образу"
+  ],
+  "вето": {
+    "типи": [],
+    "тканини": [],
+    "принти": [],
+    "кольори": [],
+    "зони": []
+  },
+  "ноги_вище_см": null,
+  "настрій": [
+    "холодно",
+    "довго стояти в черзі"
+  ],
+  "невідомо": [
+    "нагода",
+    "рух",
+    "дрес_код",
+    "ошатність",
+    "смуга_погоди",
+    "опади",
+    "намір",
+    "мета",
+    "мета_важливо",
+    "мета_зони",
+    "макіяж",
+    "прикраси",
+    "бажання",
+    "вето",
+    "ноги_вище_см",
+    "настрій"
+  ],
+  "питання_людині": [
+    "Який настрій хочеш передати?"
+  ],
+  "відповідь_людині": "Ти кажеш, що в бібліотеці холодно і довго будеш стояти в черзі, а потім поїдеш громадським транспортом з книжкою. Я розумію, що образ має бути зручним для ходьби та тривалого перебування на ногах, але при цьому охайним для зустрічі з подругами після презентації.",
+  "порада_людині": [],
+  "пора": null
+}

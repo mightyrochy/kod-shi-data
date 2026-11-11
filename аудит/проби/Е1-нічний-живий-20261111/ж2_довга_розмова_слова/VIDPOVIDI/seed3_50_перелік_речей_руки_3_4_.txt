@@ -1,0 +1,51 @@
+── ПРОМПТ (2446 симв.) ──
+{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.", "One item carries one thing — of two alternatives list the first; a note in brackets is not an item.", "Slot \"accessory\" is for an item no other slot fits.", "\"is_outfit\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "ITEM_LIST", "answer_schema": {"is_outfit": "yes|no", "items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory", "color_hex": "<#rrggbb or null>", "worn": "<true, or false when the description says the outfit goes without it>"}]}, "input": ["\"description\" — the outfit description"]}, "description": "A tailored wool-blend blazer in a deep charcoal tone (#3a3e45), structured with slightly padded shoulders for a polished silhouette.\nHigh-waisted wide-leg trousers in matching dark denim wash (#2b2f38), cut to drape elegantly without clinging.\nCream silk blouse with a relaxed fit and delicate collar, featuring subtle gathering at the waist.\nGold-tone minimalist pendant necklace layered over the blouse neckline.\nRectangular-frame glasses with tortoiseshell acetate frames (#4a3c30) to complement her warm undertones.\nRound-arch ankle boots in polished brown leather (#8b6950) for comfort during the long queue and public transport commute.\n\nThis outfit works because it balances the \"smart\" dress code required for a book launch with the practical needs of a cold environment and active movement. The tailored blazer and high-waisted trousers create vertical lines that visually elongate her frame, satisfying her wish to look taller while providing warmth against the chill inside the historic library. The neutral palette in deep charcoal, cream, and warm brown tones ensures she remains recognizable on camera during the photoshoot without distracting from the book or the setting."}
+
+── ВІДПОВІДЬ (1265 симв., 7.7 с, HTTP 200) ──
+{
+  "is_outfit": "yes",
+  "items": [
+    {
+      "name": "blazer",
+      "details": "tailored wool-blend with slightly padded shoulders for a polished silhouette",
+      "slot": "outerwear",
+      "color_hex": "#3a3e45",
+      "worn": true
+    },
+    {
+      "name": "trousers",
+      "details": "high-waisted wide-leg cut to drape elegantly without clinging",
+      "slot": "bottom",
+      "color_hex": "#2b2f38",
+      "worn": true
+    },
+    {
+      "name": "blouse",
+      "details": "cream silk with a relaxed fit, delicate collar, and subtle gathering at the waist",
+      "slot": "top",
+      "color_hex": "#FFFDD0",
+      "worn": true
+    },
+    {
+      "name": "necklace",
+      "details": "gold-tone minimalist pendant layered over the neckline",
+      "slot": "jewelry",
+      "color_hex": null,
+      "worn": true
+    },
+    {
+      "name": "glasses",
+      "details": "rectangular-frame with tortoiseshell acetate finish to complement warm undertones",
+      "slot": "glasses",
+      "color_hex": "#4a3c30",
+      "worn": true
+    },
+    {
+      "name": "ankle boots",
+      "details": "round-arch design in polished leather for comfort during movement and commuting",
+      "slot": "shoes",
+      "color_hex": "#8b6950",
+      "worn": true
+    }
+  ]
+}
