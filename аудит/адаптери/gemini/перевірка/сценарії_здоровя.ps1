@@ -170,6 +170,9 @@ try {
     Check 'зупинене джерело: за зсуву часу на 6 хв вік >5; свіжа задача власника не освіжає його' ($body -match 'вік: 6 хв' -and $body -match 'джерело застаріле' -and (Read-GeminiBeat).Time -eq $beat.read_utc)
     Check 'стан ноутбука показує вичерпану доставку' ($body -match 'спроби вичерпано 1')
 } finally {
+    # Прохід стану запускає вимір тек окремим процесом (dirs.lock у теці власника): без очікування він тримає теку.
+    $mp = Get-Variable -Scope Script -Name MeasureProc -ValueOnly -ErrorAction SilentlyContinue
+    if ($null -ne $mp) { try { [void]$mp.WaitForExit(120000) } catch { } }
     # Видаляється лише створена цим стендом тека, після перевірки абсолютного шляху.
     $resolved = [System.IO.Path]::GetFullPath($tmpRoot)
     $parent = [System.IO.Path]::GetFullPath([System.IO.Path]::GetTempPath()).TrimEnd('\') + '\'

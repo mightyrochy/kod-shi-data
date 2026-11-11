@@ -316,7 +316,7 @@ function Format-Gb([double]$Bytes) { ($Bytes / 1GB).ToString('0.0', [cultureinfo
 
 # Розміри названих тек з кешу dirs.json (Get-MeasureCache); нема кешу — порожньо, розмір з'явиться після обходу.
 function Get-HealthDirs {
-    $c = Get-MeasureCache $WorkDir 'dirs' @('-MeasureHealth', '-WorkDir', $WorkDir, '-TmpDir', $TmpDir) (Get-Limit $script:Limits 'UsageMinutes' 'usage_minutes')
+    $c = Get-MeasureCache $WorkDir 'dirs' @('-MeasureHealth', '-WorkDir', $WorkDir, '-TmpDir', $TmpDir) (60 * (Get-Limit $script:Limits 'UsageMinutes' 'usage_minutes'))
     if ($null -eq $c) { return @() }
     @($c.dirs)
 }
@@ -336,11 +336,9 @@ function Update-Health {
     $h = $null
     if (Test-Path -LiteralPath $path) { try { $h = [System.IO.File]::ReadAllText($path, $script:Utf8) | ConvertFrom-Json } catch { $null = $_ } }
     $dirs = @(Get-HealthDirs)
+    if ($null -ne $h) { $h | Add-Member -NotePropertyName dirs -NotePropertyValue $dirs -Force }
     $now = [DateTimeOffset]::UtcNow.ToUnixTimeSeconds()
-    if ($null -ne $h -and $now - [long]$h.time -lt 60 * (Get-Limit $script:Limits 'UsageMinutes' 'usage_minutes')) {
-        $h | Add-Member -NotePropertyName dirs -NotePropertyValue $dirs -Force
-        return $h
-    }
+    if ($null -ne $h -and $now - [long]$h.time -lt 60 * (Get-Limit $script:Limits 'UsageMinutes' 'usage_minutes')) { return $h }
     $samples = @(@(Get-JsonProp $h 'samples') | Where-Object { $null -ne $_ -and $now - [long]$_.t -le 2 * 86400 })
     try { $samples += [pscustomobject]@{ t = $now; free = [long](Get-FreeBytes) } } catch { Write-Log "здоров'я: місце не виміряно" }
     Write-FileAtomic $path ([pscustomobject]@{ time = $now; samples = $samples } | ConvertTo-Json -Compress -Depth 4)
@@ -1419,7 +1417,7 @@ function Main {
                 [void](Repair-GpuModels)
                 [void](Invoke-Git @('fetch', '-q', '--prune', '--no-tags', '--refmap=', 'origin',
                         "+refs/heads/main:$script:RemoteRoot/main",
-                        "+refs/heads/gemini-queue/*:$($script:QueuePrefix)*") -TimeoutMinutes 15)
+                        "+refs/heads/gemini-queue/*:$($script:QueuePrefix)*"))
                 $script:Limits = Get-Limits
                 # Накопичене — після першого успішного fetch (до нього origin/* застарілі): прохід, що впав на
                 # fetch, прибирання не знімає.

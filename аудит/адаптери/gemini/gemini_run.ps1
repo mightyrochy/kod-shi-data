@@ -1277,7 +1277,7 @@ function Invoke-ProfileMeasure {
 # запускає Invoke-ProfileMeasure окремим процесом і не чекає його), і скільки позначок agy стоїть на групі квоти з 0 %
 # (усі групи моделі — 0 %, як Get-Quota).
 function Get-GeminiHealth {
-    $c = Get-MeasureCache $RunsDir 'health' @('-MeasureProfile', '-RunsDir', $RunsDir, '-ProfileDir', $ProfileDir) (Get-Limit $script:Limits 'UsageMinutes' 'usage_minutes')
+    $c = Get-MeasureCache $RunsDir 'health' @('-MeasureProfile', '-RunsDir', $RunsDir, '-ProfileDir', $ProfileDir) (60 * (Get-Limit $script:Limits 'UsageMinutes' 'usage_minutes'))
     if ($null -eq $c) { $c = [pscustomobject]@{ profile = ''; skipped = ''; read = '' } }
     # Кеш /usage, як у квоті heartbeat: сам вимір agy не запускає; нема кешу — «?» у стані.
     $zero = ''

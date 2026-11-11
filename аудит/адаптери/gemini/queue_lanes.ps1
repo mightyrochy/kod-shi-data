@@ -791,15 +791,15 @@ function Measure-DirBytes([string]$Path) {
     [pscustomobject]@{ Bytes = $bytes; Skipped = $skipped }
 }
 
-function Get-MeasureCache([string]$Dir, [string]$Name, [string[]]$MeasureArgs, [double]$Minutes) {
-    <# Кеш обходу тек `$Dir\$Name.json`: повертає його (чи $null). Нема кешу чи від кінця попереднього обходу минуло $Minutes,
+function Get-MeasureCache([string]$Dir, [string]$Name, [string[]]$MeasureArgs, [double]$MaxAge) {
+    <# Кеш обходу тек `$Dir\$Name.json`: повертає його (чи $null). Нема кешу чи від кінця попереднього обходу минуло $MaxAge с,
     а замок `$Name.lock` вільний — окремий процес цього скрипта ($MeasureArgs) міряє й пише кеш (Save-MeasureCache); його
     не чекають: обхід тек іде хвилини, а прохід стану чи heartbeat не можуть стояти. Процес — $script:MeasureProc. #>
     $path = Join-Path $Dir "$Name.json"
     $c = $null
     if (Test-Path -LiteralPath $path) { try { $c = [System.IO.File]::ReadAllText($path, $script:Utf8) | ConvertFrom-Json } catch { $null = $_ } }
     $now = [DateTimeOffset]::UtcNow.ToUnixTimeSeconds()
-    if ($null -eq $c -or $now - [long]$c.time -ge 60 * $Minutes) {
+    if ($null -eq $c -or $now - [long]$c.time -ge $MaxAge) {
         if (Test-LockFree (Join-Path $Dir "$Name.lock")) {
             $script:MeasureProc = [System.Diagnostics.Process]::Start((New-StartInfo (Get-Process -Id $PID).Path (@('-NoProfile', '-NonInteractive', '-ExecutionPolicy', 'Bypass', '-File', $script:SelfPath) + $MeasureArgs) '' -NoRedirect))
         }
