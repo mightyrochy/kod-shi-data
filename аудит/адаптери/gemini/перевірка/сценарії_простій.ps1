@@ -177,6 +177,81 @@ Scenario 'а простій' {
     Check 'а ГОТОВО виконавця, як і раніше, не будить' (-not (Test-DispatcherAction ('GEMINI ОБГОРТКА: ГОТОВО gemini/крок ' + ('a' * 40))))
 }
 
+# 11.11 20:05Z: дві позначки codex ішли (codex-1 з .claim і STARTED, codex-2), а рядок сказав ПРОСТІЙ. Справжні
+# Test-IdleBusy і Test-GeminiBusy; стан задачі gemini-run власникові не видно ('?') — зайнятість лише з heartbeat.
+Scenario 'б зайнятість gemini-run' {
+    $work = Join-Path $tmp 'b-cr'; $gout = Join-Path $tmp 'b-gout'; $gst = Join-Path $tmp 'b-gstate'
+    . (Join-Path $SourceDir 'claude_run.ps1') -WorkDir $work -RepoDir $tmp -OutboxDir "$tmp/b-box" -PublishDir "$tmp/b-pub" -GeminiOutDir $gout -GeminiStateDir $gst -LaneDir "$tmp/b-lanes" -TmpDir "$tmp/b-ctmp" -NoStatus
+    foreach ($d in @($work, "$work/state", "$work/slots", $gout, $gst)) { [void][IO.Directory]::CreateDirectory($d) }
+    $script:StateDir = "$work/state"; $script:SlotDir = "$work/slots"; $script:Limits = $null
+    function Get-TaskRows { @([pscustomobject]@{ Name = 'gemini-run'; State = '?' }) }
+    $beat = { param([int]$Ago, $Lanes)
+        $o = [ordered]@{ read_utc = (Get-UtcStamp ((Get-Date).AddMinutes(-$Ago))); time = (Get-Date).AddMinutes(-$Ago).ToString('s'); isolation = 'OK' }
+        if ($null -ne $Lanes) { $o.lanes = $Lanes }
+        Write-FileAtomic "$gout/heartbeat.json" ($o | ConvertTo-Json -Compress -Depth 6) }
+    $free = @(@{ lane = 'codex'; n = 10; busy = @() }, @{ lane = 'agy'; n = 54; busy = @() })
+    $ceil = [int]$script:Ceil.poll_minutes[1]
+    & $beat 1 $free
+    Check 'б свіжий heartbeat, смуги вільні — gemini-run вільний' (-not (Test-GeminiBusy))
+    & $beat 1 @(@{ lane = 'codex'; n = 10; busy = @(@{ slot = 'codex-1'; marker = 'gemini-queue/н1/gpt-5/1'; model = 'gpt-5'; since = (Get-UtcStamp (Get-Date)) }) }, $free[1])
+    Check 'б зайнятий слот у heartbeat — зайнято' (Test-GeminiBusy)
+    & $beat 0 $null
+    Check '14585 heartbeat без lanes (неповний: лише read_utc/time/isolation) — не «вільно»' (Test-GeminiBusy)
+    & $beat ($ceil + 1) $free
+    Check "14585 heartbeat старший за стелю poll_minutes ($ceil хв) — не «вільно»" (Test-GeminiBusy)
+    Remove-Item "$gout/heartbeat.json" -Force
+    Check '14585 heartbeat нема — не «вільно»' (Test-GeminiBusy)
+
+    # --- 14584: узята позначка (файл .claim) — робота, а не «не готова» -----------------------------------------------
+    & $beat 1 $free
+    $now = [DateTimeOffset]::UtcNow.ToUnixTimeSeconds()
+    $m = [pscustomobject]@{ Valid = $true; Lane = 'codex'; Model = 'gpt-5'; Slug = 'Е3-місце-речі-ч-траур'; Ref = 'gemini-queue/Е3-місце-речі-ч-траур/gpt-5/2'; Name = 'gemini-queue/Е3-місце-речі-ч-траур/gpt-5/2'; Sha = ('b' * 40); Time = $now }
+    $script:Marks = @($m)
+    function Get-Markers { $script:Marks }
+    $g = [pscustomobject]@{ Codex = $null; Quota = $null }
+    $sp = Get-StatePath (Get-MarkerKey $m) $gst
+    $id = '20261111-200100-0123456789ab'
+    Write-FileAtomic $sp ('STARTED {"id":"' + $id + '","slot":"codex-1"}'); Write-FileAtomic (Get-ClaimPath $sp) $id
+    Check '14584 позначка codex узята (.claim, STARTED), heartbeat смуг вільний — робота, не ПРОСТІЙ' (Test-IdleBusy $g)
+    Write-FileAtomic $sp ('WAIT {"until":' + ($now + 3600) + ',"marker":"x","retakes":1,"group":"START"}')
+    (Get-Item -LiteralPath (Get-ClaimPath $sp)).LastWriteTime = (Get-Date).AddHours(-1)
+    $keep = $script:StateDir; $script:StateDir = $gst
+    try { Clear-OrphanClaims "$tmp/b-runs" } finally { $script:StateDir = $keep }
+    Check '14584 мертвий .claim (давній, без STARTED і живого слота) прибирає Clear-OrphanClaims — позначка знову в чеканні, простій' (-not (Test-Path -LiteralPath (Get-ClaimPath $sp)) -and -not (Test-IdleBusy $g))
+}
+
+# Heartbeat gemini-run: до Get-Limits неповним не переписується (14586); обхід профілю не тримає heartbeat і цикл (14587).
+Scenario 'в heartbeat gemini-run' {
+    $runs = Join-Path $tmp 'v-runs'; $out = Join-Path $tmp 'v-out'; $prof = Join-Path $tmp 'v-profile'
+    . (Join-Path $SourceDir 'gemini_run.ps1') -RunsDir $runs -OutDir $out -RepoDir $tmp -LaneDir "$tmp/v-lanes" -ProfileDir $prof
+    foreach ($d in @($runs, "$runs/state", "$runs/slots", $out, $prof)) { [void][IO.Directory]::CreateDirectory($d) }
+    $script:StateDir = "$runs/state"; $script:SlotDir = "$runs/slots"
+    [IO.File]::WriteAllBytes("$prof/f.bin", (New-Object byte[] 4321))
+    Write-FileAtomic "$runs/health.json" ('{"time":' + [DateTimeOffset]::UtcNow.ToUnixTimeSeconds() + ',"read":"2026-11-11T20:00:00Z","profile":"7","skipped":"0"}')
+    $script:Limits = @{ slots = @{ agy = 2; codex = 2 }; source = 'код' }
+    Write-Heartbeat ''
+    $hb = { [IO.File]::ReadAllText("$out/heartbeat.json", $utf) | ConvertFrom-Json }
+    Check 'в повний heartbeat має смуги' (@((& $hb).lanes).Count -eq 2)
+    $script:Limits = $null
+    Write-Heartbeat ''
+    Check '14586 до Get-Limits heartbeat неповним не переписано — смуги на місці' ($null -ne (& $hb).PSObject.Properties['lanes'] -and @((& $hb).lanes).Count -eq 2)
+    Write-Heartbeat 'TEST_ISOLATION'
+    Check 'в ізоляція до Get-Limits — heartbeat пишеться (isolation, без смуг)' ((& $hb).isolation -ceq 'TEST_ISOLATION')
+
+    # --- 14587: повільний обхід профілю (заглушка 20 с) не тримає heartbeat ---------------------------------------------
+    $script:Limits = @{ slots = @{ agy = 2; codex = 2 }; source = 'код' }
+    $script:Slow = 0
+    function Measure-DirBytes([string]$Path) { $script:Slow++; Start-Sleep -Seconds 20; [pscustomobject]@{ Bytes = 1; Skipped = 0 } }
+    Remove-Item "$runs/health.json" -Force
+    $sw = [Diagnostics.Stopwatch]::StartNew(); Write-Heartbeat ''; $sw.Stop()
+    Check "14587 heartbeat не чекає обходу профілю: $([int]$sw.Elapsed.TotalSeconds) с, повільний обхід у процесі heartbeat — $($script:Slow) раз" ($script:Slow -eq 0 -and $sw.Elapsed.TotalSeconds -lt 10)
+    $p = Get-Variable -Scope Script -Name ProfileMeasure -ValueOnly -ErrorAction SilentlyContinue
+    Check '14587 обхід пішов окремим процесом і завершився' ($null -ne $p -and $p.WaitForExit(60000) -and $p.ExitCode -eq 0)
+    Write-Heartbeat ''
+    $h = (& $hb).health
+    Check "14587 наступний heartbeat несе розмір профілю з кешу процесу-виміру: $($h.profile) байт, $($h.read)" ($h.profile -ceq '4321' -and $h.read -cmatch '^20\d\d-\d\d-\d\dT\d\d:\d\d:\d\dZ$' -and $script:Slow -eq 0)
+}
+
 "ПІДСУМОК: ✗ $bad"
 Remove-Item -LiteralPath $tmp -Recurse -Force -ErrorAction SilentlyContinue
 exit ([int]($bad -gt 0))
