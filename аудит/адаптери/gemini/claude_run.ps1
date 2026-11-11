@@ -1055,12 +1055,17 @@ function Resume-Interrupted {
 # --- вимкнення ----------------------------------------------------------------------------------------------------
 
 # Рушій Gemini зайнятий: задача gemini-run виконується (власникові без адміна її стан не видно, 10013) чи в heartbeat
-# є узята позначка в будь-якій смузі.
+# є узята позначка в будь-якій смузі. «Вільний» — лише за свіжим heartbeat зі смугами: gemini-run пише його щопроходу
+# й щохвилини між проходами (Invoke-HealthBeat), проходи розділяє poll_minutes, а без нарядів задача стартує знову
+# раніше за стелю poll_minutes (Ceil). Heartbeat без смуг (ізоляція, ще не прочитано межі), старший за цю стелю чи
+# відсутній — стан смуг невідомий, а невідоме не «вільно».
 function Test-GeminiBusy {
     $st = @(Get-TaskRows | Where-Object { $_.Name -eq 'gemini-run' } | ForEach-Object { $_.State })
     if ($st.Count -gt 0 -and $st[0] -ne '?') { return ($st[0] -eq 'Running') }
     $b = Read-GeminiBeat
     if ($b.Marker) { return $true }
+    $age = Get-Minutes $b.Time
+    if ($age -eq '?' -or [int]$age -gt $script:Ceil.poll_minutes[1] -or @($b.Lanes).Count -eq 0) { return $true }
     @($b.Lanes | Where-Object { $_.Busy.Count -gt 0 }).Count -gt 0
 }
 
@@ -1137,7 +1142,7 @@ function Get-MarkerStateIn($M, [string]$Dir) {
     try { Get-MarkerState $M } finally { $script:StateDir = $keep }
 }
 
-# Простій — не «позначок нема», а «брати нічого»: зайнятою вважається лише позначка, яку смуга справді візьме. Не візьме:
+# Простій — не «позначок нема», а «брати нічого»: зайнята позначка — узята смугою (.claim) чи та, яку смуга справді візьме. Не візьме:
 # нічний прохід минулого дня (gemini-run бере лише сьогоднішній, Start-Markers) і позначка на рушії з нульовою квотою —
 # Claude, Codex (скидання в майбутньому), група agy з нульовим вікном heartbeat: смуга лише поверне її в чекання. Такі
 # позначки (і ті, що вже чекають квоту) $script:IdleWhy описує для рядка: ` QUOTA0 <N> <ГРУПИ> <найраніше скидання UTC|->`.
@@ -1151,9 +1156,12 @@ function Test-IdleBusy($G) {
     $today = [datetime]::UtcNow.ToString('yyyyMMdd')
     $zero = @()
     foreach ($m in @(Get-Markers | Where-Object { $_.Valid })) {
+        $st = $(if ($m.Lane -eq 'claude') { Get-MarkerState $m } else { Get-MarkerStateIn $m $GeminiStateDir })
+        # Узята (.claim) — наряд іде чи стартує, хоч би й нічний прохід учорашнього дня; мертве узяття прибирають
+        # Clear-OrphanClaims (до STARTED) і Resume-Interrupted (STARTED без живого слота) тієї смуги.
+        if ($st.Kind -eq 'TAKEN') { return $true }
         if (($now - $m.Time) -gt $MarkerMaxAgeDays * 86400) { continue }
         if ($m.Lane -ne 'claude' -and $m.Slug -cmatch '^Е1-нічний-живий-([0-9]{8})$' -and $Matches[1] -cne $today) { continue }
-        $st = $(if ($m.Lane -eq 'claude') { Get-MarkerState $m } else { Get-MarkerStateIn $m $GeminiStateDir })
         $grp = $(if ($st.Kind -eq 'WAIT') { [string](Get-JsonProp $st.Wait 'group') } else { '' })
         if (-not (Test-MarkerReady $st)) {
             if ($grp -cmatch '^[A-Z0-9]{1,16}$' -and $grp -cnotin @('NETWORK', 'SLEEP', 'REVIEW_API', 'PLAN_WAIT', 'START')) {
