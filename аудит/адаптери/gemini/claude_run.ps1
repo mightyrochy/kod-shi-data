@@ -783,11 +783,7 @@ function Invoke-Claude([string]$Exe, [string[]]$ArgList, [string]$Prompt, [strin
     $psi = New-StartInfo $Exe $ArgList $RepoDir
     $psi.RedirectStandardInput = $true
     # .NET Framework створює StandardInput з AutoFlush: BOM пишеться вже під час Start.
-    $stdinEncoding = [Console]::InputEncoding
-    try {
-        [Console]::InputEncoding = $script:Utf8
-        $p = Start-Tree $psi
-    } finally { [Console]::InputEncoding = $stdinEncoding }
+    $p = Invoke-WithStdinUtf8 { Start-Tree $psi }
     $start = ''; try { $start = Get-UtcStamp $p.StartTime } catch { $null = $_ }
     Write-FileAtomic $StatePath ($StateHead + ' ' + (([ordered]@{ pid = $p.Id; start = $start; marker = $Marker; slot = $Slot; retakes = (Get-Retakes $StatePath) }) | ConvertTo-Json -Compress))
     $w = New-Object System.IO.StreamWriter($p.StandardInput.BaseStream, $script:Utf8)

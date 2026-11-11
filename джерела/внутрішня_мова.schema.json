@@ -4168,6 +4168,27 @@
       {
        "properties": {
         "name": {
+         "const": "switch_profile"
+        },
+        "args": {
+         "type": "object",
+         "additionalProperties": false,
+         "required": [
+          "id"
+         ],
+         "properties": {
+          "id": {
+           "type": "string",
+           "minLength": 1,
+           "description": "the \"id\" of one of profiles"
+          }
+         }
+        }
+       }
+      },
+      {
+       "properties": {
+        "name": {
          "const": "confirm_case"
         },
         "args": {
@@ -4215,6 +4236,7 @@
         "open_scenario",
         "delete_scenario",
         "new_scenario",
+        "switch_profile",
         "confirm_case",
         "set_weather_feel"
        ]
