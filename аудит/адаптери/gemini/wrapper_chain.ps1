@@ -121,6 +121,46 @@ function Test-ChainHeadEmpty([string]$Head) {
     $diff.Code -eq 0 -and -not $diff.Out.Trim()
 }
 
+function Get-ChainRemoteHost {
+    <# Вузол віддаленого репозиторію за http(s)-адресою `origin`; локальний шлях чи збій читання — порожньо (мережі чекати нема чого). #>
+    $r = Invoke-Git @('remote','get-url','origin') -AllowFail
+    if ($r.Code -eq 0 -and ([string]$r.Out).Trim() -cmatch '^https?://(?:[^/@]*@)?([^/:@]+)') { return $Matches[1] }
+    ''
+}
+
+function Test-ChainNetwork([string]$HostName) {
+    <# Мережа встала, коли ім'я вузла розв'язується: після сну чи обриву DNS з'являється останнім. #>
+    try { [void][System.Net.Dns]::GetHostAddresses($HostName); $true } catch { $false }
+}
+
+function Wait-ChainNetwork {
+    <# Після виходу зі сну чи обриву мережа встає за секунди (журнал: ls-remote упав о 22:41:09, за секунду після пробудження),
+    тож ls-remote не питає в неї, доки ім'я вузла не розв'язується. Межа очікування — межа публікатора для мережевої відправки:
+    до $SendRetries перевірок із паузою $SendRetryDelaySeconds між ними. Не встала й тоді — далі йде ls-remote зі своїм збоєм
+    і текстом у журналі. #>
+    $remoteHost = Get-ChainRemoteHost
+    if (-not $remoteHost) { return }
+    for ($n = 1; -not (Test-ChainNetwork $remoteHost); $n++) {
+        if ($n -ge $SendRetries) { Write-WrapperLog "ланцюг: мережа до $remoteHost не встала за $n перевірок"; return }
+        Write-WrapperLog "ланцюг: мережі до $remoteHost ще нема (перевірка $n з $SendRetries) — чекаю"
+        if ($SendRetryDelaySeconds -gt 0) { Start-Sleep -Seconds $SendRetryDelaySeconds }
+    }
+    if ($n -gt 1) { Write-WrapperLog "ланцюг: мережа до $remoteHost встала на перевірці $n" }
+}
+
+function Get-ChainRemoteHeads([string]$Pattern) {
+    <# Єдине читання гілок `origin` для ланцюга: чекає мережу, а збій ls-remote лишає в журналі з кодом і текстом git
+    (адреса без входу) — сам код CHAIN_REMOTE причини не несе. #>
+    Wait-ChainNetwork
+    $r = Invoke-Git @('ls-remote','--heads','origin',$Pattern) -AllowFail
+    if ($r.Code -ne 0) {
+        $text = (([string](Get-Prop $r 'Err')).Trim() -replace '://[^/@\s]*@','://' -replace '\s*\r?\n\s*',' | ')
+        Write-WrapperLog "ланцюг: ls-remote $Pattern -> код $($r.Code): $text"
+        throw 'CHAIN_REMOTE'
+    }
+    $r
+}
+
 function Complete-EngineDrafts {
     <# Із перевірених результатів публікатора створює PR-чернетки; повтор звіряє наявний PR. #>
     $pulls = @(Get-ChainPulls)
@@ -131,8 +171,7 @@ function Complete-EngineDrafts {
         $branch = [string]$job.branch; $head = [string]$job.head
         if ($branch -cnotmatch '^gemini/[\p{L}\p{Nd}][\p{L}\p{Nd}._-]{0,79}$' -or $branch.Contains('..') -or $branch.EndsWith('.lock') -or $head -cnotmatch $script:ShaPattern) { throw 'CHAIN_DRAFT' }
         # Голова вже пройшла захист Publish-Bundle; повтор перевіряє поточний ref GitHub.
-        $r = Invoke-Git @('ls-remote','--heads','origin',"refs/heads/$branch") -AllowFail
-        if ($r.Code -ne 0) { throw 'CHAIN_REMOTE' }
+        $r = Get-ChainRemoteHeads "refs/heads/$branch"
         if (-not $r.Out.StartsWith($head + "`t")) { continue }
         $existing = @($pulls | Where-Object {
             $_.user.login -ceq 'mightyrochy' -and $_.head.ref -ceq $branch -and $_.head.repo.full_name -ceq $GitHubRepo -and
@@ -206,8 +245,7 @@ function Add-ChainMarker([string]$Slug, [string]$Model, [string]$Main, [switch]$
     if ($Slug -cnotmatch $script:SlugPattern -or $Model -cnotmatch $script:ModelPattern -or $Main -cnotmatch $script:ShaPattern) { throw 'CHAIN_FORMAT' }
     if ($Cond -and $Cond -cnotmatch '^(?:p[0-9]|d20[0-9]{10}|gpu)(?:-(?:p[0-9]|d20[0-9]{10}|gpu)){0,2}$') { throw 'CHAIN_FORMAT' }
     $ref = "refs/heads/gemini-queue/$Slug/$Model/$Attempt" + $(if ($Cond) { "/$Cond" } elseif ($Gpu) { '/p2-gpu' } else { '/p2' })
-    $r = Invoke-Git @('ls-remote','--heads','origin',$ref) -AllowFail
-    if ($r.Code -ne 0) { throw 'CHAIN_REMOTE' }
+    $r = Get-ChainRemoteHeads $ref
     if ($r.Out.Trim()) { return }
     $r = Invoke-Git @('push','-q','--no-verify',"--force-with-lease=${ref}:",'origin',"${Main}:$ref") -AllowFail
     if ($r.Code -ne 0) { throw 'CHAIN_PUSH' }
@@ -374,8 +412,7 @@ function Get-ChainTaskCompletion([string]$Slug, [switch]$ReadyOnly, [switch]$Rem
         if ($result.Slug -ceq $Slug -and (-not $ReadyOnly -or $result.Kind -ceq 'ГОТОВО')) { return $result.Utc }
     }
     if ($Removed) {
-        $r = Invoke-Git @('ls-remote','--heads','origin',"refs/heads/gemini-queue/$Slug/*") -AllowFail
-        if ($r.Code -ne 0) { throw 'CHAIN_REMOTE' }
+        $r = Get-ChainRemoteHeads "refs/heads/gemini-queue/$Slug/*"
         if (-not $r.Out.Trim()) { return [datetime]::UtcNow.ToString('o') }
     }
     ''
@@ -517,8 +554,7 @@ function Get-ChainMarkerState([string]$Ref, [string]$Sha, [string]$Model) {
 
 function Get-ChainMarkers([string]$Slug) {
     <# Віддалені позначки з числовою спробою й поточним станом смуги — спільне джерело вибору та перенесення. #>
-    $r = Invoke-Git @('ls-remote','--heads','origin',"refs/heads/gemini-queue/$Slug/*") -AllowFail
-    if ($r.Code -ne 0) { throw 'CHAIN_REMOTE' }
+    $r = Get-ChainRemoteHeads "refs/heads/gemini-queue/$Slug/*"
     foreach ($line in ($r.Out -split "`n")) {
         if ($line.Trim() -cnotmatch '^([0-9a-f]{40})\trefs/heads/(gemini-queue/([^/]+)/([a-z0-9][a-z0-9.-]{1,63})/([1-9][0-9]{0,2})(?:/([^/]+))?)$') { continue }
         $sha = $Matches[1]; $ref = $Matches[2]; $task = $Matches[3]; $model = $Matches[4]; $attempt = [int]$Matches[5]; $cond = [string]$Matches[6]
