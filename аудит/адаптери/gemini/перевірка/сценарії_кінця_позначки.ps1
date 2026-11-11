@@ -153,6 +153,32 @@ try {
     function Invoke-Git { [pscustomobject]@{Code=1;Out='';Err='стенд мережі'} }
     try { [void](Get-LiveCompletion ([pscustomobject]@{stamp=('e'*40);published=$true})) } catch { $script:RemoteFailure = $_.Exception.Message -ceq 'CHAIN_REMOTE' }
     Check 'збій GitHub не видається за прибрану позначку' $script:RemoteFailure
+    # Мережа після сну: ls-remote не питає в неї, доки ім'я вузла не розв'язується; збій при живій мережі лишає текст git у журналі.
+    & {
+        $script:NetChecks = 0; $script:LsCalls = 0; $script:NetUpAfter = 2; $script:LsErr = ''
+        $keepDelay = $script:SendRetryDelaySeconds; $script:SendRetryDelaySeconds = 0
+        function Test-ChainNetwork { $script:NetChecks++; $script:NetChecks -gt $script:NetUpAfter }
+        function Invoke-Git {
+            if ($args[0][0] -ceq 'remote') { return [pscustomobject]@{Code=0;Out='https://x-access-token:секрет@github.com/o/r.git';Err=''} }
+            $script:LsCalls++
+            if ($script:NetChecks -gt $script:NetUpAfter -and -not $script:LsErr) { return [pscustomobject]@{Code=0;Out='';Err=''} }
+            [pscustomobject]@{Code=128;Out='';Err=$(if ($script:LsErr) { $script:LsErr } else { 'fatal: unable to access: Could not resolve host: github.com' })}
+        }
+        $active = [pscustomobject]@{stamp=('e'*40);published=$true}
+        $threw = ''
+        try { [void](Get-LiveCompletion $active) } catch { $threw = [string]$_.Exception.Message }
+        "ДАНІ мережа-ще-нема: виняток='$threw' ls-remote=$($script:LsCalls) перевірок мережі=$($script:NetChecks)"
+        Check 'мережа ще не встала: прохід чекає й ls-remote проходить без CHAIN_REMOTE' ($threw -ceq '' -and $script:LsCalls -eq 1 -and $script:NetChecks -eq 3)
+        $script:NetChecks = 0; $script:LsCalls = 0; $script:NetUpAfter = -1; $script:LsErr = "remote: Repository not found.`nfatal: https://x-access-token:секрет@github.com/o/r.git"
+        $log = "$WorkDir/publish.log"; $before = [IO.File]::ReadAllText($log, $utf).Length
+        $threw = ''
+        try { [void](Get-LiveCompletion $active) } catch { $threw = [string]$_.Exception.Message }
+        $added = [IO.File]::ReadAllText($log, $utf).Substring($before)
+        "ДАНІ мережа-жива: виняток='$threw' ls-remote=$($script:LsCalls) журнал=[$($added.Trim())]"
+        Check 'мережа жива, ls-remote падає: CHAIN_REMOTE без повторів, текст git у журналі' ($threw -ceq 'CHAIN_REMOTE' -and $script:LsCalls -eq 1 -and $added.Contains('Repository not found') -and $added.Contains('код 128'))
+        Check 'журнал не несе даних входу з адреси' (-not $added.Contains('секрет'))
+        $script:SendRetryDelaySeconds = $keepDelay
+    }
     & {
         . (Join-Path $SourceDir 'claude_run.ps1') -WorkDir "$tmp/claude-run" -OutboxDir "$tmp/claude-out" -LaneDir "$tmp/claude-lanes"
         $script:ResultBeforeLine = $false
