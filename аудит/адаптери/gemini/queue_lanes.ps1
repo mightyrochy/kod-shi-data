@@ -29,6 +29,9 @@ $script:LanesPath = 'аудит/адаптери/gemini/смуги.json'
 $script:Utf8 = New-Object System.Text.UTF8Encoding($false)
 $script:OnWindows = ($PSVersionTable.PSEdition -ne 'Core') -or [bool](Get-Variable IsWindows -ValueOnly -ErrorAction SilentlyContinue)
 $script:TreeJobs = @{}  # pid процесу Start-Tree → його задача Windows
+$script:PausedTotal = [timespan]::Zero  # пауз живлення цього процесу (Wait-PowerPause)
+$script:Pausing = $false
+$script:PauseMachine = $false  # планувальник claude-run ставить на паузу й LM Studio та ComfyUI
 $script:GpuLease = $null  # замок GPU-оренди процесу наряду (Start-GpuModels → Exit-GpuLease)
 # Тека версії цього процесу: після самооновлення — `<корінь>\versions\<SHA40>`, поряд із коренем — `active.txt`.
 $script:VersionDir = $PSScriptRoot
@@ -250,16 +253,24 @@ function Stop-Tree($Proc) {
     Stop-TreeJob $Proc.Id
 }
 
+function Set-ConsoleInputEncoding($Encoding) { [Console]::InputEncoding = $Encoding }
+
+function Invoke-WithStdinUtf8([scriptblock]$Start) {
+    <# Запуск процесу з UTF-8 без BOM у кодуванні stdin консолі: .NET Framework пише BOM у StandardInput під час Start.
+    Консоль задачі планувальника буває розірваною — тоді сетер кидає (SetValueInvocationException) і валив би увесь
+    прохід. Це не помилка: stdin кодує власний StreamWriter UTF-8 без BOM поверх BaseStream, а кодування консолі
+    відновлюється лише коли його вдалося змінити. #>
+    $saved = $null
+    try { $saved = [Console]::InputEncoding; Set-ConsoleInputEncoding $script:Utf8 } catch { $saved = $null; $null = $_ }
+    try { & $Start } finally { if ($null -ne $saved) { try { Set-ConsoleInputEncoding $saved } catch { $null = $_ } } }
+}
+
 function Invoke-Native([string]$Exe, [string[]]$Arguments, [string]$Dir = '', [double]$TimeoutMinutes = 10, [string]$StdIn = $null) {
-    <# Запуск із межею часу (по межі — зупинка дерева) і необов'язковим stdin; повертає код, ознаку межі й обидва потоки. #>
+    <# Запуск із межею часу неспання (по межі — зупинка дерева) і необов'язковим stdin; повертає код, ознаку межі й обидва потоки. #>
     $psi = New-StartInfo $Exe $Arguments $Dir
     $psi.RedirectStandardInput = ($null -ne $StdIn)
     # .NET Framework створює StandardInput з AutoFlush: BOM пишеться вже під час Start.
-    $stdinEncoding = [Console]::InputEncoding
-    try {
-        [Console]::InputEncoding = $script:Utf8
-        $p = Start-Tree $psi
-    } finally { [Console]::InputEncoding = $stdinEncoding }
+    $p = Invoke-WithStdinUtf8 { Start-Tree $psi }
     $out = $p.StandardOutput.ReadToEndAsync()
     $err = $p.StandardError.ReadToEndAsync()
     if ($null -ne $StdIn) {
@@ -267,8 +278,8 @@ function Invoke-Native([string]$Exe, [string[]]$Arguments, [string]$Dir = '', [d
         $w.Write($StdIn)
         $w.Close()
     }
-    $until = [datetime]::UtcNow.AddMinutes($TimeoutMinutes)
-    while (-not $p.WaitForExit(1000) -and [datetime]::UtcNow -lt $until) { Invoke-HealthBeat }
+    $until = (Get-AwakeTime) + [timespan]::FromMinutes($TimeoutMinutes)
+    while (-not $p.WaitForExit(1000) -and (Get-AwakeTime) -lt $until) { Wait-PowerPause; Invoke-HealthBeat }
     $timedOut = -not $p.HasExited
     if (-not $timedOut) { $p.WaitForExit() }
     Stop-Tree $p
@@ -797,10 +808,110 @@ function Open-Lock([string]$Path) {
     try { [System.IO.File]::Open($Path, 'OpenOrCreate', 'ReadWrite', 'None') } catch { $null }
 }
 
-function Get-SleepGap([datetime]$Tick, [datetime]$Now) {
-    <# Цикл наряду обертається щонайменше раз на хвилину: довша пауза — сон ноутбука, а не завислість наряду. #>
-    $gap = $Now - $Tick
-    if ($gap.TotalMinutes -gt 5) { $gap } else { [timespan]::Zero }
+function Add-PowerType {
+    if ('GeminiWrapper.Power' -as [type]) { return }
+    Add-Type -TypeDefinition @'
+using System;
+using System.Runtime.InteropServices;
+namespace GeminiWrapper {
+    public static class Power {
+        [StructLayout(LayoutKind.Sequential)]
+        struct Status { public byte AcLine, BatteryFlag, BatteryPercent, SaverStatus; public int LifeTime, FullLifeTime; }
+        [DllImport("kernel32.dll")] static extern bool QueryUnbiasedInterruptTime(out ulong time);
+        [DllImport("kernel32.dll")] static extern bool GetSystemPowerStatus(out Status status);
+        [DllImport("kernel32.dll", SetLastError = true)] static extern IntPtr OpenProcess(uint access, bool inherit, int id);
+        [DllImport("kernel32.dll")] static extern bool CloseHandle(IntPtr handle);
+        [DllImport("ntdll.dll")] static extern int NtSuspendProcess(IntPtr process);
+        [DllImport("ntdll.dll")] static extern int NtResumeProcess(IntPtr process);
+
+        public static long Ticks() { ulong t; QueryUnbiasedInterruptTime(out t); return (long)t; }
+
+        // AcLine: 0 — від батареї, 1 — від мережі, 255 — невідомо (тоді не пауза).
+        public static bool OnBattery() { Status s; return GetSystemPowerStatus(out s) && s.AcLine == 0; }
+
+        public static bool Pause(int id, bool on) {
+            IntPtr p = OpenProcess(0x0800, false, id);  // SUSPEND_RESUME
+            if (p == IntPtr.Zero) return false;
+            try { return (on ? NtSuspendProcess(p) : NtResumeProcess(p)) == 0; }
+            finally { CloseHandle(p); }
+        }
+    }
+}
+'@
+}
+
+function Get-UnbiasedTime {
+    <# Монотонний час неспання системи: Windows — QueryUnbiasedInterruptTime (без сну й гібернації); інші ОС —
+    Stopwatch (CLOCK_MONOTONIC, без призупинення). Stopwatch на Windows сон рахує. #>
+    if (-not $script:OnWindows) {
+        return [timespan]::FromTicks([long]([System.Diagnostics.Stopwatch]::GetTimestamp() * (1e7 / [System.Diagnostics.Stopwatch]::Frequency)))
+    }
+    Add-PowerType
+    [timespan]::FromTicks([GeminiWrapper.Power]::Ticks())
+}
+
+function Get-AwakeTime {
+    <# Робочий час процесу ([timespan]): неспання без пауз живлення (Wait-PowerPause). Межі часу й завислості лічать
+    лише його — сон ноутбука й пауза без світла не робота й не завислість наряду. 08.11: 7 год сну дали автоперевірці
+    #3342 «TIMEOUT, 434 хв». #>
+    (Get-UnbiasedTime) - $script:PausedTotal
+}
+
+function Test-OnBattery {
+    <# Світла нема — ноутбук живиться від батареї (GetSystemPowerStatus, дешевий виклик); без Windows — ні. #>
+    if (-not $script:OnWindows) { return $false }
+    try { Add-PowerType; [GeminiWrapper.Power]::OnBattery() } catch { $false }
+}
+
+function Get-PauseTargets {
+    <# Що ставить на паузу цей процес: усе в задачах Windows його нарядів (Start-Tree, разом із відірваними нащадками),
+    а планувальник claude-run ($script:PauseMachine) — ще й LM Studio (усі її процеси за Test-GpuModelProcess) та
+    ComfyUI: спільні сервери моделей того самого користувача. Gemini працює під іншим користувачем — свої процеси ставить на паузу його обгортка. #>
+    $ids = New-Object System.Collections.Generic.List[int]
+    foreach ($job in @($script:TreeJobs.Values)) {
+        try { foreach ($i in [GeminiWrapper.TreeJob]::Members($job)) { $ids.Add($i) } } catch { $null = $_ }
+    }
+    if ($script:PauseMachine) {
+        # LM Studio — за визначенням Test-GpuModelProcess: інтерфейс, lms, окремий сервер llmster і будь-який процес із її
+        # теки (.lmstudio); призупинений лише інтерфейс лишив би сервер рахувати на батареї.
+        foreach ($p in @(Get-Process -ErrorAction SilentlyContinue)) {
+            $path = ''
+            try { $path = [string]$p.Path } catch { $path = '' }
+            if ((Test-GpuModelProcess $p.ProcessName $path) -or $p.ProcessName -ceq 'ComfyUI') { $ids.Add($p.Id) }
+        }
+        $comfy = "Name='python.exe' AND CommandLine LIKE '%ComfyUI%'"
+        foreach ($p in @(Get-CimInstance Win32_Process -Filter $comfy -ErrorAction SilentlyContinue)) { $ids.Add([int]$p.ProcessId) }
+    }
+    @($ids | Where-Object { $_ -ne $PID } | Sort-Object -Unique)
+}
+
+function Set-ProcessPause([int]$Id, [bool]$On) {
+    <# Призупинити чи відновити процес (NtSuspendProcess/NtResumeProcess); $false — процесу нема чи прав нема. #>
+    [GeminiWrapper.Power]::Pause($Id, $On)
+}
+
+function Wait-PowerPause {
+    <# Світла нема — робота стоїть (власник 09.11): процеси Get-PauseTargets призупинено, а цикл, що кличе паузу, далі
+    не йде (нові позначки не стартують), доки не повернеться мережа; тоді процеси продовжують з того самого місця.
+    Без роботи ноутбук на батареї спить у Modern Standby й сам бачить, що світло повернулось: будильник із гібернації
+    08.11 кожним пробудженням відновлював роботу на відеокарті й коштував 2–3 % батареї. Час паузи не йде в межі. #>
+    # Серцебиття всередині паузи може дійти до Invoke-Native — друга пауза всередині першої нічого не робить.
+    if ($script:Pausing -or -not (Test-OnBattery)) { return }
+    $script:Pausing = $true
+    $from = Get-UnbiasedTime
+    $paused = @(foreach ($i in Get-PauseTargets) { if (Set-ProcessPause $i $true) { $i } })
+    Write-Log "пауза: світла нема (живлення від батареї), призупинено процесів $($paused.Count)"
+    try {
+        # Світло перевіряється раз на інтервал опитування черги: у паузі нема роботи, яку треба будити частіше.
+        $poll = [timespan]::FromMinutes((Get-Limit $script:Limits 'PollMinutes' 'poll_minutes'))
+        while (Test-OnBattery) { Start-Sleep -Milliseconds $poll.TotalMilliseconds; Invoke-HealthBeat }
+    } finally {
+        foreach ($i in $paused) { [void](Set-ProcessPause $i $false) }
+        $span = (Get-UnbiasedTime) - $from
+        $script:PausedTotal += $span
+        $script:Pausing = $false
+        Write-Log ("пауза знята: світло є через {0:N1} хв, відновлено процесів {1}" -f $span.TotalMinutes, $paused.Count)
+    }
 }
 
 function Test-LockFree([string]$Path) {
@@ -1042,6 +1153,7 @@ function Wait-Workers($Workers, [double]$Minutes) {
     $until = (Get-Date).AddMinutes($Minutes)
     while ((Get-Date) -lt $until) {
         if (@($Workers | Where-Object { -not $_.Proc.HasExited }).Count -lt $alive) { return }
+        Wait-PowerPause
         Invoke-HealthBeat
         Start-Sleep -Milliseconds 500
     }
@@ -1147,6 +1259,40 @@ function New-TaskCopy([string]$Dir, [string]$Commit, [string]$TaskText) {
     $env:TEMP = $tmp; $env:TMP = $tmp
     Write-Log "копія задачі $repo ($Commit): тек-архівів не викладено — $($skip.Count)"
     $repo
+}
+
+function Get-AttemptStart([string]$BranchSha, [string]$Main) {
+    <# Старт нової спроби наряду: що береться за основу, коли гілка попередньої спроби вже є на origin. Нема гілки чи
+    її голова — предок main (усе злито, пуш нової голови лишається швидким вперед) — основа main, `NEW`/`MERGED`; голова
+    вже містить main — гілка як є, `CURRENT`; інакше гілка, куди перед агентом вливається main, `BEHIND`. Спільне для
+    смуг: gemini_run.ps1 (Invoke-Job) і claude_run.ps1 (Invoke-Task). #>
+    if (-not $BranchSha) { return [pscustomobject]@{ Start = $Main; Mode = 'NEW' } }
+    $r = Invoke-Git @('merge-base', '--is-ancestor', $BranchSha, $Main) -AllowFail
+    if ($r.Code -gt 1) { throw "git merge-base --is-ancestor $BranchSha $Main -> $($r.Code): $($r.Err.Trim())" }
+    if ($r.Code -eq 0) { return [pscustomobject]@{ Start = $Main; Mode = 'MERGED' } }
+    $r = Invoke-Git @('merge-base', '--is-ancestor', $Main, $BranchSha) -AllowFail
+    if ($r.Code -gt 1) { throw "git merge-base --is-ancestor $Main $BranchSha -> $($r.Code): $($r.Err.Trim())" }
+    [pscustomobject]@{ Start = $BranchSha; Mode = $(if ($r.Code -eq 0) { 'CURRENT' } else { 'BEHIND' }) }
+}
+
+function Merge-MainIntoCopy([string]$Main, [string]$Branch) {
+    <# У копії задачі ($RepoDir, на гілці) вливає $Main комітом злиття. Повертає голову після злиття; конфлікт чи інший
+    збій — `merge --abort`, копія лишається на голові гілки, повертається ''. #>
+    $before = Get-RefSha 'HEAD'
+    $msg = "Обгортка: влито origin/main у $Branch перед спробою наряду (гілка відстала від main)"
+    $r = Invoke-Git @('-c', 'user.name=Обгортка Люстерка', '-c', 'user.email=wrapper@users.noreply.github.com', '-c', 'commit.gpgsign=false',
+        'merge', '--no-ff', '-q', '-m', $msg, $Main) -AllowFail
+    if ($r.Code -eq 0) { return (Get-RefSha 'HEAD') }
+    Write-Log "злиття main у $Branch не вдалося — $(($r.Out + $r.Err).Trim() -replace '\s+', ' ')"
+    [void](Invoke-Git @('merge', '--abort') -AllowFail)
+    if ((Get-RefSha 'HEAD') -cne $before) { [void](Invoke-Git @('reset', '-q', '--hard', $before)) }
+    ''
+}
+
+function Get-MergeStepText([string]$Branch) {
+    <# Крок промпту, коли обгортка не влила main сама (конфлікт) чи гілку веде агент: він вливає main першим кроком. #>
+    "Перший крок: влий свіжий ``origin/main`` у ``$Branch`` (``git merge origin/main``), конфлікти розв'язуй за змістом ``main``: гілка " +
+    "відстала від ``main``, тож код, який у ``main`` уже змінено чи прибрано, не лагодь і не відновлюй. Далі — наряд."
 }
 
 function Get-TaskDirText([string]$TaskDir) {

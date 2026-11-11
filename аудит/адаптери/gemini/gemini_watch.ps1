@@ -86,6 +86,18 @@ function ConvertTo-ArgString([string[]]$Items) {
     $parts -join ' '
 }
 
+function Set-ConsoleInputEncoding($Encoding) { [Console]::InputEncoding = $Encoding }
+
+function Invoke-WithStdinUtf8([scriptblock]$Start) {
+    <# Запуск процесу з UTF-8 без BOM у кодуванні stdin консолі: .NET Framework пише BOM у StandardInput під час Start.
+    Консоль задачі планувальника буває розірваною — тоді сетер кидає (SetValueInvocationException) і валив би увесь
+    прохід. Це не помилка: stdin кодує власний StreamWriter UTF-8 без BOM поверх BaseStream, а кодування консолі
+    відновлюється лише коли його вдалося змінити. #>
+    $saved = $null
+    try { $saved = [Console]::InputEncoding; Set-ConsoleInputEncoding $script:Utf8 } catch { $saved = $null; $null = $_ }
+    try { & $Start } finally { if ($null -ne $saved) { try { Set-ConsoleInputEncoding $saved } catch { $null = $_ } } }
+}
+
 function Invoke-Native([string]$Exe, [string[]]$Arguments, [string]$WorkDirectory = '', [double]$TimeoutMinutes = 5, [string]$StdIn = $null) {
     $psi = New-Object System.Diagnostics.ProcessStartInfo
     $psi.FileName = $Exe
@@ -101,11 +113,7 @@ function Invoke-Native([string]$Exe, [string[]]$Arguments, [string]$WorkDirector
     $psi.EnvironmentVariables['GCM_INTERACTIVE'] = 'never'
     $psi.RedirectStandardInput = ($null -ne $StdIn)
     # .NET Framework створює StandardInput з AutoFlush: BOM пишеться вже під час Start.
-    $stdinEncoding = [Console]::InputEncoding
-    try {
-        [Console]::InputEncoding = $script:Utf8
-        $p = [System.Diagnostics.Process]::Start($psi)
-    } finally { [Console]::InputEncoding = $stdinEncoding }
+    $p = Invoke-WithStdinUtf8 { [System.Diagnostics.Process]::Start($psi) }
     $out = $p.StandardOutput.ReadToEndAsync()
     $err = $p.StandardError.ReadToEndAsync()
     if ($null -ne $StdIn) {

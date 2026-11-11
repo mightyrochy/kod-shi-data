@@ -118,16 +118,13 @@ function Invoke-NativeUntilStall([string]$Exe, [string[]]$Arguments, [string]$Wo
     $p = Start-Tree $psi
     $err = $p.StandardError.ReadToEndAsync()
     $out = New-Object System.Text.StringBuilder
-    $last = Get-Date
-    $tick = $last
+    $last = Get-AwakeTime
     $stalled = $false
     $pending = $null
     while ($true) {
         if ($null -eq $pending) { $pending = $p.StandardOutput.ReadLineAsync() }
-        $now = Get-Date
-        $last = $last + (Get-SleepGap $tick $now)
-        $tick = $now
-        $left = ($last.AddMinutes($StallMinutes) - $now).TotalMilliseconds
+        Wait-PowerPause
+        $left = ($last + [timespan]::FromMinutes($StallMinutes) - (Get-AwakeTime)).TotalMilliseconds
         if ($left -le 0) { $stalled = $true; break }
         if (-not $pending.Wait([int][Math]::Min($left, 60000))) {
             # stdout міг лишитись відкритим у нащадка завершеного процесу: це не завислість.
@@ -137,13 +134,12 @@ function Invoke-NativeUntilStall([string]$Exe, [string[]]$Arguments, [string]$Wo
         $line = $pending.Result
         $pending = $null
         if ($null -eq $line) { break }
-        $last = Get-Date
-        $tick = $last  # сон до цієї події вже скинуто, вдруге його не додавати
+        $last = Get-AwakeTime
         [void]$out.Append($line).Append("`n")
         [System.IO.File]::AppendAllText($LogFile, $line + "`n", $script:Utf8)
         $type = ''
         if ($line -match '"type"\s*:\s*"([^"]{1,60})"') { $type = $Matches[1] }
-        [System.IO.File]::AppendAllText($EventsFile, $last.ToString('s') + "`t" + $type + "`n", $script:Utf8)
+        [System.IO.File]::AppendAllText($EventsFile, (Get-Date).ToString('s') + "`t" + $type + "`n", $script:Utf8)
     }
     if (-not $stalled -and -not $p.WaitForExit([int][Math]::Min([double][int]::MaxValue, $StallMinutes * 60000))) { $stalled = $true }
     if (-not $stalled) { $p.WaitForExit() }
@@ -540,7 +536,7 @@ function Get-TaskRole([string]$TaskText) {
     'ВИКОНАВЕЦЬ'
 }
 
-function Get-Prompt($M, [string]$TaskText, [string]$EngineName = 'agy', [string]$TaskDir = '') {
+function Get-Prompt($M, [string]$TaskText, [string]$EngineName = 'agy', [string]$TaskDir = '', [string]$MergeStep = '') {
     $taskSource = Get-TaskSource $M
     $branch = "gemini/$($M.Slug)"
     $adapter = $(if ($EngineName -eq 'codex') { 'адаптер — лише цей текст' } else { 'адаптер середовища — `GEMINI.md`' })
@@ -559,7 +555,7 @@ function Get-Prompt($M, [string]$TaskText, [string]$EngineName = 'agy', [string]
 - Наряд — ``$taskSource`` з ``main`` на коміті $($M.Sha); повний текст — нижче між рисками.
 - Гілку ``$branch`` уже вибрано: працюй і коміть лише в ній. Не пуш і не створюй бандла — це робить обгортка.
 $(if ($TaskDir) { '- ' + ((Get-TaskDirText $TaskDir) -replace "`n", "`n  ") })
-  Файлів ``.github/`` і ``аудит/адаптери/gemini/`` не змінюй: таку гілку не опублікують.
+  Файлів ``.github/`` і ``аудит/адаптери/gemini/`` не змінюй: таку гілку не опублікують.$(if ($MergeStep) { "`n- " + $MergeStep })
 - Кожну команду виконуй на передньому плані й чекай її завершення: фонове завдання зупиняється разом із ходом, а
   звіт без результату — кинутий прогін.
 - Коміть після кожного завершеного кроку; $commitRule
@@ -657,10 +653,11 @@ function Get-AgyArgs($M, [string]$Conversation, [string[]]$Head) {
 }
 
 # Один хід у режимі stream: подія result, eof (процес закінчився) або timeout.
-function Wait-StreamResult($Run, [datetime]$Deadline) {
+function Wait-StreamResult($Run, [timespan]$Deadline) {
     while ($true) {
         if ($null -eq $Run.Pending) { $Run.Pending = $Run.Proc.StandardOutput.ReadLineAsync() }
-        $left = ($Deadline - (Get-Date)).TotalMilliseconds
+        Wait-PowerPause
+        $left = ($Deadline - (Get-AwakeTime)).TotalMilliseconds
         if ($left -le 0) { return [pscustomobject]@{ Kind = 'timeout'; Result = $null } }
         if (-not $Run.Pending.Wait([int][Math]::Min($left, 60000))) { continue }
         $line = $Run.Pending.Result
@@ -683,11 +680,7 @@ function Start-StreamRun($M, $Run) {
     $psi = New-StartInfo $script:Agy (Get-AgyArgs $M $Run.Conversation @()) $RepoDir
     $psi.RedirectStandardInput = $true
     # .NET Framework створює StandardInput з AutoFlush: BOM пишеться вже під час Start.
-    $stdinEncoding = [Console]::InputEncoding
-    try {
-        [Console]::InputEncoding = $script:Utf8
-        $Run.Proc = Start-Tree $psi
-    } finally { [Console]::InputEncoding = $stdinEncoding }
+    $Run.Proc = Invoke-WithStdinUtf8 { Start-Tree $psi }
     $Run.Stdin = New-Object System.IO.StreamWriter($Run.Proc.StandardInput.BaseStream, $script:Utf8)
     $Run.Stderr = $Run.Proc.StandardError.ReadToEndAsync()
     $Run.Pending = $null
@@ -731,7 +724,7 @@ function Invoke-OneShotTurn($M, $Run, [string]$Text) {
     [pscustomobject]@{ Kind = 'result'; Result = $res }
 }
 
-function Invoke-Turn($M, $Run, [string]$Text, [datetime]$Deadline) {
+function Invoke-Turn($M, $Run, [string]$Text, [timespan]$Deadline) {
     if ($Run.Engine.Name -ne 'agy') { return Invoke-OneShotTurn $M $Run $Text }
     if ($Mode -eq 'stream') {
         if ($null -eq $Run.Proc) { Start-StreamRun $M $Run }
@@ -748,7 +741,7 @@ function Invoke-Turn($M, $Run, [string]$Text, [datetime]$Deadline) {
     $file = Join-Path $Run.Dir ('turn{0}.md' -f $Run.Turn)
     [System.IO.File]::WriteAllText($file, $Text, $script:Utf8)
     $short = "Прочитай файл $file і виконай його повністю"
-    $minutes = ($Deadline - (Get-Date)).TotalMinutes
+    $minutes = ($Deadline - (Get-AwakeTime)).TotalMinutes
     if ($minutes -le 0) { return [pscustomobject]@{ Kind = 'timeout'; Result = $null } }
     # Запас 2 хв: agy має встигнути сам віддати конверт із conversation_id по своїй --print-timeout.
     $r = Invoke-Native $script:Agy (Get-AgyArgs $M $Run.Conversation @('-p', $short)) $RepoDir ($minutes + 2)
@@ -770,7 +763,8 @@ function Invoke-Agent($M, [string]$Start, [string]$Prompt, [string]$Dir, $Sel) {
         Responses = New-Object System.Collections.Generic.List[string] }
     # Codex без межі часу всього й ходу (власник 26.10): його зупиняє лише завислість; `agy` — як було.
     $unlimited = ($Sel.Engine.Name -eq 'codex')
-    $deadline = $(if ($unlimited) { [datetime]::MaxValue } else { (Get-Date).AddMinutes($TotalMinutes) })
+    # Межі — за часом неспання (Get-AwakeTime): сон ноутбука посеред ходу не закриває наряд як TIMEOUT.
+    $deadline = $(if ($unlimited) { [timespan]::MaxValue } else { (Get-AwakeTime) + [timespan]::FromMinutes($TotalMinutes) })
     $text = $Prompt
     $turns = 0
     $nudges = 0
@@ -781,7 +775,7 @@ function Invoke-Agent($M, [string]$Start, [string]$Prompt, [string]$Dir, $Sel) {
         while ($true) {
             $turnDeadline = $deadline
             if (-not $unlimited) {
-                $turnDeadline = (Get-Date).AddMinutes($TurnMinutes)
+                $turnDeadline = (Get-AwakeTime) + [timespan]::FromMinutes($TurnMinutes)
                 if ($turnDeadline -gt $deadline) { $turnDeadline = $deadline }
             }
             $turns++
@@ -830,7 +824,7 @@ function Invoke-Agent($M, [string]$Start, [string]$Prompt, [string]$Dir, $Sel) {
                 Write-Log "agy: $($r.Kind) без id розмови — догонки нема"
                 break
             }
-            if ((Get-Date) -ge $deadline) { $code = 'TIMEOUT'; break }
+            if ((Get-AwakeTime) -ge $deadline) { $code = 'TIMEOUT'; break }
             if ($nudges -ge $MaxNudges) { $code = 'NO_REPORT'; break }
             $nudges++
             $text = Get-Nudge $M (Test-Report $M $Start '') $why
@@ -1065,8 +1059,14 @@ function Invoke-Task($M, $Job) {
         $start = Get-RefSha "refs/remotes/origin/gemini/$($M.Slug)"
         # Повтор після відмови за квотою: від голови того прогону, якщо опублікована гілка — її предок (інакше NOT_FF).
         $wh = [string]$Job.head
+        $att = $null
         if ($wh -match '^[0-9a-f]{40}$' -and (Get-RefSha $wh) -and (-not $start -or (Invoke-Git @('merge-base', '--is-ancestor', $start, $wh) -AllowFail).Code -eq 0)) { $start = $wh }
-        if (-not $start) { $start = $main }
+        else {
+            # Нова спроба, не повтор: гілка попередньої — лише коли не злита; злита чи відсутня — від свіжого main (Get-AttemptStart).
+            $att = Get-AttemptStart $start $main
+            $start = $att.Start
+            if ($att.Mode -in @('MERGED', 'BEHIND')) { Write-Log "старт нової спроби $($M.Name): гілка $(if ($att.Mode -eq 'MERGED') { 'злита — від main' } else { 'відстала — main буде влито' })" }
+        }
         # Звірка голови — до копії задачі: мертва позначка копії не отримує.
         $review = Get-AutoReviewState $M.Slug
         if ($review -eq 'REVIEW_API') {
@@ -1089,10 +1089,16 @@ function Invoke-Task($M, $Job) {
         $taskDir = Join-Path (Join-Path $RunsDir 'w') $id
         try { [void](New-TaskCopy $taskDir $start $taskText) } catch { $copyFailed = $true; throw }
         [void](Invoke-Git @('checkout', '-q', '-f', '--ignore-other-worktrees', '-B', "gemini/$($M.Slug)", $start))
+        $mergeStep = ''
+        if ($att -and $att.Mode -eq 'BEHIND') {
+            # Старт — після злиття: його коміт не рахується за роботу агента (Get-Facts: $start..голова).
+            $merged = Merge-MainIntoCopy $main "gemini/$($M.Slug)"
+            if ($merged) { $start = $merged } else { $mergeStep = Get-MergeStepText "gemini/$($M.Slug)" }
+        }
         $status.start = $start
         # Стан із початком гілки: перерваний прогін наступний запуск закриє й забандлить (Resume-Interrupted).
         Write-FileAtomic $statePath ('STARTED ' + ($status | ConvertTo-Json -Compress))
-        $prompt = Get-Prompt $MA $taskText $sel.Engine.Name $taskDir
+        $prompt = Get-Prompt $MA $taskText $sel.Engine.Name $taskDir $mergeStep
         [IO.File]::WriteAllText((Join-Path $dir 'prompt.md'), $prompt, $script:Utf8)
         $res = Invoke-Agent $MA $start $prompt $dir $sel
         $tail = $res.Tail
@@ -1512,6 +1518,7 @@ function Main {
                 Clear-OrphanClaims $RunsDir
                 $script:Agy = Find-EngineExe $AgyExe
                 if ($script:Agy) { [void](Read-Usage) }
+                Wait-PowerPause  # без світла нові позначки не стартують
                 $started = Start-Markers $workers
                 Update-HoldSignals $script:Held { param($l) Add-HoldLine $l }
             } catch { Add-HealthException $_.Exception; Write-Log "прохід: $($_.Exception.Message)" }

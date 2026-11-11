@@ -20,7 +20,9 @@ function Get-ChainPulls {
 $script:ChainPaths = @{}
 
 function Get-ChainPullPaths($Pull) {
-    <# Повний список файлів API (з попередніми іменами перейменувань), один раз на голову; неповна відповідь лишає повтор. #>
+    <# Повний список файлів API (з попередніми іменами перейменувань), один раз на голову. Неповна відповідь (збій сторінки,
+    елемент без filename) лишає повтор; успішна порожня — правда: PR без змін, список порожній (журнал — раз на голову,
+    у кеш не йде: голова, яку GitHub ще не порахував, має перечитатись). #>
     $key = "$($Pull.number) $($Pull.head.sha)"
     if ($script:ChainPaths.ContainsKey($key)) { return @($script:ChainPaths[$key]) }
     $all = @(); $count = 0
@@ -36,8 +38,8 @@ function Get-ChainPullPaths($Pull) {
             $count++
         }
         if ($items.Count -lt 100) {
-            if (-not $count) { throw 'CHAIN_FILES' }
-            $script:ChainPaths = @{ $key = $all }
+            if ($count) { $script:ChainPaths = @{ $key = $all } }
+            elseif (-not (Test-Seen "chain-empty $key")) { Write-WrapperLog "ланцюг: #$($Pull.number) $($Pull.head.sha) — API віддав порожній список файлів: PR без змін, перевіряти нічого" }
             return $all
         }
     }
@@ -112,10 +114,19 @@ function Save-DraftRequest([string]$Branch, [string]$Head, [string]$Model = '') 
     Write-FileAtomic (Join-Path $dir ((Get-Sha256Hex "$Branch $Head") + '.json')) ((@{branch=$Branch;head=$Head} | ConvertTo-Json -Compress))
 }
 
+function Test-ChainHeadEmpty([string]$Head) {
+    <# Голова без власних змін відносно main: diff від merge-base порожній. Недоведено (нема об'єкта, нема бази) — $false. #>
+    if ((Invoke-Git @('cat-file','-e',"$Head^{commit}") -AllowFail).Code -ne 0) { [void](Invoke-Git @('fetch','-q','origin',$Head) -AllowFail) }
+    $diff = Invoke-Git @('diff','--name-only',"refs/remotes/origin/main...$Head") -AllowFail
+    $diff.Code -eq 0 -and -not $diff.Out.Trim()
+}
+
 function Complete-EngineDrafts {
     <# Із перевірених результатів публікатора створює PR-чернетки; повтор звіряє наявний PR. #>
     $pulls = @(Get-ChainPulls)
     foreach ($file in @(Get-ChildItem -LiteralPath (Join-Path $WorkDir 'drafts') -Filter '*.json' -File -ErrorAction SilentlyContinue)) {
+        # Кожна гілка — окремо: збій однієї чернетки лишає її завдання на повтор і не зупиняє решти.
+        try {
         $job = ConvertFrom-Json ((Read-ChainStateText $file.FullName))
         $branch = [string]$job.branch; $head = [string]$job.head
         if ($branch -cnotmatch '^gemini/[\p{L}\p{Nd}][\p{L}\p{Nd}._-]{0,79}$' -or $branch.Contains('..') -or $branch.EndsWith('.lock') -or $head -cnotmatch $script:ShaPattern) { throw 'CHAIN_DRAFT' }
@@ -134,6 +145,14 @@ function Complete-EngineDrafts {
                 Write-WrapperLog "ланцюг: звіт $branch без рядків дошки — гілка без PR-чернетки"
                 Remove-Item -LiteralPath $file.FullName; continue
             }
+        }
+        # Гілка прогону без власних змін відносно main (сесія лише злила main): PR-чернетка порожня, нічого перевіряти.
+        if (-not $existing.Count -and (Test-ChainHeadEmpty $head)) {
+            Write-WrapperLog "ланцюг: $branch $head — власних змін відносно main нема, PR-чернетку не відкрито"
+            if (-not (Test-Seen "empty-draft $branch $head")) {
+                Add-ChainLine "empty-draft $branch $head" "GEMINI ОБГОРТКА: ЗАБЛОКОВАНО $branch EMPTY"
+            }
+            Remove-Item -LiteralPath $file.FullName; continue
         }
         # Список PR міг передувати допису перевірки: читаємо чинне тіло безпосередньо перед PATCH.
         $currentBody = ''
@@ -158,6 +177,7 @@ function Complete-EngineDrafts {
         if ([string]$pr.number -cnotmatch '^[1-9][0-9]{0,8}$') { throw 'CHAIN_DRAFT' }
         Write-WrapperLog "ланцюг: $method PR-чернетки #$($pr.number) $branch $head"
         Remove-Item -LiteralPath $file.FullName
+        } catch { Write-WrapperLog "ланцюг: чернетка $($file.Name) — $([string]$_.Exception.Message); завдання лишається на повтор"; Write-ChainFailure $_ }
     }
 }
 
@@ -419,6 +439,11 @@ function Write-StateFailureDiagnostic([string]$Code, $Failure, [string]$Path = '
 }
 
 
+function Add-ChainLine([string]$Seed, [string]$Text) {
+    <# Рядок диспетчерові: ім’я файлу — час і 12 знаків хешу $Seed. #>
+    Add-OutboxLine ((Get-Date -Format 'yyyyMMdd-HHmmss') + '-' + (Get-Sha256Hex $Seed).Substring(0,12) + '.txt') $Text
+}
+
 function Write-ChainFailure($Failure) {
     <# Пише тип, місце й JSON-шлях об’єкта в рядок; повний виняток і метадані — у журнали. #>
     $code = [string]$Failure.Exception.Message
@@ -438,7 +463,25 @@ function Write-ChainFailure($Failure) {
     }
     Write-WrapperLog "ланцюг: $code$detail; наступний прохід повторить незавершене"
     if (-not (Test-Seen ("chain-failed $code $where " + [datetime]::UtcNow.ToString('yyyyMMddHH')))) {
-        Add-OutboxLine ((Get-Date -Format 'yyyyMMdd-HHmmss') + '-' + (Get-Sha256Hex "chain $code $where").Substring(0,12) + '.txt') "GEMINI ОБГОРТКА: ЛАНЦЮГ $code$detail"
+        Add-ChainLine "chain $code $where" "GEMINI ОБГОРТКА: ЛАНЦЮГ $code$detail"
+    }
+}
+
+function Write-ChainPullFailure($Failure, [string]$Number, [string]$Head) {
+    <# Збій одного PR не зупиняє проходу: рядок журналу з номером і кодом, диспетчерові — раз на PR і голову;
+    наступний прохід повторить лише цей PR. Збій віддаленого репозиторію (читання чи push позначок) — спільний для всіх PR:
+    його, як і раніше, обробляє прохід цілком (Write-ChainFailure). #>
+    $code = [string]$Failure.Exception.Message
+    if ($code -cin @('CHAIN_REMOTE','CHAIN_PUSH')) { throw $Failure }
+    $diagnosticCode = $(if ($code -cmatch '^CHAIN_[A-Z_]+$') { $code } else { 'CHAIN_FAILED' })
+    [void](Write-StateFailureDiagnostic $diagnosticCode $Failure)
+    if ($code -cnotmatch '^CHAIN_[A-Z_]+$') {
+        Write-WrapperLog ("ланцюг: CHAIN_FAILED {0}: {1}`n{2}" -f $Failure.Exception.GetType().FullName, $Failure.Exception.Message, $Failure.ScriptStackTrace)
+        $code = 'CHAIN_FAILED'
+    }
+    Write-WrapperLog "ланцюг: #$Number $Head — $code; PR пропущено, наступний прохід повторить лише його"
+    if (-not (Test-Seen "chain-pr-failed $Number $Head $code")) {
+        Add-ChainLine "chain-pr $code $Number $Head" "GEMINI ОБГОРТКА: ЛАНЦЮГ $code PR $Number $Head"
     }
 }
 
@@ -623,6 +666,8 @@ function Remove-DeadReviewMarkers($Pulls, $Seen, [datetimeoffset]$Now) {
     foreach ($g in @($refs | Group-Object -CaseSensitive { "$($_.N) $($_.Head)" })) {
         if (@($g.Group | Where-Object { $_.Kind -ceq 'UNKNOWN' }).Count) { continue }
         $first = $g.Group[0]; $pr = $live[$first.N]; $why = ''
+        # Збій читання одного PR лишає його позначки на місці й не зупиняє решти груп.
+        try {
         if ($null -eq $pr) { $why = 'PR не відкритий чи не перевіряється' }
         elseif ([string]$pr.head.sha -cne $first.Head) { $why = 'голова PR змінилась' }
         elseif (-not @($Seen.Keys | Where-Object { $_ -cmatch ('^' + $first.N + ' ' + $first.Head + ' ') }).Count -and -not (Test-ChainCodePull $pr)) { $why = 'PR без коду' }
@@ -640,6 +685,7 @@ function Remove-DeadReviewMarkers($Pulls, $Seen, [datetimeoffset]$Now) {
             $drop += [pscustomobject]@{ Ref = $m.Ref; Sha = $m.Sha; Key = "$($m.N) $($m.Head) $($m.Model)"; Cc = (-not $why -and $cc)
                 Why = $(if ($why) { $why } elseif ($cc) { 'Claude на ноутбуці не перевіряє' } else { 'друга позначка тієї самої голови' }) }
         }
+        } catch { Write-ChainPullFailure $_ $first.N $first.Head }
     }
     $removed = 0
     # Пачками: перший прохід нової версії знімає сотні позначок, а кожен push — окремий вхід на origin.
@@ -881,6 +927,8 @@ function Invoke-WrapperChain {
         foreach ($pr in $pulls) {
             if (-not (Test-ChainReviewPull $pr)) { continue }
             $head = [string]$pr.head.sha; $n = [string]$pr.number
+            # Кожен PR — окремо: його збій іде в журнал і не зупиняє PR після нього.
+            try {
             $eligible = Test-RecentReviewHead $pr $heads $installed $now $hours
             Write-FileAtomic $statePath (([ordered]@{ main=$main; reviewed=$reviewed; live_active=$liveActive; live_since=$liveSince; live_stamps=@($liveStamps.Keys); live_pending=@($livePending); reviews=@($seen.Keys); installed_utc=$installed.ToString('o'); heads=$heads }) | ConvertTo-Json -Compress -Depth 5)
             if (-not $eligible) { continue }
@@ -925,6 +973,7 @@ function Invoke-WrapperChain {
                 $reviewed[$n] = @{head=$head;diff=$diff;pid=$patchId}
                 Write-FileAtomic $statePath (([ordered]@{ main=$main; reviewed=$reviewed; live_active=$liveActive; live_since=$liveSince; live_stamps=@($liveStamps.Keys); live_pending=@($livePending); reviews=@($seen.Keys); installed_utc=$installed.ToString('o'); heads=$heads }) | ConvertTo-Json -Compress -Depth 5)
             }
+            } catch { Write-ChainPullFailure $_ $n $head }
         }
     } catch {
         Write-ChainFailure $_
