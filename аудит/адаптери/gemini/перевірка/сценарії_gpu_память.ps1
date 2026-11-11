@@ -42,7 +42,7 @@ function Row([int]$Id, [long]$MiB) {
 }
 function State([string]$Name, [bool]$Expected, [string]$Reason = '') {
     <# Планувальник і воркер мають однакове рішення, причина доходить до публікатора. #>
-    $why = Get-GpuBusyReason @()
+    $why = Get-GpuBusyReason
     $free = Test-ExternalGpuFree
     Check "$Name — вільна=$free; причина=«$why»" (($why -eq '') -eq $Expected -and $free -eq $Expected)
     if ($Reason) {
@@ -103,10 +103,8 @@ State 'драйвер не відповів' $false 'nvidia-smi'
 $script:SmiCode = 0; $script:NoSmi = $true
 State 'драйвера немає' $false 'nvidia-smi'
 $script:NoSmi = $false; $script:LockFree = $false
-Check 'між обліковими записами лишається замок GPU' ((Get-GpuBusyReason @()) -match 'замок')
+Check 'між обліковими записами лишається замок GPU' ((Get-GpuBusyReason) -match 'замок')
 $script:LockFree = $true
-$worker = @([pscustomobject]@{ Gpu = $true; Proc = [pscustomobject]@{ HasExited = $false } })
-Check 'власний GPU-наряд утримує карту' ((Get-GpuBusyReason $worker) -match 'власний наряд')
 foreach ($reason in @('навантаження 101 %', 'навантаження -1 %', 'вільно 1 з потрібних 2 MiB; навантаження 101 %', 'вільно 1 з потрібних 2 MiB; навантаження -1 %', "вільно 1 з потрібних 2 MiB`nкоманда", 'вільно N/A з потрібних 8925 MiB')) {
     Check "транспорт відкидає довільний текст [$reason]" (-not (Test-HoldLine "GEMINI ОБГОРТКА: ЗАБЛОКОВАНО GPU: $reason, позначок 1"))
 }

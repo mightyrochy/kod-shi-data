@@ -120,6 +120,15 @@ FAKE_BOOT=b2 cr; chk "наступний прохід — нічого ново�
 setup k6b; rm "$W/cr/boot.txt"; mark "ВИМКНИ-НОУТБУК/cc-off/1"; cr
 chk "позначка до першого проходу після ввімкнення → BOOT, без shutdown" '[ "$(lines)" = "GEMINI ОБГОРТКА: ЗАБЛОКОВАНО claude/ВИМКНИ-НОУТБУК BOOT" ] && [ ! -e "$W/cr/shutdown.txt" ]'
 mark "ВИМКНИ-НОУТБУК/cc-off/2"; cr; chk "наступна спроба — вимикає" '[ -e "$W/cr/shutdown.txt" ]'
+echo "=== К6в вимкнення не під власником (10.11 ноутбук вимкнувся під ним)"
+setup k6c; mark "ВИМКНИ-НОУТБУК/cc-off/1"; MS=$(git -C "$W/seed" rev-parse main); FAKE_OWNER=1 cr
+chk "сеанс активний і не заблокований — рядок OWNER, без ВИМКНЕНО й shutdown" '[ "$(lines)" = "GEMINI ОБГОРТКА: ЗАБЛОКОВАНО claude/ВИМКНИ-НОУТБУК OWNER" ] && [ ! -e "$W/cr/shutdown.txt" ]'
+FAKE_OWNER=1 cr; chk "наступний прохід — позначка не закрита, рядка вдруге нема" '[ "$(nlines)" = 1 ] && [ ! -e "$W/cr/shutdown.txt" ] && ! grep -rqs "^OFF " "$W/cr/state"'
+cr; chk "сеанс заблоковано чи нема — ВИМКНЕНО <SHA> і shutdown, OWNER не повторено" '[ "$(nlines)" = 2 ] && [ -e "$W/cr/shutdown.txt" ] && [ "$(lines | grep -c "ВИМКНЕНО $MS")" = 1 ]'
+setup k6d; mark "ВИМКНИ-НОУТБУК/cc-off/1"; FAKE_OWNER=late cr
+chk "власник з'явився після ВИМКНЕНО — shutdown нема, є рядок OWNER, стан не OFF" '[ "$(nlines)" = 2 ] && [ "$(lines | tail -n1)" = "GEMINI ОБГОРТКА: ЗАБЛОКОВАНО claude/ВИМКНИ-НОУТБУК OWNER" ] && [ ! -e "$W/cr/shutdown.txt" ] && ! grep -rqs "^OFF " "$W/cr/state"'
+FAKE_OWNER=1 cr; chk "позначку не з'їдено: власник ще є — нічого нового, shutdown нема" '[ "$(nlines)" = 2 ] && [ ! -e "$W/cr/shutdown.txt" ] && ! grep -rqs "^DONE BOOT" "$W/cr/state"'
+cr; chk "власник пішов — позначка пройшла знову: ВИМКНЕНО і shutdown" '[ -e "$W/cr/shutdown.txt" ] && [ "$(lines | grep -c "ВИМКНЕНО [0-9a-f]\{40\}")" = 2 ]'
 echo "=== К7 gemini-run позначок cc- не бере й узятими не позначає"
 setup k7; mark "$SLUG/$M/1"
 "$PW" -NoProfile -File "$(wp "$H/side.ps1")" -Script "$(wp "$SRC/gemini_run.ps1")" -ArgsJson "{\"RepoDir\":\"$(wp "$W/clone")\",\"RunsDir\":\"$(wp "$W/runs")\",\"OutDir\":\"$(wp "$W/gem")\",\"RepoUrl\":\"$(wp "$W/origin.git")\",\"AgyExe\":\"$(stub fake_agy)\",\"TurnMinutes\":0.05,\"TotalMinutes\":0.5,\"MaxNudges\":3}" >/dev/null 2>&1

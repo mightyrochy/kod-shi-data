@@ -89,9 +89,35 @@ try {
     $script:FailPage = ''; Invoke-WrapperChain
     Check 'після відновлення API той самий PR отримав рівно одну перевірку' (@(Markers 'автоперевірка-22-').Count -eq 1)
     $script:Files['23/1'] = @(); $script:Pulls = @((Pull 23)); Invoke-WrapperChain
-    Check 'порожній список файлів не вважається документним успіхом' (@(Markers 'автоперевірка-23-').Count -eq $skip)
+    Check 'порожній список файлів: PR без коду, позначки нема' (@(Markers 'автоперевірка-23-').Count -eq $skip)
     $script:Files['23/1'] = @([pscustomobject]@{filename='джерела/a.py'}); Invoke-WrapperChain
-    Check 'порожній список файлів повторено після відновлення' (@(Markers 'автоперевірка-23-').Count -eq 1)
+    Check 'порожня відповідь не кешується: після появи файлів голову перевірено' (@(Markers 'автоперевірка-23-').Count -eq 1)
+    # Наряд ланцюг-порожній-pr: порожній PR (10.11 — #3114 і #3478) переривав увесь прохід, тож PR після нього не діставалися.
+    $script:Files['25/1'] = @(); $script:Files['26/1'] = @([pscustomobject]@{filename='джерела/a.py'})
+    Get-ChildItem -LiteralPath $OutboxDir -File | Remove-Item
+    $script:Pulls = @((Pull 25), (Pull 26)); Invoke-WrapperChain; Invoke-WrapperChain
+    Check "порожній PR не зупиняє проходу: наступний PR отримав позначку ($(@(Markers 'автоперевірка-26-').Count))" ((@(Markers 'автоперевірка-26-').Count -eq 1) -eq $after)
+    Check 'порожній PR: позначки нема' (@(Markers 'автоперевірка-25-').Count -eq 0)
+    $log = [IO.File]::ReadAllText((Join-Path $WorkDir 'publish.log'), $utf)
+    if ($after) {
+        Check 'порожній PR: рядок журналу раз на голову за два проходи' (([regex]::Matches($log, '#25 [0-9a-f]{40} — API віддав порожній список файлів')).Count -eq 1)
+        Check 'порожній PR не дав рядка ЛАНЦЮГ диспетчерові' (@(Get-ChildItem -LiteralPath $OutboxDir -File | Where-Object { [IO.File]::ReadAllText($_.FullName, $utf) -match 'ЛАНЦЮГ' }).Count -eq 0)
+    }
+    # Виняток одного PR (збій сторінки, елемент без filename) іде в журнал і рядок раз на PR і голову; решта PR обробляються.
+    $script:Files['27/1'] = @([pscustomobject]@{filename=''}); $script:Files['28/1'] = @([pscustomobject]@{filename='джерела/a.py'})
+    $script:FailPage = '29/1'; $script:Files['29/1'] = @([pscustomobject]@{filename='джерела/a.py'}); $script:Files['30/1'] = @([pscustomobject]@{filename='джерела/a.py'})
+    Get-ChildItem -LiteralPath $OutboxDir -File | Remove-Item
+    $script:Pulls = @((Pull 27), (Pull 29), (Pull 28), (Pull 30)); Invoke-WrapperChain; Invoke-WrapperChain
+    Check "PR із винятком не зупиняє решти: позначки 28=$(@(Markers 'автоперевірка-28-').Count), 30=$(@(Markers 'автоперевірка-30-').Count)" ((@(Markers 'автоперевірка-28-').Count -eq 1 -and @(Markers 'автоперевірка-30-').Count -eq 1) -eq $after)
+    Check 'PR із винятком: позначки нема' (@(Markers 'автоперевірка-27-').Count -eq 0 -and @(Markers 'автоперевірка-29-').Count -eq 0)
+    if ($after) {
+        $log = [IO.File]::ReadAllText((Join-Path $WorkDir 'publish.log'), $utf)
+        $lines = @(Get-ChildItem -LiteralPath $OutboxDir -File | ForEach-Object { [IO.File]::ReadAllText($_.FullName, $utf).Trim() } | Where-Object { $_ -match 'ЛАНЦЮГ' })
+        Check 'виняток PR: у журналі номер і код, прохід повторить лише його' ($log -match '#27 [0-9a-f]{40} — CHAIN_FILES; PR пропущено' -and $log -match '#29 [0-9a-f]{40} — CHAIN_API; PR пропущено')
+        Check 'виняток PR: по одному рядку диспетчерові на PR і голову за два проходи, за шаблоном публікатора' ($lines.Count -eq 2 -and @($lines | Where-Object { (Test-OutboxLine $_) -ceq '' }).Count -eq 2 -and @($lines | Where-Object { $_ -cmatch "^GEMINI ОБГОРТКА: ЛАНЦЮГ CHAIN_(FILES PR 27|API PR 29) $head$" }).Count -eq 2)
+    }
+    $script:FailPage = ''; $script:Files['27/1'] = @([pscustomobject]@{filename='джерела/a.py'}); Invoke-WrapperChain
+    Check 'після відновлення збійний PR отримав рівно одну перевірку' (@(Markers 'автоперевірка-27-').Count -eq 1 -and @(Markers 'автоперевірка-29-').Count -eq 1)
     $script:Files['24/1'] = @([pscustomobject]@{filename='аудит/опис.md';status='renamed';previous_filename='джерела/a.py'})
     $script:Pulls = @((Pull 24)); Invoke-WrapperChain
     Check 'перенесення коду в документацію теж змінює код' (@(Markers 'автоперевірка-24-').Count -eq 1)
@@ -140,7 +166,20 @@ Invoke-WrapperChain
         Check 'повтор старого штампу не ставить нового прогону' (@(Markers 'автоживий-').Count -eq 2)
         $bad = Merge 'build.txt' 'пошкоджено'; Invoke-WrapperChain
         Check 'пошкоджений штамп не створює позначки' (@(Markers 'автоживий-').Count -eq 2)
+        # Консоль задачі планувальника розірвана (10.11 23:04: «No process is on the other end of the pipe»): сетер
+        # Console.InputEncoding кидає, але запуск процесу й stdin без BOM не залежать від нього — прохід не рветься.
+        $keyFile = Join-Path $tmp 'key.txt'; [IO.File]::WriteAllText($keyFile, 'ключ', $utf)
+        $keyHash = (& git hash-object --no-filters $keyFile).Trim()
+        # Консоль CI — кодова сторінка без BOM; локально (chcp 65001) її кодування саме додає BOM, тож приймаємо обидва вигляди.
+        [IO.File]::WriteAllText($keyFile, 'ключ', (New-Object Text.UTF8Encoding($true)))
+        $keyHashBom = (& git hash-object --no-filters $keyFile).Trim()
+        function Set-ConsoleInputEncoding($Encoding) { throw 'No process is on the other end of the pipe.' }
+        $viaPublish = Invoke-Native 'git' @('hash-object', '--stdin') $tmp 1 'ключ'
+        Check 'Invoke-Native публікації: сетер кодування кидає — процес запущено, stdin доставлено' ($viaPublish.Code -eq 0 -and $viaPublish.Out.Trim() -cin @($keyHash, $keyHashBom))
         . (Join-Path $SourceDir 'queue_lanes.ps1')
+        function Set-ConsoleInputEncoding($Encoding) { throw 'No process is on the other end of the pipe.' }
+        $viaLanes = Invoke-Native 'git' @('hash-object', '--stdin') $tmp 1 'ключ'
+        Check 'Invoke-Native черги: сетер кодування кидає — процес запущено, stdin доставлено' ($viaLanes.Code -eq 0 -and $viaLanes.Out.Trim() -cin @($keyHash, $keyHashBom))
         function Get-AutoLivePlan { '{}' }
         $context = Add-AutoTaskContext "автоживий-$product" 'Наряд' $built
         Check 'наряд призначає дерево збірки й окремо називає штамп джерел' ($context.Contains("коміт збірки $built") -and $context.Contains("штамп build.txt $product"))
