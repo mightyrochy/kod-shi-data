@@ -65,6 +65,32 @@ try {
     }
     $tomorrow = @(Get-NightlyMarker ([datetime]'2026-10-28T02:00:00Z'))
     if (-not $Before) { Assert-That ($tomorrow.Count -eq 0) 'дата без окремого дозволу не запускається' }
+    # Диспетчер знімає нічну позначку комітом «ЗНЯТО…» поверх дозволу з main: голова не з main, але зняття має дійти до обробника скасування.
+    if (-not $Before) {
+        [void](Git-At $seed @('checkout', '-qb', 'зняття-ночі', $base))
+        [void](Git-At $seed @('commit', '-qm', 'ЗНЯТО: проба нічного зняття', '--allow-empty'))
+        $cancelSha = Git-At $seed @('rev-parse', 'HEAD')
+        [void](Git-At $seed @('push', '-q', 'origin', "${cancelSha}:refs/heads/$queue"))
+        [void](Git-At $seed @('checkout', '-q', 'main'))
+        [void](Git-At $clone @('fetch', '-q', 'origin'))
+        $cn = @(Get-NightlyMarker $clock)
+        Assert-That ($cn.Count -eq 1 -and $cn[0].Cancel -and $cn[0].Sha -ceq $cancelSha) 'нічне ЗНЯТО поверх дозволу читається як зняття з SHA знімального коміту'
+        [void](Git-At $origin @('update-ref', '-d', "refs/heads/$otherQueue"))
+        [void](Git-At $clone @('fetch', '-q', '--prune', 'origin'))
+        $nightReader = ${function:Get-NightlyMarker}
+        & {
+            $script:NightClosed = 0; $script:StateDir = Join-Path $testRoot 'state'; $script:SlotDir = Join-Path $testRoot 'slots'; [void](New-Item -ItemType Directory -Force -Path $script:StateDir, $script:SlotDir)
+            function Get-NightlyMarker { & $nightReader $clock }
+            function Repair-GpuModels { }
+            function Save-Skips($Path) { }
+            function Close-CancelledMarker($M, $Workers) { $script:NightClosed++ }
+            [void](Start-Markers @())
+        }
+        Assert-That ($script:NightClosed -eq 1) 'нічне ЗНЯТО доходить до обробника скасування (Close-CancelledMarker) у Start-Markers'
+        [void](Git-At $seed @('push', '-q', '-f', 'origin', "${base}:refs/heads/$queue"))
+        [void](Git-At $clone @('fetch', '-q', 'origin'))
+        Assert-That (@(Get-NightlyMarker $clock).Count -eq 1 -and -not @(Get-NightlyMarker $clock)[0].Cancel) 'повернений дозвіл знову дає звичайну ніч без скасування'
+    }
     # У режимі ДО позначка є лише в локальному JSON, як у старій латці 02.
     if ($Before) {
         [void](Git-At $origin @('update-ref', '-d', "refs/heads/$queue"))

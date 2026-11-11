@@ -431,10 +431,10 @@ function Test-MarkerCancelled($M) {
     $null -ne $p -and [bool]$p.Value
 }
 
-function Get-Markers {
-    <# Усі позначки черги з origin (після fetch), і криві — з Valid=$false. #>
+function Get-Markers([string]$Pattern = $script:QueuePrefix) {
+    <# Усі позначки черги з origin (після fetch), і криві — з Valid=$false; $Pattern — одна позначка (повна назва посилання). #>
     $fmt = '%(refname)%09%(objectname)%09%(committerdate:unix)%09%(contents:subject)'
-    $r = Invoke-Git @('for-each-ref', "--format=$fmt", $script:QueuePrefix)
+    $r = Invoke-Git @('for-each-ref', "--format=$fmt", $Pattern)
     @(foreach ($line in ($r.Out -split "`n")) { if ($line.Trim()) { ConvertTo-Marker $line.Trim() } })
 }
 
@@ -452,8 +452,14 @@ function Get-NightlyMarker([datetime]$Now = [datetime]::UtcNow) {
     $sha = Get-RefSha $ref
     if ($sha -cnotmatch '^[0-9a-f]{40}$') { return }
     $main = Get-RefSha 'refs/remotes/origin/main'
-    if ($main -cnotmatch '^[0-9a-f]{40}$' -or
-        (Invoke-Git @('merge-base', '--is-ancestor', $sha, $main) -AllowFail).Code -ne 0) { return }
+    if ($main -cnotmatch '^[0-9a-f]{40}$') { return }
+    if ((Invoke-Git @('merge-base', '--is-ancestor', $sha, $main) -AllowFail).Code -ne 0) {
+        # Голова не з main — лише зняття диспетчера («ЗНЯТО…» поверх дозволу з main). Його віддають тим самим читачем, що й звичайним
+        # позначкам: Cancel лишається в позначці, і Start-Markers закриває її спільним обробником скасування (стоп прогону, CANCELLED).
+        $cut = @(Get-Markers $ref | Where-Object { $_.Cancel })
+        if ($cut.Count -eq 1 -and (Invoke-Git @('merge-base', $sha, $main) -AllowFail).Code -eq 0) { return $cut[0] }
+        return
+    }
     $template = 'аудит/наряди/автоживий.md'
     $build = (Invoke-Git @('cat-file','blob',"${sha}:build.txt") -AllowFail).Out.Trim()
     if ($build -cmatch '^[0-9a-f]{40}$' -and (Invoke-Git @('for-each-ref','--format=%(refname)',($script:QueuePrefix + "автоживий-$build/"))).Out.Trim()) { return }
