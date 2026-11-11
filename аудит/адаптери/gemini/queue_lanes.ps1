@@ -213,12 +213,14 @@ function Start-Tree($Psi) {
     <# Старт процесу в задачі Windows: нащадки, відірвані від батька (nohup, start), лишаються в ній, і Stop-Tree зупиняє
     їх разом із деревом. 08.11 вимір, запущений сесією через nohup, після кінця наряду тримав 12 ГБ відеокарти й копію задачі. #>
     # Тип збирається до старту: збірка триває секунди, а нащадки, народжені до прив'язки, у задачу не потрапляють.
+    # Нема задачі (збірка типу чи прив'язка не вдалися: «Access is denied» для процесу, що вже завершився) — це журнал, а не
+    # збій запуску: Write-Log належить викликачеві, і його відсутність чи помилка не мають кидати виняток після старту.
     $typed = $false
-    if ($script:OnWindows) { try { Add-TreeJobType; $typed = $true } catch { Write-Log "задача процесів: $($_.Exception.Message)" } }
+    if ($script:OnWindows) { try { Add-TreeJobType; $typed = $true } catch { try { Write-Log "задача процесів: $($_.Exception.Message)" } catch { } } }
     $p = [System.Diagnostics.Process]::Start($Psi)
     if ($typed) {
         try { $script:TreeJobs[$p.Id] = [GeminiWrapper.TreeJob]::Create($p.Handle) }
-        catch { Write-Log "задача процесів $($p.Id): $($_.Exception.Message) — лишки зупиняє лише дерево" }
+        catch { $why = $_.Exception.Message; try { Write-Log "задача процесів $($p.Id): $why — лишки зупиняє лише дерево" } catch { } }
     }
     $p
 }
@@ -454,12 +456,21 @@ function Get-TaskSource($M) {
     Get-AutoTaskPath $M.Slug
 }
 
-function Get-NightlyMarker([datetime]$Now = [datetime]::UtcNow) {
+function Get-NightlyBuild([string]$Sha) {
+    <# Збірка, на якій стоїть нічний дозвіл: штамп build.txt його коміту; '' — штампа нема чи він хибний. Одне місце для
+    Get-NightlyMarker і для ланцюга, що переносить дозвіл (Move-NightlyMarker у wrapper_chain.ps1). #>
+    $build = (Invoke-Git @('cat-file','blob',"${Sha}:build.txt") -AllowFail).Out.Trim()
+    if ($build -cmatch '^[0-9a-f]{40}$') { $build } else { '' }
+}
+
+function Get-NightlyMarker([datetime]$Now = [datetime]::UtcNow, [switch]$OpenOnly) {
     <# Після 02:00 UTC читає лише датований дозвіл із GitHub; локальний стан не дає прав. Дозвіл дати — найбільша спроба /N
     з комітом на main: кінець /1 (CRASH від сну) його не з'їдає, а повтор — лише нова спроба /N від диспетчера. Дві спроби
-    водночас не йдуть: slug у всіх спроб один, його тримає Test-SlugBusy. #>
+    водночас не йдуть: slug у всіх спроб один, його тримає Test-SlugBusy. -OpenOnly — лише вікно: $true, коли нічний
+    відкрито (так ланцюг, що переносить дозвіл, не тримає другої години: Test-NightlyOpen у wrapper_chain.ps1). #>
     $utc = $Now.ToUniversalTime()
     if ($utc.Hour -lt 2) { return }
+    if ($OpenOnly) { return $true }
     $date = $utc.ToString('yyyyMMdd')
     $head = $script:QueuePrefix + 'Е1-нічний-живий-' + $date + '/gpt-6.1-sol-high/'
     $main = Get-RefSha 'refs/remotes/origin/main'
@@ -480,8 +491,8 @@ function Get-NightlyMarker([datetime]$Now = [datetime]::UtcNow) {
     }
     if (-not $ref) { return }
     $template = 'аудит/наряди/автоживий.md'
-    $build = (Invoke-Git @('cat-file','blob',"${sha}:build.txt") -AllowFail).Out.Trim()
-    if ($build -cmatch '^[0-9a-f]{40}$' -and (Invoke-Git @('for-each-ref','--format=%(refname)',($script:QueuePrefix + "автоживий-$build/"))).Out.Trim()) { return }
+    $build = Get-NightlyBuild $sha
+    if ($build -and (Invoke-Git @('for-each-ref','--format=%(refname)',($script:QueuePrefix + "автоживий-$build/"))).Out.Trim()) { return }
     if ((Invoke-Git @('cat-file', '-e', "${sha}:$template") -AllowFail).Code -ne 0) { return }
     $dir = Join-Path $RunsDir 'nightly'
     [void](New-Item -ItemType Directory -Force -Path $dir)

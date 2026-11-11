@@ -51,13 +51,13 @@ try {
     $script:Pulls = @((Pull 12 'claude/наряд' $first), (Pull 13 'codex/наряд' $first), (Pull 14 'gemini/наряд' $first), (Pull 15 'claude/чужий' $first 'чужий'), (Pull 16 'claude/форк' $first 'mightyrochy' 'чужий/форк'), (Pull 17 "gemini/автоперевірка-12-$first" $first))
     Invoke-WrapperChain
     function Markers { @(& git -C $remote for-each-ref '--format=%(refname)' refs/heads/gemini-queue/) }
-    Check 'готові PR автоматично отримали незалежні рушії, Gemini — один' ((Markers).Count -eq 3)
-    Check 'чужий автор, форк та автозвіт не породили нарядів' (@(Markers | Where-Object { $_ -match 'автоперевірка-(15|16|17)-' }).Count -eq 0)
+    # Слово власника 08.11 15:47: пачку й позначки перевірок ставить диспетчер, ланцюг після ГОТОВО їх не ставить.
+    Check 'ланцюг після ГОТОВО не ставить автоперевірки: готовим PR трьох рушіїв, чужому, форку, автозвіту' (@(Markers | Where-Object { $_ -match 'автоперевірка-' }).Count -eq 0)
     Invoke-WrapperChain
-    Check 'повтор після перезапуску не дублює позначки' ((Markers).Count -eq 3)
-    $file = Join-Path $WorkDir 'chain.json'; Remove-Item -LiteralPath $file
+    Check 'повтор після перезапуску теж не ставить' (@(Markers).Count -eq 0)
+    $file = Join-Path $WorkDir 'chain.json'; if (Test-Path -LiteralPath $file) { Remove-Item -LiteralPath $file }
     Invoke-WrapperChain
-    Check 'втрата локального списку не перезаписує наявні позначки' ((Markers).Count -eq 3)
+    Check 'втрата локального списку не оживляє постановку' (@(Markers).Count -eq 0)
     function Merge([string]$Path, [string]$Text) {
         <# Злитий стан main і наступний справжній fetch публікатора. #>
         [IO.File]::WriteAllText((Join-Path $seed $Path), $Text, $utf)
@@ -78,7 +78,7 @@ try {
     Invoke-WrapperChain
     Check 'живий прогін не дублюється' (@(Markers | Where-Object { $_ -match 'автоживий-' }).Count -eq 1)
     $script:Pulls = @((Pull 12 'claude/наряд' $newer)); Invoke-WrapperChain
-    Check 'нова голова PR отримала нову перевірку' (@(Markers | Where-Object { $_ -match "автоперевірка-12-$newer/" }).Count -eq 1)
+    Check 'нова голова PR не отримала автоперевірки: їх ставить диспетчер' (@(Markers | Where-Object { $_ -match "автоперевірка-12-$newer/" }).Count -eq 0)
     # Квоти: вибір рушія за файлами, які смуги вже ведуть (heartbeat.json — Codex, quota-claude.json — Claude).
     $OutDir = Join-Path $tmpRoot 'gem-out'; [void][IO.Directory]::CreateDirectory($OutDir)
     $claudeDir = Join-Path $tmpRoot 'claude-run'; [void][IO.Directory]::CreateDirectory($claudeDir)
@@ -99,51 +99,15 @@ try {
     function OutLines { @(Get-ChildItem -LiteralPath $OutboxDir -File -ErrorAction SilentlyContinue | ForEach-Object { [IO.File]::ReadAllText($_.FullName, $utf).Trim() }) }
     function CloudLines([string]$N) { @(OutLines | Where-Object { $_ -cmatch ('^GEMINI ОБГОРТКА: ПОТРІБНА ПЕРЕВІРКА CLAUDE #' + $N + ' [0-9a-f]{40}$') }) }
     $script:Pulls = @(); $script:Ready = $true
+    # Квота не повертає ланцюгові постановку: за будь-яких квот нема ні позначки автоперевірки, ні рядка хмарному Claude.
+    foreach ($q in @(@{Codex=$false;Agy=$false;Claude=$false}, @{Codex=$false;Agy=$true;Claude=$false}, @{Codex=$true;Agy=$false;Claude=$false}, @{Codex=$true;Agy=$true;Claude=$true})) {
+        SetCodex $q.Codex; SetClaude $q.Claude; SetAgy $q.Agy
+        $head = Merge "квота-$($q.Codex)-$($q.Agy).txt" '1'
+        Author 'gemini/квота-j' $head 'gemini-4-argon-high'
+        $script:Pulls = @((Pull 31 'claude/квота-a' $head), (Pull 39 'codex/квота-i' $head), (Pull 40 'gemini/квота-j' $head)); Invoke-WrapperChain
+        Check "квоти codex $($q.Codex), agy $($q.Agy): автоперевірки нема, рядка хмарному Claude нема" (@(Markers | Where-Object { $_ -match 'автоперевірка-' }).Count -eq 0 -and @(OutLines | Where-Object { $_ -match 'ПОТРІБНА ПЕРЕВІРКА CLAUDE' }).Count -eq 0)
+    }
     SetCodex $false; SetClaude $false; SetAgy $false
-    $head = Merge 'квота-1.txt' '1'
-    $script:Pulls = @((Pull 31 'claude/квота-a' $head)); Invoke-WrapperChain
-    Check 'автор Claude, Gemini Models 0 %, Argon вільний: перевіряє Argon' (@(SlugMarkers "автоперевірка-31-$head").Count -eq 1 -and @(SlugMarkers "автоперевірка-31-$head")[0] -match '/gemini-4-argon-high/1/p2$')
-    $script:Pulls = @((Pull 39 'codex/квота-i' $head)); Invoke-WrapperChain
-    Check 'автор GPT, Gemini Models 0 %, Argon вільний: перевіряє Argon' (@(SlugMarkers "автоперевірка-39-$head").Count -eq 1 -and @(SlugMarkers "автоперевірка-39-$head")[0] -match '/gemini-4-argon-high/1/p2$')
-    Author 'gemini/квота-j' $head 'gemini-4-argon-high'
-    $script:Pulls = @((Pull 40 'gemini/квота-j' $head)); Invoke-WrapperChain
-    Check 'автор Gemini: перевіряє Codex' (@(SlugMarkers "автоперевірка-40-$head").Count -eq 1 -and @(SlugMarkers "автоперевірка-40-$head")[0] -match '/gpt-6\.1-sol-high/1/p2$')
-    SetAgy $true
-    $head = Merge 'квота-2.txt' '2'
-    $script:Pulls = @((Pull 32 'claude/квота-b' $head)); Invoke-WrapperChain
-    Check 'автор Claude, agy на квоті: Codex' (@(SlugMarkers "автоперевірка-32-$head").Count -eq 1 -and @(SlugMarkers "автоперевірка-32-$head")[0] -match '/gpt-6\.1-sol-high/1/p2$')
-    $script:Pulls = @((Pull 33 'codex/квота-c' $head)); Invoke-WrapperChain
-    Check 'автор GPT, agy на квоті: рядок хмарному Claude, позначки нема' (@(SlugMarkers "автоперевірка-33-$head").Count -eq 0 -and @(CloudLines 33).Count -eq 1 -and @(CloudLines 33)[0].EndsWith($head))
-    Invoke-WrapperChain
-    Check 'повтор не дублює рядок хмарному Claude' (@(CloudLines 33).Count -eq 1)
-    SetCodex $true
-    Author 'gemini/квота-d' $head 'gemini-4-argon-high'
-    $script:Pulls = @((Pull 34 'gemini/квота-d' $head)); Invoke-WrapperChain
-    Check 'автор Gemini, Codex на квоті: хмарний Claude' (@(SlugMarkers "автоперевірка-34-$head").Count -eq 0 -and @(CloudLines 34).Count -eq 1)
-    Check 'жодної позначки cc- для перевірки' (@(Markers | Where-Object { $_ -match 'автоперевірка-.*/cc-' }).Count -eq 0)
-    $head = Merge 'квота-3.txt' '3'
-    $script:Pulls = @((Pull 35 'claude/квота-e' $head)); Invoke-WrapperChain
-    Check 'обидва на квоті: позначка чекає першого постачальника за порядком' (@(SlugMarkers "автоперевірка-35-$head").Count -eq 1 -and @(SlugMarkers "автоперевірка-35-$head")[0] -match '/gemini-4-argon-high/1/p2$')
-    # Позначка, що чекає вичерпаної квоти, переходить до доступного рушія без дубля.
-    SetCodex $false; SetAgy $false
-    $head = Merge 'квота-4.txt' '4'
-    $script:Pulls = @((Pull 36 'claude/квота-f' $head)); Invoke-WrapperChain
-    Check 'до квоти: позначка agy' (@(SlugMarkers "автоперевірка-36-$head").Count -eq 1 -and @(SlugMarkers "автоперевірка-36-$head")[0] -match '/gemini-4-argon-high/1/p2$')
-    SetAgy $true; Invoke-WrapperChain
-    $moved = @(SlugMarkers "автоперевірка-36-$head")
-    Check 'agy вичерпано: позначка перейшла до Codex, одна' ($moved.Count -eq 1 -and $moved[0] -match '/gpt-6\.1-sol-high/1/p2$')
-    Invoke-WrapperChain; SetAgy $false; Invoke-WrapperChain
-    Check 'повтор і відновлення agy не дублюють перевірку' (@(SlugMarkers "автоперевірка-36-$head").Count -eq 1)
-    # Позначка Codex роботи Gemini, Codex вичерпано: позначку знято, перевірку бере хмарний Claude.
-    SetCodex $false
-    $head = Merge 'квота-4б.txt' '4б'
-    Author 'gemini/квота-h' $head 'gemini-4-argon-high'
-    $script:Pulls = @((Pull 38 'gemini/квота-h' $head)); Invoke-WrapperChain
-    Check 'до квоти: позначка Codex роботи Gemini' (@(SlugMarkers "автоперевірка-38-$head").Count -eq 1 -and @(CloudLines 38).Count -eq 0)
-    SetCodex $true; Invoke-WrapperChain; Invoke-WrapperChain
-    Check 'Codex вичерпано: позначку знято, один рядок хмарному Claude' (@(SlugMarkers "автоперевірка-38-$head").Count -eq 0 -and @(CloudLines 38).Count -eq 1)
-    SetCodex $false; Invoke-WrapperChain
-    Check 'відновлення Codex не ставить другої перевірки' (@(SlugMarkers "автоперевірка-38-$head").Count -eq 0)
     # Argon має власну групу GEMINI4ARGON: нуль у Gemini Models чи Claude and GPT Models його не блокує.
     # Старий pools.json без назв груп зберігає сумісність: agy недоступний лише коли всі групи на нулі.
     function SetPools($Gem, $Cg, $Argon, [switch]$Old) {
@@ -179,49 +143,38 @@ try {
         Check "випадок $($c.N): $($c.Why) — рецензент $($c.Want)" ($got.Count -eq 1 -and $got[0] -ceq $c.Want)
         "  мірило: випадок $($c.N), без назв $($was -join ',') → з назвами $($got -join ',')"
     }
-    # Та сама позначка Argon лишається за старого формату, а після розпізнання його нульової групи переходить до Codex.
-    SetCodex $false; SetPools 0 1 40
-    $head = Merge 'квота-група.txt' '1'
-    $script:Pulls = @((Pull 51 'claude/квота-група' $head)); Invoke-WrapperChain
-    Check 'група: Gemini Models 0 %, Argon 40 % — позначка agy' (@(SlugMarkers "автоперевірка-51-$head").Count -eq 1 -and @(SlugMarkers "автоперевірка-51-$head")[0] -match '/gemini-4-argon-high/1/p2$')
-    SetRefused (Stamp -3.7); SetPools 0 1 0 -Old; Invoke-WrapperChain
-    $was = @(SlugMarkers "автоперевірка-51-$head")
-    Check 'без назв груп: ненульова стороння група лишає позначку Argon' ($was.Count -eq 1 -and $was[0] -match '/gemini-4-argon-high/1/p2$')
-    SetPools 0 1 0; Invoke-WrapperChain; Invoke-WrapperChain
-    $got = @(SlugMarkers "автоперевірка-51-$head")
-    Check 'GEMINI4ARGON 0 %, стороння група 1 %: позначка перейшла до Codex, одна' ($got.Count -eq 1 -and $got[0] -match '/gpt-6\.1-sol-high/1/p2$')
-    "  мірило: заміна позначки — без назв $(@($was | ForEach-Object { ($_ -split '/')[-3] }) -join ',') → з назвами $(@($got | ForEach-Object { ($_ -split '/')[-3] }) -join ',')"
-    SetCodex $false
-    # 13027: автор GPT на гілці gemini/, стан якого лежить у теці іншого облікового запису (ланцюг її не читає):
-    # автор невідомий — позначки gpt-… нема, є рядок хмарному Claude; Codex не перевіряє те, чого автор не доведений.
     SetCodex $false; SetAgy $false
-    $head = Merge 'автор-gpt.txt' '1'
-    Author 'gemini/автор-gpt' $head 'gpt-6.1-sol-high' "$tmpRoot/gemini-account/state"
-    $script:Pulls = @((Pull 60 'gemini/автор-gpt' $head)); Invoke-WrapperChain
-    Check 'автор GPT зі станом поза ланцюгом: позначки gpt-… нема' (@(SlugMarkers "автоперевірка-60-$head" | Where-Object { $_ -match '/gpt-' }).Count -eq 0)
-    Check 'автор GPT зі станом поза ланцюгом: рядок хмарному Claude, позначок нема' (@(SlugMarkers "автоперевірка-60-$head").Count -eq 0 -and @(CloudLines 60).Count -eq 1 -and @(CloudLines 60)[0].EndsWith($head))
-    Invoke-WrapperChain
-    Check 'автор GPT: повтор не дублює рядок' (@(CloudLines 60).Count -eq 1)
-    "  мірило: позначок Codex для невідомого автора на PR 60 — $(@(SlugMarkers "автоперевірка-60-$head" | Where-Object { $_ -match '/gpt-' }).Count), рядків хмарному Claude — $(@(CloudLines 60).Count)"
-    # Автор GPT відомий ланцюгові (стан у його теці): рецензент agy, як і було.
-    $head = Merge 'автор-gpt-2.txt' '2'
-    Author 'gemini/автор-gpt-2' $head 'gpt-6.1-sol-high'
-    $script:Pulls = @((Pull 61 'gemini/автор-gpt-2' $head)); Invoke-WrapperChain
-    Check 'автор GPT відомий: рецензент agy' (@(SlugMarkers "автоперевірка-61-$head").Count -eq 1 -and @(SlugMarkers "автоперевірка-61-$head")[0] -match '/gemini-4-argon-high/1/p2$')
-    # Звіт, що вже опубліковано, інший рушій не повторює.
-    SetAgy $false
     [void][IO.Directory]::CreateDirectory("$WorkDir/state")
-    $head = Merge 'квота-5.txt' '5'
-    $script:Pulls = @((Pull 37 'claude/квота-g' $head)); Invoke-WrapperChain
-    [IO.File]::WriteAllText("$WorkDir/state/done37.json", ((@{slug="автоперевірка-37-$head";line="GEMINI ОБГОРТКА: ГОТОВО gemini/автоперевірка-37-$head $head"}) | ConvertTo-Json), $utf)
-    SetAgy $true; Invoke-WrapperChain
-    Check 'готовий звіт: нової позначки нема' (@(SlugMarkers "автоперевірка-37-$head").Count -eq 1)
-    SetAgy $false
     # Автоживий: позначка, що чекає Codex на квоті, переходить до Claude без дубля; відновлення Codex її не повертає.
     SetCodex $true; SetClaude $false; Invoke-WrapperChain
     Check 'автоживий при Codex на квоті — одна позначка Claude' (@(SlugMarkers "автоживий-$newer").Count -eq 1 -and @(SlugMarkers "автоживий-$newer")[0] -match '/cc-claude-sonnet-5-5-medium/1/p2-gpu$')
     SetCodex $false; Invoke-WrapperChain
     Check 'відновлення Codex не дублює автоживий' (@(SlugMarkers "автоживий-$newer").Count -eq 1)
+    # Нічний Е1: дозвіл стоїть на codex, квота codex вичерпана — дозвіл переходить на модель із квотою (та сама квота й порядок, що в автоживого).
+    Check 'нічний Е1 відкривається з 02:00 UTC' (-not (Test-NightlyOpen ([datetime]::new(2026, 11, 9, 1, 59, 0, [DateTimeKind]::Utc))) -and (Test-NightlyOpen ([datetime]::new(2026, 11, 9, 2, 0, 0, [DateTimeKind]::Utc))))
+    function Test-NightlyOpen([datetime]$Utc) { $true }
+    $night = 'Е1-нічний-живий-' + [datetimeoffset]::UtcNow.UtcDateTime.ToString('yyyyMMdd')
+    & git -C $seed push -q origin "${newer}:refs/heads/gemini-queue/$night/gpt-6.1-sol-high/1/gpu-p8"
+    SetCodex $true; SetClaude $false; Invoke-WrapperChain
+    $nm = @(SlugMarkers $night)
+    Check 'нічний, codex 0 %: дозвіл перейшов на Claude з квотою — одна позначка, умови gpu-p8 і коміт ті самі' ($nm.Count -eq 1 -and $nm[0] -match '/cc-claude-sonnet-5-5-medium/1/gpu-p8$' -and (& git -C $remote rev-parse $nm[0]).Trim() -ceq $newer)
+    "  мірило: нічний при codex 0 % — було gpt-6.1-sol-high/1, стало $(($nm[0] -split '/')[-3])/$(($nm[0] -split '/')[-2])"
+    SetCodex $false; Invoke-WrapperChain
+    Check 'відновлення codex не повертає й не дублює нічний дозвіл' (@(SlugMarkers $night).Count -eq 1 -and @(SlugMarkers $night)[0] -match '/cc-claude-sonnet-5-5-medium/1/gpu-p8$')
+    & git -C $seed push -q origin ":$($nm[0])"
+    & git -C $seed push -q origin "${newer}:refs/heads/gemini-queue/$night/gpt-6.1-sol-high/1/gpu-p8"
+    Invoke-WrapperChain
+    Check 'нічний, codex з квотою: дозвіл лишається на codex' (@(SlugMarkers $night).Count -eq 1 -and @(SlugMarkers $night)[0] -match '/gpt-6\.1-sol-high/1/gpu-p8$')
+    SetCodex $true; SetClaude $true; Invoke-WrapperChain
+    Check 'нічний, обидва на квоті: дозвіл чекає на codex, не переходить' (@(SlugMarkers $night).Count -eq 1 -and @(SlugMarkers $night)[0] -match '/gpt-6\.1-sol-high/1/gpu-p8$')
+    & git -C $seed push -q origin ":$(@(SlugMarkers $night)[0])"
+    # Дозвіл на збірці, для якої автоживий уже є ($built несе build.txt = $newer, автоживий-$newer стоїть): Get-NightlyMarker
+    # такого дозволу не віддає, тож і перенесення до Claude його не обходить.
+    & git -C $seed push -q origin "${built}:refs/heads/gemini-queue/$night/gpt-6.1-sol-high/1/gpu-p8"
+    SetCodex $true; SetClaude $false; Invoke-WrapperChain
+    Check 'нічний, codex 0 %, але автоживий цієї збірки вже є: дозвіл не переходить до Claude' (@(SlugMarkers $night).Count -eq 1 -and @(SlugMarkers $night)[0] -match '/gpt-6\.1-sol-high/1/gpu-p8$')
+    & git -C $seed push -q origin ":$(@(SlugMarkers $night)[0])"
+    SetCodex $false; SetClaude $false
     # Збій не з кодом CHAIN_*: у рядку тип і рядок скрипту, без шляхів і тексту.
     Get-ChildItem -LiteralPath $OutboxDir -File | Remove-Item
     [IO.File]::WriteAllText($file, 'не json /секрет/шлях', $utf)
@@ -290,62 +243,31 @@ try {
     Check 'звіт перевірки без рядків дошки лишається гілкою без PR-чернетки' ($script:DraftPosts -eq 2 -and @(Get-ChildItem "$WorkDir/drafts/*.json" -ErrorAction SilentlyContinue).Count -eq 0)
     # Мірило наряду обгортка-ресурс-слотів: 3 відкриті PR, у одного голова змінилась, один злито. ДО (за кодом до зміни)
     # лишалось 5 позначок: по одній на кожну побачену голову й ніякого зняття; ПІСЛЯ — одна на живу голову.
+    # Позначки диспетчера (умова p1) ланцюг не ставить, але мертві голови знімає: стара голова, закритий PR, дубль.
+    function PushMk([string]$Slug, [string]$Model, [string]$Sha, [string]$Cond = 'p1') { & git -C $seed push -q origin "${Sha}:refs/heads/gemini-queue/$Slug/$Model/1/$Cond" }
     $h1 = Merge 'три-pr.txt' '1'
-    $script:Pulls = @((Pull 41 'claude/живий' $h1), (Pull 42 'codex/змінений' $h1), (Pull 43 'claude/злитий' $h1)); Invoke-WrapperChain
-    Check 'три PR — три позначки' (@(Markers | Where-Object { $_ -match "автоперевірка-4[123]-$h1/" }).Count -eq 3)
-    & git -C $seed push -q origin "${h1}:refs/heads/gemini-queue/автоперевірка-41-$h1/gpt-6.1-sol-high/1/p2"
     $h2 = Merge 'три-pr.txt' '2'
-    $script:Pulls = @((Pull 41 'claude/живий' $h1), (Pull 42 'codex/змінений' $h2)); Invoke-WrapperChain
+    PushMk "автоперевірка-41-$h2" 'gpt-6.1-sol-high' $h2
+    PushMk "автоперевірка-41-$h2" 'gemini-4-argon-high' $h2 'p2'
+    PushMk "автоперевірка-42-$h1" 'gemini-4-argon-high' $h1
+    PushMk "автоперевірка-43-$h2" 'gemini-4-argon-high' $h2
+    SetCodex $false; SetAgy $false; SetClaude $false
+    $script:Pulls = @((Pull 41 'claude/живий' $h2), (Pull 42 'codex/змінений' $h2)); Invoke-WrapperChain
     $after = @(Markers | Where-Object { $_ -match 'автоперевірка-4[123]-' })
     $log = [IO.File]::ReadAllText((Join-Path $WorkDir 'publish.log'), $utf)
-    Check 'ПІСЛЯ: по одній позначці на живу голову відкритого PR' ($after.Count -eq 2 -and @($after | Where-Object { $_ -match "автоперевірка-41-$h1/" }).Count -eq 1 -and @($after | Where-Object { $_ -match "автоперевірка-42-$h2/" }).Count -eq 1)
-    Check 'мертві позначки знято до узяття: стара голова, злитий PR, дубль' (@($after | Where-Object { $_ -match "автоперевірка-4[23]-$h1/" }).Count -eq 0 -and $log.Contains('знято — голова PR змінилась') -and $log.Contains('знято — PR не відкритий') -and $log.Contains('знято — друга позначка тієї самої голови'))
-    "  мірило: позначок ДО 5 (за кодом main) → ПІСЛЯ $($after.Count)"
-    # Мірило наряду обгортка-claude-у-хмару: позначка автоперевірки Claude на ноутбуці від старого вибору (ключ у стані
-    # ланцюга) знімається, голова отримує рецензента іншого постачальника, а кількість знятих — рядок у зведенні.
-    $script:Pulls = @((Pull 44 'codex/старий-вибір' $h2)); Invoke-WrapperChain
-    $agyRef = @(SlugMarkers "автоперевірка-44-$h2")
-    & git -C $seed push -q origin ":$($agyRef[0])"
-    & git -C $seed push -q origin "${h2}:refs/heads/gemini-queue/автоперевірка-44-$h2/cc-claude-sonnet-5-5-medium/1/p2"
-    $st = ConvertFrom-Json ([IO.File]::ReadAllText($file, $utf))
-    $st.reviews = @(@($st.reviews | Where-Object { $_ -notmatch "^44 $h2 " }) + "44 $h2 cc-claude-sonnet-5-5-medium")
-    [IO.File]::WriteAllText($file, ($st | ConvertTo-Json -Compress -Depth 7), $utf)
+    Check 'позначка диспетчера на живій голові лишилась, давня позначка ланцюга (p2) — знята' ($after.Count -eq 1 -and $after[0] -match "автоперевірка-41-$h2/gpt-6\.1-sol-high/1/p1$")
+    Check 'мертві позначки знято до узяття: стара голова, закритий PR, дубль' (@($after | Where-Object { $_ -match 'автоперевірка-4[23]-' }).Count -eq 0 -and $log.Contains('знято — голова PR змінилась') -and $log.Contains('знято — PR не відкритий') -and $log.Contains('знято — друга позначка тієї самої голови'))
+    "  мірило: позначок диспетчера 4 → після зняття мертвих $($after.Count)"
+    # Позначка Claude на ноутбуці в автоперевірці не потрібна: зникає, а кількість знятих — рядок у зведенні.
+    PushMk "автоперевірка-44-$h2" 'cc-claude-sonnet-5-5-medium' $h2
     Get-ChildItem -LiteralPath $OutboxDir -File | Remove-Item
     $before = @(SlugMarkers "автоперевірка-44-$h2")
-    Invoke-WrapperChain
+    $script:Pulls = @((Pull 41 'claude/живий' $h2), (Pull 44 'codex/старий-вибір' $h2)); Invoke-WrapperChain
     $now44 = @(SlugMarkers "автоперевірка-44-$h2")
-    Check 'старий вибір: позначку cc- знято, рецензент — agy' ($before.Count -eq 1 -and $before[0] -match '/cc-' -and $now44.Count -eq 1 -and $now44[0] -match '/gemini-4-argon-high/1/p2$' -and ([IO.File]::ReadAllText((Join-Path $WorkDir 'publish.log'), $utf)).Contains('знято — Claude на ноутбуці не перевіряє'))
+    Check 'позначку cc- знято' ($before.Count -eq 1 -and $before[0] -match '/cc-' -and $now44.Count -eq 0 -and ([IO.File]::ReadAllText((Join-Path $WorkDir 'publish.log'), $utf)).Contains('знято — Claude на ноутбуці не перевіряє'))
     Check 'зняття позначок — рядок у зведенні' (@(OutLines | Where-Object { $_ -ceq 'GEMINI ОБГОРТКА: ЗНЯТО ПОЗНАЧОК ПЕРЕВІРКИ 1' }).Count -eq 1)
     Check 'рядок зняття не будить диспетчера, рядок хмарного Claude будить' (-not (Test-DispatcherAction 'GEMINI ОБГОРТКА: ЗНЯТО ПОЗНАЧОК ПЕРЕВІРКИ 1') -and (Test-DispatcherAction "GEMINI ОБГОРТКА: ПОТРІБНА ПЕРЕВІРКА CLAUDE #44 $h2") -and (Test-OutboxLine "GEMINI ОБГОРТКА: ПОТРІБНА ПЕРЕВІРКА CLAUDE #44 $h2") -eq '' -and -not (Test-DispatcherAction "GEMINI ОБГОРТКА: ЗАБЛОКОВАНО claude/автоперевірка-44-$h2 CLAUDE_NOT_LAPTOP") -and (Test-DispatcherAction 'GEMINI ОБГОРТКА: ЗАБЛОКОВАНО claude/наряд CLAUDE_NOT_LAPTOP'))
     "  мірило: позначок cc- автоперевірки ДО 1 → ПІСЛЯ $(@(Markers | Where-Object { $_ -match 'автоперевірка-.*/cc-' }).Count)"
-    # Правила 31.10 (ПК-9): перевірка лише на голову з оголошеним кінцем і ризиком Р1–Р3; та сама зміна (patch-id) — без нової.
-    $script:FilePaths = @('джерела/a.py')
-    function Invoke-ChainApi([string]$Path) {
-        if ($Path -match '/files\?') { return @($script:FilePaths | ForEach-Object { [pscustomobject]@{filename=$_} }) }
-        [pscustomobject]@{sha=($Path -split '/')[-1];commit=@{committer=@{date=[datetimeoffset]::UtcNow.AddMinutes(-1).ToString('o')}}}
-    }
-    function DraftPull([int]$Number, [string]$Branch, [string]$Sha) { $p = Pull $Number $Branch $Sha; $p | Add-Member -NotePropertyName draft -NotePropertyValue $true; $p }
-    SetCodex $false; SetAgy $false; SetClaude $false
-    $head = Merge 'кінець-1.txt' '1'
-    $script:Pulls = @((DraftPull 80 'claude/кінець-a' $head)); Invoke-WrapperChain
-    Check 'чернетка без ГОТОВО смуги: перевірки нема' (@(SlugMarkers "автоперевірка-80-$head").Count -eq 0)
-    [IO.File]::WriteAllText("$WorkDir/state/done80.json", ((@{line="GEMINI ОБГОРТКА: ГОТОВО claude/кінець-a $head МОДЕЛЬ cc-claude-sonnet-5-5-medium"}) | ConvertTo-Json), $utf)
-    Invoke-WrapperChain
-    Check 'чернетка з ГОТОВО смуги на цій голові: одна перевірка' (@(SlugMarkers "автоперевірка-80-$head").Count -eq 1)
-    $head = Merge 'кінець-2.txt' '2'
-    $script:Pulls = @((Pull 81 'claude/кінець-b' $head)); Invoke-WrapperChain
-    Check 'PR не чернетка: одна перевірка' (@(SlugMarkers "автоперевірка-81-$head").Count -eq 1)
-    [void](Merge 'аудит/наряди/р0-проба.md' "р0-проба | вид: код | ризик Р0`nтіло`n")
-    $head = Merge 'ризик-1.txt' '1'
-    $script:FilePaths = @('джерела/a.py', 'аудит/наряди/р0-проба.md')
-    $script:Pulls = @((Pull 82 'claude/ризик-0' $head)); Invoke-WrapperChain
-    Check 'ризик Р0 у шапці наряду: перевірки нема' (@(SlugMarkers "автоперевірка-82-$head").Count -eq 0)
-    [void](Merge 'аудит/наряди/р2-проба.md' "р2-проба | вид: код | ризик Р2`n")
-    $head = Merge 'ризик-2.txt' '2'
-    $script:FilePaths = @('джерела/a.py', 'аудит/наряди/р2-проба.md')
-    $script:Pulls = @((Pull 83 'claude/ризик-2' $head)); Invoke-WrapperChain
-    Check 'ризик Р2: одна перевірка' (@(SlugMarkers "автоперевірка-83-$head").Count -eq 1)
-    $script:FilePaths = @('джерела/a.py')
     $base = Get-RefSha 'refs/remotes/origin/main'
     & git -C $seed checkout -q -b pid-a
     [IO.File]::WriteAllText("$seed/джерела/пч.txt", 'x', $utf); & git -C $seed add -A; & git -C $seed commit -q -m 'a'
