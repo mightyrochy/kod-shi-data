@@ -205,15 +205,18 @@ try {
         $before = Join-Path $root 'run-before'; [void](New-DeniedCopy $before)
         $msg = ''
         try { Remove-Item -LiteralPath $before -Recurse -Force -ErrorAction Stop } catch { $msg = $_.Exception.Message }
-        Check "ДО: Remove-Item не прибирає копію, лишається в журналі «не прибрана»: $msg" ((Test-Path -LiteralPath $before) -and $msg -match 'denied|Permission|доступ')
-        [void](Reset-TreeAcl $before); Remove-Item -LiteralPath $before -Recurse -Force
+        # Піднятий токен (раннер CI) видаляє й таку копію сам: тоді ДО не відтворюється — це видно в назві, а не червоніє.
+        $effective = (Test-Path -LiteralPath $before) -and $msg -match 'denied|Permission|доступ'
+        if ($effective) { Check "ДО: Remove-Item не прибирає копію, лишається в журналі «не прибрана»: $msg" $true }
+        else { "- ДО не відтворено: Remove-Item з цим токеном прибрав копію з забороною сам (піднятий токен)" }
+        if (Test-Path -LiteralPath $before) { [void](Reset-TreeAcl $before); Remove-Item -LiteralPath $before -Recurse -Force }
         # ПІСЛЯ: Remove-TaskCopy скидає ACL і прибирає; журнал каже, скільки звільнено.
         $dir = Join-Path $root 'run-after'; $size = New-DeniedCopy $dir
         $script:Log.Clear()
         $kept = Remove-TaskCopy $dir @('--remotes')
         Check "ПІСЛЯ: копію прибрано ($($dir)), не лишилась" ($kept -eq '' -and -not (Test-Path -LiteralPath $dir))
         $line = @($script:Log | Where-Object { $_ -like "копія задачі $dir *" })
-        Check "журнал: звільнено $size байт, ACL скинуто, «не прибрана» нема" ($line.Count -eq 1 -and $line[0] -ceq "копія задачі $dir прибрана: звільнено $size байт (ACL скинуто)")
+        Check "журнал: звільнено $size байт, ACL скинуто, «не прибрана» нема" ($line.Count -eq 1 -and ($line[0] -ceq "копія задачі $dir прибрана: звільнено $size байт (ACL скинуто)" -or (-not $effective -and $line[0] -ceq "копія задачі $dir прибрана: звільнено $size байт")))
         # Те саме через накопичене: давня копія слота з забороною.
         $old = Join-Path $root 'run-old'; [void](New-DeniedCopy $old)
         Clear-TaskCopies $root @('--remotes')
