@@ -274,7 +274,7 @@ function Get-Sha256Hex([string]$Text) {
 }
 
 function Get-BadLine([string]$Id, [string]$Why, $Failure = $null) {
-    # Єдиний викликач — Get-Line. Його режим читання не споживає повідомлення STATE_INVALID.
+    # Викликачі — Get-Line і Receive-RunState; режим читання Get-Line (-StatusOnly) не споживає повідомлення STATE_INVALID.
     $statusOnly = Get-Variable -Name StatusOnly -Scope 1 -ValueOnly -ErrorAction SilentlyContinue
     if ($statusOnly) { return $null }
     if ($null -eq $Failure) {
@@ -339,8 +339,12 @@ function Get-RunSleep($Status) {
         $before = $from -le $sleepFrom
         # За зміни завантаження початок прогону до boot доводить, що це ще попередня Windows,
         # навіть якщо новий наряд стартував між останнім heartbeat і втратою живлення.
-        if ([string](Get-Prop $event 'source') -ceq 'heartbeat/boot') { $before = $from -lt $sleepTo }
+        $boot = [string](Get-Prop $event 'source') -ceq 'heartbeat/boot'
+        if ($boot) { $before = $from -lt $sleepTo }
         if ($before -and $to -ge $sleepTo) { return $event }
+        # Вимкнення Windows зупиняє процес наряду, і його finally пише INTERRUPTED ще до нового завантаження: кінець — у
+        # вікні між останнім heartbeat і boot, а не після boot.
+        if ($boot -and $before -and [string](Get-Prop $Status 'code') -ceq 'INTERRUPTED' -and $to -ge $sleepFrom) { return $event }
     }
 }
 
@@ -491,14 +495,14 @@ function Get-Line([string]$Id, [switch]$StatusOnly) {
     $publicationKey = Get-SleepPublicationKey $s $queue $marker
     if (-not $publicationKey) { return Get-BadLine $Id 'без дозволу повтору після сну' }
     $publishedPath = Get-SeenPath $publicationKey
+    $resumed = $false
     if (Test-Path -LiteralPath $publishedPath) {
-        # Після збою між публікацією й запитом повтору той самий результат відновлює запит.
         # ID з власного стану не дозволяє чужому JSON відкрити вже закриту позначку.
-        if ([IO.File]::ReadAllText($publishedPath, $script:Utf8) -ceq ($publicationKey + "`n" + $Id) -and
-            $head -and (Get-RefSha "refs/remotes/origin/gemini/$slug") -ceq $head) {
-            [void](Request-SleepRetry $s $queue $marker $head)
-        }
-        return $null
+        if ([IO.File]::ReadAllText($publishedPath, $script:Utf8) -cne ($publicationKey + "`n" + $Id) -or
+            -not $head -or (Get-RefSha "refs/remotes/origin/gemini/$slug") -cne $head) { return $null }
+        # Той самий результат уже запушено, а обробку обірвав виняток (Receive-RunState лишає стан на повтор): кінець
+        # іде далі без другого пушу — запит повтору після сну й рядок диспетчерові не губляться.
+        $resumed = $true
     }
     $turns = Get-Int $s 'turns'; $minutes = Get-Int $s 'minutes'; $ahead = Get-Int $s 'ahead'
     # Лише слова цього файлу: поля стану поза переліками (зокрема `models`) у рядок не потрапляють.
@@ -524,7 +528,7 @@ function Get-Line([string]$Id, [switch]$StatusOnly) {
         Write-WrapperLog "кінець $Id — НЕ ЗАВЕРШЕНО $branch — $run; комітів нема$tail"
         return [pscustomobject]@{ Slug = $slug; Outbox = "GEMINI ОБГОРТКА: ЗАБЛОКОВАНО $branch $code" }
     }
-    $res = Publish-Bundle $s $Id
+    $res = $(if ($resumed) { @('OK', '—') } else { Publish-Bundle $s $Id })
     $pc = $res[0]; $files = $res[1]
     if ($pc -eq 'PUSH_FAILED') {
         $retry = Join-Path (Join-Path $WorkDir 'seen') ((Get-Sha256Hex "retry $queue $marker") + '.txt')
@@ -979,6 +983,38 @@ function Write-DeliveryStatus {
     Write-FileAtomic (Join-Path $WorkDir 'delivery.json') (([ordered]@{ read_utc = [datetime]::UtcNow.ToString("yyyy-MM-dd'T'HH:mm:ss'Z'"); pending = $pending; exhausted = $exhausted }) | ConvertTo-Json -Compress)
 }
 
+function Receive-RunState([string]$Id) {
+    <# Один стан прогону -> запис у state публікатора; лише записаний стан наступний прохід пропускає.
+
+    Виняток обробки (зламаний виклик процесу, пуш, тека) — не вирок станові: запису нема, той самий стан бере наступний
+    прохід, а Get-Line доводить уже запушений результат до рядка без другого пушу. Діагностика й рядок STATE_INVALID —
+    як у кривого стану (не частіше раз на добу), ім'я файлу вихідних — не id стану: воно лишається справжньому рядку. #>
+    $statePath = Join-Path (Join-Path $WorkDir 'state') ($Id + '.json')
+    if (Test-Path -LiteralPath $statePath) { return }
+    try { $line = Get-Line $Id }
+    catch {
+        Write-WrapperLog "стан ${Id}: $($_.Exception.Message)"
+        Add-HealthException $_.Exception
+        $bad = Get-BadLine $Id 'не обробився — повтор наступним проходом' $_
+        if ($null -ne $bad) { Add-OutboxLine ((Get-Date -Format 'yyyyMMdd-HHmmss') + '-' + (Get-Sha256Hex "bad $Id").Substring(0, 12) + '.txt') $bad.Outbox }
+        return
+    }
+    if ($line -is [string] -and $line -eq 'RETRY') { return }
+    if ($line -isnot [string] -and $null -ne $line) {
+        # Кінець прогону: рядок — у теку вихідних під id стану; доставка — з неї, як для рядків інших скриптів.
+        Add-OutboxLine ($Id + '.txt') $line.Outbox
+        Write-FileAtomic $statePath (([ordered]@{ line = ''; slug = [string](Get-Prop $line 'Slug'); sent = $true; attempts = 0; outbox = ($Id + '.txt') }) | ConvertTo-Json -Compress)
+        return
+    }
+    if ($null -eq $line) {
+        Write-WrapperLog "стан $Id — повтор, рядка нема"
+        Write-FileAtomic $statePath (([ordered]@{ line = ''; sent = $true; attempts = 0 }) | ConvertTo-Json -Compress)
+        return
+    }
+    Write-WrapperLog $line
+    Write-FileAtomic $statePath (([ordered]@{ line = $line; sent = $false; attempts = 0 }) | ConvertTo-Json -Compress)
+}
+
 function Main {
     if (-not $OutboxDir) { $script:OutboxDir = Join-Path (Split-Path -Parent $WorkDir) 'gemini-outbox' }
     foreach ($d in @($WorkDir, (Join-Path $WorkDir 'state'), (Join-Path $WorkDir 'inbox'), (Join-Path $WorkDir 'seen'), $OutboxDir)) { [void](New-Item -ItemType Directory -Force -Path $d) }
@@ -1004,26 +1040,7 @@ function Main {
         if ($Retry) { Reset-State $Retry }
         $files = @(Get-ChildItem -LiteralPath $OutDir -Filter '*.json' -File -ErrorAction SilentlyContinue | Sort-Object Name)
         foreach ($f in $files) {
-            $id = $f.BaseName
-            if ($id -notmatch $script:IdPattern) { continue }
-            $statePath = Join-Path (Join-Path $WorkDir 'state') ($id + '.json')
-            if (Test-Path -LiteralPath $statePath) { continue }
-            try { $line = Get-Line $id }
-            catch { Write-WrapperLog "стан ${id}: $($_.Exception.Message)"; $line = Get-BadLine $id 'не обробився' $_ }
-            if ($line -is [string] -and $line -eq 'RETRY') { continue }
-            if ($line -isnot [string] -and $null -ne $line) {
-                # Кінець прогону: рядок — у теку вихідних під id стану; доставка — з неї, як для рядків інших скриптів.
-                Add-OutboxLine ($id + '.txt') $line.Outbox
-                Write-FileAtomic $statePath (([ordered]@{ line = ''; slug = [string](Get-Prop $line 'Slug'); sent = $true; attempts = 0; outbox = ($id + '.txt') }) | ConvertTo-Json -Compress)
-                continue
-            }
-            if ($null -eq $line) {
-                Write-WrapperLog "стан $id — повтор, рядка нема"
-                Write-FileAtomic $statePath (([ordered]@{ line = ''; sent = $true; attempts = 0 }) | ConvertTo-Json -Compress)
-                continue
-            }
-            Write-WrapperLog $line
-            Write-FileAtomic $statePath (([ordered]@{ line = $line; sent = $false; attempts = 0 }) | ConvertTo-Json -Compress)
+            if ($f.BaseName -match $script:IdPattern) { Receive-RunState $f.BaseName }
         }
         Add-PoolsLine
         Receive-HealthAlerts

@@ -933,7 +933,11 @@ function Get-SleepParent([string]$StatePath) {
 
 # Кінець прогону: факти гілки, бандл (коли є нові коміти), стан у теці обміну. Спільне для звичайного кінця й
 # для прогону, перерваного вимкненням чи сном ноутбука (тоді стан — `STARTED` із JSON).
+# Порожній код — тіло Invoke-Task обірвано до кінця агента: вимкнення Windows зупиняє конвеєр, і виконується лише
+# finally. Це той самий кінець, що й STARTED без живого процесу (Resume-Interrupted): INTERRUPTED, бандл зробленого й
+# повтор після вимкнення в публікатора, а не «невідомий код» без назви наряду.
 function Complete-Status($Status, [string]$StatePath, [string]$Tail, [datetime]$T0) {
+    if (-not $Status.code) { $Status.code = 'INTERRUPTED' }
     try {
         if ($Status.start) {
             $slugObj = [pscustomobject]@{ Slug = $Status.slug }
@@ -952,7 +956,7 @@ function Complete-Status($Status, [string]$StatePath, [string]$Tail, [datetime]$
         }
     } catch {
         Write-Log "бандл: $($_.Exception.Message)"
-        if ($Status.code -in @('DONE', 'BLOCKED', '')) { $Status.code = 'CRASH' }
+        if ($Status.code -in @('DONE', 'BLOCKED')) { $Status.code = 'CRASH' }
     }
     if ($T0 -ne [datetime]::MinValue) { $Status.minutes = [int][Math]::Round(((Get-Date) - $T0).TotalMinutes) }
     if ($Tail) { [System.IO.File]::WriteAllText((Join-Path $OutDir ($Status.id + '.tail.txt')), $Tail, $script:Utf8) }
