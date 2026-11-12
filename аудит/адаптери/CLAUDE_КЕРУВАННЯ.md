@@ -25,8 +25,8 @@
 
 - Стан сесії: `get_session(<id>)` того самого ходу, час UTC.
   `list_*` — фільтри й `limit` ≤ 10, `list_events` — `kinds`; не тягти весь список у контекст.
-- Недоставлені листи: `list_triggers(recurring=false, include_completed=true, limit=6)`, звірити `last_run`.
-  Прямий патч між сесіями — `send_message`, доставка — `updated_at`; звичайний лист — `CLAUDE.md`, «Лист».
+- Недоставлені листи: `list_triggers(recurring=false, include_completed=true, limit=6)`, звірити `last_run`; лист —
+  `CLAUDE.md`, «Лист».
 - Нагляд PR — такт пульсу; `subscribe_pr_activity` закрито в `.claude/settings.json` — підписки дали 44 % пробуджень
   диспетчера (власник 29.10). Останній коментар — `get_comments(perPage=1, page=<кількість>)`. Архів/повернення —
   `archive_session` / `unarchive_session`.
@@ -43,6 +43,5 @@
   саму: тригери (пульс, нагадування, листи) — `ROUTINE_RUN_FAILURE_REASON_ACCESS_DENIED`, `send_message` інших сесій —
   `elevated_session_untrusted_device`; доходять лише чат власника й події PR за підпискою. Менеджер і диспетчер її не
   просять; роботу ноутбукові — позначка обгортки (`аудит/адаптери/gemini/ЧЕРГА.md`). Міст — Remote Control у застосунку
-  власника (перемикачі ввімкнено 26.10: ноутбук без сну, сесії ноутбука власник запускає й бачить з телефона):
-  `create_session` на міст з хмари без картки — відмова `elevated_session_untrusted_device` (проба 26.10), не
+  власника: `create_session` на міст з хмари без картки — відмова `elevated_session_untrusted_device` (проба 26.10), не
   повторюють.
