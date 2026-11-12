@@ -1,0 +1,19 @@
+# ПРОБА (тимчасово, знімається в цьому ж PR): виклик syhnal-ryadky.yml з тими самими permissions, що в samozlyttia.yml.
+# Job викликаного процесу не виконується: умова хибна під час запуску; startup_failure дає сама перевірка виклику.
+name: проба виклику syhnal
+
+on:
+  push:
+    branches: ['claude/CI-самозлиття-запуск']
+
+permissions: {}
+
+jobs:
+  syhnal:
+    if: github.run_attempt == 0
+    permissions:
+      contents: read
+    uses: ./.github/workflows/syhnal-ryadky.yml
+    with:
+      pered: ${{ github.sha }}
+      pislia: ${{ github.sha }}

@@ -1,0 +1,19 @@
+# ПРОБА (тимчасово, знімається в цьому ж PR): виклик khrapovyk.yml з тими самими permissions, що в samozlyttia.yml.
+# Job викликаного процесу не виконується: умова хибна під час запуску; startup_failure дає сама перевірка виклику.
+name: проба виклику khrapovyk
+
+on:
+  push:
+    branches: ['claude/CI-самозлиття-запуск']
+
+permissions: {}
+
+jobs:
+  khrapovyk:
+    if: github.run_attempt == 0
+    permissions:
+      contents: read
+    uses: ./.github/workflows/khrapovyk.yml
+    with:
+      pered: ${{ github.sha }}
+      pislia: ${{ github.sha }}
