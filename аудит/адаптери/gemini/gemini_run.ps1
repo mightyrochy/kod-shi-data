@@ -54,6 +54,7 @@ param(
     [double]$QuotaMinutes = 2,
     [int]$MarkerMaxAgeDays = 7,
     [switch]$NoPrintTimeoutFlag,
+    [switch]$MeasureProfile,
     [string]$WorkerFile = ''
 )
 
@@ -76,8 +77,6 @@ $script:Lanes = @('codex', 'agy')
 $script:PoolModelPattern = '^(gemini|claude|gpt)-[a-z0-9.-]{1,36}$'
 # `agy -p "/usage"` без ходу моделі й без витрати квоти — з v1.1.11 (changelog agy, 7.08.2026): перелік у НАЛАШТУВАННЯ.md.
 $script:UsageMinVersion = [version]'1.1.11'
-# Каскад моделей «проєктування» (pro): наступна за пулом після самої моделі позначки; далі лише Codex (-CodexFallbackModel).
-$script:ClaudeCascadeModel = 'claude-opus-5-5-high'
 # Суфікс-зусилля позначки gpt-*: що `codex exec` не приймає, то відмова (EFFORT_INVALID), а не тиха підміна.
 $script:CodexEfforts = 'none|minimal|low|medium|high|xhigh|max|ultra'
 $script:AgyVersionDone = $false; $script:AgyVersion = $null; $script:AgyModels = $null
@@ -445,21 +444,11 @@ function Get-Quota([string]$Model, [switch]$Fresh, [long]$After = 0) {
         ResetAt = $(if ($null -ne $ref.Reset) { $ref.Reset.ToUnixTimeSeconds() } else { 0L }); Left = $ref.Left }
 }
 
-# Клас моделі за назвою: код — flash, проєктування — pro; інше — без каскаду.
-function Get-ModelClass([string]$Model) {
-    $t = @(Get-NameTokens $Model)
-    if ($t -contains 'flash') { return 'code' }
-    if ($t -contains 'pro') { return 'design' }
-    ''
-}
+# Codex у каскаді: лише з -EnableCodex і gpt-моделлю в -CodexFallbackModel (heartbeat `codex_fallback` — для claude_run.ps1).
+function Test-CodexFallback { [bool]($EnableCodex -and $CodexFallbackModel -and (Get-Engine $CodexFallbackModel).Name -eq 'codex') }
 
-# Кандидати за порядком: модель позначки → [claude-opus-5-5-high для проєктування] → Codex (лише з -CodexFallbackModel).
-function Get-Cascade([string]$Model) {
-    $c = @($Model)
-    if ((Get-ModelClass $Model) -eq 'design') { $c += $script:ClaudeCascadeModel }
-    if ($EnableCodex -and $CodexFallbackModel -and (Get-Engine $CodexFallbackModel).Name -eq 'codex') { $c += $CodexFallbackModel }
-    $c
-}
+# Кандидати за порядком (Get-CascadePlan, queue_lanes.ps1 — той самий порядок читає claude_run.ps1 для простою).
+function Get-Cascade([string]$Model) { @(Get-CascadePlan $Model $(if (Test-CodexFallback) { $CodexFallbackModel } else { '' })) }
 
 # Рушій наряду за позначкою й квотою пулів. Model — фактична модель (каскад); Quota — пулу першого кандидата, якщо всі
 # на 0 % (Blocked); Exe $null — рушія нема на ноутбуці. -After — позначка чекала скидання до цього часу (unix): квоту
@@ -1228,6 +1217,7 @@ function Start-Markers($Workers) {
             Write-FileAtomic (Get-StatePath (Get-MarkerKey $m)) 'STALE'
             continue
         }
+        if (Test-OldChainMarker $m) { Add-Skip $m 'давня позначка ланцюга: перевірки ставить диспетчер, умова не p2'; continue }
         if ((@($Workers | Where-Object { $_.Slug -ceq $m.Slug -and -not $_.Proc.HasExited }).Count -gt 0) -or (Test-SlugBusy $m.Slug $script:Lanes)) { Add-Skip $m 'той самий наряд уже йде в слоті'; continue }
         if ($m.Gpu) {
             if ($null -eq $gpuWhy) { $gpuWhy = Get-GpuBusyReason }
@@ -1274,19 +1264,32 @@ function Start-Markers($Workers) {
     $started
 }
 
-# Здоров'я для стану ноутбука (10971; лише показ): розмір профілю gemini (-ProfileDir; нема теки — порожньо) — не
-# частіше за usage_minutes (кеш health.json), і скільки позначок agy стоїть на групі квоти з 0 % (усі групи моделі — 0 %,
-# як Get-Quota).
+# Розмір профілю gemini (-ProfileDir) міряє окремий процес цього скрипта (-MeasureProfile): обхід ~245 ГБ ішов ~15 хв
+# (вимір 11.11), і всередині heartbeat тримав головний цикл. Замок health.lock — один обхід водночас; час кешу
+# health.json — кінець обходу, тож наступний обхід не раніше ніж за usage_minutes після нього.
+function Invoke-ProfileMeasure {
+    $lock = Open-Lock (Join-Path $RunsDir 'health.lock')
+    if ($null -eq $lock) { return 0 }
+    try {
+        $r = Measure-DirBytes $ProfileDir
+        $c = [ordered]@{ time = [DateTimeOffset]::UtcNow.ToUnixTimeSeconds(); read = (Get-UtcStamp (Get-Date)); profile = $(if ($null -ne $r) { [string]$r.Bytes } else { '' }); skipped = $(if ($null -ne $r) { [string]$r.Skipped } else { '' }) }
+        Write-FileAtomic (Join-Path $RunsDir 'health.json') ($c | ConvertTo-Json -Compress)
+    } finally { $lock.Dispose() }
+    0
+}
+
+# Здоров'я для стану ноутбука (10971; лише показ): розмір профілю gemini з кешу health.json (застарів за usage_minutes —
+# запускає Invoke-ProfileMeasure окремим процесом і не чекає його), і скільки позначок agy стоїть на групі квоти з 0 %
+# (усі групи моделі — 0 %, як Get-Quota).
 function Get-GeminiHealth {
     $path = Join-Path $RunsDir 'health.json'
     $c = $null
     if (Test-Path -LiteralPath $path) { try { $c = [System.IO.File]::ReadAllText($path, $script:Utf8) | ConvertFrom-Json } catch { $null = $_ } }
     $now = [DateTimeOffset]::UtcNow.ToUnixTimeSeconds()
     if ($null -eq $c -or $now - [long]$c.time -ge 60 * (Get-Limit $script:Limits 'UsageMinutes' 'usage_minutes')) {
-        $r = Measure-DirBytes $ProfileDir
-        $c = [pscustomobject]@{ time = $now; read = (Get-UtcStamp (Get-Date)); profile = $(if ($null -ne $r) { [string]$r.Bytes } else { '' }); skipped = $(if ($null -ne $r) { [string]$r.Skipped } else { '' }) }
-        Write-FileAtomic $path ($c | ConvertTo-Json -Compress)
+        if (Test-LockFree (Join-Path $RunsDir 'health.lock')) { $script:ProfileMeasure =[System.Diagnostics.Process]::Start((New-StartInfo (Get-Process -Id $PID).Path @('-NoProfile', '-NonInteractive', '-ExecutionPolicy', 'Bypass', '-File', $script:SelfPath, '-MeasureProfile', '-RunsDir', $RunsDir, '-ProfileDir', $ProfileDir) '' -NoRedirect)) }
     }
+    if ($null -eq $c) { $c = [pscustomobject]@{ profile = ''; skipped = ''; read = '' } }
     # Кеш /usage, як у квоті heartbeat: сам вимір agy не запускає; нема кешу — «?» у стані.
     $zero = ''
     try {
@@ -1304,6 +1307,9 @@ function Get-GeminiHealth {
 # heartbeat.json для стану ноутбука (claude_run.ps1 читає, перевіряючи кожне поле): смуги й слоти, квота груп моделей
 # (вікна, % залишку, скидання UTC, коли зчитано), остання відмова Codex, позначки в чеканні квоти. Лише назви й числа.
 function Write-Heartbeat([string]$Iso) {
+    # До Get-Limits смуг не знаємо: неповний heartbeat (без lanes) затер би повний попереднього проходу, а claude-run
+    # прочитав би «смуги вільні». Ізоляцію пишемо завжди — вона й без меж каже, що нових прогонів нема.
+    if (-not $Iso -and $null -eq $script:Limits) { return }
     $hb = [ordered]@{ read_utc = (Get-UtcStamp (Get-Date)); time = (Get-Date).ToString('s'); isolation = $(if ($Iso) { $Iso } else { 'OK' }) }
     if (-not $Iso -and $null -ne $script:Limits) {
         $lanes = @(); $first = $null
@@ -1331,6 +1337,7 @@ function Write-Heartbeat([string]$Iso) {
                 }) }
         } catch { $null = $_ }
         try { $hb.codex = [System.IO.File]::ReadAllText((Join-Path $RunsDir 'quota-codex.json'), $script:Utf8) | ConvertFrom-Json } catch { $null = $_ }
+        $hb.codex_fallback = (Test-CodexFallback)
         $hb.wait = @(foreach ($w in @(Get-WaitingMarkers | Select-Object -First 12)) { [ordered]@{ marker = $w.Marker; until = $w.Until; g = $w.Group } })
         try { $hb.health = Get-GeminiHealth } catch { Write-Log "здоров'я: $($_.Exception.Message)" }
     }
@@ -1465,6 +1472,7 @@ function Restore-FinishedMarkerState([string]$Target) {
 
 
 function Main {
+    if ($MeasureProfile) { return (Invoke-ProfileMeasure) }
     if ($WorkerFile) { $script:Job = Read-WorkerJob $WorkerFile }
     $script:StateDir = Join-Path $RunsDir 'state'
     $script:SlotDir = Join-Path $RunsDir 'slots'
